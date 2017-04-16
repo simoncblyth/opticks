@@ -91,6 +91,9 @@ inline NPY_API ndifference make_ndifference(nnode* left, nnode* right)
     ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
+
+
+/*
 inline NPY_API nunion* make_nunion_ptr(nnode* left, nnode* right)
 {
     nunion* n = new nunion ;         nnode::Init(*n, CSG_UNION , left, right ); return n ; 
@@ -103,6 +106,6 @@ inline NPY_API ndifference* make_ndifference_ptr(nnode* left, nnode* right)
 {
     ndifference* n = new ndifference ;    nnode::Init(*n, CSG_DIFFERENCE , left, right ); return n ;
 }
-
+*/
 
 

@@ -32,11 +32,17 @@ struct NPY_API nslab : nnode
 
 inline NPY_API void init_nslab(nslab& slab, const nvec4& param, const nvec4& param1 )
 {
-    slab.n = glm::normalize(glm::vec3(param.x, param.y, param.z));
+    glm::vec3 n = glm::normalize(glm::vec3(param.x, param.y, param.z));
+
+    slab.n = n ; 
     slab.a = param1.x ; 
     slab.b = param1.y ; 
 
-    slab.param = param ; 
+    slab.param.x = n.x ; 
+    slab.param.y = n.y ; 
+    slab.param.z = n.z ; 
+    slab.param.w = 0.f ;
+ 
     slab.param1 = param1 ; 
 
     assert(slab.b > slab.a );
@@ -48,18 +54,21 @@ inline NPY_API nslab make_nslab(const nvec4& param, const nvec4& param1)
     init_nslab(slab, param, param1 );
     return slab ;
 }
+
+inline NPY_API nslab make_nslab(float x, float y, float z, float a, float b)
+{
+    nvec4 param = {x,y,z,0} ;
+    nvec4 param1 = {a,b,0,0} ;
+    return make_nslab( param, param1 ); 
+}
+
+
 inline NPY_API nslab* make_nslab_ptr(const nvec4& param, const nvec4& param1)
 {
     nslab* slab = new nslab ; 
     nnode::Init(*slab,CSG_SLAB) ; 
     init_nslab(*slab, param, param1 );
     return slab ; 
-}
-inline NPY_API nslab make_nslab(float x, float y, float z, float a, float b)
-{
-    nvec4 param = {x,y,z,0} ;
-    nvec4 param1 = {a,b,0,0} ;
-    return make_nslab( param, param1 ); 
 }
 inline NPY_API nslab* make_nslab_ptr(float x, float y, float z, float a, float b)
 {

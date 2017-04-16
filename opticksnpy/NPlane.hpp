@@ -17,16 +17,33 @@ p116: Kay-Kajiya slab based volumes
 p126: Closest point on plane to a point in space
 
 
+
+                          +ve 
+              n ^
+                |
+      ----------+--------- 0 -
+        |
+        d                 -ve      
+        |
+      ----------O-------------
+
+
+
 */
+
+
+
 
 
 struct NPY_API nplane : nnode 
 {
     float operator()(float x, float y, float z) ;
 
-    void dump(const char* msg);
+    bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
 
-    nvec4 param ; 
+    glm::vec3 gcenter();
+    void pdump(const char* msg="nplane::dump", int verbosity=1);
+
     glm::vec3 n ;  // normal
     float     d ;  // signed distance to origin
 };
@@ -34,17 +51,23 @@ struct NPY_API nplane : nnode
 
 inline NPY_API void init_nplane(nplane& plane, const nvec4& param )
 {
-    plane.param = param ;
-    plane.n.x = param.x ; 
-    plane.n.y = param.y ; 
-    plane.n.z = param.z ; 
-    plane.d   = param.w ; 
+    glm::vec3 n = glm::normalize(glm::vec3(param.x, param.y, param.z));
+
+    plane.n = n ; 
+    plane.d = param.w ; 
+
+    plane.param.x = n.x ;
+    plane.param.y = n.y ;
+    plane.param.z = n.z ;
+    plane.param.w = plane.d  ;
+
 }
 inline NPY_API nplane make_nplane(const nvec4& param)
 {  
-   nplane plane ; 
-   init_nplane(plane, param );
-   return plane ;
+    nplane plane ; 
+    nnode::Init(plane,CSG_PLANE) ; 
+    init_nplane(plane, param );
+    return plane ;
 }
 inline NPY_API nplane make_nplane(float x, float y, float z, float w)
 {

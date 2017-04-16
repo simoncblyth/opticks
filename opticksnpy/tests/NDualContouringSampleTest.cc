@@ -42,8 +42,8 @@ int main(int argc, char** argv)
     NPY_LOG__ ; 
 
 
-    nsphere* sph = make_nsphere_ptr(0,0,0, 10) ;
-    //nbox*    box = make_nbox_ptr(5,5,5, 10) ;
+    nsphere* sph = new nsphere(make_nsphere(0,0,0, 10)) ;
+    //nbox* box = new nbox(make_nbox(5,5,5, 10)) ;
 
     NDualContouringSample dcs ;
     NTrianglesNPY* tris = dcs(sph) ;

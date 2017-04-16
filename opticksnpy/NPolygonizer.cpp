@@ -77,6 +77,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     if(!valid)
     {   
+        checkTris(tris, true);
         LOG(warning) << "INVALID NPolygonizer tris with " << m_poly << "  triangles outside root bbox REPLACE WITH PLACEHOLDER " ;   
         delete tris ; 
         tris = NTrianglesNPY::box(*m_bbox);
@@ -86,7 +87,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
 }
 
 
-bool NPolygonizer::checkTris(NTrianglesNPY* tris)
+bool NPolygonizer::checkTris(NTrianglesNPY* tris, bool verbose)
 {
     unsigned numTris = tris ? tris->getNumTriangles() : 0 ;
 
@@ -94,6 +95,7 @@ bool NPolygonizer::checkTris(NTrianglesNPY* tris)
 
     bool poly_valid = tris_bb ? m_bbox->contains(*tris_bb) : false  ;
 
+    if(verbose)
     LOG(info) << "NPolygonizer::checkTris"
               << " poly " << m_poly
               << " index " << m_index 

@@ -42,7 +42,7 @@ struct sphere_functor
 
 NTrianglesNPY* test_sphere_node()
 {
-    nsphere* sph = make_nsphere_ptr(0,0,0, 10) ;
+    nsphere* sph = new nsphere(make_nsphere(0,0,0, 10)) ;
     nbbox bb = sph->bbox();
 
     LOG(info) << "test_sphere_node bb:" << bb.desc() ;

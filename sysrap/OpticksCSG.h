@@ -16,7 +16,8 @@ typedef enum {
       CSG_TUBS=11,
   CSG_CYLINDER=12,
       CSG_SLAB=13,
- CSG_UNDEFINED=14,
+     CSG_PLANE=14,
+ CSG_UNDEFINED=15,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101
@@ -47,6 +48,7 @@ static const char* CSG_PRISM_         = "prism" ;
 static const char* CSG_TUBS_          = "tubs" ; 
 static const char* CSG_CYLINDER_      = "cylinder" ; 
 static const char* CSG_SLAB_          = "slab" ; 
+static const char* CSG_PLANE_         = "plane" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
@@ -66,6 +68,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
     else if(strcmp(nodename, CSG_CYLINDER_) == 0)       tc = CSG_CYLINDER ;
     else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
+    else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
     else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
     else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
@@ -95,6 +98,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_TUBS:          s = CSG_TUBS_          ; break ; 
         case CSG_CYLINDER:      s = CSG_CYLINDER_      ; break ; 
         case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
+        case CSG_PLANE:         s = CSG_PLANE_         ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
         case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 

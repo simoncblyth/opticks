@@ -11,12 +11,14 @@
 #include "NNode.hpp"
 #include "NPart.hpp"
 #include "NQuad.hpp"
+#include "NBBox.hpp"
 
+// primitives
 #include "NSphere.hpp"
 #include "NBox.hpp"
 #include "NSlab.hpp"
+#include "NPlane.hpp"
 
-#include "NBBox.hpp"
 
 #include "PLOG.hh"
 
@@ -198,15 +200,15 @@ float ndifference::operator()(float x, float y, float z)
 
 void nnode::Tests(std::vector<nnode*>& nodes )
 {
-    nsphere* a = make_nsphere_ptr(0.f,0.f,-50.f,100.f);
-    nsphere* b = make_nsphere_ptr(0.f,0.f, 50.f,100.f);
-    nbox*    c = make_nbox_ptr(0.f,0.f,0.f,200.f);
+    nsphere* a = new nsphere(make_nsphere(0.f,0.f,-50.f,100.f));
+    nsphere* b = new nsphere(make_nsphere(0.f,0.f, 50.f,100.f));
+    nbox*    c = new nbox(make_nbox(0.f,0.f,0.f,200.f));
 
-    nunion* u = make_nunion_ptr( a, b );
-    nintersection* i = make_nintersection_ptr( a, b ); 
-    ndifference* d1 = make_ndifference_ptr( a, b ); 
-    ndifference* d2 = make_ndifference_ptr( b, a ); 
-    nunion* u2 = make_nunion_ptr( d1, d2 );
+    nunion* u = new nunion(make_nunion( a, b ));
+    nintersection* i = new nintersection(make_nintersection( a, b )); 
+    ndifference* d1 = new ndifference(make_ndifference( a, b )); 
+    ndifference* d2 = new ndifference(make_ndifference( b, a )); 
+    nunion* u2 = new nunion(make_nunion( d1, d2 ));
 
     nodes.push_back( (nnode*)a );
     nodes.push_back( (nnode*)b );
@@ -222,12 +224,12 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = make_nsphere_ptr(0.f,0.f,0.f,radius);
-    nbox*    bx = make_nbox_ptr(0.f,0.f,0.f, inscribe );
-    nunion*  u_sp_bx = make_nunion_ptr( sp, bx );
-    nintersection*  i_sp_bx = make_nintersection_ptr( sp, bx );
-    ndifference*    d_sp_bx = make_ndifference_ptr( sp, bx );
-    ndifference*    d_bx_sp = make_ndifference_ptr( bx, sp );
+    nsphere* sp = new nsphere(make_nsphere(0.f,0.f,0.f,radius));
+    nbox*    bx = new nbox(make_nbox(0.f,0.f,0.f, inscribe ));
+    nunion*  u_sp_bx = new nunion(make_nunion( sp, bx ));
+    nintersection*  i_sp_bx = new nintersection(make_nintersection( sp, bx ));
+    ndifference*    d_sp_bx = new ndifference(make_ndifference( sp, bx ));
+    ndifference*    d_bx_sp = new ndifference(make_ndifference( bx, sp ));
 
     nodes.push_back( (nnode*)u_sp_bx );
     nodes.push_back( (nnode*)i_sp_bx );
@@ -282,6 +284,12 @@ std::function<float(float,float,float)> nnode::sdf()
                 f = *n ;
             }
             break ;
+        case CSG_PLANE:
+            {
+                nplane* n = (nplane*)node ;  
+                f = *n ;
+            }
+            break ;
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -333,6 +341,19 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    dirs.push_back( glm::vec3(dir));
                }
                break ;  
+
+            case CSG_PLANE: 
+               {  
+                   nplane* n = (nplane*)p ;
+                   centers.push_back(n->gcenter()); 
+                   glm::vec4 dir(n->n,0); 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
+
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
+ 
+
  
             default:
                {

@@ -18,6 +18,7 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 #include "NSlab.hpp"
+#include "NPlane.hpp"
 
 #include "NNode.hpp"
 #include "NPY.hpp"
@@ -270,9 +271,9 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_UNION:        node = make_nunion_ptr(NULL, NULL )        ; break ; 
-           case CSG_INTERSECTION: node = make_nintersection_ptr(NULL, NULL ) ; break ; 
-           case CSG_DIFFERENCE:   node = make_ndifference_ptr(NULL, NULL )   ; break ; 
+           case CSG_UNION:        node = new nunion(make_nunion(NULL, NULL )) ; break ; 
+           case CSG_INTERSECTION: node = new nintersection(make_nintersection(NULL, NULL )) ; break ; 
+           case CSG_DIFFERENCE:   node = new ndifference(make_ndifference(NULL, NULL ))   ; break ; 
            default:               node = NULL                                 ; break ; 
         }
         assert(node);
@@ -302,9 +303,10 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE: node = make_nsphere_ptr(param)       ; break ; 
-           case CSG_BOX:    node = make_nbox_ptr(param)          ; break ; 
-           case CSG_SLAB:   node = make_nslab_ptr(param, param1) ; break ; 
+           case CSG_SPHERE: node = new nsphere(make_nsphere(param))     ; break ; 
+           case CSG_BOX:    node = new nbox(make_nbox(param))           ; break ; 
+           case CSG_SLAB:   node = new nslab(make_nslab(param, param1)) ; break ; 
+           case CSG_PLANE:  node = new nplane(make_nplane(param))        ; break ; 
            default:         node = NULL ; break ; 
         }       
 

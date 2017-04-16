@@ -21,13 +21,7 @@ float sdCappedCylinder( vec3 p, vec2 h )
 
 http://mercury.sexy/hg_sdf/
 
-
-
-
 */
-
-
-
 
 
 struct NPY_API ncylinder : nnode {
@@ -73,6 +67,9 @@ inline NPY_API ncylinder make_ncylinder(float x, float y, float z, float w)
     nvec4 param = {x,y,z,w} ;
     return make_ncylinder(param);
 }
+
+
+/*
 inline NPY_API ncylinder* make_ncylinder_ptr(const nvec4& param)
 {
     ncylinder* n = new ncylinder ; 
@@ -85,5 +82,5 @@ inline NPY_API ncylinder* make_ncylinder_ptr(float x, float y, float z, float w)
     nvec4 param = {x,y,z,w} ;
     return make_ncylinder_ptr(param);
 }
-
+*/
 

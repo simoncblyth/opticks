@@ -378,6 +378,26 @@ EOP
 
 
 
+tboolean-sphere-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-sphere-plane-(){ cat << EOP 
+from opticks.ana.base import opticks_main
+from opticks.dev.csg.csg import CSG  
+args = opticks_main()
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+  
+plane  = CSG("plane",  param=[0,0,1,100] )
+sphere = CSG("sphere", param=[0,0,0,500] )
+
+object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-object)", poly="IM", resolution="50" )
+
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+EOP
+}
+
+
+
+
 
 tboolean-csg-unbalanced-py(){ tboolean-testconfig-py- $FUNCNAME ; }
 tboolean-csg-unbalanced-py-()
@@ -537,6 +557,7 @@ tboolean-bsd(){          TESTCONFIG=$(tboolean-box-sphere-py difference)   tbool
 tboolean-bsi(){          TESTCONFIG=$(tboolean-box-sphere-py intersection) tboolean-- ; }
 tboolean-pmt(){          TESTCONFIG=$(tboolean-csg-pmt-py 2>/dev/null)     tboolean-- ; }
 tboolean-ssl(){          TESTCONFIG=$(tboolean-sphere-slab 2>/dev/null)    tboolean-- ; }
+tboolean-spl(){          TESTCONFIG=$(tboolean-sphere-plane 2>/dev/null)    tboolean-- ; }
 
 
 

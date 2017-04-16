@@ -285,3 +285,27 @@ npy-wipe(){
    local bdir=$(npy-bdir)
    rm -rf $bdir
 }
+
+
+npy-node-(){
+   local iwd=$PWD
+   npy-cd
+   local hpp
+
+   grep -l :\ nnode *.hpp | while read hpp ; do
+      echo $hpp
+   done
+   grep -l :\ nnode *.hpp | while read hpp ; do
+      echo ${hpp/.hpp}.cpp
+   done
+
+
+   cd $iwd
+}
+
+npy-node(){
+   npy-cd
+   vi $(npy-node-)
+}
+
+

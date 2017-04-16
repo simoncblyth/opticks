@@ -15,7 +15,7 @@ class NPY_API NPolygonizer {
          NPolygonizer(NCSG* csg);
          NTrianglesNPY* polygonize();
    private:
-         bool checkTris(NTrianglesNPY* tris);
+         bool checkTris(NTrianglesNPY* tris, bool verbose=false);
          NTrianglesNPY* implicitMesher();
          NTrianglesNPY* dualContouringSample();
          NTrianglesNPY* marchingCubesNPY();

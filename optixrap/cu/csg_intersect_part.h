@@ -149,6 +149,45 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
 
 
 
+
+static __device__
+void csg_bounds_plane(const quad& q0, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
+{
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float d = q0.f.w ; 
+   rtPrintf("## csg_bounds_plane n %7.3f %7.3f %7.3f  d %7.3f  \n", n.x, n.y, n.z, d );
+   // plane must always be used in intersection, so dont extend bbox for it 
+}
+
+
+static __device__
+bool csg_intersect_plane(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+   // infinite plane a distance d in normal direction from origin 
+
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float d = q0.f.w ; 
+
+   float idn = 1.f/dot(ray_direction, n );
+   float on = dot(ray_origin, n ); 
+
+   float t_cand = (d - on)*idn ;
+
+   bool valid_intersect = t_cand > t_min ;
+   if( valid_intersect ) 
+   {
+       isect.x = n.x ;
+       isect.y = n.y ;
+       isect.z = n.z ;
+       isect.w = t_cand ; 
+   }
+   return valid_intersect ; 
+}
+
+
+
+
+
 static __device__
 void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
 {
@@ -215,6 +254,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
             case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray.origin, ray.direction )  ; break ; 
             case CSG_BOX:    csg_intersect_box(   pt.q0, tt_min, tt, ray.origin, ray.direction )  ; break ; 
             case CSG_SLAB:   csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_PLANE:  csg_intersect_plane( pt.q0, tt_min, tt, ray.origin, ray.direction )        ; break ; 
         }
     }
     else
@@ -246,6 +286,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
             case CSG_SPHERE: valid_intersect = csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_BOX:    valid_intersect = csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_SLAB:   valid_intersect = csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_PLANE:  valid_intersect = csg_intersect_plane( pt.q0, tt_min, tt, ray.origin, ray.direction )  ; break ; 
         }
 
         if(valid_intersect)

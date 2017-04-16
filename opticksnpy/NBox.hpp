@@ -42,6 +42,8 @@ inline NPY_API nbox make_nbox(const nvec4& p)
     init_nbox(n, p );
     return n ;
 }
+
+/*
 inline NPY_API nbox* make_nbox_ptr(const nvec4& p)
 {
     nbox* n = new nbox ; 
@@ -49,16 +51,21 @@ inline NPY_API nbox* make_nbox_ptr(const nvec4& p)
     init_nbox(*n, p );
     return n ; 
 }
+*/
+
 
 inline NPY_API nbox make_nbox(float x, float y, float z, float w)
 {
     nvec4 param = {x,y,z,w} ;
     return make_nbox( param ); 
 }
+
+
+/*
 inline NPY_API nbox* make_nbox_ptr(float x, float y, float z, float w)
 {
     nvec4 param = {x,y,z,w} ;
     return make_nbox_ptr( param ); 
 }
-
+*/
 

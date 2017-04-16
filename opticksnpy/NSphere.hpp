@@ -63,6 +63,10 @@ inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
     nvec4 param = {x,y,z,w} ;
     return make_nsphere(param);
 }
+
+
+
+/*
 inline NPY_API nsphere* make_nsphere_ptr(const nvec4& param)
 {
     nsphere* n = new nsphere ; 
@@ -75,5 +79,5 @@ inline NPY_API nsphere* make_nsphere_ptr(float x, float y, float z, float w)
     nvec4 param = {x,y,z,w} ;
     return make_nsphere_ptr(param);
 }
-
+*/
 
