@@ -46,6 +46,7 @@ NSpectralTest.cc
 NSphereTest.cc
 NBoxTest.cc
 NSlabTest.cc
+NPlaneTest.cc
 NBBoxTest.cc
 NNodeTest.cc
 

@@ -61,6 +61,7 @@ struct NPY_API nnode
     unsigned   gtransform_idx ; 
 
     nvec4 param ; 
+    nvec4 param1 ; 
 };
 
 // hmm perhaps easier to switch on these ?? instead

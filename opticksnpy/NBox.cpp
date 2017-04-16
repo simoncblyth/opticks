@@ -1,5 +1,6 @@
 
 #include "NGLMExt.hpp"
+#include <glm/gtx/component_wise.hpp>
 
 #include "NBBox.hpp"
 #include "NBox.hpp"
@@ -21,18 +22,46 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 
 **/
 
-float nbox::operator()(float px, float py, float pz) 
+float nbox::operator()(float x, float y, float z) 
 {
-    glm::vec4 p0(px,py,pz,1.0); 
-    glm::vec4 p1 = gtransform ? gtransform->v * p0 : p0 ; 
+    glm::vec4 q(x,y,z,1.0); 
+    if(gtransform) q = gtransform->v * q ;
 
-    glm::vec3 pc = glm::vec3(p1) - center ;  // coordinates in frame with origin at box center 
-    glm::vec3 a = glm::abs(pc) ;
-    glm::vec3 s( param.w );
+    glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
+    glm::vec3 a = glm::abs(p) ;
+    glm::vec3 s( param.w );      
     glm::vec3 d = a - s ; 
 
-    return gmaxf(d) ;
+    return glm::compMax(d) ;
 } 
+
+float nbox::sdf1(float x, float y, float z)
+{
+    return (*this)(x,y,z);
+}
+
+float nbox::sdf2(float x, float y, float z)
+{
+    glm::vec4 p(x,y,z,1.0); 
+    if(gtransform) p = gtransform->v * p ;
+
+    glm::vec3 bmax = center + glm::vec3( param.w ) ; // 
+
+    glm::vec3 d = glm::abs(glm::vec3(p)) - bmax  ;
+
+    float dmaxcomp = glm::compMax(d);
+
+    glm::vec3 dmax = glm::max( d, glm::vec3(0.f) );
+
+    float d_inside = fminf(dmaxcomp, 0.f);
+    float d_outside = glm::length( dmax );
+
+    return d_inside + d_outside ;       
+
+   // see tests/NBoxTest.cc   sdf2 and sdf1 match despite code appearances
+}
+
+
 
 
 nbbox nbox::bbox()

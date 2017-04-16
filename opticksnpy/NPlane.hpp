@@ -1,29 +1,61 @@
 #pragma once
 
+#include "NGLM.hpp"
 #include "NQuad.hpp"
+#include "NNode.hpp"
+
 #include "NPY_API_EXPORT.hh"
 
+/*
+
+http://mathworld.wolfram.com/Plane.html
+xyz: normalized normal vector, w:distance from origin
+
+RTCD 
+
+p116: Kay-Kajiya slab based volumes
+p126: Closest point on plane to a point in space
 
 
-struct NPY_API nplane {
-    // http://mathworld.wolfram.com/Plane.html
-    // xyz: normalized normal vector, w:distance from origin
+*/
+
+
+struct NPY_API nplane : nnode 
+{
+    float operator()(float x, float y, float z) ;
 
     void dump(const char* msg);
 
     nvec4 param ; 
+    glm::vec3 n ;  // normal
+    float     d ;  // signed distance to origin
 };
 
 
-inline NPY_API nplane make_nplane(float x, float y, float z, float w)
+inline NPY_API void init_nplane(nplane& plane, const nvec4& param )
+{
+    plane.param = param ;
+    plane.n.x = param.x ; 
+    plane.n.y = param.y ; 
+    plane.n.z = param.z ; 
+    plane.d   = param.w ; 
+}
+inline NPY_API nplane make_nplane(const nvec4& param)
 {  
-   nplane pl ; pl.param.x = x ; pl.param.y = y ; pl.param.z = z ; pl.param.w = w ; return pl ; 
+   nplane plane ; 
+   init_nplane(plane, param );
+   return plane ;
+}
+inline NPY_API nplane make_nplane(float x, float y, float z, float w)
+{
+    nvec4 param = {x,y,z,w} ;
+    return make_nplane( param ); 
 }
 
-inline NPY_API nplane make_nplane(const nvec4& p)
-{  
-   nplane pl ; pl.param.x = p.x ; pl.param.y = p.y ; pl.param.z = p.z ; pl.param.w = p.w ; return pl ; 
-}
+
+
+
+
 
 
 struct NPY_API ndisc {

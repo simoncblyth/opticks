@@ -67,34 +67,7 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 
-/*
-static __device__
-bool csg_intersect_slab(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
-{
-   // slab about origin with offset d 
 
-   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
-   const float  d = q0.f.w ; 
-
-   const float3 b0 = -d*n ; 
-   const float3 b1 =  d*n ; 
- 
-
-
-   float denom = dot(n, ray_direction);
-   float tt_cand = -(d + dot(n, ray_origin))/denom;
-
-   bool has_valid_intersect = denom != 0.f && tt_cand > tt_min  ; 
-   if(has_valid_intersect)
-   {
-       tt.x = n.x ;
-       tt.y = n.y ;
-       tt.z = n.z ;
-       tt.w = tt_cand ; 
-   }
-   return has_valid_intersect ; 
-}
-*/
 
 
 static __device__
@@ -174,19 +147,74 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
    return has_valid_intersect ; 
 }
 
+
+
+static __device__
+void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, optix::Matrix4x4* /*tr*/  )
+{
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float a = q1.f.x ; 
+   const float b = q1.f.y ; 
+   rtPrintf("## csg_bounds_slab n %7.3f %7.3f %7.3f  a %7.3f b %7.3f \n", n.x, n.y, n.z, a, b );
+
+   // slab must always be used in intersection, so dont extend bbox for it 
+}
+
+
+
+static __device__
+bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+   // slab (ie space between two parallel infinite planes with near and far signed distances from origin, where b > a)
+
+   const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const float a = q1.f.x ; 
+   const float b = q1.f.y ; 
+
+   float idn = 1.f/dot(ray_direction, n );
+   float on = dot(ray_origin, n ); 
+
+   float ta = (a - on)*idn ;
+   float tb = (b - on)*idn ;
+   
+   float t_near = fminf(ta,tb);  // order the intersects 
+   float t_far  = fmaxf(ta,tb);
+
+   float t_cand = t_near > t_min ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
+
+   bool valid_intersect = t_cand > t_min ;
+   bool b_hit = t_cand == tb ;
+
+   if( valid_intersect ) 
+   {
+       isect.x = b_hit ? n.x : -n.x ;
+       isect.y = b_hit ? n.y : -n.y ;
+       isect.z = b_hit ? n.z : -n.z ;
+       isect.w = t_cand ; 
+   }
+   return valid_intersect ; 
+}
+
+
+
+
+
+
+
 static __device__
 void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
     Part pt = partBuffer[partIdx] ; 
-    unsigned partType = pt.partType() ; 
+    unsigned typecode = pt.typecode() ; 
     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
 
     if(gtransformIdx == 0)
     {
-        switch(partType)
+        switch(typecode)
         {
             case CSG_SPHERE: csg_intersect_sphere(pt.q0,tt_min, tt, ray.origin, ray.direction )  ; break ; 
-            case CSG_BOX:    csg_intersect_box(   pt.q0,tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_BOX:    csg_intersect_box(   pt.q0, tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_SLAB:   csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
         }
     }
     else
@@ -213,10 +241,11 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 
         bool valid_intersect = false ; 
 
-        switch(partType)
+        switch(typecode)
         {
             case CSG_SPHERE: valid_intersect = csg_intersect_sphere(pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_BOX:    valid_intersect = csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
+            case CSG_SLAB:   valid_intersect = csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
         }
 
         if(valid_intersect)

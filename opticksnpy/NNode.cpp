@@ -70,6 +70,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.gtransform_idx = 0 ; 
 
     n.param = {0.f, 0.f, 0.f, 0.f };
+    n.param1 = {0.f, 0.f, 0.f, 0.f };
 }
 
 const char* nnode::csgname()
@@ -135,6 +136,8 @@ npart nnode::part()
     npart pt ; 
     pt.zero();
     pt.setParam( param );
+    pt.setParam1( param1 );
+
     pt.setTypeCode( type );
     pt.setGTransform( gtransform_idx );
     // gtransform_idx is index into a buffer of the distinct compound transforms for the tree
@@ -170,26 +173,26 @@ transformation to the point before evaluating the SDF.
 **/
 
 
-float nunion::operator()(float px, float py, float pz) 
+float nunion::operator()(float x, float y, float z) 
 {
     assert( left && right );
-    float l = (*left)(px, py, pz) ;
-    float r = (*right)(px, py, pz) ;
-    return fmin(l, r);
+    float l = (*left)(x, y, z) ;
+    float r = (*right)(x, y, z) ;
+    return fminf(l, r);
 }
-float nintersection::operator()(float px, float py, float pz) 
+float nintersection::operator()(float x, float y, float z) 
 {
     assert( left && right );
-    float l = (*left)(px, py, pz) ;
-    float r = (*right)(px, py, pz) ;
-    return fmax( l, r);
+    float l = (*left)(x, y, z) ;
+    float r = (*right)(x, y, z) ;
+    return fmaxf( l, r);
 }
-float ndifference::operator()(float px, float py, float pz) 
+float ndifference::operator()(float x, float y, float z) 
 {
     assert( left && right );
-    float l = (*left)(px, py, pz) ;
-    float r = (*right)(px, py, pz) ;
-    return fmax( l, -r);    // difference is intersection with complement, complement negates signed distance function
+    float l = (*left)(x, y, z) ;
+    float r = (*right)(x, y, z) ;
+    return fmaxf( l, -r);    // difference is intersection with complement, complement negates signed distance function
 }
 
 
@@ -322,10 +325,10 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 
             case CSG_SLAB: 
                {  
-                   nslab* n = (nslab*)p ;
-                   centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(n->normal,0); 
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
+                   nslab* s = (nslab*)p ;
+                   centers.push_back(s->gcenter()); 
+                   glm::vec4 dir(s->n,0); 
+                   if(s->gtransform) dir = s->gtransform->t * dir ; 
 
                    dirs.push_back( glm::vec3(dir));
                }

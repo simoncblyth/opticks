@@ -17,16 +17,7 @@ find_package(PLog REQUIRED)
 #message("NPY.NonExisting_LIBRARIES   :${NonExisting_LIBRARIES} ")
 
 find_package(ImplicitMesher) 
-message("NPY.ImplicitMesher_FOUND       :${ImplicitMesher_FOUND} ")
-message("NPY.ImplicitMesher_INCLUDE_DIRS:${ImplicitMesher_INCLUDE_DIRS} ")
-message("NPY.ImplicitMesher_LIBRARIES   :${ImplicitMesher_LIBRARIES} ")
-
 find_package(DualContouringSample) 
-message("NPY.DualContouringSample_FOUND       :${DualContouringSample_FOUND} ")
-message("NPY.DualContouringSample_INCLUDE_DIRS:${DualContouringSample_INCLUDE_DIRS} ")
-message("NPY.DualContouringSample_LIBRARIES   :${DualContouringSample_LIBRARIES} ")
-
-
 
 
 

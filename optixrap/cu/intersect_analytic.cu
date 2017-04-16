@@ -118,17 +118,18 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
             Part pt = partBuffer[partOffset+nodeIdx-1];  // nodeIdx is 1-based
 
-            unsigned partType = pt.partType() ; 
+            unsigned typecode = pt.typecode() ; 
             unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
     
-            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d partType %2u gtransformIdx %2u \n", nodeIdx, depth, elev, partType, gtransformIdx );
+            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u \n", nodeIdx, depth, elev, typecode, gtransformIdx );
 
             if(gtransformIdx == 0)
             {
-                switch(partType)
+                switch(typecode)
                 {
                     case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, NULL  );  break ;
                     case CSG_BOX:    csg_bounds_box(pt.q0, aabb, NULL  );     break ;
+                    case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, NULL ) ; break ;  /* infinite slabs must always be used in intersection */
                     default:                                                  break ; 
                 }
             }
@@ -141,10 +142,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                     return ;  
                 }
                 optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
-                switch(partType)
+                switch(typecode)
                 {
                     case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, &tr  );  break ;
                     case CSG_BOX:    csg_bounds_box(   pt.q0, aabb, &tr  );  break ;
+                    case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, &tr ) ; break ;  /* infinite slabs must always be used in intersection */
                     default:                                                 break ; 
                 }
             }
@@ -160,11 +162,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
             Part pt = partBuffer[partOffset + p] ; 
-            unsigned partType = pt.q2.u.w ; 
+            unsigned typecode = pt.typecode() ; 
 
-            identity.z = pt.q1.u.z ;  // boundary from partBuffer (see ggeo-/GPmt)
+            identity.z = pt.boundary() ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-            if(partType == CSG_PRISM) 
+            if(typecode == CSG_PRISM) 
             {
                 make_prism(pt.q0.f, aabb) ;
             }
@@ -222,7 +224,7 @@ RT_PROGRAM void intersect(int primIdx)
     { 
         Part pt = partBuffer[partOffset] ; 
 
-        identity.z = pt.q1.u.z ;        // replace placeholder zero with test analytic geometry root node boundary
+        identity.z = pt.boundary() ;        // replace placeholder zero with test analytic geometry root node boundary
 
         evaluative_csg( prim, identity );
         //intersect_csg( prim, identity );
@@ -234,11 +236,11 @@ RT_PROGRAM void intersect(int primIdx)
         {  
             Part pt = partBuffer[partOffset + p] ; 
 
-            identity.z = pt.q1.u.z ;   
+            identity.z = pt.boundary() ;   
 
-            unsigned partType = pt.q2.u.w ; 
+            unsigned typecode = pt.typecode() ; 
 
-            switch(partType)
+            switch(typecode)
             {
                 case CSG_ZERO:
                     intersect_aabb(pt.q2, pt.q3, identity);

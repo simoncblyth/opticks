@@ -14,8 +14,11 @@
 #include "NGLMExt.hpp"
 #include "NParameters.hpp"
 #include "NPart.h"
+
 #include "NSphere.hpp"
 #include "NBox.hpp"
+#include "NSlab.hpp"
+
 #include "NNode.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -244,6 +247,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     int transform_idx = getTransformIndex(idx) ; 
 
     nvec4 param = getQuad(idx, 0);
+    nvec4 param1 = getQuad(idx, 1);
 
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
@@ -254,6 +258,10 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
               << " param.y " << param.y
               << " param.z " << param.z
               << " param.w " << param.w
+              << " param1.x " << param1.x
+              << " param1.y " << param1.y
+              << " param1.z " << param1.z
+              << " param1.w " << param1.w
               ;
 
     nnode* node = NULL ;   
@@ -294,12 +302,13 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE: node = make_nsphere_ptr(param)   ; break ; 
-           case CSG_BOX:    node = make_nbox_ptr(param)      ; break ; 
+           case CSG_SPHERE: node = make_nsphere_ptr(param)       ; break ; 
+           case CSG_BOX:    node = make_nbox_ptr(param)          ; break ; 
+           case CSG_SLAB:   node = make_nslab_ptr(param, param1) ; break ; 
            default:         node = NULL ; break ; 
         }       
 
-        assert(node); 
+        assert(node && "unhandled CSG type"); 
 
         // structure of recursive call dictated by need for 
         // the primitive to know parent and its transform here...

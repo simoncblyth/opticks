@@ -478,10 +478,8 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
         isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
     } 
 
-    //quad q2 ; 
-    //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
     Part pt = partBuffer[partOffset+nodeIdx-1] ; 
-    OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
+    OpticksCSG_t operation = (OpticksCSG_t)pt.typecode() ;
 
 
     IntersectionState_t x_state[2] ; 
@@ -641,7 +639,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             unsigned elevation = height - depth ; 
 
             Part pt = partBuffer[partOffset+nodeIdx-1]; 
-            OpticksCSG_t typecode = (OpticksCSG_t)pt.q2.u.w ;
+            OpticksCSG_t typecode = (OpticksCSG_t)pt.typecode() ;
 
             if(typecode == CSG_ZERO) 
             {
@@ -961,7 +959,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              //q2.f = partBuffer[NPART_Q2(partOffset+nodeIdx-1)];      // (nodeIdx-1) as 1-based
 
              Part pt = partBuffer[partOffset+nodeIdx-1];
-             OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
+             OpticksCSG_t operation = (OpticksCSG_t)pt.typecode() ;
 
              float tX_min[2] ; 
              tX_min[LHS] = tmin ;
@@ -1092,7 +1090,7 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     unsigned rightIdx = nodeIdx*2 + 1 ;  
 
     Part pt = partBuffer[partOffset+nodeIdx-1] ;
-    OpticksCSG_t operation = (OpticksCSG_t)pt.q2.u.w ;
+    OpticksCSG_t operation = (OpticksCSG_t)pt.typecode() ;
 
     //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 

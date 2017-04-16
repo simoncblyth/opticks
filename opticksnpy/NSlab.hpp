@@ -1,59 +1,71 @@
 #pragma once
 
+#include <cassert>
 #include "NGLM.hpp"
 #include "NNode.hpp"
 
 #include "NPY_API_EXPORT.hh"
 
+/*
+
+RTCD 
+
+p116: Kay-Kajiya slab based volumes
+p126: Closest point on plane to a point in space
+
+*/
+
 struct NPY_API nslab : nnode 
 {
     float operator()(float x, float y, float z) ;
 
+    bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
+
     glm::vec3 gcenter();
     void pdump(const char* msg="nslab::pdump", int verbosity=1);
 
-
-    glm::vec3 normal ; 
-    float offset ; 
+    glm::vec3 n ;  // normalized normal direction
+    float a ;      // signed distance from origin to plane a, 
+    float b ;      // signed distance from origin to plane b, requirement b > a  (used for picking normal direction of intersects)
 
 };
 
+inline NPY_API void init_nslab(nslab& slab, const nvec4& param, const nvec4& param1 )
+{
+    slab.n = glm::normalize(glm::vec3(param.x, param.y, param.z));
+    slab.a = param1.x ; 
+    slab.b = param1.y ; 
 
-// only methods that are specific to slabs
-// and need to override the nnode need to be here 
+    slab.param = param ; 
+    slab.param1 = param1 ; 
 
-inline NPY_API void init_nslab(nslab& n, const nvec4& p )
-{
-    n.normal.x = p.x ; 
-    n.normal.y = p.y ; 
-    n.normal.z = p.z ; 
-    n.offset   = p.w ; 
+    assert(slab.b > slab.a );
 }
-
-inline NPY_API nslab make_nslab(const nvec4& p)
+inline NPY_API nslab make_nslab(const nvec4& param, const nvec4& param1)
 {
-    nslab n ; 
-    nnode::Init(n,CSG_SLAB) ; 
-    init_nslab(n, p );
-    return n ;
+    nslab slab ; 
+    nnode::Init(slab,CSG_SLAB) ; 
+    init_nslab(slab, param, param1 );
+    return slab ;
 }
-inline NPY_API nslab* make_nslab_ptr(const nvec4& p)
+inline NPY_API nslab* make_nslab_ptr(const nvec4& param, const nvec4& param1)
 {
-    nslab* n = new nslab ; 
-    nnode::Init(*n,CSG_SLAB) ; 
-    init_nslab(*n, p );
-    return n ; 
+    nslab* slab = new nslab ; 
+    nnode::Init(*slab,CSG_SLAB) ; 
+    init_nslab(*slab, param, param1 );
+    return slab ; 
 }
-
-inline NPY_API nslab make_nslab(float x, float y, float z, float w)
+inline NPY_API nslab make_nslab(float x, float y, float z, float a, float b)
 {
-    nvec4 param = {x,y,z,w} ;
-    return make_nslab( param ); 
+    nvec4 param = {x,y,z,0} ;
+    nvec4 param1 = {a,b,0,0} ;
+    return make_nslab( param, param1 ); 
 }
-inline NPY_API nslab* make_nslab_ptr(float x, float y, float z, float w)
+inline NPY_API nslab* make_nslab_ptr(float x, float y, float z, float a, float b)
 {
-    nvec4 param = {x,y,z,w} ;
-    return make_nslab_ptr( param ); 
+    nvec4 param = {x,y,z,0} ;
+    nvec4 param1 = {a,b,0,0} ;
+    return make_nslab_ptr( param, param1 ); 
 }
 
 

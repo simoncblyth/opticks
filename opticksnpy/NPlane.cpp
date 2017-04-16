@@ -7,6 +7,33 @@ void nplane::dump(const char* msg)
     param.dump(msg);
 }
 
+
+float nplane::operator()(float x, float y, float z) 
+{
+    glm::vec3 q(x,y,z);
+    return glm::dot(n,q) - d ;   
+}
+
+/*
+
+
+
+                          +ve 
+              n ^
+                |
+      ----------+--------- 0 -
+        |
+        d                 -ve      
+        |
+      ----------O-------------
+
+
+
+*/
+
+
+
+
 float ndisc::z() const 
 {
    return plane.param.w ;  

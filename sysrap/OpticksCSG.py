@@ -1,4 +1,4 @@
-# generated Thu Mar 16 12:24:37 2017 
+# generated Sun Apr 16 15:20:14 2017 
 # from /Users/blyth/opticks/sysrap 
 # base OpticksCSG.h stem OpticksCSG 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py OpticksCSG.h 
@@ -16,8 +16,12 @@ class CSG_(object):
     PMT = 9
     PRISM = 10
     TUBS = 11
-    UNDEFINED = 12
-    D2V={'box': 6, 'zlens': 8, 'difference': 3, 'undefined': 12, 'union': 1, 'pmt': 9, 'prism': 10, 'zsphere': 7, 'sphere': 5, 'zero': 0, 'partlist': 4, 'intersection': 2, 'tubs': 11}
+    CYLINDER = 12
+    SLAB = 13
+    UNDEFINED = 14
+    FLAGPARTLIST = 100
+    FLAGNODETREE = 101
+    D2V={'box': 6, 'zlens': 8, 'cylinder': 12, 'difference': 3, 'undefined': 14, 'union': 1, 'slab': 13, 'pmt': 9, 'prism': 10, 'zsphere': 7, 'sphere': 5, 'zero': 0, 'partlist': 4, 'flagpartlist': 100, 'intersection': 2, 'tubs': 11, 'flagnodetree': 101}
 
 
     @classmethod

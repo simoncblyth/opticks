@@ -41,6 +41,8 @@ void test_p1()
     p.dump("p1"); 
 }
 
+
+/*
 void test_NPART_TYPECODE()
 {
     nvec4 buf[8] ; 
@@ -76,7 +78,7 @@ void test_NPART_TYPECODE()
     assert(tc0u == tc0u_check);
     assert(tc1u == tc1u_check);
 }
-
+*/
 
 void test_csgtree()
 {
@@ -118,7 +120,7 @@ int main(int argc, char** argv)
 
     test_p0();
     test_p1();
-    test_NPART_TYPECODE();
+ //   test_NPART_TYPECODE();
 
     test_csgtree();
 

@@ -73,12 +73,36 @@ void test_gtransform()
 }
 
 
+void test_sdf()
+{
+    nbox b = make_nbox(0,0,0,1);  // unit box centered at origin       
+
+    for(float x=-2.f ; x < 2.f ; x+=0.01f )
+    {
+        float sd1 = b.sdf1(x,0,0) ;
+        float sd2 = b.sdf2(x,0,0) ;
+
+       /*
+        std::cout
+            << " x " << std::setw(5) << x 
+            << " sd1 " << std::setw(5) << sd1 
+            << " sd2 " << std::setw(5) << sd2
+            << std::endl ;  
+        */
+
+        assert(sd1 == sd2 );
+    }
+
+}
+
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    test_gtransform();
+    //test_gtransform();
+    test_sdf();
 
     return 0 ; 
 }

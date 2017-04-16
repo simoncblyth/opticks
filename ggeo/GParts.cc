@@ -770,14 +770,10 @@ unsigned int GParts::getNodeIndex(unsigned int part)
 {
     return getUInt(part, NODEINDEX_J, NODEINDEX_K);
 }
-
 unsigned int GParts::getTypeCode(unsigned int part)
 {
     return getUInt(part, TYPECODE_J, TYPECODE_K);
 }
-
-
-
 unsigned int GParts::getIndex(unsigned int part)
 {
     return getUInt(part, INDEX_J, INDEX_K);
@@ -788,17 +784,16 @@ unsigned int GParts::getBoundary(unsigned int part)
 }
 
 
+
+
 void GParts::setNodeIndex(unsigned int part, unsigned int nodeindex)
 {
     setUInt(part, NODEINDEX_J, NODEINDEX_K, nodeindex);
 }
-
 void GParts::setTypeCode(unsigned int part, unsigned int typecode)
 {
     setUInt(part, TYPECODE_J, TYPECODE_K, typecode);
 }
-
-
 void GParts::setIndex(unsigned int part, unsigned int index)
 {
     setUInt(part, INDEX_J, INDEX_K, index);
@@ -807,6 +802,10 @@ void GParts::setBoundary(unsigned int part, unsigned int boundary)
 {
     setUInt(part, BOUNDARY_J, BOUNDARY_K, boundary);
 }
+
+
+
+
 
 void GParts::setBoundaryAll(unsigned int boundary)
 {
@@ -888,7 +887,7 @@ void GParts::dump(const char* msg)
               else if( j == INDEX_J && k == INDEX_K)
               {
                   assert( uif.u == id );
-                  printf(" %6u <-id   " , uif.u );
+                  printf(" %6u <-INDEX   " , uif.u );
               }
               else if( j == BOUNDARY_J && k == BOUNDARY_K)
               {

@@ -207,11 +207,18 @@ class CSG(CSG_):
 
     
 
-    def __init__(self, typ, name="", left=None, right=None, param=None, param1=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
-        if type(typ) is str:
-            typ = self.fromdesc(typ)  
+    def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
+        if type(typ_) is str:
+            typ = self.fromdesc(typ_)
+        else:
+            typ = typ_  
         pass
-        assert type(typ) is int and typ > -1, (typ, type(typ))
+
+        type_ok = type(typ) is int and typ > -1 
+        if not type_ok:
+            log.fatal("entered CSG type is invalid : you probably beed to update python enums with : sysrap-;sysrap-csg-generate ")
+        pass
+        assert type_ok, (typ_, typ, type(typ))
 
         self.typ = typ
         self.name = name

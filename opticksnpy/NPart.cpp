@@ -27,22 +27,27 @@ void npart::setGTransform(unsigned gtransform_idx)
 
 void npart::setLeft(unsigned left)
 {
-    assert( LEFT_J == 0 && LEFT_K == 3 );  // note same location as primitive param.w
-    q0.u.w = left ; 
+    //assert( LEFT_J == 0 && LEFT_K == 3 );  // note same location as primitive param.w
+    qx.u.w = left ; 
 }
 void npart::setRight(unsigned right)
 {
-    assert( RIGHT_J == 1 && RIGHT_K == 3 );
-    q1.u.w = right ; 
+    //assert( RIGHT_J == 1 && RIGHT_K == 3 );
+    qx.u.w = right ; 
 }
 unsigned npart::getLeft()
 {
-    return q0.u.w ; 
+    return qx.u.w ; 
 }
 unsigned npart::getRight()
 {
-    return q1.u.w ; 
+    return qx.u.w ; 
 }
+
+
+
+
+
 
 
 OpticksCSG_t npart::getTypeCode()
@@ -91,6 +96,8 @@ void npart::dump(const char* msg)
     q1.dump("q1");
     q2.dump("q2");
     q3.dump("q3");
+
+    qx.dump("qx");
 }
 
 void npart::zero()
@@ -99,20 +106,34 @@ void npart::zero()
     q1.u = {0,0,0,0} ;
     q2.u = {0,0,0,0} ;
     q3.u = {0,0,0,0} ;
+
+    qx.u = {0,0,0,0} ;
 }
 void npart::setParam(const nvec4& param)
 {
     assert( PARAM_J == 0 && PARAM_K == 0 );
     q0.f = param;
 }
+void npart::setParam1(const nvec4& param1)
+{
+    assert( PARAM1_J == 1 && PARAM_K == 0 );
+    q1.f = param1;
+}
+
 void npart::setParam(float x, float y, float z, float w)
 {
-    assert( PARAM_J == 0 && PARAM_K == 0 );
-    q0.f.x = x;
-    q0.f.y = y;
-    q0.f.z = z;
-    q0.f.w = w;
+    nvec4 param = {x,y,z,w} ;
+    setParam( param );
 }
+
+void npart::setParam1(float x, float y, float z, float w)
+{
+    nvec4 param1 = {x,y,z,w} ;
+    setParam1( param1 );
+}
+
+
+
 
 
 
