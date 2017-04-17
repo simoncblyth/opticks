@@ -15,29 +15,29 @@
 
 nprism::nprism(float apex_angle_degrees, float height_mm, float depth_mm, float fallback_mm)
 {
-    param.x = apex_angle_degrees  ;
-    param.y = height_mm  ;
-    param.z = depth_mm  ;
-    param.w = fallback_mm  ;
+    param.f.x = apex_angle_degrees  ;
+    param.f.y = height_mm  ;
+    param.f.z = depth_mm  ;
+    param.f.w = fallback_mm  ;
 }
 
-nprism::nprism(const nvec4& param_)
+nprism::nprism(const nquad& param_)
 {
     param = param_ ;
 }
 
 float nprism::height()
 {
-    return param.y > 0.f ? param.y : param.w ; 
+    return param.f.y > 0.f ? param.f.y : param.f.w ; 
 }
 float nprism::depth()
 {
-    return param.z > 0.f ? param.z : param.w ; 
+    return param.f.z > 0.f ? param.f.z : param.f.w ; 
 }
 float nprism::hwidth()
 {
     float pi = boost::math::constants::pi<float>() ;
-    return height()*tan((pi/180.f)*param.x/2.0f) ;
+    return height()*tan((pi/180.f)*param.f.x/2.0f) ;
 }
 
 

@@ -17,6 +17,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
             case CSG_BOX:    csg_intersect_box(   pt.q0, tt_min, tt, ray.origin, ray.direction )  ; break ; 
             case CSG_SLAB:   csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
             case CSG_PLANE:  csg_intersect_plane( pt.q0, tt_min, tt, ray.origin, ray.direction )        ; break ; 
+            case CSG_CYLINDER:  csg_intersect_cylinder( pt.q0, pt.q1, tt_min, tt, ray.origin, ray.direction )        ; break ; 
         }
     }
     else
@@ -49,6 +50,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
             case CSG_BOX:    valid_intersect = csg_intersect_box(   pt.q0,tt_min, tt, ray_origin, ray_direction )  ; break ; 
             case CSG_SLAB:   valid_intersect = csg_intersect_slab(  pt.q0,pt.q1, tt_min, tt, ray.origin, ray.direction )  ; break ; 
             case CSG_PLANE:  valid_intersect = csg_intersect_plane( pt.q0, tt_min, tt, ray.origin, ray.direction )  ; break ; 
+            case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1, tt_min, tt, ray.origin, ray.direction ) ; break ; 
         }
 
         if(valid_intersect)

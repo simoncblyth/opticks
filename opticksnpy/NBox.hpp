@@ -27,15 +27,15 @@ struct NPY_API nbox : nnode {
 
 
 
-inline NPY_API void init_nbox(nbox& b, const nvec4& p )
+inline NPY_API void init_nbox(nbox& b, const nquad& p )
 {
     b.param = p ; 
-    b.center.x = p.x ; 
-    b.center.y = p.y ; 
-    b.center.z = p.z ; 
+    b.center.x = p.f.x ; 
+    b.center.y = p.f.y ; 
+    b.center.z = p.f.z ; 
 }
 
-inline NPY_API nbox make_nbox(const nvec4& p)
+inline NPY_API nbox make_nbox(const nquad& p)
 {
     nbox n ; 
     nnode::Init(n,CSG_BOX) ; 
@@ -43,29 +43,11 @@ inline NPY_API nbox make_nbox(const nvec4& p)
     return n ;
 }
 
-/*
-inline NPY_API nbox* make_nbox_ptr(const nvec4& p)
-{
-    nbox* n = new nbox ; 
-    nnode::Init(*n,CSG_BOX) ; 
-    init_nbox(*n, p );
-    return n ; 
-}
-*/
-
-
 inline NPY_API nbox make_nbox(float x, float y, float z, float w)
 {
-    nvec4 param = {x,y,z,w} ;
+    nquad param ;
+    param.f =  {x,y,z,w} ;
     return make_nbox( param ); 
 }
 
-
-/*
-inline NPY_API nbox* make_nbox_ptr(float x, float y, float z, float w)
-{
-    nvec4 param = {x,y,z,w} ;
-    return make_nbox_ptr( param ); 
-}
-*/
 

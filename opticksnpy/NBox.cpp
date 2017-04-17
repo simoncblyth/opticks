@@ -29,7 +29,7 @@ float nbox::operator()(float x, float y, float z)
 
     glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
     glm::vec3 a = glm::abs(p) ;
-    glm::vec3 s( param.w );      
+    glm::vec3 s( param.f.w );      
     glm::vec3 d = a - s ; 
 
     return glm::compMax(d) ;
@@ -45,7 +45,7 @@ float nbox::sdf2(float x, float y, float z)
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ;
 
-    glm::vec3 bmax = center + glm::vec3( param.w ) ; // 
+    glm::vec3 bmax = center + glm::vec3( param.f.w ) ; // 
 
     glm::vec3 d = glm::abs(glm::vec3(p)) - bmax  ;
 
@@ -68,9 +68,9 @@ nbbox nbox::bbox()
 {
     nbbox bb ;
 
-    float s  = param.w ; 
-    bb.min = make_nvec3( param.x - s, param.y - s, param.z - s );
-    bb.max = make_nvec3( param.x + s, param.y + s, param.z + s );
+    float s  = param.f.w ; 
+    bb.min = make_nvec3( center.x - s, center.y - s, center.z - s );
+    bb.max = make_nvec3( center.x + s, center.y + s, center.z + s );
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -90,7 +90,7 @@ void nbox::pdump(const char* msg, int verbosity )
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
-              << " side " << param.w 
+              << " side " << param.f.w 
               << " gcenter " << gcenter()
               << " gtransform? " << !!gtransform
               << std::endl ; 

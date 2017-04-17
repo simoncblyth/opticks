@@ -109,26 +109,28 @@ void npart::zero()
 
     qx.u = {0,0,0,0} ;
 }
-void npart::setParam(const nvec4& param)
+void npart::setParam(const nquad& param)
 {
     assert( PARAM_J == 0 && PARAM_K == 0 );
-    q0.f = param;
+    q0 = param;
 }
-void npart::setParam1(const nvec4& param1)
+void npart::setParam1(const nquad& param1)
 {
     assert( PARAM1_J == 1 && PARAM_K == 0 );
-    q1.f = param1;
+    q1 = param1;
 }
 
 void npart::setParam(float x, float y, float z, float w)
 {
-    nvec4 param = {x,y,z,w} ;
+    nquad param ;
+    param.f = {x,y,z,w} ;
     setParam( param );
 }
 
 void npart::setParam1(float x, float y, float z, float w)
 {
-    nvec4 param1 = {x,y,z,w} ;
+    nquad param1 ;
+    param1.f = {x,y,z,w} ;
     setParam1( param1 );
 }
 

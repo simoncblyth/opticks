@@ -132,6 +132,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                     case CSG_BOX:    csg_bounds_box(pt.q0, aabb, NULL  );     break ;
                     case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, NULL ) ; break ;  /* infinite slabs must always be used in intersection */
                     case CSG_PLANE:  csg_bounds_plane(  pt.q0, aabb, NULL ) ; break ;       /* infinite plane must always be used in intersection */
+                    case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,  aabb, NULL )   ; break ;  
                     default:                                                  break ; 
                 }
             }
@@ -150,6 +151,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
                     case CSG_BOX:    csg_bounds_box(   pt.q0, aabb, &tr  );  break ;
                     case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, &tr ) ; break ;  /* infinite slabs must always be used in intersection */
                     case CSG_PLANE:  csg_bounds_plane( pt.q0, aabb, &tr )   ; break ;       /* infinite plane must always be used in intersection */
+                    case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,  aabb, &tr )   ; break ;     
                     default:                                                 break ; 
                 }
             }

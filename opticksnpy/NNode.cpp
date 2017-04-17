@@ -18,6 +18,7 @@
 #include "NBox.hpp"
 #include "NSlab.hpp"
 #include "NPlane.hpp"
+#include "NCylinder.hpp"
 
 
 #include "PLOG.hh"
@@ -71,8 +72,8 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.gtransform = NULL ; 
     n.gtransform_idx = 0 ; 
 
-    n.param = {0.f, 0.f, 0.f, 0.f };
-    n.param1 = {0.f, 0.f, 0.f, 0.f };
+    n.param.f = {0.f, 0.f, 0.f, 0.f };
+    n.param1.f = {0.f, 0.f, 0.f, 0.f };
 }
 
 const char* nnode::csgname()
@@ -290,6 +291,12 @@ std::function<float(float,float,float)> nnode::sdf()
                 f = *n ;
             }
             break ;
+        case CSG_CYLINDER:
+            {
+                ncylinder* n = (ncylinder*)node ;  
+                f = *n ;
+            }
+            break ;
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -353,7 +360,17 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                }
                break ;  
  
+            case CSG_CYLINDER: 
+               {  
+                   ncylinder* n = (ncylinder*)p ;
+                   centers.push_back(n->gcenter()); 
+                   glm::vec4 dir(0,0,1,0); 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
 
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
+ 
  
             default:
                {

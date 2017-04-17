@@ -155,6 +155,7 @@ Ericson, Real Time Collision Detection p196-198
 
 */
 
+
 enum
 {
     ENDCAP_P = 0x1 <<  0,    
@@ -247,7 +248,7 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
                 rtReportIntersection(0);
             }
         }
-        else    // md 0:dd, ray origin inside 
+        else    // md 0->dd, ray origin inside 
         {
             if( nd > 0.f && PCAP) // ray along +d 
             {

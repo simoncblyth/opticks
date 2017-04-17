@@ -5,10 +5,13 @@
 struct npart ;
 struct nbbox ; 
 
+
+//TODO: change into nnode substruct 
+
 struct NPY_API nprism 
 {
     nprism(float apex_angle_degrees=90.f, float height_mm=100.f, float depth_mm=100.f, float fallback_mm=100.f);
-    nprism(const nvec4& param_);
+    nprism(const nquad& param_);
 
     nbbox bbox();
 
@@ -19,7 +22,7 @@ struct NPY_API nprism
     npart part();
     void dump(const char* msg);
 
-    nvec4 param ; 
+    nquad param ; 
 };
 
 

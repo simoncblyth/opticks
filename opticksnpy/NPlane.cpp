@@ -47,7 +47,7 @@ glm::vec3 nplane::gcenter()
 
 float ndisc::z() const 
 {
-   return plane.param.w ;  
+   return plane.param.f.w ;  
 }
 
 void ndisc::dump(const char* msg)

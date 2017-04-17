@@ -27,11 +27,7 @@ p126: Closest point on plane to a point in space
         |
       ----------O-------------
 
-
-
 */
-
-
 
 
 
@@ -49,20 +45,20 @@ struct NPY_API nplane : nnode
 };
 
 
-inline NPY_API void init_nplane(nplane& plane, const nvec4& param )
+inline NPY_API void init_nplane(nplane& plane, const nquad& param )
 {
-    glm::vec3 n = glm::normalize(glm::vec3(param.x, param.y, param.z));
+    glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
     plane.n = n ; 
-    plane.d = param.w ; 
+    plane.d = param.f.w ; 
 
-    plane.param.x = n.x ;
-    plane.param.y = n.y ;
-    plane.param.z = n.z ;
-    plane.param.w = plane.d  ;
+    plane.param.f.x = n.x ;
+    plane.param.f.y = n.y ;
+    plane.param.f.z = n.z ;
+    plane.param.f.w = plane.d  ;
 
 }
-inline NPY_API nplane make_nplane(const nvec4& param)
+inline NPY_API nplane make_nplane(const nquad& param)
 {  
     nplane plane ; 
     nnode::Init(plane,CSG_PLANE) ; 
@@ -71,7 +67,8 @@ inline NPY_API nplane make_nplane(const nvec4& param)
 }
 inline NPY_API nplane make_nplane(float x, float y, float z, float w)
 {
-    nvec4 param = {x,y,z,w} ;
+    nquad param ;  
+    param.f = {x,y,z,w} ;
     return make_nplane( param ); 
 }
 

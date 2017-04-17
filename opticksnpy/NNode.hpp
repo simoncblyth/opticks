@@ -60,21 +60,21 @@ struct NPY_API nnode
     nmat4triple* gtransform ; 
     unsigned   gtransform_idx ; 
 
-    nvec4 param ; 
-    nvec4 param1 ; 
+    nquad param ; 
+    nquad param1 ; 
 };
 
 // hmm perhaps easier to switch on these ?? instead
 // of having separate types ? 
 
 struct NPY_API nunion : nnode {
-    float operator()(float px, float py, float pz) ;
+    float operator()(float x, float y, float z) ;
 };
 struct NPY_API nintersection : nnode {
-    float operator()(float px, float py, float pz);
+    float operator()(float x, float y, float z);
 };
 struct NPY_API ndifference : nnode {
-    float operator()(float px, float py, float pz);
+    float operator()(float x, float y, float z);
 };
 
 
@@ -91,21 +91,5 @@ inline NPY_API ndifference make_ndifference(nnode* left, nnode* right)
     ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
-
-
-/*
-inline NPY_API nunion* make_nunion_ptr(nnode* left, nnode* right)
-{
-    nunion* n = new nunion ;         nnode::Init(*n, CSG_UNION , left, right ); return n ; 
-}
-inline NPY_API nintersection* make_nintersection_ptr(nnode* left, nnode* right)
-{
-    nintersection* n = new nintersection ;  nnode::Init(*n, CSG_INTERSECTION , left, right ); return n ;
-}
-inline NPY_API ndifference* make_ndifference_ptr(nnode* left, nnode* right)
-{
-    ndifference* n = new ndifference ;    nnode::Init(*n, CSG_DIFFERENCE , left, right ); return n ;
-}
-*/
 
 

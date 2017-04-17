@@ -115,6 +115,7 @@ set(SOURCES
     NNode.cpp
     NBox.cpp
     NSlab.cpp
+    NCylinder.cpp
 
     NQuad.cpp
     NSphere.cpp

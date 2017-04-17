@@ -24,9 +24,9 @@ struct NPY_API npart
     void setGTransform(unsigned gtransform_idx);
     void setBBox(const nbbox& bb);
 
-    void setParam(const nvec4& param);
+    void setParam(const nquad& param);
+    void setParam1(const nquad& param1);
     void setParam(float x, float y, float z, float w);
-    void setParam1(const nvec4& param1);
     void setParam1(float x, float y, float z, float w);
 
 

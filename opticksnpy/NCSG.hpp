@@ -53,6 +53,7 @@ GParts* GParts::make( NCSG* tree)
 **/
 
 struct nvec4 ; 
+union nquad ; 
 struct nnode ; 
 struct nmat4pair ; 
 struct nmat4triple ; 
@@ -96,7 +97,7 @@ class NPY_API NCSG {
         void setBoundary(const char* boundary);
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
-        nvec4 getQuad(unsigned idx, unsigned j);
+        nquad getQuad(unsigned idx, unsigned j);
         void load();
         void import();
         nnode* import_r(unsigned idx, nnode* parent=NULL);

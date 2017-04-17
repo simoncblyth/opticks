@@ -19,6 +19,7 @@
 #include "NBox.hpp"
 #include "NSlab.hpp"
 #include "NPlane.hpp"
+#include "NCylinder.hpp"
 
 #include "NNode.hpp"
 #include "NPY.hpp"
@@ -205,9 +206,10 @@ unsigned NCSG::getTransformIndex(unsigned idx)
 
 
 
-nvec4 NCSG::getQuad(unsigned idx, unsigned j)
+nquad NCSG::getQuad(unsigned idx, unsigned j)
 {
-    nvec4 qj = m_nodes->getVQuad(idx, j) ;
+    nquad qj ; 
+    qj.f = m_nodes->getVQuad(idx, j) ;
     return qj ;
 }
 
@@ -271,8 +273,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     int transform_idx = getTransformIndex(idx) ; 
 
-    nvec4 param = getQuad(idx, 0);
-    nvec4 param1 = getQuad(idx, 1);
+    nquad param = getQuad(idx, 0);
+    nquad param1 = getQuad(idx, 1);
 
 
     if(m_verbosity > 2)
@@ -281,14 +283,14 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
               << " typecode " << typecode 
               << " transform_idx " << transform_idx 
               << " csgname " << CSGName(typecode) 
-              << " param.x " << param.x
-              << " param.y " << param.y
-              << " param.z " << param.z
-              << " param.w " << param.w
-              << " param1.x " << param1.x
-              << " param1.y " << param1.y
-              << " param1.z " << param1.z
-              << " param1.w " << param1.w
+              << " param.f.x " << param.f.x
+              << " param.f.y " << param.f.y
+              << " param.f.z " << param.f.z
+              << " param.f.w " << param.f.w
+              << " param1.f.x " << param1.f.x
+              << " param1.f.y " << param1.f.y
+              << " param1.f.z " << param1.f.z
+              << " param1.f.w " << param1.f.w
               ;
 
     nnode* node = NULL ;   
@@ -331,11 +333,12 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE: node = new nsphere(make_nsphere(param))     ; break ; 
-           case CSG_BOX:    node = new nbox(make_nbox(param))           ; break ; 
-           case CSG_SLAB:   node = new nslab(make_nslab(param, param1)) ; break ; 
-           case CSG_PLANE:  node = new nplane(make_nplane(param))        ; break ; 
-           default:         node = NULL ; break ; 
+           case CSG_SPHERE:   node = new nsphere(make_nsphere(param))     ; break ; 
+           case CSG_BOX:      node = new nbox(make_nbox(param))           ; break ; 
+           case CSG_SLAB:     node = new nslab(make_nslab(param, param1)) ; break ; 
+           case CSG_PLANE:    node = new nplane(make_nplane(param))        ; break ; 
+           case CSG_CYLINDER: node = new ncylinder(make_ncylinder(param, param1)) ; break ; 
+           default:           node = NULL ; break ; 
         }       
 
         assert(node && "unhandled CSG type"); 

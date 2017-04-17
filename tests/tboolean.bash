@@ -5,6 +5,19 @@ tboolean-usage(){ cat << \EOU
 tboolean- 
 ======================================================
 
+
+TODO
+--------
+
+* CSG geometry config using python that writes
+  a serialization turns out to be really convenient...
+  Howabout attaching emission of torch photons to pieces
+  of geometry ?
+  
+
+NOTES
+--------
+
 tracetest option
 ~~~~~~~~~~~~~~~~~~~
 
@@ -486,8 +499,36 @@ EOP
 
 
 
+tboolean-cylinder(){ TESTCONFIG=$(tboolean-csg-cylinder 2>/dev/null)    tboolean-- ; }
+tboolean-csg-cylinder(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-cylinder-(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.dev.csg.csg import CSG  
+args = opticks_main()
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
+cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+
+PCAP = 0x1 << 0  # smaller z endcap
+QCAP = 0x1 << 1
+#flags = PCAP | QCAP
+flags = 0 
+
+cylinder.param1.view(np.uint32)[1] = flags 
+
+CSG.Serialize([container, cylinder], "$TMP/$FUNCNAME" )
+
+"""
+
+Issue:
+
+1. seeing endcaps when would expect to see the sides of the cylinder
 
 
+"""
+EOP
+}
 
 
 

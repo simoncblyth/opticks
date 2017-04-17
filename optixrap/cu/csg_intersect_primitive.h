@@ -219,3 +219,205 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
 
 
 
+
+enum
+{
+    CYLINDER_ENDCAP_P = 0x1 <<  0,    
+    CYLINDER_ENDCAP_Q = 0x1 <<  1
+};    
+
+static __device__
+void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const float3  center = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+    const float   radius = q0.f.w ; 
+    const float    sizeZ = q1.f.x  ; 
+    const unsigned flags = q1.u.y ;
+
+    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
+    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+
+    rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f %7.3f radius %7.3f  sizeZ %7.3f flags %u PCAP %d QCAP %d \n",
+          center.x, center.y, center.z, radius, sizeZ, flags, PCAP, QCAP );
+
+    const float3 bbmin = make_float3( center.x - radius, center.y - radius, center.z - sizeZ/2.f );
+    const float3 bbmax = make_float3( center.x + radius, center.y + radius, center.z + sizeZ/2.f );
+
+    Aabb tbb(bbmin, bbmax);
+    if(tr) transform_bbox( &tbb, tr );  
+    aabb->include(tbb);
+}
+
+static __device__
+bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    // ascii art explanation in intersect_ztubs.h
+
+    const float   radius = q0.f.w ; 
+    const float    sizeZ = q1.f.x  ; 
+    const unsigned flags = q1.u.y ;
+    const float3 position = make_float3( q0.f.x, q0.f.y, q0.f.z - sizeZ/2.f ); // P: point on axis at base of cylinder
+
+    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
+    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+
+    const float3 m = ray_origin - position ;
+    const float3 n = ray_direction ; 
+    const float3 d = make_float3(0.f, 0.f, sizeZ );   // PQ : cylinder axis 
+
+    float rr = radius*radius ; 
+    float3 dnorm = normalize(d);  
+
+    float mm = dot(m, m) ; 
+    float nn = dot(n, n) ; 
+    float dd = dot(d, d) ;  
+    float nd = dot(n, d) ;
+    float md = dot(m, d) ;
+    float mn = dot(m, n) ; 
+    float k = mm - rr ; 
+
+    // quadratic coefficients of t,     a tt + 2b t + c = 0 
+    float a = dd*nn - nd*nd ;   
+    float b = dd*mn - nd*md ;
+    float c = dd*k - md*md ; 
+
+    float disc = b*b-a*c;
+
+    // axial ray endcap handling 
+    if(fabs(a) < 1e-6f)     
+    {
+        if(c > 0.f) return false ;  // ray starts and ends outside cylinder
+
+        if(md < 0.f && PCAP)        // ray origin on P side
+        {
+            isect.x = -dnorm.x ; 
+            isect.y = -dnorm.y ; 
+            isect.z = -dnorm.z ; 
+            isect.w = -mn/nn ;      // P endcap 
+        } 
+        else if(md > dd && QCAP) // ray origin on Q side 
+        {
+            isect.x = dnorm.x ; 
+            isect.y = dnorm.y ; 
+            isect.z = dnorm.z ; 
+            isect.w = (nd - mn)/nn ;  // Q endcap
+        }
+        else    // md 0->dd, ray origin inside 
+        {
+            if( nd > 0.f && PCAP) // ray along +d 
+            {
+                isect.x = dnorm.x ; 
+                isect.y = dnorm.y ; 
+                isect.z = dnorm.z ; 
+                isect.w = -mn/nn ;    // P endcap from inside
+            } 
+            else if(QCAP)  // ray along -d
+            {
+                isect.x = -dnorm.x ; 
+                isect.y = -dnorm.y ; 
+                isect.z = -dnorm.z ; 
+                isect.w = (nd - mn)/nn ;  // Q endcap from inside
+            }
+            return false  ;   // hmm  
+        }
+    }  // end-of-axial-ray endcap handling 
+    
+
+
+    if(disc > 0.0f)  // intersection with the infinite cylinder
+    {
+        float sdisc = sqrtf(disc);
+
+        float root1 = (-b - sdisc)/a;     
+        float ad1 = md + root1*nd ;        // axial coord of intersection point 
+        float3 P1 = ray_origin + root1*ray_direction ;  
+
+        if( ad1 > 0.f && ad1 < dd )  // intersection inside cylinder range
+        {
+            float3 N  = (P1 - position)/radius  ;  
+            N.z = 0.f ; 
+            N = normalize(N);
+
+            isect.x = N.x ; 
+            isect.y = N.y ; 
+            isect.z = N.z ; 
+            isect.w = root1 ; 
+            // HP_WALL_O ;
+        } 
+        else if( ad1 < 0.f && PCAP ) //  intersection outside cylinder on P side
+        {
+            if( nd <= 0.f ) return false ; // ray direction away from endcap
+            float t = -md/nd ;   // P endcap 
+            float checkr = k + t*(2.f*mn + t*nn) ; // bracket typo in book 2*t*t makes no sense   
+            if ( checkr < 0.f )
+            {
+                isect.x = -dnorm.x ; 
+                isect.y = -dnorm.y ; 
+                isect.z = -dnorm.z ; 
+                isect.w = t ; 
+                // HP_PCAP_O ;
+            } 
+        } 
+        else if( ad1 > dd && QCAP  ) //  intersection outside cylinder on Q side
+        {
+            if( nd >= 0.f ) return false ; // ray direction away from endcap
+            float t = (dd-md)/nd ;   // Q endcap 
+            float checkr = k + dd - 2.0f*md + t*(2.f*(mn-nd)+t*nn) ;             
+            if ( checkr < 0.f )
+            {
+                isect.x = dnorm.x ; 
+                isect.y = dnorm.y ; 
+                isect.z = dnorm.z ; 
+                isect.w = t ; 
+                // HP_QCAP_O ;
+            } 
+        }
+
+        float root2 = (-b + sdisc)/a;     // far root : means are inside (always?)
+        float ad2 = md + root2*nd ;        // axial coord of far intersection point 
+        float3 P2 = ray.origin + root2*ray.direction ;  
+
+        if( ad2 > 0.f && ad2 < dd )  // intersection from inside against wall 
+        {
+            float3 N  = (P2 - position)/radius  ;  
+            N.z = 0.f ; 
+            N = -normalize(N);
+
+            isect.x = N.x ; 
+            isect.y = N.y ; 
+            isect.z = N.z ; 
+            isect.w = root2 ; 
+            // HP_WALL_I ;
+        } 
+        else if( ad2 < 0.f && PCAP ) //  intersection from inside to P endcap
+        {
+            float t = -md/nd ;   // P endcap 
+            float checkr = k + t*(2.f*mn + t*nn) ; // bracket typo in book 2*t*t makes no sense   
+            if ( checkr < 0.f )
+            {
+                isect.x = dnorm.x ; 
+                isect.y = dnorm.y ; 
+                isect.z = dnorm.z ; 
+                isect.w = t  ; 
+                // HP_PCAP_I 
+            } 
+        } 
+        else if( ad2 > dd  && QCAP ) //  intersection from inside to Q endcap
+        {
+            float t = (dd-md)/nd ;   // Q endcap 
+            float checkr = k + dd - 2.0f*md + t*(2.f*(mn-nd)+t*nn) ;             
+            if ( checkr < 0.f )
+            {
+                isect.x = -dnorm.x ; 
+                isect.y = -dnorm.y ; 
+                isect.z = -dnorm.z ; 
+                isect.w = t  ; 
+                // HP_QCAP_I ;
+            } 
+        }
+    }
+    return true ; 
+}
+
+
+

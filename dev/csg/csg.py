@@ -236,14 +236,14 @@ class CSG(CSG_):
         return self._param
     def _set_param(self, v):
         if self.is_primitive and v is None: v = [0,0,0,0]
-        self._param = np.asarray(v) if v is not None else None
+        self._param = np.asarray(v, dtype=np.float32) if v is not None else None
     param = property(_get_param, _set_param)
 
     def _get_param1(self):
         return self._param1
     def _set_param1(self, v):
         if self.is_primitive and v is None: v = [0,0,0,0]
-        self._param1 = np.asarray(v) if v is not None else None
+        self._param1 = np.asarray(v, dtype=np.float32) if v is not None else None
     param1 = property(_get_param1, _set_param1)
 
 
