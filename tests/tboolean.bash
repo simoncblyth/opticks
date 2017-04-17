@@ -336,8 +336,14 @@ CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
 }
 
-tboolean-box-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
-tboolean-box-sphere-py-(){ cat << EOP 
+
+
+
+tboolean-bsu(){ TESTCONFIG=$(tboolean-csg-box-sphere-py union)        tboolean-- ; }
+tboolean-bsd(){ TESTCONFIG=$(tboolean-csg-box-sphere-py difference)   tboolean-- ; }
+tboolean-bsi(){ TESTCONFIG=$(tboolean-csg-box-sphere-py intersection) tboolean-- ; }
+tboolean-csg-box-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-box-sphere-py-(){ cat << EOP 
 import math
 from opticks.dev.csg.csg import CSG  
 
@@ -359,39 +365,122 @@ EOP
 }
 
 
-tboolean-sphere-slab(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
-tboolean-sphere-slab-(){ cat << EOP 
+
+
+tboolean-sphere-slab(){ TESTCONFIG=$(tboolean-csg-sphere-slab 2>/dev/null)    tboolean-- ; } 
+tboolean-csg-sphere-slab(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere-slab-(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
-slab   = CSG("slab", param=[0,0,1,0],param1=[-100,100,0,0] )
+slab   = CSG("slab", param=[0,0,1,0],param1=[-500,100,0,0] )
 sphere = CSG("sphere", param=[0,0,0,500] )
 
 object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-object)", poly="IM", resolution="50" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+
+"""
+
+0. Works 
+
+Why tboolean-sphere-slab raytrace is OK but tboolean-sphere-plane has directional visibility issues ?
+
+* suspect due to "sub-objects must be closed" limitation of the  algorithm that 
+  my CSG implementation is based upon: "Kensler:Ray Tracing CSG Objects Using Single Hit Intersections"
+
+* http://xrt.wikidot.com/doc:csg
+
+    "The [algorithm] computes intersections with binary CSG objects using the
+    [nearest] intersection. Though it may need to do several of these per
+    sub-object, the usual number needed is quite low. The only limitation of this
+    algorithm is that the sub-objects must be closed, non-self-intersecting and
+    have consistently oriented normals."
+
+It appears can get away with infinite slab, which isnt bounded also, 
+as only unbounded in "one" direction whereas half-space is much more
+unbounded : in half the directions.
+
+"""
 EOP
 }
 
 
-
-tboolean-sphere-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
-tboolean-sphere-plane-(){ cat << EOP 
+tboolean-sphere-plane(){ TESTCONFIG=$(tboolean-csg-sphere-plane 2>/dev/null)    tboolean-- ; }
+tboolean-csg-sphere-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
 args = opticks_main()
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
   
 plane  = CSG("plane",  param=[0,0,1,100] )
 sphere = CSG("sphere", param=[0,0,0,500] )
 
-object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-object)", poly="IM", resolution="50" )
+object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+
+"""
+
+0. Polygonization looks correct
+1. only see the sphere surface from beneath the plane (ie beneath z=100)
+2. only see the plane surface in shape of disc from above the plane 
+
+"""
+EOP
+}
+
+tboolean-box-plane(){ TESTCONFIG=$(tboolean-csg-box-plane 2>/dev/null)    tboolean-- ; }
+tboolean-csg-box-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-box-plane-(){ cat << EOP 
+from opticks.ana.base import opticks_main
+from opticks.dev.csg.csg import CSG  
+args = opticks_main()
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
+
+plane  = CSG("plane",  param=[0,0,1,100] )
+box    = CSG("box", param=[0,0,0,200]  )
+object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+
+"""
+#. Analogous issue to tboolean-sphere-plane
+"""
+EOP
+}
+
+
+
+tboolean-plane(){ TESTCONFIG=$(tboolean-csg-plane 2>/dev/null)    tboolean-- ; }
+tboolean-csg-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-plane-(){ cat << EOP 
+from opticks.ana.base import opticks_main
+from opticks.dev.csg.csg import CSG  
+args = opticks_main()
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
+
+bigbox = CSG("box", param=[0,0,0,999] )
+plane  = CSG("plane",  param=[0,0,1,100] )
+object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+
+"""
+
+#. intersecting the plane with the container, leads to coincident surfaces and a flickery mess when 
+   view from beneath the plane, avoided issue by intersecting instead with a bigbox slightly 
+   smaller than the container
+
+"""
+
 EOP
 }
 
@@ -399,6 +488,12 @@ EOP
 
 
 
+
+
+
+
+
+tboolean-unbalanced(){   TESTCONFIG=$(tboolean-csg-unbalanced-py)          tboolean-- ; }
 tboolean-csg-unbalanced-py(){ tboolean-testconfig-py- $FUNCNAME ; }
 tboolean-csg-unbalanced-py-()
 {
@@ -431,6 +526,11 @@ EOP
 
 
 
+
+
+
+
+tboolean-pmt(){          TESTCONFIG=$(tboolean-csg-pmt-py 2>/dev/null)     tboolean-- ; }
 tboolean-csg-pmt-py-check(){ tboolean-csg-pmt-py 2> /dev/null ; }
 tboolean-csg-pmt-py(){ tboolean-testconfig-py- $FUNCNAME ; }
 tboolean-csg-pmt-py-()
@@ -483,6 +583,9 @@ EOP
 
 
 
+
+
+tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }
 tboolean-csg-two-box-minus-sphere-interlocked-py(){ tboolean-testconfig-py- $FUNCNAME ; }
 tboolean-csg-two-box-minus-sphere-interlocked-py-()
 {
@@ -548,16 +651,6 @@ tboolean-testconfig()
 
     #tboolean-csg-two-box-minus-sphere-interlocked-py
 }
-
-
-tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }
-tboolean-unbalanced(){   TESTCONFIG=$(tboolean-csg-unbalanced-py)          tboolean-- ; }
-tboolean-bsu(){          TESTCONFIG=$(tboolean-box-sphere-py union)        tboolean-- ; }
-tboolean-bsd(){          TESTCONFIG=$(tboolean-box-sphere-py difference)   tboolean-- ; }
-tboolean-bsi(){          TESTCONFIG=$(tboolean-box-sphere-py intersection) tboolean-- ; }
-tboolean-pmt(){          TESTCONFIG=$(tboolean-csg-pmt-py 2>/dev/null)     tboolean-- ; }
-tboolean-ssl(){          TESTCONFIG=$(tboolean-sphere-slab 2>/dev/null)    tboolean-- ; }
-tboolean-spl(){          TESTCONFIG=$(tboolean-sphere-plane 2>/dev/null)    tboolean-- ; }
 
 
 

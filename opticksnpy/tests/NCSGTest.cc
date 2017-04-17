@@ -11,8 +11,9 @@
 
 void test_Deserialize(const char* base)
 {
+    int verbosity = 1 ; 
     std::vector<NCSG*> trees ;
-    NCSG::Deserialize( base, trees );
+    NCSG::Deserialize( base, trees, verbosity );
     LOG(info) << "test_Deserialize " << base << " found trees : " << trees.size() ;
     for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSGTest dump");
 }

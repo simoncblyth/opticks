@@ -201,12 +201,18 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {
-    LOG(info) << "GGeoTest::loadCSG " << csgpath ; 
+    int verbosity = m_config->getVerbosity();
+    LOG(info) << "GGeoTest::loadCSG " 
+              << " csgpath " << csgpath
+              << " verbosity " << verbosity
+              ; 
 
     std::vector<NCSG*> trees ;
-    int rc = NCSG::Deserialize( csgpath, trees );
+    int rc = NCSG::Deserialize( csgpath, trees, verbosity );
     assert(rc == 0);
+
     unsigned ntree = trees.size() ;
+
     LOG(info) << "GGeoTest::loadCSG " << csgpath << " got " << ntree << " trees " ; 
 
     int primIdx(-1) ; 

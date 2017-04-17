@@ -26,11 +26,13 @@ Where NCSG is used
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
-    NCSG::Deserialize creates csg trees, which are collected
-    into GSolids by GMaker::makeFromCSG  
+    GGeoTest is the primary user of NCSG, with method GGeoTest::loadCSG
+    invoking NCSG::Deserialize to create vectors of csg trees. 
+    Each tree is converted into a GSolid by GMaker::makeFromCSG(NCSG* tree).  
 
-    This is the newer python CSG definition route that is usurping the 
-    old bash config GGeoTest::createCsgInBox approach  
+    This python defined CSG node tree approach has replaced
+    the old bash configured GGeoTest::createCsgInBox.
+
 
 GSolid* GMaker::makeFromCSG(NCSG* csg)
 
@@ -42,8 +44,10 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 
 GParts* GParts::make( NCSG* tree)
 
-    Little to do, just bndlib hookup
+    Little to do, just bndlib hookup :
+    huh but thats done in GMaker::makeFromCSG too...
 
+    * TODO: review if GParts is serving any purpose for NCSG
 
 
 **/
@@ -63,7 +67,7 @@ class NPY_API NCSG {
         static const char* FILENAME ; 
         static const unsigned NTRAN ; 
         static unsigned NumNodes(unsigned height);
-        static int Deserialize(const char* base, std::vector<NCSG*>& trees);
+        static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
     public:
         void dump(const char* msg="NCSG::dump");
@@ -71,6 +75,7 @@ class NPY_API NCSG {
     public:
         const char* getTreeDir();
         unsigned getIndex();
+        int      getVerbosity();
         const char* getBoundary();
         NPY<float>* getNodeBuffer();
         NPY<float>* getTransformBuffer();
@@ -83,7 +88,11 @@ class NPY_API NCSG {
         void check_r(nnode* node); 
     private:
         // Deserialize
-        NCSG(const char* treedir, unsigned index=0u);
+        NCSG(const char* treedir, unsigned index, int verbosity=0);
+         // Serialize 
+        NCSG(nnode* root, unsigned index, int verbosity=0);
+    private:
+        // Deserialize branch 
         void setBoundary(const char* boundary);
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
@@ -94,12 +103,12 @@ class NPY_API NCSG {
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);
     private:
-         // Serialize
-        NCSG(nnode* root, unsigned index=0u);
+         // Serialize branch
         void export_r(nnode* node, unsigned idx);
         void export_();
     private:
         unsigned    m_index ; 
+        int         m_verbosity ;  
         nnode*      m_root ;  
         const char* m_treedir ; 
         NPY<float>* m_nodes ; 

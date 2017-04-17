@@ -177,9 +177,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     // see opticks/ana/pmt/geom.py:Part.as_quads
     float sizeZ = q1.f.x ; 
     float z0 = q0.f.z - sizeZ/2.f ;     
-    float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.
+    float3 position = make_float3( q0.f.x, q0.f.y, z0 );  // 0,0,-169.  <-- P: point on axis at base of cylinder
 
-    float zmin = q2.f.z ;
+    float zmin = q2.f.z ;  // using bbox z-range
     float zmax = q3.f.z ;
 
     float clipped_sizeZ = zmax - zmin ;  

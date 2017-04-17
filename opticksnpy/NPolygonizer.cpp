@@ -39,6 +39,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     std::string poly = m_meta->get<std::string>("poly", "DCS");
     m_poly = strdup(poly.c_str());
 
+    if(m_verbosity > 0)
     m_meta->dump("NPolygonizer::NPolygonizer(meta)");
 
 }
@@ -48,6 +49,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
 NTrianglesNPY* NPolygonizer::polygonize()
 {
     LOG(info) << "NPolygonizer::polygonize"
+              << " treedir " << m_csg->getTreeDir()
               << " poly " << m_poly 
               << " verbosity " << m_verbosity 
               << " index " << m_index

@@ -33,9 +33,11 @@ const char* NCSG::FILENAME = "csg.txt" ;
 const unsigned NCSG::NTRAN = 3 ; 
 
 
-NCSG::NCSG(const char* treedir, unsigned index) 
+// ctor : booting via deserialization of directory 
+NCSG::NCSG(const char* treedir, unsigned index, int verbosity) 
    :
    m_index(index),
+   m_verbosity(verbosity),
    m_root(NULL),
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
@@ -50,6 +52,26 @@ NCSG::NCSG(const char* treedir, unsigned index)
 {
 }
 
+// ctor : booting from in memory node tree
+NCSG::NCSG(nnode* root, unsigned index, int verbosity ) 
+   :
+   m_index(index),
+   m_verbosity(verbosity),
+   m_root(root),
+   m_treedir(NULL),
+   m_nodes(NULL),
+   m_num_nodes(0),
+   m_height(root->maxdepth()),
+   m_boundary(NULL)
+{
+   m_num_nodes = NumNodes(m_height);
+   m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
+   m_nodes->zero();
+}
+
+
+
+
 void NCSG::load()
 {
     std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
@@ -58,6 +80,18 @@ void NCSG::load()
 
     m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
+
+    int verbosity = m_meta->get<int>("verbosity", "-1");
+    if(verbosity > -1 && verbosity != m_verbosity) 
+    {
+        LOG(fatal) << "NCSG::load changing verbosity via metadata " 
+                   << " treedir " << m_treedir
+                   << " old " << m_verbosity 
+                   << " new " << verbosity 
+                   ; 
+        m_verbosity = verbosity ; 
+    }
+
 
     m_nodes = NPY<float>::load(nodepath.c_str());
 
@@ -98,22 +132,6 @@ void NCSG::load()
     int h = MAX_HEIGHT ; 
     while(h--) if(TREE_NODES(h) == m_num_nodes) m_height = h ; 
     assert(m_height >= 0); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
-}
-
-
-NCSG::NCSG(nnode* root, unsigned index) 
-   :
-   m_index(index),
-   m_root(root),
-   m_treedir(NULL),
-   m_nodes(NULL),
-   m_num_nodes(0),
-   m_height(root->maxdepth()),
-   m_boundary(NULL)
-{
-   m_num_nodes = NumNodes(m_height);
-   m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
-   m_nodes->zero();
 }
 
 
@@ -162,6 +180,12 @@ unsigned NCSG::getIndex()
 {
     return m_index ; 
 }
+int NCSG::getVerbosity()
+{
+    return m_verbosity ; 
+}
+
+
 
 void NCSG::setBoundary(const char* boundary)
 {
@@ -250,6 +274,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     nvec4 param = getQuad(idx, 0);
     nvec4 param1 = getQuad(idx, 1);
 
+
+    if(m_verbosity > 2)
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
@@ -282,17 +308,19 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->transform = import_transform_triple( transform_idx ) ;
 
-        std::cout << "NCSG::import_r(oper)" 
-                  << " idx " << idx
-                  << " csgname " << CSGName(typecode) 
-                  << " transform_idx " << transform_idx
-                  << std::endl
-                  ;
+        if(m_verbosity > 2)
+        {
+            std::cout << "NCSG::import_r(oper)" 
+                      << " idx " << idx
+                      << " csgname " << CSGName(typecode) 
+                      << " transform_idx " << transform_idx
+                      << std::endl
+                      ;
 
-        if(node->transform) std::cout << " transform " << *node->transform ;
-        else                std::cout << " no-transform " ; 
-        std::cout << std::endl ; 
-
+            if(node->transform) std::cout << " transform " << *node->transform ;
+            else                std::cout << " no-transform " ; 
+            std::cout << std::endl ; 
+        }
 
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
@@ -360,6 +388,7 @@ void NCSG::check()
 
     unsigned ni =  m_gtransforms ? m_gtransforms->getNumItems() : 0  ;
 
+    if(m_verbosity > 1)
     LOG(info) << "NCSG::check"
               << " unique gtransforms " << ni
               ;
@@ -377,19 +406,23 @@ void NCSG::check()
 
 void NCSG::check_r(nnode* node)
 {
-    if(node->gtransform)
+
+    if(m_verbosity > 2)
     {
-        std::cout << "NCSG::check_r"
-                  << " gtransform_idx " << node->gtransform_idx
-                  << std::endl 
-                  ;
-    }
-    if(node->transform)
-    {
-        std::cout << "NCSG::check_r"
-                  << " transform " << *node->transform
-                  << std::endl 
-                  ;
+        if(node->gtransform)
+        {
+            std::cout << "NCSG::check_r"
+                      << " gtransform_idx " << node->gtransform_idx
+                      << std::endl 
+                      ;
+        }
+        if(node->transform)
+        {
+            std::cout << "NCSG::check_r"
+                      << " transform " << *node->transform
+                      << std::endl 
+                      ;
+        }
     }
 
 
@@ -405,7 +438,7 @@ void NCSG::check_r(nnode* node)
 
 NCSG* NCSG::FromNode(nnode* root, const char* boundary)
 {
-    NCSG* tree = new NCSG(root);
+    NCSG* tree = new NCSG(root, 0);
     tree->setBoundary( boundary );
     tree->export_();
     return tree ; 
@@ -456,8 +489,8 @@ void NCSG::dump(const char* msg)
 
 std::string NCSG::desc()
 {
-    std::string node_sh = m_nodes ? m_nodes->getShapeString() : "" ;    
-    std::string tran_sh = m_transforms ? m_transforms->getShapeString() : "" ;    
+    std::string node_sh = m_nodes ? m_nodes->getShapeString() : "-" ;    
+    std::string tran_sh = m_transforms ? m_transforms->getShapeString() : "-" ;    
     std::stringstream ss ; 
     ss << "NCSG " 
        << " index " << m_index
@@ -470,7 +503,7 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
-int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
+int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity )
 {
     assert(trees.size() == 0);
     LOG(info) << base ; 
@@ -494,7 +527,7 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees)
     {
         std::string treedir = BFile::FormPath(base, BStr::itoa(i));  
 
-        NCSG* tree = new NCSG(treedir.c_str(), i);
+        NCSG* tree = new NCSG(treedir.c_str(), i, verbosity );
         tree->setBoundary( bnd.getLine(i) );
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)

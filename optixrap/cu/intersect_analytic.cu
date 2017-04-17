@@ -67,6 +67,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 #include "bbox.h"
 #include "transform_test.h"
 
+#include "csg_intersect_primitive.h"
 #include "csg_intersect_part.h"
 #include "csg_intersect_boolean.h"
 
