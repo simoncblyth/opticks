@@ -364,7 +364,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                {  
                    ncylinder* n = (ncylinder*)p ;
                    centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(0,0,1,0); 
+                   glm::vec4 dir(1,0,0,0);   // Z: not a good choice as without endcap fail to hit 
                    if(n->gtransform) dir = n->gtransform->t * dir ; 
 
                    dirs.push_back( glm::vec3(dir));

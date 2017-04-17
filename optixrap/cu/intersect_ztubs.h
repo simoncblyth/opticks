@@ -194,9 +194,9 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     //rtPrintf("intersect_ztubs position %10.4f %10.4f %10.4f \n", position.x, position.y, position.z );
     //rtPrintf("intersect_ztubs flags %d PCAP %d QCAP %d \n", flags, PCAP, QCAP);
  
-    float3 m = ray.origin - position ;
+    float3 m = ray.origin - position ;                  // ray origin in cylinder P-frame
     float3 n = ray.direction ; 
-    float3 d = make_float3(0.f, 0.f, clipped_sizeZ ); 
+    float3 d = make_float3(0.f, 0.f, clipped_sizeZ );   // cylinder axis
 
     float rr = radius*radius ; 
     float3 dnorm = normalize(d);
@@ -205,7 +205,7 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
     float mm = dot(m, m) ; 
     float nn = dot(n, n) ; 
     float dd = dot(d, d) ;  
-    float nd = dot(n, d) ;
+    float nd = dot(n, d) ;   
     float md = dot(m, d) ;
     float mn = dot(m, n) ; 
     float k = mm - rr ; 
@@ -285,7 +285,11 @@ void intersect_ztubs(quad& q0, quad& q1, quad& q2, quad& q3, const uint4& identi
         float sdisc = sqrtf(disc);
 
         float root1 = (-b - sdisc)/a;     
-        float ad1 = md + root1*nd ;        // axial coord of intersection point 
+
+         // m:ray.origin-position
+         // n:ray.direction
+
+        float ad1 = md + root1*nd ;        // axial coord of intersection point (* sizeZ) 
         float3 P1 = ray.origin + root1*ray.direction ;  
 
         if( ad1 > 0.f && ad1 < dd )  // intersection inside cylinder range

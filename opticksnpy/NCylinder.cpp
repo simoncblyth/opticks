@@ -19,14 +19,39 @@
 #include "PLOG.hh"
 
 
+#include "NCylinder.h"
+
+
 float ncylinder::operator()(float x, float y, float z) 
 {
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ; 
 
     float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(center.x, center.y) ) - radius ;  // <- no z-dep
-    float dcap = fabs(p.z) - sizeZ/2.f ;  
-    // hmm this doesnt honour the endcap flags ... it 
+
+
+
+
+    
+  /*
+
+    // try to honour the endcap flags ...
+
+    //  QCAP : larger Z
+    //  PCAP : smaller Z
+
+    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
+    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+
+    float d_PCAP = PCAP ? fabs(p.z) - sizeZ/2.f : 0.f ; 
+    float d_QCAP = QCAP ? fabs(p.z) + sizeZ/2.f : 0.f ; 
+
+    float dcap = fmaxf( d_PCAP, d_QCAP ) ; // guessing 
+
+   */
+
+    float dcap = fabs(p.z) - sizeZ/2.f ; 
+
 
     float sd = fmaxf( dinf, dcap ) ;  
 

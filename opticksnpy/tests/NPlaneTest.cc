@@ -52,7 +52,7 @@ void test_intersect()
 int main()
 {
     test_sdf();
-    test_intersect();
+    //test_intersect();
 
 
     return 0 ; 

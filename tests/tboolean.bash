@@ -508,12 +508,27 @@ from opticks.dev.csg.csg import CSG
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
-cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+
+
+
+kwa = {}
+
+im = dict(poly="IM", resolution="50")
+transform = dict(scale="1,1,0.5", rotate="1,1,1,45", translate="100,100,100" )
+
+kwa["verbosity"] = "1" 
+kwa.update(im)
+kwa.update(transform)
+
+cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-object)", **kwa )
 
 PCAP = 0x1 << 0  # smaller z endcap
-QCAP = 0x1 << 1
-#flags = PCAP | QCAP
-flags = 0 
+QCAP = 0x1 << 1  
+
+#flags = PCAP          # bottom(-z) 
+#flags = QCAP           # top(+z) o
+flags = PCAP | QCAP   # both 
+#flags = 0             # no-endcaps 
 
 cylinder.param1.view(np.uint32)[1] = flags 
 
@@ -523,7 +538,13 @@ CSG.Serialize([container, cylinder], "$TMP/$FUNCNAME" )
 
 Issue:
 
-1. seeing endcaps when would expect to see the sides of the cylinder
+1. FIXED:seeing endcaps when would expect to see the sides of the cylinder
+2. FIXED:Not honouring transforms
+3. polygonization does not honour endcap flags, but raytrace does
+
+Note that endcaps and insides of the cylinder look dark from inside: 
+this is correct as normals are rigidly attached to geometry pointing outwards.
+
 
 
 """
