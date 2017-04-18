@@ -97,10 +97,10 @@ int main(int argc, char** argv)
     int level = 3 ; 
 
 
-    nbox world = make_nbox(0,0,0,11) ; 
+    nbox world = make_box(0,0,0,11) ; 
     nbbox wbb = world.bbox() ;
 
-    nbox obj = make_nbox(0,0,0,7) ; 
+    nbox obj = make_box(0,0,0,7) ; 
 
     std::function<float(float,float,float)> fn = obj.sdf();
 

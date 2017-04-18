@@ -39,7 +39,7 @@ struct NPY_API nsphere : nnode {
 
 
 
-inline NPY_API void init_nsphere(nsphere& s, const nquad& param)
+inline NPY_API void init_sphere(nsphere& s, const nquad& param)
 {
     s.param = param ; 
 
@@ -49,18 +49,18 @@ inline NPY_API void init_nsphere(nsphere& s, const nquad& param)
     s.radius  = param.f.w ;  
 }
 
-inline NPY_API nsphere make_nsphere(const nquad& param)
+inline NPY_API nsphere make_sphere(const nquad& param)
 {
     nsphere n ; 
     nnode::Init(n,CSG_SPHERE) ; 
-    init_nsphere(n, param);
+    init_sphere(n, param);
     return n ; 
 }
-inline NPY_API nsphere make_nsphere(float x, float y, float z, float w)
+inline NPY_API nsphere make_sphere(float x, float y, float z, float w)
 {
     nquad param ; 
     param.f = {x,y,z,w} ;
-    return make_nsphere(param);
+    return make_sphere(param);
 }
 
 

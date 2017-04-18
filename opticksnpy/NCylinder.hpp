@@ -27,7 +27,7 @@ struct NPY_API ncylinder : nnode {
 };
 
 
-inline NPY_API void init_ncylinder(ncylinder& n, const nquad& param, const nquad& param1 )
+inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 )
 {
     n.param = param ; 
     n.param1 = param1 ;
@@ -41,15 +41,15 @@ inline NPY_API void init_ncylinder(ncylinder& n, const nquad& param, const nquad
     n.flags    = param1.u.y ; 
 }
 
-inline NPY_API ncylinder make_ncylinder(const nquad& param, const nquad& param1 )
+inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
 {
     ncylinder n ; 
     nnode::Init(n,CSG_CYLINDER) ; 
-    init_ncylinder(n, param, param1);
+    init_cylinder(n, param, param1);
     return n ; 
 }
 
-inline NPY_API ncylinder make_ncylinder(float x, float y, float z, float radius, float sizeZ, unsigned flags)
+inline NPY_API ncylinder make_cylinder(float x, float y, float z, float radius, float sizeZ, unsigned flags)
 {
     nquad param, param1 ;
 
@@ -60,7 +60,7 @@ inline NPY_API ncylinder make_ncylinder(float x, float y, float z, float radius,
     param1.u.z = 0u ; 
     param1.u.w = 0u ; 
 
-    return make_ncylinder(param, param1 );
+    return make_cylinder(param, param1 );
 }
 
 

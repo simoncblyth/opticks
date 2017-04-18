@@ -35,14 +35,14 @@ void test_gtransform()
         if(verbose)
         std::cout << " gtransform " << triple << std::endl ; 
 
-        nbox a = make_nbox(0.f,0.f,0.f,100.f);      
+        nbox a = make_box(0.f,0.f,0.f,100.f);      
         // untouched box at origin
 
-        nbox b = make_nbox(0.f,0.f,0.f,100.f);      
+        nbox b = make_box(0.f,0.f,0.f,100.f);      
         b.gtransform = &triple ;  
         // translated box via gtransform
 
-        nbox c = make_nbox( tlate.x, tlate.y, tlate.z,100.f);  
+        nbox c = make_box( tlate.x, tlate.y, tlate.z,100.f);  
         // manually positioned box at tlated position 
 
 
@@ -75,7 +75,7 @@ void test_gtransform()
 
 void test_sdf()
 {
-    nbox b = make_nbox(0,0,0,1);  // unit box centered at origin       
+    nbox b = make_box(0,0,0,1);  // unit box centered at origin       
 
     for(float x=-2.f ; x < 2.f ; x+=0.01f )
     {

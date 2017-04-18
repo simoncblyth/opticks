@@ -12,15 +12,15 @@
 
 void test_part()
 {
-    nsphere s = make_nsphere(0,0,3,10);
+    nsphere s = make_sphere(0,0,3,10);
     npart p = s.part();
     p.dump("p");
 }
 
 void test_intersect()
 {
-    nsphere s1 = make_nsphere(0,0,3,10);
-    nsphere s2 = make_nsphere(0,0,1,10);
+    nsphere s1 = make_sphere(0,0,3,10);
+    nsphere s2 = make_sphere(0,0,1,10);
 
     ndisc d12 = nsphere::intersect(s1,s2) ;
     d12.dump("d12");
@@ -37,7 +37,7 @@ void test_intersect()
 
 void test_sdf()
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
 
     float x = 0.f ; 
     float y = 0.f ; 
@@ -55,14 +55,14 @@ void test_sdf()
 
 void test_csgsdf()
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    nunion u = make_nunion( &a, &b );
-    nintersection i = make_nintersection( &a, &b ); 
-    ndifference d1 = make_ndifference( &a, &b ); 
-    ndifference d2 = make_ndifference( &b, &a ); 
-    nunion u2 = make_nunion( &d1, &d2 );
+    nunion u = make_union( &a, &b );
+    nintersection i = make_intersection( &a, &b ); 
+    ndifference d1 = make_difference( &a, &b ); 
+    ndifference d2 = make_difference( &b, &a ); 
+    nunion u2 = make_union( &d1, &d2 );
 
     typedef std::vector<nnode*> VN ;
 
@@ -120,7 +120,7 @@ void test_csgsdf()
 
 void test_bbox()
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     a.dump("sph");
 
     nbbox bb = a.bbox();
@@ -129,9 +129,9 @@ void test_bbox()
 
 void test_bbox_u()
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
-    nunion  u = make_nunion( &a, &b );
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
+    nunion  u = make_union( &a, &b );
 
     a.dump("(a) sph");
     b.dump("(b) sph");
@@ -173,14 +173,14 @@ void test_gtransform()
         if(verbose)
         std::cout << " gtransform " << triple << std::endl ; 
 
-        nsphere a = make_nsphere(0.f,0.f,0.f,100.f);      
+        nsphere a = make_sphere(0.f,0.f,0.f,100.f);      
         // untouched sphere at origin
 
-        nsphere b = make_nsphere(0.f,0.f,0.f,100.f);      
+        nsphere b = make_sphere(0.f,0.f,0.f,100.f);      
         b.gtransform = &triple ; 
         // translated sphere via gtransform
 
-        nsphere c = make_nsphere( tlate.x, tlate.y, tlate.z,100.f);  
+        nsphere c = make_sphere( tlate.x, tlate.y, tlate.z,100.f);  
         // manually positioned sphere at tlate-d position 
 
 

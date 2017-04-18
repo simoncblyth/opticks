@@ -10,10 +10,10 @@ int main()
     float radius = 200 ;  
     float sizeZ = 400 ; 
 
-    c[0] = make_ncylinder(0,0,0,radius,sizeZ,0) ;    // no caps
-    c[1] = make_ncylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_P ) ;   
-    c[2] = make_ncylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_Q ) ;    
-    c[3] = make_ncylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_P | CYLINDER_ENDCAP_Q ) ; // both caps
+    c[0] = make_cylinder(0,0,0,radius,sizeZ,0) ;    // no caps
+    c[1] = make_cylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_P ) ;   
+    c[2] = make_cylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_Q ) ;    
+    c[3] = make_cylinder(0,0,0,radius,sizeZ, CYLINDER_ENDCAP_P | CYLINDER_ENDCAP_Q ) ; // both caps
 
     for(int i=0 ; i < 4 ; i++) c[i].dump();
 

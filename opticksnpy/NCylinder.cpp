@@ -140,7 +140,7 @@ void ncylinder::pdump(const char* msg, int verbosity)
 
 nbbox ncylinder::bbox()
 {
-    nbbox bb = make_nbbox();
+    nbbox bb = make_bbox();
 
     bb.min = make_nvec3(center.x - param.f.w, center.y - param.f.w, center.z - param.f.w);
     bb.max = make_nvec3(center.x + param.f.w, center.y + param.f.w, center.z + param.f.w);

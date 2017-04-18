@@ -629,10 +629,10 @@ assert nn == 5
 
 
 for i in [0]:
-    node = tr.get(i)
-    obj = NCSGTranslator.TranslateLV( node.lv )
+    root = tr.get(i)
+    obj = NCSGTranslator.TranslateLV( root.lv )
     obj.boundary = "$(tboolean-object)"
-    obj.meta.update(poly="IM", resolution="30")
+    obj.meta.update(poly="IM", resolution="30")  
     objs.append(obj)
 pass
 

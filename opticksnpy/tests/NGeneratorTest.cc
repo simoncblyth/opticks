@@ -10,7 +10,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    nbox box = make_nbox( 0,0,0, 10 );
+    nbox box = make_box( 0,0,0, 10 );
     nbbox bb = box.bbox();
 
     NGenerator gen(bb);

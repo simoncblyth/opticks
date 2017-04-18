@@ -55,7 +55,7 @@ inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
 
 
 // "ctor" assuming rotational symmetry around z axis
-inline NPY_API nbbox make_nbbox(float zmin, float zmax, float ymin, float ymax)
+inline NPY_API nbbox make_bbox(float zmin, float zmax, float ymin, float ymax)
 {
     nbbox bb ; 
     bb.min = make_nvec3( ymin, ymin, zmin ) ;
@@ -65,9 +65,9 @@ inline NPY_API nbbox make_nbbox(float zmin, float zmax, float ymin, float ymax)
 }
 
 
-inline NPY_API nbbox make_nbbox()
+inline NPY_API nbbox make_bbox()
 {
-    return make_nbbox(0,0,0,0) ;
+    return make_bbox(0,0,0,0) ;
 }
 
 

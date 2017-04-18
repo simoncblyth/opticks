@@ -33,7 +33,7 @@ void test_bbox_transform()
 {
      glm::mat4 tr = make_test_matrix();
 
-     nbox a = make_nbox(0.f,0.f,0.f,100.f);      
+     nbox a = make_box(0.f,0.f,0.f,100.f);      
      nbbox bb = a.bbox();
 
      nbbox tbb0 ;
@@ -67,7 +67,7 @@ void test_bbox_transform_loaded(const char* path)
     std::cout << gpresent("tr[2]",tr[2] ) << std::endl ; 
     std::cout << gpresent("tr[3]",tr[3] ) << std::endl ; 
 
-    nbox a = make_nbox(0.f,0.f,0.f,100.f);      
+    nbox a = make_box(0.f,0.f,0.f,100.f);      
     nbbox bb = a.bbox();
     std::cout << "bb " <<  bb.desc() << std::endl ; 
 

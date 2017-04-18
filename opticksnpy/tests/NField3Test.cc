@@ -131,10 +131,10 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    nbox world = make_nbox(0,0,0,11) ; 
+    nbox world = make_box(0,0,0,11) ; 
     nbbox wbb = world.bbox() ;
 
-    nbox obj = make_nbox(0,0,0,7) ; 
+    nbox obj = make_box(0,0,0,7) ; 
 
     std::function<float(float,float,float)> fn = obj.sdf();
 

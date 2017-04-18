@@ -14,7 +14,7 @@ void test_sdf()
     float far  =  10 ; 
     float mid = (near+far)/2.f ; 
 
-    nslab s = make_nslab( 0,0,1, near, far) ; 
+    nslab s = make_slab( 0,0,1, near, far) ; 
 
     for(int i=-20 ; i < 20 ; i++)
         std::cout << std::setw(4) << i << " " << s(0,0,i) << std::endl ;  
@@ -33,7 +33,7 @@ void test_intersect()
     float a = -10 ; 
     float b = 10 ; 
 
-    nslab slab = make_nslab( 0,0,1, a, b) ; 
+    nslab slab = make_slab( 0,0,1, a, b) ; 
 
     glm::vec3 ray_origin(0,0,0);
     glm::vec3 ray_direction(0,0,0);

@@ -63,21 +63,21 @@ void test_node_transforms()
     */
   
     // lu
-    nsphere la = make_nsphere(-500.f,0.f,-50.f,100.f); la.label = "la" ; 
-    nsphere lb = make_nsphere(-500.f,0.f, 50.f,100.f); lb.label = "lb" ; 
-    nunion  lu = make_nunion( &la, &lb );
+    nsphere la = make_sphere(-500.f,0.f,-50.f,100.f); la.label = "la" ; 
+    nsphere lb = make_sphere(-500.f,0.f, 50.f,100.f); lb.label = "lb" ; 
+    nunion  lu = make_union( &la, &lb );
     la.parent = &lu ; 
     lb.parent = &lu ; 
 
     // ru
-    nsphere ra = make_nsphere( 500.f,0.f,-50.f,100.f); ra.label = "ra" ; 
-    nsphere rb = make_nsphere( 500.f,0.f, 50.f,100.f); rb.label = "rb" ; 
-    nunion  ru = make_nunion( &ra, &rb );
+    nsphere ra = make_sphere( 500.f,0.f,-50.f,100.f); ra.label = "ra" ; 
+    nsphere rb = make_sphere( 500.f,0.f, 50.f,100.f); rb.label = "rb" ; 
+    nunion  ru = make_union( &ra, &rb );
     ra.parent = &ru ; 
     rb.parent = &ru ; 
 
     // u 
-    nunion u = make_nunion( &lu, &ru );
+    nunion u = make_union( &lu, &ru );
     lu.parent = &u ; 
     ru.parent = &u ; 
  

@@ -10,7 +10,7 @@ void test_sdf()
 {
     float distToOrigin = 10 ; 
 
-    nplane plane = make_nplane( 0,0,1, distToOrigin) ; 
+    nplane plane = make_plane( 0,0,1, distToOrigin) ; 
 
     for(int i=0 ; i < 30 ; i++)
         std::cout << std::setw(4) << i << " " << plane(0.f,0.f,i) << std::endl ;  
@@ -18,7 +18,7 @@ void test_sdf()
 
 void test_intersect()
 {
-    nplane plane = make_nplane( 0,0,1,10) ;
+    nplane plane = make_plane( 0,0,1,10) ;
 
     float tmin = 0.f ; 
     glm::vec3 ray_origin(0,0,0);

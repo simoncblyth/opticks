@@ -56,7 +56,7 @@ void test_csgsdf()
 
 void test_sphere(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere a = make_nsphere(0.f,0.f,0.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,0.f,100.f);
 
     NTrianglesNPY* tris0 = mcu(&a);
     assert(tris0);
@@ -70,7 +70,7 @@ void test_sphere(NMarchingCubesNPY& mcu, bool dump)
 
 void test_box(NMarchingCubesNPY& mcu, bool dump)
 {
-    nbox a = make_nbox(0.f,0.f,0.f,1000.f);
+    nbox a = make_box(0.f,0.f,0.f,1000.f);
 
     NTrianglesNPY* tris0 = mcu(&a);
     assert(tris0);
@@ -89,9 +89,9 @@ void test_box(NMarchingCubesNPY& mcu, bool dump)
 
 void test_union(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
-    nunion u = make_nunion( &a, &b ); 
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
+    nunion u = make_union( &a, &b ); 
 
     NTrianglesNPY* tris = mcu(&u);
     assert(tris);
@@ -101,10 +101,10 @@ void test_union(NMarchingCubesNPY& mcu, bool dump)
 
 void test_intersection(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    nintersection i = make_nintersection( &a , &b ); 
+    nintersection i = make_intersection( &a , &b ); 
 
     NTrianglesNPY* tris = mcu(&i);
     assert(tris);
@@ -115,11 +115,11 @@ void test_intersection(NMarchingCubesNPY& mcu, bool dump)
 
 void test_difference(NMarchingCubesNPY& mcu, bool dump)
 {
-    nsphere a = make_nsphere(0.f,0.f,-50.f,100.f);
-    nsphere b = make_nsphere(0.f,0.f, 50.f,100.f);
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    ndifference d1 = make_ndifference( &a, &b ); 
-    ndifference d2 = make_ndifference( &b, &a ); 
+    ndifference d1 = make_difference( &a, &b ); 
+    ndifference d2 = make_difference( &b, &a ); 
 
     NTrianglesNPY* tris1 = mcu(&d1);
     assert(tris1);

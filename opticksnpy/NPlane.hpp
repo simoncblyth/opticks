@@ -45,7 +45,7 @@ struct NPY_API nplane : nnode
 };
 
 
-inline NPY_API void init_nplane(nplane& plane, const nquad& param )
+inline NPY_API void init_plane(nplane& plane, const nquad& param )
 {
     glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
@@ -58,18 +58,18 @@ inline NPY_API void init_nplane(nplane& plane, const nquad& param )
     plane.param.f.w = plane.d  ;
 
 }
-inline NPY_API nplane make_nplane(const nquad& param)
+inline NPY_API nplane make_plane(const nquad& param)
 {  
     nplane plane ; 
     nnode::Init(plane,CSG_PLANE) ; 
-    init_nplane(plane, param );
+    init_plane(plane, param );
     return plane ;
 }
-inline NPY_API nplane make_nplane(float x, float y, float z, float w)
+inline NPY_API nplane make_plane(float x, float y, float z, float w)
 {
     nquad param ;  
     param.f = {x,y,z,w} ;
-    return make_nplane( param ); 
+    return make_plane( param ); 
 }
 
 
@@ -87,7 +87,7 @@ struct NPY_API ndisc {
 };
 
 
-inline NPY_API ndisc make_ndisc(const nplane& plane_, float radius_) 
+inline NPY_API ndisc make_disc(const nplane& plane_, float radius_) 
 {
    ndisc d ; d.plane = plane_ ; d.radius = radius_ ; return d ; 
 }

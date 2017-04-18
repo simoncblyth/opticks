@@ -78,15 +78,15 @@ struct NPY_API ndifference : nnode {
 };
 
 
-inline NPY_API nunion make_nunion(nnode* left, nnode* right)
+inline NPY_API nunion make_union(nnode* left, nnode* right)
 {
     nunion n ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
 }
-inline NPY_API nintersection make_nintersection(nnode* left, nnode* right)
+inline NPY_API nintersection make_intersection(nnode* left, nnode* right)
 {
     nintersection n ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
 }
-inline NPY_API ndifference make_ndifference(nnode* left, nnode* right)
+inline NPY_API ndifference make_difference(nnode* left, nnode* right)
 {
     ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }

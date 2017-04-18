@@ -158,7 +158,7 @@ npart nnode::part()
 nbbox nnode::bbox()
 {
    // needs to be overridden for primitives
-    nbbox bb = make_nbbox() ; 
+    nbbox bb = make_bbox() ; 
     if(left && right)
     {
         bb.include( left->bbox() );
@@ -201,15 +201,15 @@ float ndifference::operator()(float x, float y, float z)
 
 void nnode::Tests(std::vector<nnode*>& nodes )
 {
-    nsphere* a = new nsphere(make_nsphere(0.f,0.f,-50.f,100.f));
-    nsphere* b = new nsphere(make_nsphere(0.f,0.f, 50.f,100.f));
-    nbox*    c = new nbox(make_nbox(0.f,0.f,0.f,200.f));
+    nsphere* a = new nsphere(make_sphere(0.f,0.f,-50.f,100.f));
+    nsphere* b = new nsphere(make_sphere(0.f,0.f, 50.f,100.f));
+    nbox*    c = new nbox(make_box(0.f,0.f,0.f,200.f));
 
-    nunion* u = new nunion(make_nunion( a, b ));
-    nintersection* i = new nintersection(make_nintersection( a, b )); 
-    ndifference* d1 = new ndifference(make_ndifference( a, b )); 
-    ndifference* d2 = new ndifference(make_ndifference( b, a )); 
-    nunion* u2 = new nunion(make_nunion( d1, d2 ));
+    nunion* u = new nunion(make_union( a, b ));
+    nintersection* i = new nintersection(make_intersection( a, b )); 
+    ndifference* d1 = new ndifference(make_difference( a, b )); 
+    ndifference* d2 = new ndifference(make_difference( b, a )); 
+    nunion* u2 = new nunion(make_union( d1, d2 ));
 
     nodes.push_back( (nnode*)a );
     nodes.push_back( (nnode*)b );
@@ -225,12 +225,12 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     float radius = 200.f ; 
     float inscribe = 1.3f*radius/sqrt(3.f) ; 
 
-    nsphere* sp = new nsphere(make_nsphere(0.f,0.f,0.f,radius));
-    nbox*    bx = new nbox(make_nbox(0.f,0.f,0.f, inscribe ));
-    nunion*  u_sp_bx = new nunion(make_nunion( sp, bx ));
-    nintersection*  i_sp_bx = new nintersection(make_nintersection( sp, bx ));
-    ndifference*    d_sp_bx = new ndifference(make_ndifference( sp, bx ));
-    ndifference*    d_bx_sp = new ndifference(make_ndifference( bx, sp ));
+    nsphere* sp = new nsphere(make_sphere(0.f,0.f,0.f,radius));
+    nbox*    bx = new nbox(make_box(0.f,0.f,0.f, inscribe ));
+    nunion*  u_sp_bx = new nunion(make_union( sp, bx ));
+    nintersection*  i_sp_bx = new nintersection(make_intersection( sp, bx ));
+    ndifference*    d_sp_bx = new ndifference(make_difference( sp, bx ));
+    ndifference*    d_bx_sp = new ndifference(make_difference( bx, sp ));
 
     nodes.push_back( (nnode*)u_sp_bx );
     nodes.push_back( (nnode*)i_sp_bx );

@@ -30,7 +30,7 @@ struct NPY_API nslab : nnode
 
 };
 
-inline NPY_API void init_nslab(nslab& slab, const nquad& param, const nquad& param1 )
+inline NPY_API void init_slab(nslab& slab, const nquad& param, const nquad& param1 )
 {
     glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
@@ -47,20 +47,20 @@ inline NPY_API void init_nslab(nslab& slab, const nquad& param, const nquad& par
 
     assert(slab.b > slab.a );
 }
-inline NPY_API nslab make_nslab(const nquad& param, const nquad& param1)
+inline NPY_API nslab make_slab(const nquad& param, const nquad& param1)
 {
     nslab slab ; 
     nnode::Init(slab,CSG_SLAB) ; 
-    init_nslab(slab, param, param1 );
+    init_slab(slab, param, param1 );
     return slab ;
 }
 
-inline NPY_API nslab make_nslab(float x, float y, float z, float a, float b)
+inline NPY_API nslab make_slab(float x, float y, float z, float a, float b)
 {
     nquad param, param1 ; 
     param.f = {x,y,z,0} ;
     param1.f = {a,b,0,0} ;
-    return make_nslab( param, param1 ); 
+    return make_slab( param, param1 ); 
 }
 
 

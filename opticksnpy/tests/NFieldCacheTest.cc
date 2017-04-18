@@ -10,10 +10,10 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    nbox world = make_nbox(0,0,0,100) ; 
+    nbox world = make_box(0,0,0,100) ; 
     nbbox wbb = world.bbox() ;
     NGenerator gen(wbb);
-    nbox obj = make_nbox(0,0,0,10) ; 
+    nbox obj = make_box(0,0,0,10) ; 
 
     NFieldCache fc(obj, wbb) ; 
 

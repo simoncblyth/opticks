@@ -299,9 +299,9 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_UNION:        node = new nunion(make_nunion(NULL, NULL )) ; break ; 
-           case CSG_INTERSECTION: node = new nintersection(make_nintersection(NULL, NULL )) ; break ; 
-           case CSG_DIFFERENCE:   node = new ndifference(make_ndifference(NULL, NULL ))   ; break ; 
+           case CSG_UNION:        node = new nunion(make_union(NULL, NULL )) ; break ; 
+           case CSG_INTERSECTION: node = new nintersection(make_intersection(NULL, NULL )) ; break ; 
+           case CSG_DIFFERENCE:   node = new ndifference(make_difference(NULL, NULL ))   ; break ; 
            default:               node = NULL                                 ; break ; 
         }
         assert(node);
@@ -333,11 +333,11 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE:   node = new nsphere(make_nsphere(param))     ; break ; 
-           case CSG_BOX:      node = new nbox(make_nbox(param))           ; break ; 
-           case CSG_SLAB:     node = new nslab(make_nslab(param, param1)) ; break ; 
-           case CSG_PLANE:    node = new nplane(make_nplane(param))        ; break ; 
-           case CSG_CYLINDER: node = new ncylinder(make_ncylinder(param, param1)) ; break ; 
+           case CSG_SPHERE:   node = new nsphere(make_sphere(param))     ; break ; 
+           case CSG_BOX:      node = new nbox(make_box(param))           ; break ; 
+           case CSG_SLAB:     node = new nslab(make_slab(param, param1)) ; break ; 
+           case CSG_PLANE:    node = new nplane(make_plane(param))        ; break ; 
+           case CSG_CYLINDER: node = new ncylinder(make_cylinder(param, param1)) ; break ; 
            default:           node = NULL ; break ; 
         }       
 

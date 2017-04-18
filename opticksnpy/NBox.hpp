@@ -27,7 +27,7 @@ struct NPY_API nbox : nnode {
 
 
 
-inline NPY_API void init_nbox(nbox& b, const nquad& p )
+inline NPY_API void init_box(nbox& b, const nquad& p )
 {
     b.param = p ; 
     b.center.x = p.f.x ; 
@@ -35,19 +35,19 @@ inline NPY_API void init_nbox(nbox& b, const nquad& p )
     b.center.z = p.f.z ; 
 }
 
-inline NPY_API nbox make_nbox(const nquad& p)
+inline NPY_API nbox make_box(const nquad& p)
 {
     nbox n ; 
     nnode::Init(n,CSG_BOX) ; 
-    init_nbox(n, p );
+    init_box(n, p );
     return n ;
 }
 
-inline NPY_API nbox make_nbox(float x, float y, float z, float w)
+inline NPY_API nbox make_box(float x, float y, float z, float w)
 {
     nquad param ;
     param.f =  {x,y,z,w} ;
-    return make_nbox( param ); 
+    return make_box( param ); 
 }
 
 

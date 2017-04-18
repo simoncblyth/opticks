@@ -360,8 +360,12 @@ GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
 
     */
 
-    nsphere a = make_nsphere(0,0,a_zpos,a_radius);
-    nsphere b = make_nsphere(0,0,b_zpos,b_radius);
+    // TODO: such npy- level geo-specifics should
+    //       be moved into npy- and handled at a higher
+    //       from here
+
+    nsphere a = make_sphere(0,0,a_zpos,a_radius);
+    nsphere b = make_sphere(0,0,b_zpos,b_radius);
     ndisc d = nsphere::intersect(a,b) ;
     float zd = d.z();
 

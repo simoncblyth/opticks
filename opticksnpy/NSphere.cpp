@@ -57,7 +57,7 @@ void nsphere::pdump(const char* msg, int verbosity)
 
 nbbox nsphere::bbox()
 {
-    nbbox bb = make_nbbox();
+    nbbox bb = make_bbox();
 
     bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - radius);
     bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + radius);
@@ -94,8 +94,8 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
 
-    nplane plane = make_nplane(0,0,1,z + a.center.z) ;
-    ndisc  disc = make_ndisc(plane, y) ;
+    nplane plane = make_plane(0,0,1,z + a.center.z) ;
+    ndisc  disc = make_disc(plane, y) ;
 
     return disc ;      // return to original frame
 }
@@ -113,7 +113,7 @@ npart nsphere::part()
         LOG(warning) << "nsphere::part override bbox " ;  
         float z = center.z ;  
         float r  = radius ; 
-        nbbox bb = make_nbbox(z - r, z + r, r, r);
+        nbbox bb = make_bbox(z - r, z + r, r, r);
 
         p.setBBox(bb);
     }
@@ -128,7 +128,7 @@ npart nsphere::zlhs(const ndisc& dsk)
 
     float z = center.z ;  
     float r  = radius ; 
-    nbbox bb = make_nbbox(z - r, dsk.z(), -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox(z - r, dsk.z(), -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
@@ -140,7 +140,7 @@ npart nsphere::zrhs(const ndisc& dsk)
 
     float z = center.z ;  
     float r  = radius ; 
-    nbbox bb = make_nbbox(dsk.z(), z + r, -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox(dsk.z(), z + r, -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
