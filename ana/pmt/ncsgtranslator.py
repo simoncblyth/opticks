@@ -128,11 +128,24 @@ class NCSGTranslator(object):
 
     @classmethod
     def translate_Sphere(cls, en):
+        """
+        * z-slice sphere primitive OR intersect with a slab ?
+        * r-range sphere primitive OR difference two spheres ? 
+
+        * doing z and r both at once is problematic for param layout 
+        """
+        ora = en.outerRadius.value 
+        ira = en.innerRadius.value 
+        sta = en.startThetaAngle.value 
+        dta = en.deltaThetaAngle.value 
+
+        log.info("translate_Sphere ora:%s ira:%s sta:%s dta:%s " % (ora,ira,sta,dta)) 
+
         cn = CSG("sphere", name=en.name)
         cn.param[0] = en.xyz[0] 
         cn.param[1] = en.xyz[1] 
         cn.param[2] = en.xyz[2]
-        cn.param[3] = en.outerRadius.value 
+        cn.param[3] = ora
         return cn
 
     @classmethod
@@ -158,7 +171,7 @@ class NCSGTranslator(object):
         translate_method = getattr(cls, translate_method_name, None )
         assert translate_method, "missing translate method: %s " % translate_method_name  
 
-        log.info("translate_primitive with %s " % translate_method_name )
+        #log.info("translate_primitive with %s " % translate_method_name )
 
         cn = translate_method(en)
         cn.elem = en   # <-- temporary during dev, not used downstream
@@ -223,6 +236,13 @@ if __name__ == '__main__':
     ncsgnode = NCSGTranslator.TranslateLV( tr.root.lv )
 
     CSG.Dump(ncsgnode)
+
+
+
+
+
+
+
 
 
 

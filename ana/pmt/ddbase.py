@@ -240,6 +240,16 @@ class Sphere(Primitive):
     def has_inner(self):
         return self.innerRadius.value is not None 
 
+    def has_innerRadius(self):
+        return self.innerRadius.value is not None 
+
+    def has_startThetaAngle(self):
+        return self.startThetaAngle.value is not None 
+
+    def has_deltaThetaAngle(self):
+        return self.deltaThetaAngle.value is not None 
+
+
     def __repr__(self):
         return "sphere %20s : %s :  %s " % (self.name, self.outerRadius, self.posXYZ)
 

@@ -601,7 +601,6 @@ tboolean-csg-pmt-py-()
     local base=$TMP/$FUNCNAME 
     cat << EOP 
 from opticks.ana.base import opticks_main
-
 from opticks.ana.pmt.ddbase import Dddb
 from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.ncsgtranslator import NCSGTranslator
