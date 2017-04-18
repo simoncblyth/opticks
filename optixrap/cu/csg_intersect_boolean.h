@@ -313,7 +313,6 @@ void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
 #define POSTORDER_RANGE_END(   range )    (  (range) >> 8 )
 
 
-#include "postorder.h"
 #include "pack.h"
 
 
@@ -446,13 +445,6 @@ __device__ unsigned long long csg_repr(CSG& csg)
 } 
 
 
-
-
-
-// perfect binary tree assumptions,   2^(h+1) - 1 
-#define TREE_HEIGHT(numNodes) ( __ffs((numNodes) + 1) - 2)
-#define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
-#define TREE_DEPTH(nodeIdx) ( 32 - __clz((nodeIdx)) - 1 )
 
 
 

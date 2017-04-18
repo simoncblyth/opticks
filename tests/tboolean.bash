@@ -313,8 +313,11 @@ CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
 }
 
-tboolean-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
-tboolean-sphere-py-(){ cat << EOP 
+
+
+tboolean-sphere(){ TESTCONFIG=$(tboolean-csg-sphere 2>/dev/null)    tboolean-- ; } 
+tboolean-csg-sphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -333,6 +336,33 @@ sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
 EOP
 }
+
+
+tboolean-zsphere(){ TESTCONFIG=$(tboolean-csg-zsphere 2>/dev/null)    tboolean-- ; } 
+tboolean-csg-zsphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-zsphere-(){ cat << EOP 
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+
+
+im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+#tr = dict(scale="1,1,2")
+tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+
+kwa = {}
+kwa.update(im)
+kwa.update(tr)
+
+zsphere = CSG("zsphere", param=[0,0,0,100], param1=[-75,75,0,0], boundary="$(tboolean-object)", **kwa )
+
+CSG.Serialize([container, zsphere], "$TMP/$FUNCNAME" )
+EOP
+}
+
+
+
+
 
 tboolean-box-small-offset-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
 tboolean-box-small-offset-sphere-py-(){ cat << EOP

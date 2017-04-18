@@ -15,6 +15,7 @@
 
 // primitives
 #include "NSphere.hpp"
+#include "NZSphere.hpp"
 #include "NBox.hpp"
 #include "NSlab.hpp"
 #include "NPlane.hpp"
@@ -273,6 +274,12 @@ std::function<float(float,float,float)> nnode::sdf()
                 f = *n ;
             }
             break ;
+        case CSG_ZSPHERE:
+            {
+                nzsphere* n = (nzsphere*)node ; 
+                f = *n ;
+            }
+            break ;
         case CSG_BOX:
             {
                 nbox* n = (nbox*)node ;  
@@ -322,6 +329,16 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    nsphere* n = (nsphere*)p ;
                    centers.push_back(n->gcenter()); 
                    glm::vec4 dir(1,1,1,0); 
+                   if(n->gtransform) dir = n->gtransform->t * dir ; 
+                   dirs.push_back( glm::vec3(dir));
+               }
+               break ;  
+
+            case CSG_ZSPHERE: 
+               {  
+                   nzsphere* n = (nzsphere*)p ;
+                   centers.push_back(n->gcenter()); 
+                   glm::vec4 dir(0,0,1,0);  // <--- probably need to expose an interface for this canonical direction
                    if(n->gtransform) dir = n->gtransform->t * dir ; 
                    dirs.push_back( glm::vec3(dir));
                }

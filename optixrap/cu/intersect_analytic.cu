@@ -66,6 +66,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 #include "bbox.h"
 #include "transform_test.h"
+#include "postorder.h"
 
 #include "csg_intersect_primitive.h"
 #include "csg_intersect_part.h"
@@ -77,14 +78,6 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 #include "intersect_prism.h"
 
 
-/*
-TODO
-~~~~~~
-
-* use prim.z for numTran, instead of duplicating primIdx 
-
-*/
-
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     if(primIdx == 0) 
@@ -92,75 +85,20 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         transform_test();
     }
 
-    unsigned tranBuffer_size = tranBuffer.size() ;
+    optix::Aabb* aabb = (optix::Aabb*)result;
+    *aabb = optix::Aabb();
+
+    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
+
     const uint4& prim    = primBuffer[primIdx]; 
 
     unsigned partOffset  = prim.x ;  
     unsigned numParts    = prim.y ; 
     unsigned primFlag    = prim.w ;  
 
-    unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
-    unsigned numNodes = TREE_NODES(height) ;      
-
-    rtPrintf("##bounds primIdx %2d partOffset %2d numParts %2d height %2d numNodes %2d tranBuffer_size %3u \n", primIdx, partOffset, numParts, height, numNodes, tranBuffer_size );
-
-    uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
-
-    optix::Aabb* aabb = (optix::Aabb*)result;
-    *aabb = optix::Aabb();
-
     if(primFlag == CSG_FLAGNODETREE)  
     {
-        unsigned nodeIdx = 1 << height ; 
-        while(nodeIdx)
-        {
-            int depth = TREE_DEPTH(nodeIdx) ;
-            int elev = height - depth ; 
-
-            Part pt = partBuffer[partOffset+nodeIdx-1];  // nodeIdx is 1-based
-
-            unsigned typecode = pt.typecode() ; 
-            unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
-    
-            rtPrintf("## bounds nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u \n", nodeIdx, depth, elev, typecode, gtransformIdx );
-
-            if(gtransformIdx == 0)
-            {
-                switch(typecode)
-                {
-                    case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, NULL  );  break ;
-                    case CSG_BOX:    csg_bounds_box(pt.q0, aabb, NULL  );     break ;
-                    case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, NULL ) ; break ;  /* infinite slabs must always be used in intersection */
-                    case CSG_PLANE:  csg_bounds_plane(  pt.q0, aabb, NULL ) ; break ;       /* infinite plane must always be used in intersection */
-                    case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,  aabb, NULL )   ; break ;  
-                    default:                                                  break ; 
-                }
-            }
-            else
-            {
-                unsigned trIdx = 3*(gtransformIdx-1)+0 ;
-                if(trIdx >= tranBuffer_size)
-                { 
-                    rtPrintf("## bounds ABORT trIdx %3u overflows tranBuffer_size %3u \n", trIdx, tranBuffer_size );
-                    return ;  
-                }
-                optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
-                switch(typecode)
-                {
-                    case CSG_SPHERE: csg_bounds_sphere(pt.q0, aabb, &tr  );  break ;
-                    case CSG_BOX:    csg_bounds_box(   pt.q0, aabb, &tr  );  break ;
-                    case CSG_SLAB:   csg_bounds_slab(  pt.q0, pt.q1, aabb, &tr ) ; break ;  /* infinite slabs must always be used in intersection */
-                    case CSG_PLANE:  csg_bounds_plane( pt.q0, aabb, &tr )   ; break ;       /* infinite plane must always be used in intersection */
-                    case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,  aabb, &tr )   ; break ;     
-                    default:                                                 break ; 
-                }
-            }
-
-            nodeIdx = POSTORDER_NEXT( nodeIdx, elev ) ;
-            // see opticks/dev/csg/postorder.py for explanation of bit-twiddling postorder  
-            //unsigned nodeIdx2 = nodeIdx & 1 ? nodeIdx >> 1 : (nodeIdx << elev) + (1 << elev) ;
-            //if(nodeIdx2 != nodeIdx) rtPrintf("nodeIdx MISMATCH \n");
-        }
+        csg_bounds_prim(primIdx, aabb); 
     }
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
@@ -170,6 +108,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             unsigned typecode = pt.typecode() ; 
 
             identity.z = pt.boundary() ;  // boundary from partBuffer (see ggeo-/GPmt)
+            // ^^^^ needed ? why not other branch ?
 
             if(typecode == CSG_PRISM) 
             {

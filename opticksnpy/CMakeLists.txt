@@ -119,6 +119,7 @@ set(SOURCES
 
     NQuad.cpp
     NSphere.cpp
+    NZSphere.cpp
     NPlane.cpp
     NBBox.cpp
     NPart.cpp

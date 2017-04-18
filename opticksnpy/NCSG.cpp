@@ -15,7 +15,9 @@
 #include "NParameters.hpp"
 #include "NPart.h"
 
+// primitives
 #include "NSphere.hpp"
+#include "NZSphere.hpp"
 #include "NBox.hpp"
 #include "NSlab.hpp"
 #include "NPlane.hpp"
@@ -333,10 +335,11 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE:   node = new nsphere(make_sphere(param))     ; break ; 
-           case CSG_BOX:      node = new nbox(make_box(param))           ; break ; 
-           case CSG_SLAB:     node = new nslab(make_slab(param, param1)) ; break ; 
-           case CSG_PLANE:    node = new nplane(make_plane(param))        ; break ; 
+           case CSG_SPHERE:   node = new nsphere(make_sphere(param))             ; break ; 
+           case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(param, param1))   ; break ; 
+           case CSG_BOX:      node = new nbox(make_box(param))                   ; break ; 
+           case CSG_SLAB:     node = new nslab(make_slab(param, param1))         ; break ; 
+           case CSG_PLANE:    node = new nplane(make_plane(param))               ; break ; 
            case CSG_CYLINDER: node = new ncylinder(make_cylinder(param, param1)) ; break ; 
            default:           node = NULL ; break ; 
         }       

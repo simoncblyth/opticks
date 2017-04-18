@@ -44,6 +44,7 @@ NPartTest.cc
 NSpectralTest.cc
 
 NSphereTest.cc
+NZSphereTest.cc
 NBoxTest.cc
 NSlabTest.cc
 NPlaneTest.cc

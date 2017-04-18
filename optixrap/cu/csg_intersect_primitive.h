@@ -12,7 +12,27 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
 }
 
 static __device__
-bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+void csg_bounds_zsphere(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    float radius = q0.f.w;
+    float zmax = q0.f.z + q1.f.y ;   
+    float zmin = q0.f.z + q1.f.x ;   
+
+    float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
+    float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+
+
+
+
+static __device__
+bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
@@ -32,21 +52,58 @@ bool csg_intersect_sphere(const quad& q0, const float& tt_min, float4& tt, const
 
     // FORMER SCALING ISSUE DUE TO ASSUMPTION IN ABOVE OF NORMALIZED RAY_DIRECTION 
 
-    float tt_cand = sdisc > 0.f ? ( root1 > tt_min ? root1 : root2 ) : tt_min ; 
+    float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
 
-    bool isect = tt_cand > tt_min ;
-    if(isect)
+    bool valid_isect = t_cand > t_min ;
+    if(valid_isect)
     {        
-        tt.x = (O.x + tt_cand*D.x)/radius ; 
-        tt.y = (O.y + tt_cand*D.y)/radius ; 
-        tt.z = (O.z + tt_cand*D.z)/radius ; 
-
-        // x,y,z in frame with unit sphere at origin 
-        // normalized by construction,  (x/r)^2 + (y/r)^2 + (z/r)^2 = 1
-
-        tt.w = tt_cand ; 
+        isect.x = (O.x + t_cand*D.x)/radius ;   // normalized by construction
+        isect.y = (O.y + t_cand*D.y)/radius ; 
+        isect.z = (O.z + t_cand*D.z)/radius ; 
+        isect.w = t_cand ; 
     }
-    return isect ; 
+    return valid_isect ; 
+}
+
+static __device__
+bool csg_intersect_zsphere(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    float3 center = make_float3(q0.f);
+    float radius = q0.f.w;
+    float zmax = q0.f.z + q1.f.y ;   
+    float zmin = q0.f.z + q1.f.x ;   
+
+    float3 O = ray_origin - center;
+    float3 D = ray_direction;
+
+    float b = dot(O, D);
+    float c = dot(O, O)-radius*radius;
+    float d = dot(D, D);
+
+    float disc = b*b-d*c;
+
+    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
+    float root1 = (-b - sdisc)/d ;
+    float root2 = (-b + sdisc)/d ;  // root2 > root1 always
+
+    //float z1 = ray_origin.z + ray_direction.z*root1 ; 
+    //float z2 = ray_origin.z + ray_direction.z*root2 ; 
+
+    float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
+
+    float z = ray_origin.z + ray_direction.z*t_cand ; 
+
+    // assuming it is OK to check the z as a post condition, and not as part of root choice ?
+
+    bool valid_isect = t_cand > t_min && z > zmin && z < zmax ;
+    if(valid_isect)
+    {        
+        isect.x = (O.x + t_cand*D.x)/radius ;   // normalized by construction
+        isect.y = (O.y + t_cand*D.y)/radius ; 
+        isect.z = (O.z + t_cand*D.z)/radius ; 
+        isect.w = t_cand ; 
+    }
+    return valid_isect ; 
 }
 
 

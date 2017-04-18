@@ -14,8 +14,6 @@ struct nbbox ;
 
 struct NPY_API nsphere : nnode {
 
-    // NO CTOR
-
     float costheta(float z);
 
     float operator()(float x, float y, float z) ;
@@ -39,6 +37,10 @@ struct NPY_API nsphere : nnode {
 
 
 
+
+
+
+
 inline NPY_API void init_sphere(nsphere& s, const nquad& param)
 {
     s.param = param ; 
@@ -48,6 +50,10 @@ inline NPY_API void init_sphere(nsphere& s, const nquad& param)
     s.center.z = param.f.z ;
     s.radius  = param.f.w ;  
 }
+
+
+
+
 
 inline NPY_API nsphere make_sphere(const nquad& param)
 {
@@ -62,5 +68,14 @@ inline NPY_API nsphere make_sphere(float x, float y, float z, float w)
     param.f = {x,y,z,w} ;
     return make_sphere(param);
 }
+
+
+
+
+
+
+
+
+
 
 
