@@ -318,14 +318,14 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
             isect.x = sign*dnorm.x ; 
             isect.y = sign*dnorm.y ; 
             isect.z = sign*dnorm.z ; 
-            isect.w = t_cand ;      // P endcap 
+            isect.w = t_cand ;      
         }
         return has_axial_intersect ;
     }   // end-of-axial-ray endcap handling 
     
 
 
-    if(disc > 0.0f)  // intersection with the infinite cylinder
+    if(disc > 0.0f)  // has intersections with the infinite cylinder
     {
         float sdisc = sqrtf(disc);
 
@@ -348,12 +348,12 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
         float checkr_QCAP = k + dd - 2.0f*md + t_QCAP*(2.f*(mn-nd)+t_QCAP*nn) ;             
 
 
-        if( aNEAR > 0.f && aNEAR < dd )  // intersection inside cylinder z range
+        if( aNEAR > 0.f && aNEAR < dd )  // near intersection inside cylinder z range
         {
             t_cand = t_NEAR ; 
             checkr = -1.f ; 
         } 
-        else if( aNEAR < 0.f && PCAP ) //  intersection outside cylinder z range, on P side
+        else if( aNEAR < 0.f && PCAP ) //  near intersection outside cylinder z range, on P side
         {
             t_cand =  nd > 0 ? t_PCAP : t_min ;   // nd > 0, ray headed upwards (+z)
             checkr = checkr_PCAP ; 
@@ -385,19 +385,19 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
        
   
 
-        if( aFAR > 0.f && aFAR < dd )  // intersection from inside against wall 
+        if( aFAR > 0.f && aFAR < dd )  // far intersection inside cylinder z range
         {
             t_cand = t_FAR ; 
             checkr = -1.f ; 
         } 
-        else if( aFAR < 0.f && PCAP ) //  intersection from inside infinite cylinder towards P endcap
+        else if( aFAR < 0.f && PCAP ) //  far intersection outside cylinder z range, on P side (-z)
         {
-            t_cand = t_PCAP ;         // no need to check nd, from inside there is no alternative 
+            t_cand = nd > 0 ? t_PCAP : t_min ;         
             checkr = checkr_PCAP ; 
         } 
-        else if( aFAR > dd && QCAP ) //  intersection from inside to Q endcap
+        else if( aFAR > dd && QCAP ) //  far intersection outside cylinder z range, on Q side (+z)
         {
-            t_cand = t_QCAP ; 
+            t_cand = nd < 0 ? t_QCAP : t_min  ; 
             checkr = checkr_QCAP ;
         }
 
