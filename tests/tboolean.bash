@@ -623,21 +623,38 @@ objs.append(container)
 nn = tr.num_nodes()
 assert nn == 5
 
-# 0:Pyrex
-# 1:Vacuum
-# 2:Cathode needs zsphere z-slicing and innerRadius CSG differencing
+im = dict(poly="IM", resolution="30")
+mc = dict(poly="MC", nx="30")
+dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
+poly = im
 
 
 for i in [0]:
     root = tr.get(i)
     obj = NCSGTranslator.TranslateLV( root.lv )
     obj.boundary = "$(tboolean-object)"
-    obj.meta.update(poly="IM", resolution="30")  
+    obj.meta.update(poly)  
     objs.append(obj)
 pass
 
 
 CSG.Serialize(objs, "$base" )
+
+"""
+
+
+# 1:Vacuum
+# 2:Cathode needs zsphere z-slicing and innerRadius CSG differencing
+
+
+#. FIXED: solid-0 (Pyrex) poly-cylinder not matching raytrace, 
+   NCylinder SDF was ignoring center.z and bbox was wrong 
+           
+
+
+
+"""
+
 
 EOP
 }

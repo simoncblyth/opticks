@@ -294,7 +294,7 @@ class CSG(CSG_):
         label = node.label(indent)
         content = node.content()
 
-        sys.stderr.write( "%-50s : %s " % (label, content))
+        sys.stderr.write( "%-50s : %s \n" % (label, content))
 
         if node.left and node.right:
             cls.Dump(node.left, depth+1)

@@ -39,6 +39,13 @@ inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad&
     n.radius   = param.f.w ;  
     n.sizeZ    = param1.f.x ; 
     n.flags    = param1.u.y ; 
+
+    // cylinder axis in Z direction 
+    //
+    //      QCAP (higher Z) at   center.z + sizeZ/2
+    //      PCAP (lower Z)  at   center.z - sizeZ/2
+    //      
+
 }
 
 inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )

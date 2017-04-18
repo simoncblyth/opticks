@@ -114,13 +114,6 @@ class NCSGTranslator(object):
     Translate single volume detdesc primitives and CSG operations
     into an NCSG style node tree
     """
-    kls2csgname = {
-      Sphere:"sphere",
-      Tubs:"box",
-      Intersection:"intersection",
-      Union:"union",
-      Difference:"difference",
-    }
 
     @classmethod
     def TranslateLV(cls, lv ):
@@ -134,25 +127,40 @@ class NCSGTranslator(object):
         return cls.translate_primitive(node) if node.is_primitive else cls.translate_operator(node) 
 
     @classmethod
-    def translate_primitive(cls, en):
-        pr = cls.kls2csgname.get(type(en), None)
-        assert pr, ("primitive Elem node type not handled", en, type(en))
-
-        cn = CSG(pr, name=en.name)
-
+    def translate_Sphere(cls, en):
+        cn = CSG("sphere", name=en.name)
         cn.param[0] = en.xyz[0] 
         cn.param[1] = en.xyz[1] 
         cn.param[2] = en.xyz[2]
+        cn.param[3] = en.outerRadius.value 
+        return cn
 
-        if type(en) is Sphere:
-            cn.param[3] = en.outerRadius.value 
-        elif type(en) is Tubs:
-            cn.param[3] = en.outerRadius.value 
-            cn.param1[0] = en.sizeZ.value
-        else:
-            pass
-        pass              
+    @classmethod
+    def translate_Tubs(cls, en):
+        cn = CSG("cylinder", name=en.name)
+        cn.param[0] = en.xyz[0] 
+        cn.param[1] = en.xyz[1] 
+        cn.param[2] = en.xyz[2]
+        cn.param[3] = en.outerRadius.value 
+        cn.param1[0] = en.sizeZ.value
 
+        PCAP = 0x1 << 0 
+        QCAP = 0x1 << 1 
+        flags = PCAP | QCAP 
+        cn.param1.view(np.uint32)[1] = flags  
+
+        return cn
+
+
+    @classmethod
+    def translate_primitive(cls, en):
+        translate_method_name = "translate_%s" % en.__class__.__name__ 
+        translate_method = getattr(cls, translate_method_name, None )
+        assert translate_method, "missing translate method: %s " % translate_method_name  
+
+        log.info("translate_primitive with %s " % translate_method_name )
+
+        cn = translate_method(en)
         cn.elem = en   # <-- temporary during dev, not used downstream
         return cn 
 
@@ -170,8 +178,8 @@ class NCSGTranslator(object):
                100 101
 
         """
-        op = cls.kls2csgname.get(type(en), None)
-        assert op, ("operator node type not handled", en, type(en))
+        op = en.__class__.__name__.lower()
+        assert op in ["intersection", "union", "difference"]
  
         children = en.geometry()
         nchild = len(children)

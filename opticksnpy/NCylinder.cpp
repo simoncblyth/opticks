@@ -21,8 +21,6 @@
 
 #include "NCylinder.h"
 
-
-
     
 /*
 
@@ -34,19 +32,6 @@ Can SDFs model finite open cylinder, ie no endcaps or 1 endcap  ?
 * suspect this is fundamental limitation of geometry modelling with SDF,
   ... **can only handle closed geometry** 
 
-*/
-
-
-
-float ncylinder::operator()(float x, float y, float z) 
-{
-    glm::vec4 p(x,y,z,1.0); 
-    if(gtransform) p = gtransform->v * p ; 
-
-    float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(center.x, center.y) ) - radius ;  // <- no z-dep
-
-
-/*
    //// not working ... cannot honour endcaps singly 
 
     bool PCAP = flags & CYLINDER_ENDCAP_P ;  // smaller Z
@@ -60,9 +45,58 @@ float ncylinder::operator()(float x, float y, float z)
     if(PCAP && QCAP) sd = fmaxf( sd, d_PQCAP );
     else if(PCAP)    sd = fmaxf( sd, -d_PCAP );   // <-- negated to complement
     else if(QCAP)    sd = fmaxf( sd,  d_QCAP );
+
+
 */
 
-    float d_PQCAP = fabs(p.z) - sizeZ/2.f ; 
+
+/*
+
+Extract from env-;sdf-:
+
+Slab is a difference of half-spaces
+
+* sdfA = z - h      (plane at z = h) 
+* sdfB = z + h      (plane at z = -h ),  
+* ~sdfB = -(z+h)    (same position, but now inside are upwards to +z)
+
+::
+
+    intersect(sdfA, ~sdfB) 
+    max( z - h , -(z + h) )
+    max( z - h , -z - h )
+    max(z, -z) - h
+    abs(z) - h 
+
+*/
+
+
+
+nbbox ncylinder::bbox()
+{
+    nbbox bb = make_bbox();
+
+    bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + sizeZ/2.f);
+    bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - sizeZ/2.f);
+    bb.side = bb.max - bb.min ; 
+
+    return gtransform ? bb.transform(gtransform->t) : bb ; 
+}
+
+
+float ncylinder::operator()(float x, float y, float z) 
+{
+    glm::vec4 p(x,y,z,1.0); 
+    if(gtransform) p = gtransform->v * p ; 
+
+    float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(center.x, center.y) ) - radius ;  // <- no z-dep
+
+
+    float qcap_z = center.z + sizeZ/2.f ; 
+    float pcap_z = center.z - sizeZ/2.f ; 
+
+    float d_PQCAP = fmaxf( p.z - qcap_z, -(p.z - pcap_z) );
+
     float sd = fmaxf( d_PQCAP, dinf );
 
 
@@ -135,18 +169,6 @@ void ncylinder::pdump(const char* msg, int verbosity)
               << std::endl ; 
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
-}
-
-
-nbbox ncylinder::bbox()
-{
-    nbbox bb = make_bbox();
-
-    bb.min = make_nvec3(center.x - param.f.w, center.y - param.f.w, center.z - param.f.w);
-    bb.max = make_nvec3(center.x + param.f.w, center.y + param.f.w, center.z + param.f.w);
-    bb.side = bb.max - bb.min ; 
-
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
 npart ncylinder::part()
