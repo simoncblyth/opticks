@@ -364,6 +364,13 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
             checkr = checkr_QCAP ; 
         }
 
+        // consider looking from P side thru open PCAP towards the QCAP, 
+        // the aNEAR will be a long way behind you (due to close to axial ray direction) 
+        // hence it will be -ve and thus disqualified as PCAP=false 
+        // ... so t_cand will stay at t_min and thus will fall thru 
+        // to the 2nd chance intersects 
+        
+
         if( t_cand > t_min && checkr < 0.f )
         {
             isect.w = t_cand ; 
@@ -384,6 +391,14 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
         }
        
   
+        // resume considing P to Q lookthru, the aFAR >> dd and this time QCAP 
+        // is enabled so t_cand = t_QCAP which yields endcap hit so long as checkr_QCAP
+        // pans out 
+        //
+        // 2nd intersect (as RTCD p198 suggests), as the ray can approach 
+        // the 2nd endcap from either direction : 
+        // 
+
 
         if( aFAR > 0.f && aFAR < dd )  // far intersection inside cylinder z range
         {
@@ -392,12 +407,12 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
         } 
         else if( aFAR < 0.f && PCAP ) //  far intersection outside cylinder z range, on P side (-z)
         {
-            t_cand = nd > 0 ? t_PCAP : t_min ;         
+            t_cand = nd < 0 ? t_PCAP : t_min ;      // sign flip cf RTCD:p198     
             checkr = checkr_PCAP ; 
         } 
         else if( aFAR > dd && QCAP ) //  far intersection outside cylinder z range, on Q side (+z)
         {
-            t_cand = nd < 0 ? t_QCAP : t_min  ; 
+            t_cand = nd > 0 ? t_QCAP : t_min  ;    // sign flip cf RTCD:p198
             checkr = checkr_QCAP ;
         }
 
@@ -425,5 +440,15 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
     return false ; 
 }
 
+/*
+Consider looking thru the open PCAP (-z) end of the cylinder thru to the inside of the QCAP (+z) endcap.
 
+* the infinite cylinder intersects will be far behind (aNEAR < 0) but as
+
+
+and far ahead (aFAR > dd)
+  but only QCAP is enabled
+
+
+*/
 

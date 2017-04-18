@@ -22,6 +22,22 @@
 #include "NCylinder.h"
 
 
+
+    
+/*
+
+Can SDFs model finite open cylinder, ie no endcaps or 1 endcap  ?
+====================================================================
+
+* i do not think so...
+
+* suspect this is fundamental limitation of geometry modelling with SDF,
+  ... **can only handle closed geometry** 
+
+*/
+
+
+
 float ncylinder::operator()(float x, float y, float z) 
 {
     glm::vec4 p(x,y,z,1.0); 
@@ -30,30 +46,26 @@ float ncylinder::operator()(float x, float y, float z)
     float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(center.x, center.y) ) - radius ;  // <- no z-dep
 
 
+/*
+   //// not working ... cannot honour endcaps singly 
+
+    bool PCAP = flags & CYLINDER_ENDCAP_P ;  // smaller Z
+    bool QCAP = flags & CYLINDER_ENDCAP_Q ;  // larger Z
+
+    float d_PCAP = p.z - sizeZ/2.f ;   // half-space defined by plane at z = h, inside towards -z 
+    float d_QCAP = p.z + sizeZ/2.f ;   // half-space defined by plane at z = -h, inside towards -z
+    float d_PQCAP = fabs(p.z) - sizeZ/2.f ; 
+
+    float sd = dinf ; 
+    if(PCAP && QCAP) sd = fmaxf( sd, d_PQCAP );
+    else if(PCAP)    sd = fmaxf( sd, -d_PCAP );   // <-- negated to complement
+    else if(QCAP)    sd = fmaxf( sd,  d_QCAP );
+*/
+
+    float d_PQCAP = fabs(p.z) - sizeZ/2.f ; 
+    float sd = fmaxf( d_PQCAP, dinf );
 
 
-    
-  /*
-
-    // try to honour the endcap flags ...
-
-    //  QCAP : larger Z
-    //  PCAP : smaller Z
-
-    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
-    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
-
-    float d_PCAP = PCAP ? fabs(p.z) - sizeZ/2.f : 0.f ; 
-    float d_QCAP = QCAP ? fabs(p.z) + sizeZ/2.f : 0.f ; 
-
-    float dcap = fmaxf( d_PCAP, d_QCAP ) ; // guessing 
-
-   */
-
-    float dcap = fabs(p.z) - sizeZ/2.f ; 
-
-
-    float sd = fmaxf( dinf, dcap ) ;  
 
 /*
     std::cout 

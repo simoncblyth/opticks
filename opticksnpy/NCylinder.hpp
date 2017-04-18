@@ -2,6 +2,7 @@
 
 #include "NNode.hpp"
 #include "NGLM.hpp"
+#include "NCylinder.h"
 
 struct npart ;
 struct nbbox ; 

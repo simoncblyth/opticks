@@ -525,10 +525,10 @@ cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tb
 PCAP = 0x1 << 0  # smaller z endcap
 QCAP = 0x1 << 1  
 
-#flags = PCAP          # bottom(-z) 
-#flags = QCAP           # top(+z) o
-flags = PCAP | QCAP   # both 
-#flags = 0             # no-endcaps 
+flags = PCAP          # bottom-cap(-z) 
+#flags = QCAP           # top-cap(+z) 
+#flags = PCAP | QCAP   # both-caps
+#flags = 0             # no-caps 
 
 cylinder.param1.view(np.uint32)[1] = flags 
 
@@ -540,11 +540,11 @@ Issue:
 
 1. FIXED:seeing endcaps when would expect to see the sides of the cylinder
 2. FIXED:Not honouring transforms
-3. polygonization does not honour endcap flags, but raytrace does
+3. CONCLUDE_UNFIXABLE_SDF_LIMITATION:polygonization does not honour endcap flags, but raytrace does
+4. FIXED:with only one endcap enabled, when look into the open side, can see straight thru the other endcap
 
 Note that endcaps and insides of the cylinder look dark from inside: 
 this is correct as normals are rigidly attached to geometry pointing outwards.
-
 
 
 """
