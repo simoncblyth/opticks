@@ -3,6 +3,7 @@
 #include <cassert>
 #include "NGLM.hpp"
 #include "NNode.hpp"
+#include "NSlab.h"
 
 #include "NPY_API_EXPORT.hh"
 
@@ -28,11 +29,14 @@ struct NPY_API nslab : nnode
     float a ;      // signed distance from origin to plane a, 
     float b ;      // signed distance from origin to plane b, requirement b > a  (used for picking normal direction of intersects)
 
+    unsigned flags ;  // eg 3 for:  SLAB_ACAP|SLAB_BCAP
+
 };
 
 inline NPY_API void init_slab(nslab& slab, const nquad& param, const nquad& param1 )
 {
     glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
+    slab.flags = param.u.w ;  
 
     slab.n = n ; 
     slab.a = param1.f.x ; 
@@ -41,7 +45,7 @@ inline NPY_API void init_slab(nslab& slab, const nquad& param, const nquad& para
     slab.param.f.x = n.x ; 
     slab.param.f.y = n.y ; 
     slab.param.f.z = n.z ; 
-    slab.param.f.w = 0.f ;
+    slab.param.u.w = slab.flags ;
  
     slab.param1 = param1 ; 
 
@@ -55,11 +59,18 @@ inline NPY_API nslab make_slab(const nquad& param, const nquad& param1)
     return slab ;
 }
 
-inline NPY_API nslab make_slab(float x, float y, float z, float a, float b)
+inline NPY_API nslab make_slab(float x, float y, float z, float a, float b, unsigned flags=SLAB_ACAP|SLAB_BCAP)
 {
     nquad param, param1 ; 
-    param.f = {x,y,z,0} ;
-    param1.f = {a,b,0,0} ;
+
+    param.f.x = x ;
+    param.f.y = y ;
+    param.f.z = z ;
+    param.u.w = flags ; 
+
+    param1.f.x = a ;
+    param1.f.y = b ;
+
     return make_slab( param, param1 ); 
 }
 

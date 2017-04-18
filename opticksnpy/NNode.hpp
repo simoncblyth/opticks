@@ -18,8 +18,6 @@ struct nmat4triple ;
 
 struct NPY_API nnode 
 {
-
-    //virtual double operator()(double px, double py, double pz) ;
     virtual float operator()(float px, float py, float pz) ;
 
     virtual void dump(const char* msg="nnode::dump");
@@ -62,6 +60,8 @@ struct NPY_API nnode
 
     nquad param ; 
     nquad param1 ; 
+    nquad param2 ; 
+    nquad param3 ; 
 };
 
 // hmm perhaps easier to switch on these ?? instead

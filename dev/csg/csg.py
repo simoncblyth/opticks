@@ -207,7 +207,7 @@ class CSG(CSG_):
 
     
 
-    def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
+    def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, param2=None, param3=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
         if type(typ_) is str:
             typ = self.fromdesc(typ_)
         else:
@@ -227,6 +227,8 @@ class CSG(CSG_):
 
         self.param = param
         self.param1 = param1
+        self.param2 = param2
+        self.param3 = param3
 
         self.boundary = boundary
         self.transform = make_trs(translate,rotate,scale)
@@ -245,6 +247,21 @@ class CSG(CSG_):
         if self.is_primitive and v is None: v = [0,0,0,0]
         self._param1 = np.asarray(v, dtype=np.float32) if v is not None else None
     param1 = property(_get_param1, _set_param1)
+
+    def _get_param2(self):
+        return self._param2
+    def _set_param2(self, v):
+        if self.is_primitive and v is None: v = [0,0,0,0]
+        self._param2 = np.asarray(v, dtype=np.float32) if v is not None else None
+    param2 = property(_get_param2, _set_param2)
+
+    def _get_param3(self):
+        return self._param3
+    def _set_param3(self, v):
+        if self.is_primitive and v is None: v = [0,0,0,0]
+        self._param3 = np.asarray(v, dtype=np.float32) if v is not None else None
+    param3 = property(_get_param3, _set_param3)
+
 
 
     def asarray(self, itra=0):
@@ -267,6 +284,13 @@ class CSG(CSG_):
         if self.param1 is not None:  
             arr[Q1] = self.param1
         pass
+        if self.param2 is not None:  
+            arr[Q2] = self.param2
+        pass
+        if self.param3 is not None:  
+            arr[Q3] = self.param3
+        pass
+
         if self.transform is not None:
             assert itra > 0, itra  # 1-based transform index
             arr.view(np.uint32)[Q3,W] = itra 

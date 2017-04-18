@@ -35,7 +35,10 @@ if __name__ == '__main__':
     poly = im
 
 
-    for i in range(nn):
+    ii = range(nn)
+    #ii = range(2,3)
+
+    for i in ii:
         root = tr.get(i)
         log.info("\ntranslating ..........................  %r " % root )
 

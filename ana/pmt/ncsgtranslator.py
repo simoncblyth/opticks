@@ -99,7 +99,7 @@ handle this by using zsphere primitive which has z-range restriction.
 
 """
 
-import os, logging, sys, numpy as np
+import os, logging, sys, math, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
@@ -127,26 +127,113 @@ class NCSGTranslator(object):
         return cls.translate_primitive(node) if node.is_primitive else cls.translate_operator(node) 
 
     @classmethod
-    def translate_Sphere(cls, en):
+    def translate_Sphere(cls, en, use_slab=False, only_inner=False):
         """
+        :param en: source element node
+        :param use_slab: alternative approach using intersect with a slab rather than the nascent zsphere  
+        :param only_inner: used to control/distinguish internal recursive call handling the inner sphere
+   
+        Using infinite slab in boolean intersection with the 
+        sphere to effect the zslice unavoidably (it seems) yields a cap.
+        Switching off the caps causes the intersection to 
+        yield nothing.  So back to using zsphere, which 
+        means must implement the cap handling.
+
+
         * z-slice sphere primitive OR intersect with a slab ?
         * r-range sphere primitive OR difference two spheres ? 
 
         * doing z and r both at once is problematic for param layout 
         """
-        ora = en.outerRadius.value 
-        ira = en.innerRadius.value 
-        sta = en.startThetaAngle.value 
-        dta = en.deltaThetaAngle.value 
+        outerRadius = en.outerRadius.value 
+        innerRadius = en.innerRadius.value 
+        x = en.xyz[0]
+        y = en.xyz[1]
+        z = en.xyz[2]
+  
+        has_inner = not only_inner and innerRadius is not None 
+        if has_inner:
+            inner = cls.translate_Sphere(en, only_inner=True)  # recursive call to make inner sphere
+        pass
 
-        log.info("translate_Sphere ora:%s ira:%s sta:%s dta:%s " % (ora,ira,sta,dta)) 
+        radius = innerRadius if only_inner else outerRadius 
+        assert radius, (radius, innerRadius, outerRadius, only_inner)
 
-        cn = CSG("sphere", name=en.name)
-        cn.param[0] = en.xyz[0] 
-        cn.param[1] = en.xyz[1] 
-        cn.param[2] = en.xyz[2]
-        cn.param[3] = ora
-        return cn
+        log.info("translate_Sphere outerRadius:%s innerRadius:%s radius:%s only_inner:%s  has_inner:%s " % (outerRadius,innerRadius,radius, only_inner, has_inner)) 
+
+        startThetaAngle = en.startThetaAngle.value 
+        deltaThetaAngle = en.deltaThetaAngle.value 
+
+        zslice = startThetaAngle is not None or deltaThetaAngle is not None
+
+        if zslice:
+            if startThetaAngle is None:
+                startThetaAngle = 0.
+
+            if deltaThetaAngle is None:
+                deltaThetaAngle = 180.
+
+            # z to the right, theta   0 -> z=r, theta 180 -> z=-r
+            rTheta = startThetaAngle
+            lTheta = startThetaAngle + deltaThetaAngle
+
+            assert rTheta >= 0. and rTheta <= 180.
+            assert lTheta >= 0. and lTheta <= 180.
+            zmin = radius*math.cos(lTheta*math.pi/180.)
+            zmax = radius*math.cos(rTheta*math.pi/180.)
+            assert zmax > zmin, (startThetaAngle, deltaThetaAngle, rTheta, lTheta, zmin, zmax )
+
+            if not use_slab:
+                cn = CSG("zsphere", name=en.name)
+                cn.param1[0] = zmin
+                cn.param1[1] = zmax
+                cn.param[0] = x
+                cn.param[1] = y
+                cn.param[2] = z
+                cn.param[3] = radius
+            else:
+                sp = CSG("sphere") 
+                sp.param[0] = x
+                sp.param[1] = y
+                sp.param[2] = z
+                sp.param[3] = radius
+ 
+                zs = CSG("slab")
+                zs.param[0] = 0
+                zs.param[1] = 0
+                zs.param[2] = 1   # slab normal: +Z
+
+                ACAP = 0x1 << 0
+                BCAP = 0x1 << 1
+                #capflags = ACAP | BCAP    ##  seems cannot use infinite slab intersection without enabling the caps
+                capflags = 0 
+                zs.param.view(np.uint32)[3] = capflags 
+
+                a = z + zmin
+                b = z + zmax
+                assert b > a 
+                zs.param1[0] = a
+                zs.param1[1] = b 
+
+                cn = CSG("intersection", left=sp, right=zs, name=en.name)
+            pass
+        else:
+            cn = CSG("sphere", name=en.name)
+            cn.param[0] = x
+            cn.param[1] = y
+            cn.param[2] = z
+            cn.param[3] = radius
+        pass 
+        if has_inner:
+            #ret = CSG("difference", left=cn, right=inner )
+            #ret = inner
+            ret = cn 
+        else: 
+            ret = cn 
+        pass
+        return ret
+
+
 
     @classmethod
     def translate_Tubs(cls, en):

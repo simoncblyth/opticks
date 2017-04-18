@@ -109,16 +109,27 @@ void npart::zero()
 
     qx.u = {0,0,0,0} ;
 }
-void npart::setParam(const nquad& param)
+void npart::setParam(const nquad& q0_)
 {
     assert( PARAM_J == 0 && PARAM_K == 0 );
-    q0 = param;
+    q0 = q0_;
 }
-void npart::setParam1(const nquad& param1)
+void npart::setParam1(const nquad& q1_)
 {
     assert( PARAM1_J == 1 && PARAM_K == 0 );
-    q1 = param1;
+    q1 = q1_;
 }
+void npart::setParam2(const nquad& q2_)
+{
+    q2 = q2_;
+}
+void npart::setParam3(const nquad& q3_)
+{
+    q3 = q3_;
+}
+
+
+
 
 void npart::setParam(float x, float y, float z, float w)
 {
@@ -126,7 +137,6 @@ void npart::setParam(float x, float y, float z, float w)
     param.f = {x,y,z,w} ;
     setParam( param );
 }
-
 void npart::setParam1(float x, float y, float z, float w)
 {
     nquad param1 ;

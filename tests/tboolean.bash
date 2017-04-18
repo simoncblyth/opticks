@@ -341,6 +341,8 @@ EOP
 tboolean-zsphere(){ TESTCONFIG=$(tboolean-csg-zsphere 2>/dev/null)    tboolean-- ; } 
 tboolean-csg-zsphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
 tboolean-csg-zsphere-(){ cat << EOP 
+
+import numpy as np
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -352,9 +354,15 @@ tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
 
 kwa = {}
 kwa.update(im)
-kwa.update(tr)
+#kwa.update(tr)
 
-zsphere = CSG("zsphere", param=[0,0,0,100], param1=[-75,75,0,0], boundary="$(tboolean-object)", **kwa )
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[0,400,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
+
+ZSPHERE_MINCAP = 0x1 << 0 
+ZSPHERE_MAXCAP = 0x1 << 1
+flags = ZSPHERE_MAXCAP
+
+zsphere.param2.view(np.uint32)[0] = flags 
 
 CSG.Serialize([container, zsphere], "$TMP/$FUNCNAME" )
 EOP
@@ -413,6 +421,7 @@ EOP
 tboolean-sphere-slab(){ TESTCONFIG=$(tboolean-csg-sphere-slab 2>/dev/null)    tboolean-- ; } 
 tboolean-csg-sphere-slab(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
 tboolean-csg-sphere-slab-(){ cat << EOP 
+import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
 args = opticks_main()
@@ -420,6 +429,14 @@ args = opticks_main()
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
 slab   = CSG("slab", param=[0,0,1,0],param1=[-500,100,0,0] )
+
+
+SLAB_ACAP = 0x1 << 0
+SLAB_BCAP = 0x1 << 1
+flags = SLAB_ACAP | SLAB_BCAP
+slab.param.view(np.uint32)[3] = flags 
+
+
 sphere = CSG("sphere", param=[0,0,0,500] )
 
 object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-object)", poly="IM", resolution="50" )
@@ -652,13 +669,19 @@ objs.append(container)
 nn = tr.num_nodes()
 assert nn == 5
 
-im = dict(poly="IM", resolution="30")
+im = dict(poly="IM", resolution="30", verbosity="2")
 mc = dict(poly="MC", nx="30")
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 poly = im
 
 
-for i in [0]:
+PYREX = 0
+VACUUM = 1
+CATHODE = 2
+BOTTOM = 3
+DYNODE = 4
+
+for i in [CATHODE]:
     root = tr.get(i)
     obj = NCSGTranslator.TranslateLV( root.lv )
     obj.boundary = "$(tboolean-object)"
@@ -673,12 +696,18 @@ CSG.Serialize(objs, "$base" )
 
 
 # 1:Vacuum
-# 2:Cathode needs zsphere z-slicing and innerRadius CSG differencing
 
 
-#. FIXED: solid-0 (Pyrex) poly-cylinder not matching raytrace, 
+#. FIXED: solid-0:PYREX poly-cylinder not matching raytrace, 
    NCylinder SDF was ignoring center.z and bbox was wrong 
            
+
+#. ISSUE: solid-2:CATHODE has two very close sphere shells, this is difficult
+          for meshers to handle without very high resolution
+
+#. ISSUE: solid-2:CATHODE restricting to just the inner observe the correct
+          union of zsphere shape : but it disappears from the other side ?  
+
 
 
 

@@ -73,8 +73,10 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.gtransform = NULL ; 
     n.gtransform_idx = 0 ; 
 
-    n.param.f = {0.f, 0.f, 0.f, 0.f };
-    n.param1.f = {0.f, 0.f, 0.f, 0.f };
+    n.param.u  = {0u,0u,0u,0u};
+    n.param1.u = {0u,0u,0u,0u};
+    n.param2.u = {0u,0u,0u,0u};
+    n.param3.u = {0u,0u,0u,0u};
 }
 
 const char* nnode::csgname()
@@ -139,8 +141,10 @@ npart nnode::part()
 
     npart pt ; 
     pt.zero();
-    pt.setParam( param );
+    pt.setParam(  param );
     pt.setParam1( param1 );
+    pt.setParam2( param2 );
+    pt.setParam3( param3 );
 
     pt.setTypeCode( type );
     pt.setGTransform( gtransform_idx );

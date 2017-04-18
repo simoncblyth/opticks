@@ -10,14 +10,16 @@
 
 void test_part()
 {
-    nzsphere s = make_zsphere(0,0,0,10,-5,5);
+    unsigned flags = 0 ; 
+    nzsphere s = make_zsphere(0,0,0,10,-5,5, flags);
     npart p = s.part();
     p.dump("p");
 }
 
 void test_bbox()
 {
-    nzsphere a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f);
+    unsigned flags = 0 ; 
+    nzsphere a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f, flags);
     a.dump("zsph");
 
     nbbox bb = a.bbox();
@@ -26,11 +28,12 @@ void test_bbox()
 
 void test_sdf()
 {
+    unsigned flags = 0 ; 
     float radius = 10.f ; 
     float zdelta_min = -radius/2.f ; 
     float zdelta_max = radius/2.f ; 
 
-    nzsphere a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
+    nzsphere a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max, flags);
 
     for(float v=-2*radius ; v <= 2*radius ; v+= radius/10.f ) 
         std::cout 

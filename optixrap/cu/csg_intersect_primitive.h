@@ -12,11 +12,17 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
 }
 
 static __device__
-void csg_bounds_zsphere(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
     float radius = q0.f.w;
     float zmax = q0.f.z + q1.f.y ;   
     float zmin = q0.f.z + q1.f.x ;   
+    const unsigned flags = q2.u.x ;
+
+    bool MINCAP = flags & ZSPHERE_MINCAP ;  
+    bool MAXCAP = flags & ZSPHERE_MAXCAP ; 
+
+    rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u MINCAP %d MAXCAP %d  \n", zmin, zmax, flags, MINCAP, MAXCAP );
 
     float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
     float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );
@@ -26,9 +32,6 @@ void csg_bounds_zsphere(const quad& q0, const quad& q1, optix::Aabb* aabb, optix
 
     aabb->include(tbb);
 }
-
-
-
 
 
 static __device__
@@ -65,8 +68,9 @@ bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, con
     return valid_isect ; 
 }
 
+
 static __device__
-bool csg_intersect_zsphere(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& /*q2*/, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
     float3 center = make_float3(q0.f);
     float radius = q0.f.w;
@@ -86,9 +90,6 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const float& t_min, f
     float root1 = (-b - sdisc)/d ;
     float root2 = (-b + sdisc)/d ;  // root2 > root1 always
 
-    //float z1 = ray_origin.z + ray_direction.z*root1 ; 
-    //float z2 = ray_origin.z + ray_direction.z*root2 ; 
-
     float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
 
     float z = ray_origin.z + ray_direction.z*t_cand ; 
@@ -105,6 +106,8 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const float& t_min, f
     }
     return valid_isect ; 
 }
+
+
 
 
 
@@ -239,15 +242,25 @@ void csg_bounds_slab(const quad& q0, const quad& q1, optix::Aabb* /*aabb*/, opti
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
    const float a = q1.f.x ; 
    const float b = q1.f.y ; 
-   rtPrintf("## csg_bounds_slab n %7.3f %7.3f %7.3f  a %7.3f b %7.3f \n", n.x, n.y, n.z, a, b );
+   const unsigned flags = q0.u.w ;
+
+   bool ACAP = flags & SLAB_ACAP ;  
+   bool BCAP = flags & SLAB_BCAP ; // b > a by construction
+
+   rtPrintf("## csg_bounds_slab n %7.3f %7.3f %7.3f  a %7.3f b %7.3f flags %u ACAP %d BCAP %d  \n", n.x, n.y, n.z, a, b, flags, ACAP, BCAP );
 }
 
 static __device__
 bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
    const float3 n = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+   const unsigned flags = q0.u.w ;
+
    const float a = q1.f.x ; 
    const float b = q1.f.y ; 
+
+   bool ACAP = flags & SLAB_ACAP ;  
+   bool BCAP = flags & SLAB_BCAP ; // b > a by construction
 
    float idn = 1.f/dot(ray_direction, n );
    float on = dot(ray_origin, n ); 
@@ -258,10 +271,16 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
    float t_near = fminf(ta,tb);  // order the intersects 
    float t_far  = fmaxf(ta,tb);
 
-   float t_cand = t_near > t_min ?  t_near : ( t_far > t_min ? t_far : t_min ) ; 
+   bool a_near = t_near == ta ;  
+
+   bool near_cap  = a_near ? ACAP : BCAP ; 
+   bool far_cap   = a_near ? BCAP : ACAP ;   // a_near -> "b_far"
+
+   float t_cand = t_near > t_min && near_cap ?  t_near : ( t_far > t_min && far_cap  ? t_far : t_min ) ; 
 
    bool valid_intersect = t_cand > t_min ;
    bool b_hit = t_cand == tb ;
+
 
    if( valid_intersect ) 
    {
@@ -276,15 +295,7 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
 
 
 
-#include "NCylinder.h"
-/*
-enum
-{
-    CYLINDER_ENDCAP_P = 0x1 <<  0,    
-    CYLINDER_ENDCAP_Q = 0x1 <<  1
-};
-*/
-    
+   
 
 static __device__
 void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -307,6 +318,17 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
     if(tr) transform_bbox( &tbb, tr );  
     aabb->include(tbb);
 }
+
+
+
+
+
+
+
+
+
+
+
 
 static __device__
 bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )

@@ -26,6 +26,9 @@ struct NPY_API npart
 
     void setParam(const nquad& param);
     void setParam1(const nquad& param1);
+    void setParam2(const nquad& param2);
+    void setParam3(const nquad& param3);
+
     void setParam(float x, float y, float z, float w);
     void setParam1(float x, float y, float z, float w);
 

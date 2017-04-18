@@ -275,24 +275,26 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     int transform_idx = getTransformIndex(idx) ; 
 
-    nquad param = getQuad(idx, 0);
-    nquad param1 = getQuad(idx, 1);
+    nquad p0 = getQuad(idx, 0);
+    nquad p1 = getQuad(idx, 1);
+    nquad p2 = getQuad(idx, 2);
 
-
-    if(m_verbosity > 2)
+    //if(m_verbosity > 2)
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 
               << " transform_idx " << transform_idx 
               << " csgname " << CSGName(typecode) 
-              << " param.f.x " << param.f.x
-              << " param.f.y " << param.f.y
-              << " param.f.z " << param.f.z
-              << " param.f.w " << param.f.w
-              << " param1.f.x " << param1.f.x
-              << " param1.f.y " << param1.f.y
-              << " param1.f.z " << param1.f.z
-              << " param1.f.w " << param1.f.w
+              << " p0.f.x " << p0.f.x
+              << " p0.f.y " << p0.f.y
+              << " p0.f.z " << p0.f.z
+              << " p0.f.w " << p0.f.w
+              << " p0.u.w " << p0.u.w
+              << " p1.f.x " << p1.f.x
+              << " p1.f.y " << p1.f.y
+              << " p1.f.z " << p1.f.z
+              << " p1.f.w " << p1.f.w
+              << " p2.u.x " << p2.u.x
               ;
 
     nnode* node = NULL ;   
@@ -335,12 +337,12 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     {
         switch(typecode)
         {
-           case CSG_SPHERE:   node = new nsphere(make_sphere(param))             ; break ; 
-           case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(param, param1))   ; break ; 
-           case CSG_BOX:      node = new nbox(make_box(param))                   ; break ; 
-           case CSG_SLAB:     node = new nslab(make_slab(param, param1))         ; break ; 
-           case CSG_PLANE:    node = new nplane(make_plane(param))               ; break ; 
-           case CSG_CYLINDER: node = new ncylinder(make_cylinder(param, param1)) ; break ; 
+           case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ; 
+           case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
+           case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ; 
+           case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
+           case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
+           case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
            default:           node = NULL ; break ; 
         }       
 

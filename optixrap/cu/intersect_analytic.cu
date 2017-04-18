@@ -1,5 +1,10 @@
 #include "OpticksCSG.h"
+
+// shape flag enums from npy-
 #include "NPart.h"
+#include "NCylinder.h"
+#include "NSlab.h"
+#include "NZSphere.h"
 
 #include <optix_world.h>
 
