@@ -119,7 +119,35 @@ Intersect with sphere
       -----------------------
              d   
 
-   Need to know wherther root1 corres to PCAP (zmin) or QCAP (zmax) 
+
+   Alternative quadratic in 1/t 
+
+
+    c (1/t)^2 + 2b (1/t) + d  = 0 
+
+
+    1/t  =   -2b +- sqrt( (2b)^2 - 4dc )
+             ----------------------------
+                      2c
+
+    1/t  =    -b  +- sqrt( b^2 - d c )
+             -------------------------
+                      c
+
+                     c
+    t =    ---------------------------
+             -b  +-  sqrt( b^2 - d c )
+
+
+----------------
+
+
+
+      q =  b + sign(b) sqrt( b^2 - d c )      
+
+      q =  b + sqrt( b^2 - d c ) # b > 0
+      q =  b - sqrt( b^2 - d c ) # b < 0
+   
 
 
 
@@ -153,8 +181,18 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
     float disc = b*b-d*c;
     float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
 
+
+#ifdef ZSPHERE_NUMERICALLY_UNSTABLY
     float t1sph = (-b - sdisc)/d ;
     float t2sph = (-b + sdisc)/d ;  // t2sph > t1sph always, sdisc and d always +ve
+#else
+    // picking robust quadratic roots that avoid catastrophic subtraction 
+    float q = b > 0.f ? -(b + sdisc) : -(b - sdisc) ; 
+    float root1 = q/d  ; 
+    float root2 = c/q  ;
+    float t1sph = fminf( root1, root2 );
+    float t2sph = fmaxf( root1, root2 );
+#endif
 
     float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
     float z2sph = ray_origin.z + t2sph*ray_direction.z ; 
