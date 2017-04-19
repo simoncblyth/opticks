@@ -356,11 +356,15 @@ kwa = {}
 kwa.update(im)
 #kwa.update(tr)
 
-zsphere = CSG("zsphere", param=[0,0,0,500], param1=[0,400,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-100,100,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
 
-ZSPHERE_MINCAP = 0x1 << 0 
-ZSPHERE_MAXCAP = 0x1 << 1
-flags = ZSPHERE_MAXCAP
+ZSPHERE_QCAP = 0x1 << 1   # ZMAX
+ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+#flags = ZSPHERE_QCAP | ZSPHERE_PCAP
+flags = ZSPHERE_QCAP | ZSPHERE_PCAP
+#flags = ZSPHERE_QCAP
+#flags = ZSPHERE_PCAP
+#flags = 0 
 
 zsphere.param2.view(np.uint32)[0] = flags 
 

@@ -1,8 +1,8 @@
 #pragma once
 
 enum {
-  ZSPHERE_MINCAP = 0x1 << 0,
-  ZSPHERE_MAXCAP = 0x1 << 1
+  ZSPHERE_PCAP = 0x1 << 0,
+  ZSPHERE_QCAP = 0x1 << 1
 };
 
 

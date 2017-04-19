@@ -56,7 +56,7 @@ inline NPY_API nzsphere make_zsphere(const nquad& param, const nquad& param1, co
     return n ; 
 }
 
-inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, float zdelta_min, float zdelta_max, unsigned flags=ZSPHERE_MINCAP|ZSPHERE_MAXCAP)
+inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, float zdelta_min, float zdelta_max, unsigned flags=ZSPHERE_PCAP|ZSPHERE_QCAP)
 {
     nquad p0, p1, p2  ; 
 

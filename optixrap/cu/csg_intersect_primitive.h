@@ -12,29 +12,6 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
 }
 
 static __device__
-void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::Aabb* aabb, optix::Matrix4x4* tr  )
-{
-    float radius = q0.f.w;
-    float zmax = q0.f.z + q1.f.y ;   
-    float zmin = q0.f.z + q1.f.x ;   
-    const unsigned flags = q2.u.x ;
-
-    bool MINCAP = flags & ZSPHERE_MINCAP ;  
-    bool MAXCAP = flags & ZSPHERE_MAXCAP ; 
-
-    rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u MINCAP %d MAXCAP %d  \n", zmin, zmax, flags, MINCAP, MAXCAP );
-
-    float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
-    float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );
-
-    Aabb tbb(mn, mx);
-    if(tr) transform_bbox( &tbb, tr );  
-
-    aabb->include(tbb);
-}
-
-
-static __device__
 bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
     float3 center = make_float3(q0.f);
@@ -69,40 +46,160 @@ bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, con
 }
 
 
+
+
+
 static __device__
-bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& /*q2*/, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
-    float3 center = make_float3(q0.f);
-    float radius = q0.f.w;
-    float zmax = q0.f.z + q1.f.y ;   
-    float zmin = q0.f.z + q1.f.x ;   
+    const float radius = q0.f.w;
+    const float zmax = q0.f.z + q1.f.y ;   
+    const float zmin = q0.f.z + q1.f.x ;   
 
-    float3 O = ray_origin - center;
+    const unsigned flags = q2.u.x ;
+    const bool QCAP = flags & ZSPHERE_QCAP ;  
+    const bool PCAP = flags & ZSPHERE_PCAP ; 
+
+    rtPrintf("## csg_bounds_zsphere  zmin %7.3f zmax %7.3f flags %u QCAP(zmin) %d PCAP(zmax) %d  \n", zmin, zmax, flags, QCAP, PCAP );
+
+    float3 mx = make_float3( q0.f.x + radius, q0.f.y + radius, zmax );
+    float3 mn = make_float3( q0.f.x - radius, q0.f.y - radius, zmin );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+
+/*
+Plane eqn in general frame:
+               point_in_plane.plane_normal = plane_dist_to_origin
+
+Ray-Plane intersection 
+
+    ( ray_origin + t ray_direction ).plane_normal = plane_dist_to_origin
+ 
+     t = plane_dist_to_origin - ray_origin.plane_normal
+        -------------------------------------------------
+                ray_direction.plane_normal
+
+
+Now consider plane normal to be +z axis and 
+
+     t = plane_dist_to_origin - ray_origin.z
+        --------------------------------------
+              ray_direction.z
+
+plane_dist_to_orign = zmin or zmax
+
+
+
+Intersect with sphere
+
+     O = ray_origin - center 
+     D = ray_direction  
+
+     (O + t D).(O + t D) = rr
+
+   t^2 D.D + 2 t O.D + O.O - rr  = 0 
+
+     d = D.D
+     b = O.D
+     c = O.O - rr
+
+   d t^2 + 2b t + c = 0  
+
+
+  t =     -2b +- sqrt((2b)^2 - 4dc )
+        -----------------------------
+                2d
+
+      -b +- sqrt( b^2 - d c )
+      -----------------------
+             d   
+
+   Need to know wherther root1 corres to PCAP (zmin) or QCAP (zmax) 
+
+
+
+*/
+
+
+static __device__
+bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    const float3 center = make_float3(q0.f);
+    float3 O = ray_origin - center;  
     float3 D = ray_direction;
+    const float radius = q0.f.w;
 
-    float b = dot(O, D);
-    float c = dot(O, O)-radius*radius;
-    float d = dot(D, D);
+    float b = dot(O, D);               // t of closest approach to sphere center
+    float c = dot(O, O)-radius*radius; // < 0. indicates ray_origin inside sphere
+    if( c > 0.f && b > 0.f ) return false ;   
 
+    // Cannot intersect when ray origin outside sphere and direction away from sphere.
+    // Whether early exit speeds things up is another question ... 
+
+    const unsigned flags = q2.u.x ;
+    const bool QCAP = flags & ZSPHERE_QCAP ; 
+    const bool PCAP = flags & ZSPHERE_PCAP ;  
+
+    const float2 zdelta = make_float2(q1.f);
+    const float zmax = center.z + zdelta.y ; 
+    const float zmin = center.z + zdelta.x ;   
+
+    float d = dot(D, D);               // NB NOT assuming normalized ray_direction
     float disc = b*b-d*c;
-
     float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
-    float root1 = (-b - sdisc)/d ;
-    float root2 = (-b + sdisc)/d ;  // root2 > root1 always
 
-    float t_cand = sdisc > 0.f ? ( root1 > t_min ? root1 : root2 ) : t_min ; 
+    float t1sph = (-b - sdisc)/d ;
+    float t2sph = (-b + sdisc)/d ;  // t2sph > t1sph always, sdisc and d always +ve
 
-    float z = ray_origin.z + ray_direction.z*t_cand ; 
+    float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
+    float z2sph = ray_origin.z + t2sph*ray_direction.z ; 
 
-    // assuming it is OK to check the z as a post condition, and not as part of root choice ?
+    float idz = 1.f/ray_direction.z ; 
+    float t_QCAP = QCAP ? (zmax - ray_origin.z)*idz : t_min ;   // cap intersects,  t_min for cap not enabled
+    float t_PCAP = PCAP ? (zmin - ray_origin.z)*idz : t_min ;
 
-    bool valid_isect = t_cand > t_min && z > zmin && z < zmax ;
+    float t1cap = fminf( t_QCAP, t_PCAP ) ;   // order cap intersects along the ray 
+    float t2cap = fmaxf( t_QCAP, t_PCAP ) ;   // t2cap > t1cap 
+
+    // disqualify plane intersects outside sphere t range
+    if(t1cap < t1sph || t1cap > t2sph) t1cap = t_min ; 
+    if(t2cap < t1sph || t2cap > t2sph) t2cap = t_min ; 
+
+    // hmm somehow is seems unclean to have to use both z and t language
+
+    float t_cand = t_min ; 
+    if(sdisc > 0.f)
+    {
+        if(      t1sph > t_min && z1sph > zmin && z1sph < zmax )  t_cand = t1sph ;  // t1sph qualified and t1cap disabled or disqualified -> t1sph
+        else if( t1cap > t_min )                                  t_cand = t1cap ;  // t1cap qualifies -> t1cap 
+        else if( t2cap > t_min )                                  t_cand = t2cap ;  // t2cap qualifies -> t2cap
+        else if( t2sph > t_min && z2sph > zmin && z2sph < zmax)   t_cand = t2sph ;  // t2sph qualifies and t2cap disabled or disqialified -> t2sph
+
+        //rtPrintf("csg_intersect_zsphere t_min %7.3f t1sph %7.3f t1cap %7.3f t2cap %7.3f t2sph %7.3f t_cand %7.3f \n", t_min, t1sph, t1cap, t2cap, t2sph, t_cand ); 
+    }
+
+    bool valid_isect = t_cand > t_min ;
+
     if(valid_isect)
     {        
-        isect.x = (O.x + t_cand*D.x)/radius ;   // normalized by construction
-        isect.y = (O.y + t_cand*D.y)/radius ; 
-        isect.z = (O.z + t_cand*D.z)/radius ; 
         isect.w = t_cand ; 
+        if( t_cand == t1sph || t_cand == t2sph)
+        {
+            isect.x = (O.x + t_cand*D.x)/radius ; // normalized by construction
+            isect.y = (O.y + t_cand*D.y)/radius ; 
+            isect.z = (O.z + t_cand*D.z)/radius ; 
+        }
+        else
+        {
+            isect.x = 0.f ; 
+            isect.y = 0.f ; 
+            isect.z = t_cand == t_PCAP ? -1.f : 1.f ;  
+        }
     }
     return valid_isect ; 
 }
