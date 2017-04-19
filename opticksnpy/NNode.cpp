@@ -93,7 +93,6 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 }
 
 
-
 nmat4triple* nnode::global_transform()
 {
     return global_transform(this);
@@ -128,6 +127,21 @@ void nnode::update_gtransforms_r(nnode* node)
     }
 }
 
+
+
+glm::vec3 nnode::apply_gtransform(const glm::vec4& v_)
+{
+    glm::vec4 v(v_) ; 
+    if(gtransform) v = gtransform->t * v ; 
+    return glm::vec3(v) ; 
+}
+
+
+glm::vec3 nnode::gseeddir()   // override in shapes if needed
+{
+    glm::vec4 dir(1,1,1,0); 
+    return apply_gtransform(dir);
+}
 
 
 
@@ -254,60 +268,15 @@ std::function<float(float,float,float)> nnode::sdf()
     std::function<float(float,float,float)> f ; 
     switch(node->type)
     {
-        case CSG_UNION:
-            {
-                nunion* n = (nunion*)node ; 
-                f = *n ;
-            }
-            break ;
-        case CSG_INTERSECTION:
-            {
-                nintersection* n = (nintersection*)node ; 
-                f = *n ;
-            }
-            break ;
-        case CSG_DIFFERENCE:
-            {
-                ndifference* n = (ndifference*)node ; 
-                f = *n ;
-            }
-            break ;
-        case CSG_SPHERE:
-            {
-                nsphere* n = (nsphere*)node ; 
-                f = *n ;
-            }
-            break ;
-        case CSG_ZSPHERE:
-            {
-                nzsphere* n = (nzsphere*)node ; 
-                f = *n ;
-            }
-            break ;
-        case CSG_BOX:
-            {
-                nbox* n = (nbox*)node ;  
-                f = *n ;
-            }
-            break ;
-        case CSG_SLAB:
-            {
-                nslab* n = (nslab*)node ;  
-                f = *n ;
-            }
-            break ;
-        case CSG_PLANE:
-            {
-                nplane* n = (nplane*)node ;  
-                f = *n ;
-            }
-            break ;
-        case CSG_CYLINDER:
-            {
-                ncylinder* n = (ncylinder*)node ;  
-                f = *n ;
-            }
-            break ;
+        case CSG_UNION:          { nunion* n        = (nunion*)node         ; f = *n ; } break ;
+        case CSG_INTERSECTION:   { nintersection* n = (nintersection*)node  ; f = *n ; } break ;
+        case CSG_DIFFERENCE:     { ndifference* n   = (ndifference*)node    ; f = *n ; } break ;
+        case CSG_SPHERE:         { nsphere* n       = (nsphere*)node        ; f = *n ; } break ;
+        case CSG_ZSPHERE:        { nzsphere* n      = (nzsphere*)node       ; f = *n ; } break ;
+        case CSG_BOX:            { nbox* n          = (nbox*)node           ; f = *n ; } break ;
+        case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = *n ; } break ; 
+        case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
+        case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -317,78 +286,77 @@ std::function<float(float,float,float)> nnode::sdf()
 
 
 
-void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs )
+void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity)
 {
     std::vector<nnode*> prim ; 
-    collect_prim(prim); 
+    collect_prim(prim);    // recursive collection of list of all primitives in tree
+    unsigned nprim = prim.size();
 
-    unsigned npr = prim.size();
-    for(unsigned i=0 ; i < npr ; i++)
+    if(verbosity > 0)
+    LOG(info) << "nnode::collect_prim_centers"
+              << " verbosity " << verbosity
+              << " nprim " << nprim 
+              ;
+
+    for(unsigned i=0 ; i < nprim ; i++)
     {
         nnode* p = prim[i] ; 
+
+        if(verbosity > 1 )
+        LOG(info) << "nnode::collect_prim_centers"
+                  << " i " << i 
+                  << " type " << p->type 
+                  << " name " << CSGName(p->type) 
+                  ;
+
+
         switch(p->type)
         {
             case CSG_SPHERE: 
                {  
                    nsphere* n = (nsphere*)p ;
-                   centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(1,1,1,0); 
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
-                   dirs.push_back( glm::vec3(dir));
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
 
             case CSG_ZSPHERE: 
                {  
                    nzsphere* n = (nzsphere*)p ;
-                   centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(0,0,1,0);  // <--- probably need to expose an interface for this canonical direction
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
-                   dirs.push_back( glm::vec3(dir));
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
           
             case CSG_BOX: 
                {  
                    nbox* n = (nbox*)p ;
-                   centers.push_back(n->gcenter()); 
-                   
-                   glm::vec4 dir(1,1,1,0); 
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
-                   dirs.push_back( glm::vec3(dir));
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
 
             case CSG_SLAB: 
                {  
-                   nslab* s = (nslab*)p ;
-                   centers.push_back(s->gcenter()); 
-                   glm::vec4 dir(s->n,0); 
-                   if(s->gtransform) dir = s->gtransform->t * dir ; 
-
-                   dirs.push_back( glm::vec3(dir));
+                   nslab* n = (nslab*)p ;
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
 
             case CSG_PLANE: 
                {  
                    nplane* n = (nplane*)p ;
-                   centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(n->n,0); 
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
-
-                   dirs.push_back( glm::vec3(dir));
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
  
             case CSG_CYLINDER: 
                {  
                    ncylinder* n = (ncylinder*)p ;
-                   centers.push_back(n->gcenter()); 
-                   glm::vec4 dir(1,0,0,0);   // Z: not a good choice as without endcap fail to hit 
-                   if(n->gtransform) dir = n->gtransform->t * dir ; 
-
-                   dirs.push_back( glm::vec3(dir));
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
                }
                break ;  
  

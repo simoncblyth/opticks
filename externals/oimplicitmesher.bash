@@ -32,6 +32,13 @@ oimplicitmesher-fullwipe()
     ## test executables not removed
 }
 
+oimplicitmesher-update()
+{
+    oimplicitmesher-fullwipe
+    oimplicitmesher-- 
+}
+
+
 oimplicitmesher-get(){
    local iwd=$PWD
    local dir=$(dirname $(oimplicitmesher-dir)) &&  mkdir -p $dir && cd $dir

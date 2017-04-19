@@ -150,10 +150,19 @@ cylinder with radius r and height h:
 
 
 
-glm::vec3 ncylinder::gcenter()
+glm::vec3 ncylinder::gseedcenter()
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
+
+glm::vec3 ncylinder::gseeddir()
+{
+    glm::vec4 dir(1,0,0,0);   // Z: not a good choice as without endcap fail to hit 
+    if(gtransform) dir = gtransform->t * dir ; 
+    return glm::vec3(dir) ;
+}
+
+
 
 void ncylinder::pdump(const char* msg, int verbosity)
 {
@@ -164,7 +173,7 @@ void ncylinder::pdump(const char* msg, int verbosity)
               << " radius " << radius 
               << " sizeZ " << sizeZ
               << " flags " << flags
-              << " gcenter " << gcenter()
+              << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
 

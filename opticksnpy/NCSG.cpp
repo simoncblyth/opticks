@@ -218,6 +218,7 @@ nquad NCSG::getQuad(unsigned idx, unsigned j)
 void NCSG::import()
 {
     assert(m_nodes);
+    if(m_verbosity > 0)
     LOG(info) << "NCSG::import"
               << " importing buffer into CSG node tree "
               << " num_nodes " << m_num_nodes
@@ -279,7 +280,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     nquad p1 = getQuad(idx, 1);
     nquad p2 = getQuad(idx, 2);
 
-    //if(m_verbosity > 2)
+    if(m_verbosity > 2)
     LOG(info) << "NCSG::import_r " 
               << " idx " << idx 
               << " typecode " << typecode 

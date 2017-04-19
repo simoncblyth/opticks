@@ -15,7 +15,9 @@ struct NPY_API nbox : nnode {
     float sdf2(float x, float y, float z) ;
 
     nbbox bbox();
-    glm::vec3 gcenter() ;
+
+    glm::vec3 gseedcenter();
+
     void pdump(const char* msg="nbox::pdump", int verbosity=1);
 
     glm::vec3 center ; 

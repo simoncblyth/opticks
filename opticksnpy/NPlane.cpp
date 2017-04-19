@@ -35,12 +35,18 @@ bool nplane::intersect( const float tmin, const glm::vec3& ray_origin, const glm
 }
 
 
-glm::vec3 nplane::gcenter()
+glm::vec3 nplane::gseedcenter()
 {
     glm::vec3 center = n * d ;
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
 
+glm::vec3 nplane::gseeddir()
+{
+    glm::vec4 dir(n,0); 
+    if(gtransform) dir = gtransform->t * dir ; 
+    return glm::vec3(dir) ;
+}
 
 
 

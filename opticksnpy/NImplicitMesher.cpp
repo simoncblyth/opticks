@@ -61,6 +61,12 @@ void NImplicitMesher::init()
 
     float tval = 0.f ; 
     float negate = false ; 
+    LOG(fatal) << "NImplicitMesher::init"
+               << " ImplicitMesherF ctor "
+               << " verbosity " << m_verbosity 
+               ;
+              
+
     m_mesher = new ImplicitMesherF(m_sdf, m_verbosity, tval, negate ); 
 
     glm::vec3 min(m_bbox->min.x, m_bbox->min.y, m_bbox->min.z );
@@ -75,6 +81,8 @@ void NImplicitMesher::init()
 
 void NImplicitMesher::addManualSeeds()
 {
+    LOG(info) << "NImplicitMesher::addManualSeeds" ; 
+
     std::vector<float> seed ; 
     if(!m_seedstr.empty()) BStr::fsplit(seed, m_seedstr.c_str(), ',');
 
@@ -109,9 +117,12 @@ void NImplicitMesher::addManualSeeds()
 
 void NImplicitMesher::addCenterSeeds()
 {
+    LOG(info) << "NImplicitMesher::addCenterSeeds" ; 
+
     std::vector<glm::vec3> centers ; 
     std::vector<glm::vec3> dirs; 
-    m_node->collect_prim_centers(centers, dirs);
+
+    m_node->collect_prim_centers(centers, dirs, m_verbosity);
    
     unsigned ncenters = centers.size();
     unsigned ndirs = dirs.size();
@@ -136,20 +147,38 @@ void NImplicitMesher::addCenterSeeds()
 
 NTrianglesNPY* NImplicitMesher::operator()()
 {
-    LOG(info) << "NImplicitMesher::operator() bb " << m_bbox->desc() ; 
+    LOG(info) << "NImplicitMesher::operator() polygonizing START"
+              << " verbosity " << m_verbosity 
+              << " bb " << m_bbox->desc() 
+              ; 
 
     m_mesher->polygonize();
-    if(m_verbosity > 0) m_mesher->dump();
-    
+
+   
     const std::vector<glm::vec3>& verts = m_mesher->vertices();
     const std::vector<glm::vec3>& norms = m_mesher->normals();
     const std::vector<glm::ivec3>& tris = m_mesher->triangles();
 
     NTrianglesNPY* tt = collectTriangles( verts, norms, tris );
 
-    report("NImplicitMesher::");
+    if(m_verbosity > 0)
+    report("NImplicitMesher::operator() polygonizing DONE");
 
     return tt ; 
+}
+
+
+
+void NImplicitMesher::report(const char* msg)
+{
+    m_mesher->report();
+    m_mesher->dump();
+ 
+    LOG(info) << msg ; 
+    LOG(info) << desc() ; 
+    TimesTable* tt = m_timer->makeTable();
+    tt->dump();
+    //tt->save("$TMP");
 }
 
 
@@ -163,17 +192,6 @@ void NImplicitMesher::profile(const char* s)
 {
    (*m_timer)(s);
 }
-
-void NImplicitMesher::report(const char* msg)
-{
-    LOG(info) << msg ; 
-    LOG(info) << desc() ; 
-    TimesTable* tt = m_timer->makeTable();
-    tt->dump();
-    //tt->save("$TMP");
-}
-
-
 
 
 NTrianglesNPY* NImplicitMesher::collectTriangles(const std::vector<glm::vec3>& verts, const std::vector<glm::vec3>& norms, const std::vector<glm::ivec3>& tris )

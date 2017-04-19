@@ -17,7 +17,8 @@ struct NPY_API ncylinder : nnode {
 
     npart part();
 
-    glm::vec3 gcenter() ;
+    glm::vec3 gseedcenter() ;
+    glm::vec3 gseeddir() ;
     void pdump(const char* msg="ncylinder::pdump", int verbosity=1);
  
     glm::vec3 center ; 

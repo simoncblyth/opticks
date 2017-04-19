@@ -33,7 +33,7 @@ float nsphere::operator()(float x, float y, float z)
     return glm::distance( glm::vec3(p), center ) - radius ;
 } 
 
-glm::vec3 nsphere::gcenter()
+glm::vec3 nsphere::gseedcenter()
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform
 }
@@ -46,7 +46,7 @@ void nsphere::pdump(const char* msg, int verbosity)
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
               << " radius " << radius 
-              << " gcenter " << gcenter()
+              << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
 

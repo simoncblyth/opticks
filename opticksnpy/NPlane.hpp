@@ -37,7 +37,8 @@ struct NPY_API nplane : nnode
 
     bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
 
-    glm::vec3 gcenter();
+    glm::vec3 gseedcenter();
+    glm::vec3 gseeddir();
     void pdump(const char* msg="nplane::dump", int verbosity=1);
 
     glm::vec3 n ;  // normal

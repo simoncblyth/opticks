@@ -22,7 +22,8 @@ struct NPY_API nslab : nnode
 
     bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
 
-    glm::vec3 gcenter();
+    glm::vec3 gseedcenter();
+    glm::vec3 gseeddir();
     void pdump(const char* msg="nslab::pdump", int verbosity=1);
 
     glm::vec3 n ;  // normalized normal direction

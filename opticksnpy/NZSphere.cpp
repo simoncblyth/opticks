@@ -39,10 +39,23 @@ nbbox nzsphere::bbox()
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
-glm::vec3 nzsphere::gcenter()
+glm::vec3 nzsphere::gseedcenter()
 {
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform
+    glm::vec4 seedcenter( center.x, center.y, (zmin() + zmax())/2.f, 1.f ); 
+    return apply_gtransform(seedcenter);
+    //if(gtransform) seedcenter = gtransform->t * seedcenter ; 
+    //return glm::vec3(seedcenter) ; 
 }
+
+glm::vec3 nzsphere::gseeddir()
+{
+    glm::vec4 dir(0,0,1,0); 
+    return apply_gtransform(dir);
+    //if(gtransform) dir = gtransform->t * dir ; 
+    //return glm::vec3(dir) ;
+}
+
+
 
 void nzsphere::pdump(const char* msg, int verbosity)
 {
@@ -53,7 +66,7 @@ void nzsphere::pdump(const char* msg, int verbosity)
               << " radius " << radius 
               << " zmin " << zmin()
               << " zmax " << zmax()
-              << " gcenter " << gcenter()
+              << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
 

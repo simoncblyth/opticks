@@ -133,11 +133,19 @@ bool nslab::intersect( const float t_min, const glm::vec3& ray_origin, const glm
 
 
 
-glm::vec3 nslab::gcenter()
+glm::vec3 nslab::gseedcenter()
 {
     glm::vec3 center = n * (a+b)/2.f ;
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
+
+glm::vec3 nslab::gseeddir()
+{
+    glm::vec4 dir(n,0); 
+    if(gtransform) dir = gtransform->t * dir ; 
+    return glm::vec3(dir) ;
+}
+
 
 
 void nslab::pdump(const char* msg, int verbosity )

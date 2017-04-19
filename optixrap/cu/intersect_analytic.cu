@@ -85,10 +85,7 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
-    if(primIdx == 0) 
-    { 
-        transform_test();
-    }
+    //if(primIdx == 0) transform_test();
 
     optix::Aabb* aabb = (optix::Aabb*)result;
     *aabb = optix::Aabb();

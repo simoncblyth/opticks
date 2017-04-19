@@ -17,7 +17,9 @@ struct NPY_API nzsphere : nnode {
 
     nbbox bbox();
 
-    glm::vec3 gcenter() ;
+    glm::vec3 gseedcenter() ;
+    glm::vec3 gseeddir();
+
     void pdump(const char* msg="nzsphere::pdump", int verbosity=1);
 
     float zmax(){ return center.z + zdelta.y ; }

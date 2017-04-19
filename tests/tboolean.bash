@@ -348,7 +348,7 @@ from opticks.dev.csg.csg import CSG
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
 
-im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0" )
 #tr = dict(scale="1,1,2")
 tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
 
@@ -356,7 +356,8 @@ kwa = {}
 kwa.update(im)
 #kwa.update(tr)
 
-zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-100,100,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
+#zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
 
 ZSPHERE_QCAP = 0x1 << 1   # ZMAX
 ZSPHERE_PCAP = 0x1 << 0   # ZMIN
@@ -369,6 +370,7 @@ flags = ZSPHERE_QCAP | ZSPHERE_PCAP
 zsphere.param2.view(np.uint32)[0] = flags 
 
 CSG.Serialize([container, zsphere], "$TMP/$FUNCNAME" )
+
 EOP
 }
 

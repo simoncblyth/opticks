@@ -79,7 +79,7 @@ nbbox nbox::bbox()
     // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }
 
-glm::vec3 nbox::gcenter()
+glm::vec3 nbox::gseedcenter()
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
@@ -91,7 +91,7 @@ void nbox::pdump(const char* msg, int verbosity )
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
               << " side " << param.f.w 
-              << " gcenter " << gcenter()
+              << " gseedcenter " << gseedcenter()
               << " gtransform? " << !!gtransform
               << std::endl ; 
 

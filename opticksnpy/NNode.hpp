@@ -33,14 +33,17 @@ struct NPY_API nnode
 
     std::function<float(float,float,float)> sdf();
 
+    glm::vec3 gseeddir();  // override if needed
+ 
 
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);
 
     nmat4triple* global_transform(); 
     static nmat4triple* global_transform(nnode* n); 
+    glm::vec3 apply_gtransform(const glm::vec4& v_);
 
-    void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs);
+    void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
 
     void dump_prim(const char* msg="dump_prim", int verbosity=1 ) ;
     void collect_prim(std::vector<nnode*>& prim) ;
