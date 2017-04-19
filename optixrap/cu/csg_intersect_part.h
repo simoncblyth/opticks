@@ -6,6 +6,7 @@ void csg_bounds_prim(unsigned primIdx, optix::Aabb* aabb )
 
     unsigned partOffset  = prim.x ;  
     unsigned numParts    = prim.y ; 
+    unsigned tranOffset  = prim.z ; 
     unsigned primFlag    = prim.w ;  
 
     if(primFlag != CSG_FLAGNODETREE)  
@@ -50,7 +51,7 @@ void csg_bounds_prim(unsigned primIdx, optix::Aabb* aabb )
         }
         else
         {
-            unsigned trIdx = 3*(gtransformIdx-1)+0 ;
+            unsigned trIdx = 3*(tranOffset + gtransformIdx-1)+0 ;
             if(trIdx >= tranBuffer_size)
             { 
                 rtPrintf("## bounds ABORT trIdx %3u overflows tranBuffer_size %3u \n", trIdx, tranBuffer_size );
@@ -80,6 +81,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
 {
     Part pt = partBuffer[partIdx] ; 
     unsigned typecode = pt.typecode() ; 
+    unsigned tranOffset = 0 ; // PLACEHOLDER .. need to get this here
     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
 
     if(gtransformIdx == 0)
@@ -96,7 +98,7 @@ void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
     }
     else
     {
-        unsigned tIdx = 3*(gtransformIdx-1) ;  // transform
+        unsigned tIdx = 3*(tranOffset + gtransformIdx-1) ;  // transform
         if(tIdx + 2 >= tranBuffer.size())
         { 
             rtPrintf("##csg_intersect_part ABORT tIdx+2 %3u overflows tranBuffer.size \n", tIdx+2 );

@@ -67,7 +67,7 @@ class Elem(object):
         """
         Attach any *posXYZ* instances in the list to preceeding primitives
         """
-        for i in range(len(ls)):
+        for i in range(1,len(ls)):   # start from 1 to avoid list wraparound ?
             if base is not None and ls[i-1].is_primitive:
                 ls[i-1].posXYZ = base 
             pass
@@ -154,10 +154,11 @@ class Elem(object):
             posXYZ = self.find_("./posXYZ")
             lvn = self.logvolref.split("/")[-1]
             lv = self.g.logvol_(lvn)
-            lv.posXYZ = posXYZ
+            lv.posXYZ = posXYZ    # propagating the 
             if posXYZ is not None:
-                log.debug("%s positioning %s  " % (self.name, repr(lv))) 
+                log.info("children... %s passing pv posXYZ to lv %s  " % (self.name, repr(lv))) 
             return [lv]
+
         elif type(self) is Logvol:
             pvs = self.findall_("./physvol")
             return pvs

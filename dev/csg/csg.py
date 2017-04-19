@@ -111,11 +111,11 @@ class CSG(CSG_):
         transforms = []
 
         def serialize_r(node, idx): 
-            tran = node.transform  
-            if tran is None:
+            trs = node.transform  
+            if trs is None:
                 itra = 0 
             else:
-                transforms.append(tran)
+                transforms.append(trs)
                 itra = len(transforms)   # 1-based index pointing to the transform
             pass
             buf[idx] = node.asarray(itra)
@@ -124,6 +124,7 @@ class CSG(CSG_):
                 serialize_r( node.left,  2*idx+1)
                 serialize_r( node.right, 2*idx+2)
             pass
+
         serialize_r(self, 0)
 
         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
@@ -231,8 +232,37 @@ class CSG(CSG_):
         self.param3 = param3
 
         self.boundary = boundary
-        self.transform = make_trs(translate,rotate,scale)
+
+        self.translate = translate
+        self.rotate = rotate
+        self.scale = scale
+
         self.meta = kwa
+
+    def _get_translate(self):
+        return self._translate 
+    def _set_translate(self, s):
+        self._translate = s
+    translate = property(_get_translate, _set_translate)
+
+    def _get_rotate(self):
+        return self._rotate
+    def _set_rotate(self, s):
+        self._rotate = s
+    rotate = property(_get_rotate, _set_rotate)
+
+    def _get_scale(self):
+        return self._scale
+    def _set_scale(self, s):
+        self._scale = s
+    scale = property(_get_scale, _set_scale)
+
+    def _get_transform(self):
+        transform = make_trs(self._translate, self._rotate, self._scale ) 
+        return transform 
+    transform = property(_get_transform)
+    
+
 
     def _get_param(self):
         return self._param

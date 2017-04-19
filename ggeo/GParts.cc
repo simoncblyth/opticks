@@ -54,7 +54,7 @@ GParts* GParts::combine(std::vector<GParts*> subs)
             assert(pf == primflag && "GParts::combine requires all GParts instances to have the same primFlag " );
 
         unsigned av = sp->getAnalyticVersion();
-        LOG(info) << std::setw(3) << i << " " << "av " << av ; 
+        //LOG(info) << std::setw(3) << i << " " << "av " << av ; 
 
         if(analytic_version == 0)
             analytic_version = av ;
@@ -390,11 +390,15 @@ void GParts::add(GParts* other)
     unsigned int n0 = getNumParts(); // before adding
 
     m_bndspec->add(other->getBndSpec());
-    m_part_buffer->add(other->getPartBuffer());
-    m_tran_buffer->add(other->getTranBuffer());
 
-    unsigned num_part_add = other->getPartBuffer()->getNumItems() ;
-    unsigned num_tran_add = other->getTranBuffer()->getNumItems() ;
+    NPY<float>* other_part_buffer = other->getPartBuffer() ;
+    NPY<float>* other_tran_buffer = other->getTranBuffer() ;
+
+    m_part_buffer->add(other_part_buffer);
+    m_tran_buffer->add(other_tran_buffer);
+
+    unsigned num_part_add = other_part_buffer->getNumItems() ;
+    unsigned num_tran_add = other_tran_buffer->getNumItems() ;
 
     m_part_per_add.push_back(num_part_add); 
     m_tran_per_add.push_back(num_tran_add);
@@ -411,6 +415,8 @@ void GParts::add(GParts* other)
               << " n1 " << n1
               << " num_part_add " << num_part_add
               << " num_tran_add " << num_tran_add
+              << " other_part_buffer  " << other_part_buffer->getShapeString()
+              << " other_tran_buffer  " << other_tran_buffer->getShapeString()
               ;  
 }
 
@@ -528,6 +534,10 @@ void GParts::makePrimBuffer()
  
     unsigned int num_prim = m_parts_per_prim.size() ;
 
+    assert( m_part_per_add.size() == num_prim );
+    assert( m_tran_per_add.size() == num_prim );
+
+
 
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
     if(nmax - nmin != num_prim - 1)
@@ -541,27 +551,43 @@ void GParts::makePrimBuffer()
                      ; 
     }
 
+    
+    
+
 
     guint4* priminfo = new guint4[num_prim] ;
 
     typedef std::map<unsigned int, unsigned int> UU ; 
-    unsigned int part_offset = 0 ; 
-    unsigned int n = 0 ; 
-    for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
+    unsigned part_offset = 0 ; 
+    unsigned tran_offset = 0 ; 
+    unsigned n = 0 ; 
+
+    //for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
+
+    for(unsigned i=0 ; i < num_prim ; i++)
     {
-        unsigned int node_index = it->first ; 
-        unsigned int parts_for_prim = it->second ; 
+        //unsigned int node_index = it->first ; 
+        //unsigned int parts_for_prim = it->second ; 
+        
+        unsigned int tran_for_prim = m_tran_per_add[i] ; 
+        unsigned int parts_for_prim = m_parts_per_prim[i] ; 
+
 
         guint4& pri = *(priminfo+n) ;
 
         pri.x = part_offset ; 
         pri.y = parts_for_prim ;
-        pri.z = node_index ; 
+
+        //pri.z = node_index ; 
+        pri.z = tran_offset ; 
+
         pri.w = m_primflag ; 
 
         LOG(info) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
 
         part_offset += parts_for_prim ; 
+        tran_offset += tran_for_prim ; 
+
         n++ ; 
     }
 

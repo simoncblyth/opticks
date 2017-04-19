@@ -234,7 +234,7 @@ tboolean-torchconfig()
 #tboolean-material(){ echo MainH2OHale ; }
 tboolean-material(){ echo GlassSchottF2 ; }
 tboolean-container(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
-tboolean-object(){ echo Vacuum///GlassSchottF2 ; }
+tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
 tboolean-bib-box()
@@ -245,7 +245,7 @@ tboolean-bib-box()
                  analytic=1
 
                  node=box      parameters=0,0,0,1000               boundary=$(tboolean-container)
-                 node=box      parameters=0,0,0,100                boundary=$(tboolean-object)
+                 node=box      parameters=0,0,0,100                boundary=$(tboolean-testobject)
 
                     )
      echo "$(join _ ${test_config[@]})" 
@@ -261,9 +261,9 @@ tboolean-bib-box-small-offset-sphere()
 
                  node=sphere           parameters=0,0,0,1000          boundary=$(tboolean-container)
  
-                 node=${1:-difference} parameters=0,0,0,300           boundary=$(tboolean-object)
-                 node=box              parameters=0,0,0,200           boundary=$(tboolean-object)
-                 node=sphere           parameters=0,0,200,100         boundary=$(tboolean-object)
+                 node=${1:-difference} parameters=0,0,0,300           boundary=$(tboolean-testobject)
+                 node=box              parameters=0,0,0,200           boundary=$(tboolean-testobject)
+                 node=sphere           parameters=0,0,200,100         boundary=$(tboolean-testobject)
                )
      echo "$(join _ ${test_config[@]})" 
 }
@@ -279,9 +279,9 @@ tboolean-bib-box-sphere()
 
                  node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
  
-                 node=$operation   parameters=0,0,0,300           boundary=$(tboolean-object)
-                 node=box          parameters=0,0,0,$inscribe     boundary=$(tboolean-object)
-                 node=sphere       parameters=0,0,0,200           boundary=$(tboolean-object)
+                 node=$operation   parameters=0,0,0,300           boundary=$(tboolean-testobject)
+                 node=box          parameters=0,0,0,$inscribe     boundary=$(tboolean-testobject)
+                 node=sphere       parameters=0,0,0,200           boundary=$(tboolean-testobject)
                )
 
      echo "$(join _ ${test_config[@]})" 
@@ -307,7 +307,7 @@ kwa = {}
 kwa.update(im)
 kwa.update(tr)
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-object)", **kwa )
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", **kwa )
 
 CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
 EOP
@@ -331,7 +331,7 @@ kwa = {}
 kwa.update(im)
 kwa.update(tr)
 
-sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", **kwa )
+sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", **kwa )
 
 CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
 EOP
@@ -356,8 +356,8 @@ kwa = {}
 kwa.update(im)
 #kwa.update(tr)
 
-#zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
-zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-object)", **kwa )
+#zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
 
 ZSPHERE_QCAP = 0x1 << 1   # ZMAX
 ZSPHERE_PCAP = 0x1 << 0   # ZMIN
@@ -377,6 +377,49 @@ EOP
 
 
 
+tboolean-union-zsphere(){ TESTCONFIG=$(tboolean-csg-union-zsphere 2>/dev/null)    tboolean-- ; } 
+tboolean-csg-union-zsphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-union-zsphere-(){ cat << EOP 
+
+import numpy as np
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+
+im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0" )
+
+kwa = {}
+kwa.update(im)
+
+
+ZSPHERE_QCAP = 0x1 << 1   # ZMAX
+ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+
+lzs = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
+lzs.param2.view(np.uint32)[0] = 3   # no caps 
+
+rzs = CSG("zsphere", param=[0,0,0,500], param1=[300,400,0,0] ,param2=[0,0,0,0] )
+rzs.param2.view(np.uint32)[0] = 3   # no caps 
+
+uzs = CSG("union", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
+
+CSG.Serialize([container, uzs], "$TMP/$FUNCNAME" )
+
+"""
+Observe wierdness when caps are off:
+
+* wrong sub-object appears in front of other...
+* hmm maybe fundamental closed-sub-object-limitation again 
+
+"""
+
+EOP
+}
+
+
+
+
+
 
 tboolean-box-small-offset-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
 tboolean-box-small-offset-sphere-py-(){ cat << EOP
@@ -384,10 +427,10 @@ from opticks.dev.csg.csg import CSG
 
 container = CSG("sphere",           param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box",    param=[0,0,0,200], boundary="$(tboolean-object)", rotate="0,0,1,45" )
-sph = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-object)", translate="0,0,200", scale="1,1,0.5" )
+box = CSG("box",    param=[0,0,0,200], boundary="$(tboolean-testobject)", rotate="0,0,1,45" )
+sph = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", translate="0,0,200", scale="1,1,0.5" )
 
-object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)", poly="IM", resolution="50" )
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -415,7 +458,7 @@ box = CSG("box", param=[0,0,0,inscribe])
 rtran = dict(translate="100,0,0")
 sph = CSG("sphere", param=[0,0,0,radius], **rtran)
 
-object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-object)", poly="IM", resolution="50" )
+object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
@@ -445,7 +488,7 @@ slab.param.view(np.uint32)[3] = flags
 
 sphere = CSG("sphere", param=[0,0,0,500] )
 
-object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-object)", poly="IM", resolution="50" )
+object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
@@ -487,7 +530,7 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 plane  = CSG("plane",  param=[0,0,1,100] )
 sphere = CSG("sphere", param=[0,0,0,500] )
 
-object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
@@ -512,7 +555,7 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 
 plane  = CSG("plane",  param=[0,0,1,100] )
 box    = CSG("box", param=[0,0,0,200]  )
-object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
@@ -535,7 +578,7 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 
 bigbox = CSG("box", param=[0,0,0,999] )
 plane  = CSG("plane",  param=[0,0,1,100] )
-object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-object)", poly="IM", resolution="50", verbosity="1" )
+object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
@@ -573,7 +616,7 @@ kwa["verbosity"] = "1"
 kwa.update(im)
 kwa.update(transform)
 
-cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-object)", **kwa )
+cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-testobject)", **kwa )
 
 PCAP = 0x1 << 0  # smaller z endcap
 QCAP = 0x1 << 1  
@@ -623,11 +666,11 @@ inscribe = 1.3*radius/math.sqrt(3)
 
 lbox = CSG("box",    param=[100,100,-100,inscribe])
 lsph = CSG("sphere", param=[100,100,-100,radius])
-left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
+left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-testobject)" )
 
 right = CSG("sphere", param=[0,0,100,radius])
 
-object = CSG("union", left=left, right=right, boundary="$(tboolean-object)", poly="IM", resolution="60" )
+object = CSG("union", left=left, right=right, boundary="$(tboolean-testobject)", poly="IM", resolution="60" )
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
 
@@ -650,13 +693,12 @@ tboolean-csg-pmt-py-check(){ tboolean-csg-pmt-py 2> /dev/null ; }
 tboolean-csg-pmt-py(){ tboolean-testconfig-py- $FUNCNAME ; }
 tboolean-csg-pmt-py-()
 {
-    local material=$(tboolean-material)
     local base=$TMP/$FUNCNAME 
     cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.ddbase import Dddb
 from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.ncsgtranslator import NCSGTranslator
+from opticks.ana.pmt.ncsgconverter import NCSGConverter
 
 from opticks.dev.csg.csg import CSG  
 
@@ -681,16 +723,18 @@ dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 poly = im
 
 
-PYREX = 0
-VACUUM = 1
-CATHODE = 2
-BOTTOM = 3
-DYNODE = 4
+PYREX = 0    # raytrace + poly OK
+VACUUM = 1   # raytrace + poly OK
+CATHODE = 2  # raytrace OK when enable endcaps (othersize unions of zspheres wierdness), poly fails 
+BOTTOM = 3   # raytrace OK, poly fails (does not find inside d)  : tris outside box?
+DYNODE = 4   # looks OK
 
-for i in [CATHODE]:
+ii = range(nn)
+
+for i in ii:
     root = tr.get(i)
-    obj = NCSGTranslator.TranslateLV( root.lv )
-    obj.boundary = "$(tboolean-object)"
+    obj = NCSGConverter.ConvertLV( root.lv )
+    obj.boundary = "$(tboolean-testobject)"
     obj.meta.update(poly)  
     objs.append(obj)
 pass
@@ -703,10 +747,8 @@ CSG.Serialize(objs, "$base" )
 
 # 1:Vacuum
 
-
 #. FIXED: solid-0:PYREX poly-cylinder not matching raytrace, 
    NCylinder SDF was ignoring center.z and bbox was wrong 
-           
 
 #. ISSUE: solid-2:CATHODE has two very close sphere shells, this is difficult
           for meshers to handle without very high resolution
@@ -714,6 +756,9 @@ CSG.Serialize(objs, "$base" )
 #. ISSUE: solid-2:CATHODE restricting to just the inner observe the correct
           union of zsphere shape : but it disappears from the other side ?  
 
+#. ISSUE: doing all together,
+
+   * are missing a translate transform for BOTTOM ?
 
 
 
@@ -743,20 +788,20 @@ inscribe = 1.3*radius/math.sqrt(3)
 
 lbox = CSG("box",    param=[100,100,-100,inscribe])
 lsph = CSG("sphere", param=[100,100,-100,radius])
-left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-object)" )
+left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-testobject)" )
 
 rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 
 
 tran = dict(translate="0,0,200", rotate="1,1,1,45", scale="1,1,1.5" )
-right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-object)", **tran)
+right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-testobject)", **tran)
 
 dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 
 #seeds = "100,100,-100,0,0,300"
 im = dict(poly="IM", resolution="64", verbosity="0", ctrl="0" )
-object = CSG("union", left=left, right=right,  boundary="$(tboolean-object)", **im )
+object = CSG("union", left=left, right=right,  boundary="$(tboolean-testobject)", **im )
 
 mc = dict(poly="MC", nx="20")
 

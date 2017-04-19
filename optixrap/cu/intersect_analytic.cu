@@ -96,6 +96,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     unsigned partOffset  = prim.x ;  
     unsigned numParts    = prim.y ; 
+    //unsigned tranOffset  = prim.z ; 
     unsigned primFlag    = prim.w ;  
 
     if(primFlag == CSG_FLAGNODETREE)  

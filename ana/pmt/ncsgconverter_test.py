@@ -6,7 +6,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.ddbase import Dddb
 from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.ncsgtranslator import NCSGTranslator
+from opticks.ana.pmt.ncsgconverter import NCSGConverter
 
 from opticks.dev.csg.csg import CSG  
 
@@ -42,7 +42,7 @@ if __name__ == '__main__':
         root = tr.get(i)
         log.info("\ntranslating ..........................  %r " % root )
 
-        obj = NCSGTranslator.TranslateLV( root.lv )
+        obj = NCSGConverter.ConvertLV( root.lv )
         obj.boundary = "dummy"
         obj.meta.update(poly)  
         objs.append(obj)
@@ -50,7 +50,7 @@ if __name__ == '__main__':
     pass
 
 
-    CSG.Serialize(objs, "$TMP/ncsgtranslator_test" )
+    CSG.Serialize(objs, "$TMP/ncsgconverter_test" )
 
 
 
