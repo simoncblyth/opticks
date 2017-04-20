@@ -389,7 +389,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
 
 
-
 void NCSG::check()
 {
     check_r( m_root );

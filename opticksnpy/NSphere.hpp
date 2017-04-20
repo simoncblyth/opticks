@@ -16,9 +16,9 @@ struct NPY_API nsphere : nnode {
 
     float costheta(float z);
 
-    float operator()(float x, float y, float z) ;
+    float operator()(float x, float y, float z) const ;
 
-    nbbox bbox();
+    nbbox bbox() const ;
 
     npart part();
     static ndisc intersect(nsphere& a, nsphere& b);

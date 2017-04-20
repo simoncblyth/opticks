@@ -18,7 +18,7 @@ p126: Closest point on plane to a point in space
 
 struct NPY_API nslab : nnode 
 {
-    float operator()(float x, float y, float z) ;
+    float operator()(float x, float y, float z) const ;
 
     bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
 

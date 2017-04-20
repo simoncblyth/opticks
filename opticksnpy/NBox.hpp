@@ -6,15 +6,15 @@
 
 #include "NPY_API_EXPORT.hh"
 
-struct NPY_API nbox : nnode {
+struct NPY_API nbox : nnode 
+{
 
-    // NO CTOR
-    float operator()(float x, float y, float z) ;
+    float operator()(float x, float y, float z) const ;
 
     float sdf1(float x, float y, float z) ;
     float sdf2(float x, float y, float z) ;
 
-    nbbox bbox();
+    nbbox bbox() const ;
 
     glm::vec3 gseedcenter();
 

@@ -48,7 +48,7 @@ Consider CSG difference of near and far halfspaces
 
 */
 
-float nslab::operator()(float x, float y, float z) 
+float nslab::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
     if(gtransform) q = gtransform->v * q ;

@@ -16,7 +16,7 @@
 #include "PLOG.hh"
 
 
-float nzsphere::operator()(float x, float y, float z) 
+float nzsphere::operator()(float x, float y, float z) const 
 {
     glm::vec4 p(x,y,z,1.f); 
     if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
@@ -28,7 +28,7 @@ float nzsphere::operator()(float x, float y, float z)
     return fmaxf( d_sphere, d_slab );  // CSG intersect of sphere with slab
 } 
 
-nbbox nzsphere::bbox()
+nbbox nzsphere::bbox() const 
 {
     nbbox bb = make_bbox();
     assert( zmax() > zmin() ); 

@@ -22,7 +22,7 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 
 **/
 
-float nbox::operator()(float x, float y, float z) 
+float nbox::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
     if(gtransform) q = gtransform->v * q ;
@@ -35,7 +35,7 @@ float nbox::operator()(float x, float y, float z)
     return glm::compMax(d) ;
 } 
 
-float nbox::sdf1(float x, float y, float z)
+float nbox::sdf1(float x, float y, float z)  
 {
     return (*this)(x,y,z);
 }
@@ -64,7 +64,7 @@ float nbox::sdf2(float x, float y, float z)
 
 
 
-nbbox nbox::bbox()
+nbbox nbox::bbox() const
 {
     nbbox bb ;
 

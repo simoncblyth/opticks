@@ -13,18 +13,18 @@ struct nbbox ;
 
 struct NPY_API nzsphere : nnode {
 
-    float operator()(float x, float y, float z) ;
+    float operator()(float x, float y, float z) const ;
 
-    nbbox bbox();
+    nbbox bbox() const ;
 
     glm::vec3 gseedcenter() ;
     glm::vec3 gseeddir();
 
     void pdump(const char* msg="nzsphere::pdump", int verbosity=1);
 
-    float zmax(){ return center.z + zdelta.y ; }
-    float zmin(){ return center.z + zdelta.x ; }
-    unsigned flags(){ return param2.u.x ; }
+    float zmax() const { return center.z + zdelta.y ; }
+    float zmin() const { return center.z + zdelta.x ; }
+    unsigned flags() const { return param2.u.x ; }
 
  
     glm::vec3 center ; 

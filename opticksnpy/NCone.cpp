@@ -18,7 +18,7 @@
     
 
 
-nbbox ncone::bbox()
+nbbox ncone::bbox() const 
 {
     nbbox bb = make_bbox();
 
@@ -29,7 +29,7 @@ nbbox ncone::bbox()
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
-float ncone::operator()(float x, float y, float z) 
+float ncone::operator()(float x, float y, float z) const 
 {
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ; 

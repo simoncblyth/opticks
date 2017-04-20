@@ -8,7 +8,7 @@ void nplane::pdump(const char* msg, int /*verbosity*/)
     param.dump(msg);
 }
 
-float nplane::operator()(float x, float y, float z) 
+float nplane::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
     if(gtransform) q = gtransform->v * q ;

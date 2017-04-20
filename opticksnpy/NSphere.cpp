@@ -26,7 +26,7 @@ float nsphere::costheta(float z)
 
 // signed distance function
 
-float nsphere::operator()(float x, float y, float z) 
+float nsphere::operator()(float x, float y, float z) const 
 {
     glm::vec4 p(x,y,z,1.f); 
     if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
@@ -55,7 +55,7 @@ void nsphere::pdump(const char* msg, int verbosity)
 
 
 
-nbbox nsphere::bbox()
+nbbox nsphere::bbox() const 
 {
     nbbox bb = make_bbox();
 

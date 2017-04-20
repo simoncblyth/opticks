@@ -1,13 +1,68 @@
 NCSG Translated PMT
 ======================
 
-Missing physvol placement transforms
----------------------------------------
+ISSUE : ImplicitMesher fails to polygnonize close shell, eg from CATHODE (csg difference of zspheres)
+-------------------------------------------------------------------------------------------------------
+
+Attempting to wind up the resolution, still fails to find surface
+Investigate in tboolean-difference-zsphere
+
+* found and fixed bug in setting of manual seeds, that causes surface search to head in wrong direction,
+  this fixed tboolean-difference-zsphere polygonization but not tboolean-pmt for CATHODE solid
+
+* suspect problem may be due to bbox touching surface at the search 
+
+
+
+Huh manual seeding headed in wrong direction::
+
+    2017-04-20 18:16:35.109 INFO  [1417293] [GPropertyLib::close@384] GPropertyLib::close type GSurfaceLib buf 48,2,39,4
+    2017-04-20 18:16:35.109 FATAL [1417293] [*GParts::make@163] GParts::make NCSG  treedir /tmp/blyth/opticks/tboolean-difference-zsphere--/0 node_sh 1,4,4 tran_sh 0,3,4,4 spec Rock//perfectAbsorbSurface/Vacuum type box
+    2017-04-20 18:16:35.109 INFO  [1417293] [*GMaker::makeFromCSG@91] GMaker::makeFromCSG index 1
+    NPolygonizer::NPolygonizer(meta)
+          verbosity :               3
+              seeds :     0,0,0,1,0,0
+         resolution :              50
+               poly :              IM
+               ctrl :               0
+    2017-04-20 18:16:35.109 INFO  [1417293] [*NPolygonizer::polygonize@51] NPolygonizer::polygonize treedir /tmp/blyth/opticks/tboolean-difference-zsphere--/1 poly IM verbosity 3 index 1
+    2017-04-20 18:16:35.109 FATAL [1417293] [NImplicitMesher::init@64] NImplicitMesher::init ImplicitMesherF ctor  verbosity 3
+    ImplicitMesherF::ImplicitMesherF m_gfunc: GenericFunctionBase::desc verbosity 3 epsilon 0.01 numSeeds 0 numSeedDirs 0
+    MakePolygonizer verbosity 3 center.x 0 center.y 0 center.z 0 cubesize 14.8268 convergence 10 bounds  low (  -35 -35 -7 )  high (  35 35 7 ) 
+    2017-04-20 18:16:35.110 INFO  [1417293] [NImplicitMesher::addManualSeeds@84] NImplicitMesher::addManualSeeds
+    2017-04-20 18:16:35.110 INFO  [1417293] [NImplicitMesher::addManualSeeds@103] NImplicitMesher::addManualSeeds nseed 6 sxyz(0 0 0)  dxyz(1 0 0) 
+    2017-04-20 18:16:35.110 INFO  [1417293] [NImplicitMesher::addCenterSeeds@120] NImplicitMesher::addCenterSeeds
+    2017-04-20 18:16:35.110 INFO  [1417293] [nnode::collect_prim_centers@296] nnode::collect_prim_centers verbosity 3 nprim 2
+    2017-04-20 18:16:35.110 INFO  [1417293] [nnode::collect_prim_centers@306] nnode::collect_prim_centers i 0 type 7 name zsphere
+    2017-04-20 18:16:35.110 INFO  [1417293] [nnode::collect_prim_centers@306] nnode::collect_prim_centers i 1 type 7 name zsphere
+    2017-04-20 18:16:35.110 INFO  [1417293] [NImplicitMesher::addCenterSeeds@130] NImplicitMesher::addCenterSeeds ncenters 2 ndirs 2
+      0 position {    0.0000    0.0000    0.0000} direction {    0.0000    0.0000    1.0000}
+      1 position {    0.0000    0.0000    0.0000} direction {    0.0000    0.0000    1.0000}
+    2017-04-20 18:16:35.110 INFO  [1417293] [*NImplicitMesher::operator@150] NImplicitMesher::operator() polygonizing START verbosity 3 bb  mi  (-505.00 -505.00 -102.01)  mx  ( 505.00  505.00  102.01)  
+    ImplicitPolygonizer::Polygonize START
+    ImplicitPolygonizer::Polygonize reset_polygonizer verbosity: 3
+    GenericFunctionBase::GetSeedPoints  nBufIndex 0 nBufSize 6144 nseed 3 nsdir 3
+    ::next_seed_point verbosity 3 num_seed_points 3
+    ::next_seed_point verbosity 3 point.x 0.0000 point.y 0.0000 point.z 0.0000 xdir 1.0000 ydir 0.0000 zdir 1.0000 i 0 j 0 k 0
+    GenericFunctionF::Value     1 ( 0.0000  0.0000  0.0000 ) -> 101.0000
+    GenericFunctionF::Value     2 ( 0.0000  0.0000  0.0000 ) -> 101.0000
+    GenericFunctionF::Value     3 (13.4789  0.0000 13.4789 ) -> 87.5211
+    GenericFunctionF::Value     4 (26.9578  0.0000 26.9578 ) -> 74.0422
+    GenericFunctionF::Value     5 (40.4367  0.0000 40.4367 ) -> 60.5633
+    GenericFunctionF::Value     6 (53.9156  0.0000 53.9156 ) -> 47.0844
+    GenericFunctionF::Value     7 (67.3945  0.0000 67.3945 ) -> 33.6055
+    GenericFunctionF::Value     8 (80.8735  0.0000 80.8735 ) -> 20.1265
+    GenericFunctionF::Value     9 (94.3524  0.0000 94.3524 ) ->  6.6476
+    GenericFunctionF::Value    10 (107.8313  0.0000 107.8313 ) ->  7.8313
+
+
+
+
+FIXED : Missing physvol placement transforms
+------------------------------------------------
 
 Doing all 5 solids of pmt together with tboolean-pmt
 shows missing transforms dfor BOTTOM and presumably DYNODE too.
-
-
 
 
 
@@ -113,8 +168,8 @@ this is probably the lack of transform offsets::
 
 
 
-Cathode Inner or Outer
----------------------------
+FIXED : Cathode Inner or Outer
+-----------------------------------
 
 * can see from front but disappearing from back 
 * observe wierdness in t_min clipping, 
@@ -134,6 +189,7 @@ Cathode Inner or Outer
   * cannot use infinite slab intersection without enabling the caps
 
   * so cannot use slab intersection and have open caps 
+
   * hmm, means must implement cap handling similar to cylinder in zsphere
 
 
@@ -180,6 +236,6 @@ return the inner or outer in ncsgtranslator.py::
 
          0.0000      0.0000     43.0000     98.9500 
         12.9934     55.7343     124 <-bnd        3 <-INDEX    bn Vacuum///GlassSchottF2 
-         0.0000      0.0000      0.0000           7 (zsphere) TYPECODE 
+        0.0000      0.0000      0.0000           7 (zsphere) TYPECODE 
          0.0000      0.0000      0.0000           1 (nodeIndex) 
 

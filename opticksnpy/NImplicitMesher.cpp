@@ -74,19 +74,34 @@ void NImplicitMesher::init()
 
     m_mesher->setParam(m_resolution, min, max);
 
-    addManualSeeds();
-    addCenterSeeds();
-
+    addSeeds();
 }
 
-void NImplicitMesher::addManualSeeds()
+int NImplicitMesher::addSeeds()
 {
-    LOG(info) << "NImplicitMesher::addManualSeeds" ; 
+    int numManual = addManualSeeds();
+    int numCenter = 0 ; 
+    if(numManual == 0)
+    {
+        numCenter = addCenterSeeds();
+    }
+
+    LOG(info) << "NImplicitMesher::addSeeds"
+              << " numManual " << numManual
+              << " numCenter " << numCenter
+              ;
+
+    return numCenter + numManual ; 
+}
+
+
+int NImplicitMesher::addManualSeeds()
+{
 
     std::vector<float> seed ; 
     if(!m_seedstr.empty()) BStr::fsplit(seed, m_seedstr.c_str(), ',');
-
     unsigned nseed = seed.size();
+    int numManual = 0 ; 
     if(nseed > 0)
     {
         if(nseed % 6 == 0)
@@ -105,7 +120,8 @@ void NImplicitMesher::addManualSeeds()
                          << " dxyz(" << dx << " " << dy << " " << dz << ") " 
                          ; 
 
-               m_mesher->addSeed(sx, sy, sz, dx, dy, dx); 
+               m_mesher->addSeed(sx, sy, sz, dx, dy, dz); 
+               numManual++ ;    
             }
         }
         else
@@ -113,12 +129,16 @@ void NImplicitMesher::addManualSeeds()
             LOG(warning) << "NImplicitMesher::addManualSeeds ignoring seeds as not a multiple of 6 for x,y,z,dx,dy,dz coordinates : " << nseed ; 
         }
     } 
+
+    LOG(info) << "NImplicitMesher::addManualSeeds" 
+              << " numManual " << numManual 
+              ; 
+
+    return numManual ; 
 }
 
-void NImplicitMesher::addCenterSeeds()
+int NImplicitMesher::addCenterSeeds()
 {
-    LOG(info) << "NImplicitMesher::addCenterSeeds" ; 
-
     std::vector<glm::vec3> centers ; 
     std::vector<glm::vec3> dirs; 
 
@@ -126,6 +146,8 @@ void NImplicitMesher::addCenterSeeds()
    
     unsigned ncenters = centers.size();
     unsigned ndirs = dirs.size();
+
+    unsigned numCenter = 0 ; 
 
     LOG(info) << "NImplicitMesher::addCenterSeeds"
               << " ncenters " << ncenters
@@ -141,7 +163,13 @@ void NImplicitMesher::addCenterSeeds()
  
         std::cout << std::setw(3) << i << " position " << c << " direction " << d << std::endl ; 
         m_mesher->addSeed(c.x, c.y, c.z, d.x, d.y, d.z);
+        numCenter++ ; 
     }
+    LOG(info) << "NImplicitMesher::addCenterSeeds" 
+              << " numCenter " << numCenter 
+              ;
+
+    return numCenter ; 
 }
 
 

@@ -18,11 +18,13 @@ struct nmat4triple ;
 
 struct NPY_API nnode 
 {
-    virtual float operator()(float px, float py, float pz) ;
+    virtual float operator()(float px, float py, float pz) const  ;
+
+    static void Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt );
 
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
-    virtual nbbox bbox();
+    virtual nbbox bbox() const ;
     virtual npart part();
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
@@ -71,13 +73,13 @@ struct NPY_API nnode
 // of having separate types ? 
 
 struct NPY_API nunion : nnode {
-    float operator()(float x, float y, float z) ;
+    float operator()(float x, float y, float z) const ;
 };
 struct NPY_API nintersection : nnode {
-    float operator()(float x, float y, float z);
+    float operator()(float x, float y, float z) const ;
 };
 struct NPY_API ndifference : nnode {
-    float operator()(float x, float y, float z);
+    float operator()(float x, float y, float z) const ;
 };
 
 

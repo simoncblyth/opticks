@@ -13,6 +13,15 @@ TODO
   a serialization turns out to be really convenient...
   Howabout attaching emission of torch photons to pieces
   of geometry ?
+
+* Also there is lots of duplication in torchconfig
+  between all the tests... pull out the preparation of 
+  torchconfig metadata into a python script ? that 
+  all the tests can use ? 
+
+  Hmm but the sources need to correspond to geometry ...
+  this needs an overhaul.
+  
   
 
 NOTES
@@ -169,6 +178,7 @@ tboolean-enum(){
 
 tboolean-torchconfig()
 {
+
     local pol=${1:-s}
     local wavelength=500
     local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
@@ -324,9 +334,9 @@ EOP
 }
 
 
-tboolean-zsphere(){ TESTCONFIG=$(tboolean-csg-zsphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-zsphere(){ $FUNCNAME- | python $* ; } 
-tboolean-csg-zsphere-(){ cat << EOP 
+tboolean-zsphere(){ TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-zsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere--(){ cat << EOP 
 
 import numpy as np
 from opticks.dev.csg.csg import CSG  
@@ -363,9 +373,9 @@ EOP
 
 
 
-tboolean-union-zsphere(){ TESTCONFIG=$(tboolean-csg-union-zsphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-union-zsphere(){ $FUNCNAME- | python $* ; } 
-tboolean-csg-union-zsphere-(){ cat << EOP 
+tboolean-union-zsphere(){ TESTCONFIG=$(tboolean-union-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-union-zsphere--(){ cat << EOP 
 
 import numpy as np
 from opticks.dev.csg.csg import CSG  
@@ -402,6 +412,60 @@ Observe wierdness when caps are off:
 
 EOP
 }
+
+
+
+
+
+
+tboolean-difference-zsphere(){ TESTCONFIG=$(tboolean-difference-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-difference-zsphere--(){ cat << EOP 
+
+import numpy as np
+from opticks.dev.csg.csg import CSG  
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+
+im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0", seeds="0,0,0,1,0,0")
+
+kwa = {}
+kwa.update(im)
+
+ZSPHERE_QCAP = 0x1 << 1   # ZMAX
+ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+both = ZSPHERE_QCAP | ZSPHERE_PCAP
+
+lzs = CSG("zsphere", param=[0,0,0,500], param1=[-100,100,0,0],param2=[0,0,0,0] )
+lzs.param2.view(np.uint32)[0] = both   
+
+rzs = CSG("zsphere", param=[0,0,0,400], param1=[-101,101,0,0] ,param2=[0,0,0,0] )
+rzs.param2.view(np.uint32)[0] = both
+
+dzs = CSG("difference", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
+
+CSG.Serialize([container, dzs], "$TMP/$FUNCNAME" )
+
+"""
+
+#. FIXED: Differencing two concentric zspheres with same zmin/zmax does not 
+   produce the expected ring like shape, unless you slightly increase the 
+   zmin/zmax of the one you are subtracting over the other
+
+#. FIXED: IM poly: fails to find surface even radii 400 and 500, hmm NZSphere looking in +z, 
+   but manual seeding doesnt find surface either, it does after fix  
+   bug in the setting of manual seed directions in NImplicitMesher
+
+
+"""
+
+EOP
+}
+
+
+
+
+
 
 
 
@@ -692,6 +756,7 @@ tboolean-pmt-()
 }
 tboolean-pmt-check(){ tboolean-pmt- 2> /dev/null ; }
 tboolean-pmt-edit(){ vi $(tboolean-dir)/tboolean_pmt.py  ; }
+tboolean-pmt-scan(){ SCAN="10,10,10,0" NCSGLoadTest $TMP/tboolean-pmt-/1 ; }
 
 
 

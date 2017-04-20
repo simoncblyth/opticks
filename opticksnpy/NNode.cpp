@@ -25,8 +25,7 @@
 #include "PLOG.hh"
 
 
-//double nnode::operator()(double,double,double) 
-float nnode::operator()(float,float,float) 
+float nnode::operator()(float,float,float) const 
 {
     return 0.f ; 
 } 
@@ -174,7 +173,7 @@ npart nnode::part()
 }
 
 
-nbbox nnode::bbox()
+nbbox nnode::bbox() const 
 {
    // needs to be overridden for primitives
     nbbox bb = make_bbox() ; 
@@ -188,6 +187,31 @@ nbbox nnode::bbox()
 
 
 
+void nnode::Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt )
+{
+    LOG(info) << "nnode::Scan" ;
+    std::cout 
+        << " origin " << origin 
+        << " direction " << direction
+        << " range " << tt
+        << std::endl ; 
+
+    for(float t=tt.x ; t <= tt.y ; t+= tt.z)
+    {
+        glm::vec3 p = origin + t * direction ;  
+        std::cout
+                 << " t " <<  std::fixed << std::setprecision(4) << std::setw(10) << t  
+                 << " x " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.x 
+                 << " y " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.y 
+                 << " z " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.z 
+                 << " : " <<  std::fixed << std::setprecision(4) << std::setw(10) <<  node(p.x,p.y,p.z) 
+                 << std::endl ; 
+    }
+}
+
+
+
+
 /**
 To translate or rotate a surface modeled as an SDF, you can apply the inverse
 transformation to the point before evaluating the SDF.
@@ -195,21 +219,21 @@ transformation to the point before evaluating the SDF.
 **/
 
 
-float nunion::operator()(float x, float y, float z) 
+float nunion::operator()(float x, float y, float z) const 
 {
     assert( left && right );
     float l = (*left)(x, y, z) ;
     float r = (*right)(x, y, z) ;
     return fminf(l, r);
 }
-float nintersection::operator()(float x, float y, float z) 
+float nintersection::operator()(float x, float y, float z) const 
 {
     assert( left && right );
     float l = (*left)(x, y, z) ;
     float r = (*right)(x, y, z) ;
     return fmaxf( l, r);
 }
-float ndifference::operator()(float x, float y, float z) 
+float ndifference::operator()(float x, float y, float z) const 
 {
     assert( left && right );
     float l = (*left)(x, y, z) ;

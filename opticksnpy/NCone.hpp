@@ -10,10 +10,11 @@ struct nbbox ;
 #include "NPY_API_EXPORT.hh"
 
 
-struct NPY_API ncone : nnode {
+struct NPY_API ncone : nnode 
+{
 
-    float operator()(float x, float y, float z) ;
-    nbbox bbox();
+    float operator()(float x, float y, float z) const ;
+    nbbox bbox() const;
 
     npart part();
 

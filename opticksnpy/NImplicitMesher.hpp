@@ -32,8 +32,9 @@ class NPY_API NImplicitMesher
     
     private:
         void init();
-        void addManualSeeds();
-        void addCenterSeeds();
+        int addSeeds();
+        int addManualSeeds();
+        int addCenterSeeds();
         NTrianglesNPY* collectTriangles(const std::vector<glm::vec3>& verts, const std::vector<glm::vec3>& norms, const std::vector<glm::ivec3>& tris );
 
     private:

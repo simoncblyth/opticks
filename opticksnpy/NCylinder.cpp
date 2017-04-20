@@ -72,7 +72,7 @@ Slab is a difference of half-spaces
 
 
 
-nbbox ncylinder::bbox()
+nbbox ncylinder::bbox() const 
 {
     nbbox bb = make_bbox();
 
@@ -84,7 +84,7 @@ nbbox ncylinder::bbox()
 }
 
 
-float ncylinder::operator()(float x, float y, float z) 
+float ncylinder::operator()(float x, float y, float z) const 
 {
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ; 
