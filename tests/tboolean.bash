@@ -166,21 +166,6 @@ tboolean-enum(){
    clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp $*
 }
 
-tboolean-testconfig-py-()
-{
-    # prepare the testconfig using python 
-    local fn=$1
-    shift 
-    local csgpath=$($fn- $* | python)
-    local test_config=( 
-                       mode=PyCsgInBox
-                       name=$fn
-                       analytic=1
-                       csgpath=$csgpath
-                     ) 
-    echo "$(join _ ${test_config[@]})" 
-}
-
 
 tboolean-torchconfig()
 {
@@ -293,8 +278,9 @@ tboolean-bib-box-sphere()
 
 
 
-tboolean-box-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
-tboolean-box-py-(){ cat << EOP 
+tboolean-box(){ TESTCONFIG=$(tboolean-csg-box 2>/dev/null)    tboolean-- ; } 
+tboolean-csg-box(){  $FUNCNAME- | python $* ; }
+tboolean-csg-box-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -316,7 +302,7 @@ EOP
 
 
 tboolean-sphere(){ TESTCONFIG=$(tboolean-csg-sphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-sphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere(){ $FUNCNAME- | python $* ; } 
 tboolean-csg-sphere-(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
@@ -339,7 +325,7 @@ EOP
 
 
 tboolean-zsphere(){ TESTCONFIG=$(tboolean-csg-zsphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-zsphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-zsphere(){ $FUNCNAME- | python $* ; } 
 tboolean-csg-zsphere-(){ cat << EOP 
 
 import numpy as np
@@ -378,7 +364,7 @@ EOP
 
 
 tboolean-union-zsphere(){ TESTCONFIG=$(tboolean-csg-union-zsphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-union-zsphere(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-union-zsphere(){ $FUNCNAME- | python $* ; } 
 tboolean-csg-union-zsphere-(){ cat << EOP 
 
 import numpy as np
@@ -394,12 +380,13 @@ kwa.update(im)
 
 ZSPHERE_QCAP = 0x1 << 1   # ZMAX
 ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+flags = ZSPHERE_QCAP | ZSPHERE_PCAP
 
 lzs = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
-lzs.param2.view(np.uint32)[0] = 3   # no caps 
+lzs.param2.view(np.uint32)[0] = flags   
 
 rzs = CSG("zsphere", param=[0,0,0,500], param1=[300,400,0,0] ,param2=[0,0,0,0] )
-rzs.param2.view(np.uint32)[0] = 3   # no caps 
+rzs.param2.view(np.uint32)[0] = flags
 
 uzs = CSG("union", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
 
@@ -421,7 +408,7 @@ EOP
 
 
 
-tboolean-box-small-offset-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-box-small-offset-sphere-py(){ $FUNCNAME- | python $* ; } 
 tboolean-box-small-offset-sphere-py-(){ cat << EOP
 from opticks.dev.csg.csg import CSG  
 
@@ -442,7 +429,7 @@ EOP
 tboolean-bsu(){ TESTCONFIG=$(tboolean-csg-box-sphere-py union)        tboolean-- ; }
 tboolean-bsd(){ TESTCONFIG=$(tboolean-csg-box-sphere-py difference)   tboolean-- ; }
 tboolean-bsi(){ TESTCONFIG=$(tboolean-csg-box-sphere-py intersection) tboolean-- ; }
-tboolean-csg-box-sphere-py(){ tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-box-sphere-py(){ $FUNCNAME- $* | python  ; } 
 tboolean-csg-box-sphere-py-(){ cat << EOP 
 import math
 from opticks.dev.csg.csg import CSG  
@@ -468,7 +455,7 @@ EOP
 
 
 tboolean-sphere-slab(){ TESTCONFIG=$(tboolean-csg-sphere-slab 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-sphere-slab(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere-slab(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-sphere-slab-(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
@@ -519,7 +506,7 @@ EOP
 
 
 tboolean-sphere-plane(){ TESTCONFIG=$(tboolean-csg-sphere-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-sphere-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-sphere-plane(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-sphere-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
@@ -535,6 +522,7 @@ object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-test
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
 """
+Exibits wierdness, unbounded sub-objects such as planes are not valid CSG sub-objects within OpticksCSG 
 
 0. Polygonization looks correct
 1. only see the sphere surface from beneath the plane (ie beneath z=100)
@@ -545,7 +533,7 @@ EOP
 }
 
 tboolean-box-plane(){ TESTCONFIG=$(tboolean-csg-box-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-box-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-box-plane(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-box-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
@@ -568,7 +556,7 @@ EOP
 
 
 tboolean-plane(){ TESTCONFIG=$(tboolean-csg-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-plane(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-plane(){ $FUNCNAME- | python $* ; } 
 tboolean-csg-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
@@ -584,6 +572,13 @@ CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
 """
 
+
+#. An odd one, it appears OK in polygonization and raytrace : but it is breaking the rules,
+   are using an unbounded sub-object (the plane) in intersection with the bigbox.
+
+#. Actually the wierdness is there, just you there is no viewpoint from which you can see it. 
+   Reducing the size of the bigbox to 500 allows it to manifest.
+
 #. intersecting the plane with the container, leads to coincident surfaces and a flickery mess when 
    view from beneath the plane, avoided issue by intersecting instead with a bigbox slightly 
    smaller than the container
@@ -596,7 +591,7 @@ EOP
 
 
 tboolean-cylinder(){ TESTCONFIG=$(tboolean-csg-cylinder 2>/dev/null)    tboolean-- ; }
-tboolean-csg-cylinder(){  tboolean-testconfig-py- $FUNCNAME $* ; } 
+tboolean-csg-cylinder(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-cylinder-(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
@@ -642,7 +637,6 @@ Issue:
 Note that endcaps and insides of the cylinder look dark from inside: 
 this is correct as normals are rigidly attached to geometry pointing outwards.
 
-
 """
 EOP
 }
@@ -652,7 +646,7 @@ EOP
 
 
 tboolean-unbalanced(){   TESTCONFIG=$(tboolean-csg-unbalanced-py)          tboolean-- ; }
-tboolean-csg-unbalanced-py(){ tboolean-testconfig-py- $FUNCNAME ; }
+tboolean-csg-unbalanced-py(){ $FUNCNAME- | python $*  ; }
 tboolean-csg-unbalanced-py-()
 {
     local material=$(tboolean-material)
@@ -686,98 +680,25 @@ EOP
 
 
 
+tboolean-pmt(){          TESTCONFIG=$(tboolean-pmt- 2>/dev/null)     tboolean-- ; }
+tboolean-pmt-()
+{       
+    python $(tboolean-dir)/tboolean_pmt.py \
+          --csgpath $TMP/$FUNCNAME \
+          --container $(tboolean-container)  \
+          --testobject $(tboolean-testobject)  
 
-
-tboolean-pmt(){          TESTCONFIG=$(tboolean-csg-pmt-py 2>/dev/null)     tboolean-- ; }
-tboolean-csg-pmt-py-check(){ tboolean-csg-pmt-py 2> /dev/null ; }
-tboolean-csg-pmt-py(){ tboolean-testconfig-py- $FUNCNAME ; }
-tboolean-csg-pmt-py-()
-{
-    local base=$TMP/$FUNCNAME 
-    cat << EOP 
-from opticks.ana.base import opticks_main
-from opticks.ana.pmt.ddbase import Dddb
-from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.ncsgconverter import NCSGConverter
-
-from opticks.dev.csg.csg import CSG  
-
-args = opticks_main()
-
-g = Dddb.parse(args.apmtddpath)
-
-lv = g.logvol_("lvPmtHemi")
-tr = Tree(lv)
-
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
-
-objs = []
-objs.append(container)
-
-nn = tr.num_nodes()
-assert nn == 5
-
-im = dict(poly="IM", resolution="30", verbosity="2")
-mc = dict(poly="MC", nx="30")
-dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
-poly = im
-
-
-PYREX = 0    # raytrace + poly OK
-VACUUM = 1   # raytrace + poly OK
-CATHODE = 2  # raytrace OK when enable endcaps (othersize unions of zspheres wierdness), poly fails 
-BOTTOM = 3   # raytrace OK, poly fails (does not find inside d)  : tris outside box?
-DYNODE = 4   # looks OK
-
-ii = range(nn)
-
-for i in ii:
-    root = tr.get(i)
-    obj = NCSGConverter.ConvertLV( root.lv )
-    obj.boundary = "$(tboolean-testobject)"
-    obj.meta.update(poly)  
-    objs.append(obj)
-pass
-
-
-CSG.Serialize(objs, "$base" )
-
-"""
-
-
-# 1:Vacuum
-
-#. FIXED: solid-0:PYREX poly-cylinder not matching raytrace, 
-   NCylinder SDF was ignoring center.z and bbox was wrong 
-
-#. ISSUE: solid-2:CATHODE has two very close sphere shells, this is difficult
-          for meshers to handle without very high resolution
-
-#. ISSUE: solid-2:CATHODE restricting to just the inner observe the correct
-          union of zsphere shape : but it disappears from the other side ?  
-
-#. ISSUE: doing all together,
-
-   * are missing a translate transform for BOTTOM ?
-
-
-
-"""
-
-
-EOP
+    # got too long for here-string  so broke out into script
 }
-
-
-
+tboolean-pmt-check(){ tboolean-pmt- 2> /dev/null ; }
+tboolean-pmt-edit(){ vi $(tboolean-dir)/tboolean_pmt.py  ; }
 
 
 
 tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }
-tboolean-csg-two-box-minus-sphere-interlocked-py(){ tboolean-testconfig-py- $FUNCNAME ; }
+tboolean-csg-two-box-minus-sphere-interlocked-py(){ $FUNCNAME- | python $* ; }
 tboolean-csg-two-box-minus-sphere-interlocked-py-()
 {
-    local material=$(tboolean-material)
     local base=$TMP/$FUNCNAME 
     cat << EOP 
 import math

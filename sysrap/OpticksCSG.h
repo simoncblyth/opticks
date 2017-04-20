@@ -29,10 +29,9 @@ typedef enum {
 /*
 * keep CSG_SPHERE as 1st primitive
 * keep CSG_UNDEFINED as one beyond the last primitive
-* regenerate the derived python enumeration classes with::
-
-  sysrap-;sysrap-csg-generate  
-
+* regenerate the derived python e-n-u-m-e-r-a-t-i-o-n classes with sysrap-csg-generate  
+* CAUTION : the text of this header is parsed for the generation, 
+  some words are not allowed and avoid semi-colons
 
 */
 

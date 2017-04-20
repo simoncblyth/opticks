@@ -1,5 +1,11 @@
 #!/usr/bin/env python
 """
+
+See tboolean-pmt for testing of the conversion of 
+detdesc XML analytic geometry into NCSG input serialization
+via: $(tboolean-dir)/tboolean_pmt.py  (tboolean-pmt-edit)
+
+
 """
 
 import os, logging, sys, math, numpy as np

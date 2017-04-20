@@ -62,6 +62,10 @@ sysrap-csg-generate()
 
     if [  "$ans" == "YES" ]; then 
        c_enums_to_python.py OpticksCSG.h > OpticksCSG.py 
+
+       echo $msh checking the generated python is valid 
+       python  OpticksCSG.py
+
     else
        echo $msg SKIP
     fi 

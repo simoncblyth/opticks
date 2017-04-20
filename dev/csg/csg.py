@@ -64,7 +64,7 @@ class CSG(CSG_):
         return os.path.join(base, cls.FILENAME )
 
     @classmethod
-    def Serialize(cls, trees, base):
+    def Serialize(cls, trees, base, outmeta=True):
         assert type(trees) is list 
         assert type(base) is str and len(base) > 5, ("invalid base directory %s " % base)
         base = os.path.expandvars(base) 
@@ -81,7 +81,12 @@ class CSG(CSG_):
         pass
         boundaries = map(lambda tree:tree.boundary, trees)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
-        print base # used from bash to pass directory of serialization into testconfig
+
+        if outmeta:
+            meta = dict(mode="PyCsgInBox", name=os.path.basename(base), analytic=1, csgpath=base)
+            meta_fmt_ = lambda meta:"_".join(["%s=%s" % kv for kv in meta.items()])
+            print meta_fmt_(meta)  # communicates to tboolean--
+        pass
 
     @classmethod
     def Deserialize(cls, base):
