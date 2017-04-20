@@ -116,14 +116,16 @@ set(SOURCES
     NBox.cpp
     NSlab.cpp
     NCylinder.cpp
+    NCone.cpp
+    NZSphere.cpp
+    NPlane.cpp
+
+    NPrism.cpp
 
     NQuad.cpp
     NSphere.cpp
-    NZSphere.cpp
-    NPlane.cpp
     NBBox.cpp
     NPart.cpp
-    NPrism.cpp
     NTriangle.cpp
     NBoundingBox.cpp
     NTesselate.cpp

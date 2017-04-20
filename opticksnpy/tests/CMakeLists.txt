@@ -49,6 +49,7 @@ NBoxTest.cc
 NSlabTest.cc
 NPlaneTest.cc
 NCylinderTest.cc
+NConeTest.cc
 
 NBBoxTest.cc
 NNodeTest.cc
