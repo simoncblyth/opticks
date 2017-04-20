@@ -1,13 +1,13 @@
 static __device__
-void csg_bounds_prim(unsigned primIdx, optix::Aabb* aabb )
+void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
 {
     unsigned tranBuffer_size = tranBuffer.size() ;
-    const uint4& prim    = primBuffer[primIdx]; 
 
-    unsigned partOffset  = prim.x ;  
-    unsigned numParts    = prim.y ; 
-    unsigned tranOffset  = prim.z ; 
-    unsigned primFlag    = prim.w ;  
+    const unsigned partOffset = prim.partOffset();
+    const unsigned numParts   = prim.numParts() ;
+    const unsigned tranOffset = prim.tranOffset() ;
+    const unsigned primFlag   = prim.primFlag() ;  
+
 
     if(primFlag != CSG_FLAGNODETREE)  
     {
@@ -18,7 +18,7 @@ void csg_bounds_prim(unsigned primIdx, optix::Aabb* aabb )
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numNodes = TREE_NODES(height) ;      
 
-    rtPrintf("##csg_bounds_prim primIdx %2d partOffset %2d numParts %2d height %2d numNodes %2d tranBuffer_size %3u \n", primIdx, partOffset, numParts, height, numNodes, tranBuffer_size );
+    rtPrintf("##csg_bounds_prim partOffset %2d numParts %2d height %2d numNodes %2d tranBuffer_size %3u \n", partOffset, numParts, height, numNodes, tranBuffer_size );
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
@@ -77,11 +77,11 @@ void csg_bounds_prim(unsigned primIdx, optix::Aabb* aabb )
 
 
 static __device__
-void csg_intersect_part(unsigned partIdx, const float& tt_min, float4& tt  )
+void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const float& tt_min, float4& tt  )
 {
     Part pt = partBuffer[partIdx] ; 
+
     unsigned typecode = pt.typecode() ; 
-    unsigned tranOffset = 0 ; // PLACEHOLDER .. need to get this here
     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
 
     if(gtransformIdx == 0)

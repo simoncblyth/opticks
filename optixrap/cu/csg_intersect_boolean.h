@@ -149,16 +149,16 @@ unsigned long getBitField(unsigned long val, int pos, int len) {
 
 
 static __device__
-void intersect_boolean_only_first( const uint4& prim, const uint4& identity )
+void intersect_boolean_only_first( const Prim& prim, const uint4& identity )
 {
-    unsigned a_partIdx = prim.x + 1 ;  
-
+    unsigned a_partIdx = prim.partOffset() + 1u ;  
+    unsigned tranOffset = prim.tranOffset(); 
 
     float tA_min = propagate_epsilon ;  
     float4 tt = make_float4(0.f,0.f,1.f, tA_min);
 
     //IntersectionState_t a_state = intersect_part( a_partIdx , tA_min, tt ) ;
-    csg_intersect_part( a_partIdx , tA_min, tt ) ;
+    csg_intersect_part( tranOffset, a_partIdx , tA_min, tt ) ;
 
     IntersectionState_t a_state = tt.w > tA_min ? 
                         ( (tt.x * ray.direction.x + tt.y * ray.direction.y + tt.z * ray.direction.z) < 0.f ? State_Enter : State_Exit ) 
@@ -449,10 +449,11 @@ __device__ unsigned long long csg_repr(CSG& csg)
 
 
 __device__
-float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
+float4 recursive_csg_r( unsigned tranOffset, unsigned partOffset, unsigned numInternalNodes, unsigned nodeIdx, float tmin )
 {
     unsigned leftIdx = nodeIdx*2 ; 
     unsigned rightIdx = leftIdx + 1 ; 
+
     bool bileaf = leftIdx > numInternalNodes ; 
     enum { LEFT=0, RIGHT=1 };
 
@@ -461,13 +462,13 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
     isect[RIGHT] = make_float4(0.f, 0.f, 0.f, 0.f) ;  
     if(bileaf)
     {
-        csg_intersect_part( partOffset+leftIdx-1, tmin, isect[LEFT] );
-        csg_intersect_part( partOffset+rightIdx-1, tmin, isect[RIGHT] );
+        csg_intersect_part( tranOffset, partOffset+leftIdx-1, tmin, isect[LEFT] );
+        csg_intersect_part( tranOffset, partOffset+rightIdx-1, tmin, isect[RIGHT] );
     }  
     else
     {
-        isect[LEFT]  = recursive_csg_r( partOffset, numInternalNodes, leftIdx, tmin);
-        isect[RIGHT] = recursive_csg_r( partOffset, numInternalNodes, rightIdx, tmin);
+        isect[LEFT]  = recursive_csg_r( tranOffset, partOffset, numInternalNodes, leftIdx, tmin);
+        isect[RIGHT] = recursive_csg_r( tranOffset, partOffset, numInternalNodes, rightIdx, tmin);
     } 
 
     Part pt = partBuffer[partOffset+nodeIdx-1] ; 
@@ -494,11 +495,11 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
             x_tmin[side] = isect[side].w + propagate_epsilon ; 
             if(bileaf)
             {
-                csg_intersect_part( partOffset+leftIdx+side-1, x_tmin[side], isect[LEFT+side] );
+                csg_intersect_part( tranOffset, partOffset+leftIdx+side-1, x_tmin[side], isect[LEFT+side] );
             }
             else
             {
-                isect[LEFT+side] = recursive_csg_r( partOffset, numInternalNodes, leftIdx+side, x_tmin[side]);
+                isect[LEFT+side] = recursive_csg_r( tranOffset, partOffset, numInternalNodes, leftIdx+side, x_tmin[side]);
             }
             x_state[LEFT+side] = CSG_CLASSIFY( isect[LEFT+side], ray.direction, x_tmin[side] );
             ctrl = boolean_ctrl_packed_lookup( operation, x_state[LEFT], x_state[RIGHT], isect[LEFT].w <= isect[RIGHT].w ) ;
@@ -518,15 +519,17 @@ float4 recursive_csg_r( unsigned partOffset, unsigned numInternalNodes, unsigned
 
 
 static __device__
-void UNSUPPORTED_recursive_csg( const uint4& prim, const uint4& identity )
+void UNSUPPORTED_recursive_csg( const Prim& prim, const uint4& identity )
 {
-    unsigned partOffset = prim.x ; 
-    unsigned numParts   = prim.y ;
+    unsigned partOffset = prim.partOffset() ; 
+    unsigned numParts   = prim.numParts() ;
+    unsigned tranOffset = prim.tranOffset() ; 
+
     unsigned fullHeight = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numInternalNodes = TREE_NODES(fullHeight-1) ;
     unsigned rootIdx = 1 ; 
 
-    float4 ret = recursive_csg_r( partOffset, numInternalNodes, rootIdx, ray.tmin ); 
+    float4 ret = recursive_csg_r( tranOffset, partOffset, numInternalNodes, rootIdx, ray.tmin ); 
     if(rtPotentialIntersection( fabsf(ret.w) ))
     {
         shading_normal = geometric_normal = make_float3(ret.x, ret.y, ret.z) ;
@@ -539,21 +542,22 @@ void UNSUPPORTED_recursive_csg( const uint4& prim, const uint4& identity )
 #define USE_TWIDDLE_POSTORDER 1
 
 static __device__
-void evaluative_csg( const uint4& prim, const uint4& identity )
+void evaluative_csg( const Prim& prim, const uint4& identity )
 {
-    unsigned partOffset = prim.x ; 
-    unsigned numParts   = prim.y ;
-    unsigned primIdx_   = prim.z ; 
+    unsigned partOffset = prim.partOffset() ; 
+    unsigned numParts   = prim.numParts() ;
+    unsigned tranOffset = prim.tranOffset() ; 
+
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
 
 #ifdef USE_TWIDDLE_POSTORDER
-    // bit-twiddle postorder limited to height 7, ie maximum of 0xff nodes
-    // (using 2-bytes with PACK2 would bump that to 0xffff nodes)
+    // bit-twiddle postorder limited to height 7, ie maximum of 0xff (255) nodes
+    // (using 2-bytes with PACK2 would bump that to 0xffff (65535) nodes)
     // In any case 0xff nodes are far more than this is expected to be used with
     //
     if(height > 7)
     {
-        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree height %u exceeds current limit\n", primIdx_, numParts, height ) ;
+        rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
         return ; 
     } 
 #else
@@ -561,7 +565,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
     // by needing to stuff the postorder sequence 0x137fe6dc25ba498ull into 64 bits 
     if(height > 3)
     {
-        rtPrintf("evaluative_csg primIdx_ %u numParts %u perfect tree height %u exceeds current limit\n", primIdx_, numParts, height ) ;
+        rtPrintf("evaluative_csg tranOffset %u numParts %u perfect tree height %u exceeds current limit\n", tranOffset, numParts, height ) ;
         return ; 
     } 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
@@ -663,7 +667,9 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
             if(primitive)
             {
                 float4 isect = make_float4(0.f, 0.f, 0.f, 0.f) ;  
-                csg_intersect_part( partOffset+nodeIdx-1, tmin, isect );
+
+                csg_intersect_part( tranOffset, partOffset+nodeIdx-1, tmin, isect );
+
                 isect.w = copysignf( isect.w, nodeIdx % 2 == 0 ? -1.f : 1.f );  // hijack t signbit, to record the side, LHS -ve
 
                 ierr = csg_push(csg, isect, nodeIdx ); 
@@ -875,7 +881,7 @@ void evaluative_csg( const uint4& prim, const uint4& identity )
 
 
 static __device__
-void intersect_csg( const uint4& prim, const uint4& identity )
+void intersect_csg( const Prim& prim, const uint4& identity )
 {
 
     const unsigned long long postorder_sequence[4] = { 0x1ull, 0x132ull, 0x1376254ull, 0x137fe6dc25ba498ull } ;
@@ -885,9 +891,9 @@ void intersect_csg( const uint4& prim, const uint4& identity )
     int ierr = 0 ;  
     int loop = -1 ; 
 
-    unsigned partOffset = prim.x ; 
-    unsigned numParts   = prim.y ;
-    unsigned primIdx_   = prim.z ; 
+    unsigned partOffset = prim.partOffset() ; 
+    unsigned numParts   = prim.numParts() ;
+    unsigned tranOffset = prim.tranOffset() ; 
 
     unsigned fullHeight = __ffs(numParts + 1) - 2 ;   // assumes perfect binary tree node count       2^(h+1) - 1 
     unsigned height = fullHeight - 1;                 // exclude leaves, triplet has height 0
@@ -963,8 +969,8 @@ void intersect_csg( const uint4& prim, const uint4& identity )
              {
                  left.w = 0.f ;   // reusing the same storage so clear ahead
                  right.w = 0.f ; 
-                 csg_intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
-                 csg_intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
+                 csg_intersect_part( tranOffset, partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+                 csg_intersect_part( tranOffset, partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
              }
              else       //  op-op-op
              {
@@ -989,7 +995,7 @@ void intersect_csg( const uint4& prim, const uint4& identity )
             
                  if(bileaf)
                  {
-                      csg_intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advance
+                      csg_intersect_part( tranOffset, partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advance
                  }
                  else
                  {
@@ -1056,8 +1062,8 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
     //rtPrintf("intersect_csg partOffset %u numParts %u numInternalNodes %u primIdx_ %u height %u postorder %llx ierr %x \n", partOffset, numParts, numInternalNodes, primIdx_, height, postorder, ierr );
     if(ierr != 0)
-    rtPrintf("intersect_csg primIdx_ %u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
-          primIdx_, ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,
+    rtPrintf("intersect_csg tranOffset %u ierr %4x tloop %3d launch_index (%5d,%5d) li.x(26) %2d ray.direction (%10.3f,%10.3f,%10.3f) ray.origin (%10.3f,%10.3f,%10.3f)   \n",
+          tranOffset, ierr, tloop, launch_index.x, launch_index.y,  launch_index.x % 26,
           ray.direction.x, ray.direction.y, ray.direction.z,
           ray.origin.x, ray.origin.y, ray.origin.z
       );
@@ -1072,10 +1078,10 @@ void intersect_csg( const uint4& prim, const uint4& identity )
 
 
 static __device__
-void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
+void intersect_boolean_triplet( const Prim& prim, const uint4& identity )
 {
-    unsigned partOffset = prim.x ; 
-    //unsigned primIdx_   = prim.z ; 
+    unsigned partOffset = prim.partOffset() ; 
+    unsigned tranOffset = prim.tranOffset() ; 
 
     unsigned nodeIdx = 1 ;    
     unsigned leftIdx = nodeIdx*2 ;      
@@ -1084,7 +1090,6 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
     Part pt = partBuffer[partOffset+nodeIdx-1] ;
     OpticksCSG_t operation = (OpticksCSG_t)pt.typecode() ;
 
-    //rtPrintf("intersect_boolean primIdx_:%u n:%u a:%u b:%u operation:%u \n", primIdx_, n_partIdx, a_partIdx, b_partIdx, operation );
 
     enum { LHS, RHS };
     enum { MISS, LEFT, RIGHT, RFLIP } ;
@@ -1104,8 +1109,8 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
 
     left.w = 0.f ;   // reusing the same storage so clear ahead
     right.w = 0.f ; 
-    csg_intersect_part( partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
-    csg_intersect_part( partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
+    csg_intersect_part( tranOffset, partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
+    csg_intersect_part( tranOffset, partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
 
     IntersectionState_t x_state[2] ;
 
@@ -1121,7 +1126,7 @@ void intersect_boolean_triplet( const uint4& prim, const uint4& identity )
         loop++ ;
         float4& _side = isect[side+LEFT] ;
         tX_min[side] = _side.w + propagate_epsilon ;
-        csg_intersect_part( partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advanced intersect
+        csg_intersect_part( tranOffset, partOffset+leftIdx+side-1 , tX_min[side], _side  ) ; // tmin advanced intersect
 
         x_state[side] = CSG_CLASSIFY( _side, ray.direction, tX_min[side] );
         ctrl = boolean_ctrl_packed_lookup( operation, x_state[LHS], x_state[RHS], left.w <= right.w );

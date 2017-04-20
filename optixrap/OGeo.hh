@@ -56,7 +56,7 @@ public:
     template <typename T>             optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     
-    optix::Buffer createInputUserBuffer(NPY<float>* src, unsigned elementSize, const char* name);
+    template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm);
     //optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);

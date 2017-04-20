@@ -10,6 +10,7 @@
 
 #include "quad.h"
 #include "Part.h"
+#include "Prim.h"
 
 #include "switches.h"
 #define DEBUG 1
@@ -55,7 +56,7 @@ rtDeclareVariable(unsigned int, primitive_count, ,);
 rtBuffer<Part> partBuffer; 
 rtBuffer<Matrix4x4> tranBuffer; 
 
-rtBuffer<uint4>  primBuffer; 
+rtBuffer<Prim>  primBuffer; 
 rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()
 rtBuffer<float4> prismBuffer ;
 
@@ -92,19 +93,18 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
-    const uint4& prim    = primBuffer[primIdx]; 
-
-    unsigned partOffset  = prim.x ;  
-    unsigned numParts    = prim.y ; 
-    //unsigned tranOffset  = prim.z ; 
-    unsigned primFlag    = prim.w ;  
+    const Prim prim    = primBuffer[primIdx]; 
+    unsigned primFlag    = prim.primFlag() ;  
 
     if(primFlag == CSG_FLAGNODETREE)  
     {
-        csg_bounds_prim(primIdx, aabb); 
+        csg_bounds_prim(prim, aabb); 
     }
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
+        unsigned partOffset  = prim.partOffset() ;  
+        unsigned numParts    = prim.numParts() ; 
+
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
             Part pt = partBuffer[partOffset + p] ; 
@@ -158,20 +158,20 @@ identityBuffer
 
 RT_PROGRAM void intersect(int primIdx)
 {
-    const uint4& prim    = primBuffer[primIdx]; 
+    const Prim& prim    = primBuffer[primIdx]; 
 
-    unsigned partOffset  = prim.x ;  
-    unsigned numParts    = prim.y ; 
-    unsigned primFlag    = prim.w ;  
+    unsigned partOffset  = prim.partOffset() ;  
+    unsigned numParts    = prim.numParts() ; 
+    unsigned primFlag    = prim.primFlag() ;  
 
     uint4 identity = identityBuffer[instance_index] ; 
 
 
     if(primFlag == CSG_FLAGNODETREE)  
     { 
-        Part pt = partBuffer[partOffset] ; 
+        Part pt0 = partBuffer[partOffset + 0] ; 
 
-        identity.z = pt.boundary() ;        // replace placeholder zero with test analytic geometry root node boundary
+        identity.z = pt0.boundary() ;        // replace placeholder zero with test analytic geometry root node boundary
 
         evaluative_csg( prim, identity );
         //intersect_csg( prim, identity );
