@@ -58,6 +58,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_TUBS:
          case CSG_CYLINDER:
          case CSG_SLAB:
+         case CSG_CONE:
          case CSG_PLANE:
          case CSG_UNDEFINED:
          case CSG_FLAGPARTLIST:

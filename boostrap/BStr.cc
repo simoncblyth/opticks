@@ -218,6 +218,23 @@ void BStr::fsplit( std::vector<float>& elem, const char* line, char delim )
     }
 }
 
+void BStr::fsplitEnv( std::vector<float>& elem, const char* envvar, const char* fallback, char delim )
+{
+    char* line = getenv(envvar) ;
+
+    std::cout << "BStr::fsplitEnv"
+              << " envvar " << envvar 
+              << " line " << line
+              << std::endl 
+              ;
+ 
+
+    if(line)
+        BStr::fsplit(elem, line, delim);
+    else
+        BStr::fsplit(elem, fallback, delim);
+    
+}
 
 
 

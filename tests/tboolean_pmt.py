@@ -12,14 +12,29 @@ Usage::
 
 #. FIXED: solid-0:PYREX poly-cylinder not matching raytrace, NCylinder SDF was ignoring center.z and bbox was wrong 
 
-#. ISSUE: solid-2:CATHODE has two very close sphere shells, this is difficult for meshers to handle without very high resolution
-          investigating in tboolean-difference-zsphere
-
 #. FIXED: solid-2:CATHODE restricting to just the inner observe the correct union of zsphere shape : but it disappears from the other side ?  
           this wierdness was due to using CSG sub-objects that are not solids : ie closed geometry, 
           endcaps to close sub-objects are required when using CSG 
 
 #. FIXED: doing all together, are missing a translate transform for BOTTOM, the tranOffset needed passing in to csg_intersect_part
+
+
+#. ISSUE: CATHODE is 0.05 mm thick diff of zspheres, this causes difficulties
+
+   * finding the surface, needs manual seeding and extreme resolution (4000)
+   * extreme resolution 4000, did not run into memory problems only due to continuation failure
+   * without continuation failure even resolution ~200 runs into memory issues,
+     and in any case that kinda resolution produces far too many tris
+   * IM continuation fails to stay with the surface, only producing a very small mesh patch
+  
+#. ISSUE: BOTTOM is 1 mm thick diff of zspheres, similar issue to CATHODE but x20 less bad
+
+   * IM succeeds with resolution 150, but too many tris to be of much use  
+   * DCS nominal 7, coarse 7/6 produces a whacky partial mesh with "Moire lace pattern"  
+   * DCS nominal 8, coarse 7 : slow and produces too many tris 670198, they are disqualified for being beyond bbox
+
+
+
 
 """
 
@@ -50,21 +65,33 @@ if __name__ == '__main__':
     objs = []
     objs.append(container)
 
-    im = dict(poly="IM", resolution="500", verbosity="2")
+
+    im = dict(poly="IM", resolution="150", verbosity="2")
     mc = dict(poly="MC", nx="30")
-    dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
-    poly = im
+    dcs = dict(poly="DCS", nominal="7", coarse="7", threshold="1", verbosity="0")
 
-    PYREX = 0    # raytrace + poly OK
-    VACUUM = 1   # raytrace + poly OK
-    CATHODE = 2  # raytrace OK when enable endcaps (othersize unions of zspheres wierdness), poly fails 
-    BOTTOM = 3   # raytrace OK, poly fails (does not find inside d)  : tris outside box?
-    DYNODE = 4   # looks OK
+    PYREX = 0    
+    VACUUM = 1   
 
-    ii = [CATHODE]
+    CATHODE = 2 
+    BOTTOM = 3 
+
+    DYNODE = 4   
+
+    ii = [BOTTOM]
     #ii = range(nn)
 
+    vseeds = {}
+    vseeds[CATHODE] = "0,0,127.9,0,0,1"
+    vseeds[BOTTOM] = "0,0,0,0,0,-1"
+
+
     for i in ii:
+
+        seeds = vseeds.get(i, None)
+        if seeds is not None:  im.update(seeds=seeds)
+        poly = dcs
+
         root = tr.get(i)
         log.info("\ntranslating ..........................  %r " % root )
 

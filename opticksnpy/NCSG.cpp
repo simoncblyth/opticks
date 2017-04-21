@@ -37,10 +37,10 @@ const unsigned NCSG::NTRAN = 3 ;
 
 
 // ctor : booting via deserialization of directory 
-NCSG::NCSG(const char* treedir, unsigned index, int verbosity) 
+NCSG::NCSG(const char* treedir) 
    :
-   m_index(index),
-   m_verbosity(verbosity),
+   m_index(0),
+   m_verbosity(0),
    m_root(NULL),
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
@@ -56,10 +56,10 @@ NCSG::NCSG(const char* treedir, unsigned index, int verbosity)
 }
 
 // ctor : booting from in memory node tree
-NCSG::NCSG(nnode* root, unsigned index, int verbosity ) 
+NCSG::NCSG(nnode* root ) 
    :
-   m_index(index),
-   m_verbosity(verbosity),
+   m_index(0),
+   m_verbosity(0),
    m_root(root),
    m_treedir(NULL),
    m_nodes(NULL),
@@ -183,9 +183,24 @@ unsigned NCSG::getIndex()
 {
     return m_index ; 
 }
+
+
+
 int NCSG::getVerbosity()
 {
     return m_verbosity ; 
+}
+
+
+
+
+void NCSG::setIndex(unsigned index)
+{
+    m_index = index ; 
+}
+void NCSG::setVerbosity(int verbosity)
+{
+    m_verbosity = verbosity ; 
 }
 
 
@@ -446,7 +461,7 @@ void NCSG::check_r(nnode* node)
 
 NCSG* NCSG::FromNode(nnode* root, const char* boundary)
 {
-    NCSG* tree = new NCSG(root, 0);
+    NCSG* tree = new NCSG(root);
     tree->setBoundary( boundary );
     tree->export_();
     return tree ; 
@@ -535,7 +550,9 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity
     {
         std::string treedir = BFile::FormPath(base, BStr::itoa(i));  
 
-        NCSG* tree = new NCSG(treedir.c_str(), i, verbosity );
+        NCSG* tree = new NCSG(treedir.c_str());
+        tree->setIndex(i);
+        tree->setVerbosity(verbosity);
         tree->setBoundary( bnd.getLine(i) );
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
@@ -549,5 +566,23 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity
     }
     return 0 ; 
 }
+
+
+NCSG* NCSG::LoadTree(const char* treedir, int verbosity)
+{
+     NCSG* tree = new NCSG(treedir) ; 
+     tree->setVerbosity(verbosity);
+
+     tree->load();
+     tree->import();
+     tree->export_();
+
+     if(verbosity > 1) tree->dump("NCSG::LoadTree");
+
+     return tree ; 
+
+}
+    
+
 
 

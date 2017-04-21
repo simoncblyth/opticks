@@ -743,8 +743,7 @@ EOP
 
 
 
-
-tboolean-pmt(){          TESTCONFIG=$(tboolean-pmt- 2>/dev/null)     tboolean-- ; }
+tboolean-pmt(){          TESTCONFIG=$(tboolean-pmt- 2>/dev/null)     tboolean-- $* ; }
 tboolean-pmt-()
 {       
     python $(tboolean-dir)/tboolean_pmt.py \
@@ -756,8 +755,7 @@ tboolean-pmt-()
 }
 tboolean-pmt-check(){ tboolean-pmt- 2> /dev/null ; }
 tboolean-pmt-edit(){ vi $(tboolean-dir)/tboolean_pmt.py  ; }
-tboolean-pmt-scan(){ SCAN="10,10,10,0" NCSGLoadTest $TMP/tboolean-pmt-/1 ; }
-
+tboolean-pmt-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-pmt-/1 ; }
 
 
 tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }

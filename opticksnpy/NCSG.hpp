@@ -70,6 +70,7 @@ class NPY_API NCSG {
         static unsigned NumNodes(unsigned height);
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
+        static NCSG* LoadTree(const char* treedir, int verbosity=0);
     public:
         void dump(const char* msg="NCSG::dump");
         std::string desc();
@@ -87,11 +88,13 @@ class NPY_API NCSG {
     public:
         void check();
         void check_r(nnode* node); 
+        void setIndex(unsigned index);
+        void setVerbosity(int verbosity);
     private:
         // Deserialize
-        NCSG(const char* treedir, unsigned index, int verbosity=0);
+        NCSG(const char* treedir);
          // Serialize 
-        NCSG(nnode* root, unsigned index, int verbosity=0);
+        NCSG(nnode* root);
     private:
         // Deserialize branch 
         void setBoundary(const char* boundary);
