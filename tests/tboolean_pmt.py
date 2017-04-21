@@ -54,10 +54,16 @@ if __name__ == '__main__':
 
     g = Dddb.parse(args.apmtddpath)
 
-    lv = g.logvol_("lvPmtHemi")
+    #lvn = "lvPmtHemiwPmtHolder"
+    lvn = "lvPmtHemi" 
+
+    lv = g.logvol_(lvn)
     tr = Tree(lv)
     nn = tr.num_nodes()
-    assert nn == 5
+
+    if lvn == "lvPmtHemi":
+        assert nn == 5
+    pass
 
 
     container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="20")
@@ -70,13 +76,12 @@ if __name__ == '__main__':
     mc = dict(poly="MC", nx="30")
     dcs = dict(poly="DCS", nominal="7", coarse="7", threshold="1", verbosity="0")
 
-
-    DEFAULT = -1
-    PYREX = 0    
-    VACUUM = 1   
-    CATHODE = 2 
-    BOTTOM = 3 
-    DYNODE = 4   
+    DEFAULT = "DEFAULT"
+    PYREX = "lvPmtHemi"    
+    VACUUM = "lvPmtHemiVacuum"   
+    CATHODE = "lvPmtHemiCathode"
+    BOTTOM = "lvPmtHemiBottom"
+    DYNODE = "lvPmtHemiDynode"
 
     #ii = [DYNODE]
     ii = range(nn)
@@ -96,23 +101,29 @@ if __name__ == '__main__':
 
     for i in ii:
 
-        seeds = vseeds.get(i, None)
+        node = tr.get(i)
+        lv = node.lv 
+        lvn = lv.name
+
+        log.info("\ntranslating .............lvn %s ....node  %r " % (lvn, node) )
+
+
+        seeds = vseeds.get(lvn, None)
         if seeds is not None:  im.update(seeds=seeds)
 
-        resolution = vresolution.get(i, vresolution[DEFAULT])
-        verbosity = vverbosity.get(i, vverbosity[DEFAULT])
+        resolution = vresolution.get(lvn, vresolution[DEFAULT])
+        verbosity = vverbosity.get(lvn, vverbosity[DEFAULT])
         im.update(resolution=resolution, verbosity=verbosity)
 
-        if i in [CATHODE, BOTTOM]:
-            poly = dcs
+        if lvn in [CATHODE, BOTTOM]:
+            #poly = dcs
+            poly = im
         else:
             poly = im
         pass
 
-        root = tr.get(i)
-        log.info("\ntranslating ..........................  %r " % root )
 
-        obj = NCSGConverter.ConvertLV( root.lv )
+        obj = NCSGConverter.ConvertLV( lv )
         obj.boundary = args.testobject
         obj.meta.update(poly) 
         obj.meta.update(gpuoffset="-200,0,0")  # shift raytrace only up in x

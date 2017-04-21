@@ -469,6 +469,17 @@ pmt-ecd(){ cd $(pmt-edir) ; }
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
 
+pmt-ddir(){ echo $(dirname $(pmt-dir)) ; }
+pmt-dcd(){  cd $(pmt-ddir) ; }
+
+pmt-dfind(){
+  local iwd=$PWD
+  pmt-dcd
+  find . -name '*.xml' -exec grep -H ${1:-lvPmtHemi} {} \;
+
+  
+}
+
 pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
 pmt-export(){  
     echo -n 
@@ -489,5 +500,4 @@ pmt-i(){
 #pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
 #pmt-gcsg(){     python $(pmt-edir)/gcsg.py $*  ; }
 #
-
 

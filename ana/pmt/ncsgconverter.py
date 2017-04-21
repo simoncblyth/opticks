@@ -219,7 +219,11 @@ if __name__ == '__main__':
 
     g = Dddb.parse(args.apmtddpath)
 
-    lv = g.logvol_("lvPmtHemi")
+
+    #lvn = "lvPmtHemi"
+    lvn = "lvPmtHemiwPmtHolder"
+
+    lv = g.logvol_(lvn)
 
     tr = Tree(lv)
 
