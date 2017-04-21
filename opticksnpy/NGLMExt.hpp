@@ -12,7 +12,9 @@ struct NPY_API nmat4pair
 {
     static nmat4pair* product(const std::vector<nmat4pair*>& tt);
 
-    nmat4pair( const glm::mat4& tr, const glm::mat4& irit ) : t(tr), v(irit) {} ;
+    nmat4pair* clone();
+    nmat4pair( const glm::mat4& transform ); 
+    nmat4pair( const glm::mat4& transform, const glm::mat4& inverse ) : t(transform), v(inverse) {} ;
     std::string digest();
 
     glm::mat4 t ; 
@@ -23,7 +25,11 @@ struct NPY_API nmat4pair
 struct NPY_API nmat4triple
 {
     static nmat4triple* product(const std::vector<nmat4triple*>& tt);
+    static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate );
 
+    nmat4triple* clone();
+    nmat4triple* make_translated(const glm::vec3& tlate );
+    nmat4triple( const glm::mat4& transform ); 
     nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
          : 
             t(transform), 
@@ -32,6 +38,7 @@ struct NPY_API nmat4triple
          {} ;
 
     std::string digest();
+
 
     glm::mat4 t ; 
     glm::mat4 v ; 

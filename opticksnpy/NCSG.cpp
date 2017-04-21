@@ -1,7 +1,3 @@
-
-
-
-
 #include <cstring>
 #include <algorithm>
 #include <sstream>
@@ -12,6 +8,7 @@
 #include "OpticksCSG.h"
 
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 #include "NParameters.hpp"
 #include "NPart.h"
 
@@ -27,6 +24,8 @@
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NTxt.hpp"
+
+
 
 #define TREE_NODES(height) ( (0x1 << (1+(height))) - 1 )
 
@@ -51,7 +50,8 @@ NCSG::NCSG(const char* treedir)
    m_num_nodes(0),
    m_num_transforms(0),
    m_height(-1),
-   m_boundary(NULL)
+   m_boundary(NULL),
+   m_gpuoffset(0,0,0)
 {
 }
 
@@ -65,7 +65,8 @@ NCSG::NCSG(nnode* root )
    m_nodes(NULL),
    m_num_nodes(0),
    m_height(root->maxdepth()),
-   m_boundary(NULL)
+   m_boundary(NULL),
+   m_gpuoffset(0,0,0)
 {
    m_num_nodes = NumNodes(m_height);
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
@@ -85,6 +86,9 @@ void NCSG::load()
     m_meta->load_( metapath.c_str() );
 
     int verbosity = m_meta->get<int>("verbosity", "-1");
+    std::string gpuoffset = m_meta->get<std::string>("gpuoffset", "0,0,0" );
+    m_gpuoffset = gvec3(gpuoffset);  
+
     if(verbosity > -1 && verbosity != m_verbosity) 
     {
         LOG(fatal) << "NCSG::load changing verbosity via metadata " 
@@ -163,6 +167,11 @@ NPY<float>* NCSG::getTransformBuffer()
 {
     return m_transforms ; 
 }
+NPY<float>* NCSG::getGTransformBuffer()
+{
+    return m_gtransforms ; 
+}
+
 
 
 
@@ -372,20 +381,10 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->parent = parent ; 
         node->transform = import_transform_triple( transform_idx ) ;
 
-
         nmat4triple* gtransform = node->global_transform();
-        unsigned gtransform_idx = 0 ; 
-        if(gtransform)
-        {
-            NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
-            gtmp->zero();
-            gtmp->setMat4Triple(gtransform, 0);
-            gtransform_idx = 1 + m_gtransforms->addItemUnique( gtmp, 0 ) ; 
-            delete gtmp ; 
-        }
+        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
         node->gtransform = gtransform ; 
         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
-
 
 
     }
@@ -402,6 +401,28 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     return node ; 
 } 
 
+
+unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
+{
+    bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
+
+    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset) ;
+
+    std::cout << "NCSG::addUniqueTransform"
+              << " orig " << *gtransform_
+              << " tlated " << *gtransform
+              << " gpuoffset " << m_gpuoffset 
+              << std::endl 
+              ;
+
+
+    NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
+    gtmp->zero();
+    gtmp->setMat4Triple( gtransform, 0);
+    unsigned gtransform_idx = 1 + m_gtransforms->addItemUnique( gtmp, 0 ) ; 
+    delete gtmp ; 
+    return gtransform_idx ; 
+}
 
 
 void NCSG::check()

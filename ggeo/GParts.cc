@@ -138,11 +138,10 @@ GParts* GParts::make( NCSG* tree)
 {
     const char* spec = tree->getBoundary();
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
-    NPY<float>* tranbuf = tree->getTransformBuffer();  // (tr,irit) pairs   
+    NPY<float>* tranbuf = tree->getGTransformBuffer();  // formerly was incorrectly using TransformBuffer
+
     if(!tranbuf) 
     {
-       // NB dont want to change transform counts as GParts get combined
-       // also this means that cannot support transforms on the container box 
        tranbuf = NPY<float>::make(0,NTRAN,4,4) ;
        tranbuf->zero();
     } 
@@ -577,10 +576,7 @@ void GParts::makePrimBuffer()
 
         pri.x = part_offset ; 
         pri.y = parts_for_prim ;
-
-        //pri.z = node_index ; 
         pri.z = tran_offset ; 
-
         pri.w = m_primflag ; 
 
         LOG(info) << "GParts::makePrimBuffer priminfo " << pri.description() ;       

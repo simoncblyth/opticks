@@ -17,7 +17,7 @@ Opticks now supports:
   can be derived by non-uniform scaling without 
   implementing separate primitives to support ellipsoids. 
 
-* Very small number of primitives: sphere, box
+* Very small number of primitives: sphere, box, zsphere, cylinder, slab, plane
 
 * Interactive composited visualization of the ray traced images and rasterized 
   polygonization meshes together with photon propagations thru the geometry 
@@ -27,10 +27,8 @@ Opticks now supports:
 TODO: add more primitives
 ---------------------------
 
-* cylinder (infinite, truncated)
 * cone
 * polycone
-* tubs (ie cylinder with thickness)
 
 There is some choice over where to
 draw the line between primitives and compound CSG trees, 
@@ -83,8 +81,10 @@ Add:
 * comparisons of GPU and CPU propagations using CSG node tree geometries
 
 
-TODO: Apply CSG tree model to analytic PMT 
--------------------------------------------
+DONE: tboolean-pmt converts ddbase.py PMT into NCSG node tree 
+---------------------------------------------------------------
+
+See pmt-ecd
 
 Currently:
 
@@ -98,6 +98,7 @@ Instead:
      Skip the non-generalizable partitioning by adding support 
      for converting the python node tree into CSG_FLAGNODETREE  
      serialization.
+
 
 This should allow rapid testing of a CSG node tree 
 description of the PMT geometry. 

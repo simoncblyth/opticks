@@ -179,6 +179,10 @@ std::string nmat4triple::digest()
 }
 
 
+nmat4pair* nmat4pair::clone()
+{
+    return new nmat4pair(t,v);
+}
 
 nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& pairs)
 {
@@ -205,6 +209,31 @@ nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& pairs)
     // ... pairs order is from the leaf back to the root   
 
     return new nmat4pair(t, v) ; 
+}
+
+
+
+
+nmat4pair::nmat4pair(const glm::mat4& t_ ) 
+     : 
+     t(t_),
+     v(nglmext::invert_trs(t))
+{
+}
+
+
+
+nmat4triple::nmat4triple(const glm::mat4& t_ ) 
+     : 
+     t(t_),
+     v(nglmext::invert_trs(t)),
+     q(glm::transpose(v))
+{
+}
+
+nmat4triple* nmat4triple::clone()
+{
+    return new nmat4triple(t,v,q);
 }
 
 
@@ -237,7 +266,24 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples)
 
 
 
+nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate )
+{
+    return make_translated(this, tlate );
+}
 
+nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate )
+{ 
+    glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
+    nmat4triple perturb( tra );
+
+    std::vector<nmat4triple*> triples ; 
+    triples.push_back(&perturb);
+    triples.push_back(src);    // order ?
+
+    nmat4triple* translated = nmat4triple::product( triples );  
+
+    return translated ; 
+}
 
 
 

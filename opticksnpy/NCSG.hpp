@@ -81,6 +81,7 @@ class NPY_API NCSG {
         const char* getBoundary();
         NPY<float>* getNodeBuffer();
         NPY<float>* getTransformBuffer();
+        NPY<float>* getGTransformBuffer();
         NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();
@@ -106,6 +107,7 @@ class NPY_API NCSG {
         nnode* import_r(unsigned idx, nnode* parent=NULL);
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);
+        unsigned addUniqueTransform( nmat4triple* gtransform );
     private:
          // Serialize branch
         void export_r(nnode* node, unsigned idx);
@@ -123,6 +125,7 @@ class NPY_API NCSG {
         unsigned    m_num_transforms ; 
         unsigned    m_height ; 
         const char* m_boundary ; 
+        glm::vec3   m_gpuoffset ; 
 
 
 

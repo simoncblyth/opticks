@@ -110,9 +110,14 @@ if __name__ == '__main__':
 
         obj = NCSGConverter.ConvertLV( root.lv )
         obj.boundary = args.testobject
-        obj.meta.update(poly)  
+        obj.meta.update(poly) 
+        obj.meta.update(gpuoffset="-200,0,0")  # shift raytrace only up in x
         
-        obj._translate += np.array([0, (i-2)*200, 0], dtype=np.float32 ) # solid parade in Y  
+        obj._translate += np.array([200, (i-2)*200, 0], dtype=np.float32 ) 
+
+        # solid parade in Y (left-right) and shift everything down in Z  
+        # translate applied to root nodes, gets propagated 
+        # down to gtransforms on the primitives at serialization 
 
         log.info("obj.translate: %s " % (obj.translate) )
         log.info("obj.transform: \n%s " % (obj.transform) )

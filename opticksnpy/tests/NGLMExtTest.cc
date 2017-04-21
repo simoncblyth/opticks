@@ -64,7 +64,26 @@ void test_invert_tr()
 }
 
 
+void test_nmat4triple_make_translated()
+{
+    LOG(info) << "test_nmat4triple_make_translated" ;
 
+    glm::vec3 tlat(0,0,100) ; 
+    glm::vec4 trot(0,0,1,0) ; 
+    glm::vec3 tsca(1,1,1) ; 
+
+    glm::mat4 trs = nglmext::make_transform("trs", tlat, trot, tsca );
+    nmat4triple tt0(trs);
+
+    glm::vec3 tlat2(-100,0,0) ; 
+    nmat4triple* tt1 = tt0.make_translated( tlat2 );
+
+    std::cout 
+         << " tt0 " << tt0 
+         << " tt1 " << *tt1
+         << std::endl 
+        ;  
+}
 
 
 
@@ -74,6 +93,7 @@ int main(int argc, char** argv)
 
     test_stream();
     test_invert_tr();
+    test_nmat4triple_make_translated();
 
     return 0 ; 
 }
