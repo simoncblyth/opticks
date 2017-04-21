@@ -80,6 +80,9 @@ class GGEO_API GParts {
         void init();        
     public: 
         const char*  getName();
+        bool isPartList();
+        bool isNodeTree();
+
         unsigned int getIndex(unsigned int part);
         unsigned int getTypeCode(unsigned int part);
         unsigned int getNodeIndex(unsigned int part);
@@ -129,6 +132,7 @@ class GGEO_API GParts {
     private:
         void registerBoundaries();
         void makePrimBuffer();
+        void reconstructPartsPerPrim();
     private:
         void setBndSpec(GItemList* bndspec);
         void setPartBuffer(NPY<float>* part_buffer);

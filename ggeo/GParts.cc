@@ -228,6 +228,17 @@ void GParts::setPrimFlag(OpticksCSG_t primflag)
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST );
     m_primflag = primflag ; 
 }
+bool GParts::isPartList()
+{
+    return m_primflag == CSG_FLAGPARTLIST ;
+}
+bool GParts::isNodeTree()
+{
+    return m_primflag == CSG_FLAGNODETREE ;
+}
+
+
+
 
 OpticksCSG_t GParts::getPrimFlag()
 {
@@ -465,22 +476,23 @@ void GParts::registerBoundaries()
 }
 
 
-void GParts::makePrimBuffer()
+void GParts::reconstructPartsPerPrim()
 {
-    // Derives prim buffer from the parts buffer
-    //
-    // "prim" here was previously named "solid"
-    // but thats confusing due to other solids so renamed
-    // to "prim" as this corresponds to OptiX primitives GPU side, 
-    // see oxrap/cu/hemi-pmt.cu::intersect
-    //
-    // "parts" are associated to their containing "prim" 
-    // via the NodeIndex property  
-    // so to prep a boolean composite need to:
-    //
-    // * arrange for constituent parts to share the same NodeIndex 
-    // * set intersect/union/difference flag in parts buffer for first part
-    //
+/*
+The "classic" partlist formed in python with opticks/ana/pmt/analytic.py  (pmt-ecd)
+uses the nodeindex entry in the partlist buffer to identify which parts 
+correspond to each solid eg PYREX,VACUUM,CATHODE,BOTTOM,DYNODE. 
+
+Hence by counting parts keyed by the nodeIndex the below reconstructs 
+the number of parts for each primitive.
+
+In orther words "parts" are associated to their containing "prim" 
+via the nodeIndex property.
+
+For the CSG nodeTree things are simpler as each NCSG tree 
+directly corresponds to a 1 GSolid and 1 GParts that
+are added separtately, see GGeoTest::loadCSG.
+*/
 
     m_parts_per_prim.clear();
 
@@ -489,11 +501,10 @@ void GParts::makePrimBuffer()
 
     unsigned numParts = getNumParts() ; 
 
-    LOG(info) << "GParts::makePrimBuffer"
+    LOG(info) << "GParts::reconstructPartsPerPrim"
               << " numParts " << numParts 
               ;
  
-
     // count parts for each nodeindex
     for(unsigned int i=0; i < numParts ; i++)
     {
@@ -514,34 +525,12 @@ void GParts::makePrimBuffer()
         if(nodeIndex > nmax) nmax = nodeIndex ; 
     }
 
-
-    // NB the number of prim does not match the number of additions ...
-    //
-    //    perhaps this should be arranged to simplify this ?
-    //
-    //    without this difficult to define a primitive transformOffset to 
-    //    handle transforms from more than one pot 
-    //
-
-    LOG(info) << "GParts::makePrimBuffer"
-              << " nodeIndex.min " << nmin 
-              << " nodeIndex.max " << nmax
-              << " parts_per_prim.size " << m_parts_per_prim.size()
-              << " part_per_add.size " << m_part_per_add.size()
-              << " tran_per_add.size " << m_tran_per_add.size()
-              ; 
- 
     unsigned int num_prim = m_parts_per_prim.size() ;
-
-    assert( m_part_per_add.size() == num_prim );
-    assert( m_tran_per_add.size() == num_prim );
-
-
 
     //assert(nmax - nmin == num_solids - 1);  // expect contiguous node indices
     if(nmax - nmin != num_prim - 1)
     {
-        LOG(warning) << "GParts::makePrimBuffer non-contiguous node indices"
+        LOG(warning) << "GParts::reconstructPartsPerPrim  non-contiguous node indices"
                      << " nmin " << nmin 
                      << " nmax " << nmax
                      << " num_prim " << num_prim
@@ -549,43 +538,77 @@ void GParts::makePrimBuffer()
                      << " tran_per_add.size " << m_tran_per_add.size()
                      ; 
     }
+}
 
-    
-    
 
+
+void GParts::makePrimBuffer()
+{
+    // Derives prim buffer from the parts buffer
+    //
+    reconstructPartsPerPrim();
+    unsigned int num_prim = m_parts_per_prim.size() ;
+
+    LOG(info) << "GParts::makePrimBuffer"
+              << " parts_per_prim.size " << m_parts_per_prim.size()
+              << " part_per_add.size " << m_part_per_add.size()
+              << " tran_per_add.size " << m_tran_per_add.size()
+              ; 
+ 
 
     guint4* priminfo = new guint4[num_prim] ;
 
-    typedef std::map<unsigned int, unsigned int> UU ; 
     unsigned part_offset = 0 ; 
     unsigned tran_offset = 0 ; 
-    unsigned n = 0 ; 
 
-    //for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
-
-    for(unsigned i=0 ; i < num_prim ; i++)
+    if(isNodeTree())
     {
-        //unsigned int node_index = it->first ; 
-        //unsigned int parts_for_prim = it->second ; 
-        
-        unsigned int tran_for_prim = m_tran_per_add[i] ; 
-        unsigned int parts_for_prim = m_parts_per_prim[i] ; 
+        assert( m_part_per_add.size() == num_prim );
+        assert( m_tran_per_add.size() == num_prim );
 
+        unsigned n = 0 ; 
+        for(unsigned i=0 ; i < num_prim ; i++)
+        {
+            unsigned int tran_for_prim = m_tran_per_add[i] ; 
+            unsigned int parts_for_prim = m_parts_per_prim[i] ; 
 
-        guint4& pri = *(priminfo+n) ;
+            guint4& pri = *(priminfo+n) ;
 
-        pri.x = part_offset ; 
-        pri.y = parts_for_prim ;
-        pri.z = tran_offset ; 
-        pri.w = m_primflag ; 
+            pri.x = part_offset ; 
+            pri.y = parts_for_prim ;
+            pri.z = tran_offset ; 
+            pri.w = m_primflag ; 
 
-        LOG(info) << "GParts::makePrimBuffer priminfo " << pri.description() ;       
+            LOG(info) << "GParts::makePrimBuffer(nodeTree) priminfo " << pri.description() ;       
 
-        part_offset += parts_for_prim ; 
-        tran_offset += tran_for_prim ; 
-
-        n++ ; 
+            part_offset += parts_for_prim ; 
+            tran_offset += tran_for_prim ; 
+            n++ ; 
+        }
     }
+    else if(isPartList())
+    {
+        unsigned n = 0 ; 
+        typedef std::map<unsigned int, unsigned int> UU ; 
+        for(UU::const_iterator it=m_parts_per_prim.begin() ; it != m_parts_per_prim.end() ; it++)
+        {
+            //unsigned int node_index = it->first ; 
+            unsigned int parts_for_prim = it->second ; 
+
+            guint4& pri = *(priminfo+n) ;
+
+            pri.x = part_offset ; 
+            pri.y = parts_for_prim ;
+            pri.z = 0u ; 
+            pri.w = m_primflag ; 
+
+            LOG(info) << "GParts::makePrimBuffer(partList) priminfo " << pri.description() ;       
+
+            part_offset += parts_for_prim ; 
+            n++ ; 
+        }
+    }
+
 
     NPY<unsigned int>* buf = NPY<unsigned int>::make( num_prim, 4 );
     buf->setData((unsigned int*)priminfo);

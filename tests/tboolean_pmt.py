@@ -103,7 +103,11 @@ if __name__ == '__main__':
         verbosity = vverbosity.get(i, vverbosity[DEFAULT])
         im.update(resolution=resolution, verbosity=verbosity)
 
-        poly = im
+        if i in [CATHODE, BOTTOM]:
+            poly = dcs
+        else:
+            poly = im
+        pass
 
         root = tr.get(i)
         log.info("\ntranslating ..........................  %r " % root )

@@ -8,6 +8,7 @@
 #include "NSlice.hpp"
 #include "NCSG.hpp"
 #include "GLMFormat.hpp"
+#include "NGLMExt.hpp"
 
 // opticks-
 #include "Opticks.hh"
@@ -198,6 +199,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     return triangulated ; 
 }
+
+
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {

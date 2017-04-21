@@ -4,7 +4,7 @@
 #include <vector>
 #include <map>
 
-#include <glm/fwd.hpp>
+#include "NGLM.hpp"
 
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
