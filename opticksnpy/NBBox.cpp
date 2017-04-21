@@ -1,4 +1,5 @@
 //#include <sstream>
+#include <iostream>
 #include <cstring>
 
 #include "NGLM.hpp"
@@ -88,5 +89,63 @@ void nbbox::include(const nbbox& other)
     min = nminf( min, other.min );
     max = nmaxf( max, other.max );
 }
+
+
+
+bool nbbox::contains(const nvec3& p, float epsilon) const 
+{
+    // allow epsilon excursions
+    bool x_ok = p.x - min.x > -epsilon && p.x - max.x < epsilon ;
+    bool y_ok = p.y - min.y > -epsilon && p.y - max.y < epsilon ;
+    bool z_ok = p.z - min.z > -epsilon && p.z - max.z < epsilon ;
+
+    bool xyz_ok = x_ok && y_ok && z_ok ; 
+
+    std::cout << "nbbox::contains"
+               << " epsilon " << epsilon 
+               << " x_ok " << x_ok
+               << " y_ok " << y_ok
+               << " z_ok " << z_ok
+               << " xyz_ok " << xyz_ok
+               << std::endl ; 
+
+    if(!x_ok) std::cout 
+              << "nbbox::contains(X)"
+              << " epsilon " << epsilon 
+              << " p.x " << p.x
+              << " min.x " << min.x 
+              << " max.x " << max.x 
+              << std::endl ;
+ 
+    if(!y_ok) std::cout
+              << "nbbox::contains(Y)"
+              << " epsilon " << epsilon 
+              << " p.y " << p.y
+              << " min.y " << min.y 
+              << " max.y " << max.y 
+              << std::endl ;
+ 
+    if(!z_ok) std::cout 
+              << "nbbox::contains(Z)"
+              << " epsilon " << epsilon 
+              << " p.z " << p.z
+              << " min.z " << min.z 
+              << " max.z " << max.z 
+              << std::endl ;
+ 
+
+
+    return xyz_ok ; 
+
+} 
+
+bool nbbox::contains(const nbbox& other, float epsilon ) const
+{
+    return contains( other.min, epsilon ) && contains(other.max, epsilon ) ;
+} 
+
+
+
+
 
 

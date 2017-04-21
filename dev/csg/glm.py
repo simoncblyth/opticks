@@ -106,7 +106,7 @@ def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
 
 
 
-def make_transform( order, tla, rot, sca, dtype=np.float32 ):
+def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True):
     """
     :param order: string containing "s" "r" and "t", standard order is "trs" meaning t*r*s  ie scale first, then rotate, then translate 
     :param tla: tx,ty,tz tranlation dists eg 0,0,0 for no translation 
@@ -122,6 +122,7 @@ def make_transform( order, tla, rot, sca, dtype=np.float32 ):
     if tla is None and rot is None and sca is None:
         return None
 
+    identity = np.eye(4, dtype=dtype)
     m = np.eye(4, dtype=dtype) 
     for c in order:
         if c == 's':
@@ -133,6 +134,10 @@ def make_transform( order, tla, rot, sca, dtype=np.float32 ):
         else:
             assert 0
         pass
+    pass
+
+    if suppress_identity and np.all( m == identity ):
+        return None
     pass
     return m 
 

@@ -22,7 +22,7 @@
 
 
 
-NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float scale_bb, int ctrl, std::string seedstr)
+NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float expand_bb, int ctrl, std::string seedstr)
     :
     m_timer(new Timer),
     m_node(node),
@@ -31,7 +31,7 @@ NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, flo
     m_mesher(NULL),
     m_resolution(resolution),
     m_verbosity(verbosity),
-    m_scale_bb(scale_bb),  
+    m_expand_bb(expand_bb),  
     m_ctrl(ctrl),
     m_seedstr(seedstr)
 {
@@ -45,7 +45,7 @@ std::string NImplicitMesher::desc()
    ss << "NImplicitMesher"
       << " resolution " << m_resolution
       << " verbosity " << m_verbosity
-      << " scale_bb " << m_scale_bb
+      << " expand_bb " << m_expand_bb
       << " ctrl " << m_ctrl
       << " seedstr " << m_seedstr
       ;
@@ -56,8 +56,7 @@ void NImplicitMesher::init()
 {
     m_timer->start();
 
-    m_bbox->scale(m_scale_bb);  // kinda assumes centered at origin, slightly enlarge
-    m_bbox->side = m_bbox->max - m_bbox->min ;
+    m_bbox->expand(m_expand_bb);  // kinda assumes centered at origin, slightly enlarge
 
     float tval = 0.f ; 
     float negate = false ; 
@@ -111,16 +110,26 @@ int NImplicitMesher::addManualSeeds()
                float sx = seed[i*6+0]; 
                float sy = seed[i*6+1]; 
                float sz = seed[i*6+2];
+
                float dx = seed[i*6+3]; 
                float dy = seed[i*6+4]; 
                float dz = seed[i*6+5];
 
+               glm::vec4 pos_(sx,sy,sz,1.f);
+               glm::vec4 dir_(dx,dy,dz,0.f);
+
+               glm::vec3 spos = m_node->apply_gtransform(pos_);
+               glm::vec3 sdir = m_node->apply_gtransform(dir_);
+                
+
                LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed 
                          << " sxyz(" << sx << " " << sy << " " << sz << ") " 
+                         << " spos(" << spos.x << " " << spos.y << " " << spos.z << ") " 
                          << " dxyz(" << dx << " " << dy << " " << dz << ") " 
+                         << " sdir(" << sdir.x << " " << sdir.y << " " << sdir.z << ") " 
                          ; 
 
-               m_mesher->addSeed(sx, sy, sz, dx, dy, dz); 
+               m_mesher->addSeed(spos.x, spos.y, spos.z, sdir.x, sdir.y, sdir.z); 
                numManual++ ;    
             }
         }

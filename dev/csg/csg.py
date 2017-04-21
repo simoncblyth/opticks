@@ -28,6 +28,8 @@ X,Y,Z,W = 0,1,2,3
 TREE_NODES = lambda height:( (0x1 << (1+(height))) - 1 )
 TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
 
+fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",")
+
 
 class CSG(CSG_):
     """
@@ -247,23 +249,29 @@ class CSG(CSG_):
     def _get_translate(self):
         return self._translate 
     def _set_translate(self, s):
-        self._translate = s
+        if s is None: s="0,0,0"
+        self._translate = fromstring_(s) 
     translate = property(_get_translate, _set_translate)
 
     def _get_rotate(self):
         return self._rotate
     def _set_rotate(self, s):
-        self._rotate = s
+        if s is None: s="0,0,1,0"
+        self._rotate = fromstring_(s)
     rotate = property(_get_rotate, _set_rotate)
 
     def _get_scale(self):
         return self._scale
     def _set_scale(self, s):
-        self._scale = s
+        if s is None: s="1,1,1"
+        self._scale = fromstring_(s)
     scale = property(_get_scale, _set_scale)
 
     def _get_transform(self):
         transform = make_trs(self._translate, self._rotate, self._scale ) 
+
+        
+
         return transform 
     transform = property(_get_transform)
     

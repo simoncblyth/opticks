@@ -1,14 +1,13 @@
 #pragma once
 
 #include <glm/fwd.hpp>
+
 #include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
 
-struct NPY_API nbbox {
-
-    // NO CTOR
-
+struct NPY_API nbbox 
+{
     void dump(const char* msg);
     void include(const nbbox& other );
     const char* desc() const;
@@ -24,14 +23,15 @@ struct NPY_API nbbox {
     nvec4 dimension_extent() const ;
     static float extent(const nvec4& dim);
 
-    bool contains( const nvec3& p) const ; 
-    bool contains( const nbbox& other) const ; 
+    bool contains( const nvec3& p, float epsilon=1e-4) const ; 
+    bool contains( const nbbox& other, float epsilon=1e-4) const ; 
 
 
     void expand(float delta)
     {
         min -= delta ; 
         max += delta ; 
+        side = max - min ; 
     } 
 
     void scale(float factor)
@@ -69,20 +69,6 @@ inline NPY_API nbbox make_bbox()
 {
     return make_bbox(0,0,0,0) ;
 }
-
-
-inline NPY_API bool nbbox::contains(const nvec3& p) const 
-{
-    return p.x >= min.x && p.x <= max.x &&
-           p.y >= min.y && p.y <= max.y &&
-           p.z >= min.z && p.z <= max.z ;
-} 
-
-inline NPY_API bool nbbox::contains(const nbbox& other) const
-{
-    return contains( other.min ) && contains(other.max ) ;
-} 
-
 
 
 

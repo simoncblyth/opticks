@@ -35,9 +35,9 @@ Usage::
 
 
 
-
 """
 
+import numpy as np
 import logging
 log = logging.getLogger(__name__)
 
@@ -66,31 +66,44 @@ if __name__ == '__main__':
     objs.append(container)
 
 
-    im = dict(poly="IM", resolution="150", verbosity="2")
+    im = dict(poly="IM")
     mc = dict(poly="MC", nx="30")
     dcs = dict(poly="DCS", nominal="7", coarse="7", threshold="1", verbosity="0")
 
+
+    DEFAULT = -1
     PYREX = 0    
     VACUUM = 1   
-
     CATHODE = 2 
     BOTTOM = 3 
-
     DYNODE = 4   
 
-    ii = [BOTTOM]
-    #ii = range(nn)
+    #ii = [DYNODE]
+    ii = range(nn)
 
     vseeds = {}
     vseeds[CATHODE] = "0,0,127.9,0,0,1"
     vseeds[BOTTOM] = "0,0,0,0,0,-1"
+
+    vresolution = {}
+    vresolution[BOTTOM] = "150"
+    vresolution[DEFAULT] = "40"
+
+    vverbosity = {}
+    vverbosity[DYNODE] = "3"
+    vverbosity[DEFAULT] = "0"
 
 
     for i in ii:
 
         seeds = vseeds.get(i, None)
         if seeds is not None:  im.update(seeds=seeds)
-        poly = dcs
+
+        resolution = vresolution.get(i, vresolution[DEFAULT])
+        verbosity = vverbosity.get(i, vverbosity[DEFAULT])
+        im.update(resolution=resolution, verbosity=verbosity)
+
+        poly = im
 
         root = tr.get(i)
         log.info("\ntranslating ..........................  %r " % root )
@@ -98,6 +111,12 @@ if __name__ == '__main__':
         obj = NCSGConverter.ConvertLV( root.lv )
         obj.boundary = args.testobject
         obj.meta.update(poly)  
+        
+        obj._translate += np.array([0, (i-2)*200, 0], dtype=np.float32 ) # solid parade in Y  
+
+        log.info("obj.translate: %s " % (obj.translate) )
+        log.info("obj.transform: \n%s " % (obj.transform) )
+
         objs.append(obj)
 
         CSG.Dump(obj)

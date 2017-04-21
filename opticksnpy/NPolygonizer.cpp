@@ -79,8 +79,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     if(!valid)
     {   
-        checkTris(tris, true);
-        LOG(warning) << "INVALID NPolygonizer tris with " << m_poly << "  triangles outside root bbox REPLACE WITH PLACEHOLDER " ;   
+        LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
         delete tris ; 
         tris = NTrianglesNPY::box(*m_bbox);
     }   
@@ -89,7 +88,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
 }
 
 
-bool NPolygonizer::checkTris(NTrianglesNPY* tris, bool verbose)
+bool NPolygonizer::checkTris(NTrianglesNPY* tris)
 {
     unsigned numTris = tris ? tris->getNumTriangles() : 0 ;
 
@@ -97,15 +96,17 @@ bool NPolygonizer::checkTris(NTrianglesNPY* tris, bool verbose)
 
     bool poly_valid = tris_bb ? m_bbox->contains(*tris_bb) : false  ;
 
-    if(verbose)
-    LOG(info) << "NPolygonizer::checkTris"
-              << " poly " << m_poly
-              << " index " << m_index 
-              << " numTris " << numTris
-              << " tris_bb " << ( tris_bb ? tris_bb->desc() : "bb:NULL" )
-              << " poly_valid " << ( poly_valid ? "YES" : "NO" )
-              ;   
+    if(!poly_valid)
+    {
+        LOG(warning) << "NPolygonizer::checkTris INVALID POLYGONIZATION "
+                     << " poly " << m_poly
+                     << " index " << m_index 
+                     << " numTris " << numTris
+                     ;
 
+        std::cout << " node_bb " << m_bbox->desc() << std::endl ; 
+        std::cout << " tris_bb " << ( tris_bb ? tris_bb->desc() : "bb:NULL" ) << std::endl ; 
+    }
     return poly_valid ;
 }
 
@@ -140,8 +141,9 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 #ifdef WITH_ImplicitMesher
     int   resolution = m_meta->get<int>("resolution", "100" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
+    float expand_bb = 1e-4 ; 
     std::string seeds = m_meta->get<std::string>("seeds", "" );
-    NImplicitMesher poly(m_root, resolution, m_verbosity, 1.01, ctrl, seeds ) ; 
+    NImplicitMesher poly(m_root, resolution, m_verbosity, expand_bb, ctrl, seeds ) ; 
     tris = poly();
 #else
     assert(0 && "installation does not have ImplicitMesher support" );

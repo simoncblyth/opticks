@@ -35,7 +35,7 @@ class NCSGConverter(object):
         cn = cls.convert(lvgeom[0]) 
 
         if lv.posXYZ is not None:
-            assert cn.transform is None
+            assert cn.transform is None, cn.transform 
             translate  = "%s,%s,%s" % (lv.xyz[0], lv.xyz[1], lv.xyz[2])
             cn.translate = translate 
             log.info("TranslateLV posXYZ:%r -> translate %s  " % (lv.posXYZ, translate) )

@@ -20,7 +20,7 @@ class NPY_API NImplicitMesher
     public:
         typedef std::function<float(float,float,float)> FUNC ; 
     public:
-        NImplicitMesher(nnode* node, int resolution=100, int verbosity=1, float scale_bb=1.01f, int ctrl=0, std::string seedstr="");
+        NImplicitMesher(nnode* node, int resolution=100, int verbosity=1, float expand_bb=1e-4, int ctrl=0, std::string seedstr="");
         NTrianglesNPY* operator()();
  
         void setFunc(FUNC sdf);
@@ -45,7 +45,7 @@ class NPY_API NImplicitMesher
         ImplicitMesherF* m_mesher ; 
         int              m_resolution; 
         int              m_verbosity ; 
-        float            m_scale_bb ;  
+        float            m_expand_bb ;  
         int              m_ctrl ;  
         std::string      m_seedstr ; 
 
