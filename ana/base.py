@@ -270,6 +270,7 @@ def opticks_args(**kwa):
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
 
+    addpath = kwa.get("addpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/dayabay.xml" )
     apmtddpath = kwa.get("apmtddpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-pmt.xml" )
     apmtpathtmpl = kwa.get("apmtpathtmpl", "$OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/%(apmtidx)s/GPmt.npy" )
     apmtidx = kwa.get("apmtidx", 2 )
@@ -326,6 +327,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--apmtpathtmpl", default=apmtpathtmpl, help="Template Path to analytic PMT serialization, see pmt- and ana/pmt/analytic.py. %(default)s ")
     parser.add_argument(     "--apmtidx",      default=apmtidx, type=int, help="PmtPath index used to fill in the template, see pmt- and ana/pmt/analytic.py. %(default)s ")
     parser.add_argument(     "--apmtddpath",   default=apmtddpath, help="Path to detdesc xml file with description of DayaBay PMT, which references other files. %(default)s ")
+    parser.add_argument(     "--addpath",   default=addpath, help="Path to detdesc xml file for topdown testing. %(default)s ")
     parser.add_argument(     "--yes", action="store_true", help="Confirm any YES dialogs. %(default)s ")
     parser.add_argument(     "--csgpath",   default=csgpath, help="Directory of the NCSG input serialization. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")

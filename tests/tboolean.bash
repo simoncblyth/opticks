@@ -452,6 +452,9 @@ CSG.Serialize([container, dzs], "$TMP/$FUNCNAME" )
    produce the expected ring like shape, unless you slightly increase the 
    zmin/zmax of the one you are subtracting over the other
 
+   * avoid common/coincident faces between the subtracted solids 
+
+
 #. FIXED: IM poly: fails to find surface even radii 400 and 500, hmm NZSphere looking in +z, 
    but manual seeding doesnt find surface either, it does after fix  
    bug in the setting of manual seed directions in NImplicitMesher

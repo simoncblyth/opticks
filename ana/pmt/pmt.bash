@@ -469,6 +469,10 @@ pmt-ecd(){ cd $(pmt-edir) ; }
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
 
+
+pmt-pdf(){ open ~/opticks_refs/Detdesc_Solids.pdf ~/opticks_refs/Detdesc_lhcbdtd.pdf  ; }
+pmt-gg(){ open ~/opticks_refs/GDMLmanual.pdf ; }
+
 pmt-ddir(){ echo $(dirname $(pmt-dir)) ; }
 pmt-dcd(){  cd $(pmt-ddir) ; }
 

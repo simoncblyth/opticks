@@ -1,5 +1,140 @@
 #!/usr/bin/env python
+"""
+ddbase.py : Detdesc parsing into wrapped Elem tree
+====================================================
 
+
+Questions 
+-----------
+
+
+Fly in ointment is that there is detdesc xml generation
+which means cannot understand whats going on from sources
+alone.
+
+
+Detdesc Cross File Referencing
+-------------------------------------
+
+
+Catalog declares things that can be referenced from other files and
+defines the references for them eg /dd/Geometr
+
+
+DDDB/geometry.xml::
+
+     04 <DDDB>
+      5 
+      6   <catalog name="Geometry">
+      7 
+     ..
+     30 
+     31     <catalogref href="PMT/geometry.xml#PMT" />
+     ..
+     41   </catalog>
+     42 
+     43 </DDDB>
+
+
+DDDB/PMT/geometry.xml::
+
+     06 <DDDB>
+      7 
+      8   <catalog name="PMT">
+      9 
+     10     <logvolref href="hemi-pmt.xml#lvPmtHemiFrame"/>
+     11     <logvolref href="hemi-pmt.xml#lvPmtHemi"/>
+     12     <logvolref href="hemi-pmt.xml#lvPmtHemiwPmtHolder"/>
+     13     <logvolref href="hemi-pmt.xml#lvAdPmtCollar"/>
+
+
+
+
+::
+
+    simon:DDDB blyth$ pmt-dfind /dd/Geometry/PMT/lvPmtHemi\"
+    ./PMT/hemi-pmt.xml:     <physvol name="pvPmtHemi" logvol="/dd/Geometry/PMT/lvPmtHemi" />
+    ./PMT/hemi-pmt.xml:     <physvol name="pvAdPmt" logvol="/dd/Geometry/PMT/lvPmtHemi" />
+    ./PMT/pmt.xml:       volsecond="/dd/Geometry/PMT/lvPmtHemi">
+    ./PmtBox/geometry.xml:    <physvol name="pvPmtBoxPmt" logvol="/dd/Geometry/PMT/lvPmtHemi">
+    ./PmtPanel/properties.xml:     volfirst="/dd/Geometry/PMT/lvPmtHemi"
+    ./PmtPanel/properties.xml:     volfirst="/dd/Geometry/PMT/lvPmtHemi"
+    simon:DDDB blyth$ 
+
+    simon:DDDB blyth$ pmt-dfind /dd/Geometry/PMT/lvPmtHemiFrame\"
+    ./PmtPanel/vetopmt.xml:    <physvol name="pvVetoPmtUnit" logvol="/dd/Geometry/PMT/lvPmtHemiFrame">
+    simon:DDDB blyth$ 
+
+    simon:DDDB blyth$ pmt-dfind /dd/Geometry/PMT/lvPmtHemiwPmtHolder\"
+    ./AdPmts/geometry.xml:  <physvol name="pvAdPmtUnit" logvol="/dd/Geometry/PMT/lvPmtHemiwPmtHolder">
+    simon:DDDB blyth$ 
+
+
+
+
+* Relies on all paramters being defined within the file
+  (XML entity inclusion is regarded as being withn the same file)
+
+
+Classes
+--------
+
+Att(object) 
+    holds string expression "expr" and top level global "g" 
+    allowing the expression to be evaluated within the global context  
+    via the "value" property 
+ 
+    For simple properties this is not needed,  only need for expression 
+    properties.
+
+
+Elem(object)
+    ctor simply holds raw lxml elem and global "g", 
+
+    Primary functionality invoked via findall_ which takes the 
+    lxml elements returned by lxml findall and wraps them into 
+    Elem subclasses appropriate to the lxml tag
+     
+    Also provides introspection. 
+
+
+Dddb(Elem)
+    top level global g that holds the context within which txt expr 
+    are evaluated via Att "value" properties 
+
+Parameter(Elem)
+    prop: expr
+
+PosXYZ(Elem)
+    att: x,y,z 
+
+    att rather than simple props are needed as they are expressions 
+    that must be evaluated within the global context 
+
+Primitive(Elem)
+    att: outerRadius, innerRadius
+
+Sphere(Primitive)
+    att: startThetaAngle, deltaThetaAngle
+
+Tubs(Primitive)
+    att: sizeZ
+
+Logvol(Elem)
+    prop: material, sensdet 
+
+Physvol(Elem)
+    prop: logvolref
+
+Union(Elem)
+Intersection(Elem)
+Subtraction(Elem)
+    naming types
+
+
+
+
+"""
 import os, re, logging, math
 log = logging.getLogger(__name__)
 
@@ -11,6 +146,7 @@ import lxml.html as HT
 from math import acos   # needed for detdesc string evaluation during context building
 
 tostring_ = lambda _:ET.tostring(_)
+exists_ = lambda _:os.path.exists(os.path.expandvars(_))
 parse_ = lambda _:ET.parse(os.path.expandvars(_)).getroot()
 fparse_ = lambda _:HT.fragments_fromstring(file(os.path.expandvars(_)).read())
 pp_ = lambda d:"\n".join([" %30s : %f " % (k,d[k]) for k in sorted(d.keys())])
@@ -29,10 +165,61 @@ class Att(object):
     def __repr__(self):
         return "%s : %s " % (self.expr, self.value)
 
-class Elem(object):
+
+
+class E(object):
+    typ = property(lambda self:self.__class__.__name__)
+    name  = property(lambda self:self.elem.attrib.get('name',None))
+
+    def __init__(self, elem, g=None):
+        self.elem = elem 
+        self.g = g 
+
+    def att(self, k, dflt=None):
+        v = self.elem.attrib.get(k, None)
+        return Att(v, self.g) if v is not None else Att(dflt, self.g, evaluate=False) 
+
+    def findall_(self, expr):
+        """
+        lxml findall result elements are wrapped in the class appropriate to their tags,
+        note the global g gets passed into all Elem
+
+        g.kls is a dict associating tag names to classes, Elem 
+        is fallback, all the classes have signature of  elem-instance, g 
+
+        """
+        wrap_ = lambda e:self.g.kls.get(e.tag,E)(e,self.g)
+        fa = map(wrap_, self.elem.findall(expr) )
+        kln = self.__class__.__name__
+        name = self.name 
+        log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
+        return fa 
+
+    def findone_(self, expr):
+        all_ = self.findall_(expr)
+        assert len(all_) == 1
+        return all_[0]
+
+    def find1_(self, expr):
+        all_ = self.findall_(expr)
+        assert len(all_) in [0,1]
+        return all_[0] if len(all_) == 1 else None
+
+    def find_(self, expr):
+        e = self.elem.find(expr) 
+        wrap_ = lambda e:self.g.kls.get(e.tag,Elem)(e,self.g)
+        return wrap_(e) if e is not None else None
+
+    def __repr__(self):
+        return "%15s : %s " % ( self.elem.tag, repr(self.elem.attrib) )
+
+
+
+
+
+class Elem(E):
     posXYZ = None
     is_rev = False
-    name  = property(lambda self:self.elem.attrib.get('name',None))
 
     # structure avoids having to forward declare classes
     is_primitive = property(lambda self:type(self) in self.g.primitive)
@@ -46,7 +233,6 @@ class Elem(object):
     is_posXYZ = property(lambda self:type(self) in self.g.posXYZ)
     is_geometry  = property(lambda self:type(self) in self.g.geometry)
     is_logvol  = property(lambda self:type(self) in self.g.logvol)
-    typ = property(lambda self:self.__class__.__name__)
 
     @classmethod
     def link_posXYZ(cls, ls, posXYZ):
@@ -102,43 +288,6 @@ class Elem(object):
        return z
     z = property(_get_z)
 
-    def __init__(self, elem, g=None):
-        self.elem = elem 
-        self.g = g 
-
-    def att(self, k, dflt=None):
-        v = self.elem.attrib.get(k, None)
-        return Att(v, self.g) if v is not None else Att(dflt, self.g, evaluate=False) 
-
-    def findall_(self, expr):
-        """
-        lxml findall result elements are wrapped in the class appropriate to their tags,
-        note the global g gets passed into all Elem
-
-        g.kls is a dict associating tag names to classes, Elem 
-        is fallback, all the classes have signature of  elem-instance, g 
-
-        """
-        wrap_ = lambda e:self.g.kls.get(e.tag,Elem)(e,self.g)
-        fa = map(wrap_, self.elem.findall(expr) )
-        kln = self.__class__.__name__
-        name = self.name 
-        log.debug("findall_ from %s:%s expr:%s returned %s " % (kln, name, expr, len(fa)))
-        return fa 
-
-    def findone_(self, expr):
-        all_ = self.findall_(expr)
-        assert len(all_) == 1
-        return all_[0]
-
-    def find_(self, expr):
-        e = self.elem.find(expr) 
-        wrap_ = lambda e:self.g.kls.get(e.tag,Elem)(e,self.g)
-        return wrap_(e) if e is not None else None
-
-    def __repr__(self):
-        return "%15s : %s " % ( self.elem.tag, repr(self.elem.attrib) )
-
     def children(self):
         """
         Defines the nature of the tree. 
@@ -154,7 +303,17 @@ class Elem(object):
             posXYZ = self.find_("./posXYZ")
             lvn = self.logvolref.split("/")[-1]
             lv = self.g.logvol_(lvn)
-            lv.posXYZ = posXYZ    # propagating the 
+
+            lv.posXYZ = posXYZ   
+    
+            ## Hmm: Associating a posXYZ to an lv should probably be done 
+            ##      on a clone of the lv ?  As there may be multiple such placements
+            ##      and dont want prior placements to get stomped on.
+            ##
+            ## OR use a different class to hold the original lv   
+            ##    together with its posXYZ ?
+            ##
+
             if posXYZ is not None:
                 log.info("children... %s passing pv posXYZ to lv %s  " % (self.name, repr(lv))) 
             return [lv]
@@ -200,9 +359,9 @@ class Intersection(Elem):
     def __repr__(self):
         return "Intersection %20s  " % (self.name)
 
-class Difference(Elem):
+class Subtraction(Elem):
     def __repr__(self):
-        return "Difference%20s  " % (self.name)
+        return "Subtraction %20s  " % (self.name)
 
 
 
@@ -250,7 +409,6 @@ class Sphere(Primitive):
     def has_deltaThetaAngle(self):
         return self.deltaThetaAngle.value is not None 
 
-
     def __repr__(self):
         return "sphere %20s : %s :  %s " % (self.name, self.outerRadius, self.posXYZ)
 
@@ -272,8 +430,9 @@ class Dddb(Elem):
         "posXYZ":PosXYZ,
         "intersection":Intersection,
         "union":Union,
-        "difference":Difference,    # not seen in wild
+        "subtraction":Subtraction,    # not seen in wild
     }
+
 
     primitive = [Sphere, Tubs]
     tubs = [Tubs]
@@ -281,12 +440,12 @@ class Dddb(Elem):
 
     intersection = [Intersection]
     union = [Union]
-    difference = [Difference]
-    operator = [Union, Intersection, Difference]
+    subtraction = [Subtraction]
+    operator = [Union, Intersection, Subtraction]
 
-    composite = [Union, Intersection, Difference, Physvol]  # who uses this ? funny combo
+    composite = [Union, Intersection, Subtraction, Physvol]  # who uses this ? funny combo
 
-    geometry = [Sphere, Tubs, Union, Intersection, Difference]
+    geometry = [Sphere, Tubs, Union, Intersection, Subtraction]
 
     posXYZ= [PosXYZ]
     logvol = [Logvol]
@@ -322,6 +481,12 @@ class Dddb(Elem):
         self.ctx.build_context(self.params_())
 
     def logvol_(self, name):
+        """
+        Hmm this referencing is single file only, 
+        need to build registry of logvol from all files
+        """
+        log.info("logvol_ %s " % name)
+
         if name[0] == '/':
             name = name.split("/")[-1]
         return self.find_(".//logvol[@name='%s']"%name)
@@ -353,7 +518,8 @@ class Context(object):
     def __init__(self, d, expand):
         """
         :param d: context dict pre-populated with units
-        :param expand: manual expansion dict  
+        :param expand: manual expansion dict, workaround for detdesc 
+                       expressions that are not valid python 
         """
         self.d = d
         self.expand = expand
@@ -361,6 +527,10 @@ class Context(object):
     def build_context(self, params):
         """
         :param params: XML parameter elements  
+
+        Three wave context building avoids having to work out dependencies, 
+        just repeat and rely on simpler expressions getting set into 
+        context on prior waves.
         """
         name_error = params
         type_error = []
@@ -418,8 +588,125 @@ class Context(object):
 
 
 
+
+    
+
+
+
+class Ref(E):
+    href = property(lambda self:self.elem.attrib['href'])
+
+    xmlname = property(lambda self:self.href.split("#")[0])
+    anchor = property(lambda self:self.href.split("#")[1])
+
+    xmlpath = property(lambda self:os.path.join(self.parent.xmldir, self.xmlname))
+    ddpath = property(lambda self:os.path.join(self.parent.ddpath, self.anchor))
+
+    def __repr__(self):
+        return "%20s %20s %s %s " % (self.typ, self.anchor, self.xmlpath, self.ddpath )
+
+class CatalogRef(Ref):
+    pass
+
+class LogvolRef(Ref):
+    pass
+
+
+class Catalog(E):
+    """
+    Role of catalog is to provide easy access to 
+    logvol via simple path access... so this 
+    needs to maintain the connection between 
+    
+    * filesystem paths
+    * dd paths
+    * in memory elements 
+
+    """ 
+    name = property(lambda self:self.elem.attrib['name'])
+    parent = None
+
+    def _get_ddpath(self):
+        lev = [""]
+        if self.parent is not None:
+            lev.append( self.parent.ddpath )
+        pass
+        lev.append(self.name) 
+        return "/".join(lev)
+
+    ddpath = property(_get_ddpath)
+
+
+    def __repr__(self):
+        return "%20s %20s %s " % (self.typ, self.name, self.ddpath)
+
+    def refs(self):
+        """
+        Catalogs often contain catalogref, logvolref but they
+        can also directly contain logvol.
+    
+        Hmm splitting into separate files is an 
+        implementation detail, should not impact the 
+        tree being built.
+        """
+        refs = self.findall_("./catalogref")
+        for ref in refs:
+            ref.parent = self
+            if not exists_(ref.xmlpath):
+                log.warning("ref.xmlpath doesnt exist %s " % ref.xmlpath)
+        pass
+        return refs 
+
+
+
+
+
+
+class DD(E):
+
+    ddr = {}
+
+    kls = {
+        "catalog":Catalog,
+        "catalogref":CatalogRef,
+        "logvolref":LogvolRef,
+    }
+
+    xmldir = property(lambda self:os.path.dirname(self.xmlpath))
+
+    @classmethod
+    def parse(cls, path):
+        log.info("DD parsing %s " % path )
+        g = cls 
+        dd = DD(parse_(path), g)
+        dd.xmlpath = path
+        dd.init()
+        return dd
+
+    def init(self):
+        cat = self.find1_("./catalog")
+        if cat is not None:
+            print cat  
+            cat.xmldir = self.xmldir
+            for ref in cat.refs():
+                print ref, ref.ddpath
+                self.g.ddr[ref.ddpath] = DD.parse(ref.xmlpath) 
+
+    def __repr__(self):
+        return "%20s %s %s " % (self.typ, self.xmlpath, self.xmldir)
+
+
+
+
+
+
+
+
+
 if __name__ == '__main__':
     args = opticks_main(apmtidx=2)
+
+
 
     xmlpath = args.apmtddpath 
     log.info("parsing %s -> %s " % (xmlpath, os.path.expandvars(xmlpath)))
@@ -427,5 +714,12 @@ if __name__ == '__main__':
     g = Dddb.parse(xmlpath)
 
     lv = g.logvol_("lvPmtHemi")
+
+
+    dd = DD.parse(args.addpath)
+
+
+    print dd
+
 
 

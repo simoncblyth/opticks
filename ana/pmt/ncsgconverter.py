@@ -14,7 +14,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG 
 
-from ddbase import Dddb, Sphere, Tubs, Intersection, Union, Difference
+from ddbase import Dddb, Sphere, Tubs, Intersection, Union, Subtraction 
 from treebase import Tree
 
 
@@ -220,8 +220,8 @@ if __name__ == '__main__':
     g = Dddb.parse(args.apmtddpath)
 
 
-    #lvn = "lvPmtHemi"
-    lvn = "lvPmtHemiwPmtHolder"
+    lvn = "lvPmtHemi"
+    #lvn = "lvPmtHemiwPmtHolder"
 
     lv = g.logvol_(lvn)
 

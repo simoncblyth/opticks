@@ -44,5 +44,45 @@ AdPmts/geometry.xml::
 
 
 
- 
+Detdesc generation
+--------------------
+
+Detdesc generation complicates things greatly... Take a look at GDML
+
+/usr/local/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/python/XmlDetDescGen
+
+
+
+Multi File Detdesc Parsing with ddbase.py ?
+-----------------------------------------------
+
+* https://wiki.bnl.gov/dayabay/index.php?title=Tutorial:DetDesc/XML_Files
+
+
+Detdesc using catalog to handle cross-file ? Always ? 
+
+::
+
+    simon:PMT blyth$ pmt-dfind hemi-pmt.xml
+    ./PMT/geometry.xml:    <logvolref href="hemi-pmt.xml#lvPmtHemiFrame"/>
+    ./PMT/geometry.xml:    <logvolref href="hemi-pmt.xml#lvPmtHemi"/>
+    ./PMT/geometry.xml:    <logvolref href="hemi-pmt.xml#lvPmtHemiwPmtHolder"/>
+    ./PMT/geometry.xml:    <logvolref href="hemi-pmt.xml#lvAdPmtCollar"/>
+    ...
+
+     06 <DDDB>
+      7 
+      8   <catalog name="PMT">
+      9 
+     10     <logvolref href="hemi-pmt.xml#lvPmtHemiFrame"/>
+     11     <logvolref href="hemi-pmt.xml#lvPmtHemi"/>
+     12     <logvolref href="hemi-pmt.xml#lvPmtHemiwPmtHolder"/>
+     13     <logvolref href="hemi-pmt.xml#lvAdPmtCollar"/>
+     14     <logvolref href="hemi-pmt.xml#lvPmtHemiCathode"/>
+     15     <logvolref href="hemi-pmt.xml#lvPmtHemiVacuum"/>
+     16     <logvolref href="hemi-pmt.xml#lvPmtHemiBottom"/>
+
+
+
+     
 
