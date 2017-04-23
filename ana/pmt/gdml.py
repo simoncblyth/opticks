@@ -8,6 +8,8 @@ import os, re, logging, math
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
+from opticks.dev.csg.csg import CSG 
+from opticks.dev.csg.glm import make_trs
 
 import numpy as np
 import lxml.etree as ET
@@ -20,12 +22,25 @@ fparse_ = lambda _:HT.fragments_fromstring(file(os.path.expandvars(_)).read())
 pp_ = lambda d:"\n".join([" %30s : %f " % (k,d[k]) for k in sorted(d.keys())])
 
 
+def construct_transform(obj):
+    pos = obj.position
+    rot = obj.rotation
+    sca = obj.scale
+    return make_trs( 
+              pos.xyz if pos is not None else None,  
+              rot.xyz if rot is not None else None, 
+              sca.xyz if sca is not None else None, three_axis_rotate=True)
+
+
 class G(object):
     typ = property(lambda self:self.__class__.__name__)
     name  = property(lambda self:self.elem.attrib.get('name',None))
+    xml = property(lambda self:tostring_(self.elem))
 
-    def att(self, name, default=None):
-        return self.elem.attrib.get(name, default)
+    def att(self, name, default=None, typ=None):
+        assert typ is not None
+        v = self.elem.attrib.get(name, default)
+        return typ(v)
 
     def __init__(self, elem, g=None):
         self.elem = elem 
@@ -68,16 +83,17 @@ class G(object):
 
 
 class Material(G):
-    state = property(lambda self:self.att('state', None))
+    state = property(lambda self:self.att('state', '', typ=str ))
     def __repr__(self):
         return "%s %s %s" % (self.typ, self.name, self.state )
  
 
 class Transform(G):
-    unit = property(lambda self:self.att('unit', None))
-    x = property(lambda self:self.att('x', None))
-    y = property(lambda self:self.att('y', None))
-    z = property(lambda self:self.att('z', None))
+    unit = property(lambda self:self.att('unit', "", typ=str ))
+    x = property(lambda self:self.att('x', 0, typ=float))
+    y = property(lambda self:self.att('y', 0, typ=float))
+    z = property(lambda self:self.att('z', 0, typ=float))
+    xyz = property(lambda self:[self.x, self.y, self.z] )
 
     def __repr__(self):
         return "%s %s %s %s %s " % (self.typ, self.unit, self.x, self.y, self.z )
@@ -86,13 +102,25 @@ class Position(Transform):
     pass
 class Rotation(Transform):
     pass
+class Scale(Transform):
+    pass
 
 
-class Boolean(G):
+
+
+
+class Geometry(G):
+    def as_ncsg(self):
+        assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
+
+class Boolean(Geometry):
     firstref = property(lambda self:self.elem.find("first").attrib["ref"])
     secondref = property(lambda self:self.elem.find("second").attrib["ref"])
+
     position = property(lambda self:self.find1_("position"))
     rotation = property(lambda self:self.find1_("rotation"))
+    scale = None
+    secondtransform = property(lambda self:construct_transform(self))
    
     first = property(lambda self:self.g.solids[self.firstref])
     second = property(lambda self:self.g.solids[self.secondref])
@@ -102,38 +130,130 @@ class Boolean(G):
         lrep_ = lambda label,obj:"     %s:%r"%(label,obj)
         return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
 
+    def as_ncsg(self):
+        left = self.first.as_ncsg()
+        right = self.second.as_ncsg()
+        right.transform = self.secondtransform
+
+        cn = CSG(self.operation, name=self.name)
+        cn.left = left
+        cn.right = right 
+        return cn 
 
 class Intersection(Boolean):
-    pass
+    operation = "intersection"
+
 class Subtraction(Boolean):
-    pass
+    operation = "difference"
+
 class Union(Boolean):
-    pass
+    operation = "union"
 
 
-class Primitive(G):
-    lunit = property(lambda self:self.att('lunit', None))
-    aunit = property(lambda self:self.att('aunit', None))
-    startphi = property(lambda self:self.att('startphi', None))
-    deltaphi = property(lambda self:self.att('deltaphi', None))
-    starttheta = property(lambda self:self.att('starttheta', None))
-    deltatheta = property(lambda self:self.att('deltatheta', None))
-    rmin = property(lambda self:self.att('rmin', None))
-    rmax = property(lambda self:self.att('rmax', None))
+class Primitive(Geometry):
+    lunit = property(lambda self:self.att('lunit', 'mm', typ=str))
+    aunit = property(lambda self:self.att('aunit', 'deg', typ=str))
+    startphi = property(lambda self:self.att('startphi', 0, typ=float))
+    deltaphi = property(lambda self:self.att('deltaphi',  360, typ=float))
+    starttheta = property(lambda self:self.att('starttheta', 0, typ=float))
+    deltatheta = property(lambda self:self.att('deltatheta', 180, typ=float))
+    rmin = property(lambda self:self.att('rmin', 0, typ=float))
+    rmax = property(lambda self:self.att('rmax', 0, typ=float))
 
-    x = property(lambda self:self.att('x', None))
-    y = property(lambda self:self.att('y', None))
-    z = property(lambda self:self.att('z', None))
+    x = property(lambda self:self.att('x', 0, typ=float))
+    y = property(lambda self:self.att('y', 0, typ=float))
+    z = property(lambda self:self.att('z', 0, typ=float))
 
     def __repr__(self):
         return "%s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
-    pass
+    def as_ncsg(self):
+        cn = CSG("cylinder", name=self.name)
+        cn.param[0] = 0
+        cn.param[1] = 0
+        cn.param[2] = 0    
+        cn.param[3] = self.rmax
+        cn.param1[0] = self.z    # assuming the z actually means dimension "sizeZ"
+        assert self.rmin == 0.
+
+        PCAP = 0x1 << 0 
+        QCAP = 0x1 << 1 
+        flags = PCAP | QCAP 
+        cn.param1.view(np.uint32)[1] = flags  
+
+        return cn
+
+
 class Sphere(Primitive):
-    pass
+    def as_ncsg(self, only_inner=False):
+        pass
+        assert self.aunit == "deg" and self.lunit == "mm"
+
+        has_inner = not only_inner and self.rmin > 0.
+        if has_inner:
+            inner = self.as_ncsg(only_inner=True)  # recursive call to make inner 
+        pass
+
+        radius = self.rmin if only_inner else self.rmax 
+        assert radius is not None
+
+        startThetaAngle = self.starttheta
+        deltaThetaAngle = self.deltatheta
+
+        x = 0
+        y = 0
+        z = 0
+
+        # z to the right, theta   0 -> z=r, theta 180 -> z=-r
+        rTheta = startThetaAngle
+        lTheta = startThetaAngle + deltaThetaAngle
+
+        assert rTheta >= 0. and rTheta <= 180.
+        assert lTheta >= 0. and lTheta <= 180.
+
+        log.info("Sphere.as_ncsg radius:%s only_inner:%s  has_inner:%s " % (radius, only_inner, has_inner)) 
+
+        zslice = startThetaAngle > 0. or deltaThetaAngle < 180.
+
+        if zslice:
+            zmin = radius*math.cos(lTheta*math.pi/180.)
+            zmax = radius*math.cos(rTheta*math.pi/180.)
+            assert zmax > zmin, (startThetaAngle, deltaThetaAngle, rTheta, lTheta, zmin, zmax )
+
+            log.info("Sphere.as_ncsg rTheta:%5.2f lTheta:%5.2f zmin:%5.2f zmax:%5.2f azmin:%5.2f azmax:%5.2f " % (rTheta, lTheta, zmin, zmax, z+zmin, z+zmax ))
+
+            cn = CSG("zsphere", name=self.name, param=[x,y,z,radius], param1=[zmin,zmax,0,0], param2=[0,0,0,0]  )
+
+            ZSPHERE_QCAP = 0x1 << 1   # zmax
+            ZSPHERE_PCAP = 0x1 << 0   # zmin
+            flags = ZSPHERE_QCAP | ZSPHERE_PCAP 
+
+            cn.param2.view(np.uint32)[0] = flags 
+            pass
+        else:
+            cn = CSG("sphere", name=self.name)
+            cn.param[0] = x
+            cn.param[1] = y
+            cn.param[2] = z
+            cn.param[3] = radius
+        pass 
+        if has_inner:
+            ret = CSG("difference", left=cn, right=inner )
+        else: 
+            ret = cn 
+        pass
+        return ret
+
+
+
 class Box(Primitive):
-    pass
+    def as_ncsg(self):
+        pass
+
+
+
+
 
 
 class Volume(G):
@@ -143,13 +263,33 @@ class Volume(G):
     material = property(lambda self:self.g.materials[self.materialref])
 
     physvol = property(lambda self:self.findall_("physvol"))
+    children = property(lambda self:self.physvol)
+
+    def filterpv(self, pfx):
+        return filter(lambda pv:pv.name.startswith(pfx), self.physvol) 
 
     def rdump(self, depth=0):
         print self
         for pv in self.physvol:
             lv = pv.volume
             lv.rdump(depth=depth+1)
-            
+
+
+    def as_ncsg(self):
+        """
+        Hmm pv level transforms need to be applied to the
+        csg top nodes of the solids, as the pv transforms
+        are not being propagated GPU side, and even when they
+        are will want to be able to handle a csg instance
+        comprising a few solids only (eg the PMT) 
+        as is with its own transforms transforms.
+
+        Essentially are collapsing a subtree for the 
+        handful of solids into the self contained instance
+        of a list of csgnodes.
+        """
+        pass
+ 
 
     def __repr__(self):
         repr_ = lambda _:"   %r" % _ 
@@ -159,13 +299,16 @@ class Volume(G):
 
 class PhysVol(G):
     volumeref = property(lambda self:self.elem.find("volumeref").attrib["ref"])
+    volume = property(lambda self:self.g.volumes[self.volumeref])
+    children = property(lambda self:[self.volume])
+
     position = property(lambda self:self.find1_("position"))
     rotation = property(lambda self:self.find1_("rotation"))
-
-    volume = property(lambda self:self.g.volumes[self.volumeref])
+    scale = property(lambda self:self.find1_("scale"))
+    transform = property(lambda self:construct_transform(self))
 
     def __repr__(self):
-        return "%s %s  %r %r " % (self.typ, self.volumeref, self.position, self.rotation)
+        return "\n".join(["%s %s" % (self.typ, self.name)," %r %r " % ( self.position, self.rotation)])
      
 
 class GDML(G):
@@ -182,6 +325,7 @@ class GDML(G):
 
         "position":Position,
         "rotation":Rotation,
+        "scale":Scale,
 
         "volume":Volume,
         "physvol":PhysVol,
@@ -189,6 +333,7 @@ class GDML(G):
 
     @classmethod
     def parse(cls, path):
+        log.info("parsing gdmlpath %s " % path )
         gg = cls(parse_(path))
         gg.g = gg
         gg.path = path 
@@ -230,9 +375,40 @@ class GDML(G):
 
 
 if __name__ == '__main__':
-    gg = GDML.parse("/tmp/g4_00.gdml")
-    #print gg.world
-    #gg.world.rdump()
 
-    gg.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
+    args = opticks_main()
+    gdmlpath = os.environ['OPTICKS_GDMLPATH']   # envvar set within opticks_main 
+
+    gdml = GDML.parse(gdmlpath)
+
+    #print gdml.world
+    #gdml.world.rdump()
+
+    #gdml.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
+
+    from treebase import Tree
+    t = Tree(gdml.world, postype="position") 
+
+    lvn = "/dd/Geometry/PMT/lvPmtHemi0x"
+ 
+    l = t.findlv(lvn)  # all nodes 
+    assert len(l) == 672
+
+    #a = np.array(map(lambda n:n.index, l))  # 3 groups of index pitches apparent in  a[1:] - a[:-1]
+
+    n = l[0] 
+    sibs = n.siblings 
+    assert len(sibs) == 192
+  
+   
+    cn = n.lv.solid.as_ncsg()
+    cn.dump()
+
+    v = n.children[0]
+    for c in v.children:
+        print c.pv.transform
+
+
+
+
 

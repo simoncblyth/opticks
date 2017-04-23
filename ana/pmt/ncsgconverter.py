@@ -227,9 +227,9 @@ if __name__ == '__main__':
 
     tr = Tree(lv)
 
-    ncsgnode = NCSGConverter.ConvertLV( tr.root.lv )
+    cn = NCSGConverter.ConvertLV( tr.root.lv )
 
-    CSG.Dump(ncsgnode)
+    cn.dump()
 
 
 

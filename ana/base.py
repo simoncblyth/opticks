@@ -72,6 +72,14 @@ def _opticks_daepath(idpath):
     idfold = _opticks_idfold(idpath)
     return os.path.join(idfold, idfilename)
 
+def _opticks_gdmlpath(idpath):
+    idfilename_dae = _opticks_idfilename(idpath)
+    base,ext = idfilename_dae.split(".")
+    idfilename_gdml = "%s.gdml" % base 
+    idfold = _opticks_idfold(idpath)
+    return os.path.join(idfold, idfilename_gdml)
+
+
 def _opticks_install_prefix(idpath):
     prefix = _dirname(idpath,4)
     log.debug("_opticks_install_prefix idpath %s -> prefix %s " % (idpath, prefix))
@@ -149,6 +157,7 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
         self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))
+        self.setdefault("OPTICKS_GDMLPATH",        _opticks_gdmlpath(IDPATH))
         self.setdefault("OPTICKS_DATA_DIR",        _opticks_data_dir(IDPATH))
         self.setdefault("OPTICKS_EXPORT_DIR",      _opticks_export_dir(IDPATH))
         self.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))

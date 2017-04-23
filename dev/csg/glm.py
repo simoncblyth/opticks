@@ -50,6 +50,27 @@ def translate(arg=[1,2,3], m=None, dtype=np.float32):
     return Result
 
 
+def rotate_three_axis(arg=[0,0,90], m=None, dtype=np.float32):
+    """
+    :param arg: 3-component array 
+    """
+    if m is None:m = np.eye(4, dtype=dtype)
+
+    if arg is not None:
+        assert len(arg) == 3, arg
+        rx = arg[0]
+        ry = arg[1]
+        rz = arg[2]
+
+        if rx != 0: m = rotate([1,0,0,rx], m )
+        if ry != 0: m = rotate([0,1,0,ry], m )
+        if rz != 0: m = rotate([0,0,1,rz], m )
+    pass
+
+    return m 
+   
+
+
 def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
     """
     :param arg: 4-component array, 1st three for axis, 4th for rotation angle in degrees
@@ -106,7 +127,7 @@ def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
 
 
 
-def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True):
+def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True, three_axis_rotate=False):
     """
     :param order: string containing "s" "r" and "t", standard order is "trs" meaning t*r*s  ie scale first, then rotate, then translate 
     :param tla: tx,ty,tz tranlation dists eg 0,0,0 for no translation 
@@ -128,7 +149,11 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
         if c == 's':
             m = scale(sca, m)
         elif c == 'r':
-            m = rotate(rot, m)
+            if three_axis_rotate:
+                m = rotate_three_axis(rot, m)
+            else:
+                m = rotate(rot, m)
+            pass
         elif c == 't':
             m = translate(tla, m)
         else:
@@ -142,8 +167,9 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
     return m 
 
 
-def make_trs( tla, rot, sca, dtype=np.float32):
-    return make_transform("trs", tla, rot, sca, dtype=dtype ) 
+
+def make_trs( tla, rot, sca, three_axis_rotate=False, dtype=np.float32):
+    return make_transform("trs", tla, rot, sca, three_axis_rotate=three_axis_rotate, dtype=dtype ) 
 
 
 def test_make_transform():
@@ -196,6 +222,18 @@ if __name__ == '__main__':
 
     test_make_transform()
 
+    rot3x = rotate_three_axis([45,0,0])
+    rot3y = rotate_three_axis([0,45,0])
+    rot3z = rotate_three_axis([0,0,45])
+
+    rot3xyz = rotate_three_axis([45,45,45])
+
+
+    print "rot3x\n", rot3x
+    print "rot3y\n", rot3y
+    print "rot3z\n", rot3z
+
+    print "rot3xyz\n", rot3xyz
 
 
 

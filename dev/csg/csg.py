@@ -243,6 +243,7 @@ class CSG(CSG_):
         self.translate = translate
         self.rotate = rotate
         self.scale = scale
+        self._transform = None
 
         self.meta = kwa
 
@@ -268,14 +269,12 @@ class CSG(CSG_):
     scale = property(_get_scale, _set_scale)
 
     def _get_transform(self):
-        transform = make_trs(self._translate, self._rotate, self._scale ) 
-
-        
-
-        return transform 
-    transform = property(_get_transform)
-    
-
+        if self._transform is None: 
+            self._transform = make_trs(self._translate, self._rotate, self._scale ) 
+        return self._transform
+    def _set_transform(self, trs):
+        self._transform = trs
+    transform = property(_get_transform, _set_transform)
 
     def _get_param(self):
         return self._param
@@ -353,6 +352,9 @@ class CSG(CSG_):
             n.itra = itra if itra > 0 else None
         pass
         return n 
+
+    def dump(self):
+        self.Dump(self)
 
     @classmethod 
     def Dump(cls, node, depth=0):

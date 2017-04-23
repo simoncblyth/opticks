@@ -3,118 +3,11 @@
 treebase.py
 =============
 
-treebase.py uses self-assemblage by digest approach, it contains
-a tree of Node instances starting from root
+* Node and Tree classes work together to provide tree "auto" assemblage 
+  using parent digest lookup
 
-::
-
-    In [1]: run treebase.py
-    ...
-    In [2]: tr.root
-    Out[2]: Node  0 : dig 8c5f pig d41d : LV lvPmtHemi                           Pyrex None : None  : None 
-
-    In [5]: tr.byindex
-    Out[5]: 
-    {0: Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None ,
-     1: Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None ,
-     2: Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None ,
-     3: Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0    ,
-     4: Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5    }
-
-    In [6]: tr.registry
-    Out[6]: 
-    {'324d9022d803eae989b540bbb2375f38': Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None ,
-     '5e291f5b9bbedf27f720e5dceb65ad56': Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5    ,
-     '9e612c43301f13a23a5fd41e7ea59404': Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0    ,
-     'f34ba27750136ebdc5bd9f3119f2c559': Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None ,
-     'fafaa4fcd3682ac3f89da9afb9680e9a': Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None }
-
-    In [7]: 
-
-
-Recursive dumper::
-
-    In [20]: tr.get(0).traverse()
-    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  0 : dig f34b pig d41d : LV lvPmtHemi                           Pyrex None : None  : None  
-    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None  
-    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
-    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
-    [2017-04-14 19:51:48,181] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 2 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
-
-    In [21]: tr.get(1).traverse()
-    [2017-04-14 19:52:01,124] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  1 : dig fafa pig f34b : LV lvPmtHemiVacuum                    Vacuum None : None  : None  
-    [2017-04-14 19:52:01,124] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
-    [2017-04-14 19:52:01,125] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
-    [2017-04-14 19:52:01,125] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 1 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
-
-    In [22]: tr.get(2).traverse()
-    [2017-04-14 19:52:17,660] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  2 : dig 324d pig fafa : LV lvPmtHemiCathode                 Bialkali DsPmtSensDet : None  : None  
-
-    In [23]: tr.get(3).traverse()
-    [2017-04-14 19:52:29,365] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  3 : dig 9e61 pig fafa : LV lvPmtHemiBottom              OpaqueVacuum None : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     : PosXYZ  PmtHemiFaceOff+PmtHemiBellyOff : 69.0     
-
-    In [24]: tr.get(4).traverse()
-    [2017-04-14 19:52:42,476] p36676 {/Users/blyth/opticks/ana/pmt/tree.py:79} INFO - visit depth 0 Node  4 : dig 5e29 pig fafa : LV lvPmtHemiDynode              OpaqueVacuum None : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     : PosXYZ  -0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness : -81.5     
-
-
-::
-
-     37   <!-- The PMT glass -->
-     38   <logvol name="lvPmtHemi" material="Pyrex">
-     39     <union name="pmt-hemi">
-     40       <intersection name="pmt-hemi-glass-bulb">
-     41     <sphere name="pmt-hemi-face-glass"
-     42         outerRadius="PmtHemiFaceROC"/>
-     43 
-     44     <sphere name="pmt-hemi-top-glass"
-     45         outerRadius="PmtHemiBellyROC"/>
-     46     <posXYZ z="PmtHemiFaceOff-PmtHemiBellyOff"/>
-     47 
-     48     <sphere name="pmt-hemi-bot-glass"
-     49         outerRadius="PmtHemiBellyROC"/>
-     50     <posXYZ z="PmtHemiFaceOff+PmtHemiBellyOff"/>
-     51 
-     52       </intersection>
-     53       <tubs name="pmt-hemi-base"
-     54         sizeZ="PmtHemiGlassBaseLength"
-     55         outerRadius="PmtHemiGlassBaseRadius"/>
-     56       <posXYZ z="-0.5*PmtHemiGlassBaseLength"/>
-     57     </union>
-     58 
-     59     <physvol name="pvPmtHemiVacuum"
-     60          logvol="/dd/Geometry/PMT/lvPmtHemiVacuum"/>
-     61 
-     62   </logvol>
-
-::
-
-    In [48]: py = tr.get(0)
-
-    In [54]: py.lv.name
-    Out[54]: 'lvPmtHemi'
-
-    In [55]: py.lv.material
-    Out[55]: 'Pyrex'
-
-    In [57]: py.lv.findall_("./*")
-    Out[57]: 
-    [Union             pmt-hemi  ,
-     PV pvPmtHemiVacuum      /dd/Geometry/PMT/lvPmtHemiVacuum ]
-
-    In [58]: un = py.lv.findall_("./*")[0]
-
-    In [59]: un
-    Out[59]: Union             pmt-hemi  
-
-    In [60]: un.findall_("./*")
-    Out[60]: 
-    [Intersection  pmt-hemi-glass-bulb  ,
-     Tubs        pmt-hemi-base : outerRadius PmtHemiGlassBaseRadius : 42.25   sizeZ PmtHemiGlassBaseLength : 169.0   :  None ,
-     PosXYZ  -0.5*PmtHemiGlassBaseLength : -84.5   ]
-
-
-Need to findall_ recurse on the lv, constructing NCSG node tree.
-Unclear what level to do this at, probably simpler to operate at dd level
+* Stripped volume PV/LV/PV/LV source trees in detdesc or gdml flavors are converted 
+  into a homogenous Node trees (PV,LV)/(PV,LV)/...
 
 
 """
@@ -125,10 +18,15 @@ np.set_printoptions(precision=2)
 
 from opticks.ana.base import opticks_main, Buf
 
-from ddbase import Dddb
-
-
 log = logging.getLogger(__name__)
+
+
+class DummyTopPV(object):
+    name = "dummyTopPV"
+    def find_(self, smth):
+        return None
+    def __repr__(self):
+        return self.name
 
 
 class Node(object):
@@ -142,12 +40,18 @@ class Node(object):
         return dig
 
     @classmethod
-    def create(cls, volpath ):
-        """
-        :param volpath: list of python instance id, effectively reference addresses
+    def _depth(cls, node):
+        d = 0
+        while node.parent is not None:
+            node = node.parent
+            d += 1 
+        pass
+        return d 
 
-        Note that this parent digest approach allows the 
-        nodes to assemble themselves into the tree  
+    @classmethod
+    def create(cls, volpath, lvtype="Logvol", pvtype="Physvol", postype="posXYZ" ):
+        """
+        :param volpath: ancestor volume instances
         """
         assert len(volpath) >= 2 
         
@@ -155,20 +59,39 @@ class Node(object):
 
         ndig = node.digest   
         assert ndig not in Tree.registry, "each node must have a unique digest" 
+
         node.index  = len(Tree.registry)
 
         Tree.byindex[node.index] = node 
         Tree.registry[ndig] = node
 
-        node.parent = Tree.lookup(node.pdigest)
+        parent = Tree.lookup(node.pdigest)
+        node.parent = parent
+
         if node.parent:
             node.parent.add_child(node)  
+        pass
+        node.depth = cls._depth(node)
 
-        node.pv = volpath[-2] if type(volpath[-2]).__name__ == "Physvol" else None  # tis None for root
-        node.lv = volpath[-1] if type(volpath[-1]).__name__ == "Logvol" else None
-        assert node.lv
+        assert type(volpath[-2]).__name__ in (pvtype, "DummyTopPV") 
+        assert type(volpath[-1]).__name__ == lvtype
 
-        node.posXYZ = node.pv.find_("./posXYZ") if node.pv is not None else None
+        pv = volpath[-2] 
+        lv = volpath[-1] 
+
+        assert lv
+  
+        if node.index > 0:
+            if pv is None:
+                log.fatal("all nodes other than root must have a pv %r " % node)
+            assert pv 
+        pass
+
+        node.pv = pv
+        node.lv = lv
+
+
+        node.posXYZ = node.pv.find_(postype) if node.pv is not None else None
 
         #node.dump("visitWrap_")
         return node
@@ -192,6 +115,7 @@ class Node(object):
         self.children = []
         self.lv = None
         self.pv = None
+        self.depth = None
 
     def visit(self, depth):
         log.info("visit depth %s %s " % (depth, repr(self)))
@@ -201,16 +125,38 @@ class Node(object):
         for child in self.children:
             child.traverse(depth+1)
 
+    def rprogeny(self):
+        """
+        :return list of nodes:  
+        """
+        progeny = []
+        def progeny_r(node):
+            progeny.append(node) 
+            for child in node.children:
+                progeny_r(child)
+            pass
+        progeny_r(self)
+        pass
+        return progeny
+
     def add_child(self, child):
         log.debug("add_child %s " % repr(child))
         self.children.append(child)
+
+    def filter_children_by_lvn(self, lvn):
+        return filter(lambda node:node.lv.name.startswith(lvn), self.children )
+
+    siblings = property(lambda self:self.parent.filter_children_by_lvn(self.lv.name), doc="siblings of this node with same lv" )
 
     def dump(self, msg="Node.dump"):
         log.info(msg + " " + repr(self))
         #print "\n".join(map(str, self.geometry))   
 
+    nchild = property(lambda self:len(self.children))
+    name = property(lambda self:"Node %2d : dig %s pig %s depth %s nchild %s " % (self.index, self.digest[:4], self.pdigest[:4], self.depth, self.nchild) )
+
     def __repr__(self):
-        return "Node %2d : dig %s pig %s : %s : %s " % (self.index, self.digest[:4], self.pdigest[:4], repr(self.volpath[-1]), repr(self.posXYZ) ) 
+        return "%s \npv:%s\nlv:%s : %s " % (self.name, repr(self.pv),repr(self.lv), repr(self.posXYZ) ) 
 
 
 
@@ -237,12 +183,25 @@ class Tree(object):
     byindex = {}
 
     @classmethod
+    def clear(cls):
+        cls.registry.clear()
+        cls.byindex.clear()
+
+    @classmethod
     def lookup(cls, digest):
         return cls.registry.get(digest, None)  
 
     @classmethod
     def get(cls, index):
         return cls.byindex.get(index, None)  
+
+    @classmethod
+    def findpv(cls, pfx):
+        return filter(lambda node:node.pv.name.startswith(pfx), cls.byindex.values()) 
+
+    @classmethod
+    def findlv(cls, pfx):
+        return filter(lambda node:node.lv.name.startswith(pfx), cls.byindex.values()) 
 
     @classmethod
     def description(cls):
@@ -257,25 +216,62 @@ class Tree(object):
         assert len(cls.registry) == len(cls.byindex)
         return len(cls.registry)
 
+    def __call__(self, arg):
+        if type(arg) is int:
+            return self.get(arg)
+        elif type(arg) is slice:
+            return [self.get(index) for index in range(arg.start, arg.stop, arg.step or 1 )]
+        else:
+             log.warning("expecting int or slice")
+             return None
+
+
+    def __getitem__(self, arg):
+        slice_ = arg if type(arg) is slice else slice(arg,arg+1,1) 
+        self.slice_ = slice_ 
+        return self
+
+    typ = property(lambda self:self.__class__.__name__)
+
+    def __repr__(self):
+        nn = self.num_nodes()
+        smry  =  "%s num_nodes %s " % (self.typ, nn)
+        lines = [smry]
+        s = self.slice_
+        if s is not None:
+            step = s.step if s.step is not None else 1
+            lines.extend(map(lambda index:repr(self.byindex[index]), range(s.start,s.stop,step)))
+        pass
+        return "\n\n".join(lines)
+
+
     def traverse(self):
         self.root.traverse()
 
-    def __init__(self, base):
+    def __init__(self, base, postype="posXYZ"):
         """
-        :param base: top ddbase.Elem instance of lv of interest, eg lvPmtHemi
+        :param base: top ddbase.Elem or gdml.G instance of lv of interest, eg lvPmtHemi
         """
-        self.base = base
-        ancestors = [self]   # dummy top "PV", to regularize striping: TOP-LV-PV-LV 
-        self.root = self.traverseWrap_(self.base, ancestors)
+        self.clear()  # prevent interactive re-running from doubling up nodes
+        self.lvtype = base.__class__.__name__
+        self.pvtype = base.children[0].__class__.__name__
+        self.postype = postype
+        self.slice_ = None
 
-    def traverseWrap_(self, vol, ancestors):
+        self.base = base
+
+        top = DummyTopPV()
+        ancestors = [top] # dummy to regularize striping TOP-LV-PV-LV 
+        self.root = self.create_r(self.base, ancestors)
+
+    def create_r(self, vol, ancestors):
         """
-        Source tree traversal, creating nodes as desired in destination tree
+        Source tree traversal creating nodes as desired in destination tree
 
         #. vital to make a copy with [:] as need separate volpath for every node
-        #. only form wrapped nodes at Logvol points in the tree
-           in order to have regular TOP-LV-PV-LV ancestry, 
-           but traverse over all nodes of the source tree
+
+        #. only form destination nodes at Logvol points in the tree
+
         #. this is kept simple as the parent digest approach to tree hookup
            means that the Nodes assemble themselves into the tree, just need
            to create nodes where desired and make sure to traverse the entire 
@@ -284,18 +280,15 @@ class Tree(object):
         volpath = ancestors[:] 
         volpath.append(vol) 
 
-        ret = None
-        if type(volpath[-1]).__name__ == "Logvol":
-            ret = self.visitWrap_(volpath)
+        node = None
+        if type(volpath[-1]).__name__ == self.lvtype:
+            node = Node.create(volpath, lvtype=self.lvtype, pvtype=self.pvtype, postype=self.postype )
+        pass
 
-        for child in vol.children():
-            self.traverseWrap_(child, volpath)
+        for child in vol.children:
+            self.create_r(child, volpath)
         pass 
-        return ret
-
-    def visitWrap_(self, volpath):
-        log.debug("visitWrap_ %s : %s " % (len(volpath), repr(volpath[-1])))
-        return Node.create(volpath)
+        return node
 
 
 
@@ -305,11 +298,13 @@ if __name__ == '__main__':
 
     args = opticks_main()
 
+    from ddbase import Dddb
+
     g = Dddb.parse(args.apmtddpath)
 
     lv = g.logvol_("lvPmtHemi")
 
-    tr = Tree(lv)
+    tr = Tree(lv, postype="posXYZ")
 
 
 
