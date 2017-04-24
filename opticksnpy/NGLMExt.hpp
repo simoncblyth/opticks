@@ -69,6 +69,7 @@ struct NPY_API nglmext
     static glm::mat4 invert_tr( const glm::mat4& tr ); 
     static glm::mat4* invert_tr( const glm::mat4* tr ); 
 
+    static float compDiff2(const glm::mat4& a , const glm::mat4& b, bool fractional=false );
     static float compDiff(const glm::mat4& a , const glm::mat4& b );
 
     static glm::mat4 average_to_inverse_transpose( const glm::mat4& m );

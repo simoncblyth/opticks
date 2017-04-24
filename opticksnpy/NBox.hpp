@@ -8,11 +8,12 @@
 
 struct NPY_API nbox : nnode 
 {
-
     float operator()(float x, float y, float z) const ;
 
     float sdf1(float x, float y, float z) ;
     float sdf2(float x, float y, float z) ;
+
+    void adjustToFit(const nbbox& container_bb, float scale);
 
     nbbox bbox() const ;
 
@@ -29,6 +30,7 @@ struct NPY_API nbox : nnode
 
 
 
+
 inline NPY_API void init_box(nbox& b, const nquad& p )
 {
     b.param = p ; 
@@ -36,6 +38,9 @@ inline NPY_API void init_box(nbox& b, const nquad& p )
     b.center.y = p.f.y ; 
     b.center.z = p.f.z ; 
 }
+
+
+
 
 inline NPY_API nbox make_box(const nquad& p)
 {

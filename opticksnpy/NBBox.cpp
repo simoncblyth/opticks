@@ -88,6 +88,7 @@ void nbbox::include(const nbbox& other)
 {
     min = nminf( min, other.min );
     max = nmaxf( max, other.max );
+    side = max - min ; 
 }
 
 

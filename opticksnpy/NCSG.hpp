@@ -74,7 +74,7 @@ class NPY_API NCSG {
     public:
         void dump(const char* msg="NCSG::dump");
         std::string desc();
-    public:
+   public:
         const char* getTreeDir();
         unsigned getIndex();
         int      getVerbosity();
@@ -86,6 +86,9 @@ class NPY_API NCSG {
         unsigned getNumNodes();
         unsigned getHeight();
         nnode* getRoot();
+    public:
+        float getContainerScale();
+        bool  isContainer();
     public:
         void check();
         void check_r(nnode* node); 
@@ -126,6 +129,8 @@ class NPY_API NCSG {
         unsigned    m_height ; 
         const char* m_boundary ; 
         glm::vec3   m_gpuoffset ; 
+        int         m_container ;  
+        float       m_containerscale ;  
 
 
 

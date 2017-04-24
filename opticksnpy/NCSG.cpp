@@ -21,6 +21,7 @@
 #include "NCylinder.hpp"
 
 #include "NNode.hpp"
+#include "NBBox.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NTxt.hpp"
@@ -51,7 +52,9 @@ NCSG::NCSG(const char* treedir)
    m_num_transforms(0),
    m_height(-1),
    m_boundary(NULL),
-   m_gpuoffset(0,0,0)
+   m_gpuoffset(0,0,0),
+   m_container(0),
+   m_containerscale(2.f)
 {
 }
 
@@ -66,7 +69,9 @@ NCSG::NCSG(nnode* root )
    m_num_nodes(0),
    m_height(root->maxdepth()),
    m_boundary(NULL),
-   m_gpuoffset(0,0,0)
+   m_gpuoffset(0,0,0),
+   m_container(0),
+   m_containerscale(2.f)
 {
    m_num_nodes = NumNodes(m_height);
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
@@ -85,9 +90,15 @@ void NCSG::load()
     m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
 
+    int container = m_meta->get<int>("container", "-1");
+    float containerscale = m_meta->get<float>("containerscale", "2.");
     int verbosity = m_meta->get<int>("verbosity", "-1");
     std::string gpuoffset = m_meta->get<std::string>("gpuoffset", "0,0,0" );
+
     m_gpuoffset = gvec3(gpuoffset);  
+    m_container = container ; 
+    m_containerscale = containerscale ;
+
 
     if(verbosity > -1 && verbosity != m_verbosity) 
     {
@@ -199,6 +210,18 @@ int NCSG::getVerbosity()
 {
     return m_verbosity ; 
 }
+
+bool NCSG::isContainer()
+{
+    return m_container > 0  ; 
+}
+
+float NCSG::getContainerScale()
+{
+    return m_containerscale  ; 
+}
+
+
 
 
 
@@ -408,13 +431,15 @@ unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
 
     nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset) ;
 
+
+    /*
     std::cout << "NCSG::addUniqueTransform"
               << " orig " << *gtransform_
               << " tlated " << *gtransform
               << " gpuoffset " << m_gpuoffset 
               << std::endl 
               ;
-
+    */
 
     NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
     gtmp->zero();
@@ -547,12 +572,12 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
-int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity )
+int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
 {
     assert(trees.size() == 0);
-    LOG(info) << base ; 
+    LOG(info) << basedir ; 
 
-    std::string txtpath = BFile::FormPath(base, FILENAME) ;
+    std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
     bool exists = BFile::ExistsFile(txtpath.c_str() ); 
 
     if(!exists) LOG(fatal) << "NCSG::Deserialize"
@@ -567,9 +592,12 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity
 
     unsigned nbnd = bnd.getNumLines();
 
-    for(unsigned i=0 ; i < nbnd ; i++)
+    nbbox container_bb ; 
+
+    for(unsigned j=0 ; j < nbnd ; j++)
     {
-        std::string treedir = BFile::FormPath(base, BStr::itoa(i));  
+        unsigned i = nbnd - 1 - j ;    // reverse order for possible container setup
+        std::string treedir = BFile::FormPath(basedir, BStr::itoa(i));  
 
         NCSG* tree = new NCSG(treedir.c_str());
         tree->setIndex(i);
@@ -579,12 +607,34 @@ int NCSG::Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
         tree->import();  // input m_nodes buffer into CSG nnode tree 
 
-        tree->export_(); // from CSG nnode tree back into *same* buffer, with bbox added   
+        nnode* root = tree->getRoot();
+        nbbox root_bb = root->bbox();
+
+        if(tree->isContainer())
+        {
+            nbox* box = static_cast<nbox*>(root)  ;
+            assert(box) ; 
+            box->adjustToFit(container_bb, tree->getContainerScale());
+        }
+        else
+        {
+            container_bb.include(root_bb); 
+        }
+
+        LOG(info) << "NCSG::Deserialize"
+                  << " i " << i 
+                  << " root_bb " << root_bb.desc()
+                  << " container_bb " << container_bb.desc()
+                  ;
+
+
+        tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
         LOG(info) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
 
         trees.push_back(tree);  
     }
+
     return 0 ; 
 }
 

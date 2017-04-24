@@ -76,6 +76,8 @@ NMarchingCubesNPYTest.cc
 NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
+NCSGDeserializeTest.cc
+
 NOctNodeTest.cc
 
 NDualContouringSampleTest.cc

@@ -1,7 +1,7 @@
 /**
-Tests individual trees::
+Tests directories of multiple trees::
 
-    NCSGLoadTest $TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
+    NCSGDeserializeTest $TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-
 
 **/
 
@@ -20,14 +20,13 @@ Tests individual trees::
 
 
  
-void test_LoadTree(const char* treedir)
+void test_Deserialize(const char* basedir)
 {
-    int verbosity = 2 ; 
-    NCSG* csg = NCSG::LoadTree(treedir, verbosity );
-    assert(csg);
+    int verbosity = 1 ; 
+    std::vector<NCSG*> trees ; 
+    int rc = NCSG::Deserialize(basedir, trees, verbosity );
+    assert(rc == 0 );
 }
-
-
 
 int main(int argc, char** argv)
 {
@@ -36,7 +35,7 @@ int main(int argc, char** argv)
 
     LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
 
-    test_LoadTree( argc > 1 ? argv[1] : "$TMP/csg_py/1" );
+    test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py" );
 
     return 0 ; 
 }

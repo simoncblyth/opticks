@@ -125,18 +125,31 @@ class Node(object):
         for child in self.children:
             child.traverse(depth+1)
 
-    def rprogeny(self):
+    def rprogeny(self, maxdepth=0, maxnode=0):
         """
         :return list of nodes:  
         """
         progeny = []
-        def progeny_r(node):
-            progeny.append(node) 
-            for child in node.children:
-                progeny_r(child)
+        skip = dict(total=0,count=0,depth=0)
+
+        def progeny_r(node, depth):
+            count_ok = maxnode == 0 or len(progeny) < maxnode
+            depth_ok = maxdepth == 0 or depth < maxdepth 
+            if count_ok and depth_ok:
+                progeny.append(node) 
+            else:
+                skip["total"] += 1
+                if not count_ok: skip["count"] += 1 
+                if not depth_ok: skip["depth"] += 1 
             pass
-        progeny_r(self)
+            for child in node.children:
+                progeny_r(child, depth+1)
+            pass
         pass
+
+        progeny_r(self, 0)
+        pass
+        log.info("rprogeny numProgeny:%s (maxnode:%s maxdepth:%s skip:%r ) " % (len(progeny),maxnode,maxdepth,skip ))
         return progeny
 
     def add_child(self, child):
@@ -196,12 +209,65 @@ class Tree(object):
         return cls.byindex.get(index, None)  
 
     @classmethod
-    def findpv(cls, pfx):
+    def filternodes_pv(cls, pfx):
         return filter(lambda node:node.pv.name.startswith(pfx), cls.byindex.values()) 
 
     @classmethod
-    def findlv(cls, pfx):
+    def filternodes_lv(cls, pfx):
         return filter(lambda node:node.lv.name.startswith(pfx), cls.byindex.values()) 
+
+    @classmethod
+    def findnode_lv(cls, lvn, idx=0):
+        """
+        TODO: use the idx within filternodes for short circuiting 
+        """
+        nodes = cls.filternodes_lv(lvn)    
+
+        numNodes = len(nodes) 
+        log.info("found %s nodes with lvn(LV name prefix) starting:%s " % (numNodes, lvn))
+        if not idx < numNodes:
+             log.warning("requested node index idx %s not within numNodes %s " % (idx, numNodes)) 
+        pass
+
+        targetNode = nodes[idx] if idx < numNodes else None 
+
+        log.info("selected targetNode:[%s]\n%r " % (idx, targetNode)) 
+        return targetNode
+
+    @classmethod
+    def findnode(cls, sel, idx=None):
+        try:
+            isel = int(sel)
+        except ValueError:
+            isel = None 
+        pass
+
+        if isel is not None:
+            targetNode = cls.get(isel)
+        else:
+            targetNode = cls.findnode_lv(sel, idx)
+        pass
+
+        if targetNode is None:
+            log.warning("failed to findnode with sel %s and idx %s " % (sel, idx))
+            return None
+        return targetNode
+
+
+    @classmethod
+    def subtree(cls, sel, maxdepth=0, maxnode=0, idx=0):
+        """
+        :param sel: lvn prefix or integer tree index
+        :param maxdepth: node depth limit
+        :param maxnode: node count limit
+        :param idx: used to pick target node within an lvn selection that yields multiple nodes
+
+        TODO: review similar node selection code from previous DAE based approach
+        """
+        targetNode = cls.findnode(sel, idx)
+        pass
+        progeny = targetNode.rprogeny(maxdepth, maxnode)   # including the idxNode 
+        return progeny
 
     @classmethod
     def description(cls):

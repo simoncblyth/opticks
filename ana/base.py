@@ -278,16 +278,20 @@ def opticks_args(**kwa):
     statcut = kwa.get("statcut", 1000)
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
+    yes = kwa.get("yes", False )
 
     addpath = kwa.get("addpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/dayabay.xml" )
     apmtddpath = kwa.get("apmtddpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-pmt.xml" )
     apmtpathtmpl = kwa.get("apmtpathtmpl", "$OPTICKS_INSTALL_PREFIX/opticksdata/export/DayaBay/GPmt/%(apmtidx)s/GPmt.npy" )
     apmtidx = kwa.get("apmtidx", 2 )
+
     csgpath = kwa.get("csgpath", "$TMP/tboolean-csg-pmt-py")
     container = kwa.get("container","Rock//perfectAbsorbSurface/Vacuum") 
     testobject = kwa.get("testobject","Vacuum///GlassSchottF2" ) 
-
-    yes = kwa.get("yes", False )
+    gsel = kwa.get("gsel", "/dd/Geometry/PMT/lvPmtHemi0x" ) 
+    gidx = kwa.get("gidx", 0 ) 
+    gmaxnode = kwa.get("gmaxnode", 0 ) 
+    gmaxdepth = kwa.get("gmaxdepth", 0 ) 
 
 
     parser = argparse.ArgumentParser(doc)
@@ -342,6 +346,10 @@ def opticks_args(**kwa):
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
 
+    parser.add_argument(     "--gsel",  default=gsel, help="GDML node selection, either tree node index integer or LV name prefix, see tboolean-gdml . %(default)s ")
+    parser.add_argument(     "--gmaxdepth",  default=gmaxdepth, type=int, help="GDML node depth limit, 0 for no limit, see tboolean-gdml. %(default)s ")
+    parser.add_argument(     "--gmaxnode",  default=gmaxnode, type=int, help="GDML node limit including target node, 0 for no limit, see tboolean-gdml. %(default)s ")
+    parser.add_argument(     "--gidx",  default=gidx, type=int, help="GDML index to pick target node from within gsel lvn selection, see tboolean-gdml. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

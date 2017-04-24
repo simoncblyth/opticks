@@ -752,12 +752,13 @@ tboolean-gdml-()
     python $(tboolean-dir)/tboolean_gdml.py \
           --csgpath $TMP/$FUNCNAME \
           --container $(tboolean-container)  \
-          --testobject $(tboolean-testobject)  
+          --testobject $(tboolean-testobject) $* 
 }
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-dir)/tboolean_gdml.py  ; }
 tboolean-gdml-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-gdml-/1 ; }
-
+tboolean-gdml-deserialize(){ NCSGDeserializeTest $TMP/tboolean-gdml- ; }
+tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
 
 
 

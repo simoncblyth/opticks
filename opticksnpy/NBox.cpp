@@ -63,6 +63,21 @@ float nbox::sdf2(float x, float y, float z)
 
 
 
+void nbox::adjustToFit(const nbbox& bb, float scale)
+{
+    nquad qce ; 
+    qce.f = bb.center_extent() ; 
+    qce.f.w *= scale ; 
+
+    init_box( *this, qce );
+    
+
+
+}
+
+
+
+
 
 nbbox nbox::bbox() const
 {

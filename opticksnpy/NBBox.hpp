@@ -38,6 +38,7 @@ struct NPY_API nbbox
     {
         min *= factor ; 
         max *= factor ; 
+        side = max - min ; 
     } 
 
     nvec3 min ; 

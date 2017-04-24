@@ -48,16 +48,18 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
     glm::mat4 prev = d.rs ; 
     glm::mat4 next ; 
 
-    float diff ; 
+    float diff, diff2  ; 
     int count(0) ; 
     do {
         next = average_to_inverse_transpose( prev ) ;
         diff = compDiff(prev, next) ;
+        diff2 = compDiff2(prev, next) ;
         prev = next ; 
 
         if(verbose)
         std::cout << "polar_decomposition"
                   << " diff " << diff 
+                  << " diff2 " << diff2 
                   << " count " << count 
                   << std::endl ; 
 
@@ -110,7 +112,23 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
     glm::mat4 i_trs = glm::inverse( trs ) ; 
 
     float diff = compDiff(isirit, i_trs );
-    assert( diff < 1e-4 );
+    float diff2 = compDiff2(isirit, i_trs, false );
+    float diffFractional = compDiff2(isirit, i_trs, true );
+
+    bool match = diffFractional < 1e-4 ; 
+    if(!match)
+    {
+       std::cout << "nglmext::invert_trs"
+                 << " polar_decomposition inverse and straight inverse are mismatched "
+                 << " diff " << diff 
+                 << " diff2 " << diff2 
+                 << " diffFractional " << diffFractional
+                 << std::endl << gpresent("trs", trs)
+                 << std::endl << gpresent("isirit", isirit)
+                 << std::endl << gpresent("i_trs ",i_trs)
+                 << std::endl ; 
+    }
+    assert(match);
 
     return isirit ; 
 }
@@ -131,6 +149,27 @@ float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 
     return glm::compMax(colmax) ; 
 }
+
+
+float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional)
+{
+    float a, b, d, maxdiff = 0.f ; 
+    for(unsigned i=0 ; i < 4 ; i++){
+    for(unsigned j=0 ; j < 4 ; j++)
+    { 
+        a = a_[i][j] ; 
+        b = b_[i][j] ; 
+        d = fabsf(a - b);
+        if(fractional) d /= (a+b)/2.f ; 
+        if( d > maxdiff ) maxdiff = d ; 
+    }
+    }
+    return maxdiff ; 
+}
+
+
+
+
 
 
 
