@@ -645,6 +645,7 @@ okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
 cfh-(){             . $(opticks-home)/ana/cfh.bash && cfh-env $*  ; }
 tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
+notes-(){           . $(opticks-home)/notes/notes.bash && notes-env $*  ; }
 pmt-(){             . $(opticks-home)/ana/pmt/pmt.bash && pmt-env $* ; }
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 

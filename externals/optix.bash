@@ -205,6 +205,17 @@ Alternatives to OptiX
 * http://raytracey.blogspot.tw/2016/05/start-your-engines-source-code-for.html
 
 
+Rayforce
+~~~~~~~~~~~
+
+* http://rayforce.survice.com
+* https://gitlab.survice.com/survice/Rayforce/tree/master
+
+Ray tracer referenced from Multi-Hit Ray Traversal paper
+
+* http://jcgt.org/published/0003/01/01/paper.pdf
+
+
 Intel : Embree  (works on CPUs and many integrated core (MICs) coprocessors)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

@@ -197,11 +197,10 @@ def test_3d():
 
 if __name__ == '__main__':
 
-    #test_2d(1)
-    #test_2d(2)
-    #test_2d(4)
-    #test_2d(8)
+    test_2d(1)
+    test_2d(2)
+    test_2d(4)
+    test_2d(8)
     #test_3d()
 
-    test_postorder()
 
