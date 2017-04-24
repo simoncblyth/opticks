@@ -18,6 +18,15 @@ OpenGL headers, but wanted to avoid directly using
 GLFW3 inside oglrap-
 
 
+Instancing Refs
+-----------------
+
+* https://learnopengl.com/#!Advanced-OpenGL/Instancing
+* http://sol.gfxile.net/instancing.html performance comparisons
+* https://www.khronos.org/opengl/wiki/Vertex_Rendering
+* http://ogldev.atspace.co.uk/www/tutorial33/tutorial33.html 
+
+
 
 Switch Ortho to Frustum without "loosing" view
 -----------------------------------------------

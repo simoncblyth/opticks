@@ -169,19 +169,104 @@ Aug
 * rework for simultaneous Opticks, G4 simulation : OpticksEvent pairs held in OpticksHub
 * integration genstep handoff form G4 to Opticks
 
-Sep
------
+Sep : mostly G4/Opticks interop
+-----------------------------------
 
 * encapsulate Geant4 into CG4
 * multievent handling rejig, looks to be mostly done in optixrap/OEvent.cc
 * intro OKMgr and OKG4Mgr the slimmed down replacements for the old App
-* Integrated Geant4/Opticks runing allowing G4GUN steps to be directly Opticks GPU propagated
+* Integrated Geant4/Opticks running allowing G4GUN steps to be directly Opticks GPU propagated
 * OptiX buffer control worked out for multi-event running, using buffer control flags system  
 
 
+Oct
+------
+
+* CHEP meeting 
+* DYB optical physics including reemission teleported into cfg4
+* CRecorder : for tracing the G4 propagations in Opticks photon record format 
+* reemission continuation handling, so G4 recorded propagations can be directly compared to opticks ones
+* step-by-step comparisons within the propagations
+* tlaser testing 
+* tconcentric chisq guided iteration 
+
+Nov : G4/Opticks optical physics chisq iteration
+--------------------------------------------------------------
+
+* scatter debug
+* groupvel debug 
+* high volume histo chisq numpy comparisons machinery 
+
+Dec
+------
+
+* Paris trip, review
+* g4gun 
+* CHEP proceedings 
+* GPU CSG research 
+
+Jan
+-----
+
+* CHEP meeting proceedings bulk of the writing  
+* start looking at GPU CSG implementation
+* PSROC presentation
+* PHP
+
+Feb
+-----
+
+* prototyping GPU CSG in python
+* Ulyanov iterative CSG paper pseudocode leads me astray
+* GPU binary tree serialization
+* adopt XRT boolean lookup tables
+* learn how to migate recursive into iterative
+
+Mar
+----
+
+* moving CSG python prototype to CUDA
+* reiteration, tree gymnastics
+* CSG stacks in CUDA
+* fix a real painful rare bug in tree reiteration  
+* OpticksCSG unification of type shape codes
+
+* learn geometry modelling with implicit functions, SDFs
+* start adding polygonization of CSG trees using SDF isosurface extraction
+* integrate marching cubes, MC
+* integrate dual contouring sample DCS, detour into getting Octree operational in acceptably performant,
+  painful at the time, by got real experience of z-order curves, multi-res and morton codes
 
 
+Apr
+-----
 
+* integrate implicit mesher IM over a couple of days: much faster than MC or DCS 
+  as uses continuation approach and produces prettier meshes
+* boot DCS out of Opticks into optional external 
+* start adding transform handling to the CSG tree
+* add scaling transform support, debug normal transforms
+* fix implicit assumption of normalized ray directions bug in sphere intersection 
+* introduce python CSG geometry description into tboolean 
+* remove CSG tree height limitation by adoption of bit twiddling postorder, 
+  benefiting from morton code experience gained whilst debugging DCS Octree construction
+
+* implement ncylinder
+* implement nzsphere
+
+* attempts to use unbounded and open geometry as CSG sub-objects drives home 
+  the theory behind CSG : S means SOLID, endcaps are not optional 
+
+* conclude polygonization fails for cathode and base are a limitation of current poly techniques, 
+  need new approach to work with thin volumes
+
+* complete conversion of detdesc PMT into NCSG (no uncoincide yet)
+
+* conclude topdown detdesc parse too painful, jump ship to GDML
+* GDML parse turns out to be much easier
+* implement GDML tree querying to select general subtrees 
+
+  
 
 
 

@@ -1697,6 +1697,14 @@ Thoughts on applying *Transform* instancing to complex/large geometries
 * need to create local assembly frame vertices 
 
 
+OptiX instancing in formum
+-----------------------------
+
+* https://devtalk.nvidia.com/default/topic/647610/optix/instancing-for-geometry/
+
+
+
+
 Instancing Example
 -------------------
 
