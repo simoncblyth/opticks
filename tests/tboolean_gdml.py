@@ -38,10 +38,10 @@ if __name__ == '__main__':
 
     args = opticks_main()
 
-    gsel = args.gsel       
-    gidx = args.gidx   
-    gmaxnode = args.gmaxnode  # limit subtree
-    gmaxdepth = args.gmaxdepth  
+    gsel = args.gsel            # string representing target node index integer or lvname
+    gmaxnode = args.gmaxnode    # limit subtree node count
+    gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
+    gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
     log.info(" gsel:%s gidx:%s gmaxnode:%s gmaxdepth:%s " % (gsel, gidx, gmaxnode, gmaxdepth))
 

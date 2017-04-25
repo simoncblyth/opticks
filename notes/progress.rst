@@ -270,7 +270,6 @@ Dont use colons in section text for easy title grepping.
 * GDML parse turns out to be much easier
 * implement GDML tree querying to select general subtrees 
 
-  
 
 
 
