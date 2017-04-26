@@ -463,11 +463,13 @@ With coincident surface removal and boundary name rejig and persisting as bndspe
 EOU
 }
 
-pmt-cd(){  cd $(pmt-dir); }
-pmt-ecd(){ cd $(pmt-edir) ; }
+pmt-cd(){  cd $(pmt-edir); }
+pmt-ocd(){ cd $(pmt-dir) ; }
 
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
+
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
+pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
 
 
 pmt-pdf(){ open ~/opticks_refs/Detdesc_Solids.pdf ~/opticks_refs/Detdesc_lhcbdtd.pdf  ; }
@@ -484,7 +486,6 @@ pmt-dfind(){
   
 }
 
-pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
 pmt-export(){  
     echo -n 
     # PMT_DIR env setup moved into opticks_main in ana.base

@@ -3,6 +3,48 @@
 gdml.py : parsing GDML
 =========================
 
+::
+
+    In [19]: len(gdml.elem.findall("solids/*"))
+    Out[19]: 707
+
+    In [20]: len(gdml.elem.findall("solids//*"))
+    Out[20]: 1526
+
+    In [21]: set([e.tag for e in gdml.elem.findall("solids//*")])
+    Out[21]: 
+    {
+     'position',
+     'rotation',
+
+     'first',
+     'second',
+     'intersection',
+     'subtraction',
+     'union',
+
+     'box',      <-- needs fixing 
+     'sphere',
+     'tube',
+
+
+      ## below need implementing
+
+     'cone',
+     'polycone', 'zplane'
+     'trd',                 # trapezoid
+   }
+
+
+    In [26]: for e in gdml.elem.findall("solids//tube"):print tostring_(e)
+
+    In [26]: for e in gdml.elem.findall("solids//trd"):print tostring_(e)
+    <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstTopRadiusRibBase0xc271078" x1="160" x2="691.02" y1="20" y2="20" z="2228.5"/>
+    <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstInnVerRibCut0xbf31118" x1="100" x2="237.2" y1="27" y2="27" z="50.02"/>
+        
+
+
+
 """
 import os, re, logging, math
 log = logging.getLogger(__name__)
@@ -33,9 +75,19 @@ def construct_transform(obj):
 
 
 class G(object):
+    pvtype = 'PhysVol'
+    lvtype = 'Volume'
+    postype = 'position'
+
     typ = property(lambda self:self.__class__.__name__)
     name  = property(lambda self:self.elem.attrib.get('name',None))
     xml = property(lambda self:tostring_(self.elem))
+
+    def _get_shortname(self):
+        """/dd/Geometry/PMT/lvPmtHemi0xc133740 -> lvPmtHemi"""
+        base = self.name.split("/")[-1]
+        return base[:-9] if base[-9:-7] == '0x' else base
+    shortname = property(_get_shortname)
 
     def att(self, name, default=None, typ=None):
         assert typ is not None
@@ -212,7 +264,7 @@ class Sphere(Primitive):
         assert rTheta >= 0. and rTheta <= 180.
         assert lTheta >= 0. and lTheta <= 180.
 
-        log.info("Sphere.as_ncsg radius:%s only_inner:%s  has_inner:%s " % (radius, only_inner, has_inner)) 
+        log.debug("Sphere.as_ncsg radius:%s only_inner:%s  has_inner:%s " % (radius, only_inner, has_inner)) 
 
         zslice = startThetaAngle > 0. or deltaThetaAngle < 180.
 
@@ -221,7 +273,7 @@ class Sphere(Primitive):
             zmax = radius*math.cos(rTheta*math.pi/180.)
             assert zmax > zmin, (startThetaAngle, deltaThetaAngle, rTheta, lTheta, zmin, zmax )
 
-            log.info("Sphere.as_ncsg rTheta:%5.2f lTheta:%5.2f zmin:%5.2f zmax:%5.2f azmin:%5.2f azmax:%5.2f " % (rTheta, lTheta, zmin, zmax, z+zmin, z+zmax ))
+            log.debug("Sphere.as_ncsg rTheta:%5.2f lTheta:%5.2f zmin:%5.2f zmax:%5.2f azmin:%5.2f azmax:%5.2f " % (rTheta, lTheta, zmin, zmax, z+zmin, z+zmax ))
 
             cn = CSG("zsphere", name=self.name, param=[x,y,z,radius], param1=[zmin,zmax,0,0], param2=[0,0,0,0]  )
 
@@ -388,19 +440,24 @@ if __name__ == '__main__':
     args = opticks_main()
     gdmlpath = os.environ['OPTICKS_GDMLPATH']   # envvar set within opticks_main 
 
+
+    gsel = args.gsel            # string representing target node index integer or lvname
+    gmaxnode = args.gmaxnode    # limit subtree node count
+    gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
+    gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
+
     gdml = GDML.parse(gdmlpath)
 
     #print gdml.world
     #gdml.world.rdump()
-
     #gdml.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
 
     from treebase import Tree
-    t = Tree(gdml.world, postype="position") 
+    t = Tree(gdml.world) 
 
     lvn = "/dd/Geometry/PMT/lvPmtHemi0x"
  
-    l = t.findlv(lvn)  # all nodes 
+    l = t.filternodes_lv(lvn)  # all nodes 
     assert len(l) == 672
 
     #a = np.array(map(lambda n:n.index, l))  # 3 groups of index pitches apparent in  a[1:] - a[:-1]

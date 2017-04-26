@@ -145,7 +145,7 @@ class CSG(CSG_):
         metapath = self.metapath(treedir)
         tranpath = self.tranpath(treedir)
 
-        log.info("save to %s meta %r metapath %s tpath %s " % (nodepath, self.meta, metapath, tranpath))
+        log.debug("save to %s meta %r metapath %s tpath %s " % (nodepath, self.meta, metapath, tranpath))
         json.dump(self.meta,file(metapath,"w"))
 
         nodebuf, tranbuf = self.serialize() 

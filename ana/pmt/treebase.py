@@ -314,14 +314,17 @@ class Tree(object):
     def traverse(self):
         self.root.traverse()
 
-    def __init__(self, base, postype="posXYZ"):
+    def __init__(self, base):
         """
         :param base: top ddbase.Elem or gdml.G instance of lv of interest, eg lvPmtHemi
         """
         self.clear()  # prevent interactive re-running from doubling up nodes
-        self.lvtype = base.__class__.__name__
-        self.pvtype = base.children[0].__class__.__name__
-        self.postype = postype
+
+        self.lvtype = base.lvtype
+        self.pvtype = base.pvtype
+        self.postype = base.postype
+        assert self.postype and self.lvtype and self.pvtype
+
         self.slice_ = None
 
         self.base = base
@@ -370,7 +373,7 @@ if __name__ == '__main__':
 
     lv = g.logvol_("lvPmtHemi")
 
-    tr = Tree(lv, postype="posXYZ")
+    tr = Tree(lv)
 
 
 

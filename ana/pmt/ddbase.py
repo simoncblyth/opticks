@@ -168,12 +168,18 @@ class Att(object):
 
 
 class E(object):
+    lvtype = 'Logvol'
+    pvtype = 'Physvol'
+    postype = 'posXYZ'
+
     typ = property(lambda self:self.__class__.__name__)
     name  = property(lambda self:self.elem.attrib.get('name',None))
+    shortname = property(lambda self:self.name)   # for correspondence with GDML branch 
 
     def __init__(self, elem, g=None):
         self.elem = elem 
         self.g = g 
+
 
     def att(self, k, dflt=None):
         v = self.elem.attrib.get(k, None)
@@ -288,7 +294,7 @@ class Elem(E):
        return z
     z = property(_get_z)
 
-    def children(self):
+    def _get_children(self):
         """
         Defines the nature of the tree. 
 
@@ -324,6 +330,9 @@ class Elem(E):
         else:
             return []  
         pass
+
+    children = property(_get_children)
+
 
     def comps(self):
         """

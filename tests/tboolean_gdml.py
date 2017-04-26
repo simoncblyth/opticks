@@ -48,7 +48,7 @@ if __name__ == '__main__':
 
     gdmlpath = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main 
     gdml = GDML.parse(gdmlpath)
-    tree = Tree(gdml.world, postype="position")
+    tree = Tree(gdml.world)
 
     subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
 

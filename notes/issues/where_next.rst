@@ -29,6 +29,7 @@ TODO: add more primitives
 
 * cone
 * polycone
+* trapezoid "trd"
 
 There is some choice over where to
 draw the line between primitives and compound CSG trees, 
@@ -209,12 +210,18 @@ Validation
 OpticksSceneGraph Technicalites
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+See scene- for examples of scene descriptions 
+
+
 * use python for parsing GDML rather than working in C++ with the G4 parse ? 
   Then can start from the (pmt-) dd.py detdesc/lxml parse 
   and bring it over to work with GDML 
     
 * no reason why not to use python for input geometry conversion, 
   as in production this is only done once for each geometry 
+
+  * can always migrate the python to C++ with some minimal XML parser external
+    if it proves inconvenient to require python preprocessing 
 
 Multi-level approach similar to NCSG chain, perhaps steered with 
 an "NScene" ?  
@@ -236,10 +243,10 @@ an "NScene" ?
 * ogeo-  to OptiX
 
 
-Why not parse with G4 and work with G4 in-memory tree ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Why not parse GDML with G4 and work with G4 in-memory tree ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* prefer to keep G4 dependency to a minimum, yields more generally usable code
+* prefer to keep G4 dependency to a minimum as this yields more generally usable code
 * promotes an independent approach 
 * avoids having to work with G4 too much 
 
@@ -255,7 +262,6 @@ Would need to add solids: cylinder
 
 YES BUT, partlist are very limited, only keep them around as 
 a possible optimization of csg tree, so this is too much of a cul-de-sac.
-
 
 
 
