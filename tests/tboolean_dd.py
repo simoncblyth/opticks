@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """
-tboolean_pmt.py
+tboolean_dd.py
 =================
 
 Usage::
 
    tboolean-
-   tboolean-pmt-   # see the output of this script doing the conversion into NCSG
-   tboolean-pmt    # visualize resulting polygonization and raytrace
+   tboolean-dd-   # see the output of this script doing the conversion into NCSG
+   tboolean-dd    # visualize resulting polygonization and raytrace
 
 
 #. FIXED: solid-0:PYREX poly-cylinder not matching raytrace, NCylinder SDF was ignoring center.z and bbox was wrong 
@@ -45,48 +45,9 @@ from opticks.ana.base import opticks_main
 from opticks.ana.pmt.ddbase import Dddb
 from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.ncsgconverter import NCSGConverter
+from opticks.ana.pmt.polyconfig import PolyConfig
 
 from opticks.dev.csg.csg import CSG  
-
-
-
-
-
-DEFAULT = "DEFAULT"
-PYREX = "lvPmtHemi"    
-VACUUM = "lvPmtHemiVacuum"   
-CATHODE = "lvPmtHemiCathode"
-BOTTOM = "lvPmtHemiBottom"
-DYNODE = "lvPmtHemiDynode"
-
-class ConfigPoly(object):
-    """
-    Common location for volume specific polygonization settings
-    to avoid duplication between the GDML and detdesc branches.
-    """
-
-    _seeds = {
-        CATHODE: "0,0,127.9,0,0,1",
-         BOTTOM:"0,0,0,0,0,-1", 
-     }
-
-    _resolution = {
-          BOTTOM:"150",
-         DEFAULT:"40",
-    }
-
-    _verbosity = {
-          DYNODE:"3",
-         DEFAULT:"0"
-    }
-
-    def __init__(self, lvn):
-        self.lvn = lvn 
-    
-    resolution = property(lambda self:self._resolution.get(self.lvn, self._resolution[DEFAULT]))
-    verbosity = property(lambda self:self._verbosity.get(self.lvn, self._verbosity[DEFAULT]))
-    seeds = property(lambda self:self._seeds.get(self.lvn, self._seeds[DEFAULT]))
-
 
 
 
@@ -96,31 +57,21 @@ if __name__ == '__main__':
 
     g = Dddb.parse(args.apmtddpath)
 
-    #lvn = "lvPmtHemiwPmtHolder"
     lvn = "lvPmtHemi" 
 
     lv = g.logvol_(lvn)
     tr = Tree(lv)
     nn = tr.num_nodes()
 
-    if lvn == "lvPmtHemi":
-        assert nn == 5
-    pass
 
-
-    container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="20")
+    container = CSG("box")
+    container.boundary = args.container
+    container.meta.update(PolyConfig("CONTAINER").meta)
 
     objs = []
     objs.append(container)
 
-
-    im = dict(poly="IM")
-    mc = dict(poly="MC", nx="30")
-    dcs = dict(poly="DCS", nominal="7", coarse="7", threshold="1", verbosity="0")
-
-    #ii = [DYNODE]
     ii = range(nn)
-
 
     for i in ii:
 
@@ -128,31 +79,14 @@ if __name__ == '__main__':
         lv = node.lv 
         lvn = lv.name
 
-        cfg = ConfigPoly(lv.shortname)
-
+        pc = PolyConfig(lv.shortname)
 
         log.info("\ntranslating .............lvn %s ....node  %r " % (lvn, node) )
 
-
-        seeds = vseeds.get(lvn, None)
-        if seeds is not None:  im.update(seeds=seeds)
-
-        resolution = vresolution.get(lvn, vresolution[DEFAULT])
-        verbosity = vverbosity.get(lvn, vverbosity[DEFAULT])
-        im.update(resolution=resolution, verbosity=verbosity)
-
-        if lvn in [CATHODE, BOTTOM]:
-            #poly = dcs
-            poly = im
-        else:
-            poly = im
-        pass
-
-
         obj = NCSGConverter.ConvertLV( lv )
         obj.boundary = args.testobject
-        obj.meta.update(poly) 
-        obj.meta.update(gpuoffset="-200,0,0")  # shift raytrace only up in x
+        obj.meta.update(pc.meta)
+        obj.meta.update(gpuoffset="-200,0,0")  # shift raytrace only 
         
         obj._translate += np.array([200, (i-2)*200, 0], dtype=np.float32 ) 
 

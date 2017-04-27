@@ -1,4 +1,38 @@
 #pragma once
+/*
+
+1-based indexing of complete binary tree
+-------------------------------------------
+
+Exhibits a very regular pattern of the bits::
+
+                                                     depth     elevation
+
+                         1                               0           3   
+
+              10                   11                    1           2   
+
+         100       101        110        111             2           1   
+                        
+     1000 1001  1010 1011  1100 1101  1110  1111         3           0   
+ 
+
+This has several advantages:
+
+* child/parent indices can be computed (not stored) so no tree overheads
+* postorder traverse can be computed by bit twiddling 
+
+::
+
+    parent(i)         = i/2 
+    leftchild(i)      = 2*i + 1 
+    rightchild(i)     = 2*i + 2 
+
+    leftmost(height)  =  1 << height 
+    postorder_next(i) =  i & 1   ?   i >> 1   :   (i << elevation) + (1 << elevation)  
+
+
+*/
 
 #ifdef __CUDACC__
 #define POSTORDER_DEPTH(currIdx) ( 32 - __clz((currIdx)) - 1 )

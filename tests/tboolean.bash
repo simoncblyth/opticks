@@ -762,19 +762,21 @@ tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
 
 
 
-tboolean-pmt(){          TESTCONFIG=$(tboolean-pmt- 2>/dev/null)     tboolean-- $* ; }
-tboolean-pmt-()
+tboolean-dd(){          TESTCONFIG=$(tboolean-dd- 2>/dev/null)     tboolean-- $* ; }
+tboolean-dd-()
 {       
-    python $(tboolean-dir)/tboolean_pmt.py \
+    python $(tboolean-dir)/tboolean_dd.py \
           --csgpath $TMP/$FUNCNAME \
           --container $(tboolean-container)  \
           --testobject $(tboolean-testobject)  
 
     # got too long for here-string  so broke out into script
 }
-tboolean-pmt-check(){ tboolean-pmt- 2> /dev/null ; }
-tboolean-pmt-edit(){ vi $(tboolean-dir)/tboolean_pmt.py  ; }
-tboolean-pmt-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-pmt-/1 ; }
+tboolean-dd-check(){ tboolean-dd- 2> /dev/null ; }
+tboolean-dd-edit(){ vi $(tboolean-dir)/tboolean_dd.py  ; }
+tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-dd-/1 ; }
+
+
 
 
 tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }

@@ -31,6 +31,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.gdml import GDML
+from opticks.ana.pmt.polyconfig import PolyConfig
 
 from opticks.dev.csg.csg import CSG  
 
@@ -53,19 +54,18 @@ if __name__ == '__main__':
     subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
 
 
-    im = dict(poly="IM", resolution="50")
-
     csgnodes = []
     for i, node in enumerate(subtree): 
 
         solid = node.lv.solid
+        polyconfig = PolyConfig(node.lv.shortname)
 
         csgnode = solid.as_ncsg()
 
         if i > 0: # skip first node transform which is placement of targetNode within its parent 
             csgnode.transform = node.pv.transform
         pass 
-        csgnode.meta.update(im)
+        csgnode.meta.update(polyconfig.meta )
         csgnode.boundary = args.testobject
         csgnodes.append(csgnode)
     pass
@@ -73,10 +73,7 @@ if __name__ == '__main__':
 
     container = CSG("box")
     container.boundary = args.container
-    container.meta.update(poly="IM", resolution="40")
-    container.meta.update(container="1", containerscale="4") 
-    # container="1" meta data signals NCSG deserialization 
-    # to adjust box size and position to contain contents 
+    container.meta.update(PolyConfig("CONTAINER").meta)
 
     objs = []
     objs.append(container)
