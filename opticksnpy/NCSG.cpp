@@ -388,6 +388,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
            case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ; 
            case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
            case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ; 
+           case CSG_BOX3:     node = new nbox(make_box3(p0))                ; break ; 
            case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
            case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
            case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 

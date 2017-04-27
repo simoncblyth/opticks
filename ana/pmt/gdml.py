@@ -300,14 +300,9 @@ class Sphere(Primitive):
 
 
 class Box(Primitive):
-    """
-    Need to overhaul nbox, currently using x,y,z for placement
-    and just w for extent...  instead need to generalize to 
-    use x,y,z for dimensions and leave placement to transforms. 
-    """
     def as_ncsg(self):
         assert self.lunit == 'mm' 
-        cn = CSG("box", name=self.name)
+        cn = CSG("box3", name=self.name)
         cn.param[0] = self.x
         cn.param[1] = self.y
         cn.param[2] = self.z

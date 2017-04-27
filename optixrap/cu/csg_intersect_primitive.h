@@ -262,14 +262,22 @@ void csg_bounds_box(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 static __device__
-bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+void csg_bounds_box3(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
-   const float hside = q0.f.w ; 
-   const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
-   const float3 bmax = make_float3(q0.f.x + hside, q0.f.y + hside, q0.f.z + hside ); 
+    const float3 bmin = make_float3(-q0.f.x/2.f, -q0.f.y/2.f, -q0.f.z/2.f ); 
+    const float3 bmax = make_float3( q0.f.x/2.f,  q0.f.y/2.f,  q0.f.z/2.f ); 
 
-   const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+    Aabb tbb(bmin, bmax);
+    if(tr) transform_bbox( &tbb, tr );  
 
+    aabb->include(tbb);
+}
+
+
+
+static __device__
+bool _csg_intersect_box(const float3& bmin, const float3& bmax, const float3& bcen, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+{
    float3 idir = make_float3(1.f)/ray_direction ; 
 
    // the below t-parameter float3 are intersects with the x, y and z planes of
@@ -318,7 +326,13 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
        //rtPrintf(" intersect_box : t_near %f t_far %f tt %f tt_min %f \n", t_near, t_far, tt, tt_min  );
 
        float3 p = ray_origin + tt_cand*ray_direction - bcen ; 
-       float3 pa = make_float3(fabs(p.x), fabs(p.y), fabs(p.z)) ;
+
+       float3 pa = make_float3(fabs(p.x)/(bmax.x - bmin.x), 
+                               fabs(p.y)/(bmax.y - bmin.y), 
+                               fabs(p.z)/(bmax.z - bmin.z)) ;
+
+       // discern which face is intersected from the largest absolute coordinate 
+       // hmm this implicitly assumes a "box" of equal sides, not a "box3"
 
        float3 n = make_float3(0.f) ;
        if(      pa.x >= pa.y && pa.x >= pa.z ) n.x = copysignf( 1.f , p.x ) ;              
@@ -328,6 +342,7 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
        if(tt_cand > tt_min)
        {
            has_valid_intersect = true ; 
+
            tt.x = n.x ;
            tt.y = n.y ;
            tt.z = n.z ;
@@ -337,6 +352,31 @@ bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const fl
 
    return has_valid_intersect ; 
 }
+
+
+static __device__
+bool csg_intersect_box3(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+{
+   const float3 bmin = make_float3(-q0.f.x/2.f, -q0.f.y/2.f, -q0.f.z/2.f ); 
+   const float3 bmax = make_float3( q0.f.x/2.f,  q0.f.y/2.f,  q0.f.z/2.f ); 
+   const float3 bcen = make_float3( 0.f, 0.f, 0.f ) ;    
+
+   return _csg_intersect_box( bmin, bmax, bcen , tt_min, tt, ray_origin, ray_direction );   
+}
+ 
+static __device__
+bool csg_intersect_box(const quad& q0, const float& tt_min, float4& tt, const float3& ray_origin, const float3& ray_direction )
+{
+   // TODO: get rid of box in favor of box3
+   const float hside = q0.f.w ; 
+   const float3 bmin = make_float3(q0.f.x - hside, q0.f.y - hside, q0.f.z - hside ); 
+   const float3 bmax = make_float3(q0.f.x + hside, q0.f.y + hside, q0.f.z + hside ); 
+   const float3 bcen = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+
+   return _csg_intersect_box( bmin, bmax, bcen , tt_min, tt, ray_origin, ray_direction );   
+}
+ 
+
 
 
 

@@ -43,6 +43,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
                 case CSG_SPHERE:     csg_bounds_sphere(   pt.q0,               aabb, NULL ); break ;
                 case CSG_ZSPHERE:    csg_bounds_zsphere(  pt.q0, pt.q1, pt.q2, aabb, NULL ); break ;
                 case CSG_BOX:        csg_bounds_box(      pt.q0,               aabb, NULL ); break ;
+                case CSG_BOX3:       csg_bounds_box3(     pt.q0,               aabb, NULL ); break ;
                 case CSG_SLAB:       csg_bounds_slab(     pt.q0, pt.q1,        aabb, NULL ); break ; 
                 case CSG_PLANE:      csg_bounds_plane(    pt.q0,               aabb, NULL ); break ;      
                 case CSG_CYLINDER:   csg_bounds_cylinder( pt.q0, pt.q1,        aabb, NULL ); break ;  
@@ -63,6 +64,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
                 case CSG_SPHERE:    csg_bounds_sphere(   pt.q0,               aabb, &tr ); break ;
                 case CSG_ZSPHERE:   csg_bounds_zsphere(  pt.q0, pt.q1, pt.q2, aabb, &tr ); break ;
                 case CSG_BOX:       csg_bounds_box(      pt.q0,               aabb, &tr ); break ;
+                case CSG_BOX3:      csg_bounds_box3(     pt.q0,               aabb, &tr ); break ;
                 case CSG_SLAB:      csg_bounds_slab(     pt.q0, pt.q1,        aabb, &tr ); break ; 
                 case CSG_PLANE:     csg_bounds_plane(    pt.q0,               aabb, &tr ); break ; 
                 case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,        aabb, &tr ); break ;     
@@ -91,6 +93,7 @@ void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const
             case CSG_SPHERE:    csg_intersect_sphere(   pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_ZSPHERE:   csg_intersect_zsphere(  pt.q0, pt.q1, pt.q2, tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_BOX:       csg_intersect_box(      pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_BOX3:      csg_intersect_box3(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_SLAB:      csg_intersect_slab(     pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_PLANE:     csg_intersect_plane(    pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CYLINDER:  csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
@@ -125,6 +128,7 @@ void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const
             case CSG_SPHERE:    valid_intersect = csg_intersect_sphere(   pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_ZSPHERE:   valid_intersect = csg_intersect_zsphere(  pt.q0, pt.q1, pt.q2, tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_BOX:       valid_intersect = csg_intersect_box(      pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
+            case CSG_BOX3:      valid_intersect = csg_intersect_box3(     pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_SLAB:      valid_intersect = csg_intersect_slab(     pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_PLANE:     valid_intersect = csg_intersect_plane(    pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 

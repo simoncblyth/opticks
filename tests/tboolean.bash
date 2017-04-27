@@ -288,26 +288,44 @@ tboolean-bib-box-sphere()
 
 
 
-tboolean-box(){ TESTCONFIG=$(tboolean-csg-box 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-box(){  $FUNCNAME- | python $* ; }
-tboolean-csg-box-(){ cat << EOP 
+tboolean-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-box-(){  $FUNCNAME- | python $* ; }
+tboolean-box--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.ana.pmt.polyconfig import PolyConfig
 from opticks.dev.csg.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+args = opticks_main()
 
-im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+container = CSG("box")
+container.boundary = args.container
+container.meta.update(PolyConfig("CONTAINER").meta)
+
+
+im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
 #tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
-tr = dict(scale="2,2,2", rotate="1,1,1,45")
+#tr = dict(scale="2,2,2", rotate="1,1,1,45")
 
 kwa = {}
 kwa.update(im)
-kwa.update(tr)
+#kwa.update(tr)
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", **kwa )
+box_param = [0,0,0,200]
+box3_param = [100,200,200,0] 
 
-CSG.Serialize([container, box], "$TMP/$FUNCNAME" )
+box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)", **kwa )
+box.dump()
+
+
+CSG.Serialize([container, box], args.csgpath, outmeta=True )
 EOP
 }
+
+
+
+
 
 
 
@@ -746,7 +764,7 @@ EOP
 
 
 
-tboolean-gdml(){        TESTCONFIG=$(tboolean-gdml- 2>/dev/null)     tboolean-- $* ; }
+tboolean-gdml(){        TESTCONFIG=$(tboolean-gdml- $* 2>/dev/null)     tboolean--  ; }
 tboolean-gdml-()
 {       
     python $(tboolean-dir)/tboolean_gdml.py \

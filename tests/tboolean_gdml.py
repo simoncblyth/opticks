@@ -85,4 +85,15 @@ if __name__ == '__main__':
 
     CSG.Serialize(objs, args.csgpath, outmeta=True )  
 
+"""
 
+
+* TODO: split the translation interface sensitivity from rotation sensitivity
+
+::
+
+   tboolean-gdml- --gsel 0 --gmaxdepth 2    # world is too big for easy navigation
+   tboolean-gdml- --gsel 1 --gmaxdepth 1
+
+
+"""

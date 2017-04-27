@@ -298,6 +298,7 @@ std::function<float(float,float,float)> nnode::sdf()
         case CSG_SPHERE:         { nsphere* n       = (nsphere*)node        ; f = *n ; } break ;
         case CSG_ZSPHERE:        { nzsphere* n      = (nzsphere*)node       ; f = *n ; } break ;
         case CSG_BOX:            { nbox* n          = (nbox*)node           ; f = *n ; } break ;
+        case CSG_BOX3:           { nbox* n          = (nbox*)node           ; f = *n ; } break ;
         case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = *n ; } break ; 
         case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
         case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
@@ -353,6 +354,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                break ;  
           
             case CSG_BOX: 
+            case CSG_BOX3: 
                {  
                    nbox* n = (nbox*)p ;
                    centers.push_back(n->gseedcenter()); 

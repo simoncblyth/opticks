@@ -17,8 +17,13 @@ typedef enum {
   CSG_CYLINDER=12,
       CSG_SLAB=13,
      CSG_PLANE=14,
+
       CSG_CONE=15,
- CSG_UNDEFINED=16,
+ CSG_MULTICONE=16,
+      CSG_BOX3=17,
+ CSG_TRAPEZOID=18,
+
+ CSG_UNDEFINED=19,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101
@@ -55,8 +60,10 @@ static const char* CSG_CYLINDER_      = "cylinder" ;
 static const char* CSG_SLAB_          = "slab" ; 
 static const char* CSG_PLANE_         = "plane" ; 
 static const char* CSG_CONE_          = "cone" ; 
+static const char* CSG_MULTICONE_     = "multicone" ; 
+static const char* CSG_BOX3_          = "box3" ; 
+static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
-
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
 static const char* CSG_FLAGNODETREE_ = "flagnodetree" ; 
 
@@ -66,6 +73,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
 {
     OpticksCSG_t tc = CSG_UNDEFINED ;
     if(     strcmp(nodename, CSG_BOX_) == 0)            tc = CSG_BOX ;
+    else if(strcmp(nodename, CSG_BOX3_) == 0)           tc = CSG_BOX3 ;
     else if(strcmp(nodename, CSG_SPHERE_) == 0)         tc = CSG_SPHERE ;
     else if(strcmp(nodename, CSG_ZSPHERE_) == 0)        tc = CSG_ZSPHERE ;
     else if(strcmp(nodename, CSG_ZLENS_) == 0)          tc = CSG_ZLENS ;
@@ -76,6 +84,8 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
     else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
     else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
+    else if(strcmp(nodename, CSG_MULTICONE_) == 0)      tc = CSG_MULTICONE ;
+    else if(strcmp(nodename, CSG_TRAPEZOID_) == 0)      tc = CSG_TRAPEZOID ;
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
     else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
     else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
@@ -98,6 +108,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_PARTLIST:      s = CSG_PARTLIST_      ; break ; 
         case CSG_SPHERE:        s = CSG_SPHERE_        ; break ; 
         case CSG_BOX:           s = CSG_BOX_           ; break ; 
+        case CSG_BOX3:          s = CSG_BOX3_          ; break ; 
         case CSG_ZSPHERE:       s = CSG_ZSPHERE_       ; break ; 
         case CSG_ZLENS:         s = CSG_ZLENS_         ; break ; 
         case CSG_PMT:           s = CSG_PMT_           ; break ; 
@@ -107,6 +118,8 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
         case CSG_PLANE:         s = CSG_PLANE_         ; break ; 
         case CSG_CONE:          s = CSG_CONE_          ; break ; 
+        case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
+        case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
         case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 

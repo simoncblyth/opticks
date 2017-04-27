@@ -29,10 +29,21 @@ float nbox::operator()(float x, float y, float z) const
 
     glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
     glm::vec3 a = glm::abs(p) ;
-    glm::vec3 s( param.f.w );      
-    glm::vec3 d = a - s ; 
 
-    return glm::compMax(d) ;
+    float sd = 0.f ; 
+    if(is_box3)
+    {
+        glm::vec3 s( param.f.x/2.f, param.f.y/2.f, param.f.z/2.f );      
+        glm::vec3 d = a - s ; 
+        sd = glm::compMax(d) ;
+    }
+    else
+    {
+        glm::vec3 s( param.f.w );      
+        glm::vec3 d = a - s ; 
+        sd = glm::compMax(d) ;
+    }
+    return sd ; 
 } 
 
 float nbox::sdf1(float x, float y, float z)  
@@ -45,7 +56,7 @@ float nbox::sdf2(float x, float y, float z)
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ;
 
-    glm::vec3 bmax = center + glm::vec3( param.f.w ) ; // 
+    glm::vec3 bmax = is_box3 ? glm::vec3(param.f.x/2.f, param.f.y/2.f, param.f.z/2.f) : center + glm::vec3( param.f.w ) ; // 
 
     glm::vec3 d = glm::abs(glm::vec3(p)) - bmax  ;
 
@@ -70,9 +81,6 @@ void nbox::adjustToFit(const nbbox& bb, float scale)
     qce.f.w *= scale ; 
 
     init_box( *this, qce );
-    
-
-
 }
 
 
@@ -82,10 +90,18 @@ void nbox::adjustToFit(const nbbox& bb, float scale)
 nbbox nbox::bbox() const
 {
     nbbox bb ;
+    if(is_box3)
+    {
+        bb.min = make_nvec3( -param.f.x/2.f, -param.f.y/2.f, -param.f.z/2.f );
+        bb.max = make_nvec3(  param.f.x/2.f,  param.f.y/2.f,  param.f.z/2.f );
+    }
+    else
+    {
+        float s  = param.f.w ; 
+        bb.min = make_nvec3( center.x - s, center.y - s, center.z - s );
+        bb.max = make_nvec3( center.x + s, center.y + s, center.z + s );
+    }
 
-    float s  = param.f.w ; 
-    bb.min = make_nvec3( center.x - s, center.y - s, center.z - s );
-    bb.max = make_nvec3( center.x + s, center.y + s, center.z + s );
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -108,6 +124,7 @@ void nbox::pdump(const char* msg, int verbosity )
               << " side " << param.f.w 
               << " gseedcenter " << gseedcenter()
               << " gtransform? " << !!gtransform
+              << " is_box3 " << is_box3
               << std::endl ; 
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
