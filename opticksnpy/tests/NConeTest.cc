@@ -5,11 +5,13 @@
 
 int main()
 {
-    float radius = 4.f ; 
-    float height = 3.f ;
-    unsigned flags = 0u ; 
+    float r1 = 4.f ; 
+    float z1 = 0.f ;
 
-    ncone cone = make_cone(0,0,0, radius, height, flags ) ; 
+    float r2 = 2.f ; 
+    float z2 = 2.f ;
+
+    ncone cone = make_cone(r1,z1,r2,z2) ; 
     nnode* node = (nnode*)&cone ;
 
     for(float v=10. ; v >= -10. ; v-=1.f )

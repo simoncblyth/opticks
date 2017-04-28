@@ -19,6 +19,7 @@
 #include "NSlab.hpp"
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
+#include "NCone.hpp"
 
 #include "NNode.hpp"
 #include "NBBox.hpp"
@@ -392,6 +393,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
            case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
            case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
            case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
+           case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
            default:           node = NULL ; break ; 
         }       
 

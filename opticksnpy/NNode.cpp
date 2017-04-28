@@ -20,6 +20,7 @@
 #include "NSlab.hpp"
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
+#include "NCone.hpp"
 
 
 #include "PLOG.hh"
@@ -302,6 +303,7 @@ std::function<float(float,float,float)> nnode::sdf()
         case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = *n ; } break ; 
         case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
         case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
+        case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = *n ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -385,7 +387,14 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                    dirs.push_back(n->gseeddir());
                }
                break ;  
- 
+
+            case CSG_CONE: 
+               {  
+                   ncone* n = (ncone*)p ;
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
+               }
+               break ;  
  
             default:
                {

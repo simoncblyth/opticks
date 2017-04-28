@@ -22,8 +22,10 @@ nbbox ncone::bbox() const
 {
     nbbox bb = make_bbox();
 
-    bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + sizeZ/2.f);
-    bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - sizeZ/2.f);
+    float rmax_ = rmax(); 
+
+    bb.max = make_nvec3(  rmax_,  rmax_, z2() );
+    bb.min = make_nvec3( -rmax_, -rmax_, z1() );
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -156,7 +158,7 @@ glm::vec3 ncone::gseedcenter()
 
 glm::vec3 ncone::gseeddir()
 {
-    glm::vec4 dir(1,0,0,0);   // Z: not a good choice as without endcap fail to hit 
+    glm::vec4 dir(1,0,0,0);  
     if(gtransform) dir = gtransform->t * dir ; 
     return glm::vec3(dir) ;
 }
@@ -168,9 +170,12 @@ void ncone::pdump(const char* msg, int verbosity)
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
-              << " radius " << radius 
-              << " sizeZ " << sizeZ
-              << " flags " << flags
+              << " r1 " << r1()
+              << " r2 " << r2()
+              << " rmax " << rmax()
+              << " z1 " << z1()
+              << " z2 " << z2()
+              << " zc " << zc()
               << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 

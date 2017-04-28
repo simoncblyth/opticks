@@ -1,3 +1,99 @@
+
+static __device__
+void csg_bounds_cone(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    float r1 = q0.f.x ; 
+    float z1 = q0.f.y ; 
+    float r2 = q0.f.z ; 
+    float z2 = q0.f.w ; 
+
+    float rmax = fmaxf(r1, r2) ;
+
+    float tan_theta = (r2-r1)/(z2-z1) ;
+    float z_apex = (z2*r1-z1*r2)/(r1-r2) ; 
+ 
+    rtPrintf("## csg_bounds_cone r1:%10.3f z1:%10.3f r2:%10.3f z2:%10.3f rmax:%10.3f tan_theta:%10.3f z_apex:%10.3f  \n", r1,z1,r2,z2, rmax, tan_theta, z_apex) ; 
+
+    if(z2 < z1) rtPrintf("## csg_bounds_cone z2 < z1, z1: %10.3f z2 %10.3f \n", z1, z2 );
+
+    float3 mx = make_float3(  rmax,  rmax,  z2 );
+    float3 mn = make_float3( -rmax, -rmax,  z1 );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+static __device__
+bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    float r1 = q0.f.x ; 
+    float z1 = q0.f.y ; 
+    float r2 = q0.f.z ; 
+    float z2 = q0.f.w ;   // z2 > z1
+
+    float tth = (r2-r1)/(z2-z1) ;
+    float tth2 = tth*tth ; 
+    float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
+ 
+    const float3& o = ray_origin ;
+    const float3& d = ray_direction ;
+
+   //     x^2 + y^2 = (z - z0)^2 tanth^2 
+   //
+   //   (o.x+ t d.x)^2 + (o.y + t d.y)^2 = (o.z + t d.z)^2 tth2
+   // 
+   // quadratic in t :    c2 t^2 + 2 c1 t + c0 = 0 
+
+    float c2 = d.x*d.x + d.y*d.y - d.z*d.z*tth2 ;
+    float c1 = o.x*d.x + o.y*d.y - (o.z-z0)*d.z*tth2 ; 
+    float c0 = o.x*o.x + o.y*o.y - (o.z-z0)*(o.z-z0)*tth2 ;
+ 
+    float disc = c1*c1 - c0*c2 ; 
+    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   
+
+    float root1 = (-c1 - sdisc)/c2 ;
+    float root2 = (-c1 + sdisc)/c2 ;
+    float t_near = fminf( root1, root2 );  // hmm could get order from sign of c2 ?
+    float t_far  = fmaxf( root1, root2 );
+
+    //float idz = 1.f/d.z ; 
+    //float t_cap1 = (z1 - o.z)*idz ;  
+    //float t_cap2 = (z2 - o.z)*idz ;
+
+
+    //
+    // cap intersects will have out of z-range cone intersects 
+    // even axial cap intersects will have out of z-range cone intersects 
+    //
+    // cone intersects will usually have out of r-range cap-plane intersects  
+    //
+
+    //float t_cand = t_min ; 
+
+
+    float t_cand = sdisc > 0.f ? ( t_near > t_min ? t_near : t_far ) : t_min ; 
+
+
+
+
+    float3 p = make_float3( o.x + t_cand*d.x, o.y + t_cand*d.y, o.z + t_cand*d.z ) ;
+    
+    bool valid_isect = t_cand > t_min && p.z > z1 && p.z < z2 ;
+    if(valid_isect)
+    {        
+        float3 nxy = normalize(make_float3(p.x, p.y, 0.f))  ; 
+        isect.x = -nxy.x/tth ; 
+        isect.y = -nxy.y/tth ;
+        isect.z = -tth ; 
+        isect.w = t_cand ; 
+    }
+    return valid_isect ; 
+}
+ 
+
+
 static __device__
 void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {

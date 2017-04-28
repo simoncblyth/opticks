@@ -325,6 +325,38 @@ EOP
 
 
 
+tboolean-cone(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cone-(){  $FUNCNAME- | python $* ; }
+tboolean-cone--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.ana.pmt.polyconfig import PolyConfig
+from opticks.dev.csg.csg import CSG  
+
+args = opticks_main()
+
+container = CSG("box")
+container.boundary = args.container
+container.meta.update(PolyConfig("CONTAINER").meta)
+
+im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
+z1 = 0
+r1 = 300
+
+z2 = 200
+r2 = 100
+
+param = [r1,z1,r2,z2]
+obj = CSG("cone", param=param, boundary=args.testobject, **im )
+obj.dump()
+
+
+CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
+EOP
+}
+
+
 
 
 

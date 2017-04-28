@@ -5,6 +5,9 @@ gdml.py : parsing GDML
 
 ::
 
+    In [1]: run gdml.py
+    ...
+
     In [19]: len(gdml.elem.findall("solids/*"))
     Out[19]: 707
 
@@ -43,6 +46,23 @@ gdml.py : parsing GDML
     <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstInnVerRibCut0xbf31118" x1="100" x2="237.2" y1="27" y2="27" z="50.02"/>
         
 
+    In [5]: print "\n".join([tostring_(e) for e in gdml.elem.findall("solids//cone")])
+
+
+    <cone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+
+          name="OcrCalLsoSubCon0xc17de20" 
+          lunit="mm" 
+          aunit="deg" 
+          startphi="0" 
+          deltaphi="360" 
+          rmax1="1930" rmax2="125" 
+          rmin1="0" rmin2="0" 
+          z="94.5960416058894"
+
+
+
+       />
 
 
 """
@@ -132,6 +152,9 @@ class G(object):
     def __repr__(self):
         return "%15s : %s " % ( self.elem.tag, repr(self.elem.attrib) )
 
+    def __str__(self):
+        return self.xml
+   
 
 
 class Material(G):
@@ -309,6 +332,156 @@ class Box(Primitive):
         cn.param[3] = 0
         return cn
 
+class Cone(Primitive):
+    """
+    GDML does inner... i will do that via a CSG difference 
+
+    rmin1: inner radius at base of cone 
+    rmax1: outer radius at base of cone 
+    rmin2: inner radius at top of cone 
+    rmax2: outer radius at top of cone
+    z height of cone segment
+
+    """
+    rmin1 = property(lambda self:self.att('rmin1', 0, typ=float))
+    rmin2 = property(lambda self:self.att('rmin2', 0, typ=float))
+
+    rmax1 = property(lambda self:self.att('rmax1', 0, typ=float))
+    rmax2 = property(lambda self:self.att('rmax2', 0, typ=float))
+    z = property(lambda self:self.att('z', 0, typ=float))
+    pass
+
+    def as_ncsg(self, only_inner=False):
+        pass
+        assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
+        has_inner = not only_inner and (self.rmin1 > 0. or self.rmin2 > 0. )
+        if has_inner:
+            inner = self.as_ncsg(only_inner=True)  # recursive call to make inner 
+        pass
+
+        r1 = self.rmin1 if only_inner else self.rmax1 
+        z1 = 0
+
+        r2 = self.rmin2 if only_inner else self.rmax2 
+        z2 = self.z
+
+        cn = CSG("cone", name=self.name)
+
+        cn.param[0] = r1
+        cn.param[1] = z1
+        cn.param[2] = r2
+        cn.param[3] = z2
+
+        return CSG("difference", left=cn, right=inner ) if has_inner else cn
+
+    def __repr__(self):
+        return "%s z:%s rmin1:%s rmin2:%s rmax1:%s rmax2:%s  " % (self.typ, self.z, self.rmin1, self.rmin2, self.rmax1, self.rmax2 )
+
+    def plot(self, ax):
+        zp0 = FakeZPlane(z=0., rmin=self.rmin1,rmax=self.rmax1) 
+        zp1 = FakeZPlane(z=self.z, rmin=self.rmin2,rmax=self.rmax2) 
+        zp = [zp0, zp1]
+        PolyCone.Plot(ax, zp)
+
+
+
+class FakeZPlane(object):
+    def __init__(self, z, rmin, rmax):
+        self.z = z
+        self.rmin = rmin
+        self.rmax = rmax
+
+    def __repr__(self):
+        return "%s %s %s %s " % (self.__class__.__name__, self.z, self.rmin, self.rmax)
+
+
+class ZPlane(Primitive):
+    pass
+    
+
+class PolyCone(Primitive):
+    """
+    Annoyingly DYB using up to 6 zplanes, that will be a parameter squeeze...
+
+    ::
+
+        In [13]: pcs = gdml.findall_("solids//polycone")
+
+        In [16]: print "\n".join([pc.xml for pc in pcs])
+
+            <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="gds_polycone0xc404f40" startphi="0">
+              <zplane rmax="1520" rmin="0" z="3070"/>
+              <zplane rmax="75" rmin="0" z="3145.72924106399"/>
+              <zplane rmax="75" rmin="0" z="3159.43963177189"/>
+            </polycone>
+            ...
+            <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="OavTopHub0xc2c9030" startphi="0">
+              <zplane rmax="125" rmin="50" z="0"/>
+              <zplane rmax="125" rmin="50" z="57"/>
+              <zplane rmax="68" rmin="50" z="57"/>
+              <zplane rmax="68" rmin="50" z="90"/>
+              <zplane rmax="98" rmin="50" z="90"/>
+              <zplane rmax="98" rmin="50" z="120"/>
+            </polycone>
+            
+
+    * all using same rmin, thats polycone abuse : should subtract a cylinder
+    * common pattern repeated z with different rmax to model "lips"
+
+    * polycylinder ?
+
+    """
+    pass
+    zplane = property(lambda self:self.findall_("zplane"))
+
+    def plot(self, ax):
+        self.Plot(ax, self.zplane)
+
+    @classmethod
+    def Plot(cls, ax, zp):
+
+        rmin = map(lambda _:_.rmin, zp)
+        rmax = map(lambda _:_.rmax, zp)
+
+        z = map(lambda _:_.z, zp)
+        zmax = max(z) 
+        zmin = min(z)
+        zsiz = zmax - zmin
+
+        for i in range(1,len(zp)):
+            zp0 = zp[i-1]
+            zp1 = zp[i]
+            ax.plot( [zp0.rmax,zp1.rmax], [zp0.z,zp1.z])        
+            ax.plot( [-zp0.rmax,-zp1.rmax], [zp0.z,zp1.z])        
+
+            if i == 1:
+                ax.plot( [-zp0.rmax, zp0.rmax], [zp0.z, zp0.z] )
+            pass
+            if i == len(zp) - 1:
+                ax.plot( [-zp1.rmax, zp1.rmax], [zp1.z, zp1.z] )
+            pass
+        pass
+
+        for i in range(1,len(zp)):
+            zp0 = zp[i-1]
+            zp1 = zp[i]
+            ax.plot( [zp0.rmin,zp1.rmin], [zp0.z,zp1.z])        
+            ax.plot( [-zp0.rmin,-zp1.rmin], [zp0.z,zp1.z])        
+
+            if i == 1:
+                ax.plot( [-zp0.rmin, zp0.rmin], [zp0.z, zp0.z] )
+            pass
+            if i == len(zp) - 1:
+                ax.plot( [-zp1.rmin, zp1.rmin], [zp1.z, zp1.z] )
+            pass
+        pass
+
+        xmax = max(rmax)*1.2
+        ax.set_xlim(-xmax, xmax )
+        ax.set_ylim( zmin - 0.1*zsiz, zmax + 0.1*zsiz )
+
+
+
 
 
 
@@ -374,6 +547,9 @@ class GDML(G):
         "tube":Tube,
         "sphere":Sphere,
         "box":Box,
+        "cone":Cone,
+        "polycone":PolyCone,
+        "zplane":ZPlane,
 
         "intersection":Intersection,
         "subtraction":Subtraction,
@@ -430,6 +606,21 @@ class GDML(G):
 
 
 
+
+
+def oneplot(obj):
+    fig = plt.figure()
+    ax = fig.add_subplot(1,1,1, aspect='equal')
+    obj.plot(ax)
+    plt.show()
+
+def multiplot(fig, objs, nx=4, ny=4):
+    for i in range(len(objs)):
+        ax = fig.add_subplot(nx,ny,i+1, aspect='equal')
+        objs[i].plot(ax)
+    pass
+
+
 if __name__ == '__main__':
 
     args = opticks_main()
@@ -468,6 +659,14 @@ if __name__ == '__main__':
     v = n.children[0]
     for c in v.children:
         print c.pv.transform
+
+
+    cns = gdml.findall_("solids//cone")
+        
+    import matplotlib.pyplot as plt
+    plt.ion()
+
+    fig = plt.figure()
 
 
 
