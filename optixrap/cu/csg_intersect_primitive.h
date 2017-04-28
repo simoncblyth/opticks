@@ -37,57 +37,155 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     float tth2 = tth*tth ; 
     float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
  
+    float r1r1 = r1*r1 ; 
+    float r2r2 = r2*r2 ; 
+
+   /*
+    rtPrintf("## csg_intersect_cone r1:%10.3f z1:%10.3f r2:%10.3f z2:%10.3f tth:%10.3f tth2:%10.3f z0:%10.3f r1r1:%10.3f r2r2:%10.3f \n",
+          r1,z1,r2,z2,tth,tth2,z0,r1r1,r2r2);
+    */
+
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
 
-   //     x^2 + y^2 = (z - z0)^2 tanth^2 
+   //  cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
    //
-   //   (o.x+ t d.x)^2 + (o.y + t d.y)^2 = (o.z + t d.z)^2 tth2
+   //     x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
+   //     x^2 + y^2  - (z^2 -2z0 z - z0^2) tanth^2 = 0 
+   //
+   //   Gradient:    [2x, 2y, (-2z tanth^2) + 2z0 tanth^2 ] 
+   //
+   //   (o.x+ t d.x)^2 + (o.y + t d.y)^2 - (o.z - z0 + t d.z)^2 tth2 = 0 
    // 
    // quadratic in t :    c2 t^2 + 2 c1 t + c0 = 0 
+
+    // axial rays have small d.x, d.y and d.z~ 1.f  or -1.f
+    // when start on axis ... are all third term
 
     float c2 = d.x*d.x + d.y*d.y - d.z*d.z*tth2 ;
     float c1 = o.x*d.x + o.y*d.y - (o.z-z0)*d.z*tth2 ; 
     float c0 = o.x*o.x + o.y*o.y - (o.z-z0)*(o.z-z0)*tth2 ;
- 
     float disc = c1*c1 - c0*c2 ; 
-    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   
 
-    float root1 = (-c1 - sdisc)/c2 ;
-    float root2 = (-c1 + sdisc)/c2 ;
-    float t_near = fminf( root1, root2 );  // hmm could get order from sign of c2 ?
-    float t_far  = fmaxf( root1, root2 );
+    // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
+    // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
+   
 
-    //float idz = 1.f/d.z ; 
-    //float t_cap1 = (z1 - o.z)*idz ;  
-    //float t_cap2 = (z2 - o.z)*idz ;
+    // suspect the shadow cone on other side is causing problems ...
+ 
+    bool valid_isect = false ;
+ 
+    if(disc > 0.f)  // has intersects with infinite cone
+    {
+        float sdisc = sqrtf(disc) ;   
+        float root1 = (-c1 - sdisc)/c2 ;
+        float root2 = (-c1 + sdisc)/c2 ;
+        float t_near = fminf( root1, root2 );
+        float t_far  = fmaxf( root1, root2 );  
+        float z_near = o.z+t_near*d.z ; 
+        float z_far  = o.z+t_far*d.z ; 
 
-
-    //
-    // cap intersects will have out of z-range cone intersects 
-    // even axial cap intersects will have out of z-range cone intersects 
-    //
-    // cone intersects will usually have out of r-range cap-plane intersects  
-    //
-
-    //float t_cand = t_min ; 
-
-
-    float t_cand = sdisc > 0.f ? ( t_near > t_min ? t_near : t_far ) : t_min ; 
+        t_near = z_near > z1 && z_near < z2  && t_near > t_min ? t_near : RT_DEFAULT_MAX ; // disqualify out-of-z
+        t_far  = z_far  > z1 && z_far  < z2  && t_far  > t_min ? t_far  : RT_DEFAULT_MAX ; 
 
 
+        float idz = 1.f/d.z ; 
+        float t_cap1 = d.z == 0.f ? t_min : (z1 - o.z)*idz ;   // d.z zero means no z-plane intersects
+        float t_cap2 = d.z == 0.f ? t_min : (z2 - o.z)*idz ;
+        float r_cap1 = (o.x + t_cap1*d.x)*(o.x + t_cap1*d.x) + (o.y + t_cap1*d.y)*(o.y + t_cap1*d.y) ;  
+        float r_cap2 = (o.x + t_cap2*d.x)*(o.x + t_cap2*d.x) + (o.y + t_cap2*d.y)*(o.y + t_cap2*d.y) ;  
+
+        t_cap1 = r_cap1 < r1r1 && t_cap1 > t_min ? t_cap1 : RT_DEFAULT_MAX ;  // disqualify out-of-radius
+        t_cap2 = r_cap2 < r2r2 && t_cap2 > t_min ? t_cap2 : RT_DEFAULT_MAX ; 
+ 
+        float t_capn = fminf( t_cap1, t_cap2 );    // order caps
+        float t_capf = fmaxf( t_cap1, t_cap2 );
 
 
-    float3 p = make_float3( o.x + t_cand*d.x, o.y + t_cand*d.y, o.z + t_cand*d.z ) ;
-    
-    bool valid_isect = t_cand > t_min && p.z > z1 && p.z < z2 ;
-    if(valid_isect)
-    {        
-        float3 nxy = normalize(make_float3(p.x, p.y, 0.f))  ; 
-        isect.x = -nxy.x/tth ; 
-        isect.y = -nxy.y/tth ;
-        isect.z = -tth ; 
-        isect.w = t_cand ; 
+        // cannot just pick the closest, as if one fails need to fall back to next 
+        // however the correct priority order depends on the ray 
+
+        /*
+        near/capn/capf/far
+             looks correct from side until rotate viewpoint up toward cone axis
+             when starting from the front edge the cone gets cut away more and more 
+             as the angle increases (seeing thru to backside of bottom cap ?)
+             eventually at axial viewpoint 
+             can only see the top endcap with the rest of the cone appearing dark
+
+        float t_cand = t_min ; 
+        if(     t_near > t_min )  t_cand = t_near ; 
+        else if(t_capn > t_min )  t_cand = t_capn ; 
+        else if(t_far  > t_min )  t_cand = t_far ; 
+        else if(t_capf > t_min )  t_cand = t_capf ; 
+
+        near/capn/far/capf
+             kills endcaps
+
+           see issue when ray is within the infinite cone  
+
+
+        */ 
+
+        float t_cand = t_min ; 
+
+
+
+        if(fabsf(1.f-d.z) < 1e-4f) // FIX: this is assuming normalized ray direction vector
+        { 
+           // rtPrintf("## axial \n");
+            if(     t_capn > t_min && t_capn < RT_DEFAULT_MAX )  t_cand = t_capn ; 
+            else if(t_capf > t_min && t_capf < RT_DEFAULT_MAX )  t_cand = t_capf ; 
+            else if(t_near > t_min && t_near < RT_DEFAULT_MAX )  t_cand = t_near ; 
+            else if(t_far  > t_min && t_far  < RT_DEFAULT_MAX )  t_cand = t_far ; 
+        }
+        else
+        {
+            if(     t_near > t_min && t_near < RT_DEFAULT_MAX )  t_cand = t_near ; 
+            else if(t_capn > t_min && t_capn < RT_DEFAULT_MAX )  t_cand = t_capn ; 
+            else if(t_capf > t_min && t_capf < RT_DEFAULT_MAX )  t_cand = t_capf ; 
+            else if(t_far  > t_min && t_far  < RT_DEFAULT_MAX )  t_cand = t_far ; 
+        }
+
+
+        valid_isect = t_cand > t_min ;
+        if(valid_isect)
+        {
+            //rtPrintf("## csg_intersect_cone t_min:%10.3f t_cand:%10.3f    t_cap1:%10.3f t_cap2:%10.3f t_near:%10.3f t_far:%10.3f \n", t_min, t_cand, t_cap1, t_cap2, t_near, t_far );
+            if( t_cand == t_cap1 || t_cand == t_cap2 )
+            {
+                isect.x = 0.f ; 
+                isect.y = 0.f ;
+                isect.z =  t_cand == t_cap2 ? 1.f : -1.f  ;   
+            }
+            else
+            { 
+
+               //     x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
+               //     x^2 + y^2  - (z^2 -2z0 z - z0^2) tanth^2 = 0 
+               //
+               //   Gradient:    [2x, 2y, (-2z + 2z0) tanth^2 ] 
+               //   Gradient:    2*[x, y, (z0-z) tanth^2 ] 
+
+
+                float3 p = make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, o.z+t_cand*d.z) ; 
+                float tth2_check = (p.x*p.x + p.y*p.y)/((p.z-z0)*(p.z-z0)) ;
+                float tth2_delta = tth2 - tth2_check ; 
+
+                float3 v = normalize(make_float3( p.x , p.y , p.z - z0 ));   // direction vector from apex (0,0,z0) to p
+                float3 n = normalize(make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, (z0-(o.z+t_cand*d.z))*tth2  ))  ; 
+
+                float vn = dot(v,n);  
+
+                rtPrintf("## csg_intersect_cone c2 %10.3f  p %10.3f %10.3f %10.3f   n %10.3f %10.3f %10.3f  v %10.3f %10.3f %10.3f  vn %10.3f   tth2_delta %10.3f \n", 
+                      c2, p.x, p.y, p.z, n.x, n.y, n.z, v.x, v.y, v.z, vn,   tth2_delta );
+
+                isect.x = c2 < 0.f ? -n.x : n.x ; 
+                isect.y = c2 < 0.f ? -n.y : n.y ;
+                isect.z = n.z ; 
+            }
+            isect.w = t_cand ; 
+        }
     }
     return valid_isect ; 
 }

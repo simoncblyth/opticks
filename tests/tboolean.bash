@@ -191,13 +191,13 @@ tboolean-torchconfig()
                  type=disc
                  photons=$photons
                  mode=fixpol
-                 polarization=0,1,0
+                 polarization=1,1,0
                  frame=-1
                  transform=$identity
                  source=0,0,599
                  target=0,0,0
                  time=0.1
-                 radius=110
+                 radius=300
                  distance=200
                  zenithazimuth=0,1,0,1
                  material=Vacuum
@@ -221,7 +221,8 @@ tboolean-torchconfig()
                  wavelength=$wavelength 
                )
 
-    echo "$(join _ ${torch_config_discaxial[@]})" 
+    #echo "$(join _ ${torch_config_discaxial[@]})" 
+    echo "$(join _ ${torch_config_disc[@]})" 
 }
 
 
