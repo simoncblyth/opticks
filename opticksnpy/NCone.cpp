@@ -21,11 +21,8 @@
 nbbox ncone::bbox() const 
 {
     nbbox bb = make_bbox();
-
-    float rmax_ = rmax(); 
-
-    bb.max = make_nvec3(  rmax_,  rmax_, z2() );
-    bb.min = make_nvec3( -rmax_, -rmax_, z1() );
+    bb.max = make_nvec3(  rmax,  rmax, z2 );
+    bb.min = make_nvec3( -rmax, -rmax, z1 );
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -38,10 +35,50 @@ float ncone::operator()(float x, float y, float z) const
 
     // Z: cone axis
 
-    glm::vec2 q( glm::length(glm::vec2(p)), z ) ; 
-    glm::vec2 c = glm::normalize( glm::vec2(1.f,1.f)) ; 
+    glm::vec2 q( glm::length(glm::vec2(p)), p.z-z0 ) ;        // cone coordinate (radial,axial) from apex origin  
 
-    float sd = glm::dot( c, q ) ; 
+    float sd_cone = glm::dot( cnormal, q ) ; 
+
+    float dz1 = p.z - z1  ; 
+    float dz2 = p.z - z2  ;   // z2 > z1
+
+    float sd_zslab = fmaxf( dz2, -dz1 );
+
+    float sd = fmaxf( sd_cone, sd_zslab ); 
+
+    std::cout << "ncone::operator" 
+              << " q (" << q.x << " " << q.y << ")"
+              << " cnormal (" << cnormal.x << " " << cnormal.y << ")"
+              << " sd " << sd
+              << std::endl ; 
+
+/*
+
+    322 // Cone with correct distances to tip and base circle. Y is up, 0 is in the middle of the base.
+    323 float fCone(vec3 p, float radius, float height) {
+    324     vec2 q = vec2(length(p.xz), p.y);
+    325     vec2 tip = q - vec2(0, height);              // cone coordinates (radial, axial) from apex
+    326     vec2 mantleDir = normalize(vec2(height, radius));
+    327     float mantle = dot(tip, mantleDir);
+    328     float d = max(mantle, -q.y);
+    329     float projected = dot(tip, vec2(mantleDir.y, -mantleDir.x));
+    330 
+    331     // distance to tip
+    332     if ((q.y > height) && (projected < 0)) {
+    333         d = max(d, length(tip));
+    334     }
+    335 
+    336     // distance to base ring
+    337     if ((q.x > radius) && (projected > length(vec2(height, radius)))) {
+    338         d = max(d, length(q - vec2(radius, 0)));
+    339     }
+    340     return d;
+    341 }
+
+
+
+*/
+
 
     return sd ; 
 } 
@@ -99,7 +136,7 @@ sdf-edit::
     322 // Cone with correct distances to tip and base circle. Y is up, 0 is in the middle of the base.
     323 float fCone(vec3 p, float radius, float height) {
     324     vec2 q = vec2(length(p.xz), p.y);
-    325     vec2 tip = q - vec2(0, height);
+    325     vec2 tip = q - vec2(0, height);              // cone coordinates (radial, axial) from apex
     326     vec2 mantleDir = normalize(vec2(height, radius));
     327     float mantle = dot(tip, mantleDir);
     328     float d = max(mantle, -q.y);
@@ -170,12 +207,13 @@ void ncone::pdump(const char* msg, int verbosity)
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
-              << " r1 " << r1()
-              << " r2 " << r2()
-              << " rmax " << rmax()
-              << " z1 " << z1()
-              << " z2 " << z2()
-              << " zc " << zc()
+              << " r1 " << r1
+              << " r2 " << r2
+              << " rmax " << rmax
+              << " z1 " << z1
+              << " z2 " << z2
+              << " zc " << zc
+              << " z0(apex) " << z0
               << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 

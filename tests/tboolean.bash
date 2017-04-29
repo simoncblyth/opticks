@@ -326,6 +326,7 @@ EOP
 
 
 
+tboolean-cone-scan(){ SCAN="0,0,100,1,0,0,0,300,10" NCSGScanTest $TMP/tboolean-cone--/1 ; }
 tboolean-cone(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
@@ -342,10 +343,11 @@ container.meta.update(PolyConfig("CONTAINER").meta)
 
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
-r1 = 300
-z1 = 0
 r2 = 100
+r1 = 300
+
 z2 = 200
+z1 = 0
 
 param = [r1,z1,r2,z2]
 obj = CSG("cone", param=param, boundary=args.testobject, **im )

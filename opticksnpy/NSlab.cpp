@@ -25,10 +25,6 @@ Consider CSG difference of near and far halfspaces
                          .  origin
 
 
-
-
-
-
   CSG difference "max(l,-r)" near and far:
 
            far-halfspace - near-halfspace  = slab 
@@ -55,7 +51,7 @@ float nslab::operator()(float x, float y, float z) const
  
     float d = glm::dot(n, glm::vec3(q)) ; // distance from q to the nearest point on plane thru origin
     float da =  d - a ;             
-    float db =  d - b  ; 
+    float db =  d - b  ;   // b > a
 
     //  CSG 
     //     union(l,r)     ->  min(l,r)
