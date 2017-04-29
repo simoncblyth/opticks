@@ -26,6 +26,14 @@ void csg_bounds_cone(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 
+enum {
+    NEAR_CAP  = 0x1 << 0 ,
+    NEAR_OBJ  = 0x1 << 1 ,
+    FAR_OBJ   = 0x1 << 2 ,
+    FAR_CAP   = 0x1 << 3 
+};
+
+
 static __device__
 bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -53,7 +61,6 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     rtPrintf("## csg_intersect_cone o: %10.3f %10.3f %10.3f  d: %10.3f %10.3f %10.3f \n", o.x, o.y, o.z, d.x, d.y, d.z );
 #endif
 
-
    //  cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
    //
    //     x^2 + y^2  - (z - z0)^2 tanth^2 = 0 
@@ -65,8 +72,6 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
    // 
    // quadratic in t :    c2 t^2 + 2 c1 t + c0 = 0 
 
-    // axial rays have small d.x, d.y and d.z~ 1.f  or -1.f
-    // when start on axis ... are all third term
 
     float c2 = d.x*d.x + d.y*d.y - d.z*d.z*tth2 ;
     float c1 = o.x*d.x + o.y*d.y - (o.z-z0)*d.z*tth2 ; 
@@ -77,12 +82,9 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     rtPrintf("## csg_intersect_cone c2 %10.3f c1 %10.3f c0 %10.3f disc %10.3f \n", c2, c1, c0, disc );
 #endif
 
-
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
     // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
    
-
-    // suspect the shadow cone on other side is causing problems ...
  
     bool valid_isect = false ;
  
@@ -91,7 +93,7 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
         float sdisc = sqrtf(disc) ;   
         float root1 = (-c1 - sdisc)/c2 ;
         float root2 = (-c1 + sdisc)/c2 ;  
-        float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;   // must disqualify -ve roots from the mirror cone immediately 
+        float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;   // disqualify -ve roots from mirror cone immediately 
         float root2p = root2 > t_min ? root2 : RT_DEFAULT_MAX ; 
 
         float t_near = fminf( root1p, root2p );
@@ -119,52 +121,46 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
         float t_capn = fminf( t_cap1, t_cap2 );    // order caps
         float t_capf = fmaxf( t_cap1, t_cap2 );
 
-
-        // cannot just pick the closest, as if one fails need to fall back to next 
-        // however the correct priority order depends on the ray 
-
-        /*
-        near/capn/capf/far
-             looks correct from side until rotate viewpoint up toward cone axis
-             when starting from the front edge the cone gets cut away more and more 
-             as the angle increases (seeing thru to backside of bottom cap ?)
-             eventually at axial viewpoint 
-             can only see the top endcap with the rest of the cone appearing dark
-
-        float t_cand = t_min ; 
-        if(     t_near > t_min )  t_cand = t_near ; 
-        else if(t_capn > t_min )  t_cand = t_capn ; 
-        else if(t_far  > t_min )  t_cand = t_far ; 
-        else if(t_capf > t_min )  t_cand = t_capf ; 
-
-        near/capn/far/capf
-             kills endcaps
-
-           see issue when ray is within the infinite cone  
-
-
-        */ 
-
         float t_cand = t_min ; 
 
+        bool near_cap  = t_capn > t_min && t_capn < RT_DEFAULT_MAX ;
+        bool far_cap   = t_capf > t_min && t_capf < RT_DEFAULT_MAX ;
+        bool near_cone = t_near > t_min && t_near < RT_DEFAULT_MAX ;
+        bool far_cone  = t_far  > t_min && t_far  < RT_DEFAULT_MAX ;
 
-
-        if(fabsf(1.f-d.z) < 1e-4f) // FIX: this is assuming normalized ray direction vector
+        unsigned code = 0u ; 
+        if(near_cap)  code |=  NEAR_CAP  ; 
+        if(near_cone) code |=  NEAR_OBJ ; 
+        if(far_cone)  code |=  FAR_OBJ  ; 
+        if(far_cap)   code |=  FAR_CAP  ; 
+         
+        switch(code)
         { 
-           // rtPrintf("## axial \n");
-            if(     t_capn > t_min && t_capn < RT_DEFAULT_MAX )  t_cand = t_capn ; 
-            else if(t_capf > t_min && t_capf < RT_DEFAULT_MAX )  t_cand = t_capf ; 
-            else if(t_near > t_min && t_near < RT_DEFAULT_MAX )  t_cand = t_near ; 
-            else if(t_far  > t_min && t_far  < RT_DEFAULT_MAX )  t_cand = t_far ; 
-        }
-        else
-        {
-            if(     t_near > t_min && t_near < RT_DEFAULT_MAX )  t_cand = t_near ; 
-            else if(t_capn > t_min && t_capn < RT_DEFAULT_MAX )  t_cand = t_capn ; 
-            else if(t_capf > t_min && t_capf < RT_DEFAULT_MAX )  t_cand = t_capf ; 
-            else if(t_far  > t_min && t_far  < RT_DEFAULT_MAX )  t_cand = t_far ; 
-        }
+            case                0u:   t_cand = t_min                   ; break ; 
+            case          NEAR_CAP:   t_cand = t_capn                  ; break ;
+            case          NEAR_OBJ:   t_cand = t_near                  ; break ;
+            case           FAR_OBJ:   t_cand = t_far                   ; break ;
+            case           FAR_CAP:   t_cand = t_capf                  ; break ;
+            case NEAR_CAP|NEAR_OBJ:   t_cand = fminf( t_capn, t_near ) ; break ;
+            case  NEAR_CAP|FAR_OBJ:   t_cand = fminf( t_capn, t_far)   ; break ;
+            case   FAR_CAP|FAR_OBJ:   t_cand = fminf( t_capf, t_far )  ; break ;
+            case  NEAR_OBJ|FAR_OBJ:   t_cand = fminf( t_near, t_far)   ; break ;
+            case  NEAR_CAP|FAR_CAP:   t_cand = fminf( t_capf, t_capn)  ; break ;
 
+            default:
+                 rtPrintf("## unhandled combi %x \n", code) ; break ; 
+        }
+        // HMM: 
+        //
+        // * cannot just pick the closest, as if one fails need to fall back to next 
+        //   however the correct priority order depends on the disposition of the ray
+        //
+        // * This approach really powerful way to build case logic by experiment (ie in incremental way) 
+        //   because it splayed the logical possibilities out into a long line of 16 possible combinations
+        //
+        // * Note that the ordering of the switch does not matter... as the code
+        //   composed of the 4 input bits can be combined in 16 possible ways from 0000 to 1111 
+        //
 
         valid_isect = t_cand > t_min ;
         if(valid_isect)
@@ -191,15 +187,10 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
                 float3 p = make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, o.z+t_cand*d.z) ; 
                 float tth2_check = (p.x*p.x + p.y*p.y)/((p.z-z0)*(p.z-z0)) ;
                 float tth2_delta = tth2 - tth2_check ; 
-
                 float3 v = normalize(make_float3( p.x , p.y , p.z - z0 ));   // direction vector from apex (0,0,z0) to p
-
                 float vn = dot(v,n);  
-
-
                 rtPrintf("## csg_intersect_cone c2 %10.3f  p %10.3f %10.3f %10.3f   n %10.3f %10.3f %10.3f  v %10.3f %10.3f %10.3f  vn %10.3f   tth2_delta %10.3f \n", 
                       c2, p.x, p.y, p.z, n.x, n.y, n.z, v.x, v.y, v.z, vn,   tth2_delta );
-
 #endif
                 isect.x = n.x ; 
                 isect.y = n.y ;
@@ -211,13 +202,62 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     return valid_isect ; 
 }
  
+
+
+
+
 static __device__
-void csg_intersect_cone_test()
+unsigned classify_x( const float x, const float r1, const float r2)
+{ 
+   // hmm : this approach obfuscates expectations 
+    unsigned i =  0 ; 
+    if(      x < -r1 )             i = 0 ;   
+    else if( x > -r1 && x < -r2 )  i = 1 ; 
+    else if( x > -r2 && x < r2  )  i = 2 ; 
+    else if( x > r2  && x < r1  )  i = 3 ; 
+    else if( x > r1  )             i = 4 ;
+    return i ; 
+}
+
+
+static __device__
+void csg_intersect_cone_test(unsigned long long photon_id)
 {
-    float r1 = 300.f ;
-    float z1 = 0.f ; 
+     /*
+
+
+      0------1----2----A---3----4----5------           
+                      / \
+                     /   \
+                    /     \
+                   /       \
+                  /         \
+                 +-----------+         z = z2
+                /     r2      \
+               /               \
+            t_near              \
+             /                   \
+            +----------|-----------+   z = z1
+      [-300,0,-300]    r1       [+300,0,-300]
+
+
+     */
+
     float r2 = 100.f ;
-    float z2 = 200.f ;   
+    float r1 = 300.f ;
+    float rd = 50.f ; 
+
+    float z2 = -100.f ;   
+    float z1 = -300.f ; 
+    float zd = 50.f ; 
+
+    float z0 = (z2*r1-z1*r2)/(r1-r2) ;  // apex
+    
+
+    rtPrintf("## csg_intersect_cone_test z0:%10.3f \n", z0 );
+
+    if(z1 > z2) rtPrintf("## csg_intersect_cone_test ERROR: z1>z2  (fundamental error) \n");
+    if(r2 > r1) rtPrintf("## csg_intersect_cone_test ERROR: r2>r1  (violates assumption used in this test) \n");
 
     quad q0 ;  
     q0.f.x = r1 ; 
@@ -227,47 +267,116 @@ void csg_intersect_cone_test()
 
     float t_min = 0.f ; 
 
+    // shoot down cone axis (-z) at various x along y=0 line in xy plane
+    float3 ray_direction = make_float3( 0.f, 0.f, 0.f );
+    float3 ray_origin    = make_float3( 0.f ,0.f, 0.f );
 
-   /*
+    for(unsigned j=0 ; j < 2 ; j++)
     {
-        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
-        float3 ray_origin = make_float3( -10.f, 0.f, 50.f );
-        float3 ray_direction = make_float3( 1.f, 0.f, 0.f );
-        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
-        rtPrintf("## test_csg_intersect_cone (from -x)   isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
-    }
-    {
-        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
-        float3 ray_origin = make_float3(    -10.f, 10.f, z1-50.f );
-        float3 ray_direction = make_float3( 0.f, 0.f, 1.f );
-        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
-        rtPrintf("## test_csg_intersect_cone (from -z, cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
-    }
-    {
-        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
-        float3 ray_origin = make_float3(    -10.f, 10.f, z2+50.f );
-        float3 ray_direction = make_float3( 0.f, 0.f, -1.f );
-        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
-        rtPrintf("## test_csg_intersect_cone (from +z, cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
-    }
-    {
-        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
-        float3 ray_origin = make_float3(    -400.f, 0.f, -50.f );
-        float3 ray_direction = make_float3( 0.f, 0.f, 1.f );
-        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
-        rtPrintf("## test_csg_intersect_cone (from -z, off-cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
-    }
-    */
+        float dz = 0.f ; 
+        float line_z = 0.f ; 
 
-    {
-        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
-        float3 ray_origin = make_float3(   r2+50.f , 0.f, z2+50.f );
-        float3 ray_direction = make_float3( 0.f, 0.f, -1.f );
-        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
-        rtPrintf("## csg_intersect_cone_test (from +z, off-cap) isect %10.3f %10.3f %10.3f %10.3f <-- HITTING BASE AND NOT THE CONE \n", isect.x, isect.y, isect.z, isect.w ); 
+        switch(j)
+        {
+            case 0:dz = -1.f ; line_z = z0      ; break ; 
+            case 1:dz =  1.f ; line_z = z1 - zd ; break ; 
+        }
+        ray_direction.z = dz ; 
+
+        for(unsigned i=0 ; i < 6 ; i++)
+        {
+            float x = 0.f ; 
+            switch(i)
+            {
+                case 0:x = -(r1+rd) ; break ; 
+                case 1:x = -(r1-rd) ; break ; 
+                case 2:x = -(r2-rd) ; break ; 
+                case 3:x =  (r2-rd) ; break ; 
+                case 4:x =  (r1-rd) ; break ; 
+                case 5:x =  (r1+rd) ; break ; 
+            }
+            ray_origin.x = x ; 
+            ray_origin.y = 0.f ; 
+            ray_origin.z = line_z ; 
+
+            float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+
+            bool valid_isect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+
+            float t = isect.w ;  
+            float3 p = ray_origin + t*ray_direction ; 
+
+            rtPrintf("## csg_intersect_cone_test j:%d i:%d x:%10.3f valid_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
+                 j,i,x, valid_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+
+            bool expect_valid_isect = false ; 
+            float expect_z = 0.f ; 
+
+            if( j == 0)
+            {
+                // rays down -z from apex plane expecting: miss, cone, endcap, cone, miss
+
+                if( x < -r1 )
+                {
+                    expect_valid_isect = false ; 
+                    expect_z = ray_origin.z ; 
+                }
+                else if( x > -r1 && x < -r2 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = x ; 
+                } 
+                else if( x > -r2 && x < r2 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = z2 ; 
+                }
+                else if( x > r2  && x < r1 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = -x ; 
+                }
+                else if(x > r1)
+                {
+                    expect_valid_isect = false ; 
+                    expect_z = ray_origin.z ; 
+                } 
+            }
+            else if( j == 1)
+            {
+                // rays up +z from below z=z1 expecting: miss, endcap, endcap, endcap, miss
+
+                if( x < -r1 )
+                {
+                    expect_valid_isect = false ; 
+                    expect_z = ray_origin.z ; 
+                }
+                else if( x > -r1 && x < -r2 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = z1 ; 
+                } 
+                else if( x > -r2 && x < r2 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = z1 ; 
+                }
+                else if( x > r2  && x < r1 )
+                {
+                    expect_valid_isect = true ; 
+                    expect_z = z1 ; 
+                }
+                else if(x > r1)
+                {
+                    expect_valid_isect = false ; 
+                    expect_z = ray_origin.z ; 
+                } 
+            } 
+
+            if(expect_valid_isect != valid_isect) rtPrintf("## ERROR valid_isect \n"); 
+            if(fabsf(expect_z - p.z) > 1e-4f ) rtPrintf("## ERROR z %10.3f expect: %10.3f \n", p.z, expect_z );
+        }
     }
-
-
 } 
 
 

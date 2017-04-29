@@ -27,7 +27,7 @@ rtBuffer<Matrix4x4> tranBuffer;
 
 #include "bbox.h"
 
-#define CSG_INTERSECT_CONE_TEST 1
+//#define CSG_INTERSECT_CONE_TEST 1
 #include "csg_intersect_primitive.h"
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
@@ -42,7 +42,7 @@ RT_PROGRAM void intersect_analytic_test()
 
     rtPrintf("## intersect_analytic_test %llu\n", photon_id);
 
-    csg_intersect_cone_test();
+    csg_intersect_cone_test(photon_id);
     
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);
     output_buffer[photon_offset+1] = make_float4(41.f, 41.f, 41.f, 41.f);
