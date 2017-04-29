@@ -187,6 +187,8 @@ set(SOURCES
     cu/OEventTest.cu
     cu/OInterpolationTest.cu
     cu/ORayleighTest.cu
+
+    cu/intersect_analytic_test.cu
 )
 
 
@@ -214,6 +216,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OEventTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OInterpolationTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_ORayleighTest.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_intersect_analytic_test.cu.ptx
 )
 
 

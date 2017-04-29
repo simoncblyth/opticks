@@ -47,6 +47,10 @@ void OptiXTest::init(optix::Context& context)
 
     context->setRayGenerationProgram(0,raygenProg);
     context->setExceptionProgram(0,exceptionProg);
+
+    context->setPrintEnabled(true);
+    context->setPrintBufferSize(2*2*2*8192);
+
 }
 
 std::string OptiXTest::description()

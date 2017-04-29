@@ -25,6 +25,7 @@ void csg_bounds_cone(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     aabb->include(tbb);
 }
 
+
 static __device__
 bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -40,13 +41,18 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     float r1r1 = r1*r1 ; 
     float r2r2 = r2*r2 ; 
 
-   /*
+#ifdef CSG_INTERSECT_CONE_TEST
     rtPrintf("## csg_intersect_cone r1:%10.3f z1:%10.3f r2:%10.3f z2:%10.3f tth:%10.3f tth2:%10.3f z0:%10.3f r1r1:%10.3f r2r2:%10.3f \n",
           r1,z1,r2,z2,tth,tth2,z0,r1r1,r2r2);
-    */
+#endif
 
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
+
+#ifdef CSG_INTERSECT_CONE_TEST
+    rtPrintf("## csg_intersect_cone o: %10.3f %10.3f %10.3f  d: %10.3f %10.3f %10.3f \n", o.x, o.y, o.z, d.x, d.y, d.z );
+#endif
+
 
    //  cone with apex at [0,0,z0]  and   r1/(z1-z0) = tanth  for any r1,z1 on the cone
    //
@@ -67,6 +73,11 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     float c0 = o.x*o.x + o.y*o.y - (o.z-z0)*(o.z-z0)*tth2 ;
     float disc = c1*c1 - c0*c2 ; 
 
+#ifdef CSG_INTERSECT_CONE_TEST
+    rtPrintf("## csg_intersect_cone c2 %10.3f c1 %10.3f c0 %10.3f disc %10.3f \n", c2, c1, c0, disc );
+#endif
+
+
     // * cap intersects (including axial ones) will always have potentially out of z-range cone intersects 
     // * cone intersects will have out of r-range plane intersects, other than rays within xy plane
    
@@ -79,15 +90,22 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     {
         float sdisc = sqrtf(disc) ;   
         float root1 = (-c1 - sdisc)/c2 ;
-        float root2 = (-c1 + sdisc)/c2 ;
-        float t_near = fminf( root1, root2 );
-        float t_far  = fmaxf( root1, root2 );  
+        float root2 = (-c1 + sdisc)/c2 ;  
+        float root1p = root1 > t_min ? root1 : RT_DEFAULT_MAX ;   // must disqualify -ve roots from the mirror cone immediately 
+        float root2p = root2 > t_min ? root2 : RT_DEFAULT_MAX ; 
+
+        float t_near = fminf( root1p, root2p );
+        float t_far  = fmaxf( root1p, root2p );  
         float z_near = o.z+t_near*d.z ; 
         float z_far  = o.z+t_far*d.z ; 
+
 
         t_near = z_near > z1 && z_near < z2  && t_near > t_min ? t_near : RT_DEFAULT_MAX ; // disqualify out-of-z
         t_far  = z_far  > z1 && z_far  < z2  && t_far  > t_min ? t_far  : RT_DEFAULT_MAX ; 
 
+#ifdef CSG_INTERSECT_CONE_TEST
+        rtPrintf("## csg_intersect_cone sdisc %10.3f root1 %10.3f root2 %10.3f t_near %10.3f t_far %10.3f z_near %10.3f z_far %10.3f \n", sdisc, root1, root2, t_near, t_far, z_near, z_far  );
+#endif
 
         float idz = 1.f/d.z ; 
         float t_cap1 = d.z == 0.f ? t_min : (z1 - o.z)*idz ;   // d.z zero means no z-plane intersects
@@ -168,20 +186,23 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
                //   Gradient:    2*[x, y, (z0-z) tanth^2 ] 
 
 
+                float3 n = normalize(make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, (z0-(o.z+t_cand*d.z))*tth2  ))  ; 
+#ifdef CSG_INTERSECT_CONE_TEST
                 float3 p = make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, o.z+t_cand*d.z) ; 
                 float tth2_check = (p.x*p.x + p.y*p.y)/((p.z-z0)*(p.z-z0)) ;
                 float tth2_delta = tth2 - tth2_check ; 
 
                 float3 v = normalize(make_float3( p.x , p.y , p.z - z0 ));   // direction vector from apex (0,0,z0) to p
-                float3 n = normalize(make_float3( o.x+t_cand*d.x, o.y+t_cand*d.y, (z0-(o.z+t_cand*d.z))*tth2  ))  ; 
 
                 float vn = dot(v,n);  
+
 
                 rtPrintf("## csg_intersect_cone c2 %10.3f  p %10.3f %10.3f %10.3f   n %10.3f %10.3f %10.3f  v %10.3f %10.3f %10.3f  vn %10.3f   tth2_delta %10.3f \n", 
                       c2, p.x, p.y, p.z, n.x, n.y, n.z, v.x, v.y, v.z, vn,   tth2_delta );
 
-                isect.x = c2 < 0.f ? -n.x : n.x ; 
-                isect.y = c2 < 0.f ? -n.y : n.y ;
+#endif
+                isect.x = n.x ; 
+                isect.y = n.y ;
                 isect.z = n.z ; 
             }
             isect.w = t_cand ; 
@@ -190,6 +211,68 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
     return valid_isect ; 
 }
  
+static __device__
+void csg_intersect_cone_test()
+{
+    float r1 = 300.f ;
+    float z1 = 0.f ; 
+    float r2 = 100.f ;
+    float z2 = 200.f ;   
+
+    quad q0 ;  
+    q0.f.x = r1 ; 
+    q0.f.y = z1 ; 
+    q0.f.z = r2 ; 
+    q0.f.w = z2 ; 
+
+    float t_min = 0.f ; 
+
+
+   /*
+    {
+        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+        float3 ray_origin = make_float3( -10.f, 0.f, 50.f );
+        float3 ray_direction = make_float3( 1.f, 0.f, 0.f );
+        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+        rtPrintf("## test_csg_intersect_cone (from -x)   isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
+    }
+    {
+        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+        float3 ray_origin = make_float3(    -10.f, 10.f, z1-50.f );
+        float3 ray_direction = make_float3( 0.f, 0.f, 1.f );
+        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+        rtPrintf("## test_csg_intersect_cone (from -z, cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
+    }
+    {
+        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+        float3 ray_origin = make_float3(    -10.f, 10.f, z2+50.f );
+        float3 ray_direction = make_float3( 0.f, 0.f, -1.f );
+        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+        rtPrintf("## test_csg_intersect_cone (from +z, cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
+    }
+    {
+        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+        float3 ray_origin = make_float3(    -400.f, 0.f, -50.f );
+        float3 ray_direction = make_float3( 0.f, 0.f, 1.f );
+        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+        rtPrintf("## test_csg_intersect_cone (from -z, off-cap) isect %10.3f %10.3f %10.3f %10.3f \n", isect.x, isect.y, isect.z, isect.w ); 
+    }
+    */
+
+    {
+        float4 isect = make_float4(0.f, 0.f, 0.f, 0.f );
+        float3 ray_origin = make_float3(   r2+50.f , 0.f, z2+50.f );
+        float3 ray_direction = make_float3( 0.f, 0.f, -1.f );
+        bool valid_intersect = csg_intersect_cone(q0, t_min , isect, ray_origin, ray_direction );
+        rtPrintf("## csg_intersect_cone_test (from +z, off-cap) isect %10.3f %10.3f %10.3f %10.3f <-- HITTING BASE AND NOT THE CONE \n", isect.x, isect.y, isect.z, isect.w ); 
+    }
+
+
+} 
+
+
+
+
 
 
 static __device__

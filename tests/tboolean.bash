@@ -342,11 +342,10 @@ container.meta.update(PolyConfig("CONTAINER").meta)
 
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
-z1 = 0
 r1 = 300
-
-z2 = 200
+z1 = 0
 r2 = 100
+z2 = 200
 
 param = [r1,z1,r2,z2]
 obj = CSG("cone", param=param, boundary=args.testobject, **im )
