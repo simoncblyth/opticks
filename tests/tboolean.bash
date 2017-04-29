@@ -343,8 +343,10 @@ container.meta.update(PolyConfig("CONTAINER").meta)
 
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
-r2 = 100
-r1 = 300
+r2,r1 = 100,300
+#r2,r1 = 300,300    ## with equal radii (a cylinder) polygonization and raytrace both yield nothing 
+#r2,r1 = 300,100    ## radii swapped (upside-down cone) works
+
 
 z2 = 200
 z1 = 0

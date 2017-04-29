@@ -46,11 +46,15 @@ float ncone::operator()(float x, float y, float z) const
 
     float sd = fmaxf( sd_cone, sd_zslab ); 
 
+
+/*
     std::cout << "ncone::operator" 
               << " q (" << q.x << " " << q.y << ")"
               << " cnormal (" << cnormal.x << " " << cnormal.y << ")"
               << " sd " << sd
               << std::endl ; 
+*/
+
 
 /*
 

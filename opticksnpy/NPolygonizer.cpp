@@ -77,14 +77,12 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     bool valid = checkTris(tris);
 
-/*
     if(!valid)
     {   
         LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
         delete tris ; 
         tris = NTrianglesNPY::box(*m_bbox);
     }   
-*/
 
     return tris ;
 }

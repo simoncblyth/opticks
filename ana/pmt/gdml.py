@@ -26,14 +26,13 @@ gdml.py : parsing GDML
      'subtraction',
      'union',
 
-     'box',      <-- needs fixing 
+     'box',     
      'sphere',
      'tube',
-
+     'cone',
 
       ## below need implementing
 
-     'cone',
      'polycone', 'zplane'
      'trd',                 # trapezoid
    }
@@ -205,6 +204,8 @@ class Boolean(Geometry):
         lrep_ = lambda label,obj:"     %s:%r"%(label,obj)
         return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
 
+
+
     def as_ncsg(self):
         left = self.first.as_ncsg()
         right = self.second.as_ncsg()
@@ -223,6 +224,69 @@ class Subtraction(Boolean):
 
 class Union(Boolean):
     operation = "union"
+
+    @classmethod 
+    def make(cls, subs, name):
+        """
+        #. hmm need a tree growing algorithm that keeps 
+           as complete and balanced as possible
+
+            
+        1.
+             A
+
+        2.
+             U 
+            A B
+
+        3. 
+               U
+            U    C 
+           A B
+
+        4. 
+                 U
+            U         U
+           A B       C D
+
+        5. 
+                      U 
+
+                 U         E
+            U         U
+           A B       C D
+
+
+        6. 
+                      U 
+
+                 U         U
+            U        U    E  F
+           A B      C D
+
+
+        7. 
+                      U 
+
+                 U         U
+            U        U    E  F
+           A B      C D
+
+
+
+
+        """
+        top = CSG(self.operation, name=self.name) 
+
+        for sub in subs:
+             
+
+
+        return top
+
+
+
+
 
 
 class Primitive(Geometry):
@@ -243,21 +307,22 @@ class Primitive(Geometry):
         return "%s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
-    def as_ncsg(self):
-        cn = CSG("cylinder", name=self.name)
+    @classmethod 
+    def make_cylinder(cls, sizeZ, radius, name)
+        cn = CSG("cylinder", name=name)
         cn.param[0] = 0
         cn.param[1] = 0
         cn.param[2] = 0    
-        cn.param[3] = self.rmax
-        cn.param1[0] = self.z    # assuming the z actually means dimension "sizeZ"
-        assert self.rmin == 0.
-
+        cn.param[3] = radius
+        cn.param1[0] = sizeZ    
         PCAP = 0x1 << 0 
         QCAP = 0x1 << 1 
-        flags = PCAP | QCAP 
-        cn.param1.view(np.uint32)[1] = flags  
-
+        cn.param1.view(np.uint32)[1] = PCAP | QCAP 
         return cn
+
+    def as_ncsg(self):
+        assert self.rmin == 0.
+        return self.make_cylinder(self.z, self.rmax, self.name)
 
 
 class Sphere(Primitive):
@@ -405,34 +470,99 @@ class PolyCone(Primitive):
 
     ::
 
-        In [13]: pcs = gdml.findall_("solids//polycone")
 
-        In [16]: print "\n".join([pc.xml for pc in pcs])
+        In [1]: run gdml.py 
 
-            <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="gds_polycone0xc404f40" startphi="0">
-              <zplane rmax="1520" rmin="0" z="3070"/>
-              <zplane rmax="75" rmin="0" z="3145.72924106399"/>
-              <zplane rmax="75" rmin="0" z="3159.43963177189"/>
-            </polycone>
-            ...
-            <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="OavTopHub0xc2c9030" startphi="0">
-              <zplane rmax="125" rmin="50" z="0"/>
-              <zplane rmax="125" rmin="50" z="57"/>
-              <zplane rmax="68" rmin="50" z="57"/>
-              <zplane rmax="68" rmin="50" z="90"/>
-              <zplane rmax="98" rmin="50" z="90"/>
-              <zplane rmax="98" rmin="50" z="120"/>
-            </polycone>
-            
+        In [2]: pcs = gdml.findall_("solids//polycone")
 
-    * all using same rmin, thats polycone abuse : should subtract a cylinder
+        In [3]: len(pcs)
+        Out[3]: 13
+
+        In [6]: print pcs[0]
+        <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="gds_polycone0xc404f40" startphi="0">
+          <zplane rmax="1520" rmin="0" z="3070"/>
+                                                           # really flat cone 
+          <zplane rmax="75" rmin="0" z="3145.72924106399"/>
+                                                           # little cylinder 
+          <zplane rmax="75" rmin="0" z="3159.43963177189"/>    
+        </polycone>
+
+
+       In [7]: print pcs[1]
+        <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="iav_polycone0xc346448" startphi="0">
+          <zplane rmax="1565" rmin="0" z="3085"/>
+                                                           # flat cylinder (repeated rmax)
+          <zplane rmax="1565" rmin="0" z="3100"/>     
+                                                           # repeated z, changed r   <--- polycone abuse, zero height truncated cone
+          <zplane rmax="1520.39278882354" rmin="0" z="3100"/>     
+                                                            #    big taper cone
+          <zplane rmax="100" rmin="0" z="3174.43963177189"/>
+        </polycone>
+
+
+
+    Summarizing with zp, see that::
+
+        pcs[ 0].zp :          gds_polycone0xc404f40  3 z:      [3145.72924106399, 3159.43963177189, 3070.0] rmax:                     [1520.0, 75.0] rmin:               [0.0]  
+        pcs[ 7].zp :          SstTopHubBot0xc2635b8  2 z:                                  [-320.0, -340.0] rmax:                            [220.5] rmin:             [150.5]  
+        pcs[ 8].zp :         SstTopHubMain0xc263d80  2 z:                                     [-320.0, 0.0] rmax:                            [170.5] rmin:             [150.5]  
+
+
+        pcs[ 1].zp :          iav_polycone0xc346448  4 z:                [3100.0, 3085.0, 3174.43963177189] rmax:  [100.0, 1520.39278882354, 1565.0] rmin:               [0.0]  
+        pcs[ 2].zp :             IavTopHub0xc405968  4 z:         [0.0, 85.5603682281126, 110.560368228113] rmax:                     [100.0, 150.0] rmin:              [75.0]  
+        pcs[ 3].zp :       CtrGdsOflBotClp0xbf5dec0  4 z:                                 [0.0, 25.0, 30.0] rmax:                      [36.5, 150.0] rmin:              [31.5]  
+        pcs[ 4].zp :          OcrGdsPrtPln0xbfa1408  4 z:                               [0.0, 160.0, 185.0] rmax:                     [100.0, 150.0] rmin:              [75.0]  
+        pcs[ 5].zp :          lso_polycone0xc02a418  4 z:      [4076.62074383385, 4058.59604160589, 3964.0] rmax:              [1930.0, 50.0, 125.0] rmin:               [0.0]  
+        pcs[ 6].zp :          oav_polycone0xbf1c840  4 z:      [4094.62074383385, 3937.0, 4000.02470222796] rmax:            [2040.0, 1930.0, 125.0] rmin:               [0.0]  
+
+        pcs[ 9].zp :             OavTopHub0xc2c9030  6 z:                          [0.0, 57.0, 90.0, 120.0] rmax:                [98.0, 68.0, 125.0] rmin:              [50.0]  
+        pcs[10].zp :       CtrLsoOflTopClp0xc178498  6 z:                         [0.0, 16.0, 184.0, 200.0] rmax:              [102.5, 112.5, 100.0] rmin:              [50.0]  
+        pcs[11].zp :       OcrGdsLsoPrtPln0xc104000  4 z:         [0.0, 214.596041605889, 184.596041605889] rmax:                       [98.0, 68.0] rmin:              [50.0]  
+        pcs[12].zp :       OcrCalLsoPrtPln0xc2fadd8  4 z:         [0.0, 214.596041605889, 184.596041605889] rmax:                       [98.0, 68.0] rmin:              [50.0]  
+
+
+    * all using same rmin, thats polycone abuse : better to subtract a cylinder
     * common pattern repeated z with different rmax to model "lips"
 
-    * polycylinder ?
 
     """
     pass
     zplane = property(lambda self:self.findall_("zplane"))
+
+    zp_num = property(lambda self:len(self.zplane))
+    zp_rmin = property(lambda self:list(set(map(lambda _:_.rmin,self.zplane))))
+    zp_rmax = property(lambda self:list(set(map(lambda _:_.rmax,self.zplane))))
+    zp_z = property(lambda self:list(set(map(lambda _:_.z,self.zplane))))
+    zp = property(lambda self:"%30s %2d z:%50r rmax:%35r rmin:%20r " % (self.name, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin)) 
+
+
+
+    def as_ncsg(self):
+        assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
+
+        _zp_rmin = self.zp_rmin
+        assert len(_zp_rmin) == 1 
+        _zp_rmin = _zp_rmin[0]
+
+        zp = self.zplane 
+        z = map(lambda _:_.z, zp)
+        zmax = max(z) 
+        zmin = min(z)
+        zsiz = zmax - zmin
+
+        has_inner = _zp_rmin > 0.
+        if has_inner:
+            inner = Tube.make_cylinder( zsiz, _zp_rmin, self.name + "_inner_cylinder" )
+            ## need to transform 
+        pass
+
+
+        cn = Union.make( zpsubs ) 
+
+        return CSG("difference", left=cn, right=inner ) if has_inner else cn
+
+
+
 
     def plot(self, ax):
         self.Plot(ax, self.zplane)
@@ -661,14 +791,14 @@ if __name__ == '__main__':
         print c.pv.transform
 
 
-    cns = gdml.findall_("solids//cone")
-        
-    import matplotlib.pyplot as plt
-    plt.ion()
+    #cns = gdml.findall_("solids//cone")
+    #import matplotlib.pyplot as plt
+    #plt.ion()
+    #fig = plt.figure()
 
-    fig = plt.figure()
-
-
+    pcs = gdml.findall_("solids//polycone")
+    for i,pc in enumerate(pcs):
+        print "pcs[%2d].zp : %s " % (i, pc.zp)
 
 
 
