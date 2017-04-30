@@ -21,14 +21,114 @@ log = logging.getLogger(__name__)
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.dev.csg.glm import make_trs
+from opticks.dev.csg.textgrid import TextGrid
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
 
 TREE_NODES = lambda height:( (0x1 << (1+(height))) - 1 )
+TREE_PRIMITIVES = lambda height:1 << height 
 TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
 
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",")
+
+
+
+
+class TreeBuilder(object):
+    def __init__(self, primitives, operator="union"):
+        """
+        :param primitives: list of CSG instance primitives
+        """
+        self.operator = operator 
+        nprim = len(map(lambda n:n.is_primitive, primitives))
+        assert nprim == len(primitives) and nprim > 0
+        self.nprim = nprim
+        self.primitives = primitives
+
+        height = -1
+        for h in range(10):
+            tprim = 1 << h 
+            if tprim >= nprim:
+                height = h
+                break
+
+        assert height > -1 
+        log.info("TreeBuilder nprim:%d required height:%d " % (nprim, height))
+        self.height = height
+
+        if height == 0:
+            root = primitives[0]
+        else: 
+            root = self.build(height)
+            self.populate(root, primitives[::-1]) 
+            self.prune(root)
+        pass
+        self.root = root 
+
+    def build(self, height):
+        """
+        Build complete binary tree with all operators the same
+        and CSG.ZERO placeholders for the primitives.
+        """
+        def build_r(elevation, operator):
+            if elevation > 1:
+                node = CSG(operator)
+                node.left  = build_r(elevation-1, operator) 
+                node.right = build_r(elevation-1, operator)
+            else:
+                node = CSG(operator)
+                node.left = CSG(CSG.ZERO)
+                node.right = CSG(CSG.ZERO)
+            pass
+            return node  
+        pass
+        root = build_r(height, self.operator ) 
+        return root
+
+    def populate(self, root, primitives):
+        """
+        Replace the CSG.ZERO placeholders with the primitives
+        """
+        for node in root.inorder_():
+            if node.is_operator:
+                try:
+                    if node.left.is_zero:
+                        node.left = primitives.pop()
+                    if node.right.is_zero:
+                        node.right = primitives.pop()
+                    pass
+                except IndexError:
+                    pass
+                pass
+            pass
+        pass
+
+    def prune(self, root):
+        def prune_r(node):
+            if node is None:return
+            if node.is_operator:
+                prune_r(node.left)
+                prune_r(node.right)
+
+                if node.left.is_lrzero:
+                    node.left = CSG(CSG.ZERO)
+                elif node.left.is_rzero:
+                    ll = node.left.left
+                    node.left = ll
+                pass
+                if node.right.is_lrzero:
+                    node.right = CSG(CSG.ZERO)
+                elif node.right.is_rzero:
+                    rl = node.right.left
+                    node.right = rl
+                pass
+            pass
+        pass
+        prune_r(root)
+
+
+
 
 
 class CSG(CSG_):
@@ -40,6 +140,7 @@ class CSG(CSG_):
 
     def depth_(self):
         def depth_r(node, depth):
+            if node is None:return depth
             node.depth = depth
             if node.left is None and node.right is None:
                 return depth
@@ -51,9 +152,67 @@ class CSG(CSG_):
         pass
         return depth_r(self, 0) 
 
+    def inorder_(self):
+        inorder = []
+        def inorder_r(node):
+            if node is None:return
+            inorder_r(node.left)
+            inorder.append(node)
+            inorder_r(node.right)
+        pass
+        inorder_r(self)
+        return inorder
+
+    def parenting_(self):
+        def parenting_r(node, parent):
+            if node is None:return 
+            node.parent = parent
+            parenting_r(node.left, node)
+            parenting_r(node.right, node)
+        pass
+        parenting_r(self, None)
+
+    def rooting_(self):
+        def rooting_r(node, root):
+            if node is None:return 
+            node.root = root
+            rooting_r(node.left, root)
+            rooting_r(node.right, root)
+        pass
+        rooting_r(self, self) 
+
+    elevation = property(lambda self:self.root.height - self.depth) 
+
     def analyse(self):
+        """
+        Call from root node to label the tree, root node is annotated with:
+
+        height 
+             maximum node depth
+ 
+        totnodes 
+             complete binary tree node count for the height 
+            
+        ::
+
+            In [45]: map(TREE_NODES, range(10))
+            Out[45]: [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023] 
+
+        """
         self.height = self.depth_()
+        self.parenting_()
+        self.rooting_()
+
         self.totnodes = TREE_NODES(self.height)
+        inorder = self.inorder_()
+
+        txt = TextGrid( self.height+1, len(inorder) )
+        for i,node in enumerate(inorder):
+            label = "%s%s" % (node.dsc, node.textra) if hasattr(node,'textra') else node.dsc
+            txt.a[node.depth, i] = label 
+        pass
+        self.txt = txt
+
 
     is_root = property(lambda self:hasattr(self,'height') and hasattr(self,'totnodes'))
 
@@ -212,8 +371,12 @@ class CSG(CSG_):
         root.height = height 
         return root
 
-
-    
+    @classmethod
+    def uniontree(cls, primitives):
+        tb = TreeBuilder(primitives, operator="union")
+        root = tb.root 
+        root.analyse()
+        return root
 
     def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, param2=None, param3=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
         if type(typ_) is str:
@@ -232,6 +395,7 @@ class CSG(CSG_):
         self.name = name
         self.left = left
         self.right = right
+        self.parent = None
 
         self.param = param
         self.param1 = param1
@@ -355,6 +519,9 @@ class CSG(CSG_):
 
     def dump(self):
         self.Dump(self)
+        self.analyse()
+        log.info("\n%s" % self.txt)
+
 
     @classmethod 
     def Dump(cls, node, depth=0):
@@ -377,9 +544,14 @@ class CSG(CSG_):
         return "%r %r " % (self.param, self.param1)
 
 
+    dsc = property(lambda self:self.desc(self.typ)[0:2])
+
     def __repr__(self):
         rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
-        return "%s(%s) %s " % (self.desc(self.typ), ",".join(map(repr,filter(None,[self.left,self.right]))),rrep)
+        dlr = ",".join(map(repr,filter(None,[self.left,self.right])))
+        if len(dlr) > 0: dlr = "(%s)" % dlr 
+        return "".join(filter(None, [self.dsc, dlr, rrep])) + " "
+
 
     def __call__(self, p):
         """
@@ -394,6 +566,11 @@ class CSG(CSG_):
             assert 0 
 
     is_primitive = property(lambda self:self.typ >= self.SPHERE )
+    is_zero = property(lambda self:self.typ == self.ZERO )
+    is_operator = property(lambda self:self.typ in [self.UNION,self.DIFFERENCE,self.INTERSECTION])
+    is_lrzero = property(lambda self:self.is_operator and self.left.is_zero and self.right.is_zero )
+    is_rzero = property(lambda self:self.is_operator and not(self.left.is_zero) and self.right.is_zero )
+    is_lzero = property(lambda self:self.is_operator and self.left.is_zero and not(self.right.is_zero) )
 
     def union(self, other):
         return CSG(typ=self.UNION, left=self, right=other)
@@ -413,14 +590,9 @@ class CSG(CSG_):
     def __mul__(self, other):
         return self.intersect(other)
 
-       
+   
 
-
-if __name__ == '__main__':
-    pass
-    logging.basicConfig(level=logging.INFO)
-
-
+def test_serialize_deserialize():
 
     container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
    
@@ -429,7 +601,6 @@ if __name__ == '__main__':
     sub = CSG("union", left=s, right=b, boundary="Vacuum///GlassShottF2", hello="world")
 
     trees0 = [container, sub]
-
 
     base = "$TMP/csg_py"
     CSG.Serialize(trees0, base )
@@ -440,6 +611,42 @@ if __name__ == '__main__':
     for i in range(len(trees1)):
         assert np.all( trees0[i].transform == trees1[i].transform )
 
+    
+def test_analyse():
+    s = CSG("sphere")
+    b = CSG("box")
+    sub = CSG("union", left=s, right=b)
+    sub.analyse()
+
+
+def test_treebuilder():
+    sprim = "sphere box cone zsphere cylinder trapezoid"
+    primitives = map(CSG, sprim.split() + sprim.split() )
+    nprim = len(primitives)
+
+    for n in range(0,nprim):
+        tb = TreeBuilder(primitives[0:n+1])
+        tb.root.analyse()
+        print tb.root.txt 
+
+
+def test_uniontree():
+ 
+    sprim = "sphere box cone zsphere cylinder trapezoid"
+    primitives = map(CSG, sprim.split())
+
+    for n in range(0,len(primitives)):
+        root = CSG.uniontree(primitives[0:n+1])
+        print root.txt
+ 
+
+if __name__ == '__main__':
+    pass
+    logging.basicConfig(level=logging.INFO)
+    test_uniontree()
+
+
+    
 
 
    

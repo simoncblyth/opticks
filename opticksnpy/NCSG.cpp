@@ -397,6 +397,8 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
            default:           node = NULL ; break ; 
         }       
 
+        if(!node) LOG(fatal) << "UNKNOWN CSG typecode: " << typecode ; 
+
         assert(node && "unhandled CSG type"); 
 
         // structure of recursive call dictated by need for 

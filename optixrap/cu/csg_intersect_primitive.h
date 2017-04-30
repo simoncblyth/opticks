@@ -110,8 +110,8 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
 #endif
 
         float idz = 1.f/d.z ; 
-        float t_cap1 = d.z == 0.f ? t_min : (z1 - o.z)*idz ;   // d.z zero means no z-plane intersects
-        float t_cap2 = d.z == 0.f ? t_min : (z2 - o.z)*idz ;
+        float t_cap1 = d.z == 0.f ? RT_DEFAULT_MAX : (z1 - o.z)*idz ;   // d.z zero means no z-plane intersects
+        float t_cap2 = d.z == 0.f ? RT_DEFAULT_MAX : (z2 - o.z)*idz ;
         float r_cap1 = (o.x + t_cap1*d.x)*(o.x + t_cap1*d.x) + (o.y + t_cap1*d.y)*(o.y + t_cap1*d.y) ;  
         float r_cap2 = (o.x + t_cap2*d.x)*(o.x + t_cap2*d.x) + (o.y + t_cap2*d.y)*(o.y + t_cap2*d.y) ;  
 
@@ -121,8 +121,17 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
         float t_capn = fminf( t_cap1, t_cap2 );    // order caps
         float t_capf = fmaxf( t_cap1, t_cap2 );
 
-        float t_cand = t_min ; 
 
+        // SIMPLE WAY fminf(float4) : appears to work for single cone, but 
+        //  seeing issues when combine such cones within a union
+        //  with wierd mirror cone cutoffs as rotate around 
+        //  ... that was not using RT_DEFAULT_MAX 
+        //  
+        float4 tt = make_float4( t_near, t_far, t_capn, t_capf );
+        float t_cand = fminf(tt) ; 
+        
+/*
+        float t_cand = t_min ; 
         bool near_cap  = t_capn > t_min && t_capn < RT_DEFAULT_MAX ;
         bool far_cap   = t_capf > t_min && t_capf < RT_DEFAULT_MAX ;
         bool near_cone = t_near > t_min && t_near < RT_DEFAULT_MAX ;
@@ -150,6 +159,9 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
             default:
                  rtPrintf("## unhandled combi %x \n", code) ; break ; 
         }
+*/
+
+
         // HMM: 
         //
         // * cannot just pick the closest, as if one fails need to fall back to next 
@@ -162,7 +174,7 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
         //   composed of the 4 input bits can be combined in 16 possible ways from 0000 to 1111 
         //
 
-        valid_isect = t_cand > t_min ;
+        valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
         if(valid_isect)
         {
             //rtPrintf("## csg_intersect_cone t_min:%10.3f t_cand:%10.3f    t_cap1:%10.3f t_cap2:%10.3f t_near:%10.3f t_far:%10.3f \n", t_min, t_cand, t_cap1, t_cap2, t_near, t_far );

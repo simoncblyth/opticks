@@ -362,6 +362,96 @@ EOP
 
 
 
+tboolean-uniontree(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
+tboolean-uniontree--(){ cat << EOP 
+
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.ana.pmt.polyconfig import PolyConfig
+from opticks.dev.csg.csg import CSG  
+
+args = opticks_main()
+
+container = CSG("box")
+container.boundary = args.container
+container.meta.update(PolyConfig("CONTAINER").meta)
+
+im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
+
+sp = CSG("sphere", param=[0,0,-1,100] )   # zrange -100:100
+sp2 = CSG("sphere", param=[0,0,0,200] )   # zrange -200:200
+
+zs = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0])  # zrange 100:200
+zs.param2.view(np.uint32)[0] = 3 
+
+co = CSG("cone", param=[300,0,100,200])   # zrange 0:200
+
+
+#prim = [sp,zs,co]    
+prim = [sp,co,zs]    
+
+"""
+prim = [sp,zs,co]    
+
+            un    
+     un          co
+ sp      zs        
+
+
+         __________
+        /          \       zs
+       +---+-----+--+  
+          /_______\        co
+             \_/           sp
+
+
+looks like improper "shadow" sphere surface inside the union,  
+propagation intersects with improper surf between sphere and cone,
+nudging sphere upwards makes a hole in the center of improper surface
+ ... suspect issue with three way overlapping 
+nudging downwards still get the improper surf
+ 
+can only see it when position to look up at cone ie looking into threeway region
+
+
+prim = [sp,co,zs]      ## changing order to a more natural one, gets expected behavior
+
+            un    
+     un          zs
+ sp      co        
+
+          
+CONCLUSION: 
+
+* make sure uniontree primitives are in a sensible order 
+* avoid three way overlapping where possible
+
+ 
+"""
+
+#prim = [sp2, zs, co]  # works as expected
+#prim = [sp, co]       # works as expected
+#prim = [sp, zs ]      #  sp just touches zp, so difficult to say 
+#prim = [sp2, zs]      # expected behavior
+
+
+ut = CSG.uniontree(prim)
+ut.boundary = args.container
+ut.meta.update(im)
+ut.dump()
+
+CSG.Serialize([container, ut], "$TMP/$FUNCNAME", outmeta=True )
+
+
+EOP
+}
+
+
+
+
+
 
 
 
@@ -766,16 +856,20 @@ EOP
 
 
 
-tboolean-unbalanced(){   TESTCONFIG=$(tboolean-csg-unbalanced-py)          tboolean-- ; }
-tboolean-csg-unbalanced-py(){ $FUNCNAME- | python $*  ; }
-tboolean-csg-unbalanced-py-()
+tboolean-unbalanced(){   TESTCONFIG=$(tboolean-unbalanced-)  tboolean-- ; }
+tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
+tboolean-unbalanced--()
 {
     local material=$(tboolean-material)
     local base=$TMP/$FUNCNAME 
     cat << EOP 
-import math
+import math, logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG  
-  
+args = opticks_main()
+
+ 
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)
 
@@ -786,13 +880,12 @@ left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-testobject
 right = CSG("sphere", param=[0,0,100,radius])
 
 object = CSG("union", left=left, right=right, boundary="$(tboolean-testobject)", poly="IM", resolution="60" )
+object.dump()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
 
 CSG.Serialize([container, object], "$base" )
 
-# marching cubes with nx=15 again makes a mess 
-# the ray trace skips the sphere 
 
 EOP
 }

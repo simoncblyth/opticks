@@ -18,54 +18,8 @@ Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
 
 
-#from opticks.optixrap.cu.boolean_h import desc_op, UNION, INTERSECTION, DIFFERENCE
-#from opticks.opticksnpy.NPart_h import EMPTY, ZERO, SPHERE, BOX
-#_desc_sh = { EMPTY:"e", ZERO:"z", SPHERE:"s", BOX:"b" }
-#def desc_sh(sh):
-#    return _desc_sh.get(sh, "bad shape key %d %x " % (sh,sh)) 
-
+from textgrid import TextGrid, T
 from opticks.sysrap.OpticksCSG import CSG_
-
-
-class T(np.ndarray):
-    """
-    An array with a text grid representation::
-
-        In [223]: a = np.empty((3,3),dtype=np.object)
-        In [224]: t = T.init(a)
-
-
-        In [230]: t[0,2] = "02"
-        In [231]: t[2,0] = "20"
-
-        In [232]: t
-        Out[232]: 
-           00    01    02
-        
-           20            
-
-        In [233]: t[1,0] = "10"
-
-        In [234]: t
-        Out[234]: 
-           00    01    02
-
-           10            
-
-           20            
-
-    """
-    @classmethod
-    def init(cls, a):  
-        assert len(a.shape) == 2, a
-        t = a.view(cls)
-        return t
-
-    def __repr__(self):
-        row_ = lambda r:" ".join(map(lambda _:"%3s" % (_ if _ is not None else "") ,r))
-        tab_ = lambda a:"\n".join(map(row_, a))
-        return tab_(self)
-
 
 
 class Node(object):
@@ -95,8 +49,6 @@ class Node(object):
     def _set_param(self, v):
         self._param = np.asarray(v) if v is not None else None 
     param = property(_get_param, _set_param)
-
-
 
 
     def apply_(self, **kwa):
@@ -149,19 +101,14 @@ class Node(object):
         while node is not None:
             if node.is_leaf:
                 assert 0, "not expecting leaves" 
-                node.apply_(shape=SPHERE, param=[0,0,0,100])
+                node.apply_(shape=CSG_.SPHERE, param=[0,0,0,100])
             elif node.is_bileaf:
-                #node.apply_(operation=DIFFERENCE)
-                node.apply_(operation=INTERSECTION) ## causes infinite tranche loop for iterative
-                #node.apply_(operation=UNION)
-                node.l.apply_(shape=BOX, param=[0,node.l.side*30+1,0,100] )             
-                node.r.apply_(shape=SPHERE, param=[0,node.r.side*30+1,0,100] )             
-            #elif node.r.is_bileaf and node.l.is_bileaf:
-            #    node.apply_(operation=DIFFERENCE)
+                node.apply_(operation=CSG_.INTERSECTION) ## causes infinite tranche loop for iterative
+                node.l.apply_(shape=CSG_.BOX, param=[0,node.l.side*30+1,0,100] )             
+                node.r.apply_(shape=CSG_.SPHERE, param=[0,node.r.side*30+1,0,100] )             
             else:
-                node.apply_(operation=UNION)
+                node.apply_(operation=CSG_.UNION)
             pass
-            #log.info(" dress %r " % node )
             node = node.next_ 
 
     @classmethod
@@ -310,15 +257,18 @@ class Node(object):
     is_root = property(lambda self:self.parent is None)
 
     def _get_tag(self):
+        """
+        hmm: subsequent dev fused operation and shape into single type code
+        """
         if self.operation is not None:
-            if self.operation in [UNION,INTERSECTION,DIFFERENCE]:
-                ty = desc_op(self.operation)[0]
+            if self.operation in [CSG_.UNION,CSG_.INTERSECTION,CSG_.DIFFERENCE]:
+                ty = CSG_.desc(self.operation)[0]
             else:
                 assert 0
             pass
         elif self.shape is not None:
-            if self.shape in [SPHERE, BOX, EMPTY]:
-                ty = desc_sh(self.shape)
+            if self.shape in [CSG_.SPHERE, CSG_.BOX, CSG_.ZERO]:
+                ty = CSG_.desc(self.shape)
             else:
                 assert 0
             pass
@@ -910,6 +860,10 @@ class Node(object):
 
 
 
+
+
+
+
 root0 = Node(1)
 root0.name = "root0"
 
@@ -1003,56 +957,56 @@ root4.name = "root4"
 
 
 
-cbox = Node(shape=BOX, param=[0,0,0,200], name="cbox")
-lbox = Node(shape=BOX, param=[-50,50,0,100], name="lbox")
-rbox = Node(shape=BOX, param=[ 50,-50,0,100], name="rbox")
+cbox = Node(shape=CSG_.BOX, param=[0,0,0,200], name="cbox")
+lbox = Node(shape=CSG_.BOX, param=[-50,50,0,100], name="lbox")
+rbox = Node(shape=CSG_.BOX, param=[ 50,-50,0,100], name="rbox")
 
-csph = Node(shape=SPHERE, param=[0,0,0,250], name="csph")
-lsph = Node(shape=SPHERE, param=[-50,50,0,100], name="lsph")
-rsph = Node(shape=SPHERE, param=[50,-50,0,100], name="rsph")
+csph = Node(shape=CSG_.SPHERE, param=[0,0,0,250], name="csph")
+lsph = Node(shape=CSG_.SPHERE, param=[-50,50,0,100], name="lsph")
+rsph = Node(shape=CSG_.SPHERE, param=[50,-50,0,100], name="rsph")
 
-empty = Node(shape=EMPTY, param=[0,0,0,0], name="empty")
+empty = Node(shape=CSG_.ZERO, param=[0,0,0,0], name="empty")
 
 
 trees = []
 
-lbox_ue = Node(operation=UNION, l=lbox, r=empty, name="lbox_ue")
+lbox_ue = Node(operation=CSG_.UNION, l=lbox, r=empty, name="lbox_ue")
 trees += [lbox_ue]
 
 
-lrbox_u = Node(operation=UNION, l=lbox,  r=rbox, name="lrbox_u", ok=True) 
-lrbox_i = Node(operation=INTERSECTION, l=lbox,  r=rbox, name="lrbox_i", ok=True) 
-lrbox_d1 = Node(operation=DIFFERENCE, l=lbox,  r=rbox, name="lrbox_d1", ok=True) 
-lrbox_d2 = Node(operation=DIFFERENCE, l=rbox,  r=lbox, name="lrbox_d2", ok=True) 
+lrbox_u = Node(operation=CSG_.UNION, l=lbox,  r=rbox, name="lrbox_u", ok=True) 
+lrbox_i = Node(operation=CSG_.INTERSECTION, l=lbox,  r=rbox, name="lrbox_i", ok=True) 
+lrbox_d1 = Node(operation=CSG_.DIFFERENCE, l=lbox,  r=rbox, name="lrbox_d1", ok=True) 
+lrbox_d2 = Node(operation=CSG_.DIFFERENCE, l=rbox,  r=lbox, name="lrbox_d2", ok=True) 
 trees += [lrbox_u, lrbox_i, lrbox_d1, lrbox_d2]
 
 
-bms = Node(name="bms",operation=DIFFERENCE, l=cbox,  r=csph, ok=True )
-smb = Node(name="smb",operation=DIFFERENCE, l=csph,  r=cbox, ok=True)
+bms = Node(name="bms",operation=CSG_.DIFFERENCE, l=cbox,  r=csph, ok=True )
+smb = Node(name="smb",operation=CSG_.DIFFERENCE, l=csph,  r=cbox, ok=True)
 
-ubo = Node(name="ubo",operation=UNION,      l=bms,   r=lrbox_u , ok=False)
+ubo = Node(name="ubo",operation=CSG_.UNION,      l=bms,   r=lrbox_u , ok=False)
 
 trees += [bms, smb, ubo ]
 
-#u_lrbox_d1 = Node(name="u_lrbox_d1", operation=UNION, l=lrbox_d1, r=lrbox_d1 )
+#u_lrbox_d1 = Node(name="u_lrbox_d1", operation=CSG_.UNION, l=lrbox_d1, r=lrbox_d1 )
 #trees += [u_lrbox_d1]
 
 
-bms_rbox = Node(name="bms_rbox", operation=UNION, l=bms, r=rbox, ok=False)
-bms_lbox = Node(name="bms_lbox", operation=UNION, l=bms, r=lbox, ok=False)
-smb_lbox = Node(name="smb_lbox", operation=UNION, l=smb, r=lbox, ok=False)
-smb_lbox_ue = Node(name="smb_lbox_ue", operation=UNION, l=smb, r=lbox_ue, ok=False)
+bms_rbox = Node(name="bms_rbox", operation=CSG_.UNION, l=bms, r=rbox, ok=False)
+bms_lbox = Node(name="bms_lbox", operation=CSG_.UNION, l=bms, r=lbox, ok=False)
+smb_lbox = Node(name="smb_lbox", operation=CSG_.UNION, l=smb, r=lbox, ok=False)
+smb_lbox_ue = Node(name="smb_lbox_ue", operation=CSG_.UNION, l=smb, r=lbox_ue, ok=False)
 
-bms_rbox_lbox = Node(name="bms_rbox_lbox", operation=UNION, l=bms_rbox,r=lbox, ok=False) 
-bms_lbox_rbox = Node( name="bms_lbox_rbox", operation=UNION, l=bms_lbox, r=rbox, ok=False ) 
+bms_rbox_lbox = Node(name="bms_rbox_lbox", operation=CSG_.UNION, l=bms_rbox,r=lbox, ok=False) 
+bms_lbox_rbox = Node( name="bms_lbox_rbox", operation=CSG_.UNION, l=bms_lbox, r=rbox, ok=False ) 
 
 trees += [bms_rbox,bms_lbox,smb_lbox,smb_lbox_ue, bms_rbox_lbox,bms_lbox_rbox] 
 
 
-lrsph_u = Node(operation=UNION,        l=lsph, r=rsph, name="lrsph_u", ok=True)
-lrsph_i = Node(operation=INTERSECTION, l=lsph, r=rsph, name="lrsph_i", ok=True)
-lrsph_d1 = Node(operation=DIFFERENCE,   l=lsph, r=rsph, name="lrsph_d1", ok=True)
-lrsph_d2 = Node(operation=DIFFERENCE,   l=rsph, r=lsph, name="lrsph_d2", ok=True)
+lrsph_u = Node(operation=CSG_.UNION,        l=lsph, r=rsph, name="lrsph_u", ok=True)
+lrsph_i = Node(operation=CSG_.INTERSECTION, l=lsph, r=rsph, name="lrsph_i", ok=True)
+lrsph_d1 = Node(operation=CSG_.DIFFERENCE,   l=lsph, r=rsph, name="lrsph_d1", ok=True)
+lrsph_d2 = Node(operation=CSG_.DIFFERENCE,   l=rsph, r=lsph, name="lrsph_d2", ok=True)
 
 trees += [lrsph_u, lrsph_i, lrsph_d1, lrsph_d2 ]
 
@@ -1197,13 +1151,7 @@ def asC(pseq64, name="seq"):
 
 
 
-if __name__ == '__main__':
-
-    logging.basicConfig(level=logging.INFO)
-
-    #test_is_complete()
-    #test_make_perfect()
-
+def test_pak():
     seq4 =  np.array( map(lambda n:n.idx, Node.postorder_r(root4)), dtype=np.int32 )    
     seq3 =  np.array( map(lambda n:n.idx, Node.postorder_r(root3)), dtype=np.int32 )    
 
@@ -1223,6 +1171,18 @@ if __name__ == '__main__':
     for i in range(16):
         q = unpak64(pseq3, i, itembits=4)
         print "%3d  %.2x  %3d " % ( i, q, q)
+
+
+
+
+
+
+if __name__ == '__main__':
+
+    logging.basicConfig(level=logging.INFO)
+
+    #test_is_complete()
+    #test_make_perfect()
 
 
 
