@@ -228,8 +228,14 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         GSolid* solid = m_maker->makeFromCSG(tree);
 
         GParts* pts = solid->getParts();
+
         pts->setIndex(0u, i);
-        pts->setNodeIndexAll(primIdx ); 
+
+        if(pts->isPartList())  // not doing this for NodeTree
+        {
+            pts->setNodeIndexAll(primIdx ); 
+        }
+
         pts->setBndLib(m_bndlib);
 
         solids.push_back(solid);
@@ -286,6 +292,8 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
         GSolid* solid = solids[i];
         GParts* pts = solid->getParts();
         assert(pts);
+        assert(pts->isPartList());
+
 
         OpticksCSG_t csgflag = solid->getCSGFlag(); 
         int flags = csgflag ;

@@ -87,9 +87,15 @@ GParts* GParts::make(const npart& pt, const char* spec)
     NPY<float>* tranBuf = NPY<float>::make(0, NTRAN, 4, 4 );
     tranBuf->zero();
 
+    NPY<float>* planBuf = NPY<float>::make(0, 4 );
+    planBuf->zero();
+
+
+
+
     partBuf->setPart( pt, 0u );
 
-    GParts* gpt = new GParts(partBuf,tranBuf, spec) ;
+    GParts* gpt = new GParts(partBuf,tranBuf,planBuf,spec) ;
 
     unsigned typecode = gpt->getTypeCode(0u);
     assert(typecode == CSG_BOX || typecode == CSG_SPHERE || typecode == CSG_PRISM);
@@ -100,20 +106,27 @@ GParts* GParts::make(const npart& pt, const char* spec)
 GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 {
     float size = param.w ;  
+    //-------   
+    // FIX: this is wrong for most solids 
     gbbox bb(gfloat3(-size), gfloat3(size));  
-
     if(csgflag == CSG_ZSPHERE)
     {
         assert( 0 && "TODO: geometry specifics should live in nzsphere etc.. not here " );
         bb.min.z = param.x*param.w ; 
         bb.max.z = param.y*param.w ; 
     } 
+    //-------
 
     NPY<float>* partBuf = NPY<float>::make(1, NJ, NK );
     partBuf->zero();
 
     NPY<float>* tranBuf = NPY<float>::make(0, NTRAN, 4, 4 );
     tranBuf->zero();
+
+    NPY<float>* planBuf = NPY<float>::make(0, 4);
+    planBuf->zero();
+
+
 
     assert(BBMIN_K == 0 );
     assert(BBMAX_K == 0 );
@@ -125,7 +138,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 
     // TODO: go via an npart instance
 
-    GParts* pt = new GParts(partBuf, tranBuf,  spec) ;
+    GParts* pt = new GParts(partBuf, tranBuf, planBuf, spec) ;
     pt->setTypeCode(0u, csgflag);
 
     return pt ; 
@@ -139,6 +152,7 @@ GParts* GParts::make( NCSG* tree)
     const char* spec = tree->getBoundary();
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = tree->getGTransformBuffer();  // formerly was incorrectly using TransformBuffer
+    NPY<float>* planbuf = tree->getPlaneBuffer();      
 
     if(!tranbuf) 
     {
@@ -146,6 +160,14 @@ GParts* GParts::make( NCSG* tree)
        tranbuf->zero();
     } 
     assert( tranbuf && tranbuf->hasShape(-1,NTRAN,4,4));
+
+    if(!planbuf) 
+    {
+       planbuf = NPY<float>::make(0,4) ;
+       planbuf->zero();
+    } 
+    assert( planbuf && planbuf->hasShape(-1,4));
+
 
 
     nnode* root = tree->getRoot(); 
@@ -182,7 +204,7 @@ GParts* GParts::make( NCSG* tree)
 
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
 
-    GParts* pts = new GParts(nodebuf, tranbuf, lspec) ;
+    GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
     return pts ; 
@@ -192,6 +214,7 @@ GParts::GParts(GBndLib* bndlib)
       :
       m_part_buffer(NULL),
       m_tran_buffer(NULL),
+      m_plan_buffer(NULL),
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_name(NULL),
@@ -203,10 +226,11 @@ GParts::GParts(GBndLib* bndlib)
 {
       init() ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, const char* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
       :
       m_part_buffer(partBuf),
       m_tran_buffer(tranBuf),
+      m_plan_buffer(planBuf),
       m_bndspec(NULL),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
@@ -216,10 +240,11 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, const char* spec, GBnd
 {
       init(spec) ; 
 }
-GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, GItemList* spec, GBndLib* bndlib) 
+GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
       :
       m_part_buffer(partBuf),
       m_tran_buffer(tranBuf),
+      m_plan_buffer(planBuf),
       m_bndspec(spec),
       m_bndlib(bndlib),
       m_prim_buffer(NULL),
@@ -265,6 +290,7 @@ void GParts::save(const char* dir)
     if(m_part_buffer) m_part_buffer->save(dir, name, "partBuffer.npy");     
     if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
     if(m_tran_buffer) m_tran_buffer->save(dir, name, "tranBuffer.npy");    
+    if(m_plan_buffer) m_plan_buffer->save(dir, name, "planBuffer.npy");    
 }
 
 void GParts::setName(const char* name)
@@ -324,7 +350,7 @@ GBndLib* GParts::getBndLib()
 
 
 
-void GParts::setPrimBuffer(NPY<unsigned int>* buf )
+void GParts::setPrimBuffer(NPY<int>* buf )
 {
     m_prim_buffer = buf ; 
 }
@@ -336,9 +362,13 @@ void GParts::setTranBuffer(NPY<float>* buf)
 {
     m_tran_buffer = buf ; 
 }
+void GParts::setPlanBuffer(NPY<float>* buf)
+{
+    m_plan_buffer = buf ; 
+}
 
 
-NPY<unsigned int>* GParts::getPrimBuffer()
+NPY<int>* GParts::getPrimBuffer()
 {
     return m_prim_buffer ; 
 }
@@ -350,6 +380,11 @@ NPY<float>* GParts::getTranBuffer()
 {
     return m_tran_buffer ; 
 }
+NPY<float>* GParts::getPlanBuffer()
+{
+    return m_plan_buffer ; 
+}
+
 
 
 
@@ -362,7 +397,7 @@ void GParts::init(const char* spec)
 
 void GParts::init()
 {
-    if(m_part_buffer == NULL && m_tran_buffer == NULL && m_bndspec == NULL)
+    if(m_part_buffer == NULL && m_tran_buffer == NULL && m_plan_buffer == NULL && m_bndspec == NULL)
     {
         LOG(trace) << "GParts::init creating empty part_buffer, tran_buffer and bndspec " ; 
 
@@ -371,6 +406,9 @@ void GParts::init()
 
         m_tran_buffer = NPY<float>::make(0, NTRAN, 4, 4 );
         m_tran_buffer->zero();
+
+        m_plan_buffer = NPY<float>::make(0, 4);
+        m_plan_buffer->zero();
 
         m_bndspec = new GItemList("GParts");
     } 
@@ -410,15 +448,19 @@ void GParts::add(GParts* other)
 
     NPY<float>* other_part_buffer = other->getPartBuffer() ;
     NPY<float>* other_tran_buffer = other->getTranBuffer() ;
+    NPY<float>* other_plan_buffer = other->getPlanBuffer() ;
 
     m_part_buffer->add(other_part_buffer);
     m_tran_buffer->add(other_tran_buffer);
+    m_plan_buffer->add(other_plan_buffer);
 
     unsigned num_part_add = other_part_buffer->getNumItems() ;
     unsigned num_tran_add = other_tran_buffer->getNumItems() ;
+    unsigned num_plan_add = other_plan_buffer->getNumItems() ;
 
     m_part_per_add.push_back(num_part_add); 
     m_tran_per_add.push_back(num_tran_add);
+    m_plan_per_add.push_back(num_plan_add);
 
     unsigned int n1 = getNumParts(); // after adding
 
@@ -432,8 +474,10 @@ void GParts::add(GParts* other)
               << " n1 " << n1
               << " num_part_add " << num_part_add
               << " num_tran_add " << num_tran_add
+              << " num_plan_add " << num_plan_add
               << " other_part_buffer  " << other_part_buffer->getShapeString()
               << " other_tran_buffer  " << other_tran_buffer->getShapeString()
+              << " other_plan_buffer  " << other_plan_buffer->getShapeString()
               ;  
 }
 
@@ -501,6 +545,7 @@ directly corresponds to a 1 GSolid and 1 GParts that
 are added separtately, see GGeoTest::loadCSG.
 */
 
+    assert(isPartList());
     m_parts_per_prim.clear();
 
     unsigned int nmin(INT_MAX) ; 
@@ -553,43 +598,62 @@ void GParts::makePrimBuffer()
 {
     // Derives prim buffer from the parts buffer
     //
-    reconstructPartsPerPrim();
-    unsigned int num_prim = m_parts_per_prim.size() ;
+    unsigned int num_prim = 0 ; 
+    if(isPartList())
+    {
+        reconstructPartsPerPrim();
+        num_prim = m_parts_per_prim.size() ;
+    } 
+    else if(isNodeTree())
+    {
+        num_prim = m_part_per_add.size() ;
+        assert( m_part_per_add.size() == num_prim );
+        assert( m_tran_per_add.size() == num_prim );
+        assert( m_plan_per_add.size() == num_prim );
+    }
+    else
+    {
+        assert(0);
+    }
+
 
     LOG(info) << "GParts::makePrimBuffer"
+              << " num_prim " << num_prim
               << " parts_per_prim.size " << m_parts_per_prim.size()
               << " part_per_add.size " << m_part_per_add.size()
               << " tran_per_add.size " << m_tran_per_add.size()
               ; 
- 
 
-    guint4* priminfo = new guint4[num_prim] ;
+    nivec4* priminfo = new nivec4[num_prim] ;
 
     unsigned part_offset = 0 ; 
     unsigned tran_offset = 0 ; 
+    unsigned plan_offset = 0 ; 
 
     if(isNodeTree())
     {
-        assert( m_part_per_add.size() == num_prim );
-        assert( m_tran_per_add.size() == num_prim );
-
         unsigned n = 0 ; 
         for(unsigned i=0 ; i < num_prim ; i++)
         {
             unsigned int tran_for_prim = m_tran_per_add[i] ; 
-            unsigned int parts_for_prim = m_parts_per_prim[i] ; 
+            unsigned int plan_for_prim = m_plan_per_add[i] ; 
 
-            guint4& pri = *(priminfo+n) ;
+            //unsigned int parts_for_prim = m_parts_per_prim[i] ; 
+            unsigned int parts_for_prim = m_part_per_add[i] ; 
+
+            nivec4& pri = *(priminfo+n) ;
 
             pri.x = part_offset ; 
-            pri.y = parts_for_prim ;
+            pri.y = m_primflag == CSG_FLAGPARTLIST ? -parts_for_prim : parts_for_prim ;
             pri.z = tran_offset ; 
-            pri.w = m_primflag ; 
+            pri.w = plan_offset ; 
 
-            LOG(info) << "GParts::makePrimBuffer(nodeTree) priminfo " << pri.description() ;       
+            LOG(info) << "GParts::makePrimBuffer(nodeTree) priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
             tran_offset += tran_for_prim ; 
+            plan_offset += plan_for_prim ; 
+
             n++ ; 
         }
     }
@@ -602,14 +666,15 @@ void GParts::makePrimBuffer()
             //unsigned int node_index = it->first ; 
             unsigned int parts_for_prim = it->second ; 
 
-            guint4& pri = *(priminfo+n) ;
+            nivec4& pri = *(priminfo+n) ;
 
             pri.x = part_offset ; 
-            pri.y = parts_for_prim ;
-            pri.z = 0u ; 
-            pri.w = m_primflag ; 
+            pri.y = m_primflag == CSG_FLAGPARTLIST ? -parts_for_prim : parts_for_prim ;
+            pri.z = 0 ; 
+            //pri.w = m_primflag ; 
+            pri.w = 0 ; 
 
-            LOG(info) << "GParts::makePrimBuffer(partList) priminfo " << pri.description() ;       
+            LOG(info) << "GParts::makePrimBuffer(partList) priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
             n++ ; 
@@ -617,8 +682,8 @@ void GParts::makePrimBuffer()
     }
 
 
-    NPY<unsigned int>* buf = NPY<unsigned int>::make( num_prim, 4 );
-    buf->setData((unsigned int*)priminfo);
+    NPY<int>* buf = NPY<int>::make( num_prim, 4 );
+    buf->setData((int*)priminfo);
     delete [] priminfo ; 
 
     setPrimBuffer(buf);
@@ -630,27 +695,35 @@ void GParts::dumpPrim(unsigned primIdx)
 {
     // following access pattern of oxrap/cu/hemi-pmt.cu::intersect
 
-    NPY<unsigned int>* primBuffer = getPrimBuffer();
-    NPY<float>*        partBuffer = getPartBuffer();
+    NPY<int>*    primBuffer = getPrimBuffer();
+    NPY<float>*  partBuffer = getPartBuffer();
+    //NPY<float>*  planBuffer = getPlanBuffer();
 
     if(!primBuffer) return ; 
     if(!partBuffer) return ; 
 
-    glm::uvec4 prim = primBuffer->getQuadU(primIdx) ;
+    glm::ivec4 prim = primBuffer->getQuadI(primIdx) ;
 
-    unsigned partOffset = prim.x ; 
-    unsigned numParts   = prim.y ; 
-    unsigned primFlag   = prim.w ; 
+    int partOffset = prim.x ; 
+    int numParts_   = prim.y ; 
+    int tranOffset = prim.z ; 
+    int planOffset = prim.w ; 
+
+    unsigned numParts = abs(numParts_) ;
+    unsigned primFlag = numParts_ < 0 ? CSG_FLAGPARTLIST : CSG_FLAGNODETREE  ; 
 
     LOG(info) << " primIdx "    << std::setw(3) << primIdx 
               << " partOffset " << std::setw(3) << partOffset 
+              << " tranOffset " << std::setw(3) << tranOffset 
+              << " planOffset " << std::setw(3) << planOffset 
+              << " numParts_ "  << std::setw(3) << numParts_
               << " numParts "   << std::setw(3) << numParts
               << " primFlag "   << std::setw(5) << primFlag 
               << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
               << " prim "       << gformat(prim)
               ;
 
-    for(unsigned int p=0 ; p < numParts ; p++)
+    for(unsigned p=0 ; p < numParts ; p++)
     {
         unsigned int partIdx = partOffset + p ;
 
@@ -678,8 +751,8 @@ void GParts::dumpPrim(unsigned primIdx)
 
 void GParts::dumpPrimBuffer(const char* msg)
 {
-    NPY<unsigned int>* primBuffer = getPrimBuffer();
-    NPY<float>*        partBuffer = getPartBuffer();
+    NPY<int>*    primBuffer = getPrimBuffer();
+    NPY<float>*  partBuffer = getPartBuffer();
     LOG(info) << msg ; 
     if(!primBuffer) return ; 
     if(!partBuffer) return ; 
@@ -699,12 +772,12 @@ void GParts::dumpPrimBuffer(const char* msg)
 void GParts::dumpPrimInfo(const char* msg)
 {
     unsigned int numPrim = getNumPrim() ;
-    LOG(info) << msg << " (part_offset, parts_for_prim, prim_index, prim_flags) numPrim:" << numPrim  ;
+    LOG(info) << msg << " (part_offset, parts_for_prim, tran_offset, plan_offset) numPrim:" << numPrim  ;
 
     for(unsigned int i=0 ; i < numPrim ; i++)
     {
-        guint4 pri = getPrimInfo(i);
-        LOG(info) << pri.description() ;
+        nivec4 pri = getPrimInfo(i);
+        LOG(info) << pri.desc() ;
     }
 }
 
@@ -758,11 +831,14 @@ gfloat3 GParts::getGfloat3(unsigned int i, unsigned int j, unsigned int k)
     float* ptr = getValues(i,j,k);
     return gfloat3( *ptr, *(ptr+1), *(ptr+2) ); 
 }
-guint4 GParts::getPrimInfo(unsigned int iprim)
+
+nivec4 GParts::getPrimInfo(unsigned int iprim)
 {
-    unsigned int* data = m_prim_buffer->getValues();
-    unsigned int* ptr = data + iprim*SK  ;
-    return guint4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
+    int* data = m_prim_buffer->getValues();
+    int* ptr = data + iprim*SK  ;
+
+    nivec4 pri = make_nivec4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
+    return pri ;  
 }
 gbbox GParts::getBBox(unsigned int i)
 {
@@ -886,7 +962,7 @@ void GParts::fulldump(const char* msg)
     Summary(msg);
 
     NPY<float>* partBuf = getPartBuffer();
-    NPY<unsigned int>* primBuf = getPrimBuffer(); 
+    NPY<int>*   primBuf = getPrimBuffer(); 
 
     partBuf->dump("partBuf");
     primBuf->dump("primBuf:partOffset/numParts/primIndex/0");

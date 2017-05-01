@@ -385,9 +385,15 @@ obj.boundary = args.testobject
 obj.planes = CSG.CubePlanes(200.)
 
 bbmin = [-201,-201,-201,0]
-bbmax = [ 201, 201, 201,0]  # unlike other solids, need to manually set bbox as stored as set of planes in NConvexPolyhedron 
+bbmax = [ 201, 201, 201,0]  
 obj.param2 = bbmin
 obj.param3 = bbmax
+
+#
+# unlike other solids, need to manually set bbox for solids stored as a 
+# set of planes in NConvexPolyhedron as cannot easily derive the bbox 
+# from the set of planes
+#
 
 obj.meta.update(im)
 

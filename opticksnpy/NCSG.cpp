@@ -225,10 +225,19 @@ NPY<float>* NCSG::getTransformBuffer()
 {
     return m_transforms ; 
 }
+
 NPY<float>* NCSG::getGTransformBuffer()
 {
     return m_gtransforms ; 
 }
+NPY<float>* NCSG::getPlaneBuffer()
+{
+    return m_planes ; 
+}
+
+
+
+
 
 
 

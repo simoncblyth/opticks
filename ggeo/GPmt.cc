@@ -119,7 +119,10 @@ void GPmt::loadFromCache(NSlice* slice)
     NPY<float>* tranBuf = NPY<float>::make(0,NTRAN,4,4);
     tranBuf->zero();
 
-    GParts* parts = new GParts(partBuf, tranBuf, bndSpec, m_bndlib);
+    NPY<float>* planBuf = NPY<float>::make(0,4);
+    planBuf->zero();
+
+    GParts* parts = new GParts(partBuf, tranBuf, planBuf, bndSpec, m_bndlib);
     parts->setAnalyticVersion(getIndex());
     parts->setPrimFlag(CSG_FLAGPARTLIST);
 

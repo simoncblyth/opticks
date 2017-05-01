@@ -16,8 +16,13 @@ void npart::setTypeCode(OpticksCSG_t typecode)
 void npart::setGTransform(unsigned gtransform_idx)
 {
     assert(VERSION == 1u);
-    assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 0 );
-    q3.u.x = gtransform_idx ; 
+
+   // assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 0 );
+   // q3.u.x = gtransform_idx ; 
+
+   assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 3 );
+   q3.u.w = gtransform_idx ; 
+
 }
 
 

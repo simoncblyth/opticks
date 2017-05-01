@@ -1,5 +1,4 @@
 #pragma once
-
 /*
 
 Currently:
@@ -45,106 +44,34 @@ difficult to rejig the layout, so for now just shift the id to w
 
 
 
+Argh getting a clash for convexpolyhedron between bbmax.x and the gtransform
+
+
+2017-05-01 19:16:55.450 INFO  [3453366] [GParts::dump@971] GParts::dump ni 2
+     0.0000      0.0000      0.0000      0.0000 
+     0.0000      0.0000     123 <-bnd        0 <-INDEX    bn Vacuum///GlassSchottF2 
+  -201.0000   -201.0000   -201.0000          19 (convexpolyhedron) TYPECODE 
+     0.0000    201.0000    201.0000           0 (nodeIndex) 
 */
 
 
+enum { PARAM_J  = 0, PARAM_K   = 0  };  // q0.f.xyzw
 
 
-enum { 
-  PARAM_J  = 0, 
-  PARAM_K  = 0 
-};       // q0.f.xyzw
-
-enum { 
-  PARAM1_J  = 1, 
-  PARAM1_K  = 0 
-};       // q1.f.xyzw
-
-
-
-/*
-enum {
-    LEFT_J = 0, 
-    LEFT_K = 3
-};
-enum {
-    RIGHT_J = 1, 
-    RIGHT_K = 3
-};
-*/
-
-
-
-
-
-// only used for CSG operator nodes in input serialization buffer
-enum {
-    TRANSFORM_J = 3,
-    TRANSFORM_K = 3 
-};   // q3.u.w
-
-// only used for CSG primitives in part buffer
-enum {
-    GTRANSFORM_J = 3,
-    GTRANSFORM_K = 0 
-};   // q3.u.x
-
-
-
-
-
-//enum { INDEX_J    = 1, INDEX_K    = 1  };   // q1.u.y
+enum { PARAM1_J   = 1, PARAM1_K   = 0  };  // q1.f.xyzw
 enum { INDEX_J    = 1, INDEX_K    = 3  };   // q1.u.w
 enum { BOUNDARY_J = 1, BOUNDARY_K = 2  };   // q1.u.z
 
 
+enum { BBMIN_J     = 2,  BBMIN_K     = 0   }; // q2.f.xyz
+enum { TYPECODE_J  = 2,  TYPECODE_K  = 3  };  // q2.u.w
 
 
+//enum { GTRANSFORM_J = 3,  GTRANSFORM_K = 0  };   // q3.u.x
+enum { GTRANSFORM_J = 3,  GTRANSFORM_K = 3  };   // q3.u.w     (as it seems nodeIndex not used GPU side)
+enum { BBMAX_J      = 3,  BBMAX_K = 0   };       // q3.f.xyz 
+enum { TRANSFORM_J  = 3,  TRANSFORM_K = 3  };    // q3.u.w   : only used for CSG operator nodes in input serialization buffer
+enum {  NODEINDEX_J = 3,  NODEINDEX_K = 3  };    // q3.u.w   <-- WHAT USES THIS GPU side ?
 
-
-
-enum { 
-    NODEINDEX_J = 3, 
-    NODEINDEX_K = 3 
-};  // q3.u.w 
-
-enum { 
-    TYPECODE_J  = 2, 
-    TYPECODE_K  = 3 
-};  // q2.u.w
-
-
-
-
-
-
-
-// only used for CSG operator nodes
-enum { 
-    BBMIN_J     = 2, 
-    BBMIN_K     = 0 
-};  // q2.f.xyz
-enum { 
-    BBMAX_J = 3,     
-    BBMAX_K = 0 
-};  // q3.f.xyz 
-
-
-
-
-/*
-// pointer arithmetic does not work on OptiX buffers
-#define NPART_OFFSET(partFloatPtr, partOffset)  ( (partFloatPtr) + 16*(partOffset) )
-
-#define NPART_Q0(partOffset)  ( 4*(partOffset) + 0 )
-#define NPART_Q1(partOffset)  ( 4*(partOffset) + 1 )
-#define NPART_Q2(partOffset)  ( 4*(partOffset) + 2 )
-#define NPART_Q3(partOffset)  ( 4*(partOffset) + 3 )
-
-
-#define NPART_TYPECODE(partFloatPtr) (  (partFloatPtr)+4*TYPECODE_J+TYPECODE_K )
-#define NPART_NODEINDEX(partFloatPtr) ( (partFloatPtr)+4*NODEINDEX_J+NODEINDEX_K )
-
-*/
 
 

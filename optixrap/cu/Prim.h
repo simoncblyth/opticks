@@ -2,12 +2,13 @@
 
 struct Prim 
 {
-    __device__ unsigned partOffset() const { return  prim.x ; } 
-    __device__ unsigned numParts()   const { return  prim.y ; } 
-    __device__ unsigned tranOffset() const { return  prim.z ; } 
-    __device__ unsigned primFlag()   const { return  prim.w ; } 
+    __device__ int partOffset() const { return  prim.x ; } 
+    __device__ int numParts()   const { return  prim.y < 0 ? -prim.y : prim.y ; } 
+    __device__ int tranOffset() const { return  prim.z ; } 
+    __device__ int planOffset() const { return  prim.w ; } 
+    __device__ int primFlag()   const { return  prim.y < 0 ? CSG_FLAGPARTLIST : CSG_FLAGNODETREE  ; } 
 
-    uint4 prim ; 
+    int4 prim ; 
 
 };
 

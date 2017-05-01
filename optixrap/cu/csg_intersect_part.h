@@ -3,11 +3,12 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
 {
     unsigned tranBuffer_size = tranBuffer.size() ;
 
-    const unsigned partOffset = prim.partOffset();
-    const unsigned numParts   = prim.numParts() ;
-    const unsigned tranOffset = prim.tranOffset() ;
-    const unsigned primFlag   = prim.primFlag() ;  
+    const int partOffset = prim.partOffset();
+    const int numParts   = prim.numParts() ;
+    const int tranOffset = prim.tranOffset() ;
+    const int planOffset = prim.planOffset() ;
 
+    const unsigned primFlag   = prim.primFlag() ;  
 
     if(primFlag != CSG_FLAGNODETREE)  
     {
@@ -48,6 +49,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
                 case CSG_PLANE:      csg_bounds_plane(    pt.q0,               aabb, NULL ); break ;      
                 case CSG_CYLINDER:   csg_bounds_cylinder( pt.q0, pt.q1,        aabb, NULL ); break ;  
                 case CSG_CONE:       csg_bounds_cone(     pt.q0,               aabb, NULL ); break ;  
+                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,   aabb, NULL ); break ;  
                 default:                                                                     break ; 
             }
         }
@@ -70,6 +72,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
                 case CSG_PLANE:     csg_bounds_plane(    pt.q0,               aabb, &tr ); break ; 
                 case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,        aabb, &tr ); break ;     
                 case CSG_CONE:      csg_bounds_cone(     pt.q0,               aabb, &tr ); break ;
+                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,  aabb, &tr ); break ;  
                 default:                                                 break ; 
             }
         }
@@ -81,8 +84,10 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
 
 
 static __device__
-void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const float& tt_min, float4& tt  )
+void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& tt_min, float4& tt  )
 {
+    unsigned tranOffset = prim.tranOffset();
+    unsigned planOffset = prim.planOffset();
     Part pt = partBuffer[partIdx] ; 
 
     unsigned typecode = pt.typecode() ; 
@@ -100,6 +105,7 @@ void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const
             case CSG_PLANE:     csg_intersect_plane(    pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CYLINDER:  csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CONE:      csg_intersect_cone(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_CONVEXPOLYHEDRON: csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray.origin, ray.direction ) ; break ; 
         }
     }
     else
@@ -136,6 +142,7 @@ void csg_intersect_part(const unsigned tranOffset, const unsigned partIdx, const
             case CSG_PLANE:     valid_intersect = csg_intersect_plane(    pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
+            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray_origin, ray_direction ) ; break ; 
         }
 
         if(valid_intersect)

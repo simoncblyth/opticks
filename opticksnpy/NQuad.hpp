@@ -68,6 +68,7 @@ struct NPY_API nivec4 {
 
   // NO CTOR
   void dump(const char* msg);
+  const char* desc() const ;  
 
   int x ; 
   int y ; 

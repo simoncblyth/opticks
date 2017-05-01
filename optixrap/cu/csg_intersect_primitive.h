@@ -1,3 +1,104 @@
+// csg_intersect_primitive.h : is included into top level program: intersect_analytic.cu
+// csg_intersect_part.h      : is primary user of these functions
+
+rtBuffer<float4> planBuffer ;
+
+static __device__
+void csg_bounds_convexpolyhedron(const unsigned& planeOffset, const Part& pt, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const quad& q2 = pt.q2 ; 
+    const quad& q3 = pt.q3 ; 
+
+    unsigned planeIdx = pt.planeIdx() ; 
+    unsigned planeNum = pt.planeNum() ; 
+
+    rtPrintf("## csg_bounds_convexpolyhedron planeIdx %u planeNum %u planeOffset %u  \n", planeIdx, planeNum, planeOffset );
+    unsigned planeBase = planeIdx-1+planeOffset ;
+
+    for(unsigned i=0 ; i < planeNum ; i++)
+    {
+        float4 plane = planBuffer[planeBase+i] ;
+        rtPrintf("## csg_bounds_convexpolyhedron plane i:%u plane: %10.3f %10.3f %10.3f %10.3f  \n", i, plane.x, plane.y, plane.z, plane.w );
+    } 
+
+    float3 mn = make_float3( q2.f.x, q2.f.y,  q2.f.z );
+    float3 mx = make_float3( q3.f.x, q3.f.y,  q3.f.z );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+
+
+
+static __device__
+bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    unsigned planeIdx = pt.planeIdx() ; 
+    unsigned planeNum = pt.planeNum() ; 
+    unsigned planeBase = planeIdx-1+planeOffset ;
+
+    rtPrintf("## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
+
+    float t0 = -RT_DEFAULT_MAX ; 
+    float t1 =  RT_DEFAULT_MAX ; 
+
+    float3 t0_normal = make_float3(0.f);
+    float3 t1_normal = make_float3(0.f);
+
+    for(unsigned i=0 ; i < planeNum && t0 < t1  ; i++)
+    {
+        float4 plane = planBuffer[planeBase+i];  
+        float3 n = make_float3(plane);
+        float d = plane.w ;
+        float denom = dot(n, ray_direction);
+        if(denom == 0.f) continue ;   
+
+        float t_cand = (d - dot(n, ray_origin))/denom;
+  
+        if( denom < 0.f)  // entering 
+        {
+            if(t_cand > t0)
+            {
+                t0 = t_cand ;
+                t0_normal = n ;
+            }
+        } 
+        else     // exiting
+        {       
+            if(t_cand < t1)
+            {
+                t1 = t_cand ;
+                t1_normal = n ;
+            }
+        }
+    }
+
+    bool valid_intersect = t0 < t1 ; 
+    if(valid_intersect)
+    {
+        if( t0 > t_min )
+        {
+            isect.x = t0_normal.x ; 
+            isect.y = t0_normal.y ; 
+            isect.z = t0_normal.z ; 
+            isect.w = t0 ; 
+        } 
+        else if( t1 > t_min )
+        {
+            isect.x = t1_normal.x ; 
+            isect.y = t1_normal.y ; 
+            isect.z = t1_normal.z ; 
+            isect.w = t1 ; 
+        }
+    }
+    return valid_intersect ;
+}
+
+
+
 
 static __device__
 void csg_bounds_cone(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )

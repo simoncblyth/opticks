@@ -58,7 +58,8 @@ rtBuffer<Matrix4x4> tranBuffer;
 
 rtBuffer<Prim>  primBuffer; 
 rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdentityBuffer()
-rtBuffer<float4> prismBuffer ;
+
+rtBuffer<float4> prismBuffer ;   // TODO: migrate prism to use planBuffer
 
 
 // attributes communicate to closest hit program,

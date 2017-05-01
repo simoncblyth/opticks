@@ -469,13 +469,15 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
-    NPY<unsigned>*  primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));     // prim
+    NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
+    NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
     NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
      // PmtInBox yielding -1,1,4 ?
 
     unsigned numPrim = primBuf->getNumItems();
     unsigned numPart = partBuf->getNumItems();
     unsigned numTran = tranBuf->getNumItems();
+    unsigned numPlan = planBuf->getNumItems();
 
     // mm transforms not used for analytic
     NPY<float>*    itransforms = mm->getITransformsBuffer();              
@@ -492,6 +494,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
                  << " numPrim " << numPrim 
                  << " numPart " << numPart
                  << " numTran(pairs) " << numTran
+                 << " numPlan " << numPlan
                  << " numITransforms(unused) " << numITransforms 
                  << " analytic_version " << analytic_version
                  ;
@@ -507,8 +510,8 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
 
     //optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 
-    assert(sizeof(unsigned) == 4);
-    optix::Buffer primBuffer = createInputUserBuffer<unsigned>( primBuf,  4*4, "primBuffer"); 
+    assert(sizeof(int) == 4);
+    optix::Buffer primBuffer = createInputUserBuffer<int>( primBuf,  4*4, "primBuffer"); 
     geometry["primBuffer"]->setBuffer(primBuffer);
     // hmm perhaps prim and id should be handled together ? 
 
@@ -525,8 +528,12 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer identityBuffer = createInputBuffer<optix::uint4, unsigned int>( idBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "identityBuffer"); 
     geometry["identityBuffer"]->setBuffer(identityBuffer);
 
+    optix::Buffer planBuffer = createInputUserBuffer<float>( planBuf,  4*4, "planBuffer"); 
+    geometry["planBuffer"]->setBuffer(planBuffer);
 
-    // TODO: why is this here? Remove?
+
+
+    // TODO: prismBuffer is misnamed it contains planes, TODO:migrate to use the planBuffer
     optix::Buffer prismBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     prismBuffer->setFormat(RT_FORMAT_FLOAT4);
     prismBuffer->setSize(5);

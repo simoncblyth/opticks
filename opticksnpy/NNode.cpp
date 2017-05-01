@@ -179,6 +179,7 @@ npart nnode::part()
 
     pt.setTypeCode( type );
     pt.setGTransform( gtransform_idx );
+
     // gtransform_idx is index into a buffer of the distinct compound transforms for the tree
 
     if(npart::VERSION == 0u)

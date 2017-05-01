@@ -12,10 +12,11 @@ struct NSlice ;
 template <typename T> class NPY ;
 class NCSG ; 
 
-struct guint4 ; 
+//struct guint4 ; 
+struct nivec4 ; 
+
 struct gbbox ; 
 struct gfloat3 ; 
-
 
 
 class GItemList ; 
@@ -64,8 +65,8 @@ class GGEO_API GParts {
         static GParts* combine(std::vector<GParts*> subs);
     public:
         GParts(GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, const char* spec, GBndLib* bndlib=NULL);
-        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, GItemList* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
+        GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
     public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
@@ -98,7 +99,7 @@ class GGEO_API GParts {
         gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
         float*       getValues(unsigned int i, unsigned int j, unsigned int k);
     public:
-        guint4       getPrimInfo(unsigned int iprim);
+        nivec4       getPrimInfo(unsigned int iprim);
    public:
         void setIndex(unsigned int part, unsigned int index);
         void setTypeCode(unsigned int part, unsigned int typecode);
@@ -114,9 +115,10 @@ class GGEO_API GParts {
         unsigned int       getNumParts();
         unsigned int       getPrimNumParts(unsigned int prim_index);
     public:
-        NPY<unsigned int>* getPrimBuffer();
+        NPY<int>*          getPrimBuffer();
         NPY<float>*        getPartBuffer();
         NPY<float>*        getTranBuffer(); // inverse transforms IR*IT ie inverse of T*R 
+        NPY<float>*        getPlanBuffer(); // planes used by convex polyhedra such as trapezoid
     public:
         void fulldump(const char* msg="GParts::fulldump");
         void dump(const char* msg="GParts::dump");
@@ -136,8 +138,9 @@ class GGEO_API GParts {
     private:
         void setBndSpec(GItemList* bndspec);
         void setPartBuffer(NPY<float>* part_buffer);
-        void setPrimBuffer(NPY<unsigned int>* prim_buffer);
+        void setPrimBuffer(NPY<int>*   prim_buffer);
         void setTranBuffer(NPY<float>* tran_buffer);
+        void setPlanBuffer(NPY<float>* plan_buffer);
         void setPrimFlag(OpticksCSG_t primflag);
         OpticksCSG_t getPrimFlag(); 
     private:
@@ -148,6 +151,7 @@ class GGEO_API GParts {
         // allowing this to copied/used on GPU in cu/hemi-pmt.cu
         NPY<float>*        m_part_buffer ; 
         NPY<float>*        m_tran_buffer ; 
+        NPY<float>*        m_plan_buffer ; 
         GItemList*         m_bndspec ;  
         GBndLib*           m_bndlib ; 
         const char*        m_name ;         
@@ -155,11 +159,12 @@ class GGEO_API GParts {
         typedef std::map<unsigned, unsigned> MUU ; 
         typedef std::vector<unsigned> VU ; 
     private:
-        NPY<unsigned>*     m_prim_buffer ; 
+        NPY<int>*          m_prim_buffer ; 
         bool               m_closed ; 
         MUU                m_parts_per_prim ;
         VU                 m_tran_per_add ; 
         VU                 m_part_per_add ; 
+        VU                 m_plan_per_add ; 
         bool               m_verbose ; 
         unsigned           m_analytic_version ; 
         OpticksCSG_t       m_primflag ; 

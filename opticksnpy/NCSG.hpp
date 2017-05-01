@@ -82,6 +82,7 @@ class NPY_API NCSG {
         NPY<float>* getNodeBuffer();
         NPY<float>* getTransformBuffer();
         NPY<float>* getGTransformBuffer();
+        NPY<float>* getPlaneBuffer();
         NParameters* getMeta();
         unsigned getNumNodes();
         unsigned getHeight();
