@@ -8,6 +8,7 @@
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 
+#include "NCSG.hpp"
 #include "NNode.hpp"
 #include "NPart.hpp"
 #include "NQuad.hpp"
@@ -21,6 +22,7 @@
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
 #include "NCone.hpp"
+#include "NConvexPolyhedron.hpp"
 
 
 #include "PLOG.hh"
@@ -39,6 +41,21 @@ std::string nnode::desc()
         << std::setw(15) << CSGName(type) 
         ;     
     return ss.str();
+}
+
+
+bool nnode::has_planes()
+{
+    return CSGHasPlanes(type) ;
+}
+
+unsigned nnode::planeIdx()
+{
+    return param.u.x ; 
+}
+unsigned nnode::planeNum()
+{
+    return param.u.y ; 
 }
 
 
@@ -212,6 +229,14 @@ void nnode::Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& d
 
 
 
+nnode* nnode::load(const char* treedir, unsigned verbosity)
+{
+    NCSG* tree = NCSG::LoadTree(treedir, verbosity );
+    nnode* root = tree->getRoot();
+    return root ; 
+}
+
+
 
 /**
 To translate or rotate a surface modeled as an SDF, you can apply the inverse
@@ -304,6 +329,7 @@ std::function<float(float,float,float)> nnode::sdf()
         case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
         case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
         case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = *n ; } break ; 
+        case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = *n ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
@@ -391,6 +417,14 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
             case CSG_CONE: 
                {  
                    ncone* n = (ncone*)p ;
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
+               }
+               break ;  
+
+            case CSG_CONVEXPOLYHEDRON: 
+               {  
+                   nconvexpolyhedron* n = (nconvexpolyhedron*)p ;
                    centers.push_back(n->gseedcenter()); 
                    dirs.push_back(n->gseeddir());
                }

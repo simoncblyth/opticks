@@ -105,9 +105,18 @@ class NPY_API NCSG {
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
         nquad getQuad(unsigned idx, unsigned j);
+    private:
         void load();
+        void loadMetadata();
+        void loadNodes();
+        void loadTransforms();
+        void loadPlanes();
+    private:
         void import();
         nnode* import_r(unsigned idx, nnode* parent=NULL);
+        void import_transforms(nnode* node, int transform_idx);
+        void import_planes(nnode* node);
+    private:
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);
         unsigned addUniqueTransform( nmat4triple* gtransform );
@@ -120,12 +129,17 @@ class NPY_API NCSG {
         int         m_verbosity ;  
         nnode*      m_root ;  
         const char* m_treedir ; 
+
         NPY<float>* m_nodes ; 
         NPY<float>* m_transforms ; 
         NPY<float>* m_gtransforms ; 
+        NPY<float>* m_planes ;
+
         NParameters* m_meta ; 
         unsigned    m_num_nodes ; 
         unsigned    m_num_transforms ; 
+        unsigned    m_num_planes ;
+ 
         unsigned    m_height ; 
         const char* m_boundary ; 
         glm::vec3   m_gpuoffset ; 

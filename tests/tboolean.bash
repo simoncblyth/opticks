@@ -362,7 +362,47 @@ EOP
 
 
 
-tboolean-uniontree(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+
+tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/tboolean-trapezoid-- ; }
+tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
+tboolean-trapezoid--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.ana.pmt.polyconfig import PolyConfig
+from opticks.dev.csg.csg import CSG  
+
+args = opticks_main()
+
+container = CSG("box")
+container.boundary = args.container
+container.meta.update(PolyConfig("CONTAINER").meta)
+
+im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
+obj = CSG("trapezoid")
+obj.boundary = args.testobject
+obj.planes = CSG.CubePlanes(200.)
+obj.meta.update(im)
+
+obj.dump()
+
+CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
+EOP
+}
+
+
+
+
+
+
+
+
+
+
+
+
+tboolean-uniontree(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- || echo $FUNCNAME : ERROR : investigate with : $FUNCNAME-  ; } 
 tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
 tboolean-uniontree--(){ cat << EOP 
 
@@ -407,28 +447,56 @@ prim = [sp,zs,co]
              \_/           sp
 
 
-looks like improper "shadow" sphere surface inside the union,  
+Looks like improper "shadow" sphere surface inside the union,  
 propagation intersects with improper surf between sphere and cone,
 nudging sphere upwards makes a hole in the center of improper surface
  ... suspect issue with three way overlapping 
 nudging downwards still get the improper surf
- 
-can only see it when position to look up at cone ie looking into threeway region
 
 
-prim = [sp,co,zs]      ## changing order to a more natural one, gets expected behavior
+Can only see the shadow shape when positioned to look up at cone 
+(ie looking into threeway region)
 
-            un    
-     un          zs
- sp      co        
+Changing order to a more natural (2-way overlapping) one, gets expected behavior
 
-          
-CONCLUSION: 
+::
+
+    prim = [sp,co,zs]   
+
+                un    
+         un          zs
+     sp      co        
+
+
+Does the order depency of a set of unions indicate a bug, 
+or a limitation of the algorithm ... or is it just 
+a result of having coincident z-faces ?
+
+NON-CONCLUSION: 
 
 * make sure uniontree primitives are in a sensible order 
 * avoid three way overlapping where possible
 
- 
+
+Thinking about the pairwise CSG algorithm the behaviour is kinda
+understandable... sp and zs are initially tangential and then after 
+nudging the sp upwards creates a small intersection opening up the hole.
+
+But then the union with the cone thru the middle should get rid of that 
+surface, and open up a full cavity betweeb the zs and sp ?
+
+
+TODO:
+
+* see what happens when all coincidident z-planes are avoided
+
+* automatic z-growing in polycone to avoid coincident surfaces 
+  (this would be difficult in a general uniontree, but easy in 
+  polycone as just needs 3*epsilon grow in z from the
+  smaller radius part into the larger radius part)  
+  ... analogous to joins in carpentry
+          
+
 """
 
 #prim = [sp2, zs, co]  # works as expected
@@ -437,7 +505,7 @@ CONCLUSION:
 #prim = [sp2, zs]      # expected behavior
 
 
-ut = CSG.uniontree(prim)
+ut = CSG.uniontree(prim, name="$FUNCNAME")
 ut.boundary = args.container
 ut.meta.update(im)
 ut.dump()

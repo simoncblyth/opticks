@@ -43,6 +43,7 @@ class TreeBuilder(object):
         self.operator = operator 
         nprim = len(map(lambda n:n.is_primitive, primitives))
         assert nprim == len(primitives) and nprim > 0
+
         self.nprim = nprim
         self.primitives = primitives
 
@@ -58,6 +59,7 @@ class TreeBuilder(object):
         self.height = height
 
         if height == 0:
+            assert len(primitives) == 1
             root = primitives[0]
         else: 
             root = self.build(height)
@@ -69,7 +71,7 @@ class TreeBuilder(object):
     def build(self, height):
         """
         Build complete binary tree with all operators the same
-        and CSG.ZERO placeholders for the primitives.
+        and CSG.ZERO placeholders for the primitives at elevation 0.
         """
         def build_r(elevation, operator):
             if elevation > 1:
@@ -137,8 +139,10 @@ class CSG(CSG_):
     """
     NJ, NK = 4, 4
     FILENAME = "csg.txt"
+    CONVEX_POLYHEDRA = [CSG_.TRAPEZOID]
 
     def depth_(self):
+        """Label tree nodes with their depth, return maxdepth"""
         def depth_r(node, depth):
             if node is None:return depth
             node.depth = depth
@@ -153,6 +157,7 @@ class CSG(CSG_):
         return depth_r(self, 0) 
 
     def inorder_(self):
+        """Return inorder sequence of nodes"""
         inorder = []
         def inorder_r(node):
             if node is None:return
@@ -164,6 +169,7 @@ class CSG(CSG_):
         return inorder
 
     def parenting_(self):
+        """Label tree nodes with their parent"""
         def parenting_r(node, parent):
             if node is None:return 
             node.parent = parent
@@ -173,6 +179,7 @@ class CSG(CSG_):
         parenting_r(self, None)
 
     def rooting_(self):
+        """Label tree nodes with root"""
         def rooting_r(node, root):
             if node is None:return 
             node.root = root
@@ -241,6 +248,7 @@ class CSG(CSG_):
             tree.save(treedir)
         pass
         boundaries = map(lambda tree:tree.boundary, trees)
+        cls.CheckNonBlank(boundaries)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
 
         if outmeta:
@@ -250,10 +258,16 @@ class CSG(CSG_):
         pass
 
     @classmethod
+    def CheckNonBlank(cls, boundaries):
+        boundaries2 = filter(None, boundaries)
+        assert len(boundaries) == len(boundaries2), "there are blank boundaries\n%s" % "\n".join(boundaries) 
+
+    @classmethod
     def Deserialize(cls, base):
         base = os.path.expandvars(base) 
         assert os.path.exists(base)
         boundaries = file(cls.txtpath(base)).read().splitlines()
+        cls.CheckNonBlank(boundaries)
         trees = []
         for idx, boundary in enumerate(boundaries): 
             tree = cls.load(cls.treedir(base, idx))      
@@ -262,29 +276,51 @@ class CSG(CSG_):
         pass
         return trees
 
+    @classmethod
+    def CubePlanes(cls, hsize=0.5):
+        planes = np.zeros([6,4], dtype=np.float32)  # unit cube for testing
+        for i in range(3):
+            pl = np.array([int(i==0),int(i==1),int(i==2),hsize], dtype=np.float32)  
+            planes[2*i+0] = pl
+            planes[2*i+1] = -pl
+        pass
+        return planes
 
 
     def serialize(self):
         """
         Array is sized for a complete tree, empty slots stay all zero
-
-        For transforms, need to 
-
         """
         if not self.is_root: self.analyse()
         buf = np.zeros((self.totnodes,self.NJ,self.NK), dtype=np.float32 )
 
         transforms = []
+        planes = []
 
         def serialize_r(node, idx): 
+            """
+            :param node:
+            :param idx: 0-based complete binary tree index, left:2*idx+1, right:2*idx+2 
+            """
             trs = node.transform  
             if trs is None:
-                itra = 0 
+                itransform = 0 
             else:
+                itransform = len(transforms) + 1  # 1-based index pointing to the transform
                 transforms.append(trs)
-                itra = len(transforms)   # 1-based index pointing to the transform
             pass
-            buf[idx] = node.asarray(itra)
+
+            node_planes = node.planes
+            if len(node_planes) == 0:
+                planeIdx = 0
+                planeNum = 0
+            else:
+                planeIdx = len(planes) + 1   # 1-based index pointing to the first plane for the node
+                planeNum = len(node_planes)
+                planes.extend(node_planes)
+            pass 
+
+            buf[idx] = node.as_array(itransform, planeIdx, planeNum)
 
             if node.left is not None and node.right is not None:
                 serialize_r( node.left,  2*idx+1)
@@ -294,34 +330,40 @@ class CSG(CSG_):
         serialize_r(self, 0)
 
         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
-        return buf, tbuf
+        pbuf = np.vstack(planes).reshape(-1,4) if len(planes) > 0 else None
+
+        return buf, tbuf, pbuf
 
 
     def save(self, treedir):
-        """
-        """
-        nodepath = self.nodepath(treedir)
+        log.debug("save to %s " % (treedir))
+
+        nodebuf, tranbuf, planebuf = self.serialize() 
+
         metapath = self.metapath(treedir)
-        tranpath = self.tranpath(treedir)
-
-        #self.dump("saving...")
-
-        log.debug("save to %s meta %r metapath %s tpath %s " % (nodepath, self.meta, metapath, tranpath))
         json.dump(self.meta,file(metapath,"w"))
 
-        nodebuf, tranbuf = self.serialize() 
-
+        nodepath = self.nodepath(treedir)
         np.save(nodepath, nodebuf)
-
+        pass
         if tranbuf is not None:
+            tranpath = self.tranpath(treedir)
             np.save(tranpath, tranbuf)
         pass
+        if planebuf is not None:
+            planepath = self.planepath(treedir)
+            np.save(planepath, planebuf)
+        pass
+
 
     stream = property(lambda self:self.save(sys.stdout))
 
     @classmethod
     def tranpath(cls, treedir):
         return os.path.join(treedir,"transforms.npy") 
+    @classmethod
+    def planepath(cls, treedir):
+        return os.path.join(treedir,"planes.npy") 
     @classmethod
     def metapath(cls, treedir):
         return os.path.join(treedir,"meta.json") 
@@ -338,16 +380,17 @@ class CSG(CSG_):
 
     @classmethod
     def deserialize(cls, treedir):
-        assert os.path.exists(treedir)
+        assert os.path.exists(treedir), treedir
+        log.info("load %s " % (treedir) )
          
         nodepath = cls.nodepath(treedir)
         metapath = cls.metapath(treedir)
         tranpath = cls.tranpath(treedir)
-
-        log.info("load nodepath %s tranpath %s " % (nodepath,tranpath) )
+        planepath = cls.planepath(treedir)
 
         nodebuf = np.load(nodepath) 
         tranbuf = np.load(tranpath) if os.path.exists(tranpath) else None
+        planebuf = np.load(planepath) if os.path.exists(planepath) else None
 
         totnodes = len(nodebuf)
         try:
@@ -357,11 +400,19 @@ class CSG(CSG_):
             assert 0
 
         def deserialize_r(buf, idx):
-            node = cls.fromarray(buf[idx]) if idx < len(buf) else None
-            if node is not None and node.itra is not None and node.itra > 0:
-                assert tranbuf is not None and node.itra - 1 < len(tranbuf)  
-                node.transform = tranbuf[node.itra - 1]
-                
+            node = cls.from_array(buf[idx]) if idx < len(buf) else None
+
+            if node is not None and node.itransform is not None and node.itransform > 0:
+                assert tranbuf is not None and node.itransform - 1 < len(tranbuf)  
+                node.transform = tranbuf[node.itransform - 1]
+            pass
+               
+            if node is not None and node.iplane is not None and node.iplane > 0:
+                assert planebuf is not None and node.iplane - 1 < len(planebuf) 
+                assert node.nplane > 3 and node.iplane - 1 + node.nplane <= len(planebuf)
+                node.planes = planebuf[node.iplane-1:node.iplane-1+node.nplane]
+            pass
+ 
             if node is not None:
                 node.left  = deserialize_r(buf, 2*idx+1)
                 node.right = deserialize_r(buf, 2*idx+2)
@@ -412,6 +463,7 @@ class CSG(CSG_):
         self.scale = scale
         self._transform = None
 
+        self.planes = []
         self.meta = kwa
 
     def _get_translate(self):
@@ -473,7 +525,7 @@ class CSG(CSG_):
 
 
 
-    def asarray(self, itra=0):
+    def as_array(self, itransform=0, planeIdx=0, planeNum=0):
         """
         Both primitive and internal nodes:
 
@@ -501,22 +553,40 @@ class CSG(CSG_):
         pass
 
         if self.transform is not None:
-            assert itra > 0, itra  # 1-based transform index
-            arr.view(np.uint32)[Q3,W] = itra 
+            assert itransform > 0, itransform  # 1-based transform index
+            arr.view(np.uint32)[Q3,W] = itransform 
         pass
+
+        if len(self.planes) > 0:
+            assert planeIdx > 0 and planeNum > 3, (planeIdx, planeNum)  # 1-based plane index
+            arr.view(np.uint32)[Q0,X] = planeIdx   # cf NNode::planeIdx
+            arr.view(np.uint32)[Q0,Y] = planeNum   # cf NNode::planeNum
+        pass
+
         arr.view(np.uint32)[Q2,W] = self.typ
 
         return arr
 
     @classmethod
-    def fromarray(cls, arr):
+    def from_array(cls, arr):
         typ = int(arr.view(np.uint32)[Q2,W])
-        itra = int(arr.view(np.uint32)[Q3,W]) if typ < cls.SPHERE else 0 
+        itransform = int(arr.view(np.uint32)[Q3,W]) if typ < cls.SPHERE else 0 
 
-        log.info("CSG.fromarray typ %d %s itra %d  " % (typ, cls.desc(typ), itra) )
+        if typ in cls.CONVEX_POLYHEDRA:
+            iplane = int(arr.view(np.uint32)[Q0,X])  
+            nplane = int(arr.view(np.uint32)[Q0,Y]) 
+        else:
+            iplane = 0 
+            nplane = 0 
+        pass 
+
+        log.info("CSG.from_array typ %d %s itransform %d iplane %d nplane %d " % (typ, cls.desc(typ), itransform, iplane, nplane) )
+
         n = cls(typ) if typ > 0 else None
         if n is not None:
-            n.itra = itra if itra > 0 else None
+            n.itransform = itransform if itransform > 0 else None
+            n.iplane = iplane if iplane > 0 else None
+            n.nplane = nplane if nplane > 0 else None
         pass
         return n 
 
@@ -569,6 +639,7 @@ class CSG(CSG_):
         else:
             assert 0 
 
+    is_convex_polyhedron = property(lambda self:self.typ in self.CONVEX_POLYHEDRA )
     is_primitive = property(lambda self:self.typ >= self.SPHERE )
     is_zero = property(lambda self:self.typ == self.ZERO )
     is_operator = property(lambda self:self.typ in [self.UNION,self.DIFFERENCE,self.INTERSECTION])
@@ -597,7 +668,7 @@ class CSG(CSG_):
    
 
 def test_serialize_deserialize():
-
+    log.info("test_serialize_deserialize")
     container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
    
     s = CSG("sphere")
@@ -617,6 +688,7 @@ def test_serialize_deserialize():
 
     
 def test_analyse():
+    log.info("test_analyse")
     s = CSG("sphere")
     b = CSG("box")
     sub = CSG("union", left=s, right=b)
@@ -624,6 +696,7 @@ def test_analyse():
 
 
 def test_treebuilder():
+    log.info("test_treebuilder")
     sprim = "sphere box cone zsphere cylinder trapezoid"
     primitives = map(CSG, sprim.split() + sprim.split() )
     nprim = len(primitives)
@@ -633,24 +706,48 @@ def test_treebuilder():
         tb.root.analyse()
         print tb.root.txt 
 
-
 def test_uniontree():
+    log.info("test_uniontree")
  
     sprim = "sphere box cone zsphere cylinder trapezoid"
     primitives = map(CSG, sprim.split())
 
     for n in range(0,len(primitives)):
-        root = CSG.uniontree(primitives[0:n+1])
-        print root.txt
+        root = CSG.uniontree(primitives[0:n+1], name="test_uniontree")
+        print "\n",root.txt
+
+
+def test_trapezoid():
+    log.info("test_trapezoid")
+
+    tr = CSG("trapezoid")
+    tr.planes = CSG.CubePlanes(0.5)
+    tr.boundary = "dummy"   
  
+    trees0 = [tr]
+    base = "$TMP/test_trapezoid"
+
+    CSG.Serialize(trees0, base )
+    trees1 = CSG.Deserialize(base)
+
+    assert len(trees1) == len(trees0)
+    tr1 = trees1[0] 
+
+    assert np.all( tr1.planes == tr.planes )
+
+
 
 if __name__ == '__main__':
     pass
     logging.basicConfig(level=logging.INFO)
-    test_uniontree()
+
+    #test_serialize_deserialize()
+    #test_analyse()
+    #test_treebuilder()
+    #test_uniontree()
+    test_trapezoid()
 
 
-    
 
 
    

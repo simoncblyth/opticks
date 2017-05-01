@@ -156,8 +156,15 @@ GParts* GParts::make( NCSG* tree)
     unsigned ni = nodebuf->getShape(0);
     assert( nodebuf->hasItemShape(NJ, NK) && ni > 0 );
 
+    bool type_ok = root && root->type < CSG_UNDEFINED ;
+    if(!type_ok)
+        LOG(fatal) << "GParts::make"
+                   << " bad type " << root->type
+                   << " name " << CSGName(root->type) 
+                   << " YOU MAY JUST NEED TO RECOMPILE " 
+                   ;
 
-    assert(root && root->type < CSG_UNDEFINED );
+    assert(type_ok);
 
     LOG(fatal) << "GParts::make NCSG "
               << " treedir " << tree->getTreeDir()

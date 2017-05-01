@@ -22,8 +22,9 @@ typedef enum {
  CSG_MULTICONE=16,
       CSG_BOX3=17,
  CSG_TRAPEZOID=18,
+ CSG_CONVEXPOLYHEDRON=19,
 
- CSG_UNDEFINED=19,
+ CSG_UNDEFINED=20,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101
@@ -63,6 +64,7 @@ static const char* CSG_CONE_          = "cone" ;
 static const char* CSG_MULTICONE_     = "multicone" ; 
 static const char* CSG_BOX3_          = "box3" ; 
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
+static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
 static const char* CSG_FLAGNODETREE_ = "flagnodetree" ; 
@@ -86,6 +88,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
     else if(strcmp(nodename, CSG_MULTICONE_) == 0)      tc = CSG_MULTICONE ;
     else if(strcmp(nodename, CSG_TRAPEZOID_) == 0)      tc = CSG_TRAPEZOID ;
+    else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
     else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
     else if(strcmp(nodename, CSG_DIFFERENCE_) == 0)     tc = CSG_DIFFERENCE ;
@@ -120,6 +123,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_CONE:          s = CSG_CONE_          ; break ; 
         case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
         case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
+        case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
         case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 
@@ -135,6 +139,11 @@ static bool CSGExists( OpticksCSG_t type )
 static bool CSGIsPrimitive(OpticksCSG_t type)
 {
     return !(type == CSG_INTERSECTION || type == CSG_UNION || type == CSG_DIFFERENCE) ; 
+}
+
+static bool CSGHasPlanes(OpticksCSG_t type)
+{
+    return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON ) ; 
 }
 
 

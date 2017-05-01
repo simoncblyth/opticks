@@ -119,6 +119,7 @@ set(SOURCES
     NCone.cpp
     NZSphere.cpp
     NPlane.cpp
+    NConvexPolyhedron.cpp
 
     NPrism.cpp
 

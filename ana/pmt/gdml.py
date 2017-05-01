@@ -397,6 +397,32 @@ class Trapezoid(Primitive):
     y2: y length at +z
     z:  z length
 
+    The general form is ConvexPolyhedron, modelled by a list of planes 
+    defining half spaces which come together to define the polyhedron.
+    
+    Plane counts:
+
+    * 4:tetrahedron
+    * 5:triangular prism
+    * 6:trapezoid, cube, box
+
+    Questions: 
+
+    * where to transition from specific Trapezoid to generic ConvexPolyhedron ?
+    * where to extract the bbox, thats easier before conversion to generic
+    * need a planeBuffer and need planeOffsets and planeCounts stored in the part buffer
+      (analogous to the handling of transforms)
+
+
+    * :google:`convex polyhedron bounding box`
+
+    Enumerating the vertices of a convex polyhedron defined by its planes
+    looks complicated, hence need to extract and store the bbox prior
+    to generalization of the shape. 
+
+    * http://cgm.cs.mcgill.ca/~avis/doc/avis/AF92b.pdf
+
+
     ::
 
         In [1]: run gdml.py 
@@ -404,7 +430,7 @@ class Trapezoid(Primitive):
         In [2]: trs = gdml.findall_("solids//trd")
 
         In [3]: len(trs)
-        Out[3]: 13
+        Out[3]: 2
 
         In [3]: trs
         Out[3]: 

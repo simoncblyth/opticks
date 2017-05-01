@@ -50,6 +50,7 @@ NSlabTest.cc
 NPlaneTest.cc
 NCylinderTest.cc
 NConeTest.cc
+NConvexPolyhedronTest.cc
 
 NBBoxTest.cc
 NNodeTest.cc

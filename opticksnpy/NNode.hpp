@@ -20,6 +20,7 @@ struct NPY_API nnode
 {
     virtual float operator()(float px, float py, float pz) const  ;
 
+    static nnode* load(const char* treedir, unsigned verbosity);
     static void Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt );
 
     virtual void dump(const char* msg="nnode::dump");
@@ -51,6 +52,9 @@ struct NPY_API nnode
     void collect_prim(std::vector<nnode*>& prim) ;
     static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
 
+    bool has_planes();
+    unsigned planeIdx();
+    unsigned planeNum();
 
     unsigned idx ; 
     OpticksCSG_t type ;  
@@ -67,6 +71,9 @@ struct NPY_API nnode
     nquad param1 ; 
     nquad param2 ; 
     nquad param3 ; 
+
+    std::vector<nvec4> planes ; 
+
 };
 
 // hmm perhaps easier to switch on these ?? instead

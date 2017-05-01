@@ -20,6 +20,7 @@
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
 #include "NCone.hpp"
+#include "NConvexPolyhedron.hpp"
 
 #include "NNode.hpp"
 #include "NBBox.hpp"
@@ -47,10 +48,11 @@ NCSG::NCSG(const char* treedir)
    m_nodes(NULL),
    m_transforms(NULL),
    m_gtransforms(NULL),
+   m_planes(NULL),
    m_meta(NULL),
-
    m_num_nodes(0),
    m_num_transforms(0),
+   m_num_planes(0),
    m_height(-1),
    m_boundary(NULL),
    m_gpuoffset(0,0,0),
@@ -67,7 +69,9 @@ NCSG::NCSG(nnode* root )
    m_root(root),
    m_treedir(NULL),
    m_nodes(NULL),
+   m_planes(NULL),
    m_num_nodes(0),
+   m_num_planes(0),
    m_height(root->maxdepth()),
    m_boundary(NULL),
    m_gpuoffset(0,0,0),
@@ -77,17 +81,23 @@ NCSG::NCSG(nnode* root )
    m_num_nodes = NumNodes(m_height);
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
    m_nodes->zero();
+
+   m_planes = NPY<float>::make(0,4);
+   m_planes->zero();
+
 }
 
 
 
 
-void NCSG::load()
+
+
+
+
+
+void NCSG::loadMetadata()
 {
     std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
-    std::string nodepath = BFile::FormPath(m_treedir, "nodes.npy") ;
-    std::string tranpath = BFile::FormPath(m_treedir, "transforms.npy") ;
-
     m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
 
@@ -100,17 +110,20 @@ void NCSG::load()
     m_container = container ; 
     m_containerscale = containerscale ;
 
-
     if(verbosity > -1 && verbosity != m_verbosity) 
     {
-        LOG(fatal) << "NCSG::load changing verbosity via metadata " 
+        LOG(fatal) << "NCSG::loadMetadata changing verbosity via metadata " 
                    << " treedir " << m_treedir
                    << " old " << m_verbosity 
                    << " new " << verbosity 
                    ; 
         m_verbosity = verbosity ; 
     }
+}
 
+void NCSG::loadNodes()
+{
+    std::string nodepath = BFile::FormPath(m_treedir, "nodes.npy") ;
 
     m_nodes = NPY<float>::load(nodepath.c_str());
 
@@ -120,37 +133,70 @@ void NCSG::load()
     assert( nj == NJ );
     assert( nk == NK );
 
-    if(BFile::ExistsFile(tranpath.c_str()))
-    {
-        NPY<float>* src = NPY<float>::load(tranpath.c_str());
-        assert(src); 
-        bool valid_src = src->hasShape(-1,4,4) ;
-        if(!valid_src) 
-            LOG(fatal) << "NCSG::load"
-                       << " invalid src transforms "
-                       << " tranpath " << tranpath
-                       << " src_sh " << src->getShapeString()
-                       ;
-
-        assert(valid_src);
-        unsigned ni = src->getShape(0) ;
-
-                  
-        assert(NTRAN == 2 || NTRAN == 3);
-        NPY<float>* transforms = NTRAN == 2 ? NPY<float>::make_paired_transforms(src) : NPY<float>::make_triple_transforms(src) ;
-        assert(transforms->hasShape(ni,NTRAN,4,4));
-
-        m_transforms = transforms ; 
-        m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;  // for collecting unique gtransforms
-
-        m_num_transforms  = ni  ;  
-    }
-
-
     m_height = -1 ; 
     int h = MAX_HEIGHT ; 
     while(h--) if(TREE_NODES(h) == m_num_nodes) m_height = h ; 
     assert(m_height >= 0); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
+}
+
+
+void NCSG::loadTransforms()
+{
+    std::string tranpath = BFile::FormPath(m_treedir, "transforms.npy") ;
+    if(!BFile::ExistsFile(tranpath.c_str())) return ; 
+
+    NPY<float>* src = NPY<float>::load(tranpath.c_str());
+    assert(src); 
+    bool valid_src = src->hasShape(-1,4,4) ;
+    if(!valid_src) 
+        LOG(fatal) << "NCSG::loadTransforms"
+                   << " invalid src transforms "
+                   << " tranpath " << tranpath
+                   << " src_sh " << src->getShapeString()
+                   ;
+
+    assert(valid_src);
+    unsigned ni = src->getShape(0) ;
+
+              
+    assert(NTRAN == 2 || NTRAN == 3);
+    NPY<float>* transforms = NTRAN == 2 ? NPY<float>::make_paired_transforms(src) : NPY<float>::make_triple_transforms(src) ;
+    assert(transforms->hasShape(ni,NTRAN,4,4));
+
+    m_transforms = transforms ; 
+    m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;  // for collecting unique gtransforms
+
+    m_num_transforms  = ni  ;  
+}
+
+void NCSG::loadPlanes()
+{
+    std::string planepath = BFile::FormPath(m_treedir, "planes.npy") ;
+    if(!BFile::ExistsFile(planepath.c_str())) return ; 
+
+    NPY<float>* planes = NPY<float>::load(planepath.c_str());
+    assert(planes); 
+    bool valid_planes = planes->hasShape(-1,4) ;
+    if(!valid_planes) 
+        LOG(fatal) << "NCSG::loadPlanes"
+                   << " invalid planes  "
+                   << " planepath " << planepath
+                   << " planes_sh " << planes->getShapeString()
+                   ;
+
+    assert(valid_planes);
+    unsigned ni = planes->getShape(0) ;
+
+    m_planes = planes ; 
+    m_num_planes = ni ; 
+}
+
+void NCSG::load()
+{
+    loadMetadata();
+    loadNodes();
+    loadTransforms();
+    loadPlanes();
 }
 
 
@@ -327,6 +373,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     nquad p0 = getQuad(idx, 0);
     nquad p1 = getQuad(idx, 1);
     nquad p2 = getQuad(idx, 2);
+    nquad p3 = getQuad(idx, 3);
 
     if(m_verbosity > 2)
     LOG(info) << "NCSG::import_r " 
@@ -379,6 +426,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
+
         // recursive calls after "visit" as full ancestry needed for transform collection
         // once reach the primitives
     }
@@ -394,26 +442,20 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
            case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
            case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
            case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
+           case CSG_TRAPEZOID:  
+           case CSG_CONVEXPOLYHEDRON:  
+                              node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ; 
            default:           node = NULL ; break ; 
         }       
 
         if(!node) LOG(fatal) << "UNKNOWN CSG typecode: " << typecode ; 
-
         assert(node && "unhandled CSG type"); 
 
-        // structure of recursive call dictated by need for 
-        // the primitive to know parent and its transform here...
-        // so the ancestor transforms can be multiplied straightaway 
-        // without some 2nd pass
-
         node->parent = parent ; 
-        node->transform = import_transform_triple( transform_idx ) ;
 
-        nmat4triple* gtransform = node->global_transform();
-        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
-        node->gtransform = gtransform ; 
-        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+        import_transforms(node, transform_idx);
 
+        if(CSGHasPlanes(typecode)) import_planes( node );
 
     }
     if(node == NULL) LOG(fatal) << "NCSG::import_r"
@@ -428,6 +470,52 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
     return node ; 
 } 
+
+
+void NCSG::import_transforms(nnode* node, int transform_idx)
+{
+     // structure of recursive call dictated by need for 
+     // the primitive to know parent and its transform here...
+     // so the ancestor transforms can be multiplied straightaway 
+     // without some 2nd pass
+
+     node->transform = import_transform_triple( transform_idx ) ;
+
+     nmat4triple* gtransform = node->global_transform();
+     unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
+     node->gtransform = gtransform ; 
+     node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+}
+
+void NCSG::import_planes(nnode* node)
+{
+    assert( node->has_planes() );
+    unsigned iplane = node->planeIdx() ;
+    unsigned nplane = node->planeNum() ;
+    unsigned idx = iplane - 1 ; 
+
+    LOG(info) << "NCSG::import_planes"
+              << " iplane " << iplane
+              << " nplane " << nplane
+              ;
+
+    assert( idx < m_num_planes );
+    assert( idx + nplane - 1 < m_num_planes );
+    assert( m_planes->hasShape(-1,4) );
+    assert( node->planes.size() == 0u );
+
+    for(unsigned i=idx ; i < idx + nplane ; i++)
+    {
+        nvec4 plane = m_planes->getVQuad(i) ;
+        node->planes.push_back(plane);    
+
+        std::cout << " plane " << std::setw(3) << i 
+                  << plane.desc()
+                  << std::endl ; 
+
+    }
+    assert( node->planes.size() == nplane );
+}
 
 
 unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
@@ -659,6 +747,5 @@ NCSG* NCSG::LoadTree(const char* treedir, int verbosity)
 
 }
     
-
 
 
