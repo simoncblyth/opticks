@@ -363,6 +363,67 @@ EOP
 
 
 
+
+
+
+
+tboolean-prism(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- ; } 
+tboolean-prism-(){  $FUNCNAME- | python $* ; }
+tboolean-prism--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.ana.pmt.polyconfig import PolyConfig
+from opticks.dev.csg.csg import CSG  
+from opticks.dev.csg.glm import make_prism  
+
+args = opticks_main()
+
+container = CSG("box")
+container.boundary = args.container
+container.meta.update(PolyConfig("CONTAINER").meta)
+
+im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
+angle, height, depth = 45, 200, 300
+
+obj1 = CSG("convexpolyhedron")
+obj1.boundary = args.testobject
+obj1.planes = make_prism(angle, height, depth)
+
+bbmin = [-400,-400,-400,0]   # TODO: tighten this up
+bbmax = [ 400, 400, 400,0]  
+obj1.param2 = bbmin
+obj1.param3 = bbmax
+
+
+# unlike other solids, need to manually set bbox for solids stored as a 
+# set of planes in NConvexPolyhedron as cannot easily derive the bbox 
+# from the set of planes
+
+obj1.meta.update(im)
+
+obj1.dump()
+
+CSG.Serialize([container, obj1], "$TMP/$FUNCNAME", outmeta=True )
+
+
+"""
+FIX: rays at normal incidence are reflecting beyond the edge of the prism 
+
+"""
+
+EOP
+
+
+}
+
+
+
+
+
+
+
+
 tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/tboolean-trapezoid-- ; }
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }

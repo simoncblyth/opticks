@@ -31,10 +31,8 @@ gdml.py : parsing GDML
      'tube',
      'cone',
      'polycone', 'zplane'
-
-      ## below need implementing
-
      'trd',                 # trapezoid
+
    }
 
 

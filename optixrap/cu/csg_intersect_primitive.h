@@ -40,7 +40,7 @@ bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt,
     unsigned planeNum = pt.planeNum() ; 
     unsigned planeBase = planeIdx-1+planeOffset ;
 
-    rtPrintf("## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
+    //rtPrintf("## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
 
     float t0 = -RT_DEFAULT_MAX ; 
     float t1 =  RT_DEFAULT_MAX ; 
