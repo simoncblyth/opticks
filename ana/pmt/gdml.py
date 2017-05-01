@@ -30,10 +30,10 @@ gdml.py : parsing GDML
      'sphere',
      'tube',
      'cone',
+     'polycone', 'zplane'
 
       ## below need implementing
 
-     'polycone', 'zplane'
      'trd',                 # trapezoid
    }
 
@@ -44,25 +44,6 @@ gdml.py : parsing GDML
     <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstTopRadiusRibBase0xc271078" x1="160" x2="691.02" y1="20" y2="20" z="2228.5"/>
     <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstInnVerRibCut0xbf31118" x1="100" x2="237.2" y1="27" y2="27" z="50.02"/>
         
-
-    In [5]: print "\n".join([tostring_(e) for e in gdml.elem.findall("solids//cone")])
-
-
-    <cone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
-
-          name="OcrCalLsoSubCon0xc17de20" 
-          lunit="mm" 
-          aunit="deg" 
-          startphi="0" 
-          deltaphi="360" 
-          rmax1="1930" rmax2="125" 
-          rmin1="0" rmin2="0" 
-          z="94.5960416058894"
-
-
-
-       />
-
 
 """
 import os, re, logging, math
@@ -225,69 +206,6 @@ class Subtraction(Boolean):
 class Union(Boolean):
     operation = "union"
 
-    @classmethod 
-    def make(cls, subs, name):
-        """
-        #. hmm need a tree growing algorithm that keeps 
-           as complete and balanced as possible
-
-            
-        1.
-             A
-
-        2.
-             U 
-            A B
-
-        3. 
-               U
-            U    C 
-           A B
-
-        4. 
-                 U
-            U         U
-           A B       C D
-
-        5. 
-                      U 
-
-                 U         E
-            U         U
-           A B       C D
-
-
-        6. 
-                      U 
-
-                 U         U
-            U        U    E  F
-           A B      C D
-
-
-        7. 
-                      U 
-
-                 U         U
-            U        U    E  F
-           A B      C D
-
-
-
-
-        """
-        top = CSG(self.operation, name=self.name) 
-
-        for sub in subs:
-             
-
-
-        return top
-
-
-
-
-
 
 class Primitive(Geometry):
     lunit = property(lambda self:self.att('lunit', 'mm', typ=str))
@@ -308,21 +226,22 @@ class Primitive(Geometry):
 
 class Tube(Primitive):
     @classmethod 
-    def make_cylinder(cls, sizeZ, radius, name)
+    def make_cylinder(cls, radius, z1, z2, name):
         cn = CSG("cylinder", name=name)
         cn.param[0] = 0
         cn.param[1] = 0
         cn.param[2] = 0    
         cn.param[3] = radius
-        cn.param1[0] = sizeZ    
-        PCAP = 0x1 << 0 
-        QCAP = 0x1 << 1 
-        cn.param1.view(np.uint32)[1] = PCAP | QCAP 
+        cn.param1[0] = z1
+        cn.param1[1] = z2
         return cn
 
     def as_ncsg(self):
-        assert self.rmin == 0.
-        return self.make_cylinder(self.z, self.rmax, self.name)
+        hz = self.z/2.
+        has_inner = self.rmin > 0.
+        inner = self.make_cylinder(self.rmin, -hz, hz, self.name + "_inner") if has_inner else None
+        outer = self.make_cylinder(self.rmax, -hz, hz, self.name + "_outer" )
+        return  CSG("difference", left=outer, right=inner, name=self.name + "_difference" ) if has_inner else outer
 
 
 class Sphere(Primitive):
@@ -379,7 +298,7 @@ class Sphere(Primitive):
             cn.param[3] = radius
         pass 
         if has_inner:
-            ret = CSG("difference", left=cn, right=inner )
+            ret = CSG("difference", left=cn, right=inner, name=self.name + "_difference"  )
         else: 
             ret = cn 
         pass
@@ -416,6 +335,15 @@ class Cone(Primitive):
     z = property(lambda self:self.att('z', 0, typ=float))
     pass
 
+    @classmethod
+    def make_cone(cls, r1,z1,r2,z2, name):
+        cn = CSG("cone", name=name)
+        cn.param[0] = r1
+        cn.param[1] = z1
+        cn.param[2] = r2
+        cn.param[3] = z2
+        return cn 
+
     def as_ncsg(self, only_inner=False):
         pass
         assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
@@ -429,13 +357,8 @@ class Cone(Primitive):
 
         r2 = self.rmin2 if only_inner else self.rmax2 
         z2 = self.z
-
-        cn = CSG("cone", name=self.name)
-
-        cn.param[0] = r1
-        cn.param[1] = z1
-        cn.param[2] = r2
-        cn.param[3] = z2
+   
+        cn = self.make_cone( r1,z1,r2,z2, self.name )
 
         return CSG("difference", left=cn, right=inner ) if has_inner else cn
 
@@ -464,12 +387,86 @@ class ZPlane(Primitive):
     pass
     
 
-class PolyCone(Primitive):
+class Trapezoid(Primitive):
     """
-    Annoyingly DYB using up to 6 zplanes, that will be a parameter squeeze...
+    The GDML Trapezoid is formed using 5 dimensions:
+
+    x1: x length at -z
+    x2: x length at +z
+    y1: y length at -z
+    y2: y length at +z
+    z:  z length
 
     ::
 
+        In [1]: run gdml.py 
+
+        In [2]: trs = gdml.findall_("solids//trd")
+
+        In [3]: len(trs)
+        Out[3]: 13
+
+        In [3]: trs
+        Out[3]: 
+        [Trapezoid SstTopRadiusRibBase0xc271078 mm rmin 0.0 rmax 0.0  x 0.0 y 0.0 z 2228.5  ,
+         Trapezoid SstInnVerRibCut0xbf31118 mm rmin 0.0 rmax 0.0  x 0.0 y 0.0 z 50.02  ]
+
+        In [4]: print trs[0]
+        <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstTopRadiusRibBase0xc271078" x1="160" x2="691.02" y1="20" y2="20" z="2228.5"/>
+            
+
+        In [5]: print trs[1]
+        <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstInnVerRibCut0xbf31118" x1="100" x2="237.2" y1="27" y2="27" z="50.02"/>
+
+    """
+    x1 = property(lambda self:self.att('x1', 0, typ=float))
+    x2 = property(lambda self:self.att('x2', 0, typ=float))
+    y1 = property(lambda self:self.att('y1', 0, typ=float))
+    y2 = property(lambda self:self.att('y2', 0, typ=float))
+    z = property(lambda self:self.att('z', 0, typ=float))
+
+
+    def quads(self):
+        """
+
+        ::       _______.+y2/2       
+             -x2/2     /|
+               +------+ |        z = z2
+               |      | | 
+               |      | /+y1/2
+               |      |/
+               +------+           z = z1
+             -x1/2  +x1/2      
+
+        """ 
+        z = self.z 
+        z1 = -z
+        z2 = +z
+        x1 = self.x1 
+        x2 = self.x2
+        y1 = self.y1 
+        y2 = self.y2
+
+        
+
+
+    def __repr__(self):
+        return "%s name:%s z:%s x1:%s y1:%s x2:%s y2:%s  " % (self.typ, self.name, self.z, self.x1, self.y1, self.x2, self.y2 )
+
+    def as_ncsg(self):
+        assert self.lunit == 'mm' 
+        cn = CSG("trapezoid", name=self.name)
+        cn.param[0] = self.x1
+        cn.param[1] = self.y1
+        cn.param[2] = self.x2
+        cn.param[3] = self.y2
+        cn.param1[0] = self.z
+        return cn
+
+
+class PolyCone(Primitive):
+    """
+    ::
 
         In [1]: run gdml.py 
 
@@ -480,28 +477,26 @@ class PolyCone(Primitive):
 
         In [6]: print pcs[0]
         <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="gds_polycone0xc404f40" startphi="0">
-          <zplane rmax="1520" rmin="0" z="3070"/>
-                                                           # really flat cone 
-          <zplane rmax="75" rmin="0" z="3145.72924106399"/>
-                                                           # little cylinder 
+          <zplane rmax="1520" rmin="0" z="3070"/>              # really flat cone 
+          <zplane rmax="75" rmin="0" z="3145.72924106399"/>    # little cylinder 
           <zplane rmax="75" rmin="0" z="3159.43963177189"/>    
         </polycone>
 
-
        In [7]: print pcs[1]
         <polycone xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" aunit="deg" deltaphi="360" lunit="mm" name="iav_polycone0xc346448" startphi="0">
-          <zplane rmax="1565" rmin="0" z="3085"/>
-                                                           # flat cylinder (repeated rmax)
-          <zplane rmax="1565" rmin="0" z="3100"/>     
-                                                           # repeated z, changed r   <--- polycone abuse, zero height truncated cone
-          <zplane rmax="1520.39278882354" rmin="0" z="3100"/>     
-                                                            #    big taper cone
+          <zplane rmax="1565" rmin="0" z="3085"/>                 # flat cylinder (repeated rmax)
+          <zplane rmax="1565" rmin="0" z="3100"/>                 # repeated z, changed r   <--- polycone abuse, zero height truncated cone
+          <zplane rmax="1520.39278882354" rmin="0" z="3100"/>     #    big taper cone
           <zplane rmax="100" rmin="0" z="3174.43963177189"/>
         </polycone>
 
 
+    Summarizing with zp, see that
 
-    Summarizing with zp, see that::
+    * all using same rmin, thats polycone abuse : better to subtract a cylinder
+    * common pattern repeated z with different rmax to model "lips"
+
+    ::
 
         pcs[ 0].zp :          gds_polycone0xc404f40  3 z:      [3145.72924106399, 3159.43963177189, 3070.0] rmax:                     [1520.0, 75.0] rmin:               [0.0]  
         pcs[ 7].zp :          SstTopHubBot0xc2635b8  2 z:                                  [-320.0, -340.0] rmax:                            [220.5] rmin:             [150.5]  
@@ -521,10 +516,6 @@ class PolyCone(Primitive):
         pcs[12].zp :       OcrCalLsoPrtPln0xc2fadd8  4 z:         [0.0, 214.596041605889, 184.596041605889] rmax:                       [98.0, 68.0] rmin:              [50.0]  
 
 
-    * all using same rmin, thats polycone abuse : better to subtract a cylinder
-    * common pattern repeated z with different rmax to model "lips"
-
-
     """
     pass
     zplane = property(lambda self:self.findall_("zplane"))
@@ -535,33 +526,60 @@ class PolyCone(Primitive):
     zp_z = property(lambda self:list(set(map(lambda _:_.z,self.zplane))))
     zp = property(lambda self:"%30s %2d z:%50r rmax:%35r rmin:%20r " % (self.name, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin)) 
 
+    def __repr__(self):
+        return self.zp
 
 
-    def as_ncsg(self):
-        assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
+    def prims(self):
+        zp = self.zplane 
+        prims = []
+        for i in range(1,len(zp)):
+            zp1 = zp[i-1]
+            zp2 = zp[i]
 
-        _zp_rmin = self.zp_rmin
-        assert len(_zp_rmin) == 1 
-        _zp_rmin = _zp_rmin[0]
+            r1 = zp1.rmax
+            r2 = zp2.rmax
+            z1 = zp1.z
+            z2 = zp2.z
+
+            if z2 == z1:
+                log.debug("skipping z2 == z1 zp" )
+            else:
+                assert z2 > z1, (z2,z1)
+                name = self.name + "_zp_%d" % i 
+                pr = Tube.make_cylinder( r1, z1, z2, name ) if r1 == r2 else Cone.make_cone( r1, z1, r2, z2, name )
+                prims.append(pr)
+            pass
+        pass
+        return prims
+
+    def inner(self):
+        rmin = self.zp_rmin
+        assert len(rmin) == 1 
+        rmin = rmin[0]
 
         zp = self.zplane 
         z = map(lambda _:_.z, zp)
         zmax = max(z) 
         zmin = min(z)
-        zsiz = zmax - zmin
 
-        has_inner = _zp_rmin > 0.
+        has_inner = rmin > 0.
         if has_inner:
-            inner = Tube.make_cylinder( zsiz, _zp_rmin, self.name + "_inner_cylinder" )
-            ## need to transform 
+            inner = Tube.make_cylinder( rmin, zmin, zmax, self.name + "_inner_cylinder" )
+        else:
+            inner = None
         pass
+        return inner
 
 
-        cn = Union.make( zpsubs ) 
+    def as_ncsg(self):
+        assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
 
-        return CSG("difference", left=cn, right=inner ) if has_inner else cn
-
-
+        prims = self.prims()
+        cn = CSG.uniontree(prims, name=self.name + "_uniontree")
+        inner = self.inner()
+        #return CSG("difference", left=cn, right=inner ) if inner is not None else cn
+        return cn
 
 
     def plot(self, ax):
@@ -680,6 +698,7 @@ class GDML(G):
         "cone":Cone,
         "polycone":PolyCone,
         "zplane":ZPlane,
+        "trd":Trapezoid,
 
         "intersection":Intersection,
         "subtraction":Subtraction,
@@ -751,6 +770,41 @@ def multiplot(fig, objs, nx=4, ny=4):
     pass
 
 
+
+
+def test_children(t):
+
+    lvn = "/dd/Geometry/PMT/lvPmtHemi0x"
+ 
+    l = t.filternodes_lv(lvn)  # all nodes 
+    assert len(l) == 672
+
+    n = l[0] 
+    sibs = n.siblings 
+    assert len(sibs) == 192
+   
+    cn = n.lv.solid.as_ncsg()
+    cn.dump()
+
+    v = n.children[0]
+    for c in v.children:
+        print c.pv.transform
+
+
+def test_polycone(g):
+    pcs = g.findall_("solids//polycone")
+    for i,pc in enumerate(pcs):
+        print "pcs[%2d].zp : %s " % (i, pc.zp)
+        cn = pc.as_ncsg()
+
+def test_gdml(g):
+    print g.world
+    g.world.rdump()
+    g.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
+
+
+
+
 if __name__ == '__main__':
 
     args = opticks_main()
@@ -762,43 +816,19 @@ if __name__ == '__main__':
     gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
     gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
-    gdml = GDML.parse(gdmlpath)
-
-    #print gdml.world
-    #gdml.world.rdump()
-    #gdml.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
+    g = GDML.parse(gdmlpath)
 
     from treebase import Tree
-    t = Tree(gdml.world) 
+    t = Tree(g.world) 
 
-    lvn = "/dd/Geometry/PMT/lvPmtHemi0x"
- 
-    l = t.filternodes_lv(lvn)  # all nodes 
-    assert len(l) == 672
+    test_children(t)
+    test_polycone(g)
 
-    #a = np.array(map(lambda n:n.index, l))  # 3 groups of index pitches apparent in  a[1:] - a[:-1]
-
-    n = l[0] 
-    sibs = n.siblings 
-    assert len(sibs) == 192
-  
-   
-    cn = n.lv.solid.as_ncsg()
-    cn.dump()
-
-    v = n.children[0]
-    for c in v.children:
-        print c.pv.transform
-
-
-    #cns = gdml.findall_("solids//cone")
-    #import matplotlib.pyplot as plt
-    #plt.ion()
-    #fig = plt.figure()
-
-    pcs = gdml.findall_("solids//polycone")
-    for i,pc in enumerate(pcs):
-        print "pcs[%2d].zp : %s " % (i, pc.zp)
-
+    trs = g.findall_("solids//trd")
+    cns = []
+    for i,tr in enumerate(trs):
+        cn = tr.as_ncsg()
+        cns.append(cn)
+    
 
 

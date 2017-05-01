@@ -24,8 +24,8 @@ struct NPY_API ncylinder : nnode
  
     glm::vec3 center ; 
     float     radius ; 
-    float     sizeZ ; 
-    unsigned  flags ; 
+    float     z1 ; 
+    float     z2 ; 
 };
 
 
@@ -36,16 +36,18 @@ inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad&
 
     n.center.x = param.f.x ; 
     n.center.y = param.f.y ; 
-    n.center.z = param.f.z ;
+    n.center.z = 0.f ;
 
     n.radius   = param.f.w ;  
-    n.sizeZ    = param1.f.x ; 
-    n.flags    = param1.u.y ; 
+    n.z1       = param1.f.x ; 
+    n.z2       = param1.f.y ; 
+
+    assert( n.z2 > n.z1 );
 
     // cylinder axis in Z direction 
     //
-    //      QCAP (higher Z) at   center.z + sizeZ/2
-    //      PCAP (lower Z)  at   center.z - sizeZ/2
+    //      QCAP (higher Z) at   z2
+    //      PCAP (lower Z)  at   z1
     //      
 
 }
@@ -58,19 +60,18 @@ inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
     return n ; 
 }
 
-inline NPY_API ncylinder make_cylinder(float x, float y, float z, float radius, float sizeZ, unsigned flags)
+inline NPY_API ncylinder make_cylinder(float radius, float z1, float z2)
 {
     nquad param, param1 ;
 
-    param.f = {x,y,z,radius} ;
+    param.f = {0,0,0,radius} ;
 
-    param1.f.x = sizeZ ; 
-    param1.u.y = flags ; 
+    param1.f.x = z1 ; 
+    param1.f.y = z2 ; 
     param1.u.z = 0u ; 
     param1.u.w = 0u ; 
 
     return make_cylinder(param, param1 );
 }
-
 
 

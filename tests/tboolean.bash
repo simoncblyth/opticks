@@ -892,14 +892,25 @@ EOP
 
 
 
+tboolean-gds(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+tboolean-gds-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }
 
-tboolean-gdml(){        TESTCONFIG=$(tboolean-gdml- $* 2>/dev/null)     tboolean--  ; }
+tboolean-oav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+tboolean-oav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvOAV0x ; }
+
+tboolean-pmt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+tboolean-pmt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PMT/lvPmtHemi0x ; }
+
+
 tboolean-gdml-()
-{       
+{      
+    local csgpath=$1
+    shift
     python $(tboolean-dir)/tboolean_gdml.py \
-          --csgpath $TMP/$FUNCNAME \
+          --csgpath $csgpath \
           --container $(tboolean-container)  \
-          --testobject $(tboolean-testobject) $* 
+          --testobject $(tboolean-testobject) \
+          $*
 }
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-dir)/tboolean_gdml.py  ; }

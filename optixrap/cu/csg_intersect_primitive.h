@@ -873,33 +873,21 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
 static __device__
 void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
-    const float3  center = make_float3(q0.f.x, q0.f.y, q0.f.z) ;    
+    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
     const float   radius = q0.f.w ; 
-    const float    sizeZ = q1.f.x  ; 
-    const unsigned flags = q1.u.y ;
+    const float    z1 = q1.f.x  ; 
+    const float    z2 = q1.f.y  ; 
 
-    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
-    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+    rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f  radius %7.3f z1 %7.3f z2 %7.3f \n",
+          center.x, center.y, radius, z1, z2 );
 
-    rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f %7.3f radius %7.3f  sizeZ %7.3f flags %u PCAP %d QCAP %d \n",
-          center.x, center.y, center.z, radius, sizeZ, flags, PCAP, QCAP );
-
-    const float3 bbmin = make_float3( center.x - radius, center.y - radius, center.z - sizeZ/2.f );
-    const float3 bbmax = make_float3( center.x + radius, center.y + radius, center.z + sizeZ/2.f );
+    const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
+    const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
 
     Aabb tbb(bbmin, bbmax);
     if(tr) transform_bbox( &tbb, tr );  
     aabb->include(tbb);
 }
-
-
-
-
-
-
-
-
-
 
 
 
@@ -909,12 +897,18 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
     // ascii art explanation in intersect_ztubs.h
 
     const float   radius = q0.f.w ; 
-    const float    sizeZ = q1.f.x  ; 
-    const unsigned flags = q1.u.y ;
-    const float3 position = make_float3( q0.f.x, q0.f.y, q0.f.z - sizeZ/2.f ); // P: point on axis at base of cylinder
+    const float       z1 = q1.f.x  ; 
+    const float       z2 = q1.f.y  ; 
+    const float  sizeZ = z2 - z1 ; 
+    const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
 
-    bool PCAP = flags & CYLINDER_ENDCAP_P ; 
-    bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+    //const unsigned flags = q1.u.y ;
+    //bool PCAP = flags & CYLINDER_ENDCAP_P ; 
+    //bool QCAP = flags & CYLINDER_ENDCAP_Q ;
+
+    bool PCAP = true ; 
+    bool QCAP = true ; 
+
 
     const float3 m = ray_origin - position ;
     const float3 n = ray_direction ; 

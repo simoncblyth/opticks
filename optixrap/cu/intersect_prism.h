@@ -13,7 +13,12 @@ void intersect_prism(const uint4& identity)
 
     for(int i = 0; i < nplane && t0 < t1 ; ++i ) 
     {
-        float4 plane = prismBuffer[i];
+        float4 plane = prismBuffer[i];    
+
+         // should be called plane buffer
+         // plus need to support multiple prisms and trapezoids ?
+         // need another buffer aux buffer with plane offset and count 
+
         float3 n = make_float3(plane);
         float  d = plane.w;
 
@@ -51,8 +56,15 @@ void intersect_prism(const uint4& identity)
         }
     }
 
+    // should always have both a t0 (ingoing-intersect) and a t1 (outgoing-intersect)
+    // as no matter where from the ray must intersect two planes...
+    //
+    // similar the slab method, when the t ordering is wrong that means plane intersects
+    // outside of the solid
+
     if(t0 > t1)
         return;
+
 
     if(rtPotentialIntersection( t0 ))
     {

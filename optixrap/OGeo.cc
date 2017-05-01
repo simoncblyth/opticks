@@ -482,7 +482,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;   
     assert(idBuf->getNumItems() == numITransforms );
 
-    assert( numPrim < 10 );  // expecting small number
+    //assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 
 
     unsigned analytic_version = pts->getAnalyticVersion();

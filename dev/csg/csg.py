@@ -54,7 +54,7 @@ class TreeBuilder(object):
                 break
 
         assert height > -1 
-        log.info("TreeBuilder nprim:%d required height:%d " % (nprim, height))
+        log.debug("TreeBuilder nprim:%d required height:%d " % (nprim, height))
         self.height = height
 
         if height == 0:
@@ -304,6 +304,8 @@ class CSG(CSG_):
         metapath = self.metapath(treedir)
         tranpath = self.tranpath(treedir)
 
+        #self.dump("saving...")
+
         log.debug("save to %s meta %r metapath %s tpath %s " % (nodepath, self.meta, metapath, tranpath))
         json.dump(self.meta,file(metapath,"w"))
 
@@ -372,9 +374,10 @@ class CSG(CSG_):
         return root
 
     @classmethod
-    def uniontree(cls, primitives):
+    def uniontree(cls, primitives, name):
         tb = TreeBuilder(primitives, operator="union")
         root = tb.root 
+        root.name = name
         root.analyse()
         return root
 
@@ -517,7 +520,8 @@ class CSG(CSG_):
         pass
         return n 
 
-    def dump(self):
+    def dump(self, msg="CSG.dump"):
+        log.info(msg + " name:%s" % self.name)
         self.Dump(self)
         self.analyse()
         log.info("\n%s" % self.txt)

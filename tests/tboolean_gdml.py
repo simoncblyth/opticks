@@ -53,21 +53,29 @@ if __name__ == '__main__':
 
     subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
 
+    log.info(" subtree %s nodes " % len(subtree) ) 
 
-    csgnodes = []
+    cns = []
+     
     for i, node in enumerate(subtree): 
 
         solid = node.lv.solid
+
+        log.info("[%2d] converting solid %r " % (i,solid.name))
+
         polyconfig = PolyConfig(node.lv.shortname)
 
-        csgnode = solid.as_ncsg()
+        cn = solid.as_ncsg()
+
+        has_name = cn.name is not None and len(cn.name) > 0
+        assert has_name, "\n"+str(solid)
 
         if i > 0: # skip first node transform which is placement of targetNode within its parent 
-            csgnode.transform = node.pv.transform
+            cn.transform = node.pv.transform
         pass 
-        csgnode.meta.update(polyconfig.meta )
-        csgnode.boundary = args.testobject
-        csgnodes.append(csgnode)
+        cn.meta.update(polyconfig.meta )
+        cn.boundary = args.testobject
+        cns.append(cn)
     pass
 
 
@@ -77,11 +85,9 @@ if __name__ == '__main__':
 
     objs = []
     objs.append(container)
-    objs.extend(csgnodes)
+    objs.extend(cns)
 
-    for obj in objs:
-        obj.dump()
-    pass
+    #for obj in objs: obj.dump()
 
     CSG.Serialize(objs, args.csgpath, outmeta=True )  
 

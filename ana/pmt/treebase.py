@@ -217,6 +217,22 @@ class Tree(object):
         return filter(lambda node:node.lv.name.startswith(pfx), cls.byindex.values()) 
 
     @classmethod
+    def filternodes_so(cls, pfx):
+        """
+        NB this only finds top level solids 
+        ::
+        
+            t.filternodes_so("gds0xc28d3f0")  # works
+            t.filternodes_so("gds_polycone0xc404f40")  # nope thats hidden in union
+
+        """
+        def filter_lv_solid(node):
+            return node.lv.solid is not None and node.lv.solid.name.startswith(pfx)  
+        pass
+        return filter(filter_lv_solid, cls.byindex.values()) 
+
+
+    @classmethod
     def findnode_lv(cls, lvn, idx=0):
         """
         TODO: use the idx within filternodes for short circuiting 

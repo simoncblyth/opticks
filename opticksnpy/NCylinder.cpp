@@ -76,8 +76,8 @@ nbbox ncylinder::bbox() const
 {
     nbbox bb = make_bbox();
 
-    bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + sizeZ/2.f);
-    bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - sizeZ/2.f);
+    bb.max = make_nvec3(center.x + radius, center.y + radius, z2 );
+    bb.min = make_nvec3(center.x - radius, center.y - radius, z1 );
     bb.side = bb.max - bb.min ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
@@ -92,8 +92,8 @@ float ncylinder::operator()(float x, float y, float z) const
     float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(center.x, center.y) ) - radius ;  // <- no z-dep
 
 
-    float qcap_z = center.z + sizeZ/2.f ; 
-    float pcap_z = center.z - sizeZ/2.f ; 
+    float qcap_z = z2 ; 
+    float pcap_z = z1 ; 
 
     float d_PQCAP = fmaxf( p.z - qcap_z, -(p.z - pcap_z) );
 
@@ -171,8 +171,8 @@ void ncylinder::pdump(const char* msg, int verbosity)
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
               << " radius " << radius 
-              << " sizeZ " << sizeZ
-              << " flags " << flags
+              << " z1 " << z1
+              << " z2 " << z2
               << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
