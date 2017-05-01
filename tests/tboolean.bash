@@ -383,6 +383,12 @@ im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 obj = CSG("trapezoid")
 obj.boundary = args.testobject
 obj.planes = CSG.CubePlanes(200.)
+
+bbmin = [-201,-201,-201,0]
+bbmax = [ 201, 201, 201,0]  # unlike other solids, need to manually set bbox as stored as set of planes in NConvexPolyhedron 
+obj.param2 = bbmin
+obj.param3 = bbmax
+
 obj.meta.update(im)
 
 obj.dump()

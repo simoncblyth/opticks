@@ -280,9 +280,10 @@ class CSG(CSG_):
     def CubePlanes(cls, hsize=0.5):
         planes = np.zeros([6,4], dtype=np.float32)  # unit cube for testing
         for i in range(3):
-            pl = np.array([int(i==0),int(i==1),int(i==2),hsize], dtype=np.float32)  
-            planes[2*i+0] = pl
-            planes[2*i+1] = -pl
+            plp = np.array([int(i==0),int(i==1),int(i==2),hsize], dtype=np.float32)  
+            pln = np.array([-int(i==0),-int(i==1),-int(i==2),hsize], dtype=np.float32)  
+            planes[2*i+0] = plp
+            planes[2*i+1] = pln
         pass
         return planes
 
