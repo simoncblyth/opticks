@@ -415,6 +415,7 @@ tboolean-trapezoid--(){ cat << EOP
 
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.polyconfig import PolyConfig
+from opticks.dev.csg.prism import make_trapezoid  
 from opticks.dev.csg.csg import CSG  
 
 args = opticks_main()
@@ -427,12 +428,21 @@ im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
 obj = CSG("trapezoid")
 obj.boundary = args.testobject
-obj.planes = CSG.CubePlanes(200.)
 
-bbmin = [-201,-201,-201,0]
-bbmax = [ 201, 201, 201,0]  
-obj.param2 = bbmin
-obj.param3 = bbmax
+cube = False
+
+if cube:
+    planes = CSG.CubePlanes(200.)
+    bbox = [[-201,-201,-201,0],[ 201, 201, 201,0]] 
+else:
+    #planes, verts, bbox = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    planes, verts, bbox = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+pass
+
+obj.planes = planes
+obj.param2[:3] = bbox[0]
+obj.param3[:3] = bbox[1]
+
 
 #
 # unlike other solids, need to manually set bbox for solids stored as a 
