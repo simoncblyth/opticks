@@ -111,6 +111,7 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
     glm::mat4 isirit = d.isirit ; 
     glm::mat4 i_trs = glm::inverse( trs ) ; 
 
+
     float diff = compDiff(isirit, i_trs );
     float diff2 = compDiff2(isirit, i_trs, false );
     float diffFractional = compDiff2(isirit, i_trs, true );
@@ -127,9 +128,30 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
                  << std::endl << gpresent("isirit", isirit)
                  << std::endl << gpresent("i_trs ",i_trs)
                  << std::endl ; 
+
+        for(unsigned i=0 ; i < 4 ; i++)
+        {
+            for(unsigned j=0 ; j < 4 ; j++)
+            {
+
+                float a = isirit[i][j] ;
+                float b = i_trs[i][j] ;
+
+                std::cout << "[" 
+                          << std::setw(10) << a
+                          << ":"
+                          << std::setw(10) << b
+                          << ":"
+                          << std::setw(10) << a-b
+                          << ":"
+                          << std::setw(10) << a/b
+                          << "]"
+                           ;
+            }
+            std::cout << std::endl; 
+        }
     }
     assert(match);
-
     return isirit ; 
 }
 
@@ -160,7 +182,9 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
         a = a_[i][j] ; 
         b = b_[i][j] ; 
         d = fabsf(a - b);
+
         if(fractional) d /= (a+b)/2.f ; 
+
         if( d > maxdiff ) maxdiff = d ; 
     }
     }
@@ -234,8 +258,6 @@ nmat4pair* nmat4pair::product(const std::vector<nmat4pair*>& pairs)
 
     for(unsigned i=0,j=npairs-1 ; i < npairs ; i++,j-- )
     {
-        std::cout << " i " << i << " j " << j << std::endl ; 
- 
         const nmat4pair* ii = pairs[i] ; 
         const nmat4pair* jj = pairs[j] ; 
 
@@ -287,8 +309,6 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples)
 
     for(unsigned i=0,j=ntriples-1 ; i < ntriples ; i++,j-- )
     {
-        std::cout << " i " << i << " j " << j << std::endl ; 
- 
         const nmat4triple* ii = triples[i] ; 
         const nmat4triple* jj = triples[j] ; 
 

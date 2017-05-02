@@ -5,7 +5,6 @@
 #include "BStr.hh"
 #include "BFile.hh"
 
-#include "OpticksCSG.h"
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -88,13 +87,6 @@ NCSG::NCSG(nnode* root )
 }
 
 
-
-
-
-
-
-
-
 void NCSG::loadMetadata()
 {
     std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
@@ -110,14 +102,27 @@ void NCSG::loadMetadata()
     m_container = container ; 
     m_containerscale = containerscale ;
 
-    if(verbosity > -1 && verbosity != m_verbosity) 
+    if(verbosity > -1) 
     {
-        LOG(fatal) << "NCSG::loadMetadata changing verbosity via metadata " 
-                   << " treedir " << m_treedir
-                   << " old " << m_verbosity 
-                   << " new " << verbosity 
-                   ; 
-        m_verbosity = verbosity ; 
+
+        if(verbosity > m_verbosity)
+        {
+            LOG(debug) << "NCSG::loadMetadata increasing verbosity via metadata " 
+                       << " treedir " << m_treedir
+                       << " old " << m_verbosity 
+                       << " new " << verbosity 
+                       ; 
+            m_verbosity = verbosity ; 
+        }
+        else
+        {
+            LOG(debug) << "NCSG::loadMetadata IGNORING REQUEST TO DECREASE verbosity via metadata " 
+                       << " treedir " << m_treedir
+                       << " current verbosity " << m_verbosity 
+                       << " request via metadata: " << verbosity 
+                       ; 
+ 
+        }
     }
 }
 
@@ -160,6 +165,7 @@ void NCSG::loadTransforms()
 
               
     assert(NTRAN == 2 || NTRAN == 3);
+
     NPY<float>* transforms = NTRAN == 2 ? NPY<float>::make_paired_transforms(src) : NPY<float>::make_triple_transforms(src) ;
     assert(transforms->hasShape(ni,NTRAN,4,4));
 
@@ -167,6 +173,12 @@ void NCSG::loadTransforms()
     m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;  // for collecting unique gtransforms
 
     m_num_transforms  = ni  ;  
+
+    LOG(trace) << "NCSG::loadTransforms"
+              << " tranpath " << tranpath 
+              << " num_transforms " << ni
+              ;
+
 }
 
 void NCSG::loadPlanes()
@@ -193,10 +205,14 @@ void NCSG::loadPlanes()
 
 void NCSG::load()
 {
+    LOG(info) << "NCSG::load " << m_treedir  ; 
+
     loadMetadata();
     loadNodes();
+    LOG(debug) << "NCSG::load MIDDLE " ; 
     loadTransforms();
     loadPlanes();
+    LOG(debug) << "NCSG::load DONE " ; 
 }
 
 
@@ -320,6 +336,9 @@ nquad NCSG::getQuad(unsigned idx, unsigned j)
 
 void NCSG::import()
 {
+    if(m_verbosity > 1)
+    LOG(info) << "NCSG::import START" ; 
+
     assert(m_nodes);
     if(m_verbosity > 0)
     LOG(info) << "NCSG::import"
@@ -330,8 +349,11 @@ void NCSG::import()
 
     m_root = import_r(0, NULL) ; 
 
-    check();
+    if(m_verbosity > 5)
+    check();  // recursive transform dumping 
 
+    if(m_verbosity > 1)
+    LOG(info) << "NCSG::import DONE " ; 
 }
 
 
@@ -379,122 +401,121 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     int transform_idx = getTransformIndex(idx) ; 
 
-    nquad p0 = getQuad(idx, 0);
-    nquad p1 = getQuad(idx, 1);
-    nquad p2 = getQuad(idx, 2);
-    nquad p3 = getQuad(idx, 3);
-
-    if(m_verbosity > 2)
-    LOG(info) << "NCSG::import_r " 
-              << " idx " << idx 
-              << " typecode " << typecode 
-              << " transform_idx " << transform_idx 
-              << " csgname " << CSGName(typecode) 
-              << " p0.f.x " << p0.f.x
-              << " p0.f.y " << p0.f.y
-              << " p0.f.z " << p0.f.z
-              << " p0.f.w " << p0.f.w
-              << " p0.u.w " << p0.u.w
-              << " p1.f.x " << p1.f.x
-              << " p1.f.y " << p1.f.y
-              << " p1.f.z " << p1.f.z
-              << " p1.f.w " << p1.f.w
-              << " p2.u.x " << p2.u.x
-              ;
-
     nnode* node = NULL ;   
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
     {
-        switch(typecode)
-        {
-           case CSG_UNION:        node = new nunion(make_union(NULL, NULL )) ; break ; 
-           case CSG_INTERSECTION: node = new nintersection(make_intersection(NULL, NULL )) ; break ; 
-           case CSG_DIFFERENCE:   node = new ndifference(make_difference(NULL, NULL ))   ; break ; 
-           default:               node = NULL                                 ; break ; 
-        }
-        assert(node);
-
+        node = import_operator( idx, typecode ) ; 
         node->parent = parent ; 
 
         node->transform = import_transform_triple( transform_idx ) ;
 
-        if(m_verbosity > 2)
-        {
-            std::cout << "NCSG::import_r(oper)" 
-                      << " idx " << idx
-                      << " csgname " << CSGName(typecode) 
-                      << " transform_idx " << transform_idx
-                      << std::endl
-                      ;
-
-            if(node->transform) std::cout << " transform " << *node->transform ;
-            else                std::cout << " no-transform " ; 
-            std::cout << std::endl ; 
-        }
-
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
 
-        // recursive calls after "visit" as full ancestry needed for transform collection
-        // once reach the primitives
+        // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }
     else 
     {
-        switch(typecode)
-        {
-           case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ; 
-           case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
-           case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ; 
-           case CSG_BOX3:     node = new nbox(make_box3(p0))                ; break ; 
-           case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
-           case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
-           case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
-           case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
-           case CSG_TRAPEZOID:  
-           case CSG_CONVEXPOLYHEDRON:  
-                              node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ; 
-           default:           node = NULL ; break ; 
-        }       
+        node = import_primitive( idx, typecode ); 
+        node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
 
-        if(!node) LOG(fatal) << "UNKNOWN CSG typecode: " << typecode ; 
-        assert(node && "unhandled CSG type"); 
+        node->transform = import_transform_triple( transform_idx ) ;
 
-        node->parent = parent ; 
-
-        import_transforms(node, transform_idx);
-
-        if(CSGHasPlanes(typecode)) import_planes( node );
-
+        nmat4triple* gtransform = node->global_transform();   
+        unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
+        node->gtransform = gtransform ; 
+        node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
     }
-    if(node == NULL) LOG(fatal) << "NCSG::import_r"
-                                << " TYPECODE NOT IMPLEMENTED " 
-                                << " idx " << idx 
-                                << " typecode " << typecode
-                                << " csgname " << CSGName(typecode)
-                                ;
     assert(node); 
-
     node->idx = idx ; 
 
     return node ; 
 } 
 
 
-void NCSG::import_transforms(nnode* node, int transform_idx)
+nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 {
-     // structure of recursive call dictated by need for 
-     // the primitive to know parent and its transform here...
-     // so the ancestor transforms can be multiplied straightaway 
-     // without some 2nd pass
+    if(m_verbosity > 2)
+    LOG(info) << "NCSG::import_operator " 
+              << " idx " << idx 
+              << " typecode " << typecode 
+              << " csgname " << CSGName(typecode) 
+              ;
 
-     node->transform = import_transform_triple( transform_idx ) ;
-
-     nmat4triple* gtransform = node->global_transform();
-     unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
-     node->gtransform = gtransform ; 
-     node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+    nnode* node = NULL ;   
+    switch(typecode)
+    {
+       case CSG_UNION:        node = new nunion(make_union(NULL, NULL )) ; break ; 
+       case CSG_INTERSECTION: node = new nintersection(make_intersection(NULL, NULL )) ; break ; 
+       case CSG_DIFFERENCE:   node = new ndifference(make_difference(NULL, NULL ))   ; break ; 
+       default:               node = NULL                                 ; break ; 
+    }
+    assert(node);
+    return node ; 
 }
+
+nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
+{
+    nquad p0 = getQuad(idx, 0);
+    nquad p1 = getQuad(idx, 1);
+    nquad p2 = getQuad(idx, 2);
+    nquad p3 = getQuad(idx, 3);
+
+    if(m_verbosity > 2)
+    LOG(info) << "NCSG::import_primitive  " 
+              << " idx " << idx 
+              << " typecode " << typecode 
+              << " csgname " << CSGName(typecode) 
+              ;
+
+    nnode* node = NULL ;   
+    switch(typecode)
+    {
+       case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ; 
+       case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
+       case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ; 
+       case CSG_BOX3:     node = new nbox(make_box3(p0))                ; break ; 
+       case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
+       case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
+       case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
+       case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
+       case CSG_TRAPEZOID:  
+       case CSG_CONVEXPOLYHEDRON:  
+                          node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ; 
+       default:           node = NULL ; break ; 
+    }       
+
+
+    if(node == NULL) LOG(fatal) << "NCSG::import_primitive"
+                                << " TYPECODE NOT IMPLEMENTED " 
+                                << " idx " << idx 
+                                << " typecode " << typecode
+                                << " csgname " << CSGName(typecode)
+                                ;
+
+    assert(node); 
+
+    if(CSGHasPlanes(typecode)) import_planes( node );
+
+    if(m_verbosity > 3)
+    LOG(info) << "NCSG::import_primitive  " 
+              << " idx " << idx 
+              << " typecode " << typecode 
+              << " csgname " << CSGName(typecode) 
+              << " DONE " 
+              ;
+
+    
+
+    return node ; 
+}
+
+
+
+
+
+
 
 void NCSG::import_planes(nnode* node)
 {
@@ -556,7 +577,6 @@ void NCSG::check()
 {
     check_r( m_root );
 
-
     unsigned ni =  m_gtransforms ? m_gtransforms->getNumItems() : 0  ;
 
     if(m_verbosity > 1)
@@ -566,7 +586,6 @@ void NCSG::check()
 
     for(unsigned i=0 ; i < ni ; i++)
     {
-        //const nmat4pair* u_gtran = m_gtransforms->getMat4PairPtr(i);
         const nmat4triple* u_gtran = m_gtransforms->getMat4TriplePtr(i);
         std::cout 
                   << "[" << std::setw(2) << i << "] " 
@@ -677,7 +696,6 @@ std::string NCSG::desc()
 int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
 {
     assert(trees.size() == 0);
-    LOG(info) << basedir ; 
 
     std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
     bool exists = BFile::ExistsFile(txtpath.c_str() ); 
@@ -694,6 +712,13 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
     unsigned nbnd = bnd.getNumLines();
 
+    LOG(info) << "NCSG::Deserialize"
+              << " VERBOSITY " << verbosity 
+              << " basedir " << basedir 
+              << " txtpath " << txtpath 
+              << " nbnd " << nbnd 
+              ;
+
     nbbox container_bb ; 
 
     for(unsigned j=0 ; j < nbnd ; j++)
@@ -703,7 +728,7 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
         NCSG* tree = new NCSG(treedir.c_str());
         tree->setIndex(i);
-        tree->setVerbosity(verbosity);
+        tree->setVerbosity( verbosity );
         tree->setBoundary( bnd.getLine(i) );
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
@@ -723,16 +748,15 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
             container_bb.include(root_bb); 
         }
 
-        LOG(info) << "NCSG::Deserialize"
+        LOG(debug) << "NCSG::Deserialize"
                   << " i " << i 
                   << " root_bb " << root_bb.desc()
                   << " container_bb " << container_bb.desc()
                   ;
 
-
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
-        LOG(info) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
+        LOG(debug) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
 
         trees.push_back(tree);  
     }

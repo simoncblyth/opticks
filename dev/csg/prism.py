@@ -353,7 +353,6 @@ def make_icosahedron(scale=500., dtype=np.float32):
     X2 = C2*CZ
     Y2 = S2*CZ
 
-
     SC *= scale
     X2 *= scale
     Y2 *= scale
@@ -361,7 +360,6 @@ def make_icosahedron(scale=500., dtype=np.float32):
     X1 *= scale
     Y1 *= scale
     CZ *= scale
-
 
     vec3_ = lambda x,y,z:np.array([x,y,z], dtype=dtype) 
 

@@ -50,6 +50,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.dev.csg.csg import CSG 
 from opticks.dev.csg.glm import make_trs
+from opticks.dev.csg.prism import make_trapezoid
 
 import numpy as np
 import lxml.etree as ET
@@ -398,20 +399,15 @@ class Trapezoid(Primitive):
     The general form is ConvexPolyhedron, modelled by a list of planes 
     defining half spaces which come together to define the polyhedron.
     
-    Plane counts:
-
     * 4:tetrahedron
     * 5:triangular prism
     * 6:trapezoid, cube, box
 
-    Questions: 
+    Q&A: 
 
-    * where to transition from specific Trapezoid to generic ConvexPolyhedron ?
-    * where to extract the bbox, thats easier before conversion to generic
-    * need a planeBuffer and need planeOffsets and planeCounts stored in the part buffer
-      (analogous to the handling of transforms)
-
-
+    * where to transition from specific Trapezoid to generic ConvexPolyhedron ? Did this immediately with python input. 
+    * where to extract the bbox, thats easier before conversion to generic ? Again immediately in python.
+    
     * :google:`convex polyhedron bounding box`
 
     Enumerating the vertices of a convex polyhedron defined by its planes
@@ -420,20 +416,21 @@ class Trapezoid(Primitive):
 
     * http://cgm.cs.mcgill.ca/~avis/doc/avis/AF92b.pdf
 
-
     ::
 
         In [1]: run gdml.py 
 
-        In [2]: trs = gdml.findall_("solids//trd")
+        In [2]: trs = g.findall_("solids//trd")
 
         In [3]: len(trs)
         Out[3]: 2
 
-        In [3]: trs
-        Out[3]: 
-        [Trapezoid SstTopRadiusRibBase0xc271078 mm rmin 0.0 rmax 0.0  x 0.0 y 0.0 z 2228.5  ,
-         Trapezoid SstInnVerRibCut0xbf31118 mm rmin 0.0 rmax 0.0  x 0.0 y 0.0 z 50.02  ]
+        In [13]: trs = g.findall_("solids//trd")
+
+        In [14]: trs
+        Out[14]: 
+        [Trapezoid name:SstTopRadiusRibBase0xc271078 z:2228.5 x1:160.0 y1:20.0 x2:691.02 y2:20.0  ,
+         Trapezoid name:SstInnVerRibCut0xbf31118 z:50.02 x1:100.0 y1:27.0 x2:237.2 y2:27.0  ]
 
         In [4]: print trs[0]
         <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstTopRadiusRibBase0xc271078" x1="160" x2="691.02" y1="20" y2="20" z="2228.5"/>
@@ -442,6 +439,41 @@ class Trapezoid(Primitive):
         In [5]: print trs[1]
         <trd xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" lunit="mm" name="SstInnVerRibCut0xbf31118" x1="100" x2="237.2" y1="27" y2="27" z="50.02"/>
 
+
+    Tips for finding LV with a solid... use filternodes_so to get some nodes
+    then can use parent links to get idea of local tree around the solid.
+
+    ::
+
+        In [17]: sivr = t.filternodes_so("SstInnVerRib")
+
+        In [18]: sivr[0]
+        Out[18]: 
+        Node 4473 : dig a60e pig 8be9 depth 11 nchild 0  
+        pv:PhysVol /dd/Geometry/AD/lvOIL#pvSstInnVerRibs#SstInnVerRibs#SstInnVerRibRot0xbf1abc0
+         Position mm 2428.0 0.0 -40.0  None 
+        lv:Volume /dd/Geometry/AdDetails/lvSstInnVerRibBase0xbf31748 /dd/Materials/StainlessSteel0xc2adc00 SstInnVerRibBase0xbf30b50
+           Subtraction SstInnVerRibBase0xbf30b50  
+             l:Box SstInnVerRibBox0xbf310d8 mm rmin 0.0 rmax 0.0  x 120.0 y 25.0 z 4875.0  
+             r:Trapezoid name:SstInnVerRibCut0xbf31118 z:50.02 x1:100.0 y1:27.0 x2:237.2 y2:27.0  
+           Material /dd/Materials/StainlessSteel0xc2adc00 solid : Position mm 2428.0 0.0 -40.0  
+
+        In [26]: print list(map(lambda n:n.index, sivr))
+        [4473, 4474, 4475, 4476, 4477, 4478, 4479, 4480, 6133, 6134, 6135, 6136, 6137, 6138, 6139, 6140]
+
+
+        In [28]: sivr[0].parent
+        Out[28]: 
+        Node 3155 : dig 8be9 pig a856 depth 10 nchild 520  
+        pv:PhysVol /dd/Geometry/AD/lvSST#pvOIL0xc241510
+         Position mm 0.0 0.0 7.5  Rotation deg 0.0 0.0 -180.0  
+        lv:Volume /dd/Geometry/AD/lvOIL0xbf5e0b8 /dd/Materials/MineralOil0xbf5c830 oil0xbf5ed48
+           Tube oil0xbf5ed48 mm rmin 0.0 rmax 2488.0  x 0.0 y 0.0 z 4955.0  
+           Material /dd/Materials/MineralOil0xbf5c830 solid
+           PhysVol /dd/Geometry/AD/lvOIL#pvOAV0xbf8f638
+
+
+
     """
     x1 = property(lambda self:self.att('x1', 0, typ=float))
     x2 = property(lambda self:self.att('x2', 0, typ=float))
@@ -449,42 +481,16 @@ class Trapezoid(Primitive):
     y2 = property(lambda self:self.att('y2', 0, typ=float))
     z = property(lambda self:self.att('z', 0, typ=float))
 
-
-    def quads(self):
-        """
-
-        ::       _______.+y2/2       
-             -x2/2     /|
-               +------+ |        z = z2
-               |      | | 
-               |      | /+y1/2
-               |      |/
-               +------+           z = z1
-             -x1/2  +x1/2      
-
-        """ 
-        z = self.z 
-        z1 = -z
-        z2 = +z
-        x1 = self.x1 
-        x2 = self.x2
-        y1 = self.y1 
-        y2 = self.y2
-
-        
-
-
     def __repr__(self):
         return "%s name:%s z:%s x1:%s y1:%s x2:%s y2:%s  " % (self.typ, self.name, self.z, self.x1, self.y1, self.x2, self.y2 )
 
     def as_ncsg(self):
         assert self.lunit == 'mm' 
         cn = CSG("trapezoid", name=self.name)
-        cn.param[0] = self.x1
-        cn.param[1] = self.y1
-        cn.param[2] = self.x2
-        cn.param[3] = self.y2
-        cn.param1[0] = self.z
+        planes, verts, bbox = make_trapezoid(z=self.z, x1=self.x1, y1=self.y1, x2=self.x2, y2=self.y2 )
+        cn.planes = planes
+        cn.param2[:3] = bbox[0]
+        cn.param3[:3] = bbox[1]
         return cn
 
 

@@ -5,6 +5,7 @@
 #include <map>
 
 #include "NGLM.hpp"
+#include "OpticksCSG.h"
 
 template <typename T> class NPY ; 
 #include "NPY_API_EXPORT.hh"
@@ -115,7 +116,8 @@ class NPY_API NCSG {
     private:
         void import();
         nnode* import_r(unsigned idx, nnode* parent=NULL);
-        void import_transforms(nnode* node, int transform_idx);
+        nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
+        nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
         void import_planes(nnode* node);
     private:
         nmat4pair*   import_transform_pair(unsigned itra);

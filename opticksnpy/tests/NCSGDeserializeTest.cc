@@ -7,6 +7,7 @@ Tests directories of multiple trees::
 
 #include <iostream>
 
+#include "SSys.hh"
 #include "BStr.hh"
 
 #include "NPY.hpp"
@@ -20,9 +21,8 @@ Tests directories of multiple trees::
 
 
  
-void test_Deserialize(const char* basedir)
+void test_Deserialize(const char* basedir, int verbosity)
 {
-    int verbosity = 1 ; 
     std::vector<NCSG*> trees ; 
     int rc = NCSG::Deserialize(basedir, trees, verbosity );
     assert(rc == 0 );
@@ -33,9 +33,13 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ;  
 
-    LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
+    int verbosity = SSys::getenvint("VERBOSITY", 0 );
+    LOG(info) << " argc " << argc 
+              << " argv[0] " << argv[0] 
+              << " VERBOSITY " << verbosity 
+              ;  
 
-    test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py" );
+    test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py", verbosity);
 
     return 0 ; 
 }

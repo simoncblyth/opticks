@@ -1020,14 +1020,30 @@ EOP
 
 
 
-tboolean-gds(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+
+tboolean-0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
+tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
+
+tboolean-gds(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-gds-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }
 
-tboolean-oav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+tboolean-oav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-oav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvOAV0x ; }
 
-tboolean-pmt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean--  ; }
+tboolean-iav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-iav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvIAV0x ; }
+
+
+tboolean-pmt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-pmt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PMT/lvPmtHemi0x ; }
+
+tboolean-sstt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-sstt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstTopRadiusRib0x ; } 
+# contains a trapezoid as part of, thats the real skinny one 
+
+tboolean-sstt2(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-sstt2-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstInnVerRibBase0x ; }
 
 
 tboolean-gdml-()
@@ -1043,7 +1059,6 @@ tboolean-gdml-()
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-dir)/tboolean_gdml.py  ; }
 tboolean-gdml-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-gdml-/1 ; }
-tboolean-gdml-deserialize(){ NCSGDeserializeTest $TMP/tboolean-gdml- ; }
 tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
 
 

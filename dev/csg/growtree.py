@@ -3,6 +3,12 @@
 FAILED APPEMPT TO GROW BALANCED TREES, 
 INSTEAD ADOPTED SIMPLER CSG.uniontree approach
 which builds complete tree and then prunes it 
+
+
+If ever need to get this workin sometime...  perhaps:
+ 
+* http://www.geeksforgeeks.org/linked-complete-binary-tree-its-creation/
+
 """
 import logging 
 log = logging.getLogger(__name__)
