@@ -314,7 +314,7 @@ kwa.update(im)
 #kwa.update(tr)
 
 box_param = [0,0,0,200]
-box3_param = [100,200,200,0] 
+box3_param = [300,300,200,0] 
 
 box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)", **kwa )
 box.dump()
@@ -363,10 +363,6 @@ EOP
 
 
 
-
-
-
-
 tboolean-prism(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- ; } 
 tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
@@ -407,18 +403,9 @@ obj1.dump()
 CSG.Serialize([container, obj1], "$TMP/$FUNCNAME", outmeta=True )
 
 
-"""
-FIX: rays at normal incidence are reflecting beyond the edge of the prism 
-
-"""
-
 EOP
 
-
 }
-
-
-
 
 
 

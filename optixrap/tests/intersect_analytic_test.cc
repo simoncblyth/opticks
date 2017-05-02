@@ -1,4 +1,5 @@
 #include "OptiXTest.hh"
+#include "OGeo.hh"
 
 #include "NPY.hpp"
 
@@ -22,6 +23,24 @@ int main( int argc, char** argv )
     // optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width, height );
     optix::Buffer buffer = context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, width*height );
     context["output_buffer"]->set(buffer);
+
+
+    NPY<float>* planBuf = NPY<float>::make(6, 4) ;  
+    planBuf->zero();
+    float hsize = 200.f ;
+    unsigned j = 0 ; 
+ 
+    planBuf->setQuad(0,j,  1.f, 0.f, 0.f,hsize );
+    planBuf->setQuad(1,j, -1.f, 0.f, 0.f,hsize );
+    planBuf->setQuad(2,j,  0.f, 1.f, 0.f,hsize );
+    planBuf->setQuad(3,j,  0.f,-1.f, 0.f,hsize );
+    planBuf->setQuad(4,j,  0.f, 0.f, 1.f,hsize );
+    planBuf->setQuad(5,j,  0.f, 0.f,-1.f,hsize );
+
+
+    optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer"); 
+    context["planBuffer"]->setBuffer(planBuffer);
+
 
     context->validate();
     context->compile();

@@ -33,6 +33,7 @@ void csg_bounds_convexpolyhedron(const unsigned& planeOffset, const Part& pt, op
 
 
 
+
 static __device__
 bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -40,25 +41,57 @@ bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt,
     unsigned planeNum = pt.planeNum() ; 
     unsigned planeBase = planeIdx-1+planeOffset ;
 
-    //rtPrintf("## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
 
-    float t0 = -RT_DEFAULT_MAX ; 
-    float t1 =  RT_DEFAULT_MAX ; 
+#ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
+    const float3& o = ray_origin ;
+    const float3& d = ray_direction ;
+    rtPrintf("\n## csg_intersect_convexpolyhedron planeIdx %u planeNum %u planeOffset %u planeBase %u  \n", planeIdx, planeNum, planeOffset, planeBase );
+    rtPrintf("## csg_intersect_convexpolyhedron o: %10.3f %10.3f %10.3f  d: %10.3f %10.3f %10.3f \n", o.x, o.y, o.z, d.x, d.y, d.z );
+#endif
+
+    float t0 = -CUDART_INF_F ; 
+    float t1 =  CUDART_INF_F ; 
 
     float3 t0_normal = make_float3(0.f);
     float3 t1_normal = make_float3(0.f);
 
-    for(unsigned i=0 ; i < planeNum && t0 < t1  ; i++)
+    //for(unsigned i=0 ; i < planeNum && t0 < t1  ; i++)
+    for(unsigned i=0 ; i < planeNum ; i++)
     {
         float4 plane = planBuffer[planeBase+i];  
         float3 n = make_float3(plane);
-        float d = plane.w ;
-        float denom = dot(n, ray_direction);
-        if(denom == 0.f) continue ;   
+        float dplane = plane.w ;
 
-        float t_cand = (d - dot(n, ray_origin))/denom;
-  
-        if( denom < 0.f)  // entering 
+         // RTCD p199
+
+        float nd = dot(n, ray_direction); // -ve: entering, +ve exiting halfspace  
+        float no = dot(n, ray_origin ) ;  //
+        float dist = no - dplane ;        // sign determines if ray origin is inside/outside halfspace in parallel case
+        float t_cand = -dist/nd ;
+
+        bool parallel_inside = nd == 0.f && dist < 0.f ;
+        bool parallel_outside = nd == 0.f && dist > 0.f ;
+
+#ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
+        rtPrintf("## csg_intersect_convexpolyhedron i: %2d n: %10.3f %10.3f %10.3f dplane:%10.3f nd:%10.3f no:%10.3f  dist:%10.3f parallel_inside:%d parallel_outside:%d  t_cand: %10.3f \n", i,
+          n.x, n.y, n.z, dplane, nd, no, dist, parallel_inside, parallel_outside,   t_cand );
+#endif
+
+        if(parallel_inside) continue ;  
+        if(parallel_outside) return false ;  // <-- without this early exit, this still works due to infinity handling 
+
+        //
+        //    ray parallel to plane and inside halfspace 
+        //        -> continue to next plane
+        //
+        //    NB ray parallel to plane and outside halfspace 
+        //         ->  t_cand = -inf 
+        //                 nd = 0.f 
+        //                t1 -> -inf  
+        //          hence t0 > t1 and get no intersect 
+        //
+
+        if( nd < 0.f)  // entering 
         {
             if(t_cand > t0)
             {
@@ -75,6 +108,11 @@ bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt,
             }
         }
     }
+
+#ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
+    rtPrintf("## csg_intersect_convexpolyhedron t0:%10.3f t1: %10.3f \n", t0, t1 );
+#endif
+
 
     bool valid_intersect = t0 < t1 ; 
     if(valid_intersect)
@@ -95,6 +133,38 @@ bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt,
         }
     }
     return valid_intersect ;
+}
+
+
+static __device__
+void csg_intersect_convexpolyhedron_test(unsigned long long photon_id)
+{
+    unsigned planeOffset = 0 ; 
+    Part pt ; 
+    pt.setPlaneIdx(1) ; 
+    pt.setPlaneNum(6) ; 
+
+    float t_min = 0.f ; 
+    float3 ray_direction = make_float3(    0.f, 0.f, -1.f );
+    float3 ray_origin    = make_float3(    0.f, 0.f, 500.f ); // off the side of the box
+
+    for(unsigned i=0 ; i < 2 ; i++)
+    {
+        ray_origin.x = i == 0 ? 0.f : 300.f ;    //   mid-cube or off the side
+        bool expect_has_isect = i == 0 ; 
+
+        float4 isect = make_float4(0.f,0.f,0.f,0.f);
+        bool has_isect = csg_intersect_convexpolyhedron(planeOffset, pt, t_min , isect, ray_origin, ray_direction );
+
+        float t = isect.w ;  
+        float3 p = ray_origin + t*ray_direction ; 
+
+        rtPrintf("## csg_intersect_convexpolyhedron_test pid:%llu i:%u has_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
+                     photon_id, i, has_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+
+        if(has_isect != expect_has_isect) rtPrintf("## csg_intersect_convexpolyhedron_test FAILURE \n"); 
+    }
+
 }
 
 

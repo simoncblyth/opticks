@@ -17,6 +17,9 @@ struct Part
     __device__ unsigned planeIdx()      const { return q0.u.x ; }  // 1-based, 0 meaning None
     __device__ unsigned planeNum()      const { return q0.u.y ; } 
 
+    __device__ void setPlaneIdx(unsigned idx){  q0.u.x = idx ; }
+    __device__ void setPlaneNum(unsigned num){  q0.u.y = num ; }
+
 
     //__device__ unsigned index()   const {      return q1.u.y ; }  //
     __device__ unsigned index()     const {      return q1.u.w ; }  //

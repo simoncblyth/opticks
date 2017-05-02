@@ -783,11 +783,18 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 template<typename T>
 optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name)
 {
+   return CreateInputUserBuffer(m_context, src, elementSize, name);
+}
+
+
+template<typename T>
+optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name)
+{
     unsigned numBytes = src->getNumBytes() ;
     assert( numBytes % elementSize == 0 );
     unsigned size = numBytes/elementSize ; 
 
-    LOG(info) << "OGeo::createInputUserBuffer"
+    LOG(info) << "OGeo::CreateInputUserBuffer"
               << " name " << name
               << " src shape " << src->getShapeString()
               << " numBytes " << numBytes
@@ -795,7 +802,7 @@ optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, con
               << " size " << size 
               ;
 
-    optix::Buffer buffer = m_context->createBuffer( RT_BUFFER_INPUT );
+    optix::Buffer buffer = ctx->createBuffer( RT_BUFFER_INPUT );
 
     buffer->setFormat( RT_FORMAT_USER );
     buffer->setElementSize(elementSize);
@@ -806,6 +813,11 @@ optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, con
 
     return buffer ; 
 }
+
+
+template
+optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name) ;
+
 
 
 
