@@ -300,9 +300,6 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
 
     """ 
     v = np.zeros( (8,3), dtype=dtype)   # verts
-    p = np.zeros( (6,4), dtype=dtype)   # planes
-    b = np.zeros( (2,3), dtype=dtype )  # bbox
-
                                     # ZYX
     v[0] = [ -x1/2., -y1/2. , -z ]  # 000
     v[1] = [  x1/2., -y1/2. , -z ]  # 001 
@@ -314,6 +311,7 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     v[6] = [ -x2/2.,  y2/2. ,  z ]  # 110
     v[7] = [  x2/2.,  y2/2. ,  z ]  # 111
 
+    p = np.zeros( (6,4), dtype=dtype)   # planes
     p[0] = make_plane3( v[3], v[7], v[5] ) # +X  
     p[1] = make_plane3( v[0], v[4], v[6] ) # -X
     p[2] = make_plane3( v[2], v[6], v[7] ) # +Y
@@ -321,6 +319,96 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     p[4] = make_plane3( v[5], v[7], v[6] ) # +Z
     p[5] = make_plane3( v[3], v[1], v[0] ) # -Z
 
+    b = np.zeros( (2,3), dtype=dtype )  # bbox
+    for i in range(3):
+        b[0,i] = np.min(v[:,i])
+        b[1,i] = np.max(v[:,i])
+    pass
+    return p, v, b
+
+
+
+def make_icosahedron(scale=500., dtype=np.float32):
+    """
+    dtype = np.float32
+
+    * 20 faces (triangular)
+    * 12 verts
+    * 30 edges
+
+    Translation of npy-/NTrianglesNPY::icosahedron()
+
+    """
+    CZ = 2./np.sqrt(5)
+    SZ = 1./np.sqrt(5)
+
+    C1 = np.cos( np.pi*18./180. )
+    S1 = np.sin( np.pi*18./180. )
+    C2 = np.cos( np.pi*54./180. )
+    S2 = np.sin( np.pi*54./180. )
+
+    SC = 1.
+    X1 = C1*CZ
+    Y1 = S1*CZ
+    X2 = C2*CZ
+    Y2 = S2*CZ
+
+
+    SC *= scale
+    X2 *= scale
+    Y2 *= scale
+    SZ *= scale
+    X1 *= scale
+    Y1 *= scale
+    CZ *= scale
+
+
+    vec3_ = lambda x,y,z:np.array([x,y,z], dtype=dtype) 
+
+    Ip0 = vec3_(0,0,SC) 
+    Ip1 = vec3_(-X2,-Y2,SZ) 
+    Ip2 = vec3_( X2,-Y2,SZ) 
+    Ip3 = vec3_( X1, Y1,SZ) 
+    Ip4 = vec3_(  0, CZ,SZ) 
+    Ip5 = vec3_(-X1, Y1,SZ) 
+
+    Im0 = vec3_(-X1, -Y1,-SZ) 
+    Im1 = vec3_(  0, -CZ,-SZ) 
+    Im2 = vec3_( X1, -Y1,-SZ) 
+    Im3 = vec3_( X2,  Y2,-SZ) 
+    Im4 = vec3_(-X2,  Y2,-SZ) 
+    Im5 = vec3_(0,0,-SC) 
+
+    v = np.hstack( [Ip0,Ip1,Ip2,Ip3,Ip4,Ip5, Im0,Im1,Im2,Im3,Im4,Im5] ).reshape(-1,3)
+    p = np.zeros( (20,4), dtype=dtype)   # planes
+
+    # front pole 
+    p[ 0] = make_plane3(Ip0, Ip1, Ip2)
+    p[ 1] = make_plane3(Ip0, Ip5, Ip1)
+    p[ 2] = make_plane3(Ip0, Ip4, Ip5)
+    p[ 3] = make_plane3(Ip0, Ip3, Ip4)
+    p[ 4] = make_plane3(Ip0, Ip2, Ip3)
+
+    # mid 
+    p[ 5] = make_plane3(Ip1, Im0, Im1)
+    p[ 6] = make_plane3(Im0, Ip1, Ip5)
+    p[ 7] = make_plane3(Ip5, Im4, Im0)
+    p[ 8] = make_plane3(Im4, Ip5, Ip4)
+    p[ 9] = make_plane3(Ip4, Im3, Im4)
+    p[10] = make_plane3(Im3, Ip4, Ip3)
+    p[11] = make_plane3(Ip3, Im2, Im3)
+    p[12] = make_plane3(Im2, Ip3, Ip2)
+    p[13] = make_plane3(Ip2, Im1, Im2)
+    p[14] = make_plane3(Im1, Ip2, Ip1)
+
+    # back pole
+    p[15] = make_plane3(Im3, Im2, Im5)
+    p[16] = make_plane3(Im4, Im3, Im5)
+    p[17] = make_plane3(Im0, Im4, Im5)
+    p[18] = make_plane3(Im1, Im0, Im5)
+    p[19] = make_plane3(Im2, Im1, Im5)
+
+    b = np.zeros( (2,3), dtype=dtype )  # bbox
     for i in range(3):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
@@ -330,13 +418,10 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
 
 
 
-
-
-
-
-
 if __name__ == '__main__':
-    #p, v, bbox = make_prism( 45, 400,  400 )
-    p, v, bbox = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    #p, v, b = make_prism( 45, 400,  400 )
+    #p, v, b = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    p, v, b = make_icosahedron()
+    pass
 
 

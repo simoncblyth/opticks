@@ -415,7 +415,7 @@ tboolean-trapezoid--(){ cat << EOP
 
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.prism import make_trapezoid  
+from opticks.dev.csg.prism import make_trapezoid, make_icosahedron
 from opticks.dev.csg.csg import CSG  
 
 args = opticks_main()
@@ -436,7 +436,8 @@ if cube:
     bbox = [[-201,-201,-201,0],[ 201, 201, 201,0]] 
 else:
     #planes, verts, bbox = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    planes, verts, bbox = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+    #planes, verts, bbox = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+    planes, verts, bbox = make_icosahedron()
 pass
 
 obj.planes = planes
@@ -457,14 +458,6 @@ obj.dump()
 CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
 EOP
 }
-
-
-
-
-
-
-
-
 
 
 

@@ -193,7 +193,13 @@ nbbox* NTrianglesNPY::findBBox()
 }
 
 
-/* for icosahedron */
+/* for icosahedron 
+
+* 20 faces (triangular)
+* 12 verts
+* 30 edges
+
+*/
 #define CZ (0.89442719099991)   /*  2/sqrt(5) */
 #define SZ (0.44721359549995)   /*  1/sqrt(5) */
 #define C1 (0.951056516)        /* cos(18),  */
