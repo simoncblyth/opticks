@@ -62,28 +62,30 @@ bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt,
         float3 n = make_float3(plane);
         float dplane = plane.w ;
 
-         // RTCD p199
+         // RTCD p199,  
+         //            n.X = dplane
+         //
+         //             n.(o+td) = dplane
+         //            no + t nd = dplane
+         //                    t = (dplane - no)/nd
+         //
 
         float nd = dot(n, ray_direction); // -ve: entering, +ve exiting halfspace  
-        float no = dot(n, ray_origin ) ;  //
-        float dist = no - dplane ;        // sign determines if ray origin is inside/outside halfspace in parallel case
+        float no = dot(n, ray_origin ) ;  //  distance from coordinate origin to ray origin in direction of plane normal 
+        float dist = no - dplane ;        //  subtract plane distance from origin to get signed distance from plane, -ve inside 
         float t_cand = -dist/nd ;
 
-        bool parallel_inside = nd == 0.f && dist < 0.f ;
-        bool parallel_outside = nd == 0.f && dist > 0.f ;
+        bool parallel_inside = nd == 0.f && dist < 0.f ;   // ray parallel to plane and inside halfspace
+        bool parallel_outside = nd == 0.f && dist > 0.f ;  // ray parallel to plane and outside halfspac
 
 #ifdef CSG_INTERSECT_CONVEXPOLYHEDRON_TEST
         rtPrintf("## csg_intersect_convexpolyhedron i: %2d n: %10.3f %10.3f %10.3f dplane:%10.3f nd:%10.3f no:%10.3f  dist:%10.3f parallel_inside:%d parallel_outside:%d  t_cand: %10.3f \n", i,
           n.x, n.y, n.z, dplane, nd, no, dist, parallel_inside, parallel_outside,   t_cand );
 #endif
 
-        if(parallel_inside) continue ;  
-        if(parallel_outside) return false ;  // <-- without this early exit, this still works due to infinity handling 
+        if(parallel_inside) continue ;       // continue to next plane 
+        if(parallel_outside) return false ;  // <-- without early exit, this still works due to infinity handling 
 
-        //
-        //    ray parallel to plane and inside halfspace 
-        //        -> continue to next plane
-        //
         //    NB ray parallel to plane and outside halfspace 
         //         ->  t_cand = -inf 
         //                 nd = 0.f 

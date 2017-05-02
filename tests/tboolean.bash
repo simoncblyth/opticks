@@ -370,7 +370,7 @@ tboolean-prism--(){ cat << EOP
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.polyconfig import PolyConfig
 from opticks.dev.csg.csg import CSG  
-from opticks.dev.csg.glm import make_prism  
+from opticks.dev.csg.prism import make_prism  
 
 args = opticks_main()
 
@@ -381,16 +381,13 @@ container.meta.update(PolyConfig("CONTAINER").meta)
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
 angle, height, depth = 45, 200, 300
+planes, verts, bbox = make_prism(angle, height, depth)
 
 obj1 = CSG("convexpolyhedron")
 obj1.boundary = args.testobject
-obj1.planes = make_prism(angle, height, depth)
-
-bbmin = [-400,-400,-400,0]   # TODO: tighten this up
-bbmax = [ 400, 400, 400,0]  
-obj1.param2 = bbmin
-obj1.param3 = bbmax
-
+obj1.planes = planes
+obj1.param2[:3] = bbox[0]
+obj1.param3[:3] = bbox[1]
 
 # unlike other solids, need to manually set bbox for solids stored as a 
 # set of planes in NConvexPolyhedron as cannot easily derive the bbox 

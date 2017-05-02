@@ -5,63 +5,6 @@ import numpy as np
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
 
-def make_plane( normal, point, dtype=np.float32 ):
-
-    normal = np.asarray(normal, dtype=dtype)
-    point = np.asarray(point, dtype=dtype)
-
-    assert normal.shape == (3,)
-    assert point.shape == (3,)
-    normal /= np.sqrt(np.dot(normal,normal))
-
-    d = np.dot(normal, point)  # distance of point from origin 
-    plane = np.array( [normal[0], normal[1], normal[2], d], dtype=np.float32 )
-    return plane
-
-
-def make_prism( angle, height, depth, dtype=np.float32):
-    """
-    Mid line of the symmetric prism spanning along z from -depth/2 to depth/2
-
-                                                 
-                            A  (0,height,0)     Y
-                           /|\                  |
-                          / | \                 |
-                         /  |  \                +---- X
-                        /   h   \              Z  
-                       /    |    \ (x,y)   
-                      M     |     N   
-                     /      |      \
-                    L-------O-------R   
-         (-hwidth,0, 0)           (hwidth, 0, 0)
-
-
-    For apex angle 90 degrees, hwidth = height 
-    """
-
-    hwidth = height*np.tan((np.pi/180.)*angle/2.) 
-    ymax =  height/2.
-    ymin =  -height/2.
-
-    a_ = lambda _:np.array(_, dtype=dtype)
-
-
-    apex =  a_([0, ymax,  0])
-    base =  a_([0, ymin,  0]) 
-    front = a_([0, ymin, depth/2.])
-    back  = a_([0, ymin, -depth/2.])
-
-    planes = np.zeros( (5,4), dtype=dtype)
-    planes[0] = make_plane( a_([ height, hwidth, 0]),  apex )  # +X+Y
-    planes[1] = make_plane( a_([-height, hwidth, 0]),  apex )  # -X+Y
-    planes[2] = make_plane( a_([ 0,          -1,  0]), base )  # -Y
-    planes[3] = make_plane( a_([ 0,           0,  1]), front)  # +Z
-    planes[4] = make_plane( a_([ 0,           0, -1]), back )  # -Z
-
-    return planes
-
-
-
 
 def scale(arg=[1,2,3], m=None, dtype=np.float32):
     """  
