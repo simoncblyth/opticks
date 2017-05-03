@@ -242,6 +242,10 @@ class CSG(CSG_):
         pass
         for it, tree in enumerate(trees):
             treedir = cls.treedir(base,it)
+
+            tree.analyse()
+            log.info(" %5d %30s %s " % (it, treedir, tree.totnodes )) 
+
             if not os.path.exists(treedir):
                 os.makedirs(treedir)
             pass

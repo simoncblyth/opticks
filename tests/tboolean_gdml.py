@@ -77,6 +77,8 @@ if __name__ == '__main__':
         cn.meta.update(node.meta)
 
         cn.boundary = args.testobject
+        cn.node = node
+
         cns.append(cn)
     pass
 

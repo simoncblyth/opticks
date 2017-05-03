@@ -89,6 +89,15 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     //if(primIdx == 0) transform_test();
 
+    if(primIdx == 0)
+    {
+        unsigned partBuffer_size = partBuffer.size() ;
+        unsigned planBuffer_size = planBuffer.size() ;
+        unsigned tranBuffer_size = tranBuffer.size() ;
+        rtPrintf("## intersect_analytic.cu:bounds pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
+    }
+
+
     optix::Aabb* aabb = (optix::Aabb*)result;
     *aabb = optix::Aabb();
 

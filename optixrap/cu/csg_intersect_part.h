@@ -1,6 +1,8 @@
 static __device__
 void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
 {
+    unsigned partBuffer_size = partBuffer.size() ;
+    unsigned planBuffer_size = planBuffer.size() ;
     unsigned tranBuffer_size = tranBuffer.size() ;
 
     const int partOffset = prim.partOffset();
@@ -19,7 +21,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numNodes = TREE_NODES(height) ;      
 
-    rtPrintf("##csg_bounds_prim partOffset %2d numParts %2d height %2d numNodes %2d tranBuffer_size %3u \n", partOffset, numParts, height, numNodes, tranBuffer_size );
+    rtPrintf("##csg_bounds_prim partOffset %3d numParts %3d height %2d numNodes %2d tranBuffer_size %3u \n", partOffset, numParts, height, numNodes, tranBuffer_size );
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
