@@ -117,6 +117,8 @@ class Node(object):
         self.pv = None
         self.depth = None
 
+
+
     def visit(self, depth):
         log.info("visit depth %s %s " % (depth, repr(self)))
 
@@ -170,6 +172,20 @@ class Node(object):
 
     def __repr__(self):
         return "%s \npv:%s\nlv:%s : %s " % (self.name, repr(self.pv),repr(self.lv), repr(self.posXYZ) ) 
+
+    def _get_meta(self):
+        m = {}
+        m['treeindex'] = self.index
+        m['nchild'] = self.nchild
+        m['depth'] = self.depth
+
+        m['digest'] = self.digest
+        m['pdigest'] = self.pdigest
+        m['lvname'] = self.lv.name
+        m['pvname'] = self.pv.name
+        m['soname'] = self.lv.solid.name
+        return m 
+    meta = property(_get_meta)
 
 
 

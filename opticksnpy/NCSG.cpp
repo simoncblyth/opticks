@@ -11,6 +11,11 @@
 #include "NParameters.hpp"
 #include "NPart.h"
 
+
+#include "NTrianglesNPY.hpp"
+#include "NPolygonizer.hpp"
+
+
 // primitives
 #include "NSphere.hpp"
 #include "NZSphere.hpp"
@@ -56,7 +61,8 @@ NCSG::NCSG(const char* treedir)
    m_boundary(NULL),
    m_gpuoffset(0,0,0),
    m_container(0),
-   m_containerscale(2.f)
+   m_containerscale(2.f),
+   m_tris(NULL)
 {
 }
 
@@ -75,7 +81,8 @@ NCSG::NCSG(nnode* root )
    m_boundary(NULL),
    m_gpuoffset(0,0,0),
    m_container(0),
-   m_containerscale(2.f)
+   m_containerscale(2.f),
+   m_tris(NULL)
 {
    m_num_nodes = NumNodes(m_height);
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
@@ -87,16 +94,68 @@ NCSG::NCSG(nnode* root )
 }
 
 
+
+// metadata from the root nodes of the CSG trees for each solid
+// pmt-cd treebase.py:Node._get_meta
+//
+template<typename T>
+T NCSG::getMeta(const char* key, const char* fallback )
+{
+    return m_meta->get<T>(key, fallback) ;
+}
+
+template NPY_API std::string NCSG::getMeta<std::string>(const char*, const char*);
+template NPY_API int         NCSG::getMeta<int>(const char*, const char*);
+template NPY_API float       NCSG::getMeta<float>(const char*, const char*);
+
+
+std::string NCSG::lvname(){ return getMeta<std::string>("lvname","-") ; }
+std::string NCSG::pvname(){ return getMeta<std::string>("pvname","-") ; }
+std::string NCSG::soname(){ return getMeta<std::string>("soname","-") ; }
+
+int NCSG::treeindex(){ return getMeta<int>("treeindex","-1") ; }
+int NCSG::depth(){     return getMeta<int>("depth","-1") ; }
+int NCSG::nchild(){    return getMeta<int>("nchild","-1") ; }
+
+
+std::string NCSG::meta()
+{
+    std::stringstream ss ; 
+    ss << " treeindex " << treeindex()
+       << " depth " << depth()
+       << " nchild " << nchild()
+       << " lvname " << lvname() 
+       << " pvname " << pvname() 
+       << " soname " << soname() 
+       ;
+
+    return ss.str();
+}
+
+std::string NCSG::smry()
+{
+    std::stringstream ss ; 
+    ss << "[" << std::setw(5) << treeindex() << "] "
+       << lvname() 
+       << " / " 
+       << soname() 
+       ;
+
+    return ss.str();
+}
+
+
+
 void NCSG::loadMetadata()
 {
     std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
     m_meta = new NParameters ; 
     m_meta->load_( metapath.c_str() );
 
-    int container = m_meta->get<int>("container", "-1");
-    float containerscale = m_meta->get<float>("containerscale", "2.");
-    int verbosity = m_meta->get<int>("verbosity", "-1");
-    std::string gpuoffset = m_meta->get<std::string>("gpuoffset", "0,0,0" );
+    int container         = getMeta<int>("container", "-1");
+    float containerscale  = getMeta<float>("containerscale", "2.");
+    int verbosity         = getMeta<int>("verbosity", "-1");
+    std::string gpuoffset = getMeta<std::string>("gpuoffset", "0,0,0" );
 
     m_gpuoffset = gvec3(gpuoffset);  
     m_container = container ; 
@@ -205,7 +264,11 @@ void NCSG::loadPlanes()
 
 void NCSG::load()
 {
-    LOG(info) << "NCSG::load " << m_treedir  ; 
+    if(m_index % 100 == 0)
+    LOG(info) << "NCSG::load " 
+              << " index " << m_index
+              << " treedir " << m_treedir 
+               ; 
 
     loadMetadata();
     loadNodes();
@@ -258,7 +321,7 @@ NPY<float>* NCSG::getPlaneBuffer()
 
 
 
-NParameters* NCSG::getMeta()
+NParameters* NCSG::getMetaParameters()
 {
     return m_meta ; 
 }
@@ -337,7 +400,11 @@ nquad NCSG::getQuad(unsigned idx, unsigned j)
 void NCSG::import()
 {
     if(m_verbosity > 1)
-    LOG(info) << "NCSG::import START" ; 
+    LOG(info) << "NCSG::import START" 
+              << " verbosity " << m_verbosity
+              << " treedir " << m_treedir
+              << " smry " << smry()
+              ; 
 
     assert(m_nodes);
     if(m_verbosity > 0)
@@ -524,6 +591,7 @@ void NCSG::import_planes(nnode* node)
     unsigned nplane = node->planeNum() ;
     unsigned idx = iplane - 1 ; 
 
+    if(m_verbosity > 3)
     LOG(info) << "NCSG::import_planes"
               << " iplane " << iplane
               << " nplane " << nplane
@@ -539,6 +607,7 @@ void NCSG::import_planes(nnode* node)
         nvec4 plane = m_planes->getVQuad(i) ;
         node->planes.push_back(plane);    
 
+        if(m_verbosity > 3)
         std::cout << " plane " << std::setw(3) << i 
                   << plane.desc()
                   << std::endl ; 
@@ -781,4 +850,40 @@ NCSG* NCSG::LoadTree(const char* treedir, int verbosity)
 }
     
 
+NTrianglesNPY* NCSG::polygonize()
+{
+    if(m_tris == NULL)
+    {
+        NPolygonizer pg(this);
+        m_tris = pg.polygonize();
+    }
+    return m_tris ; 
+}
+
+NTrianglesNPY* NCSG::getTris()
+{
+    return m_tris ; 
+}
+
+int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
+{
+    unsigned ntree = trees.size();
+    assert(ntree > 0);
+
+    LOG(info) << "NCSG::Polygonize"
+              << " basedir " << basedir
+              << " verbosity " << verbosity 
+              << " ntree " << ntree
+              ;
+
+    int rc = 0 ; 
+    for(unsigned i=0 ; i < ntree ; i++)
+    {
+        NCSG* tree = trees[i]; 
+        tree->setVerbosity(verbosity);
+        tree->polygonize();
+        if(tree->getTris() == NULL) rc++ ; 
+    }     
+    return rc ; 
+}
 

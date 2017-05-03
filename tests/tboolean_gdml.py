@@ -61,7 +61,7 @@ if __name__ == '__main__':
 
         solid = node.lv.solid
 
-        log.info("[%2d] converting solid %r " % (i,solid.name))
+        if i % 100 == 0:log.info("[%2d] converting solid %r " % (i,solid.name))
 
         polyconfig = PolyConfig(node.lv.shortname)
 
@@ -74,6 +74,8 @@ if __name__ == '__main__':
             cn.transform = node.pv.transform
         pass 
         cn.meta.update(polyconfig.meta )
+        cn.meta.update(node.meta)
+
         cn.boundary = args.testobject
         cns.append(cn)
     pass

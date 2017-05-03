@@ -78,8 +78,10 @@ void NParameters::dump()
 
 std::string NParameters::desc()
 {
+    prepLines();
     std::stringstream ss ; 
     ss << "NParameters numItems " << getNumItems() ; 
+    for(VS::const_iterator it=m_lines.begin() ; it != m_lines.end() ; it++) ss << *it << " : " ;  
     return ss.str();
 }
 

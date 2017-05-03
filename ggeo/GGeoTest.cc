@@ -211,6 +211,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
               ; 
 
     std::vector<NCSG*> trees ;
+
     int rc = NCSG::Deserialize( csgpath, trees, verbosity );
     assert(rc == 0);
 

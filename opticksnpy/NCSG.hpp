@@ -60,6 +60,7 @@ struct nmat4pair ;
 struct nmat4triple ; 
 
 class NParameters ; 
+class NTrianglesNPY ;
 
 class NPY_API NCSG {
         friend struct NCSGLoadTest ; 
@@ -70,8 +71,22 @@ class NPY_API NCSG {
         static const unsigned NTRAN ; 
         static unsigned NumNodes(unsigned height);
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
+        static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
         static NCSG* LoadTree(const char* treedir, int verbosity=0);
+    public:
+        NTrianglesNPY* polygonize();
+        NTrianglesNPY* getTris();
+    public:
+        template<typename T> T getMeta(const char* key, const char* fallback );
+        std::string lvname();
+        std::string pvname();
+        std::string soname();
+        int treeindex();
+        int depth();
+        int nchild();
+        std::string meta();
+        std::string smry();
     public:
         void dump(const char* msg="NCSG::dump");
         std::string desc();
@@ -84,7 +99,7 @@ class NPY_API NCSG {
         NPY<float>* getTransformBuffer();
         NPY<float>* getGTransformBuffer();
         NPY<float>* getPlaneBuffer();
-        NParameters* getMeta();
+        NParameters* getMetaParameters();
         unsigned getNumNodes();
         unsigned getHeight();
         nnode* getRoot();
@@ -149,6 +164,7 @@ class NPY_API NCSG {
         int         m_container ;  
         float       m_containerscale ;  
 
+         NTrianglesNPY* m_tris ; 
 
 
 };

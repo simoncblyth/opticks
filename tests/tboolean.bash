@@ -1024,6 +1024,7 @@ EOP
 tboolean-0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
 tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
+tboolean-0-polygonize(){  VERBOSITY=0 lldb NCSGPolygonizeTest  -- $TMP/tboolean-0- ; }
 
 tboolean-gds(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-gds-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }

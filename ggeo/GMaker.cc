@@ -12,9 +12,6 @@
 #include "NPrism.hpp"
 #include "NPart.hpp"
 
-#include "NPolygonizer.hpp"
-
-
 #include "OpticksCSG.h"
 
 // ggeo-
@@ -97,9 +94,8 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
               << " index " << index 
               ; 
 
-    NPolygonizer pg(csg);
 
-    NTrianglesNPY* tris = pg.polygonize();
+    NTrianglesNPY* tris = csg->polygonize();
 
     nnode* root = csg->getRoot() ;
 

@@ -42,8 +42,8 @@ class PolyConfig(object):
     # general settings
 
     _verbosity = {
-          DYNODE:"3",
-         DEFAULT:"0"
+          DYNODE:"0",
+          DEFAULT:"0"
     }
 
     _poly = {

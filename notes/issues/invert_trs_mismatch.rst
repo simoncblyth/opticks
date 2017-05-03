@@ -1,5 +1,12 @@
-Invert TRS Mismatch
-======================
+FIXED: Invert TRS Mismatch
+==============================
+
+
+* Fixed with epsilon handling in nglmext::compDiff2. 
+
+
+ISSUE
+---------
 
 Need improved matrix comparison, with separate handling of translation and rotation portions.
 

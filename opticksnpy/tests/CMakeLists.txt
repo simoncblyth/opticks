@@ -78,6 +78,9 @@ NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
 NCSGDeserializeTest.cc
+NCSGPolygonizeTest.cc 
+
+
 
 NOctNodeTest.cc
 

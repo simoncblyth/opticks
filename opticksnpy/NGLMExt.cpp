@@ -137,14 +137,17 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
                 float a = isirit[i][j] ;
                 float b = i_trs[i][j] ;
 
+                float da = compDiff2(a,b, false);
+                float df = compDiff2(a,b, true );
+
                 std::cout << "[" 
                           << std::setw(10) << a
                           << ":"
                           << std::setw(10) << b
                           << ":"
-                          << std::setw(10) << a-b
+                          << std::setw(10) << da
                           << ":"
-                          << std::setw(10) << a/b
+                          << std::setw(10) << df
                           << "]"
                            ;
             }
@@ -173,7 +176,34 @@ float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 }
 
 
-float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional)
+/*
+In [1]: a = 2.16489e-17
+
+In [2]: b = 0 
+
+In [3]: (a+b)/2
+Out[3]: 1.082445e-17
+
+In [4]: avg = (a+b)/2
+
+In [5]: ab = a-b 
+
+In [6]: ab/avg
+Out[6]: 2.0
+
+*/
+
+float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float epsilon )
+{
+    float a = fabsf(a_) < epsilon  ? 0.f : a_ ; 
+    float b = fabsf(b_) < epsilon  ? 0.f : b_ ; 
+
+    float d = fabsf(a - b);
+    if(fractional) d /= (a+b)/2.f ; 
+    return d ; 
+}
+
+float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional, float epsilon)
 {
     float a, b, d, maxdiff = 0.f ; 
     for(unsigned i=0 ; i < 4 ; i++){
@@ -181,10 +211,7 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
     { 
         a = a_[i][j] ; 
         b = b_[i][j] ; 
-        d = fabsf(a - b);
-
-        if(fractional) d /= (a+b)/2.f ; 
-
+        d = compDiff2(a, b, fractional, epsilon );
         if( d > maxdiff ) maxdiff = d ; 
     }
     }
