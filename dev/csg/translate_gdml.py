@@ -1,26 +1,43 @@
 #!/usr/bin/env python
 """
-tboolean_gdml.py
+translate_gdml.py
 =================
 
 Usage::
 
    tboolean-
 
-   tboolean-gdml-             
-   # see logging from this script, parsing GDML and converting subtree into NCSG
+   tboolean-0-             
+   tboolean-gds-             
+   tboolean-oav-             
+   tboolean-iav-             
+   tboolean-pmt-             
+       see logging from this script, parsing GDML and translating subtree into NCSG
 
-   tboolean-gdml              
-   # subtree visualization of polygonization and raytrace 
+
+   tboolean-gdml- --gsel 0 --gmaxdepth 2    # world is too big for easy navigation
+   tboolean-gdml- --gsel 1 --gmaxdepth 1
+   
+   tboolean-0
+   tboolean-gds             
+   tboolean-oav             
+   tboolean-iav             
+   tboolean-pmt             
+       subtree visualization of polygonization and raytrace 
 
    tboolean-gdml-scan         
    # NCSGScanTest load single solid and SDF scan a line segment thru geometry
 
-   tboolean-gdml-deserialize  
+   tboolean-0-deserialize  
    # NCSGDeserializeTest all solids within subtree, eg 5 solids for /dd/Geometry/PMT/lvPmtHemi0x
 
    tboolean-gdml-ip
    # jump into ipython running this script to provide GDML tree ready for querying 
+
+
+
+* TODO: split the translation interface sensitivity from rotation sensitivity
+
 
 """
 
@@ -91,19 +108,6 @@ if __name__ == '__main__':
     objs.append(container)
     objs.extend(cns)
 
-    #for obj in objs: obj.dump()
-
     CSG.Serialize(objs, args.csgpath, outmeta=True )  
 
-"""
 
-
-* TODO: split the translation interface sensitivity from rotation sensitivity
-
-::
-
-   tboolean-gdml- --gsel 0 --gmaxdepth 2    # world is too big for easy navigation
-   tboolean-gdml- --gsel 1 --gmaxdepth 1
-
-
-"""

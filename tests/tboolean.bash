@@ -1046,19 +1046,27 @@ tboolean-sstt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lv
 tboolean-sstt2(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sstt2-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstInnVerRibBase0x ; }
 
+tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0xc137060 ; }  
+## ntc: flat lozenge shape
+
+
+
 
 tboolean-gdml-()
 {      
     local csgpath=$1
     shift
-    python $(tboolean-dir)/tboolean_gdml.py \
+    python $(tboolean-gdml-translator) \
           --csgpath $csgpath \
           --container $(tboolean-container)  \
           --testobject $(tboolean-testobject) \
           $*
 }
+tboolean-gdml-translator(){ echo $(opticks-home)/dev/csg/translate_gdml.py ; }
+
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
-tboolean-gdml-edit(){ vi $(tboolean-dir)/tboolean_gdml.py  ; }
+tboolean-gdml-edit(){ vi $(tboolean-gdml-translator)   ; }
 tboolean-gdml-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-gdml-/1 ; }
 tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
 

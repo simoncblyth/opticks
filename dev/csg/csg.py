@@ -233,6 +233,10 @@ class CSG(CSG_):
 
     @classmethod
     def Serialize(cls, trees, base, outmeta=True):
+        """
+        :param trees: list of CSG instances of solid root nodes
+        :param base: directory to save the tree serializations, under an indexed directory 
+        """
         assert type(trees) is list 
         assert type(base) is str and len(base) > 5, ("invalid base directory %s " % base)
         base = os.path.expandvars(base) 
@@ -242,15 +246,9 @@ class CSG(CSG_):
         pass
         for it, tree in enumerate(trees):
             treedir = cls.treedir(base,it)
-
-            tree.analyse()
-            log.info(" %5d %30s %s " % (it, treedir, tree.totnodes )) 
-
-            if not os.path.exists(treedir):
-                os.makedirs(treedir)
-            pass
             tree.save(treedir)
         pass
+
         boundaries = map(lambda tree:tree.boundary, trees)
         cls.CheckNonBlank(boundaries)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
@@ -341,7 +339,13 @@ class CSG(CSG_):
 
 
     def save(self, treedir):
-        log.debug("save to %s " % (treedir))
+        if not os.path.exists(treedir):
+            os.makedirs(treedir)
+        pass
+
+        self.analyse() 
+
+        log.info("save %30s %s " % (treedir, self.totnodes )) 
 
         nodebuf, tranbuf, planebuf = self.serialize() 
 

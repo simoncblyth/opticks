@@ -8,6 +8,137 @@ gdml.py : parsing GDML
     In [1]: run gdml.py
     ...
 
+    In [13]: len(g.volumes)  # lv
+    Out[13]: 249
+
+    In [14]: len(g.solids)   # top level solids, ie root nodes of all the gdml solids
+    Out[14]: 707             # comparing lv:249 so:707 -> avg  ~3 solids per lv 
+
+    In [15]: len(g.materials)
+    Out[15]: 36
+
+
+Hmm in scene serialization ? Preserve all the solids, or flatten into lv ?
+
+
+Or flatten yet more... eg for PMT there are 5 solids that natuarally go together
+to make an instance...
+
+* need to analyse the solid tree to look for such clusters, or defer that til later ?
+
+::
+
+    In [76]: g.volumes(47)  # eg lv:47 comprises so:131,129,127,125,126,128,130 
+    Out[76]: 
+    [47] Volume /dd/Geometry/PMT/lvPmtHemi0xc133740 /dd/Materials/Pyrex0xc1005e0 pmt-hemi0xc0fed90
+       [131] Union pmt-hemi0xc0fed90  
+         l:[129] Intersection pmt-hemi-glass-bulb0xc0feb98  
+         l:[127] Intersection pmt-hemi-face-glass*ChildForpmt-hemi-glass-bulb0xbf1f8d0  
+         l:[125] Sphere pmt-hemi-face-glass0xc0fde80 mm rmin 0.0 rmax 131.0  x 0.0 y 0.0 z 0.0  
+         r:[126] Sphere pmt-hemi-top-glass0xc0fdef0 mm rmin 0.0 rmax 102.0  x 0.0 y 0.0 z 0.0  
+         r:[128] Sphere pmt-hemi-bot-glass0xc0feac8 mm rmin 0.0 rmax 102.0  x 0.0 y 0.0 z 0.0  
+         r:[130] Tube pmt-hemi-base0xc0fecb0 mm rmin 0.0 rmax 42.25  x 0.0 y 0.0 z 169.0  
+       [14] Material /dd/Materials/Pyrex0xc1005e0 solid
+       PhysVol /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum0xc1340e8
+     None None 
+
+
+::
+
+    In [83]: g.volumes(2).physvol   ## pv are placements: so there are loads of em, thus no need for abaolute indexing 
+    Out[83]: 
+    [PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:1#pvStrip14Unit0xc311da0
+     Position mm -910.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:2#pvStrip14Unit0xc125cf8
+     Position mm -650.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:3#pvStrip14Unit0xc125df0
+     Position mm -390.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:4#pvStrip14Unit0xc125ee8
+     Position mm -130.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:5#pvStrip14Unit0xc125fe0
+     Position mm 130.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:6#pvStrip14Unit0xc1260d8
+     Position mm 390.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:7#pvStrip14Unit0xc1261d0
+     Position mm 650.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ,
+     PhysVol /dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:8#pvStrip14Unit0xc1262c8
+     Position mm 910.0 0.0 0.0  Rotation deg 0.0 0.0 -90.0  ]
+
+
+
+Absolute gidx volume(lv), solid and material indexing done via odict:: 
+
+    In [75]: g.volumes.keys()
+    Out[75]: 
+    ['/dd/Geometry/PoolDetails/lvNearTopCover0xc137060',
+     '/dd/Geometry/RPC/lvRPCStrip0xc2213c0',
+     '/dd/Geometry/RPC/lvRPCGasgap140xbf98ae0',
+     ...
+
+
+
+    In [59]: g.volumes(100)
+    Out[59]: 
+    [100] Volume /dd/Geometry/CalibrationSources/lvLedSourceShell0xc3066b0 /dd/Materials/Acrylic0xc02ab98 led-source-shell0xc3068f0
+       [320] Union led-source-shell0xc3068f0  
+         l:[318] Union led-acryliccylinder+ChildForled-source-shell0xc306188  
+         l:[316] Tube led-acryliccylinder0xc306f40 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 29.73  
+         r:[317] Sphere led-acrylicendtop0xc306fe8 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+         r:[319] Sphere led-acrylicendbot0xc307120 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+       [8] Material /dd/Materials/Acrylic0xc02ab98 solid
+       PhysVol /dd/Geometry/CalibrationSources/lvLedSourceShell#pvDiffuserBall0xc0d3488
+     None None 
+
+    In [60]: g.solids(320)
+    Out[60]: 
+    [320] Union led-source-shell0xc3068f0  
+         l:[318] Union led-acryliccylinder+ChildForled-source-shell0xc306188  
+         l:[316] Tube led-acryliccylinder0xc306f40 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 29.73  
+         r:[317] Sphere led-acrylicendtop0xc306fe8 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+         r:[319] Sphere led-acrylicendbot0xc307120 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+
+    In [61]: g.solids(319)
+    Out[61]: [319] Sphere led-acrylicendbot0xc307120 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+
+    In [62]: g.materials(8)
+    Out[62]: [8] Material /dd/Materials/Acrylic0xc02ab98 solid
+
+
+
+    In [72]: print g.solids(2).xml
+    <subtraction xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" name="near_top_cover-ChildFornear_top_cover_box0xc241498">
+          <first ref="near_top_cover0xc5843d8"/>
+          <second ref="near_top_cover_sub00xc584418"/>
+          <position name="near_top_cover-ChildFornear_top_cover_box0xc241498_pos" unit="mm" x="8000" y="5000" z="0"/>
+          <rotation name="near_top_cover-ChildFornear_top_cover_box0xc241498_rot" unit="deg" x="0" y="0" z="45"/>
+        </subtraction>
+        
+
+
+
+    In [55]: g.volumes(100).solid
+    Out[55]: 
+    Union led-source-shell0xc3068f0  
+         l:Union led-acryliccylinder+ChildForled-source-shell0xc306188  
+         l:Tube led-acryliccylinder0xc306f40 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 29.73  
+         r:Sphere led-acrylicendtop0xc306fe8 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+         r:Sphere led-acrylicendbot0xc307120 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+
+    In [56]: g.volumes(100).solid.idx
+    Out[56]: 320
+
+    In [57]: g.solids(320)
+    Out[57]: 
+    Union led-source-shell0xc3068f0  
+         l:Union led-acryliccylinder+ChildForled-source-shell0xc306188  
+         l:Tube led-acryliccylinder0xc306f40 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 29.73  
+         r:Sphere led-acrylicendtop0xc306fe8 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+         r:Sphere led-acrylicendbot0xc307120 mm rmin 0.0 rmax 10.035  x 0.0 y 0.0 z 0.0  
+
+
+
+
+
     In [19]: len(gdml.elem.findall("solids/*"))
     Out[19]: 707
 
@@ -44,7 +175,7 @@ gdml.py : parsing GDML
         
 
 """
-import os, re, logging, math
+import os, re, logging, math, collections
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
@@ -81,6 +212,11 @@ class G(object):
     typ = property(lambda self:self.__class__.__name__)
     name  = property(lambda self:self.elem.attrib.get('name',None))
     xml = property(lambda self:tostring_(self.elem))
+    gidx = property(lambda self:"[%d]" % self.idx if hasattr(self, 'idx') else '[]' )  # materials, volumes and top level solids have idx attribute 
+
+    is_primitive = property(lambda self:issubclass(self.__class__ , Primitive )) 
+    is_boolean   = property(lambda self:issubclass(self.__class__ , Boolean )) 
+
 
     def _get_shortname(self):
         """/dd/Geometry/PMT/lvPmtHemi0xc133740 -> lvPmtHemi"""
@@ -139,7 +275,7 @@ class G(object):
 class Material(G):
     state = property(lambda self:self.att('state', '', typ=str ))
     def __repr__(self):
-        return "%s %s %s" % (self.typ, self.name, self.state )
+        return "%s %s %s %s" % (self.gidx, self.typ, self.name, self.state )
  
 
 class Transform(G):
@@ -161,11 +297,24 @@ class Scale(Transform):
 
 
 
-
-
 class Geometry(G):
     def as_ncsg(self):
         assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
+
+    def _get_subsolids(self):
+        ss = []
+        def subsolids_r(solid):
+            ss.append(solid.idx)
+            if solid.is_boolean:
+                subsolids_r(solid.first)
+                subsolids_r(solid.second)
+            pass
+        pass
+        subsolids_r(self)
+        return ss
+    subsolids = property(_get_subsolids)
+
+
 
 class Boolean(Geometry):
     firstref = property(lambda self:self.elem.find("first").attrib["ref"])
@@ -180,11 +329,9 @@ class Boolean(Geometry):
     second = property(lambda self:self.g.solids[self.secondref])
 
     def __repr__(self):
-        line = "%s %s  " % (self.typ, self.name )
+        line = "%s %s %s  " % (self.gidx, self.typ, self.name )
         lrep_ = lambda label,obj:"     %s:%r"%(label,obj)
         return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
-
-
 
     def as_ncsg(self):
         left = self.first.as_ncsg()
@@ -221,7 +368,7 @@ class Primitive(Geometry):
     z = property(lambda self:self.att('z', 0, typ=float))
 
     def __repr__(self):
-        return "%s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
+        return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
     @classmethod 
@@ -362,7 +509,7 @@ class Cone(Primitive):
         return CSG("difference", left=cn, right=inner ) if has_inner else cn
 
     def __repr__(self):
-        return "%s z:%s rmin1:%s rmin2:%s rmax1:%s rmax2:%s  " % (self.typ, self.z, self.rmin1, self.rmin2, self.rmax1, self.rmax2 )
+        return "%s %s z:%s rmin1:%s rmin2:%s rmax1:%s rmax2:%s  " % (self.gidx, self.typ, self.z, self.rmin1, self.rmin2, self.rmax1, self.rmax2 )
 
     def plot(self, ax):
         zp0 = FakeZPlane(z=0., rmin=self.rmin1,rmax=self.rmax1) 
@@ -554,7 +701,7 @@ class PolyCone(Primitive):
     zp_rmin = property(lambda self:list(set(map(lambda _:_.rmin,self.zplane))))
     zp_rmax = property(lambda self:list(set(map(lambda _:_.rmax,self.zplane))))
     zp_z = property(lambda self:list(set(map(lambda _:_.z,self.zplane))))
-    zp = property(lambda self:"%30s %2d z:%50r rmax:%35r rmin:%20r " % (self.name, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin)) 
+    zp = property(lambda self:"%s %30s %2d z:%50r rmax:%35r rmin:%20r " % (self.gidx, self.name, self.zp_num, self.zp_z, self.zp_rmax, self.zp_rmin)) 
 
     def __repr__(self):
         return self.zp
@@ -701,7 +848,7 @@ class Volume(G):
     def __repr__(self):
         repr_ = lambda _:"   %r" % _ 
         pvs = map(repr_, self.physvol) 
-        line = "%s %s %s %s" % (self.typ, self.name, self.materialref, self.solidref)
+        line = "%s %s %s %s %s" % (self.gidx, self.typ, self.name, self.materialref, self.solidref)
         return "\n".join([line, repr_(self.solid), repr_(self.material)] + pvs )
 
 class PhysVol(G):
@@ -717,6 +864,16 @@ class PhysVol(G):
     def __repr__(self):
         return "\n".join(["%s %s" % (self.typ, self.name)," %r %r " % ( self.position, self.rotation)])
      
+
+
+class odict(collections.OrderedDict):
+    """
+    Used for GDML collections of materials, solids and volumes which are 
+    always keyed by name.  Call method for convenient indexed access. 
+    """
+    def __call__(self, iarg):
+        return self.items()[iarg][1]
+
 
 class GDML(G):
     kls = {
@@ -767,20 +924,27 @@ class GDML(G):
 
     def init(self):
 
-        self.materials = {}
-        self.solids = {}
-        self.volumes = {}
+        self.materials = odict()
+        self.solids = odict()
+        self.volumes = odict()
 
-        for e in self.findall_("materials/material"):
+        for i, e in enumerate(self.findall_("materials/material")):
+            e.idx = i
             self.materials[e.name] = e 
 
-        for e in self.findall_("solids/*"):
+        for i, e in enumerate(self.findall_("solids/*")):
+            e.idx = i
             self.solids[e.name] = e 
         pass
-        for e in self.findall_("structure/*"):
+        for i, e in enumerate(self.findall_("structure/*")):
+            e.idx = i
             self.volumes[e.name] = e
         pass
         self.worldvol = self.elem.find("setup/world").attrib["ref"]
+
+        self.lv2so = dict([(v.idx, v.solid.idx) for v in self.volumes.values()])
+
+
 
 
 
@@ -847,6 +1011,7 @@ if __name__ == '__main__':
     gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
     g = GDML.parse(gdmlpath)
+
 
     from treebase import Tree
     t = Tree(g.world) 
