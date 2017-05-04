@@ -25,6 +25,18 @@ void test_Deserialize(const char* basedir, int verbosity)
 {
     std::vector<NCSG*> trees ; 
     int rc = NCSG::Deserialize(basedir, trees, verbosity );
+
+    unsigned ntree = trees.size();
+    for(unsigned i=0 ; i < ntree ; i++)
+    {
+        NCSG* tree = trees[i]; 
+        nnode* root = tree->getRoot();
+        LOG(info) << " root.desc : " << root->desc() ;
+
+        NPY<float>* nodes = tree->getNodeBuffer();
+        nodes->dump(); 
+
+    }
     assert(rc == 0 );
 }
 

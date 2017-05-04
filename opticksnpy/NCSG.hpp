@@ -69,6 +69,7 @@ class NPY_API NCSG {
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
         static const char* FILENAME ; 
         static const unsigned NTRAN ; 
+
         static unsigned NumNodes(unsigned height);
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
@@ -121,6 +122,7 @@ class NPY_API NCSG {
         void setBoundary(const char* boundary);
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
+        bool     isComplement(unsigned idx);
         nquad getQuad(unsigned idx, unsigned j);
     private:
         void load();

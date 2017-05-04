@@ -1,5 +1,109 @@
 #include "NQuad.hpp"
+#include <iostream>
 #include <cstdio>
+
+
+
+/*
+ ///  copy sign-bit from src value to dst value
+ 183 OPTIXU_INLINE float copysignf(const float dst, const float src)
+ 184 {
+ 185   union {
+ 186     float f;
+ 187     unsigned int i;
+ 188   } v1, v2, v3;
+ 189   v1.f = src;
+ 190   v2.f = dst;
+ 191   v3.i = (v2.i & 0x7fffffff) | (v1.i & 0x80000000);
+ 192 
+ 193   return v3.f;
+ 194 }
+ 195 
+*/
+
+
+
+
+
+void test_negative_zero()
+{
+    nquad q, p ;
+    q.u = {0,1,2,3} ;
+    p.u = {0,0,0,0} ;
+
+    const unsigned SIGNBIT32 = 0x1 << 31  ;
+    const unsigned OTHERBIT32 = 0x7fffffffu ;
+
+    assert(  SIGNBIT32  == 0x80000000u );
+    // assert(  !SIGNBIT32 == OTHERBIT32 );  // <<< not so
+
+
+    q.i.x = (q.i.x & OTHERBIT32) | SIGNBIT32 ;  // <- set the sign bit 
+    q.i.y = (q.i.y & OTHERBIT32) | SIGNBIT32 ;  // <- set the sign bit 
+    q.i.z = (q.i.z & OTHERBIT32) | SIGNBIT32 ;  // <- set the sign bit 
+    q.i.w = (q.i.w & OTHERBIT32) | SIGNBIT32 ;  // <- set the sign bit 
+
+    p.u.x =   q.u.x & OTHERBIT32 ; 
+    p.u.y =   q.u.y & OTHERBIT32 ; 
+    p.u.z =   q.u.z & OTHERBIT32 ; 
+    p.u.w =   q.u.w & OTHERBIT32 ; 
+
+
+/*
+test_negative_zero q.i.x 0 q.u.x 0 q.f.x 0 q.i.y 0 q.u.y 0 q.f.y 0 q.i.z 0 q.u.z 0 q.f.z 0 q.i.w -2147483648 q.u.w 2147483648 q.f.w -0
+
+test_negative_zero
+ q.i.x -2147483648 q.u.x 2147483648 q.f.x -0
+ q.i.y -2147483647 q.u.y 2147483649 q.f.y -1.4013e-45
+ q.i.z -2147483646 q.u.z 2147483650 q.f.z -2.8026e-45
+ q.i.w -2147483645 q.u.w 2147483651 q.f.w -4.2039e-45
+
+*/
+
+    std::cout << "test_negative_zero" << std::endl ; 
+
+
+    std::cout 
+              << " q.i.x " << q.i.x 
+              << " q.u.x " << q.u.x 
+              << " q.f.x " << q.f.x 
+              << " p.i.x " << p.i.x 
+              << " p.u.x " << p.u.x 
+              << " p.f.x " << p.f.x 
+              << std::endl ; 
+
+    std::cout 
+              << " q.i.y " << q.i.y 
+              << " q.u.y " << q.u.y 
+              << " q.f.y " << q.f.y 
+              << " p.i.y " << p.i.y 
+              << " p.u.y " << p.u.y 
+              << " p.f.y " << p.f.y 
+              << std::endl ; 
+
+    std::cout 
+              << " q.i.z " << q.i.z 
+              << " q.u.z " << q.u.z 
+              << " q.f.z " << q.f.z 
+              << " p.i.z " << p.i.z 
+              << " p.u.z " << p.u.z 
+              << " p.f.z " << p.f.z 
+              << std::endl ; 
+
+    std::cout 
+              << " q.i.w " << q.i.w 
+              << " q.u.w " << q.u.w 
+              << " q.f.w " << q.f.w 
+              << " p.i.w " << p.i.w 
+              << " p.u.w " << p.u.w 
+              << " p.f.w " << p.f.w 
+              << std::endl ; 
+
+
+ 
+
+
+}
 
 
 
@@ -54,8 +158,10 @@ void test_make()
 
 int main()
 {
-    test_quad();
-    test_make();
+    //test_quad();
+    //test_make();
+
+    test_negative_zero();
 
     return 0 ;
 }

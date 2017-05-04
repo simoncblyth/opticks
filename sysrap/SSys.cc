@@ -17,6 +17,11 @@ simon:optixrap blyth$ echo $?
 */
 
 
+
+const unsigned SSys::SIGNBIT32  = 0x80000000 ;
+const unsigned SSys::OTHERBIT32 = 0x7fffffff ;
+
+
 const char* SSys::fmt(const char* tmpl, unsigned val)
 {
     char buf[100] ; 

@@ -21,7 +21,7 @@ struct NPY_API npart
     void zero();
     void dump(const char* msg);
     void setTypeCode(OpticksCSG_t typecode);
-    void setGTransform(unsigned gtransform_idx);
+    void setGTransform(unsigned gtransform_idx, bool complement=false);
     void setBBox(const nbbox& bb);
 
     void setParam(const nquad& param);

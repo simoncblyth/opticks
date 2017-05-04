@@ -582,10 +582,10 @@ EOP
 
 
 
-
-tboolean-sphere(){ TESTCONFIG=$(tboolean-csg-sphere 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-sphere(){ $FUNCNAME- | python $* ; } 
-tboolean-csg-sphere-(){ cat << EOP 
+tboolean-sphere-deserialize(){ NCSGDeserializeTest $TMP/tboolean-sphere-- ; }
+tboolean-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-sphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-sphere--(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -593,15 +593,26 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 
 im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
 #tr = dict(scale="1,1,2")
-tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
+tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,1")
 
 kwa = {}
 kwa.update(im)
-kwa.update(tr)
+#kwa.update(tr)
 
-sphere = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", **kwa )
+sp1 = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", **kwa )
+sp1.complement = False
 
-CSG.Serialize([container, sphere], "$TMP/$FUNCNAME" )
+sp2 = CSG("sphere", param=[0,0,300,100], boundary="$(tboolean-testobject)", **kwa )
+sp2.complement = True 
+
+
+CSG.Serialize([container, sp1, sp2], "$TMP/$FUNCNAME" )
+
+"""
+Complemented inside out sphere ray trace appears dark, it has inverted normals 
+
+"""
+
 EOP
 }
 
@@ -813,6 +824,9 @@ slab.param.view(np.uint32)[3] = flags
 
 
 sphere = CSG("sphere", param=[0,0,0,500] )
+
+
+
 
 object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 

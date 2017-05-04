@@ -41,6 +41,7 @@ glm::vec3 nsphere::gseedcenter()
 
 void nsphere::pdump(const char* msg, int verbosity)
 {
+    nnode::dump();
     std::cout 
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )

@@ -66,6 +66,7 @@ struct NPY_API nnode
     nmat4triple* transform ; 
     nmat4triple* gtransform ; 
     unsigned   gtransform_idx ; 
+    bool  complement ; 
 
     nquad param ; 
     nquad param1 ; 

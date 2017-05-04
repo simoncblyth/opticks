@@ -6,6 +6,8 @@
 
 class SYSRAP_API SSys {
   public:
+     static const unsigned SIGNBIT32 ;
+     static const unsigned OTHERBIT32 ; 
      static const char* fmt(const char* tmpl="hello%u.npy", unsigned val=0);
      static int run(const char* cmd);
      static int exec(const char* exe, const char* path);

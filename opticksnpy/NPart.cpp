@@ -1,11 +1,18 @@
+#include "SSys.hh"
+
 #include "NPart.hpp"
 #include "NBBox.hpp"
 #include "NPlane.hpp"
+
+#include "PLOG.hh"
 
 #include <cstdio>
 #include <cassert>
 
 unsigned npart::VERSION = 1 ;   // could become an enumerated LAYOUT bitfield if need more granularity 
+
+
+
 
 void npart::setTypeCode(OpticksCSG_t typecode)
 {
@@ -13,7 +20,7 @@ void npart::setTypeCode(OpticksCSG_t typecode)
     q2.u.w = typecode ; 
 }
 
-void npart::setGTransform(unsigned gtransform_idx)
+void npart::setGTransform(unsigned gtransform_idx, bool complement)
 {
     assert(VERSION == 1u);
 
@@ -21,7 +28,19 @@ void npart::setGTransform(unsigned gtransform_idx)
    // q3.u.x = gtransform_idx ; 
 
    assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 3 );
-   q3.u.w = gtransform_idx ; 
+
+
+   unsigned gpack = gtransform_idx & SSys::OTHERBIT32 ;
+   if(complement) gpack |= SSys::SIGNBIT32 ; 
+
+   LOG(info) << "npart::setGTransform"
+             << " gtransform_idx " << gtransform_idx
+             << " complement " << complement
+             << " gpack " << gpack 
+             << " gpack(hex) " << std::hex << gpack << std::dec 
+             ; 
+
+   q3.u.w = gpack ; 
 
 }
 

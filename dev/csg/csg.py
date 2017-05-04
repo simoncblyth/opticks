@@ -338,6 +338,10 @@ class CSG(CSG_):
         return buf, tbuf, pbuf
 
 
+
+
+
+
     def save(self, treedir):
         if not os.path.exists(treedir):
             os.makedirs(treedir)
@@ -467,6 +471,7 @@ class CSG(CSG_):
         self.rotate = rotate
         self.scale = scale
         self._transform = None
+        self.complement = False
 
         self.planes = []
         self.meta = kwa
@@ -562,6 +567,13 @@ class CSG(CSG_):
             arr.view(np.uint32)[Q3,W] = itransform 
         pass
 
+        if self.complement:
+            # view as float in order to set signbit 0x80000000
+            # do via float as this works even when the value is integer zero yielding negative zero
+            # AND with 0x7fffffff to recover the transform idx
+            np.copysign(arr.view(np.float32)[Q3,W:W+1], -1. , arr.view(np.float32)[Q3,W:W+1] )  
+        pass
+
         if len(self.planes) > 0:
             assert planeIdx > 0 and planeNum > 3, (planeIdx, planeNum)  # 1-based plane index
             arr.view(np.uint32)[Q0,X] = planeIdx   # cf NNode::planeIdx
@@ -622,8 +634,7 @@ class CSG(CSG_):
     def content(self):
         return "%r %r " % (self.param, self.param1)
 
-
-    dsc = property(lambda self:self.desc(self.typ)[0:2])
+    dsc = property(lambda self:"%s%s"%("!" if self.complement else "", self.desc(self.typ)[0:2]))
 
     def __repr__(self):
         rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  

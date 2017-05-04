@@ -4,15 +4,15 @@
 
 struct Part 
 {
+
     quad q0 ; 
     quad q1 ; 
     quad q2 ; 
     quad q3 ; 
 
+    __device__ unsigned gtransformIdx() const { return q3.u.w & 0x7fffffff ; }  //  gtransformIdx is 1-based, 0 meaning None 
+    __device__ bool        complement() const { return q3.u.w & 0x80000000 ; }
 
-    //__device__ unsigned transformIdx()  const { return q3.u.w ; }  //   transformIdx is 1-based, 0 meaning None 
-    //__device__ unsigned gtransformIdx() const { return q3.u.x ; }  //  gtransformIdx is 1-based, 0 meaning None 
-    __device__ unsigned gtransformIdx() const { return q3.u.w ; }  //  gtransformIdx is 1-based, 0 meaning None 
 
     __device__ unsigned planeIdx()      const { return q0.u.x ; }  // 1-based, 0 meaning None
     __device__ unsigned planeNum()      const { return q0.u.y ; } 

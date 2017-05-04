@@ -2,6 +2,8 @@
 #include <algorithm>
 #include <sstream>
 
+#include "SSys.hh"
+
 #include "BStr.hh"
 #include "BFile.hh"
 
@@ -381,12 +383,19 @@ unsigned NCSG::getTypeCode(unsigned idx)
 {
     return m_nodes->getUInt(idx,TYPECODE_J,TYPECODE_K,0u);
 }
+
+
 unsigned NCSG::getTransformIndex(unsigned idx)
 {
-    return m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    unsigned raw = m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    return raw & SSys::OTHERBIT32 ;   // <-- strip the sign bit  
 }
 
-
+bool NCSG::isComplement(unsigned idx)
+{
+    unsigned raw = m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
+    return raw & SSys::SIGNBIT32 ; 
+}
 
 
 
@@ -467,6 +476,14 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         
     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);      
     int transform_idx = getTransformIndex(idx) ; 
+    bool complement = isComplement(idx) ; 
+
+    LOG(info) << "NCSG::import_r"
+              << " idx " << idx
+              << " transform_idx " << transform_idx
+              << " complement " << complement 
+              ;
+ 
 
     nnode* node = NULL ;   
  
@@ -496,6 +513,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
     node->idx = idx ; 
+    node->complement = complement ; 
 
     return node ; 
 } 

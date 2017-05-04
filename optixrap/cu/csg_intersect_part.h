@@ -36,8 +36,9 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
 
         unsigned typecode = pt.typecode() ; 
         unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
+        bool complement = pt.complement() ; 
     
-        rtPrintf("##csg_bounds_prim nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u \n", nodeIdx, depth, elev, typecode, gtransformIdx );
+        rtPrintf("##csg_bounds_prim nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u complement %d \n", nodeIdx, depth, elev, typecode, gtransformIdx, complement );
 
         if(gtransformIdx == 0)
         {
@@ -94,20 +95,23 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
 
     unsigned typecode = pt.typecode() ; 
     unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
+    bool complement = pt.complement();  
+
+    bool valid_intersect = false ; 
 
     if(gtransformIdx == 0)
     {
         switch(typecode)
         {
-            case CSG_SPHERE:    csg_intersect_sphere(   pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_ZSPHERE:   csg_intersect_zsphere(  pt.q0, pt.q1, pt.q2, tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_BOX:       csg_intersect_box(      pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_BOX3:      csg_intersect_box3(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_SLAB:      csg_intersect_slab(     pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_PLANE:     csg_intersect_plane(    pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_CYLINDER:  csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_CONE:      csg_intersect_cone(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_CONVEXPOLYHEDRON: csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_SPHERE:    valid_intersect = csg_intersect_sphere(   pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_ZSPHERE:   valid_intersect = csg_intersect_zsphere(  pt.q0, pt.q1, pt.q2, tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_BOX:       valid_intersect = csg_intersect_box(      pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_BOX3:      valid_intersect = csg_intersect_box3(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_SLAB:      valid_intersect = csg_intersect_slab(     pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_PLANE:     valid_intersect = csg_intersect_plane(    pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray.origin, ray.direction ) ; break ; 
         }
     }
     else
@@ -131,8 +135,6 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
 
         float3 ray_origin = make_float3( origin.x, origin.y, origin.z );
         float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); 
-
-        bool valid_intersect = false ; 
 
         switch(typecode)
         {
@@ -158,6 +160,14 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             tt.z = ttn.z ; 
         }
     }
+
+    if(complement && valid_intersect)  // flip normal 
+    {
+        tt.x = -tt.x ; 
+        tt.y = -tt.y ; 
+        tt.z = -tt.z ; 
+    }
+
 }
 
 

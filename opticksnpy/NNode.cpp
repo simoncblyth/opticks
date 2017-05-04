@@ -38,6 +38,7 @@ std::string nnode::desc()
     std::stringstream ss ; 
     ss  << " nnode "
         << std::setw(3) << type 
+        << ( complement ? "!" : "" )
         << std::setw(15) << CSGName(type) 
         ;     
     return ss.str();
@@ -89,6 +90,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.transform = NULL ; 
     n.gtransform = NULL ; 
     n.gtransform_idx = 0 ; 
+    n.complement = false ; 
 
     n.param.u  = {0u,0u,0u,0u};
     n.param1.u = {0u,0u,0u,0u};
@@ -178,7 +180,7 @@ npart nnode::part()
     pt.setParam3( param3 );
 
     pt.setTypeCode( type );
-    pt.setGTransform( gtransform_idx );
+    pt.setGTransform( gtransform_idx, complement );
 
     // gtransform_idx is index into a buffer of the distinct compound transforms for the tree
 
