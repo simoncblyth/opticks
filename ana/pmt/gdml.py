@@ -176,9 +176,11 @@ Absolute gidx volume(lv), solid and material indexing done via odict::
 
 """
 import os, re, logging, math, collections
+
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
+from opticks.ana.nbase import find_ranges
 from opticks.dev.csg.csg import CSG 
 from opticks.dev.csg.glm import make_trs
 from opticks.dev.csg.prism import make_trapezoid
@@ -186,6 +188,7 @@ from opticks.dev.csg.prism import make_trapezoid
 import numpy as np
 import lxml.etree as ET
 import lxml.html as HT
+
 
 tostring_ = lambda _:ET.tostring(_)
 exists_ = lambda _:os.path.exists(os.path.expandvars(_))
@@ -303,16 +306,20 @@ class Geometry(G):
 
     def _get_subsolids(self):
         ss = []
-        def subsolids_r(solid):
-            ss.append(solid.idx)
+        def subsolids_r(solid, top=False):
+            if not top:
+                ss.append(solid.idx)
+            pass
             if solid.is_boolean:
                 subsolids_r(solid.first)
                 subsolids_r(solid.second)
             pass
         pass
-        subsolids_r(self)
+        subsolids_r(self, top=True)
         return ss
     subsolids = property(_get_subsolids)
+    subsolidranges = property(lambda self:list(find_ranges(sorted(self.subsolids))))
+    subsolidcount = property(lambda self:len(self.subsolids))
 
 
 

@@ -1,76 +1,6 @@
 #!/usr/bin/env python
 """
 
-https://github.com/KhronosGroup/glTF/tree/2.0/specification/2.0
-
-
-* currently there is no referencing of solids, they are just listed in place
-
-
-
-::
-
-    In [107]: t.filternodes_so("near_pool_ows")[0].name
-    Out[107]: 'Node 3150 : dig 9ff6 pig 29c2 depth 5 nchild 2938 '
-
-::
-
-    In [108]: g.solids(658)
-    Out[108]: 
-    [658] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc356df8  
-         l:[656] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc2c4a40  
-         l:[654] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc21d530  
-         l:[652] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc12e148  
-         l:[650] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xbf97a68  
-         l:[648] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc12de98  
-         l:[646] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc357900  
-         l:[644] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xc12f640  
-         l:[642] Subtraction near_pool_ows-ChildFornear_pool_ows_box0xbf8c148  
-         l:[640] Box near_pool_ows0xc2bc1d8 mm rmin 0.0 rmax 0.0  x 15832.0 y 9832.0 z 9912.0  
-         r:[641] Box near_pool_ows_sub00xc55ebf8 mm rmin 0.0 rmax 0.0  x 4179.41484434 y 4179.41484434 z 9922.0  
-         r:[643] Box near_pool_ows_sub10xc21e940 mm rmin 0.0 rmax 0.0  x 4179.41484434 y 4179.41484434 z 9922.0  
-         r:[645] Box near_pool_ows_sub20xc2344b0 mm rmin 0.0 rmax 0.0  x 4179.41484434 y 4179.41484434 z 9922.0  
-         r:[647] Box near_pool_ows_sub30xbf5f5b8 mm rmin 0.0 rmax 0.0  x 4179.41484434 y 4179.41484434 z 9922.0  
-         r:[649] Box near_pool_ows_sub40xbf979e0 mm rmin 0.0 rmax 0.0  x 4176.10113585 y 4176.10113585 z 9912.0  
-         r:[651] Box near_pool_ows_sub50xc12e0c0 mm rmin 0.0 rmax 0.0  x 4176.10113585 y 4176.10113585 z 9912.0  
-         r:[653] Box near_pool_ows_sub60xc2a23c8 mm rmin 0.0 rmax 0.0  x 4176.10113585 y 4176.10113585 z 9912.0  
-         r:[655] Box near_pool_ows_sub70xc21d660 mm rmin 0.0 rmax 0.0  x 4176.10113585 y 4176.10113585 z 9912.0  
-         r:[657] Box near_pool_ows_sub80xc2c4b70 mm rmin 0.0 rmax 0.0  x 15824.0 y 10.0 z 9912.0  
-
-
-    In [150]: s = g.solids(658)
-
-    In [151]: s.subsolids
-    Out[151]: [658, 656, 654, 652, 650, 648, 646, 644, 642, 640, 641, 643, 645, 647, 649, 651, 653, 655, 657] 
-
-    In [153]: len(g.solids(658).subsolids)
-    Out[153]: 19
-
-
-    In [109]: cn = g.solids(658).as_ncsg()
-
-    In [110]: cn
-    Out[110]: di(di(di(di(di(di(di(di(di(bo ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) 
-
-    In [111]: cn.analyse()
-
-    In [112]: cn
-    Out[112]: di(di(di(di(di(di(di(di(di(bo ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo )height:9 totnodes:1023  
-
-
-    In [114]: print cn.txt
-                                                                         di    
-                                                                 di          bo
-                                                         di          bo        
-                                                 di          bo                
-                                         di          bo                        
-                                 di          bo                                
-                         di          bo                                        
-                 di          bo                                                
-         di          bo                                                        
-     bo      bo                                    
-
-
 """
 
 import numpy as np
@@ -85,6 +15,7 @@ json_save_ = lambda path, d:json.dump(d, file(expand_(path),"w"))
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
+from opticks.ana.nbase import find_ranges
 from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.gdml import GDML
 from opticks.ana.pmt.polyconfig import PolyConfig
@@ -93,11 +24,63 @@ from opticks.dev.csg.textgrid import TextGrid
 from opticks.dev.csg.csg import CSG  
 
 
+class SNode(object):
+    """
+    Solid node for establishing relationships between all solids within 
+    a geometry, especially looking for top solids that are not
+    contained within any other solid.
+    """
+    registry = {}
+
+    @classmethod
+    def create(cls, idx, ssidx=[]):
+        sn = SNode(idx, ssidx)
+        cls.registry[idx] = sn 
+        log.debug("SNode.create %r " % (sn))
+        for ssi in ssidx:
+            if ssi == idx:continue
+            child = cls.registry[ssi]
+            assert child
+            child.top = sn  
+            # top for some SNode will change as more SNode are created, 
+            # but dont care, are just looking for SNode without tops
+        pass
+        return sn
+
+    @classmethod
+    def tops(cls, ssmin=0):
+        return filter(lambda sn:sn.top is None and sn.ssn >= ssmin, cls.registry.values())
+
+    def __repr__(self):
+        return "%3d; %s " % (self.idx, self.ssd)
+
+    def __init__(self, idx, ssidx ):
+        self.idx = idx
+        self.ss = ssidx
+        ssr = list(find_ranges(sorted(ssidx)))
+        assert len(ssr) in (0,1)  
+        if len(ssr) == 1:
+            ssr = ssr[0]
+            ssn = ssr[1] - ssr[0] + 1 
+            ssd = "%2d:%3d-%3d" % (ssn, ssr[0], ssr[1])
+        elif len(ssr) == 0:
+            ssr = None
+            ssn = 0 
+            ssd = "-"
+        pass
+        self.ssr = ssr 
+        self.ssn = ssn
+        self.ssd = ssd 
+        self.top = None
+        
+
+
 class Scene(object):
     def __init__(self, gdml, base="$TMP/dev/csg/scene", name="scene.json"):
         self.gdml = gdml
         self.base = expand_(base) 
         self.name = name
+        self.associate_solids_to_lv()
 
     path = property(lambda self:os.path.join(self.base, self.name))
 
@@ -108,18 +91,69 @@ class Scene(object):
     gltf = property(_get_gltf)
 
     def save(self):
-        self.save_solids()
+        self.save_lvsolids()
         #self.save_materials()
         #self.save_nodes() 
 
-    def save_solids(self):
-        rdir = self.prep_reldir("solids")
-        solids = self.gdml.solids 
-        for solid in self.gdml.solids.values():
-            cn = solid.as_ncsg()
-            treedir = os.path.join(rdir, "%d" % solid.idx )
-            cn.save(treedir)
+    def associate_solids_to_lv(self):
+        so2lv = {}
+        lvs = self.gdml.volumes.values()
+        for lv in lvs:
+            solid = lv.solid
+            so2lv[solid.idx] = lv.idx
+            pass
         pass
+        self.so2lv = so2lv
+
+    def analyse_solids(self):
+        """
+        Builds tree of SNode in order to identify 
+        top solids that are not part of any other solid.
+        """
+        flatsolids = self.gdml.solids.values()
+        for solid in flatsolids:
+            sn = SNode.create( solid.idx, solid.subsolids )
+            ssr = solid.subsolidranges
+            assert len(ssr) in (0,1), "all solids expected to be leaves with no subsolids or have contiguous idx range subsolids"
+        pass
+        tops = SNode.tops()
+        ntops = len(tops)
+        ndeep = 0 
+        deeplv = []
+   
+        for top in tops:
+            solid = self.gdml.solids(top.idx) 
+            cn = solid.as_ncsg()
+            cn.analyse() 
+
+            lvidx = self.so2lv[solid.idx]
+            lv = self.gdml.volumes(lvidx)
+
+            if cn.height > 3: 
+                ndeep += 1 
+                print "solid.idx:%d cn.height:%d cn.totnodes:%d solid.name:%s ideep:%d lvidx:%d lvn:%s " % (solid.idx, cn.height, cn.totnodes, solid.name, ndeep, lvidx, lv.name  )
+                deeplv.extend(["%2d : %-60s : %s " % (ndeep, lv.name,repr(cn))])
+                print cn.txt
+            pass
+        pass
+        log.info("analyse_solids nflatsolids:%d ntops:%d ndeep:%d " % (len(flatsolids), ntops, ndeep)) 
+        
+        print "\n".join(deeplv)
+
+
+    def save_lvsolids(self):
+        rdir = self.prep_reldir("lvsolids")
+        lvs = self.gdml.volumes.values()
+        for lv in lvs:
+            solid = lv.solid
+            ssn = solid.subsolidcount 
+            cn = solid.as_ncsg()
+            cn.analyse() 
+            treedir = os.path.join(rdir, "%d" % lv.idx )
+            cn.save(treedir)
+            pass
+        pass
+        log.info("save_lvsolids nlvs:%d " % (len(lvs))) 
 
     def prep_reldir(self, reldir):
         rdir = os.path.join(self.base, reldir)
@@ -151,6 +185,7 @@ if __name__ == '__main__':
 
 
     scene = Scene(gdml)
+    scene.analyse_solids()
 
     scene.save()
 

@@ -343,10 +343,6 @@ class CSG(CSG_):
             os.makedirs(treedir)
         pass
 
-        self.analyse() 
-
-        log.info("save %30s %s " % (treedir, self.totnodes )) 
-
         nodebuf, tranbuf, planebuf = self.serialize() 
 
         metapath = self.metapath(treedir)
@@ -633,7 +629,7 @@ class CSG(CSG_):
         rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
         dlr = ",".join(map(repr,filter(None,[self.left,self.right])))
         if len(dlr) > 0: dlr = "(%s)" % dlr 
-        return "".join(filter(None, [self.dsc, dlr, rrep])) + " "
+        return "".join(filter(None, [self.dsc, dlr, rrep])) 
 
 
     def __call__(self, p):

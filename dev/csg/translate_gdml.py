@@ -42,7 +42,7 @@ Usage::
 """
 
 import numpy as np
-import os, logging
+import os, logging, sys
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
@@ -83,6 +83,9 @@ if __name__ == '__main__':
         polyconfig = PolyConfig(node.lv.shortname)
 
         cn = solid.as_ncsg()
+        cn.analyse()
+
+        sys.stderr.write("\n".join(["","",solid.name,repr(cn),str(cn.txt)])) 
 
         has_name = cn.name is not None and len(cn.name) > 0
         assert has_name, "\n"+str(solid)

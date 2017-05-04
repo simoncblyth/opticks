@@ -2,10 +2,462 @@ CSG Translation Issues (solid level)
 ========================================
 
 
+ISSUE : DYB has some deep CSG trees
+--------------------------------------
+
+* observed with scene.py, csg.py see some surprising totnodes arising from deep trees
+* deep trees are very inefficiently handled as complete binary trees
+
+
+Lots of subtraction of rotated boxes : results in deep trees
+--------------------------------------------------------------
+
+Looking at subsolid ranges with scene.py, csg.py see that 
+all DYB solids have contiguous subsolid idx ranges, ie there is 
+no cross referencing between different solid assemblies.
+
+DYB Near has 707 solids. But those are not distinct solids, eg the sub-chains 
+for solid.idx 664 are in contiguous range 640-664 occupying 25 solid idx, 
+whereas logically theres really only one complex solid.idx 664.
+
+
+How to handle deep unbalanced trees ?
+-----------------------------------------
+
+Moved search to env-;csg-
+
+
+
+Checking Deep Volumes with tboolean-deep
+-------------------------------------------
+
+::
+
+    Node 4428 : dig a06f pig e31d depth 11 nchild 1  
+    pv:PhysVol /dd/Geometry/AD/lvOIL#pvBotReflector0xc34c068
+     Position mm 0.0 0.0 -2027.5  None 
+    lv:[62] Volume /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 /dd/Materials/Acrylic0xc02ab98 BotRefHols0xc3cd380
+       [224] Subtraction BotRefHols0xc3cd380  
+         l:[222] Subtraction BotReflector-ChildForBotRefHols0xc3cd1b8  
+         l:[220] Subtraction BotReflector-ChildForBotRefHols0xc3ccff0  
+         l:[218] Subtraction BotReflector-ChildForBotRefHols0xc0d5f30  
+         l:[216] Tube BotReflector0xc0d4ac8 mm rmin 19.25 rmax 2250.0  x 0.0 y 0.0 z 20.0  
+         r:[217] Box BoxHolInBotRef10xc2ce6d0 mm rmin 0.0 rmax 0.0  x 90.0 y 384.0 z 21.0  
+         r:[219] Box BoxHolInBotRef20xc3ccfb0 mm rmin 0.0 rmax 0.0  x 90.0 y 384.0 z 21.0  
+         r:[221] Box BoxHolInBotRef30xc3cd130 mm rmin 0.0 rmax 0.0  x 384.0 y 90.0 z 21.0  
+         r:[223] Box BoxHolInBotRef40xc3cd2f8 mm rmin 0.0 rmax 0.0  x 384.0 y 90.0 z 21.0  
+       [8] Material /dd/Materials/Acrylic0xc02ab98 solid
+       PhysVol /dd/Geometry/AdDetails/lvBotReflector#pvBotRefGap0xbfa6458
+     None None  : Position mm 0.0 0.0 -2027.5   
+    [2017-05-04 15:09:54,667] p66920 {/Users/blyth/opticks/ana/pmt/treebase.py:154} INFO - rprogeny numProgeny:3 (maxnode:0 maxdepth:0 skip:{'count': 0, 'depth': 0, 'total': 0} ) 
+    [2017-05-04 15:09:54,667] p66920 {/Users/blyth/opticks/dev/csg/translate_gdml.py:73} INFO -  subtree 3 nodes 
+    [2017-05-04 15:09:54,667] p66920 {/Users/blyth/opticks/dev/csg/translate_gdml.py:81} INFO - [ 0] converting solid 'BotRefHols0xc3cd380' 
+
+
+    BotRefHols0xc3cd380
+    di(di(di(di(di(cy ,cy ) ,bo ) ,bo ) ,bo ) ,bo )height:5 totnodes:63  
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     cy      cy                                
+
+    BotRefGapCutHols0xc34bb28
+    di(di(di(di(di(cy ,cy ) ,bo ) ,bo ) ,bo ) ,bo )height:5 totnodes:63  
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     cy      cy                                
+
+    BotESRCutHols0xbfa7368
+    di(di(di(di(di(di(di(di(cy ,cy ) ,bo ) ,bo ) ,bo ) ,bo ) ,cy ) ,cy ) ,cy )height:8 totnodes:511  
+                                                                 di    
+                                                         di          cy
+                                                 di          cy        
+                                         di          cy                
+                                 di          bo                        
+                         di          bo                                
+                 di          bo                                        
+         di          bo                                                
+     cy      cy                                                        [2017-05-04 15:09:54,671] p66920 {/Users/blyth/opticks/dev/csg/csg.py:243} INFO - CSG.Serialize : writing 4 trees to directory /tmp/blyth/opticks/tboolean-deep-8 
+    analytic=1_csgpath=/tmp/blyth/opticks/tboolean-deep-8_name=tboolean-deep-8_mode=PyCsgInBox
+    simon:csg blyth$ 
+
+
+
+
+
+Deep Volumes, 22 out of 249 are have tree height > 3 
+-------------------------------------------------------
+
+Of the 22:
+
+* 16 are difference only trees, maximally unbalanced, progressive subtraction of boxes
+* 4 are union only trees, maximally unbalanced
+* 2 are mixed unions of difference of cylinders : these are not so unbalanced
+
+::
+
+    [2017-05-04 15:40:50,454] p67638 {/Users/blyth/opticks/dev/csg/scene.py:139} INFO - analyse_solids nflatsolids:707 ntops:249 ndeep:22 
+
+     1 : /dd/Geometry/PoolDetails/lvNearTopCover0xc137060             : di(di(di(di(bo,bo),bo),bo),bo)height:4 totnodes:31  
+     2 : /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0           : di(di(di(di(di(di(di(cy,cy),cy),cy),cy),cy),cy),cy)height:7 totnodes:255  
+     3 : /dd/Geometry/AdDetails/lvTopESR0xc21fb88                     : di(di(di(di(di(di(di(di(di(cy,cy),cy),cy),cy),cy),cy),cy),cy),cy)height:9 totnodes:1023  
+     4 : /dd/Geometry/AdDetails/lvTopRefGap0xbf9c648                  : di(di(di(di(di(cy,cy),cy),cy),cy),cy)height:5 totnodes:63  
+     5 : /dd/Geometry/AdDetails/lvTopReflector0xbf9be68               : di(di(di(di(di(cy,cy),cy),cy),cy),cy)height:5 totnodes:63  
+     6 : /dd/Geometry/AdDetails/lvBotESR0xbfa74c0                     : di(di(di(di(di(di(di(di(cy,cy),bo),bo),bo),bo),cy),cy),cy)height:8 totnodes:511  
+     7 : /dd/Geometry/AdDetails/lvBotRefGap0xc34bc68                  : di(di(di(di(di(cy,cy),bo),bo),bo),bo)height:5 totnodes:63  
+     8 : /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0               : di(di(di(di(di(cy,cy),bo),bo),bo),bo)height:5 totnodes:63  
+     9 : /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0           : di(di(di(di(di(cy,cy),bo),bo),bo),bo)height:5 totnodes:63  
+    16 : /dd/Geometry/PoolDetails/lvTablePanel0xc0101d8               : di(di(di(di(di(bo,bo),bo),bo),bo),bo)height:5 totnodes:63  
+    17 : /dd/Geometry/Pool/lvNearPoolIWS0xc28bc60                     : di(di(di(di(di(di(di(di(di(di(di(di(bo,bo),bo),bo),bo),bo),bo),bo),bo),bo),bo),bo),bo)height:12 totnodes:8191  
+    18 : /dd/Geometry/Pool/lvNearPoolCurtain0xc2ceef0                 : di(di(di(di(bo,bo),bo),bo),bo)height:4 totnodes:31  
+    19 : /dd/Geometry/Pool/lvNearPoolOWS0xbf93840                     : di(di(di(di(di(di(di(di(di(di(di(di(bo,bo),bo),bo),bo),bo),bo),bo),bo),bo),bo),bo),bo)height:12 totnodes:8191  
+    20 : /dd/Geometry/Pool/lvNearPoolLiner0xc21e9d0                   : di(di(di(di(bo,bo),bo),bo),bo)height:4 totnodes:31  
+    21 : /dd/Geometry/Pool/lvNearPoolDead0xc2dc490                    : di(di(di(di(bo,bo),bo),bo),bo)height:4 totnodes:31  
+    22 : /dd/Geometry/RadSlabs/lvNearRadSlab90xc15c208                : di(di(di(di(bo,bo),bo),bo),bo)height:4 totnodes:31  
+
+    10 : /dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328     : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy)height:10 totnodes:2047  
+    11 : /dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0    : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy)height:10 totnodes:2047  
+    12 : /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy)height:10 totnodes:2047  
+    15 : /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8        : un(un(un(un(un(cy,cy),cy),cy),cy),cy)height:5 totnodes:63  
+
+    13 : /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990              : un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy))height:4 totnodes:31  
+    14 : /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0              : un(un(un(un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy))height:7 totnodes:255  
+
+
+
+
+
+::
+
+    [2017-05-04 13:28:13,914] p63916 {/Users/blyth/opticks/ana/pmt/gdml.py:911} INFO - parsing gdmlpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml 
+
+
+flat lozenge::
+
+    solid.idx:8  cn.totnodes:31 solid.name:near_top_cover_box0xc23f970 ideep:1 lvidx:0 lvn:/dd/Geometry/PoolDetails/lvNearTopCover0xc137060 
+                                 di    
+                         di          bo
+                 di          bo        
+         di          bo                
+     bo      bo
+
+
+tambourine with 6 holes::
+                        
+    solid.idx:156  cn.totnodes:255 solid.name:RadialShieldUnit0xc3d7da8 ideep:2 lvidx:56 lvn:/dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 
+                                                         di    
+                                                 di          cy
+                                         di          cy        
+                                 di          cy                
+                         di          cy                        
+                 di          cy                                
+         di          cy                                        
+     cy      cy                                                
+
+
+
+3 solids each for top and bot reflectors::
+
+    solid.idx:173  cn.totnodes:1023 solid.name:TopESRCutHols0xbf9de10 ideep:3 lvidx:57 lvn:/dd/Geometry/AdDetails/lvTopESR0xc21fb88 
+                                                                         di    
+                                                                 di          cy
+                                                         di          cy        
+                                                 di          cy                
+                                         di          cy                        
+                                 di          cy                                
+                         di          cy                                        
+                 di          cy                                                
+         di          cy                                                        
+     cy      cy                                                                
+    solid.idx:182  cn.totnodes:63 solid.name:TopRefGapCutHols0xbf9cef8 ideep:4 lvidx:58 lvn:/dd/Geometry/AdDetails/lvTopRefGap0xbf9c648 
+                                         di    
+                                 di          cy
+                         di          cy        
+                 di          cy                
+         di          cy                        
+     cy      cy                                
+    solid.idx:191  cn.totnodes:63 solid.name:TopRefCutHols0xbf9bd50 ideep:5 lvidx:59 lvn:/dd/Geometry/AdDetails/lvTopReflector0xbf9be68 
+                                         di    
+                                 di          cy
+                         di          cy        
+                 di          cy                
+         di          cy                        
+     cy      cy                                
+
+
+
+    solid.idx:206  cn.totnodes:511 solid.name:BotESRCutHols0xbfa7368 ideep:6 lvidx:60 lvn:/dd/Geometry/AdDetails/lvBotESR0xbfa74c0 
+                                                                 di    
+                                                         di          cy
+                                                 di          cy        
+                                         di          cy                
+                                 di          bo                        
+                         di          bo                                
+                 di          bo                                        
+         di          bo                                                
+     cy      cy                                                        
+    solid.idx:215  cn.totnodes:63 solid.name:BotRefGapCutHols0xc34bb28 ideep:7 lvidx:61 lvn:/dd/Geometry/AdDetails/lvBotRefGap0xc34bc68 
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     cy      cy                                
+    solid.idx:224  cn.totnodes:63 solid.name:BotRefHols0xc3cd380 ideep:8 lvidx:62 lvn:/dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     cy      cy                                
+
+
+
+
+
+    solid.idx:259  cn.totnodes:63 solid.name:SstTopCirRibBase0xc264f78 ideep:9 lvidx:69 lvn:/dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     cy      cy                                
+
+    solid.idx:349  cn.totnodes:2047 solid.name:led-source-assy0xc3061d0 ideep:10 lvidx:105 lvn:/dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328 
+                                                                                 un    
+                                                                         un          cy
+                                                                 un          zs        
+                                                         un          zs                
+                                                 un          cy                        
+                                         un          cy                                
+                                 un          zs                                        
+                         un          zs                                                
+                 un          cy                                                        
+         un          zs                                                                
+     cy      zs                                                                        
+
+    solid.idx:380  cn.totnodes:2047 solid.name:source-assy0xc2d5d78 ideep:11 lvidx:112 lvn:/dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0 
+                                                                                 un    
+                                                                         un          cy
+                                                                 un          zs        
+                                                         un          zs                
+                                                 un          cy                        
+                                         un          cy                                
+                                 un          zs                                        
+                         un          zs                                                
+                 un          cy                                                        
+         un          zs                                                                
+     cy      zs                                                                     
+
+    solid.idx:428  cn.totnodes:2047 solid.name:amcco60-source-assy0xc0b1df8 ideep:12 lvidx:132 lvn:/dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 
+                                                                                 un    
+                                                                         un          cy
+                                                                 un          zs        
+                                                         un          zs                
+                                                 un          cy                        
+                                         un          cy                                
+                                 un          zs                                        
+                         un          zs                                                
+                 un          cy                                                        
+         un          zs                                                                
+     cy      zs                                                         
+               
+    solid.idx:442  cn.totnodes:31 solid.name:LsoOflTnk0xc17d928 ideep:13 lvidx:140 lvn:/dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990 
+                                                 un            
+                                 un                      di    
+                 un                      di          cy      cy
+         di              di          cy      cy                
+     cy      cy      cy      cy                                
+
+    solid.idx:460  cn.totnodes:255 solid.name:GdsOflTnk0xc3d5160 ideep:14 lvidx:142 lvn:/dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0 
+                                                                                                 un            
+                                                                                 un                      di    
+                                                                 un                      di          cy      cy
+                                                 un                      di          cy      cy                
+                                 un                      di          cy      cy                                
+                 un                      di          cy      cy                                                
+         di              di          cy      cy                                                                
+     cy      cy      cy      cy                                                                                
+
+    solid.idx:479  cn.totnodes:63 solid.name:OflTnkContainer0xc17cf50 ideep:15 lvidx:145 lvn:/dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8 
+                                         un    
+                                 un          cy
+                         un          cy        
+                 un          cy                
+         un          cy                        
+     cy      cy                                
+
+    solid.idx:548  cn.totnodes:63 solid.name:table_panel_box0xc00f558 ideep:16 lvidx:200 lvn:/dd/Geometry/PoolDetails/lvTablePanel0xc0101d8 
+                                         di    
+                                 di          bo
+                         di          bo        
+                 di          bo                
+         di          bo                        
+     bo      bo                                
+
+    solid.idx:587  cn.totnodes:8191 solid.name:near_pool_iws_box0xc288ce8 ideep:17 lvidx:211 lvn:/dd/Geometry/Pool/lvNearPoolIWS0xc28bc60 
+                                                                                                 di    
+                                                                                         di          bo
+                                                                                 di          bo        
+                                                                         di          bo                
+                                                                 di          bo                        
+                                                         di          bo                                
+                                                 di          bo                                        
+                                         di          bo                                                
+                                 di          bo                                                        
+                         di          bo                                                                
+                 di          bo                                                                        
+         di          bo                                                                                
+     bo      bo                                                                                        
+
+    solid.idx:597  cn.totnodes:31 solid.name:near_pool_curtain_box0xc2cef48 ideep:18 lvidx:213 lvn:/dd/Geometry/Pool/lvNearPoolCurtain0xc2ceef0 
+                                 di    
+                         di          bo
+                 di          bo        
+         di          bo                
+     bo      bo                        
+
+    solid.idx:664  cn.totnodes:8191 solid.name:near_pool_ows_box0xbf8c8a8 ideep:19 lvidx:232 lvn:/dd/Geometry/Pool/lvNearPoolOWS0xbf93840 
+                                                                                                 di    
+                                                                                         di          bo
+                                                                                 di          bo        
+                                                                         di          bo                
+                                                                 di          bo                        
+                                                         di          bo                                
+                                                 di          bo                                        
+                                         di          bo                                                
+                                 di          bo                                                        
+                         di          bo                                                                
+                 di          bo                                                                        
+         di          bo                                                                                
+     bo      bo                                                                                        
+
+    solid.idx:674  cn.totnodes:31 solid.name:near_pool_liner_box0xc2dcc28 ideep:20 lvidx:234 lvn:/dd/Geometry/Pool/lvNearPoolLiner0xc21e9d0 
+                                 di    
+                         di          bo
+                 di          bo        
+         di          bo                
+     bo      bo                        
+
+    solid.idx:684  cn.totnodes:31 solid.name:near_pool_dead_box0xbf8a280 ideep:21 lvidx:236 lvn:/dd/Geometry/Pool/lvNearPoolDead0xc2dc490 
+                                 di    
+                         di          bo
+                 di          bo        
+         di          bo                
+     bo      bo                        
+
+    solid.idx:701  cn.totnodes:31 solid.name:near-radslab-box-90xcd31ea0 ideep:22 lvidx:245 lvn:/dd/Geometry/RadSlabs/lvNearRadSlab90xc15c208 
+                                 di    
+                         di          bo
+                 di          bo        
+         di          bo                
+     bo      bo                        
+    [2017-05-04 13:28:14,179] p63916 {/Users/blyth/opticks/dev/csg/scene.py:206} INFO - analyse_solids nflatsolids:707 ntops:249 ndeep:22 
+    [2017-05-04 13:28:14,470] p63916 {/Users/blyth/opticks/dev/csg/scene.py:221} INFO - save_lvsolids nlvs:249 
+
+
+
+Enumerating Distinct Top Solids
+-----------------------------------
+
+
+Enumeration of all the top solids with scene.py SNode.tops
+
+* total:249 matches the number of LV
+* regarding the serialization, perhaps just dont start with solids, instead start with the 249 lv and their solids
+
+
+::
+
+    In [60]: topidx = [top.idx for top in SNode.tops()]
+
+    In [61]: lvsolids = [lv.solid.idx for lv in gdml.volumes.values()]
+
+    In [62]: topidx == lvsolids
+    Out[62]: True
+
+
+::
+
+    [2017-05-04 12:30:24,226] p63604 {/Users/blyth/opticks/dev/csg/scene.py:199} INFO - save_solids nsolids:707 ndeep:229 ntops:249
+
+    In [9]: len(gdml.volumes)
+    Out[9]: 249
+
+
+Counts with increasing number of subsolids, extends to 24 subsolids::
+
+    In [49]: [(_,len(SNode.tops(ssmin=_))) for _ in range(26)]
+    Out[49]: 
+    [(0, 249),
+     (1, 88),
+     (2, 88),
+     (3, 47),
+     (4, 47),
+     (5, 26),
+     (6, 26),
+     (7, 21),
+     (8, 21),
+     (9, 11),
+     (10, 11),
+     (11, 9),
+     (12, 9),
+     (13, 7),
+     (14, 7),
+     (15, 6),
+     (16, 6),
+     (17, 5),
+     (18, 5),
+     (19, 5),
+     (20, 5),
+     (21, 2),
+     (22, 2),
+     (23, 2),
+     (24, 2),
+     (25, 0)]
+
+
+
+
+
+::
+
+
+    In [13]: gdml.solids(664).as_ncsg()
+    Out[13]: di(di(di(di(di(di(di(di(di(di(di(di(bo ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo ) ,bo )
+
+
+    solid.idx:664  25:640-664    cn.totnodes:8191 solid.name:near_pool_ows_box0xbf8c8a8
+                                                                                                 664  
+                                                                                                  | 
+                                                                                                 di    
+                                                                                         di          bo
+                                                                                 di          bo        \
+                                                                         di          bo                663
+                                                                 di          bo                        
+                                                         di          bo                                
+                                                 di          bo                                        
+                                         di          bo                                                
+                                 di          bo                                                        
+        642              di          bo                                                                
+         |       di          bo                                                                        
+         di          bo                                                                                
+     bo      bo                                        
+     |       | 
+     640     641
+
+
+
 Big node trees 
 ------------------
 
-From scene.py see some surprising totnodes in the CSG trees::
+
+::
 
     [2017-05-03 20:04:44,940] p60750 {/Users/blyth/opticks/dev/csg/csg.py:348} INFO - save /tmp/blyth/opticks/dev/csg/scene/solids/647 1 
     [2017-05-03 20:04:44,942] p60750 {/Users/blyth/opticks/dev/csg/csg.py:348} INFO - save /tmp/blyth/opticks/dev/csg/scene/solids/648 31 
@@ -132,7 +584,7 @@ Hmm need a better way to get from a solid to a list of the lvs that use it...
 
 
 
-Checking detdesc::
+Checking detdesc, repeated subtraction of rotated boxes::
 
      33 <!-- Far Pool top cover -->
      34 <logvol name="lvFarTopCover" material="PPE">

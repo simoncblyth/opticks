@@ -1021,6 +1021,50 @@ EOP
 
 
 
+
+tboolean-deep(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-deep-(){ local n=14 ; tboolean-gdml- $TMP/${FUNCNAME}$n --gsel $($FUNCNAME- $n) --gmaxdepth 1 ; }
+tboolean-deep--(){  $FUNCNAME- | sed -n ${1:-1}p ; }
+tboolean-deep---(){ cat << EOD
+/dd/Geometry/PoolDetails/lvNearTopCover0x
+/dd/Geometry/AdDetails/lvRadialShieldUnit0x
+/dd/Geometry/AdDetails/lvTopESR0x
+/dd/Geometry/AdDetails/lvTopRefGap0x
+/dd/Geometry/AdDetails/lvTopReflector0x
+/dd/Geometry/AdDetails/lvBotESR0x
+/dd/Geometry/AdDetails/lvBotRefGap0x
+/dd/Geometry/AdDetails/lvBotReflector0x
+/dd/Geometry/AdDetails/lvSstTopCirRibBase0x
+/dd/Geometry/CalibrationSources/lvLedSourceAssy0x
+/dd/Geometry/CalibrationSources/lvGe68SourceAssy0x
+/dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0x
+/dd/Geometry/OverflowTanks/lvLsoOflTnk0x
+/dd/Geometry/OverflowTanks/lvGdsOflTnk0x
+/dd/Geometry/OverflowTanks/lvOflTnkContainer0x
+/dd/Geometry/PoolDetails/lvTablePanel0x
+/dd/Geometry/Pool/lvNearPoolIWS0x
+/dd/Geometry/Pool/lvNearPoolCurtain0x
+/dd/Geometry/Pool/lvNearPoolOWS0x
+/dd/Geometry/Pool/lvNearPoolLiner0x
+/dd/Geometry/Pool/lvNearPoolDead0x
+/dd/Geometry/RadSlabs/lvNearRadSlab90x
+EOD
+}
+
+tboolean-deep-notes(){ cat << EON
+
+n = {}  
+n["/dd/Geometry/PoolDetails/lvNearTopCover0x"]="1:flat lozenge"
+n["/dd/Geometry/AdDetails/lvRadialShieldUnit0x"]="2:tambourine with 6 holes, potential wierdness : from inside dont see the caps, coincidence perhaps"
+n["/dd/Geometry/AdDetails/lvTopESR0x"]="3:evaluative_csg tranOffset 0 numParts 1023 perfect tree height 9 exceeds current limit"
+n["/dd/Geometry/AdDetails/lvBotReflector0x"]="8:  disc with 4 slots, but thats partial: evaluative_csg tranOffset 0 numParts 511 perfect tree height 8 exceeds current limit "
+n["/dd/Geometry/AdDetails/lvSstTopCirRibBase0x"]="9:  cross cut cylinder, obvious coincidence speckling in the cuts"
+
+
+EON
+}
+
+
 tboolean-0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
 tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
@@ -1040,14 +1084,14 @@ tboolean-pmt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-pmt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PMT/lvPmtHemi0x ; }
 
 tboolean-sstt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
-tboolean-sstt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstTopRadiusRib0x ; } 
+tboolean-sstt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstTopRadiusRib0x ; }
 # contains a trapezoid as part of, thats the real skinny one 
 
 tboolean-sstt2(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sstt2-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstInnVerRibBase0x ; }
 
 tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
-tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0xc137060 ; }  
+tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0x ; }
 ## ntc: flat lozenge shape
 
 

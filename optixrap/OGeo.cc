@@ -557,6 +557,9 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     //  in order to provide identity to the instances need to repeat the iidentity to the
     //  triangles
     //
+    //
+    // Hmm this is really treating each triangle as a primitive each with its own bounds...
+    //  
 
     optix::Geometry geometry = m_context->createGeometry();
     geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));

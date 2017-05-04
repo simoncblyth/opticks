@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import numpy as np
 import os, logging
+import itertools
 log = logging.getLogger(__name__) 
 
 try:
@@ -24,6 +25,19 @@ def ahash(a):
     """
     a.flags.writeable = False
     return "%x" % hash(a.data)
+
+
+
+
+def find_ranges(i):
+    """  
+    :param i: sorted list of integers
+
+    http://stackoverflow.com/questions/4628333/converting-a-list-of-integers-into-range-in-python
+    """
+    for a, b in itertools.groupby(enumerate(i), lambda (x, y): y - x):
+        b = list(b)
+        yield b[0][1], b[-1][1]
 
 
 def count_unique_truncating(vals):
