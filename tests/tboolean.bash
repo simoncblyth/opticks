@@ -599,17 +599,48 @@ kwa = {}
 kwa.update(im)
 #kwa.update(tr)
 
-sp1 = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", **kwa )
-sp1.complement = False
 
-sp2 = CSG("sphere", param=[0,0,300,100], boundary="$(tboolean-testobject)", **kwa )
-sp2.complement = True 
+al = CSG("sphere", param=[0,0,50,100])
+ar = CSG("sphere", param=[0,0,-50,100])
+a = CSG("difference", left=al, right=ar, translate="400,0,0" )
+a.boundary = "$(tboolean-testobject)"
+a.meta.update(im)
+
+cl = CSG("sphere", param=[0,0, 50,100])
+cr = CSG("sphere", param=[0,0,-50,100])
+c = CSG("difference", left=cr, right=cl, translate="200,0,0" )
+c.boundary = "$(tboolean-testobject)"
+c.meta.update(im)
 
 
-CSG.Serialize([container, sp1, sp2], "$TMP/$FUNCNAME" )
+
+bl = CSG("sphere", param=[0,0,50,100])
+br = CSG("sphere", param=[0,0,-50,100])
+br.complement = True
+b = CSG("intersection", left=bl, right=br, translate="-200,0,0" )
+b.boundary = "$(tboolean-testobject)"
+b.meta.update(im)
+
+dl = CSG("sphere", param=[0,0,50,100])
+dl.complement = True
+dr = CSG("sphere", param=[0,0,-50,100])
+d = CSG("intersection", left=dl, right=dr, translate="-400,0,0" )
+d.boundary = "$(tboolean-testobject)"
+d.meta.update(im)
+
+
+
+
+
+
+CSG.Serialize([container, a, b, c, d ], "$TMP/$FUNCNAME" )
 
 """
 Complemented inside out sphere ray trace appears dark, it has inverted normals 
+
+# FIX: not getting the expected, A diff B = A intersect !B 
+       getting mirrored ? 
+
 
 """
 
