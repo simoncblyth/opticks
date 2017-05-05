@@ -4,7 +4,8 @@
 """
 
 import numpy as np
-import os, logging, json
+import os, logging, json, pprint
+pp = pprint.PrettyPrinter(indent=4)
 
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
 json_load_ = lambda path:json.load(file(expand_(path)))
@@ -76,16 +77,25 @@ class SNode(object):
 
 
 class Scene(object):
-    def __init__(self, gdml, base="$TMP/dev/csg/scene", name="scene.json"):
-        self.gdml = gdml
-        self.base = expand_(base) 
-        self.name = name
-        self.associate_solids_to_lv()
 
-    path = property(lambda self:os.path.join(self.base, self.name))
+    base = "$TMP/dev/csg/scene" 
+    name = "scene.json" 
+
+    @classmethod
+    def path_(cls):
+        base = expand_(cls.base) 
+        return os.path.join(cls.base, cls.name)
+
+    path = property(lambda self:self.path_())
+
+    def __init__(self, gdml):
+        self.gdml = gdml
+        self.associate_solids_to_lv()
 
     def _get_gltf(self):
         g = {}
+        g["scenes"] = [{"nodes":[0]}]
+        g["nodes"] = [{"mesh":0 }]
         g['asset'] = dict(version="2.0", generator="scene.py", copyright="Opticks")
         return g
     gltf = property(_get_gltf)
@@ -93,7 +103,8 @@ class Scene(object):
     def save(self):
         self.save_lvsolids()
         #self.save_materials()
-        #self.save_nodes() 
+        self.save_gltf() 
+
 
     def associate_solids_to_lv(self):
         so2lv = {}
@@ -142,6 +153,10 @@ class Scene(object):
 
 
     def save_lvsolids(self):
+        """
+        TODO: Needs to save only solids referenced from a subtree, but use
+        absolute indices from the full gdml
+        """ 
         rdir = self.prep_reldir("lvsolids")
         lvs = self.gdml.volumes.values()
         for lv in lvs:
@@ -162,9 +177,105 @@ class Scene(object):
         pass
         return rdir
 
-    def save_nodes(self):
+    def save_gltf(self):
         path = self.path 
+        log.info("save_gltf to %s " % path )
         json_save_(path, dict(self.gltf))
+
+    @classmethod 
+    def load_gltf(cls, path=None):
+        if path is None:
+            path = cls.path_()  
+        pass
+        gltf = json_load_(path)
+        pp.pprint(gltf)
+        return gltf 
+
+
+
+class Nd(object):
+    """
+    Mimimal representation of a node tree, just holding 
+    referencing indices and transforms
+    """
+    count = 0 
+    ulv = set()
+    uso = set()
+    registry = {}
+
+    def __init__(self, nindex, lvidx, transform, name, depth):
+        self.nindex= nindex
+        self.lvidx = lvidx 
+        self.name = name
+        self.transform = transform
+        self.depth = depth
+        self.ichildren = []
+
+    def _get_gltf(self):
+        d = {}
+        d["name"] = self.name
+        d["children"] = self.ichildren
+        d["matrix"] = self.smatrix
+        return d
+    gltf = property(_get_gltf)
+
+    stransform = property(lambda self:"".join(map(lambda row:"%30s" % row, self.transform )))
+
+    def _get_smatrix(self):
+        return ",\n".join(map(lambda row:",".join(map(lambda v:"%10s" % v,row)), self.transform )) 
+    smatrix = property(_get_smatrix)
+
+    brief = property(lambda self:"Nd ni%5d  lv%5d nch:%d chulv:%s  st:%s " % (self.nindex, self.lvidx,  len(self.ichildren), self.ch_unique_lv, self.stransform ))
+
+    ch_unique_lv = property(lambda self:list(set(map(lambda ch:ch.lvidx, self.children))))
+
+    children = property(lambda self:map(lambda ic:self.get(ic), self.ichildren))
+
+    def __repr__(self):
+        indent = ".. " * self.depth 
+        return "\n".join([indent + self.brief] + map(repr, self.children))   
+
+    @classmethod
+    def report(cls):
+        log.info(" count %d len(ulv):%d len(uso):%d " % (cls.count, len(cls.ulv), len(cls.uso)))
+
+    @classmethod
+    def summarize(cls, node, depth):
+        cls.count += 1
+        cls.ulv.add(node.lv.idx)
+        cls.uso.add(node.lv.solid.idx)
+
+        name = node.lv.name  # <-- hmm whats the best name ? 
+        nindex = node.index
+
+        nd = cls(nindex, node.lv.idx, node.pv.transform, name, depth)
+        assert not nindex in cls.registry
+        cls.registry[nindex] = nd  
+        return nd  
+
+    @classmethod
+    def get(cls, nindex):
+        return cls.registry[nindex]
+
+    @classmethod
+    def build_minimal_tree(cls, target):
+        def build_r(node, depth=0):
+            if depth < 3:
+                nd = cls.summarize(node, depth)
+            else:
+                nd = None 
+            pass
+            for child in node.children: 
+                ch = build_r(child, depth+1)
+                if nd is not None and ch is not None:
+                    nd.ichildren.append(ch.nindex)
+                pass
+            pass
+            return nd
+        pass 
+        return build_r(target)
+
+
 
 
 
@@ -177,6 +288,10 @@ if __name__ == '__main__':
     gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
     gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
+    gsel = "/dd/Geometry/AD/lvSST0x" 
+    gmaxdepth = 3
+
+
     log.info(" gsel:%s gidx:%s gmaxnode:%s gmaxdepth:%s " % (gsel, gidx, gmaxnode, gmaxdepth))
 
 
@@ -184,19 +299,27 @@ if __name__ == '__main__':
     gdml = GDML.parse(gdmlpath)
 
 
-    scene = Scene(gdml)
-    scene.analyse_solids()
+    tree = Tree(gdml.world)
+    target = tree.findnode(gsel, gidx)
+    log.info(" target node %s " % target )   
+    nodelist = target.rprogeny(gmaxdepth, gmaxnode)
+    log.info(" target nodelist  %s " % len(nodelist) )   
 
-    scene.save()
+
+    nd = Nd.build_minimal_tree(target)
+    Nd.report() 
+
 
 
 if 0:
 
-    tree = Tree(gdml.world)
+    scene = Scene(gdml)
+    #scene.analyse_solids()
+    scene.save_lvsolids()
+    gltf = Scene.load_gltf()
 
-    subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
 
-    log.info(" subtree %s nodes " % len(subtree) ) 
+
 
 
 

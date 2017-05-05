@@ -471,7 +471,7 @@ class Box(Primitive):
 
 class Cone(Primitive):
     """
-    GDML does inner... i will do that via a CSG difference 
+    GDML inner cone translated into CSG difference 
 
     rmin1: inner radius at base of cone 
     rmax1: outer radius at base of cone 
@@ -843,7 +843,7 @@ class Volume(G):
         are not being propagated GPU side, and even when they
         are will want to be able to handle a csg instance
         comprising a few solids only (eg the PMT) 
-        as is with its own transforms transforms.
+        as is with its own transforms.
 
         Essentially are collapsing a subtree for the 
         handful of solids into the self contained instance
@@ -859,6 +859,22 @@ class Volume(G):
         return "\n".join([line, repr_(self.solid), repr_(self.material)] + pvs )
 
 class PhysVol(G):
+    """
+
+    volume
+         opticks.ana.pmt.gdml.Volume  
+
+    transform
+         4x4 np.ndarray homogeneous TRS matrix ie Translate-Rotate-Scale 
+         combining the position, rotation and scale attributes
+
+    position
+    rotation
+    scale
+         dont use these, use transform that combines them
+
+
+    """
     volumeref = property(lambda self:self.elem.find("volumeref").attrib["ref"])
     volume = property(lambda self:self.g.volumes[self.volumeref])
     children = property(lambda self:[self.volume])

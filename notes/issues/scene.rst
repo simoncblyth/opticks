@@ -17,6 +17,130 @@ Currently NCSG::Polygonize blindly applies to every CSG node tree without:
 * caching to avoid repeating work
 
 
+gltf samples
+------------
+
+* https://github.com/KhronosGroup/glTF-Sample-Models/blob/master/2.0/Lantern/glTF/Lantern.gltf
+
+
+::
+
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 0,
+            "NORMAL": 1,
+            "TANGENT": 2,
+            "POSITION": 3
+          },
+          "indices": 4,
+          "material": 0,
+          "mode": 4
+        }
+      ],
+      "name": "LanternPole_Body"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 5,
+            "NORMAL": 6,
+            "TANGENT": 7,
+            "POSITION": 8
+          },
+          "indices": 9,
+          "material": 0,
+          "mode": 4
+        }
+      ],
+      "name": "LanternPole_Chain"
+    },
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "TEXCOORD_0": 10,
+            "NORMAL": 11,
+            "TANGENT": 12,
+            "POSITION": 13
+          },
+          "indices": 14,
+          "material": 0,
+          "mode": 4
+        }
+      ],
+      "name": "LanternPole_Lantern"
+    }
+  ],
+
+
+
+  "nodes": [
+    {
+      "children": [],
+      "mesh": 0,
+      "translation": [
+        -3.82315421,
+        13.01603,
+        0.0
+      ],
+      "name": "LanternPole_Body"
+    },
+    {
+      "children": [],
+      "mesh": 1,
+      "translation": [
+        -9.582001,
+        21.0378723,
+        0.0
+      ],
+      "name": "LanternPole_Chain"
+    },
+    {
+      "children": [],
+      "mesh": 2,
+      "translation": [
+        -9.582007,
+        18.0091515,
+        0.0
+      ],
+      "name": "LanternPole_Lantern"
+    },
+    {
+      "children": [
+        0,
+        1,
+        2
+      ],
+      "scale": [
+        0.06,
+        0.06,
+        0.06
+      ],
+      "translation": [
+        0.237,
+        -0.758,
+        0.0
+      ],
+      "name": "Lantern"
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        3
+      ]
+    }
+  ],
+
+
+
+
+
 TODO : make input serialization smarter ? avoiding repetition 
 ---------------------------------------------------------------------
 

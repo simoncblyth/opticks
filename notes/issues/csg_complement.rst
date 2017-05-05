@@ -14,6 +14,8 @@ FIXED ISSUE : complemented solids via normal flip yields unexpected intersection
   as it is impossible to MISS the unbounded complementd solid
 
 
+* see tboolean-complement for testing this
+
 
 csg_intersect_part.h::
 

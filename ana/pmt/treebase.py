@@ -30,6 +30,45 @@ class DummyTopPV(object):
 
 
 class Node(object):
+    """
+    treebase.Node
+    ===============
+
+    Collects GDML elements into more easily navigable tree structure...
+
+    pv 
+       opticks.ana.pmt.gdml.PhysVol : placement of the node
+
+    pv.transform
+       4x4 np.array 
+
+    posXYZ 
+        opticks.ana.pmt.gdml.Position
+        TODO: remove this, it was a kludge ? should be using transform 
+
+    pv.volume 
+    lv   
+       opticks.ana.pmt.gdml.Volume : same as the lv
+
+    lv.physvol
+       list of opticks.ana.pmt.gdml.PhysVol
+
+    lv.solid
+       geometry eg opticks.ana.pmt.gdml.Tube, opticks.ana.pmt.gdml.Union
+
+
+
+    parent
+       opticks.ana.pmt.treebase.Node
+
+    children
+       list of opticks.ana.pmt.treebase.Node 
+
+
+    TODO: migrate into opticks.gdml  or opticks.analytic ?
+
+    """
+
     @classmethod
     def md5digest(cls, volpath ):
         """  
@@ -170,6 +209,8 @@ class Node(object):
     nchild = property(lambda self:len(self.children))
     name = property(lambda self:"Node %2d : dig %s pig %s depth %s nchild %s " % (self.index, self.digest[:4], self.pdigest[:4], self.depth, self.nchild) )
 
+    brief = property(lambda self:"%5d : %40s %s " % (self.index, self.lv.name, self.pv.name))
+
     def __repr__(self):
         return "%s \npv:%s\nlv:%s : %s " % (self.name, repr(self.pv),repr(self.lv), repr(self.posXYZ) ) 
 
@@ -263,7 +304,7 @@ class Tree(object):
 
         targetNode = nodes[idx] if idx < numNodes else None 
 
-        log.info("selected targetNode:[%s]\n%r " % (idx, targetNode)) 
+        #log.info("selected targetNode:[%s]\n%r " % (idx, targetNode)) 
         return targetNode
 
     @classmethod
@@ -293,6 +334,9 @@ class Tree(object):
         :param maxdepth: node depth limit
         :param maxnode: node count limit
         :param idx: used to pick target node within an lvn selection that yields multiple nodes
+
+        :return progeny: recursively obtained flat list of all progeny nodes including selected arget node 
+
 
         TODO: review similar node selection code from previous DAE based approach
         """
