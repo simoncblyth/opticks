@@ -26,7 +26,7 @@ It imports python classes generated from C enum headers::
 
 """
 import sys, os, datetime, collections, numpy as np
-ndict = lambda:collections.defaultdict(ndict) 
+ndict = lambda:collections.defaultdict(ndict)     # for perl style hash-of-hash-of-hash-of...
 
 # generated enum classes
 from opticks.sysrap.OpticksCSG import CSG_

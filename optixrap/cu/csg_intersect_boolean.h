@@ -696,6 +696,7 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
                 bool firstLeft = signbit(csg.data[csg.curr].w) ;
                 bool secondLeft = signbit(csg.data[csg.curr-1].w) ;
 
+
                 if(!(firstLeft ^ secondLeft))
                 {
                     rtPrintf("[%5d]evaluative_csg ERROR_XOR_SIDE nodeIdx %4d typecode %d tl %10.3f tr %10.3f sl %d sr %d \n", launch_index.x, nodeIdx, typecode, csg.data[csg.curr].w, csg.data[csg.curr-1].w, firstLeft, secondLeft );
@@ -708,10 +709,37 @@ void evaluative_csg( const Prim& prim, const uint4& identity )
                 IntersectionState_t l_state = CSG_CLASSIFY( csg.data[left], ray.direction, tmin );
                 IntersectionState_t r_state = CSG_CLASSIFY( csg.data[right], ray.direction, tmin );
 
+
                 float t_left  = fabsf( csg.data[left].w );
                 float t_right = fabsf( csg.data[right].w );
 
-                int ctrl = boolean_ctrl_packed_lookup( typecode , l_state, r_state, t_left <= t_right ) ;
+                bool leftIsCloser = t_left <= t_right ;
+
+#define WITH_COMPLEMENT 1
+#ifdef WITH_COMPLEMENT
+                // complements (signalled by -0.f) cannot Miss, only Exit, see opticks/notes/issues/csg_complement.rst 
+
+                // these are only valid (and only needed) for misses 
+                bool l_complement = signbit(csg.data[left].x) ;
+                bool r_complement = signbit(csg.data[right].x) ;
+
+                bool l_complement_miss = l_state == State_Miss && l_complement ;
+                bool r_complement_miss = r_state == State_Miss && r_complement ;
+
+                if(r_complement_miss)
+                {
+                    r_state = State_Exit ; 
+                    leftIsCloser = true ; 
+                } 
+
+                if(l_complement_miss)
+                {
+                    l_state = State_Exit ; 
+                    leftIsCloser = false ; 
+                } 
+
+#endif
+                int ctrl = boolean_ctrl_packed_lookup( typecode , l_state, r_state, leftIsCloser ) ;
                 history_append( hist, nodeIdx, ctrl ); 
 
                 enum { UNDEFINED=0, CONTINUE=1, BREAK=2 } ;
@@ -919,10 +947,10 @@ void intersect_csg( const Prim& prim, const uint4& identity )
 
     enum { MISS, LEFT, RIGHT, RFLIP  } ;  // this order is tied to CTRL_ enum, needs rejig of lookup to change 
     float4 isect[4] ;
-    isect[MISS]       =  make_float4(0.f, 0.f, 1.f, 0.f);
-    isect[LEFT]       =  make_float4(0.f, 0.f, 1.f, 0.f);
-    isect[RIGHT]      =  make_float4(0.f, 0.f, 1.f, 0.f);
-    isect[RFLIP]      =  make_float4(0.f, 0.f, 1.f, 0.f);
+    isect[MISS]       =  make_float4(0.f, 0.f, 0.f, 0.f);
+    isect[LEFT]       =  make_float4(0.f, 0.f, 0.f, 0.f);
+    isect[RIGHT]      =  make_float4(0.f, 0.f, 0.f, 0.f);
+    isect[RFLIP]      =  make_float4(0.f, 0.f, 0.f, 0.f);
 
     const float4& miss  = isect[MISS];
     float4& left  = isect[LEFT];
@@ -967,8 +995,18 @@ void intersect_csg( const Prim& prim, const uint4& identity )
 
              if(bileaf) // op-left-right leaves
              {
-                 left.w = 0.f ;   // reusing the same storage so clear ahead
+                 // reusing the same storage so clear ahead
+
+                 left.x = 0.f ; 
+                 left.y = 0.f ; 
+                 left.z = 0.f ; 
+                 left.w = 0.f ;  
+
+                 right.x = 0.f ; 
+                 right.y = 0.f ; 
+                 right.z = 0.f ; 
                  right.w = 0.f ; 
+
                  csg_intersect_part( prim, partOffset+leftIdx-1 , tX_min[LHS], left  ) ;
                  csg_intersect_part( prim, partOffset+rightIdx-1 , tX_min[RHS], right  ) ;
              }

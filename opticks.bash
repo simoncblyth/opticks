@@ -570,7 +570,7 @@ opticks-docs-make()
 
 
 
-opticks-notes-cd(){ cd $(opticks-home)/notes/issues/geant4_opticks_integration ; }
+opticks-notes-cd(){ cd $(opticks-home)/notes/issues/$1 ; }
 
 opticks-notes-image(){
     find $(opticks-home)/notes -name '*.rst' -exec grep -H image {} \;

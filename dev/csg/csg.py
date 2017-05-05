@@ -441,7 +441,7 @@ class CSG(CSG_):
         root.analyse()
         return root
 
-    def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, param2=None, param3=None, boundary="", translate=None, rotate=None, scale=None,  **kwa):
+    def __init__(self, typ_, name="", left=None, right=None, param=None, param1=None, param2=None, param3=None, boundary="", complement=False, translate=None, rotate=None, scale=None,  **kwa):
         if type(typ_) is str:
             typ = self.fromdesc(typ_)
         else:
@@ -471,7 +471,7 @@ class CSG(CSG_):
         self.rotate = rotate
         self.scale = scale
         self._transform = None
-        self.complement = False
+        self.complement = complement
 
         self.planes = []
         self.meta = kwa

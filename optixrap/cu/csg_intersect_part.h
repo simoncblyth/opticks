@@ -161,8 +161,13 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
         }
     }
 
-    if(complement && valid_intersect)  // flip normal 
+    if(complement)  // flip normal, even for miss need to signal the complement with a -0.f  
     {
+        // For valid_intersects this flips the normal
+        // otherwise for misses all tt.xyz values should be zero
+        // but nevertheless proceed to set signbits to signal a complement miss  
+        // to the caller... csg_intersect_boolean
+
         tt.x = -tt.x ; 
         tt.y = -tt.y ; 
         tt.z = -tt.z ; 

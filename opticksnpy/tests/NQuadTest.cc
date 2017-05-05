@@ -23,16 +23,55 @@
 
 
 
+const unsigned SIGNBIT32 = 0x1 << 31  ;
+const unsigned OTHERBIT32 = 0x7fffffffu ;
 
 
 void test_negative_zero()
 {
+
+    float fzero = 0.f ; 
+    float negative_fzero = -0.f ; 
+    assert( negative_fzero == fzero );  // <-- regarded as equal despite different signbit 
+
+    std::cout
+           << " fzero " << fzero 
+           << " negative_fzero " << negative_fzero 
+           << std::endl ; 
+
+
+    int izero = 0 ; 
+    int negative_izero = -0 ; 
+    assert( negative_izero == izero );  // int zeros fail to hold on to their signbit 
+
+    std::cout
+           << " izero " << izero 
+           << " negative_izero " << negative_izero 
+           << std::endl ; 
+ 
+
+
+    union uuif 
+    {
+        float f ;
+        int   i ;
+        unsigned u ;
+    };
+
+    uuif q ; 
+    q.f = negative_fzero ; 
+    assert( q.u & SIGNBIT32 ) ; 
+ 
+            
+}
+
+
+void test_quad_negative_zero()
+{
+
     nquad q, p ;
     q.u = {0,1,2,3} ;
     p.u = {0,0,0,0} ;
-
-    const unsigned SIGNBIT32 = 0x1 << 31  ;
-    const unsigned OTHERBIT32 = 0x7fffffffu ;
 
     assert(  SIGNBIT32  == 0x80000000u );
     // assert(  !SIGNBIT32 == OTHERBIT32 );  // <<< not so
@@ -162,6 +201,7 @@ int main()
     //test_make();
 
     test_negative_zero();
+    test_quad_negative_zero();
 
     return 0 ;
 }

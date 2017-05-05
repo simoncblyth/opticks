@@ -582,10 +582,10 @@ EOP
 
 
 
-tboolean-sphere-deserialize(){ NCSGDeserializeTest $TMP/tboolean-sphere-- ; }
-tboolean-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
-tboolean-sphere-(){ $FUNCNAME- | python $* ; } 
-tboolean-sphere--(){ cat << EOP 
+tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/tboolean-complement-- ; }
+tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-complement-(){ $FUNCNAME- | python $* ; } 
+tboolean-complement--(){ cat << EOP 
 from opticks.dev.csg.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -600,33 +600,31 @@ kwa.update(im)
 #kwa.update(tr)
 
 
-al = CSG("sphere", param=[0,0,50,100])
+al = CSG("sphere", param=[0,0,50,100])   # mid-right-Y, conventional difference(top-sphere,bottom-sphere)
 ar = CSG("sphere", param=[0,0,-50,100])
-a = CSG("difference", left=al, right=ar, translate="400,0,0" )
+a = CSG("difference", left=al, right=ar, translate="0,200,0" )
 a.boundary = "$(tboolean-testobject)"
 a.meta.update(im)
 
-cl = CSG("sphere", param=[0,0, 50,100])
-cr = CSG("sphere", param=[0,0,-50,100])
-c = CSG("difference", left=cr, right=cl, translate="200,0,0" )
-c.boundary = "$(tboolean-testobject)"
-c.meta.update(im)
-
-
-
-bl = CSG("sphere", param=[0,0,50,100])
-br = CSG("sphere", param=[0,0,-50,100])
-br.complement = True
-b = CSG("intersection", left=bl, right=br, translate="-200,0,0" )
+bl = CSG("sphere", param=[0,0,50,100])   # far-right-Y,     intersect(top-sphere, complement(bot-sphere) )      
+br = CSG("sphere", param=[0,0,-50,100], complement=True)
+b = CSG("intersection", left=bl, right=br, translate="0,400,0" )
 b.boundary = "$(tboolean-testobject)"
 b.meta.update(im)
 
-dl = CSG("sphere", param=[0,0,50,100])
-dl.complement = True
+
+cl = CSG("sphere", param=[0,0, 50,100])  # mid left Y,  conventional difference(bot-sphere,top-sphere) 
+cr = CSG("sphere", param=[0,0,-50,100])
+c = CSG("difference", left=cr, right=cl, translate="0,-200,0" )
+c.boundary = "$(tboolean-testobject)"
+c.meta.update(im)
+
+dl = CSG("sphere", param=[0,0,50,100], complement=True)    #  far-left-Y  intersect( complement(top-sphere), bot-sphere )    #  bot-top
 dr = CSG("sphere", param=[0,0,-50,100])
-d = CSG("intersection", left=dl, right=dr, translate="-400,0,0" )
+d = CSG("intersection", left=dl, right=dr, translate="0,-400,0" )
 d.boundary = "$(tboolean-testobject)"
 d.meta.update(im)
+
 
 
 
