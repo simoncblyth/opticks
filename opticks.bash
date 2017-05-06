@@ -20,6 +20,12 @@ OPTICKS BASH FUNCTIONS
      sphinx-build the notes
 
 
+Most Opticks development notes are kept in the env repository, 
+use start from 
+
+   env-;opticksdev-;opticksdev-vi
+
+
 EOU
 }
 

@@ -2,7 +2,6 @@
 """
 
 """
-
 import numpy as np
 import os, logging, json, pprint
 pp = pprint.PrettyPrinter(indent=4)
@@ -10,7 +9,6 @@ pp = pprint.PrettyPrinter(indent=4)
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
 json_load_ = lambda path:json.load(file(expand_(path)))
 json_save_ = lambda path, d:json.dump(d, file(expand_(path),"w"))
-
 
 
 log = logging.getLogger(__name__)
@@ -190,90 +188,6 @@ class Scene(object):
         gltf = json_load_(path)
         pp.pprint(gltf)
         return gltf 
-
-
-
-class Nd(object):
-    """
-    Mimimal representation of a node tree, just holding 
-    referencing indices and transforms
-    """
-    count = 0 
-    ulv = set()
-    uso = set()
-    registry = {}
-
-    def __init__(self, nindex, lvidx, transform, name, depth):
-        self.nindex= nindex
-        self.lvidx = lvidx 
-        self.name = name
-        self.transform = transform
-        self.depth = depth
-        self.ichildren = []
-
-    def _get_gltf(self):
-        d = {}
-        d["name"] = self.name
-        d["children"] = self.ichildren
-        d["matrix"] = self.smatrix
-        return d
-    gltf = property(_get_gltf)
-
-    stransform = property(lambda self:"".join(map(lambda row:"%30s" % row, self.transform )))
-
-    def _get_smatrix(self):
-        return ",\n".join(map(lambda row:",".join(map(lambda v:"%10s" % v,row)), self.transform )) 
-    smatrix = property(_get_smatrix)
-
-    brief = property(lambda self:"Nd ni%5d  lv%5d nch:%d chulv:%s  st:%s " % (self.nindex, self.lvidx,  len(self.ichildren), self.ch_unique_lv, self.stransform ))
-
-    ch_unique_lv = property(lambda self:list(set(map(lambda ch:ch.lvidx, self.children))))
-
-    children = property(lambda self:map(lambda ic:self.get(ic), self.ichildren))
-
-    def __repr__(self):
-        indent = ".. " * self.depth 
-        return "\n".join([indent + self.brief] + map(repr, self.children))   
-
-    @classmethod
-    def report(cls):
-        log.info(" count %d len(ulv):%d len(uso):%d " % (cls.count, len(cls.ulv), len(cls.uso)))
-
-    @classmethod
-    def summarize(cls, node, depth):
-        cls.count += 1
-        cls.ulv.add(node.lv.idx)
-        cls.uso.add(node.lv.solid.idx)
-
-        name = node.lv.name  # <-- hmm whats the best name ? 
-        nindex = node.index
-
-        nd = cls(nindex, node.lv.idx, node.pv.transform, name, depth)
-        assert not nindex in cls.registry
-        cls.registry[nindex] = nd  
-        return nd  
-
-    @classmethod
-    def get(cls, nindex):
-        return cls.registry[nindex]
-
-    @classmethod
-    def build_minimal_tree(cls, target):
-        def build_r(node, depth=0):
-            if depth < 3:
-                nd = cls.summarize(node, depth)
-            else:
-                nd = None 
-            pass
-            for child in node.children: 
-                ch = build_r(child, depth+1)
-                if nd is not None and ch is not None:
-                    nd.ichildren.append(ch.nindex)
-                pass
-            pass
-            return nd
-        pass 
-        return build_r(target)
 
 
 

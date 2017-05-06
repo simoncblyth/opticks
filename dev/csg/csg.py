@@ -339,9 +339,6 @@ class CSG(CSG_):
 
 
 
-
-
-
     def save(self, treedir):
         if not os.path.exists(treedir):
             os.makedirs(treedir)
