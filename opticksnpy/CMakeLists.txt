@@ -18,8 +18,9 @@ find_package(PLog REQUIRED)
 
 find_package(ImplicitMesher) 
 find_package(DualContouringSample) 
+find_package(YoctoGL) 
 
-
+message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
 
 
 include_directories(
@@ -33,6 +34,7 @@ include_directories(
 
    ${ImplicitMesher_INCLUDE_DIRS}
    ${DualContouringSample_INCLUDE_DIRS}
+   ${YoctoGL_INCLUDE_DIRS}
 )
 
 add_definitions( 
@@ -44,6 +46,7 @@ add_definitions(
 
    ${ImplicitMesher_DEFINITIONS}
    ${DualContouringSample_DEFINITIONS}
+   ${YoctoGL_DEFINITIONS}
 )
 
 
@@ -58,6 +61,7 @@ set(LIBRARIES
 
    ${ImplicitMesher_LIBRARIES}
    ${DualContouringSample_LIBRARIES}
+   ${YoctoGL_LIBRARIES}
 )
 
 if(UNIX)
@@ -168,6 +172,9 @@ set(SOURCES
     NOctools.cpp
     NGLMExt.cpp
     NPolygonizer.cpp
+
+    NScene.cpp
+
 )
 
 set(_SOURCES

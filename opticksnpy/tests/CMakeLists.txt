@@ -80,6 +80,8 @@ NCSGScanTest.cc
 NCSGDeserializeTest.cc
 NCSGPolygonizeTest.cc 
 
+NSceneTest.cc
+
 
 
 NOctNodeTest.cc

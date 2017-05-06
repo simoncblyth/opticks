@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import numpy as np
-import os, logging, json
+import os, logging, json, collections
 
 log = logging.getLogger(__name__)
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
@@ -20,6 +20,22 @@ from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.gdml import GDML
 
 
+
+class Mh(object):
+    def __init__(self, lvIdx, lvName, soName):
+        self.lvIdx = lvIdx
+        self.lvName = lvName
+        self.soName = soName
+
+    def _get_gltf(self):
+        d = {}
+        d["name"] = self.lvName
+        d["extras"] = dict(lvIdx=self.lvIdx, soName=self.soName)
+        d["primitives"] = [dict(attributes=[])]
+        return d  
+    gltf = property(_get_gltf)
+
+
 class Nd(object):
     """
     Mimimal representation of a node tree, just holding 
@@ -28,16 +44,16 @@ class Nd(object):
     count = 0 
     ulv = set()
     uso = set()
-    nodes = {}
-    meshes = {}
+    nodes = collections.OrderedDict()
+    meshes = collections.OrderedDict()
 
     @classmethod
     def clear(cls):
         cls.count = 0 
         cls.ulv = set()
         cls.uso = set()
-        cls.nodes = {}
-        cls.meshes = {}
+        cls.nodes = collections.OrderedDict()
+        cls.meshes = collections.OrderedDict()
 
     @classmethod
     def report(cls):
@@ -64,94 +80,81 @@ class Nd(object):
     @classmethod
     def summarize(cls, node, depth):
         cls.count += 1
-        cls.ulv.add(node.lv.idx)
-        cls.uso.add(node.lv.solid.idx)
+
+        transform = node.pv.transform 
+        nodeIdx = node.index
+        lvIdx = node.lv.idx
+        lvName = node.lv.name
+        solidIdx = node.lv.solid.idx
+        soName = node.lv.solid.name
+
+        #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)
+        cls.ulv.add(lvIdx)
+        cls.uso.add(solidIdx)
         assert len(cls.ulv) == len(cls.uso)
 
         ndIdx = len(cls.nodes)
-        soIdx = len(cls.meshes)     
+        if not lvIdx in cls.meshes:
+            cls.meshes[lvIdx] = Mh(lvIdx, lvName, soName)
+        pass
+        soIdx = list(cls.meshes.iterkeys()).index(lvIdx)  # local mesh index, using lvIdx identity
 
-        nodeIdx = node.index
-        lvIdx = node.lv.idx
-        transform = node.pv.transform 
+        name = "ndIdx:%3d,soIdx:%3d,count:%3d,depth:%d,nodeIdx:%4d,so:%s,lv:%d:%s" % (ndIdx, soIdx, cls.count, depth, nodeIdx, node.lv.solid.name, lvIdx, node.lv.name )
+        #name = node.lv.name
+        log.info( name ) 
 
-        name = "count:%3d,depth:%d,nodeIdx:%4d,so:%s,lv:%d:%s" % (cls.count, depth, nodeIdx, node.lv.solid.name, lvIdx, node.lv.name )
-
-        nd = cls(ndIdx, soIdx, transform, name, depth, nodeIdx, lvIdx)
+        nd = cls(ndIdx, soIdx, transform, name, depth )
         assert not ndIdx in cls.nodes
 
         cls.nodes[ndIdx] = nd 
-        cls.meshes[soIdx] = { "name":node.lv.solid.name } 
-
         return nd  
 
     @classmethod
     def get(cls, ndIdx):
-        return cls.registry[ndIdx]
-
-    @classmethod
-    def GLTF(cls):
-        gltf = {}          
-        gltf["asset"] = { "version":"2.0" }
-        gltf["scenes"] = [{ "nodes":[0] }]
-        gltf["nodes"] = [node.gltf for node in cls.nodes.values()]
-        gltf["meshes"] = [mesh for mesh in cls.meshes]
-
-        return gltf 
-
-    def __init__(self, ndIdx, soIdx, transform, name, depth, nodeIdx, lvIdx):
-        """
-        :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
-        :param soIdx: local within substree ms index, used for referencing to distinct solids/meshes
-
-        :param nodeIdx: absolute (entire GDML tree) treebase.node index
-        :param lvIdx:
-        """
-        self.ndIdx = ndIdx
-        self.soIdx = soIdx
-
-        self.nodeIdx= nodeIdx
-        self.lvIdx = lvIdx 
-        self.transform = transform
-        self.name = name
-        self.depth = depth
-        self.children = []
-
-    def _get_rprogeny(self):
-        idx = []
-        def progeny_r(ndIdx):
-            idx.append(ndIdx)
-            nd = self.get(ndIdx)
-            for chIdx in nd.children:
-                progeny_r(chIdx)
-            pass
-        pass
-        progeny_r(self.ndIdx)
-        return idx
-    rprogeny = property(_get_rprogeny)  
-
+        return cls.nodes[ndIdx]
 
     def _get_gltf(self):
         d = {}
-        if self.soIdx > -1:
-            d["mesh"] = self.soIdx
-        pass
+        d["mesh"] = self.soIdx
         d["name"] = self.name
-        d["children"] = self.children
+        if len(self.children) > 0:
+            d["children"] = self.children
+        pass
         d["matrix"] = self.matrix
         return d
     gltf = property(_get_gltf)
 
-    nd_children = property(lambda self:map(lambda ch:self.get(ch), self.children))
-    ch_unique_lv = property(lambda self:list(set(map(lambda ch:ch.lvIdx, self.nd_children))))
-    smatrix = property(lambda self:",".join(map(lambda row:",".join(map(lambda v:"%10s" % v,row)), self.transform ))) 
+
+    @classmethod
+    def GLTF(cls):
+        gltf = {}          
+        gltf["scene"] = 0 
+        gltf["scenes"] = [{ "nodes":[0] }]
+        gltf["asset"] = { "version":"2.0" }
+        gltf["nodes"] = [node.gltf for node in cls.nodes.values()]
+        gltf["meshes"] = [mesh.gltf for mesh in cls.meshes.values()]
+        return gltf 
+
+    def __init__(self, ndIdx, soIdx, transform, name, depth):
+        """
+        :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
+        :param soIdx: local within substree so index, used for referencing to distinct solids/meshes
+
+        """
+        self.ndIdx = ndIdx
+        self.soIdx = soIdx
+        self.transform = transform
+
+        self.name = name
+        self.depth = depth
+        self.children = []
+
     matrix = property(lambda self:list(map(float,self.transform.ravel())))
-    stransform = property(lambda self:"".join(map(lambda row:"%30s" % row, self.transform )))
-    brief = property(lambda self:"Nd ndIdx:%3d nodeIdx:%5d lvIdx:%5d nch:%d chulv:%s  st:%s " % (self.ndIdx, self.nodeIdx, self.lvIdx,  len(self.children), self.ch_unique_lv, self.matrix))
+    brief = property(lambda self:"Nd ndIdx:%3d soIdx:%d nch:%d matrix:%s " % (self.ndIdx, self.soIdx,  len(self.children), self.matrix))
 
     def __repr__(self):
         indent = ".. " * self.depth 
-        return "\n".join([indent + self.brief] + map(repr, self.nd_children))   
+        return "\n".join([indent + self.brief] + map(repr,map(self.get,self.children)))   
 
 
 
@@ -180,8 +183,6 @@ if __name__ == '__main__':
     target = tree.findnode(gsel, gidx)
 
     log.info(" target node %s " % target )   
-    nodelist = target.rprogeny(gmaxdepth, gmaxnode)
-    log.info(" target nodelist  %s " % len(nodelist) )   
 
     nd = Nd.build_minimal_tree(target)
     Nd.report() 
@@ -192,7 +193,7 @@ if __name__ == '__main__':
     log.info("saving to %s " % path )
     json_save_(path, gltf)    
 
-
+    gltf2 = json_load_(path)
 
 
 
