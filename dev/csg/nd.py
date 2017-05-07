@@ -18,19 +18,23 @@ json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
 from opticks.ana.base import opticks_main
 from opticks.ana.pmt.treebase import Tree
 from opticks.ana.pmt.gdml import GDML
-
+from opticks.dev.csg.translate_gdml import translate_lv
 
 
 class Mh(object):
-    def __init__(self, lvIdx, lvName, soName):
+    def __init__(self, lvIdx, lvName, soName, uri=""):
         self.lvIdx = lvIdx
         self.lvName = lvName
         self.soName = soName
+        self.extras = dict(lvIdx=self.lvIdx, soName=self.soName, uri=uri )
+
+    def __repr__(self):
+        return "Mh %4d : %30s %s " % (self.lvIdx, self.soName, self.lvName )
 
     def _get_gltf(self):
         d = {}
         d["name"] = self.lvName
-        d["extras"] = dict(lvIdx=self.lvIdx, soName=self.soName)
+        d["extras"] = self.extras
         d["primitives"] = [dict(attributes=[])]
         return d  
     gltf = property(_get_gltf)
@@ -77,6 +81,11 @@ class Nd(object):
         pass 
         return build_r(target)
 
+
+    @classmethod
+    def extras_dir(cls, lvIdx):
+        return os.path.join("extras", str(lvIdx) )
+
     @classmethod
     def summarize(cls, node, depth):
         cls.count += 1
@@ -98,7 +107,8 @@ class Nd(object):
             cls.meshes[lvIdx] = Mh(lvIdx, lvName, soName)
         pass
         soIdx = list(cls.meshes.iterkeys()).index(lvIdx)  # local mesh index, using lvIdx identity
-
+        cls.meshes[lvIdx].soIdx = soIdx 
+ 
         name = "ndIdx:%3d,soIdx:%3d,count:%3d,depth:%d,nodeIdx:%4d,so:%s,lv:%d:%s" % (ndIdx, soIdx, cls.count, depth, nodeIdx, node.lv.solid.name, lvIdx, node.lv.name )
         #name = node.lv.name
         log.info( name ) 
@@ -157,6 +167,40 @@ class Nd(object):
         return "\n".join([indent + self.brief] + map(repr,map(self.get,self.children)))   
 
 
+    @classmethod
+    def save_extras(cls, gdir, gdml):
+        extras_dir = expand_(os.path.join( gdir, "extras" ))
+        log.info("save_extras %s " % extras_dir )
+        if not os.path.exists(extras_dir):
+            os.makedirs(extras_dir)
+        pass
+        count = 0 
+        for lvIdx, mh in cls.meshes.items():
+            soIdx = mh.soIdx
+            lvdir = os.path.join( extras_dir, "%d" % lvIdx )
+            mh.extras["uri"] = lvdir
+
+            lv = gdml.volumes(lvIdx) 
+            cn = translate_lv(lv)
+
+            cn.save( lvdir ) 
+            count += 1 
+        pass
+        log.info("save_extras %s  : saved %d " % (extras_dir, count) )
+        
+
+    def save(self, path, load_check=True):
+
+        log.info("saving to %s " % path )
+
+        gltf = Nd.GLTF()
+        json_save_(path, gltf)    
+
+        if load_check:
+            gltf2 = json_load_(path)
+        pass
+        return gltf 
+
 
 
 
@@ -187,13 +231,13 @@ if __name__ == '__main__':
     nd = Nd.build_minimal_tree(target)
     Nd.report() 
 
-    gltf = Nd.GLTF()
-
     path = "$TMP/nd/scene.gltf" 
-    log.info("saving to %s " % path )
-    json_save_(path, gltf)    
 
-    gltf2 = json_load_(path)
+    gdir = os.path.dirname(path)
+    Nd.save_extras(gdir, gdml)    # sets uri for extra external files, so must come first  
+
+    gltf = nd.save(path)
+
 
 
 

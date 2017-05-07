@@ -13,6 +13,12 @@ int main(int argc, char** argv)
 
     NScene* scene = NScene::load( base, name  ); 
     assert(scene);
+    scene->dump(argv[0]);
+
+    //scene->dumpAll();
+
+    scene->dumpAll();
+
 
     return 0 ; 
 }

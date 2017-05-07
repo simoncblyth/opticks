@@ -52,6 +52,23 @@ from opticks.ana.pmt.polyconfig import PolyConfig
 
 from opticks.dev.csg.csg import CSG  
 
+
+def translate_lv(lv):
+    solid = lv.solid
+
+    cn = solid.as_ncsg()
+    cn.analyse()
+
+    has_name = cn.name is not None and len(cn.name) > 0
+    assert has_name, "\n"+str(solid)
+
+    polyconfig = PolyConfig(lv.shortname)
+    cn.meta.update(polyconfig.meta )
+
+    return cn 
+
+
+
 if __name__ == '__main__':
 
     args = opticks_main()
@@ -69,6 +86,7 @@ if __name__ == '__main__':
     tree = Tree(gdml.world)
 
     subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
+    # just a flat list of nodes
 
     log.info(" subtree %s nodes " % len(subtree) ) 
 
@@ -77,24 +95,20 @@ if __name__ == '__main__':
     for i, node in enumerate(subtree): 
 
         solid = node.lv.solid
-
         if i % 100 == 0:log.info("[%2d] converting solid %r " % (i,solid.name))
 
-        polyconfig = PolyConfig(node.lv.shortname)
+        cn = translate_lv(node.lv)
 
-        cn = solid.as_ncsg()
-        cn.analyse()
-
-        sys.stderr.write("\n".join(["","",solid.name,repr(cn),str(cn.txt)])) 
-
-        has_name = cn.name is not None and len(cn.name) > 0
-        assert has_name, "\n"+str(solid)
-
-        if i > 0: # skip first node transform which is placement of targetNode within its parent 
+        skip_transform = i == 0  # skip first node transform which is placement of targetNode within its parent 
+        if skip_transform:
+            log.warning("skipping transform")
+        else: 
             cn.transform = node.pv.transform
         pass 
-        cn.meta.update(polyconfig.meta )
+
         cn.meta.update(node.meta)
+
+        sys.stderr.write("\n".join(["","",solid.name,repr(cn),str(cn.txt)])) 
 
         cn.boundary = args.testobject
         cn.node = node
