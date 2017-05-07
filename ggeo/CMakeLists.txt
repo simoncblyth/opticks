@@ -109,7 +109,10 @@ set(SOURCES
     GMaker.cc
     GBBoxMesh.cc
     GColorizer.cc
+
     GTreeCheck.cc
+    GScene.cc
+
     GTraverse.cc
     GMergedMesh.cc
     GGeo.cc

@@ -239,6 +239,6 @@ if __name__ == '__main__':
 
     gltf = nd.save(path)
 
-
+    # TODO: a scene Sc class to do this main and most of the Nd classmethods 
 
 

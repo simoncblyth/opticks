@@ -66,6 +66,8 @@ set(TEST_SOURCES
     NLookupTest.cc
     RecordsNPYTest.cc
 
+    GSceneTest.cc
+
 )
 
 

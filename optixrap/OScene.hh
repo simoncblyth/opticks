@@ -21,7 +21,8 @@ OScene
 
 Canonical m_scene instance resides in okop-/OpEngine 
 
-
+OScene::init creates the OptiX context and populates
+it with geometry, boundary etc.. info 
 
 **/
 

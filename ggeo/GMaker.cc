@@ -86,7 +86,14 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
      return solid ; 
 }
 
+
 GSolid* GMaker::makeFromCSG(NCSG* csg)
+{
+    return makeFromCSG(csg, m_bndlib);
+}
+
+
+GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib)
 {
     unsigned index = csg->getIndex();
 
@@ -110,7 +117,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg)
 
     const char* spec = csg->getBoundary();
 
-    unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
+    unsigned boundary = bndlib->addBoundary(spec);  // only adds if not existing
 
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 

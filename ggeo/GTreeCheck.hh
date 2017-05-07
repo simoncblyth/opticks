@@ -51,10 +51,6 @@ class GGEO_API GTreeCheck {
         unsigned int getNumRepeats(); 
         GNode* getRepeatExample(unsigned int ridx);
    private:
-        GBuffer* PRIOR_makeInstanceIdentityBuffer(unsigned int ridx) ;
-        GBuffer* PRIOR_makeInstanceTransformsBuffer(unsigned int ridx);
-        void checkInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx);
-   private:
         // canonically invoked by GTreeCheck::createInstancedMergedMeshes
         void makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx);
         NPY<float>*        makeInstanceTransformsBuffer(unsigned int ridx);

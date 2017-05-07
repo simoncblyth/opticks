@@ -4,6 +4,8 @@
 #include "BFile.hh"
 
 #include "NYGLTF.hpp"
+
+#include "NPY.hpp"
 #include "NScene.hpp"
 #include "NCSG.hpp"
 
@@ -239,9 +241,31 @@ const std::array<float, 16>& NScene::getTransform(unsigned node_idx )
 } 
 
 
+NPY<float>* NScene::makeInstanceTransformsBuffer(unsigned mesh_idx)
+{
+    unsigned num_instances = getNumInstances(mesh_idx);
+    NPY<float>* buf = NPY<float>::make(num_instances, 4, 4);
+    buf->zero();
 
+    for(unsigned i=0 ; i < num_instances ; i++)
+    {
+        int node_idx = getInstanceNodeIndex(mesh_idx, i );
+        const std::array<float, 16>& xform = getTransform(node_idx ); 
 
+        for(unsigned j=0 ; j < 4 ; j++){
+        for(unsigned k=0 ; k < 4 ; k++)
+        {
+            buf->setValue(i,j,k,0, xform[j*4+k]);
+        }
+        } 
+    }
 
+    if(mesh_idx == 0) 
+    {
+       assert(buf->getNumItems() == 1);
+    }
+    return buf ;
+}
 
 
 std::string NScene::descNode( unsigned node_idx )

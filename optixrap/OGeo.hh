@@ -22,9 +22,13 @@ template <typename S> class NPY ;
 OGeo
 =====
 
-Canonical instance resides in OScene and is
-configured in OScene::init.
-
+Canonical OGeo instance resides in OScene and is
+instanciated and has its *convert* called from OScene::init.
+OScene::convert loops over the GMergedMesh within GGeo 
+converting them into OptiX geometry groups. The first 
+GMergedMesh is assumed to be non-instanced, the remainder
+are expected to be instanced with appropriate 
+transform and identity buffers.
 
 
 

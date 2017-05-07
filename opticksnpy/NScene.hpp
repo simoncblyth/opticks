@@ -15,6 +15,8 @@ namespace ygltf
 
 class NCSG ; 
 
+template<class T> class NPY ;
+
 
 class NPY_API NScene 
 {
@@ -34,6 +36,7 @@ class NPY_API NScene
     public:
         void dump_mesh_totals(const char* msg="NScene::dump_mesh_totals");
     public:
+        NPY<float>* makeInstanceTransformsBuffer(unsigned mesh_idx);
         unsigned getNumMeshes();
         unsigned getNumInstances(unsigned mesh_idx);
         int getInstanceNodeIndex( unsigned mesh_idx, unsigned instance_idx);

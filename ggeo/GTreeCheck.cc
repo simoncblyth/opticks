@@ -127,24 +127,6 @@ void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx
 }
 
 
-void GTreeCheck::checkInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
-{
-    NPY<float>* itransforms = mergedmesh->getITransformsBuffer();
-    itransforms->save("$TMP/itransforms.npy");
-
-    GBuffer* itransforms_old    = PRIOR_makeInstanceTransformsBuffer(ridx);
-    itransforms_old->save<float>("$TMP/itransforms_old.npy");
-    assert(itransforms->isEqualTo(itransforms_old->getPointer(), itransforms_old->getNumBytes()));
-    
-    NPY<unsigned int>* iidentity  = mergedmesh->getInstancedIdentityBuffer();
-    iidentity->save("$TMP/iidentity.npy");
-
-    GBuffer* iidentity_old       = PRIOR_makeInstanceIdentityBuffer(ridx);
-    iidentity_old->save<unsigned int>("$TMP/iidentity_old.npy");
-    assert(iidentity->isEqualTo(iidentity_old->getPointer(), iidentity_old->getNumBytes()));
-
-}
-
 
 
 void GTreeCheck::traverse()
@@ -431,34 +413,6 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 }
 
 
-GBuffer* GTreeCheck::PRIOR_makeInstanceTransformsBuffer(unsigned int ridx) 
-{
-    // collecting transforms from the instances into a buffer
-    std::vector<GNode*> placements = getPlacements(ridx);
-
-    unsigned int num = placements.size() ; 
-    unsigned int numElements = 16 ; 
-    unsigned int size = sizeof(float)*numElements;
-    float* transforms = new float[num*numElements];
-
-    for(unsigned int i=0 ; i < placements.size() ; i++)
-    {
-        GNode* place = placements[i] ;
-        GMatrix<float>* t = place->getTransform();
-        t->copyTo(transforms + numElements*i); 
-    } 
-
-    LOG(info) << "GTreeCheck::PRIOR_makeInstanceTransformsBuffer " 
-              << " ridx " << ridx 
-              << " num " << num 
-              << " itemsize " << size 
-              ;
-
-    GBuffer* buffer = new GBuffer( size*num, (void*)transforms, size, numElements ); 
-    return buffer ;
-}
-
-
 NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
 {
     // collecting transforms from the instances into a buffer
@@ -544,8 +498,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
     return buf ; 
 }
 
-
-GBuffer* GTreeCheck::PRIOR_makeInstanceIdentityBuffer(unsigned int ridx) 
+NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
 {
     /*
      Instances need to know the sensor they correspond 
@@ -562,62 +515,9 @@ GBuffer* GTreeCheck::PRIOR_makeInstanceIdentityBuffer(unsigned int ridx)
      The triangulated version can be created from the analytic one
      by duplication according to the number of triangles.
 
-
     */
 
-    std::vector<GNode*> placements = getPlacements(ridx);
-    unsigned int numInstances = placements.size() ;
-    unsigned int numProgeny = placements[0]->getProgenyCount();
-    unsigned int numSolids  = numProgeny + 1 ; 
-    unsigned int num = numSolids*numInstances ; 
-    guint4* iidentity = new guint4[num]; 
 
-    LOG(info) << "GTreeCheck::PRIOR_makeInstanceIdentityBuffer" 
-              << " numInstances " << numInstances 
-              << " numProgeny " << numProgeny 
-              << " numSolids " << numSolids 
-              << " num " << num 
-              ;
-
-    for(unsigned int i=0 ; i < numInstances ; i++)
-    {
-        GNode* base = placements[i] ;
-
-        // repeated geometry for the instances, so the progeny counts must match 
-        assert( numProgeny == base->getProgenyCount() );
-        std::vector<GNode*>& progeny = base->getProgeny();
-        assert( progeny.size() == numProgeny );
-
-        for(unsigned int s=0 ; s < numSolids ; s++ )
-        {
-            GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GSolid* solid = dynamic_cast<GSolid*>(node) ;
-            guint4 id = solid->getIdentity();
-            iidentity[i*numSolids+s] = id ;  
-
-#ifdef DEBUG
-            std::cout  
-                  << " i " << i
-                  << " s " << s
-                  << " node/mesh/boundary/sensor " << id.x << "/" << id.y << "/" << id.z << "/" << id.w 
-                  << " nodeName " << node->getName()
-                  << std::endl 
-                  ;
-#endif
-        }
-    }
-     // cf GMesh::setIdentity
-    unsigned int size = sizeof(guint4) ;
-    assert(size == sizeof(unsigned int)*4 );
-    GBuffer* buffer = new GBuffer( size*num, (void*)iidentity, size, 4 ); 
-    return buffer  ; 
-}
-
-
-
-
-NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
-{
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int numInstances = placements.size() ;
     unsigned int numProgeny = placements[0]->getProgenyCount();
@@ -654,9 +554,6 @@ NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
 }
 
 
-
-
-
 /*
 
 ::
@@ -680,7 +577,6 @@ NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
             [ 3208,    44,     1,     9],
             [ 3209,    45,     1,    10]],
 
-
 After requiring an associated sensor surface to provide the sensor index, only cathodes 
 have non-zero index::
 
@@ -699,11 +595,6 @@ have non-zero index::
             [ 3207,    43,    21,     8],
             [ 3208,    44,     1,     0],
             [ 3209,    45,     1,     0]],
-
-
-
-
-
 */
 
 
