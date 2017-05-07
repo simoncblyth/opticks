@@ -33,7 +33,7 @@ void npart::setGTransform(unsigned gtransform_idx, bool complement)
    unsigned gpack = gtransform_idx & SSys::OTHERBIT32 ;
    if(complement) gpack |= SSys::SIGNBIT32 ; 
 
-   LOG(info) << "npart::setGTransform"
+   LOG(debug) << "npart::setGTransform"
              << " gtransform_idx " << gtransform_idx
              << " complement " << complement
              << " gpack " << gpack 

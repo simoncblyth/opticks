@@ -16,6 +16,9 @@ EOU
 oimplicitmesher-edit(){ vi $(opticks-home)/cmake/Modules/FindImplicitMesher.cmake ; }
 oimplicitmesher-url(){ echo https://bitbucket.com/simoncblyth/implicitmesher ; }
 
+#oimplicitmesher-url(){ echo https://bitbucket.com/simoncblyth/implicitmesher ; }
+oimplicitmesher-url(){ echo ssh://hg@bitbucket.org/simoncblyth/ImplicitMesher ; }
+
 oimplicitmesher-dir(){  echo $(opticks-prefix)/externals/implicitmesher/implicitmesher ; }
 oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/implicitmesher/implicitmesher.build ; }
 oimplicitmesher-prefix(){ echo $(opticks-prefix)/externals ; }
@@ -26,10 +29,11 @@ oimplicitmesher-bcd(){ cd $(oimplicitmesher-bdir) ; }
 
 oimplicitmesher-fullwipe()
 {
-    rm -rf $(opticks-prefix)/externals/implicitmesher 
+   # rm -rf  $(opticks-prefix)/externals/implicitmesher
+   # moving dev into here .. so dont blow it away 
+ 
     rm -f  $(opticks-prefix)/externals/lib/libImplicitMesher.dylib 
     rm -rf $(opticks-prefix)/externals/include/ImplicitMesher
-    ## test executables not removed
 }
 
 oimplicitmesher-update()

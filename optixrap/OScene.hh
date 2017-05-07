@@ -14,6 +14,18 @@ class OBndLib ;
 class OScintillatorLib ; 
 class OSourceLib ; 
 
+/**
+
+OScene
+========
+
+Canonical m_scene instance resides in okop-/OpEngine 
+
+
+
+**/
+
+
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OScene {

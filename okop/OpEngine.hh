@@ -23,6 +23,12 @@ OpEngine
 =========
 
 Canonical m_engine instance resides in ok-/OKPropagator
+
+NB OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE NEED TO SEE ONE LEVEL UP 
+   OKPropagator::uploadEvent 
+   OKPropagator::downloadEvent
+
+  
 **/
 
 class OKOP_API OpEngine {

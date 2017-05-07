@@ -82,10 +82,7 @@ void OpEngine::initPropagation()
 
 
 
-// NB OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE NEED TO SEE ONE LEVEL UP 
-//     OKPropagator::uploadEvent 
-//     OKPropagator::downloadEvent
-//   
+ 
 
 unsigned OpEngine::uploadEvent()
 {

@@ -11,13 +11,12 @@ int main(int argc, char** argv)
     const char* base = argc > 1 ? argv[1] : "$TMP/nd" ;
     const char* name = "scene.gltf" ;
 
-    NScene* scene = NScene::load( base, name  ); 
+    NScene* scene = new NScene( base, name  ); 
     assert(scene);
     scene->dump(argv[0]);
 
     //scene->dumpAll();
 
-    scene->dumpAll();
 
 
     return 0 ; 

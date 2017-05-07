@@ -102,6 +102,7 @@ bool nbbox::contains(const nvec3& p, float epsilon) const
 
     bool xyz_ok = x_ok && y_ok && z_ok ; 
 
+/*
     std::cout << "nbbox::contains"
                << " epsilon " << epsilon 
                << " x_ok " << x_ok
@@ -133,7 +134,7 @@ bool nbbox::contains(const nvec3& p, float epsilon) const
               << " min.z " << min.z 
               << " max.z " << max.z 
               << std::endl ;
- 
+ */
 
 
     return xyz_ok ; 

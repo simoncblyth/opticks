@@ -750,6 +750,7 @@ void GGeo::loadAnalyticPmt()
 void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "ggv --test" 
+
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
     LOG(trace) << "GGeo::modifyGeometry" 
@@ -759,6 +760,8 @@ void GGeo::modifyGeometry(const char* config)
 
     m_geotest = new GGeoTest(m_opticks, gtc, this);
     m_geotest->modifyGeometry();
+
+
 }
 
 

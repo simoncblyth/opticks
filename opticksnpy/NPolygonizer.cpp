@@ -48,6 +48,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
 
 NTrianglesNPY* NPolygonizer::polygonize()
 {
+    if(m_verbosity > 0)
     LOG(info) << "NPolygonizer::polygonize"
               << " treedir " << m_csg->getTreeDir()
               << " poly " << m_poly 
@@ -79,9 +80,11 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     if(!valid)
     {   
+        if(m_verbosity > 0)
         LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
         delete tris ; 
         tris = NTrianglesNPY::box(*m_bbox);
+        tris->setMessage("PLACEHOLDER");
     }   
 
     return tris ;
@@ -96,7 +99,7 @@ bool NPolygonizer::checkTris(NTrianglesNPY* tris)
 
     bool poly_valid = tris_bb ? m_bbox->contains(*tris_bb) : false  ;
 
-    if(!poly_valid)
+    if(!poly_valid && m_verbosity > 0)
     {
         LOG(warning) << "NPolygonizer::checkTris INVALID POLYGONIZATION "
                      << " poly " << m_poly

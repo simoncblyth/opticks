@@ -22,6 +22,12 @@ template <typename S> class NPY ;
 OGeo
 =====
 
+Canonical instance resides in OScene and is
+configured in OScene::init.
+
+
+
+
 Crucial OptiX geometrical members:
 
 

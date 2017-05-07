@@ -74,7 +74,7 @@ class NPY_API NCSG {
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
-        static NCSG* LoadTree(const char* treedir, int verbosity=0);
+        static NCSG* LoadTree(const char* treedir, int verbosity=0, bool polygonize=false );
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
@@ -107,6 +107,7 @@ class NPY_API NCSG {
     public:
         float getContainerScale();
         bool  isContainer();
+        unsigned getNumTriangles();
     public:
         void check();
         void check_r(nnode* node); 

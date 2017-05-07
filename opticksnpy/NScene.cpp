@@ -5,6 +5,7 @@
 
 #include "NYGLTF.hpp"
 #include "NScene.hpp"
+#include "NCSG.hpp"
 
 #include "PLOG.hh"
 
@@ -46,10 +47,26 @@ const std::array<float, 16> _identity_float4x4 = {{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0
 
 
 
+NScene::NScene(const char* base, const char* name, int scene_idx)
+   :
+    m_base(strdup(base)),
+    m_name(strdup(name)),
+    m_scene_idx(scene_idx),
+    m_gltf(NULL),
+    m_fgltf(NULL)
+{
+    load(m_base, m_name, m_scene_idx);
+    collect_mesh_instances();
+    collect_mesh_totals();
+    load_mesh_extras();
+
+    //check_transforms();
+}
 
 
 
-NScene* NScene::load(const char* base, const char* name)
+
+void NScene::load(const char* base, const char* name, int scene_idx )
 {
     std::string path = BFile::FormPath(base, name);
 
@@ -62,26 +79,47 @@ NScene* NScene::load(const char* base, const char* name)
     bool load_img = false ; 
     bool skip_missing = true  ;   
 
-    ygltf::glTF_t* gltf = ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing ) ;
-
-    int scene_idx = 0 ; 
-    ygltf::fl_gltf* fgltf = ygltf::flatten_gltf(gltf, scene_idx); 
-
-
-    return new NScene(gltf, fgltf ); 
-
+    m_gltf = ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing ) ;
+    m_fgltf = ygltf::flatten_gltf(m_gltf, scene_idx); 
 }
 
-NScene::NScene(ygltf::glTF_t* gltf, ygltf::fl_gltf* fgltf  )
-   :
-    m_gltf(gltf),
-    m_fgltf(fgltf)
+
+void NScene::load_mesh_extras()
 {
+    std::cout << "NScene::load_mesh_extras"
+              << " m_gltf->meshes.size() " << m_gltf->meshes.size()
+              << std::endl ; 
 
-    collect_mesh_instances();
-    collect_mesh_totals();
 
-    //check_transforms();
+    for(std::size_t mesh_id = 0; mesh_id < m_gltf->meshes.size(); ++mesh_id)
+    {
+        auto mesh = &m_gltf->meshes.at(mesh_id);
+
+        auto primitives = mesh->primitives ; 
+
+        auto extras = mesh->extras ; 
+
+        // https://nlohmann.github.io/json/
+        // TODO: handle non existing 
+        std::string uri = extras["uri"] ; 
+        //std::string soName = extras["soName"] ; 
+        //int lvIdx = extras["lvIdx"] ; 
+
+        std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
+
+        int verbosity = 0 ; 
+        bool polygonize = true ; 
+        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), verbosity, polygonize  ); 
+        m_csg_trees.push_back(csg); 
+
+
+        std::cout << " mesh_id " << std::setw(4) << mesh_id 
+                  << " primitives " << std::setw(4) << primitives.size() 
+                  << " name " << std::setw(65) << mesh->name 
+                  << " csgsmry " << csg->smry() 
+                  << std::endl ; 
+
+    }  
 }
 
 
@@ -100,6 +138,7 @@ void NScene::collect_mesh_instances()
         if(m_mesh_instances.count(mesh_id) == 0) m_mesh_instances[mesh_id] = {} ;  
 
         m_mesh_instances[mesh_id].push_back(ifm)  ;
+
     }
 
     assert( m_mesh_instances.size() == m_gltf->meshes.size()  );

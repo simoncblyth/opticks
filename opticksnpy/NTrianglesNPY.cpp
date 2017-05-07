@@ -38,6 +38,14 @@ NPY<float>* NTrianglesNPY::getNormals()
 }
 
 
+void NTrianglesNPY::setMessage(const std::string& msg)
+{
+   m_message = msg ; 
+}
+const std::string& NTrianglesNPY::getMessage()
+{
+   return m_message ; 
+}
 
 
 

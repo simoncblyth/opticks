@@ -137,10 +137,11 @@ std::string NCSG::meta()
 std::string NCSG::smry()
 {
     std::stringstream ss ; 
-    ss << "[" << std::setw(5) << treeindex() << "] "
-       << lvname() 
-       << " / " 
-       << soname() 
+    ss 
+       << " height " << std::setw(2) << m_height 
+       << " num_nodes " << std::setw(4) << m_num_nodes
+       << " num_triangles " << std::setw(6) << getNumTriangles()
+       << " tris " << m_tris->getMessage() 
        ;
 
     return ss.str();
@@ -266,7 +267,7 @@ void NCSG::loadPlanes()
 
 void NCSG::load()
 {
-    if(m_index % 100 == 0)
+    if(m_index % 100 == 0 && m_verbosity > 0)
     LOG(info) << "NCSG::load " 
               << " index " << m_index
               << " treedir " << m_treedir 
@@ -478,7 +479,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     int transform_idx = getTransformIndex(idx) ; 
     bool complement = isComplement(idx) ; 
 
-    LOG(info) << "NCSG::import_r"
+    LOG(debug) << "NCSG::import_r"
               << " idx " << idx
               << " transform_idx " << transform_idx
               << " complement " << complement 
@@ -852,7 +853,7 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 }
 
 
-NCSG* NCSG::LoadTree(const char* treedir, int verbosity)
+NCSG* NCSG::LoadTree(const char* treedir, int verbosity, bool polygonize)
 {
      NCSG* tree = new NCSG(treedir) ; 
      tree->setVerbosity(verbosity);
@@ -862,6 +863,9 @@ NCSG* NCSG::LoadTree(const char* treedir, int verbosity)
      tree->export_();
 
      if(verbosity > 1) tree->dump("NCSG::LoadTree");
+
+     if(polygonize)
+     tree->polygonize();
 
      return tree ; 
 
@@ -881,6 +885,11 @@ NTrianglesNPY* NCSG::polygonize()
 NTrianglesNPY* NCSG::getTris()
 {
     return m_tris ; 
+}
+
+unsigned NCSG::getNumTriangles()
+{
+    return m_tris ? m_tris->getNumTriangles() : 0 ; 
 }
 
 int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )

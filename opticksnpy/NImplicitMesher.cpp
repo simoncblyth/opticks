@@ -60,7 +60,9 @@ void NImplicitMesher::init()
 
     float tval = 0.f ; 
     float negate = false ; 
-    LOG(fatal) << "NImplicitMesher::init"
+
+    if(m_verbosity > 0)
+    LOG(info) << "NImplicitMesher::init"
                << " ImplicitMesherF ctor "
                << " verbosity " << m_verbosity 
                ;
@@ -85,6 +87,7 @@ int NImplicitMesher::addSeeds()
         numCenter = addCenterSeeds();
     }
 
+    if(m_verbosity > 0)
     LOG(info) << "NImplicitMesher::addSeeds"
               << " numManual " << numManual
               << " numCenter " << numCenter
@@ -122,6 +125,7 @@ int NImplicitMesher::addManualSeeds()
                glm::vec3 sdir = m_node->apply_gtransform(dir_);
                 
 
+               if(m_verbosity > 0)
                LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed 
                          << " sxyz(" << sx << " " << sy << " " << sz << ") " 
                          << " spos(" << spos.x << " " << spos.y << " " << spos.z << ") " 
@@ -139,6 +143,7 @@ int NImplicitMesher::addManualSeeds()
         }
     } 
 
+    if(m_verbosity > 0)
     LOG(info) << "NImplicitMesher::addManualSeeds" 
               << " numManual " << numManual 
               ; 
@@ -158,6 +163,7 @@ int NImplicitMesher::addCenterSeeds()
 
     unsigned numCenter = 0 ; 
 
+    if(m_verbosity > 0)
     LOG(info) << "NImplicitMesher::addCenterSeeds"
               << " ncenters " << ncenters
               << " ndirs " << ndirs
@@ -170,10 +176,12 @@ int NImplicitMesher::addCenterSeeds()
         const glm::vec3& c = centers[i] ; 
         const glm::vec3& d = dirs[i] ;
  
+        if(m_verbosity > 0)
         std::cout << std::setw(3) << i << " position " << c << " direction " << d << std::endl ; 
         m_mesher->addSeed(c.x, c.y, c.z, d.x, d.y, d.z);
         numCenter++ ; 
     }
+    if(m_verbosity > 0)
     LOG(info) << "NImplicitMesher::addCenterSeeds" 
               << " numCenter " << numCenter 
               ;
@@ -184,6 +192,7 @@ int NImplicitMesher::addCenterSeeds()
 
 NTrianglesNPY* NImplicitMesher::operator()()
 {
+    if(m_verbosity > 0)
     LOG(info) << "NImplicitMesher::operator() polygonizing START"
               << " verbosity " << m_verbosity 
               << " bb " << m_bbox->desc() 

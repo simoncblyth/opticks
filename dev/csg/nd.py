@@ -169,7 +169,8 @@ class Nd(object):
 
     @classmethod
     def save_extras(cls, gdir, gdml):
-        extras_dir = expand_(os.path.join( gdir, "extras" ))
+        gdir = expand_(gdir)
+        extras_dir = os.path.join( gdir, "extras" )
         log.info("save_extras %s " % extras_dir )
         if not os.path.exists(extras_dir):
             os.makedirs(extras_dir)
@@ -178,7 +179,7 @@ class Nd(object):
         for lvIdx, mh in cls.meshes.items():
             soIdx = mh.soIdx
             lvdir = os.path.join( extras_dir, "%d" % lvIdx )
-            mh.extras["uri"] = lvdir
+            mh.extras["uri"] = os.path.relpath(lvdir, gdir)
 
             lv = gdml.volumes(lvIdx) 
             cn = translate_lv(lv)
