@@ -17,6 +17,43 @@ void nglmext::copyTransform( std::array<float,16>& dst, const glm::mat4& src )
 }
 
 
+std::string nglmext::xform_string( const std::array<float, 16>& xform )
+{
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < 16 ; i++) 
+    {
+        bool translation =  i == 12 || i == 13 || i == 14 ; 
+        int fwid = translation ? 8 : 6 ;  
+        int fprec = translation ? 2 : 3 ; 
+        ss << std::setw(fwid) << std::fixed << std::setprecision(fprec) << xform[i] << ' ' ; 
+    }
+    return ss.str();
+}
+
+
+// Extracts from /usr/local/opticks/externals/yoctogl/yocto-gl/yocto/yocto_gltf.cpp
+
+std::array<float, 16> nglmext::_float4x4_mul( const std::array<float, 16>& a, const std::array<float, 16>& b) 
+{
+    auto c = std::array<float, 16>();
+    for (auto i = 0; i < 4; i++) {
+        for (auto j = 0; j < 4; j++) {
+            c[j * 4 + i] = 0;
+            for (auto k = 0; k < 4; k++)
+                c[j * 4 + i] += a[k * 4 + i] * b[j * 4 + k];
+        }
+    }
+    return c;
+}
+
+const std::array<float, 16> nglmext::_identity_float4x4 = {{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}};
+
+
+
+
+
+
+
 glm::mat4 nglmext::invert_tr( const glm::mat4& tr )
 {
     /**

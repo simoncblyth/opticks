@@ -173,6 +173,8 @@ set(SOURCES
     NGLMExt.cpp
     NPolygonizer.cpp
 
+    Nd.cpp
+    NGLTF.cpp
     NScene.cpp
 
 )
