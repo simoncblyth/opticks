@@ -58,9 +58,15 @@ class GGEO_API GParts {
               SK = 4  
             } ;
     public:
+
+       // hmm boundary spec is a node-type-qty, not a mesh-type-qty 
+       // so it does not belong inside GParts (a mesh-type-qty)
+       // ... there are relatively few mesh-type-qty for 
+       // each distinct shape (~249), but much more node-type-qty (~12k)
+       //
         static GParts* make(const npart& pt, const char* spec);
         static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
-        static GParts* make(NCSG* tree);
+        static GParts* make(NCSG* tree, const char* spec);
     public:
         static GParts* combine(std::vector<GParts*> subs);
     public:

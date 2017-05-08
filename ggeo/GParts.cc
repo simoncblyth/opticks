@@ -147,9 +147,10 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 const int GParts::NTRAN = 3 ; 
 
 
-GParts* GParts::make( NCSG* tree)
+GParts* GParts::make( NCSG* tree, const char* spec )
 {
-    const char* spec = tree->getBoundary();
+    assert(spec);
+
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = tree->getGTransformBuffer();  // formerly was incorrectly using TransformBuffer
     NPY<float>* planbuf = tree->getPlaneBuffer();      

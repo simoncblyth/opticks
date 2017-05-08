@@ -28,9 +28,9 @@ int main(int argc, char** argv)
         const char* name = n->csgname();
         assert( type < CSG_UNDEFINED && type > 0 && name != NULL ) ; 
 
-        NCSG* tree = NCSG::FromNode( n , spec ); 
+        NCSG* tree = NCSG::FromNode( n , spec );  // TODO: eliminate spec from NCSG 
 
-        GParts* pts = GParts::make( tree ) ; 
+        GParts* pts = GParts::make( tree, spec ) ; 
         pts->dump("GPartsTest");
 
     }

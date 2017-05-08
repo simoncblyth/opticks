@@ -92,18 +92,19 @@ class NPY_API NCSG {
         void dump(const char* msg="NCSG::dump");
         std::string desc();
    public:
-        const char* getTreeDir();
-        unsigned getIndex();
-        int      getVerbosity();
-        const char* getBoundary();
-        NPY<float>* getNodeBuffer();
-        NPY<float>* getTransformBuffer();
-        NPY<float>* getGTransformBuffer();
-        NPY<float>* getPlaneBuffer();
+        const char*  getTreeDir();
+        unsigned     getIndex();
+        int          getVerbosity();
+        const char*  getBoundary();
+        NPY<float>*  getNodeBuffer();
+        NPY<float>*  getTransformBuffer();
+        NPY<float>*  getGTransformBuffer();
+        NPY<float>*  getPlaneBuffer();
         NParameters* getMetaParameters();
-        unsigned getNumNodes();
-        unsigned getHeight();
-        nnode* getRoot();
+        unsigned     getNumNodes();
+        unsigned     getHeight();
+        nnode*       getRoot();
+        OpticksCSG_t getRootType();  
     public:
         float getContainerScale();
         bool  isContainer();

@@ -10,11 +10,11 @@ struct nmat4triple ;
 
 struct NPY_API nd
 {
-   int idx ;
-   int mesh ; 
-   int depth ; 
-   nd* parent ; 
-
+   unsigned idx ;
+   unsigned mesh ; 
+   unsigned depth ; 
+   std::string boundary ; 
+   nd*          parent ; 
    nmat4triple* transform ; 
    nmat4triple* gtransform ; 
    std::vector<nd*> children ; 

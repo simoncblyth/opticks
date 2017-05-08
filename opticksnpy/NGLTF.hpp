@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <string>
 #include <map>
 #include <vector>
@@ -53,7 +54,6 @@ class NPY_API NGLTF {
         int             m_scene_idx ; 
         ygltf::glTF_t*  m_gltf ;  
         ygltf::fl_gltf* m_fgltf ;
-
 
         std::map<unsigned, std::vector<unsigned>>  m_mesh_instances ; 
         std::map<unsigned, unsigned>               m_mesh_totals ; 

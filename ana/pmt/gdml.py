@@ -818,6 +818,22 @@ class PolyCone(Primitive):
 
 
 class Volume(G):
+    """
+    ::
+
+        In [15]: for v in gdml.volumes.values():print v.material.shortname
+        PPE
+        MixGas
+        Air
+        Bakelite
+        Air
+        Bakelite
+        Foam
+        Aluminium
+        Air
+        ...
+
+    """
     materialref = property(lambda self:self.elem.find("materialref").attrib["ref"])
     solidref = property(lambda self:self.elem.find("solidref").attrib["ref"])
     solid = property(lambda self:self.g.solids[self.solidref])

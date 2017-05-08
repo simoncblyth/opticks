@@ -157,6 +157,32 @@ class Node(object):
         self.depth = None
 
 
+    def _get_boundary(self):
+        """
+        ::
+
+            In [23]: target.lv.material.shortname
+            Out[23]: 'StainlessSteel'
+
+            In [24]: target.parent.lv.material.shortname
+            Out[24]: 'IwsWater'
+
+
+        What about root volume
+
+        * for actual root, the issue is mute as world boundary is not a real one
+        * but for sub-roots maybe need use input, actually its OK as always parse 
+          the entire GDML file
+
+        """
+        omat = 'Vacuum' if self.parent is None else self.parent.lv.material.shortname 
+        osur = ""
+        isur = ""
+        imat = self.lv.material.shortname
+        return "/".join([omat,osur,isur,imat])
+    boundary = property(_get_boundary)
+
+
 
     def visit(self, depth):
         log.info("visit depth %s %s " % (depth, repr(self)))

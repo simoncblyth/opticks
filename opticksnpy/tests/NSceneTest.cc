@@ -34,6 +34,7 @@ int main(int argc, char** argv)
     NScene* scene = new NScene( base, name  ); 
     assert(scene);
     scene->dump(argv[0]);
+    scene->dumpNdTree();
 
     //scene->dumpAll();
 

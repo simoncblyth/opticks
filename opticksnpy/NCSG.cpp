@@ -291,6 +291,12 @@ nnode* NCSG::getRoot()
 {
     return m_root ; 
 }
+OpticksCSG_t NCSG::getRootType()
+{
+    assert(m_root);
+    return m_root->type ; 
+}
+
 unsigned NCSG::getHeight()
 {
     return m_height ; 

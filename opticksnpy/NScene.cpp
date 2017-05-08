@@ -15,42 +15,56 @@
 
 
 
+
+nd* NScene::getNd(unsigned idx)
+{
+    return m_nd[idx] ; 
+}
+nd* NScene::getRoot()
+{
+    return m_root ; 
+}
+NCSG* NScene::getCSG(unsigned mesh_idx)
+{
+    return m_csg_trees[mesh_idx];
+}
+
+
+
 NScene::NScene(const char* base, const char* name, int scene_idx)  
    :
     NGLTF(base, name, scene_idx)
 {
     load_mesh_extras();
     import();
+    compare_trees();
 }
-
-
 
 void NScene::load_mesh_extras()
 {
+    unsigned num_meshes = getNumMeshes();
+    assert( num_meshes == m_gltf->meshes.size() ); 
+
     std::cout << "NScene::load_mesh_extras"
-              << " m_gltf->meshes.size() " << m_gltf->meshes.size()
+              << " num_meshes " << num_meshes
               << std::endl ; 
 
 
-    for(std::size_t mesh_id = 0; mesh_id < m_gltf->meshes.size(); ++mesh_id)
+    for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
         auto mesh = &m_gltf->meshes.at(mesh_id);
 
         auto primitives = mesh->primitives ; 
-
         auto extras = mesh->extras ; 
 
-        // https://nlohmann.github.io/json/
-        // TODO: handle non existing 
         std::string uri = extras["uri"] ; 
-        //std::string soName = extras["soName"] ; 
-        //int lvIdx = extras["lvIdx"] ; 
-
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
         int verbosity = 0 ; 
         bool polygonize = true ; 
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), verbosity, polygonize  ); 
+        csg->setIndex(mesh_id);
+
         m_csg_trees.push_back(csg); 
 
         std::cout << " mesh_id " << std::setw(4) << mesh_id 
@@ -58,7 +72,6 @@ void NScene::load_mesh_extras()
                   << " name " << std::setw(65) << mesh->name 
                   << " csgsmry " << csg->smry() 
                   << std::endl ; 
-
     }  
 }
 
@@ -68,19 +81,21 @@ void NScene::load_mesh_extras()
 void NScene::import()
 {
     m_root = import_r(0, NULL, 0); 
-    compare_trees();
 }
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
     ygltf::node_t* node = getNode(idx);
-
+    auto extras = node->extras ; 
+    std::string boundary = extras["boundary"] ; 
+ 
     nd* n = new nd ; 
 
     n->idx = idx ; 
     n->mesh = node->mesh ; 
     n->parent = parent ;
     n->depth = depth ;
+    n->boundary = boundary ;
     n->transform = new nmat4triple( node->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 
@@ -89,11 +104,6 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     m_nd[idx] = n ;
 
     return n ; 
-}
-
-nd* NScene::getNd(int idx)
-{
-    return m_nd[idx] ; 
 }
 
 
@@ -120,7 +130,7 @@ void NScene::compare_trees_r(int idx)
     ygltf::node_t* node = getNode(idx);
     nd* n = getNd(idx);    
 
-    assert( node->mesh == n->mesh );
+    assert( node->mesh == int(n->mesh) );
     assert( node->children.size() == n->children.size() );
     assert( n->transform) ; 
     assert( n->gtransform) ; 

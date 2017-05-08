@@ -19,6 +19,7 @@ std::string nd::desc()
        << ":" 
        << std::setw(2) << depth
        << "]"
+       << " " << boundary 
        ;
 
     return ss.str();

@@ -96,6 +96,7 @@ class Nd(object):
         lvName = node.lv.name
         solidIdx = node.lv.solid.idx
         soName = node.lv.solid.name
+        boundary = node.boundary
 
         #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)
         cls.ulv.add(lvIdx)
@@ -113,7 +114,7 @@ class Nd(object):
         #name = node.lv.name
         log.info( name ) 
 
-        nd = cls(ndIdx, soIdx, transform, name, depth )
+        nd = cls(ndIdx, soIdx, transform, boundary, name, depth )
         assert not ndIdx in cls.nodes
 
         cls.nodes[ndIdx] = nd 
@@ -122,18 +123,6 @@ class Nd(object):
     @classmethod
     def get(cls, ndIdx):
         return cls.nodes[ndIdx]
-
-    def _get_gltf(self):
-        d = {}
-        d["mesh"] = self.soIdx
-        d["name"] = self.name
-        if len(self.children) > 0:
-            d["children"] = self.children
-        pass
-        d["matrix"] = self.matrix
-        return d
-    gltf = property(_get_gltf)
-
 
     @classmethod
     def GLTF(cls):
@@ -145,7 +134,21 @@ class Nd(object):
         gltf["meshes"] = [mesh.gltf for mesh in cls.meshes.values()]
         return gltf 
 
-    def __init__(self, ndIdx, soIdx, transform, name, depth):
+
+    def _get_gltf(self):
+        d = {}
+        d["mesh"] = self.soIdx
+        d["name"] = self.name
+        d["extras"] = self.extras
+        if len(self.children) > 0:
+            d["children"] = self.children
+        pass
+        d["matrix"] = self.matrix
+        return d
+    gltf = property(_get_gltf)
+
+
+    def __init__(self, ndIdx, soIdx, transform, boundary, name, depth):
         """
         :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
         :param soIdx: local within substree so index, used for referencing to distinct solids/meshes
@@ -154,6 +157,7 @@ class Nd(object):
         self.ndIdx = ndIdx
         self.soIdx = soIdx
         self.transform = transform
+        self.extras = dict(boundary=boundary)
 
         self.name = name
         self.depth = depth
@@ -202,6 +206,10 @@ class Nd(object):
         pass
         return gltf 
 
+
+
+class Sc(object):
+    pass
 
 
 

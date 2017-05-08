@@ -104,18 +104,18 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib)
 
     NTrianglesNPY* tris = csg->polygonize();
 
-    nnode* root = csg->getRoot() ;
+    //nnode* root = csg->getRoot() ;
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
-
     glm::mat4 txf = tris->getTransform(); 
+
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
     GSolid* solid = new GSolid(index, transform, mesh, UINT_MAX, NULL );     
 
-
-    const char* spec = csg->getBoundary();
+    const char* spec = csg->getBoundary();  
+    // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     unsigned boundary = bndlib->addBoundary(spec);  // only adds if not existing
 
@@ -123,9 +123,10 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib)
 
     solid->setSensor( NULL );      
 
-    solid->setCSGFlag( root->type );
+    solid->setCSGFlag( csg->getRootType() );
   
-    GParts* pts = GParts::make( csg );
+
+    GParts* pts = GParts::make( csg, spec );
 
     solid->setParts( pts );
 
