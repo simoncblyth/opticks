@@ -24,12 +24,13 @@ struct NPY_API nmat4pair
 
 struct NPY_API nmat4triple
 {
-    static nmat4triple* product(const std::vector<nmat4triple*>& tt);
+    static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool swap=false);
     static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate );
 
     nmat4triple* clone();
     nmat4triple* make_translated(const glm::vec3& tlate );
     nmat4triple( const glm::mat4& transform ); 
+    nmat4triple( float* data ); 
     nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
          : 
             t(transform), 
@@ -66,6 +67,7 @@ struct NPY_API ndeco
 
 struct NPY_API nglmext 
 { 
+    static void copyTransform( std::array<float,16>& dst, const glm::mat4& src );
     static glm::mat4 invert_tr( const glm::mat4& tr ); 
     static glm::mat4* invert_tr( const glm::mat4* tr ); 
 

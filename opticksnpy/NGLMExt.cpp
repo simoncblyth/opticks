@@ -1,9 +1,20 @@
+#include <array>
+#include <iterator>
+
 #include "SDigest.hh"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
 #include <glm/gtx/component_wise.hpp> 
 #include <glm/gtx/matrix_operation.hpp>
+
+
+
+void nglmext::copyTransform( std::array<float,16>& dst, const glm::mat4& src )
+{
+    const float* p = glm::value_ptr(src);
+    std::copy(p, p+16, std::begin(dst));
+}
 
 
 glm::mat4 nglmext::invert_tr( const glm::mat4& tr )
@@ -310,6 +321,13 @@ nmat4pair::nmat4pair(const glm::mat4& t_ )
 }
 
 
+nmat4triple::nmat4triple(float* data ) 
+     : 
+     t(glm::make_mat4(data)),
+     v(nglmext::invert_trs(t)),
+     q(glm::transpose(v))
+{
+}
 
 nmat4triple::nmat4triple(const glm::mat4& t_ ) 
      : 
@@ -325,7 +343,7 @@ nmat4triple* nmat4triple::clone()
 }
 
 
-nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples)
+nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool swap)
 {
     unsigned ntriples = triples.size();
     if(ntriples==0) return NULL ; 
@@ -336,8 +354,8 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples)
 
     for(unsigned i=0,j=ntriples-1 ; i < ntriples ; i++,j-- )
     {
-        const nmat4triple* ii = triples[i] ; 
-        const nmat4triple* jj = triples[j] ; 
+        const nmat4triple* ii = triples[swap ? j : i] ; 
+        const nmat4triple* jj = triples[swap ? i : j] ; 
 
         t *= ii->t ; 
         v *= jj->v ;

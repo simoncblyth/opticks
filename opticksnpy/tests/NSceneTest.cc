@@ -35,7 +35,7 @@ int main(int argc, char** argv)
 
     //scene->dumpAll();
 
-    test_makeInstanceTransformsBuffer(scene);
+    //test_makeInstanceTransformsBuffer(scene);
 
     return 0 ; 
 }
