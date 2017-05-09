@@ -380,16 +380,20 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 
 void GTreeCheck::makeMergedMeshAndInstancedBuffers()
 {
-    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
-    makeInstancedBuffers(mergedmesh, 0);  // ? instanced global too, for common structure
+    GNode* root = m_ggeo->getNode(0);
+    assert(root); 
+    GNode* base = NULL ; 
 
-    //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
+
+    GMergedMesh* mm0 = m_ggeo->makeMergedMesh(0, base, root );
+    makeInstancedBuffers(mm0, 0);  // ? instanced global too, for common structure
+
 
     unsigned int numRepeats = getNumRepeats();
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
-         GNode*   rbase          = getRepeatExample(ridx) ; 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
+         GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase, root); 
 
          makeInstancedBuffers(mm, ridx);
      

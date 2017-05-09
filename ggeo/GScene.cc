@@ -45,10 +45,7 @@ void GScene::init()
 
 void GScene::modifyGeometry()
 {
-    // is this needed ?? 
-    // the merged meshes are created via GGeoLib which
-    // holds onto them 
-
+    // clear out the G4DAE geometry GMergedMesh, typically loaded from cache 
     m_geolib->clear();
 }
 
@@ -97,6 +94,8 @@ GSolid* GScene::createVolumeTree(NScene* scene)
     return root ; 
 }
 
+
+
 GSolid* GScene::createVolumeTree_r(nd* n)
 {
     GSolid* node = createVolume(n);
@@ -111,9 +110,11 @@ GSolid* GScene::createVolumeTree_r(nd* n)
     //
     // With this simple strategy just the target node will get merged in
     // GMergedMesh::traverse_r
+    //
+    // contrast with the G4DAE route: AssimpGGeo::convertStructure
 
     unsigned mesh_idx = n->mesh ;   
-    node->setRepeatIndex(mesh_idx);  // <-- steers GMergedMesh::create repsel
+    node->setRepeatIndex(1+mesh_idx);  //   1-based index <-- steers GMergedMesh::create repsel
 
 
     typedef std::vector<nd*> VN ; 
@@ -122,6 +123,7 @@ GSolid* GScene::createVolumeTree_r(nd* n)
         nd* cn = *it ; 
         GSolid* child = createVolumeTree_r(cn);
         node->addChild(child);
+        child->setParent(node) ;  
     } 
 
 
@@ -163,11 +165,18 @@ GSolid* GScene::createVolume(nd* n)
 
     NCSG* csg = getCSG(mesh_idx);
 
-    glm::mat4 xf_local = n->transform->t ;    
 
-    GMatrixF* transform = new GMatrix<float>(glm::value_ptr(xf_local));
+    glm::mat4 xf_global = n->gtransform->t ;    
+    glm::mat4 xf_local  = n->transform->t ;    
 
-    GSolid* solid = new GSolid(node_idx, transform, mesh, UINT_MAX, NULL );     
+    GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+    GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
+
+    GSolid* solid = new GSolid(node_idx, gtransform, mesh, UINT_MAX, NULL );     
+    solid->setLevelTransform(ltransform); 
+
+    // see AssimpGGeo::convertStructureVisit
+
 
     solid->setSensor( NULL );      
 
@@ -197,32 +206,61 @@ void GScene::createInstancedMergedMeshes(bool /*delta*/)
 
 
 
+
+
+
+
 void GScene::makeMergedMeshAndInstancedBuffers()
 {
+
+/*
+    GMergedMesh* mm0 = m_ggeo->makeMergedMesh(0, NULL, m_root );  // base NULL for global transforms
+    makeInstancedBuffers(mm0, 0);  
+    mm0->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
+*/
+
+
     unsigned num_meshes = m_scene->getNumMeshes();
     for(unsigned mesh_idx=0 ; mesh_idx < num_meshes ; mesh_idx++)  // 1-based index
     {
          const std::vector<unsigned>& instances = m_scene->getInstances(mesh_idx);
          assert(instances.size() > 0 ); 
-
          unsigned first_node_idx = instances[0]; 
-         unsigned ridx = mesh_idx ; 
+         GSolid* first = getNode(first_node_idx);
+         GNode* rbase = first->getParent();    
 
-         GSolid* rbase = getNode(first_node_idx);
-         assert(rbase);
+         // was using first instance as the base... but thats surely wrong 
+         // GTreeCheck does this... must be some off-by-one confusion somewhere 
 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
+         unsigned ridx = mesh_idx + 1 ;   // 1-based index
+
+         if(rbase == NULL) 
+             LOG(warning) << "GScene::makeMergedMeshAndInstancedBuffers"
+                          << " NULL parent for first instance of"
+                          << " mesh_idx " << mesh_idx
+                          << " first_node_idx  " << first_node_idx 
+                          ;
+                                        
+         //assert(rbase);
+
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase, m_root ); 
          makeInstancedBuffers(mm, ridx);
-
          mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
 
-
-         GParts* combi = GParts::combine( rbase->getParts()  );
-
+         GParts* combi = GParts::combine( first->getParts()  );
          mm->setParts( combi ) ;  // combine even when only 1 for consistent handling 
 
     }
 }
+
+
+
+
+
+
+
+
+
 
 void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned int ridx)
 {
@@ -241,13 +279,13 @@ void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned int ridx)
 
 NPY<float>* GScene::makeInstanceTransformsBuffer(unsigned ridx)
 {
-    unsigned mesh_idx = ridx ; // simple 1-to-1 mesh to instance
+    unsigned mesh_idx = ridx - 1 ; // simple 1-to-1 mesh to instance
     return m_scene->makeInstanceTransformsBuffer(mesh_idx)  ; 
 }
 
 NPY<unsigned>* GScene::makeInstanceIdentityBuffer(unsigned ridx) 
 {
-    unsigned mesh_idx = ridx ; // simple 1-to-1 mesh to instance
+    unsigned mesh_idx = ridx - 1; // simple 1-to-1 mesh to instance
     const std::vector<unsigned>& instances = m_scene->getInstances(mesh_idx);
     unsigned num_instances = instances.size() ; 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 4);
@@ -268,7 +306,7 @@ NPY<unsigned>* GScene::makeInstanceIdentityBuffer(unsigned ridx)
 
 NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer(unsigned ridx) 
 {
-    unsigned mesh_idx = ridx ; // simple 1-to-1 mesh to instance
+    unsigned mesh_idx = ridx - 1; // simple 1-to-1 mesh to instance
     const std::vector<unsigned>& instances = m_scene->getInstances(mesh_idx);
     unsigned num_instances = instances.size() ; 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 1, 4);  //  TODO: unify shape aii and ii shape
@@ -302,9 +340,6 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer(unsigned ridx)
 }
 
 
-
-
-
 /*
 
 385 void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
@@ -322,11 +357,6 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer(unsigned ridx)
 394     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
 
 */
-
-
-
-
-
 
 
 

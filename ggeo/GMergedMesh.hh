@@ -27,7 +27,8 @@ public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
     // GGeo needed just to access root node
-    static GMergedMesh* create(unsigned ridx, GGeo* ggeo, GNode* base=NULL);
+    //static GMergedMesh* create(unsigned ridx, GGeo* ggeo, GNode* base=NULL);
+    static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root );
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected solids and their vertices to allocate then 

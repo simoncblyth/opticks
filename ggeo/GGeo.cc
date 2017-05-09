@@ -508,9 +508,10 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
     return mm ; 
 }
 
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root)
 {
-    return m_geolib->makeMergedMesh(this, index, base);
+    //return m_geolib->makeMergedMesh(this, index, base);
+    return m_geolib->makeMergedMesh(index, base, root);
 }
 
 
@@ -643,14 +644,16 @@ void GGeo::loadFromGLTF()
     assert(gltf > 0);
     const char* gltfbase = m_ok->getGLTFBase();
     const char* gltfname = m_ok->getGLTFName();
+    const char* gltfconfig = m_ok->getGLTFConfig();
 
     LOG(info) << "GGeo::loadFromGLTF"
                << " gltfbase " << gltfbase
                << " gltfname " << gltfname
+               << " gltfconfig " << gltfconfig
                << " gltf " << gltf
               ;
 
-    m_nscene = new NScene(gltfbase, gltfname);
+    m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
     m_gscene = new GScene(this, m_nscene );
 
 
@@ -983,7 +986,7 @@ void GGeo::dumpRaw(const char* msg)
 }
 
 
-GSolid* GGeo::getSolid(unsigned int index)
+GSolid* GGeo::getSolid(unsigned index)
 {
     GSolid* solid = NULL ; 
     if(m_solidmap.find(index) != m_solidmap.end()) 
@@ -993,6 +996,15 @@ GSolid* GGeo::getSolid(unsigned int index)
     }
     return solid ; 
 }
+
+
+GNode* GGeo::getNode(unsigned index)
+{
+    GSolid* solid = getSolid(index);
+    GNode* node = static_cast<GNode*>(solid); 
+    return node ; 
+}
+
 
 
 
@@ -1307,7 +1319,8 @@ void GGeo::prepareMeshes()
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
-        makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+        GNode* root = getNode(0);
+        makeMergedMesh(0, NULL, root);  // ridx:0 rbase:NULL 
     }
     LOG(trace) << "GGeo::prepareMeshes DONE" ;
 }
@@ -1467,6 +1480,8 @@ void GGeo::dumpStats(const char* msg)
     for(unsigned int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = getMergedMesh(i);
+        if(!mm) continue ; 
+
         GBuffer* tbuf = mm->getTransformsBuffer();
         NPY<float>* ibuf = mm->getITransformsBuffer();
         GBuffer* vbuf = mm->getVerticesBuffer();

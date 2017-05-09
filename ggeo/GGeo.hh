@@ -144,7 +144,8 @@ class GGEO_API GGeo : public NConfigurable {
         void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
-        GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
+        //GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
+        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root);
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:
@@ -261,6 +262,7 @@ class GGEO_API GGeo : public NConfigurable {
         GPropertyMap<float>* findRawMaterial(const char* shortname);
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname);
     public:
+        GNode* getNode(unsigned index); 
         GSolid* getSolid(unsigned int index);  
         GSolid* getSolidSimple(unsigned int index);  
 

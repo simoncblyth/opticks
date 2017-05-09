@@ -8,16 +8,23 @@
 #include "NGLMExt.hpp"
 
 
-NGLTF::NGLTF(const char* base, const char* name, unsigned scene_idx)
+NGLTF::NGLTF(const char* base, const char* name, const char* config, unsigned scene_idx)
    :
-    m_base(strdup(base)),
-    m_name(strdup(name)),
+    m_base(base ? strdup(base) : NULL),
+    m_name(name ? strdup(name) : NULL),
+    m_config(config ? strdup(config) : NULL),
     m_scene_idx(scene_idx),
     m_gltf(NULL),
     m_fgltf(NULL)
 {
     load();
     collect();
+}
+
+
+const char* NGLTF::getConfig()
+{
+    return m_config ; 
 }
 
 

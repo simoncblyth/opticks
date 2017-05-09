@@ -27,11 +27,11 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-
     const char* base = argc > 1 ? argv[1] : "$TMP/nd" ;
     const char* name = "scene.gltf" ;
+    const char* config = NULL ; 
 
-    NScene* scene = new NScene( base, name  ); 
+    NScene* scene = new NScene( base, name, config  ); 
     assert(scene);
     scene->dump(argv[0]);
     scene->dumpNdTree();

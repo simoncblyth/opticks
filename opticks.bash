@@ -680,6 +680,7 @@ tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
 tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
 tboolean-(){      . $(opticks-home)/tests/tboolean.bash  && tboolean-env $* ; }
+tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }
 
 ####### below functions support analysis on machines without a full opticks install
 ####### by copying some parts of an opticks install to corresponding local locations 

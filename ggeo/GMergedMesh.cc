@@ -153,37 +153,30 @@ void GMergedMesh::collectParts( std::vector<GParts*>& analytic, const std::vecto
 }
 
 
-GMergedMesh* GMergedMesh::create(unsigned ridx, GGeo* ggeo, GNode* base)
+
+GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
 {
-    // needs GGeo just to access root node
+    assert(root && "root node is required");
 
     Timer t("GMergedMesh::create") ; 
     t.setVerbose(false);
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( ridx ); 
-    mm->setVerbosity(ggeo->getMeshVerbosity());
+    //mm->setVerbosity(ggeo->getMeshVerbosity());
+    mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
 
-    if(base == NULL)  // non-instanced global transforms
-    {
-        mm->setCurrentBase(NULL);
-        base = static_cast<GNode*>(ggeo->getSolid(0)); 
-        unsigned int numMeshes = ggeo->getNumMeshes();
-        assert(numMeshes < 500 );
-    }
-    else   // instances transforms, with transform heirarchy split at the base 
-    {
-        mm->setCurrentBase(base);
-    }
+    GNode* start = base ? base : root ; 
+
 
     LOG(info)<<"GMergedMesh::create"
              << " ridx " << ridx 
-             << " from base " << base->getName() ;
+             << " starting from " << start->getName() ;
              ; 
 
     // 1st pass traversal : counts vertices and faces
 
-    mm->traverse_r( base, 0, PASS_COUNT );  
+    mm->traverse_r( start, 0, PASS_COUNT );  
 
     t("1st pass traverse");
 
@@ -201,7 +194,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GGeo* ggeo, GNode* base)
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
-    mm->traverse_r( base, 0, PASS_MERGE );  
+    mm->traverse_r( start, 0, PASS_MERGE );  
     t("2nd pass traverse");
 
     mm->updateBounds();

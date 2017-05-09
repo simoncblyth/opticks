@@ -9,7 +9,7 @@ struct nd ;
 class NPY_API NScene : public NGLTF 
 {
     public:
-        NScene(const char* base, const char* name, int scene_idx=0  );
+        NScene(const char* base, const char* name, const char* config, int scene_idx=0  );
         nd*   getRoot();
         nd*   getNd(unsigned node_idx);
         NCSG* getCSG(unsigned mesh_idx);
@@ -25,7 +25,7 @@ class NPY_API NScene : public NGLTF
     private:
         nd*                       m_root ; 
         std::map<unsigned, nd*>   m_nd ; 
-        std::vector<NCSG*>        m_csg_trees ; 
+        std::map<unsigned, NCSG*> m_csg ; 
 
 };
 

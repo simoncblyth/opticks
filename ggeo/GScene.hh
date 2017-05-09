@@ -31,6 +31,13 @@ GTreeCheck
 
   GGeo/GGeoLib/GMergedMesh::create machinery 
 
+* a global mm0 is needed for setting domains... when 
+  operating purely instanced need to construct some 
+  placeholder bbox so satisfy the global mesh 0 that 
+  lots of things require
+
+
+
 */
 
 class GGEO_API GScene 

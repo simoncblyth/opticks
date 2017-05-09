@@ -575,6 +575,10 @@ const char* Opticks::getGLTFName()
 {
     return m_cfg->getGLTFName().c_str() ; 
 }
+const char* Opticks::getGLTFConfig()
+{
+    return m_cfg->getGLTFConfig().c_str() ; 
+}
 int  Opticks::getGLTF()
 {
     return m_cfg->getGLTF(); 

@@ -321,9 +321,12 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
 
     if(nbase == 0)
     {
-        LOG(warning)<<"GNode::getRelativeTransform " 
-                    << " base node  " << base->getName()
-                    << " is not an ancestor of this node  " << this->getName()
+        LOG(warning)
+                    << " BASE NODE IS NOT ANCESTOR " 
+                    << " base node index: " << ( base ? base->getIndex() : -1 )
+                    << " base node name:  " << base->getName()
+                    << " this node index:  " << getIndex() 
+                    << " this node name:  " << this->getName()
                     ;
     }
     return m ; 

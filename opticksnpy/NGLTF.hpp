@@ -20,7 +20,8 @@ namespace ygltf
 
 class NPY_API NGLTF {
     public:
-        NGLTF(const char* base, const char* name, unsigned scene_idx);
+        NGLTF(const char* base, const char* name, const char* config, unsigned scene_idx);
+        const char* getConfig();
     private:
         void load();
         void collect();
@@ -51,6 +52,7 @@ class NPY_API NGLTF {
     protected:
         const char*     m_base ; 
         const char*     m_name ; 
+        const char*     m_config ; 
         int             m_scene_idx ; 
         ygltf::glTF_t*  m_gltf ;  
         ygltf::fl_gltf* m_fgltf ;

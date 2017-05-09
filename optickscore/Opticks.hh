@@ -163,8 +163,10 @@ class OKCORE_API Opticks {
        float getFxAb();
        float getFxSc();
    public:
+       // see GScene, NScene, NGLTF
        const char* getGLTFBase();
        const char* getGLTFName();
+       const char* getGLTFConfig();
        int         getGLTF();
        bool        isGLTF();
    public:

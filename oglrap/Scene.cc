@@ -563,10 +563,12 @@ void Scene::setComposition(Composition* composition)
 void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 {
     LOG(debug)<< "Scene::uploadGeometryGlobal " ;
-    bool skip = mm->isSkip() ;
 
     assert(m_mesh0 == NULL); // not expected to Scene::uploadGeometryGlobal more than once 
     m_mesh0 = mm ; 
+
+    bool skip = mm == NULL ? true : mm->isSkip() ;
+
     static unsigned int n_global(0);
 
     if(!skip)

@@ -33,6 +33,7 @@ int main(int argc, char** argv)
 
     const char* base = ok.getGLTFBase() ;
     const char* name = ok.getGLTFName() ;
+    const char* config = ok.getGLTFConfig() ;
     int gltf = ok.getGLTF();
 
     assert(gltf == 101);
@@ -40,6 +41,7 @@ int main(int argc, char** argv)
     LOG(info) << argv[0]
               << " base " << base
               << " name " << name
+              << " config " << config
               << " gltf " << gltf 
               ; 
 

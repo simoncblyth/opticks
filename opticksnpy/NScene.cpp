@@ -26,14 +26,14 @@ nd* NScene::getRoot()
 }
 NCSG* NScene::getCSG(unsigned mesh_idx)
 {
-    return m_csg_trees[mesh_idx];
+    return m_csg[mesh_idx];
 }
 
 
 
-NScene::NScene(const char* base, const char* name, int scene_idx)  
+NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
    :
-    NGLTF(base, name, scene_idx)
+    NGLTF(base, name, config, scene_idx)
 {
     load_mesh_extras();
     import();
@@ -65,7 +65,7 @@ void NScene::load_mesh_extras()
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), verbosity, polygonize  ); 
         csg->setIndex(mesh_id);
 
-        m_csg_trees.push_back(csg); 
+        m_csg[mesh_id] = csg ; 
 
         std::cout << " mesh_id " << std::setw(4) << mesh_id 
                   << " primitives " << std::setw(4) << primitives.size() 
