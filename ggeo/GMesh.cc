@@ -1273,15 +1273,31 @@ void GMesh::updateBounds()
 {
     gbbox*  bb = findBBox(m_vertices, m_num_vertices);
 
-    //assert(bb);
+
+/*
+   // just means have instanciated the mesh and not added
+   // any verts yet 
+
     if(bb == NULL)
     {
-        LOG(warning) << "GMesh::updateBounds mesh with no verts, g_instance_count " << g_instance_count ; 
+        LOG(warning) << "GMesh::updateBounds"
+                     << " mesh with NO BBOX "
+                     << " index " << m_index 
+                     << " g_instance_count " << g_instance_count 
+                     << " num_vertices " << m_num_vertices
+                     ; 
     }
     else
     {
-        LOG(info) << "GMesh::updateBounds mesh with verts,  g_instance_count " << g_instance_count ;   
+        LOG(info) << "GMesh::updateBounds"
+                     << " mesh with bbox "
+                     << " index " << m_index 
+                     << " g_instance_count " << g_instance_count 
+                     << " num_vertices " << m_num_vertices
+                     ; 
+ 
     }
+*/
 
 
     gfloat4 ce(0,0,0,1.f) ;
@@ -1754,15 +1770,30 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int numFaces = getNumFaces() ;
     unsigned int numRepeatedIdentity = numITransforms*numFaces ;
 
-    LOG(trace) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
-              << " numSolids " << numSolids 
-              << " numFaces (sum of faces in numSolids)" << numFaces 
-              << " numITransforms " << numITransforms
-              << " numRepeatedIdentity " << numRepeatedIdentity 
+    bool nodeinfo_ok = m_nodeinfo_buffer->getNumItems() == numSolids ;
+    bool iidentity_ok = m_iidentity_buffer->getNumItems() == numSolids*numITransforms ;
+
+    if(!nodeinfo_ok)
+    LOG(fatal) 
+               << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+               << " nodeinfo_ok " << nodeinfo_ok
+               << " nodeinfo_buffer_items " << m_nodeinfo_buffer->getNumItems()
+               << " numSolids " << numSolids  
+               ;
+
+    if(!iidentity_ok)
+    LOG(fatal) 
+               << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+               << " iidentity_ok " << iidentity_ok
+               << " iidentity_buffer_items " << m_iidentity_buffer->getNumItems() 
+               << " numFaces (sum of faces in numSolids)" << numFaces 
+               << " numITransforms " << numITransforms
+               << " numSolids*numITransforms " << numSolids*numITransforms 
+               << " numRepeatedIdentity " << numRepeatedIdentity 
                ; 
 
-    assert(m_nodeinfo_buffer->getNumItems() == numSolids);
-    assert(m_iidentity_buffer->getNumItems() == numSolids*numITransforms);
+    assert(nodeinfo_ok);
+    assert(iidentity_ok);
 
     guint4* nodeinfo = getNodeInfo();
     unsigned int nftot(0);

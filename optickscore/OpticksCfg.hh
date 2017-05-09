@@ -75,6 +75,12 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getLoaderVerbosity(); 
      int          getMeshVerbosity(); 
      int          getAnalyticPMTIndex(); 
+
+
+     const std::string& getGLTFBase();
+     const std::string& getGLTFName();
+     int                getGLTF();
+
 private:
      void init();
 private:
@@ -142,6 +148,13 @@ private:
      int         m_loaderverbosity ; 
      int         m_meshverbosity ; 
      int         m_apmtidx ; 
+
+
+     std::string m_gltfbase ; 
+     std::string m_gltfname ;
+     int         m_gltf ;  
+
+
 };
 
 

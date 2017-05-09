@@ -54,7 +54,7 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* WIRE_ ; 
         static const char* NORM_BBOX_ ; 
    public:
-        enum { MAX_INSTANCE_RENDERER = 5 };  
+        enum { MAX_INSTANCE_RENDERER = 500 };  
         static const char* _INSTANCE   ;
         static const char* INSTANCE0  ;
         static const char* INSTANCE1  ;

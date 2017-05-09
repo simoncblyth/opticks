@@ -567,6 +567,32 @@ NSlice* Opticks::getAnalyticPMTSlice()
 }
 
 
+const char* Opticks::getGLTFBase()
+{
+    return m_cfg->getGLTFBase().c_str() ; 
+}
+const char* Opticks::getGLTFName()
+{
+    return m_cfg->getGLTFName().c_str() ; 
+}
+int  Opticks::getGLTF()
+{
+    return m_cfg->getGLTF(); 
+}
+bool Opticks::isGLTF()
+{
+    return getGLTF() > 0 ; 
+}
+  
+
+
+
+
+
+
+
+
+
 void Opticks::defineEventSpec()
 {
     const char* typ = getSourceType(); 

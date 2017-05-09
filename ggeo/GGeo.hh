@@ -14,6 +14,7 @@
 // npy-
 #include "NConfigurable.hpp"
 class NSensorList ; 
+class NScene ; 
 class NLookup ; 
 class TorchStepNPY ; 
 
@@ -56,6 +57,7 @@ class GGeoTest ;
 class GItemIndex ; 
 class GItemList ; 
 class GMergedMesh ;
+class GScene ; 
 
 
 #include "GGEO_API_EXPORT.hh"
@@ -104,6 +106,8 @@ class GGEO_API GGeo : public NConfigurable {
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
+        void loadFromGLTF();
+
         void afterConvertMaterials();
         void createSurLib();
     public:
@@ -303,7 +307,7 @@ class GGEO_API GGeo : public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
-        Opticks*                      m_opticks ;  
+        Opticks*                      m_ok ;  
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
@@ -352,7 +356,10 @@ class GGEO_API GGeo : public NConfigurable {
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
 
-
+    private:
+        // glTF route 
+        NScene*                            m_nscene ; 
+        GScene*                            m_gscene ; 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 

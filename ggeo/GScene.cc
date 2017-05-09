@@ -1,3 +1,5 @@
+#include "OpticksConst.hh"
+
 #include "NScene.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NSensor.hpp"
@@ -9,6 +11,7 @@
 
 #include "GGeo.hh"
 #include "GParts.hh"
+#include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GMatrix.hh"
 #include "GMesh.hh"
@@ -20,6 +23,7 @@
 GScene::GScene( GGeo* ggeo, NScene* scene )
     :
     m_ggeo(ggeo),
+    m_geolib(ggeo->getGeoLib()),
     m_bndlib(ggeo->getBndLib()),
     m_scene(scene),
     m_root(NULL)
@@ -29,12 +33,25 @@ GScene::GScene( GGeo* ggeo, NScene* scene )
 
 void GScene::init()
 {
+    modifyGeometry();
+
     importMeshes(m_scene);
 
     m_root = createVolumeTree(m_scene) ;
 
     createInstancedMergedMeshes(false);
 }
+
+
+void GScene::modifyGeometry()
+{
+    // is this needed ?? 
+    // the merged meshes are created via GGeoLib which
+    // holds onto them 
+
+    m_geolib->clear();
+}
+
 
 void GScene::importMeshes(NScene* scene)
 {
@@ -66,13 +83,17 @@ NCSG* GScene::getCSG(unsigned mesh_idx)
 
 GSolid* GScene::createVolumeTree(NScene* scene)
 {
-    LOG(info) << "GScene::createVolumeTree" ; 
+    LOG(debug) << "GScene::createVolumeTree START" ; 
     assert(scene);
 
-    scene->dumpNdTree("GScene::createVolumeTree");
+    //scene->dumpNdTree("GScene::createVolumeTree");
 
     GSolid* root = createVolumeTree_r( scene->getRoot() );
     assert(root);
+
+    LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
+
+
     return root ; 
 }
 
@@ -130,7 +151,7 @@ GSolid* GScene::createVolume(nd* n)
 
     const char* spec = bnd.c_str();
 
-    LOG(info) << "GScene::createVolume"
+    LOG(debug) << "GScene::createVolume"
               << " node_idx " << std::setw(5) << node_idx 
               << " mesh_idx " << std::setw(3) << mesh_idx 
               << " bnd " << bnd 
@@ -157,6 +178,8 @@ GSolid* GScene::createVolume(nd* n)
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 
     GParts* pts = GParts::make( csg, spec  );
+
+    pts->setBndLib(m_bndlib);
 
     solid->setParts( pts );
 
@@ -190,6 +213,14 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
          GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
          makeInstancedBuffers(mm, ridx);
+
+         mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
+
+
+         GParts* combi = GParts::combine( rbase->getParts()  );
+
+         mm->setParts( combi ) ;  // combine even when only 1 for consistent handling 
+
     }
 }
 

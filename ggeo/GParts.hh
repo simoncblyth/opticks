@@ -69,6 +69,7 @@ class GGEO_API GParts {
         static GParts* make(NCSG* tree, const char* spec);
     public:
         static GParts* combine(std::vector<GParts*> subs);
+        static GParts* combine(GParts* onesub);   // for consistent handling between 1 and many 
     public:
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);

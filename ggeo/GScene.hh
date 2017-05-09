@@ -6,6 +6,7 @@ class GGeo ;
 class GSolid ; 
 class GNode ; 
 class GBndLib ; 
+class GGeoLib ; 
 class GMesh ; 
 
 class NCSG ; 
@@ -39,6 +40,7 @@ class GGEO_API GScene
     private:
         void init();
     private:
+        void modifyGeometry();
         void importMeshes(NScene* scene);
         GMesh* getMesh(unsigned mesh_idx);
         NCSG*  getCSG(unsigned mesh_idx);
@@ -58,6 +60,7 @@ class GGEO_API GScene
         GSolid*       getNode(unsigned node_idx);
     private:
         GGeo*    m_ggeo ; 
+        GGeoLib* m_geolib ; 
         GBndLib* m_bndlib ; 
         NScene*  m_scene ; 
         GSolid*  m_root ; 

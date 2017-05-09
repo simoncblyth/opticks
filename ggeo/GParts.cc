@@ -29,6 +29,16 @@ const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
 
+
+GParts* GParts::combine(GParts* onesub)
+{
+    // for consistency: need to combine even when only one sub
+    std::vector<GParts*> subs ; 
+    subs.push_back(onesub); 
+    return GParts::combine(subs);
+}
+
+
 GParts* GParts::combine(std::vector<GParts*> subs)
 {
     // Concatenate vector of GParts instances into a single GParts instance
@@ -189,7 +199,7 @@ GParts* GParts::make( NCSG* tree, const char* spec )
 
     assert(type_ok);
 
-    LOG(fatal) << "GParts::make NCSG "
+    LOG(debug) << "GParts::make NCSG "
               << " treedir " << tree->getTreeDir()
               << " node_sh " << nodebuf->getShapeString()
               << " tran_sh " << tranbuf->getShapeString() 
@@ -289,9 +299,10 @@ void GParts::save(const char* dir)
     LOG(info) << "GParts::save " << name << " to " << dir ; 
 
     if(m_part_buffer) m_part_buffer->save(dir, name, "partBuffer.npy");     
-    if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
     if(m_tran_buffer) m_tran_buffer->save(dir, name, "tranBuffer.npy");    
     if(m_plan_buffer) m_plan_buffer->save(dir, name, "planBuffer.npy");    
+
+    if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
 }
 
 void GParts::setName(const char* name)

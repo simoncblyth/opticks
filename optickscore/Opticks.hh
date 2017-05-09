@@ -122,6 +122,7 @@ class OKCORE_API Opticks {
        std::string getObjectPath(const char* name, unsigned int ridx, bool relative=false);
        const char* getDAEPath();
        const char* getGDMLPath();
+
        const char* getIdPath();
        const char* getIdFold();
        const char* getDetectorBase();
@@ -161,6 +162,11 @@ class OKCORE_API Opticks {
        float getFxRe();
        float getFxAb();
        float getFxSc();
+   public:
+       const char* getGLTFBase();
+       const char* getGLTFName();
+       int         getGLTF();
+       bool        isGLTF();
    public:
        NSlice*  getAnalyticPMTSlice();
        unsigned getAnalyticPMTIndex();

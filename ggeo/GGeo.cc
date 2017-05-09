@@ -22,6 +22,7 @@ namespace fs = boost::filesystem;
 #include "NSensor.hpp"
 #include "NLookup.hpp"
 #include "NSlice.hpp"
+#include "NScene.hpp"
 #include "Typ.hpp"
 
 
@@ -60,6 +61,7 @@ namespace fs = boost::filesystem;
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
 #include "GPmt.hh"
+#include "GScene.hh"
 
 #include "GMergedMesh.hh"
 #include "GItemIndex.hh"
@@ -79,7 +81,7 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 GGeo::GGeo(Opticks* opticks)
   :
-   m_opticks(opticks), 
+   m_ok(opticks), 
    m_composition(NULL), 
    m_treecheck(NULL), 
    m_treepresent(NULL), 
@@ -370,7 +372,7 @@ void GGeo::dumpCathodeLV(const char* msg)
 
 Opticks* GGeo::getOpticks()
 {
-    return m_opticks ; 
+    return m_ok ; 
 }
 
 
@@ -384,8 +386,8 @@ void GGeo::init()
 {
    LOG(trace) << "GGeo::init" ; 
 
-   OpticksResource* resource = m_opticks->getResource(); 
-   const char* idpath = m_opticks->getIdPath() ;
+   OpticksResource* resource = m_ok->getResource(); 
+   const char* idpath = m_ok->getIdPath() ;
 
    LOG(trace) << "GGeo::init" 
              << " idpath " << ( idpath ? idpath : "NULL" )
@@ -396,7 +398,7 @@ void GGeo::init()
    fs::path geocache(idpath); 
 
    bool cache_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
-   bool cache_requested = m_opticks->isGeocache() ; 
+   bool cache_requested = m_ok->isGeocache() ; 
 
    m_loaded = cache_exists && cache_requested ;
 
@@ -422,7 +424,7 @@ void GGeo::init()
 
    //////////////  below only when operating pre-cache //////////////////////////
 
-   m_geolib = new GGeoLib(m_opticks);
+   m_geolib = new GGeoLib(m_ok);
 
    m_treecheck = new GTreeCheck(this) ;
    if(resource->isJuno())
@@ -436,15 +438,15 @@ void GGeo::init()
 
    m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
-   m_bndlib = new GBndLib(m_opticks);
-   m_materiallib = new GMaterialLib(m_opticks);
-   m_surfacelib  = new GSurfaceLib(m_opticks);
+   m_bndlib = new GBndLib(m_ok);
+   m_materiallib = new GMaterialLib(m_ok);
+   m_surfacelib  = new GSurfaceLib(m_ok);
 
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
 
-   m_scintillatorlib  = new GScintillatorLib(m_opticks);
-   m_sourcelib  = new GSourceLib(m_opticks);
+   m_scintillatorlib  = new GScintillatorLib(m_ok);
+   m_sourcelib  = new GSourceLib(m_ok);
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
@@ -515,24 +517,24 @@ GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base)
 
 const char* GGeo::getIdPath()
 {
-    return m_opticks->getIdPath();
+    return m_ok->getIdPath();
 }
 OpticksColors* GGeo::getColors()
 {
-   return m_opticks->getColors() ; 
+   return m_ok->getColors() ; 
 }
 OpticksFlags* GGeo::getFlags()
 {
-    return m_opticks->getFlags();
+    return m_ok->getFlags();
 }
 OpticksAttrSeq* GGeo::getFlagNames()
 {
-    return m_opticks->getFlagNames();
+    return m_ok->getFlagNames();
 } 
 
 OpticksResource* GGeo::getResource()
 {
-    return m_opticks->getResource();
+    return m_ok->getResource();
 }
 
 
@@ -561,7 +563,10 @@ void GGeo::loadGeometry()
         loadFromCache();
     } 
 
+
     loadAnalyticPmt();
+    if(m_ok->isGLTF()) loadFromGLTF();
+
 
     setupLookup();
     setupColors();
@@ -604,9 +609,9 @@ void GGeo::loadFromCache()
 {   
     LOG(trace) << "GGeo::loadFromCache START" ; 
 
-    m_geolib = GGeoLib::load(m_opticks);
+    m_geolib = GGeoLib::load(m_ok);
         
-    const char* idpath = m_opticks->getIdPath() ;
+    const char* idpath = m_ok->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
 
     if(m_volnames)
@@ -616,18 +621,51 @@ void GGeo::loadFromCache()
     }
 
     bool constituents = true ; 
-    m_bndlib = GBndLib::load(m_opticks, constituents);    // interpolation potentially happens in here
+    m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
 
     // GBndLib is persisted via index buffer, not float buffer
     m_materiallib = m_bndlib->getMaterialLib();
     m_surfacelib = m_bndlib->getSurfaceLib();
 
 
-    m_scintillatorlib  = GScintillatorLib::load(m_opticks);
-    m_sourcelib  = GSourceLib::load(m_opticks);
+    m_scintillatorlib  = GScintillatorLib::load(m_ok);
+    m_sourcelib  = GSourceLib::load(m_ok);
 
     LOG(trace) << "GGeo::loadFromCache DONE" ; 
 }
+
+
+void GGeo::loadFromGLTF()
+{
+    if(!m_ok->isGLTF()) return ; 
+
+    int gltf = m_ok->getGLTF();
+    assert(gltf > 0);
+    const char* gltfbase = m_ok->getGLTFBase();
+    const char* gltfname = m_ok->getGLTFName();
+
+    LOG(info) << "GGeo::loadFromGLTF"
+               << " gltfbase " << gltfbase
+               << " gltfname " << gltfname
+               << " gltf " << gltf
+              ;
+
+    m_nscene = new NScene(gltfbase, gltfname);
+    m_gscene = new GScene(this, m_nscene );
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 void GGeo::createSurLib()
@@ -680,21 +718,21 @@ void GGeo::setupLookup()
 void GGeo::setupTyp()
 {
    // hmm maybe better elsewhere to avoid repetition from tests ? 
-    Typ* typ = m_opticks->getTyp();
+    Typ* typ = m_ok->getTyp();
     typ->setMaterialNames(m_materiallib->getNamesMap());
-    typ->setFlagNames(m_opticks->getFlagNamesMap());
+    typ->setFlagNames(m_ok->getFlagNamesMap());
 }
 
 void GGeo::setupColors()
 {
     LOG(trace) << "GGeo::setupColors" ; 
 
-    //OpticksFlags* flags = m_opticks->getFlags();
+    //OpticksFlags* flags = m_ok->getFlags();
 
     std::vector<unsigned int>& material_codes = m_materiallib->getAttrNames()->getColorCodes() ; 
-    std::vector<unsigned int>& flag_codes     = m_opticks->getFlagNames()->getColorCodes() ; 
+    std::vector<unsigned int>& flag_codes     = m_ok->getFlagNames()->getColorCodes() ; 
 
-    OpticksColors* colors = m_opticks->getColors();
+    OpticksColors* colors = m_ok->getColors();
 
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 
@@ -724,11 +762,11 @@ void GGeo::save(const char* idpath)
 
 void GGeo::loadAnalyticPmt()
 {
-    NSlice* slice = m_opticks->getAnalyticPMTSlice();
+    NSlice* slice = m_ok->getAnalyticPMTSlice();
 
-    unsigned apmtidx = m_opticks->getAnalyticPMTIndex();
+    unsigned apmtidx = m_ok->getAnalyticPMTIndex();
 
-    m_pmt = GPmt::load( m_opticks, m_bndlib, apmtidx, slice ); 
+    m_pmt = GPmt::load( m_ok, m_bndlib, apmtidx, slice ); 
 
     LOG(fatal) << "GGeo::loadAnalyticPmt"
               << " AnalyticPMTIndex " << apmtidx
@@ -750,6 +788,7 @@ void GGeo::loadAnalyticPmt()
 void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "ggv --test" 
+    //   controlled from OpticksGeometry::loadGeometry 
 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
@@ -758,9 +797,8 @@ void GGeo::modifyGeometry(const char* config)
 
     assert(m_geotest == NULL);
 
-    m_geotest = new GGeoTest(m_opticks, gtc, this);
+    m_geotest = new GGeoTest(m_ok, gtc, this);
     m_geotest->modifyGeometry();
-
 
 }
 
@@ -1255,7 +1293,7 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 void GGeo::prepareMeshes()
 {
-    bool instanced = m_opticks->isInstanced();
+    bool instanced = m_ok->isInstanced();
 
     LOG(trace) << "GGeo::prepareMeshes START" 
               << " instanced " << instanced 
@@ -1775,7 +1813,7 @@ GMesh* GGeo::invokeMeshJoin(GMesh* mesh)
     {
         LOG(trace) << "GGeo::invokeMeshJoin proceeding for " << mesh->getName() ; 
 
-        result = (*m_join_imp)(mesh, m_opticks); 
+        result = (*m_join_imp)(mesh, m_ok); 
 
         result->setName(mesh->getName()); 
         result->setIndex(mesh->getIndex()); 

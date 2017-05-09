@@ -34,7 +34,21 @@ void NGLTF::load()
     bool load_img = false ; 
     bool skip_missing = true  ;   
 
-    m_gltf = ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing ) ;
+    try
+    {
+        m_gltf = ygltf::load_gltf(path, load_bin, load_shaders, load_img, skip_missing ) ;
+    }
+    catch( ygltf::gltf_exception& e )
+    {
+        LOG(fatal) << "NGLTF::load FAILED FOR PATH " << path ; 
+        assert(0);
+    }
+    catch(...)
+    {
+        LOG(fatal) << "NGLTF::load FAILED FOR PATH " << path ; 
+        assert(0);
+    }
+
     m_fgltf = ygltf::flatten_gltf(m_gltf, m_scene_idx); 
 }
 

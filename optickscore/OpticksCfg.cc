@@ -72,7 +72,10 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_num_photons_per_g4event(10000),
        m_loaderverbosity(0),
        m_meshverbosity(0),
-       m_apmtidx(0)
+       m_apmtidx(0),
+       m_gltfbase("$TMP/nd"),
+       m_gltfname("scene.gltf"),
+       m_gltf(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -604,6 +607,25 @@ void OpticksCfg<Listener>::init()
            "string with spaces to be live parsed, as test of composed overrides");
 
 
+   char gltfbase[128];
+   snprintf(gltfbase,128, "String identifying directory of glTF geometry files to load with --gltf option. Default %s ", m_gltfbase.c_str() );
+   m_desc.add_options()
+       ("gltfbase",   boost::program_options::value<std::string>(&m_gltfbase), gltfbase );
+
+   char gltfname[128];
+   snprintf(gltfname,128, "String identifying name of glTF geometry file to load with --gltf option. Default %s ", m_gltfname.c_str() );
+   m_desc.add_options()
+       ("gltfname",   boost::program_options::value<std::string>(&m_gltfname), gltfname );
+
+   char gltf[128];
+   snprintf(gltf,128, "Integer controlling  glTF geometry file loading, 0 means NO.  Default %d ", m_gltf );
+   m_desc.add_options()
+       ("gltf",  boost::program_options::value<int>(&m_gltf), gltf );
+
+
+
+
+
 
     // the below formerly called size seems not to be working, so use simpler size above 
    addOptionS<Listener>(m_listener, 
@@ -616,6 +638,12 @@ void OpticksCfg<Listener>::init()
    addOptionI<Listener>(m_listener, 
             "dumpevent", 
             "Control GLFW event dumping ");
+
+
+
+
+
+
 }   
 
 
@@ -973,6 +1001,28 @@ int OpticksCfg<Listener>::getAnalyticPMTIndex()
 {
     return m_apmtidx ; 
 }
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getGLTFBase()
+{
+   return m_gltfbase ; 
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getGLTFName()
+{
+   return m_gltfname ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getGLTF()
+{
+    return m_gltf ; 
+}
+
+
+
 
 
 

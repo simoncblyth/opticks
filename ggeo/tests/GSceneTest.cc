@@ -1,4 +1,8 @@
+/**
 
+GSceneTest --okcore debug --gltfname hello.gltf
+
+**/
 #include <set>
 #include <string>
 
@@ -11,6 +15,8 @@
 #include "GScene.hh"
 
 #include "PLOG.hh"
+#include "OKCORE_LOG.hh"
+#include "NPY_LOG.hh"
 #include "GGEO_LOG.hh"
 
 
@@ -18,20 +24,33 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+    OKCORE_LOG__ ;
+    NPY_LOG__ ;
     GGEO_LOG__ ;
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--gltf 101");
+    ok.configure();
+
+    const char* base = ok.getGLTFBase() ;
+    const char* name = ok.getGLTFName() ;
+    int gltf = ok.getGLTF();
+
+    assert(gltf == 101);
+
+    LOG(info) << argv[0]
+              << " base " << base
+              << " name " << name
+              << " gltf " << gltf 
+              ; 
 
     GGeo gg(&ok);
     gg.loadFromCache();
+    gg.loadFromGLTF();
     gg.dumpStats();
 
-    const char* base = "$TMP/nd" ;
-    const char* name = "scene.gltf" ; 
 
-    NScene ns(base, name); 
-    GScene gs(&gg, &ns) ; 
-
+    //NScene ns(base, name); 
+    //GScene gs(&gg, &ns) ; 
 
     return 0 ; 
 }
