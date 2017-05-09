@@ -4,6 +4,7 @@
 
 class GGeo ; 
 class GSolid ; 
+class GNode ; 
 class GBndLib ; 
 class GMesh ; 
 
@@ -20,8 +21,14 @@ template<class T> class NPY ;
 GScene
 ========
 
-Aiming to be analytic replacement for GTreeCheck 
+Aiming to be a fully analytic replacement for the mainly triangulated 
+GTreeCheck 
 
+* to follow the same pattern as GTreeCheck need to 
+  label the node tree with a ridx repeat index... 
+  in order to use the GGeo meshing machinery
+
+  GGeo/GGeoLib/GMergedMesh::create machinery 
 
 */
 
@@ -40,15 +47,23 @@ class GGEO_API GScene
         GSolid* createVolumeTree_r(nd* n);
         GSolid* createVolume(nd* n);
    private:
-        unsigned int getNumRepeats(); 
-        void createInstancedMergedMeshes(bool delta);
-        NPY<float>*        makeInstanceTransformsBuffer(unsigned int ridx);
+        void         createInstancedMergedMeshes(bool delta);
+        void         makeMergedMeshAndInstancedBuffers() ; 
+        void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
+
+        NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
+        NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
+        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
+   private:
+        GSolid*       getNode(unsigned node_idx);
     private:
         GGeo*    m_ggeo ; 
         GBndLib* m_bndlib ; 
         NScene*  m_scene ; 
         GSolid*  m_root ; 
-        std::map<unsigned, GMesh*> m_meshes ; 
+
+        std::map<unsigned, GMesh*>  m_meshes ; 
+        std::map<unsigned, GSolid*> m_nodes ;  
 
 };
 

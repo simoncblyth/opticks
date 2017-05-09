@@ -290,6 +290,8 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 
 GMatrixF* GNode::getRelativeTransform(GNode* base)
 {
+   // only transforms after the base node are collected
+
     std::vector<GNode*> nodes = getAncestors();
     nodes.push_back(this);
 

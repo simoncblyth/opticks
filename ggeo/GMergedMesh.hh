@@ -26,7 +26,15 @@ class GGEO_API GMergedMesh : public GMesh {
 public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
-    static GMergedMesh* create(unsigned int index, GGeo* ggeo, GNode* base=NULL);
+    // GGeo needed just to access root node
+    static GMergedMesh* create(unsigned ridx, GGeo* ggeo, GNode* base=NULL);
+private:
+     // operates in COUNT and MERGE passes, COUNT find out the number of 
+     // ridx selected solids and their vertices to allocate then 
+     // MERGE collects toegether
+     void traverse_r( GNode* node, unsigned int depth, unsigned int pass);
+
+public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids) ;
@@ -45,8 +53,7 @@ private:
     void countMesh( GMesh* mesh ); 
     void mergeSolid( GSolid* solid, bool selected );
     void mergeMergedMesh( GMergedMesh* other, bool selected );
-public:
-    void traverse( GNode* node, unsigned int depth, unsigned int pass);
+
 public:
     float* getModelToWorldPtr(unsigned int index);
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");

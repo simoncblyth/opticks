@@ -27,16 +27,15 @@
 GTreeCheck::GTreeCheck(GGeo* ggeo) 
        :
        m_ggeo(ggeo),
-       m_geolib(NULL),
+       m_geolib(ggeo->getGeoLib()),
        m_repeat_min(120),
        m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
        m_count(0),
-       m_labels(0)
-       {
-          init();
-       }
-
+       m_labels(0),
+       m_digest_count(new Counts<unsigned>("progenyDigest"))
+{
+}
 
 unsigned int GTreeCheck::getNumRepeats()
 {
@@ -52,18 +51,9 @@ void GTreeCheck::setVertexMin(unsigned int vertex_min)
    m_vertex_min = vertex_min ; 
 }
 
-
-void GTreeCheck::init()
-{
-    m_digest_count = new Counts<unsigned int>("progenyDigest");
-    m_geolib = m_ggeo->getGeoLib() ;
-}
-
-
 void GTreeCheck::createInstancedMergedMeshes(bool delta)
 {
     //assert(0);  
-
     Timer t("GTreeCheck::createInstancedMergedMeshes") ; 
     t.setVerbose(true);
     t.start();
@@ -80,51 +70,16 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
     t("labelTree"); 
 
-    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
-    makeInstancedBuffers(mergedmesh, 0);  // ? instanced global too, for common structure
+    makeMergedMeshAndInstancedBuffers();
+    t("makeMergedMeshAndInstancedBuffers"); 
 
-    //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
-
-    unsigned int numRepeats = getNumRepeats();
-    for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
-    {
-         GNode*   rbase          = getRepeatExample(ridx) ; 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
-
-         makeInstancedBuffers(mm, ridx);
-     
-         //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
-    }
-    t("makeRepeatTransforms"); 
-
-
-    GTreePresent* tp = m_ggeo->getTreePresent();
-    GNode* top = static_cast<GNode*>(m_ggeo->getSolid(0)) ; 
-    tp->traverse(top);
-    //tp->dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
-    tp->write(m_ggeo->getIdPath());
-    
-        
+    treePresent();
     t("treePresent"); 
 
     t.stop();
     t.dump();
 }
 
-
-void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
-{
-     //mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
-
-     NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx);
-     mergedmesh->setITransformsBuffer(itransforms);
-
-     NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
-     mergedmesh->setInstancedIdentityBuffer(iidentity);
-
-     NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
-     mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
-}
 
 
 
@@ -135,7 +90,7 @@ void GTreeCheck::traverse()
     assert(m_root);
 
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
-    traverse(m_root, 0);
+    traverse_r(m_root, 0);
 
     m_digest_count->sort(false);   // descending count order, ie most common subtrees first
     //m_digest_count->dump();
@@ -147,13 +102,13 @@ void GTreeCheck::traverse()
     dumpRepeatCandidates();
 }
 
-void GTreeCheck::traverse( GNode* node, unsigned int depth)
+void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
 {
     std::string& pdig = node->getProgenyDigest();
     m_digest_count->add(pdig.c_str());
     m_count++ ; 
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1 );
 }
 
 
@@ -163,10 +118,10 @@ void GTreeCheck::deltacheck()
     m_root = m_ggeo->getSolid(0);
     assert(m_root);
 
-    deltacheck(m_root, 0);
+    deltacheck_r(m_root, 0);
 }
 
-void GTreeCheck::deltacheck( GNode* node, unsigned int depth)
+void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     GMatrixF* gtransform = solid->getTransform();
@@ -190,7 +145,7 @@ void GTreeCheck::deltacheck( GNode* node, unsigned int depth)
 
     assert(delta < 1e-6) ;
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) deltacheck(node->getChild(i), depth + 1 );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) deltacheck_r(node->getChild(i), depth + 1 );
 }
 
 
@@ -363,14 +318,14 @@ void GTreeCheck::labelTree()
          // recursive labelling starting from the placements
          for(unsigned int p=0 ; p < placements.size() ; p++)
          {
-             labelTree(placements[p], ridx);
+             labelTree_r(placements[p], ridx);
          }
     }
 
     LOG(info)<<"GTreeCheck::labelTree count of non-zero setRepeatIndex " << m_labels ; 
 }
 
-void GTreeCheck::labelTree( GNode* node, unsigned int ridx)
+void GTreeCheck::labelTree_r( GNode* node, unsigned int ridx)
 {
     node->setRepeatIndex(ridx);
     if(ridx > 0)
@@ -381,7 +336,7 @@ void GTreeCheck::labelTree( GNode* node, unsigned int ridx)
                   ;
          m_labels++ ; 
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree(node->getChild(i), ridx );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) labelTree_r(node->getChild(i), ridx );
 }
 
 
@@ -398,7 +353,7 @@ std::vector<GNode*> GTreeCheck::getPlacements(unsigned int ridx)
         assert(ridx-1 < m_repeat_candidates.size()); 
         std::string pdig = m_repeat_candidates[ridx-1];
         placements = m_root->findAllProgenyDigest(pdig);
-        placements = m_root->findAllProgenyDigest(pdig);
+        //placements = m_root->findAllProgenyDigest(pdig);
     } 
     return placements ; 
 }
@@ -413,9 +368,54 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+void GTreeCheck::makeMergedMeshAndInstancedBuffers()
+{
+    GMergedMesh* mergedmesh = m_ggeo->makeMergedMesh(0, NULL);  // ridx:0 rbase:NULL 
+    makeInstancedBuffers(mergedmesh, 0);  // ? instanced global too, for common structure
+
+    //mergedmesh->reportMeshUsage( m_ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (global)");
+
+    unsigned int numRepeats = getNumRepeats();
+    for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
+    {
+         GNode*   rbase          = getRepeatExample(ridx) ; 
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase); 
+
+         makeInstancedBuffers(mm, ridx);
+     
+         //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
+    }
+}
+
+void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
+{
+     //mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
+
+     NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx); // collect GNode placement transforms into buffer
+     mergedmesh->setITransformsBuffer(itransforms);
+
+     NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
+     mergedmesh->setInstancedIdentityBuffer(iidentity);
+
+     NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
+     mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
+}
+
+
 NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
 {
-    // collecting transforms from the instances into a buffer
+    // collecting transforms from GNode instances into a buffer
+
     std::vector<GNode*> placements = getPlacements(ridx);
     unsigned int ni = placements.size(); 
     if(ridx == 0)
@@ -434,14 +434,28 @@ NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
 
 NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int ridx) 
 {
+    // collect identity information for each of the repeated nodes (or subtrees)
+    // eg PMT sensor index
+
     std::vector<GNode*> placements = getPlacements(ridx);
-    unsigned int ni = placements.size() ;
+    unsigned int numInstances = placements.size() ;
     if(ridx == 0)
-        assert(ni == 1);
+        assert(numInstances == 1);
 
 
-    NPY<unsigned int>* buf = NPY<unsigned int>::make(ni, 1, 4);
+    NPY<unsigned int>* buf = NPY<unsigned int>::make(numInstances, 1, 4); // huh non-analytic uses (-1,4)
     buf->zero(); 
+
+    // NB the differences:
+    //
+    //    analytic
+    //         identity buffer has numInstances items (ie one entry for each repeated instance)
+    //
+    //    triangulated:  
+    //         identity buffer has numInstances*numSolids items (ie one entry for every solid of every instance)
+    //         ... downstream this gets repeated further to every triangle
+    //
+
 
     unsigned int numProgeny = placements[0]->getProgenyCount();
     unsigned int numSolids  = numProgeny + 1 ; 
@@ -451,11 +465,11 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
 
     LOG(info) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
               << " ridx " << ridx
-              << " numPlacements " << ni
+              << " numPlacements " << numInstances
               << " numSolids " << numSolids      
               ;
 
-    for(unsigned int i=0 ; i < ni ; i++) // over instances of the same geometry
+    for(unsigned int i=0 ; i < numInstances ; i++) // over instances of the same geometry
     {
         GNode* base = placements[i] ;
         assert( numProgeny == base->getProgenyCount() );  // repeated geometry for the instances, so the progeny counts must match 
@@ -494,6 +508,7 @@ NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int r
         aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
 
         buf->setQuadU(aii, i, 0); 
+        
     }
     return buf ; 
 }
@@ -531,10 +546,12 @@ NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx)
         assert( numProgeny == base->getProgenyCount() && "repeated geometry for the instances, so the progeny counts must match");
         std::vector<GNode*>& progeny = base->getProgeny();
         assert( progeny.size() == numProgeny );
+
         for(unsigned int s=0 ; s < numSolids ; s++ )
         {
             GNode* node = s == 0 ? base : progeny[s-1] ; 
             GSolid* solid = dynamic_cast<GSolid*>(node) ;
+
             guint4 id = solid->getIdentity();
             buf->add(id.x, id.y, id.z, id.w ); 
 
@@ -596,5 +613,16 @@ have non-zero index::
             [ 3208,    44,     1,     0],
             [ 3209,    45,     1,     0]],
 */
+
+void GTreeCheck::treePresent()
+{
+    GTreePresent* tp = m_ggeo->getTreePresent();
+    GNode* top = static_cast<GNode*>(m_ggeo->getSolid(0)) ; 
+    tp->traverse(top);
+    //tp->dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
+    tp->write(m_ggeo->getIdPath());
+} 
+
+
 
 

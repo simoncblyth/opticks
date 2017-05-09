@@ -153,7 +153,7 @@ void GMergedMesh::collectParts( std::vector<GParts*>& analytic, const std::vecto
 }
 
 
-GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
+GMergedMesh* GMergedMesh::create(unsigned ridx, GGeo* ggeo, GNode* base)
 {
     // needs GGeo just to access root node
 
@@ -161,7 +161,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     t.setVerbose(false);
     t.start();
 
-    GMergedMesh* mm = new GMergedMesh( index ); 
+    GMergedMesh* mm = new GMergedMesh( ridx ); 
     mm->setVerbosity(ggeo->getMeshVerbosity());
 
     if(base == NULL)  // non-instanced global transforms
@@ -177,13 +177,13 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
     }
 
     LOG(info)<<"GMergedMesh::create"
-             << " index " << index 
+             << " ridx " << ridx 
              << " from base " << base->getName() ;
              ; 
 
     // 1st pass traversal : counts vertices and faces
 
-    mm->traverse( base, 0, PASS_COUNT );  
+    mm->traverse_r( base, 0, PASS_COUNT );  
 
     t("1st pass traverse");
 
@@ -201,7 +201,7 @@ GMergedMesh* GMergedMesh::create(unsigned int index, GGeo* ggeo, GNode* base)
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
-    mm->traverse( base, 0, PASS_MERGE );  
+    mm->traverse_r( base, 0, PASS_MERGE );  
     t("2nd pass traverse");
 
     mm->updateBounds();
@@ -512,7 +512,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 }
 
 
-void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
+void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass)
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
@@ -532,7 +532,7 @@ void GMergedMesh::traverse( GNode* node, unsigned int depth, unsigned int pass)
                default:    assert(0)                    ;break;
     }
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1, pass);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass);
 }
 
 
