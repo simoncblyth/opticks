@@ -7,6 +7,7 @@
 
 template <typename T> class GMatrix ; 
 class GMesh ;
+class GSolid ; 
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -65,7 +66,8 @@ class GGEO_API GNode {
   public:
       unsigned int  getIndex();
       GNode*        getParent(); 
-      GNode*        getChild(unsigned int index);
+      GNode*        getChild(unsigned index);
+      GSolid*       getChildSolid(unsigned index);
       unsigned int  getNumChildren();
       char*         getDescription();
       gfloat3*      getLow();
@@ -109,13 +111,15 @@ class GGEO_API GNode {
       unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
       std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
-
+      std::vector<GNode*>  findAllInstances(unsigned ridx);
   private:
       std::string          meshDigest();
       std::string          localDigest();
       static std::string   localDigest(std::vector<GNode*>& nodes, GNode* extra=NULL);
+
       void collectProgeny(std::vector<GNode*>& progeny);
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
+      void collectAllInstances(std::vector<GNode*>& match, unsigned ridx );
 
 
   private:

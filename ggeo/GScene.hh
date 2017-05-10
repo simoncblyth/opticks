@@ -49,20 +49,33 @@ class GGEO_API GScene
     private:
         void modifyGeometry();
         void importMeshes(NScene* scene);
+        void dumpMeshes();
         GMesh* getMesh(unsigned mesh_idx);
+        unsigned getNumMeshes();
+
         NCSG*  getCSG(unsigned mesh_idx);
     private:
         GSolid* createVolumeTree(NScene* scene);
-        GSolid* createVolumeTree_r(nd* n);
+        GSolid* createVolumeTree_r(nd* n, GSolid* parent);
         GSolid* createVolume(nd* n);
+    private:
+        void labelTree_r(GNode* node);
+        unsigned deviseRepeatIndex( GNode* node);
+        void     countRepeatIdx();
+        unsigned countRepeatIdx( unsigned ridx );
+        unsigned countRepeatIdx_r( GNode* node, unsigned ridx );
+        void     dumpRepeatCount();
+        unsigned getRepeatCount(unsigned ridx);
+        unsigned getNumRepeats();
    private:
         void         createInstancedMergedMeshes(bool delta);
+        void         dumpMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
 
-        NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
-        NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
-        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
+        NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned num_instances);
+        NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned num_instances );
+        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned num_instances);
    private:
         GSolid*       getNode(unsigned node_idx);
     private:
@@ -74,6 +87,8 @@ class GGEO_API GScene
 
         std::map<unsigned, GMesh*>  m_meshes ; 
         std::map<unsigned, GSolid*> m_nodes ;  
+        std::map<unsigned, unsigned>  m_repeat_count ; 
+        std::map<unsigned, unsigned>  m_mesh2ridx ; 
 
 };
 

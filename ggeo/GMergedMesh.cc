@@ -50,6 +50,8 @@ GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_solid(0),
        m_cur_base(NULL)
 {
+    GParts* parts = new GParts();
+    setParts(parts);
 } 
 
 void GMergedMesh::setCurrentBase(GNode* base)
@@ -377,6 +379,10 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 {
+
+
+
+
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
     unsigned int nface = mesh->getNumFaces();
@@ -501,6 +507,14 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
         // offset within the flat arrays
         m_cur_vertices += nvert ;
         m_cur_faces    += nface ;
+
+
+        // analytic CSG combined at node level  
+        GParts* soparts = solid->getParts();
+        GParts* mmparts = getParts();
+
+        mmparts->add(soparts);
+
     }
 }
 

@@ -24,6 +24,23 @@ template <typename T> class GMatrix ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/**
+
+GSolid
+========
+
+TODO: restructure
+
+* perhaps just rename GSolid -> GVolume(?) or GVolNode 
+* OR move everythng down into GNode ?
+* OR rename current GNode -> GVNode making it pure virtual and use the GNode name up here ?
+
+* GSolid is a node-level-object, not a mesh-level-object but the name GSolid implies a mesh-level-object
+* GSolid just adds a few properties to its GNode base class
+
+
+**/
+
 class GGEO_API GSolid : public GNode {
   public:
       static void Dump( const std::vector<GSolid*>& solids, const char* msg="GSolid::Dump" );

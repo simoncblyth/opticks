@@ -13,6 +13,7 @@
 #include "GMatrix.hh"
 #include "GMesh.hh"
 #include "GNode.hh"
+#include "GSolid.hh"
 
 
 #include "PLOG.hh"
@@ -112,6 +113,14 @@ GNode* GNode::getChild(unsigned int index)
 {
     return index < getNumChildren() ? m_children[index] : NULL ;
 }
+
+GSolid* GNode::getChildSolid(unsigned int index)
+{
+    return dynamic_cast<GSolid*>(getChild(index));
+}
+
+
+
 unsigned int GNode::getNumChildren()
 {
     return m_children.size();
@@ -473,6 +482,15 @@ std::vector<GNode*> GNode::findAllProgenyDigest(std::string& dig)
     collectAllProgenyDigest(match, dig );
     return match ;
 }
+std::vector<GNode*> GNode::findAllInstances(unsigned ridx)
+{
+    std::vector<GNode*> match ;
+    collectAllInstances(match, ridx );
+    return match ;
+}
+
+
+
 
 void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig)
 {
@@ -487,4 +505,14 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
     }
 }
 
-
+void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx)
+{
+    if(getRepeatIndex()==ridx) 
+    {
+        match.push_back(this);
+    }
+    else
+    {
+        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx );
+    }
+}

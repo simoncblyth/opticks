@@ -1,7 +1,6 @@
 #include "PLOG.hh"
 #include "BFile.hh"
 
-
 #include "NYGLTF.hpp"
 #include "NGLTF.hpp"
 #include "NPY.hpp"

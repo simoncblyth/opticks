@@ -23,14 +23,13 @@ class GGEO_API GGeoLib {
     public:
         void loadFromCache();
         void saveToCache();
-        //GMergedMesh* makeMergedMesh(GGeo* ggeo, unsigned int index=0, GNode* base=NULL);
         GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root);
     private:
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);
         void saveMergedMeshes(const char* idpath);
     public:
-        unsigned int getNumMergedMesh();
+        unsigned getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);
@@ -38,7 +37,7 @@ class GGEO_API GGeoLib {
     private:
         Opticks* m_opticks ; 
         char*   m_mesh_version ;
-        std::map<unsigned int,GMergedMesh*>  m_merged_mesh ; 
+        std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
 };
 
 #include "GGEO_TAIL.hh"

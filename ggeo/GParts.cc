@@ -454,6 +454,15 @@ unsigned int GParts::getNumParts()
 
 void GParts::add(GParts* other)
 {
+    if(getBndLib() == NULL)
+    {
+        setBndLib(other->getBndLib()); 
+    }
+    else
+    {
+        assert(getBndLib() == other->getBndLib());
+    }
+
     unsigned int n0 = getNumParts(); // before adding
 
     m_bndspec->add(other->getBndSpec());

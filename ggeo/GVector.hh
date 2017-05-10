@@ -179,6 +179,7 @@ struct GGEO_API gbbox
        min *= m ; 
        max *= m ; 
        return *this ;
+       // hmm rotations will make the new bbox not axis aligned... see nbbox::transform
    }
 
    float extent(const gfloat3& dim)

@@ -510,7 +510,6 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root)
 {
-    //return m_geolib->makeMergedMesh(this, index, base);
     return m_geolib->makeMergedMesh(index, base, root);
 }
 
