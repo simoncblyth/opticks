@@ -59,6 +59,10 @@ class GGEO_API GScene
         GSolid* createVolumeTree_r(nd* n, GSolid* parent);
         GSolid* createVolume(nd* n);
     private:
+        // compare tree calculated and persisted transforms
+        void           deltacheck(); 
+        void           deltacheck_r( GNode* node, unsigned int depth );
+    private:
         void labelTree_r(GNode* node);
         unsigned deviseRepeatIndex( GNode* node);
         void     countRepeatIdx();
@@ -68,7 +72,7 @@ class GGEO_API GScene
         unsigned getRepeatCount(unsigned ridx);
         unsigned getNumRepeats();
    private:
-        void         createInstancedMergedMeshes(bool delta);
+        void         createInstancedMergedMeshes(bool deltacheck);
         void         dumpMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);

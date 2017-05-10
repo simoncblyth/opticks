@@ -490,12 +490,12 @@ void GParts::add(GParts* other)
         setIndex(p, p);
     }
 
-    LOG(info) << "GParts::add"
-              << " n0 " << n0  
-              << " n1 " << n1
-              << " num_part_add " << num_part_add
-              << " num_tran_add " << num_tran_add
-              << " num_plan_add " << num_plan_add
+    LOG(info) 
+              << " n0 " << std::setw(3) << n0  
+              << " n1 " << std::setw(3) << n1
+              << " num_part_add " << std::setw(3) <<  num_part_add
+              << " num_tran_add " << std::setw(3) << num_tran_add
+              << " num_plan_add " << std::setw(3) << num_plan_add
               << " other_part_buffer  " << other_part_buffer->getShapeString()
               << " other_tran_buffer  " << other_tran_buffer->getShapeString()
               << " other_plan_buffer  " << other_plan_buffer->getShapeString()

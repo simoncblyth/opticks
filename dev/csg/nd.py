@@ -81,7 +81,10 @@ class Nd(object):
         pass 
         return build_r(target)
 
-
+    @classmethod
+    def build_debug_tree(cls):
+        pass
+        
     @classmethod
     def extras_dir(cls, lvIdx):
         return os.path.join("extras", str(lvIdx) )
@@ -90,35 +93,47 @@ class Nd(object):
     def summarize(cls, node, depth):
         cls.count += 1
 
-        transform = node.pv.transform 
-        nodeIdx = node.index
         lvIdx = node.lv.idx
         lvName = node.lv.name
-        solidIdx = node.lv.solid.idx
         soName = node.lv.solid.name
+        transform = node.pv.transform 
         boundary = node.boundary
 
-        #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)
+        nodeIdx = node.index
+        solidIdx = node.lv.solid.idx
+        #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)  ## not so, many more solids than lv 
+
         cls.ulv.add(lvIdx)
         cls.uso.add(solidIdx)
         assert len(cls.ulv) == len(cls.uso)
+
+        nd = cls.create_nd( lvIdx, lvName, soName, transform, boundary, depth )
+
+        return nd  
+
+    @classmethod
+    def create_nd(cls, lvIdx, lvName, soName, transform, boundary, depth):
 
         ndIdx = len(cls.nodes)
         if not lvIdx in cls.meshes:
             cls.meshes[lvIdx] = Mh(lvIdx, lvName, soName)
         pass
+
         soIdx = list(cls.meshes.iterkeys()).index(lvIdx)  # local mesh index, using lvIdx identity
+
         cls.meshes[lvIdx].soIdx = soIdx 
- 
-        name = "ndIdx:%3d,soIdx:%3d,count:%3d,depth:%d,nodeIdx:%4d,so:%s,lv:%d:%s" % (ndIdx, soIdx, cls.count, depth, nodeIdx, node.lv.solid.name, lvIdx, node.lv.name )
-        #name = node.lv.name
+
+        name = "ndIdx:%3d,soIdx:%3d,lvName:%s" % (ndIdx, soIdx, lvName)
         log.info( name ) 
 
-        nd = cls(ndIdx, soIdx, transform, boundary, name, depth )
         assert not ndIdx in cls.nodes
-
+    
+        nd = cls(ndIdx, soIdx, transform, boundary, name, depth )
+    
         cls.nodes[ndIdx] = nd 
-        return nd  
+    
+        return nd
+
 
     @classmethod
     def get(cls, ndIdx):

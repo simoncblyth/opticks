@@ -1,5 +1,6 @@
 
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -86,6 +87,23 @@ void test_summary()
 }
 
 
+void test_cf_glm_2()
+{
+    glm::vec3 tlat(0,100,0); 
+    glm::vec4 axis_angle(0,0,1,30.f); 
+    glm::vec3 scal(1,1,1); 
+
+    glm::mat4 trs = nglmext::make_transform("trs", tlat, axis_angle, scal );
+    GMatrixF* gtrs = new GMatrix<float>(glm::value_ptr(trs));
+    const float* data = static_cast<float*>(gtrs->getPointer());
+    glm::mat4 trs2 = glm::make_mat4( data ) ;  
+
+    std::cout << "trs " << trs << std::endl ; 
+    std::cout << "trs2" << trs2 << std::endl ; 
+
+    gtrs->Summary("gtrs");
+}
+
 
 
 int main(int argc, char** argv)
@@ -96,6 +114,7 @@ int main(int argc, char** argv)
      test_matrix();
      test_cf_glm();
      test_summary();
+     test_cf_glm_2();
 
 
      return 0 ; 

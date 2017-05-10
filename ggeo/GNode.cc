@@ -301,7 +301,7 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
 {
    // only transforms after the base node are collected
 
-    std::vector<GNode*> nodes = getAncestors();
+    std::vector<GNode*> nodes = getAncestors();  // <--- in order starting from root
     nodes.push_back(this);
 
     typedef std::vector<GNode*>::const_iterator NIT ; 
@@ -312,6 +312,7 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
     unsigned int nbase(0);
     unsigned int nprod(0);
     bool collect = false ; 
+
     for(NIT it=nodes.begin() ; it != nodes.end() ; it++)
     {
         GNode* node = *it ; 
@@ -507,6 +508,12 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
 
 void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx)
 {
+    // NB when a node labelled with the target ridx is found... 
+    // the traverse stops there...  
+    // ie there is no attempt to collect from inside the target node
+    // ... this is why looking for instances of ridx 0 returns just one instance, 
+    // the root node
+    //
     if(getRepeatIndex()==ridx) 
     {
         match.push_back(this);

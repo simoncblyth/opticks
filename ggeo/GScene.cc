@@ -45,7 +45,7 @@ void GScene::init()
     countRepeatIdx();
     dumpRepeatCount();
 
-    createInstancedMergedMeshes(false);
+    createInstancedMergedMeshes(true);
     dumpMergedMeshes();
 }
 
@@ -287,12 +287,16 @@ GSolid* GScene::createVolume(nd* n)
 
 
     glm::mat4 xf_global = n->gtransform->t ;    
+
     glm::mat4 xf_local  = n->transform->t ;    
 
     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
+
     GSolid* solid = new GSolid(node_idx, gtransform, mesh, UINT_MAX, NULL );     
+
     solid->setLevelTransform(ltransform); 
 
     // see AssimpGGeo::convertStructureVisit
@@ -317,8 +321,54 @@ GSolid* GScene::createVolume(nd* n)
 
 
 
-void GScene::createInstancedMergedMeshes(bool /*delta*/)
+
+void GScene::deltacheck()
 {
+    // check consistency of the level transforms
+    assert(m_root);
+    deltacheck_r(m_root, 0);
+}
+
+void GScene::deltacheck_r( GNode* node, unsigned int depth)
+{
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GMatrixF* gtransform = solid->getTransform();
+
+    //GMatrixF* ltransform = solid->getLevelTransform();  
+    GMatrixF* ctransform = solid->calculateTransform();
+    float delta = gtransform->largestDiff(*ctransform);
+
+    unsigned int nprogeny = node->getProgenyCount() ;
+
+   // if(nprogeny > 0 ) 
+/*
+            LOG(info) 
+              << "GScene::deltacheck " 
+              << " #progeny "  << std::setw(6) << nprogeny 
+              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
+              << " name " << node->getName() 
+              << " gtransform " << gtransform->brief(7) 
+              ;
+*/
+
+
+    std::cout << " gtransform " << gtransform->brief(7) << std::endl  ;
+
+    assert(delta < 1e-6) ;
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) deltacheck_r(node->getChild(i), depth + 1 );
+}
+
+
+
+
+void GScene::createInstancedMergedMeshes(bool delta)
+{
+    if(delta)
+    {  
+        deltacheck();
+    }
+
     makeMergedMeshAndInstancedBuffers() ; 
 }
 
@@ -342,7 +392,9 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
          GSolid* instance0 = dynamic_cast<GSolid*>(instances[0]); 
 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, instance0, m_root );   // TODO: check off-by-1 in base transforms
+         GSolid* base = ridx == 0 ? NULL : instance0 ; 
+
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root );   // TODO: check off-by-1 in base transforms
 
          assert(mm);
 
@@ -402,11 +454,15 @@ void GScene::dumpMergedMeshes()
 
 void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned int ridx)
 {
-    LOG(info) << "GScene::makeInstancedBuffers" << " ridx " << ridx ;
-
     const std::vector<GNode*>& instances = m_root->findAllInstances(ridx);
     unsigned num_instances = instances.size(); 
-    if(ridx == 0) assert(num_instances == 1);
+
+    LOG(info) << "GScene::makeInstancedBuffers" 
+              << " ridx " << std::setw(3) << ridx
+              << " num_instances " << std::setw(5) << num_instances
+              ;
+
+    if(ridx == 0) assert(num_instances == 1);  // <-- why ? because the traverse stops at the first target ridx node 
 
     NPY<float>* itr = makeInstanceTransformsBuffer(instances, num_instances); 
     mm->setITransformsBuffer(itr);
@@ -426,8 +482,11 @@ NPY<float>* GScene::makeInstanceTransformsBuffer(const std::vector<GNode*>& inst
     for(unsigned i=0 ; i < num_instances ; i++)
     {
         GNode* instance = instances[i] ;
+
         GMatrix<float>* gtransform = instance->getTransform();
+
         const float* data = static_cast<float*>(gtransform->getPointer());
+
         glm::mat4 xf_global = glm::make_mat4( data ) ;  
 
         buf->setMat4(xf_global, i);  
@@ -477,25 +536,6 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNo
     }
     return buf ; 
 }
-
-
-/*
-
-385 void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
-386 {
-387     GMesh* mesh = solid->getMesh();
-388     unsigned int nvert = mesh->getNumVertices();
-389     unsigned int nface = mesh->getNumFaces();
-390     guint4 _identity = solid->getIdentity();
-391 
-392     GNode* base = getCurrentBase();
-393     GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;
-
-        // after base global, or totally global transform persisted in the node
-
-394     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
-
-*/
 
 
 

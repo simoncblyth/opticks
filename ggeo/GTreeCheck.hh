@@ -46,6 +46,7 @@ class GGEO_API GTreeCheck {
         // compare tree calculated and persisted transforms
         void           deltacheck(); 
         void           deltacheck_r( GNode* node, unsigned int depth );
+
    private:
         // Collecting m_repeat_candidates vector of digests
         //

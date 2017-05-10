@@ -380,9 +380,6 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 {
 
-
-
-
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
     unsigned int nface = mesh->getNumFaces();
