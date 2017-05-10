@@ -3,13 +3,7 @@
 
 """
 import numpy as np
-import os, logging, json, pprint
-pp = pprint.PrettyPrinter(indent=4)
-
-expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
-json_load_ = lambda path:json.load(file(expand_(path)))
-json_save_ = lambda path, d:json.dump(d, file(expand_(path),"w"))
-
+import os, logging
 
 log = logging.getLogger(__name__)
 
@@ -74,35 +68,11 @@ class SNode(object):
         
 
 
-class Scene(object):
-
-    base = "$TMP/dev/csg/scene" 
-    name = "scene.json" 
-
-    @classmethod
-    def path_(cls):
-        base = expand_(cls.base) 
-        return os.path.join(cls.base, cls.name)
-
-    path = property(lambda self:self.path_())
-
+class GDMLSolidCheck(object):
     def __init__(self, gdml):
         self.gdml = gdml
         self.associate_solids_to_lv()
-
-    def _get_gltf(self):
-        g = {}
-        g["scenes"] = [{"nodes":[0]}]
-        g["nodes"] = [{"mesh":0 }]
-        g['asset'] = dict(version="2.0", generator="scene.py", copyright="Opticks")
-        return g
-    gltf = property(_get_gltf)
-
-    def save(self):
-        self.save_lvsolids()
-        #self.save_materials()
-        self.save_gltf() 
-
+        self.analyse_solids()
 
     def associate_solids_to_lv(self):
         so2lv = {}
@@ -150,47 +120,6 @@ class Scene(object):
         print "\n".join(deeplv)
 
 
-    def save_lvsolids(self):
-        """
-        TODO: Needs to save only solids referenced from a subtree, but use
-        absolute indices from the full gdml
-        """ 
-        rdir = self.prep_reldir("lvsolids")
-        lvs = self.gdml.volumes.values()
-        for lv in lvs:
-            solid = lv.solid
-            ssn = solid.subsolidcount 
-            cn = solid.as_ncsg()
-            cn.analyse() 
-            treedir = os.path.join(rdir, "%d" % lv.idx )
-            cn.save(treedir)
-            pass
-        pass
-        log.info("save_lvsolids nlvs:%d " % (len(lvs))) 
-
-    def prep_reldir(self, reldir):
-        rdir = os.path.join(self.base, reldir)
-        if not os.path.exists(rdir):
-            os.makedirs(rdir)
-        pass
-        return rdir
-
-    def save_gltf(self):
-        path = self.path 
-        log.info("save_gltf to %s " % path )
-        json_save_(path, dict(self.gltf))
-
-    @classmethod 
-    def load_gltf(cls, path=None):
-        if path is None:
-            path = cls.path_()  
-        pass
-        gltf = json_load_(path)
-        pp.pprint(gltf)
-        return gltf 
-
-
-
 
 
 if __name__ == '__main__':
@@ -220,17 +149,7 @@ if __name__ == '__main__':
     log.info(" target nodelist  %s " % len(nodelist) )   
 
 
-    nd = Nd.build_minimal_tree(target)
-    Nd.report() 
-
-
-
-if 0:
-
-    scene = Scene(gdml)
-    #scene.analyse_solids()
-    scene.save_lvsolids()
-    gltf = Scene.load_gltf()
+    gsc = GDMLSolidCheck(gdml)
 
 
 

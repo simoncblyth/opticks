@@ -36,6 +36,20 @@ def stamp_(path, fmt="%Y%m%d-%H%M"):
 
 
 
+def makedirs_(path):
+    pdir = os.path.dirname(path)
+    if not os.path.exists(pdir):
+        os.makedirs(pdir)
+    pass
+    return path 
+
+expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
+json_load_ = lambda path:json.load(file(expand_(path)))
+json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
+
+
+
+
 def manual_mixin( dst, src ):
     """ 
     Add all methods from the src class to the destination class
