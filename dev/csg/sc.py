@@ -270,13 +270,3 @@ if __name__ == '__main__':
 
 
 
-    lvIdx = sc.find_meshes_so("pmt-hemi")[0].lvIdx    
-    pmts = tg.find_nodes(lvIdx)
-    assert len(pmts) == 192
-
-    txf = np.vstack([pmt.transform for pmt in pmts]).reshape(-1,4,4)
-    assert np.all( pmts[100].transform == txf[100] )
-
-
-
-

@@ -228,6 +228,18 @@ class Node(object):
 
     siblings = property(lambda self:self.parent.filter_children_by_lvn(self.lv.name), doc="siblings of this node with same lv" )
 
+    def find_nodes_lvn(self, lvn):
+        selection = []
+        def find_nodes_lvn_r(node):
+            if node.lv.name.startswith(lvn):
+                selection.append(node)
+            for child in node.children:
+                find_nodes_lvn_r(child)
+            pass     
+        pass
+        find_nodes_lvn_r(self)
+        return selection
+
     def dump(self, msg="Node.dump"):
         log.info(msg + " " + repr(self))
         #print "\n".join(map(str, self.geometry))   

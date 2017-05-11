@@ -74,10 +74,12 @@ txf: 8,24,4,4
 */
 
         glm::mat4 trs2(1.f) ; 
-        trs2[0] = trs[1] ;
-        trs2[1] = trs[2] ;
-        trs2[2] = trs[0] ;
+        trs2[0] = trs[1] ;  //  Y->X
+        trs2[1] = trs[2] ;  //  Z->Y
+        trs2[2] = trs[0] ;  //  X->Z
         trs2[3] = trs[3] ;
+
+        //  ( X,Y,Z ) -> ( Y,Z,X )
 
         glm::mat4 rot = glm::extractMatrixRotation( trs2 );
 
