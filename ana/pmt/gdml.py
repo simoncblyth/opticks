@@ -941,11 +941,20 @@ class GDML(G):
     @classmethod
     def parse(cls, path):
         log.info("parsing gdmlpath %s " % path )
-        gg = cls(parse_(path))
+        gg = parse_(path)
+        wgg = cls.wrap(gg, path=path)
+        return wgg 
+
+    @classmethod
+    def wrap(cls, gdml, path=None):
+        log.info("wrapping gdml element  ")
+        gg = cls(gdml)
         gg.g = gg
-        gg.path = path 
+        gg.path = path
+        gg.string = tostring_(gdml) 
         gg.init()
         return gg 
+
 
     def find_by_prefix(self, d, prefix):
         return filter(lambda v:v.name.startswith(prefix), d.values())

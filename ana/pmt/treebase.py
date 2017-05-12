@@ -23,6 +23,9 @@ log = logging.getLogger(__name__)
 
 class DummyTopPV(object):
     name = "dummyTopPV"
+
+    transform = np.eye(4, dtype=np.float32)
+
     def find_(self, smth):
         return None
     def __repr__(self):

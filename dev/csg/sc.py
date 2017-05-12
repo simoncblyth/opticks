@@ -233,7 +233,7 @@ class Sc(object):
         if load_check:
             gltf2 = json_load_(path)
         pass
-        return gltf 
+        return gltf
 
 
 
