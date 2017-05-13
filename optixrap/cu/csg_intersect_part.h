@@ -1,5 +1,5 @@
 static __device__
-void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
+void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
 {
     unsigned partBuffer_size = partBuffer.size() ;
     unsigned planBuffer_size = planBuffer.size() ;
@@ -21,7 +21,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
     unsigned height = TREE_HEIGHT(numParts) ; // 1->0, 3->1, 7->2, 15->3, 31->4 
     unsigned numNodes = TREE_NODES(height) ;      
 
-    rtPrintf("##csg_bounds_prim partOffset %3d numParts %3d height %2d numNodes %2d tranBuffer_size %3u \n", partOffset, numParts, height, numNodes, tranBuffer_size );
+    rtPrintf("##csg_bounds_prim primIdx %3d partOffset %3d numParts %3d height %2d numNodes %2d tranBuffer_size %3u \n", primIdx, partOffset, numParts, height, numNodes, tranBuffer_size );
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
@@ -38,7 +38,7 @@ void csg_bounds_prim(const Prim& prim, optix::Aabb* aabb )
         unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
         bool complement = pt.complement() ; 
     
-        rtPrintf("##csg_bounds_prim nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u complement %d \n", nodeIdx, depth, elev, typecode, gtransformIdx, complement );
+        rtPrintf("##csg_bounds_prim primIdx %3d nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u complement %d \n", primIdx, nodeIdx, depth, elev, typecode, gtransformIdx, complement );
 
         if(gtransformIdx == 0)
         {

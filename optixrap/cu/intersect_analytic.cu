@@ -108,7 +108,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     if(primFlag == CSG_FLAGNODETREE)  
     {
-        csg_bounds_prim(prim, aabb); 
+        csg_bounds_prim(primIdx, prim, aabb); 
     }
     else if(primFlag == CSG_FLAGPARTLIST)  
     {

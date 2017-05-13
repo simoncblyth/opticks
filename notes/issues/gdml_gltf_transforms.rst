@@ -2,8 +2,38 @@ GDML-glTF Geometry Route Transform Debug
 ===========================================
 
 
-Issue : PMTs pointing in reverse direction !
+Issue : top level (non-instanced) transforms ignored by raytrace
+------------------------------------------------------------------
+
+
+* ray trace not handling transforms applied to global geometry ie non-instanced
+
+
+Using gdml_builder to make a partial geometry with just the oil 
+and 2 PMTs (using 2 to be beneath the instancing cut in)
+
+* other than PMT reverse direction, rasterized looks OK : with the 2 PMTs located near the edge of the oil cylinder
+* raytrace shows single PMT at origin (presumably 2 on top of each other) ignoring the top level transform
+
+* increasing the number beyond instancing cut in (at 4) the PMTs and Collars adopt their positions, 
+  (still reverse pointing)
+
+::
+
+    tgltf-;tgltf-gdml 
+
+
+
+
+FIXED : PMTs pointing in reverse direction !
 ------------------------------------------------
+
+* fixed by transposing the rotation matrix relative to that obtained from 
+  the numpy translation of glm::rotate in glm.py 
+
+* TODO: motivate the transform better that it looks right :
+  ie look for documentation of rotation matrix conventions used in Geant4 and OpenGL/GLM
+
 
 ::
 
@@ -14,6 +44,11 @@ See:
 
 * npy-/tests/NGLMTest.cc:test_axisAngle
 * dev/csg/sc_transform_check.py 
+
+
+Red Herring
+~~~~~~~~~~~~~
+
 
 Permuting axes (X,Y,Z)->(Y,Z,X) leads to much more reasonable interpretation 
 of the txf transforms.  This is suggestive that a PMT orienting 

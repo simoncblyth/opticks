@@ -6,6 +6,10 @@ tgltf-
 ======================================================
 
 
+
+
+
+
 EOU
 }
 
@@ -69,9 +73,9 @@ tgltf--(){
 
 
 
-tgltf-pmt(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- ; }
-tgltf-pmt-(){ $FUNCNAME- | python $* ; }
-tgltf-pmt--(){ cat << EOP
+tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- ; }
+tgltf-gdml-(){ $FUNCNAME- | python $* ; }
+tgltf-gdml--(){ cat << EOP
 
 import os, logging, sys, numpy as np
 
@@ -85,7 +89,10 @@ from opticks.dev.csg.sc import Sc
 
 args = opticks_main()
 
-gg = make_gdml(worldref="/dd/Geometry/PMT/lvPmtHemi0xc133740")
+pmt = "/dd/Geometry/PMT/lvPmtHemi0xc133740"
+oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
+
+gg = make_gdml(worldref=oil)
 wgg = GDML.wrap(gg) 
 
 tree = Tree(wgg.world)

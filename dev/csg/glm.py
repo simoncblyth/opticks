@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """
 """
+import logging
+log = logging.getLogger(__name__)
 import numpy as np
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
@@ -51,7 +53,7 @@ def translate(arg=[1,2,3], m=None, dtype=np.float32):
     return Result
 
 
-def rotate_three_axis(arg=[0,0,90], m=None, dtype=np.float32):
+def rotate_three_axis(arg=[0,0,90], m=None, dtype=np.float32, transpose=False):
     """
     :param arg: 3-component array 
     """
@@ -63,9 +65,9 @@ def rotate_three_axis(arg=[0,0,90], m=None, dtype=np.float32):
         ry = arg[1]
         rz = arg[2]
 
-        if rx != 0: m = rotate([1,0,0,rx], m )
-        if ry != 0: m = rotate([0,1,0,ry], m )
-        if rz != 0: m = rotate([0,0,1,rz], m )
+        if rx != 0: m = rotate([1,0,0,rx], m, transpose=transpose )
+        if ry != 0: m = rotate([0,1,0,ry], m, transpose=transpose )
+        if rz != 0: m = rotate([0,0,1,rz], m, transpose=transpose )
     pass
 
     return m 
@@ -74,7 +76,7 @@ def rotate_three_axis(arg=[0,0,90], m=None, dtype=np.float32):
 
 
 
-def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
+def rotate(arg=[0,0,1,45], m=None, dtype=np.float32, transpose=False):
     """
     :param arg: 4-component array, 1st three for axis, 4th for rotation angle in degrees
     :param m: optional matrix to combine with  
@@ -118,6 +120,11 @@ def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
     Rotate[2][0] = 0 + temp[2] * axis[0] + s * axis[1]
     Rotate[2][1] = 0 + temp[2] * axis[1] - s * axis[0]
     Rotate[2][2] = c + temp[2] * axis[2]
+
+    if transpose: 
+        log.info("adhoc transposing rotation")
+        Rotate = Rotate.T   #  <--- huh, adhoc addition to to get PMTs to point in correct direction
+    pass
  
     Result = np.eye(4, dtype=dtype)
     Result[0] = m[0] * Rotate[0][0] + m[1] * Rotate[0][1] + m[2] * Rotate[0][2];
@@ -130,7 +137,7 @@ def rotate(arg=[0,0,1,45], m=None, dtype=np.float32):
 
 
 
-def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True, three_axis_rotate=False):
+def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True, three_axis_rotate=False, transpose_rotation=False):
     """
     :param order: string containing "s" "r" and "t", standard order is "trs" meaning t*r*s  ie scale first, then rotate, then translate 
     :param tla: tx,ty,tz tranlation dists eg 0,0,0 for no translation 
@@ -153,9 +160,9 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
             m = scale(sca, m)
         elif c == 'r':
             if three_axis_rotate:
-                m = rotate_three_axis(rot, m)
+                m = rotate_three_axis(rot, m, transpose=transpose_rotation )
             else:
-                m = rotate(rot, m)
+                m = rotate(rot, m, transpose=transpose_rotation )
             pass
         elif c == 't':
             m = translate(tla, m)

@@ -182,7 +182,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import find_ranges
 from opticks.dev.csg.csg import CSG 
-from opticks.dev.csg.glm import make_trs
+from opticks.dev.csg.glm import make_trs, make_transform
 from opticks.dev.csg.prism import make_trapezoid
 
 import numpy as np
@@ -198,13 +198,11 @@ pp_ = lambda d:"\n".join([" %30s : %f " % (k,d[k]) for k in sorted(d.keys())])
 
 
 def construct_transform(obj):
-    pos = obj.position
-    rot = obj.rotation
-    sca = obj.scale
-    return make_trs( 
-              pos.xyz if pos is not None else None,  
-              rot.xyz if rot is not None else None, 
-              sca.xyz if sca is not None else None, three_axis_rotate=True)
+    tla = obj.position.xyz if obj.position is not None else None
+    rot = obj.rotation.xyz if obj.rotation is not None else None
+    sca = obj.scale.xyz if obj.scale is not None else None
+    order = "trs"
+    return make_transform( order, tla, rot, sca , three_axis_rotate=True, transpose_rotation=True, dtype=np.float32 )
 
 
 class G(object):
