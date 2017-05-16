@@ -36,8 +36,12 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     NGLTF(base, name, config, scene_idx)
 {
     load_mesh_extras();
-    import();
+    m_root = import();
     compare_trees();
+
+    labelTree_r(m_root);
+    dumpRepeatCount(); 
+
 }
 
 void NScene::load_mesh_extras()
@@ -78,28 +82,29 @@ void NScene::load_mesh_extras()
 
 
 
-void NScene::import()
+nd* NScene::import()
 {
-    m_root = import_r(0, NULL, 0); 
+    return import_r(0, NULL, 0); 
 }
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
-    ygltf::node_t* node = getNode(idx);
-    auto extras = node->extras ; 
+    ygltf::node_t* ynode = getNode(idx);
+    auto extras = ynode->extras ; 
     std::string boundary = extras["boundary"] ; 
  
     nd* n = new nd ; 
 
     n->idx = idx ; 
-    n->mesh = node->mesh ; 
+    n->repeatIdx = -1 ; 
+    n->mesh = ynode->mesh ; 
     n->parent = parent ;
     n->depth = depth ;
     n->boundary = boundary ;
-    n->transform = new nmat4triple( node->matrix.data() ); 
+    n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 
-    for(auto child : node->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
+    for(int child : ynode->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
 
     m_nd[idx] = n ;
 
@@ -115,7 +120,7 @@ void NScene::dumpNdTree(const char* msg)
 void NScene::dumpNdTree_r(nd* n)
 {
     std::cout << n->desc() << std::endl ;  
-    for(auto cn : n->children) dumpNdTree_r(cn) ;
+    for(nd* cn : n->children) dumpNdTree_r(cn) ;
 }
 
 
@@ -127,11 +132,11 @@ void NScene::compare_trees()
 
 void NScene::compare_trees_r(int idx)
 {
-    ygltf::node_t* node = getNode(idx);
+    ygltf::node_t* ynode = getNode(idx);
     nd* n = getNd(idx);    
 
-    assert( node->mesh == int(n->mesh) );
-    assert( node->children.size() == n->children.size() );
+    assert( ynode->mesh == int(n->mesh) );
+    assert( ynode->children.size() == n->children.size() );
     assert( n->transform) ; 
     assert( n->gtransform) ; 
 
@@ -139,12 +144,12 @@ void NScene::compare_trees_r(int idx)
         std::array<float,16> tt ;   
         nglmext::copyTransform(tt, n->transform->t );
 
-        bool local_match = tt == node->matrix ; 
+        bool local_match = tt == ynode->matrix ; 
         if(!local_match)
         {
             std::cout << "idx " << idx << ( local_match ? " LOCAL-MATCH " : " LOCAL-MISMATCH " ) << std::endl ; 
             std::cout << "ntt " << nglmext::xform_string( tt ) << std::endl ;    
-            std::cout << "nmx " << nglmext::xform_string( node->matrix ) << std::endl ;    
+            std::cout << "nmx " << nglmext::xform_string( ynode->matrix ) << std::endl ;    
         }
         assert(local_match);
     }
@@ -168,6 +173,77 @@ void NScene::compare_trees_r(int idx)
     }
 
 
-    for(auto child : node->children) compare_trees_r( child );
+    for(int child : ynode->children) compare_trees_r( child );
 }
+
+
+
+unsigned NScene::deviseRepeatIndex(nd* n)
+{
+    unsigned mesh_idx = n->mesh ; 
+    unsigned num_mesh_instances = getNumInstances(mesh_idx) ;
+
+    unsigned ridx = 0 ;   // <-- global default ridx
+
+    bool make_instance  = num_mesh_instances > 4  ;
+
+    if(make_instance)
+    {
+        if(m_mesh2ridx.count(mesh_idx) == 0)
+             m_mesh2ridx[mesh_idx] = m_mesh2ridx.size() + 1 ;
+
+        ridx = m_mesh2ridx[mesh_idx] ;
+
+        // ridx is a 1-based contiguous index tied to the mesh_idx 
+        // using trivial things like "mesh_idx + 1" causes  
+        // issue downstream which expects a contiguous range of ridx 
+        // when using partial geometries 
+    }
+    return ridx ;
+}
+
+void NScene::labelTree_r(nd* n)
+{
+    unsigned ridx = deviseRepeatIndex(n);
+
+    n->repeatIdx = ridx ;
+
+    if(m_repeat_count.count(ridx) == 0) m_repeat_count[ridx] = 0 ; 
+    m_repeat_count[ridx]++ ; 
+
+
+    for(nd* c : n->children) labelTree_r(c) ;
+}
+
+
+void NScene::dumpRepeatCount()
+{
+    typedef std::map<unsigned, unsigned> MUU ;
+    unsigned totCount = 0 ;
+
+    for(MUU::const_iterator it=m_repeat_count.begin() ; it != m_repeat_count.end() ; it++)
+    {
+        unsigned ridx = it->first ;
+        unsigned count = it->second ;
+        totCount += count ;
+        std::cout
+                  << " ridx " << std::setw(3) << ridx
+                  << " count " << std::setw(5) << count
+                  << std::endl ; 
+    }
+    LOG(info) << "NScene::dumpRepeatCount" 
+              << " totCount " << totCount 
+               ; 
+}   
+unsigned NScene::getRepeatCount(unsigned ridx)
+{       
+    return m_repeat_count[ridx] ; 
+}   
+unsigned NScene::getNumRepeats()
+{       
+   // this assumes ridx is a contiguous index
+    return m_repeat_count.size() ;
+}
+
+
 

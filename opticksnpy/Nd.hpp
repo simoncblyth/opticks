@@ -11,6 +11,7 @@ struct nmat4triple ;
 struct NPY_API nd
 {
    unsigned idx ;
+   int repeatIdx ;
    unsigned mesh ; 
    unsigned depth ; 
    std::string boundary ; 

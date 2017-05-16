@@ -111,7 +111,7 @@ class GGEO_API GNode {
       unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
       std::vector<GNode*>  findAllProgenyDigest(std::string& dig);
-      std::vector<GNode*>  findAllInstances(unsigned ridx);
+      std::vector<GNode*>  findAllInstances(unsigned ridx, bool inside );
   private:
       std::string          meshDigest();
       std::string          localDigest();
@@ -119,7 +119,7 @@ class GGEO_API GNode {
 
       void collectProgeny(std::vector<GNode*>& progeny);
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
-      void collectAllInstances(std::vector<GNode*>& match, unsigned ridx );
+      void collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside );
 
 
   private:

@@ -2,6 +2,142 @@ GDML-glTF Geometry Route Transform Debug
 ===========================================
 
 
+
+Review Transforms
+------------------
+
+Transform heirarchies are used at both the 
+local distinct CSG solid(mesh) level and at the structural level.  
+Instancing collects the structural transforms of meshes that pass
+the instancing criteria (eg based on number of repeats). 
+
+Meshes that do not pass instancing criteria (as not enough of them) 
+are clumped together into a global mesh, this means that the 
+structural transform heirarchy down to the mesh (placement transform)
+needs to be applied directly to the CSG geometry. 
+
+CSG and Structural Transform workflow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+CSG transforms are collected from the source GDML boolean secondtransform
+and set as transforms of ncsg nodes within python. csg.serialize
+collects the transforms (still only local level transforms) into 
+the transforms buffer and index references to the transforms are written 
+into the part buffer.
+A similar workflow happens for planes referenced from convex polyhedra.
+
+Structural transforms are collected from source GDML PhysVol by gdml.py 
+into the wrapped GDML model.  These are rearranged into homogenous node
+tree by treebase.py which is just the structural tree, not decending into the 
+CSG solids. The recursive sc.py sc.add_tree_gdml collects node structure 
+and level transforms into the Nd tree matrix attributes. The Nd matrix 
+are persisted into the gltf node tree.  
+
+The CSG parts, transforms and planes are treated as GLTF extras saved as
+sidecars to the gltf json file that holds the structural node tree with 
+matrix attributes.
+
+npy-/NScene/NGLTF reads in the gltf and reconstructs the nd tree, also the 
+CSG extras are loaded with NScene::load_mesh_extras and stored as
+NCSG objects 
+
+GScene::importMeshes(NScene* scene)
+    uses the polygonized CSG triangles to form GMesh
+
+GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
+    creates GNode/GSolid tree with associated GMesh  
+
+Currently the structural global transforms for all nodes are computed in NScene::import_r, 
+thats too soon as need a structural transform on the top for geometry 
+that does not meet the instancing criteria.
+
+::
+
+    086 nd* NScene::import_r(int idx,  nd* parent, int depth)
+     87 {
+     88     ygltf::node_t* node = getNode(idx);
+     89     auto extras = node->extras ;
+     90     std::string boundary = extras["boundary"] ;
+     91 
+     92     nd* n = new nd ;
+     93 
+     94     n->idx = idx ;
+     95     n->mesh = node->mesh ;
+     96     n->parent = parent ;
+     97     n->depth = depth ;
+     98     n->boundary = boundary ;
+     99     n->transform = new nmat4triple( node->matrix.data() );
+    100     n->gtransform = nd::make_global_transform(n) ;
+    101 
+    102     for(auto child : node->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
+    103 
+    104     m_nd[idx] = n ;
+    105 
+    106     return n ;
+    107 }
+
+
+The nd tree transforms are currently passed thru unchanged into the GNode/GSolid tree
+
+* this may be a good place to disperse placement transforms for global geometry 
+  ... but then need to move the repeat index decision/labelling earlier down into NScene/nd,
+  then GScene::createVolume can use the repeat index from nd tree  
+
+Note that it may become necessary to manually set ridx, so dont assume 
+some criteria in more than one place ... apply the criteria and write ridx into the tree and then
+act upon the ridx in the tree.
+
+
+::
+
+    268 GSolid* GScene::createVolume(nd* n)
+    269 {
+    270     assert(n);
+    271 
+    272     unsigned node_idx = n->idx ;
+    273     unsigned mesh_idx = n->mesh ;
+    274     std::string bnd = n->boundary ;
+    275 
+    276     const char* spec = bnd.c_str();
+    277 
+    278     LOG(debug) << "GScene::createVolume"
+    279               << " node_idx " << std::setw(5) << node_idx
+    280               << " mesh_idx " << std::setw(3) << mesh_idx
+    281               << " bnd " << bnd
+    282               ;
+    283 
+    284     assert(!bnd.empty());
+    285 
+    286     GMesh* mesh = getMesh(mesh_idx);
+    287 
+    288     NCSG* csg = getCSG(mesh_idx);
+    289 
+    290 
+    291     glm::mat4 xf_global = n->gtransform->t ;
+    292 
+    293     glm::mat4 xf_local  = n->transform->t ;
+    294 
+    295     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+    296 
+    297     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
+    298 
+    299 
+    300     GSolid* solid = new GSolid(node_idx, gtransform, mesh, UINT_MAX, NULL );
+    301 
+    302     solid->setLevelTransform(ltransform);
+
+
+
+
+GScene::labelTree_r(GNode* node)  
+     applies the instancing criteria setting ridx RepeatIndex for all nodes of the tree
+
+GScene::makeMergedMeshAndInstancedBuffers
+      acts on the ridx labels, creating the merged mesh and instancing buffers 
+
+
+
+
 Issue : top level (non-instanced) transforms ignored by raytrace
 ------------------------------------------------------------------
 

@@ -62,24 +62,15 @@ class GGEO_API GScene
         // compare tree calculated and persisted transforms
         void           deltacheck(); 
         void           deltacheck_r( GNode* node, unsigned int depth );
-    private:
-        void labelTree_r(GNode* node);
-        unsigned deviseRepeatIndex( GNode* node);
-        void     countRepeatIdx();
-        unsigned countRepeatIdx( unsigned ridx );
-        unsigned countRepeatIdx_r( GNode* node, unsigned ridx );
-        void     dumpRepeatCount();
-        unsigned getRepeatCount(unsigned ridx);
-        unsigned getNumRepeats();
    private:
         void         createInstancedMergedMeshes(bool deltacheck);
         void         dumpMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
 
-        NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned num_instances);
-        NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned num_instances );
-        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned num_instances);
+        NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
+        NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
+        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
    private:
         GSolid*       getNode(unsigned node_idx);
     private:
@@ -91,8 +82,6 @@ class GGEO_API GScene
 
         std::map<unsigned, GMesh*>  m_meshes ; 
         std::map<unsigned, GSolid*> m_nodes ;  
-        std::map<unsigned, unsigned>  m_repeat_count ; 
-        std::map<unsigned, unsigned>  m_mesh2ridx ; 
 
 };
 

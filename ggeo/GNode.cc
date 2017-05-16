@@ -483,10 +483,10 @@ std::vector<GNode*> GNode::findAllProgenyDigest(std::string& dig)
     collectAllProgenyDigest(match, dig );
     return match ;
 }
-std::vector<GNode*> GNode::findAllInstances(unsigned ridx)
+std::vector<GNode*> GNode::findAllInstances(unsigned ridx, bool inside_self)
 {
     std::vector<GNode*> match ;
-    collectAllInstances(match, ridx );
+    collectAllInstances(match, ridx, inside_self );
     return match ;
 }
 
@@ -506,7 +506,7 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
     }
 }
 
-void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx)
+void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside )
 {
     // NB when a node labelled with the target ridx is found... 
     // the traverse stops there...  
@@ -514,12 +514,26 @@ void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx)
     // ... this is why looking for instances of ridx 0 returns just one instance, 
     // the root node
     //
-    if(getRepeatIndex()==ridx) 
+
+    bool matched = getRepeatIndex()==ridx ;
+
+    if(inside)
     {
-        match.push_back(this);
+        if(matched) match.push_back(this);
+        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside );
     }
     else
     {
-        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx );
+        // without "inside" the traverse is stopped at the first matched instance, ie it doesnt look inside self 
+        if(matched) 
+        {
+            match.push_back(this);
+        }
+        else
+        {
+            for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside );
+        }
     }
+
+
 }
