@@ -136,6 +136,68 @@ GScene::makeMergedMeshAndInstancedBuffers
       acts on the ridx labels, creating the merged mesh and instancing buffers 
 
 
+The NCSG GTransformsBuffer of CSG "global" transforms (global to the CSG tree, not to the full geometry)
+for each node of the CSG tree lives on inside the GParts instance that is associated to every GNode::
+
+    NPY<float>* tranbuf = tree->getGTransformBuffer();
+
+
+Triggered by GScene::makeMergedMeshAndInstancedBuffers the separate GParts are combined within
+GMergedMesh::mergeSolid providing the transform offsets for each primitive, allowing lookup of 
+transforms from GPU.
+
+Need to apply placement transforms to all the nodes in the CSG trees for the un-instanced 
+geometry. This doesnt change referencing, just all transforms for each node tree.
+
+
+
+4 nodes, three meshes::
+
+    delta:issues blyth$ tgltf-;tgltf-gdml-
+    args: 
+    [2017-05-17 10:18:23,278] p23902 {/Users/blyth/opticks/ana/pmt/gdml.py:948} INFO - wrapping gdml element  
+    sc.py:add_node_gdml nodeIdx:   0 lvIdx: 2 soName:                  oil0xbf5ed48 lvName:/dd/Geometry/AD/lvOIL0xbf5e0b8 
+    array([[ 1.,  0.,  0.,  0.],
+           [ 0.,  1.,  0.,  0.],
+           [ 0.,  0.,  1.,  0.],
+           [ 0.,  0.,  0.,  1.]], dtype=float32)
+    sc.py:add_node_gdml nodeIdx:   1 lvIdx: 0 soName:             pmt-hemi0xc0fed90 lvName:/dd/Geometry/PMT/lvPmtHemi0xc133740 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.1305,    -0.9914,    -0.    ,     0.    ],
+           [    0.9914,     0.1305,     0.    ,     0.    ],
+           [-2304.6135,  -303.4081, -1750.    ,     1.    ]], dtype=float32)
+    sc.py:add_node_gdml nodeIdx:   2 lvIdx: 1 soName:          AdPmtCollar0xc2c5260 lvName:/dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.1305,    -0.9914,    -0.    ,     0.    ],
+           [    0.9914,     0.1305,     0.    ,     0.    ],
+           [-2249.0928,  -296.0987, -1750.    ,     1.    ]], dtype=float32)
+    sc.py:add_node_gdml nodeIdx:   3 lvIdx: 0 soName:             pmt-hemi0xc0fed90 lvName:/dd/Geometry/PMT/lvPmtHemi0xc133740 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.3827,    -0.9239,    -0.    ,     0.    ],
+           [    0.9239,     0.3827,     0.    ,     0.    ],
+           [-2147.5579,  -889.5477, -1750.    ,     1.    ]], dtype=float32)
+    [2017-05-17 10:18:23,283] p23902 {/Users/blyth/opticks/dev/csg/sc.py:230} INFO - saving to /tmp/blyth/opticks/tgltf/tgltf-gdml--.gltf 
+    [2017-05-17 10:18:23,286] p23902 {/Users/blyth/opticks/dev/csg/sc.py:225} INFO - save_extras /tmp/blyth/opticks/tgltf/extras  : saved 3 
+    /tmp/blyth/opticks/tgltf/tgltf-gdml--.gltf
+
+
+All three CSG trees have at least one transform::
+
+    delta:issues blyth$ head -1 /tmp/blyth/opticks/tgltf/extras/0/transforms.npy 
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (4, 4, 4), }       
+    delta:issues blyth$ 
+    delta:issues blyth$ head -1 /tmp/blyth/opticks/tgltf/extras/*/transforms.npy 
+    ==> /tmp/blyth/opticks/tgltf/extras/0/transforms.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (4, 4, 4), }       
+
+    ==> /tmp/blyth/opticks/tgltf/extras/1/transforms.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (1, 4, 4), }       
+
+    ==> /tmp/blyth/opticks/tgltf/extras/2/transforms.npy <==
+    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (1, 4, 4), }       
+    delta:issues blyth$ 
+
+
 
 
 Issue : top level (non-instanced) transforms ignored by raytrace

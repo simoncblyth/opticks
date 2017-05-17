@@ -10,6 +10,7 @@
 struct npart ; 
 struct NSlice ; 
 template <typename T> class NPY ;
+template <typename T> class GMatrix ;
 class NCSG ; 
 
 //struct guint4 ; 
@@ -137,6 +138,7 @@ class GGEO_API GParts {
     public:
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
+        void applyGlobalPlacementTransform(GMatrix<float>* placement);
         void save(const char* dir);
     private:
         void registerBoundaries();

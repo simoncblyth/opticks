@@ -41,10 +41,6 @@ void GScene::init()
 
     m_root = createVolumeTree(m_scene) ;
 
-    // moved these down to NScene 
-    //labelTree_r(m_root);
-    //countRepeatIdx();
-    //dumpRepeatCount();
 
     createInstancedMergedMeshes(true);
     dumpMergedMeshes();
@@ -239,21 +235,7 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
     GMatrixF* ctransform = solid->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
 
-    //unsigned int nprogeny = node->getProgenyCount() ;
-
-   // if(nprogeny > 0 ) 
-/*
-            LOG(info) 
-              << "GScene::deltacheck " 
-              << " #progeny "  << std::setw(6) << nprogeny 
-              << " delta*1e6 " << std::setprecision(6) << std::fixed << delta*1e6 
-              << " name " << node->getName() 
-              << " gtransform " << gtransform->brief(7) 
-              ;
-*/
-
-
-    std::cout << " gtransform " << gtransform->brief(7) << std::endl  ;
+    std::cout << "GScene::deltacheck_r gtransform " << gtransform->brief(7) << std::endl  ;
 
     assert(delta < 1e-6) ;
 
@@ -265,6 +247,7 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 void GScene::createInstancedMergedMeshes(bool delta)
 {
+    
     if(delta)
     {  
         deltacheck();
@@ -277,11 +260,14 @@ void GScene::createInstancedMergedMeshes(bool delta)
 
 void GScene::makeMergedMeshAndInstancedBuffers()
 {
+    
     unsigned num_repeats = m_scene->getNumRepeats(); // global 0 included
     unsigned nmm_created = 0 ; 
 
     for(unsigned ridx=0 ; ridx < num_repeats ; ridx++)
     {
+         LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
+
          bool inside = ridx == 0 ? true : false ; 
          const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside );
          if(instances.size() == 0)
@@ -315,6 +301,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()
          GMergedMesh* mmc = m_ggeo->getMergedMesh(ridx);
          assert(mmc == mm);
 
+         LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " DONE " ;  
     }
 
     unsigned nmm = m_ggeo->getNumMergedMesh();
@@ -365,23 +352,6 @@ void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx)
               << " num_instances " << std::setw(5) << num_instances
               ;
 
-    //if(ridx == 0) assert(num_instances == 1);  
-    //
-    // ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    // because the traverse stops at the first target ridx node 
-    // this should be correct for instances of the same geometry 
-    // as do not expect an instance of a geometry to contain another
-    // instance of itself ... but for global geometry where
-    // the "instances" are not the same there is no such expectation
-    //
-    // nevertheless for ridx=0 its true, so need to have
-    // a diffeent method for mopping up the global geometry 
-    // 
-    // the transforms need to go elsewhere ...
-    // baked into the geometry 
-
-
-
     NPY<float>* itr = makeInstanceTransformsBuffer(instances, ridx); 
     mm->setITransformsBuffer(itr);
 
@@ -395,25 +365,29 @@ void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx)
 
 NPY<float>* GScene::makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx)
 {
-    unsigned num_instances = instances.size(); 
-    NPY<float>* buf = NPY<float>::make(num_instances, 4, 4);
-    buf->zero(); 
-    for(unsigned i=0 ; i < num_instances ; i++)
+    NPY<float>* buf = NULL ; 
+    if(ridx == 0)
     {
-        GNode* instance = instances[i] ;
-
-        GMatrix<float>* gtransform = instance->getTransform();
-
-        const float* data = static_cast<float*>(gtransform->getPointer());
-
-        glm::mat4 xf_global = glm::make_mat4( data ) ;  
-
-        buf->setMat4(xf_global, i);  
-    } 
+        buf = NPY<float>::make_identity_transforms(1) ; 
+    }
+    else
+    {
+        unsigned num_instances = instances.size(); 
+        buf = NPY<float>::make(num_instances, 4, 4);
+        buf->zero(); 
+        for(unsigned i=0 ; i < num_instances ; i++)
+        {
+            GNode* instance = instances[i] ;
+            GMatrix<float>* gtransform = instance->getTransform();
+            const float* data = static_cast<float*>(gtransform->getPointer());
+            glm::mat4 xf_global = glm::make_mat4( data ) ;  
+            buf->setMat4(xf_global, i);  
+        } 
+    }
     return buf ; 
 }
 
-NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx)   
+NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned /*ridx*/)   
 {
     unsigned num_instances = instances.size(); 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 4);
@@ -428,7 +402,7 @@ NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& ins
     return buf ;  
 }
 
-NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNode*>& instances, unsigned ridx) 
+NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNode*>& instances, unsigned /*ridx*/) 
 {
     unsigned num_instances = instances.size(); 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 1, 4);  //  TODO: unify shape aii and ii shape

@@ -26,6 +26,7 @@ struct NPY_API nmat4triple
 {
     static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool swap=false);
     static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate );
+    static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool pre);
 
     nmat4triple* clone();
     nmat4triple* make_translated(const glm::vec3& tlate );

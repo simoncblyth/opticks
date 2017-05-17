@@ -415,15 +415,28 @@ nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate )
 nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate )
 { 
     glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
-    nmat4triple perturb( tra );
+    bool pre = true ; 
+    return make_transformed(src, tra, pre );
+}
 
+nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool pre)
+{
+    nmat4triple perturb( txf );
     std::vector<nmat4triple*> triples ; 
-    triples.push_back(&perturb);
-    triples.push_back(src);    // order ?
+    // order ?
+    if(pre)
+    { 
+        triples.push_back(&perturb);
+        triples.push_back(src);    
+    }
+    else
+    {
+        triples.push_back(src);    
+        triples.push_back(&perturb);
+    }
 
-    nmat4triple* translated = nmat4triple::product( triples );  
-
-    return translated ; 
+    nmat4triple* transformed = nmat4triple::product( triples );  
+    return transformed ; 
 }
 
 

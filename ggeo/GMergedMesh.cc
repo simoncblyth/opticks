@@ -185,7 +185,9 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
     // allocate space for flattened arrays
 
     LOG(info) << "GMergedMesh::create" 
-              << " index " << index 
+              << " ridx " << ridx 
+              << " index? " << index 
+              << " mm.index " << mm->getIndex() 
               << " numVertices " << mm->getNumVertices()
               << " numFaces " << mm->getNumFaces()
               << " numSolids " << mm->getNumSolids()
@@ -385,8 +387,10 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
     unsigned int nface = mesh->getNumFaces();
     guint4 _identity = solid->getIdentity();
 
+    unsigned ridx = solid->getRepeatIndex() ;  
+
     GNode* base = getCurrentBase();
-    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;    
+    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
 
     // needs to be outside the selection branch for the all solid center extent
@@ -401,6 +405,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
         LOG(info) << "GMergedMesh::mergeSolid" 
                   << " m_cur_solid " << m_cur_solid
                   << " idx " << solid->getIndex()
+                  << " ridx " << ridx
                   << " id " << _identity.description()
                   << " pv " << ( pvn ? pvn : "-" )
                   << " lv " << ( lvn ? lvn : "-" )
@@ -507,8 +512,22 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 
 
         // analytic CSG combined at node level  
-        GParts* soparts = solid->getParts();
+
         GParts* mmparts = getParts();
+        GParts* soparts = solid->getParts();
+
+        if(solid->getRepeatIndex() == 0)
+        {
+            GMatrixF* sotransform = solid->getTransform() ;  
+            soparts->applyGlobalPlacementTransform(sotransform);
+
+            LOG(info) << "GMergedMesh::mergeSolid(applyGlobalPlacementTransform)"
+                      << " nodeIndex " << nodeIndex 
+                      << " meshIndex " << meshIndex 
+                      << " sotransform " << sotransform->brief(7)
+                      ;
+
+        } 
 
         mmparts->add(soparts);
 

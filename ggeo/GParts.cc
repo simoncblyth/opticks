@@ -8,7 +8,7 @@
 #include "OpticksCSG.h"
 
 // npy-
-#include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "NPY.hpp"
 #include "NSlice.hpp"
 #include "NPart.hpp"
@@ -21,6 +21,7 @@
 #include "GItemList.hh"
 #include "GBndLib.hh"
 #include "GParts.hh"
+#include "GMatrix.hh"
 
 #include "PLOG.hh"
 
@@ -451,6 +452,47 @@ unsigned int GParts::getNumParts()
     assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
     return m_part_buffer->getNumItems() ;
 }
+
+
+
+void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
+{
+    const float* data = static_cast<float*>(gtransform->getPointer());
+
+    glm::mat4 gpt = glm::make_mat4( data ) ;  
+
+    assert(m_tran_buffer->hasShape(-1,3,4,4));
+
+    unsigned ni = m_tran_buffer->getNumItems();
+
+    LOG(info) << "GParts::applyGlobalPlacementTransform"
+              << " tran_buffer " << m_tran_buffer->getShapeString()
+              << " ni " << ni
+              ;
+
+    std::cout << "GParts::applyGlobalPlacementTransform" 
+              << " gpt " << gpt << std::endl ; 
+
+
+    bool pre = false ; 
+
+   // m_tran_buffer->dump("before GParts::applyGlobalPlacementTransform");
+
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
+
+        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, gpt, pre );
+
+        m_tran_buffer->setMat4Triple( ntvq, i ); 
+    }
+
+    //m_tran_buffer->dump("after GParts::applyGlobalPlacementTransform");
+
+
+}
+
+
 
 void GParts::add(GParts* other)
 {

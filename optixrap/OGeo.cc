@@ -478,23 +478,31 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();
 
-    // mm transforms not used for analytic
+    // mm instance transforms not used for analytic
+    /*
     NPY<float>*    itransforms = mm->getITransformsBuffer();              
     unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;   
     assert(idBuf->getNumItems() == numITransforms );
+
+    LOG(info)
+                 << "OGeo::makeAnalyticGeometry " 
+                 << " numITransforms(unused) " << numITransforms 
+                 ;
+    */ 
+
 
     //assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 
 
     unsigned analytic_version = pts->getAnalyticVersion();
 
-    LOG(info)   << "OGeo::makeAnalyticGeometry " 
+    LOG(info) 
+                 << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
                  << " numPrim " << numPrim 
                  << " numPart " << numPart
-                 << " numTran(pairs) " << numTran
+                 << " numTran(triples) " << numTran
                  << " numPlan " << numPlan
-                 << " numITransforms(unused) " << numITransforms 
                  << " analytic_version " << analytic_version
                  ;
 
