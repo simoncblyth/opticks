@@ -20,8 +20,8 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.dev.csg.glm import make_trs
-from opticks.dev.csg.textgrid import TextGrid
+from opticks.analytic.glm import make_trs
+from opticks.analytic.textgrid import TextGrid
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
@@ -306,6 +306,10 @@ class CSG(CSG_):
             :param idx: 0-based complete binary tree index, left:2*idx+1, right:2*idx+2 
             """
             trs = node.transform  
+            if trs is None and idx == 0:
+                trs = np.eye(4, dtype=np.float32)  # make sure root node always has a transform, incase of global placement 
+            pass
+
             if trs is None:
                 itransform = 0 
             else:
@@ -334,6 +338,8 @@ class CSG(CSG_):
 
         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
         pbuf = np.vstack(planes).reshape(-1,4) if len(planes) > 0 else None
+
+        assert tbuf is not None
 
         return buf, tbuf, pbuf
 

@@ -6,9 +6,9 @@ log = logging.getLogger(__name__)
 
 
 from opticks.ana.base import opticks_main, expand_, json_load_, json_save_
-from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.gdml import GDML
-from opticks.dev.csg.translate_gdml import translate_lv
+from opticks.analytic.treebase import Tree
+from opticks.analytic.gdml import GDML
+from opticks.analytic.translate_gdml import translate_lv
 
 
 class Mh(object):
@@ -163,7 +163,6 @@ class Sc(object):
         soName = node.lv.solid.name
         transform = node.pv.transform 
         boundary = node.boundary
-
         nodeIdx = node.index
 
         #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)  
@@ -175,6 +174,10 @@ class Sc(object):
             self.uso.add(solidIdx)
             assert len(self.ulv) == len(self.uso)
         pass
+
+        msg = "sc.py:add_node_gdml nodeIdx:%4d lvIdx:%2d soName:%30s lvName:%s " % (nodeIdx, lvIdx, soName, lvName )
+        sys.stderr.write(msg+"\n" + repr(transform)+"\n")
+
 
         nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
 
@@ -193,7 +196,7 @@ class Sc(object):
                     if ch is not None:
                         ch.parent = nd.ndIdx
                         nd.children.append(ch.ndIdx)
-                        sys.stderr.write(repr(ch)+"\n") 
+                        #sys.stderr.write("sc.py:add_tree_gdml ch\n" + repr(ch)+"\n") 
                     pass
                 pass
             else:

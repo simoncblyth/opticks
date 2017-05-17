@@ -122,7 +122,7 @@ def rotate(arg=[0,0,1,45], m=None, dtype=np.float32, transpose=False):
     Rotate[2][2] = c + temp[2] * axis[2]
 
     if transpose: 
-        log.info("adhoc transposing rotation")
+        log.debug("adhoc transposing rotation")
         Rotate = Rotate.T   #  <--- huh, adhoc addition to to get PMTs to point in correct direction
     pass
  

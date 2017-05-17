@@ -82,17 +82,18 @@ import os, logging, sys, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.gdml import GDML
-from opticks.ana.pmt.gdml_builder import make_gdml, tostring_
-from opticks.dev.csg.sc import Sc
+from opticks.analytic.treebase import Tree
+from opticks.analytic.gdml import GDML
+from opticks.analytic.gdml_builder import make_gdml, tostring_
+from opticks.analytic.sc import Sc
 
 args = opticks_main()
 
 pmt = "/dd/Geometry/PMT/lvPmtHemi0xc133740"
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 
-gg = make_gdml(worldref=oil)
+
+gg = make_gdml(worldref=oil, structure_key="pmt2")
 wgg = GDML.wrap(gg) 
 
 tree = Tree(wgg.world)

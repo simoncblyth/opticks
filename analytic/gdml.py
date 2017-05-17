@@ -181,9 +181,9 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import find_ranges
-from opticks.dev.csg.csg import CSG 
-from opticks.dev.csg.glm import make_trs, make_transform
-from opticks.dev.csg.prism import make_trapezoid
+from opticks.analytic.csg import CSG 
+from opticks.analytic.glm import make_trs, make_transform
+from opticks.analytic.prism import make_trapezoid
 
 import numpy as np
 import lxml.etree as ET
@@ -1059,7 +1059,7 @@ if __name__ == '__main__':
     g = GDML.parse(gdmlpath)
 
 
-    from treebase import Tree
+    from opticks.analytic.treebase import Tree
     t = Tree(g.world) 
 
     test_children(t)

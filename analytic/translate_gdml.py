@@ -46,11 +46,10 @@ import os, logging, sys
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.gdml import GDML
-from opticks.ana.pmt.polyconfig import PolyConfig
-
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.treebase import Tree
+from opticks.analytic.gdml import GDML
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
 
 
 def translate_lv(lv):

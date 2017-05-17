@@ -24,7 +24,11 @@ log = logging.getLogger(__name__)
 class DummyTopPV(object):
     name = "dummyTopPV"
 
-    transform = np.eye(4, dtype=np.float32)
+    def _get_transform(self):
+        #assert 0
+        log.warning("returning placeholder transform")
+        return np.eye(4, dtype=np.float32)
+    transform = property(_get_transform) 
 
     def find_(self, smth):
         return None
@@ -484,7 +488,7 @@ if __name__ == '__main__':
 
     args = opticks_main()
 
-    from ddbase import Dddb
+    from opticks.ana.pmt.ddbase import Dddb
 
     g = Dddb.parse(args.apmtddpath)
 

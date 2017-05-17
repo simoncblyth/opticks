@@ -79,6 +79,28 @@ solids=ET.fromstring(r"""
         <rotation name="/dd/Geometry/AD/lvOIL#pvOAV0xbf8f638_rot" unit="deg" x="0" y="0" z="-180"/>
       </physvol>
 
+
+"""
+
+structure={}
+
+
+structure["pmt2"]=ET.fromstring(r"""
+   <structure>
+    <volume name="/dd/Geometry/PMT/lvPmtHemi0xc133740">
+      <materialref ref="/dd/Materials/Pyrex0xc1005e0"/>
+      <solidref ref="pmt-hemi0xc0fed90"/>
+    </volume>
+
+    <volume name="/dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0">
+      <materialref ref="/dd/Materials/UnstStainlessSteel0xc5c11e8"/>
+      <solidref ref="AdPmtCollar0xc2c5260"/>
+    </volume>
+ 
+    <volume name="/dd/Geometry/AD/lvOIL0xbf5e0b8">
+      <materialref ref="/dd/Materials/MineralOil0xbf5c830"/>
+      <solidref ref="oil0xbf5ed48"/>
+
       <physvol name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40">
         <volumeref ref="/dd/Geometry/PMT/lvPmtHemi0xc133740"/>
         <position name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40_pos" unit="mm" x="-2304.61358026342" y="-303.40813381551" z="-1750"/>
@@ -97,13 +119,13 @@ solids=ET.fromstring(r"""
         <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmt0xc25dc28_rot" unit="deg" x="90" y="-67.5" z="90"/>
       </physvol>
  
+    </volume>
+  </structure>
+""")
 
 
 
-
-"""
-
-structure=ET.fromstring(r"""
+structure["pmt5"]=ET.fromstring(r"""
    <structure>
     <volume name="/dd/Geometry/PMT/lvPmtHemi0xc133740">
       <materialref ref="/dd/Materials/Pyrex0xc1005e0"/>
@@ -182,24 +204,16 @@ structure=ET.fromstring(r"""
         <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:5#pvAdPmtUnit#pvAdPmtCollar0xc25e290_rot" unit="deg" x="90" y="-22.5" z="90"/>
       </physvol>
  
-
-
-
-
     </volume>
-
-
-
-
   </structure>
 """)
 
 
-def make_gdml(worldref="/dd/Geometry/PMT/lvPmtHemi0xc133740"):
+def make_gdml(worldref="/dd/Geometry/PMT/lvPmtHemi0xc133740", structure_key="pmt5"):
    doc = E.gdml(
              materials,
              solids,
-             structure,
+             structure.get(structure_key),
              E.setup(E.world(ref=worldref), name="Default", version="1.0")
              )
    return doc
