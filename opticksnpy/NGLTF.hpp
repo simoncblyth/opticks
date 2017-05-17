@@ -36,6 +36,10 @@ class NPY_API NGLTF {
         unsigned                     getNumMeshes();
         unsigned                     getNumInstances(unsigned mesh_idx);
         const std::vector<unsigned>& getInstances(unsigned mesh_idx);
+    public:
+        // meshes that are used globally need to have gtransform slots for all primitives
+        bool                         isUsedGlobally(unsigned mesh_idx);
+        void                         setIsUsedGlobally(unsigned mesh_idx, bool iug);
     protected:
         ygltf::fl_mesh*              getFlatNode(unsigned node_idx );
         const std::array<float, 16>& getFlatTransform(unsigned node_idx );
@@ -59,6 +63,7 @@ class NPY_API NGLTF {
 
         std::map<unsigned, std::vector<unsigned>>  m_mesh_instances ; 
         std::map<unsigned, unsigned>               m_mesh_totals ; 
+        std::map<unsigned, bool>                   m_mesh_used_globally ; 
         std::map<unsigned, std::array<float,16>>   m_xf  ; 
         std::map<unsigned, unsigned>               m_node2traversal  ; 
 

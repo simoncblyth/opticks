@@ -26,7 +26,7 @@ class DummyTopPV(object):
 
     def _get_transform(self):
         #assert 0
-        log.warning("returning placeholder transform")
+        log.warning("returning DummyTopPV placeholder transform")
         return np.eye(4, dtype=np.float32)
     transform = property(_get_transform) 
 

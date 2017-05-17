@@ -10,8 +10,11 @@ std::string nd::desc()
     std::stringstream ss ; 
 
     ss << "nd"
+       << " idx/repeatIdx/mesh/nch/depth "
        << " [" 
        << std::setw(3) << idx 
+       << ":" 
+       << std::setw(3) << repeatIdx
        << ":" 
        << std::setw(3) << mesh 
        << ":" 
@@ -19,7 +22,7 @@ std::string nd::desc()
        << ":" 
        << std::setw(2) << depth
        << "]"
-       << " " << boundary 
+       << " bnd:" << boundary 
        ;
 
     return ss.str();

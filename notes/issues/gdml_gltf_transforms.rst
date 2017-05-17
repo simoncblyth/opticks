@@ -199,6 +199,97 @@ All three CSG trees have at least one transform::
 
 
 
+Perhaps simpler not to attempt to change transforms, rather get 
+them correct first time via providing a top transform input to the 
+NCSG::import_r which is driven by NCSG::LoadTree.
+
+But, NCSG::LoadTree is done at mesh level(not node level) by NScene::load_mesh_extras
+... so looks like need to stay with node level modification.
+
+When a mesh fails the instancing criteria every primitive needs to 
+have a gtransform (ie must not suppress identity) as need somewhere to 
+apply the placement transform ... unless arrange another place for this, hmm 
+maybe simpler than diddling in the node tree. BUT must diddle there to avoid more
+work on GPU. 
+
+So can I know that before NScene::load_mesh_extras and ensure not to 
+suppress gtransform slots for all primitive in that case ?
+
+
+::
+
+    480 nnode* NCSG::import_r(unsigned idx, nnode* parent)
+    481 {
+    482     if(idx >= m_num_nodes) return NULL ;
+    483 
+    484     OpticksCSG_t typecode = (OpticksCSG_t)getTypeCode(idx);     
+    485     int transform_idx = getTransformIndex(idx) ;
+    486     bool complement = isComplement(idx) ;
+    487 
+    488     LOG(debug) << "NCSG::import_r"
+    489               << " idx " << idx
+    490               << " transform_idx " << transform_idx
+    491               << " complement " << complement
+    492               ;
+    493 
+    494 
+    495     nnode* node = NULL ;
+    496 
+    497     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
+    498     {
+    499         node = import_operator( idx, typecode ) ;
+    500         node->parent = parent ;
+    501 
+    502         node->transform = import_transform_triple( transform_idx ) ;
+    503 
+    504         node->left = import_r(idx*2+1, node );
+    505         node->right = import_r(idx*2+2, node );
+    506 
+    507         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
+    508     }
+    509     else
+    510     {
+    511         node = import_primitive( idx, typecode );
+    512         node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
+    513 
+    514         node->transform = import_transform_triple( transform_idx ) ;
+    515 
+    516         nmat4triple* gtransform = node->global_transform();
+
+                ^^^^^^^^^^^^^^^^ this often gets identity suppressed stymie-ing the placement transform approach ^^^^^^^^^^^^^
+
+    517         unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ;
+    518         node->gtransform = gtransform ;
+    519         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+    520     }
+    521     assert(node);
+    522     node->idx = idx ;
+    523     node->complement = complement ;
+    524 
+    525     return node ;
+    526 }
+
+
+
+Hmm getting no gtransforms for two of the meshes, so nowhere to apply the placement transform::
+
+    NScene::load_mesh_extras num_meshes 3
+     mid    0 prm    1 nam                                    /dd/Geometry/AD/lvOIL0xbf5e0b8 smry  ht  0 nn    1 tri  17884 tmsg             nd 1,4,4  tr 1,3,4,4 gtr 0,3,4,4 pln NULL
+     mid    1 prm    1 nam                               /dd/Geometry/PMT/lvPmtHemi0xc133740 smry  ht  3 nn   15 tri   8308 tmsg             nd 15,4,4 tr 4,3,4,4 gtr 3,3,4,4 pln NULL
+     mid    2 prm    1 nam                           /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 smry  ht  1 nn    3 tri     12 tmsg PLACEHOLDER nd 3,4,4  tr 1,3,4,4 gtr 0,3,4,4 pln NULL
+    2017-05-17 12:05:31.607 INFO  [1806476] [NScene::dumpNdTree@120] NScene::NScene
+
+
+After arrange to always have gtransforms slots for meshes that are used globally::
+
+    NScene::load_mesh_extras num_meshes 3
+     mid    0 prm    1 nam                                    /dd/Geometry/AD/lvOIL0xbf5e0b8 iug 1 smry  ht  0 nn    1 tri  17884 tmsg  iug 1 nd 1,4,4 tr 1,3,4,4 gtr 1,3,4,4 pln NULL
+     mid    1 prm    1 nam                               /dd/Geometry/PMT/lvPmtHemi0xc133740 iug 1 smry  ht  3 nn   15 tri   8308 tmsg  iug 1 nd 15,4,4 tr 4,3,4,4 gtr 4,3,4,4 pln NULL
+     mid    2 prm    1 nam                           /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 iug 1 smry  ht  1 nn    3 tri     12 tmsg PLACEHOLDER iug 1 nd 3,4,4 tr 1,3,4,4 gtr 1,3,4,4 pln NULL
+    2017-05-17 13:43:43.718 INFO  [1838644] [GScene::importMeshes@60] GScene::importMeshes num_meshes 3
+
+
+
 
 Issue : top level (non-instanced) transforms ignored by raytrace
 ------------------------------------------------------------------

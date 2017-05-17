@@ -172,6 +172,7 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
     pass
 
     if suppress_identity and np.all( m == identity ):
+        log.warning("supressing identity transform")
         return None
     pass
     return m 

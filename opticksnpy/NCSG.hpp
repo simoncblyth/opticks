@@ -74,7 +74,7 @@ class NPY_API NCSG {
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
-        static NCSG* LoadTree(const char* treedir, int verbosity=0, bool polygonize=false );
+        static NCSG* LoadTree(const char* treedir, bool usedglobally=false, int verbosity=0, bool polygonize=false );
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
@@ -92,9 +92,12 @@ class NPY_API NCSG {
         void dump(const char* msg="NCSG::dump");
         std::string desc();
    public:
+        void setIsUsedGlobally(bool usedglobally);
+   public:
         const char*  getTreeDir();
         unsigned     getIndex();
         int          getVerbosity();
+        bool         isUsedGlobally();
         const char*  getBoundary();
         NPY<float>*  getNodeBuffer();
         NPY<float>*  getTransformBuffer();
@@ -102,6 +105,7 @@ class NPY_API NCSG {
         NPY<float>*  getPlaneBuffer();
         NParameters* getMetaParameters();
         unsigned     getNumNodes();
+        unsigned     getNumTransforms();
         unsigned     getHeight();
         nnode*       getRoot();
         OpticksCSG_t getRootType();  
@@ -149,6 +153,7 @@ class NPY_API NCSG {
     private:
         unsigned    m_index ; 
         int         m_verbosity ;  
+        bool        m_usedglobally ; 
         nnode*      m_root ;  
         const char* m_treedir ; 
 

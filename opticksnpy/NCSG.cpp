@@ -49,6 +49,7 @@ NCSG::NCSG(const char* treedir)
    :
    m_index(0),
    m_verbosity(0),
+   m_usedglobally(false),
    m_root(NULL),
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
@@ -73,6 +74,7 @@ NCSG::NCSG(nnode* root )
    :
    m_index(0),
    m_verbosity(0),
+   m_usedglobally(false),
    m_root(root),
    m_treedir(NULL),
    m_nodes(NULL),
@@ -138,10 +140,15 @@ std::string NCSG::smry()
 {
     std::stringstream ss ; 
     ss 
-       << " height " << std::setw(2) << m_height 
-       << " num_nodes " << std::setw(4) << m_num_nodes
-       << " num_triangles " << std::setw(6) << getNumTriangles()
-       << " tris " << m_tris->getMessage() 
+       << " ht " << std::setw(2) << m_height 
+       << " nn " << std::setw(4) << m_num_nodes
+       << " tri " << std::setw(6) << getNumTriangles()
+       << " tmsg " << m_tris->getMessage() 
+       << " iug " << m_usedglobally 
+       << " nd " << ( m_nodes ? m_nodes->getShapeString() : "NULL" )
+       << " tr " << ( m_transforms ? m_transforms->getShapeString() : "NULL" )
+       << " gtr " << ( m_gtransforms ? m_gtransforms->getShapeString() : "NULL" )
+       << " pln " << ( m_planes ? m_planes->getShapeString() : "NULL" )
        ;
 
     return ss.str();
@@ -378,6 +385,14 @@ void NCSG::setVerbosity(int verbosity)
 {
     m_verbosity = verbosity ; 
 }
+void NCSG::setIsUsedGlobally(bool usedglobally )
+{
+    m_usedglobally = usedglobally ; 
+}
+bool NCSG::isUsedGlobally()
+{
+    return m_usedglobally ; 
+}
 
 
 
@@ -514,7 +529,13 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->transform = import_transform_triple( transform_idx ) ;
 
         nmat4triple* gtransform = node->global_transform();   
+        if(gtransform == NULL && m_usedglobally)
+        {
+            gtransform = nmat4triple::make_identity() ;
+        }
+
         unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
+
         node->gtransform = gtransform ; 
         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
     }
@@ -661,6 +682,7 @@ unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
     NPY<float>* gtmp = NPY<float>::make(1,NTRAN,4,4);
     gtmp->zero();
     gtmp->setMat4Triple( gtransform, 0);
+
     unsigned gtransform_idx = 1 + m_gtransforms->addItemUnique( gtmp, 0 ) ; 
     delete gtmp ; 
     return gtransform_idx ; 
@@ -859,10 +881,11 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 }
 
 
-NCSG* NCSG::LoadTree(const char* treedir, int verbosity, bool polygonize)
+NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool polygonize)
 {
      NCSG* tree = new NCSG(treedir) ; 
      tree->setVerbosity(verbosity);
+     tree->setIsUsedGlobally(usedglobally);
 
      tree->load();
      tree->import();

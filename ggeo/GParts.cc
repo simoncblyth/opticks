@@ -166,8 +166,19 @@ GParts* GParts::make( NCSG* tree, const char* spec )
     NPY<float>* tranbuf = tree->getGTransformBuffer();  // formerly was incorrectly using TransformBuffer
     NPY<float>* planbuf = tree->getPlaneBuffer();      
 
+    LOG(info) << "GParts::make(NCSG)"
+              << " tree " << std::setw(5) << tree->getIndex()
+              << " nodebuf " << ( nodebuf ? nodebuf->getShapeString() : "NULL" ) 
+              << " tranbuf " << ( tranbuf ? tranbuf->getShapeString() : "NULL" ) 
+              << " planbuf " << ( planbuf ? planbuf->getShapeString() : "NULL" ) 
+              ;
+
+
     if(!tranbuf) 
     {
+       LOG(fatal) << "GParts::make NO GTransformBuffer " ; 
+       assert(0);
+
        tranbuf = NPY<float>::make(0,NTRAN,4,4) ;
        tranbuf->zero();
     } 

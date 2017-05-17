@@ -406,6 +406,12 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool
 }
 
 
+nmat4triple* nmat4triple::make_identity()
+{
+    glm::mat4 identity(1.f); 
+    return new nmat4triple(identity);
+}
+
 
 nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate )
 {

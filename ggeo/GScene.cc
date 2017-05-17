@@ -100,6 +100,7 @@ void GScene::dumpMeshes()
          gbbox bb = mesh->getBBox(0) ; 
 
          std::cout << std::setw(3) << mesh_idx 
+                   << " "
                    << bb.description()
                    << std::endl ; 
     }
@@ -108,7 +109,7 @@ void GScene::dumpMeshes()
 
 GSolid* GScene::createVolumeTree(NScene* scene)
 {
-    LOG(debug) << "GScene::createVolumeTree START" ; 
+    LOG(info) << "GScene::createVolumeTree START" ; 
     assert(scene);
 
     //scene->dumpNdTree("GScene::createVolumeTree");
@@ -121,7 +122,6 @@ GSolid* GScene::createVolumeTree(NScene* scene)
     assert(root);
 
     LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
-
     return root ; 
 }
 
@@ -164,17 +164,22 @@ GSolid* GScene::createVolume(nd* n)
 
     unsigned node_idx = n->idx ;
     unsigned mesh_idx = n->mesh ; 
+
+    int ridx = n->repeatIdx ; 
+
     std::string bnd = n->boundary ; 
 
     const char* spec = bnd.c_str();
 
-    LOG(debug) << "GScene::createVolume"
+    LOG(info) << "GScene::createVolume"
               << " node_idx " << std::setw(5) << node_idx 
               << " mesh_idx " << std::setw(3) << mesh_idx 
+              << " ridx " << std::setw(3) << ridx 
               << " bnd " << bnd 
               ;
 
     assert(!bnd.empty());
+    assert(ridx > -1);
 
     GMesh* mesh = getMesh(mesh_idx);
 
@@ -204,7 +209,8 @@ GSolid* GScene::createVolume(nd* n)
 
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 
-    GParts* pts = GParts::make( csg, spec  );
+
+    GParts* pts = GParts::make( csg, spec  ); // amplification from mesh level to node level 
 
     pts->setBndLib(m_bndlib);
 

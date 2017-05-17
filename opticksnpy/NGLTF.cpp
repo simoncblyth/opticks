@@ -93,6 +93,7 @@ void NGLTF::collect()
         auto mesh_id = node->mesh ;
         if( m_mesh_totals.count(mesh_id) == 0) m_mesh_totals[mesh_id] = 0 ;  
         m_mesh_totals[mesh_id]++  ;
+        m_mesh_used_globally[mesh_id] = false ; 
 
         if(m_mesh_instances.count(mesh_id) == 0) m_mesh_instances[mesh_id] = {} ;  
         m_mesh_instances[mesh_id].push_back(node_id)  ;
@@ -103,6 +104,19 @@ void NGLTF::collect()
 }
 
 
+
+
+// meshes that are used globally need to have gtransform slots for all primitives
+bool NGLTF::isUsedGlobally(unsigned mesh_idx)
+{
+    assert( m_mesh_used_globally.count(mesh_idx) == 1 );
+    return m_mesh_used_globally[mesh_idx] ; 
+}
+
+void NGLTF::setIsUsedGlobally(unsigned mesh_idx, bool iug)
+{
+    m_mesh_used_globally[mesh_idx] = iug ; 
+} 
 
 
 

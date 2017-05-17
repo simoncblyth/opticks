@@ -22,6 +22,7 @@ class NPY_API NScene : public NGLTF
         void dumpNdTree_r(nd* n);
         void compare_trees();
         void compare_trees_r(int idx);
+        void markGloballyUsedMeshes_r(nd* n);
     private:
         unsigned deviseRepeatIndex(nd* n);
         void labelTree_r(nd* n);

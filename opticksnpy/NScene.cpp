@@ -35,12 +35,20 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
    :
     NGLTF(base, name, config, scene_idx)
 {
-    load_mesh_extras();
     m_root = import();
+
+    dumpNdTree("NScene::NScene");
+
     compare_trees();
 
     labelTree_r(m_root);
     dumpRepeatCount(); 
+
+    markGloballyUsedMeshes_r(m_root);
+
+    // move load_mesh_extras later so can know which meshes are non-instanced needing 
+    // gtransform slots for all primitives
+    load_mesh_extras();
 
 }
 
@@ -61,20 +69,23 @@ void NScene::load_mesh_extras()
         auto primitives = mesh->primitives ; 
         auto extras = mesh->extras ; 
 
+        bool iug = isUsedGlobally(mesh_id); 
+
         std::string uri = extras["uri"] ; 
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
         int verbosity = 0 ; 
         bool polygonize = true ; 
-        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), verbosity, polygonize  ); 
+        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), iug, verbosity, polygonize  ); 
         csg->setIndex(mesh_id);
 
         m_csg[mesh_id] = csg ; 
 
-        std::cout << " mesh_id " << std::setw(4) << mesh_id 
-                  << " primitives " << std::setw(4) << primitives.size() 
-                  << " name " << std::setw(65) << mesh->name 
-                  << " csgsmry " << csg->smry() 
+        std::cout << " mid " << std::setw(4) << mesh_id 
+                  << " prm " << std::setw(4) << primitives.size() 
+                  << " nam " << std::setw(65) << mesh->name 
+                  << " iug " << std::setw(1) << iug 
+                  << " smry " << csg->smry() 
                   << std::endl ; 
     }  
 }
@@ -93,7 +104,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     auto extras = ynode->extras ; 
     std::string boundary = extras["boundary"] ; 
  
-    nd* n = new nd ; 
+    nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
     n->idx = idx ; 
     n->repeatIdx = -1 ; 
@@ -120,6 +131,15 @@ void NScene::dumpNdTree(const char* msg)
 void NScene::dumpNdTree_r(nd* n)
 {
     std::cout << n->desc() << std::endl ;  
+
+    /*
+    if(n->transform)   
+    std::cout <<  "n.transform  " << *n->transform << std::endl ; 
+
+    if(n->gtransform)   
+    std::cout <<  "n.gtransform " << *n->gtransform << std::endl ; 
+    */
+
     for(nd* cn : n->children) dumpNdTree_r(cn) ;
 }
 
@@ -214,6 +234,17 @@ void NScene::labelTree_r(nd* n)
 
     for(nd* c : n->children) labelTree_r(c) ;
 }
+
+
+
+void NScene::markGloballyUsedMeshes_r(nd* n)
+{
+    assert( n->repeatIdx > -1 );
+    if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
+
+    for(nd* c : n->children) markGloballyUsedMeshes_r(c) ;
+}
+
 
 
 void NScene::dumpRepeatCount()

@@ -15,6 +15,7 @@ struct NPY_API nd
    unsigned mesh ; 
    unsigned depth ; 
    std::string boundary ; 
+
    nd*          parent ; 
    nmat4triple* transform ; 
    nmat4triple* gtransform ; 
