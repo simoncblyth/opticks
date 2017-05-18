@@ -162,17 +162,21 @@ GParts* GParts::make( NCSG* tree, const char* spec )
 {
     assert(spec);
 
+    bool usedglobally = tree->isUsedGlobally() ;  
+
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
-    NPY<float>* tranbuf = tree->getGTransformBuffer();  // formerly was incorrectly using TransformBuffer
-    NPY<float>* planbuf = tree->getPlaneBuffer();      
+    NPY<float>* tranbuf = usedglobally ? tree->getGTransformBuffer()->clone() : tree->getGTransformBuffer() ; 
+    NPY<float>* planbuf = tree->getPlaneBuffer();       // <-- probably will need to clone this one too for usedglobally ?? 
+
+
 
     LOG(info) << "GParts::make(NCSG)"
               << " tree " << std::setw(5) << tree->getIndex()
+              << " usedglobally " << std::setw(1) << usedglobally 
               << " nodebuf " << ( nodebuf ? nodebuf->getShapeString() : "NULL" ) 
               << " tranbuf " << ( tranbuf ? tranbuf->getShapeString() : "NULL" ) 
               << " planbuf " << ( planbuf ? planbuf->getShapeString() : "NULL" ) 
               ;
-
 
     if(!tranbuf) 
     {
@@ -226,6 +230,7 @@ GParts* GParts::make( NCSG* tree, const char* spec )
     // for every node of the tree
 
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
+
 
     GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
 
@@ -487,7 +492,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
 
     bool pre = false ; 
 
-   // m_tran_buffer->dump("before GParts::applyGlobalPlacementTransform");
+    nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform before");
 
     for(unsigned i=0 ; i < ni ; i++)
     {
@@ -498,7 +503,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
 
-    //m_tran_buffer->dump("after GParts::applyGlobalPlacementTransform");
+    nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform after");
 
 
 }

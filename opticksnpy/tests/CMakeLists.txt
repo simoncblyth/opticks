@@ -19,7 +19,8 @@ GLMPrintTest.cc
 GLMFormatTest.cc
 
 ViewNPYTest.cc
-MultiViewNPYTest.cc
+
+
 NStateTest.cc
 NParametersTest.cc
 ReportTest.cc
@@ -52,15 +53,14 @@ NCylinderTest.cc
 NConeTest.cc
 NConvexPolyhedronTest.cc
 
-NBBoxTest.cc
 NNodeTest.cc
 
 NTesselateTest.cc
-G4StepNPYTest.cc
+
+
 _TorchStepNPYTest.cc
 FabStepTest.cc
 
-HitsNPYTest.cc
 _BoundariesNPYTest.cc
 _RecordsNPYTest.cc
 NTrianglesNPYTest.cc
@@ -70,14 +70,15 @@ NCIETest.cc
 NPYTest.cc
 NPY2Test.cc
 NLoadTest.cc
-NLoadCheck.cc
+
+
 DummyPhotonsNPYTest.cc
 
 NMarchingCubesNPYTest.cc
 NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
-NCSGDeserializeTest.cc
+
 NCSGPolygonizeTest.cc 
 
 NSceneTest.cc
@@ -95,8 +96,18 @@ NField3Test.cc
 NFieldGrid3Test.cc
 NTreeToolsTest.cc
 
-NGLMTest.cc
 NGLMExtTest.cc
+
+
+NLoadCheck.cc
+NGLMTest.cc
+NCSGDeserializeTest.cc
+NBBoxTest.cc
+MultiViewNPYTest.cc
+HitsNPYTest.cc
+G4StepNPYTest.cc
+
+
 
 )
 
@@ -112,7 +123,23 @@ endif()
 
 
 
+set(_TEST_SOURCES_WITH_LINK_ERRORS_FROM_FWD_NPY_DECL_IN_NGLMEXT_HPP
+
+NLoadCheck.cc
+NGLMTest.cc
+NCSGDeserializeTest.cc
+NBBoxTest.cc
+MultiViewNPYTest.cc
+HitsNPYTest.cc
+G4StepNPYTest.cc
+
+)
+
+
 set(_TEST_SOURCES
+
+
+
 
 SequenceNPYTest.cc
 NConstructorTest.cc

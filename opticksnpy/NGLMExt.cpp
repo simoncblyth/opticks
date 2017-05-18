@@ -2,11 +2,16 @@
 #include <iterator>
 
 #include "SDigest.hh"
+#include "NPY.hpp"
+
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
 #include <glm/gtx/component_wise.hpp> 
 #include <glm/gtx/matrix_operation.hpp>
+
+
+#include "PLOG.hh"
 
 
 
@@ -444,6 +449,22 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
     nmat4triple* transformed = nmat4triple::product( triples );  
     return transformed ; 
 }
+
+
+void nmat4triple::dump( NPY<float>* buf, const char* msg)
+{
+    LOG(info) << msg ; 
+    assert(buf->hasShape(-1,3,4,4));
+    unsigned ni = buf->getNumItems();  
+    for(unsigned i=0 ; i < ni ; i++)
+    {
+        nmat4triple* tvq = buf->getMat4TriplePtr(i) ;
+        std::cout << std::setw(3) << i << " tvq " << *tvq << std::endl ;  
+    }
+}
+
+
+
 
 
 

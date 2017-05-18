@@ -5,6 +5,10 @@
 #include <vector>
 #include <string>
 
+// trying to fwd declare leads to linker errors for static NPY methods with some tests : G4StepNPYTest.cc, HitsNPYTest.cc see tests/CMakeLists.txt
+//template <typename T> class NPY ; 
+#include "NPY.hpp"
+
 #include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 
@@ -28,6 +32,7 @@ struct NPY_API nmat4triple
     static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate );
     static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool pre);
     static nmat4triple* make_identity();
+    static void dump(NPY<float>* buf, const char* msg="nmat4triple::dump");
 
     nmat4triple* clone();
     nmat4triple* make_translated(const glm::vec3& tlate );

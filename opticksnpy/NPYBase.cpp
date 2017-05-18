@@ -307,7 +307,7 @@ void NPYBase::setBufferSpec(NPYSpec* spec)
 {
     // set when OpticksEvent uses the ctor  NPY<T>::make(NPYSpec* )
     m_buffer_spec = spec ; 
-    setBufferName(spec->getName());
+    setBufferName(spec ? spec->getName() : NULL);
 }
 
 const char* NPYBase::getBufferName()

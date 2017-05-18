@@ -514,7 +514,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
         // analytic CSG combined at node level  
 
         GParts* mmparts = getParts();
-        GParts* soparts = solid->getParts();
+        GParts* soparts = solid->getParts(); // despite the name a node-level-object
 
         if(solid->getRepeatIndex() == 0)
         {
