@@ -87,12 +87,13 @@ int main(int argc, char** argv)
 
     m_ggeo->traverse();
 
+    unsigned verbosity = 0 ; 
 
     unsigned idx = 0 ; 
     GNode* base = NULL ;  // global transforms
     GNode* root = m_ggeo->getNode(0); 
 
-    GMergedMesh* mm = m_ggeo->makeMergedMesh(idx, base, root); // this only makes when not existing TODO:split 
+    GMergedMesh* mm = m_ggeo->makeMergedMesh(idx, base, root, verbosity); // this only makes when not existing TODO:split 
     mm->Summary("GMergedMesh");
 
     GMaterialLib* mlib = m_ggeo->getMaterialLib();

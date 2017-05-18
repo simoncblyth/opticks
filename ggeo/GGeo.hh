@@ -144,8 +144,7 @@ class GGEO_API GGeo : public NConfigurable {
         void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
-        //GMergedMesh* makeMergedMesh(unsigned int index=0, GNode* base=NULL);
-        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root);
+        GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity );
         unsigned int getNumMergedMesh();
         GMergedMesh* getMergedMesh(unsigned int index);
     public:

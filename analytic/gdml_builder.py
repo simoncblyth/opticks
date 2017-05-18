@@ -84,9 +84,6 @@ solids=ET.fromstring(r"""
 
 structure={}
 
-
-
-
 structure["collar"]=ET.fromstring(r"""
 
    <structure>
@@ -111,6 +108,39 @@ structure["collar"]=ET.fromstring(r"""
   </structure>
 """)
 
+
+structure["collar2"]=ET.fromstring(r"""
+
+   <structure>
+
+    <volume name="/dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0">
+      <materialref ref="/dd/Materials/UnstStainlessSteel0xc5c11e8"/>
+      <solidref ref="AdPmtCollar0xc2c5260"/>
+    </volume>
+ 
+    <volume name="/dd/Geometry/AD/lvOIL0xbf5e0b8">
+      <materialref ref="/dd/Materials/MineralOil0xbf5c830"/>
+      <solidref ref="oil0xbf5ed48"/>
+
+      <physvol name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmtCollar0xc569920">
+        <volumeref ref="/dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0"/>
+        <position name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmtCollar0xc569920_pos" unit="mm" x="-2249.09266802649" y="-296.098667051187" z="-1750"/>
+        <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmtCollar0xc569920_rot" unit="deg" x="90" y="-82.5" z="90"/>
+      </physvol>
+
+
+      <physvol name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmtCollar0xc25dce8">
+        <volumeref ref="/dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0"/>
+        <position name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmtCollar0xc25dce8_pos" unit="mm" x="-2095.82071950185" y="-868.117366320206" z="-1750"/>
+        <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmtCollar0xc25dce8_rot" unit="deg" x="90" y="-67.5" z="90"/>
+      </physvol>
+
+
+
+ 
+    </volume>
+  </structure>
+""")
 
 
 structure["pmt2"]=ET.fromstring(r"""

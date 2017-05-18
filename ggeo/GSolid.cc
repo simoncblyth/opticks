@@ -106,6 +106,8 @@ std::string GSolid::description()
    return getDescription(); 
 }
 
+
+/*
 GParts* GSolid::getParts()
 {
     return m_mesh ? m_mesh->getParts() : NULL ; 
@@ -114,6 +116,19 @@ void GSolid::setParts(GParts* pts)
 {
     if(m_mesh) m_mesh->setParts(pts) ;
 }
+*/
+
+
+GParts* GSolid::getParts()
+{
+    return m_parts ;  
+}
+void GSolid::setParts(GParts* pts)
+{
+    m_parts = pts ; 
+}
+
+
 
 
 

@@ -27,6 +27,7 @@ GScene::GScene( GGeo* ggeo, NScene* scene )
     m_geolib(ggeo->getGeoLib()),
     m_bndlib(ggeo->getBndLib()),
     m_scene(scene),
+    m_verbosity(scene->getVerbosity()),
     m_root(NULL)
 {
     init();
@@ -41,8 +42,7 @@ void GScene::init()
 
     m_root = createVolumeTree(m_scene) ;
 
-
-    createInstancedMergedMeshes(true);
+    createInstancedMergedMeshes(true, m_verbosity);
     dumpMergedMeshes();
 }
 
@@ -171,13 +171,6 @@ GSolid* GScene::createVolume(nd* n)
 
     const char* spec = bnd.c_str();
 
-    LOG(info) << "GScene::createVolume"
-              << " node_idx " << std::setw(5) << node_idx 
-              << " mesh_idx " << std::setw(3) << mesh_idx 
-              << " ridx " << std::setw(3) << ridx 
-              << " bnd " << bnd 
-              ;
-
     assert(!bnd.empty());
     assert(ridx > -1);
 
@@ -212,11 +205,23 @@ GSolid* GScene::createVolume(nd* n)
 
     GParts* pts = GParts::make( csg, spec  ); // amplification from mesh level to node level 
 
+
     pts->setBndLib(m_bndlib);
 
     solid->setParts( pts );
 
     solid->setRepeatIndex( n->repeatIdx ); 
+
+
+    LOG(info) << "GScene::createVolume"
+              << " node_idx " << std::setw(5) << node_idx 
+              << " mesh_idx " << std::setw(3) << mesh_idx 
+              << " ridx " << std::setw(3) << ridx 
+              << " bnd " << bnd 
+              << " solid " << solid
+              << " solid.pts " << pts 
+              ;
+
 
 
     return solid ; 
@@ -251,20 +256,19 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
-void GScene::createInstancedMergedMeshes(bool delta)
+void GScene::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
-    
     if(delta)
     {  
         deltacheck();
     }
 
-    makeMergedMeshAndInstancedBuffers() ; 
+    makeMergedMeshAndInstancedBuffers(verbosity) ; 
 }
 
 
 
-void GScene::makeMergedMeshAndInstancedBuffers()
+void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     
     unsigned num_repeats = m_scene->getNumRepeats(); // global 0 included
@@ -288,7 +292,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
          GSolid* base = ridx == 0 ? NULL : instance0 ; 
 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root );   // TODO: check off-by-1 in base transforms
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root, verbosity );   // TODO: check off-by-1 in base transforms
 
          assert(mm);
 

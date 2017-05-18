@@ -81,6 +81,7 @@ class GGEO_API GSolid : public GNode {
       const char*       m_pvname ; 
       const char*       m_lvname ; 
       unsigned int      m_sensor_surface_index ; 
+      GParts*           m_parts ; 
 
 };
 #include "GGEO_TAIL.hh"

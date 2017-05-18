@@ -41,7 +41,7 @@ class GGEO_API GTreeCheck {
         void setVertexMin(unsigned vertex_min);
    public:
         // principal method, almost everything else invoked by this 
-        void createInstancedMergedMeshes(bool deltacheck=false); 
+        void createInstancedMergedMeshes(bool deltacheck, unsigned verbosity); 
    private:
         // compare tree calculated and persisted transforms
         void           deltacheck(); 
@@ -77,7 +77,7 @@ class GGEO_API GTreeCheck {
    private:
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
-        void           makeMergedMeshAndInstancedBuffers();
+        void           makeMergedMeshAndInstancedBuffers(unsigned verbosity);
         void           makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
         NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
         NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);

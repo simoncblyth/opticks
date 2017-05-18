@@ -92,8 +92,12 @@ args = opticks_main()
 pmt = "/dd/Geometry/PMT/lvPmtHemi0xc133740"
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 
+skey = "pmt2"
+#skey = "pmt5"
+#skey = "collar"
+#skey = "collar2"
 
-gg = make_gdml(worldref=oil, structure_key="collar")
+gg = make_gdml(worldref=oil, structure_key=skey )
 wgg = GDML.wrap(gg) 
 
 tree = Tree(wgg.world)
@@ -101,6 +105,7 @@ tree = Tree(wgg.world)
 #target = tree.findnode(gsel=0, gidx=None)
 
 sc = Sc()
+sc.extras["verbosity"] = 1
 tg = sc.add_tree_gdml( tree.root, maxdepth=0 )
 
 path = "$TMP/tgltf/$FUNCNAME.gltf"

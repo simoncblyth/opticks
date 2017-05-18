@@ -33,8 +33,11 @@ NCSG* NScene::getCSG(unsigned mesh_idx)
 
 NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
    :
-    NGLTF(base, name, config, scene_idx)
+    NGLTF(base, name, config, scene_idx),
+    m_verbosity(0)
 {
+    load_asset_extras();
+
     m_root = import();
 
     dumpNdTree("NScene::NScene");
@@ -51,6 +54,23 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     load_mesh_extras();
 
 }
+
+void NScene::load_asset_extras()
+{
+    auto extras = m_gltf->asset.extras ; 
+    m_verbosity = extras["verbosity"]; 
+
+    LOG(info) << "NScene::load_asset_extras"
+              << " m_verbosity " << m_verbosity 
+               ;
+
+}
+
+unsigned NScene::getVerbosity()
+{
+    return m_verbosity ; 
+}
+
 
 void NScene::load_mesh_extras()
 {

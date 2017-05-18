@@ -471,9 +471,14 @@ unsigned int GParts::getNumParts()
 
 
 
-void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
+void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
+   // gets invoked from GMergedMesh::mergeSolid
+
     const float* data = static_cast<float*>(gtransform->getPointer());
+
+    if(verbosity > 2)
+    nmat4triple::dump(data, "GParts::applyGlobalPlacementTransform gtransform:" ); 
 
     glm::mat4 gpt = glm::make_mat4( data ) ;  
 
@@ -486,12 +491,10 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
               << " ni " << ni
               ;
 
-    std::cout << "GParts::applyGlobalPlacementTransform" 
-              << " gpt " << gpt << std::endl ; 
-
 
     bool pre = false ; 
 
+    if(verbosity > 2)
     nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform before");
 
     for(unsigned i=0 ; i < ni ; i++)
@@ -503,6 +506,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform)
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
 
+    if(verbosity > 2)
     nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform after");
 
 

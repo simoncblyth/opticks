@@ -508,9 +508,9 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
     return mm ; 
 }
 
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root)
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
 {
-    return m_geolib->makeMergedMesh(index, base, root);
+    return m_geolib->makeMergedMesh(index, base, root, verbosity);
 }
 
 
@@ -1309,17 +1309,18 @@ void GGeo::prepareMeshes()
     LOG(trace) << "GGeo::prepareMeshes START" 
               << " instanced " << instanced 
               ;
+    unsigned verbosity = 0 ; 
 
     if(instanced)
     { 
         bool deltacheck = true ; 
-        m_treecheck->createInstancedMergedMeshes(deltacheck);   // GTreeCheck::createInstancedMergedMeshes
+        m_treecheck->createInstancedMergedMeshes(deltacheck, verbosity);   // GTreeCheck::createInstancedMergedMeshes
     }
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
         GNode* root = getNode(0);
-        makeMergedMesh(0, NULL, root);  // ridx:0 rbase:NULL 
+        makeMergedMesh(0, NULL, root, verbosity);  // ridx:0 rbase:NULL 
     }
     LOG(trace) << "GGeo::prepareMeshes DONE" ;
 }

@@ -92,13 +92,14 @@ class Sc(object):
         self.uso = set()
         self.nodes = collections.OrderedDict()
         self.meshes = collections.OrderedDict()
+        self.extras = {}
 
     def _get_gltf(self):
         root = 0 
         d = {}          
         d["scene"] = 0 
         d["scenes"] = [{ "nodes":[root] }]
-        d["asset"] = { "version":"2.0" }
+        d["asset"] = { "version":"2.0", "extras":self.extras }
         d["nodes"] = [node.gltf for node in self.nodes.values()]
         d["meshes"] = [mesh.gltf for mesh in self.meshes.values()]
         return d

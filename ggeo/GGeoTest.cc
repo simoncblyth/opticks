@@ -176,7 +176,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     //
     //
 
-    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container );   
+    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
 
     if(verbosity > 1)
         triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
@@ -318,7 +318,8 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
 
 GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
 {
-    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids );
+    unsigned verbosity = 3 ; 
+    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids, verbosity );
 
     unsigned nelem = solids.size() ; 
     GTransforms* txf = GTransforms::make(nelem); // identities

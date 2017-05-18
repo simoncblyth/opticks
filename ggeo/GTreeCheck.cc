@@ -51,7 +51,7 @@ void GTreeCheck::setVertexMin(unsigned int vertex_min)
    m_vertex_min = vertex_min ; 
 }
 
-void GTreeCheck::createInstancedMergedMeshes(bool delta)
+void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 {
     //assert(0);  
     Timer t("GTreeCheck::createInstancedMergedMeshes") ; 
@@ -70,7 +70,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta)
     labelTree();  // recursive setRepeatIndex on the GNode tree for each of the repeated bits of geometry
     t("labelTree"); 
 
-    makeMergedMeshAndInstancedBuffers();
+    makeMergedMeshAndInstancedBuffers(verbosity);
     t("makeMergedMeshAndInstancedBuffers"); 
 
     treePresent();
@@ -378,14 +378,14 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 
 
 
-void GTreeCheck::makeMergedMeshAndInstancedBuffers()
+void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     GNode* root = m_ggeo->getNode(0);
     assert(root); 
     GNode* base = NULL ; 
 
 
-    GMergedMesh* mm0 = m_ggeo->makeMergedMesh(0, base, root );
+    GMergedMesh* mm0 = m_ggeo->makeMergedMesh(0, base, root, verbosity );
     makeInstancedBuffers(mm0, 0);  // ? instanced global too, for common structure
 
 
@@ -393,7 +393,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers()
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase, root); 
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase, root, verbosity ); 
 
          makeInstancedBuffers(mm, ridx);
      

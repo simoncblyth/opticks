@@ -23,7 +23,7 @@ class GGEO_API GGeoLib {
     public:
         void loadFromCache();
         void saveToCache();
-        GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root);
+        GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
     private:
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);

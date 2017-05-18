@@ -14,7 +14,9 @@ class NPY_API NScene : public NGLTF
         nd*   getNd(unsigned node_idx);
         NCSG* getCSG(unsigned mesh_idx);
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
+        unsigned getVerbosity();
     private:
+        void load_asset_extras();
         void load_mesh_extras();
     private:
         nd*  import();
@@ -36,6 +38,7 @@ class NPY_API NScene : public NGLTF
         std::map<unsigned, NCSG*> m_csg ; 
         std::map<unsigned, unsigned>  m_mesh2ridx ;
         std::map<unsigned, unsigned>  m_repeat_count ;
+        unsigned m_verbosity ; 
 
 
 };

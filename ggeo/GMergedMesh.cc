@@ -48,11 +48,21 @@ GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_vertices(0),
        m_cur_faces(0),
        m_cur_solid(0),
-       m_cur_base(NULL)
+       m_cur_base(NULL),
+       m_parts(new GParts())
 {
-    GParts* parts = new GParts();
-    setParts(parts);
 } 
+
+GParts* GMergedMesh::getParts()
+{
+    return m_parts ; 
+}
+void GMergedMesh::setParts(GParts* pts) // under protest 
+{
+    m_parts = pts ; 
+}
+
+
 
 void GMergedMesh::setCurrentBase(GNode* base)
 {
@@ -75,63 +85,46 @@ bool GMergedMesh::isInstanced()
 
 
 
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid)
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity )
 {
     std::vector<GSolid*> solids ; 
     solids.push_back(solid);
-    return combine(index, mm, solids );
+    return combine(index, mm, solids, verbosity );
 }
 
 // count-allocate-merge
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids)
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity )
 {
     unsigned numSolids = solids.size(); 
     LOG(info) << "GMergedMesh::combine"
               << " making new mesh "
               << " index " << index 
               << " solids " << numSolids
+              << " verbosity " << verbosity 
               ; 
 
     GSolid::Dump(solids, "GMergedMesh::combine (source solids)");
 
-    std::vector<GParts*> analytic ; 
-    collectParts( analytic, mm );
-    collectParts( analytic, solids );
 
     GMergedMesh* com = new GMergedMesh( index ); 
     com->setVerbosity(mm ? mm->getVerbosity() : 0 );
 
     if(mm) com->countMergedMesh(mm, true);
-    for(unsigned i=0 ; i < numSolids ; i++) com->countSolid(solids[i], true) ;
+    for(unsigned i=0 ; i < numSolids ; i++) com->countSolid(solids[i], true, verbosity ) ;
 
     com->allocate(); 
  
     if(mm) com->mergeMergedMesh(mm, true);
-    for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true) ;
+    for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true, verbosity ) ;
 
     com->updateBounds();
     com->dumpSolids("GMergedMesh::combine (combined result) ");
    
-
-    unsigned int ncomp = numSolids + ( mm ? 1 : 0 ) ;
-
-    if(analytic.size() == ncomp)
-    {
-        GParts*      anl = GParts::combine(analytic);
-        com->setParts(anl);
-    }
-    else
-    {
-        LOG(warning) << "GMergedMesh::combine CANNOT combine analytic parts are incomplete " 
-                     << " ncomp " << ncomp 
-                     << " nanalytic " << analytic.size()
-                     ;
-    }
     return com ; 
 }
 
 
-
+/*
 void GMergedMesh::collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm)
 {
     if(!mm) return ;
@@ -154,9 +147,11 @@ void GMergedMesh::collectParts( std::vector<GParts*>& analytic, const std::vecto
     } 
 }
 
+*/
 
 
-GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
+
+GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
 {
     assert(root && "root node is required");
 
@@ -178,7 +173,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
 
     // 1st pass traversal : counts vertices and faces
 
-    mm->traverse_r( start, 0, PASS_COUNT );  
+    mm->traverse_r( start, 0, PASS_COUNT, verbosity  );  
 
     t("1st pass traverse");
 
@@ -198,7 +193,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
 
     // 2nd pass traversal : merge copy GMesh into GMergedMesh 
 
-    mm->traverse_r( start, 0, PASS_MERGE );  
+    mm->traverse_r( start, 0, PASS_MERGE, verbosity );  
     t("2nd pass traverse");
 
     mm->updateBounds();
@@ -210,37 +205,6 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root)
 
     return mm ;
 }
-
-
-
-/*
-Huh ? why do OAV and IAV give a number of solids of 1 whereas all others give zero ?  maybe related to mesh fixing 
-
-[2015-Nov-04 17:28:12.203204]:info: GMergedMesh::count  selected false mesh.nsolid 0 mesh.name near_pool_iws_box0xc288ce8 num_solids 0 num_solids_selected 0
-[2015-Nov-04 17:28:12.203320]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name ade0xc2a7438 num_solids 0 num_solids_selected 0
-[2015-Nov-04 17:28:12.203430]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name sst0xbf4b060 num_solids 0 num_solids_selected 0
-[2015-Nov-04 17:28:12.203538]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name oil0xbf5ed48 num_solids 0 num_solids_selected 0
-[2015-Nov-04 17:28:12.203648]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name oav0xc2ed7c8 num_solids 1 num_solids_selected 0
-[2015-Nov-04 17:28:12.203758]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name lso0xc028a38 num_solids 1 num_solids_selected 1
-[2015-Nov-04 17:28:12.203866]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name iav0xc346f90 num_solids 2 num_solids_selected 1
-[2015-Nov-04 17:28:12.203974]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name gds0xc28d3f0 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.204082]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name OcrGdsInIav0xc405b10 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.204195]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name IavTopHub0xc405968 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.204310]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name CtrGdsOflBotClp0xbf5dec0 num_solids 2 num_solids_selected 2
-...
-[2015-Nov-04 17:28:12.397076]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name MOFTTopCover0xc047878 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.397190]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name ade0xc2a7438 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.397297]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name sst0xbf4b060 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.397406]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name oil0xbf5ed48 num_solids 2 num_solids_selected 2
-[2015-Nov-04 17:28:12.397512]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name oav0xc2ed7c8 num_solids 3 num_solids_selected 2
-[2015-Nov-04 17:28:12.397619]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name lso0xc028a38 num_solids 3 num_solids_selected 3
-[2015-Nov-04 17:28:12.397725]:info: GMergedMesh::count  selected true mesh.nsolid 1 mesh.name iav0xc346f90 num_solids 4 num_solids_selected 3
-[2015-Nov-04 17:28:12.397831]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name gds0xc28d3f0 num_solids 4 num_solids_selected 4
-[2015-Nov-04 17:28:12.397936]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name OcrGdsInIav0xc405b10 num_solids 4 num_solids_selected 4
-[2015-Nov-04 17:28:12.398048]:info: GMergedMesh::count  selected true mesh.nsolid 0 mesh.name IavTopHub0xc405968 num_solids 4 num_solids_selected 4
-
-*/
-
 
 
 // NB what is appropriate for a merged mesh is not for a mesh ... wrt counting solids
@@ -266,7 +230,7 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
               ;
 }
 
-void GMergedMesh::countSolid( GSolid* solid, bool selected)
+void GMergedMesh::countSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
     GMesh* mesh = solid->getMesh();
 
@@ -280,6 +244,7 @@ void GMergedMesh::countSolid( GSolid* solid, bool selected)
 
     if(m_verbosity > 1)
     LOG(info) << "GMergedMesh::count GSolid " 
+              << " verbosity " << verbosity 
               << " selected " << selected
               << " num_solids " << m_num_solids 
               << " num_solids_selected " << m_num_solids_selected 
@@ -379,7 +344,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 
 }
 
-void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
+void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
 
     GMesh* mesh = solid->getMesh();
@@ -519,9 +484,11 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
         if(solid->getRepeatIndex() == 0)
         {
             GMatrixF* sotransform = solid->getTransform() ;  
-            soparts->applyGlobalPlacementTransform(sotransform);
+            soparts->applyGlobalPlacementTransform(sotransform, verbosity );
 
             LOG(info) << "GMergedMesh::mergeSolid(applyGlobalPlacementTransform)"
+                      << " solid " << solid
+                      << " soparts " << soparts
                       << " nodeIndex " << nodeIndex 
                       << " meshIndex " << meshIndex 
                       << " sotransform " << sotransform->brief(7)
@@ -535,9 +502,11 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected )
 }
 
 
-void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass)
+void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
+
+
 
     // using repeat index labelling in the tree
     //  bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
@@ -548,14 +517,27 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
     bool repsel =  idx == -1 || ridx == uidx ;
     bool selected = solid->isSelected() && repsel ;
 
+    if(verbosity > 0)
+          LOG(info)
+                  << "GMergedMesh::traverse_r"
+                  << " node " << node 
+                  << " solid " << solid 
+                  << " solid.pts " << solid->getParts()
+                  << " depth " << depth 
+                  << " NumChildren " << node->getNumChildren()
+                  << " pass " << pass
+                  << " selected " << selected
+                  ; 
+
+
     switch(pass)
     {
-       case PASS_COUNT:    countSolid(solid, selected)  ;break;
-       case PASS_MERGE:    mergeSolid(solid, selected)  ;break;
+       case PASS_COUNT:    countSolid(solid, selected, verbosity)  ;break;
+       case PASS_MERGE:    mergeSolid(solid, selected, verbosity)  ;break;
                default:    assert(0)                    ;break;
     }
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
 }
 
 

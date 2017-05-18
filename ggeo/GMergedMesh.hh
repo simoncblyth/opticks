@@ -24,34 +24,41 @@ class GMergedMesh ;
 
 
 class GGEO_API GMergedMesh : public GMesh {
+    friend class GGeoTest ;         // for setParts analytic PMT kludge
+    friend class OpticksGeometry ;  // for setParts analytic PMT kludge
 public:
     enum { PASS_COUNT, PASS_MERGE } ;
 public:
-    static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root );
+    static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
      // ridx selected solids and their vertices to allocate then 
      // MERGE collects them together
-     void traverse_r( GNode* node, unsigned int depth, unsigned int pass);
+     void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
 
 public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids) ;
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid ) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity ) ;
 private:
+     /*
     static void collectParts( std::vector<GParts*>& analytic, const std::vector<GSolid*>& solids );
     static void collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm);
+    */
 public:
     //GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
+    GParts* getParts();
+private:
+    void setParts(GParts* pts); 
 private:
     // NB cannot treat GMergedMesh as a GMesh wrt calling getNumSolids 
     // explicit naming to avoid subclass confusion
     void countMergedMesh( GMergedMesh* other, bool selected );   
-    void countSolid( GSolid*      solid, bool selected ); 
+    void countSolid( GSolid*      solid, bool selected, unsigned verbosity  ); 
     void countMesh( GMesh* mesh ); 
-    void mergeSolid( GSolid* solid, bool selected );
+    void mergeSolid( GSolid* solid, bool selected, unsigned verbosity );
     void mergeMergedMesh( GMergedMesh* other, bool selected );
 
 public:
@@ -75,6 +82,7 @@ private:
     unsigned int m_cur_faces ;
     unsigned int m_cur_solid ;
     GNode*       m_cur_base ;  
+    GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
      
 };

@@ -154,7 +154,7 @@ GMesh::GMesh(unsigned int index,
       m_facerepeated_iidentity_buffer(NULL),
       m_analytic_geometry_buffer(NULL),
 
-      m_parts(NULL),
+      //m_parts(NULL),
       m_verbosity(0)
 {
      init(vertices, faces, normals, texcoords);
@@ -559,6 +559,7 @@ NSlice* GMesh::getPartSlice()
 
 
 
+/*
 void GMesh::setParts(GParts* parts)
 {
     m_parts = parts ; 
@@ -567,7 +568,7 @@ GParts* GMesh::getParts()
 {
     return m_parts ; 
 }
-
+*/
 
 
 

@@ -127,11 +127,11 @@ void GGeoLib::saveMergedMeshes(const char* idpath)
     }
 }
 
-GMergedMesh* GGeoLib::makeMergedMesh(unsigned int index, GNode* base, GNode* root)
+GMergedMesh* GGeoLib::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh[index] = GMergedMesh::create(index, base, root);
+        m_merged_mesh[index] = GMergedMesh::create(index, base, root, verbosity );
     }
     return m_merged_mesh[index] ;
 }

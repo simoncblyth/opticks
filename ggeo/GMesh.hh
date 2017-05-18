@@ -443,8 +443,8 @@ class GGEO_API GMesh : public GDrawable {
 
   public:
       // analytic geometry standin for OptiX
-      void setParts(GParts* parts);
-      GParts* getParts();
+      //void setParts(GParts* parts);
+      //GParts* getParts();
 
   protected:
       unsigned int    m_index ;
@@ -519,7 +519,7 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* m_facerepeated_iidentity_buffer ;
       GBuffer* m_analytic_geometry_buffer ; 
 
-      GParts*      m_parts ; 
+      //GParts*      m_parts ; 
 
       unsigned int   m_verbosity ; 
 
