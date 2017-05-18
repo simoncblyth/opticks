@@ -38,50 +38,50 @@ class NPY_API NPYBase {
        static std::string path(const char* dir, const char* reldir, const char* name);
        static std::string path(const char* det, const char* source, const char* tag, const char* tfmt);
    public:
-        NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
+        NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data);
         virtual ~NPYBase();
         void setHasData(bool has_data=true);
-        bool hasData();
+        bool hasData() const ;
         static void transfer(NPYBase* dst, NPYBase* src); 
    public:
        // shape related
-       NPYSpec* getShapeSpec();
-       NPYSpec* getItemSpec();
-       std::vector<int>& getShapeVector();
+       NPYSpec* getShapeSpec() const ;
+       NPYSpec* getItemSpec() const ;
+       const std::vector<int>& getShapeVector() const ;
 
-       bool hasSameShape(NPYBase* other, unsigned fromdim=0);
-       bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0); // -1 for anything 
-       bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0);
+       bool hasSameShape(NPYBase* other, unsigned fromdim=0) const ;
+       bool hasShape(int ni, int nj=0, int nk=0, int nl=0, int nm=0) const ; // -1 for anything 
+       bool hasItemShape(int nj, int nk=0, int nl=0, int nm=0) const ;
 
-       bool hasShapeSpec(NPYSpec* spec); 
-       bool hasItemSpec(NPYSpec* spec); 
+       bool hasShapeSpec(NPYSpec* spec) const ; 
+       bool hasItemSpec(NPYSpec* spec) const ; 
 
-       std::string  getItemShape(unsigned int ifr=1);
-       std::string  getDigestString();
+       std::string  getItemShape(unsigned int ifr=1) const ;
+       std::string  getDigestString()  ;
        std::string  getItemDigestString(unsigned i);
 
-       static std::string  getDigestString(void* bytes, unsigned int nbytes);
-       bool isEqualTo(void* bytes, unsigned int nbytes);
-       bool isEqualTo(NPYBase* other);
-       unsigned int getNumQuads();  // product of all dimensions excluding the last, which must be 4 
+       static std::string  getDigestString(void* bytes, unsigned int nbytes) ; 
+       bool isEqualTo(void* bytes, unsigned int nbytes) ;
+       bool isEqualTo(NPYBase* other) ;
+       unsigned int getNumQuads() const ;  // product of all dimensions excluding the last, which must be 4 
        //unsigned int getLength();
-       unsigned int getNumItems(int ifr=0, int ito=1);  // default ifr/ito=0/1 is size of 1st dimension
-       unsigned int getNumElements();   // size of last dimension
-       unsigned int getDimensions();
-       std::string  getShapeString(unsigned int ifr=0);
-       unsigned int getShape(unsigned int dim);
-       unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);
-       unsigned int getNumValues(unsigned int from_dim=0);
+       unsigned int getNumItems(int ifr=0, int ito=1) const;  // default ifr/ito=0/1 is size of 1st dimension
+       unsigned int getNumElements() const ;   // size of last dimension
+       unsigned int getDimensions() const ;
+       std::string  getShapeString(unsigned int ifr=0) const ;
+       unsigned int getShape(unsigned int dim) const ;
+       unsigned int getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
+       unsigned int getNumValues(unsigned int from_dim=0) const ;
 
-       NParameters*  getParameters();
+       NParameters*  getParameters() const ;
    public:
        // depending on sizeoftype
-       Type_t        getType();
-       bool          isIntegerType();
-       bool          isFloatType();
-       unsigned char getSizeOfType();
-       unsigned int  getNumBytes(unsigned int from_dim=0);
-       unsigned int  getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0);
+       Type_t        getType() const ;
+       bool          isIntegerType() const ;
+       bool          isFloatType() const ;
+       unsigned char getSizeOfType() const ;
+       unsigned int  getNumBytes(unsigned int from_dim=0) const ;
+       unsigned int  getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l=0, unsigned m=0) const ;
    public:
        void reshape(int ni, unsigned nj=0, unsigned nk=0, unsigned nl=0, unsigned nm=0);
    private:
@@ -90,38 +90,38 @@ class NPY_API NPYBase {
    public:
        // OpenGL related
        void         setBufferId(int buffer_id);
-       int          getBufferId();  // either -1 if not uploaded, or the OpenGL buffer Id
-       bool         isComputeBuffer();
-       bool         isInteropBuffer();
+       int          getBufferId() const ;  // either -1 if not uploaded, or the OpenGL buffer Id
+       bool         isComputeBuffer() const ;
+       bool         isInteropBuffer() const ;
 
        void         setBufferTarget(int buffer_target);
-       int          getBufferTarget();  // -1 if unset
+       int          getBufferTarget() const ;  // -1 if unset
 
        void         setBufferControl(unsigned long long  buffer_control);
-       unsigned long long getBufferControl();
-       unsigned long long* getBufferControlPtr();
+       unsigned long long getBufferControl() const ;
+       unsigned long long* getBufferControlPtr()  ;
 
        void         setActionControl(unsigned long long  action_control);
        void         addActionControl(unsigned long long  action_control);
-       unsigned long long  getActionControl();
-       unsigned long long* getActionControlPtr();
+       unsigned long long  getActionControl() const ;
+       unsigned long long* getActionControlPtr() ;
 
        void     setLookup(NLookup* lookup);   // needed for legacy gensteps
-       NLookup* getLookup();
+       NLookup* getLookup() const ;
 
        void         setBufferSpec(NPYSpec* spec);
-       NPYSpec*     getBufferSpec();
-       const char*  getBufferName();
+       NPYSpec*     getBufferSpec() const ;
+       const char*  getBufferName() const ;
 
        void         setAux(void* aux);
-       void*        getAux();
+       void*        getAux() const ;
        void         setDynamic(bool dynamic=true);
-       bool         isDynamic();    // used by oglrap-/Rdr::upload
+       bool         isDynamic() const ;    // used by oglrap-/Rdr::upload
 
-       bool isGenstepTranslated();
+       bool isGenstepTranslated() const ;
        void setGenstepTranslated(bool flag=true);
 
-       unsigned getNumHit();
+       unsigned getNumHit() const ;
        void setNumHit(unsigned num_hit);
    private:
        void         setBufferName(const char* name);
@@ -149,8 +149,8 @@ class NPY_API NPYBase {
        virtual void save(const char* tfmt, const char* targ, const char* tag, const char* det ) = 0;
  
     public:
-       void Summary(const char* msg="NPYBase::Summary");
-       std::string description(const char* msg="NPYBase::description");
+       void Summary(const char* msg="NPYBase::Summary") const ;
+       std::string description(const char* msg="NPYBase::description") const ;
 
    //protected:
     public:

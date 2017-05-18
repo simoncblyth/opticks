@@ -363,7 +363,7 @@ nmat4pair::nmat4pair(const glm::mat4& t_ )
 }
 
 
-nmat4triple::nmat4triple(float* data ) 
+nmat4triple::nmat4triple(const float* data ) 
      : 
      t(glm::make_mat4(data)),
      v(nglmext::invert_trs(t)),
@@ -451,7 +451,7 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
 }
 
 
-void nmat4triple::dump( NPY<float>* buf, const char* msg)
+void nmat4triple::dump( const NPY<float>* buf, const char* msg)
 {
     LOG(info) << msg ; 
     assert(buf->hasShape(-1,3,4,4));
@@ -464,8 +464,12 @@ void nmat4triple::dump( NPY<float>* buf, const char* msg)
 }
 
 
-
-
+void nmat4triple::dump( const float* data4x4, const char* msg )
+{
+    LOG(info) << msg ; 
+    nmat4triple* tvq = new nmat4triple(data4x4)  ;
+    std::cout << " tvq " << *tvq << std::endl ;  
+}
 
 
 

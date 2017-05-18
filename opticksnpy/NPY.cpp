@@ -19,7 +19,7 @@ namespace fs = boost::filesystem;
 // ctor takes ownership of a copy of the inputs 
 
 template <typename T>
-NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data_, std::string& metadata) 
+NPY<T>::NPY(const std::vector<int>& shape, std::vector<T>& data_, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
          m_data(data_),      // copies the vector
@@ -29,7 +29,7 @@ NPY<T>::NPY(std::vector<int>& shape, std::vector<T>& data_, std::string& metadat
 } 
 
 template <typename T>
-NPY<T>::NPY(std::vector<int>& shape, T* data_, std::string& metadata) 
+NPY<T>::NPY(const std::vector<int>& shape, T* data_, std::string& metadata) 
          :
          NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
          m_data(),      
@@ -753,7 +753,7 @@ NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned
 
 
 template <typename T>
-NPY<T>* NPY<T>::make(std::vector<int>& shape)
+NPY<T>* NPY<T>::make(const std::vector<int>& shape)
 {
     T* values = NULL ;
     std::string metadata = "{}";
@@ -1138,7 +1138,7 @@ NPY<T>* NPY<T>::make_slice(NSlice* slice)
         offset += size ; 
     }   
 
-    std::vector<int>& orig = getShapeVector();
+    const std::vector<int>& orig = getShapeVector();
     std::vector<int> shape(orig.size()) ; 
     std::copy(orig.begin(), orig.end(), shape.begin() );
 
@@ -1467,17 +1467,26 @@ NPY<T>* NPY<T>::transform(glm::mat4& mat)
 
 
 template <typename T> 
-std::vector<T>& NPY<T>::data()
+std::vector<T>& NPY<T>::data() 
 {
     return m_data ;
 }
 
 
 template <typename T> 
-T* NPY<T>::getValues()
+T* NPY<T>::getValues() 
 {
     return m_data.data();
 }
+
+
+template <typename T> 
+const T* NPY<T>::getValuesConst()  const 
+{
+    return m_data.data();
+}
+
+
 
 
 template <typename T> 
@@ -1510,6 +1519,18 @@ T* NPY<T>::getValues(unsigned int i, unsigned int j)
     unsigned int idx = getValueIndex(i,j,0);
     return m_data.data() + idx ;
 }
+
+
+template <typename T> 
+const T* NPY<T>::getValuesConst(unsigned int i, unsigned int j) const 
+{
+    unsigned int idx = getValueIndex(i,j,0);
+    return m_data.data() + idx ;
+}
+
+
+
+
 
 
 template <typename T> 
@@ -1693,21 +1714,21 @@ void NPY<T>::setMat4(const glm::mat4& mat, int i, int j_, bool transpose)
 
 
 template <typename T> 
-glm::mat4 NPY<T>::getMat4(int i, int j_)
+glm::mat4 NPY<T>::getMat4(int i, int j_) const 
 {
     if(j_ == -1) assert(hasItemShape(4,4));
     else         assert(hasItemShape(-1,4,4));
 
     int j = j_ == -1 ? 0 : j_ ; 
 
-    T* vals = getValues(i, j);
+    const T* vals = getValuesConst(i, j);
     return glm::make_mat4(vals);
 }
 
 
 
 template <typename T> 
-glm::mat4* NPY<T>::getMat4Ptr(int i, int j_)
+glm::mat4* NPY<T>::getMat4Ptr(int i, int j_) const 
 {
     glm::mat4 m = getMat4(i, j_) ; 
     return new glm::mat4(m) ; 
@@ -1715,7 +1736,7 @@ glm::mat4* NPY<T>::getMat4Ptr(int i, int j_)
 
 
 template <typename T> 
-nmat4pair* NPY<T>::getMat4PairPtr(int i)
+nmat4pair* NPY<T>::getMat4PairPtr(int i) const 
 {
     // return Ptr as including NGLMExt into NPY header
     // causes thrustrap- issues
@@ -1729,7 +1750,7 @@ nmat4pair* NPY<T>::getMat4PairPtr(int i)
 }
 
 template <typename T> 
-nmat4triple* NPY<T>::getMat4TriplePtr(int i)
+nmat4triple* NPY<T>::getMat4TriplePtr(int i) const 
 {
     assert(hasShape(-1,3,4,4));
 

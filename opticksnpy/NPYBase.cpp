@@ -74,7 +74,7 @@ std::string NPYBase::path(const char* det, const char* source, const char* tag, 
 }
 
 
-int NPYBase::checkNumItems(NPYBase* data)
+int NPYBase::checkNumItems(NPYBase* data) 
 {
     return data && data->hasData() ? data->getNumItems() : -1 ;
 }
@@ -89,17 +89,17 @@ void NPYBase::setLookup(NLookup* lookup)
 {
     m_lookup = lookup ; 
 }
-NLookup* NPYBase::getLookup()
+NLookup* NPYBase::getLookup() const 
 {
     return m_lookup ; 
 }
-NParameters* NPYBase::getParameters()
+NParameters* NPYBase::getParameters() const 
 {
     return m_parameters ;
 }
 
 
-bool NPYBase::isGenstepTranslated()
+bool NPYBase::isGenstepTranslated() const 
 {
     return m_parameters->get<bool>("GenstepTranslated","0");  // fallback to false if not set 
 }
@@ -114,7 +114,7 @@ void NPYBase::setNumHit(unsigned num_hit)
     m_parameters->set<unsigned>("NumHit", num_hit); 
 }
 
-unsigned NPYBase::getNumHit()
+unsigned NPYBase::getNumHit() const 
 {
     return m_parameters->get<unsigned>("NumHit","0"); 
 }
@@ -122,7 +122,7 @@ unsigned NPYBase::getNumHit()
 
 
 
-NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
+NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 
          :
          m_shape_spec(NULL),
          m_item_spec(NULL),
@@ -157,16 +157,16 @@ NPYBase::NPYBase(std::vector<int>& shape, unsigned char sizeoftype, Type_t type,
     m_has_data = has_data ; 
 }
 
- bool NPYBase::hasData()
+ bool NPYBase::hasData() const 
 {
     return m_has_data ; 
 }
 
- NPYSpec* NPYBase::getShapeSpec()
+ NPYSpec* NPYBase::getShapeSpec() const 
 {
     return m_shape_spec ; 
 }
-NPYSpec* NPYBase::getItemSpec()
+NPYSpec* NPYBase::getItemSpec() const 
 {
     return m_item_spec ; 
 }
@@ -175,7 +175,7 @@ NPYSpec* NPYBase::getItemSpec()
 
 // shape related
 
- std::vector<int>& NPYBase::getShapeVector()
+const std::vector<int>& NPYBase::getShapeVector() const 
 {
     return m_shape ; 
 }
@@ -183,7 +183,7 @@ NPYSpec* NPYBase::getItemSpec()
 
 
 
- unsigned int NPYBase::getNumItems(int ifr, int ito)
+ unsigned int NPYBase::getNumItems(int ifr, int ito) const 
 {
     //  A) default ifr/ito  0/1 correponds to shape of 1st dimension
     //
@@ -207,17 +207,17 @@ NPYSpec* NPYBase::getItemSpec()
     for(int i=ifr ; i < ito ; i++) nit *= getShape(i);
     return nit ;
 }
- unsigned int NPYBase::getNumElements()
+ unsigned int NPYBase::getNumElements() const 
 {
     return getShape(m_shape.size()-1);
 }
 
 
- unsigned int NPYBase::getDimensions()
+ unsigned int NPYBase::getDimensions() const 
 {
     return m_shape.size();
 }
- unsigned int NPYBase::getShape(unsigned int n)
+ unsigned int NPYBase::getShape(unsigned int n) const 
 {
     return n < m_shape.size() ? m_shape[n] : 0 ;
 }
@@ -230,15 +230,15 @@ NPYSpec* NPYBase::getItemSpec()
 {
     m_buffer_id = buffer_id  ;
 }
- int NPYBase::getBufferId()
+ int NPYBase::getBufferId() const 
 {
     return m_buffer_id ;
 }
-bool NPYBase::isComputeBuffer()
+bool NPYBase::isComputeBuffer() const 
 {
     return m_buffer_id == -1 ; 
 }
-bool NPYBase::isInteropBuffer()
+bool NPYBase::isInteropBuffer() const 
 {
     return m_buffer_id > -1 ; 
 }
@@ -248,7 +248,7 @@ bool NPYBase::isInteropBuffer()
 {
     m_buffer_target = buffer_target  ;
 }
- int NPYBase::getBufferTarget()
+ int NPYBase::getBufferTarget() const 
 {
     return m_buffer_target ;
 }
@@ -258,11 +258,11 @@ void NPYBase::setBufferControl(unsigned long long control)
 {
     m_buffer_control = control ;  
 }
-unsigned long long NPYBase::getBufferControl()
+unsigned long long NPYBase::getBufferControl() const 
 {
     return m_buffer_control ;  
 }
-unsigned long long* NPYBase::getBufferControlPtr()
+unsigned long long* NPYBase::getBufferControlPtr() 
 {
     return &m_buffer_control ;  
 }
@@ -278,11 +278,11 @@ void NPYBase::setActionControl(unsigned long long control)
     m_action_control = control ;  
 }
 
-unsigned long long NPYBase::getActionControl()
+unsigned long long NPYBase::getActionControl() const 
 {
     return m_action_control ;  
 }
-unsigned long long* NPYBase::getActionControlPtr()
+unsigned long long* NPYBase::getActionControlPtr() 
 {
     return &m_action_control ;  
 }
@@ -310,11 +310,11 @@ void NPYBase::setBufferSpec(NPYSpec* spec)
     setBufferName(spec ? spec->getName() : NULL);
 }
 
-const char* NPYBase::getBufferName()
+const char* NPYBase::getBufferName() const 
 {
     return m_buffer_name ;  
 }
-NPYSpec* NPYBase::getBufferSpec()
+NPYSpec* NPYBase::getBufferSpec() const 
 {
     return m_buffer_spec ; 
 }
@@ -332,7 +332,7 @@ NPYSpec* NPYBase::getBufferSpec()
 {
     m_aux = aux ; 
 }
- void* NPYBase::getAux()
+ void* NPYBase::getAux() const 
 {
     return m_aux ; 
 }
@@ -353,7 +353,7 @@ NPYSpec* NPYBase::getBufferSpec()
 }
 
 
- unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m)
+ unsigned int NPYBase::getValueIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const 
 {
     unsigned int nj = m_nj == 0 ? 1 : m_nj ;
     unsigned int nk = m_nk == 0 ? 1 : m_nk ;
@@ -365,7 +365,7 @@ NPYSpec* NPYBase::getBufferSpec()
 
 
 
- unsigned int NPYBase::getNumValues(unsigned int from_dim)
+ unsigned int NPYBase::getNumValues(unsigned int from_dim) const 
 {
     unsigned int nvals = 1 ; 
     for(unsigned int i=from_dim ; i < m_shape.size() ; i++) nvals *= m_shape[i] ;
@@ -375,30 +375,30 @@ NPYSpec* NPYBase::getBufferSpec()
 
 // depending on sizeoftype
 
- unsigned char NPYBase::getSizeOfType()
+ unsigned char NPYBase::getSizeOfType() const 
 {
     return m_sizeoftype;
 }
- NPYBase::Type_t NPYBase::getType()
+ NPYBase::Type_t NPYBase::getType() const 
 {
     return m_type;
 }
 
-bool NPYBase::isIntegerType()
+bool NPYBase::isIntegerType() const 
 {
     return m_type == SHORT || m_type == INT || m_type == UINT || m_type == CHAR || m_type == UCHAR || m_type == ULONGLONG ; 
 }
-bool NPYBase::isFloatType()
+bool NPYBase::isFloatType() const 
 {
     return m_type == FLOAT || m_type == DOUBLE ;
 }
 
 
- unsigned int NPYBase::getNumBytes(unsigned int from_dim)
+ unsigned int NPYBase::getNumBytes(unsigned int from_dim) const 
 {
     return m_sizeoftype*getNumValues(from_dim);
 }
- unsigned int NPYBase::getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m)
+ unsigned int NPYBase::getByteIndex(unsigned i, unsigned j, unsigned k, unsigned l, unsigned m) const 
 {
     return m_sizeoftype*getValueIndex(i,j,k,l,m);
 }
@@ -407,7 +407,7 @@ bool NPYBase::isFloatType()
 {
     m_dynamic = dynamic ; 
 }
- bool NPYBase::isDynamic()
+ bool NPYBase::isDynamic() const 
 {
     return m_dynamic ; 
 }
@@ -433,7 +433,7 @@ void NPYBase::updateDimensions()
 }
 
 
-unsigned int NPYBase::getNumQuads()
+unsigned int NPYBase::getNumQuads() const 
 {
    unsigned int num_quad ;  
    unsigned int ndim = m_shape.size() ;
@@ -453,17 +453,17 @@ unsigned int NPYBase::getNumQuads()
 }
 
 
-bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim)
+bool NPYBase::hasSameShape(NPYBase* other, unsigned fromdim) const 
 {
-    std::vector<int>& a = getShapeVector();
-    std::vector<int>& b = other->getShapeVector();
+    const std::vector<int>& a = getShapeVector();
+    const std::vector<int>& b = other->getShapeVector();
     if(a.size() != b.size()) return false ; 
     unsigned int n = a.size();
     for(unsigned int i=fromdim ; i < n ; i++) if(a[i] != b[i]) return false ;
     return true ; 
 }
 
-bool NPYBase::hasShape(int ni, int nj, int nk, int nl, int nm)
+bool NPYBase::hasShape(int ni, int nj, int nk, int nl, int nm) const 
 {
     return 
            ( ni == -1 || int(m_ni) == ni) && 
@@ -473,7 +473,7 @@ bool NPYBase::hasShape(int ni, int nj, int nk, int nl, int nm)
            ( nm == -1 || int(m_nm) == nm) ;
 }
 
-bool NPYBase::hasItemShape(int nj, int nk, int nl, int nm)
+bool NPYBase::hasItemShape(int nj, int nk, int nl, int nm) const 
 {
     return 
            ( nj == -1 || int(m_nj) == nj) && 
@@ -482,12 +482,12 @@ bool NPYBase::hasItemShape(int nj, int nk, int nl, int nm)
            ( nm == -1 || int(m_nm) == nm) ;
 }
 
-bool NPYBase::hasItemSpec(NPYSpec* item_spec)
+bool NPYBase::hasItemSpec(NPYSpec* item_spec) const 
 {
     return m_item_spec->isEqualTo(item_spec); 
 }
 
-bool NPYBase::hasShapeSpec(NPYSpec* shape_spec)
+bool NPYBase::hasShapeSpec(NPYSpec* shape_spec) const 
 {
     return m_shape_spec->isEqualTo(shape_spec); 
 }
@@ -555,19 +555,19 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
 
 
 
-std::string NPYBase::getDigestString()
+std::string NPYBase::getDigestString() 
 {
     return getDigestString(getBytes(), getNumBytes(0));
 }
 
 
-std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes)
+std::string NPYBase::getDigestString(void* bytes, unsigned int nbytes) 
 {
     return SDigest::digest(bytes, nbytes);
 }
 
 
-std::string NPYBase::getItemDigestString(unsigned i)
+std::string NPYBase::getItemDigestString(unsigned i) 
 {
     assert( i < getNumItems() );
 
@@ -586,12 +586,12 @@ std::string NPYBase::getItemDigestString(unsigned i)
 
 
 
-bool NPYBase::isEqualTo(NPYBase* other)
+bool NPYBase::isEqualTo(NPYBase* other) 
 {
     return isEqualTo(other->getBytes(), other->getNumBytes(0));
 }
 
-bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes)
+bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes) 
 {
     std::string self = getDigestString();
     std::string other = getDigestString(bytes, nbytes);
@@ -611,12 +611,12 @@ bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes)
 
 
 
-std::string NPYBase::getShapeString(unsigned int ifr)
+std::string NPYBase::getShapeString(unsigned int ifr) const 
 {
     return getItemShape(ifr);
 }
 
-std::string NPYBase::getItemShape(unsigned int ifr)
+std::string NPYBase::getItemShape(unsigned int ifr) const 
 {
     std::stringstream ss ; 
     for(size_t i=ifr ; i < m_shape.size() ; i++)
@@ -628,13 +628,13 @@ std::string NPYBase::getItemShape(unsigned int ifr)
 }
 
 
-void NPYBase::Summary(const char* msg)
+void NPYBase::Summary(const char* msg) const 
 {
     std::string desc = description(msg);
     LOG(info) << desc ; 
 }   
 
-std::string NPYBase::description(const char* msg)
+std::string NPYBase::description(const char* msg) const 
 {
     std::stringstream ss ; 
 

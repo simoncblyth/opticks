@@ -96,7 +96,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_vec3(float* m2w, unsigned int npo=100);  
 
        static NPY<T>* make(NPYSpec* spec);
-       static NPY<T>* make(std::vector<int>& shape);
+       static NPY<T>* make(const std::vector<int>& shape);
        static NPY<T>* make(unsigned int ni);
        static NPY<T>* make(unsigned int ni, unsigned int nj );
        static NPY<T>* make(unsigned int ni, unsigned int nj, unsigned int nk );
@@ -124,8 +124,8 @@ class NPY_API NPY : public NPYBase {
        static unsigned _copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
    public:
        // ctor takes ownership of a copy of the inputs 
-       NPY(std::vector<int>& shape, T*  data            , std::string& metadata) ;
-       NPY(std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
+       NPY(const std::vector<int>& shape, T*  data            , std::string& metadata) ;
+       NPY(const std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
 
    public:
        static NPY<T>* debugload(const char* path);
@@ -158,11 +158,13 @@ class NPY_API NPY : public NPYBase {
        T maxdiff(NPY<T>* other, bool dump=false);
    public:
        T* getValues();
+       const T* getValuesConst() const ;
        //unsigned int getNumValues(); tis in base class
        T* begin();
        T* end();
 
        T* getValues(unsigned int i, unsigned int j=0);
+       const T* getValuesConst(unsigned int i, unsigned int j=0) const ;
        void* getBytes();
        void* getPointer();   // aping GBuffer for easier migration
        BBufSpec* getBufSpec();
@@ -272,12 +274,12 @@ class NPY_API NPY : public NPYBase {
 
        // Mat4 
        void         setMat4( const glm::mat4& mat, int i, int j_=-1 , bool transpose=false );
-       glm::mat4    getMat4(int i, int j=-1);
-       glm::mat4*   getMat4Ptr(int i, int j=-1);
+       glm::mat4    getMat4(int i, int j=-1) const ;
+       glm::mat4*   getMat4Ptr(int i, int j=-1) const ;
 
-       nmat4pair*   getMat4PairPtr(int i);
+       nmat4pair*   getMat4PairPtr(int i) const ;
        void         setMat4Pair(const nmat4pair* mpair, unsigned i );
-       nmat4triple* getMat4TriplePtr(int i);
+       nmat4triple* getMat4TriplePtr(int i) const ;
        void         setMat4Triple(const nmat4triple* mpair, unsigned i );
 
 
