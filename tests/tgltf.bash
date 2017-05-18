@@ -93,7 +93,7 @@ pmt = "/dd/Geometry/PMT/lvPmtHemi0xc133740"
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 
 
-gg = make_gdml(worldref=oil, structure_key="pmt2")
+gg = make_gdml(worldref=oil, structure_key="collar")
 wgg = GDML.wrap(gg) 
 
 tree = Tree(wgg.world)

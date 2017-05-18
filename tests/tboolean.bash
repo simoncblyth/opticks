@@ -294,8 +294,8 @@ tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
 
 args = opticks_main()
 
@@ -332,8 +332,8 @@ tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
 
 args = opticks_main()
 
@@ -368,9 +368,9 @@ tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.csg import CSG  
-from opticks.dev.csg.prism import make_prism  
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
+from opticks.analytic.prism import make_prism  
 
 args = opticks_main()
 
@@ -414,9 +414,9 @@ tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.prism import make_trapezoid, make_icosahedron
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.prism import make_trapezoid, make_icosahedron
+from opticks.analytic.csg import CSG  
 
 args = opticks_main()
 
@@ -468,8 +468,8 @@ tboolean-uniontree--(){ cat << EOP
 
 import numpy as np
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.polyconfig import PolyConfig
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
 
 args = opticks_main()
 
@@ -586,7 +586,7 @@ tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/tboolean-complement-
 tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-complement-(){ $FUNCNAME- | python $* ; } 
 tboolean-complement--(){ cat << EOP 
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -651,7 +651,7 @@ tboolean-zsphere-(){ $FUNCNAME- | python $* ; }
 tboolean-zsphere--(){ cat << EOP 
 
 import numpy as np
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -690,7 +690,7 @@ tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; }
 tboolean-union-zsphere--(){ cat << EOP 
 
 import numpy as np
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -735,7 +735,7 @@ tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; }
 tboolean-difference-zsphere--(){ cat << EOP 
 
 import numpy as np
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -789,7 +789,7 @@ EOP
 
 tboolean-box-small-offset-sphere-py(){ $FUNCNAME- | python $* ; } 
 tboolean-box-small-offset-sphere-py-(){ cat << EOP
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("sphere",           param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
@@ -811,7 +811,7 @@ tboolean-bsi(){ TESTCONFIG=$(tboolean-csg-box-sphere-py intersection) tboolean--
 tboolean-csg-box-sphere-py(){ $FUNCNAME- $* | python  ; } 
 tboolean-csg-box-sphere-py-(){ cat << EOP 
 import math
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
@@ -838,7 +838,7 @@ tboolean-csg-sphere-slab(){  $FUNCNAME- | python $* ; }
 tboolean-csg-sphere-slab-(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
@@ -891,7 +891,7 @@ tboolean-sphere-plane(){ TESTCONFIG=$(tboolean-csg-sphere-plane 2>/dev/null)    
 tboolean-csg-sphere-plane(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-sphere-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
@@ -918,7 +918,7 @@ tboolean-box-plane(){ TESTCONFIG=$(tboolean-csg-box-plane 2>/dev/null)    tboole
 tboolean-csg-box-plane(){  $FUNCNAME- | python $* ; } 
 tboolean-csg-box-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
@@ -941,7 +941,7 @@ tboolean-plane(){ TESTCONFIG=$(tboolean-csg-plane 2>/dev/null)    tboolean-- ; }
 tboolean-csg-plane(){ $FUNCNAME- | python $* ; } 
 tboolean-csg-plane-(){ cat << EOP 
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
@@ -977,7 +977,7 @@ tboolean-csg-cylinder(){  $FUNCNAME- | python $* ; }
 tboolean-csg-cylinder-(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
@@ -1027,7 +1027,36 @@ EOP
 
 
 
-tboolean-unbalanced(){   TESTCONFIG=$(tboolean-unbalanced-)  tboolean-- ; }
+
+tboolean-fromstring(){  TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-fromstring-(){ $FUNCNAME- | python ; }
+tboolean-fromstring--(){ cat << EOP
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+from opticks.analytic.gdml import Primitive
+
+args = opticks_main()
+
+
+so = Primitive.fromstring(r"""<tube aunit="deg" deltaphi="360" lunit="mm" name="AdPmtCollar0xc2c5260" rmax="106" rmin="105" startphi="0" z="12.7"/>""")
+
+obj = so.as_ncsg() 
+obj.boundary = "$(tboolean-testobject)"
+
+container = CSG("box", param=[0,0,0,200], boundary="$(tboolean-container)", poly="IM", resolution="20" )
+
+CSG.Serialize([container, obj], "$TMP/$FUNCNAME" )
+
+EOP
+}
+
+
+
+
+
+
+tboolean-unbalanced(){  TESTCONFIG=$($FUNCNAME-)  tboolean-- ; }
 tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
 tboolean-unbalanced--()
 {
@@ -1037,7 +1066,7 @@ tboolean-unbalanced--()
 import math, logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
 args = opticks_main()
 
  
@@ -1163,7 +1192,7 @@ tboolean-gdml-()
           --testobject $(tboolean-testobject) \
           $*
 }
-tboolean-gdml-translator(){ echo $(opticks-home)/dev/csg/translate_gdml.py ; }
+tboolean-gdml-translator(){ echo $(opticks-home)/analytic/translate_gdml.py ; }
 
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-gdml-translator)   ; }
@@ -1189,14 +1218,13 @@ tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean
 
 
 
-tboolean-interlocked(){  TESTCONFIG=$(tboolean-csg-two-box-minus-sphere-interlocked-py) tboolean-- ; }
-tboolean-csg-two-box-minus-sphere-interlocked-py(){ $FUNCNAME- | python $* ; }
-tboolean-csg-two-box-minus-sphere-interlocked-py-()
+tboolean-interlocked(){  TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-interlocked-(){ $FUNCNAME- | python $* ; }
+tboolean-interlocked--()
 {
-    local base=$TMP/$FUNCNAME 
     cat << EOP 
 import math
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.csg import CSG  
   
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)
@@ -1222,11 +1250,13 @@ mc = dict(poly="MC", nx="20")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20" )
 
-CSG.Serialize([container, object], "$base" )
-# marching cubes with nx=15 makes a mess with this 
+CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
 EOP
 }
+
+
+
 
 
 

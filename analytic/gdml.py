@@ -372,6 +372,12 @@ class Primitive(Geometry):
     y = property(lambda self:self.att('y', 0, typ=float))
     z = property(lambda self:self.att('z', 0, typ=float))
 
+    @classmethod
+    def fromstring(cls, st ):
+        gg = GDML.fromstring("<gdml><solids>" + st + "</solids></gdml>")
+        so = gg.solids(-1)   # pick last to allow composite booleans
+        return so
+
     def __repr__(self):
         return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
@@ -387,11 +393,18 @@ class Tube(Primitive):
         cn.param1[1] = z2
         return cn
 
-    def as_ncsg(self):
+    def as_ncsg(self, nudge_inner=0.01):
         hz = self.z/2.
         has_inner = self.rmin > 0.
-        inner = self.make_cylinder(self.rmin, -hz, hz, self.name + "_inner") if has_inner else None
+
+        if has_inner:
+            dz = hz*nudge_inner 
+            inner = self.make_cylinder(self.rmin, -(hz+dz), (hz+dz), self.name + "_inner") 
+        else:
+            inner = None
+        pass
         outer = self.make_cylinder(self.rmax, -hz, hz, self.name + "_outer" )
+
         return  CSG("difference", left=outer, right=inner, name=self.name + "_difference" ) if has_inner else outer
 
 
@@ -944,6 +957,13 @@ class GDML(G):
         return wgg 
 
     @classmethod
+    def fromstring(cls, st ):
+        log.info("parsing string %s " % st )
+        gg = ET.fromstring(st) 
+        wgg = cls.wrap(gg)
+        return wgg 
+
+    @classmethod
     def wrap(cls, gdml, path=None):
         log.info("wrapping gdml element  ")
         gg = cls(gdml)
@@ -986,7 +1006,8 @@ class GDML(G):
             e.idx = i
             self.volumes[e.name] = e
         pass
-        self.worldvol = self.elem.find("setup/world").attrib["ref"]
+        self.setup_world = self.elem.find("setup/world")
+        self.worldvol = self.setup_world.attrib["ref"] if self.setup_world is not None else None
 
         self.lv2so = dict([(v.idx, v.solid.idx) for v in self.volumes.values()])
 
@@ -1042,6 +1063,27 @@ def test_gdml(g):
     g.world.rdump()
     g.volumes["/dd/Geometry/PMT/lvPmtHemi0xc133740"].rdump()
 
+def test_trd(g):
+    trs = g.findall_("solids//trd")
+    cns = []
+    for i,tr in enumerate(trs):
+        cn = tr.as_ncsg()
+        cns.append(cn)
+ 
+
+def test_gdml_fromstring():
+    gg = GDML.fromstring(r"""<gdml><solids><tube aunit="deg" deltaphi="360" lunit="mm" name="AdPmtCollar0xc2c5260" rmax="106" rmin="105" startphi="0" z="12.7"/></solids></gdml>""")    
+    so = gg.solids(0)
+    assert type(so) is Tube
+    cn = so.as_ncsg()
+    assert cn.typ == cn.DIFFERENCE
+
+def test_primitive_fromstring():
+    so = Primitive.fromstring(r"""<tube aunit="deg" deltaphi="360" lunit="mm" name="AdPmtCollar0xc2c5260" rmax="106" rmin="105" startphi="0" z="12.7"/>""")
+    assert type(so) is Tube
+    cn = so.as_ncsg()
+    assert cn.typ == cn.DIFFERENCE
+
 
 
 
@@ -1058,18 +1100,23 @@ if __name__ == '__main__':
 
     g = GDML.parse(gdmlpath)
 
-
     from opticks.analytic.treebase import Tree
     t = Tree(g.world) 
 
     test_children(t)
     test_polycone(g)
+    test_trd(g)
 
-    trs = g.findall_("solids//trd")
-    cns = []
-    for i,tr in enumerate(trs):
-        cn = tr.as_ncsg()
-        cns.append(cn)
-    
+    test_gdml_fromstring()
+    test_primitive_fromstring()
+
+
+
+
+
+
+
+
+   
 
 
