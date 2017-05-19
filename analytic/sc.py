@@ -181,8 +181,9 @@ class Sc(object):
 
 
         nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
-
         mesh = self.get_mesh( lvIdx )
+        assert nd.mesh == mesh 
+
         if getattr(mesh,'csg',None) is None:
             mesh.csg = translate_lv( node.lv )
         pass

@@ -290,7 +290,7 @@ class CSG(CSG_):
         return planes
 
 
-    def serialize(self):
+    def serialize(self, suppress_identity=False):
         """
         Array is sized for a complete tree, empty slots stay all zero
         """
@@ -306,8 +306,10 @@ class CSG(CSG_):
             :param idx: 0-based complete binary tree index, left:2*idx+1, right:2*idx+2 
             """
             trs = node.transform  
-            if trs is None and idx == 0:
-                trs = np.eye(4, dtype=np.float32)  # make sure root node always has a transform, incase of global placement 
+            if trs is None and suppress_identity == False:
+                trs = np.eye(4, dtype=np.float32)  
+                # make sure root node always has a transform, incase of global placement 
+                # hmm root node is just an op-node it doesnt matter, need transform slots for all primitives 
             pass
 
             if trs is None:
@@ -316,6 +318,7 @@ class CSG(CSG_):
                 itransform = len(transforms) + 1  # 1-based index pointing to the transform
                 transforms.append(trs)
             pass
+
 
             node_planes = node.planes
             if len(node_planes) == 0:
@@ -326,6 +329,7 @@ class CSG(CSG_):
                 planeNum = len(node_planes)
                 planes.extend(node_planes)
             pass 
+            log.info("serialize_r idx %3d itransform %2d planeIdx %2d " % (idx, itransform, planeIdx))
 
             buf[idx] = node.as_array(itransform, planeIdx, planeNum)
 

@@ -38,7 +38,7 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
         unsigned gtransformIdx = pt.gtransformIdx() ;  //  gtransformIdx is 1-based, 0 meaning None
         bool complement = pt.complement() ; 
     
-        rtPrintf("##csg_bounds_prim primIdx %3d nodeIdx %2u depth %2d elev %2d typecode %2u gtransformIdx %2u complement %d \n", primIdx, nodeIdx, depth, elev, typecode, gtransformIdx, complement );
+        rtPrintf("##csg_bounds_prim primIdx %3d nodeIdx %2u depth %2d elev %2d typecode %2u tranOffset %2d gtransformIdx %2u complement %d \n", primIdx, nodeIdx, depth, elev, typecode, tranOffset, gtransformIdx, complement );
 
         if(gtransformIdx == 0)
         {
@@ -65,6 +65,18 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
                 return ;  
             }
             optix::Matrix4x4 tr = tranBuffer[trIdx] ; 
+            optix::Matrix4x4 vt = tranBuffer[trIdx+1] ;  // inverse transform 
+
+            rtPrintf("\n%8.3f %8.3f %8.3f %8.3f   (trIdx:%3d)[vt]\n%8.3f %8.3f %8.3f %8.3f\n", 
+                  vt[0], vt[1], vt[2], vt[3], trIdx,
+                  vt[4], vt[5], vt[6], vt[7]  
+                 );  
+            rtPrintf("\n%8.3f %8.3f %8.3f %8.3f   (trIdx:%3d)[vt]\n%8.3f %8.3f %8.3f %8.3f\n",
+                     vt[8], vt[9], vt[10], vt[11], trIdx,
+                    vt[12], vt[13], vt[14], vt[15]
+                  );
+
+
             switch(typecode)
             {
                 case CSG_SPHERE:    csg_bounds_sphere(   pt.q0,               aabb, &tr ); break ;

@@ -1,8 +1,6 @@
 GDML-glTF Geometry Route Transform Debug
 ===========================================
 
-
-
 Review Transforms
 ------------------
 
@@ -181,23 +179,6 @@ geometry. This doesnt change referencing, just all transforms for each node tree
     /tmp/blyth/opticks/tgltf/tgltf-gdml--.gltf
 
 
-All three CSG trees have at least one transform::
-
-    delta:issues blyth$ head -1 /tmp/blyth/opticks/tgltf/extras/0/transforms.npy 
-    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (4, 4, 4), }       
-    delta:issues blyth$ 
-    delta:issues blyth$ head -1 /tmp/blyth/opticks/tgltf/extras/*/transforms.npy 
-    ==> /tmp/blyth/opticks/tgltf/extras/0/transforms.npy <==
-    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (4, 4, 4), }       
-
-    ==> /tmp/blyth/opticks/tgltf/extras/1/transforms.npy <==
-    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (1, 4, 4), }       
-
-    ==> /tmp/blyth/opticks/tgltf/extras/2/transforms.npy <==
-    ?NUMPYF{'descr': '<f4', 'fortran_order': False, 'shape': (1, 4, 4), }       
-    delta:issues blyth$ 
-
-
 
 Perhaps simpler not to attempt to change transforms, rather get 
 them correct first time via providing a top transform input to the 
@@ -287,6 +268,388 @@ After arrange to always have gtransforms slots for meshes that are used globally
      mid    1 prm    1 nam                               /dd/Geometry/PMT/lvPmtHemi0xc133740 iug 1 smry  ht  3 nn   15 tri   8308 tmsg  iug 1 nd 15,4,4 tr 4,3,4,4 gtr 4,3,4,4 pln NULL
      mid    2 prm    1 nam                           /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 iug 1 smry  ht  1 nn    3 tri     12 tmsg PLACEHOLDER iug 1 nd 3,4,4 tr 1,3,4,4 gtr 1,3,4,4 pln NULL
     2017-05-17 13:43:43.718 INFO  [1838644] [GScene::importMeshes@60] GScene::importMeshes num_meshes 3
+
+
+
+
+Issue : PMT gets scrambled when apply global placement transform
+-------------------------------------------------------------------
+
+Skipping the physvol rotation, the PMT stays unscrambled but pointing in wrong position after 
+placement. 
+
+
+Better way, use the prexisting::
+
+    In [13]: sc.get_node(1).mesh
+    Out[13]: Mh    0 :              pmt-hemi0xc0fed90 /dd/Geometry/PMT/lvPmtHemi0xc133740 
+
+    In [14]: sc.get_node(1).mesh.csg
+    Out[14]: un(in(in(sp,sp),sp),cy)height:3 totnodes:15 
+
+    In [15]: print sc.get_node(1).mesh.csg.txt
+                         un    
+                 in          cy
+         in          sp        
+     sp      sp                
+
+
+    ::
+
+                      0
+
+                 1         2
+           3        4         
+       7     8      
+
+::
+
+    2017-05-19 13:55:54.372 INFO  [2272564] [GParts::dump@1068] GParts::dump ni 16
+         0.0000      0.0000      0.0000   2488.0000 
+     -2477.5000   2477.5000     123 <-bnd        0 <-INDEX    bn Vacuum///MineralOil 
+         0.0000      0.0000      0.0000          12 (cylinder) TYPECODE 
+         0.0000      0.0000      0.0000           1 (nodeIndex) 
+
+
+    0:
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      27 <-bnd        1 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           1 (union) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+    1:
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      27 <-bnd        2 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           2 (intersection) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+    2:
+         0.0000      0.0000      0.0000     42.2500 
+       -84.5000     84.5000      27 <-bnd        3 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000          12 (cylinder) TYPECODE 
+         0.0000      0.0000      0.0000           4 (nodeIndex) 
+
+    3:
+         0.0000      0.0000      0.0000      0.0000 
+         0.0000      0.0000      27 <-bnd        4 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           2 (intersection) TYPECODE 
+         0.0000      0.0000      0.0000           0 (nodeIndex) 
+
+    4:
+         0.0000      0.0000      0.0000    102.0000 
+         0.0000      0.0000      27 <-bnd        5 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           5 (sphere) TYPECODE 
+         0.0000      0.0000      0.0000           3 (nodeIndex) 
+
+    7:
+         0.0000      0.0000      0.0000    131.0000 
+         0.0000      0.0000      27 <-bnd        8 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           5 (sphere) TYPECODE 
+         0.0000      0.0000      0.0000           1 (nodeIndex) 
+
+    8:
+         0.0000      0.0000      0.0000    102.0000 
+         0.0000      0.0000      27 <-bnd        9 <-INDEX    bn MineralOil///Pyrex 
+         0.0000      0.0000      0.0000           5 (sphere) TYPECODE 
+         0.0000      0.0000      0.0000           2 (nodeIndex) 
+
+
+
+
+After avoiding identity suppression have 4 transforms for the 4 primitives (3 sp and 1 cy),
+which are identity for the first sp and model frame z-shifts for the rest. 
+
+::
+
+    2017-05-19 13:55:53.196 INFO  [2272564] [GParts::applyGlobalPlacementTransform@489] GParts::applyGlobalPlacementTransform tran_buffer 4,3,4,4 ni 4
+    2017-05-19 13:55:53.196 INFO  [2272564] [nmat4triple::dump@456] GParts::applyGlobalPlacementTransform before
+      0 tvq 
+      triple.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000   0.000   1.000 
+
+      triple.v  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000   0.000   1.000 
+
+      triple.q  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000   0.000   1.000 
+
+
+      1 tvq 
+      triple.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000  43.000   1.000 
+
+      triple.v  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -43.000   1.000 
+
+      triple.q  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000 -43.000 
+                0.000   0.000   0.000   1.000 
+
+
+      2 tvq 
+      triple.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000  69.000   1.000 
+
+      triple.v  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -69.000   1.000 
+
+      triple.q  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000 -69.000 
+                0.000   0.000   0.000   1.000 
+
+
+      3 tvq 
+      triple.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -84.500   1.000 
+
+      triple.v  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000  84.500   1.000 
+
+      triple.q  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000  84.500 
+                0.000   0.000   0.000   1.000 
+
+
+2017-05-19 13:55:53.196 INFO  [2272564] [nmat4triple::dump@456] GParts::applyGlobalPlacementTransform after
+  0 tvq 
+  triple.t  0.000  -0.000   1.000   0.000 
+            0.131  -0.991  -0.000   0.000 
+            0.991   0.131   0.000   0.000 
+          -2304.614 -303.408 -1750.000   1.000 
+
+  triple.v  0.000   0.131   0.991   0.000 
+           -0.000  -0.991   0.131   0.000 
+            1.000  -0.000   0.000   0.000 
+          1750.000  -0.000 2324.500   1.000 
+
+  triple.q  0.000  -0.000   1.000 1750.000 
+            0.131  -0.991  -0.000  -0.000 
+            0.991   0.131   0.000 2324.500 
+            0.000   0.000   0.000   1.000 
+
+
+  1 tvq 
+  triple.t  0.000  -0.000   1.000   0.000 
+            0.131  -0.991  -0.000   0.000 
+            0.991   0.131   0.000   0.000 
+          -2304.614 -303.408 -1707.000   1.000     # -1707 - (-1750) = 43
+
+  triple.v  0.000   0.131   0.991   0.000 
+           -0.000  -0.991   0.131   0.000 
+            1.000  -0.000   0.000   0.000 
+          1707.000  -0.000 2324.500   1.000 
+
+  triple.q  0.000  -0.000   1.000 1707.000 
+            0.131  -0.991  -0.000  -0.000 
+            0.991   0.131   0.000 2324.500 
+            0.000   0.000   0.000   1.000 
+
+
+  2 tvq 
+  triple.t  0.000  -0.000   1.000   0.000 
+            0.131  -0.991  -0.000   0.000 
+            0.991   0.131   0.000   0.000 
+          -2304.614 -303.408 -1681.000   1.000    # -1681 - (-1750) = 69 
+
+  triple.v  0.000   0.131   0.991   0.000 
+           -0.000  -0.991   0.131   0.000 
+            1.000  -0.000   0.000   0.000 
+          1681.000  -0.000 2324.500   1.000 
+
+  triple.q  0.000  -0.000   1.000 1681.000 
+            0.131  -0.991  -0.000  -0.000 
+            0.991   0.131   0.000 2324.500 
+            0.000   0.000   0.000   1.000 
+
+
+  3 tvq 
+  triple.t  0.000  -0.000   1.000   0.000 
+            0.131  -0.991  -0.000   0.000 
+            0.991   0.131   0.000   0.000 
+          -2304.614 -303.408 -1834.500   1.000   # -1834.5 - (-1750) = -84.5
+
+  triple.v  0.000   0.131   0.991   0.000 
+           -0.000  -0.991   0.131   0.000 
+            1.000  -0.000   0.000   0.000 
+          1834.500  -0.000 2324.500   1.000 
+
+  triple.q  0.000  -0.000   1.000 1834.500 
+            0.131  -0.991  -0.000  -0.000 
+            0.991   0.131   0.000 2324.500 
+            0.000   0.000   0.000   1.000 
+
+
+::
+
+
+    ## intersect_analytic.cu:bounds pts:  16 pln:   0 trs:  15 
+    ##csg_bounds_prim primIdx   0 partOffset   0 numParts   1 height  0 numNodes  1 tranBuffer_size  15 
+    ##csg_bounds_prim primIdx   1 partOffset   1 numParts  15 height  3 numNodes 15 tranBuffer_size  15 
+
+    ##csg_bounds_prim primIdx   0 nodeIdx  1 depth  0 elev  0 typecode 12 tranOffset  0 gtransformIdx  1 complement 0    ##cy
+    ## csg_bounds_cylinder center   0.000   0.000  radius 2488.000 z1 -2477.500 z2 2477.500 
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  8 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  1 complement 0    ##sp
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  9 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  2 complement 0    ##sp
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  4 depth  2 elev  1 typecode  2 tranOffset  1 gtransformIdx  0 complement 0    ##in
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  5 depth  2 elev  1 typecode  5 tranOffset  1 gtransformIdx  3 complement 0    ##sp
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  2 depth  1 elev  2 typecode  2 tranOffset  1 gtransformIdx  0 complement 0    ##in
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  3 depth  1 elev  2 typecode 12 tranOffset  1 gtransformIdx  4 complement 0    ##cy
+    ## csg_bounds_cylinder center   0.000   0.000  radius  42.250 z1 -84.500 z2  84.500 
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  1 depth  0 elev  3 typecode  1 tranOffset  1 gtransformIdx  0 complement 0    ##un
+
+
+    ##intersect_analytic.cu:bounds primIdx 0 primFlag 101 min -2488.0000 -2488.0000 -2477.5000 max  2488.0000  2488.0000  2477.5000 
+    ##intersect_analytic.cu:bounds primIdx 1 primFlag 101 min -2451.5918  -450.3864 -1881.0000 max -2157.6353  -156.4299 -1579.0000     
+
+
+
+
+::
+
+    ## intersect_analytic.cu:bounds pts:  16 pln:   0 trs:  15 
+    ##csg_bounds_prim primIdx   0 partOffset   0 numParts   1 height  0 numNodes  1 tranBuffer_size  15 
+    ##csg_bounds_prim primIdx   1 partOffset   1 numParts  15 height  3 numNodes 15 tranBuffer_size  15 
+    ##csg_bounds_prim primIdx   0 nodeIdx  1 depth  0 elev  0 typecode 12 tranOffset  0 gtransformIdx  1 complement 0 
+    ## trIdx   0
+       1.000    0.000    0.000    0.000
+       0.000    1.000    0.000    0.000
+       0.000    0.000    1.000    0.000
+       0.000    0.000    0.000    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  8 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  1 complement 0 
+    ## trIdx   3
+       0.000   -0.000    1.000    0.000
+       0.131   -0.991   -0.000    0.000
+       0.991    0.131    0.000    0.000
+    -2304.614 -303.408 -1750.000    1.000
+
+    ## csg_bounds_cylinder center   0.000   0.000  radius 2488.000 z1 -2477.500 z2 2477.500 
+    ##csg_bounds_prim primIdx   1 nodeIdx  9 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  2 complement 0 
+    ## trIdx   6
+       0.000   -0.000    1.000    0.000
+       0.131   -0.991   -0.000    0.000
+       0.991    0.131    0.000    0.000
+    -2304.614 -303.408 -1707.000    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  4 depth  2 elev  1 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 10 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 11 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  5 depth  2 elev  1 typecode  5 tranOffset  1 gtransformIdx  3 complement 0 
+    ## trIdx   9
+       0.000   -0.000    1.000    0.000
+       0.131   -0.991   -0.000    0.000
+       0.991    0.131    0.000    0.000
+    -2304.614 -303.408 -1681.000    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  2 depth  1 elev  2 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 12 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 13 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  6 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 14 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 15 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  7 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  3 depth  1 elev  2 typecode 12 tranOffset  1 gtransformIdx  4 complement 0 
+    ## trIdx  12
+       0.000   -0.000    1.000    0.000
+       0.131   -0.991   -0.000    0.000
+       0.991    0.131    0.000    0.000
+    -2304.614 -303.408 -1834.500    1.000
+    ## csg_bounds_cylinder center   0.000   0.000  radius  42.250 z1 -84.500 z2  84.500 
+    ##csg_bounds_prim primIdx   1 nodeIdx  1 depth  0 elev  3 typecode  1 tranOffset  1 gtransformIdx  0 complement 0 
+    ##intersect_analytic.cu:bounds primIdx 0 primFlag 101 min -2488.0000 -2488.0000 -2477.5000 max  2488.0000  2488.0000  2477.5000 
+    ##intersect_analytic.cu:bounds primIdx 1 primFlag 101 min -2451.5918  -450.3864 -1881.0000 max -2157.6353  -156.4299 -1579.0000 
+
+
+
+
+
+
+
+
+
+    ## intersect_analytic.cu:bounds pts:  16 pln:   0 trs:  15 
+    ##csg_bounds_prim primIdx   0 partOffset   0 numParts   1 height  0 numNodes  1 tranBuffer_size  15 
+    ##csg_bounds_prim primIdx   1 partOffset   1 numParts  15 height  3 numNodes 15 tranBuffer_size  15 
+    ##csg_bounds_prim primIdx   0 nodeIdx  1 depth  0 elev  0 typecode 12 tranOffset  0 gtransformIdx  1 complement 0 
+
+   1.000    0.000    0.000    0.000   (trIdx:  0)[vt]
+   0.000    1.000    0.000    0.000
+   0.000    0.000    1.000    0.000   (trIdx:  0)[vt]
+   0.000    0.000    0.000    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  8 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  1 complement 0 
+
+   0.000    0.131    0.991    0.000   (trIdx:  3)[vt]
+  -0.000   -0.991    0.131    0.000
+   1.000   -0.000    0.000    0.000   (trIdx:  3)[vt]
+1750.000   -0.000 2324.500    1.000
+
+
+    ## csg_bounds_cylinder center   0.000   0.000  radius 2488.000 z1 -2477.500 z2 2477.500 
+    ##csg_bounds_prim primIdx   1 nodeIdx  9 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  2 complement 0 
+
+   0.000    0.131    0.991    0.000   (trIdx:  6)[vt]
+  -0.000   -0.991    0.131    0.000
+   1.000   -0.000    0.000    0.000   (trIdx:  6)[vt]
+1707.000   -0.000 2324.500    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  4 depth  2 elev  1 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 10 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 11 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  5 depth  2 elev  1 typecode  5 tranOffset  1 gtransformIdx  3 complement 0 
+
+   0.000    0.131    0.991    0.000   (trIdx:  9)[vt]
+  -0.000   -0.991    0.131    0.000
+   1.000   -0.000    0.000    0.000   (trIdx:  9)[vt]
+1681.000   -0.000 2324.500    1.000
+
+    ##csg_bounds_prim primIdx   1 nodeIdx  2 depth  1 elev  2 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 12 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 13 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  6 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 14 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx 15 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  7 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
+    ##csg_bounds_prim primIdx   1 nodeIdx  3 depth  1 elev  2 typecode 12 tranOffset  1 gtransformIdx  4 complement 0 
+
+   0.000    0.131    0.991    0.000   (trIdx: 12)[vt]
+  -0.000   -0.991    0.131    0.000
+   1.000   -0.000    0.000    0.000   (trIdx: 12)[vt]
+1834.500   -0.000 2324.500    1.000
+
+
+    ## csg_bounds_cylinder center   0.000   0.000  radius  42.250 z1 -84.500 z2  84.500 
+
+
+
 
 
 
