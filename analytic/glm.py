@@ -150,7 +150,7 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
     Translation of npy/tests/NGLMTest.cc:make_mat
     """
 
-    if tla is None and rot is None and sca is None:
+    if tla is None and rot is None and sca is None and suppress_identity:
         return None
 
     identity = np.eye(4, dtype=dtype)

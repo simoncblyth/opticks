@@ -226,7 +226,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
         NCSG* tree = trees[i] ; 
 
-        GSolid* solid = m_maker->makeFromCSG(tree);
+        GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
 
         GParts* pts = solid->getParts();
 

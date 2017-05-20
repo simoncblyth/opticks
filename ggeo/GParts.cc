@@ -31,19 +31,20 @@ const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;
 
 
 
-GParts* GParts::combine(GParts* onesub)
+GParts* GParts::combine(GParts* onesub, unsigned verbosity)
 {
     // for consistency: need to combine even when only one sub
     std::vector<GParts*> subs ; 
     subs.push_back(onesub); 
-    return GParts::combine(subs);
+    return GParts::combine(subs, verbosity );
 }
 
 
-GParts* GParts::combine(std::vector<GParts*> subs)
+GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
 {
     // Concatenate vector of GParts instances into a single GParts instance
-    LOG(fatal) << "GParts::combine " << subs.size() ; 
+    if(verbosity > 1)
+    LOG(info) << "GParts::combine " << subs.size() ; 
 
     GParts* parts = new GParts(); 
 
@@ -73,7 +74,7 @@ GParts* GParts::combine(std::vector<GParts*> subs)
             assert(av == analytic_version && "GParts::combine requires all GParts instances to have the same analytic_version " );   
 
 
-        parts->add(sp);
+        parts->add(sp, verbosity );
 
         if(!bndlib) bndlib = sp->getBndLib(); 
     } 
@@ -158,7 +159,7 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 const int GParts::NTRAN = 3 ; 
 
 
-GParts* GParts::make( NCSG* tree, const char* spec )
+GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
 {
     assert(spec);
 
@@ -166,10 +167,15 @@ GParts* GParts::make( NCSG* tree, const char* spec )
 
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = usedglobally ? tree->getGTransformBuffer()->clone() : tree->getGTransformBuffer() ; 
-    NPY<float>* planbuf = tree->getPlaneBuffer();       // <-- probably will need to clone this one too for usedglobally ?? 
+    NPY<float>* planbuf = tree->getPlaneBuffer();  
 
+    // if any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
+    //
+    //   1. clone the PlaneBuffer above
+    //   2. transform the planes with the global transform, do this in applyGlobalPlacementTransform 
+    //
 
-
+    if(verbosity > 1)
     LOG(info) << "GParts::make(NCSG)"
               << " tree " << std::setw(5) << tree->getIndex()
               << " usedglobally " << std::setw(1) << usedglobally 
@@ -510,11 +516,22 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned 
     nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform after");
 
 
+    assert(m_plan_buffer->hasShape(-1,4));
+
+    unsigned nplane = m_plan_buffer->getNumItems();
+    if(nplane > 0 )
+    {
+        assert(0 && "plane global placement not implemented" );
+    }
+
+
+
+
 }
 
 
 
-void GParts::add(GParts* other)
+void GParts::add(GParts* other, unsigned verbosity )
 {
     if(getBndLib() == NULL)
     {
@@ -552,6 +569,9 @@ void GParts::add(GParts* other)
         setIndex(p, p);
     }
 
+
+
+    if(verbosity > 2)
     LOG(info) 
               << " n0 " << std::setw(3) << n0  
               << " n1 " << std::setw(3) << n1
@@ -562,6 +582,7 @@ void GParts::add(GParts* other)
               << " other_tran_buffer  " << other_tran_buffer->getShapeString()
               << " other_plan_buffer  " << other_plan_buffer->getShapeString()
               ;  
+    
 }
 
 void GParts::setContainingMaterial(const char* material)

@@ -21,6 +21,8 @@ int main(int argc, char** argv)
     
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
 
+    unsigned verbosity = 1 ; 
+
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {   
         nnode* n = *it ; 
@@ -30,7 +32,7 @@ int main(int argc, char** argv)
 
         NCSG* tree = NCSG::FromNode( n , spec );  // TODO: eliminate spec from NCSG 
 
-        GParts* pts = GParts::make( tree, spec ) ; 
+        GParts* pts = GParts::make( tree, spec, verbosity ) ; 
         pts->dump("GPartsTest");
 
     }

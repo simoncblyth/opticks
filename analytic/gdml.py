@@ -202,7 +202,7 @@ def construct_transform(obj):
     rot = obj.rotation.xyz if obj.rotation is not None else None
     sca = obj.scale.xyz if obj.scale is not None else None
     order = "trs"
-    return make_transform( order, tla, rot, sca , three_axis_rotate=True, transpose_rotation=True, dtype=np.float32 )
+    return make_transform( order, tla, rot, sca , three_axis_rotate=True, transpose_rotation=True, suppress_identity=False, dtype=np.float32 )
 
 
 class G(object):
@@ -301,6 +301,8 @@ class Scale(Transform):
 class Geometry(G):
     def as_ncsg(self):
         assert 0, "Geometry.as_ncsg needs to be overridden in the subclass: %s " % self.__class__ 
+
+
 
     def _get_subsolids(self):
         ss = []
@@ -950,7 +952,10 @@ class GDML(G):
     }
 
     @classmethod
-    def parse(cls, path):
+    def parse(cls, path=None):
+        if path is None:
+            path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
+        pass
         log.info("parsing gdmlpath %s " % path )
         gg = parse_(path)
         wgg = cls.wrap(gg, path=path)

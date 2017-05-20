@@ -42,8 +42,8 @@ void GScene::init()
 
     m_root = createVolumeTree(m_scene) ;
 
-    createInstancedMergedMeshes(true, m_verbosity);
-    dumpMergedMeshes();
+    createInstancedMergedMeshes(true);
+    checkMergedMeshes();
 }
 
 
@@ -109,7 +109,8 @@ void GScene::dumpMeshes()
 
 GSolid* GScene::createVolumeTree(NScene* scene)
 {
-    LOG(info) << "GScene::createVolumeTree START" ; 
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::createVolumeTree START verbosity " << m_verbosity  ; 
     assert(scene);
 
     //scene->dumpNdTree("GScene::createVolumeTree");
@@ -117,10 +118,10 @@ GSolid* GScene::createVolumeTree(NScene* scene)
     nd* root_nd = scene->getRoot() ;
     assert(root_nd->idx == 0 );
 
-
     GSolid* root = createVolumeTree_r( root_nd, NULL );
     assert(root);
 
+    if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
     return root ; 
 }
@@ -203,7 +204,7 @@ GSolid* GScene::createVolume(nd* n)
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 
 
-    GParts* pts = GParts::make( csg, spec  ); // amplification from mesh level to node level 
+    GParts* pts = GParts::make( csg, spec, m_verbosity  ); // amplification from mesh level to node level 
 
 
     pts->setBndLib(m_bndlib);
@@ -212,7 +213,7 @@ GSolid* GScene::createVolume(nd* n)
 
     solid->setRepeatIndex( n->repeatIdx ); 
 
-
+    if(m_verbosity > 1) 
     LOG(info) << "GScene::createVolume"
               << " node_idx " << std::setw(5) << node_idx 
               << " mesh_idx " << std::setw(3) << mesh_idx 
@@ -246,6 +247,7 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
     GMatrixF* ctransform = solid->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
 
+    if(m_verbosity > 1)
     std::cout << "GScene::deltacheck_r gtransform " << gtransform->brief(7) << std::endl  ;
 
     assert(delta < 1e-6) ;
@@ -256,26 +258,30 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
-void GScene::createInstancedMergedMeshes(bool delta, unsigned verbosity)
+void GScene::createInstancedMergedMeshes(bool delta)
 {
     if(delta)
     {  
         deltacheck();
     }
 
-    makeMergedMeshAndInstancedBuffers(verbosity) ; 
+    makeMergedMeshAndInstancedBuffers() ; 
 }
 
 
 
-void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
+void GScene::makeMergedMeshAndInstancedBuffers()
 {
-    
     unsigned num_repeats = m_scene->getNumRepeats(); // global 0 included
     unsigned nmm_created = 0 ; 
 
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers num_repeats " << num_repeats << " START " ;  
+
+
     for(unsigned ridx=0 ; ridx < num_repeats ; ridx++)
     {
+         if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
 
          bool inside = ridx == 0 ? true : false ; 
@@ -292,7 +298,7 @@ void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          GSolid* base = ridx == 0 ? NULL : instance0 ; 
 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root, verbosity );   // TODO: check off-by-1 in base transforms
+         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root, m_verbosity );   
 
          assert(mm);
 
@@ -300,6 +306,7 @@ void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
 
+         if(m_verbosity > 1)
          std::cout << "GScene::makeMergedMeshAndInstancedBuffers"
                    << " ridx " << ridx 
                    << " mm " << mm->getIndex()
@@ -311,13 +318,15 @@ void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
          GMergedMesh* mmc = m_ggeo->getMergedMesh(ridx);
          assert(mmc == mm);
 
+         if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " DONE " ;  
     }
 
     unsigned nmm = m_ggeo->getNumMergedMesh();
    
      
-    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers"
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers DONE"
               << " num_repeats " << num_repeats
               << " nmm_created " << nmm_created
               << " nmm " << nmm
@@ -329,7 +338,7 @@ void GScene::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 }
 
 
-void GScene::dumpMergedMeshes()
+void GScene::checkMergedMeshes()
 {
     int nmm = m_ggeo->getNumMergedMesh();
     int mia = 0 ;
@@ -337,11 +346,13 @@ void GScene::dumpMergedMeshes()
     for(int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        std::cout << std::setw(4) << i << " mm? " << (mm ? int(mm->getIndex()) : -1 ) << std::endl ; 
+        if(m_verbosity > 2) 
+        std::cout << "GScene::checkMergedMeshes i:" << std::setw(4) << i << " mm? " << (mm ? int(mm->getIndex()) : -1 ) << std::endl ; 
         if(mm == NULL) mia++ ; 
     } 
 
-    LOG(info) << "GScene::dumpMergedMeshes" 
+    if(m_verbosity > 2 || mia != 0)
+    LOG(info) << "GScene::checkMergedMeshes" 
               << " nmm " << nmm
               << " mia " << mia
               ;
@@ -357,6 +368,7 @@ void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx)
     const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside );
     unsigned num_instances = instances.size(); 
 
+    if(m_verbosity > 1) 
     LOG(info) << "GScene::makeInstancedBuffers" 
               << " ridx " << std::setw(3) << ridx
               << " num_instances " << std::setw(5) << num_instances

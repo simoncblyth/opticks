@@ -57,6 +57,8 @@ void GMakerTest::makeFromCSG()
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 
+    unsigned verbosity = 1 ; 
+
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
         nnode* n = *it ; 
@@ -64,7 +66,7 @@ void GMakerTest::makeFromCSG()
 
         NCSG* csg = NCSG::FromNode( n, spec );
 
-        GSolid* solid = m_maker->makeFromCSG(csg);
+        GSolid* solid = m_maker->makeFromCSG(csg, verbosity );
 
         GMesh* mesh = solid->getMesh();
 

@@ -63,9 +63,9 @@ class GGEO_API GScene
         void           deltacheck(); 
         void           deltacheck_r( GNode* node, unsigned int depth );
    private:
-        void         createInstancedMergedMeshes(bool deltacheck, unsigned verbosity);
-        void         dumpMergedMeshes();
-        void         makeMergedMeshAndInstancedBuffers(unsigned verbosity) ; 
+        void         createInstancedMergedMeshes(bool deltacheck);
+        void         checkMergedMeshes();
+        void         makeMergedMeshAndInstancedBuffers() ; 
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
 
         NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);

@@ -75,13 +75,13 @@ class TreeBuilder(object):
         """
         def build_r(elevation, operator):
             if elevation > 1:
-                node = CSG(operator)
+                node = CSG(operator, name="treebuilder_midop")
                 node.left  = build_r(elevation-1, operator) 
                 node.right = build_r(elevation-1, operator)
             else:
-                node = CSG(operator)
-                node.left = CSG(CSG.ZERO)
-                node.right = CSG(CSG.ZERO)
+                node = CSG(operator, name="treebuilder_bileaf")
+                node.left = CSG(CSG.ZERO, name="treebuilder_bileaf_left")
+                node.right = CSG(CSG.ZERO, name="treebuilder_bilead_right")
             pass
             return node  
         pass
@@ -454,6 +454,9 @@ class CSG(CSG_):
         else:
             typ = typ_  
         pass
+
+        assert name is not None and len(name) > 0
+
 
         type_ok = type(typ) is int and typ > -1 
         if not type_ok:

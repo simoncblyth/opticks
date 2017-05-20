@@ -56,6 +56,11 @@ void NGLTF::load()
     }
 
     m_fgltf = ygltf::flatten_gltf(m_gltf, m_scene_idx); 
+
+
+    LOG(info) << "NGLTF::load DONE"
+              ;
+
 }
 
 void NGLTF::collect()

@@ -602,11 +602,13 @@ void GMesh::allocate()
     unsigned int numFaces = getNumFaces();
     unsigned int numSolids = getNumSolids();
 
+    /*
     LOG(info) << "GMesh::allocate"
               << " numVertices " << numVertices
               << " numFaces " << numFaces
               << " numSolids " << numSolids
               ;
+    */
 
     assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
 
@@ -633,7 +635,7 @@ void GMesh::allocate()
     setIdentity(new guint4[numSolids]);
     setTransforms(new float[numSolids*16]);
 
-    LOG(info) << "GMesh::allocate DONE " ;
+    //LOG(info) << "GMesh::allocate DONE " ;
 }
 
 
@@ -849,6 +851,7 @@ float* GMesh::getTransform(unsigned int index)
 {
     if(index >= m_num_solids)
     {
+       // assert(0);
         LOG(warning) << "GMesh::getTransform out of bounds " 
                      << " m_num_solids " << m_num_solids 
                      << " index " << index

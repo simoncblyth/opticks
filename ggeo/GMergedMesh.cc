@@ -57,7 +57,7 @@ GParts* GMergedMesh::getParts()
 {
     return m_parts ; 
 }
-void GMergedMesh::setParts(GParts* pts) // under protest 
+void GMergedMesh::setParts(GParts* pts) // under protest, used by the old dirty analytic PMT handling 
 {
     m_parts = pts ; 
 }
@@ -124,32 +124,6 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 }
 
 
-/*
-void GMergedMesh::collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm)
-{
-    if(!mm) return ;
-
-    GParts* pts = mm->getParts();
-    if(!pts) LOG(fatal) << "GMergedMesh::collectParts mm has no analytic GParts attached " ;
-    if(pts) analytic.push_back(pts);
-}
-
-void GMergedMesh::collectParts( std::vector<GParts*>& analytic, const std::vector<GSolid*>& solids )
-{
-    unsigned numSolids = solids.size(); 
-    for(unsigned i=0 ; i < numSolids ; i++)
-    {
-        GSolid* solid = solids[i];
-        GParts* pts = solid->getParts();
-        if(!pts) LOG(fatal) << "GMergedMesh::collectParts solid " << i << "/" << numSolids << " has no analytic GParts attached " ;
-        assert(pts);
-        if(pts) analytic.push_back(pts);
-    } 
-}
-
-*/
-
-
 
 GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
 {
@@ -160,12 +134,12 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
     t.start();
 
     GMergedMesh* mm = new GMergedMesh( ridx ); 
-    //mm->setVerbosity(ggeo->getMeshVerbosity());
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
 
     GNode* start = base ? base : root ; 
 
 
+    if(verbosity > 1)
     LOG(info)<<"GMergedMesh::create"
              << " ridx " << ridx 
              << " starting from " << start->getName() ;
@@ -179,6 +153,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 
     // allocate space for flattened arrays
 
+    if(verbosity > 1)
     LOG(info) << "GMergedMesh::create" 
               << " ridx " << ridx 
               << " index? " << index 
@@ -486,6 +461,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
             GMatrixF* sotransform = solid->getTransform() ;  
             soparts->applyGlobalPlacementTransform(sotransform, verbosity );
 
+            if(verbosity > 0)
             LOG(info) << "GMergedMesh::mergeSolid(applyGlobalPlacementTransform)"
                       << " solid " << solid
                       << " soparts " << soparts
@@ -496,7 +472,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 
         } 
 
-        mmparts->add(soparts);
+        mmparts->add(soparts, verbosity);
 
     }
 }
@@ -505,8 +481,6 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-
 
     // using repeat index labelling in the tree
     //  bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
@@ -517,7 +491,7 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
     bool repsel =  idx == -1 || ridx == uidx ;
     bool selected = solid->isSelected() && repsel ;
 
-    if(verbosity > 0)
+    if(verbosity > 1)
           LOG(info)
                   << "GMergedMesh::traverse_r"
                   << " node " << node 

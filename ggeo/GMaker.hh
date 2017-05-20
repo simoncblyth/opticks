@@ -39,10 +39,11 @@ class GGEO_API GMaker {
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:
        GSolid* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
-       GSolid* makeFromCSG(NCSG* csg);
+       GSolid* makeFromCSG(NCSG* csg, unsigned verbosity );
    private:
        void init();    
-       static GSolid* makeFromCSG(NCSG* csg, GBndLib* bndlib);
+
+       static GSolid* makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity );
        static GSolid* makePrism(glm::vec4& param, const char* spec);
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);

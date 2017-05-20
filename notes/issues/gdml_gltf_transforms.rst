@@ -595,68 +595,9 @@ which are identity for the first sp and model frame z-shifts for the rest.
 
 
 
-    ## intersect_analytic.cu:bounds pts:  16 pln:   0 trs:  15 
-    ##csg_bounds_prim primIdx   0 partOffset   0 numParts   1 height  0 numNodes  1 tranBuffer_size  15 
-    ##csg_bounds_prim primIdx   1 partOffset   1 numParts  15 height  3 numNodes 15 tranBuffer_size  15 
-    ##csg_bounds_prim primIdx   0 nodeIdx  1 depth  0 elev  0 typecode 12 tranOffset  0 gtransformIdx  1 complement 0 
 
-   1.000    0.000    0.000    0.000   (trIdx:  0)[vt]
-   0.000    1.000    0.000    0.000
-   0.000    0.000    1.000    0.000   (trIdx:  0)[vt]
-   0.000    0.000    0.000    1.000
-
-    ##csg_bounds_prim primIdx   1 nodeIdx  8 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  1 complement 0 
-
-   0.000    0.131    0.991    0.000   (trIdx:  3)[vt]
-  -0.000   -0.991    0.131    0.000
-   1.000   -0.000    0.000    0.000   (trIdx:  3)[vt]
-1750.000   -0.000 2324.500    1.000
-
-
-    ## csg_bounds_cylinder center   0.000   0.000  radius 2488.000 z1 -2477.500 z2 2477.500 
-    ##csg_bounds_prim primIdx   1 nodeIdx  9 depth  3 elev  0 typecode  5 tranOffset  1 gtransformIdx  2 complement 0 
-
-   0.000    0.131    0.991    0.000   (trIdx:  6)[vt]
-  -0.000   -0.991    0.131    0.000
-   1.000   -0.000    0.000    0.000   (trIdx:  6)[vt]
-1707.000   -0.000 2324.500    1.000
-
-    ##csg_bounds_prim primIdx   1 nodeIdx  4 depth  2 elev  1 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 10 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 11 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx  5 depth  2 elev  1 typecode  5 tranOffset  1 gtransformIdx  3 complement 0 
-
-   0.000    0.131    0.991    0.000   (trIdx:  9)[vt]
-  -0.000   -0.991    0.131    0.000
-   1.000   -0.000    0.000    0.000   (trIdx:  9)[vt]
-1681.000   -0.000 2324.500    1.000
-
-    ##csg_bounds_prim primIdx   1 nodeIdx  2 depth  1 elev  2 typecode  2 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 12 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 13 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx  6 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 14 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx 15 depth  3 elev  0 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx  7 depth  2 elev  1 typecode  0 tranOffset  1 gtransformIdx  0 complement 0 
-    ##csg_bounds_prim primIdx   1 nodeIdx  3 depth  1 elev  2 typecode 12 tranOffset  1 gtransformIdx  4 complement 0 
-
-   0.000    0.131    0.991    0.000   (trIdx: 12)[vt]
-  -0.000   -0.991    0.131    0.000
-   1.000   -0.000    0.000    0.000   (trIdx: 12)[vt]
-1834.500   -0.000 2324.500    1.000
-
-
-    ## csg_bounds_cylinder center   0.000   0.000  radius  42.250 z1 -84.500 z2  84.500 
-
-
-
-
-
-
-
-Issue : top level (non-instanced) transforms ignored by raytrace
+FIXED : top level (non-instanced) transforms ignored by raytrace
 ------------------------------------------------------------------
-
 
 * ray trace not handling transforms applied to global geometry ie non-instanced
 

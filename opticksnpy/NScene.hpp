@@ -33,12 +33,12 @@ class NPY_API NScene : public NGLTF
         unsigned getRepeatCount(unsigned ridx);
         unsigned getNumRepeats();
     private:
-        nd*                       m_root ; 
-        std::map<unsigned, nd*>   m_nd ; 
-        std::map<unsigned, NCSG*> m_csg ; 
+        nd*                           m_root ; 
+        std::map<unsigned, nd*>       m_nd ; 
+        std::map<unsigned, NCSG*>     m_csg ; 
         std::map<unsigned, unsigned>  m_mesh2ridx ;
         std::map<unsigned, unsigned>  m_repeat_count ;
-        unsigned m_verbosity ; 
+        unsigned                      m_verbosity ; 
 
 
 };

@@ -770,7 +770,7 @@ void GGeo::loadAnalyticPmt()
 
     m_pmt = GPmt::load( m_ok, m_bndlib, apmtidx, slice ); 
 
-    LOG(fatal) << "GGeo::loadAnalyticPmt"
+    LOG(info) << "GGeo::loadAnalyticPmt"
               << " AnalyticPMTIndex " << apmtidx
               << " AnalyticPMTSlice " << ( slice ? slice->description() : "ALL" )
               << " Path " << m_pmt->getPath()

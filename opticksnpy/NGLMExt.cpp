@@ -165,22 +165,31 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
     glm::mat4 i_trs = glm::inverse( trs ) ; 
 
 
+    float epsilon_translation = 1e-3 ; 
+    float epsilon = 1e-5 ; 
     float diff = compDiff(isirit, i_trs );
-    float diff2 = compDiff2(isirit, i_trs, false );
-    float diffFractional = compDiff2(isirit, i_trs, true );
+    float diff2 = compDiff2(isirit, i_trs, false, epsilon, epsilon_translation );
+    float diffFractional = compDiff2(isirit, i_trs, true, epsilon, epsilon_translation  );
 
-    bool match = diffFractional < 1e-4 ; 
+    float diffFractionalMax = 1e-4 ; 
+
+    bool match = diffFractional < diffFractionalMax ; 
+
     if(!match)
     {
        std::cout << "nglmext::invert_trs"
                  << " polar_decomposition inverse and straight inverse are mismatched "
+                 << " epsilon " << epsilon
                  << " diff " << diff 
                  << " diff2 " << diff2 
                  << " diffFractional " << diffFractional
+                 << " diffFractionalMax " << diffFractionalMax
                  << std::endl << gpresent("trs", trs)
                  << std::endl << gpresent("isirit", isirit)
                  << std::endl << gpresent("i_trs ",i_trs)
                  << std::endl ; 
+
+    
 
         for(unsigned i=0 ; i < 4 ; i++)
         {
@@ -190,10 +199,13 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
                 float a = isirit[i][j] ;
                 float b = i_trs[i][j] ;
 
-                float da = compDiff2(a,b, false);
-                float df = compDiff2(a,b, true );
+                float da = compDiff2(a,b, false, epsilon);
+                float df = compDiff2(a,b, true , epsilon);
+
+                bool ijmatch = df < diffFractionalMax ;
 
                 std::cout << "[" 
+                          << ( ijmatch ? "" : "**" ) 
                           << std::setw(10) << a
                           << ":"
                           << std::setw(10) << b
@@ -201,6 +213,7 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
                           << std::setw(10) << da
                           << ":"
                           << std::setw(10) << df
+                          << ( ijmatch ? "" : "**" ) 
                           << "]"
                            ;
             }
@@ -246,7 +259,7 @@ Out[6]: 2.0
 
 */
 
-float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float epsilon )
+float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float epsilon  )
 {
     float a = fabsf(a_) < epsilon  ? 0.f : a_ ; 
     float b = fabsf(b_) < epsilon  ? 0.f : b_ ; 
@@ -256,7 +269,7 @@ float nglmext::compDiff2(const float a_ , const float b_, bool fractional, float
     return d ; 
 }
 
-float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional, float epsilon)
+float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractional, float epsilon, float epsilon_translation )
 {
     float a, b, d, maxdiff = 0.f ; 
     for(unsigned i=0 ; i < 4 ; i++){
@@ -264,7 +277,7 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
     { 
         a = a_[i][j] ; 
         b = b_[i][j] ; 
-        d = compDiff2(a, b, fractional, epsilon );
+        d = compDiff2(a, b, fractional, i == 3 ? epsilon_translation : epsilon );
         if( d > maxdiff ) maxdiff = d ; 
     }
     }

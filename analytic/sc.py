@@ -8,7 +8,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main, expand_, json_load_, json_save_
 from opticks.analytic.treebase import Tree
 from opticks.analytic.gdml import GDML
-from opticks.analytic.translate_gdml import translate_lv
+from opticks.analytic.polyconfig import PolyConfig
 
 
 class Mh(object):
@@ -146,6 +146,9 @@ class Sc(object):
         ndIdx = len(self.nodes)
         name = "ndIdx:%3d,soIdx:%3d,lvName:%s" % (ndIdx, soIdx, lvName)
 
+        log.info("add_node %s " % name)
+        assert transform is not None
+
         nd = Nd(ndIdx, soIdx, transform, boundary, name, depth, self )
         nd.mesh = mesh 
 
@@ -157,7 +160,7 @@ class Sc(object):
     def get_node(self, ndIdx):
         return self.nodes[ndIdx]
 
-    def add_node_gdml(self, node, depth, debug=True):
+    def add_node_gdml(self, node, depth, debug=False, maxcsgheight=0):
 
         lvIdx = node.lv.idx
         lvName = node.lv.name
@@ -166,39 +169,53 @@ class Sc(object):
         boundary = node.boundary
         nodeIdx = node.index
 
-        #assert lvIdx == solidIdx, (lvIdx, solidIdx, lvName, soName)  
-        # not so, many more solids ~707 than lv ~249 
+        msg = "sc.py:add_node_gdml nodeIdx:%4d lvIdx:%2d soName:%30s lvName:%s " % (nodeIdx, lvIdx, soName, lvName )
 
         if debug:
             solidIdx = node.lv.solid.idx
             self.ulv.add(lvIdx)
             self.uso.add(solidIdx)
             assert len(self.ulv) == len(self.uso)
+            sys.stderr.write(msg+"\n" + repr(transform)+"\n")
         pass
 
-        msg = "sc.py:add_node_gdml nodeIdx:%4d lvIdx:%2d soName:%30s lvName:%s " % (nodeIdx, lvIdx, soName, lvName )
-        sys.stderr.write(msg+"\n" + repr(transform)+"\n")
+        csg = self.translate_lv( node.lv )
 
-
-        nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
-        mesh = self.get_mesh( lvIdx )
-        assert nd.mesh == mesh 
-
-        if getattr(mesh,'csg',None) is None:
-            mesh.csg = translate_lv( node.lv )
+        if maxcsgheight == 0 or csg.height < maxcsgheight:
+            nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
+            if getattr(nd.mesh,'csg',None) is None:
+                nd.mesh.csg = csg 
+            pass
+        else:
+            log.warning("skipped node as csg.height %2d exceeds maxcsgheight %d %s " % (csg.height, maxcsgheight, msg )) 
+            nd = None
         pass
         return nd
 
-    def add_tree_gdml(self, target, maxdepth=0):
+
+    @classmethod 
+    def translate_lv(cls, lv ):
+        solid = lv.solid
+        cn = solid.as_ncsg()
+        cn.analyse()
+        polyconfig = PolyConfig(lv.shortname)
+        cn.meta.update(polyconfig.meta )
+        return cn 
+
+
+    def add_tree_gdml(self, target, maxdepth=0, maxcsgheight=4):
         def build_r(node, depth=0):
             if maxdepth == 0 or depth < maxdepth:
-                nd = self.add_node_gdml(node, depth)
-                for child in node.children: 
-                    ch = build_r(child, depth+1)
-                    if ch is not None:
-                        ch.parent = nd.ndIdx
-                        nd.children.append(ch.ndIdx)
-                        #sys.stderr.write("sc.py:add_tree_gdml ch\n" + repr(ch)+"\n") 
+                nd = self.add_node_gdml(node, depth, maxcsgheight=maxcsgheight)
+                if nd is not None:
+                    for child in node.children: 
+                        ch = build_r(child, depth+1)
+                        if ch is not None:
+                            ch.parent = nd.ndIdx
+                            nd.children.append(ch.ndIdx)
+                        pass
+                    pass
+                else:
                     pass
                 pass
             else:

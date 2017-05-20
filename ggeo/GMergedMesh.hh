@@ -41,11 +41,6 @@ public:
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity ) ;
-private:
-     /*
-    static void collectParts( std::vector<GParts*>& analytic, const std::vector<GSolid*>& solids );
-    static void collectParts( std::vector<GParts*>& analytic, GMergedMesh* mm);
-    */
 public:
     //GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;

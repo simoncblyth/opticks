@@ -58,9 +58,6 @@ def translate_lv(lv):
     cn = solid.as_ncsg()
     cn.analyse()
 
-    has_name = cn.name is not None and len(cn.name) > 0
-    assert has_name, "\n"+str(solid)
-
     polyconfig = PolyConfig(lv.shortname)
     cn.meta.update(polyconfig.meta )
 

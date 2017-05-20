@@ -40,11 +40,14 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
 
     m_root = import();
 
+    if(m_verbosity > 1)
     dumpNdTree("NScene::NScene");
 
     compare_trees();
 
     labelTree_r(m_root);
+
+    if(m_verbosity > 1)
     dumpRepeatCount(); 
 
     markGloballyUsedMeshes_r(m_root);
@@ -77,9 +80,9 @@ void NScene::load_mesh_extras()
     unsigned num_meshes = getNumMeshes();
     assert( num_meshes == m_gltf->meshes.size() ); 
 
-    std::cout << "NScene::load_mesh_extras"
+    LOG(info) << "NScene::load_mesh_extras"
               << " num_meshes " << num_meshes
-              << std::endl ; 
+              ;
 
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
@@ -96,6 +99,7 @@ void NScene::load_mesh_extras()
 
         int verbosity = 0 ; 
         bool polygonize = true ; 
+
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), iug, verbosity, polygonize  ); 
         csg->setIndex(mesh_id);
 
@@ -120,6 +124,7 @@ nd* NScene::import()
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
+
     ygltf::node_t* ynode = getNode(idx);
     auto extras = ynode->extras ; 
     std::string boundary = extras["boundary"] ; 
@@ -145,20 +150,21 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 void NScene::dumpNdTree(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg << " m_verbosity " << m_verbosity  ; 
     dumpNdTree_r( m_root ) ; 
 }
 void NScene::dumpNdTree_r(nd* n)
 {
     std::cout << n->desc() << std::endl ;  
 
-    /*
-    if(n->transform)   
-    std::cout <<  "n.transform  " << *n->transform << std::endl ; 
+    if(m_verbosity > 3)
+    {
+        if(n->transform)   
+        std::cout <<  "n.transform  " << *n->transform << std::endl ; 
 
-    if(n->gtransform)   
-    std::cout <<  "n.gtransform " << *n->gtransform << std::endl ; 
-    */
+        if(n->gtransform)   
+        std::cout <<  "n.gtransform " << *n->gtransform << std::endl ; 
+    }
 
     for(nd* cn : n->children) dumpNdTree_r(cn) ;
 }
@@ -269,6 +275,10 @@ void NScene::markGloballyUsedMeshes_r(nd* n)
 
 void NScene::dumpRepeatCount()
 {
+    LOG(info) << "NScene::dumpRepeatCount" 
+              << " m_verbosity " << m_verbosity 
+               ; 
+
     typedef std::map<unsigned, unsigned> MUU ;
     unsigned totCount = 0 ;
 
@@ -286,6 +296,7 @@ void NScene::dumpRepeatCount()
               << " totCount " << totCount 
                ; 
 }   
+
 unsigned NScene::getRepeatCount(unsigned ridx)
 {       
     return m_repeat_count[ridx] ; 

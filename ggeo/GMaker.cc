@@ -87,18 +87,19 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
 }
 
 
-GSolid* GMaker::makeFromCSG(NCSG* csg)
+GSolid* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
 {
-    return makeFromCSG(csg, m_bndlib);
+    return makeFromCSG(csg, m_bndlib, verbosity );
 }
 
 
-GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib)
+GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 {
     unsigned index = csg->getIndex();
 
     LOG(info) << "GMaker::makeFromCSG" 
               << " index " << index 
+              << " verbosity " << verbosity 
               ; 
 
 
@@ -126,7 +127,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib)
     solid->setCSGFlag( csg->getRootType() );
   
 
-    GParts* pts = GParts::make( csg, spec );
+    GParts* pts = GParts::make( csg, spec, verbosity );
 
     solid->setParts( pts );
 

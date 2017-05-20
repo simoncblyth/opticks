@@ -36,7 +36,8 @@ nmat4triple* nd::make_global_transform(nd* n)
         if(n->transform) tvq.push_back(n->transform);
         n = n->parent ; 
     }
-    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, true) ; 
+    bool reverse = true ; // as tvq in leaf-to-root order
+    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
 
 
