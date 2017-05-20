@@ -667,7 +667,9 @@ unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
 {
     bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
 
-    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset) ;
+    bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
+
+    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse) ;
 
 
     /*

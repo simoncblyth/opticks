@@ -28,15 +28,15 @@ struct NPY_API nmat4pair
 
 struct NPY_API nmat4triple
 {
-    static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool swap=false);
-    static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate );
-    static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool pre);
+    static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool reverse );
+    static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse );
+    static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse);
     static nmat4triple* make_identity();
     static void dump( const NPY<float>* buf, const char* msg="nmat4triple::dump");
     static void dump( const float* data4x4, const char* msg="nmat4triple::dump");
 
     nmat4triple* clone();
-    nmat4triple* make_translated(const glm::vec3& tlate );
+    nmat4triple* make_translated(const glm::vec3& tlate, bool reverse );
     nmat4triple( const glm::mat4& transform ); 
     nmat4triple( const float* data ); 
     nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 

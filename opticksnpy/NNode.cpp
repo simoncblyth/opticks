@@ -126,7 +126,11 @@ nmat4triple* nnode::global_transform(nnode* n)
         if(n->transform) tvq.push_back(n->transform);
         n = n->parent ; 
     }
-    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq) ; 
+
+    // tvq transforms are in reverse hierarchical order from leaf back up to root
+    // these are the CSG nodes
+    bool reverse = true ; 
+    return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
 
 

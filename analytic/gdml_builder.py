@@ -167,6 +167,7 @@ structure["pmt1"]=ET.fromstring(r"""
       <physvol name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40">
         <volumeref ref="/dd/Geometry/PMT/lvPmtHemi0xc133740"/>
         <position name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40_pos" unit="mm" x="-2304.61358026342" y="-303.40813381551" z="-1750"/>
+        <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40_rot" unit="deg" x="90" y="-82.5" z="90"/>
       </physvol>
 
     </volume>
@@ -175,7 +176,6 @@ structure["pmt1"]=ET.fromstring(r"""
 
 r"""
         <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40_rot" unit="deg" x="90" y="0" z="90"/>
-        <rotation name="/dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt0xc2a6b40_rot" unit="deg" x="90" y="-82.5" z="90"/>
 
 """
 

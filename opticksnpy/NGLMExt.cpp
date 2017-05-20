@@ -292,7 +292,7 @@ glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tla
            case 't': mat = glm::translate(mat, tlat )    ; break ; 
         }
     }
-    // for fourth column translation unmodified the "t" must come last, ie "trs"
+    // for fourth column translation unmodified the "t" must come last, ie "trs" ?? shouldnt that be order="srt"
     return mat  ; 
 }
 
@@ -385,8 +385,15 @@ nmat4triple* nmat4triple::clone()
 }
 
 
-nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool swap)
+nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool reverse )
 {
+/*
+
+Use *reverse=true* when the triples are in reverse heirarchical order, ie when
+they have been collected by starting from the leaf node and then following parent 
+links back up to the root node. 
+
+*/
     unsigned ntriples = triples.size();
     if(ntriples==0) return NULL ; 
     if(ntriples==1) return triples[0] ; 
@@ -396,15 +403,19 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool
 
     for(unsigned i=0,j=ntriples-1 ; i < ntriples ; i++,j-- )
     {
-        const nmat4triple* ii = triples[swap ? j : i] ; 
-        const nmat4triple* jj = triples[swap ? i : j] ; 
+        // inclusive indices:
+        //     i: 0 -> ntriples - 1      ascending 
+        //     j: ntriples - 1 -> 0      descending (from last transform down to first)
+        //
+        const nmat4triple* ii = triples[reverse ? j : i] ;  // with reverse: start from the last (ie root node)
+        const nmat4triple* jj = triples[reverse ? i : j] ;  // with reverse: start from the first (ie leaf node)
 
-        t *= ii->t ; 
-        v *= jj->v ;
+        t *= ii->t ;   
+        v *= jj->v ;  // inverse-transform product in opposite order
     }
 
     // is this the appropriate transform and inverse transform multiplication order ?
-    // ... tt order is from the leaf back to the root   
+    // ... triples order is from the leaf back to the root   
 
     glm::mat4 q = glm::transpose(v);
     return new nmat4triple(t, v, q) ; 
@@ -418,35 +429,41 @@ nmat4triple* nmat4triple::make_identity()
 }
 
 
-nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate )
+nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse )
 {
-    return make_translated(this, tlate );
+    // reverse:true means the tlate happens at the root 
+    // reverse:false means the tlate happens at the leaf
+
+    return make_translated(this, tlate, reverse );
 }
 
-nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate )
+nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse )
 { 
     glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
-    bool pre = true ; 
-    return make_transformed(src, tra, pre );
+    return make_transformed(src, tra, reverse );
 }
 
-nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool pre)
+nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse)
 {
+    // reverse:true means the transform ordering is from leaf to root 
+    // so when wishing to extend the hierarchy with a higher level root transform, 
+    // that means just pushing another transform on the end of the existing vector
+
     nmat4triple perturb( txf );
     std::vector<nmat4triple*> triples ; 
-    // order ?
-    if(pre)
+
+    if(reverse)
     { 
-        triples.push_back(&perturb);
         triples.push_back(src);    
+        triples.push_back(&perturb);
     }
     else
     {
-        triples.push_back(src);    
         triples.push_back(&perturb);
+        triples.push_back(src);    
     }
 
-    nmat4triple* transformed = nmat4triple::product( triples );  
+    nmat4triple* transformed = nmat4triple::product( triples, reverse );  
     return transformed ; 
 }
 

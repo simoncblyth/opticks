@@ -492,7 +492,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned 
               ;
 
 
-    bool pre = false ; 
+    bool reversed = true ; // means apply transform at root end, not leaf end 
 
     if(verbosity > 2)
     nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform before");
@@ -501,7 +501,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned 
     {
         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
 
-        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, gpt, pre );
+        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, gpt, reversed );
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }

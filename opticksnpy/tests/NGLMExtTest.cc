@@ -76,7 +76,8 @@ void test_nmat4triple_make_translated()
     nmat4triple tt0(trs);
 
     glm::vec3 tlat2(-100,0,0) ; 
-    nmat4triple* tt1 = tt0.make_translated( tlat2 );
+    bool reversed(true);
+    nmat4triple* tt1 = tt0.make_translated( tlat2, reversed );
 
     std::cout 
          << " tt0 " << tt0 
