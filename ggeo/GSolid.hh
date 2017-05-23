@@ -51,6 +51,7 @@ class GGEO_API GSolid : public GNode {
       bool isSelected();
   public:
       void setCSGFlag(OpticksCSG_t flag);
+      void setCSGSkip(bool csgskip);
       void setBoundary(unsigned boundary);
       void setBoundaryAll(unsigned boundary);
       void setSensor(NSensor* sensor);
@@ -64,6 +65,7 @@ class GGEO_API GSolid : public GNode {
       const char* getLVName();
   public:
       OpticksCSG_t getCSGFlag();
+      bool         isCSGSkip();
       unsigned int getBoundary();
       guint4       getIdentity();
       NSensor*     getSensor();
@@ -76,6 +78,7 @@ class GGEO_API GSolid : public GNode {
   private:
       unsigned int      m_boundary ; 
       OpticksCSG_t      m_csgflag ; 
+      bool              m_csgskip ; 
       NSensor*          m_sensor ; 
       bool              m_selected ;
       const char*       m_pvname ; 

@@ -321,6 +321,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
+    //assert(0);
 
     GMesh* mesh = solid->getMesh();
     unsigned int nvert = mesh->getNumVertices();
@@ -456,6 +457,8 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
         GParts* mmparts = getParts();
         GParts* soparts = solid->getParts(); // despite the name a node-level-object
 
+        // perhaps could skip overheight soparts here ??
+
         if(solid->getRepeatIndex() == 0)
         {
             GMatrixF* sotransform = solid->getTransform() ;  
@@ -486,14 +489,19 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
     //  bool repsel = getIndex() == -1 || solid->getRepeatIndex() == getIndex() ;
 
     int idx = getIndex() ;
-    unsigned int uidx = idx > -1 ? idx : UINT_MAX ; 
-    unsigned int ridx = solid->getRepeatIndex() ;
-    bool repsel =  idx == -1 || ridx == uidx ;
-    bool selected = solid->isSelected() && repsel ;
+    assert(idx > -1 ) ; 
 
-    if(verbosity > 1)
+    unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
+    unsigned ridx = solid->getRepeatIndex() ;
+
+    bool repsel =  idx == -1 || ridx == uidx ;
+    bool csgskip = solid->isCSGSkip() ; 
+    bool selected = solid->isSelected() && repsel && !csgskip ;
+
+    if(verbosity > 1 || csgskip)
           LOG(info)
                   << "GMergedMesh::traverse_r"
+                  << " verbosity " << verbosity
                   << " node " << node 
                   << " solid " << solid 
                   << " solid.pts " << solid->getParts()
@@ -501,6 +509,7 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
                   << " NumChildren " << node->getNumChildren()
                   << " pass " << pass
                   << " selected " << selected
+                  << " csgskip " << csgskip
                   ; 
 
 

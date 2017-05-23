@@ -1095,7 +1095,6 @@ def test_primitive_fromstring():
 if __name__ == '__main__':
 
     args = opticks_main()
-    gdmlpath = os.environ['OPTICKS_GDMLPATH']   # envvar set within opticks_main 
 
 
     gsel = args.gsel            # string representing target node index integer or lvname
@@ -1103,7 +1102,7 @@ if __name__ == '__main__':
     gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
     gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
-    g = GDML.parse(gdmlpath)
+    g = GDML.parse()
 
     from opticks.analytic.treebase import Tree
     t = Tree(g.world) 

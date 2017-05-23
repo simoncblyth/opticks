@@ -34,7 +34,9 @@ NCSG* NScene::getCSG(unsigned mesh_idx)
 NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
-    m_verbosity(0)
+    m_verbosity(0),
+    m_num_global(0),
+    m_num_csgskip(0)
 {
     load_asset_extras();
 
@@ -80,9 +82,6 @@ void NScene::load_mesh_extras()
     unsigned num_meshes = getNumMeshes();
     assert( num_meshes == m_gltf->meshes.size() ); 
 
-    LOG(info) << "NScene::load_mesh_extras"
-              << " num_meshes " << num_meshes
-              ;
 
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
@@ -93,6 +92,7 @@ void NScene::load_mesh_extras()
         auto extras = mesh->extras ; 
 
         bool iug = isUsedGlobally(mesh_id); 
+        if(iug) m_num_global++ ; 
 
         std::string uri = extras["uri"] ; 
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
@@ -103,6 +103,17 @@ void NScene::load_mesh_extras()
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), iug, verbosity, polygonize  ); 
         csg->setIndex(mesh_id);
 
+        bool csgskip = csg->isSkip() ;
+        if(csgskip) m_num_csgskip++ ; 
+
+        if(csgskip)
+        {
+            LOG(warning) << "NScene::load_mesh_extras"
+                         << " csgskip CSG loaded " << csg->meta()
+                          ;
+        }
+
+
         m_csg[mesh_id] = csg ; 
 
         std::cout << " mid " << std::setw(4) << mesh_id 
@@ -112,6 +123,16 @@ void NScene::load_mesh_extras()
                   << " smry " << csg->smry() 
                   << std::endl ; 
     }  
+
+
+    LOG(info) << "NScene::load_mesh_extras"
+              << " num_meshes " << num_meshes
+              << " m_num_global " << m_num_global
+              << " m_num_csgskip " << m_num_csgskip
+              ;
+
+
+
 }
 
 

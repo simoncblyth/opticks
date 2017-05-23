@@ -39,6 +39,8 @@ class NPY_API NScene : public NGLTF
         std::map<unsigned, unsigned>  m_mesh2ridx ;
         std::map<unsigned, unsigned>  m_repeat_count ;
         unsigned                      m_verbosity ; 
+        unsigned                      m_num_global ; 
+        unsigned                      m_num_csgskip ; 
 
 
 };

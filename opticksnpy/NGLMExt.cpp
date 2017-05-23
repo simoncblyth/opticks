@@ -171,7 +171,8 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
     float diff2 = compDiff2(isirit, i_trs, false, epsilon, epsilon_translation );
     float diffFractional = compDiff2(isirit, i_trs, true, epsilon, epsilon_translation  );
 
-    float diffFractionalMax = 1e-4 ; 
+    //float diffFractionalMax = 1e-4 ;  // <-- small row3 positions trip this  
+    float diffFractionalMax = 1e-3 ; 
 
     bool match = diffFractional < diffFractionalMax ; 
 

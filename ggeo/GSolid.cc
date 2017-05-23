@@ -25,6 +25,7 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
          GNode(index, transform, mesh ),
          m_boundary(boundary),
          m_csgflag(CSG_PARTLIST),
+         m_csgskip(false),
          m_sensor(sensor),
          m_selected(true),
          m_pvname(NULL),
@@ -38,6 +39,16 @@ OpticksCSG_t GSolid::getCSGFlag()
 {
     return m_csgflag ; 
 }
+
+bool GSolid::isCSGSkip()
+{
+    return m_csgskip ; 
+}
+void GSolid::setCSGSkip(bool csgskip)
+{
+    m_csgskip = csgskip ; 
+}
+
 
 unsigned int GSolid::getBoundary()
 {

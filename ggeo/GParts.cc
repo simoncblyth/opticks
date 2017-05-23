@@ -238,6 +238,7 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
 
 
+
     GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
@@ -291,7 +292,7 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
 
 void GParts::setPrimFlag(OpticksCSG_t primflag)
 {
-    assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST );
+    assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
     m_primflag = primflag ; 
 }
 bool GParts::isPartList()
@@ -302,7 +303,14 @@ bool GParts::isNodeTree()
 {
     return m_primflag == CSG_FLAGNODETREE ;
 }
-
+bool GParts::isInvisible()
+{
+    return m_primflag == CSG_FLAGINVISIBLE ;
+}
+void GParts::setInvisible()
+{
+    setPrimFlag(CSG_FLAGINVISIBLE);
+}
 
 
 
@@ -708,7 +716,7 @@ void GParts::makePrimBuffer()
         reconstructPartsPerPrim();
         num_prim = m_parts_per_prim.size() ;
     } 
-    else if(isNodeTree())
+    else if(isNodeTree() )
     {
         num_prim = m_part_per_add.size() ;
         assert( m_part_per_add.size() == num_prim );
@@ -816,16 +824,8 @@ void GParts::dumpPrim(unsigned primIdx)
     unsigned numParts = abs(numParts_) ;
     unsigned primFlag = numParts_ < 0 ? CSG_FLAGPARTLIST : CSG_FLAGNODETREE  ; 
 
-    LOG(info) << " primIdx "    << std::setw(3) << primIdx 
-              << " partOffset " << std::setw(3) << partOffset 
-              << " tranOffset " << std::setw(3) << tranOffset 
-              << " planOffset " << std::setw(3) << planOffset 
-              << " numParts_ "  << std::setw(3) << numParts_
-              << " numParts "   << std::setw(3) << numParts
-              << " primFlag "   << std::setw(5) << primFlag 
-              << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
-              << " prim "       << gformat(prim)
-              ;
+    unsigned num_zeros = 0 ; 
+    unsigned num_nonzeros = 0 ; 
 
     for(unsigned p=0 ; p < numParts ; p++)
     {
@@ -841,6 +841,11 @@ void GParts::dumpPrim(unsigned primIdx)
         unsigned typecode = q2.u.w ;
         assert(TYPECODE_J == 2 && TYPECODE_K == 3);
 
+        bool iszero = typecode == 0 ; 
+        if(iszero) num_zeros++ ; 
+        else num_nonzeros++ ; 
+
+        if(!iszero)
         LOG(info) << " p " << std::setw(3) << p 
                   << " partIdx " << std::setw(3) << partIdx
                   << " typecode " << typecode
@@ -848,6 +853,21 @@ void GParts::dumpPrim(unsigned primIdx)
                   ;
 
     }
+
+    LOG(info) << " primIdx "    << std::setw(3) << primIdx 
+              << " partOffset " << std::setw(3) << partOffset 
+              << " tranOffset " << std::setw(3) << tranOffset 
+              << " planOffset " << std::setw(3) << planOffset 
+              << " numParts_ "  << std::setw(3) << numParts_
+              << " numParts "   << std::setw(3) << numParts
+              << " num_zeros "   << std::setw(5) << num_zeros
+              << " num_nonzeros " << std::setw(5) << num_nonzeros
+              << " primFlag "   << std::setw(5) << primFlag 
+              << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
+              << " prim "       << gformat(prim)
+              ;
+
+
 
 
 }

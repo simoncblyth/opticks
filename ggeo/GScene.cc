@@ -149,9 +149,6 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
 
 
 
-
-
-
 GSolid* GScene::getNode(unsigned node_idx)
 {
     assert(node_idx < m_nodes.size());
@@ -180,6 +177,7 @@ GSolid* GScene::createVolume(nd* n)
     NCSG* csg = getCSG(mesh_idx);
 
 
+
     glm::mat4 xf_global = n->gtransform->t ;    
 
     glm::mat4 xf_local  = n->transform->t ;    
@@ -198,6 +196,10 @@ GSolid* GScene::createVolume(nd* n)
     solid->setSensor( NULL );      
 
     solid->setCSGFlag( csg->getRootType() );
+
+    solid->setCSGSkip( csg->isSkip() );
+
+
   
     unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
 
@@ -205,7 +207,6 @@ GSolid* GScene::createVolume(nd* n)
 
 
     GParts* pts = GParts::make( csg, spec, m_verbosity  ); // amplification from mesh level to node level 
-
 
     pts->setBndLib(m_bndlib);
 

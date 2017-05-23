@@ -113,15 +113,19 @@ from opticks.analytic.sc import Sc
 args = opticks_main()
 
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
-tlv = oil
+sel = oil
+#sel = 3153
+sel = 1
+idx = 0 
 
 wgg = GDML.parse()
 tree = Tree(wgg.world)
-target = tree.findnode(sel=tlv, idx=0)
 
-sc = Sc()
-sc.extras["verbosity"] = 4
-tg = sc.add_tree_gdml( target, maxdepth=3, maxcsgheight=4 )
+target = tree.findnode(sel=sel, idx=idx)
+
+sc = Sc(maxcsgheight=4)
+sc.extras["verbosity"] = 1
+tg = sc.add_tree_gdml( target, maxdepth=0)
 
 path = "$TMP/tgltf/$FUNCNAME.gltf"
 gltf = sc.save(path)

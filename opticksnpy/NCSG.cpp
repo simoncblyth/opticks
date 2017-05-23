@@ -111,6 +111,7 @@ T NCSG::getMeta(const char* key, const char* fallback )
 template NPY_API std::string NCSG::getMeta<std::string>(const char*, const char*);
 template NPY_API int         NCSG::getMeta<int>(const char*, const char*);
 template NPY_API float       NCSG::getMeta<float>(const char*, const char*);
+template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*);
 
 
 std::string NCSG::lvname(){ return getMeta<std::string>("lvname","-") ; }
@@ -120,6 +121,7 @@ std::string NCSG::soname(){ return getMeta<std::string>("soname","-") ; }
 int NCSG::treeindex(){ return getMeta<int>("treeindex","-1") ; }
 int NCSG::depth(){     return getMeta<int>("depth","-1") ; }
 int NCSG::nchild(){    return getMeta<int>("nchild","-1") ; }
+bool NCSG::isSkip(){  return getMeta<int>("skip","0") == 1 ; }
 
 
 std::string NCSG::meta()
@@ -131,6 +133,7 @@ std::string NCSG::meta()
        << " lvname " << lvname() 
        << " pvname " << pvname() 
        << " soname " << soname() 
+       << " skip " << isSkip()
        ;
 
     return ss.str();

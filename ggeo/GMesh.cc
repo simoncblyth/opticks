@@ -79,6 +79,11 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 int GMesh::g_instance_count = 0 ;
 
 
+bool GMesh::isEmpty()
+{
+    return m_num_vertices == 0 && m_num_faces == 0 ; 
+}
+
 
 GMesh::GMesh(unsigned int index, 
              gfloat3* vertices, 
@@ -602,35 +607,44 @@ void GMesh::allocate()
     unsigned int numFaces = getNumFaces();
     unsigned int numSolids = getNumSolids();
 
-    /*
-    LOG(info) << "GMesh::allocate"
+
+    bool empty = numVertices == 0 && numFaces == 0 ; 
+
+    if(empty)
+    LOG(warning) << "GMesh::allocate EMPTY"
               << " numVertices " << numVertices
               << " numFaces " << numFaces
               << " numSolids " << numSolids
               ;
-    */
 
-    assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
+    //assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
+    assert(numSolids > 0);
 
-    setVertices(new gfloat3[numVertices]); 
-    setNormals( new gfloat3[numVertices]);
-    setColors(  new gfloat3[numVertices]);
-    setTexcoords( NULL );  
+    if(numVertices > 0 && numFaces > 0)
+    {
 
-    setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
+        setVertices(new gfloat3[numVertices]); 
+        setNormals( new gfloat3[numVertices]);
+        setColors(  new gfloat3[numVertices]);
+        setTexcoords( NULL );  
 
-    // consolidate into guint4 
+        setColor(0.5,0.5,0.5);  // starting point mid-grey, change in traverse 2nd pass
 
-    setFaces(        new guint3[numFaces]);
+        // consolidate into guint4 
 
-    // TODO: consolidate into uint4 with one spare
-    setNodes(        new unsigned int[numFaces]);
-    setBoundaries(   new unsigned int[numFaces]);
-    setSensors(      new unsigned int[numFaces]);
+        setFaces(        new guint3[numFaces]);
+
+        // TODO: consolidate into uint4 with one spare
+        setNodes(        new unsigned[numFaces]);
+        setBoundaries(   new unsigned[numFaces]);
+        setSensors(      new unsigned[numFaces]);
+
+    }
+
 
     setCenterExtent(new gfloat4[numSolids]);
     setBBox(new gbbox[numSolids]);
-    setMeshes(new unsigned int[numSolids]);
+    setMeshes(new unsigned[numSolids]);
     setNodeInfo(new guint4[numSolids]);
     setIdentity(new guint4[numSolids]);
     setTransforms(new float[numSolids*16]);

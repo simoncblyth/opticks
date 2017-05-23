@@ -86,6 +86,7 @@ class NPY_API NCSG {
         int treeindex();
         int depth();
         int nchild();
+        bool isSkip();
         std::string meta();
         std::string smry();
     public:

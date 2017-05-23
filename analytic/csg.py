@@ -329,7 +329,7 @@ class CSG(CSG_):
                 planeNum = len(node_planes)
                 planes.extend(node_planes)
             pass 
-            log.info("serialize_r idx %3d itransform %2d planeIdx %2d " % (idx, itransform, planeIdx))
+            log.debug("serialize_r idx %3d itransform %2d planeIdx %2d " % (idx, itransform, planeIdx))
 
             buf[idx] = node.as_array(itransform, planeIdx, planeNum)
 
@@ -337,12 +337,14 @@ class CSG(CSG_):
                 serialize_r( node.left,  2*idx+1)
                 serialize_r( node.right, 2*idx+2)
             pass
+        pass
 
         serialize_r(self, 0)
 
         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
         pbuf = np.vstack(planes).reshape(-1,4) if len(planes) > 0 else None
 
+        log.info("serialized CSG of height %2d into buf with %3d nodes, %3d transforms, %3d planes, meta %r " % (self.height, len(buf), len(transforms), len(planes), self.meta ))  
         assert tbuf is not None
 
         return buf, tbuf, pbuf

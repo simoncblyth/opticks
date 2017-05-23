@@ -591,9 +591,10 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
 void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 {
+    bool empty = mm->isEmpty();
     bool skip = mm->isSkip() ;
 
-    if(!skip)
+    if(!skip && !empty)
     { 
 
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
@@ -622,7 +623,10 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     }
     else
     {
-         LOG(warning) << "Scene::uploadGeometry SKIPPING " ; 
+         LOG(warning) << "Scene::uploadGeometry SKIPPING " 
+                      << " empty " << empty 
+                      << " skip " << skip 
+                      ; 
     }
 }
 

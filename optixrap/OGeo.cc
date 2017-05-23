@@ -171,7 +171,7 @@ void OGeo::convert()
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
 
-        if( mm == NULL || mm->isSkip())
+        if( mm == NULL || mm->isSkip() || mm->isEmpty() )
         {
             LOG(warning) << "OGeo::convert"
                          << " skipping mesh " << i 

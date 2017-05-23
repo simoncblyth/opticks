@@ -94,6 +94,7 @@ G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
         case CSG_UNDEFINED:
         case CSG_FLAGPARTLIST:
         case CSG_FLAGNODETREE:
+        case CSG_FLAGINVISIBLE:
         case CSG_CONVEXPOLYHEDRON:
                          solid = NULL ; break ; 
 

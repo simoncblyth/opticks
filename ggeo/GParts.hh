@@ -91,6 +91,8 @@ class GGEO_API GParts {
         const char*  getName();
         bool isPartList();
         bool isNodeTree();
+        bool isInvisible();
+        void setInvisible();
 
         unsigned int getIndex(unsigned int part);
         unsigned int getTypeCode(unsigned int part);

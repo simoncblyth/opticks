@@ -26,7 +26,8 @@ typedef enum {
  CSG_UNDEFINED=20,
 
  CSG_FLAGPARTLIST=100,
- CSG_FLAGNODETREE=101
+ CSG_FLAGNODETREE=101,
+ CSG_FLAGINVISIBLE=102
 
 } OpticksCSG_t ; 
    
@@ -65,8 +66,10 @@ static const char* CSG_BOX3_          = "box3" ;
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
+
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
 static const char* CSG_FLAGNODETREE_ = "flagnodetree" ; 
+static const char* CSG_FLAGINVISIBLE_ = "flaginvisible" ; 
 
 
 
@@ -94,6 +97,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_PARTLIST_) == 0)       tc = CSG_PARTLIST ;
     else if(strcmp(nodename, CSG_FLAGPARTLIST_) == 0)   tc = CSG_FLAGPARTLIST ;
     else if(strcmp(nodename, CSG_FLAGNODETREE_) == 0)   tc = CSG_FLAGNODETREE ;
+    else if(strcmp(nodename, CSG_FLAGINVISIBLE_) == 0)  tc = CSG_FLAGINVISIBLE ;
     return tc ;
 }
 
@@ -126,6 +130,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
         case CSG_FLAGNODETREE:  s = CSG_FLAGNODETREE_  ; break ; 
+        case CSG_FLAGINVISIBLE: s = CSG_FLAGINVISIBLE_ ; break ; 
     }
     return s ; 
 }

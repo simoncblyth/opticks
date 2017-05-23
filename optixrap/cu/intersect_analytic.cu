@@ -106,7 +106,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     const Prim prim    = primBuffer[primIdx]; 
     unsigned primFlag    = prim.primFlag() ;  
 
-    if(primFlag == CSG_FLAGNODETREE)  
+    if(primFlag == CSG_FLAGNODETREE || primFlag == CSG_FLAGINVISIBLE )  
     {
         csg_bounds_prim(primIdx, prim, aabb); 
     }
@@ -187,6 +187,10 @@ RT_PROGRAM void intersect(int primIdx)
         //intersect_csg( prim, identity );
 
     }
+    else if(primFlag == CSG_FLAGINVISIBLE)
+    {
+        // do nothing : report no intersections for primitives marked with primFlag CSG_FLAGINVISIBLE 
+    }  
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
         for(unsigned int p=0 ; p < numParts ; p++)

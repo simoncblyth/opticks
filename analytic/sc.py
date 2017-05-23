@@ -87,12 +87,14 @@ class Nd(object):
 
 
 class Sc(object):
-    def __init__(self):
+    def __init__(self, maxcsgheight=4):
         self.ulv = set()
         self.uso = set()
         self.nodes = collections.OrderedDict()
         self.meshes = collections.OrderedDict()
         self.extras = {}
+        self.maxcsgheight = maxcsgheight
+        self.translate_lv_count = 0 
 
     def _get_gltf(self):
         root = 0 
@@ -146,7 +148,7 @@ class Sc(object):
         ndIdx = len(self.nodes)
         name = "ndIdx:%3d,soIdx:%3d,lvName:%s" % (ndIdx, soIdx, lvName)
 
-        log.info("add_node %s " % name)
+        #log.info("add_node %s " % name)
         assert transform is not None
 
         nd = Nd(ndIdx, soIdx, transform, boundary, name, depth, self )
@@ -160,7 +162,7 @@ class Sc(object):
     def get_node(self, ndIdx):
         return self.nodes[ndIdx]
 
-    def add_node_gdml(self, node, depth, debug=False, maxcsgheight=0):
+    def add_node_gdml(self, node, depth, debug=False):
 
         lvIdx = node.lv.idx
         lvName = node.lv.name
@@ -179,43 +181,45 @@ class Sc(object):
             sys.stderr.write(msg+"\n" + repr(transform)+"\n")
         pass
 
-        csg = self.translate_lv( node.lv )
+        nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
 
-        if maxcsgheight == 0 or csg.height < maxcsgheight:
-            nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
-            if getattr(nd.mesh,'csg',None) is None:
-                nd.mesh.csg = csg 
-            pass
-        else:
-            log.warning("skipped node as csg.height %2d exceeds maxcsgheight %d %s " % (csg.height, maxcsgheight, msg )) 
-            nd = None
+        ## hmm: why handle csg translation at node level, its more logical to do at mesh level ?
+        ##      Presumably done here as it is then easy to access the lv ?
+        ##
+        if getattr(nd.mesh,'csg',None) is None:
+            csg = self.translate_lv( node.lv )
+            nd.mesh.csg = csg 
         pass
         return nd
 
 
-    @classmethod 
-    def translate_lv(cls, lv ):
+    def translate_lv(self, lv ):
+
         solid = lv.solid
-        cn = solid.as_ncsg()
-        cn.analyse()
+        csg = solid.as_ncsg()
+        csg.analyse()
         polyconfig = PolyConfig(lv.shortname)
-        cn.meta.update(polyconfig.meta )
-        return cn 
+        csg.meta.update(polyconfig.meta )
+
+        if csg.height > self.maxcsgheight and self.maxcsgheight != 0:
+            log.warning("translate_lv(%d) marked csg skipped as csg.height %2d exceeds maxcsgheight %d lv.name %s lv.idx %s " % 
+                   (self.translate_lv_count, csg.height, self.maxcsgheight, lv.name, lv.idx )) 
+            csg.meta.update(skip=1) 
+        pass
+        self.translate_lv_count += 1
+        return csg 
 
 
-    def add_tree_gdml(self, target, maxdepth=0, maxcsgheight=4):
+    def add_tree_gdml(self, target, maxdepth=0):
         def build_r(node, depth=0):
             if maxdepth == 0 or depth < maxdepth:
-                nd = self.add_node_gdml(node, depth, maxcsgheight=maxcsgheight)
-                if nd is not None:
-                    for child in node.children: 
-                        ch = build_r(child, depth+1)
-                        if ch is not None:
-                            ch.parent = nd.ndIdx
-                            nd.children.append(ch.ndIdx)
-                        pass
-                    pass
-                else:
+                nd = self.add_node_gdml(node, depth)
+                assert nd is not None
+                for child in node.children: 
+                    ch = build_r(child, depth+1)
+                    if ch is not None:
+                        ch.parent = nd.ndIdx
+                        nd.children.append(ch.ndIdx)
                     pass
                 pass
             else:
@@ -223,8 +227,10 @@ class Sc(object):
             pass
             return nd
         pass 
-        return build_r(target)
-
+        log.info("add_tree_gdml START maxdepth:%d maxcsgheight:%d nodesCount:%5d targetNode: %r " % (maxdepth, self.maxcsgheight, len(self.nodes), target))
+        tg = build_r(target)
+        log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d  tgNd:%r " % (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_lv_count, tg))
+        return tg
 
     def save_extras(self, gdir):
         gdir = expand_(gdir)
@@ -242,7 +248,6 @@ class Sc(object):
             count += 1 
         pass
         log.info("save_extras %s  : saved %d " % (extras_dir, count) )
-
  
 
     def save(self, path, load_check=True):

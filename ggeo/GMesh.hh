@@ -251,15 +251,16 @@ class GGEO_API GMesh : public GDrawable {
       GMatrix<float>* getModelToWorld();
 
   public:
-      unsigned int   getIndex();
-      unsigned int   getNumVertices();
-      unsigned int   getNumColors();
-      unsigned int   getNumFaces();
-      unsigned int   getNumSolidsSelected();
-      unsigned int   getNumSolids();
-      unsigned int   getNumTransforms();
+      bool     isEmpty();
+      unsigned getIndex();
+      unsigned getNumVertices();
+      unsigned getNumColors();
+      unsigned getNumFaces();
+      unsigned getNumSolidsSelected();
+      unsigned getNumSolids();
+      unsigned getNumTransforms();
 
-      unsigned int   getNumITransforms();
+      unsigned getNumITransforms();
 
   public:
       // debug
