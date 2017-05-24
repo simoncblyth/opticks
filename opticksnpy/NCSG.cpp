@@ -60,7 +60,7 @@ NCSG::NCSG(const char* treedir)
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
-   m_height(-1),
+   m_height(UINT_MAX),
    m_boundary(NULL),
    m_gpuoffset(0,0,0),
    m_container(0),
@@ -158,12 +158,17 @@ std::string NCSG::smry()
 }
 
 
+NParameters* NCSG::LoadMetadata(const char* treedir)
+{
+    std::string metapath = BFile::FormPath(treedir, "meta.json") ;
+    NParameters* meta = new NParameters ; 
+    meta->load_( metapath.c_str() );
+    return meta ; 
+}
 
 void NCSG::loadMetadata()
 {
-    std::string metapath = BFile::FormPath(m_treedir, "meta.json") ;
-    m_meta = new NParameters ; 
-    m_meta->load_( metapath.c_str() );
+    m_meta = LoadMetadata( m_treedir );
 
     int container         = getMeta<int>("container", "-1");
     float containerscale  = getMeta<float>("containerscale", "2.");
@@ -176,7 +181,6 @@ void NCSG::loadMetadata()
 
     if(verbosity > -1) 
     {
-
         if(verbosity > m_verbosity)
         {
             LOG(debug) << "NCSG::loadMetadata increasing verbosity via metadata " 
@@ -210,9 +214,10 @@ void NCSG::loadNodes()
     assert( nj == NJ );
     assert( nk == NK );
 
-    m_height = -1 ; 
-    int h = MAX_HEIGHT ; 
+    m_height = UINT_MAX ; 
+    int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
     while(h--) if(TREE_NODES(h) == m_num_nodes) m_height = h ; 
+
     assert(m_height >= 0); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
 }
 

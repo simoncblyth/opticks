@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+   csg_deep_trees
    boost_visibility_linker_warnings
    invisible_propagation
    automated_interop_tests

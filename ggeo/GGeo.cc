@@ -565,8 +565,8 @@ void GGeo::loadGeometry()
 
 
     loadAnalyticPmt();
-    if(m_ok->isGLTF()) loadFromGLTF();
 
+    if(m_ok->isGLTF()) loadFromGLTF();
 
     setupLookup();
     setupColors();
@@ -641,6 +641,7 @@ void GGeo::loadFromGLTF()
 
     int gltf = m_ok->getGLTF();
     assert(gltf > 0);
+
     const char* gltfbase = m_ok->getGLTFBase();
     const char* gltfname = m_ok->getGLTFName();
     const char* gltfconfig = m_ok->getGLTFConfig();
@@ -656,7 +657,7 @@ void GGeo::loadFromGLTF()
     m_gscene = new GScene(this, m_nscene );
 
 
-
+    if(gltf == 4)  assert(0 && "early exit for gltf==4" );
 }
 
 

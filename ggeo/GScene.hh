@@ -22,20 +22,27 @@ template<class T> class NPY ;
 GScene
 ========
 
-Aiming to be a fully analytic replacement for the mainly triangulated 
-GTreeCheck 
+Fully analytic glTF based replacement for the 
+mainly triangulated GTreeCheck.
 
-* to follow the same pattern as GTreeCheck need to 
-  label the node tree with a ridx repeat index... 
-  in order to use the GGeo meshing machinery
+Note the only public method is the ctor, this 
+gets invoked from GGeo::loadGeometry/GGeo::loadFromGLTF
+when the "--gltf 1" commandline option is used with a 
+value greater than 0.
 
-  GGeo/GGeoLib/GMergedMesh::create machinery 
+Using "--gltf 4", signals an early exit following GScene 
+instanciation in GGeo::loadFromGLTF.
+
+
+* generally follows the same pattern as GTreeCheck 
+  labelling the GNode tree with a ridx repeat index... 
+  which us used within  GGeo/GGeoLib/GMergedMesh mesh merging
+  (which also merges analytic solids)
 
 * a global mm0 is needed for setting domains... when 
   operating purely instanced need to construct some 
   placeholder bbox so satisfy the global mesh 0 that 
   lots of things require
-
 
 
 */
@@ -44,6 +51,7 @@ class GGEO_API GScene
 {
     public:
         GScene(GGeo* ggeo, NScene* scene);
+
     private:
         void init();
     private:
@@ -60,10 +68,8 @@ class GGEO_API GScene
         GSolid* createVolume(nd* n);
     private:
         // compare tree calculated and persisted transforms
-        void           deltacheck(); 
         void           deltacheck_r( GNode* node, unsigned int depth );
-   private:
-        void         createInstancedMergedMeshes(bool deltacheck);
+    private:
         void         checkMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
@@ -71,7 +77,7 @@ class GGEO_API GScene
         NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
         NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
         NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
-   private:
+    private:
         GSolid*       getNode(unsigned node_idx);
     private:
         GGeo*    m_ggeo ; 

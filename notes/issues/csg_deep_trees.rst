@@ -1,6 +1,5 @@
-CSG Translation Issues (solid level)
+CSG Deep Trees (solid level issue)
 ========================================
-
 
 ISSUE : DYB has some deep CSG trees
 --------------------------------------
@@ -24,8 +23,7 @@ whereas logically theres really only one complex solid.idx 664.
 How to handle deep unbalanced trees ?
 -----------------------------------------
 
-Moved search to env-;csg-
-
+Moved literature search to env-;csg-
 
 
 Checking Deep Volumes with tboolean-deep
@@ -87,6 +85,56 @@ Checking Deep Volumes with tboolean-deep
     simon:csg blyth$ 
 
 
+
+
+sc.py KLUDGE SKIPPING deep CSG until work out how to balance
+----------------------------------------------------------------------
+
+::
+
+    simon:issues blyth$ tgltf-;tgltf-gdml-
+    args: 
+    [2017-05-24 11:01:03,663] p77724 {/Users/blyth/opticks/analytic/gdml.py:959} INFO - parsing gdmlpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml 
+    [2017-05-24 11:01:03,699] p77724 {/Users/blyth/opticks/analytic/gdml.py:973} INFO - wrapping gdml element  
+    [2017-05-24 11:01:04,550] p77724 {/Users/blyth/opticks/analytic/sc.py:230} INFO - add_tree_gdml START maxdepth:0 maxcsgheight:3 nodesCount:    0 targetNode: Node  1 : dig 450a pig 369b depth 1 nchild 2  
+    pv:PhysVol /dd/Structure/Sites/db-rock0xc15d358
+     Position mm -16520.0 -802110.0 -2110.0  Rotation deg 0.0 0.0 -122.9  
+    lv:[247] Volume /dd/Geometry/Sites/lvNearSiteRock0xc030350 /dd/Materials/Rock0xc0300c8 near_rock0xc04ba08
+       [705] Subtraction near_rock0xc04ba08  
+         l:[703] Box near_rock_main0xc21d4f0 mm rmin 0.0 rmax 0.0  x 50000.0 y 50000.0 z 50000.0  
+         r:[704] Box near_rock_void0xc21d6c8 mm rmin 0.0 rmax 0.0  x 50010.0 y 50010.0 z 12010.0  
+       [35] Material /dd/Materials/Rock0xc0300c8 solid
+       PhysVol /dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop0xbf89820
+     Position mm 2500.0 -500.0 7500.0  None 
+       PhysVol /dd/Geometry/Sites/lvNearSiteRock#pvNearHallBot0xcd2fa58
+     Position mm 0.0 0.0 -5150.0  None  : Position mm -16520.0 -802110.0 -2110.0   
+    [2017-05-24 11:01:04,553] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(  2) csg.skip as height  4 > 3 lvn /dd/Geometry/PoolDetails/lvNearTopCover0xc137060 lvidx 0 
+    [2017-05-24 11:01:05,114] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 24) csg.skip as height  4 > 3 lvn /dd/Geometry/Pool/lvNearPoolDead0xc2dc490 lvidx 236 
+    [2017-05-24 11:01:05,116] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 25) csg.skip as height  4 > 3 lvn /dd/Geometry/Pool/lvNearPoolLiner0xc21e9d0 lvidx 234 
+    [2017-05-24 11:01:05,120] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 26) csg.skip as height 12 > 3 lvn /dd/Geometry/Pool/lvNearPoolOWS0xbf93840 lvidx 232 
+    [2017-05-24 11:01:05,121] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 27) csg.skip as height  4 > 3 lvn /dd/Geometry/Pool/lvNearPoolCurtain0xc2ceef0 lvidx 213 
+    [2017-05-24 11:01:05,125] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 28) csg.skip as height 12 > 3 lvn /dd/Geometry/Pool/lvNearPoolIWS0xc28bc60 lvidx 211 
+    [2017-05-24 11:01:05,424] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 66) csg.skip as height  7 > 3 lvn /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 lvidx 56 
+    [2017-05-24 11:01:05,433] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 67) csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvTopReflector0xbf9be68 lvidx 59 
+    [2017-05-24 11:01:05,434] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 68) csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvTopRefGap0xbf9c648 lvidx 58 
+    [2017-05-24 11:01:05,437] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 69) csg.skip as height  9 > 3 lvn /dd/Geometry/AdDetails/lvTopESR0xc21fb88 lvidx 57 
+    [2017-05-24 11:01:05,438] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 70) csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 lvidx 62 
+    [2017-05-24 11:01:05,439] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 71) csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvBotRefGap0xc34bc68 lvidx 61 
+    [2017-05-24 11:01:05,441] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 72) csg.skip as height  8 > 3 lvn /dd/Geometry/AdDetails/lvBotESR0xbfa74c0 lvidx 60 
+    [2017-05-24 11:01:05,455] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv( 79) csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 lvidx 69 
+    [2017-05-24 11:01:05,486] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(110) csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328 lvidx 105 
+    [2017-05-24 11:01:05,492] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(117) csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0 lvidx 112 
+    [2017-05-24 11:01:05,498] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(124) csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 lvidx 132 
+    [2017-05-24 11:01:05,510] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(148) csg.skip as height  5 > 3 lvn /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8 lvidx 145 
+    [2017-05-24 11:01:05,512] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(150) csg.skip as height  4 > 3 lvn /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990 lvidx 140 
+    [2017-05-24 11:01:05,514] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(152) csg.skip as height  7 > 3 lvn /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0 lvidx 142 
+    [2017-05-24 11:01:06,487] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(207) csg.skip as height  5 > 3 lvn /dd/Geometry/PoolDetails/lvTablePanel0xc0101d8 lvidx 200 
+    [2017-05-24 11:01:07,685] p77724 {/Users/blyth/opticks/analytic/sc.py:206} WARNING - tlv(247) csg.skip as height  4 > 3 lvn /dd/Geometry/RadSlabs/lvNearRadSlab90xc15c208 lvidx 245 
+    [2017-05-24 11:01:07,686] p77724 {/Users/blyth/opticks/analytic/sc.py:232} INFO - add_tree_gdml DONE maxdepth:0 maxcsgheight:3 nodesCount:12229 tlvCount:248  tgNd:Nd ndIdx:  0 soIdx:0 nch:2 par:-1 matrix:[-0.5431744456291199, 0.8396198749542236, 0.0, 0.0, -0.8396198749542236, -0.5431744456291199, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, -16520.0, -802110.0, -2110.0, 1.0]  
+    [2017-05-24 11:01:07,686] p77724 {/Users/blyth/opticks/analytic/sc.py:254} INFO - saving to /tmp/blyth/opticks/tgltf/tgltf-gdml--.gltf 
+    [2017-05-24 11:01:07,929] p77724 {/Users/blyth/opticks/analytic/sc.py:250} INFO - save_extras /tmp/blyth/opticks/tgltf/extras  : saved 248 
+    /tmp/blyth/opticks/tgltf/tgltf-gdml--.gltf
+    simon:issues blyth$ 
 
 
 
@@ -584,7 +632,7 @@ Hmm need a better way to get from a solid to a list of the lvs that use it...
 
 
 
-Checking detdesc, repeated subtraction of rotated boxes::
+Checking detdesc, repeated bevel subtraction of rotated boxes::
 
      33 <!-- Far Pool top cover -->
      34 <logvol name="lvFarTopCover" material="PPE">

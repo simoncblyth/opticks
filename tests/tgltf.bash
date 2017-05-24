@@ -5,7 +5,14 @@ tgltf-usage(){ cat << \EOU
 tgltf- 
 ======================================================
 
+FUNCTIONS
+-----------
 
+tgltf-make-gdml
+     testing small snippets of GDML
+
+tgltf-gdml
+     testing full geometries 
 
 
 
@@ -26,8 +33,6 @@ tgltf-args(){ echo  --det $(tgltf-det) --src $(tgltf-src) ; }
 
 
 
-
-
 tgltf--(){
 
     tgltf-
@@ -35,10 +40,13 @@ tgltf--(){
     local cmdline=$*
     local tgltfpath=${TGLTFPATH:-$TMP/nd/scene.gltf}
 
+    #local gltf=1
+    local gltf=4  # early exit from GGeo::loadFromGLTF
+
     op.sh  \
             $cmdline \
             --debugger \
-            --gltf 1 \
+            --gltf $gltf \
             --gltfbase $(dirname $tgltfpath) \
             --gltfname $(basename $tgltfpath) \
             --target 3 \
@@ -123,8 +131,9 @@ tree = Tree(wgg.world)
 
 target = tree.findnode(sel=sel, idx=idx)
 
-sc = Sc(maxcsgheight=4)
+sc = Sc(maxcsgheight=3)
 sc.extras["verbosity"] = 1
+
 tg = sc.add_tree_gdml( target, maxdepth=0)
 
 path = "$TMP/tgltf/$FUNCNAME.gltf"

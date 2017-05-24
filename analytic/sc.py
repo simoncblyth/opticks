@@ -199,10 +199,12 @@ class Sc(object):
         csg = solid.as_ncsg()
         csg.analyse()
         polyconfig = PolyConfig(lv.shortname)
+
         csg.meta.update(polyconfig.meta )
+        csg.meta.update(lvname=lv.shortname, soname=lv.solid.name, height=csg.height)  
 
         if csg.height > self.maxcsgheight and self.maxcsgheight != 0:
-            log.warning("translate_lv(%d) marked csg skipped as csg.height %2d exceeds maxcsgheight %d lv.name %s lv.idx %s " % 
+            log.warning("tlv(%3d) csg.skip as height %2d > %d lvn %s lvidx %s " % 
                    (self.translate_lv_count, csg.height, self.maxcsgheight, lv.name, lv.idx )) 
             csg.meta.update(skip=1) 
         pass

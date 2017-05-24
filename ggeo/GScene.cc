@@ -41,8 +41,13 @@ void GScene::init()
     dumpMeshes();
 
     m_root = createVolumeTree(m_scene) ;
+    assert(m_root);
 
-    createInstancedMergedMeshes(true);
+    // check consistency of the level transforms
+    deltacheck_r(m_root, 0);
+
+    makeMergedMeshAndInstancedBuffers() ; 
+
     checkMergedMeshes();
 }
 
@@ -57,7 +62,7 @@ void GScene::modifyGeometry()
 void GScene::importMeshes(NScene* scene)
 {
     unsigned num_meshes = scene->getNumMeshes();
-    LOG(info) << "GScene::importMeshes num_meshes " << num_meshes  ; 
+    LOG(info) << "GScene::importMeshes START num_meshes " << num_meshes  ; 
      
     for(unsigned mesh_idx=0 ; mesh_idx < num_meshes ; mesh_idx++)
     {
@@ -70,6 +75,7 @@ void GScene::importMeshes(NScene* scene)
         // maybe GGeo should be holding on to these ?
         assert(mesh);
     }
+    LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
 }
 
 
@@ -232,12 +238,6 @@ GSolid* GScene::createVolume(nd* n)
 
 
 
-void GScene::deltacheck()
-{
-    // check consistency of the level transforms
-    assert(m_root);
-    deltacheck_r(m_root, 0);
-}
 
 void GScene::deltacheck_r( GNode* node, unsigned int depth)
 {
@@ -257,17 +257,6 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 }
 
 
-
-
-void GScene::createInstancedMergedMeshes(bool delta)
-{
-    if(delta)
-    {  
-        deltacheck();
-    }
-
-    makeMergedMeshAndInstancedBuffers() ; 
-}
 
 
 

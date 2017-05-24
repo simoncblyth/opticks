@@ -75,6 +75,7 @@ class NPY_API NCSG {
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
         static NCSG* LoadTree(const char* treedir, bool usedglobally=false, int verbosity=0, bool polygonize=false );
+        static NParameters* LoadMetadata(const char* treedir);
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();

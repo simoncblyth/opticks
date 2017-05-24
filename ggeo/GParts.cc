@@ -500,6 +500,7 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned 
 
     unsigned ni = m_tran_buffer->getNumItems();
 
+    if(verbosity > 2)
     LOG(info) << "GParts::applyGlobalPlacementTransform"
               << " tran_buffer " << m_tran_buffer->getShapeString()
               << " ni " << ni

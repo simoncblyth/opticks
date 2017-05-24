@@ -48,10 +48,33 @@ GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_vertices(0),
        m_cur_faces(0),
        m_cur_solid(0),
+       m_num_csgskip(0),
        m_cur_base(NULL),
        m_parts(new GParts())
 {
 } 
+
+
+std::string GMergedMesh::brief()
+{
+    std::stringstream ss ; 
+
+    ss << "GMergedMesh::brief"
+       << " index " << std::setw(6) << getIndex()
+       << " num_csgskip " << std::setw(4) << m_num_csgskip
+       << " isSkip " << std::setw(1) << isSkip()
+       << " isAnalytic " << std::setw(1) << isAnalytic()
+       << " isTriangulated " << std::setw(1) << isTriangulated()
+       << " numVertices " << std::setw(7) << getNumVertices()
+       << " numFaces " << std::setw(7) << getNumFaces()
+       << " numSolids " << std::setw(5) << getNumSolids()
+       << " numSolidsSelected " << std::setw(5) << getNumSolidsSelected()
+       ;
+
+    return ss.str();
+}
+
+
 
 GParts* GMergedMesh::getParts()
 {
@@ -154,15 +177,7 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
     // allocate space for flattened arrays
 
     if(verbosity > 1)
-    LOG(info) << "GMergedMesh::create" 
-              << " ridx " << ridx 
-              << " index? " << index 
-              << " mm.index " << mm->getIndex() 
-              << " numVertices " << mm->getNumVertices()
-              << " numFaces " << mm->getNumFaces()
-              << " numSolids " << mm->getNumSolids()
-              << " numSolidsSelected " << mm->getNumSolidsSelected()
-              ;
+    LOG(info) << mm->brief() ; 
 
     mm->allocate(); 
 
@@ -319,6 +334,10 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 
 }
 
+
+
+
+
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
     //assert(0);
@@ -457,14 +476,13 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
         GParts* mmparts = getParts();
         GParts* soparts = solid->getParts(); // despite the name a node-level-object
 
-        // perhaps could skip overheight soparts here ??
 
         if(solid->getRepeatIndex() == 0)
         {
             GMatrixF* sotransform = solid->getTransform() ;  
             soparts->applyGlobalPlacementTransform(sotransform, verbosity );
 
-            if(verbosity > 0)
+            if(verbosity > 1)
             LOG(info) << "GMergedMesh::mergeSolid(applyGlobalPlacementTransform)"
                       << " solid " << solid
                       << " soparts " << soparts
@@ -496,9 +514,15 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
 
     bool repsel =  idx == -1 || ridx == uidx ;
     bool csgskip = solid->isCSGSkip() ; 
-    bool selected = solid->isSelected() && repsel && !csgskip ;
+    bool selected_ =  solid->isSelected() && repsel ;
+    bool selected = selected_ && !csgskip ;
 
-    if(verbosity > 1 || csgskip)
+    if(pass == PASS_COUNT)
+    {
+         if(selected_ && csgskip) m_num_csgskip++ ; 
+    }
+
+    if(verbosity > 1)
           LOG(info)
                   << "GMergedMesh::traverse_r"
                   << " verbosity " << verbosity

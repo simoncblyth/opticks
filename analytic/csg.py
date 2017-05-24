@@ -344,7 +344,7 @@ class CSG(CSG_):
         tbuf = np.vstack(transforms).reshape(-1,4,4) if len(transforms) > 0 else None 
         pbuf = np.vstack(planes).reshape(-1,4) if len(planes) > 0 else None
 
-        log.info("serialized CSG of height %2d into buf with %3d nodes, %3d transforms, %3d planes, meta %r " % (self.height, len(buf), len(transforms), len(planes), self.meta ))  
+        log.debug("serialized CSG of height %2d into buf with %3d nodes, %3d transforms, %3d planes, meta %r " % (self.height, len(buf), len(transforms), len(planes), self.meta ))  
         assert tbuf is not None
 
         return buf, tbuf, pbuf

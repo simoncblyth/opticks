@@ -84,6 +84,11 @@ SDigest::~SDigest()
 {
 }
 
+void SDigest::update(const std::string& str)
+{
+    update( (char*)str.c_str(), strlen(str.c_str()) );
+}
+
 void SDigest::update(char* buffer, int length)
 {
     md5digest_str2md5_update(m_ctx, buffer, length );

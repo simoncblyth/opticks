@@ -47,8 +47,8 @@ class PolyConfig(object):
     }
 
     _poly = {
-         CATHODE:"DCS",
-         BOTTOM:"DCS",
+     #    CATHODE:"DCS",
+     #    BOTTOM:"DCS",
          CONTAINER:"IM",
          DEFAULT:"IM"
     }
@@ -102,7 +102,7 @@ class PolyConfig(object):
     # container settings
     #
     #      container="1" meta causes the NCSG deserialization 
-    #      to adjust box size and position to contain contents 
+    #      to adjust box size and position to contain contents (ie prior trees)
     #
 
     _container = dict(poly="IM",resolution="40", container="1", containerscale="4")

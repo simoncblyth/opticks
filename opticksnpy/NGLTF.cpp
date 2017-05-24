@@ -123,6 +123,10 @@ void NGLTF::setIsUsedGlobally(unsigned mesh_idx, bool iug)
     m_mesh_used_globally[mesh_idx] = iug ; 
 } 
 
+ygltf::mesh_t* NGLTF::getMesh(unsigned mesh_id)
+{
+    return &m_gltf->meshes.at(mesh_id);
+}
 
 
 unsigned NGLTF::getNumMeshes()

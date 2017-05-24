@@ -16,6 +16,7 @@ namespace ygltf
     struct fl_gltf ;
     struct fl_mesh ;
     struct node_t ;
+    struct mesh_t ;
 }
 
 class NPY_API NGLTF {
@@ -41,6 +42,8 @@ class NPY_API NGLTF {
         bool                         isUsedGlobally(unsigned mesh_idx);
         void                         setIsUsedGlobally(unsigned mesh_idx, bool iug);
     protected:
+        ygltf::mesh_t*               getMesh(unsigned mesh_id); 
+
         ygltf::fl_mesh*              getFlatNode(unsigned node_idx );
         const std::array<float, 16>& getFlatTransform(unsigned node_idx );
         const std::array<float, 16>& getNodeTransform(unsigned node_idx );

@@ -36,6 +36,7 @@ class SYSRAP_API SDigest
        virtual ~SDigest();
    public:
        void update(char* buffer, int length);
+       void update( const std::string& str );
        char* finalize();
    private:
        MD5_CTX m_ctx ;

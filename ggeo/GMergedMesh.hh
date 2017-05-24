@@ -42,9 +42,9 @@ public:
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity ) ;
 public:
-    //GMergedMesh(GMergedMesh* other) ;  // stealing copy ctor
     GMergedMesh(unsigned int index) ;
     GParts* getParts();
+    std::string brief();
 private:
     void setParts(GParts* pts); 
 private:
@@ -73,12 +73,15 @@ public:
     bool   isTriangulated(); 
 private:
     // transients that do not need persisting, persistables are down in GMesh
-    unsigned int m_cur_vertices ;
-    unsigned int m_cur_faces ;
-    unsigned int m_cur_solid ;
+    unsigned     m_cur_vertices ;
+    unsigned     m_cur_faces ;
+    unsigned     m_cur_solid ;
+    unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
     GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
+
+  
      
 };
 

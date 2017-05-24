@@ -5,6 +5,8 @@
 
 #include "NYGLTF.hpp"
 
+#include "Counts.hpp"
+#include "NParameters.hpp"
 #include "NPY.hpp"
 #include "NScene.hpp"
 #include "NCSG.hpp"
@@ -36,16 +38,22 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     NGLTF(base, name, config, scene_idx),
     m_verbosity(0),
     m_num_global(0),
-    m_num_csgskip(0)
+    m_num_csgskip(0),
+    m_node_count(0),
+    m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
     load_asset_extras();
+    load_csg_metadata();
 
-    m_root = import();
+    m_root = import_r(0, NULL, 0); 
 
     if(m_verbosity > 1)
     dumpNdTree("NScene::NScene");
 
     compare_trees();
+
+    count_progeny_digests();
+
 
     labelTree_r(m_root);
 
@@ -76,17 +84,88 @@ unsigned NScene::getVerbosity()
     return m_verbosity ; 
 }
 
+void NScene::load_csg_metadata()
+{
+   // for debugging need the CSG metadata prior to loading the trees
+    unsigned num_meshes = getNumMeshes();
+    LOG(info) << "NScene::load_csg_metadata"
+              << " num_meshes " << num_meshes
+              ;
+
+    for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
+    {
+        ygltf::mesh_t* mesh = getMesh(mesh_id);
+        auto extras = mesh->extras ; 
+        std::string uri = extras["uri"] ; 
+        std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
+
+        NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+
+        m_csg_metadata[mesh_id] = meta ; 
+
+        std::cout << meshmeta(mesh_id)
+                  << std::endl 
+                  ;
+
+
+
+    }
+}
+
+
+// metadata from the root nodes of the CSG trees for each solid
+// pmt-cd treebase.py:Node._get_meta
+//
+template<typename T>
+T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback )
+{
+    NParameters* meta = m_csg_metadata[mesh_id] ; 
+    return meta->get<T>(key, fallback) ;
+}
+
+template NPY_API std::string NScene::getCSGMeta<std::string>(unsigned,const char*, const char*);
+template NPY_API int         NScene::getCSGMeta<int>(unsigned,const char*, const char*);
+template NPY_API float       NScene::getCSGMeta<float>(unsigned,const char*, const char*);
+template NPY_API bool        NScene::getCSGMeta<bool>(unsigned,const char*, const char*);
+
+// keys need to match analytic/sc.py 
+std::string NScene::lvname(unsigned mesh_id){    return getCSGMeta<std::string>(mesh_id,"lvname","-") ; }
+std::string NScene::soname(unsigned mesh_id){    return getCSGMeta<std::string>(mesh_id,"soname","-") ; }
+int         NScene::treeindex(unsigned mesh_id){ return getCSGMeta<int>(mesh_id,"treeindex","-1") ; }
+int         NScene::height(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"height","-1") ; }
+int         NScene::nchild(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"nchild","-1") ; }
+bool        NScene::isSkip(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"skip","0") == 1 ; }
+
+std::string NScene::meshmeta(unsigned mesh_id)
+{
+    std::stringstream ss ; 
+
+    ss << " mesh_id " << std::setw(3) << mesh_id
+       << " soname " << std::setw(30) << soname(mesh_id)
+       << " lvname " << std::setw(30) << lvname(mesh_id)
+       << " height " << std::setw(2) << height(mesh_id)
+       ;
+
+    return ss.str();
+}
+
+
 
 void NScene::load_mesh_extras()
 {
     unsigned num_meshes = getNumMeshes();
     assert( num_meshes == m_gltf->meshes.size() ); 
 
-
+    LOG(info) << "NScene::load_mesh_extras START" 
+              << " m_verbosity " << m_verbosity
+              << " num_meshes " << num_meshes 
+              ; 
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        auto mesh = &m_gltf->meshes.at(mesh_id);
+        //auto mesh = &m_gltf->meshes.at(mesh_id);
+        //ygltf::mesh_t* mesh = &m_gltf->meshes.at(mesh_id);
+        ygltf::mesh_t* mesh = getMesh(mesh_id);
 
         auto primitives = mesh->primitives ; 
         auto extras = mesh->extras ; 
@@ -116,8 +195,8 @@ void NScene::load_mesh_extras()
 
         m_csg[mesh_id] = csg ; 
 
-        std::cout << " mid " << std::setw(4) << mesh_id 
-                  << " prm " << std::setw(4) << primitives.size() 
+        std::cout << " mId " << std::setw(4) << mesh_id 
+                  << " npr " << std::setw(4) << primitives.size() 
                   << " nam " << std::setw(65) << mesh->name 
                   << " iug " << std::setw(1) << iug 
                   << " smry " << csg->smry() 
@@ -125,7 +204,8 @@ void NScene::load_mesh_extras()
     }  
 
 
-    LOG(info) << "NScene::load_mesh_extras"
+    LOG(info) << "NScene::load_mesh_extras DONE"
+              << " m_verbosity " << m_verbosity
               << " num_meshes " << num_meshes
               << " m_num_global " << m_num_global
               << " m_num_csgskip " << m_num_csgskip
@@ -138,10 +218,6 @@ void NScene::load_mesh_extras()
 
 
 
-nd* NScene::import()
-{
-    return import_r(0, NULL, 0); 
-}
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
@@ -167,6 +243,65 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
     return n ; 
 }
+
+
+
+
+void NScene::count_progeny_digests_r(nd* n)
+{
+    const std::string& pdig = n->get_progeny_digest();
+
+    m_digest_count->add(pdig.c_str());
+    m_node_count++ ; 
+
+    for(nd* c : n->children) count_progeny_digests_r(c) ;
+}
+
+void NScene::count_progeny_digests()
+{
+    count_progeny_digests_r(m_root);
+
+    m_digest_count->sort(false);   // descending count order, ie most common subtrees first
+    m_digest_count->dump();
+
+    LOG(info) << "NScene::count_progeny_digests"
+              << " node_count " << m_node_count 
+              << " digest_size " << m_digest_count->size()
+              ;  
+
+    for(unsigned i=0 ; i < m_digest_count->size() ; i++)
+    {
+        const std::pair<std::string, unsigned>&  su =  m_digest_count->get(i);
+        std::string pdig = su.first ;
+        unsigned num = su.second ;  
+
+        std::vector<nd*> selection = m_root->find_nodes(pdig);
+        assert( selection.size() == num );
+
+        nd* first = m_root->find_node(pdig);
+
+        if(num > 0)
+        {
+            assert( first && selection[0] == first );
+        }
+
+        assert(first);
+       
+        unsigned mesh_id = first->mesh ; 
+
+        std::cout << " pdig " << std::setw(32) << pdig
+                  << " num " << std::setw(5) << num
+                  << " mesh_id " << std::setw(4) << mesh_id 
+                  << " meshmeta " << meshmeta(mesh_id)
+                  << std::endl 
+                  ; 
+
+        
+
+    } 
+ 
+}
+
 
 
 void NScene::dumpNdTree(const char* msg)
