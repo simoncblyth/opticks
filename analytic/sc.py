@@ -187,13 +187,18 @@ class Sc(object):
         ##      Presumably done here as it is then easy to access the lv ?
         ##
         if getattr(nd.mesh,'csg',None) is None:
-            csg = self.translate_lv( node.lv )
+            csg = self.translate_lv( node.lv, self.maxcsgheight )
             nd.mesh.csg = csg 
+            self.translate_lv_count += 1
+            if csg.meta.get('skip',0) == 1:
+                log.warning("tlv(%3d): csg.skip as height %2d > %d lvn %s lvidx %s " % (self.translate_lv_count, csg.height, self.maxcsgheight, node.lv.name, node.lv.idx )) 
+            pass
         pass
         return nd
 
 
-    def translate_lv(self, lv ):
+    @classmethod
+    def translate_lv(cls, lv, maxcsgheight ):
 
         solid = lv.solid
         csg = solid.as_ncsg()
@@ -203,12 +208,10 @@ class Sc(object):
         csg.meta.update(polyconfig.meta )
         csg.meta.update(lvname=lv.shortname, soname=lv.solid.name, height=csg.height)  
 
-        if csg.height > self.maxcsgheight and self.maxcsgheight != 0:
-            log.warning("tlv(%3d) csg.skip as height %2d > %d lvn %s lvidx %s " % 
-                   (self.translate_lv_count, csg.height, self.maxcsgheight, lv.name, lv.idx )) 
+        if csg.height > maxcsgheight and maxcsgheight != 0:
             csg.meta.update(skip=1) 
         pass
-        self.translate_lv_count += 1
+
         return csg 
 
 

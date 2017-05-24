@@ -274,8 +274,12 @@ void GScene::makeMergedMeshAndInstancedBuffers()
          if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
 
+
          bool inside = ridx == 0 ? true : false ; 
+
          const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside );
+
+
          if(instances.size() == 0)
          {
              LOG(warning) << "GScene::makeMergedMeshAndInstancedBuffers"

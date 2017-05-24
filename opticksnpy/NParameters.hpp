@@ -19,7 +19,7 @@ class NPY_API NParameters {
        NParameters();
        const std::vector<std::pair<std::string,std::string> >& getVec() ;
 
-       std::string getStringValue(const char* name);
+       std::string getStringValue(const char* name) const ;
    public:
        void append(NParameters* other);
    public:
@@ -30,10 +30,10 @@ class NPY_API NParameters {
        void set(const char* name, T value);
 
        template <typename T> 
-       T get(const char* name);
+       T get(const char* name) const ;
 
        template <typename T> 
-       T get(const char* name, const char* fallback);
+       T get(const char* name, const char* fallback) const ;
    public:
        unsigned getNumItems();
        void dump();

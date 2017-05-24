@@ -40,6 +40,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     m_num_global(0),
     m_num_csgskip(0),
     m_node_count(0),
+    m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
     load_asset_extras();
@@ -54,8 +55,11 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
 
     count_progeny_digests();
 
+    find_repeat_candidates();
 
-    labelTree_r(m_root);
+    dump_repeat_candidates();
+
+    labelTree();
 
     if(m_verbosity > 1)
     dumpRepeatCount(); 
@@ -103,12 +107,7 @@ void NScene::load_csg_metadata()
 
         m_csg_metadata[mesh_id] = meta ; 
 
-        std::cout << meshmeta(mesh_id)
-                  << std::endl 
-                  ;
-
-
-
+        //std::cout << meshmeta(mesh_id) << std::endl ;
     }
 }
 
@@ -117,33 +116,32 @@ void NScene::load_csg_metadata()
 // pmt-cd treebase.py:Node._get_meta
 //
 template<typename T>
-T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback )
+T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const 
 {
-    NParameters* meta = m_csg_metadata[mesh_id] ; 
+    const NParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
     return meta->get<T>(key, fallback) ;
 }
 
-template NPY_API std::string NScene::getCSGMeta<std::string>(unsigned,const char*, const char*);
-template NPY_API int         NScene::getCSGMeta<int>(unsigned,const char*, const char*);
-template NPY_API float       NScene::getCSGMeta<float>(unsigned,const char*, const char*);
-template NPY_API bool        NScene::getCSGMeta<bool>(unsigned,const char*, const char*);
+template NPY_API std::string NScene::getCSGMeta<std::string>(unsigned,const char*, const char*) const ;
+template NPY_API int         NScene::getCSGMeta<int>(unsigned,const char*, const char*) const ;
+template NPY_API float       NScene::getCSGMeta<float>(unsigned,const char*, const char*) const ;
+template NPY_API bool        NScene::getCSGMeta<bool>(unsigned,const char*, const char*) const ;
 
 // keys need to match analytic/sc.py 
-std::string NScene::lvname(unsigned mesh_id){    return getCSGMeta<std::string>(mesh_id,"lvname","-") ; }
-std::string NScene::soname(unsigned mesh_id){    return getCSGMeta<std::string>(mesh_id,"soname","-") ; }
-int         NScene::treeindex(unsigned mesh_id){ return getCSGMeta<int>(mesh_id,"treeindex","-1") ; }
-int         NScene::height(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"height","-1") ; }
-int         NScene::nchild(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"nchild","-1") ; }
-bool        NScene::isSkip(unsigned mesh_id){    return getCSGMeta<int>(mesh_id,"skip","0") == 1 ; }
+std::string NScene::lvname(unsigned mesh_id) const { return getCSGMeta<std::string>(mesh_id,"lvname","-") ; }
+std::string NScene::soname(unsigned mesh_id) const { return getCSGMeta<std::string>(mesh_id,"soname","-") ; }
+int         NScene::height(unsigned mesh_id) const { return getCSGMeta<int>(mesh_id,"height","-1") ; }
+int         NScene::nchild(unsigned mesh_id) const { return getCSGMeta<int>(mesh_id,"nchild","-1") ; }
+bool        NScene::isSkip(unsigned mesh_id) const { return getCSGMeta<int>(mesh_id,"skip","0") == 1 ; }
 
-std::string NScene::meshmeta(unsigned mesh_id)
+std::string NScene::meshmeta(unsigned mesh_id) const 
 {
     std::stringstream ss ; 
 
     ss << " mesh_id " << std::setw(3) << mesh_id
-       << " soname " << std::setw(30) << soname(mesh_id)
-       << " lvname " << std::setw(30) << lvname(mesh_id)
-       << " height " << std::setw(2) << height(mesh_id)
+       << " height "  << std::setw(2) << height(mesh_id)
+       << " soname "  << std::setw(35) << soname(mesh_id)
+       << " lvname "  << std::setw(35) << lvname(mesh_id)
        ;
 
     return ss.str();
@@ -221,7 +219,6 @@ void NScene::load_mesh_extras()
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
-
     ygltf::node_t* ynode = getNode(idx);
     auto extras = ynode->extras ; 
     std::string boundary = extras["boundary"] ; 
@@ -229,7 +226,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
     n->idx = idx ; 
-    n->repeatIdx = -1 ; 
+    n->repeatIdx = 0 ; 
     n->mesh = ynode->mesh ; 
     n->parent = parent ;
     n->depth = depth ;
@@ -262,6 +259,10 @@ void NScene::count_progeny_digests()
     count_progeny_digests_r(m_root);
 
     m_digest_count->sort(false);   // descending count order, ie most common subtrees first
+
+    bool dump = false ;
+
+    if(dump)
     m_digest_count->dump();
 
     LOG(info) << "NScene::count_progeny_digests"
@@ -289,18 +290,165 @@ void NScene::count_progeny_digests()
        
         unsigned mesh_id = first->mesh ; 
 
+        if(dump)
         std::cout << " pdig " << std::setw(32) << pdig
                   << " num " << std::setw(5) << num
-                  << " mesh_id " << std::setw(4) << mesh_id 
                   << " meshmeta " << meshmeta(mesh_id)
                   << std::endl 
-                  ; 
-
-        
-
+                ; 
     } 
+}
+
+
+void NScene::find_repeat_candidates()
+{
+   // hmm : this approach will not gang together siblings 
+   //       that always appear together, only subtrees 
+
+    unsigned repeat_min = 4 ; 
+
+    unsigned int num_progeny_digests = m_digest_count->size() ;
+
+    LOG(debug) << "NScene::find_repeat_candidates"
+              << " num_progeny_digests " << num_progeny_digests 
+              << " candidates marked with ** "
+              ;   
+
+    for(unsigned i=0 ; i < num_progeny_digests ; i++)
+    {   
+        std::pair<std::string,unsigned int>&  kv = m_digest_count->get(i) ;
+
+        std::string& pdig = kv.first ; 
+        unsigned int num_pdig = kv.second ;   
+
+        bool select = num_pdig > repeat_min ;
+
+/*
+        nd* first = m_root->find_node(pdig) ;
+        unsigned num_progeny = first->get_progeny_count() ;  // includes self 
+        std::cout  
+                  << ( select ? "**" : "  " ) 
+                  << " i "         << std::setw(3) << i 
+                  << " pdig "      << std::setw(32) << pdig  
+                  << " num_pdig "  << std::setw(6) << num_pdig
+                  << " num_progeny "     <<  std::setw(6) << num_progeny
+                  << " meshmeta "  <<  meshmeta(first->mesh)
+                  << std::endl 
+                  ;
+*/
+
+        if(select) m_repeat_candidates.push_back(pdig);
+    }
+
+    // erase repeats that are enclosed within other repeats 
+    // ie that have an ancestor which is also a repeat candidate
+
+    m_repeat_candidates.erase(
+         std::remove_if(m_repeat_candidates.begin(), m_repeat_candidates.end(), *this ),
+         m_repeat_candidates.end()
+    );
+
+
+}
+
+bool NScene::operator()(const std::string& pdig)
+{
+    bool cr = is_contained_repeat(pdig, 3);
+
+/*
+    if(cr) LOG(info)
+                  << "NScene::operator() "
+                  << " pdig "  << std::setw(32) << pdig
+                  << " disallowd as is_contained_repeat "
+                  ;
+*/
+
+    return cr ;
+}
+
+
+bool NScene::is_contained_repeat( const std::string& pdig, unsigned levels ) 
+{
+    // for the first node that matches the *pdig* progeny digest
+    // look back *levels* ancestors to see if any of the immediate ancestors 
+    // are also repeat candidates, if they are then this is a contained repeat
+    // and is thus disallowed in favor of the ancestor that contains it 
+
+    nd* n = m_root->find_node(pdig) ;
+    const std::vector<nd*>& ancestors = n->get_ancestors();  // ordered from root to parent 
+    unsigned int asize = ancestors.size();
+
+    for(unsigned i=0 ; i < std::min(levels, asize) ; i++)
+    {
+        nd* a = ancestors[asize - 1 - i] ; // from back to start with parent
+        const std::string& adig = a->get_progeny_digest();
+
+        if(std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), adig ) != m_repeat_candidates.end())
+        {
+            return true ;
+        }
+    }
+    return false ;
+}
+
+void NScene::dump_repeat_candidates() const
+{
+    unsigned num_repeat_candidates = m_repeat_candidates.size() ;
+    LOG(info) << "NScene::dump_repeat_candidates"
+              << " num_repeat_candidates " << num_repeat_candidates 
+              ;
+    for(unsigned i=0 ; i < num_repeat_candidates ; i++)
+        dump_repeat_candidate(i);
+} 
+
+void NScene::dump_repeat_candidate(unsigned idx) const 
+{
+    std::string pdig = m_repeat_candidates[idx];
+    unsigned num_instances = m_digest_count->getCount(pdig.c_str());
+
+    nd* first = m_root->find_node(pdig) ;
+    assert(first);
+
+    unsigned num_progeny = first->get_progeny_count() ;  
+    unsigned mesh_id = first->mesh ; 
+
+    std::vector<nd*> placements = m_root->find_nodes(pdig);
+    assert( placements[0] == first );
+    assert( placements.size() == num_instances );
+
+    for(unsigned i=0 ; i < num_instances ; i++)
+    {
+       assert( placements[i]->get_progeny_count() == num_progeny ) ; 
+       assert( placements[i]->mesh == mesh_id ) ; 
+    }
+
+    std::cout
+              << " idx "           << std::setw(3) << idx 
+              << " pdig "          << std::setw(32) << pdig
+              << " num_progeny "   << std::setw(5) << num_progeny
+              << " num_instances " << std::setw(5) << num_instances
+              << " meshmeta "      << meshmeta(mesh_id)
+              << std::endl 
+              ; 
+
+    bool verbose = num_progeny > 0 ; 
+
+    if(verbose)
+    {
+        const std::vector<nd*>& progeny = first->get_progeny();    
+        assert(num_progeny == progeny.size());
+        for(unsigned p=0 ; p < progeny.size() ; p++)
+        {
+            
+            std::cout << "(" << std::setw(2) << p << ") "  
+                      << meshmeta(progeny[p]->mesh)
+                      << std::endl ; 
+        }
+    }
+
  
 }
+
 
 
 
@@ -380,7 +528,7 @@ void NScene::compare_trees_r(int idx)
 
 
 
-unsigned NScene::deviseRepeatIndex(nd* n)
+unsigned NScene::deviseRepeatIndex_0(nd* n)
 {
     unsigned mesh_idx = n->mesh ; 
     unsigned num_mesh_instances = getNumInstances(mesh_idx) ;
@@ -404,17 +552,62 @@ unsigned NScene::deviseRepeatIndex(nd* n)
     return ridx ;
 }
 
-void NScene::labelTree_r(nd* n)
-{
-    unsigned ridx = deviseRepeatIndex(n);
 
+unsigned NScene::deviseRepeatIndex(const std::string& pdig )
+{
+    // repeat index corresponding to a digest
+     unsigned ridx(0);
+     std::vector<std::string>::iterator it = std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), pdig );
+     if(it != m_repeat_candidates.end())
+     {
+         ridx = 1 + std::distance(m_repeat_candidates.begin(), it ) ;  // 1-based index
+         LOG(debug)<<"NScene::deviseRepeatIndex "
+                  << std::setw(32) << pdig
+                  << " ridx " << ridx
+                  ;
+     }
+     return ridx ;
+}
+
+
+void NScene::labelTree()
+{
+    for(unsigned i=0 ; i < m_repeat_candidates.size() ; i++)
+    {
+         std::string pdig = m_repeat_candidates.at(i);
+
+         unsigned ridx = deviseRepeatIndex(pdig);
+
+         assert(ridx == i + 1 );
+
+         std::vector<nd*> instances = m_root->find_nodes(pdig);
+
+         // recursive labelling starting from the instances
+         for(unsigned int p=0 ; p < instances.size() ; p++)
+         {
+             labelTree_r(instances[p], ridx);
+         }
+    }
+
+    LOG(info)<<"NScene::labelTree count of non-zero ridx labelTree_r " << m_label_count ;
+}
+
+#ifdef OLD_LABEL_TREE
+void NScene::labelTree_r(nd* n, unsigned /*ridx*/)
+{
+    unsigned ridx = deviseRepeatIndex_0(n) ;
+#else
+void NScene::labelTree_r(nd* n, unsigned ridx)
+{
+#endif
     n->repeatIdx = ridx ;
 
     if(m_repeat_count.count(ridx) == 0) m_repeat_count[ridx] = 0 ; 
-    m_repeat_count[ridx]++ ; 
+    m_repeat_count[ridx]++ ;
 
+    if(ridx > 0) m_label_count++ ;  
 
-    for(nd* c : n->children) labelTree_r(c) ;
+    for(nd* c : n->children) labelTree_r(c, ridx) ;
 }
 
 

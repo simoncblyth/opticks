@@ -13,6 +13,13 @@ tgltf-make-gdml
 
 tgltf-gdml
      testing full geometries 
+     handy options for debugging::
+ 
+         --restrictmesh 0  # just the global 
+         --restrictmesh 1  # just ridx:1 (eg PMTCollar, depending on root node)
+         --restrictmesh 2  # just ridx:2 (the PMT assembly)   
+
+   
 
 
 
@@ -40,8 +47,8 @@ tgltf--(){
     local cmdline=$*
     local tgltfpath=${TGLTFPATH:-$TMP/nd/scene.gltf}
 
-    #local gltf=1
-    local gltf=4  # early exit from GGeo::loadFromGLTF
+    local gltf=1
+    #local gltf=4  # early exit from GGeo::loadFromGLTF
 
     op.sh  \
             $cmdline \
@@ -105,7 +112,7 @@ EOP
 }
 
 
-tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- ; }
+tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
 tgltf-gdml-(){ $FUNCNAME- | python $* ; }
 tgltf-gdml--(){ cat << EOP
 
@@ -122,8 +129,8 @@ args = opticks_main()
 
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 sel = oil
-#sel = 3153
-sel = 1
+sel = 3153
+#sel = 1
 idx = 0 
 
 wgg = GDML.parse()

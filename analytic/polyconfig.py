@@ -66,8 +66,8 @@ class PolyConfig(object):
      }
 
     _resolution = {
-          BOTTOM:"150",
-         DEFAULT:"40",
+       #   BOTTOM:"150",
+         DEFAULT:"20",
     }
 
     seeds = property(lambda self:self._get(self._seeds))

@@ -232,12 +232,12 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
     // and is thus disallowed in favor of the ancestor that contains it 
 
     GNode* node = m_root->findProgenyDigest(pdig) ; 
-    std::vector<GNode*>& ancestors = node->getAncestors();
+    std::vector<GNode*>& ancestors = node->getAncestors();  // ordered from root to parent 
     unsigned int asize = ancestors.size(); 
 
     for(unsigned int i=0 ; i < std::min(levels, asize) ; i++)
     {
-        GNode* a = ancestors[asize - 1 - i] ;
+        GNode* a = ancestors[asize - 1 - i] ; // from back to start with parent
         std::string& adig = a->getProgenyDigest();
         if(std::find(m_repeat_candidates.begin(), m_repeat_candidates.end(), adig ) != m_repeat_candidates.end())
         { 

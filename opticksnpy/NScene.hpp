@@ -19,20 +19,23 @@ class NPY_API NScene : public NGLTF
         unsigned getVerbosity();
 
     private:
-        template<typename T>
-        T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback );
-
-        std::string lvname(unsigned mesh_id);
-        std::string soname(unsigned mesh_id);
-        int         treeindex(unsigned mesh_id);
-        int         height(unsigned mesh_id);
-        int         nchild(unsigned mesh_id);
-        bool        isSkip(unsigned mesh_id);
-        std::string meshmeta(unsigned mesh_id);
+        template<typename T> T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const ;
+        std::string lvname(unsigned mesh_id) const ;
+        std::string soname(unsigned mesh_id) const ;
+        int         height(unsigned mesh_id) const ;
+        int         nchild(unsigned mesh_id) const ;
+        bool        isSkip(unsigned mesh_id) const ;
+        std::string meshmeta(unsigned mesh_id) const ;
     private:
         void load_asset_extras();
         void load_csg_metadata();
         void load_mesh_extras();
+        void find_repeat_candidates();
+    public:
+        bool operator()(const std::string& pdig);
+        bool is_contained_repeat( const std::string& pdig, unsigned levels ) ;
+        void dump_repeat_candidate(unsigned i) const ;
+        void dump_repeat_candidates() const;
     private:
         nd*  import_r(int idx, nd* parent, int depth);
         void dumpNdTree_r(nd* n);
@@ -42,8 +45,16 @@ class NPY_API NScene : public NGLTF
         void compare_trees_r(int idx);
         void markGloballyUsedMeshes_r(nd* n);
     private:
-        unsigned deviseRepeatIndex(nd* n);
-        void labelTree_r(nd* n);
+        unsigned deviseRepeatIndex(const std::string& pdig);
+        unsigned deviseRepeatIndex_0(nd* n);
+        void labelTree();
+
+#ifdef OLD_LABEL_TREE
+        void labelTree_r(nd* n, unsigned /*ridx*/);
+#else
+        void labelTree_r(nd* n, unsigned ridx);
+#endif
+
     public:
         void     dumpRepeatCount();
         unsigned getRepeatCount(unsigned ridx);
@@ -60,7 +71,10 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_num_global ; 
         unsigned                          m_num_csgskip ; 
         unsigned                          m_node_count ; 
+        unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;
+        std::vector<std::string>          m_repeat_candidates ;
+     
 
 
 };

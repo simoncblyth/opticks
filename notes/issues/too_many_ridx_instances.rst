@@ -1,7 +1,8 @@
 Too Many Ridx Instances
 =========================
 
-Current simple instancing criteria from NScene::labelTree_r of "num_mesh_instances > 4" 
+
+Initial simple instancing criteria from NScene::labelTree_r of "num_mesh_instances > 4" 
 is yielding 117 distinct types of geometry, that is an order of magnitude more than desired.
 
 The very simple instancing criteria based on mesh instance counts alone 
@@ -11,8 +12,33 @@ within the node tree.
 Using containment relations allow "vertical" combination in the node tree not just 
 the current "horizontal" combinations. 
 
-Need to do the analytic equivalent of GTreeCheck/GNode progeny digests within NScene. 
+NScene now does repeat candidate finding similar to GTreeCheck/GNode progeny digests within NScene. 
 
+
+GMergedMesh subtree assemblies missing transform ?
+-----------------------------------------------------
+
+PMT model frame z-shift transforms are not correctly applied when 
+doing GMergedMesh of the PMT assembly of 5 solids.
+
+When instancing a subtree assembly need to bake the subtree-root relative
+transform into the geometry, that aint happening correctly.
+
+Where is the subtree relative transform being baked into the analytic
+CSG list of ~5 trees ?
+
+::
+
+    tgltf-;tgltf-gdml --restrictmesh 0   # crazy too big placeholder bbox to fix
+
+    tgltf-;tgltf-gdml --restrictmesh 2
+
+    tboolean-;tboolean-pmt 
+
+
+
+Initial Approach
+-------------------
 
 ::
 

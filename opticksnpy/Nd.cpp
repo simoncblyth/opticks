@@ -1,6 +1,7 @@
 #include <iomanip>
 #include <sstream>
 #include <cstring>
+#include <algorithm>
 
 #include "SDigest.hh"
 
@@ -50,15 +51,39 @@ nmat4triple* nd::make_global_transform(nd* n)
 
 
 
-
-
+void nd::_collect_ancestors(nd* n, std::vector<nd*>& ancestors)
+{
+    while(n)
+    {
+        ancestors.push_back(n);
+        n = n->parent ; 
+    }
+    std::reverse( ancestors.begin(), ancestors.end() );
+}
+const std::vector<nd*>& nd::get_ancestors()
+{
+    if(_ancestors.size() == 0) _collect_ancestors(parent, _ancestors ); 
+    return _ancestors  ; 
+}
 
 
 const std::vector<nd*>& nd::get_progeny()
 {
-    if(_progeny.size() == 0) _collect_progeny_r(this, _progeny, 0); 
+    if(_progeny.size() == 0)
+    {
+        _collect_progeny_r(this, _progeny, 0); 
+    }
     return _progeny ; 
 }
+
+
+unsigned nd::get_progeny_count()
+{
+    const std::vector<nd*>& progs = get_progeny();
+    return progs.size();
+}
+
+
 
 void nd::_collect_progeny_r(nd* n, std::vector<nd*>& progeny, int depth)
 {
@@ -66,14 +91,14 @@ void nd::_collect_progeny_r(nd* n, std::vector<nd*>& progeny, int depth)
     for(unsigned i = 0; i < n->children.size(); i++) _collect_progeny_r(n->children[i], progeny, depth+1);
 }
 
-std::string nd::_mesh_id()
+std::string nd::_mesh_id() const  
 {
     std::stringstream ss ; 
     ss << mesh ; 
     return ss.str();
 }
 
-std::string nd::_make_mesh_digest()
+std::string nd::_make_mesh_digest() const 
 {
     SDigest dig ;
 
@@ -83,7 +108,7 @@ std::string nd::_make_mesh_digest()
     return dig.finalize();
 }
 
-std::string nd::_make_local_digest()
+std::string nd::_make_local_digest() const 
 {
     SDigest dig ;
 
@@ -164,13 +189,12 @@ void nd::_collect_nodes_r(std::vector<nd*>& selection, const std::string& pdig)
     }
 }
 
-std::vector<nd*> nd::find_nodes(std::string& pdig)
+std::vector<nd*> nd::find_nodes(const std::string& pdig)
 {
     std::vector<nd*> selection ;
     _collect_nodes_r(selection, pdig );
     return selection ;
 }
-
 
 
 
@@ -192,15 +216,10 @@ nd* nd::_find_node_r(const std::string& pdig)
     return n ; 
 }
 
-
-nd* nd::find_node(std::string& pdig)
+nd* nd::find_node(const std::string& pdig)
 {
     return _find_node_r(pdig);
 }
-
-
-
-
 
 
 

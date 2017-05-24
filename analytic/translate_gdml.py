@@ -50,8 +50,10 @@ from opticks.analytic.treebase import Tree
 from opticks.analytic.gdml import GDML
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
+from opticks.analytic.sc import Sc
 
 
+"""
 def translate_lv(lv):
     solid = lv.solid
 
@@ -62,7 +64,7 @@ def translate_lv(lv):
     cn.meta.update(polyconfig.meta )
 
     return cn 
-
+"""
 
 
 if __name__ == '__main__':
@@ -77,8 +79,7 @@ if __name__ == '__main__':
     log.info(" gsel:%s gidx:%s gmaxnode:%s gmaxdepth:%s " % (gsel, gidx, gmaxnode, gmaxdepth))
 
 
-    gdmlpath = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main 
-    gdml = GDML.parse(gdmlpath)
+    gdml = GDML.parse()
     tree = Tree(gdml.world)
 
     subtree = tree.subtree(gsel, maxdepth=gmaxdepth, maxnode=gmaxnode, idx=gidx)
@@ -93,7 +94,7 @@ if __name__ == '__main__':
         solid = node.lv.solid
         if i % 100 == 0:log.info("[%2d] converting solid %r " % (i,solid.name))
 
-        cn = translate_lv(node.lv)
+        cn = Sc.translate_lv(node.lv, maxcsgheight=4)
 
         skip_transform = i == 0  # skip first node transform which is placement of targetNode within its parent 
         if skip_transform:
@@ -104,6 +105,8 @@ if __name__ == '__main__':
 
         cn.meta.update(node.meta)
 
+        log.info("cn.meta %r " % cn.meta )
+
         sys.stderr.write("\n".join(["","",solid.name,repr(cn),str(cn.txt)])) 
 
         cn.boundary = args.testobject
@@ -113,7 +116,7 @@ if __name__ == '__main__':
     pass
 
 
-    container = CSG("box")
+    container = CSG("box", name="container")
     container.boundary = args.container
     container.meta.update(PolyConfig("CONTAINER").meta)
 
