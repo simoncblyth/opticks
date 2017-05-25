@@ -39,6 +39,8 @@ class GGEO_API GMatrix : public GBuffer
        void copyTo(T* buf);
        void* getPointer();  // override GBuffer
 
+       bool isIdentity();
+
        std::string digest();
        std::string brief(unsigned int w=11);
 

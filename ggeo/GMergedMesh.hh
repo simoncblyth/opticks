@@ -58,7 +58,7 @@ private:
     void mergeSolidIdentity( GSolid* solid, bool selected );
     void mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
     void mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
-    void mergeSolidAnalytic( GSolid* solid, unsigned verbosity );
+    void mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
     void mergeSolidBBox( gfloat3* vertices, unsigned nvert );
     void mergeSolidDump( GSolid* solid);
 private:

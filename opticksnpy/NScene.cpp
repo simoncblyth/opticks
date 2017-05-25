@@ -615,7 +615,9 @@ void NScene::labelTree_r(nd* n, unsigned ridx)
 void NScene::markGloballyUsedMeshes_r(nd* n)
 {
     assert( n->repeatIdx > -1 );
-    if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
+
+    //if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
+    setIsUsedGlobally(n->mesh, true );
 
     for(nd* c : n->children) markGloballyUsedMeshes_r(c) ;
 }

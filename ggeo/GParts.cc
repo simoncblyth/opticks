@@ -164,6 +164,7 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     assert(spec);
 
     bool usedglobally = tree->isUsedGlobally() ;  
+    //bool usedglobally = true ; 
 
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
     NPY<float>* tranbuf = usedglobally ? tree->getGTransformBuffer()->clone() : tree->getGTransformBuffer() ; 
@@ -172,7 +173,7 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     // if any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
     //
     //   1. clone the PlaneBuffer above
-    //   2. transform the planes with the global transform, do this in applyGlobalPlacementTransform 
+    //   2. transform the planes with the global transform, do this in applyPlacementTransform 
     //
 
     if(verbosity > 1)
@@ -484,24 +485,31 @@ unsigned int GParts::getNumParts()
 }
 
 
-
-void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
+/*
+void GParts::makePlacementPossible()
 {
-   // gets invoked from GMergedMesh::mergeSolid
+    m_tran_buffer = m_tran_buffer->clone() ; 
+}
+*/
+
+
+void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
+{
+   // gets invoked from GMergedMesh::mergeSolidAnalytic
 
     const float* data = static_cast<float*>(gtransform->getPointer());
 
     if(verbosity > 2)
-    nmat4triple::dump(data, "GParts::applyGlobalPlacementTransform gtransform:" ); 
+    nmat4triple::dump(data, "GParts::applyPlacementTransform gtransform:" ); 
 
-    glm::mat4 gpt = glm::make_mat4( data ) ;  
+    glm::mat4 placement = glm::make_mat4( data ) ;  
 
     assert(m_tran_buffer->hasShape(-1,3,4,4));
 
     unsigned ni = m_tran_buffer->getNumItems();
 
     if(verbosity > 2)
-    LOG(info) << "GParts::applyGlobalPlacementTransform"
+    LOG(info) << "GParts::applyPlacementTransform"
               << " tran_buffer " << m_tran_buffer->getShapeString()
               << " ni " << ni
               ;
@@ -510,31 +518,24 @@ void GParts::applyGlobalPlacementTransform(GMatrix<float>* gtransform, unsigned 
     bool reversed = true ; // means apply transform at root end, not leaf end 
 
     if(verbosity > 2)
-    nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform before");
+    nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform before");
 
     for(unsigned i=0 ; i < ni ; i++)
     {
         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
 
-        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, gpt, reversed );
+        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed );
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
 
     if(verbosity > 2)
-    nmat4triple::dump(m_tran_buffer,"GParts::applyGlobalPlacementTransform after");
+    nmat4triple::dump(m_tran_buffer,"GParts::applyPlacementTransform after");
 
 
     assert(m_plan_buffer->hasShape(-1,4));
-
     unsigned nplane = m_plan_buffer->getNumItems();
-    if(nplane > 0 )
-    {
-        assert(0 && "plane global placement not implemented" );
-    }
-
-
-
+    if(nplane > 0 ) assert(0 && "plane placement not implemented" );
 
 }
 

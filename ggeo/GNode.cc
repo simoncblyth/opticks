@@ -300,6 +300,11 @@ void GNode::collectProgeny(std::vector<GNode*>& progeny)
 GMatrixF* GNode::getRelativeTransform(GNode* base)
 {
    // only transforms after the base node are collected
+   //
+   // #. When this node is the base get identity ?
+   // #. When this node is above base this will assert
+   // #. When this node is below base get transforms relative to base
+   //  
 
     std::vector<GNode*> nodes = getAncestors();  // <--- in order starting from root
     nodes.push_back(this);
@@ -331,13 +336,14 @@ GMatrixF* GNode::getRelativeTransform(GNode* base)
 
     if(nbase == 0)
     {
-        LOG(warning)
+        LOG(fatal)
                     << " BASE NODE IS NOT ANCESTOR " 
                     << " base node index: " << ( base ? base->getIndex() : -1 )
                     << " base node name:  " << base->getName()
                     << " this node index:  " << getIndex() 
                     << " this node name:  " << this->getName()
                     ;
+        assert(0);
     }
     return m ; 
 }

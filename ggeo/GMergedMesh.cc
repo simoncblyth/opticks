@@ -150,6 +150,9 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 
 GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
 {
+    // for instanced meshes the base is set to the first occurence of the 
+    // instance eg invoked from GScene::makeMergedMeshAndInstancedBuffers
+
     assert(root && "root node is required");
 
     Timer t("GMergedMesh::create") ; 
@@ -319,14 +322,38 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
+    GNode* node = static_cast<GNode*>(solid);
     GNode* base = getCurrentBase();
+    unsigned ridx = solid->getRepeatIndex() ;  
+
     GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
+
+    // GMergedMesh::create invokes GMergedMesh::mergeSolid from node tree traversal 
+    // via the recursive GMergedMesh::traverse_r 
+    //
+    // GNode::getRelativeTransform
+    //     relative transform calculated from the product of ancestor transforms
+    //     after the base node (ie traverse ancestors starting from root to this node
+    //     but only collect transforms after the base node : which is required to be 
+    //     an ancestor of this node)
+    //
+    // GNode::getTransform
+    //     global transform, ie product of all transforms from root to this node
+    //  
+    //
+    // When node == base the transform is identity
+    //
+    if( node == base ) assert( transform->isIdentity() ); 
+    if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
+
 
     float* dest = getTransform(m_cur_solid);
     assert(dest);
     transform->copyTo(dest);
 
-    GMesh* mesh = solid->getMesh();
+    GMesh* mesh = solid->getMesh();   // triangulated
+    GParts* pts = solid->getParts();  // analytic 
+
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
 
@@ -335,9 +362,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
     gfloat3* normals  = mesh->getTransformedNormals(*transform);  
 
     if(verbosity > 1) mergeSolidDump(solid);
-
     mergeSolidBBox(vertices, num_vert);
-
     mergeSolidIdentity(solid, selected );
 
     m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
@@ -351,7 +376,8 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
         unsigned* sensor_indices   = solid->getSensorIndices();
 
         mergeSolidFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
-        mergeSolidAnalytic( solid, verbosity );
+
+        mergeSolidAnalytic( pts, transform, verbosity );
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -474,28 +500,15 @@ void GMergedMesh::mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node
 }
 
 
-void GMergedMesh::mergeSolidAnalytic( GSolid* solid, unsigned verbosity )
+void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
 {
-     // analytic CSG combined at node level  
-     GParts* mmparts = getParts();
-     GParts* soparts = solid->getParts(); // despite the name a node-level-object
-
-     if(solid->getRepeatIndex() == 0)
-     {
-         GMatrixF* sotransform = solid->getTransform() ;  
-         soparts->applyGlobalPlacementTransform(sotransform, verbosity );
-
-         if(verbosity > 1)
-         LOG(info) << "GMergedMesh::mergeSolidAnalytic(applyGlobalPlacementTransform)"
-                   << " solid " << solid
-                   << " soparts " << soparts
-                   << " sotransform " << sotransform->brief(7)
-                   ;
-
-     } 
-     mmparts->add(soparts, verbosity);
+    // analytic CSG combined at node level  
+    if(transform && !transform->isIdentity())
+    {
+        pts->applyPlacementTransform(transform, verbosity );
+    }
+    m_parts->add(pts, verbosity); 
 }
-
 
 
 void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )

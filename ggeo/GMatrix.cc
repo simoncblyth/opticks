@@ -153,6 +153,18 @@ void GMatrix<T>::copyTo(T* buf)
 }
 
 
+template <typename T>
+bool GMatrix<T>::isIdentity()
+{
+    T one(1.) ; 
+    T zero(0.) ; 
+    return
+         a1 == one  && a2 == zero  && a3 == zero && a4 == zero  &&
+         b1 == zero && b2 == one   && b3 == zero && b4 == zero  &&
+         c1 == zero && c2 == zero  && c3 == one  && c4 == zero  &&
+         d1 == zero && d2 == zero  && d3 == zero && d4 == one   ;
+
+}
 
 template <typename T>
 void* GMatrix<T>::getPointer()

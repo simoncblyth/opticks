@@ -15,27 +15,6 @@ the current "horizontal" combinations.
 NScene now does repeat candidate finding similar to GTreeCheck/GNode progeny digests within NScene. 
 
 
-GMergedMesh subtree assemblies missing transform ?
------------------------------------------------------
-
-PMT model frame z-shift transforms are not correctly applied when 
-doing GMergedMesh of the PMT assembly of 5 solids.
-
-When instancing a subtree assembly need to bake the subtree-root relative
-transform into the geometry, that aint happening correctly.
-
-Where is the subtree relative transform being baked into the analytic
-CSG list of ~5 trees ?
-
-::
-
-    tgltf-;tgltf-gdml --restrictmesh 0   # crazy too big placeholder bbox to fix
-
-    tgltf-;tgltf-gdml --restrictmesh 2
-
-    tboolean-;tboolean-pmt 
-
-
 
 Initial Approach
 -------------------
