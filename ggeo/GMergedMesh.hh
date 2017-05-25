@@ -53,9 +53,16 @@ private:
     void countMergedMesh( GMergedMesh* other, bool selected );   
     void countSolid( GSolid*      solid, bool selected, unsigned verbosity  ); 
     void countMesh( GMesh* mesh ); 
+private:
     void mergeSolid( GSolid* solid, bool selected, unsigned verbosity );
+    void mergeSolidIdentity( GSolid* solid, bool selected );
+    void mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
+    void mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
+    void mergeSolidAnalytic( GSolid* solid, unsigned verbosity );
+    void mergeSolidBBox( gfloat3* vertices, unsigned nvert );
+    void mergeSolidDump( GSolid* solid);
+private:
     void mergeMergedMesh( GMergedMesh* other, bool selected );
-
 public:
     float* getModelToWorldPtr(unsigned int index);
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");

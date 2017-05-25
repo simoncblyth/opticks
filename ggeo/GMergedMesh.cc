@@ -257,6 +257,8 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
 
+    assert(0 && "is this being used ?");
+
     unsigned int nsolid = other->getNumSolids();
 
     if(m_verbosity > 1)
@@ -300,90 +302,108 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
     gfloat3* normals = other->getNormals();
     guint3*  faces = other->getFaces();
 
-    unsigned int* node_indices = other->getNodes();
-    unsigned int* boundary_indices = other->getBoundaries();
-    unsigned int* sensor_indices = other->getSensors();
-
-    assert(node_indices);
-    assert(boundary_indices);
-    assert(sensor_indices);
+    unsigned* node_indices = other->getNodes();
+    unsigned* boundary_indices = other->getBoundaries();
+    unsigned* sensor_indices = other->getSensors();
 
     if(selected)
     {
-        for(unsigned int i=0 ; i<nvert ; ++i )
-        {
-            m_vertices[m_cur_vertices+i] = vertices[i] ; 
-            m_normals[m_cur_vertices+i] = normals[i] ; 
-        }
+        mergeSolidVertices( nvert, vertices, normals );
+        mergeSolidFaces(    nface, faces, node_indices, boundary_indices, sensor_indices );
 
-        for(unsigned int i=0 ; i<nface ; ++i )
-        {
-            m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
-            m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
-            m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
-
-            m_nodes[m_cur_faces+i]      = node_indices[i] ;
-            m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
-            m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
-        }
-
-        // offset within the flat arrays
         m_cur_vertices += nvert ;
         m_cur_faces    += nface ;
+        // offsets within the flat arrays
     }
-
 }
-
-
-
-
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
-    //assert(0);
-
-    GMesh* mesh = solid->getMesh();
-    unsigned int nvert = mesh->getNumVertices();
-    unsigned int nface = mesh->getNumFaces();
-    guint4 _identity = solid->getIdentity();
-
-    unsigned ridx = solid->getRepeatIndex() ;  
-
     GNode* base = getCurrentBase();
     GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
-    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
 
+    float* dest = getTransform(m_cur_solid);
+    assert(dest);
+    transform->copyTo(dest);
+
+    GMesh* mesh = solid->getMesh();
+    unsigned num_vert = mesh->getNumVertices();
+    unsigned num_face = mesh->getNumFaces();
+
+    guint3* faces = mesh->getFaces();
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+    gfloat3* normals  = mesh->getTransformedNormals(*transform);  
+
+    if(verbosity > 1) mergeSolidDump(solid);
+
+    mergeSolidBBox(vertices, num_vert);
+
+    mergeSolidIdentity(solid, selected );
+
+    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+
+    if(selected)
+    {
+        mergeSolidVertices( num_vert, vertices, normals );
+
+        unsigned* node_indices     = solid->getNodeIndices();
+        unsigned* boundary_indices = solid->getBoundaryIndices();
+        unsigned* sensor_indices   = solid->getSensorIndices();
+
+        mergeSolidFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
+        mergeSolidAnalytic( solid, verbosity );
+
+        // offsets with the flat arrays
+        m_cur_vertices += num_vert ;  
+        m_cur_faces    += num_face ; 
+    }
+}
+
+
+void GMergedMesh::mergeSolidDump( GSolid* solid)
+{
+    const char* pvn = solid->getPVName() ;
+    const char* lvn = solid->getLVName() ;
+    guint4 _identity = solid->getIdentity();
+    unsigned ridx = solid->getRepeatIndex() ;  
+
+    LOG(info) << "GMergedMesh::mergeSolidDump" 
+              << " m_cur_solid " << m_cur_solid
+              << " idx " << solid->getIndex()
+              << " ridx " << ridx
+              << " id " << _identity.description()
+              << " pv " << ( pvn ? pvn : "-" )
+              << " lv " << ( lvn ? lvn : "-" )
+              ;
+}
+
+void GMergedMesh::mergeSolidBBox( gfloat3* vertices, unsigned nvert )
+{
     // needs to be outside the selection branch for the all solid center extent
     gbbox* bb = GMesh::findBBox(vertices, nvert) ;
+    if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeSolid NULL bb " ; 
+    assert(bb); 
 
-   if(m_verbosity > 1)
-   {
+    m_bbox[m_cur_solid] = *bb ;  
+    m_center_extent[m_cur_solid] = bb->center_extent() ;
+}
 
-        const char* pvn = solid->getPVName() ;
-        const char* lvn = solid->getLVName() ;
+void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
+{
+    GMesh* mesh = solid->getMesh();
 
-        LOG(info) << "GMergedMesh::mergeSolid" 
-                  << " m_cur_solid " << m_cur_solid
-                  << " idx " << solid->getIndex()
-                  << " ridx " << ridx
-                  << " id " << _identity.description()
-                  << " pv " << ( pvn ? pvn : "-" )
-                  << " lv " << ( lvn ? lvn : "-" )
-                  << " bb " << ( bb ? bb->description() : "bb:NULL"  )
-                  ;
-        transform->Summary("GMergedMesh::mergeSolid transform");
-   }   
+    unsigned nvert = mesh->getNumVertices();
+    unsigned nface = mesh->getNumFaces();
 
-   if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeSolid NULL bb " ; 
-   assert(bb); 
+    guint4 _identity = solid->getIdentity();
 
+    unsigned nodeIndex = solid->getIndex();
+    unsigned meshIndex = mesh->getIndex();
+    unsigned boundary = solid->getBoundary();
 
-    unsigned int boundary = solid->getBoundary();
     NSensor* sensor = solid->getSensor();
+    unsigned sensorIndex = NSensor::RefIndex(sensor) ; 
 
-    unsigned int nodeIndex = solid->getIndex();
-    unsigned int meshIndex = mesh->getIndex();
-    unsigned int sensorIndex = NSensor::RefIndex(sensor) ; 
     assert(_identity.x == nodeIndex);
     assert(_identity.y == meshIndex);
     assert(_identity.z == boundary);
@@ -397,17 +417,10 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
               << " sensor " << ( sensor ? sensor->description() : "NULL" )
               ;
 
+
     GNode* parent = solid->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
-
-    m_bbox[m_cur_solid] = *bb ;  
-    m_center_extent[m_cur_solid] = bb->center_extent() ;
-
-    float* dest = getTransform(m_cur_solid);
-    assert(dest);
-
-    transform->copyTo(dest);
     m_meshes[m_cur_solid] = meshIndex ; 
 
     // face and vertex counts must use same selection as above to be usable 
@@ -428,75 +441,61 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 
          //assert(nodeIndex == m_cur_solid);  // trips ggv-pmt still needed ?
     } 
-
     m_identity[m_cur_solid] = _identity ; 
+}
 
-    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
-
-
-
-    if(selected)
+void GMergedMesh::mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals )
+{
+    for(unsigned i=0 ; i < nvert ; ++i )
     {
-        gfloat3* normals = mesh->getTransformedNormals(*transform);  
-        guint3* faces = mesh->getFaces();
-
-        for(unsigned int i=0 ; i<nvert ; ++i )
-        {
-            m_vertices[m_cur_vertices+i] = vertices[i] ; 
-            m_normals[m_cur_vertices+i] = normals[i] ; 
-        }
-
-        // TODO: consolidate into uint4 (with one spare)
-        unsigned int* node_indices = solid->getNodeIndices();
-        unsigned int* boundary_indices = solid->getBoundaryIndices();
-        unsigned int* sensor_indices = solid->getSensorIndices();
-        assert(node_indices);
-        assert(boundary_indices);
-        assert(sensor_indices);
-
-        // offset the vertex indices as are combining all meshes into single vertex list 
-        for(unsigned int i=0 ; i<nface ; ++i )
-        {
-            m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
-            m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
-            m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
-
-            m_nodes[m_cur_faces+i]      = node_indices[i] ;
-            m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
-            m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
-        }
-
-        // offset within the flat arrays
-        m_cur_vertices += nvert ;
-        m_cur_faces    += nface ;
-
-
-        // analytic CSG combined at node level  
-
-        GParts* mmparts = getParts();
-        GParts* soparts = solid->getParts(); // despite the name a node-level-object
-
-
-        if(solid->getRepeatIndex() == 0)
-        {
-            GMatrixF* sotransform = solid->getTransform() ;  
-            soparts->applyGlobalPlacementTransform(sotransform, verbosity );
-
-            if(verbosity > 1)
-            LOG(info) << "GMergedMesh::mergeSolid(applyGlobalPlacementTransform)"
-                      << " solid " << solid
-                      << " soparts " << soparts
-                      << " nodeIndex " << nodeIndex 
-                      << " meshIndex " << meshIndex 
-                      << " sotransform " << sotransform->brief(7)
-                      ;
-
-        } 
-
-        mmparts->add(soparts, verbosity);
-
+        m_vertices[m_cur_vertices+i] = vertices[i] ; 
+        m_normals[m_cur_vertices+i] = normals[i] ; 
     }
 }
+
+void GMergedMesh::mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices )
+{
+    assert(node_indices);
+    assert(boundary_indices);
+    assert(sensor_indices);
+
+    for(unsigned i=0 ; i < nface ; ++i )
+    {
+        m_faces[m_cur_faces+i].x = faces[i].x + m_cur_vertices ;  
+        m_faces[m_cur_faces+i].y = faces[i].y + m_cur_vertices ;  
+        m_faces[m_cur_faces+i].z = faces[i].z + m_cur_vertices ;  
+
+        // TODO: consolidate into uint4 
+        m_nodes[m_cur_faces+i]      = node_indices[i] ;
+        m_boundaries[m_cur_faces+i] = boundary_indices[i] ;
+        m_sensors[m_cur_faces+i]    = sensor_indices[i] ;
+    }
+
+}
+
+
+void GMergedMesh::mergeSolidAnalytic( GSolid* solid, unsigned verbosity )
+{
+     // analytic CSG combined at node level  
+     GParts* mmparts = getParts();
+     GParts* soparts = solid->getParts(); // despite the name a node-level-object
+
+     if(solid->getRepeatIndex() == 0)
+     {
+         GMatrixF* sotransform = solid->getTransform() ;  
+         soparts->applyGlobalPlacementTransform(sotransform, verbosity );
+
+         if(verbosity > 1)
+         LOG(info) << "GMergedMesh::mergeSolidAnalytic(applyGlobalPlacementTransform)"
+                   << " solid " << solid
+                   << " soparts " << soparts
+                   << " sotransform " << sotransform->brief(7)
+                   ;
+
+     } 
+     mmparts->add(soparts, verbosity);
+}
+
 
 
 void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
