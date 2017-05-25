@@ -619,6 +619,9 @@ void NScene::markGloballyUsedMeshes_r(nd* n)
     //if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
     setIsUsedGlobally(n->mesh, true );
 
+    // see opticks/notes/issues/subtree_instances_missing_transform.rst
+
+
     for(nd* c : n->children) markGloballyUsedMeshes_r(c) ;
 }
 

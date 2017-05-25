@@ -163,7 +163,7 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
 {
     assert(spec);
 
-    bool usedglobally = tree->isUsedGlobally() ;  
+    bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
     //bool usedglobally = true ; 
 
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
@@ -483,14 +483,6 @@ unsigned int GParts::getNumParts()
     assert(m_part_buffer->getNumItems() == m_bndspec->getNumItems() );
     return m_part_buffer->getNumItems() ;
 }
-
-
-/*
-void GParts::makePlacementPossible()
-{
-    m_tran_buffer = m_tran_buffer->clone() ; 
-}
-*/
 
 
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )

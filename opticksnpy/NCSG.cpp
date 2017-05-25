@@ -537,7 +537,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->transform = import_transform_triple( transform_idx ) ;
 
         nmat4triple* gtransform = node->global_transform();   
-        if(gtransform == NULL && m_usedglobally)
+        if(gtransform == NULL && m_usedglobally) // see opticks/notes/issues/subtree_instances_missing_transform.rst
         {
             gtransform = nmat4triple::make_identity() ;
         }
