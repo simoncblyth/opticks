@@ -16,6 +16,365 @@ NScene now does repeat candidate finding similar to GTreeCheck/GNode progeny dig
 
 
 
+Can siblings be grouped into added subtrees in crowded nodes ?
+----------------------------------------------------------------
+
+* repeat candidate finding only works for subtrees (not siblings), so would be better
+  to unflatten the node tree for crowded nodes into groups, allowing the progeny digest 
+  and repeat candidiate finding/labelling machinery to be used as is ... 
+
+* eg would want the PMT Collar to be grouped together with the PMT subtree, but 
+  its unscalable to write geometry specific code to do this : need a general way 
+   
+
+Finding nodes with lots of children
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+
+    simon:opticks blyth$ tgltf-;tgltf-gdml-rip   # starting from 3153
+
+    In [20]: map(lambda n:(n,len(target.find_nodes_nchild(n))), range(23) )
+    Out[20]: 
+    [(0, 532),
+     (1, 269),
+     (2, 228),
+     (3, 29),
+     (4, 25),
+     (5, 13),
+     (6, 6),
+     (7, 6),
+     (8, 6),
+     (9, 6),
+     (10, 6),
+     (11, 2),
+     (12, 2),
+     (13, 2),
+     (14, 2),
+     (15, 2),
+     (16, 2),
+     (17, 2),
+     (18, 2),
+     (19, 2),
+     (20, 2),
+     (21, 2),
+     (22, 2)]
+
+
+    In [21]: nn = target.find_nodes_nchild(22)
+
+    In [24]: len(nn[0].children)
+    Out[24]: 520
+
+    In [25]: len(nn[1].children)
+    Out[25]: 35
+
+    In [29]: nn[0].lv.name
+    Out[29]: '/dd/Geometry/AD/lvOIL0xbf5e0b8'
+
+    In [30]: nn[1].lv.name
+    Out[30]: '/dd/Geometry/AD/lvLSO0xc403e40'
+
+    In [45]: txf = [c.pv.transform for c in oil.children]
+
+    In [46]: len(oil.children)
+    Out[46]: 520
+
+    In [47]: len(txf)
+    Out[47]: 520
+
+    In [52]: tt = np.vstack(txf).reshape(-1,4,4)
+
+    In [53]: len(tt)
+    Out[53]: 520
+
+    In [54]: tt[0]
+    Out[54]: 
+    array([[ -1.,   0.,   0.,   0.],
+           [ -0.,  -1.,   0.,   0.],
+           [  0.,   0.,   1.,   0.],
+           [  0.,   0., -49.,   1.]], dtype=float32)
+
+    In [55]: tt[1]
+    Out[55]: 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.1305,    -0.9914,    -0.    ,     0.    ],
+           [    0.9914,     0.1305,     0.    ,     0.    ],
+           [-2304.6135,  -303.4081, -1750.    ,     1.    ]], dtype=float32)
+
+    In [56]: tt[2]
+    Out[56]: 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.1305,    -0.9914,    -0.    ,     0.    ],
+           [    0.9914,     0.1305,     0.    ,     0.    ],
+           [-2249.0928,  -296.0987, -1750.    ,     1.    ]], dtype=float32)
+
+    In [57]: tt[3]
+    Out[57]: 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.3827,    -0.9239,    -0.    ,     0.    ],
+           [    0.9239,     0.3827,     0.    ,     0.    ],
+           [-2147.5579,  -889.5477, -1750.    ,     1.    ]], dtype=float32)
+
+    In [58]: tt[4]
+    Out[58]: 
+    array([[    0.    ,    -0.    ,     1.    ,     0.    ],
+           [    0.3827,    -0.9239,    -0.    ,     0.    ],
+           [    0.9239,     0.3827,     0.    ,     0.    ],
+           [-2095.8208,  -868.1174, -1750.    ,     1.    ]], dtype=float32)
+
+
+    In [64]: len(unique2D_subarray(tt))    ## all transforms are unique
+    Out[64]: 520
+
+
+
+    In [71]: rr = tt[:,:3,:3]
+
+    In [72]: rr
+    Out[72]: 
+    array([[[-1.    ,  0.    ,  0.    ],
+            [-0.    , -1.    ,  0.    ],
+            [ 0.    ,  0.    ,  1.    ]],
+
+           [[ 0.    , -0.    ,  1.    ],
+            [ 0.1305, -0.9914, -0.    ],
+            [ 0.9914,  0.1305,  0.    ]],
+
+           [[ 0.    , -0.    ,  1.    ],
+            [ 0.1305, -0.9914, -0.    ],
+            [ 0.9914,  0.1305,  0.    ]],
+
+           ..., 
+           [[ 0.    , -0.    , -1.    ],
+            [ 0.866 , -0.5   ,  0.    ],
+            [-0.5   , -0.866 ,  0.    ]],
+
+           [[ 0.    , -0.    , -1.    ],
+            [ 0.866 , -0.5   ,  0.    ],
+            [-0.5   , -0.866 ,  0.    ]],
+
+           [[ 0.    , -0.    , -1.    ],
+            [ 0.866 , -0.5   ,  0.    ],
+            [-0.5   , -0.866 ,  0.    ]]], dtype=float32)
+
+    In [73]: len(rr)
+    Out[73]: 520
+
+    In [74]: unique2D_subarray(rr)
+    Out[74]: 
+    array([[[ 1.    ,  0.    ,  0.    ],
+            [ 0.    ,  1.    ,  0.    ],
+            [ 0.    ,  0.    ,  1.    ]],
+
+           [[-1.    ,  0.    ,  0.    ],
+            [-0.    , -1.    ,  0.    ],
+            [ 0.    ,  0.    ,  1.    ]],
+
+           [[ 0.    ,  0.    ,  1.    ],
+            ...
+
+    In [75]: len(unique2D_subarray(rr))   ## only 68 distinct rotations
+    Out[75]: 68
+
+
+
+
+General Sibling grouping 
+---------------------------
+
+For crowded nodes like oil and ls, counting 
+lv occurrence and looking for groups with equal counts
+will yield candidate groupings... then need to analyse the 
+transforms to pair the appropriate ones together.  They should
+have equal transforms (or at least equal rotation and z-shift) 
+
+::
+
+    In [1]: tree.analyse_crowds()
+    /dd/Geometry/RPC/lvNearRPCRoof0xbf40030 54
+        54 : /dd/Geometry/RPC/lvRPCMod0xbf54e60 
+    /dd/Geometry/RPCSupport/lvNearHbeamSmallUnit0xc5bef70 72
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSpanHbeam0xc21f438 
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSideShortHbeam0xc2b1dd0 
+         8 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagSquareIron0xc358910 
+         8 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagAngleIron0xc12bb90 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearPentagonIron0xc35a0b0 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSquareIron0xc2484c0 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartLongAngleIron0xc21e000 
+    /dd/Geometry/RPCSupport/lvNearHbeamBigUnit0xbf3a988 178
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSideLongHbeam0xbf3b550 
+         4 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSpanHbeam0xc21f438 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagSquareIron0xc358910 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagAngleIron0xc12bb90 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartShortAngleIron0xbf3dbf0 
+        32 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearPentagonIron0xc35a0b0 
+        36 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartLongAngleIron0xc21e000 
+        54 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSquareIron0xc2484c0 
+    /dd/Geometry/RPCSupport/lvNearHbeamBigUnit0xbf3a988 178
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSideLongHbeam0xbf3b550 
+         4 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSpanHbeam0xc21f438 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagSquareIron0xc358910 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagAngleIron0xc12bb90 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartShortAngleIron0xbf3dbf0 
+        32 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearPentagonIron0xc35a0b0 
+        36 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartLongAngleIron0xc21e000 
+        54 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSquareIron0xc2484c0 
+    /dd/Geometry/RPCSupport/lvNearHbeamBigUnit0xbf3a988 178
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSideLongHbeam0xbf3b550 
+         4 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSpanHbeam0xc21f438 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagSquareIron0xc358910 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagAngleIron0xc12bb90 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartShortAngleIron0xbf3dbf0 
+        32 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearPentagonIron0xc35a0b0 
+        36 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartLongAngleIron0xc21e000 
+        54 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSquareIron0xc2484c0 
+    /dd/Geometry/RPCSupport/lvNearHbeamBigUnit0xbf3a988 178
+         2 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSideLongHbeam0xbf3b550 
+         4 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSpanHbeam0xc21f438 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagSquareIron0xc358910 
+        16 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearDiagAngleIron0xc12bb90 
+        18 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartShortAngleIron0xbf3dbf0 
+        32 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearPentagonIron0xc35a0b0 
+        36 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearThwartLongAngleIron0xc21e000 
+        54 : /dd/Geometry/RPCSupport/TrivialComponents/lvNearSquareIron0xc2484c0 
+    /dd/Geometry/Pool/lvNearPoolOWS0xbf93840 2938
+         1 : /dd/Geometry/Pool/lvNearPoolCurtain0xc2ceef0 
+         1 : /dd/Geometry/PoolDetails/lvOutInWaterPipeNearTub0xce594c0 
+         1 : /dd/Geometry/PoolDetails/lvOutOutWaterPipeNearTub0xce58ca0 
+         2 : /dd/Geometry/PoolDetails/lvTopShortCableTray0xce58200 
+         4 : /dd/Geometry/PoolDetails/lvTopCornerCableTray0xce56ff8 
+         8 : /dd/Geometry/PoolDetails/lvLegInOWSTub0xcced348 
+         8 : /dd/Geometry/PoolDetails/lvVertiCableTray0xc0e08a0 
+        16 : /dd/Geometry/PoolDetails/lvShortParRib20xcd56b40 
+        16 : /dd/Geometry/PoolDetails/lvLongParRib20xc3b4910 
+        16 : /dd/Geometry/PoolDetails/lvShortParRib10xcd55e48 
+        16 : /dd/Geometry/PoolDetails/lvLongParRib10xc3b3eb8 
+        32 : /dd/Geometry/PoolDetails/lvCornerParRib10xc0e2430 
+        32 : /dd/Geometry/PoolDetails/lvCornerParRib20xc0f2040 
+        92 : /dd/Geometry/PoolDetails/lvBotVertiRib0xbf63800 
+       167 : /dd/Geometry/PMT/lvPmtTee0xc011648 
+       167 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+       167 : /dd/Geometry/PMT/lvPmtTopRing0xc3486f0 
+       167 : /dd/Geometry/PMT/lvPmtBaseRing0xc00f400 
+       192 : /dd/Geometry/PoolDetails/lvCrossRib0xcd570b8 
+       330 : /dd/Geometry/PoolDetails/lvSidVertiRib0xc5e6fa0 
+       501 : /dd/Geometry/PMT/lvMountRib10xc3a4cb0 
+       501 : /dd/Geometry/PMT/lvMountRib20xc012500 
+       501 : /dd/Geometry/PMT/lvMountRib30xc00d350 
+    /dd/Geometry/Pool/lvNearPoolIWS0xc28bc60 1619
+         1 : /dd/Geometry/PoolDetails/lvInnInWaterPipeNearTub0xbf29660 
+         1 : /dd/Geometry/PoolDetails/lvInnOutWaterPipeNearTub0xc0d7c30 
+         2 : /dd/Geometry/PoolDetails/lvInnShortParCableTray0xc95a730 
+         2 : /dd/Geometry/AD/lvADE0xc2a78c0 
+         2 : /dd/Geometry/PoolDetails/lvTablePanel0xc0101d8 
+         2 : /dd/Geometry/PoolDetails/lvInnVertiCableTray0xbf28e40 
+         4 : /dd/Geometry/PoolDetails/lvSupportRib50xc0d8bb8 
+         8 : /dd/Geometry/PoolDetails/lvLegInIWSTub0xc400e40 
+         8 : /dd/Geometry/PoolDetails/lvSlopeRib10xc0d8b50 
+         8 : /dd/Geometry/PoolDetails/lvSupportRib10xc0d8868 
+         8 : /dd/Geometry/PoolDetails/lvSlopeRib50xc0d8db0 
+       121 : /dd/Geometry/PMT/lvPmtTee0xc011648 
+       121 : /dd/Geometry/PMT/lvPmtTopRing0xc3486f0 
+       121 : /dd/Geometry/PMT/lvPmtBaseRing0xc00f400 
+       121 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+       363 : /dd/Geometry/PMT/lvMountRib20xc012500 
+       363 : /dd/Geometry/PMT/lvMountRib30xc00d350 
+       363 : /dd/Geometry/PMT/lvMountRib10xc3a4cb0 
+    /dd/Geometry/AD/lvOIL0xbf5e0b8 520
+         1 : /dd/Geometry/AdDetails/lvSstTopHub0xc2644f0 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsLsoPrt0xc104a90 
+         1 : /dd/Geometry/AdDetails/lvOcrCalLsoPrt0xc1077c8 
+         1 : /dd/Geometry/AdDetails/lvSstBotHub0xc1760f0 
+         1 : /dd/Geometry/AdDetails/lvTopReflector0xbf9be68 
+         1 : /dd/Geometry/AdDetails/lvCtrLsoOflInOil0xc183248 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsLsoOfl0xc1052d0 
+         1 : /dd/Geometry/AdDetails/lvOcrCalLso0xc17e288 
+         1 : /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 
+         1 : /dd/Geometry/AD/lvOAV0xbf1c760 
+         1 : /dd/Geometry/AdDetails/lvOavTopHub0xbf366d0 
+         3 : /dd/Geometry/AdDetails/lvCtrLsoOflTopClp0xc26f5a0 
+         3 : /dd/Geometry/CalibrationSources/lvWallLedSourceAssy0xc3a9f40 
+         3 : /dd/Geometry/AdDetails/lvCtrLsoOflTfb0xc3a2ab0 
+         4 : /dd/Geometry/AdDetails/lvBotRefRadialShortRib0xbf339c8 
+         4 : /dd/Geometry/AdDetails/lvBotRefRadialLongRib0xbf32988 
+         6 : /dd/Geometry/PMT/lvHeadonPmtAssy0xbf9fb20 
+         6 : /dd/Geometry/PMT/lvHeadonPmtMount0xc02d380 
+         8 : /dd/Geometry/AdDetails/lvSstInnVerRibBase0xbf31748 
+         8 : /dd/Geometry/AdDetails/lvSstBotRib0xc26c650 
+         8 : /dd/Geometry/AdDetails/lvSstTopTshapeRib0xc2629f0 
+         8 : /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0 
+         8 : /dd/Geometry/AdDetails/lvSstBotCirRibBase0xc26e220 
+         8 : /dd/Geometry/AdDetails/lvOavTopRib0xbf7bce8 
+         8 : /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 
+         8 : /dd/Geometry/AdDetails/lvBotRefCircleRib0xbf34468 
+        32 : /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 
+       192 : /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 
+       192 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+    /dd/Geometry/AD/lvLSO0xc403e40 35
+         1 : /dd/Geometry/AD/lvIAV0xc404ee8 
+         1 : /dd/Geometry/AdDetails/lvIavTopHub0xc129d88 
+         1 : /dd/Geometry/AdDetails/lvCtrGdsOflInLso0xc28cc88 
+         1 : /dd/Geometry/AdDetails/lvIavBotHub0xc355b80 
+         1 : /dd/Geometry/AdDetails/lvCtrGdsOflTfbInLso0xbfa0728 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsPrt0xc352630 
+         1 : /dd/Geometry/AdDetails/lvOavBotHub0xc3550d8 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsTfbInLso0xc3529c0 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsInLso0xc353990 
+         2 : /dd/Geometry/AdDetails/lvCtrGdsOflBotClp0xc407eb0 
+         8 : /dd/Geometry/AdDetails/lvIavBotRib0xc355990 
+         8 : /dd/Geometry/AdDetails/lvOavBotRib0xc353d30 
+         8 : /dd/Geometry/AdDetails/lvIavTopRib0xbf8e280 
+    /dd/Geometry/AD/lvOIL0xbf5e0b8 520
+         1 : /dd/Geometry/AdDetails/lvSstTopHub0xc2644f0 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsLsoPrt0xc104a90 
+         1 : /dd/Geometry/AdDetails/lvOcrCalLsoPrt0xc1077c8 
+         1 : /dd/Geometry/AdDetails/lvSstBotHub0xc1760f0 
+         1 : /dd/Geometry/AdDetails/lvTopReflector0xbf9be68 
+         1 : /dd/Geometry/AdDetails/lvCtrLsoOflInOil0xc183248 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsLsoOfl0xc1052d0 
+         1 : /dd/Geometry/AdDetails/lvOcrCalLso0xc17e288 
+         1 : /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 
+         1 : /dd/Geometry/AD/lvOAV0xbf1c760 
+         1 : /dd/Geometry/AdDetails/lvOavTopHub0xbf366d0 
+         3 : /dd/Geometry/AdDetails/lvCtrLsoOflTopClp0xc26f5a0 
+         3 : /dd/Geometry/CalibrationSources/lvWallLedSourceAssy0xc3a9f40 
+         3 : /dd/Geometry/AdDetails/lvCtrLsoOflTfb0xc3a2ab0 
+         4 : /dd/Geometry/AdDetails/lvBotRefRadialShortRib0xbf339c8 
+         4 : /dd/Geometry/AdDetails/lvBotRefRadialLongRib0xbf32988 
+         6 : /dd/Geometry/PMT/lvHeadonPmtAssy0xbf9fb20 
+         6 : /dd/Geometry/PMT/lvHeadonPmtMount0xc02d380 
+         8 : /dd/Geometry/AdDetails/lvSstInnVerRibBase0xbf31748 
+         8 : /dd/Geometry/AdDetails/lvSstBotRib0xc26c650 
+         8 : /dd/Geometry/AdDetails/lvSstTopTshapeRib0xc2629f0 
+         8 : /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0 
+         8 : /dd/Geometry/AdDetails/lvSstBotCirRibBase0xc26e220 
+         8 : /dd/Geometry/AdDetails/lvOavTopRib0xbf7bce8 
+         8 : /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 
+         8 : /dd/Geometry/AdDetails/lvBotRefCircleRib0xbf34468 
+        32 : /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 
+       192 : /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 
+       192 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+    /dd/Geometry/AD/lvLSO0xc403e40 35
+         1 : /dd/Geometry/AD/lvIAV0xc404ee8 
+         1 : /dd/Geometry/AdDetails/lvIavTopHub0xc129d88 
+         1 : /dd/Geometry/AdDetails/lvCtrGdsOflInLso0xc28cc88 
+         1 : /dd/Geometry/AdDetails/lvIavBotHub0xc355b80 
+         1 : /dd/Geometry/AdDetails/lvCtrGdsOflTfbInLso0xbfa0728 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsPrt0xc352630 
+         1 : /dd/Geometry/AdDetails/lvOavBotHub0xc3550d8 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsTfbInLso0xc3529c0 
+         1 : /dd/Geometry/AdDetails/lvOcrGdsInLso0xc353990 
+         2 : /dd/Geometry/AdDetails/lvCtrGdsOflBotClp0xc407eb0 
+         8 : /dd/Geometry/AdDetails/lvIavBotRib0xc355990 
+         8 : /dd/Geometry/AdDetails/lvOavBotRib0xc353d30 
+         8 : /dd/Geometry/AdDetails/lvIavTopRib0xbf8e280 
+
+
+
+
+
 Initial Approach
 -------------------
 

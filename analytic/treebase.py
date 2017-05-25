@@ -13,6 +13,7 @@ treebase.py
 """
 
 import logging, hashlib, sys, os
+from collections import Counter
 import numpy as np
 np.set_printoptions(precision=2) 
 
@@ -247,6 +248,28 @@ class Node(object):
         find_nodes_lvn_r(self)
         return selection
 
+    def find_nodes_nchild(self, nchild):
+        selection = []
+        def find_nodes_nchild_r(node):
+            if len(node.children) > nchild:
+                selection.append(node)
+            for child in node.children:
+                find_nodes_nchild_r(child)
+            pass     
+        pass
+        find_nodes_nchild_r(self)
+        return selection
+
+
+    def analyse_child_lv_occurrence(self):
+        """
+        """
+        lvn = [c.lv.name for c in self.children]
+        lvc = Counter(lvn) 
+        for k,v in sorted(lvc.items(), key=lambda kv:kv[1]):
+            print " %5d : %s " % (v, k )
+
+
     def dump(self, msg="Node.dump"):
         log.info(msg + " " + repr(self))
         #print "\n".join(map(str, self.geometry))   
@@ -434,6 +457,18 @@ class Tree(object):
 
     def traverse(self):
         self.root.traverse()
+
+
+    def find_crowds(self, minchild=22):
+        return self.root.find_nodes_nchild(minchild)
+
+    def analyse_crowds(self):
+        nn = self.find_crowds()
+        for n in nn:
+            print n.lv.name, len(n.children)
+            n.analyse_child_lv_occurrence()
+            
+
 
     def __init__(self, base):
         """

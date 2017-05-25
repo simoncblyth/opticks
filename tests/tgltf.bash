@@ -114,6 +114,10 @@ EOP
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
 tgltf-gdml-(){ $FUNCNAME- | python $* ; }
+
+rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+tgltf-gdml-rip(){ rip tgltf-gdml--  ; }  ## jump into ipython running the below script
+
 tgltf-gdml--(){ cat << EOP
 
 import os, logging, sys, numpy as np
@@ -149,5 +153,8 @@ print path
 
 EOP
 }
+
+
+
 
 

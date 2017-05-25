@@ -63,6 +63,16 @@ def count_unique(vals):
 
 
 
+def unique2D_subarray(a):
+    """
+    https://stackoverflow.com/questions/40674696/numpy-unique-2d-sub-array 
+    """
+    dtype1 = np.dtype((np.void, a.dtype.itemsize * np.prod(a.shape[1:])))  #  eg for (10,4,4) -> np.dtype( (np.void, 
+    b = np.ascontiguousarray(a.reshape(a.shape[0],-1)).view(dtype1)
+    return a[np.unique(b, return_index=1)[1]]
+
+
+
 
 
 
