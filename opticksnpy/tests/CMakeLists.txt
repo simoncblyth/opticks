@@ -108,6 +108,8 @@ HitsNPYTest.cc
 G4StepNPYTest.cc
 
 
+NTrisTest.cc
+
 
 )
 

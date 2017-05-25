@@ -12,6 +12,22 @@
 #include "NGLM.hpp"
 #include "NPY_API_EXPORT.hh"
 
+
+template<typename T>
+void sincos_(const T angle, T& s, T& c)
+{
+#ifdef __APPLE__
+    __sincos( angle, &s, &c);
+#elif __linux
+    sincos( angle, &s, &c);
+#else
+    s = sin(angle);
+    c = cos(angle) ;
+#endif
+
+}
+
+
 struct NPY_API nmat4pair 
 {
     static nmat4pair* product(const std::vector<nmat4pair*>& tt);

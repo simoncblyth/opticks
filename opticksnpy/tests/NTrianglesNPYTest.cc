@@ -6,10 +6,12 @@
 
 void test_prism()
 {
+    LOG(info) << "test_prism" ; 
+
     glm::vec4 param(90,100,100,200);
     NTrianglesNPY* m = NTrianglesNPY::prism(param);
-    m->getBuffer()->dump("prism");
-    m->getBuffer()->save("$TMP/prism.npy");
+    m->getTris()->dump("prism");
+    m->getTris()->save("$TMP/prism.npy");
 /*
 In [1]: fig = plt.figure()
 In [2]: xyz3d(fig, "$TMP/prism.npy")
@@ -19,8 +21,10 @@ In [3]: plt.show()
 
 void test_transform()
 {
+    LOG(info) << "test_transform" ; 
+
     NTrianglesNPY* c = NTrianglesNPY::cube();
-    c->getBuffer()->dump("cube");
+    c->getTris()->dump("cube");
 
     glm::vec3 tr(100.,0.,0);
     glm::vec3 sc(10.,10.,10.);
@@ -31,27 +35,31 @@ void test_transform()
     print(m, "m");
 
     NTrianglesNPY* tc = c->transform(m);
-    tc->getBuffer()->dump("tcube");
+    tc->getTris()->dump("tcube");
 }
 
 void test_latlon()
 {
-     unsigned int n_polar = 24 ; 
-     unsigned int n_azimuthal = 2 ; 
+    LOG(info) << "test_latlon" ; 
 
-     NTrianglesNPY* s = NTrianglesNPY::sphere(n_polar, n_azimuthal);
-     s->getBuffer()->dump("s");
+    unsigned n_polar = 24 ; 
+    unsigned n_azimuthal = 2 ; 
 
-     glm::vec4 param(0.,1.,0,0) ;
-     NTrianglesNPY* hp = NTrianglesNPY::sphere(param, n_polar, n_azimuthal);
-     hp->getBuffer()->dump("hp");
+    NTrianglesNPY* s = NTrianglesNPY::sphere(n_polar, n_azimuthal);
+    s->getTris()->dump("s");
+
+    glm::vec4 param(0.,1.,0,0) ;
+    NTrianglesNPY* hp = NTrianglesNPY::sphere(param, n_polar, n_azimuthal);
+    hp->getTris()->dump("hp");
 }
 
 
 void test_icosahedron()
 {
+    LOG(info) << "test_icosahedron" ;
+ 
     NTrianglesNPY* icos = NTrianglesNPY::icosahedron();
-    icos->getBuffer()->save("$TMP/icos.npy"); 
+    icos->getTris()->save("$TMP/icos.npy"); 
 }
 
 

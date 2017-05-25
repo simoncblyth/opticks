@@ -9,6 +9,7 @@
 // npy-
 #include "NGLM.hpp"
 #include "NCache.hpp"
+#include "NTris.hpp"
 #include "GLMPrint.hpp"
 
 // ggeo-
@@ -43,6 +44,44 @@ std::vector<typename MeshT::VertexHandle>& MWrap<MeshT>::getBoundaryLoop()
     return m_boundary ; 
 }
 
+
+template <typename MeshT>
+void MWrap<MeshT>::copyIn(struct NTris* tris)
+{
+    unsigned num_vertices = tris->get_num_vert();
+    unsigned num_faces    = tris->get_num_tri();
+
+    MeshT* mesh = m_mesh ; 
+
+    typedef typename MeshT::VertexHandle VH ; 
+    typedef typename MeshT::Point P ; 
+
+    VH* vh = new VH[num_vertices] ;
+
+    glm::vec3 vert ; 
+    for(unsigned i=0 ; i < num_vertices ; i++)
+    {
+        tris->get_vert(i, vert);
+        vh[i] = mesh->add_vertex(P(vert.x, vert.y, vert.z));
+    } 
+
+    std::vector<VH> fvh;
+
+    glm::uvec3 tri ; 
+    for(unsigned i=0 ; i < num_faces ; i++)
+    {
+        fvh.clear();
+
+        tris->get_tri(i,tri);
+
+        fvh.push_back(vh[tri.x]);
+        fvh.push_back(vh[tri.y]);
+        fvh.push_back(vh[tri.z]);
+
+        mesh->add_face(fvh);
+    }
+    delete[] vh ; 
+}
 
 
 

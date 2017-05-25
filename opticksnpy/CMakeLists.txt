@@ -177,6 +177,8 @@ set(SOURCES
     NGLTF.cpp
     NScene.cpp
 
+    NTris.cpp
+
 )
 
 set(_SOURCES

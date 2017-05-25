@@ -1,6 +1,7 @@
 
 #include <boost/math/constants/constants.hpp>
 
+#include "NGLMExt.hpp"
 #include "GLMPrint.hpp"
 #include "NPY.hpp"
 
@@ -10,6 +11,7 @@
 #include "NTesselate.hpp"
 #include "NTriangle.hpp"
 
+#include "NTris.hpp"
 
 #ifdef _MSC_VER
 // instanciations of 'NTrianglesNPY' raise warning:
@@ -60,11 +62,30 @@ glm::mat4 NTrianglesNPY::getTransform()
 
 
 
-
-NTrianglesNPY::NTrianglesNPY()
+NTrianglesNPY::NTrianglesNPY(const NTris* tris)
+    :
+    m_tris(NPY<float>::make(0,3,3)),
+    m_normals(NPY<float>::make(0,3,3))
 {
-    m_tris    = NPY<float>::make(0,3,3);
-    m_normals = NPY<float>::make(0,3,3);
+    glm::uvec3 t ; 
+    glm::vec3 a ; 
+    glm::vec3 b ; 
+    glm::vec3 c ; 
+    
+    unsigned ntri = tris->get_num_tri();
+    for(unsigned i=0 ; i < ntri ; i++)
+    {   
+        tris->get_tri(i,t,a,b,c );
+        add(a,b,c); 
+    }
+}
+
+
+NTrianglesNPY::NTrianglesNPY() 
+   :
+    m_tris(NPY<float>::make(0,3,3)),
+    m_normals(NPY<float>::make(0,3,3))
+{
 }
 
 NTrianglesNPY::NTrianglesNPY(NPY<float>* tris, NPY<float>* normals)
@@ -312,21 +333,6 @@ NTrianglesNPY* NTrianglesNPY::hemi_octahedron()
 
 
 
-template<typename T>
-void sincos_(const T angle, T& s, T& c)
-{
-#ifdef __APPLE__
-    __sincos( angle, &s, &c);
-#elif __linux
-    sincos( angle, &s, &c);
-#else
-    s = sin(angle);
-    c = cos(angle) ;
-#endif
-
-}
-
-
 
 NTrianglesNPY* NTrianglesNPY::sphere(unsigned int n_polar, unsigned int n_azimuthal) 
 {
@@ -356,7 +362,9 @@ NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, uns
     float radius = param.w ; 
 
     // unit sphere at origin 
-    NTrianglesNPY* tris = sphere(ctmin, ctmax, n_polar, n_azimuthal);  
+    NTris* ts = NTris::make_sphere( n_polar, n_azimuthal, ctmin, ctmax );
+
+    NTrianglesNPY* tris = new NTrianglesNPY(ts); 
 
     glm::vec3 scale(radius);
     glm::vec3 translate(0,0,zpos);
@@ -369,99 +377,6 @@ NTrianglesNPY* NTrianglesNPY::sphere(glm::vec4& param, unsigned int n_polar, uns
 }
 
 
-NTrianglesNPY* NTrianglesNPY::sphere(float ctmin, float ctmax, unsigned int n_polar, unsigned int n_azimuthal) 
-{
-    NTrianglesNPY* tris = new NTrianglesNPY();
-
-    /*
- 
-                                  t0             t1            ct0       
-
-            t = 0                  0             1/n_polar      +1   
-
-            t = n_polar - 1      1 - 1/n_polar     1            -1   
-
-
-
-                 -  ct0
-                    max_exclude:  ct1 > zmax 
-                 -  ct1               - ct0
-    zmax     +-----------------+        max_straddle
-            /    -              \     - ct1
-           /                     \
-          /      -                \   - ct0
-    zmin +-------------------------+    min_straddle
-                 - ct0                - ct1
-                   min_exclude:  ct0 < zmin
-                 - ct1
-
-    */
- 
-    assert(ctmax > ctmin && ctmax <= 1.f && ctmin >= -1.f);
-
-
-    float pi = boost::math::constants::pi<float>() ;
-
-    for(unsigned int t=0 ; t < n_polar ; t++)
-    {
-        double t0 = 1.0f*pi*float(t)/n_polar ; 
-        double t1 = 1.0f*pi*float(t+1)/n_polar ;
-
-        double st0,st1,ct0,ct1 ;
-        sincos_<double>(t0, st0, ct0 ); 
-        sincos_<double>(t1, st1, ct1 ); 
-        assert( ct0 > ct1 );
-
-        bool max_exclude  = ct1 > ctmax ;
-        bool max_straddle = ctmax <= ct0 && ctmax > ct1 ; 
-        bool min_straddle = ctmin <= ct0 && ctmin > ct1 ; 
-        bool min_exclude  = ct0 < ctmin ;  
-
-        if(max_exclude || min_exclude ) 
-        {
-            continue ; 
-        }
-        else if(max_straddle)
-        {
-            sincos_<double>(acos(ctmax), st0, ct0 ); 
-        }
-        else if(min_straddle) 
-        {
-            sincos_<double>(acos(ctmin), st1, ct1 ); 
-        }
-
-        for(unsigned int p=0 ; p < n_azimuthal ; p++)
-        {
-            float p0 = 2.0f*pi*float(p)/n_azimuthal ;
-            float p1 = 2.0f*pi*float(p+1)/n_azimuthal ;
-
-            double sp0,sp1,cp0,cp1 ;
-            sincos_<double>(p0, sp0, cp0 ); 
-            sincos_<double>(p1, sp1, cp1 ); 
-
-            glm::vec3 x00( st0*cp0, st0*sp0, ct0 );
-            glm::vec3 x10( st0*cp1, st0*sp1, ct0 );
-
-            glm::vec3 x01( st1*cp0, st1*sp0, ct1 );
-            glm::vec3 x11( st1*cp1, st1*sp1, ct1 );
-
-            if( t == 0 ) 
-            {
-                tris->add(x00,x01,x11);
-            }
-            else if( t == n_polar - 1)
-            {
-                tris->add(x00,x01,x11);
-            }
-            else
-            {
-                tris->add(x00,x01,x10);
-                tris->add(x10,x01,x11); 
-            }
-        }
-    } 
-    return tris ; 
-}
 
 /*
          p0     p1
