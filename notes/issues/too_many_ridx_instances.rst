@@ -190,6 +190,12 @@ will yield candidate groupings... then need to analyse the
 transforms to pair the appropriate ones together.  They should
 have equal transforms (or at least equal rotation and z-shift) 
 
+Also need way to verify that the intended added groups would actually 
+have same progeny digests before going to trouble of editing 
+the node tree...
+
+
+
 ::
 
     In [1]: tree.analyse_crowds()
@@ -254,15 +260,21 @@ have equal transforms (or at least equal rotation and z-shift)
         32 : /dd/Geometry/PoolDetails/lvCornerParRib10xc0e2430 
         32 : /dd/Geometry/PoolDetails/lvCornerParRib20xc0f2040 
         92 : /dd/Geometry/PoolDetails/lvBotVertiRib0xbf63800 
+
        167 : /dd/Geometry/PMT/lvPmtTee0xc011648 
        167 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
        167 : /dd/Geometry/PMT/lvPmtTopRing0xc3486f0 
-       167 : /dd/Geometry/PMT/lvPmtBaseRing0xc00f400 
+       167 : /dd/Geometry/PMT/lvPmtBaseRing0xc00f400        ### this would be a juicy instance
+
        192 : /dd/Geometry/PoolDetails/lvCrossRib0xcd570b8 
+
        330 : /dd/Geometry/PoolDetails/lvSidVertiRib0xc5e6fa0 
+
        501 : /dd/Geometry/PMT/lvMountRib10xc3a4cb0 
-       501 : /dd/Geometry/PMT/lvMountRib20xc012500 
-       501 : /dd/Geometry/PMT/lvMountRib30xc00d350 
+       501 : /dd/Geometry/PMT/lvMountRib20xc012500          
+       501 : /dd/Geometry/PMT/lvMountRib30xc00d350          ### maybe this too 
+
+
     /dd/Geometry/Pool/lvNearPoolIWS0xc28bc60 1619
          1 : /dd/Geometry/PoolDetails/lvInnInWaterPipeNearTub0xbf29660 
          1 : /dd/Geometry/PoolDetails/lvInnOutWaterPipeNearTub0xc0d7c30 
@@ -275,13 +287,16 @@ have equal transforms (or at least equal rotation and z-shift)
          8 : /dd/Geometry/PoolDetails/lvSlopeRib10xc0d8b50 
          8 : /dd/Geometry/PoolDetails/lvSupportRib10xc0d8868 
          8 : /dd/Geometry/PoolDetails/lvSlopeRib50xc0d8db0 
+
        121 : /dd/Geometry/PMT/lvPmtTee0xc011648 
        121 : /dd/Geometry/PMT/lvPmtTopRing0xc3486f0 
        121 : /dd/Geometry/PMT/lvPmtBaseRing0xc00f400 
-       121 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+       121 : /dd/Geometry/PMT/lvPmtHemi0xc133740          ### another juicy one if can be grouped into identical mesh-transform-digest subtrees 
+
        363 : /dd/Geometry/PMT/lvMountRib20xc012500 
        363 : /dd/Geometry/PMT/lvMountRib30xc00d350 
-       363 : /dd/Geometry/PMT/lvMountRib10xc3a4cb0 
+       363 : /dd/Geometry/PMT/lvMountRib10xc3a4cb0         ### perhaps
+
     /dd/Geometry/AD/lvOIL0xbf5e0b8 520
          1 : /dd/Geometry/AdDetails/lvSstTopHub0xc2644f0 
          1 : /dd/Geometry/AdDetails/lvOcrGdsLsoPrt0xc104a90 
@@ -310,9 +325,13 @@ have equal transforms (or at least equal rotation and z-shift)
          8 : /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 
          8 : /dd/Geometry/AdDetails/lvBotRefCircleRib0xbf34468 
         32 : /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 
+
        192 : /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 
-       192 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+       192 : /dd/Geometry/PMT/lvPmtHemi0xc133740           ### obvious one
+
+
     /dd/Geometry/AD/lvLSO0xc403e40 35
+
          1 : /dd/Geometry/AD/lvIAV0xc404ee8 
          1 : /dd/Geometry/AdDetails/lvIavTopHub0xc129d88 
          1 : /dd/Geometry/AdDetails/lvCtrGdsOflInLso0xc28cc88 
@@ -326,6 +345,7 @@ have equal transforms (or at least equal rotation and z-shift)
          8 : /dd/Geometry/AdDetails/lvIavBotRib0xc355990 
          8 : /dd/Geometry/AdDetails/lvOavBotRib0xc353d30 
          8 : /dd/Geometry/AdDetails/lvIavTopRib0xbf8e280 
+
     /dd/Geometry/AD/lvOIL0xbf5e0b8 520
          1 : /dd/Geometry/AdDetails/lvSstTopHub0xc2644f0 
          1 : /dd/Geometry/AdDetails/lvOcrGdsLsoPrt0xc104a90 
@@ -354,8 +374,11 @@ have equal transforms (or at least equal rotation and z-shift)
          8 : /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 
          8 : /dd/Geometry/AdDetails/lvBotRefCircleRib0xbf34468 
         32 : /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 
-       192 : /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0 
+
+       192 : /dd/Geometry/PMT/lvAdPmtCollar0xbf21fb0           ### from the other AD
        192 : /dd/Geometry/PMT/lvPmtHemi0xc133740 
+
+
     /dd/Geometry/AD/lvLSO0xc403e40 35
          1 : /dd/Geometry/AD/lvIAV0xc404ee8 
          1 : /dd/Geometry/AdDetails/lvIavTopHub0xc129d88 
