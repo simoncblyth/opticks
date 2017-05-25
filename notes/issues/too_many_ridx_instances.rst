@@ -25,6 +25,18 @@ Can siblings be grouped into added subtrees in crowded nodes ?
 
 * eg would want the PMT Collar to be grouped together with the PMT subtree, but 
   its unscalable to write geometry specific code to do this : need a general way 
+
+
+Where to implement sibling grouping ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* needs only the mesh_id and transforms for the node tree, so could 
+  be done at python level 
+
+* seems that it is possible to duplicate transform digests (for identity transforms anyhow) 
+  in python (see sysrap/tests/SDigestTest.py) ... hmm but dont want 
+  to duplicate the polar decomposition py side, but dont need to : just adjust 
+  to digesting the basis transform 
    
 
 Finding nodes with lots of children

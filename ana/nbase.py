@@ -2,6 +2,14 @@
 import numpy as np
 import os, logging
 import itertools
+
+try: 
+    from hashlib import md5 
+except ImportError: 
+    from md5 import md5 
+
+
+
 log = logging.getLogger(__name__) 
 
 try:
@@ -62,7 +70,6 @@ def count_unique(vals):
     return np.vstack((uniq, cnts.astype(np.uint64))).T 
 
 
-
 def unique2D_subarray(a):
     """
     https://stackoverflow.com/questions/40674696/numpy-unique-2d-sub-array 
@@ -72,10 +79,14 @@ def unique2D_subarray(a):
     return a[np.unique(b, return_index=1)[1]]
 
 
-
-
-
-
+def array_digest(a):
+    """
+    https://stackoverflow.com/questions/5386694/fast-way-to-hash-numpy-objects-for-caching
+    """
+    dig = md5()
+    data = np.ascontiguousarray(a.view(np.uint8))
+    dig.update(data)
+    return dig.hexdigest()
 
 
 def count_unique_sorted(vals):

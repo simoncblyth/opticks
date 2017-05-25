@@ -87,6 +87,15 @@ void test_nmat4triple_make_translated()
 }
 
 
+void test_nmat4triple_id_digest()
+{
+    LOG(info) << "test_nmat4triple_id_digest" ; 
+
+    nmat4triple* id = nmat4triple::make_identity() ;
+    std::cout << " id " << *id << " dig " << id->digest() << std::endl ; 
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -95,6 +104,7 @@ int main(int argc, char** argv)
     test_stream();
     test_invert_tr();
     test_nmat4triple_make_translated();
+    test_nmat4triple_id_digest();
 
     return 0 ; 
 }
