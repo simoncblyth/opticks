@@ -109,6 +109,8 @@ G4StepNPYTest.cc
 
 
 NTrisTest.cc
+NYMathTest.cc
+NYShapeTest.cc
 
 
 )
