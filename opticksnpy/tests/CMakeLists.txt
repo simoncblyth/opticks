@@ -112,6 +112,7 @@ NTrisTest.cc
 NYMathTest.cc
 NYShapeTest.cc
 
+NOpenMeshTest.cc
 
 )
 

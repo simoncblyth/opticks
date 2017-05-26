@@ -28,6 +28,8 @@ struct NPY_API nsphere : nnode {
     npart zlhs(const ndisc& dsc);  
 
     glm::vec3 gseedcenter() ;
+    glm::vec3 par_pos(const glm::vec2& uv) const  ;
+
     void pdump(const char* msg="nsphere::pdump", int verbosity=1);
  
     glm::vec3 center ; 

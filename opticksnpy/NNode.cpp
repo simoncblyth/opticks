@@ -168,9 +168,6 @@ glm::vec3 nnode::gseeddir()   // override in shapes if needed
 }
 
 
-
-
-
 npart nnode::part()
 {
     // this is invoked by NCSG::export_r to totally re-write the nodes buffer 
@@ -344,6 +341,28 @@ std::function<float(float,float,float)> nnode::sdf()
     }
     return f ;
 }
+
+
+
+glm::vec3 nnode::par_pos(const glm::vec2& ) const  // override in shapes 
+{
+    glm::vec3 pos ;
+    assert(0 && "this need to be overridden");
+    return pos ;  
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

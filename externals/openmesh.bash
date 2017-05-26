@@ -140,6 +140,22 @@ TriMesh
 
 * file:///usr/local/env/graphics/openmesh/OpenMesh-4.1/Documentation/a00276.html
 
+Halfedge structure
+-------------------
+
+* https://www.openmesh.org/Daily-Builds/Doc/a03947.html
+
+The data structure used in this project is the so called halfedge data
+structure . While face-based structures store their connectivity in faces
+referencing their vertices and neighbors, edge-based structures put the
+connectivity information into the edges. Each edge references its two vertices,
+the faces it belongs to and the two next edges in these faces. If one now
+splits the edges (i.e. an edge connecting vertex A and vertex B becomes two
+directed halfeges from A to B and vice versa) one gets a halfedge-based data
+structure. The following figure illustrates the way connectivity is stored in
+this structure:
+
+
 
 Alternates
 -----------

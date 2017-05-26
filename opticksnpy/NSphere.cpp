@@ -33,6 +33,38 @@ float nsphere::operator()(float x, float y, float z) const
     return glm::distance( glm::vec3(p), center ) - radius ;
 } 
 
+
+glm::vec3 nsphere::par_pos(const glm::vec2& uv ) const 
+{
+
+    const float pi = glm::pi<float>() ;
+
+    float phi = uv.x * pi ;
+    float theta = uv.y * 2 * pi ;
+
+    float ct = cosf(theta);
+    float st = sinf(theta);
+    float cp = cosf(phi);
+    float sp = sinf(phi);
+
+    glm::vec3 p( ct*sp, st*sp, cp )  ; 
+
+    std::cout << "nsphere::par_pos"
+              << " uv " << glm::to_string(uv) 
+              << " p " << glm::to_string(p)
+              << std::endl 
+               ; 
+
+ 
+    return p ; 
+}
+
+
+
+
+
+
+
 glm::vec3 nsphere::gseedcenter()
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform

@@ -11,6 +11,8 @@ find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(PLog REQUIRED)
 
+find_package(OpenMesh REQUIRED)
+
 #find_package(NonExisting) 
 #message("NPY.NonExisting_FOUND       :${NonExisting_FOUND} ")
 #message("NPY.NonExisting_INCLUDE_DIRS:${NonExisting_INCLUDE_DIRS} ")
@@ -31,6 +33,7 @@ include_directories(
    ${PLog_INCLUDE_DIRS} 
    ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
+   ${OpenMesh_INCLUDE_DIRS} 
 
    ${ImplicitMesher_INCLUDE_DIRS}
    ${DualContouringSample_INCLUDE_DIRS}
@@ -43,6 +46,7 @@ add_definitions(
    ${PLog_DEFINITIONS} 
    ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
+   ${OpenMesh_DEFINITIONS}
 
    ${ImplicitMesher_DEFINITIONS}
    ${DualContouringSample_DEFINITIONS}
@@ -58,6 +62,7 @@ set(LIBRARIES
    ${PLog_LIBRARIES} 
    ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
+   ${OpenMesh_LIBRARIES}
 
    ${ImplicitMesher_LIBRARIES}
    ${DualContouringSample_LIBRARIES}
@@ -178,6 +183,7 @@ set(SOURCES
     NScene.cpp
 
     NTris.cpp
+    NOpenMesh.cpp
 
 )
 
