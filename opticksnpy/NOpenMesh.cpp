@@ -28,7 +28,6 @@ int NOpenMesh<T>::write(const char* path)
     return 0 ; 
 }
 
-
 template <typename T>
 void NOpenMesh<T>::dump(const char* msg)
 {
@@ -37,15 +36,14 @@ void NOpenMesh<T>::dump(const char* msg)
     dump_faces();
 }
 
-
 template <typename T>
 std::string NOpenMesh<T>::brief()
 {
     std::stringstream ss ; 
 
-    unsigned nface = std::distance( mesh.faces_begin(), mesh.faces_end() );
+    unsigned nface = std::distance( mesh.faces_begin(),    mesh.faces_end() );
     unsigned nvert = std::distance( mesh.vertices_begin(), mesh.vertices_end() );
-    unsigned nedge = std::distance( mesh.edges_begin(), mesh.edges_end() );
+    unsigned nedge = std::distance( mesh.edges_begin(),    mesh.edges_end() );
 
     unsigned n_face = mesh.n_faces(); 
     unsigned n_vert = mesh.n_vertices(); 
@@ -55,11 +53,13 @@ std::string NOpenMesh<T>::brief()
     assert( nvert == n_vert );
     assert( nedge == n_edge );
 
+    int euler = nvert - nedge + nface  ;
+
     ss 
         << " V " << nvert
         << " F " << nface
         << " E " << nedge
-        << " (V - E + F) - 2  (expect 0) " << nvert - nedge + nface - 2
+        << " euler [(V - E + F)]  (expect 2) " << euler
         ;
     
     return ss.str();
@@ -71,9 +71,57 @@ void NOpenMesh<T>::dump_vertices(const char* msg)
 {
     LOG(info) << msg ; 
 
-    typename T::VertexIter v_it, v_end(mesh.vertices_end());
+    typedef typename T::Point          P ; 
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::HalfedgeHandle HEH ; 
+    typedef typename T::FaceHandle     FH ; 
+    typedef typename T::Vertex         V ; 
+    typedef typename T::VertexIter     VI ; 
 
-    for (v_it=mesh.vertices_begin(); v_it!=v_end ; ++v_it) std::cout << mesh.point( *v_it ) << std::endl ;
+    VI beg = mesh.vertices_begin() ;
+    VI end = mesh.vertices_end() ;
+
+    for (VI vit=beg ; vit != end ; ++vit) 
+    {
+
+        VH vh = *vit ; 
+        int idx = vh.idx() ;
+        assert( idx == std::distance( beg, vit ) ) ;
+
+        const P& p = mesh.point(vh); 
+
+        //const V& v = mesh.vertex(vh); // <-- purely private internal V has no public methods, so useless
+
+        const HEH& heh = mesh.halfedge_handle(vh); 
+        bool heh_valid = mesh.is_valid_handle(heh);
+
+
+        std::cout 
+             << " vh " << std::setw(5) << vh  
+             << " p " << p
+             << " heh " << std::setw(5) << heh  
+             ;
+
+        if(heh_valid)
+        {
+            const VH& tvh = mesh.to_vertex_handle(heh);
+            const VH& fvh = mesh.from_vertex_handle(heh);
+            const FH& fh  = mesh.face_handle(heh);
+            bool bnd = mesh.is_boundary(heh);
+
+            std::cout  
+                << " tvh " << std::setw(5) << tvh  
+                << " fvh " << std::setw(5) << fvh  
+                << " fh " << std::setw(5) << fh  
+                << " bnd " << std::setw(5) << bnd 
+                << std::endl ;
+        }
+        else
+        {
+             std::cout << std::endl ; 
+        }
+
+    }
 }
 
 
@@ -109,17 +157,20 @@ void NOpenMesh<T>::dump_faces(const char* msg )
     }
 }
  
+
 template <typename T>
 void NOpenMesh<T>::add_face(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 )
 {
-    std::vector<typename T::VertexHandle>  face_vhandles;
+   /*
+              3-------2
+              |     . | 
+              |   .   |
+              | .     |
+              0-------1  
+   */
 
-    face_vhandles.push_back(v0);
-    face_vhandles.push_back(v1);
-    face_vhandles.push_back(v2);
-    face_vhandles.push_back(v3);
-
-    mesh.add_face(face_vhandles);
+    mesh.add_face(v0,v1,v2);
+    mesh.add_face(v2,v3,v0);
 }
  
 template <typename T>
@@ -168,65 +219,153 @@ void NOpenMesh<T>::build_cube()
 
 
 
+
+
 template <typename T>
-void NOpenMesh<T>::build_parametric(const nnode* node, int usteps, int vsteps)  
+typename T::VertexHandle NOpenMesh<T>::find_vertex(typename T::Point pt)  
 {
-    int num_vert = (usteps+1)*(vsteps+1) ; 
-    //int num_tri = usteps*vsteps*2 ; 
+    typedef typename T::VertexHandle   VH ;
+    typedef typename T::Point           P ; 
+    typedef typename T::VertexIter     VI ; 
+
+    VH result ;
+
+    VI beg = mesh.vertices_begin() ;
+    VI end = mesh.vertices_end() ;
+
+    for (VI vit=beg ; vit != end ; ++vit) 
+    {
+        VH vh = *vit ; 
+        const P& p = mesh.point(vh); 
+        if( p == pt )
+        {
+            result = vh ; 
+            break ;          
+        }
+    }
+    return result ; 
+}
+
+
+template <typename T>
+typename T::VertexHandle NOpenMesh<T>::add_vertex_unique(typename T::Point pt)  
+{
+    typedef typename T::VertexHandle VH ;
+    VH prior = find_vertex(pt);
+    bool valid = mesh.is_valid_handle(prior) ;
+    return valid ? prior : mesh.add_vertex(pt)   ; 
+}
+
+
+template <typename T>
+void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv)  
+{
+   /*
+    suspect that cannot generically do this, eg consider the sphere
+    need to handle the poles different from the rest ...
+
+   */
+    int ns = node->par_nsurf() ;
+    auto vid = [ns,nu,nv](int s, int u, int v) { return  s*(nu+1)*(nv+1) + v*(nu+1) + u ; };
+
+    int num_vert = (nu+1)*(nv+1)*ns ; 
 
     typedef typename T::VertexHandle VH ;
     typedef typename T::Point P ; 
 
     VH* vh = new VH[num_vert] ;
 
-    auto vid = [usteps](int u, int v) { return v * (usteps + 1) + u ; };
-
-    for (int v = 0; v <= vsteps; v++){
-    for (int u = 0; u <= usteps; u++) 
+    for (int s=0 ; s < ns ; s++ )
     {
-        glm::vec2 uv( float(u)/(float)usteps, float(v)/(float)vsteps );
-        glm::vec3 pos = node->par_pos(uv);
-
-        vh[vid(u,v)] = mesh.add_vertex(P(pos.x, pos.y, pos.z)) ;          
-    }
-    }
-
-
-    for (int v = 0; v < vsteps; v++){
-    for (int u = 0; u < usteps; u++) 
-    {
-        if ((u + v) % 2) 
+        for (int v = 0; v <= nv ; v++){
+        for (int u = 0; u <= nu ; u++) 
         {
-            mesh.add_face( 
-                           vh[vid(u, v)], 
-                           vh[vid(u + 1, v)], 
-                           vh[vid(u + 1, v + 1)]
-                      );
+            glm::vec2 uv( float(u)/nu, float(v)/nv );
+            glm::vec3 pos = node->par_pos(uv, s );
 
-            mesh.add_face( 
-                           vh[vid(u + 1, v + 1)], 
-                           vh[vid(u    , v + 1)], 
-                           vh[vid(u    , v    )]
-                         );
-        } 
-        else 
-        {
-            mesh.add_face( 
-                           vh[vid(u, v)], 
-                           vh[vid(u + 1, v)], 
-                           vh[vid(u    , v + 1)]
-                      );
-
-            mesh.add_face( 
-                           vh[vid(u + 1, v + 1)], 
-                           vh[vid(u    , v + 1)], 
-                           vh[vid(u + 1, v    )]
-                         );
- 
+            vh[vid(s,u,v)] = add_vertex_unique(P(pos.x, pos.y, pos.z)) ;          
+        }
         }
     }
-    }
 
+
+    /*
+        4---5---6---7---8
+        | \ | / | \ | / |
+        3---4---5---6---7
+        | / | \ | / | \ |
+        2---3---4---5---6
+        | \ | / | \ | / |
+        1---2---3---4---5
+        | / | \ | / | \ |
+        0---1---2---3---4    -> u      
+
+    */
+
+    for (int s=0 ; s < ns ; s++ )
+    {
+        for (int v = 0; v < nv; v++){
+        for (int u = 0; u < nu; u++) 
+        {
+            int i00 = vid(s,u    ,     v) ;
+            int i10 = vid(s,u + 1,     v) ;
+            int i11 = vid(s,u + 1, v + 1) ;
+            int i01 = vid(s,u    , v + 1) ;
+
+            VH v00 = vh[i00] ;
+            VH v10 = vh[i10] ;
+            VH v01 = vh[i01] ;
+            VH v11 = vh[i11] ;
+
+            std::cout 
+                  << " s " << std::setw(3)  << s
+                  << " v " << std::setw(3)  << v
+                  << " u " << std::setw(3)  << u
+                  << " v00 " << std::setw(3)  << v00
+                  << " v10 " << std::setw(3)  << v10
+                  << " v01 " << std::setw(3)  << v01
+                  << " v11 " << std::setw(3)  << v11
+                  << std::endl 
+                  ;
+   
+
+            if ((u + v) % 2) 
+            {
+         /*
+            (u,v+1)   (u+1,v+1)
+              01---------11
+               |       .  |
+               |     .    |
+               |   .      |
+               | .        |
+              00---------10
+             (u,v)    (u+1,v)
+
+         */
+
+                mesh.add_face( v00,v10,v11 );
+                mesh.add_face( v11,v01,v00 );
+            } 
+            else 
+            {
+         /*
+
+            (u,v+1)   (u+1,v+1)
+              01---------11
+               | .        |
+               |   .      |
+               |     .    |
+               |       .  |
+              00---------10
+             (u,v)    (u+1,v)
+
+         */
+                mesh.add_face( v00, v10, v01 );
+                mesh.add_face( v11, v01, v10 );
+            }
+        }
+        }
+    }
 
 }
 

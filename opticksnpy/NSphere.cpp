@@ -34,8 +34,14 @@ float nsphere::operator()(float x, float y, float z) const
 } 
 
 
-glm::vec3 nsphere::par_pos(const glm::vec2& uv ) const 
+unsigned nsphere::par_nsurf() const 
 {
+   return 1 ; 
+}
+
+glm::vec3 nsphere::par_pos(const glm::vec2& uv, unsigned surf ) const 
+{
+    assert(surf < par_nsurf());
 
     const float pi = glm::pi<float>() ;
 
@@ -48,14 +54,17 @@ glm::vec3 nsphere::par_pos(const glm::vec2& uv ) const
     float sp = sinf(phi);
 
     glm::vec3 p( ct*sp, st*sp, cp )  ; 
+    p *= radius ; 
+    p += center ; 
 
+/*
     std::cout << "nsphere::par_pos"
               << " uv " << glm::to_string(uv) 
               << " p " << glm::to_string(p)
               << std::endl 
                ; 
+*/ 
 
- 
     return p ; 
 }
 

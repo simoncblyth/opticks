@@ -96,13 +96,48 @@ void test_sdf()
 }
 
 
+void test_parametric()
+{
+    LOG(info) << "test_parametric" ;
+
+    nbox box = make_box(0,0,0,100); 
+
+    unsigned nsurf = box.par_nsurf();
+    assert(nsurf == 6);
+
+    unsigned nu = 1 ; 
+    unsigned nv = 1 ; 
+
+    for(unsigned surf=0 ; surf < nsurf ; surf++)
+    {
+        std::cout << " surf : " << surf << std::endl ; 
+
+        for(unsigned u=0 ; u <= nu ; u++){
+        for(unsigned v=0 ; v <= nv ; v++)
+        {
+            glm::vec2 uv( float(u)/nu,  float(v)/nv );
+            glm::vec3 p = box.par_pos(uv, surf );
+
+            std::cout 
+                 << " u " << std::setw(3) << u  
+                 << " v " << std::setw(3) << v
+                 << " uv " << glm::to_string(uv) 
+                 << " p " << glm::to_string(p)
+                 << std::endl ;   
+        }
+        }
+    }
+}
+
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
     //test_gtransform();
-    test_sdf();
+    //test_sdf();
+    test_parametric();
 
     return 0 ; 
 }

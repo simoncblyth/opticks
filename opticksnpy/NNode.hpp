@@ -37,7 +37,9 @@ struct NPY_API nnode
     std::function<float(float,float,float)> sdf();
 
     glm::vec3 gseeddir();  // override if needed
-    glm::vec3 par_pos(const glm::vec2& uv ) const ;
+
+    virtual unsigned  par_nsurf() const ;
+    virtual glm::vec3 par_pos(const glm::vec2& uv, unsigned surf ) const ;
 
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);

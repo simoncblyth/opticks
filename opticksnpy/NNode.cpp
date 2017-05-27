@@ -317,11 +317,16 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
 
 
+
 std::function<float(float,float,float)> nnode::sdf()
 {
+    //  return node types operator() callable as function
+    //  somehow the object parameter member data goes along for the ride
+
     nnode* node = this ; 
     std::function<float(float,float,float)> f ; 
-    switch(node->type)
+
+    switch(node->type)   
     {
         case CSG_UNION:          { nunion* n        = (nunion*)node         ; f = *n ; } break ;
         case CSG_INTERSECTION:   { nintersection* n = (nintersection*)node  ; f = *n ; } break ;
@@ -343,25 +348,19 @@ std::function<float(float,float,float)> nnode::sdf()
 }
 
 
-
-glm::vec3 nnode::par_pos(const glm::vec2& ) const  // override in shapes 
+unsigned nnode::par_nsurf() const 
 {
-    glm::vec3 pos ;
     assert(0 && "this need to be overridden");
-    return pos ;  
+    return 0 ; 
 }
 
-
-
-
-
-
-
-
-
-
-
-
+glm::vec3 nnode::par_pos(const glm::vec2&, unsigned surf) const  // override in shapes 
+{
+    assert(0 && "this need to be overridden");
+    assert( surf < par_nsurf());
+    glm::vec3 pos ;
+    return pos ;  
+}
 
 
 

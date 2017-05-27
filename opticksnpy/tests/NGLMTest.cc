@@ -15,6 +15,7 @@ void test_axisAngle()
 {
 
     NPY<float>* txf = NPY<float>::load("/tmp/txf.npy") ;
+    if(!txf) return ; 
 
     std::cout << "txf: " << txf->getShapeString() << std::endl ; 
     assert( txf->hasShape(8,24,4,4)) ;
@@ -426,6 +427,24 @@ void test_transform_normal()
 }
 
 
+void test_mix()
+{
+    LOG(info) << "test_mix" ; 
+    float x0 = 10.f ; 
+    float x1 = 20.f ; 
+
+    for(float a=0 ; a < 1.01 ; a+=0.1 )
+    {
+         float xa = glm::mix(x0,x1,a) ;
+         std::cout 
+            << " a " << std::setw(7) << a  
+            << " xa " << std::setw(7) << xa 
+            << std::endl ;
+
+    } 
+
+}
+
 
 
 
@@ -448,6 +467,8 @@ int main(int argc, char** argv)
     test_transform_normal();
 
     test_axisAngle();
+
+    test_mix();
 
     return 0 ; 
 }

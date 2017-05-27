@@ -33,6 +33,10 @@ struct NPY_API nbox : nnode
 
     nbbox bbox() const ;
 
+    unsigned par_nsurf() const ;
+    glm::vec3 par_pos(const glm::vec2& uv, unsigned surf ) const ;
+
+
     glm::vec3 gseedcenter();
 
     void pdump(const char* msg="nbox::pdump", int verbosity=1);

@@ -41,6 +41,329 @@ cmake::
     Skipping Python Bindings.
 
 
+Mesh Basics
+-------------
+
+* http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/02_Basics.pdf
+
+
+Code Review
+--------------
+
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/ArrayItems.hh::
+
+
+    ///  purely private internal classes, only accessible via ArrayKernel 
+
+    .63 namespace OpenMesh {
+     64 
+     65 
+     66 //== CLASS DEFINITION =========================================================
+     67 
+     68 
+     69 /// Definition of mesh items for use in the ArrayKernel
+     70 struct ArrayItems
+     71 {
+     72 
+     73   //------------------------------------------------------ internal vertex type
+     74 
+     75   /// The vertex item
+     76   class Vertex
+     77   {
+     78     friend class ArrayKernel;
+     79     HalfedgeHandle  halfedge_handle_;
+     80   };
+     81 
+     82 
+     83   //---------------------------------------------------- internal halfedge type
+     84 
+     85 #ifndef DOXY_IGNORE_THIS
+     86   class Halfedge_without_prev
+     87   {
+     88     friend class ArrayKernel;
+     89     FaceHandle      face_handle_;
+     90     VertexHandle    vertex_handle_;
+     91     HalfedgeHandle  next_halfedge_handle_;
+     92   };
+     93 #endif
+     94 
+     95 #ifndef DOXY_IGNORE_THIS
+     96   class Halfedge_with_prev : public Halfedge_without_prev
+     97   {
+     98     friend class ArrayKernel;
+     99     HalfedgeHandle  prev_halfedge_handle_;
+    100   };
+    101 #endif
+    102 
+    103   //TODO: should be selected with config.h define
+    104   typedef Halfedge_with_prev                Halfedge;
+    105   typedef GenProg::Bool2Type<true>          HasPrevHalfedge;
+    106 
+    107   //-------------------------------------------------------- internal edge type
+    108 #ifndef DOXY_IGNORE_THIS
+    109   class Edge
+    110   {
+    111     friend class ArrayKernel;
+    112     Halfedge  halfedges_[2];
+    113   };
+    114 #endif
+    115 
+    116   //-------------------------------------------------------- internal face type
+    117 #ifndef DOXY_IGNORE_THIS
+    118   class Face
+    119   {
+    120     friend class ArrayKernel;
+    121     HalfedgeHandle  halfedge_handle_;
+    122   };
+    123 };
+    124 #endif
+
+
+
+
+
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/PolyMeshT.hh
+
+::
+
+    093 template <class Kernel>
+     94 class PolyMeshT : public Kernel
+     95 {
+
+    188   PolyMeshT() {}
+    ...
+    195    // --- creation ---
+    196   inline VertexHandle new_vertex()
+    197   { return Kernel::new_vertex(); }
+    198 
+    199   inline VertexHandle new_vertex(const Point& _p)
+    200   {
+    201     VertexHandle vh(Kernel::new_vertex());
+    202     this->set_point(vh, _p);
+    203     return vh;
+    204   }
+    205 
+    206   inline VertexHandle add_vertex(const Point& _p)
+    207   { return new_vertex(_p); }
+
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/Handles.hh
+
+Handles are just ints::
+
+
+    .66 /// Base class for all handle types
+     67 class BaseHandle
+     68 {
+     69 public:
+     70 
+     71   explicit BaseHandle(int _idx=-1) : idx_(_idx) {}
+     72 
+     73   /// Get the underlying index of this handle
+     74   int idx() const { return idx_; }
+     75 
+     76   /// The handle is valid iff the index is not equal to -1.
+     77   bool is_valid() const { return idx_ != -1; }
+     78 
+     79   /// reset handle to be invalid
+     80   void reset() { idx_=-1; }
+     81   /// reset handle to be invalid
+     82   void invalidate() { idx_ = -1; }
+     83 
+     84   bool operator==(const BaseHandle& _rhs) const {
+     85     return (this->idx_ == _rhs.idx_);
+     86   }
+     87 
+    ...
+    102 private:
+    103 
+    104   int idx_;
+    105 };
+    ...
+    111 inline std::ostream& operator<<(std::ostream& _os, const BaseHandle& _hnd)
+    112 {
+    113   return (_os << _hnd.idx());
+    114 }
+    115 
+    121 struct VertexHandle : public BaseHandle
+    122 {
+    123   explicit VertexHandle(int _idx=-1) : BaseHandle(_idx) {}
+    124 };
+    128 struct HalfedgeHandle : public BaseHandle
+    129 {
+    130   explicit HalfedgeHandle(int _idx=-1) : BaseHandle(_idx) {}
+    131 };
+    135 struct EdgeHandle : public BaseHandle
+    136 {
+    137   explicit EdgeHandle(int _idx=-1) : BaseHandle(_idx) {}
+    138 };
+    142 struct FaceHandle : public BaseHandle
+    143 {
+    144   explicit FaceHandle(int _idx=-1) : BaseHandle(_idx) {}
+    145 };
+
+    * https://stackoverflow.com/questions/121162/what-does-the-explicit-keyword-mean-in-c
+
+     "explicit" ctors prevents compiler from using single parameter implicit conversions ... 
+     otherwise methods that accept handles would be able to implicitly magic them into 
+     existance : which would lead to ambiguity. 
+      
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/ArrayKernel.hh::
+
+
+    092 class OPENMESHDLLEXPORT ArrayKernel : public BaseKernel, public ArrayItems
+     93 {
+     94 public:
+     95 
+     96   // handles
+     97   typedef OpenMesh::VertexHandle            VertexHandle;
+     98   typedef OpenMesh::HalfedgeHandle          HalfedgeHandle;
+     99   typedef OpenMesh::EdgeHandle              EdgeHandle;
+    100   typedef OpenMesh::FaceHandle              FaceHandle;
+    101   typedef Attributes::StatusInfo            StatusInfo;
+    102   typedef VPropHandleT<StatusInfo>          VertexStatusPropertyHandle;
+    103   typedef HPropHandleT<StatusInfo>          HalfedgeStatusPropertyHandle;
+    104   typedef EPropHandleT<StatusInfo>          EdgeStatusPropertyHandle;
+    105   typedef FPropHandleT<StatusInfo>          FaceStatusPropertyHandle;
+    106 
+    107 public:
+    108 
+    109   // --- constructor/destructor ---
+    110   ArrayKernel();
+    111   virtual ~ArrayKernel();
+    112 
+    113   /** ArrayKernel uses the default copy constructor and assignment operator, which means
+    114       that the connectivity and all properties are copied, including reference
+    115       counters, allocated bit status masks, etc.. In contrast assign_connectivity
+    116       copies only the connectivity, i.e. vertices, edges, faces and their status fields.
+    117       NOTE: The geometry (the points property) is NOT copied. Poly/TriConnectivity
+    118       override(and hide) that function to provide connectivity consistence.*/
+    119   void assign_connectivity(const ArrayKernel& _other);
+    120 
+    121   // --- handle -> item ---
+    122   VertexHandle handle(const Vertex& _v) const;
+    123 
+    124   HalfedgeHandle handle(const Halfedge& _he) const;
+    125 
+    126   EdgeHandle handle(const Edge& _e) const;
+    127 
+    128   FaceHandle handle(const Face& _f) const;
+    ...
+    144   // --- item -> handle ---
+    145   const Vertex& vertex(VertexHandle _vh) const
+    146   {
+    147     assert(is_valid_handle(_vh));
+    148     return vertices_[_vh.idx()];
+    149   }
+    150 
+    151   Vertex& vertex(VertexHandle _vh)
+    152   {
+    153     assert(is_valid_handle(_vh));
+    154     return vertices_[_vh.idx()];
+    155   }
+    156 
+    157   const Halfedge& halfedge(HalfedgeHandle _heh) const
+    158   {
+    159     assert(is_valid_handle(_heh));
+    160     return edges_[_heh.idx() >> 1].halfedges_[_heh.idx() & 1];
+    161   }
+    162 
+    163   Halfedge& halfedge(HalfedgeHandle _heh)
+    164   {
+    165     assert(is_valid_handle(_heh));
+    166     return edges_[_heh.idx() >> 1].halfedges_[_heh.idx() & 1];
+    167   }
+    168 
+    169   const Edge& edge(EdgeHandle _eh) const
+    170   {
+    171     assert(is_valid_handle(_eh));
+    172     return edges_[_eh.idx()];
+    173   }
+    174 
+    175   Edge& edge(EdgeHandle _eh)
+    176   {
+    177     assert(is_valid_handle(_eh));
+    178     return edges_[_eh.idx()];
+    179   }
+    180 
+    181   const Face& face(FaceHandle _fh) const
+    182   {
+    183     assert(is_valid_handle(_fh));
+    184     return faces_[_fh.idx()];
+    185   }
+    186 
+    187   Face& face(FaceHandle _fh)
+    188   {
+    189     assert(is_valid_handle(_fh));
+    190     return faces_[_fh.idx()];
+    191   }
+    192 
+    193   // --- get i'th items ---
+    194 
+    195   VertexHandle vertex_handle(unsigned int _i) const
+    196   { return (_i < n_vertices()) ? handle( vertices_[_i] ) : VertexHandle(); }
+    197 
+    198   HalfedgeHandle halfedge_handle(unsigned int _i) const
+    199   {
+    200     return (_i < n_halfedges()) ?
+    201       halfedge_handle(edge_handle(_i/2), _i%2) : HalfedgeHandle();
+    202   }
+    203 
+    204   EdgeHandle edge_handle(unsigned int _i) const
+    205   { return (_i < n_edges()) ? handle(edges_[_i]) : EdgeHandle(); }
+    206 
+    207   FaceHandle face_handle(unsigned int _i) const
+    208   { return (_i < n_faces()) ? handle(faces_[_i]) : FaceHandle(); }
+    209 
+
+
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/ArrayKernel.cc::
+
+    105 VertexHandle ArrayKernel::handle(const Vertex& _v) const^M
+    106 {^M
+    107    return VertexHandle( int( &_v - &vertices_.front()));^M
+    108 }^M
+    109 ^M
+    110 HalfedgeHandle ArrayKernel::handle(const Halfedge& _he) const^M
+    111 {^M
+    112   // Calculate edge belonging to given halfedge^M
+    113   // There are two halfedges stored per edge^M
+    114   // Get memory position inside edge vector and devide by size of an edge^M
+    115   // to get the corresponding edge for the requested halfedge^M
+    116   size_t eh = ( (char*)&_he - (char*)&edges_.front() ) /  sizeof(Edge)  ;^M
+    117   assert((&_he == &edges_[eh].halfedges_[0]) ||^M
+    118          (&_he == &edges_[eh].halfedges_[1]));^M
+    119   return ((&_he == &edges_[eh].halfedges_[0]) ?^M
+    120                     HalfedgeHandle( int(eh)<<1) : HalfedgeHandle((int(eh)<<1)+1));^M
+    121 }^M
+    122 ^M
+    123 EdgeHandle ArrayKernel::handle(const Edge& _e) const^M
+    124 {^M
+    125   return EdgeHandle( int(&_e - &edges_.front() ) );^M
+    126 }^M
+    127 ^M
+    128 FaceHandle ArrayKernel::handle(const Face& _f) const^M
+    129 {^M
+    130   return FaceHandle( int(&_f - &faces_.front()) );^M
+    131 }^M
+
+    /// handle ints are pointer arithmetic offsets from the container front
+
+    ...
+    212   inline VertexHandle new_vertex()
+    213   {
+    214     vertices_.push_back(Vertex());
+    215     vprops_resize(n_vertices());//TODO:should it be push_back()?
+    216 
+    217     return handle(vertices_.back());
+    218   }
+
+
+
 
 Flag Consistency
 -----------------
@@ -132,6 +455,8 @@ Usage
 -------
 
 * http://www.hao-li.com/cs599-ss2015/exercises/exercise1.pdf
+* ~/opticks_refs/OpenMesh_Introduction_HaoLi.pdf
+
 
 Good Starting points
 ----------------------
@@ -200,7 +525,11 @@ openmesh-get(){
    [ ! -d "$nam" ] && tar zxf $tgz 
 }
 
+openmesh-doc(){ openmesh-html ; }
 openmesh-html(){ open $(openmesh-dir)/Documentation/index.html ; }
+
+openmesh-find(){ openmesh-cd ; find src -type f -exec grep -H ${1:-DefaultTraits} {} \; ; }
+
 
 openmesh-wipe(){
   local bdir=$(openmesh-bdir)

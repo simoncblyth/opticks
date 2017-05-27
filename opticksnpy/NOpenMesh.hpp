@@ -75,7 +75,8 @@ struct NPY_API  NOpenMesh
     void dump_faces(const char* msg="NOpenMesh::dump_faces") ;
 
     void add_face(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 );
-    void add_face(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2 );
+    typename T::VertexHandle add_vertex_unique(typename T::Point pt) ;  
+    typename T::VertexHandle find_vertex(typename T::Point pt);
 
     void build_cube();
     void build_parametric(const nnode* node, int usteps, int vsteps); 

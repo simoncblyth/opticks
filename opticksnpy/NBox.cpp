@@ -74,6 +74,126 @@ float nbox::sdf2(float x, float y, float z)
 
 
 
+
+
+
+unsigned nbox::par_nsurf() const 
+{
+   return 6 ; 
+}
+
+glm::vec3 nbox::par_pos(const glm::vec2& uv, unsigned surf ) const 
+{
+    /*
+
+                 6-----------7
+                /|          /| 
+               / |         / |
+              4-----------5  |
+              |  |        |  |
+              |  |        |  |
+              |  2--------|--3
+              | /         | /
+              |/          |/
+              0-----------1
+          
+        z
+         |  y
+         | /
+         |/
+         +---> x
+        
+
+    0:    (0,2,1) (1,2,3)  :   -z
+    1:    (4,5,6) (6,5,7)  :   +z
+
+    2:    (0,4,2) (2,4,6)  :   -x
+    3:    (1,3,5) (5,3,7)  :   +x
+
+    4:    (1,5,0) (0,5,4)  :   -y
+    5:    (6,7,2) (2,7,3)  :   +y
+
+    */
+
+    nbbox bb = bbox() ;
+
+    assert(surf < par_nsurf());
+    glm::vec3 p ; 
+
+    // hmm perhaps need some   1 - uv[0] ???
+    switch(surf)
+    {
+        case 0:{ 
+                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, uv[1] ) ;
+                  p.z = bb.min.z ;
+               } 
+               ; break ;
+        case 1:{ 
+                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, uv[1] ) ;
+                  p.z = bb.max.z ;
+               }
+               ; break ;
+
+
+        case 2:{ 
+                  p.x = bb.min.x ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, uv[0] ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+               } 
+               ; break ;
+        case 3:{ 
+                  p.x = bb.max.x ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, uv[0] ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+               }
+               ; break ;
+ 
+
+
+        case 4:{ 
+                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+                  p.y = bb.min.y ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+               } 
+               ; break ;
+        case 5:{ 
+                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+                  p.y = bb.max.y ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+               }
+               ; break ;
+ 
+
+ 
+    }
+
+/*
+    std::cout << "nbox::par_pos"
+              << " uv " << glm::to_string(uv) 
+              << " p " << glm::to_string(p)
+              << std::endl 
+               ; 
+*/
+
+    return p ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 void nbox::adjustToFit(const nbbox& bb, float scale)
 {
     nquad qce ; 
