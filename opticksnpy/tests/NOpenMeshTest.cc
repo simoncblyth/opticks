@@ -171,6 +171,168 @@ void test_point()
 
 
 
+/*
+        2
+       / \
+      /   \
+     /     \
+    0-------1
+
+ i 0 ii 1
+ i 1 ii 2
+ i 2 ii 0
+
+*/
+
+void test_topology()
+{
+    int i, ii, n(3) ; 
+    for (i=0, ii=1; i<n; ++i, ++ii, ii%=n)
+       std::cout 
+           << " i " << i 
+           << " ii " << ii
+           << std::endl ;  
+}
+ 
+void test_add_face()
+{
+    typedef NOpenMeshType   T ; 
+    typedef T::Point        P ; 
+    typedef T::VertexHandle VH ; 
+
+    NOpenMesh<T> m  ;
+
+    VH v00 = m.mesh.add_vertex(P(0, 0, 0));
+    VH v01 = m.mesh.add_vertex(P(0, 1, 0));
+    VH v10 = m.mesh.add_vertex(P(1, 0, 0));
+ 
+    m.mesh.add_face( v00, v10, v01 );
+    m.dump();
+
+/*
+    m.mesh.add_face( v00, v01, v10 );
+
+  1
+
+   B 01   
+     | .      
+  |  |   .    
+  V  |     .  
+   A 00-------10 C
+  0       -->     2
+   
+
+ vh     0 p 0 0 0 heh     5 fvh->tvh 0->2 fh    -1 bnd     1
+ vh     1 p 0 1 0 heh     1 fvh->tvh 1->0 fh    -1 bnd     1
+ vh     2 p 1 0 0 heh     3 fvh->tvh 2->1 fh    -1 bnd     1
+
+
+    m.mesh.add_face( v00, v10, v01 );
+
+  1
+
+   C 01   
+     | .      
+  ^  |   .    
+  |  |     .  
+   A 00-------10 B
+  0      <--     2
+ 
+
+ vh     0 p 0 0 0 heh     5 fvh->tvh 0->1 fh    -1 bnd     1
+ vh     1 p 0 1 0 heh     3 fvh->tvh 1->2 fh    -1 bnd     1
+ vh     2 p 1 0 0 heh     1 fvh->tvh 2->0 fh    -1 bnd     1
+
+
+*/
+
+
+}
+
+
+
+void test_add_two_face()
+{
+    typedef NOpenMeshType   T ; 
+    typedef T::Point        P ; 
+    typedef T::VertexHandle VH ; 
+    typedef T::FaceHandle   FH ; 
+
+    NOpenMesh<T> m  ;
+
+    VH v00 = m.mesh.add_vertex(P(0, 0, 0));
+    VH v01 = m.mesh.add_vertex(P(0, 1, 0));
+    VH v10 = m.mesh.add_vertex(P(1, 0, 0));
+    VH v11 = m.mesh.add_vertex(P(1, 1, 0));
+ 
+    FH f0 = m.mesh.add_face( v11, v00, v10 );
+
+
+    // NB must do the check prior to adding the 2nd face 
+    //    to be in same situation
+
+    assert(m.is_valid_face_winding(v00,v11,v01) == true);
+    assert(m.is_valid_face_winding(v11,v01,v00) == true);
+    assert(m.is_valid_face_winding(v01,v00,v11) == true);
+
+    assert(m.is_valid_face_winding(v11,v00,v01) == false);
+    assert(m.is_valid_face_winding(v00,v01,v11) == false);
+    assert(m.is_valid_face_winding(v01,v11,v00) == false);
+
+    FH f1 = m.mesh.add_face( v00, v11, v01 );  // ok
+
+
+    //FH f1 = m.mesh.add_face( v00, v11, v01 );   // ok
+    //FH f1 = m.mesh.add_face( v11, v01, v00 );   // ok
+    //FH f1 = m.mesh.add_face( v01, v00, v11 );   // ok
+
+    //FH f1 = m.mesh.add_face( v11, v00, v01 );   // <-- invalid "complex edge" 
+    //FH f1 = m.mesh.add_face( v00, v01, v11 );   // <-- invalid "complex edge" 
+    //FH f1 = m.mesh.add_face( v01, v11, v00 );   // <-- invalid "complex edge" 
+
+
+    assert(m.mesh.is_valid_handle(f0));
+    assert(m.mesh.is_valid_handle(f1));
+
+    // Notice that the common edge between the two faces 
+    // in oppositely wound for the two faces, 
+    //
+    //    v11->v00 in first
+    //    v00->v11 in second
+    //
+    // Doing this wrong yields an invalid face:
+    // 
+    //      PolyMeshT::add_face: complex edge
+
+    m.dump();
+
+/*
+     01-----11
+     |     . |
+     |   .   |
+     | .     |
+     00-----10
+
+
+2017-05-27 18:34:49.367 INFO  [3752609] [>::dump@34] NOpenMesh::dump  V 4 F 2 E 5 euler [(V - E + F)]  (expect 2) 1
+2017-05-27 18:34:49.368 INFO  [3752609] [>::dump_vertices@72] NOpenMesh::dump_vertices
+ vh     0 p 0 0 0 heh     9 fvh->tvh 0->1 fh    -1 bnd     1
+ vh     1 p 0 1 0 heh     7 fvh->tvh 1->3 fh    -1 bnd     1
+ vh     2 p 1 0 0 heh     3 fvh->tvh 2->0 fh    -1 bnd     1
+ vh     3 p 1 1 0 heh     5 fvh->tvh 3->2 fh    -1 bnd     1
+2017-05-27 18:34:49.368 INFO  [3752609] [>::dump_faces@130] NOpenMesh::dump_faces nface 2
+ f    0 i   0 v   3 :   3   0   2                1.000 1.000 0.000                0.000 0.000 0.000                1.000 0.000 0.000 
+ f    1 i   1 v   3 :   0   3   1                0.000 0.000 0.000                1.000 1.000 0.000                0.000 1.000 0.000 
+delta:tests blyth$ 
+
+
+
+*/
+
+}
+ 
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -183,9 +345,13 @@ int main(int argc, char** argv)
  
 
     //test_sphere_parametric(); 
-    test_box_parametric(); 
+    //test_box_parametric(); 
 
     //test_add_vertex_unique();
+
+    //test_topology();
+    //test_add_face();
+    test_add_two_face();
  
     return 0 ; 
 }

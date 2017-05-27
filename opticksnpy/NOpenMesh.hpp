@@ -77,6 +77,7 @@ struct NPY_API  NOpenMesh
     void add_face(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 );
     typename T::VertexHandle add_vertex_unique(typename T::Point pt) ;  
     typename T::VertexHandle find_vertex(typename T::Point pt);
+    bool is_valid_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2);
 
     void build_cube();
     void build_parametric(const nnode* node, int usteps, int vsteps); 

@@ -66,6 +66,49 @@ std::string NOpenMesh<T>::brief()
 }
 
 
+
+template <typename T>
+bool NOpenMesh<T>::is_valid_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2)
+{
+    typedef typename T::HalfedgeHandle  HEH ; 
+    typedef typename T::VertexHandle    VH ; 
+   
+    VH _vertex_handles[3] ; 
+    _vertex_handles[0] = v0 ; 
+    _vertex_handles[1] = v1 ; 
+    _vertex_handles[2] = v2 ; 
+
+    int i,ii,n(3) ; 
+
+    struct WindingCheck  
+    {
+        HEH   halfedge_handle;
+        bool is_new;
+    };
+
+    // checking based on PolyConnectivity::add_face
+
+    std::vector<WindingCheck> edgeData_; 
+    edgeData_.resize(n);
+
+    for (i=0, ii=1; i<n; ++i, ++ii, ii%=n)
+    {
+        // Initialise edge attributes
+        edgeData_[i].halfedge_handle = mesh.find_halfedge(_vertex_handles[i],
+                                                          _vertex_handles[ii]);
+        edgeData_[i].is_new = !edgeData_[i].halfedge_handle.is_valid();
+  
+        if (!edgeData_[i].is_new && !mesh.is_boundary(edgeData_[i].halfedge_handle))
+        {
+            std::cerr << "predicting... PolyMeshT::add_face: complex edge\n";
+            return false ;
+        }
+    }
+    return true ; 
+}
+
+
+
 template <typename T>
 void NOpenMesh<T>::dump_vertices(const char* msg)
 {
@@ -110,8 +153,7 @@ void NOpenMesh<T>::dump_vertices(const char* msg)
             bool bnd = mesh.is_boundary(heh);
 
             std::cout  
-                << " tvh " << std::setw(5) << tvh  
-                << " fvh " << std::setw(5) << fvh  
+                << " fvh->tvh " << fvh << "->" << tvh   
                 << " fh " << std::setw(5) << fh  
                 << " bnd " << std::setw(5) << bnd 
                 << std::endl ;
@@ -257,6 +299,9 @@ typename T::VertexHandle NOpenMesh<T>::add_vertex_unique(typename T::Point pt)
 }
 
 
+
+
+
 template <typename T>
 void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv)  
 {
@@ -291,13 +336,13 @@ void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv)
 
     /*
         4---5---6---7---8
-        | \ | / | \ | / |
+        | / | \ | / | \ |
         3---4---5---6---7
-        | / | \ | / | \ |
-        2---3---4---5---6
         | \ | / | \ | / |
-        1---2---3---4---5
+        2---3---4---5---6
         | / | \ | / | \ |
+        1---2---3---4---5
+        | \ | / | \ | / |
         0---1---2---3---4    -> u      
 
     */
@@ -329,7 +374,7 @@ void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv)
                   ;
    
 
-            if ((u + v) % 2) 
+            if ((u + v) % 2)  // odd
             {
          /*
             (u,v+1)   (u+1,v+1)
