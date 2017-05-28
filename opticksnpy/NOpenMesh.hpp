@@ -70,20 +70,28 @@ struct NPY_API  NOpenMesh
     int write(const char* path);
 
     void dump(const char* msg="NOpenMesh::dump") ;
-    std::string brief();
     void dump_vertices(const char* msg="NOpenMesh::dump_vertices") ;
     void dump_faces(const char* msg="NOpenMesh::dump_faces") ;
+    std::string brief();
 
-    void add_face(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 );
-    typename T::VertexHandle add_vertex_unique(typename T::Point pt) ;  
-    typename T::VertexHandle find_vertex(typename T::Point pt);
-    bool is_valid_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2);
+    void add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3, int verbosity=0 );
+
+    typename T::FaceHandle   add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, int verbosity=0 );
+
+    typename T::VertexHandle add_vertex_unique(typename T::Point pt, const float epsilon) ;  
+    typename T::VertexHandle find_vertex_exact( typename T::Point pt);
+    typename T::VertexHandle find_vertex_closest(typename T::Point pt, float& distance);
+    typename T::VertexHandle find_vertex_epsilon(typename T::Point pt, const float epsilon);
+
+
+    bool is_consistent_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2);
+
 
     void build_cube();
-    void build_parametric(const nnode* node, int usteps, int vsteps); 
+    void build_parametric(const nnode* node, int nu, int nv, int verbosity=0, const float epsilon=1e-5f ); 
+    int  euler_characteristic();
 
-
-    T mesh ; 
+    T    mesh ; 
 };
 
 

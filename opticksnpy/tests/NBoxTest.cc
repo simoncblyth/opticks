@@ -115,13 +115,17 @@ void test_parametric()
         for(unsigned u=0 ; u <= nu ; u++){
         for(unsigned v=0 ; v <= nv ; v++)
         {
-            glm::vec2 uv( float(u)/nu,  float(v)/nv );
-            glm::vec3 p = box.par_pos(uv, surf );
+            nquad quv ;
+            quv.i.x = u ; 
+            quv.i.y = v ; 
+            quv.i.z = nu ; 
+            quv.i.w = nv ; 
+
+            glm::vec3 p = box.par_pos(quv, surf );
 
             std::cout 
                  << " u " << std::setw(3) << u  
                  << " v " << std::setw(3) << v
-                 << " uv " << glm::to_string(uv) 
                  << " p " << glm::to_string(p)
                  << std::endl ;   
         }

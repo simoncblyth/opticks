@@ -29,8 +29,11 @@ struct NPY_API nsphere : nnode {
 
     glm::vec3 gseedcenter() ;
 
-    unsigned par_nsurf() const ; 
-    glm::vec3 par_pos(const glm::vec2& uv, unsigned surf) const  ;
+    unsigned  par_nsurf() const ; 
+    glm::vec3 par_pos(const nquad& quv, unsigned surf) const  ;
+    int       par_euler() const ; 
+    unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
+
 
     void pdump(const char* msg="nsphere::pdump", int verbosity=1);
  

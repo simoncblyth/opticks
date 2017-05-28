@@ -81,8 +81,54 @@ unsigned nbox::par_nsurf() const
 {
    return 6 ; 
 }
+int nbox::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const 
+{
+   assert( nu >=1 && nv >= 1 ); 
 
-glm::vec3 nbox::par_pos(const glm::vec2& uv, unsigned surf ) const 
+/*
+
+                 +-----------+
+                /|          /| 
+               / |         / |
+              7-----8-----9  |
+              |  |        |  |
+              |  |        |  |
+              4  +--5-----6--+
+              | /         | /
+              |/          |/
+              1-----2-----3
+ 
+                               (nu = 2, nv = 2)    
+
+
+                (nu+1)*(nv+1) = 3*3 = 9      distinct vertices for one face
+
+            (nu+1-2)*(nv+1-2) = 
+                (nu-1)*(nv-1) = 1*1 = 1       mid-vertices (not shared)
+
+                     2*(nv-1) = 2*1 = 2       u edges (shared with one other, so only count half of em)
+                     2*(nu-1) = 2*1 = 2       v edges (ditto)
+
+       
+     fvert = lambda nu,nv:(nu-1)*(nv-1) + (nv-1) + (nu-1) 
+     nvert = lambda nu,nv:8+6*fvert(nu,nv)
+
+*/
+
+   unsigned mid_vert = (nv+1-2)*(nu+1-2) ;
+   unsigned edge_vert = (nv+1-2) + (nu+1-2) ;
+   unsigned face_vert = mid_vert + edge_vert   ;  
+   unsigned distinct_vert = 8 + 6*face_vert ; 
+
+   return distinct_vert ; 
+}
+
+
+glm::vec3 nbox::par_pos(const nquad& quv, unsigned surf ) const 
 {
     /*
 
@@ -120,48 +166,67 @@ glm::vec3 nbox::par_pos(const glm::vec2& uv, unsigned surf ) const
     assert(surf < par_nsurf());
     glm::vec3 p ; 
 
-    // hmm perhaps need some   1 - uv[0] ???
+    //   1 - uv[0] 
+    //
+    //      attempts to arrange mappings
+    //      as view the cube from the 6 different
+    //      directions to yield consistent face winding  
+    //      
+    //            (x,y) -> (u,v)
+    //            (y,z) -> (u,v)
+    //            (x,z) -> (u,v)
+    // 
+
+    int iu = quv.i.x ; 
+    int iv = quv.i.y ;
+    int nu = quv.i.z ; 
+    int nv = quv.i.w ;
+  
+    float fu = float(iu)/float(nu) ;
+    float fv = float(iv)/float(nv) ;
+
+
     switch(surf)
     {
-        case 0:{ 
-                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
-                  p.y = glm::mix( bb.min.y, bb.max.y, uv[1] ) ;
+        case 0:{    // -Z
+                  p.x = glm::mix( bb.min.x, bb.max.x, 1 - fu ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, fv ) ;
                   p.z = bb.min.z ;
                } 
                ; break ;
-        case 1:{ 
-                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
-                  p.y = glm::mix( bb.min.y, bb.max.y, uv[1] ) ;
+        case 1:{   // +Z
+                  p.x = glm::mix( bb.min.x, bb.max.x, fu ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, fv ) ;
                   p.z = bb.max.z ;
                }
                ; break ;
 
 
-        case 2:{ 
+        case 2:{   // -X
                   p.x = bb.min.x ;
-                  p.y = glm::mix( bb.min.y, bb.max.y, uv[0] ) ;
-                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, 1 - fu ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                } 
                ; break ;
-        case 3:{ 
+        case 3:{   // +X
                   p.x = bb.max.x ;
-                  p.y = glm::mix( bb.min.y, bb.max.y, uv[0] ) ;
-                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+                  p.y = glm::mix( bb.min.y, bb.max.y, fu ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                }
                ; break ;
  
 
 
-        case 4:{ 
-                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+        case 4:{  // -Y
+                  p.x = glm::mix( bb.min.x, bb.max.x, fu ) ;
                   p.y = bb.min.y ;
-                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                } 
                ; break ;
-        case 5:{ 
-                  p.x = glm::mix( bb.min.x, bb.max.x, uv[0] ) ;
+        case 5:{  // +Y
+                  p.x = glm::mix( bb.min.x, bb.max.x, 1 - fu ) ;
                   p.y = bb.max.y ;
-                  p.z = glm::mix( bb.min.z, bb.max.z, uv[1] ) ;
+                  p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                }
                ; break ;
  

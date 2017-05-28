@@ -5,7 +5,6 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 
-
 void test_write()
 {
     const char* path = "/tmp/test_write.off" ;
@@ -19,7 +18,6 @@ void test_write()
     std::cout << mesh.brief() << std::endl ; 
 }
 
-
 void test_dump()
 {
     LOG(info) << "test_dump" ; 
@@ -30,29 +28,34 @@ void test_dump()
     mesh.dump();
 }
 
-
 void test_sphere_parametric()
 {
     LOG(info) << "test_sphere_parametric" ;
- 
+    int verbosity = 1 ; 
+
     nsphere sphere = make_sphere(0,0,0,10);
-
-    NOpenMesh<NOpenMeshType> m ;
-
-    m.build_parametric( &sphere, 4, 4 );
-    m.dump("sphere");
+    for(int level=2 ; level < 7 ; level++)
+    { 
+        int n = 1 << level ; 
+        NOpenMesh<NOpenMeshType> m ;
+        m.build_parametric( &sphere, n, n, verbosity );
+        //m.dump("sphere");
+    }
 }
 
 void test_box_parametric()
 {
     LOG(info) << "test_box_parametric" ;
- 
+    int verbosity = 1 ; 
+
     nbox box = make_box(0,0,0,100);
-
-    NOpenMesh<NOpenMeshType> m ;
-
-    m.build_parametric( &box, 1, 1 );
-    m.dump("box");
+    for(int level=1 ; level < 6 ; level++)
+    { 
+        int n = 1 << level ; 
+        NOpenMesh<NOpenMeshType> m ;
+        m.build_parametric( &box, n, n, verbosity  ); 
+        //m.dump("box");
+    }
 }
 
 
@@ -97,6 +100,8 @@ void test_add_vertex_unique()
 {
     LOG(info) << "test_add_vertex_unique" ; 
 
+    float epsilon = 1e-5f ; 
+
     typedef NOpenMeshType   T ; 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
@@ -106,36 +111,36 @@ void test_add_vertex_unique()
     VH vh[8];
     VH vhd[8];
 
-    vh[0] = mesh.add_vertex_unique(P(-1, -1,  1));
-    vhd[0] = mesh.add_vertex_unique(P(-1, -1,  1));
+    vh[0] = mesh.add_vertex_unique(P(-1, -1,  1), epsilon);
+    vhd[0] = mesh.add_vertex_unique(P(-1, -1,  1), epsilon);
     assert(vhd[0] == vh[0]);
     
-    vh[1] = mesh.add_vertex_unique(P( 1, -1,  1));
-    vhd[1] = mesh.add_vertex_unique(P( 1, -1,  1));
+    vh[1] = mesh.add_vertex_unique(P( 1, -1,  1), epsilon);
+    vhd[1] = mesh.add_vertex_unique(P( 1, -1,  1), epsilon);
     assert(vhd[1] == vh[1]);
 
-    vh[2] = mesh.add_vertex_unique(P( 1,  1,  1));
-    vhd[2] = mesh.add_vertex_unique(P( 1,  1,  1));
+    vh[2] = mesh.add_vertex_unique(P( 1,  1,  1), epsilon);
+    vhd[2] = mesh.add_vertex_unique(P( 1,  1,  1), epsilon);
     assert(vhd[2] == vh[2]);
 
-    vh[3] = mesh.add_vertex_unique(P(-1,  1,  1));
-    vhd[3] = mesh.add_vertex_unique(P(-1,  1,  1));
+    vh[3] = mesh.add_vertex_unique(P(-1,  1,  1),epsilon);
+    vhd[3] = mesh.add_vertex_unique(P(-1,  1,  1),epsilon);
     assert(vhd[3] == vh[3]);
 
-    vh[4] = mesh.add_vertex_unique(P(-1, -1, -1));
-    vhd[4] = mesh.add_vertex_unique(P(-1, -1, -1));
+    vh[4] = mesh.add_vertex_unique(P(-1, -1, -1),epsilon);
+    vhd[4] = mesh.add_vertex_unique(P(-1, -1, -1),epsilon);
     assert(vhd[4] == vh[4]);
 
-    vh[5] = mesh.add_vertex_unique(P( 1, -1, -1));
-    vhd[5] = mesh.add_vertex_unique(P( 1, -1, -1));
+    vh[5] = mesh.add_vertex_unique(P( 1, -1, -1),epsilon);
+    vhd[5] = mesh.add_vertex_unique(P( 1, -1, -1),epsilon);
     assert(vhd[5] == vh[5]);
 
-    vh[6] = mesh.add_vertex_unique(P( 1,  1, -1));
-    vhd[6] = mesh.add_vertex_unique(P( 1,  1, -1));
+    vh[6] = mesh.add_vertex_unique(P( 1,  1, -1),epsilon);
+    vhd[6] = mesh.add_vertex_unique(P( 1,  1, -1),epsilon);
     assert(vhd[6] == vh[6]);
 
-    vh[7] = mesh.add_vertex_unique(P(-1,  1, -1));
-    vhd[7] = mesh.add_vertex_unique(P(-1,  1, -1));
+    vh[7] = mesh.add_vertex_unique(P(-1,  1, -1),epsilon);
+    vhd[7] = mesh.add_vertex_unique(P(-1,  1, -1),epsilon);
     assert(vhd[7] == vh[7]);
 
 
@@ -157,15 +162,28 @@ void test_point()
     pt[0] = P(1,1,1) ;
     pt[1] = P(1,1,1) ;
 
-    P pta(1,1,1);
-    P ptb(1,1,1);
+    P a(1,1,1);
+    P b(1,1,1);
+    P c(1,1,1.0001);
+    P d  = c - b ;
 
-    std::cout << "pta " << pta << std::endl ; 
-    std::cout << "ptb " << ptb << std::endl ; 
-    assert(pta == ptb);
+    std::cout << "a " << a << " len " << a.length() << std::endl ; 
+    std::cout << "b " << b << " len " << b.length() << std::endl ; 
+    assert(a == b);
+
+    std::cout << "c " << c << " len " << c.length() << std::endl ; 
+    std::cout << "d " << d << " len " << d.length() << std::endl ; 
+
+
+
+
 
     std::cout << "pt[0] " << pt[0] << std::endl ; 
     std::cout << "pt[1] " << pt[1] << std::endl ; 
+
+
+    
+
 
 }
 
@@ -266,21 +284,21 @@ void test_add_two_face()
     VH v11 = m.mesh.add_vertex(P(1, 1, 0));
  
     FH f0 = m.mesh.add_face( v11, v00, v10 );
-
+    assert(m.mesh.is_valid_handle(f0));
 
     // NB must do the check prior to adding the 2nd face 
     //    to be in same situation
 
-    assert(m.is_valid_face_winding(v00,v11,v01) == true);
-    assert(m.is_valid_face_winding(v11,v01,v00) == true);
-    assert(m.is_valid_face_winding(v01,v00,v11) == true);
+    assert(m.is_consistent_face_winding(v00,v11,v01) == true);
+    assert(m.is_consistent_face_winding(v11,v01,v00) == true);
+    assert(m.is_consistent_face_winding(v01,v00,v11) == true);
 
-    assert(m.is_valid_face_winding(v11,v00,v01) == false);
-    assert(m.is_valid_face_winding(v00,v01,v11) == false);
-    assert(m.is_valid_face_winding(v01,v11,v00) == false);
+    assert(m.is_consistent_face_winding(v11,v00,v01) == false);
+    assert(m.is_consistent_face_winding(v00,v01,v11) == false);
+    assert(m.is_consistent_face_winding(v01,v11,v00) == false);
 
     FH f1 = m.mesh.add_face( v00, v11, v01 );  // ok
-
+    assert(m.mesh.is_valid_handle(f1));
 
     //FH f1 = m.mesh.add_face( v00, v11, v01 );   // ok
     //FH f1 = m.mesh.add_face( v11, v01, v00 );   // ok
@@ -289,11 +307,7 @@ void test_add_two_face()
     //FH f1 = m.mesh.add_face( v11, v00, v01 );   // <-- invalid "complex edge" 
     //FH f1 = m.mesh.add_face( v00, v01, v11 );   // <-- invalid "complex edge" 
     //FH f1 = m.mesh.add_face( v01, v11, v00 );   // <-- invalid "complex edge" 
-
-
-    assert(m.mesh.is_valid_handle(f0));
-    assert(m.mesh.is_valid_handle(f1));
-
+    //
     // Notice that the common edge between the two faces 
     // in oppositely wound for the two faces, 
     //
@@ -341,17 +355,17 @@ int main(int argc, char** argv)
     //test_write(); 
     //test_dump(); 
     //test_add_vertex();
-    //test_point();
+    test_point();
  
 
-    //test_sphere_parametric(); 
-    //test_box_parametric(); 
+    test_box_parametric(); 
+    test_sphere_parametric(); 
 
     //test_add_vertex_unique();
 
     //test_topology();
     //test_add_face();
-    test_add_two_face();
+    //test_add_two_face();
  
     return 0 ; 
 }

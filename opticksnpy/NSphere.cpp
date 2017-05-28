@@ -38,34 +38,81 @@ unsigned nsphere::par_nsurf() const
 {
    return 1 ; 
 }
+int nsphere::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned nsphere::par_nvertices(unsigned nu, unsigned nv) const 
+{
+   // expected unique vertex count, accounting for extra ones, poles and 360-seam 
+   assert( nv > 2 ); 
+   return 2 + (nu+1-1)*(nv+1-2) ;     
+}
 
-glm::vec3 nsphere::par_pos(const glm::vec2& uv, unsigned surf ) const 
+
+glm::vec3 nsphere::par_pos(const nquad& quv, unsigned surf ) const 
 {
     assert(surf < par_nsurf());
 
+    int  u  = quv.i.x ; 
+    int  v  = quv.i.y ; 
+    int  nu = quv.i.z ; 
+    int  nv = quv.i.w ; 
+
+    // Avoid numerical precision problems at the poles
+    // by providing precisely the same positions
+    // and on the 360 degree sea by using 0 degrees at 360 
+    
+    bool is_north_pole = v == 0 ; 
+    bool is_south_pole = v == nv ; 
+    bool is_360_seam = u == nu ; 
+
+    float fu = is_360_seam ? 0.f : float(u)/float(nu) ; 
+    float fv = float(v)/float(nv) ; 
+
     const float pi = glm::pi<float>() ;
+    float azimuth = fu * 2 * pi ;
+    float polar   = fv * pi ;
 
-    float phi = uv.x * pi ;
-    float theta = uv.y * 2 * pi ;
 
-    float ct = cosf(theta);
-    float st = sinf(theta);
-    float cp = cosf(phi);
-    float sp = sinf(phi);
+    glm::vec3 pos(center) ;  
+    if(is_north_pole || is_south_pole)
+    {
+        pos += glm::vec3(0,0,is_north_pole ? radius : -radius ) ; 
+    }   
+    else
+    { 
+        float ca = cosf(azimuth);
+        float sa = sinf(azimuth);
+        float cp = cosf(polar);
+        float sp = sinf(polar);
 
-    glm::vec3 p( ct*sp, st*sp, cp )  ; 
-    p *= radius ; 
-    p += center ; 
+        pos += glm::vec3( radius*ca*sp, radius*sa*sp, radius*cp );
+    }
 
-/*
+
+
+    /*
     std::cout << "nsphere::par_pos"
-              << " uv " << glm::to_string(uv) 
-              << " p " << glm::to_string(p)
+              << " u " << std::setw(3) << u 
+              << " v " << std::setw(3) << v
+              << " nu " << std::setw(3) << nu 
+              << " nv " << std::setw(3) << nv
+              << " azimuth " << std::setw(15) << std::fixed << std::setprecision(4) << azimuth
+              << " polar " << std::setw(15) << std::fixed << std::setprecision(4) << polar
+              << " pos "
+              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.x
+              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.y
+              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.z
+              << " " << ( is_north_pole ? "north_pole" : "" )
+              << " " << ( is_south_pole ? "south_pole" : "" )
+              << " " << ( is_360_seam ? "360_seam" : "" )
               << std::endl 
-               ; 
-*/ 
+              ;
+     */
+   
 
-    return p ; 
+    return pos ; 
 }
 
 

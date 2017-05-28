@@ -347,14 +347,24 @@ std::function<float(float,float,float)> nnode::sdf()
     return f ;
 }
 
+int nnode::par_euler() const 
+{
+    assert(0 && "this need to be overridden");
+    return 0 ; 
+}
 
 unsigned nnode::par_nsurf() const 
 {
     assert(0 && "this need to be overridden");
     return 0 ; 
 }
+unsigned nnode::par_nvertices(unsigned , unsigned ) const 
+{
+    assert(0 && "this need to be overridden");
+    return 0 ; 
+}
 
-glm::vec3 nnode::par_pos(const glm::vec2&, unsigned surf) const  // override in shapes 
+glm::vec3 nnode::par_pos(const nquad& , unsigned surf) const  // override in shapes 
 {
     assert(0 && "this need to be overridden");
     assert( surf < par_nsurf());
