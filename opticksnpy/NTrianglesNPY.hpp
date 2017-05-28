@@ -6,7 +6,7 @@ template <typename T> class NPY ;
 
 struct nbbox ; 
 struct ntriangle ; 
-struct NTris ; 
+struct NTriSource ; 
 
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
@@ -57,7 +57,7 @@ class NPY_API NTrianglesNPY {
     public:
         NTrianglesNPY();
         NTrianglesNPY(NPY<float>* tris, NPY<float>* normals=NULL);
-        NTrianglesNPY(const NTris* tris) ;
+        NTrianglesNPY(const NTriSource* tris) ;
     public:
         NTrianglesNPY* transform(glm::mat4& m);
         NTrianglesNPY* subdivide(unsigned int nsubdiv);

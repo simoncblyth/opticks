@@ -784,6 +784,22 @@ EOP
 
 
 
+tboolean-hybrid(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
+tboolean-hybrid--(){ cat << EOP
+from opticks.analytic.csg import CSG  
+
+container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
+
+box = CSG("box",    name="box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="5" )
+sph = CSG("sphere", name="sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", poly="HY", level="5"  )
+
+CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
+EOP
+}
+
+
+
 
 
 

@@ -20,6 +20,9 @@
 #include "NImplicitMesher.hpp"
 #endif
 
+#include "NHybridMesher.hpp"
+
+
 
 #include "PLOG.hh"
 
@@ -70,6 +73,10 @@ NTrianglesNPY* NPolygonizer::polygonize()
     else if(strcmp(m_poly, "IM") == 0)
     {
         tris = implicitMesher(); 
+    }
+    else if(strcmp(m_poly, "HY") == 0)
+    {
+        tris = hybridMesher(); 
     }
     else
     {
@@ -151,6 +158,16 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 #else
     assert(0 && "installation does not have ImplicitMesher support" );
 #endif
+    return tris ;
+}
+
+
+NTrianglesNPY* NPolygonizer::hybridMesher()
+{
+    NTrianglesNPY* tris = NULL ; 
+    int   level = m_meta->get<int>("level", "5" );
+    NHybridMesher poly(m_root, level, m_verbosity ) ; 
+    tris = poly();
     return tris ;
 }
 

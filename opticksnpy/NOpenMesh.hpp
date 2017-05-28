@@ -64,8 +64,10 @@ typedef OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits>  NOpenMeshType ;
 
 struct nnode ; 
 
+#include "NTriSource.hpp"
+
 template <typename T>
-struct NPY_API  NOpenMesh
+struct NPY_API  NOpenMesh : NTriSource
 {
     int write(const char* path);
 
@@ -90,6 +92,15 @@ struct NPY_API  NOpenMesh
     void build_cube();
     void build_parametric(const nnode* node, int nu, int nv, int verbosity=0, const float epsilon=1e-5f ); 
     int  euler_characteristic();
+
+
+    // NTriSource interface
+    unsigned get_num_tri() const ;
+    unsigned get_num_vert() const ;
+    void get_vert( unsigned i, glm::vec3& v ) const ;
+    void get_tri( unsigned i, glm::uvec3& t ) const ;
+    void get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const ;
+
 
     T    mesh ; 
 };

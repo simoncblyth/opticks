@@ -185,6 +185,8 @@ set(SOURCES
     NTris.cpp
     NOpenMesh.cpp
 
+    NHybridMesher.cpp
+
 )
 
 set(_SOURCES

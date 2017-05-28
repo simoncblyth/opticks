@@ -87,6 +87,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.right = right ; 
     n.parent = NULL ; 
     n.label = NULL ; 
+    n.mesh = NULL ; 
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 

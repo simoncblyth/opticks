@@ -16,6 +16,9 @@ struct npart ;
 struct nmat4pair ; 
 struct nmat4triple ; 
 
+//template <typename T> struct NOpenMesh ;
+
+
 struct NPY_API nnode 
 {
     virtual float operator()(float px, float py, float pz) const  ;
@@ -66,6 +69,7 @@ struct NPY_API nnode
     nnode* right ; 
     nnode* parent ; 
     const char* label ; 
+    void*  mesh ; 
 
     nmat4triple* transform ; 
     nmat4triple* gtransform ; 

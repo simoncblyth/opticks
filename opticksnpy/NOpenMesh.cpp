@@ -598,13 +598,67 @@ void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv, int verbo
 
 
 
+// NTriSource interface
 
+template <typename T>
+unsigned NOpenMesh<T>::get_num_tri() const
+{
+    return mesh.n_faces();
+}
+template <typename T>
+unsigned NOpenMesh<T>::get_num_vert() const
+{
+    return mesh.n_vertices();
+}
 
+template <typename T>
+void NOpenMesh<T>::get_vert( unsigned i, glm::vec3& v   ) const
+{
+    typedef typename T::Point          P ; 
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::FaceHandle     FH ; 
 
+    const VH& vh = mesh.vertex_handle(i) ;
+    const P& p = mesh.point(vh); 
+
+    v.x = p[0] ; 
+    v.y = p[1] ; 
+    v.z = p[2] ; 
+}
+
+template <typename T>
+void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t   ) const
+{
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::FaceHandle     FH ; 
+    typedef typename T::ConstFaceVertexIter FVI ; 
+
+    const FH& fh = mesh.face_handle(i) ;
+
+    assert( mesh.valence(fh) == 3 ); 
+
+    int n = 0 ; 
+    for(FVI fv=mesh.cfv_iter(fh) ; fv.is_valid() ; fv++) 
+    { 
+        const VH& vh = *fv ; 
+        t[n++] = vh.idx() ;
+    }
+    assert(n == 3);
+
+}
+
+template <typename T>
+void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const
+{
+    get_tri(i, t );
+
+    get_vert(t.x, a );
+    get_vert(t.y, b );
+    get_vert(t.z, c );
+}
 
 
 template struct NOpenMesh<NOpenMeshType> ;
-
 
 
 

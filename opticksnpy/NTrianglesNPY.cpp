@@ -62,7 +62,7 @@ glm::mat4 NTrianglesNPY::getTransform()
 
 
 
-NTrianglesNPY::NTrianglesNPY(const NTris* tris)
+NTrianglesNPY::NTrianglesNPY(const NTriSource* tris)
     :
     m_tris(NPY<float>::make(0,3,3)),
     m_normals(NPY<float>::make(0,3,3))
