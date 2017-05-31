@@ -28,6 +28,16 @@ Joining Endcaps to body
   the uv spaces, which can then 
   simply be collaped to one in combined meshes 
 
+  * actually just using add_vertex unique with 
+    some suitable length epsilon below which to snap
+    vertices together this turns out to be straightforward.
+
+ 
+  * problem comes with general boolean combinations where there will
+    not be equal numbers of vertices around the boundaries that 
+    need to be stitched together : need to come up with a local edge split/join 
+    algorithm that can locally change vertex counts around the boundary region 
+  
 
 
 

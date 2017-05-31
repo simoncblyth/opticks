@@ -791,10 +791,24 @@ from opticks.analytic.csg import CSG
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box",    name="box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="5" )
-sph = CSG("sphere", name="sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", poly="HY", level="5"  )
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="4" )
+sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="4"  )
 
-CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
+obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4"  )
+
+CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
+#CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
+
+"""
+2017-05-31 14:16:49.409 INFO  [4109070] [>::build_parametric@64] build_parametric leftmesh 0x7fa7639de550 rightmesh 0x7fa7639dec70
+2017-05-31 14:16:49.413 INFO  [4109070] [>::build_parametric@70] leftmesh inside node->right : 
+2017-05-31 14:16:49.413 INFO  [4109070] [>::build_parametric@73] rightmesh inside node->left :
+
+         0 :   2728|  1 :     14|  2 :     14|  3 :     12|  4 :     28|  5 :     12|  6 :     12|  7 :    252|
+         0 :     72|  1 :     10|  2 :     10|  3 :     36|  4 :      8|  5 :     16|  6 :     16|  7 :    312|
+
+"""
+
 EOP
 }
 
@@ -803,8 +817,9 @@ EOP
 
 
 
-tboolean-box-small-offset-sphere-py(){ $FUNCNAME- | python $* ; } 
-tboolean-box-small-offset-sphere-py-(){ cat << EOP
+tboolean-boxsphere(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-boxsphere-(){ $FUNCNAME- | python $* ; } 
+tboolean-boxsphere--(){ cat << EOP
 from opticks.analytic.csg import CSG  
 
 container = CSG("sphere",           param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )

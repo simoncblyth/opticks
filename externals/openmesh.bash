@@ -9,12 +9,18 @@ OpenMesh
 
 
 * http://openmesh.org/Documentation/OpenMesh-Doc-Latest/a00030.html
+* https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/index.html
 
+
+Mailing List 
+---------------
 
 * https://mailman.rwth-aachen.de/mailman/listinfo/openmesh
   
   Argh unsearchable mailing list 
 
+Repo
+-------
 
 * https://graphics.rwth-aachen.de:9000/OpenMesh/OpenMesh
 
@@ -27,10 +33,8 @@ OpenMesh
   gtest unittests 
 
 
-* https://www.openmesh.org/media/Documentations/OpenMesh-4.1-Documentation/index.html
-
-
-
+Building
+------------
 
 cmake::
 
@@ -41,10 +45,205 @@ cmake::
     Skipping Python Bindings.
 
 
+Refs
+-------
+
+
+Geometric Modeling Based on Triangle Meshes (EUROGRAPHICS 2006)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+106 page tutorial covering mesh operations
+
+* https://graphics.ethz.ch/Downloads/Publications/Tutorials/2006/Bot06b/eg06-tutorial.pdf
+* ~/opticks_refs/Mesh_Geometric_Modelling_Botsch_eg06-tutorial.pdf  
+
+
 Mesh Basics
 -------------
 
 * http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/02_Basics.pdf
+
+Mesh Navigation : following a boundary 
+-------------------------------------------
+
+* http://www.openmesh.org/Documentation/OpenMesh-2.0-Documentation/mesh_navigation.html
+
+Mesh Editing
+-------------
+
+* garbage collection invalidates vertex handles
+
+
+Splitting Edges
+~~~~~~~~~~~~~~~~
+
+* https://mailman.rwth-aachen.de/pipermail/openmesh/2012-November/000802.html
+
+as long as you don't call garbage_collection on your mesh, all handles
+will stay valid and point to the correct vertices (even after the split
+operation.
+
+
+No, if you tag the vertices before your operation, the handle will point
+to the correct vertex and this information is stored on the vertex. Of
+course, if you do a garbage collection, your old handle will be
+invalidated (You can use the advanced garbage collection to let OM
+update the handles for you). But the information is still stored for the
+correct vertex.
+
+Splitting Faces
+~~~~~~~~~~~~~~~~~~
+
+* https://stackoverflow.com/questions/41008298/openmesh-face-split
+
+Deleting faces 
+~~~~~~~~~~~~~~~~~~
+
+* https://mailman.rwth-aachen.de/pipermail/openmesh/2012-August/000764.html
+
+That is how garbage collection is working. The deleted elements are
+removed from the storage and the vectors are compacted, which
+invalidates the handles. Therefore, garbage collection should be used
+after your algorithm is completed.
+
+The entities which are deleted, are marked as
+deleted in their status flag. If you are using the mesh for rendering,
+you can simply use the skipping iterators ( mesh->vertices_sbegin() )
+which will skip deleted elements in the iteration.
+
+Another possibility is the newly introduced garbage_collection with
+handle updates. You have to give the garbage collection arrays of
+pointers to handles which should get updated. It's in the svn repo and
+already included in the daily builds.
+
+
+Boundary handling
+------------------
+
+From docs:
+
+In order to efficiently classify a boundary vertex, the outgoing halfedge of
+these vertices must be a boundary halfedge (see OpenMesh::PolyMeshT::is_boundary()).  
+
+Whenever you modify the topology using low-level topology changing functions, 
+be sure to guarantee this behaviour (see OpenMesh::PolyMeshT::adjust_outgoing_halfedge())
+
+Related
+--------
+
+* https://github.com/memononen/libtess2
+
+Books
+------
+
+Geometric Tools for Computer Graphics
+
+* https://books.google.com.tw/books?id=3Q7HGBx1uLIC
+
+  * p340: connected meshes, an algo to split mesh into connected components 
+
+M. Botsch et al. / Geometric Modeling Based on Triangle Meshes
+
+* http://lgg.epfl.ch/publications/2006/botsch_2006_GMT_eg.pdf
+* fig10 is most useful 
+
+
+Splitting Mesh into Connected Components
+------------------------------------------
+
+* https://stackoverflow.com/questions/21502416/splitting-mesh-into-connected-components-in-openmesh
+* http://www.openflipper.org/media/Documentation/OpenFlipper-1.0.2/MeshInfoT_8cc_source.html
+
+Usage
+-------
+
+* http://www.hao-li.com/cs599-ss2015/exercises/exercise1.pdf
+* ~/opticks_refs/OpenMesh_Introduction_HaoLi.pdf
+
+
+Good Starting points
+----------------------
+
+TriMesh
+
+* file:///usr/local/env/graphics/openmesh/OpenMesh-4.1/Documentation/a00276.html
+
+Halfedge structure
+-------------------
+
+* https://www.openmesh.org/Daily-Builds/Doc/a03947.html
+
+The data structure used in this project is the so called halfedge data
+structure . While face-based structures store their connectivity in faces
+referencing their vertices and neighbors, edge-based structures put the
+connectivity information into the edges. Each edge references its two vertices,
+the faces it belongs to and the two next edges in these faces. If one now
+splits the edges (i.e. an edge connecting vertex A and vertex B becomes two
+directed halfeges from A to B and vice versa) one gets a halfedge-based data
+structure. The following figure illustrates the way connectivity is stored in
+this structure:
+
+
+Introduction to Halfedge data structure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://www.flipcode.com/archives/The_Half-Edge_Data_Structure.shtml
+
+Another Halfedge intro
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://kaba.hilvi.org/homepage/blog/halfedge/halfedge.htm
+
+What makes the half-edge structure interesting is its ability to efficiently answer such adjacency queries as:
+
+* What edges are connected to this vertex?
+* What polygons are connected to this vertex?
+* What vertices are connected to this polygon?
+
+and the fact that it achieves this by using only a constant amount of data for each element.
+
+There are two important restrictions on the relationships that can be described:
+
+* No non-orientable surfaces (e.g. Moebius strip).
+* No non-manifold surfaces (e.g. two cubes sharing a corner vertex).
+
+The second restriction implies an analogous statement for edges and polygons.
+The quad-edge structure is a minimal upgrade to the half-edge structure that
+enables representation of non-orientable surfaces. The partial entity structure
+extends the idea of halving edges to halving all elements and handles also
+non-manifold surfaces.
+
+
+Another Intro
+~~~~~~~~~~~~~~~
+
+* https://fgiesen.wordpress.com/2012/02/21/half-edge-based-mesh-representations-theory/
+
+The reason for focusing on edges is quite simple: Face->Edge, Face->Vertex,
+Vertex->Edge and Vertex->Face are all one-to-many-type relationships in a general
+polygon mesh, but each edge links exactly 2 vertices and lies (in a closed,
+2-manifold mesh) between exactly 2 faces – a fixed number of pointers (or
+indices), much nicer. 
+
+Half-edges make this even more uniform by using directed edges 
+(in the direction of winding order). Each half-edge is incident to one
+face and one vertex, and a pair of half-edges makes up a full edge, hence the
+name.
+
+
+
+Efficient Following of boundaries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Its a fundamental feature of the halfedge data structure.
+
+
+Alternates
+-----------
+
+* cgal
+* vcg/meshlab
+* http://gfx.cs.princeton.edu/proj/trimesh2/
 
 
 Code Review
@@ -364,130 +563,6 @@ Handles are just ints::
 
 
 
-
-Flag Consistency
------------------
-
-::
-
-    (Link target) ->
-      OpenMeshCored.lib(BaseProperty.obj) : error LNK2038: mismatch detected for '_ITERATOR_DEBUG_LEVEL': 
-      value '2' doesn't match value '0' in MESHRAP_LOG.obj [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-
-      OpenMeshCored.lib(BaseProperty.obj) : error LNK2038: mismatch detected for 'RuntimeLibrary':
-      value 'MDd_DynamicDebug' doesn't match value 'MD_DynamicRelease' in MESHRAP_LOG.obj [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-
-Warnings
---------------
-
-::
-
-    "C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj" (default target) (88) ->
-    (ClCompile target) ->
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(140): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(143): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(146): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(149): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(152): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(155): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(158): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(161): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(164): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(167): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(170): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(173): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(176): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(179): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(182): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(185): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(188): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      C:\usr\local\opticks\externals\include\OpenMesh/Core/Mesh/AttribKernelT.hh(191): warning C4127: conditional expression is constant [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(166): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-      c:\usr\local\opticks\externals\include\openmesh\core\utils\property.hh(156): warning C4702: unreachable code [C:\usr\local\opticks\build\graphics\openmeshrap\OpenMeshRap.vcxproj]
-
-
-
-
-Boundary handling
-------------------
-
-From docs:
-
-In order to efficiently classify a boundary vertex, the outgoing halfedge of
-these vertices must be a boundary halfedge (see OpenMesh::PolyMeshT::is_boundary()).  
-
-Whenever you modify the topology using low-level topology changing functions, 
-be sure to guarantee this behaviour (see OpenMesh::PolyMeshT::adjust_outgoing_halfedge())
-
-Related
---------
-
-* https://github.com/memononen/libtess2
-
-Books
-------
-
-Geometric Tools for Computer Graphics
-
-* https://books.google.com.tw/books?id=3Q7HGBx1uLIC
-
-  * p340: connected meshes, an algo to split mesh into connected components 
-
-M. Botsch et al. / Geometric Modeling Based on Triangle Meshes
-
-* http://lgg.epfl.ch/publications/2006/botsch_2006_GMT_eg.pdf
-* fig10 is most useful 
-
-
-Splitting Mesh into Connected Components
-------------------------------------------
-
-* http://stackoverflow.com/questions/21502416/splitting-mesh-into-connected-components-in-openmesh
-* http://www.openflipper.org/media/Documentation/OpenFlipper-1.0.2/MeshInfoT_8cc_source.html
-
-Usage
--------
-
-* http://www.hao-li.com/cs599-ss2015/exercises/exercise1.pdf
-* ~/opticks_refs/OpenMesh_Introduction_HaoLi.pdf
-
-
-Good Starting points
-----------------------
-
-TriMesh
-
-* file:///usr/local/env/graphics/openmesh/OpenMesh-4.1/Documentation/a00276.html
-
-Halfedge structure
--------------------
-
-* https://www.openmesh.org/Daily-Builds/Doc/a03947.html
-
-The data structure used in this project is the so called halfedge data
-structure . While face-based structures store their connectivity in faces
-referencing their vertices and neighbors, edge-based structures put the
-connectivity information into the edges. Each edge references its two vertices,
-the faces it belongs to and the two next edges in these faces. If one now
-splits the edges (i.e. an edge connecting vertex A and vertex B becomes two
-directed halfeges from A to B and vice versa) one gets a halfedge-based data
-structure. The following figure illustrates the way connectivity is stored in
-this structure:
-
-
-
-Alternates
------------
-
-* cgal
-* vcg/meshlab
-* http://gfx.cs.princeton.edu/proj/trimesh2/
 
 EOU
 }

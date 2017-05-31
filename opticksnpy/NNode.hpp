@@ -37,7 +37,7 @@ struct NPY_API nnode
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
-    std::function<float(float,float,float)> sdf();
+    std::function<float(float,float,float)> sdf() const ;
 
     glm::vec3 gseeddir();  // override if needed
 
@@ -69,7 +69,6 @@ struct NPY_API nnode
     nnode* right ; 
     nnode* parent ; 
     const char* label ; 
-    void*  mesh ; 
 
     nmat4triple* transform ; 
     nmat4triple* gtransform ; 

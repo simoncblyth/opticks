@@ -457,8 +457,10 @@ class CSG(CSG_):
             typ = typ_  
         pass
 
-        assert name is not None and len(name) > 0
-
+        if name is None or len(name) == 0:
+            name = typ_
+        pass
+        #assert name is not None and len(name) > 0
 
         type_ok = type(typ) is int and typ > -1 
         if not type_ok:

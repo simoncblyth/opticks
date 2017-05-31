@@ -10,6 +10,251 @@
 #include "NNode.hpp"
 #include "NOpenMesh.hpp"
 
+
+template <typename T>
+NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, float epsilon)
+    :
+    node(node), 
+    level(level), 
+    verbosity(verbosity), 
+    epsilon(epsilon),
+    leftmesh(NULL),
+    rightmesh(NULL) 
+{
+    init();
+}
+
+template <typename T>
+const char* NOpenMesh<T>::F_INSIDE_OTHER = "f_inside_other" ; 
+
+template <typename T>
+const char* NOpenMesh<T>::V_SDF_OTHER = "v_sdf_other" ; 
+
+
+
+template <typename T>
+void NOpenMesh<T>::init()
+{
+    OpenMesh::FPropHandleT<int> f_inside_other ;
+    mesh.add_property(f_inside_other, F_INSIDE_OTHER);  
+
+    OpenMesh::VPropHandleT<float> v_sdf_other ;
+    mesh.add_property(v_sdf_other, V_SDF_OTHER);  
+
+
+    build_parametric();
+}
+
+
+template <typename T>
+void NOpenMesh<T>::build_parametric()
+{
+/*
+
+Aim is to combine leftmesh and rightmesh faces 
+appropriately for the CSG operator of the combination. 
+
+Faces that are entirely inside or outside the other 
+can simply be copied or not copied as appropriate into the combined mesh.  
+
+The complex part is how to stitch up the join between the two(? or more) open boundaries. 
+
+union(A,B)
+    copy faces of A entirely outside B and vv  (symmetric/commutative)
+
+intersection(A,B)
+    copy faces of A entirely inside B and vv (symmetric/commutative)
+
+difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
+    copy faces of A entirely outside -B 
+    copy faces of A entirely inside B 
+
+    copy faces of A entirely outside B 
+    copy faces of B entirely inside A 
+
+*/
+
+    bool combination = node->left && node->right ; 
+
+    if(!combination)
+    {
+        build_parametric_primitive();  // adds unique vertices and faces to build out the parametric mesh  
+    }
+    else
+    {
+        assert(node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE );
+   
+        typedef NOpenMesh<T> Mesh ; 
+        leftmesh = new Mesh(node->left, level, verbosity, epsilon) ; 
+        rightmesh = new Mesh(node->right, level, verbosity, epsilon) ; 
+
+        LOG(info) << "build_parametric" 
+                  << " leftmesh " << leftmesh
+                  << " rightmesh " << rightmesh
+                   ;
+
+        leftmesh->mark_inside_other( node->right );
+        LOG(info) << "leftmesh inside node->right : " <<  leftmesh->desc_inside_other() ;  
+
+        rightmesh->mark_inside_other( node->left );
+        LOG(info) << "rightmesh inside node->left : " <<  rightmesh->desc_inside_other() ;  
+
+        int ALL_OUTSIDE_OTHER = 0 ; 
+        int ALL_INSIDE_OTHER = 7 ; 
+
+        if(node->type == CSG_UNION)
+        {
+            copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
+            copy_faces( rightmesh, ALL_OUTSIDE_OTHER );
+        }
+        else if(node->type == CSG_INTERSECTION)
+        {
+            copy_faces( leftmesh,  ALL_INSIDE_OTHER );
+            copy_faces( rightmesh, ALL_INSIDE_OTHER );
+        }
+        else if(node->type == CSG_DIFFERENCE )
+        {
+            copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
+            copy_faces( rightmesh, ALL_INSIDE_OTHER );
+        }
+    }
+}
+
+
+template <typename T>
+void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
+{
+    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceIter            FI ; 
+    typedef typename T::ConstFaceVertexIter FVI ; 
+    typedef typename T::Point               P ; 
+
+    OpenMesh::FPropHandleT<int> f_inside_other ;
+    assert(other->mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
+
+    for( FI f=other->mesh.faces_begin() ; f != other->mesh.faces_end(); ++f ) 
+    {
+        const FH& fh = *f ;  
+        int _f_inside_other = other->mesh.property(f_inside_other, fh) ; 
+
+        if( _f_inside_other == facemask )
+        {  
+            VH nvh[3] ; 
+            int fvert(0);
+            for(FVI fv=other->mesh.cfv_iter(fh) ; fv.is_valid() ; fv++) 
+            {
+                const VH& vh = *fv ; 
+                const P& pt = other->mesh.point(vh);
+         
+                nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), epsilon);  
+            } 
+            assert( fvert == 3 );
+            add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
+        }
+    }
+    // Hmm how to retain pointers to open boundaries, to avoid a subsequent search.
+}
+ 
+
+template <typename T>
+void NOpenMesh<T>::mark_inside_other(const nnode* other)
+{
+/*
+facemask "f_inside_outside"
+-----------------------------
+
+bitmask of 3 bits for each face corresponding to 
+inside/outside for the vertices of the face
+
+0   (0) : all vertices outside other
+
+1   (1) : 1st vertex inside other
+2  (10) : 2nd vertex inside other
+3  (11) : 1st and 2nd vertices inside other
+4 (100) : 3rd vertex inside other
+5 (101) : 1st and 3rd vertex inside other
+6 (110) : 2nd and 3rd vertex inside other
+
+7 (111) : all vertices inside other 
+
+*/
+
+    std::function<float(float,float,float)> sdf = other->sdf();
+
+    OpenMesh::VPropHandleT<float> v_sdf_other ;
+    assert(mesh.get_property_handle(v_sdf_other, V_SDF_OTHER));
+
+    OpenMesh::FPropHandleT<int> f_inside_other ;
+    assert(mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
+
+
+    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceIter            FI ; 
+    typedef typename T::ConstFaceVertexIter FVI ; 
+    typedef typename T::Point               P ; 
+
+    for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
+    {
+        const FH& fh = *f ;  
+
+        int _f_inside_other = 0 ;  
+
+        assert( mesh.valence(fh) == 3 );
+
+        int fvert = 0 ; 
+
+        for(FVI fv=mesh.cfv_iter(fh) ; fv.is_valid() ; fv++) 
+        {
+            const VH& vh = *fv ; 
+        
+            const P& pt = mesh.point(vh);
+
+            float dist = sdf(pt[0], pt[1], pt[2]);
+
+            mesh.property(v_sdf_other, vh ) = dist   ;
+
+            bool inside_other = dist < 0.f ; 
+
+            _f_inside_other |=  (!!inside_other << fvert++) ;   
+        }
+        assert( fvert == 3 );
+        mesh.property(f_inside_other, fh) = _f_inside_other ; 
+
+
+        if(f_inside_other_count.count(_f_inside_other) == 0)
+        {
+            f_inside_other_count[_f_inside_other] = 0 ; 
+        }
+        f_inside_other_count[_f_inside_other]++ ; 
+    }
+
+
+}
+ 
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc_inside_other()
+{
+    std::stringstream ss ; 
+    typedef std::map<int,int> MII ; 
+
+    for(MII::const_iterator it=f_inside_other_count.begin() ; it!=f_inside_other_count.end() ; it++)
+    {
+         ss << std::setw(3) << it->first << " : " << std::setw(6) << it->second << "|" ; 
+    }
+
+    return ss.str();
+}
+ 
+
+
+ 
+
+
+
 template <typename T>
 int NOpenMesh<T>::write(const char* path)
 {
@@ -302,10 +547,8 @@ typename T::VertexHandle NOpenMesh<T>::find_vertex_closest(typename T::Point pt,
     typedef typename T::Point           P ; 
     typedef typename T::VertexIter     VI ; 
 
-
     VI beg = mesh.vertices_begin() ;
     VI end = mesh.vertices_end() ;
-
 
     VH closest ;
 
@@ -380,11 +623,13 @@ typename T::FaceHandle NOpenMesh<T>::add_face_(typename T::VertexHandle v0, type
 }
 
 
+
+
+
 template <typename T>
-void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv, int verbosity, const float epsilon)  
+void NOpenMesh<T>::build_parametric_primitive()  
 {
    /*
-
    Singularities like the poles of a latitude/longitude sphere parametrization 
    are handled by detecting the degenerate verts and adjusting the
    faces generated accordingly. 
@@ -392,8 +637,13 @@ void NOpenMesh<T>::build_parametric(const nnode* node, int nu, int nv, int verbo
    NB parameterizations should avoid leaning on the epsilon crutch, better 
    to provide exactly equal positions for poles and seams    
 
-
    */
+
+    int nu = 1 << level ; 
+    int nv = 1 << level ; 
+
+
+
     int ns = node->par_nsurf() ;
     auto vid = [ns,nu,nv](int s, int u, int v) { return  s*(nu+1)*(nv+1) + v*(nu+1) + u ; };
 

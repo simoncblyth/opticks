@@ -10,7 +10,10 @@ void test_write()
     const char* path = "/tmp/test_write.off" ;
     LOG(info) << "test_write " << path  ; 
 
-    NOpenMesh<NOpenMeshType> mesh;
+    int level = 4 ; 
+    int verbosity = 1 ; 
+
+    NOpenMesh<NOpenMeshType> mesh(NULL, level, verbosity );
 
     mesh.build_cube();
     mesh.write(path);
@@ -22,7 +25,10 @@ void test_dump()
 {
     LOG(info) << "test_dump" ; 
 
-    NOpenMesh<NOpenMeshType> mesh;
+    int level = 4 ; 
+    int verbosity = 1 ; 
+
+    NOpenMesh<NOpenMeshType> mesh(NULL, level, verbosity);
 
     mesh.build_cube();
     mesh.dump();
@@ -36,9 +42,7 @@ void test_sphere_parametric()
     nsphere sphere = make_sphere(0,0,0,10);
     for(int level=2 ; level < 7 ; level++)
     { 
-        int n = 1 << level ; 
-        NOpenMesh<NOpenMeshType> m ;
-        m.build_parametric( &sphere, n, n, verbosity );
+        NOpenMesh<NOpenMeshType> m(&sphere, level, verbosity) ;
         //m.dump("sphere");
     }
 }
@@ -51,9 +55,7 @@ void test_box_parametric()
     nbox box = make_box(0,0,0,100);
     for(int level=1 ; level < 6 ; level++)
     { 
-        int n = 1 << level ; 
-        NOpenMesh<NOpenMeshType> m ;
-        m.build_parametric( &box, n, n, verbosity  ); 
+        NOpenMesh<NOpenMeshType> m(&box, level, verbosity);
         //m.dump("box");
     }
 }
@@ -67,7 +69,10 @@ void test_add_vertex()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    NOpenMesh<T> mesh ;
+    int level = 4 ; 
+    int verbosity = 1 ; 
+
+    NOpenMesh<T> mesh(NULL, level, verbosity) ;
 
     VH vh[8];
     VH vhd[8];
@@ -106,7 +111,11 @@ void test_add_vertex_unique()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    NOpenMesh<T> mesh ;
+
+    int level = 4 ; 
+    int verbosity = 1 ; 
+
+    NOpenMesh<T> mesh(NULL, level, verbosity) ;
 
     VH vh[8];
     VH vhd[8];
@@ -218,7 +227,9 @@ void test_add_face()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    NOpenMesh<T> m  ;
+    int level = 4 ; 
+    int verbosity = 1 ; 
+    NOpenMesh<T> m(NULL, level, verbosity) ;
 
     VH v00 = m.mesh.add_vertex(P(0, 0, 0));
     VH v01 = m.mesh.add_vertex(P(0, 1, 0));
@@ -276,7 +287,10 @@ void test_add_two_face()
     typedef T::VertexHandle VH ; 
     typedef T::FaceHandle   FH ; 
 
-    NOpenMesh<T> m  ;
+
+    int level = 4 ; 
+    int verbosity = 1 ; 
+    NOpenMesh<T> m(NULL, level, verbosity) ;
 
     VH v00 = m.mesh.add_vertex(P(0, 0, 0));
     VH v01 = m.mesh.add_vertex(P(0, 1, 0));

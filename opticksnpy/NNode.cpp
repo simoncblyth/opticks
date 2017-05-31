@@ -87,7 +87,6 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.right = right ; 
     n.parent = NULL ; 
     n.label = NULL ; 
-    n.mesh = NULL ; 
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
@@ -319,12 +318,12 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
 
 
-std::function<float(float,float,float)> nnode::sdf()
+std::function<float(float,float,float)> nnode::sdf() const 
 {
     //  return node types operator() callable as function
     //  somehow the object parameter member data goes along for the ride
 
-    nnode* node = this ; 
+    const nnode* node = this ; 
     std::function<float(float,float,float)> f ; 
 
     switch(node->type)   

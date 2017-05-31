@@ -5,8 +5,12 @@
 #include <string>
 
 #include "NBBox.hpp"
+#include "NOpenMeshType.hpp"
 
 #include "NPY_API_EXPORT.hh"
+
+
+template <typename T> struct NOpenMesh ; 
 
 class Timer ; 
 class NTrianglesNPY ; 
@@ -18,18 +22,15 @@ class NPY_API NHybridMesher
     public:
         typedef std::function<float(float,float,float)> FUNC ; 
      public:
-        NHybridMesher(nnode* node, int level=5, int verbosity=1);
+        NHybridMesher(const nnode* node, int level=5, int verbosity=1);
         NTrianglesNPY* operator()();
-
         std::string desc();
     private:
-        Timer*           m_timer ; 
-        nnode*           m_node ; 
-        nbbox*           m_bbox ; 
-        FUNC             m_sdf ;  
-        int              m_level ; 
-        int              m_nu ; 
-        int              m_nv ; 
-        int              m_verbosity ; 
+        void init(); 
+    private:
+        Timer*                     m_timer ; 
+        NOpenMesh<NOpenMeshType>*  m_mesh ;
+        nbbox*                     m_bbox ; 
+        int                        m_verbosity ; 
 
 };
