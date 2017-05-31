@@ -24,6 +24,7 @@ set(TEST_SOURCES
    BDynamicDefineTest.cc
    BOpticksEventTest.cc
    LexicalCastTest.cc
+   BBisectTest.cc
 
 )
 

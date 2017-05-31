@@ -6,6 +6,7 @@
 #include "NBox.hpp"
 #include "NPart.hpp"
 #include "NPlane.hpp"
+#include "Nuv.hpp"
 
 #include <cmath>
 #include <cassert>
@@ -128,7 +129,7 @@ unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const
 }
 
 
-glm::vec3 nbox::par_pos(const nquad& quv, unsigned surf ) const 
+glm::vec3 nbox::par_pos(const nuv& uv) const 
 {
     /*
 
@@ -163,7 +164,8 @@ glm::vec3 nbox::par_pos(const nquad& quv, unsigned surf ) const
 
     nbbox bb = bbox() ;
 
-    assert(surf < par_nsurf());
+
+
     glm::vec3 p ; 
 
     //   1 - uv[0] 
@@ -177,16 +179,17 @@ glm::vec3 nbox::par_pos(const nquad& quv, unsigned surf ) const
     //            (x,z) -> (u,v)
     // 
 
-    int iu = quv.i.x ; 
-    int iv = quv.i.y ;
-    int nu = quv.i.z ; 
-    int nv = quv.i.w ;
-  
+    unsigned s = uv.s() ; 
+    unsigned iu = uv.u() ; 
+    unsigned iv = uv.v() ;
+    unsigned nu = uv.nu() ; 
+    unsigned nv = uv.nv();
+
+    assert(s < par_nsurf());
     float fu = float(iu)/float(nu) ;
     float fv = float(iv)/float(nv) ;
 
-
-    switch(surf)
+    switch(s)
     {
         case 0:{    // -Z
                   p.x = glm::mix( bb.min.x, bb.max.x, 1 - fu ) ;

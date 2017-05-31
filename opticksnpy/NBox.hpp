@@ -36,7 +36,7 @@ struct NPY_API nbox : nnode
     unsigned  par_nsurf() const ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     int       par_euler() const ; 
-    glm::vec3 par_pos(const nquad& quv, unsigned surf ) const ;
+    glm::vec3 par_pos(const nuv& uv) const ;
 
 
     glm::vec3 gseedcenter();

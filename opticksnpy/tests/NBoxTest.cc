@@ -6,6 +6,7 @@
 #include "NGenerator.hpp"
 #include "NBox.hpp"
 #include "NBBox.hpp"
+#include "Nuv.hpp"
 
 #include "PLOG.hh"
 
@@ -108,22 +109,19 @@ void test_parametric()
     unsigned nu = 1 ; 
     unsigned nv = 1 ; 
 
-    for(unsigned surf=0 ; surf < nsurf ; surf++)
+    for(unsigned s=0 ; s < nsurf ; s++)
     {
-        std::cout << " surf : " << surf << std::endl ; 
+        std::cout << " surf : " << s << std::endl ; 
 
         for(unsigned u=0 ; u <= nu ; u++){
         for(unsigned v=0 ; v <= nv ; v++)
         {
-            nquad quv ;
-            quv.i.x = u ; 
-            quv.i.y = v ; 
-            quv.i.z = nu ; 
-            quv.i.w = nv ; 
+            nuv uv = make_uv(s,u,v,nu,nv );
 
-            glm::vec3 p = box.par_pos(quv, surf );
+            glm::vec3 p = box.par_pos(uv);
 
             std::cout 
+                 << " s " << std::setw(3) << s  
                  << " u " << std::setw(3) << u  
                  << " v " << std::setw(3) << v
                  << " p " << glm::to_string(p)

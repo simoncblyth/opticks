@@ -113,6 +113,8 @@ NYMathTest.cc
 NYShapeTest.cc
 
 NOpenMeshTest.cc
+NOpenMeshCombineTest.cc
+NuvTest.cc
 
 )
 

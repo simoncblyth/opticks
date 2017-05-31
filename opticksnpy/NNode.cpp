@@ -12,6 +12,7 @@
 #include "NNode.hpp"
 #include "NPart.hpp"
 #include "NQuad.hpp"
+#include "Nuv.hpp"
 #include "NBBox.hpp"
 
 // primitives
@@ -364,8 +365,9 @@ unsigned nnode::par_nvertices(unsigned , unsigned ) const
     return 0 ; 
 }
 
-glm::vec3 nnode::par_pos(const nquad& , unsigned surf) const  // override in shapes 
+glm::vec3 nnode::par_pos(const nuv& uv) const  // override in shapes 
 {
+    unsigned surf = uv.s();
     assert(0 && "this need to be overridden");
     assert( surf < par_nsurf());
     glm::vec3 pos ;

@@ -119,37 +119,38 @@ void test_add_vertex_unique()
 
     VH vh[8];
     VH vhd[8];
+    bool added(false) ; 
 
-    vh[0] = mesh.add_vertex_unique(P(-1, -1,  1), epsilon);
-    vhd[0] = mesh.add_vertex_unique(P(-1, -1,  1), epsilon);
+    vh[0] = mesh.add_vertex_unique(P(-1, -1,  1), added, epsilon);
+    vhd[0] = mesh.add_vertex_unique(P(-1, -1,  1), added, epsilon);
     assert(vhd[0] == vh[0]);
     
-    vh[1] = mesh.add_vertex_unique(P( 1, -1,  1), epsilon);
-    vhd[1] = mesh.add_vertex_unique(P( 1, -1,  1), epsilon);
+    vh[1] = mesh.add_vertex_unique(P( 1, -1,  1), added, epsilon);
+    vhd[1] = mesh.add_vertex_unique(P( 1, -1,  1), added, epsilon);
     assert(vhd[1] == vh[1]);
 
-    vh[2] = mesh.add_vertex_unique(P( 1,  1,  1), epsilon);
-    vhd[2] = mesh.add_vertex_unique(P( 1,  1,  1), epsilon);
+    vh[2] = mesh.add_vertex_unique(P( 1,  1,  1), added, epsilon);
+    vhd[2] = mesh.add_vertex_unique(P( 1,  1,  1), added, epsilon);
     assert(vhd[2] == vh[2]);
 
-    vh[3] = mesh.add_vertex_unique(P(-1,  1,  1),epsilon);
-    vhd[3] = mesh.add_vertex_unique(P(-1,  1,  1),epsilon);
+    vh[3] = mesh.add_vertex_unique(P(-1,  1,  1),added, epsilon);
+    vhd[3] = mesh.add_vertex_unique(P(-1,  1,  1),added, epsilon);
     assert(vhd[3] == vh[3]);
 
-    vh[4] = mesh.add_vertex_unique(P(-1, -1, -1),epsilon);
-    vhd[4] = mesh.add_vertex_unique(P(-1, -1, -1),epsilon);
+    vh[4] = mesh.add_vertex_unique(P(-1, -1, -1),added, epsilon);
+    vhd[4] = mesh.add_vertex_unique(P(-1, -1, -1),added, epsilon);
     assert(vhd[4] == vh[4]);
 
-    vh[5] = mesh.add_vertex_unique(P( 1, -1, -1),epsilon);
-    vhd[5] = mesh.add_vertex_unique(P( 1, -1, -1),epsilon);
+    vh[5] = mesh.add_vertex_unique(P( 1, -1, -1),added, epsilon);
+    vhd[5] = mesh.add_vertex_unique(P( 1, -1, -1),added, epsilon);
     assert(vhd[5] == vh[5]);
 
-    vh[6] = mesh.add_vertex_unique(P( 1,  1, -1),epsilon);
-    vhd[6] = mesh.add_vertex_unique(P( 1,  1, -1),epsilon);
+    vh[6] = mesh.add_vertex_unique(P( 1,  1, -1),added, epsilon);
+    vhd[6] = mesh.add_vertex_unique(P( 1,  1, -1),added, epsilon);
     assert(vhd[6] == vh[6]);
 
-    vh[7] = mesh.add_vertex_unique(P(-1,  1, -1),epsilon);
-    vhd[7] = mesh.add_vertex_unique(P(-1,  1, -1),epsilon);
+    vh[7] = mesh.add_vertex_unique(P(-1,  1, -1),added, epsilon);
+    vhd[7] = mesh.add_vertex_unique(P(-1,  1, -1),added, epsilon);
     assert(vhd[7] == vh[7]);
 
 
@@ -359,6 +360,10 @@ delta:tests blyth$
 
 }
  
+
+
+
+
 
 
 int main(int argc, char** argv)

@@ -146,7 +146,7 @@ std::string NCSG::smry()
        << " ht " << std::setw(2) << m_height 
        << " nn " << std::setw(4) << m_num_nodes
        << " tri " << std::setw(6) << getNumTriangles()
-       << " tmsg " << m_tris->getMessage() 
+       << " tmsg " << ( m_tris ? m_tris->getMessage() : "NULL-tris" ) 
        << " iug " << m_usedglobally 
        << " nd " << ( m_nodes ? m_nodes->getShapeString() : "NULL" )
        << " tr " << ( m_transforms ? m_transforms->getShapeString() : "NULL" )

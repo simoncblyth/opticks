@@ -8,6 +8,7 @@ struct nplane ;
 struct ndisc ; 
 struct npart ;
 struct nbbox ; 
+struct nuv ; 
 
 
 #include "NPY_API_EXPORT.hh"
@@ -30,7 +31,7 @@ struct NPY_API nsphere : nnode {
     glm::vec3 gseedcenter() ;
 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nquad& quv, unsigned surf) const  ;
+    glm::vec3 par_pos(const nuv& uv) const  ;
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 

@@ -11,6 +11,7 @@
 
 struct nbbox ; 
 struct npart ; 
+struct nuv ; 
 
 // NGLMExt
 struct nmat4pair ; 
@@ -42,7 +43,7 @@ struct NPY_API nnode
     glm::vec3 gseeddir();  // override if needed
 
     virtual unsigned  par_nsurf() const ;
-    virtual glm::vec3 par_pos(const nquad& quv, unsigned surf ) const ;
+    virtual glm::vec3 par_pos(const nuv& uv) const ;
     virtual int       par_euler() const ; 
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
 

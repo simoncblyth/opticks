@@ -15,6 +15,7 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+#include "Nuv.hpp"
 
 #include "PLOG.hh"
 
@@ -50,18 +51,19 @@ unsigned nsphere::par_nvertices(unsigned nu, unsigned nv) const
 }
 
 
-glm::vec3 nsphere::par_pos(const nquad& quv, unsigned surf ) const 
+glm::vec3 nsphere::par_pos(const nuv& uv) const 
 {
-    assert(surf < par_nsurf());
+    unsigned s  = uv.s(); 
+    unsigned u  = uv.u() ; 
+    unsigned v  = uv.v() ; 
+    unsigned nu = uv.nu() ; 
+    unsigned nv = uv.nv() ; 
 
-    int  u  = quv.i.x ; 
-    int  v  = quv.i.y ; 
-    int  nu = quv.i.z ; 
-    int  nv = quv.i.w ; 
+    assert(s < par_nsurf());
 
     // Avoid numerical precision problems at the poles
     // by providing precisely the same positions
-    // and on the 360 degree sea by using 0 degrees at 360 
+    // and on the 360 degree seam by using 0 degrees at 360 
     
     bool is_north_pole = v == 0 ; 
     bool is_south_pole = v == nv ; 

@@ -785,6 +785,7 @@ EOP
 
 
 tboolean-hybrid(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-hybrid-combinetest(){ NOpenMeshCombineTest $TMP/tboolean-hybrid--/1 ; }
 tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
 tboolean-hybrid--(){ cat << EOP
 from opticks.analytic.csg import CSG  

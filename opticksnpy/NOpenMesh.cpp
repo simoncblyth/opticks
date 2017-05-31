@@ -7,6 +7,7 @@
 
 #include "PLOG.hh"
 #include "NGLM.hpp"
+#include "Nuv.hpp"
 #include "NNode.hpp"
 #include "NOpenMesh.hpp"
 
@@ -30,6 +31,9 @@ const char* NOpenMesh<T>::F_INSIDE_OTHER = "f_inside_other" ;
 template <typename T>
 const char* NOpenMesh<T>::V_SDF_OTHER = "v_sdf_other" ; 
 
+template <typename T>
+const char* NOpenMesh<T>::V_PARAMETRIC = "v_parametric" ; 
+
 
 
 template <typename T>
@@ -41,6 +45,8 @@ void NOpenMesh<T>::init()
     OpenMesh::VPropHandleT<float> v_sdf_other ;
     mesh.add_property(v_sdf_other, V_SDF_OTHER);  
 
+    OpenMesh::VPropHandleT<nuv> v_parametric ;
+    mesh.add_property(v_parametric, V_PARAMETRIC);  
 
     build_parametric();
 }
@@ -99,13 +105,12 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         rightmesh->mark_inside_other( node->left );
         LOG(info) << "rightmesh inside node->left : " <<  rightmesh->desc_inside_other() ;  
 
-        int ALL_OUTSIDE_OTHER = 0 ; 
-        int ALL_INSIDE_OTHER = 7 ; 
-
         if(node->type == CSG_UNION)
         {
             copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
             copy_faces( rightmesh, ALL_OUTSIDE_OTHER );
+
+            dump_boundary_faces( "boundary faces", 'L' );
         }
         else if(node->type == CSG_INTERSECTION)
         {
@@ -146,8 +151,8 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
             {
                 const VH& vh = *fv ; 
                 const P& pt = other->mesh.point(vh);
-         
-                nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), epsilon);  
+                bool added(false);        
+                nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), added, epsilon);  
             } 
             assert( fvert == 3 );
             add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
@@ -156,6 +161,166 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
     // Hmm how to retain pointers to open boundaries, to avoid a subsequent search.
 }
  
+
+template <typename T>
+void NOpenMesh<T>::dump_boundary_faces(const char* msg, char side)
+{
+    LOG(info) << msg  ; 
+
+    typedef NOpenMesh<T> Mesh ; 
+
+    Mesh* a_mesh = NULL  ;
+    Mesh* b_mesh = NULL  ;
+    assert( side == 'L' || side == 'R' );
+
+    switch(side)
+    {
+       case 'L':{  
+                   a_mesh = leftmesh ; 
+                   b_mesh = rightmesh ; 
+                }
+                break ;
+
+       case 'R':{  
+                   a_mesh = rightmesh ; 
+                   b_mesh = leftmesh ; 
+                }
+                break ;
+    }
+
+    const nnode* a_node = a_mesh->node ; 
+    const nnode* b_node = b_mesh->node ; 
+
+    std::function<float(float,float,float)> a_sdf = a_node->sdf() ; 
+    std::function<float(float,float,float)> b_sdf = b_node->sdf() ; 
+
+
+    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::EdgeHandle          EH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::FaceIter            FI ; 
+    typedef typename T::ConstFaceVertexIter FVI ; 
+    typedef typename T::ConstFaceEdgeIter   FEI ; 
+    typedef typename T::ConstFaceHalfedgeIter   FHI ; 
+    typedef typename T::Point               P ; 
+
+    OpenMesh::FPropHandleT<int> f_inside_other ;
+    assert(a_mesh->mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
+
+    OpenMesh::VPropHandleT<nuv> v_parametric;
+    assert(a_mesh->mesh.get_property_handle(v_parametric, V_PARAMETRIC));
+
+
+    for( FI f=a_mesh->mesh.faces_begin() ; f != a_mesh->mesh.faces_end(); ++f ) 
+    {
+        const FH& fh = *f ;  
+        int _f_inside_other = a_mesh->mesh.property(f_inside_other, fh) ; 
+        if( _f_inside_other == ALL_OUTSIDE_OTHER || _f_inside_other == ALL_INSIDE_OTHER ) continue ; 
+            
+        std::cout << "facemask:" << _f_inside_other << std::endl ; 
+
+        // a_mesh edges along which b_sdf changes sign can be bisected 
+        // (can treat as unary functions as only one 
+        //  parameter will vary along the parametric edge)
+        //  does that stay true above the leaves ? need to arrange for it to stay true... 
+
+      
+        VH vh[2] ;  
+        nuv uv[2] ; 
+        glm::vec3 a_pos[2] ;
+        P pt[2];
+        float _a_sdf[2] ; 
+        float _b_sdf[2] ; 
+
+
+        for(FHI fhe=a_mesh->mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
+        {
+            const HEH& heh = *fhe ; 
+            vh[0] = a_mesh->mesh.from_vertex_handle( heh );
+            vh[1] = a_mesh->mesh.to_vertex_handle( heh );
+
+            uv[0] = a_mesh->mesh.property(v_parametric, vh[0]) ; 
+            uv[1] = a_mesh->mesh.property(v_parametric, vh[1]) ; 
+
+            a_pos[0] = a_node->par_pos( uv[0] );
+            a_pos[1] = a_node->par_pos( uv[1] );
+
+            _a_sdf[0] = a_sdf( a_pos[0].x, a_pos[0].y, a_pos[0].z );
+            _a_sdf[1] = a_sdf( a_pos[1].x, a_pos[1].y, a_pos[1].z );
+
+            _b_sdf[0] = b_sdf( a_pos[0].x, a_pos[0].y, a_pos[0].z );
+            _b_sdf[1] = b_sdf( a_pos[1].x, a_pos[1].y, a_pos[1].z );
+
+            pt[0] = a_mesh->mesh.point(vh[0]);
+            pt[1] = a_mesh->mesh.point(vh[1]);
+
+            assert( pt[0][0] == a_pos[0][0] );
+            assert( pt[0][1] == a_pos[0][1] );
+            assert( pt[0][2] == a_pos[0][2] );
+
+            assert( pt[1][0] == a_pos[1][0] );
+            assert( pt[1][1] == a_pos[1][1] );
+            assert( pt[1][2] == a_pos[1][2] );
+
+            assert( _a_sdf[0] == 0.f );
+            assert( _a_sdf[1] == 0.f );
+
+
+            std::cout << " heh " << heh
+                      << " vh " << vh[0] << " -> " << vh[1]
+                      << " uv " << uv[0].desc() << " -> " << uv[1].desc() 
+                      << " a_pos " << glm::to_string(a_pos[0]) << " -> " << glm::to_string(a_pos[1]) 
+                      << " _b_sdf " 
+                      << std::setw(15) << std::setprecision(3) << std::fixed << _b_sdf[0]
+                      << " -> " 
+                      << std::setw(15) << std::setprecision(3) << std::fixed << _b_sdf[1]
+                      << std::endl ;  
+
+        }
+
+
+
+
+/*
+        VH nvh[3] ; 
+        int fvert(0);
+        for(FVI fv=a_mesh->mesh.cfv_iter(fh) ; fv.is_valid() ; fv++) 
+        {
+            const VH& vh = *fv ; 
+            const P& pt = a_mesh->mesh.point(vh);
+
+            nvh[fvert++] = vh ; 
+
+            float _a_sdf = a_sdf(pt[0],pt[1],pt[2]); 
+            float _b_sdf = b_sdf(pt[0],pt[1],pt[2]); 
+ 
+            nuv uv = a_mesh->mesh.property(v_parametric, vh) ; 
+
+            std::cout 
+                      << uv.desc()
+                      << " pt: "
+                      << std::setw(15) << std::setprecision(3) << std::fixed << pt[0]
+                      << std::setw(15) << std::setprecision(3) << std::fixed << pt[1]
+                      << std::setw(15) << std::setprecision(3) << std::fixed << pt[2]
+                      << " _a_sdf: " 
+                      << std::setw(15) << std::setprecision(3) << std::fixed << _a_sdf
+                      << " a_pos "
+                      << glm::to_string(a_pos) 
+                      << " _b_sdf: " 
+                      << std::setw(15) << std::setprecision(3) << std::fixed << _b_sdf
+                      << std::endl ; 
+
+        } 
+        assert( fvert == 3);
+*/
+
+
+    }
+}
+
+
+
 
 template <typename T>
 void NOpenMesh<T>::mark_inside_other(const nnode* other)
@@ -586,13 +751,15 @@ typename T::VertexHandle NOpenMesh<T>::find_vertex_epsilon(typename T::Point pt,
 
 
 template <typename T>
-typename T::VertexHandle NOpenMesh<T>::add_vertex_unique(typename T::Point pt, const float epsilon )  
+typename T::VertexHandle NOpenMesh<T>::add_vertex_unique(typename T::Point pt, bool& added, const float epsilon )  
 {
     typedef typename T::VertexHandle VH ;
 
     VH prior = find_vertex_epsilon(pt, epsilon ) ;
 
     bool valid = mesh.is_valid_handle(prior) ;
+
+    added = valid ? false : true  ;  
 
     return valid ? prior : mesh.add_vertex(pt)   ; 
 }
@@ -643,6 +810,9 @@ void NOpenMesh<T>::build_parametric_primitive()
     int nv = 1 << level ; 
 
 
+    OpenMesh::VPropHandleT<nuv> v_parametric ;
+    assert(mesh.get_property_handle(v_parametric, V_PARAMETRIC));
+
 
     int ns = node->par_nsurf() ;
     auto vid = [ns,nu,nv](int s, int u, int v) { return  s*(nu+1)*(nv+1) + v*(nu+1) + u ; };
@@ -673,18 +843,26 @@ void NOpenMesh<T>::build_parametric_primitive()
         {
             for (int u = umin; u <= umax ; u++) 
             {
-                nquad quv ; 
-                quv.i.x  = u ; 
-                quv.i.y  = v ; 
-                quv.i.z  = nu ; 
-                quv.i.w  = nv ; 
+                nuv uv = make_uv(s,u,v,nu,nv);
 
-                glm::vec3 pos = node->par_pos(quv, s );
+                glm::vec3 pos = node->par_pos(uv);
 
-                vh[vid(s,u,v)] = add_vertex_unique(P(pos.x, pos.y, pos.z), epsilon) ;          
+                bool added(false) ;
+
+                int vidx = vid(s,u,v) ;
+
+                vh[vidx] = add_vertex_unique(P(pos.x, pos.y, pos.z), added, epsilon) ; 
+
+                if(added)
+                {
+                    mesh.property(v_parametric, vh[vidx] ) = uv   ;
+                } 
+         
             }
         }
     }
+
+    
 
 
 
