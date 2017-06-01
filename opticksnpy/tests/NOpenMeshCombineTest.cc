@@ -80,6 +80,7 @@ int main(int argc, char** argv)
     const nnode* root = tree->getRoot();
 
     int level = 4 ; 
+
     NOpenMesh<NOpenMeshType> mesh(root, level, verbosity );
 
 

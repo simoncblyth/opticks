@@ -5,6 +5,11 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 
+typedef NOpenMeshType T ; 
+typedef T::VertexHandle VH ; 
+typedef T::FaceHandle   FH ; 
+
+
 void test_write()
 {
     const char* path = "/tmp/test_write.off" ;
@@ -13,7 +18,7 @@ void test_write()
     int level = 4 ; 
     int verbosity = 1 ; 
 
-    NOpenMesh<NOpenMeshType> mesh(NULL, level, verbosity );
+    NOpenMesh<T> mesh(NULL, level, verbosity );
 
     mesh.build_cube();
     mesh.write(path);
@@ -28,7 +33,7 @@ void test_dump()
     int level = 4 ; 
     int verbosity = 1 ; 
 
-    NOpenMesh<NOpenMeshType> mesh(NULL, level, verbosity);
+    NOpenMesh<T> mesh(NULL, level, verbosity);
 
     mesh.build_cube();
     mesh.dump();
@@ -42,7 +47,7 @@ void test_sphere_parametric()
     nsphere sphere = make_sphere(0,0,0,10);
     for(int level=2 ; level < 7 ; level++)
     { 
-        NOpenMesh<NOpenMeshType> m(&sphere, level, verbosity) ;
+        NOpenMesh<T> m(&sphere, level, verbosity) ;
         //m.dump("sphere");
     }
 }
@@ -55,7 +60,7 @@ void test_box_parametric()
     nbox box = make_box(0,0,0,100);
     for(int level=1 ; level < 6 ; level++)
     { 
-        NOpenMesh<NOpenMeshType> m(&box, level, verbosity);
+        NOpenMesh<T> m(&box, level, verbosity);
         //m.dump("box");
     }
 }
@@ -65,7 +70,6 @@ void test_add_vertex()
 {
     LOG(info) << "test_add_vertex" ; 
 
-    typedef NOpenMeshType   T ; 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
@@ -107,7 +111,6 @@ void test_add_vertex_unique()
 
     float epsilon = 1e-5f ; 
 
-    typedef NOpenMeshType   T ; 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
@@ -164,7 +167,6 @@ void test_point()
 {
     LOG(info) << "test_point" ; 
 
-    typedef NOpenMeshType   T ; 
     typedef T::Point  P ; 
 
     P pt[2];
@@ -224,7 +226,6 @@ void test_topology()
  
 void test_add_face()
 {
-    typedef NOpenMeshType   T ; 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
@@ -283,7 +284,6 @@ void test_add_face()
 
 void test_add_two_face()
 {
-    typedef NOpenMeshType   T ; 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
     typedef T::FaceHandle   FH ; 
@@ -362,8 +362,28 @@ delta:tests blyth$
  
 
 
+void test_subdivide_face()
+{
+    LOG(info) << "test_subdivide_face" ; 
+
+    int level = 0 ; 
+    int verbosity = 3 ; 
+    nbox box = make_box(0,0,0, 100);
+
+    NOpenMesh<T> m(&box, level, verbosity) ;
+
+    assert( m.find_boundary_loops() == 0 ) ;
+ 
+    FH fh = *m.mesh.faces_begin() ; 
+
+    m.subdivide_face(fh, NULL ); 
+
+    std::cout << "after subdivide_face " << m.brief() << std::endl ;   
+
+    assert( m.find_boundary_loops() == 0 ) ;
 
 
+}
 
 
 int main(int argc, char** argv)
@@ -374,11 +394,11 @@ int main(int argc, char** argv)
     //test_write(); 
     //test_dump(); 
     //test_add_vertex();
-    test_point();
+    //test_point();
  
 
-    test_box_parametric(); 
-    test_sphere_parametric(); 
+    //test_box_parametric(); 
+    //test_sphere_parametric(); 
 
     //test_add_vertex_unique();
 
@@ -386,6 +406,8 @@ int main(int argc, char** argv)
     //test_add_face();
     //test_add_two_face();
  
+    test_subdivide_face(); 
+
     return 0 ; 
 }
   

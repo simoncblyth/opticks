@@ -33,6 +33,31 @@ Repo
   gtest unittests 
 
 
+PyMesh
+--------
+
+* http://pymesh.readthedocs.io/en/latest/basic.html
+
+OpenVolumeMesh
+----------------
+
+* http://www.openvolumemesh.org/Documentation/OpenVolumeMesh-Doc-Latest/concepts.html
+
+
+Mesh Basics
+-------------
+
+* https://www.cs.mtu.edu/~shene/COURSES/cs3621/SLIDES/Mesh.pdf
+
+
+Does Edge splitting make a mesh non-manifold ?
+-----------------------------------------------
+
+* https://en.wikipedia.org/wiki/Euler_operator
+* https://en.wikipedia.org/wiki/Manifold
+
+
+
 Building
 ------------
 

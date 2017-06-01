@@ -54,6 +54,9 @@ const char* NOpenMesh<T>::V_SDF_OTHER = "v_sdf_other" ;
 template <typename T>
 const char* NOpenMesh<T>::V_PARAMETRIC = "v_parametric" ; 
 
+template <typename T>
+const char* NOpenMesh<T>::H_BOUNDARY_LOOP = "h_boundary_loop" ; 
+
 
 
 template <typename T>
@@ -68,10 +71,15 @@ void NOpenMesh<T>::init()
     OpenMesh::VPropHandleT<nuv> v_parametric ;
     mesh.add_property(v_parametric, V_PARAMETRIC);  
 
+    OpenMesh::HPropHandleT<int> h_boundary_loop ;
+    mesh.add_property(h_boundary_loop, H_BOUNDARY_LOOP);  
+
+
 
     // without the below get segv on trying to delete a face
     mesh.request_face_status();
     mesh.request_edge_status();
+    mesh.request_halfedge_status();
     mesh.request_vertex_status();
 
 
@@ -126,6 +134,9 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
                   << " rightmesh " << rightmesh
                    ;
 
+        // initial meshes should be closed with no boundary loops
+        assert( leftmesh->find_boundary_loops() == 0) ;   
+        assert( rightmesh->find_boundary_loops() == 0) ;  
 
         leftmesh->mark_faces( node->right );
         LOG(info) << "[0] leftmesh inside node->right : " <<  leftmesh->desc_inside_other() ;  
@@ -151,6 +162,8 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
      
         **/
 
+       
+
         leftmesh->subdivide_border_faces( node->right, nsubdiv );
         LOG(info) << "[1] leftmesh inside node->right : " <<  leftmesh->desc_inside_other() ;  
 
@@ -158,12 +171,27 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         LOG(info) << "[1] rightmesh inside node->left : " <<  rightmesh->desc_inside_other() ;  
 
 
+        leftmesh->mesh.garbage_collection();  
+        rightmesh->mesh.garbage_collection();  
+
+
+        // despite subdiv should still be closed zero boundary meshes
+        //  BUT WAS GETTING LOADS OF OPEN LOOPS, when using _creating_soup subdiv approach
+
+        assert( leftmesh->find_boundary_loops() == 0) ;   
+        assert( rightmesh->find_boundary_loops() == 0) ;  
+
+
+
         if(node->type == CSG_UNION)
         {
             copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
-            copy_faces( rightmesh, ALL_OUTSIDE_OTHER );
+            assert( find_boundary_loops() == 1 ) ;   // <-- hmm geometry specific
 
-            dump_border_faces( "border faces", 'L' );
+            copy_faces( rightmesh, ALL_OUTSIDE_OTHER );
+            assert( find_boundary_loops() == 2 ) ;  // <-- hmm geometry specific
+
+            //dump_border_faces( "border faces", 'L' );
         }
         else if(node->type == CSG_INTERSECTION)
         {
@@ -177,11 +205,6 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         }
 
 
-        // hmm there should be two open border loops from left and right meshes... 
-        // need to retain left/right info into the composite..
-
-        typename T::HalfedgeHandle heh = find_boundary_halfedge() ;  
-        std::cout << "find_boundary_halfedge: " << heh << std::endl ; 
 
 
 
@@ -197,7 +220,7 @@ bool NOpenMesh<T>::is_border_face(const int facemask)
 
 
 template <typename T>
-void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv)
+void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup )
 {
     OpenMesh::FPropHandleT<int> f_inside_other ;
     assert(mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
@@ -222,17 +245,98 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv)
                   << " nsubdiv " << nsubdiv
                   << " round " << round 
                   << " nbf: " << border_faces.size()
+                  << " creating_soup " << creating_soup
                   ;
 
-        for(unsigned i=0 ; i < border_faces.size(); i++) subdivide_face(border_faces[i], other); 
+
+        for(unsigned i=0 ; i < border_faces.size(); i++) 
+        {
+            if(creating_soup)
+            {
+                subdivide_face_creating_soup(border_faces[i], other); 
+            }
+            else
+            {        
+                subdivide_face(border_faces[i], other); 
+            }
+        }
+
 
         mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
     }
 
 }
 
+
 template <typename T>
 void NOpenMesh<T>::subdivide_face(typename T::FaceHandle fh, const nnode* other)
+{
+/*
+Centroid subdivision of single triangle face... this 
+works but leads to crackly edge... after 2 rounds of subdiv
+
+Hmm there must be some better way to refine border tris of the mesh.
+
+
+
+
+                     o[2]
+                     +
+                    / \
+                   / | \
+                  /     \
+                 /   |   \
+                /         \
+               /     |     \
+              /             \
+             /       |       \
+            /       .  .      \
+           /      .      .     \
+          /     .           .   \
+         /   .                 . \
+        / .                      .\
+       +---------------------------+
+      o[0]                         o[1]
+
+
+https://stackoverflow.com/questions/41008298/openmesh-face-split
+
+*/
+
+    typedef typename T::Point                P ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::VertexFaceIter      VFI ; 
+
+    P centroid = mesh.calc_face_centroid( fh );
+
+    bool added(false) ;
+    VH cvh = add_vertex_unique( centroid, added, epsilon );
+    assert(added);
+
+    mesh.split( fh, cvh ); 
+
+    VFI beg = mesh.vf_begin(cvh) ;
+    VFI end = mesh.vf_end(cvh) ;
+
+    unsigned n(0);
+
+    for( VFI vfi=beg ; vfi != end ; vfi++ )
+    {
+        FH fh = *vfi ; 
+        if(other)
+        {
+            mark_face(fh, other);
+        }
+        n++ ; 
+    }
+    assert( n == 3); 
+}
+
+
+
+template <typename T>
+void NOpenMesh<T>::subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other)
 {
 /*
 Uniform subdivision of single triangle face
@@ -240,6 +344,18 @@ Uniform subdivision of single triangle face
 * add three new vertices at midpoints of original triangle edges 
 * delete face, leaving triangular hole, retain vertices
 * add 4 new faces
+
+Hmm cannot do this to single face without regard to the rest of the 
+connected faces... so although this appears to work it 
+creates triangle soup, hindering further operations.  
+
+Can only do this when apply to entire mesh ?
+
+Suspect deleting and adding faces is not the way OpenMesh expects 
+subdiv to be done, the below used mesh.split(eh, midpoint)
+
+   /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Uniform/LongestEdgeT.hh
+
 
 
                      o[2]
@@ -260,19 +376,24 @@ Uniform subdivision of single triangle face
        +-------------+-------------+
       o[0]          m[0]           o[1]
 
+
 */
 
-    //LOG(info) << "subdivide_face" << " fh " << fh ; 
 
     typedef typename T::FaceHandle          FH ; 
     typedef typename T::VertexHandle        VH ; 
     typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::FaceHalfedgeIter    FHI ; 
+    typedef typename T::ConstFaceHalfedgeIter FHI ; 
     typedef typename T::Point               P ; 
 
     VH o[3] ; 
     VH m[3] ; 
     FH f[4] ; 
+
+
+    if(verbosity > 1)
+    LOG(info) << "subdivide_face" << " fh " << fh ; 
+                           
 
     unsigned n(0) ; 
     for(FHI fhe=mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
@@ -292,7 +413,20 @@ Uniform subdivision of single triangle face
 
         //assert(added == true);   
         // not always added, as edges (and midpoints) are shared 
-         
+        
+        if(verbosity > 2)
+        {
+          std::cout 
+                    << " splitting heh " << heh 
+                    << " n " << n 
+                    << " o[n] " << o[n]
+                    << " m[n] " << m[n]
+                    << " fr " << desc(fr)
+                    << " to " << desc(to)
+                    << " mi " << desc(mi)
+                    << std::endl ; 
+        } 
+ 
 
         n++ ; 
     }
@@ -307,13 +441,14 @@ Uniform subdivision of single triangle face
     f[2] = add_face_( m[1], o[2], m[2], verbosity ); 
     f[3] = add_face_( m[0], m[1], m[2], verbosity ); 
 
-    mark_face(f[0], other);
-    mark_face(f[1], other);
-    mark_face(f[2], other);
-    mark_face(f[3], other);
 
-    //LOG(info) << "subdivide_face DONE" << " fh " << fh ; 
-
+    if(other)
+    {
+        mark_face(f[0], other);
+        mark_face(f[1], other);
+        mark_face(f[2], other);
+        mark_face(f[3], other);
+    }
 
 
 }
@@ -353,82 +488,128 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
             add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
         }
     }
-    // Hmm how to retain pointers to open boundaries, to avoid a subsequent search.
 }
  
 
 
 template <typename T>
-typename T::HalfedgeHandle NOpenMesh<T>::find_boundary_halfedge()
+void NOpenMeshBoundary<T>::CollectLoop( const T& mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop)
 {
-    typedef typename T::FaceIter            FI ; 
-    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+    HEH heh = start ; 
+    do
+    {
+        if(!mesh.status(heh).deleted()) 
+        {
+            loop.push_back(heh);                
+        } 
+        heh = mesh.next_halfedge_handle(heh);
+    }
+    while( heh != start );
+}
+
+
+template <typename T>
+NOpenMeshBoundary<T>::NOpenMeshBoundary( const T& mesh, typename T::HalfedgeHandle start )
+{
+    CollectLoop( mesh, start, loop );
+
+    std::cout << "NOpenMeshBoundary start " << start << " collected " << loop.size() << " : "  ; 
+    for(unsigned i=0 ; i < std::min(unsigned(loop.size()), 10u) ; i++ ) std::cout << " " << loop[i] ;
+    std::cout << "..." << std::endl ;         
+  
+
+}
+
+template <typename T>
+bool NOpenMeshBoundary<T>::contains( typename T::HalfedgeHandle heh )
+{
+    return std::find(loop.begin(), loop.end(), heh) != loop.end() ;
+}
+ 
+
+
+
+
+
+template <typename T>
+int NOpenMesh<T>::find_boundary_loops()
+{
+    LOG(info) << "find_boundary_loops" ; 
+
     typedef typename T::VertexHandle        VH ; 
     typedef typename T::Point               P ; 
     typedef typename T::FaceHalfedgeIter    FHI ; 
+    typedef typename T::ConstEdgeIter       EI ; 
+    typedef typename T::EdgeHandle          EH ; 
     typedef typename T::HalfedgeHandle      HEH ; 
 
-    HEH heh ; 
+    typedef std::vector<HEH>              VHEH ; 
+    typedef typename VHEH::const_iterator VHEHI ; 
 
 
-/*
-  for (v_it=mesh_.vertices_begin(); v_it!=v_end; ++v_it)
-    if (mesh_.is_boundary(v_it.handle()))
-      break;
+    unsigned he_bnd[3] ; 
+    he_bnd[0] = 0 ; 
+    he_bnd[1] = 0 ; 
+    he_bnd[2] = 0 ; 
 
-  // boundary found ?
-  if (v_it == v_end)
-  {
-    std::cerr << "No boundary found\n";
-    return;
-  }
-
-  // collect boundary loop
-  vh = v_it.handle();
-  hh = mesh_.halfedge_handle(vh);
-  do
-  {
-    loop.push_back(mesh_.to_vertex_handle(hh));
-    hh = mesh_.next_halfedge_handle(hh);
-  }
-  while (hh != mesh_.halfedge_handle(vh));
-
-*/
+    loops.clear();
 
 
+    OpenMesh::HPropHandleT<int> h_boundary_loop ;
+    assert(mesh.get_property_handle(h_boundary_loop, H_BOUNDARY_LOOP));
 
-    for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
+
+    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e) 
     {
-        const FH& fh = *f ;  
-        bool check_vertex = false ; 
-        if(!mesh.is_boundary( fh, check_vertex )) continue ; 
-
-        for(FHI fhe=mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
+        EH eh = *e ; 
+        for(int i=0 ; i < 2 ; i++)
         {
-            heh = *fhe ; 
-            if(!mesh.is_boundary(heh)) continue ;  
-
-            P pt[2];
-            VH vh[2] ;  
-
-            vh[0] = mesh.from_vertex_handle( heh );
-            vh[1] = mesh.to_vertex_handle( heh );
-
-            pt[0] = mesh.point( vh[0] );
-            pt[1] = mesh.point( vh[1] );
-
-            std::cout << "find_boundary"
-                      << " fr " << vh[0] << desc(pt[0])
-                      << " to " << vh[1] << desc(pt[1])
-                      << std::endl 
-                      ; 
-
+            HEH heh = mesh.halfedge_handle(eh, i);
+            mesh.property(h_boundary_loop, heh) = 0 ; 
         }
-    } 
+    }
 
-    return heh ; 
+
+    // label halfedges with 1-based loop indices
+
+    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e)
+    {
+        EH eh = *e ; 
+        if(mesh.status(eh).deleted()) continue ; 
+
+        for(int i=0 ; i < 2 ; i++)
+        {
+            HEH heh = mesh.halfedge_handle(eh, i);
+            if(mesh.status(heh).deleted()) continue ; 
+
+            int hbl = mesh.property(h_boundary_loop, heh) ; 
+
+            if(mesh.is_boundary(heh) && hbl == 0) 
+            {
+                he_bnd[i]++ ; 
+
+                NOpenMeshBoundary<T> bnd(mesh, heh); 
+                loops.push_back(bnd);            
+
+                for(VHEHI it=bnd.loop.begin() ; it != bnd.loop.end() ; it++) mesh.property(h_boundary_loop, *it) = loops.size()  ; 
+            }
+        }
+
+        he_bnd[2]++ ; 
+    }
+
+    LOG(info) << "find_boundary_loops"
+              << " he_bnd[0] " << he_bnd[0]      
+              << " he_bnd[1] " << he_bnd[1]      
+              << " he_bnd[2] " << he_bnd[2]
+              << " loops " << loops.size()
+              ;      
+
+
+    return loops.size();
 }
- 
+           
 
 
 

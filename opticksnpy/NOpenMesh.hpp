@@ -8,12 +8,30 @@ struct nnode ;
 
 #include "NTriSource.hpp"
 
+
+template <typename T>
+struct NPY_API  NOpenMeshBoundary
+{
+     static void CollectLoop( const T& mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop);
+
+     NOpenMeshBoundary( const T& mesh, typename T::HalfedgeHandle start );
+
+     bool contains(const typename T::HalfedgeHandle heh);
+
+     std::vector<typename T::HalfedgeHandle> loop ; 
+};
+ 
+
+
+
+
 template <typename T>
 struct NPY_API  NOpenMesh : NTriSource
 {
     static const char* F_INSIDE_OTHER ; 
     static const char* V_SDF_OTHER ; 
     static const char* V_PARAMETRIC ; 
+    static const char* H_BOUNDARY_LOOP ; 
 
     enum
     {
@@ -56,7 +74,7 @@ struct NPY_API  NOpenMesh : NTriSource
     bool is_border_face(const int facemask);
 
 
-    typename T::HalfedgeHandle find_boundary_halfedge() ;
+    int find_boundary_loops() ;
 
 
 
@@ -64,8 +82,9 @@ struct NPY_API  NOpenMesh : NTriSource
 
 
 
-    void subdivide_border_faces(const nnode* other, unsigned nsubdiv);
+    void subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup=false);
     void subdivide_face(typename T::FaceHandle fh, const nnode* other);
+    void subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other);
 
 
 
@@ -89,6 +108,8 @@ struct NPY_API  NOpenMesh : NTriSource
     NOpenMesh<T>*  rightmesh ; 
 
     std::map<int,int> f_inside_other_count ; 
+
+    std::vector<NOpenMeshBoundary<T>> loops ; 
 
 
 };
