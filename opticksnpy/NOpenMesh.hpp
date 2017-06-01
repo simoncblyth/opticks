@@ -31,6 +31,7 @@ struct NPY_API  NOpenMesh : NTriSource
     void dump_faces(const char* msg="NOpenMesh::dump_faces") ;
     std::string brief();
     std::string desc_inside_other();
+    static std::string desc(const typename T::Point& pt);
 
     void add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3, int verbosity=0 );
 
@@ -47,11 +48,25 @@ struct NPY_API  NOpenMesh : NTriSource
 
     void build_parametric();
     void build_parametric_primitive(); 
-    void mark_inside_other(const nnode* other);
+    void mark_faces(const nnode* other);
+    void mark_face(typename T::FaceHandle fh, const nnode* other);
     void copy_faces(const NOpenMesh<T>* other, int facemask);
-    void dump_boundary_faces(const char* msg="NOpenMesh::dump_boundary)_faces", char side='L');
+
+    void dump_border_faces(const char* msg="NOpenMesh::dump_border_faces", char side='L');
+    bool is_border_face(const int facemask);
+
+
+    typename T::HalfedgeHandle find_boundary_halfedge() ;
+
+
 
     int  euler_characteristic();
+
+
+
+    void subdivide_border_faces(const nnode* other, unsigned nsubdiv);
+    void subdivide_face(typename T::FaceHandle fh, const nnode* other);
+
 
 
     // NTriSource interface
@@ -66,6 +81,7 @@ struct NPY_API  NOpenMesh : NTriSource
     int    level ; 
     int    verbosity ;
     float  epsilon ; 
+    unsigned nsubdiv ; 
 
     T              mesh ; 
 
