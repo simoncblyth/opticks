@@ -93,6 +93,13 @@ NTrianglesNPY* NPolygonizer::polygonize()
         tris = NTrianglesNPY::box(*m_bbox);
         tris->setMessage("PLACEHOLDER");
     }   
+    else
+    {
+        unsigned numTris = tris ? tris->getNumTriangles() : 0 ;
+        LOG(info) << "NPolygonizer::polygonize OK " 
+                  << " numTris " << numTris 
+                  ; 
+    }
 
     return tris ;
 }

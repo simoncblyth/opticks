@@ -27,6 +27,9 @@ struct NPY_API  NOpenMesh : NTriSource
     };
 
 
+    static NOpenMesh<T>* cube(int level, int verbosity, int ctrl );
+    static NOpenMesh<T>* tetrahedron(int level, int verbosity, int ctrl  ) ;
+
     NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, float epsilon=1e-05f ); 
 
     void init();
@@ -51,8 +54,6 @@ struct NPY_API  NOpenMesh : NTriSource
     typename T::VertexHandle find_vertex_epsilon(typename T::Point pt, const float epsilon);
 
     bool is_consistent_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2);
-
-    void build_cube();
 
     void build_parametric();
     void build_parametric_primitive(); 

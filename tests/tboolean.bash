@@ -803,15 +803,24 @@ CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
 EOP
 }
 
-tboolean-hysubdiv(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-hysubdiv-(){ $FUNCNAME- | python $* ; } 
-tboolean-hysubdiv--(){ cat << EOP
+tboolean-hyctrl(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
+tboolean-hyctrl--(){ cat << EOP
 from opticks.analytic.csg import CSG  
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl="1", verbosity="3" )
 
+#ctrl = "1"  # subdiv_test
+ctrl = "4"  # tetrahedron
+#ctrl = "6"  # cube
+
+box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="3" )
+
+"""
+tetrahedron is using bait and switch, the box needs to large enough to contain the tet 
+
+"""
 CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
 
 EOP

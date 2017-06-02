@@ -64,17 +64,21 @@ void NOpenMesh<T>::init()
     mesh.add_property(h_boundary_loop, H_BOUNDARY_LOOP);  
 
 
-
     // without the below get segv on trying to delete a face
     mesh.request_face_status();
     mesh.request_edge_status();
     mesh.request_halfedge_status();
     mesh.request_vertex_status();
 
+    if(node)
+    {
+        build_parametric(); 
+    }
+    else
+    {
+        LOG(warning) << "node NULL, no parametric building " ; 
+    }
 
-    build_parametric();
-
-    if(ctrl == 1) subdiv_test(); 
 }
 
 
@@ -233,12 +237,6 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
             copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
             copy_faces( rightmesh, ALL_INSIDE_OTHER );
         }
-
-
-
-
-
-
     }
 }
 
@@ -302,11 +300,30 @@ template <typename T>
 void NOpenMesh<T>::subdivide_face(typename T::FaceHandle fh, const nnode* other)
 {
 /*
-Centroid subdivision of single triangle face... this 
-works but leads to crackly edge... after 2 rounds of subdiv
+
+First tried just centroid subdivision, 
+this works but leads to skinny triangles, that 
+after border edge skipping yields sliver cracks.
 
 Hmm there must be some better way to refine border tris of the mesh.
+Yes, now trying to implement sqrt(3) subdivision
 
+* https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
+* ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
+
+Thats:
+
+* centroid face split 
+* flip original edges. 
+
+But its currently scrambling the mesh... maybe:
+
+* as flipping "feature" edges ?
+* and/or implementation error.  
+
+TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
 
 
 
@@ -330,6 +347,10 @@ Hmm there must be some better way to refine border tris of the mesh.
 
 
 https://stackoverflow.com/questions/41008298/openmesh-face-split
+
+
+
+
 
 */
     if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
@@ -1106,50 +1127,6 @@ void NOpenMesh<T>::add_face_(typename T::VertexHandle v0,typename T::VertexHandl
     add_face_(v2,v3,v0, verbosity);
 }
  
-template <typename T>
-void NOpenMesh<T>::build_cube()
-{
-    /*
-
-                 3-----------2
-                /|          /| 
-               / |         / |
-              0-----------1  |
-              |  |        |  |
-              |  |        |  |
-              |  7--------|--6
-              | /         | /
-              |/          |/
-              4-----------5
-          
-
-         z  y
-         | /
-         |/
-         +---> x
-
-    */
-
-    typedef typename T::Point P ; 
-    typename T::VertexHandle vh[8];
-
-    vh[0] = mesh.add_vertex(P(-1, -1,  1));
-    vh[1] = mesh.add_vertex(P( 1, -1,  1));
-    vh[2] = mesh.add_vertex(P( 1,  1,  1));
-    vh[3] = mesh.add_vertex(P(-1,  1,  1));
-    vh[4] = mesh.add_vertex(P(-1, -1, -1));
-    vh[5] = mesh.add_vertex(P( 1, -1, -1));
-    vh[6] = mesh.add_vertex(P( 1,  1, -1));
-    vh[7] = mesh.add_vertex(P(-1,  1, -1));
-
-    add_face_(vh[0],vh[1],vh[2],vh[3]);
-    add_face_(vh[7],vh[6],vh[5],vh[4]);
-    add_face_(vh[1],vh[0],vh[4],vh[5]);
-    add_face_(vh[2],vh[1],vh[5],vh[6]);
-    add_face_(vh[3],vh[2],vh[6],vh[7]);
-    add_face_(vh[0],vh[3],vh[7],vh[4]);
-}
-
 
 
 
@@ -1571,6 +1548,121 @@ void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& 
     get_vert(t.y, b );
     get_vert(t.z, c );
 }
+
+
+
+
+
+
+// debug shapes
+
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::cube(int level, int verbosity, int ctrl)
+{
+    /*
+
+                 3-----------2
+                /|          /| 
+               / |         / |
+              0-----------1  |
+              |  |        |  |
+              |  |        |  |
+              |  7--------|--6
+              | /         | /
+              |/          |/
+              4-----------5
+          
+
+         z  y
+         | /
+         |/
+         +---> x
+
+    */
+
+
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
+
+    typedef typename T::Point P ; 
+    typename T::VertexHandle vh[8];
+
+    vh[0] = m->mesh.add_vertex(P(-1, -1,  1));
+    vh[1] = m->mesh.add_vertex(P( 1, -1,  1));
+    vh[2] = m->mesh.add_vertex(P( 1,  1,  1));
+    vh[3] = m->mesh.add_vertex(P(-1,  1,  1));
+    vh[4] = m->mesh.add_vertex(P(-1, -1, -1));
+    vh[5] = m->mesh.add_vertex(P( 1, -1, -1));
+    vh[6] = m->mesh.add_vertex(P( 1,  1, -1));
+    vh[7] = m->mesh.add_vertex(P(-1,  1, -1));
+
+    m->add_face_(vh[0],vh[1],vh[2],vh[3]);
+    m->add_face_(vh[7],vh[6],vh[5],vh[4]);
+    m->add_face_(vh[1],vh[0],vh[4],vh[5]);
+    m->add_face_(vh[2],vh[1],vh[5],vh[6]);
+    m->add_face_(vh[3],vh[2],vh[6],vh[7]);
+    m->add_face_(vh[0],vh[3],vh[7],vh[4]);
+
+    return m ; 
+}
+ 
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::tetrahedron(int level, int verbosity, int ctrl)
+{
+    /*
+     https://en.wikipedia.org/wiki/Tetrahedron
+
+       (1,1,1), (1,−1,−1), (−1,1,−1), (−1,−1,1)
+
+
+
+                 +-----------0
+                /|          /| 
+               / |         / |
+              3-----------+  |
+              |  |        |  |
+              |  |        |  |
+              |  2--------|--+
+              | /         | /
+              |/          |/
+              +-----------1
+          
+
+         z  y
+         | /
+         |/
+         +---> x
+
+    */
+
+    if(verbosity > 0 ) LOG(info) << "NOpenMesh::tetrahedron" ; 
+
+
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
+
+    typedef typename T::Point P ; 
+    typename T::VertexHandle vh[4];
+
+    float s = 500.f ;  
+
+    vh[0] = m->mesh.add_vertex(P( s,  s,  s));
+    vh[1] = m->mesh.add_vertex(P( s, -s, -s));
+    vh[2] = m->mesh.add_vertex(P(-s,  s, -s));
+    vh[3] = m->mesh.add_vertex(P(-s, -s,  s));
+
+
+    m->add_face_(vh[0],vh[3],vh[1]);
+    m->add_face_(vh[3],vh[2],vh[1]);
+    m->add_face_(vh[0],vh[2],vh[3]);
+    m->add_face_(vh[2],vh[0],vh[1]);
+
+    if(verbosity > 2) std::cout << m->desc.desc() << std::endl ; 
+
+
+    return m ; 
+}
+
+
+
 
 
 template struct NOpenMesh<NOpenMeshType> ;

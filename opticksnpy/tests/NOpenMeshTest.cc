@@ -17,29 +17,44 @@ void test_write()
     const char* path = "/tmp/test_write.off" ;
     LOG(info) << "test_write " << path  ; 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
+    int level = 0 ; 
+    int verbosity = 3 ; 
+    int ctrl = 0 ; 
 
-    NOpenMesh<T> mesh(NULL, level, verbosity );
-
-    mesh.build_cube();
-    mesh.write(path);
-
-    std::cout << mesh.brief() << std::endl ; 
+    NOpenMesh<T>* mesh = NOpenMesh<T>::cube(level, verbosity, ctrl );
+    mesh->write(path);
+    std::cout << mesh->brief() << std::endl ; 
 }
 
-void test_dump()
+void test_cube()
 {
-    LOG(info) << "test_dump" ; 
+    LOG(info) << "test_cube" ; 
+    int level = 0 ; 
+    int verbosity = 3 ; 
+    int ctrl = 0 ; 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
 
-    NOpenMesh<T> mesh(NULL, level, verbosity);
-
-    mesh.build_cube();
-    mesh.dump();
+    NOpenMesh<T>* mesh = NOpenMesh<T>::cube(level, verbosity, ctrl  );
+    mesh->dump();
+    std::cout << mesh->desc.desc() ;
 }
+
+void test_tetrahedron()
+{
+    LOG(info) << "test_tetrahedron" ; 
+    int level = 0 ; 
+    int verbosity = 3 ; 
+    int ctrl = 0 ; 
+
+
+    NOpenMesh<T>* mesh = NOpenMesh<T>::tetrahedron( level, verbosity, ctrl );
+    mesh->dump();
+    std::cout << mesh->desc.desc() ;
+}
+
+
+
+
 
 void test_sphere_parametric()
 {
@@ -394,7 +409,9 @@ int main(int argc, char** argv)
     NPY_LOG__ ; 
 
     //test_write(); 
-    //test_dump(); 
+    //test_cube(); 
+    test_tetrahedron(); 
+
     //test_add_vertex();
     //test_point();
  
@@ -408,7 +425,7 @@ int main(int argc, char** argv)
     //test_add_face();
     //test_add_two_face();
  
-    test_subdivide_face(); 
+    //test_subdivide_face(); 
 
     return 0 ; 
 }

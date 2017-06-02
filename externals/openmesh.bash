@@ -45,14 +45,10 @@ Geometric Modeling Based on Triangle Meshes (EUROGRAPHICS 2006)
 * https://graphics.ethz.ch/Downloads/Publications/Tutorials/2006/Bot06b/eg06-tutorial.pdf
 * ~/opticks_refs/Mesh_Geometric_Modelling_Botsch_eg06-tutorial.pdf  
 
-
 Mesh Basics
 -------------
 
 * http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/02_Basics.pdf
-
-
-
 
 PyMesh
 --------
@@ -98,6 +94,16 @@ sqrt(3)-subdivision
 * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
 * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
 
+
+Reference from OpenMesh source
+
+* /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.hh
+* :google:`API Design for Adaptive Subdivision schemes`
+* ~/opticks_refs/OpenSG2003_sovakar_APIDesign_slides.pdf
+
+
+* http://www.multires.caltech.edu/pubs/sqrt3.pdf
+* ~/opticks_refs/composite_primal_dual_sqrt3_subdiv.pdf
 
 
 Mesh Basics

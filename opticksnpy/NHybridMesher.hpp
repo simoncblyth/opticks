@@ -20,6 +20,8 @@ struct nbbox ;
 class NPY_API NHybridMesher
 {
     public:
+        static NOpenMesh<NOpenMeshType>* make_mesh( const nnode* node, int level , int verbosity, int ctrl );
+    public:
         typedef std::function<float(float,float,float)> FUNC ; 
      public:
         NHybridMesher(const nnode* node, int level=5, int verbosity=1, int ctrl=0);
@@ -32,5 +34,6 @@ class NPY_API NHybridMesher
         NOpenMesh<NOpenMeshType>*  m_mesh ;
         nbbox*                     m_bbox ; 
         int                        m_verbosity ; 
+        int                        m_ctrl ; 
 
 };

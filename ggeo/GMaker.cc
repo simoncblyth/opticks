@@ -98,13 +98,17 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 {
     unsigned index = csg->getIndex();
 
-    LOG(info) << "GMaker::makeFromCSG" 
-              << " index " << index 
-              << " verbosity " << verbosity 
-              ; 
-
+    const char* spec = csg->getBoundary();  
 
     NTrianglesNPY* tris = csg->polygonize();
+
+    LOG(info) << "GMaker::makeFromCSG" 
+              << " verbosity " << verbosity 
+              << " index " << index 
+              << " boundary-spec " << spec 
+              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
+              ; 
+
 
     //nnode* root = csg->getRoot() ;
 
@@ -116,7 +120,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     GSolid* solid = new GSolid(index, transform, mesh, UINT_MAX, NULL );     
 
-    const char* spec = csg->getBoundary();  
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     unsigned boundary = bndlib->addBoundary(spec);  // only adds if not existing
