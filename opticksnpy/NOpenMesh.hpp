@@ -7,22 +7,9 @@
 struct nnode ; 
 
 #include "NTriSource.hpp"
+#include "NOpenMeshDesc.hpp"
 
-
-template <typename T>
-struct NPY_API  NOpenMeshBoundary
-{
-     static void CollectLoop( const T& mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop);
-
-     NOpenMeshBoundary( const T& mesh, typename T::HalfedgeHandle start );
-
-     bool contains(const typename T::HalfedgeHandle heh);
-
-     std::vector<typename T::HalfedgeHandle> loop ; 
-};
- 
-
-
+template <typename T> struct NOpenMeshBoundary ; 
 
 
 template <typename T>
@@ -49,19 +36,6 @@ struct NPY_API  NOpenMesh : NTriSource
     void dump_faces(const char* msg="NOpenMesh::dump_faces") ;
 
 
-
-    std::string desc(const std::vector<typename T::HalfedgeHandle> loop, unsigned mx=10u) const ;
-    std::string desc(const typename T::FaceHandle fh) const ;
-    std::string desc(const typename T::HalfedgeHandle heh) const ;
-    std::string desc(const typename T::VertexHandle vh) const ;
-    std::string desc(const typename T::EdgeHandle vh) const ;
-
-    std::string desc() const ;
-    std::string desc_vertices() const ;
-    std::string desc_faces() const ;
-    std::string desc_edges() const ;
-
-    static std::string desc(const typename T::Point& pt);
 
 
     std::string brief();
@@ -113,14 +87,18 @@ struct NPY_API  NOpenMesh : NTriSource
     void get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const ;
 
 
+
+
+
+    T                  mesh ; 
+    NOpenMeshDesc<T>   desc ; 
+
     const nnode* node ; 
     int    level ; 
     int    verbosity ;
     int    ctrl ;
     float  epsilon ; 
     unsigned nsubdiv ; 
-
-    T              mesh ; 
 
     NOpenMesh<T>*  leftmesh ; 
     NOpenMesh<T>*  rightmesh ; 

@@ -1,5 +1,7 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
+
+#include "NOpenMeshBoundary.hpp"
 #include "NOpenMesh.hpp"
 
 #include "NSphere.hpp"

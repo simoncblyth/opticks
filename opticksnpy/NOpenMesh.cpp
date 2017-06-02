@@ -9,26 +9,12 @@
 #include "NGLM.hpp"
 #include "Nuv.hpp"
 #include "NNode.hpp"
+
 #include "NOpenMesh.hpp"
+#include "NOpenMeshBoundary.hpp"
+#include "NOpenMeshDesc.hpp"
 
 
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const typename T::Point& pt)
-{
-    std::stringstream ss ; 
-    ss 
-        << " (" 
-        << std::setw(15) << std::setprecision(3) << std::fixed << pt[0]
-        << "," 
-        << std::setw(15) << std::setprecision(3) << std::fixed << pt[1]
-        << "," 
-        << std::setw(15) << std::setprecision(3) << std::fixed << pt[2]
-        << ") " 
-        ;
-
-    return ss.str();
-}
 
 
 template <typename T>
@@ -41,7 +27,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, f
     epsilon(epsilon),
     nsubdiv(1),
     leftmesh(NULL),
-    rightmesh(NULL) 
+    rightmesh(NULL)
 {
     init();
 }
@@ -63,6 +49,8 @@ const char* NOpenMesh<T>::H_BOUNDARY_LOOP = "h_boundary_loop" ;
 template <typename T>
 void NOpenMesh<T>::init()
 {
+    desc.mesh = &mesh ; 
+
     OpenMesh::FPropHandleT<int> f_inside_other ;
     mesh.add_property(f_inside_other, F_INSIDE_OTHER);  
 
@@ -107,7 +95,7 @@ void NOpenMesh<T>::subdiv_test()
 
     std::cout << "fh(before) " << desc(fh) << std::endl ;  
 
-    std::cout << "desc(before)" << desc()  << std::endl ; 
+    std::cout << "desc(before)" << desc.desc()  << std::endl ; 
 
 
     subdivide_face(fh, NULL ); 
@@ -604,44 +592,6 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
  
 
 
-template <typename T>
-void NOpenMeshBoundary<T>::CollectLoop( const T& mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop)
-{
-    typedef typename T::HalfedgeHandle      HEH ; 
-    HEH heh = start ; 
-    do
-    {
-        if(!mesh.status(heh).deleted()) 
-        {
-            loop.push_back(heh);                
-        } 
-        heh = mesh.next_halfedge_handle(heh);
-    }
-    while( heh != start );
-}
-
-
-template <typename T>
-NOpenMeshBoundary<T>::NOpenMeshBoundary( const T& mesh, typename T::HalfedgeHandle start )
-{
-    CollectLoop( mesh, start, loop );
-
-    std::cout << "NOpenMeshBoundary start " << start << " collected " << loop.size() << " : "  ; 
-    for(unsigned i=0 ; i < std::min(unsigned(loop.size()), 10u) ; i++ ) std::cout << " " << loop[i] ;
-    std::cout << "..." << std::endl ;         
-  
-
-}
-
-template <typename T>
-bool NOpenMeshBoundary<T>::contains( typename T::HalfedgeHandle heh )
-{
-    return std::find(loop.begin(), loop.end(), heh) != loop.end() ;
-}
- 
-
-
-
 
 
 template <typename T>
@@ -701,7 +651,7 @@ int NOpenMesh<T>::find_boundary_loops()
             {
                 he_bnd[i]++ ; 
 
-                NOpenMeshBoundary<T> bnd(mesh, heh); 
+                NOpenMeshBoundary<T> bnd(&mesh, heh); 
                 loops.push_back(bnd);            
 
                 for(VHEHI it=bnd.loop.begin() ; it != bnd.loop.end() ; it++) mesh.property(h_boundary_loop, *it) = loops.size()  ; 
@@ -722,220 +672,6 @@ int NOpenMesh<T>::find_boundary_loops()
     return loops.size();
 }
            
-
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc() const 
-{
-    std::stringstream ss ; 
- 
-    ss << "desc_vertices" << std::endl << desc_vertices() << std::endl ; 
-    ss << "desc_faces" << std::endl << desc_faces() << std::endl ; 
-    ss << "desc_edges" << std::endl << desc_edges() << std::endl ; 
-
-    return ss.str();
-}
-
-
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc_vertices() const 
-{
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::ConstVertexIter     VI ; 
-
-    VI beg = mesh.vertices_begin() ;
-    VI end = mesh.vertices_end() ;
-
-    std::stringstream ss ; 
-
-    for (VI vi=beg ; vi != end ; ++vi) 
-    {
-        VH vh = *vi ;
-        ss << desc(vh) << std::endl ; 
-    }
-
-    return ss.str();
-}
-
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc_faces() const 
-{
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::FaceHandle     FH ; 
-    typedef typename T::ConstFaceIter  FI ; 
-
-    FI beg = mesh.faces_begin() ;
-    FI end = mesh.faces_end() ;
-
-    std::stringstream ss ; 
-
-    for (FI fi=beg ; fi != end ; ++fi) 
-    {
-        FH fh = *fi ;
-        ss << desc(fh) << std::endl ; 
-    }
-
-    return ss.str();
-}
-
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc_edges() const 
-{
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::EdgeHandle     EH ; 
-    typedef typename T::ConstEdgeIter  EI ; 
-
-    EI beg = mesh.edges_begin() ;
-    EI end = mesh.edges_end() ;
-
-    std::stringstream ss ; 
-
-    for (EI ei=beg ; ei != end ; ++ei) 
-    {
-        EH eh = *ei ;
-        ss << desc(eh) << std::endl ; 
-    }
-
-    return ss.str();
-}
-
-
-
-
-
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const typename T::VertexHandle vh) const 
-{
-    typedef typename T::Point            P ; 
-    typedef typename T::FaceHandle      FH ; 
-    typedef typename T::HalfedgeHandle HEH ; 
-
-
-    OpenMesh::VPropHandleT<nuv> v_parametric;
-    assert(mesh.get_property_handle(v_parametric, V_PARAMETRIC));
-
-    nuv uv = mesh.property(v_parametric, vh) ; 
-
-    P pt = mesh.point(vh);
-    HEH heh = mesh.halfedge_handle(vh); 
-    //bool heh_valid = mesh.is_valid_handle(heh);
-    FH fh = mesh.face_handle(heh);
-
-    std::stringstream ss ; 
-    ss 
-       << " vh:" << std::setw(4) << vh 
-       << desc(pt)
-       << uv.desc()
-       << "  fh: " << std::setw(5) << fh  
-       << desc(heh)  
-       ;  
-
-
-    return ss.str();
-}
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const std::vector<typename T::HalfedgeHandle> loop, unsigned mx) const 
-{
-    std::stringstream ss ; 
-    unsigned nhe = loop.size() ;
-    ss << " loop: " ;
-    for(unsigned i=0 ; i < std::min(nhe,mx) ; i++) ss << " " << loop[i] ; 
-    if( nhe > mx ) ss << "..." ;
-    ss << " (" << nhe << ")" ;  
-    return ss.str();
-}
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const typename T::EdgeHandle eh) const 
-{
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
-    typedef typename T::FaceHandle          FH ; 
-
-    std::stringstream ss ; 
-
-    HEH heh0 = mesh.halfedge_handle(eh,0);
-    HEH heh1 = mesh.halfedge_handle(eh,1);
-
-    FH fh0 = mesh.face_handle( heh0 ); 
-    FH fh1 = mesh.face_handle( heh1 ); 
-
-    ss << " eh " << std::setw(4) << eh << std::endl 
-       <<  desc(heh0) << std::endl 
-       <<  desc(heh1) << std::endl 
-       ;
-
-    ss 
-        << desc(fh0) << std::endl 
-        << desc(fh1) << std::endl  
-        ;
-
-    return ss.str();
-}
-
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const typename T::HalfedgeHandle heh) const 
-{
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
-    typedef typename T::FaceHandle          FH ; 
-
-    FH fh = mesh.face_handle( heh ); 
-    VH vfr = mesh.from_vertex_handle( heh );
-    VH vto = mesh.to_vertex_handle( heh );
-
-    std::vector<HEH> loop ; 
-    NOpenMeshBoundary<T>::CollectLoop( mesh, heh, loop );
-
-    std::stringstream ss ; 
-    ss 
-       << " heh " << std::setw(5) << heh 
-       << " fh " << std::setw(5) << fh 
-       << " vfr-to: " << vfr << "-" << vto  
-       << desc(loop, 10) 
-        ;
-
-    return ss.str();
-}
-
-template <typename T>
-std::string NOpenMesh<T>::desc(const typename T::FaceHandle fh) const 
-{
-    typedef typename T::ConstFaceHalfedgeIter   FHI ; 
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
-
-    std::stringstream ss ; 
-    ss << "fh " << std::setw(4) << fh << std::endl ;
- 
-    std::vector<VH> vtos ; 
- 
-    for(FHI fhe=mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
-    {
-        HEH heh = *fhe ; 
-        VH vto = mesh.to_vertex_handle( heh );
-        vtos.push_back(vto);
-        ss <<  desc( heh ) << std::endl ; 
-    }
-
-    for(unsigned i=0 ; i < vtos.size() ; i++) ss << desc(vtos[i]) << std::endl ; 
-
-    return ss.str();
-}
-
 
 
 
