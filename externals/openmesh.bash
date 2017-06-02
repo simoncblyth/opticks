@@ -33,6 +33,27 @@ Repo
   gtest unittests 
 
 
+Refs
+-------
+
+
+Geometric Modeling Based on Triangle Meshes (EUROGRAPHICS 2006)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+106 page tutorial covering mesh operations
+
+* https://graphics.ethz.ch/Downloads/Publications/Tutorials/2006/Bot06b/eg06-tutorial.pdf
+* ~/opticks_refs/Mesh_Geometric_Modelling_Botsch_eg06-tutorial.pdf  
+
+
+Mesh Basics
+-------------
+
+* http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/02_Basics.pdf
+
+
+
+
 PyMesh
 --------
 
@@ -42,6 +63,41 @@ OpenVolumeMesh
 ----------------
 
 * http://www.openvolumemesh.org/Documentation/OpenVolumeMesh-Doc-Latest/concepts.html
+
+Search
+--------
+
+* :google:`single face mesh subdivision`
+* :google:`local mesh subdivision`
+
+
+Subdivision Basics
+~~~~~~~~~~~~~~~~~~~~
+
+* http://www.cs.cmu.edu/afs/cs/academic/class/15462-s14/www/lec_slides/Subdivision.pdf
+
+Incremental Mesh Subdivision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://pdfs.semanticscholar.org/398d/5a2c15eedfc93969109277bf5002652231f3.pdf
+* ~/opticks_refs/incremental_mesh_subdivision_5a2c15eedfc93969109277bf5002652231f3.pdf
+
+
+A Remeshing Approach to Multiresolution Modeling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Mario Botsch, Leif Kobbelt
+Computer Graphics Group, RWTH Aachen University
+
+* http://www.lsi.upc.edu/~pere/PapersWeb/SGI/Kobbelt2.pdf
+
+
+sqrt(3)-subdivision
+~~~~~~~~~~~~~~~~~~~~~
+
+* https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
+* ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
+
 
 
 Mesh Basics
@@ -69,24 +125,6 @@ cmake::
     Make sure that your Python and Boost Python libraries match.
     Skipping Python Bindings.
 
-
-Refs
--------
-
-
-Geometric Modeling Based on Triangle Meshes (EUROGRAPHICS 2006)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-106 page tutorial covering mesh operations
-
-* https://graphics.ethz.ch/Downloads/Publications/Tutorials/2006/Bot06b/eg06-tutorial.pdf
-* ~/opticks_refs/Mesh_Geometric_Modelling_Botsch_eg06-tutorial.pdf  
-
-
-Mesh Basics
--------------
-
-* http://graphics.stanford.edu/courses/cs468-10-fall/LectureSlides/02_Basics.pdf
 
 Mesh Navigation : following a boundary 
 -------------------------------------------
@@ -140,6 +178,110 @@ Another possibility is the newly introduced garbage_collection with
 handle updates. You have to give the garbage collection arrays of
 pointers to handles which should get updated. It's in the svn repo and
 already included in the daily builds.
+
+
+Flipping an edge
+~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    341 void TriConnectivity::flip(EdgeHandle _eh)
+    342 {
+    343   // CAUTION : Flipping a halfedge may result in
+    344   // a non-manifold mesh, hence check for yourself
+    345   // whether this operation is allowed or not!
+    346   assert(is_flip_ok(_eh));//let's make it sure it is actually checked
+    347   assert(!is_boundary(_eh));
+    348 
+    349   HalfedgeHandle a0 = halfedge_handle(_eh, 0);
+    350   HalfedgeHandle b0 = halfedge_handle(_eh, 1);
+    351 
+    352   HalfedgeHandle a1 = next_halfedge_handle(a0);   // all 3 halfedges (ccw)  a0,a1,a2  and b0,b1,b2
+    353   HalfedgeHandle a2 = next_halfedge_handle(a1);
+    354 
+    355   HalfedgeHandle b1 = next_halfedge_handle(b0);
+    356   HalfedgeHandle b2 = next_halfedge_handle(b1);
+    357 
+    358   VertexHandle   va0 = to_vertex_handle(a0);
+    359   VertexHandle   va1 = to_vertex_handle(a1);
+    360 
+    361   VertexHandle   vb0 = to_vertex_handle(b0);
+    362   VertexHandle   vb1 = to_vertex_handle(b1);
+    363 
+    364   FaceHandle     fa  = face_handle(a0);
+    365   FaceHandle     fb  = face_handle(b0);
+
+
+::
+
+                   /\                                          /\                     
+                  /  \                                        /  \
+                 / vb1\                                      / vb1\
+                / /  \ \                                    / /||\ \
+               / /    \ \                                  / / || \ \ 
+              / /      \ \                                / /  ||  \ \
+             / /        \ \                              / /   ||   \ \
+            / /        ^ \ \                            / /    ||  ^ \ \
+           / /         b1 \ \                          / /     ||  b1 \ \
+          / / b2           \ \                        / / b2   ||  |   \ \
+         / / v              \ \                      / / v     ||  |    \ \
+        / /     fb           \ \                    / /        ||  fa    \ \ 
+       / /        \           \ \                  / /        ^|| /       \ \
+      / /----------b0>--------vb0\                / va0      b0||a0        \ \
+      \ va0-------<a0----------  /                \ \       /  ||v        vb0/
+       \ \          \         / /                  \ \     fb  ||         / /
+        \ \          fa      / /                    \ \    |   ||        / /
+         \ \                / /                      \ \   |   ||       / /
+          \ \            ^ / /                        \ \  |   ||    ^ / /
+           \ \ a1       a2/ /                          \ \ a1  ||   a2/ /
+            \ \ v        / /                            \ \ v  ||    / /
+             \ \        / /                              \ \   ||   / /
+              \ \      / /                                \ \  ||  / /
+               \ \    / /                                  \ \ || / /
+                \ \  / /                                    \ \||/ /
+                 \ va1/                                      \ va1/
+                  \  /                                        \  /
+                   \/                                          \/                  
+
+
+    341 void TriConnectivity::flip(EdgeHandle _eh)
+    ...
+    366 
+    367   set_vertex_handle(a0, va1);
+    368   set_vertex_handle(b0, vb1);
+    ///   
+    ///   changing "to" vertex of both halfedges
+    ///
+    369 
+    370   set_next_halfedge_handle(a0, a2);   // a0-a2-b1-a0 ccw next cycle
+    371   set_next_halfedge_handle(a2, b1);
+    372   set_next_halfedge_handle(b1, a0);
+    373 
+    374   set_next_halfedge_handle(b0, b2);   // b0-b2-a1-b0 ccw next cycle
+    375   set_next_halfedge_handle(b2, a1);
+    376   set_next_halfedge_handle(a1, b0);
+    377 
+    378   set_face_handle(a1, fb);    //  a1 changes its face
+    379   set_face_handle(b1, fa);    //  
+
+    380 
+    381   set_halfedge_handle(fa, a0);
+    382   set_halfedge_handle(fb, b0);
+
+    ///  remember in halfedge data structure a "face" is just identified by one of  
+    ///  its halfedges ... (i think any halfedge will do)
+
+    383 
+    384   if (halfedge_handle(va0) == b0)
+    385     set_halfedge_handle(va0, a1);
+    386   if (halfedge_handle(vb0) == a0)
+    387     set_halfedge_handle(vb0, b1);
+    388 }
+
+
+
+
+
 
 
 Boundary handling
@@ -275,6 +417,22 @@ Code Review
 --------------
 
 
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/ArrayKernel.hh::
+
+    339   // --- halfedge connectivity ---
+    340   VertexHandle to_vertex_handle(HalfedgeHandle _heh) const
+    341   { return halfedge(_heh).vertex_handle_; }
+    342 
+    343   VertexHandle from_vertex_handle(HalfedgeHandle _heh) const
+    344   { return to_vertex_handle(opposite_halfedge_handle(_heh)); }
+    345 
+    346   void set_vertex_handle(HalfedgeHandle _heh, VertexHandle _vh)
+    347   {
+    348 //     assert(is_valid_handle(_vh));
+    349     halfedge(_heh).vertex_handle_ = _vh;
+    350   }
+
+
 /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Core/Mesh/ArrayItems.hh::
 
 
@@ -299,6 +457,7 @@ Code Review
      79     HalfedgeHandle  halfedge_handle_;
      80   };
      81 
+     ///  * Each vertex references one outgoing halfedge, i.e. a halfedge that starts at this vertex (1).
      82 
      83   //---------------------------------------------------- internal halfedge type
      84 
@@ -310,6 +469,29 @@ Code Review
      90     VertexHandle    vertex_handle_;
      91     HalfedgeHandle  next_halfedge_handle_;
      92   };
+
+     ///    halfedge : face, vertex and next halfedge 
+     ///
+     ///    * vertex is the "to_vertex"  (see ArrayKernel.hh)
+     ///   
+     ///
+
+     /// Each halfedge provides a handle to
+     ///
+     ///  1. the vertex it points to (3),
+     ///  2. the face it belongs to (4)
+     ///  3. the next halfedge inside the face (ordered counter-clockwise) (5),
+     ///     the opposite halfedge (6),
+     ///
+     ///     (optionally: the previous halfedge in the face (7)).
+     ///
+     ///   ArrayKernel.hh opposite is derived from the index, not stored    
+     ///
+     ///  427   HalfedgeHandle opposite_halfedge_handle(HalfedgeHandle _heh) const
+     ///  428   { return HalfedgeHandle((_heh.idx() & 1) ? _heh.idx()-1 : _heh.idx()+1); }
+     ///  429 
+
+
      93 #endif
      94 
      95 #ifndef DOXY_IGNORE_THIS
@@ -331,6 +513,9 @@ Code Review
     111     friend class ArrayKernel;
     112     Halfedge  halfedges_[2];
     113   };
+
+    /// edge : just two halfedges
+
     114 #endif
     115 
     116   //-------------------------------------------------------- internal face type
@@ -340,6 +525,12 @@ Code Review
     120     friend class ArrayKernel;
     121     HalfedgeHandle  halfedge_handle_;
     122   };
+
+    ///  face : just holds onto one halfedge (which ? is it symmetric)
+    ///
+    /// Each face references one of the halfedges bounding it (2).
+
+
     123 };
     124 #endif
 

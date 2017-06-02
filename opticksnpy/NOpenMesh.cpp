@@ -32,13 +32,14 @@ std::string NOpenMesh<T>::desc(const typename T::Point& pt)
 
 
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, float epsilon)
+NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, float epsilon)
     :
     node(node), 
     level(level), 
     verbosity(verbosity), 
+    ctrl(ctrl), 
     epsilon(epsilon),
-    nsubdiv(2),
+    nsubdiv(1),
     leftmesh(NULL),
     rightmesh(NULL) 
 {
@@ -84,6 +85,41 @@ void NOpenMesh<T>::init()
 
 
     build_parametric();
+
+    if(ctrl == 1) subdiv_test(); 
+}
+
+
+
+template <typename T>
+void NOpenMesh<T>::subdiv_test()
+{
+    LOG(info) << "subdiv_test" 
+              << " ctrl " << ctrl 
+              << " verbosity " << verbosity
+              ;
+
+    std::cout << "before subdivide_face " << brief() << std::endl ;   
+
+    typedef typename T::FaceHandle          FH ; 
+
+    FH fh = *mesh.faces_begin() ; 
+
+    std::cout << "fh(before) " << desc(fh) << std::endl ;  
+
+    std::cout << "desc(before)" << desc()  << std::endl ; 
+
+
+    subdivide_face(fh, NULL ); 
+
+    std::cout << "after subdivide_face " << brief() << std::endl ;   
+
+    std::cout << "fh(after) " << desc(fh) << std::endl ;  
+
+    unsigned nloop = find_boundary_loops() ;
+
+    assert( nloop == 0 ) ;
+
 }
 
 
@@ -186,10 +222,16 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         if(node->type == CSG_UNION)
         {
             copy_faces( leftmesh,  ALL_OUTSIDE_OTHER );
-            assert( find_boundary_loops() == 1 ) ;   // <-- hmm geometry specific
+
+            unsigned nloop0 = find_boundary_loops() ;
+            if( nloop0 != 1 ) LOG(warning) << "unexpected nloop0 " << nloop0 ; 
+            //assert( nloop0 == 1 ) ;   // <-- hmm geometry specific
 
             copy_faces( rightmesh, ALL_OUTSIDE_OTHER );
-            assert( find_boundary_loops() == 2 ) ;  // <-- hmm geometry specific
+
+            unsigned nloop1 = find_boundary_loops() ;
+            if( nloop1 != 2 ) LOG(warning) << "unexpected nloop1 " << nloop1 ; 
+            //assert( nloop1 == 2 ) ;   // <-- hmm geometry specific
 
             //dump_border_faces( "border faces", 'L' );
         }
@@ -302,35 +344,95 @@ Hmm there must be some better way to refine border tris of the mesh.
 https://stackoverflow.com/questions/41008298/openmesh-face-split
 
 */
+    if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
 
     typedef typename T::Point                P ; 
     typedef typename T::VertexHandle        VH ; 
     typedef typename T::FaceHandle          FH ; 
+    typedef typename T::EdgeHandle          EH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
     typedef typename T::VertexFaceIter      VFI ; 
+    typedef typename T::FaceEdgeIter        FEI ; 
 
     P centroid = mesh.calc_face_centroid( fh );
 
+    FEI febeg = mesh.fe_begin(fh); 
+    FEI feend = mesh.fe_end(fh); 
+
+    std::vector<EH> original_edges ;  
+    for( FEI fei=febeg ; fei != feend ; fei++ ) 
+    {
+        EH eh = *fei ; 
+        original_edges.push_back(eh) ; 
+    }
+
+    // hmm do original edge handles survive the split ?
+
+
     bool added(false) ;
     VH cvh = add_vertex_unique( centroid, added, epsilon );
-    assert(added);
+    //assert(added);
+    if(verbosity > 2)
+    {
+        std::cout << "centroid " << desc(centroid)
+                  << "cvh " << cvh 
+                  << "added " << added
+                  << std::endl ; 
+    }
+
 
     mesh.split( fh, cvh ); 
 
-    VFI beg = mesh.vf_begin(cvh) ;
-    VFI end = mesh.vf_end(cvh) ;
-
-    unsigned n(0);
-
-    for( VFI vfi=beg ; vfi != end ; vfi++ )
+   
+    for(unsigned o=0 ; o < original_edges.size() ; o++)
     {
-        FH fh = *vfi ; 
-        if(other)
-        {
-            mark_face(fh, other);
+        EH eh = original_edges[o] ; 
+
+        if(mesh.is_flip_ok(eh))
+        { 
+             mesh.flip(eh) ;
+
+             if(other)
+             {
+                 HEH a0 = mesh.halfedge_handle(eh, 0);
+                 HEH a1 = mesh.halfedge_handle(eh, 1);
+
+                 FH  f0 = mesh.face_handle(a0);
+                 FH  f1 = mesh.face_handle(a1);
+
+                 mark_face(f0, other);
+                 mark_face(f1, other);
+             }
         }
-        n++ ; 
+        else
+        {
+            LOG(warning) << "NOpenMesh::subdivide_face : flip not OK " ; 
+        } 
+    } 
+
+
+    //if( nori != 3 ) LOG(warning) << "NOpenMesh::subdivide_face : unexpected nori " << nori ; 
+
+
+
+    VFI vfbeg = mesh.vf_begin(cvh) ;
+    VFI vfend = mesh.vf_end(cvh) ;
+
+
+    if(other)
+    {
+        unsigned n(0);
+        for( VFI vfi=vfbeg ; vfi != vfend ; vfi++ ) // over 3 new faces
+        {
+            FH f = *vfi ; 
+            mark_face(f, other);
+            n++ ; 
+        }
+        if( n != 3) LOG(warning) << "NOpenMesh::subdivide_face : unexpected face count around added vertex " << n ; 
+        //assert( n == 3); 
     }
-    assert( n == 3); 
+
+
 }
 
 
@@ -468,6 +570,8 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
     OpenMesh::FPropHandleT<int> f_inside_other ;
     assert(other->mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
 
+    unsigned badface(0);
+
     for( FI f=other->mesh.faces_begin() ; f != other->mesh.faces_end(); ++f ) 
     {
         const FH& fh = *f ;  
@@ -485,8 +589,16 @@ void NOpenMesh<T>::copy_faces(const NOpenMesh<T>* other, int facemask)
                 nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), added, epsilon);  
             } 
             assert( fvert == 3 );
-            add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
+
+            FH f = add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
+            if(!mesh.is_valid_handle(f)) badface++ ; 
+
         }
+    }
+
+    if(badface > 0)
+    {
+        LOG(warning) << "copy_faces badface skips: " << badface ; 
     }
 }
  
@@ -611,6 +723,218 @@ int NOpenMesh<T>::find_boundary_loops()
 }
            
 
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc() const 
+{
+    std::stringstream ss ; 
+ 
+    ss << "desc_vertices" << std::endl << desc_vertices() << std::endl ; 
+    ss << "desc_faces" << std::endl << desc_faces() << std::endl ; 
+    ss << "desc_edges" << std::endl << desc_edges() << std::endl ; 
+
+    return ss.str();
+}
+
+
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc_vertices() const 
+{
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::ConstVertexIter     VI ; 
+
+    VI beg = mesh.vertices_begin() ;
+    VI end = mesh.vertices_end() ;
+
+    std::stringstream ss ; 
+
+    for (VI vi=beg ; vi != end ; ++vi) 
+    {
+        VH vh = *vi ;
+        ss << desc(vh) << std::endl ; 
+    }
+
+    return ss.str();
+}
+
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc_faces() const 
+{
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::FaceHandle     FH ; 
+    typedef typename T::ConstFaceIter  FI ; 
+
+    FI beg = mesh.faces_begin() ;
+    FI end = mesh.faces_end() ;
+
+    std::stringstream ss ; 
+
+    for (FI fi=beg ; fi != end ; ++fi) 
+    {
+        FH fh = *fi ;
+        ss << desc(fh) << std::endl ; 
+    }
+
+    return ss.str();
+}
+
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc_edges() const 
+{
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::EdgeHandle     EH ; 
+    typedef typename T::ConstEdgeIter  EI ; 
+
+    EI beg = mesh.edges_begin() ;
+    EI end = mesh.edges_end() ;
+
+    std::stringstream ss ; 
+
+    for (EI ei=beg ; ei != end ; ++ei) 
+    {
+        EH eh = *ei ;
+        ss << desc(eh) << std::endl ; 
+    }
+
+    return ss.str();
+}
+
+
+
+
+
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc(const typename T::VertexHandle vh) const 
+{
+    typedef typename T::Point            P ; 
+    typedef typename T::FaceHandle      FH ; 
+    typedef typename T::HalfedgeHandle HEH ; 
+
+
+    OpenMesh::VPropHandleT<nuv> v_parametric;
+    assert(mesh.get_property_handle(v_parametric, V_PARAMETRIC));
+
+    nuv uv = mesh.property(v_parametric, vh) ; 
+
+    P pt = mesh.point(vh);
+    HEH heh = mesh.halfedge_handle(vh); 
+    //bool heh_valid = mesh.is_valid_handle(heh);
+    FH fh = mesh.face_handle(heh);
+
+    std::stringstream ss ; 
+    ss 
+       << " vh:" << std::setw(4) << vh 
+       << desc(pt)
+       << uv.desc()
+       << "  fh: " << std::setw(5) << fh  
+       << desc(heh)  
+       ;  
+
+
+    return ss.str();
+}
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc(const std::vector<typename T::HalfedgeHandle> loop, unsigned mx) const 
+{
+    std::stringstream ss ; 
+    unsigned nhe = loop.size() ;
+    ss << " loop: " ;
+    for(unsigned i=0 ; i < std::min(nhe,mx) ; i++) ss << " " << loop[i] ; 
+    if( nhe > mx ) ss << "..." ;
+    ss << " (" << nhe << ")" ;  
+    return ss.str();
+}
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc(const typename T::EdgeHandle eh) const 
+{
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceHandle          FH ; 
+
+    std::stringstream ss ; 
+
+    HEH heh0 = mesh.halfedge_handle(eh,0);
+    HEH heh1 = mesh.halfedge_handle(eh,1);
+
+    FH fh0 = mesh.face_handle( heh0 ); 
+    FH fh1 = mesh.face_handle( heh1 ); 
+
+    ss << " eh " << std::setw(4) << eh << std::endl 
+       <<  desc(heh0) << std::endl 
+       <<  desc(heh1) << std::endl 
+       ;
+
+    ss 
+        << desc(fh0) << std::endl 
+        << desc(fh1) << std::endl  
+        ;
+
+    return ss.str();
+}
+
+
+template <typename T>
+std::string NOpenMesh<T>::desc(const typename T::HalfedgeHandle heh) const 
+{
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceHandle          FH ; 
+
+    FH fh = mesh.face_handle( heh ); 
+    VH vfr = mesh.from_vertex_handle( heh );
+    VH vto = mesh.to_vertex_handle( heh );
+
+    std::vector<HEH> loop ; 
+    NOpenMeshBoundary<T>::CollectLoop( mesh, heh, loop );
+
+    std::stringstream ss ; 
+    ss 
+       << " heh " << std::setw(5) << heh 
+       << " fh " << std::setw(5) << fh 
+       << " vfr-to: " << vfr << "-" << vto  
+       << desc(loop, 10) 
+        ;
+
+    return ss.str();
+}
+
+template <typename T>
+std::string NOpenMesh<T>::desc(const typename T::FaceHandle fh) const 
+{
+    typedef typename T::ConstFaceHalfedgeIter   FHI ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::VertexHandle        VH ; 
+
+    std::stringstream ss ; 
+    ss << "fh " << std::setw(4) << fh << std::endl ;
+ 
+    std::vector<VH> vtos ; 
+ 
+    for(FHI fhe=mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
+    {
+        HEH heh = *fhe ; 
+        VH vto = mesh.to_vertex_handle( heh );
+        vtos.push_back(vto);
+        ss <<  desc( heh ) << std::endl ; 
+    }
+
+    for(unsigned i=0 ; i < vtos.size() ; i++) ss << desc(vtos[i]) << std::endl ; 
+
+    return ss.str();
+}
 
 
 
@@ -960,11 +1284,8 @@ void NOpenMesh<T>::dump_vertices(const char* msg)
 
         const P& p = mesh.point(vh); 
 
-        //const V& v = mesh.vertex(vh); // <-- purely private internal V has no public methods, so useless
-
         const HEH& heh = mesh.halfedge_handle(vh); 
         bool heh_valid = mesh.is_valid_handle(heh);
-
 
         std::cout 
              << " vh " << std::setw(5) << vh  
@@ -1189,23 +1510,34 @@ typename T::FaceHandle NOpenMesh<T>::add_face_(typename T::VertexHandle v0, type
 {
     typedef typename T::FaceHandle FH ; 
 
-    assert( v0 != v1 );
-    assert( v0 != v2 );
-    assert( v1 != v2 );
+    FH f ; 
+    if( v0 == v1 || v0 == v2 || v1 == v2 )
+    {
+        LOG(warning) << "add_face_ skipping degenerate "
+                     << " " << std::setw(5) << v0
+                     << " " << std::setw(5) << v1
+                     << " " << std::setw(5) << v2 
+                     ;
+        return f ;  
+    }
+ 
+    //assert( v0 != v1 );
+    //assert( v0 != v2 );
+    //assert( v1 != v2 );
 
     if(verbosity > 3)
     {
         std::cout << "add_face_"
-                  << std::setw(5) << v0 
-                  << std::setw(5) << v1 
-                  << std::setw(5) << v2
+                  << " " << std::setw(5) << v0 
+                  << " " << std::setw(5) << v1 
+                  << " " << std::setw(5) << v2
                   << std::endl ;  
 
     }
 
-    FH fh = mesh.add_face(v0,v1,v2);
-    assert(mesh.is_valid_handle(fh));
-    return fh ; 
+    f = mesh.add_face(v0,v1,v2);
+    assert(mesh.is_valid_handle(f));
+    return f ; 
 }
 
 

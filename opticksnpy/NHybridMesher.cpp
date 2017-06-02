@@ -9,10 +9,10 @@
 #include "PLOG.hh"
 
 
-NHybridMesher::NHybridMesher(const nnode* node, int level , int verbosity)
+NHybridMesher::NHybridMesher(const nnode* node, int level , int verbosity, int ctrl)
     :
     m_timer(new Timer),
-    m_mesh(new NOpenMesh<NOpenMeshType>(node, level, verbosity)),
+    m_mesh(new NOpenMesh<NOpenMeshType>(node, level, verbosity, ctrl)),
     m_bbox( new nbbox(node->bbox()) ), 
     m_verbosity(verbosity)
 {

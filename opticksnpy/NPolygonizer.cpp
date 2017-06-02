@@ -166,7 +166,8 @@ NTrianglesNPY* NPolygonizer::hybridMesher()
 {
     NTrianglesNPY* tris = NULL ; 
     int   level = m_meta->get<int>("level", "5" );
-    NHybridMesher poly(m_root, level, m_verbosity ) ; 
+    int   ctrl = m_meta->get<int>("ctrl", "0" );
+    NHybridMesher poly(m_root, level, m_verbosity, ctrl ) ; 
     tris = poly();
     return tris ;
 }

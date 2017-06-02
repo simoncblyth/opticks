@@ -40,16 +40,32 @@ struct NPY_API  NOpenMesh : NTriSource
     };
 
 
-    NOpenMesh( const nnode* node, int level, int verbosity, float epsilon=1e-05f ); 
+    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, float epsilon=1e-05f ); 
 
     void init();
     int write(const char* path);
     void dump(const char* msg="NOpenMesh::dump") ;
     void dump_vertices(const char* msg="NOpenMesh::dump_vertices") ;
     void dump_faces(const char* msg="NOpenMesh::dump_faces") ;
+
+
+
+    std::string desc(const std::vector<typename T::HalfedgeHandle> loop, unsigned mx=10u) const ;
+    std::string desc(const typename T::FaceHandle fh) const ;
+    std::string desc(const typename T::HalfedgeHandle heh) const ;
+    std::string desc(const typename T::VertexHandle vh) const ;
+    std::string desc(const typename T::EdgeHandle vh) const ;
+
+    std::string desc() const ;
+    std::string desc_vertices() const ;
+    std::string desc_faces() const ;
+    std::string desc_edges() const ;
+
+    static std::string desc(const typename T::Point& pt);
+
+
     std::string brief();
     std::string desc_inside_other();
-    static std::string desc(const typename T::Point& pt);
 
     void add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3, int verbosity=0 );
 
@@ -75,6 +91,7 @@ struct NPY_API  NOpenMesh : NTriSource
 
 
     int find_boundary_loops() ;
+    void subdiv_test() ;
 
 
 
@@ -99,6 +116,7 @@ struct NPY_API  NOpenMesh : NTriSource
     const nnode* node ; 
     int    level ; 
     int    verbosity ;
+    int    ctrl ;
     float  epsilon ; 
     unsigned nsubdiv ; 
 

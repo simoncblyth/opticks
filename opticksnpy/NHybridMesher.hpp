@@ -22,7 +22,7 @@ class NPY_API NHybridMesher
     public:
         typedef std::function<float(float,float,float)> FUNC ; 
      public:
-        NHybridMesher(const nnode* node, int level=5, int verbosity=1);
+        NHybridMesher(const nnode* node, int level=5, int verbosity=1, int ctrl=0);
         NTrianglesNPY* operator()();
         std::string desc();
     private:
