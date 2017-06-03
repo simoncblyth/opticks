@@ -107,7 +107,6 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::VertexHandle vh) cons
     typedef typename T::FaceHandle      FH ; 
     typedef typename T::HalfedgeHandle HEH ; 
 
-
     OpenMesh::VPropHandleT<nuv> v_parametric;
     assert(mesh->get_property_handle(v_parametric, NOpenMesh<T>::V_PARAMETRIC));
 
@@ -208,18 +207,22 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::FaceHandle fh) const
 
     std::stringstream ss ; 
     ss << "fh " << std::setw(4) << fh << std::endl ;
- 
-    std::vector<VH> vtos ; 
- 
-    for(FHI fhe=mesh->cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
+
+    if(mesh->is_valid_handle(fh))
     {
-        HEH heh = *fhe ; 
-        VH vto = mesh->to_vertex_handle( heh );
-        vtos.push_back(vto);
-        ss <<  (*this)( heh ) << std::endl ; 
+        std::vector<VH> vtos ; 
+     
+        for(FHI fhe=mesh->cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
+        {
+            HEH heh = *fhe ; 
+            VH vto = mesh->to_vertex_handle( heh );
+            vtos.push_back(vto);
+            ss <<  (*this)( heh ) << std::endl ; 
+        }
+
+        for(unsigned i=0 ; i < vtos.size() ; i++) ss << (*this)(vtos[i]) << std::endl ; 
     }
 
-    for(unsigned i=0 ; i < vtos.size() ; i++) ss << (*this)(vtos[i]) << std::endl ; 
 
     return ss.str();
 }

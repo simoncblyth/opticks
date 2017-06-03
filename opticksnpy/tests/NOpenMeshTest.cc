@@ -26,6 +26,21 @@ void test_write()
     std::cout << mesh->brief() << std::endl ; 
 }
 
+
+
+void test_hexpatch()
+{
+    LOG(info) << "test_hexpatch" ; 
+    int level = 0 ; 
+    int verbosity = 3 ; 
+    int ctrl = 0 ; 
+
+    NOpenMesh<T>* mesh = NOpenMesh<T>::hexpatch(level, verbosity, ctrl  );
+    mesh->dump();
+    std::cout << mesh->desc.desc() ;
+}
+
+
 void test_cube()
 {
     LOG(info) << "test_cube" ; 
@@ -48,7 +63,9 @@ void test_tetrahedron()
 
 
     NOpenMesh<T>* mesh = NOpenMesh<T>::tetrahedron( level, verbosity, ctrl );
+
     mesh->dump();
+
     std::cout << mesh->desc.desc() ;
 }
 
@@ -379,9 +396,9 @@ delta:tests blyth$
  
 
 
-void test_subdivide_face()
+void test_manual_subdivide_face()
 {
-    LOG(info) << "test_subdivide_face" ; 
+    LOG(info) << "test_manual_subdivide_face" ; 
 
     int level = 0 ; 
     int verbosity = 3 ; 
@@ -393,9 +410,9 @@ void test_subdivide_face()
  
     FH fh = *m.mesh.faces_begin() ; 
 
-    m.subdivide_face(fh, NULL ); 
+    m.manual_subdivide_face(fh, NULL ); 
 
-    std::cout << "after subdivide_face " << m.brief() << std::endl ;   
+    std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 
     assert( m.find_boundary_loops() == 0 ) ;
 
@@ -410,7 +427,9 @@ int main(int argc, char** argv)
 
     //test_write(); 
     //test_cube(); 
-    test_tetrahedron(); 
+    //test_tetrahedron(); 
+
+    test_hexpatch(); 
 
     //test_add_vertex();
     //test_point();

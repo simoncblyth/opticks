@@ -186,6 +186,113 @@ pointers to handles which should get updated. It's in the svn repo and
 already included in the daily builds.
 
 
+
+Adaptive Composite Rule for Tvv3 : topological split face into 3 by adding vertex at centroid
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc
+
+::
+
+     102 template<class M>
+     103 void
+     104 Tvv3<M>::raise(typename M::FaceHandle& _fh, state_t _target_state)
+     105 {
+     ...
+     139     // interior face
+     140     if (!Base::mesh_.is_boundary(_fh) || MOBJ(_fh).final()) {
+     141 
+     142       // insert new vertex
+     143       vh = Base::mesh_.new_vertex();
+     144 
+     145       Base::mesh_.split(_fh, vh);
+     146 
+     147       typename M::Scalar valence(0.0);
+     148 
+     149       // calculate display position for new vertex
+     150       for (vv_it = Base::mesh_.vv_iter(vh); vv_it.is_valid(); ++vv_it)
+     151       {
+     152         position += Base::mesh_.point(*vv_it);
+     153         valence += 1.0;
+     154       }
+     155 
+     156       position /= valence;
+     157 
+     158       // set attributes for new vertex
+     159       Base::mesh_.set_point(vh, position);
+
+     ///    above is same as add_vertex at centroid
+
+
+
+     088 #define MOBJ Base::mesh_.data
+      89 #define FH face_handle
+      90 #define VH vertex_handle
+      91 #define EH edge_handle
+      92 #define HEH halfedge_handle
+      93 #define NHEH next_halfedge_handle
+      94 #define PHEH prev_halfedge_handle
+      95 #define OHEH opposite_halfedge_handle
+      96 #define TVH  to_vertex_handle
+      97 #define FVH  from_vertex_handle
+      98 
+
+
+     160       MOBJ(vh).set_position(_target_state, zero_point);
+     161       MOBJ(vh).set_state(_target_state);
+     162       MOBJ(vh).set_not_final();
+     163 
+
+
+     ///     outgoing halfedges from the new splitting vertex
+     ///     nheh goes around ccw, so the oheh face gets adjacent faces
+     ///
+     ///   
+           
+                      +
+                     / \
+                    / . \  ^ 
+                0n /  ^  \  \
+               /  /   0   \  1n
+              v  /    +    \
+                /  v.   v   \
+               / .2       1 .\
+              +---------------+
+                    -> 2n
+
+     164       typename M::VertexOHalfedgeIter      voh_it;
+     165       // check for edge flipping
+     166       for (voh_it = Base::mesh_.voh_iter(vh); voh_it.is_valid(); ++voh_it) {
+     167 
+     168         if (Base::mesh_.FH(*voh_it).is_valid()) {
+     169 
+     170           MOBJ(Base::mesh_.FH(*voh_it)).set_state(_target_state);
+     171           MOBJ(Base::mesh_.FH(*voh_it)).set_not_final();
+     172           MOBJ(Base::mesh_.FH(*voh_it)).set_position(_target_state - 1, face_position);
+     173 
+     174 
+     175           for (state_t j = 0; j < _target_state; ++j) {
+     176             MOBJ(Base::mesh_.FH(*voh_it)).set_position(j, MOBJ(_fh).position(j));
+     177           }
+     178 
+     179           if (Base::mesh_.FH(Base::mesh_.OHEH(Base::mesh_.NHEH(*voh_it))).is_valid()) {
+     180 
+     181             if (MOBJ(Base::mesh_.FH(Base::mesh_.OHEH(Base::mesh_.NHEH(*voh_it)))).state() == _target_state) {
+     182 
+     183               if (Base::mesh_.is_flip_ok(Base::mesh_.EH(Base::mesh_.NHEH(*voh_it)))) {
+     184 
+     185                 edge_vector.push_back(Base::mesh_.EH(Base::mesh_.NHEH(*voh_it)));
+     186               }
+     187             }
+     188           }
+     189         }
+     190       }
+     191     }
+
+
+
+
+
 Flipping an edge
 ~~~~~~~~~~~~~~~~~~~~
 
@@ -792,6 +899,17 @@ EOU
 openmesh-env(){  olocal- ; opticks- ; }
 openmesh-vers(){ echo 4.1 ; }
 #openmesh-vers(){ echo 6.1 ; }
+
+openmesh-info(){ cat << EOI
+
+    name : $(openmesh-name)
+    dist : $(openmesh-dist)
+
+
+
+EOI
+}
+
 
 openmesh-name(){ echo OpenMesh-$(openmesh-vers) ; }
 openmesh-url(){  echo http://www.openmesh.org/media/Releases/$(openmesh-vers)/$(openmesh-name).tar.gz ; }

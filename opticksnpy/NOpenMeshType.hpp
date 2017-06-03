@@ -29,6 +29,11 @@
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/TriMesh_ArrayKernelT.hh>
+#include <OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeTraits.hh>
+
+#include <OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.hh>
+#include <OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.hh>
+
 
 
 #ifdef __clang__
@@ -50,9 +55,29 @@
 
 #include "NPY_API_EXPORT.hh"
 
+
+/*
+// status traits needed for deleting things
+
 struct NPY_API NOpenMeshTraits : public OpenMesh::DefaultTraits
 {
+    FaceAttributes( OpenMesh::Attributes::Status );        
+    VertexAttributes( OpenMesh::Attributes::Status );           
+    EdgeAttributes( OpenMesh::Attributes::Status );           
+    HalfedgeAttributes( OpenMesh::Attributes::Status );           
 };
+*/
+
+// boatload of traits needed for composite subdiv
+//    OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeTraits.hh
+
+struct NPY_API NOpenMeshTraits : public OpenMesh::Subdivider::Adaptive::CompositeTraits
+{
+    EdgeAttributes( OpenMesh::Attributes::Status );           
+    HalfedgeAttributes( OpenMesh::Attributes::Status );           
+};
+
+
 
 typedef OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits>  NOpenMeshType ;
 

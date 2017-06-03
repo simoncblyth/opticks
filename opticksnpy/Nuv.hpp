@@ -11,6 +11,9 @@ struct NPY_API nuv
     unsigned nu() const {  return u_ >> 16 ; } 
     unsigned nv() const {  return v_ >> 16 ; } ;
 
+    bool is_interior(unsigned margin=0) const ;
+
+
     std::string desc() const ;
     std::string detail() const ;
 
@@ -18,6 +21,7 @@ struct NPY_API nuv
     unsigned u_ ; 
     unsigned v_ ;
 };
+
 
 
 inline nuv make_uv(unsigned s, unsigned u, unsigned v, unsigned nu, unsigned nv)

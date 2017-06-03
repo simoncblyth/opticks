@@ -5,8 +5,11 @@
 #include <iostream>
 #include <sstream>
 
+#include <boost/math/constants/constants.hpp>
+
 #include "PLOG.hh"
 #include "NGLM.hpp"
+#include "NGLMext.hpp"
 #include "Nuv.hpp"
 #include "NNode.hpp"
 
@@ -14,12 +17,13 @@
 #include "NOpenMeshBoundary.hpp"
 #include "NOpenMeshDesc.hpp"
 
-
+#include <OpenMesh/Tools/Utils/MeshCheckerT.hh>
 
 
 template <typename T>
 NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, float epsilon)
     :
+    subdiv(mesh),
     node(node), 
     level(level), 
     verbosity(verbosity), 
@@ -57,7 +61,7 @@ void NOpenMesh<T>::init()
     OpenMesh::VPropHandleT<float> v_sdf_other ;
     mesh.add_property(v_sdf_other, V_SDF_OTHER);  
 
-    OpenMesh::VPropHandleT<nuv> v_parametric ;
+    //OpenMesh::VPropHandleT<nuv> v_parametric ;
     mesh.add_property(v_parametric, V_PARAMETRIC);  
 
     OpenMesh::HPropHandleT<int> h_boundary_loop ;
@@ -65,14 +69,19 @@ void NOpenMesh<T>::init()
 
 
     // without the below get segv on trying to delete a face
+    // unless compile in the traits
+    /*
     mesh.request_face_status();
     mesh.request_edge_status();
     mesh.request_halfedge_status();
     mesh.request_vertex_status();
+    */
+ 
 
     if(node)
     {
         build_parametric(); 
+        check();
     }
     else
     {
@@ -80,6 +89,69 @@ void NOpenMesh<T>::init()
     }
 
 }
+
+
+
+
+template <typename T>
+void NOpenMesh<T>::check()
+{
+    assert(OpenMesh::Utils::MeshCheckerT<T>(mesh).check()) ;
+    LOG(info) << "NOpenMesh<T>::check OK" ; 
+
+
+}
+
+
+
+template <typename T>
+void NOpenMesh<T>::subdiv_interior_test()
+{
+    typedef typename T::FaceHandle          FH ; 
+
+    unsigned nloop0 = find_boundary_loops() ;
+
+    std::vector<FH> target_faces ; 
+
+    //unsigned param = 0 ;  // margin for INTERIOR_FACE
+    unsigned param = 6 ;  // valence for REGULAR_FACE
+ 
+    find_faces( target_faces, REGULAR_FACE,  param );
+    unsigned n_target_faces = target_faces.size() ;
+
+    LOG(info) << "subdiv_interior_test" 
+              << " ctrl " << ctrl 
+              << " verbosity " << verbosity
+              << " n_target_faces " << n_target_faces
+              << " nloop0 " << nloop0
+              ;
+
+
+    if( n_target_faces > 0)
+    {
+        for(unsigned i=0 ; i < n_target_faces ; i++) 
+        {
+            FH fh = target_faces[i] ;
+            manual_subdivide_face(fh,  NULL );
+        }
+        // subdiv.refine(fh);  <-- just hangs ? infinite loop ?
+    }
+
+    unsigned nloop1 = find_boundary_loops() ;
+
+    LOG(info) << "subdiv_interior_test DONE " 
+              << " ctrl " << ctrl 
+              << " verbosity " << verbosity
+              << " nloop1 " << nloop1
+              ;
+
+
+
+}
+
+
+
+
 
 
 
@@ -91,22 +163,12 @@ void NOpenMesh<T>::subdiv_test()
               << " verbosity " << verbosity
               ;
 
-    std::cout << "before subdivide_face " << brief() << std::endl ;   
 
     typedef typename T::FaceHandle          FH ; 
 
     FH fh = *mesh.faces_begin() ; 
 
-    std::cout << "fh(before) " << desc(fh) << std::endl ;  
-
-    std::cout << "desc(before)" << desc.desc()  << std::endl ; 
-
-
-    subdivide_face(fh, NULL ); 
-
-    std::cout << "after subdivide_face " << brief() << std::endl ;   
-
-    std::cout << "fh(after) " << desc(fh) << std::endl ;  
+    manual_subdivide_face(fh, NULL ); 
 
     unsigned nloop = find_boundary_loops() ;
 
@@ -247,6 +309,99 @@ bool NOpenMesh<T>::is_border_face(const int facemask)
 }
 
 
+
+
+template <typename T>
+void NOpenMesh<T>::find_faces(std::vector<typename T::FaceHandle>& faces, select_t select, unsigned param)
+{
+    typedef typename T::FaceHandle           FH ; 
+    typedef typename T::ConstFaceIter        FI ; 
+
+    faces.clear();
+
+    unsigned totface(0); 
+
+    for( FI fi=mesh.faces_begin() ; fi != mesh.faces_end(); ++fi ) 
+    {
+        totface++ ; 
+
+        FH fh = *fi ;  
+
+        bool selected = false ; 
+        if( select == REGULAR_FACE )
+        {  
+            selected = is_regular_face(fh, param);
+        }
+        else if(select == INTERIOR_FACE )
+        {
+            selected = is_interior_face(fh, param);
+
+        }
+
+        if(selected) faces.push_back(fh);
+    }
+
+    LOG(info) << "NOpenMesh<T>::find_faces (faces with all vertices having same valence) "
+              << " verbosity " << verbosity 
+              << " select " << select
+              << " param " << param
+              << " count " << faces.size()
+              << " totface " << totface
+              ; 
+
+}
+
+
+template <typename T>
+bool NOpenMesh<T>::is_interior_face(const typename T::FaceHandle& fh, unsigned margin )
+{
+    typedef typename T::VertexHandle         VH ; 
+    typedef typename T::ConstFaceVertexIter  FVI ; 
+
+    for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
+    {
+        VH vh = *fvi ; 
+        nuv uv = mesh.property(v_parametric, vh) ; 
+        if(!uv.is_interior(margin)) return false ; 
+    }
+    return true ;  
+}
+
+
+
+template <typename T>
+bool NOpenMesh<T>::is_regular_face(const typename T::FaceHandle& fh, unsigned valence )
+{
+    typedef typename T::VertexHandle         VH ; 
+    typedef typename T::ConstFaceVertexIter  FVI ; 
+
+    unsigned tot(0) ; 
+    unsigned miss(0) ; 
+  
+    for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
+    {
+        VH vh = *fvi ; 
+        unsigned vhv = mesh.valence(vh) ;
+        tot++ ; 
+
+        std::cout << "vh" << std::setw(4) << vh << " vhv " << vhv << std::endl ; 
+        if(vhv != valence) miss++ ; 
+        
+    }
+
+    bool is_regular = miss == 0 ; 
+
+    LOG(info) << "NOpenMesh<T>::is_regular_face"
+              << " tot " << tot
+              << " miss " << miss
+              << " is_regular " << is_regular
+              ;
+
+    return is_regular ; 
+}
+ 
+
+
 template <typename T>
 void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup )
 {
@@ -281,11 +436,11 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, 
         {
             if(creating_soup)
             {
-                subdivide_face_creating_soup(border_faces[i], other); 
+                manual_subdivide_face_creating_soup(border_faces[i], other); 
             }
             else
             {        
-                subdivide_face(border_faces[i], other); 
+                manual_subdivide_face(border_faces[i], other); 
             }
         }
 
@@ -297,7 +452,7 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, 
 
 
 template <typename T>
-void NOpenMesh<T>::subdivide_face(typename T::FaceHandle fh, const nnode* other)
+void NOpenMesh<T>::manual_subdivide_face(typename T::FaceHandle fh, const nnode* other)
 {
 /*
 
@@ -355,6 +510,14 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
 */
     if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
 
+    std::cout << "before subdivide_face " << brief() << std::endl ;   
+    //std::cout << "fh(before) " << desc(fh) << std::endl ;  
+
+
+
+
+
+
     typedef typename T::Point                P ; 
     typedef typename T::VertexHandle        VH ; 
     typedef typename T::FaceHandle          FH ; 
@@ -362,25 +525,31 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
     typedef typename T::HalfedgeHandle      HEH ; 
     typedef typename T::VertexFaceIter      VFI ; 
     typedef typename T::FaceEdgeIter        FEI ; 
+    typedef typename T::VertexOHalfedgeIter   VOHI ;
 
     P centroid = mesh.calc_face_centroid( fh );
 
+
+
+
+/*
     FEI febeg = mesh.fe_begin(fh); 
     FEI feend = mesh.fe_end(fh); 
-
-    std::vector<EH> original_edges ;  
     for( FEI fei=febeg ; fei != feend ; fei++ ) 
     {
         EH eh = *fei ; 
         original_edges.push_back(eh) ; 
     }
-
     // hmm do original edge handles survive the split ?
+    // moved to lower level approach below to be more certain
+
+*/
 
 
     bool added(false) ;
     VH cvh = add_vertex_unique( centroid, added, epsilon );
-    //assert(added);
+    assert(added);
+
     if(verbosity > 2)
     {
         std::cout << "centroid " << desc(centroid)
@@ -392,41 +561,91 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
 
     mesh.split( fh, cvh ); 
 
-   
-    for(unsigned o=0 ; o < original_edges.size() ; o++)
+
+
+/*
+
+  Using approach from Tvv3 of 
+  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc  
+
+  outgoing halfedges from the new splitting vertex
+  nheh goes around ccw, so the oheh face gets adjacent faces
+     
+           
+                      +
+                     / \
+                    / . \  ^ 
+                0n /  ^  \  \
+               /  /   0   \  1n
+              v  /    +    \
+                /  v.   v   \
+               / .2       1 .\
+              +---------------+
+                    -> 2n
+
+
+*/
+
+    std::vector<EH>  edge_vector;
+
+
+    for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) 
     {
-        EH eh = original_edges[o] ; 
+        HEH heh = *vohi ; 
+        FH  nfh = mesh.face_handle(heh) ;  // new faces 
 
-        if(mesh.is_flip_ok(eh))
-        { 
-             mesh.flip(eh) ;
+        if (!nfh.is_valid()) continue ;
 
-             if(other)
-             {
-                 HEH a0 = mesh.halfedge_handle(eh, 0);
-                 HEH a1 = mesh.halfedge_handle(eh, 1);
+        HEH nheh = mesh.next_halfedge_handle(heh);
+        HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
+    
+        FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
 
-                 FH  f0 = mesh.face_handle(a0);
-                 FH  f1 = mesh.face_handle(a1);
-
-                 mark_face(f0, other);
-                 mark_face(f1, other);
-             }
-        }
-        else
+        if(ofh.is_valid())
         {
-            LOG(warning) << "NOpenMesh::subdivide_face : flip not OK " ; 
-        } 
-    } 
+             EH eh = mesh.edge_handle(nheh) ; 
+             if(mesh.is_flip_ok(eh))
+             {
+                 edge_vector.push_back(eh); 
+             } 
+        }
+    }
 
 
-    //if( nori != 3 ) LOG(warning) << "NOpenMesh::subdivide_face : unexpected nori " << nori ; 
+    // flip edges
+    while (!edge_vector.empty()) 
+    {
+        EH eh = edge_vector.back();
+        edge_vector.pop_back();
+          
+        assert(mesh.is_flip_ok(eh));
 
+        mesh.flip(eh);
+
+        if(other)
+        {
+            HEH a0 = mesh.halfedge_handle(eh, 0);
+            HEH a1 = mesh.halfedge_handle(eh, 1);
+
+            FH  f0 = mesh.face_handle(a0);
+            FH  f1 = mesh.face_handle(a1);
+
+            mark_face(f0, other);
+            mark_face(f1, other);
+        }
+   } 
+
+
+
+
+/*
+
+   suspect this is a higher level 
+   way of doing the above
 
 
     VFI vfbeg = mesh.vf_begin(cvh) ;
     VFI vfend = mesh.vf_end(cvh) ;
-
 
     if(other)
     {
@@ -441,13 +660,21 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
         //assert( n == 3); 
     }
 
+*/
+
+    //std::cout << "desc(after)" << desc.desc()  << std::endl ; 
+    std::cout << "after subdivide_face " << brief() << std::endl ;   
+    std::cout << "fh(after) " << desc(fh) << std::endl ;  
+
+
+
 
 }
 
 
 
 template <typename T>
-void NOpenMesh<T>::subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other)
+void NOpenMesh<T>::manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other)
 {
 /*
 Uniform subdivision of single triangle face
@@ -942,9 +1169,11 @@ int NOpenMesh<T>::write(const char* path)
 template <typename T>
 void NOpenMesh<T>::dump(const char* msg)
 {
+    LOG(info) << "dump START" ; 
     LOG(info) << msg << " " << brief() ; 
     dump_vertices();
     dump_faces();
+    LOG(info) << "dump DONE" ; 
 }
 
 template <typename T>
@@ -1602,6 +1831,8 @@ NOpenMesh<T>* NOpenMesh<T>::cube(int level, int verbosity, int ctrl)
     m->add_face_(vh[3],vh[2],vh[6],vh[7]);
     m->add_face_(vh[0],vh[3],vh[7],vh[4]);
 
+    m->check();
+
     return m ; 
 }
  
@@ -1655,14 +1886,115 @@ NOpenMesh<T>* NOpenMesh<T>::tetrahedron(int level, int verbosity, int ctrl)
     m->add_face_(vh[0],vh[2],vh[3]);
     m->add_face_(vh[2],vh[0],vh[1]);
 
-    if(verbosity > 2) std::cout << m->desc.desc() << std::endl ; 
+    if(verbosity > 2) 
+    {
+       LOG(info) << "NOpenMesh::tetrahedron" 
+                 << " verbosity " << verbosity 
+                 ; 
+       std::cout << m->desc.desc() << std::endl ; 
+    }
 
+    m->check();
 
     return m ; 
 }
 
 
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::hexpatch(int level, int verbosity, int ctrl)
+{
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
 
+    typedef typename T::Point P ; 
+    P p[19] ; 
+
+
+    typename T::VertexHandle v[19];
+
+    float s = 200.f ; 
+    float z = 0.f ; 
+
+    double pi = boost::math::constants::pi<double>() ;
+    double sa[7],ca[7] ;
+    for(unsigned i=0 ; i < 7 ; i++) 
+    {
+        double a = 2.*pi*i/6.0 ; 
+        sincos_<double>(a, sa[i], ca[i] ); 
+    }
+
+
+    p[0] = P( 0,  0,  z);
+
+    for(unsigned r=0 ; r < 2 ; r++)
+    { 
+        for(unsigned i=0 ; i < 6 ; i++)
+        {
+            unsigned offset = 1 + r*6 + i ;          
+            p[offset] = P( (r+1)*s*ca[i], (r+1)*s*sa[i],  z);
+        }
+    }
+
+    enum { A=10, B=11, C=12, D=13, E=14, F=15, G=16, H=17, I=18 } ; 
+
+    p[D] = P(  s*(1+ca[1]),     s*sa[1],z) ; 
+    p[F] = P( -s*(1+ca[1]),     s*sa[1],z) ; 
+    p[G] = P( -s*(1+ca[1]),    -s*sa[1],z) ; 
+    p[I] = P(  s*(1+ca[1]),    -s*sa[1],z) ; 
+
+    p[E] = P(            0,  2.*s*sa[1],z) ; 
+    p[H] = P(            0, -2.*s*sa[1],z) ; 
+
+
+    for(unsigned i=0 ; i <=I ; i++) v[i] = m->mesh.add_vertex(p[i]) ;
+
+   /*
+
+                 9---e---8
+                / \ / \ / \
+               f---3---2---d
+              / \ / \ / \ / \
+             a---4---0---1---7
+              \ / \ / \ / \ /
+               g---5---6---i
+                \ / \ / \ /
+                 b---h---c
+    */             
+
+    m->add_face_(v[0],v[1],v[2], verbosity);
+    m->add_face_(v[0],v[2],v[3], verbosity);
+    m->add_face_(v[0],v[3],v[4], verbosity);
+    m->add_face_(v[0],v[4],v[5], verbosity);
+    m->add_face_(v[0],v[5],v[6], verbosity);
+    m->add_face_(v[0],v[6],v[1], verbosity);
+
+    m->add_face_(v[1],v[7],v[D], verbosity);
+    m->add_face_(v[1],v[D],v[2], verbosity);
+    m->add_face_(v[2],v[D],v[8], verbosity);
+
+    m->add_face_(v[2],v[8],v[E], verbosity);
+    m->add_face_(v[2],v[E],v[3], verbosity);
+    m->add_face_(v[E],v[9],v[3], verbosity);
+
+    m->add_face_(v[9],v[F],v[3], verbosity);
+    m->add_face_(v[3],v[F],v[4], verbosity);
+    m->add_face_(v[F],v[A],v[4], verbosity);
+
+    m->add_face_(v[4],v[A],v[G], verbosity);
+    m->add_face_(v[4],v[G],v[5], verbosity);
+    m->add_face_(v[5],v[G],v[B], verbosity);
+
+    m->add_face_(v[5],v[B],v[H], verbosity);
+    m->add_face_(v[5],v[H],v[6], verbosity);
+    m->add_face_(v[6],v[H],v[C], verbosity);
+
+    m->add_face_(v[6],v[C],v[I], verbosity);
+    m->add_face_(v[1],v[6],v[I], verbosity);
+    m->add_face_(v[1],v[I],v[7], verbosity);
+
+    return m ; 
+
+}
+ 
 
 
 template struct NOpenMesh<NOpenMeshType> ;

@@ -792,12 +792,13 @@ from opticks.analytic.csg import CSG
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="4" )
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="2" )
 sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="4"  )
 
 obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4"  )
 
-CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
+#CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
 #CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
 
 EOP
@@ -812,8 +813,9 @@ container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboo
 
 
 #ctrl = "1"  # subdiv_test
-ctrl = "4"  # tetrahedron
+#ctrl = "4"  # tetrahedron
 #ctrl = "6"  # cube
+ctrl = "666" # hexpatch
 
 box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="3" )
 
