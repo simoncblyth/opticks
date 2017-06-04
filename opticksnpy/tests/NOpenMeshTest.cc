@@ -402,7 +402,6 @@ void test_manual_subdivide_face()
 
     int level = 0 ; 
     int verbosity = 3 ; 
-    float epsilon = 1e-5 ; 
 
     nbox box = make_box(0,0,0, 100);
 
@@ -412,7 +411,7 @@ void test_manual_subdivide_face()
  
     FH fh = *m.mesh.faces_begin() ; 
 
-    m.subdiv.manual_subdivide_face(fh, NULL, verbosity, epsilon ); 
+    m.subdiv.manual_subdivide_face(fh, NULL ); 
 
     std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 

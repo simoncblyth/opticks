@@ -550,7 +550,8 @@ void NOpenMeshBuild<T>::add_hexpatch(int verbosity)
 
     /*
     19 verts : 12 around boundary, 7 in interior
-    24 faces
+    24 faces : 12 with edge on boundary 
+
 
                  9---e---8
                 / \ / \ / \

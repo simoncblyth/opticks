@@ -18,12 +18,6 @@ struct nuv ;
 template <typename T>
 struct NPY_API  NOpenMesh : NTriSource
 {
-    enum
-    {
-        ALL_OUTSIDE_OTHER = 0,
-        ALL_INSIDE_OTHER = 7  
-    };
-
     static NOpenMesh<T>* hexpatch(int level, int verbosity, int ctrl );
     static NOpenMesh<T>* cube(int level, int verbosity, int ctrl );
     static NOpenMesh<T>* tetrahedron(int level, int verbosity, int ctrl  ) ;
@@ -40,7 +34,6 @@ struct NPY_API  NOpenMesh : NTriSource
 
 
     void dump_border_faces(const char* msg="NOpenMesh::dump_border_faces", char side='L');
-    bool is_border_face(const int facemask);
 
 
     void subdiv_test() ;

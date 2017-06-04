@@ -23,10 +23,13 @@ struct NPY_API  NOpenMeshSubdiv
     typedef typename OpenMesh::Subdivider::Adaptive::CompositeT<T> subdivider_t ;  
 
     NOpenMeshSubdiv( T& mesh, 
-                     const NOpenMeshProp<T>& prop, 
+                     NOpenMeshProp<T>& prop, 
                      const NOpenMeshDesc<T>& desc, 
                      const NOpenMeshFind<T>& find, 
-                     NOpenMeshBuild<T>& build );
+                     NOpenMeshBuild<T>& build, 
+                     int verbosity,
+                     float epsilon
+                    );
 
     void init();
     void init_subdivider();
@@ -34,18 +37,21 @@ struct NPY_API  NOpenMeshSubdiv
 
     void refine(typename T::FaceHandle fh); 
 
-    void manual_subdivide_face(              typename T::FaceHandle fh, const nnode* other, int verbosity, float epsilon );
-    void manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other, int verbosity, float epsilon );
 
+    typename T::VertexHandle centroid_split_face(typename T::FaceHandle fh );
 
+    void manual_subdivide_face(              typename T::FaceHandle fh, const nnode* other );
+    void manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other );
 
 
 
     T& mesh  ;
-    const NOpenMeshProp<T>& prop ;
+    NOpenMeshProp<T>& prop ;
     const NOpenMeshDesc<T>& desc ;
     const NOpenMeshFind<T>& find ;
     NOpenMeshBuild<T>& build ;
+    int verbosity ; 
+    float epsilon ; 
 
     subdivider_t* subdivider ; 
 

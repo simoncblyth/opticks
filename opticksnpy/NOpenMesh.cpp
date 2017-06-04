@@ -27,7 +27,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, f
     desc(mesh, prop),
     find(mesh, prop),
     build(mesh, prop, desc, find),
-    subdiv(mesh, prop, desc, find, build),
+    subdiv(mesh, prop, desc, find, build, verbosity, epsilon ),
 
     node(node), 
     level(level), 
@@ -71,10 +71,11 @@ void NOpenMesh<T>::subdiv_test()
 
     //unsigned param = 0 ;  // margin for INTERIOR_FACE
     unsigned param = 6 ;  // valence for REGULAR_FACE
- 
-    //find.find_faces( target_faces, FIND_REGULAR_FACE,  param );
-    find.find_faces( target_faces, FIND_ALL_FACE,  param );
 
+    //select_t select = FIND_REGULAR_FACE ;
+    select_t select = FIND_ALL_FACE ;
+
+    find.find_faces( target_faces, select,  param );
 
     unsigned n_target_faces = target_faces.size() ;
 
@@ -91,9 +92,8 @@ void NOpenMesh<T>::subdiv_test()
         for(unsigned i=0 ; i < n_target_faces ; i++) 
         {
             FH fh = target_faces[i] ;
-            subdiv.manual_subdivide_face(fh,  NULL, verbosity, epsilon);
+            subdiv.manual_subdivide_face(fh,  NULL );
         }
-        // subdiv.refine(fh);  <-- just hangs ? infinite loop ?
     }
 
     unsigned nloop1 = find.find_boundary_loops() ;
@@ -207,28 +207,23 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
         if(node->type == CSG_UNION)
         {
-            build.copy_faces( leftmesh,  ALL_OUTSIDE_OTHER, verbosity, epsilon );
-            build.copy_faces( rightmesh, ALL_OUTSIDE_OTHER, verbosity, epsilon );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon );
         }
         else if(node->type == CSG_INTERSECTION)
         {
-            build.copy_faces( leftmesh,  ALL_INSIDE_OTHER, verbosity, epsilon  );
-            build.copy_faces( rightmesh, ALL_INSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
         }
         else if(node->type == CSG_DIFFERENCE )
         {
-            build.copy_faces( leftmesh,  ALL_OUTSIDE_OTHER, verbosity, epsilon  );
-            build.copy_faces( rightmesh, ALL_INSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
         }
     }
 }
 
 
-template <typename T>
-bool NOpenMesh<T>::is_border_face(const int facemask)
-{
-    return !( facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ) ; 
-}
 
 template <typename T>
 void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup )
@@ -245,8 +240,9 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, 
         for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
         {
             FH fh = *f ;  
-            int _f_inside_other = mesh.property(prop.f_inside_other, fh) ; 
-            if(!is_border_face(_f_inside_other)) continue ; 
+
+            if(!prop.is_border_face(fh)) continue ; 
+
             border_faces.push_back(fh);
         }
 
@@ -263,11 +259,11 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, 
             FH fh = border_faces[i] ;
             if(creating_soup)
             {
-                subdiv.manual_subdivide_face_creating_soup(fh, other, verbosity, epsilon );
+                subdiv.manual_subdivide_face_creating_soup(fh, other);
             }
             else
             {        
-                subdiv.manual_subdivide_face(fh, other, verbosity, epsilon); 
+                subdiv.manual_subdivide_face(fh, other); 
             }
         }
         mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
@@ -317,21 +313,12 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
     typedef typename T::ConstFaceHalfedgeIter   FHI ; 
     typedef typename T::Point               P ; 
 
-    //OpenMesh::FPropHandleT<int> f_inside_other ;
-    //assert(a_mesh->mesh.get_property_handle(f_inside_other, F_INSIDE_OTHER));
-
-    //OpenMesh::VPropHandleT<nuv> v_parametric;
-    //assert(a_mesh->mesh.get_property_handle(v_parametric, V_PARAMETRIC));
-
 
     for( FI f=a_mesh->mesh.faces_begin() ; f != a_mesh->mesh.faces_end(); ++f ) 
     {
-        const FH& fh = *f ;  
-        int _f_inside_other = a_mesh->mesh.property(prop.f_inside_other, fh) ; 
-        if(!is_border_face(_f_inside_other)) continue ; 
+        const FH fh = *f ;  
+        if(!prop.is_border_face(fh)) continue ; 
             
-        std::cout << "facemask:" << _f_inside_other << std::endl ; 
-
         // a_mesh edges along which b_sdf changes sign can be bisected 
         // (can treat as unary functions as only one 
         //  parameter will vary along the parametric edge)

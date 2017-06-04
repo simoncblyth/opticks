@@ -15,10 +15,12 @@ using namespace OpenMesh::Subdivider;
 template <typename T>
 NOpenMeshSubdiv<T>::NOpenMeshSubdiv( 
     T& mesh, 
-    const NOpenMeshProp<T>& prop, 
+    NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
     const NOpenMeshFind<T>& find, 
-          NOpenMeshBuild<T>& build 
+          NOpenMeshBuild<T>& build,
+    int verbosity,
+    float epsilon
     )
     : 
     mesh(mesh),
@@ -26,7 +28,9 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
     desc(desc),
     find(find),
     build(build),
-    subdivider(new subdivider_t(mesh)) 
+    verbosity(verbosity),
+    epsilon(epsilon),
+    subdivider(new subdivider_t(mesh))
 {
     init();
 } 
@@ -88,7 +92,7 @@ void NOpenMeshSubdiv<T>::refine(typename T::FaceHandle fh)
 
 
 template <typename T>
-void NOpenMeshSubdiv<T>::manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other, int verbosity, float epsilon )
+void NOpenMeshSubdiv<T>::manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other  )
 {
 /*
 Uniform subdivision of single triangle face
@@ -202,79 +206,23 @@ subdiv to be done, the below used mesh.split(eh, midpoint)
 }
  
 
-
-
-
-
-
 template <typename T>
-void NOpenMeshSubdiv<T>::manual_subdivide_face(typename T::FaceHandle fh, const nnode* /*other*/, int verbosity, float epsilon)
+typename T::VertexHandle NOpenMeshSubdiv<T>::centroid_split_face(typename T::FaceHandle fh )
 {
 /*
-
-First tried just centroid subdivision, 
-this works but leads to skinny triangles, that 
-after border edge skipping yields sliver cracks.
-
-Hmm there must be some better way to refine border tris of the mesh.
-Yes, now trying to implement sqrt(3) subdivision
-
-* https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
-* ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
-
-Thats:
-
-* centroid face split 
-* flip original edges. 
-
-But its currently scrambling the mesh... maybe:
-
-* as flipping "feature" edges ?
-* and/or implementation error.  
-
-TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
-
-/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
-
-
-
-                     o[2]
-                     +
-                    / \
-                   / | \
-                  /     \
-                 /   |   \
-                /         \
-               /     |     \
-              /             \
-             /       |       \
-            /       .  .      \
-           /      .      .     \
-          /     .           .   \
-         /   .                 . \
-        / .                      .\
-       +---------------------------+
-      o[0]                         o[1]
-
-
-https://stackoverflow.com/questions/41008298/openmesh-face-split
-
-
+                      +
+                     / \
+                    / . \  ^ 
+                0n /  ^  \  \
+               /  /   0   \  1n
+              v  /    +    \
+                /  v.   v   \
+               / .2       1 .\
+              +---------------+
+                    -> 2n
 */
-    if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
-
-    std::cout << "before subdivide_face " << brief() << std::endl ;   
-    //std::cout << "fh(before) " << desc(fh) << std::endl ;  
-
-
     typedef typename T::Point                P ; 
     typedef typename T::VertexHandle        VH ; 
-    typedef typename T::FaceHandle          FH ; 
-    typedef typename T::EdgeHandle          EH ; 
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexFaceIter      VFI ; 
-    typedef typename T::FaceEdgeIter        FEI ; 
-    typedef typename T::VertexOHalfedgeIter   VOHI ;
 
     P centroid = mesh.calc_face_centroid( fh );
 
@@ -292,12 +240,25 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
 
 
     mesh.split( fh, cvh ); 
+    return cvh ; 
+}
 
 
+template <typename T>
+void NOpenMeshSubdiv<T>::manual_subdivide_face(typename T::FaceHandle fh, const nnode* /*other*/ )
+{
 /*
 
   Using approach from Tvv3 of 
   /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc  
+
+  Trying to implement sqrt(3) subdivision
+
+   * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
+   * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
+
+   * centroid face split 
+   * flip original edges. 
 
   outgoing halfedges from the new splitting vertex
   nheh goes around ccw, so the oheh face gets adjacent faces
@@ -314,45 +275,92 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
               +---------------+
                     -> 2n
 
+
+But its currently scrambling the mesh... maybe:
+
+* as flipping "feature" edges ?
+* and/or implementation error.  
+
+TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
+
+/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
+
 */
+    if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
 
 
-/*
-    std::vector<EH>  edge_vector;
+    typedef typename T::Point                P ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceHandle          FH ; 
+    typedef typename T::EdgeHandle          EH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::VertexFaceIter      VFI ; 
+    typedef typename T::FaceEdgeIter        FEI ; 
+    typedef typename T::VertexOHalfedgeIter   VOHI ;
 
-    for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) 
+
+    int base_gen = prop.get_generation( fh ); 
+    int new_gen = base_gen + 1 ; 
+
+    bool even = base_gen % 2 == 0 ; 
+
+    if(even)
     {
-        HEH heh = *vohi ; 
-        FH  nfh = mesh.face_handle(heh) ;  // new faces 
+        VH cvh = centroid_split_face( fh );
 
-        if (!nfh.is_valid()) continue ;
-
-        HEH nheh = mesh.next_halfedge_handle(heh);
-        HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
-    
-        FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
-
-        if(ofh.is_valid())
+        for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) 
         {
-             EH eh = mesh.edge_handle(nheh) ; 
-             if(mesh.is_flip_ok(eh))
-             {
-                 edge_vector.push_back(eh); 
-             } 
+            HEH heh = *vohi ; 
+            FH  nfh = mesh.face_handle(heh) ;  // new faces 
+            assert( nfh.is_valid() );
+
+            prop.set_generation(nfh, new_gen ) ;
+            //if (!nfh.is_valid()) continue ;
+
+            HEH nheh = mesh.next_halfedge_handle(heh);
+            HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
+        
+            FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
+         
+            //assert(ofh.is_valid());
+            if(ofh.is_valid())
+            {
+                int adjacent_gen = prop.get_generation(ofh) ;
+                if( adjacent_gen == new_gen ) // its been split 
+                {
+                     EH eh = mesh.edge_handle(nheh) ; 
+                     if(mesh.is_flip_ok(eh))
+                     {
+                         mesh.flip(eh);
+
+                         HEH a0 = mesh.halfedge_handle(eh, 0);
+                         HEH a1 = mesh.halfedge_handle(eh, 1);
+                         FH  f0 = mesh.face_handle(a0);
+                         FH  f1 = mesh.face_handle(a1);
+
+                         prop.increment_generation(f0);
+                         prop.increment_generation(f1);
+
+                     } 
+                }
+            }
+            else
+            {
+                std::cout << "invalid ofh ?" << std::endl ; 
+            }
+
+
         }
     }
 
 
-    // flip edges
-    while (!edge_vector.empty()) 
-    {
-        EH eh = edge_vector.back();
-        edge_vector.pop_back();
-          
-        assert(mesh.is_flip_ok(eh));
 
-        mesh.flip(eh);
 
+
+
+
+
+/*
         if(other)
         {
             HEH a0 = mesh.halfedge_handle(eh, 0);
@@ -364,48 +372,12 @@ https://stackoverflow.com/questions/41008298/openmesh-face-split
             mark_face(f0, other);
             mark_face(f1, other);
         }
-   } 
-*/
-
-
-
-/*
-
-   suspect this is a higher level 
-   way of doing the above
-
-
-    VFI vfbeg = mesh.vf_begin(cvh) ;
-    VFI vfend = mesh.vf_end(cvh) ;
-
-    if(other)
-    {
-        unsigned n(0);
-        for( VFI vfi=vfbeg ; vfi != vfend ; vfi++ ) // over 3 new faces
-        {
-            FH f = *vfi ; 
-            mark_face(f, other);
-            n++ ; 
-        }
-        if( n != 3) LOG(warning) << "NOpenMesh::subdivide_face : unexpected face count around added vertex " << n ; 
-        //assert( n == 3); 
-    }
-
 */
 
     //std::cout << "desc(after)" << desc.desc()  << std::endl ; 
-    std::cout << "after subdivide_face " << brief() << std::endl ;   
-    std::cout << "fh(after) " << desc(fh) << std::endl ;  
-
-
-
-
+    //std::cout << "after subdivide_face " << brief() << std::endl ;   
+    //std::cout << "fh(after) " << desc(fh) << std::endl ;  
 }
-
-
-
-
-
 
 
 

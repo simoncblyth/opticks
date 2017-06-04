@@ -146,9 +146,6 @@ int NOpenMeshFind<T>::find_boundary_loops()
     loops.clear();
 
 
-    //OpenMesh::HPropHandleT<int> h_boundary_loop ;
-    //assert(mesh.get_property_handle(h_boundary_loop, H_BOUNDARY_LOOP));
-
 
     for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e) 
     {
