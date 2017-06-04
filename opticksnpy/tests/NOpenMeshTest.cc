@@ -158,36 +158,36 @@ void test_add_vertex_unique()
     VH vhd[8];
     bool added(false) ; 
 
-    vh[0] = mesh.add_vertex_unique(P(-1, -1,  1), added, epsilon);
-    vhd[0] = mesh.add_vertex_unique(P(-1, -1,  1), added, epsilon);
+    vh[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added, epsilon);
+    vhd[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added, epsilon);
     assert(vhd[0] == vh[0]);
     
-    vh[1] = mesh.add_vertex_unique(P( 1, -1,  1), added, epsilon);
-    vhd[1] = mesh.add_vertex_unique(P( 1, -1,  1), added, epsilon);
+    vh[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added, epsilon);
+    vhd[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added, epsilon);
     assert(vhd[1] == vh[1]);
 
-    vh[2] = mesh.add_vertex_unique(P( 1,  1,  1), added, epsilon);
-    vhd[2] = mesh.add_vertex_unique(P( 1,  1,  1), added, epsilon);
+    vh[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added, epsilon);
+    vhd[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added, epsilon);
     assert(vhd[2] == vh[2]);
 
-    vh[3] = mesh.add_vertex_unique(P(-1,  1,  1),added, epsilon);
-    vhd[3] = mesh.add_vertex_unique(P(-1,  1,  1),added, epsilon);
+    vh[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added, epsilon);
+    vhd[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added, epsilon);
     assert(vhd[3] == vh[3]);
 
-    vh[4] = mesh.add_vertex_unique(P(-1, -1, -1),added, epsilon);
-    vhd[4] = mesh.add_vertex_unique(P(-1, -1, -1),added, epsilon);
+    vh[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added, epsilon);
+    vhd[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added, epsilon);
     assert(vhd[4] == vh[4]);
 
-    vh[5] = mesh.add_vertex_unique(P( 1, -1, -1),added, epsilon);
-    vhd[5] = mesh.add_vertex_unique(P( 1, -1, -1),added, epsilon);
+    vh[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added, epsilon);
+    vhd[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added, epsilon);
     assert(vhd[5] == vh[5]);
 
-    vh[6] = mesh.add_vertex_unique(P( 1,  1, -1),added, epsilon);
-    vhd[6] = mesh.add_vertex_unique(P( 1,  1, -1),added, epsilon);
+    vh[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added, epsilon);
+    vhd[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added, epsilon);
     assert(vhd[6] == vh[6]);
 
-    vh[7] = mesh.add_vertex_unique(P(-1,  1, -1),added, epsilon);
-    vhd[7] = mesh.add_vertex_unique(P(-1,  1, -1),added, epsilon);
+    vh[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added, epsilon);
+    vhd[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added, epsilon);
     assert(vhd[7] == vh[7]);
 
 
@@ -338,13 +338,13 @@ void test_add_two_face()
     // NB must do the check prior to adding the 2nd face 
     //    to be in same situation
 
-    assert(m.is_consistent_face_winding(v00,v11,v01) == true);
-    assert(m.is_consistent_face_winding(v11,v01,v00) == true);
-    assert(m.is_consistent_face_winding(v01,v00,v11) == true);
+    assert(m.build.is_consistent_face_winding(v00,v11,v01) == true);
+    assert(m.build.is_consistent_face_winding(v11,v01,v00) == true);
+    assert(m.build.is_consistent_face_winding(v01,v00,v11) == true);
 
-    assert(m.is_consistent_face_winding(v11,v00,v01) == false);
-    assert(m.is_consistent_face_winding(v00,v01,v11) == false);
-    assert(m.is_consistent_face_winding(v01,v11,v00) == false);
+    assert(m.build.is_consistent_face_winding(v11,v00,v01) == false);
+    assert(m.build.is_consistent_face_winding(v00,v01,v11) == false);
+    assert(m.build.is_consistent_face_winding(v01,v11,v00) == false);
 
     FH f1 = m.mesh.add_face( v00, v11, v01 );  // ok
     assert(m.mesh.is_valid_handle(f1));
@@ -402,19 +402,21 @@ void test_manual_subdivide_face()
 
     int level = 0 ; 
     int verbosity = 3 ; 
+    float epsilon = 1e-5 ; 
+
     nbox box = make_box(0,0,0, 100);
 
     NOpenMesh<T> m(&box, level, verbosity) ;
 
-    assert( m.find_boundary_loops() == 0 ) ;
+    assert( m.find.find_boundary_loops() == 0 ) ;
  
     FH fh = *m.mesh.faces_begin() ; 
 
-    m.manual_subdivide_face(fh, NULL ); 
+    m.subdiv.manual_subdivide_face(fh, NULL, verbosity, epsilon ); 
 
     std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 
-    assert( m.find_boundary_loops() == 0 ) ;
+    assert( m.find.find_boundary_loops() == 0 ) ;
 
 
 }

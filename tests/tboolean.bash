@@ -157,7 +157,7 @@ tboolean--(){
             --animtimemax 10 \
             --timemax 10 \
             --geocenter \
-            --eye 1,0,0 \
+            --eye 0,0,1 \
             --dbganalytic \
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
@@ -809,7 +809,7 @@ tboolean-hyctrl-(){ $FUNCNAME- | python $* ; }
 tboolean-hyctrl--(){ cat << EOP
 from opticks.analytic.csg import CSG  
 
-container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
+container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="1" )
 
 
 #ctrl = "1"  # subdiv_test

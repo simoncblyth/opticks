@@ -1,0 +1,281 @@
+#include "NOpenMeshFind.hpp"
+
+
+#include <iostream>
+#include <iomanip>
+#include <sstream>
+
+#include "PLOG.hh"
+
+#include "Nuv.hpp"
+
+#include "NOpenMeshFind.hpp"
+#include "NOpenMeshProp.hpp"
+#include "NOpenMesh.hpp"
+
+
+template <typename T>
+NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop )
+    :
+    mesh(mesh),
+    prop(prop)
+ {} 
+
+
+
+template <typename T>
+void NOpenMeshFind<T>::find_faces(std::vector<typename T::FaceHandle>& faces, select_t select, unsigned param)
+{
+    typedef typename T::FaceHandle           FH ; 
+    typedef typename T::ConstFaceIter        FI ; 
+
+    faces.clear();
+
+    unsigned totface(0); 
+
+    for( FI fi=mesh.faces_begin() ; fi != mesh.faces_end(); ++fi ) 
+    {
+        totface++ ; 
+
+        FH fh = *fi ;  
+
+        bool selected = false ; 
+
+        switch(select)
+        {
+           case FIND_ALL_FACE      : selected = true                        ; break ; 
+           case FIND_REGULAR_FACE  : selected = is_regular_face(fh, param)  ; break ; 
+           case FIND_INTERIOR_FACE : selected = is_interior_face(fh, param) ; break ; 
+        }
+        if(selected) faces.push_back(fh);
+    }
+
+    LOG(info) << "NOpenMeshFind<T>::find_faces (faces with all vertices having same valence) "
+              << " select " << select
+              << " param " << param
+              << " count " << faces.size()
+              << " totface " << totface
+              ; 
+
+}
+
+
+
+
+
+
+
+template <typename T>
+bool NOpenMeshFind<T>::is_regular_face(const typename T::FaceHandle& fh, unsigned valence )
+{
+    // defining a "regular" face as one with all three vertices having 
+    // valence equal to the argument value
+
+    typedef typename T::VertexHandle         VH ; 
+    typedef typename T::ConstFaceVertexIter  FVI ; 
+
+    unsigned tot(0) ; 
+    unsigned miss(0) ; 
+  
+    for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
+    {
+        VH vh = *fvi ; 
+        unsigned vhv = mesh.valence(vh) ;
+        tot++ ; 
+
+        //std::cout << "vh" << std::setw(4) << vh << " vhv " << vhv << std::endl ; 
+
+        if(vhv != valence) miss++ ; 
+    }
+
+    bool is_regular = miss == 0 ; 
+
+    /*
+    LOG(info) << "NOpenMeshFind<T>::is_regular_face"
+              << " tot " << tot
+              << " miss " << miss
+              << " is_regular " << is_regular
+              ;
+    */
+
+    return is_regular ; 
+}
+ 
+
+
+
+template <typename T>
+bool NOpenMeshFind<T>::is_interior_face(const typename T::FaceHandle& fh, unsigned margin )
+{
+    typedef typename T::VertexHandle         VH ; 
+    typedef typename T::ConstFaceVertexIter  FVI ; 
+
+    for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
+    {
+        VH vh = *fvi ; 
+        nuv uv = mesh.property(prop.v_parametric, vh) ; 
+        if(!uv.is_interior(margin)) return false ; 
+    }
+    return true ;  
+}
+
+
+
+
+template <typename T>
+int NOpenMeshFind<T>::find_boundary_loops()
+{
+    LOG(info) << "find_boundary_loops" ; 
+
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::Point               P ; 
+    typedef typename T::FaceHalfedgeIter    FHI ; 
+    typedef typename T::ConstEdgeIter       EI ; 
+    typedef typename T::EdgeHandle          EH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+
+    typedef std::vector<HEH>              VHEH ; 
+    typedef typename VHEH::const_iterator VHEHI ; 
+
+
+    unsigned he_bnd[3] ; 
+    he_bnd[0] = 0 ; 
+    he_bnd[1] = 0 ; 
+    he_bnd[2] = 0 ; 
+
+    loops.clear();
+
+
+    //OpenMesh::HPropHandleT<int> h_boundary_loop ;
+    //assert(mesh.get_property_handle(h_boundary_loop, H_BOUNDARY_LOOP));
+
+
+    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e) 
+    {
+        EH eh = *e ; 
+        for(int i=0 ; i < 2 ; i++)
+        {
+            HEH heh = mesh.halfedge_handle(eh, i);
+            mesh.property(prop.h_boundary_loop, heh) = 0 ; 
+        }
+    }
+
+
+    // label halfedges with 1-based loop indices
+
+    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e)
+    {
+        EH eh = *e ; 
+        if(mesh.status(eh).deleted()) continue ; 
+
+        for(int i=0 ; i < 2 ; i++)
+        {
+            HEH heh = mesh.halfedge_handle(eh, i);
+            if(mesh.status(heh).deleted()) continue ; 
+
+            int hbl = mesh.property(prop.h_boundary_loop, heh) ; 
+
+            if(mesh.is_boundary(heh) && hbl == 0) 
+            {
+                he_bnd[i]++ ; 
+
+                NOpenMeshBoundary<T> bnd(&mesh, heh); 
+                loops.push_back(bnd);            
+
+                for(VHEHI it=bnd.loop.begin() ; it != bnd.loop.end() ; it++) mesh.property(prop.h_boundary_loop, *it) = loops.size()  ; 
+            }
+        }
+
+        he_bnd[2]++ ; 
+    }
+
+    LOG(info) << "find_boundary_loops"
+              << " he_bnd[0] " << he_bnd[0]      
+              << " he_bnd[1] " << he_bnd[1]      
+              << " he_bnd[2] " << he_bnd[2]
+              << " loops " << loops.size()
+              ;      
+
+
+    return loops.size();
+}
+           
+
+
+template <typename T>
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_exact(typename T::Point pt) const 
+{
+    typedef typename T::VertexHandle   VH ;
+    typedef typename T::Point           P ; 
+    typedef typename T::VertexIter     VI ; 
+
+    VH result ;
+
+    VI beg = mesh.vertices_begin() ;
+    VI end = mesh.vertices_end() ;
+
+    for (VI vit=beg ; vit != end ; ++vit) 
+    {
+        VH vh = *vit ; 
+        const P& p = mesh.point(vh); 
+        if( p == pt )
+        {
+            result = vh ; 
+            break ;          
+        }
+    }
+    return result ; 
+}
+
+
+
+template <typename T>
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(typename T::Point pt, float& distance ) const 
+{
+    typedef typename T::VertexHandle   VH ;
+    typedef typename T::Point           P ; 
+    typedef typename T::VertexIter     VI ; 
+
+    VI beg = mesh.vertices_begin() ;
+    VI end = mesh.vertices_end() ;
+
+    VH closest ;
+
+    for (VI vit=beg ; vit != end ; ++vit) 
+    {
+        VH vh = *vit ; 
+        const P& p = mesh.point(vh); 
+
+        P d = p - pt ; 
+        float dlen = d.length();
+
+        if(dlen < distance )
+        {
+            closest = vh ;
+            distance = dlen ;  
+        }
+    }
+    return closest ; 
+}
+
+
+template <typename T>
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(typename T::Point pt, const float epsilon ) const 
+{
+    typedef typename T::VertexHandle   VH ;
+    typedef typename T::Point           P ; 
+
+    float distance = std::numeric_limits<float>::max() ;
+
+    VH empty ; 
+    VH closest = find_vertex_closest(pt, distance );
+         
+    return distance < epsilon ? closest : empty ;  
+}
+
+
+
+
+
+template struct NOpenMeshFind<NOpenMeshType> ;
+

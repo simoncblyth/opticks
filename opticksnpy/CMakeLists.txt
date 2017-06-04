@@ -187,6 +187,9 @@ set(SOURCES
     NOpenMeshDesc.cpp
     NOpenMeshBoundary.cpp
     NOpenMeshSubdiv.cpp
+    NOpenMeshFind.cpp
+    NOpenMeshProp.cpp
+    NOpenMeshBuild.cpp
 
     NHybridMesher.cpp
     Nuv.cpp

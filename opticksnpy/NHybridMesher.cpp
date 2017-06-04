@@ -39,7 +39,7 @@ NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level
               break ; 
        case 666: 
               mesh = NOpenMesh<NOpenMeshType>::hexpatch(level, verbosity, ctrl  ) ; 
-              mesh->subdiv_interior_test() ;
+              mesh->subdiv_test() ;
               break ; 
     }
     assert(mesh);
