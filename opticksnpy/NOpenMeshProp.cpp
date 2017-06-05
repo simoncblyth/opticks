@@ -20,6 +20,30 @@ template <typename T>
 const char* NOpenMeshProp<T>::H_BOUNDARY_LOOP = "h_boundary_loop" ; 
 
 
+template <typename T>
+void NOpenMeshProp<T>::init()
+{
+    mesh.add_property(f_inside_other, F_INSIDE_OTHER);  
+    mesh.add_property(f_generation, F_GENERATION);  
+    mesh.add_property(f_identity, F_IDENTITY);  
+
+    mesh.add_property(v_sdf_other, V_SDF_OTHER);  
+    mesh.add_property(v_parametric, V_PARAMETRIC);  
+    mesh.add_property(h_boundary_loop, H_BOUNDARY_LOOP);  
+
+    // without the below get segv on trying to delete a face
+    // unless compile traits into NOpenMeshType
+    /*
+    mesh.request_face_status();
+    mesh.request_edge_status();
+    mesh.request_halfedge_status();
+    mesh.request_vertex_status();
+    */
+ 
+    set_generation_all(0); // hmm perhaps too soon, no faces yet ?
+}
+
+
 
 
 template <typename T>
@@ -32,15 +56,30 @@ NOpenMeshProp<T>::NOpenMeshProp( T& mesh )
 
 
 
+template <typename T>
+bool NOpenMeshProp<T>::is_identity_face(FH fh, const std::vector<int>& identity ) const 
+{
+    int face_id = get_identity( fh );
+    return std::find(identity.begin(), identity.end(), face_id ) != identity.end()  ; 
+}
 
 template <typename T>
-int NOpenMeshProp<T>::get_identity( typename T::FaceHandle fh ) const 
+bool NOpenMeshProp<T>::is_identity_face(FH fh, int identity ) const 
+{
+    int face_id = get_identity( fh );
+    return face_id == identity ; 
+}
+
+
+
+template <typename T>
+int NOpenMeshProp<T>::get_identity( FH fh ) const 
 {
     return mesh.property(f_identity, fh) ; 
 }
 
 template <typename T>
-void NOpenMeshProp<T>::set_identity( typename T::FaceHandle fh, int identity )
+void NOpenMeshProp<T>::set_identity( FH fh, int identity )
 {
     mesh.property(f_identity, fh) = identity ; 
 }
@@ -50,19 +89,19 @@ void NOpenMeshProp<T>::set_identity( typename T::FaceHandle fh, int identity )
 
 
 template <typename T>
-int NOpenMeshProp<T>::get_facemask( typename T::FaceHandle fh ) const 
+int NOpenMeshProp<T>::get_facemask( FH fh ) const 
 {
     return mesh.property(f_inside_other, fh) ; 
 }
 
 template <typename T>
-void NOpenMeshProp<T>::set_facemask( typename T::FaceHandle fh, int facemask )
+void NOpenMeshProp<T>::set_facemask( FH fh, int facemask )
 {
     mesh.property(f_inside_other, fh) = facemask ; 
 }
 
 template <typename T>
-bool NOpenMeshProp<T>::is_border_face(typename T::FaceHandle fh ) const 
+bool NOpenMeshProp<T>::is_border_face(FH fh ) const 
 {
     int facemask = get_facemask( fh );
     return !( facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ) ; 
@@ -70,19 +109,19 @@ bool NOpenMeshProp<T>::is_border_face(typename T::FaceHandle fh ) const
 
 
 template <typename T>
-int NOpenMeshProp<T>::get_generation( typename T::FaceHandle fh ) const 
+int NOpenMeshProp<T>::get_generation( FH fh ) const 
 {
     return mesh.property(f_generation, fh) ; 
 }
 
 template <typename T>
-void NOpenMeshProp<T>::set_generation( typename T::FaceHandle fh, int fgen )
+void NOpenMeshProp<T>::set_generation( FH fh, int fgen )
 {
     mesh.property(f_generation, fh) = fgen ; 
 }
 
 template <typename T>
-void NOpenMeshProp<T>::increment_generation( typename T::FaceHandle fh )
+void NOpenMeshProp<T>::increment_generation( FH fh )
 {
     mesh.property(f_generation, fh)++ ; 
 }
@@ -92,7 +131,6 @@ void NOpenMeshProp<T>::increment_generation( typename T::FaceHandle fh )
 template <typename T>
 void NOpenMeshProp<T>::set_generation_all( int fgen )
 {
-    typedef typename T::FaceHandle  FH ; 
     typedef typename T::FaceIter    FI ; 
 
     for( FI fi=mesh.faces_begin() ; fi != mesh.faces_end(); ++fi ) 
@@ -108,27 +146,6 @@ void NOpenMeshProp<T>::set_generation_all( int fgen )
 
 
 
-template <typename T>
-void NOpenMeshProp<T>::init()
-{
-    mesh.add_property(f_inside_other, F_INSIDE_OTHER);  
-    mesh.add_property(f_generation, F_GENERATION);  
-    mesh.add_property(v_sdf_other, V_SDF_OTHER);  
-    mesh.add_property(v_parametric, V_PARAMETRIC);  
-    mesh.add_property(h_boundary_loop, H_BOUNDARY_LOOP);  
-
-    // without the below get segv on trying to delete a face
-    // unless compile traits into NOpenMeshType
-    /*
-    mesh.request_face_status();
-    mesh.request_edge_status();
-    mesh.request_halfedge_status();
-    mesh.request_vertex_status();
-    */
- 
-    set_generation_all(0);
-
-}
 
 template struct NOpenMeshProp<NOpenMeshType> ;
 

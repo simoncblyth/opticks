@@ -411,7 +411,7 @@ void test_manual_subdivide_face()
  
     FH fh = *m.mesh.faces_begin() ; 
 
-    m.subdiv.sqrt3_split_r(fh, NULL ); 
+    m.subdiv.sqrt3_split_r(fh, NULL, 0); 
 
     std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 

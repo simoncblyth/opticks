@@ -88,11 +88,22 @@ Computer Graphics Group, RWTH Aachen University
 * http://www.lsi.upc.edu/~pere/PapersWeb/SGI/Kobbelt2.pdf
 
 
+CGAL Subdiv
+~~~~~~~~~~~~~~~
+
+* http://doc.cgal.org/latest/Subdivision_method_3/
+
+
 sqrt(3)-subdivision
 ~~~~~~~~~~~~~~~~~~~~~
 
 * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
 * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
+
+
+* https://people.eecs.berkeley.edu/~sequin/CS284/PAPERS/root3subdiv.pdf
+* ~/opticks_refs/interpolatory_sqrt3_subdiv_root3subdiv.pdf
+
 
 
 Reference from OpenMesh source

@@ -553,6 +553,17 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
     p[E] = P(            0,  2.*s*sa[1],z) ; 
     p[H] = P(            0, -2.*s*sa[1],z) ; 
 
+    unsigned vlast = inner_only ? 6 : I ; 
+
+    for(unsigned i=0 ; i <=vlast ; i++) v[i] = mesh.add_vertex(p[i]) ;
+
+    add_face_(v[0],v[1],v[2], 1);
+    add_face_(v[0],v[2],v[3], 2);
+    add_face_(v[0],v[3],v[4], 3);
+    add_face_(v[0],v[4],v[5], 4);
+    add_face_(v[0],v[5],v[6], 5);
+    add_face_(v[0],v[6],v[1], 6);
+
     /*
     19 verts :                                 24 faces
     12 around boundary, 7 in interior          12 with edge on boundary
@@ -566,47 +577,65 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
                g---5---6---i                    +---5---6---i
                 \ / \ / \ /                      \i/j\k/l\m/
                  b---h---c                        +---+---+        
-    */             
-
-    unsigned vlast = inner_only ? 6 : I ; 
-
-    for(unsigned i=0 ; i <=vlast ; i++) v[i] = mesh.add_vertex(p[i]) ;
-
-    add_face_(v[0],v[1],v[2], 1);
-    add_face_(v[0],v[2],v[3], 2);
-    add_face_(v[0],v[3],v[4], 3);
-    add_face_(v[0],v[4],v[5], 4);
-    add_face_(v[0],v[5],v[6], 5);
-    add_face_(v[0],v[6],v[1], 6);
+    */
 
     if(!inner_only)
     {
+        add_face_(v[1],v[I],v[7], O);  // <-- huh with this at end, get a missed edge with 1st round of boundary face subdiv
         add_face_(v[1],v[7],v[D], 7);
         add_face_(v[1],v[D],v[2], 8);
-        add_face_(v[2],v[D],v[8], 9);
 
+        add_face_(v[2],v[D],v[8], 9);
         add_face_(v[2],v[8],v[E], A);
         add_face_(v[2],v[E],v[3], B);
-        add_face_(v[E],v[9],v[3], C);
 
-        add_face_(v[9],v[F],v[3], D);
+        add_face_(v[3],v[E],v[9], C);
+        add_face_(v[3],v[9],v[F], D);
         add_face_(v[3],v[F],v[4], E);
-        add_face_(v[F],v[A],v[4], F);
 
+        add_face_(v[4],v[F],v[A], F);
         add_face_(v[4],v[A],v[G], G);
         add_face_(v[4],v[G],v[5], H);
-        add_face_(v[5],v[G],v[B], I);
 
+        add_face_(v[5],v[G],v[B], I);
         add_face_(v[5],v[B],v[H], J);
         add_face_(v[5],v[H],v[6], K);
-        add_face_(v[6],v[H],v[C], L);
 
+        add_face_(v[6],v[H],v[C], L);
         add_face_(v[6],v[C],v[I], M);
-        add_face_(v[1],v[6],v[I], N);
-        add_face_(v[1],v[I],v[7], O);
+        add_face_(v[6],v[I],v[1], N);
+
     }
 }
 
+// suspect need to use "rosette" pattern of minimum seed vertices
+// to fit in with sqrt3_subdiv_r
+
+//
+// add_face_(v[E],v[9],v[3], C);
+// add_face_(v[9],v[F],v[3], D); 
+//  
+// sqrt3_split_r is sensitive to the vertex ordering!!
+// above (which is a valid winding) leads to a missed edge  
+// adopting an ordering more consistent with the other faces
+// solve the issue
+//
+
+
+
+
+/*                                                                 
+                 +-------+        
+                / \     / \
+               /   \ 2 /   \
+              /  3  \ /  1  \
+             +-------+-------+   
+              \  4  / \  6  /   
+               \   / 5 \   /   
+                \ /     \ /   
+                 +-------+   
+
+*/             
 
 
 

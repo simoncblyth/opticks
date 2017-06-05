@@ -60,49 +60,66 @@ void NOpenMesh<T>::check()
 }
 
 
+
 template <typename T>
-void NOpenMesh<T>::subdiv_test()
+void NOpenMesh<T>::one_subdiv(int round, select_t select, int param)
 {
     typedef typename T::FaceHandle          FH ; 
-
-    unsigned nloop0 = find.find_boundary_loops() ;
-
     std::vector<FH> target_faces ; 
-
-    //unsigned param = 0 ;  // margin for INTERIOR_FACE
-    unsigned param = 6 ;  // valence for REGULAR_FACE
-
-    //select_t select = FIND_REGULAR_FACE ;
-    select_t select = FIND_ALL_FACE ;
-
     find.find_faces( target_faces, select,  param );
-
     unsigned n_target_faces = target_faces.size() ;
 
-    LOG(info) << "subdiv_interior_test" 
+    LOG(info) << "one_subdiv" 
+              << " round " << round
               << " ctrl " << ctrl 
               << " verbosity " << verbosity
               << " n_target_faces " << n_target_faces
-              << " nloop0 " << nloop0
+              << desc.desc_euler()
               ;
 
-
-    if( n_target_faces > 0)
+    int depth = 0 ; 
+    for(unsigned i=0 ; i < n_target_faces ; i++) 
     {
-        for(unsigned i=0 ; i < n_target_faces ; i++) 
-        {
-            FH fh = target_faces[i] ;
-            subdiv.sqrt3_split_r(fh,  NULL );
-        }
+        FH fh = target_faces[i] ;
+        subdiv.sqrt3_split_r(fh,  NULL, depth );
     }
+}
+ 
+
+
+template <typename T>
+void NOpenMesh<T>::subdiv_test()
+{
+    unsigned nloop0 = find.find_boundary_loops() ;
+    LOG(info) << "subdiv_test START " 
+              << " ctrl " << ctrl 
+              << " verbosity " << verbosity
+              << " nloop0 " << nloop0
+              << desc.desc_euler()
+              ;
+    if(verbosity > 3) std::cout << desc.faces() << std::endl ;  
+
+    one_subdiv(0, FIND_ALL_FACE, -1);
+    one_subdiv(1, FIND_NONBOUNDARY_FACE, -1);
+
+
+    //one_subdiv(0, FIND_BOUNDARY_FACE, -1);
+    //one_subdiv(1, FIND_NONBOUNDARY_FACE, -1);
+
+    //one_subdiv(1, FIND_IDENTITY_FACE, 101 );
+    //one_subdiv(0, FIND_IDENTITY_FACE, 2);
+    //one_subdiv(1, FIND_IDENTITY_FACE,  101);
+ 
 
     unsigned nloop1 = find.find_boundary_loops() ;
-
     LOG(info) << "subdiv_test DONE " 
               << " ctrl " << ctrl 
               << " verbosity " << verbosity
               << " nloop1 " << nloop1
+              << desc.desc_euler()
               ;
+
+    if(verbosity > 3) std::cout << desc.faces() << std::endl ;  
 }
 
 
@@ -256,8 +273,8 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv )
         for(unsigned i=0 ; i < border_faces.size(); i++) 
         {
             FH fh = border_faces[i] ;
-            //subdiv.create_soup(fh, other);
-            subdiv.sqrt3_split_r(fh, other); 
+            int depth = 0 ; 
+            subdiv.sqrt3_split_r(fh, other, depth); 
         }
         mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
     }

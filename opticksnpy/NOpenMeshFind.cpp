@@ -24,9 +24,8 @@ NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop )
 
 
 template <typename T>
-void NOpenMeshFind<T>::find_faces(std::vector<typename T::FaceHandle>& faces, select_t select, unsigned param)
+void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, select_t select, int param)
 {
-    typedef typename T::FaceHandle           FH ; 
     typedef typename T::ConstFaceIter        FI ; 
 
     faces.clear();
@@ -43,9 +42,12 @@ void NOpenMeshFind<T>::find_faces(std::vector<typename T::FaceHandle>& faces, se
 
         switch(select)
         {
-           case FIND_ALL_FACE      : selected = true                        ; break ; 
+           case FIND_ALL_FACE      : selected = true                             ; break ; 
+           case FIND_IDENTITY_FACE : selected = prop.is_identity_face(fh, param) ; break ; 
            case FIND_REGULAR_FACE  : selected = is_regular_face(fh, param)  ; break ; 
            case FIND_INTERIOR_FACE : selected = is_interior_face(fh, param) ; break ; 
+           case FIND_NONBOUNDARY_FACE : selected = is_numboundary_face(fh, 0)  ; break ; 
+           case FIND_BOUNDARY_FACE :    selected = is_numboundary_face(fh, -1)  ; break ; 
         }
         if(selected) faces.push_back(fh);
     }
@@ -56,17 +58,35 @@ void NOpenMeshFind<T>::find_faces(std::vector<typename T::FaceHandle>& faces, se
               << " count " << faces.size()
               << " totface " << totface
               ; 
-
 }
 
 
 
 
+template <typename T>
+bool NOpenMeshFind<T>::is_numboundary_face(const FH fh, int numboundary)
+{
+    typedef typename T::ConstFaceEdgeIter   FEI ; 
+    typedef typename T::EdgeHandle          EH ; 
+
+    int n_edge(0) ;
+    int n_boundary(0) ;
+
+    for(FEI fei=mesh.cfe_iter(fh) ; fei.is_valid() ; fei++) 
+    {
+        EH eh = *fei ; 
+        if( mesh.is_boundary(eh) ) n_boundary++ ;
+        n_edge++ ; 
+    }
+    
+    return numboundary > -1 ? n_boundary == numboundary : ( n_boundary > 0 )  ;  
+}
+ 
 
 
 
 template <typename T>
-bool NOpenMeshFind<T>::is_regular_face(const typename T::FaceHandle& fh, unsigned valence )
+bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
 {
     // defining a "regular" face as one with all three vertices having 
     // valence equal to the argument value
@@ -85,7 +105,7 @@ bool NOpenMeshFind<T>::is_regular_face(const typename T::FaceHandle& fh, unsigne
 
         //std::cout << "vh" << std::setw(4) << vh << " vhv " << vhv << std::endl ; 
 
-        if(vhv != valence) miss++ ; 
+        if(vhv != unsigned(valence)) miss++ ; 
     }
 
     bool is_regular = miss == 0 ; 
@@ -105,7 +125,7 @@ bool NOpenMeshFind<T>::is_regular_face(const typename T::FaceHandle& fh, unsigne
 
 
 template <typename T>
-bool NOpenMeshFind<T>::is_interior_face(const typename T::FaceHandle& fh, unsigned margin )
+bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin )
 {
     typedef typename T::VertexHandle         VH ; 
     typedef typename T::ConstFaceVertexIter  FVI ; 
@@ -114,7 +134,7 @@ bool NOpenMeshFind<T>::is_interior_face(const typename T::FaceHandle& fh, unsign
     {
         VH vh = *fvi ; 
         nuv uv = mesh.property(prop.v_parametric, vh) ; 
-        if(!uv.is_interior(margin)) return false ; 
+        if(!uv.is_interior(unsigned(margin))) return false ; 
     }
     return true ;  
 }
@@ -128,7 +148,6 @@ int NOpenMeshFind<T>::find_boundary_loops()
     LOG(info) << "find_boundary_loops" ; 
 
     typedef typename T::VertexHandle        VH ; 
-    typedef typename T::Point               P ; 
     typedef typename T::FaceHalfedgeIter    FHI ; 
     typedef typename T::ConstEdgeIter       EI ; 
     typedef typename T::EdgeHandle          EH ; 
@@ -144,8 +163,6 @@ int NOpenMeshFind<T>::find_boundary_loops()
     he_bnd[2] = 0 ; 
 
     loops.clear();
-
-
 
     for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e) 
     {
@@ -200,10 +217,9 @@ int NOpenMeshFind<T>::find_boundary_loops()
 
 
 template <typename T>
-typename T::VertexHandle NOpenMeshFind<T>::find_vertex_exact(typename T::Point pt) const 
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_exact(P pt) const 
 {
     typedef typename T::VertexHandle   VH ;
-    typedef typename T::Point           P ; 
     typedef typename T::VertexIter     VI ; 
 
     VH result ;
@@ -227,10 +243,9 @@ typename T::VertexHandle NOpenMeshFind<T>::find_vertex_exact(typename T::Point p
 
 
 template <typename T>
-typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(typename T::Point pt, float& distance ) const 
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(P pt, float& distance ) const 
 {
     typedef typename T::VertexHandle   VH ;
-    typedef typename T::Point           P ; 
     typedef typename T::VertexIter     VI ; 
 
     VI beg = mesh.vertices_begin() ;
@@ -257,10 +272,9 @@ typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(typename T::Point
 
 
 template <typename T>
-typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(typename T::Point pt, const float epsilon ) const 
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float epsilon ) const 
 {
     typedef typename T::VertexHandle   VH ;
-    typedef typename T::Point           P ; 
 
     float distance = std::numeric_limits<float>::max() ;
 

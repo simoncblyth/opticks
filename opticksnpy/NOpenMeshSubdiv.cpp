@@ -202,65 +202,24 @@ subdiv to be done, the below used mesh.split(eh, midpoint)
  
 
 template <typename T>
-typename T::VertexHandle NOpenMeshSubdiv<T>::centroid_split_face(typename T::FaceHandle fh )
+void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, const nnode* other, int depth )
 {
 /*
-                      +
-                     / \
-                    / . \  ^ 
-                0n /  ^  \  \
-               /  /   0   \  1n
-              v  /    +    \
-                /  v.   v   \
-               / .2       1 .\
-              +---------------+
-                    -> 2n
-*/
-    typedef typename T::Point                P ; 
-    typedef typename T::VertexHandle        VH ; 
-
-    P centroid = mesh.calc_face_centroid( fh );
-
-    bool added(false) ;
-    VH cvh = build.add_vertex_unique( centroid, added, epsilon );
-    assert(added);
-
-    if(verbosity > 2)
-    {
-        std::cout << "centroid " << desc(centroid)
-                  << "cvh " << cvh 
-                  << "added " << added
-                  << std::endl ; 
-    }
-
-
-    mesh.split( fh, cvh ); 
-    return cvh ; 
-}
-
-
-template <typename T>
-void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, const nnode* other )
-{
-/*
-
   Using approach from Tvv3 of 
   /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc  
+  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
 
-  Trying to implement sqrt(3) subdivision
+  Trying to implement sqrt(3) subdivision : centroid face split, flip original edges 
+
+  NB the recursion is limited, it does not spread over the entire mesh, it just applies splits to neighbouring 
+  faces when that is necessary for mesh conformance/balancing 
 
    * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
    * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
 
-   * centroid face split 
-   * flip original edges. 
-
-  outgoing halfedges from the new splitting vertex
-  nheh goes around ccw, so the oheh face gets adjacent faces
-     
            
-                      +
-                     / \
+                      +               0,1,2    : outgoing halfedges from the new splitting vertex
+                     / \              0n,1n,2n : nheh halfedges (ccw), oheh to give adjacent faces
                     / . \  ^ 
                 0n /  ^  \  \
                /  /   0   \  1n
@@ -269,20 +228,7 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, const nnode* o
                / .2       1 .\
               +---------------+
                     -> 2n
-
-
-But its currently scrambling the mesh... maybe:
-
-* as flipping "feature" edges ?
-* and/or implementation error.  
-
-TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
-
-/usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
-
 */
-    if(verbosity > 2) LOG(info) << "subdivide_face " << fh  ;  
-
 
     typedef typename T::Point                P ; 
     typedef typename T::VertexHandle        VH ; 
@@ -293,41 +239,77 @@ TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
     typedef typename T::FaceEdgeIter        FEI ; 
     typedef typename T::VertexOHalfedgeIter   VOHI ;
 
-
     int base_id = prop.get_identity( fh ); 
     int base_gen = prop.get_generation( fh ); 
-    int new_gen = base_gen + 1 ; 
 
     bool even = base_gen % 2 == 0 ; 
 
+    if(verbosity > 2) 
+    std::cout << "sqrt3_split_r" 
+              << " face fh " << std::setw(4) << fh 
+              << " base_gen " << std::setw(4) << base_gen 
+              << " base_id " << std::setw(4) << base_id
+              << " depth " << std::setw(4) << depth
+              << std::endl 
+               ;  
+
     if(even)
     {
-        VH cvh = centroid_split_face( fh );
+        P centroid = mesh.calc_face_centroid( fh );
+        bool added(false) ;
+        VH cvh = build.add_vertex_unique( centroid, added, epsilon );
+        assert(added && "centroid face splitting should always add a new vertex??");
+        mesh.split( fh, cvh ); 
 
         int iface = 0 ; 
+
+        // outgoing halfedges from the splitting vertex
         for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) 
         {
             HEH heh = *vohi ; 
             FH  nfh = mesh.face_handle(heh) ;  // new faces 
             assert( nfh.is_valid() );
-
             iface++ ; 
-            prop.set_identity( nfh, base_id*100 + iface ) ;
-            prop.set_generation(nfh, new_gen ) ;
+
+            int newface_id = base_id*100 + iface  ;
+            int newface_gen = base_gen + 1 ; 
+
+            prop.set_identity( nfh, newface_id ) ;
+            prop.set_generation( nfh, newface_gen ) ;
 
             HEH nheh = mesh.next_halfedge_handle(heh);
-            HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
-            FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
-         
-            if(ofh.is_valid())
+            HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  
+            FH  ofh = mesh.face_handle(oheh) ; 
+            // next then opposite_halfedge face is adjacent 
+            bool adjacent_valid = ofh.is_valid() ; 
+
+            if(verbosity > 2)
+            std::cout 
+                   << " (even) " 
+                   << " newface_id " << std::setw(4) << newface_id 
+                   << " newface_gen " << std::setw(4) << newface_gen 
+                   << " adjacent_valid " << ( adjacent_valid ? "Y" : "N" )
+                   ;
+ 
+            if(adjacent_valid)
             {
+                int adjacent_id = prop.get_identity(ofh) ;  
                 int adjacent_gen = prop.get_generation(ofh) ;
-                if( adjacent_gen == new_gen ) // its been split 
+                bool do_flip = adjacent_gen == newface_gen ;
+
+                if(verbosity > 2)
+                std::cout 
+                   << " adjacent_id " << std::setw(4) << adjacent_id 
+                   << " adjacent_gen " << std::setw(4) << adjacent_gen
+                   << " do_flip " << ( do_flip ? "YES" : "NO" )
+                   << std::endl ; 
+
+                if( do_flip ) 
                 {
                      EH eh = mesh.edge_handle(nheh) ; 
                      if(mesh.is_flip_ok(eh))
                      {
-                         mesh.flip(eh);
+                         mesh.flip(eh);  
 
                          HEH a0 = mesh.halfedge_handle(eh, 0);
                          HEH a1 = mesh.halfedge_handle(eh, 1);
@@ -337,31 +319,58 @@ TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
                          prop.increment_generation(f0);
                          prop.increment_generation(f1);
                      } 
+                     else
+                     {
+                         LOG(warning) << "flip not ok,  fh " << fh ;  
+                     }
                 }
             }
             else
             {
-                std::cout << "invalid ofh : " 
-                          << " base_id " << base_id 
-                          << " iface " << iface
-                          << std::endl ; 
+                if(verbosity > 2)
+                std::cout 
+                       << std::endl ; 
+                       ;
+                     
             }
         }
     }
     else
     {
+        if(verbosity > 2)
+        std::cout 
+                << " (odd) " 
+                << std::endl ; 
+ 
+
         HEH heh = mesh.halfedge_handle(fh); 
         HEH nheh = mesh.next_halfedge_handle(heh);
-        HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
-        FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
+        HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  
+        FH  ofh = mesh.face_handle(oheh) ; 
+
+        // next then opposite_halfedge face is adjacent 
+        // (hmm perhaps this depends on the vertex->halfedge ordering of the original mesh?) 
  
         if(ofh.is_valid())
         {
-            int adjacent_gen = prop.get_generation(ofh) ; 
-            if(adjacent_gen == base_gen - 2)
+            int adjacent_id = prop.get_identity(ofh) ;  
+            int adjacent_gen = prop.get_generation(ofh) ;
+            bool two_gen = adjacent_gen == base_gen - 2 ;
+
+            if(verbosity > 2)
+            std::cout 
+                << " (odd) " 
+                << " adjacent_id " << adjacent_id
+                << " adjacent_gen " << adjacent_gen
+                << " two_gen " << ( two_gen ? "YES" : "NO" )
+                << std::endl ; 
+
+            if(two_gen)
             {
-                sqrt3_split_r(ofh, other) ;  
+                sqrt3_split_r(ofh, other, depth+1) ;  
             }
+            //sqrt3_split_r(ofh, other, depth+1) ;  
+
         }
     }
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 struct nuv ; 
 
 #include "NOpenMeshType.hpp"
@@ -7,6 +8,8 @@ struct nuv ;
 template <typename T>
 struct NPY_API  NOpenMeshProp
 {
+    typedef typename T::FaceHandle FH ; 
+
     enum
     {
         ALL_OUTSIDE_OTHER = 0,
@@ -25,16 +28,18 @@ struct NPY_API  NOpenMeshProp
     NOpenMeshProp( T& mesh );
     void init();
 
-    bool is_border_face(    typename T::FaceHandle fh ) const ;
-    int  get_facemask( typename T::FaceHandle fh ) const ;
-    void set_facemask( typename T::FaceHandle fh, int facemask );
+    bool is_border_face( FH fh ) const ;
+    int  get_facemask( FH fh ) const ;
+    void set_facemask( FH fh, int facemask );
 
-    int  get_identity( typename T::FaceHandle fh ) const ;
-    void set_identity( typename T::FaceHandle fh, int identity );
+    bool is_identity_face( FH fh, const std::vector<int>& identity ) const ;
+    bool is_identity_face( FH fh, int identity ) const ;
+    int  get_identity( FH fh ) const ;
+    void set_identity( FH fh, int identity );
 
-    int  get_generation( typename T::FaceHandle fh ) const ;
-    void set_generation( typename T::FaceHandle fh, int fgen );
-    void increment_generation( typename T::FaceHandle fh );
+    int  get_generation( FH fh ) const ;
+    void set_generation( FH fh, int fgen );
+    void increment_generation( FH fh );
     void set_generation_all( int fgen );
 
 

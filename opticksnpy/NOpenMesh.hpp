@@ -35,6 +35,7 @@ struct NPY_API  NOpenMesh : NTriSource
 
     void dump_border_faces(const char* msg="NOpenMesh::dump_border_faces", char side='L');
 
+    void one_subdiv(int round, select_t select, int param);
 
     void subdiv_test() ;
     void subdiv_interior_test() ;

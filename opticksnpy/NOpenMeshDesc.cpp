@@ -245,13 +245,19 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::FaceHandle fh) const
     typedef typename T::HalfedgeHandle      HEH ; 
     typedef typename T::VertexHandle        VH ; 
 
-    std::stringstream ss ; 
-    ss << "fh " << std::setw(4) << fh << std::endl ;
+    bool valid = mesh.is_valid_handle(fh) ;
+    int id = valid ? prop.get_identity(fh) : -1 ; 
 
-    if(mesh.is_valid_handle(fh))
+    std::stringstream ss ; 
+    ss 
+       << " fh " << std::setw(4) << fh 
+       << " id " << std::setw(4) << id 
+       << std::endl ;
+
+
+    if(valid)
     {
         std::vector<VH> vtos ; 
-     
         for(FHI fhe=mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
         {
             HEH heh = *fhe ; 

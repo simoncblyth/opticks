@@ -805,6 +805,8 @@ EOP
 }
 
 tboolean-hyctrl(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+#tboolean-hyctrl-polytest(){ lldb NPolygonizerTest -- $TMP/tboolean-hyctrl--/1 ; }
+tboolean-hyctrl-polytest(){ NPolygonizerTest $TMP/tboolean-hyctrl--/1 ; }
 tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
 tboolean-hyctrl--(){ cat << EOP
 from opticks.analytic.csg import CSG  
@@ -818,12 +820,8 @@ container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboo
 ctrl = "66" # hexpatch inner_only 
 #ctrl = "666" # hexpatch
 
-box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="3" )
+box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4" )
 
-"""
-tetrahedron is using bait and switch, the box needs to large enough to contain the tet 
-
-"""
 CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
 
 EOP
