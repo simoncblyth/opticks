@@ -13,15 +13,17 @@
 template <typename T>
 NOpenMeshBuild<T>::NOpenMeshBuild(
     T& mesh, 
-    const NOpenMeshProp<T>& prop, 
+    NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
-    const NOpenMeshFind<T>& find
+    const NOpenMeshFind<T>& find,
+    int verbosity
     )
     :
     mesh(mesh),
     prop(prop),
     desc(desc),
-    find(find)
+    find(find),
+    verbosity(verbosity)
  {} 
 
 
@@ -42,7 +44,7 @@ typename T::VertexHandle NOpenMeshBuild<T>::add_vertex_unique(typename T::Point 
 
 
 template <typename T>
-typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0, typename T::VertexHandle v1, typename T::VertexHandle v2, int verbosity )  
+typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0, typename T::VertexHandle v1, typename T::VertexHandle v2, int identity )  
 {
     typedef typename T::FaceHandle FH ; 
 
@@ -67,19 +69,23 @@ typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,
                   << " " << std::setw(5) << v0 
                   << " " << std::setw(5) << v1 
                   << " " << std::setw(5) << v2
+                  << " id " << std::setw(5) << identity 
                   << std::endl ;  
 
     }
 
     f = mesh.add_face(v0,v1,v2);
     assert(mesh.is_valid_handle(f));
+
+    if(identity > -1 ) prop.set_identity(f, identity ) ;
+
     return f ; 
 }
 
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3, int verbosity )
+void NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 )
 {
    /*
               3-------2
@@ -89,8 +95,8 @@ void NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,typename T::Vertex
               0-------1  
    */
 
-    add_face_(v0,v1,v2, verbosity);
-    add_face_(v2,v3,v0, verbosity);
+    add_face_(v0,v1,v2, -1);
+    add_face_(v2,v3,v0, -1);
 }
 
 
@@ -137,7 +143,7 @@ bool NOpenMeshBuild<T>::is_consistent_face_winding(typename T::VertexHandle v0,t
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, int verbosity, int ctrl, float epsilon )  
+void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, int ctrl, float epsilon )  
 {
    /*
    Singularities like the poles of a latitude/longitude sphere parametrization 
@@ -217,7 +223,6 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
             VH v01 = vh[i01] ;
             VH v11 = vh[i11] ;
 
-
             if(verbosity > 2)
             std::cout 
                   << " s " << std::setw(3)  << s
@@ -230,11 +235,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
                   << std::endl 
                   ;
 
-
-
          /*
-
-
             v
             ^
             4---5---6---7---8
@@ -290,39 +291,41 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
             if( umin_degenerate || umax_degenerate ) assert( umin_degenerate ^ umax_degenerate ) ;
 
 
+            int identity = -1 ; 
+
             if( vmax_degenerate )
             {
                 if(verbosity > 2)
                 std::cout << "vmax_degenerate" << std::endl ; 
-                add_face_( v00,v10,v11, verbosity );   // A (or C)
+                add_face_( v00,v10,v11, identity );   // A (or C)
             } 
             else if ( vmin_degenerate )
             {
                 if(verbosity > 2)
                 std::cout << "vmin_degenerate" << std::endl ; 
-                add_face_( v11, v01, v10, verbosity  );  // D (or B)
+                add_face_( v11, v01, v10, identity  );  // D (or B)
             }
             else if ( umin_degenerate )
             {
                 if(verbosity > 2)
                 std::cout << "umin_degenerate" << std::endl ; 
-                add_face_( v00,v10,v11, verbosity );   // A (or D)
+                add_face_( v00,v10,v11, identity );   // A (or D)
             }
             else if ( umax_degenerate )
             {
                 if(verbosity > 2)
                 std::cout << "umax_degenerate" << std::endl ; 
-                add_face_( v00, v10, v01, verbosity ); // C  (or B)
+                add_face_( v00, v10, v01, identity ); // C  (or B)
             } 
             else if ((u + v) % 2)  // odd
             {
-                add_face_( v00,v10,v11, verbosity  ); // A
-                add_face_( v11,v01,v00, verbosity  ); // B
+                add_face_( v00,v10,v11, identity  ); // A
+                add_face_( v11,v01,v00, identity  ); // B
             } 
             else                 // even
             {
-                add_face_( v00, v10, v01, verbosity  ); // C
-                add_face_( v11, v01, v10, verbosity  ); // D
+                add_face_( v00, v10, v01, identity  ); // C
+                add_face_( v11, v01, v10, identity  ); // D
             }
         }
         }
@@ -331,7 +334,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
 
 
 template <typename T>
-void NOpenMeshBuild<T>::euler_check(const nnode* node, int level, int verbosity )
+void NOpenMeshBuild<T>::euler_check(const nnode* node, int level )
 {
     int nu = 1 << level ; 
     int nv = 1 << level ; 
@@ -469,7 +472,7 @@ std::string NOpenMeshBuild<T>::desc_inside_other()
 
  
 template <typename T>
-void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, int verbosity, float epsilon )
+void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, float epsilon )
 {
     typedef typename T::FaceHandle          FH ; 
     typedef typename T::VertexHandle        VH ; 
@@ -498,7 +501,9 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, int 
             } 
             assert( fvert == 3 );
 
-            FH f = add_face_( nvh[0], nvh[1], nvh[2], verbosity ); 
+            int identity = -1 ; 
+
+            FH f = add_face_( nvh[0], nvh[1], nvh[2], identity ); 
             if(!mesh.is_valid_handle(f)) badface++ ; 
 
         }
@@ -515,7 +520,7 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, int 
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_hexpatch(int verbosity)
+void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 {
     if(verbosity > 1) LOG(info) << "add_hexpatch" ; 
  
@@ -533,7 +538,7 @@ void NOpenMeshBuild<T>::add_hexpatch(int verbosity)
     P p[19] ; 
     V v[19];
 
-    enum { A=10, B=11, C=12, D=13, E=14, F=15, G=16, H=17, I=18 } ; 
+    enum { A=10, B=11, C=12, D=13, E=14, F=15, G=16, H=17, I=18, J=19, K=20, L=21, M=22, N=23, O=24 } ; 
 
     p[0] = P( 0,  0,  z);
 
@@ -549,61 +554,56 @@ void NOpenMeshBuild<T>::add_hexpatch(int verbosity)
     p[H] = P(            0, -2.*s*sa[1],z) ; 
 
     /*
-    19 verts : 12 around boundary, 7 in interior
-    24 faces : 12 with edge on boundary 
-
-
-                 9---e---8
-                / \ / \ / \
-               f---3---2---d
-              / \ / \ / \ / \
-             a---4---0---1---7
-              \ / \ / \ / \ /
-               g---5---6---i
-                \ / \ / \ /
-                 b---h---c
+    19 verts :                                 24 faces
+    12 around boundary, 7 in interior          12 with edge on boundary
+                                                                     
+                 9---e---8                        +---+---+           
+                / \ / \ / \                      /d\c/b\a/9\
+               f---3---2---d                    +---+---+---+
+              / \ / \ / \ / \                  /f\e/3\2/1\8/7\
+             a---4---0---1---7                +---+---+---+---+
+              \ / \ / \ / \ /                  \g/h\4/5\6/n\o/
+               g---5---6---i                    +---5---6---i
+                \ / \ / \ /                      \i/j\k/l\m/
+                 b---h---c                        +---+---+        
     */             
 
-
-    bool inner_only = false ; 
     unsigned vlast = inner_only ? 6 : I ; 
 
     for(unsigned i=0 ; i <=vlast ; i++) v[i] = mesh.add_vertex(p[i]) ;
 
-
-    add_face_(v[0],v[1],v[2], verbosity);
-    add_face_(v[0],v[2],v[3], verbosity);
-    add_face_(v[0],v[3],v[4], verbosity);
-    add_face_(v[0],v[4],v[5], verbosity);
-    add_face_(v[0],v[5],v[6], verbosity);
-    add_face_(v[0],v[6],v[1], verbosity);
-
+    add_face_(v[0],v[1],v[2], 1);
+    add_face_(v[0],v[2],v[3], 2);
+    add_face_(v[0],v[3],v[4], 3);
+    add_face_(v[0],v[4],v[5], 4);
+    add_face_(v[0],v[5],v[6], 5);
+    add_face_(v[0],v[6],v[1], 6);
 
     if(!inner_only)
     {
-        add_face_(v[1],v[7],v[D], verbosity);
-        add_face_(v[1],v[D],v[2], verbosity);
-        add_face_(v[2],v[D],v[8], verbosity);
+        add_face_(v[1],v[7],v[D], 7);
+        add_face_(v[1],v[D],v[2], 8);
+        add_face_(v[2],v[D],v[8], 9);
 
-        add_face_(v[2],v[8],v[E], verbosity);
-        add_face_(v[2],v[E],v[3], verbosity);
-        add_face_(v[E],v[9],v[3], verbosity);
+        add_face_(v[2],v[8],v[E], A);
+        add_face_(v[2],v[E],v[3], B);
+        add_face_(v[E],v[9],v[3], C);
 
-        add_face_(v[9],v[F],v[3], verbosity);
-        add_face_(v[3],v[F],v[4], verbosity);
-        add_face_(v[F],v[A],v[4], verbosity);
+        add_face_(v[9],v[F],v[3], D);
+        add_face_(v[3],v[F],v[4], E);
+        add_face_(v[F],v[A],v[4], F);
 
-        add_face_(v[4],v[A],v[G], verbosity);
-        add_face_(v[4],v[G],v[5], verbosity);
-        add_face_(v[5],v[G],v[B], verbosity);
+        add_face_(v[4],v[A],v[G], G);
+        add_face_(v[4],v[G],v[5], H);
+        add_face_(v[5],v[G],v[B], I);
 
-        add_face_(v[5],v[B],v[H], verbosity);
-        add_face_(v[5],v[H],v[6], verbosity);
-        add_face_(v[6],v[H],v[C], verbosity);
+        add_face_(v[5],v[B],v[H], J);
+        add_face_(v[5],v[H],v[6], K);
+        add_face_(v[6],v[H],v[C], L);
 
-        add_face_(v[6],v[C],v[I], verbosity);
-        add_face_(v[1],v[6],v[I], verbosity);
-        add_face_(v[1],v[I],v[7], verbosity);
+        add_face_(v[6],v[C],v[I], M);
+        add_face_(v[1],v[6],v[I], N);
+        add_face_(v[1],v[I],v[7], O);
     }
 }
 
@@ -612,7 +612,7 @@ void NOpenMeshBuild<T>::add_hexpatch(int verbosity)
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_tetrahedron(int verbosity)
+void NOpenMeshBuild<T>::add_tetrahedron()
 {
     if(verbosity > 1) LOG(info) << "add_tetrahedron" ; 
 
@@ -653,16 +653,17 @@ void NOpenMeshBuild<T>::add_tetrahedron(int verbosity)
     vh[2] = mesh.add_vertex(P(-s,  s, -s));
     vh[3] = mesh.add_vertex(P(-s, -s,  s));
 
-    add_face_(vh[0],vh[3],vh[1]);
-    add_face_(vh[3],vh[2],vh[1]);
-    add_face_(vh[0],vh[2],vh[3]);
-    add_face_(vh[2],vh[0],vh[1]);
+    int identity = -1 ;  
+    add_face_(vh[0],vh[3],vh[1],identity);
+    add_face_(vh[3],vh[2],vh[1],identity);
+    add_face_(vh[0],vh[2],vh[3],identity);
+    add_face_(vh[2],vh[0],vh[1],identity);
 }
 
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_cube(int verbosity)
+void NOpenMeshBuild<T>::add_cube()
 {
     if(verbosity > 1) LOG(info) << "add_cube" ; 
     /*

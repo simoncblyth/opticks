@@ -26,7 +26,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, f
     prop(mesh),
     desc(mesh, prop),
     find(mesh, prop),
-    build(mesh, prop, desc, find),
+    build(mesh, prop, desc, find, verbosity),
     subdiv(mesh, prop, desc, find, build, verbosity, epsilon ),
 
     node(node), 
@@ -92,7 +92,7 @@ void NOpenMesh<T>::subdiv_test()
         for(unsigned i=0 ; i < n_target_faces ; i++) 
         {
             FH fh = target_faces[i] ;
-            subdiv.manual_subdivide_face(fh,  NULL );
+            subdiv.sqrt3_split_r(fh,  NULL );
         }
     }
 
@@ -141,8 +141,8 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
     if(!combination)
     {
-        build.add_parametric_primitive(node, level, verbosity, ctrl, epsilon ); // adds unique vertices and faces to build out the parametric mesh  
-        build.euler_check(node, level, verbosity );
+        build.add_parametric_primitive(node, level, ctrl, epsilon ); // adds unique vertices and faces to build out the parametric mesh  
+        build.euler_check(node, level);
     }
     else
     {
@@ -207,18 +207,18 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
         if(node->type == CSG_UNION)
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
         }
         else if(node->type == CSG_INTERSECTION)
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
         }
         else if(node->type == CSG_DIFFERENCE )
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, verbosity, epsilon  );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, verbosity, epsilon  );
+            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon  );
+            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
         }
     }
 }
@@ -226,7 +226,7 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
 
 template <typename T>
-void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup )
+void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv )
 {
 
     typedef typename T::FaceHandle          FH ; 
@@ -250,21 +250,14 @@ void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv, 
                   << " nsubdiv " << nsubdiv
                   << " round " << round 
                   << " nbf: " << border_faces.size()
-                  << " creating_soup " << creating_soup
                   ;
 
 
         for(unsigned i=0 ; i < border_faces.size(); i++) 
         {
             FH fh = border_faces[i] ;
-            if(creating_soup)
-            {
-                subdiv.manual_subdivide_face_creating_soup(fh, other);
-            }
-            else
-            {        
-                subdiv.manual_subdivide_face(fh, other); 
-            }
+            //subdiv.create_soup(fh, other);
+            subdiv.sqrt3_split_r(fh, other); 
         }
         mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
     }
@@ -483,7 +476,7 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::cube(int level, int verbosity, int ctrl)
 {
     NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    m->build.add_cube(verbosity);
+    m->build.add_cube();
     m->check();
     return m ; 
 }
@@ -492,7 +485,7 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::tetrahedron(int level, int verbosity, int ctrl)
 {
     NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    m->build.add_tetrahedron(verbosity);
+    m->build.add_tetrahedron();
     //std::cout << m->desc.desc() << std::endl ; 
     m->check();
     return m ; 
@@ -502,7 +495,8 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::hexpatch(int level, int verbosity, int ctrl)
 {
     NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    m->build.add_hexpatch(verbosity);
+    bool inner_only = ctrl == 66 ? true : false ; 
+    m->build.add_hexpatch(inner_only );
     m->check();
     return m ; 
 }

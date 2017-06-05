@@ -40,8 +40,8 @@ struct NPY_API  NOpenMeshSubdiv
 
     typename T::VertexHandle centroid_split_face(typename T::FaceHandle fh );
 
-    void manual_subdivide_face(              typename T::FaceHandle fh, const nnode* other );
-    void manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other );
+    void sqrt3_split_r( typename T::FaceHandle fh, const nnode* other );
+    void create_soup(typename T::FaceHandle fh, const nnode* other );
 
 
 

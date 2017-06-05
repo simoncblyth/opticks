@@ -86,13 +86,8 @@ void NOpenMeshSubdiv<T>::refine(typename T::FaceHandle fh)
 
 
 
-
-
-
-
-
 template <typename T>
-void NOpenMeshSubdiv<T>::manual_subdivide_face_creating_soup(typename T::FaceHandle fh, const nnode* other  )
+void NOpenMeshSubdiv<T>::create_soup(typename T::FaceHandle fh, const nnode* other  )
 {
 /*
 Uniform subdivision of single triangle face
@@ -245,7 +240,7 @@ typename T::VertexHandle NOpenMeshSubdiv<T>::centroid_split_face(typename T::Fac
 
 
 template <typename T>
-void NOpenMeshSubdiv<T>::manual_subdivide_face(typename T::FaceHandle fh, const nnode* /*other*/ )
+void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, const nnode* other )
 {
 /*
 
@@ -299,6 +294,7 @@ TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
     typedef typename T::VertexOHalfedgeIter   VOHI ;
 
 
+    int base_id = prop.get_identity( fh ); 
     int base_gen = prop.get_generation( fh ); 
     int new_gen = base_gen + 1 ; 
 
@@ -308,21 +304,21 @@ TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
     {
         VH cvh = centroid_split_face( fh );
 
+        int iface = 0 ; 
         for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) 
         {
             HEH heh = *vohi ; 
             FH  nfh = mesh.face_handle(heh) ;  // new faces 
             assert( nfh.is_valid() );
 
+            iface++ ; 
+            prop.set_identity( nfh, base_id*100 + iface ) ;
             prop.set_generation(nfh, new_gen ) ;
-            //if (!nfh.is_valid()) continue ;
 
             HEH nheh = mesh.next_halfedge_handle(heh);
             HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
-        
             FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
          
-            //assert(ofh.is_valid());
             if(ofh.is_valid())
             {
                 int adjacent_gen = prop.get_generation(ofh) ;
@@ -340,45 +336,35 @@ TODO: study how other adaptive subdiv are done, eg how to hold on to old verts.
 
                          prop.increment_generation(f0);
                          prop.increment_generation(f1);
-
                      } 
                 }
             }
             else
             {
-                std::cout << "invalid ofh ?" << std::endl ; 
+                std::cout << "invalid ofh : " 
+                          << " base_id " << base_id 
+                          << " iface " << iface
+                          << std::endl ; 
             }
-
-
         }
     }
-
-
-
-
-
-
-
-
-/*
-        if(other)
+    else
+    {
+        HEH heh = mesh.halfedge_handle(fh); 
+        HEH nheh = mesh.next_halfedge_handle(heh);
+        HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  // same edge, opposite direction to give access to adjacent face
+        FH  ofh = mesh.face_handle(oheh) ;  // adjacent faces   
+ 
+        if(ofh.is_valid())
         {
-            HEH a0 = mesh.halfedge_handle(eh, 0);
-            HEH a1 = mesh.halfedge_handle(eh, 1);
-
-            FH  f0 = mesh.face_handle(a0);
-            FH  f1 = mesh.face_handle(a1);
-
-            mark_face(f0, other);
-            mark_face(f1, other);
+            int adjacent_gen = prop.get_generation(ofh) ; 
+            if(adjacent_gen == base_gen - 2)
+            {
+                sqrt3_split_r(ofh, other) ;  
+            }
         }
-*/
-
-    //std::cout << "desc(after)" << desc.desc()  << std::endl ; 
-    //std::cout << "after subdivide_face " << brief() << std::endl ;   
-    //std::cout << "fh(after) " << desc(fh) << std::endl ;  
+    }
 }
-
 
 
 template struct NOpenMeshSubdiv<NOpenMeshType> ;

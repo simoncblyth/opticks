@@ -38,7 +38,7 @@ struct NPY_API  NOpenMesh : NTriSource
 
     void subdiv_test() ;
     void subdiv_interior_test() ;
-    void subdivide_border_faces(const nnode* other, unsigned nsubdiv, bool creating_soup=false);
+    void subdivide_border_faces(const nnode* other, unsigned nsubdiv );
 
 
     // NTriSource interface

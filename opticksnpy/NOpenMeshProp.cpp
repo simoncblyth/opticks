@@ -8,6 +8,9 @@ template <typename T>
 const char* NOpenMeshProp<T>::F_GENERATION = "f_generation" ; 
 
 template <typename T>
+const char* NOpenMeshProp<T>::F_IDENTITY = "f_identity" ; 
+
+template <typename T>
 const char* NOpenMeshProp<T>::V_SDF_OTHER = "v_sdf_other" ; 
 
 template <typename T>
@@ -29,14 +32,31 @@ NOpenMeshProp<T>::NOpenMeshProp( T& mesh )
 
 
 
+
 template <typename T>
-int NOpenMeshProp<T>::get_f_inside_other( typename T::FaceHandle fh ) const 
+int NOpenMeshProp<T>::get_identity( typename T::FaceHandle fh ) const 
+{
+    return mesh.property(f_identity, fh) ; 
+}
+
+template <typename T>
+void NOpenMeshProp<T>::set_identity( typename T::FaceHandle fh, int identity )
+{
+    mesh.property(f_identity, fh) = identity ; 
+}
+
+
+
+
+
+template <typename T>
+int NOpenMeshProp<T>::get_facemask( typename T::FaceHandle fh ) const 
 {
     return mesh.property(f_inside_other, fh) ; 
 }
 
 template <typename T>
-void NOpenMeshProp<T>::set_f_inside_other( typename T::FaceHandle fh, int facemask )
+void NOpenMeshProp<T>::set_facemask( typename T::FaceHandle fh, int facemask )
 {
     mesh.property(f_inside_other, fh) = facemask ; 
 }
@@ -44,7 +64,7 @@ void NOpenMeshProp<T>::set_f_inside_other( typename T::FaceHandle fh, int facema
 template <typename T>
 bool NOpenMeshProp<T>::is_border_face(typename T::FaceHandle fh ) const 
 {
-    int facemask = get_f_inside_other( fh );
+    int facemask = get_facemask( fh );
     return !( facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ) ; 
 }
 
