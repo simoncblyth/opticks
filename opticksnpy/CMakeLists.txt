@@ -21,8 +21,10 @@ find_package(OpenMesh REQUIRED)
 find_package(ImplicitMesher) 
 find_package(DualContouringSample) 
 find_package(YoctoGL) 
+find_package(CSGBSP) 
 
-message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
+message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
+#message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
 
 
 include_directories(
@@ -38,6 +40,7 @@ include_directories(
    ${ImplicitMesher_INCLUDE_DIRS}
    ${DualContouringSample_INCLUDE_DIRS}
    ${YoctoGL_INCLUDE_DIRS}
+   ${CSGBSP_INCLUDE_DIRS}
 )
 
 add_definitions( 
@@ -51,10 +54,8 @@ add_definitions(
    ${ImplicitMesher_DEFINITIONS}
    ${DualContouringSample_DEFINITIONS}
    ${YoctoGL_DEFINITIONS}
+   ${CSGBSP_DEFINITIONS}
 )
-
-
-
 
 set(LIBRARIES
    ${OpticksBoost_LIBRARIES}
@@ -67,6 +68,7 @@ set(LIBRARIES
    ${ImplicitMesher_LIBRARIES}
    ${DualContouringSample_LIBRARIES}
    ${YoctoGL_LIBRARIES}
+   ${CSGBSP_LIBRARIES}
 )
 
 if(UNIX)
@@ -190,6 +192,8 @@ set(SOURCES
     NOpenMeshFind.cpp
     NOpenMeshProp.cpp
     NOpenMeshBuild.cpp
+
+    NCSGBSP.cpp
 
     NHybridMesher.cpp
     Nuv.cpp

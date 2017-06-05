@@ -792,13 +792,15 @@ from opticks.analytic.csg import CSG
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="2" )
-sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", poly="HY", level="4"  )
+box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", poly="BSP", level="2" )
+sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", poly="BSP", level="4"  )
 
-obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4"  )
+obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="BSP", level="4", verbosity="1"  )
 
-#CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
-CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
+# only root node poly is obeyed ?
+
+CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
+#CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
 #CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
 
 EOP

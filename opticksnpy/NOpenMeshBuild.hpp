@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 
+struct NTriSource ; 
 struct nnode ; 
 
 #include "NOpenMeshType.hpp"
@@ -17,6 +18,7 @@ struct NPY_API  NOpenMeshBuild
 {
     typedef typename T::VertexHandle VH ; 
     typedef typename T::FaceHandle   FH ; 
+    typedef typename T::Point         P ; 
 
     NOpenMeshBuild( T& mesh, 
                     NOpenMeshProp<T>& prop, 
@@ -35,6 +37,7 @@ struct NPY_API  NOpenMeshBuild
     void euler_check(const nnode* node, int level );
 
     void copy_faces(const NOpenMesh<T>* other, int facemask, float epsilon );
+    void copy_faces(const NTriSource*   other, float epsilon  );
 
     void mark_faces(const nnode* other);
     void mark_face(FH fh, const nnode* other);
@@ -47,6 +50,7 @@ struct NPY_API  NOpenMeshBuild
 
 
     T& mesh  ;
+
     NOpenMeshProp<T>& prop ;
     const NOpenMeshDesc<T>& desc ;
     const NOpenMeshFind<T>& find ;
@@ -54,8 +58,9 @@ struct NPY_API  NOpenMeshBuild
 
     std::map<int,int> f_inside_other_count ; 
 
-
 };
+
+
  
 
 

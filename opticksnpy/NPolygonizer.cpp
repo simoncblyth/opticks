@@ -26,6 +26,44 @@
 
 #include "PLOG.hh"
 
+
+NPolyMode_t NPolygonizer::PolyMode(const char* poly)
+{
+    NPolyMode_t mode = POLY_NONE ; 
+
+    if(     strcmp(poly, "MC")  == 0)  mode = POLY_MC ;
+    else if(strcmp(poly, "DCS") == 0)  mode = POLY_DCS ;
+    else if(strcmp(poly, "IM")  == 0)  mode = POLY_IM ; 
+    else if(strcmp(poly, "HY")  == 0)  mode = POLY_HY ; 
+    else if(strcmp(poly, "BSP") == 0)  mode = POLY_BSP ; 
+
+    return mode ; 
+}
+
+
+const char* NPolygonizer::POLY_NONE_  = "POLY_NONE" ; 
+const char* NPolygonizer::POLY_MC_  = "POLY_MC" ; 
+const char* NPolygonizer::POLY_DCS_ = "POLY_DCS" ; 
+const char* NPolygonizer::POLY_IM_  = "POLY_IM" ; 
+const char* NPolygonizer::POLY_HY_  = "POLY_HY" ; 
+const char* NPolygonizer::POLY_BSP_ = "POLY_BSP" ; 
+
+const char* NPolygonizer::PolyModeString(NPolyMode_t polymode)
+{
+    const char* s = NULL ;
+    switch( polymode)
+    {
+       case POLY_NONE : s = POLY_NONE_ ; break ; 
+       case POLY_MC   : s = POLY_MC_ ; break ; 
+       case POLY_DCS  : s = POLY_DCS_ ; break ; 
+       case POLY_IM   : s = POLY_IM_ ; break ; 
+       case POLY_HY   : s = POLY_HY_ ; break ; 
+       case POLY_BSP  : s = POLY_BSP_ ; break ; 
+    }
+    return s ; 
+}
+
+
 NPolygonizer::NPolygonizer(NCSG* csg)
     :
     m_csg(csg), 
@@ -34,16 +72,28 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_meta(csg->getMetaParameters()),
     m_verbosity(m_meta->get<int>("verbosity", "0" )),
     m_index(m_csg->getIndex()),
-    m_poly(NULL)
+    m_poly(NULL),
+    m_polymode(POLY_NONE)
 {
     assert(m_root);
     assert(m_meta);
 
     std::string poly = m_meta->get<std::string>("poly", "DCS");
+
     m_poly = strdup(poly.c_str());
+    m_polymode = PolyMode(m_poly);
+
 
     if(m_verbosity > 0)
-    m_meta->dump("NPolygonizer::NPolygonizer(meta)");
+    { 
+        m_meta->dump("NPolygonizer::NPolygonizer(meta)");
+
+        LOG(info) << "NPolygonizer::NPolygonizer"
+                  << " poly " << m_poly 
+                  << " polymode " << m_polymode
+                  << " PolyModeString " << PolyModeString(m_polymode) 
+                  ;
+    }
 
 }
 
@@ -55,34 +105,23 @@ NTrianglesNPY* NPolygonizer::polygonize()
     LOG(info) << "NPolygonizer::polygonize"
               << " treedir " << m_csg->getTreeDir()
               << " poly " << m_poly 
+              << " polymode " << m_polymode 
+              << " PolyModeString " << PolyModeString(m_polymode) 
               << " verbosity " << m_verbosity 
               << " index " << m_index
               ;
 
-
     NTrianglesNPY* tris = NULL ; 
 
-    if( strcmp(m_poly, "MC") == 0)
-    {   
-        tris = marchingCubesNPY();
-    }   
-    else if(strcmp(m_poly, "DCS") == 0)
-    {   
-        tris = dualContouringSample(); 
-    }   
-    else if(strcmp(m_poly, "IM") == 0)
+    switch( m_polymode )
     {
-        tris = implicitMesher(); 
+        case POLY_MC:  tris = marchingCubesNPY()    ; break ; 
+        case POLY_DCS: tris = dualContouringSample(); break ; 
+        case POLY_IM:  tris = implicitMesher()      ; break ;      
+        case POLY_HY:  tris = hybridMesher(m_polymode) ; break ;    
+        case POLY_BSP: tris = hybridMesher(m_polymode) ; break ;    
+        default:   assert(0);
     }
-    else if(strcmp(m_poly, "HY") == 0)
-    {
-        tris = hybridMesher(); 
-    }
-    else
-    {
-        assert(0);
-    }
-
     bool valid = checkTris(tris);
 
     if(!valid)
@@ -169,12 +208,21 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 }
 
 
-NTrianglesNPY* NPolygonizer::hybridMesher()
+NTrianglesNPY* NPolygonizer::hybridMesher(NPolyMode_t polymode)
 {
+    if(m_verbosity > 0 )
+    LOG(info) << "NPolygonizer::hybridMesher"
+              << " polymode " << polymode 
+              << " PolyModeString " << PolyModeString(polymode) 
+              ; 
+ 
+
     NTrianglesNPY* tris = NULL ; 
     int   level = m_meta->get<int>("level", "5" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
-    NHybridMesher poly(m_root, level, m_verbosity, ctrl ) ; 
+
+    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode ) ;
+ 
     tris = poly();
     return tris ;
 }

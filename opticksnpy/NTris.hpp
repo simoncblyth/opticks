@@ -3,12 +3,7 @@
 #include <vector>
 #include <string>
 
-
 #include "NTriSource.hpp"
-
-//#include "NGLM.hpp"
-//#include "NPY_API_EXPORT.hh"
-
 
 struct NPY_API NTris : NTriSource
 {
@@ -20,8 +15,10 @@ struct NPY_API NTris : NTriSource
     unsigned get_num_tri() const ;
     unsigned get_num_vert() const ;
     void get_vert( unsigned i, glm::vec3& v ) const ;
-    void get_tri( unsigned i, glm::uvec3& t ) const ;
-    void get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const ;
+    void get_normal( unsigned i, glm::vec3& n ) const ;
+    void get_uv(  unsigned i, glm::vec3& uv ) const  ;
+    void get_tri( unsigned j, glm::uvec3& t ) const ;
+    void get_tri( unsigned j, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const ;
 
     void dump(const char* msg="Tris::dump") const ;
     std::string brief() const ;

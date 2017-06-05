@@ -9,50 +9,63 @@
 #include "PLOG.hh"
 
 
-NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level , int verbosity, int ctrl )
+NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level , int verbosity, int ctrl, NPolyMode_t polymode )
 {
+    assert(polymode == POLY_HY || polymode == POLY_BSP) ;
+    NOpenMeshMode_t meshmode = polymode == POLY_HY ? COMBINE_HYBRID : COMBINE_CSGBSP ; 
+
     NOpenMesh<NOpenMeshType>* mesh = NULL ; 
+
+    typedef NOpenMesh<NOpenMeshType> MESH ; 
+
 
     if(verbosity > 0)
     LOG(info) << "NHybridMesher::make_mesh"
               << " level " << level 
               << " verbosity " << verbosity
               << " ctrl " << ctrl
+              << " polymode " << polymode
+              << " polymode " << NPolygonizer::PolyModeString(polymode)
+              << " meshmode " << meshmode
+              << " MeshModeString " << MESH::MeshModeString(meshmode) 
               ;
 
-    switch(ctrl)
+    if(ctrl == 0)
     {
-       case 0:
-              mesh = new NOpenMesh<NOpenMeshType>(node, level, verbosity, ctrl )  ;
-              break ; 
-       case 1: 
-              mesh = new NOpenMesh<NOpenMeshType>(node, level, verbosity, ctrl )  ;
-              mesh->subdiv_test() ;
-              break ; 
-       case 4: 
-              mesh = NOpenMesh<NOpenMeshType>::tetrahedron(level, verbosity, ctrl  ) ; 
-              mesh->subdiv_test() ;
-              break ; 
-       case 6: 
-              mesh = NOpenMesh<NOpenMeshType>::cube(level, verbosity, ctrl  ) ; 
-              mesh->subdiv_test() ;
-              break ; 
-       case 66: 
-       case 666: 
-              mesh = NOpenMesh<NOpenMeshType>::hexpatch(level, verbosity, ctrl  ) ; 
-              mesh->subdiv_test() ;
-              break ; 
+         LOG(info) << " meshmode again " << meshmode ;   
+         mesh = new MESH(node, level, verbosity, ctrl, meshmode )  ;
+    }
+    else
+    {
+        switch(ctrl)
+        {
+           case 4: 
+                  mesh = MESH::tetrahedron(level, verbosity, ctrl  ) ; 
+                  mesh->subdiv_test() ;
+                  break ; 
+           case 6: 
+                  mesh = MESH::cube(level, verbosity, ctrl  ) ; 
+                  mesh->subdiv_test() ;
+                  break ; 
+           case 66: 
+                  mesh = MESH::hexpatch_inner(level, verbosity, ctrl  ) ; 
+                  mesh->subdiv_test() ;
+                  break ; 
+           case 666: 
+                  mesh = MESH::hexpatch(level, verbosity, ctrl  ) ; 
+                  mesh->subdiv_test() ;
+                  break ; 
+        }
     }
     assert(mesh);
     return mesh ; 
 }
 
 
-
-NHybridMesher::NHybridMesher(const nnode* node, int level , int verbosity, int ctrl)
+NHybridMesher::NHybridMesher(const nnode* node, int level , int verbosity, int ctrl, NPolyMode_t polymode )
     :
     m_timer(new Timer),
-    m_mesh(make_mesh(node, level, verbosity, ctrl)),
+    m_mesh(make_mesh(node, level, verbosity, ctrl, polymode)),
     m_bbox( new nbbox(node->bbox()) ), 
     m_verbosity(verbosity),
     m_ctrl(ctrl)

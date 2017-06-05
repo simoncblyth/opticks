@@ -1,4 +1,5 @@
 #include "Nuv.hpp"
+//#include "NOpenMesh.hpp"
 #include "NOpenMeshProp.hpp"
 
 template <typename T>
@@ -43,6 +44,14 @@ void NOpenMeshProp<T>::init()
     set_generation_all(0); // hmm perhaps too soon, no faces yet ?
 }
 
+template <typename T>
+void NOpenMeshProp<T>::update_normals()
+{
+    mesh.request_face_normals();
+    mesh.request_vertex_normals();
+    mesh.update_normals();
+}
+ 
 
 
 
@@ -125,6 +134,22 @@ void NOpenMeshProp<T>::increment_generation( FH fh )
 {
     mesh.property(f_generation, fh)++ ; 
 }
+
+
+template <typename T>
+nuv NOpenMeshProp<T>::get_uv( VH vh ) const 
+{
+    nuv uv = mesh.property(v_parametric, vh) ; 
+    return uv ; 
+}
+
+template <typename T>
+void NOpenMeshProp<T>::set_uv( VH vh, nuv uv )
+{
+    mesh.property(v_parametric, vh) = uv  ; 
+}
+
+
 
 
 

@@ -32,6 +32,21 @@ void NTris::get_vert( unsigned i, glm::vec3& v ) const
 {
     v = verts[i] ; 
 }
+void NTris::get_normal( unsigned /*i*/, glm::vec3& n ) const 
+{
+    n.x = 0  ; 
+    n.y = 0  ; 
+    n.z = 0  ; 
+}
+void NTris::get_uv( unsigned /*i*/, glm::vec3& uv ) const 
+{
+    uv.x = 0  ; 
+    uv.y = 0  ; 
+    uv.z = 0  ; 
+}
+
+
+
 void NTris::get_tri(unsigned i, glm::uvec3& t) const 
 {
     t = tris[i] ; 

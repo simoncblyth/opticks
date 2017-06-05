@@ -10,6 +10,7 @@
 #include "NGLM.hpp"
 #include "Nuv.hpp"
 #include "NNode.hpp"
+#include "NCSGBSP.hpp"
 
 #include "NOpenMesh.hpp"
 #include "NOpenMeshProp.hpp"
@@ -21,7 +22,37 @@
 
 
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, float epsilon)
+const char* NOpenMesh<T>::COMBINE_HYBRID_ = "COMBINE_HYBRID" ; 
+
+template <typename T>
+const char* NOpenMesh<T>::COMBINE_CSGBSP_ = "COMBINE_CSGBSP" ; 
+
+template <typename T>
+const char* NOpenMesh<T>::MeshModeString(NOpenMeshMode_t meshmode)
+{
+    const char* s = NULL ; 
+    if(     meshmode & COMBINE_HYBRID) s = COMBINE_HYBRID_  ;
+    else if(meshmode & COMBINE_CSGBSP) s = COMBINE_CSGBSP_  ;
+    return s ; 
+}
+
+
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::spawn_left()
+{
+    return new NOpenMesh<T>(node->left, level, verbosity, ctrl, meshmode, epsilon ) ;
+}
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::spawn_right()
+{
+    return new NOpenMesh<T>(node->left, level, verbosity, ctrl, meshmode, epsilon ) ;
+}
+
+
+ 
+
+template <typename T>
+NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, NOpenMeshMode_t meshmode, float epsilon)
     :
     prop(mesh),
     desc(mesh, prop),
@@ -33,6 +64,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, f
     level(level), 
     verbosity(verbosity), 
     ctrl(ctrl), 
+    meshmode(meshmode),
     epsilon(epsilon),
     nsubdiv(1),
     leftmesh(NULL),
@@ -45,12 +77,17 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, f
 template <typename T>
 void NOpenMesh<T>::init()
 {
-    if(node)
-    {
-        build_parametric(); 
-        check();
-    }
+    if(!node) return ; 
+
+    LOG(info) << "NOpenMesh<T>::init()"
+              << " meshmode " << meshmode 
+              << " MeshModeString " << MeshModeString(meshmode) 
+              ; 
+
+    build_csg();
+    check();
 }
+
 
 template <typename T>
 void NOpenMesh<T>::check()
@@ -127,7 +164,7 @@ void NOpenMesh<T>::subdiv_test()
 
 
 template <typename T>
-void NOpenMesh<T>::build_parametric()
+void NOpenMesh<T>::build_csg()
 {
 /*
 
@@ -164,81 +201,119 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     else
     {
         assert(node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE );
-   
-        typedef NOpenMesh<T> Mesh ; 
-        leftmesh = new Mesh(node->left, level, verbosity, epsilon) ; 
-        rightmesh = new Mesh(node->right, level, verbosity, epsilon) ; 
 
-        LOG(info) << "build_parametric" 
-                  << " leftmesh " << leftmesh
-                  << " rightmesh " << rightmesh
-                   ;
+        LOG(info) << " making leftmesh rightmesh "
+                  << " meshmode " << meshmode
+                  << " COMBINE_HYBRID " << COMBINE_HYBRID
+                  << " COMBINE_CSGBSP " << COMBINE_CSGBSP
+                  << " MeshModeString " << MeshModeString(meshmode)
+                  ; 
 
-        // initial meshes should be closed with no boundary loops
-        assert( leftmesh->find.find_boundary_loops() == 0) ;   
-        assert( rightmesh->find.find_boundary_loops() == 0) ;  
+        leftmesh = spawn_left() ; 
+        rightmesh = spawn_right() ; 
 
-        leftmesh->build.mark_faces( node->right );
-        LOG(info) << "[0] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
-
-        rightmesh->build.mark_faces( node->left );
-        LOG(info) << "[0] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
-
-        /**
-
-        0. sub-object mesh tris are assigned a facemask property from (0-7) (000b-111b) 
-           indicating whether vertices have negative other sub-object SDF values  
-
-        1. CSG sub-object mesh faces with mixed other sub-object sdf signs (aka border faces) 
-           are subdivided (ie original tris are deleted and replaced with four new smaller ones)
-
-        2. border subdiv is repeated in nsubdiv rounds, increasing mesh "resolution" around the border
-        
-        3. Only triangles with all 3 vertices inside or outside the other sub-object get copied
-           into the composite mesh, this means there is no overlapping/intersection at this stage  
-
-        4. remaining gap between sub-object meshes then needs to be zippered up 
-           to close the composite mesh ???? how exactly 
-     
-        **/
-
-       
-
-        leftmesh->subdivide_border_faces( node->right, nsubdiv );
-        LOG(info) << "[1] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
-
-        rightmesh->subdivide_border_faces( node->left, nsubdiv );
-        LOG(info) << "[1] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
-
-
-        leftmesh->mesh.garbage_collection();  
-        rightmesh->mesh.garbage_collection();  
-
-
-        // despite subdiv should still be closed zero boundary meshes
-        //  BUT WAS GETTING LOADS OF OPEN LOOPS, when using _creating_soup subdiv approach
-
-        assert( leftmesh->find.find_boundary_loops() == 0) ;   
-        assert( rightmesh->find.find_boundary_loops() == 0) ;  
-
-
-        if(node->type == CSG_UNION)
+        if( meshmode & COMBINE_HYBRID )
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
+            combine_hybrid();
         }
-        else if(node->type == CSG_INTERSECTION)
+        else if( meshmode & COMBINE_CSGBSP )
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+            combine_csgbsp() ; 
         }
-        else if(node->type == CSG_DIFFERENCE )
+        else
         {
-            build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon  );
-            build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+            assert(0) ; 
         }
     }
 }
+
+
+
+template <typename T>
+void NOpenMesh<T>::combine_csgbsp()
+{
+    NCSGBSP csgbsp( leftmesh, rightmesh, node->type );
+    build.copy_faces( &csgbsp, epsilon );
+}
+
+
+template <typename T>
+void NOpenMesh<T>::combine_hybrid( )
+{
+    /**
+
+    0. sub-object mesh tris are assigned a facemask property from (0-7) (000b-111b) 
+       indicating whether vertices have negative other sub-object SDF values  
+
+    1. CSG sub-object mesh faces with mixed other sub-object sdf signs (aka border faces) 
+       are subdivided (ie original tris are deleted and replaced with four new smaller ones)
+
+    2. border subdiv is repeated in nsubdiv rounds, increasing mesh "resolution" around the border
+    
+    3. Only triangles with all 3 vertices inside or outside the other sub-object get copied
+       into the composite mesh, this means there is no overlapping/intersection at this stage  
+
+    4. remaining gap between sub-object meshes then needs to be zippered up 
+       to close the composite mesh ???? how exactly 
+ 
+    **/    
+
+    LOG(info) << "combine_hybrid" 
+              << " leftmesh " << leftmesh
+              << " rightmesh " << rightmesh
+               ;
+
+    // initial meshes should be closed with no boundary loops
+    assert( leftmesh->find.find_boundary_loops() == 0) ;   
+    assert( rightmesh->find.find_boundary_loops() == 0) ;  
+
+    leftmesh->build.mark_faces( node->right );
+    LOG(info) << "[0] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
+
+    rightmesh->build.mark_faces( node->left );
+    LOG(info) << "[0] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
+
+   
+
+    leftmesh->subdivide_border_faces( node->right, nsubdiv );
+    LOG(info) << "[1] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
+
+    rightmesh->subdivide_border_faces( node->left, nsubdiv );
+    LOG(info) << "[1] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
+
+
+    leftmesh->mesh.garbage_collection();  
+    rightmesh->mesh.garbage_collection();  
+
+    // despite subdiv should still be closed zero boundary meshes
+    //  BUT WAS GETTING LOADS OF OPEN LOOPS, when using _creating_soup subdiv approach
+
+    assert( leftmesh->find.find_boundary_loops() == 0) ;   
+    assert( rightmesh->find.find_boundary_loops() == 0) ;  
+
+    if(node->type == CSG_UNION)
+    {
+        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
+        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
+    }
+    else if(node->type == CSG_INTERSECTION)
+    {
+        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+    }
+    else if(node->type == CSG_DIFFERENCE )
+    {
+        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon  );
+        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+    }
+}
+
+
+
+
+
+
+
 
 
 
@@ -350,8 +425,12 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
             vh[0] = a_mesh->mesh.from_vertex_handle( heh );
             vh[1] = a_mesh->mesh.to_vertex_handle( heh );
 
-            uv[0] = a_mesh->mesh.property(prop.v_parametric, vh[0]) ; 
-            uv[1] = a_mesh->mesh.property(prop.v_parametric, vh[1]) ; 
+            //uv[0] = a_mesh->mesh.property(prop.v_parametric, vh[0]) ; 
+            //uv[1] = a_mesh->mesh.property(prop.v_parametric, vh[1]) ; 
+
+            uv[0] = a_mesh->prop.get_uv(vh[0]) ; 
+            uv[1] = a_mesh->prop.get_uv(vh[1]) ; 
+
 
             a_pos[0] = a_node->par_pos( uv[0] );
             a_pos[1] = a_node->par_pos( uv[1] );
@@ -440,15 +519,12 @@ unsigned NOpenMesh<T>::get_num_vert() const
     return mesh.n_vertices();
 }
 
+
 template <typename T>
 void NOpenMesh<T>::get_vert( unsigned i, glm::vec3& v   ) const
 {
-    typedef typename T::Point          P ; 
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::FaceHandle     FH ; 
-
-    const VH& vh = mesh.vertex_handle(i) ;
-    const P& p = mesh.point(vh); 
+    const VH vh = mesh.vertex_handle(i) ;
+    const P  p = mesh.point(vh); 
 
     v.x = p[0] ; 
     v.y = p[1] ; 
@@ -456,10 +532,35 @@ void NOpenMesh<T>::get_vert( unsigned i, glm::vec3& v   ) const
 }
 
 template <typename T>
+void NOpenMesh<T>::get_normal( unsigned i, glm::vec3& n   ) const
+{
+    const VH vh = mesh.vertex_handle(i) ;
+    const P  nrm = mesh.normal(vh); 
+
+    n.x = nrm[0] ; 
+    n.y = nrm[1] ; 
+    n.z = nrm[2] ; 
+}
+
+
+
+template <typename T>
+void NOpenMesh<T>::get_uv( unsigned i, glm::vec3& ouv   ) const
+{
+    const VH vh = mesh.vertex_handle(i) ;
+    nuv uv = prop.get_uv( vh );
+
+    ouv.x = uv.u() ;   // <-- currently the integer values
+    ouv.y = uv.v() ; 
+    ouv.z = uv.s() ; 
+}
+
+
+template <typename T>
 void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t   ) const
 {
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::FaceHandle     FH ; 
+    //typedef typename T::VertexHandle   VH ; 
+    //typedef typename T::FaceHandle     FH ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
 
     const FH& fh = mesh.face_handle(i) ;
@@ -512,11 +613,22 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::hexpatch(int level, int verbosity, int ctrl)
 {
     NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    bool inner_only = ctrl == 66 ? true : false ; 
+    bool inner_only = false ; 
     m->build.add_hexpatch(inner_only );
     m->check();
     return m ; 
 }
+
+template <typename T>
+NOpenMesh<T>* NOpenMesh<T>::hexpatch_inner(int level, int verbosity, int ctrl)
+{
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
+    bool inner_only = true ; 
+    m->build.add_hexpatch(inner_only );
+    m->check();
+    return m ; 
+}
+
 
 template struct NOpenMesh<NOpenMeshType> ;
 

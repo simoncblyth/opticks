@@ -200,7 +200,8 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
 
                 if(added)
                 {
-                    mesh.property(prop.v_parametric, vh[vidx] ) = uv   ;
+                    //mesh.property(prop.v_parametric, vh[vidx] ) = uv   ;
+                    prop.set_uv( vh[vidx], uv );
                 } 
          
             }
@@ -469,16 +470,49 @@ std::string NOpenMeshBuild<T>::desc_inside_other()
  
 
 
+template <typename T>
+void NOpenMeshBuild<T>::copy_faces(const NTriSource*   other, float epsilon  )
+{
+    unsigned nvtx = other->get_num_vert();
+    unsigned ntri = other->get_num_tri();
+
+    glm::uvec3 tri ; 
+    glm::vec3 pos ; 
+    //glm::vec3 nrm ; 
+    //glm::vec3 uv ;
+ 
+    std::vector<VH> vhs ; 
+    vhs.reserve(nvtx);
+
+    for(unsigned i=0 ; i < nvtx ; i++)
+    {
+        other->get_vert(i, pos );
+        //other->get_normal(i, nrm );
+        //other->get_uv(i, uv );
+
+         bool added(false);        
+         VH vh = add_vertex_unique(P(pos.x, pos.y, pos.z), added, epsilon);  
+         vhs.push_back(vh); 
+    }
+
+    unsigned badface(0);
+    for(unsigned i=0 ; i < ntri ; i++)
+    {
+        other->get_tri(i, tri );
+
+        int identity = -1 ; 
+        FH f = add_face_( vhs[tri.x], vhs[tri.y], vhs[tri.z], identity ); 
+        if(!mesh.is_valid_handle(f)) badface++ ; 
+    }
+    assert(badface == 0);
+}
 
  
 template <typename T>
 void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, float epsilon )
 {
-    typedef typename T::FaceHandle          FH ; 
-    typedef typename T::VertexHandle        VH ; 
     typedef typename T::FaceIter            FI ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
-    typedef typename T::Point               P ; 
 
 
     unsigned badface(0);
@@ -502,7 +536,6 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
             assert( fvert == 3 );
 
             int identity = -1 ; 
-
             FH f = add_face_( nvh[0], nvh[1], nvh[2], identity ); 
             if(!mesh.is_valid_handle(f)) badface++ ; 
 
@@ -515,6 +548,9 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
     }
 }
  
+
+
+
 
 
 

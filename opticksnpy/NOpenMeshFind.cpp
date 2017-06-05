@@ -133,7 +133,9 @@ bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin )
     for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
     {
         VH vh = *fvi ; 
-        nuv uv = mesh.property(prop.v_parametric, vh) ; 
+        //nuv uv = mesh.property(prop.v_parametric, vh) ; 
+        nuv uv = prop.get_uv(vh) ; 
+
         if(!uv.is_interior(unsigned(margin))) return false ; 
     }
     return true ;  

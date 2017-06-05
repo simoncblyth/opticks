@@ -115,6 +115,7 @@ NYShapeTest.cc
 NOpenMeshTest.cc
 NOpenMeshCombineTest.cc
 NPolygonizerTest.cc
+NCSGBSPTest.cc
 NuvTest.cc
 
 )

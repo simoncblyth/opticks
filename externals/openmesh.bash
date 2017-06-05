@@ -88,6 +88,12 @@ Computer Graphics Group, RWTH Aachen University
 * http://www.lsi.upc.edu/~pere/PapersWeb/SGI/Kobbelt2.pdf
 
 
+Mesh Optimization
+~~~~~~~~~~~~~~~~~~~
+
+* http://hhoppe.com/meshopt.pdf
+
+
 CGAL Subdiv
 ~~~~~~~~~~~~~~~
 

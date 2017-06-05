@@ -8,7 +8,8 @@ struct nuv ;
 template <typename T>
 struct NPY_API  NOpenMeshProp
 {
-    typedef typename T::FaceHandle FH ; 
+    typedef typename T::VertexHandle VH ; 
+    typedef typename T::FaceHandle   FH ; 
 
     enum
     {
@@ -27,6 +28,7 @@ struct NPY_API  NOpenMeshProp
 
     NOpenMeshProp( T& mesh );
     void init();
+    void update_normals();
 
     bool is_border_face( FH fh ) const ;
     int  get_facemask( FH fh ) const ;
@@ -41,6 +43,9 @@ struct NPY_API  NOpenMeshProp
     void set_generation( FH fh, int fgen );
     void increment_generation( FH fh );
     void set_generation_all( int fgen );
+
+    nuv  get_uv( VH vh ) const ; 
+    void set_uv( VH vh, nuv uv )  ; 
 
 
     T& mesh  ;

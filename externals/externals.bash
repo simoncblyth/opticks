@@ -18,6 +18,7 @@ opticksdata-(){      . $(opticks-home)/externals/opticksdata.bash       && optic
 oimplicitmesher-(){  . $(opticks-home)/externals/oimplicitmesher.bash   && oimplicitmesher-env $* ; }
 odcs-(){             . $(opticks-home)/externals/odcs.bash              && odcs-env $* ; }
 oyoctogl-(){         . $(opticks-home)/externals/oyoctogl.bash          && oyoctogl-env $* ; }
+ocsgbsp-(){          . $(opticks-home)/externals/ocsgbsp.bash           && ocsgbsp-env $* ; }
 
 g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
 
