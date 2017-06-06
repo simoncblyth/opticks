@@ -33,6 +33,79 @@ Repo
   gtest unittests 
 
 
+
+Connectivity Traverse 
+-------------------------
+
+Sqrt3 subdiv appears to need face order of the traverse the mesh in ever increasing circles
+of connected faces. 
+
+
+// https://mailman.rwth-aachen.de/pipermail/openmesh/2015-April/001083.html
+// https://mailman.rwth-aachen.de/pipermail/openmesh/2015-April/001084.html
+
+On Wed, Apr 1, 2015 at 9:42 AM, Junwei Huang <jwhuang1982 at gmail.com> wrote:
+
+> Hello,
+> I wonder if there are efficient algorithms/ideas that allow me to visit
+> every vertex or face of a mesh by connectivity. Methods like *for vh in
+> mesh.vertices()* can visit all vertices, but it does not honor the
+> connectivity. For example, the next vertex in the list may not connected at
+> all with the previous vertex. Same problem with *for fh in mesh.faces()*.
+> Other circulators such as *for vh in mesh.vv(vh1)* honor the connectivity
+> for one step only (one ring). How can I get a vertex handle and then access
+> its one-ring neighborhood, 2-ring, 3-ring, till all vertices are visited?
+> Many thanks.
+
+
+You can try a breadth first search. A non-recursive traversal might looks
+something like:
+
+VertexHandle start = ...
+
+enum Color { White, Gray, Black };
+std::vector<Color> vcolor( mesh.n_vertices(), White );
+std::deque<VHandle> Q;
+
+vcolor[start.idx()] = Gray;
+Q.push_back( start );
+
+visit( start );
+
+while( !Q.empty() )
+{
+  VHandle Vi = Q.front(); Q.pop_front();
+
+  for( VOHIter vohit = mesh.voh_iter(Vi); vohit.is_valid(); ++vohit )
+  {
+    VHandle Vj = mesh.to_vertex_handle( *vohit );
+    if( vcolor[Vj.idx()] == White )
+    {
+      vcolor[Vj.idx()] = Gray;
+      visit( Vj );
+      Q.push_back(Vj);
+    }
+    else { ... }
+  } // for halfedge one-ring
+
+  vcolor[Vi.idx()] = Black;
+}
+
+This is based on the implementation of boost::graph::breadth_first_visit in
+the boost graph library and there are plenty of other visiting events that
+can be triggered during this traversal, see their code for reference.
+
+Ron Griswold
+Software Engineer
+Digital Domain
+rgriswold at d2.com
+
+
+
+
+
+
+
 Refs
 -------
 
@@ -977,9 +1050,11 @@ openmesh-dir(){  echo $(openmesh-base)/$(openmesh-name) ; }
 openmesh-bdir(){ echo $(openmesh-base)/$(openmesh-name).build ; }
 
 openmesh-ecd(){  cd $(openmesh-edir); }
-openmesh-cd(){   cd $(openmesh-dir); }
+openmesh-cd(){   cd $(openmesh-dir)/$1 ; }
 openmesh-bcd(){  cd $(openmesh-bdir); }
 openmesh-icd(){  cd $(openmesh-idir); }
+
+openmesh-mcd(){  openmesh-cd src/OpenMesh/Core/Mesh ; }
 
 openmesh-get(){
    local dir=$(dirname $(openmesh-dir)) &&  mkdir -p $dir && cd $dir

@@ -1,6 +1,6 @@
 #include "NOpenMeshFind.hpp"
 
-
+#include <algorithm>  
 #include <iostream>
 #include <iomanip>
 #include <sstream>
@@ -21,6 +21,19 @@ NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop, int verb
     prop(prop),
     verbosity(verbosity)
  {} 
+
+
+
+
+template <typename T>
+struct NOpenMeshFaceOrder
+{
+    typedef typename T::FaceHandle FH  ; 
+    bool operator() (const FH a, const FH b) const 
+    {
+        return  !(a<b) ;
+    }
+};
 
 
 
@@ -62,6 +75,10 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
               << " count " << faces.size()
               << " totface " << totface
               ; 
+
+     NOpenMeshFaceOrder<T> order ; 
+     std::sort( faces.begin(), faces.end(), order );
+
 }
 
 

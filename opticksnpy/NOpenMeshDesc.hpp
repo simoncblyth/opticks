@@ -7,6 +7,12 @@ template <typename T> struct  NOpenMeshProp ;
 template <typename T>
 struct NPY_API  NOpenMeshDesc
 {
+    typedef typename T::EdgeHandle          EH ; 
+    typedef typename T::HalfedgeHandle      HEH ; 
+    typedef typename T::VertexHandle        VH ; 
+    typedef typename T::FaceHandle          FH ; 
+
+
     NOpenMeshDesc( const T& mesh, const NOpenMeshProp<T>& prop );
 
     std::string operator()(const std::vector<typename T::HalfedgeHandle> loop, unsigned mx=10u) const ;

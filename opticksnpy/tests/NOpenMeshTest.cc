@@ -19,9 +19,9 @@ void test_write()
 
     int level = 0 ; 
     int verbosity = 3 ; 
-    int ctrl = 0 ; 
+    int ctrl = 6 ; // cube 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::cube(level, verbosity, ctrl );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl );
     mesh->write(path);
     std::cout << mesh->brief() << std::endl ; 
 }
@@ -33,9 +33,9 @@ void test_hexpatch()
     LOG(info) << "test_hexpatch" ; 
     int level = 0 ; 
     int verbosity = 3 ; 
-    int ctrl = 0 ; 
+    int ctrl = 666 ;  // hexpatch
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::hexpatch(level, verbosity, ctrl  );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl  );
     mesh->dump();
     std::cout << mesh->desc.desc() ;
 }
@@ -46,10 +46,10 @@ void test_cube()
     LOG(info) << "test_cube" ; 
     int level = 0 ; 
     int verbosity = 3 ; 
-    int ctrl = 0 ; 
+    int ctrl = 6 ; 
 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::cube(level, verbosity, ctrl  );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl  );
     mesh->dump();
     std::cout << mesh->desc.desc() ;
 }
@@ -59,10 +59,10 @@ void test_tetrahedron()
     LOG(info) << "test_tetrahedron" ; 
     int level = 0 ; 
     int verbosity = 3 ; 
-    int ctrl = 0 ; 
+    int ctrl = 4 ;  // tetrahedron
 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::tetrahedron( level, verbosity, ctrl );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest( level, verbosity, ctrl );
 
     mesh->dump();
 
@@ -411,7 +411,7 @@ void test_manual_subdivide_face()
  
     FH fh = *m.mesh.faces_begin() ; 
 
-    m.subdiv.sqrt3_split_r(fh, NULL, 0); 
+    m.subdiv.sqrt3_split_r(fh, 0 ); 
 
     std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 

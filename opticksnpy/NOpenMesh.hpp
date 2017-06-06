@@ -34,10 +34,7 @@ struct NPY_API  NOpenMesh : NTriSource
     typedef typename T::VertexHandle   VH ; 
     typedef typename T::FaceHandle     FH ; 
 
-    static NOpenMesh<T>* hexpatch(int level, int verbosity, int ctrl );
-    static NOpenMesh<T>* hexpatch_inner(int level, int verbosity, int ctrl );
-    static NOpenMesh<T>* cube(int level, int verbosity, int ctrl );
-    static NOpenMesh<T>* tetrahedron(int level, int verbosity, int ctrl  ) ;
+    static NOpenMesh<T>* BuildTest(int level, int verbosity, int ctrl );
 
     NOpenMesh<T>* spawn_left();
     NOpenMesh<T>* spawn_right();

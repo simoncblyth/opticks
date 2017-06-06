@@ -98,27 +98,13 @@ void NOpenMesh<T>::check()
 
 
 template <typename T>
-void NOpenMesh<T>::one_subdiv(NOpenMeshFindType select, int param, const nnode* other)
+void NOpenMesh<T>::one_subdiv(NOpenMeshFindType select, int param, const nnode* /*other*/ )
 {
-    std::vector<FH> target_faces ; 
-    find.find_faces( target_faces, select,  param );
+    std::vector<FH> target ; 
+    find.find_faces( target, select,  param );
 
-    unsigned n_target_faces = target_faces.size() ;
+    subdiv.sqrt3_refine( target );
 
-    LOG(info) << "one_subdiv" 
-              << " ctrl " << ctrl 
-              << " verbosity " << verbosity
-              << " n_target_faces " << n_target_faces
-              << desc.desc_euler()
-              ;
-
-    int depth = 0 ; 
-    for(unsigned i=0 ; i < n_target_faces ; i++) 
-    {
-        FH fh = target_faces[i] ;
-        subdiv.sqrt3_split_r(fh,  other, depth );
-    }
-    mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
 }
  
 
@@ -139,6 +125,13 @@ void NOpenMesh<T>::subdiv_test()
     const nnode* other = NULL ; 
 
     one_subdiv(FIND_ALL_FACE, -1, other) ;
+    one_subdiv(FIND_ALL_FACE, -1, other) ;
+
+    //one_subdiv(FIND_IDENTITY_FACE, 101 , other);
+    //one_subdiv(FIND_IDENTITY_FACE, 201 , other);
+
+    //one_subdiv(FIND_ALL_FACE, -1, other) ;
+
     //one_subdiv(FIND_NONBOUNDARY_FACE, -1, other);
     //one_subdiv(FIND_FACEMASK_FACE, -1, other);
 
@@ -572,40 +565,17 @@ void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& 
 // debug shapes
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::cube(int level, int verbosity, int ctrl)
+NOpenMesh<T>* NOpenMesh<T>::BuildTest(int level, int verbosity, int ctrl)
 {
     NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    m->build.add_cube();
-    m->check();
-    return m ; 
-}
- 
-template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::tetrahedron(int level, int verbosity, int ctrl)
-{
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    m->build.add_tetrahedron();
-    //std::cout << m->desc.desc() << std::endl ; 
-    m->check();
-    return m ; 
-}
-
-template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::hexpatch(int level, int verbosity, int ctrl)
-{
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    bool inner_only = false ; 
-    m->build.add_hexpatch(inner_only );
-    m->check();
-    return m ; 
-}
-
-template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::hexpatch_inner(int level, int verbosity, int ctrl)
-{
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
-    bool inner_only = true ; 
-    m->build.add_hexpatch(inner_only );
+    switch(ctrl)
+    {
+       case   3: m->build.add_tripatch()       ; break ; 
+       case   4: m->build.add_tetrahedron()    ; break ; 
+       case   6: m->build.add_cube()           ; break ; 
+       case  66: m->build.add_hexpatch(true)   ; break ; 
+       case 666: m->build.add_hexpatch(false)  ; break ; 
+    }
     m->check();
     return m ; 
 }

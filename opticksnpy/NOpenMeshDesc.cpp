@@ -242,10 +242,7 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::EdgeHandle eh) const
 template <typename T>
 std::string NOpenMeshDesc<T>::operator()(const typename T::HalfedgeHandle heh) const 
 {
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
-    typedef typename T::FaceHandle          FH ; 
-
+    EH eh = mesh.edge_handle( heh ); 
     FH fh = mesh.face_handle( heh ); 
     VH vfr = mesh.from_vertex_handle( heh );
     VH vto = mesh.to_vertex_handle( heh );
@@ -256,8 +253,9 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::HalfedgeHandle heh) c
     std::stringstream ss ; 
     ss 
        << " heh " << std::setw(5) << heh 
+       << " eh " << std::setw(5) << eh 
        << " fh " << std::setw(5) << fh 
-       << " vfr-to: " << vfr << "-" << vto  
+       << " v( " << vfr << ":" << vto << ")"
        << (*this)(loop, 10) 
         ;
 
@@ -268,8 +266,6 @@ template <typename T>
 std::string NOpenMeshDesc<T>::operator()(const typename T::FaceHandle fh) const 
 {
     typedef typename T::ConstFaceHalfedgeIter   FHI ; 
-    typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
 
     bool valid = mesh.is_valid_handle(fh) ;
     int id = valid ? prop.get_identity(fh) : -1 ; 
@@ -309,10 +305,6 @@ void NOpenMeshDesc<T>::dump_vertices(const char* msg) const
     LOG(info) << msg ; 
 
     typedef typename T::Point          P ; 
-    typedef typename T::VertexHandle   VH ; 
-    typedef typename T::HalfedgeHandle HEH ; 
-    typedef typename T::FaceHandle     FH ; 
-    typedef typename T::Vertex         V ; 
     typedef typename T::VertexIter     VI ; 
 
     VI beg = mesh.vertices_begin() ;
@@ -326,7 +318,7 @@ void NOpenMeshDesc<T>::dump_vertices(const char* msg) const
 
         const P& p = mesh.point(vh); 
 
-        const HEH& heh = mesh.halfedge_handle(vh); 
+        const HEH heh = mesh.halfedge_handle(vh); 
         bool heh_valid = mesh.is_valid_handle(heh);
 
         std::cout 
@@ -342,9 +334,10 @@ void NOpenMeshDesc<T>::dump_vertices(const char* msg) const
 
         if(heh_valid)
         {
-            const VH& tvh = mesh.to_vertex_handle(heh);
-            const VH& fvh = mesh.from_vertex_handle(heh);
-            const FH& fh  = mesh.face_handle(heh);
+            const EH eh = mesh.edge_handle(heh); 
+            const VH tvh = mesh.to_vertex_handle(heh);
+            const VH fvh = mesh.from_vertex_handle(heh);
+            const FH fh  = mesh.face_handle(heh);
             bool bnd = mesh.is_boundary(heh);
 
             std::cout  
@@ -352,6 +345,7 @@ void NOpenMeshDesc<T>::dump_vertices(const char* msg) const
                 << std::setw(3) << fvh << "->" 
                 << std::setw(3) << tvh   
                 << " fh " << std::setw(5) << fh  
+                << " eh " << std::setw(5) << eh  
                 << " bnd " << std::setw(5) << bnd 
                 << std::endl ;
         }

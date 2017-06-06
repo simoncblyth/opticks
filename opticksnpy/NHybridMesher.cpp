@@ -36,13 +36,7 @@ NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level
     }
     else
     {
-        switch(ctrl)
-        {
-           case   4: mesh = MESH::tetrahedron(level, verbosity, ctrl  )    ; break ; 
-           case   6: mesh = MESH::cube(level, verbosity, ctrl  )           ; break ; 
-           case  66: mesh = MESH::hexpatch_inner(level, verbosity, ctrl  ) ; break ; 
-           case 666: mesh = MESH::hexpatch(level, verbosity, ctrl  )       ; break ; 
-        }
+        mesh = MESH::BuildTest( level, verbosity, ctrl );
         assert(mesh);
         mesh->subdiv_test() ;
     }

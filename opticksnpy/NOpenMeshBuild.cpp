@@ -31,8 +31,6 @@ NOpenMeshBuild<T>::NOpenMeshBuild(
 template <typename T>
 typename T::VertexHandle NOpenMeshBuild<T>::add_vertex_unique(typename T::Point pt, bool& added, const float epsilon )  
 {
-    typedef typename T::VertexHandle VH ;
-
     VH prior = find.find_vertex_epsilon(pt, epsilon ) ;
 
     bool valid = mesh.is_valid_handle(prior) ;
@@ -44,10 +42,8 @@ typename T::VertexHandle NOpenMeshBuild<T>::add_vertex_unique(typename T::Point 
 
 
 template <typename T>
-typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0, typename T::VertexHandle v1, typename T::VertexHandle v2, int identity )  
+typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0, typename T::VertexHandle v1, typename T::VertexHandle v2, int identity, int permute )  
 {
-    typedef typename T::FaceHandle FH ; 
-
     FH f ; 
     if( v0 == v1 || v0 == v2 || v1 == v2 )
     {
@@ -58,23 +54,43 @@ typename T::FaceHandle NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,
                      ;
         return f ;  
     }
- 
-    //assert( v0 != v1 );
-    //assert( v0 != v2 );
-    //assert( v1 != v2 );
+
+   
+
+    VH u0, u1, u2 ; 
+
+    if( permute == 0)
+    {
+        u0 = v0 ; 
+        u1 = v1 ; 
+        u2 = v2 ; 
+    }
+    else if( permute == 1)
+    {
+        u0 = v1 ; 
+        u1 = v2 ; 
+        u2 = v0 ; 
+    }
+    else if( permute == 2)
+    {
+        u0 = v2 ; 
+        u1 = v0 ; 
+        u2 = v1 ; 
+    }
+
 
     if(verbosity > 3)
     {
         std::cout << "add_face_"
-                  << " " << std::setw(5) << v0 
-                  << " " << std::setw(5) << v1 
-                  << " " << std::setw(5) << v2
+                  << " " << std::setw(5) << u0 
+                  << " " << std::setw(5) << u1 
+                  << " " << std::setw(5) << u2
                   << " id " << std::setw(5) << identity 
                   << std::endl ;  
-
     }
 
-    f = mesh.add_face(v0,v1,v2);
+    f = mesh.add_face(u0,u1,u2);
+
     assert(mesh.is_valid_handle(f));
 
     if(identity > -1 ) prop.set_identity(f, identity ) ;
@@ -100,13 +116,9 @@ void NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,typename T::Vertex
 }
 
 
-
 template <typename T>
 bool NOpenMeshBuild<T>::is_consistent_face_winding(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2)
 {
-    typedef typename T::HalfedgeHandle  HEH ; 
-    typedef typename T::VertexHandle    VH ; 
-   
     VH _vertex_handles[3] ; 
     _vertex_handles[0] = v0 ; 
     _vertex_handles[1] = v1 ; 
@@ -173,9 +185,6 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
               << " ctrl " << ctrl 
               ;
 
-
-    typedef typename T::VertexHandle VH ;
-    typedef typename T::Point P ; 
 
     VH* vh = new VH[num_vert] ;
 
@@ -380,7 +389,6 @@ void NOpenMeshBuild<T>::euler_check(const nnode* node, int level )
 template <typename T>
 void NOpenMeshBuild<T>::mark_faces(const nnode* other)
 {
-    typedef typename T::FaceHandle          FH ; 
     typedef typename T::FaceIter            FI ; 
 
     for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
@@ -419,9 +427,7 @@ inside/outside for the vertices of the face
 
     std::function<float(float,float,float)> sdf = other->sdf();
 
-    typedef typename T::VertexHandle        VH ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
-    typedef typename T::Point               P ; 
 
     int _facemask = 0 ;  
 
@@ -556,6 +562,63 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
 
 
 
+template <typename T>
+void NOpenMeshBuild<T>::add_tripatch()
+{
+    if(verbosity > 1) LOG(info) << "add_tripatch" ; 
+ 
+
+    double pi = boost::math::constants::pi<double>() ;
+    double sa[2],ca[2] ;
+    for(unsigned i=0 ; i < 2 ; i++) sincos_<double>( 2.*pi*i/6.0, sa[i], ca[i] ); 
+
+    float s = 200.f ; 
+    float z = 0.f ; 
+
+    P p[6] ; 
+    VH v[6];
+
+    p[0] = P(       0,       0,  z);
+    p[1] = P( s*ca[0], s*sa[0], z );
+    p[2] = P( s*ca[1], s*sa[1], z );
+    p[3] = P( 2.*s*ca[0], 2*s*sa[0], z );
+    p[5] = P( 2.*s*ca[1], 2*s*sa[1], z );
+    p[4] = P( s*(1.+ca[1]),  s*sa[1], z );
+
+    P mid = p[1] + p[2] + p[4] ;
+    mid /= 3.0 ; 
+
+    for(unsigned i=0 ; i < 6 ; i++) v[i] = mesh.add_vertex(p[i] - mid) ;
+
+    /*
+    6  verts :                                 4 faces
+                                                                     
+                 5                                +           
+                / \                              /4\
+               2---4                            +---+
+              / \ / \                          /2\1/3\
+             0---1---3                        +---+---+
+    */
+
+     
+
+    // check suspicion of vertex ordering dependancy   
+    // seems to not be so, so long as face order is OK, see below
+    //int permute[4] = {2,0,1,1} ;
+    //int permute[4] = {1,2,0,1} ;
+    int permute[4] = {0,0,0,0} ;
+
+    add_face_(v[1],v[4],v[2], 1, permute[0] );
+    add_face_(v[1],v[2],v[0], 2, permute[1] );
+    add_face_(v[4],v[1],v[3], 3, permute[2] );
+    add_face_(v[2],v[4],v[5], 4, permute[3] );
+
+
+
+    // add_face_ order dictates subdiv order...
+    // see NOpenMeshSubdiv.cpp for notes about face ordering sensitivity of sqrt3 subdiv
+
+}
 
 
 
@@ -564,9 +627,6 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 {
     if(verbosity > 1) LOG(info) << "add_hexpatch" ; 
  
-    typedef typename T::Point          P ; 
-    typedef typename T::VertexHandle   V ; 
-
     float s = 200.f ; 
     float z = 0.f ; 
 
@@ -576,7 +636,7 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 
 
     P p[19] ; 
-    V v[19];
+    VH v[19];
 
     enum { A=10, B=11, C=12, D=13, E=14, F=15, G=16, H=17, I=18, J=19, K=20, L=21, M=22, N=23, O=24 } ; 
 
@@ -644,13 +704,11 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
         add_face_(v[6],v[H],v[C], L);
         add_face_(v[6],v[C],v[I], M);
         add_face_(v[6],v[I],v[1], N);
-
     }
 }
 
 // suspect need to use "rosette" pattern of minimum seed vertices
 // to fit in with sqrt3_subdiv_r
-
 //
 // add_face_(v[E],v[9],v[3], C);
 // add_face_(v[9],v[F],v[3], D); 
@@ -660,10 +718,8 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 // adopting an ordering more consistent with the other faces
 // solve the issue
 //
-
-
-
-
+//
+//
 /*                                                                 
                  +-------+        
                 / \     / \

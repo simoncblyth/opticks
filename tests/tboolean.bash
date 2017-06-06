@@ -816,10 +816,10 @@ from opticks.analytic.csg import CSG
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="1" )
 
 
-#ctrl = "1"  # subdiv_test
+ctrl = "3"   # tripatch
 #ctrl = "4"  # tetrahedron
 #ctrl = "6"  # cube
-ctrl = "66" # hexpatch inner_only 
+#ctrl = "66" # hexpatch inner_only 
 #ctrl = "666" # hexpatch
 
 box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4" )

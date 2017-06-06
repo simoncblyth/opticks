@@ -18,6 +18,7 @@ struct NPY_API  NOpenMeshBuild
 {
     typedef typename T::VertexHandle VH ; 
     typedef typename T::FaceHandle   FH ; 
+    typedef typename T::HalfedgeHandle  HEH ; 
     typedef typename T::Point         P ; 
 
     NOpenMeshBuild( T& mesh, 
@@ -30,7 +31,7 @@ struct NPY_API  NOpenMeshBuild
     VH add_vertex_unique(typename T::Point pt, bool& added, const float epsilon) ;  
 
     void add_face_(VH v0, VH v1, VH v2, VH v3 );
-    FH   add_face_(VH v0, VH v1, VH v2, int identity=-1 );
+    FH   add_face_(VH v0, VH v1, VH v2, int identity=-1, int permute=0 );
     bool is_consistent_face_winding(VH v0, VH v1, VH v2);
 
     void add_parametric_primitive(const nnode* node, int level, int ctrl, float epsilon )  ;
@@ -44,6 +45,7 @@ struct NPY_API  NOpenMeshBuild
     std::string desc_facemask();
 
 
+    void add_tripatch();
     void add_hexpatch(bool inner_only);
     void add_tetrahedron();
     void add_cube();
