@@ -30,7 +30,7 @@ struct NPY_API  NOpenMeshProp
     void init();
     void update_normals();
 
-    bool is_border_face( FH fh ) const ;
+    bool is_facemask_face( FH fh, int facemask=-1 ) const ;
     int  get_facemask( FH fh ) const ;
     void set_facemask( FH fh, int facemask );
 

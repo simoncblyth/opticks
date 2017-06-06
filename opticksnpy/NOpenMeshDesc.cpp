@@ -27,6 +27,32 @@ NOpenMeshDesc<T>::NOpenMeshDesc( const T& mesh, const NOpenMeshProp<T>& prop )
 template <typename T>
 int NOpenMeshDesc<T>::euler_characteristic() const 
 {
+/*
+https://www.cs.mtu.edu/~shene/COURSES/cs3621/NOTES/model/euler.html
+
+
+   V - E + F - (L - F) - 2(S - G) = 0
+
+V: the number of vertices
+
+E: the number of edges
+
+F: the number of faces
+
+G: the number of holes that penetrate the solid, usually referred to as genus in topology
+
+S: the number of shells. A shell is an internal void of a solid. A shell is bounded by a 2-manifold surface, 
+   which can have its own genus value. 
+   Note that the solid itself is counted as a shell. 
+   Therefore, the value for S is at least 1.
+
+L: the number of loops, all outer and inner loops of faces are counted.
+
+
+* http://www.cad.zju.edu.cn/home/zhx/GM/015/00-ism.pdf
+
+*/
+
     unsigned n_faces    = std::distance( mesh.faces_begin(),    mesh.faces_end() );
     unsigned n_vertices = std::distance( mesh.vertices_begin(), mesh.vertices_end() );
     unsigned n_edges    = std::distance( mesh.edges_begin(),    mesh.edges_end() );

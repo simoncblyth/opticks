@@ -8,12 +8,12 @@ struct nuv ;
 
 #include "NTriSource.hpp"
 
+#include "NOpenMeshEnum.hpp"
 #include "NOpenMeshProp.hpp"
 #include "NOpenMeshDesc.hpp"
 #include "NOpenMeshFind.hpp"
 #include "NOpenMeshBuild.hpp"
 #include "NOpenMeshSubdiv.hpp"
-
 
 
 typedef enum {
@@ -57,11 +57,8 @@ struct NPY_API  NOpenMesh : NTriSource
 
     void dump_border_faces(const char* msg="NOpenMesh::dump_border_faces", char side='L');
 
-    void one_subdiv(int round, select_t select, int param);
-
+    void one_subdiv(NOpenMeshFindType select, int param, const nnode* other);
     void subdiv_test() ;
-    void subdiv_interior_test() ;
-    void subdivide_border_faces(const nnode* other, unsigned nsubdiv );
 
 
     // NTriSource interface
@@ -88,7 +85,6 @@ struct NPY_API  NOpenMesh : NTriSource
     NOpenMeshMode_t meshmode ; 
     float           epsilon ; 
 
-    unsigned nsubdiv ; 
 
     MESH*  leftmesh ; 
     MESH*  rightmesh ; 

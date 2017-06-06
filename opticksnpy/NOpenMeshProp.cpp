@@ -102,20 +102,18 @@ int NOpenMeshProp<T>::get_facemask( FH fh ) const
 {
     return mesh.property(f_inside_other, fh) ; 
 }
-
 template <typename T>
 void NOpenMeshProp<T>::set_facemask( FH fh, int facemask )
 {
     mesh.property(f_inside_other, fh) = facemask ; 
 }
-
 template <typename T>
-bool NOpenMeshProp<T>::is_border_face(FH fh ) const 
+bool NOpenMeshProp<T>::is_facemask_face(FH fh, int fmsk ) const 
 {
     int facemask = get_facemask( fh );
-    return !( facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ) ; 
+    bool pure = facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ;
+    return fmsk > -1 ? facemask == fmsk : !pure ;
 }
-
 
 template <typename T>
 int NOpenMeshProp<T>::get_generation( FH fh ) const 

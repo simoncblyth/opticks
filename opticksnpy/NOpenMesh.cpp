@@ -45,7 +45,7 @@ NOpenMesh<T>* NOpenMesh<T>::spawn_left()
 template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::spawn_right()
 {
-    return new NOpenMesh<T>(node->left, level, verbosity, ctrl, meshmode, epsilon ) ;
+    return new NOpenMesh<T>(node->right, level, verbosity, ctrl, meshmode, epsilon ) ;
 }
 
 
@@ -56,7 +56,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, N
     :
     prop(mesh),
     desc(mesh, prop),
-    find(mesh, prop),
+    find(mesh, prop, verbosity),
     build(mesh, prop, desc, find, verbosity),
     subdiv(mesh, prop, desc, find, build, verbosity, epsilon ),
 
@@ -66,7 +66,6 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, N
     ctrl(ctrl), 
     meshmode(meshmode),
     epsilon(epsilon),
-    nsubdiv(1),
     leftmesh(NULL),
     rightmesh(NULL)
 {
@@ -99,15 +98,14 @@ void NOpenMesh<T>::check()
 
 
 template <typename T>
-void NOpenMesh<T>::one_subdiv(int round, select_t select, int param)
+void NOpenMesh<T>::one_subdiv(NOpenMeshFindType select, int param, const nnode* other)
 {
-    typedef typename T::FaceHandle          FH ; 
     std::vector<FH> target_faces ; 
     find.find_faces( target_faces, select,  param );
+
     unsigned n_target_faces = target_faces.size() ;
 
     LOG(info) << "one_subdiv" 
-              << " round " << round
               << " ctrl " << ctrl 
               << " verbosity " << verbosity
               << " n_target_faces " << n_target_faces
@@ -118,10 +116,12 @@ void NOpenMesh<T>::one_subdiv(int round, select_t select, int param)
     for(unsigned i=0 ; i < n_target_faces ; i++) 
     {
         FH fh = target_faces[i] ;
-        subdiv.sqrt3_split_r(fh,  NULL, depth );
+        subdiv.sqrt3_split_r(fh,  other, depth );
     }
+    mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
 }
  
+
 
 
 template <typename T>
@@ -136,16 +136,18 @@ void NOpenMesh<T>::subdiv_test()
               ;
     if(verbosity > 3) std::cout << desc.faces() << std::endl ;  
 
-    one_subdiv(0, FIND_ALL_FACE, -1);
-    one_subdiv(1, FIND_NONBOUNDARY_FACE, -1);
+    const nnode* other = NULL ; 
 
+    one_subdiv(FIND_ALL_FACE, -1, other) ;
+    //one_subdiv(FIND_NONBOUNDARY_FACE, -1, other);
+    //one_subdiv(FIND_FACEMASK_FACE, -1, other);
 
-    //one_subdiv(0, FIND_BOUNDARY_FACE, -1);
-    //one_subdiv(1, FIND_NONBOUNDARY_FACE, -1);
+    //one_subdiv(FIND_BOUNDARY_FACE, -1, other);
+    //one_subdiv(FIND_NONBOUNDARY_FACE, -1, other);
 
-    //one_subdiv(1, FIND_IDENTITY_FACE, 101 );
-    //one_subdiv(0, FIND_IDENTITY_FACE, 2);
-    //one_subdiv(1, FIND_IDENTITY_FACE,  101);
+    //one_subdiv(FIND_IDENTITY_FACE, 101 , other);
+    //one_subdiv(FIND_IDENTITY_FACE, 2, other);
+    //one_subdiv(FIND_IDENTITY_FACE,  101, other);
  
 
     unsigned nloop1 = find.find_boundary_loops() ;
@@ -167,7 +169,6 @@ template <typename T>
 void NOpenMesh<T>::build_csg()
 {
 /*
-
 Aim is to combine leftmesh and rightmesh faces 
 appropriately for the CSG operator of the combination. 
 
@@ -190,7 +191,6 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     copy faces of B entirely inside A 
 
 */
-
     bool combination = node->left && node->right ; 
 
     if(!combination)
@@ -201,8 +201,9 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     else
     {
         assert(node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE );
-
-        LOG(info) << " making leftmesh rightmesh "
+        LOG(info) 
+                  << "NOpenMesh<T>::build_csg" 
+                  << " making leftmesh rightmesh "
                   << " meshmode " << meshmode
                   << " COMBINE_HYBRID " << COMBINE_HYBRID
                   << " COMBINE_CSGBSP " << COMBINE_CSGBSP
@@ -211,6 +212,16 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
         leftmesh = spawn_left() ; 
         rightmesh = spawn_right() ; 
+
+
+        LOG(info) 
+                  << "NOpenMesh<T>::build_csg" 
+                  << " START "
+                  ;
+
+        std::cout << " leftmesh  " << leftmesh->brief() << std::endl ; 
+        std::cout << " rightmesh " << rightmesh->brief() << std::endl ; 
+
 
         if( meshmode & COMBINE_HYBRID )
         {
@@ -224,6 +235,15 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         {
             assert(0) ; 
         }
+
+        LOG(info) 
+                  << "NOpenMesh<T>::build_csg" 
+                  << " DONE "
+                  ;
+
+        std::cout << " leftmesh  " << leftmesh->brief() << std::endl ; 
+        std::cout << " rightmesh " << rightmesh->brief() << std::endl ; 
+        std::cout << " combined " << brief() << std::endl ; 
     }
 }
 
@@ -268,28 +288,19 @@ void NOpenMesh<T>::combine_hybrid( )
     assert( rightmesh->find.find_boundary_loops() == 0) ;  
 
     leftmesh->build.mark_faces( node->right );
-    LOG(info) << "[0] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
-
     rightmesh->build.mark_faces( node->left );
-    LOG(info) << "[0] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
 
-   
+    leftmesh->one_subdiv( FIND_FACEMASK_FACE, -1, node->right);
+    rightmesh->one_subdiv( FIND_FACEMASK_FACE, -1, node->left);
 
-    leftmesh->subdivide_border_faces( node->right, nsubdiv );
-    LOG(info) << "[1] leftmesh inside node->right : " <<  leftmesh->build.desc_inside_other() ;  
+    leftmesh->build.mark_faces( node->right );
+    rightmesh->build.mark_faces( node->left );
 
-    rightmesh->subdivide_border_faces( node->left, nsubdiv );
-    LOG(info) << "[1] rightmesh inside node->left : " <<  rightmesh->build.desc_inside_other() ;  
-
-
-    leftmesh->mesh.garbage_collection();  
-    rightmesh->mesh.garbage_collection();  
 
     // despite subdiv should still be closed zero boundary meshes
-    //  BUT WAS GETTING LOADS OF OPEN LOOPS, when using _creating_soup subdiv approach
-
     assert( leftmesh->find.find_boundary_loops() == 0) ;   
     assert( rightmesh->find.find_boundary_loops() == 0) ;  
+
 
     if(node->type == CSG_UNION)
     {
@@ -306,6 +317,17 @@ void NOpenMesh<T>::combine_hybrid( )
         build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon  );
         build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
     }
+
+
+    int nloop = find.find_boundary_loops() ;
+    // hmm expecting 2, but thats geometry specific
+
+    if(verbosity > 0)
+    LOG(info) << "combine_hybrid"
+              << " boundary_loops " << nloop 
+               ;    
+
+
 }
 
 
@@ -316,44 +338,6 @@ void NOpenMesh<T>::combine_hybrid( )
 
 
 
-
-template <typename T>
-void NOpenMesh<T>::subdivide_border_faces(const nnode* other, unsigned nsubdiv )
-{
-
-    typedef typename T::FaceHandle          FH ; 
-    typedef typename T::FaceIter            FI ; 
-
-    std::vector<FH> border_faces ; 
-
-    for(unsigned round=0 ; round < nsubdiv ; round++)
-    {
-        border_faces.clear();
-        for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
-        {
-            FH fh = *f ;  
-
-            if(!prop.is_border_face(fh)) continue ; 
-
-            border_faces.push_back(fh);
-        }
-
-        LOG(info) << "subdivide_border_faces" 
-                  << " nsubdiv " << nsubdiv
-                  << " round " << round 
-                  << " nbf: " << border_faces.size()
-                  ;
-
-
-        for(unsigned i=0 ; i < border_faces.size(); i++) 
-        {
-            FH fh = border_faces[i] ;
-            int depth = 0 ; 
-            subdiv.sqrt3_split_r(fh, other, depth); 
-        }
-        mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
-    }
-}
 
 template <typename T>
 void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
@@ -402,7 +386,7 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
     for( FI f=a_mesh->mesh.faces_begin() ; f != a_mesh->mesh.faces_end(); ++f ) 
     {
         const FH fh = *f ;  
-        if(!prop.is_border_face(fh)) continue ; 
+        if(!prop.is_facemask_face(fh, -1)) continue ; 
             
         // a_mesh edges along which b_sdf changes sign can be bisected 
         // (can treat as unary functions as only one 
@@ -422,15 +406,12 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
         for(FHI fhe=a_mesh->mesh.cfh_iter(fh) ; fhe.is_valid() ; fhe++) 
         {
             const HEH& heh = *fhe ; 
+
             vh[0] = a_mesh->mesh.from_vertex_handle( heh );
             vh[1] = a_mesh->mesh.to_vertex_handle( heh );
 
-            //uv[0] = a_mesh->mesh.property(prop.v_parametric, vh[0]) ; 
-            //uv[1] = a_mesh->mesh.property(prop.v_parametric, vh[1]) ; 
-
             uv[0] = a_mesh->prop.get_uv(vh[0]) ; 
             uv[1] = a_mesh->prop.get_uv(vh[1]) ; 
-
 
             a_pos[0] = a_node->par_pos( uv[0] );
             a_pos[1] = a_node->par_pos( uv[1] );

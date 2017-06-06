@@ -41,7 +41,7 @@ struct NPY_API  NOpenMeshBuild
 
     void mark_faces(const nnode* other);
     void mark_face(FH fh, const nnode* other);
-    std::string desc_inside_other();
+    std::string desc_facemask();
 
 
     void add_hexpatch(bool inner_only);

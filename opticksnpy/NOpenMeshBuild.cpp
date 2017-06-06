@@ -388,6 +388,8 @@ void NOpenMeshBuild<T>::mark_faces(const nnode* other)
         const FH& fh = *f ;  
         mark_face( fh, other );
     }
+    if(verbosity > 0)
+    LOG(info) << "mark_faces " <<  desc_facemask() ;  
 }
  
 
@@ -417,12 +419,11 @@ inside/outside for the vertices of the face
 
     std::function<float(float,float,float)> sdf = other->sdf();
 
-
     typedef typename T::VertexHandle        VH ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
     typedef typename T::Point               P ; 
 
-    int _f_inside_other = 0 ;  
+    int _facemask = 0 ;  
 
     assert( mesh.valence(fh) == 3 );
 
@@ -430,9 +431,9 @@ inside/outside for the vertices of the face
 
     for(FVI fv=mesh.cfv_iter(fh) ; fv.is_valid() ; fv++) 
     {
-        const VH& vh = *fv ; 
+        const VH vh = *fv ; 
     
-        const P& pt = mesh.point(vh);
+        const P pt = mesh.point(vh);
 
         float dist = sdf(pt[0], pt[1], pt[2]);
 
@@ -440,29 +441,32 @@ inside/outside for the vertices of the face
 
         bool inside_other = dist < 0.f ; 
 
-        _f_inside_other |=  (!!inside_other << fvert++) ;   
+        _facemask |=  (!!inside_other << fvert++) ;   
     }
     assert( fvert == 3 );
-    mesh.property(prop.f_inside_other, fh) = _f_inside_other ; 
 
+    //mesh.property(prop.f_inside_other, fh) = _facemask ; 
+    prop.set_facemask(fh, _facemask );
 
-    if(f_inside_other_count.count(_f_inside_other) == 0)
+    if(f_inside_other_count.count(_facemask) == 0)
     {
-        f_inside_other_count[_f_inside_other] = 0 ; 
+        f_inside_other_count[_facemask] = 0 ; 
     }
-    f_inside_other_count[_f_inside_other]++ ; 
+    f_inside_other_count[_facemask]++ ;
+
+ 
 }
  
 
 template <typename T>
-std::string NOpenMeshBuild<T>::desc_inside_other()
+std::string NOpenMeshBuild<T>::desc_facemask()
 {
     std::stringstream ss ; 
     typedef std::map<int,int> MII ; 
 
     for(MII::const_iterator it=f_inside_other_count.begin() ; it!=f_inside_other_count.end() ; it++)
     {
-         ss << std::setw(3) << it->first << " : " << std::setw(6) << it->second << "|" ; 
+         ss << std::setw(1) << it->first << ":" << std::setw(6) << it->second << "|" ; 
     }
 
     return ss.str();

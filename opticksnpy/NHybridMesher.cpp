@@ -18,7 +18,6 @@ NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level
 
     typedef NOpenMesh<NOpenMeshType> MESH ; 
 
-
     if(verbosity > 0)
     LOG(info) << "NHybridMesher::make_mesh"
               << " level " << level 
@@ -32,32 +31,21 @@ NOpenMesh<NOpenMeshType>* NHybridMesher::make_mesh( const nnode* node, int level
 
     if(ctrl == 0)
     {
-         LOG(info) << " meshmode again " << meshmode ;   
          mesh = new MESH(node, level, verbosity, ctrl, meshmode )  ;
+         assert(mesh);
     }
     else
     {
         switch(ctrl)
         {
-           case 4: 
-                  mesh = MESH::tetrahedron(level, verbosity, ctrl  ) ; 
-                  mesh->subdiv_test() ;
-                  break ; 
-           case 6: 
-                  mesh = MESH::cube(level, verbosity, ctrl  ) ; 
-                  mesh->subdiv_test() ;
-                  break ; 
-           case 66: 
-                  mesh = MESH::hexpatch_inner(level, verbosity, ctrl  ) ; 
-                  mesh->subdiv_test() ;
-                  break ; 
-           case 666: 
-                  mesh = MESH::hexpatch(level, verbosity, ctrl  ) ; 
-                  mesh->subdiv_test() ;
-                  break ; 
+           case   4: mesh = MESH::tetrahedron(level, verbosity, ctrl  )    ; break ; 
+           case   6: mesh = MESH::cube(level, verbosity, ctrl  )           ; break ; 
+           case  66: mesh = MESH::hexpatch_inner(level, verbosity, ctrl  ) ; break ; 
+           case 666: mesh = MESH::hexpatch(level, verbosity, ctrl  )       ; break ; 
         }
+        assert(mesh);
+        mesh->subdiv_test() ;
     }
-    assert(mesh);
     return mesh ; 
 }
 

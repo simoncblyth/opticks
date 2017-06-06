@@ -15,17 +15,19 @@
 
 
 template <typename T>
-NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop )
+NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop, int verbosity )
     :
     mesh(mesh),
-    prop(prop)
+    prop(prop),
+    verbosity(verbosity)
  {} 
 
 
 
 template <typename T>
-void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, select_t select, int param)
+void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel, int param)
 {
+
     typedef typename T::ConstFaceIter        FI ; 
 
     faces.clear();
@@ -40,20 +42,22 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, select_t select, int p
 
         bool selected = false ; 
 
-        switch(select)
+        switch(sel)
         {
-           case FIND_ALL_FACE      : selected = true                             ; break ; 
-           case FIND_IDENTITY_FACE : selected = prop.is_identity_face(fh, param) ; break ; 
-           case FIND_REGULAR_FACE  : selected = is_regular_face(fh, param)  ; break ; 
-           case FIND_INTERIOR_FACE : selected = is_interior_face(fh, param) ; break ; 
+           case FIND_ALL_FACE      :    selected = true                             ; break ; 
+           case FIND_IDENTITY_FACE :    selected = prop.is_identity_face(fh, param) ; break ;
+           case FIND_FACEMASK_FACE :    selected = prop.is_facemask_face(fh, param) ; break ;
+           case FIND_REGULAR_FACE  :    selected = is_regular_face(fh, param)  ; break ; 
+           case FIND_INTERIOR_FACE :    selected = is_interior_face(fh, param) ; break ; 
            case FIND_NONBOUNDARY_FACE : selected = is_numboundary_face(fh, 0)  ; break ; 
            case FIND_BOUNDARY_FACE :    selected = is_numboundary_face(fh, -1)  ; break ; 
         }
         if(selected) faces.push_back(fh);
     }
 
-    LOG(info) << "NOpenMeshFind<T>::find_faces (faces with all vertices having same valence) "
-              << " select " << select
+    if(verbosity > 0)
+    LOG(info) << "NOpenMeshFind<T>::find_faces  "
+              << " FindType " << NOpenMeshEnum::FindType(sel)
               << " param " << param
               << " count " << faces.size()
               << " totface " << totface
@@ -91,9 +95,6 @@ bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
     // defining a "regular" face as one with all three vertices having 
     // valence equal to the argument value
 
-    typedef typename T::VertexHandle         VH ; 
-    typedef typename T::ConstFaceVertexIter  FVI ; 
-
     unsigned tot(0) ; 
     unsigned miss(0) ; 
   
@@ -103,21 +104,10 @@ bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
         unsigned vhv = mesh.valence(vh) ;
         tot++ ; 
 
-        //std::cout << "vh" << std::setw(4) << vh << " vhv " << vhv << std::endl ; 
-
         if(vhv != unsigned(valence)) miss++ ; 
     }
 
     bool is_regular = miss == 0 ; 
-
-    /*
-    LOG(info) << "NOpenMeshFind<T>::is_regular_face"
-              << " tot " << tot
-              << " miss " << miss
-              << " is_regular " << is_regular
-              ;
-    */
-
     return is_regular ; 
 }
  
@@ -127,13 +117,9 @@ bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
 template <typename T>
 bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin )
 {
-    typedef typename T::VertexHandle         VH ; 
-    typedef typename T::ConstFaceVertexIter  FVI ; 
-
     for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
     {
         VH vh = *fvi ; 
-        //nuv uv = mesh.property(prop.v_parametric, vh) ; 
         nuv uv = prop.get_uv(vh) ; 
 
         if(!uv.is_interior(unsigned(margin))) return false ; 
@@ -147,9 +133,8 @@ bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin )
 template <typename T>
 int NOpenMeshFind<T>::find_boundary_loops()
 {
-    LOG(info) << "find_boundary_loops" ; 
+    //LOG(info) << "find_boundary_loops" ; 
 
-    typedef typename T::VertexHandle        VH ; 
     typedef typename T::FaceHalfedgeIter    FHI ; 
     typedef typename T::ConstEdgeIter       EI ; 
     typedef typename T::EdgeHandle          EH ; 
@@ -205,13 +190,13 @@ int NOpenMeshFind<T>::find_boundary_loops()
         he_bnd[2]++ ; 
     }
 
-    LOG(info) << "find_boundary_loops"
-              << " he_bnd[0] " << he_bnd[0]      
-              << " he_bnd[1] " << he_bnd[1]      
-              << " he_bnd[2] " << he_bnd[2]
+    if(verbosity > 0)
+    LOG(info) << "is_boundary stats for halfedges"
+              << " heh(0) " << he_bnd[0]      
+              << " heh(1) " << he_bnd[1]      
+              << " all " << he_bnd[2]
               << " loops " << loops.size()
               ;      
-
 
     return loops.size();
 }
@@ -276,8 +261,6 @@ typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(P pt, float& dist
 template <typename T>
 typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float epsilon ) const 
 {
-    typedef typename T::VertexHandle   VH ;
-
     float distance = std::numeric_limits<float>::max() ;
 
     VH empty ; 

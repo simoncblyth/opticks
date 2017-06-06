@@ -36,6 +36,38 @@ Repo
 Refs
 -------
 
+Euler Formula
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://math.stackexchange.com/questions/425968/eulers-formula-for-triangle-mesh
+
+Nathan Reed: 
+
+Since we're talking about a triangle mesh, there is a fixed relationship
+between the number of edges and the number of faces. To derive this it's
+helpful to think of the mesh as being made of half-edges. 
+
+A half-edge is a pair of an edge and a face it borders. 
+
+The total number of half-edges in the mesh is 2E, 
+since each edge has two halves; and it's also 3F, since each face touches 
+three half-edges and this counts all the half-edges exactly once. 
+Therefore 2E=3F.
+
+By solving for E and substituting into the formula V−E+F=0, we can easily derive your two facts:
+
+* E = 3/2 F
+* V - 3/2 F + F ~ 0 
+* V - 1/2 F ~ 0  
+* F ~ 2V
+
+
+* F = 2/3E 
+* V - E + 2/3E = V - 1/3E ~ 0 
+* E ~ 3V
+
+
+
 
 Geometric Modeling Based on Triangle Meshes (EUROGRAPHICS 2006)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -134,6 +166,7 @@ Does Edge splitting make a mesh non-manifold ?
 
 * https://en.wikipedia.org/wiki/Euler_operator
 * https://en.wikipedia.org/wiki/Manifold
+
 
 
 
