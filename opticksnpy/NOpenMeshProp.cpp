@@ -8,6 +8,13 @@ const char* NOpenMeshProp<T>::F_INSIDE_OTHER = "f_inside_other" ;
 template <typename T>
 const char* NOpenMeshProp<T>::F_GENERATION = "f_generation" ; 
 
+
+#ifdef WITH_V_GENERATION
+template <typename T>
+const char* NOpenMeshProp<T>::V_GENERATION = "v_generation" ; 
+#endif
+
+
 template <typename T>
 const char* NOpenMeshProp<T>::F_IDENTITY = "f_identity" ; 
 
@@ -28,21 +35,36 @@ void NOpenMeshProp<T>::init()
     mesh.add_property(f_generation, F_GENERATION);  
     mesh.add_property(f_identity, F_IDENTITY);  
 
+#ifdef WITH_V_GENERATION
+    mesh.add_property(v_generation, V_GENERATION);  
+#endif
     mesh.add_property(v_sdf_other, V_SDF_OTHER);  
     mesh.add_property(v_parametric, V_PARAMETRIC);  
     mesh.add_property(h_boundary_loop, H_BOUNDARY_LOOP);  
 
-    // without the below get segv on trying to delete a face
-    // unless compile traits into NOpenMeshType
-    /*
+    //init_status();  
+
+   // hmm perhaps too soon, no faces yet ?
+    set_fgeneration_all(0); 
+#ifdef WITH_V_GENERATION
+    set_vgeneration_all(0); 
+#endif
+}
+
+
+template <typename T>
+void NOpenMeshProp<T>::init_status()
+{
+    // not needed as specified at compilation, see NOpenMeshType
+    // without status get segv on trying to delete a face
+
     mesh.request_face_status();
     mesh.request_edge_status();
     mesh.request_halfedge_status();
     mesh.request_vertex_status();
-    */
- 
-    set_generation_all(0); // hmm perhaps too soon, no faces yet ?
 }
+
+
 
 template <typename T>
 void NOpenMeshProp<T>::update_normals()
@@ -115,23 +137,100 @@ bool NOpenMeshProp<T>::is_facemask_face(FH fh, int fmsk ) const
     return fmsk > -1 ? facemask == fmsk : !pure ;
 }
 
+
+
 template <typename T>
-int NOpenMeshProp<T>::get_generation( FH fh ) const 
+int NOpenMeshProp<T>::get_fgeneration( FH fh ) const 
 {
     return mesh.property(f_generation, fh) ; 
 }
-
 template <typename T>
-void NOpenMeshProp<T>::set_generation( FH fh, int fgen )
+void NOpenMeshProp<T>::set_fgeneration( FH fh, int fgen )
 {
     mesh.property(f_generation, fh) = fgen ; 
 }
-
 template <typename T>
-void NOpenMeshProp<T>::increment_generation( FH fh )
+void NOpenMeshProp<T>::increment_fgeneration( FH fh )
 {
     mesh.property(f_generation, fh)++ ; 
 }
+template <typename T>
+bool NOpenMeshProp<T>::is_even_fgeneration(const FH fh, int mingen) const 
+{
+    int fgen = get_fgeneration(fh) ;
+    bool even = fgen % 2 == 0 ;
+    return fgen >= mingen && even ; 
+}
+template <typename T>
+bool NOpenMeshProp<T>::is_odd_fgeneration(const FH fh, int mingen)  const 
+{
+    int fgen = get_fgeneration(fh) ;
+    bool odd = fgen % 2 == 1 ;
+    return fgen >= mingen && odd ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::set_fgeneration_all( int fgen )
+{
+    typedef typename T::FaceIter    FI ; 
+    for( FI fi=mesh.faces_begin() ; fi != mesh.faces_end(); ++fi ) 
+    {
+        FH fh = *fi ;  
+        set_fgeneration(fh, fgen );
+    } 
+}
+
+
+
+
+
+#ifdef WITH_V_GENERATION
+template <typename T>
+int NOpenMeshProp<T>::get_vgeneration( VH vh ) const 
+{
+    return mesh.property(v_generation, vh) ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::set_vgeneration( VH vh, int vgen )
+{
+    mesh.property(v_generation, vh) = vgen ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::increment_vgeneration( VH vh )
+{
+    mesh.property(v_generation, vh)++ ; 
+}
+template <typename T>
+bool NOpenMeshProp<T>::is_even_vgeneration(const VH vh, int mingen) const 
+{
+    int vgen = get_vgeneration(vh) ;
+    bool even = vgen % 2 == 0 ;
+    return vgen >= mingen && even ; 
+}
+template <typename T>
+bool NOpenMeshProp<T>::is_odd_vgeneration(const VH vh, int mingen)  const 
+{
+    int vgen = get_vgeneration(vh) ;
+    bool odd = vgen % 2 == 1 ;
+    return vgen >= mingen && odd ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::set_vgeneration_all( int vgen )
+{
+    typedef typename T::VertexIter    VI ; 
+    for( VI vi=mesh.vertices_begin() ; vi != mesh.vertices_end(); ++vi ) 
+    {
+        VH vh = *vi ;  
+        set_vgeneration(vh, vgen );
+    } 
+}
+#endif
+
+
+
+
+
+
+
 
 
 template <typename T>
@@ -150,18 +249,6 @@ void NOpenMeshProp<T>::set_uv( VH vh, nuv uv )
 
 
 
-
-template <typename T>
-void NOpenMeshProp<T>::set_generation_all( int fgen )
-{
-    typedef typename T::FaceIter    FI ; 
-
-    for( FI fi=mesh.faces_begin() ; fi != mesh.faces_end(); ++fi ) 
-    {
-        FH fh = *fi ;  
-        set_generation(fh, fgen );
-    } 
-}
 
 
 

@@ -37,6 +37,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_materialprefix("/dd/Materials/"),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
+       m_rendermode(""),
        m_islice(""),
        m_fslice(""),
        m_pslice(""),
@@ -452,6 +453,11 @@ void OpticksCfg<Listener>::init()
        ("meshversion",   boost::program_options::value<std::string>(&m_meshversion), "debug only option for testing alternate mesh versions" );
 
    m_desc.add_options()
+       ("rendermode",   boost::program_options::value<std::string>(&m_rendermode), "debug only rendermode, see oglrap-/OpticksViz::prepareScene" );
+
+
+
+   m_desc.add_options()
        ("islice",        boost::program_options::value<std::string>(&m_islice), "debug only option for use of partial instanced geometry, specified by python slice style colon delimited ints " );
 
    m_desc.add_options()
@@ -788,6 +794,12 @@ const std::string& OpticksCfg<Listener>::getMeshVersion()
 {
     return m_meshversion ;
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getRenderMode()
+{
+    return m_rendermode ;
+}
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getISlice()
 {

@@ -14,6 +14,7 @@ struct nuv ;
 #include "NOpenMeshFind.hpp"
 #include "NOpenMeshBuild.hpp"
 #include "NOpenMeshSubdiv.hpp"
+#include "NOpenMeshCfg.hpp"
 
 
 typedef enum {
@@ -34,11 +35,10 @@ struct NPY_API  NOpenMesh : NTriSource
     typedef typename T::VertexHandle   VH ; 
     typedef typename T::FaceHandle     FH ; 
 
-    static NOpenMesh<T>* BuildTest(int level, int verbosity, int ctrl );
+    static NOpenMesh<T>* BuildTest(int level, int verbosity, int ctrl, const char* polycfg);
 
-    NOpenMesh<T>* spawn_left();
-    NOpenMesh<T>* spawn_right();
-    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, NOpenMeshMode_t meshmode=COMBINE_HYBRID, float epsilon=1e-05f ); 
+    NOpenMesh<T>* spawn(const nnode* subnode);
+    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, const char* polycfg=NULL, NOpenMeshMode_t meshmode=COMBINE_HYBRID, float epsilon=1e-05f ); 
 
     void build_csg();
     void init();
@@ -54,7 +54,6 @@ struct NPY_API  NOpenMesh : NTriSource
 
     void dump_border_faces(const char* msg="NOpenMesh::dump_border_faces", char side='L');
 
-    void one_subdiv(NOpenMeshFindType select, int param, const nnode* other);
     void subdiv_test() ;
 
 
@@ -69,6 +68,7 @@ struct NPY_API  NOpenMesh : NTriSource
 
 
     T                  mesh ; 
+    NOpenMeshCfg       cfg ; 
     NOpenMeshProp<T>   prop ; 
     NOpenMeshDesc<T>   desc ; 
     NOpenMeshFind<T>   find ; 

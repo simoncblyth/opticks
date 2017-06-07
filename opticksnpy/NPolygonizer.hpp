@@ -52,5 +52,6 @@ class NPY_API NPolygonizer {
          int               m_index ; 
          const char*       m_poly ; 
          NPolyMode_t       m_polymode ;  
+         const char*       m_polycfg ; 
 
 };

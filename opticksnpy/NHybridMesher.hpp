@@ -20,11 +20,11 @@ struct nbbox ;
 class NPY_API NHybridMesher
 {
     public:
-        static NOpenMesh<NOpenMeshType>* make_mesh( const nnode* node, int level , int verbosity, int ctrl, NPolyMode_t polymode);
+        static NOpenMesh<NOpenMeshType>* make_mesh( const nnode* node, int level , int verbosity, int ctrl, NPolyMode_t polymode, const char* polycfg );
     public:
         typedef std::function<float(float,float,float)> FUNC ; 
      public:
-        NHybridMesher(const nnode* node, int level=5, int verbosity=1, int ctrl=0, NPolyMode_t polymode=POLY_HY );
+        NHybridMesher(const nnode* node, int level=5, int verbosity=1, int ctrl=0, NPolyMode_t polymode=POLY_HY, const char* polycfg=NULL );
 
         NTrianglesNPY* operator()();
         std::string desc();
@@ -36,5 +36,6 @@ class NPY_API NHybridMesher
         nbbox*                     m_bbox ; 
         int                        m_verbosity ; 
         int                        m_ctrl ; 
+        const char*                m_polycfg ; 
 
 };

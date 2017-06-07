@@ -117,7 +117,9 @@ void OpticksViz::init()
         
         m_hub->configureState(getSceneConfigurable()) ;    // loads/creates Bookmarks
 
-        prepareScene();      // setup OpenGL shaders and creates OpenGL context (the window)
+        const char* renderMode = m_ok->getRenderMode();
+
+        prepareScene(renderMode);      // setup OpenGL shaders and creates OpenGL context (the window)
  
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload
     }

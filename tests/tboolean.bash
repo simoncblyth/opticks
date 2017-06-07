@@ -158,6 +158,7 @@ tboolean--(){
             --timemax 10 \
             --geocenter \
             --eye 0,0,1 \
+            --rendermode "-axis" \
             --dbganalytic \
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
@@ -815,16 +816,26 @@ from opticks.analytic.csg import CSG
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="1" )
 
+#ctrl = "3"   # tripatch
+# tripatch : works in phased and contiguous, contiguous-reversed missed edge(looks broken) 
 
-ctrl = "3"   # tripatch
 #ctrl = "4"  # tetrahedron
 #ctrl = "6"  # cube
-#ctrl = "66" # hexpatch inner_only 
-#ctrl = "666" # hexpatch
+ctrl = "66"  
+# hexpatch_inner : contiguous works, but not with reversed, showing face order sensitivity 
+# hexpatch_inner : phased fails to do last flip, when reversed fails to do two flips
 
-box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4" )
+#ctrl = "666"  # hexpatch 
+# hexpatch : contiguous works until reversed=1 showing face order sensitivity
+# hexpatch : phased is missing ~6 flips 
 
-CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
+polycfg="phased=1,contiguous=0,split=1,flip=1,numflip=4,reversed=0,maxflip=0"
+
+box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4", polycfg=polycfg )
+
+
+
+CSG.Serialize([container, box  ], "$TMP/$FUNCNAME" )
 
 EOP
 }

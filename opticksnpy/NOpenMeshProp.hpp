@@ -22,12 +22,16 @@ struct NPY_API  NOpenMeshProp
     static const char* F_GENERATION ; 
     static const char* F_IDENTITY ;
  
+#ifdef WITH_V_GENERATION
+    static const char* V_GENERATION ; 
+#endif
     static const char* V_SDF_OTHER ; 
     static const char* V_PARAMETRIC ; 
     static const char* H_BOUNDARY_LOOP ; 
 
     NOpenMeshProp( T& mesh );
     void init();
+    void init_status();
     void update_normals();
 
     bool is_facemask_face( FH fh, int facemask=-1 ) const ;
@@ -39,19 +43,33 @@ struct NPY_API  NOpenMeshProp
     int  get_identity( FH fh ) const ;
     void set_identity( FH fh, int identity );
 
-    int  get_generation( FH fh ) const ;
-    void set_generation( FH fh, int fgen );
-    void increment_generation( FH fh );
-    void set_generation_all( int fgen );
+
+    int  get_fgeneration( FH fh ) const ;
+    void set_fgeneration( FH fh, int fgen );
+    void increment_fgeneration( FH fh );
+    bool is_even_fgeneration(const FH fh, int mingen) const ;
+    bool is_odd_fgeneration(const FH fh, int mingen) const ;
+    void set_fgeneration_all( int fgen );
+
+#ifdef WITH_V_GENERATION
+    int  get_vgeneration( VH vh ) const ;
+    void set_vgeneration( VH vh, int vgen );
+    void increment_vgeneration( VH vh );
+    bool is_even_vgeneration(const VH vh, int mingen) const ;
+    bool is_odd_vgeneration(const VH vh, int mingen) const ;
+    void set_vgeneration_all( int vgen );
+#endif
 
     nuv  get_uv( VH vh ) const ; 
     void set_uv( VH vh, nuv uv )  ; 
-
 
     T& mesh  ;
 
     OpenMesh::VPropHandleT<nuv>    v_parametric ;
     OpenMesh::VPropHandleT<float>  v_sdf_other ;
+#ifdef WITH_V_GENERATION
+    OpenMesh::VPropHandleT<int>    v_generation ;
+#endif
 
     OpenMesh::FPropHandleT<int>    f_inside_other ;
     OpenMesh::FPropHandleT<int>    f_generation ;

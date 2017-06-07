@@ -20,8 +20,9 @@ void test_write()
     int level = 0 ; 
     int verbosity = 3 ; 
     int ctrl = 6 ; // cube 
+    const char* polycfg = NULL ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg );
     mesh->write(path);
     std::cout << mesh->brief() << std::endl ; 
 }
@@ -34,8 +35,9 @@ void test_hexpatch()
     int level = 0 ; 
     int verbosity = 3 ; 
     int ctrl = 666 ;  // hexpatch
+    const char* polycfg = NULL ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl  );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
     mesh->dump();
     std::cout << mesh->desc.desc() ;
 }
@@ -47,9 +49,10 @@ void test_cube()
     int level = 0 ; 
     int verbosity = 3 ; 
     int ctrl = 6 ; 
+    const char* polycfg = NULL ; 
 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl  );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
     mesh->dump();
     std::cout << mesh->desc.desc() ;
 }
@@ -60,9 +63,9 @@ void test_tetrahedron()
     int level = 0 ; 
     int verbosity = 3 ; 
     int ctrl = 4 ;  // tetrahedron
+    const char* polycfg = NULL ; 
 
-
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest( level, verbosity, ctrl );
+    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest( level, verbosity, ctrl, polycfg );
 
     mesh->dump();
 
@@ -409,9 +412,7 @@ void test_manual_subdivide_face()
 
     assert( m.find.find_boundary_loops() == 0 ) ;
  
-    FH fh = *m.mesh.faces_begin() ; 
-
-    m.subdiv.sqrt3_split_r(fh, 0 ); 
+    m.subdiv.sqrt3_refine( FIND_ALL_FACE, -1 ); 
 
     std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
 

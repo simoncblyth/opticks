@@ -83,6 +83,8 @@ NPolygonizer::NPolygonizer(NCSG* csg)
     m_poly = strdup(poly.c_str());
     m_polymode = PolyMode(m_poly);
 
+    std::string cfg = m_meta->get<std::string>("polycfg", "");
+    m_polycfg = strdup(cfg.c_str());
 
     if(m_verbosity > 0)
     { 
@@ -92,6 +94,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
                   << " poly " << m_poly 
                   << " polymode " << m_polymode
                   << " PolyModeString " << PolyModeString(m_polymode) 
+                  << " polycfg " << m_polycfg 
                   ;
     }
 
@@ -108,6 +111,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
               << " polymode " << m_polymode 
               << " PolyModeString " << PolyModeString(m_polymode) 
               << " verbosity " << m_verbosity 
+              << " polycfg " << m_polycfg 
               << " index " << m_index
               ;
 
@@ -221,7 +225,7 @@ NTrianglesNPY* NPolygonizer::hybridMesher(NPolyMode_t polymode)
     int   level = m_meta->get<int>("level", "5" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
 
-    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode ) ;
+    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode, m_polycfg ) ;
  
     tris = poly();
     return tris ;

@@ -2,11 +2,104 @@
 
 #include "PLOG.hh"
 
+#include "NOpenMeshCfg.hpp"
 #include "NOpenMeshProp.hpp"
 #include "NOpenMeshDesc.hpp"
 #include "NOpenMeshFind.hpp"
 #include "NOpenMeshBuild.hpp"
 #include "NOpenMeshSubdiv.hpp"
+
+
+/*
+  Using approach from Tvv3 of 
+  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc  
+  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
+
+  Trying to implement sqrt(3) subdivision pseudocode : centroid face split, flip original edges 
+
+  NB the recursion is limited, it does not spread over the entire mesh, it just applies splits to neighbouring 
+  faces when that is necessary for mesh conformance/balancing 
+
+   * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
+   * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
+
+           
+                      +               0,1,2    : outgoing halfedges from the new splitting vertex
+                     / \              0n,1n,2n : nheh halfedges (ccw), oheh to give adjacent faces
+                    / . \  ^ 
+                0n /  ^  \  \
+               /  /   0   \  1n
+              v  /    +    \
+                /  v.   v   \
+               / .2       1 .\
+              +---------------+
+                    -> 2n
+
+
+    tripatch testing
+
+    6  verts :                                 4 faces
+                                                                     
+                 5                                +           
+                / \                              /4\
+               2---4                            +---+
+              / \ / \                          /2\1/3\
+             0---1---3                        +---+---+
+
+    add_face_(v[1],v[4],v[2], 1);
+    add_face_(v[1],v[2],v[0], 2);
+    add_face_(v[4],v[1],v[3], 3);
+    add_face_(v[2],v[4],v[5], 4);
+
+    add_face_ order dictates subdiv order...
+    
+         putting the middle face last leads to no flips until placing this
+         last one ... whence get wierd issue of seeing 4 heh from the 
+         added centroid ?? which leads to an extra flip 
+    
+         * how is this possible, generation check should avoid ? 
+           YES but : flipping all edges of a triangle leads to confusion 
+       
+         * moral of story : dont flip all edges of a triangle
+           at one subdiv if you wish to maintain sanity, instead try 
+           to pace the flips so one flip happens 
+    
+           putting the middle face first enables flips to happen for every 
+           centroid subdiv as there is always an adjacent other that has been split
+           already to flip with 
+      
+           seems that subdiv face order needs to contiguous, so need to 
+           arrange face order like that... around in circles ?
+    
+      how to generate a list of faces ... 
+      need to traverse the mesh in ever increasing circles
+      of connected faces 
+          https://mailman.rwth-aachen.de/pipermail/openmesh/2015-April/001083.html
+          https://mailman.rwth-aachen.de/pipermail/openmesh/2015-April/001084.html
+
+      Hmm it may be possible to do this with test meshes, but with real world
+      ones this isnt practical, try instead to avoid face order sensitivity by 
+      doing the split and the flip is separate passes.
+
+
+
+*contiguous* 
+    problems with contiguous are
+
+    1. contiguous face order is needed
+    2. must avoid last piece in jigsaw issue (ie refining a face that
+       has already been refined on all three other sides leads to 
+       failed treble flipping). Potentially there are other similar 
+       issues from failed double flips...
+
+*phased*
+    problems with phased are
+
+    1. near to last flips, mess up : issue with flipping edges that have 
+       already undergone a flip 
+
+
+*/
 
 
 using namespace OpenMesh::Subdivider;
@@ -15,6 +108,7 @@ using namespace OpenMesh::Subdivider;
 template <typename T>
 NOpenMeshSubdiv<T>::NOpenMeshSubdiv( 
     T& mesh, 
+    const NOpenMeshCfg& cfg, 
     NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
     const NOpenMeshFind<T>& find, 
@@ -24,6 +118,7 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
     )
     : 
     mesh(mesh),
+    cfg(cfg),
     prop(prop),
     desc(desc),
     find(find),
@@ -39,6 +134,9 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
 template <typename T>
 void NOpenMeshSubdiv<T>::init()
 {
+    LOG(info) << "NOpenMeshSubdiv<T>::init()" ;
+    std::cout << cfg.desc() ;
+
     //init_subdivider();
 }
  
@@ -83,114 +181,35 @@ void NOpenMeshSubdiv<T>::refine(typename T::FaceHandle fh)
 }
 
 
-
-
-template <typename T>
-void NOpenMeshSubdiv<T>::sqrt3_refine( std::vector<FH>& target )
-{
-    unsigned n_target = target.size() ;
-
-    LOG(info) << "sqrt3" 
-              << " verbosity " << verbosity
-              << " n_target " << n_target
-              << desc.desc_euler()
-              ;
-
-
-    // need to traverse the mesh in ever increasing circles
-    // of connected faces 
-    // https://mailman.rwth-aachen.de/pipermail/openmesh/2015-April/001083.html
-
-    typedef typename T::ConstVertexFaceIter CVFI ;  // cvf_iter(vh)
-    typedef typename T::ConstFaceFaceIter   CFFI ;  // cff_iter(fh)
-
-    int depth = 0 ; 
-    for(unsigned i=0 ; i < n_target ; i++) 
-    {
-        FH fh = target[i] ;
-        sqrt3_split_r(fh, depth );
-    }
-
-    mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them
-}
-
-
-
-
-
-template <typename T>
-void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, int depth )
-{
 /*
-  Using approach from Tvv3 of 
-  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/RulesT.cc  
-  /usr/local/opticks/externals/openmesh/OpenMesh-4.1/src/OpenMesh/Tools/Subdivider/Adaptive/Composite/CompositeT.cc
+Doing splits then immediatelt flips introduces a face ordering 
+sensitivity, as the faces need to be contiguous with other formerly refined ones
+in order that the flipping will find a same fgeneration pair.
+  
+Instead if the splits and the flips could be done in two passes, I think 
+the face ordering sensitivity can be eliminated, as all splits will
+have been done when flipping.
 
-  Trying to implement sqrt(3) subdivision pseudocode : centroid face split, flip original edges 
-
-  NB the recursion is limited, it does not spread over the entire mesh, it just applies splits to neighbouring 
-  faces when that is necessary for mesh conformance/balancing 
-
-   * https://www.graphics.rwth-aachen.de/media/papers/sqrt31.pdf
-   * ~/opticks_refs/sqrt3_mesh_subdivision_kobbelt_sqrt31.pdf
-
-           
-                      +               0,1,2    : outgoing halfedges from the new splitting vertex
-                     / \              0n,1n,2n : nheh halfedges (ccw), oheh to give adjacent faces
-                    / . \  ^ 
-                0n /  ^  \  \
-               /  /   0   \  1n
-              v  /    +    \
-                /  v.   v   \
-               / .2       1 .\
-              +---------------+
-                    -> 2n
+Hmm, can the flips be done in any order though ?
 
 
-    tripatch testing
+But that means need a way to identity the edges that need to be flipped...
 
-    6  verts :                                 4 faces
-                                                                     
-                 5                                +           
-                / \                              /4\
-               2---4                            +---+
-              / \ / \                          /2\1/3\
-             0---1---3                        +---+---+
+* given a list of faces after a split, 
+  how to find the splitting vertex in order to find the edges to flip ?
+  they will all be odd fgeneration, so that doesnt help
 
-    add_face_(v[1],v[4],v[2], 1);
-    add_face_(v[1],v[2],v[0], 2);
-    add_face_(v[4],v[1],v[3], 3);
-    add_face_(v[2],v[4],v[5], 4);
+* ... could use a vgeneration ?  so then just iterate over all vertices finding odd vgeneration 
+  that need flips
 
-    // add_face_ order dictates subdiv order...
-    //
-    //     putting the middle face last leads to no flips until placing this
-    //     last one ... whence get wierd issue of seeing 4 heh from the 
-    //     added centroid ?? which leads to an extra flip 
-    //
-    //     * how is this possible, generation check should avoid ? 
-    //       YES but : flipping all edges of a triangle leads to confusion 
-    //   
-    //     * moral of story : dont flip all edges of a triangle
-    //       at one subdiv if you wish to maintain sanity, instead try 
-    //       to pace the flips so one flip happens 
-    //
-    //     putting the middle face first enables flips to happen for every 
-    //     centroid subdiv as there is always an adjacent other that has been split
-    //     already to flip with 
-    //
-    //     seems that subdiv face order needs to contiguous, so need to 
-    //     arrange face order like that... around in circles ?
-    //
-    //  how to generate a list of faces ... 
-    //
 */
-    typedef typename T::VertexFaceIter      VFI ; 
-    typedef typename T::FaceEdgeIter        FEI ; 
-    typedef typename T::VertexOHalfedgeIter   VOHI ;
 
+
+template <typename T>
+void NOpenMeshSubdiv<T>::sqrt3_split_r( FH fh, int depth )
+{
     int base_id = prop.get_identity( fh ); 
-    int base_gen = prop.get_generation( fh ); 
+    int base_gen = prop.get_fgeneration( fh ); 
     bool even = base_gen % 2 == 0 ; 
 
     if(verbosity > 2) std::cout << desc_face(fh, "sqrt3_split") << " depth " << std::setw(4) << depth << std::endl ;  
@@ -214,12 +233,12 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, int depth )
 
             iface++ ; 
             prop.set_identity(   new_face, base_id*100 + iface ) ;
-            prop.set_generation( new_face, base_gen + 1 ) ;
+            prop.set_fgeneration( new_face, base_gen + 1 ) ;
 
             if(verbosity > 2) std::cout << desc_face(new_face, "even:nf") << std::endl  ;
             if(!adj_face.is_valid()) continue ;          // no adj_face on border
 
-            bool same_generation = prop.get_generation(adj_face) == base_gen + 1 ;
+            bool same_generation = prop.get_fgeneration(adj_face) == base_gen + 1 ;
             if(verbosity > 2) std::cout << desc_face(adj_face, "adj_face") << ( same_generation ? " DO_FLIP" : "" ) << std::endl ; 
             if( same_generation ) sqrt3_flip_edge( next_heh );
         }
@@ -230,7 +249,7 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, int depth )
         FH  adj_face = next_opposite_face(heh) ;
         if(adj_face.is_valid())           // no adj_face on border
         { 
-            bool adj_behind = prop.get_generation(adj_face) == base_gen - 2 ;
+            bool adj_behind = prop.get_fgeneration(adj_face) == base_gen - 2 ;
             if(verbosity > 2) std::cout << desc_face(adj_face, "(odd)") << ( adj_behind ? " RECURSE" : "" ) << std::endl ;   
             if(adj_behind) sqrt3_split_r(adj_face, depth+1) ;  
         }
@@ -238,41 +257,173 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r(typename T::FaceHandle fh, int depth )
 }
 
 
-template <typename T>
-std::string NOpenMeshSubdiv<T>::desc_face(const FH fh, const char* label)
-{
-     int id = prop.get_identity(fh) ;  
-     int gen = prop.get_generation(fh) ;
-
-     std::stringstream ss ; 
-     ss 
-       << std::setw(10) << label
-       << " fh " << std::setw(4) << fh 
-       << " id " << std::setw(4) << id 
-       << " gen " << std::setw(1) << gen
-       ; 
-
-     return ss.str();
-}
- 
-
 
 template <typename T>
-typename T::FaceHandle NOpenMeshSubdiv<T>::next_opposite_face(HEH heh)
+void NOpenMeshSubdiv<T>::sqrt3_refine( NOpenMeshFindType select, int param  )
 {
-    // next then opposite_halfedge face is adjacent 
-    // (hmm perhaps this depends on the vertex->halfedge ordering of the original mesh?) 
+/*
+    vertex valence:3 indicates a freshly added splitting vertex 
+    without any flips yet, avoid multi-flipping by requiring this
+*/
+    std::vector<FH> target ; 
+    find.find_faces( target, select,  param );
 
-    HEH nheh = mesh.next_halfedge_handle(heh);
-    HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  
-    FH  ofh = mesh.face_handle(oheh) ; 
-    return ofh ; 
+    bool contiguous = cfg.contiguous > 0 ; 
+    bool phased = cfg.phased > 0 ; 
+    bool split = cfg.split > 0 ;
+    bool flip = cfg.flip > 0 ;
+
+    int numflip = cfg.numflip ; 
+
+
+    LOG(info) << "sqrt3" 
+              << ( contiguous ? " CONTIGUOUS " : " " )
+              << ( phased ? " PHASED " : " " )
+              << ( split ? " SPLIT " : " " )
+              << ( flip ? " FLIP " : " " )
+              << " numflip " << numflip
+              << " verbosity " << verbosity
+              << " cfg " << cfg.desc()
+              << " n_target " << target.size()
+              << desc.desc_euler()
+              ;
+
+    assert( contiguous ^ phased );
+
+    if(phased)
+    {
+        std::vector<VH> centroid_vertices ; 
+        if(split)
+        {
+            for(unsigned i=0 ; i < target.size() ; i++) 
+            {
+                FH fh = target[i] ;
+                sqrt3_centroid_split_face(fh, centroid_vertices);
+            }
+            LOG(info) << " centroid_vertices " << centroid_vertices.size()  ; 
+        }
+
+        if(flip)
+        {
+            int numflip = centroid_vertices.size() ;
+            if( cfg.numflip < 0 )     numflip += cfg.numflip ;  // -ve numflip, reduces the total 
+            else if( cfg.numflip > 0) numflip = cfg.numflip ;   // +ve numflip, set absolute value
+            else if( cfg.numflip == 0) assert( numflip > 0 );   // leave asis 
+            int maxflip = cfg.maxflip ; 
+
+            LOG(info) << "FLIP centroid_vertices " << centroid_vertices.size()
+                      << " cfg.numflip " << cfg.numflip
+                      << " numflip " << numflip
+                      << " maxflip " << maxflip
+                      ;
+
+
+            for( int i=0 ; i < numflip ; i++)
+            {
+                VH cvh = centroid_vertices[i] ; 
+                if(mesh.valence(cvh)== 3) 
+                {
+                    sqrt3_flip_adjacent_edges(cvh, maxflip);
+                }
+                else
+                {
+                    std::cout << " valence skip-flip " << desc_vertex(cvh, "cvh") << std::endl ;  
+                }
+            } 
+        }
+    }
+    else
+    {
+        // contiguous mode
+        for(unsigned i=0 ; i < target.size() ; i++) 
+        {
+            FH fh = target[i] ;
+            sqrt3_split_r(fh, 0);
+        }
+    }
+
+
+    mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them across this point
 }
+
+
+template <typename T>
+void NOpenMeshSubdiv<T>::sqrt3_centroid_split_face(FH fh, std::vector<VH>& centroid_vertices)
+{
+    int base_id = prop.get_identity( fh ); 
+    int base_gen = prop.get_fgeneration( fh ); 
+    assert( base_gen % 2 == 0 && "expecting even fgeneration" ); 
+
+    P centroid = mesh.calc_face_centroid( fh );
+
+    bool added(false) ;
+
+    VH cvh = build.add_vertex_unique( centroid, added, epsilon );
+
+    if(!added) LOG(fatal) << desc_face(fh, "DUPE-CENTROID?") << desc(centroid) ;
+    assert(added); 
+
+    mesh.split( fh, cvh ); 
+    centroid_vertices.push_back(cvh);
+
+    int iface = 0 ; 
+    for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) // outgoing halfedges from the splitting vertex
+    {
+        HEH heh       = *vohi  ;                         assert( heh.is_valid() );
+        HEH next_heh  = mesh.next_halfedge_handle(heh);  assert( next_heh.is_valid() ) ; 
+        FH  new_face  = mesh.face_handle(heh) ;          assert( new_face.is_valid() );
+
+        iface++ ; 
+        prop.set_identity(   new_face, base_id*100 + iface ) ;
+        prop.set_fgeneration( new_face, base_gen + 1 ) ;
+    } 
+}
+
+template <typename T>
+void NOpenMeshSubdiv<T>::sqrt3_flip_adjacent_edges(const VH cvh, int maxflip)
+{
+    int nflip(0);
+    for( VOHI vohi=mesh.voh_iter(cvh); vohi.is_valid(); ++vohi) // outgoing halfedges from the splitting vertex
+    {
+        HEH heh       = *vohi  ;                         assert( heh.is_valid() );
+        FH  new_face  = mesh.face_handle(heh) ;          assert( new_face.is_valid() );
+        HEH next_heh  = mesh.next_halfedge_handle(heh);  assert( next_heh.is_valid() ) ; 
+
+        FH  adj_face  = next_opposite_face(heh) ;       
+
+        if(verbosity > 2) std::cout << desc_face(new_face, "even:nf") << std::endl  ;
+        if(!adj_face.is_valid()) continue ;   // no adj_face on border
+
+        bool same_fgeneration = prop.get_fgeneration(adj_face) == prop.get_fgeneration(new_face) ;
+
+        if(same_fgeneration)
+        { 
+            bool flip_limited = maxflip != 0 && nflip >= maxflip ; 
+            if(flip_limited)
+            {    
+                if(verbosity > 2) 
+                std::cout << desc_face(adj_face, "adj_face") 
+                          << " FLIP_LIMITED " 
+                          << " nflip " << nflip 
+                          << " maxflip " << maxflip 
+                          << std::endl ; 
+            }
+            else
+            {
+                if(verbosity > 2) 
+                std::cout << desc_face(adj_face, "adj_face") 
+                          << " DO_FLIP " 
+                          << " nflip " << nflip 
+                          << " maxflip " << maxflip 
+                          << std::endl ; 
  
+                sqrt3_flip_edge( next_heh );
+                nflip++ ; 
+            }
 
-
-
-
+        }
+    }
+}
 
 template <typename T>
 void NOpenMeshSubdiv<T>::sqrt3_flip_edge(typename T::HalfedgeHandle heh)
@@ -287,11 +438,11 @@ void NOpenMeshSubdiv<T>::sqrt3_flip_edge(typename T::HalfedgeHandle heh)
          FH  f0 = mesh.face_handle(a0);
          FH  f1 = mesh.face_handle(a1);
 
-         prop.increment_generation(f0);
-         prop.increment_generation(f1);
+         prop.increment_fgeneration(f0);
+         prop.increment_fgeneration(f1);
 
-         int f0gen =  prop.get_generation(f0) ;
-         int f1gen =  prop.get_generation(f1) ;
+         int f0gen =  prop.get_fgeneration(f0) ;
+         int f1gen =  prop.get_fgeneration(f1) ;
 
          std::cout 
              << " sqrt3_flip_edge " << eh
@@ -309,6 +460,63 @@ void NOpenMeshSubdiv<T>::sqrt3_flip_edge(typename T::HalfedgeHandle heh)
 
 
 
+
+
+template <typename T>
+typename T::FaceHandle NOpenMeshSubdiv<T>::next_opposite_face(HEH heh)
+{
+    // next then opposite_halfedge face is adjacent 
+    // (hmm perhaps this depends on the vertex->halfedge ordering of the original mesh?) 
+
+    HEH nheh = mesh.next_halfedge_handle(heh);
+    HEH oheh = mesh.opposite_halfedge_handle(nheh) ;  
+    FH  ofh = mesh.face_handle(oheh) ; 
+    return ofh ; 
+}
+
+template <typename T>
+std::string NOpenMeshSubdiv<T>::desc_face(const FH fh, const char* label)
+{
+     int id = prop.get_identity(fh) ;  
+     int fgen = prop.get_fgeneration(fh) ;
+
+     std::stringstream ss ; 
+     ss 
+       << std::setw(10) << label
+       << " fh " << std::setw(4) << fh 
+       << " id " << std::setw(4) << id 
+       << " fgen " << std::setw(1) << fgen
+       ; 
+
+     return ss.str();
+}
+ 
+template <typename T>
+std::string NOpenMeshSubdiv<T>::desc_vertex(const VH vh, const char* label)
+{
+     std::stringstream ss ; 
+     ss 
+       << std::setw(10) << label
+       << " vh " << std::setw(4) << vh 
+       << " val " << mesh.valence(vh)
+       ; 
+     return ss.str();
+}
+
+template <typename T>
+std::string NOpenMeshSubdiv<T>::desc_edge(const EH eh, const char* label)
+{
+     std::stringstream ss ; 
+     ss 
+       << std::setw(10) << label
+       << " eh " << std::setw(4) << eh 
+       ; 
+     return ss.str();
+}
+
+
+
+ 
 
 template <typename T>
 void NOpenMeshSubdiv<T>::create_soup(typename T::FaceHandle fh, const nnode* other  )

@@ -1,23 +1,31 @@
 #include "NOpenMeshFind.hpp"
 
+#include <deque>  
 #include <algorithm>  
 #include <iostream>
 #include <iomanip>
 #include <sstream>
 
+#include <boost/lexical_cast.hpp>
+
 #include "PLOG.hh"
 
 #include "Nuv.hpp"
 
-#include "NOpenMeshFind.hpp"
+#include "NOpenMeshCfg.hpp"
 #include "NOpenMeshProp.hpp"
 #include "NOpenMesh.hpp"
+#include "NOpenMeshFind.hpp"
 
 
 template <typename T>
-NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop, int verbosity )
+NOpenMeshFind<T>::NOpenMeshFind( T& mesh, 
+                                  const NOpenMeshCfg& cfg, 
+                                  const NOpenMeshProp<T>& prop, 
+                                  int verbosity )
     :
     mesh(mesh),
+    cfg(cfg),
     prop(prop),
     verbosity(verbosity)
  {} 
@@ -26,21 +34,33 @@ NOpenMeshFind<T>::NOpenMeshFind( T& mesh, const NOpenMeshProp<T>& prop, int verb
 
 
 template <typename T>
-struct NOpenMeshFaceOrder
+struct NOpenMeshOrder
 {
     typedef typename T::FaceHandle FH  ; 
+
+    NOpenMeshOrder(NOpenMeshOrderType order) : order(order) {} ;  
+
     bool operator() (const FH a, const FH b) const 
     {
-        return  !(a<b) ;
+        bool cmp = false ; 
+        switch(order)
+        {
+           case ORDER_DEFAULT_FACE: cmp = a < b     ;break;
+           case ORDER_REVERSE_FACE: cmp = !(a < b)  ;break;
+        }
+        return cmp  ;
     }
+
+    NOpenMeshOrderType order ; 
 };
 
 
 
-template <typename T>
-void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel, int param)
-{
 
+
+template <typename T>
+void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel, int param) const 
+{
     typedef typename T::ConstFaceIter        FI ; 
 
     faces.clear();
@@ -59,6 +79,8 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
         {
            case FIND_ALL_FACE      :    selected = true                             ; break ; 
            case FIND_IDENTITY_FACE :    selected = prop.is_identity_face(fh, param) ; break ;
+           case FIND_EVENGEN_FACE  :    selected = prop.is_even_fgeneration(fh, param) ; break ;
+           case FIND_ODDGEN_FACE   :    selected = prop.is_odd_fgeneration(fh, param) ; break ;
            case FIND_FACEMASK_FACE :    selected = prop.is_facemask_face(fh, param) ; break ;
            case FIND_REGULAR_FACE  :    selected = is_regular_face(fh, param)  ; break ; 
            case FIND_INTERIOR_FACE :    selected = is_interior_face(fh, param) ; break ; 
@@ -74,18 +96,200 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
               << " param " << param
               << " count " << faces.size()
               << " totface " << totface
+              << " cfg.reversed " << cfg.reversed
               ; 
 
-     NOpenMeshFaceOrder<T> order ; 
-     std::sort( faces.begin(), faces.end(), order );
+    if(totface > 1)
+    {
+        sort_faces(faces);
+    }
+}
+
+template <typename T>
+void NOpenMeshFind<T>::sort_faces(std::vector<FH>& faces) const 
+{
+    if(cfg.sortcontiguous > 0)
+    {
+        sort_faces_contiguous(faces);
+    }
+    else
+    {
+        NOpenMeshOrderType face_order = ORDER_DEFAULT_FACE ;
+        if(cfg.reversed > 0)
+        {
+            LOG(warning) << "using reversed face order" ; 
+            face_order = ORDER_REVERSE_FACE ;         
+        }
+        NOpenMeshOrder<T> order(face_order) ; 
+        std::sort( faces.begin(), faces.end(), order );
+    }
+}
+
+template <typename T>
+bool NOpenMeshFind<T>::are_contiguous(const FH a, const FH b) const 
+{
+    for (CFFI cffi = mesh.cff_iter(a); cffi.is_valid(); ++cffi) 
+    {
+        const FH fh = *cffi ; 
+        if( fh == b ) return true ; 
+    }
+    return false ; 
+}
+
+
+
+
+
+
+template <typename T>
+void NOpenMeshFind<T>::dump_contiguity( const std::vector<FH>& faces ) const 
+{
+
+
+    std::cout << std::setw(2) << "  " ;  
+    for(unsigned i=0 ; i < faces.size() ; i++) std::cout << std::setw(3) << faces[i] ; 
+    std::cout << std::endl ;
+
+    for(unsigned i=0 ; i < faces.size() ; i++) 
+    {
+        for(unsigned j=0 ; j < faces.size() ; j++) 
+        {
+            if( j == 0 ) std::cout << std::setw(3) << i ;  
+            if( i == j )
+            {
+                std::cout << " - " ; 
+            }
+            else
+            {
+                const FH a = faces[i] ; 
+                const FH b = faces[j] ; 
+                bool contig = are_contiguous(a,b) ;
+
+                //int a_id = prop.get_identity(a);
+                //int b_id = prop.get_identity(b);
+
+
+                std::cout << ( contig ? " C " : " . " ) ;
+            } 
+        }
+        std::cout << std::endl ;
+    }
+}
+
+
+
+ 
+
+template <typename T>
+void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const 
+{
+    if(faces.size()==0) return ; 
+
+    // hmm is direct contuguity to the last face needed ? or just to the clump of faces so far ?
+
+    std::deque<FH> q(faces.begin(), faces.end()); 
+    std::vector<FH> contiguous(faces.size()) ; 
+
+    FH cursor = q[0] ; 
+    int cursor_id = prop.get_identity(cursor) ;
+    contiguous.push_back(cursor);
+
+    std::map<int, std::string> idc ; 
+    for(int i=0 ; i < 10 ; i++) idc[i] = boost::lexical_cast<std::string>(i) ; 
+    //for(int i=10 ; i < 24 ; i++) idc[i] = boost::lexical_cast<std::string>( i-10 + 'a' ) ; 
+
+    idc[10] = "a" ; 
+    idc[11] = "b" ; 
+    idc[12] = "c" ; 
+    idc[13] = "d" ; 
+    idc[14] = "e" ; 
+    idc[15] = "f" ; 
+    idc[16] = "g" ; 
+    idc[17] = "h" ; 
+    idc[18] = "i" ; 
+    idc[19] = "j" ; 
+    idc[20] = "k" ; 
+    idc[21] = "l" ; 
+    idc[22] = "m" ; 
+    idc[23] = "n" ; 
+    idc[24] = "o" ; 
+    idc[25] = "p" ; 
+    idc[26] = "q" ; 
+    idc[27] = "r" ; 
+    idc[27] = "r" ; 
+
+
+
+    // keep pulling faces from the queue, 
+    // if they are contiguous with prior face 
+    // proceed to add them, if not try with the next...
+    // continue until all faces are added
+    // ... this of course assumes they are actually all
+    // contiguous 
+
+    int steps(0); 
+
+    while(!q.empty() && steps < 200)
+    {
+        FH candidate = q.back(); q.pop_back() ; 
+        int candidate_id = prop.get_identity(candidate) ; 
+
+
+
+        bool is_contiguous = are_contiguous(cursor, candidate) ;
+
+        std::cout 
+            << " q " << std::setw(3) << q.size()
+            << " c " << std::setw(3) << contiguous.size()
+            << " cursor    " << std::setw(3) << cursor
+            << " candidate " << std::setw(3) << candidate
+            << " cursor_id    " << std::setw(3) << cursor_id
+            << " candidate_id " << std::setw(3) << candidate_id
+            << " idc " << std::setw(3) << idc[candidate_id]
+            << ( is_contiguous ? " is_contiguous " : "" )
+            << std::endl
+            ;
+
+        if(is_contiguous)
+        {
+            contiguous.push_back(candidate);
+            cursor = candidate ; 
+            cursor_id = candidate_id ; 
+        }  
+        else
+        { 
+            q.push_front(candidate);
+        }
+
+        steps++ ; 
+
+    } 
+
+    assert( contiguous.size() == faces.size() );   
+
+    LOG(info) << "NOpenMeshFind<T>::sort_faces_contiguous"
+              << " faces " << faces.size()
+              ;
+
+    for(unsigned i=0 ; i < faces.size() ; i++)
+    {
+         std::cout 
+             << "  fh:" << std::setw(10) << faces[i]
+             << " cfh:" << std::setw(10) << contiguous[i]
+             << std::endl ; 
+    }
+
+
+
 
 }
 
 
 
 
+
 template <typename T>
-bool NOpenMeshFind<T>::is_numboundary_face(const FH fh, int numboundary)
+bool NOpenMeshFind<T>::is_numboundary_face(const FH fh, int numboundary) const 
 {
     typedef typename T::ConstFaceEdgeIter   FEI ; 
     typedef typename T::EdgeHandle          EH ; 
@@ -107,7 +311,7 @@ bool NOpenMeshFind<T>::is_numboundary_face(const FH fh, int numboundary)
 
 
 template <typename T>
-bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
+bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence ) const 
 {
     // defining a "regular" face as one with all three vertices having 
     // valence equal to the argument value
@@ -132,7 +336,7 @@ bool NOpenMeshFind<T>::is_regular_face(const FH fh, int valence )
 
 
 template <typename T>
-bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin )
+bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin ) const 
 {
     for (FVI fvi=mesh.cfv_iter(fh); fvi.is_valid(); ++fvi)
     {

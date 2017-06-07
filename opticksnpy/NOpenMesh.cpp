@@ -38,27 +38,20 @@ const char* NOpenMesh<T>::MeshModeString(NOpenMeshMode_t meshmode)
 
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::spawn_left()
+NOpenMesh<T>* NOpenMesh<T>::spawn(const nnode* subnode)
 {
-    return new NOpenMesh<T>(node->left, level, verbosity, ctrl, meshmode, epsilon ) ;
-}
-template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::spawn_right()
-{
-    return new NOpenMesh<T>(node->right, level, verbosity, ctrl, meshmode, epsilon ) ;
+    return new NOpenMesh<T>(subnode, level, verbosity, ctrl, cfg.cfg, meshmode,  epsilon ) ;
 }
 
-
- 
-
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, NOpenMeshMode_t meshmode, float epsilon)
+NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, const char* polycfg, NOpenMeshMode_t meshmode, float epsilon)
     :
+    cfg(polycfg),
     prop(mesh),
     desc(mesh, prop),
-    find(mesh, prop, verbosity),
+    find(mesh, cfg, prop, verbosity),
     build(mesh, prop, desc, find, verbosity),
-    subdiv(mesh, prop, desc, find, build, verbosity, epsilon ),
+    subdiv(mesh, cfg, prop, desc, find, build, verbosity, epsilon),
 
     node(node), 
     level(level), 
@@ -81,6 +74,7 @@ void NOpenMesh<T>::init()
     LOG(info) << "NOpenMesh<T>::init()"
               << " meshmode " << meshmode 
               << " MeshModeString " << MeshModeString(meshmode) 
+              << " cfg " << cfg.desc()
               ; 
 
     build_csg();
@@ -95,53 +89,22 @@ void NOpenMesh<T>::check()
     LOG(info) << "NOpenMesh<T>::check OK" ; 
 }
 
-
-
-template <typename T>
-void NOpenMesh<T>::one_subdiv(NOpenMeshFindType select, int param, const nnode* /*other*/ )
-{
-    std::vector<FH> target ; 
-    find.find_faces( target, select,  param );
-
-    subdiv.sqrt3_refine( target );
-
-}
- 
-
-
-
 template <typename T>
 void NOpenMesh<T>::subdiv_test()
 {
     unsigned nloop0 = find.find_boundary_loops() ;
     LOG(info) << "subdiv_test START " 
               << " ctrl " << ctrl 
+              << " cfg " << cfg.desc()
               << " verbosity " << verbosity
               << " nloop0 " << nloop0
               << desc.desc_euler()
               ;
-    if(verbosity > 3) std::cout << desc.faces() << std::endl ;  
+    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 
-    const nnode* other = NULL ; 
 
-    one_subdiv(FIND_ALL_FACE, -1, other) ;
-    one_subdiv(FIND_ALL_FACE, -1, other) ;
+    subdiv.sqrt3_refine( FIND_ALL_FACE, -1 );
 
-    //one_subdiv(FIND_IDENTITY_FACE, 101 , other);
-    //one_subdiv(FIND_IDENTITY_FACE, 201 , other);
-
-    //one_subdiv(FIND_ALL_FACE, -1, other) ;
-
-    //one_subdiv(FIND_NONBOUNDARY_FACE, -1, other);
-    //one_subdiv(FIND_FACEMASK_FACE, -1, other);
-
-    //one_subdiv(FIND_BOUNDARY_FACE, -1, other);
-    //one_subdiv(FIND_NONBOUNDARY_FACE, -1, other);
-
-    //one_subdiv(FIND_IDENTITY_FACE, 101 , other);
-    //one_subdiv(FIND_IDENTITY_FACE, 2, other);
-    //one_subdiv(FIND_IDENTITY_FACE,  101, other);
- 
 
     unsigned nloop1 = find.find_boundary_loops() ;
     LOG(info) << "subdiv_test DONE " 
@@ -151,7 +114,7 @@ void NOpenMesh<T>::subdiv_test()
               << desc.desc_euler()
               ;
 
-    if(verbosity > 3) std::cout << desc.faces() << std::endl ;  
+    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 }
 
 
@@ -203,8 +166,8 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
                   << " MeshModeString " << MeshModeString(meshmode)
                   ; 
 
-        leftmesh = spawn_left() ; 
-        rightmesh = spawn_right() ; 
+        leftmesh = spawn(node->left) ; 
+        rightmesh = spawn(node->right) ; 
 
 
         LOG(info) 
@@ -283,8 +246,8 @@ void NOpenMesh<T>::combine_hybrid( )
     leftmesh->build.mark_faces( node->right );
     rightmesh->build.mark_faces( node->left );
 
-    leftmesh->one_subdiv( FIND_FACEMASK_FACE, -1, node->right);
-    rightmesh->one_subdiv( FIND_FACEMASK_FACE, -1, node->left);
+    leftmesh->subdiv.sqrt3_refine( FIND_FACEMASK_FACE, -1 );
+    rightmesh->subdiv.sqrt3_refine( FIND_FACEMASK_FACE, -1 );
 
     leftmesh->build.mark_faces( node->right );
     rightmesh->build.mark_faces( node->left );
@@ -565,9 +528,11 @@ void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& 
 // debug shapes
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::BuildTest(int level, int verbosity, int ctrl)
+NOpenMesh<T>* NOpenMesh<T>::BuildTest(int level, int verbosity, int ctrl, const char* polycfg)
 {
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl ); 
+    NOpenMeshMode_t meshmode = COMBINE_HYBRID ;
+    float epsilon = 1e-5f  ;
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl, polycfg, meshmode, epsilon ); 
     switch(ctrl)
     {
        case   3: m->build.add_tripatch()       ; break ; 

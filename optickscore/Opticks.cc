@@ -340,6 +340,13 @@ OpticksCfg<Opticks>* Opticks::getCfg()
 {
     return m_cfg ; 
 }
+
+const char* Opticks::getRenderMode()
+{
+    const std::string& renderMode = m_cfg->getRenderMode();
+    return renderMode.c_str();
+}
+
 OpticksRun* Opticks::getRun()
 {
     return m_run ;  

@@ -174,6 +174,7 @@ class OKCORE_API Opticks {
        unsigned getAnalyticPMTIndex();
    public:
        OpticksCfg<Opticks>* getCfg();
+       const char*          getRenderMode();
        std::string          getG4GunConfig();
        std::string          getAnaKey();
        OpticksResource*     getResource(); 
