@@ -259,89 +259,94 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r( FH fh, int depth )
 
 
 template <typename T>
-void NOpenMeshSubdiv<T>::sqrt3_refine( NOpenMeshFindType select, int param  )
+void NOpenMeshSubdiv<T>::sqrt3_refine_phased( const std::vector<FH>& target )
 {
-/*
-    vertex valence:3 indicates a freshly added splitting vertex 
-    without any flips yet, avoid multi-flipping by requiring this
-*/
-    std::vector<FH> target ; 
-    find.find_faces( target, select,  param );
-
-    bool contiguous = cfg.contiguous > 0 ; 
-    bool phased = cfg.phased > 0 ; 
     bool split = cfg.split > 0 ;
     bool flip = cfg.flip > 0 ;
 
-    int numflip = cfg.numflip ; 
-
-
-    LOG(info) << "sqrt3" 
-              << ( contiguous ? " CONTIGUOUS " : " " )
-              << ( phased ? " PHASED " : " " )
+    LOG(info) << "sqrt3_refine_phased" 
               << ( split ? " SPLIT " : " " )
-              << ( flip ? " FLIP " : " " )
-              << " numflip " << numflip
               << " verbosity " << verbosity
               << " cfg " << cfg.desc()
               << " n_target " << target.size()
               << desc.desc_euler()
               ;
 
+    std::vector<VH> centroid_vertices ; 
+    if(split)
+    {
+        for(unsigned i=0 ; i < target.size() ; i++) 
+        {
+            FH fh = target[i] ;
+            sqrt3_centroid_split_face(fh, centroid_vertices);
+        }
+        LOG(info) << " centroid_vertices " << centroid_vertices.size()  ; 
+    }
+
+    if(flip)
+    {
+        int numflip = centroid_vertices.size() ;
+        if( cfg.numflip < 0 )     numflip += cfg.numflip ;  // -ve numflip, reduces the total 
+        else if( cfg.numflip > 0) numflip = cfg.numflip ;   // +ve numflip, set absolute value
+        else if( cfg.numflip == 0) assert( numflip > 0 );   // leave asis 
+        int maxflip = cfg.maxflip ; 
+
+        LOG(info) << "FLIP centroid_vertices " << centroid_vertices.size()
+                  << " cfg.numflip " << cfg.numflip
+                  << " numflip " << numflip
+                  << " maxflip " << maxflip
+                  ;
+
+
+        for( int i=0 ; i < numflip ; i++)
+        {
+            VH cvh = centroid_vertices[i] ; 
+            if(mesh.valence(cvh)== 3) 
+            {
+                sqrt3_flip_adjacent_edges(cvh, maxflip);
+               // vertex valence:3 indicates a freshly added splitting vertex 
+               // without any flips yet, avoid multi-flipping by requiring this
+            }
+            else
+            {
+                std::cout << " valence skip-flip " << desc_vertex(cvh, "cvh") << std::endl ;  
+            }
+        } 
+    }
+}
+
+template <typename T>
+void NOpenMeshSubdiv<T>::sqrt3_refine_contiguous( std::vector<FH>& target )
+{
+    find.sort_faces_contiguous( target );
+    for(unsigned i=0 ; i < target.size() ; i++) 
+    {
+        FH fh = target[i] ;
+        sqrt3_split_r(fh, 0);
+    }
+}
+
+
+
+template <typename T>
+void NOpenMeshSubdiv<T>::sqrt3_refine( NOpenMeshFindType select, int param  )
+{
+    std::vector<FH> target ; 
+    find.find_faces( target, select,  param );
+
+    bool contiguous = cfg.contiguous > 0 ; 
+    bool phased = cfg.phased > 0 ; 
+
     assert( contiguous ^ phased );
 
     if(phased)
     {
-        std::vector<VH> centroid_vertices ; 
-        if(split)
-        {
-            for(unsigned i=0 ; i < target.size() ; i++) 
-            {
-                FH fh = target[i] ;
-                sqrt3_centroid_split_face(fh, centroid_vertices);
-            }
-            LOG(info) << " centroid_vertices " << centroid_vertices.size()  ; 
-        }
-
-        if(flip)
-        {
-            int numflip = centroid_vertices.size() ;
-            if( cfg.numflip < 0 )     numflip += cfg.numflip ;  // -ve numflip, reduces the total 
-            else if( cfg.numflip > 0) numflip = cfg.numflip ;   // +ve numflip, set absolute value
-            else if( cfg.numflip == 0) assert( numflip > 0 );   // leave asis 
-            int maxflip = cfg.maxflip ; 
-
-            LOG(info) << "FLIP centroid_vertices " << centroid_vertices.size()
-                      << " cfg.numflip " << cfg.numflip
-                      << " numflip " << numflip
-                      << " maxflip " << maxflip
-                      ;
-
-
-            for( int i=0 ; i < numflip ; i++)
-            {
-                VH cvh = centroid_vertices[i] ; 
-                if(mesh.valence(cvh)== 3) 
-                {
-                    sqrt3_flip_adjacent_edges(cvh, maxflip);
-                }
-                else
-                {
-                    std::cout << " valence skip-flip " << desc_vertex(cvh, "cvh") << std::endl ;  
-                }
-            } 
-        }
+         sqrt3_refine_phased(target);
     }
     else
     {
-        // contiguous mode
-        for(unsigned i=0 ; i < target.size() ; i++) 
-        {
-            FH fh = target[i] ;
-            sqrt3_split_r(fh, 0);
-        }
+         sqrt3_refine_contiguous(target);
     }
-
 
     mesh.garbage_collection();  // NB this invalidates handles, so dont hold on to them across this point
 }

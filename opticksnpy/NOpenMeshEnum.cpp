@@ -14,6 +14,9 @@ const char* NOpenMeshEnum::FIND_NONBOUNDARY_FACE_ = "FIND_NONBOUNDARY_FACE" ;
 const char* NOpenMeshEnum::FIND_BOUNDARY_FACE_ = "FIND_BOUNDARY_FACE" ;
 const char* NOpenMeshEnum::FIND_REGULAR_FACE_ = "FIND_REGULAR_FACE" ;
 const char* NOpenMeshEnum::FIND_INTERIOR_FACE_ = "FIND_INTERIOR_FACE" ;
+const char* NOpenMeshEnum::FIND_CORNER_FACE_ = "FIND_CORNER_FACE" ;
+const char* NOpenMeshEnum::FIND_SIDE_FACE_ = "FIND_SIDE_FACE" ;
+const char* NOpenMeshEnum::FIND_SIDECORNER_FACE_ = "FIND_SIDECORNER_FACE" ;
 
 const char* NOpenMeshEnum::FindType( NOpenMeshFindType select )
 {
@@ -29,6 +32,9 @@ const char* NOpenMeshEnum::FindType( NOpenMeshFindType select )
         case FIND_BOUNDARY_FACE    : s="FIND_BOUNDARY_FACE"    ;break; 
         case FIND_REGULAR_FACE     : s="FIND_REGULAR_FACE"     ;break; 
         case FIND_INTERIOR_FACE    : s="FIND_INTERIOR_FACE"    ;break; 
+        case FIND_CORNER_FACE      : s="FIND_CORNER_FACE"      ;break; 
+        case FIND_SIDE_FACE        : s="FIND_SIDE_FACE"        ;break; 
+        case FIND_SIDECORNER_FACE  : s="FIND_SIDECORNER_FACE"  ;break; 
     }
     return s ; 
 }

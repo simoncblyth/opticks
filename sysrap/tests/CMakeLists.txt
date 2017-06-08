@@ -9,6 +9,7 @@ set(TEST_SOURCES
    SEnvTest.cc
    SSysTest.cc
    SProcTest.cc
+   SBase36Test.cc
    SDigestTest.cc
    OpticksCMakeConfigTest.cc
    PLogTest.cc 

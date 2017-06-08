@@ -10,7 +10,10 @@ typedef enum {
    FIND_NONBOUNDARY_FACE,
    FIND_BOUNDARY_FACE,
    FIND_REGULAR_FACE,
-   FIND_INTERIOR_FACE
+   FIND_INTERIOR_FACE,
+   FIND_CORNER_FACE,
+   FIND_SIDE_FACE,
+   FIND_SIDECORNER_FACE
 } NOpenMeshFindType ; 
 
 
@@ -34,6 +37,9 @@ struct NPY_API NOpenMeshEnum
     static const char* FIND_BOUNDARY_FACE_ ;
     static const char* FIND_REGULAR_FACE_ ;
     static const char* FIND_INTERIOR_FACE_ ; 
+    static const char* FIND_CORNER_FACE_ ; 
+    static const char* FIND_SIDE_FACE_ ; 
+    static const char* FIND_SIDECORNER_FACE_ ; 
 
     static const char* FindType( NOpenMeshFindType find );
 

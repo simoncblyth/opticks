@@ -4,11 +4,8 @@ project(${name})
 
 
 
-#file(GLOB TEST_SOURCES "*Test.cc")
-#LogTest.cc
-#LookupTest.cc
 
-set(TEST_SOURCES
+set(_TEST_SOURCES
 
 EnvTest.cc
 NPYBaseTest.cc
@@ -121,6 +118,24 @@ NCSGBSPTest.cc
 NuvTest.cc
 
 )
+
+set(TEST_SOURCES
+
+
+NOpenMeshTest.cc
+NOpenMeshCfgTest.cc
+NOpenMeshFindTest.cc
+NOpenMeshCombineTest.cc
+NPolygonizerTest.cc
+NCSGBSPTest.cc
+NuvTest.cc
+
+
+
+)
+
+
+
 
 
 

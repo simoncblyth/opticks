@@ -101,8 +101,16 @@ Digital Domain
 rgriswold at d2.com
 
 
+Graph Traversal : Tricolor Algorithm : Breadth First Search
+--------------------------------------------------------------
 
+* http://www.cs.cornell.edu/courses/cs2112/2012sp/lectures/lec24/lec24-12sp.html
 
+* http://hhoppe.com/edgetrav.pdf
+* https://www.researchgate.net/publication/2274908_A_Breadth-First_Approach_To_Efficient_Mesh_Traversal
+
+* http://oa.upm.es/21749/1/INVE_MEM_2011_114411.pdf
+* ~/opticks_refs/mesh_traversal_and_sorting_INVE_MEM_2011_114411.pdf
 
 
 

@@ -15,8 +15,8 @@ struct NPY_API  NOpenMeshFind
     typedef typename T::FaceHandle FH ; 
     typedef typename T::Point      P ; 
     typedef typename T::VertexHandle         VH ; 
-    typedef typename T::ConstFaceVertexIter  FVI ; 
-    typedef typename T::ConstFaceFaceIter   CFFI ;  // cff_iter(fh)
+    typedef typename T::ConstFaceVertexIter  CFVI ; 
+    typedef typename T::ConstFaceFaceIter    CFFI ;  // cff_iter(fh)
 
     NOpenMeshFind( T& mesh, 
                    const NOpenMeshCfg&      cfg,
@@ -25,13 +25,28 @@ struct NPY_API  NOpenMeshFind
 
     int find_boundary_loops() ;
 
+    bool                    is_selected(const FH fh, NOpenMeshFindType sel, int param) const ;
+   
+
+    std::string desc_face(const FH fh) const ;
+    std::string desc_face_i(const FH fh) const ;
+    std::string desc_face_v(const FH fh) const ;
+
+    typename T::FaceHandle first_face(const std::vector<FH>& faces, NOpenMeshFindType sel, int param) const ;
+    typename T::FaceHandle first_face(                              NOpenMeshFindType sel, int param) const ;
+     // NB check mesh.is_valid_handle to see if a face was found
+
     void find_faces(std::vector<FH>& faces, NOpenMeshFindType find, int param) const ;
     void sort_faces(           std::vector<FH>& faces) const ;
     void sort_faces_contiguous(std::vector<FH>& faces) const ;
+    void sort_faces_contiguous_faster(std::vector<FH>& faces) const ;
+
     bool are_contiguous(const FH a, const FH b) const ;
     void dump_contiguity( const std::vector<FH>& faces ) const ;
 
 
+    unsigned get_num_boundary(const FH fh) const ;
+    bool is_side_or_corner_face(const FH fh) const ;
     bool is_numboundary_face(const FH fh, int numboundary) const ;
     bool is_regular_face(const FH fh, int valence ) const ;
     bool is_interior_face(const FH fh, int margin ) const ;

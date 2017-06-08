@@ -50,6 +50,9 @@ struct NPY_API  NOpenMeshSubdiv
 
     void refine(FH fh); 
     void sqrt3_refine( NOpenMeshFindType select, int param  );
+    void sqrt3_refine_phased( const std::vector<FH>& target );
+    void sqrt3_refine_contiguous( std::vector<FH>& target );
+
 
     void sqrt3_split_r( FH fh, int depth );
 

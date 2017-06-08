@@ -102,6 +102,23 @@ bool NOpenMeshProp<T>::is_identity_face(FH fh, int identity ) const
 }
 
 
+template <typename T>
+std::string NOpenMeshProp<T>::get_identity_b36(FH fh) const 
+{
+    int face_id = get_identity( fh );
+    return b36(face_id) ; 
+}
+
+template <typename T>
+std::string NOpenMeshProp<T>::get_index_b36(FH fh) const 
+{
+    return b36(fh.idx()) ; 
+}
+
+
+
+
+
 
 template <typename T>
 int NOpenMeshProp<T>::get_identity( FH fh ) const 

@@ -41,6 +41,7 @@ set(SOURCES
     SRenderer.cc
     STimes.cc
     SLog.cc
+    SBase36.cc
     md5.cc
 ) 
 

@@ -3,6 +3,7 @@
 #include <vector>
 struct nuv ; 
 
+#include "SBase36.hh"
 #include "NOpenMeshType.hpp"
 
 template <typename T>
@@ -43,6 +44,9 @@ struct NPY_API  NOpenMeshProp
     int  get_identity( FH fh ) const ;
     void set_identity( FH fh, int identity );
 
+    std::string get_identity_b36( FH fh ) const ;
+    std::string get_index_b36( FH fh ) const ;
+
 
     int  get_fgeneration( FH fh ) const ;
     void set_fgeneration( FH fh, int fgen );
@@ -77,6 +81,7 @@ struct NPY_API  NOpenMeshProp
 
     OpenMesh::HPropHandleT<int>    h_boundary_loop ;
 
+    SBase36 b36 ; 
 };
  
 

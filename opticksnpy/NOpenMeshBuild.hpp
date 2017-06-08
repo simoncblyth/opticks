@@ -21,6 +21,9 @@ struct NPY_API  NOpenMeshBuild
     typedef typename T::HalfedgeHandle  HEH ; 
     typedef typename T::Point         P ; 
 
+    static const char* TRIPATCH ; 
+    static const char* HEXPATCH ; 
+
     NOpenMeshBuild( T& mesh, 
                     NOpenMeshProp<T>& prop, 
                     const NOpenMeshDesc<T>& desc, 

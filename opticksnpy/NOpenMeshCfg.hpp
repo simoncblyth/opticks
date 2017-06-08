@@ -34,6 +34,7 @@ struct NPY_API NOpenMeshCfg
 
     NOpenMeshCfg(const char* cfg=NULL);
     void init();
+    void parse(const char* cfg);
 
     NOpenMeshCfgType  parse_key(const char* k) const ;
     int               parse_val(const char* v) const ;

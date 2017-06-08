@@ -562,11 +562,12 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
 
 
 
+
+
 template <typename T>
 void NOpenMeshBuild<T>::add_tripatch()
 {
     if(verbosity > 1) LOG(info) << "add_tripatch" ; 
- 
 
     double pi = boost::math::constants::pi<double>() ;
     double sa[2],ca[2] ;
@@ -590,18 +591,6 @@ void NOpenMeshBuild<T>::add_tripatch()
 
     for(unsigned i=0 ; i < 6 ; i++) v[i] = mesh.add_vertex(p[i] - mid) ;
 
-    /*
-    6  verts :                                 4 faces
-                                                                     
-                 5                                +           
-                / \                              /4\
-               2---4                            +---+
-              / \ / \                          /2\1/3\
-             0---1---3                        +---+---+
-    */
-
-     
-
     // check suspicion of vertex ordering dependancy   
     // seems to not be so, so long as face order is OK, see below
     //int permute[4] = {2,0,1,1} ;
@@ -613,12 +602,25 @@ void NOpenMeshBuild<T>::add_tripatch()
     add_face_(v[4],v[1],v[3], 3, permute[2] );
     add_face_(v[2],v[4],v[5], 4, permute[3] );
 
-
-
     // add_face_ order dictates subdiv order...
     // see NOpenMeshSubdiv.cpp for notes about face ordering sensitivity of sqrt3 subdiv
-
 }
+
+template <typename T>
+const char* NOpenMeshBuild<T>::TRIPATCH = R"LITERAL("
+    /*
+    6  verts :                                 4 faces
+                                               3 corner faces with 2 boundary edges 
+                                                                     
+                 5                                +           
+                / \                              /4\
+               2---4                            +---+
+              / \ / \                          /2\1/3\
+             0---1---3                        +---+---+
+    */
+)LITERAL" ;
+
+
 
 
 
@@ -664,21 +666,6 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
     add_face_(v[0],v[5],v[6], 5);
     add_face_(v[0],v[6],v[1], 6);
 
-    /*
-    19 verts :                                 24 faces
-    12 around boundary, 7 in interior          12 with edge on boundary
-                                                                     
-                 9---e---8                        +---+---+           
-                / \ / \ / \                      /d\c/b\a/9\
-               f---3---2---d                    +---+---+---+
-              / \ / \ / \ / \                  /f\e/3\2/1\8/7\
-             a---4---0---1---7                +---+---+---+---+
-              \ / \ / \ / \ /                  \g/h\4/5\6/n\o/
-               g---5---6---i                    +---5---6---i
-                \ / \ / \ /                      \i/j\k/l\m/
-                 b---h---c                        +---+---+        
-    */
-
     if(!inner_only)
     {
         add_face_(v[1],v[I],v[7], O);  // <-- huh with this at end, get a missed edge with 1st round of boundary face subdiv
@@ -706,6 +693,29 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
         add_face_(v[6],v[I],v[1], N);
     }
 }
+
+
+template <typename T>
+const char* NOpenMeshBuild<T>::HEXPATCH = R"LITERAL("
+/*
+    19 verts :                                 24 faces
+    12 around boundary, 7 in interior          12 with edge on boundary
+                                               (no corners ie 2 boundary edges)
+                                                                     
+                 9---e---8                        +---+---+          
+                / \ / \ / \                      /d\c/b\a/9\
+               f---3---2---d                    +---+---+---+        
+              / \ / \ / \ / \                  /f\e/3\2/1\8/7\
+             a---4---0---1---7                +---+---+---+---+      
+              \ / \ / \ / \ /                  \g/h\4/5\6/n\o/       
+               g---5---6---i                    +---5---6---i        
+                \ / \ / \ /                      \i/j\k/l\m/         
+                 b---h---c                        +---+---+          
+*/
+)LITERAL" ;
+
+
+
 
 // suspect need to use "rosette" pattern of minimum seed vertices
 // to fit in with sqrt3_subdiv_r

@@ -21,7 +21,7 @@ const char* NOpenMeshCfg::CFG_NUMFLIP_ = "numflip" ;
 const char* NOpenMeshCfg::CFG_MAXFLIP_ = "maxflip" ;
 const char* NOpenMeshCfg::CFG_REVERSED_ = "reversed" ;
 
-const char* NOpenMeshCfg::DEFAULT = "phased=1,contiguous=0,split=1,flip=1,numflip=0,maxflip=0,reversed=0,sortcontiguous=0" ;
+const char* NOpenMeshCfg::DEFAULT = "phased=0,contiguous=0,split=1,flip=1,numflip=0,maxflip=0,reversed=0,sortcontiguous=0" ;
 
 NOpenMeshCfgType  NOpenMeshCfg::parse_key(const char* k) const 
 {
@@ -46,19 +46,27 @@ int NOpenMeshCfg::parse_val(const char* v) const
 
 NOpenMeshCfg::NOpenMeshCfg(const char* cfg_) 
      : 
-     cfg(cfg_ ? strdup(cfg_) : DEFAULT )
+     cfg(cfg_ ? strdup(cfg_) : NULL )
 {
     init();
 }
 
 void NOpenMeshCfg::init()
 {
-    std::cout << "parsing " << cfg << std::endl ; 
+    parse(DEFAULT);
+    parse(cfg);
+}
+
+
+void NOpenMeshCfg::parse(const char* cfg_)
+{
+    if(!cfg_) return ; 
+    std::cout << "parsing " << cfg_ << std::endl ; 
 
     typedef std::pair<std::string,std::string> KV ;
     typedef std::vector<KV>::const_iterator KVI ; 
 
-    std::vector<KV> ekv = BStr::ekv_split(cfg,',',"=");
+    std::vector<KV> ekv = BStr::ekv_split(cfg_,',',"=");
 
     for(KVI it=ekv.begin() ; it!=ekv.end() ; it++)
     {   
