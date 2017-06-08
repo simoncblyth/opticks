@@ -39,9 +39,11 @@ struct NPY_API  NOpenMeshFind
     void find_faces(std::vector<FH>& faces, NOpenMeshFindType find, int param) const ;
     void sort_faces(           std::vector<FH>& faces) const ;
     void sort_faces_contiguous(std::vector<FH>& faces) const ;
-    void sort_faces_contiguous_faster(std::vector<FH>& faces) const ;
+    void sort_faces_contiguous_monolithic(std::vector<FH>& faces) const ;
 
     bool are_contiguous(const FH a, const FH b) const ;
+
+    void dump_faces(           std::vector<FH>& faces) const ;
     void dump_contiguity( const std::vector<FH>& faces ) const ;
 
 

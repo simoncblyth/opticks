@@ -53,8 +53,11 @@ void test_sort_contiguous(int ctrl)
 
     std::vector<FH> faces ; 
     find.find_faces(faces, FIND_ALL_FACE, -1);
-    //find.sort_faces_contiguous(faces);
-    find.sort_faces_contiguous_faster(faces);
+
+    find.sort_faces_contiguous(faces);
+    //find.sort_faces_contiguous_monolithic(faces);
+
+    find.dump_faces(faces); 
 
     find.dump_contiguity(faces);
 }

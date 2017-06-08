@@ -1,5 +1,6 @@
 #include "Nuv.hpp"
 //#include "NOpenMesh.hpp"
+#include "NOpenMeshEnum.hpp"
 #include "NOpenMeshProp.hpp"
 
 template <typename T>
@@ -150,8 +151,8 @@ template <typename T>
 bool NOpenMeshProp<T>::is_facemask_face(FH fh, int fmsk ) const 
 {
     int facemask = get_facemask( fh );
-    bool pure = facemask == ALL_OUTSIDE_OTHER || facemask == ALL_INSIDE_OTHER ;
-    return fmsk > -1 ? facemask == fmsk : !pure ;
+    bool pure = facemask == PROP_OUTSIDE_OTHER || facemask == PROP_INSIDE_OTHER ;
+    return fmsk == PROP_FRONTIER ? !pure : facemask == fmsk ;
 }
 
 

@@ -319,11 +319,25 @@ template <typename T>
 void NOpenMeshSubdiv<T>::sqrt3_refine_contiguous( std::vector<FH>& target )
 {
     find.sort_faces_contiguous( target );
+
+    if(verbosity > 0)
+    LOG(info) << "NOpenMeshSubdiv<T>::sqrt3_refine_contiguous START"
+              << " verbosity " << verbosity 
+              << " target " << target.size()
+              ;
+
     for(unsigned i=0 ; i < target.size() ; i++) 
     {
         FH fh = target[i] ;
         sqrt3_split_r(fh, 0);
     }
+
+    if(verbosity > 0)
+    LOG(info) << "NOpenMeshSubdiv<T>::sqrt3_refine_contiguous DONE"
+              << " verbosity " << verbosity 
+              << " target " << target.size()
+              ;
+
 }
 
 
@@ -449,6 +463,7 @@ void NOpenMeshSubdiv<T>::sqrt3_flip_edge(typename T::HalfedgeHandle heh)
          int f0gen =  prop.get_fgeneration(f0) ;
          int f1gen =  prop.get_fgeneration(f1) ;
 
+         if(verbosity > 2)
          std::cout 
              << " sqrt3_flip_edge " << eh
              << " f0gen " << f0gen 

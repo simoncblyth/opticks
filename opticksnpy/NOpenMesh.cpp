@@ -103,8 +103,10 @@ void NOpenMesh<T>::subdiv_test()
     if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 
 
-    subdiv.sqrt3_refine( FIND_ALL_FACE, -1 );
-
+    for(int i=0 ; i < cfg.numsubdiv ; i++)
+    {
+        subdiv.sqrt3_refine( FIND_ALL_FACE, -1 );
+    }
 
     unsigned nloop1 = find.find_boundary_loops() ;
     LOG(info) << "subdiv_test DONE " 
@@ -246,32 +248,41 @@ void NOpenMesh<T>::combine_hybrid( )
     leftmesh->build.mark_faces( node->right );
     rightmesh->build.mark_faces( node->left );
 
-    leftmesh->subdiv.sqrt3_refine( FIND_FACEMASK_FACE, -1 );
-    rightmesh->subdiv.sqrt3_refine( FIND_FACEMASK_FACE, -1 );
 
-    leftmesh->build.mark_faces( node->right );
-    rightmesh->build.mark_faces( node->left );
+    if(cfg.numsubdiv > 0)
+    {
+        NOpenMeshFindType sel = FIND_FACEMASK_FACE ;
+        leftmesh->subdiv.sqrt3_refine( sel , -1 );
+        rightmesh->subdiv.sqrt3_refine( sel , -1 );
+
+        leftmesh->build.mark_faces( node->right );
+        rightmesh->build.mark_faces( node->left );
+
+        // despite subdiv should still be closed zero boundary meshes
+        assert( leftmesh->find.find_boundary_loops() == 0) ;   
+        assert( rightmesh->find.find_boundary_loops() == 0) ;  
+    }
 
 
-    // despite subdiv should still be closed zero boundary meshes
-    assert( leftmesh->find.find_boundary_loops() == 0) ;   
-    assert( rightmesh->find.find_boundary_loops() == 0) ;  
 
 
     if(node->type == CSG_UNION)
     {
-        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
-        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon );
+        //NOpenMeshPropType prop = PROP_OUTSIDE_OTHER ;
+        NOpenMeshPropType prop = PROP_FRONTIER ;
+        build.copy_faces( leftmesh,  prop, epsilon );
+        build.copy_faces( rightmesh, prop, epsilon );
     }
     else if(node->type == CSG_INTERSECTION)
     {
-        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
-        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+        NOpenMeshPropType prop = PROP_INSIDE_OTHER ;
+        build.copy_faces( leftmesh,  prop , epsilon  );
+        build.copy_faces( rightmesh, prop, epsilon  );
     }
     else if(node->type == CSG_DIFFERENCE )
     {
-        build.copy_faces( leftmesh,  NOpenMeshProp<T>::ALL_OUTSIDE_OTHER, epsilon  );
-        build.copy_faces( rightmesh, NOpenMeshProp<T>::ALL_INSIDE_OTHER, epsilon  );
+        build.copy_faces( leftmesh,  PROP_OUTSIDE_OTHER, epsilon  );
+        build.copy_faces( rightmesh, PROP_INSIDE_OTHER, epsilon  );
     }
 
 

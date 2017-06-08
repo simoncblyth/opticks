@@ -23,6 +23,13 @@ typedef enum {
 } NOpenMeshOrderType ; 
 
 
+typedef enum {
+   PROP_OUTSIDE_OTHER = 0,
+   PROP_INSIDE_OTHER = 7,
+   PROP_FRONTIER = -1  
+} NOpenMeshPropType ; 
+
+
 
 #include "NPY_API_EXPORT.hh"
 
@@ -47,6 +54,11 @@ struct NPY_API NOpenMeshEnum
     static const char* ORDER_DEFAULT_FACE_ ; 
     static const char* ORDER_REVERSE_FACE_ ; 
     static const char* OrderType( NOpenMeshOrderType order );
+
+    static const char* PROP_OUTSIDE_OTHER_ ; 
+    static const char* PROP_INSIDE_OTHER_ ; 
+    static const char* PROP_FRONTIER_ ; 
+    static const char* PropType( NOpenMeshPropType prop );
 
 
 

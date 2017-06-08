@@ -13,7 +13,8 @@ typedef enum
     CFG_NUMFLIP    ,
     CFG_MAXFLIP    ,
     CFG_REVERSED   ,
-    CFG_SORTCONTIGUOUS
+    CFG_SORTCONTIGUOUS,
+    CFG_NUMSUBDIV
 } NOpenMeshCfgType ;
 
 //  .,+10s/\s*\(CFG\w*\).*$/static const char* \1_ ;/g
@@ -31,6 +32,7 @@ struct NPY_API NOpenMeshCfg
     static const char* CFG_MAXFLIP_ ;
     static const char* CFG_REVERSED_ ;
     static const char* CFG_SORTCONTIGUOUS_ ;
+    static const char* CFG_NUMSUBDIV_ ;
 
     NOpenMeshCfg(const char* cfg=NULL);
     void init();
@@ -51,6 +53,7 @@ struct NPY_API NOpenMeshCfg
     int maxflip ; 
     int reversed ; 
     int sortcontiguous ; 
+    int numsubdiv ; 
  
 };
 

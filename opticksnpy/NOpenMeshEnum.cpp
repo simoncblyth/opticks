@@ -2,8 +2,31 @@
 #include "NOpenMeshEnum.hpp"
 
 /*
-  .,+10s/\s*\(FIND\w*\).*$/static const char* \1_ = "\1" ;/gc
+  .,+10s/\s*\(PROP\w*\).*$/const char* NOpenMeshEnum::\1_ = "\1" ;/gc
 */
+
+const char* PROP_OUTSIDE_OTHER_ = "PROP_OUTSIDE_OTHER" ;
+const char* PROP_INSIDE_OTHER_ = "PROP_INSIDE_OTHER" ;
+const char* PROP_FRONTIER_ = "PROP_FRONTIER" ;
+
+
+//   .,+30s/\s*\(\S*\).*/case \1 : s="\1" ;break; /gc
+
+
+
+const char* NOpenMeshEnum::PropType( NOpenMeshPropType prop )
+{
+    const char* s = NULL ; 
+    switch(prop)
+    {
+        case PROP_OUTSIDE_OTHER : s="PROP_OUTSIDE_OTHER" ;break; 
+        case PROP_INSIDE_OTHER : s="PROP_INSIDE_OTHER" ;break; 
+        case PROP_FRONTIER : s="PROP_FRONTIER" ;break; 
+    }
+    return s ;
+}
+
+
 
 const char* NOpenMeshEnum::FIND_ALL_FACE_ = "FIND_ALL_FACE" ;
 const char* NOpenMeshEnum::FIND_IDENTITY_FACE_ = "FIND_IDENTITY_FACE" ;
@@ -56,8 +79,6 @@ const char* NOpenMeshEnum::OrderType( NOpenMeshOrderType order )
     }
     return s ; 
 }
-
-
 
 
 

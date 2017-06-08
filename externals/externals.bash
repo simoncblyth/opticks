@@ -19,7 +19,7 @@ oimplicitmesher-(){  . $(opticks-home)/externals/oimplicitmesher.bash   && oimpl
 odcs-(){             . $(opticks-home)/externals/odcs.bash              && odcs-env $* ; }
 oyoctogl-(){         . $(opticks-home)/externals/oyoctogl.bash          && oyoctogl-env $* ; }
 ocsgbsp-(){          . $(opticks-home)/externals/ocsgbsp.bash           && ocsgbsp-env $* ; }
-oopenflipper-(){     . $(opticks-home)/externals/oopenflipper.bash      && oopenflipper-env $* ; }
+oof-(){              . $(opticks-home)/externals/oof.bash               && oof-env $* ; }
 
 g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
 

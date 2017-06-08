@@ -12,12 +12,6 @@ struct NPY_API  NOpenMeshProp
     typedef typename T::VertexHandle VH ; 
     typedef typename T::FaceHandle   FH ; 
 
-    enum
-    {
-        ALL_OUTSIDE_OTHER = 0,
-        ALL_INSIDE_OTHER = 7  
-    };
-
 
     static const char* F_INSIDE_OTHER ; 
     static const char* F_GENERATION ; 
@@ -35,7 +29,7 @@ struct NPY_API  NOpenMeshProp
     void init_status();
     void update_normals();
 
-    bool is_facemask_face( FH fh, int facemask=-1 ) const ;
+    bool is_facemask_face( FH fh, int facemask ) const ;
     int  get_facemask( FH fh ) const ;
     void set_facemask( FH fh, int facemask );
 

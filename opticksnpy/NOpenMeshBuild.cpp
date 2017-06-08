@@ -529,10 +529,8 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
 
     for( FI f=other->mesh.faces_begin() ; f != other->mesh.faces_end(); ++f ) 
     {
-        const FH& fh = *f ;  
-        int _f_inside_other = other->mesh.property(other->prop.f_inside_other, fh) ; 
-
-        if( _f_inside_other == facemask )
+        const FH fh = *f ;  
+        if(other->prop.is_facemask_face(fh, facemask))
         {  
             VH nvh[3] ; 
             int fvert(0);
@@ -708,7 +706,7 @@ const char* NOpenMeshBuild<T>::HEXPATCH = R"LITERAL("
               / \ / \ / \ / \                  /f\e/3\2/1\8/7\
              a---4---0---1---7                +---+---+---+---+      
               \ / \ / \ / \ /                  \g/h\4/5\6/n\o/       
-               g---5---6---i                    +---5---6---i        
+               g---5---6---i                    +---+---+---+       
                 \ / \ / \ /                      \i/j\k/l\m/         
                  b---h---c                        +---+---+          
 */

@@ -103,8 +103,6 @@ typename T::FaceHandle NOpenMeshFind<T>::first_face(NOpenMeshFindType sel, int p
     return first ;  
 }
 
-
-
 template <typename T>
 typename T::FaceHandle NOpenMeshFind<T>::first_face(const std::vector<FH>& faces, NOpenMeshFindType sel, int param) const 
 {
@@ -122,9 +120,6 @@ typename T::FaceHandle NOpenMeshFind<T>::first_face(const std::vector<FH>& faces
     } 
     return first ;   
 }
-
-
-
 
 template <typename T>
 void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel, int param) const 
@@ -159,8 +154,8 @@ void NOpenMeshFind<T>::sort_faces(std::vector<FH>& faces) const
 {
     if(cfg.sortcontiguous > 0)
     {
-        //sort_faces_contiguous(faces);
-        sort_faces_contiguous_faster(faces);
+        sort_faces_contiguous(faces);
+        //sort_faces_contiguous_monolithic(faces);
     }
     else
     {
@@ -191,6 +186,10 @@ template <typename T>
 void NOpenMeshFind<T>::dump_contiguity( const std::vector<FH>& faces ) const 
 {
     unsigned nf = faces.size(); 
+    LOG(info) << "NOpenMeshFind<T>::dump_contiguity"
+              << " nf " << nf 
+               ; 
+
 
     std::cout << std::setw(2) << "  " ;  
     for(unsigned i=0 ; i < nf ; i++) std::cout << std::setw(3) << prop.get_identity_b36(faces[i]) ; 
@@ -217,23 +216,6 @@ void NOpenMeshFind<T>::dump_contiguity( const std::vector<FH>& faces ) const
 }
 
 
-
-/*
-
-keep pulling faces from the queue, 
-if they are contiguous with prior face 
-proceed to add them, if not try with the next...
-continue until all faces are added
-... this of course assumes they are actually all
-contiguous 
-
-In addition to being contiguous, also need to avoid ending on an interior
-face to avoid the last piece in jigsaw 3-flips issue, need to end on side or corner face.
-
-... hmm difficult to arrange to end somewhere so instead start there
-and reverse the sequence as a post step
-
-*/
 
 template <typename T>
 std::string NOpenMeshFind<T>::desc_face_i(const FH fh) const 
@@ -275,29 +257,60 @@ std::string NOpenMeshFind<T>::desc_face(const FH fh) const
     return ss.str();
 }
 
+template <typename T>
+void NOpenMeshFind<T>::dump_faces(std::vector<FH>& faces) const 
+{
+    LOG(info) << "NOpenMeshFind<T>::dump_faces"
+              << " verbosity " << verbosity
+              << " nf " << faces.size()
+              ; 
+
+    for(unsigned i=0 ; i < faces.size() ; i++)
+         std::cout 
+            << std::setw(4) << i 
+            << " "
+            << desc_face( faces[i] ) 
+            << std::endl
+             ;
+
+}
 
 
 
 template <typename T>
-void NOpenMeshFind<T>::sort_faces_contiguous_faster(std::vector<FH>& faces) const 
+void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const 
 {
-
     if(faces.size()==0) return ; 
 
+    if(verbosity > 0)
+    LOG(info) << "NOpenMeshFind<T>::sort_faces_contiguous"
+              << " faces " << faces.size()
+              ;
+
+
+    
+
     FH seed = first_face( faces, FIND_SIDECORNER_FACE, -1 ); 
+
+    if(!mesh.is_valid_handle(seed))
+    {
+        LOG(warning) << "failed to find SIDECORNER seed, trying FIND_ALL_FACE ";
+        seed = first_face( faces, FIND_ALL_FACE, -1 ); 
+    }
+
+
     assert( mesh.is_valid_handle(seed)  ); 
 
 
-    NOpenMeshTraverse<T> trav(mesh, *this, faces, seed, 3) ; 
 
-    for(unsigned i=0 ; i < faces.size() ; i++)
-         std::cout  << desc_face( faces[i] ) << std::endl ;
 
+
+    NOpenMeshTraverse<T> trav(mesh, *this, faces, seed, verbosity) ; 
 
 } 
 
 template <typename T>
-void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const 
+void NOpenMeshFind<T>::sort_faces_contiguous_monolithic(std::vector<FH>& faces) const 
 {
 /*
     This does not yield a nice continuous traversal of 
@@ -319,12 +332,22 @@ void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const
     * graph traversals : tricolor algorithm 
     * http://www.cs.cornell.edu/courses/cs2112/2012sp/lectures/lec24/lec24-12sp.html
 
-    On a more prosaic level, this can also be made much faster by 
 
+In addition to being contiguous, also need to avoid ending on an interior
+face to avoid the last piece in jigsaw 3-flips issue, need to end on side or corner face.
+
+... hmm difficult to arrange to end somewhere so instead start there
+and reverse the sequence as a post step
 
 */
 
-    if(faces.size()==0) return ; 
+
+    assert( 0 && "dont use this use the NOpenMeshTraverse one "); 
+
+
+    unsigned nfaces = faces.size() ;
+
+    if(nfaces ==0) return ; 
 
     // pick seed face at border
     FH seed = first_face( faces, FIND_SIDECORNER_FACE, -1 ); 
@@ -349,7 +372,6 @@ void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const
     assert( it != q.end() );
     q.erase(it) ; 
     assert( q.size() == faces.size() - 1 );
-
 
     std::deque<FH> contiguous  ; 
     contiguous.push_back(seed);
@@ -395,6 +417,9 @@ void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const
             q.push_front(candidate);
             since++ ;
         }
+
+        assert( contiguous.size() + q.size() == nfaces );
+
 
         if(is_stuck && offset + 1 < contiguous.size() )
         {
