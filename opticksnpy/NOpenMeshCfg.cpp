@@ -21,8 +21,9 @@ const char* NOpenMeshCfg::CFG_NUMFLIP_ = "numflip" ;
 const char* NOpenMeshCfg::CFG_MAXFLIP_ = "maxflip" ;
 const char* NOpenMeshCfg::CFG_REVERSED_ = "reversed" ;
 const char* NOpenMeshCfg::CFG_NUMSUBDIV_ = "numsubdiv" ;
+const char* NOpenMeshCfg::CFG_OFFSAVE_ = "offsave" ;
 
-const char* NOpenMeshCfg::DEFAULT = "phased=0,contiguous=0,split=1,flip=1,numflip=0,maxflip=0,reversed=0,sortcontiguous=0,numsubdiv=1" ;
+const char* NOpenMeshCfg::DEFAULT = "phased=0,contiguous=0,split=1,flip=1,numflip=0,maxflip=0,reversed=0,sortcontiguous=0,numsubdiv=1,offsave=0" ;
 
 NOpenMeshCfgType  NOpenMeshCfg::parse_key(const char* k) const 
 {
@@ -37,6 +38,7 @@ NOpenMeshCfgType  NOpenMeshCfg::parse_key(const char* k) const
     else if(strcmp(k,CFG_REVERSED_)==0)   param = CFG_REVERSED ;
     else if(strcmp(k,CFG_SORTCONTIGUOUS_)==0) param = CFG_SORTCONTIGUOUS ;
     else if(strcmp(k,CFG_NUMSUBDIV_)==0) param = CFG_NUMSUBDIV ;
+    else if(strcmp(k,CFG_OFFSAVE_)==0) param = CFG_OFFSAVE ;
     return param ; 
 }  
 
@@ -54,6 +56,7 @@ void NOpenMeshCfg::set( NOpenMeshCfgType k, int v )
         case CFG_REVERSED       : reversed = v       ; break ; 
         case CFG_SORTCONTIGUOUS : sortcontiguous = v ; break ; 
         case CFG_NUMSUBDIV      : numsubdiv = v       ; break ; 
+        case CFG_OFFSAVE        : offsave = v       ; break ; 
     }
 }
 
@@ -71,6 +74,7 @@ std::string NOpenMeshCfg::describe(const char* msg, const char* pfx, const char*
         << pfx << CFG_REVERSED_       << kvdelim << reversed << delim 
         << pfx << CFG_SORTCONTIGUOUS_ << kvdelim << sortcontiguous << delim 
         << pfx << CFG_NUMSUBDIV_      << kvdelim << numsubdiv << delim 
+        << pfx << CFG_OFFSAVE_        << kvdelim << offsave << delim 
         ;
 
     return ss.str();

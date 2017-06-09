@@ -796,10 +796,10 @@ container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboo
 box = CSG("box", param=[0,0,0,201], boundary="$(tboolean-testobject)", level="2" )
 sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", level="4"  )
 
-polycfg="contiguous=1,reversed=0,numsubdiv=0"
+polycfg="contiguous=1,reversed=0,numsubdiv=0,offsave=1"
 obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4", verbosity="2", polycfg=polycfg  )
 
-# only root node poly is obeyed ?
+# only root node poly and polycfg are obeyed, and distributed to the entire tree
 
 CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
 #CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
@@ -833,16 +833,16 @@ container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboo
 
 #ctrl = "4"  # tetrahedron
 #ctrl = "6"  # cube
-ctrl = "66"  
+#ctrl = "66"  
 # hexpatch_inner : contiguous works, but not with reversed, showing face order sensitivity 
 # hexpatch_inner : phased fails to do last flip, when reversed fails to do two flips
 
-#ctrl = "666"  # hexpatch 
+ctrl = "666"  # hexpatch 
 # hexpatch : contiguous works until reversed=1 showing face order sensitivity
 # hexpatch : phased is missing ~6 flips 
 
-cfg0="phased=1,split=1,flip=1,numflip=0,reversed=0,maxflip=0"
-cfg1="contiguous=1,reversed=1,numsubdiv=0"
+cfg0="phased=1,split=1,flip=1,numflip=0,reversed=0,maxflip=0,offsave=1"
+cfg1="contiguous=1,reversed=1,numsubdiv=1,offsave=1"
 
 box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY", level="0", ctrl=ctrl, verbosity="4", polycfg=cfg1 )
 

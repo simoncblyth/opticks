@@ -7,6 +7,7 @@
 #include "NOpenMeshEnum.hpp"
 #include "NOpenMeshBoundary.hpp"
 
+struct nnode ; 
 template <typename T> struct NOpenMeshProp ;
 
 template <typename T>
@@ -21,11 +22,12 @@ struct NPY_API  NOpenMeshFind
     NOpenMeshFind( T& mesh, 
                    const NOpenMeshCfg&      cfg,
                    NOpenMeshProp<T>& prop, 
-                   int verbosity );
+                   int verbosity, 
+                   const nnode* node);
 
 
 
-    void                  dump_boundary_loops(const char* msg="NOpenMeshFind::dump_boundary_loops") ;
+    void                  dump_boundary_loops(const char* msg="NOpenMeshFind::dump_boundary_loops", bool detail=false) ;
     int                   find_boundary_loops() ;
     unsigned              get_num_boundary_loops();
     NOpenMeshBoundary<T>& get_boundary_loop(unsigned i);
@@ -67,9 +69,10 @@ struct NPY_API  NOpenMeshFind
 
 
     T&                      mesh  ;
-    const NOpenMeshCfg&      cfg ; 
-    NOpenMeshProp<T>& prop ;
+    const NOpenMeshCfg&     cfg ; 
+    NOpenMeshProp<T>&       prop ;
     int                     verbosity ; 
+    const nnode*            node ;
 
     std::vector<NOpenMeshBoundary<T>> loops ; 
 

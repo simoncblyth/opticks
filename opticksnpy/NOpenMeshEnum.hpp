@@ -35,6 +35,8 @@ typedef enum {
 
 struct NPY_API NOpenMeshEnum 
 {
+    static unsigned OpenMeshVersion();
+
     static const char* FIND_ALL_FACE_ ; 
     static const char* FIND_IDENTITY_FACE_ ;
     static const char* FIND_EVENGEN_FACE_ ;

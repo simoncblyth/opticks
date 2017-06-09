@@ -402,10 +402,8 @@ void NOpenMeshDesc<T>::dump_faces(const char* msg ) const
 
 
 
-
-
 template <typename T>
-std::string NOpenMeshDesc<T>::operator()(const typename T::Point& pt) const 
+std::string NOpenMeshDesc<T>::desc_point(const typename T::Point& pt) 
 {
     std::stringstream ss ; 
     ss 
@@ -419,6 +417,14 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::Point& pt) const
         ;
 
     return ss.str();
+}
+
+
+
+template <typename T>
+std::string NOpenMeshDesc<T>::operator()(const typename T::Point& pt) const 
+{
+    return desc_point(pt);
 }
 
 

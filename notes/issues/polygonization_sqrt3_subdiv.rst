@@ -1,6 +1,35 @@
 Polygonization Sqrt3 Subdiv
 =============================
 
+Overview
+---------
+
+* progress kinda stymied by subdiv problems, 
+
+  perhaps OpenMesh multi-flip bug ...
+  so try out OpenFlipper which is using newer OpenMesh
+
+
+* actually polygonization is a once only task for a geometry, so 
+  taking a higher level view and using existing tools is entirely 
+  plausible : and of course if can get it to work at 
+  a high level can batch it somehow
+  
+
+Higher Level Approaches
+-------------------------
+
+* https://github.com/VTREEM/Carve
+
+
+
+
+
+BASH Funcs
+-------------
+
+
+
 ::
 
 
@@ -26,8 +55,6 @@ Polygonization Sqrt3 Subdiv
      826 
      827 EOP
      828 }
-
-
 
 
 ::

@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <OpenMesh/Core/System/config.hh>
 #include "NOpenMeshEnum.hpp"
 
 /*
@@ -12,6 +13,12 @@ const char* PROP_FRONTIER_ = "PROP_FRONTIER" ;
 
 //   .,+30s/\s*\(\S*\).*/case \1 : s="\1" ;break; /gc
 
+
+
+unsigned NOpenMeshEnum::OpenMeshVersion()
+{
+    return OM_VERSION ;  
+}
 
 
 const char* NOpenMeshEnum::PropType( NOpenMeshPropType prop )

@@ -35,8 +35,6 @@ Canonically used from
 
 
 
-
-
 */
 
 template <typename T>

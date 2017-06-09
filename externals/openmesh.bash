@@ -33,6 +33,12 @@ Repo
   gtest unittests 
 
 
+Joining Meshes
+--------------
+
+* http://www.lsis.org/louruding/doc/LOU_TMCE2008.pdf
+* ~/opticks_refs/direct_merging_of_meshes_EDF_LOU_TMCE2008.pdf
+
 
 Connectivity Traverse 
 -------------------------
@@ -1028,15 +1034,17 @@ EOU
 }
 
 openmesh-env(){  olocal- ; opticks- ; }
-openmesh-vers(){ echo 4.1 ; }
-#openmesh-vers(){ echo 6.1 ; }
+#openmesh-vers(){ echo 4.1 ; }
+openmesh-vers(){ echo 6.3 ; }
 
 openmesh-info(){ cat << EOI
 
     name : $(openmesh-name)
     dist : $(openmesh-dist)
 
-
+    dir  : $(openmesh-dir)
+    bdir : $(openmesh-bdir)
+    pfx  : $(openmesh-prefix)
 
 EOI
 }
@@ -1130,5 +1138,7 @@ openmesh--(){
 }
 
 
-
+openmesh-libs(){
+  ls -l $(openmesh-prefix)/lib/libOpenMesh*
+}
 

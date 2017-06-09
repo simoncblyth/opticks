@@ -26,14 +26,16 @@ template <typename T>
 NOpenMeshFind<T>::NOpenMeshFind( T& mesh, 
                                   const NOpenMeshCfg& cfg, 
                                   NOpenMeshProp<T>& prop, 
-                                  int verbosity )
+                                  int verbosity,
+                                  const nnode* node
+                                )
     :
     mesh(mesh),
     cfg(cfg),
     prop(prop),
-    verbosity(verbosity)
- {} 
-
+    verbosity(verbosity),
+    node(node)
+{} 
 
 
 
@@ -303,8 +305,6 @@ void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const
 
 
 
-
-
     NOpenMeshTraverse<T> trav(mesh, *this, faces, seed, verbosity) ; 
 
 } 
@@ -523,7 +523,7 @@ bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin ) const
 
 
 template <typename T>
-void NOpenMeshFind<T>::dump_boundary_loops(const char* msg)
+void NOpenMeshFind<T>::dump_boundary_loops(const char* msg, bool detail)
 {
     LOG(info) << msg ; 
     unsigned nloop = get_num_boundary_loops();
@@ -532,6 +532,15 @@ void NOpenMeshFind<T>::dump_boundary_loops(const char* msg)
     {
         NOpenMeshBoundary<T>& loop = get_boundary_loop(i);
         std::cout << loop.desc() << std::endl ; 
+    }
+
+    if(detail)
+    {
+        for(unsigned i=0 ; i < nloop ; i++)
+        {
+            NOpenMeshBoundary<T>& loop = get_boundary_loop(i);
+            loop.dump();
+        }
     }
 }
 
@@ -593,7 +602,7 @@ int NOpenMeshFind<T>::find_boundary_loops()
             {
                 he_bnd[i]++ ; 
 
-                NOpenMeshBoundary<T> bnd(mesh, prop, heh); 
+                NOpenMeshBoundary<T> bnd(mesh, prop, heh, node); 
                 loops.push_back(bnd);            
 
                 int loop_index = loops.size() ;

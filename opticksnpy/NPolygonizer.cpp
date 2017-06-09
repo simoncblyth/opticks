@@ -224,7 +224,8 @@ NTrianglesNPY* NPolygonizer::hybridMesher(NPolyMode_t polymode)
     int   level = m_meta->get<int>("level", "5" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
 
-    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode, m_polycfg ) ;
+    const char* treedir = m_csg->getTreeDir();
+    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode, m_polycfg, treedir ) ;
  
     tris = poly();
     return tris ;

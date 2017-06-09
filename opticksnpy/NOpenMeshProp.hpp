@@ -45,8 +45,6 @@ struct NPY_API  NOpenMeshProp
 
 
 
-
-
     int  get_fgeneration( FH fh ) const ;
     void set_fgeneration( FH fh, int fgen );
     void increment_fgeneration( FH fh );
@@ -62,6 +60,10 @@ struct NPY_API  NOpenMeshProp
     bool is_odd_vgeneration(const VH vh, int mingen) const ;
     void set_vgeneration_all( int vgen );
 #endif
+
+
+    float get_sdf_other(const VH vh) const ;
+    void  set_sdf_other(const VH vh, float sdf) const ;
 
 
     int  get_hbloop( HEH heh ) const ;

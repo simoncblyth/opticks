@@ -444,7 +444,8 @@ inside/outside for the vertices of the face
 
         float dist = sdf(pt[0], pt[1], pt[2]);
 
-        mesh.property(prop.v_sdf_other, vh ) = dist   ;
+        //mesh.property(prop.v_sdf_other, vh ) = dist   ;
+        prop.set_sdf_other( vh, dist ); 
 
         bool inside_other = dist < 0.f ; 
 

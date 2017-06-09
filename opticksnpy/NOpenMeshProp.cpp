@@ -198,6 +198,17 @@ void NOpenMeshProp<T>::set_fgeneration_all( int fgen )
 }
 
 
+template <typename T>
+float NOpenMeshProp<T>::get_sdf_other( const VH vh ) const 
+{
+    return mesh.property(v_sdf_other, vh) ; 
+}
+
+template <typename T>
+void NOpenMeshProp<T>::set_sdf_other( const VH vh, float sdf ) const 
+{
+    mesh.property(v_sdf_other, vh) = sdf ; 
+}
 
 
 

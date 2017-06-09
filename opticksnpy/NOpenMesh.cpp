@@ -18,7 +18,9 @@
 #include "NOpenMeshFind.hpp"
 #include "NOpenMeshBuild.hpp"
 
+
 #include <OpenMesh/Tools/Utils/MeshCheckerT.hh>
+
 
 
 template <typename T>
@@ -49,7 +51,7 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, c
     cfg(polycfg),
     prop(mesh),
     desc(mesh, prop),
-    find(mesh, cfg, prop, verbosity),
+    find(mesh, cfg, prop, verbosity, node),
     build(mesh, prop, desc, find, verbosity),
     subdiv(mesh, cfg, prop, desc, find, build, verbosity, epsilon),
 
@@ -62,6 +64,9 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, c
     leftmesh(NULL),
     rightmesh(NULL)
 {
+    unsigned omv = NOpenMeshEnum::OpenMeshVersion();
+    std::cout << "OpenMeshVersion " << std::hex << omv << std::dec << std::endl ; 
+
     init();
 }
 
@@ -269,6 +274,11 @@ void NOpenMesh<T>::combine_hybrid( )
         
         1. towards the retained parametric mesh which needs to be unchanged
         2. towards intersection that needs zippering
+
+
+        Trying refinement of frontiers shows subdiv issues, non-manifold meshes...
+        TODO:
+           look into the contiguous order being used... 
  
     */
 
@@ -296,9 +306,7 @@ void NOpenMesh<T>::combine_hybrid( )
         build.copy_faces( leftmesh,  prop, epsilon );
         //build.copy_faces( rightmesh, prop, epsilon );
 
-
-        subdiv.sqrt3_refine( FIND_ALL_FACE , -1 );  // test refining copied over frontier tris
-
+        //subdiv.sqrt3_refine( FIND_ALL_FACE , -1 );  // test refining copied over frontier tris
 
     }
     else if(node->type == CSG_INTERSECTION)
@@ -315,12 +323,10 @@ void NOpenMesh<T>::combine_hybrid( )
 
 
 
-
-
     int nloop = find.find_boundary_loops() ;
     // hmm expecting 2, but thats geometry specific
 
-    find.dump_boundary_loops();
+    find.dump_boundary_loops("find.dump_boundary_loops", true );
 
 
     if(verbosity > 0)

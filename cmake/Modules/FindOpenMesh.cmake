@@ -1,7 +1,6 @@
 
 set(OpenMesh_PREFIX "${OPTICKS_PREFIX}/externals")
-
-
+set(OpenMesh_VERSION "3.4")
 set(OpenMesh_SUFFIX "")
 
 ## For SUSE Linux without debug libs.
