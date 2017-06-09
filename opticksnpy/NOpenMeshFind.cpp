@@ -25,7 +25,7 @@
 template <typename T>
 NOpenMeshFind<T>::NOpenMeshFind( T& mesh, 
                                   const NOpenMeshCfg& cfg, 
-                                  const NOpenMeshProp<T>& prop, 
+                                  NOpenMeshProp<T>& prop, 
                                   int verbosity )
     :
     mesh(mesh),
@@ -522,6 +522,32 @@ bool NOpenMeshFind<T>::is_interior_face(const FH fh, int margin ) const
 
 
 
+template <typename T>
+void NOpenMeshFind<T>::dump_boundary_loops(const char* msg)
+{
+    LOG(info) << msg ; 
+    unsigned nloop = get_num_boundary_loops();
+    std::cout << " nloop " << nloop << std::endl ;
+    for(unsigned i=0 ; i < nloop ; i++)
+    {
+        NOpenMeshBoundary<T>& loop = get_boundary_loop(i);
+        std::cout << loop.desc() << std::endl ; 
+    }
+}
+
+
+template <typename T>
+unsigned  NOpenMeshFind<T>::get_num_boundary_loops()
+{
+    return loops.size();
+}
+template <typename T>
+NOpenMeshBoundary<T>& NOpenMeshFind<T>::get_boundary_loop(unsigned i)
+{
+    return loops[i] ; 
+}
+
+
 
 template <typename T>
 int NOpenMeshFind<T>::find_boundary_loops()
@@ -529,13 +555,11 @@ int NOpenMeshFind<T>::find_boundary_loops()
     //LOG(info) << "find_boundary_loops" ; 
 
     typedef typename T::FaceHalfedgeIter    FHI ; 
-    typedef typename T::ConstEdgeIter       EI ; 
+    typedef typename T::ConstEdgeIter       CEI ; 
     typedef typename T::EdgeHandle          EH ; 
     typedef typename T::HalfedgeHandle      HEH ; 
 
     typedef std::vector<HEH>              VHEH ; 
-    typedef typename VHEH::const_iterator VHEHI ; 
-
 
     unsigned he_bnd[3] ; 
     he_bnd[0] = 0 ; 
@@ -544,20 +568,16 @@ int NOpenMeshFind<T>::find_boundary_loops()
 
     loops.clear();
 
-    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e) 
-    {
-        EH eh = *e ; 
-        for(int i=0 ; i < 2 ; i++)
-        {
-            HEH heh = mesh.halfedge_handle(eh, i);
-            mesh.property(prop.h_boundary_loop, heh) = 0 ; 
-        }
-    }
+    prop.set_hbloop_all( 0 );  
 
+    // initialize to 0, then subsequenntly set 
+    // to =1-based loop indices
+    //
+    // NB the hbl labelling as loops are found prevents the loop finding 
+    // from being repeated for every heh, instead it is only done 
+    // for each distinct loop
 
-    // label halfedges with 1-based loop indices
-
-    for(EI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e)
+    for(CEI e=mesh.edges_begin() ; e != mesh.edges_end() ; ++e)
     {
         EH eh = *e ; 
         if(mesh.status(eh).deleted()) continue ; 
@@ -567,22 +587,24 @@ int NOpenMeshFind<T>::find_boundary_loops()
             HEH heh = mesh.halfedge_handle(eh, i);
             if(mesh.status(heh).deleted()) continue ; 
 
-            int hbl = mesh.property(prop.h_boundary_loop, heh) ; 
-
-            if(mesh.is_boundary(heh) && hbl == 0) 
+            int hbl = prop.get_hbloop(heh) ;
+ 
+            if(mesh.is_boundary(heh) && hbl == 0)  
             {
                 he_bnd[i]++ ; 
 
-                NOpenMeshBoundary<T> bnd(&mesh, heh); 
+                NOpenMeshBoundary<T> bnd(mesh, prop, heh); 
                 loops.push_back(bnd);            
 
-                for(VHEHI it=bnd.loop.begin() ; it != bnd.loop.end() ; it++) mesh.property(prop.h_boundary_loop, *it) = loops.size()  ; 
+                int loop_index = loops.size() ;
+                bnd.set_loop_index( loop_index ); // sets hbl for all heh in the loop
             }
         }
 
         he_bnd[2]++ ; 
     }
 
+/*
     if(verbosity > 0)
     LOG(info) << "is_boundary stats for halfedges"
               << " heh(0) " << he_bnd[0]      
@@ -590,6 +612,7 @@ int NOpenMeshFind<T>::find_boundary_loops()
               << " all " << he_bnd[2]
               << " loops " << loops.size()
               ;      
+*/
 
     return loops.size();
 }

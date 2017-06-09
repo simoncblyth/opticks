@@ -9,8 +9,10 @@ struct nuv ;
 template <typename T>
 struct NPY_API  NOpenMeshProp
 {
-    typedef typename T::VertexHandle VH ; 
-    typedef typename T::FaceHandle   FH ; 
+    typedef typename T::EdgeHandle     EH ; 
+    typedef typename T::HalfedgeHandle HEH ; 
+    typedef typename T::VertexHandle   VH ; 
+    typedef typename T::FaceHandle     FH ; 
 
 
     static const char* F_INSIDE_OTHER ; 
@@ -42,6 +44,9 @@ struct NPY_API  NOpenMeshProp
     std::string get_index_b36( FH fh ) const ;
 
 
+
+
+
     int  get_fgeneration( FH fh ) const ;
     void set_fgeneration( FH fh, int fgen );
     void increment_fgeneration( FH fh );
@@ -57,6 +62,13 @@ struct NPY_API  NOpenMeshProp
     bool is_odd_vgeneration(const VH vh, int mingen) const ;
     void set_vgeneration_all( int vgen );
 #endif
+
+
+    int  get_hbloop( HEH heh ) const ;
+    void set_hbloop( HEH heh, int hbl );
+    void set_hbloop_all( int hbl );
+
+
 
     nuv  get_uv( VH vh ) const ; 
     void set_uv( VH vh, nuv uv )  ; 

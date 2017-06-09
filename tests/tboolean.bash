@@ -793,17 +793,28 @@ from opticks.analytic.csg import CSG
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
-box = CSG("box", param=[0,0,0,200], boundary="$(tboolean-testobject)", level="2" )
+box = CSG("box", param=[0,0,0,201], boundary="$(tboolean-testobject)", level="2" )
 sph = CSG("sphere", param=[100,0,0,200], boundary="$(tboolean-testobject)", level="4"  )
 
 polycfg="contiguous=1,reversed=0,numsubdiv=0"
-obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4", verbosity="3", polycfg=polycfg  )
+obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly="HY", level="4", verbosity="2", polycfg=polycfg  )
 
 # only root node poly is obeyed ?
 
 CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
 #CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
 #CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
+
+
+"""
+* initially with box size and sphere radius equal, the poles of the sphere
+  were just touching the inside of the box : this is invisible in the ray trace but meant that 
+  the polecaps tris where classified as frontier as the poles were regarded as being 
+  outside the box (perhaps some epsiloning needed here) 
+  ... how to handle such tangency issues without manual tweaks ? 
+  
+
+"""
 
 EOP
 }

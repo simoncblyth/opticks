@@ -176,7 +176,8 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
     int num_vert = (nu+1)*(nv+1)*ns ; 
 
     if(verbosity > 0)
-    LOG(info) << "NOpenMeshBuikd<T>::add_parametric_primitive"
+    LOG(info) << "NOpenMeshBuild<T>::add_parametric_primitive"
+              << " verbosity " << verbosity
               << " ns " << ns
               << " nu " << nu
               << " nv " << nv
@@ -233,7 +234,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
             VH v01 = vh[i01] ;
             VH v11 = vh[i11] ;
 
-            if(verbosity > 2)
+            if(verbosity > 4)
             std::cout 
                   << " s " << std::setw(3)  << s
                   << " v " << std::setw(3)  << v
@@ -305,25 +306,25 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
 
             if( vmax_degenerate )
             {
-                if(verbosity > 2)
+                if(verbosity > 4)
                 std::cout << "vmax_degenerate" << std::endl ; 
                 add_face_( v00,v10,v11, identity );   // A (or C)
             } 
             else if ( vmin_degenerate )
             {
-                if(verbosity > 2)
+                if(verbosity > 4)
                 std::cout << "vmin_degenerate" << std::endl ; 
                 add_face_( v11, v01, v10, identity  );  // D (or B)
             }
             else if ( umin_degenerate )
             {
-                if(verbosity > 2)
+                if(verbosity > 4)
                 std::cout << "umin_degenerate" << std::endl ; 
                 add_face_( v00,v10,v11, identity );   // A (or D)
             }
             else if ( umax_degenerate )
             {
-                if(verbosity > 2)
+                if(verbosity > 4)
                 std::cout << "umax_degenerate" << std::endl ; 
                 add_face_( v00, v10, v01, identity ); // C  (or B)
             } 
@@ -357,7 +358,7 @@ void NOpenMeshBuild<T>::euler_check(const nnode* node, int level )
     int expect_nvertices = node->par_nvertices(nu, nv);
     bool nvertices_ok = nvertices == expect_nvertices ; 
 
-    if(verbosity > 0)
+    if(verbosity > 2)
     {
         LOG(info) << desc.desc_euler() ; 
         LOG(info) << "euler_check"

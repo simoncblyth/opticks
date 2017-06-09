@@ -22,6 +22,22 @@ typedef enum {
    COMBINE_CSGBSP = 0x1 << 1
 } NOpenMeshMode_t ; 
 
+/*
+NOpenMesh
+===========
+
+Canonically used from 
+
+   NCSG::LoadTree
+   NCSG::polygonize
+   NPolygonizer::hybridMesher
+   NHybridMesher::make_mesh
+
+
+
+
+
+*/
 
 template <typename T>
 struct NPY_API  NOpenMesh : NTriSource

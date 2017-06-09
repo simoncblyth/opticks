@@ -71,10 +71,12 @@ void NOpenMesh<T>::init()
 {
     if(!node) return ; 
 
+    if(verbosity > 4)
     LOG(info) << "NOpenMesh<T>::init()"
+              << " node.label " << ( node->label ? node->label : "-" )
               << " meshmode " << meshmode 
               << " MeshModeString " << MeshModeString(meshmode) 
-              << " cfg " << cfg.desc()
+              << cfg.brief()
               ; 
 
     build_csg();
@@ -86,6 +88,7 @@ template <typename T>
 void NOpenMesh<T>::check()
 {
     assert(OpenMesh::Utils::MeshCheckerT<T>(mesh).check()) ;
+    if(verbosity > 3)
     LOG(info) << "NOpenMesh<T>::check OK" ; 
 }
 
@@ -93,6 +96,7 @@ template <typename T>
 void NOpenMesh<T>::subdiv_test()
 {
     unsigned nloop0 = find.find_boundary_loops() ;
+    if(verbosity > 0)
     LOG(info) << "subdiv_test START " 
               << " ctrl " << ctrl 
               << " cfg " << cfg.desc()
@@ -109,6 +113,7 @@ void NOpenMesh<T>::subdiv_test()
     }
 
     unsigned nloop1 = find.find_boundary_loops() ;
+    if(verbosity > 0)
     LOG(info) << "subdiv_test DONE " 
               << " ctrl " << ctrl 
               << " verbosity " << verbosity
@@ -118,9 +123,6 @@ void NOpenMesh<T>::subdiv_test()
 
     if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 }
-
-
-
 
 
 template <typename T>
@@ -161,6 +163,7 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
         assert(node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE );
         LOG(info) 
                   << "NOpenMesh<T>::build_csg" 
+                  << cfg.brief()
                   << " making leftmesh rightmesh "
                   << " meshmode " << meshmode
                   << " COMBINE_HYBRID " << COMBINE_HYBRID
@@ -249,10 +252,31 @@ void NOpenMesh<T>::combine_hybrid( )
     rightmesh->build.mark_faces( node->left );
 
 
+    /*
+      hmm refinement expects to find a sidecorner to seed traverse... but 
+      leftmesh and rightmesh are complete meshes...
+
+      * Where to refine ? whilst still in the closed initial parametric meshes, 
+        as separate frontier patches or once in combined ?
+
+      * In general case there can be multiple frontier patches
+        (ie contiguous patches of tris with verts that are not pure left/right) 
+        from left and right, that need to be paired together and zippered 
+        and the combined into composite ... 
+
+        Each frontier patch "ring" should have two boundary loops, SDF 
+        value can distinguish.
+        
+        1. towards the retained parametric mesh which needs to be unchanged
+        2. towards intersection that needs zippering
+ 
+    */
+
     if(cfg.numsubdiv > 0)
     {
         NOpenMeshFindType sel = FIND_FACEMASK_FACE ;
-        leftmesh->subdiv.sqrt3_refine( sel , -1 );
+
+        leftmesh->subdiv.sqrt3_refine( sel , -1 );  // refining frontier tris
         rightmesh->subdiv.sqrt3_refine( sel , -1 );
 
         leftmesh->build.mark_faces( node->right );
@@ -264,14 +288,18 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
-
-
     if(node->type == CSG_UNION)
     {
         //NOpenMeshPropType prop = PROP_OUTSIDE_OTHER ;
         NOpenMeshPropType prop = PROP_FRONTIER ;
+
         build.copy_faces( leftmesh,  prop, epsilon );
-        build.copy_faces( rightmesh, prop, epsilon );
+        //build.copy_faces( rightmesh, prop, epsilon );
+
+
+        subdiv.sqrt3_refine( FIND_ALL_FACE , -1 );  // test refining copied over frontier tris
+
+
     }
     else if(node->type == CSG_INTERSECTION)
     {
@@ -286,8 +314,14 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
+
+
+
     int nloop = find.find_boundary_loops() ;
     // hmm expecting 2, but thats geometry specific
+
+    find.dump_boundary_loops();
+
 
     if(verbosity > 0)
     LOG(info) << "combine_hybrid"

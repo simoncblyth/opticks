@@ -20,10 +20,18 @@ struct NPY_API  NOpenMeshFind
 
     NOpenMeshFind( T& mesh, 
                    const NOpenMeshCfg&      cfg,
-                   const NOpenMeshProp<T>& prop, 
+                   NOpenMeshProp<T>& prop, 
                    int verbosity );
 
-    int find_boundary_loops() ;
+
+
+    void                  dump_boundary_loops(const char* msg="NOpenMeshFind::dump_boundary_loops") ;
+    int                   find_boundary_loops() ;
+    unsigned              get_num_boundary_loops();
+    NOpenMeshBoundary<T>& get_boundary_loop(unsigned i);
+
+
+
 
     bool                    is_selected(const FH fh, NOpenMeshFindType sel, int param) const ;
    
@@ -60,7 +68,7 @@ struct NPY_API  NOpenMeshFind
 
     T&                      mesh  ;
     const NOpenMeshCfg&      cfg ; 
-    const NOpenMeshProp<T>& prop ;
+    NOpenMeshProp<T>& prop ;
     int                     verbosity ; 
 
     std::vector<NOpenMeshBoundary<T>> loops ; 

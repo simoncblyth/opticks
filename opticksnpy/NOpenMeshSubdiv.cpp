@@ -134,8 +134,9 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
 template <typename T>
 void NOpenMeshSubdiv<T>::init()
 {
+    if(verbosity > 3)
     LOG(info) << "NOpenMeshSubdiv<T>::init()" ;
-    std::cout << cfg.desc() ;
+    //std::cout << cfg.brief() << std::endl ;
 
     //init_subdivider();
 }

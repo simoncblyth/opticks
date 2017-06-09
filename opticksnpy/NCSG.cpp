@@ -915,8 +915,19 @@ NTrianglesNPY* NCSG::polygonize()
 {
     if(m_tris == NULL)
     {
+        LOG(info) << "NCSG::polygonize START"
+                  << " verbosity " << m_verbosity 
+                  << " treedir " << m_treedir
+                  ; 
+
         NPolygonizer pg(this);
         m_tris = pg.polygonize();
+
+        LOG(info) << "NCSG::polygonize DONE" 
+                  << " verbosity " << m_verbosity 
+                  << " treedir " << m_treedir
+                  ; 
+
     }
     return m_tris ; 
 }

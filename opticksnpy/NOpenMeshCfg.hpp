@@ -38,9 +38,12 @@ struct NPY_API NOpenMeshCfg
     void init();
     void parse(const char* cfg);
 
+    void set( NOpenMeshCfgType k, int v );
     NOpenMeshCfgType  parse_key(const char* k) const ;
     int               parse_val(const char* v) const ;
     std::string       desc(const char* msg="NOpenMeshCfg::desc") const ;
+    std::string       brief(const char* msg="cfg") const ;
+    std::string       describe(const char* msg, const char* pfx, const char* kvdelim, const char* delim ) const ;
 
 
     const char* cfg ; 

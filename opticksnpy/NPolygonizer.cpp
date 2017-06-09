@@ -219,7 +219,6 @@ NTrianglesNPY* NPolygonizer::hybridMesher(NPolyMode_t polymode)
               << " polymode " << polymode 
               << " PolyModeString " << PolyModeString(polymode) 
               ; 
- 
 
     NTrianglesNPY* tris = NULL ; 
     int   level = m_meta->get<int>("level", "5" );

@@ -245,6 +245,39 @@ void NOpenMeshProp<T>::set_vgeneration_all( int vgen )
 
 
 
+template <typename T>
+int NOpenMeshProp<T>::get_hbloop( HEH heh ) const 
+{
+    return mesh.property(h_boundary_loop, heh) ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::set_hbloop( HEH heh, int hbl )
+{
+    mesh.property(h_boundary_loop, heh) = hbl ; 
+}
+template <typename T>
+void NOpenMeshProp<T>::set_hbloop_all( int hbl  )
+{
+    typedef typename T::EdgeIter EI ; 
+
+    for(EI ei=mesh.edges_begin() ; ei != mesh.edges_end() ; ++ei) 
+    {
+        EH eh = *ei ; 
+        HEH a = mesh.halfedge_handle(eh, 0);
+        HEH b = mesh.halfedge_handle(eh, 1);  
+
+       // although technically only one of the heh of an edge 
+       // can ever be a boundary, this is just setting a starting point value
+
+        set_hbloop(a, hbl );
+        set_hbloop(b, hbl );
+    }
+}
+
+
+
+
+
 
 
 

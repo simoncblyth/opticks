@@ -1,45 +1,79 @@
 #include <iostream>
 
+#include "NOpenMeshProp.hpp"
 #include "NOpenMeshBoundary.hpp"
 #include "NOpenMesh.hpp"
 
 
+
+
 template <typename T>
-void NOpenMeshBoundary<T>::CollectLoop( const T* mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop)
+void NOpenMeshBoundary<T>::set_loop_index( int hbl )
 {
-    typedef typename T::HalfedgeHandle      HEH ; 
+    for(VHEHI it=loop.begin() ; it != loop.end() ; it++)
+    {
+        HEH heh = *it ; 
+        prop.set_hbloop( heh, hbl ) ;
+    }
+}
+
+
+template <typename T>
+int NOpenMeshBoundary<T>::get_loop_index()
+{
+    return prop.get_hbloop( start );
+}
+
+
+template <typename T>
+NOpenMeshBoundary<T>::NOpenMeshBoundary( T& mesh, NOpenMeshProp<T>& prop, HEH start )
+   :
+   mesh(mesh),
+   prop(prop),
+   start(start)
+{
+    init();
+}
+
+
+template <typename T>
+void NOpenMeshBoundary<T>::init()
+{
     HEH heh = start ; 
     do
     {
-        if(!mesh->status(heh).deleted()) 
+        if(!mesh.status(heh).deleted()) 
         {
             loop.push_back(heh);                
         } 
-        heh = mesh->next_halfedge_handle(heh);
+        heh = mesh.next_halfedge_handle(heh);
     }
     while( heh != start );
 }
 
 
 template <typename T>
-NOpenMeshBoundary<T>::NOpenMeshBoundary( const T* mesh, typename T::HalfedgeHandle start )
+std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh)
 {
-    CollectLoop( mesh, start, loop );
+    std::stringstream ss ; 
+    ss << msg 
+       << " halfedge boundary loop "
+       << " index " << prop.get_hbloop(start) 
+       << " start " << start 
+       << " num_heh " << loop.size() 
+       << " : "  ; 
+    for(unsigned i=0 ; i < std::min(unsigned(loop.size()), maxheh) ; i++ ) ss << " " << loop[i] ;
+    ss << "..."  ;
 
-    std::cout << "NOpenMeshBoundary start " << start << " collected " << loop.size() << " : "  ; 
-    for(unsigned i=0 ; i < std::min(unsigned(loop.size()), 10u) ; i++ ) std::cout << " " << loop[i] ;
-    std::cout << "..." << std::endl ;         
-  
-
+    return ss.str();
 }
 
+
 template <typename T>
-bool NOpenMeshBoundary<T>::contains( typename T::HalfedgeHandle heh )
+bool NOpenMeshBoundary<T>::contains( HEH heh )
 {
     return std::find(loop.begin(), loop.end(), heh) != loop.end() ;
 }
- 
-
 
 template struct NOpenMeshBoundary<NOpenMeshType> ;
 

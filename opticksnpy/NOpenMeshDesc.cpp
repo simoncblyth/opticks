@@ -9,7 +9,7 @@
 
 #include "NOpenMeshProp.hpp"
 #include "NOpenMeshDesc.hpp"
-#include "NOpenMeshBoundary.hpp"
+//#include "NOpenMeshBoundary.hpp"
 #include "NOpenMesh.hpp"
 
 
@@ -247,8 +247,8 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::HalfedgeHandle heh) c
     VH vfr = mesh.from_vertex_handle( heh );
     VH vto = mesh.to_vertex_handle( heh );
 
-    std::vector<HEH> loop ; 
-    NOpenMeshBoundary<T>::CollectLoop( &mesh, heh, loop );
+    //std::vector<HEH> loop ; 
+    //NOpenMeshBoundary<T>::CollectLoop( &mesh, heh, loop );
 
     std::stringstream ss ; 
     ss 
@@ -256,7 +256,7 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::HalfedgeHandle heh) c
        << " eh " << std::setw(5) << eh 
        << " fh " << std::setw(5) << fh 
        << " v( " << vfr << ":" << vto << ")"
-       << (*this)(loop, 10) 
+      // << (*this)(loop, 10) 
         ;
 
     return ss.str();

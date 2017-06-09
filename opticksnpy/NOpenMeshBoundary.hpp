@@ -2,16 +2,43 @@
 
 #include "NOpenMeshType.hpp"
 
+template <typename T> struct NOpenMeshProp ; 
+
+/*
+NOpenMeshBoundary
+==================
+
+Collects vector of halfedges respresenting the mesh boundary 
+given a starting halfedge that must lie on the boundary.
+
+Used from NOpenMeshFind<T>::find_boundary_loops
+
+
+*/ 
+
+
 template <typename T>
 struct NPY_API  NOpenMeshBoundary
 {
-     static void CollectLoop( const T* mesh, typename T::HalfedgeHandle start, std::vector<typename T::HalfedgeHandle>& loop);
+    typedef typename T::HalfedgeHandle    HEH ; 
+    typedef std::vector<HEH>              VHEH ; 
+    typedef typename VHEH::const_iterator VHEHI ; 
 
-     NOpenMeshBoundary( const T* mesh, typename T::HalfedgeHandle start );
+    NOpenMeshBoundary( T& mesh, NOpenMeshProp<T>& prop,  HEH start );
 
-     bool contains(const typename T::HalfedgeHandle heh);
+    void set_loop_index( int hbl );
+    int get_loop_index();
+    void init();
 
-     std::vector<typename T::HalfedgeHandle> loop ; 
+    std::string desc(const char* msg="NOpenMeshBoundary::desc", unsigned maxheh=20u) ;
+    bool contains(const HEH heh);
+
+
+    T&  mesh ; 
+    NOpenMeshProp<T>&  prop ; 
+    HEH start ; 
+
+    std::vector<HEH> loop ; 
 };
  
 

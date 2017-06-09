@@ -40,11 +40,55 @@ NOpenMeshCfgType  NOpenMeshCfg::parse_key(const char* k) const
     return param ; 
 }  
 
+void NOpenMeshCfg::set( NOpenMeshCfgType k, int v )
+{
+    switch(k)
+    {
+        case CFG_ZERO           : assert(0)      ; break ; 
+        case CFG_CONTIGUOUS     : contiguous = v ; break ; 
+        case CFG_PHASED         : phased = v     ; break ; 
+        case CFG_SPLIT          : split = v      ; break ; 
+        case CFG_FLIP           : flip = v       ; break ; 
+        case CFG_NUMFLIP        : numflip = v       ; break ; 
+        case CFG_MAXFLIP        : maxflip = v       ; break ; 
+        case CFG_REVERSED       : reversed = v       ; break ; 
+        case CFG_SORTCONTIGUOUS : sortcontiguous = v ; break ; 
+        case CFG_NUMSUBDIV      : numsubdiv = v       ; break ; 
+    }
+}
+
+std::string NOpenMeshCfg::describe(const char* msg, const char* pfx, const char* kvdelim, const char* delim) const 
+{   
+    std::stringstream ss ; 
+    ss 
+        << pfx << msg  << delim 
+        << pfx << CFG_CONTIGUOUS_     << kvdelim << contiguous << delim 
+        << pfx << CFG_PHASED_         << kvdelim << phased << delim 
+        << pfx << CFG_SPLIT_          << kvdelim << split << delim 
+        << pfx << CFG_FLIP_           << kvdelim << flip << delim 
+        << pfx << CFG_NUMFLIP_        << kvdelim << numflip << delim 
+        << pfx << CFG_MAXFLIP_        << kvdelim << maxflip << delim 
+        << pfx << CFG_REVERSED_       << kvdelim << reversed << delim 
+        << pfx << CFG_SORTCONTIGUOUS_ << kvdelim << sortcontiguous << delim 
+        << pfx << CFG_NUMSUBDIV_      << kvdelim << numsubdiv << delim 
+        ;
+
+    return ss.str();
+}
+
+std::string NOpenMeshCfg::desc(const char* msg) const 
+{
+    return describe(msg, " ", ":", "\n" );
+}
+std::string NOpenMeshCfg::brief(const char* msg) const 
+{
+    return describe(msg, " ", "=", " " );
+}
+
 int NOpenMeshCfg::parse_val(const char* v) const 
 {
     return boost::lexical_cast<int>(v);
 }  
-
 
 NOpenMeshCfg::NOpenMeshCfg(const char* cfg_) 
      : 
@@ -59,11 +103,10 @@ void NOpenMeshCfg::init()
     parse(cfg);
 }
 
-
 void NOpenMeshCfg::parse(const char* cfg_)
 {
     if(!cfg_) return ; 
-    std::cout << "parsing " << cfg_ << std::endl ; 
+    //std::cout << "parsing " << cfg_ << std::endl ; 
 
     typedef std::pair<std::string,std::string> KV ;
     typedef std::vector<KV>::const_iterator KVI ; 
@@ -77,39 +120,10 @@ void NOpenMeshCfg::parse(const char* cfg_)
 
         NOpenMeshCfgType k = parse_key(k_);
         int  v = parse_val(v_);
-
-        switch(k)
-        {
-            case CFG_ZERO           : assert(0)      ; break ; 
-            case CFG_CONTIGUOUS     : contiguous = v ; break ; 
-            case CFG_PHASED         : phased = v     ; break ; 
-            case CFG_SPLIT          : split = v      ; break ; 
-            case CFG_FLIP           : flip = v       ; break ; 
-            case CFG_NUMFLIP        : numflip = v       ; break ; 
-            case CFG_MAXFLIP        : maxflip = v       ; break ; 
-            case CFG_REVERSED       : reversed = v       ; break ; 
-            case CFG_SORTCONTIGUOUS : sortcontiguous = v ; break ; 
-            case CFG_NUMSUBDIV      : numsubdiv = v       ; break ; 
-        }
+        set(k,v);
     }
 }
 
-std::string NOpenMeshCfg::desc(const char* msg) const 
-{   
-    std::stringstream ss ; 
-    ss 
-        << msg  << std::endl 
-        << " " << CFG_CONTIGUOUS_ << ":" << contiguous << std::endl 
-        << " " << CFG_PHASED_     << ":" << phased << std::endl 
-        << " " << CFG_SPLIT_      << ":" << split << std::endl 
-        << " " << CFG_FLIP_       << ":" << flip << std::endl 
-        << " " << CFG_NUMFLIP_    << ":" << numflip << std::endl 
-        << " " << CFG_MAXFLIP_    << ":" << maxflip << std::endl 
-        << " " << CFG_REVERSED_   << ":" << reversed << std::endl 
-        << " " << CFG_SORTCONTIGUOUS_ << ":" << sortcontiguous << std::endl 
-        << " " << CFG_NUMSUBDIV_      << ":" << numsubdiv << std::endl 
-        ;
 
-    return ss.str();
-}
+
 
