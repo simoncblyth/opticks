@@ -146,7 +146,6 @@ void test_add_vertex_unique()
 {
     LOG(info) << "test_add_vertex_unique" ; 
 
-    float epsilon = 1e-5f ; 
 
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
@@ -161,36 +160,36 @@ void test_add_vertex_unique()
     VH vhd[8];
     bool added(false) ; 
 
-    vh[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added, epsilon);
-    vhd[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added, epsilon);
+    vh[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added);
+    vhd[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added);
     assert(vhd[0] == vh[0]);
     
-    vh[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added, epsilon);
-    vhd[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added, epsilon);
+    vh[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added);
+    vhd[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added);
     assert(vhd[1] == vh[1]);
 
-    vh[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added, epsilon);
-    vhd[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added, epsilon);
+    vh[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added);
+    vhd[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added);
     assert(vhd[2] == vh[2]);
 
-    vh[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added, epsilon);
-    vhd[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added, epsilon);
+    vh[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added);
+    vhd[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added);
     assert(vhd[3] == vh[3]);
 
-    vh[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added, epsilon);
-    vhd[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added, epsilon);
+    vh[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added);
+    vhd[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added);
     assert(vhd[4] == vh[4]);
 
-    vh[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added, epsilon);
-    vhd[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added, epsilon);
+    vh[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added);
+    vhd[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added);
     assert(vhd[5] == vh[5]);
 
-    vh[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added, epsilon);
-    vhd[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added, epsilon);
+    vh[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added);
+    vhd[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added);
     assert(vhd[6] == vh[6]);
 
-    vh[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added, epsilon);
-    vhd[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added, epsilon);
+    vh[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added);
+    vhd[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added);
     assert(vhd[7] == vh[7]);
 
 

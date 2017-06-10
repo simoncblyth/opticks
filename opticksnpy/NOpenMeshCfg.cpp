@@ -96,7 +96,8 @@ int NOpenMeshCfg::parse_val(const char* v) const
 
 NOpenMeshCfg::NOpenMeshCfg(const char* cfg_) 
      : 
-     cfg(cfg_ ? strdup(cfg_) : NULL )
+     cfg(cfg_ ? strdup(cfg_) : NULL ),
+     epsilon(1e-5f)
 {
     init();
 }

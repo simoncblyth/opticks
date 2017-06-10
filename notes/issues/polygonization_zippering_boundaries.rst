@@ -8,7 +8,9 @@ Zippering Realizations for CSG union of box and sphere
 
 * outer loop from leftmesh needs to be zippered with the outer loop of the rightmesh frontier ribbon equivalent
 
-* inner loops can be discarded, tris can be discarded
+* inner loops can be discarded, tris can be discarded, 
+
+  * hmm NO : can bisect frontier crossing edges to get verts on the frontier "ring" 
 
 * ONLY NEED TO RETAIN outer loop vertices from left and right 
 

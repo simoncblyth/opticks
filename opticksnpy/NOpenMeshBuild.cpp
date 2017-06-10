@@ -6,6 +6,7 @@
 #include "Nuv.hpp"
 #include "NGLMext.hpp"
 #include "NOpenMesh.hpp"
+#include "NOpenMeshCfg.hpp"
 #include "NOpenMeshBuild.hpp"
 #include "NNode.hpp"
 
@@ -13,6 +14,7 @@
 template <typename T>
 NOpenMeshBuild<T>::NOpenMeshBuild(
     T& mesh, 
+    const NOpenMeshCfg& cfg, 
     NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
     const NOpenMeshFind<T>& find,
@@ -20,6 +22,7 @@ NOpenMeshBuild<T>::NOpenMeshBuild(
     )
     :
     mesh(mesh),
+    cfg(cfg),
     prop(prop),
     desc(desc),
     find(find),
@@ -29,9 +32,9 @@ NOpenMeshBuild<T>::NOpenMeshBuild(
 
 
 template <typename T>
-typename T::VertexHandle NOpenMeshBuild<T>::add_vertex_unique(typename T::Point pt, bool& added, const float epsilon )  
+typename T::VertexHandle NOpenMeshBuild<T>::add_vertex_unique(typename T::Point pt, bool& added )  
 {
-    VH prior = find.find_vertex_epsilon(pt, epsilon ) ;
+    VH prior = find.find_vertex_epsilon(pt) ;
 
     bool valid = mesh.is_valid_handle(prior) ;
 
@@ -155,7 +158,7 @@ bool NOpenMeshBuild<T>::is_consistent_face_winding(typename T::VertexHandle v0,t
 
 
 template <typename T>
-void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, int ctrl, float epsilon )  
+void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, int ctrl )  
 {
    /*
    Singularities like the poles of a latitude/longitude sphere parametrization 
@@ -182,7 +185,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
               << " nu " << nu
               << " nv " << nv
               << " num_vert(raw) " << num_vert 
-              << " epsilon " << epsilon
+              << " cfg.epsilon " << cfg.epsilon
               << " ctrl " << ctrl 
               ;
 
@@ -206,7 +209,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
 
                 int vidx = vid(s,u,v) ;
 
-                vh[vidx] = add_vertex_unique(P(pos.x, pos.y, pos.z), added, epsilon) ; 
+                vh[vidx] = add_vertex_unique(P(pos.x, pos.y, pos.z), added ) ; 
 
                 if(added)
                 {
@@ -483,7 +486,7 @@ std::string NOpenMeshBuild<T>::desc_facemask()
 
 
 template <typename T>
-void NOpenMeshBuild<T>::copy_faces(const NTriSource*   other, float epsilon  )
+void NOpenMeshBuild<T>::copy_faces(const NTriSource* other )
 {
     unsigned nvtx = other->get_num_vert();
     unsigned ntri = other->get_num_tri();
@@ -503,7 +506,7 @@ void NOpenMeshBuild<T>::copy_faces(const NTriSource*   other, float epsilon  )
         //other->get_uv(i, uv );
 
          bool added(false);        
-         VH vh = add_vertex_unique(P(pos.x, pos.y, pos.z), added, epsilon);  
+         VH vh = add_vertex_unique(P(pos.x, pos.y, pos.z), added );  
          vhs.push_back(vh); 
     }
 
@@ -521,7 +524,7 @@ void NOpenMeshBuild<T>::copy_faces(const NTriSource*   other, float epsilon  )
 
  
 template <typename T>
-void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, float epsilon )
+void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask )
 {
     typedef typename T::FaceIter            FI ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
@@ -541,7 +544,7 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask, floa
                 const VH& vh = *fv ; 
                 const P& pt = other->mesh.point(vh);
                 bool added(false);        
-                nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), added, epsilon);  
+                nvh[fvert++] = add_vertex_unique(P(pt[0], pt[1], pt[2]), added );  
             } 
             assert( fvert == 3 );
 

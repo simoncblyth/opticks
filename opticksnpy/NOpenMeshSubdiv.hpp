@@ -40,8 +40,7 @@ struct NPY_API  NOpenMeshSubdiv
                      const NOpenMeshDesc<T>& desc, 
                      const NOpenMeshFind<T>& find, 
                      NOpenMeshBuild<T>& build, 
-                     int verbosity,
-                     float epsilon
+                     int verbosity
                     );
 
     void init();
@@ -79,7 +78,6 @@ struct NPY_API  NOpenMeshSubdiv
     const NOpenMeshFind<T>&  find ;
     NOpenMeshBuild<T>&       build ;
     int                      verbosity ; 
-    float                    epsilon ; 
 
     subdivider_t*            subdivider ; 
 

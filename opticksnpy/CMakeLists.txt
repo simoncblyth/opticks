@@ -197,6 +197,8 @@ set(SOURCES
     NOpenMeshBuild.cpp
     NOpenMeshEnum.cpp
     NOpenMeshCfg.cpp
+    NOpenMeshBisect.cpp
+    NOpenMeshZipper.cpp
 
     NCSGBSP.cpp
 

@@ -11,7 +11,31 @@ const char* PROP_INSIDE_OTHER_ = "PROP_INSIDE_OTHER" ;
 const char* PROP_FRONTIER_ = "PROP_FRONTIER" ;
 
 
-//   .,+30s/\s*\(\S*\).*/case \1 : s="\1" ;break; /gc
+
+
+
+
+
+//  .,+3s/\s*\(COMP\w*\).*$/const char* NOpenMeshEnum::\1_ = "\1" ;/g 
+
+// .,+3s/\s*\(\S*\).*/case \1 : s="\1" ;break; /g
+
+const char* NOpenMeshEnum::COMP_COMBINED_ = "COMP_COMBINED" ;
+const char* NOpenMeshEnum::COMP_LEFT_ = "COMP_LEFT" ;
+const char* NOpenMeshEnum::COMP_RIGHT_ = "COMP_RIGHT" ;
+
+
+const char* NOpenMeshEnum::CompType( NOpenMeshCompType comp )
+{
+    const char* s = NULL ; 
+    switch(comp)
+    {
+        case COMP_COMBINED : s="COMP_COMBINED" ;break; 
+        case COMP_LEFT     : s="COMP_LEFT"     ;break; 
+        case COMP_RIGHT    : s="COMP_RIGHT"    ;break; 
+    }
+    return s ; 
+}
 
 
 

@@ -52,7 +52,7 @@ struct NPY_API  NOpenMesh : NTriSource
     static NOpenMesh<T>* BuildTest(int level, int verbosity, int ctrl, const char* polycfg);
 
     NOpenMesh<T>* spawn(const nnode* subnode);
-    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, const char* polycfg=NULL, NOpenMeshMode_t meshmode=COMBINE_HYBRID, float epsilon=1e-05f ); 
+    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, const char* polycfg=NULL, NOpenMeshMode_t meshmode=COMBINE_HYBRID ); 
 
     void build_csg();
     void init();
@@ -94,11 +94,13 @@ struct NPY_API  NOpenMesh : NTriSource
     int             verbosity ;
     int             ctrl ;
     NOpenMeshMode_t meshmode ; 
-    float           epsilon ; 
 
 
     MESH*  leftmesh ; 
     MESH*  rightmesh ; 
+
+    MESH*  lfrontier ; 
+    MESH*  rfrontier ; 
 
 };
 

@@ -31,6 +31,13 @@ typedef enum {
 
 
 
+typedef enum { 
+   COMP_COMBINED, 
+   COMP_LEFT, 
+   COMP_RIGHT 
+} NOpenMeshCompType ;
+
+
 #include "NPY_API_EXPORT.hh"
 
 struct NPY_API NOpenMeshEnum 
@@ -49,7 +56,6 @@ struct NPY_API NOpenMeshEnum
     static const char* FIND_CORNER_FACE_ ; 
     static const char* FIND_SIDE_FACE_ ; 
     static const char* FIND_SIDECORNER_FACE_ ; 
-
     static const char* FindType( NOpenMeshFindType find );
 
 
@@ -62,6 +68,10 @@ struct NPY_API NOpenMeshEnum
     static const char* PROP_FRONTIER_ ; 
     static const char* PropType( NOpenMeshPropType prop );
 
+    static const char* COMP_COMBINED_ ; 
+    static const char* COMP_LEFT_ ; 
+    static const char* COMP_RIGHT_ ; 
+    static const char* CompType( NOpenMeshCompType comp );
 
 
 };

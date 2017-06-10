@@ -65,7 +65,7 @@ struct NPY_API  NOpenMeshFind
 
     typename T::VertexHandle find_vertex_exact( P pt) const ;
     typename T::VertexHandle find_vertex_closest(P pt, float& distance) const ;
-    typename T::VertexHandle find_vertex_epsilon(P pt, const float epsilon) const ;
+    typename T::VertexHandle find_vertex_epsilon(P pt, const float epsilon=-1) const ; // when negative use cfg.epsilon
 
 
     T&                      mesh  ;

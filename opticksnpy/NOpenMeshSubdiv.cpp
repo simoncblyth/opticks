@@ -113,8 +113,7 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
     const NOpenMeshDesc<T>& desc, 
     const NOpenMeshFind<T>& find, 
           NOpenMeshBuild<T>& build,
-    int verbosity,
-    float epsilon
+    int verbosity
     )
     : 
     mesh(mesh),
@@ -124,7 +123,6 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
     find(find),
     build(build),
     verbosity(verbosity),
-    epsilon(epsilon),
     subdivider(new subdivider_t(mesh))
 {
     init();
@@ -219,7 +217,7 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r( FH fh, int depth )
     {
         P centroid = mesh.calc_face_centroid( fh );
         bool added(false) ;
-        VH cvh = build.add_vertex_unique( centroid, added, epsilon );
+        VH cvh = build.add_vertex_unique( centroid, added );
         if(!added) LOG(warning) << " fh " << fh << " base_id " << base_id << " NON_UNIQUE CENTROID ? " << desc(centroid)   ;
 
         mesh.split( fh, cvh ); 
@@ -378,7 +376,7 @@ void NOpenMeshSubdiv<T>::sqrt3_centroid_split_face(FH fh, std::vector<VH>& centr
 
     bool added(false) ;
 
-    VH cvh = build.add_vertex_unique( centroid, added, epsilon );
+    VH cvh = build.add_vertex_unique( centroid, added );
 
     if(!added) LOG(fatal) << desc_face(fh, "DUPE-CENTROID?") << desc(centroid) ;
     assert(added); 
@@ -613,7 +611,7 @@ subdiv to be done, the below used mesh.split(eh, midpoint)
 
         bool added(false); 
         o[n] = fr_ ;
-        m[n] = build.add_vertex_unique(mi, added, epsilon);  
+        m[n] = build.add_vertex_unique(mi, added );  
 
         //assert(added == true);   
         // not always added, as edges (and midpoints) are shared 

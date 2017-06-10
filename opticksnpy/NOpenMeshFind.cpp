@@ -602,7 +602,7 @@ int NOpenMeshFind<T>::find_boundary_loops()
             {
                 he_bnd[i]++ ; 
 
-                NOpenMeshBoundary<T> bnd(mesh, prop, heh, node); 
+                NOpenMeshBoundary<T> bnd(mesh, cfg, prop, heh, node); 
                 loops.push_back(bnd);            
 
                 int loop_index = loops.size() ;
@@ -684,9 +684,10 @@ typename T::VertexHandle NOpenMeshFind<T>::find_vertex_closest(P pt, float& dist
 
 
 template <typename T>
-typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float epsilon ) const 
+typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float epsilon_ ) const 
 {
     float distance = std::numeric_limits<float>::max() ;
+    float epsilon = epsilon_ < 0 ? cfg.epsilon : epsilon_ ; 
 
     VH empty ; 
     VH closest = find_vertex_closest(pt, distance );

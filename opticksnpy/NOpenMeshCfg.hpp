@@ -37,6 +37,7 @@ struct NPY_API NOpenMeshCfg
     static const char* CFG_OFFSAVE_ ;
 
     NOpenMeshCfg(const char* cfg=NULL);
+
     void init();
     void parse(const char* cfg);
 
@@ -60,6 +61,8 @@ struct NPY_API NOpenMeshCfg
     int sortcontiguous ; 
     int numsubdiv ; 
     int offsave ; 
+
+    float epsilon ; 
  
 };
 

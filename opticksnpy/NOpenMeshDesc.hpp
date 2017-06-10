@@ -22,7 +22,7 @@ struct NPY_API  NOpenMeshDesc
     std::string operator()(const typename T::EdgeHandle vh) const ;
     std::string operator()(const typename T::Point& pt) const ;
 
-    static std::string desc_point(const typename T::Point& pt) ;
+    static std::string desc_point(const typename T::Point& pt, int w, int p) ;
 
     std::string desc() const ;
     std::string desc_euler() const ; 

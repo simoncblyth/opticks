@@ -42,27 +42,28 @@ const char* NOpenMesh<T>::MeshModeString(NOpenMeshMode_t meshmode)
 template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::spawn(const nnode* subnode)
 {
-    return new NOpenMesh<T>(subnode, level, verbosity, ctrl, cfg.cfg, meshmode,  epsilon ) ;
+    return new NOpenMesh<T>(subnode, level, verbosity, ctrl, cfg.cfg, meshmode) ;
 }
 
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, const char* polycfg, NOpenMeshMode_t meshmode, float epsilon)
+NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, const char* polycfg, NOpenMeshMode_t meshmode )
     :
     cfg(polycfg),
     prop(mesh),
     desc(mesh, prop),
     find(mesh, cfg, prop, verbosity, node),
-    build(mesh, prop, desc, find, verbosity),
-    subdiv(mesh, cfg, prop, desc, find, build, verbosity, epsilon),
+    build(mesh, cfg, prop, desc, find, verbosity),
+    subdiv(mesh, cfg, prop, desc, find, build, verbosity),
 
     node(node), 
     level(level), 
     verbosity(verbosity), 
     ctrl(ctrl), 
     meshmode(meshmode),
-    epsilon(epsilon),
     leftmesh(NULL),
-    rightmesh(NULL)
+    rightmesh(NULL),
+    lfrontier(NULL),
+    rfrontier(NULL)
 {
     unsigned omv = NOpenMeshEnum::OpenMeshVersion();
     std::cout << "OpenMeshVersion " << std::hex << omv << std::dec << std::endl ; 
@@ -160,7 +161,7 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
 
     if(!combination)
     {
-        build.add_parametric_primitive(node, level, ctrl, epsilon ); // adds unique vertices and faces to build out the parametric mesh  
+        build.add_parametric_primitive(node, level, ctrl ); // adds unique vertices and faces to build out the parametric mesh  
         build.euler_check(node, level);
     }
     else
@@ -219,7 +220,7 @@ template <typename T>
 void NOpenMesh<T>::combine_csgbsp()
 {
     NCSGBSP csgbsp( leftmesh, rightmesh, node->type );
-    build.copy_faces( &csgbsp, epsilon );
+    build.copy_faces( &csgbsp );
 }
 
 
@@ -298,27 +299,30 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
+
+    // copying subsets of leftmesh and rightmesh faces into this one 
+    // selected via the NOpenMeshPropType
+
     if(node->type == CSG_UNION)
     {
         //NOpenMeshPropType prop = PROP_OUTSIDE_OTHER ;
         NOpenMeshPropType prop = PROP_FRONTIER ;
 
-        build.copy_faces( leftmesh,  prop, epsilon );
-        //build.copy_faces( rightmesh, prop, epsilon );
+        build.copy_faces( leftmesh,  prop );
+        //build.copy_faces( rightmesh, prop );
 
         //subdiv.sqrt3_refine( FIND_ALL_FACE , -1 );  // test refining copied over frontier tris
 
     }
     else if(node->type == CSG_INTERSECTION)
     {
-        NOpenMeshPropType prop = PROP_INSIDE_OTHER ;
-        build.copy_faces( leftmesh,  prop , epsilon  );
-        build.copy_faces( rightmesh, prop, epsilon  );
+        build.copy_faces( leftmesh,  PROP_INSIDE_OTHER );  
+        build.copy_faces( rightmesh, PROP_INSIDE_OTHER );
     }
     else if(node->type == CSG_DIFFERENCE )
     {
-        build.copy_faces( leftmesh,  PROP_OUTSIDE_OTHER, epsilon  );
-        build.copy_faces( rightmesh, PROP_INSIDE_OTHER, epsilon  );
+        build.copy_faces( leftmesh,  PROP_OUTSIDE_OTHER );
+        build.copy_faces( rightmesh, PROP_INSIDE_OTHER  );
     }
 
 
@@ -582,8 +586,7 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::BuildTest(int level, int verbosity, int ctrl, const char* polycfg)
 {
     NOpenMeshMode_t meshmode = COMBINE_HYBRID ;
-    float epsilon = 1e-5f  ;
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl, polycfg, meshmode, epsilon ); 
+    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl, polycfg, meshmode ); 
     switch(ctrl)
     {
        case   3: m->build.add_tripatch()       ; break ; 
