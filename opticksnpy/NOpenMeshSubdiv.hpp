@@ -35,12 +35,11 @@ struct NPY_API  NOpenMeshSubdiv
     typedef typename OpenMesh::Subdivider::Adaptive::CompositeT<T> subdivider_t ;  
 
     NOpenMeshSubdiv( T& mesh, 
-                     const NOpenMeshCfg& cfg,
-                     NOpenMeshProp<T>& prop, 
+                     const NOpenMeshCfg*     cfg,
+                     NOpenMeshProp<T>&       prop, 
                      const NOpenMeshDesc<T>& desc, 
                      const NOpenMeshFind<T>& find, 
-                     NOpenMeshBuild<T>& build, 
-                     int verbosity
+                     NOpenMeshBuild<T>&      build
                     );
 
     void init();
@@ -72,7 +71,7 @@ struct NPY_API  NOpenMeshSubdiv
 
 
     T&                       mesh ;
-    const NOpenMeshCfg&      cfg ; 
+    const NOpenMeshCfg*      cfg ; 
     NOpenMeshProp<T>&        prop ;
     const NOpenMeshDesc<T>&  desc ;
     const NOpenMeshFind<T>&  find ;

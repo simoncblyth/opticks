@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
+#include "NParameters.hpp"
 #include "NOpenMesh.hpp"
 
 
@@ -8,15 +9,17 @@ typedef NOpenMeshType T ;
 typedef T::VertexHandle VH ; 
 typedef T::FaceHandle   FH ; 
 
+typedef NOpenMesh<T> MESH ; 
+
 
 void test_find_faces(int ctrl, NOpenMeshFindType sel)
 {
     LOG(info) << "test_find_faces" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    const char* polycfg = NULL ; 
+    
+    NParameters* meta = new NParameters ; 
+    meta->add<int>("ctrl", ctrl );
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
+    MESH* mesh = MESH::Make(NULL, meta, NULL);
     const NOpenMeshFind<T>& find = mesh->find ; 
 
     std::vector<FH> faces ; 
@@ -28,11 +31,14 @@ void test_find_faces(int ctrl, NOpenMeshFindType sel)
 void test_are_contiguous(int ctrl)
 {
     LOG(info) << "test_are_contiguous" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    const char* polycfg = "sortcontiguous=0" ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
+    NParameters* meta = new NParameters ; 
+    meta->add<int>("ctrl", ctrl );
+    meta->add<std::string>("poly", "HY" );
+    meta->add<std::string>("polycfg", "sortcontiguous=0" );
+
+    MESH* mesh = MESH::Make(NULL, meta, NULL);
+
     const NOpenMeshFind<T>& find = mesh->find ; 
 
     std::vector<FH> all_faces ; 
@@ -44,11 +50,15 @@ void test_are_contiguous(int ctrl)
 void test_sort_contiguous(int ctrl)
 {
     LOG(info) << "test_sort_contiguous" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    const char* polycfg = "sortcontiguous=1" ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
+    NParameters* meta = new NParameters ; 
+    meta->add<int>("ctrl", ctrl );
+    meta->add<std::string>("poly", "HY" );
+    meta->add<std::string>("polycfg", "sortcontiguous=1" );
+
+    MESH* mesh = MESH::Make(NULL, meta, NULL);
+
+
     const NOpenMeshFind<T>& find = mesh->find ; 
 
     std::vector<FH> faces ; 

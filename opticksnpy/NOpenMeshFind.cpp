@@ -24,16 +24,15 @@
 
 template <typename T>
 NOpenMeshFind<T>::NOpenMeshFind( T& mesh, 
-                                  const NOpenMeshCfg& cfg, 
+                                  const NOpenMeshCfg* cfg, 
                                   NOpenMeshProp<T>& prop, 
-                                  int verbosity,
                                   const nnode* node
                                 )
     :
     mesh(mesh),
     cfg(cfg),
     prop(prop),
-    verbosity(verbosity),
+    verbosity(cfg->verbosity),
     node(node)
 {} 
 
@@ -146,7 +145,7 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
                   << " param " << param
                   << " count " << faces.size()
                   << " totface " << totface
-                  << " cfg.reversed " << cfg.reversed
+                  << " cfg.reversed " << cfg->reversed
                   ; 
 
 }
@@ -154,7 +153,7 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
 template <typename T>
 void NOpenMeshFind<T>::sort_faces(std::vector<FH>& faces) const 
 {
-    if(cfg.sortcontiguous > 0)
+    if(cfg->sortcontiguous > 0)
     {
         sort_faces_contiguous(faces);
         //sort_faces_contiguous_monolithic(faces);
@@ -162,7 +161,7 @@ void NOpenMeshFind<T>::sort_faces(std::vector<FH>& faces) const
     else
     {
         NOpenMeshOrderType face_order = ORDER_DEFAULT_FACE ;
-        if(cfg.reversed > 0)
+        if(cfg->reversed > 0)
         {
             LOG(warning) << "using reversed face order" ; 
             face_order = ORDER_REVERSE_FACE ;         
@@ -687,7 +686,7 @@ template <typename T>
 typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float epsilon_ ) const 
 {
     float distance = std::numeric_limits<float>::max() ;
-    float epsilon = epsilon_ < 0 ? cfg.epsilon : epsilon_ ; 
+    float epsilon = epsilon_ < 0 ? cfg->epsilon : epsilon_ ; 
 
     VH empty ; 
     VH closest = find_vertex_closest(pt, distance );

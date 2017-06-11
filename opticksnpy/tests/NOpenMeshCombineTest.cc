@@ -36,10 +36,14 @@ int main(int argc, char** argv)
 
     const nnode* root = tree->getRoot();
 
-    int level = 4 ; 
-    int ctrl = 0 ; 
+    NParameters* meta = tree->getMetaParameters() ;
 
-    NOpenMesh<NOpenMeshType> mesh(root, level, verbosity, ctrl );
+
+    typedef NOpenMesh<NOpenMeshType> MESH ; 
+
+    MESH* mesh = MESH::Make(root, meta, treedir );
+
+    assert(mesh);
 
 
 

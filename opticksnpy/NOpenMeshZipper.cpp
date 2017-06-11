@@ -10,10 +10,11 @@
 #include "NOpenMeshEnum.hpp"
 
 
+
 template <typename T>
 NOpenMeshZipper<T>::NOpenMeshZipper(
-          const NOpenMeshBoundary<T>& lhs, 
-          const NOpenMeshBoundary<T>& rhs
+          const NOpenMesh<T>& lhs, 
+          const NOpenMesh<T>& rhs
          )
    :
    lhs(lhs), 
@@ -25,9 +26,11 @@ NOpenMeshZipper<T>::NOpenMeshZipper(
 template <typename T>
 void NOpenMeshZipper<T>::init()
 {
+    LOG(info) << "NOpenMeshZipper::init"
+              << " lhs " << lhs.brief()
+              << " rhs " << rhs.brief()
+              ;
 }
-
-
 
 
 

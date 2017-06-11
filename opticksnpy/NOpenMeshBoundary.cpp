@@ -34,8 +34,8 @@ int NOpenMeshBoundary<T>::get_loop_index()
 template <typename T>
 NOpenMeshBoundary<T>::NOpenMeshBoundary(
           T& mesh, 
-          const NOpenMeshCfg& cfg, 
-          NOpenMeshProp<T>& prop, 
+          const NOpenMeshCfg* cfg, 
+          NOpenMeshProp<T>&   prop, 
           HEH start, 
           const nnode* node )
    :

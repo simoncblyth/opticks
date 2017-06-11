@@ -20,9 +20,8 @@ struct NPY_API  NOpenMeshFind
     typedef typename T::ConstFaceFaceIter    CFFI ;  // cff_iter(fh)
 
     NOpenMeshFind( T& mesh, 
-                   const NOpenMeshCfg&      cfg,
+                   const NOpenMeshCfg* cfg,
                    NOpenMeshProp<T>& prop, 
-                   int verbosity, 
                    const nnode* node);
 
 
@@ -69,7 +68,7 @@ struct NPY_API  NOpenMeshFind
 
 
     T&                      mesh  ;
-    const NOpenMeshCfg&     cfg ; 
+    const NOpenMeshCfg*     cfg ; 
     NOpenMeshProp<T>&       prop ;
     int                     verbosity ; 
     const nnode*            node ;

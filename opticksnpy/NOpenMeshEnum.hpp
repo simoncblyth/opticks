@@ -38,11 +38,24 @@ typedef enum {
 } NOpenMeshCompType ;
 
 
+typedef enum {
+   COMBINE_HYBRID,
+   COMBINE_CSGBSP 
+} NOpenMeshCombineType ;
+// NOpenMeshMode_t ; 
+
+
+
 #include "NPY_API_EXPORT.hh"
 
 struct NPY_API NOpenMeshEnum 
 {
     static unsigned OpenMeshVersion();
+
+    static const char* COMBINE_HYBRID_ ; 
+    static const char* COMBINE_CSGBSP_ ; 
+    static const char* CombineType(NOpenMeshCombineType meshmode) ;
+    static NOpenMeshCombineType CombineTypeFromPoly(const char* poly);
 
     static const char* FIND_ALL_FACE_ ; 
     static const char* FIND_IDENTITY_FACE_ ;

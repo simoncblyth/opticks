@@ -17,10 +17,9 @@ struct nuv ;
 #include "NOpenMeshCfg.hpp"
 
 
-typedef enum {
-   COMBINE_HYBRID = 0x1 << 0,
-   COMBINE_CSGBSP = 0x1 << 1
-} NOpenMeshMode_t ; 
+class NParameters ; 
+
+template <typename T> struct NOpenMeshZipper ; 
 
 /*
 NOpenMesh
@@ -34,33 +33,34 @@ Canonically used from
    NHybridMesher::make_mesh
 
 
-
 */
 
 template <typename T>
 struct NPY_API  NOpenMesh : NTriSource
 {
-    static const char* COMBINE_HYBRID_ ; 
-    static const char* COMBINE_CSGBSP_ ; 
-    static const char* MeshModeString(NOpenMeshMode_t meshmode);
-
     typedef NOpenMesh<T>    MESH ; 
     typedef typename T::Point           P ; 
     typedef typename T::VertexHandle   VH ; 
     typedef typename T::FaceHandle     FH ; 
 
-    static NOpenMesh<T>* BuildTest(int level, int verbosity, int ctrl, const char* polycfg);
+    static NOpenMesh<T>* Make( const nnode* node, const NParameters* meta, const char* treedir );
 
-    NOpenMesh<T>* spawn(const nnode* subnode);
-    NOpenMesh( const nnode* node, int level, int verbosity, int ctrl=0, const char* polycfg=NULL, NOpenMeshMode_t meshmode=COMBINE_HYBRID ); 
+    NOpenMesh<T>* spawn( const nnode* subnode);
+    NOpenMesh<T>* spawn_submesh( NOpenMeshPropType select );
+
+    NOpenMesh( const nnode* node, const NOpenMeshCfg* cfg ); 
 
     void build_csg();
     void init();
     void check();
 
-    int write(const char* path);
-    void dump(const char* msg="NOpenMesh::dump") ;
-    std::string brief();
+    int write(const char* path) const ;
+    void save(const char* name="mesh.off") const ;
+
+    void dump(const char* msg="NOpenMesh::dump") const ;
+    std::string brief() const ;  
+    std::string summary(const char* msg="NOpenMesh::summary") const ; 
+
 
     void combine_hybrid();
     void combine_csgbsp();
@@ -82,18 +82,22 @@ struct NPY_API  NOpenMesh : NTriSource
 
 
     T                  mesh ; 
-    NOpenMeshCfg       cfg ; 
+
+    const nnode*        node ; 
+    const NOpenMeshCfg* cfg ; 
+    int                verbosity ;
+
     NOpenMeshProp<T>   prop ; 
     NOpenMeshDesc<T>   desc ; 
     NOpenMeshFind<T>   find ; 
     NOpenMeshBuild<T>  build ; 
     NOpenMeshSubdiv<T> subdiv ; 
 
-    const nnode*    node ; 
+    /*
     int             level ; 
-    int             verbosity ;
     int             ctrl ;
-    NOpenMeshMode_t meshmode ; 
+    NOpenMeshCombineType meshmode ; 
+    */
 
 
     MESH*  leftmesh ; 
@@ -101,6 +105,9 @@ struct NPY_API  NOpenMesh : NTriSource
 
     MESH*  lfrontier ; 
     MESH*  rfrontier ; 
+
+    NOpenMeshZipper<T>* zipper ; 
+
 
 };
 

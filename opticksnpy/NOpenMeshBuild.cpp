@@ -14,11 +14,10 @@
 template <typename T>
 NOpenMeshBuild<T>::NOpenMeshBuild(
     T& mesh, 
-    const NOpenMeshCfg& cfg, 
+    const NOpenMeshCfg* cfg, 
     NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
-    const NOpenMeshFind<T>& find,
-    int verbosity
+    const NOpenMeshFind<T>& find
     )
     :
     mesh(mesh),
@@ -26,7 +25,7 @@ NOpenMeshBuild<T>::NOpenMeshBuild(
     prop(prop),
     desc(desc),
     find(find),
-    verbosity(verbosity)
+    verbosity(cfg->verbosity)
  {} 
 
 
@@ -185,7 +184,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
               << " nu " << nu
               << " nv " << nv
               << " num_vert(raw) " << num_vert 
-              << " cfg.epsilon " << cfg.epsilon
+              << " cfg.epsilon " << cfg->epsilon
               << " ctrl " << ctrl 
               ;
 

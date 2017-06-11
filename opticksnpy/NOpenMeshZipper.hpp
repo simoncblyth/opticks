@@ -1,6 +1,6 @@
 #pragma once
 
-template <typename T> struct NOpenMeshBoundary ; 
+template <typename T> struct NOpenMesh ; 
 
 /*
 NOpenMeshZipper
@@ -21,14 +21,14 @@ template <typename T>
 struct NPY_API  NOpenMeshZipper
 {
     NOpenMeshZipper(
-                    const NOpenMeshBoundary<T>& lhs, 
-                    const NOpenMeshBoundary<T>& rhs
+                    const NOpenMesh<T>& lhs, 
+                    const NOpenMesh<T>& rhs
                    );
 
     void init();
 
-    const NOpenMeshBoundary<T>&  lhs ; 
-    const NOpenMeshBoundary<T>&  rhs ; 
+    const NOpenMesh<T>&  lhs ; 
+    const NOpenMesh<T>&  rhs ; 
 }; 
 
 

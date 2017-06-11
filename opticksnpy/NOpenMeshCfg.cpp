@@ -8,7 +8,39 @@
 
 #include "BStr.hh"
 
+#include "NParameters.hpp"
+#include "NOpenMeshEnum.hpp"
 #include "NOpenMeshCfg.hpp"
+
+
+NOpenMeshCfg::NOpenMeshCfg(const NParameters* meta, const char* treedir) 
+     : 
+     meta(meta),
+     treedir(treedir ? strdup(treedir) : NULL),
+     level(meta->get<int>("level", "5" )),
+     verbosity(meta->get<int>("verbosity", "0" )),
+     ctrl(meta->get<int>("ctrl", "0" )),
+     poly(meta->get<std::string>("poly", "HY")),
+     polycfg(meta->get<std::string>("polycfg", "")),
+     combine(NOpenMeshEnum::CombineTypeFromPoly(poly.c_str())),
+     epsilon(1e-5f)
+{
+    init();
+}
+
+
+void NOpenMeshCfg::init()
+{
+    parse(DEFAULT);
+    parse(polycfg.c_str());
+}
+
+
+const char* NOpenMeshCfg::CombineTypeString() const 
+{
+    return NOpenMeshEnum::CombineType(combine) ;
+}
+
 
 
 const char* NOpenMeshCfg::CFG_SORTCONTIGUOUS_ = "sortcontiguous" ;
@@ -93,20 +125,6 @@ int NOpenMeshCfg::parse_val(const char* v) const
 {
     return boost::lexical_cast<int>(v);
 }  
-
-NOpenMeshCfg::NOpenMeshCfg(const char* cfg_) 
-     : 
-     cfg(cfg_ ? strdup(cfg_) : NULL ),
-     epsilon(1e-5f)
-{
-    init();
-}
-
-void NOpenMeshCfg::init()
-{
-    parse(DEFAULT);
-    parse(cfg);
-}
 
 void NOpenMeshCfg::parse(const char* cfg_)
 {

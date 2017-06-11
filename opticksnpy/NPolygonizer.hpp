@@ -42,7 +42,7 @@ class NPY_API NPolygonizer {
          NTrianglesNPY* implicitMesher();
          NTrianglesNPY* dualContouringSample();
          NTrianglesNPY* marchingCubesNPY();
-         NTrianglesNPY* hybridMesher(NPolyMode_t polymode);
+         NTrianglesNPY* hybridMesher();
    private:
          NCSG*             m_csg ;
          nnode*            m_root ; 

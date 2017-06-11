@@ -3,6 +3,8 @@
 #include <string>
 #include "NPY_API_EXPORT.hh"
 
+#include "NOpenMeshEnum.hpp"
+
 typedef enum
 {
     CFG_ZERO       , 
@@ -20,6 +22,9 @@ typedef enum
 
 //  .,+10s/\s*\(CFG\w*\).*$/static const char* \1_ ;/g
 
+class NParameters ; 
+
+
 struct NPY_API NOpenMeshCfg 
 {
     static const char* DEFAULT ; 
@@ -36,7 +41,7 @@ struct NPY_API NOpenMeshCfg
     static const char* CFG_NUMSUBDIV_ ;
     static const char* CFG_OFFSAVE_ ;
 
-    NOpenMeshCfg(const char* cfg=NULL);
+    NOpenMeshCfg(const NParameters* meta, const char* treedir);
 
     void init();
     void parse(const char* cfg);
@@ -48,9 +53,24 @@ struct NPY_API NOpenMeshCfg
     std::string       brief(const char* msg="cfg") const ;
     std::string       describe(const char* msg, const char* pfx, const char* kvdelim, const char* delim ) const ;
 
+    const char* CombineTypeString() const ;
 
-    const char* cfg ; 
-    
+
+    // args
+    const NParameters* meta ; 
+    const char* treedir ; 
+
+    // direct from meta 
+    int level ; 
+    int verbosity ; 
+    int ctrl ; 
+    std::string poly ; 
+    std::string polycfg ; 
+
+    // parsed from poly 
+    NOpenMeshCombineType combine ; 
+
+    // parsed from polycfg     
     int contiguous ; 
     int phased ; 
     int flip ; 
@@ -62,6 +82,7 @@ struct NPY_API NOpenMeshCfg
     int numsubdiv ; 
     int offsave ; 
 
+    // defaulted
     float epsilon ; 
  
 };

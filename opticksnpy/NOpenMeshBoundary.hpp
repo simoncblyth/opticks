@@ -12,7 +12,9 @@ struct nnode ;
 NOpenMeshBoundary
 ==================
 
-Used from NOpenMeshFind<T>::find_boundary_loops
+Zero or more boundary loops are collected into a vector or loops 
+residing in NOpenMeshFind instances by NOpenMeshFind<T>::find_boundary_loops.
+(NOpenMeshFind is a top level constituent of NOpenMesh) 
 
 
 init_loop
@@ -63,8 +65,8 @@ struct NPY_API  NOpenMeshBoundary
     typedef typename VHEH::const_iterator VHEHI ; 
 
     NOpenMeshBoundary( T& mesh, 
-                       const NOpenMeshCfg& cfg, 
-                       NOpenMeshProp<T>& prop,  
+                       const NOpenMeshCfg* cfg, 
+                       NOpenMeshProp<T>&   prop,  
                        HEH start, 
                        const nnode* node );
 
@@ -91,10 +93,10 @@ struct NPY_API  NOpenMeshBoundary
 
 
     T&                   mesh ; 
-    const NOpenMeshCfg&  cfg ; 
-    NOpenMeshProp<T>&   prop ; 
-    HEH                start ; 
-    const nnode*        node ; 
+    const NOpenMeshCfg*  cfg ; 
+    NOpenMeshProp<T>&    prop ; 
+    HEH                  start ; 
+    const nnode*         node ; 
 
     std::vector<HEH>    loop ; 
     std::vector<P>      frontier  ; 

@@ -1,4 +1,6 @@
 #include <cstddef>
+#include <cstring>
+
 #include <OpenMesh/Core/System/config.hh>
 #include "NOpenMeshEnum.hpp"
 
@@ -12,6 +14,29 @@ const char* PROP_FRONTIER_ = "PROP_FRONTIER" ;
 
 
 
+
+const char* NOpenMeshEnum::COMBINE_HYBRID_ = "NOpenMeshEnum::COMBINE_HYBRID" ; 
+const char* NOpenMeshEnum::COMBINE_CSGBSP_ = "NOpenMeshEnum::COMBINE_CSGBSP" ; 
+
+const char* NOpenMeshEnum::CombineType(NOpenMeshCombineType meshmode)
+{
+    const char* s = NULL ; 
+    switch( meshmode )
+    {
+        case COMBINE_HYBRID : s = COMBINE_HYBRID_  ; break ; 
+        case COMBINE_CSGBSP : s = COMBINE_CSGBSP_  ; break ; 
+    }
+    return s ; 
+}
+
+
+NOpenMeshCombineType NOpenMeshEnum::CombineTypeFromPoly(const char* poly)
+{
+    if(strcmp(poly,"HY") == 0 )  return COMBINE_HYBRID ;
+    if(strcmp(poly,"BSP") == 0 ) return COMBINE_CSGBSP ;
+    assert(0) ; 
+    return COMBINE_HYBRID ;
+}
 
 
 

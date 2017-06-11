@@ -27,11 +27,10 @@ struct NPY_API  NOpenMeshBuild
     static const char* HEXPATCH ; 
 
     NOpenMeshBuild( T& mesh, 
-                    const NOpenMeshCfg& cfg, 
-                    NOpenMeshProp<T>& prop, 
+                    const NOpenMeshCfg*     cfg, 
+                    NOpenMeshProp<T>&       prop, 
                     const NOpenMeshDesc<T>& desc, 
-                    const NOpenMeshFind<T>& find,
-                    int verbosity
+                    const NOpenMeshFind<T>& find
                   );
 
     VH add_vertex_unique(typename T::Point pt, bool& added ) ;  
@@ -59,11 +58,11 @@ struct NPY_API  NOpenMeshBuild
 
     T& mesh  ;
 
-    const NOpenMeshCfg& cfg ;
-    NOpenMeshProp<T>& prop ;
+    const NOpenMeshCfg*     cfg ;
+    NOpenMeshProp<T>&       prop ;
     const NOpenMeshDesc<T>& desc ;
     const NOpenMeshFind<T>& find ;
-    int verbosity ; 
+    int                     verbosity ; 
 
     std::map<int,int> f_inside_other_count ; 
 

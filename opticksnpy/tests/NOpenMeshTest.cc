@@ -1,6 +1,7 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
+#include "NParameters.hpp"
 #include "NOpenMeshBoundary.hpp"
 #include "NOpenMesh.hpp"
 
@@ -11,18 +12,24 @@ typedef NOpenMeshType T ;
 typedef T::VertexHandle VH ; 
 typedef T::FaceHandle   FH ; 
 
+typedef NOpenMesh<T> MESH ; 
+
+enum {
+  CUBE = 6,
+  TETRAHEDRON = 4,
+  HEXPATCH = 666
+};  
+
 
 void test_write()
 {
     const char* path = "/tmp/test_write.off" ;
     LOG(info) << "test_write " << path  ; 
 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    int ctrl = 6 ; // cube 
-    const char* polycfg = NULL ; 
+    NParameters meta ; 
+    meta.add<int>("ctrl", CUBE ); 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg );
+    MESH* mesh = MESH::Make( NULL, &meta, NULL );
     mesh->write(path);
     std::cout << mesh->brief() << std::endl ; 
 }
@@ -32,13 +39,13 @@ void test_write()
 void test_hexpatch()
 {
     LOG(info) << "test_hexpatch" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    int ctrl = 666 ;  // hexpatch
-    const char* polycfg = NULL ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
+    NParameters meta ; 
+    meta.add<int>("ctrl", HEXPATCH ); 
+
+    MESH* mesh = MESH::Make( NULL, &meta, NULL );
     mesh->dump();
+
     std::cout << mesh->desc.desc() ;
 }
 
@@ -46,13 +53,12 @@ void test_hexpatch()
 void test_cube()
 {
     LOG(info) << "test_cube" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    int ctrl = 6 ; 
-    const char* polycfg = NULL ; 
 
+    NParameters meta ; 
+    meta.add<int>("ctrl", CUBE ); 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest(level, verbosity, ctrl, polycfg  );
+    MESH* mesh = MESH::Make( NULL, &meta, NULL );
+
     mesh->dump();
     std::cout << mesh->desc.desc() ;
 }
@@ -60,12 +66,11 @@ void test_cube()
 void test_tetrahedron()
 {
     LOG(info) << "test_tetrahedron" ; 
-    int level = 0 ; 
-    int verbosity = 3 ; 
-    int ctrl = 4 ;  // tetrahedron
-    const char* polycfg = NULL ; 
 
-    NOpenMesh<T>* mesh = NOpenMesh<T>::BuildTest( level, verbosity, ctrl, polycfg );
+    NParameters meta ; 
+    meta.add<int>("ctrl", TETRAHEDRON ); 
+
+    MESH* mesh = MESH::Make( NULL, &meta, NULL );
 
     mesh->dump();
 
@@ -73,32 +78,35 @@ void test_tetrahedron()
 }
 
 
-
-
-
 void test_sphere_parametric()
 {
     LOG(info) << "test_sphere_parametric" ;
-    int verbosity = 1 ; 
 
     nsphere sphere = make_sphere(0,0,0,10);
     for(int level=2 ; level < 7 ; level++)
     { 
-        NOpenMesh<T> m(&sphere, level, verbosity) ;
-        //m.dump("sphere");
+        NParameters meta ; 
+        meta.add<int>("level", level ); 
+        meta.add<int>("verbosity", 1 ); 
+
+        MESH* m = MESH::Make(&sphere, &meta, NULL ) ;
+        m->dump("sphere");
     }
 }
 
 void test_box_parametric()
 {
     LOG(info) << "test_box_parametric" ;
-    int verbosity = 1 ; 
 
     nbox box = make_box(0,0,0,100);
     for(int level=1 ; level < 6 ; level++)
     { 
-        NOpenMesh<T> m(&box, level, verbosity);
-        //m.dump("box");
+        NParameters meta ; 
+        meta.add<int>("level", level ); 
+        meta.add<int>("verbosity", 1 ); 
+
+        MESH* m = MESH::Make(&box, &meta, NULL );
+        m->dump("box");
     }
 }
 
@@ -110,34 +118,36 @@ void test_add_vertex()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
 
-    NOpenMesh<T> mesh(NULL, level, verbosity) ;
+    NParameters meta ; 
+    meta.add<int>("level", 4 ); 
+    meta.add<int>("verbosity", 1 ); 
+
+    MESH* m = MESH::Make(NULL, &meta, NULL ) ;
 
     VH vh[8];
     VH vhd[8];
 
 
-    vh[0] = mesh.mesh.add_vertex(P(-1, -1,  1));
-    mesh.dump("after vh[0]");
+    vh[0] = m->mesh.add_vertex(P(-1, -1,  1));
+    m->dump("after vh[0]");
 
-    vhd[0] = mesh.mesh.add_vertex(P(-1, -1,  1));
-    mesh.dump("after vhd[0]");
+    vhd[0] = m->mesh.add_vertex(P(-1, -1,  1));
+    m->dump("after vhd[0]");
 
     // nothing special happens with duplicate vertices, just gets added
-    //  https://mailman.rwth-aachen.de/pipermail/openmesh/2011-August/000584.html
+    //  https://mailman.rwth-aachen.de/pipermail/openm->2011-August/000584.html
 
-    vh[1] = mesh.mesh.add_vertex(P( 1, -1,  1));
-    mesh.dump("after vh[1]");
+    vh[1] = m->mesh.add_vertex(P( 1, -1,  1));
+    m->dump("after vh[1]");
 
 
-    vh[2] = mesh.mesh.add_vertex(P( 1,  1,  1));
-    vh[3] = mesh.mesh.add_vertex(P(-1,  1,  1));
-    vh[4] = mesh.mesh.add_vertex(P(-1, -1, -1));
-    vh[5] = mesh.mesh.add_vertex(P( 1, -1, -1));
-    vh[6] = mesh.mesh.add_vertex(P( 1,  1, -1));
-    vh[7] = mesh.mesh.add_vertex(P(-1,  1, -1));
+    vh[2] = m->mesh.add_vertex(P( 1,  1,  1));
+    vh[3] = m->mesh.add_vertex(P(-1,  1,  1));
+    vh[4] = m->mesh.add_vertex(P(-1, -1, -1));
+    vh[5] = m->mesh.add_vertex(P( 1, -1, -1));
+    vh[6] = m->mesh.add_vertex(P( 1,  1, -1));
+    vh[7] = m->mesh.add_vertex(P(-1,  1, -1));
 
 }
 
@@ -150,50 +160,50 @@ void test_add_vertex_unique()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
+    NParameters meta ; 
+    meta.add<int>("level", 4 ); 
+    meta.add<int>("verbosity", 1 ); 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
-
-    NOpenMesh<T> mesh(NULL, level, verbosity) ;
+    MESH* m = MESH::Make(NULL, &meta, NULL);
 
     VH vh[8];
     VH vhd[8];
     bool added(false) ; 
 
-    vh[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added);
-    vhd[0] = mesh.build.add_vertex_unique(P(-1, -1,  1), added);
+    vh[0] = m->build.add_vertex_unique(P(-1, -1,  1), added);
+    vhd[0] = m->build.add_vertex_unique(P(-1, -1,  1), added);
     assert(vhd[0] == vh[0]);
     
-    vh[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added);
-    vhd[1] = mesh.build.add_vertex_unique(P( 1, -1,  1), added);
+    vh[1] = m->build.add_vertex_unique(P( 1, -1,  1), added);
+    vhd[1] = m->build.add_vertex_unique(P( 1, -1,  1), added);
     assert(vhd[1] == vh[1]);
 
-    vh[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added);
-    vhd[2] = mesh.build.add_vertex_unique(P( 1,  1,  1), added);
+    vh[2] = m->build.add_vertex_unique(P( 1,  1,  1), added);
+    vhd[2] = m->build.add_vertex_unique(P( 1,  1,  1), added);
     assert(vhd[2] == vh[2]);
 
-    vh[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added);
-    vhd[3] = mesh.build.add_vertex_unique(P(-1,  1,  1),added);
+    vh[3] = m->build.add_vertex_unique(P(-1,  1,  1),added);
+    vhd[3] = m->build.add_vertex_unique(P(-1,  1,  1),added);
     assert(vhd[3] == vh[3]);
 
-    vh[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added);
-    vhd[4] = mesh.build.add_vertex_unique(P(-1, -1, -1),added);
+    vh[4] = m->build.add_vertex_unique(P(-1, -1, -1),added);
+    vhd[4] = m->build.add_vertex_unique(P(-1, -1, -1),added);
     assert(vhd[4] == vh[4]);
 
-    vh[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added);
-    vhd[5] = mesh.build.add_vertex_unique(P( 1, -1, -1),added);
+    vh[5] = m->build.add_vertex_unique(P( 1, -1, -1),added);
+    vhd[5] = m->build.add_vertex_unique(P( 1, -1, -1),added);
     assert(vhd[5] == vh[5]);
 
-    vh[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added);
-    vhd[6] = mesh.build.add_vertex_unique(P( 1,  1, -1),added);
+    vh[6] = m->build.add_vertex_unique(P( 1,  1, -1),added);
+    vhd[6] = m->build.add_vertex_unique(P( 1,  1, -1),added);
     assert(vhd[6] == vh[6]);
 
-    vh[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added);
-    vhd[7] = mesh.build.add_vertex_unique(P(-1,  1, -1),added);
+    vh[7] = m->build.add_vertex_unique(P(-1,  1, -1),added);
+    vhd[7] = m->build.add_vertex_unique(P(-1,  1, -1),added);
     assert(vhd[7] == vh[7]);
 
 
-    mesh.dump();
+    m->dump();
 }
 
 
@@ -265,19 +275,23 @@ void test_add_face()
     typedef T::Point        P ; 
     typedef T::VertexHandle VH ; 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
-    NOpenMesh<T> m(NULL, level, verbosity) ;
 
-    VH v00 = m.mesh.add_vertex(P(0, 0, 0));
-    VH v01 = m.mesh.add_vertex(P(0, 1, 0));
-    VH v10 = m.mesh.add_vertex(P(1, 0, 0));
+    NParameters meta ; 
+    meta.add<int>("level", 4 ); 
+    meta.add<int>("verbosity", 1 ); 
+
+    MESH* m = MESH::Make(NULL, &meta, NULL);
+
+
+    VH v00 = m->mesh.add_vertex(P(0, 0, 0));
+    VH v01 = m->mesh.add_vertex(P(0, 1, 0));
+    VH v10 = m->mesh.add_vertex(P(1, 0, 0));
  
-    m.mesh.add_face( v00, v10, v01 );
-    m.dump();
+    m->mesh.add_face( v00, v10, v01 );
+    m->dump();
 
 /*
-    m.mesh.add_face( v00, v01, v10 );
+    m->mesh.add_face( v00, v01, v10 );
 
   1
 
@@ -325,39 +339,42 @@ void test_add_two_face()
     typedef T::FaceHandle   FH ; 
 
 
-    int level = 4 ; 
-    int verbosity = 1 ; 
-    NOpenMesh<T> m(NULL, level, verbosity) ;
 
-    VH v00 = m.mesh.add_vertex(P(0, 0, 0));
-    VH v01 = m.mesh.add_vertex(P(0, 1, 0));
-    VH v10 = m.mesh.add_vertex(P(1, 0, 0));
-    VH v11 = m.mesh.add_vertex(P(1, 1, 0));
+    NParameters meta ; 
+    meta.add<int>("level", 4 ); 
+    meta.add<int>("verbosity", 1 ); 
+
+    MESH* m = MESH::Make(NULL, &meta, NULL);
+
+    VH v00 = m->mesh.add_vertex(P(0, 0, 0));
+    VH v01 = m->mesh.add_vertex(P(0, 1, 0));
+    VH v10 = m->mesh.add_vertex(P(1, 0, 0));
+    VH v11 = m->mesh.add_vertex(P(1, 1, 0));
  
-    FH f0 = m.mesh.add_face( v11, v00, v10 );
-    assert(m.mesh.is_valid_handle(f0));
+    FH f0 = m->mesh.add_face( v11, v00, v10 );
+    assert(m->mesh.is_valid_handle(f0));
 
     // NB must do the check prior to adding the 2nd face 
     //    to be in same situation
 
-    assert(m.build.is_consistent_face_winding(v00,v11,v01) == true);
-    assert(m.build.is_consistent_face_winding(v11,v01,v00) == true);
-    assert(m.build.is_consistent_face_winding(v01,v00,v11) == true);
+    assert(m->build.is_consistent_face_winding(v00,v11,v01) == true);
+    assert(m->build.is_consistent_face_winding(v11,v01,v00) == true);
+    assert(m->build.is_consistent_face_winding(v01,v00,v11) == true);
 
-    assert(m.build.is_consistent_face_winding(v11,v00,v01) == false);
-    assert(m.build.is_consistent_face_winding(v00,v01,v11) == false);
-    assert(m.build.is_consistent_face_winding(v01,v11,v00) == false);
+    assert(m->build.is_consistent_face_winding(v11,v00,v01) == false);
+    assert(m->build.is_consistent_face_winding(v00,v01,v11) == false);
+    assert(m->build.is_consistent_face_winding(v01,v11,v00) == false);
 
-    FH f1 = m.mesh.add_face( v00, v11, v01 );  // ok
-    assert(m.mesh.is_valid_handle(f1));
+    FH f1 = m->mesh.add_face( v00, v11, v01 );  // ok
+    assert(m->mesh.is_valid_handle(f1));
 
-    //FH f1 = m.mesh.add_face( v00, v11, v01 );   // ok
-    //FH f1 = m.mesh.add_face( v11, v01, v00 );   // ok
-    //FH f1 = m.mesh.add_face( v01, v00, v11 );   // ok
+    //FH f1 = m->mesh.add_face( v00, v11, v01 );   // ok
+    //FH f1 = m->mesh.add_face( v11, v01, v00 );   // ok
+    //FH f1 = m->mesh.add_face( v01, v00, v11 );   // ok
 
-    //FH f1 = m.mesh.add_face( v11, v00, v01 );   // <-- invalid "complex edge" 
-    //FH f1 = m.mesh.add_face( v00, v01, v11 );   // <-- invalid "complex edge" 
-    //FH f1 = m.mesh.add_face( v01, v11, v00 );   // <-- invalid "complex edge" 
+    //FH f1 = m->mesh.add_face( v11, v00, v01 );   // <-- invalid "complex edge" 
+    //FH f1 = m->mesh.add_face( v00, v01, v11 );   // <-- invalid "complex edge" 
+    //FH f1 = m->mesh.add_face( v01, v11, v00 );   // <-- invalid "complex edge" 
     //
     // Notice that the common edge between the two faces 
     // in oppositely wound for the two faces, 
@@ -369,7 +386,7 @@ void test_add_two_face()
     // 
     //      PolyMeshT::add_face: complex edge
 
-    m.dump();
+    m->dump();
 
 /*
      01-----11
@@ -402,20 +419,23 @@ void test_manual_subdivide_face()
 {
     LOG(info) << "test_manual_subdivide_face" ; 
 
-    int level = 0 ; 
-    int verbosity = 3 ; 
 
     nbox box = make_box(0,0,0, 100);
 
-    NOpenMesh<T> m(&box, level, verbosity) ;
 
-    assert( m.find.find_boundary_loops() == 0 ) ;
+    NParameters meta ; 
+    meta.add<int>("level", 4 ); 
+    meta.add<int>("verbosity", 1 ); 
+
+    MESH* m = MESH::Make(&box, &meta, NULL) ;
+
+    assert( m->find.find_boundary_loops() == 0 ) ;
  
-    m.subdiv.sqrt3_refine( FIND_ALL_FACE, -1 ); 
+    m->subdiv.sqrt3_refine( FIND_ALL_FACE, -1 ); 
 
-    std::cout << "after manual_subdivide_face " << m.brief() << std::endl ;   
+    std::cout << "after m->nual_subdivide_face " << m->brief() << std::endl ;   
 
-    assert( m.find.find_boundary_loops() == 0 ) ;
+    assert( m->find.find_boundary_loops() == 0 ) ;
 
 
 }

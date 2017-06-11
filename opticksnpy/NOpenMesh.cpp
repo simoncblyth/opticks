@@ -5,11 +5,14 @@
 #include <iostream>
 #include <sstream>
 
-
 #include "PLOG.hh"
+
+#include "BFile.hh"
+
 #include "NGLM.hpp"
 #include "Nuv.hpp"
 #include "NNode.hpp"
+#include "NParameters.hpp"
 #include "NCSGBSP.hpp"
 
 #include "NOpenMesh.hpp"
@@ -17,119 +20,91 @@
 #include "NOpenMeshDesc.hpp"
 #include "NOpenMeshFind.hpp"
 #include "NOpenMeshBuild.hpp"
-
+#include "NOpenMeshZipper.hpp"
 
 #include <OpenMesh/Tools/Utils/MeshCheckerT.hh>
 
 
 
 template <typename T>
-const char* NOpenMesh<T>::COMBINE_HYBRID_ = "COMBINE_HYBRID" ; 
-
-template <typename T>
-const char* NOpenMesh<T>::COMBINE_CSGBSP_ = "COMBINE_CSGBSP" ; 
-
-template <typename T>
-const char* NOpenMesh<T>::MeshModeString(NOpenMeshMode_t meshmode)
+NOpenMesh<T>* NOpenMesh<T>::Make( const nnode* node, const NParameters* meta, const char* treedir )
 {
-    const char* s = NULL ; 
-    if(     meshmode & COMBINE_HYBRID) s = COMBINE_HYBRID_  ;
-    else if(meshmode & COMBINE_CSGBSP) s = COMBINE_CSGBSP_  ;
-    return s ; 
+    NOpenMeshCfg* cfg = new NOpenMeshCfg(meta, treedir) ; 
+    NOpenMesh<T>* m = new NOpenMesh<T>(node, cfg ); 
+
+    switch(cfg->ctrl)
+    {
+       case   3: m->build.add_tripatch()       ; break ; 
+       case   4: m->build.add_tetrahedron()    ; break ; 
+       case   6: m->build.add_cube()           ; break ; 
+       case  66: m->build.add_hexpatch(true)   ; break ; 
+       case 666: m->build.add_hexpatch(false)  ; break ; 
+    }
+    m->check();
+
+    return m ; 
 }
 
 
 template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::spawn(const nnode* subnode)
 {
-    return new NOpenMesh<T>(subnode, level, verbosity, ctrl, cfg.cfg, meshmode) ;
+    return new NOpenMesh<T>( subnode, cfg ) ;
 }
 
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, int level, int verbosity, int ctrl, const char* polycfg, NOpenMeshMode_t meshmode )
+NOpenMesh<T>* NOpenMesh<T>::spawn_submesh(NOpenMeshPropType select )
+{
+    NOpenMesh<T>* submesh = spawn(NULL) ; 
+    submesh->build.copy_faces( this,  select );
+
+    int nloop = submesh->find.find_boundary_loops() ;
+
+    if(verbosity > 2)
+    {
+         LOG(info) << "NOpenMesh<T>::spawn_submesh"
+                   << " nloop " << nloop 
+                   ;
+    } 
+
+    if(verbosity > 3)
+    {
+        submesh->find.dump_boundary_loops("find.dump_boundary_loops", true );
+    }
+
+    return submesh ; 
+}
+
+
+template <typename T>
+NOpenMesh<T>::NOpenMesh(const nnode* node, const NOpenMeshCfg* cfg  )
     :
-    cfg(polycfg),
+    node(node), 
+    cfg(cfg),
+    verbosity(cfg->verbosity),
+
     prop(mesh),
     desc(mesh, prop),
-    find(mesh, cfg, prop, verbosity, node),
-    build(mesh, cfg, prop, desc, find, verbosity),
-    subdiv(mesh, cfg, prop, desc, find, build, verbosity),
+    find(mesh, cfg, prop, node),
+    build(mesh, cfg, prop, desc, find ),
+    subdiv(mesh, cfg, prop, desc, find, build ),
 
-    node(node), 
-    level(level), 
-    verbosity(verbosity), 
-    ctrl(ctrl), 
-    meshmode(meshmode),
     leftmesh(NULL),
     rightmesh(NULL),
     lfrontier(NULL),
-    rfrontier(NULL)
+    rfrontier(NULL),
+    zipper(NULL)
 {
-    unsigned omv = NOpenMeshEnum::OpenMeshVersion();
-    std::cout << "OpenMeshVersion " << std::hex << omv << std::dec << std::endl ; 
-
     init();
 }
-
 
 template <typename T>
 void NOpenMesh<T>::init()
 {
     if(!node) return ; 
-
-    if(verbosity > 4)
-    LOG(info) << "NOpenMesh<T>::init()"
-              << " node.label " << ( node->label ? node->label : "-" )
-              << " meshmode " << meshmode 
-              << " MeshModeString " << MeshModeString(meshmode) 
-              << cfg.brief()
-              ; 
-
     build_csg();
     check();
 }
-
-
-template <typename T>
-void NOpenMesh<T>::check()
-{
-    assert(OpenMesh::Utils::MeshCheckerT<T>(mesh).check()) ;
-    if(verbosity > 3)
-    LOG(info) << "NOpenMesh<T>::check OK" ; 
-}
-
-template <typename T>
-void NOpenMesh<T>::subdiv_test()
-{
-    unsigned nloop0 = find.find_boundary_loops() ;
-    if(verbosity > 0)
-    LOG(info) << "subdiv_test START " 
-              << " ctrl " << ctrl 
-              << " cfg " << cfg.desc()
-              << " verbosity " << verbosity
-              << " nloop0 " << nloop0
-              << desc.desc_euler()
-              ;
-    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
-
-
-    for(int i=0 ; i < cfg.numsubdiv ; i++)
-    {
-        subdiv.sqrt3_refine( FIND_ALL_FACE, -1 );
-    }
-
-    unsigned nloop1 = find.find_boundary_loops() ;
-    if(verbosity > 0)
-    LOG(info) << "subdiv_test DONE " 
-              << " ctrl " << ctrl 
-              << " verbosity " << verbosity
-              << " nloop1 " << nloop1
-              << desc.desc_euler()
-              ;
-
-    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
-}
-
 
 template <typename T>
 void NOpenMesh<T>::build_csg()
@@ -157,56 +132,39 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     copy faces of B entirely inside A 
 
 */
+    if(verbosity > 4) LOG(info) << summary("NOpenMesh::build_csg") ;
     bool combination = node->left && node->right ; 
 
     if(!combination)
     {
-        build.add_parametric_primitive(node, level, ctrl ); // adds unique vertices and faces to build out the parametric mesh  
-        build.euler_check(node, level);
+        build.add_parametric_primitive(node, cfg->level, cfg->ctrl ); // adds unique vertices and faces to build out the parametric mesh  
+        build.euler_check(node, cfg->level);
     }
     else
     {
         assert(node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE );
         LOG(info) 
                   << "NOpenMesh<T>::build_csg" 
-                  << cfg.brief()
+                  << cfg->brief()
                   << " making leftmesh rightmesh "
-                  << " meshmode " << meshmode
-                  << " COMBINE_HYBRID " << COMBINE_HYBRID
-                  << " COMBINE_CSGBSP " << COMBINE_CSGBSP
-                  << " MeshModeString " << MeshModeString(meshmode)
+                  << " CombineType " << cfg->CombineTypeString()
                   ; 
 
         leftmesh = spawn(node->left) ; 
         rightmesh = spawn(node->right) ; 
 
-
-        LOG(info) 
-                  << "NOpenMesh<T>::build_csg" 
-                  << " START "
-                  ;
+        LOG(info) << "NOpenMesh<T>::build_csg" << " START " ;
 
         std::cout << " leftmesh  " << leftmesh->brief() << std::endl ; 
         std::cout << " rightmesh " << rightmesh->brief() << std::endl ; 
 
-
-        if( meshmode & COMBINE_HYBRID )
+        switch(cfg->combine)
         {
-            combine_hybrid();
-        }
-        else if( meshmode & COMBINE_CSGBSP )
-        {
-            combine_csgbsp() ; 
-        }
-        else
-        {
-            assert(0) ; 
+            case COMBINE_HYBRID : combine_hybrid() ; break ; 
+            case COMBINE_CSGBSP : combine_csgbsp() ; break ;
         }
 
-        LOG(info) 
-                  << "NOpenMesh<T>::build_csg" 
-                  << " DONE "
-                  ;
+        LOG(info) << "NOpenMesh<T>::build_csg" << " DONE " ;
 
         std::cout << " leftmesh  " << leftmesh->brief() << std::endl ; 
         std::cout << " rightmesh " << rightmesh->brief() << std::endl ; 
@@ -214,14 +172,6 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     }
 }
 
-
-
-template <typename T>
-void NOpenMesh<T>::combine_csgbsp()
-{
-    NCSGBSP csgbsp( leftmesh, rightmesh, node->type );
-    build.copy_faces( &csgbsp );
-}
 
 
 template <typename T>
@@ -283,7 +233,7 @@ void NOpenMesh<T>::combine_hybrid( )
  
     */
 
-    if(cfg.numsubdiv > 0)
+    if(cfg->numsubdiv > 0)
     {
         NOpenMeshFindType sel = FIND_FACEMASK_FACE ;
 
@@ -299,20 +249,21 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
+    lfrontier = leftmesh->spawn_submesh( PROP_FRONTIER );
+    rfrontier = rightmesh->spawn_submesh( PROP_FRONTIER );
+
+    zipper = new NOpenMeshZipper<T>(*lfrontier, *rfrontier );
+
+
+
 
     // copying subsets of leftmesh and rightmesh faces into this one 
     // selected via the NOpenMeshPropType
 
     if(node->type == CSG_UNION)
     {
-        //NOpenMeshPropType prop = PROP_OUTSIDE_OTHER ;
-        NOpenMeshPropType prop = PROP_FRONTIER ;
-
-        build.copy_faces( leftmesh,  prop );
-        //build.copy_faces( rightmesh, prop );
-
-        //subdiv.sqrt3_refine( FIND_ALL_FACE , -1 );  // test refining copied over frontier tris
-
+        build.copy_faces( leftmesh,  PROP_OUTSIDE_OTHER );
+        build.copy_faces( rightmesh, PROP_OUTSIDE_OTHER );
     }
     else if(node->type == CSG_INTERSECTION)
     {
@@ -326,22 +277,21 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
-
-    int nloop = find.find_boundary_loops() ;
-    // hmm expecting 2, but thats geometry specific
-
-    find.dump_boundary_loops("find.dump_boundary_loops", true );
-
-
-    if(verbosity > 0)
-    LOG(info) << "combine_hybrid"
-              << " boundary_loops " << nloop 
-               ;    
+    //int nloop = find.find_boundary_loops() ;
+    //find.dump_boundary_loops("find.dump_boundary_loops", true );
 
 
 }
 
 
+
+
+template <typename T>
+void NOpenMesh<T>::combine_csgbsp()
+{
+    NCSGBSP csgbsp( leftmesh, rightmesh, node->type );
+    build.copy_faces( &csgbsp );
+}
 
 
 
@@ -460,8 +410,28 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
 }
 
 
+
+
+
+
+
+
 template <typename T>
-int NOpenMesh<T>::write(const char* path)
+void NOpenMesh<T>::save(const char* name) const 
+{
+    const char* treedir = cfg->treedir ; 
+    assert(treedir);
+
+    std::string meshpath = BFile::FormPath(treedir, name) ;
+    LOG(info) << "NOpenMesh<T>::save writing mesh to " << meshpath ; 
+
+    write(meshpath.c_str());
+    // formerly auto wrote when cfg->offsave > 0
+
+}
+
+template <typename T>
+int NOpenMesh<T>::write(const char* path) const 
 {
     try
     {
@@ -478,9 +448,8 @@ int NOpenMesh<T>::write(const char* path)
     }
     return 0 ; 
 }
-
 template <typename T>
-void NOpenMesh<T>::dump(const char* msg)
+void NOpenMesh<T>::dump(const char* msg) const 
 {
     LOG(info) << "dump START" ; 
     LOG(info) << msg << " " << brief() ; 
@@ -488,14 +457,25 @@ void NOpenMesh<T>::dump(const char* msg)
     desc.dump_faces();
     LOG(info) << "dump DONE" ; 
 }
-
-
 template <typename T>
-std::string NOpenMesh<T>::brief()
+std::string NOpenMesh<T>::brief() const 
 {
     return desc.desc_euler();
 }
+template <typename T>
+std::string NOpenMesh<T>::summary(const char* msg) const 
+{
+    unsigned omv = NOpenMeshEnum::OpenMeshVersion();
+    std::stringstream ss ; 
+    ss <<  msg
+       << "OpenMeshVersion " << std::hex << omv << std::dec 
+       << " node.label " << ( node->label ? node->label : "-" )
+       << " CombineType " << cfg->CombineTypeString() 
+       << cfg->brief()
+       ; 
 
+    return ss.str();
+}
 
 
 // NTriSource interface
@@ -582,22 +562,55 @@ void NOpenMesh<T>::get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& 
 
 // debug shapes
 
+
+
+
+
+
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::BuildTest(int level, int verbosity, int ctrl, const char* polycfg)
+void NOpenMesh<T>::check()
 {
-    NOpenMeshMode_t meshmode = COMBINE_HYBRID ;
-    NOpenMesh<T>* m = new NOpenMesh<T>(NULL, level, verbosity, ctrl, polycfg, meshmode ); 
-    switch(ctrl)
-    {
-       case   3: m->build.add_tripatch()       ; break ; 
-       case   4: m->build.add_tetrahedron()    ; break ; 
-       case   6: m->build.add_cube()           ; break ; 
-       case  66: m->build.add_hexpatch(true)   ; break ; 
-       case 666: m->build.add_hexpatch(false)  ; break ; 
-    }
-    m->check();
-    return m ; 
+    assert(OpenMesh::Utils::MeshCheckerT<T>(mesh).check()) ;
+    if(verbosity > 3)
+    LOG(info) << "NOpenMesh<T>::check OK" ; 
 }
+
+template <typename T>
+void NOpenMesh<T>::subdiv_test()
+{
+    unsigned nloop0 = find.find_boundary_loops() ;
+    if(verbosity > 0)
+    LOG(info) << "subdiv_test START " 
+              << " ctrl " << cfg->ctrl 
+              << " cfg " << cfg->desc()
+              << " verbosity " << verbosity
+              << " nloop0 " << nloop0
+              << desc.desc_euler()
+              ;
+    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
+
+
+    for(int i=0 ; i < cfg->numsubdiv ; i++)
+    {
+        subdiv.sqrt3_refine( FIND_ALL_FACE, -1 );
+    }
+
+    unsigned nloop1 = find.find_boundary_loops() ;
+    if(verbosity > 0)
+    LOG(info) << "subdiv_test DONE " 
+              << " ctrl " << cfg->ctrl 
+              << " verbosity " << verbosity
+              << " nloop1 " << nloop1
+              << desc.desc_euler()
+              ;
+
+    if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
+}
+
+
+
+
+
 
 
 template struct NOpenMesh<NOpenMeshType> ;

@@ -108,12 +108,11 @@ using namespace OpenMesh::Subdivider;
 template <typename T>
 NOpenMeshSubdiv<T>::NOpenMeshSubdiv( 
     T& mesh, 
-    const NOpenMeshCfg& cfg, 
+    const NOpenMeshCfg* cfg, 
     NOpenMeshProp<T>& prop, 
     const NOpenMeshDesc<T>& desc, 
     const NOpenMeshFind<T>& find, 
-          NOpenMeshBuild<T>& build,
-    int verbosity
+          NOpenMeshBuild<T>& build
     )
     : 
     mesh(mesh),
@@ -122,7 +121,7 @@ NOpenMeshSubdiv<T>::NOpenMeshSubdiv(
     desc(desc),
     find(find),
     build(build),
-    verbosity(verbosity),
+    verbosity(cfg->verbosity),
     subdivider(new subdivider_t(mesh))
 {
     init();
@@ -260,13 +259,13 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r( FH fh, int depth )
 template <typename T>
 void NOpenMeshSubdiv<T>::sqrt3_refine_phased( const std::vector<FH>& target )
 {
-    bool split = cfg.split > 0 ;
-    bool flip = cfg.flip > 0 ;
+    bool split = cfg->split > 0 ;
+    bool flip = cfg->flip > 0 ;
 
     LOG(info) << "sqrt3_refine_phased" 
               << ( split ? " SPLIT " : " " )
               << " verbosity " << verbosity
-              << " cfg " << cfg.desc()
+              << " cfg " << cfg->desc()
               << " n_target " << target.size()
               << desc.desc_euler()
               ;
@@ -285,13 +284,13 @@ void NOpenMeshSubdiv<T>::sqrt3_refine_phased( const std::vector<FH>& target )
     if(flip)
     {
         int numflip = centroid_vertices.size() ;
-        if( cfg.numflip < 0 )     numflip += cfg.numflip ;  // -ve numflip, reduces the total 
-        else if( cfg.numflip > 0) numflip = cfg.numflip ;   // +ve numflip, set absolute value
-        else if( cfg.numflip == 0) assert( numflip > 0 );   // leave asis 
-        int maxflip = cfg.maxflip ; 
+        if( cfg->numflip < 0 )     numflip += cfg->numflip ;  // -ve numflip, reduces the total 
+        else if( cfg->numflip > 0) numflip = cfg->numflip ;   // +ve numflip, set absolute value
+        else if( cfg->numflip == 0) assert( numflip > 0 );   // leave asis 
+        int maxflip = cfg->maxflip ; 
 
         LOG(info) << "FLIP centroid_vertices " << centroid_vertices.size()
-                  << " cfg.numflip " << cfg.numflip
+                  << " cfg.numflip " << cfg->numflip
                   << " numflip " << numflip
                   << " maxflip " << maxflip
                   ;
@@ -347,8 +346,8 @@ void NOpenMeshSubdiv<T>::sqrt3_refine( NOpenMeshFindType select, int param  )
     std::vector<FH> target ; 
     find.find_faces( target, select,  param );
 
-    bool contiguous = cfg.contiguous > 0 ; 
-    bool phased = cfg.phased > 0 ; 
+    bool contiguous = cfg->contiguous > 0 ; 
+    bool phased = cfg->phased > 0 ; 
 
     assert( contiguous ^ phased );
 

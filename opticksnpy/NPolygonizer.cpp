@@ -48,6 +48,8 @@ const char* NPolygonizer::POLY_IM_  = "POLY_IM" ;
 const char* NPolygonizer::POLY_HY_  = "POLY_HY" ; 
 const char* NPolygonizer::POLY_BSP_ = "POLY_BSP" ; 
 
+
+
 const char* NPolygonizer::PolyModeString(NPolyMode_t polymode)
 {
     const char* s = NULL ;
@@ -97,7 +99,6 @@ NPolygonizer::NPolygonizer(NCSG* csg)
                   << " polycfg " << m_polycfg 
                   ;
     }
-
 }
 
 
@@ -122,8 +123,8 @@ NTrianglesNPY* NPolygonizer::polygonize()
         case POLY_MC:  tris = marchingCubesNPY()    ; break ; 
         case POLY_DCS: tris = dualContouringSample(); break ; 
         case POLY_IM:  tris = implicitMesher()      ; break ;      
-        case POLY_HY:  tris = hybridMesher(m_polymode) ; break ;    
-        case POLY_BSP: tris = hybridMesher(m_polymode) ; break ;    
+        case POLY_HY:  tris = hybridMesher()        ; break ;    
+        case POLY_BSP: tris = hybridMesher()        ; break ;    
         default:   assert(0);
     }
     bool valid = checkTris(tris);
@@ -212,20 +213,15 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 }
 
 
-NTrianglesNPY* NPolygonizer::hybridMesher(NPolyMode_t polymode)
+NTrianglesNPY* NPolygonizer::hybridMesher()
 {
     if(m_verbosity > 0 )
-    LOG(info) << "NPolygonizer::hybridMesher"
-              << " polymode " << polymode 
-              << " PolyModeString " << PolyModeString(polymode) 
-              ; 
+    LOG(info) << "NPolygonizer::hybridMesher" ; 
 
     NTrianglesNPY* tris = NULL ; 
-    int   level = m_meta->get<int>("level", "5" );
-    int   ctrl = m_meta->get<int>("ctrl", "0" );
 
     const char* treedir = m_csg->getTreeDir();
-    NHybridMesher poly(m_root, level, m_verbosity, ctrl, polymode, m_polycfg, treedir ) ;
+    NHybridMesher poly(m_root, m_meta, treedir ) ;
  
     tris = poly();
     return tris ;
