@@ -69,6 +69,7 @@ struct NPY_API nnode
     nnode* left ; 
     nnode* right ; 
     nnode* parent ; 
+    nnode* other ; 
     const char* label ; 
 
     nmat4triple* transform ; 

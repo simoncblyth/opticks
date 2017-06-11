@@ -32,9 +32,11 @@ typedef enum {
 
 
 typedef enum { 
+   COMP_THIS,
+   COMP_OTHER,
    COMP_COMBINED, 
    COMP_LEFT, 
-   COMP_RIGHT 
+   COMP_RIGHT
 } NOpenMeshCompType ;
 
 
@@ -81,6 +83,8 @@ struct NPY_API NOpenMeshEnum
     static const char* PROP_FRONTIER_ ; 
     static const char* PropType( NOpenMeshPropType prop );
 
+    static const char* COMP_THIS_ ; 
+    static const char* COMP_OTHER_ ; 
     static const char* COMP_COMBINED_ ; 
     static const char* COMP_LEFT_ ; 
     static const char* COMP_RIGHT_ ; 

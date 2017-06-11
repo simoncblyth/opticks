@@ -52,8 +52,9 @@ NOpenMeshBoundary<T>::NOpenMeshBoundary(
 template <typename T>
 void NOpenMeshBoundary<T>::init()
 {
-    init_loop();
     init_sdf();
+    init_loop();
+    init_range();
     init_frontier();
 }
 
@@ -72,48 +73,79 @@ void NOpenMeshBoundary<T>::init_loop()
     while( heh != start );
 }
 
+
+
 template <typename T>
 void NOpenMeshBoundary<T>::init_sdf()
 {
     assert(node); 
-    if(node)
-    {
-        sdf[COMP_COMBINED] = node->sdf();
-        if(node->left && node->right)
-        { 
-           sdf[COMP_LEFT] = node->left->sdf();
-           sdf[COMP_RIGHT] = node->right->sdf();
-        }
-    }
+    assert(node->other);
+
+    sdf[0] = node->sdf();
+    sdf[1] = node->other->sdf();
 }
+
+
+template <typename T>
+void NOpenMeshBoundary<T>::init_range()
+{
+    range[0] = std::numeric_limits<float>::lowest() ;
+    range[1] = std::numeric_limits<float>::max() ;
+
+    for(unsigned i=0 ; i < loop.size() ; i++ )
+    {
+        HEH h = loop[i] ; 
+        VH  v = mesh.to_vertex_handle(h); 
+        P p = mesh.point(v);
+        float d = signed_distance(COMP_OTHER, p );         
+        if( d > range[0] ) range[0] = d ; 
+        if( d < range[1] ) range[1] = d ; 
+    }
+
+    assert( range[0]*range[1] > 0. && "boundary loop other sdf should be both -ve or both +ve " );
+}
+
+
+template <typename T>
+bool NOpenMeshBoundary<T>::is_outer_loop() const 
+{
+    return range[0] > 0.f && range[1] > 0.f ; 
+}
+template <typename T>
+bool NOpenMeshBoundary<T>::is_inner_loop() const 
+{
+   return !is_outer_loop();
+}
+
 
 template <typename T>
 void NOpenMeshBoundary<T>::init_frontier()
 {
-    bool dump(false) ; 
+    bisect_frontier_edges(frontier, COMP_OTHER);
 
-    // hmm one of the below will be degenerate and can be skipped
-
-    bisect_frontier_edges(frontier, COMP_LEFT,  dump);
-    bisect_frontier_edges(frontier, COMP_RIGHT, dump );
+    frontier_cog[0] = 0. ; 
+    frontier_cog[1] = 0. ; 
+    frontier_cog[2] = 0. ; 
 
     for(unsigned i=0 ; i < frontier.size() ; i++)
     {
         frontier_cog += frontier[i] ; 
     }
     frontier_cog /= frontier.size() ;
-
 }
  
 
 template <typename T>
-std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh)
+std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh) const 
 {
     std::stringstream ss ; 
     ss << msg 
        << " halfedge boundary loop "
        << " index " << prop.get_hbloop(start) 
        << " start " << start 
+       << " range " << range[0]
+       << " -> " << range[1]
+       <<  ( is_outer_loop() ? " OUTER " : " INNER " )
        << " num_heh " << loop.size() 
        << " frontier " << frontier.size()
        << " frontier_cog " << NOpenMeshDesc<T>::desc_point( frontier_cog, 8, 2) 
@@ -127,6 +159,7 @@ std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh)
 template <typename T>
 float NOpenMeshBoundary<T>::signed_distance(NOpenMeshCompType comp, const P& a) const
 {
+     assert( comp == COMP_THIS || comp == COMP_OTHER );
      return sdf[comp] ? sdf[comp](a[0],a[1],a[2]) : std::numeric_limits<float>::lowest() ;  
 }
 
@@ -144,13 +177,16 @@ std::string NOpenMeshBoundary<T>::fmt(const float f, int w, int p) const
 
 
 template <typename T>
-void NOpenMeshBoundary<T>::bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp, bool dump ) const 
+void NOpenMeshBoundary<T>::bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp ) const 
 {
     //  For leftmesh(rightmesh) edges with comp=LHS(RHS) 
     //  all the signed distances should be close approximations to zero
     //
     //  Need to apply to the other component to get an approximation 
     //  of the analytic frontier.   
+
+    //bool dump(true);
+    bool dump(false);
 
     P pt ;  
     float t ; 
@@ -236,11 +272,11 @@ bool  NOpenMeshBoundary<T>::bisect_frontier_edge(P& frontier, float& t, HEH heh,
 
 
 template <typename T>
-void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh)
+void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh) const 
 {
     LOG(info) << desc(msg, maxheh) ;
 
-    float sd[3] ; 
+    float sd[2] ; 
 
     for(unsigned i=0 ; i < loop.size() ; i++)
     {
@@ -251,9 +287,8 @@ void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh)
 
         const P tp = mesh.point(tv);
 
-        sd[COMP_COMBINED] = signed_distance(COMP_COMBINED, tp );
-        sd[COMP_LEFT]     = signed_distance(COMP_LEFT, tp );
-        sd[COMP_RIGHT]    = signed_distance(COMP_RIGHT, tp );
+        sd[0] = signed_distance(COMP_THIS, tp );
+        sd[1] = signed_distance(COMP_OTHER, tp );
 
         std::cout 
              << " i " << std::setw(4) << i 
@@ -263,7 +298,7 @@ void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh)
              << NOpenMeshDesc<T>::desc_point(tp,8,2) 
              ;
 
-        for(unsigned i=0 ; i < 3 ; i++)
+        for(unsigned i=0 ; i < 2 ; i++)
         {
             NOpenMeshCompType comp = (NOpenMeshCompType)i ; 
             std::cout 
@@ -272,11 +307,7 @@ void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh)
                  << " " << fmt(sd[i]) 
                  ;
         }
-
         std::cout << std::endl ; 
-
-
-
     }
 }
 
@@ -284,7 +315,7 @@ void NOpenMeshBoundary<T>::dump(const char* msg, unsigned maxheh)
 
 
 template <typename T>
-bool NOpenMeshBoundary<T>::contains( HEH heh )
+bool NOpenMeshBoundary<T>::contains( HEH heh ) const 
 {
     return std::find(loop.begin(), loop.end(), heh) != loop.end() ;
 }

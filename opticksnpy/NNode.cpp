@@ -87,6 +87,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.left = left ; 
     n.right = right ; 
     n.parent = NULL ; 
+    n.other  = NULL ;   // used by NOpenMesh 
     n.label = NULL ; 
 
     n.transform = NULL ; 

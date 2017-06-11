@@ -527,6 +527,9 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
 
+        node->left->other = node->right ;   // used by NOpenMesh 
+        node->right->other = node->left ; 
+
         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }
     else 

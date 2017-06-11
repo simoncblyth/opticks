@@ -30,7 +30,8 @@ template <typename T>
 NOpenMesh<T>* NOpenMesh<T>::Make( const nnode* node, const NParameters* meta, const char* treedir )
 {
     NOpenMeshCfg* cfg = new NOpenMeshCfg(meta, treedir) ; 
-    NOpenMesh<T>* m = new NOpenMesh<T>(node, cfg ); 
+    bool partial = false ; 
+    NOpenMesh<T>* m = new NOpenMesh<T>(node, cfg, partial ); 
 
     switch(cfg->ctrl)
     {
@@ -47,40 +48,43 @@ NOpenMesh<T>* NOpenMesh<T>::Make( const nnode* node, const NParameters* meta, co
 
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::spawn(const nnode* subnode)
+NOpenMesh<T>* NOpenMesh<T>::make_submesh(const nnode* subnode)
 {
-    return new NOpenMesh<T>( subnode, cfg ) ;
+    bool partial = false ; 
+    return new NOpenMesh<T>( subnode, cfg, partial ) ;
 }
 
 template <typename T>
-NOpenMesh<T>* NOpenMesh<T>::spawn_submesh(NOpenMeshPropType select )
+NOpenMesh<T>* NOpenMesh<T>::make_selection(NOpenMeshPropType select )
 {
-    NOpenMesh<T>* submesh = spawn(NULL) ; 
-    submesh->build.copy_faces( this,  select );
+    NOpenMesh<T>* partial = new NOpenMesh<T>( node, cfg, true ) ;
 
-    int nloop = submesh->find.find_boundary_loops() ;
+    partial->build.copy_faces( this,  select );   // copy from this parent into the partial
+
+    int nloop = partial->find.find_boundary_loops() ;
 
     if(verbosity > 2)
     {
-         LOG(info) << "NOpenMesh<T>::spawn_submesh"
+         LOG(info) << "NOpenMesh<T>::make_selection"
                    << " nloop " << nloop 
                    ;
     } 
 
     if(verbosity > 3)
     {
-        submesh->find.dump_boundary_loops("find.dump_boundary_loops", true );
+        partial->find.dump_boundary_loops("find.dump_boundary_loops", true );
     }
 
-    return submesh ; 
+    return partial ; 
 }
 
 
 template <typename T>
-NOpenMesh<T>::NOpenMesh(const nnode* node, const NOpenMeshCfg* cfg  )
+NOpenMesh<T>::NOpenMesh(const nnode* node, const NOpenMeshCfg* cfg, bool partial )
     :
     node(node), 
     cfg(cfg),
+    partial(partial),
     verbosity(cfg->verbosity),
 
     prop(mesh),
@@ -101,7 +105,8 @@ NOpenMesh<T>::NOpenMesh(const nnode* node, const NOpenMeshCfg* cfg  )
 template <typename T>
 void NOpenMesh<T>::init()
 {
-    if(!node) return ; 
+    if(!node || partial ) return ; 
+
     build_csg();
     check();
 }
@@ -150,8 +155,8 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
                   << " CombineType " << cfg->CombineTypeString()
                   ; 
 
-        leftmesh = spawn(node->left) ; 
-        rightmesh = spawn(node->right) ; 
+        leftmesh  = make_submesh(node->left) ; 
+        rightmesh = make_submesh(node->right) ; 
 
         LOG(info) << "NOpenMesh<T>::build_csg" << " START " ;
 
@@ -249,8 +254,12 @@ void NOpenMesh<T>::combine_hybrid( )
     }
 
 
-    lfrontier = leftmesh->spawn_submesh( PROP_FRONTIER );
-    rfrontier = rightmesh->spawn_submesh( PROP_FRONTIER );
+
+
+    // perhaps these should live inside zipper ?
+
+    lfrontier = leftmesh->make_selection( PROP_FRONTIER );
+    rfrontier = rightmesh->make_selection( PROP_FRONTIER );
 
     zipper = new NOpenMeshZipper<T>(*lfrontier, *rfrontier );
 
@@ -282,6 +291,27 @@ void NOpenMesh<T>::combine_hybrid( )
 
 
 }
+
+
+
+
+
+
+
+
+
+template <typename T>
+unsigned  NOpenMesh<T>::get_num_boundary_loops() const 
+{
+    return find.loops.size();
+}
+
+template <typename T>
+const NOpenMeshBoundary<T>& NOpenMesh<T>::get_boundary_loop(unsigned i) const 
+{
+    return find.loops[i] ; 
+}
+
 
 
 
@@ -460,7 +490,11 @@ void NOpenMesh<T>::dump(const char* msg) const
 template <typename T>
 std::string NOpenMesh<T>::brief() const 
 {
-    return desc.desc_euler();
+    std::stringstream ss ; 
+    ss << desc.desc_euler()
+       << " boundary_loops " << get_num_boundary_loops()
+       ;
+    return ss.str() ;
 }
 template <typename T>
 std::string NOpenMesh<T>::summary(const char* msg) const 

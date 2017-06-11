@@ -27,7 +27,7 @@ init_frontier
      applies bisection root finding to the SDF other function to find
      where the edges cross the analytic frontier, to within a tolerance
      (currently edgelength*0.001 ), the points along the frontier
-     and collected
+     are collected
 
 
 When using copy_faces with PROP_FRONTIER only faces that cross 
@@ -71,12 +71,17 @@ struct NPY_API  NOpenMeshBoundary
                        const nnode* node );
 
     void init();
-    void init_loop();
     void init_sdf();
+    void init_loop();
+    void init_range();
     void init_frontier();
 
+    bool is_outer_loop() const ;
+    bool is_inner_loop() const ;
+ 
 
-    void bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp, bool dump ) const ; 
+
+    void bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp ) const ; 
     bool bisect_frontier_edge(P& p, float& t, HEH heh, NOpenMeshCompType comp, bool dump ) const ;
 
 
@@ -87,9 +92,9 @@ struct NPY_API  NOpenMeshBoundary
     void set_loop_index( int hbl );
     int get_loop_index();
 
-    std::string desc(const char* msg="NOpenMeshBoundary::desc", unsigned maxheh=20u) ;
-    void dump(const char* msg="NOpenMeshBoundary::dump", unsigned maxheh=20u) ;
-    bool contains(const HEH heh);
+    std::string desc(const char* msg="NOpenMeshBoundary::desc", unsigned maxheh=20u) const  ;
+    void dump(const char* msg="NOpenMeshBoundary::dump", unsigned maxheh=20u) const  ;
+    bool contains(const HEH heh) const ;
 
 
     T&                   mesh ; 
@@ -102,7 +107,8 @@ struct NPY_API  NOpenMeshBoundary
     std::vector<P>      frontier  ; 
     P                   frontier_cog ; 
 
-    SDF                 sdf[3] ; 
+    SDF                 sdf[2]  ; 
+    float               range[2] ; 
 
 };
 

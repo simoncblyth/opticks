@@ -218,6 +218,9 @@ void NOpenMeshFind<T>::dump_contiguity( const std::vector<FH>& faces ) const
 
 
 
+
+
+
 template <typename T>
 std::string NOpenMeshFind<T>::desc_face_i(const FH fh) const 
 {
@@ -525,35 +528,22 @@ template <typename T>
 void NOpenMeshFind<T>::dump_boundary_loops(const char* msg, bool detail)
 {
     LOG(info) << msg ; 
-    unsigned nloop = get_num_boundary_loops();
-    std::cout << " nloop " << nloop << std::endl ;
-    for(unsigned i=0 ; i < nloop ; i++)
+    std::cout << " nloop " << loops.size() << std::endl ;
+    for(unsigned i=0 ; i < loops.size() ; i++)
     {
-        NOpenMeshBoundary<T>& loop = get_boundary_loop(i);
-        std::cout << loop.desc() << std::endl ; 
+        std::cout << loops[i].desc() << std::endl ; 
     }
 
     if(detail)
     {
-        for(unsigned i=0 ; i < nloop ; i++)
+        for(unsigned i=0 ; i < loops.size() ; i++)
         {
-            NOpenMeshBoundary<T>& loop = get_boundary_loop(i);
-            loop.dump();
+            loops[i].dump();
         }
     }
 }
 
 
-template <typename T>
-unsigned  NOpenMeshFind<T>::get_num_boundary_loops()
-{
-    return loops.size();
-}
-template <typename T>
-NOpenMeshBoundary<T>& NOpenMeshFind<T>::get_boundary_loop(unsigned i)
-{
-    return loops[i] ; 
-}
 
 
 
@@ -606,6 +596,18 @@ int NOpenMeshFind<T>::find_boundary_loops()
 
                 int loop_index = loops.size() ;
                 bnd.set_loop_index( loop_index ); // sets hbl for all heh in the loop
+
+                if(bnd.is_inner_loop())
+                {
+                    inner_loops.push_back(bnd);
+                }
+                else
+                {
+                    outer_loops.push_back(bnd);
+                }
+
+                
+
             }
         }
 

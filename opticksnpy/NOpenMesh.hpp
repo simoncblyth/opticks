@@ -45,10 +45,10 @@ struct NPY_API  NOpenMesh : NTriSource
 
     static NOpenMesh<T>* Make( const nnode* node, const NParameters* meta, const char* treedir );
 
-    NOpenMesh<T>* spawn( const nnode* subnode);
-    NOpenMesh<T>* spawn_submesh( NOpenMeshPropType select );
+    NOpenMesh<T>* make_submesh(   const nnode* subnode);
+    NOpenMesh<T>* make_selection( NOpenMeshPropType select );
 
-    NOpenMesh( const nnode* node, const NOpenMeshCfg* cfg ); 
+    NOpenMesh( const nnode* node, const NOpenMeshCfg* cfg, bool partial ); 
 
     void build_csg();
     void init();
@@ -71,6 +71,12 @@ struct NPY_API  NOpenMesh : NTriSource
     void subdiv_test() ;
 
 
+
+    // from find
+    unsigned              get_num_boundary_loops() const ;
+    const NOpenMeshBoundary<T>& get_boundary_loop(unsigned i) const ;
+
+
     // NTriSource interface
     unsigned get_num_tri() const ;
     unsigned get_num_vert() const ;
@@ -81,11 +87,12 @@ struct NPY_API  NOpenMesh : NTriSource
     void get_tri( unsigned i, glm::uvec3& t, glm::vec3& a, glm::vec3& b, glm::vec3& c ) const ;
 
 
-    T                  mesh ; 
+    T                   mesh ; 
 
     const nnode*        node ; 
     const NOpenMeshCfg* cfg ; 
-    int                verbosity ;
+    const bool          partial ; 
+    const int           verbosity ;
 
     NOpenMeshProp<T>   prop ; 
     NOpenMeshDesc<T>   desc ; 
@@ -93,11 +100,6 @@ struct NPY_API  NOpenMesh : NTriSource
     NOpenMeshBuild<T>  build ; 
     NOpenMeshSubdiv<T> subdiv ; 
 
-    /*
-    int             level ; 
-    int             ctrl ;
-    NOpenMeshCombineType meshmode ; 
-    */
 
 
     MESH*  leftmesh ; 

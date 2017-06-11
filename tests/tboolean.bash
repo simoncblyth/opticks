@@ -812,6 +812,14 @@ CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
   the polecaps tris where classified as frontier as the poles were regarded as being 
   outside the box (perhaps some epsiloning needed here) 
   ... how to handle such tangency issues without manual tweaks ? 
+
+
+   (x - 100)^2 + y^2 + z^2 = 200^2       x = 201 
+
+        y^2 + z^2 = 200^2 - 101^2
+
+In [1]: np.sqrt( 200*200-101*101 ) 
+Out[1]: 172.62386856978961
   
 
 """
