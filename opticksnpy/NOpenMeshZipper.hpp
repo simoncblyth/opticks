@@ -39,7 +39,6 @@ struct NPY_API  NOpenMeshZipper
     void init();
 
     void dump();
-    void dump_frontier(const NOpenMeshBoundary<T>& loop );
     void dump_boundary(int index, const NOpenMeshBoundary<T>& loop, const char* msg);
 
 

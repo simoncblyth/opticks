@@ -1,5 +1,6 @@
 #pragma once
 
+#include "NPlaneFromPoints.hpp"
 #include "NOpenMeshType.hpp"
 #include "NOpenMeshEnum.hpp"
 #include <functional>
@@ -80,8 +81,7 @@ struct NPY_API  NOpenMeshBoundary
     bool is_inner_loop() const ;
  
 
-
-    void bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp ) const ; 
+    void bisect_frontier_edges() ; 
     bool bisect_frontier_edge(P& p, float& t, HEH heh, NOpenMeshCompType comp, bool dump ) const ;
 
 
@@ -104,8 +104,7 @@ struct NPY_API  NOpenMeshBoundary
     const nnode*         node ; 
 
     std::vector<HEH>    loop ; 
-    std::vector<P>      frontier  ; 
-    P                   frontier_cog ; 
+    NPlaneFromPoints    frontier ; 
 
     SDF                 sdf[2]  ; 
     float               range[2] ; 

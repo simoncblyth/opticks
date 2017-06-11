@@ -121,19 +121,11 @@ bool NOpenMeshBoundary<T>::is_inner_loop() const
 template <typename T>
 void NOpenMeshBoundary<T>::init_frontier()
 {
-    bisect_frontier_edges(frontier, COMP_OTHER);
-
-    frontier_cog[0] = 0. ; 
-    frontier_cog[1] = 0. ; 
-    frontier_cog[2] = 0. ; 
-
-    for(unsigned i=0 ; i < frontier.size() ; i++)
-    {
-        frontier_cog += frontier[i] ; 
-    }
-    frontier_cog /= frontier.size() ;
+    bisect_frontier_edges();
+    frontier.update();
+    std::cout << " frontier plane " << frontier.desc() << std::endl ; 
 }
- 
+
 
 template <typename T>
 std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh) const 
@@ -147,8 +139,9 @@ std::string NOpenMeshBoundary<T>::desc(const char* msg, unsigned maxheh) const
        << " -> " << range[1]
        <<  ( is_outer_loop() ? " OUTER " : " INNER " )
        << " num_heh " << loop.size() 
-       << " frontier " << frontier.size()
-       << " frontier_cog " << NOpenMeshDesc<T>::desc_point( frontier_cog, 8, 2) 
+       << " frontier " << frontier.points.size()
+       << " frontier.cog " << frontier.cog 
+       << " frontier.nrm " << frontier.nrm 
        << " : "  ; 
     for(unsigned i=0 ; i < std::min(unsigned(loop.size()), maxheh) ; i++ ) ss << " " << loop[i] ;
     ss << "..."  ;
@@ -177,15 +170,10 @@ std::string NOpenMeshBoundary<T>::fmt(const float f, int w, int p) const
 
 
 template <typename T>
-void NOpenMeshBoundary<T>::bisect_frontier_edges(std::vector<P>& points, NOpenMeshCompType comp ) const 
+void NOpenMeshBoundary<T>::bisect_frontier_edges() 
 {
-    //  For leftmesh(rightmesh) edges with comp=LHS(RHS) 
-    //  all the signed distances should be close approximations to zero
-    //
-    //  Need to apply to the other component to get an approximation 
-    //  of the analytic frontier.   
+    NOpenMeshCompType comp = COMP_OTHER ; 
 
-    //bool dump(true);
     bool dump(false);
 
     P pt ;  
@@ -202,12 +190,12 @@ void NOpenMeshBoundary<T>::bisect_frontier_edges(std::vector<P>& points, NOpenMe
 
         assert( t >= 0. && t <= 1. );
 
-        points.push_back(pt) ;
+        frontier.add(pt[0],pt[1],pt[2]) ;
     }
 
     LOG(info) << "NOpenMeshBoundary<T>::bisect_frontier_edges"
               << " comp " << NOpenMeshEnum::CompType(comp)
-              << " points " << points.size()
+              << " points " << frontier.points.size()
               ; 
 
 }

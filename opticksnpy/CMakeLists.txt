@@ -200,6 +200,8 @@ set(SOURCES
     NOpenMeshBisect.cpp
     NOpenMeshZipper.cpp
 
+    NPlaneFromPoints.cpp
+
     NCSGBSP.cpp
 
     NHybridMesher.cpp
