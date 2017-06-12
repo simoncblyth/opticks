@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
-# this file is copied into place by imgui-cmake-ize
+# this file is copied from imgui-edir to imgui-sdir by imgui-get
 set(name ImGui)
 project(${name})
 
@@ -12,6 +12,8 @@ include(EnvBuildOptions)
 find_package(GLEW REQUIRED)
 find_package(GLFW REQUIRED)
 
+message("ImGui.GLEW_INCLUDE_DIRS : ${GLEW_INCLUDE_DIRS}")
+message("ImGui.GLFW_INCLUDE_DIRS : ${GLFW_INCLUDE_DIRS}")
 
 
 set(IMGUI_DEFINITIONS
@@ -132,7 +134,7 @@ endif(WIN32)
 target_link_libraries(${name} ${LIBRARIES})
 
 install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include)
+install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 ## getting the example to build entails converting from gl3w to glew 

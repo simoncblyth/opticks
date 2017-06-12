@@ -34,6 +34,21 @@ opticks-env(){
    . $(opticks-home)/externals/externals.bash   ## just precursors
 }
 
+opticks-env-info(){
+
+   cat << EOI
+
+       uname   : $(uname -a)
+       HOME    : $HOME
+       VERBOSE : $VERBOSE
+       USER    : $USER
+
+EOI
+   env | grep OPTICKS
+   
+}
+
+
 olocal-()
 {
    echo -n # transitional standin for olocal-
@@ -189,17 +204,21 @@ EOL
    done
 }
 
-opticks-externals-install(){ opticks-externals | -opticks-installer ; }
-opticks-externals-url(){     opticks-externals | -opticks-url ; }
-opticks-externals-dist(){    opticks-externals | -opticks-dist ; }
+opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
+opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
+opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
 
-opticks-optionals-install(){ opticks-optionals | -opticks-installer ; }
-opticks-optionals-url(){     opticks-optionals | -opticks-url ; }
-opticks-optionals-dist(){    opticks-optionals | -opticks-dist ; }
+opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | -opticks-installer ; }
+opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | -opticks-url ; }
+opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | -opticks-dist ; }
 
 
 opticks-locations(){ cat << EOL
 
+$FUNCNAME
+==================
+
+      opticks-source   :   $(opticks-source)
       opticks-home     :   $(opticks-home)
       opticks-fold     :   $(opticks-fold)
 
@@ -217,15 +236,11 @@ EOL
 
 
 opticks-info(){
-   echo locations
    opticks-locations
-   echo externals-url
+   opticks-env-info
    opticks-externals-url
-   echo externals-dist
    opticks-externals-dist
-   echo optionals-url
    opticks-optionals-url
-   echo optionals-dist
    opticks-optionals-dist
 }
 
@@ -268,8 +283,10 @@ opticks-cmake(){
    local iwd=$PWD
    local bdir=$(opticks-bdir)
 
+   echo $msg configuring installation
+
    mkdir -p $bdir
-   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to reconfigure  && return  
+   [ -f "$bdir/CMakeCache.txt" ] && echo $msg configured already use opticks-configure to wipe build dir and re-configure && return  
 
    opticks-bcd
 
@@ -310,7 +327,9 @@ opticks-cmake-modify(){
 
 
 opticks-wipe(){
+  local msg="=== $FUNCNAME : "
    local bdir=$(opticks-bdir)
+   echo $msg wiping build dir $bdir
    rm -rf $bdir
 }
 
@@ -570,13 +589,14 @@ opticks-full()
 {
     local msg="=== $FUNCNAME :"
     echo $msg START $(date)
+    opticks-info
 
     if [ ! -d "$(opticks-prefix)/externals" ]; then
-         echo $msg installing the below externals into $(opticks-prefix)/externals
-         opticks-externals 
-         opticks-externals-install
+        echo $msg installing the below externals into $(opticks-prefix)/externals
+        opticks-externals 
+        opticks-externals-install
     else
-         echo $msg using preexisting externals from $(opticks-prefix)/externals
+        echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 
 
     opticks-configure

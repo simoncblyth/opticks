@@ -135,8 +135,7 @@ NuvTest.cc
 )
 
 
-
-
+#if( DualContouringSample_FOUND )
 
 
 if(NonExisting_FOUND)

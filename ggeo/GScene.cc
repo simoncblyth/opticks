@@ -2,7 +2,9 @@
 
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+
 #include "NScene.hpp"
+
 #include "NSensor.hpp"
 #include "NCSG.hpp"
 #include "Nd.hpp"

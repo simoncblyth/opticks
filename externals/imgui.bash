@@ -17,6 +17,95 @@ This is tested by imguitest-
 
 
 
+
+Fail to find 
+
+::
+
+    OGLRap.ImGui_INCLUDE_DIRS : /tmp/blyth/opticks20170612/externals/include
+
+    Scanning dependencies of target OGLRap
+    [  0%] Building CXX object oglrap/CMakeFiles/OGLRap.dir/StateGUI.cc.o
+    /Users/blyth/opticks/oglrap/StateGUI.cc:6:10: fatal error: 'imgui.h' file not found
+    #include <imgui.h>
+             ^
+    1 error generated.
+
+
+::
+
+    delta:oglrap blyth$ l /tmp/blyth/opticks20170612/externals/imgui/imgui/
+    total 1992
+    -rw-r--r--   1 blyth  wheel    3456 Jun 12 15:15 CMakeLists.txt
+    -rw-r--r--   1 blyth  wheel    1106 Jun 12 15:15 LICENSE
+    -rw-r--r--   1 blyth  wheel   15735 Jun 12 15:15 README.md
+    drwxr-xr-x  17 blyth  wheel     578 Jun 12 15:15 examples
+    drwxr-xr-x   9 blyth  wheel     306 Jun 12 15:15 extra_fonts
+    -rw-r--r--   1 blyth  wheel    2240 Jun 12 15:15 imconfig.h
+    -rw-r--r--   1 blyth  wheel  406005 Jun 12 15:15 imgui.cpp
+    -rw-r--r--   1 blyth  wheel  113489 Jun 12 15:15 imgui.h
+    -rw-r--r--   1 blyth  wheel  109946 Jun 12 15:15 imgui_demo.cpp
+    -rw-r--r--   1 blyth  wheel  105674 Jun 12 15:15 imgui_draw.cpp
+    -rw-r--r--   1 blyth  wheel   45273 Jun 12 15:15 imgui_internal.h
+    -rw-r--r--   1 blyth  wheel   17059 Jun 12 15:15 stb_rect_pack.h
+    -rw-r--r--   1 blyth  wheel   48747 Jun 12 15:15 stb_textedit.h
+    -rw-r--r--   1 blyth  wheel  127748 Jun 12 15:15 stb_truetype.h
+    delta:oglrap blyth$ 
+
+
+
+
+Greenfield fail
+------------------
+
+::
+
+    === -opticks-installer : imgui
+    Cloning into 'imgui'...
+    remote: Counting objects: 9001, done.
+    remote: Total 9001 (delta 0), reused 0 (delta 0), pack-reused 9000
+    Receiving objects: 100% (9001/9001), 10.14 MiB | 147.00 KiB/s, done.
+    Resolving deltas: 100% (6225/6225), done.
+    Checking connectivity... done.
+    13c13
+    < #include <GL/gl3w.h>
+    ---
+    > #include <GL/glew.h>
+    -- The C compiler identification is AppleClang 6.0.0.6000057
+    -- The CXX compiler identification is AppleClang 6.0.0.6000057
+    -- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
+    -- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -- works
+    -- Detecting C compiler ABI info
+    -- Detecting C compiler ABI info - done
+    -- Detecting C compile features
+    -- Detecting C compile features - done
+    -- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
+    -- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -- works
+    -- Detecting CXX compiler ABI info
+    -- Detecting CXX compiler ABI info - done
+    -- Detecting CXX compile features
+    -- Detecting CXX compile features - done
+    -- Configuring ImGui
+    APPLE
+     DEFINITIONS :  
+    -- Configuring done
+    -- Generating done
+    -- Build files have been written to: /tmp/blyth/opticks20170612/externals/imgui/imgui.build
+    Scanning dependencies of target ImGui
+    [ 20%] Building CXX object CMakeFiles/ImGui.dir/imgui.cpp.o
+    [ 40%] Building CXX object CMakeFiles/ImGui.dir/imgui_draw.cpp.o
+    [ 60%] Building CXX object CMakeFiles/ImGui.dir/imgui_demo.cpp.o
+    [ 80%] Building CXX object CMakeFiles/ImGui.dir/examples/opengl3_example/imgui_impl_glfw_gl3.cpp.o
+    /tmp/blyth/opticks20170612/externals/imgui/imgui/examples/opengl3_example/imgui_impl_glfw_gl3.cpp:13:10: fatal error: 'GL/glew.h' file not found
+#include <GL/glew.h>
+             ^
+    1 error generated.
+    make[2]: *** [CMakeFiles/ImGui.dir/examples/opengl3_example/imgui_impl_glfw_gl3.cpp.o] Error 1
+    make[1]: *** [CMakeFiles/ImGui.dir/all] Error 2
+    make: *** [all] Error 2
+
+
+
 Windows VS2015
 ------------------
 
@@ -197,6 +286,24 @@ imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
 
+imgui-info(){ cat << EOI
+
+$FUNCNAME
+================
+
+    imgui-prefix : $(imgui-prefix)
+    imgui-edir : $(imgui-edir)
+    imgui-idir : $(imgui-idir)
+    imgui-bdir : $(imgui-bdir)
+    imgui-sdir : $(imgui-sdir)
+    imgui-dir  : $(imgui-dir)
+   
+    imgui-url  : $(imgui-url)
+
+EOI
+}
+
+
 imgui-cd(){  cd $(imgui-dir)/$1; }
 
 
@@ -205,7 +312,8 @@ imgui-url(){
    #  blyth) echo git@github.com:simoncblyth/imgui.git ;;
    #      *) echo git://github.com/simoncblyth/imgui.git ;;
    #esac
-   echo git://github.com/simoncblyth/imgui.git
+   #echo git://github.com/simoncblyth/imgui.git
+   echo http://github.com/simoncblyth/imgui.git
 } 
 
 imgui-edit(){ vi $(imgui-edir)/CMakeLists.txt $(opticks-home)/cmake/Modules/FindImGui.cmake ; }
@@ -232,6 +340,10 @@ imgui-cmake-diff(){
 imgui-cmake-copyback(){
    cp $(imgui-sdir)/CMakeLists.txt $(imgui-edir)/CMakeLists.txt 
 }
+imgui-cmake-copyin(){
+   cp $(imgui-edir)/CMakeLists.txt $(imgui-sdir)/CMakeLists.txt 
+}
+
 
 
 imgui-status(){
@@ -262,6 +374,7 @@ imgui-wipe(){
    local bdir=$(imgui-bdir)
    rm -rf $bdir
 }
+
 
 imgui-cmake(){
   local iwd=$PWD
@@ -297,6 +410,9 @@ imgui-make(){
 imgui--(){
 
   local iwd=$PWD
+
+  imgui-info 
+
   imgui-get
   imgui-cmake
   imgui-make install 

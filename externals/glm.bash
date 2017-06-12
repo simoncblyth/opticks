@@ -125,8 +125,10 @@ glm-get(){
    local url=$(glm-url)
    local zip=$(basename $url)
    local nam="glm"
+   local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
+
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $zip
+   [ ! -d "$nam" ] && unzip $opt $zip
    ln -sfnv $nam $(glm-name) 
    echo symbolic link to take note of the version
 }

@@ -14,7 +14,6 @@
 // npy-
 #include "NConfigurable.hpp"
 class NSensorList ; 
-class NScene ; 
 class NLookup ; 
 class TorchStepNPY ; 
 
@@ -57,7 +56,13 @@ class GGeoTest ;
 class GItemIndex ; 
 class GItemList ; 
 class GMergedMesh ;
+
+
+#ifdef WITH_YoctoGL
+// GLTF handling 
+class NScene ; 
 class GScene ; 
+#endif
 
 
 #include "GGEO_API_EXPORT.hh"
@@ -357,10 +362,14 @@ class GGEO_API GGeo : public NConfigurable {
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
 
+
+#ifdef WITH_YoctoGL
     private:
         // glTF route 
         NScene*                            m_nscene ; 
         GScene*                            m_gscene ; 
+#endif
+
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 

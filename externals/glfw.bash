@@ -246,9 +246,11 @@ glfw-get(){
 
    local url=$(glfw-url)
    local zip=$(basename $url)
+   local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
+
    local nam=${zip/.zip}
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $zip 
+   [ ! -d "$nam" ] && unzip $opt $zip 
 
    #ln -sfnv $nam glfw
    # try to avoid having to pass the version around via symbolic link

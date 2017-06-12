@@ -82,9 +82,10 @@ glew-get(){
    local url=$(glew-url)
    local zip=$(basename $url)
    local nam=${zip/.zip}
+   local opt=$( [ -n "${VERBOSE}" ] && echo "" || echo "-q" )
 
    [ ! -f "$zip" ] && curl -L -O $url
-   [ ! -d "$nam" ] && unzip $zip 
+   [ ! -d "$nam" ] && unzip $opt $zip 
 
    # ln -sfnv $nam glew
 }

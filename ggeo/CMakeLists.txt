@@ -43,9 +43,6 @@ set(DEFINITIONS
    ${OpticksCore_DEFINITIONS} 
 )
 
-include_directories(${INCLUDE_DIRS})   
-add_definitions(${DEFINITIONS})
-
 set(SOURCES
 
     GGEO_LOG.cc
@@ -111,7 +108,6 @@ set(SOURCES
     GColorizer.cc
 
     GTreeCheck.cc
-    GScene.cc
 
     GTraverse.cc
     GMergedMesh.cc
@@ -186,6 +182,18 @@ SET(ALL_HEADERS
 
 )
 
+if(YoctoGL_FOUND)
+    message("GGEO.YoctoGL_FOUND")
+    list(APPEND SOURCES GScene.cc)
+else()
+    message("GGEO.YoctoGL_NOT_FOUND")
+endif()
+
+
+
+
+include_directories(${INCLUDE_DIRS})   
+add_definitions(${DEFINITIONS})
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} ${LIBRARIES})
 

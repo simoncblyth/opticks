@@ -639,6 +639,8 @@ void GGeo::loadFromGLTF()
 {
     if(!m_ok->isGLTF()) return ; 
 
+#ifdef WITH_YoctoGL
+
     int gltf = m_ok->getGLTF();
     assert(gltf > 0);
 
@@ -658,6 +660,13 @@ void GGeo::loadFromGLTF()
 
 
     if(gltf == 4)  assert(0 && "early exit for gltf==4" );
+
+#else
+   LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
+   assert(0);
+#endif
+
+
 }
 
 

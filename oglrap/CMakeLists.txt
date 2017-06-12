@@ -19,6 +19,7 @@ find_package(OpticksGeometry REQUIRED)
 find_package(NPY REQUIRED) 
 find_package(ImGui REQUIRED)
 
+message("OGLRap.ImGui_INCLUDE_DIRS : ${ImGui_INCLUDE_DIRS}")
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}

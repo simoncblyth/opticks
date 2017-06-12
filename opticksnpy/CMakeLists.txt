@@ -10,7 +10,6 @@ find_package(GLM    REQUIRED)
 find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
 find_package(PLog REQUIRED)
-
 find_package(OpenMesh REQUIRED)
 
 message("NPY.OpenMesh_LIBRARIES :${OpenMesh_LIBRARIES} ")
@@ -30,34 +29,22 @@ message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
 #message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
 
 
-include_directories(
-   ${CMAKE_CURRENT_SOURCE_DIR}
-
+set(INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
    ${SysRap_INCLUDE_DIRS} 
    ${BoostRap_INCLUDE_DIRS} 
    ${OpenMesh_INCLUDE_DIRS} 
-
-   ${ImplicitMesher_INCLUDE_DIRS}
-   ${DualContouringSample_INCLUDE_DIRS}
-   ${YoctoGL_INCLUDE_DIRS}
-   ${CSGBSP_INCLUDE_DIRS}
 )
 
-add_definitions( 
+set(DEFINITIONS 
    ${OpticksBoost_DEFINITIONS} 
    ${GLM_DEFINITIONS} 
    ${PLog_DEFINITIONS} 
    ${SysRap_DEFINITIONS} 
    ${BoostRap_DEFINITIONS} 
    ${OpenMesh_DEFINITIONS}
-
-   ${ImplicitMesher_DEFINITIONS}
-   ${DualContouringSample_DEFINITIONS}
-   ${YoctoGL_DEFINITIONS}
-   ${CSGBSP_DEFINITIONS}
 )
 
 set(LIBRARIES
@@ -67,16 +54,38 @@ set(LIBRARIES
    ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${OpenMesh_LIBRARIES}
-
-   ${ImplicitMesher_LIBRARIES}
-   ${DualContouringSample_LIBRARIES}
-   ${YoctoGL_LIBRARIES}
-   ${CSGBSP_LIBRARIES}
 )
+
 
 if(UNIX)
    list(APPEND LIBRARIES ssl crypto)
 endif(UNIX)
+
+
+if(ImplicitMesher_FOUND)
+   list(APPEND INCLUDE_DIRS ${ImplicitMesher_INCLUDE_DIRS})
+   list(APPEND DEFINITIONS -DWITH_ImplicitMesher ${ImplicitMesher_DEFINITIONS} )
+   list(APPEND LIBRARIES ${ImplicitMesher_LIBRARIES})
+endif()
+
+if(DualContouringSample_FOUND)
+   list(APPEND INCLUDE_DIRS ${DualContouringSample_INCLUDE_DIRS})
+   list(APPEND DEFINITIONS -DWITH_DualContouringSample ${DualContouringSample_DEFINITIONS} )
+   list(APPEND LIBRARIES ${DualContouringSample_LIBRARIES})
+endif()
+
+if(YoctoGL_FOUND)
+   list(APPEND INCLUDE_DIRS ${YoctoGL_INCLUDE_DIRS})
+   list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
+   list(APPEND LIBRARIES ${YoctoGL_LIBRARIES})
+endif()
+
+if(CSGBSP_FOUND)
+   list(APPEND INCLUDE_DIRS ${CSGBSP_INCLUDE_DIRS})
+   list(APPEND DEFINITIONS -DWITH_CSGBSP ${CSGBSP_DEFINITIONS})
+   list(APPEND LIBRARIES ${CSGBSP_LIBRARIES})
+endif()
+
 
 
 
@@ -179,13 +188,10 @@ set(SOURCES
     NFieldGrid3.cpp
 
     NTreeTools.cpp
-    NOctools.cpp
     NGLMExt.cpp
     NPolygonizer.cpp
 
     Nd.cpp
-    NGLTF.cpp
-    NScene.cpp
 
     NTris.cpp
     NOpenMesh.cpp
@@ -202,7 +208,6 @@ set(SOURCES
 
     NPlaneFromPoints.cpp
 
-    NCSGBSP.cpp
 
     NHybridMesher.cpp
     Nuv.cpp
@@ -214,21 +219,6 @@ set(SOURCES
 set(_SOURCES
     NOct.cpp
 )
-
-if(NonExisting_FOUND)
-   add_definitions(-DWITH_NonExisting)
-   list(APPEND SOURCES  NNonExisting.cpp)
-endif()
-
-if(ImplicitMesher_FOUND)
-   add_definitions(-DWITH_ImplicitMesher)
-   list(APPEND SOURCES  NImplicitMesher.cpp)
-endif()
-
-if(DualContouringSample_FOUND)
-   add_definitions(-DWITH_DualContouringSample)
-   list(APPEND SOURCES  NDualContouringSample.cpp)
-endif()
 
 
 
@@ -315,7 +305,6 @@ NField3.hpp
 NFieldGrid3.hpp
 
 NTreeTools.hpp
-NOctools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp
 
@@ -323,16 +312,45 @@ NPolygonizer.hpp
 
 
 set(_HEADERS
-
-NOct.hpp
-NDualContouringSample.hpp
-
 )
 
 
 
+if(NonExisting_FOUND)
+   list(APPEND SOURCES  NNonExisting.cpp)
+endif()
+
+if(ImplicitMesher_FOUND)
+   message("NPY.ImplicitMesher_FOUND")
+   list(APPEND SOURCES  NImplicitMesher.cpp)
+   list(APPEND HEADERS  NImplicitMesher.hpp)
+endif()
+
+if(DualContouringSample_FOUND)
+   message("NPY.DualContouringSample_FOUND")
+   list(APPEND SOURCES  NDualContouringSample.cpp NOctools.cpp)
+   list(APPEND HEADERS  NDualContouringSample.hpp NOct.hpp NOctools.hpp)
+endif()
+
+if(CSGBSP_FOUND)
+   message("NPY.CSGBSP_FOUND")
+   list(APPEND SOURCES  NCSGBSP.cpp)
+   list(APPEND HEADERS  NCSGBSP.hpp)
+endif()
+
+if(YoctoGL_FOUND)
+   message("NPY.YoctoGL_FOUND")
+   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp)
+   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp)
+endif()
+
+
+
+include_directories( ${INCLUDE_DIRS} )
+add_definitions( ${DEFINITIONS} )
 add_library( ${name}  SHARED ${SOURCES} )
 target_link_libraries( ${name} ${LIBRARIES} )
+
 install(TARGETS ${name}  DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION include/${name})
 

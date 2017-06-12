@@ -15,7 +15,8 @@ message(STATUS "Configuring ${name}")
 # FindX.cmake use OPTICKS_PREFIX and _SOURCE_DIR
 # set by CMake as visible in cache : grep _SOURCE_DIR CMakeCache.txt
 #
-set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
+#set(OPTICKS_PREFIX "$ENV{LOCAL_BASE}/opticks")
+set(OPTICKS_PREFIX "${CMAKE_INSTALL_PREFIX}")
 
 set(OPTICKS_CUDA_VERSION 5.5)
 set(OPTICKS_OPTIX_VERSION 3.5)
