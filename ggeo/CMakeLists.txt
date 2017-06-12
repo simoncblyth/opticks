@@ -13,6 +13,7 @@ find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 find_package(OpticksCore REQUIRED)
 
+message("GGEO.NPY_INCLUDE_DIRS : ${NPY_INCLUDE_DIRS}")
 
 set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}

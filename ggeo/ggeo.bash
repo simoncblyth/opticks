@@ -34,7 +34,8 @@ ggeo-apihh(){  echo $(ggeo-sdir)/$(ggeo-tag)_API_EXPORT.hh ; }
 ggeo---(){     touch $(ggeo-apihh) ; ggeo--  ; }
 
 ggeo--(){                   opticks-- $(ggeo-bdir) ; }
-ggeo-ctest(){               opticks-ctest $(ggeo-bdir) $* ; }
+ggeo-t(){                   opticks-t $(ggeo-bdir) $* ; }
+
 ggeo-genproj() { ggeo-scd ; opticks-genproj $(ggeo-name) $(ggeo-tag) ; }
 ggeo-gentest() { ggeo-tcd ; opticks-gentest ${1:-GExample} $(ggeo-tag) ; }
 ggeo-txt(){ vi $(ggeo-sdir)/CMakeLists.txt $(ggeo-tdir)/CMakeLists.txt ; }

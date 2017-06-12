@@ -11,7 +11,10 @@ struct npart ;
 struct NSlice ; 
 template <typename T> class NPY ;
 template <typename T> class GMatrix ;
-class NCSG ; 
+
+#include "NCSG.hpp"
+
+//class NCSG ; 
 
 //struct guint4 ; 
 struct nivec4 ; 

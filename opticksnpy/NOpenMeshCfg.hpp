@@ -42,6 +42,7 @@ struct NPY_API NOpenMeshCfg
     static const char* CFG_OFFSAVE_ ;
 
     NOpenMeshCfg(const NParameters* meta, const char* treedir);
+    void dump(const char* msg="NOpenMeshCfg::dump");
 
     void init();
     void parse(const char* cfg);

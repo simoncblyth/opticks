@@ -30,7 +30,11 @@ std::string NParameters::getStringValue(const char* name) const
     for(VSS::const_iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
     {
         std::string npar  = it->first ; 
-        if( strncmp(npar.c_str(), name, strlen(name))==0) value = it->second ; 
+
+        //if( strncmp(npar.c_str(), name, strlen(name))==0) value = it->second ; 
+        //  ^^^^^^^^^^ oops : this string comparison is a "startswith" one confusing "poly" and "polycfg"
+
+        if(npar.compare(name)==0) value = it->second ; 
     }
     return value ;  
 }

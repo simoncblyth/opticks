@@ -6,6 +6,8 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include "PLOG.hh"
+
 #include "BStr.hh"
 
 #include "NParameters.hpp"
@@ -25,8 +27,26 @@ NOpenMeshCfg::NOpenMeshCfg(const NParameters* meta, const char* treedir)
      combine(NOpenMeshEnum::CombineTypeFromPoly(poly.c_str())),
      epsilon(1e-5f)
 {
+    dump();
     init();
 }
+
+
+void NOpenMeshCfg::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    std::cout 
+        << " treedir " << ( treedir ? treedir : "-" )
+        << " level " << level
+        << " verbosity " << verbosity 
+        << " ctrl " << ctrl
+        << " poly " << poly
+        << " polycfg " << polycfg
+        << " combine " << combine
+        << " epsilon " << epsilon
+        << std::endl ; 
+}
+
 
 
 void NOpenMeshCfg::init()

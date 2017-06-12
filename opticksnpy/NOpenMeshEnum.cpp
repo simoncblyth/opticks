@@ -1,5 +1,6 @@
 #include <cstddef>
 #include <cstring>
+#include "PLOG.hh"
 
 #include <OpenMesh/Core/System/config.hh>
 #include "NOpenMeshEnum.hpp"
@@ -49,7 +50,12 @@ NOpenMeshCombineType NOpenMeshEnum::CombineTypeFromPoly(const char* poly)
 {
     if(strcmp(poly,"HY") == 0 )  return COMBINE_HYBRID ;
     if(strcmp(poly,"BSP") == 0 ) return COMBINE_CSGBSP ;
-    assert(0) ; 
+
+    LOG(fatal) << "NOpenMeshEnum::CombineTypeFromPoly"
+               << " bad poly " << poly 
+               ;
+
+    //assert(0) ; 
     return COMBINE_HYBRID ;
 }
 

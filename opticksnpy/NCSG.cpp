@@ -78,8 +78,12 @@ NCSG::NCSG(nnode* root )
    m_root(root),
    m_treedir(NULL),
    m_nodes(NULL),
+   m_transforms(NULL),
+   m_gtransforms(NULL),
    m_planes(NULL),
+   m_meta(NULL),
    m_num_nodes(0),
+   m_num_transforms(0),
    m_num_planes(0),
    m_height(root->maxdepth()),
    m_boundary(NULL),
@@ -89,11 +93,19 @@ NCSG::NCSG(nnode* root )
    m_tris(NULL)
 {
    m_num_nodes = NumNodes(m_height);
+
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
    m_nodes->zero();
 
+   m_transforms = NPY<float>::make(0,NTRAN,4,4) ;  
+   m_transforms->zero();
+
+   m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ; 
+   m_gtransforms->zero();
+
    m_planes = NPY<float>::make(0,4);
    m_planes->zero();
+
 
 }
 
@@ -540,7 +552,9 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->transform = import_transform_triple( transform_idx ) ;
 
         nmat4triple* gtransform = node->global_transform();   
-        if(gtransform == NULL && m_usedglobally) // see opticks/notes/issues/subtree_instances_missing_transform.rst
+        // see opticks/notes/issues/subtree_instances_missing_transform.rst
+        //if(gtransform == NULL && m_usedglobally)
+        if(gtransform == NULL )  // move to giving all primitives a gtransform 
         {
             gtransform = nmat4triple::make_identity() ;
         }
@@ -760,6 +774,8 @@ NCSG* NCSG::FromNode(nnode* root, const char* boundary)
     NCSG* tree = new NCSG(root);
     tree->setBoundary( boundary );
     tree->export_();
+    assert( tree->getGTransformBuffer() );
+
     return tree ; 
 }
 

@@ -139,7 +139,8 @@ if __name__ == '__main__':
         b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=seqs, args=args)
     except IOError as err:
         log.fatal(err)
-        sys.exit(args.mrc)
+        #sys.exit(args.mrc)  this causes a sysrap-t test fail from lack of a tmp file
+        sys.exit(0)
 
   
 

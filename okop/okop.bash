@@ -177,7 +177,7 @@ okop---(){     touch $(okop-apihh) ; okop--  ; }
 
 okop-wipe(){ local bdir=$(okop-bdir) ; rm -rf $bdir ; } 
 okop--(){                   opticks-- $(okop-bdir) ; } 
-okop-ctest(){               opticks-ctest $(okop-bdir) $* ; } 
+okop-t(){                  opticks-t $(okop-bdir) $* ; } 
 okop-genproj() { okop-scd ; opticks-genproj $(okop-name) $(okop-tag) ; } 
 okop-gentest() { okop-tcd ; opticks-gentest ${1:-OExample} $(okop-tag) ; } 
 okop-txt(){ vi $(okop-sdir)/CMakeLists.txt $(okop-tdir)/CMakeLists.txt ; } 
