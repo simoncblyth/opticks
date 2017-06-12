@@ -41,6 +41,8 @@ olocal-()
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
 
+
+
 opticks-suffix(){
    case $(uname) in
       MING*) echo .exe ;;
@@ -48,18 +50,36 @@ opticks-suffix(){
    esac
 }
 
+opticks-day(){ date +"%Y%m%d" ; }
+
 opticks-fold(){ 
    # when LOCAL_BASE unset rely instead on finding an installed binary from PATH  
-   if [ -z "$LOCAL_BASE" ]; then 
-      echo $(dirname $(dirname $(which OpticksTest$(opticks-suffix))))
+
+   if [ -n "$OPTICKS_GREENFIELD_TEST" ]; then
+       echo /tmp/$USER/opticks$(opticks-day) 
    else
-      echo ${LOCAL_BASE}/opticks ;
+       if [ -z "$LOCAL_BASE" ]; then 
+          echo $(dirname $(dirname $(which OpticksTest$(opticks-suffix))))
+       else
+          echo ${LOCAL_BASE}/opticks ;
+       fi
    fi
 }
+
+
+
+
+
+
+
 
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
+
+
+
+
 
 #opticks-bid(){    echo $(optix-vernum) ; }    ## build identity 
 #opticks-prefix(){ echo $(opticks-fold)/$(opticks-bid) ; }
@@ -79,6 +99,10 @@ opticks-xcd(){  cd $(opticks-xdir); }
 
 
 
+
+
+
+
 opticks-optix-install-dir(){ 
     local t=$NODE_TAG
     case $t in 
@@ -90,6 +114,17 @@ opticks-optix-install-dir(){
        *) echo /tmp ;;
     esac
 }
+
+
+
+
+
+
+
+
+
+
+
 
 opticks-compute-capability(){
     local t=$NODE_TAG
@@ -162,7 +197,28 @@ opticks-optionals-install(){ opticks-optionals | -opticks-installer ; }
 opticks-optionals-url(){     opticks-optionals | -opticks-url ; }
 opticks-optionals-dist(){    opticks-optionals | -opticks-dist ; }
 
+
+opticks-locations(){ cat << EOL
+
+      opticks-home     :   $(opticks-home)
+      opticks-fold     :   $(opticks-fold)
+
+      opticks-sdir     :   $(opticks-sdir)
+      opticks-idir     :   $(opticks-idir)
+      opticks-bdir     :   $(opticks-bdir)
+      opticks-xdir     :   $(opticks-xdir)
+      ## cd to these with opticks-scd/icd/bcd/xcd
+
+      opticks-bindir    :   $(opticks-bindir)
+      opticks-optix-install-dir :  $(opticks-optix-install-dir)
+
+EOL
+}
+
+
 opticks-info(){
+   echo locations
+   opticks-locations
    echo externals-url
    opticks-externals-url
    echo externals-dist
@@ -187,6 +243,26 @@ opticks-cmake-generator()
     fi
 }
 
+opticks-cmake-info(){ cat << EOI
+
+$FUNCNAME
+======================
+
+       opticks-sdir               :  $(opticks-sdir)
+       opticks-bdir               :  $(opticks-bdir)
+       opticks-cmake-generator    :  $(opticks-cmake-generator)
+       opticks-compute-capability :  $(opticks-compute-capability)
+       opticks-prefix             :  $(opticks-prefix)
+       opticks-optix-install-dir  :  $(opticks-optix-install-dir)
+       g4-cmake-dir               :  $(g4-cmake-dir)
+       xercesc-library            :  $(xercesc-library)
+       xercesc-include-dir        :  $(xercesc-include-dir)
+
+EOI
+}
+
+
+
 opticks-cmake(){
    local msg="=== $FUNCNAME : "
    local iwd=$PWD
@@ -200,12 +276,7 @@ opticks-cmake(){
    g4- 
    xercesc-
 
-
-   echo $msg opticks-prefix:$(opticks-prefix)
-   echo $msg opticks-optix-install-dir:$(opticks-optix-install-dir)
-   echo $msg g4-cmake-dir:$(g4-cmake-dir)
-   echo $msg xercesc-library:$(xercesc-library)
-   echo $msg xercesc-include-dir:$(xercesc-include-dir)
+   opticks-cmake-info 
 
    cmake \
         -G "$(opticks-cmake-generator)" \
@@ -501,7 +572,11 @@ opticks-full()
     echo $msg START $(date)
 
     if [ ! -d "$(opticks-prefix)/externals" ]; then
+         echo $msg installing the below externals into $(opticks-prefix)/externals
+         opticks-externals 
          opticks-externals-install
+    else
+         echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 
 
     opticks-configure
@@ -524,6 +599,7 @@ opticks-cleanbuild()
 opticks-path(){ echo $PATH | tr ":" "\n" ; }
 opticks-path-add(){
   local dir=$1 
+  #[ ! -d "$dir" ] && return  
   [ "${PATH/$dir}" == "${PATH}" ] && export PATH=$dir:$PATH
 }
 

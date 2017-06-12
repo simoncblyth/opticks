@@ -4,11 +4,11 @@ Opticks : A GPU Accelerated Optical Photon Simulation using NVIDIA OptiX
 
 For presentations and videos about Opticks:
 
-* http://simoncblyth.bitbucket.org
+* http://simoncblyth.bitbucket.io
 
 For instructions on building Opticks and externals: 
 
-* http://simoncblyth.bitbucket.org/opticks/
+* http://simoncblyth.bitbucket.io/opticks/
 
 Related repositories:
 

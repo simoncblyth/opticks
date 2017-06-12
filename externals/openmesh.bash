@@ -40,6 +40,14 @@ Joining Meshes
 * ~/opticks_refs/direct_merging_of_meshes_EDF_LOU_TMCE2008.pdf
 
 
+CSG BSP
+-------
+
+Web service for mesh booleans
+
+* https://www.graphics.rwth-aachen.de/webbsp/
+
+
 Connectivity Traverse 
 -------------------------
 
