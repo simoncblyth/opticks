@@ -273,7 +273,7 @@ imgui-env(){      olocal- ; opticks- ;  }
 
 imgui-edir(){ echo $(opticks-home)/externals/imgui ; }
 imgui-base(){ echo $(opticks-prefix)/externals/imgui ; }
-imgui-prefix(){ echo $(opticks-prefix)/externals ; }
+imgui-prefix(){ echo $(opticks-prefix) ; }
 
 imgui-idir(){ echo $(imgui-prefix) ; }
 imgui-bdir(){ echo $(imgui-base)/imgui.build   ; }

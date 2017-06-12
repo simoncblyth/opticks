@@ -30,7 +30,8 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsi
          m_selected(true),
          m_pvname(NULL),
          m_lvname(NULL),
-         m_sensor_surface_index(0)
+         m_sensor_surface_index(0),
+         m_parts(NULL)
 {
 }
 

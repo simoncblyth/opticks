@@ -345,7 +345,6 @@ if(YoctoGL_FOUND)
 endif()
 
 
-
 include_directories( ${INCLUDE_DIRS} )
 add_definitions( ${DEFINITIONS} )
 add_library( ${name}  SHARED ${SOURCES} )

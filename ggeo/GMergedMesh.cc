@@ -503,6 +503,13 @@ void GMergedMesh::mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node
 void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
 {
     // analytic CSG combined at node level  
+
+    if(!pts)
+    {
+        LOG(debug) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
+        return ; 
+    }
+
     if(transform && !transform->isIdentity())
     {
         pts->applyPlacementTransform(transform, verbosity );

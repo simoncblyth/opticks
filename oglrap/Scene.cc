@@ -47,7 +47,7 @@
 #include "Interactor.hh"
 
 #ifdef GUI_
-#include <imgui.h>
+#include <ImGui/imgui.h>
 #endif
 
 

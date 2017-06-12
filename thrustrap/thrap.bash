@@ -38,6 +38,28 @@ Realising that "_20" is for Fermi not Kepler "_30" correcting options seems to f
      55 )
 
 
+link issue
+~~~~~~~~~~~~
+
+::
+
+    Scanning dependencies of target TBuf4x4Test
+    [ 69%] Linking CXX executable TBuf4x4Test
+    Undefined symbols for architecture x86_64:
+      "void TBuf::dump<float4>(char const*, unsigned int, unsigned int, unsigned int) const", referenced from:
+          test_dump44() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+      "void TBuf::dump<float4x4>(char const*, unsigned int, unsigned int, unsigned int) const", referenced from:
+          test_dump44() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+          test_dump4x4() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+          test_count4x4() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+          test_count4x4_ptr() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+          test_copy4x4() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+          test_copy4x4_ptr() in TBuf4x4Test_generated_TBuf4x4Test.cu.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [thrustrap/tests/TBuf4x4Test] Error 1
+
+
 Other packages using CUDA
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

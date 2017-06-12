@@ -114,10 +114,6 @@ opticks-xcd(){  cd $(opticks-xdir); }
 
 
 
-
-
-
-
 opticks-optix-install-dir(){ 
     local t=$NODE_TAG
     case $t in 
@@ -129,16 +125,6 @@ opticks-optix-install-dir(){
        *) echo /tmp ;;
     esac
 }
-
-
-
-
-
-
-
-
-
-
 
 
 opticks-compute-capability(){
@@ -168,6 +154,11 @@ EOL
 opticks-optionals(){ cat << EOL
 xercesc
 g4
+oimplicitmesher
+odcs
+oyoctogl
+ocsgbsp
+oof
 EOL
 }
 
@@ -390,8 +381,12 @@ opticks--(){
 }
 
 
+
 opticks-prepare-installcache()
 {
+    local msg="=== $FUNCNAME :"
+    echo $msg generating RNG seeds into installcache 
+
     cudarap-
     cudarap-prepare-installcache
 
@@ -603,6 +598,8 @@ opticks-full()
 
     opticks--
 
+    opticks-prepare-installcache
+
     echo $msg DONE $(date)
 }
 
@@ -653,7 +650,8 @@ opticks-export-mingw()
 
 ########## building opticks docs 
 
-opticks-docs(){ opticks-open  $(opticks-docs-htmldir)/index.html ; } 
+opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
+opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
    local htmldirbb=$HOME/simoncblyth.bitbucket.org/opticks 
    [ -d "$htmldirbb" ] && echo $htmldirbb || echo $(opticks-prefix)/html 
@@ -665,6 +663,9 @@ opticks-docs-make()
    sphinx-build -b html  . $(opticks-docs-htmldir)
    cd $iwd 
    opticks-docs
+
+   echo $msg publish the docs via bitbucket commit/push from $(opticks-docs-htmldir)
+
 }
 
 ########## building opticks dev notes

@@ -15,7 +15,7 @@
 
 
 #ifdef GUI_
-#include <imgui.h>
+#include <ImGui/imgui.h>
 #endif
 
 #include "GUI.hh"

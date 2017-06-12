@@ -133,8 +133,12 @@ endif(WIN32)
 
 target_link_libraries(${name} ${LIBRARIES})
 
-install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+install(TARGETS ${name}  DESTINATION externals/lib)
+install(FILES ${HEADERS} DESTINATION externals/include/${name})
+
+## slightly funny to have the externals prefix here... but 
+## this is because are using the input prefix to 
+## find the GLEW and GLFW headers 
 
 
 ## getting the example to build entails converting from gl3w to glew 

@@ -4,6 +4,7 @@ project(${name})
 
 file(GLOB TEST_CC_SRCS "*Test.cc")
 
+
 foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     get_filename_component(TGT ${TEST_CC_SRC} NAME_WE)
 
@@ -17,7 +18,25 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
 endforeach()
 
 
-file(GLOB TEST_CU_SRCS "*Test.cu")
+
+#file(GLOB TEST_CU_SRCS "*Test.cu")
+set(TEST_CU_SRCS
+
+CBufSpecTest.cu
+TBufTest.cu
+expandTest.cu
+iexpandTest.cu
+issue628Test.cu
+printfTest.cu
+repeated_rangeTest.cu
+strided_rangeTest.cu
+strided_repeated_rangeTest.cu
+)
+
+set(_TEST_CU_SRCS
+TBuf4x4Test.cu
+)
+
 
 foreach(TEST_CU_SRC ${TEST_CU_SRCS})
     get_filename_component(TGT ${TEST_CU_SRC} NAME_WE)

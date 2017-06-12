@@ -43,8 +43,8 @@
 
 
 
-#include <imgui.h>
-#include "imgui_impl_glfw_gl3.h"
+#include <ImGui/imgui.h>
+#include "ImGui/imgui_impl_glfw_gl3.h"
 
 
 void GUI::setComposition(Composition* composition)

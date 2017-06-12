@@ -31,7 +31,7 @@
 
 
 #ifdef GUI_
-#include <imgui.h>
+#include <ImGui/imgui.h>
 #endif
 
 const unsigned int Interactor::_pan_mode_key = GLFW_KEY_X ; 
