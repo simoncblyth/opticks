@@ -33,15 +33,19 @@ void main ()
 
     vec3 normal = flip * normalize(vec3( ModelView * vec4 (vertex_normal, 0.0)));
 
-    vec3 vpos_e = vec3( ModelView * InstanceTransform * vec4 (vertex_position, 1.0));  // vertex position in eye space 
 
-    gl_ClipDistance[0] = dot(vec4(vertex_position, 1.0), ClipPlane);
+    vec4 i_vertex_position = InstanceTransform * vec4 (vertex_position, 1.0) ;
+
+
+    vec3 vpos_e = vec3( ModelView * i_vertex_position);  // vertex position in eye space 
+
+    gl_ClipDistance[0] = dot(i_vertex_position, ClipPlane);
 
     vec3 ambient = vec3(0.1, 0.1, 0.1) ;
 
 #incl vcolor.h
 
-    gl_Position = ModelViewProjection * InstanceTransform * vec4 (vertex_position, 1.0);
+    gl_Position = ModelViewProjection * i_vertex_position ;
 
 }
 
