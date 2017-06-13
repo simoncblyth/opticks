@@ -82,19 +82,16 @@ NCSGScanTest.cc
 
 NCSGPolygonizeTest.cc 
 
-NSceneTest.cc
 
 
 
 NOctNodeTest.cc
 
-NDualContouringSampleTest.cc
 NFieldCacheTest.cc
 NGeneratorTest.cc
 mortonlibTest.cc
 NGrid3Test.cc
 NField3Test.cc
-NFieldGrid3Test.cc
 NTreeToolsTest.cc
 
 NGLMExtTest.cc
@@ -109,8 +106,8 @@ G4StepNPYTest.cc
 
 
 NTrisTest.cc
-NYMathTest.cc
-NYShapeTest.cc
+
+
 
 
 )
@@ -143,6 +140,25 @@ endif()
 if(ImplicitMesher_FOUND)
    list(APPEND TEST_SOURCES  NImplicitMesherTest.cc)
 endif()
+
+if(DualContouringSample_FOUND)
+   list(APPEND TEST_SOURCES  
+       NDualContouringSampleTest.cc
+       NFieldGrid3Test.cc
+)
+endif()
+
+
+if(YoctoGL_FOUND)
+   list(APPEND TEST_SOURCES  
+       NSceneTest.cc
+       NYMathTest.cc
+       NYShapeTest.cc
+)
+endif()
+
+
+
 
 
 

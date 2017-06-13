@@ -69,16 +69,20 @@ Most of these are differences...
      /dd/Geometry/AdDetails/lvBotESR0xbfa74c0                     : 1 : di(di(di(di(di(di(di(di(cy,cy),bo),bo),bo),bo),cy),cy),cy) height:8 totnodes:511  
      /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0           : 1 : di(di(di(di(di(cy,cy),bo),bo),bo),bo) height:5 totnodes:63  
 
+     ## directly uniontree 
+  
      /dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328     : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
      /dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0    : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
      /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
      /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8        : 1 : un(un(un(un(un(cy,cy),cy),cy),cy),cy) height:5 totnodes:63  
 
+     ### hmm not so easy ...
+
      /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990              : 1 : un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:4 totnodes:31  
      /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0              : 1 : un(un(un(un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:7 totnodes:255  
-    simon:analytic blyth$ 
 
-
+     ## need detection of tree patterns that are easily simplified ...
+     ##  is_mono_operator_tree ?
 
 
 

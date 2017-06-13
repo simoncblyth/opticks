@@ -88,6 +88,16 @@ First 2 from same cause::
 
 
 
+Full Build : without optionals
+--------------------------------
+
+::
+
+    /Users/blyth/opticks/optickscore/tests/OpticksBufferSpecTest.cc:20:48: error: use of undeclared identifier 'CFG4_G4VERSION_NUMBER'
+        LOG(info) << "CFG4_G4VERSION_NUMBER : " << CFG4_G4VERSION_NUMBER ;
+                        
+
+
 
 
 

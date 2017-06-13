@@ -32,6 +32,24 @@ OptiX 400
               ^
 
 
+Warnings
+----------
+
+::
+
+    /Users/blyth/opticks/optixrap/cu/generate.cu(254): warning: variable "gencode" was declared but never referenced
+
+    /Users/blyth/opticks/optixrap/cu/generate.cu(258): warning: variable "s" was set but never used
+
+    /Users/blyth/opticks/optixrap/cu/LTminimalTest.cu(29): warning: variable "photon_offset" was declared but never referenced
+
+    /Users/blyth/opticks/optixrap/cu/seedTest.cu(35): warning: variable "ghead" was set but never used
+
+    /Users/blyth/opticks/optixrap/cu/OEventTest.cu(34): warning: variable "ghead" was set but never used
+
+
+
+
 OptiX Version Isolation ?
 ---------------------------
 

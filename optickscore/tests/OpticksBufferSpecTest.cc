@@ -17,7 +17,13 @@ int main(int argc, char** argv)
 #endif
 
     LOG(info) << "OXRAP_OPTIX_VERSION : " << OXRAP_OPTIX_VERSION ;
+
+
+#ifdef WITH_Geant4
     LOG(info) << "CFG4_G4VERSION_NUMBER : " << CFG4_G4VERSION_NUMBER ;
+#else
+    LOG(info) << " NOT WITH_Geant4 " ;  
+#endif
 
     std::vector<std::string> names ; 
     OpticksEvent::pushNames(names);
