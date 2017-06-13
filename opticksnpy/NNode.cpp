@@ -204,8 +204,10 @@ nbbox nnode::bbox() const
     nbbox bb = make_bbox() ; 
     if(left && right)
     {
-        bb.include( left->bbox() );
-        bb.include( right->bbox() );
+        nbbox l = left->bbox();
+        nbbox r = right->bbox();
+        bool ret = nbbox::CombineCSG(bb, l, r, type );
+        if(!ret) LOG(warning) << "nnode::bbox EMPTY ? " ; 
     }
     return bb ; 
 }

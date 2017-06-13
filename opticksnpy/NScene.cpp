@@ -90,7 +90,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
 
     LOG(info) << "NScene::NScene DONE" ;  
 
-    assert(0 && "hari kari");
+    //assert(0 && "hari kari");
 
 }
 

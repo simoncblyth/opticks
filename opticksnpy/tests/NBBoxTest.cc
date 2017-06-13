@@ -29,6 +29,9 @@ glm::mat4 make_test_matrix()
     return tr ; 
 }
 
+
+
+
 void test_bbox_transform()
 {
      glm::mat4 tr = make_test_matrix();
@@ -77,6 +80,110 @@ void test_bbox_transform_loaded(const char* path)
 }
 
 
+void test_overlap()
+{
+    LOG(info) << "test_overlap" ; 
+
+    {
+        std::cout << std::endl << "totally not overlapping... " << std::endl ; 
+
+        nbox _a = make_box(0.f,0.f,0.f,1.f);      
+        _a.pdump("_a");
+
+        nbbox a = _a.bbox();
+        a.dump("a");
+
+        nbox _b = make_box(3.f,3.f,3.f,1.f);      
+        _b.pdump("_b");
+
+        nbbox b = _b.bbox();
+        b.dump("b");
+
+        nbbox ab ;
+        assert( a.has_overlap(b) == false );
+        assert( a.find_overlap(ab, b) == false );
+    }
+
+
+    {
+        std::cout << std::endl << "single point of overlap" << std::endl ; 
+
+        nbox _a = make_box(0.f,0.f,0.f,1.f);      
+        _a.pdump("_a");
+
+        nbbox a = _a.bbox();
+        a.dump("a");
+
+        nbox _b = make_box(2.f,2.f,2.f,1.f);      
+        _b.pdump("_b");
+
+        nbbox b = _b.bbox();
+        b.dump("b");
+
+        nbbox ab ;
+        assert( a.has_overlap(b) == true );
+        assert( a.find_overlap(ab, b) == true );
+
+        ab.dump("ab");
+    }
+
+
+
+    {
+        std::cout << std::endl << "b contained inside a" << std::endl ; 
+
+        nbox _a = make_box(0.f,0.f,0.f,1.f);      
+        _a.pdump("_a");
+
+        nbbox a = _a.bbox();
+        a.dump("a");
+
+        nbox _b = make_box(0.5f,0.5f,0.5f,0.5f);      
+        _b.pdump("_b");
+
+        nbbox b = _b.bbox();
+        b.dump("b");
+
+        nbbox ab ;
+        assert( a.has_overlap(b) == true );
+        assert( a.find_overlap(ab, b) == true );
+
+        ab.dump("ab");
+        assert( ab == b );
+    }
+ 
+
+
+    {
+        std::cout << std::endl << "substantial overlap" << std::endl ; 
+
+        nbox _a = make_box(0.f,0.f,0.f,1.f);      
+        _a.pdump("_a");
+
+        nbbox a = _a.bbox();
+        a.dump("a");
+
+        nbox _b = make_box(0.5f,0.5f,0.5f,1.f);      
+        _b.pdump("_b");
+
+        nbbox b = _b.bbox();
+        b.dump("b");
+
+        nbbox ab ;
+        assert( a.has_overlap(b) == true );
+        assert( a.find_overlap(ab, b) == true );
+
+        ab.dump("ab");
+        assert( ab.min == b.min );
+        assert( ab.max == a.max );
+    }
+  
+
+    
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -86,6 +193,8 @@ int main(int argc, char** argv)
 
     const char* path = "$TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/transforms.npy" ;
     test_bbox_transform_loaded( argc > 1 ? argv[1] : path );
+
+    test_overlap();
 
     return 0 ; 
 }

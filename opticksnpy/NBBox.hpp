@@ -2,6 +2,7 @@
 
 #include <glm/fwd.hpp>
 
+#include "OpticksCSG.h"
 #include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
@@ -15,6 +16,16 @@ struct NPY_API nbbox
 
     static void transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
     static void transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
+
+
+    static bool HasOverlap(const nbbox& a, const nbbox& b );
+    static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
+    static bool CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op );
+
+    bool has_overlap(const nbbox& other);
+    bool find_overlap(nbbox& overlap, const nbbox& other);
+
+
 
     nbbox transform( const glm::mat4& t );
 

@@ -13,6 +13,70 @@ nbbox nbbox::transform( const glm::mat4& t )
     return tbb ; 
 }
 
+bool nbbox::HasOverlap(const nbbox& a, const nbbox& b )
+{
+    if( a.max.x < b.min.x || a.min.x > b.max.x ) return false ; 
+    if( a.max.y < b.min.y || a.min.y > b.max.y ) return false ; 
+    if( a.max.z < b.min.z || a.min.z > b.max.z ) return false ; 
+    return true ; 
+}
+
+bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
+{
+    if(!HasOverlap(a,b)) return false ; 
+
+    overlap.min.x = fmaxf(a.min.x, b.min.x) ;
+    overlap.min.y = fmaxf(a.min.y, b.min.y) ;
+    overlap.min.z = fmaxf(a.min.z, b.min.z) ;
+
+    overlap.max.x = fminf(a.max.x, b.max.x) ;
+    overlap.max.y = fminf(a.max.y, b.max.y) ;
+    overlap.max.z = fminf(a.max.z, b.max.z) ;
+
+    overlap.side = overlap.max - overlap.min ; 
+
+    return true ; 
+}
+
+bool nbbox::has_overlap(const nbbox& other)
+{
+    return HasOverlap(*this, other);
+}
+bool nbbox::find_overlap(nbbox& overlap, const nbbox& other)
+{
+    return FindOverlap(overlap, *this, other);
+}
+
+
+bool nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op )
+{
+    bool ret(true) ; 
+
+    if(op == CSG_INTERSECTION )
+    {
+        ret = FindOverlap(comb, a, b);
+    } 
+    else if (op == CSG_UNION )
+    {
+        comb.include(a);
+        comb.include(b);
+    }
+    else if( op == CSG_DIFFERENCE )
+    {
+        comb.include(a); // <-- overlarge, but better than union 
+        // difference is intersect wit complemented : but how to do that ?
+    }
+    return ret ; 
+}
+
+
+
+
+
+
+
+
+
 void nbbox::transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
 {
     glm::vec4 min(bb.min.x, bb.min.y, bb.min.z , 1.f);

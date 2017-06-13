@@ -99,7 +99,6 @@ NGLMExtTest.cc
 NLoadCheck.cc
 NGLMTest.cc
 NCSGDeserializeTest.cc
-NBBoxTest.cc
 MultiViewNPYTest.cc
 HitsNPYTest.cc
 G4StepNPYTest.cc
@@ -123,6 +122,7 @@ set(TEST_SOURCES
 
 
 NPYConfigTest.cc
+NBBoxTest.cc
 
 NOpenMeshTest.cc
 NOpenMeshCfgTest.cc
