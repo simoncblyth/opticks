@@ -2,11 +2,33 @@
 #include "NPY_API_EXPORT.hh"
 
 class NCSG ; 
+class NTxt ; 
 class NParameters ; 
 struct nd ; 
 template<class T> class Counts ;
 
 #include "NGLTF.hpp"
+
+/*
+
+NScene(NGLTF)
+===============
+
+Used by GGeo::loadFromGLTF and GScene, GGeo.cc::
+
+     658     m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
+     659     m_gscene = new GScene(this, m_nscene );
+
+Scene files in glTF format are created by opticks/analytic/sc.py 
+which parses the input GDML geometry file and writes the mesh (ie solid 
+shapes) as np ncsg and the tree structure as json/gltf.
+
+NScene imports the gltf using its NGLTF based (YoctoGL external)
+creating a nd tree. The small CSG node trees for each solid
+are polygonized on load in NScene::load_mesh_extras.
+
+*/
+
 
 class NPY_API NScene : public NGLTF 
 {
@@ -70,6 +92,9 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_verbosity ; 
         unsigned                          m_num_global ; 
         unsigned                          m_num_csgskip ; 
+        unsigned                          m_num_placeholder ; 
+        NTxt*                             m_csgskip_lvlist ; 
+        NTxt*                             m_placeholder_lvlist ; 
         unsigned                          m_node_count ; 
         unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;

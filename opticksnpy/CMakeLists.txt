@@ -87,10 +87,13 @@ if(CSGBSP_FOUND)
 endif()
 
 
+message("NPY.DEFINITIONS : ${DEFINITIONS} ")
+
 
 
 set(SOURCES
     NPY_LOG.cc
+    NPYConfig.cpp
 
     foo.cpp
     NPYBase.cpp

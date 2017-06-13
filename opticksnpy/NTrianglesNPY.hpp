@@ -13,6 +13,8 @@ struct NTriSource ;
 
 class NPY_API NTrianglesNPY {
     public:
+        static const char* PLACEHOLDER ; 
+    public:
         static const glm::vec3 PX ; 
         static const glm::vec3 PY ; 
         static const glm::vec3 PZ ; 
@@ -77,13 +79,20 @@ class NPY_API NTrianglesNPY {
         void setTransform(const glm::mat4& transform);
         void setTransform(const glm::vec3& scale, const glm::vec3& translate);
         glm::mat4 getTransform();
+    public:
+        void setPoly(const std::string& poly);
+        const std::string& getPoly();
+    public:
         void setMessage(const std::string& msg);
         const std::string& getMessage();
+        bool  hasMessage(const std::string& msg);
+        bool  isPlaceholder();
     private:
         NPY<float>*  m_tris ; 
         NPY<float>*  m_normals ; 
         glm::mat4    m_transform ; 
         std::string  m_message ; 
+        std::string  m_poly ; 
 };
 
 #include "NPY_TAIL.hh"

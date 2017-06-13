@@ -13,6 +13,11 @@ find_package(BoostRap REQUIRED)
 find_package(NPY REQUIRED)
 find_package(OpticksCore REQUIRED)
 
+
+
+
+
+
 message("GGEO.NPY_INCLUDE_DIRS : ${NPY_INCLUDE_DIRS}")
 
 set(INCLUDE_DIRS
@@ -43,6 +48,10 @@ set(DEFINITIONS
    ${BoostRap_DEFINITIONS} 
    ${OpticksCore_DEFINITIONS} 
 )
+
+
+
+
 
 set(SOURCES
 
@@ -183,12 +192,24 @@ SET(ALL_HEADERS
 
 )
 
+
+
+
+# hmm : dont need direct access to YoctoGL headers or libs, they are hidden behind NScene.hpp
+# but do need the switch to say its available ... perhaps externals used in NPY should 
+# feed into NPY_DEFINITIONS ???
+
+find_package(YoctoGL )
+
 if(YoctoGL_FOUND)
-    message("GGEO.YoctoGL_FOUND")
-    list(APPEND SOURCES GScene.cc)
+   list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
+   message("GGEO.YoctoGL_FOUND")
+   list(APPEND SOURCES GScene.cc)
 else()
     message("GGEO.YoctoGL_NOT_FOUND")
 endif()
+message("GGEO.DEFINITIONS : ${DEFINITIONS}")
+
 
 
 

@@ -122,6 +122,8 @@ NuvTest.cc
 set(TEST_SOURCES
 
 
+NPYConfigTest.cc
+
 NOpenMeshTest.cc
 NOpenMeshCfgTest.cc
 NOpenMeshFindTest.cc

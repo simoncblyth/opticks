@@ -651,7 +651,7 @@ class CSG(CSG_):
     dsc = property(lambda self:"%s%s"%("!" if self.complement else "", self.desc(self.typ)[0:2]))
 
     def __repr__(self):
-        rrep = "height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
+        rrep = " height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
         dlr = ",".join(map(repr,filter(None,[self.left,self.right])))
         if len(dlr) > 0: dlr = "(%s)" % dlr 
         return "".join(filter(None, [self.dsc, dlr, rrep])) 

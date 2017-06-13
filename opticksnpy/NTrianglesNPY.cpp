@@ -23,6 +23,8 @@
 #endif
 
 
+const char* NTrianglesNPY::PLACEHOLDER = "PLACEHOLDER" ; 
+
 
 NPY<float>* NTrianglesNPY::getBuffer()
 {
@@ -40,6 +42,17 @@ NPY<float>* NTrianglesNPY::getNormals()
 }
 
 
+void NTrianglesNPY::setPoly(const std::string& poly)
+{
+   m_poly = poly ; 
+}
+const std::string& NTrianglesNPY::getPoly()
+{
+   return m_poly ; 
+}
+
+
+
 void NTrianglesNPY::setMessage(const std::string& msg)
 {
    m_message = msg ; 
@@ -48,6 +61,19 @@ const std::string& NTrianglesNPY::getMessage()
 {
    return m_message ; 
 }
+
+bool NTrianglesNPY::hasMessage(const std::string& msg)
+{
+    return m_message.compare(msg) == 0 ; 
+}
+bool NTrianglesNPY::isPlaceholder()
+{
+    return m_message.compare(PLACEHOLDER) == 0 ; 
+}
+
+
+
+
 
 
 

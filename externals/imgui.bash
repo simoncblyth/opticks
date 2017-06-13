@@ -32,6 +32,19 @@ Fail to find
     1 error generated.
 
 
+
+Manual fixup in standard installation, for new layout motivated by greenfield fixes::
+
+    simon:include blyth$ pwd
+    /usr/local/opticks/externals/include
+
+    simon:include blyth$ mkdir ImGui
+    simon:include blyth$ mv imconfig.h imgui.h imgui_impl_glfw_gl3.h ImGui/
+    simon:include blyth$ 
+
+
+
+
 ::
 
     delta:oglrap blyth$ l /tmp/blyth/opticks20170612/externals/imgui/imgui/

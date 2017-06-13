@@ -6,9 +6,11 @@
 #include "NYGLTF.hpp"
 
 #include "Counts.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NParameters.hpp"
 #include "NPY.hpp"
 #include "NScene.hpp"
+#include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
 #include "Nd.hpp"
@@ -39,10 +41,20 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     m_verbosity(0),
     m_num_global(0),
     m_num_csgskip(0),
+    m_num_placeholder(0),
+    m_csgskip_lvlist(NULL),
+    m_placeholder_lvlist(NULL),
     m_node_count(0),
     m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
+
+    std::string csgskip_path = BFile::FormPath(base, "CSGSKIP_DEEP_TREES.txt");
+    std::string placeholder_path = BFile::FormPath(base, "PLACEHOLDER_FAILED_POLY.txt");
+
+    m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
+    m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
+
     load_asset_extras();
     load_csg_metadata();
 
@@ -69,6 +81,16 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     // move load_mesh_extras later so can know which meshes are non-instanced needing 
     // gtransform slots for all primitives
     load_mesh_extras();
+
+
+
+    m_csgskip_lvlist->write();
+    m_placeholder_lvlist->write();
+
+
+    LOG(info) << "NScene::NScene DONE" ;  
+
+    assert(0 && "hari kari");
 
 }
 
@@ -181,13 +203,22 @@ void NScene::load_mesh_extras()
         csg->setIndex(mesh_id);
 
         bool csgskip = csg->isSkip() ;
-        if(csgskip) m_num_csgskip++ ; 
-
-        if(csgskip)
+        if(csgskip) 
         {
+            m_csgskip_lvlist->addLine(mesh->name);
+            m_num_csgskip++ ; 
             LOG(warning) << "NScene::load_mesh_extras"
                          << " csgskip CSG loaded " << csg->meta()
                           ;
+        }
+
+        NTrianglesNPY* tris = csg->getTris();
+        assert(tris);
+        bool placeholder = tris->isPlaceholder();
+        if(placeholder) 
+        {
+            m_placeholder_lvlist->addLine(mesh->name);
+            m_num_placeholder++ ; 
         }
 
 
@@ -197,6 +228,7 @@ void NScene::load_mesh_extras()
                   << " npr " << std::setw(4) << primitives.size() 
                   << " nam " << std::setw(65) << mesh->name 
                   << " iug " << std::setw(1) << iug 
+                  << " poly " << std::setw(3) << tris->getPoly()
                   << " smry " << csg->smry() 
                   << std::endl ; 
     }  
@@ -207,6 +239,7 @@ void NScene::load_mesh_extras()
               << " num_meshes " << num_meshes
               << " m_num_global " << m_num_global
               << " m_num_csgskip " << m_num_csgskip
+              << " m_num_placeholder " << m_num_placeholder
               ;
 
 
@@ -423,11 +456,11 @@ void NScene::dump_repeat_candidate(unsigned idx) const
     }
 
     std::cout
-              << " idx "           << std::setw(3) << idx 
-              << " pdig "          << std::setw(32) << pdig
-              << " num_progeny "   << std::setw(5) << num_progeny
-              << " num_instances " << std::setw(5) << num_instances
-              << " meshmeta "      << meshmeta(mesh_id)
+              << " idx "    << std::setw(3) << idx 
+              << " pdig "   << std::setw(32) << pdig
+              << " nprog "  << std::setw(5) << num_progeny
+              << " ninst " << std::setw(5) << num_instances
+              << " mmeta " << meshmeta(mesh_id)
               << std::endl 
               ; 
 

@@ -120,13 +120,14 @@ NTrianglesNPY* NPolygonizer::polygonize()
 
     switch( m_polymode )
     {
-        case POLY_MC:  tris = marchingCubesNPY()    ; break ; 
-        case POLY_DCS: tris = dualContouringSample(); break ; 
-        case POLY_IM:  tris = implicitMesher()      ; break ;      
-        case POLY_HY:  tris = hybridMesher()        ; break ;    
-        case POLY_BSP: tris = hybridMesher()        ; break ;    
+        case POLY_MC:  tris = marchingCubesNPY()     ; break ; 
+        case POLY_DCS: tris = dualContouringSample() ; break ; 
+        case POLY_IM:  tris = implicitMesher()       ; break ;      
+        case POLY_HY:  tris = hybridMesher()         ; break ;    
+        case POLY_BSP: tris = hybridMesher()         ; break ;    
         default:   assert(0);
     }
+    tris->setPoly(m_poly); 
     bool valid = checkTris(tris);
 
     if(!valid)
@@ -134,13 +135,18 @@ NTrianglesNPY* NPolygonizer::polygonize()
         if(m_verbosity > 0)
         LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
         delete tris ; 
+
         tris = NTrianglesNPY::box(*m_bbox);
-        tris->setMessage("PLACEHOLDER");
+        tris->setMessage(NTrianglesNPY::PLACEHOLDER);
+        tris->setPoly(m_poly); 
     }   
     else
     {
         unsigned numTris = tris ? tris->getNumTriangles() : 0 ;
+      
+        if(m_verbosity > 1 )
         LOG(info) << "NPolygonizer::polygonize OK " 
+                  << " verbosity " << m_verbosity 
                   << " numTris " << numTris 
                   ; 
     }
@@ -170,6 +176,9 @@ bool NPolygonizer::checkTris(NTrianglesNPY* tris)
     }
     return poly_valid ;
 }
+
+
+
 
 
 

@@ -155,6 +155,13 @@ EOP
 }
 
 
+tgltf-gdml-placeholders()
+{
+    $OPTICKS_HOME/analytic/sc.py --lvnlist $TMP/tgltf/PLACEHOLDER_FAILED_POLY.txt 
+}
+
+
+
 
 
 

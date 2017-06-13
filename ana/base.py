@@ -293,6 +293,8 @@ def opticks_args(**kwa):
     nointerpol = kwa.get("nointerpol", False)
     figsize = kwa.get("figsize", "18,10.2" )
     yes = kwa.get("yes", False )
+    gltfsave = kwa.get("gltfsave", False )
+    lvnlist = kwa.get("lvnlist", "" )
 
     addpath = kwa.get("addpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/dayabay.xml" )
     apmtddpath = kwa.get("apmtddpath", "$LOCAL_BASE/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT/hemi-pmt.xml" )
@@ -364,6 +366,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--gmaxdepth",  default=gmaxdepth, type=int, help="GDML node depth limit, 0 for no limit, see tboolean-gdml. %(default)s ")
     parser.add_argument(     "--gmaxnode",  default=gmaxnode, type=int, help="GDML node limit including target node, 0 for no limit, see tboolean-gdml. %(default)s ")
     parser.add_argument(     "--gidx",  default=gidx, type=int, help="GDML index to pick target node from within gsel lvn selection, see tboolean-gdml. %(default)s ")
+    parser.add_argument(     "--gltfsave", default=gltfsave, action="store_true", help="Save GDML parsed scene as glTF, see analytic/sc.py. %(default)s ")
+    parser.add_argument(     "--lvnlist", default=lvnlist, help="Path to file containing list of lv names. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

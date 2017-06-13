@@ -5,7 +5,7 @@ import os, logging, collections, sys
 log = logging.getLogger(__name__)
 
 
-from opticks.ana.base import opticks_main, expand_, json_load_, json_save_
+from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, splitlines_
 from opticks.analytic.treebase import Tree
 from opticks.analytic.gdml import GDML
 from opticks.analytic.polyconfig import PolyConfig
@@ -269,10 +269,27 @@ class Sc(object):
 
 
 
+    def dump_all(self, lvns):
+        log.info("dump_all lvns %d " %  len(lvns))
+        for lvn in lvns:
+            self.dump(lvn)
+        pass
+
+    def dump(self, lvn):
+        mss = self.find_meshes_lv(lvn)
+        assert len(mss) == 1
+        ms = mss[0]
+        print " %-60s : %d : %r " % (lvn, len(mss), ms.csg) 
+ 
+
 
 
 
 if __name__ == '__main__':
+
+    """
+    NB tgltf-gdml does not use this main ... it uses the python from tgltf-gdml--
+    """
 
     args = opticks_main()
 
@@ -281,8 +298,10 @@ if __name__ == '__main__':
     gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
     gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
 
-    gsel = "/dd/Geometry/AD/lvSST0x" 
-    gmaxdepth = 3
+    #gsel = "/dd/Geometry/AD/lvSST0x" 
+    #gsel = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
+    gsel = 3153
+
 
     log.info(" gsel:%s gidx:%s gmaxnode:%s gmaxdepth:%s " % (gsel, gidx, gmaxnode, gmaxdepth))
 
@@ -296,9 +315,20 @@ if __name__ == '__main__':
     log.info(" target node %s " % target )   
 
 
-    sc = Sc()
-    tg = sc.add_tree_gdml( target, maxdepth=3 )
-    gltf = sc.save("$TMP/nd/scene.gltf")
+    sc = Sc(maxcsgheight=3)
+    tg = sc.add_tree_gdml( target, maxdepth=0 )
 
+   
+    if args.gltfsave: 
+        gltfpath = "$TMP/nd/scene.gltf"
+        gltf = sc.save(gltfpath)
+    else:
+        pass
+    pass
+
+    if len(args.lvnlist) > 0 and os.path.exists(args.lvnlist):
+        lvns = splitlines_(args.lvnlist)   
+        sc.dump_all(lvns)
+    pass
 
 

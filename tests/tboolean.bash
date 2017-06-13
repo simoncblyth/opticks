@@ -1260,6 +1260,10 @@ tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0x ; }
 
 
+tboolean-p0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-p0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel  /dd/Geometry/AdDetails/lvOcrGdsInIav0x ; }
+
+
 
 
 tboolean-gdml-()

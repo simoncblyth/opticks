@@ -85,7 +85,10 @@ void NTxt::write()
     out.close();
 }
 
-
+void NTxt::addLine(const std::string& line)
+{
+    addLine(line.c_str());
+}
 void NTxt::addLine(const char* line)
 {
     m_lines.push_back(line);

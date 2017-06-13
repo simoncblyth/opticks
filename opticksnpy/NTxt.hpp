@@ -18,6 +18,7 @@ class NPY_API NTxt {
        unsigned int getIndex(const char* line); // index of line or UINT_MAX if not found
        unsigned int getNumLines();
    public:
+       void addLine(const std::string& line); 
        void addLine(const char* line); 
        void write();
    private:
