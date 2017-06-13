@@ -31,6 +31,16 @@ int main(int argc, char** argv)
     const char* name = "scene.gltf" ;
     const char* config = NULL ; 
 
+    if(!NScene::Exists(base, name))
+    {
+        LOG(warning) << "no such scene at"
+                     << " base " << base
+                     << " name " << name
+                     ;
+        return 0 ; 
+    } 
+
+
     NScene* scene = new NScene( base, name, config  ); 
     assert(scene);
     scene->dump(argv[0]);

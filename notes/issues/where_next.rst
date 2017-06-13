@@ -24,6 +24,23 @@ Opticks now supports:
   for convenient geometry debugging.
 
 
+
+TODO: get verbosity under control in GDML/glTF route especially GParts 
+-------------------------------------------------------------------------
+
+
+TODO: deep csg trees are still being skipped
+--------------------------------------------------
+
+Most of these are differences...
+
+* complement was implemented to allow tree rearrangement, use that 
+  to create +ve form tree (with signs all in the leaves as complements) 
+  so then have a fully commutative CSG expression tree 
+  that can easily be balanced
+
+
+
 TODO: polycone testing, general coincident surface testing(how?)
 ------------------------------------------------------------------
 
@@ -53,6 +70,8 @@ Add:
 
 * creation of Geant4 geometries from the CSG node tree description.
 * comparisons of GPU and CPU propagations using CSG node tree geometries
+
+
 
 
 NOPE : More Primitives

@@ -240,10 +240,12 @@ std::string BFile::FindFile(const char* dirlist, const char* sub, const char* na
 std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 {
 
+   bool prepare = false ; 
    LOG(trace) << "BFile::FormPath"
               << " path " << path 
               << " sub " << sub
               << " name " << name
+              << " prepare " << prepare
               ;   
 
 
@@ -319,6 +321,13 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name)
    p.make_preferred();
 
    std::string preferred = p.string();  // platform native
+
+   if(prepare)
+   {
+       preparePath(preferred.c_str(), true);
+   }
+
+
    return preferred ;
 }
 

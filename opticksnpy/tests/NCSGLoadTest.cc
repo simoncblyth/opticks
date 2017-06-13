@@ -7,6 +7,7 @@ Tests individual trees::
 
 #include <iostream>
 
+#include "BFile.hh"
 #include "BStr.hh"
 
 #include "NPY.hpp"
@@ -22,7 +23,14 @@ Tests individual trees::
  
 void test_LoadTree(const char* treedir)
 {
-    int verbosity = 2 ; 
+    int verbosity = 2 ;
+
+    if(!BFile::ExistsDir(treedir))
+    {
+         LOG(warning) << "test_LoadTree no such dir " << treedir ;
+         return ; 
+    }
+ 
     NCSG* csg = NCSG::LoadTree(treedir, verbosity );
     assert(csg);
 }

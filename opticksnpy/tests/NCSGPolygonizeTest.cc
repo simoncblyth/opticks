@@ -9,6 +9,7 @@ Tests directories of multiple trees::
 
 #include "SSys.hh"
 #include "BStr.hh"
+#include "BFile.hh"
 
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -23,6 +24,12 @@ Tests directories of multiple trees::
  
 void test_Polygonize(const char* basedir, int verbosity, std::vector<NCSG*>& trees)
 {
+    if(!BFile::ExistsDir(basedir))
+    {
+         LOG(warning) << "test_Polygonize no such dir " << basedir ;
+         return ; 
+    }
+
     int rc0 = NCSG::Deserialize(basedir, trees, verbosity );  // revive CSG node tree for each solid
     assert(rc0 == 0 );
 

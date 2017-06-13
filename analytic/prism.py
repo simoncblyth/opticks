@@ -70,7 +70,7 @@ def make_plane3( a, b, c, dtype=np.float32):
 
 
 
-def make_prism( angle, height, depth, dtype=np.float32, layout=0):
+def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=True):
     #angle = 30
     #height = 200
     #depth = 200

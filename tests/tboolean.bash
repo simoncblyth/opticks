@@ -364,7 +364,7 @@ EOP
 
 
 
-tboolean-prism(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- ; } 
+tboolean-prism(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
 tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
 
@@ -493,6 +493,20 @@ co = CSG("cone", param=[300,0,100,200])   # zrange 0:200
 #prim = [sp,zs,co]    
 prim = [sp,co,zs]    
 
+#prim = [sp2, zs, co]  # works as expected
+#prim = [sp, co]       # works as expected
+#prim = [sp, zs ]      #  sp just touches zp, so difficult to say 
+#prim = [sp2, zs]      # expected behavior
+
+
+ut = CSG.uniontree(prim, name="$FUNCNAME")
+ut.boundary = args.container
+ut.meta.update(im)
+ut.dump()
+
+CSG.Serialize([container, ut], "$TMP/$FUNCNAME", outmeta=True )
+
+
 """
 prim = [sp,zs,co]    
 
@@ -559,19 +573,6 @@ TODO:
           
 
 """
-
-#prim = [sp2, zs, co]  # works as expected
-#prim = [sp, co]       # works as expected
-#prim = [sp, zs ]      #  sp just touches zp, so difficult to say 
-#prim = [sp2, zs]      # expected behavior
-
-
-ut = CSG.uniontree(prim, name="$FUNCNAME")
-ut.boundary = args.container
-ut.meta.update(im)
-ut.dump()
-
-CSG.Serialize([container, ut], "$TMP/$FUNCNAME", outmeta=True )
 
 
 EOP

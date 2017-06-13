@@ -66,6 +66,8 @@ void GMakerTest::makeFromCSG()
 
         NCSG* csg = NCSG::FromNode( n, spec );
 
+        csg->setMeta<std::string>("poly", "IM");
+
         GSolid* solid = m_maker->makeFromCSG(csg, verbosity );
 
         GMesh* mesh = solid->getMesh();

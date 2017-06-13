@@ -11,6 +11,12 @@
 
 void test_Deserialize(const char* base)
 {
+    if(!NCSG::Exists(base))
+    {
+        LOG(warning) << "test_Deserialize !NCSG::Exists " << base ; 
+        return ; 
+    }
+
     int verbosity = 1 ; 
     std::vector<NCSG*> trees ;
     NCSG::Deserialize( base, trees, verbosity );

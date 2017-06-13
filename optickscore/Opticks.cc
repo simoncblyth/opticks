@@ -840,6 +840,7 @@ unsigned int Opticks::getSourceCode()
     return code ;
 }
 
+
 bool Opticks::isFabricatedGensteps()
 {
     unsigned int code = getSourceCode() ;

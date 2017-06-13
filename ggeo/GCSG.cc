@@ -195,6 +195,7 @@ void GCSG::dump(const char* msg)
 }
 
 
+/*
 GMergedMesh* GCSG::makeMergedMesh()
 {
     GCSG* csg = this ; 
@@ -226,7 +227,7 @@ GMergedMesh* GCSG::makeMergedMesh()
 
     return mm ; 
 }
-
+*/
 
 
 

@@ -106,6 +106,7 @@ NCSG::NCSG(nnode* root )
    m_planes = NPY<float>::make(0,4);
    m_planes->zero();
 
+   m_meta = new NParameters ; 
 
 }
 
@@ -119,6 +120,19 @@ T NCSG::getMeta(const char* key, const char* fallback )
 {
     return m_meta->get<T>(key, fallback) ;
 }
+
+template<typename T>
+void NCSG::setMeta(const char* key, T value )
+{
+    return m_meta->set<T>(key, value) ;
+}
+
+
+
+template NPY_API void NCSG::setMeta<float>(const char*, float);
+template NPY_API void NCSG::setMeta<int>(const char*, int);
+template NPY_API void NCSG::setMeta<bool>(const char*, bool);
+template NPY_API void NCSG::setMeta<std::string>(const char*, std::string);
 
 template NPY_API std::string NCSG::getMeta<std::string>(const char*, const char*);
 template NPY_API int         NCSG::getMeta<int>(const char*, const char*);
@@ -219,6 +233,16 @@ void NCSG::loadNodes()
     std::string nodepath = BFile::FormPath(m_treedir, "nodes.npy") ;
 
     m_nodes = NPY<float>::load(nodepath.c_str());
+
+    if(!m_nodes)
+         LOG(fatal) << "NCSG::loadNodes"
+                    << " failed to load " 
+                    << " nodepath [" << nodepath << "]"
+                    ;
+
+    assert(m_nodes);
+
+
 
     m_num_nodes  = m_nodes->getShape(0) ;  
     unsigned nj = m_nodes->getShape(1);
@@ -836,6 +860,13 @@ std::string NCSG::desc()
        << " meta " << m_meta->desc()
        ;
     return ss.str();  
+}
+
+bool NCSG::Exists(const char* basedir)
+{
+    std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
+    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
+    return exists ; 
 }
 
 int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )

@@ -33,13 +33,16 @@ are polygonized on load in NScene::load_mesh_extras.
 class NPY_API NScene : public NGLTF 
 {
     public:
+        static bool Exists(const char* base, const char* name);
         NScene(const char* base, const char* name, const char* config, int scene_idx=0  );
         nd*   getRoot();
         nd*   getNd(unsigned node_idx);
         NCSG* getCSG(unsigned mesh_idx);
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
         unsigned getVerbosity();
-
+    private:
+        void init_lvlists(const char* base, const char* name);
+        void write_lvlists();
     private:
         template<typename T> T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const ;
         std::string lvname(unsigned mesh_id) const ;

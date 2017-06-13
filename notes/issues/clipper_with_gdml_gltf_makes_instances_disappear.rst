@@ -16,10 +16,16 @@ FIXED
 By applying InstanceTransform prior to clipping in oglrap/gl/inrm/vert.glsl 
 
 
+* NB shader modifications despite being "compiled" at run time 
+  still need to be installed via the standard CMake build "oglrap--" 
+  
+
 OpenGL gl_ClipDistance
 --------------------------
 
 * https://www.khronos.org/registry/OpenGL-Refpages/gl4/html/gl_ClipDistance.xhtml
+
+
 
 
 Clipping in oglrap and okc

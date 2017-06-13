@@ -8,6 +8,7 @@ Tests directories of multiple trees::
 #include <iostream>
 
 #include "SSys.hh"
+#include "BFile.hh"
 #include "BStr.hh"
 
 #include "NPY.hpp"
@@ -24,6 +25,13 @@ Tests directories of multiple trees::
 void test_Deserialize(const char* basedir, int verbosity)
 {
     std::vector<NCSG*> trees ; 
+
+    if(!BFile::ExistsDir(basedir))
+    {
+         LOG(warning) << "test_Deserialize no such dir " << basedir ;
+         return ; 
+    }
+
     int rc = NCSG::Deserialize(basedir, trees, verbosity );
 
     unsigned ntree = trees.size();

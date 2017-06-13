@@ -302,7 +302,7 @@ GProperty<T>* GProperty<T>::make_GROUPVEL(GProperty<T>* rindex)
                    << GAry<T>::maxdiff(wl0, wl1,true)
                    ; 
     }
-    assert(same);
+    //assert(same);
         
 
     return vgW ;

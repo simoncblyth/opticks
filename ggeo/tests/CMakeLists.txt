@@ -2,7 +2,13 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name GGeoTest)
 project(${name})
 
-#file(GLOB TEST_SOURCES "*Test.cc")
+
+set(OBSOLETE_TESTS
+
+    GGeoTestTest.cc
+
+)
+
 
 set(TEST_SOURCES
 
@@ -50,7 +56,6 @@ set(TEST_SOURCES
     GGeoLibTest.cc
 
     GGeoTest.cc
-    GGeoTestTest.cc
     GMakerTest.cc
 
     GMergedMeshTest.cc

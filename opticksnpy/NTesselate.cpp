@@ -39,7 +39,7 @@ void NTesselate::init()
 
 NPY<float>* NTesselate::getBuffer()
 {
-    return m_tris->getBuffer() ; 
+    return m_tris->getTris() ; 
 }
 
 

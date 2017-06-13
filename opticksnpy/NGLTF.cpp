@@ -27,6 +27,7 @@ const char* NGLTF::getConfig()
 }
 
 
+
 void NGLTF::load()
 {
     std::string path = BFile::FormPath(m_base, m_name);

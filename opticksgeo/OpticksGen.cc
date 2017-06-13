@@ -59,9 +59,14 @@ void OpticksGen::initInputGensteps()
         return ; 
     } 
 
-    LOG(debug) << "OpticksGen::initInputGensteps" ; 
+    const char* type = m_ok->getSourceType();
+    unsigned code = m_ok->getSourceCode();
+    LOG(debug) << "OpticksGen::initInputGensteps" 
+               << " code " << code
+               << " type " << type
+               ;
 
-    unsigned int code = m_ok->getSourceCode();
+
     NPY<float>* gs = NULL ; 
 
     if( code == FABRICATED || code == MACHINERY  )

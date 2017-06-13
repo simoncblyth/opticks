@@ -33,6 +33,10 @@ NCSG* NScene::getCSG(unsigned mesh_idx)
     return m_csg[mesh_idx];
 }
 
+bool NScene::Exists(const char* base, const char* name)
+{
+    return BFile::ExistsFile(base, name);
+}
 
 
 NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
@@ -48,12 +52,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
-
-    std::string csgskip_path = BFile::FormPath(base, "CSGSKIP_DEEP_TREES.txt");
-    std::string placeholder_path = BFile::FormPath(base, "PLACEHOLDER_FAILED_POLY.txt");
-
-    m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
-    m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
+    init_lvlists(base, name);
 
     load_asset_extras();
     load_csg_metadata();
@@ -82,17 +81,45 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     // gtransform slots for all primitives
     load_mesh_extras();
 
-
-
-    m_csgskip_lvlist->write();
-    m_placeholder_lvlist->write();
-
+    write_lvlists();
 
     LOG(info) << "NScene::NScene DONE" ;  
 
-    //assert(0 && "hari kari");
+    assert(0 && "hari kari");
 
 }
+
+void NScene::init_lvlists(const char* base, const char* name)
+{
+    std::string stem = BFile::Stem(name);
+    std::string csgskip_path = BFile::FormPath(base, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
+    std::string placeholder_path = BFile::FormPath(base, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
+
+    BFile::preparePath( csgskip_path.c_str(), true);
+    BFile::preparePath( placeholder_path.c_str(), true);
+
+    m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
+    m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
+
+    LOG(info) << "NScene::init_lvlists"
+              << " csgskip " << m_csgskip_lvlist->desc()
+              << " placeholder(polyfail) " << m_placeholder_lvlist->desc()
+              << " stem [" << stem << "]"
+              ; 
+
+}
+
+void NScene::write_lvlists()
+{
+    LOG(info) << "NScene::write_lvlists"
+              << " csgskip " << m_csgskip_lvlist->desc()
+              << " placeholder(polyfail) " << m_placeholder_lvlist->desc()
+              ; 
+
+    m_csgskip_lvlist->write();
+    m_placeholder_lvlist->write();
+}
+
 
 void NScene::load_asset_extras()
 {

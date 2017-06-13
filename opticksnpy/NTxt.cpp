@@ -1,4 +1,5 @@
 #include <iostream>
+#include <sstream>
 #include <fstream>
 #include <cstring>
 #include <climits>
@@ -19,16 +20,27 @@ NTxt::NTxt(const char* path)
 {
 }
 
-const char* NTxt::getLine(unsigned int num)
+std::string NTxt::desc() const 
+{  
+    std::stringstream ss ;
+    ss << "NTxt " 
+       << " path " << m_path  
+       << " NumLines " << getNumLines()
+       ;
+    return ss.str();
+}
+
+
+const char* NTxt::getLine(unsigned int num) const 
 {
    return num < m_lines.size() ? m_lines[num].c_str() : NULL ; 
 }
-unsigned int  NTxt::getNumLines()
+unsigned int  NTxt::getNumLines() const 
 {
    return m_lines.size() ; 
 }
 
-void NTxt::dump(const char* msg)
+void NTxt::dump(const char* msg) const 
 {
     unsigned n = getNumLines() ;
     LOG(info) << msg << " NumLines " << n ; 
@@ -36,7 +48,7 @@ void NTxt::dump(const char* msg)
 }
 
 
-unsigned int NTxt::getIndex(const char* line)
+unsigned int NTxt::getIndex(const char* line) const 
 {
    std::string s(line);
    for(unsigned int i=0 ; i < m_lines.size() ; i++) if(m_lines[i].compare(s)==0) return i ;
@@ -67,7 +79,7 @@ void NTxt::read()
 
 }
 
-void NTxt::write()
+void NTxt::write() const 
 {
     std::ofstream out(m_path, std::ios::out);
     if(!out.is_open()) 

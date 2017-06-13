@@ -7,6 +7,7 @@ Tests individual trees::
 
 #include <iostream>
 
+#include "BFile.hh"
 #include "BStr.hh"
 
 
@@ -30,6 +31,12 @@ int main(int argc, char** argv)
 
     const char* treedir = argc > 1 ? argv[1] : "$TMP/csg_py/1"  ;
 
+    if(!BFile::ExistsDir(treedir))
+    {
+         LOG(warning) << argv[0] << " no such dir " << treedir ;
+         return 0 ; 
+    }
+ 
     int verbosity = 2 ; 
     NCSG* csg = NCSG::LoadTree(treedir, verbosity );
     assert(csg);

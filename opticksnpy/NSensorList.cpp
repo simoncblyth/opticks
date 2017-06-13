@@ -5,11 +5,17 @@
 #include <iostream>
 #include <fstream>
 
+
+
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/algorithm/string/join.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/tokenizer.hpp>
+
+#include "BStr.hh"
+
+
+//#include <boost/tokenizer.hpp>
 
 
 #include "NSensorList.hpp"
@@ -114,6 +120,11 @@ void NSensorList::load(const char* idpath_, const char* ext)
 }
 
 
+
+
+
+
+
 void NSensorList::read(const char* path)
 {
     std::ifstream in(path, std::ios::in);
@@ -123,19 +134,37 @@ void NSensorList::read(const char* path)
         return ;
     }   
 
-    typedef boost::tokenizer< boost::char_separator<char> > Tok_t;
-    boost::char_separator<char> delim(" ");
-
     std::string line ; 
     std::vector<std::string> elem ; 
 
-    unsigned int count(0);
+    unsigned expected = 6 ;
+    unsigned count(0);
     while(std::getline(in, line))
     {   
         if(line[0] == '#') continue ; 
 
+
+        /*
+        typedef boost::tokenizer< boost::char_separator<char> > Tok_t;
+        boost::char_separator<char> delim ;
         Tok_t tok(line, delim) ;
         elem.assign(tok.begin(), tok.end());
+        */
+
+        elem.clear();
+        BStr::split(elem, line.c_str(), ' ');
+
+        if(elem.size() != expected) 
+             LOG(fatal) 
+                  << "NSensorList::read"
+                  << line 
+                  << " elem " << elem.size()
+                  << " expected " << expected
+                  ;
+
+        assert(elem.size() == expected );
+
+
         NSensor* sensor = createSensor(elem);
         if(sensor) add(sensor);
 
@@ -163,7 +192,6 @@ std::string NSensorList::description()
 
 NSensor* NSensorList::createSensor(std::vector<std::string>& elem )
 {
-    assert(elem.size() == 6 );
 
     unsigned int nodeIndex  = boost::lexical_cast<unsigned int>(elem[0]); 
     unsigned int id         = boost::lexical_cast<unsigned int>(elem[1]); 

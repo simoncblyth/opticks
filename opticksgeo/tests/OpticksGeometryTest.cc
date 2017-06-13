@@ -5,6 +5,7 @@
 #include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
+#include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "OKGEO_LOG.hh"
 
@@ -13,8 +14,9 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    OKCORE_LOG_ ;
-    OKGEO_LOG_ ;
+    NPY_LOG__ ;
+    OKCORE_LOG__ ;
+    OKGEO_LOG__ ;
 
     Opticks ok(argc, argv);
 

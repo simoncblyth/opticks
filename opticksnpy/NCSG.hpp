@@ -71,6 +71,7 @@ class NPY_API NCSG {
         static const unsigned NTRAN ; 
 
         static unsigned NumNodes(unsigned height);
+        static bool Exists(const char* base);
         static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
@@ -81,6 +82,7 @@ class NPY_API NCSG {
         NTrianglesNPY* getTris();
     public:
         template<typename T> T getMeta(const char* key, const char* fallback );
+        template<typename T> void setMeta(const char* key, T value);
         std::string lvname();
         std::string pvname();
         std::string soname();

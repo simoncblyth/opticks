@@ -655,9 +655,15 @@ void GGeo::loadFromGLTF()
                << " gltf " << gltf
               ;
 
-    m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
-    m_gscene = new GScene(this, m_nscene );
-
+    if(!NScene::Exists(gltfbase, gltfname))
+    {
+        LOG(fatal) << "GGeo::loadFromGLTF MISSING PATH" ; 
+    }
+    else
+    { 
+        m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
+        m_gscene = new GScene(this, m_nscene );
+    } 
 
     if(gltf == 4)  assert(0 && "early exit for gltf==4" );
 

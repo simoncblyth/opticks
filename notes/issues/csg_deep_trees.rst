@@ -26,6 +26,65 @@ How to handle deep unbalanced trees ?
 Moved literature search to env-;csg-
 
 
+
+
+Most of these are differences...
+
+* complement was implemented to allow tree rearrangement, use that 
+  to create +ve form tree (with signs all in the leaves as complements) 
+  so then have a fully commutative CSG expression tree 
+  that can easily be balanced
+
+
+    simon:analytic blyth$ ./sc.py --lvnlist /tmp/blyth/opticks/tgltf/tgltf-gdml--/CSGSKIP_DEEP_TREES.txt
+    args: ./sc.py --lvnlist /tmp/blyth/opticks/tgltf/tgltf-gdml--/CSGSKIP_DEEP_TREES.txt
+    [2017-06-13 18:01:12,699] p29002 {./sc.py:306} INFO -  gsel:3153 gidx:0 gmaxnode:0 gmaxdepth:0 
+    [2017-06-13 18:01:12,699] p29002 {/Users/blyth/opticks/analytic/gdml.py:959} INFO - parsing gdmlpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml 
+    [2017-06-13 18:01:13,875] p29002 {./sc.py:194} WARNING - tlv( 38): csg.skip as height  7 > 3 lvn /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0 lvidx 56 
+    [2017-06-13 18:01:13,883] p29002 {./sc.py:194} WARNING - tlv( 39): csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvTopReflector0xbf9be68 lvidx 59 
+    [2017-06-13 18:01:13,885] p29002 {./sc.py:194} WARNING - tlv( 40): csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvTopRefGap0xbf9c648 lvidx 58 
+    [2017-06-13 18:01:13,887] p29002 {./sc.py:194} WARNING - tlv( 41): csg.skip as height  9 > 3 lvn /dd/Geometry/AdDetails/lvTopESR0xc21fb88 lvidx 57 
+    [2017-06-13 18:01:13,888] p29002 {./sc.py:194} WARNING - tlv( 42): csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0 lvidx 62 
+    [2017-06-13 18:01:13,889] p29002 {./sc.py:194} WARNING - tlv( 43): csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvBotRefGap0xc34bc68 lvidx 61 
+    [2017-06-13 18:01:13,891] p29002 {./sc.py:194} WARNING - tlv( 44): csg.skip as height  8 > 3 lvn /dd/Geometry/AdDetails/lvBotESR0xbfa74c0 lvidx 60 
+    [2017-06-13 18:01:13,905] p29002 {./sc.py:194} WARNING - tlv( 51): csg.skip as height  5 > 3 lvn /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0 lvidx 69 
+    [2017-06-13 18:01:13,936] p29002 {./sc.py:194} WARNING - tlv( 82): csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328 lvidx 105 
+    [2017-06-13 18:01:13,943] p29002 {./sc.py:194} WARNING - tlv( 89): csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0 lvidx 112 
+    [2017-06-13 18:01:13,949] p29002 {./sc.py:194} WARNING - tlv( 96): csg.skip as height 10 > 3 lvn /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 lvidx 132 
+    [2017-06-13 18:01:13,961] p29002 {./sc.py:194} WARNING - tlv(120): csg.skip as height  5 > 3 lvn /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8 lvidx 145 
+    [2017-06-13 18:01:13,963] p29002 {./sc.py:194} WARNING - tlv(122): csg.skip as height  4 > 3 lvn /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990 lvidx 140 
+    [2017-06-13 18:01:13,966] p29002 {./sc.py:194} WARNING - tlv(124): csg.skip as height  7 > 3 lvn /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0 lvidx 142 
+    [2017-06-13 18:01:14,009] p29002 {./sc.py:237} INFO - add_tree_gdml DONE maxdepth:0 maxcsgheight:3 nodesCount: 1660 tlvCount:171  tgNd:Nd ndIdx:  0 soIdx:0 nch:11 par:-1 matrix:[-1.0, 1.2246468525851679e-16, 0.0, 0.0, -1.2246468525851679e-16, -1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 2871.0, 0.0, -41.0, 1.0]  
+    [2017-06-13 18:01:14,009] p29002 {./sc.py:273} INFO - dump_all lvns 14 
+
+
+     ## these ones should work as csg.intersectiontree with all leaves complemented apart from the leftmost   
+
+     /dd/Geometry/AdDetails/lvRadialShieldUnit0xc3d7ec0           : 1 : di(di(di(di(di(di(di(cy,cy),cy),cy),cy),cy),cy),cy) height:7 totnodes:255  
+     /dd/Geometry/AdDetails/lvTopReflector0xbf9be68               : 1 : di(di(di(di(di(cy,cy),cy),cy),cy),cy) height:5 totnodes:63  
+     /dd/Geometry/AdDetails/lvTopRefGap0xbf9c648                  : 1 : di(di(di(di(di(cy,cy),cy),cy),cy),cy) height:5 totnodes:63  
+     /dd/Geometry/AdDetails/lvTopESR0xc21fb88                     : 1 : di(di(di(di(di(di(di(di(di(cy,cy),cy),cy),cy),cy),cy),cy),cy),cy) height:9 totnodes:1023  
+     /dd/Geometry/AdDetails/lvBotReflector0xc3cd4c0               : 1 : di(di(di(di(di(cy,cy),bo),bo),bo),bo) height:5 totnodes:63  
+     /dd/Geometry/AdDetails/lvBotRefGap0xc34bc68                  : 1 : di(di(di(di(di(cy,cy),bo),bo),bo),bo) height:5 totnodes:63  
+     /dd/Geometry/AdDetails/lvBotESR0xbfa74c0                     : 1 : di(di(di(di(di(di(di(di(cy,cy),bo),bo),bo),bo),cy),cy),cy) height:8 totnodes:511  
+     /dd/Geometry/AdDetails/lvSstTopCirRibBase0xc2649f0           : 1 : di(di(di(di(di(cy,cy),bo),bo),bo),bo) height:5 totnodes:63  
+
+     /dd/Geometry/CalibrationSources/lvLedSourceAssy0xc306328     : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
+     /dd/Geometry/CalibrationSources/lvGe68SourceAssy0xc2d4ad0    : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
+     /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
+     /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8        : 1 : un(un(un(un(un(cy,cy),cy),cy),cy),cy) height:5 totnodes:63  
+
+     /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990              : 1 : un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:4 totnodes:31  
+     /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0              : 1 : un(un(un(un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:7 totnodes:255  
+    simon:analytic blyth$ 
+
+
+
+
+
+
+
+
 Checking Deep Volumes with tboolean-deep
 -------------------------------------------
 
