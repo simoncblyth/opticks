@@ -23,6 +23,7 @@ from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs
 from opticks.analytic.textgrid import TextGrid
 
+
 Q0,Q1,Q2,Q3 = 0,1,2,3
 X,Y,Z,W = 0,1,2,3
 
@@ -31,8 +32,6 @@ TREE_PRIMITIVES = lambda height:1 << height
 TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
 
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",")
-
-
 
 
 
@@ -345,22 +344,6 @@ class CSG(CSG_):
         root.totnodes = totnodes
         root.height = height 
         return root
-
-    @classmethod
-    def commontree(cls, operator, primitives, name):
-        tb = TreeBuilder(primitives, operator="union")
-        root = tb.root 
-        root.name = name
-        root.analyse()
-        return root
-
-    @classmethod
-    def uniontree(cls, primitives, name):
-        return cls.commontree("union", primitives, name )
-
-    @classmethod
-    def intersectiontree(cls, primitives, name):
-        return cls.commontree("intersection", primitives, name )
 
 
 

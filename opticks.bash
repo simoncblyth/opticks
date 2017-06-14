@@ -148,19 +148,80 @@ assimp
 openmesh
 plog
 opticksdata
+oimplicitmesher
+odcs
+oyoctogl
+ocsgbsp
 EOL
 }
 
 opticks-optionals(){ cat << EOL
 xercesc
 g4
-oimplicitmesher
-odcs
-oyoctogl
-ocsgbsp
+EOL
+}
+
+opticks-possibles(){ cat << EOL
 oof
 EOL
 }
+
+
+opticks-externals-notes(){ cat << EON
+
+oimplicitmesher
+    requires glm, finds it using opticks/cmake/Modules/FindGLM.cmake
+    this means use common prefix with opticks
+odcs
+    requires glm, finds it using opticks/cmake/Modules/FindGLM.cmake
+    this means use common prefix with opticks
+
+
+
+EON
+}
+
+
+opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
+opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
+opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
+
+opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | -opticks-installer ; }
+opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | -opticks-url ; }
+opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | -opticks-dist ; }
+
+opticks-possibles-install(){ echo $FUNCNAME ; opticks-possibles | -opticks-installer ; }
+opticks-possibles-url(){     echo $FUNCNAME ; opticks-possibles | -opticks-url ; }
+opticks-possibles-dist(){    echo $FUNCNAME ; opticks-possibles | -opticks-dist ; }
+
+
+opticks-full()
+{
+    local msg="=== $FUNCNAME :"
+    echo $msg START $(date)
+    opticks-info
+
+    if [ ! -d "$(opticks-prefix)/externals" ]; then
+
+        echo $msg installing the below externals into $(opticks-prefix)/externals
+        opticks-externals 
+        opticks-externals-install
+
+
+    else
+        echo $msg using preexisting externals from $(opticks-prefix)/externals
+    fi 
+
+    opticks-configure
+
+    opticks--
+
+    opticks-prepare-installcache
+
+    echo $msg DONE $(date)
+}
+
+
 
 -opticks-installer(){
    local msg="=== $FUNCNAME :"
@@ -194,14 +255,6 @@ EOL
         printf "%30s :  %s \n" $ext $dist
    done
 }
-
-opticks-externals-install(){ echo $FUNCNAME ; opticks-externals | -opticks-installer ; }
-opticks-externals-url(){     echo $FUNCNAME ; opticks-externals | -opticks-url ; }
-opticks-externals-dist(){    echo $FUNCNAME ; opticks-externals | -opticks-dist ; }
-
-opticks-optionals-install(){ echo $FUNCNAME ; opticks-optionals | -opticks-installer ; }
-opticks-optionals-url(){     echo $FUNCNAME ; opticks-optionals | -opticks-url ; }
-opticks-optionals-dist(){    echo $FUNCNAME ; opticks-optionals | -opticks-dist ; }
 
 
 opticks-locations(){ cat << EOL
@@ -578,29 +631,6 @@ opticks-rmdirs-(){
       local dir=$base/$name
       [ -d "$dir" ] && echo rm -rf $dir ;
    done
-}
-
-opticks-full()
-{
-    local msg="=== $FUNCNAME :"
-    echo $msg START $(date)
-    opticks-info
-
-    if [ ! -d "$(opticks-prefix)/externals" ]; then
-        echo $msg installing the below externals into $(opticks-prefix)/externals
-        opticks-externals 
-        opticks-externals-install
-    else
-        echo $msg using preexisting externals from $(opticks-prefix)/externals
-    fi 
-
-    opticks-configure
-
-    opticks--
-
-    opticks-prepare-installcache
-
-    echo $msg DONE $(date)
 }
 
 opticks-cleanbuild()

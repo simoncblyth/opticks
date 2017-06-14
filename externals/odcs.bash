@@ -9,6 +9,8 @@ DualContouringSample as Opticks External
 
 See also env-;dcs-
 
+NB uses same prefix as Opticks so that opticks/cmake/Modules/FindGLM.cmake succeeds
+
 
 EOU
 }
@@ -18,8 +20,6 @@ odcs-url(){ echo https://github.com/simoncblyth/DualContouringSample ; }
 
 odcs-dir(){  echo $(opticks-prefix)/externals/dualcontouringsample ; }
 odcs-bdir(){ echo $(opticks-prefix)/externals/dualcontouringsample/dualcontouringsample.build ; }
-odcs-prefix(){ echo $(opticks-prefix)/externals ; }
-
 
 odcs-cd(){  cd $(odcs-dir); }
 odcs-bcd(){ cd $(odcs-bdir) ; }
@@ -54,7 +54,7 @@ odcs-cmake()
     cmake \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(odcs-prefix) \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        $* \
        $(odcs-dir)
 

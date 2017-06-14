@@ -159,19 +159,39 @@ The *opticks-full* command automatically downloads and installs the below extern
 into the places required by Opticks.
 
 
-===============  =============   ==============================================================================
-precursor        pkg name        notes
-===============  =============   ==============================================================================
-glm-             GLM             OpenGL mathematics, 3D transforms 
-assimp-          Assimp          Assimp 3D asset importer, my fork that handles G4DAE extras
-openmesh-        OpenMesh        basis for mesh navigation and fixing
-glew-            GLEW            OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
-glfw-            GLFW            Interface between system and OpenGL, creating windows and receiving input
-gleq-            GLEQ            Keyboard event handling header from GLFW author, header only
-imgui-           ImGui           OpenGL immediate mode GUI, depends on glfw and glew
-plog-            PLog            Header only logging, supporting multi dll logging on windows 
-opticksdata-     -               Dayabay G4DAE and GDML geometry files for testing Opticks      
-===============  =============   ==============================================================================
+=================  =====================   ==============================================================================
+precursor          pkg name                notes
+=================  =====================   ==============================================================================
+glm-               GLM                     OpenGL mathematics, 3D transforms 
+assimp-            Assimp                  Assimp 3D asset importer, my fork that handles G4DAE extras
+openmesh-          OpenMesh                basis for mesh navigation and fixing
+glew-              GLEW                    OpenGL extensions loading library, cmake build didnt work, includes vc12 sln for windows
+glfw-              GLFW                    Interface between system and OpenGL, creating windows and receiving input
+gleq-              GLEQ                    Keyboard event handling header from GLFW author, header only
+imgui-             ImGui                   OpenGL immediate mode GUI, depends on glfw and glew
+plog-              PLog                    Header only logging, supporting multi dll logging on windows 
+opticksdata-       -                       Dayabay G4DAE and GDML geometry files for testing Opticks      
+oimplicitmesher-   ImplicitMesher          Polygonization of implicitly defined shapes
+odcs-              DualContouringSample    Alternate polygonization using Octree for multi-resolution, however its slow
+ocsgbsp-           CSGBSP                  Another BSP approach to polygonization under investigation
+oyoctogl-          YoctoGL                 Used for glTF geometry file format handling, parsing/serializing    
+=================  =====================   ==============================================================================
+
+
+Separate installation of externals
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The *opticks-externals* function lists current precursor names, *opticks-externals-install* runs each 
+of the precursor functions in turn.  To rerun a single external install, use the below pattern of running 
+the precursor function and then the installer function.
+
+::
+
+   oyoctogl-
+   oyoctogl--
+
+After installation has been done rerunning *opticks-externals-install* completes quickly,
+and does no harm.
 
 
 Manually Configuring Opticks

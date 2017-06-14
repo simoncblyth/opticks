@@ -176,7 +176,8 @@ ocsgbsp-edit(){ vi $(opticks-home)/cmake/Modules/FindCSGBSP.cmake ; }
 ocsgbsp-url(){  echo https://github.com/simoncblyth/csgjs-cpp ; }
 ocsgbsp-dir(){  echo $(opticks-prefix)/externals/csgbsp/csgjs-cpp ; }
 ocsgbsp-bdir(){ echo $(opticks-prefix)/externals/csgbsp/csgjs-cpp.build ; }
-ocsgbsp-prefix(){ echo $(opticks-prefix)/externals ; }
+
+#ocsgbsp-prefix(){ echo $(opticks-prefix)/externals ; }
 
 ocsgbsp-cd(){  cd $(ocsgbsp-dir); }
 ocsgbsp-bcd(){ cd $(ocsgbsp-bdir) ; }

@@ -14,12 +14,17 @@ XERCESC
 EOU
 }
 
-xercesc-prefix(){  
+xercesc-prefix-old(){  
+
   case $(uname -s) in 
       Darwin) echo /opt/local ;;
     MINGW64*) echo /mingw64 ;;
            *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
   esac  
+}
+
+xercesc-prefix(){  
+    echo $(opticks-prefix)/externals
 }
 
 
@@ -58,8 +63,30 @@ xercesc-dist(){ echo $(basename $(xercesc-url)); }
 xercesc-name(){ local dist=$(xercesc-dist) ; echo ${dist/.tar.gz} ; }
 xercesc-base(){ echo $(opticks-prefix)/externals/xercesc ; }
 
-xercesc-dir(){  echo $(opticks-prefix)/externals/xercesc/$(xercesc-name) ; }
-xercesc-bdir(){ echo $(opticks-prefix)/externals/xercesc/$(xercesc-name).build ; }
+xercesc-dir(){  echo $(xercesc-prefix)/xercesc/$(xercesc-name) ; }
+xercesc-bdir(){ echo $(xercesc-prefix)/xercesc/$(xercesc-name).build ; }
+
+xercesc-info(){ cat << EOI
+
+$FUNCNAME
+==============
+
+   xercesc-url    : $(xercesc-url)
+   xercesc-dist   : $(xercesc-dist)
+   xercesc-name   : $(xercesc-name)
+   xercesc-base   : $(xercesc-base)
+   xercesc-dir    : $(xercesc-dir)
+   xercesc-bdir   : $(xercesc-bdir)
+
+   xercesc-prefix  : $(xercesc-prefix)
+   xercesc-library : $(xercesc-library)
+   xercesc-include-dir : $(xercesc-include-dir)
+
+
+EOI
+}
+
+
 
 xercesc-cd(){   cd $(xercesc-dir); }
 xercesc-bcd(){  cd $(xercesc-bdir); }
@@ -87,6 +114,7 @@ xercesc-make()
 
 xercesc--()
 {
+   xercesc-info
    xercesc-get
    xercesc-configure
    xercesc-make

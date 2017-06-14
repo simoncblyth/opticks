@@ -13,7 +13,23 @@ class TreeBuilder(object):
     @classmethod 
     def balance(cls, tree):
         pass 
- 
+
+    @classmethod
+    def commontree(cls, operator, primitives, name):
+        tb = TreeBuilder(primitives, operator="union")
+        root = tb.root 
+        root.name = name
+        root.analyse()
+        return root
+
+    @classmethod
+    def uniontree(cls, primitives, name):
+        return cls.commontree("union", primitives, name )
+
+    @classmethod
+    def intersectiontree(cls, primitives, name):
+        return cls.commontree("intersection", primitives, name )
+
 
     def __init__(self, primitives, operator="union"):
         """
@@ -111,6 +127,33 @@ class TreeBuilder(object):
         pass
         prune_r(root)
 
+    @classmethod 
+    def positive_form(cls, tree):
+        """
+        The positive form of a CSG expression is obtained by 
+        distributing any negations down the tree to end up  
+        with complements in the leaves only.
+
+        Where
+
+        * UNION == + 
+        * INTERSECTION == *
+        * DIFFERENCE == -
+
+        (A+B)(C-(D-E))                      (A+B)(C(!D+E))
+
+                       *                                   *
+                                                                        
+                  +          -                        +          *
+                 / \        / \                      / \        / \
+                A   B      C    -                   A   B      C    +  
+                               / \                                 / \
+                              D   E                              !D   E
+
+
+        """
+        pass 
+
 
 
 
@@ -136,6 +179,31 @@ def test_uniontree():
         print "\n",root.txt
 
 
+def test_positive_form():
+    log.info("test_positive_form")
+
+    a = CSG("sphere", param=[0,0,-50,100] ) 
+    b = CSG("sphere", param=[0,0, 50,100] ) 
+    c = CSG("box", param=[0,0, 50,100] ) 
+    d = CSG("box", param=[0,0, 0,100] ) 
+    e = CSG("box", param=[0,0, 0,100] ) 
+
+    ab = CSG("union", left=a, right=b )
+    de = CSG("difference", left=d, right=e )
+    cde = CSG("difference", left=c, right=de )
+
+    abcde = CSG("intersection", left=ab, right=cde )
+
+    abcde.analyse()
+    print abcde.txt
+
+
+
+
+
+
+
+
 
 if __name__ == '__main__':
     pass
@@ -143,5 +211,6 @@ if __name__ == '__main__':
 
     test_treebuilder()
     test_uniontree()
+    test_positive_form()
 
 

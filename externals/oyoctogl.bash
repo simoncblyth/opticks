@@ -18,6 +18,21 @@ See also env-;yoctogl-
 
 
 
+CMake install locations
+-------------------------
+
+This has same CMake prefix as Opticks, thus the CMakeLists.txt
+does some internal prefixing of install locations
+
+::
+
+    install(TARGETS ${name}  DESTINATION     externals/lib)
+    install(FILES ${HEADERS} DESTINATION     externals/include/${name})
+    install(FILES ${EXT_HEADERS} DESTINATION externals/include/${name}/ext)
+
+
+
+
 Flattened glTF
 -----------------
 
@@ -133,7 +148,7 @@ oyoctogl-url(){ echo https://github.com/simoncblyth/yocto-gl ; }
 
 oyoctogl-dir(){  echo $(opticks-prefix)/externals/yoctogl/yocto-gl ; }
 oyoctogl-bdir(){ echo $(opticks-prefix)/externals/yoctogl/yocto-gl.build ; }
-oyoctogl-prefix(){ echo $(opticks-prefix)/externals ; }
+
 
 
 oyoctogl-cd(){  cd $(oyoctogl-dir); }
@@ -176,7 +191,7 @@ oyoctogl-cmake()
     cmake \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_BUILD_TYPE=Debug \
-       -DCMAKE_INSTALL_PREFIX=$(oyoctogl-prefix) \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        $* \
        $sdir
 

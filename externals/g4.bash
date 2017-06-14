@@ -7,13 +7,26 @@ g4-usage(){ cat << \EOU
 Geant4
 ========
 
-
 Migration to 10 (Multithreaded)
 --------------------------------
 
 Quick migration guide for Geant4 version 10.x series
 
 * https://twiki.cern.ch/twiki/bin/view/Geant4/QuickMigrationGuideForGeant4V10
+
+
+
+Not finding xercesc
+--------------------
+
+::
+
+    In file included from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include/G4GDMLReadDefine.hh:45:
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/include/G4GDMLRead.hh:42:10: fatal error: 'xercesc/parsers/XercesDOMParser.hpp' file not found
+    #include <xercesc/parsers/XercesDOMParser.hpp>
+             ^
+    1 error generated.
+
 
 
 G4 Version Macro
@@ -273,6 +286,22 @@ or to start over use : g4-wipe then g4-configure
 EOM
 }
 
+
+g4-cmake-info(){ cat << EOI
+$FUNCNAME
+===============
+
+   opticks-cmake-generator : $(opticks-cmake-generator)
+   xercesc-library         : $(xercesc-library)
+   xercesc-include-dir     : $(xercesc-include-dir)
+   g4-prefix               : $(g4-prefix) 
+   g4-bdir                 : $(g4-bdir) 
+   g4-dir                  : $(g4-dir) 
+
+
+EOI
+}
+
 g4-cmake(){
    local iwd=$PWD
 
@@ -281,6 +310,8 @@ g4-cmake(){
 
    local idir=$(g4-prefix)
    mkdir -p $idir
+
+   g4-cmake-info
 
    g4-bcd
 
