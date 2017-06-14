@@ -1,9 +1,47 @@
 Leftfield Error Following BFile change attempt
 ================================================
 
+
+Argh, back again in::
+
+    tboolean-;tboolean-hybrid
+    tboolean-;tboolean-hyctrl
+
 Argh flakey, its gone away::
 
     tboolean-;tboolean-prism --debugger --NPY debug
+
+
+Test fails seem unrelated to the flakiness. 
+They are mostly too low level ?
+Does that indicate the problem is up at very high integration level ?
+
+
+TODO: get the high level ana-t tests working again
+
+
+
+::
+
+
+    97% tests passed, 6 tests failed out of 234
+
+    Total Test time (real) = 116.68 sec
+
+    The following tests FAILED:
+        208 - OptiXRapTest.OEventTest (OTHER_FAULT)
+        209 - OptiXRapTest.OInterpolationTest (Failed)
+        213 - OKOPTest.OpSeederTest (OTHER_FAULT)
+        220 - OKTest.VizTest (OTHER_FAULT)
+
+        222 - cfg4Test.CMaterialLibTest (OTHER_FAULT)
+        223 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+    simon:opticks blyth$ 
+
+
+
 
 
 

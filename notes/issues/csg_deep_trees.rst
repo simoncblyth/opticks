@@ -151,16 +151,15 @@ Hmm this definitely needs balancing::
     [2017-06-14 20:07:59,674] p94010 {/Users/blyth/opticks/analytic/treebuilder.py:21} WARNING - balancing of non-mono operator trees not implemented
     [2017-06-14 20:07:59,674] p94010 {./sc.py:300} WARNING - cannot balance
 
+
+Multi-union of 7 intersections, arranging like below can get to height 4.  How to detect a multi-union ? Meaning
+the top of the tree is all union ... collect elevations of every operator
     
-6 unions of 7 intersections, arranging like below can get to height 5 ... "a unionmajor tree"
-
-
                          un 
                  un                un
-             un      un        un       un
-           un  un  un  un       
+             un       un        un     in
+           in   in   in  in    in  in          
          
-
 
 
 
