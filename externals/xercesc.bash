@@ -11,6 +11,100 @@ XERCESC
 * XML handling package required for Geant4 GDML support
 
 
+
+FindEnvXercesC.cmake
+----------------------
+
+See *xercesc-edit*::
+
+     21 # try to find the header
+     22 FIND_PATH(XERCESC_INCLUDE_DIR xercesc/parsers/SAXParser.hpp 
+     23   ${XERCESC_ROOT_DIR}/include
+     24   HINTS ENV  XERCESC_ROOT
+     25   /usr/include 
+     26   /usr/local/include
+     27   /opt/local/include
+     28 )
+     29 
+     30 # Find the library
+     31 FIND_LIBRARY(XERCESC_LIBRARY
+     32    NAMES xerces-c 
+     33    HINTS ENV  XERCESC_ROOT
+     34    PATHS
+     35      ${XERCESC_ROOT_DIR}/lib
+     36      /usr/lib 
+     37      /usr/local/lib
+     38      /opt/local/lib
+     39    DOC "The name of the xerces-c library"
+     40 )
+
+
+
+Multi-Version Confusion Issue
+-------------------------------
+
+* probably easiest to 
+
+
+cfg4 link failing with xercesc_2_8::
+
+    [ 71%] Linking CXX shared library libcfg4.dylib
+    Undefined symbols for architecture x86_64:
+      "xercesc_2_8::DTDEntityDecl::serialize(xercesc_2_8::XSerializeEngine&)", referenced from:
+          vtable for xercesc_2_8::DTDEntityDecl in CGDMLDetector.cc.o
+      "xercesc_2_8::XMLAttDefList::serialize(xercesc_2_8::XSerializeEngine&)", referenced from:
+          vtable for xercesc_2_8::XMLAttDefList in CGDMLDetector.cc.o
+      "xercesc_2_8::XMLEntityDecl::~XMLEntityDecl()", referenced from:
+          xercesc_2_8::DTDEntityDecl::~DTDEntityDecl() in CGDMLDetector.cc.o
+      "xercesc_2_8::SAXParseException::SAXParseException(xercesc_2_8::SAXParseException const&)", referenced from:
+          xercesc_2_8::HandlerBase::fatalError(xercesc_2_8::SAXParseException const&) in CGDMLDetector.cc.o
+
+G4 expecting libxerces-c-3.1.dylib::
+
+    simon:lib blyth$ otool -L libG4persistency.dylib
+    libG4persistency.dylib:
+        @rpath/libG4persistency.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4run.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/local/opticks/lib/libxerces-c-3.1.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4event.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4tracking.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4processes.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4digits_hits.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libexpat.1.dylib (compatibility version 8.0.0, current version 8.2.0)
+        @rpath/libG4zlib.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4track.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libG4particles.dylib (compatibility version 0.0.0, current version 0.0.0)
+
+
+::
+
+    simon:cfg4 blyth$ port info xercesc
+    xercesc @2.8.0_3 (textproc)
+    Variants:             universal
+
+    simon:cfg4 blyth$ port info xercesc3
+    xercesc3 @3.1.4 (textproc, xml, shibboleth)
+    Variants:             universal
+
+
+
+    simon:tests blyth$ c++ XercescCTest.cc -I/opt/local/include -L/opt/local/lib -lc++
+    Undefined symbols for architecture x86_64:
+      "xercesc_2_8::XMLPlatformUtils::Initialize(char const*, char const*, xercesc_2_8::PanicHandler*, xercesc_2_8::MemoryManager*, bool)", referenced from:
+          _main in XercescCTest-6063d6.o
+      "xercesc_2_8::XMLUni::fgXercescDefaultLocale", referenced from:
+          _main in XercescCTest-6063d6.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    simon:tests blyth$ 
+    simon:tests blyth$ 
+    simon:tests blyth$ pwd
+    /Users/blyth/opticks/cfg4/tests
+
+
+
+
+
 EOU
 }
 
@@ -28,14 +122,12 @@ xercesc-prefix(){
 }
 
 
-xercesc-include-dir(){ 
-  if [ "$NODE_TAG" == "MGB" ]; then
-      ome-
-      ome-xercesc-include
-  else
-      echo $(xercesc-prefix)/include ;
-  fi
-}
+xercesc-edit(){ vi $(opticks-home)/cmake/Modules/FindEnvXercesC.cmake ; }
+
+
+xercesc-library-macports(){     echo /opt/local/lib/libxerces-c.dylib ; }
+xercesc-include-dir-macports(){ echo /opt/local/include ; }
+
 xercesc-library(){  
 
   if [ "$NODE_TAG" == "MGB" ]; then
@@ -45,12 +137,25 @@ xercesc-library(){
       echo /lib64/libxerces-c-3.1.so    
   else 
       case $(uname -s) in 
-           Darwin) echo $(xercesc-prefix)/lib/libxerces-c.dylib   ;;
+           Darwin) echo $(xercesc-library-macports)  ;;
          MINGW64*) echo $(xercesc-prefix)/bin/libxerces-c-3-1.dll ;;
                 *) echo $(xercesc-prefix)/lib/libxerces-c-3-1.so  ;;
       esac
   fi 
 }
+
+xercesc-include-dir(){ 
+  if [ "$NODE_TAG" == "MGB" ]; then
+      ome-
+      ome-xercesc-include
+  else
+      case $(uname -s) in 
+           Darwin) echo $(xercesc-include-dir-macports)  ;;
+                *) echo $(xercesc-prefix)/include    ;;
+      esac
+  fi
+}
+
 
 xercesc-geant4-export(){
   export XERCESC_INCLUDE_DIR=$(xercesc-include-dir)
@@ -81,6 +186,13 @@ $FUNCNAME
    xercesc-prefix  : $(xercesc-prefix)
    xercesc-library : $(xercesc-library)
    xercesc-include-dir : $(xercesc-include-dir)
+
+   xercesc-library-macports : $(xercesc-library-macports)
+   xercesc-include-dir-macports : $(xercesc-include-dir-macports)
+
+   On Mac a preexisting xercesc from macports can confuse the build, 
+   in this case probably better to just use macports xercesc
+   see g4-cmake-modify-adopt-macports-xercesc
 
 
 EOI
@@ -115,9 +227,20 @@ xercesc-make()
 xercesc--()
 {
    xercesc-info
+
+   [ "$(uname -s)" == "Darwin" ] && xercesc-darwin && return  
+
    xercesc-get
    xercesc-configure
    xercesc-make
 }
+
+xercesc-darwin(){ cat << EOD
+
+$FUNCNAME : on OSX use macports xercesc 
+
+EOD
+}
+
 
 

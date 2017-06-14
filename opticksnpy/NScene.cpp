@@ -85,7 +85,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
 
     LOG(info) << "NScene::NScene DONE" ;  
 
-    assert(0 && "hari kari");
+    //assert(0 && "hari kari");
 
 }
 
@@ -101,20 +101,18 @@ void NScene::init_lvlists(const char* base, const char* name)
     m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
     m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
 
-    LOG(info) << "NScene::init_lvlists"
-              << " csgskip " << m_csgskip_lvlist->desc()
-              << " placeholder(polyfail) " << m_placeholder_lvlist->desc()
-              << " stem [" << stem << "]"
-              ; 
+    LOG(info) << "NScene::init_lvlists" ;
+
+    std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
+    std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
 
 }
 
 void NScene::write_lvlists()
 {
-    LOG(info) << "NScene::write_lvlists"
-              << " csgskip " << m_csgskip_lvlist->desc()
-              << " placeholder(polyfail) " << m_placeholder_lvlist->desc()
-              ; 
+    LOG(info) << "NScene::write_lvlists";
+    std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
+    std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
 
     m_csgskip_lvlist->write();
     m_placeholder_lvlist->write();

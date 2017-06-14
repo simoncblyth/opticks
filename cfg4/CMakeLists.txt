@@ -64,6 +64,12 @@ endif(Geant4_FOUND)
 
 
 find_package(EnvXercesC  REQUIRED)  
+
+message("${name}.XERCESC_INCLUDE_DIR  : ${XERCESC_INCLUDE_DIR} ")
+message("${name}.XERCESC_LIBRARIES    : ${XERCESC_LIBRARIES} ")
+
+
+
 #find_package(G4DAE  REQUIRED)  
 
 set(INCLUDE_DIRS  

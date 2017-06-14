@@ -2,7 +2,7 @@
 set(ImplicitMesher_PREFIX "${OPTICKS_PREFIX}/externals")
 
 find_library( ImplicitMesher_LIBRARIES 
-              NAMES XImplicitMesher
+              NAMES ImplicitMesher
               PATHS ${ImplicitMesher_PREFIX}/lib )
 
 if(NOT ImplicitMesher_LIBRARIES)

@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name NPY)
 project(${name})
 
+
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
@@ -24,6 +25,7 @@ find_package(ImplicitMesher)
 find_package(DualContouringSample) 
 find_package(YoctoGL) 
 find_package(CSGBSP) 
+
 
 message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
 #message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")

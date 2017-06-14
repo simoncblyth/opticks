@@ -27,6 +27,41 @@ TODO
 * light source config, blackbody
 
 
+
+Clean Build Link Issue
+-----------------------
+
+::
+
+    [ 71%] Linking CXX shared library libcfg4.dylib
+    Undefined symbols for architecture x86_64:
+      "xercesc_2_8::DTDEntityDecl::serialize(xercesc_2_8::XSerializeEngine&)", referenced from:
+          vtable for xercesc_2_8::DTDEntityDecl in CGDMLDetector.cc.o
+    ...
+      "typeinfo for xercesc_2_8::SAXParseException", referenced from:
+          xercesc_2_8::HandlerBase::fatalError(xercesc_2_8::SAXParseException const&) in CGDMLDetector.cc.o
+    ld: symbol(s) not found for architecture x86_64
+    clang: error: linker command failed with exit code 1 (use -v to see invocation)
+    make[2]: *** [cfg4/libcfg4.dylib] Error 1
+    make[1]: *** [cfg4/CMakeFiles/cfg4.dir/all] Error 2
+    make: *** [all] Error 2
+
+
+::
+
+    simon:tests blyth$ clang XercescCTest.cc -I$(xercesc-include-dir) -L/usr/local/opticks/externals/lib 
+    XercescCTest.cc:11:5: error: use of undeclared identifier 'XMLPlatformUtils'; did you mean 'xercesc_3_1::XMLPlatformUtils'?
+        XMLPlatformUtils::Initialize();
+        ^~~~~~~~~~~~~~~~
+        xercesc_3_1::XMLPlatformUtils
+    /usr/local/opticks/externals/include/xercesc/util/PlatformUtils.hpp:68:22: note: 'xercesc_3_1::XMLPlatformUtils' declared here
+    class XMLUTIL_EXPORT XMLPlatformUtils
+                         ^
+    1 error generated.
+
+
+
+
 macOS : 2 test fails
 -----------------------
 

@@ -15,7 +15,6 @@ Quick migration guide for Geant4 version 10.x series
 * https://twiki.cern.ch/twiki/bin/view/Geant4/QuickMigrationGuideForGeant4V10
 
 
-
 Not finding xercesc
 --------------------
 
@@ -340,7 +339,15 @@ g4-cmake-modify(){
    cd $iwd
 }
 
+g4-cmake-modify-adopt-macports-xercesc()
+{
+   xercesc-
+   g4-cmake-modify \
+      -DXERCESC_LIBRARY=$(xercesc-library-macports) \
+      -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir-macports) 
 
+
+}
 
 
 

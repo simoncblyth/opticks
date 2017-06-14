@@ -7,6 +7,41 @@ Argh flakey, its gone away::
 
 
 
+::
+
+    simon:Modules blyth$ tboolean-;tboolean-hybrid
+    288 -rwxr-xr-x  1 blyth  staff  146000 Jun 14 16:32 /usr/local/opticks/lib/OKTest
+    proceeding : 
+          /usr/local/opticks/lib/OKTest
+               --animtimemax 10 
+               --timemax 10 
+               --geocenter 
+               --eye 0,0,1 
+               --dbganalytic
+                --test 
+                --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tboolean-hybrid--_name=tboolean-hybrid--_mode=PyCsgInBox
+                --torch 
+                --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.1_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --tag 1 --cat boolean --save
+    2017-06-14 16:37:51.836 INFO  [7408864] [OpticksDbg::postconfigure@49] OpticksDbg::postconfigure OpticksDbg  debug_photon  size: 0 elem: () other_photon  size: 0 elem: ()
+    OKTest(81748,0x7fff75379310) malloc: *** error for object 0x7fb840c365b0: incorrect checksum for freed object - object was probably modified after being freed.
+    *** set a breakpoint in malloc_error_break to debug
+    /Users/blyth/opticks/bin/op.sh: line 580: 81748 Abort trap: 6           /usr/local/opticks/lib/OKTest --animtimemax 10 --timemax 10 --geocenter --eye 0,0,1 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tboolean-hybrid--_name=tboolean-hybrid--_mode=PyCsgInBox --torch --torchconfig type=disc_photons=100000_mode=fixpol_polarization=1,1,0_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000_source=0,0,599_target=0,0,0_time=0.1_radius=300_distance=200_zenithazimuth=0,1,0,1_material=Vacuum_wavelength=500 --tag 1 --cat boolean --save
+    /Users/blyth/opticks/bin/op.sh RC 134
+    simon:Modules blyth$ 
+
+
+
+
+Turning up verbosity makes the issue go away::
+
+    tboolean-;tboolean-hybrid --NPY trace --BRAP --trace 
+
+
+
+
+
+
+
 Flakeys give good motivation for getting all the ctests going again... 
 
 ::

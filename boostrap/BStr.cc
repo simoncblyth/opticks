@@ -172,6 +172,7 @@ std::string BStr::patternPickField(std::string str, std::string ptn, int num )
 }
 
 
+/*
 void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
 {
     if(line == NULL) return ; 
@@ -179,6 +180,21 @@ void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim)) elem.push_back(s);
 }
+*/
+
+
+void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
+{
+    if(line == NULL) return ; 
+
+    std::stringstream ss;
+    ss.str(line)  ;
+
+    std::string s;
+    while (std::getline(ss, s, delim)) elem.push_back(s);
+}
+
+
 
 void BStr::isplit( std::vector<int>& elem, const char* line, char delim )
 {

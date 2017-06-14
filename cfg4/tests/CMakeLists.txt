@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name cfg4Test)
 project(${name})
 
-#file(GLOB TEST_SOURCES "*Test.cc")
 
 set(_TEST_SOURCES
 

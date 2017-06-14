@@ -152,13 +152,15 @@ tboolean--(){
         testconfig=$(tboolean-testconfig)
     fi 
 
+
+    #        --rendermode "-axis" \
+
     op.sh  \
             $cmdline \
             --animtimemax 10 \
             --timemax 10 \
             --geocenter \
             --eye 0,0,1 \
-            --rendermode "-axis" \
             --dbganalytic \
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
@@ -1347,27 +1349,7 @@ EOP
 
 tboolean-testconfig()
 {
-    # token BoxInBox 
-    #tboolean-bib-box
-    #tboolean-bib-box-small-offset-sphere
-    #tboolean-bib-box-sphere
-
-
-    #tboolean-box-py
-    #tboolean-sphere-py
-
-    #tboolean-box-small-offset-sphere-py difference
-    #tboolean-box-small-offset-sphere-py intersection
-    #tboolean-box-small-offset-sphere-py union
-
-    #tboolean-box-sphere-py intersection 
-    #tboolean-box-sphere-py difference
-    tboolean-box-sphere-py union
-
-    #tboolean-csg-unbalanced-py
-    #tboolean-csg-pmt-py 2>/dev/null
-
-    #tboolean-csg-two-box-minus-sphere-interlocked-py
+    tboolean-boxsphere-
 }
 
 
