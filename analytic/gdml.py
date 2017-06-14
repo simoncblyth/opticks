@@ -182,6 +182,7 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import find_ranges
 from opticks.analytic.csg import CSG 
+from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.glm import make_trs, make_transform
 from opticks.analytic.prism import make_trapezoid
 
@@ -773,7 +774,7 @@ class PolyCone(Primitive):
         assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
 
         prims = self.prims()
-        cn = CSG.uniontree(prims, name=self.name + "_uniontree")
+        cn = TreeBuilder.uniontree(prims, name=self.name + "_uniontree")
         inner = self.inner()
         #return CSG("difference", left=cn, right=inner ) if inner is not None else cn
         return cn

@@ -86,6 +86,81 @@ Most of these are differences...
 
 
 
+Non Mono Balancing ?
+------------------------
+
+
+This one is fairly balanced already, how to detect that ?
+
+::
+
+    [2017-06-14 20:07:59,671] p94010 {/Users/blyth/opticks/analytic/csg.py:648} INFO - /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990 name:LsoOflTnk0xc17d928
+    un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:4 totnodes:31 
+
+                                                 un            
+                                 un                      di    
+                 un                      di          cy      cy
+         di              di          cy      cy                
+     cy      cy      cy      cy                                
+
+    [2017-06-14 20:07:59,672] p94010 {/Users/blyth/opticks/analytic/csg.py:648} INFO - /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990 (converted to positive form) name:LsoOflTnk0xc17d928
+    un(un(un(in(cy,!cy),in(cy,!cy)),in(cy,!cy)),in(cy,!cy)) height:4 totnodes:31 
+
+                                                 un            
+                                 un                      in    
+                 un                      in          cy     !cy
+         in              in          cy     !cy                
+     cy     !cy      cy     !cy                                
+
+
+
+
+
+    [2017-06-14 20:07:59,672] p94010 {/Users/blyth/opticks/analytic/treebuilder.py:21} WARNING - balancing of non-mono operator trees not implemented
+    [2017-06-14 20:07:59,672] p94010 {./sc.py:300} WARNING - cannot balance
+
+
+
+
+Hmm this definitely needs balancing::
+
+    [2017-06-14 20:07:59,672] p94010 {/Users/blyth/opticks/analytic/csg.py:648} INFO - /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0 name:GdsOflTnk0xc3d5160
+    un(un(un(un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:7 totnodes:255 
+
+                                                                                                 un            
+                                                                                 un                      di    
+                                                                 un                      di          cy      cy
+                                                 un                      di          cy      cy                
+                                 un                      di          cy      cy                                
+                 un                      di          cy      cy                                                
+         di              di          cy      cy                                                                
+     cy      cy      cy      cy                                                                                
+    [2017-06-14 20:07:59,673] p94010 {/Users/blyth/opticks/analytic/csg.py:648} INFO - /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0 (converted to positive form) name:GdsOflTnk0xc3d5160
+    un(un(un(un(un(un(in(cy,!cy),in(cy,!cy)),in(cy,!cy)),in(cy,!cy)),in(cy,!cy)),in(cy,!cy)),in(cy,!cy)) height:7 totnodes:255 
+
+                                                                                                 un            
+                                                                                 un                      in    
+                                                                 un                      in          cy     !cy
+                                                 un                      in          cy     !cy                
+                                 un                      in          cy     !cy                                
+                 un                      in          cy     !cy                                                
+         in              in          cy     !cy                                                                
+     cy     !cy      cy     !cy      
+
+                                                                          
+    [2017-06-14 20:07:59,674] p94010 {/Users/blyth/opticks/analytic/treebuilder.py:21} WARNING - balancing of non-mono operator trees not implemented
+    [2017-06-14 20:07:59,674] p94010 {./sc.py:300} WARNING - cannot balance
+
+    
+6 unions of 7 intersections, arranging like below can get to height 5 ... "a unionmajor tree"
+
+
+                         un 
+                 un                un
+             un      un        un       un
+           un  un  un  un       
+         
+
 
 
 

@@ -11,12 +11,36 @@ from opticks.analytic.csg import CSG
 class TreeBuilder(object):
 
     @classmethod 
+    def can_balance(cls, tree):
+        if not tree.is_positive_form():
+            log.warning("cannot balance tree that is not in positive form")
+            return False 
+        pass
+        ops = tree.operators()
+        if len(ops) != 1:
+            log.warning("balancing of non-mono operator trees not implemented" )
+            return False
+        pass
+        return True
+
+
+    @classmethod 
     def balance(cls, tree):
-        pass 
+        """
+        Note that positivization is done inplace whereas
+        the balanced tree is created separately 
+        """
+        assert cls.can_balance(tree), "must positivize first "
+        ops = tree.operators()
+        assert len(ops) == 1
+        op = ops[0]
+        prims = tree.primitives()
+        return cls.commontree(op, prims, tree.name+"_balanced" )
+
 
     @classmethod
     def commontree(cls, operator, primitives, name):
-        tb = TreeBuilder(primitives, operator="union")
+        tb = TreeBuilder(primitives, operator=operator)
         root = tb.root 
         root.name = name
         root.analyse()
@@ -24,14 +48,14 @@ class TreeBuilder(object):
 
     @classmethod
     def uniontree(cls, primitives, name):
-        return cls.commontree("union", primitives, name )
+        return cls.commontree(CSG.UNION, primitives, name )
 
     @classmethod
     def intersectiontree(cls, primitives, name):
-        return cls.commontree("intersection", primitives, name )
+        return cls.commontree(CSG.INTERSECTION, primitives, name )
 
 
-    def __init__(self, primitives, operator="union"):
+    def __init__(self, primitives, operator=CSG.UNION):
         """
         :param primitives: list of CSG instance primitives
         """
@@ -127,33 +151,6 @@ class TreeBuilder(object):
         pass
         prune_r(root)
 
-    @classmethod 
-    def positive_form(cls, tree):
-        """
-        The positive form of a CSG expression is obtained by 
-        distributing any negations down the tree to end up  
-        with complements in the leaves only.
-
-        Where
-
-        * UNION == + 
-        * INTERSECTION == *
-        * DIFFERENCE == -
-
-        (A+B)(C-(D-E))                      (A+B)(C(!D+E))
-
-                       *                                   *
-                                                                        
-                  +          -                        +          *
-                 / \        / \                      / \        / \
-                A   B      C    -                   A   B      C    +  
-                               / \                                 / \
-                              D   E                              !D   E
-
-
-        """
-        pass 
-
 
 
 
@@ -175,31 +172,31 @@ def test_uniontree():
     primitives = map(CSG, sprim.split())
 
     for n in range(0,len(primitives)):
-        root = CSG.uniontree(primitives[0:n+1], name="test_uniontree")
+        root = TreeBuilder.uniontree(primitives[0:n+1], name="test_uniontree")
         print "\n",root.txt
 
 
-def test_positive_form():
-    log.info("test_positive_form")
+def test_balance():
+    log.info("test_balance")
+ 
+    sprim = "sphere box cone zsphere cylinder trapezoid"
+    primitives = map(CSG, sprim.split())
 
-    a = CSG("sphere", param=[0,0,-50,100] ) 
-    b = CSG("sphere", param=[0,0, 50,100] ) 
-    c = CSG("box", param=[0,0, 50,100] ) 
-    d = CSG("box", param=[0,0, 0,100] ) 
-    e = CSG("box", param=[0,0, 0,100] ) 
-
-    ab = CSG("union", left=a, right=b )
-    de = CSG("difference", left=d, right=e )
-    cde = CSG("difference", left=c, right=de )
-
-    abcde = CSG("intersection", left=ab, right=cde )
-
-    abcde.analyse()
-    print abcde.txt
+    sp,bo,co,zs,cy,tr = primitives
 
 
+    root = sp - bo - co - zs - cy - tr
+
+    root.analyse()    
+    print root.txt
+
+    prims = root.primitives()
+    print "prims : %s " % repr(prims)
 
 
+    balanced = TreeBuilder.balance(root)
+    balanced.analyse()    
+    print balanced.txt
 
 
 
@@ -211,6 +208,6 @@ if __name__ == '__main__':
 
     test_treebuilder()
     test_uniontree()
-    test_positive_form()
+    test_balance()
 
 

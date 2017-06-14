@@ -59,6 +59,132 @@ class CSG(CSG_):
         pass
         return depth_r(self, 0) 
 
+    def positivize(self):
+        """
+        Using background info from Rossignac, "Blist: A Boolean list formulation of CSG trees"
+
+        * http://www.cc.gatech.edu/~jarek/papers/Blist.pdf  
+        * https://www.ics.uci.edu/~pattis/ICS-31/lectures/simplify/lecture.html
+
+        The positive form of a CSG expression is obtained by 
+        distributing any negations down the tree to end up  
+        with complements in the leaves only.
+
+        * DIFFERNCE -> "-" 
+        * UNION -> "+"  "OR"
+        * INTERSECTION -> "*"  "AND"
+        * COMPLEMENT -> "!" 
+
+        deMorgan Tranformations
+
+            A - B -> A * !B
+            !(A*B) -> !A + !B
+            !(A+B) -> !A * !B
+            !(A - B) -> !(A*!B) -> !A + B
+
+        Example
+
+        (A+B)(C-(D-E))                      (A+B)(C(!D+E))
+
+                       *                                   *
+                                                                        
+                  +          -                        +          *
+                 / \        / \                      / \        / \
+                A   B      C    -                   A   B      C    +  
+                               / \                                 / \
+                              D   E                              !D   E
+
+        test_positivize
+
+            original
+
+                         in                    
+                 un              di            
+             sp      sp      bo          di    
+                                     bo      bo
+            positivize
+
+                         in                    
+                 un              in            
+             sp      sp      bo          un    
+                                    !bo      bo
+
+
+        """
+        def positivize_r(node, negate=False, depth=0):
+
+            if node.left is None and node.right is None:
+                if negate:
+                    node.complement = not node.complement
+                pass
+            else:
+                if node.typ in [CSG_.INTERSECTION, CSG_.UNION]:
+
+                    if negate:    #  !( A*B ) ->  !A + !B       !(A+B) ->     !A * !B
+                        node.typ = CSG_.UNION if node.typ == CSG_.INTERSECTION else CSG_.UNION
+                        left_negate = True 
+                        right_negate = True
+                    else:        #   A * B ->  A * B         A+B ->  A+B
+                        left_negate = False
+                        right_negate = False
+                    pass
+                elif node.typ == CSG_.DIFFERENCE:
+
+                    if negate:  #      !(A - B) -> !(A*!B) -> !A + B
+                        node.typ = CSG_.UNION 
+                        left_negate = True
+                        right_negate = False 
+                    else:
+                        node.typ = CSG_.INTERSECTION    #    A - B ->  A*!B
+                        left_negate = False
+                        right_negate = True 
+                    pass
+                else:
+                    assert 0, "unexpected node.typ %s " % node.typ
+
+                positivize_r(node.left, negate=left_negate, depth=depth+1)
+                positivize_r(node.right, negate=right_negate, depth=depth+1)
+            pass
+        pass
+        positivize_r(self)
+        assert self.is_positive_form()
+        self.analyse()
+
+
+
+    def operators(self):
+        ops = set()
+        def operators_r(node, depth):
+            if node.left is None and node.right is None:
+                pass
+            else:
+                assert node.typ in [CSG_.INTERSECTION, CSG_.UNION, CSG_.DIFFERENCE]
+                ops.add(node.typ)
+                operators_r(node.left, depth+1)
+                operators_r(node.right, depth+1)
+            pass
+        pass
+        operators_r(self, 0)
+        return list(ops)
+
+    def is_positive_form(self):
+        ops = self.operators()
+        return not CSG.DIFFERENCE in ops
+
+    def primitives(self):
+        prims = []
+        def primitives_r(node, depth):
+            if node.left is None and node.right is None:
+                prims.append(node)
+            else:
+                primitives_r(node.left, depth+1)
+                primitives_r(node.right, depth+1)
+            pass
+        pass
+        primitives_r(self, 0)
+        return prims
+
+
     def inorder_(self):
         """Return inorder sequence of nodes"""
         inorder = []
@@ -123,8 +249,8 @@ class CSG(CSG_):
         pass
         self.txt = txt
 
-
     is_root = property(lambda self:hasattr(self,'height') and hasattr(self,'totnodes'))
+
 
     @classmethod
     def treedir(cls, base, idx):
@@ -355,7 +481,7 @@ class CSG(CSG_):
         pass
 
         if name is None or len(name) == 0:
-            name = typ_
+            name = self.desc(typ)
         pass
         #assert name is not None and len(name) > 0
 
@@ -518,11 +644,15 @@ class CSG(CSG_):
         pass
         return n 
 
-    def dump(self, msg="CSG.dump"):
+    def dump(self, msg="CSG.dump", detailed=False):
         log.info(msg + " name:%s" % self.name)
-        self.Dump(self)
+        sys.stderr.write("%s" % repr(self) + "\n")
+        if detailed:
+            self.Dump(self)
+        pass
         self.analyse()
-        log.info("\n%s" % self.txt)
+        sys.stderr.write("\n%s\n" % self.txt)
+
 
 
     @classmethod 
@@ -575,13 +705,13 @@ class CSG(CSG_):
     is_lzero = property(lambda self:self.is_operator and self.left.is_zero and not(self.right.is_zero) )
 
     def union(self, other):
-        return CSG(typ=self.UNION, left=self, right=other)
+        return CSG(self.UNION, left=self, right=other)
 
     def subtract(self, other):
-        return CSG(typ=self.DIFFERENCE, left=self, right=other)
+        return CSG(self.DIFFERENCE, left=self, right=other)
 
     def intersect(self, other):
-        return CSG(typ=self.INTERSECTION, left=self, right=other)
+        return CSG(self.INTERSECTION, left=self, right=other)
 
     def __add__(self, other):
         return self.union(other)
@@ -642,15 +772,42 @@ def test_trapezoid():
 
 
 
+def test_positivize():
+    log.info("test_positivize")
+
+    a = CSG("sphere", param=[0,0,-50,100] ) 
+    b = CSG("sphere", param=[0,0, 50,100] ) 
+    c = CSG("box", param=[0,0, 50,100] ) 
+    d = CSG("box", param=[0,0, 0,100] ) 
+    e = CSG("box", param=[0,0, 0,100] ) 
+
+    ab = CSG("union", left=a, right=b )
+    de = CSG("difference", left=d, right=e )
+    cde = CSG("difference", left=c, right=de )
+
+    abcde = CSG("intersection", left=ab, right=cde )
+
+    abcde.analyse()
+    print "original\n\n", abcde.txt
+    print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
+
+    abcde.positivize() 
+    print "positivize\n\n", abcde.txt
+    print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
+
+
+
+
+
 if __name__ == '__main__':
     pass
     logging.basicConfig(level=logging.INFO)
 
     #test_serialize_deserialize()
     #test_analyse()
+    #test_trapezoid()
 
-    test_trapezoid()
-
+    test_positivize()
 
 
 

@@ -7,6 +7,7 @@ log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, splitlines_
 from opticks.analytic.treebase import Tree
+from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.gdml import GDML
 from opticks.analytic.polyconfig import PolyConfig
 
@@ -172,6 +173,7 @@ class Sc(object):
         nodeIdx = node.index
 
         msg = "sc.py:add_node_gdml nodeIdx:%4d lvIdx:%2d soName:%30s lvName:%s " % (nodeIdx, lvIdx, soName, lvName )
+        #print msg
 
         if debug:
             solidIdx = node.lv.solid.idx
@@ -232,7 +234,8 @@ class Sc(object):
             pass
             return nd
         pass 
-        log.info("add_tree_gdml START maxdepth:%d maxcsgheight:%d nodesCount:%5d targetNode: %r " % (maxdepth, self.maxcsgheight, len(self.nodes), target))
+        log.info("add_tree_gdml START maxdepth:%d maxcsgheight:%d nodesCount:%5d" % (maxdepth, self.maxcsgheight, len(self.nodes)))
+        #log.info("add_tree_gdml targetNode: %r " % (target))
         tg = build_r(target)
         log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d  tgNd:%r " % (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_lv_count, tg))
         return tg
@@ -279,7 +282,24 @@ class Sc(object):
         mss = self.find_meshes_lv(lvn)
         assert len(mss) == 1
         ms = mss[0]
-        print " %-60s : %d : %r " % (lvn, len(mss), ms.csg) 
+
+        tree = ms.csg 
+        #tree.analyse()
+
+        tree.dump(lvn)
+
+        if not tree.is_positive_form():
+            tree.positivize()
+            tree.dump(lvn + " (converted to positive form)")
+        pass
+
+        if TreeBuilder.can_balance(tree):
+            balanced = TreeBuilder.balance(tree)
+            balanced.dump(lvn + " (TreeBuilder balanced form)")
+        else:
+            log.warning("cannot balance")
+        pass
+            
  
 
 
@@ -308,16 +328,13 @@ if __name__ == '__main__':
     gdmlpath = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main 
     gdml = GDML.parse(gdmlpath)
 
-
     tree = Tree(gdml.world)
     target = tree.findnode(gsel, gidx)
 
-    log.info(" target node %s " % target )   
-
+    #log.info(" target node %s " % target )   
 
     sc = Sc(maxcsgheight=3)
     tg = sc.add_tree_gdml( target, maxdepth=0 )
-
    
     if args.gltfsave: 
         gltfpath = "$TMP/nd/scene.gltf"
