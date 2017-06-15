@@ -890,6 +890,49 @@ EOP
 
 
 
+tboolean-sc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-sc-(){ $FUNCNAME- | python $* ; } 
+tboolean-sc--(){ cat << EOP
+
+outdir = "$TMP/$FUNCNAME"
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+
+from opticks.analytic.csg import CSG  
+from opticks.analytic.gdml import GDML
+from opticks.analytic.sc import Sc
+from opticks.analytic.treebase import Tree
+
+args = opticks_main()
+
+
+CSG.boundary = "$(tboolean-testobject)"
+
+container = CSG("sphere",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="HY", level="5" )
+
+gdml = GDML.parse()
+tree = Tree(gdml.world)
+
+gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"
+gidx = 0 
+target = tree.findnode(gsel, gidx)
+
+
+obj = Sc.translate_lv(target.lv, maxcsgheight=0)
+obj.analyse()
+
+log.info("\n"+str(obj.txt))
+
+CSG.Serialize([container, obj], outdir )
+
+
+EOP
+}
+
+
+
 
 
 
@@ -900,6 +943,7 @@ tboolean-positivize--(){ cat << EOP
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
+
 from opticks.analytic.csg import CSG  
 
 args = opticks_main()
@@ -1352,6 +1396,9 @@ tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/l
 
 tboolean-p0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-p0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel  /dd/Geometry/AdDetails/lvOcrGdsInIav0x ; }
+
+
+
 
 
 

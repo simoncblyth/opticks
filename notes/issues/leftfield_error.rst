@@ -2,6 +2,34 @@ Leftfield Error Following BFile change attempt
 ================================================
 
 
+FIXED with help from Guard Malloc
+------------------------------------
+
+* GuardMalloc pointed to GGeo instanciation, issue appears to
+  have been due to an inconsistent WITH_YoctoGL macro yielding different
+  GGeo instances from GGeo.hh depending on where used ... eliminated
+  this anti-pattern of WITH_Macros in headers, do that in implementation
+  not header
+
+  * **ALWAYS AIM TO PUT MINIMUM INFO IN HEADER, THEN IT WONT CHANGE SO OFTEN**
+   
+   
+* GGeo is a class in need of a sledgehammer
+
+
+QUICK TIP : USING Guard Malloc
+--------------------------------
+
+::
+
+    (lldb) env DYLD_INSERT_LIBRARIES=/usr/lib/libgmalloc.dylib
+    (lldb) r 
+
+
+
+ISSUE : early crash of OKTest when invoked with some arguments
+------------------------------------------------------------------
+
 Argh, back again in::
 
     tboolean-;tboolean-hybrid
@@ -11,8 +39,8 @@ Argh flakey, its gone away::
 
     tboolean-;tboolean-prism --debugger --NPY debug
 
+Observe that removing the torch option prevents the issue. But that was random.
 
-Observe that removing the torch option prevents the issue.
 
 
 Guard Malloc : points to GGeo instanciation

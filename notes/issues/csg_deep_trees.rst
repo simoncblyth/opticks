@@ -27,7 +27,6 @@ Moved literature search to env-;csg-
 
 
 
-
 Most of these are differences...
 
 * complement was implemented to allow tree rearrangement, use that 
