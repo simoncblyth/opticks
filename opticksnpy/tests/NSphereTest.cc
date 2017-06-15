@@ -37,18 +37,66 @@ void test_intersect()
 
 void test_sdf()
 {
+    LOG(info) << "test_sdf" ; 
+
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f,-50.f,100.f);
+    b.complement = true ; 
 
     float x = 0.f ; 
     float y = 0.f ; 
     float z = 0.f ; 
 
+    float epsilon = 1e-5 ; 
+
     for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
+    {
+        float sd_a = a(x,y,z) ;
+        float sd_b = b(x,y,z) ;
+
+        assert( abs( sd_a + sd_b) < epsilon );
+
         std::cout 
              << " z " << std::setw(10) << z 
-             << " a " << std::setw(10) << std::fixed << std::setprecision(2) << a(x,y,z)
+             << " sd_a  " << std::setw(10) << std::fixed << std::setprecision(2) << sd_a
+             << " sd_b " << std::setw(10) << std::fixed << std::setprecision(2) << sd_b
              << std::endl 
              ; 
+    }
+}
+
+void test_diff_DeMorgan_sdf()
+{
+    LOG(info) << "test_diff_DeMorgan_sdf" ; 
+
+    nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
+    nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
+    nsphere c = make_sphere(0.f,0.f, 50.f,100.f);
+    c.complement = true ; 
+
+    ndifference   d = make_difference( &a, &b ); 
+    nintersection i = make_intersection( &a, &c ); 
+
+    float epsilon = 1e-5 ; 
+    float x = 0.f ; 
+    float y = 0.f ; 
+    float z = 0.f ; 
+
+    for(int iz=-200 ; iz <= 200 ; iz+= 10, z=iz ) 
+    {
+        float sd_d = d(x,y,z) ;
+        float sd_i = i(x,y,z) ;
+
+
+        std::cout 
+             << " z " << std::setw(10) << z 
+             << " sd_d  " << std::setw(10) << std::fixed << std::setprecision(2) << sd_d
+             << " sd_i " << std::setw(10) << std::fixed << std::setprecision(2) << sd_i
+             << std::endl 
+             ; 
+
+        assert( abs( sd_d - sd_i) < epsilon );
+    }
 }
 
 
@@ -220,14 +268,15 @@ int main(int argc, char** argv)
     test_part();
     test_intersect();
 
-    test_sdf();
     test_csgsdf();
 
     test_bbox();
     test_bbox_u();
+    test_gtransform();
 */
 
-    test_gtransform();
+    //test_sdf();
+    test_diff_DeMorgan_sdf();
 
     return 0 ; 
 }

@@ -44,7 +44,7 @@ float nbox::operator()(float x, float y, float z) const
         glm::vec3 d = a - s ; 
         sd = glm::compMax(d) ;
     }
-    return sd ; 
+    return complement ? -sd : sd ; 
 } 
 
 float nbox::sdf1(float x, float y, float z)  

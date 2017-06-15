@@ -84,7 +84,7 @@ float ncone::operator()(float x, float y, float z) const
 */
 
 
-    return sd ; 
+    return complement ? -sd : sd  ; 
 } 
 
 

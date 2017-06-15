@@ -44,7 +44,9 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
     if(verbosity > 2)
     std::cout << std::endl ; 
 
-    return dmax ; 
+    float sd = dmax ;
+
+    return complement ? -sd : sd ; 
 } 
 
 

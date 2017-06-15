@@ -48,23 +48,68 @@ bool nbbox::find_overlap(nbbox& overlap, const nbbox& other)
 }
 
 
-bool nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op )
+bool nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, bool a_complement, bool b_complement )
 {
     bool ret(true) ; 
 
+   
+
+
+
     if(op == CSG_INTERSECTION )
     {
-        ret = FindOverlap(comb, a, b);
+
+        if(!a_complement && !b_complement)
+        {
+            ret = FindOverlap(comb, a, b);
+        }
+        else if(!a_complement && b_complement)  // A * !B  -> A-B
+        {
+            comb.include(a);   
+        }
+        else if(a_complement && !b_complement)  // !A * B  -> B-A
+        {
+            comb.include(b);   
+        }
+        else if(a_complement && b_complement)  // !A * !B  ->  !(A+B)
+        {
+            assert(0 && " intersection of two complements ?? !A * !B would typically not be bounded ?" );
+            comb.include(b);   
+        }
+
     } 
     else if (op == CSG_UNION )
     {
+        assert( !a_complement && " a_complement in union -> non-bounded ? " );
+        assert( !b_complement && " b_complement in union -> non-bounded ? " );
+
         comb.include(a);
         comb.include(b);
     }
     else if( op == CSG_DIFFERENCE )
     {
-        comb.include(a); // <-- overlarge, but better than union 
-        // difference is intersect wit complemented : but how to do that ?
+
+        if(!a_complement && !b_complement)
+        {
+            comb.include(a); 
+        }
+        else if( a_complement && b_complement)   // !A - !B  -> !A + B  -> B + !A ->  B - A ???
+        {
+            comb.include(b);
+        }
+        else if( !a_complement && b_complement)
+        {
+             //  A - (!B)  ->  A + B 
+            comb.include(a);
+            comb.include(b);
+        }
+        else if( a_complement && !b_complement)
+        {
+            comb.include(a);
+            comb.include(b);
+            assert(0 && "  !A - B  ->  !A * !B ->   intersection of two complements ?? !A * !B would typically not be bounded ?" );
+        }
+
     }
     return ret ; 
 }

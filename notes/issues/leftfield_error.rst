@@ -18,10 +18,13 @@ Observe that removing the torch option prevents the issue.
 Guard Malloc : points to GGeo instanciation
 -------------------------------------------------
 
-* GGeo is definitely in need to a clean up, far too much of a mixed bag scope...
+* GGeo is definitely in need of a clean up, far too much of a mixed bag scope...
 
 Hmm suspect that doing the below ifdef-ing within a "dirty" header is asking for trouble...
 instead just remove the ifdef and intialize NULL...  Do ifdef in implementation, not header.
+
+Its asking for trouble because any use of the header that differs in the macro define
+will have a different memory layout for GGeo... hence corruption.
 
 ::
 
@@ -31,7 +34,6 @@ instead just remove the ifdef and intialize NULL...  Do ifdef in implementation,
     380         NScene*                            m_nscene ; 
     381         GScene*                            m_gscene ;
     382 #endif
-
 
 
 

@@ -98,9 +98,6 @@ float ncylinder::operator()(float x, float y, float z) const
     float d_PQCAP = fmaxf( p.z - qcap_z, -(p.z - pcap_z) );
 
     float sd = fmaxf( d_PQCAP, dinf );
-
-
-
 /*
     std::cout 
           << "ncylinder" 
@@ -111,8 +108,7 @@ float ncylinder::operator()(float x, float y, float z) const
           << std::endl 
           ;
 */
-
-    return sd ; 
+    return complement ? -sd : sd ; 
 } 
 
 

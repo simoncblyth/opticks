@@ -206,7 +206,7 @@ nbbox nnode::bbox() const
     {
         nbbox l = left->bbox();
         nbbox r = right->bbox();
-        bool ret = nbbox::CombineCSG(bb, l, r, type );
+        bool ret = nbbox::CombineCSG(bb, l, r, type, left->complement, right->complement );
         if(!ret) LOG(warning) << "nnode::bbox EMPTY ? " ; 
     }
     return bb ; 
@@ -259,14 +259,14 @@ float nunion::operator()(float x, float y, float z) const
     assert( left && right );
     float l = (*left)(x, y, z) ;
     float r = (*right)(x, y, z) ;
-    return fminf(l, r);
+    return fminf( l, r );
 }
 float nintersection::operator()(float x, float y, float z) const 
 {
     assert( left && right );
     float l = (*left)(x, y, z) ;
     float r = (*right)(x, y, z) ;
-    return fmaxf( l, r);
+    return fmaxf( l, r );
 }
 float ndifference::operator()(float x, float y, float z) const 
 {

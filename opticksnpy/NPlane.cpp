@@ -12,7 +12,8 @@ float nplane::operator()(float x, float y, float z) const
 {
     glm::vec4 q(x,y,z,1.0); 
     if(gtransform) q = gtransform->v * q ;
-    return glm::dot(n,glm::vec3(q)) - d ;   
+    float sd = glm::dot(n,glm::vec3(q)) - d ;   
+    return complement ? -sd : sd ; 
 }
 
 

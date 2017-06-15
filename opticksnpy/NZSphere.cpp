@@ -25,7 +25,9 @@ float nzsphere::operator()(float x, float y, float z) const
 
     float d_slab = fmaxf( p.z - zmax(), -(p.z - zmin()) );  
 
-    return fmaxf( d_sphere, d_slab );  // CSG intersect of sphere with slab
+    float sd = fmaxf( d_sphere, d_slab );  // CSG intersect of sphere with slab
+
+    return complement ? -sd : sd ; 
 } 
 
 nbbox nzsphere::bbox() const 

@@ -58,7 +58,9 @@ float nslab::operator()(float x, float y, float z) const
     //     intersect(l,r) ->  max(l,r)
     //     difference(l,r) -> max(l,-r)
     //     
-    return fmaxf(db, -da)   ;
+    float sd = fmaxf(db, -da)   ;
+
+    return complement ? -sd : sd ; 
 } 
 
 

@@ -31,7 +31,8 @@ float nsphere::operator()(float x, float y, float z) const
 {
     glm::vec4 p(x,y,z,1.f); 
     if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
-    return glm::distance( glm::vec3(p), center ) - radius ;
+    float sd = glm::distance( glm::vec3(p), center ) - radius ;
+    return complement ? -sd : sd ;
 } 
 
 

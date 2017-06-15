@@ -20,7 +20,7 @@ struct NPY_API nbbox
 
     static bool HasOverlap(const nbbox& a, const nbbox& b );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
-    static bool CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op );
+    static bool CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, bool a_complement, bool b_complement );
 
     bool has_overlap(const nbbox& other);
     bool find_overlap(nbbox& overlap, const nbbox& other);

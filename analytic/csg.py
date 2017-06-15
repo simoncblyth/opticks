@@ -84,8 +84,18 @@ class CSG(CSG_):
 
     def balance(self):
         assert hasattr(self, 'subdepth'), "balancing requires subdepth labels first"
-
-
+        def balance_r(node, depth):
+            leaf = node.is_leaf 
+            if not leaf: 
+                balance_r(node.left, depth+1)
+                balance_r(node.right, depth+1)
+            pass
+            # postorder visit 
+            if not leaf:
+                print "%2d %2d %2d : %s " % (node.subdepth,node.left.subdepth,node.right.subdepth, node) 
+            pass
+        pass
+        balance_r(self, 0)
 
 
     def positivize(self):
@@ -138,19 +148,23 @@ class CSG(CSG_):
              sp      sp      bo          un    
                                     !bo      bo
 
-
         """
+        deMorganSwap = {CSG_.INTERSECTION:CSG_.UNION, CSG_.UNION:CSG_.INTERSECTION }
+
         def positivize_r(node, negate=False, depth=0):
+
 
             if node.left is None and node.right is None:
                 if negate:
                     node.complement = not node.complement
                 pass
             else:
+                #log.info("beg: %s %s " % (node, "NEGATE" if negate else "") ) 
                 if node.typ in [CSG_.INTERSECTION, CSG_.UNION]:
 
                     if negate:    #  !( A*B ) ->  !A + !B       !(A+B) ->     !A * !B
-                        node.typ = CSG_.UNION if node.typ == CSG_.INTERSECTION else CSG_.UNION
+                        node.typ = deMorganSwap.get(node.typ, None)
+                        assert node.typ
                         left_negate = True 
                         right_negate = True
                     else:        #   A * B ->  A * B         A+B ->  A+B
@@ -170,7 +184,9 @@ class CSG(CSG_):
                     pass
                 else:
                     assert 0, "unexpected node.typ %s " % node.typ
+                pass
 
+                #log.info("end: %s " % node ) 
                 positivize_r(node.left, negate=left_negate, depth=depth+1)
                 positivize_r(node.right, negate=right_negate, depth=depth+1)
             pass
@@ -225,6 +241,9 @@ class CSG(CSG_):
         pass
         inorder_r(self)
         return inorder
+
+
+
 
     def parenting_(self):
         """Label tree nodes with their parent"""
@@ -510,11 +529,6 @@ class CSG(CSG_):
             typ = typ_  
         pass
 
-        if name is None or len(name) == 0:
-            name = self.desc(typ)
-        pass
-        #assert name is not None and len(name) > 0
-
         type_ok = type(typ) is int and typ > -1 
         if not type_ok:
             log.fatal("entered CSG type is invalid : you probably beed to update python enums with : sysrap-;sysrap-csg-generate ")
@@ -522,7 +536,7 @@ class CSG(CSG_):
         assert type_ok, (typ_, typ, type(typ))
 
         self.typ = typ
-        self.name = name
+        self.name = name   
         self.left = left
         self.right = right
         self.parent = None
@@ -532,6 +546,10 @@ class CSG(CSG_):
         self.param2 = param2
         self.param3 = param3
 
+        if len(boundary) == 0 and getattr(self.__class__,'boundary',None) != None:
+            boundary = self.__class__.boundary  
+            log.info("using defaulted CSG.boundary %s " % boundary )
+        pass
         self.boundary = boundary
 
         self.translate = translate
@@ -541,7 +559,23 @@ class CSG(CSG_):
         self.complement = complement
 
         self.planes = []
+
+
+        if len(kwa) == 0 and getattr(self.__class__,'kwa',None) != None:
+            kwa = self.__class__.kwa  
+            log.info("using defaulted CSG.kwa %r " % kwa  )
+        pass
         self.meta = kwa
+
+
+
+    def _get_name(self):
+        """When no name is given a name based on typ is returned, but not persisted, to avoid becoming stale on changing typ"""
+        noname = self._name is None or len(self._name) == 0
+        return self.desc(self.typ) if noname else self._name
+    def _set_name(self, name):
+        self._name = name
+    name = property(_get_name, _set_name)
 
     def _get_translate(self):
         return self._translate 
@@ -705,7 +739,13 @@ class CSG(CSG_):
     def content(self):
         return "%r %r " % (self.param, self.param1)
 
-    dsc = property(lambda self:"%s%s"%("!" if self.complement else "", self.desc(self.typ)[0:2]))
+    def _get_tag(self):
+        #return self.desc(self.typ)[0:2]
+        return self.name[0:2]
+    tag = property(_get_tag)
+
+
+    dsc = property(lambda self:"%s%s"%("!" if self.complement else "", self.tag ))
 
     def __repr__(self):
         rrep = " height:%d totnodes:%d " % (self.height, self.totnodes) if self.is_root else ""  
@@ -728,11 +768,27 @@ class CSG(CSG_):
 
     is_convex_polyhedron = property(lambda self:self.typ in self.CONVEX_POLYHEDRA )
     is_primitive = property(lambda self:self.typ >= self.SPHERE )
+    is_leaf = property(lambda self:self.left is None and self.right is None)
     is_zero = property(lambda self:self.typ == self.ZERO )
     is_operator = property(lambda self:self.typ in [self.UNION,self.DIFFERENCE,self.INTERSECTION])
     is_lrzero = property(lambda self:self.is_operator and self.left.is_zero and self.right.is_zero )
     is_rzero = property(lambda self:self.is_operator and not(self.left.is_zero) and self.right.is_zero )
     is_lzero = property(lambda self:self.is_operator and self.left.is_zero and not(self.right.is_zero) )
+
+
+
+    @classmethod
+    def Union(cls, a, b, **kwa):
+        return cls(cls.UNION, left=a, right=b, **kwa)
+
+    @classmethod
+    def Intersection(cls, a, b, **kwa):
+        return cls(cls.INTERSECTION, left=a, right=b, **kwa)
+
+    @classmethod
+    def Difference(cls, a, b, **kwa):
+        return cls(cls.DIFFERENCE, left=a, right=b, **kwa)
+
 
     def union(self, other):
         return CSG(self.UNION, left=self, right=other)
@@ -826,6 +882,67 @@ def test_positivize():
     print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
 
 
+
+
+
+def test_positivize_2():
+    """
+    Example from p4 of Rossignac Blist paper 
+
+    :: 
+
+        INFO:__main__:test_positivize_2
+        original
+
+                             di                            
+             in                                      in    
+          a          un              un                   g
+                  b       c       d          di            
+                                          e       f        
+        operators: union intersection difference
+        positivize
+
+                             in                            
+             in                                      un    
+          a          un              in                  !g
+                  b       c      !d          un            
+                                         !e       f        
+        operators: union intersection
+
+    """
+    log.info("test_positivize_2")
+
+    a = CSG("sphere", param=[0,0,-50,100], name="a") 
+    b = CSG("sphere", param=[0,0, 50,100], name="b") 
+    c = CSG("box", param=[0,0, 50,100], name="c") 
+    d = CSG("box", param=[0,0, 0,100], name="d") 
+    e = CSG("box", param=[0,0, 0,100], name="e") 
+    f = CSG("box", param=[0,0, 0,100], name="f") 
+    g = CSG("box", param=[0,0, 0,100], name="g") 
+
+    bc = CSG.Union(b,c)
+    abc = CSG.Intersection(a, bc)
+    ef = CSG.Difference(e,f)
+    def_ = CSG.Union(d, ef)
+    defg = CSG.Intersection(def_, g)
+    abcdefg = CSG.Difference(abc, defg)
+
+    root = abcdefg
+
+
+    root.analyse()
+    print "original\n\n", root.txt
+    print "operators: " + " ".join(map(CSG.desc, root.operators()))
+
+    root.positivize() 
+    print "positivize\n\n", root.txt
+    print "operators: " + " ".join(map(CSG.desc, root.operators()))
+
+
+
+
+
+
 def test_subdepth():
     log.info("test_subdepth")
  
@@ -836,15 +953,27 @@ def test_subdepth():
 
     root = sp - bo - co - zs - cy - tr
 
-
-
-
     root.analyse()    
-
-
     print root.txt
 
 
+
+def test_balance():
+    log.info("test_balance")
+ 
+    sprim = "sphere box cone zsphere cylinder trapezoid"
+    primitives = map(CSG, sprim.split())
+
+    sp,bo,co,zs,cy,tr = primitives
+
+    #root = sp - bo - co - zs - cy - tr
+    #root = sp * bo * co * zs * cy * tr
+    root = sp + bo + co + zs + cy + tr
+
+    root.analyse()    
+    print root.txt
+
+    root.balance()
 
 
 
@@ -861,8 +990,10 @@ if __name__ == '__main__':
     #test_trapezoid()
 
     #test_positivize()
-    test_subdepth()
+    #test_positivize_2()
+    #test_subdepth()
 
+    test_balance()
 
 
    

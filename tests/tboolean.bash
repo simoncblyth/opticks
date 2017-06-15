@@ -473,6 +473,7 @@ import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
+from opticks.analytic.treebuilder import TreeBuilder 
 
 args = opticks_main()
 
@@ -501,7 +502,7 @@ prim = [sp,co,zs]
 #prim = [sp2, zs]      # expected behavior
 
 
-ut = CSG.uniontree(prim, name="$FUNCNAME")
+ut = TreeBuilder.uniontree(prim, name="$FUNCNAME")
 ut.boundary = args.container
 ut.meta.update(im)
 ut.dump()
@@ -770,7 +771,6 @@ CSG.Serialize([container, dzs], "$TMP/$FUNCNAME" )
 
    * avoid common/coincident faces between the subtracted solids 
 
-
 #. FIXED: IM poly: fails to find surface even radii 400 and 500, hmm NZSphere looking in +z, 
    but manual seeding doesnt find surface either, it does after fix  
    bug in the setting of manual seed directions in NImplicitMesher
@@ -884,6 +884,93 @@ object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testo
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
 }
+
+
+
+
+
+
+
+
+
+tboolean-positivize(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-positivize-(){ $FUNCNAME- | python $* ; } 
+tboolean-positivize--(){ cat << EOP
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main()
+
+outdir = "$TMP/$FUNCNAME"
+CSG.boundary = "$(tboolean-testobject)"
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="1" )
+
+container = CSG("sphere",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="HY", level="4" )
+
+lshape = "box"
+#lshape = "sphere"
+rshape = "sphere"
+
+a_msg = "Positivized CSG difference, ie A - B ->  A*!B  "
+a_left = CSG(lshape, param=[0,0,0,200], rotate="0,0,1,45"  )
+a_right = CSG(rshape, param=[0,0,0,100],translate="0,0,200", scale="1,1,0.5" )
+a = CSG.Difference(a_left, a_right, translate="-600,0,0" )
+a.positivize()   
+a.analyse()
+log.info("A\n"+str(a.txt))
+
+
+b_msg = "Standard CSG difference,  A - B "
+b_left = CSG(lshape, param=[0,0,0,200], rotate="0,0,1,45" )
+b_right = CSG(rshape, param=[0,0,0,100], translate="0,0,200", scale="1,1,0.5" )
+b = CSG.Difference(b_left, b_right, translate="0,0,0" )
+b.analyse()
+log.info("B\n"+str(b.txt))
+
+
+c_msg = "Standard CSG intersection with B complemented,  A*!B "
+c_left = CSG(lshape, param=[0,0,0,200], rotate="0,0,1,45" )
+c_right = CSG(rshape, param=[0,0,0,100], translate="0,0,200", scale="1,1,0.5" )
+c_right.complement = True 
+c = CSG.Intersection(c_left, c_right, translate="600,0,0" )
+c.analyse()
+log.info("C\n"+str(c.txt))
+
+
+CSG.Serialize([container, a, b, c  ], outdir )
+#CSG.Serialize([container, a ],  outdir )
+
+log.info(r"""
+
+Three CSG Differences, done in three different ways
+=====================================================
+
+Polygonizations and raytraces should all look the same.
+
+A. %s
+B. %s 
+C. %s
+
+* raytrace correctly looks the same with and without positivize, it is handling the complement
+
+* FIXED : polygonization was ignoring the complement, got little intersection box not a difference,
+          fixed by getting implicit function to honour the complement
+           
+* FIXED : positivize causing implicit mesher to complain of out-of-bounds, as the NNode::bbox
+          was not honouring the complement
+
+""" % (a_msg, b_msg, c_msg))
+
+EOP
+}
+
+
+
+
+
 
 
 

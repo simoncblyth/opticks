@@ -20,8 +20,6 @@
 #include "PLOG.hh"
 
 
-
-
 NImplicitMesher::NImplicitMesher(nnode* node, int resolution, int verbosity, float expand_bb, int ctrl, std::string seedstr)
     :
     m_timer(new Timer),
