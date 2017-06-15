@@ -260,7 +260,26 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
 
-    assert(0 && "is this being used ?");
+    //assert(0 && "is this being used ?");  // users will probably need to accomodate new way of handling analytic...
+/*
+    // YEP : 
+    frame #4: 0x0000000100d79dcf libGGeo.dylib`GMergedMesh::mergeMergedMesh(this=0x000000010acf6200, other=0x000000010acf3390, selected=true) + 63 at GMergedMesh.cc:263
+    frame #5: 0x0000000100d79836 libGGeo.dylib`GMergedMesh::combine(index=0, mm=0x000000010acf3390, solids=0x00007fff5fbfd220, verbosity=1) + 870 at GMergedMesh.cc:140
+    frame #6: 0x0000000100d79468 libGGeo.dylib`GMergedMesh::combine(index=0, mm=0x000000010acf3390, solid=0x000000010acf5860, verbosity=1) + 664 at GMergedMesh.cc:115
+    frame #7: 0x0000000100d60419 libGGeo.dylib`GGeoTest::createPmtInBox(this=0x000000010ac4ea50) + 1209 at GGeoTest.cc:179
+    frame #8: 0x0000000100d5fb5e libGGeo.dylib`GGeoTest::create(this=0x000000010ac4ea50) + 126 at GGeoTest.cc:109
+    frame #9: 0x0000000100d5fa3d libGGeo.dylib`GGeoTest::modifyGeometry(this=0x000000010ac4ea50) + 157 at GGeoTest.cc:81
+    frame #10: 0x0000000100d842bc libGGeo.dylib`GGeo::modifyGeometry(this=0x0000000107b11ae0, config=0x0000000000000000) + 668 at GGeo.cc:819
+    frame #11: 0x00000001010f6844 libOpticksGeometry.dylib`OpticksGeometry::modifyGeometry(this=0x0000000107b12cb0) + 868 at OpticksGeometry.cc:263
+    frame #12: 0x00000001010f5d8c libOpticksGeometry.dylib`OpticksGeometry::loadGeometry(this=0x0000000107b12cb0) + 572 at OpticksGeometry.cc:200
+    frame #13: 0x00000001010f9e69 libOpticksGeometry.dylib`OpticksHub::loadGeometry(this=0x00007fff5fbfeae0) + 409 at OpticksHub.cc:243
+    frame #14: 0x00000001010f8ffd libOpticksGeometry.dylib`OpticksHub::init(this=0x00007fff5fbfeae0) + 77 at OpticksHub.cc:94
+    frame #15: 0x00000001010f8f00 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x00007fff5fbfeae0, ok=0x00007fff5fbfeb50) + 416 at OpticksHub.cc:81
+    frame #16: 0x00000001010f90dd libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x00007fff5fbfeae0, ok=0x00007fff5fbfeb50) + 29 at OpticksHub.cc:83
+    frame #17: 0x000000010000d026 CTestDetectorTest`main(argc=1, argv=0x00007fff5fbfee58) + 950 at CTestDetectorTest.cc:48
+    frame #18: 0x00007fff8a48b5fd libdyld.dylib`start + 1
+*/
+
 
     unsigned int nsolid = other->getNumSolids();
 

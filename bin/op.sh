@@ -397,6 +397,9 @@ op-cmdline-specials()
    unset OPTICKS_LOAD
    unset OPTIX_API_CAPTURE
 
+   if [ "${cmdline/--malloc}" != "${cmdline}" ]; then
+       export OPTICKS_MALLOC=1
+   fi
    if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
    fi
@@ -537,6 +540,18 @@ op-runline()
    echo $runline
 }
 
+op-malloc()
+{
+   #if [ "${OPTICKS_MALLOC}" == "1" ]; then 
+
+       export MallocStackLoggingNoCompact=1   # all allocations are logged
+       export MallocScribble=1     # free sets each byte of every released block to the value 0x55.
+       export MallocPreScribble=1  # sets each byte of a newly allocated block to the value 0xAA
+       export MallocGuardEdges=1   # adds guard pages before and after large allocations
+       export MallocCheckHeapStart=1 
+       export MallocCheckHeapEach=1 
+   #fi
+}
 
 
 opticks-
@@ -577,6 +592,10 @@ else
       # env | >&2 grep OPTICKS_ | sort  
        >&2 echo proceeding : $runline
    fi 
+
+
+   #op-malloc 
+
    eval $runline
    RC=$?
    echo $0 RC $RC

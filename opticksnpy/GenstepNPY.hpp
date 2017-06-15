@@ -10,6 +10,15 @@ template<typename T> class NPY ;
 
 
 /*
+
+GenstepNPY
+============
+
+Base class of FabStepNPY and TorchStepNPY 
+
+
+
+
    *setZenithAzimuth*
 
    Photons directions are generated using two random numbers in range 0:1 

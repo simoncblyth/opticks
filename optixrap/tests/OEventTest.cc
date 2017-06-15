@@ -14,6 +14,7 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
+#include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "OXRAP_LOG.hh"
 
@@ -30,15 +31,17 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);    
 
+    NPY_LOG__ ; 
     OKCORE_LOG__ ; 
     OXRAP_LOG__ ; 
 
     Opticks ok(argc, argv, "--machinery");
+    //Opticks ok(argc, argv);
     OpticksHub hub(&ok);
+
 
     NPY<float>* gs0 = hub.getInputGensteps(); 
     assert(gs0);
-
 
     unsigned version = OConfig::OptiXVersion()  ;
     LOG(info) << argv[0] << " OPTIX_VERSION " << version ; 
@@ -82,22 +85,17 @@ int main(int argc, char** argv)
 
          evt->save();
 
-
          LOG(info) <<  evt->description() ;
     }
-
 
     return 0 ;     
 }
 
 /*
-
 ::
 
    ipython -i $(which tevt.py) -- --tag 5
 
-
 */
-
 
 

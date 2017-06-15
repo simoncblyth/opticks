@@ -1,6 +1,5 @@
 
 #include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
 
 // npy-
 #include "GenstepNPY.hpp"
@@ -22,6 +21,14 @@ GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* con
        m_material(NULL),
        m_npy(NPY<float>::make(num_step, 6, 4)),
        m_step_index(0),
+       m_ctrl(0,0,0,0),
+       m_post(0,0,0,0),
+       m_dirw(0,0,0,0),
+       m_polw(0,0,0,0),
+       m_zeaz(0,0,0,0),
+       m_beam(0,0,0,0),
+       m_frame(-1,0,0,0),
+       m_frame_transform(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1),
        m_frame_targetted(false)
 {
     m_npy->zero();
@@ -70,7 +77,9 @@ void GenstepNPY::addStep(bool verbose)
     bool dummy_frame = isDummyFrame();
     bool target_acquired = dummy_frame ? true : m_frame_targetted ;
     if(!target_acquired) 
-         LOG(fatal) << "GenstepNPY::addStep target MUST be set for non-dummy frame" 
+         LOG(fatal) << "GenstepNPY::addStep target MUST be set for non-dummy frame " 
+                    << " dummy_frame " << dummy_frame
+                    << " m_frame_targetted " << m_frame_targetted
                     << brief()
                     ;
 

@@ -1187,9 +1187,16 @@ std::string Opticks::MaterialSequence(const unsigned long long seqmat)
 
 TorchStepNPY* Opticks::makeSimpleTorchStep()
 {
-    std::string config = m_cfg->getTorchConfig() ;
+    const std::string& config = m_cfg->getTorchConfig() ;
 
-    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, config.empty() ? NULL : config.c_str() );
+    const char* cfg = config.empty() ? NULL : config.c_str() ;
+
+    LOG(info) << "Opticks::makeSimpleTorchStep" 
+              << " config " << config 
+              << " cfg " << ( cfg ? cfg : "NULL" )
+              ;
+
+    TorchStepNPY* torchstep = new TorchStepNPY(TORCH, 1, cfg );
 
     unsigned int photons_per_g4event = m_cfg->getNumPhotonsPerG4Event() ;  // only used for cfg4-
 

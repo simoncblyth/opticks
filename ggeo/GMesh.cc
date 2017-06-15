@@ -1820,6 +1820,13 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int il = (numITransforms-1)*numFaces ; // instance N-1 offset 
 
     // check nodeinfo per-solid sum of faces matches expected total 
+
+    if(m_verbosity > 3) 
+    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+              << " verbosity " << m_verbosity
+              << " dumping per solid offsets "
+              ;
+
     for(unsigned int s=0 ; s < numSolids ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
@@ -1828,8 +1835,15 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
         nftot += nf ;
         offset += nf ; 
     }
-    if(m_verbosity > 3)
-    printf(" ----- %d \n", nftot);
+
+    if(m_verbosity > 3) 
+    LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
+              << " verbosity " << m_verbosity
+              << " nftot " << nftot
+              ;
+
+
+
     assert( numFaces == nftot );
 
 

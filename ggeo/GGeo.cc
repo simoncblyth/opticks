@@ -108,7 +108,9 @@ GGeo::GGeo(Opticks* opticks)
    m_cathode(NULL),
    m_join_cfg(NULL),
    m_loader_verbosity(0),
-   m_mesh_verbosity(0)
+   m_mesh_verbosity(0),
+   m_nscene(NULL),
+   m_gscene(NULL)
 {
    init(); 
 }

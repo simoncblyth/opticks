@@ -58,11 +58,9 @@ class GItemList ;
 class GMergedMesh ;
 
 
-#ifdef WITH_YoctoGL
 // GLTF handling 
 class NScene ; 
 class GScene ; 
-#endif
 
 
 #include "GGEO_API_EXPORT.hh"
@@ -362,14 +360,6 @@ class GGEO_API GGeo : public NConfigurable {
         GItemList*                    m_pvlist ; 
         GItemList*                    m_lvlist ; 
 
-
-#ifdef WITH_YoctoGL
-    private:
-        // glTF route 
-        NScene*                            m_nscene ; 
-        GScene*                            m_gscene ; 
-#endif
-
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         Index_t                            m_index ; 
@@ -381,6 +371,13 @@ class GGEO_API GGeo : public NConfigurable {
         GLoaderImpFunctionPtr              m_loader_imp ;  
         unsigned int                       m_loader_verbosity ; 
         unsigned int                       m_mesh_verbosity ; 
+
+    private:
+        // glTF route 
+        NScene*                            m_nscene ; 
+        GScene*                            m_gscene ; 
+
+
 
 };
 

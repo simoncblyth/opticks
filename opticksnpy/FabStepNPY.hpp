@@ -9,11 +9,6 @@ typedef enum {
 
 #ifndef __CUDACC__
 
-#include <string>
-#include "NGLM.hpp"
-
-template<typename T> class NPY ; 
-
 #include "GenstepNPY.hpp"
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
