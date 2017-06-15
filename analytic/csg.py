@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 """
-
 CSG_
 =====
 
@@ -44,11 +43,14 @@ class CSG(CSG_):
     FILENAME = "csg.txt"
     CONVEX_POLYHEDRA = [CSG_.TRAPEZOID]
 
-    def depth_(self):
-        """Label tree nodes with their depth, return maxdepth"""
+    def depth_(self, label=False):
+        """Label tree nodes with their depth from the root, return maxdepth"""
         def depth_r(node, depth):
             if node is None:return depth
-            node.depth = depth
+            if label:
+                node.depth = depth
+            pass
+            #node.textra = " %s" % depth
             if node.left is None and node.right is None:
                 return depth
             else:
@@ -58,6 +60,33 @@ class CSG(CSG_):
             pass
         pass
         return depth_r(self, 0) 
+
+
+    def subdepth_(self, label=False):
+        """max height of each node treated as a subtree"""
+        def subdepth_r(node, depth):
+            assert not node is None
+            subdepth = node.depth_(label=False)
+            if label:
+                node.subdepth = subdepth 
+            pass
+            #node.textra = " %s" % subdepth
+            pass
+            if node.left is None and node.right is None:
+                pass 
+            else:
+                subdepth_r(node.left, depth=depth+1)
+                subdepth_r(node.right, depth=depth+1)
+            pass
+        pass
+        subdepth_r(self, 0)
+
+
+    def balance(self):
+        assert hasattr(self, 'subdepth'), "balancing requires subdepth labels first"
+
+
+
 
     def positivize(self):
         """
@@ -235,9 +264,10 @@ class CSG(CSG_):
             Out[45]: [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023] 
 
         """
-        self.height = self.depth_()
+        self.height = self.depth_(label=True)
         self.parenting_()
         self.rooting_()
+        self.subdepth_(label=True)
 
         self.totnodes = TREE_NODES(self.height)
         inorder = self.inorder_()
@@ -796,6 +826,29 @@ def test_positivize():
     print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
 
 
+def test_subdepth():
+    log.info("test_subdepth")
+ 
+    sprim = "sphere box cone zsphere cylinder trapezoid"
+    primitives = map(CSG, sprim.split())
+
+    sp,bo,co,zs,cy,tr = primitives
+
+    root = sp - bo - co - zs - cy - tr
+
+
+
+
+    root.analyse()    
+
+
+    print root.txt
+
+
+
+
+
+
 
 
 
@@ -807,7 +860,8 @@ if __name__ == '__main__':
     #test_analyse()
     #test_trapezoid()
 
-    test_positivize()
+    #test_positivize()
+    test_subdepth()
 
 
 

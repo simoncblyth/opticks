@@ -176,6 +176,9 @@ def test_uniontree():
         print "\n",root.txt
 
 
+
+
+
 def test_balance():
     log.info("test_balance")
  
@@ -188,11 +191,14 @@ def test_balance():
     root = sp - bo - co - zs - cy - tr
 
     root.analyse()    
+    root.subdepth_()
+
     print root.txt
 
     prims = root.primitives()
     print "prims : %s " % repr(prims)
 
+    root.positivize() 
 
     balanced = TreeBuilder.balance(root)
     balanced.analyse()    
@@ -206,8 +212,8 @@ if __name__ == '__main__':
     pass
     logging.basicConfig(level=logging.INFO)
 
-    test_treebuilder()
-    test_uniontree()
+    #test_treebuilder()
+    #test_uniontree()
     test_balance()
 
 
