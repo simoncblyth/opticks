@@ -737,7 +737,7 @@ class CSG(CSG_):
         return "%s %s;%s " % (indent, self.desc(self.typ),self.name )
 
     def content(self):
-        return "%r %r " % (self.param, self.param1)
+        return "%r %r \n%r" % (self.param, self.param1, self.transform)
 
     def _get_tag(self):
         return self.desc(self.typ)[0:2]

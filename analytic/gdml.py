@@ -385,6 +385,8 @@ class Primitive(Geometry):
         return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
+    """
+    """
     @classmethod 
     def make_cylinder(cls, radius, z1, z2, name):
         cn = CSG("cylinder", name=name)

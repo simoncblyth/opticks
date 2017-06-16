@@ -889,6 +889,8 @@ EOP
 
 
 
+tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+# jump into ipython session with the python streamed from a bash function
 
 tboolean-sc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sc-(){ $FUNCNAME- | python $* ; } 
@@ -913,12 +915,21 @@ CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1")
 
 # container=1 metadata causes sphere/box to be auto sized to contain other trees
-container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="1", boundary="$(tboolean-container)", poly="HY", level="5" )
+container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)", poly="HY", level="5" )
 
 gdml = GDML.parse()
 tree = Tree(gdml.world)
 
-gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"
+
+#gsel = "/dd/Geometry/AdDetails/lvRadialShieldUnit0x"   # thin shell cy with 6 cy holes, poly mess
+#gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"      # flat plate with 5 holes, no poly
+#gsel = "/dd/Geometry/AdDetails/lvTopRefGap0x"          # flat plate with 5 holes, no poly 
+#gsel = "/dd/Geometry/AdDetails/lvTopESR0x"            # flat plate with 9 holes, no poly, center one has coincidence speckle
+#gsel = "/dd/Geometry/AdDetails/lvSstTopCirRibBase0x"       # ring with 4-T slots cut out, coincidence speckle at top of T  
+
+gsel = "/dd/Geometry/CalibrationSources/lvLedSourceAssy0x"  # three capsules connected with 2 wires , poly works!
+
+
 gidx = 0 
 
 target = tree.findnode(gsel, gidx)
@@ -926,6 +937,7 @@ target = tree.findnode(gsel, gidx)
 
 orig = Sc.translate_lv(target.lv, maxcsgheight=0)
 orig.analyse()
+orig.dump(msg="ORIG", detailed=True)
 
 log.info("ORIGINAL:\n"+str(orig.txt))
 
@@ -939,6 +951,9 @@ else:
     obj = orig 
     log.warning("cannot balance")
 pass
+
+obj.meta.update(verbosity="1")
+obj.dump(msg="BALANCED", detailed=True)
 
 
 CSG.Serialize([container, obj], outdir )
