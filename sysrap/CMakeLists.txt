@@ -35,6 +35,7 @@ set(SOURCES
     PLOG.cc 
     SProc.cc
     SSys.cc
+    SVec.cc
     SDigest.cc
     SArrayDigest.cc
     SLauncher.cc
@@ -54,6 +55,7 @@ set(HEADERS
     PLOG_INIT.hh  
     SProc.hh
     SSys.hh
+    SVec.hh
     SDigest.hh
     SArrayDigest.hh
     SLauncher.hh

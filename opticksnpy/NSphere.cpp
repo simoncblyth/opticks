@@ -154,6 +154,8 @@ nbbox nsphere::bbox() const
     bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - radius);
     bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + radius);
     bb.side = bb.max - bb.min ; 
+    bb.invert = complement ; 
+    bb.empty = false ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }

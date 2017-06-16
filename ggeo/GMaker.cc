@@ -107,6 +107,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
               << " index " << index 
               << " boundary-spec " << spec 
               << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
+              << " trisMsg " << ( tris ? tris->getMessage() : "" )
               ; 
 
 

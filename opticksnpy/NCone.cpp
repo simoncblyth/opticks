@@ -24,6 +24,8 @@ nbbox ncone::bbox() const
     bb.max = make_nvec3(  rmax,  rmax, z2 );
     bb.min = make_nvec3( -rmax, -rmax, z1 );
     bb.side = bb.max - bb.min ; 
+    bb.invert = complement ; 
+    bb.empty = false ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }

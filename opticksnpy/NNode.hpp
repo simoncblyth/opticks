@@ -25,11 +25,13 @@ struct NPY_API nnode
     virtual float operator()(float px, float py, float pz) const  ;
 
     static nnode* load(const char* treedir, unsigned verbosity);
-    static void Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt );
+    static void Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump=true );
 
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
+    void composite_bbox( nbbox& bb ) const ;
+
     virtual npart part();
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);

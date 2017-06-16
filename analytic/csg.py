@@ -548,7 +548,7 @@ class CSG(CSG_):
 
         if len(boundary) == 0 and getattr(self.__class__,'boundary',None) != None:
             boundary = self.__class__.boundary  
-            log.info("using defaulted CSG.boundary %s " % boundary )
+            log.debug("using defaulted CSG.boundary %s " % boundary )
         pass
         self.boundary = boundary
 
@@ -563,7 +563,7 @@ class CSG(CSG_):
 
         if len(kwa) == 0 and getattr(self.__class__,'kwa',None) != None:
             kwa = self.__class__.kwa  
-            log.info("using defaulted CSG.kwa %r " % kwa  )
+            log.debug("using defaulted CSG.kwa %r " % kwa  )
         pass
         self.meta = kwa
 
@@ -740,8 +740,8 @@ class CSG(CSG_):
         return "%r %r " % (self.param, self.param1)
 
     def _get_tag(self):
-        #return self.desc(self.typ)[0:2]
-        return self.name[0:2]
+        return self.desc(self.typ)[0:2]
+        #return self.name[0:2]
     tag = property(_get_tag)
 
 

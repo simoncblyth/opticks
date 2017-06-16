@@ -904,29 +904,52 @@ from opticks.analytic.csg import CSG
 from opticks.analytic.gdml import GDML
 from opticks.analytic.sc import Sc
 from opticks.analytic.treebase import Tree
+from opticks.analytic.treebuilder import TreeBuilder
 
 args = opticks_main()
 
 
 CSG.boundary = "$(tboolean-testobject)"
+CSG.kwa = dict(verbosity="1")
 
-container = CSG("sphere",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="HY", level="5" )
+container = CSG("sphere",  param=[0,0,0,4000], boundary="$(tboolean-container)", poly="HY", level="5" )
 
 gdml = GDML.parse()
 tree = Tree(gdml.world)
 
 gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"
 gidx = 0 
+
 target = tree.findnode(gsel, gidx)
 
 
-obj = Sc.translate_lv(target.lv, maxcsgheight=0)
-obj.analyse()
+orig = Sc.translate_lv(target.lv, maxcsgheight=0)
+orig.analyse()
 
-log.info("\n"+str(obj.txt))
+log.info("ORIGINAL:\n"+str(orig.txt))
+
+orig.positivize()
+log.info("POSITIVIZED:\n"+str(orig.txt))
+
+if TreeBuilder.can_balance(orig):
+    obj = TreeBuilder.balance(orig)
+    log.info("BALANCED:\n"+str(obj.txt))
+else:
+    obj = orig 
+    log.warning("cannot balance")
+pass
+
 
 CSG.Serialize([container, obj], outdir )
 
+"""
+
+* raytrace of balanced tree as expected
+* polygonization yielding a blank 
+
+
+
+"""
 
 EOP
 }

@@ -64,7 +64,10 @@ int main(int argc, char** argv)
     glm::vec3 direction( f[3],f[4],f[5] );
     glm::vec3 range(     f[6],f[7],f[8] );
 
-    nnode::Scan(*root, origin, direction, range );
+    std::vector<float> sd ; 
+    bool dump = true ; 
+
+    nnode::Scan(sd, *root, origin, direction, range, dump );
 
 
 

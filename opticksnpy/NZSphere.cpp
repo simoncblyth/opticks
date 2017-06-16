@@ -37,6 +37,8 @@ nbbox nzsphere::bbox() const
     bb.max = make_nvec3(center.x + radius, center.y + radius, zmax() );
     bb.min = make_nvec3(center.x - radius, center.y - radius, zmin() );
     bb.side = bb.max - bb.min ; 
+    bb.invert = complement ; 
+    bb.empty = false ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }

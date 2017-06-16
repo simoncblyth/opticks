@@ -4,6 +4,9 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 */
 
 
+#include <cmath>
+#include "SVec.hh"
+
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -177,11 +180,96 @@ void test_overlap()
         assert( ab.min == b.min );
         assert( ab.max == a.max );
     }
-  
+}
 
-    
+
+
+void test_positive_form()
+{
+/*
+          -             *
+         / \           / \
+        -   d         *   !d
+       / \           / \
+      -   c         *   !c 
+     / \           / \
+    a   b         a   !b   
+
+*/
+
+    nbox a = make_box(0.f,0.f,0.f,10.f);   a.label = "A" ;     
+    nbox b = make_box(5.f,0.f,0.f,0.01f);    b.label = "B" ;   
+    nbox c = make_box(0.f,5.f,0.f,0.01f);    c.label = "C" ;   
+    nbox d = make_box(0.f,0.f,5.f,0.01f);    d.label = "D" ;     
+
+    a.pdump("a");
+    b.pdump("b");
+    c.pdump("c");
+    d.pdump("d");
+
+    nbbox a_bb = a.bbox();
+    nbbox b_bb = b.bbox();
+    nbbox c_bb = c.bbox();
+    nbbox d_bb = d.bbox();
+
+
+    std::cout << a.desc() << " " << a_bb.desc() << std::endl ; 
+    std::cout << b.desc() << " " << b_bb.desc() << std::endl ; 
+    std::cout << c.desc() << " " << c_bb.desc() << std::endl ; 
+    std::cout << d.desc() << " " << d_bb.desc() << std::endl ; 
+
+
+    bool dump = true ; 
+    glm::vec3 origin(    0,0,0 );
+    glm::vec3 direction( 1,0,0 );
+    glm::vec3 range(     0,10,1 );
+
+    nbbox bb0 ; 
+    std::vector<float> sd0 ; 
+    {
+        ndifference ab = make_difference( &a, &b ); 
+        ndifference abc = make_difference( &ab, &c ); 
+        ndifference abcd = make_difference( &abc, &d ); 
+
+        nnode::Scan(sd0,  abcd, origin, direction, range, dump );
+        abcd.composite_bbox(bb0);
+    }
+    std::cout << "bb0 " << bb0.description() << std::endl ; 
+
+
+    nbbox bb1 ; 
+    std::vector<float> sd1 ; 
+    {
+        b.complement = true ;  
+        c.complement = true ;  
+        d.complement = true ;  
+
+        nintersection ab = make_intersection( &a, &b ); 
+        nintersection abc = make_intersection( &ab, &c ); 
+        nintersection abcd = make_intersection( &abc, &d ); 
+
+        nnode::Scan(sd1,  abcd, origin, direction, range, dump );
+        abcd.composite_bbox(bb1);
+
+        b.complement = false ;  
+        c.complement = false ;  
+        d.complement = false ;  
+    }
+    std::cout << "bb1 " << bb1.description() << std::endl ; 
+
+
+    float epsilon = 1e-5f ; 
+    float mxdf = SVec<float>::MaxDiff(sd0, sd1, false) ; 
+    assert( std::fabs(mxdf) < epsilon ) ; 
+
+
+
+
 
 }
+
+
+
 
 
 
@@ -191,10 +279,11 @@ int main(int argc, char** argv)
 
     //test_bbox_transform();
 
-    const char* path = "$TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/transforms.npy" ;
-    test_bbox_transform_loaded( argc > 1 ? argv[1] : path );
+    //const char* path = "$TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/transforms.npy" ;
+    //test_bbox_transform_loaded( argc > 1 ? argv[1] : path );
 
-    test_overlap();
+    //test_overlap();
+    test_positive_form();
 
     return 0 ; 
 }

@@ -79,6 +79,8 @@ nbbox ncylinder::bbox() const
     bb.max = make_nvec3(center.x + radius, center.y + radius, z2 );
     bb.min = make_nvec3(center.x - radius, center.y - radius, z1 );
     bb.side = bb.max - bb.min ; 
+    bb.invert = complement ; 
+    bb.empty = false ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }

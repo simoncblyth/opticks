@@ -12,6 +12,7 @@ struct NPY_API nbbox
     void dump(const char* msg);
     void include(const nbbox& other );
     const char* desc() const;
+    std::string description() const ; 
 
 
     static void transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
@@ -20,7 +21,7 @@ struct NPY_API nbbox
 
     static bool HasOverlap(const nbbox& a, const nbbox& b );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
-    static bool CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, bool a_complement, bool b_complement );
+    static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op);
 
     bool has_overlap(const nbbox& other);
     bool find_overlap(nbbox& overlap, const nbbox& other);
@@ -55,6 +56,8 @@ struct NPY_API nbbox
     nvec3 min ; 
     nvec3 max ; 
     nvec3 side ; 
+    bool  invert ; 
+    bool  empty ; 
 };
 
 
@@ -70,8 +73,12 @@ inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
 inline NPY_API nbbox make_bbox(float zmin, float zmax, float ymin, float ymax)
 {
     nbbox bb ; 
+
     bb.min = make_nvec3( ymin, ymin, zmin ) ;
     bb.max = make_nvec3( ymax, ymax, zmax ) ;
+    bb.side = bb.max - bb.min ; 
+    bb.invert = false ; 
+    bb.empty = false ; 
 
     return bb ;
 }

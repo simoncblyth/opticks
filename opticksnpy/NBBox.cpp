@@ -1,4 +1,4 @@
-//#include <sstream>
+#include <sstream>
 #include <iostream>
 #include <cstring>
 
@@ -23,7 +23,11 @@ bool nbbox::HasOverlap(const nbbox& a, const nbbox& b )
 
 bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
 {
-    if(!HasOverlap(a,b)) return false ; 
+    if(!HasOverlap(a,b)) 
+    {
+        overlap.empty = true ; 
+        return false ; 
+    }
 
     overlap.min.x = fmaxf(a.min.x, b.min.x) ;
     overlap.min.y = fmaxf(a.min.y, b.min.y) ;
@@ -47,71 +51,102 @@ bool nbbox::find_overlap(nbbox& overlap, const nbbox& other)
     return FindOverlap(overlap, *this, other);
 }
 
-
-bool nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, bool a_complement, bool b_complement )
+void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op )
 {
-    bool ret(true) ; 
+    // see csgbbox- for searches for papers to help with an algebra of CSG bbox 
+    std::string expr ; 
 
-   
-
-
+    comb.invert = false ; // set true for unbounders
+    comb.empty = false ;  // set true when no overlap found
 
     if(op == CSG_INTERSECTION )
     {
-
-        if(!a_complement && !b_complement)
+        if(!a.invert && !b.invert)     
         {
-            ret = FindOverlap(comb, a, b);
+            expr = " BB(A * B) " ; 
+            FindOverlap(comb, a, b);
         }
-        else if(!a_complement && b_complement)  // A * !B  -> A-B
+        else if(!a.invert && b.invert)  
         {
+            expr = " BB( A * !B  ->  A - B ) ->  BB(A) " ; 
             comb.include(a);   
         }
-        else if(a_complement && !b_complement)  // !A * B  -> B-A
+        else if(a.invert && !b.invert)
         {
+            expr = " BB(!A * B  ->  B - A ) ->  BB(B)  " ; 
             comb.include(b);   
         }
-        else if(a_complement && b_complement)  // !A * !B  ->  !(A+B)
+        else if(a.invert && b.invert) 
         {
-            assert(0 && " intersection of two complements ?? !A * !B would typically not be bounded ?" );
-            comb.include(b);   
+            expr = " BB(!A * !B  ->  !(A+B) ) ->  !BB(A+B)   " ; 
+            comb.include(a);
+            comb.include(b);
+            comb.invert = true ;
         }
-
     } 
     else if (op == CSG_UNION )
     {
-        assert( !a_complement && " a_complement in union -> non-bounded ? " );
-        assert( !b_complement && " b_complement in union -> non-bounded ? " );
-
-        comb.include(a);
-        comb.include(b);
+        if(!a.invert && !b.invert)    
+        {
+            expr = "  BB(A+B) " ; 
+            comb.include(a);
+            comb.include(b);
+        } 
+        else if(a.invert && !b.invert) 
+        {
+            expr = " BB( !A+B ->  !( A*!B ) -> !( A-B ) ) ->   ! BB(A)  " ; 
+            comb.include(a);
+            comb.invert = true ;
+        } 
+        else if(!a.invert && b.invert)  
+        {
+            expr = " BB( A+!B -> !( !A*B ) -> !( B-A ) ) ->   ! BB(B)   " ;
+            comb.include(b);
+            comb.invert = true ;
+        } 
+        else if(a.invert && b.invert)   
+        {
+            expr = "  BB( !A+!B ->  !( A*B ) ) ->   ! BB(A*B)   " ; 
+            FindOverlap(comb, a, b);
+            comb.invert = true ; 
+        }
     }
     else if( op == CSG_DIFFERENCE )
     {
-
-        if(!a_complement && !b_complement)
+        if(!a.invert && !b.invert)  
         {
+            expr = " BB(A - B)  -> BB(A)  " ;
             comb.include(a); 
         }
-        else if( a_complement && b_complement)   // !A - !B  -> !A + B  -> B + !A ->  B - A ???
+        else if( a.invert && b.invert)   
         {
+            expr = " BB(  !A - !B -> !A * B -> B*!A ->  B - A ) -> BB(B) " ;  
             comb.include(b);
         }
-        else if( !a_complement && b_complement)
+        else if( !a.invert && b.invert)  
         {
-             //  A - (!B)  ->  A + B 
+            expr = " BB( A - !B  -> A * B ) -> BB(A*B) " ; 
+            FindOverlap(comb, a, b);
+        }
+        else if( a.invert && !b.invert)  
+        {
+            expr = " BB( !A - B -> !A * !B -> !( A+B ) ) -> !BB(A+B)    " ; 
             comb.include(a);
             comb.include(b);
+            comb.invert = true ; 
         }
-        else if( a_complement && !b_complement)
-        {
-            comb.include(a);
-            comb.include(b);
-            assert(0 && "  !A - B  ->  !A * !B ->   intersection of two complements ?? !A * !B would typically not be bounded ?" );
-        }
-
     }
-    return ret ; 
+
+
+
+    std::cout 
+               << "nbbox::CombineCSG"
+               << " " << expr << std::endl 
+               << " L " << a.desc()    << std::endl 
+               << " R " << b.desc()    << std::endl 
+               << " C " << comb.desc() << std::endl
+               ;
+
 }
 
 
@@ -174,15 +209,25 @@ void nbbox::transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
 
 
 
+std::string nbbox::description() const 
+{
+    std::stringstream ss ; 
+    ss
+        << " mi " << min.desc() 
+        << " mx " << max.desc() 
+        << ( invert ? " INVERTED" : "" )
+        << ( empty ? " EMPTY" : "" )
+        ;
 
-
-
+    return ss.str();
+}
 
 const char* nbbox::desc() const
 {
-    char _desc[128];
-    snprintf(_desc, 128, " mi %.32s mx %.32s ", min.desc(), max.desc() );
-    return strdup(_desc);
+    //char _desc[128];
+    //snprintf(_desc, 128, " mi %.32s mx %.32s ", min.desc(), max.desc() );
+    std::string _desc = description() ; 
+    return strdup(_desc.c_str());
 }
 
 

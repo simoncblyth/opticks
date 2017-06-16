@@ -38,10 +38,11 @@ float nnode::operator()(float,float,float) const
 std::string nnode::desc()
 {
     std::stringstream ss ; 
-    ss  << " nnode "
-        << std::setw(3) << type 
+    ss  
+        << CSGTag(type) 
+        << " "
         << ( complement ? "!" : "" )
-        << std::setw(15) << CSGName(type) 
+        << ( label ? label : "" )
         ;     
     return ss.str();
 }
@@ -198,23 +199,38 @@ npart nnode::part()
 }
 
 
+void nnode::composite_bbox( nbbox& bb ) const 
+{
+    assert( left && right );
+
+    nbbox l = left->bbox();
+    nbbox r = right->bbox();
+    
+    nbbox::CombineCSG(bb, l, r, type );
+
+    std::cout << "nnode::composite_bbox "
+              << " left " << left->desc()
+              << " right " << right->desc()
+              << " bb " << bb.desc()
+              << std::endl 
+              ;
+
+}  
+
 nbbox nnode::bbox() const 
 {
    // needs to be overridden for primitives
     nbbox bb = make_bbox() ; 
     if(left && right)
     {
-        nbbox l = left->bbox();
-        nbbox r = right->bbox();
-        bool ret = nbbox::CombineCSG(bb, l, r, type, left->complement, right->complement );
-        if(!ret) LOG(warning) << "nnode::bbox EMPTY ? " ; 
+        composite_bbox(bb);
     }
     return bb ; 
 }
 
 
 
-void nnode::Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt )
+void nnode::Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump )
 {
     LOG(info) << "nnode::Scan" ;
     std::cout 
@@ -223,15 +239,21 @@ void nnode::Scan( const nnode& node, const glm::vec3& origin, const glm::vec3& d
         << " range " << tt
         << std::endl ; 
 
+    sd.clear(); 
+
     for(float t=tt.x ; t <= tt.y ; t+= tt.z)
     {
         glm::vec3 p = origin + t * direction ;  
+        float sd_ = node(p.x,p.y,p.z) ;        
+        sd.push_back(sd_);
+
+        if(dump)
         std::cout
                  << " t " <<  std::fixed << std::setprecision(4) << std::setw(10) << t  
                  << " x " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.x 
                  << " y " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.y 
                  << " z " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.z 
-                 << " : " <<  std::fixed << std::setprecision(4) << std::setw(10) <<  node(p.x,p.y,p.z) 
+                 << " : " <<  std::fixed << std::setprecision(4) << std::setw(10) <<  sd_
                  << std::endl ; 
     }
 }

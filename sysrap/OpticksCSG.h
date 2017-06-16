@@ -43,7 +43,9 @@ typedef enum {
 
 #ifndef __CUDACC__
 
+#include <string>
 #include <cstring>
+#include <cassert>
 
 static const char* CSG_ZERO_          = "zero" ; 
 static const char* CSG_INTERSECTION_  = "intersection" ; 
@@ -134,6 +136,16 @@ static const char* CSGName( OpticksCSG_t type )
     }
     return s ; 
 }
+
+static std::string CSGTag( OpticksCSG_t type )
+{
+    const char* name = CSGName(type);
+    assert(strlen(name) > 2 );
+    std::string s(name, name+2) ; 
+    return s ; 
+}
+
+
 
 static bool CSGExists( OpticksCSG_t type )
 { 

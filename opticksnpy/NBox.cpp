@@ -291,6 +291,8 @@ nbbox nbox::bbox() const
     }
 
     bb.side = bb.max - bb.min ; 
+    bb.invert = complement ; 
+    bb.empty = false ; 
 
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 
