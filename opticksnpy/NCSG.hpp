@@ -58,6 +58,7 @@ union nquad ;
 struct nnode ; 
 struct nmat4pair ; 
 struct nmat4triple ; 
+struct nbbox ; 
 
 class NParameters ; 
 class NTrianglesNPY ;
@@ -77,6 +78,7 @@ class NPY_API NCSG {
         static NCSG* FromNode(nnode* root, const char* boundary);
         static NCSG* LoadTree(const char* treedir, bool usedglobally=false, int verbosity=0, bool polygonize=false );
         static NParameters* LoadMetadata(const char* treedir);
+        void updateContainer( nbbox& container ) const  ;
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
@@ -98,24 +100,26 @@ class NPY_API NCSG {
    public:
         void setIsUsedGlobally(bool usedglobally);
    public:
-        const char*  getTreeDir();
-        unsigned     getIndex();
-        int          getVerbosity();
-        bool         isUsedGlobally();
-        const char*  getBoundary();
+        const char*  getBoundary() const ;
+        const char*  getTreeDir() const ;
+        unsigned     getIndex() const ;
+        int          getVerbosity() const ;
+    public:
+        bool         isContainer() const ;
+        float        getContainerScale() const ;
+        bool         isUsedGlobally() const ;
+
         NPY<float>*  getNodeBuffer();
         NPY<float>*  getTransformBuffer();
         NPY<float>*  getGTransformBuffer();
         NPY<float>*  getPlaneBuffer();
         NParameters* getMetaParameters();
-        unsigned     getNumNodes();
+        unsigned     getNumNodes() const ;
         unsigned     getNumTransforms();
-        unsigned     getHeight();
-        nnode*       getRoot();
-        OpticksCSG_t getRootType();  
-    public:
-        float getContainerScale();
-        bool  isContainer();
+
+        unsigned     getHeight() const ;
+        nnode*       getRoot() const ;
+        OpticksCSG_t getRootType() const ;  
         unsigned getNumTriangles();
     public:
         void check();
@@ -137,6 +141,7 @@ class NPY_API NCSG {
     private:
         void load();
         void loadMetadata();
+        void increaseVerbosity(int verbosity);
         void loadNodes();
         void loadTransforms();
         void loadPlanes();

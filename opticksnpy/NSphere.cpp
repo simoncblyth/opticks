@@ -161,6 +161,23 @@ nbbox nsphere::bbox() const
 }
 
 
+
+void nsphere::adjustToFit(const nbbox& bb, float scale)
+{
+    nquad qce ; 
+    qce.f = bb.center_extent() ; 
+    qce.f.w *= scale ; 
+
+    init_sphere( *this, qce );
+}
+
+
+
+
+
+
+
+
 ndisc nsphere::intersect(nsphere& a, nsphere& b)
 {
     // Find Z intersection disc of two Z offset spheres,

@@ -15,20 +15,21 @@ struct NPY_API nbbox
     std::string description() const ; 
 
 
+    // transform returns a transformed copy of the bbox
+    nbbox transform( const glm::mat4& t );
     static void transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
     static void transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
 
 
     static bool HasOverlap(const nbbox& a, const nbbox& b );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
-    static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op);
+    static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity );
 
     bool has_overlap(const nbbox& other);
     bool find_overlap(nbbox& overlap, const nbbox& other);
 
 
 
-    nbbox transform( const glm::mat4& t );
 
 
     nvec4 center_extent() const ;

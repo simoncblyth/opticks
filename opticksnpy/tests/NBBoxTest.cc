@@ -197,6 +197,8 @@ void test_positive_form()
 
 */
 
+    LOG(info) << "test_positive_form" ; 
+
     nbox a = make_box(0.f,0.f,0.f,10.f);   a.label = "A" ;     
     nbox b = make_box(5.f,0.f,0.f,0.01f);    b.label = "B" ;   
     nbox c = make_box(0.f,5.f,0.f,0.01f);    c.label = "C" ;   
@@ -262,12 +264,29 @@ void test_positive_form()
     float mxdf = SVec<float>::MaxDiff(sd0, sd1, false) ; 
     assert( std::fabs(mxdf) < epsilon ) ; 
 
-
-
-
-
 }
 
+
+void test_default_copy_ctor()
+{
+    LOG(info) << "test_default_copy_ctor" ; 
+
+    nbbox bb ; 
+
+    bb.min = {-10,-10,-10} ;
+    bb.max = { 10, 10, 10} ;
+    bb.side = bb.max - bb.min ; 
+
+    bb.invert = true ; 
+    bb.empty = false ; 
+
+
+    nbbox cbb(bb) ;
+
+    std::cout << " bb  " << bb.desc() << std::endl ; 
+    std::cout << " cbb " << cbb.desc() << std::endl ; 
+
+}
 
 
 
@@ -284,6 +303,9 @@ int main(int argc, char** argv)
 
     //test_overlap();
     test_positive_form();
+
+    test_default_copy_ctor();
+
 
     return 0 ; 
 }

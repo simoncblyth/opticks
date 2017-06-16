@@ -195,38 +195,42 @@ NParameters* NCSG::LoadMetadata(const char* treedir)
 void NCSG::loadMetadata()
 {
     m_meta = LoadMetadata( m_treedir );
+    m_container       = getMeta<int>("container", "-1");
+    m_containerscale  = getMeta<float>("containerscale", "2.");
 
-    int container         = getMeta<int>("container", "-1");
-    float containerscale  = getMeta<float>("containerscale", "2.");
-    int verbosity         = getMeta<int>("verbosity", "-1");
     std::string gpuoffset = getMeta<std::string>("gpuoffset", "0,0,0" );
-
     m_gpuoffset = gvec3(gpuoffset);  
-    m_container = container ; 
-    m_containerscale = containerscale ;
 
+    int verbosity     = getMeta<int>("verbosity", "0");
+    increaseVerbosity(verbosity);
+}
+
+
+void NCSG::increaseVerbosity(int verbosity)
+{
     if(verbosity > -1) 
     {
         if(verbosity > m_verbosity)
         {
-            LOG(debug) << "NCSG::loadMetadata increasing verbosity via metadata " 
+            LOG(debug) << "NCSG::increaseVerbosity" 
                        << " treedir " << m_treedir
                        << " old " << m_verbosity 
                        << " new " << verbosity 
                        ; 
-            m_verbosity = verbosity ; 
         }
         else
         {
-            LOG(debug) << "NCSG::loadMetadata IGNORING REQUEST TO DECREASE verbosity via metadata " 
+            LOG(debug) << "NCSG::increaseVerbosity IGNORING REQUEST TO DECREASE verbosity " 
                        << " treedir " << m_treedir
                        << " current verbosity " << m_verbosity 
-                       << " request via metadata: " << verbosity 
+                       << " requested : " << verbosity 
                        ; 
  
         }
     }
 }
+
+
 
 void NCSG::loadNodes()
 {
@@ -338,24 +342,24 @@ unsigned NCSG::NumNodes(unsigned height)
 {
    return TREE_NODES(height);
 }
-nnode* NCSG::getRoot()
+nnode* NCSG::getRoot() const 
 {
     return m_root ; 
 }
-OpticksCSG_t NCSG::getRootType()
+OpticksCSG_t NCSG::getRootType() const 
 {
     assert(m_root);
     return m_root->type ; 
 }
-
-unsigned NCSG::getHeight()
+unsigned NCSG::getHeight() const 
 {
     return m_height ; 
 }
-unsigned NCSG::getNumNodes()
+unsigned NCSG::getNumNodes() const 
 {
     return m_num_nodes ; 
 }
+
 NPY<float>* NCSG::getNodeBuffer()
 {
     return m_nodes ; 
@@ -381,40 +385,40 @@ NPY<float>* NCSG::getPlaneBuffer()
 
 
 
-NParameters* NCSG::getMetaParameters()
+NParameters* NCSG::getMetaParameters() 
 {
     return m_meta ; 
 }
 
-const char* NCSG::getBoundary()
+const char* NCSG::getBoundary() const 
 {
     return m_boundary ; 
 }
-const char* NCSG::getTreeDir()
+const char* NCSG::getTreeDir() const 
 {
     return m_treedir ; 
 }
-unsigned NCSG::getIndex()
+unsigned NCSG::getIndex() const 
 {
     return m_index ; 
 }
-
-
-
-int NCSG::getVerbosity()
+int NCSG::getVerbosity() const 
 {
     return m_verbosity ; 
 }
-
-bool NCSG::isContainer()
+bool NCSG::isContainer() const 
 {
     return m_container > 0  ; 
 }
-
-float NCSG::getContainerScale()
+float NCSG::getContainerScale() const 
 {
     return m_containerscale  ; 
 }
+bool NCSG::isUsedGlobally() const 
+{
+    return m_usedglobally ; 
+}
+
 
 
 
@@ -433,11 +437,6 @@ void NCSG::setIsUsedGlobally(bool usedglobally )
 {
     m_usedglobally = usedglobally ; 
 }
-bool NCSG::isUsedGlobally()
-{
-    return m_usedglobally ; 
-}
-
 
 
 void NCSG::setBoundary(const char* boundary)
@@ -895,11 +894,15 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
               << " nbnd " << nbnd 
               ;
 
-    nbbox container_bb ; 
+    nbbox container_bb = make_bbox() ; 
+
+    // order is reversed so that a tree with the "container" meta data tag at tree slot 0
+    // is handled last, so container_bb will then have been adjusted to hold all the others...
+    // allowing the auto-bbox setting of the container
 
     for(unsigned j=0 ; j < nbnd ; j++)
     {
-        unsigned i = nbnd - 1 - j ;    // reverse order for possible container setup
+        unsigned i = nbnd - 1 - j ;    
         std::string treedir = BFile::FormPath(basedir, BStr::itoa(i));  
 
         NCSG* tree = new NCSG(treedir.c_str());
@@ -909,27 +912,7 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
         tree->import();  // input m_nodes buffer into CSG nnode tree 
-
-        nnode* root = tree->getRoot();
-        nbbox root_bb = root->bbox();
-
-        if(tree->isContainer())
-        {
-            nbox* box = static_cast<nbox*>(root)  ;
-            assert(box) ; 
-            box->adjustToFit(container_bb, tree->getContainerScale());
-        }
-        else
-        {
-            container_bb.include(root_bb); 
-        }
-
-        LOG(debug) << "NCSG::Deserialize"
-                  << " i " << i 
-                  << " root_bb " << root_bb.desc()
-                  << " container_bb " << container_bb.desc()
-                  ;
-
+        tree->updateContainer(container_bb);
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
         LOG(debug) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
@@ -939,6 +922,39 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
     return 0 ; 
 }
+
+
+void NCSG::updateContainer( nbbox& container ) const 
+{
+    LOG(debug) << "NCSG::updateContainer START " ; 
+
+    nnode* root = getRoot();
+    //root->dump("root");
+
+    nbbox root_bb = root->bbox();
+
+    if(!isContainer())
+    {  
+        container.include(root_bb); 
+    }
+    else
+    {
+        float scale = getContainerScale() ;
+        LOG(info) << "NCSG::updateContainer"
+                  << " root " << root->desc()
+                  << " container " << container.desc()
+                  << " scale " << scale
+                  ;
+        nnode::AdjustToFit(root, container, scale );         
+    }
+
+    LOG(debug) << "NCSG::updateContainer DONE"
+              << " root_bb " << root_bb.desc()
+              << " container " << container.desc()
+              ;
+
+}
+
 
 
 NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool polygonize)

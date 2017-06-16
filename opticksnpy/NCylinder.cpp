@@ -74,6 +74,8 @@ Slab is a difference of half-spaces
 
 nbbox ncylinder::bbox() const 
 {
+    //std::cout << "ncylinder::bbox" << std::endl ; 
+
     nbbox bb = make_bbox();
 
     bb.max = make_nvec3(center.x + radius, center.y + radius, z2 );

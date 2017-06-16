@@ -24,18 +24,21 @@ struct NPY_API nnode
 {
     virtual float operator()(float px, float py, float pz) const  ;
 
-    static nnode* load(const char* treedir, unsigned verbosity);
+    static nnode* load(const char* treedir, int verbosity);
     static void Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump=true );
+    static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
     virtual void dump(const char* msg="nnode::dump");
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
+
+
     void composite_bbox( nbbox& bb ) const ;
 
     virtual npart part();
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
-    virtual std::string desc();
+    virtual std::string desc() const ;
 
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
@@ -62,6 +65,7 @@ struct NPY_API nnode
     void collect_prim(std::vector<nnode*>& prim) ;
     static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
 
+    bool is_primitive() const ;
     bool has_planes();
     unsigned planeIdx();
     unsigned planeNum();
@@ -78,6 +82,7 @@ struct NPY_API nnode
     nmat4triple* gtransform ; 
     unsigned   gtransform_idx ; 
     bool  complement ; 
+    int verbosity ; 
 
     nquad param ; 
     nquad param1 ; 

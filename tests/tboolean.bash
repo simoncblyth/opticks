@@ -912,7 +912,8 @@ args = opticks_main()
 CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1")
 
-container = CSG("sphere",  param=[0,0,0,4000], boundary="$(tboolean-container)", poly="HY", level="5" )
+# container=1 metadata causes sphere/box to be auto sized to contain other trees
+container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="1", boundary="$(tboolean-container)", poly="HY", level="5" )
 
 gdml = GDML.parse()
 tree = Tree(gdml.world)

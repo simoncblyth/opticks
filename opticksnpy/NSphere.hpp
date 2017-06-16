@@ -19,6 +19,9 @@ struct NPY_API nsphere : nnode {
 
     float operator()(float x, float y, float z) const ;
 
+    void adjustToFit(const nbbox& container_bb, float scale);
+
+
     nbbox bbox() const ;
 
     npart part();
@@ -44,11 +47,6 @@ struct NPY_API nsphere : nnode {
 };
 
 
-
-
-
-
-
 inline NPY_API void init_sphere(nsphere& s, const nquad& param)
 {
     s.param = param ; 
@@ -58,9 +56,6 @@ inline NPY_API void init_sphere(nsphere& s, const nquad& param)
     s.center.z = param.f.z ;
     s.radius  = param.f.w ;  
 }
-
-
-
 
 
 inline NPY_API nsphere make_sphere(const nquad& param)

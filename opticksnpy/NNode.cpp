@@ -35,19 +35,6 @@ float nnode::operator()(float,float,float) const
     return 0.f ; 
 } 
 
-std::string nnode::desc()
-{
-    std::stringstream ss ; 
-    ss  
-        << CSGTag(type) 
-        << " "
-        << ( complement ? "!" : "" )
-        << ( label ? label : "" )
-        ;     
-    return ss.str();
-}
-
-
 bool nnode::has_planes()
 {
     return CSGHasPlanes(type) ;
@@ -63,21 +50,62 @@ unsigned nnode::planeNum()
 }
 
 
+
+
+
+std::string nnode::desc() const 
+{
+    std::stringstream ss ; 
+    ss  
+        << " [" << std::setw(3) << idx << "] "
+        << CSGTag(type) 
+        << " "
+        << ( complement ? "!" : " " )
+        << ( label ? label : " " )
+        ;     
+    return ss.str();
+}
+
+
+
 void nnode::dump(const char* msg)
 {
-    printf("(%s)%s\n",csgname(), msg);
-    if(left && right)
+    bool prim = is_primitive();
+
+    std::cout 
+          << std::setw(10) << msg << " " 
+          << desc() 
+          << ( prim ? " PRIM " : " OPER " )
+          << " v:" << std::setw(1) << verbosity 
+          ; 
+
+    if(prim)
     {
+        nbbox bb = bbox();
+        std::cout << " bb " << bb.desc() << std::endl ; 
+    }
+    else
+    {
+        std::cout << std::endl ; 
+
         left->dump("left");
         right->dump("right");
     }
 
+/*
     if(transform)
     {
         //std::cout << "transform: " << glm::to_string( *transform ) << std::endl ; 
         std::cout << "transform: " << *transform  << std::endl ; 
     } 
+*/
 
+}
+
+
+bool nnode::is_primitive() const 
+{
+    return left == NULL && right == NULL ; 
 }
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
@@ -95,6 +123,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.gtransform = NULL ; 
     n.gtransform_idx = 0 ; 
     n.complement = false ; 
+    n.verbosity = 0 ; 
 
     n.param.u  = {0u,0u,0u,0u};
     n.param1.u = {0u,0u,0u,0u};
@@ -203,11 +232,44 @@ void nnode::composite_bbox( nbbox& bb ) const
 {
     assert( left && right );
 
-    nbbox l = left->bbox();
-    nbbox r = right->bbox();
-    
-    nbbox::CombineCSG(bb, l, r, type );
+    nbbox l_bb = left->bbox();
+    nbbox r_bb = right->bbox();
 
+
+    if(left->is_primitive())
+    {
+        bool l_invert_is_complement = l_bb.invert == left->complement ;
+
+        if(!l_invert_is_complement)
+           LOG(fatal) << "nnode::composite_bbox"
+                      << " l_invert_is_complement FAIL "
+                      << " l_bb  " << l_bb.desc()
+                      << " left  " << left->desc()
+                      ;
+                     
+
+        assert( l_invert_is_complement );
+    }
+
+    if(right->is_primitive())
+    {
+
+        bool r_invert_is_complement = r_bb.invert == right->complement ;
+
+        if(!r_invert_is_complement)
+           LOG(fatal) << "nnode::composite_bbox"
+                      << " r_invert_is_complement FAIL "
+                      << " r_bb  " << r_bb.desc()
+                      << " right  " << right->desc()
+                      ;
+                     
+
+        assert( r_invert_is_complement );
+    }
+    
+    nbbox::CombineCSG(bb, l_bb, r_bb, type, verbosity  );
+
+    if(verbosity > 0)
     std::cout << "nnode::composite_bbox "
               << " left " << left->desc()
               << " right " << right->desc()
@@ -219,9 +281,15 @@ void nnode::composite_bbox( nbbox& bb ) const
 
 nbbox nnode::bbox() const 
 {
-   // needs to be overridden for primitives
+    if(verbosity > 0)
+    LOG(info) << "nnode::bbox " << desc() ; 
+
     nbbox bb = make_bbox() ; 
-    if(left && right)
+    if(is_primitive())
+    { 
+        assert(0 && "nnode::bbox() needs to be overridden for all primitives" );
+    } 
+    else 
     {
         composite_bbox(bb);
     }
@@ -260,9 +328,12 @@ void nnode::Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& or
 
 
 
-nnode* nnode::load(const char* treedir, unsigned verbosity)
+nnode* nnode::load(const char* treedir, int verbosity)
 {
-    NCSG* tree = NCSG::LoadTree(treedir, verbosity );
+    bool usedglobally = false ; 
+    bool polygonize = false ; 
+
+    NCSG* tree = NCSG::LoadTree(treedir, usedglobally, verbosity, polygonize );
     nnode* root = tree->getRoot();
     return root ; 
 }
@@ -340,6 +411,33 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
 }
 
+
+
+
+
+void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale) 
+{
+    if( root->type == CSG_BOX )
+    {
+        nbox* box = dynamic_cast<nbox*>(root)  ;
+        assert(box) ; 
+        box->adjustToFit(container, scale );
+    }
+    else if( root->type == CSG_SPHERE )
+    {
+        nsphere* sph = dynamic_cast<nsphere*>(root)  ;
+        assert(sph) ; 
+        sph->adjustToFit(container, scale );
+    }
+    else
+    {
+        LOG(fatal) << "nnode::AdjustToFit"
+                   << " auto-containement only implemented for BOX and SPHERE"
+                   << " root: " << root->desc()
+                   ; 
+        assert(0 && "nnode::AdjustToFit" ); 
+    }
+}
 
 
 
