@@ -28,10 +28,10 @@ struct NPY_API nnode
     static void Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump=true );
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
-    virtual void dump(const char* msg="nnode::dump");
+    virtual void dump(const char* msg="nnode::dump") const ;
+    virtual void pdump(const char* msg="nnode::pdump") const ; 
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
-
 
     void composite_bbox( nbbox& bb ) const ;
 
@@ -43,6 +43,14 @@ struct NPY_API nnode
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
+    unsigned uncoincide();
+    void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin ) const ;
+    void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin ) const ;
+    void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon) const ;
+    void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1) const ;
+
+
+
     std::function<float(float,float,float)> sdf() const ;
 
     glm::vec3 gseeddir();  // override if needed
@@ -51,21 +59,25 @@ struct NPY_API nnode
     virtual glm::vec3 par_pos(const nuv& uv) const ;
     virtual int       par_euler() const ; 
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
+    virtual void      nudge(unsigned s, float delta);
+
 
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);
 
     nmat4triple* global_transform(); 
     static nmat4triple* global_transform(nnode* n); 
-    glm::vec3 apply_gtransform(const glm::vec4& v_);
+
+    glm::vec3 apply_gtransform(const glm::vec4& v_) const ;
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
 
-    void dump_prim(const char* msg="dump_prim", int verbosity=1 ) ;
+    void dump_prim(const char* msg="nnode::dump_prim") ;
     void collect_prim(std::vector<nnode*>& prim) ;
     static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
 
     bool is_primitive() const ;
+    bool is_bileaf() const ;
     bool has_planes();
     unsigned planeIdx();
     unsigned planeNum();

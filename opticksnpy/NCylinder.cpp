@@ -150,7 +150,7 @@ cylinder with radius r and height h:
 
 
 
-glm::vec3 ncylinder::gseedcenter()
+glm::vec3 ncylinder::gseedcenter() const 
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
@@ -164,7 +164,7 @@ glm::vec3 ncylinder::gseeddir()
 
 
 
-void ncylinder::pdump(const char* msg, int verbosity)
+void ncylinder::pdump(const char* msg ) const 
 {
     std::cout 
               << std::setw(10) << msg 

@@ -8,6 +8,7 @@
 #include "NBBox.hpp"
 #include "Nuv.hpp"
 
+#include "NPY_LOG.hh"
 #include "PLOG.hh"
 
 
@@ -133,13 +134,99 @@ void test_parametric()
 
 
 
+void test_box_box3()
+{
+    LOG(info) << "test_box_box3" ;
+
+
+    nbox box = make_box(0,0,0,10);
+    box.verbosity = 3 ;  
+    box.pdump("make_box(0,0,0,10)");
+
+    nbox box3 = make_box3(20,20,20);
+    box3.verbosity = 3 ;  
+    box3.pdump("make_box3(20,20,20)");
+
+}
+
+
+void test_nudge()
+{
+    LOG(info) << "test_nudge" ;
+
+    unsigned level = 1 ; 
+    int margin = 1 ;  
+
+    float h = 10.f ;  
+    nbox box = make_box3(2*h,2*h,2*h); 
+    box.verbosity = 3 ;  
+
+    std::string order = "srt" ;  // scale first, then rotate, then transform
+    glm::vec3 tlat(0,0,500);
+    glm::vec4 axis_angle(0,0,1,0);
+    glm::vec3 scal(1,1,1);
+    glm::mat4 transform = nglmext::make_transform(order, tlat, axis_angle, scal );
+
+    box.gtransform = new nmat4triple(transform); 
+
+    nmat4triple* start = box.gtransform ;
+
+    box.pdump("make_box3(2*h,2*h,2*h)");
+
+    std::vector<glm::vec3> before ; 
+    box.getSurfacePointsAll( before, level, margin ); 
+
+    assert(before.size() == 6 ); 
+
+    if(start == NULL)
+    { 
+        assert( before[0].z == -h  );
+        assert( before[1].z == h  );
+        assert( before[2].x == -h  );
+        assert( before[3].x == h  );
+        assert( before[4].y == -h  );
+        assert( before[5].y == h  );
+    }
+
+    //for(unsigned i=0 ; i < before.size() ; i++) std::cout << glm::to_string(before[i]) << std::endl ; 
+  
+    unsigned nudge_face = 1 ; // +Z nudge
+
+    float delta = 1.f ; 
+    box.nudge(nudge_face, delta);
+    box.pdump("make_box3(2*h,2*h,2*h) NUDGED");
+
+    std::vector<glm::vec3> after ; 
+    box.getSurfacePointsAll( after, level, margin ); 
+
+    assert(after.size() == 6 ); 
+
+    if(start == NULL)
+    {
+        assert( after[0].z == -h );
+        assert( after[1].z == h + delta );
+        assert( after[2].x == -h  );
+        assert( after[3].x == h  );
+        assert( after[4].y == -h  );
+        assert( after[5].y == h  );
+    }
+
+
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    NPY_LOG__ ; 
 
     //test_gtransform();
     //test_sdf();
-    test_parametric();
+    //test_parametric();
+    //test_box_box3();
+    test_nudge();
 
     return 0 ; 
 }

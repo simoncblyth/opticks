@@ -24,7 +24,7 @@ struct NPY_API nslab : nnode
 
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
-    void pdump(const char* msg="nslab::pdump", int verbosity=1);
+    void pdump(const char* msg="nslab::pdump") const ;
 
     glm::vec3 n ;  // normalized normal direction
     float a ;      // signed distance from origin to plane a, 

@@ -39,7 +39,7 @@ struct NPY_API nplane : nnode
 
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
-    void pdump(const char* msg="nplane::dump", int verbosity=1);
+    void pdump(const char* msg="nplane::dump") const ;
 
     glm::vec3 n ;  // normal
     float     d ;  // signed distance to origin

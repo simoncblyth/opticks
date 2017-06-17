@@ -55,7 +55,7 @@ struct NPY_API ntrange3 {
 struct NPY_API nuvec4 {
 
   // NO CTOR
-  void dump(const char* msg);
+  void dump(const char* msg) const ;
 
   unsigned x ; 
   unsigned y ; 
@@ -67,7 +67,7 @@ struct NPY_API nuvec4 {
 struct NPY_API nivec4 {
 
   // NO CTOR
-  void dump(const char* msg);
+  void dump(const char* msg) const ;
   const char* desc() const ;  
 
   int x ; 
@@ -95,12 +95,12 @@ union NPY_API nquad
    nivec4 i ; 
    nvec4  f ; 
 
-   void dump(const char* msg);
+   void dump(const char* msg) const ;
 };
 
 struct NPY_API nuvec3 {
 
-  void dump(const char* msg);
+  void dump(const char* msg) const ;
   const char* desc() const ;
 
   unsigned x ; 
@@ -143,7 +143,7 @@ struct NPY_API nivec3
   nivec3( int x ) : x(x), y(x), z(x) {} ; 
 
   const char* desc() const ;
-  void dump(const char* msg);
+  void dump(const char* msg) const ;
 
   nivec3& operator += (const nivec3& other);
   nivec3& operator -= (const nivec3& other);

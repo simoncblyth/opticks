@@ -156,7 +156,7 @@ glm::vec3 nconvexpolyhedron::gseeddir()
 }
 
 
-void nconvexpolyhedron::pdump(const char* msg, int verbosity )
+void nconvexpolyhedron::pdump(const char* msg) const 
 {
     unsigned num_planes = planes.size();
     std::cout 

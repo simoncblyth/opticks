@@ -194,7 +194,7 @@ http://aka-san.halcy.de/distance_fields_prefinal.pdf
 */
 
 
-glm::vec3 ncone::gseedcenter()
+glm::vec3 ncone::gseedcenter() const 
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
@@ -207,7 +207,7 @@ glm::vec3 ncone::gseeddir()
 }
 
 
-void ncone::pdump(const char* msg, int verbosity)
+void ncone::pdump(const char* msg ) const 
 {
     std::cout 
               << std::setw(10) << msg 

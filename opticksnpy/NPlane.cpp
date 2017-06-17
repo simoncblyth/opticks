@@ -3,7 +3,7 @@
 #include "GLMPrint.hpp"
 #include <cstring>
 
-void nplane::pdump(const char* msg, int /*verbosity*/)
+void nplane::pdump(const char* msg) const 
 {
     param.dump(msg);
 }

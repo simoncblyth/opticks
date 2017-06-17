@@ -43,7 +43,7 @@ nbbox nzsphere::bbox() const
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
-glm::vec3 nzsphere::gseedcenter()
+glm::vec3 nzsphere::gseedcenter() const 
 {
     glm::vec4 seedcenter( center.x, center.y, (zmin() + zmax())/2.f, 1.f ); 
     return apply_gtransform(seedcenter);
@@ -61,7 +61,7 @@ glm::vec3 nzsphere::gseeddir()
 
 
 
-void nzsphere::pdump(const char* msg, int verbosity)
+void nzsphere::pdump(const char* msg) const 
 {
     std::cout 
               << std::setw(10) << msg 

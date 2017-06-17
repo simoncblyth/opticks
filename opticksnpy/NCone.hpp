@@ -14,9 +14,9 @@ struct NPY_API ncone : nnode
     nbbox bbox() const;
     npart part();
 
-    glm::vec3 gseedcenter() ;
+    glm::vec3 gseedcenter() const  ;
     glm::vec3 gseeddir() ;
-    void pdump(const char* msg="ncone::pdump", int verbosity=1);
+    void pdump(const char* msg="ncone::pdump") const ;
  
     glm::vec3 center ; 
     glm::vec2 cnormal ; 

@@ -30,6 +30,7 @@ struct NPY_API nbox : nnode
     float sdf2(float x, float y, float z) ;
 
     void adjustToFit(const nbbox& container_bb, float scale);
+    void nudge(unsigned s, float delta);
 
     nbbox bbox() const ;
 
@@ -39,9 +40,10 @@ struct NPY_API nbox : nnode
     glm::vec3 par_pos(const nuv& uv) const ;
 
 
-    glm::vec3 gseedcenter();
 
-    void pdump(const char* msg="nbox::pdump", int verbosity=1);
+    glm::vec3 gseedcenter() const ;
+
+    void pdump(const char* msg="nbox::pdump") const ;
 
     glm::vec3 center ; 
 
@@ -89,16 +91,20 @@ inline NPY_API nbox make_box3(const nquad& p)
 }
 
 
-inline NPY_API nbox make_box(float x, float y, float z, float w)
+inline NPY_API nbox make_box(float x, float y, float z, float w)  // center and halfside
 {
     nquad param ;
     param.f =  {x,y,z,w} ;
     return make_box( param ); 
 }
-inline NPY_API nbox make_box3(float x, float y, float z)
+inline NPY_API nbox make_box3(float x, float y, float z) // three 
 {
     nquad param ;
     param.f =  {x,y,z,0} ;
     return make_box3( param ); 
 }
+
+
+
+
 

@@ -146,7 +146,7 @@ glm::vec3 nslab::gseeddir()
 
 
 
-void nslab::pdump(const char* msg, int verbosity )
+void nslab::pdump(const char* msg) const 
 {
     std::cout 
               << std::setw(10) << msg 

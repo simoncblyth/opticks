@@ -1,3 +1,4 @@
+#include "PLOG.hh"
 
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp>
@@ -26,7 +27,7 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 float nbox::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
-    if(gtransform) q = gtransform->v * q ;
+    if(gtransform) q = gtransform->v * q ;  // NB using inverse transform on the query point 
 
     glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
     glm::vec3 a = glm::abs(p) ;
@@ -162,9 +163,7 @@ glm::vec3 nbox::par_pos(const nuv& uv) const
 
     */
 
-    nbbox bb = bbox() ;
-
-
+    nbbox bb = bbox() ;  // NB the gtransform->t is already applied
 
     glm::vec3 p ; 
 
@@ -233,8 +232,6 @@ glm::vec3 nbox::par_pos(const nuv& uv) const
                }
                ; break ;
  
-
- 
     }
 
 /*
@@ -245,19 +242,112 @@ glm::vec3 nbox::par_pos(const nuv& uv) const
                ; 
 */
 
+
+    
+    //glm::vec4 pt(p) ; 
+    //if(gtransform) pt = gtransform->t * p ;   // <-- direct transform, not inverse
+    //return glm::vec3(pt) ; 
+
+    // NOPE its wrong to transform here as parametric postions are based 
+    // on the bbox which is already transformed 
+
     return p ; 
 }
 
 
 
 
+void nbox::nudge(unsigned s, float delta)
+{
+/*
+How to nudge to avoid a coincidence ? 
+
+* want to grow the coincident face by some delta eg ~2*epsilon 
+
+* but CSG_BOX3 is positioned at 0,0,0 in model frame with 3 dimensions 
+  ... so need to grow eg +Z face to avoid coincidence, but that 
+  would require a compensating translation transform ???
+
+* CSG_BOX is model frame placed but is symmetric, 
+  hmm could non-uniformly scale OR rather just not support as CSG_BOX is only used in
+  testing not real geometry.
+
+* Does it matter that grow both +Z and -Z by a few epsilon, when only +Z is coincident ?  
+  Currently envisage such nudges being applied only to subtracted 
+  sub-objects, eg B in (A - B) or B in A*!B 
+
+  YES, it does matter, consider (A - B) cutting a groove...
+  growing out into empty space in +Z for the subtracted box B
+  is needed to avoid the edge speckles and does not change 
+  the geometry, (because there is no interesction between this growth and A)
+
+  Whereas growing B in -Z would deepen the groove. 
+
+             _______        +Z
+       +-----+ . . +-----+   ^
+       |     |  B  |     |   |  
+       |  A  +-----+     |
+       |                 |
+       +-----------------+
+
+*/
+    assert( s < par_nsurf());
+    assert( is_box3 && type == CSG_BOX3 && "nbox::nudge only implemented for CSG_BOX3 not CSG_BOX " );
+
+    if(verbosity > 0)
+    {
+        std::cout << "nbox::nudge START" 
+                  << " s " << s 
+                  << " delta " << delta
+                  << " param.f " << param.f.desc()
+                  << " verbosity " << verbosity
+                  << std::endl ;
+    }
+
+    glm::vec3 tlate(0,0,0) ; 
+
+    // -Z :  grows in +-Z,  tlate in -Z keeping +Z in same position
+    // +Z :  grows in +-Z,  tlate in +Z keeping -Z in same positiom 
+
+    switch(s)
+    {
+        case 0:{ param.f.z += delta ; tlate.z = -delta/2.f ; } ; break ; // -Z
+        case 1:{ param.f.z += delta ; tlate.z =  delta/2.f ; } ; break ; // +Z
+
+        case 2:{ param.f.x += delta ; tlate.x = -delta/2.f ; } ; break ; // -X
+        case 3:{ param.f.x += delta ; tlate.x =  delta/2.f ; } ; break ; // +X
+
+        case 4:{ param.f.y += delta ; tlate.y = -delta/2.f ; } ; break ; // -Y 
+        case 5:{ param.f.y += delta ; tlate.y =  delta/2.f ; } ; break ; // +Y 
+    }
 
 
+    if(verbosity > 0)
+    std::cout << "nbox::nudge DONE " 
+              << " s " << s 
+              << " delta " << delta
+              << " param.f " << param.f.desc()
+              << " tlate " << glm::to_string(tlate)
+              << std::endl ;
 
 
+    if(transform == NULL)  transform = nmat4triple::make_identity() ; 
+    bool reverse = false ; 
+    // want nudge correcton translation at leaf end (ie do it first)
+    transform = transform->make_translated(tlate, reverse); 
 
+    gtransform = global_transform();  // product of transforms from heirarchy
 
+    // DO I NEED A SEPARATE nudge_transform BECAUSE HOW MUCH TO DELTA TRANSLATE 
+    // TO PREVENT MOVEMENT OF THE FIXED FACE DEPENDS ON CURRENT TRANSFORM
+    // (IF ITS NOT JUST A TRANSLATION WHICH COMMUTES)
+    //
+    //  gtransforms are normally created for all primitives 
+    //  when NCSG::import_r recursion gets down to them based on the
+    //  heirarchy of transforms collected from the ancestors of the primitive in 
+    //  the tree
 
+}
 
 
 
@@ -300,12 +390,12 @@ nbbox nbox::bbox() const
     // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }
 
-glm::vec3 nbox::gseedcenter()
+glm::vec3 nbox::gseedcenter() const 
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
 }
 
-void nbox::pdump(const char* msg, int verbosity )
+void nbox::pdump(const char* msg) const 
 {
     std::cout 
               << std::setw(10) << msg 
@@ -318,6 +408,28 @@ void nbox::pdump(const char* msg, int verbosity )
               << std::endl ; 
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
+
+    if(verbosity > 2)
+    {
+        unsigned level = 1 ;  // +---+---+
+        int margin = 1 ;      // o---*---o
+
+        std::cout << " SurfacePointsAll "
+                  << " verbosity " << verbosity     
+                  << " uvlevel " << level     
+                  << " uvmargin " << margin
+                  << std::endl ;     
+
+        std::vector<glm::vec3> points ; 
+        getSurfacePointsAll( points, level, margin ); 
+        for(unsigned i=0 ; i < points.size() ; i++) 
+              std::cout
+                   << " i " << std::setw(4) << i 
+                   << " " 
+                   << glm::to_string(points[i]) 
+                   << std::endl
+                   ; 
+    }
 }
 
 

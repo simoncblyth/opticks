@@ -124,13 +124,13 @@ glm::vec3 nsphere::par_pos(const nuv& uv) const
 
 
 
-glm::vec3 nsphere::gseedcenter()
+glm::vec3 nsphere::gseedcenter() const 
 {
     return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform
 }
 
 
-void nsphere::pdump(const char* msg, int verbosity)
+void nsphere::pdump(const char* msg) const 
 {
     nnode::dump();
     std::cout 

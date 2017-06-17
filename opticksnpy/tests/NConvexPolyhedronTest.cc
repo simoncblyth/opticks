@@ -98,7 +98,8 @@ int main(int argc, char** argv)
     nnode* root = nnode::load(argc > 1 ?  argv[1] : "$TMP/tboolean-trapezoid--/1" , 1 );
     assert(root->type == CSG_CONVEXPOLYHEDRON );
     nconvexpolyhedron* cpol = (nconvexpolyhedron*)root  ;
-    cpol->pdump(argv[0], 1);
+    cpol->verbosity = 1 ;  
+    cpol->pdump(argv[0]);
 
     //test_sdf(cpol);
     //test_intersect(cpol);

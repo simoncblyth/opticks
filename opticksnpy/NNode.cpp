@@ -5,6 +5,7 @@
 #include <sstream>
 #include <iomanip>
 
+
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 
@@ -67,8 +68,21 @@ std::string nnode::desc() const
 }
 
 
+void nnode::pdump(const char* msg) const 
+{
+    LOG(info) << msg << " verbosity " << verbosity ; 
+    assert(0 && "override nnode::pdump in primitives" );
+}
 
-void nnode::dump(const char* msg)
+
+void nnode::nudge(unsigned /*uv_surf*/, float /*delta*/ ) 
+{
+    assert(0 && "override nnode::nudge in primitives" );
+}
+
+
+
+void nnode::dump(const char* msg) const 
 {
     bool prim = is_primitive();
 
@@ -107,6 +121,13 @@ bool nnode::is_primitive() const
 {
     return left == NULL && right == NULL ; 
 }
+bool nnode::is_bileaf() const 
+{
+    return !is_primitive() && left->is_primitive() && right->is_primitive() ; 
+}
+
+
+
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 {
@@ -129,7 +150,11 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.param1.u = {0u,0u,0u,0u};
     n.param2.u = {0u,0u,0u,0u};
     n.param3.u = {0u,0u,0u,0u};
+
 }
+
+
+
 
 const char* nnode::csgname()
 {
@@ -165,15 +190,15 @@ nmat4triple* nnode::global_transform(nnode* n)
     return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
 
-
-
 void nnode::update_gtransforms()
 {
     update_gtransforms_r(this);
 }
 void nnode::update_gtransforms_r(nnode* node)
 {
-    // NB this traversal doesnt need parent links, but global_transforms does...
+    // NB this downwards traversal doesnt need parent links, 
+    // but the ancestor collection of global_transforms that it uses does...
+    //
     node->gtransform = node->global_transform();
 
     if(node->left && node->right)
@@ -185,7 +210,7 @@ void nnode::update_gtransforms_r(nnode* node)
 
 
 
-glm::vec3 nnode::apply_gtransform(const glm::vec4& v_)
+glm::vec3 nnode::apply_gtransform(const glm::vec4& v_) const 
 {
     glm::vec4 v(v_) ; 
     if(gtransform) v = gtransform->t * v ; 
@@ -621,7 +646,7 @@ void nnode::collect_prim_r(std::vector<nnode*>& prim, nnode* node)
 }
 
 
-void nnode::dump_prim( const char* msg, int verbosity )
+void nnode::dump_prim( const char* msg)
 {
     std::vector<nnode*> prim ;
     collect_prim(prim);   
@@ -632,9 +657,9 @@ void nnode::dump_prim( const char* msg, int verbosity )
         nnode* p = prim[i] ; 
         switch(p->type)
         {
-            case CSG_SPHERE: ((nsphere*)p)->pdump("sp",verbosity) ; break ; 
-            case CSG_BOX   :    ((nbox*)p)->pdump("bx",verbosity) ; break ; 
-            case CSG_SLAB   :  ((nslab*)p)->pdump("sl",verbosity) ; break ; 
+            case CSG_SPHERE: ((nsphere*)p)->pdump("sp") ; break ; 
+            case CSG_BOX   :    ((nbox*)p)->pdump("bx") ; break ; 
+            case CSG_SLAB   :  ((nslab*)p)->pdump("sl") ; break ; 
             default:
             {
                    LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSGName(p->type) ;
@@ -643,6 +668,156 @@ void nnode::dump_prim( const char* msg, int verbosity )
         }
     }
 }
+
+
+
+
+unsigned nnode::uncoincide()
+{
+    // canonically invoked from NCSG::import_r
+
+    assert( is_bileaf() && "nnode::uncoincide expects left and right to be primitives" );
+  
+    float epsilon = 1e-5f ; 
+    unsigned level = 1 ; 
+    int margin = 1 ; 
+
+    std::vector<nuv> coincident ;
+    
+    nnode* a = NULL ; 
+    nnode* b = NULL ; 
+
+    if( type == CSG_DIFFERENCE )  // left - right 
+    {
+        a = left ; 
+        b = right ; 
+    }
+    else if( type == CSG_INTERSECTION && !left->complement &&  right->complement)  // left * !right  ->   left - right
+    { 
+        a = left ; 
+        b = right ; 
+    }
+    else if( type == CSG_INTERSECTION &&  left->complement && !right->complement)  // !left * right  ->  right - left 
+    {
+        a = right ; 
+        b = left ; 
+    }
+
+    if( a && b )
+    {
+        a->getCoincident( coincident, b, epsilon, level, margin );
+
+        unsigned ncoin = coincident.size() ;
+        if(ncoin > 0)
+        {
+            LOG(info) << "nnode::uncoincide" << " ncoin " << ncoin ; 
+
+            a->verbosity = 4 ; 
+            b->verbosity = 4 ; 
+
+            a->pdump("A");
+            b->pdump("B");
+
+            assert( ncoin == 1);
+            nuv uv = coincident[0] ; 
+            float delta = 5*epsilon ; 
+
+            std::cout << "nnode::uncoincide" 
+                      << " uv " << uv.desc()
+                      << " epsilon " << epsilon
+                      << " delta " << delta
+                      << std::endl 
+                      ;
+
+            b->nudge( uv.s(),  delta ); 
+        } 
+    }
+    return coincident.size() ;
+}
+
+
+void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin) const 
+{
+     unsigned ns = par_nsurf();
+     for(unsigned s = 0 ; s < ns ; s++)
+     {    
+         getSurfacePoints(surf, s, level, margin) ;
+     }
+}
+
+void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin) const 
+{
+    /*
+
+     level 1  
+          (1 << 1) = 2 divisions in u and v,  +1 for endpost -> 3 points in u and v 
+
+     margin 1
+          skip the start and end of uv range 
+          3 points - 2*margin ->   1 point   at mid uv of the face 
+
+          +---+---+
+          |   |   |
+          +---*---+
+          |   |   |
+          +---+---+
+    */
+    int nu = 1 << level ; 
+    int nv = 1 << level ; 
+    assert( (nv - margin) > 0 );
+    assert( (nu - margin) > 0 );
+
+    int ndiv = nu + 1 - 2*margin ;
+    unsigned expect = ndiv*ndiv  ;  
+    unsigned n0 = surf.size();
+
+    for (int v = margin; v <= (nv-margin) ; v++)
+    {
+        for (int u = margin; u <= (nu-margin) ; u++) 
+        {
+            nuv uv = make_uv(s,u,v,nu,nv);
+            glm::vec3 pos = par_pos(uv);
+            surf.push_back(pos) ;
+        }
+    }
+    unsigned n1 = surf.size();
+    assert( n1 - n0 == expect );
+}
+
+
+void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon) const 
+{
+    int nu = 1 << level ; 
+    int nv = 1 << level ; 
+    assert( (nv - margin) > 0 );
+    assert( (nu - margin) > 0 );
+
+    for (int v = margin; v <= (nv-margin)  ; v++)
+    {
+        for (int u = margin; u <= (nu-margin) ; u++) 
+        {
+            nuv uv = make_uv(s,u,v,nu,nv);
+            glm::vec3 pos = par_pos(uv);
+
+            float other_sdf = (*other)(pos.x, pos.y, pos.z );
+
+            if( fabs(other_sdf) < epsilon )  
+            {
+                surf.push_back(uv) ;
+            }
+        }
+    }
+}
+
+void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin) const 
+{
+     unsigned ns = par_nsurf();
+     for(unsigned s = 0 ; s < ns ; s++)
+     {    
+         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon ) ;
+     }
+}
+
 
 
 

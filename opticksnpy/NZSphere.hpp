@@ -17,10 +17,10 @@ struct NPY_API nzsphere : nnode {
 
     nbbox bbox() const ;
 
-    glm::vec3 gseedcenter() ;
+    glm::vec3 gseedcenter() const  ;
     glm::vec3 gseeddir();
 
-    void pdump(const char* msg="nzsphere::pdump", int verbosity=1);
+    void pdump(const char* msg="nzsphere::pdump") const ;
 
     float zmax() const { return center.z + zdelta.y ; }
     float zmin() const { return center.z + zdelta.x ; }

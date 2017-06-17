@@ -471,6 +471,14 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
     nmat4triple perturb( txf );
     std::vector<nmat4triple*> triples ; 
 
+    // HMM its confusing to reverse here 
+    // because reversal is also done in nmat4triple::product
+    // so they will counteract ??
+    // Who uses this ?
+ 
+    assert(0);
+    
+
     if(reverse)
     { 
         triples.push_back(src);    

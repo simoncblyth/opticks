@@ -16,7 +16,7 @@ struct NPY_API nconvexpolyhedron : nnode
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
 
-    void pdump(const char* msg="nconvexpolyhedron::pdump", int verbosity=1);
+    void pdump(const char* msg="nconvexpolyhedron::pdump") const ;
 };
 
 inline NPY_API void init_convexpolyhedron(nconvexpolyhedron& cpol, const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3 )
