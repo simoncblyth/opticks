@@ -312,6 +312,13 @@ glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tla
         }
     }
     // for fourth column translation unmodified the "t" must come last, ie "trs" ?? shouldnt that be order="srt"
+    //
+    // Despite this intution from reading the code  there is the row-major business too..
+    //
+    // See tests/NGLMExt.cc:test_make_transform it shows that 
+    // order argument "trs" somewhat confusingly : does scaling before translation, 
+    // order argument "srt" somewhat confusingly : does translation before scaling
+
     return mat  ; 
 }
 
@@ -448,25 +455,28 @@ nmat4triple* nmat4triple::make_identity()
 }
 
 
-nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse )
+nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse, const char* user )
 {
     // reverse:true means the tlate happens at the root 
     // reverse:false means the tlate happens at the leaf
-
-    return make_translated(this, tlate, reverse );
+    return make_translated(this, tlate, reverse, user );
 }
 
-nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse )
+nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user)
 { 
     glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
-    return make_transformed(src, tra, reverse );
+    return make_transformed(src, tra, reverse, user );
 }
 
-nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse)
+nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user)
 {
     // reverse:true means the transform ordering is from leaf to root 
     // so when wishing to extend the hierarchy with a higher level root transform, 
     // that means just pushing another transform on the end of the existing vector
+
+    LOG(info) << "nmat4triple::make_transformed" 
+              << " user " << user
+              ;
 
     nmat4triple perturb( txf );
     std::vector<nmat4triple*> triples ; 
@@ -475,9 +485,9 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
     // because reversal is also done in nmat4triple::product
     // so they will counteract ??
     // Who uses this ?
- 
-    assert(0);
     
+    // used by GMergedMesh::mergeSolidAnalytic/GParts::applyPlacementTransform
+    //assert(0);
 
     if(reverse)
     { 

@@ -334,7 +334,7 @@ How to nudge to avoid a coincidence ?
     if(transform == NULL)  transform = nmat4triple::make_identity() ; 
     bool reverse = false ; 
     // want nudge correcton translation at leaf end (ie do it first)
-    transform = transform->make_translated(tlate, reverse); 
+    transform = transform->make_translated(tlate, reverse, "nbox::nudge" ); 
 
     gtransform = global_transform();  // product of transforms from heirarchy
 

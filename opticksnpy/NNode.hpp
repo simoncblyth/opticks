@@ -44,6 +44,8 @@ struct NPY_API nnode
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
     unsigned uncoincide();
+    bool can_uncoincide(const nnode* a, const nnode* b) const ;
+
     void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin ) const ;
     void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin ) const ;
     void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon) const ;

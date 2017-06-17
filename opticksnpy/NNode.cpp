@@ -672,6 +672,11 @@ void nnode::dump_prim( const char* msg)
 
 
 
+bool nnode::can_uncoincide(const nnode* a, const nnode* b) const 
+{
+    return ( a && b && a->type == CSG_BOX3 && b->type == CSG_BOX3 ) ;
+}
+
 unsigned nnode::uncoincide()
 {
     // canonically invoked from NCSG::import_r
@@ -705,6 +710,16 @@ unsigned nnode::uncoincide()
 
     if( a && b )
     {
+        if(!can_uncoincide(a, b))
+        {
+            LOG(warning) << "nnode::uncoincide skip as not implemented for (A - B) subtraction with "
+                         << " A " << a->csgname()
+                         << " B " << b->csgname()
+                          ;
+            return 0 ; 
+        }
+
+
         a->getCoincident( coincident, b, epsilon, level, margin );
 
         unsigned ncoin = coincident.size() ;

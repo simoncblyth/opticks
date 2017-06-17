@@ -147,7 +147,9 @@ std::string NCSG::soname(){ return getMeta<std::string>("soname","-") ; }
 int NCSG::treeindex(){ return getMeta<int>("treeindex","-1") ; }
 int NCSG::depth(){     return getMeta<int>("depth","-1") ; }
 int NCSG::nchild(){    return getMeta<int>("nchild","-1") ; }
-bool NCSG::isSkip(){  return getMeta<int>("skip","0") == 1 ; }
+
+bool NCSG::isSkip(){       return getMeta<int>("skip","0") == 1 ; }
+bool NCSG::is_uncoincide(){ return getMeta<int>("uncoincide","1") == 1 ; }
 
 
 std::string NCSG::meta()
@@ -159,7 +161,8 @@ std::string NCSG::meta()
        << " lvname " << lvname() 
        << " pvname " << pvname() 
        << " soname " << soname() 
-       << " skip " << isSkip()
+       << " isSkip " << isSkip()
+       << " is_uncoincide " << is_uncoincide()
        ;
 
     return ss.str();
@@ -565,7 +568,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->left->other = node->right ;   // used by NOpenMesh 
         node->right->other = node->left ; 
 
-        if(node->is_bileaf()) node->uncoincide();
+        if(node->is_bileaf() && is_uncoincide()) node->uncoincide();
 
         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }
@@ -719,7 +722,7 @@ unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
 
     bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
 
-    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse) ;
+    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
 
 
     /*

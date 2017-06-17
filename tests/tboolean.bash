@@ -160,7 +160,7 @@ tboolean--(){
             --animtimemax 10 \
             --timemax 10 \
             --geocenter \
-            --eye 0,0,1 \
+            --eye 1,0,0 \
             --dbganalytic \
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$(tboolean-torchconfig)" \
@@ -885,6 +885,53 @@ CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
 }
 
+
+
+tboolean-uncoincide(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-uncoincide-(){ $FUNCNAME- | python $* ; } 
+tboolean-uncoincide--(){ cat << EOP
+
+outdir = "$TMP/$FUNCNAME"
+
+import logging
+log = logging.getLogger(__name__)
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main()
+
+CSG.boundary = "$(tboolean-testobject)"
+CSG.kwa = dict(verbosity="1", poly="IM", resolution="20" )
+
+
+# container=1 metadata causes sphere/box to be auto sized to contain other trees
+container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)", poly="HY", level="5" )
+
+a = CSG("box3", param=[400,400,100,0] )
+b = CSG("box3", param=[350,350,50,0], translate="0,0,25" )
+
+obj = a - b
+obj.meta.update(uncoincide="1")  # 0:disable uncoincidence nudging
+
+obj.translate = "0,0,100"
+obj.scale = "0.5,1.5,1.1"
+#obj.rotate = "1,1,1,45"
+
+CSG.Serialize([container, obj], outdir )
+
+"""
+* disabling uncoincide not causing speckles, its causing subtraction not to appear
+* uncoincide fails to work when there is a rotation applied to the composite obj
+* applying a non-uniform scale 0.5,1.5,1 causes speckles from some angles
+
+SUSPECT the standard make_transformed is doing the nudge translation last
+as translation last is the usual TRS order, but nudging 
+needs it to be first ...
+
+"""
+EOP
+}
 
 
 

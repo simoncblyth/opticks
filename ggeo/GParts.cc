@@ -516,7 +516,8 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
     {
         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
 
-        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed );
+        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform" );
+                      //  ^^^^^^^^^^^^^^^^^^^^^^^ SUSPECT DOUBLE NEGATIVE RE REVERSED  ^^^^^^^
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }

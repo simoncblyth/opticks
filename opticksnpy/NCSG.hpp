@@ -92,6 +92,7 @@ class NPY_API NCSG {
         int depth();
         int nchild();
         bool isSkip();
+        bool is_uncoincide();
         std::string meta();
         std::string smry();
     public:
