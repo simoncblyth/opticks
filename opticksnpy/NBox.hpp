@@ -21,32 +21,62 @@ change the enum.
 
 */
 
+struct nmat4triple ; 
 
 struct NPY_API nbox : nnode 
 {
-    float operator()(float x, float y, float z) const ;
-
-    float sdf1(float x, float y, float z) ;
-    float sdf2(float x, float y, float z) ;
+    //  geometry modifiers
 
     void adjustToFit(const nbbox& container_bb, float scale);
     void nudge(unsigned s, float delta);
 
+    // signed distance functions
+
+    float operator()(float x, float y, float z) const ;
+
+    float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
+    float sdf_(const glm::vec3& pos, const nmat4triple* triple) const ; 
+    float sdf_model(const glm::vec3& pos) const ; 
+    float sdf_local(const glm::vec3& pos) const ; 
+    float sdf_global(const glm::vec3& pos) const ; 
+
+    // testing sdf imps
+
+    float sdf1(float x, float y, float z) const ;
+    float sdf2(float x, float y, float z) const ;
+
+    // bounding box
+
+    nbbox bbox_(NNodeFrameType fty) const ;
+    nbbox bbox_(const nmat4triple* triple) const ;
+    nbbox bbox_model() const ;
+    nbbox bbox_local() const ;
+    nbbox bbox_global() const ;
     nbbox bbox() const ;
+
+    // parametric surface positions 
+
+    glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;   
+    glm::vec3 par_pos_(const nuv& uv, const nmat4triple* triple) const ;   
+    glm::vec3 par_pos_model(const nuv& uv) const ;  // no transforms, bare model
+    glm::vec3 par_pos_local(const nuv& uv) const ;  // "transform"  local node frame
+    glm::vec3 par_pos_global(const nuv& uv) const ; // "gtransform" CSG tree root node frame 
+    glm::vec3 par_pos(const nuv& uv) const ;        // "gtransform" CSG tree root node frame 
+
+    // parametric metadata
 
     unsigned  par_nsurf() const ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     int       par_euler() const ; 
-    glm::vec3 par_pos(const nuv& uv) const ;
-
-
+ 
+    // seedcenter needed for ImplicitMesher
 
     glm::vec3 gseedcenter() const ;
 
     void pdump(const char* msg="nbox::pdump") const ;
 
-    glm::vec3 center ; 
 
+    glm::vec3 center ; 
     bool is_box3 ; 
 
 };

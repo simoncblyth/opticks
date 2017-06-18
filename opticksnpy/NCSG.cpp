@@ -552,13 +552,15 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
               << " complement " << complement 
               ;
  
-
     nnode* node = NULL ;   
  
     if(typecode == CSG_UNION || typecode == CSG_INTERSECTION || typecode == CSG_DIFFERENCE)
     {
         node = import_operator( idx, typecode ) ; 
+
         node->parent = parent ; 
+        node->idx = idx ; 
+        node->complement = complement ; 
 
         node->transform = import_transform_triple( transform_idx ) ;
 
@@ -575,11 +577,15 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     else 
     {
         node = import_primitive( idx, typecode ); 
+
         node->parent = parent ;                // <-- parent hookup needed prior to gtransform collection 
+        node->idx = idx ; 
+        node->complement = complement ; 
 
         node->transform = import_transform_triple( transform_idx ) ;
 
         nmat4triple* gtransform = node->global_transform();   
+
         // see opticks/notes/issues/subtree_instances_missing_transform.rst
         //if(gtransform == NULL && m_usedglobally)
         if(gtransform == NULL )  // move to giving all primitives a gtransform 
@@ -593,8 +599,9 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
     }
     assert(node); 
-    node->idx = idx ; 
-    node->complement = complement ; 
+
+    // Avoiding duplication between the operator and primitive branches 
+    // in the above is not sufficient reason to put things here, so very late.
 
     return node ; 
 } 

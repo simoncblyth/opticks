@@ -44,6 +44,10 @@ struct NPY_API nmat4pair
 
 struct NPY_API nmat4triple
 {
+    static nmat4triple* make_translate(const glm::vec3& tlate);
+    static nmat4triple* make_rotate(   const glm::vec4& trot);
+    static nmat4triple* make_scale(    const glm::vec3& tsca);
+
     static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool reverse );
     static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user  );
     static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user);
@@ -109,6 +113,11 @@ struct NPY_API nglmext
     static glm::mat4 invert_trs( const glm::mat4& trs ); 
     static glm::mat4 make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal );
     static glm::mat4 make_transform(const std::string& order);
+
+    static float angle_radians(float angle_degrees);
+    static glm::mat4 make_translate(const glm::vec3& tlat);
+    static glm::mat4 make_rotate(const glm::vec4& axis_angle);
+    static glm::mat4 make_scale(const glm::vec3& scal);
 
 };
 

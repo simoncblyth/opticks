@@ -31,10 +31,45 @@
 #include "PLOG.hh"
 
 
+const char* nnode::FRAME_MODEL_ = "FRAME_MODEL" ;
+const char* nnode::FRAME_LOCAL_ = "FRAME_LOCAL" ;
+const char* nnode::FRAME_GLOBAL_ = "FRAME_GLOBAL" ;
+
+const char* nnode::FrameType(NNodeFrameType fr)
+{
+    const char* s = NULL ;
+    switch(fr)
+    {
+        case FRAME_MODEL: s = FRAME_MODEL_ ; break ; 
+        case FRAME_LOCAL: s = FRAME_LOCAL_ ; break ; 
+        case FRAME_GLOBAL: s = FRAME_GLOBAL_ ; break ; 
+    }
+    return s ;
+}
+
+
 float nnode::operator()(float,float,float) const 
 {
+    assert(0 && "nnode::operator() needs override ");
     return 0.f ; 
 } 
+
+
+float nnode::sdf_(const glm::vec3& , NNodeFrameType ) const 
+{
+    assert(0 && "nnode::sdf_ needs override ");
+    return 0.f ; 
+}
+
+
+glm::vec3 nnode::par_pos_(const nuv& , NNodeFrameType ) const 
+{
+    assert(0 && "nnode::par_pos_ needs override ");
+    return glm::vec3(0);
+}
+
+
+
 
 bool nnode::has_planes()
 {
@@ -692,6 +727,9 @@ unsigned nnode::uncoincide()
     nnode* a = NULL ; 
     nnode* b = NULL ; 
 
+    // hmm theres an implicit assumption here that all complements have 
+    // already fed down to the leaves 
+
     if( type == CSG_DIFFERENCE )  // left - right 
     {
         a = left ; 
@@ -720,12 +758,12 @@ unsigned nnode::uncoincide()
         }
 
 
-        a->getCoincident( coincident, b, epsilon, level, margin );
+        a->getCoincident( coincident, b, epsilon, level, margin, FRAME_LOCAL );
 
         unsigned ncoin = coincident.size() ;
         if(ncoin > 0)
         {
-            LOG(info) << "nnode::uncoincide" << " ncoin " << ncoin ; 
+            LOG(info) << "nnode::uncoincide   START " ; 
 
             a->verbosity = 4 ; 
             b->verbosity = 4 ; 
@@ -735,9 +773,12 @@ unsigned nnode::uncoincide()
 
             assert( ncoin == 1);
             nuv uv = coincident[0] ; 
-            float delta = 5*epsilon ; 
+
+            //float delta = 5*epsilon ; 
+            float delta = 1 ;  // crazy large delta, so can see it  
 
             std::cout << "nnode::uncoincide" 
+                      << " ncoin " << ncoin 
                       << " uv " << uv.desc()
                       << " epsilon " << epsilon
                       << " delta " << delta
@@ -745,22 +786,57 @@ unsigned nnode::uncoincide()
                       ;
 
             b->nudge( uv.s(),  delta ); 
+
+            b->pdump("B(nudged)");
+
+
+            LOG(info) << "nnode::uncoincide   DONE " ; 
         } 
     }
     return coincident.size() ;
 }
 
 
-void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin) const 
+
+
+void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const 
+{
+    LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
+
+    unsigned level = 1 ;  // +---+---+
+    int margin = 1 ;      // o---*---o
+
+    std::cout 
+              << FrameType(fr)
+              << " verbosity " << verbosity     
+              << " uvlevel " << level     
+              << " uvmargin " << margin
+              << std::endl ;     
+
+    std::vector<glm::vec3> points ; 
+    getSurfacePointsAll( points, level, margin, fr ); 
+
+    for(unsigned i=0 ; i < points.size() ; i++) 
+          std::cout
+               << " i " << std::setw(4) << i 
+               << " " 
+               << glm::to_string(points[i]) 
+               << std::endl
+               ; 
+}
+
+
+
+void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr) const 
 {
      unsigned ns = par_nsurf();
      for(unsigned s = 0 ; s < ns ; s++)
      {    
-         getSurfacePoints(surf, s, level, margin) ;
+         getSurfacePoints(surf, s, level, margin, fr) ;
      }
 }
 
-void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin) const 
+void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const 
 {
     /*
 
@@ -791,7 +867,7 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
         for (int u = margin; u <= (nu-margin) ; u++) 
         {
             nuv uv = make_uv(s,u,v,nu,nv);
-            glm::vec3 pos = par_pos(uv);
+            glm::vec3 pos = par_pos_(uv, fr );
             surf.push_back(pos) ;
         }
     }
@@ -800,8 +876,11 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
 }
 
 
-void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon) const 
+void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const 
 {
+    // doing this comparison with gtransform applied to par_pos positions
+    // and other_sdf is simplest to think about ... ie CSG tree relative frame
+
     int nu = 1 << level ; 
     int nv = 1 << level ; 
     assert( (nv - margin) > 0 );
@@ -812,9 +891,10 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
         for (int u = margin; u <= (nu-margin) ; u++) 
         {
             nuv uv = make_uv(s,u,v,nu,nv);
-            glm::vec3 pos = par_pos(uv);
 
-            float other_sdf = (*other)(pos.x, pos.y, pos.z );
+            glm::vec3 pos = par_pos_(uv, fr);
+
+            float other_sdf = other->sdf_(pos, fr );
 
             if( fabs(other_sdf) < epsilon )  
             {
@@ -824,16 +904,14 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
     }
 }
 
-void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin) const 
+void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
 {
      unsigned ns = par_nsurf();
      for(unsigned s = 0 ; s < ns ; s++)
      {    
-         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon ) ;
+         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon, fr) ;
      }
 }
-
-
 
 
 

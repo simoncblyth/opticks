@@ -15,11 +15,6 @@
 
 
 
-
-
-
-
-
 void nglmext::copyTransform( std::array<float,16>& dst, const glm::mat4& src )
 {
     const float* p = glm::value_ptr(src);
@@ -57,9 +52,6 @@ std::array<float, 16> nglmext::_float4x4_mul( const std::array<float, 16>& a, co
 }
 
 const std::array<float, 16> nglmext::_identity_float4x4 = {{ 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1}};
-
-
-
 
 
 
@@ -295,19 +287,38 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
 
 
 
+glm::mat4 nglmext::make_translate(const glm::vec3& tlat)
+{
+    return glm::translate(glm::mat4(1.f), tlat);
+}
+glm::mat4 nglmext::make_rotate(const glm::vec4& axis_angle)
+{
+    float angle = nglmext::angle_radians(axis_angle.w) ; 
+    return glm::rotate(glm::mat4(1.f), angle , glm::vec3(axis_angle)) ;
+}
+glm::mat4 nglmext::make_scale(const glm::vec3& scal)
+{
+    return glm::scale(glm::mat4(1.f), scal);
+}
+
+
+float nglmext::angle_radians(float angle_degrees)
+{
+    return glm::pi<float>()*angle_degrees/180.f ; 
+}
 
 glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tlat, const glm::vec4& axis_angle, const glm::vec3& scal )
 {
     glm::mat4 mat(1.f) ;
-
-    float angle_radians = glm::pi<float>()*axis_angle.w/180.f ; 
+    
+    float angle = nglmext::angle_radians(axis_angle.w) ; 
 
     for(unsigned i=0 ; i < order.length() ; i++)
     {
         switch(order[i])
         {
            case 's': mat = glm::scale(mat, scal)         ; break ; 
-           case 'r': mat = glm::rotate(mat, angle_radians, glm::vec3(axis_angle)) ; break ; 
+           case 'r': mat = glm::rotate(mat, angle , glm::vec3(axis_angle)) ; break ; 
            case 't': mat = glm::translate(mat, tlat )    ; break ; 
         }
     }
@@ -410,15 +421,38 @@ nmat4triple* nmat4triple::clone()
     return new nmat4triple(t,v,q);
 }
 
+nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )
+{
+    glm::mat4 t = nglmext::make_translate(tlate);
+    return new nmat4triple(t);
+}
+nmat4triple* nmat4triple::make_scale( const glm::vec3& tsca )
+{
+    glm::mat4 s = nglmext::make_scale(tsca);
+    return new nmat4triple(s);
+}
+nmat4triple* nmat4triple::make_rotate( const glm::vec4& trot )
+{
+    glm::mat4 r = nglmext::make_rotate(trot);
+    return new nmat4triple(r);
+}
+
+
+
+
+
+
+
+
+
+
 
 nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool reverse )
 {
 /*
-
-Use *reverse=true* when the triples are in reverse heirarchical order, ie when
-they have been collected by starting from the leaf node and then following parent 
-links back up to the root node. 
-
+    Use *reverse=true* when the triples are in reverse heirarchical order, ie when
+    they have been collected by starting from the leaf node and then following parent 
+    links back up to the root node. 
 */
     unsigned ntriples = triples.size();
     if(ntriples==0) return NULL ; 

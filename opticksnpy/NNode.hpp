@@ -19,10 +19,25 @@ struct nmat4triple ;
 
 //template <typename T> struct NOpenMesh ;
 
+typedef enum
+{  
+   FRAME_MODEL, 
+   FRAME_LOCAL, 
+   FRAME_GLOBAL 
+
+} NNodeFrameType ;
+
 
 struct NPY_API nnode 
 {
+    static const char* FRAME_MODEL_ ;
+    static const char* FRAME_LOCAL_;
+    static const char* FRAME_GLOBAL_ ;
+
+    static const char* FrameType(NNodeFrameType fr);
+
     virtual float operator()(float px, float py, float pz) const  ;
+    virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
 
     static nnode* load(const char* treedir, int verbosity);
     static void Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump=true );
@@ -46,10 +61,13 @@ struct NPY_API nnode
     unsigned uncoincide();
     bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
-    void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin ) const ;
-    void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin ) const ;
-    void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon) const ;
-    void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1) const ;
+    
+    void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;
+
+    void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin, NNodeFrameType fr) const ;
+    void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const ;
+    void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const ;
+    void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
 
 
 
@@ -59,6 +77,7 @@ struct NPY_API nnode
 
     virtual unsigned  par_nsurf() const ;
     virtual glm::vec3 par_pos(const nuv& uv) const ;
+    virtual glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;
     virtual int       par_euler() const ; 
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     virtual void      nudge(unsigned s, float delta);

@@ -887,6 +887,8 @@ EOP
 
 
 
+
+tboolean-uncoincide-loadtest(){ ${FUNCNAME/loadtest} ; NCSGLoadTest $TMP/${FUNCNAME/loadtest}-/1 ; }
 tboolean-uncoincide(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-uncoincide-(){ $FUNCNAME- | python $* ; } 
 tboolean-uncoincide--(){ cat << EOP
@@ -904,32 +906,113 @@ args = opticks_main()
 CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1", poly="IM", resolution="20" )
 
-
 # container=1 metadata causes sphere/box to be auto sized to contain other trees
 container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)", poly="HY", level="5" )
 
-a = CSG("box3", param=[400,400,100,0] )
-b = CSG("box3", param=[350,350,50,0], translate="0,0,25" )
+log.info(r"""
 
-obj = a - b
-obj.meta.update(uncoincide="1")  # 0:disable uncoincidence nudging
+$FUNCNAME
+=========================
 
-obj.translate = "0,0,100"
-obj.scale = "0.5,1.5,1.1"
-#obj.rotate = "1,1,1,45"
+* FIXED : disabling uncoincide not causing speckles, its causing subtraction not to appear
+* FIXED : uncoincide fails to work when there is a rotation applied to the composite obj
+* FIXED : applying a non-uniform scale 0.5,1.5,1 causes speckles from some angles
 
-CSG.Serialize([container, obj], outdir )
-
-"""
-* disabling uncoincide not causing speckles, its causing subtraction not to appear
-* uncoincide fails to work when there is a rotation applied to the composite obj
-* applying a non-uniform scale 0.5,1.5,1 causes speckles from some angles
 
 SUSPECT the standard make_transformed is doing the nudge translation last
 as translation last is the usual TRS order, but nudging 
 needs it to be first ...
 
-"""
+::
+  
+  -200,200                   200,200
+        +-----------------------+
+        |                150,150|
+        |   +---------------+   |
+        |   |               |   |
+        |   |       Y       |   |
+        |   |       |       |   |
+        |   |       +--X    |   |
+        |   |               |   |
+        |   |               |   |
+        |   |               |   |
+        |   +---------------+   |
+        |                       |
+        +-----------------------+         
+  -200,-200                  200,-200
+
+
+
+     Z
+     |
+
+      50
+        +---------------+--+--+--+--- <--- +Z face:1 at 50 
+        |
+        |
+     25 +  +  +  +  +
+        |
+        |
+        +               + + + + + +   <-- -Z face:0 at 0 
+        |
+        | 
+    -25 +  +  +  +  +
+        |
+        |
+        +----------------------------
+     -50
+
+
+Testing what obj transforms prevent uncoincide from working:
+
+* obj.rotate = "0,0,1,45"  # works : about Z is OK
+* obj.rotate = "1,0,0,180" # works
+* obj.rotate = "1,0,0,360" # works
+* obj.rotate = "1,0,0,45" # nope about X or Y 
+* obj.rotate = "1,0,0,90" # nope
+
+* obj.scale = "0.5,0.5,0.5"   # uniform scale works
+* obj.scale = "0.5,0.5,2"   # works
+* obj.scale = "1,1,1.5"     # works
+
+ALL WORKING NOW
+
+Fixed by doing coincidence detection and nudging 
+entirely in FRAME_LOCAL of the CSG boolean sub-objects (usually difference) node.
+Hmm have only tested right node having a transform.
+
+Basically this means that only the left/right transforms are relevant, the
+gtransforms are not used.
+
+To enable this, added a frame argument to par_pos_ and sdf_ and bbox_
+
+       obj
+      /  \
+     A    B 
+
+Local coincidence testing and uncoincidence fixes 
+needs to be done in obj frame, and thus be impervious to whatever
+transforms are applied to obj... only the transforms
+applied to A and B are relevant.
+
+This means need an SDF route that can operate in such local
+frames is needed.
+
+
+""")
+
+a = CSG("box3", param=[400,400,100,0] )
+b = CSG("box3", param=[300,300,50,0], translate="0,0,25" )
+
+obj = a - b
+obj.meta.update(uncoincide="1")  # 0:disable uncoincidence nudging
+
+obj.translate = "0,0,100"
+obj.scale = "1,1,1.5"
+obj.rotate = "1,0,0,45"
+
+CSG.Serialize([container, obj], outdir )
+
 EOP
 }
 

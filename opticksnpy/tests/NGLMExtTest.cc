@@ -64,6 +64,90 @@ void test_invert_tr()
 }
 
 
+void test_make_mat()
+{
+    glm::vec3 tlat(0,0,100) ; 
+    glm::vec4 trot(0,0,1,45) ; 
+    glm::vec3 tsca(1,1,2) ; 
+
+    glm::vec4 orig(0,0,0,1);
+    glm::vec4 px(1,0,0,1);
+    glm::vec4 py(0,1,0,1);
+    glm::vec4 pz(0,0,1,1);
+    glm::vec4 pxyz(1,1,1,1);
+
+
+    glm::mat4 T = nglmext::make_translate(tlat);
+    glm::mat4 R = nglmext::make_rotate(trot);
+    glm::mat4 S = nglmext::make_scale(tsca);
+
+
+    glm::mat4 SRT = nglmext::make_transform("srt", tlat, trot, tsca );
+    glm::mat4 TRS = nglmext::make_transform("trs", tlat, trot, tsca );
+
+    glm::mat4 S_R_T = S*R*T ; 
+    glm::mat4 T_R_S = T*R*S ; 
+
+
+    std::cout 
+         << std::endl 
+
+         << gpresent( "tlat",  tlat ) 
+         << gpresent( "trot",  trot ) 
+         << gpresent( "tsca",  tsca )
+
+         << std::endl 
+         << std::endl 
+
+         << gpresent( "T",  T )
+         << std::endl 
+         << gpresent( "R",  R )
+         << std::endl 
+         << gpresent( "S",  S )
+
+         << std::endl 
+         << std::endl 
+
+         << gpresent( "SRT",  SRT )
+         << std::endl 
+         << gpresent( "S*R*T",  S_R_T )
+         << std::endl 
+          
+         << gpresent( "SRT*orig",  SRT*orig )
+         << gpresent( "SRT*px",    SRT*px )
+         << gpresent( "SRT*py",    SRT*py )
+         << gpresent( "SRT*pz",    SRT*pz )
+         << gpresent( "SRT*pxyz",  SRT*pxyz )
+
+         << std::endl 
+         << " S really does happen last when using \"srt\" argument to make_transform "
+         << std::endl 
+         << std::endl 
+         << std::endl 
+
+         << gpresent( "TRS",  TRS )
+         << std::endl 
+         << gpresent( "T*R*S",  T_R_S )
+         << std::endl 
+
+         << gpresent( "TRS*orig",  TRS*orig )
+         << gpresent( "TRS*px",    TRS*px )
+         << gpresent( "TRS*py",    TRS*py )
+         << gpresent( "TRS*pz",    TRS*pz )
+         << gpresent( "TRS*pxyz",  TRS*pxyz )
+
+         << std::endl
+         << " T really does happen last when using \"trs\" argument to make_transform "
+
+         << std::endl  
+         ;
+
+}
+
+
+
+
+
 void test_make_transform()
 {
     LOG(info) << "test_make_transform" ;
@@ -195,8 +279,9 @@ int main(int argc, char** argv)
 
     //test_stream();
     //test_invert_tr();
-    test_make_transform();
-    test_nmat4triple_make_translated();
+    test_make_mat();
+    //test_make_transform();
+    //test_nmat4triple_make_translated();
     //test_nmat4triple_id_digest();
 
     return 0 ; 

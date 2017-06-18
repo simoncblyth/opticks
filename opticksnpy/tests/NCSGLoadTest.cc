@@ -25,6 +25,11 @@ void test_LoadTree(const char* treedir)
 {
     int verbosity = 2 ;
 
+    LOG(info) << "test_LoadTree" 
+              << " treedir " << treedir
+              << " verbosity " << verbosity
+              ; 
+
     if(!BFile::ExistsDir(treedir))
     {
          LOG(warning) << "test_LoadTree no such dir " << treedir ;

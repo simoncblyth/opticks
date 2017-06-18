@@ -150,6 +150,18 @@ void test_box_box3()
 }
 
 
+nmat4triple* make_triple()
+{
+    std::string order = "srt" ;   //  <- translate is first, see NGLMExtTest 
+    glm::vec3 tlat(0,0,500);
+    glm::vec4 axis_angle(0,0,1,0);
+    glm::vec3 scal(1,1,1);
+    glm::mat4 transform = nglmext::make_transform(order, tlat, axis_angle, scal );
+
+    return new nmat4triple(transform);
+}
+
+
 void test_nudge()
 {
     LOG(info) << "test_nudge" ;
@@ -161,20 +173,14 @@ void test_nudge()
     nbox box = make_box3(2*h,2*h,2*h); 
     box.verbosity = 3 ;  
 
-    std::string order = "srt" ;  // scale first, then rotate, then transform
-    glm::vec3 tlat(0,0,500);
-    glm::vec4 axis_angle(0,0,1,0);
-    glm::vec3 scal(1,1,1);
-    glm::mat4 transform = nglmext::make_transform(order, tlat, axis_angle, scal );
-
-    box.gtransform = new nmat4triple(transform); 
-
-    nmat4triple* start = box.gtransform ;
+    nmat4triple* start = make_triple() ;
+    box.gtransform = start ; 
 
     box.pdump("make_box3(2*h,2*h,2*h)");
 
+
     std::vector<glm::vec3> before ; 
-    box.getSurfacePointsAll( before, level, margin ); 
+    box.getSurfacePointsAll( before, level, margin, FRAME_LOCAL ); 
 
     assert(before.size() == 6 ); 
 
@@ -197,7 +203,7 @@ void test_nudge()
     box.pdump("make_box3(2*h,2*h,2*h) NUDGED");
 
     std::vector<glm::vec3> after ; 
-    box.getSurfacePointsAll( after, level, margin ); 
+    box.getSurfacePointsAll( after, level, margin, FRAME_LOCAL ); 
 
     assert(after.size() == 6 ); 
 

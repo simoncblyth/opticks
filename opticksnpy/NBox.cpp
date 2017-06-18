@@ -1,7 +1,9 @@
 #include "PLOG.hh"
 
+#include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp>
+
 
 #include "NBBox.hpp"
 #include "NBox.hpp"
@@ -26,8 +28,31 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 
 float nbox::operator()(float x, float y, float z) const 
 {
-    glm::vec4 q(x,y,z,1.0); 
-    if(gtransform) q = gtransform->v * q ;  // NB using inverse transform on the query point 
+    glm::vec3 pos(x,y,z);
+    return sdf_(pos, gtransform);
+} 
+
+float nbox::sdf_model(const glm::vec3& pos) const { return sdf_(pos, NULL) ; }
+float nbox::sdf_local(const glm::vec3& pos) const { return sdf_(pos, transform) ; }
+float nbox::sdf_global(const glm::vec3& pos) const { return sdf_(pos, gtransform) ; }
+
+float nbox::sdf_(const glm::vec3& pos, NNodeFrameType fty) const 
+{
+    float sd = 0.f ; 
+    switch(fty)
+    {
+       case FRAME_MODEL  : sd = sdf_(pos, NULL)      ; break ; 
+       case FRAME_LOCAL  : sd = sdf_(pos, transform) ; break ; 
+       case FRAME_GLOBAL : sd = sdf_(pos, gtransform) ; break ; 
+    }
+    return sd ; 
+}
+
+float nbox::sdf_(const glm::vec3& pos, const nmat4triple* triple) const 
+{
+    glm::vec4 q(pos,1.0); 
+
+    if(triple) q = triple->v * q ;  // NB using inverse transform on the query point 
 
     glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
     glm::vec3 a = glm::abs(p) ;
@@ -46,14 +71,16 @@ float nbox::operator()(float x, float y, float z) const
         sd = glm::compMax(d) ;
     }
     return complement ? -sd : sd ; 
-} 
+}
 
-float nbox::sdf1(float x, float y, float z)  
+
+
+float nbox::sdf1(float x, float y, float z) const 
 {
     return (*this)(x,y,z);
 }
 
-float nbox::sdf2(float x, float y, float z)
+float nbox::sdf2(float x, float y, float z) const 
 {
     glm::vec4 p(x,y,z,1.0); 
     if(gtransform) p = gtransform->v * p ;
@@ -130,7 +157,32 @@ unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const
 }
 
 
-glm::vec3 nbox::par_pos(const nuv& uv) const 
+glm::vec3 nbox::par_pos_(const nuv& uv, NNodeFrameType fty) const 
+{
+    glm::vec3 pos ; 
+    switch(fty)
+    {
+        case FRAME_MODEL:  pos = par_pos_(uv, NULL)       ; break ; 
+        case FRAME_LOCAL:  pos = par_pos_(uv, transform)  ; break ; 
+        case FRAME_GLOBAL: pos = par_pos_(uv, gtransform) ; break ; 
+    }
+    return pos ; 
+}
+
+glm::vec3 nbox::par_pos_(const nuv& uv, const nmat4triple* triple) const 
+{
+    glm::vec3 mpos = par_pos_model(uv);
+    glm::vec4 tpos(mpos, 1) ; 
+    if(triple) tpos = triple->t * tpos ;   // <-- direct transform, not inverse
+    return glm::vec3(tpos) ; 
+}
+
+
+glm::vec3 nbox::par_pos_local( const nuv& uv) const { return par_pos_(uv, transform) ; }
+glm::vec3 nbox::par_pos_global(const nuv& uv) const { return par_pos_(uv, gtransform) ; }
+glm::vec3 nbox::par_pos(       const nuv& uv) const { return par_pos_(uv, gtransform) ; }
+
+glm::vec3 nbox::par_pos_model( const nuv& uv) const 
 {
     /*
 
@@ -163,7 +215,8 @@ glm::vec3 nbox::par_pos(const nuv& uv) const
 
     */
 
-    nbbox bb = bbox() ;  // NB the gtransform->t is already applied
+    //nbbox bb = bbox() ;  // NB bbox() has gtransform->t is already applied
+    nbbox bb = bbox_model() ;  // bbox_model() has no transforms applied
 
     glm::vec3 p ; 
 
@@ -231,28 +284,20 @@ glm::vec3 nbox::par_pos(const nuv& uv) const
                   p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                }
                ; break ;
- 
     }
 
 /*
-    std::cout << "nbox::par_pos"
+    std::cout << "nbox::par_pos_model"
               << " uv " << glm::to_string(uv) 
               << " p " << glm::to_string(p)
               << std::endl 
                ; 
 */
-
-
     
-    //glm::vec4 pt(p) ; 
-    //if(gtransform) pt = gtransform->t * p ;   // <-- direct transform, not inverse
-    //return glm::vec3(pt) ; 
-
-    // NOPE its wrong to transform here as parametric postions are based 
-    // on the bbox which is already transformed 
-
     return p ; 
 }
+
+
 
 
 
@@ -290,6 +335,22 @@ How to nudge to avoid a coincidence ?
        |                 |
        +-----------------+
 
+
+* DO I NEED A SEPARATE nudge_transform BECAUSE HOW MUCH TO DELTA TRANSLATE 
+  TO PREVENT MOVEMENT OF THE FIXED FACE DEPENDS ON CURRENT TRANSFORM
+  (IF ITS NOT JUST A TRANSLATION WHICH COMMUTES)
+
+  * this is mixed frame thinking... just think within the single primitive
+    frame, just want to grow the box in one direction... if you compensate to 
+    fix the face in the prim frame, it will be fixed in the composite one 
+
+  * gtransforms are normally created for all primitives 
+    when NCSG::import_r recursion gets down to them based on the
+    heirarchy of transforms collected from the ancestors of the primitive in 
+    the tree ... so that means need to change transform and then update gtransforms
+
+
+
 */
     assert( s < par_nsurf());
     assert( is_box3 && type == CSG_BOX3 && "nbox::nudge only implemented for CSG_BOX3 not CSG_BOX " );
@@ -321,6 +382,8 @@ How to nudge to avoid a coincidence ?
         case 5:{ param.f.y += delta ; tlate.y =  delta/2.f ; } ; break ; // +Y 
     }
 
+    // HMM MAYBE PREFERABLE TO NON-UNIFORMLY SCALE TO ACHIEVE A DELTA
+    // RATHER THAN ACTUALLY CHANGING GEOMETRY, AS THAT CAN BE DONE TO ANYTHING ???
 
     if(verbosity > 0)
     std::cout << "nbox::nudge DONE " 
@@ -331,21 +394,41 @@ How to nudge to avoid a coincidence ?
               << std::endl ;
 
 
-    if(transform == NULL)  transform = nmat4triple::make_identity() ; 
-    bool reverse = false ; 
-    // want nudge correcton translation at leaf end (ie do it first)
-    transform = transform->make_translated(tlate, reverse, "nbox::nudge" ); 
+    if(transform == NULL) transform = nmat4triple::make_identity() ; 
 
+    glm::mat4 compensate_ = nglmext::make_translate(tlate); 
+    nmat4triple compensate(compensate_);
+
+    bool reverse = true ;   // <-- think of the nudge as an origin frame inside the leaf 
+    std::vector<nmat4triple*> triples ; 
+    triples.push_back(&compensate); 
+    triples.push_back(transform); 
+    nmat4triple* compensated = nmat4triple::product(triples, reverse );
+
+    // cannot use make_translated as need the translation first ...
+    // transform = transform->make_translated(tlate, reverse, "nbox::nudge" ); 
+
+    if(verbosity > 0)
+    std::cout << "nbox::nudge"
+              << std::endl 
+              << gpresent("compensate_", compensate_ )
+              << std::endl 
+              << " changing primitive transform "
+              << std::endl
+              << gpresent("transform->t", transform->t) 
+              << std::endl
+              << " with "
+              << std::endl
+              << gpresent("compensate.t", compensate.t)
+              << std::endl
+              << " -> "
+              << gpresent("compensated->t", compensated->t)
+              << std::endl
+              ;
+
+    transform = compensated ; 
     gtransform = global_transform();  // product of transforms from heirarchy
 
-    // DO I NEED A SEPARATE nudge_transform BECAUSE HOW MUCH TO DELTA TRANSLATE 
-    // TO PREVENT MOVEMENT OF THE FIXED FACE DEPENDS ON CURRENT TRANSFORM
-    // (IF ITS NOT JUST A TRANSLATION WHICH COMMUTES)
-    //
-    //  gtransforms are normally created for all primitives 
-    //  when NCSG::import_r recursion gets down to them based on the
-    //  heirarchy of transforms collected from the ancestors of the primitive in 
-    //  the tree
 
 }
 
@@ -362,10 +445,7 @@ void nbox::adjustToFit(const nbbox& bb, float scale)
 }
 
 
-
-
-
-nbbox nbox::bbox() const
+nbbox nbox::bbox_model() const
 {
     nbbox bb ;
     if(is_box3)
@@ -384,11 +464,45 @@ nbbox nbox::bbox() const
     bb.invert = complement ; 
     bb.empty = false ; 
 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    // Is the transform intrinsic or extrinsic to the model ??? 
+    // .... currently thinking extrinsic, but maybe need
+    // a separate model transform to simplify intra node uncoincidence 
+    // checking and nudging.
 
+    return bb ; 
+}
+
+nbbox nbox::bbox_(NNodeFrameType fr) const 
+{
+    nbbox bb = bbox_model();
+    nbbox tbb(bb);
+
+    if(fr == FRAME_LOCAL && transform)
+    {
+        tbb = bb.transform(transform->t);
+    }
+    else if(fr == FRAME_GLOBAL && gtransform)
+    {
+        tbb = bb.transform(gtransform->t);
+    }
+    return tbb ; 
+}
+
+nbbox nbox::bbox_(const nmat4triple* triple) const
+{
+    nbbox bb = bbox_model();
+    return triple ? bb.transform(triple->t) : bb ; 
     // bbox transforms need TR not IR*IT as they apply directly to geometry 
     // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }
+
+
+nbbox nbox::bbox()        const { return bbox_(FRAME_GLOBAL) ; } 
+nbbox nbox::bbox_global() const { return bbox_(FRAME_GLOBAL) ; } 
+nbbox nbox::bbox_local()  const { return bbox_(FRAME_LOCAL) ; } 
+
+
+
 
 glm::vec3 nbox::gseedcenter() const 
 {
@@ -399,38 +513,40 @@ void nbox::pdump(const char* msg) const
 {
     std::cout 
               << std::setw(10) << msg 
+              << " nbox::pdump "
               << " label " << ( label ? label : "no-label" )
               << " center " << center 
+              << " param.f " << param.f.desc() 
               << " side " << param.f.w 
               << " gseedcenter " << gseedcenter()
+              << " transform? " << !!transform
               << " gtransform? " << !!gtransform
               << " is_box3 " << is_box3
               << std::endl ; 
 
-    if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
+
+    if(verbosity > 1 && transform) 
+         std::cout 
+              << std::endl
+              << gpresent("tr->t", transform->t) 
+              << std::endl
+              ;
+
+    if(verbosity > 1 && gtransform) 
+         std::cout 
+              << std::endl
+              << gpresent("gtr->t", gtransform->t) 
+              << std::endl
+              ;
 
     if(verbosity > 2)
     {
-        unsigned level = 1 ;  // +---+---+
-        int margin = 1 ;      // o---*---o
-
-        std::cout << " SurfacePointsAll "
-                  << " verbosity " << verbosity     
-                  << " uvlevel " << level     
-                  << " uvmargin " << margin
-                  << std::endl ;     
-
-        std::vector<glm::vec3> points ; 
-        getSurfacePointsAll( points, level, margin ); 
-        for(unsigned i=0 ; i < points.size() ; i++) 
-              std::cout
-                   << " i " << std::setw(4) << i 
-                   << " " 
-                   << glm::to_string(points[i]) 
-                   << std::endl
-                   ; 
+        dumpSurfacePointsAll("nbox::pdump", FRAME_MODEL );
+        dumpSurfacePointsAll("nbox::pdump", FRAME_LOCAL );
+        dumpSurfacePointsAll("nbox::pdump", FRAME_GLOBAL );
     }
 }
+
 
 
 

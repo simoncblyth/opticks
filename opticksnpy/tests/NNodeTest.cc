@@ -36,9 +36,6 @@ nmat4triple make_tlate_triple( const glm::vec3& tlate )
 }
 
 
-
-
-
 void test_node_transforms()
 {
     LOG(info) << "test_node_transforms" ; 
@@ -121,10 +118,47 @@ void test_node_transforms()
 
 
 
+
+void test_getSurfacePoints_difference()
+{
+    LOG(info) << "test_getSurfacePoints_difference" ; 
+
+    nbox a = make_box3(400,400,100);
+    nbox b = make_box3(300,300,50);
+
+    glm::vec3 tlate(0,0,25);
+    b.transform = nmat4triple::make_translate( tlate );    
+
+    ndifference obj = make_difference(&a, &b);
+
+    a.parent = &obj ;  // parent hookup usually done by NCSG::import_r 
+    b.parent = &obj ;   
+    
+    obj.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+    // without update_gtransforms they are all NULL so the dump shows un-translated bbox
+
+    obj.dump("before scaling obj");
+
+
+    glm::vec3 tsca(2,2,2);
+    obj.transform = nmat4triple::make_scale( tsca );    
+
+    obj.update_gtransforms();  
+   
+    obj.dump("after scaling obj");
+
+    // NOW HOW TO GET LOCALS ? WITHOUT THE OBJ TRANSFORM  
+
+    b.verbosity = 3 ; 
+    b.pdump("b.pdump");
+
+
+}
+
+
 void test_getSurfacePoints()
 {
-
-     nbox bx = make_box(0,0,0,10);
+     nbox bx = make_box3(20,20,20);
 
      unsigned ns = bx.par_nsurf();
      assert( ns == 6 );
@@ -164,18 +198,19 @@ void test_getSurfacePoints()
 
      for(unsigned s = 0 ; s < ns ; s++)
      {    
-         std::vector<glm::vec3> surf ; 
+         std::vector<glm::vec3> pts ; 
 
-         bx.getSurfacePoints(surf, s, level, margin) ;
+         bx.getSurfacePoints(pts, s, level, margin, FRAME_LOCAL ) ;
 
-         //assert( surf.size() == expect );
+         assert( pts.size() == expect );
 
-         std::cout 
-              << " s " << s
-              << " surf " << surf.size() 
-              << std::endl ; 
-
-         for(unsigned i=0 ; i < surf.size() ; i++ ) std::cout << glm::to_string(surf[i]) << std::endl ; 
+         for(unsigned i=0 ; i < pts.size() ; i++ ) 
+              std::cout 
+                  << " s " << s
+                  << " pts " << pts.size() 
+                  << " i " << i
+                  << " " 
+                  << glm::to_string(pts[i]) << std::endl ; 
      }
 }
 
@@ -215,7 +250,7 @@ void test_getCoincidentSurfacePoints()
      {    
          std::vector<nuv> coincident ; 
 
-         bx.getCoincidentSurfacePoints(coincident, s, level, margin, &other, epsilon ) ;
+         bx.getCoincidentSurfacePoints(coincident, s, level, margin, &other, epsilon, FRAME_LOCAL ) ;
 
          std::cout << " s " 
                    << s 
@@ -268,9 +303,10 @@ int main(int argc, char** argv)
 
     //test_node_transforms();
 
-    test_getSurfacePoints();
-    test_getCoincidentSurfacePoints();
-    test_getCoincident();
+    test_getSurfacePoints_difference();
+    //test_getSurfacePoints();
+    //test_getCoincidentSurfacePoints();
+    //test_getCoincident();
 
     return 0 ; 
 }
