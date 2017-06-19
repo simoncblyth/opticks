@@ -2,9 +2,27 @@ CSG Coincidence Speckle
 ==========================
 
 
+
+* ~/opticks_refs/speckle_lvTopESR.png
+
+
 * ~/opticks_refs/edge_speckle.png
+* ~/opticks_refs/speckle_lvSstTopCirRibBase
 
 * how to generalize nudges to avoid subtractions that lead to ghost speckle coincidence ???
+
+* have implemeted bileaf uncoincidence detection and nudge fixing for box3 - box3, 
+  but thats not directly applicable as the box cuts from an already 
+  composite: cy - cy (for cylinder with inner radius)
+
+  * could reorder this inner subtraction ?? ie cut out the boxes from the cylinder endcap
+
+
+* suspect this situation is rather rare, so fixing it via metadata
+  labelled nudge hints seems appropriate
+
+* could add inner radius param handling to cylinder primitive, 
+  but thats significant work, will probably eventually do this but not a priority
 
 
 ::

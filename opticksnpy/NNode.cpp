@@ -714,7 +714,7 @@ bool nnode::can_uncoincide(const nnode* a, const nnode* b) const
 
 unsigned nnode::uncoincide()
 {
-    // canonically invoked from NCSG::import_r
+    // canonically invoked for bileaf from NCSG::import_r
 
     assert( is_bileaf() && "nnode::uncoincide expects left and right to be primitives" );
   
@@ -728,7 +728,8 @@ unsigned nnode::uncoincide()
     nnode* b = NULL ; 
 
     // hmm theres an implicit assumption here that all complements have 
-    // already fed down to the leaves 
+    // already fed down to the leaves
+    assert(!complement); 
 
     if( type == CSG_DIFFERENCE )  // left - right 
     {
@@ -750,7 +751,7 @@ unsigned nnode::uncoincide()
     {
         if(!can_uncoincide(a, b))
         {
-            LOG(warning) << "nnode::uncoincide skip as not implemented for (A - B) subtraction with "
+            LOG(warning) << "nnode::uncoincide detects bileaf A-B subtraction, but must skip as not implemented for: "
                          << " A " << a->csgname()
                          << " B " << b->csgname()
                           ;
@@ -878,8 +879,17 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
 
 void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const 
 {
-    // doing this comparison with gtransform applied to par_pos positions
-    // and other_sdf is simplest to think about ... ie CSG tree relative frame
+    // Checking the disposition of parametric points of parametric surface s of this node 
+    // with respect to the implicit distance to the surface of the other node...  
+    //
+    // Parametric uv coordinates of this node are collected into *surf* 
+    // when their positions are within epsilon of the surface of the other node.
+    //
+    // The frame of this nodes paramtric positions and the frame of the other nodes 
+    // signed distance to surface are specified by the fr arguement, typically FRAME_LOCAL
+    // is appropriate.
+    //
+
 
     int nu = 1 << level ; 
     int nv = 1 << level ; 

@@ -7,6 +7,24 @@ import numpy as np
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
 
+def to_pylist(a, fmt="%.3f"):
+    s = ",".join(map(lambda _:fmt % _, list(a) )) 
+    return "[%s]" % s 
+
+def to_pyline(a, alabel="a", fmt="%.3f"):
+    assert alabel is not None
+    if a is None:
+        s = "None"
+    elif a.shape == (4,):
+        s = to_pylist(a, fmt)
+    elif a.shape == (4,4):
+        ss = map(to_pylist, a )
+        s = "[" + ",".join(ss) + "]"
+    else:
+        pass
+    pass
+    return "%s = %s" % (alabel, s)
+
 
 def scale(arg=[1,2,3], m=None, dtype=np.float32):
     """  
@@ -246,6 +264,12 @@ if __name__ == '__main__':
 
     print "rot3xyz\n", rot3xyz
 
+
+    a = np.array([1,2,3,4], dtype=np.float32)
+    m = np.eye(4, dtype=np.float32)
+
+    print to_pyline(a, "a")
+    print to_pyline(m, "m")
 
 
 

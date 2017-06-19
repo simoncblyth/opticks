@@ -1019,9 +1019,67 @@ EOP
 
 
 
+
+
+tboolean-esr(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-esr-(){ $FUNCNAME- | python $* ; } 
+tboolean-esr--(){ cat << EOP
+
+outdir = "$TMP/$FUNCNAME"
+obj_ = "$(tboolean-testobject)"
+con_ = "$(tboolean-container)"
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main()
+
+CSG.boundary = obj_
+CSG.kwa = dict(verbosity="1",poly="IM")
+
+a = CSG("cylinder", param = [0.000,0.000,0.000,2223.000],param1 = [-0.050,0.050,0.000,0.000])
+b = CSG("cylinder", param = [0.000,0.000,0.000,2144.500],param1 = [-2.051,2.051,0.000,0.000],complement = True)
+ab = CSG("intersection", left=a, right=b)
+
+obj = ab
+
+con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
+CSG.Serialize([con, obj], outdir )
+
+
+"""
+
+Annulus shape, difference of two very thin discs : 
+-----------------------------------------------------
+
+Speckles like crazy in the hole, especially when viewed from high angle, end on 
+
+* without increasing thickness of the subtracted, the hole doesnt show : just looks like complete disc
+
+* substantially increasing thickness of the subtracted disk, gets rid of the speckle 
+
+  * NB this is perfectly valid thing to do, IT DOES NOT CHANGE GEOMETRY, 
+    are increasing the size of smth are about to subtract.. 
+    there is no concern about bumping into other geometry.
+
+  * TODO: verify the above statement by testing two close annuli whose
+    subtracted cylinders would overlap
+
+
+* BUT there is still a bright dot "pole artifact" when viewed end on   
+
+"""
+
+EOP
+}
+
+
+
 tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
 # jump into ipython session with the python streamed from a bash function
 
+tboolean-sc-loadtest(){ ${FUNCNAME/loadtest} ; NCSGLoadTest $TMP/${FUNCNAME/loadtest}-/1 ; }
 tboolean-sc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sc-(){ $FUNCNAME- | python $* ; } 
 tboolean-sc--(){ cat << EOP
@@ -1054,10 +1112,10 @@ tree = Tree(gdml.world)
 #gsel = "/dd/Geometry/AdDetails/lvRadialShieldUnit0x"   # thin shell cy with 6 cy holes, poly mess
 #gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"      # flat plate with 5 holes, no poly
 #gsel = "/dd/Geometry/AdDetails/lvTopRefGap0x"          # flat plate with 5 holes, no poly 
-#gsel = "/dd/Geometry/AdDetails/lvTopESR0x"            # flat plate with 9 holes, no poly, center one has coincidence speckle
+gsel = "/dd/Geometry/AdDetails/lvTopESR0x"            # flat plate with 9 holes, no poly, center one has coincidence speckle
 #gsel = "/dd/Geometry/AdDetails/lvSstTopCirRibBase0x"       # ring with 4-T slots cut out, coincidence speckle at top of T  
 
-gsel = "/dd/Geometry/CalibrationSources/lvLedSourceAssy0x"  # three capsules connected with 2 wires , poly works!
+#gsel = "/dd/Geometry/CalibrationSources/lvLedSourceAssy0x"  # three capsules connected with 2 wires , poly works!
 
 
 gidx = 0 
@@ -1084,6 +1142,7 @@ pass
 
 obj.meta.update(verbosity="1")
 obj.dump(msg="BALANCED", detailed=True)
+obj.dump_tboolean(name="esr")
 
 
 CSG.Serialize([container, obj], outdir )
@@ -1092,6 +1151,10 @@ CSG.Serialize([container, obj], outdir )
 
 * raytrace of balanced tree as expected
 * polygonization yielding a blank 
+
+
+~/opticks_refs/tboolean_esr_pole_artifact.png
+
 
 
 
@@ -1355,52 +1418,44 @@ EOP
 
 
 
-tboolean-cylinder(){ TESTCONFIG=$(tboolean-csg-cylinder 2>/dev/null)    tboolean-- ; }
-tboolean-csg-cylinder(){  $FUNCNAME- | python $* ; } 
-tboolean-csg-cylinder-(){ cat << EOP 
+tboolean-cylinder(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-cylinder-(){  $FUNCNAME- | python $* ; } 
+tboolean-cylinder--(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main()
 
+
+outdir = "$TMP/$FUNCNAME"
+
+CSG.boundary = "$(tboolean-testobject)"
+CSG.kwa = dict(verbosity="1", poly="IM", resolution="30" )
+
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
 
+z1 = -100
+z2 = 100
+delta = 0.001 
+
+z1d = z1 - delta
+z2d = z2 + delta
+
+a = CSG("cylinder", param=[0,0,0,400], param1=[z1,z2,0,0] )
+b = CSG("cylinder", param=[0,0,0,100], param1=[z1d,z2d,0,0] )
+c = CSG("cylinder", param=[200,200,0,100], param1=[z1d,z2d,0,0] )
+d = CSG("cylinder", param=[-200,-200,0,100], param1=[z1d,z2d,0,0] )
+
+obj = a - b - c - d 
 
 
-kwa = {}
+#obj.rotate = "1,1,1,45"
 
-im = dict(poly="IM", resolution="50")
-transform = dict(scale="1,1,0.5", rotate="1,1,1,45", translate="100,100,100" )
 
-kwa["verbosity"] = "1" 
-kwa.update(im)
-kwa.update(transform)
-
-cylinder = CSG("cylinder", param=[0,0,0,200], param1=[400,0,0,0], boundary="$(tboolean-testobject)", **kwa )
-
-PCAP = 0x1 << 0  # smaller z endcap
-QCAP = 0x1 << 1  
-
-flags = PCAP          # bottom-cap(-z) 
-#flags = QCAP           # top-cap(+z) 
-#flags = PCAP | QCAP   # both-caps
-#flags = 0             # no-caps 
-
-cylinder.param1.view(np.uint32)[1] = flags 
-
-CSG.Serialize([container, cylinder], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, obj], outdir )
 
 """
-
-Issue:
-
-1. FIXED:seeing endcaps when would expect to see the sides of the cylinder
-2. FIXED:Not honouring transforms
-3. CONCLUDE_UNFIXABLE_SDF_LIMITATION:polygonization does not honour endcap flags, but raytrace does
-4. FIXED:with only one endcap enabled, when look into the open side, can see straight thru the other endcap
-
-Note that endcaps and insides of the cylinder look dark from inside: 
-this is correct as normals are rigidly attached to geometry pointing outwards.
+Failed to reproduce the ESR speckles, from tboolean-sc
 
 """
 EOP

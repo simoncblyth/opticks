@@ -14,13 +14,14 @@ TODO:
   parameters such as thresholds and octree sizes per csg tree.
 
 """
-import os, sys, logging, json, numpy as np
+import os, sys, logging, json, string, numpy as np
 log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.analytic.glm import make_trs
+from opticks.analytic.glm import make_trs, to_pyline
 from opticks.analytic.textgrid import TextGrid
+from opticks.analytic.tboolean import TBooleanBashFunction
 
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
@@ -31,7 +32,6 @@ TREE_PRIMITIVES = lambda height:1 << height
 TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 511, 1023]
 
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",")
-
 
 
 
@@ -242,9 +242,6 @@ class CSG(CSG_):
         inorder_r(self)
         return inorder
 
-
-
-
     def parenting_(self):
         """Label tree nodes with their parent"""
         def parenting_r(node, parent):
@@ -267,6 +264,29 @@ class CSG(CSG_):
 
     elevation = property(lambda self:self.root.height - self.depth) 
 
+
+    def alabels_(self):
+        """Auto label nodes with primitive code letters"""
+        prims = [] 
+        def alabels_r(node):
+            if node is None:return 
+            alabels_r(node.left)
+            alabels_r(node.right)
+            # postorder visit, so primitives always visited before their parents
+            if node.is_primitive:
+                alabel = string.ascii_lowercase[len(prims)]
+                prims.append(node)
+            else: 
+                alabel = node.left.alabel + node.right.alabel
+            pass
+            node.alabel = alabel
+            #node.textra = " %s" % alabel
+        pass
+        alabels_r(self) 
+
+
+
+
     def analyse(self):
         """
         Call from root node to label the tree, root node is annotated with:
@@ -287,6 +307,7 @@ class CSG(CSG_):
         self.parenting_()
         self.rooting_()
         self.subdepth_(label=True)
+        self.alabels_()
 
         self.totnodes = TREE_NODES(self.height)
         inorder = self.inorder_()
@@ -603,7 +624,7 @@ class CSG(CSG_):
             self._transform = make_trs(self._translate, self._rotate, self._scale ) 
         return self._transform
     def _set_transform(self, trs):
-        self._transform = trs
+        self._transform = np.asarray(trs, dtype=np.float32) if trs is not None else None
     transform = property(_get_transform, _set_transform)
 
     def _get_param(self):
@@ -718,7 +739,6 @@ class CSG(CSG_):
         sys.stderr.write("\n%s\n" % self.txt)
 
 
-
     @classmethod 
     def Dump(cls, node, depth=0):
         indent = "   " * depth    
@@ -736,8 +756,64 @@ class CSG(CSG_):
     def label(self, indent=""):
         return "%s %s;%s " % (indent, self.desc(self.typ),self.name )
 
+    def content_operator(self):
+        return "left=%s, right=%s" % ( self.left.alabel, self.right.alabel ) 
+
+    def content_primitive(self):
+        if self.param is not None:
+            param = to_pyline(self.param, "param")
+        else:
+            param = None
+        pass
+        if self.param1 is not None:
+            param1 = to_pyline(self.param1, "param1")
+        else:
+            param1 = None
+        pass
+
+        if self.complement:
+            complement = "complement = True"
+        else:
+            complement = None 
+        pass
+
+        return ",".join(filter(None,[param,param1,complement]))
+
     def content(self):
-        return "%r %r \n%r" % (self.param, self.param1, self.transform)
+        if self.is_primitive:
+            content_ = self.content_primitive()
+        else:
+            content_ = self.content_operator() 
+        pass
+        return "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
+
+
+    def as_python(self):
+        lines = []
+        def as_python_r(node):
+            if node is None:return
+            as_python_r(node.left) 
+            as_python_r(node.right) 
+
+            # postorder visit
+            line = node.content()
+            lines.append(line)    
+            if node.transform is not None:
+                line = to_pyline(node.transform, "%s.transform" % node.alabel )  
+                lines.append(line)    
+            if not node.is_primitive:
+                lines.append("")
+            pass
+        pass
+        as_python_r(self) 
+        return "\n".join(lines)
+
+    def as_tboolean(self, name="esr"):
+        tbf = TBooleanBashFunction(name=name, root=self.alabel, body=self.as_python() )
+        return str(tbf)
+
+    def dump_tboolean(self, name):
+        sys.stderr.write("\n"+self.as_tboolean(name))
 
     def _get_tag(self):
         return self.desc(self.typ)[0:2]
