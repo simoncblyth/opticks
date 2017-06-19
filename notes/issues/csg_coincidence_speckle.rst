@@ -2,9 +2,16 @@ CSG Coincidence Speckle
 ==========================
 
 
+FIXED : Very Thin Cylinder Speckles in CSG difference holes
+---------------------------------------------------------------
 
 * ~/opticks_refs/speckle_lvTopESR.png
 
+* FIXED using new primitive CSG_DISC
+
+
+Complex box cuts from hollowed cylinder speckles
+----------------------------------------------------
 
 * ~/opticks_refs/edge_speckle.png
 * ~/opticks_refs/speckle_lvSstTopCirRibBase
@@ -16,7 +23,6 @@ CSG Coincidence Speckle
   composite: cy - cy (for cylinder with inner radius)
 
   * could reorder this inner subtraction ?? ie cut out the boxes from the cylinder endcap
-
 
 * suspect this situation is rather rare, so fixing it via metadata
   labelled nudge hints seems appropriate

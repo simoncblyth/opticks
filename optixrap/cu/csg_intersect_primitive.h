@@ -1037,13 +1037,14 @@ static __device__
 void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
     const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
+    const float   inner  = q0.f.z ; 
     const float   radius = q0.f.w ; 
 
     const float    z1 = q1.f.x  ; 
     const float    z2 = q1.f.y  ; 
 
-    rtPrintf("## csg_bounds_disc center %7.3f %7.3f  radius %7.3f z1 %7.3f z2 %7.3f \n",
-          center.x, center.y, radius, z1, z2 );
+    rtPrintf("## csg_bounds_disc center %7.3f %7.3f  inner %7.3f radius %7.3f  z1 %7.3f z2 %7.3f \n",
+          center.x, center.y, inner, radius, z1, z2 );
 
     const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
     const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
@@ -1199,24 +1200,55 @@ bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, floa
 
 
 
+/*
+
+#define WITH_CYLINDER_INNER 1
+
+Hmm supporting cylinder with inner radius
+directly will add a boatload of cases...
+
+
+                  /    /        /
+                 /    /        /
+     +------+   /  . /    +---*--+
+     |      |  /   ./     |  /   |
+ ----*------*------/------*-/----*------
+     |      |/    /.      |/     |
+     |      *    / .      *      |
+     |     /|   /  .     /|      |
+     |    / |  /   .    / |      |
+     +---*--+ /    .   /  +------+
+        /    /        /
+       /    /        /
+      /    /        /
+
+Unless could implement by doing internal to the primitive
+boolean combination intersects with the full cylinder 
+and inner cylinder. Hmm this just duplicates what 
+CSG difference or intersect with complement would do though...
+so no point.
+
+*/
+
 static __device__
 bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
     // ascii art explanation in intersect_ztubs.h
 
+#ifdef WITH_CYLINDER_INNER
+    const float inner  = q0.f.z ; 
+    const float ii = inner*inner ; 
+#endif
+
     const float   radius = q0.f.w ; 
+
     const float       z1 = q1.f.x  ; 
     const float       z2 = q1.f.y  ; 
     const float  sizeZ = z2 - z1 ; 
     const float3 position = make_float3( q0.f.x, q0.f.y, z1 ); // P: point on axis at base of cylinder
 
-    //const unsigned flags = q1.u.y ;
-    //bool PCAP = flags & CYLINDER_ENDCAP_P ; 
-    //bool QCAP = flags & CYLINDER_ENDCAP_Q ;
-
     bool PCAP = true ; 
     bool QCAP = true ; 
-
 
     const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame
     const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
@@ -1285,12 +1317,8 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
 
         robust_quadratic_roots(t_NEAR, t_FAR, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
 
-
         float t_PCAP = -md/nd ; 
         float t_QCAP = (dd-md)/nd ;   
-
-        // hmm very thin disc annulus is artifacting, see tboolean-esr ? 
-        // Perhaps from degeneracy between the endcaps ? 
 
 
         float aNEAR = md + t_NEAR*nd ;        // axial coord of near intersection point * sizeZ

@@ -791,3 +791,93 @@ Checking detdesc, repeated bevel subtraction of rotated boxes::
 
 
 
+
+
+Final Deep Tree
+-----------------
+
+
+Code generation with tboolean-sc
+
+* this one would really benefit from cylinder inner radius support 
+
+::
+
+
+    a = CSG("cylinder", param = [0.000,0.000,0.000,660.000],param1 = [-5.000,5.000,0.000,0.000])
+    b = CSG("cylinder", param = [0.000,0.000,0.000,31.500],param1 = [-5.050,5.050,0.000,0.000],complement = True)
+    ab = CSG("intersection", left=a, right=b)
+
+    c = CSG("cylinder", param = [0.000,0.000,0.000,46.500],param1 = [-12.500,12.500,0.000,0.000])
+    d = CSG("cylinder", param = [0.000,0.000,0.000,31.500],param1 = [-12.625,12.625,0.000,0.000],complement = True)
+    cd = CSG("intersection", left=c, right=d)
+    cd.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,-17.500,1.000]]
+
+    abcd = CSG("union", left=ab, right=cd)
+
+    e = CSG("cylinder", param = [0.000,0.000,0.000,660.000],param1 = [-67.500,67.500,0.000,0.000])
+    f = CSG("cylinder", param = [0.000,0.000,0.000,650.000],param1 = [-68.175,68.175,0.000,0.000],complement = True)
+    ef = CSG("intersection", left=e, right=f)
+    ef.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,72.500,1.000]]
+
+    abcdef = CSG("union", left=abcd, right=ef)
+
+    g = CSG("cylinder", param = [0.000,0.000,0.000,660.000],param1 = [-5.000,5.000,0.000,0.000])
+    h = CSG("cylinder", param = [0.000,0.000,0.000,122.000],param1 = [-5.050,5.050,0.000,0.000],complement = True)
+    gh = CSG("intersection", left=g, right=h)
+    gh.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,145.000,1.000]]
+
+    abcdefgh = CSG("union", left=abcdef, right=gh)
+
+    i = CSG("cylinder", param = [0.000,0.000,0.000,132.000],param1 = [-17.500,17.500,0.000,0.000])
+    j = CSG("cylinder", param = [0.000,0.000,0.000,122.000],param1 = [-17.675,17.675,0.000,0.000],complement = True)
+    ij = CSG("intersection", left=i, right=j)
+    ij.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,167.500,1.000]]
+
+    abcdefghij = CSG("union", left=abcdefgh, right=ij)
+
+    k = CSG("cylinder", param = [0.000,0.000,0.000,167.000],param1 = [-10.000,10.000,0.000,0.000])
+    l = CSG("cylinder", param = [0.000,0.000,0.000,122.000],param1 = [-10.100,10.100,0.000,0.000],complement = True)
+    kl = CSG("intersection", left=k, right=l)
+    kl.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,195.000,1.000]]
+
+    abcdefghijkl = CSG("union", left=abcdefghij, right=kl)
+
+    m = CSG("cylinder", param = [0.000,0.000,0.000,167.000],param1 = [-10.000,10.000,0.000,0.000])
+    n = CSG("cylinder", param = [0.000,0.000,0.000,41.500],param1 = [-10.100,10.100,0.000,0.000],complement = True)
+    mn = CSG("intersection", left=m, right=n)
+    mn.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,215.000,1.000]]
+
+    abcdefghijklmn = CSG("union", left=abcdefghijkl, right=mn)
+
+
+
+
+
+    obj = abcdefghijklmn
+
+
+::
+
+    [2017-06-19 17:46:22,850] p81026 {<stdin>:46} INFO - ORIGINAL:
+                                                                                                 un            
+                                                                                 un                      di    
+                                                                 un                      di          cy      cy
+                                                 un                      di          cy      cy                
+                                 un                      di          cy      cy                                
+                 un                      di          cy      cy                                                
+         di              di          cy      cy                                                                
+     cy      cy      cy      cy                                                                                
+    [2017-06-19 17:46:22,851] p81026 {<stdin>:49} INFO - POSITIVIZED:
+                                                                                                 un            
+                                                                                 un                      in    
+                                                                 un                      in          cy     !cy
+                                                 un                      in          cy     !cy                
+                                 un                      in          cy     !cy                                
+                 un                      in          cy     !cy                                                
+         in              in          cy     !cy                                                                
+     cy     !cy      cy     !cy                                                       
+
+
+
+

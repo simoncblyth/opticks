@@ -398,7 +398,18 @@ class Tube(Primitive):
         cn.param1[1] = z2
         return cn
 
-    def as_ncsg(self, nudge_inner=0.01):
+    @classmethod 
+    def make_disc(cls, x, y, inner, radius, z1, z2, name):
+        cn = CSG("disc", name=name)
+        cn.param[0] = x
+        cn.param[1] = y
+        cn.param[2] = inner    
+        cn.param[3] = radius
+        cn.param1[0] = z1
+        cn.param1[1] = z2
+        return cn
+
+    def as_cylinder(self, nudge_inner=0.01):
         hz = self.z/2.
         has_inner = self.rmin > 0.
 
@@ -409,8 +420,22 @@ class Tube(Primitive):
             inner = None
         pass
         outer = self.make_cylinder(self.rmax, -hz, hz, self.name + "_outer" )
-
         return  CSG("difference", left=outer, right=inner, name=self.name + "_difference" ) if has_inner else outer
+
+    def as_disc(self):
+        hz = self.z/2.
+        return self.make_disc( self.x, self.y, self.rmin, self.rmax, -hz, hz, self.name + "_disc" ) 
+
+    def as_ncsg(self, hz_disc_cylinder_cut=1.):
+        hz = self.z/2.
+        rmin = self.rmin
+        rmax = self.rmax
+        pick_disc = hz < hz_disc_cylinder_cut 
+        if pick_disc:
+            log.warning("Tube.as_ncsg picking disc for %s as hz <  hz_disc_cylinder_cut,  hz:%s cut:%s   rmin:%s rmax:%s " % (self.name, hz, hz_disc_cylinder_cut, rmin, rmax))
+        pass
+        return self.as_disc() if pick_disc else self.as_cylinder()
+
 
 
 class Sphere(Primitive):

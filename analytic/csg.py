@@ -47,10 +47,10 @@ class CSG(CSG_):
         """Label tree nodes with their depth from the root, return maxdepth"""
         def depth_r(node, depth):
             if node is None:return depth
+            #node.textra = " %s" % depth
             if label:
                 node.depth = depth
             pass
-            #node.textra = " %s" % depth
             if node.left is None and node.right is None:
                 return depth
             else:
@@ -63,7 +63,7 @@ class CSG(CSG_):
 
 
     def subdepth_(self, label=False):
-        """max height of each node treated as a subtree"""
+        """label tree with *subdepth* : the max height of each node treated as a subtree"""
         def subdepth_r(node, depth):
             assert not node is None
             subdepth = node.depth_(label=False)
@@ -80,6 +80,22 @@ class CSG(CSG_):
             pass
         pass
         subdepth_r(self, 0)
+
+
+    def subtrees_(self, subdepth=1):
+        """collect all subtrees of a particular subdepth"""
+        subtrees = []
+        def subtrees_r(node):
+            if node is None:return
+            subtrees_r(node.left)
+            subtrees_r(node.right)
+            # postorder visit 
+            if node.subdepth == subdepth:
+                subtrees.append(node)  
+            pass
+        pass
+        subtrees_r(self)
+        return subtrees
 
 
     def balance(self):
@@ -195,16 +211,19 @@ class CSG(CSG_):
         assert self.is_positive_form()
         self.analyse()
 
-
-
-    def operators(self):
+    def operators_(self, minsubdepth=0):
         ops = set()
         def operators_r(node, depth):
             if node.left is None and node.right is None:
                 pass
             else:
                 assert node.typ in [CSG_.INTERSECTION, CSG_.UNION, CSG_.DIFFERENCE]
-                ops.add(node.typ)
+
+                # preorder visit
+                if node.subdepth >= minsubdepth:
+                    ops.add(node.typ)
+                pass
+
                 operators_r(node.left, depth+1)
                 operators_r(node.right, depth+1)
             pass
@@ -213,8 +232,34 @@ class CSG(CSG_):
         return list(ops)
 
     def is_positive_form(self):
-        ops = self.operators()
+        ops = self.operators_()
         return not CSG.DIFFERENCE in ops
+
+    def is_mono_operator(self):
+        ops = self.operators_()
+        return len(ops) == 1 
+
+    def is_mono_bileaf(self):
+        """
+        Example of a mono bileaf tree, with all opertors 
+        above subdepth 1 (bileaf level) being the same, in this case: union.
+        The numbers label the subdepth.::
+
+                                                                                                       un 7            
+                                                                                        un 6                     in 1    
+                                                                        un 5                     in 1         cy 0     !cy 0
+                                                        un 4                     in 1         cy 0     !cy 0                
+                                        un 3                     in 1         cy 0     !cy 0                                
+                        un 2                     in 1         cy 0     !cy 0                                                
+                in 1             in 1         cy 0     !cy 0                                                                
+            cy 0     !cy 0     cy 0     !cy 0              
+
+
+        """ 
+        subdepth = 1   # bileaf level, one step up from the primitives
+        ops = self.operators_(minsubdepth=subdepth+1)  # look at operators above the bileafs 
+        return len(ops) == 1 
+
 
     def primitives(self):
         prims = []
@@ -277,10 +322,15 @@ class CSG(CSG_):
                 alabel = string.ascii_lowercase[len(prims)]
                 prims.append(node)
             else: 
-                alabel = node.left.alabel + node.right.alabel
+                if node.left is None or node.right is None:
+                    log.warning("alabels_ malformed binary tree") 
+                    alabel = "ERR"
+                else:
+                    alabel = node.left.alabel + node.right.alabel
+                pass
             pass
             node.alabel = alabel
-            #node.textra = " %s" % alabel
+            node.textra = " %s" % alabel
         pass
         alabels_r(self) 
 
@@ -844,12 +894,13 @@ class CSG(CSG_):
 
     is_convex_polyhedron = property(lambda self:self.typ in self.CONVEX_POLYHEDRA )
     is_primitive = property(lambda self:self.typ >= self.SPHERE )
+    is_bileaf = property(lambda self:self.left is not None and self.left.is_leaf and self.right is not None and self.right.is_leaf )
     is_leaf = property(lambda self:self.left is None and self.right is None)
     is_zero = property(lambda self:self.typ == self.ZERO )
     is_operator = property(lambda self:self.typ in [self.UNION,self.DIFFERENCE,self.INTERSECTION])
-    is_lrzero = property(lambda self:self.is_operator and self.left.is_zero and self.right.is_zero )
-    is_rzero = property(lambda self:self.is_operator and not(self.left.is_zero) and self.right.is_zero )
-    is_lzero = property(lambda self:self.is_operator and self.left.is_zero and not(self.right.is_zero) )
+    is_lrzero = property(lambda self:self.is_operator and self.left.is_zero and self.right.is_zero )      # l-zero AND r-zero
+    is_rzero = property(lambda self:self.is_operator and not(self.left.is_zero) and self.right.is_zero )  # r-zero BUT !l-zero
+    is_lzero = property(lambda self:self.is_operator and self.left.is_zero and not(self.right.is_zero) )  # l-zero BUT !r-zero
 
 
 
@@ -951,11 +1002,11 @@ def test_positivize():
 
     abcde.analyse()
     print "original\n\n", abcde.txt
-    print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
+    print "operators: " + " ".join(map(CSG.desc, abcde.operators_()))
 
     abcde.positivize() 
     print "positivize\n\n", abcde.txt
-    print "operators: " + " ".join(map(CSG.desc, abcde.operators()))
+    print "operators: " + " ".join(map(CSG.desc, abcde.operators_()))
 
 
 
@@ -1008,11 +1059,11 @@ def test_positivize_2():
 
     root.analyse()
     print "original\n\n", root.txt
-    print "operators: " + " ".join(map(CSG.desc, root.operators()))
+    print "operators: " + " ".join(map(CSG.desc, root.operators_()))
 
     root.positivize() 
     print "positivize\n\n", root.txt
-    print "operators: " + " ".join(map(CSG.desc, root.operators()))
+    print "operators: " + " ".join(map(CSG.desc, root.operators_()))
 
 
 

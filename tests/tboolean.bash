@@ -1168,6 +1168,8 @@ Speckles like crazy in the hole, especially when viewed from high angle, end on
     for near degenerate endcaps, seem like the next available thing to try
 
 
+* THESE ISSUES MOTIVATED DEVELOPMENT OF CSG_DISC see tboolean-disc
+
 
 """
 
@@ -1212,11 +1214,12 @@ tree = Tree(gdml.world)
 #gsel = "/dd/Geometry/AdDetails/lvRadialShieldUnit0x"   # thin shell cy with 6 cy holes, poly mess
 #gsel = "/dd/Geometry/AdDetails/lvTopReflector0x"      # flat plate with 5 holes, no poly
 #gsel = "/dd/Geometry/AdDetails/lvTopRefGap0x"          # flat plate with 5 holes, no poly 
-gsel = "/dd/Geometry/AdDetails/lvTopESR0x"            # flat plate with 9 holes, no poly, center one has coincidence speckle
+#gsel = "/dd/Geometry/AdDetails/lvTopESR0x"            # flat plate with 9 holes, no poly, center one has coincidence speckle FIXED with disc
 #gsel = "/dd/Geometry/AdDetails/lvSstTopCirRibBase0x"       # ring with 4-T slots cut out, coincidence speckle at top of T  
 
 #gsel = "/dd/Geometry/CalibrationSources/lvLedSourceAssy0x"  # three capsules connected with 2 wires , poly works!
 
+gsel = "/dd/Geometry/OverflowTanks/lvGdsOflTnk0x"   # mixed deep tree (union of cy-cy) 
 
 gidx = 0 
 
@@ -1232,13 +1235,8 @@ log.info("ORIGINAL:\n"+str(orig.txt))
 orig.positivize()
 log.info("POSITIVIZED:\n"+str(orig.txt))
 
-if TreeBuilder.can_balance(orig):
-    obj = TreeBuilder.balance(orig)
-    log.info("BALANCED:\n"+str(obj.txt))
-else:
-    obj = orig 
-    log.warning("cannot balance")
-pass
+obj = TreeBuilder.balance(orig)
+log.info("BALANCED:\n"+str(obj.txt))
 
 obj.meta.update(verbosity="1")
 obj.dump(msg="BALANCED", detailed=True)

@@ -9,34 +9,40 @@ from opticks.analytic.csg import CSG
 
 
 class TreeBuilder(object):
-
-    @classmethod 
-    def can_balance(cls, tree):
-        if not tree.is_positive_form():
-            log.warning("cannot balance tree that is not in positive form")
-            return False 
-        pass
-        ops = tree.operators()
-        if len(ops) != 1:
-            log.warning("balancing of non-mono operator trees not implemented" )
-            return False
-        pass
-        return True
-
-
     @classmethod 
     def balance(cls, tree):
         """
         Note that positivization is done inplace whereas
         the balanced tree is created separately 
         """
-        assert cls.can_balance(tree), "must positivize first "
-        ops = tree.operators()
-        assert len(ops) == 1
-        op = ops[0]
-        prims = tree.primitives()
-        return cls.commontree(op, prims, tree.name+"_balanced" )
+        if not tree.is_positive_form():
+            log.fatal("cannot balance tree that is not in positive form")
+            assert 0 
+        pass
+        ops = tree.operators_()
+        hops = tree.operators_(minsubdepth=2)   # operators above the bileaf operators  
 
+        if len(ops) == 1:
+            op = ops[0]
+            prims = tree.primitives()
+            balanced = cls.commontree(op, prims, tree.name+"_prim_balanced" )
+        elif len(hops) == 1: 
+            op = hops[0]
+            bileafs = tree.subtrees_(subdepth=1)
+            balanced = cls.bileaftree(op, bileafs, tree.name+"_bileaf_balanced" )
+        else:
+            log.warning("balancing trees of this structure not implemented")
+            balanced = tree
+        pass
+        return balanced
+
+    @classmethod
+    def bileaftree(cls, operator, bileafs, name):
+        tb = TreeBuilder(bileafs, operator=operator, bileaf=True)
+        root = tb.root 
+        root.name = name
+        root.analyse()
+        return root
 
     @classmethod
     def commontree(cls, operator, primitives, name):
@@ -55,42 +61,63 @@ class TreeBuilder(object):
         return cls.commontree(CSG.INTERSECTION, primitives, name )
 
 
-    def __init__(self, primitives, operator=CSG.UNION):
+    def __init__(self, subs, operator=CSG.UNION, bileaf=False):
         """
-        :param primitives: list of CSG instance primitives
+        :param subs: list of CSG instance primitives or bileafs when bileaf is True
         """
         self.operator = operator 
-        nprim = len(map(lambda n:n.is_primitive, primitives))
-        assert nprim == len(primitives) and nprim > 0
 
+        if not bileaf:
+            nprim = len(map(lambda n:n.is_primitive, subs))
+            assert nprim == len(subs) and nprim > 0
+        else:
+            nbileaf = len(map(lambda n:n.is_bileaf, subs))
+            assert nbileaf == len(subs) and nbileaf > 0
+            nprim = 2*nbileaf
+            log.info("TreeBuilder bileaf mode, nbileaf: %s nprim:%s " % (nbileaf, nprim))
+        pass
         self.nprim = nprim
-        self.primitives = primitives
+        self.subs = subs
 
+        # find complete binary tree height sufficient for nprim leaves
+        #
+        #     height: 0, 1, 2, 3,  4,  5,  6,   7,   8,   9,   10, 
+        #     tprim : 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 
+        #
         height = -1
         for h in range(10):
-            tprim = 1 << h 
+            tprim = 1 << h    
             if tprim >= nprim:
                 height = h
                 break
-
+            pass
+        pass
         assert height > -1 
-        log.debug("TreeBuilder nprim:%d required height:%d " % (nprim, height))
-        self.height = height
 
-        if height == 0:
-            assert len(primitives) == 1
-            root = primitives[0]
-        else: 
-            root = self.build(height)
-            self.populate(root, primitives[::-1]) 
+        log.info("TreeBuilder nprim:%d required height:%d " % (nprim, height))
+        self.height = height
+        
+        if not bileaf:
+            if height == 0:
+                assert len(subs) == 1
+                root = subs[0]
+            else: 
+                root = self.build(height, placeholder=CSG.ZERO)
+                self.populate(root, subs[::-1]) 
+                self.prune(root)
+            pass
+        else:
+            assert height > 0
+            root = self.build(height-1, placeholder=CSG.ZERO)   # bileaf are 2 levels, so height - 1
+            self.populate(root, subs[::-1]) 
             self.prune(root)
         pass
         self.root = root 
 
-    def build(self, height):
+    def build(self, height, placeholder=CSG.ZERO):
         """
         Build complete binary tree with all operators the same
-        and CSG.ZERO placeholders for the primitives at elevation 0.
+        and CSG.ZERO placeholders for elevation 0
         """
         def build_r(elevation, operator):
             if elevation > 1:
@@ -99,25 +126,28 @@ class TreeBuilder(object):
                 node.right = build_r(elevation-1, operator)
             else:
                 node = CSG(operator, name="treebuilder_bileaf")
-                node.left = CSG(CSG.ZERO, name="treebuilder_bileaf_left")
-                node.right = CSG(CSG.ZERO, name="treebuilder_bilead_right")
+                node.left = CSG(placeholder, name="treebuilder_bileaf_left")
+                node.right = CSG(placeholder, name="treebuilder_bilead_right")
             pass
             return node  
         pass
         root = build_r(height, self.operator ) 
         return root
 
-    def populate(self, root, primitives):
+    def populate(self, root, subs):
         """
-        Replace the CSG.ZERO placeholders with the primitives
+        Replace the CSG.ZERO placeholders with the subs
         """
-        for node in root.inorder_():
+        inorder = root.inorder_() 
+        log.info("populate filling tree of %d nodes with %d subs " % (len(inorder),len(subs)))
+ 
+        for node in inorder:
             if node.is_operator:
                 try:
                     if node.left.is_zero:
-                        node.left = primitives.pop()
+                        node.left = subs.pop()
                     if node.right.is_zero:
-                        node.right = primitives.pop()
+                        node.right = subs.pop()
                     pass
                 except IndexError:
                     pass
@@ -135,6 +165,7 @@ class TreeBuilder(object):
                 prune_r(node.left)
                 prune_r(node.right)
 
+                # postorder visit
                 if node.left.is_lrzero:
                     node.left = CSG(CSG.ZERO)
                 elif node.left.is_rzero:
@@ -191,7 +222,7 @@ def test_balance():
     root = sp - bo - co - zs - cy - tr
 
     root.analyse()    
-    root.subdepth_()
+    #root.subdepth_()
 
     print root.txt
 
@@ -201,10 +232,44 @@ def test_balance():
     root.positivize() 
 
     balanced = TreeBuilder.balance(root)
-    balanced.analyse()    
     print balanced.txt
 
 
+def make_bileaf(name):
+    outer = CSG("cylinder", name=name+"_outer")
+    inner = CSG("cylinder", name=name+"_inner")
+    tube = outer - inner
+    return  tube
+
+def test_balance_bileaf():
+    log.info("test_balance_bileaf")
+    
+    a = make_bileaf("a") 
+    b = make_bileaf("b") 
+    c = make_bileaf("c") 
+    d = make_bileaf("d") 
+    e = make_bileaf("e") 
+    f = make_bileaf("f") 
+    g = make_bileaf("g") 
+
+    roots = []
+    roots.append(a)
+    roots.append(a+b)
+    roots.append(a+b+c)
+    roots.append(a+b+c+d)
+    roots.append(a+b+c+d+e)
+    roots.append(a+b+c+d+e+f)
+    roots.append(a+b+c+d+e+f+g)
+
+    for root in roots:
+        root.analyse()
+        root.positivize()
+
+        print root.txt
+        balanced = TreeBuilder.balance(root)
+
+        print balanced.txt
+    pass
 
 
 
@@ -214,6 +279,7 @@ if __name__ == '__main__':
 
     #test_treebuilder()
     #test_uniontree()
-    test_balance()
+    #test_balance()
+    test_balance_bileaf()
 
 
