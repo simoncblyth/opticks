@@ -144,6 +144,7 @@ set(SOURCES
     NBox.cpp
     NSlab.cpp
     NCylinder.cpp
+    NDisc.cpp
     NCone.cpp
     NZSphere.cpp
     NPlane.cpp

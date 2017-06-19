@@ -79,7 +79,8 @@ inline NPY_API nplane make_plane(float x, float y, float z, float w)
 
 
 
-struct NPY_API ndisc {
+
+struct NPY_API ndisk { // NB *ndisk* is not the same as *ndisc* (degenerated ncylinder)
     float z() const;
     nplane plane ;
     float radius ;  
@@ -88,9 +89,9 @@ struct NPY_API ndisc {
 };
 
 
-inline NPY_API ndisc make_disc(const nplane& plane_, float radius_) 
+inline NPY_API ndisk make_disk(const nplane& plane_, float radius_) 
 {
-   ndisc d ; d.plane = plane_ ; d.radius = radius_ ; return d ; 
+   ndisk d ; d.plane = plane_ ; d.radius = radius_ ; return d ; 
 }
 
 

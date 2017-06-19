@@ -23,7 +23,8 @@ typedef enum {
       CSG_BOX3=17,
  CSG_TRAPEZOID=18,
  CSG_CONVEXPOLYHEDRON=19,
- CSG_UNDEFINED=20,
+     CSG_DISC=20,
+ CSG_UNDEFINED=21,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101,
@@ -60,6 +61,7 @@ static const char* CSG_PMT_           = "pmt" ;
 static const char* CSG_PRISM_         = "prism" ; 
 static const char* CSG_TUBS_          = "tubs" ; 
 static const char* CSG_CYLINDER_      = "cylinder" ; 
+static const char* CSG_DISC_          = "disc" ; 
 static const char* CSG_SLAB_          = "slab" ; 
 static const char* CSG_PLANE_         = "plane" ; 
 static const char* CSG_CONE_          = "cone" ; 
@@ -87,6 +89,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_PRISM_) == 0)          tc = CSG_PRISM ;
     else if(strcmp(nodename, CSG_TUBS_) == 0)           tc = CSG_TUBS ;
     else if(strcmp(nodename, CSG_CYLINDER_) == 0)       tc = CSG_CYLINDER ;
+    else if(strcmp(nodename, CSG_DISC_) == 0)           tc = CSG_DISC ;
     else if(strcmp(nodename, CSG_SLAB_) == 0)           tc = CSG_SLAB ;
     else if(strcmp(nodename, CSG_PLANE_) == 0)          tc = CSG_PLANE ;
     else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
@@ -123,6 +126,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_PRISM:         s = CSG_PRISM_         ; break ; 
         case CSG_TUBS:          s = CSG_TUBS_          ; break ; 
         case CSG_CYLINDER:      s = CSG_CYLINDER_      ; break ; 
+        case CSG_DISC:          s = CSG_DISC_          ; break ; 
         case CSG_SLAB:          s = CSG_SLAB_          ; break ; 
         case CSG_PLANE:         s = CSG_PLANE_         ; break ; 
         case CSG_CONE:          s = CSG_CONE_          ; break ; 

@@ -25,6 +25,7 @@
 #include "NSlab.hpp"
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
+#include "NDisc.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
 
@@ -652,6 +653,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
        case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
        case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
        case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ; 
+       case CSG_DISC:     node = new ndisc(make_disc(p0, p1))           ; break ; 
        case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
        case CSG_TRAPEZOID:  
        case CSG_CONVEXPOLYHEDRON:  

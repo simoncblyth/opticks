@@ -151,6 +151,11 @@ Ericson, Real Time Collision Detection p196-198
 
 
 
+   For a very thin disk P and Q become almost degenerate and axis d becomes almost zero length,
+   making it a very bad thing to make dot products with...  Nevertheless there is a normal
+   to the disc that should be using
+
+
 
 
 */

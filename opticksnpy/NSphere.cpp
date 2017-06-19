@@ -178,10 +178,10 @@ void nsphere::adjustToFit(const nbbox& bb, float scale)
 
 
 
-ndisc nsphere::intersect(nsphere& a, nsphere& b)
+ndisk nsphere::intersect(nsphere& a, nsphere& b)
 {
-    // Find Z intersection disc of two Z offset spheres,
-    // disc radius is set to zero when no intersection.
+    // Find Z intersection disk of two Z offset spheres,
+    // disk radius is set to zero when no intersection.
     //
     // http://mathworld.wolfram.com/Circle-CircleIntersection.html
     //
@@ -206,9 +206,9 @@ ndisc nsphere::intersect(nsphere& a, nsphere& b)
 
 
     nplane plane = make_plane(0,0,1,z + a.center.z) ;
-    ndisc  disc = make_disc(plane, y) ;
+    ndisk  disk = make_disk(plane, y) ;
 
-    return disc ;      // return to original frame
+    return disk ;      // return to original frame
 }
 
 
@@ -233,7 +233,7 @@ npart nsphere::part()
 
 
 
-npart nsphere::zlhs(const ndisc& dsk)
+npart nsphere::zlhs(const ndisk& dsk)
 {
     npart p = part();
 
@@ -245,7 +245,7 @@ npart nsphere::zlhs(const ndisc& dsk)
     return p ; 
 }
 
-npart nsphere::zrhs(const ndisc& dsk)
+npart nsphere::zrhs(const ndisk& dsk)
 {
     npart p = part();
 

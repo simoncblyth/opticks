@@ -5,7 +5,7 @@
 #include "NGLM.hpp"
 
 struct nplane ; 
-struct ndisc ; 
+struct ndisk ; 
 struct npart ;
 struct nbbox ; 
 struct nuv ; 
@@ -25,11 +25,11 @@ struct NPY_API nsphere : nnode {
     nbbox bbox() const ;
 
     npart part();
-    static ndisc intersect(nsphere& a, nsphere& b);
+    static ndisk intersect(nsphere& a, nsphere& b);
 
     // result of intersect allows partitioning 
-    npart zrhs(const ndisc& dsc); // +z to the right  
-    npart zlhs(const ndisc& dsc);  
+    npart zrhs(const ndisk& dsc); // +z to the right  
+    npart zlhs(const ndisk& dsc);  
 
     glm::vec3 gseedcenter() const ;
 

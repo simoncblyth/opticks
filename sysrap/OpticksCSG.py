@@ -1,4 +1,4 @@
-# generated Tue May 23 17:40:42 2017 
+# generated Mon Jun 19 13:45:56 2017 
 # from /Users/blyth/opticks/sysrap 
 # base OpticksCSG.h stem OpticksCSG 
 # with command :  /Users/blyth/opticks/bin/c_enums_to_python.py OpticksCSG.h 
@@ -24,11 +24,12 @@ class CSG_(object):
     BOX3 = 17
     TRAPEZOID = 18
     CONVEXPOLYHEDRON = 19
-    UNDEFINED = 20
+    DISC = 20
+    UNDEFINED = 21
     FLAGPARTLIST = 100
     FLAGNODETREE = 101
     FLAGINVISIBLE = 102
-    D2V={'pmt': 9, 'cylinder': 12, 'convexpolyhedron': 19, 'zsphere': 7, 'sphere': 5, 'zero': 0, 'cone': 15, 'slab': 13, 'flaginvisible': 102, 'intersection': 2, 'zlens': 8, 'union': 1, 'prism': 10, 'partlist': 4, 'tubs': 11, 'plane': 14, 'multicone': 16, 'difference': 3, 'box3': 17, 'box': 6, 'undefined': 20, 'flagnodetree': 101, 'trapezoid': 18, 'flagpartlist': 100}
+    D2V={'pmt': 9, 'cylinder': 12, 'convexpolyhedron': 19, 'zsphere': 7, 'sphere': 5, 'zero': 0, 'disc': 20, 'cone': 15, 'slab': 13, 'flaginvisible': 102, 'intersection': 2, 'zlens': 8, 'union': 1, 'prism': 10, 'partlist': 4, 'tubs': 11, 'plane': 14, 'multicone': 16, 'difference': 3, 'box3': 17, 'box': 6, 'undefined': 21, 'flagnodetree': 101, 'trapezoid': 18, 'flagpartlist': 100}
 
 
     @classmethod

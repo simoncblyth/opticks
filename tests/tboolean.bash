@@ -1020,6 +1020,38 @@ EOP
 
 
 
+tboolean-disc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-disc-(){ $FUNCNAME- | python $* ; } 
+tboolean-disc--(){ cat << EOP
+
+outdir = "$TMP/$FUNCNAME"
+obj_ = "$(tboolean-testobject)"
+con_ = "$(tboolean-container)"
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main()
+
+CSG.boundary = obj_
+CSG.kwa = dict(verbosity="1",poly="IM")
+
+z1,z2 = -0.050,0.050
+a = CSG("disc", param = [0.000,0.000,0.000,2223.000],param1 = [z1,z2,0.000,0.000])
+
+obj = a 
+
+con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
+CSG.Serialize([con, obj], outdir )
+
+EOP
+}
+
+
+
+
+
 
 tboolean-esr(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-esr-(){ $FUNCNAME- | python $* ; } 
@@ -1038,11 +1070,54 @@ args = opticks_main()
 CSG.boundary = obj_
 CSG.kwa = dict(verbosity="1",poly="IM")
 
-a = CSG("cylinder", param = [0.000,0.000,0.000,2223.000],param1 = [-0.050,0.050,0.000,0.000])
-b = CSG("cylinder", param = [0.000,0.000,0.000,2144.500],param1 = [-2.051,2.051,0.000,0.000],complement = True)
+z1,z2 = -0.050,0.050
+
+scale = 10. 
+
+z1 *= scale
+z2 *= scale
+
+# Varying the delta that increases the thickness of the subtracted disc cylinder 
+#
+# delta observations for scale = 1
+#
+#delta = 20.    # NO pole artifact visible
+#delta = 15.    # slight artifacting 
+#delta = 10.    # pole artifact, disappears axially 
+delta = 1.     # pole artifact, disappears axially   (scale:10 tiny artifact)
+#delta = 0.1    # pole artifact, does not disappear axially 
+#delta = 0.01   # pole artifact, does not disappear axially 
+#delta = 0.001  # pole artifact, does not disappear axially + RING SPECKLES, ~/opticks_refs/tboolean_esr_speckle_centered_on_pole_delta_10-3.png 
+#delta = 0.0001 # full metal speckle from all angles
+#delta = 0.     # zero makes the subtraction appear not to work, just get a disc not an annulus 
+
+z1d,z2d = z1-delta, z2+delta
+
+a = CSG("cylinder", param = [0.000,0.000,0.000,2223.000],param1 = [z1 , z2,0.000,0.000])
+b = CSG("cylinder", param = [0.000,0.000,0.000,2144.500],param1 = [z1d,z2d,0.000,0.000],complement = True)
 ab = CSG("intersection", left=a, right=b)
 
 obj = ab
+
+check_3 = False
+if check_3:
+    c = CSG("cylinder", param = [0.000,0.000,0.000,2223.001],param1 = [-0.050,0.050,0.000,0.000])
+    d = CSG("cylinder", param = [0.000,0.000,0.000,2144.500],param1 = [-20.051,20.051,0.000,0.000],complement = True)
+    cd = CSG("intersection", left=c, right=d)
+    cd.translate = "0,0,10"
+
+    e = CSG("cylinder", param = [0.000,0.000,0.000,2223.001],param1 = [-0.050,0.050,0.000,0.000])
+    f = CSG("cylinder", param = [0.000,0.000,0.000,2144.500],param1 = [-20.051,20.051,0.000,0.000],complement = True)
+    ef = CSG("intersection", left=e, right=f)
+    ef.translate = "0,0,20"
+
+    abcd = CSG("union", left=ab, right=cd) 
+    abcdef = CSG("union", left=abcd, right=ef) 
+
+    obj = abcdef
+pass
+
+
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
 CSG.Serialize([con, obj], outdir )
@@ -1057,17 +1132,36 @@ Speckles like crazy in the hole, especially when viewed from high angle, end on
 
 * without increasing thickness of the subtracted, the hole doesnt show : just looks like complete disc
 
-* substantially increasing thickness of the subtracted disk, gets rid of the speckle 
+* speckles only appear for very small delta
+
+* delta 0.001 shows the speckles have a circular disposition surrounding the pole
+
+* substantially increasing *delta* thickness of the subtracted disk, gets rid of the speckle 
 
   * NB this is perfectly valid thing to do, IT DOES NOT CHANGE GEOMETRY, 
     are increasing the size of smth are about to subtract.. 
     there is no concern about bumping into other geometry.
 
-  * TODO: verify the above statement by testing two close annuli whose
-    subtracted cylinders would overlap
+  * DONE: verified the above statement by testing two and three close annuli whose
+    subtracted cylinders would overlap, bizarrely this also makes the 
+    pole artifact go away ???
+
+* small bright split circle  "pole artifact" when viewed from high angles that 
+  moves across the hole as the angle is changed, but disappears in the middle
+  when very close to axis (algorithm special casing of axial rays ?)
+
+* increasing *delta* yet more gets rid of the pole artifact, varying the 
+  parameters suggests that the primary cause of the pole artifact 
+  is the thinness of the "disc" cylinder resulting in near degeneracy of the endcaps 
+  intersections
+
+* Adopting robust quadratic did not change behavior... so presumably 
+  the issue is from the endcap intersects when they are almost degenerate 
+
+  * using a separate disc primitive or special casing cylinder intersection
+    for near degenerate endcaps, seem like the next available thing to try
 
 
-* BUT there is still a bright dot "pole artifact" when viewed end on   
 
 """
 

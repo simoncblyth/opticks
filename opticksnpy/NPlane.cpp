@@ -52,15 +52,15 @@ glm::vec3 nplane::gseeddir()
 
 
 
-float ndisc::z() const 
+float ndisk::z() const 
 {
    return plane.param.f.w ;  
 }
 
-void ndisc::dump(const char* msg)
+void ndisk::dump(const char* msg)
 {
     char dmsg[128];
-    snprintf(dmsg, 128, "ndisc radius %10.4f %s \n", radius, msg );
+    snprintf(dmsg, 128, "ndisk radius %10.4f %s \n", radius, msg );
     plane.dump(dmsg);
 }
 

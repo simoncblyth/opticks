@@ -1,6 +1,8 @@
 // csg_intersect_primitive.h : is included into top level program: intersect_analytic.cu
 // csg_intersect_part.h      : is primary user of these functions
 
+#include "robust_quadratic_roots.h"
+
 rtBuffer<float4> planBuffer ;
 
 static __device__
@@ -643,6 +645,9 @@ void csg_bounds_zsphere(const quad& q0, const quad& q1, const quad& q2, optix::A
 }
 
 
+
+
+
 /*
 Plane eqn in general frame:
                point_in_plane.plane_normal = plane_dist_to_origin
@@ -679,49 +684,6 @@ Intersect with sphere
      b = O.D
      c = O.O - rr
 
-   d t^2 + 2b t + c = 0  
-
-
-  t =     -2b +- sqrt((2b)^2 - 4dc )
-        -----------------------------
-                2d
-
-      -b +- sqrt( b^2 - d c )
-      -----------------------
-             d   
-
-
-   Alternative quadratic in 1/t 
-
-
-    c (1/t)^2 + 2b (1/t) + d  = 0 
-
-
-    1/t  =   -2b +- sqrt( (2b)^2 - 4dc )
-             ----------------------------
-                      2c
-
-    1/t  =    -b  +- sqrt( b^2 - d c )
-             -------------------------
-                      c
-
-                     c
-    t =    ---------------------------
-             -b  +-  sqrt( b^2 - d c )
-
-
-----------------
-
-
-
-      q =  b + sign(b) sqrt( b^2 - d c )      
-
-      q =  b + sqrt( b^2 - d c ) # b > 0
-      q =  b - sqrt( b^2 - d c ) # b < 0
-   
-
-
-
 */
 
 
@@ -749,9 +711,13 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
     const float zmin = center.z + zdelta.x ;   
 
     float d = dot(D, D);               // NB NOT assuming normalized ray_direction
+
+    float t1sph, t2sph, disc, sdisc ;   
+    robust_quadratic_roots(t1sph, t2sph, disc, sdisc, d, b, c); //  Solving:  d t^2 + 2 b t +  c = 0 
+
+/*
     float disc = b*b-d*c;
     float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
-
 
 #ifdef ZSPHERE_NUMERICALLY_UNSTABLY
     float t1sph = (-b - sdisc)/d ;
@@ -764,6 +730,8 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
     float t1sph = fminf( root1, root2 );
     float t2sph = fmaxf( root1, root2 );
 #endif
+*/
+
 
     float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
     float z2sph = ray_origin.z + t2sph*ray_direction.z ; 
@@ -1048,6 +1016,7 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
 {
     const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
     const float   radius = q0.f.w ; 
+
     const float    z1 = q1.f.x  ; 
     const float    z2 = q1.f.y  ; 
 
@@ -1061,6 +1030,71 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
     if(tr) transform_bbox( &tbb, tr );  
     aabb->include(tbb);
 }
+
+
+
+static __device__
+void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
+    const float   radius = q0.f.w ; 
+
+    const float    z1 = q1.f.x  ; 
+    const float    z2 = q1.f.y  ; 
+
+    rtPrintf("## csg_bounds_disc center %7.3f %7.3f  radius %7.3f z1 %7.3f z2 %7.3f \n",
+          center.x, center.y, radius, z1, z2 );
+
+    const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
+    const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
+
+    Aabb tbb(bbmin, bbmax);
+    if(tr) transform_bbox( &tbb, tr );  
+    aabb->include(tbb);
+}
+
+
+static __device__
+bool csg_intersect_disc(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+    // TODO: once disc working, handle inner radius for annulus
+
+    const float   radius = q0.f.w ; 
+    const float       z1 = q1.f.x  ; 
+    const float       z2 = q1.f.y  ; 
+    const float       zc = (z1 + z2)/2.f  ; 
+
+    const float3 center = make_float3( q0.f.x, q0.f.y, zc ); // P: point at middle of disc
+
+    const float3 m = ray_origin - center ;            // m: ray origin in disc frame
+    const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
+    const float3 d = make_float3(0.f, 0.f, 1.f );     // d: normal to the disc (normalized)
+
+    float rr = radius*radius ; 
+
+    float mm = dot(m, m) ; 
+    float nn = dot(n, n) ; 
+    float nd = dot(n, d) ;
+    float md = dot(m, d) ;
+    float mn = dot(m, n) ; 
+    float k = mm - rr ; 
+
+    float t_cand = -md/nd ; 
+
+    float checkr = k + t_cand*(2.f*mn + t_cand*nn) ; // bracket typo in RTCD book, 2*t*t makes no sense   
+
+    if( t_cand > t_min && checkr < 0.f )
+    {
+        isect.x = 0.f ; 
+        isect.y = 0.f ; 
+        isect.z = md < 0.f ? -1.f : 1.f ;  // ray origin below, normal is -Z  
+        isect.w = t_cand ; 
+ 
+        return true ; 
+    }
+    return false ; 
+}
+
 
 
 
@@ -1083,9 +1117,9 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
     bool QCAP = true ; 
 
 
-    const float3 m = ray_origin - position ;
-    const float3 n = ray_direction ; 
-    const float3 d = make_float3(0.f, 0.f, sizeZ );   // PQ : cylinder axis 
+    const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame
+    const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
+    const float3 d = make_float3(0.f, 0.f, sizeZ );   // d: (PQ) cylinder axis vector (not normalized)
 
     float rr = radius*radius ; 
     float3 dnorm = normalize(d);  
@@ -1146,12 +1180,17 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
 
     if(disc > 0.0f)  // has intersections with the infinite cylinder
     {
-        float sdisc = sqrtf(disc);
+        float t_NEAR, t_FAR, sdisc ;   
 
-        float t_NEAR = (-b - sdisc)/a;     
-        float t_FAR  = (-b + sdisc)/a;   
+        robust_quadratic_roots(t_NEAR, t_FAR, disc, sdisc, a, b, c); //  Solving:  a t^2 + 2 b t +  c = 0 
+
+
         float t_PCAP = -md/nd ; 
         float t_QCAP = (dd-md)/nd ;   
+
+        // hmm very thin disc annulus is artifacting, see tboolean-esr ? 
+        // Perhaps from degeneracy between the endcaps ? 
+
 
         float aNEAR = md + t_NEAR*nd ;        // axial coord of near intersection point * sizeZ
         float aFAR  = md + t_FAR*nd ;         // axial coord of far intersection point  * sizeZ

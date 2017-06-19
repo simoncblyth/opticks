@@ -23,6 +23,7 @@
 #include "NSlab.hpp"
 #include "NPlane.hpp"
 #include "NCylinder.hpp"
+#include "NDisc.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
 
@@ -522,6 +523,7 @@ std::function<float(float,float,float)> nnode::sdf() const
         case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = *n ; } break ; 
         case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = *n ; } break ; 
         case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = *n ; } break ; 
+        case CSG_DISC:           { ndisc* n         = (ndisc*)node          ; f = *n ; } break ; 
         case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = *n ; } break ; 
         case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = *n ; } break ; 
         default:
@@ -630,6 +632,14 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
             case CSG_CYLINDER: 
                {  
                    ncylinder* n = (ncylinder*)p ;
+                   centers.push_back(n->gseedcenter()); 
+                   dirs.push_back(n->gseeddir());
+               }
+               break ;  
+
+            case CSG_DISC: 
+               {  
+                   ndisc* n = (ndisc*)p ;
                    centers.push_back(n->gseedcenter()); 
                    dirs.push_back(n->gseeddir());
                }

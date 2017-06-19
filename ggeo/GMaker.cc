@@ -54,6 +54,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_PMT:
          case CSG_TUBS:
          case CSG_CYLINDER:
+         case CSG_DISC:
          case CSG_SLAB:
          case CSG_CONE:
          case CSG_MULTICONE:
@@ -381,7 +382,7 @@ GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
 
     nsphere a = make_sphere(0,0,a_zpos,a_radius);
     nsphere b = make_sphere(0,0,b_zpos,b_radius);
-    ndisc d = nsphere::intersect(a,b) ;
+    ndisk d = nsphere::intersect(a,b) ;   // from NPlane.hpp, not same as ndisc (degenerated ncylinder)
     float zd = d.z();
 
     npart ar = a.zrhs(d);

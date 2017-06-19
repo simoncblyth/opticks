@@ -84,6 +84,7 @@ G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
         case CSG_TUBS:
         case CSG_PARTLIST:
         case CSG_CYLINDER:
+        case CSG_DISC:
         case CSG_CONE:
         case CSG_MULTICONE:
         case CSG_BOX3:
