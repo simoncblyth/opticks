@@ -1037,10 +1037,16 @@ args = opticks_main()
 CSG.boundary = obj_
 CSG.kwa = dict(verbosity="1",poly="IM")
 
-z1,z2 = -0.050,0.050
-a = CSG("disc", param = [0.000,0.000,0.000,2223.000],param1 = [z1,z2,0.000,0.000])
+delta = 1.0 
 
-obj = a 
+z1,z2 = -0.050,0.050
+z1d,z2d = z1-delta,z2+delta
+
+
+a = CSG("disc", param = [0.000,0.000,523.0,2223.000],param1 = [z1,z2,0.000,0.000])
+b = CSG("disc", param = [1000.000,0.000,0.000,223.000],param1 = [z1d,z2d,0.000,0.000])
+
+obj = a - b 
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
 CSG.Serialize([con, obj], outdir )
