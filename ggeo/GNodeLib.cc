@@ -13,7 +13,7 @@ GNodeLib* GNodeLib::load(Opticks* ok)
     return nodelib ; 
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool loaded)  
+GNodeLib::GNodeLib(Opticks* ok, bool loaded )  
     :
     m_ok(ok),
     m_loaded(loaded),
@@ -23,24 +23,29 @@ GNodeLib::GNodeLib(Opticks* ok, bool loaded)
     init();
 }
 
+
+
 void GNodeLib::init()
 {
     if(!m_loaded)
     {
-        m_pvlist = new GItemList("PVNames") ; 
-        m_lvlist = new GItemList("LVNames") ; 
+        m_pvlist = new GItemList("GNodeLib_PVNames") ; 
+        m_lvlist = new GItemList("GNodeLib_LVNames") ; 
     }
     else
     {
         const char* idpath = m_ok->getIdPath() ;
-        m_pvlist = GItemList::load(idpath, "PVNames");
-        m_lvlist = GItemList::load(idpath, "LVNames");
+        m_pvlist = GItemList::load(idpath, "GNodeLib_PVNames");
+        m_lvlist = GItemList::load(idpath, "GNodeLib_LVNames");
     }
 }
 
 void GNodeLib::save()
 {
     const char* idpath = m_ok->getIdPath() ;
+    LOG(info) << "GNodeLib::save"
+              << " idpath " << idpath 
+              ;
     m_pvlist->save(idpath);
     m_lvlist->save(idpath);
 }

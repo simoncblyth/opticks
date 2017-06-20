@@ -12,9 +12,10 @@ class GItemList ;
 
 #include "GGEO_API_EXPORT.hh"
 
-class GGEO_API GNodeLib {
-
-        friend class GGeo ;  // for save 
+class GGEO_API GNodeLib 
+{
+        friend class GGeo   ;  // for save 
+        friend class GScene ;  // for save 
     public:
         static GNodeLib* load(Opticks* ok);
         GNodeLib(Opticks* opticks, bool loaded); 

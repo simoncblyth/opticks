@@ -50,6 +50,7 @@ tgltf--()
     cat $tgltfpath | python -m json.tool > $tgltfpretty
     echo $msg wrote prettified gltf to $tgltfpretty
 
+    #return
 
     #local gltf=1
     #local gltf=4  # early exit at start of GScene::init
@@ -74,8 +75,6 @@ tgltf--()
 
 tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
 tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
-
-
 tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
@@ -95,9 +94,10 @@ args = opticks_main()
 
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 
-sel = oil
+#sel = oil
 #sel = 3153
 #sel = 1
+sel = 0
 idx = 0 
 
 wgg = GDML.parse()

@@ -142,7 +142,7 @@ template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*);
 
 
 std::string NCSG::lvname(){ return getMeta<std::string>("lvname","-") ; }
-std::string NCSG::pvname(){ return getMeta<std::string>("pvname","-") ; }
+//std::string NCSG::pvname(){ return getMeta<std::string>("pvname","-") ; }  // <-- NOT APPROPRIATE AS NCSG IS MESH LEVEL NOT NODE LEVEL
 std::string NCSG::soname(){ return getMeta<std::string>("soname","-") ; }
 
 int NCSG::treeindex(){ return getMeta<int>("treeindex","-1") ; }
@@ -160,7 +160,6 @@ std::string NCSG::meta()
        << " depth " << depth()
        << " nchild " << nchild()
        << " lvname " << lvname() 
-       << " pvname " << pvname() 
        << " soname " << soname() 
        << " isSkip " << isSkip()
        << " is_uncoincide " << is_uncoincide()

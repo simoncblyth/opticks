@@ -20,6 +20,9 @@ IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
 
 
+def translate_xml_identifier_(name):
+    return name.replace("__","/").replace("--","#").replace("..",":") 
+
 class Buf(np.ndarray): pass
 
 splitlines_ = lambda txtpath:file(txtpath).read().splitlines()
@@ -494,14 +497,21 @@ class Abbrev(object):
 
 
 class ItemList(object): # formerly ListFlags
-   def __init__(self, txt="GMaterialLib", offset=1 ):
+   def __init__(self, txt="GMaterialLib", offset=1, translate_=None):
         npath=idp_("GItemList/%(txt)s.txt" % locals())
         names = map(lambda _:_[:-1],file(npath).readlines())
+        if translate_ is not None:
+            log.info("translating")
+            names = map(translate_, names) 
+        pass
         codes = map(lambda _:_ + offset, range(len(names)))
         self.names = names
         self.codes = codes
         self.name2code = dict(zip(names, codes)) 
         self.code2name = dict(zip(codes, names))
+
+
+
 
 class IniFlags(object):
     """

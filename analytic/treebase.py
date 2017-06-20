@@ -23,7 +23,8 @@ log = logging.getLogger(__name__)
 
 
 class DummyTopPV(object):
-    name = "dummyTopPV"
+    name = "top"  # match the G4DAE name
+    #name = "dummyTopPV"
 
     def _get_transform(self):
         #assert 0

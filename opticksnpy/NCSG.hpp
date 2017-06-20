@@ -86,7 +86,7 @@ class NPY_API NCSG {
         template<typename T> T getMeta(const char* key, const char* fallback );
         template<typename T> void setMeta(const char* key, T value);
         std::string lvname();
-        std::string pvname();
+        //std::string pvname();
         std::string soname();
         int treeindex();
         int depth();

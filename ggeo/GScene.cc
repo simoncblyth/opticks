@@ -70,6 +70,8 @@ void GScene::init()
 
 
 
+    m_nodelib->save();
+
     if(m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==44" );
 
 }
@@ -176,18 +178,8 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
         node->addChild(child);
     } 
 
-    addNode(node, n );
 
     return node  ; 
-}
-
-void GScene::addNode(GSolid* node, nd* n)
-{
-    unsigned node_idx = n->idx ;
-    assert(m_nodes.count(node_idx) == 0); 
-    m_nodes[node_idx] = node ; 
-    // TODO ... get rid of above, use the nodelib 
-    m_nodelib->add(node);    
 }
 
 
@@ -229,8 +221,9 @@ GSolid* GScene::createVolume(nd* n)
 
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
+    unsigned solid_idx = node_idx ; 
 
-    GSolid* solid = new GSolid(node_idx, gtransform, mesh, UINT_MAX, NULL );     
+    GSolid* solid = new GSolid(solid_idx, gtransform, mesh, UINT_MAX, NULL );     
 
     solid->setLevelTransform(ltransform); 
 
@@ -243,10 +236,11 @@ GSolid* GScene::createVolume(nd* n)
     solid->setCSGSkip( csg->isSkip() );
 
 
-    std::string pvn = csg->pvname()  ;
+    //std::string pvn = csg->pvname()  ;  <--- NOPE CSG IS MESH LEVEL, NOT NODE LEVEL
+    std::string pvname = n->pvname  ; 
     std::string lvn = csg->lvname()  ;
 
-    solid->setPVName( pvn.c_str() );
+    solid->setPVName( pvname.c_str() );
     solid->setLVName( lvn.c_str() );
 
 
@@ -282,7 +276,19 @@ GSolid* GScene::createVolume(nd* n)
               ;
 
 
+    addNode(solid, n );
+
     return solid ; 
+}
+
+void GScene::addNode(GSolid* node, nd* n)
+{
+    unsigned node_idx = n->idx ;
+    assert(m_nodes.count(node_idx) == 0); 
+    m_nodes[node_idx] = node ; 
+
+    // TODO ... get rid of above, use the nodelib 
+    m_nodelib->add(node);    
 }
 
 

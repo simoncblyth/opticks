@@ -32,7 +32,7 @@ class Mh(object):
 
 
 class Nd(object):
-    def __init__(self, ndIdx, soIdx, transform, boundary, name, depth, scene):
+    def __init__(self, ndIdx, soIdx, transform, boundary, pvname, depth, scene):
         """
         :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
         :param soIdx: local within substree so index, used for referencing to distinct solids/meshes
@@ -40,9 +40,9 @@ class Nd(object):
         self.ndIdx = ndIdx
         self.soIdx = soIdx
         self.transform = transform
-        self.extras = dict(boundary=boundary)
+        self.extras = dict(boundary=boundary, pvname=pvname)
 
-        self.name = name
+        self.name = pvname
         self.depth = depth
         self.scene = scene 
 
@@ -141,7 +141,7 @@ class Sc(object):
         return filter(lambda mesh:mesh.lvName.startswith(pfx),self.meshes.values())
 
 
-    def add_node(self, lvIdx, lvName, soName, transform, boundary, depth):
+    def add_node(self, lvIdx, lvName, pvName, soName, transform, boundary, depth):
 
         mesh = self.add_mesh(lvIdx, lvName, soName)
         soIdx = mesh.soIdx
@@ -152,7 +152,7 @@ class Sc(object):
         #log.info("add_node %s " % name)
         assert transform is not None
 
-        nd = Nd(ndIdx, soIdx, transform, boundary, name, depth, self )
+        nd = Nd(ndIdx, soIdx, transform, boundary, pvName, depth, self )
         nd.mesh = mesh 
 
 
@@ -167,6 +167,7 @@ class Sc(object):
 
         lvIdx = node.lv.idx
         lvName = node.lv.name
+        pvName = node.pv.name
         soName = node.lv.solid.name
         transform = node.pv.transform 
         boundary = node.boundary
@@ -183,14 +184,14 @@ class Sc(object):
             sys.stderr.write(msg+"\n" + repr(transform)+"\n")
         pass
 
-        nd = self.add_node( lvIdx, lvName, soName, transform, boundary, depth )
+        nd = self.add_node( lvIdx, lvName, pvName, soName, transform, boundary, depth )
 
         ## hmm: why handle csg translation at node level, its more logical to do at mesh level ?
         ##      Presumably done here as it is then easy to access the lv ?
         ##
         if getattr(nd.mesh,'csg',None) is None:
             #print msg 
-            csg = self.translate_node( node, self.maxcsgheight )
+            csg = self.translate_lv( node.lv, self.maxcsgheight )
             nd.mesh.csg = csg 
             self.translate_node_count += 1
             if csg.meta.get('skip',0) == 1:
@@ -201,8 +202,10 @@ class Sc(object):
 
 
     @classmethod
-    def translate_node(cls, node, maxcsgheight, maxcsgheight2=0 ):
+    def translate_lv(cls, lv, maxcsgheight, maxcsgheight2=0 ):
         """
+        NB dont be tempted to convert to node here as CSG is a mesh level thing, not node level
+
         :param lv:
         :param maxcsgheight:  CSG trees greater than this are balanced
         :param maxcsgheight2:  required post-balanced height to avoid skipping 
@@ -212,8 +215,6 @@ class Sc(object):
         such as the Polycone invokes treebuilder to provide uniontree composites.
 
         """ 
-        pv = node.pv
-        lv = node.lv
 
         if maxcsgheight2 == 0 and maxcsgheight != 0:
             maxcsgheight2 = maxcsgheight + 1
@@ -231,7 +232,9 @@ class Sc(object):
 
         polyconfig = PolyConfig(lv.shortname)
         csg.meta.update(polyconfig.meta )
-        csg.meta.update(pvname=pv.name, lvname=lv.name, soname=lv.solid.name, height=csg.height)  
+        csg.meta.update(lvname=lv.name, soname=lv.solid.name, height=csg.height)  
+
+        ### Nope pvname is not appropriate in the CSG, CSG is a mesh level tink not a node/volume level thing 
 
         return csg 
 

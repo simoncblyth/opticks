@@ -16,6 +16,7 @@ struct NPY_API nd
    unsigned         mesh ; 
    unsigned         depth ; 
    std::string      boundary ; 
+   std::string      pvname ; 
 
    std::string      _local_digest ; 
    std::string      _mesh_digest ; 
