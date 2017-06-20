@@ -208,6 +208,8 @@ GSolid* GScene::createVolume(nd* n)
     solid->setCSGSkip( csg->isSkip() );
 
 
+    // analytic spec currently missing surface info...
+    // here need 
   
     unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
 

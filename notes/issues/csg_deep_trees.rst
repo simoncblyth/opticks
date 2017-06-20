@@ -1,11 +1,18 @@
-CSG Deep Trees (solid level issue)
-========================================
+FIXED : CSG Deep Trees (solid level issue)
+==============================================
 
-ISSUE : DYB has some deep CSG trees
+FIXED : DYB has some deep CSG trees
 --------------------------------------
 
 * observed with scene.py, csg.py see some surprising totnodes arising from deep trees
 * deep trees are very inefficiently handled as complete binary trees
+
+See opticks/analytic/sc.py:optimize_csg 
+
+Using maxcsgheight 3, to optimize CSG trees exceeding height 3 and then 
+permitting balanced trees up to height 4 succeeds to handle DYB Near site geometry.
+The balancing converts the trees to positive form and then rearranges into a more 
+balanced tree.
 
 
 Lots of subtraction of rotated boxes : results in deep trees
@@ -75,7 +82,7 @@ Most of these are differences...
      /dd/Geometry/CalibrationSources/lvAmCCo60SourceAssy0xc0b1da0 : 1 : un(un(un(un(un(un(un(un(un(un(cy,zs),zs),cy),zs),zs),cy),cy),zs),zs),cy) height:10 totnodes:2047  
      /dd/Geometry/OverflowTanks/lvOflTnkContainer0xc17cee8        : 1 : un(un(un(un(un(cy,cy),cy),cy),cy),cy) height:5 totnodes:63  
 
-     ### hmm not so easy ...
+     ### hmm not so easy ...  HANDLED USING BILEAF COLLECTION AND COMBINATION INTO BALANCED FORM 
 
      /dd/Geometry/OverflowTanks/lvLsoOflTnk0xc0ad990              : 1 : un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:4 totnodes:31  
      /dd/Geometry/OverflowTanks/lvGdsOflTnk0xc3d52a0              : 1 : un(un(un(un(un(un(di(cy,cy),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)),di(cy,cy)) height:7 totnodes:255  
@@ -90,6 +97,9 @@ Non Mono Balancing ?
 
 
 This one is fairly balanced already, how to detect that ?
+
+THERE IS NO DETECTION, THIS TREE IS PROBABLY BEING BALANCED BUT NOT CHANGING 
+
 
 ::
 
@@ -799,7 +809,7 @@ Final Deep Tree
 
 Code generation with tboolean-sc
 
-* this one would really benefit from cylinder inner radius support 
+* this one would really benefit from cylinder inner radius support , DID NOT DO THAT : JUST USING BILEAF BALANCING
 
 ::
 

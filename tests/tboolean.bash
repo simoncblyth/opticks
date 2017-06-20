@@ -292,7 +292,7 @@ tboolean-bib-box-sphere()
 
 
 
-tboolean-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- ; } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 
@@ -411,8 +411,8 @@ EOP
 
 
 
+tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
-tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/tboolean-trapezoid-- ; }
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
@@ -573,10 +573,8 @@ TODO:
   polycone as just needs 3*epsilon grow in z from the
   smaller radius part into the larger radius part)  
   ... analogous to joins in carpentry
-          
 
 """
-
 
 EOP
 }
@@ -584,10 +582,7 @@ EOP
 
 
 
-
-
-
-tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/tboolean-complement-- ; }
+tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-complement-(){ $FUNCNAME- | python $* ; } 
 tboolean-complement--(){ cat << EOP 
@@ -789,7 +784,7 @@ EOP
 
 
 tboolean-hybrid(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-tboolean-hybrid-combinetest(){ lldb NOpenMeshCombineTest -- $TMP/tboolean-hybrid--/1 ; }
+tboolean-hybrid-combinetest(){ lldb NOpenMeshCombineTest -- $TMP/${FUNCNAME/-combinetest}--/1 ; }
 tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
 tboolean-hybrid--(){ cat << EOP
 from opticks.analytic.csg import CSG  
@@ -831,8 +826,8 @@ EOP
 }
 
 tboolean-hyctrl(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
-#tboolean-hyctrl-polytest(){ lldb NPolygonizerTest -- $TMP/tboolean-hyctrl--/1 ; }
-tboolean-hyctrl-polytest(){ NPolygonizerTest $TMP/tboolean-hyctrl--/1 ; }
+tboolean-hyctrl-polytest-lldb(){ lldb NPolygonizerTest -- $TMP/${FUNCNAME/-polytest-lldb}--/1 ; }
+tboolean-hyctrl-polytest(){           NPolygonizerTest    $TMP/${FUNCNAME/-polytest}--/1 ; }
 tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
 tboolean-hyctrl--(){ cat << EOP
 from opticks.analytic.csg import CSG  
@@ -888,7 +883,7 @@ EOP
 
 
 
-tboolean-uncoincide-loadtest(){ ${FUNCNAME/loadtest} ; NCSGLoadTest $TMP/${FUNCNAME/loadtest}-/1 ; }
+tboolean-uncoincide-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
 tboolean-uncoincide(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-uncoincide-(){ $FUNCNAME- | python $* ; } 
 tboolean-uncoincide--(){ cat << EOP
@@ -1181,7 +1176,7 @@ EOP
 tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
 # jump into ipython session with the python streamed from a bash function
 
-tboolean-sc-loadtest(){ ${FUNCNAME/loadtest} ; NCSGLoadTest $TMP/${FUNCNAME/loadtest}-/1 ; }
+tboolean-sc-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
 tboolean-sc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sc-(){ $FUNCNAME- | python $* ; } 
 tboolean-sc--(){ cat << EOP
@@ -1349,11 +1344,11 @@ EOP
 
 
 
-tboolean-bsu(){ TESTCONFIG=$(tboolean-csg-box-sphere-py union)        tboolean-- ; }
-tboolean-bsd(){ TESTCONFIG=$(tboolean-csg-box-sphere-py difference)   tboolean-- ; }
-tboolean-bsi(){ TESTCONFIG=$(tboolean-csg-box-sphere-py intersection) tboolean-- ; }
-tboolean-csg-box-sphere-py(){ $FUNCNAME- $* | python  ; } 
-tboolean-csg-box-sphere-py-(){ cat << EOP 
+tboolean-bsu(){ TESTCONFIG=$(tboolean-boxsphere union)        tboolean-- ; }
+tboolean-bsd(){ TESTCONFIG=$(tboolean-boxsphere difference)   tboolean-- ; }
+tboolean-bsi(){ TESTCONFIG=$(tboolean-boxsphere intersection) tboolean-- ; }
+tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
+tboolean-boxsphere--(){ cat << EOP 
 import math
 from opticks.analytic.csg import CSG  
 
@@ -1377,9 +1372,9 @@ EOP
 
 
 
-tboolean-sphere-slab(){ TESTCONFIG=$(tboolean-csg-sphere-slab 2>/dev/null)    tboolean-- ; } 
-tboolean-csg-sphere-slab(){  $FUNCNAME- | python $* ; } 
-tboolean-csg-sphere-slab-(){ cat << EOP 
+tboolean-sphereslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-sphereslab-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphereslab--(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
@@ -1431,9 +1426,9 @@ EOP
 }
 
 
-tboolean-sphere-plane(){ TESTCONFIG=$(tboolean-csg-sphere-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-sphere-plane(){  $FUNCNAME- | python $* ; } 
-tboolean-csg-sphere-plane-(){ cat << EOP 
+tboolean-sphereplane(){ TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-sphereplane-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphereplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main()
@@ -1458,9 +1453,9 @@ Exibits wierdness, unbounded sub-objects such as planes are not valid CSG sub-ob
 EOP
 }
 
-tboolean-box-plane(){ TESTCONFIG=$(tboolean-csg-box-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-box-plane(){  $FUNCNAME- | python $* ; } 
-tboolean-csg-box-plane-(){ cat << EOP 
+tboolean-boxplane(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-boxplane-(){  $FUNCNAME- | python $* ; } 
+tboolean-boxplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main()
@@ -1481,9 +1476,9 @@ EOP
 
 
 
-tboolean-plane(){ TESTCONFIG=$(tboolean-csg-plane 2>/dev/null)    tboolean-- ; }
-tboolean-csg-plane(){ $FUNCNAME- | python $* ; } 
-tboolean-csg-plane-(){ cat << EOP 
+tboolean-plane(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-plane-(){ $FUNCNAME- | python $* ; } 
+tboolean-plane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main()
@@ -1800,15 +1795,10 @@ EOP
 
 
 
-
-
-
 tboolean-testconfig()
 {
+    # this is the default TESTCONFIG
     tboolean-boxsphere-
 }
-
-
-
 
 

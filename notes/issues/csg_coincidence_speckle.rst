@@ -1,7 +1,6 @@
 CSG Coincidence Speckle
 ==========================
 
-
 FIXED : Very Thin Cylinder Speckles in CSG difference holes
 ---------------------------------------------------------------
 

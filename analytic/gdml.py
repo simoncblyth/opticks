@@ -432,7 +432,7 @@ class Tube(Primitive):
         rmax = self.rmax
         pick_disc = hz < hz_disc_cylinder_cut 
         if pick_disc:
-            log.warning("Tube.as_ncsg picking disc for %s as hz <  hz_disc_cylinder_cut,  hz:%s cut:%s   rmin:%s rmax:%s " % (self.name, hz, hz_disc_cylinder_cut, rmin, rmax))
+            log.warning("Tube.as_ncsg.CSG_DISC %s as hz < cut,  hz:%s cut:%s rmin:%s rmax:%s " % (self.name, hz, hz_disc_cylinder_cut, rmin, rmax))
         pass
         return self.as_disc() if pick_disc else self.as_cylinder()
 

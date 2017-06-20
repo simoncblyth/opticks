@@ -189,6 +189,7 @@ class Sc(object):
         ##      Presumably done here as it is then easy to access the lv ?
         ##
         if getattr(nd.mesh,'csg',None) is None:
+            #print msg 
             csg = self.translate_lv( node.lv, self.maxcsgheight )
             nd.mesh.csg = csg 
             self.translate_lv_count += 1
@@ -200,21 +201,62 @@ class Sc(object):
 
 
     @classmethod
-    def translate_lv(cls, lv, maxcsgheight ):
+    def translate_lv(cls, lv, maxcsgheight, maxcsgheight2=0 ):
+        """
+        :param lv:
+        :param maxcsgheight:  CSG trees greater than this are balanced
+        :param maxcsgheight2:  required post-balanced height to avoid skipping 
+
+        There are many `solid.as_ncsg` implementations, one for each the supported GDML solids, 
+        some of them return single primitives others return boolean composites, some
+        such as the Polycone invokes treebuilder to provide uniontree composites.
+
+        """ 
+        if maxcsgheight2 == 0 and maxcsgheight != 0:
+            maxcsgheight2 = maxcsgheight + 1
+        pass  
 
         solid = lv.solid
-        csg = solid.as_ncsg()
-        csg.analyse()
-        polyconfig = PolyConfig(lv.shortname)
+        log.debug("translate_lv START %-15s %s  " % (solid.__class__.__name__, lv.name ))
 
+        rawcsg = solid.as_ncsg()
+        rawcsg.analyse()
+
+        log.info("translate_lv DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
+
+        csg = cls.optimize_csg(rawcsg, maxcsgheight, maxcsgheight2 )
+
+        polyconfig = PolyConfig(lv.shortname)
         csg.meta.update(polyconfig.meta )
         csg.meta.update(lvname=lv.shortname, soname=lv.solid.name, height=csg.height)  
 
-        if csg.height > maxcsgheight and maxcsgheight != 0:
+        return csg 
+
+
+    @classmethod
+    def optimize_csg(self, rawcsg, maxcsgheight, maxcsgheight2):
+
+        overheight_ = lambda csg,maxheight:csg.height > maxheight and maxheight != 0
+
+        if not overheight_(rawcsg, maxcsgheight):
+            return rawcsg 
+        pass
+        log.info("optimize_csg OVERHEIGHT h:%2d maxcsgheight:%d maxcsgheight2:%d %s " % (rawcsg.height,maxcsgheight, maxcsgheight2, rawcsg.name))
+
+        rawcsg.positivize() 
+
+        csg = TreeBuilder.balance(rawcsg)
+
+        log.info("optimize_csg compressed tree from height %3d to %3d " % (rawcsg.height, csg.height ))
+
+        assert not overheight_(csg, maxcsgheight2)
+
+        if overheight_(csg, maxcsgheight2):
             csg.meta.update(skip=1) 
         pass
 
         return csg 
+
 
 
     def add_tree_gdml(self, target, maxdepth=0):

@@ -94,7 +94,7 @@ class TreeBuilder(object):
         pass
         assert height > -1 
 
-        log.info("TreeBuilder nprim:%d required height:%d " % (nprim, height))
+        log.debug("TreeBuilder nprim:%d required height:%d " % (nprim, height))
         self.height = height
         
         if not bileaf:
@@ -139,7 +139,7 @@ class TreeBuilder(object):
         Replace the CSG.ZERO placeholders with the subs
         """
         inorder = root.inorder_() 
-        log.info("populate filling tree of %d nodes with %d subs " % (len(inorder),len(subs)))
+        log.debug("populate filling tree of %d nodes with %d subs " % (len(inorder),len(subs)))
  
         for node in inorder:
             if node.is_operator:

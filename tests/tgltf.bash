@@ -19,10 +19,6 @@ tgltf-gdml
          --restrictmesh 1  # just ridx:1 (eg PMTCollar, depending on root node)
          --restrictmesh 2  # just ridx:2 (the PMT assembly)   
 
-   
-
-
-
 
 EOU
 }
@@ -40,12 +36,18 @@ tgltf-args(){ echo  --det $(tgltf-det) --src $(tgltf-src) ; }
 
 
 
-tgltf--(){
+tgltf--()
+{
+    local msg="=== $FUNCNAME :"
 
     tgltf-
 
     local cmdline=$*
     local tgltfpath=${TGLTFPATH:-$TMP/nd/scene.gltf}
+    local tgltfpretty=${tgltfpath/.gltf}.pretty.gltf
+    cat $tgltfpath | python -m json.tool > $tgltfpretty
+    echo $msg wrote prettified gltf to $tgltfpretty
+
 
     local gltf=1
     #local gltf=4  # early exit from GGeo::loadFromGLTF
@@ -111,13 +113,11 @@ print path
 EOP
 }
 
+tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
 tgltf-gdml-(){ $FUNCNAME- | python $* ; }
-
-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
-tgltf-gdml-rip(){ rip tgltf-gdml--  ; }  ## jump into ipython running the below script
-
 tgltf-gdml--(){ cat << EOP
 
 import os, logging, sys, numpy as np
@@ -132,9 +132,9 @@ from opticks.analytic.sc import Sc
 args = opticks_main()
 
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
-sel = oil
-sel = 3153
-#sel = 1
+#sel = oil
+#sel = 3153
+sel = 1
 idx = 0 
 
 wgg = GDML.parse()
@@ -149,7 +149,8 @@ tg = sc.add_tree_gdml( target, maxdepth=0)
 
 path = "$TMP/tgltf/$FUNCNAME.gltf"
 gltf = sc.save(path)
-print path
+
+print path      ## <-- WARNING COMMUNICATION PRINT
 
 EOP
 }
@@ -159,8 +160,6 @@ tgltf-gdml-placeholders()
 {
     $OPTICKS_HOME/analytic/sc.py --lvnlist $TMP/tgltf/PLACEHOLDER_FAILED_POLY.txt 
 }
-
-
 
 
 
