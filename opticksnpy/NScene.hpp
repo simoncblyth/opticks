@@ -33,6 +33,7 @@ are polygonized on load in NScene::load_mesh_extras.
 class NPY_API NScene : public NGLTF 
 {
     public:
+        static NScene* Load( const char* gltfbase, const char* gltfname, const char* gltfconfig) ;
         static bool Exists(const char* base, const char* name);
         NScene(const char* base, const char* name, const char* config, int scene_idx=0  );
         nd*   getRoot();

@@ -122,6 +122,7 @@ set(SOURCES
     GTraverse.cc
     GMergedMesh.cc
     GGeo.cc
+    GNodeLib.cc
 
 
 )

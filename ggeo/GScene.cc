@@ -11,33 +11,49 @@
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
 
+#include "Opticks.hh"
 
+#include "GItemList.hh"
 #include "GGeo.hh"
 #include "GParts.hh"
 #include "GGeoLib.hh"
+#include "GNodeLib.hh"
 #include "GBndLib.hh"
 #include "GMatrix.hh"
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GScene.hh"
 #include "GMergedMesh.hh"
+
+
 #include "PLOG.hh"
 
-GScene::GScene( GGeo* ggeo, NScene* scene )
+GScene::GScene( Opticks* ok, GGeo* ggeo )
     :
-    m_ggeo(ggeo),
-    m_geolib(ggeo->getGeoLib()),
+    m_ok(ok),
+    m_gltf(m_ok->getGLTF()),
+    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
+    m_geolib(new GGeoLib(m_ok)),
+    m_nodelib(new GNodeLib(m_ok, false)),
+
     m_bndlib(ggeo->getBndLib()),
-    m_scene(scene),
-    m_verbosity(scene->getVerbosity()),
+    m_verbosity(m_scene->getVerbosity()),
     m_root(NULL)
 {
     init();
 }
 
+GGeoLib* GScene::getGeoLib()
+{
+    return m_geolib ; 
+}
+
 void GScene::init()
 {
-    modifyGeometry();
+    if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
+
+    //compareTrees();
+    //modifyGeometry();  // try skipping the clear
 
     importMeshes(m_scene);
     dumpMeshes();
@@ -51,7 +67,19 @@ void GScene::init()
     makeMergedMeshAndInstancedBuffers() ; 
 
     checkMergedMeshes();
+
+
+
+    if(m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==44" );
+
 }
+
+/*
+void GScene::compareTrees()
+{
+}
+*/
+
 
 
 void GScene::modifyGeometry()
@@ -61,7 +89,7 @@ void GScene::modifyGeometry()
 }
 
 
-void GScene::importMeshes(NScene* scene)
+void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh instances into m_meshes vector
 {
     unsigned num_meshes = scene->getNumMeshes();
     LOG(info) << "GScene::importMeshes START num_meshes " << num_meshes  ; 
@@ -115,7 +143,7 @@ void GScene::dumpMeshes()
 }
 
 
-GSolid* GScene::createVolumeTree(NScene* scene)
+GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
 {
     if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree START verbosity " << m_verbosity  ; 
@@ -148,17 +176,24 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
         node->addChild(child);
     } 
 
-    unsigned node_idx = n->idx ;
-    assert(m_nodes.count(node_idx) == 0); 
-    m_nodes[node_idx] = node ; 
+    addNode(node, n );
 
     return node  ; 
 }
 
+void GScene::addNode(GSolid* node, nd* n)
+{
+    unsigned node_idx = n->idx ;
+    assert(m_nodes.count(node_idx) == 0); 
+    m_nodes[node_idx] = node ; 
+    // TODO ... get rid of above, use the nodelib 
+    m_nodelib->add(node);    
+}
 
 
 GSolid* GScene::getNode(unsigned node_idx)
 {
+   // TODO: migrate to using nodelib 
     assert(node_idx < m_nodes.size());
     return m_nodes[node_idx];  
 }
@@ -208,10 +243,18 @@ GSolid* GScene::createVolume(nd* n)
     solid->setCSGSkip( csg->isSkip() );
 
 
+    std::string pvn = csg->pvname()  ;
+    std::string lvn = csg->lvname()  ;
+
+    solid->setPVName( pvn.c_str() );
+    solid->setLVName( lvn.c_str() );
+
+
     // analytic spec currently missing surface info...
     // here need 
   
     unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
+     // ^^^^^^^^^^^^^^^^  ONLY USE OF TRIANGULATE ROUTE ^^^^^^^^^^^^^^^
 
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 
@@ -224,7 +267,8 @@ GSolid* GScene::createVolume(nd* n)
 
     solid->setRepeatIndex( n->repeatIdx ); 
 
-    if(m_verbosity > 1) 
+
+    if(m_verbosity > 0) 
     LOG(info) << "GScene::createVolume"
               << " node_idx " << std::setw(5) << node_idx 
               << " mesh_idx " << std::setw(3) << mesh_idx 
@@ -232,13 +276,14 @@ GSolid* GScene::createVolume(nd* n)
               << " bnd " << bnd 
               << " solid " << solid
               << " solid.pts " << pts 
+              << " solid.idx " << solid->getIndex()
+              << " solid.lvn " << solid->getLVName()
+              << " solid.pvn " << solid->getPVName()
               ;
-
 
 
     return solid ; 
 }
-
 
 
 
@@ -264,7 +309,7 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
-void GScene::makeMergedMeshAndInstancedBuffers()
+void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMergedMesh
 {
     unsigned num_repeats = m_scene->getNumRepeats(); // global 0 included
     unsigned nmm_created = 0 ; 
@@ -296,7 +341,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
          GSolid* base = ridx == 0 ? NULL : instance0 ; 
 
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, base, m_root, m_verbosity );   
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, base, m_root, m_verbosity );   
 
          assert(mm);
 
@@ -313,14 +358,14 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
          nmm_created++ ; 
 
-         GMergedMesh* mmc = m_ggeo->getMergedMesh(ridx);
+         GMergedMesh* mmc = m_geolib->getMergedMesh(ridx);
          assert(mmc == mm);
 
          if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " DONE " ;  
     }
 
-    unsigned nmm = m_ggeo->getNumMergedMesh();
+    unsigned nmm = m_geolib->getNumMergedMesh();
    
      
     if(m_verbosity > 0)
@@ -338,12 +383,12 @@ void GScene::makeMergedMeshAndInstancedBuffers()
 
 void GScene::checkMergedMeshes()
 {
-    int nmm = m_ggeo->getNumMergedMesh();
+    int nmm = m_geolib->getNumMergedMesh();
     int mia = 0 ;
 
     for(int i=0 ; i < nmm ; i++)
     {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        GMergedMesh* mm = m_geolib->getMergedMesh(i);
         if(m_verbosity > 2) 
         std::cout << "GScene::checkMergedMeshes i:" << std::setw(4) << i << " mm? " << (mm ? int(mm->getIndex()) : -1 ) << std::endl ; 
         if(mm == NULL) mia++ ; 

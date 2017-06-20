@@ -508,9 +508,11 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
     // so when wishing to extend the hierarchy with a higher level root transform, 
     // that means just pushing another transform on the end of the existing vector
 
+/*
     LOG(info) << "nmat4triple::make_transformed" 
               << " user " << user
               ;
+*/
 
     nmat4triple perturb( txf );
     std::vector<nmat4triple*> triples ; 

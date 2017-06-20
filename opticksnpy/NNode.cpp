@@ -761,7 +761,7 @@ unsigned nnode::uncoincide()
     {
         if(!can_uncoincide(a, b))
         {
-            LOG(warning) << "nnode::uncoincide detects bileaf A-B subtraction, but must skip as not implemented for: "
+            LOG(debug) << "nnode::uncoincide detects bileaf A-B subtraction, but must skip as not implemented for: "
                          << " A " << a->csgname()
                          << " B " << b->csgname()
                           ;

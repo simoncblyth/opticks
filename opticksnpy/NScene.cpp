@@ -39,6 +39,20 @@ bool NScene::Exists(const char* base, const char* name)
 }
 
 
+NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gltfconfig) 
+{
+    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig) : NULL ;
+    if(!scene)
+        LOG(fatal) << "NScene:Load MISSING PATH" 
+                   << " gltfbase " << gltfbase
+                   << " gltfname " << gltfname
+                   << " gltfconfig " << gltfconfig
+                   ; 
+
+    return scene ; 
+}
+
+
 NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),

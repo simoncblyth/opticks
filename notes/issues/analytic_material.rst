@@ -10,6 +10,25 @@ TODO
 * Invoked from GScene using a separate class establish triangulated and analytic tree "alignment" ,
   ie should be same node structure with same identifiers
 
+* perhaps a separate analytic m_ggeolib instance inside GGeo (or GScene)
+  with switch to choose between them is pragmatic way to handle both trees at once
+  GGeo can orchestrate where to get the GMergedMesh from ... then no changes
+  needed in oxrap ?
+
+
+GGeo/GGeoLib
+----------
+
+Normally loaded from cache::
+
+
+     610 void GGeo::loadFromCache()
+     611 {  
+     612     LOG(trace) << "GGeo::loadFromCache START" ;
+     613 
+     614     m_geolib = GGeoLib::load(m_ok);
+     615    
+
 
 GDML File LV volume elements have material refs
 --------------------------------------------------

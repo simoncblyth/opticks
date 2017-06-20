@@ -12,7 +12,9 @@ tgltf-make-gdml
      testing small snippets of GDML
 
 tgltf-gdml
-     testing full geometries 
+     testing full analytic geometry mode, as switched on with 
+     with "--gltf" option, and paths locating the gltf file
+
      handy options for debugging::
  
          --restrictmesh 0  # just the global 
@@ -49,8 +51,9 @@ tgltf--()
     echo $msg wrote prettified gltf to $tgltfpretty
 
 
-    local gltf=1
-    #local gltf=4  # early exit from GGeo::loadFromGLTF
+    #local gltf=1
+    #local gltf=4  # early exit at start of GScene::init
+    local gltf=44  # early exit at end of GScene::init
 
     op.sh  \
             $cmdline \
@@ -66,6 +69,59 @@ tgltf--()
             --dbganalytic \
             --tag $(tgltf-tag) --cat $(tgltf-det) \
             --save 
+}
+
+
+tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
+
+
+tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
+
+tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
+tgltf-gdml-(){ $FUNCNAME- | python $* ; }
+tgltf-gdml--(){ cat << EOP
+
+import os, logging, sys, numpy as np
+
+log = logging.getLogger(__name__)
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.treebase import Tree
+from opticks.analytic.gdml import GDML
+from opticks.analytic.sc import Sc
+
+args = opticks_main()
+
+oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
+
+sel = oil
+#sel = 3153
+#sel = 1
+idx = 0 
+
+wgg = GDML.parse()
+tree = Tree(wgg.world)
+
+target = tree.findnode(sel=sel, idx=idx)
+
+sc = Sc(maxcsgheight=3)
+sc.extras["verbosity"] = 1
+
+tg = sc.add_tree_gdml( target, maxdepth=0)
+
+path = "$TMP/tgltf/$FUNCNAME.gltf"
+gltf = sc.save(path)
+
+print path      ## <-- WARNING COMMUNICATION PRINT
+
+EOP
+}
+
+
+tgltf-gdml-placeholders()
+{
+    $OPTICKS_HOME/analytic/sc.py --lvnlist $TMP/tgltf/PLACEHOLDER_FAILED_POLY.txt 
 }
 
 
@@ -112,55 +168,5 @@ print path
 
 EOP
 }
-
-tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
-tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
-
-tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
-tgltf-gdml-(){ $FUNCNAME- | python $* ; }
-tgltf-gdml--(){ cat << EOP
-
-import os, logging, sys, numpy as np
-
-log = logging.getLogger(__name__)
-
-from opticks.ana.base import opticks_main
-from opticks.analytic.treebase import Tree
-from opticks.analytic.gdml import GDML
-from opticks.analytic.sc import Sc
-
-args = opticks_main()
-
-oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
-#sel = oil
-#sel = 3153
-sel = 1
-idx = 0 
-
-wgg = GDML.parse()
-tree = Tree(wgg.world)
-
-target = tree.findnode(sel=sel, idx=idx)
-
-sc = Sc(maxcsgheight=3)
-sc.extras["verbosity"] = 1
-
-tg = sc.add_tree_gdml( target, maxdepth=0)
-
-path = "$TMP/tgltf/$FUNCNAME.gltf"
-gltf = sc.save(path)
-
-print path      ## <-- WARNING COMMUNICATION PRINT
-
-EOP
-}
-
-
-tgltf-gdml-placeholders()
-{
-    $OPTICKS_HOME/analytic/sc.py --lvnlist $TMP/tgltf/PLACEHOLDER_FAILED_POLY.txt 
-}
-
-
 
 

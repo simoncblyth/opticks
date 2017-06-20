@@ -2,6 +2,10 @@
 
 #include <map>
 
+class Opticks ; 
+
+class GNodeLib ; 
+class GItemList ; 
 class GGeo ; 
 class GSolid ; 
 class GNode ; 
@@ -21,6 +25,19 @@ template<class T> class NPY ;
 /*
 GScene
 ========
+
+Canonical m_gscene instance, resident in m_ggeo,
+is instanciated by GGeo::loadFromGLTF.
+GMergedMesh are currently created via GGeo and
+managed in its GGeoLib.
+
+GScene.hh only used from GGeo, the actions of GScene
+creating the analytic GMergedMesh are felt via 
+the normal GGeoLib route. oxrap/OScene/OGeo 
+(especially OGeo::makeAnalyticGeometry)
+which converts the GGeo accessed GMergedMesh into OptiX form. 
+
+
 
 Fully analytic glTF based replacement for the 
 mainly triangulated GTreeCheck.
@@ -44,14 +61,14 @@ instanciation in GGeo::loadFromGLTF.
   placeholder bbox so satisfy the global mesh 0 that 
   lots of things require
 
-
 */
 
 class GGEO_API GScene 
 {
     public:
-        GScene(GGeo* ggeo, NScene* scene);
-
+        // ggeo currently used only for bndlib access
+        GScene(Opticks* ok, GGeo* ggeo);
+        GGeoLib* getGeoLib();
     private:
         void init();
     private:
@@ -60,18 +77,22 @@ class GGEO_API GScene
         void dumpMeshes();
         GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
-
         NCSG*  getCSG(unsigned mesh_idx);
     private:
         GSolid* createVolumeTree(NScene* scene);
         GSolid* createVolumeTree_r(nd* n, GSolid* parent);
         GSolid* createVolume(nd* n);
+        void addNode(GSolid* node, nd* n);
     private:
         // compare tree calculated and persisted transforms
         void           deltacheck_r( GNode* node, unsigned int depth );
     private:
+        // these two methods formerly used m_ggeo to get to the m_ggeo/m_geolib 
+        // now moved to holding a separate m_geolib in here
         void         checkMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
+
+    private:
         void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
 
         NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
@@ -80,11 +101,14 @@ class GGEO_API GScene
     private:
         GSolid*       getNode(unsigned node_idx);
     private:
-        GGeo*    m_ggeo ; 
-        GGeoLib* m_geolib ; 
-        GBndLib* m_bndlib ; 
+        Opticks* m_ok ; 
+        int      m_gltf ; 
         NScene*  m_scene ; 
+        GGeoLib* m_geolib ; 
+        GNodeLib* m_nodelib ; 
+        GBndLib* m_bndlib ; 
         unsigned m_verbosity ; 
+
         GSolid*  m_root ; 
 
         std::map<unsigned, GMesh*>  m_meshes ; 

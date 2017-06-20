@@ -95,7 +95,7 @@ class Sc(object):
         self.meshes = collections.OrderedDict()
         self.extras = {}
         self.maxcsgheight = maxcsgheight
-        self.translate_lv_count = 0 
+        self.translate_node_count = 0 
 
     def _get_gltf(self):
         root = 0 
@@ -190,18 +190,18 @@ class Sc(object):
         ##
         if getattr(nd.mesh,'csg',None) is None:
             #print msg 
-            csg = self.translate_lv( node.lv, self.maxcsgheight )
+            csg = self.translate_node( node, self.maxcsgheight )
             nd.mesh.csg = csg 
-            self.translate_lv_count += 1
+            self.translate_node_count += 1
             if csg.meta.get('skip',0) == 1:
-                log.warning("tlv(%3d): csg.skip as height %2d > %d lvn %s lvidx %s " % (self.translate_lv_count, csg.height, self.maxcsgheight, node.lv.name, node.lv.idx )) 
+                log.warning("tlv(%3d): csg.skip as height %2d > %d lvn %s lvidx %s " % (self.translate_node_count, csg.height, self.maxcsgheight, node.lv.name, node.lv.idx )) 
             pass
         pass
         return nd
 
 
     @classmethod
-    def translate_lv(cls, lv, maxcsgheight, maxcsgheight2=0 ):
+    def translate_node(cls, node, maxcsgheight, maxcsgheight2=0 ):
         """
         :param lv:
         :param maxcsgheight:  CSG trees greater than this are balanced
@@ -212,23 +212,26 @@ class Sc(object):
         such as the Polycone invokes treebuilder to provide uniontree composites.
 
         """ 
+        pv = node.pv
+        lv = node.lv
+
         if maxcsgheight2 == 0 and maxcsgheight != 0:
             maxcsgheight2 = maxcsgheight + 1
         pass  
 
         solid = lv.solid
-        log.debug("translate_lv START %-15s %s  " % (solid.__class__.__name__, lv.name ))
+        log.debug("translate_node START %-15s %s  " % (solid.__class__.__name__, lv.name ))
 
         rawcsg = solid.as_ncsg()
         rawcsg.analyse()
 
-        log.info("translate_lv DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
+        log.info("translate_node DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
 
         csg = cls.optimize_csg(rawcsg, maxcsgheight, maxcsgheight2 )
 
         polyconfig = PolyConfig(lv.shortname)
         csg.meta.update(polyconfig.meta )
-        csg.meta.update(lvname=lv.shortname, soname=lv.solid.name, height=csg.height)  
+        csg.meta.update(pvname=pv.name, lvname=lv.name, soname=lv.solid.name, height=csg.height)  
 
         return csg 
 
@@ -279,7 +282,7 @@ class Sc(object):
         log.info("add_tree_gdml START maxdepth:%d maxcsgheight:%d nodesCount:%5d" % (maxdepth, self.maxcsgheight, len(self.nodes)))
         #log.info("add_tree_gdml targetNode: %r " % (target))
         tg = build_r(target)
-        log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d  tgNd:%r " % (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_lv_count, tg))
+        log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d  tgNd:%r " % (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_node_count, tg))
         return tg
 
     def save_extras(self, gdir):

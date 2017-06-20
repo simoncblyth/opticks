@@ -3,7 +3,7 @@
 #include <map>
 class Opticks ; 
 
-class GGeo ; 
+//class GGeo ; 
 class GMergedMesh ; 
 class GNode ; 
 

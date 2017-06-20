@@ -38,6 +38,7 @@ class GMaterial ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 
+class GNodeLib ; 
 class GGeoLib ;
 class GBndLib ;
 class GMaterialLib ;
@@ -83,9 +84,8 @@ class GGEO_API GGeo : public NConfigurable {
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
         void setLoaderVerbosity(unsigned int verbosity);
-        unsigned int getLoaderVerbosity();
-    public:
         void setMeshVerbosity(unsigned int verbosity);
+        unsigned int getLoaderVerbosity();
         unsigned int getMeshVerbosity();
     public:
         typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, Opticks*);
@@ -130,8 +130,6 @@ class GGEO_API GGeo : public NConfigurable {
         void prepareMeshes();
         void prepareVertexColors();
     public:
-        const char* getPVName(unsigned int index);
-        const char* getLVName(unsigned int index);
 
         void setCathode(GMaterial* cathode);
         GMaterial* getCathode();  
@@ -175,10 +173,18 @@ class GGEO_API GGeo : public NConfigurable {
         bool isVolnames();
 
     public:
-        void add(GMesh*    mesh);
+        // via GNodeLib
+        unsigned int getNumSolids();
         void add(GSolid*    solid);
+        GNode* getNode(unsigned index); 
+        GSolid* getSolid(unsigned int index);  
+        GSolid* getSolidSimple(unsigned int index);  
+        const char* getPVName(unsigned int index);
+        const char* getLVName(unsigned int index);
+
 
     public:
+        void add(GMesh*    mesh);
         void add(GMaterial* material);
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
@@ -195,8 +201,6 @@ class GGEO_API GGeo : public NConfigurable {
       
     public:
         GItemIndex*  getMeshIndex(); 
-        GItemList*   getPVList(); 
-        GItemList*   getLVList(); 
 
     public:
         void dumpRaw(const char* msg="GGeo::dumpRaw");
@@ -215,7 +219,6 @@ class GGEO_API GGeo : public NConfigurable {
  
     public:
         unsigned int getNumMeshes();
-        unsigned int getNumSolids();
         unsigned int getNumMaterials();
         unsigned int getNumSkinSurfaces();
         unsigned int getNumBorderSurfaces();
@@ -264,9 +267,6 @@ class GGEO_API GGeo : public NConfigurable {
         GPropertyMap<float>* findRawMaterial(const char* shortname);
         GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname);
     public:
-        GNode* getNode(unsigned index); 
-        GSolid* getSolid(unsigned int index);  
-        GSolid* getSolidSimple(unsigned int index);  
 
     public:
         gfloat3* getLow();
@@ -312,12 +312,14 @@ class GGEO_API GGeo : public NConfigurable {
         glm::ivec4& getPickFace(); 
     private:
         Opticks*                      m_ok ;  
+        int                           m_gltf ; 
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
         std::vector<GMesh*>           m_meshes ; 
-        std::vector<GSolid*>          m_solids ; 
+
+
         std::vector<GMaterial*>       m_materials ; 
         std::vector<GSkinSurface*>    m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
@@ -336,6 +338,10 @@ class GGEO_API GGeo : public NConfigurable {
         NLookup*                      m_lookup ; 
 
         GGeoLib*                      m_geolib ; 
+        GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
+
+        GNodeLib*                     m_nodelib ; 
+
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
@@ -357,11 +363,9 @@ class GGEO_API GGeo : public NConfigurable {
         std::map<unsigned int, unsigned int>                  m_mesh_usage ; 
         std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
         GItemIndex*                   m_meshindex ; 
-        GItemList*                    m_pvlist ; 
-        GItemList*                    m_lvlist ; 
 
     private:
-        std::map<unsigned int, GSolid*>    m_solidmap ; 
+
         Index_t                            m_index ; 
         unsigned int                       m_sensitive_count ;  
         bool                               m_volnames ;    
@@ -374,7 +378,6 @@ class GGEO_API GGeo : public NConfigurable {
 
     private:
         // glTF route 
-        NScene*                            m_nscene ; 
         GScene*                            m_gscene ; 
 
 

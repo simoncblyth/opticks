@@ -45,6 +45,7 @@ namespace fs = boost::filesystem;
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
+#include "GNodeLib.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
@@ -82,12 +83,14 @@ const char* GGeo::PICKFACE = "pickface" ;
 GGeo::GGeo(Opticks* opticks)
   :
    m_ok(opticks), 
+   m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_treecheck(NULL), 
    m_treepresent(NULL), 
    m_loaded(false), 
    m_lookup(NULL), 
    m_geolib(NULL),
+   m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -101,15 +104,12 @@ GGeo::GGeo(Opticks* opticks)
    m_low(NULL),
    m_high(NULL),
    m_meshindex(NULL),
-   m_pvlist(NULL),
-   m_lvlist(NULL),
    m_sensitive_count(0),
    m_volnames(false),
    m_cathode(NULL),
    m_join_cfg(NULL),
    m_loader_verbosity(0),
    m_mesh_verbosity(0),
-   m_nscene(NULL),
    m_gscene(NULL)
 {
    init(); 
@@ -196,10 +196,8 @@ unsigned int GGeo::getNumMeshes()
 {
     return m_meshes.size();
 }
-unsigned int GGeo::getNumSolids()
-{
-    return m_solids.size();
-}
+
+
 unsigned int GGeo::getNumMaterials()
 {
     return m_materials.size();
@@ -228,10 +226,7 @@ unsigned int GGeo::getNumRawSkinSurfaces()
 
 
 
-GSolid* GGeo::getSolidSimple(unsigned int index)
-{
-    return m_solids[index];
-}
+
 GSkinSurface* GGeo::getSkinSurface(unsigned int index)
 {
     return m_skin_surfaces[index];
@@ -242,10 +237,7 @@ GBorderSurface* GGeo::getBorderSurface(unsigned int index)
 }
 
 
-GGeoLib* GGeo::getGeoLib()
-{
-    return m_geolib ; 
-}
+
 GBndLib* GGeo::getBndLib()
 {
     return m_bndlib ; 
@@ -301,6 +293,8 @@ GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshindex ; 
 }
+
+/*
 GItemList* GGeo::getPVList()
 {
     return m_pvlist ; 
@@ -309,7 +303,7 @@ GItemList* GGeo::getLVList()
 {
     return m_lvlist ; 
 }
-
+*/
 
 
 
@@ -452,12 +446,7 @@ void GGeo::init()
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
-   if(m_volnames)
-   {
-       m_pvlist = new GItemList("PVNames") ; 
-       m_lvlist = new GItemList("LVNames") ; 
-   }
-
+   m_nodelib = new GNodeLib(m_ok, false);  // not loaded 
    LOG(trace) << "GGeo::init DONE" ; 
 }
 
@@ -487,14 +476,24 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
+GGeoLib* GGeo::getGeoLib()
+{
+    return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
+}
+
 unsigned int GGeo::getNumMergedMesh()
 {
-    return m_geolib->getNumMergedMesh();
+    GGeoLib* geolib = getGeoLib() ;
+    assert(geolib);
+    return geolib->getNumMergedMesh();
 }
 
 GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 {
-    GMergedMesh* mm = m_geolib->getMergedMesh(index);
+    GGeoLib* geolib = getGeoLib() ;
+    assert(geolib);
+
+    GMergedMesh* mm = geolib->getMergedMesh(index);
 
     unsigned int meshverbosity = getMeshVerbosity() ; 
 
@@ -512,7 +511,9 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
 GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
 {
-    return m_geolib->makeMergedMesh(index, base, root, verbosity);
+    GGeoLib* geolib = getGeoLib() ;
+    assert(geolib);
+    return geolib->makeMergedMesh(index, base, root, verbosity);
 }
 
 
@@ -612,15 +613,10 @@ void GGeo::loadFromCache()
     LOG(trace) << "GGeo::loadFromCache START" ; 
 
     m_geolib = GGeoLib::load(m_ok);
+    m_nodelib = GNodeLib::load(m_ok);
         
     const char* idpath = m_ok->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");
-
-    if(m_volnames)
-    {
-        m_pvlist = GItemList::load(idpath, "PVNames");
-        m_lvlist = GItemList::load(idpath, "LVNames");
-    }
 
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
@@ -628,7 +624,6 @@ void GGeo::loadFromCache()
     // GBndLib is persisted via index buffer, not float buffer
     m_materiallib = m_bndlib->getMaterialLib();
     m_surfacelib = m_bndlib->getSurfaceLib();
-
 
     m_scintillatorlib  = GScintillatorLib::load(m_ok);
     m_sourcelib  = GSourceLib::load(m_ok);
@@ -640,47 +635,14 @@ void GGeo::loadFromCache()
 void GGeo::loadFromGLTF()
 {
     if(!m_ok->isGLTF()) return ; 
-
 #ifdef WITH_YoctoGL
-
-    int gltf = m_ok->getGLTF();
-    assert(gltf > 0);
-
-    const char* gltfbase = m_ok->getGLTFBase();
-    const char* gltfname = m_ok->getGLTFName();
-    const char* gltfconfig = m_ok->getGLTFConfig();
-
-    LOG(info) << "GGeo::loadFromGLTF"
-               << " gltfbase " << gltfbase
-               << " gltfname " << gltfname
-               << " gltfconfig " << gltfconfig
-               << " gltf " << gltf
-              ;
-
-    if(!NScene::Exists(gltfbase, gltfname))
-    {
-        LOG(fatal) << "GGeo::loadFromGLTF MISSING PATH" ; 
-    }
-    else
-    { 
-        m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
-        m_gscene = new GScene(this, m_nscene );
-    } 
-
-    if(gltf == 4)  assert(0 && "early exit for gltf==4" );
-
+    m_gscene = new GScene(m_ok, this); // GGeo needed for m_bndlib 
+    m_geolib_analytic = m_gscene->getGeoLib();
 #else
-   LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
-   assert(0);
+    LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
+    assert(0);
 #endif
-
-
 }
-
-
-
-
-
 
 
 
@@ -765,13 +727,8 @@ void GGeo::save(const char* idpath)
 
     m_meshindex->save(idpath);
 
-    if(m_volnames)
-    {
-        m_pvlist->save(idpath);
-        m_lvlist->save(idpath);
-    }
-
     // details of save handled within the class, not here 
+    m_nodelib->save();
     m_materiallib->save();
     m_surfacelib->save();
     m_scintillatorlib->save();
@@ -827,15 +784,6 @@ void GGeo::modifyGeometry(const char* config)
 
 
 
-const char* GGeo::getPVName(unsigned int index)
-{
-    return m_pvlist ? m_pvlist->getKey(index) : NULL ; 
-}
-const char* GGeo::getLVName(unsigned int index)
-{
-    return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
-}
-
 bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
 {
     return BStr::listHasKey(ctrl, key, ",");
@@ -867,7 +815,7 @@ void GGeo::Summary(const char* msg)
 {
     LOG(info) << msg
               << " ms " << m_meshes.size()
-              << " so " << m_solids.size()
+              << " so " << m_nodelib->getNumSolids()
               << " mt " << m_materials.size()
               << " bs " << m_border_surfaces.size()
               << " ss " << m_skin_surfaces.size()
@@ -974,22 +922,43 @@ void GGeo::add(GMesh* mesh)
     m_meshindex->add(name, index); 
 }
 
+
+
+
+
+// via GNodeLib
+
+unsigned GGeo::getNumSolids()
+{
+    return m_nodelib->getNumSolids();
+}
 void GGeo::add(GSolid* solid)
 {
-    m_solids.push_back(solid);
-    unsigned int index = solid->getIndex(); // absolute node index, independent of the selection
-    //printf("GGeo::add solid %u \n", index);
-    m_solidmap[index] = solid ; 
-
-    if(m_volnames)
-    { 
-        m_lvlist->add(solid->getLVName()); 
-        m_pvlist->add(solid->getPVName()); 
-    }
-
-    GSolid* check = getSolid(index);
-    assert(check == solid);
+    m_nodelib->add(solid);
 }
+GSolid* GGeo::getSolid(unsigned index)
+{
+    return m_nodelib->getSolid(index);
+}
+GSolid* GGeo::getSolidSimple(unsigned int index)
+{
+    return m_nodelib->getSolidSimple(index);
+}
+const char* GGeo::getPVName(unsigned int index)
+{
+    return m_nodelib->getPVName(index);
+}
+const char* GGeo::getLVName(unsigned int index)
+{
+    return m_nodelib->getLVName(index);
+}
+GNode* GGeo::getNode(unsigned index)
+{
+    return m_nodelib->getNode(index);
+}
+
+
+
 
 
 void GGeo::dumpRaw(const char* msg)
@@ -1002,25 +971,6 @@ void GGeo::dumpRaw(const char* msg)
     }
 }
 
-
-GSolid* GGeo::getSolid(unsigned index)
-{
-    GSolid* solid = NULL ; 
-    if(m_solidmap.find(index) != m_solidmap.end()) 
-    {
-        solid = m_solidmap[index] ;
-        assert(solid->getIndex() == index);
-    }
-    return solid ; 
-}
-
-
-GNode* GGeo::getNode(unsigned index)
-{
-    GSolid* solid = getSolid(index);
-    GNode* node = static_cast<GNode*>(solid); 
-    return node ; 
-}
 
 
 
@@ -1617,8 +1567,9 @@ void GGeo::dumpTree(const char* msg)
     // all these are full traverse counts, not reduced by selections or instancing
     unsigned int nso = mm0->getNumSolids();  
     guint4* nodeinfo = mm0->getNodeInfo(); 
-    unsigned int npv = m_pvlist->getNumKeys(); 
-    unsigned int nlv = m_lvlist->getNumKeys(); 
+
+    unsigned int npv = m_nodelib->getNumPV();
+    unsigned int nlv = m_nodelib->getNumLV(); 
 
     LOG(info) << msg 
               << " nso " << nso 
@@ -1641,8 +1592,14 @@ void GGeo::dumpTree(const char* msg)
     {
          guint4* info = nodeinfo + i ;  
          glm::ivec4 offnum = getNodeOffsetCount(i);
-         const char* pv = m_pvlist->getKey(i);
-         const char* lv = m_lvlist->getKey(i);
+
+         //const char* pv = m_pvlist->getKey(i);
+         //const char* lv = m_lvlist->getKey(i);
+
+         const char* pv = m_nodelib->getPVName(i);
+         const char* lv = m_nodelib->getLVName(i);
+
+
          printf(" %6u : nf %4d nv %4d id %6u pid %6d : %4d %4d %4d %4d  :%50s %50s \n", i, 
                     info->x, info->y, info->z, info->w,  offnum.x, offnum.y, offnum.z, offnum.w,
                     pv, lv ); 

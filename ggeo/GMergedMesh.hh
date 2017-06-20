@@ -65,6 +65,8 @@ private:
     void mergeMergedMesh( GMergedMesh* other, bool selected );
 public:
     float* getModelToWorldPtr(unsigned int index);
+
+    // TODO: below is only usage of GGeo here, move this elsewhere... into GGeo ?
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
     void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
 public:
