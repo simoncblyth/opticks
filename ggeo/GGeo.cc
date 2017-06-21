@@ -482,6 +482,11 @@ GNodeLib* GGeo::getNodeLib()
     return m_nodelib ;  // the triangulated one
 }
 
+GGeoLib* GGeo::getTriGeoLib()
+{
+    return m_geolib ; 
+}
+
 GGeoLib* GGeo::getGeoLib()
 {
     return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 

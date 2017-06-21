@@ -33,10 +33,16 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_ok(ok),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
+    m_targetnode(m_scene->getTargetNode()),
     m_geolib(new GGeoLib(m_ok)),
-    m_nodelib(new GNodeLib(m_ok, false, m_scene->getTargetNode())),
-    m_other_nodelib(ggeo->getNodeLib()),
-    m_bndlib(ggeo->getBndLib()),
+    m_nodelib(new GNodeLib(m_ok, false, m_targetnode)),
+
+    m_tri_geolib(ggeo->getTriGeoLib()),
+    m_tri_mm0(m_tri_geolib->getMergedMesh(0)),
+
+    m_tri_nodelib(ggeo->getNodeLib()),
+    m_tri_bndlib(ggeo->getBndLib()),
+
     m_verbosity(m_scene->getVerbosity()),
     m_root(NULL)
 {
@@ -52,7 +58,6 @@ void GScene::init()
 {
     if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
 
-    //compareTrees();
     //modifyGeometry();  // try skipping the clear
 
     importMeshes(m_scene);
@@ -78,11 +83,52 @@ void GScene::init()
 
 void GScene::compareTrees()
 {
-    LOG(info) << "GScene::compareTrees" ;
+    LOG(info) << "GScene::compareTrees" 
+              << " targetnode " << m_targetnode
+              ;
     
+    LOG(info) << "nodelib (GSolid) volumes " ; 
+
     std::cout << " ana " << m_nodelib->desc() << std::endl ; 
-    std::cout << " tri " << m_other_nodelib->desc() << std::endl ; 
+    std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
+
+    LOG(info) << "geolib (GMergedMesh)  " ; 
+
+    std::cout << " tri " << m_tri_geolib->desc() << std::endl ; 
+
+    // hmm would be good to know the node count via metadata 
+    // as a check as so can avoid ordering dependencies
+    unsigned nidx = m_tri_nodelib->getNumPV();
+
+    for(unsigned idx = 0 ; idx < nidx ; ++idx)
+    {
+        guint4 id = getIdentity(idx);
+        guint4 ni = getNodeInfo(idx);
+        std::cout
+                  << " " << std::setw(5) << idx 
+                  << " " << std::setw(5) << idx + m_targetnode
+                  << " ID(nd/ms/bd/sn) " << id.description() 
+                  << " NI(nf/nv/ix/px) " << ni.description() 
+                  << std::endl
+                   ; 
+    }
+
+
 }
+
+
+guint4 GScene::getNodeInfo(unsigned idx)
+{
+     return m_tri_mm0->getNodeInfo(m_targetnode + idx);
+}
+
+guint4 GScene::getIdentity(unsigned idx)
+{
+     return m_tri_mm0->getIdentity(m_targetnode + idx);
+}
+
+
+
 
 
 void GScene::modifyGeometry()
@@ -253,7 +299,7 @@ GSolid* GScene::createVolume(nd* n)
 
     GParts* pts = GParts::make( csg, spec, m_verbosity  ); // amplification from mesh level to node level 
 
-    pts->setBndLib(m_bndlib);
+    pts->setBndLib(m_tri_bndlib);
 
     solid->setParts( pts );
 

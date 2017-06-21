@@ -12,10 +12,73 @@ TODO : C++ alignment  + cross accessors
  
 * need partial alignment check
 * cross accessors : to get to corresponding objects in "other" world, just need the right index
+
 * verify oxrap can continue unchanged
 
-Hmm the tri is operating from cache, without the volume tree ? 
-Only the merged mesh and its solid related buffers are persisted ?
+* COMPLICATION : tri when operating from cache, does not have the volume tree persisted/saved
+  only the merged mesh and its solid related buffers are persisted ?
+
+* Hmm but due to instancing splits of the GMergedMesh this aint so easy ?
+  Unless the global one retains all solid info ?
+
+
+Yep mm0 is holding full solid info::
+
+    In [1]: run mergedmesh.py
+
+    [2017-06-21 12:59:49,242] p1196 {/Users/blyth/opticks/ana/mergedmesh.py:51} INFO - ready buffers from /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 
+    -rw-r--r--  1 blyth  staff  96 Jun 14 16:21 /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0/aiidentity.npy
+    -rw-r--r--  1 blyth  staff  293600 Jun 14 16:21 /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0/bbox.npy
+    ...
+    In [2]: mm
+    Out[2]: 
+               aiidentity : (1, 1, 4) 
+                     bbox : (12230, 6) 
+               boundaries : (434816, 1) 
+            center_extent : (12230, 4) 
+                   colors : (225200, 3) 
+                 identity : (12230, 4) 
+                iidentity : (12230, 4) 
+                  indices : (1304448, 1) 
+              itransforms : (1, 4, 4) 
+                   meshes : (12230, 1) 
+                 nodeinfo : (12230, 4) 
+                    nodes : (434816, 1) 
+                  normals : (225200, 3) 
+                  sensors : (434816, 1) 
+               transforms : (12230, 16) 
+                 vertices : (225200, 3) 
+
+
+Looks like key method is::
+
+
+     GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected ) 
+
+     m_nodeinfo
+     m_identity
+
+     394 guint4* GMesh::getNodeInfo()
+     395 {
+     396     return m_nodeinfo ;
+     397 }
+     398 guint4 GMesh::getNodeInfo(unsigned int index)
+     399 {
+     400     return m_nodeinfo[index] ;
+     401 }
+     402 
+     403 guint4* GMesh::getIdentity()
+     404 {
+     405     return m_identity ;
+     406 }
+     407 guint4 GMesh::getIdentity(unsigned int index)
+     408 {
+     409     return m_identity[index] ;
+     410 }
+
+
+
+
 
 ::
 

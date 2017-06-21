@@ -12,10 +12,12 @@ class GNode ;
 class GBndLib ; 
 class GGeoLib ; 
 class GMesh ; 
+class GMergedMesh ; 
 
 class NCSG ; 
 class NScene ; 
 struct nd ; 
+struct guint4 ; 
 
 template<class T> class NPY ;
 
@@ -79,6 +81,10 @@ class GGEO_API GScene
         GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
         NCSG*  getCSG(unsigned mesh_idx);
+
+        // from triangulated branch mm0
+        guint4 getNodeInfo(unsigned idx);
+        guint4 getIdentity(unsigned idx);
     private:
         GSolid* createVolumeTree(NScene* scene);
         GSolid* createVolumeTree_r(nd* n, GSolid* parent);
@@ -105,10 +111,16 @@ class GGEO_API GScene
         Opticks* m_ok ; 
         int      m_gltf ; 
         NScene*  m_scene ; 
-        GGeoLib* m_geolib ; 
+        unsigned m_targetnode ; 
+
+        GGeoLib*  m_geolib ; 
         GNodeLib* m_nodelib ; 
-        GNodeLib* m_other_nodelib ; 
-        GBndLib* m_bndlib ; 
+
+        GGeoLib*      m_tri_geolib ; 
+        GMergedMesh*  m_tri_mm0 ; 
+        GNodeLib*     m_tri_nodelib ; 
+        GBndLib*      m_tri_bndlib ; 
+
         unsigned m_verbosity ; 
 
         GSolid*  m_root ; 

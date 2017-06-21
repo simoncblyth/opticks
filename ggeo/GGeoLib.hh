@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <map>
 class Opticks ; 
 
@@ -18,8 +19,9 @@ class GGEO_API GGeoLib {
         static GGeoLib* load(Opticks* opticks);
     public:
         GGeoLib(Opticks* opticks);
+        std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
-        const char* getMeshVersion();
+        const char* getMeshVersion() const ;
     public:
         void loadFromCache();
         void saveToCache();
@@ -29,7 +31,7 @@ class GGEO_API GGeoLib {
         void removeMergedMeshes(const char* idpath);
         void saveMergedMeshes(const char* idpath);
     public:
-        unsigned getNumMergedMesh();
+        unsigned getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned int index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);

@@ -229,6 +229,7 @@ class GGEO_API GGeo : public NConfigurable {
     public:
         GNodeLib*          getNodeLib();
         GGeoLib*           getGeoLib();
+        GGeoLib*           getTriGeoLib();
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();

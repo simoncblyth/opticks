@@ -17,7 +17,6 @@ class MyItemList(object):
 manual_mixin(ItemList, MyItemList)
 
 
-
 class VolumeNames(object):
     def __init__(self, prefix="", offset=0, translate_=None):
 

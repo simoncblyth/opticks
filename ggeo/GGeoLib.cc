@@ -28,6 +28,17 @@ GGeoLib* GGeoLib::load(Opticks* opticks)
 }
 
 
+std::string GGeoLib::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "GGeoLib"
+       << " numMergedMesh " << getNumMergedMesh()
+       ; 
+
+    return ss.str();
+}
+
 
 GGeoLib::GGeoLib(Opticks* opticks) 
      :
@@ -36,7 +47,7 @@ GGeoLib::GGeoLib(Opticks* opticks)
 {
 }
 
-unsigned int GGeoLib::getNumMergedMesh()
+unsigned int GGeoLib::getNumMergedMesh() const 
 {
     return m_merged_mesh.size();
 }
@@ -44,7 +55,7 @@ void GGeoLib::setMeshVersion(const char* mesh_version)
 {
     m_mesh_version = mesh_version ? strdup(mesh_version) : NULL ;
 }
-const char* GGeoLib::getMeshVersion()
+const char* GGeoLib::getMeshVersion() const 
 {
     return m_mesh_version ;
 }
@@ -165,6 +176,5 @@ void GGeoLib::clear()
 {
     m_merged_mesh.clear(); 
 }
-
 
 
