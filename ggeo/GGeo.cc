@@ -446,7 +446,8 @@ void GGeo::init()
 
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
-   m_nodelib = new GNodeLib(m_ok, false);  // not loaded 
+   unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
+   m_nodelib = new GNodeLib(m_ok, false, targetnode );  // not loaded 
    LOG(trace) << "GGeo::init DONE" ; 
 }
 
@@ -475,6 +476,11 @@ void GGeo::add(GSkinSurface* surface)
 }
 
 
+
+GNodeLib* GGeo::getNodeLib()
+{
+    return m_nodelib ;  // the triangulated one
+}
 
 GGeoLib* GGeo::getGeoLib()
 {

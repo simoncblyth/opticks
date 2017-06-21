@@ -384,7 +384,7 @@ class Tree(object):
             isel = None 
         pass
 
-        if isel is not None:
+        if isel is not None:  ## integer node lookup
             targetNode = cls.get(isel)
         else:
             targetNode = cls.findnode_lv(sel, idx)

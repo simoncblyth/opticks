@@ -77,7 +77,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltfbase("$TMP/nd"),
        m_gltfname("scene.gltf"),
        m_gltfconfig("0,3"),
-       m_gltf(0)
+       m_gltf(0),
+       m_gltftarget(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -629,6 +630,11 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("gltfconfig",   boost::program_options::value<std::string>(&m_gltfconfig), gltfconfig );
 
+   char gltftarget[128];
+   snprintf(gltftarget,128, "Integer specifying glTF geometry node target for partial geometry, Default %d ", m_gltftarget );
+   m_desc.add_options()
+       ("gltftarget",  boost::program_options::value<int>(&m_gltftarget), gltftarget );
+
 
    char gltf[128];
    snprintf(gltf,128, "Integer controlling  glTF geometry file loading, 0 means NO.  Default %d ", m_gltf );
@@ -1045,6 +1051,12 @@ template <class Listener>
 int OpticksCfg<Listener>::getGLTF()
 {
     return m_gltf ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getGLTFTarget()
+{
+    return m_gltftarget ; 
 }
 
 

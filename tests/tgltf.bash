@@ -38,6 +38,7 @@ tgltf-args(){ echo  --det $(tgltf-det) --src $(tgltf-src) ; }
 
 
 
+
 tgltf--()
 {
     local msg="=== $FUNCNAME :"
@@ -62,6 +63,7 @@ tgltf--()
             --gltf $gltf \
             --gltfbase $(dirname $tgltfpath) \
             --gltfname $(basename $tgltfpath) \
+            --gltftarget $(tgltf-target) \
             --target 3 \
             --animtimemax 10 \
             --timemax 10 \
@@ -76,6 +78,10 @@ tgltf--()
 tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
 tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
 tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
+
+
+tgltf-target(){ echo 3153 ; }
+
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
 tgltf-gdml-(){ $FUNCNAME- | python $* ; }
@@ -95,18 +101,22 @@ args = opticks_main()
 oil = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
 
 #sel = oil
-#sel = 3153
+sel = 3153
 #sel = 1
-sel = 0
+#sel = 0
 idx = 0 
 
 wgg = GDML.parse()
 tree = Tree(wgg.world)
 
 target = tree.findnode(sel=sel, idx=idx)
+assert target.index == $(tgltf-target)
+
+
 
 sc = Sc(maxcsgheight=3)
 sc.extras["verbosity"] = 1
+sc.extras["targetnode"] = target.index
 
 tg = sc.add_tree_gdml( target, maxdepth=0)
 
@@ -114,6 +124,8 @@ path = "$TMP/tgltf/$FUNCNAME.gltf"
 gltf = sc.save(path)
 
 print path      ## <-- WARNING COMMUNICATION PRINT
+
+#TODO: instead of just passing a path pass a config line or json snippet with the target
 
 EOP
 }

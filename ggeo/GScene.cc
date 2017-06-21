@@ -34,8 +34,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
     m_geolib(new GGeoLib(m_ok)),
-    m_nodelib(new GNodeLib(m_ok, false)),
-
+    m_nodelib(new GNodeLib(m_ok, false, m_scene->getTargetNode())),
+    m_other_nodelib(ggeo->getNodeLib()),
     m_bndlib(ggeo->getBndLib()),
     m_verbosity(m_scene->getVerbosity()),
     m_root(NULL)
@@ -64,24 +64,25 @@ void GScene::init()
     // check consistency of the level transforms
     deltacheck_r(m_root, 0);
 
-    makeMergedMeshAndInstancedBuffers() ; 
-
-    checkMergedMeshes();
-
-
 
     m_nodelib->save();
 
+    compareTrees();
+
     if(m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==44" );
 
+    makeMergedMeshAndInstancedBuffers() ; // <-- making meshes requires boundaries to be set 
+
+    checkMergedMeshes();
 }
 
-/*
 void GScene::compareTrees()
 {
+    LOG(info) << "GScene::compareTrees" ;
+    
+    std::cout << " ana " << m_nodelib->desc() << std::endl ; 
+    std::cout << " tri " << m_other_nodelib->desc() << std::endl ; 
 }
-*/
-
 
 
 void GScene::modifyGeometry()
@@ -177,8 +178,6 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
         GSolid* child = createVolumeTree_r(cn, node);
         node->addChild(child);
     } 
-
-
     return node  ; 
 }
 
@@ -244,14 +243,13 @@ GSolid* GScene::createVolume(nd* n)
     solid->setLVName( lvn.c_str() );
 
 
-    // analytic spec currently missing surface info...
-    // here need 
-  
-    unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
-     // ^^^^^^^^^^^^^^^^  ONLY USE OF TRIANGULATE ROUTE ^^^^^^^^^^^^^^^
-
-    solid->setBoundary(boundary);     // unlike ctor these create arrays
-
+    // analytic spec missing surface info...
+    // so the below boundary is wrong ...
+    //  unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
+    // ^^^^^^^^^^^^^^^^  ONLY USE OF TRIANGULATE ROUTE ^^^^^^^^^^^^^^^
+    //  solid->setBoundary(boundary);     // unlike ctor these create arrays
+    
+   
 
     GParts* pts = GParts::make( csg, spec, m_verbosity  ); // amplification from mesh level to node level 
 

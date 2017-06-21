@@ -168,6 +168,7 @@ class OKCORE_API Opticks {
        const char* getGLTFName();
        const char* getGLTFConfig();
        int         getGLTF();
+       int         getGLTFTarget();
        bool        isGLTF();
    public:
        NSlice*  getAnalyticPMTSlice();

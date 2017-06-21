@@ -1,3 +1,5 @@
+#include <sstream>
+
 #include "PLOG.hh"
 
 #include "Opticks.hh"
@@ -9,21 +11,36 @@
 
 GNodeLib* GNodeLib::load(Opticks* ok)
 {
-    GNodeLib* nodelib = new GNodeLib(ok, true) ;
+    int gltftarget = ok->getGLTFTarget();
+    GNodeLib* nodelib = new GNodeLib(ok, true, gltftarget) ;
     return nodelib ; 
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool loaded )  
+GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode)  
     :
     m_ok(ok),
     m_loaded(loaded),
+    m_targetnode(targetnode),
     m_pvlist(NULL),
     m_lvlist(NULL)
 {
+    int gltftarget = ok->getGLTFTarget();
+
+    bool consistent = gltftarget == int(targetnode) ; 
+    if(!consistent)
+       LOG(fatal) << "GNodeLib::GNodeLib"
+                  << " gltftarget (commandline config) " << gltftarget
+                  << " targetnode (glTF scene file metadata) " << targetnode
+                  ;
+
+    assert( consistent && "MISMATCH BETWEEN GLTFTarget from config and from metadata, add option: --gltftarget <targetnode> "); 
     init();
 }
 
-
+unsigned GNodeLib::getTargetNodeOffset() const 
+{
+    return m_targetnode ; 
+}
 
 void GNodeLib::init()
 {
@@ -40,40 +57,58 @@ void GNodeLib::init()
     }
 }
 
-void GNodeLib::save()
+void GNodeLib::save() const 
 {
     const char* idpath = m_ok->getIdPath() ;
     LOG(info) << "GNodeLib::save"
               << " idpath " << idpath 
+              << " targetNodeOffset " << m_targetnode
               ;
     m_pvlist->save(idpath);
     m_lvlist->save(idpath);
 }
 
 
-unsigned GNodeLib::getNumPV()
+
+std::string GNodeLib::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "GNodeLib"
+       << " targetnode " << m_targetnode
+       << " numPV " << getNumPV()
+       << " numLV " << getNumLV()
+       << " numSolids " << getNumSolids()
+       << " PV(0) " << getPVName(0)
+       << " LV(0) " << getLVName(0)
+       ;
+
+    return ss.str();
+}
+
+unsigned GNodeLib::getNumPV() const 
 {
     unsigned npv = m_pvlist->getNumKeys(); 
     return npv ; 
 }
 
-unsigned GNodeLib::getNumLV()
+unsigned GNodeLib::getNumLV() const 
 {
     unsigned nlv = m_lvlist->getNumKeys(); 
     return nlv ; 
 }
 
-const char* GNodeLib::getPVName(unsigned int index)
+const char* GNodeLib::getPVName(unsigned int index) const 
 {
     return m_pvlist ? m_pvlist->getKey(index) : NULL ; 
 }
-const char* GNodeLib::getLVName(unsigned int index)
+const char* GNodeLib::getLVName(unsigned int index) const 
 {
     return m_lvlist ? m_lvlist->getKey(index) : NULL ; 
 }
 
 
-unsigned int GNodeLib::getNumSolids()
+unsigned int GNodeLib::getNumSolids() const 
 {
     return m_solids.size();
 }
@@ -113,7 +148,7 @@ void GNodeLib::add(GSolid* solid)
 }
 
 
-GSolid* GNodeLib::getSolid(unsigned index)
+GSolid* GNodeLib::getSolid(unsigned index) 
 {
     GSolid* solid = NULL ; 
     if(m_solidmap.find(index) != m_solidmap.end()) 

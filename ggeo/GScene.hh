@@ -72,6 +72,7 @@ class GGEO_API GScene
     private:
         void init();
     private:
+        void compareTrees();
         void modifyGeometry();
         void importMeshes(NScene* scene);
         void dumpMeshes();
@@ -106,6 +107,7 @@ class GGEO_API GScene
         NScene*  m_scene ; 
         GGeoLib* m_geolib ; 
         GNodeLib* m_nodelib ; 
+        GNodeLib* m_other_nodelib ; 
         GBndLib* m_bndlib ; 
         unsigned m_verbosity ; 
 

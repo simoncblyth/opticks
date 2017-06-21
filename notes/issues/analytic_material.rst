@@ -1,23 +1,55 @@
 Full Analytic Route Needs Material Hookup
 ============================================
 
-As GDML does not contain optical props with need 
-to interface to G4DAE material props.
+As GDML does not contain optical props will need 
+to interface to G4DAE material props.  
 
-TODO
-------
+* better to think of this as geometry merging between the two routes
 
-* Invoked from GScene using a separate class establish triangulated and analytic tree "alignment" ,
-  ie should be same node structure with same identifiers
 
-* perhaps a separate analytic m_ggeolib instance inside GGeo (or GScene)
-  with switch to choose between them is pragmatic way to handle both trees at once
-  GGeo can orchestrate where to get the GMergedMesh from ... then no changes
-  needed in oxrap ?
+TODO : C++ alignment  + cross accessors 
+--------------------------------------------
+ 
+* need partial alignment check
+* cross accessors : to get to corresponding objects in "other" world, just need the right index
+* verify oxrap can continue unchanged
+
+Hmm the tri is operating from cache, without the volume tree ? 
+Only the merged mesh and its solid related buffers are persisted ?
+
+::
+
+    2017-06-21 12:33:52.824 INFO  [8897976] [GScene::compareTrees@84] GScene::compareTrees
+     ana GNodeLib targetnode 3153 numPV 1660 numLV 1660 numSolids 1660 PV(0) /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 LV(0) /dd/Geometry/AD/lvADE0xc2a78c0
+     tri GNodeLib targetnode 3153 numPV 1660 numLV 1660 numSolids 0 PV(0) /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 LV(0) /dd/Geometry/AD/lvADE0xc2a78c0
+    Assertion failed: (0 && "GScene::init early exit for gltf==44"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 72.
+    Process 33509 stopped
+
+
+
+
+DONE : gltftarget(config) and targetnode(metadata)
+-----------------------------------------------------
+
+Partial targetnode now available via these routes.
+
+
+
+DONE : analytic/triangulated tree alignment for full traversals
+------------------------------------------------------------------
+
+Verified same node counts, traversal order and pv/lv identifiers 
+in ana/nodelib.py 
+
+Implemented using 2 GGeoLib instances for the GMergedMesh
+and 2 GNodeLib instances for the GSolid:
+
+* triangulated directly in GGeo
+* analytic within GGeo/GScene
 
 
 GGeo/GGeoLib
-----------
+---------------
 
 Normally loaded from cache::
 

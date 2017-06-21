@@ -137,17 +137,24 @@ void NScene::load_asset_extras()
 {
     auto extras = m_gltf->asset.extras ; 
     m_verbosity = extras["verbosity"]; 
+    m_targetnode = extras["targetnode"]; 
 
     LOG(info) << "NScene::load_asset_extras"
               << " m_verbosity " << m_verbosity 
+              << " m_targetnode " << m_targetnode 
                ;
-
 }
 
 unsigned NScene::getVerbosity()
 {
     return m_verbosity ; 
 }
+unsigned NScene::getTargetNode()
+{
+    return m_targetnode ; 
+}
+
+
 
 void NScene::load_csg_metadata()
 {

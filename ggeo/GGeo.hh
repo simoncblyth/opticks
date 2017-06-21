@@ -227,6 +227,7 @@ class GGEO_API GGeo : public NConfigurable {
         unsigned int getNumRawSkinSurfaces();
         unsigned int getNumRawBorderSurfaces();
     public:
+        GNodeLib*          getNodeLib();
         GGeoLib*           getGeoLib();
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();

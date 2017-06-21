@@ -590,6 +590,10 @@ int  Opticks::getGLTF()
 {
     return m_cfg->getGLTF(); 
 }
+int  Opticks::getGLTFTarget()
+{
+    return m_cfg->getGLTFTarget(); 
+}
 bool Opticks::isGLTF()
 {
     return getGLTF() > 0 ; 
