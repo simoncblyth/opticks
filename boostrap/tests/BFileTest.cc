@@ -97,6 +97,19 @@ void test_ParentDir()
 }
 
 
+
+void test_FormPath_reldir()
+{
+    std::string x = BFile::FormPath("$TMP", "some/deep/reldir", "name.txt");
+
+    LOG(info) << "test_FormPath_reldir"
+              << " " << x 
+              ;
+
+
+}
+
+
 void test_FormPath()
 {
     std::vector<std::string> ss ; 
@@ -177,8 +190,9 @@ int main(int argc, char** argv)
    //test_ParentDir();
    //test_FormPath();
    //test_Name_ParentDir();
-   test_ChangeExt();
+   //test_ChangeExt();
 
+   test_FormPath_reldir();
 
 
    return 0 ; 

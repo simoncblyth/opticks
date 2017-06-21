@@ -266,12 +266,7 @@ struct GGEO_API guint4
         printf("%s : %10u %10u %10u %10u \n", msg, x, y, z, w);
     }
 
-    std::string description() const
-    {
-        char s[64] ;
-        snprintf(s, 64, " (%3u,%3u,%3u,%3u) ", x, y, z, w);
-        return s ; 
-    }
+    std::string description() const ;
 
 
     unsigned int x,y,z,w ;

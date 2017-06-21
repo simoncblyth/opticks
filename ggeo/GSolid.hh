@@ -66,8 +66,10 @@ class GGEO_API GSolid : public GNode {
   public:
       OpticksCSG_t getCSGFlag();
       bool         isCSGSkip();
-      unsigned int getBoundary();
+      unsigned int getBoundary() const ;
       guint4       getIdentity();
+      //void  setIdentity(const guint4& id );
+
       NSensor*     getSensor();
   public:
       GParts*      getParts();

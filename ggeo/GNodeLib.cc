@@ -9,18 +9,19 @@
 #include "GNodeLib.hh"
 
 
-GNodeLib* GNodeLib::load(Opticks* ok)
+GNodeLib* GNodeLib::load(Opticks* ok, const char* reldir)
 {
     int gltftarget = ok->getGLTFTarget();
-    GNodeLib* nodelib = new GNodeLib(ok, true, gltftarget) ;
+    GNodeLib* nodelib = new GNodeLib(ok, true, gltftarget, reldir) ;
     return nodelib ; 
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode)  
+GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode, const char* reldir)  
     :
     m_ok(ok),
     m_loaded(loaded),
     m_targetnode(targetnode),
+    m_reldir(reldir ? strdup(reldir) : NULL),
     m_pvlist(NULL),
     m_lvlist(NULL)
 {
@@ -46,14 +47,14 @@ void GNodeLib::init()
 {
     if(!m_loaded)
     {
-        m_pvlist = new GItemList("GNodeLib_PVNames") ; 
-        m_lvlist = new GItemList("GNodeLib_LVNames") ; 
+        m_pvlist = new GItemList("PVNames", m_reldir) ; 
+        m_lvlist = new GItemList("LVNames", m_reldir) ; 
     }
     else
     {
         const char* idpath = m_ok->getIdPath() ;
-        m_pvlist = GItemList::load(idpath, "GNodeLib_PVNames");
-        m_lvlist = GItemList::load(idpath, "GNodeLib_LVNames");
+        m_pvlist = GItemList::load(idpath, "PVNames", m_reldir);
+        m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
     }
 }
 
@@ -76,6 +77,7 @@ std::string GNodeLib::desc() const
 
     ss << "GNodeLib"
        << " targetnode " << m_targetnode
+       << " reldir " << ( m_reldir ? m_reldir : "-" )
        << " numPV " << getNumPV()
        << " numLV " << getNumLV()
        << " numSolids " << getNumSolids()
@@ -129,12 +131,17 @@ void GNodeLib::add(GSolid* solid)
 {
     m_solids.push_back(solid);
 
-    unsigned int index = solid->getIndex(); // absolute node index, independent of the selection
+    unsigned int index = solid->getIndex(); 
 
+
+    //assert( m_solidmap.size() == index );   //  only with relative GSolid indexing
+
+/*
     LOG(info) << "GNodeLib::add"
               << " solidIndex " << index 
               << " preCount " << m_solidmap.size()
               ;
+*/
               
     m_solidmap[index] = solid ; 
 

@@ -83,17 +83,17 @@ class NPY_API NCSG {
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
     public:
-        template<typename T> T getMeta(const char* key, const char* fallback );
         template<typename T> void setMeta(const char* key, T value);
-        std::string lvname();
-        //std::string pvname();
-        std::string soname();
-        int treeindex();
-        int depth();
-        int nchild();
-        bool isSkip();
-        bool is_uncoincide();
-        std::string meta();
+    public:
+        template<typename T> T getMeta(const char* key, const char* fallback ) const ;
+        std::string lvname() const ;
+        std::string soname() const ;
+        int treeindex() const ;
+        int depth() const ;
+        int nchild() const ;
+        bool isSkip() const ;
+        bool is_uncoincide() const ;
+        std::string meta() const ;
         std::string smry();
     public:
         void dump(const char* msg="NCSG::dump");

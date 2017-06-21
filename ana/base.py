@@ -18,6 +18,7 @@ except OSError:
 
 IDPATH = os.path.expandvars("$IDPATH")
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
+uidp_ = lambda _:_.replace(IDPATH,"$IDPATH")
 
 
 def translate_xml_identifier_(name):
@@ -497,19 +498,35 @@ class Abbrev(object):
 
 
 class ItemList(object): # formerly ListFlags
-   def __init__(self, txt="GMaterialLib", offset=1, translate_=None):
-        npath=idp_("GItemList/%(txt)s.txt" % locals())
+    @classmethod 
+    def Path(cls, txt, reldir=None):
+        if reldir is None: reldir = "GItemList" 
+        npath=idp_("%(reldir)s/%(txt)s.txt" % locals())
+        return npath
+
+    def __init__(self, txt="GMaterialLib", offset=1, translate_=None, reldir=None):
+        npath=self.Path(txt, reldir)
         names = map(lambda _:_[:-1],file(npath).readlines())
         if translate_ is not None:
             log.info("translating")
             names = map(translate_, names) 
         pass
         codes = map(lambda _:_ + offset, range(len(names)))
+
+        self.npath = npath
+        self.offset = offset 
         self.names = names
         self.codes = codes
         self.name2code = dict(zip(names, codes)) 
         self.code2name = dict(zip(codes, names))
 
+    def find_index(self, name):
+        return self.names.index(name)
+
+    def __str__(self):
+        return "ItemLists names %6d name2code %6d code2name %6d offset %5d npath %s " % (len(self.names), len(self.name2code), len(self.code2name), self.offset, uidp_(self.npath))
+
+    __repr__ = __str__
 
 
 

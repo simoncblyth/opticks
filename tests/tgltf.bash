@@ -53,9 +53,10 @@ tgltf--()
 
     #return
 
-    #local gltf=1
+    local gltf=1
     #local gltf=4  # early exit at start of GScene::init
-    local gltf=44  # early exit at end of GScene::init
+    #local gltf=44  # early exit at middle of GScene::init
+    #local gltf=444  # early exit at end of GScene::init
 
     op.sh  \
             $cmdline \

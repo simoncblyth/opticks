@@ -48,6 +48,22 @@ void test_base()
     t->dump("after sort");
 }
 
+void test_reldir()
+{
+    GItemList l("testlist", "GItemListTest/test_reldir");
+
+    l.add("red");
+    l.add("green");
+    l.add("blue");
+    l.add("cyan");
+    l.add("magenta");
+    l.add("yellow");
+    l.dump();
+
+    l.save("$TMP");
+}
+
+
 
 void test_replaceFields(Opticks* cache)
 {
@@ -89,12 +105,13 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ; 
 
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks ok(argc, argv);
 
+    //test_base();
+    //test_replaceFields(&ok);
+    //test_makeSlice(&ok);
 
-    test_base();
-    test_replaceFields(opticks);
-    test_makeSlice(opticks);
+    test_reldir();
 
     return 0 ;
 

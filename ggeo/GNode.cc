@@ -57,10 +57,18 @@ gfloat3* GNode::getHigh()
 {
     return m_high ; 
 }
-GMesh* GNode::getMesh()
+GMesh* GNode::getMesh() 
 {
    return m_mesh ;
 }
+unsigned GNode::getMeshIndex() const 
+{
+    return m_mesh ? m_mesh->getIndex() : 0 ;
+}
+
+
+
+
 GMatrixF* GNode::getTransform()
 {
    return m_transform ;

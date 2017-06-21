@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <map>
 
 class Opticks ; 
@@ -13,8 +14,10 @@ class GBndLib ;
 class GGeoLib ; 
 class GMesh ; 
 class GMergedMesh ; 
+class GItemIndex ; 
 
 class NCSG ; 
+class NSensorList ; 
 class NScene ; 
 struct nd ; 
 struct guint4 ; 
@@ -74,21 +77,26 @@ class GGEO_API GScene
     private:
         void init();
     private:
-        void compareTrees();
+        void dumpTriInfo() const ; 
+        void compareTrees() const ;
         void modifyGeometry();
         void importMeshes(NScene* scene);
         void dumpMeshes();
         GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
         NCSG*  getCSG(unsigned mesh_idx);
+        unsigned findTriMeshIndex(const NCSG* csg) const ;
 
         // from triangulated branch mm0
-        guint4 getNodeInfo(unsigned idx);
-        guint4 getIdentity(unsigned idx);
+        guint4 getNodeInfo(unsigned idx) const ;
+        guint4 getIdentity(unsigned idx) const ;
     private:
         GSolid* createVolumeTree(NScene* scene);
         GSolid* createVolumeTree_r(nd* n, GSolid* parent);
         GSolid* createVolume(nd* n);
+        void transferIdentity( GSolid* node, const nd* n);
+        void transferMetadata( GSolid* node, const NCSG* csg, const nd* n);
+        std::string lookupBoundarySpec( const GSolid* node, const nd* n) const ;
         void addNode(GSolid* node, nd* n);
     private:
         // compare tree calculated and persisted transforms
@@ -111,22 +119,28 @@ class GGEO_API GScene
         Opticks* m_ok ; 
         int      m_gltf ; 
         NScene*  m_scene ; 
+        int      m_num_nd ; 
         unsigned m_targetnode ; 
 
         GGeoLib*  m_geolib ; 
         GNodeLib* m_nodelib ; 
 
+        NSensorList*  m_sensor_list ; 
+
         GGeoLib*      m_tri_geolib ; 
         GMergedMesh*  m_tri_mm0 ; 
         GNodeLib*     m_tri_nodelib ; 
         GBndLib*      m_tri_bndlib ; 
+        GItemIndex*   m_tri_meshindex ; 
 
         unsigned m_verbosity ; 
 
         GSolid*  m_root ; 
 
-        std::map<unsigned, GMesh*>  m_meshes ; 
-        std::map<unsigned, GSolid*> m_nodes ;  
+        std::map<unsigned, GMesh*>   m_meshes ; 
+        std::map<unsigned, GSolid*>  m_nodes ;  
+        std::map<unsigned, unsigned> m_rel2abs_mesh ; 
+        std::map<unsigned, unsigned> m_abs2rel_mesh ; 
 
 };
 

@@ -31,8 +31,8 @@ class GGEO_API GNodeLib
         friend class GGeo   ;  // for save 
         friend class GScene ;  // for save 
     public:
-        static GNodeLib* load(Opticks* ok);
-        GNodeLib(Opticks* opticks, bool loaded, unsigned targetnode); 
+        static GNodeLib* load(Opticks* ok, const char* reldir);
+        GNodeLib(Opticks* opticks, bool loaded, unsigned targetnode, const char* reldir); 
         std::string desc() const ; 
     private:
         void save() const ;
@@ -55,6 +55,7 @@ class GGEO_API GNodeLib
         Opticks*                           m_ok ;  
         bool                               m_loaded ; 
         unsigned                           m_targetnode ; 
+        const char*                        m_reldir ; 
 
         GItemList*                         m_pvlist ; 
         GItemList*                         m_lvlist ; 

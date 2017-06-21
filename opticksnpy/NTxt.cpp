@@ -4,6 +4,7 @@
 #include <cstring>
 #include <climits>
 
+#include "BFile.hh"
 
 #include "NTxt.hpp"
 #include "PLOG.hh"
@@ -79,8 +80,24 @@ void NTxt::read()
 
 }
 
+
+void NTxt::prepDir() const 
+{
+    std::string pdir = BFile::ParentDir(m_path);
+    BFile::CreateDir(pdir.c_str()); 
+
+    LOG(info) << "NTxt::prepDir"
+              << " pdir " << pdir
+              ;
+
+}
+
+
+
 void NTxt::write() const 
 {
+    prepDir();
+
     std::ofstream out(m_path, std::ios::out);
     if(!out.is_open()) 
     {   

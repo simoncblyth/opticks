@@ -2,6 +2,21 @@
 """
 Check analytic and triangulates LVNames, PVNames lists 
 
+::
+
+    simon:ana blyth$ ./nodelib.py 
+    INFO:opticks.ana.base:translating
+    INFO:opticks.ana.base:translating
+    INFO:__main__:lv ItemLists names  12230 name2code    249 code2name  12230 offset     0 npath $IDPATH/GItemList/LVNames.txt  
+    INFO:__main__:pv ItemLists names  12230 name2code   5643 code2name  12230 offset     0 npath $IDPATH/GItemList/PVNames.txt  
+    INFO:__main__:lv ItemLists names   1660 name2code    171 code2name   1660 offset     0 npath $IDPATH/analytic/GScene/GNodeLib/LVNames.txt  
+    INFO:__main__:pv ItemLists names   1660 name2code    704 code2name   1660 offset     0 npath $IDPATH/analytic/GScene/GNodeLib/PVNames.txt  
+    INFO:__main__:ana is partial list tri.size 1660 ana.size 12230 
+    INFO:__main__:tri indices of first ana PV : pv_f /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 idx_f 3153 
+    INFO:__main__:tri indices of last  ana PV : pv_l /dd/Geometry/AdDetails/lvMOOverflowTankE#pvMOFTTopCover0xc20cf40 idx_l 4804 
+    simon:ana blyth$ 
+
+
 """
 
 import os, logging, numpy as np
@@ -10,24 +25,27 @@ from opticks.ana.base import ItemList, translate_xml_identifier_, manual_mixin
 log = logging.getLogger(__name__)
 
 
-class MyItemList(object):
-    def find_index(self, name):
-        return self.names.index(name)
-
-manual_mixin(ItemList, MyItemList)
+#class MyItemList(object):
+#    def find_index(self, name):
+#        return self.names.index(name)
+#
+#manual_mixin(ItemList, MyItemList)
 
 
 class VolumeNames(object):
-    def __init__(self, prefix="", offset=0, translate_=None):
+    def __init__(self, reldir=None, offset=0, translate_=None):
+        lv = ItemList(txt="LVNames", offset=offset, translate_=translate_ , reldir=reldir)
+        pv = ItemList(txt="PVNames", offset=offset, translate_=translate_ , reldir=reldir)
+        log.info( "lv %r " % lv )
+        log.info( "pv %r " % pv )
 
-        lvn = "%sLVNames" % (prefix)
-        pvn = "%sPVNames" % (prefix)
+        assert len(lv.names) == len(pv.names)
 
-        self.lv = ItemList(txt=lvn, offset=offset, translate_=translate_)
-        self.pv = ItemList(txt=pvn, offset=offset, translate_=translate_ )
-        assert len(self.lv.names) == len(self.pv.names)
-        self.size = len(self.lv.names)
-        self.num_unique_pv = len(set(self.pv.names))
+        self.size = len(lv.names)
+        self.num_unique_pv = len(set(pv.names))
+        self.lv = lv
+        self.pv = pv
+   
 
 
 class CfVolumeNames(object):
@@ -42,8 +60,8 @@ class CfVolumeNames(object):
 
     """
     def __init__(self):
-        tri = VolumeNames(prefix="", offset=0, translate_=translate_xml_identifier_ )
-        ana = VolumeNames(prefix="GNodeLib_", offset=0, translate_=None)
+        tri = VolumeNames(reldir=None, offset=0, translate_=translate_xml_identifier_ )
+        ana = VolumeNames(reldir="analytic/GScene/GNodeLib", offset=0, translate_=None)
     
         if tri.size == ana.size:
             log.info("same size %s " % tri.size)
@@ -56,15 +74,15 @@ class CfVolumeNames(object):
             # PV names are not unique for instances, so the below reconstruction of the offset index 
             # from the ana pv names will only work for cases where the first found name corresponds to 
             # the correct volume indes.
-            # 
-            # Need some top level metadata in the GLTF to identify the starting (full geometry)
-            # node index to be specific.
+            #
+            # This is handled C++ side with gltftarget (config) and NScene targetnode GLTF asset metadata
 
             pv_f = ana.pv.names[0]
             pv_l = ana.pv.names[-1]
             idx_f = tri.pv.find_index(pv_f) 
             idx_l = tri.pv.find_index(pv_l) 
-            log.info("tri indices of first and last ana PV : pv_f %s idx_f %d      pv_l %s idx_l %d  " % (pv_f,idx_f, pv_l, idx_l ))
+            log.info("tri indices of first ana PV : pv_f %s idx_f %d " % (pv_f,idx_f))
+            log.info("tri indices of last  ana PV : pv_l %s idx_l %d " % (pv_l, idx_l))
 
             assert tri.pv.names[idx_f:idx_f+len(ana.pv.names)] == ana.pv.names
             assert tri.lv.names[idx_f:idx_f+len(ana.lv.names)] == ana.lv.names

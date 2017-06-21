@@ -85,7 +85,7 @@ op-binary-name()
           --flags) echo GFlagsTest ;;
         --gbuffer) echo GBufferTest ;;
            --meta) echo GBoundaryLibMetadataTest ;;
-         --sensor) echo GSensorListTest ;;
+         --sensor) echo NSensorListTest ;;
           --tggeo) echo GGeoTest ;;
          --assimp) echo AssimpRapTest ;;
        --openmesh) echo OpenMeshRapTest ;;

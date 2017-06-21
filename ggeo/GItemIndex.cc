@@ -193,6 +193,14 @@ unsigned int GItemIndex::getIndexLocal(const char* name, unsigned int missing)
     assert(m_index);
     return m_index->getIndexLocal(name, missing);
 }
+unsigned int GItemIndex::getIndexSource(const char* name, unsigned int missing)
+{
+    assert(m_index);
+    return m_index->getIndexSource(name, missing);
+}
+
+
+
 
 bool GItemIndex::hasItem(const char* key)
 {

@@ -91,6 +91,7 @@ GGeo::GGeo(Opticks* opticks)
    m_lookup(NULL), 
    m_geolib(NULL),
    m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
+   m_nodelib(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -294,18 +295,6 @@ GItemIndex* GGeo::getMeshIndex()
     return m_meshindex ; 
 }
 
-/*
-GItemList* GGeo::getPVList()
-{
-    return m_pvlist ; 
-}
-GItemList* GGeo::getLVList()
-{
-    return m_lvlist ; 
-}
-*/
-
-
 
 gfloat3* GGeo::getLow()
 {
@@ -447,7 +436,8 @@ void GGeo::init()
    m_meshindex = new GItemIndex("MeshIndex") ; 
 
    unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
-   m_nodelib = new GNodeLib(m_ok, false, targetnode );  // not loaded 
+   const char* reldir = NULL ;  // <-- default location for GItemList persisting 
+   m_nodelib = new GNodeLib(m_ok, false, targetnode, reldir );  // not loaded 
    LOG(trace) << "GGeo::init DONE" ; 
 }
 
@@ -624,7 +614,8 @@ void GGeo::loadFromCache()
     LOG(trace) << "GGeo::loadFromCache START" ; 
 
     m_geolib = GGeoLib::load(m_ok);
-    m_nodelib = GNodeLib::load(m_ok);
+    const char* reldir = NULL ; // default location of tri GItemList
+    m_nodelib = GNodeLib::load(m_ok, reldir);
         
     const char* idpath = m_ok->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, "MeshIndex");

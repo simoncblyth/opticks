@@ -51,7 +51,7 @@ void GSolid::setCSGSkip(bool csgskip)
 }
 
 
-unsigned int GSolid::getBoundary()
+unsigned int GSolid::getBoundary() const 
 {
     return m_boundary ; 
 }
@@ -87,16 +87,6 @@ const char* GSolid::getLVName()
 {
     return m_lvname ; 
 }
-
-void GSolid::setSensorSurfaceIndex(unsigned int ssi)
-{
-    m_sensor_surface_index = ssi ; 
-}
-unsigned int GSolid::getSensorSurfaceIndex()
-{
-    return m_sensor_surface_index ; 
-}
-
 
 
 
@@ -149,6 +139,10 @@ void GSolid::setCSGFlag(OpticksCSG_t csgflag)
     m_csgflag = csgflag ; 
 }
 
+
+
+
+
 void GSolid::setBoundary(unsigned int boundary)
 {
     m_boundary = boundary ; 
@@ -168,10 +162,7 @@ void GSolid::setBoundaryAll(unsigned boundary)
             sub->setBoundary(boundary);
         }
      } 
- }
-
-
-
+}
 
 
 void GSolid::setSensor(NSensor* sensor)
@@ -185,11 +176,40 @@ guint4 GSolid::getIdentity()
 {
     return guint4(
                    m_index, 
-                   m_mesh ? m_mesh->getIndex() : 0, 
+                   getMeshIndex(), 
                    m_boundary,
                    getSensorSurfaceIndex()
                  );
 }
+
+
+/*
+void GSolid::setIdentity(const guint4& id )
+{
+    assert( id.x == m_index );
+    assert( id.y == getMeshIndex() ) ;
+
+    setBoundary( id.z );
+    setSensorSurfaceIndex( id.w ); 
+}
+*/
+
+
+
+
+void GSolid::setSensorSurfaceIndex(unsigned int ssi)
+{
+    m_sensor_surface_index = ssi ; 
+}
+unsigned int GSolid::getSensorSurfaceIndex()
+{
+    return m_sensor_surface_index ; 
+}
+
+
+
+
+
  
 
 

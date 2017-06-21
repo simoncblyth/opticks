@@ -21,7 +21,7 @@ class NPY_API NSensorList {
 
     public:
         NSensor* getSensor(unsigned int index);
-        NSensor* findSensorForNode(unsigned int nodeIndex);
+        NSensor* findSensorForNode(unsigned int nodeIndex); // 0-based absolute node index, 0:world
     private:
         void read(const char* path);
         void add(NSensor* sensor);

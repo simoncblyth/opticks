@@ -86,6 +86,7 @@ class GGEO_API GItemIndex {
    public:
         bool         hasItem(const char* name);
         unsigned int getIndexLocal(const char* name, unsigned int missing=0);
+        unsigned int getIndexSource(const char* name, unsigned int missing=0);
         unsigned int getNumItems();
         unsigned int getColorCode(const char* key);
         const char*  getColorName(const char* key);

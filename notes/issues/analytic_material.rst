@@ -80,6 +80,10 @@ Looks like key method is::
 
 
 
+Why is the tri nodelib numPV partial ?
+
+* hmm tis reading the wrong one, need to use reldir prefix to distinguish.. and prepare path
+
 ::
 
     2017-06-21 12:33:52.824 INFO  [8897976] [GScene::compareTrees@84] GScene::compareTrees
@@ -87,6 +91,282 @@ Looks like key method is::
      tri GNodeLib targetnode 3153 numPV 1660 numLV 1660 numSolids 0 PV(0) /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 LV(0) /dd/Geometry/AD/lvADE0xc2a78c0
     Assertion failed: (0 && "GScene::init early exit for gltf==44"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 72.
     Process 33509 stopped
+
+
+Use reldir prefix to distinguish
+
+::
+
+    2017-06-21 15:30:52.867 INFO  [53670] [*GScene::createVolumeTree@207] GScene::createVolumeTree DONE num_nodes: 1660
+    2017-06-21 15:30:52.870 INFO  [53670] [GNodeLib::save@64] GNodeLib::save idpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae targetNodeOffset 3153
+    2017-06-21 15:30:52.870 INFO  [53670] [GItemList::save@88] GItemList::save writing to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/analytic/GScene/GNodeLib/PVNames.txt
+    2017-06-21 15:30:52.872 INFO  [53670] [GItemList::save@88] GItemList::save writing to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/analytic/GScene/GNodeLib/LVNames.txt
+    2017-06-21 15:30:52.873 INFO  [53670] [GScene::compareTrees@87] GScene::compareTrees num_nd 1660 targetnode 3153
+    2017-06-21 15:30:52.873 INFO  [53670] [GScene::compareTrees@92] nodelib (GSolid) volumes 
+     ana GNodeLib targetnode 3153 reldir analytic/GScene/GNodeLib numPV 1660 numLV 1660 numSolids 1660 PV(0) /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 LV(0) /dd/Geometry/AD/lvADE0xc2a78c0
+     tri GNodeLib targetnode 3153 reldir - numPV 12230 numLV 12230 numSolids 0 PV(0) top LV(0) World0xc15cfc0
+    2017-06-21 15:30:52.873 INFO  [53670] [GScene::compareTrees@96] geolib (GMergedMesh)  
+     tri GGeoLib numMergedMesh 2
+         0  3153 ID(nd/ms/bd/sn)  (3153,192, 17,  0)  NI(nf/nv/ix/px)  ( 96, 50,3153,3152) 
+         1  3154 ID(nd/ms/bd/sn)  (3154, 94, 18,  0)  NI(nf/nv/ix/px)  ( 96, 50,3154,3153) 
+         2  3155 ID(nd/ms/bd/sn)  (3155, 90, 19,  0)  NI(nf/nv/ix/px)  ( 96, 50,3155,3154) 
+         3  3156 ID(nd/ms/bd/sn)  (3156, 42, 20,  0)  NI(nf/nv/ix/px)  (288,146,3156,3155) 
+         4  3157 ID(nd/ms/bd/sn)  (3157, 37, 21,  0)  NI(nf/nv/ix/px)  (332,168,3157,3156) 
+         5  3158 ID(nd/ms/bd/sn)  (3158, 24, 22,  0)  NI(nf/nv/ix/px)  (288,146,3158,3157) 
+         6  3159 ID(nd/ms/bd/sn)  (3159, 22, 23,  0)  NI(nf/nv/ix/px)  (288,146,3159,3158) 
+
+
+
+
+GMergedMesh expecting relative ?
+-----------------------------------
+
+
+::
+
+    2017-06-21 19:31:30.894 INFO  [149669] [GItemList::save@88] GItemList::save writing to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/analytic/GScene/GNodeLib/PVNames.txt
+    2017-06-21 19:31:30.896 INFO  [149669] [GItemList::save@88] GItemList::save writing to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/analytic/GScene/GNodeLib/LVNames.txt
+    2017-06-21 19:31:30.897 INFO  [149669] [GScene::compareTrees@132] nodelib (GSolid) volumes 
+     ana GNodeLib targetnode 3153 reldir analytic/GScene/GNodeLib numPV 1660 numLV 1660 numSolids 1660 PV(0) /dd/Geometry/Pool/lvNearPoolIWS#pvNearADE10xc2cf528 LV(0) /dd/Geometry/AD/lvADE0xc2a78c0
+     tri GNodeLib targetnode 3153 reldir - numPV 12230 numLV 12230 numSolids 0 PV(0) top LV(0) World0xc15cfc0
+    2017-06-21 19:31:30.897 INFO  [149669] [GScene::makeMergedMeshAndInstancedBuffers@497] GScene::makeMergedMeshAndInstancedBuffers num_repeats 21 START 
+    2017-06-21 19:31:30.959 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3153 m_cur_solid 0
+    2017-06-21 19:31:30.960 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3154 m_cur_solid 1
+    2017-06-21 19:31:30.961 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3155 m_cur_solid 2
+    2017-06-21 19:31:30.962 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3156 m_cur_solid 3
+    2017-06-21 19:31:30.964 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3157 m_cur_solid 4
+    2017-06-21 19:31:30.965 FATAL [149669] [GMergedMesh::mergeSolidIdentity@482] GMergedMesh::mergeSolid mismatch  nodeIndex 3158 m_cur_solid 5
+
+::
+
+    479     if(isGlobal())
+    480     {
+    481          if(nodeIndex != m_cur_solid)
+    482              LOG(fatal) << "GMergedMesh::mergeSolidIdentity mismatch "
+    483                         <<  " nodeIndex " << nodeIndex
+    484                         <<  " m_cur_solid " << m_cur_solid
+    485                         ;
+    486 
+    487          //assert(nodeIndex == m_cur_solid);  // trips ggv-pmt still needed ?
+    488     }
+
+
+
+
+
+
+mesh index alignment looks like simple offset wont work
+--------------------------------------------------------
+
+Using the assimp aindex? Presumably this means absolute (full geometry) mesh indexing::
+
+     879 GMesh* GGeo::getMesh(unsigned int aindex)
+     880 {
+     881     GMesh* mesh = NULL ;
+     882     for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
+     883     {
+     884         if(m_meshes[i]->getIndex() == aindex )
+     885         {
+     886             mesh = m_meshes[i] ;
+     887             break ;
+     888         }
+     889     }
+     890     return mesh ;
+     891 }
+
+     912 void GGeo::add(GMesh* mesh)
+     913 {
+     914     m_meshes.push_back(mesh);
+     915 
+     916     const char* name = mesh->getName();
+     917     unsigned int index = mesh->getIndex();
+     918 
+     919     LOG(debug) << "GGeo::add (GMesh)"
+     920               << " index " << std::setw(4) << index
+     921               << " name " << name
+     922               ;
+     923 
+     924     m_meshindex->add(name, index);
+     925 }
+
+
+
+
+
+GGeo holds a meshindex from geocache::
+
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ head -10 MeshIndexSource.json
+    {
+        "AcrylicCylinder0xc3d3830": "136",
+        "AdPmtCollar0xc2c5260": "48",
+        "AmCCo60AcrylicContainer0xc0b23b8": "131",
+        "AmCCo60Cavity0xc0b3de0": "130",
+        "AmCCo60SourceAcrylic0xc3ce678": "122",
+        "AmCSS0xc3d0040": "120",
+        "AmCSSCap0xc3cfc58": "115",
+        "AmCSource0xc3d0708": "119",
+        "AmCSourceAcrylicCup0xc3d1bc8": "118",
+
+
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ head -10 MeshIndexLocal.json
+    {
+        "AcrylicCylinder0xc3d3830": "137",
+        "AdPmtCollar0xc2c5260": "49",
+        "AmCCo60AcrylicContainer0xc0b23b8": "132",
+        "AmCCo60Cavity0xc0b3de0": "131",
+        "AmCCo60SourceAcrylic0xc3ce678": "123",
+        "AmCSS0xc3d0040": "121",
+        "AmCSSCap0xc3cfc58": "116",
+        "AmCSource0xc3d0708": "120",
+        "AmCSourceAcrylicCup0xc3d1bc8": "119",
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ 
+
+
+
+::
+
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ grep \"0\" MeshIndexSource.json
+        "near_top_cover_box0xc23f970": "0",
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ grep \"0\" MeshIndexLocal.json
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ 
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ grep \"1\" MeshIndexLocal.json
+        "near_top_cover_box0xc23f970": "1",
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ 
+
+
+
+
+
+GLTF meshes/extras has soName and lvIdx to create mesh indices mapping.
+
+/tmp/blyth/opticks/tgltf/tgltf-gdml--.pretty.gltf::
+
+     0009     "meshes": [
+       10         {
+       11             "extras": {
+       12                 "lvIdx": 192,
+       13                 "soName": "ade0xc2a7438",
+       14                 "uri": "extras/192"
+       15             },
+       16             "name": "/dd/Geometry/AD/lvADE0xc2a78c0",
+       17             "primitives": [
+       18                 {
+       19                     "attributes": []
+       20                 }
+       21             ]
+       22         },
+
+
+
+     1258         {
+     1259             "extras": {
+     1260                 "lvIdx": 131,
+     1261                 "soName": "AmCCo60AcrylicContainer0xc0b23b8",
+     1262                 "uri": "extras/131"
+     1263             },
+     1264             "name": "/dd/Geometry/CalibrationSources/lvAmCCo60AcrylicContainer0xc0b2d78",
+     1265             "primitives": [
+     1266                 {
+     1267                     "attributes": []
+     1268                 }
+     1269             ]
+     1270         },
+
+
+
+DONE : sensor crossover
+--------------------------
+
+g4_00.idmap::
+
+    3196 0 0 (-661623,449556,5116.69) (0.543174,0.83962,0)(-0.83962,0.543174,0)(0,0,1) /dd/Geometry/AdDetails/lvOcrGdsLsoInOav#pvOcrGdsTfbInOav
+    3197 0 0 (-661623,449556,5116.69) (0.543174,0.83962,0)(-0.83962,0.543174,0)(0,0,1) /dd/Geometry/AdDetails/lvOcrGdsTfbInOav#pvOcrGdsInOav
+    3198 0 0 (-661623,449556,5116.69) (0.543174,0.83962,0)(-0.83962,0.543174,0)(0,0,1) /dd/Geometry/AD/lvOAV#pvOcrCalLsoInOav
+    3199 16843009 1010101 (8842.5,532069,599609) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt
+    3200 16843009 1010101 (8842.5,532069,599609) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum
+    3201 16843009 1010101 (8842.5,532069,599609) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode
+    3202 16843009 1010101 (8842.5,532069,599540) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiBottom
+    3203 16843009 1010101 (8842.5,532069,599690) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiDynode
+    3204 0 0 (8842.5,532069,599553) (3.96846e-17,0.761538,-0.64812)(-4.66292e-17,0.64812,0.761538)(1,0,6.12303e-17) /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmtCollar
+    3205 16843010 1010102 (8842.5,668528,441547) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmt
+    3206 16843010 1010102 (8842.5,668528,441547) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum
+    3207 16843010 1010102 (8842.5,668528,441547) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode
+    3208 16843010 1010102 (8842.5,668528,441478) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiBottom
+    3209 16843010 1010102 (8842.5,668528,441628) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiDynode
+    3210 0 0 (8842.5,668528,441491) (5.04009e-17,0.567844,-0.823136)(-3.47693e-17,0.823136,0.567844)(1,0,6.12303e-17) /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:2#pvAdPmtUnit#pvAdPmtCollar
+    3211 16843011 1010103 (8842.5,759428,253553) (5.76825e-17,0.335452,-0.942057)(-2.05398e-17,0.942057,0.335452)(1,6.16298e-33,6.12303e-17) /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:3#pvAdPmtUnit#pvAdPmt
+
+
+
+::
+
+    simon:opticksnpy blyth$ NSensorListTest --sensor 3198 3199 3200 3201 3202 3203 3204
+    nodeIndex 0 sensor NULL 
+    nodeIndex 3198 sensor NULL 
+    nodeIndex 3199 sensor NSensor  index      0 idhex 1010101 iddec 16843009 node_index   3199 name /dd/Geometry/AD/lvOIL#pvAdPmtArray#pvAdPmtArrayRotated#pvAdPmtRingInCyl:1#pvAdPmtInRing:1#pvAdPmtUnit#pvAdPmt NOT-CATHODE 
+    nodeIndex 3200 sensor NSensor  index      1 idhex 1010101 iddec 16843009 node_index   3200 name /dd/Geometry/PMT/lvPmtHemi#pvPmtHemiVacuum NOT-CATHODE 
+    nodeIndex 3201 sensor NSensor  index      2 idhex 1010101 iddec 16843009 node_index   3201 name /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiCathode CATHODE 
+    nodeIndex 3202 sensor NSensor  index      3 idhex 1010101 iddec 16843009 node_index   3202 name /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiBottom NOT-CATHODE 
+    nodeIndex 3203 sensor NSensor  index      4 idhex 1010101 iddec 16843009 node_index   3203 name /dd/Geometry/PMT/lvPmtHemiVacuum#pvPmtHemiDynode NOT-CATHODE 
+    nodeIndex 3204 sensor NULL 
+    simon:opticksnpy blyth$ 
+
+
+
+::
+
+    168 void GSolid::setSensor(NSensor* sensor)
+    169 {
+    170     m_sensor = sensor ;
+    171     // every triangle needs a value... use 0 to mean unset, so sensor   
+    172     setSensorIndices( NSensor::RefIndex(sensor) );
+    173 }
+    174 
+
+     26 unsigned int NSensor::getIndex()
+     27 {
+     28     return m_index ;
+     29 }  
+     30 unsigned int NSensor::getIndex1()
+     31 {
+     32     return m_index + 1 ;
+     33 }  
+     34 
+     35 unsigned int NSensor::RefIndex(NSensor* sensor)
+     36 {
+     37     return sensor ? sensor->getIndex1() : NSensor::UNSET_INDEX  ;
+     38 }
+
+
+
+All 5 nodes of the PMT have associated NSensor but only cathode has non-zero index::
+
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 21 tri_id.y 39 tri_meshIdx 39 mesh_idx 21
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 22 tri_id.y 38 tri_meshIdx 38 mesh_idx 22
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 23 tri_id.y 41 tri_meshIdx 41 mesh_idx 23
+    got sensor  tri_nodeIdx 3199 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 24 tri_id.y 47 tri_meshIdx 47 mesh_idx 24
+    got sensor  tri_nodeIdx 3200 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 25 tri_id.y 46 tri_meshIdx 46 mesh_idx 25
+    got sensor  tri_nodeIdx 3201 tri_sensorSurfaceIdx 3
+    2017-06-21 17:57:26.955 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 26 tri_id.y 43 tri_meshIdx 43 mesh_idx 26
+    got sensor  tri_nodeIdx 3202 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 27 tri_id.y 44 tri_meshIdx 44 mesh_idx 27
+    got sensor  tri_nodeIdx 3203 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 28 tri_id.y 45 tri_meshIdx 45 mesh_idx 28
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 29 tri_id.y 48 tri_meshIdx 48 mesh_idx 29
+    got sensor  tri_nodeIdx 3205 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 24 tri_id.y 47 tri_meshIdx 47 mesh_idx 24
+    got sensor  tri_nodeIdx 3206 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 25 tri_id.y 46 tri_meshIdx 46 mesh_idx 25
+    got sensor  tri_nodeIdx 3207 tri_sensorSurfaceIdx 8
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 26 tri_id.y 43 tri_meshIdx 43 mesh_idx 26
+    got sensor  tri_nodeIdx 3208 tri_sensorSurfaceIdx 0
+    2017-06-21 17:57:26.956 INFO  [109843] [*GScene::createVolume@355]  match_mesh_index  check_id.y 27 tri_id.y 44 tri_meshIdx 44 mesh_idx 27
+
+
+
+
 
 
 

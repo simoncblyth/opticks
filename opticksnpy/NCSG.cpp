@@ -117,7 +117,7 @@ NCSG::NCSG(nnode* root )
 // pmt-cd treebase.py:Node._get_meta
 //
 template<typename T>
-T NCSG::getMeta(const char* key, const char* fallback )
+T NCSG::getMeta(const char* key, const char* fallback ) const 
 {
     return m_meta->get<T>(key, fallback) ;
 }
@@ -135,25 +135,26 @@ template NPY_API void NCSG::setMeta<int>(const char*, int);
 template NPY_API void NCSG::setMeta<bool>(const char*, bool);
 template NPY_API void NCSG::setMeta<std::string>(const char*, std::string);
 
-template NPY_API std::string NCSG::getMeta<std::string>(const char*, const char*);
-template NPY_API int         NCSG::getMeta<int>(const char*, const char*);
-template NPY_API float       NCSG::getMeta<float>(const char*, const char*);
-template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*);
+template NPY_API std::string NCSG::getMeta<std::string>(const char*, const char*) const ;
+template NPY_API int         NCSG::getMeta<int>(const char*, const char*) const ;
+template NPY_API float       NCSG::getMeta<float>(const char*, const char*) const ;
+template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*) const ;
 
 
-std::string NCSG::lvname(){ return getMeta<std::string>("lvname","-") ; }
 //std::string NCSG::pvname(){ return getMeta<std::string>("pvname","-") ; }  // <-- NOT APPROPRIATE AS NCSG IS MESH LEVEL NOT NODE LEVEL
-std::string NCSG::soname(){ return getMeta<std::string>("soname","-") ; }
 
-int NCSG::treeindex(){ return getMeta<int>("treeindex","-1") ; }
-int NCSG::depth(){     return getMeta<int>("depth","-1") ; }
-int NCSG::nchild(){    return getMeta<int>("nchild","-1") ; }
+std::string NCSG::lvname() const { return getMeta<std::string>("lvname","-") ; }
+std::string NCSG::soname() const { return getMeta<std::string>("soname","-") ; }
 
-bool NCSG::isSkip(){       return getMeta<int>("skip","0") == 1 ; }
-bool NCSG::is_uncoincide(){ return getMeta<int>("uncoincide","1") == 1 ; }
+int NCSG::treeindex() const { return getMeta<int>("treeindex","-1") ; }
+int NCSG::depth() const {     return getMeta<int>("depth","-1") ; }
+int NCSG::nchild() const {    return getMeta<int>("nchild","-1") ; }
+
+bool NCSG::isSkip() const {       return getMeta<int>("skip","0") == 1 ; }
+bool NCSG::is_uncoincide() const { return getMeta<int>("uncoincide","1") == 1 ; }
 
 
-std::string NCSG::meta()
+std::string NCSG::meta() const 
 {
     std::stringstream ss ; 
     ss << " treeindex " << treeindex()

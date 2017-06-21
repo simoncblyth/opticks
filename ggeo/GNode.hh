@@ -73,6 +73,7 @@ class GGEO_API GNode {
       gfloat3*      getLow();
       gfloat3*      getHigh();
       GMesh*        getMesh();
+      unsigned      getMeshIndex() const ;
 
   public:
       unsigned int* getNodeIndices();

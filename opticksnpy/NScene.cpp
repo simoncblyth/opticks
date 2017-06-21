@@ -18,19 +18,25 @@
 #include "PLOG.hh"
 
 
-
-
-nd* NScene::getNd(unsigned idx)
+unsigned NScene::getNumNd() const 
 {
-    return m_nd[idx] ; 
+   return m_nd.size();
 }
-nd* NScene::getRoot()
+
+nd* NScene::getNd(unsigned idx) const 
+{
+    std::map<unsigned, nd*>::const_iterator it = m_nd.find(idx) ; 
+    return it == m_nd.end() ? NULL : it->second  ; 
+    // operator[] cannot be const 
+}
+nd* NScene::getRoot() const 
 {
     return m_root ; 
 }
-NCSG* NScene::getCSG(unsigned mesh_idx)
+NCSG* NScene::getCSG(unsigned mesh_idx) const 
 {
-    return m_csg[mesh_idx];
+    std::map<unsigned,NCSG*>::const_iterator it = m_csg.find(mesh_idx) ; 
+    return it == m_csg.end() ? NULL : it->second  ;
 }
 
 bool NScene::Exists(const char* base, const char* name)
@@ -168,12 +174,28 @@ void NScene::load_csg_metadata()
     {
         ygltf::mesh_t* mesh = getMesh(mesh_id);
         auto extras = mesh->extras ; 
+
         std::string uri = extras["uri"] ; 
+
+        
+        std::string soName = extras["soName"] ; 
+        int lvIdx = extras["lvIdx"] ; 
+
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
         NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
-
         m_csg_metadata[mesh_id] = meta ; 
+
+        std::string meta_soname = soname(mesh_id);
+        assert( meta_soname.compare(soName) == 0) ; 
+
+
+        LOG(info) << "NScene::load_csg_metadata"
+                  << " mesh_id " << std::setw(3) << mesh_id
+                  << " lvIdx " << std::setw(6) << lvIdx
+                  << " soName " << soName
+                  ;
+
 
         //std::cout << meshmeta(mesh_id) << std::endl ;
     }

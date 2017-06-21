@@ -36,9 +36,12 @@ class NPY_API NScene : public NGLTF
         static NScene* Load( const char* gltfbase, const char* gltfname, const char* gltfconfig) ;
         static bool Exists(const char* base, const char* name);
         NScene(const char* base, const char* name, const char* config, int scene_idx=0  );
-        nd*   getRoot();
-        nd*   getNd(unsigned node_idx);
-        NCSG* getCSG(unsigned mesh_idx);
+
+        nd*      getRoot() const ;
+        unsigned getNumNd() const ; 
+        nd*      getNd(unsigned node_idx) const ;
+        NCSG*    getCSG(unsigned mesh_idx) const ;
+
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
         unsigned getVerbosity();
         unsigned getTargetNode();

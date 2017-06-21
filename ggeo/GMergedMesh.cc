@@ -454,7 +454,7 @@ void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
     assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
-    LOG(debug) << "GMergedMesh::mergeSolid"
+    LOG(debug) << "GMergedMesh::mergeSolidIdentity"
               << " m_cur_solid " << m_cur_solid 
               << " nodeIndex " << nodeIndex
               << " boundaryIndex " << boundary
@@ -479,7 +479,7 @@ void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
     if(isGlobal())
     {
          if(nodeIndex != m_cur_solid)
-             LOG(fatal) << "GMergedMesh::mergeSolid mismatch " 
+             LOG(fatal) << "GMergedMesh::mergeSolidIdentity mismatch " 
                         <<  " nodeIndex " << nodeIndex 
                         <<  " m_cur_solid " << m_cur_solid
                         ; 

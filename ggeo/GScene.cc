@@ -10,10 +10,12 @@
 #include "Nd.hpp"
 #include "NPY.hpp"
 #include "NTrianglesNPY.hpp"
+#include "NSensorList.hpp"
 
 #include "Opticks.hh"
 
 #include "GItemList.hh"
+#include "GItemIndex.hh"
 #include "GGeo.hh"
 #include "GParts.hh"
 #include "GGeoLib.hh"
@@ -33,15 +35,18 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_ok(ok),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
+    m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene->getTargetNode()),
     m_geolib(new GGeoLib(m_ok)),
-    m_nodelib(new GNodeLib(m_ok, false, m_targetnode)),
+    m_nodelib(new GNodeLib(m_ok, false, m_targetnode, "analytic/GScene/GNodeLib")),
 
+    m_sensor_list(ggeo->getSensorList()),
     m_tri_geolib(ggeo->getTriGeoLib()),
     m_tri_mm0(m_tri_geolib->getMergedMesh(0)),
 
     m_tri_nodelib(ggeo->getNodeLib()),
     m_tri_bndlib(ggeo->getBndLib()),
+    m_tri_meshindex(ggeo->getMeshIndex()),
 
     m_verbosity(m_scene->getVerbosity()),
     m_root(NULL)
@@ -53,6 +58,15 @@ GGeoLib* GScene::getGeoLib()
 {
     return m_geolib ; 
 }
+guint4 GScene::getNodeInfo(unsigned idx) const 
+{
+     return m_tri_mm0->getNodeInfo(m_targetnode + idx);
+}
+guint4 GScene::getIdentity(unsigned idx) const 
+{
+     return m_tri_mm0->getIdentity(m_targetnode + idx);
+}
+
 
 void GScene::init()
 {
@@ -63,12 +77,12 @@ void GScene::init()
     importMeshes(m_scene);
     dumpMeshes();
 
+
     m_root = createVolumeTree(m_scene) ;
     assert(m_root);
 
     // check consistency of the level transforms
     deltacheck_r(m_root, 0);
-
 
     m_nodelib->save();
 
@@ -76,30 +90,28 @@ void GScene::init()
 
     if(m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==44" );
 
-    makeMergedMeshAndInstancedBuffers() ; // <-- making meshes requires boundaries to be set 
+
+    makeMergedMeshAndInstancedBuffers() ; // <-- merging meshes requires boundaries to be set 
 
     checkMergedMeshes();
+
+    if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
+
 }
 
-void GScene::compareTrees()
+
+
+void GScene::dumpTriInfo() const 
 {
-    LOG(info) << "GScene::compareTrees" 
+    LOG(info) << "GScene::dumpTriInfo" 
+              << " num_nd " << m_num_nd
               << " targetnode " << m_targetnode
               ;
     
-    LOG(info) << "nodelib (GSolid) volumes " ; 
+    std::cout << " tri (geolib)  " << m_tri_geolib->desc() << std::endl ; 
+    std::cout << " tri (nodelib) " << m_tri_nodelib->desc() << std::endl ; 
 
-    std::cout << " ana " << m_nodelib->desc() << std::endl ; 
-    std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
-
-    LOG(info) << "geolib (GMergedMesh)  " ; 
-
-    std::cout << " tri " << m_tri_geolib->desc() << std::endl ; 
-
-    // hmm would be good to know the node count via metadata 
-    // as a check as so can avoid ordering dependencies
-    unsigned nidx = m_tri_nodelib->getNumPV();
-
+    unsigned nidx = m_num_nd ; // <-- from NScene
     for(unsigned idx = 0 ; idx < nidx ; ++idx)
     {
         guint4 id = getIdentity(idx);
@@ -112,23 +124,15 @@ void GScene::compareTrees()
                   << std::endl
                    ; 
     }
-
-
 }
 
 
-guint4 GScene::getNodeInfo(unsigned idx)
+void GScene::compareTrees() const 
 {
-     return m_tri_mm0->getNodeInfo(m_targetnode + idx);
+    LOG(info) << "nodelib (GSolid) volumes " ; 
+    std::cout << " ana " << m_nodelib->desc() << std::endl ; 
+    std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
 }
-
-guint4 GScene::getIdentity(unsigned idx)
-{
-     return m_tri_mm0->getIdentity(m_targetnode + idx);
-}
-
-
-
 
 
 void GScene::modifyGeometry()
@@ -136,6 +140,18 @@ void GScene::modifyGeometry()
     // clear out the G4DAE geometry GMergedMesh, typically loaded from cache 
     m_geolib->clear();
 }
+
+
+
+unsigned GScene::findTriMeshIndex(const NCSG* csg) const 
+{
+   std::string soname = csg->soname();
+   unsigned missing = std::numeric_limits<unsigned>::max() ;
+   unsigned tri_mesh_idx = m_tri_meshindex->getIndexSource( soname.c_str(), missing );
+   assert( tri_mesh_idx != missing );
+   return tri_mesh_idx ; 
+}
+
 
 
 void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh instances into m_meshes vector
@@ -149,28 +165,39 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         NTrianglesNPY* tris = csg->getTris();
         assert(tris);
         assert( csg->getIndex() == mesh_idx) ;
+
+        unsigned tri_mesh_idx = findTriMeshIndex(csg);
+
+        m_rel2abs_mesh[mesh_idx] = tri_mesh_idx ;  
+        m_abs2rel_mesh[tri_mesh_idx] = mesh_idx ;  
+
+        // hmm: absolute or relative mesh indexing ???
+
         GMesh* mesh = GMesh::make_mesh(tris->getTris(), mesh_idx );
-        m_meshes[mesh_idx] = mesh ; 
-        // maybe GGeo should be holding on to these ?
+
+        m_meshes[mesh_idx] = mesh ;
+ 
         assert(mesh);
     }
     LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
 }
 
 
-unsigned GScene::getNumMeshes()
+unsigned GScene::getNumMeshes() 
 {
    return m_meshes.size();
 }
-GMesh* GScene::getMesh(unsigned mesh_idx)
+GMesh* GScene::getMesh(unsigned r)
 {
-    assert( mesh_idx < m_meshes.size() );
-    return m_meshes[mesh_idx];
+    assert( r < m_meshes.size() );
+    return m_meshes[r];
 }
-NCSG* GScene::getCSG(unsigned mesh_idx)
+NCSG* GScene::getCSG(unsigned r) 
 {
-    return m_scene->getCSG(mesh_idx);
+    return m_scene->getCSG(r);
 }
+
+
 
 void GScene::dumpMeshes()
 {
@@ -179,17 +206,31 @@ void GScene::dumpMeshes()
               << " num_meshes " << num_meshes 
               ;
 
-    for(unsigned mesh_idx=0 ; mesh_idx < num_meshes ; mesh_idx++)
+    for(unsigned r=0 ; r < num_meshes ; r++)
     {
-         GMesh* mesh = getMesh( mesh_idx );
+         unsigned a = m_rel2abs_mesh[r] ; 
+         unsigned a2r = m_abs2rel_mesh[a] ; 
+
+         GMesh* mesh = getMesh( r );
          gbbox bb = mesh->getBBox(0) ; 
 
-         std::cout << std::setw(3) << mesh_idx 
+         std::cout 
+                   << " r " << std::setw(4) << r
+                   << " a " << std::setw(4) << a
                    << " "
                    << bb.description()
                    << std::endl ; 
+
+
+         assert( a2r == r );
     }
 }
+
+
+
+
+
+
 
 
 GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
@@ -206,6 +247,8 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
     GSolid* root = createVolumeTree_r( root_nd, NULL );
     assert(root);
 
+    assert( m_nodes.size() == scene->getNumNd()) ;
+
     if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
     return root ; 
@@ -214,6 +257,33 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 
 GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
 {
+    guint4 id = getIdentity(n->idx);
+    guint4 ni = getNodeInfo(n->idx);
+
+    unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GSolid index
+    unsigned pidx = parent ? parent->getIndex() : 0 ; // partial parent index
+
+    if(m_verbosity > 4)
+    std::cout
+           << "GScene::createVolumeTree_r"
+           << " idx " << std::setw(5) << n->idx 
+           << " aidx " << std::setw(5) << aidx
+           << " pidx " << std::setw(5) << pidx
+           << " ID(nd/ms/bd/sn) " << id.description() 
+           << " NI(nf/nv/ix/px) " << ni.description() 
+           << std::endl
+           ; 
+
+    // constrain node indices 
+    assert( aidx == id.x && aidx == ni.z );
+    if( pidx > 0)
+    {
+        //assert( pidx == ni.w );   // absolute node indexing 
+        assert( pidx + m_targetnode == ni.w );  // relative node indexing
+    }
+
+
+
     GSolid* node = createVolume(n);
     node->setParent(parent) ;   // tree hookup 
 
@@ -236,82 +306,47 @@ GSolid* GScene::getNode(unsigned node_idx)
 }
 
 
-GSolid* GScene::createVolume(nd* n)
+GSolid* GScene::createVolume(nd* n) // compare with AssimpGGeo::convertStructureVisit
 {
     assert(n);
+    unsigned rel_node_idx = n->idx ;
+    unsigned abs_node_idx = n->idx + m_targetnode  ;  
 
-    unsigned node_idx = n->idx ;
-    unsigned mesh_idx = n->mesh ; 
+    unsigned rel_mesh_idx = n->mesh ;   
+    unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
 
-    int ridx = n->repeatIdx ; 
-
-    std::string bnd = n->boundary ; 
-
-    const char* spec = bnd.c_str();
-
-    assert(!bnd.empty());
-    assert(ridx > -1);
-
-    GMesh* mesh = getMesh(mesh_idx);
-
-    NCSG* csg = getCSG(mesh_idx);
-
-
+    GMesh* mesh = getMesh(rel_mesh_idx);
+    NCSG*   csg =  getCSG(rel_mesh_idx);
 
     glm::mat4 xf_global = n->gtransform->t ;    
-
     glm::mat4 xf_local  = n->transform->t ;    
-
     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
-
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
-    unsigned solid_idx = node_idx ; 
-
-    GSolid* solid = new GSolid(solid_idx, gtransform, mesh, UINT_MAX, NULL );     
-
+    GSolid* solid = new GSolid( rel_node_idx, gtransform, mesh, UINT_MAX, NULL );     
+   
     solid->setLevelTransform(ltransform); 
 
-    // see AssimpGGeo::convertStructureVisit
+    transferMetadata( solid, csg, n ); 
+    transferIdentity( solid, n ); 
 
-    solid->setSensor( NULL );      
+    std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
 
-    solid->setCSGFlag( csg->getRootType() );
-
-    solid->setCSGSkip( csg->isSkip() );
-
-
-    //std::string pvn = csg->pvname()  ;  <--- NOPE CSG IS MESH LEVEL, NOT NODE LEVEL
-    std::string pvname = n->pvname  ; 
-    std::string lvn = csg->lvname()  ;
-
-    solid->setPVName( pvname.c_str() );
-    solid->setLVName( lvn.c_str() );
-
-
-    // analytic spec missing surface info...
-    // so the below boundary is wrong ...
-    //  unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
-    // ^^^^^^^^^^^^^^^^  ONLY USE OF TRIANGULATE ROUTE ^^^^^^^^^^^^^^^
-    //  solid->setBoundary(boundary);     // unlike ctor these create arrays
-    
-   
-
-    GParts* pts = GParts::make( csg, spec, m_verbosity  ); // amplification from mesh level to node level 
+    GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
 
     pts->setBndLib(m_tri_bndlib);
 
     solid->setParts( pts );
 
-    solid->setRepeatIndex( n->repeatIdx ); 
 
-
-    if(m_verbosity > 0) 
+    if(m_verbosity > 2) 
     LOG(info) << "GScene::createVolume"
-              << " node_idx " << std::setw(5) << node_idx 
-              << " mesh_idx " << std::setw(3) << mesh_idx 
-              << " ridx " << std::setw(3) << ridx 
-              << " bnd " << bnd 
+              << " verbosity " << m_verbosity
+              << " rel_node_idx " << std::setw(5) << rel_node_idx 
+              << " abs_node_idx " << std::setw(6) << abs_node_idx 
+              << " rel_mesh_idx " << std::setw(3) << rel_mesh_idx 
+              << " abs_mesh_idx " << std::setw(3) << abs_mesh_idx 
+              << " ridx " << std::setw(3) << n->repeatIdx
               << " solid " << solid
               << " solid.pts " << pts 
               << " solid.idx " << solid->getIndex()
@@ -324,6 +359,131 @@ GSolid* GScene::createVolume(nd* n)
 
     return solid ; 
 }
+
+
+void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n)
+{
+    assert(n->repeatIdx > -1);
+
+    node->setRepeatIndex( n->repeatIdx ); 
+    node->setCSGFlag( csg->getRootType() );
+    node->setCSGSkip( csg->isSkip() );
+
+    std::string pvname = n->pvname  ;  // pv from the node, not the csg/mesh
+    std::string lvn = csg->lvname()  ;
+
+    node->setPVName( pvname.c_str() );
+    node->setLVName( lvn.c_str() );
+}
+
+
+void GScene::transferIdentity( GSolid* node, const nd* n)
+{
+    // passing tri identity into analytic branch 
+    unsigned rel_node_idx = n->idx ;
+    unsigned abs_node_idx = n->idx + m_targetnode  ;  
+
+    unsigned rel_mesh_idx = n->mesh ;   
+    unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
+
+
+
+    guint4 tri_id = getIdentity(n->idx);  // offsets internally 
+
+    unsigned tri_nodeIdx          = tri_id.x ;  // full geometry absolute
+    unsigned tri_meshIdx          = tri_id.y ;  // absolute (assimp) G4DAE mesh index
+    unsigned tri_boundaryIdx      = tri_id.z ; 
+    unsigned tri_sensorSurfaceIdx = tri_id.w ; 
+
+    NSensor* tri_sensor = m_sensor_list->findSensorForNode(tri_nodeIdx);
+/*
+    //  All 5 nodes of the PMT have associated NSensor but only cathode has non-zero index
+    if(tri_sensor) std::cout << "got sensor " 
+                             << " tri_nodeIdx " << tri_nodeIdx
+                             << " tri_sensorSurfaceIdx " << tri_sensorSurfaceIdx  
+                             << std::endl ; 
+*/
+
+    node->setBoundary(  tri_boundaryIdx ); 
+    node->setSensor(    tri_sensor );      
+    node->setSensorSurfaceIndex( tri_sensorSurfaceIdx );
+
+
+    guint4 check_id = node->getIdentity();
+
+    //bool match_node_index     = check_id.x == tri_id.x ;
+    //bool match_mesh_index     = check_id.y == tri_id.y ;
+    bool match_boundary_index = check_id.z == tri_id.z ;
+    bool match_sensor_index   = check_id.w == tri_id.w ;
+
+    //assert( match_node_index );    
+    //assert( match_mesh_index );
+    assert( match_boundary_index );
+    assert( match_sensor_index );
+
+
+    assert( rel_node_idx == node->getIndex() );
+    assert( abs_node_idx == tri_nodeIdx );
+
+    assert( tri_meshIdx == abs_mesh_idx );
+    assert( check_id.y  == rel_mesh_idx );
+
+/*
+    if(!match_mesh_index)   // how is mesh idx used ?? does is need to be absolute ??
+        LOG(info) 
+           << " match_mesh_index "
+           << " check_id.y " << check_id.y
+           << " tri_id.y " << tri_id.y
+           << " tri_meshIdx " << tri_meshIdx
+           << " rel_mesh_idx " << rel_mesh_idx
+           << " abs_mesh_idx " << abs_mesh_idx
+           ; 
+*/
+
+    if(!match_sensor_index)
+        LOG(info) << " match_sensor_index "
+                  << " check_id.w  " << check_id.w 
+                  << " tri_id.w " << tri_id.w
+                  ;
+    
+}
+
+
+
+
+std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const 
+{
+    unsigned tri_boundary = node->getBoundary();    // get the just transferred tri_boundary 
+
+    guint4 ana_bnd = m_tri_bndlib->parse( n->boundary.c_str());  // NO SURFACES
+    guint4 tri_bnd = m_tri_bndlib->getBnd(tri_boundary);
+
+    assert( ana_bnd.x == tri_bnd.x && "imat should match");  
+    assert( ana_bnd.w == tri_bnd.w && "omat should match");
+
+
+    std::string tri_bndname = m_tri_bndlib->shortname(tri_bnd);
+
+    const char* tri_spec = tri_bndname.c_str();
+    
+    if(m_verbosity > 3)
+    std::cout  
+              << " tri_boundary " << tri_boundary
+              << " tri_bnd " << tri_bnd.description()
+              << " ana_bnd " << ana_bnd.description()
+              << " tri_spec " << tri_spec
+              << " n.boundary " << n->boundary 
+              << std::endl 
+              ;
+  
+    return tri_bndname ; 
+}
+
+
+
+
+
+
 
 void GScene::addNode(GSolid* node, nd* n)
 {
