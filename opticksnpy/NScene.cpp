@@ -73,8 +73,17 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
     m_digest_count(new Counts<unsigned>("progenyDigest"))
 {
     init_lvlists(base, name);
+    init();
+}
 
-    load_asset_extras();
+void NScene::init()
+{
+    load_asset_extras();  // includes verbosity from glTF 
+
+    if(m_verbosity > 0)
+    LOG(info) << "NScene::init START" ;  
+
+
     load_csg_metadata();
 
     m_root = import_r(0, NULL, 0); 
@@ -103,11 +112,13 @@ NScene::NScene(const char* base, const char* name, const char* config, int scene
 
     write_lvlists();
 
-    LOG(info) << "NScene::NScene DONE" ;  
-
+    if(m_verbosity > 0)
+    LOG(info) << "NScene::init DONE" ;  
     //assert(0 && "hari kari");
-
 }
+
+
+
 
 void NScene::init_lvlists(const char* base, const char* name)
 {
@@ -121,18 +132,24 @@ void NScene::init_lvlists(const char* base, const char* name)
     m_csgskip_lvlist     = new NTxt(csgskip_path.c_str());
     m_placeholder_lvlist = new NTxt(placeholder_path.c_str());
 
-    LOG(info) << "NScene::init_lvlists" ;
 
-    std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
-    std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
+    if(m_verbosity > 2)
+    {
+        LOG(info) << "NScene::init_lvlists" ;
+        std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
+        std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
+    }
 
 }
 
 void NScene::write_lvlists()
 {
-    LOG(info) << "NScene::write_lvlists";
-    std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
-    std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
+    if(m_verbosity > 2)
+    {
+        LOG(info) << "NScene::write_lvlists";
+        std::cout << " csgskip " << m_csgskip_lvlist->desc() << std::endl ; 
+        std::cout << " placeholder(polyfail) " << m_placeholder_lvlist->desc() << std::endl ; 
+    }
 
     m_csgskip_lvlist->write();
     m_placeholder_lvlist->write();
@@ -145,6 +162,7 @@ void NScene::load_asset_extras()
     m_verbosity = extras["verbosity"]; 
     m_targetnode = extras["targetnode"]; 
 
+    if(m_verbosity > 1)
     LOG(info) << "NScene::load_asset_extras"
               << " m_verbosity " << m_verbosity 
               << " m_targetnode " << m_targetnode 
@@ -166,7 +184,9 @@ void NScene::load_csg_metadata()
 {
    // for debugging need the CSG metadata prior to loading the trees
     unsigned num_meshes = getNumMeshes();
+    if(m_verbosity > 1)
     LOG(info) << "NScene::load_csg_metadata"
+              << " verbosity " << m_verbosity 
               << " num_meshes " << num_meshes
               ;
 
@@ -189,8 +209,9 @@ void NScene::load_csg_metadata()
         std::string meta_soname = soname(mesh_id);
         assert( meta_soname.compare(soName) == 0) ; 
 
-
+        if(m_verbosity > 3)
         LOG(info) << "NScene::load_csg_metadata"
+                  << " verbosity " << m_verbosity 
                   << " mesh_id " << std::setw(3) << mesh_id
                   << " lvIdx " << std::setw(6) << lvIdx
                   << " soName " << soName
@@ -227,8 +248,9 @@ bool        NScene::isSkip(unsigned mesh_id) const { return getCSGMeta<int>(mesh
 std::string NScene::meshmeta(unsigned mesh_id) const 
 {
     std::stringstream ss ; 
-
-    ss << " mesh_id " << std::setw(3) << mesh_id
+    ss 
+       << "NScene::meshmeta"
+       << " mesh_id " << std::setw(3) << mesh_id
        << " height "  << std::setw(2) << height(mesh_id)
        << " soname "  << std::setw(35) << soname(mesh_id)
        << " lvname "  << std::setw(35) << lvname(mesh_id)
@@ -244,6 +266,7 @@ void NScene::load_mesh_extras()
     unsigned num_meshes = getNumMeshes();
     assert( num_meshes == m_gltf->meshes.size() ); 
 
+    if(m_verbosity > 1)
     LOG(info) << "NScene::load_mesh_extras START" 
               << " m_verbosity " << m_verbosity
               << " num_meshes " << num_meshes 
@@ -292,6 +315,7 @@ void NScene::load_mesh_extras()
 
         m_csg[mesh_id] = csg ; 
 
+        if(m_verbosity > 1)
         std::cout << " mId " << std::setw(4) << mesh_id 
                   << " npr " << std::setw(4) << primitives.size() 
                   << " nam " << std::setw(65) << mesh->name 
@@ -302,6 +326,7 @@ void NScene::load_mesh_extras()
     }  
 
 
+    if(m_verbosity > 1)
     LOG(info) << "NScene::load_mesh_extras DONE"
               << " m_verbosity " << m_verbosity
               << " num_meshes " << num_meshes
@@ -368,7 +393,9 @@ void NScene::count_progeny_digests()
     if(dump)
     m_digest_count->dump();
 
+    if(m_verbosity > 1)
     LOG(info) << "NScene::count_progeny_digests"
+              << " verbosity " << m_verbosity 
               << " node_count " << m_node_count 
               << " digest_size " << m_digest_count->size()
               ;  
@@ -412,9 +439,11 @@ void NScene::find_repeat_candidates()
 
     unsigned int num_progeny_digests = m_digest_count->size() ;
 
-    LOG(debug) << "NScene::find_repeat_candidates"
-              << " num_progeny_digests " << num_progeny_digests 
-              << " candidates marked with ** "
+    if(m_verbosity > 1)
+    LOG(info) << "NScene::find_repeat_candidates"
+               << " verbosity " << m_verbosity 
+               << " num_progeny_digests " << num_progeny_digests 
+               << " candidates marked with ** "
               ;   
 
     for(unsigned i=0 ; i < num_progeny_digests ; i++)
@@ -497,7 +526,10 @@ bool NScene::is_contained_repeat( const std::string& pdig, unsigned levels )
 void NScene::dump_repeat_candidates() const
 {
     unsigned num_repeat_candidates = m_repeat_candidates.size() ;
+
+    if(m_verbosity > 1)
     LOG(info) << "NScene::dump_repeat_candidates"
+              << " verbosity " << m_verbosity 
               << " num_repeat_candidates " << num_repeat_candidates 
               ;
     for(unsigned i=0 ; i < num_repeat_candidates ; i++)
@@ -525,6 +557,8 @@ void NScene::dump_repeat_candidate(unsigned idx) const
        assert( placements[i]->mesh == mesh_id ) ; 
     }
 
+
+    if(m_verbosity > 1)
     std::cout
               << " idx "    << std::setw(3) << idx 
               << " pdig "   << std::setw(32) << pdig
@@ -534,9 +568,8 @@ void NScene::dump_repeat_candidate(unsigned idx) const
               << std::endl 
               ; 
 
-    bool verbose = num_progeny > 0 ; 
-
-    if(verbose)
+    bool prolific  = num_progeny > 0 ; 
+    if(prolific && m_verbosity > 1 )
     {
         const std::vector<nd*>& progeny = first->get_progeny();    
         assert(num_progeny == progeny.size());
@@ -692,6 +725,7 @@ void NScene::labelTree()
          }
     }
 
+    if(m_verbosity > 1)
     LOG(info)<<"NScene::labelTree count of non-zero ridx labelTree_r " << m_label_count ;
 }
 

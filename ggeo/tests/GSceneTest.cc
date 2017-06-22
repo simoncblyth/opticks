@@ -51,8 +51,6 @@ int main(int argc, char** argv)
     gg.dumpStats();
 
 
-    //NScene ns(base, name); 
-    //GScene gs(&gg, &ns) ; 
 
     return 0 ; 
 }

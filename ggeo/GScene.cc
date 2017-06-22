@@ -36,7 +36,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
-    m_targetnode(m_scene->getTargetNode()),
+    m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
     m_geolib(new GGeoLib(m_ok)),
     m_nodelib(new GNodeLib(m_ok, false, m_targetnode, "analytic/GScene/GNodeLib")),
 
@@ -48,7 +48,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_tri_bndlib(ggeo->getBndLib()),
     m_tri_meshindex(ggeo->getMeshIndex()),
 
-    m_verbosity(m_scene->getVerbosity()),
+    m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
     m_root(NULL)
 {
     init();
@@ -70,11 +70,24 @@ guint4 GScene::getIdentity(unsigned idx) const
 
 void GScene::init()
 {
+    if(!m_scene)
+    {
+        LOG(fatal) << "NScene::Load FAILED" ;
+        return ; 
+    }
+
+    m_ok->setVerbosity(m_verbosity);
+
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::init START" ;
+
+
     if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
 
     //modifyGeometry();  // try skipping the clear
 
     importMeshes(m_scene);
+    if(m_verbosity > 1)
     dumpMeshes();
 
 
@@ -96,6 +109,9 @@ void GScene::init()
     checkMergedMeshes();
 
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
+
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::init DONE" ;
 
 }
 
@@ -129,9 +145,12 @@ void GScene::dumpTriInfo() const
 
 void GScene::compareTrees() const 
 {
-    LOG(info) << "nodelib (GSolid) volumes " ; 
-    std::cout << " ana " << m_nodelib->desc() << std::endl ; 
-    std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
+    if(m_verbosity > 1)
+    {
+        LOG(info) << "nodelib (GSolid) volumes " ; 
+        std::cout << " ana " << m_nodelib->desc() << std::endl ; 
+        std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
+    }
 }
 
 
@@ -203,6 +222,7 @@ void GScene::dumpMeshes()
 {
     unsigned num_meshes = getNumMeshes() ; 
     LOG(info) << "GScene::dumpMeshes" 
+              << " verbosity " << m_verbosity 
               << " num_meshes " << num_meshes 
               ;
 

@@ -74,7 +74,8 @@ OScene::OScene(OpticksHub* hub)
       m_ogeo(NULL),
       m_olib(NULL),
       m_oscin(NULL),
-      m_osrc(NULL)
+      m_osrc(NULL),
+      m_verbosity(m_ok->getVerbosity())
 {
       init();
       (*m_log)("DONE");
@@ -82,7 +83,9 @@ OScene::OScene(OpticksHub* hub)
 
 void OScene::init()
 {
-    LOG(trace) << "OScene::init START" ; 
+    if(m_verbosity > 0)
+    LOG(info) << "OScene::init START" ; 
+
     m_timer->setVerbose(true);
     m_timer->start();
 
@@ -145,7 +148,10 @@ void OScene::init()
 
 
     LOG(debug) << m_ogeo->description("OScene::init ogeo");
-    LOG(trace) << "OScene::init DONE" ;
+
+    if(m_verbosity > 0)
+    LOG(info) << "OScene::init DONE" ;
+
 }
 
 

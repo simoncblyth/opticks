@@ -63,6 +63,7 @@ GMesh* GNode::getMesh()
 }
 unsigned GNode::getMeshIndex() const 
 {
+    assert(m_mesh);
     return m_mesh ? m_mesh->getIndex() : 0 ;
 }
 

@@ -46,9 +46,9 @@
 
 #define TIMER(s) \
     { \
-       if(m_opticks)\
+       if(m_ok)\
        {\
-          Timer& t = *(m_opticks->getTimer()) ;\
+          Timer& t = *(m_ok->getTimer()) ;\
           t((s)) ;\
        }\
     }
@@ -57,13 +57,14 @@
 OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
-   m_opticks(m_hub->getOpticks()),
+   m_ok(m_hub->getOpticks()),
    m_composition(m_hub->getComposition()),
-   m_fcfg(m_opticks->getCfg()),
+   m_fcfg(m_ok->getCfg()),
    m_ggeo(NULL),
    m_mesh0(NULL),
    m_target(0),
-   m_target_deferred(0)
+   m_target_deferred(0),
+   m_verbosity(m_ok->getVerbosity())
 {
     init();
 }
@@ -84,10 +85,10 @@ void OpticksGeometry::init()
               << " instanced " << instanced
               ;
 
-    m_opticks->setGeocache(geocache);
-    m_opticks->setInstanced(instanced); // find repeated geometry 
+    m_ok->setGeocache(geocache);
+    m_ok->setInstanced(instanced); // find repeated geometry 
 
-    m_ggeo = new GGeo(m_opticks);
+    m_ggeo = new GGeo(m_ok);
     m_ggeo->setLookup(m_hub->getLookup());
 }
 
@@ -184,7 +185,7 @@ std::map<unsigned int, std::string> OpticksGeometry::getBoundaryNamesMap()
 
 void OpticksGeometry::loadGeometry()
 {
-    bool modify = m_opticks->hasOpt("test") ;
+    bool modify = m_ok->hasOpt("test") ;
 
     LOG(debug) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
 
@@ -193,7 +194,7 @@ void OpticksGeometry::loadGeometry()
     if(!m_ggeo->isValid())
     {
         LOG(warning) << "OpticksGeometry::loadGeometry finds invalid geometry, try creating geocache with --nogeocache/-G option " ; 
-        m_opticks->setExit(true); 
+        m_ok->setExit(true); 
         return ; 
     }
 
@@ -204,10 +205,10 @@ void OpticksGeometry::loadGeometry()
 
     registerGeometry();
 
-    if(!m_opticks->isGeocache())
+    if(!m_ok->isGeocache())
     {
         LOG(info) << "OpticksGeometry::loadGeometry early exit due to --nogeocache/-G option " ; 
-        m_opticks->setExit(true); 
+        m_ok->setExit(true); 
     }
 
     configureGeometry();
@@ -218,9 +219,9 @@ void OpticksGeometry::loadGeometry()
 
 void OpticksGeometry::loadGeometryBase()
 {
-    OpticksResource* resource = m_opticks->getResource();
+    OpticksResource* resource = m_ok->getResource();
 
-    if(m_opticks->hasOpt("qe1"))
+    if(m_ok->hasOpt("qe1"))
         m_ggeo->getSurfaceLib()->setFakeEfficiency(1.0);
 
 
@@ -256,7 +257,7 @@ void OpticksGeometry::loadGeometryBase()
 
 void OpticksGeometry::modifyGeometry()
 {
-    assert(m_opticks->hasOpt("test"));
+    assert(m_ok->hasOpt("test"));
     LOG(debug) << "OpticksGeometry::modifyGeometry" ;
 
     std::string testconf = m_fcfg->getTestConfig();
@@ -288,10 +289,10 @@ void OpticksGeometry::fixGeometry()
     LOG(info) << "OpticksGeometry::fixGeometry" ; 
 
     MFixer* fixer = new MFixer(m_ggeo);
-    fixer->setVerbose(m_opticks->hasOpt("meshfixdbg"));
+    fixer->setVerbose(m_ok->hasOpt("meshfixdbg"));
     fixer->fixMesh();
  
-    bool zexplode = m_opticks->hasOpt("zexplode");
+    bool zexplode = m_ok->hasOpt("zexplode");
     if(zexplode)
     {
        // for --jdyb --idyb --kdyb testing : making the cleave OR the mend obvious
@@ -339,7 +340,7 @@ void OpticksGeometry::configureGeometry()
             GParts* analytic = pmt->getParts() ;
             // TODO: the strings should come from config, as detector specific
 
-            analytic->setVerbose(true); 
+            analytic->setVerbosity(m_verbosity); 
             analytic->setContainingMaterial("MineralOil");       
             analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
 
@@ -378,7 +379,7 @@ void OpticksGeometry::registerGeometry()
 
     gfloat4 ce0 = m_mesh0->getCenterExtent(0);  // 0 : all geometry of the mesh, >0 : specific volumes
 
-    m_opticks->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
+    m_ok->setSpaceDomain( glm::vec4(ce0.x,ce0.y,ce0.z,ce0.w) );
 
 
     LOG(debug) << "OpticksGeometry::registerGeometry setting opticks SpaceDomain : " 

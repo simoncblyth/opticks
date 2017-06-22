@@ -81,7 +81,7 @@ class GGEO_API GParts {
     public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
-        void setVerbose(bool verbose); 
+        void setVerbosity(unsigned verbosity); 
         void add(GParts* other, unsigned verbosity);
         void close();
         bool isClosed();
@@ -179,7 +179,7 @@ class GGEO_API GParts {
         VU                 m_tran_per_add ; 
         VU                 m_part_per_add ; 
         VU                 m_plan_per_add ; 
-        bool               m_verbose ; 
+        unsigned           m_verbosity ; 
         unsigned           m_analytic_version ; 
         OpticksCSG_t       m_primflag ; 
 

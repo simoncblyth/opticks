@@ -73,7 +73,7 @@ void NTxt::read()
     }   
     in.close();
 
-    LOG(info) << "NTxt::read " 
+    LOG(debug) << "NTxt::read " 
               << " path " << m_path 
               << " lines " << m_lines.size() 
               ;   
@@ -86,7 +86,7 @@ void NTxt::prepDir() const
     std::string pdir = BFile::ParentDir(m_path);
     BFile::CreateDir(pdir.c_str()); 
 
-    LOG(info) << "NTxt::prepDir"
+    LOG(debug) << "NTxt::prepDir"
               << " pdir " << pdir
               ;
 

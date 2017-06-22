@@ -796,6 +796,8 @@ Contrast with G4DAE/Assimp route
   no point in long run of doing this either, the correct solution is 
   to add the missing info to the GDML. 
 
+  * recall that did pycollada with chroma and very early g4daeview.py long ago 
+
 * need to find an appropriate point to ensure the GLTF and G4DAE trees
   are aligned, and then bring over the information missing ? 
 

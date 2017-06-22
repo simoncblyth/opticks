@@ -132,6 +132,11 @@ int main(int argc, char** argv)
 
     OBndLib* obnd = sc.getOBndLib();
 
+    // SUSPECT BELOW MAY FIX TEST FAIL : BUT NEED TO TEST SOMEHOW BEFORE DOING THIS
+    //GBndLib* gbnd = hub.getBndLib();
+    //gbnd->close();
+    //gbnd->saveToCache()  
+
     OInterpolationTest tst(&ok , ocontext, obnd);
     tst.launch(context);
     return tst.ana();

@@ -182,6 +182,10 @@ GMergedMesh* GGeoTest::createPmtInBox()
         triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
 
     GParts* analytic = triangulated->getParts();
+
+    analytic->setBndLib(m_bndlib) ; // GUESS-WORK TO FIX FAILING CTestDetectorTest
+
+
     analytic->setContainingMaterial(container_inner_material);    // match outer material of PMT with inner material of the box
     analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
     analytic->close();

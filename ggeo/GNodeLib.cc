@@ -61,7 +61,7 @@ void GNodeLib::init()
 void GNodeLib::save() const 
 {
     const char* idpath = m_ok->getIdPath() ;
-    LOG(info) << "GNodeLib::save"
+    LOG(debug) << "GNodeLib::save"
               << " idpath " << idpath 
               << " targetNodeOffset " << m_targetnode
               ;

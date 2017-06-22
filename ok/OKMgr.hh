@@ -12,6 +12,16 @@ class OKPropagator ;
 #include "OK_API_EXPORT.hh"
 #include "OK_HEAD.hh"
 
+/*
+OKMgr
+======
+
+Together with OKG4Mgr the highest of high level control.
+Used from primary applications such as *OKTest* (ok/tests/OKTest.cc)
+
+*/
+
+
 class OK_API OKMgr {
    public:
        OKMgr(int argc, char** argv, const char* argforced=0 );

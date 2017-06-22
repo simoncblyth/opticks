@@ -256,7 +256,7 @@ GParts::GParts(GBndLib* bndlib)
       m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
-      m_verbose(false),
+      m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
 {
@@ -346,9 +346,9 @@ const char* GParts::getName()
     return m_name ; 
 }
 
-void GParts::setVerbose(bool verbose)
+void GParts::setVerbosity(unsigned verbosity)
 {
-    m_verbose = verbose ; 
+    m_verbosity = verbosity ; 
 }
 
 
@@ -605,9 +605,21 @@ void GParts::setSensorSurface(const char* surface)
 
 void GParts::close()
 {
+    if(m_verbosity > 1)
+    LOG(info) << "GParts::close START "
+              << " verbosity " << m_verbosity 
+               ; 
+
     registerBoundaries();
     makePrimBuffer(); 
+
+    if(m_verbosity > 1)
     dumpPrimBuffer(); 
+
+    if(m_verbosity > 1)
+    LOG(info) << "GParts::close DONE " 
+              << " verbosity " << m_verbosity 
+              ; 
 }
 
 void GParts::registerBoundaries()
@@ -621,7 +633,7 @@ void GParts::registerBoundaries()
        unsigned int boundary = m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
 
-       if(m_verbose)
+       if(m_verbosity > 0)
        LOG(info) << "GParts::registerBoundaries " 
                 << std::setw(3) << i 
                 << " " << std::setw(30) << spec
@@ -724,7 +736,9 @@ void GParts::makePrimBuffer()
     }
 
 
+    if(m_verbosity > 2)
     LOG(info) << "GParts::makePrimBuffer"
+              << " verbosity " << m_verbosity
               << " num_prim " << num_prim
               << " parts_per_prim.size " << m_parts_per_prim.size()
               << " part_per_add.size " << m_part_per_add.size()
@@ -755,6 +769,7 @@ void GParts::makePrimBuffer()
             pri.z = tran_offset ; 
             pri.w = plan_offset ; 
 
+            if(m_verbosity > 2)
             LOG(info) << "GParts::makePrimBuffer(nodeTree) priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
@@ -781,6 +796,7 @@ void GParts::makePrimBuffer()
             //pri.w = m_primflag ; 
             pri.w = 0 ; 
 
+            if(m_verbosity > 2)
             LOG(info) << "GParts::makePrimBuffer(partList) priminfo " << pri.desc() ;       
 
             part_offset += parts_for_prim ; 
@@ -872,11 +888,13 @@ void GParts::dumpPrimBuffer(const char* msg)
 {
     NPY<int>*    primBuffer = getPrimBuffer();
     NPY<float>*  partBuffer = getPartBuffer();
-    LOG(info) << msg ; 
     if(!primBuffer) return ; 
     if(!partBuffer) return ; 
 
+    if(m_verbosity > 2 )
     LOG(info) 
+        << msg 
+        << " verbosity " << m_verbosity
         << " primBuffer " << primBuffer->getShapeString() 
         << " partBuffer " << partBuffer->getShapeString() 
         ; 
@@ -884,7 +902,10 @@ void GParts::dumpPrimBuffer(const char* msg)
     assert( primBuffer->hasItemShape(4,0) && primBuffer->getNumItems() > 0  );
     assert( partBuffer->hasItemShape(4,4) && partBuffer->getNumItems() > 0 );
 
-    for(unsigned primIdx=0 ; primIdx < primBuffer->getNumItems() ; primIdx++) dumpPrim(primIdx);
+    if(m_verbosity > 3)
+    {
+        for(unsigned primIdx=0 ; primIdx < primBuffer->getNumItems() ; primIdx++) dumpPrim(primIdx);
+    }
 }
 
 

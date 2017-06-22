@@ -58,6 +58,9 @@ tgltf--()
     #local gltf=44  # early exit at middle of GScene::init
     #local gltf=444  # early exit at end of GScene::init
 
+
+     #--geocenter \
+
     op.sh  \
             $cmdline \
             --debugger \
@@ -68,7 +71,6 @@ tgltf--()
             --target 3 \
             --animtimemax 10 \
             --timemax 10 \
-            --geocenter \
             --eye 1,0,0 \
             --dbganalytic \
             --tag $(tgltf-tag) --cat $(tgltf-det) \

@@ -53,6 +53,7 @@ class OXRAP_API OScene {
        OBndLib*          m_olib ; 
        OScintillatorLib* m_oscin ; 
        OSourceLib*       m_osrc ; 
+       unsigned          m_verbosity ; 
 
 };
 

@@ -107,7 +107,7 @@ int main(int argc, char** argv)
     GMergedMesh* mm0 = geolib->getMergedMesh(0);
     GMergedMesh* mm1 = geolib->getMergedMesh(1);
 
-    test_InstancedMergedMesh(mm1);
+    //test_InstancedMergedMesh(mm1);
     test_GlobalMergedMesh(mm0);
 
 

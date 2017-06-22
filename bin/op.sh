@@ -207,6 +207,16 @@ OPTICKS_MESHFIX_CFG
      configuration of meshfixing 
 
 
+Questions
+~~~~~~~~~~~~~
+
+Do I recall correctly ? Geometry selection arguments are baked 
+into the geocache director name digest so changing geometry selection 
+arguments like the OPTICKS_QUERY volume range will require 
+a rebuild of the geocache, unless that configuration 
+has been used previously.
+
+
 EON
 }
 

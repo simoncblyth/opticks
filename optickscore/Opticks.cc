@@ -200,7 +200,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_ana(new OpticksAna(this)),
        m_dbg(new OpticksDbg(this)),
        m_rc(0),
-       m_tagoffset(0)
+       m_tagoffset(0),
+       m_verbosity(0)
 {
        OK_PROFILE("Opticks::Opticks");
        init();
@@ -599,7 +600,14 @@ bool Opticks::isGLTF()
     return getGLTF() > 0 ; 
 }
   
-
+unsigned Opticks::getVerbosity() const 
+{
+    return m_verbosity ; 
+}
+void  Opticks::setVerbosity(unsigned verbosity)
+{
+    m_verbosity = verbosity ; 
+}
 
 
 

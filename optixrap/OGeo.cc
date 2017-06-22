@@ -1,3 +1,4 @@
+
 #include "OGeo.hh"
 #include "OContext.hh"
 
@@ -126,7 +127,7 @@ OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traver
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
            m_description(NULL),
-           m_verbose(false)
+           m_verbosity(m_ok->getVerbosity())
 {
     init();
 }
@@ -140,10 +141,6 @@ void OGeo::init()
 }
 
 
-void OGeo::setVerbose(bool verbose)
-{
-    m_verbose = verbose ; 
-}
 
 void OGeo::setTop(optix::Group top)
 {
@@ -165,43 +162,14 @@ void OGeo::convert()
 {
     unsigned int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(trace) << "OGeo::convert" << " nmm " << nmm ;
+    if(m_verbosity > 0)
+    LOG(info) << "OGeo::convert START  numMergedMesh: " << nmm ;
 
-    for(unsigned int i=0 ; i < nmm ; i++)
+    for(unsigned i=0 ; i < nmm ; i++)
     {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
-
-        if( mm == NULL || mm->isSkip() || mm->isEmpty() )
-        {
-            LOG(warning) << "OGeo::convert"
-                         << " skipping mesh " << i 
-                         ;
-            continue ; 
-        }
-
-        // 1st merged mesh is the global non-instanced one
-        // subsequent merged meshes contain repeated PMT geometry
-        // that typically has analytic primitive intersection implementations  
-
-        if( i == 0 )
-        {
-            optix::Geometry gmm = makeGeometry(mm);
-            optix::Material mat = makeMaterial();
-            optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
-            gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
-            gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
-            m_geometry_group->addChild(gi);
-        }
-        else
-        {
-            optix::Group group = makeRepeatedGroup(mm);
-            group->setAcceleration( makeAcceleration() );
-            m_repeated_group->addChild(group); 
-        }
+        convertMergedMesh(i);
     }
-
     // all group and geometry_group need to have distinct acceleration structures
-
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
@@ -209,7 +177,6 @@ void OGeo::convert()
               << " geometryGroupCount " << geometryGroupCount
               << " repeatedGroupCount " << repeatedGroupCount
               ;
-
 
     if(geometryGroupCount > 0)
     {
@@ -224,6 +191,52 @@ void OGeo::convert()
     } 
 
     m_top->setAcceleration( makeAcceleration() );
+
+    if(m_verbosity > 0)
+    LOG(info) << "OGeo::convert DONE  numMergedMesh: " << nmm ;
+}
+
+
+void OGeo::convertMergedMesh(unsigned i)
+{
+    if(m_verbosity > 2)
+    LOG(info) << "OGeo::convertMesh START " << i ; 
+
+    GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
+
+    if( mm == NULL || mm->isSkip() || mm->isEmpty() )
+    {
+        LOG(warning) << "OGeo::convertMesh"
+                     << " skipping mesh " << i 
+                     ;
+        return  ; 
+    }
+
+    // 1st merged mesh is the global non-instanced one
+    // subsequent merged meshes contain repeated PMT geometry
+    // that typically has analytic primitive intersection implementations  
+
+     
+
+    if( i == 0 )
+    {
+        optix::Geometry gmm = makeGeometry(mm);
+        optix::Material mat = makeMaterial();
+        optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
+        gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
+        gi["primitive_count"]->setUint( 0u ); // not needed for non-instanced
+        m_geometry_group->addChild(gi);
+    }
+    else
+    {
+        optix::Group group = makeRepeatedGroup(mm);
+        group->setAcceleration( makeAcceleration() );
+        m_repeated_group->addChild(group); 
+    }
+
+
+    if(m_verbosity > 2)
+    LOG(info) << "OGeo::convertMesh DONE " << i ; 
 }
 
 
@@ -449,21 +462,28 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    LOG(warning) << "OGeo::makeAnalyticGeometry" ; // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
+    if(m_verbosity > 2)
+    LOG(warning) << "OGeo::makeAnalyticGeometry START" 
+                 << " verbosity " << m_verbosity 
+                 << " mm " << mm->getIndex()
+                 ; 
+
+    // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
 
     GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
     if(pts->getPrimBuffer() == NULL)
     {
+        if(m_verbosity > 4) LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close START " ; 
         pts->close();
-        LOG(warning) << "OGeo::makeAnalyticGeometry GParts closed" ; 
+        if(m_verbosity > 4) LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close DONE " ; 
     }
 
-    if(m_verbose) pts->fulldump("OGeo::makeAnalyticGeometry") ;
+    if(m_verbosity > 3) pts->fulldump("OGeo::makeAnalyticGeometry") ;
 
-    pts->setName("analytic");
-    pts->fulldump("OGeo::makeAnalyticGeometry") ;
-    pts->save("$TMP/OGeo_makeAnalyticGeometry");
+    //pts->setName("analytic");
+    //pts->fulldump("OGeo::makeAnalyticGeometry") ;
+    //pts->save("$TMP/OGeo_makeAnalyticGeometry");  // as here are now ~22 mm this just overwites..
 
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
@@ -496,6 +516,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     unsigned analytic_version = pts->getAnalyticVersion();
 
+    if(m_verbosity > 2)
     LOG(info) 
                  << "OGeo::makeAnalyticGeometry " 
                  << " mmIndex " << mm->getIndex() 
@@ -546,7 +567,12 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     prismBuffer->setSize(5);
     geometry["prismBuffer"]->setBuffer(prismBuffer);
 
-    LOG(warning) << "OGeo::makeAnalyticGeometry DONE" ; 
+
+    if(m_verbosity > 2)
+    LOG(warning) << "OGeo::makeAnalyticGeometry DONE" 
+                 << " verbosity " << m_verbosity 
+                 << " mm " << mm->getIndex()
+                 ; 
 
     return geometry ; 
 }
@@ -655,7 +681,7 @@ optix::Buffer OGeo::createInputBuffer(GBuffer* buf, RTformat format, unsigned in
    int buffer_id = buf->getBufferId() ;
 
 
-   if(m_verbose)
+   if(m_verbosity > 2)
    LOG(info)<<"OGeo::createInputBuffer [GBuffer]"
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
             << " name " << std::setw(20) << name
@@ -715,7 +741,7 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 
    bool from_gl = buffer_id > -1 && reuse ;
 
-   if(m_verbose || strcmp(name,"tranBuffer") == 0)
+   if(m_verbosity > 3 || strcmp(name,"tranBuffer") == 0)
    LOG(info)<<"OGeo::createInputBuffer [NPY<T>] "
             << " sh " << buf->getShapeString()
             << " fmt " << std::setw(20) << OConfig::getFormatName(format)
@@ -793,17 +819,18 @@ optix::Buffer OGeo::createInputBuffer(NPY<S>* buf, RTformat format, unsigned int
 template<typename T>
 optix::Buffer OGeo::createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name)
 {
-   return CreateInputUserBuffer(m_context, src, elementSize, name);
+   return CreateInputUserBuffer(m_context, src, elementSize, name, m_verbosity);
 }
 
 
 template<typename T>
-optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name)
+optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, unsigned verbosity)
 {
     unsigned numBytes = src->getNumBytes() ;
     assert( numBytes % elementSize == 0 );
     unsigned size = numBytes/elementSize ; 
 
+    if(verbosity > 2)
     LOG(info) << "OGeo::CreateInputUserBuffer"
               << " name " << name
               << " src shape " << src->getShapeString()
@@ -826,7 +853,7 @@ optix::Buffer OGeo::CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsi
 
 
 template
-optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name) ;
+optix::Buffer OGeo::CreateInputUserBuffer<float>(optix::Context& ctx, NPY<float>* src, unsigned elementSize, const char* name, unsigned verbosity) ;
 
 
 

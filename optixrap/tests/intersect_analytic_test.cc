@@ -37,8 +37,8 @@ int main( int argc, char** argv )
     planBuf->setQuad(4,j,  0.f, 0.f, 1.f,hsize );
     planBuf->setQuad(5,j,  0.f, 0.f,-1.f,hsize );
 
-
-    optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer"); 
+    unsigned verbosity = 3 ; 
+    optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer", verbosity); 
     context["planBuffer"]->setBuffer(planBuffer);
 
 

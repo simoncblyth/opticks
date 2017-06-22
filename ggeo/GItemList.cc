@@ -85,7 +85,7 @@ void GItemList::save(const char* idpath)
 {
     std::string txtname = m_itemtype + ".txt" ; 
     std::string txtpath = BFile::preparePath(idpath, m_reldir.c_str(), txtname.c_str() ); 
-    LOG(info) << "GItemList::save writing to " << txtpath ;       
+    LOG(debug) << "GItemList::save writing to " << txtpath ;       
     save_(txtpath.c_str());
 }
 

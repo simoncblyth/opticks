@@ -13,6 +13,17 @@ class FabStepNPY ;
 
 #include "OKGEO_API_EXPORT.hh"
 
+/*
+OpticksGen
+============
+
+High level genstep control.
+Canonical m_gen instance is member of ok/OKMgr OR okg4/OKG4Mgr
+
+
+*/
+
+
 class OKGEO_API OpticksGen 
 { 
     public:

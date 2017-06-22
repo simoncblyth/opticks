@@ -46,6 +46,7 @@ class NPY_API NScene : public NGLTF
         unsigned getVerbosity();
         unsigned getTargetNode();
     private:
+        void init();
         void init_lvlists(const char* base, const char* name);
         void write_lvlists();
     private:

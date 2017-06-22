@@ -113,6 +113,11 @@ class OKCORE_API Opticks {
        bool isValid();
        int  getRC();
        void setRC(int rc); 
+
+   public:
+       // verbosity typically comes from geometry metadata
+       unsigned getVerbosity() const ;
+       void setVerbosity(unsigned verbosity);
    public:
        void prepareInstallCache(const char* dir=NULL);
    public:
@@ -339,6 +344,7 @@ class OKCORE_API Opticks {
    private:
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 
+       unsigned             m_verbosity ; 
 
 
 };

@@ -11,6 +11,14 @@ class GNode ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/*
+GGeoLib
+==========
+
+Container for GMergedMesh
+
+*/
+
 class GGEO_API GGeoLib {
     public:
         static const char* GMERGEDMESH ; 

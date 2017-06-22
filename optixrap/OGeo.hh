@@ -61,9 +61,9 @@ public:
     void convert();
 private:
     void init();
-
+    void convertMergedMesh(unsigned i);
 public:
-    template <typename T> static     optix::Buffer CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name);
+    template <typename T> static     optix::Buffer CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, unsigned verbosity);
 public:
     template <typename T>             optix::Buffer createInputBuffer(GBuffer* buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
     template <typename T, typename S> optix::Buffer createInputBuffer(NPY<S>*  buf, RTformat format, unsigned int fold, const char* name, bool reuse=false);
@@ -99,12 +99,12 @@ private:
     const char*          m_builder ; 
     const char*          m_traverser ; 
     const char*          m_description ; 
+    unsigned             m_verbosity ; 
 private:
     // locals 
     optix::GeometryGroup m_geometry_group ; 
     optix::Group         m_repeated_group ; 
     RayTraceConfig*      m_cfg ; 
-    bool                 m_verbose ; 
 
 };
 
