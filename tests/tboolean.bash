@@ -154,16 +154,16 @@ tboolean--(){
 
 
     #        --rendermode "-axis" \
+    #        --torch --torchconfig "$(tboolean-torchconfig)" \
 
     op.sh  \
             $cmdline \
-            --animtimemax 10 \
-            --timemax 10 \
+            --animtimemax 20 \
+            --timemax 20 \
             --geocenter \
             --eye 1,0,0 \
             --dbganalytic \
             --test --testconfig "$testconfig" \
-            --torch --torchconfig "$(tboolean-torchconfig)" \
             --tag $(tboolean-tag) --cat $(tboolean-det) \
             --save 
 }
@@ -1673,8 +1673,8 @@ tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
 tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
 tboolean-0-polygonize(){  VERBOSITY=0 lldb NCSGPolygonizeTest  -- $TMP/tboolean-0- ; }
 
-tboolean-gds(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
-tboolean-gds-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }
+tboolean-gds0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-gds0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }
 
 tboolean-oav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-oav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvOAV0x ; }
@@ -1684,6 +1684,57 @@ tboolean-iav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvIAV0x ; 
 
 tboolean-sst(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sst-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvSST0x --gmaxdepth 3 ; }
+
+
+
+
+
+
+
+
+tboolean-gds(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-gds-(){ $FUNCNAME- | python $* ; } 
+tboolean-gds--(){ cat << EOP
+
+
+# In [15]: c.mesh.csg.dump_tboolean("gds")
+
+outdir = "$TMP/$FUNCNAME"
+obj_ = "$(tboolean-testobject)"
+con_ = "$(tboolean-container)"
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main()
+
+CSG.boundary = obj_
+CSG.kwa = dict(verbosity="1")
+
+
+a = CSG("cylinder", param = [0.000,0.000,0.000,1550.000],param1 = [-1535.000,1535.000,0.000,0.000])
+b = CSG("cone", param = [1520.000,3070.000,75.000,3145.729],param1 = [0.000,0.000,0.000,0.000])
+c = CSG("cylinder", param = [0.000,0.000,0.000,75.000],param1 = [3145.729,3159.440,0.000,0.000])
+bc = CSG("union", left=b, right=c)
+bc.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,-1535.000,1.000]]
+
+abc = CSG("union", left=a, right=bc)
+
+# photons formed maltese cross, until upped timemax from 10ns to 20ns
+
+obj = abc
+
+con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
+CSG.Serialize([con, obj], outdir )
+
+
+EOP
+}
+
+
+
+
 
 
 

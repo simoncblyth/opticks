@@ -11,6 +11,9 @@ from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.gdml import GDML
 from opticks.analytic.polyconfig import PolyConfig
 
+def log_info(msg):
+    sys.stdout.write(msg)
+
 
 class Mh(object):
     def __init__(self, lvIdx, lvName, soName, uri=""):
@@ -96,6 +99,7 @@ class Sc(object):
         self.extras = {}
         self.maxcsgheight = maxcsgheight
         self.translate_node_count = 0 
+        self.selected = []
 
     def _get_gltf(self):
         root = 0 
@@ -110,7 +114,8 @@ class Sc(object):
 
     brief = property(lambda self:"Sc nodes:%d meshes:%d len(ulv):%d len(uso):%d " % (len(self.nodes), len(self.meshes), len(self.ulv), len(self.uso)))
 
-    __repr__ = brief
+    def __repr__(self):
+         return "\n".join([self.brief])
 
     def __str__(self): 
          return "\n".join([self.brief] +  map(repr, self.meshes.items()))
@@ -190,15 +195,28 @@ class Sc(object):
         ## hmm: why handle csg translation at node level, its more logical to do at mesh level ?
         ##      Presumably done here as it is then easy to access the lv ?
         ##
+
+        
+
         if getattr(nd.mesh,'csg',None) is None:
             #print msg 
             csg = self.translate_lv( node.lv, self.maxcsgheight )
             nd.mesh.csg = csg 
             self.translate_node_count += 1
+
             if csg.meta.get('skip',0) == 1:
                 log.warning("tlv(%3d): csg.skip as height %2d > %d lvn %s lvidx %s " % (self.translate_node_count, csg.height, self.maxcsgheight, node.lv.name, node.lv.idx )) 
             pass
         pass
+
+
+        if selected:
+            log_info("selected csg.txt\n%s" % str(nd.mesh.csg.txt) )
+
+            print "\n\n" + str(nd.mesh.csg.txt) + "\n\n"
+            self.selected.append(nd)
+        pass
+
         return nd
 
 
@@ -222,12 +240,12 @@ class Sc(object):
         pass  
 
         solid = lv.solid
-        log.debug("translate_node START %-15s %s  " % (solid.__class__.__name__, lv.name ))
+        log.debug("translate_lv START %-15s %s  " % (solid.__class__.__name__, lv.name ))
 
         rawcsg = solid.as_ncsg()
         rawcsg.analyse()
 
-        log.info("translate_node DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
+        log.debug("translate_lv DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
 
         csg = cls.optimize_csg(rawcsg, maxcsgheight, maxcsgheight2 )
 

@@ -15,6 +15,7 @@ class GGeoLib ;
 class GMesh ; 
 class GMergedMesh ; 
 class GItemIndex ; 
+class GColorizer ; 
 
 class NCSG ; 
 class NSensorList ; 
@@ -71,11 +72,15 @@ instanciation in GGeo::loadFromGLTF.
 class GGEO_API GScene 
 {
     public:
-        // ggeo currently used only for bndlib access
         GScene(Opticks* ok, GGeo* ggeo);
-        GGeoLib* getGeoLib();
+        GGeoLib*  getGeoLib();
+        GNodeLib* getNodeLib();
+
+        GMergedMesh* getMergedMesh(unsigned ridx);
+        GSolid* getSolid(unsigned nidx);
     private:
         void init();
+        void prepareVertexColors();
     private:
         void dumpTriInfo() const ; 
         void compareTrees() const ;
@@ -117,6 +122,7 @@ class GGEO_API GScene
         GSolid*       getNode(unsigned node_idx);
     private:
         Opticks* m_ok ; 
+        GGeo*    m_ggeo ; 
         int      m_gltf ; 
         NScene*  m_scene ; 
         int      m_num_nd ; 
@@ -132,6 +138,7 @@ class GGEO_API GScene
         GNodeLib*     m_tri_nodelib ; 
         GBndLib*      m_tri_bndlib ; 
         GItemIndex*   m_tri_meshindex ; 
+        GColorizer*   m_colorizer ; 
 
         unsigned     m_verbosity ; 
         GSolid*      m_root ; 

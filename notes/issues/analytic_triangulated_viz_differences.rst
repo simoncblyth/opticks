@@ -27,6 +27,32 @@ as that done by standard GGeo/GMergedMesh
 
 
 
+
+mesh ordering different in gdml and dae branches
+----------------------------------------------------
+
+Forced to do solid name mapping to establish correspondence... why ?
+
+::
+
+    2017-06-23 16:55:44.638 INFO  [525994] [GScene::importMeshes@185] GScene::importMeshes START num_meshes 249
+    2017-06-23 16:55:44.638 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    0 tri_mesh_idx  248 soname WorldBox0xc15cf40
+    2017-06-23 16:55:44.639 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    1 tri_mesh_idx  247 soname near_rock0xc04ba08
+    2017-06-23 16:55:44.640 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    2 tri_mesh_idx   21 soname near_hall_top_dwarf0xc0316c8
+    2017-06-23 16:55:44.641 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    3 tri_mesh_idx    0 soname near_top_cover_box0xc23f970
+    2017-06-23 16:55:44.641 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    4 tri_mesh_idx    7 soname RPCMod0xc13bfd8
+    2017-06-23 16:55:44.643 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    5 tri_mesh_idx    6 soname RPCFoam0xc21f3f8
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    6 tri_mesh_idx    3 soname RPCBarCham140xc2ba760
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    7 tri_mesh_idx    2 soname RPCGasgap140xbf4c660
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    8 tri_mesh_idx    1 soname RPCStrip0xc04bcb0
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx    9 tri_mesh_idx    5 soname RPCBarCham230xc125900
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx   10 tri_mesh_idx    4 soname RPCGasgap230xbf50468
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx   11 tri_mesh_idx    8 soname NearRPCRoof0xc135b28
+    2017-06-23 16:55:44.644 INFO  [525994] [GScene::importMeshes@200]  mesh_idx   12 tri_mesh_idx   20 soname NearRPCSptRoof0xc052bc0
+
+
+
+
 assimprap/AssimpGeo
 ----------------------
 

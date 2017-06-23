@@ -92,6 +92,7 @@ GGeo::GGeo(Opticks* opticks)
    m_geolib(NULL),
    m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
    m_nodelib(NULL),
+   m_nodelib_analytic(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -418,10 +419,6 @@ void GGeo::init()
 
    m_treepresent = new GTreePresent(100, 1000);   // depth_max,sibling_max
 
-   //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
-   GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
-
-   m_colorizer = new GColorizer( this, style ); // colorizer needs full tree, so pre-cache only 
 
    m_bndlib = new GBndLib(m_ok);
    m_materiallib = new GMaterialLib(m_ok);
@@ -429,6 +426,12 @@ void GGeo::init()
 
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
+
+   //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
+   GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
+   OpticksColors* colors = getColors();
+   m_colorizer = new GColorizer( m_bndlib, colors, style ); // colorizer needs full tree, so pre-cache only 
+
 
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
@@ -467,10 +470,6 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
-GNodeLib* GGeo::getNodeLib()
-{
-    return m_nodelib ;  // the triangulated one
-}
 
 GGeoLib* GGeo::getTriGeoLib()
 {
@@ -481,6 +480,15 @@ GGeoLib* GGeo::getGeoLib()
 {
     return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
 }
+
+GNodeLib* GGeo::getNodeLib()
+{
+    return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
+}
+
+
+
+
 
 unsigned int GGeo::getNumMergedMesh()
 {
@@ -638,8 +646,12 @@ void GGeo::loadFromGLTF()
 {
     if(!m_ok->isGLTF()) return ; 
 #ifdef WITH_YoctoGL
+
     m_gscene = new GScene(m_ok, this); // GGeo needed for m_bndlib 
     m_geolib_analytic = m_gscene->getGeoLib();
+    m_nodelib_analytic = m_gscene->getNodeLib();
+
+
 #else
     LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
     assert(0);
@@ -1300,32 +1312,15 @@ void GGeo::prepareVertexColors()
 {
     // GColorizer needs full tree,  so have to use pre-cache
 
-
     LOG(trace) << "GGeo::prepareVertexColors START" ;
 
-
     GMergedMesh* mesh0 = getMergedMesh(0);
+    GSolid* root = getSolid(0);
 
-    assert(mesh0);
-
-    gfloat3* vertex_colors = mesh0->getColors();
-
-    GColorizer* czr = getColorizer();
-
-    assert(czr);
-
-    czr->setTarget( reinterpret_cast<nvec3*>(vertex_colors) );
-    czr->setRepeatIndex(mesh0->getIndex()); 
-    czr->traverse();
+    m_colorizer->writeVertexColors( mesh0, root );
 
     LOG(trace) << "GGeo::prepareVertexColors DONE " ;
 }
-
-
-
-
-
-
 
 
 

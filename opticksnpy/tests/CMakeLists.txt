@@ -217,10 +217,8 @@ endforeach()
 
 # promote some python scripts to the standard binary location
 set(PY_TEST_SOURCES
-
-   tgltf_gdml.py
-
 )
+
 install(FILES ${PY_TEST_SOURCES} DESTINATION lib 
         PERMISSIONS 
             WORLD_READ GROUP_READ OWNER_READ 

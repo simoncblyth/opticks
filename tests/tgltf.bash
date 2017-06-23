@@ -93,15 +93,25 @@ tgltf-target(){ echo 3153 ; }
 
 tgltf-transitional()
 {
+    local msg="=== $FUNCNAME :"
     op-  # needs OPTICKS_QUERY envvar 
+
+    #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
+    export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
+  
     local gltfpath=$TMP/$FUNCNAME/sc.gltf
-    if [ ! -f "$gltfpath" ]; then 
-        python ~/opticks/opticksnpy/tests/tgltf_gdml.py --gltfpath $gltfpath
-    fi
+    #if [ ! -f "$gltfpath" ]; then 
+        gdml2gltf.py --gltfpath $gltfpath
+    #fi
+    echo $msg running from gltfpath $gltfpath 
     TGLTFPATH=$gltfpath tgltf-- $*
 
     ## aiming for the gltf to have a standard path in geocache
 }
+
+
+
+
 
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }

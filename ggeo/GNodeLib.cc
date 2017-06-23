@@ -11,6 +11,7 @@
 
 GNodeLib* GNodeLib::load(Opticks* ok, const char* reldir)
 {
+    // NB nodes are not persisted... those survive via GMergedMesh 
     int gltftarget = ok->getGLTFTarget();
     GNodeLib* nodelib = new GNodeLib(ok, true, gltftarget, reldir) ;
     return nodelib ; 
@@ -25,7 +26,12 @@ GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode, const char* re
     m_pvlist(NULL),
     m_lvlist(NULL)
 {
+     
+    // TODO: get rid of targetnode
+
     int gltftarget = ok->getGLTFTarget();
+    assert( targetnode == 0);
+    assert( gltftarget == 0);
 
     bool consistent = gltftarget == int(targetnode) ; 
     if(!consistent)
@@ -35,6 +41,8 @@ GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode, const char* re
                   ;
 
     assert( consistent && "MISMATCH BETWEEN GLTFTarget from config and from metadata, add option: --gltftarget <targetnode> "); 
+
+
     init();
 }
 

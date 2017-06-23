@@ -5,6 +5,7 @@ Mostly Non-numpy basics, just numpy configuration
 
 import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys, datetime
+from OpticksQuery import OpticksQuery 
 from enum import Enum 
 
 log = logging.getLogger(__name__) 
@@ -246,83 +247,6 @@ def isIPython():
         return True
 
 
-class OpticksQuery(object):
-    """
-    Analogue of okc/OpticksQuery.cc
-    """
-    RANGE_ = "range:"
-
-    NONE = 0
-    RANGE = 1
-
-    def __init__(self):
-        query = os.environ.get("OPTICKS_QUERY","")
-        elem = query.split(",")
-
-        self.query_type = self.NONE 
-        self.query_range = []
-        for q in elem:
-            self.parseQueryElement(q)
-        pass
-        self.query = query 
-        if self.query_type == self.RANGE:
-            self.expect = self.expected_range_count()
-        else:
-            self.expect = None
-        pass
-
-    def check_selected_count(self, count):
-        if self.query_type != self.RANGE: return
-        assert self.expect == count, ( "expect %s count %s " % (self.expect, count))
-        log.info("count %s matches expectation " % count )
-
-    def expected_range_count(self):
-        """
-        * slice style range selection 0:10 corresponds to 10 items from 0 to 9 inclusive 
-        """
-        expected_ = 0 
-        for i in range(len(self.query_range)/2):
-            expected_ += self.query_range[i*2+1] - self.query_range[i*2+0] 
-            pass
-        return expected_
-
-    def selected(self, name, index, depth):
-        """
-        Hmm how to handle recursive_select pass back ? not needed for now
-        """
-        selected_ = False
-        if self.query_type == self.NONE:
-             selected_ = True
-        elif self.query_type == self.RANGE and len(self.query_range) > 0:
-            assert len(self.query_range) % 2 == 0 
-            for i in range(len(self.query_range)/2):
-                if index >= self.query_range[i*2+0] and index < self.query_range[i*2+1]:
-                    selected_ = True
-                pass
-            pass
-        else:
-            pass
-        pass
-        return selected_
-
-
-    def __call__(self, index):
-        return self.selected("dummy", index, -1)
-
-        
-    def parseQueryElement(self, q):
-        if q.startswith(self.RANGE_):
-            self.query_type = self.RANGE
-            elem = q[len(self.RANGE_):].split(":")
-            assert len(elem) == 2 
-            self.query_range.append(int(elem[0]))
-            self.query_range.append(int(elem[1]))
-        pass
-
-    def __repr__(self):
-        return "OpticksQuery %s %r " % (self.query, self.query_range)  
-
-
 class OK(argparse.Namespace):
     pass
     #ipython = property(lambda self:sys.argv[0].endswith("ipython"))
@@ -505,8 +429,7 @@ def opticks_args(**kwa):
 
     #return args 
 
-
-    ok.query = OpticksQuery()
+    ok.query = OpticksQuery(os.environ.get("OPTICKS_QUERY",""))
 
     return ok 
 

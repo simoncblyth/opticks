@@ -25,14 +25,17 @@
 #include "GMesh.hh"
 #include "GSolid.hh"
 #include "GScene.hh"
+#include "GColorizer.hh"
 #include "GMergedMesh.hh"
 
 
 #include "PLOG.hh"
 
+
 GScene::GScene( Opticks* ok, GGeo* ggeo )
     :
     m_ok(ok),
+    m_ggeo(ggeo),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
@@ -48,6 +51,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_tri_bndlib(ggeo->getBndLib()),
     m_tri_meshindex(ggeo->getMeshIndex()),
 
+    m_colorizer(new GColorizer(m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
+
     m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
     m_root(NULL),
     m_selected_count(0)
@@ -55,10 +60,15 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     init();
 }
 
-GGeoLib* GScene::getGeoLib()
+GGeoLib* GScene::getGeoLib() 
 {
     return m_geolib ; 
 }
+GNodeLib* GScene::getNodeLib()
+{
+    return m_nodelib ; 
+}
+
 guint4 GScene::getNodeInfo(unsigned idx) const 
 {
      return m_tri_mm0->getNodeInfo(m_targetnode + idx);
@@ -67,6 +77,17 @@ guint4 GScene::getIdentity(unsigned idx) const
 {
      return m_tri_mm0->getIdentity(m_targetnode + idx);
 }
+
+
+GMergedMesh* GScene::getMergedMesh(unsigned idx)
+{
+    return m_geolib->getMergedMesh(idx);
+}
+GSolid* GScene::getSolid(unsigned idx)
+{
+    return m_nodelib->getSolid(idx);
+}
+
 
 
 void GScene::init()
@@ -113,6 +134,8 @@ void GScene::init()
 
     checkMergedMeshes();
 
+    prepareVertexColors();
+
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
 
     if(m_verbosity > 0)
@@ -120,6 +143,20 @@ void GScene::init()
 
                 ;
 
+}
+
+
+
+void GScene::prepareVertexColors()
+{
+    LOG(info) << "GScene::prepareVertexColors START" ;
+
+    GMergedMesh* mesh0 = getMergedMesh(0);
+    GSolid* root = getSolid(0);
+
+    m_colorizer->writeVertexColors( mesh0, root );
+
+    LOG(info) << "GScene::prepareVertexColors DONE " ;
 }
 
 
@@ -194,16 +231,22 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         std::string soname = csg->soname();
         unsigned tri_mesh_idx = findTriMeshIndex(soname.c_str());
 
+        // rel2abs/abs2rel are not good names
+        //
+        // analytic/sc.py GDML branch is using mesh indexing based on lvIdx unlike G4DAE, 
+        // so need solid name mapping 
+        // to establish correspondence, the names include pointer addresses so this ensures
+        // that the source GDML and G4DAE files were produced by a single process
+
         m_rel2abs_mesh[mesh_idx] = tri_mesh_idx ;  
         m_abs2rel_mesh[tri_mesh_idx] = mesh_idx ;  
 
+        if(m_verbosity > 2)
         LOG(info) 
              << " mesh_idx " <<  std::setw(4) << mesh_idx
              << " tri_mesh_idx " <<  std::setw(4) << tri_mesh_idx
              << " soname " << soname 
              ;
-
-        // hmm: absolute or relative mesh indexing ???
 
         GMesh* mesh = GMesh::make_mesh(tris->getTris(), mesh_idx );
 
@@ -344,6 +387,8 @@ GSolid* GScene::createVolume(nd* n) // compare with AssimpGGeo::convertStructure
     assert(n);
     unsigned rel_node_idx = n->idx ;
     unsigned abs_node_idx = n->idx + m_targetnode  ;  
+    assert(m_targetnode == 0);
+
 
     unsigned rel_mesh_idx = n->mesh ;   
     unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
@@ -420,6 +465,7 @@ void GScene::transferIdentity( GSolid* node, const nd* n)
     // passing tri identity into analytic branch 
     unsigned rel_node_idx = n->idx ;
     unsigned abs_node_idx = n->idx + m_targetnode  ;  
+    assert(m_targetnode == 0);
 
     unsigned rel_mesh_idx = n->mesh ;   
     unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   

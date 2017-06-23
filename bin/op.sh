@@ -74,7 +74,7 @@ op-binary-name()
        --resource) echo OpticksResourceTest ;;
         --opticks) echo OpticksTest ;;
           --pybnd) echo GBndLibTest.py ;;
-         --pygdml) echo tgltf_gdml.py ;;
+         --pygdml) echo gdml2gltf.py ;;
              --mm) echo GMergedMeshTest ;;
         --testbox) echo GTestBoxTest ;;
          --geolib) echo GGeoLibTest ;;
@@ -96,16 +96,6 @@ op-binary-name()
    # no default as its important this return blank for unidentified commands
    #      *) echo $(op-binary-name-default) ;;
       
-}
-
-
-op-pygdml-()
-{
-   # within environment testing of "op --pygdml"  without needing to install
-   # hmm should probably put this in analytic and make that a CMake installed from
-   # proj 
-
-   python ~/opticks/opticksnpy/tests/tgltf_gdml.py
 }
 
 

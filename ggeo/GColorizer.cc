@@ -7,24 +7,23 @@
 
 #include "GVector.hh"
 #include "GMesh.hh"
+#include "GMergedMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
-#include "GGeo.hh"
 #include "GColorizer.hh"
 
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
 
-GColorizer::GColorizer(GGeo* ggeo, GColorizer::Style_t style ) 
+GColorizer::GColorizer(GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
        :
        m_target(NULL),
-       m_ggeo(ggeo),
-       m_blib(NULL),
-       m_slib(NULL),
-       m_colors(NULL),
+       m_blib(blib),
+       m_slib(blib->getSurfaceLib()),
+       m_colors(colors),
        m_style(style),
        m_cur_vertices(0),
        m_num_colorized(0),
@@ -44,12 +43,28 @@ void GColorizer::setRepeatIndex(unsigned int ridx)
 }
 
 
+void GColorizer::writeVertexColors(GMergedMesh* mesh0, GSolid* root)
+{
+    assert(mesh0);
+
+    gfloat3* vertex_colors = mesh0->getColors();
+
+    setTarget( reinterpret_cast<nvec3*>(vertex_colors) );
+    setRepeatIndex(mesh0->getIndex()); 
+
+    traverse(root);
+}
+
+
+
+
+
 
 void GColorizer::init()
 {
-    m_blib = m_ggeo->getBndLib();
-    m_slib = m_ggeo->getSurfaceLib();
-    m_colors = m_ggeo->getColors();
+    //m_blib = m_ggeo->getBndLib();
+    //m_slib = m_ggeo->getSurfaceLib();
+    //m_colors = m_ggeo->getColors();
 
     if(!m_colors)
          LOG(warning) << "GColorizer::init m_colors NULL " ; 
@@ -57,7 +72,7 @@ void GColorizer::init()
 }
 
 
-void GColorizer::traverse()
+void GColorizer::traverse(GSolid* root)
 {
     if(!m_target)
     {
@@ -66,13 +81,12 @@ void GColorizer::traverse()
     }
     LOG(info) << "GColorizer::traverse START" ; 
 
-    GSolid* root = m_ggeo->getSolid(0);
-    traverse(root, 0);
+    traverse_r(root, 0);
 
     LOG(info) << "GColorizer::traverse colorized nodes " << m_num_colorized ; 
 }
 
-void GColorizer::traverse( GNode* node, unsigned int depth)
+void GColorizer::traverse_r( GNode* node, unsigned depth)
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
     GMesh* mesh = solid->getMesh();
@@ -120,7 +134,7 @@ void GColorizer::traverse( GNode* node, unsigned int depth)
 
         m_cur_vertices += nvert ;      // offset within the flat arrays
     }
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse(node->getChild(i), depth + 1 );
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1 );
 }
 
 

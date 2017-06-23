@@ -21,6 +21,9 @@ from opticks.ana.base import opticks_main, Buf
 
 log = logging.getLogger(__name__)
 
+def log_info(msg):
+    sys.stdout.write(msg)
+
 
 class DummyTopPV(object):
     name = "top"  # match the G4DAE name
@@ -203,21 +206,22 @@ class Node(object):
         for child in self.children:
             child.traverse(depth+1)
 
-    def selection_traverse_r(self, query, depth=0):
+    def selection_traverse_r(self, query, depth=0, recursive_select_=False):
         """
         Unclear what is the appropriate name ? pv.name is not unique for instances
         but not currently used.
         """
         #print "selection_traverse ", self.index, self.pv.name, depth
-        selected = query.selected(self.pv.name, self.index, depth)
+        selected, recursive_select_ = query.selected(self.pv.name, self.index, depth, recursive_select_=recursive_select_)
         if selected:
             self.__class__.selected_count+= 1 
             self.selected = 1
+            log_info("selected index %5d depth %2d name %s mat %s so %s" % (self.index, depth, self.pv.name, self.lv.material.shortname, self.lv.solid.name)) 
         else:
             self.selected = 0
         pass 
         for child in self.children:
-            child.selection_traverse_r(query, depth+1)
+            child.selection_traverse_r(query, depth+1, recursive_select_=recursive_select_)
         pass
 
 

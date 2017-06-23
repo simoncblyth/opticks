@@ -3,12 +3,13 @@
 
 #include "NQuad.hpp"
 
-class GGeo ; 
+//class GGeo ; 
 class GNode ; 
 class OpticksColors ; 
 
 class GBndLib ; 
 class GSurfaceLib ; 
+class GColors ; 
 
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GColorizer {
@@ -19,24 +20,27 @@ class GGEO_API GColorizer {
                        PSYCHEDELIC_MESH, 
                        NUM_STYLES } Style_t ;  
    public:
-        GColorizer(GGeo* ggeo, GColorizer::Style_t style );  // vertex colorizer 
+        GColorizer(GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) ;
+        //GColorizer(GGeo* ggeo, GColorizer::Style_t style );  // vertex colorizer 
+
+        void writeVertexColors(GMergedMesh* mesh0, GSolid* root);
    private:
         void init(); 
    public:
-        void setTarget(nvec3* target);
+        void setTarget(nvec3* target);  // where to write the colors
         void setRepeatIndex(unsigned int ridx);
 
    public:
         nvec3 make_color(unsigned int rgb);
    public:
-        void traverse();   // full traverse from node 0, root
+        void traverse(GSolid* root);   // full recursive traverse from root
    private:
         nvec3 getSurfaceColor(GNode* node);
 
-        void traverse( GNode* node, unsigned int depth );
+        void traverse_r( GNode* node, unsigned int depth );
    private:
         nvec3*                 m_target ; 
-        GGeo*                  m_ggeo ; 
+        //GGeo*                  m_ggeo ; 
         GBndLib*               m_blib ; 
         GSurfaceLib*           m_slib ; 
         OpticksColors*         m_colors ; 

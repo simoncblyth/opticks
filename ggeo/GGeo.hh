@@ -343,6 +343,7 @@ class GGEO_API GGeo : public NConfigurable {
         GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
 
         GNodeLib*                     m_nodelib ; 
+        GNodeLib*                     m_nodelib_analytic ; 
 
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
