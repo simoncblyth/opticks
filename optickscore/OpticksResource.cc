@@ -267,7 +267,7 @@ void OpticksResource::init()
    readG4Environment();
    readOpticksEnvironment();
 
-   BEnv::dumpEnvironment();
+   //BEnv::dumpEnvironment();
 
    readEnvironment();
    readMetadata();

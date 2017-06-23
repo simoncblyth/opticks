@@ -49,7 +49,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_tri_meshindex(ggeo->getMeshIndex()),
 
     m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
-    m_root(NULL)
+    m_root(NULL),
+    m_selected_count(0)
 {
     init();
 }
@@ -94,6 +95,10 @@ void GScene::init()
     m_root = createVolumeTree(m_scene) ;
     assert(m_root);
 
+    if(m_verbosity > 0)
+    LOG(info) << "GScene::init createVolumeTrue selected_count " << m_selected_count ; 
+
+
     // check consistency of the level transforms
     deltacheck_r(m_root, 0);
 
@@ -111,7 +116,9 @@ void GScene::init()
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
 
     if(m_verbosity > 0)
-    LOG(info) << "GScene::init DONE" ;
+    LOG(info) << "GScene::init DONE"
+
+                ;
 
 }
 
@@ -162,11 +169,10 @@ void GScene::modifyGeometry()
 
 
 
-unsigned GScene::findTriMeshIndex(const NCSG* csg) const 
+unsigned GScene::findTriMeshIndex(const char* soname) const 
 {
-   std::string soname = csg->soname();
    unsigned missing = std::numeric_limits<unsigned>::max() ;
-   unsigned tri_mesh_idx = m_tri_meshindex->getIndexSource( soname.c_str(), missing );
+   unsigned tri_mesh_idx = m_tri_meshindex->getIndexSource( soname, missing );
    assert( tri_mesh_idx != missing );
    return tri_mesh_idx ; 
 }
@@ -185,10 +191,17 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         assert(tris);
         assert( csg->getIndex() == mesh_idx) ;
 
-        unsigned tri_mesh_idx = findTriMeshIndex(csg);
+        std::string soname = csg->soname();
+        unsigned tri_mesh_idx = findTriMeshIndex(soname.c_str());
 
         m_rel2abs_mesh[mesh_idx] = tri_mesh_idx ;  
         m_abs2rel_mesh[tri_mesh_idx] = mesh_idx ;  
+
+        LOG(info) 
+             << " mesh_idx " <<  std::setw(4) << mesh_idx
+             << " tri_mesh_idx " <<  std::setw(4) << tri_mesh_idx
+             << " soname " << soname 
+             ;
 
         // hmm: absolute or relative mesh indexing ???
 
@@ -394,6 +407,11 @@ void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n)
 
     node->setPVName( pvname.c_str() );
     node->setLVName( lvn.c_str() );
+
+    bool selected = n->selected > 0 ;
+    node->setSelected( selected  );
+
+    if(selected) m_selected_count++ ; 
 }
 
 

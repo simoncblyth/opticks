@@ -37,29 +37,36 @@ tgltf-src(){  echo torch ; }
 tgltf-args(){ echo  --det $(tgltf-det) --src $(tgltf-src) ; }
 
 
+tgltf-pretty(){
+    local msg="=== $FUNCNAME :"
+    local path=$1
+    local pretty=${path/.gltf}.pretty.gltf
+    cat $path | python -m json.tool > $pretty
+    echo $msg wrote prettified gltf to $pretty
+}
+
+
 
 
 tgltf--()
 {
     local msg="=== $FUNCNAME :"
-
     tgltf-
 
     local cmdline=$*
     local tgltfpath=${TGLTFPATH:-$TMP/nd/scene.gltf}
-    local tgltfpretty=${tgltfpath/.gltf}.pretty.gltf
-    cat $tgltfpath | python -m json.tool > $tgltfpretty
-    echo $msg wrote prettified gltf to $tgltfpretty
-
-    #return
 
     local gltf=1
     #local gltf=4  # early exit at start of GScene::init
     #local gltf=44  # early exit at middle of GScene::init
     #local gltf=444  # early exit at end of GScene::init
 
-
      #--geocenter \
+
+    #local target=$(tgltf-target)
+    local target=0   # moving to absolute tree indexing following triangulated
+
+    #        --eye 1,0,0 \
 
     op.sh  \
             $cmdline \
@@ -67,11 +74,10 @@ tgltf--()
             --gltf $gltf \
             --gltfbase $(dirname $tgltfpath) \
             --gltfname $(basename $tgltfpath) \
-            --gltftarget $(tgltf-target) \
+            --gltftarget $target \
             --target 3 \
             --animtimemax 10 \
             --timemax 10 \
-            --eye 1,0,0 \
             --dbganalytic \
             --tag $(tgltf-tag) --cat $(tgltf-det) \
             --save 
@@ -84,6 +90,18 @@ tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
 
 
 tgltf-target(){ echo 3153 ; }
+
+tgltf-transitional()
+{
+    op-  # needs OPTICKS_QUERY envvar 
+    local gltfpath=$TMP/$FUNCNAME/sc.gltf
+    if [ ! -f "$gltfpath" ]; then 
+        python ~/opticks/opticksnpy/tests/tgltf_gdml.py --gltfpath $gltfpath
+    fi
+    TGLTFPATH=$gltfpath tgltf-- $*
+
+    ## aiming for the gltf to have a standard path in geocache
+}
 
 
 tgltf-gdml(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }

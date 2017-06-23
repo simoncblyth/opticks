@@ -5,7 +5,7 @@ import os, logging, collections, sys
 log = logging.getLogger(__name__)
 
 
-from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, splitlines_
+from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, json_save_pretty_, splitlines_
 from opticks.analytic.treebase import Tree
 from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.gdml import GDML
@@ -32,7 +32,7 @@ class Mh(object):
 
 
 class Nd(object):
-    def __init__(self, ndIdx, soIdx, transform, boundary, pvname, depth, scene):
+    def __init__(self, ndIdx, soIdx, transform, boundary, pvname, depth, scene, selected):
         """
         :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
         :param soIdx: local within substree so index, used for referencing to distinct solids/meshes
@@ -40,7 +40,7 @@ class Nd(object):
         self.ndIdx = ndIdx
         self.soIdx = soIdx
         self.transform = transform
-        self.extras = dict(boundary=boundary, pvname=pvname)
+        self.extras = dict(boundary=boundary, pvname=pvname, selected=selected)
 
         self.name = pvname
         self.depth = depth
@@ -141,7 +141,7 @@ class Sc(object):
         return filter(lambda mesh:mesh.lvName.startswith(pfx),self.meshes.values())
 
 
-    def add_node(self, lvIdx, lvName, pvName, soName, transform, boundary, depth):
+    def add_node(self, lvIdx, lvName, pvName, soName, transform, boundary, depth, selected):
 
         mesh = self.add_mesh(lvIdx, lvName, soName)
         soIdx = mesh.soIdx
@@ -152,7 +152,7 @@ class Sc(object):
         #log.info("add_node %s " % name)
         assert transform is not None
 
-        nd = Nd(ndIdx, soIdx, transform, boundary, pvName, depth, self )
+        nd = Nd(ndIdx, soIdx, transform, boundary, pvName, depth, self, selected )
         nd.mesh = mesh 
 
 
@@ -172,6 +172,7 @@ class Sc(object):
         transform = node.pv.transform 
         boundary = node.boundary
         nodeIdx = node.index
+        selected = node.selected
 
         msg = "sc.py:add_node_gdml nodeIdx:%4d lvIdx:%2d soName:%30s lvName:%s " % (nodeIdx, lvIdx, soName, lvName )
         #print msg
@@ -184,7 +185,7 @@ class Sc(object):
             sys.stderr.write(msg+"\n" + repr(transform)+"\n")
         pass
 
-        nd = self.add_node( lvIdx, lvName, pvName, soName, transform, boundary, depth )
+        nd = self.add_node( lvIdx, lvName, pvName, soName, transform, boundary, depth, selected )
 
         ## hmm: why handle csg translation at node level, its more logical to do at mesh level ?
         ##      Presumably done here as it is then easy to access the lv ?
@@ -306,13 +307,20 @@ class Sc(object):
         log.info("save_extras %s  : saved %d " % (extras_dir, count) )
  
 
-    def save(self, path, load_check=True):
+    def save(self, path, load_check=True, pretty_also=True):
         log.info("saving to %s " % path )
         gdir = os.path.dirname(path)
         self.save_extras(gdir)    # sets uri for extra external files, so must come before the json gltf save
 
         gltf = self.gltf
         json_save_(path, gltf)    
+
+        if pretty_also:
+            pretty_path = path.replace(".gltf",".pretty.gltf")
+            log.info("also saving to %s " % pretty_path )
+            json_save_pretty_(pretty_path, gltf)    
+        pass
+
         if load_check:
             gltf2 = json_load_(path)
         pass

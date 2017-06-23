@@ -213,6 +213,7 @@ bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int d
    }
    else if(m_query_name)
    {
+       // startswith m_query_name ?
        if(strncmp(name,m_query_name,strlen(m_query_name)) == 0)
        {
            _selected = true ;

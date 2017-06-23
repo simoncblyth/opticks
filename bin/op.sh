@@ -99,7 +99,7 @@ op-binary-name()
 }
 
 
-op-pygdml()
+op-pygdml-()
 {
    # within environment testing of "op --pygdml"  without needing to install
    # hmm should probably put this in analytic and make that a CMake installed from
@@ -107,6 +107,8 @@ op-pygdml()
 
    python ~/opticks/opticksnpy/tests/tgltf_gdml.py
 }
+
+
 
 op-binary-desc()
 {

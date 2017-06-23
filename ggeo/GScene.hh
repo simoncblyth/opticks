@@ -85,7 +85,7 @@ class GGEO_API GScene
         GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
         NCSG*  getCSG(unsigned mesh_idx);
-        unsigned findTriMeshIndex(const NCSG* csg) const ;
+        unsigned findTriMeshIndex(const char* soname) const ;
 
         // from triangulated branch mm0
         guint4 getNodeInfo(unsigned idx) const ;
@@ -133,9 +133,9 @@ class GGEO_API GScene
         GBndLib*      m_tri_bndlib ; 
         GItemIndex*   m_tri_meshindex ; 
 
-        unsigned m_verbosity ; 
-
-        GSolid*  m_root ; 
+        unsigned     m_verbosity ; 
+        GSolid*      m_root ; 
+        unsigned     m_selected_count ; 
 
         std::map<unsigned, GMesh*>   m_meshes ; 
         std::map<unsigned, GSolid*>  m_nodes ;  

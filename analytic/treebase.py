@@ -78,6 +78,8 @@ class Node(object):
 
     """
 
+    selected_count = 0 
+
     @classmethod
     def md5digest(cls, volpath ):
         """  
@@ -200,6 +202,24 @@ class Node(object):
         self.visit(depth)
         for child in self.children:
             child.traverse(depth+1)
+
+    def selection_traverse_r(self, query, depth=0):
+        """
+        Unclear what is the appropriate name ? pv.name is not unique for instances
+        but not currently used.
+        """
+        #print "selection_traverse ", self.index, self.pv.name, depth
+        selected = query.selected(self.pv.name, self.index, depth)
+        if selected:
+            self.__class__.selected_count+= 1 
+            self.selected = 1
+        else:
+            self.selected = 0
+        pass 
+        for child in self.children:
+            child.selection_traverse_r(query, depth+1)
+        pass
+
 
     def rprogeny(self, maxdepth=0, maxnode=0):
         """
@@ -459,7 +479,6 @@ class Tree(object):
     def traverse(self):
         self.root.traverse()
 
-
     def find_crowds(self, minchild=22):
         return self.root.find_nodes_nchild(minchild)
 
@@ -469,6 +488,19 @@ class Tree(object):
             print n.lv.name, len(n.children)
             n.analyse_child_lv_occurrence()
             
+    def apply_selection(self, query):
+        """
+        Applying volume selection query whilst creating the Node tree is not 
+        easy as the source GDML tree us stripped lv/pv/lv tree 
+
+        Easier to do it in a traverse after the tree is created
+        """     
+        assert Node.selected_count == 0 
+        self.root.selection_traverse_r(query)
+        log.info("apply_selection %r Node.selected_count %d " % (query, Node.selected_count ))
+        query.check_selected_count(Node.selected_count)
+
+        self.query = query 
 
 
     def __init__(self, base):
@@ -489,6 +521,11 @@ class Tree(object):
         top = DummyTopPV()
         ancestors = [top] # dummy to regularize striping TOP-LV-PV-LV 
         self.root = self.create_r(self.base, ancestors)
+
+
+
+
+
 
     def create_r(self, vol, ancestors):
         """

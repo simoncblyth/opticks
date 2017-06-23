@@ -349,6 +349,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     auto extras = ynode->extras ; 
     std::string boundary = extras["boundary"] ; 
     std::string pvname = extras["pvname"] ; 
+    unsigned selected = extras["selected"] ; 
  
     nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
@@ -359,6 +360,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->depth = depth ;
     n->boundary = boundary ;
     n->pvname = pvname ; 
+    n->selected = selected ; 
     n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 

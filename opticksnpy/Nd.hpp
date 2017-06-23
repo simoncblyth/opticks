@@ -7,6 +7,16 @@
 struct nd ; 
 struct nmat4triple ;
 
+/*
+
+nd : structural nodes from glTF
+===================================
+
+* nd are populated from the glTF by NScene::import_r
+
+
+*/
+
 
 struct NPY_API nd
 {
@@ -17,6 +27,7 @@ struct NPY_API nd
    unsigned         depth ; 
    std::string      boundary ; 
    std::string      pvname ; 
+   unsigned         selected ; 
 
    std::string      _local_digest ; 
    std::string      _mesh_digest ; 

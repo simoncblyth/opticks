@@ -50,7 +50,7 @@ def makedirs_(path):
 expand_ = lambda path:os.path.expandvars(os.path.expanduser(path))
 json_load_ = lambda path:json.load(file(expand_(path)))
 json_save_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"))
-
+json_save_pretty_ = lambda path, d:json.dump(d, file(makedirs_(expand_(path)),"w"), sort_keys=True, indent=4, separators=(',', ': '))
 
 
 
@@ -265,6 +265,26 @@ class OpticksQuery(object):
             self.parseQueryElement(q)
         pass
         self.query = query 
+        if self.query_type == self.RANGE:
+            self.expect = self.expected_range_count()
+        else:
+            self.expect = None
+        pass
+
+    def check_selected_count(self, count):
+        if self.query_type != self.RANGE: return
+        assert self.expect == count, ( "expect %s count %s " % (self.expect, count))
+        log.info("count %s matches expectation " % count )
+
+    def expected_range_count(self):
+        """
+        * slice style range selection 0:10 corresponds to 10 items from 0 to 9 inclusive 
+        """
+        expected_ = 0 
+        for i in range(len(self.query_range)/2):
+            expected_ += self.query_range[i*2+1] - self.query_range[i*2+0] 
+            pass
+        return expected_
 
     def selected(self, name, index, depth):
         """
@@ -368,6 +388,7 @@ def opticks_args(**kwa):
     apmtidx = kwa.get("apmtidx", 2 )
 
     csgpath = kwa.get("csgpath", "$TMP/tboolean-csg-pmt-py")
+    gltfpath = kwa.get("gltfpath", "$TMP/tgltf/tgltf-gdml--.gltf")
     container = kwa.get("container","Rock//perfectAbsorbSurface/Vacuum") 
     testobject = kwa.get("testobject","Vacuum///GlassSchottF2" ) 
     gsel = kwa.get("gsel", "/dd/Geometry/PMT/lvPmtHemi0x" ) 
@@ -427,6 +448,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--addpath",   default=addpath, help="Path to detdesc xml file for topdown testing. %(default)s ")
     parser.add_argument(     "--yes", action="store_true", help="Confirm any YES dialogs. %(default)s ")
     parser.add_argument(     "--csgpath",   default=csgpath, help="Directory of the NCSG input serialization. %(default)s ")
+    parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
 
