@@ -17,6 +17,8 @@ this was due to the move from digest based identity to shortname based identity.
 """
 import os
 import numpy as np
+from opticks.ana.base import opticks_main
+
 
 path_ = lambda _:os.path.expandvars("$IDPATH/%s" % _)
 load_ = lambda _:np.load(path_(_))
@@ -65,6 +67,9 @@ def test_buffers():
 
 
 if __name__ == '__main__':
+
+    args = opticks_main()
+    print args 
     test_buffers()
 
 

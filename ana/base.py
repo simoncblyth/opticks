@@ -163,13 +163,16 @@ def _opticks_tmp():
 def _opticks_env(st="OPTICKS_ IDPATH"):
     return filter(lambda _:_[0].startswith(st.split()), os.environ.items())
 
+def _opticks_query():
+    return ""
+
 class OpticksEnv(object):
     def __init__(self):
         self.ext = {}
         self.env = {}
 
         if not os.path.isdir(IDPATH): 
-            print "Invalid/missing IDPATH envvar %s " % IDPATH
+            print "ana/base.py:OpticksEnv Invalid/missing IDPATH envvar [%s] " % IDPATH
             sys.exit(1)  
  
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
@@ -183,6 +186,7 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_DETECTOR",        _opticks_detector(IDPATH))
         self.setdefault("OPTICKS_DETECTOR_DIR",    _opticks_detector_dir(IDPATH))
         self.setdefault("OPTICKS_EVENT_BASE",      _opticks_event_base())
+        self.setdefault("OPTICKS_QUERY",           _opticks_query())
         self.setdefault("TMP",                     _opticks_tmp())
 
     def bash_export(self, path="$TMP/opticks_env.bash"):
@@ -240,6 +244,64 @@ def isIPython():
         return False
     else:
         return True
+
+
+class OpticksQuery(object):
+    """
+    Analogue of okc/OpticksQuery.cc
+    """
+    RANGE_ = "range:"
+
+    NONE = 0
+    RANGE = 1
+
+    def __init__(self):
+        query = os.environ.get("OPTICKS_QUERY","")
+        elem = query.split(",")
+
+        self.query_type = self.NONE 
+        self.query_range = []
+        for q in elem:
+            self.parseQueryElement(q)
+        pass
+        self.query = query 
+
+    def selected(self, name, index, depth):
+        """
+        Hmm how to handle recursive_select pass back ? not needed for now
+        """
+        selected_ = False
+        if self.query_type == self.NONE:
+             selected_ = True
+        elif self.query_type == self.RANGE and len(self.query_range) > 0:
+            assert len(self.query_range) % 2 == 0 
+            for i in range(len(self.query_range)/2):
+                if index >= self.query_range[i*2+0] and index < self.query_range[i*2+1]:
+                    selected_ = True
+                pass
+            pass
+        else:
+            pass
+        pass
+        return selected_
+
+
+    def __call__(self, index):
+        return self.selected("dummy", index, -1)
+
+        
+    def parseQueryElement(self, q):
+        if q.startswith(self.RANGE_):
+            self.query_type = self.RANGE
+            elem = q[len(self.RANGE_):].split(":")
+            assert len(elem) == 2 
+            self.query_range.append(int(elem[0]))
+            self.query_range.append(int(elem[1]))
+        pass
+
+    def __repr__(self):
+        return "OpticksQuery %s %r " % (self.query, self.query_range)  
+
 
 class OK(argparse.Namespace):
     pass
@@ -348,6 +410,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     parser.add_argument(     "--nosmry", dest="smry", action="store_false", help="smry SeqAna table  ")
+    parser.add_argument(     "--pybnd",  action="store_true", help="Avoid error from op binary selection flag. ")
+    parser.add_argument(     "--pygdml",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--promat", default=promat, action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--rehist", default=rehist, action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
@@ -418,6 +482,10 @@ def opticks_args(**kwa):
          sys.stderr.write("args: " + " ".join(sys.argv) + "\n")
 
     #return args 
+
+
+    ok.query = OpticksQuery()
+
     return ok 
 
     

@@ -3,6 +3,8 @@
 #include <iostream>
 #include "Opticks.hh"
 
+#define DO_LOG 1
+
 #ifdef DO_LOG
 #include "SYSRAP_LOG.hh"
 #include "BRAP_LOG.hh"

@@ -74,6 +74,7 @@ op-binary-name()
        --resource) echo OpticksResourceTest ;;
         --opticks) echo OpticksTest ;;
           --pybnd) echo GBndLibTest.py ;;
+         --pygdml) echo tgltf_gdml.py ;;
              --mm) echo GMergedMeshTest ;;
         --testbox) echo GTestBoxTest ;;
          --geolib) echo GGeoLibTest ;;
@@ -95,6 +96,16 @@ op-binary-name()
    # no default as its important this return blank for unidentified commands
    #      *) echo $(op-binary-name-default) ;;
       
+}
+
+
+op-pygdml()
+{
+   # within environment testing of "op --pygdml"  without needing to install
+   # hmm should probably put this in analytic and make that a CMake installed from
+   # proj 
+
+   python ~/opticks/opticksnpy/tests/tgltf_gdml.py
 }
 
 op-binary-desc()
@@ -283,6 +294,7 @@ op-geometry-setup()
                              JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
+    #op-geometry-setup-analytic
 }
 op-geometry-query-dyb()
 {
@@ -349,6 +361,12 @@ op-geometry-setup-misc()
     fi 
 }
 
+op-geometry-setup-analytic()
+{
+    local msg="=== $FUNCNAME :"
+    echo $msg 
+    env | grep OPTICKS_
+}
 
 
 

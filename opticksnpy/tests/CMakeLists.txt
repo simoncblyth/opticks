@@ -212,3 +212,22 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
+
+
+
+# promote some python scripts to the standard binary location
+set(PY_TEST_SOURCES
+
+   tgltf_gdml.py
+
+)
+install(FILES ${PY_TEST_SOURCES} DESTINATION lib 
+        PERMISSIONS 
+            WORLD_READ GROUP_READ OWNER_READ 
+            WORLD_WRITE GROUP_WRITE OWNER_WRITE 
+            WORLD_EXECUTE GROUP_EXECUTE OWNER_EXECUTE 
+)
+
+
+
+

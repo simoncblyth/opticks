@@ -42,6 +42,10 @@ const char* OpticksResource::OTHER   = "other" ;
 
 const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ; 
 
+
+// TODO: having these defaults compiled in is problematic, better to read in from
+//       json/ini so they are available at python level
+
 const char* OpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
 const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
@@ -262,7 +266,8 @@ void OpticksResource::init()
 
    readG4Environment();
    readOpticksEnvironment();
-   //BEnv::dumpEnvironment();
+
+   BEnv::dumpEnvironment();
 
    readEnvironment();
    readMetadata();

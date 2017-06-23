@@ -102,4 +102,21 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
 endforeach()
 
 
+# promote some python scripts to the standard binary location
+set(PY_TEST_SOURCES
+
+   GBndLibTest.py
+
+)
+install(FILES ${PY_TEST_SOURCES} DESTINATION lib 
+        PERMISSIONS 
+            WORLD_READ GROUP_READ OWNER_READ 
+            WORLD_WRITE GROUP_WRITE OWNER_WRITE 
+            WORLD_EXECUTE GROUP_EXECUTE OWNER_EXECUTE 
+ )
+
+
+
+
+
 

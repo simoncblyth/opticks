@@ -253,8 +253,14 @@ void BEnv::dumpEnvironment(const char* msg, const char* prefix)
 
       if(select)
       {
-          std::cerr << kv << std::endl ; 
+          //std::cerr << kv << std::endl ; 
+          //std::cout << kv << std::endl ; 
+          LOG(info)  << kv ; 
       }
+
+      // surprised to find that PLOG is writing to std::cout ... 
+      // so to distinguish the crucial path written by OpticksIDPATH 
+      // need to follow PLOG here
    }
 }
 #endif

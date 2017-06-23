@@ -15,6 +15,25 @@ else should arranged to be the same or very similar.
 * mesh coloration
 
 
+NEXT
+------
+
+Take analogous approach to analytic GMergedMesh creation by GScene 
+as that done by standard GGeo/GMergedMesh
+(ie full geometry but with nodes masked according to volume range selection).
+
+* working on this in op-pygdml by arranging for python to be run from 
+  within the opticks environment
+
+
+
+assimprap/AssimpGeo
+----------------------
+
+OpticksQuery volume range selection feeds into GSolid/GNode isSelected flags.
+
+
+
 Partial Geometry Control And Analytic Geometry ?
 -----------------------------------------------------
 

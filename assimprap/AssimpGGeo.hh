@@ -19,6 +19,37 @@ struct aiMesh ;
 
 #include "ASIRAP_API_EXPORT.hh"
 
+/*
+AssimpGGeo
+===========
+
+Primary entry point is AssimpGGeo::load(GGeo* ggeo)
+which imports the full geometry Assimp node tree.
+The Assimp node tree is converted into the GSolid/GNode tree, 
+with AssimpSelection such as volume ranges feeding into GSolid/GNode 
+selected flags (GSolid::setSelected).
+
+* think of the selection as a node mask.
+
+::
+
+     806 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+     807 {
+     808     // recursive traversal of the AssimpNode tree
+     809     // note that full tree is traversed even when a partial selection is applied 
+     ...
+     812     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+     814     bool selected = m_selection && m_selection->contains(node) ;
+     816     solid->setSelected(selected);
+     817 
+     818     gg->add(solid);
+     ...
+     830     for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1, solid);
+     831 }
+
+*/
+
+
 class ASIRAP_API AssimpGGeo {
 public:
     AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection);
