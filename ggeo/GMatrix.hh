@@ -41,6 +41,8 @@ class GGEO_API GMatrix : public GBuffer
 
        bool isIdentity();
 
+
+
        std::string digest();
        std::string brief(unsigned int w=11);
 

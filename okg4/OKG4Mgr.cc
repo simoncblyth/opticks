@@ -96,7 +96,7 @@ void OKG4Mgr::propagate()
             if(ok("save"))
             {
                 m_run->saveEvent();
-                m_run->anaEvent();
+                m_hub->anaEvent();
             }
 
             m_run->resetEvent();

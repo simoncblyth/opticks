@@ -68,6 +68,8 @@ tgltf--()
 
     #        --eye 1,0,0 \
 
+    local tmax=20   # too small for geometry yields maltese crosses 
+
     op.sh  \
             $cmdline \
             --debugger \
@@ -76,9 +78,10 @@ tgltf--()
             --gltfname $(basename $tgltfpath) \
             --gltftarget $target \
             --target 3 \
-            --animtimemax 10 \
-            --timemax 10 \
+            --animtimemax $tmax \
+            --timemax $tmax \
             --dbganalytic \
+            --dbgnode 3159 \
             --tag $(tgltf-tag) --cat $(tgltf-det) \
             --save 
 }
@@ -91,7 +94,7 @@ tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
 
 tgltf-target(){ echo 3153 ; }
 
-tgltf-transitional()
+tgltf-t()
 {
     local msg="=== $FUNCNAME :"
     op-  # needs OPTICKS_QUERY envvar 
@@ -103,11 +106,69 @@ tgltf-transitional()
     #if [ ! -f "$gltfpath" ]; then 
         gdml2gltf.py --gltfpath $gltfpath
     #fi
+
+
+
+
+
+
     echo $msg running from gltfpath $gltfpath 
     TGLTFPATH=$gltfpath tgltf-- $*
 
     ## aiming for the gltf to have a standard path in geocache
 }
+
+
+tgltf-tt-env(){
+  #export OPTICKS_QUERY="range:3158:3160"
+  export OPTICKS_QUERY="range:3159:3160"
+}
+
+
+tgltf-tt(){  tgltf-tt-env ; TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
+tgltf-tt-(){ tgltf-tt-env ; $FUNCNAME- | python $* ; }
+tgltf-tt--(){ cat << EOP
+
+
+# need same env in python and C++, so setting OPTICKS_QUERY here not a good place
+
+import os, logging, sys, numpy as np
+
+log = logging.getLogger(__name__)
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.treebase import Tree
+from opticks.analytic.gdml import GDML
+from opticks.analytic.sc import Sc
+
+args = opticks_main()
+
+gdml = GDML.parse()
+
+tree = Tree(gdml.world)  
+
+tree.apply_selection(args.query)   # sets node.selected "volume mask" 
+    
+sc = Sc(maxcsgheight=3)
+
+sc.extras["verbosity"] = 1 
+sc.extras["targetnode"] = 0   # args.query.query_range[0]   # hmm get rid of this ?
+
+tg = sc.add_tree_gdml( tree.root, maxdepth=0)
+
+debug = True
+if debug:
+    nd = sc.get_node(3159)
+    nd.boundary = "Acrylic//perfectAbsorbSurface/GdDopedLS"
+pass
+
+
+
+gltf = sc.save(args.gltfpath)
+print args.gltfpath
+
+EOP
+}  
 
 
 

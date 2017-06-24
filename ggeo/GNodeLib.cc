@@ -93,8 +93,21 @@ std::string GNodeLib::desc() const
        << " LV(0) " << getLVName(0)
        ;
 
+
+    typedef std::map<unsigned, GSolid*>::const_iterator IT ; 
+
+    IT beg = m_solidmap.begin() ;
+    IT end = m_solidmap.end() ;
+
+    for(IT it=beg ; it != end && std::distance(beg,it) < 10 ; it++)
+    {
+        ss << " ( " << it->first << " )" ; 
+    }
+
     return ss.str();
 }
+
+
 
 unsigned GNodeLib::getNumPV() const 
 {

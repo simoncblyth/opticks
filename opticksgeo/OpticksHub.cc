@@ -9,6 +9,7 @@
 #include "NLookup.hpp"
 #include "NPY.hpp"
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 //#include "NParameters.hpp"
@@ -29,6 +30,9 @@
 
 // ggeo-
 #include "GItemIndex.hh"
+#include "GSolid.hh"
+#include "GNodeLib.hh"
+#include "GScene.hh"
 #include "GGeo.hh"
 
 // okc-
@@ -255,7 +259,30 @@ void OpticksHub::loadGeometry()
 
 
 
+void OpticksHub::anaEvent()
+{
+    int dbgnode = m_ok->getDbgNode();
+    LOG(info) << "OpticksHub::anaEvent" 
+              << " dbgnode " << dbgnode
+              ;
 
+    if(dbgnode > -1) 
+    {
+        GScene* scene = m_ggeo->getScene();
+        if(scene)
+        { 
+            OpticksEvent* evt = m_run->getEvent();
+            scene->debugNodeIntersects( dbgnode, evt ); 
+        }
+        else
+        {
+            LOG(warning) << "--dbgnode only implemented for glTF branch " ;  
+        } 
+    }
+
+
+    m_run->anaEvent();
+}
 
 
 

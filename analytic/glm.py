@@ -26,6 +26,85 @@ def to_pyline(a, alabel="a", fmt="%.3f"):
     return "%s = %s" % (alabel, s)
 
 
+def dot_(trs, reverse=False, left=False):
+    dr = dot_reduce(trs, reverse=reverse)
+    dl = dot_loop(trs, reverse=reverse)
+    assert np.allclose(dr,dl)
+    return dl
+
+def mdot_(args):
+    """
+    * http://scipy-cookbook.readthedocs.io/items/MultiDot.html
+
+    This will always give you left to right associativity, i.e. the expression is interpreted as `(((a*b)*c)*d)`.
+
+    """
+    ret = args[0]
+    for a in args[1:]:
+        ret = np.dot(ret,a)
+    pass
+
+    chk = reduce(np.dot, args)
+    assert np.allclose(chk,ret)
+
+    return ret
+
+def mdotr_(args):
+    """
+    * http://scipy-cookbook.readthedocs.io/items/MultiDot.html
+
+    right-associative version of the loop: which evaluates as `(a*(b*(c*d)))`
+
+    """
+    ret = args[-1]
+    for a in reversed(args[:-1]):
+        ret = np.dot(a,ret)
+    pass
+    return ret
+
+
+def dot_loop(trs, reverse=False, left=False):
+    trs_ = trs if not reverse else trs[::-1]
+    m = np.eye(4)
+    for tr in trs_:
+        if left: 
+            m = np.dot(tr, m)
+        else:
+            m = np.dot(m, tr)
+        pass
+    pass
+    return np.array(m, dtype=np.float32)
+
+
+def dot_reduce(trs, reverse=False):
+    """
+
+    http://scipy-cookbook.readthedocs.io/items/MultiDot.html
+
+    Suspicious of the reduce multiplicaton order
+
+    ::
+
+        In [6]: reduce(np.dot, nd.trs) 
+        Out[6]: 
+        array([[      0.5432,      -0.8396,       0.    ,       0.    ],
+               [      0.8396,       0.5432,       0.    ,       0.    ],
+               [      0.    ,       0.    ,       1.    ,       0.    ],
+               [  19391.    ,  802110.    ,   -7100.    ,       1.    ]], dtype=float32)
+
+        In [7]: reduce(np.dot, nd.trs[::-1])
+        Out[7]: 
+        array([[      0.5432,      -0.8396,       0.    ,       0.    ],
+               [      0.8396,       0.5432,       0.    ,       0.    ],
+               [      0.    ,       0.    ,       1.    ,       0.    ],
+               [ -18079.4531, -799699.4375,   -7100.    ,       1.    ]], dtype=float32)
+
+    """
+    trs_ = trs if not reverse else trs[::-1]
+    return reduce(np.dot, trs_ )
+
+
+
 def scale(arg=[1,2,3], m=None, dtype=np.float32):
     """  
     Translation of glm::scale into numpy 

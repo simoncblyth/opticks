@@ -4,6 +4,7 @@
 #include <map>
 
 class Opticks ; 
+class OpticksEvent ; 
 
 class GNodeLib ; 
 class GItemList ; 
@@ -78,6 +79,8 @@ class GGEO_API GScene
 
         GMergedMesh* getMergedMesh(unsigned ridx);
         GSolid* getSolid(unsigned nidx);
+        void dumpNode(unsigned nidx);
+        void debugNodeIntersects(int dbgnode, OpticksEvent* evt);
     private:
         void init();
         void prepareVertexColors();

@@ -164,6 +164,7 @@ class OKCORE_API Opticks {
         // from cfg
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
+       int   getDbgNode();
        float getFxRe();
        float getFxAb();
        float getFxSc();

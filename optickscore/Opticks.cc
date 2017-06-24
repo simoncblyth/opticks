@@ -268,6 +268,10 @@ bool Opticks::isOtherPhoton(int event_id, int track_id)
 
 
 
+int Opticks::getDbgNode()
+{
+   return m_cfg->getDbgNode();
+}
 
 
 const std::vector<int>&  Opticks::getDbgIndex()

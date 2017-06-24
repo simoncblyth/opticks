@@ -74,7 +74,7 @@ class TreeBuilder(object):
             nbileaf = len(map(lambda n:n.is_bileaf, subs))
             assert nbileaf == len(subs) and nbileaf > 0
             nprim = 2*nbileaf
-            log.info("TreeBuilder bileaf mode, nbileaf: %s nprim:%s " % (nbileaf, nprim))
+            log.debug("TreeBuilder bileaf mode, nbileaf: %s nprim:%s " % (nbileaf, nprim))
         pass
         self.nprim = nprim
         self.subs = subs

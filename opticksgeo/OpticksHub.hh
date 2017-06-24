@@ -87,12 +87,14 @@ class OKGEO_API OpticksHub {
        bool         hasOpt(const char* name);
        bool         isCompute();
    public:
+       
    public:
        std::string    getG4GunConfig();
        NPY<float>*    getInputGensteps();
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();
        void createEvent(unsigned tagoffset=0);
+       void anaEvent();
    private:
        void configureEvent(OpticksEvent* evt);
    public:

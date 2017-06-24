@@ -105,7 +105,13 @@ void GSolid::Summary(const char* msg )
 
 std::string GSolid::description()
 {
-   return getDescription(); 
+    const char* desc_ = getDescription() ;
+
+    std::string desc ;
+    if(desc_) desc.assign(desc_);
+
+  
+    return desc; 
 }
 
 

@@ -179,6 +179,8 @@ class GGEO_API GGeo : public NConfigurable {
         GNode* getNode(unsigned index); 
         GSolid* getSolid(unsigned int index);  
         GSolid* getSolidSimple(unsigned int index);  
+        GSolid* getSolidAnalytic(unsigned idx);
+
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
 
@@ -227,6 +229,7 @@ class GGEO_API GGeo : public NConfigurable {
         unsigned int getNumRawSkinSurfaces();
         unsigned int getNumRawBorderSurfaces();
     public:
+        GScene*            getScene();
         GNodeLib*          getNodeLib();
         GGeoLib*           getGeoLib();
         GGeoLib*           getTriGeoLib();

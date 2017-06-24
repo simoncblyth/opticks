@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 
+#include <glm/fwd.hpp>
 #include "GVector.hh"
 
 template <typename T> class GMatrix ; 
@@ -85,6 +86,9 @@ class GGEO_API GNode {
      void updateBounds(gfloat3& low, gfloat3& high );
 
   public:
+      glm::mat4 getTransformMat4();
+
+
       GMatrixF*     getTransform();  // global transform
       GMatrixF* getLevelTransform();  // immediate "local" node transform
       GMatrixF* getRelativeTransform(GNode* base);  // product of transforms from beneath base node

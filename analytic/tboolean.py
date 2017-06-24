@@ -20,7 +20,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main()
 
 CSG.boundary = obj_
-CSG.kwa = dict(verbosity="1")
+CSG.kwa = dict(verbosity="1", poly="IM")
 
 """
 

@@ -42,6 +42,7 @@ struct NPY_API nd
 
 
    std::string desc();
+   std::string detail();
    static nmat4triple* make_global_transform(nd* n) ; 
 
 

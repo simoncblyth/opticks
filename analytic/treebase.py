@@ -22,7 +22,7 @@ from opticks.ana.base import opticks_main, Buf
 log = logging.getLogger(__name__)
 
 def log_info(msg):
-    sys.stdout.write(msg)
+    sys.stderr.write(msg)
 
 
 class DummyTopPV(object):

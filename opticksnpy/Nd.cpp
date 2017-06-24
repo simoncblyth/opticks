@@ -6,6 +6,7 @@
 #include "SDigest.hh"
 
 #include "Nd.hpp"
+#include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 
 
@@ -34,7 +35,16 @@ std::string nd::desc()
     return ss.str();
 }
 
+std::string nd::detail()
+{
+    std::stringstream ss ; 
+    ss << desc() ;
 
+    if(transform)  ss << gpresent("nd.tr.t",  transform->t ) << std::endl ;  
+    if(gtransform) ss << gpresent("nd.gtr.t", gtransform->t ) << std::endl ;  
+ 
+    return ss.str();
+}
 
 
 nmat4triple* nd::make_global_transform(nd* n)

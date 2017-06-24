@@ -69,6 +69,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_modulo(-1),
        m_override(-1),
        m_debugidx(0),
+       m_dbgnode(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
        m_loaderverbosity(0),
@@ -406,6 +407,13 @@ void OpticksCfg<Listener>::init()
    snprintf(debugidx,128, "Index of item eg Photon for debugging. Default %d", m_debugidx);
    m_desc.add_options()
        ("debugidx",  boost::program_options::value<int>(&m_debugidx), debugidx );
+
+
+   char dbgnode[128];
+   snprintf(dbgnode,128, "Index of volume node for debugging, see OpticksHub::debugNode. Default %d", m_dbgnode);
+   m_desc.add_options()
+       ("dbgnode",  boost::program_options::value<int>(&m_dbgnode), dbgnode );
+
 
    char stack[128];
    snprintf(stack,128, "OptiX stack size, smaller the faster util get overflows. Default %d", m_stack);
@@ -994,6 +1002,16 @@ int OpticksCfg<Listener>::getDebugIdx()
 {
     return m_debugidx ; 
 }
+
+template <class Listener>
+int OpticksCfg<Listener>::getDbgNode()
+{
+    return m_dbgnode ; 
+}
+
+
+
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getStack()

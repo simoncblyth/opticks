@@ -2,6 +2,7 @@
 
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 
 #include "NScene.hpp"
 
@@ -12,6 +13,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NSensorList.hpp"
 
+#include "OpticksEvent.hh"
 #include "Opticks.hh"
 
 #include "GItemList.hh"
@@ -58,7 +60,26 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_selected_count(0)
 {
     init();
+
+    dumpNode(3158);
+    dumpNode(3159);
 }
+
+void GScene::dumpNode( unsigned nidx)
+{
+    nd* n = m_scene->getNd(nidx);
+    LOG(info) << "GScene::dump_node" 
+              << " nidx " << std::setw(6) << nidx
+              << ( n ? " FOUND " : " NO-SUCH-NODE " )
+              ;
+
+
+
+    if(n)
+        std::cout << std::endl << n->detail() << std::endl ;  
+}
+
+
 
 GGeoLib* GScene::getGeoLib() 
 {
@@ -358,8 +379,6 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
         assert( pidx + m_targetnode == ni.w );  // relative node indexing
     }
 
-
-
     GSolid* node = createVolume(n);
     node->setParent(parent) ;   // tree hookup 
 
@@ -539,28 +558,41 @@ std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const
 {
     unsigned tri_boundary = node->getBoundary();    // get the just transferred tri_boundary 
 
-    guint4 ana_bnd = m_tri_bndlib->parse( n->boundary.c_str());  // NO SURFACES
-    guint4 tri_bnd = m_tri_bndlib->getBnd(tri_boundary);
+    guint4 tri = m_tri_bndlib->getBnd(tri_boundary);
+    guint4 ana = m_tri_bndlib->parse( n->boundary.c_str());  // NO SURFACES
 
-    assert( ana_bnd.x == tri_bnd.x && "imat should match");  
-    assert( ana_bnd.w == tri_bnd.w && "omat should match");
+    assert( ana.x == tri.x && "imat should match");  
+    assert( ana.w == tri.w && "omat should match");
 
+    std::string ana_spec = m_tri_bndlib->shortname(ana);
+    std::string tri_spec = m_tri_bndlib->shortname(tri);
 
-    std::string tri_bndname = m_tri_bndlib->shortname(tri_bnd);
-
-    const char* tri_spec = tri_bndname.c_str();
-    
-    if(m_verbosity > 3)
+   
+    std::string spec ; 
+    if(n->selected)
+    {
+        LOG(warning) << " using ana_spec from n.boundary " << n->boundary <<  " for selected node " << n->idx  ; 
+        spec = ana_spec ; 
+    }
+    else
+    {
+        spec = tri_spec ; 
+    }
+ 
+    if(m_verbosity > 3  || n->selected)
     std::cout  
+              << " nidx " << std::setw(5) << n->idx
               << " tri_boundary " << tri_boundary
-              << " tri_bnd " << tri_bnd.description()
-              << " ana_bnd " << ana_bnd.description()
+              << " tri " << tri.description()
+              << " ana " << ana.description()
               << " tri_spec " << tri_spec
+              << " ana_spec " << ana_spec
               << " n.boundary " << n->boundary 
+              << " USING spec : " << spec 
               << std::endl 
               ;
   
-    return tri_bndname ; 
+    return spec ; 
 }
 
 
@@ -790,5 +822,88 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNo
     }
     return buf ; 
 }
+
+
+void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
+{
+    // gets invoked from OpticksHub::anaEvent 
+    // for the analytic glTF branch when the *dbgnode* option is used 
+    // eg "--dbgnode 3159" is used 
+
+    GSolid* solid = m_ggeo->getSolidAnalytic(dbgnode);
+    GNodeLib* nlib = m_ggeo->getNodeLib();
+
+    GMesh* mesh = solid->getMesh();
+    unsigned mesh_idx = mesh->getIndex();
+    NCSG* csg = m_scene->getCSG(mesh_idx);
+
+
+    LOG(info) << "OpticksHub::debugNode " << dbgnode  ;
+    LOG(info) << " nodelib " << nlib->desc() ;
+    LOG(info) << " solid " <<  ( solid ? solid->description() : " NONE " )  ; 
+    LOG(info) << " csg.meta " << csg->meta() ; 
+    LOG(info) << " csg.desc " << csg->desc() ; 
+
+    assert(solid);
+
+    // fails to find with tboolean- because thats test mode not gltf mode
+    glm::mat4  gtr = solid->getTransformMat4();
+    glm::mat4 igtr = glm::inverse(gtr);   
+
+    std::cout << gpresent("gtr", gtr) << std::endl ; 
+    std::cout << gpresent("igtr", igtr) << std::endl ; 
+
+
+    NPY<float>* pho = evt->getPhotonData(); 
+    NPY<unsigned long long>* seq = evt->getSequenceData() ;
+    //pho->dump();
+    //seq->dump();
+    LOG(info) << " pho " << pho->getShapeString() ; 
+    LOG(info) << " seq " << seq->getShapeString() ; 
+
+    unsigned num_pho  = pho->getShape(0); 
+    unsigned num_seq  = seq->getShape(0); 
+    assert(num_pho == num_seq);
+
+    unsigned long long seqhis, seqmat ; 
+
+    unsigned long long TO_SA =  0x8dull ;
+    unsigned long long seqhis_select = TO_SA ; 
+    unsigned count_select(0); 
+
+    for(unsigned i=0 ; i < num_pho ; i++)
+    {
+        glm::vec4 post = pho->getQuad(i,0,0);
+
+        glm::vec4 pos(post);
+        pos.w = 1.0f ; 
+
+        glm::vec4 lpos = igtr * pos ; 
+
+        seqhis = seq->getValue(i,0,0);
+        seqmat = seq->getValue(i,0,1);
+
+        if(seqhis == seqhis_select )
+        {
+            count_select++ ; 
+            if(count_select % 1000 == 0)
+            std::cout 
+                 << " i " << std::setw(6) <<  i
+                 << " c " << std::setw(6) <<  count_select
+                 << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+                 << " seqmat " << std::setw(16) << std::hex << seqmat << std::dec
+                 << " post " << glm::to_string(post)
+                 << " lpos " << glm::to_string(lpos)
+                 << std::endl 
+                 ;
+         }
+    }
+
+    LOG(info) << " seqhis_select " <<  std::setw(16) << std::hex << seqhis_select << std::dec
+              << " count_select " << std::setw(6) << count_select 
+              ;
+
+}
+
 
 

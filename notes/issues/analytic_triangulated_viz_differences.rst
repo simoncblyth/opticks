@@ -1,8 +1,8 @@
 Analytic Triangulated Viz Differences
 ========================================
 
-TODO 
------
+DONE : Mostly fixed by move to absolute tree approach
+--------------------------------------------------------
 
 Investigate and resolve differences between the branches, aiming for the      
 the only significant difference to be more precise geometry intersections : everything 
@@ -15,7 +15,7 @@ else should arranged to be the same or very similar.
 * mesh coloration
 
 
-NEXT
+DONE
 ------
 
 Take analogous approach to analytic GMergedMesh creation by GScene 
@@ -28,8 +28,8 @@ as that done by standard GGeo/GMergedMesh
 
 
 
-mesh ordering different in gdml and dae branches
-----------------------------------------------------
+LEAVING AS IS : mesh ordering different in gdml and dae branches
+---------------------------------------------------------------------
 
 Forced to do solid name mapping to establish correspondence... why ?
 

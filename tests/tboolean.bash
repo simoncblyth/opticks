@@ -152,9 +152,7 @@ tboolean--(){
         testconfig=$(tboolean-testconfig)
     fi 
 
-
     #        --rendermode "-axis" \
-    #        --torch --torchconfig "$(tboolean-torchconfig)" \
 
     op.sh  \
             $cmdline \
@@ -164,6 +162,8 @@ tboolean--(){
             --eye 1,0,0 \
             --dbganalytic \
             --test --testconfig "$testconfig" \
+            --torch --torchconfig "$(tboolean-torchconfig)" \
+            --torchdbg \
             --tag $(tboolean-tag) --cat $(tboolean-det) \
             --save 
 }
@@ -177,6 +177,10 @@ tboolean-enum(){
    local tmp=$TMP/$FUNCNAME.exe
    clang $OPTICKS_HOME/optixrap/cu/boolean-solid.cc -lstdc++ -I$OPTICKS_HOME/optickscore -o $tmp && $tmp $*
 }
+
+
+
+
 
 
 tboolean-torchconfig()
@@ -224,8 +228,28 @@ tboolean-torchconfig()
                  wavelength=$wavelength 
                )
 
+
+
+    local torch_config_sphere=(
+                 type=sphere
+                 photons=10000
+                 frame=-1
+                 transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000
+                 source=0,0,0
+                 target=0,0,1
+                 time=0.1
+                 radius=100
+                 distance=400
+                 zenithazimuth=0,1,0,1
+                 material=GdDopedLS
+                 wavelength=$wavelength 
+               )
+
+
+
     #echo "$(join _ ${torch_config_discaxial[@]})" 
-    echo "$(join _ ${torch_config_disc[@]})" 
+    #echo "$(join _ ${torch_config_disc[@]})" 
+    echo "$(join _ ${torch_config_sphere[@]})" 
 }
 
 
@@ -1700,7 +1724,9 @@ tboolean-gds--(){ cat << EOP
 # In [15]: c.mesh.csg.dump_tboolean("gds")
 
 outdir = "$TMP/$FUNCNAME"
-obj_ = "$(tboolean-testobject)"
+obj_ = "Acrylic//perfectAbsorbSurface/GdDopedLS"
+
+
 con_ = "$(tboolean-container)"
 
 import logging
@@ -1710,7 +1736,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main()
 
 CSG.boundary = obj_
-CSG.kwa = dict(verbosity="1")
+CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
 
 
 a = CSG("cylinder", param = [0.000,0.000,0.000,1550.000],param1 = [-1535.000,1535.000,0.000,0.000])
@@ -1723,7 +1749,11 @@ abc = CSG("union", left=a, right=bc)
 
 # photons formed maltese cross, until upped timemax from 10ns to 20ns
 
+#abc.transform = [[0.543,-0.840,0.000,0.000],[0.840,0.543,0.000,0.000],[0.000,0.000,1.000,0.000],[-18079.453,-799699.438,-7100.000,1.000]]
+abc.transform = [[0.543,-0.840,0.000,0.000],[0.840,0.543,0.000,0.000],[0.000,0.000,1.000,0.000],[0,0,1000.,1.000]]
+
 obj = abc
+
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
 CSG.Serialize([con, obj], outdir )

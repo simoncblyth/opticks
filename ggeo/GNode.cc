@@ -9,6 +9,8 @@
 // sysrap-
 #include "SDigest.hh"
 
+#include "NGLM.hpp"
+
 // ggeo-
 #include "GMatrix.hh"
 #include "GMesh.hh"
@@ -68,6 +70,12 @@ unsigned GNode::getMeshIndex() const
 }
 
 
+glm::mat4 GNode::getTransformMat4()
+{
+    float* f = (float*)m_transform->getPointer();
+    assert(f);
+    return glm::make_mat4(f);  
+}
 
 
 GMatrixF* GNode::getTransform()

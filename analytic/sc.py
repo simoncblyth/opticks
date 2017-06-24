@@ -9,6 +9,7 @@ from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, json
 from opticks.analytic.treebase import Tree
 from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.gdml import GDML
+from opticks.analytic.glm import mdot_, mdotr_,  to_pyline
 from opticks.analytic.polyconfig import PolyConfig
 
 def log_info(msg):
@@ -55,9 +56,47 @@ class Nd(object):
     matrix = property(lambda self:list(map(float,self.transform.ravel())))
     brief = property(lambda self:"Nd ndIdx:%3d soIdx:%d nch:%d par:%d matrix:%s " % (self.ndIdx, self.soIdx,  len(self.children), self.parent, self.matrix))
 
+
+    def _get_boundary(self):
+        return self.extras['boundary']
+    def _set_boundary(self, bnd):
+        self.extras['boundary'] = bnd
+    boundary = property(_get_boundary, _set_boundary)
+
+
+    def _get_parent_node(self):
+        return self.scene.get_node(self.parent) if self.parent > -1 else None
+    parent_node = property(_get_parent_node)
+    p = property(_get_parent_node)
+
+    def _get_hierarchy(self):
+        """ starting from top, going down tree to self"""
+        ancestors_ = []
+        p = self.parent_node
+        while p:
+            ancestors_.append(p)
+            p = p.parent_node
+        pass
+        return ancestors_[::-1] + [self]
+    hierarchy = property(_get_hierarchy)
+
+    def _get_trs(self):
+        hier = self.hierarchy 
+        trs_ = map(lambda n:n.transform, hier )
+        return trs_
+    trs = property(_get_trs)
+
+    gtr_mdot = property(lambda self:mdot_(self.trs))
+    gtr_mdotr = property(lambda self:mdotr_(self.trs))
+
+    gtr_mdot_r = property(lambda self:mdot_(self.trs[::-1]))
+    gtr_mdotr_r = property(lambda self:mdotr_(self.trs[::-1]))
+
+
+
     def __repr__(self):
-        indent = ".. " * self.depth 
-        return indent + self.brief
+        #indent = ".. " * self.depth 
+        return "%30s %s " % (self.name, self.brief)
 
     def __str__(self):
         indent = ".. " * self.depth 
@@ -211,9 +250,7 @@ class Sc(object):
 
 
         if selected:
-            log_info("selected csg.txt\n%s" % str(nd.mesh.csg.txt) )
-
-            print "\n\n" + str(nd.mesh.csg.txt) + "\n\n"
+            log.info("\n\nselected nd %s \n\n%s\n\n" % (nd,  str(nd.mesh.csg.txt) ))
             self.selected.append(nd)
         pass
 
@@ -266,13 +303,13 @@ class Sc(object):
         if not overheight_(rawcsg, maxcsgheight):
             return rawcsg 
         pass
-        log.info("optimize_csg OVERHEIGHT h:%2d maxcsgheight:%d maxcsgheight2:%d %s " % (rawcsg.height,maxcsgheight, maxcsgheight2, rawcsg.name))
+        log.debug("optimize_csg OVERHEIGHT h:%2d maxcsgheight:%d maxcsgheight2:%d %s " % (rawcsg.height,maxcsgheight, maxcsgheight2, rawcsg.name))
 
         rawcsg.positivize() 
 
         csg = TreeBuilder.balance(rawcsg)
 
-        log.info("optimize_csg compressed tree from height %3d to %3d " % (rawcsg.height, csg.height ))
+        log.debug("optimize_csg compressed tree from height %3d to %3d " % (rawcsg.height, csg.height ))
 
         assert not overheight_(csg, maxcsgheight2)
 
@@ -378,48 +415,55 @@ class Sc(object):
 
 
 
+def gdml2gltf_main( args ):
+    """
+    main used by bin/gdml2gltf.py 
+    """
+
+    gdml = GDML.parse()
+
+    tree = Tree(gdml.world)  
+
+    tree.apply_selection(args.query)   # sets node.selected "volume mask" 
+     
+    sc = Sc(maxcsgheight=3)
+
+    sc.extras["verbosity"] = 1
+    sc.extras["targetnode"] = 0   # args.query.query_range[0]   # hmm get rid of this ?
+
+    tg = sc.add_tree_gdml( tree.root, maxdepth=0)
+
+
+
+    path = args.gltfpath
+    gltf = sc.save(path)
+
+    return sc
+
+
+
+
+
 
 if __name__ == '__main__':
 
-    """
-    NB tgltf-gdml does not use this main ... it uses the python from tgltf-gdml--
-    """
+
+    #q = "index:3159,depth:1"
+    q = "range:3158:3160" 
+    if q is not None: 
+        os.environ['OPTICKS_QUERY']=q
+    pass
 
     args = opticks_main()
 
-    gsel = args.gsel            # string representing target node index integer or lvname
-    gmaxnode = args.gmaxnode    # limit subtree node count
-    gmaxdepth = args.gmaxdepth  # limit subtree node depth from the target node
-    gidx = args.gidx            # target selection index, used when the gsel-ection yields multiple nodes eg when using lvname selection 
-
-    #gsel = "/dd/Geometry/AD/lvSST0x" 
-    #gsel = "/dd/Geometry/AD/lvOIL0xbf5e0b8"
-    gsel = 3153
+    sc = gdml2gltf_main( args )
 
 
-    log.info(" gsel:%s gidx:%s gmaxnode:%s gmaxdepth:%s " % (gsel, gidx, gmaxnode, gmaxdepth))
+    nd = sc.get_node(3159)
 
-    gdmlpath = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main 
-    gdml = GDML.parse(gdmlpath)
+    print nd.mesh.csg.txt
+    print to_pyline(nd.gtr_mdot_r, "gtr")
 
-    tree = Tree(gdml.world)
-    target = tree.findnode(gsel, gidx)
 
-    #log.info(" target node %s " % target )   
-
-    sc = Sc(maxcsgheight=3)
-    tg = sc.add_tree_gdml( target, maxdepth=0 )
-   
-    if args.gltfsave: 
-        gltfpath = "$TMP/nd/scene.gltf"
-        gltf = sc.save(gltfpath)
-    else:
-        pass
-    pass
-
-    if len(args.lvnlist) > 0 and os.path.exists(args.lvnlist):
-        lvns = splitlines_(args.lvnlist)   
-        sc.dump_all(lvns)
-    pass
 
 

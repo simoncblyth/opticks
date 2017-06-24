@@ -486,6 +486,10 @@ GNodeLib* GGeo::getNodeLib()
     return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
 }
 
+GScene* GGeo::getScene()
+{
+    return m_gscene ; 
+}
 
 
 
@@ -651,6 +655,8 @@ void GGeo::loadFromGLTF()
     m_geolib_analytic = m_gscene->getGeoLib();
     m_nodelib_analytic = m_gscene->getNodeLib();
 
+    
+
 
 #else
     LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
@@ -660,6 +666,10 @@ void GGeo::loadFromGLTF()
 
 
 
+GSolid* GGeo::getSolidAnalytic(unsigned idx)
+{
+    return m_nodelib_analytic ? m_nodelib_analytic->getSolid(idx) : NULL ; 
+}
 
 
 
