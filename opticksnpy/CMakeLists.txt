@@ -139,8 +139,12 @@ set(SOURCES
     NSensorList.cpp
 
     NGunConfig.cpp
+    NScan.cpp
+    NScanLine.cpp
 
     NNode.cpp
+    NNodeDump.cpp
+
     NBox.cpp
     NSlab.cpp
     NCylinder.cpp

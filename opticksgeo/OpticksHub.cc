@@ -30,8 +30,6 @@
 
 // ggeo-
 #include "GItemIndex.hh"
-#include "GSolid.hh"
-#include "GNodeLib.hh"
 #include "GScene.hh"
 #include "GGeo.hh"
 

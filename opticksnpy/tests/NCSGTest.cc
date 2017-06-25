@@ -8,23 +8,6 @@
 #include "NPY_LOG.hh"
 
 
-
-void test_Deserialize(const char* base)
-{
-    if(!NCSG::Exists(base))
-    {
-        LOG(warning) << "test_Deserialize !NCSG::Exists " << base ; 
-        return ; 
-    }
-
-    int verbosity = 1 ; 
-    std::vector<NCSG*> trees ;
-    NCSG::Deserialize( base, trees, verbosity );
-    LOG(info) << "test_Deserialize " << base << " found trees : " << trees.size() ;
-    for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSGTest dump");
-}
-
-
 void test_FromNode()
 {
     typedef std::vector<nnode*> VN ;
@@ -59,9 +42,16 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ;  
 
-    LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
+    int verbosity = 2 ; 
 
-    test_Deserialize( argc > 1 ? argv[1] : "$TMP/csg_py") ; 
+    std::vector<NCSG*> trees ;
+
+    const char* basedir = argc > 1 ? argv[0] : NULL ;
+
+    int ntree = NCSG::DeserializeTrees( basedir, trees, verbosity );
+    LOG(info) << " ntree " << ntree ; 
+ 
+
     //test_FromNode();
 
     return 0 ; 

@@ -502,7 +502,7 @@ nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tla
     return make_transformed(src, tra, reverse, user );
 }
 
-nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user)
+nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* /*user*/)
 {
     // reverse:true means the transform ordering is from leaf to root 
     // so when wishing to extend the hierarchy with a higher level root transform, 

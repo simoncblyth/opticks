@@ -882,6 +882,30 @@ bool NCSG::Exists(const char* basedir)
     return exists ; 
 }
 
+
+
+
+int NCSG::DeserializeTrees(const char* basedir, std::vector<NCSG*>& trees, int verbosity)
+{
+    if(!NCSG::Exists(basedir))
+    {
+        LOG(warning) << "NCSG::DeserializeTrees missing base " << basedir ; 
+        return 0; 
+    }
+    NCSG::Deserialize( basedir, trees, verbosity );
+
+    LOG(info) << "NCSG::DeserializeTrees " << basedir << " found trees : " << trees.size() ;
+
+    if(verbosity > 3)
+    { 
+        for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSG::DeserializeTrees");
+    }
+
+    return trees.size();
+}
+
+
+
 int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
 {
     assert(trees.size() == 0);
@@ -969,6 +993,21 @@ void NCSG::updateContainer( nbbox& container ) const
 
 }
 
+
+
+
+NCSG* NCSG::LoadCSG(const char* treedir)
+{
+    if(!treedir || !BFile::ExistsDir(treedir))
+    {
+         LOG(warning) << "NCSG::LoadCSG no such dir " << treedir ;
+         return NULL ; 
+    }
+    int verbosity = 2 ; 
+    NCSG* csg = NCSG::LoadTree(treedir, verbosity );
+    assert(csg);
+    return csg ; 
+}
 
 
 NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool polygonize)

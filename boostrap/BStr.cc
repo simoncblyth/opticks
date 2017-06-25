@@ -234,21 +234,35 @@ void BStr::fsplit( std::vector<float>& elem, const char* line, char delim )
     }
 }
 
+
+bool BStr::existsEnv( const char* envvar )
+{
+    char* line = getenv(envvar) ;
+    return line != NULL ; 
+}
+
+
 void BStr::fsplitEnv( std::vector<float>& elem, const char* envvar, const char* fallback, char delim )
 {
     char* line = getenv(envvar) ;
 
+    if(line)
+    {
+        BStr::fsplit(elem, line, delim);
+    }
+    else
+    {
+        BStr::fsplit(elem, fallback, delim);
+    }
+
     std::cout << "BStr::fsplitEnv"
               << " envvar " << envvar 
-              << " line " << line
+              << " line " << ( line ? line : " NULL " )
+              << " fallback " << ( fallback ? fallback : " NULL " )
+              << " elem.size " << elem.size()
               << std::endl 
               ;
- 
 
-    if(line)
-        BStr::fsplit(elem, line, delim);
-    else
-        BStr::fsplit(elem, fallback, delim);
     
 }
 

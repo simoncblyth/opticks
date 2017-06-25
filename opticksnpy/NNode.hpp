@@ -40,7 +40,6 @@ struct NPY_API nnode
     virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
 
     static nnode* load(const char* treedir, int verbosity);
-    static void Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump=true );
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
     virtual void dump(const char* msg="nnode::dump") const ;
@@ -54,6 +53,7 @@ struct NPY_API nnode
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
     virtual std::string desc() const ;
+    std::string tag() const ;
 
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
@@ -93,9 +93,12 @@ struct NPY_API nnode
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
 
-    void dump_prim(const char* msg="nnode::dump_prim") ;
-    void collect_prim(std::vector<nnode*>& prim) ;
-    static void collect_prim_r(std::vector<nnode*>& prim, nnode* node) ;
+    void dump_full(const char* msg="nnode::dump_full") const ;
+    void dump_transform(const char* msg="nnode::dump_transform") const ;
+    void dump_gtransform(const char* msg="nnode::dump_gtransform") const ;
+    void dump_prim(const char* msg="nnode::dump_prim") const ;
+    void collect_prim(std::vector<const nnode*>& prim) const ;
+    static void collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) ;
 
     bool is_primitive() const ;
     bool is_bileaf() const ;

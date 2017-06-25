@@ -207,6 +207,10 @@ class Sc(object):
     def get_node(self, ndIdx):
         return self.nodes[ndIdx]
 
+    def get_transform(self, ndIdx):
+        nd = self.get_node(ndIdx)
+        return nd.gtr_mdot_r 
+
     def add_node_gdml(self, node, depth, debug=False):
 
         lvIdx = node.lv.idx
@@ -351,15 +355,26 @@ class Sc(object):
         if not os.path.exists(extras_dir):
             os.makedirs(extras_dir)
         pass
+        btxt = []
         count = 0 
         for lvIdx, mesh in self.meshes.items():
             soIdx = mesh.soIdx
             lvdir = os.path.join( extras_dir, "%d" % lvIdx )
-            mesh.extras["uri"] = os.path.relpath(lvdir, gdir)
+            uri = os.path.relpath(lvdir, gdir)
+            mesh.extras["uri"] = uri
             mesh.csg.save(lvdir)
+            btxt.append(uri)
             count += 1 
         pass
+
         log.info("save_extras %s  : saved %d " % (extras_dir, count) )
+
+
+        csgtxt_path = os.path.join(extras_dir, "csg.txt")
+        log.info("write %d lines to %s " % (len(btxt), csgtxt_path))
+        file(csgtxt_path,"w").write("\n".join(btxt))
+
+
  
 
     def save(self, path, load_check=True, pretty_also=True):
@@ -455,15 +470,15 @@ if __name__ == '__main__':
     pass
 
     args = opticks_main()
-
     sc = gdml2gltf_main( args )
 
-
     nd = sc.get_node(3159)
+    tx = sc.get_transform(3159)
 
     print nd.mesh.csg.txt
     print to_pyline(nd.gtr_mdot_r, "gtr")
 
+    print tx
 
 
 

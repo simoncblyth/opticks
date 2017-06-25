@@ -79,6 +79,7 @@ NMarchingCubesNPYTest.cc
 NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
+NScanTest.cc
 
 NCSGPolygonizeTest.cc 
 

@@ -73,9 +73,13 @@ class NPY_API NCSG {
 
         static unsigned NumNodes(unsigned height);
         static bool Exists(const char* base);
-        static int Deserialize(const char* base, std::vector<NCSG*>& trees, int verbosity );
+        static int Deserialize(     const char* base, std::vector<NCSG*>& trees, int verbosity );
+        static int DeserializeTrees(const char* base, std::vector<NCSG*>& trees, int verbosity ) ;
+
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
         static NCSG* FromNode(nnode* root, const char* boundary);
+
+        static NCSG* LoadCSG(const char* treedir);
         static NCSG* LoadTree(const char* treedir, bool usedglobally=false, int verbosity=0, bool polygonize=false );
         static NParameters* LoadMetadata(const char* treedir);
         void updateContainer( nbbox& container ) const  ;

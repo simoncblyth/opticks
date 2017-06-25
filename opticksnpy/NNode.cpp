@@ -1,4 +1,3 @@
-
 #include <cstdio>
 #include <cassert>
 #include <cmath>
@@ -8,6 +7,7 @@
 
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 
 #include "NCSG.hpp"
 #include "NNode.hpp"
@@ -15,8 +15,12 @@
 #include "NQuad.hpp"
 #include "Nuv.hpp"
 #include "NBBox.hpp"
+#include "NNodeDump.hpp"
 
 // primitives
+#include "NPrimitives.hpp"
+
+/*
 #include "NSphere.hpp"
 #include "NZSphere.hpp"
 #include "NBox.hpp"
@@ -26,7 +30,7 @@
 #include "NDisc.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
-
+*/
 
 
 #include "PLOG.hh"
@@ -87,18 +91,25 @@ unsigned nnode::planeNum()
 }
 
 
-
-
-
 std::string nnode::desc() const 
 {
     std::stringstream ss ; 
+    ss << tag() ; 
+    return ss.str();
+}
+
+std::string nnode::tag() const 
+{
+    std::stringstream ss ; 
     ss  
-        << " [" << std::setw(3) << idx << "] "
+        << "[" 
+        << std::setw(2) << idx 
+        << ":"
+        << ( complement ? "!" : "" )
         << CSGTag(type) 
-        << " "
-        << ( complement ? "!" : " " )
-        << ( label ? label : " " )
+        << ( label ? " " : "" )
+        << ( label ? label : "" )
+        << "]"
         ;     
     return ss.str();
 }
@@ -116,41 +127,6 @@ void nnode::nudge(unsigned /*uv_surf*/, float /*delta*/ )
     assert(0 && "override nnode::nudge in primitives" );
 }
 
-
-
-void nnode::dump(const char* msg) const 
-{
-    bool prim = is_primitive();
-
-    std::cout 
-          << std::setw(10) << msg << " " 
-          << desc() 
-          << ( prim ? " PRIM " : " OPER " )
-          << " v:" << std::setw(1) << verbosity 
-          ; 
-
-    if(prim)
-    {
-        nbbox bb = bbox();
-        std::cout << " bb " << bb.desc() << std::endl ; 
-    }
-    else
-    {
-        std::cout << std::endl ; 
-
-        left->dump("left");
-        right->dump("right");
-    }
-
-/*
-    if(transform)
-    {
-        //std::cout << "transform: " << glm::to_string( *transform ) << std::endl ; 
-        std::cout << "transform: " << *transform  << std::endl ; 
-    } 
-*/
-
-}
 
 
 bool nnode::is_primitive() const 
@@ -359,36 +335,6 @@ nbbox nnode::bbox() const
 
 
 
-void nnode::Scan( std::vector<float>& sd, const nnode& node, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt, bool dump )
-{
-    LOG(info) << "nnode::Scan" ;
-    std::cout 
-        << " origin " << origin 
-        << " direction " << direction
-        << " range " << tt
-        << std::endl ; 
-
-    sd.clear(); 
-
-    for(float t=tt.x ; t <= tt.y ; t+= tt.z)
-    {
-        glm::vec3 p = origin + t * direction ;  
-        float sd_ = node(p.x,p.y,p.z) ;        
-        sd.push_back(sd_);
-
-        if(dump)
-        std::cout
-                 << " t " <<  std::fixed << std::setprecision(4) << std::setw(10) << t  
-                 << " x " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.x 
-                 << " y " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.y 
-                 << " z " <<  std::fixed << std::setprecision(4) << std::setw(10) << p.z 
-                 << " : " <<  std::fixed << std::setprecision(4) << std::setw(10) <<  sd_
-                 << std::endl ; 
-    }
-}
-
-
-
 nnode* nnode::load(const char* treedir, int verbosity)
 {
     bool usedglobally = false ; 
@@ -564,7 +510,7 @@ glm::vec3 nnode::par_pos(const nuv& uv) const  // override in shapes
 
 void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity)
 {
-    std::vector<nnode*> prim ; 
+    std::vector<const nnode*> prim ; 
     collect_prim(prim);    // recursive collection of list of all primitives in tree
     unsigned nprim = prim.size();
 
@@ -576,7 +522,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 
     for(unsigned i=0 ; i < nprim ; i++)
     {
-        nnode* p = prim[i] ; 
+        const nnode* p = prim[i] ; 
 
         if(verbosity > 1 )
         LOG(info) << "nnode::collect_prim_centers"
@@ -671,12 +617,12 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 }
 
 
-void nnode::collect_prim(std::vector<nnode*>& prim)
+void nnode::collect_prim(std::vector<const nnode*>& prim) const 
 {
     collect_prim_r(prim, this);   
 }
 
-void nnode::collect_prim_r(std::vector<nnode*>& prim, nnode* node)
+void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) // static
 {
     bool internal = node->left && node->right ; 
     if(!internal)
@@ -691,27 +637,37 @@ void nnode::collect_prim_r(std::vector<nnode*>& prim, nnode* node)
 }
 
 
-void nnode::dump_prim( const char* msg)
+
+void nnode::dump_full(const char* msg) const 
 {
-    std::vector<nnode*> prim ;
-    collect_prim(prim);   
-    unsigned nprim = prim.size();
-    LOG(info) << msg << " nprim " << nprim ; 
-    for(unsigned i=0 ; i < nprim ; i++)
-    {
-        nnode* p = prim[i] ; 
-        switch(p->type)
-        {
-            case CSG_SPHERE: ((nsphere*)p)->pdump("sp") ; break ; 
-            case CSG_BOX   :    ((nbox*)p)->pdump("bx") ; break ; 
-            case CSG_SLAB   :  ((nslab*)p)->pdump("sl") ; break ; 
-            default:
-            {
-                   LOG(fatal) << "nnode::dump_prim unhanded shape type " << p->type << " name " << CSGName(p->type) ;
-                   assert(0) ;
-            }
-        }
-    }
+    dump(msg);
+
+    dump_prim(msg);
+
+    dump_transform(msg);
+
+    dump_gtransform(msg);
+}
+
+void nnode::dump(const char* msg) const 
+{
+    NNodeDump d(*this);
+    d.dump(msg);
+}
+void nnode::dump_prim( const char* msg) const 
+{
+    NNodeDump d(*this);
+    d.dump_prim(msg);
+}
+void nnode::dump_gtransform( const char* msg) const 
+{
+    NNodeDump d(*this);
+    d.dump_gtransform(msg);
+}
+void nnode::dump_transform( const char* msg) const 
+{
+    NNodeDump d(*this);
+    d.dump_transform(msg);
 }
 
 

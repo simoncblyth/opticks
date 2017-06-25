@@ -14,6 +14,7 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 #include "NGenerator.hpp"
 #include "NBox.hpp"
 #include "NBBox.hpp"
+#include "NScan.hpp"
 
 #include "PLOG.hh"
 
@@ -221,7 +222,7 @@ void test_positive_form()
     std::cout << d.desc() << " " << d_bb.desc() << std::endl ; 
 
 
-    bool dump = true ; 
+    unsigned verbosity = 2 ; 
     glm::vec3 origin(    0,0,0 );
     glm::vec3 direction( 1,0,0 );
     glm::vec3 range(     0,10,1 );
@@ -233,7 +234,9 @@ void test_positive_form()
         ndifference abc = make_difference( &ab, &c ); 
         ndifference abcd = make_difference( &abc, &d ); 
 
-        nnode::Scan(sd0,  abcd, origin, direction, range, dump );
+        NScan scan(abcd, verbosity);
+        scan.scan(sd0, origin, direction, range );
+
         abcd.composite_bbox(bb0);
     }
     std::cout << "bb0 " << bb0.description() << std::endl ; 
@@ -250,7 +253,9 @@ void test_positive_form()
         nintersection abc = make_intersection( &ab, &c ); 
         nintersection abcd = make_intersection( &abc, &d ); 
 
-        nnode::Scan(sd1,  abcd, origin, direction, range, dump );
+        NScan scan(abcd, verbosity);
+        scan.scan(sd1, origin, direction, range );
+
         abcd.composite_bbox(bb1);
 
         b.complement = false ;  

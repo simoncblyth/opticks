@@ -5,7 +5,7 @@
 #include "GLMFormat.hpp"
 
 #include "NScene.hpp"
-
+#include "NNode.hpp"
 #include "NSensor.hpp"
 #include "NCSG.hpp"
 #include "Nd.hpp"
@@ -836,9 +836,14 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
     GMesh* mesh = solid->getMesh();
     unsigned mesh_idx = mesh->getIndex();
     NCSG* csg = m_scene->getCSG(mesh_idx);
+    nnode* root = csg->getRoot();
 
+    std::function<float(float,float,float)> sdf = root->sdf();
 
-    LOG(info) << "OpticksHub::debugNode " << dbgnode  ;
+    float epsilon = 0.1 ; 
+    //float epsilon = 0.05 ;   //  2798/100,000
+
+    LOG(info) << "OpticksHub::debugNode " << dbgnode << " epsilon " << epsilon  ;
     LOG(info) << " nodelib " << nlib->desc() ;
     LOG(info) << " solid " <<  ( solid ? solid->description() : " NONE " )  ; 
     LOG(info) << " csg.meta " << csg->meta() ; 
@@ -869,7 +874,15 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
 
     unsigned long long TO_SA =  0x8dull ;
     unsigned long long seqhis_select = TO_SA ; 
-    unsigned count_select(0); 
+
+   // unsigned count_select(0); 
+   // unsigned count_excursion(0); 
+
+
+    typedef std::map<unsigned long long, unsigned> MQC ;
+    MQC tot ; 
+    MQC exc ; 
+ 
 
     for(unsigned i=0 ; i < num_pho ; i++)
     {
@@ -879,29 +892,72 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
         pos.w = 1.0f ; 
 
         glm::vec4 lpos = igtr * pos ; 
+        float sd = sdf(lpos.x, lpos.y, lpos.z);
+        float asd = std::abs(sd) ;
 
         seqhis = seq->getValue(i,0,0);
         seqmat = seq->getValue(i,0,1);
+        
+        tot[seqhis]++;
+        if(asd > epsilon) exc[seqhis]++ ;  
+   }
 
+
+
+
+
+/*
         if(seqhis == seqhis_select )
         {
             count_select++ ; 
-            if(count_select % 1000 == 0)
-            std::cout 
-                 << " i " << std::setw(6) <<  i
-                 << " c " << std::setw(6) <<  count_select
-                 << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
-                 << " seqmat " << std::setw(16) << std::hex << seqmat << std::dec
-                 << " post " << glm::to_string(post)
-                 << " lpos " << glm::to_string(lpos)
-                 << std::endl 
-                 ;
+            //if(count_select % 1000 == 0)
+            {
+                count_excursion++ ; 
+                std::cout 
+                     << " i " << std::setw(6) <<  i
+                     << " c " << std::setw(6) <<  count_select
+                     << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+                     << " seqmat " << std::setw(16) << std::hex << seqmat << std::dec
+                  //   << " post " << glm::to_string(post)
+                     << " t " << std::setw(10) << post.w
+                     << " lpos " << glm::to_string(lpos)
+                     << " sd " << sd
+                     << std::endl 
+                     ;
+                 }
          }
+*/
+
+
+    LOG(info) << "SDF excursions by photon seqhis categories "
+              << " num_pho " << std::setw(6) << num_pho
+              << " epsilon " << epsilon
+              ;
+
+    /*
+    typedef std::vector<unsigned long long> VQ  ; 
+    VQ vq ; 
+    for(MQC::const_iterator it=tot.begin() ; it != tot.end() ; it++)
+    {
+        vq.push_back( it->first );
+    }
+    */
+ 
+    for(MQC::const_iterator it=tot.begin() ; it != tot.end() ; it++)
+    {
+        unsigned long long seqhis = it->first ; 
+        unsigned tot_ = it->second ; 
+        unsigned exc_ = exc[seqhis];
+        float frac = exc_/tot_ ; 
+
+        std::cout 
+             << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+             << " tot " << std::setw(6) << tot_ 
+             << " exc " << std::setw(6) << exc_
+             << " exc/tot " << std::setw(6) << frac
+             << std::endl ;  
     }
 
-    LOG(info) << " seqhis_select " <<  std::setw(16) << std::hex << seqhis_select << std::dec
-              << " count_select " << std::setw(6) << count_select 
-              ;
 
 }
 
