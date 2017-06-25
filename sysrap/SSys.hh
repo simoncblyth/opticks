@@ -20,6 +20,7 @@ class SYSRAP_API SSys {
      static int setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite=true );
      static int setenvvar( const char* ekey, const char* value, bool overwrite=true );
      static bool IsRemoteSession();
+     static bool IsVERBOSE();
      static int GetInteractivityLevel();
 
 };

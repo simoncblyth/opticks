@@ -58,6 +58,14 @@ NScanLine::NScanLine( const glm::vec3& begin, const glm::vec3& end, const glm::v
     m_num_nodes(0),
     m_message("")
 {
+    if(m_num_step > 1e6) 
+    {
+        LOG(warning) << "limiting steps " ; 
+        m_step.x = 100*m_step.x ; 
+        m_step.y = 100*m_step.y ; 
+        m_step.z = 100*m_step.z ; 
+        m_num_step /= 100 ; 
+    }
 }
 
 
@@ -105,9 +113,7 @@ std::string NScanLine::desc_zeros() const
     for(unsigned i=0 ; i < num_zeros ; i++)
     {
         glm::uvec4 t_brak = m_zeros[i] ;
-        glm::vec3 p0 = position(t_brak.x);
-        glm::vec3 p1 = position(t_brak.y);
-
+        glm::vec3 pos = position(t_brak.x);
         
         unsigned step = t_brak.x ; 
         unsigned touchzero = t_brak.z ; 
@@ -117,26 +123,49 @@ std::string NScanLine::desc_zeros() const
            << " st " << std::setw(10) << std::fixed << std::setprecision(3) << step
            << " ni " << std::setw(10) << std::fixed << std::setprecision(3) << node_idx
            << ( touchzero ? " ZERO " : "      " )
-           << " p0 " << gpresent( p0) 
-           << " p1 " << gpresent( p1) 
+           << " pos " << gpresent( pos ) 
            << std::endl   
            ;
     }
     return ss.str();
 }
 
-unsigned NScanLine::count_zeros(unsigned node_idx_) const
+
+unsigned NScanLine::count_zeros(unsigned node_idx) const
 {
-    unsigned count(0);
-    for(unsigned i=0 ; i < m_zeros.size() ; i++)
-    {
-        glm::uvec4 t_brak = m_zeros[i] ;
-        unsigned node_idx  = t_brak.w ; 
-        if(node_idx == node_idx_) count++ ; 
-    }
-    return count ; 
+    std::vector<glm::uvec4> zeros ; 
+    get_zeros(zeros, node_idx);    
+    return zeros.size();
 }
 
+void NScanLine::get_zeros(std::vector<glm::uvec4>& zeros, unsigned node_idx) const
+{
+    for(unsigned i=0 ; i < m_zeros.size() ; i++)
+    {
+        glm::uvec4 zero = m_zeros[i] ;
+        if(zero.w == node_idx) zeros.push_back(zero) ; 
+    }
+}
+void NScanLine::dump_zeros(unsigned node_idx, unsigned step_window) 
+{
+    std::vector<glm::uvec4> zeros ; 
+    get_zeros(zeros, node_idx);    
+    unsigned nzero = zeros.size();
+
+    LOG(info) << "NScanLine::dump_zeros"
+              << " nzero " << nzero
+              << " node_idx " << node_idx 
+              << " step_window " << step_window
+              ;
+
+    for(unsigned i=0 ; i < nzero ; i++)
+    {
+        glm::uvec4 zero = zeros[i];
+        int t0 = std::max<int>( int(zero.x-step_window), 0 );  
+        int t1 = std::min<int>( int(zero.x+step_window), m_num_step );  
+        dump("dump_zeros", t0, t1 );
+    }
+}
 
 
 void NScanLine::setNode(const nnode* node)
@@ -283,7 +312,7 @@ void NScanLine::sample(std::vector<float>& sd) const
 
 
 
-void NScanLine::dump( const char* msg, int t0_, int t1_) 
+void NScanLine::dump( const char* msg, int t0_, int t1_)  // not const as uses setNode
 {
     if(t0_ < 0 ) t0_ += m_num_step ; 
     if(t1_ < 0 ) t1_ += m_num_step ; 

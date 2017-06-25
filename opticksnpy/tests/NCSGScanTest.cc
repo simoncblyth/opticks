@@ -82,10 +82,12 @@ void ManualScan(NCSG* csg)
 
 void AutoScan(NCSG* csg)
 {
+    float mmstep = 1.f ; 
     unsigned verbosity = 2 ; 
     nnode* root = csg->getRoot();
+
     NScan scan(*root, verbosity);
-    scan.autoscan();
+    scan.autoscan(mmstep);
 }
 
 int main(int argc, char** argv)

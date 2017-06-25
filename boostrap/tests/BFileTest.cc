@@ -173,6 +173,24 @@ void test_ChangeExt()
     
 }
 
+void test_SomeDir()
+{
+    const char* path = "$TMP/somedir/someotherdir" ; 
+    std::string name = BFile::Name(path) ;
+    std::string stem = BFile::Stem(path);
+    std::string dir = BFile::ParentDir(path) ;
+
+
+    LOG(info) 
+              << "test_SomeDir"
+              << " path " << path
+              << " name " << name
+              << " stem " << stem
+              << " dir " << dir
+              ;
+ 
+}
+
 
 
 int main(int argc, char** argv)
@@ -192,7 +210,8 @@ int main(int argc, char** argv)
    //test_Name_ParentDir();
    //test_ChangeExt();
 
-   test_FormPath_reldir();
+   //test_FormPath_reldir();
+   test_SomeDir();
 
 
    return 0 ; 

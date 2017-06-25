@@ -4,6 +4,8 @@
 #include <sstream>
 #include "PLOG.hh"
 
+#include "SSys.hh"
+
 #include "GLMFormat.hpp"
 
 #include "NNode.hpp"
@@ -19,7 +21,14 @@ const std::string& NScan::get_message() const
     return m_message ; 
 }
 
-
+unsigned NScan::get_nzero() const 
+{
+    return m_nzero ; 
+}
+void NScan::set_nzero(unsigned nzero) 
+{
+    m_nzero = nzero ; 
+}
 
 
 NScan::NScan( const nnode& node, unsigned verbosity ) 
@@ -27,7 +36,8 @@ NScan::NScan( const nnode& node, unsigned verbosity )
     m_node(node),
     m_bbox(node.bbox()),
     m_verbosity(verbosity),
-    m_message("")
+    m_message(""),
+    m_nzero(0)
 {
     init();
 }
@@ -96,18 +106,19 @@ void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::ve
 }
 
 
-unsigned NScan::autoscan()
+unsigned NScan::autoscan(float mmstep)
 {
     if(m_verbosity > 0)
     LOG(info) << "NScan::autoscan" 
               << " verbosity " << m_verbosity 
+              << " mmstep " << mmstep
                ;
    
     // center x,y, -z->z
 
     glm::vec3 beg( m_bcen.x, m_bcen.y, int(m_bmin.z) );  // trunc to integer mm in z 
     glm::vec3 end( m_bcen.x, m_bcen.y, int(m_bmax.z) );
-    glm::vec3 step( 0,0,1 ) ;
+    glm::vec3 step( 0,0, mmstep ) ;
 
     NScanLine line(beg, end, step, m_verbosity );
 
@@ -123,6 +134,24 @@ unsigned NScan::autoscan()
     const std::string& msg = line.get_message();
     if(!msg.empty())  m_message.assign(msg);
 
+
+    if(m_verbosity > 2)
+    {
+        if(SSys::IsVERBOSE())
+        {
+            line.dump("VERBOSE full dump");
+        }
+        else
+        { 
+            unsigned step_window = 10 ; 
+            if(nzero != 2)
+            {
+                line.dump_zeros(0, step_window);
+            }
+        }
+    }
+
+    set_nzero(nzero);
 
     //line.dump("NScan::autoscan", 300, 330);
     return nzero ; 

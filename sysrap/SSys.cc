@@ -99,6 +99,12 @@ int SSys::GetInteractivityLevel()
     return level ;
 }
 
+bool SSys::IsVERBOSE()
+{
+    char* verbose = getenv("VERBOSE");
+    return verbose != NULL ;
+}
+
 bool SSys::IsRemoteSession()
 {
     char* ssh_client = getenv("SSH_CLIENT");

@@ -32,10 +32,12 @@ class NPY_API  NScan
 {
     public:
         const std::string& get_message() const ; 
+        unsigned     get_nzero() const ; 
+        void set_nzero(unsigned nzero) ;
         static void init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::vec3& bcen, float sidescale  ) ;
         NScan( const nnode& node, unsigned verbosity );
         void scan(std::vector<float>& sd, const glm::vec3& origin, const glm::vec3& direction, const glm::vec3& tt );
-        unsigned autoscan();
+        unsigned autoscan(float mmstep);
         std::string desc() const  ; 
     private:
         void init(); 
@@ -56,7 +58,7 @@ class NPY_API  NScan
         glm::vec3    m_bcen ; 
 
         std::string  m_message ; 
-
+        unsigned     m_nzero ; 
 
 };
  

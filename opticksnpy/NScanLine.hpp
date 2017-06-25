@@ -43,6 +43,8 @@ class NPY_API NScanLine {
         void find_zeros();
         void find_zeros_one();
         unsigned count_zeros(unsigned node_idx_) const;
+        void get_zeros(std::vector<glm::uvec4>& zeros, unsigned node_idx) const;
+        void dump_zeros(unsigned node_idx, unsigned step_window=10)  ;
 
         void sample(std::vector<float>& sd) const ;
 
@@ -52,9 +54,9 @@ class NPY_API NScanLine {
         const glm::vec3& m_begin ;
         const glm::vec3& m_end  ;
         const glm::vec3  m_path ;
-        const glm::vec3  m_step ;
+        glm::vec3        m_step ;
         const unsigned   m_verbosity ; 
-        const unsigned   m_num_step ; 
+        unsigned   m_num_step ; 
 
         const nnode* m_node ; 
         std::vector<const nnode*> m_nodes ; 
