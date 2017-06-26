@@ -493,6 +493,10 @@ void NCSG::import()
               ;
 
     m_root = import_r(0, NULL) ; 
+    m_root->set_treedir(m_treedir) ; 
+
+
+    if(is_uncoincide()) m_root->uncoincide();  // pairwise not helping much, try at tree level 
 
     if(m_verbosity > 5)
     check();  // recursive transform dumping 
@@ -571,7 +575,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->left->other = node->right ;   // used by NOpenMesh 
         node->right->other = node->left ; 
 
-        if(is_uncoincide()) node->uncoincide();
+        //if(is_uncoincide()) node->uncoincide();  // pairwise not helping much 
 
         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }

@@ -32,6 +32,10 @@ struct NPY_API ncylinder : nnode
     float      z() const ; 
     float     z1() const ; 
     float     z2() const ; 
+    float     r1() const ; 
+    float     r2() const ; 
+
+
 };
 
 
@@ -40,6 +44,8 @@ inline NPY_API float ncylinder::x() const { return param.f.x ; }
 inline NPY_API float ncylinder::y() const { return param.f.y ; }
 inline NPY_API float ncylinder::z() const { return 0.f ; }
 inline NPY_API float ncylinder::radius() const { return param.f.w ; }
+inline NPY_API float ncylinder::r1()     const { return param.f.w ; } // so can treat like a cone in NNodeUncoincide
+inline NPY_API float ncylinder::r2()     const { return param.f.w ; }
 inline NPY_API glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),z()) ; }
 
 inline NPY_API float ncylinder::z2() const { return param1.f.y ; }

@@ -128,6 +128,7 @@ int main(int argc, char** argv)
 
             bool with_nzero = scan->get_nzero() == nzero ;
             bool with_message = scan->has_message() && nzero == MESSAGE_NZERO ; 
+            unsigned nprim = root->get_num_prim() ; 
 
             if(with_nzero || with_message)
             {
@@ -137,6 +138,8 @@ int main(int argc, char** argv)
                      << " NScanTest " << std::left << std::setw(40) << csg->getTreeDir()  << std::right
                      << " soname " << std::setw(40) << csg->soname()  
                      << " tag " << std::setw(10) << root->tag()
+                     << " nprim " << std::setw(4) << nprim
+                     << " typ " << std::setw(20) << root->get_type_mask_string()
                      << " msg " << scan->get_message()
                      << std::endl 
                      ;

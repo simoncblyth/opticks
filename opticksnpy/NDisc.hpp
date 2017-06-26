@@ -28,6 +28,8 @@ struct NPY_API ndisc : nnode
     float     radius() const  ; 
     float     z1() const  ; 
     float     z2() const  ; 
+    float     r1() const  ;   // see NNodeUncoincide
+    float     r2() const  ; 
 };
 
 
@@ -38,6 +40,9 @@ inline NPY_API float ndisc::z() const { return 0.f ; }
 inline NPY_API glm::vec3 ndisc::center() const { return glm::vec3(x(), y(), z()) ; }
 
 inline NPY_API float ndisc::radius() const { return param.f.w ; }
+inline NPY_API float ndisc::r1() const {     return param.f.w ; }
+inline NPY_API float ndisc::r2() const {     return param.f.w ; }
+
 inline NPY_API float ndisc::z1() const { return param1.f.x ; }
 inline NPY_API float ndisc::z2() const { return param1.f.y ; }
 

@@ -55,6 +55,29 @@ Visualize nzero 3,5,7
 
 
 
+
+With some uncoincidencing
+--------------------------
+
+prim/prim uncoincidencing only manages to fix a few... 
+need to be able to uncoincide with one of em a union ?
+
+* hmm will mostly be pure uniontree, so can order 
+  all the primitives in z and look for bbox coincidence one 
+  by one
+
+
+::
+
+    2017-06-26 19:08:49.914 INFO  [1278367] [main@91]  autoscan non-zero counts trees 249 mmstep 0.1
+     nzero    0 count   43 frac 0.1727
+     nzero    1 count    5 frac 0.0201
+     nzero    2 count  171 frac 0.6867
+     nzero    3 count    7 frac 0.0281
+     nzero    4 count   22 frac 0.0884
+     nzero 11195 count    1 frac 0.0040
+
+
 Central x,y -z to +z scanline
 -----------------------------------
 
@@ -231,6 +254,81 @@ extras/66 fails to load : problem with planes
 
 
 
+
+
+
+tree level uncoincidence ?
+-----------------------------
+
+
+::
+
+    simon:sysrap blyth$ opticks-tscan /
+    opticks-tscan : scanning /tmp/blyth/opticks/tgltf/extras//
+    017-06-26 20:22:50.457 INFO  [1304562] [main@55]  NScanTest autoscan trees  basedir /tmp/blyth/opticks/tgltf/extras// ntree 249 verbosity 0
+    ...
+    2017-06-26 20:22:53.438 INFO  [1304562] [main@91]  autoscan non-zero counts trees 249 mmstep 0.1
+     nzero    0 count   43 frac 0.172691
+     nzero    1 count    5 frac 0.0200803
+     nzero    2 count  167 frac 0.670683
+     nzero    3 count    7 frac 0.0281125
+     nzero    4 count   24 frac 0.0963855
+     nzero    5 count    1 frac 0.00401606
+     nzero    7 count    1 frac 0.00401606
+     nzero 11195 count    1 frac 0.00401606
+
+     nzero    0 count   43 frac 0.172691
+    ...
+
+     nzero    1 count    5 frac 0.0200803
+     i  187 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//61      soname                BotRefGapCutHols0xc34bb28 tag    [ 0:in] typ intersection box3 disc  msg 
+     i  188 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//60      soname                   BotESRCutHols0xbfa7368 tag    [ 0:in] typ intersection box3 disc  msg 
+     i  190 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//58      soname                TopRefGapCutHols0xbf9cef8 tag    [ 0:in] typ   intersection disc  msg 
+     i  191 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//57      soname                   TopESRCutHols0xbf9de10 tag    [ 0:in] typ   intersection disc  msg 
+     i  205 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//43      soname                pmt-hemi-cathode0xc2f1ce8 tag    [ 0:un] typ union difference zsphere  msg 
+
+     nzero    2 count  167 frac 0.670683
+
+     nzero    3 count    7 frac 0.0281125
+     i  105 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//143     soname                          GdsOfl0xbf73918 tag    [ 0:un] typ      union cylinder  msg 
+     i  180 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//68      soname                       SstTopHub0xc2643d8 tag    [ 0:un] typ      union cylinder  msg 
+     i  194 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//54      soname                 headon-pmt-assy0xbf55198 tag    [ 0:un] typ      union cylinder  msg 
+     i  206 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//42      soname                             oav0xc2ed7c8 tag    [ 0:un] typ union cylinder cone  msg 
+     i  211 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//37      soname                             lso0xc028a38 tag    [ 0:un] typ union cylinder cone  msg 
+     i  222 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//26      soname                 CtrGdsOflBotClp0xbf5dec0 tag    [ 0:un] typ      union cylinder  msg 
+     i  226 nzero    3 NScanTest /tmp/blyth/opticks/tgltf/extras//22      soname                             gds0xc28d3f0 tag    [ 0:un] typ union cylinder cone  msg 
+
+
+    2017-06-26 20:22:50.361 INFO  [1304562] [NCSG::Deserialize@932] NCSG::Deserialize VERBOSITY 0 basedir /tmp/blyth/opticks/tgltf/extras// txtpath /tmp/blyth/opticks/tgltf/extras//csg.txt nbnd 249
+    2017-06-26 20:22:50.401 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//145 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.401 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//144 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.402 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//143 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.408 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//130 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.427 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//77 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.428 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//75 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.431 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//68 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.438 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//54 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.442 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//42 typmsk union cylinder cone  uniontree_cy NO uniontree_cy_co YES
+    2017-06-26 20:22:50.444 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//37 typmsk union cylinder cone  uniontree_cy NO uniontree_cy_co YES
+    2017-06-26 20:22:50.448 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//26 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.448 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//25 typmsk union cylinder  uniontree_cy YES uniontree_cy_co NO
+    2017-06-26 20:22:50.449 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//24 typmsk union cylinder cone  uniontree_cy NO uniontree_cy_co YES
+    2017-06-26 20:22:50.450 INFO  [1304562] [NNodeUncoincide::uncoincide_tree@312]  treedir /tmp/blyth/opticks/tgltf/extras//22 typmsk union cylinder cone  uniontree_cy NO uniontree_cy_co YES
+    2017-06-26 20:22:50.457 INFO  [1304562] [NCSG::DeserializeTrees@901] NCSG::DeserializeTrees /tmp/blyth/opticks/tgltf/extras// found trees : 249
+    2
+
+
+     nzero    4 count   24 frac 0.0963855
+
+     nzero    5 count    1 frac 0.00401606
+     i  219 nzero    5 NScanTest /tmp/blyth/opticks/tgltf/extras//29      soname                       OcrGdsPrt0xc352518 tag    [ 0:di] typ union difference cylinder cone  msg 
+
+     nzero    7 count    1 frac 0.00401606
+     i  103 nzero    7 NScanTest /tmp/blyth/opticks/tgltf/extras//145     soname                 OflTnkContainer0xc17cf50 tag    [ 0:un] typ      union cylinder  msg 
+
+     nzero 11195 count    1 frac 0.00401606
+     i  182 nzero 11195 NScanTest /tmp/blyth/opticks/tgltf/extras//66      soname                 SstTopRadiusRib0xc271720 tag    [ 0:di] typ difference box3 convexpolyhedron  msg 
+    simon:sysrap blyth$ 
 
 
 

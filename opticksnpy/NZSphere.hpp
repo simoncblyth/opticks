@@ -29,6 +29,10 @@ struct NPY_API nzsphere : nnode {
     float     y() const ; 
     float     z() const ; 
     float     radius() const  ; 
+    float     r1() const  ;    // of the endcaps at z1,z2  
+    float     r2() const  ; 
+    float     rz(float z) const ; // radius of z-slice endcap
+
     glm::vec3 center() const  ; 
 
     float     z2() const ; 
@@ -58,6 +62,9 @@ inline NPY_API float nzsphere::radius() const { return param.f.w ; }
 
 inline NPY_API float nzsphere::z2() const {      return param1.f.y ; }  // z2 > z1
 inline NPY_API float nzsphere::z1() const {      return param1.f.x ; }
+inline NPY_API float nzsphere::r1() const {      return rz(z1()) ; } 
+inline NPY_API float nzsphere::r2() const {      return rz(z2()) ; } 
+
 inline NPY_API float nzsphere::zmax() const {    return z() + z2() ; }
 inline NPY_API float nzsphere::zmin() const {    return z() + z1() ; }
 inline NPY_API float nzsphere::zc() const {      return (zmin() + zmax())/2.f ; }
@@ -76,6 +83,12 @@ inline NPY_API void nzsphere::check() const
     assert( zmax() > zmin() ); 
 }
 
+inline NPY_API float nzsphere::rz(float z) const 
+{
+    float r = radius(); 
+    return sqrt(r*r - z*z) ;  
+}
+
 
 inline NPY_API void init_zsphere(nzsphere& s, const nquad& param, const nquad& param1, const nquad& param2)
 {
@@ -83,19 +96,6 @@ inline NPY_API void init_zsphere(nzsphere& s, const nquad& param, const nquad& p
     s.param1 = param1 ; 
     s.param2 = param2 ; 
     s.check();
-/*
-    s.center.x = param.f.x ; 
-    s.center.y = param.f.y ; 
-    s.center.z = param.f.z ;
-    s.radius   = param.f.w ;  
-
-    s.zdelta.x = param1.f.x  ;
-    s.zdelta.y = param1.f.y  ;
-
-    assert( s.zdelta.y > s.zdelta.x );
-*/
-
-
 }
 
 inline NPY_API nzsphere make_zsphere(const nquad& param, const nquad& param1, const nquad& param2)

@@ -60,25 +60,6 @@ inline NPY_API void init_cone(ncone& n, const nquad& param)
 {
     n.param = param ;
     assert( n.z2() > n.z1() );
- 
-/*
-    n.r1 = param.f.x ; 
-    n.z1 = param.f.y ; 
-    n.r2 = param.f.z ; 
-    n.z2 = param.f.w ; 
-    assert( n.z2 > n.z1 );
-    n.rmax = fmaxf( n.r1, n.r2 );
-    n.zc = (n.z1 + n.z2)/2.f ; 
-    n.z0 = (n.z2*n.r1-n.z1*n.r2)/(n.r1-n.r2) ;
-    n.tantheta = (n.r2-n.r1)/(n.z2-n.z1) ;
-
-    n.center.x = 0.f ; 
-    n.center.y = 0.f ; 
-    n.center.z = n.zc ;
-    n.cnormal = glm::normalize( glm::vec2(n.z2-n.z1,n.r1-n.r2)) ;     
-    n.csurface = glm::vec2( n.cnormal.y, -n.cnormal.x ) ;     
-*/   
-
 }
 
 inline NPY_API ncone make_cone(const nquad& param)

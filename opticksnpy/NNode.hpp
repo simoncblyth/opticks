@@ -64,6 +64,14 @@ struct NPY_API nnode
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     virtual void      nudge(unsigned s, float delta);
 
+    // see NNodeUncoincide
+    virtual void increase_z2(float dz);
+    virtual void decrease_z1(float dz);
+    virtual float z1() const ; 
+    virtual float z2() const ; 
+    virtual float r1() const ; 
+    virtual float r2() const ; 
+
 
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);
@@ -79,10 +87,22 @@ struct NPY_API nnode
     void dump_transform(const char* msg="nnode::dump_transform") const ;
     void dump_gtransform(const char* msg="nnode::dump_gtransform") const ;
     void dump_prim(const char* msg="nnode::dump_prim") const ;
+
+
+    unsigned get_num_prim() const ;
     void collect_prim(std::vector<const nnode*>& prim) const ;
     static void collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) ;
 
+    std::string get_type_mask_string() const ;
+    unsigned    get_type_mask() const ;
+    static void get_type_mask_r(const nnode* node, unsigned& tymsk);
+
+    void set_treedir(const char* treedir) ; 
+
+    bool is_znudge_capable() const ;
+    bool is_operator() const ;
     bool is_primitive() const ;
+    bool is_root() const ;
     bool is_bileaf() const ;
     bool has_planes();
     unsigned planeIdx();
@@ -95,6 +115,7 @@ struct NPY_API nnode
     nnode* parent ; 
     nnode* other ; 
     const char* label ; 
+    const char* treedir ; 
 
     nmat4triple* transform ; 
     nmat4triple* gtransform ; 

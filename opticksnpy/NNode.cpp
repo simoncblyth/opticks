@@ -23,6 +23,7 @@
 #include "PLOG.hh"
 
 
+
 float nnode::operator()(float,float,float) const 
 {
     assert(0 && "nnode::operator() needs override ");
@@ -43,6 +44,14 @@ glm::vec3 nnode::par_pos_(const nuv& , NNodeFrameType ) const
     return glm::vec3(0);
 }
 
+
+// see NNodeUncoincide::uncoincide_union
+float nnode::z1() const { assert(0 && "nnode::z1 needs override "); return 0 ; } 
+float nnode::z2() const { assert(0 && "nnode::z2 needs override "); return 0 ; } 
+float nnode::r1() const { assert(0 && "nnode::r1 needs override "); return 0 ; } 
+float nnode::r2() const { assert(0 && "nnode::r2 needs override "); return 0 ; } 
+void  nnode::increase_z2(float /*dz*/){ assert(0 && "nnode::increase_z2 needs override "); }
+void  nnode::decrease_z1(float /*dz*/){ assert(0 && "nnode::decrease_z1 needs override "); }
 
 
 
@@ -99,17 +108,32 @@ void nnode::nudge(unsigned /*uv_surf*/, float /*delta*/ )
 
 
 
+
+bool nnode::is_operator() const 
+{
+    return type == CSG_UNION || type == CSG_INTERSECTION || type == CSG_DIFFERENCE ; 
+}
 bool nnode::is_primitive() const 
 {
     return left == NULL && right == NULL ; 
+}
+bool nnode::is_root() const 
+{
+    return parent == NULL ; 
 }
 bool nnode::is_bileaf() const 
 {
     return !is_primitive() && left->is_primitive() && right->is_primitive() ; 
 }
+bool nnode::is_znudge_capable() const 
+{
+    return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_ZSPHERE || type == CSG_DISC ; 
+}
 
-
-
+void nnode::set_treedir( const char* treedir_)
+{
+    treedir = treedir_ ? strdup(treedir_) : NULL ; 
+}
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 {
@@ -121,6 +145,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.parent = NULL ; 
     n.other  = NULL ;   // used by NOpenMesh 
     n.label = NULL ; 
+    n.treedir = NULL ; 
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
@@ -189,6 +214,39 @@ void nnode::update_gtransforms_r(nnode* node)
         update_gtransforms_r(node->right);
     }
 }
+
+
+
+
+unsigned nnode::get_type_mask() const 
+{
+    unsigned typmsk = 0 ;   
+    get_type_mask_r(this, typmsk );
+    return typmsk ; 
+}
+
+void nnode::get_type_mask_r(const nnode* node, unsigned& typmsk ) // static
+{
+    if(node->type < 32 ) typmsk |= (0x1 << node->type) ;
+    if(node->left && node->right)
+    {
+        get_type_mask_r(node->left, typmsk);
+        get_type_mask_r(node->right, typmsk);
+    }
+} 
+
+std::string nnode::get_type_mask_string() const 
+{
+    unsigned typmsk = get_type_mask();
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < 32 ; i++) if(typmsk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
+    return ss.str();
+}
+
+
+
+
+
 
 
 
@@ -417,7 +475,6 @@ void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale)
 
 
 
-
 std::function<float(float,float,float)> nnode::sdf() const 
 {
     //  return node types operator() callable as function
@@ -585,6 +642,14 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
     }
 }
 
+
+
+unsigned nnode::get_num_prim() const 
+{
+    std::vector<const nnode*> prim ; 
+    collect_prim(prim);
+    return prim.size() ;
+}
 
 void nnode::collect_prim(std::vector<const nnode*>& prim) const 
 {

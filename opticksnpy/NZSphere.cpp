@@ -61,6 +61,8 @@ glm::vec3 nzsphere::gseeddir() const
     return apply_gtransform(dir);
 }
 
+
+
 void nzsphere::pdump(const char* msg) const 
 {
     std::cout 

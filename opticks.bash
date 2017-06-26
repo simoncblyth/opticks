@@ -75,6 +75,23 @@ opticks-tbool(){
    tbool${lvid}
 }
 
+opticks-tscan-dir(){
+   echo  $TMP/tgltf/extras/${1:-0}
+}
+
+opticks-tscan(){
+   local msg="$FUNCNAME :"
+   local lvid=${1:-0} 
+   local dir=$(opticks-tscan-dir $lvid)
+   [ ! -d $dir ] && echo $msg no such dir $dir && return
+   echo $msg scanning $dir 
+   NScanTest $dir
+}
+
+opticks-tscan-all(){
+   opticks-tscan /
+}
+
 
 
 opticks-suffix(){
