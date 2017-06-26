@@ -26,9 +26,9 @@ SDF from point px,py,pz to box at origin with side lengths (sx,sy,sz) at the ori
 
 **/
 
-float nbox::operator()(float x, float y, float z) const 
+float nbox::operator()(float x_, float y_, float z_) const 
 {
-    glm::vec3 pos(x,y,z);
+    glm::vec3 pos(x_,y_,z_);
     return sdf_(pos, gtransform);
 } 
 
@@ -54,40 +54,35 @@ float nbox::sdf_(const glm::vec3& pos, const nmat4triple* triple) const
 
     if(triple) q = triple->v * q ;  // NB using inverse transform on the query point 
 
-    glm::vec3 p = glm::vec3(q) - center ;  // coordinates in frame with origin at box center 
+    glm::vec3 c = center();
+
+    glm::vec3 p = glm::vec3(q) - c ;  // coordinates in frame with origin at box center 
+
     glm::vec3 a = glm::abs(p) ;
 
-    float sd = 0.f ; 
-    if(is_box3)
-    {
-        glm::vec3 s( param.f.x/2.f, param.f.y/2.f, param.f.z/2.f );      
-        glm::vec3 d = a - s ; 
-        sd = glm::compMax(d) ;
-    }
-    else
-    {
-        glm::vec3 s( param.f.w );      
-        glm::vec3 d = a - s ; 
-        sd = glm::compMax(d) ;
-    }
+    glm::vec3 h = halfside();
+
+    glm::vec3 d = a - h ; 
+
+    float sd = glm::compMax(d) ;
+
     return complement ? -sd : sd ; 
 }
 
-
-
-float nbox::sdf1(float x, float y, float z) const 
+float nbox::sdf1(float x_, float y_, float z_) const 
 {
-    return (*this)(x,y,z);
+    return (*this)(x_,y_,z_);
 }
 
-float nbox::sdf2(float x, float y, float z) const 
+float nbox::sdf2(float x_, float y_, float z_) const 
 {
-    glm::vec4 p(x,y,z,1.0); 
+    glm::vec4 p(x_,y_,z_,1.0); 
+
     if(gtransform) p = gtransform->v * p ;
 
-    glm::vec3 bmax = is_box3 ? glm::vec3(param.f.x/2.f, param.f.y/2.f, param.f.z/2.f) : center + glm::vec3( param.f.w ) ; // 
+    glm::vec3 bmx = bmax() ; 
 
-    glm::vec3 d = glm::abs(glm::vec3(p)) - bmax  ;
+    glm::vec3 d = glm::abs(glm::vec3(p)) - bmx  ;
 
     float dmaxcomp = glm::compMax(d);
 
@@ -100,6 +95,46 @@ float nbox::sdf2(float x, float y, float z) const
 
    // see tests/NBoxTest.cc   sdf2 and sdf1 match despite code appearances
 }
+
+
+
+
+
+
+glm::vec3 nbox::bmax() const 
+{
+    glm::vec3 h = halfside(); 
+    glm::vec3 c = center();    
+    if(is_box3) assert( c.x == 0 && c.y == 0 && c.z == 0 );
+    return c + h ; 
+}
+
+glm::vec3 nbox::bmin() const 
+{
+    glm::vec3 h = halfside(); 
+    glm::vec3 c = center();    
+    if(is_box3) assert( c.x == 0 && c.y == 0 && c.z == 0 );
+    return c - h ; 
+}
+
+nbbox nbox::bbox_model() const
+{
+    glm::vec3 bmi = bmin() ; 
+    glm::vec3 bmx = bmax() ; 
+
+    nbbox bb ;
+    bb.min = make_nvec3( bmi.x, bmi.y, bmi.z  );
+    bb.max = make_nvec3( bmx.x, bmx.y, bmx.z  );
+    bb.side = bb.max - bb.min ; 
+
+    bb.invert = complement ; 
+    bb.empty = false ; 
+
+    return bb ; 
+}
+
+
+
 
 
 
@@ -445,33 +480,6 @@ void nbox::adjustToFit(const nbbox& bb, float scale)
 }
 
 
-nbbox nbox::bbox_model() const
-{
-    nbbox bb ;
-    if(is_box3)
-    {
-        bb.min = make_nvec3( -param.f.x/2.f, -param.f.y/2.f, -param.f.z/2.f );
-        bb.max = make_nvec3(  param.f.x/2.f,  param.f.y/2.f,  param.f.z/2.f );
-    }
-    else
-    {
-        float s  = param.f.w ; 
-        bb.min = make_nvec3( center.x - s, center.y - s, center.z - s );
-        bb.max = make_nvec3( center.x + s, center.y + s, center.z + s );
-    }
-
-    bb.side = bb.max - bb.min ; 
-    bb.invert = complement ; 
-    bb.empty = false ; 
-
-    // Is the transform intrinsic or extrinsic to the model ??? 
-    // .... currently thinking extrinsic, but maybe need
-    // a separate model transform to simplify intra node uncoincidence 
-    // checking and nudging.
-
-    return bb ; 
-}
-
 nbbox nbox::bbox_(NNodeFrameType fr) const 
 {
     nbbox bb = bbox_model();
@@ -506,7 +514,7 @@ nbbox nbox::bbox_local()  const { return bbox_(FRAME_LOCAL) ; }
 
 glm::vec3 nbox::gseedcenter() const 
 {
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
+    return gtransform == NULL ? center() : glm::vec3( gtransform->t * glm::vec4(center(), 1.f ) ) ;
 }
 
 void nbox::pdump(const char* msg) const 
@@ -514,8 +522,8 @@ void nbox::pdump(const char* msg) const
     std::cout 
               << std::setw(10) << msg 
               << " nbox::pdump "
-              << " label " << ( label ? label : "no-label" )
-              << " center " << center 
+              << " label " << ( label ? label : "-" )
+              << " center " << center() 
               << " param.f " << param.f.desc() 
               << " side " << param.f.w 
               << " gseedcenter " << gseedcenter()

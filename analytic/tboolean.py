@@ -72,7 +72,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgpath="$TMP/tbool/%(name)s")
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(verbosity="1", poly="IM")
+CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
 
 """
 

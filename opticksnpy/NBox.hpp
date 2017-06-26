@@ -15,9 +15,7 @@ Currently two flavors of box use nbox class
 
 #. CSG_BOX (positioned box with single dimension control) 
 #. CSG_BOX3 (unplaced box with 3 dimension control) 
-
-Perhaps CSG_BOX3 will usurp CSG_BOX at which point can 
-change the enum.
+#. TODO: CSG_BOX4 (box with z1/z2 controls)
 
 */
 
@@ -70,14 +68,19 @@ struct NPY_API nbox : nnode
     int       par_euler() const ; 
  
     // seedcenter needed for ImplicitMesher
-
     glm::vec3 gseedcenter() const ;
-
     void pdump(const char* msg="nbox::pdump") const ;
 
+    float x() const ; 
+    float y() const ; 
+    float z() const ; 
+    glm::vec3 center() const  ; 
+    glm::vec3 halfside() const ; 
+    glm::vec3 bmin() const  ; 
+    glm::vec3 bmax() const  ; 
 
-    glm::vec3 center ; 
-    bool is_box3 ; 
+    bool is_box   ;   // cannot const these without ctor
+    bool is_box3  ; 
 
 };
 
@@ -85,25 +88,49 @@ struct NPY_API nbox : nnode
 // and need to override the nnode need to be here 
 
 
+inline NPY_API glm::vec3 nbox::center() const { return glm::vec3(x(), y(), z()) ; }
+
+inline NPY_API float nbox::x() const { return is_box ? param.f.x : 0.f ; }
+inline NPY_API float nbox::y() const { return is_box ? param.f.y : 0.f ; }
+inline NPY_API float nbox::z() const { return is_box ? param.f.z : 0.f ; }
+
+inline NPY_API glm::vec3 nbox::halfside() const 
+{ 
+    glm::vec3 h ; 
+    if(type == CSG_BOX3)
+    { 
+        h.x = param.f.x/2.f ;
+        h.y = param.f.y/2.f ;
+        h.z = param.f.z/2.f ;
+    }
+    else if(type == CSG_BOX )
+    {
+        h.x = param.f.w ;
+        h.y = param.f.w ;
+        h.z = param.f.w ;
+    }
+    else
+    {
+        assert(0);
+    }
+    return h ;
+}
+
 
 
 inline NPY_API void init_box(nbox& b, const nquad& p )
 {
     b.param = p ; 
-    b.center.x = p.f.x ; 
-    b.center.y = p.f.y ; 
-    b.center.z = p.f.z ; 
+    b.is_box = true ; 
     b.is_box3 = false ; 
+
 }
 inline NPY_API void init_box3(nbox& b, const nquad& p )
 {
     b.param = p ; 
-    b.center.x = 0 ; 
-    b.center.y = 0 ; 
-    b.center.z = 0 ; 
+    b.is_box = false ; 
     b.is_box3 = true ; 
 }
-
 
 inline NPY_API nbox make_box(const nquad& p)
 {
@@ -121,20 +148,18 @@ inline NPY_API nbox make_box3(const nquad& p)
 }
 
 
-inline NPY_API nbox make_box(float x, float y, float z, float w)  // center and halfside
+inline NPY_API nbox make_box(float x_, float y_, float z_, float w_)  // center and halfside
 {
     nquad param ;
-    param.f =  {x,y,z,w} ;
+    param.f =  {x_,y_,z_,w_} ;
     return make_box( param ); 
 }
-inline NPY_API nbox make_box3(float x, float y, float z) // three 
+inline NPY_API nbox make_box3(float x_, float y_, float z_) // three 
 {
     nquad param ;
-    param.f =  {x,y,z,0} ;
+    param.f =  {x_,y_,z_,0} ;
     return make_box3( param ); 
 }
-
-
 
 
 

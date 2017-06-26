@@ -24,7 +24,7 @@ struct NPY_API nsphere : nnode {
 
     nbbox bbox() const ;
 
-    npart part();
+    npart part() const ;
     static ndisk intersect(nsphere& a, nsphere& b);
 
     // result of intersect allows partitioning 

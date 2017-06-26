@@ -212,7 +212,7 @@ ndisk nsphere::intersect(nsphere& a, nsphere& b)
 }
 
 
-npart nsphere::part()
+npart nsphere::part() const 
 {
     npart p = nnode::part();
 

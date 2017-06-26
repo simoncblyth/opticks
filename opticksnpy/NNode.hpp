@@ -17,25 +17,6 @@ struct nuv ;
 struct nmat4pair ; 
 struct nmat4triple ; 
 
-
-/*
-typedef enum
-{  
-   FRAME_MODEL, 
-   FRAME_LOCAL, 
-   FRAME_GLOBAL 
-
-} NNodeFrameType ;
-
-
-    static const char* FRAME_MODEL_ ;
-    static const char* FRAME_LOCAL_;
-    static const char* FRAME_GLOBAL_ ;
-
-    static const char* FrameType(NNodeFrameType fr);
-
-*/
-
 #include "NNodeEnum.hpp"
 
 struct NPY_API nnode 
@@ -53,7 +34,7 @@ struct NPY_API nnode
 
     void composite_bbox( nbbox& bb ) const ;
 
-    virtual npart part();
+    virtual npart part() const ;
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
     virtual std::string desc() const ;
@@ -74,7 +55,7 @@ struct NPY_API nnode
 
     std::function<float(float,float,float)> sdf() const ;
 
-    glm::vec3 gseeddir();  // override if needed
+    glm::vec3 gseeddir() const ;  // override if needed
 
     virtual unsigned  par_nsurf() const ;
     virtual glm::vec3 par_pos(const nuv& uv) const ;

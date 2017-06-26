@@ -15,7 +15,12 @@ class NPY_API NNodeUncoincide
         NNodeUncoincide(nnode* node);
     public:
         unsigned uncoincide();
-        bool can_uncoincide(const nnode* a, const nnode* b) const ;
+
+    private:
+        bool     is_uncoincidable_subtraction(nnode*& a, nnode*& b) ;
+        bool     is_uncoincidable_union(nnode*& a, nnode*& b) ;
+        unsigned uncoincide_subtraction(nnode* a, nnode* b) ;
+        unsigned uncoincide_union(nnode* a, nnode* b) ;
 
     private:
         nnode* m_node ; 

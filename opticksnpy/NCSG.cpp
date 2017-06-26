@@ -571,7 +571,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->left->other = node->right ;   // used by NOpenMesh 
         node->right->other = node->left ; 
 
-        if(node->is_bileaf() && is_uncoincide()) node->uncoincide();
+        if(is_uncoincide()) node->uncoincide();
 
         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }

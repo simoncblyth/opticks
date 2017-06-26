@@ -12,39 +12,61 @@ struct NPY_API ncone : nnode
 {
     float operator()(float x, float y, float z) const ;
     nbbox bbox() const;
-    npart part();
+    //npart part() const ;
 
     glm::vec3 gseedcenter() const  ;
-    glm::vec3 gseeddir() ;
+    glm::vec3 gseeddir() const ;
     void pdump(const char* msg="ncone::pdump") const ;
  
-    glm::vec3 center ; 
-    glm::vec2 cnormal ; 
-    glm::vec2 csurface ; 
+    glm::vec3 center() const  ; 
+    glm::vec2 cnormal() const  ; 
+    glm::vec2 csurface() const  ; 
 
-    float r1 ; 
-    float z1 ; 
-    float r2 ; 
-    float z2 ; 
+    void increase_z2(float dz);
+    void decrease_z1(float dz);
 
-    float rmax ; 
-    float zc ; 
-    float z0 ; // apex
-    float tantheta ; 
+    float r1() const ; 
+    float z1() const ; 
+    float r2() const  ; 
+    float z2() const  ; 
+
+    float rmax() const  ; 
+    float zc() const  ; 
+    float z0() const  ; // apex
+    float tantheta() const  ; 
 };
+
+
+
+inline NPY_API float ncone::r1() const { return param.f.x ; }
+inline NPY_API float ncone::z1() const { return param.f.y ; }
+inline NPY_API float ncone::r2() const { return param.f.z ; }
+inline NPY_API float ncone::z2() const { return param.f.w ; }  // z2 > z1
+
+// grow the cone on upwards on upper side (z2) or downwards on down side (z1)
+inline NPY_API void  ncone::increase_z2(float dz){ assert( dz >= 0.f) ; param.f.w += dz ; } // z2 > z1
+inline NPY_API void  ncone::decrease_z1(float dz){ assert( dz >= 0.f) ; param.f.y -= dz ; }
+
+inline NPY_API float ncone::zc() const { return (z1() + z2())/2.f ; }
+inline NPY_API float ncone::rmax() const { return fmaxf( r1(), r2())  ; }
+inline NPY_API float ncone::z0() const {  return (z2()*r1()-z1()*r2())/(r1()-r2()) ; }
+inline NPY_API float ncone::tantheta() const { return (r2()-r1())/(z2()-z1()) ; }
+inline NPY_API glm::vec3 ncone::center() const { return glm::vec3(0.f,0.f,zc()) ; } 
+inline NPY_API glm::vec2 ncone::cnormal() const { return glm::normalize( glm::vec2(z2()-z1(),r1()-r2()) ) ; }
+inline NPY_API glm::vec2 ncone::csurface() const { glm::vec2 cn = cnormal() ; return glm::vec2( cn.y, -cn.x ) ; }      
 
 
 inline NPY_API void init_cone(ncone& n, const nquad& param)
 {
     n.param = param ;
+    assert( n.z2() > n.z1() );
  
+/*
     n.r1 = param.f.x ; 
     n.z1 = param.f.y ; 
     n.r2 = param.f.z ; 
     n.z2 = param.f.w ; 
-   
     assert( n.z2 > n.z1 );
-
     n.rmax = fmaxf( n.r1, n.r2 );
     n.zc = (n.z1 + n.z2)/2.f ; 
     n.z0 = (n.z2*n.r1-n.z1*n.r2)/(n.r1-n.r2) ;
@@ -53,9 +75,9 @@ inline NPY_API void init_cone(ncone& n, const nquad& param)
     n.center.x = 0.f ; 
     n.center.y = 0.f ; 
     n.center.z = n.zc ;
-
     n.cnormal = glm::normalize( glm::vec2(n.z2-n.z1,n.r1-n.r2)) ;     
     n.csurface = glm::vec2( n.cnormal.y, -n.cnormal.x ) ;     
+*/   
 
 }
 

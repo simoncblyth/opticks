@@ -16,12 +16,15 @@
 #include "PLOG.hh"
 
 
-float nzsphere::operator()(float x, float y, float z) const 
+float nzsphere::operator()(float x_, float y_, float z_) const 
 {
-    glm::vec4 p(x,y,z,1.f); 
+    glm::vec4 p(x_,y_,z_,1.f); 
     if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
 
-    float d_sphere = glm::distance( glm::vec3(p), center ) - radius ;
+    glm::vec3 c = center(); 
+    float r = radius();
+
+    float d_sphere = glm::distance( glm::vec3(p), c ) - r ;
 
     float d_slab = fmaxf( p.z - zmax(), -(p.z - zmin()) );  
 
@@ -32,10 +35,12 @@ float nzsphere::operator()(float x, float y, float z) const
 
 nbbox nzsphere::bbox() const 
 {
+    glm::vec3 c = center(); 
+    float r = radius(); 
+
     nbbox bb = make_bbox();
-    assert( zmax() > zmin() ); 
-    bb.max = make_nvec3(center.x + radius, center.y + radius, zmax() );
-    bb.min = make_nvec3(center.x - radius, center.y - radius, zmin() );
+    bb.max = make_nvec3(c.x + r, c.y + r, zmax() );
+    bb.min = make_nvec3(c.x - r, c.y - r, zmin() );
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
@@ -45,31 +50,29 @@ nbbox nzsphere::bbox() const
 
 glm::vec3 nzsphere::gseedcenter() const 
 {
-    glm::vec4 seedcenter( center.x, center.y, (zmin() + zmax())/2.f, 1.f ); 
+    glm::vec3 c = center(); 
+    glm::vec4 seedcenter( c.x, c.y, zc(), 1.f ); 
     return apply_gtransform(seedcenter);
-    //if(gtransform) seedcenter = gtransform->t * seedcenter ; 
-    //return glm::vec3(seedcenter) ; 
 }
 
-glm::vec3 nzsphere::gseeddir()
+glm::vec3 nzsphere::gseeddir() const 
 {
     glm::vec4 dir(0,0,1,0); 
     return apply_gtransform(dir);
-    //if(gtransform) dir = gtransform->t * dir ; 
-    //return glm::vec3(dir) ;
 }
-
-
 
 void nzsphere::pdump(const char* msg) const 
 {
     std::cout 
               << std::setw(10) << msg 
-              << " label " << ( label ? label : "no-label" )
-              << " center " << center 
-              << " radius " << radius 
+              << " label " << ( label ? label : "-" )
+              << " center " << center()
+              << " radius " << radius()
               << " zmin " << zmin()
               << " zmax " << zmax()
+              << " z1 " << z1()
+              << " z2 " << z2()
+              << " zc " << zc()
               << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 

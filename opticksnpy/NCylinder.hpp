@@ -12,21 +12,43 @@ struct nbbox ;
 
 struct NPY_API ncylinder : nnode 
 {
-
     float operator()(float x, float y, float z) const ;
     nbbox bbox() const;
 
-    npart part();
+    //npart part() const ;
+
+    void increase_z2(float dz);
+    void decrease_z1(float dz);
 
     glm::vec3 gseedcenter() const ;
-    glm::vec3 gseeddir() ;
+    glm::vec3 gseeddir() const ;
+
     void pdump(const char* msg="ncylinder::pdump") const ;
  
-    glm::vec3 center ; 
-    float     radius ; 
-    float     z1 ; 
-    float     z2 ; 
+    glm::vec3  center() const  ; 
+    float      radius() const  ; 
+    float      x() const ; 
+    float      y() const ; 
+    float      z() const ; 
+    float     z1() const ; 
+    float     z2() const ; 
 };
+
+
+
+inline NPY_API float ncylinder::x() const { return param.f.x ; }
+inline NPY_API float ncylinder::y() const { return param.f.y ; }
+inline NPY_API float ncylinder::z() const { return 0.f ; }
+inline NPY_API float ncylinder::radius() const { return param.f.w ; }
+inline NPY_API glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),z()) ; }
+
+inline NPY_API float ncylinder::z2() const { return param1.f.y ; }
+inline NPY_API float ncylinder::z1() const { return param1.f.x ; }
+
+// grow the cylinder upwards on upper side (z2) or downwards on down side (z1)
+inline NPY_API void  ncylinder::increase_z2(float dz){ assert( dz >= 0.f) ; param1.f.y += dz ; } // z2 > z1
+inline NPY_API void  ncylinder::decrease_z1(float dz){ assert( dz >= 0.f) ; param1.f.x -= dz ; }
+
 
 
 inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 )
@@ -34,6 +56,9 @@ inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad&
     n.param = param ; 
     n.param1 = param1 ;
 
+    assert( n.z2() > n.z1() );
+
+/*
     n.center.x = param.f.x ; 
     n.center.y = param.f.y ; 
     n.center.z = 0.f ;
@@ -41,15 +66,7 @@ inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad&
     n.radius   = param.f.w ;  
     n.z1       = param1.f.x ; 
     n.z2       = param1.f.y ; 
-
-    assert( n.z2 > n.z1 );
-
-    // cylinder axis in Z direction 
-    //
-    //      QCAP (higher Z) at   z2
-    //      PCAP (lower Z)  at   z1
-    //      
-
+*/
 }
 
 inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
@@ -60,14 +77,14 @@ inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
     return n ; 
 }
 
-inline NPY_API ncylinder make_cylinder(float radius, float z1, float z2)
+inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
 {
     nquad param, param1 ;
 
-    param.f = {0,0,0,radius} ;
+    param.f = {0,0,0,radius_} ;
 
-    param1.f.x = z1 ; 
-    param1.f.y = z2 ; 
+    param1.f.x = z1_ ; 
+    param1.f.y = z2_ ; 
     param1.u.z = 0u ; 
     param1.u.w = 0u ; 
 

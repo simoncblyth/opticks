@@ -21,8 +21,8 @@
 nbbox ncone::bbox() const 
 {
     nbbox bb = make_bbox();
-    bb.max = make_nvec3(  rmax,  rmax, z2 );
-    bb.min = make_nvec3( -rmax, -rmax, z1 );
+    bb.max = make_nvec3(  rmax(),  rmax(), z2() );
+    bb.min = make_nvec3( -rmax(), -rmax(), z1() );
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
@@ -30,24 +30,23 @@ nbbox ncone::bbox() const
     return gtransform ? bb.transform(gtransform->t) : bb ; 
 }
 
-float ncone::operator()(float x, float y, float z) const 
+float ncone::operator()(float x_, float y_, float z_) const 
 {
-    glm::vec4 p(x,y,z,1.0); 
+    glm::vec4 p(x_,y_,z_,1.0); 
     if(gtransform) p = gtransform->v * p ; 
 
     // Z: cone axis
 
-    glm::vec2 q( glm::length(glm::vec2(p)), p.z-z0 ) ;        // cone coordinate (radial,axial) from apex origin  
+    glm::vec2 q( glm::length(glm::vec2(p)), p.z-z0() ) ;        // cone coordinate (radial,axial) from apex origin  
 
-    float sd_cone = glm::dot( cnormal, q ) ; 
+    float sd_cone = glm::dot( cnormal(), q ) ; 
 
-    float dz1 = p.z - z1  ; 
-    float dz2 = p.z - z2  ;   // z2 > z1
+    float dz1 = p.z - z1()  ; 
+    float dz2 = p.z - z2()  ;   // z2 > z1
 
     float sd_zslab = fmaxf( dz2, -dz1 );
 
     float sd = fmaxf( sd_cone, sd_zslab ); 
-
 
 /*
     std::cout << "ncone::operator" 
@@ -57,8 +56,60 @@ float ncone::operator()(float x, float y, float z) const
               << std::endl ; 
 */
 
+    return complement ? -sd : sd  ; 
+} 
+
+
+glm::vec3 ncone::gseedcenter() const 
+{
+    return gtransform == NULL ? center() : glm::vec3( gtransform->t * glm::vec4(center(), 1.f ) ) ;
+}
+
+glm::vec3 ncone::gseeddir() const 
+{
+    glm::vec4 dir(1,0,0,0);  
+    if(gtransform) dir = gtransform->t * dir ; 
+    return glm::vec3(dir) ;
+}
+
+
+void ncone::pdump(const char* msg ) const 
+{
+    std::cout 
+              << std::setw(10) << msg 
+              << " label " << ( label ? label : "-" )
+              << " center " << center() 
+              << " r1 " << r1()
+              << " r2 " << r2()
+              << " rmax " << rmax()
+              << " z1 " << z1()
+              << " z2 " << z2()
+              << " zc " << zc()
+              << " z0(apex) " << z0()
+              << " gseedcenter " << gseedcenter()
+              << " gtransform " << !!gtransform 
+              << std::endl ; 
+
+    if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
+}
+
+
 
 /*
+npart ncone::part() const 
+{
+    npart p = nnode::part();
+    assert( p.getTypeCode() == CSG_CONE );
+    return p ; 
+}
+*/
+
+
+
+
+
+/*
+
 
     322 // Cone with correct distances to tip and base circle. Y is up, 0 is in the middle of the base.
     323 float fCone(vec3 p, float radius, float height) {
@@ -83,14 +134,7 @@ float ncone::operator()(float x, float y, float z) const
 
 
 
-*/
 
-
-    return complement ? -sd : sd  ; 
-} 
-
-
-/*
 
 See env-;sdf-
 
@@ -189,50 +233,6 @@ http://aka-san.halcy.de/distance_fields_prefinal.pdf
     As with the cylinder, the intersection makes this function return a distance
     estimate rather than an exact distance.
 
-
-
 */
-
-
-glm::vec3 ncone::gseedcenter() const 
-{
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
-}
-
-glm::vec3 ncone::gseeddir()
-{
-    glm::vec4 dir(1,0,0,0);  
-    if(gtransform) dir = gtransform->t * dir ; 
-    return glm::vec3(dir) ;
-}
-
-
-void ncone::pdump(const char* msg ) const 
-{
-    std::cout 
-              << std::setw(10) << msg 
-              << " label " << ( label ? label : "no-label" )
-              << " center " << center 
-              << " r1 " << r1
-              << " r2 " << r2
-              << " rmax " << rmax
-              << " z1 " << z1
-              << " z2 " << z2
-              << " zc " << zc
-              << " z0(apex) " << z0
-              << " gseedcenter " << gseedcenter()
-              << " gtransform " << !!gtransform 
-              << std::endl ; 
-
-    if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
-}
-
-npart ncone::part()
-{
-    npart p = nnode::part();
-    assert( p.getTypeCode() == CSG_CONE );
-    return p ; 
-}
-
 
 

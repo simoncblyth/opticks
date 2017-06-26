@@ -200,18 +200,17 @@ glm::vec3 nnode::apply_gtransform(const glm::vec4& v_) const
 }
 
 
-glm::vec3 nnode::gseeddir()   // override in shapes if needed
+glm::vec3 nnode::gseeddir() const    // override in shapes if needed
 {
     glm::vec4 dir(1,1,1,0); 
     return apply_gtransform(dir);
 }
 
 
-npart nnode::part()
+npart nnode::part() const 
 {
     // this is invoked by NCSG::export_r to totally re-write the nodes buffer 
     // BUT: is it being used by partlist approach, am assuming not by not setting bbox
-
 
     npart pt ; 
     pt.zero();
