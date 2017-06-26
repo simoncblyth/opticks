@@ -16,41 +16,11 @@
 #include "Nuv.hpp"
 #include "NBBox.hpp"
 #include "NNodeDump.hpp"
+#include "NNodeUncoincide.hpp"
 
-// primitives
 #include "NPrimitives.hpp"
 
-/*
-#include "NSphere.hpp"
-#include "NZSphere.hpp"
-#include "NBox.hpp"
-#include "NSlab.hpp"
-#include "NPlane.hpp"
-#include "NCylinder.hpp"
-#include "NDisc.hpp"
-#include "NCone.hpp"
-#include "NConvexPolyhedron.hpp"
-*/
-
-
 #include "PLOG.hh"
-
-
-const char* nnode::FRAME_MODEL_ = "FRAME_MODEL" ;
-const char* nnode::FRAME_LOCAL_ = "FRAME_LOCAL" ;
-const char* nnode::FRAME_GLOBAL_ = "FRAME_GLOBAL" ;
-
-const char* nnode::FrameType(NNodeFrameType fr)
-{
-    const char* s = NULL ;
-    switch(fr)
-    {
-        case FRAME_MODEL: s = FRAME_MODEL_ ; break ; 
-        case FRAME_LOCAL: s = FRAME_LOCAL_ ; break ; 
-        case FRAME_GLOBAL: s = FRAME_GLOBAL_ ; break ; 
-    }
-    return s ;
-}
 
 
 float nnode::operator()(float,float,float) const 
@@ -670,128 +640,63 @@ void nnode::dump_transform( const char* msg) const
     d.dump_transform(msg);
 }
 
-
-
-
-bool nnode::can_uncoincide(const nnode* a, const nnode* b) const 
-{
-    return ( a && b && a->type == CSG_BOX3 && b->type == CSG_BOX3 ) ;
-}
-
 unsigned nnode::uncoincide()
 {
-    // canonically invoked for bileaf from NCSG::import_r
-
-    assert( is_bileaf() && "nnode::uncoincide expects left and right to be primitives" );
-  
-    float epsilon = 1e-5f ; 
-    unsigned level = 1 ; 
-    int margin = 1 ; 
-
-    std::vector<nuv> coincident ;
-    
-    nnode* a = NULL ; 
-    nnode* b = NULL ; 
-
-    // hmm theres an implicit assumption here that all complements have 
-    // already fed down to the leaves
-    assert(!complement); 
-
-    if( type == CSG_DIFFERENCE )  // left - right 
-    {
-        a = left ; 
-        b = right ; 
-    }
-    else if( type == CSG_INTERSECTION && !left->complement &&  right->complement)  // left * !right  ->   left - right
-    { 
-        a = left ; 
-        b = right ; 
-    }
-    else if( type == CSG_INTERSECTION &&  left->complement && !right->complement)  // !left * right  ->  right - left 
-    {
-        a = right ; 
-        b = left ; 
-    }
-
-    if( a && b )
-    {
-        if(!can_uncoincide(a, b))
-        {
-            LOG(debug) << "nnode::uncoincide detects bileaf A-B subtraction, but must skip as not implemented for: "
-                         << " A " << a->csgname()
-                         << " B " << b->csgname()
-                          ;
-            return 0 ; 
-        }
-
-
-        a->getCoincident( coincident, b, epsilon, level, margin, FRAME_LOCAL );
-
-        unsigned ncoin = coincident.size() ;
-        if(ncoin > 0)
-        {
-            LOG(info) << "nnode::uncoincide   START " ; 
-
-            a->verbosity = 4 ; 
-            b->verbosity = 4 ; 
-
-            a->pdump("A");
-            b->pdump("B");
-
-            assert( ncoin == 1);
-            nuv uv = coincident[0] ; 
-
-            //float delta = 5*epsilon ; 
-            float delta = 1 ;  // crazy large delta, so can see it  
-
-            std::cout << "nnode::uncoincide" 
-                      << " ncoin " << ncoin 
-                      << " uv " << uv.desc()
-                      << " epsilon " << epsilon
-                      << " delta " << delta
-                      << std::endl 
-                      ;
-
-            b->nudge( uv.s(),  delta ); 
-
-            b->pdump("B(nudged)");
-
-
-            LOG(info) << "nnode::uncoincide   DONE " ; 
-        } 
-    }
-    return coincident.size() ;
+    NNodeUncoincide unco(this);
+    return unco.uncoincide();
 }
 
 
 
 
-void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const 
+
+void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
 {
-    LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
+    /*
+    Checking the disposition of parametric points of parametric surfaces of this node 
+    with respect to the implicit distance to the surface of the other node...  
+    
+    Parametric uv coordinates of this node are collected into *coincident* 
+    when their positions are within epsilon of the surface of the other node.
+    
+    The frame of this nodes parametric positions and the frame of the other nodes 
+    signed distance to surface are specified by the fr arguement, typically FRAME_LOCAL
+    is appropriate.
 
-    unsigned level = 1 ;  // +---+---+
-    int margin = 1 ;      // o---*---o
+    PROBLEM IS THIS WILL ONLY WORK AT BILEAF LEVEL JUST ABOVE PRIMITIVES
+    */
 
-    std::cout 
-              << FrameType(fr)
-              << " verbosity " << verbosity     
-              << " uvlevel " << level     
-              << " uvmargin " << margin
-              << std::endl ;     
-
-    std::vector<glm::vec3> points ; 
-    getSurfacePointsAll( points, level, margin, fr ); 
-
-    for(unsigned i=0 ; i < points.size() ; i++) 
-          std::cout
-               << " i " << std::setw(4) << i 
-               << " " 
-               << glm::to_string(points[i]) 
-               << std::endl
-               ; 
+     unsigned ns = par_nsurf();
+     for(unsigned s = 0 ; s < ns ; s++)
+     {    
+         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon, fr) ;
+     }
 }
 
+void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const 
+{
+    int nu = 1 << level ; 
+    int nv = 1 << level ; 
+    assert( (nv - margin) > 0 );
+    assert( (nu - margin) > 0 );
+
+    for (int v = margin; v <= (nv-margin)  ; v++)
+    {
+        for (int u = margin; u <= (nu-margin) ; u++) 
+        {
+            nuv uv = make_uv(s,u,v,nu,nv);
+
+            glm::vec3 pos = par_pos_(uv, fr);
+
+            float other_sdf = other->sdf_(pos, fr );
+
+            if( fabs(other_sdf) < epsilon )  
+            {
+                surf.push_back(uv) ;
+            }
+        }
+    }
+}
 
 
 void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr) const 
@@ -843,51 +748,34 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
 }
 
 
-void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const 
+
+void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const 
 {
-    // Checking the disposition of parametric points of parametric surface s of this node 
-    // with respect to the implicit distance to the surface of the other node...  
-    //
-    // Parametric uv coordinates of this node are collected into *surf* 
-    // when their positions are within epsilon of the surface of the other node.
-    //
-    // The frame of this nodes paramtric positions and the frame of the other nodes 
-    // signed distance to surface are specified by the fr arguement, typically FRAME_LOCAL
-    // is appropriate.
-    //
+    LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
 
+    unsigned level = 1 ;  // +---+---+
+    int margin = 1 ;      // o---*---o
 
-    int nu = 1 << level ; 
-    int nv = 1 << level ; 
-    assert( (nv - margin) > 0 );
-    assert( (nu - margin) > 0 );
+    std::cout 
+              << NNodeEnum::FrameType(fr)
+              << " verbosity " << verbosity     
+              << " uvlevel " << level     
+              << " uvmargin " << margin
+              << std::endl ;     
 
-    for (int v = margin; v <= (nv-margin)  ; v++)
-    {
-        for (int u = margin; u <= (nu-margin) ; u++) 
-        {
-            nuv uv = make_uv(s,u,v,nu,nv);
+    std::vector<glm::vec3> points ; 
+    getSurfacePointsAll( points, level, margin, fr ); 
 
-            glm::vec3 pos = par_pos_(uv, fr);
-
-            float other_sdf = other->sdf_(pos, fr );
-
-            if( fabs(other_sdf) < epsilon )  
-            {
-                surf.push_back(uv) ;
-            }
-        }
-    }
+    for(unsigned i=0 ; i < points.size() ; i++) 
+          std::cout
+               << " i " << std::setw(4) << i 
+               << " " 
+               << glm::to_string(points[i]) 
+               << std::endl
+               ; 
 }
 
-void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
-{
-     unsigned ns = par_nsurf();
-     for(unsigned s = 0 ; s < ns ; s++)
-     {    
-         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon, fr) ;
-     }
-}
+
 
 
 

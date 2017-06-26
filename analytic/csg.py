@@ -510,6 +510,11 @@ class CSG(CSG_):
         metapath = self.metapath(treedir)
         json.dump(self.meta,file(metapath,"w"))
 
+
+        lvidx = os.path.basename(treedir)
+        tboolpath = self.tboolpath(treedir, lvidx)
+        self.write_tbool(lvidx, tboolpath)
+
         nodepath = self.nodepath(treedir)
         np.save(nodepath, nodebuf)
         pass
@@ -537,6 +542,10 @@ class CSG(CSG_):
     @classmethod
     def nodepath(cls, treedir):
         return os.path.join(treedir,"nodes.npy") 
+    @classmethod
+    def tboolpath(cls, treedir, name):
+        return os.path.join(treedir,"tbool%s.bash" % name) 
+
 
 
     @classmethod
@@ -858,12 +867,15 @@ class CSG(CSG_):
         as_python_r(self) 
         return "\n".join(lines)
 
-    def as_tboolean(self, name="esr"):
+    def as_tbool(self, name="esr"):
         tbf = TBooleanBashFunction(name=name, root=self.alabel, body=self.as_python() )
         return str(tbf)
 
-    def dump_tboolean(self, name):
-        sys.stderr.write("\n"+self.as_tboolean(name))
+    def dump_tbool(self, name):
+        sys.stderr.write("\n"+self.as_tbool(name))
+
+    def write_tbool(self, name, path):
+        file(path, "w").write("\n"+self.as_tbool(name))
 
     def _get_tag(self):
         return self.desc(self.typ)[0:2]

@@ -60,6 +60,9 @@ int main(int argc, char** argv)
           ; 
 
 
+
+    const unsigned MESSAGE_NZERO = 1000001 ;  
+
     typedef std::map<unsigned, unsigned> MUU ; 
     MUU counts ; 
 
@@ -75,6 +78,8 @@ int main(int argc, char** argv)
 
         NScan* scan = new NScan(*root, verbosity);
         unsigned nzero = scan->autoscan(mmstep);
+        const std::string& msg = scan->get_message();
+        if(!msg.empty()) counts[MESSAGE_NZERO]++ ; 
 
         scans.push_back(scan);
 
@@ -102,7 +107,18 @@ int main(int argc, char** argv)
         unsigned nzero = it->first  ;
         bool expect = nzero == 2 || nzero == 4 ; 
         bool dump = !expect  ; 
+
+        std::cout 
+           << std::endl 
+           << " nzero " << std::setw(4) << it->first   
+           << " count " << std::setw(4) << it->second
+           << " frac " << float(it->second)/float(total) 
+           << std::endl 
+           ;
+
         if(!dump) continue ; 
+
+        
 
         for(unsigned i=0 ; i < scans.size() ; i++)
         {
@@ -110,7 +126,10 @@ int main(int argc, char** argv)
             NCSG*  csg = trees[i] ; 
             nnode* root = csg->getRoot();
 
-            if(scan->get_nzero() == nzero)
+            bool with_nzero = scan->get_nzero() == nzero ;
+            bool with_message = scan->has_message() && nzero == MESSAGE_NZERO ; 
+
+            if(with_nzero || with_message)
             {
                 std::cout 
                      << " i " << std::setw(4) << i 

@@ -56,6 +56,16 @@ olocal-()
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
 
+opticks-tbool(){ 
+   local msg="$FUNCNAME :"
+   local lvid=${1:-0} 
+   local path=$TMP/tgltf/extras/${lvid}/tbool${lvid}.bash
+   echo $msg sourcing $path lvid $lvid
+   [ ! -f $path ] && echo $msg no such path && return
+   . $path
+   tbool${lvid}
+}
+
 
 
 opticks-suffix(){

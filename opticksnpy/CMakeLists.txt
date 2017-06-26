@@ -143,7 +143,9 @@ set(SOURCES
     NScanLine.cpp
 
     NNode.cpp
+    NNodeEnum.cpp
     NNodeDump.cpp
+    NNodeUncoincide.cpp
 
     NBox.cpp
     NSlab.cpp

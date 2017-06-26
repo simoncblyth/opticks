@@ -872,8 +872,8 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
 
     unsigned long long seqhis, seqmat ; 
 
-    unsigned long long TO_SA =  0x8dull ;
-    unsigned long long seqhis_select = TO_SA ; 
+    //unsigned long long TO_SA =  0x8dull ;
+    //unsigned long long seqhis_select = TO_SA ; 
 
    // unsigned count_select(0); 
    // unsigned count_excursion(0); 

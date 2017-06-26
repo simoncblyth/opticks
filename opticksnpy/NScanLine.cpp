@@ -58,9 +58,9 @@ NScanLine::NScanLine( const glm::vec3& begin, const glm::vec3& end, const glm::v
     m_num_nodes(0),
     m_message("")
 {
-    if(m_num_step > 1e6) 
+    if(m_num_step > 1e5) 
     {
-        LOG(warning) << "limiting steps " ; 
+        LOG(warning) << "limiting steps " << m_num_step ; 
         m_step.x = 100*m_step.x ; 
         m_step.y = 100*m_step.y ; 
         m_step.z = 100*m_step.z ; 

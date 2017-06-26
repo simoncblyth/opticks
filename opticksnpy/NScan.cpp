@@ -16,6 +16,11 @@
 
 
 
+bool NScan::has_message() const 
+{
+    return !m_message.empty() ; 
+}
+
 const std::string& NScan::get_message() const 
 {
     return m_message ; 
@@ -44,7 +49,10 @@ NScan::NScan( const nnode& node, unsigned verbosity )
 
 void NScan::init()
 {
-    init_cage( m_bbox, m_bmin, m_bmax, m_bcen, 0.1f );
+    float sidescale = 0.1f ; 
+    float minmargin = 2.f ;  // mm
+
+    init_cage( m_bbox, m_bmin, m_bmax, m_bcen, sidescale, minmargin, m_verbosity );
 
     m_node.collect_prim(m_prim);    // recursive collection of list of all primitives in tree
 
@@ -66,7 +74,7 @@ void NScan::init()
     LOG(info) << desc() ; 
 
     if(m_verbosity > 3)
-    m_node.dump_full("NScan::init");
+    m_node.dump_full("NScan::init(nnode::dump_full)");
 }
 
 std::string NScan::desc() const 
@@ -89,19 +97,46 @@ std::string NScan::desc() const
 }
 
 
-void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::vec3& bcen, float sidescale  ) // static
+void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::vec3& bcen, float sidescale, float minmargin, unsigned verbosity ) // static
 {
-    bmin.x = bb.min.x - bb.side.x*sidescale ;
-    bmin.y = bb.min.y - bb.side.y*sidescale ;
-    bmin.z = bb.min.z - bb.side.z*sidescale ;
+    glm::vec3 delta(0,0,0);
 
-    bmax.x = bb.max.x + bb.side.x*sidescale ;
-    bmax.y = bb.max.y + bb.side.y*sidescale ;
-    bmax.z = bb.max.z + bb.side.z*sidescale ;
+    // prevent cage margin from being too small for objs that are thin along some axis
+
+    delta.x = std::max<float>(bb.side.x*sidescale, minmargin) ;
+    delta.y = std::max<float>(bb.side.y*sidescale, minmargin) ;
+    delta.z = std::max<float>(bb.side.z*sidescale, minmargin) ;
+
+    bmin.x = bb.min.x - delta.x ;
+    bmin.y = bb.min.y - delta.y ;
+    bmin.z = bb.min.z - delta.z ;
+
+    bmax.x = bb.max.x + delta.x ;
+    bmax.y = bb.max.y + delta.y ;
+    bmax.z = bb.max.z + delta.z ;
 
     bcen.x =  (bb.min.x + bb.max.x)/2.f ;
     bcen.y =  (bb.min.y+bb.max.y)/2.f ;
     bcen.z =  (bb.min.z+bb.max.z)/2.f ;
+
+
+    if(verbosity > 3)
+    {
+        LOG(info) << "NScan::init_cage"
+                  << " verbosity " << verbosity
+                  << " sidescale " << sidescale
+                  << " minmargin " << minmargin
+                  ; 
+
+        std::cout << "delta " << glm::to_string(delta) << std::endl ; 
+        std::cout << "bmin  " << glm::to_string(bmin) << std::endl ; 
+        std::cout << "bmax  " << glm::to_string(bmax) << std::endl ; 
+        std::cout << "bcen  " << glm::to_string(bcen) << std::endl ; 
+    }
+
+
+
+
 
 }
 

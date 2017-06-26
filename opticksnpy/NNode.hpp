@@ -17,8 +17,8 @@ struct nuv ;
 struct nmat4pair ; 
 struct nmat4triple ; 
 
-//template <typename T> struct NOpenMesh ;
 
+/*
 typedef enum
 {  
    FRAME_MODEL, 
@@ -28,14 +28,18 @@ typedef enum
 } NNodeFrameType ;
 
 
-struct NPY_API nnode 
-{
     static const char* FRAME_MODEL_ ;
     static const char* FRAME_LOCAL_;
     static const char* FRAME_GLOBAL_ ;
 
     static const char* FrameType(NNodeFrameType fr);
 
+*/
+
+#include "NNodeEnum.hpp"
+
+struct NPY_API nnode 
+{
     virtual float operator()(float px, float py, float pz) const  ;
     virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
 
@@ -59,16 +63,13 @@ struct NPY_API nnode
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
     unsigned uncoincide();
-    bool can_uncoincide(const nnode* a, const nnode* b) const ;
+    //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
-    
     void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;
-
     void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin, NNodeFrameType fr) const ;
     void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const ;
     void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const ;
     void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
-
 
 
     std::function<float(float,float,float)> sdf() const ;
