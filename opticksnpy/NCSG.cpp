@@ -17,18 +17,10 @@
 #include "NTrianglesNPY.hpp"
 #include "NPolygonizer.hpp"
 
+#include "NPrimitives.hpp"
 
-// primitives
-#include "NSphere.hpp"
-#include "NZSphere.hpp"
-#include "NBox.hpp"
-#include "NSlab.hpp"
-#include "NPlane.hpp"
-#include "NCylinder.hpp"
-#include "NDisc.hpp"
-#include "NCone.hpp"
-#include "NConvexPolyhedron.hpp"
 
+#include "NScan.hpp"
 #include "NNode.hpp"
 #include "NBBox.hpp"
 #include "NPY.hpp"
@@ -495,8 +487,7 @@ void NCSG::import()
     m_root = import_r(0, NULL) ; 
     m_root->set_treedir(m_treedir) ; 
 
-
-    if(is_uncoincide()) m_root->uncoincide();  // pairwise not helping much, try at tree level 
+    postimport();
 
     if(m_verbosity > 5)
     check();  // recursive transform dumping 
@@ -504,6 +495,41 @@ void NCSG::import()
     if(m_verbosity > 1)
     LOG(info) << "NCSG::import DONE " ; 
 }
+
+
+void NCSG::postimport()
+{
+    if(is_uncoincide()) m_root->uncoincide();  // pairwise not helping much, try at tree level 
+
+    float mmstep = 0.1f ; 
+
+    NScan scan(*m_root, m_verbosity);
+    unsigned nzero = scan.autoscan(mmstep);
+    const std::string& msg = scan.get_message();
+
+    bool even_crossings = nzero % 2 == 0 ; 
+
+    if( !msg.empty() )
+    {
+        LOG(warning) << "NCSG::postimport"
+                     << " autoscan message " << msg 
+                     ;
+    }
+
+
+    if( !even_crossings )
+    {
+        LOG(warning) << "NCSG::postimport"
+                     << " autoscan odd crossings "
+                     << " nzero " << nzero 
+                     ;
+    }
+
+
+
+}
+
+
 
 
 nmat4pair* NCSG::import_transform_pair(unsigned itra)

@@ -93,6 +93,10 @@ struct NPY_API nnode
     void collect_prim(std::vector<const nnode*>& prim) const ;
     static void collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) ;
 
+    void collect_prim_for_edit(std::vector<nnode*>& prim) ;
+    static void collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) ;
+
+
     std::string get_type_mask_string() const ;
     unsigned    get_type_mask() const ;
     static void get_type_mask_r(const nnode* node, unsigned& tymsk);

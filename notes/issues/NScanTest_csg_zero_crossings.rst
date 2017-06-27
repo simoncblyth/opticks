@@ -10,6 +10,157 @@ Fixed the "not outside" problem of scan line SDFs starting or ending in negative
 by preventing NScan::init_cage coming up with too small a cage when thin along an axis.
 
 
+
+Tree level z-nudging of unions of cylinders and cones fixes most odd nzero crossings
+-----------------------------------------------------------------------------------------
+
+::
+
+    opticks-tscan-all
+
+    2017-06-27 12:18:56.883 INFO  [1370914] [main@91]  autoscan non-zero counts trees 249 mmstep 0.1
+
+     nzero    0 count   43 frac 0.173    ## scanline misses geometry, TODO improve aim
+
+     nzero    1 count    5 frac 0.020    ## thin geometry : probably not an issue, as no prob for raytrace  
+
+     nzero    2 count  179 frac 0.719    ## expected crossings 
+     nzero    4 count   20 frac 0.080
+
+     nzero    5 count    1 frac 0.004    ## wierd union of cylinders with cone cut
+
+     nzero 11195 count    1 frac 0.004   ## TO INVESTGATE : involves convexpolyhedron 
+
+
+
+::
+
+    simon:opticks_refs blyth$ opticks-tscan-all
+    opticks-tscan : scanning /tmp/blyth/opticks/tgltf/extras//
+    2017-06-27 12:18:50.778 INFO  [1370914] [NCSG::Deserialize@958] NCSG::Deserialize VERBOSITY 0 basedir /tmp/blyth/opticks/tgltf/extras// txtpath /tmp/blyth/opticks/tgltf/extras//csg.txt nbnd 249
+    ...
+
+    2017-06-27 12:18:51.646 INFO  [1370914] [Primitives::dump@496] before znudge treedir /tmp/blyth/opticks/tgltf/extras//145 typmsk union cylinder  nprim 6 znudge_count 0 verbosity 0
+    dump_qty : model frame r1/r2 (local) 
+            [ 7:cy]       r1    930.000       r2    930.000
+            [ 8:cy]                           r1   1015.000       r2   1015.000
+            [ 9:cy]                                               r1   1010.000       r2   1010.000
+            [10:cy]                                                                   r1    930.000       r2    930.000
+            [ 5:cy]                                                                                       r1    380.000       r2    380.000
+            [ 6:cy]                                                                                                           r1    400.300       r2    400.300
+    dump_qty : bbox.min/max.z (globally transformed) 
+            [ 7:cy] bb.min.z    -92.500 bb.max.z     92.500
+            [ 8:cy]                     bb.min.z     92.500 bb.max.z    107.500
+            [ 9:cy]                                         bb.min.z    107.500 bb.max.z    127.500
+            [10:cy]                                                             bb.min.z    127.500 bb.max.z    177.500
+            [ 5:cy]                                                                                 bb.min.z    177.500 bb.max.z    187.500
+            [ 6:cy]                                                                                                     bb.min.z    187.500 bb.max.z    207.500
+    dump_qty : bbox (globally transformed) 
+            [ 7:cy] mi  (-930.00 -930.00  -92.50)  mx  ( 930.00  930.00   92.50) 
+            [ 8:cy] mi  (-1015.00 -1015.00   92.50)  mx  (1015.00 1015.00  107.50) 
+            [ 9:cy] mi  (-1010.00 -1010.00  107.50)  mx  (1010.00 1010.00  127.50) 
+            [10:cy] mi  (-930.00 -930.00  127.50)  mx  ( 930.00  930.00  177.50) 
+            [ 5:cy] mi  (-423.74 -274.40  177.50)  mx  ( 336.26  485.60  187.50) 
+            [ 6:cy] mi  (-444.04 -294.70  187.50)  mx  ( 356.56  505.90  207.50) 
+    dump_joins
+     ja:         [ 7:cy] jb:         [ 8:cy] za:     92.500 zb:     92.500 join           COINCIDENT ra:    930.000 rb:   1015.000
+     ja:         [ 8:cy] jb:         [ 9:cy] za:    107.500 zb:    107.500 join           COINCIDENT ra:   1015.000 rb:   1010.000
+     ja:         [ 9:cy] jb:         [10:cy] za:    127.500 zb:    127.500 join           COINCIDENT ra:   1010.000 rb:    930.000
+     ja:         [10:cy] jb:         [ 5:cy] za:    177.500 zb:    177.500 join           COINCIDENT ra:    930.000 rb:    380.000
+     ja:         [ 5:cy] jb:         [ 6:cy] za:    187.500 zb:    187.500 join           COINCIDENT ra:    380.000 rb:    400.300
+
+
+    2017-06-27 12:18:51.646 INFO  [1370914] [Primitives::dump@496] after znudge treedir /tmp/blyth/opticks/tgltf/extras//145 typmsk union cylinder  nprim 6 znudge_count 5 verbosity 0
+    dump_qty : model frame r1/r2 (local) 
+            [ 7:cy]       r1    930.000       r2    930.000
+            [ 8:cy]                           r1   1015.000       r2   1015.000
+            [ 9:cy]                                               r1   1010.000       r2   1010.000
+            [10:cy]                                                                   r1    930.000       r2    930.000
+            [ 5:cy]                                                                                       r1    380.000       r2    380.000
+            [ 6:cy]                                                                                                           r1    400.300       r2    400.300
+    dump_qty : bbox.min/max.z (globally transformed) 
+            [ 7:cy] bb.min.z    -92.500 bb.max.z     93.500
+            [ 8:cy]                     bb.min.z     92.500 bb.max.z    107.500
+            [ 9:cy]                                         bb.min.z    106.500 bb.max.z    127.500
+            [10:cy]                                                             bb.min.z    126.500 bb.max.z    177.500
+            [ 5:cy]                                                                                 bb.min.z    176.500 bb.max.z    188.500
+            [ 6:cy]                                                                                                     bb.min.z    187.500 bb.max.z    207.500
+    dump_qty : bbox (globally transformed) 
+            [ 7:cy] mi  (-930.00 -930.00  -92.50)  mx  ( 930.00  930.00   93.50) 
+            [ 8:cy] mi  (-1015.00 -1015.00   92.50)  mx  (1015.00 1015.00  107.50) 
+            [ 9:cy] mi  (-1010.00 -1010.00  106.50)  mx  (1010.00 1010.00  127.50) 
+            [10:cy] mi  (-930.00 -930.00  126.50)  mx  ( 930.00  930.00  177.50) 
+            [ 5:cy] mi  (-423.74 -274.40  176.50)  mx  ( 336.26  485.60  188.50) 
+            [ 6:cy] mi  (-444.04 -294.70  187.50)  mx  ( 356.56  505.90  207.50) 
+    dump_joins
+     ja:         [ 7:cy] jb:         [ 8:cy] za:     93.500 zb:     92.500 join              OVERLAP ra:    930.000 rb:   1015.000
+     ja:         [ 8:cy] jb:         [ 9:cy] za:    107.500 zb:    106.500 join              OVERLAP ra:   1015.000 rb:   1010.000
+     ja:         [ 9:cy] jb:         [10:cy] za:    127.500 zb:    126.500 join              OVERLAP ra:   1010.000 rb:    930.000
+     ja:         [10:cy] jb:         [ 5:cy] za:    177.500 zb:    176.500 join              OVERLAP ra:    930.000 rb:    380.000
+     ja:         [ 5:cy] jb:         [ 6:cy] za:    188.500 zb:    187.500 join              OVERLAP ra:    380.000 rb:    400.300
+
+
+
+
+
+
+lvidx 29 : wierd nzero 5
+-----------------------------
+
+* ~/opticks_refs/opticks_tscan_29_nzero_5_OcrGdsPrt.png
+* ~/opticks_refs/opticks_tscan_29_ok_without_cone_subtraction.png
+
+Without the cone subtraction the znudge works to uncoincide it.
+
+
+::
+
+   opticks-tscan 29 
+   opticks-tbool 29      
+   opticks-tbool-vi 29   # edit to just show cone, shows its extremly flat  
+
+
+::
+
+     62 tbool29--(){ cat << EOP
+     63 
+     64 import logging
+     65 log = logging.getLogger(__name__)
+     66 from opticks.ana.base import opticks_main
+     67 from opticks.analytic.csg import CSG  
+     68 args = opticks_main(csgpath="$TMP/tbool/29")
+     69 
+     70 CSG.boundary = args.testobject
+     71 CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
+     72 
+     73 
+     74 
+     75 
+     76 a = CSG("cylinder", param = [0.000,0.000,0.000,100.000],param1 = [0.000,160.000,0.000,0.000])
+     77 b = CSG("cylinder", param = [0.000,0.000,0.000,150.000],param1 = [160.000,185.000,0.000,0.000])
+     78 ab = CSG("union", left=a, right=b)
+     79 
+     80 c = CSG("cone", param = [1520.393,0.000,100.000,74.440],param1 = [0.000,0.000,0.000,0.000])
+                               //   r1     z1    r2      z2
+
+     81 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[-516.623,1247.237,37.220,1.000]]
+     82 abc = CSG("difference", left=ab, right=c)
+     83 
+     84 
+     85 
+     86 
+     87 
+     88 obj = ab
+     89 #obj = c
+     90 
+     91 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="HY", level="5" )
+     92 CSG.Serialize([con, obj], args.csgpath )
+     93 
+     94 EOP
+     95 }
+
+
+
 Visualizing problem geometry
 -------------------------------
 

@@ -237,7 +237,7 @@ unsigned NNodeUncoincide::uncoincide_union(nnode* a, nnode* b)
 
 
        (schematic, actually there are usually transforms applied that
-        preventing a.z2 == b.z1  ) 
+        prevent a.z2 == b.z1  ) 
 
         ------> Z
 
@@ -316,17 +316,36 @@ unsigned NNodeUncoincide::uncoincide_tree()
 
 struct Primitives 
 {
-    const nnode* root ; 
-    std::vector<const nnode*> prim ; 
+    nnode* root ; 
+    const float epsilon ; 
+    const unsigned verbosity ; 
+    unsigned znudge_count ; 
+
+    std::vector<nnode*>       prim ; 
     std::vector<nbbox>        bb ; 
+    std::vector<nbbox>        cc ; 
     std::vector<unsigned>     zorder ; 
 
-    Primitives(const nnode* root) 
+    Primitives(nnode* root, float epsilon, unsigned verbosity) 
          :
-         root(root)
+         root(root),
+         epsilon(epsilon), 
+         verbosity(verbosity),
+         znudge_count(0)
     {
-         root->collect_prim(prim);
+        init();
+    }
+   
+    void init()
+    {
+         root->collect_prim_for_edit(prim);
+         update_bb();
+    }
 
+    void update_bb()
+    {
+         zorder.clear();
+         bb.clear(); 
          for(unsigned i=0 ; i < prim.size() ; i++)
          {
               const nnode* p = prim[i] ; 
@@ -335,13 +354,142 @@ struct Primitives
               zorder.push_back(i);
          }
          std::sort(zorder.begin(), zorder.end(), *this );
-    }
-   
+    } 
+
     bool operator()( int i, int j)  
     {
-         //return bb[i].min.z > bb[j].min.z ; // descending bb.min.z
          return bb[i].min.z < bb[j].min.z ;    // ascending bb.min.z
     }  
+
+    const char* UNCLASSIFIED_ = "UNCLASSIFIED" ; 
+    const char* COINCIDENT_ = "COINCIDENT" ; 
+    const char* OVERLAP_  = "OVERLAP" ; 
+    const char* SPLIT_     = "SPLIT" ; 
+
+    typedef enum {
+        UNCLASSIFIED, 
+        COINCIDENT, 
+        OVERLAP, 
+        SPLIT
+    } Join_t ; 
+
+    const char* join_type_string( Join_t join )
+    {
+        const char* s = NULL ; 
+        switch(join)
+        {
+           case UNCLASSIFIED: s = UNCLASSIFIED_ ; break ; 
+           case COINCIDENT: s = COINCIDENT_ ; break ; 
+           case OVERLAP: s = OVERLAP_ ; break ; 
+           case SPLIT: s = SPLIT_ ; break ; 
+        }
+        return s ; 
+    } 
+
+    Join_t join_type( float za, float zb )
+    {
+        float delta = zb - za   ; 
+        Join_t join = UNCLASSIFIED ; 
+ 
+        if( fabsf(delta) < epsilon )
+        {
+             join = COINCIDENT ; 
+        } 
+        else if( delta < 0.f )
+        {
+             join = OVERLAP ; 
+        }
+        else if( delta > 0.f )
+        {
+             join = SPLIT ; 
+        }
+        else
+        {
+             assert(0);
+        } 
+        return join ; 
+    }
+
+
+
+    void znudge()
+    {
+         int wid = 10 ;
+         float dz = 1.0f ; // perhaps should depend on z-range of prims ?   
+ 
+         if(verbosity > 0)
+         LOG(info) << " znudge over prim pairs " 
+                   << " dz " << dz
+                    ; 
+
+         for(unsigned i=1 ; i < prim.size() ; i++)
+         {
+              unsigned ja = zorder[i-1] ; 
+              unsigned jb = zorder[i] ; 
+
+              nnode* a = prim[ja] ;
+              nnode* b = prim[jb] ;
+ 
+              float za = bb[ja].max.z ; 
+              float ra = a->r2() ; 
+
+              float zb = bb[jb].min.z ; 
+              float rb = b->r1() ; 
+ 
+              Join_t join = join_type( za, zb );
+
+              if(verbosity > 0)
+              std::cout 
+                     << " ja: " << std::setw(15) << prim[ja]->tag()
+                     << " jb: " << std::setw(15) << prim[jb]->tag()
+                     << " za: " << std::setw(wid) << std::fixed << std::setprecision(3) << za 
+                     << " zb: " << std::setw(wid) << std::fixed << std::setprecision(3) << zb 
+                     << " join " << std::setw(2*wid) << join_type_string(join)
+                     << " ra: " << std::setw(wid) << std::fixed << std::setprecision(3) << ra 
+                     << " rb: " << std::setw(wid) << std::fixed << std::setprecision(3) << rb 
+                     << std::endl ; 
+
+              if( join == COINCIDENT )
+              {
+                  // TODO: fix unjustified assumption that transforms dont swap the radii orderiing 
+                  // expand side with smaller radii into the other to make the join OVERLAP
+                  if( ra > rb )  
+                  {
+                      b->decrease_z1( dz );   
+                  }
+                  else
+                  {
+                      a->increase_z2( dz ); 
+                  }
+                  znudge_count++ ; 
+              }  
+         } 
+         update_bb();
+    }
+    /*
+
+        +--------------+ .
+        |              |
+        |           . ++-------------+
+        |             ||             |
+        |         rb  ||  ra         |
+        |             ||             | 
+        |           . || .           |    
+        |             ||             |
+        |             ||          b  |
+        |           . ++-------------+
+        |  a           |
+        |              |
+        +--------------+ .
+
+                      za  
+                      zb                      
+
+        ------> Z
+
+    */
+
+
 
     void dump(const char* msg="Primitives::dump")
     {
@@ -350,14 +498,91 @@ struct Primitives
               << " treedir " << ( root->treedir ? root->treedir : "-" )
               << " typmsk " << root->get_type_mask_string() 
               << " nprim " << prim.size()
+              << " znudge_count " << znudge_count
+              << " verbosity " << verbosity
                ; 
+
+          dump_qty('R');
+          dump_qty('Z');
+          dump_qty('B');
+          dump_joins();
+    }
+
+    void dump_qty(char qty, int wid=10)
+    {
+         switch(qty)
+         {
+            case 'B': std::cout << "dump_qty : bbox (globally transformed) " << std::endl ; break ; 
+            case 'Z': std::cout << "dump_qty : bbox.min/max.z (globally transformed) " << std::endl ; break ; 
+            case 'R': std::cout << "dump_qty : model frame r1/r2 (local) " << std::endl ; break ; 
+         }
 
          for(unsigned i=0 ; i < prim.size() ; i++)
          {
               unsigned j = zorder[i] ; 
-              std::cout << bb[j].desc() << std::endl ; 
+              std::cout << std::setw(15) << prim[j]->tag() ;
+
+              if(qty == 'Z' ) 
+              {
+                  for(unsigned indent=0 ; indent < i ; indent++ ) std::cout << std::setw(wid*2) << " " ;  
+                  std::cout 
+                        << std::setw(wid) << " bb.min.z " 
+                        << std::setw(wid) << std::fixed << std::setprecision(3) << bb[j].min.z 
+                        << std::setw(wid) << " bb.max.z " 
+                        << std::setw(wid) << std::fixed << std::setprecision(3) << bb[j].max.z
+                        << std::endl ; 
+              } 
+              else if( qty == 'R' )
+              {
+                  for(unsigned indent=0 ; indent < i ; indent++ ) std::cout << std::setw(wid*2) << " " ;  
+                  std::cout 
+                        << std::setw(wid) << " r1 " 
+                        << std::setw(wid) << std::fixed << std::setprecision(3) << prim[j]->r1() 
+                        << std::setw(wid) << " r2 " 
+                        << std::setw(wid) << std::fixed << std::setprecision(3) << prim[j]->r2()
+                        << std::endl ; 
+              }
+              else if( qty == 'B' )
+              {
+                   std::cout << bb[j].desc() << std::endl ; 
+              }
          }
     }
+
+    void dump_joins()
+    {
+         int wid = 10 ;
+         std::cout << "dump_joins" << std::endl ; 
+
+         for(unsigned i=1 ; i < prim.size() ; i++)
+         {
+              unsigned ja = zorder[i-1] ; 
+              unsigned jb = zorder[i] ; 
+
+              const nnode* a = prim[ja] ;
+              const nnode* b = prim[jb] ;
+ 
+              float za = bb[ja].max.z ; 
+              float ra = a->r2() ; 
+
+              float zb = bb[jb].min.z ; 
+              float rb = b->r1() ; 
+ 
+              Join_t join = join_type( za, zb );
+              std::cout 
+                     << " ja: " << std::setw(15) << prim[ja]->tag()
+                     << " jb: " << std::setw(15) << prim[jb]->tag()
+                     << " za: " << std::setw(wid) << std::fixed << std::setprecision(3) << za 
+                     << " zb: " << std::setw(wid) << std::fixed << std::setprecision(3) << zb 
+                     << " join " << std::setw(2*wid) << join_type_string(join)
+                     << " ra: " << std::setw(wid) << std::fixed << std::setprecision(3) << ra 
+                     << " rb: " << std::setw(wid) << std::fixed << std::setprecision(3) << rb 
+                     << std::endl ; 
+         }
+     }
+
+
+
 
 
 };
@@ -366,8 +591,12 @@ struct Primitives
 
 unsigned NNodeUncoincide::uncoincide_tree_uncyco()
 {
-    Primitives ps(m_node) ; 
-    ps.dump();
+    float epsilon = 1e-5f ; 
+    Primitives ps(m_node, epsilon, m_verbosity) ; 
+
+    ps.dump("before znudge");
+    ps.znudge();
+    ps.dump("after znudge");
 
     return 0 ; 
 }

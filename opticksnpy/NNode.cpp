@@ -644,18 +644,36 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 
 
 
+
+void nnode::collect_prim_for_edit(std::vector<nnode*>& prim) 
+{
+    collect_prim_for_edit_r(prim, this);   
+}
+void nnode::collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) // static
+{
+    bool internal = node->left && node->right ; 
+    if(!internal)
+    {
+        prim.push_back(node);
+    }
+    else
+    {
+        collect_prim_for_edit_r(prim, node->left);
+        collect_prim_for_edit_r(prim, node->right);
+    }
+}
+
+
 unsigned nnode::get_num_prim() const 
 {
     std::vector<const nnode*> prim ; 
     collect_prim(prim);
     return prim.size() ;
 }
-
 void nnode::collect_prim(std::vector<const nnode*>& prim) const 
 {
     collect_prim_r(prim, this);   
 }
-
 void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) // static
 {
     bool internal = node->left && node->right ; 

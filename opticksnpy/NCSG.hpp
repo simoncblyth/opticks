@@ -152,6 +152,7 @@ class NPY_API NCSG {
         void loadPlanes();
     private:
         void import();
+        void postimport();
         nnode* import_r(unsigned idx, nnode* parent=NULL);
         nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
         nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
