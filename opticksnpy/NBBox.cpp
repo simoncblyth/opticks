@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <cstring>
 
 #include "NGLM.hpp"
@@ -62,6 +63,94 @@ void nbbox::transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
     tbb.side = tbb.max - tbb.min ;
 }
 
+std::string nbbox::containment_mask_string( unsigned mask )
+{
+    return nbboxenum::ContainmentMaskString(mask);
+}
+const char* nbbox::containment_name( NBBoxContainment_t cont )
+{
+    return nbboxenum::ContainmentName(cont);
+}
+
+NBBoxContainment_t nbbox::classify_containment_1( float delta, float epsilon,  NBBoxContainment_t neg, NBBoxContainment_t eps, NBBoxContainment_t pos )  // static
+{
+    /*
+
+               eps
+           -ve  ||   +ve
+                || 
+
+
+    The bbox must be transformed to be in the same frame.
+
+
+                    .      container.max
+          +-------------------+
+          |                   |  
+          |        this.max   |
+          |   +----------+    |
+          |   |     .    |    | 
+          |   |          |    |
+          |   +----------+    |
+          |  this.min         |
+          +-------------------+
+     container.min
+
+    */
+    NBBoxContainment_t cont = UNCLASSIFIED ; 
+    if( fabsf(delta) < epsilon ) cont = eps ;  
+    else if( delta < 0.f )       cont = neg ;  
+    else if( delta > 0.f )       cont = pos ;  
+    else                         assert(0); 
+
+/*
+    std::cout 
+        << " nbbox::classify_containment_1" 
+        << " delta " << std::setw(15) << std::fixed << std::setprecision(5) << delta 
+        << " fabsf(delta) " << std::setw(15) << std::fixed << std::setprecision(5) << fabsf(delta) 
+        << " epsilon " << std::setw(15) << std::fixed << std::setprecision(5) << epsilon
+        << " cont " << containment_name(cont)
+        << std::endl 
+        ; 
+*/
+
+    return cont ; 
+}
+
+unsigned nbbox::classify_containment( const nbbox& container, float epsilon ) const  // of this bbox against purported container
+{
+    // hmm rotational transforms mess with bbox dimensions, except in axis direction
+
+    glm::vec3 dmin( this->min.x - container.min.x, this->min.y - container.min.y, this->min.z - container.min.z );
+    glm::vec3 dmax( this->max.x - container.max.x, this->max.y - container.max.y, this->max.z - container.max.z );
+
+    unsigned mask = 0 ;  
+
+    mask |= classify_containment_1( dmin.x , epsilon, XMIN_OUTSIDE, XMIN_COINCIDENT, XMIN_INSIDE ) ;
+    mask |= classify_containment_1( dmin.y , epsilon, YMIN_OUTSIDE, YMIN_COINCIDENT, YMIN_INSIDE ) ;
+    mask |= classify_containment_1( dmin.z , epsilon, ZMIN_OUTSIDE, ZMIN_COINCIDENT, ZMIN_INSIDE ) ;
+
+    mask |= classify_containment_1( dmax.x , epsilon, XMAX_INSIDE, XMAX_COINCIDENT, XMAX_OUTSIDE ) ;
+    mask |= classify_containment_1( dmax.y , epsilon, YMAX_INSIDE, YMAX_COINCIDENT, YMAX_OUTSIDE ) ;
+    mask |= classify_containment_1( dmax.z , epsilon, ZMAX_INSIDE, ZMAX_COINCIDENT, ZMAX_OUTSIDE ) ;
+
+    unsigned expected = XMIN_INSIDE | YMIN_INSIDE | ZMIN_INSIDE | XMAX_INSIDE | YMAX_INSIDE | ZMAX_INSIDE ;
+    unsigned errmask = mask & ~expected  ;  // clear expected bits 
+
+/*
+    std::cout 
+        << " nbbox::classify_containment" 
+        << " this " << desc()  << std::endl 
+        << " cont " << container.desc() << std::endl
+        << " dmin (this-container) " << glm::to_string(dmin) << std::endl
+        << " dmax (this-container) " << glm::to_string(dmax) << std::endl 
+        << " mask    " << containment_mask_string(mask) << std::endl 
+        << " errmask " << containment_mask_string(errmask) << std::endl 
+        ;
+*/
+
+    return errmask ; 
+}
 
 
 
@@ -216,6 +305,7 @@ std::string nbbox::description() const
     ss
         << " mi " << min.desc() 
         << " mx " << max.desc() 
+        << " si " << side.desc() 
         << ( invert ? " INVERTED" : "" )
         << ( empty ? " EMPTY" : "" )
         ;

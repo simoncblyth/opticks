@@ -5,6 +5,8 @@ class NCSG ;
 class NTxt ; 
 class NParameters ; 
 struct nd ; 
+struct nbbox ; 
+
 template<class T> class Counts ;
 
 #include "NGLTF.hpp"
@@ -46,6 +48,10 @@ class NPY_API NScene : public NGLTF
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
         unsigned getVerbosity();
         unsigned getTargetNode();
+
+
+
+
     private:
         void init();
         void init_lvlists(const char* base, const char* name);
@@ -95,6 +101,17 @@ class NPY_API NScene : public NGLTF
         void     dumpRepeatCount();
         unsigned getRepeatCount(unsigned ridx);
         unsigned getNumRepeats();
+
+    private:
+        // cross structural geometry node checking 
+        void update_bbox();
+        void update_bbox_r(nd* node);
+
+        void check_containment() ; 
+        void check_containment_r(nd* node) ; 
+        nbbox    calc_bbox(const nd* node, bool global) const ;
+        nbbox     get_bbox(unsigned nidx) const ;
+
     private:
         nd*                               m_root ; 
         std::map<unsigned, nd*>           m_nd ; 
@@ -104,8 +121,11 @@ class NPY_API NScene : public NGLTF
        
         std::map<unsigned, unsigned>      m_mesh2ridx ;
         std::map<unsigned, unsigned>      m_repeat_count ;
+        std::map<unsigned, nbbox>         m_bbox ; 
+
 
         int                               m_dbgnode ; 
+        unsigned                          m_containment_err ; 
         unsigned                          m_verbosity ; 
         unsigned                          m_targetnode ; 
         unsigned                          m_num_global ; 

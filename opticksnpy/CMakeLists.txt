@@ -161,6 +161,7 @@ set(SOURCES
     NQuad.cpp
     NSphere.cpp
     NBBox.cpp
+    NBBoxEnum.cpp
     NPart.cpp
     NTriangle.cpp
     NBoundingBox.cpp

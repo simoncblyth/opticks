@@ -2,6 +2,8 @@
 #include <iomanip>
 
 #include "SSys.hh"
+
+#include "BStr.hh"
 #include "BFile.hh"
 
 
@@ -72,6 +74,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int dbgno
    :
     NGLTF(base, name, config, scene_idx),
     m_dbgnode(dbgnode),
+    m_containment_err(0),
     m_verbosity(0),
     m_num_global(0),
     m_num_csgskip(0),
@@ -379,6 +382,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->boundary = boundary ;
     n->pvname = pvname ; 
     n->selected = selected ; 
+    n->containment = 0 ; 
     n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 
@@ -396,6 +400,7 @@ void NScene::postimportnd()
     LOG(info) << "NScene::postimportnd" 
               << " numNd " << getNumNd()
               << " dbgnode " << m_dbgnode
+              << " verbosity " << m_verbosity
                ; 
 
 /*
@@ -415,63 +420,15 @@ void NScene::postimportmesh()
     LOG(info) << "NScene::postimportmesh" 
               << " numNd " << getNumNd()
               << " dbgnode " << m_dbgnode
+              << " verbosity " << m_verbosity
                ; 
 
-    nd* node = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
-    if(!node) return ; 
+    //nd* node = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
+    //if(!node) return ; 
 
-    nd* pnode = node->parent ; 
-    assert(pnode);
+    update_bbox();
 
-
-    dumpNd(m_dbgnode);
-
-    unsigned mesh_idx = node->mesh ; 
-    unsigned pmesh_idx = pnode->mesh ; 
-
-    NCSG* csg = getCSG(mesh_idx);
-    assert(csg);
-
-    NCSG* pcsg = getCSG(pmesh_idx);
-    assert(pcsg);
-
-    nnode* root = csg->getRoot();
-    assert(root);
-
-    nnode* proot = pcsg->getRoot();
-    assert(proot);
-
-    assert( node->gtransform );
-    const glm::mat4& node_t  = node->gtransform->t ; 
-
-    assert( pnode->gtransform );
-    const glm::mat4& pnode_t  = pnode->gtransform->t ; 
-
-
-    std::cout 
-        << " mesh_idx "  << mesh_idx 
-        << " pmesh_idx " << pmesh_idx 
-        << " root "  << root->tag() 
-        << " proot " << proot->tag() 
-        << std::endl 
-        << gpresent("node_t", node_t)
-        << std::endl 
-        << gpresent("pnode_t", pnode_t)
-        ;
-
-
-    nbbox csg_bb  = root->bbox();
-    nbbox pcsg_bb  = proot->bbox();
-
-    nbbox csg_tbb = csg_bb.transform(node_t) ; 
-    nbbox pcsg_tbb = pcsg_bb.transform(pnode_t) ; 
-
-    std::cout 
-         << " csg_bb  " <<  csg_bb.desc() << std::endl 
-         << " pcsg_bb " <<  pcsg_bb.desc() << std::endl 
-         << " csg_tbb  " <<  csg_tbb.desc() << std::endl 
-         << " pcsg_tbb " <<  pcsg_tbb.desc() << std::endl 
-         ;
+    check_containment();
 
 
     if(SSys::IsHARIKARI())
@@ -479,6 +436,133 @@ void NScene::postimportmesh()
 }
 
 //  tgltf-;HARIKARI=1 tgltf-t  
+
+
+
+nbbox NScene::calc_bbox(const nd* node, bool global) const 
+{
+    unsigned mesh_idx = node->mesh ; 
+
+    NCSG* csg = getCSG(mesh_idx);
+    assert(csg);
+
+    nnode* root = csg->getRoot();
+    assert(root);
+
+    assert( node->gtransform );
+    const glm::mat4& node_t  = node->gtransform->t ; 
+
+    nbbox bb  = root->bbox();
+
+    nbbox gbb = bb.transform(node_t) ; 
+
+    if(m_verbosity > 2)
+    std::cout 
+        << " get_bbox "
+        << " verbosity " << m_verbosity 
+        << " mesh_idx "  << mesh_idx 
+        << " root "  << root->tag() 
+        << std::endl 
+        << gpresent("node_t", node_t)
+        << std::endl 
+        << " bb  " <<  bb.desc() << std::endl 
+        << " gbb " <<  gbb.desc() << std::endl 
+        ;
+
+    return global ? gbb : bb ; 
+}
+
+void NScene::update_bbox() 
+{
+    m_bbox.clear();
+    update_bbox_r(m_root); 
+}
+void NScene::update_bbox_r(nd* node) 
+{
+    bool global = true ; 
+
+    nbbox  bb = calc_bbox(  node, global ) ; 
+    m_bbox[node->idx] = bb ; 
+
+    for(nd* c : node->children) update_bbox_r(c) ;
+}
+
+nbbox NScene::get_bbox(unsigned nidx) const 
+{
+    return m_bbox.at(nidx);
+}
+
+
+void NScene::check_containment()  
+{
+    LOG(info) << "NScene::check_containment"
+              << " verbosity " << m_verbosity 
+              ;
+
+    check_containment_r(m_root);
+
+    unsigned tot = getNumNd() ;
+
+    LOG(info) << "NScene::check_containment"
+              << " verbosity " << m_verbosity 
+              << " tot " << tot
+              << " err " << m_containment_err 
+              << " err/tot " << std::setw(10) << std::fixed << std::setprecision(2) << float(m_containment_err)/float(tot)
+              ; 
+}
+
+void NScene::check_containment_r(nd* node) 
+{
+    nd* parent = node->parent ; 
+    if(!parent) parent = node ;   // only root should not have parent
+
+    nbbox  nbb = get_bbox( node->idx ) ; 
+    nbbox  pbb = get_bbox( parent->idx ) ; 
+
+    float epsilon = 1e-5 ; 
+
+    unsigned errmask = nbb.classify_containment( pbb, epsilon );
+
+    node->containment = errmask ;  
+
+    if(errmask) m_containment_err++ ; 
+
+    //if(m_verbosity > 2 || ( errmask && m_verbosity > 0))
+    {
+        glm::vec3 dmin( nbb.min.x - pbb.min.x, 
+                        nbb.min.y - pbb.min.y, 
+                        nbb.min.z - pbb.min.z );
+
+        glm::vec3 dmax( pbb.max.x - nbb.max.x, 
+                        pbb.max.y - nbb.max.y, 
+                        pbb.max.z - nbb.max.z );
+
+
+        std::string pvn = BFile::Name(node->pvname.c_str()) ;
+        std::string pvns = BStr::firstChars(pvn.c_str(), 30) ;  
+
+        std::cout 
+             << "NSc::ccr"
+             << " n " << std::setw(6) << node->idx
+             << " p " << std::setw(6) << parent->idx 
+             << " mn(n-p) " << gpresent( dmin ) 
+             << " mx(p-n) " << gpresent( dmax ) 
+             << " pv " << std::setw(30) <<  pvns
+             << " err " << nbbox::containment_mask_string( errmask ) 
+             << std::endl 
+             ;
+
+        if(m_verbosity > 3 || ( errmask && m_verbosity > 1))
+        std::cout 
+             << " nbb " <<  nbb.desc() << std::endl 
+             << " pbb " <<  pbb.desc() << std::endl 
+             ;
+
+    }
+
+    for(nd* c : node->children) check_containment_r(c) ;
+}
+
 
 
 

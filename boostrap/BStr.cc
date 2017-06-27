@@ -70,6 +70,13 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 }
 
 
+std::string BStr::firstChars( const char* s, unsigned n)
+{
+     std::string fc( s, std::min<size_t>( n, std::strlen( s ) ));
+     return fc ;
+}
+
+
 char* BStr::afterLastOrAll(const char* orig, char delim)
 {
     const char* p = strrchr(orig, delim) ;      // point at last delim, or NULL if no delim 

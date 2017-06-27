@@ -25,6 +25,7 @@ class BRAP_API BStr {
 
      static const char* uppercase( const char* str );
      static char* afterLastOrAll(const char* orig, char delim='/');
+     static std::string firstChars( const char* orig, unsigned n );
 
      static std::string patternPickField(std::string str, std::string ptn, int num );
      static std::string ijoin( std::vector<int>& elem, char delim);

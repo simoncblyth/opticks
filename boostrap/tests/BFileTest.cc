@@ -175,7 +175,9 @@ void test_ChangeExt()
 
 void test_SomeDir()
 {
-    const char* path = "$TMP/somedir/someotherdir" ; 
+    //const char* path = "$TMP/somedir/someotherdir" ; 
+    const char* path = "/dd/Geometry/PoolDetails/lvVertiCableTray#pvVertiCable0xbf5e7f0" ;
+
     std::string name = BFile::Name(path) ;
     std::string stem = BFile::Stem(path);
     std::string dir = BFile::ParentDir(path) ;

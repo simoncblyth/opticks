@@ -4,8 +4,9 @@
 
 #include "OpticksCSG.h"
 #include "NQuad.hpp"
-#include "NPY_API_EXPORT.hh"
+#include "NBBoxEnum.hpp"
 
+#include "NPY_API_EXPORT.hh"
 
 struct NPY_API nbbox 
 {
@@ -14,6 +15,10 @@ struct NPY_API nbbox
     const char* desc() const;
     std::string description() const ; 
 
+    static NBBoxContainment_t classify_containment_1( float delta, float epsilon,  NBBoxContainment_t neg, NBBoxContainment_t eps, NBBoxContainment_t pos );
+    static std::string containment_mask_string( unsigned mask );
+    static const char* containment_name( NBBoxContainment_t cont );
+    unsigned classify_containment( const nbbox& container, float epsilon ) const ; // of this bbox against purported container
 
     // transform returns a transformed copy of the bbox
     nbbox transform( const glm::mat4& t );

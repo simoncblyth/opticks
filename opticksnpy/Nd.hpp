@@ -28,6 +28,7 @@ struct NPY_API nd
    std::string      boundary ; 
    std::string      pvname ; 
    unsigned         selected ; 
+   unsigned         containment ; 
 
    std::string      _local_digest ; 
    std::string      _mesh_digest ; 
