@@ -373,6 +373,13 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 
 
+void NScene::postimport()
+{
+    LOG(info) << "NScene::postimport" ; 
+
+}
+
+
 
 void NScene::count_progeny_digests_r(nd* n)
 {

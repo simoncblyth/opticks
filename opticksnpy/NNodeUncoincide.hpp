@@ -24,15 +24,14 @@ See issues/NScanTest_csg_zero_crossings.rst
 class NPY_API NNodeUncoincide
 {
     public:
-        NNodeUncoincide(nnode* node);
+        NNodeUncoincide(nnode* node, unsigned verbosity);
     public:
         unsigned uncoincide();
 
     private:
         // treewise approach 
-        unsigned uncoincide_tree();
-        unsigned uncoincide_tree_uncyco();
-
+        unsigned uncoincide_treewise();
+        unsigned uncoincide_uncyco(nnode* node);
     private:
         // pairwise approach 
         bool     is_uncoincidable_subtraction(nnode*& a, nnode*& b) ;

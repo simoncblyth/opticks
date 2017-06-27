@@ -69,6 +69,7 @@ class NPY_API NScene : public NGLTF
         void dump_repeat_candidates() const;
     private:
         nd*  import_r(int idx, nd* parent, int depth);
+        void postimport();
         void dumpNdTree_r(nd* n);
         void count_progeny_digests();
         void count_progeny_digests_r(nd* n);

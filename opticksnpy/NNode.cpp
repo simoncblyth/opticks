@@ -722,9 +722,11 @@ void nnode::dump_transform( const char* msg) const
     d.dump_transform(msg);
 }
 
-unsigned nnode::uncoincide()
+
+
+unsigned nnode::uncoincide(unsigned verbosity)
 {
-    NNodeUncoincide unco(this);
+    NNodeUncoincide unco(this, verbosity);
     return unco.uncoincide();
 }
 

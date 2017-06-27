@@ -499,7 +499,7 @@ void NCSG::import()
 
 void NCSG::postimport()
 {
-    if(is_uncoincide()) m_root->uncoincide();  // pairwise not helping much, try at tree level 
+    if(is_uncoincide()) m_root->uncoincide(m_verbosity);  // pairwise not helping much, try at tree level 
 
     float mmstep = 0.1f ; 
 
@@ -525,6 +525,18 @@ void NCSG::postimport()
                      ;
     }
 
+    //LOG(info) << "NCSG::postimport" ;
+    std::cout 
+         << "NCSG::postimport"
+         << " nzero " << std::setw(4) << nzero 
+         << " NScanTest " << std::left << std::setw(40) << getTreeDir()  << std::right
+         << " soname " << std::setw(40) << soname()  
+         << " tag " << std::setw(10) << m_root->tag()
+         << " nprim " << std::setw(4) << m_root->get_num_prim()
+         << " typ " << std::setw(20)  << m_root->get_type_mask_string()
+         << " msg " << scan.get_message()
+         << std::endl 
+         ;
 
 
 }

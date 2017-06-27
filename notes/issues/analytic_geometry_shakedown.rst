@@ -6,18 +6,31 @@ Issue : flickery ray trace in rib shape
 
 * ~/opticks_refs/tgltf_looking_up_poke_thru_ribs.png
 
+* this is presumably a cross volume coincidence issue... 
+  
+  * TODO : test and fix for cross coincidence 
 
-TODO: auto-detect intended unions with coincident faces, and auto-uncoincide them
+
+Impinging Volumes Test
+-------------------------
+
+* start by testing each node bbox against its parent bbox 
+
+  * within solid uncoincence done in NCSG::postimport, analogous
+    place for volume overlap testing would be NScene/GScene ? 
+
+  * start with NScene::postimport
+
+  * testing with: tgltf-t 
+  
+
+
+DONE: auto-detect intended unions with coincident faces, and auto-uncoincide them
 -----------------------------------------------------------------------------------
 
-* need to implement more parametric ? but thats a lot of work, and
-  only very effective at bileaf level when combining primitives, but
-  combining composites is very common  
+* detect within CSG tree coincidence issues with NScan/NScanTest 
 
-* how about cross bbox scans like NCSGScanTest
-  that counts zero crossings : straightforward and works at all
-  levels of the CSG tree... for convex solids (most are)
-  should be 2 crossings
+* fixed within CSG tree coincident issues for many solids with NNodeUncoincide/ZNudger : see opticks-tscan-all
 
 
 DONE : Generalized intersect test 

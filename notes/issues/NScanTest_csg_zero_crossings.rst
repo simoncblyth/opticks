@@ -14,6 +14,37 @@ by preventing NScan::init_cage coming up with too small a cage when thin along a
 Tree level z-nudging of unions of cylinders and cones fixes most odd nzero crossings
 -----------------------------------------------------------------------------------------
 
+Handle the wierd nzero:5 by applying uncoincide_uncyco to root.left, goes to nzero:4
+(normally uncyco is applied to root only)
+
+::
+
+    opticks-tscan-all
+
+    2017-06-27 13:17:40.724 INFO  [1397461] [main@91]  autoscan non-zero counts trees 249 mmstep 0.1
+     nzero    0 count   43 frac 0.172691
+     nzero    1 count    5 frac 0.0200803
+     nzero    2 count  179 frac 0.718876
+     nzero    4 count   21 frac 0.0843373
+     nzero 11195 count    1 frac 0.00401606
+
+
+    nzero    1 count    5 frac 0.0200803
+     i  187 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//61      soname                BotRefGapCutHols0xc34bb28 tag    [ 0:in] nprim    5 typ intersection box3 disc  msg 
+     i  188 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//60      soname                   BotESRCutHols0xbfa7368 tag    [ 0:in] nprim    8 typ intersection box3 disc  msg 
+     i  190 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//58      soname                TopRefGapCutHols0xbf9cef8 tag    [ 0:in] nprim    5 typ   intersection disc  msg 
+     i  191 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//57      soname                   TopESRCutHols0xbf9de10 tag    [ 0:in] nprim    9 typ   intersection disc  msg 
+     i  205 nzero    1 NScanTest /tmp/blyth/opticks/tgltf/extras//43      soname                pmt-hemi-cathode0xc2f1ce8 tag    [ 0:un] nprim    4 typ union difference zsphere  msg 
+
+     nzero    2 count  179 frac 0.718876
+
+     nzero    4 count   21 frac 0.0843373
+
+     nzero 11195 count    1 frac 0.00401606
+     i  182 nzero 11195 NScanTest /tmp/blyth/opticks/tgltf/extras//66      soname                 SstTopRadiusRib0xc271720 tag    [ 0:di] nprim    3 typ difference box3 convexpolyhedron  msg 
+
+
+
 ::
 
     opticks-tscan-all
@@ -27,7 +58,7 @@ Tree level z-nudging of unions of cylinders and cones fixes most odd nzero cross
      nzero    2 count  179 frac 0.719    ## expected crossings 
      nzero    4 count   20 frac 0.080
 
-     nzero    5 count    1 frac 0.004    ## wierd union of cylinders with cone cut
+     nzero    5 count    1 frac 0.004    ## wierd union of cylinders with cone cut :  FIXED 
 
      nzero 11195 count    1 frac 0.004   ## TO INVESTGATE : involves convexpolyhedron 
 

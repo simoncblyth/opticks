@@ -43,7 +43,7 @@ struct NPY_API nnode
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
-    unsigned uncoincide();
+    unsigned uncoincide(unsigned verbosity);
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
     void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;

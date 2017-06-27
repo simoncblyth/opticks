@@ -12,10 +12,10 @@
 
 #include "NPrimitives.hpp"
 
-NNodeUncoincide::NNodeUncoincide(nnode* node)
+NNodeUncoincide::NNodeUncoincide(nnode* node, unsigned verbosity)
    :
    m_node(node),
-   m_verbosity(node->verbosity)
+   m_verbosity(verbosity)
 {
 }
 
@@ -30,8 +30,10 @@ unsigned NNodeUncoincide::uncoincide()
 
     if(m_node->is_root())
     {
-        rc = uncoincide_tree();
+        rc = uncoincide_treewise();
     }
+
+    // NB BELOW PAIRWISE APPROACH CURRENTLY NOT USED
     else if(is_uncoincidable_subtraction(a,b))
     {
         rc = uncoincide_subtraction(a,b);
@@ -40,6 +42,7 @@ unsigned NNodeUncoincide::uncoincide()
     {
         rc = uncoincide_union(a,b);
     }
+
     return rc ; 
 }
 
@@ -139,11 +142,9 @@ Shapes with symmetric parameters like box3 are a pain, as
 to grow in eg +z direction need to grow in both +z and -z
 first and then transform to keep the other side at same place.
 
-Hmm to avoid this perhaps make another primitive ? 
-
+Hmm to avoid this perhaps make a CSG_ZBOX primitive ? 
 
 */
-
 
 
 bool NNodeUncoincide::is_uncoincidable_union(nnode*& a, nnode*& b)
@@ -300,21 +301,61 @@ unsigned NNodeUncoincide::uncoincide_union(nnode* a, nnode* b)
 
 
 
-unsigned NNodeUncoincide::uncoincide_tree()
-{
-    unsigned typmsk = m_node->get_type_mask();
-    bool uncy   = typmsk == (CSGMASK_UNION | CSGMASK_CYLINDER) ;
-    bool uncyco = typmsk == (CSGMASK_UNION | CSGMASK_CYLINDER | CSGMASK_CONE) ;
 
-    if(uncy || uncyco)
+
+
+
+unsigned NNodeUncoincide::uncoincide_treewise()
+{
+    assert( m_node->is_root() );
+
+    unsigned typmsk = m_node->get_type_mask();
+
+    unsigned uncy     = CSGMASK_UNION | CSGMASK_CYLINDER ;
+    unsigned uncyco   = CSGMASK_UNION | CSGMASK_CYLINDER | CSGMASK_CONE ;
+    unsigned uncycodi = CSGMASK_UNION | CSGMASK_DIFFERENCE | CSGMASK_CYLINDER | CSGMASK_CONE ;
+
+    bool root_difference = m_node->type == CSG_DIFFERENCE ; 
+    bool root_uncy   = typmsk == uncy ;
+    bool root_uncyco = typmsk == uncyco ;
+    bool root_uncycodi = typmsk == uncycodi  ;
+
+    if(root_uncy || root_uncyco)
     {
-         uncoincide_tree_uncyco();
+         uncoincide_uncyco(m_node);
+    }
+    else if( root_uncycodi )
+    {
+        nnode* left = m_node->left ; 
+        unsigned left_typmsk = left->get_type_mask();
+
+        //const nnode* right = m_node->right ; 
+        //unsigned right_typmsk = right->get_type_mask();
+
+        bool left_uncy   =  left_typmsk == uncy ;
+        bool left_uncyco =  left_typmsk == uncyco ;
+
+        if( root_difference  && ( left_uncy || left_uncyco ))
+        {
+            LOG(info) << "NNodeUncoincide::uncoincide_tree"
+                      << " TRYING root.left UNCOINCIDE_UNCYCO " 
+                      << " root " << m_node->get_type_mask_string()
+                      << " left " << m_node->left->get_type_mask_string()
+                      << " right " << m_node->right->get_type_mask_string()
+                      ;
+
+            uncoincide_uncyco( left );
+        }
     }
     return 0 ; 
 }
 
 
-struct Primitives 
+
+
+
+
+struct ZNudger 
 {
     nnode* root ; 
     const float epsilon ; 
@@ -326,7 +367,7 @@ struct Primitives
     std::vector<nbbox>        cc ; 
     std::vector<unsigned>     zorder ; 
 
-    Primitives(nnode* root, float epsilon, unsigned verbosity) 
+    ZNudger(nnode* root, float epsilon, unsigned verbosity) 
          :
          root(root),
          epsilon(epsilon), 
@@ -438,7 +479,7 @@ struct Primitives
  
               Join_t join = join_type( za, zb );
 
-              if(verbosity > 0)
+              if(verbosity > 2)
               std::cout 
                      << " ja: " << std::setw(15) << prim[ja]->tag()
                      << " jb: " << std::setw(15) << prim[jb]->tag()
@@ -491,7 +532,7 @@ struct Primitives
 
 
 
-    void dump(const char* msg="Primitives::dump")
+    void dump(const char* msg="ZNudger::dump")
     {
           LOG(info) 
               << msg 
@@ -580,23 +621,23 @@ struct Primitives
                      << std::endl ; 
          }
      }
-
-
-
-
-
 };
 
+// end of ZNudger 
 
 
-unsigned NNodeUncoincide::uncoincide_tree_uncyco()
+unsigned NNodeUncoincide::uncoincide_uncyco(nnode* node)
 {
     float epsilon = 1e-5f ; 
-    Primitives ps(m_node, epsilon, m_verbosity) ; 
+    ZNudger zn(node, epsilon, m_verbosity) ; 
 
-    ps.dump("before znudge");
-    ps.znudge();
-    ps.dump("after znudge");
+    if(m_verbosity > 2 )
+    zn.dump("NNodeUncoincide::uncoincide_uncyco before znudge");
+
+    zn.znudge();
+
+    if(m_verbosity > 2 )
+    zn.dump("NNodeUncoincide::uncoincide_uncyco after znudge");
 
     return 0 ; 
 }
