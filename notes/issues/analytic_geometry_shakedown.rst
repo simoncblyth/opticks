@@ -14,15 +14,8 @@ Issue : flickery ray trace in rib shape
 Impinging Volumes Test
 -------------------------
 
-* start by testing each node bbox against its parent bbox 
+* see :doc:`impinging_volumes`
 
-  * within solid uncoincence done in NCSG::postimport, analogous
-    place for volume overlap testing would be NScene/GScene ? 
-
-  * start with NScene::postimport
-
-  * testing with: tgltf-t 
-  
 
 
 DONE: auto-detect intended unions with coincident faces, and auto-uncoincide them

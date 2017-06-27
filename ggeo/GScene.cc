@@ -39,7 +39,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_ok(ok),
     m_ggeo(ggeo),
     m_gltf(m_ok->getGLTF()),
-    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig()) : NULL),
+    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
     m_geolib(new GGeoLib(m_ok)),

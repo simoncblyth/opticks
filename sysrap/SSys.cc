@@ -99,11 +99,16 @@ int SSys::GetInteractivityLevel()
     return level ;
 }
 
-bool SSys::IsVERBOSE()
+bool SSys::IsENVVAR(const char* envvar)
 {
-    char* verbose = getenv("VERBOSE");
-    return verbose != NULL ;
+    char* e = getenv(envvar);
+    return e != NULL ;
 }
+
+bool SSys::IsVERBOSE() {  return IsENVVAR("VERBOSE") ; }
+bool SSys::IsHARIKARI() { return IsENVVAR("HARIKARI") ; }
+
+
 
 bool SSys::IsRemoteSession()
 {

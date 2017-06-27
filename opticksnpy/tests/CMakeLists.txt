@@ -160,9 +160,6 @@ endif()
 
 
 
-
-
-
 set(_TEST_SOURCES_WITH_LINK_ERRORS_FROM_FWD_NPY_DECL_IN_NGLMEXT_HPP
 
 NLoadCheck.cc
@@ -177,9 +174,6 @@ G4StepNPYTest.cc
 
 
 set(_TEST_SOURCES
-
-
-
 
 SequenceNPYTest.cc
 NConstructorTest.cc

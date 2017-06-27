@@ -38,7 +38,7 @@ std::string nd::desc()
 std::string nd::detail()
 {
     std::stringstream ss ; 
-    ss << desc() ;
+    ss << desc() << std::endl ;
 
     if(transform)  ss << gpresent("nd.tr.t",  transform->t ) << std::endl ;  
     if(gtransform) ss << gpresent("nd.gtr.t", gtransform->t ) << std::endl ;  

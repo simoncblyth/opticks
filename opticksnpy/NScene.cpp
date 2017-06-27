@@ -1,19 +1,28 @@
 #include <sstream>
 #include <iomanip>
 
+#include "SSys.hh"
 #include "BFile.hh"
 
+
+#include "GLMFormat.hpp"
+#include "NGLMExt.hpp"
 #include "NYGLTF.hpp"
 
 #include "Counts.hpp"
 #include "NTrianglesNPY.hpp"
 #include "NParameters.hpp"
 #include "NPY.hpp"
-#include "NScene.hpp"
+#include "NNode.hpp"
+#include "NBBox.hpp"
+
+
 #include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
 #include "Nd.hpp"
+
+#include "NScene.hpp"
 
 #include "PLOG.hh"
 
@@ -45,9 +54,9 @@ bool NScene::Exists(const char* base, const char* name)
 }
 
 
-NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gltfconfig) 
+NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gltfconfig, int dbgnode) 
 {
-    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig) : NULL ;
+    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig, dbgnode) : NULL ;
     if(!scene)
         LOG(fatal) << "NScene:Load MISSING PATH" 
                    << " gltfbase " << gltfbase
@@ -59,9 +68,10 @@ NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gl
 }
 
 
-NScene::NScene(const char* base, const char* name, const char* config, int scene_idx)  
+NScene::NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
+    m_dbgnode(dbgnode),
     m_verbosity(0),
     m_num_global(0),
     m_num_csgskip(0),
@@ -88,6 +98,8 @@ void NScene::init()
 
     m_root = import_r(0, NULL, 0); 
 
+    postimportnd();
+
     if(m_verbosity > 1)
     dumpNdTree("NScene::NScene");
 
@@ -109,6 +121,8 @@ void NScene::init()
     // move load_mesh_extras later so can know which meshes are non-instanced needing 
     // gtransform slots for all primitives
     load_mesh_extras();
+
+    postimportmesh();
 
     write_lvlists();
 
@@ -197,9 +211,10 @@ void NScene::load_csg_metadata()
 
         std::string uri = extras["uri"] ; 
 
-        
         std::string soName = extras["soName"] ; 
+
         int lvIdx = extras["lvIdx"] ; 
+        m_csg_lvIdx[mesh_id] = lvIdx ; 
 
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
@@ -209,7 +224,7 @@ void NScene::load_csg_metadata()
         std::string meta_soname = soname(mesh_id);
         assert( meta_soname.compare(soName) == 0) ; 
 
-        if(m_verbosity > 3)
+        //if(m_verbosity > 3)
         LOG(info) << "NScene::load_csg_metadata"
                   << " verbosity " << m_verbosity 
                   << " mesh_id " << std::setw(3) << mesh_id
@@ -238,6 +253,8 @@ template NPY_API int         NScene::getCSGMeta<int>(unsigned,const char*, const
 template NPY_API float       NScene::getCSGMeta<float>(unsigned,const char*, const char*) const ;
 template NPY_API bool        NScene::getCSGMeta<bool>(unsigned,const char*, const char*) const ;
 
+int          NScene::lvidx(unsigned mesh_id) const { return m_csg_lvIdx.at(mesh_id) ; }
+
 // keys need to match analytic/sc.py 
 std::string NScene::lvname(unsigned mesh_id) const { return getCSGMeta<std::string>(mesh_id,"lvname","-") ; }
 std::string NScene::soname(unsigned mesh_id) const { return getCSGMeta<std::string>(mesh_id,"soname","-") ; }
@@ -251,6 +268,7 @@ std::string NScene::meshmeta(unsigned mesh_id) const
     ss 
        << "NScene::meshmeta"
        << " mesh_id " << std::setw(3) << mesh_id
+       << " lvidx "   << std::setw(3) << lvidx(mesh_id)
        << " height "  << std::setw(2) << height(mesh_id)
        << " soname "  << std::setw(35) << soname(mesh_id)
        << " lvname "  << std::setw(35) << lvname(mesh_id)
@@ -373,11 +391,94 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 
 
-void NScene::postimport()
+void NScene::postimportnd()
 {
-    LOG(info) << "NScene::postimport" ; 
+    LOG(info) << "NScene::postimportnd" 
+              << " numNd " << getNumNd()
+              << " dbgnode " << m_dbgnode
+               ; 
 
+/*
+    if(m_dbgnode > -1)
+    {
+        dumpNd(m_dbgnode);
+        dumpNd(m_dbgnode - 1 );  // TODO should access parent
+    }
+*/
+
+  //  if(SSys::IsHARIKARI())
+  //  assert( 0 && "NScene::postimportnd HARIKARI ");
 }
+
+void NScene::postimportmesh()
+{
+    LOG(info) << "NScene::postimportmesh" 
+              << " numNd " << getNumNd()
+              << " dbgnode " << m_dbgnode
+               ; 
+
+    nd* node = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
+    if(!node) return ; 
+
+    nd* pnode = node->parent ; 
+    assert(pnode);
+
+
+    dumpNd(m_dbgnode);
+
+    unsigned mesh_idx = node->mesh ; 
+    unsigned pmesh_idx = pnode->mesh ; 
+
+    NCSG* csg = getCSG(mesh_idx);
+    assert(csg);
+
+    NCSG* pcsg = getCSG(pmesh_idx);
+    assert(pcsg);
+
+    nnode* root = csg->getRoot();
+    assert(root);
+
+    nnode* proot = pcsg->getRoot();
+    assert(proot);
+
+    assert( node->gtransform );
+    const glm::mat4& node_t  = node->gtransform->t ; 
+
+    assert( pnode->gtransform );
+    const glm::mat4& pnode_t  = pnode->gtransform->t ; 
+
+
+    std::cout 
+        << " mesh_idx "  << mesh_idx 
+        << " pmesh_idx " << pmesh_idx 
+        << " root "  << root->tag() 
+        << " proot " << proot->tag() 
+        << std::endl 
+        << gpresent("node_t", node_t)
+        << std::endl 
+        << gpresent("pnode_t", pnode_t)
+        ;
+
+
+    nbbox csg_bb  = root->bbox();
+    nbbox pcsg_bb  = proot->bbox();
+
+    nbbox csg_tbb = csg_bb.transform(node_t) ; 
+    nbbox pcsg_tbb = pcsg_bb.transform(pnode_t) ; 
+
+    std::cout 
+         << " csg_bb  " <<  csg_bb.desc() << std::endl 
+         << " pcsg_bb " <<  pcsg_bb.desc() << std::endl 
+         << " csg_tbb  " <<  csg_tbb.desc() << std::endl 
+         << " pcsg_tbb " <<  pcsg_tbb.desc() << std::endl 
+         ;
+
+
+    if(SSys::IsHARIKARI())
+    assert( 0 && "NScene::postimportmesh HARIKARI");
+}
+
+//  tgltf-;HARIKARI=1 tgltf-t  
 
 
 
@@ -590,12 +691,33 @@ void NScene::dump_repeat_candidate(unsigned idx) const
                       << std::endl ; 
         }
     }
-
- 
 }
 
 
 
+void NScene::dumpNd(unsigned nidx, const char* msg)
+{
+
+    nd* n = getNd(nidx);
+    LOG(info) << msg 
+              << " nidx " << nidx
+              << ( n ? " node exists " : " NO SUCH NODE " )
+              << " verbosity " << m_verbosity  ; 
+
+    if(!n) return ; 
+
+    unsigned mesh_id = n->mesh ; 
+
+    std::cout << std::endl 
+              << n->detail()
+              << std::endl 
+              << " mesh_id " << mesh_id 
+              << " meshmeta " << meshmeta(mesh_id) 
+              << std::endl 
+              ;   
+
+
+}
 
 void NScene::dumpNdTree(const char* msg)
 {

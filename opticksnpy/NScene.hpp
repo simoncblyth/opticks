@@ -33,15 +33,16 @@ are polygonized on load in NScene::load_mesh_extras.
 class NPY_API NScene : public NGLTF 
 {
     public:
-        static NScene* Load( const char* gltfbase, const char* gltfname, const char* gltfconfig) ;
+        static NScene* Load( const char* gltfbase, const char* gltfname, const char* gltfconfig, int dbgnode ) ;
         static bool Exists(const char* base, const char* name);
-        NScene(const char* base, const char* name, const char* config, int scene_idx=0  );
+        NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx=0  );
 
         nd*      getRoot() const ;
         unsigned getNumNd() const ; 
         nd*      getNd(unsigned node_idx) const ;
         NCSG*    getCSG(unsigned mesh_idx) const ;
 
+        void dumpNd(unsigned idx, const char* msg="NScene::dumpNd");
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
         unsigned getVerbosity();
         unsigned getTargetNode();
@@ -51,6 +52,7 @@ class NPY_API NScene : public NGLTF
         void write_lvlists();
     private:
         template<typename T> T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const ;
+        int         lvidx(unsigned mesh_id) const ;
         std::string lvname(unsigned mesh_id) const ;
         std::string soname(unsigned mesh_id) const ;
         int         height(unsigned mesh_id) const ;
@@ -61,6 +63,7 @@ class NPY_API NScene : public NGLTF
         void load_asset_extras();
         void load_csg_metadata();
         void load_mesh_extras();
+        void postimportmesh();
         void find_repeat_candidates();
     public:
         bool operator()(const std::string& pdig);
@@ -69,7 +72,8 @@ class NPY_API NScene : public NGLTF
         void dump_repeat_candidates() const;
     private:
         nd*  import_r(int idx, nd* parent, int depth);
-        void postimport();
+        void postimportnd();
+
         void dumpNdTree_r(nd* n);
         void count_progeny_digests();
         void count_progeny_digests_r(nd* n);
@@ -96,9 +100,12 @@ class NPY_API NScene : public NGLTF
         std::map<unsigned, nd*>           m_nd ; 
         std::map<unsigned, NParameters*>  m_csg_metadata ;
         std::map<unsigned, NCSG*>         m_csg ; 
+        std::map<unsigned, int>           m_csg_lvIdx ; 
+       
         std::map<unsigned, unsigned>      m_mesh2ridx ;
         std::map<unsigned, unsigned>      m_repeat_count ;
 
+        int                               m_dbgnode ; 
         unsigned                          m_verbosity ; 
         unsigned                          m_targetnode ; 
         unsigned                          m_num_global ; 
