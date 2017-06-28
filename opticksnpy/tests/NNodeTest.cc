@@ -10,6 +10,7 @@
 #include "NBox.hpp"
 #include "Nuv.hpp"
 
+#include "NPY_LOG.hh"
 #include "PLOG.hh"
 
 
@@ -293,20 +294,87 @@ void test_getCoincident()
 
 
 
+void test_getSurfacePointsAll_Composite()
+{
+    LOG(info) << "test_getSurfacePointsAll_Composite" ; 
 
+    glm::vec3 tlate(10,0,10);
+    glm::vec4 aa(0,0,0,10);
+    glm::vec4 bb(0,0,0,10);
+
+    unsigned level = 1 ; 
+    unsigned margin = 1 ; 
+    float epsilon = 1e-5f ; 
+    unsigned pointmask = POINT_SURFACE ; 
+
+    {
+        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b.transform = nmat4triple::make_translate( tlate );    
+
+        ndifference   ab = make_difference(&a, &b); 
+
+        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
+        b.parent = &ab ;   
+        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+
+        ab.dump();
+        std::vector<glm::vec3> surf ; 
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        ab.dumpPointsSDF(surf, epsilon);
+        std::cout << "difference:(inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
+    }
+    {
+        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b.transform = nmat4triple::make_translate( tlate );    
+
+        nunion        ab = make_union(&a, &b); 
+
+        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
+        b.parent = &ab ;   
+        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+
+        ab.dump();
+        std::vector<glm::vec3> surf ; 
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        ab.dumpPointsSDF(surf, epsilon);
+        std::cout << "union: (inside/surface/outside/select)   " << glm::to_string(tot) << std::endl ; 
+    }
+    {
+        nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
+        nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
+        b.transform = nmat4triple::make_translate( tlate );    
+
+        nintersection ab = make_intersection(&a, &b); 
+
+        a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
+        b.parent = &ab ;   
+        ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
+
+        ab.dump();
+        std::vector<glm::vec3> surf ; 
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        ab.dumpPointsSDF(surf, epsilon);
+        std::cout << "intersection:  (inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
+    } 
+}
 
 
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    NPY_LOG__ ; 
 
     //test_node_transforms();
 
-    test_getSurfacePoints_difference();
+    //test_getSurfacePoints_difference();
     //test_getSurfacePoints();
     //test_getCoincidentSurfacePoints();
     //test_getCoincident();
+
+    test_getSurfacePointsAll_Composite();
 
     return 0 ; 
 }

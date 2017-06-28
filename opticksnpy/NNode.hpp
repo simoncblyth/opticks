@@ -21,8 +21,11 @@ struct nmat4triple ;
 
 struct NPY_API nnode 
 {
+    //virtual float operator()(const glm::vec3& p) const ;
     virtual float operator()(float px, float py, float pz) const  ;
     virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
+
+    std::function<float(float,float,float)> sdf() const ;
 
     static nnode* load(const char* treedir, int verbosity);
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
@@ -46,6 +49,11 @@ struct NPY_API nnode
     unsigned uncoincide(unsigned verbosity);
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
+
+    glm::uvec4 getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon ) const ;
+    glm::uvec4 selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon ) const ;
+
+    void dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon ) const ;
     void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;
     void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin, NNodeFrameType fr) const ;
     void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const ;
@@ -53,7 +61,6 @@ struct NPY_API nnode
     void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
 
 
-    std::function<float(float,float,float)> sdf() const ;
 
     glm::vec3 gseeddir() const ;  // override if needed
 
@@ -61,7 +68,6 @@ struct NPY_API nnode
     glm::vec3 par_pos_(const nuv& uv, const nmat4triple* triple) const ;
     glm::vec3 par_pos_local(const nuv& uv) const ;  // "transform"  local node frame
     glm::vec3 par_pos_global(const nuv& uv) const ; // "gtransform" CSG tree root node frame 
-    //glm::vec3 par_pos(const nuv& uv) const ;        // "gtransform" CSG tree root node frame 
 
 
     virtual glm::vec3 par_pos_model(const nuv& uv) const ;

@@ -55,7 +55,7 @@ primitive              parametric     dec_z1/inc_z2
 ===================   =============  ================  ================= 
 nbox                    Y              N
 ncone                   Y              Y                 kludged parametric endcap/body join
-nconvexpolyhedron       N              N                 hmm : defined by planes ? how to parametrise it ?
+nconvexpolyhedron       N(*)           N                 hmm : defined by planes ? minimally provide single point for each plane
 ncylinder               Y              Y                 kludged para 
 ndisc                   Y              Y                 kludged para + need flexibility wrt uv steps for different surfs : ie just 1+1 in z for disc
 nnode                   -              -
@@ -98,6 +98,91 @@ Check SDF values of one object for surface verts of other object
 
 * for example for containment the parent SDF values of child object should
   all be negative : indicating are inside the parent volume 
+
+
+
+Checking Composite Surface Point Generation
+---------------------------------------------
+
+::
+
+     .
+
+      20         +-------*--------+
+                 |              B |
+                 |                |
+      10 +-------*3------+        *
+         |       |       |        |   
+         |       |       |        |
+       0 *0      +-------*1-------+     
+         |               |
+         | A             | 
+     -10 +-------*2------+
+       -10       0       10      20
+
+
+        X
+        |
+        +-- Z
+
+
+::
+
+    Process 65773 launched: '/usr/local/opticks/lib/NNodeTest' (x86_64)
+    2017-06-28 19:54:42.041 INFO  [1739966] [test_getSurfacePointsAll_Composite@299] test_getSurfacePointsAll_Composite
+    nnode::dump [ 0:di] OPER  v:0
+             L [ 0:bo] PRIM  v:0 bb  mi  ( -10.00  -10.00  -10.00)  mx  (  10.00   10.00   10.00)  si  (  20.00   20.00   20.00) 
+             R [ 0:bo] PRIM  v:0 bb  mi  (   0.00  -10.00    0.00)  mx  (  20.00   10.00   20.00)  si  (  20.00   20.00   20.00) 
+    2017-06-28 19:54:42.041 INFO  [1739966] [nnode::dumpPointsSDF@989] nnode::dumpPointsSDF points 12
+     i    0 p (      0.000     0.000   -10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    1 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    2 p (    -10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    3 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    4 p (      0.000   -10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    5 p (      0.000    10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    6 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    7 p (     10.000     0.000    20.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i    8 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    9 p (     20.000     0.000    10.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i   10 p (     10.000   -10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i   11 p (     10.000    10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+    2017-06-28 19:54:42.042 INFO  [1739966] [nnode::dumpPointsSDF@1021] nnode::dumpPointsSDF points     12 epsilon 1.000000e-05 num_inside      0 num_surface     10 num_outside      2
+    nnode::dump [ 0:un] OPER  v:0
+             L [ 0:bo] PRIM  v:0 bb  mi  ( -10.00  -10.00  -10.00)  mx  (  10.00   10.00   10.00)  si  (  20.00   20.00   20.00) 
+             R [ 0:bo] PRIM  v:0 bb  mi  (   0.00  -10.00    0.00)  mx  (  20.00   10.00   20.00)  si  (  20.00   20.00   20.00) 
+    2017-06-28 19:54:42.042 INFO  [1739966] [nnode::dumpPointsSDF@989] nnode::dumpPointsSDF points 12
+     i    0 p (      0.000     0.000   -10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    1 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    2 p (    -10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    3 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    4 p (      0.000   -10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    5 p (      0.000    10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    6 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    7 p (     10.000     0.000    20.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    8 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    9 p (     20.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i   10 p (     10.000   -10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i   11 p (     10.000    10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+    2017-06-28 19:54:42.042 INFO  [1739966] [nnode::dumpPointsSDF@1021] nnode::dumpPointsSDF points     12 epsilon 1.000000e-05 num_inside      0 num_surface     12 num_outside      0
+    nnode::dump [ 0:in] OPER  v:0
+             L [ 0:bo] PRIM  v:0 bb  mi  ( -10.00  -10.00  -10.00)  mx  (  10.00   10.00   10.00)  si  (  20.00   20.00   20.00) 
+             R [ 0:bo] PRIM  v:0 bb  mi  (   0.00  -10.00    0.00)  mx  (  20.00   10.00   20.00)  si  (  20.00   20.00   20.00) 
+    2017-06-28 19:54:42.042 INFO  [1739966] [nnode::dumpPointsSDF@989] nnode::dumpPointsSDF points 12
+     i    0 p (      0.000     0.000   -10.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i    1 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    2 p (    -10.000     0.000     0.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i    3 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    4 p (      0.000   -10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    5 p (      0.000    10.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    6 p (     10.000     0.000     0.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    7 p (     10.000     0.000    20.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i    8 p (      0.000     0.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i    9 p (     20.000     0.000    10.000) sd(fx4)    10.0000 sd(sci) 1.0000e+01 sd(def)         10
+     i   10 p (     10.000   -10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+     i   11 p (     10.000    10.000    10.000) sd(fx4)     0.0000 sd(sci) 0.0000e+00 sd(def)          0
+    2017-06-28 19:54:42.042 INFO  [1739966] [nnode::dumpPointsSDF@1021] nnode::dumpPointsSDF points     12 epsilon 1.000000e-05 num_inside      0 num_surface      8 num_outside      4
+    Process 65773 exited with status = 0 (0x00000000) 
+
 
 
 

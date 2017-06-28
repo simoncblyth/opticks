@@ -24,21 +24,6 @@
 
 
 
-float nnode::operator()(float,float,float) const 
-{
-    assert(0 && "nnode::operator() needs override ");
-    return 0.f ; 
-} 
-
-
-float nnode::sdf_(const glm::vec3& , NNodeFrameType ) const 
-{
-    assert(0 && "nnode::sdf_ needs override ");
-    return 0.f ; 
-}
-
-
-
 
 
 // see NNodeUncoincide::uncoincide_union
@@ -503,6 +488,49 @@ std::function<float(float,float,float)> nnode::sdf() const
 
 
 
+/*
+float nnode::operator()(const glm::vec3& p) const 
+{
+   // presumably more efficient to grab the sdf once and use that, rather than doinf this for every point ?
+    float f = 0.f ; 
+    const nnode* node = this ; 
+    switch(node->type)   
+    {
+        case CSG_UNION:          { nunion* n        = (nunion*)node         ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_INTERSECTION:   { nintersection* n = (nintersection*)node  ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_DIFFERENCE:     { ndifference* n   = (ndifference*)node    ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_SPHERE:         { nsphere* n       = (nsphere*)node        ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_ZSPHERE:        { nzsphere* n      = (nzsphere*)node       ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_BOX:            { nbox* n          = (nbox*)node           ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_BOX3:           { nbox* n          = (nbox*)node           ; f = (*n)(p.x,p.y,p.z) ; } break ;
+        case CSG_SLAB:           { nslab* n         = (nslab*)node          ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        case CSG_PLANE:          { nplane* n        = (nplane*)node         ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        case CSG_CYLINDER:       { ncylinder* n     = (ncylinder*)node      ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        case CSG_DISC:           { ndisc* n         = (ndisc*)node          ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = (*n)(p.x,p.y,p.z) ; } break ; 
+        default:
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            assert(0);
+    }
+    return f; 
+} 
+*/
+
+
+float nnode::operator()(float , float , float ) const 
+{
+    assert(0 && "nnode::operator() needs override ");
+    return 0.f ; 
+}
+
+float nnode::sdf_(const glm::vec3& , NNodeFrameType ) const 
+{
+    assert(0 && "nnode::sdf_ needs override ");
+    return 0.f ; 
+}
+
+
 
 
 
@@ -867,14 +895,101 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
 }
 
 
+glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon ) const 
+{
+    unsigned num_inside(0);
+    unsigned num_outside(0);
+    unsigned num_surface(0);
+    unsigned num_select(0);
+
+    std::function<float(float,float,float)> _sdf = sdf() ;
+
+    for(unsigned i=0 ; i < source.size() ; i++) 
+    {
+          glm::vec3 p = source[i] ;
+
+          float sd =  _sdf(p.x, p.y, p.z) ;
+          
+          NNodePointType pt = NNodeEnum::PointClassify(sd, epsilon ); 
+
+          if( pt & pointmask ) 
+          {
+              num_select++ ;  
+              dest.push_back(p);
+          }
+
+          switch(pt)
+          {
+              case POINT_INSIDE  : num_inside++ ; break ; 
+              case POINT_SURFACE : num_surface++ ; break ; 
+              case POINT_OUTSIDE : num_outside++ ; break ; 
+          }
+
+/*
+          std::cout
+               << " i " << std::setw(4) << i 
+               << " p " << gpresent(p) 
+               << " pt " << std::setw(15) << NNodeEnum::PointType(pt)
+               << " sd(fx4) " << std::setw(10) << std::fixed << std::setprecision(4) << sd 
+               << " sd(sci) " << std::setw(10) << std::scientific << sd 
+               << " sd(def) " << std::setw(10) << std::defaultfloat  << sd 
+               << std::endl
+               ; 
+*/
+    }
+    return glm::uvec4(num_inside, num_surface, num_outside, num_select );
+}
+
+
+
+
 void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr) const 
 {
-     unsigned ns = par_nsurf();
-     for(unsigned s = 0 ; s < ns ; s++)
-     {    
-         getSurfacePoints(surf, s, level, margin, fr) ;
-     }
+    assert(is_primitive());
+    unsigned ns = par_nsurf();
+    for(unsigned s = 0 ; s < ns ; s++) getSurfacePoints(surf, s, level, margin, fr) ;
 }
+
+
+glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon ) const 
+{
+    NNodeFrameType fr = FRAME_GLOBAL ; // otherwise returned positions would be in mixed frames
+
+    std::vector<const nnode*> primitives ; 
+    collect_prim(primitives);    // recursive collection of list of all primitives in tree
+    unsigned nprim = primitives.size();
+
+    glm::uvec4 tot(0,0,0,0);
+
+    for(unsigned i=0 ; i < nprim ; i++)
+    {
+        const nnode* prim = primitives[i] ; 
+
+        typedef std::vector<glm::vec3> VV ; 
+        VV primsurf ;  
+        prim->getSurfacePointsAll(primsurf, level, margin, fr );    // using the above branch
+
+        glm::uvec4 isos = selectBySDF(surf, primsurf, pointmask, epsilon ); 
+        tot += isos ;  
+
+        if(verbosity > 4) 
+        std::cout << "nnode::getSurfacePointsAll" 
+                  << " prim " << std::setw(3) << i 
+                  << " pointmask " << std::setw(20) << NNodeEnum::PointMask(pointmask)
+                  << " primsurf " << std::setw(6) << primsurf.size()
+                  << " num_inside " << std::setw(6) << isos.x
+                  << " num_surface " << std::setw(6) << isos.y
+                  << " num_outside " << std::setw(6) << isos.z
+                  << " num_select " << std::setw(6) << isos.w 
+                  << std::endl ; 
+                  ;
+
+    }
+    return tot ; 
+}
+
+
+
 
 void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const 
 {
@@ -917,6 +1032,9 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
 
 
 
+
+
+
 void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const 
 {
     LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
@@ -935,12 +1053,32 @@ void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const
     std::vector<glm::vec3> points ; 
     getSurfacePointsAll( points, level, margin, fr ); 
 
+    float epsilon = 1e-5f ; 
+    dumpPointsSDF(points, epsilon );
+}
+
+void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) const 
+{
+    LOG(info) << "nnode::dumpPointsSDF"
+              << " points " << points.size()
+              ;
+
+    unsigned num_inside(0);
+    unsigned num_outside(0);
+    unsigned num_surface(0);
+
+    std::function<float(float,float,float)> _sdf = sdf() ;
+
     for(unsigned i=0 ; i < points.size() ; i++) 
     {
           glm::vec3 p = points[i] ;
 
-          float sd = (*this)(p.x, p.y, p.z) ;
+          float sd =  _sdf(p.x, p.y, p.z) ;
 
+          if(fabsf(sd) < epsilon ) num_surface++ ; 
+          else if( sd  <  0 )      num_inside++ ; 
+          else if( sd  >  0 )      num_outside++ ; 
+           
           std::cout
                << " i " << std::setw(4) << i 
                << " p " << gpresent(p) 
@@ -950,6 +1088,16 @@ void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const
                << std::endl
                ; 
     }
+
+
+    LOG(info) << "nnode::dumpPointsSDF"
+              << " points " << std::setw(6) << points.size()
+              << " epsilon " << std::scientific << epsilon 
+              << " num_inside " << std::setw(6) << num_inside
+              << " num_surface " << std::setw(6) << num_surface
+              << " num_outside " << std::setw(6) << num_outside
+              ;
+
 }
 
 
