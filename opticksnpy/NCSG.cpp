@@ -754,12 +754,12 @@ void NCSG::import_planes(nnode* node)
 
     for(unsigned i=idx ; i < idx + nplane ; i++)
     {
-        nvec4 plane = m_planes->getVQuad(i) ;
+        glm::vec4 plane = m_planes->getQuad(i) ;
         node->planes.push_back(plane);    
 
         if(m_verbosity > 3)
         std::cout << " plane " << std::setw(3) << i 
-                  << plane.desc()
+                  << gpresent(plane)
                   << std::endl ; 
 
     }

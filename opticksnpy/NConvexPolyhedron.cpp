@@ -1,8 +1,11 @@
 
 #include <cfloat>
+
+#include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp> 
 #include "NConvexPolyhedron.hpp"
+#include "Nuv.hpp"
 #include "NBBox.hpp"
 
 
@@ -21,7 +24,7 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
 
     for(unsigned i=0 ; i < num_planes ; i++)
     {
-        const nvec4& plane = planes[i]; 
+        const glm::vec4& plane = planes[i]; 
         glm::vec3 pnorm(plane.x, plane.y, plane.z );
         assert( plane.w > 0.f );// <-- TODO: assert elsewhere in lifecycle
         float pdist = plane.w ; 
@@ -33,7 +36,7 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
 
         if(verbosity > 2)
         std::cout 
-             << " pl: " << plane.desc()
+             << " pl: " << gpresent(plane)
              << " " << std::setw(10) << d 
              << std::endl 
              ; 
@@ -76,7 +79,7 @@ bool nconvexpolyhedron::intersect( const float t_min, const glm::vec3& ray_origi
 
     for(unsigned i=0 ; i < num_planes && t0 < t1  ; i++)
     {
-        const nvec4& plane = planes[i]; 
+        const glm::vec4& plane = planes[i]; 
         glm::vec3 pnorm(plane.x, plane.y, plane.z );
         assert( plane.w > 0.f );// <-- TODO: assert elsewhere in lifecycle
         float pdist = plane.w ;
@@ -171,6 +174,48 @@ void nconvexpolyhedron::pdump(const char* msg) const
 
 
 }
+
+
+
+
+unsigned nconvexpolyhedron::par_nsurf() const 
+{
+   return planes.size() ; 
+}
+int nconvexpolyhedron::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned nconvexpolyhedron::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
+{
+   return planes.size();
+}
+
+glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const 
+{
+    unsigned s  = uv.s(); 
+    assert(s < planes.size() );
+
+    glm::vec4 pl = planes[s];
+
+    glm::vec3 norm(pl.x,pl.y,pl.z) ; 
+    float dist = pl.w ; 
+
+    float epsilon = 1e-5 ; 
+    assert( fabsf(glm::length(norm) - 1.f ) < epsilon ); 
+
+    glm::vec3 pos = norm*dist ; 
+  
+    return pos ; 
+}
+
+
+
+
+
+
+
+
 
 
 

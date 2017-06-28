@@ -279,7 +279,7 @@ void test_getCoincident()
      {
          nuv uv = coincident[i] ;
 
-         glm::vec3 pos = bx.par_pos(uv);
+         glm::vec3 pos = bx.par_pos_global(uv);
 
          std::cout 
               <<  " uv " << uv.desc() 

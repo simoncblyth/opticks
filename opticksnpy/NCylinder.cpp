@@ -109,13 +109,10 @@ int ncylinder::par_euler() const
 }
 unsigned ncylinder::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
 {
-   // expected unique vertex count, accounting for extra ones, poles and 360-seam 
-   //assert( nv > 2 ); 
-   //return 2 + (nu+1-1)*(nv+1-2) ;     
    return 0 ; 
 }
 
-glm::vec3 ncylinder::par_pos(const nuv& uv) const 
+glm::vec3 ncylinder::par_pos_model(const nuv& uv) const 
 {
     unsigned s  = uv.s(); 
     assert(s < par_nsurf());

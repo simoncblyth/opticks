@@ -2,6 +2,7 @@
 #include "NConvexPolyhedron.hpp"
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -89,6 +90,30 @@ void test_bbox(const nconvexpolyhedron* cpol)
 }
 
 
+void test_getSurfacePointsAll(const nconvexpolyhedron* cpol)
+{
+    cpol->dump_planes(); 
+
+
+
+
+    std::vector<glm::vec3> surf ; 
+
+    unsigned level = 1 ;  // +---+---+
+    int margin = 1 ;      // o---*---o
+
+    cpol->getSurfacePointsAll(surf, level, margin, FRAME_LOCAL );
+
+    LOG(info) << "test_parametric"
+              << " surf points " << surf.size()
+              ;
+
+    for(unsigned i=0 ; i < surf.size() ; i++ ) std::cout << gpresent(surf[i]) << std::endl ; 
+
+}
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -103,7 +128,11 @@ int main(int argc, char** argv)
 
     //test_sdf(cpol);
     //test_intersect(cpol);
-    test_bbox(cpol);
+    //test_bbox(cpol);
+    //test_getSurfacePointsAll(cpol);
+
+     cpol->dumpSurfacePointsAll("dumpSurfacePointsAll", FRAME_LOCAL);
+
 
     return 0 ; 
 }

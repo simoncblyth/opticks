@@ -19,7 +19,7 @@ struct NPY_API ncylinder : nnode
 
     int       par_euler() const ; 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nuv& uv) const  ;
+    glm::vec3 par_pos_model(const nuv& uv) const  ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
 
@@ -91,6 +91,14 @@ inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
     param1.u.w = 0u ; 
 
     return make_cylinder(param, param1 );
+}
+
+inline NPY_API ncylinder make_cylinder()
+{
+    float radius = 10. ; 
+    float z1 = -5.f ; 
+    float z2 = 15.f ; 
+    return make_cylinder(radius,z1,z2); 
 }
 
 

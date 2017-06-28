@@ -24,7 +24,7 @@ struct NPY_API ndisc : nnode
 
     int       par_euler() const ; 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nuv& uv) const  ;
+    glm::vec3 par_pos_model(const nuv& uv) const  ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
 
@@ -88,5 +88,11 @@ inline NPY_API ndisc make_disc(float radius_, float z1_, float z2_)
 
     return make_disc(param, param1 );
 }
+
+inline NPY_API ndisc make_disc()
+{
+    return make_disc(500.f, -0.01, 0.01 );
+}
+
 
 

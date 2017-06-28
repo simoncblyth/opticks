@@ -9,6 +9,16 @@
 #include "PLOG.hh"
 
 
+
+
+void test_dumpSurfacePointsAll()
+{
+    LOG(info) << "test_dumpSurfacePointsAll" ;
+    nzsphere zs = make_zsphere();
+    zs.dumpSurfacePointsAll("zs.dumpSurfacePointsAll", FRAME_LOCAL);
+}
+
+
 void test_part()
 {
     unsigned flags = 0 ; 
@@ -84,7 +94,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv );
 
-            glm::vec3 p = zs.par_pos(uv);
+            glm::vec3 p = zs.par_pos_model(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -111,7 +121,8 @@ int main(int argc, char** argv)
     //test_bbox();
     //test_sdf();
 
-    test_parametric();
+    //test_parametric();
+    test_dumpSurfacePointsAll();
 
     return 0 ; 
 }

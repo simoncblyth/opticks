@@ -54,15 +54,7 @@ struct NPY_API nbox : nnode
 
     // parametric surface positions 
 
-    glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;   
-    glm::vec3 par_pos_(const nuv& uv, const nmat4triple* triple) const ;   
     glm::vec3 par_pos_model(const nuv& uv) const ;  // no transforms, bare model
-    glm::vec3 par_pos_local(const nuv& uv) const ;  // "transform"  local node frame
-    glm::vec3 par_pos_global(const nuv& uv) const ; // "gtransform" CSG tree root node frame 
-    glm::vec3 par_pos(const nuv& uv) const ;        // "gtransform" CSG tree root node frame 
-
-    // parametric metadata
-
     unsigned  par_nsurf() const ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     int       par_euler() const ; 

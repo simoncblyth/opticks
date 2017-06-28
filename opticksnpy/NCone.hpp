@@ -22,7 +22,7 @@ struct NPY_API ncone : nnode
 
     int       par_euler() const ; 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nuv& uv) const  ;
+    glm::vec3 par_pos_model(const nuv& uv) const  ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
     static void _par_pos_body(glm::vec3& pos,  const nuv& uv, const float r1_, const float z1_,  const float r2_, const float z2_);  
 

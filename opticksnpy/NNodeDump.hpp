@@ -13,6 +13,7 @@ class NPY_API NNodeDump
         void dump_prim( const char* msg) const ;
         void dump_transform( const char* msg) const ;
         void dump_gtransform( const char* msg) const ;
+        void dump_planes( const char* msg) const ;
 
     private:
         const nnode& m_node ; 

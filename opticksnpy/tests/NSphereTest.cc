@@ -10,6 +10,15 @@
 #include "PLOG.hh"
 
 
+
+void test_dumpSurfacePointsAll()
+{
+    LOG(info) << "test_dumpSurfacePointsAll" ;
+    nsphere sp = make_sphere();
+    sp.dumpSurfacePointsAll("sp.dumpSurfacePointsAll", FRAME_LOCAL);
+}
+
+
 void test_part()
 {
     nsphere s = make_sphere(0,0,3,10);
@@ -276,7 +285,8 @@ int main(int argc, char** argv)
 */
 
     //test_sdf();
-    test_diff_DeMorgan_sdf();
+    //test_diff_DeMorgan_sdf();
+    test_dumpSurfacePointsAll();
 
     return 0 ; 
 }

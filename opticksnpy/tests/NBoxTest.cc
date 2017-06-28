@@ -2,7 +2,7 @@
 #include <cfloat>
 #include "NGLMExt.hpp"
 
-
+#include "GLMFormat.hpp"
 #include "NGenerator.hpp"
 #include "NBox.hpp"
 #include "NBBox.hpp"
@@ -119,7 +119,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv );
 
-            glm::vec3 p = box.par_pos(uv);
+            glm::vec3 p = box.par_pos_global(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -216,9 +216,34 @@ void test_nudge()
         assert( after[4].y == -h  );
         assert( after[5].y == h  );
     }
+}
+
+
+void test_getSurfacePointsAll()
+{
+    float h = 10.f ;  
+    nbox box = make_box3(2*h,2*h,2*h); 
+    box.verbosity = 3 ;  
+    box.pdump("make_box3(2*h,2*h,2*h)");
+
+    unsigned level = 1 ;  // +---+---+
+    int margin = 1 ;      // o---*---o
+
+    std::vector<glm::vec3> surf ; 
+    box.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL ); 
+
+    LOG(info) << "test_getSurfacePointsAll"
+              << " surf " << surf.size()
+              ;
+
+    for(unsigned i=0 ; i < surf.size() ; i++ ) std::cout << gpresent(surf[i]) << std::endl ; 
+
+
+    box.dumpSurfacePointsAll("box.dumpSurfacePointsAll", FRAME_LOCAL );
 
 
 }
+
 
 
 
@@ -232,7 +257,9 @@ int main(int argc, char** argv)
     //test_sdf();
     //test_parametric();
     //test_box_box3();
-    test_nudge();
+    //test_nudge();
+
+    test_getSurfacePointsAll();
 
     return 0 ; 
 }

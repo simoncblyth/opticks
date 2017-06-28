@@ -192,30 +192,6 @@ unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const
 }
 
 
-glm::vec3 nbox::par_pos_(const nuv& uv, NNodeFrameType fty) const 
-{
-    glm::vec3 pos ; 
-    switch(fty)
-    {
-        case FRAME_MODEL:  pos = par_pos_(uv, NULL)       ; break ; 
-        case FRAME_LOCAL:  pos = par_pos_(uv, transform)  ; break ; 
-        case FRAME_GLOBAL: pos = par_pos_(uv, gtransform) ; break ; 
-    }
-    return pos ; 
-}
-
-glm::vec3 nbox::par_pos_(const nuv& uv, const nmat4triple* triple) const 
-{
-    glm::vec3 mpos = par_pos_model(uv);
-    glm::vec4 tpos(mpos, 1) ; 
-    if(triple) tpos = triple->t * tpos ;   // <-- direct transform, not inverse
-    return glm::vec3(tpos) ; 
-}
-
-
-glm::vec3 nbox::par_pos_local( const nuv& uv) const { return par_pos_(uv, transform) ; }
-glm::vec3 nbox::par_pos_global(const nuv& uv) const { return par_pos_(uv, gtransform) ; }
-glm::vec3 nbox::par_pos(       const nuv& uv) const { return par_pos_(uv, gtransform) ; }
 
 glm::vec3 nbox::par_pos_model( const nuv& uv) const 
 {

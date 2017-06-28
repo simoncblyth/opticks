@@ -7,6 +7,17 @@
 
 
 
+
+
+void test_dumpSurfacePointsAll()
+{
+    LOG(info) << "test_dumpSurfacePointsAll" ;
+    ncylinder cy = make_cylinder();
+    cy.dumpSurfacePointsAll("cy.dumpSurfacePointsAll", FRAME_LOCAL);
+}
+
+
+
 void test_parametric()
 {
     LOG(info) << "test_parametric" ;
@@ -14,7 +25,6 @@ void test_parametric()
     float radius = 10. ; 
     float z1 = -5.f ; 
     float z2 = 15.f ; 
-
     ncylinder cy = make_cylinder(radius,z1,z2); 
 
     unsigned nsurf = cy.par_nsurf();
@@ -32,7 +42,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv );
 
-            glm::vec3 p = cy.par_pos(uv);
+            glm::vec3 p = cy.par_pos_model(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -86,7 +96,9 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     //test_sdf();
-    test_parametric();
+    //test_parametric();
+
+    test_dumpSurfacePointsAll();
 
     return 0 ; 
 }   

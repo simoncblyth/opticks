@@ -408,8 +408,8 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
             uv[0] = a_mesh->prop.get_uv(vh[0]) ; 
             uv[1] = a_mesh->prop.get_uv(vh[1]) ; 
 
-            a_pos[0] = a_node->par_pos( uv[0] );
-            a_pos[1] = a_node->par_pos( uv[1] );
+            a_pos[0] = a_node->par_pos_global( uv[0] );
+            a_pos[1] = a_node->par_pos_global( uv[1] );
 
             _a_sdf[0] = a_sdf( a_pos[0].x, a_pos[0].y, a_pos[0].z );
             _a_sdf[1] = a_sdf( a_pos[1].x, a_pos[1].y, a_pos[1].z );

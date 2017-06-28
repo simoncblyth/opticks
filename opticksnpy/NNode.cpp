@@ -38,11 +38,7 @@ float nnode::sdf_(const glm::vec3& , NNodeFrameType ) const
 }
 
 
-glm::vec3 nnode::par_pos_(const nuv& , NNodeFrameType ) const 
-{
-    assert(0 && "nnode::par_pos_ needs override ");
-    return glm::vec3(0);
-}
+
 
 
 // see NNodeUncoincide::uncoincide_union
@@ -505,6 +501,46 @@ std::function<float(float,float,float)> nnode::sdf() const
     return f ;
 }
 
+
+
+
+
+
+
+
+
+glm::vec3 nnode::par_pos_model(const nuv& ) const 
+{
+    assert(0 && "nnode::par_pos_model needs override in all primitives ");
+    return glm::vec3(0);
+}
+
+
+glm::vec3 nnode::par_pos_(const nuv& uv, NNodeFrameType fty) const 
+{
+    glm::vec3 pos ; 
+    switch(fty)
+    {
+        case FRAME_MODEL:  pos = par_pos_(uv, NULL)       ; break ; 
+        case FRAME_LOCAL:  pos = par_pos_(uv, transform)  ; break ; 
+        case FRAME_GLOBAL: pos = par_pos_(uv, gtransform) ; break ; 
+    }
+    return pos ; 
+}
+
+glm::vec3 nnode::par_pos_(const nuv& uv, const nmat4triple* triple) const 
+{
+    glm::vec3 mpos = par_pos_model(uv);
+    glm::vec4 tpos(mpos, 1) ; 
+    if(triple) tpos = triple->t * tpos ;   // <-- direct transform, not inverse
+    return glm::vec3(tpos) ; 
+}
+
+glm::vec3 nnode::par_pos_local( const nuv& uv) const { return par_pos_(uv, transform) ; }
+glm::vec3 nnode::par_pos_global(const nuv& uv) const { return par_pos_(uv, gtransform) ; }
+//glm::vec3 nnode::par_pos(       const nuv& uv) const { return par_pos_(uv, gtransform) ; }
+
+
 int nnode::par_euler() const 
 {
     assert(0 && "this need to be overridden");
@@ -522,6 +558,7 @@ unsigned nnode::par_nvertices(unsigned , unsigned ) const
     return 0 ; 
 }
 
+/*
 glm::vec3 nnode::par_pos(const nuv& uv) const  // override in shapes 
 {
     unsigned surf = uv.s();
@@ -530,7 +567,7 @@ glm::vec3 nnode::par_pos(const nuv& uv) const  // override in shapes
     glm::vec3 pos ;
     return pos ;  
 }
-
+*/
 
 
 
@@ -738,6 +775,8 @@ void nnode::dump_full(const char* msg) const
     dump_transform(msg);
 
     dump_gtransform(msg);
+
+    dump_planes(msg);
 }
 
 void nnode::dump(const char* msg) const 
@@ -760,6 +799,12 @@ void nnode::dump_transform( const char* msg) const
     NNodeDump d(*this);
     d.dump_transform(msg);
 }
+void nnode::dump_planes( const char* msg) const 
+{
+    NNodeDump d(*this);
+    d.dump_planes(msg);
+}
+
 
 
 
@@ -876,7 +921,8 @@ void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const
 {
     LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
 
-    unsigned level = 1 ;  // +---+---+
+    //unsigned level = 1 ;  // +---+---+
+    unsigned level = 4 ;  
     int margin = 1 ;      // o---*---o
 
     std::cout 
@@ -890,12 +936,20 @@ void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const
     getSurfacePointsAll( points, level, margin, fr ); 
 
     for(unsigned i=0 ; i < points.size() ; i++) 
+    {
+          glm::vec3 p = points[i] ;
+
+          float sd = (*this)(p.x, p.y, p.z) ;
+
           std::cout
                << " i " << std::setw(4) << i 
-               << " " 
-               << glm::to_string(points[i]) 
+               << " p " << gpresent(p) 
+               << " sd(fx4) " << std::setw(10) << std::fixed << std::setprecision(4) << sd 
+               << " sd(sci) " << std::setw(10) << std::scientific << sd 
+               << " sd(def) " << std::setw(10) << std::defaultfloat  << sd 
                << std::endl
                ; 
+    }
 }
 
 

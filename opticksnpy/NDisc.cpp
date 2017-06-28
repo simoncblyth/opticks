@@ -116,7 +116,7 @@ unsigned ndisc::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const
    return 0 ; 
 }
 
-glm::vec3 ndisc::par_pos(const nuv& uv) const 
+glm::vec3 ndisc::par_pos_model(const nuv& uv) const 
 {
     // same as ncylinder
 

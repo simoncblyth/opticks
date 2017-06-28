@@ -78,6 +78,15 @@ eg could be a tetrahedron, cube, prism, trapezoid, octahedron, dodecahedron, ...
   which could then be subdivided
 
 
+* https://mathoverflow.net/questions/138494/finding-the-vertices-of-a-convex-polyhedron-from-a-set-of-planes
+* http://cgm.cs.mcgill.ca/~avis/doc/avis/AF92b.pdf
+* https://www.inf.ethz.ch/personal/fukudak/soft/soft.html
+* https://www.inf.ethz.ch/personal/fukudak/polyfaq/polyfaq.html
+
+* https://www.inf.ethz.ch/personal/fukudak/polyfaq/node41.html
+
+* http://www.cs.mcgill.ca/~fukuda/software/cdd_home/cdd.html
+
 
 
 

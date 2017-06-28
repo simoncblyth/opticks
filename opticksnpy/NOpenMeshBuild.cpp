@@ -202,7 +202,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
             {
                 nuv uv = make_uv(s,u,v,nu,nv);
 
-                glm::vec3 pos = node->par_pos(uv);
+                glm::vec3 pos = node->par_pos_global(uv);
 
                 bool added(false) ;
 

@@ -117,4 +117,29 @@ void NNodeDump::dump_prim( const char* msg) const
 }
 
 
+void NNodeDump::dump_planes( const char* msg) const 
+{
+    unsigned num_planes = m_node.planes.size() ;
+
+    LOG(info) << msg 
+              << " num_planes " << num_planes
+              ;
+
+
+    for(unsigned i=0 ; i < num_planes ; i++)
+    {
+        glm::vec4 pl = m_node.planes[i];
+        glm::vec3 normal(pl.x, pl.y, pl.z);
+        float dist = pl.w ; 
+        std::cout << " i " << std::setw(2) << i 
+                  << " pl " << gpresent(pl)
+                  << " nlen " << glm::length(normal)
+                  << " dist " << dist
+                  << std::endl ; 
+    }
+
+
+
+
+}
 

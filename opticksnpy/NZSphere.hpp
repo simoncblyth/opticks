@@ -23,7 +23,7 @@ struct NPY_API nzsphere : nnode {
     void pdump(const char* msg="nzsphere::pdump") const ;
 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nuv& uv) const  ;
+    glm::vec3 par_pos_model(const nuv& uv) const  ;
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
@@ -125,5 +125,10 @@ inline NPY_API nzsphere make_zsphere(float x_, float y_, float z_, float radius_
     p2.u = {flags_, 0,0,0};
 
     return make_zsphere(p0, p1, p2);
+}
+
+inline NPY_API nzsphere make_zsphere()
+{
+    return make_zsphere(0.f, 0.f, 0.f, 100.f, -50.f, 70.f, ZSPHERE_PCAP|ZSPHERE_QCAP) ;
 }
 

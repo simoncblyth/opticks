@@ -1,9 +1,11 @@
 #include <iostream>
 #include <iomanip>
 
-#include "PLOG.hh"
+#include "GLMFormat.hpp"
 #include "Nuv.hpp"
 #include "NCone.hpp"
+
+#include "PLOG.hh"
 
 
 void test_sdf()
@@ -41,7 +43,6 @@ void test_parametric()
 
     float r1 = 4.f ; 
     float z1 = 0.f ;
-
     float r2 = 2.f ; 
     float z2 = 2.f ;
 
@@ -62,7 +63,7 @@ void test_parametric()
         {
             nuv uv = make_uv(s,u,v,nu,nv );
 
-            glm::vec3 p = cone.par_pos(uv);
+            glm::vec3 p = cone.par_pos_model(uv);
 
             std::cout 
                  << " s " << std::setw(3) << s  
@@ -78,12 +79,53 @@ void test_parametric()
 
 
 
+void test_getSurfacePointsAll()
+{
+    float r1 = 4.f ; 
+    float z1 = 0.f ;
+    float r2 = 2.f ; 
+    float z2 = 2.f ;
+
+    ncone cone = make_cone(r1,z1,r2,z2) ; 
+
+    cone.verbosity = 3 ;  
+    cone.pdump("make_cone(4,0,2,2)");
+
+    unsigned level = 5 ;  // +---+---+
+    int margin = 1 ;      // o---*---o
+    std::vector<glm::vec3> surf ; 
+    cone.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL ); 
+
+    LOG(info) << "test_getSurfacePointsAll"
+              << " surf " << surf.size()
+              ;
+
+    for(unsigned i=0 ; i < surf.size() ; i++ )
+    {
+        glm::vec3 p = surf[i]; 
+        float sd = cone(p.x, p.y, p.z);
+
+        std::cout << " p " << gpresent(p) 
+                  << " sd " << sd
+                  << " sd(sci) " << std::scientific << sd << std::defaultfloat 
+                  << std::endl
+                  ; 
+    }
+
+}
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
     //test_sdf();
-    test_parametric();
+    //test_parametric();
+    test_getSurfacePointsAll();
 
     return 0 ; 
 } 

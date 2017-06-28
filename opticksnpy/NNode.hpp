@@ -57,9 +57,15 @@ struct NPY_API nnode
 
     glm::vec3 gseeddir() const ;  // override if needed
 
+    glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;
+    glm::vec3 par_pos_(const nuv& uv, const nmat4triple* triple) const ;
+    glm::vec3 par_pos_local(const nuv& uv) const ;  // "transform"  local node frame
+    glm::vec3 par_pos_global(const nuv& uv) const ; // "gtransform" CSG tree root node frame 
+    //glm::vec3 par_pos(const nuv& uv) const ;        // "gtransform" CSG tree root node frame 
+
+
+    virtual glm::vec3 par_pos_model(const nuv& uv) const ;
     virtual unsigned  par_nsurf() const ;
-    virtual glm::vec3 par_pos(const nuv& uv) const ;
-    virtual glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;
     virtual int       par_euler() const ; 
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     virtual void      nudge(unsigned s, float delta);
@@ -90,6 +96,8 @@ struct NPY_API nnode
     void dump_transform(const char* msg="nnode::dump_transform") const ;
     void dump_gtransform(const char* msg="nnode::dump_gtransform") const ;
     void dump_prim(const char* msg="nnode::dump_prim") const ;
+    void dump_planes(const char* msg="nnode::dump_planes") const ;
+  
 
 
     unsigned get_num_prim() const ;
@@ -135,7 +143,7 @@ struct NPY_API nnode
     nquad param2 ; 
     nquad param3 ; 
 
-    std::vector<nvec4> planes ; 
+    std::vector<glm::vec4> planes ; 
 
 };
 

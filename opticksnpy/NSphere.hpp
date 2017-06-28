@@ -33,7 +33,7 @@ struct NPY_API nsphere : nnode {
     glm::vec3 gseedcenter() const ;
 
     unsigned  par_nsurf() const ; 
-    glm::vec3 par_pos(const nuv& uv) const  ;
+    glm::vec3 par_pos_model(const nuv& uv) const  ;
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
@@ -73,6 +73,10 @@ inline NPY_API nsphere make_sphere(float x, float y, float z, float w)
     nquad param ; 
     param.f = {x,y,z,w} ;
     return make_sphere(param);
+}
+inline NPY_API nsphere make_sphere()
+{
+    return make_sphere(0.f,0.f,0.f,100.f);
 }
 
 

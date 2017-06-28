@@ -121,7 +121,7 @@ unsigned nzsphere::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const
    return 0 ;     
 }
 
-glm::vec3 nzsphere::par_pos(const nuv& uv) const 
+glm::vec3 nzsphere::par_pos_model(const nuv& uv) const 
 {
     unsigned s  = uv.s(); 
     assert(s == 0 || s == 1 || s == 2);
