@@ -15,6 +15,8 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+#include "NCone.hpp"
+#include "Nuv.hpp"
 
 #include "PLOG.hh"
 
@@ -95,6 +97,58 @@ void ndisc::pdump(const char* msg ) const
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
 }
+
+
+
+
+
+
+unsigned ndisc::par_nsurf() const 
+{
+   return 3 ; 
+}
+int ndisc::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned ndisc::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
+{
+   return 0 ; 
+}
+
+glm::vec3 ndisc::par_pos(const nuv& uv) const 
+{
+    // same as ncylinder
+
+    unsigned s  = uv.s(); 
+    assert(s < par_nsurf());
+
+    float r1_ = radius();
+    float r2_ = radius();
+    float z1_ = z1();
+    float z2_ = z2();
+
+    assert( z2_ > z1_ );
+
+    glm::vec3 pos(0,0,0);
+    pos.x = x();
+    pos.y = y();
+    // start on axis
+
+    switch(s)
+    {
+       case 0:  ncone::_par_pos_body(  pos, uv, r1_ ,  z1_ , r2_ , z2_ ) ; break ; 
+       case 1:  nnode::_par_pos_endcap(pos, uv, r2_ ,  z2_ )             ; break ; 
+       case 2:  nnode::_par_pos_endcap(pos, uv, r1_ ,  z1_ )             ; break ; 
+    }
+    return pos ; 
+}
+
+
+
+
+
+
 
 
 /*

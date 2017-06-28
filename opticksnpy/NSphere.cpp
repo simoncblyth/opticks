@@ -20,18 +20,19 @@
 #include "PLOG.hh"
 
 
-float nsphere::costheta(float z)
+float nsphere::costheta(float z_)
 {
-   return (z - center.z)/radius ;  
+   return (z_ - z())/radius() ;  
 }
 
 // signed distance function
 
-float nsphere::operator()(float x, float y, float z) const 
+float nsphere::operator()(float x_, float y_, float z_) const 
 {
-    glm::vec4 p(x,y,z,1.f); 
+    glm::vec4 p(x_,y_,z_,1.f); 
     if(gtransform) p = gtransform->v * p ;  // v:inverse-transform
-    float sd = glm::distance( glm::vec3(p), center ) - radius ;
+    glm::vec3 c = center(); 
+    float sd = glm::distance( glm::vec3(p), c ) - radius() ;
     return complement ? -sd : sd ;
 } 
 
@@ -55,12 +56,22 @@ unsigned nsphere::par_nvertices(unsigned nu, unsigned nv) const
 glm::vec3 nsphere::par_pos(const nuv& uv) const 
 {
     unsigned s  = uv.s(); 
-    unsigned u  = uv.u() ; 
-    unsigned v  = uv.v() ; 
-    unsigned nu = uv.nu() ; 
-    unsigned nv = uv.nv() ; 
+    assert(s == 0);
 
-    assert(s < par_nsurf());
+    glm::vec3 c = center();
+    glm::vec3 pos(c);
+
+    float r_ = radius();
+
+    _par_pos_body( pos, uv, r_ );
+  
+    return pos ; 
+}
+
+void nsphere::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ )  // static
+{
+    unsigned  v  = uv.v(); 
+    unsigned nv  = uv.nv(); 
 
     // Avoid numerical precision problems at the poles
     // by providing precisely the same positions
@@ -68,57 +79,24 @@ glm::vec3 nsphere::par_pos(const nuv& uv) const
     
     bool is_north_pole = v == 0 ; 
     bool is_south_pole = v == nv ; 
-    bool is_360_seam = u == nu ; 
 
-    float fu = is_360_seam ? 0.f : float(u)/float(nu) ; 
-    float fv = float(v)/float(nv) ; 
-
-    const float pi = glm::pi<float>() ;
-    float azimuth = fu * 2 * pi ;
-    float polar   = fv * pi ;
-
-
-    glm::vec3 pos(center) ;  
-    if(is_north_pole || is_south_pole)
+    if(is_north_pole || is_south_pole) 
     {
-        pos += glm::vec3(0,0,is_north_pole ? radius : -radius ) ; 
+        pos += glm::vec3(0,0,is_north_pole ? r_ : -r_ ) ; 
     }   
     else
     { 
+        bool seamed = true ; 
+        float azimuth = uv.fu2pi(seamed); 
+        float polar = uv.fvpi() ; 
         float ca = cosf(azimuth);
         float sa = sinf(azimuth);
         float cp = cosf(polar);
         float sp = sinf(polar);
 
-        pos += glm::vec3( radius*ca*sp, radius*sa*sp, radius*cp );
+        pos += glm::vec3( r_*ca*sp, r_*sa*sp, r_*cp );
     }
-
-
-
-    /*
-    std::cout << "nsphere::par_pos"
-              << " u " << std::setw(3) << u 
-              << " v " << std::setw(3) << v
-              << " nu " << std::setw(3) << nu 
-              << " nv " << std::setw(3) << nv
-              << " azimuth " << std::setw(15) << std::fixed << std::setprecision(4) << azimuth
-              << " polar " << std::setw(15) << std::fixed << std::setprecision(4) << polar
-              << " pos "
-              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.x
-              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.y
-              << " " << std::setw(15) << std::fixed << std::setprecision(4) << pos.z
-              << " " << ( is_north_pole ? "north_pole" : "" )
-              << " " << ( is_south_pole ? "south_pole" : "" )
-              << " " << ( is_360_seam ? "360_seam" : "" )
-              << std::endl 
-              ;
-     */
-   
-
-    return pos ; 
 }
-
-
 
 
 
@@ -126,7 +104,8 @@ glm::vec3 nsphere::par_pos(const nuv& uv) const
 
 glm::vec3 nsphere::gseedcenter() const 
 {
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ; // t:transform
+    glm::vec3 c = center();
+    return gtransform == NULL ? c : glm::vec3( gtransform->t * glm::vec4(c, 1.f ) ) ; // t:transform
 }
 
 
@@ -136,8 +115,8 @@ void nsphere::pdump(const char* msg) const
     std::cout 
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
-              << " center " << center 
-              << " radius " << radius 
+              << " center " << center()
+              << " radius " << radius()
               << " gseedcenter " << gseedcenter()
               << " gtransform " << !!gtransform 
               << std::endl ; 
@@ -151,8 +130,11 @@ nbbox nsphere::bbox() const
 {
     nbbox bb = make_bbox();
 
-    bb.min = make_nvec3(center.x - radius, center.y - radius, center.z - radius);
-    bb.max = make_nvec3(center.x + radius, center.y + radius, center.z + radius);
+    float  r = radius(); 
+    glm::vec3 c = center();
+
+    bb.min = make_nvec3(c.x - r, c.y - r, c.z - r);
+    bb.max = make_nvec3(c.x + r, c.y + r, c.z + r);
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
@@ -187,14 +169,19 @@ ndisk nsphere::intersect(nsphere& a, nsphere& b)
     //
     // cf pmt-/ddpart.py 
 
-    float R = a.radius ;
-    float r = b.radius ; 
+    float R = a.radius() ;
+    float r = b.radius() ; 
 
     // operate in frame of Sphere a 
 
-    float dx = b.center.x - a.center.x ; 
-    float dy = b.center.y - a.center.y ; 
-    float dz = b.center.z - a.center.z ; 
+    glm::vec3 a_center = a.center();
+    glm::vec3 b_center = b.center();
+
+
+
+    float dx = b_center.x - a_center.x ; 
+    float dy = b_center.y - a_center.y ; 
+    float dz = b_center.z - a_center.z ; 
 
     assert(dx == 0 && dy == 0 && dz != 0);
 
@@ -205,7 +192,7 @@ ndisk nsphere::intersect(nsphere& a, nsphere& b)
     float y = yy > 0 ? sqrt(yy) : 0 ;   
 
 
-    nplane plane = make_plane(0,0,1,z + a.center.z) ;
+    nplane plane = make_plane(0,0,1,z + a_center.z) ;
     ndisk  disk = make_disk(plane, y) ;
 
     return disk ;      // return to original frame
@@ -222,9 +209,9 @@ npart nsphere::part() const
     {
         // TODO: move this belongs into a zsphere not here ???
         LOG(warning) << "nsphere::part override bbox " ;  
-        float z = center.z ;  
-        float r  = radius ; 
-        nbbox bb = make_bbox(z - r, z + r, r, r);
+        float z_ = z() ;  
+        float r  = radius() ; 
+        nbbox bb = make_bbox(z_ - r, z_ + r, r, r);
 
         p.setBBox(bb);
     }
@@ -237,9 +224,9 @@ npart nsphere::zlhs(const ndisk& dsk)
 {
     npart p = part();
 
-    float z = center.z ;  
-    float r  = radius ; 
-    nbbox bb = make_bbox(z - r, dsk.z(), -dsk.radius, dsk.radius);
+    float z_ = z() ;  
+    float r  = radius() ; 
+    nbbox bb = make_bbox(z_ - r, dsk.z(), -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
@@ -249,9 +236,9 @@ npart nsphere::zrhs(const ndisk& dsk)
 {
     npart p = part();
 
-    float z = center.z ;  
-    float r  = radius ; 
-    nbbox bb = make_bbox(dsk.z(), z + r, -dsk.radius, dsk.radius);
+    float z_ = z() ;  
+    float r  = radius() ; 
+    nbbox bb = make_bbox(dsk.z(), z_ + r, -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 

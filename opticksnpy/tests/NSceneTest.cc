@@ -41,7 +41,11 @@ int main(int argc, char** argv)
     } 
 
 
-    NScene* scene = new NScene( base, name, config  ); 
+    int dbgnode = -1 ; 
+    int scene_idx = 0 ; 
+
+
+    NScene* scene = new NScene( base, name, config, dbgnode, scene_idx  ); 
     assert(scene);
     scene->dump(argv[0]);
     scene->dumpNdTree();

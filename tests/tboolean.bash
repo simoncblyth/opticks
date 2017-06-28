@@ -362,28 +362,26 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box")
-container.boundary = args.container
-container.meta.update(PolyConfig("CONTAINER").meta)
-
-im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+CSG.boundary = args.testobject
+CSG.kwa = dict(verbosity="1", poly="HY", resolution="4" )
 
 r2,r1 = 100,300
 #r2,r1 = 300,300    ## with equal radii (a cylinder) polygonization and raytrace both yield nothing 
 #r2,r1 = 300,100    ## radii swapped (upside-down cone) works
 
-
 z2 = 200
 z1 = 0
 
-param = [r1,z1,r2,z2]
-obj = CSG("cone", param=param, boundary=args.testobject, **im )
-obj.dump()
+a = CSG("cone", param=[r1,z1,r2,z2] )
+a.dump()
 
+obj = a 
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="HY", resolution="4", verbosity="0" )
 
-CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
+CSG.Serialize([container, obj], args.csgpath )
+
 EOP
 }
 
@@ -1532,6 +1530,60 @@ CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 
 EOP
 }
+
+
+
+
+tboolean-cy(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-cy-(){  $FUNCNAME- | python $* ; } 
+tboolean-cy--(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(verbosity="1", poly="HY", resolution="4" )
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="HY", resolution="4", verbosity="0" )
+
+ra = 200 
+z1 = -100
+z2 = 100
+
+#a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
+#a = CSG("disc", param=[0,0,0,ra], param1=[-0.01,0.01,0,0] )
+a = CSG("zsphere", param=[0,0,0,ra], param1=[z1,z2,0,0] )
+
+ZSPHERE_QCAP = 0x1 << 1   # ZMAX
+ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+flags = ZSPHERE_QCAP | ZSPHERE_PCAP
+a.param2.view(np.uint32)[0] = flags 
+
+
+
+obj = a 
+
+
+CSG.Serialize([container, obj], args.csgpath )
+
+"""
+
+Currently need to kludge ncylinder::_par_pos_body to not join endcap and body to avoid:: 
+
+    2017-06-28 12:36:37.651 INFO  [1576409] [>::add_parametric_primitive@181] NOpenMeshBuild<T>::add_parametric_primitive verbosity 1 ns 3 nu 32 nv 32 num_vert(raw) 3267 cfg.epsilon 1e-05 ctrl 0
+    PolyMeshT::add_face: complex edge
+    Assertion failed: (mesh.is_valid_handle(f)), function add_face_, file /Users/blyth/opticks/opticksnpy/NOpenMeshBuild.cpp, line 96.
+
+"""
+
+
+EOP
+}
+
+
+
+
 
 
 

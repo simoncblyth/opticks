@@ -534,6 +534,45 @@ glm::vec3 nnode::par_pos(const nuv& uv) const  // override in shapes
 
 
 
+
+
+
+
+
+void nnode::_par_pos_endcap(glm::vec3& pos,  const nuv& uv, const float r_, const float z_) // static 
+{
+    unsigned s  = uv.s(); 
+    //unsigned u  = uv.u() ; 
+    unsigned v  = uv.v() ; 
+
+    assert( s == 1 || s == 2 );  // endcaps
+
+    bool is_north_pole = v == 0 && s == 1 ; 
+    bool is_south_pole = v == 0 && s == 2 ; 
+    bool is_pole = is_north_pole || is_south_pole ;
+
+    pos.z = z_ ;  
+
+    float r = r_*uv.fv() ; 
+    bool seamed = true ; 
+    float azimuth = uv.fu2pi(seamed); 
+
+    float ca = cosf(azimuth);
+    float sa = sinf(azimuth);
+
+    if(!is_pole)
+    {
+        pos += glm::vec3( r*ca, r*sa, 0.f );
+    }
+}
+
+
+
+
+
+
+
+
 void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity)
 {
     std::vector<const nnode*> prim ; 

@@ -273,7 +273,10 @@ npy-t() {     opticks-t $(npy-bdir) $* ; }
 npy-genproj(){ npy-scd ; opticks-genproj $(npy-name) $(npy-tag) ; }
 npy-gentest(){ npy-tcd ; opticks-gentest ${1:-NExample} $(npy-tag) ; }
 npy-txt(){     vi $(npy-sdir)/CMakeLists.txt $(npy-tdir)/CMakeLists.txt ; }
-npy-prim(){ npy-cd ; vi `grep pdump -l *.*` ; }
+npy-prim(){     npy-cd ; vi `grep pdump -l *.*` ; }
+npy-prim-hpp(){ npy-cd ; vi `grep pdump -l *.hpp` ; }
+npy-prim-cpp(){ npy-cd ; vi `grep pdump -l *.cpp` ; }
+
 
 
 npy-i(){ npy-scd ; i ; }

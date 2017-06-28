@@ -6,6 +6,7 @@
 
 struct npart ;
 struct nbbox ; 
+struct nuv ; 
 
 #include "NPY_API_EXPORT.hh"
 
@@ -15,7 +16,12 @@ struct NPY_API ncylinder : nnode
     float operator()(float x, float y, float z) const ;
     nbbox bbox() const;
 
-    //npart part() const ;
+
+    int       par_euler() const ; 
+    unsigned  par_nsurf() const ; 
+    glm::vec3 par_pos(const nuv& uv) const  ;
+    unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
+
 
     void increase_z2(float dz);
     void decrease_z1(float dz);
@@ -42,7 +48,7 @@ struct NPY_API ncylinder : nnode
 
 inline NPY_API float ncylinder::x() const { return param.f.x ; }
 inline NPY_API float ncylinder::y() const { return param.f.y ; }
-inline NPY_API float ncylinder::z() const { return 0.f ; }
+inline NPY_API float ncylinder::z() const { return 0.f ; }   // <--- where is this used ? z1 z2 
 inline NPY_API float ncylinder::radius() const { return param.f.w ; }
 inline NPY_API float ncylinder::r1()     const { return param.f.w ; } // so can treat like a cone in NNodeUncoincide
 inline NPY_API float ncylinder::r2()     const { return param.f.w ; }
@@ -63,16 +69,6 @@ inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad&
     n.param1 = param1 ;
 
     assert( n.z2() > n.z1() );
-
-/*
-    n.center.x = param.f.x ; 
-    n.center.y = param.f.y ; 
-    n.center.z = 0.f ;
-
-    n.radius   = param.f.w ;  
-    n.z1       = param1.f.x ; 
-    n.z2       = param1.f.y ; 
-*/
 }
 
 inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )

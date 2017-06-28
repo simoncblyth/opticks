@@ -16,6 +16,83 @@ Plan
   * testing with: tgltf-t 
   
 
+Insights from RTCD p81
+-------------------------
+
+* aa-bbox containment is just a pre-check to avoid expensive object-object testing 
+
+* frame of aabb comparison matters
+
+
+  * some frames will gave tighter AABB than others
+  * one or other local frames will usually be tighter
+  * could look for no-overlap in both locals
+
+  * rotations usually make aabb grow
+
+  * comparing in global frame has advantage of only need to compute the positioned bbox
+    once, but disadvantage of being much further from origin (than local frame) so 
+    more potential precision issues
+
+
+How to do object-object testing ?
+-------------------------------------
+
+Generate Vertices On the Surface of the object
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* expand parametric coverage to all primitives in order to generate surface vertices 
+
+  * hmm thats fine for primitives 
+
+  * for composite trees would need to check the parametric vertices of all primitives 
+    against the composite root CSG SDF, to see if that primitives verts are actually
+    on the surface of the final composite 
+
+
+===================   =============  ================  =================
+primitive              parametric     dec_z1/inc_z2 
+===================   =============  ================  ================= 
+nbox                    Y              N
+ncone                   Y              Y                 kludged parametric endcap/body join
+nconvexpolyhedron       N              N                 hmm : defined by planes ? how to parametrise it ?
+ncylinder               Y              Y                 kludged para 
+ndisc                   Y              Y                 kludged para + need flexibility wrt uv steps for different surfs : ie just 1+1 in z for disc
+nnode                   -              -
+nplane                  -              -
+nslab                   -              -
+nsphere                 Y              N
+nzsphere                Y              Y
+===================   =============  ================  ================= 
+
+
+
+Parametric Convex Polyhedron ?
+---------------------------------
+
+*nconvexpolyhedron* is defined by a set of planes, 
+unclear how to parametrize, as it is so general 
+eg could be a tetrahedron, cube, prism, trapezoid, octahedron, dodecahedron, ...
+
+* need intersections points of planes to define the shapes of the faces, 
+  which could then be subdivided
+
+
+
+
+
+Check SDF values of one object for surface verts of other object 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* this is an approximation (as only checking a subset of the surface) : 
+  but a very good one depending on how good the parametrizations are 
+
+* for example for containment the parent SDF values of child object should
+  all be negative : indicating are inside the parent volume 
+
+
+
+
 tgltf-t : Look at gds example
 ----------------------------------
 

@@ -4,6 +4,7 @@
 #include "NZSphere.hpp"
 #include "NPart.hpp"
 #include "NBBox.hpp"
+#include "Nuv.hpp"
 
 #include "PLOG.hh"
 
@@ -50,13 +51,67 @@ void test_sdf()
 }
 
 
+
+
+
+
+void test_parametric()
+{
+    LOG(info) << "test_parametric" ;
+
+
+    unsigned flags = 0 ; 
+    float radius = 10.f ; 
+    float z1 = -radius/2.f ; 
+    float z2 = radius/2.f ; 
+
+    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2, flags);
+
+
+
+    unsigned nsurf = zs.par_nsurf();
+    assert(nsurf == 3);
+
+    unsigned nu = 5 ; 
+    unsigned nv = 5 ; 
+
+    for(unsigned s=0 ; s < nsurf ; s++)
+    {
+        std::cout << " surf : " << s << std::endl ; 
+
+        for(unsigned u=0 ; u <= nu ; u++){
+        for(unsigned v=0 ; v <= nv ; v++)
+        {
+            nuv uv = make_uv(s,u,v,nu,nv );
+
+            glm::vec3 p = zs.par_pos(uv);
+
+            std::cout 
+                 << " s " << std::setw(3) << s  
+                 << " u " << std::setw(3) << u  
+                 << " v " << std::setw(3) << v
+                 << " p " << glm::to_string(p)
+                 << std::endl ;   
+        }
+        }
+    }
+}
+
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    test_part();
-    test_bbox();
-    test_sdf();
+    //test_part();
+    //test_bbox();
+    //test_sdf();
+
+    test_parametric();
 
     return 0 ; 
 }

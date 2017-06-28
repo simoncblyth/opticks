@@ -10,7 +10,6 @@ struct npart ;
 struct nbbox ; 
 struct nuv ; 
 
-
 #include "NPY_API_EXPORT.hh"
 
 struct NPY_API nsphere : nnode {
@@ -38,26 +37,30 @@ struct NPY_API nsphere : nnode {
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
+    static void _par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ ) ;
 
     void pdump(const char* msg="nsphere::pdump") const ;
  
-    glm::vec3 center ; 
-    float     radius ; 
+    float     x() const  ; 
+    float     y() const  ; 
+    float     z() const  ; 
+    float     radius() const  ; 
+    glm::vec3 center() const  ; 
 
 };
+
+inline NPY_API float nsphere::x() const { return param.f.x ; }
+inline NPY_API float nsphere::y() const { return param.f.y ; }
+inline NPY_API float nsphere::z() const { return param.f.z ; }
+inline NPY_API float nsphere::radius() const { return param.f.w ; }
+inline NPY_API glm::vec3 nsphere::center() const { return glm::vec3(x(),y(),z())  ; }
+
 
 
 inline NPY_API void init_sphere(nsphere& s, const nquad& param)
 {
     s.param = param ; 
-
-    s.center.x = param.f.x ; 
-    s.center.y = param.f.y ; 
-    s.center.z = param.f.z ;
-    s.radius  = param.f.w ;  
 }
-
-
 inline NPY_API nsphere make_sphere(const nquad& param)
 {
     nsphere n ; 

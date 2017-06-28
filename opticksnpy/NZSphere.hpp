@@ -22,6 +22,17 @@ struct NPY_API nzsphere : nnode {
 
     void pdump(const char* msg="nzsphere::pdump") const ;
 
+    unsigned  par_nsurf() const ; 
+    glm::vec3 par_pos(const nuv& uv) const  ;
+    int       par_euler() const ; 
+    unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
+
+    static void _par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_, const float z1_, const float z2_, const bool has_z1cap_ , const bool has_z2cap_  ) ;
+
+    bool      has_z1_endcap() const ;
+    bool      has_z2_endcap() const ;
+
+
 
     unsigned flags() const ;
 
@@ -48,7 +59,6 @@ struct NPY_API nzsphere : nnode {
     void increase_z2(float dz);
     void decrease_z1(float dz);
 
-//    glm::vec2 zdelta ;               // z range relative to center.z, ie  (-radius, radius) would correspond to full sphere
 
 };
 

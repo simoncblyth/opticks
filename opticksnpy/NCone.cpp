@@ -13,6 +13,7 @@
 #include "NCone.hpp"
 #include "NBBox.hpp"
 #include "NPart.hpp"
+#include "Nuv.hpp"
 
 #include "PLOG.hh"
     
@@ -92,6 +93,93 @@ void ncone::pdump(const char* msg ) const
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
 }
+
+
+
+
+
+
+
+
+
+
+
+unsigned ncone::par_nsurf() const 
+{
+   return 3 ; 
+}
+int ncone::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned ncone::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
+{
+   return 0 ; 
+}
+
+glm::vec3 ncone::par_pos(const nuv& uv) const 
+{
+    unsigned s  = uv.s(); 
+    assert(s < par_nsurf());
+
+    float r1_ = r1();
+    float r2_ = r2();
+    float z1_ = z1();
+    float z2_ = z2();
+
+    assert( z2_ > z1_ );
+
+    glm::vec3 pos(0,0,0);
+    pos.x = x();
+    pos.y = y();
+
+    // start on axis
+    switch(s)
+    {
+       case 0:  ncone::_par_pos_body(  pos, uv, r1_ ,  z1_ , r2_ , z2_ ) ; break ; 
+       case 1:  nnode::_par_pos_endcap(pos, uv, r2_ ,  z2_ )             ; break ; 
+       case 2:  nnode::_par_pos_endcap(pos, uv, r1_ ,  z1_ )             ; break ; 
+    }
+    return pos ; 
+}
+
+
+
+
+void ncone::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r1_, const float z1_,  const float r2_, const float z2_)  // static
+{
+    unsigned s  = uv.s(); 
+    assert( s == 0);
+
+    float fv_ = uv.fv();
+
+    float rdelta = r2_ - r1_ ; // 0 for cylinder 
+    float zdelta = z2_ - z1_ ;
+
+    assert( zdelta > 0.f );
+    zdelta *= 0.95 ; // KLUDGE  
+
+    float r_ = r1_ + rdelta*fv_ ; 
+    float z_ = z1_ + zdelta*fv_ ; 
+
+    pos.z = z_  ;
+
+    bool seamed = true ; 
+    float azimuth = uv.fu2pi(seamed); 
+
+    float ca = cosf(azimuth);
+    float sa = sinf(azimuth);
+
+    pos += glm::vec3( r_*ca, r_*sa, 0.f );
+}
+
+
+
+
+
+
+
+
 
 
 

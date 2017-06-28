@@ -1,8 +1,41 @@
 #include "Nuv.hpp"
 
+#include "NGLM.hpp"
+
 #include <iostream>
 #include <sstream>
 #include <iomanip>
+
+
+
+
+float nuv::fu2pi(bool seamed) const 
+{
+    unsigned u_  = u();
+    unsigned nu_ = nu();
+
+    // With seamed=true avoid numerical precision problems 
+    // by providing 0. at the 360 seam 
+ 
+    bool is_360_seam   = u_ == nu_ ;
+ 
+    float fu_ = seamed && is_360_seam ? 0.f : fu() ; 
+
+    const float pi = glm::pi<float>() ;
+    float azimuth = fu_ * 2.f * pi ;
+    return azimuth ; 
+}
+
+float nuv::fvpi() const 
+{
+    const float pi = glm::pi<float>() ;
+    float polar   = fv() * pi ;
+    return polar ; 
+}
+
+
+
+
 
 
 
@@ -68,10 +101,12 @@ std::string nuv::detail() const
        << " s " << std::setw(1) << s()
        << " u " << std::setw(3) << u() << "/" << std::setw(3) << nu() 
        << " v " << std::setw(3) << v() << "/" << std::setw(3) << nv() 
+       << " fu " << std::setw(15) << std::fixed << std::setprecision(4) << fu()
+       << " fv " << std::setw(15) << std::fixed << std::setprecision(4) << fv()
+ 
        ;
 
     return ss.str();
 }
-
 
 

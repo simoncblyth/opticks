@@ -14,6 +14,8 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
+#include "Nuv.hpp"
+#include "NCone.hpp"
 
 #include "PLOG.hh"
 
@@ -92,16 +94,52 @@ void ncylinder::pdump(const char* msg ) const
 }
 
 
-/*
-npart ncylinder::part() const 
+
+
+
+
+
+unsigned ncylinder::par_nsurf() const 
 {
-    npart p = nnode::part();
-    assert( p.getTypeCode() == CSG_CYLINDER );
-    return p ; 
+   return 3 ; 
 }
-*/
+int ncylinder::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned ncylinder::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
+{
+   // expected unique vertex count, accounting for extra ones, poles and 360-seam 
+   //assert( nv > 2 ); 
+   //return 2 + (nu+1-1)*(nv+1-2) ;     
+   return 0 ; 
+}
 
+glm::vec3 ncylinder::par_pos(const nuv& uv) const 
+{
+    unsigned s  = uv.s(); 
+    assert(s < par_nsurf());
 
+    float r1_ = radius();
+    float r2_ = radius();
+    float z1_ = z1();
+    float z2_ = z2();
+
+    assert( z2_ > z1_ );
+
+    glm::vec3 pos(0,0,0);
+    pos.x = x();
+    pos.y = y();
+    // start on axis
+
+    switch(s)
+    {
+       case 0:  ncone::_par_pos_body(  pos, uv, r1_ ,  z1_ , r2_ , z2_ ) ; break ; 
+       case 1:  nnode::_par_pos_endcap(pos, uv, r2_ ,  z2_ )             ; break ; 
+       case 2:  nnode::_par_pos_endcap(pos, uv, r1_ ,  z1_ )             ; break ; 
+    }
+    return pos ; 
+}
 
 
 

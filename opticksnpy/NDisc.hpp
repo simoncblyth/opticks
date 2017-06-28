@@ -5,6 +5,7 @@
 
 struct npart ;
 struct nbbox ; 
+struct nuv ; 
 
 #include "NPY_API_EXPORT.hh"
 
@@ -20,6 +21,13 @@ struct NPY_API ndisc : nnode
     glm::vec3 gseedcenter() const ;
     glm::vec3 gseeddir() const  ;
     void pdump(const char* msg="ndisc::pdump") const ;
+
+    int       par_euler() const ; 
+    unsigned  par_nsurf() const ; 
+    glm::vec3 par_pos(const nuv& uv) const  ;
+    unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
+
+
  
     float     x() const  ; 
     float     y() const  ; 

@@ -11,6 +11,12 @@ struct NPY_API nuv
     unsigned nu() const {  return u_ >> 16 ; } 
     unsigned nv() const {  return v_ >> 16 ; } ;
 
+    float   fu() const  { return float(u())/float(nu()) ; } 
+    float   fv() const  { return float(v())/float(nv()) ; } 
+
+    float  fu2pi(bool seamed=true) const ; 
+    float  fvpi() const ; 
+
     bool is_interior(unsigned margin=0) const ;
 
 

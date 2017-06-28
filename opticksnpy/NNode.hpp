@@ -64,6 +64,9 @@ struct NPY_API nnode
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     virtual void      nudge(unsigned s, float delta);
 
+    static void _par_pos_endcap(glm::vec3& pos,  const nuv& uv, const float r_, const float z_ ) ; 
+
+
     // see NNodeUncoincide
     virtual void increase_z2(float dz);
     virtual void decrease_z1(float dz);
