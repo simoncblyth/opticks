@@ -420,20 +420,30 @@ nmat4triple* nmat4triple::clone()
     return new nmat4triple(t,v,q);
 }
 
+
+
 glm::vec3 nmat4triple::apply_transform_t(const glm::vec3& p_, const float w) const 
 {
-    glm::vec4 p(p_, w) ; 
-    p = t * p ; 
-    return glm::vec3(p);
+    ntransformer tr(t, w);
+    return tr(p_); 
 }
 
 glm::vec3 nmat4triple::apply_transform_v(const glm::vec3& p_, const float w) const 
 {
-    glm::vec4 p(p_, w) ; 
-    p = v * p ; 
-    return glm::vec3(p);
+    ntransformer tr(v, w);
+    return tr(p_); 
 }
 
+void nmat4triple::apply_transform_t(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w) const 
+{
+    ntransformer tr(t, w);
+    std::transform(src.begin(), src.end(), std::back_inserter(dst), tr );
+}
+void nmat4triple::apply_transform_v(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w) const 
+{
+    ntransformer tr(v, w);
+    std::transform(src.begin(), src.end(), std::back_inserter(dst), tr );
+}
 
 
 
@@ -455,8 +465,21 @@ nmat4triple* nmat4triple::make_rotate( const glm::vec4& trot )
 }
 
 
-
-
+nmat4triple* nmat4triple::make_translate( const float x, const float y, const float z)
+{
+    glm::vec3 tmp(x,y,z);
+    return make_translate(tmp);
+}
+nmat4triple* nmat4triple::make_scale( const float x, const float y, const float z)
+{
+    glm::vec3 tmp(x,y,z);
+    return make_scale(tmp);
+}
+nmat4triple* nmat4triple::make_rotate( const float x, const float y, const float z, const float w)
+{
+    glm::vec4 tmp(x,y,z,w);
+    return make_rotate(tmp);
+}
 
 
 

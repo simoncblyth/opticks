@@ -64,6 +64,118 @@ nzsphere                Y              Y
 
 
 
+
+
+NScene::check_surf_points : this node SDF issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* 4 solids have no parametric points
+* some PMT param points outside whopper epsilon SDF range ~0.25mm
+
+
+::
+
+    Sc::cac n  12227 p   3147 mn(n-p) (  10443.004  8369.250   150.000) mx(p-n) (   1794.919  2774.500   150.000) n.pv lvNearHallBot#pvNearHallRadSla err 
+    NSc::cac n  12228 p   3147 mn(n-p) (   6288.400 16757.875   150.000) mx(p-n) (   7410.776  1753.500   150.000) n.pv lvNearHallBot#pvNearHallRadSla err 
+    NSc::cac n  12229 p   3147 mn(n-p) (    414.836   414.875  -150.000) mx(p-n) (    414.838   414.875 10150.000) n.pv lvNearHallBot#pvNearHallRadSla err ZMIN_OUT 
+    2017-06-29 20:37:34.769 INFO  [1977826] [NScene::check_aabb_containment@761] NScene::check_aabb_containment (cac) verbosity 1 tot 12230 err 3491 err/tot       0.29
+    2017-06-29 20:37:34.769 INFO  [1977826] [NScene::check_surf_containment@501] NScene::check_surf_containment (csc) verbosity 1
+    2017-06-29 20:37:35.919 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.919 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.919 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.919 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    NSc::csp n  3160 p  3158 npt   0 nsd   ??   0(in/su*/ou/er)   0   0   0   0      0.000     0.000 psd   ??   0(in*/su/ou/er)   0   0   0   0      0.000     0.000 n.pv lvIAV#pvOcrGdsInIAV0xbf6b0e0 
+    2017-06-29 20:37:35.932 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.932 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.932 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:35.933 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    NSc::csp n  3198 p  3156 npt   0 nsd   ??   0(in/su*/ou/er)   0   0   0   0      0.000     0.000 psd   ??   0(in*/su/ou/er)   0   0   0   0      0.000     0.000 n.pv lvOAV#pvOcrCalLsoInOav0xbfa3eb 
+
+    NSc::csp n  3293 p  3290 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  3294 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  3437 p  3434 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  3438 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  3581 p  3578 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  3582 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  3725 p  3722 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  3726 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  3869 p  3866 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  3870 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  4013 p  4010 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  4014 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  4157 p  4154 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  4158 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+    NSc::csp n  4301 p  4298 npt  75 nsd **    75(in/su*/ou/er)   0  73   2   2     -0.188     0.250 psd       75(in*/su/ou/er)  75   0   0   0    -31.527    -0.020 n.pv lvPmtHemiVacuum#pvPmtHemiDynod 
+    NSc::csp n  4302 p  3155 npt  55 nsd **    55(in/su*/ou/er)   1  54   0   1     -0.250     0.188 psd       55(in*/su/ou/er)  55   0   0   0   -225.863  -210.695 n.pv lvOIL#pvAdPmtArray#pvAdPmtArra 
+
+    2017-06-29 20:37:36.359 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.359 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.359 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.359 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    NSc::csp n  4820 p  4818 npt   0 nsd   ??   0(in/su*/ou/er)   0   0   0   0      0.000     0.000 psd   ??   0(in*/su/ou/er)   0   0   0   0      0.000     0.000 n.pv lvIAV#pvOcrGdsInIAV0xbf6b0e0 
+    2017-06-29 20:37:36.372 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.372 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.372 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    2017-06-29 20:37:36.372 WARN  [1977826] [NSDF::apply@594]  sd.size ZERO 
+    NSc::csp n  4858 p  4816 npt   0 nsd   ??   0(in/su*/ou/er)   0   0   0   0      0.000     0.000 psd   ??   0(in*/su/ou/er)   0   0   0   0      0.000     0.000 n.pv lvOAV#pvOcrCalLsoInOav0xbfa3eb 
+    2017-06-29 20:37:40.609 INFO  [1977826] [NScene::check_surf_containment@509] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr    5690      16   10647    1129
+    Assertion failed: (0 && "NScene::postimportmesh HARIKARI"), function postimportmesh, file /Users/blyth/opticks/opticksnpy/NScene.cpp, line 437.
+
+
+
+
+
+NScene::check_surf_points : parent node SDF issues
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* a large fraction of nodes have small parent node SDF impingement/coicidence issues
+
+  * suspect lack of precision issue from doing comparisons in global frame ... a long way from origin
+  * need to arrange comparisons to be done closer to origin somehow : by picking an appropriate 
+    frame in which to compare
+
+Deviations are tending to land on particular values ::
+
+    In [3]: np.arange(1,10,dtype=np.float32)*0.031
+    Out[3]: array([ 0.031,  0.062,  0.093,  0.124,  0.155,  0.186,  0.217,  0.248,  0.279], dtype=float32)
+
+
+::
+
+    017-06-29 20:46:01.457 INFO  [1981075] [NScene::check_aabb_containment@760] NScene::check_aabb_containment (cac) verbosity 1 tot 12230 err 3491 err/tot       0.29
+    2017-06-29 20:46:01.457 INFO  [1981075] [NScene::check_surf_containment@501] NScene::check_surf_containment (csc) verbosity 1
+    NSc::csp n     0 p     0 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0      0.000     0.000 psd **   150(in*/su/ou/er)   0 150   0 150      0.000     0.000 n.pv top 
+    NSc::csp n     2 p     1 npt 300 nsd      300(in/su*/ou/er)   0 300   0   0     -0.031     0.062 psd **   300(in*/su/ou/er) 255   0  45  45 -17500.000  3000.062 n.pv lvNearSiteRock#pvNearHallTop0x 
+    NSc::csp n     3 p     2 npt 122 nsd      122(in/su*/ou/er)   0 122   0   0     -0.031     0.031 psd **   122(in*/su/ou/er)  97  25   0  25    -44.000     0.000 n.pv lvNearHallTop#pvNearTopCover0x 
+    NSc::csp n     8 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.062     0.062 psd **   150(in*/su/ou/er)  24  60  66 126     -1.000     0.062 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n     9 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.031     0.062 psd **   150(in*/su/ou/er)  39  97  14 111     -1.000     0.031 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n    10 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.062     0.062 psd **   150(in*/su/ou/er)  39  78  33 111     -1.000     0.031 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n    11 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.062     0.062 psd **   150(in*/su/ou/er)  36  69  45 114     -1.000     0.062 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n    12 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0      0.000     0.062 psd **   150(in*/su/ou/er)  24  93  33 126     -1.000     0.031 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n    13 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.031     0.062 psd **   150(in*/su/ou/er)  33  72  45 117     -1.000     0.031 n.pv lvRPCGasgap14#pvStrip14Array#p 
+    NSc::csp n    14 p     7 npt 150 nsd      150(in/su*/ou/er)   0 150   0   0     -0.062     0.062 psd **   150(in*/su/ou/er)  39  66  45 111     -1.000     0.062 n.pv lvRPCGasgap14#pvStrip14Array#p 
+
+
+Some big impingements too::
+
+    Sc::csp n  4444 p  3155 npt  33 nsd       33(in/su*/ou/er)   0  33   0   0     -0.031     0.031 psd **    33(in*/su/ou/er)  27   6   0   6   -430.000    -0.000 n.pv lvOIL#pvSstBotCirRib#SstBotCir 
+    NSc::csp n  4445 p  3155 npt  33 nsd       33(in/su*/ou/er)   0  33   0   0     -0.125     0.125 psd **    33(in*/su/ou/er)  27   6   0   6   -430.000    -0.000 n.pv lvOIL#pvSstBotCirRib#SstBotCir 
+    NSc::csp n  4446 p  3155 npt  33 nsd       33(in/su*/ou/er)   0  33   0   0     -0.031     0.031 psd **    33(in*/su/ou/er)  27   6   0   6   -430.000    -0.000 n.pv lvOIL#pvSstBotCirRib#SstBotCir 
+    NSc::csp n  4447 p  3155 npt  33 nsd       33(in/su*/ou/er)   0  33   0   0     -0.062     0.062 psd **    33(in*/su/ou/er)  27   6   0   6   -430.000    -0.000 n.pv lvOIL#pvSstBotCirRib#SstBotCir 
+    NSc::csp n  4448 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062    -0.000 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.188 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4449 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.047     0.062 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.238 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4450 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062     0.031 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.188 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4451 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062     0.062 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.238 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4452 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062     0.031 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.188 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4453 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.047     0.047 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.282 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4454 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.000     0.031 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.250 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4455 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062     0.062 psd **   149(in*/su/ou/er)  25  96  28 124   -212.002  1025.260 n.pv lvOIL#pvSstTopRadiusRibs#SstBT 
+    NSc::csp n  4464 p  3155 npt 100 nsd      100(in/su*/ou/er)   0 100   0   0     -0.062     0.000 psd **   100(in*/su/ou/er)  75  25   0  25   -340.000     0.000 n.pv lvOIL#pvSstTopHub0xc2476b8 
+    NSc::csp n  4473 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.062     0.062 psd **   149(in*/su/ou/er)  71  33  45  78   -120.000     0.062 n.pv lvOIL#pvSstInnVerRibs#SstInnVe 
+    NSc::csp n  4474 p  3155 npt 149 nsd      149(in/su*/ou/er)   0 149   0   0     -0.125     0.125 psd **   149(in*/su/ou/er)  81  37  31  68   -120.024     0.009 n.pv lvOIL#pvSstInnVerRibs#SstInnVe 
+
+
+
 Parametric Convex Polyhedron ?
 ---------------------------------
 

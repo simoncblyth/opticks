@@ -48,6 +48,10 @@ struct NPY_API nmat4triple
     static nmat4triple* make_rotate(   const glm::vec4& trot);
     static nmat4triple* make_scale(    const glm::vec3& tsca);
 
+    static nmat4triple* make_translate( const float x, const float y, const float z);
+    static nmat4triple* make_rotate(    const float x, const float y, const float z, const float w);
+    static nmat4triple* make_scale(     const float x, const float y, const float z);
+
     static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool reverse );
     static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user  );
     static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user);
@@ -71,10 +75,30 @@ struct NPY_API nmat4triple
     glm::vec3 apply_transform_t( const glm::vec3& p, const float w=1.0f ) const ;
     glm::vec3 apply_transform_v( const glm::vec3& p, const float w=1.0f ) const ;
 
+    void apply_transform_t(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
+    void apply_transform_v(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
+
 
     glm::mat4 t ; 
     glm::mat4 v ; 
     glm::mat4 q ; 
+};
+
+
+
+struct NPY_API ntransformer
+{
+    ntransformer( const glm::mat4& t, const float w ) : t(t),w(w) {} ;
+
+    glm::vec3 operator()(const glm::vec3& p_) const 
+    {
+        glm::vec4 p(p_, w) ; 
+        p = t * p ; 
+        return glm::vec3(p);
+    }
+
+    const glm::mat4 t ; 
+    const float w ; 
 };
 
 

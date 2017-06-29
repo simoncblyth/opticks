@@ -496,61 +496,6 @@ void NScene::update_aabb_r(nd* n)
 
 
 
-
-
-float NScene::sdf( const nd* n, const glm::vec3& q_) const 
-{
-    // distance from global frame query point to the surface of the solid associated to the structural nd
-
-    glm::vec4 q(q_,1.0); 
-
-    if(n->gtransform) q = n->gtransform->v * q ;  // apply inverse transform to take global position into frame of the structural nd 
-
-    const nnode* solid = getSolidRoot(n);
-
-    return (*solid)(q.x, q.y, q.z);
-}
-
-
-void NScene::dump_surface_points( const nd* n ) const 
-{
-    const nbbox& bb = n->aabb ; 
-    const nd* p = n->parent ? n->parent : n ;  // only root should have no parent
-
-    NCSG* csg = getCSG(n->mesh);
-    const std::vector<glm::vec3>& surface_points = csg->getSurfacePoints();
-
-    std::cout << "NScene::dump_surface_points"
-              << " verbosity " << m_verbosity
-              << " n " << std::setw(6) << n->idx
-              << " surface_points " << std::setw(6) << surface_points.size()
-              << " n.pv " << n->pvtag()
-              << ( is_dbgnode(n) ? " DEBUG_NODE " : " " )
-              << std::endl 
-              << " aabb " << bb.desc()
-              << std::endl 
-              ; 
-
-    for(unsigned i=0 ; i < surface_points.size() ; i++)
-    {
-        glm::vec3 q = n->gtransform->apply_transform_t( surface_points[i] ) ;  // CSG frame surface positions into global 
-       
-        float bb_sd = bb(q.x, q.y, q.z ) ; // distance to bbox (expect all -ve or zero)
-        float n_sd = sdf(n, q );          // distance to surface of this node, expect all very close to zero
-        float p_sd = sdf(p, q );          // distance to surface of parent node, expect all -ve (zero or +ve are coincident/impingement)
-
-        std::cout
-               << " i " << std::setw(6) << i 
-               << " q " << gpresent(q)
-               << " bb_sd " << std::fixed << std::setprecision(3) << std::setw(10) << bb_sd
-               << " n_sd " << std::fixed << std::setprecision(3) << std::setw(10) << n_sd
-               << " p_sd " << std::fixed << std::setprecision(3) << std::setw(10) << p_sd
-               << std::endl ; 
-    }
-}
-
-
-
 void NScene::check_surf_containment() 
 {
     LOG(info) << "NScene::check_surf_containment (csc)"
@@ -564,22 +509,242 @@ void NScene::check_surf_containment()
     LOG(info) << "NScene::check_surf_containment (csc)"
               << " verbosity " << m_verbosity 
               << " tot " << tot
+              << " surferr " << gpresent(m_surferr)
               ; 
 }
 void NScene::check_surf_containment_r(const nd* n) 
 {
-    if(m_verbosity > 3)
-    std::cout << "NScene::check_surf_containment_r"
-              << " verbosity " << m_verbosity
-              << " n " << std::setw(6) << n->idx
-              << " n.pv " << n->pvtag()
-              << std::endl ; 
+    glm::uvec4 err = check_surf_points(n);
 
-    if(is_dbgnode(n)) dump_surface_points(n) ;
-
+    if(err.x > 0) m_surferr.x++ ; 
+    if(err.y > 0) m_surferr.y++ ; 
+    if(err.z > 0) m_surferr.z++ ; 
+    if(err.w > 0) m_surferr.w++ ; 
 
     for(const nd* c : n->children) check_surf_containment_r(c) ;
 }
+
+
+
+
+
+
+
+
+float NScene::sdf_procedural( const nd* n, const glm::vec3& q_) const 
+{
+    assert(0 && "dont use this use NSDF ");
+    // distance from global frame query point to the surface of the solid associated to the structural nd
+
+    glm::vec4 q(q_,1.0); 
+
+    if(n->gtransform) q = n->gtransform->v * q ;  // apply inverse transform to take global position into frame of the structural nd 
+
+    const nnode* solid = getSolidRoot(n);
+
+    return (*solid)(q.x, q.y, q.z);
+}
+
+
+
+
+struct NSDF
+{
+   /*
+   Applies inverse transform v to take global positions 
+   into frame of the structural nd 
+   where the CSG is placed, these positions local 
+   to the CSG can then be used with the CSG SDF to 
+   see the distance from the point to the surface of the 
+   solid.
+   */
+
+    typedef std::vector<float>::const_iterator VFI ; 
+    NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse, float epsilon, unsigned expect)  
+        :
+        sdf(sdf),
+        inverse(inverse),
+        epsilon(epsilon),
+        expect(expect),
+        tot(0,0,0,0),
+        range(0,0)
+    {
+    }    
+    float operator()( const glm::vec3& q_ )
+    {
+        glm::vec4 q(q_,1.0); 
+        q = inverse * q ;  
+        return sdf(q.x, q.y, q.z);
+    }
+
+    void apply( const std::vector<glm::vec3>& qq )
+    {
+        std::transform( qq.begin(), qq.end(), std::back_inserter(sd), *this );
+
+        classify();
+
+        if(sd.size() > 0)
+        {
+            std::pair<VFI, VFI> p = std::minmax_element(sd.begin(), sd.end());
+            range.x = *p.first ; 
+            range.y = *p.second ; 
+        }
+        else
+        {
+            LOG(warning) << " sd.size ZERO " ; 
+        }
+    }
+
+    void classify()
+    {
+        tot.x = 0 ; 
+        tot.y = 0 ; 
+        tot.z = 0 ; 
+        tot.w = 0 ; 
+
+        for(unsigned i=0 ; i < sd.size() ; i++)
+        {  
+            NNodePointType pt = NNodeEnum::PointClassify(sd[i], epsilon ); 
+            switch(pt)
+            {
+                case POINT_INSIDE : tot.x++ ; break ; 
+                case POINT_SURFACE: tot.y++ ; break ; 
+                case POINT_OUTSIDE: tot.z++ ; break ; 
+            }
+            if(pt & ~expect) tot.w++ ; 
+        }
+    } 
+
+    bool is_error() const { return tot.w > 0 ; }
+    bool is_empty() const { return sd.size() == 0 ; }
+
+    std::string desc() const 
+    {
+        std::stringstream ss ; 
+        ss 
+           << ( is_error() ? "**" : "  " ) 
+           << ( is_empty() ? "??" : "  " ) 
+           << std::setw(4) << sd.size()
+           << "("
+           << "in" << ( expect & POINT_INSIDE ? "*" : ""  )
+           << "/"
+           << "su" << ( expect & POINT_SURFACE ? "*" : "" )
+           << "/"
+           << "ou" << ( expect & POINT_OUTSIDE ? "*" : "" )
+           << "/"
+           << "er"
+           << ") "
+           << gpresent( tot, 3 )
+           << " "
+           << gpresent( range )
+           ;
+        return ss.str();
+    }
+
+
+    std::function<float(float,float,float)> sdf ; 
+    const glm::mat4                         inverse ; 
+    const float                             epsilon ; 
+    const unsigned                          expect  ; 
+    std::vector<float>                      sd ; 
+    glm::uvec4                              tot ; 
+    glm::vec2                               range ;                  
+
+
+};
+
+
+
+struct NSDFSolid : NSDF 
+{
+    NSDFSolid( const nd* n , const NCSG* csg, float epsilon, unsigned expect)
+       :
+       NSDF( csg->getRoot()->sdf(), n->gtransform->v, epsilon, expect )
+    {}
+};
+
+struct NSDFBBox : NSDF
+{
+    NSDFBBox( const nd* n, const NCSG* csg, float epsilon, unsigned expect )
+       :
+       NSDF( csg->getRoot()->bbox().sdf(), n->gtransform->v, epsilon, expect  )
+    {}
+};
+
+
+// Classifiying the surface points of a node against the SDF of its parent 
+
+glm::uvec4 NScene::check_surf_points( const nd* n ) const 
+{
+    const nd* p = n->parent ? n->parent : n ;  // only root has no parent
+
+    NCSG* n_csg = getCSG(n->mesh);
+    NCSG* p_csg = getCSG(p->mesh);
+
+    std::vector<glm::vec3> surf ; // bring CSG solid surface positions into global using nd frame gtransform
+    n->gtransform->apply_transform_t( surf,  n_csg->getSurfacePoints() ); 
+    unsigned npt = surf.size() ;
+    assert( n_csg->getNumSurfacePoints() == npt );
+
+    float epsilon = 1e-4 ; 
+    float whopper_epsilon = 0.25 ;  // <-- maybe z-nudge explains the bigger than expected this-node sdf range ?
+    float ginormous_epsilon = 10 ; 
+
+    glm::mat4 id(1);
+    NSDF      tbsd( n->aabb.sdf(), id, epsilon, POINT_INSIDE|POINT_SURFACE  );  // loose bbox as uses nd frame transformed aabb
+    NSDFBBox  bsd( n, n_csg, epsilon        , POINT_INSIDE|POINT_SURFACE );   // checking the points of n against its (tighter local) bbox...
+    NSDFSolid nsd( n, n_csg, whopper_epsilon, POINT_SURFACE );      // distance to surface of this node 
+    NSDFSolid psd( p, p_csg, ginormous_epsilon, POINT_INSIDE|POINT_SURFACE  );      // distance to surface of parent node : (zero or +ve are coincident/impingement)
+
+    nsd.apply(surf);  
+    psd.apply(surf);  
+    bsd.apply(surf);
+    tbsd.apply(surf); 
+
+
+    glm::uvec4 err ; 
+
+    err.x = psd.tot.w ; 
+    err.y = nsd.tot.w ; 
+    err.z = bsd.tot.w ; 
+    err.w = tbsd.tot.w ; 
+
+
+    bool dump = err.x > 0 || npt == 0  ; 
+    //bool dump = err.y > 0 || npt == 0  ; 
+
+    if( dump )
+    {
+        unsigned wid = 3 ;     
+        bool dbgnode = is_dbgnode(n) ;
+        //if(m_verbosity > 2 || dbgnode )
+        std::cout << "NSc::csp"
+                  << " n " << std::setw(5) << n->idx
+                  << " p " << std::setw(5) << p->idx
+                  << " npt " << std::setw(wid) << npt
+                  << " nsd " <<  nsd.desc()
+                  << " psd " <<  psd.desc()
+                //  << " bsd " <<  bsd.desc()
+                  << " n.pv " << n->pvtag()
+                  << ( dbgnode ? " DEBUG_NODE " : " " )
+                  << std::endl 
+                  ; 
+    }
+
+
+    return err ;  
+
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

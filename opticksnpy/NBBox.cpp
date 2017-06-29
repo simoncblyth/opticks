@@ -298,9 +298,23 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
 
 
 
+std::function<float(float,float,float)> nbbox::sdf() const 
+{
+    return *this ;     
+}
+
 float nbbox::operator()(float x_, float y_, float z_, const nmat4triple* t_ ) const 
 {
-    glm::vec4 p(x_,y_,z_, 1.0);
+    glm::vec3 tmp(x_, y_, z_);
+    return sdf_(tmp, t_ );
+}
+float nbbox::operator()(const glm::vec3& q, const nmat4triple* t_ ) const 
+{
+    return sdf_(q, t_);
+}
+float nbbox::sdf_(const glm::vec3& q_, const nmat4triple* t_ ) const 
+{
+    glm::vec4 p(q_, 1.0);  
 
     if(t_) p = t_->v * p ;  // apply inverse transform on query point 
  

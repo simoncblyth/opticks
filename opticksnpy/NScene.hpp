@@ -1,6 +1,8 @@
 #pragma once
 #include "NPY_API_EXPORT.hh"
 
+#include "NGLM.hpp"
+
 class NCSG ; 
 class NTxt ; 
 class NParameters ; 
@@ -109,7 +111,7 @@ class NPY_API NScene : public NGLTF
         // cross structural node geometry checking 
         void check_surf_containment() ; 
         void check_surf_containment_r(const nd* node) ; 
-        void dump_surface_points( const nd* n ) const ;
+        glm::uvec4 check_surf_points( const nd* n ) const ;
     private:
         void update_aabb();
         void update_aabb_r(nd* node);
@@ -118,7 +120,7 @@ class NPY_API NScene : public NGLTF
         nbbox calc_aabb(const nd* node, bool global) const ;
     private:
         nnode*    getSolidRoot(const nd* n) const ;
-        float    sdf( const nd* n, const glm::vec3& q_) const  ; 
+        float    sdf_procedural( const nd* n, const glm::vec3& q_) const  ; 
 
     private:
         nd*                               m_root ; 
@@ -145,6 +147,8 @@ class NPY_API NScene : public NGLTF
         Counts<unsigned>*                 m_digest_count ;
         std::vector<std::string>          m_repeat_candidates ;
         std::vector<unsigned>             m_dbgnode_list ;
+
+        glm::uvec4                        m_surferr ;  
      
 
 

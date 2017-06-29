@@ -87,6 +87,7 @@ class NPY_API NCSG {
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
         const std::vector<glm::vec3>& getSurfacePoints() const ;
+        unsigned getNumSurfacePoints() const ;
     private:
         void collect_surface_points();
     public:

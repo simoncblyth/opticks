@@ -207,7 +207,7 @@ void test_make_transform()
          << gpresent( "trs*pz",    trs*pz  )
          << gpresent( "trs*pxyz",  trs*pxyz  )
 
-         << std::endl 
+        << std::endl 
          << " wrong way around gives crazy w for some" 
          << std::endl 
 
@@ -272,6 +272,63 @@ void test_nmat4triple_id_digest()
 }
 
 
+void test_apply_transform()
+{
+    LOG(info) << "test_apply_transform" ;
+ 
+    nmat4triple* id = nmat4triple::make_identity() ;
+    nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
+
+    glm::vec3 p(1,2,3);
+    glm::vec3 q = id->apply_transform_t( p );
+    glm::vec3 qs = sc->apply_transform_t( p );
+
+    assert( q.x == p.x );
+    assert( q.y == p.y );
+    assert( q.z == p.z );
+
+    assert( qs.x == 10*p.x );
+    assert( qs.y == 10*p.y );
+    assert( qs.z == 10*p.z );
+}
+
+
+void test_apply_transform_vec()
+{
+    LOG(info) << "test_apply_transform_vec" ; 
+
+    nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
+
+    std::vector<glm::vec3> src ; 
+    src.push_back(glm::vec3(1,0,0));
+    src.push_back(glm::vec3(0,1,0));
+    src.push_back(glm::vec3(0,0,1));
+    src.push_back(glm::vec3(1,1,1));
+
+    std::vector<glm::vec3> dst ; 
+    sc->apply_transform_t( dst, src );
+    assert( dst.size() == src.size() ); 
+
+
+    for(unsigned i=0 ; i < dst.size() ; i++)
+    {
+        glm::vec3 s = src[i] ;
+        glm::vec3 d = dst[i] ;
+
+        std::cout
+            << " i " << std::setw(3) << i 
+            << " s " << gpresent(s) 
+            << " d " << gpresent(d)
+            << std::endl 
+            ; 
+    }
+
+}
+
+
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -279,10 +336,13 @@ int main(int argc, char** argv)
 
     //test_stream();
     //test_invert_tr();
-    test_make_mat();
+    //test_make_mat();
     //test_make_transform();
     //test_nmat4triple_make_translated();
     //test_nmat4triple_id_digest();
+
+    test_apply_transform();
+    test_apply_transform_vec();
 
     return 0 ; 
 }

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <functional>
 #include <glm/fwd.hpp>
 
 struct nmat4triple ; 
@@ -12,7 +13,10 @@ struct nmat4triple ;
 
 struct NPY_API nbbox 
 {
+    std::function<float(float,float,float)> sdf() const ;
+    float operator()(const glm::vec3& q, const nmat4triple* t_=NULL ) const  ;
     float operator()(float x_, float y_, float z_, const nmat4triple* t_=NULL ) const  ;
+    float sdf_(const glm::vec3& q, const nmat4triple* t_=NULL ) const  ;
     void scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4triple* t=NULL ) const ;
 
     void dump(const char* msg);

@@ -1141,6 +1141,7 @@ void NCSG::collect_surface_points()
 
     glm::uvec4 tots = m_root->getCompositePoints( m_surface_points, level, margin , pointmask, epsilon, NULL );
 
+    if(m_verbosity > 2)
     LOG(info) << "NCSG::collect_surface_points"
               << " tots (inside/surface/outside/selected) " << gpresent(tots) 
               << " surface_points " << m_surface_points.size()
@@ -1151,4 +1152,11 @@ const std::vector<glm::vec3>& NCSG::getSurfacePoints() const
 {
     return m_surface_points ;
 }
+unsigned NCSG::getNumSurfacePoints() const 
+{
+    return m_surface_points.size() ;
+}
+
+
+
 
