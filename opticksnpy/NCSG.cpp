@@ -1067,6 +1067,8 @@ NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool
      if(polygonize)
      tree->polygonize();
 
+     tree->collect_surface_points();
+
      return tree ; 
 
 }
@@ -1125,5 +1127,28 @@ int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosi
         if(tree->getTris() == NULL) rc++ ; 
     }     
     return rc ; 
+}
+
+
+void NCSG::collect_surface_points()
+{
+    //unsigned level = 1 ;  // +-----+------+   0x1 << 1 == 2 divisions, 3 uv points 
+    unsigned level = 2 ;    // +--+--+--+---+   0x1 << 2 == 4 divisions, 5 uv points  
+    unsigned margin = 0 ;   // when > 0 skips the ends 
+
+    unsigned pointmask = POINT_SURFACE ; 
+    float epsilon = 1e-4 ;     // surface SDF band
+
+    glm::uvec4 tots = m_root->getCompositePoints( m_surface_points, level, margin , pointmask, epsilon, NULL );
+
+    LOG(info) << "NCSG::collect_surface_points"
+              << " tots (inside/surface/outside/selected) " << gpresent(tots) 
+              << " surface_points " << m_surface_points.size()
+              ;
+
+}
+const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 
+{
+    return m_surface_points ;
 }
 

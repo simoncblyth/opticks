@@ -107,11 +107,8 @@ class NPY_API NScene : public NGLTF
         bool is_dbgnode( const nd* n) const ;
     private:
         // cross structural node geometry checking 
-        void update_surf();
-        void update_surf_r(nd* node);
         void check_surf_containment() ; 
         void check_surf_containment_r(const nd* node) ; 
-        void find_surface_points(std::vector<glm::vec3>& surf, const nd* n, bool global);
         void dump_surface_points( const nd* n ) const ;
     private:
         void update_aabb();

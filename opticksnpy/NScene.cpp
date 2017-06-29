@@ -413,6 +413,13 @@ void NScene::postimportnd()
 
 }
 
+
+bool NScene::is_dbgnode( const nd* n) const 
+{ 
+    return std::find(m_dbgnode_list.begin(), m_dbgnode_list.end(), n->idx ) != m_dbgnode_list.end() ;
+}
+
+
 void NScene::postimportmesh()
 {
     LOG(info) << "NScene::postimportmesh" 
@@ -424,10 +431,7 @@ void NScene::postimportmesh()
 
     update_aabb();
     check_aabb_containment();
-
-    update_surf();
     check_surf_containment();
-
 
     if(SSys::IsHARIKARI())
     assert( 0 && "NScene::postimportmesh HARIKARI");
@@ -479,47 +483,19 @@ nbbox NScene::calc_aabb(const nd* n, bool global) const
     return global ? gbb : bb ; 
 }
 
-
-void NScene::find_surface_points(std::vector<glm::vec3>& surf, const nd* n, bool global )
+void NScene::update_aabb() 
 {
-    assert( n->gtransform );
-    const glm::mat4& nt  = n->gtransform->t ; 
-
-    const nnode* solid = getSolidRoot(n);
-    assert(solid);
-
-    //unsigned level = 1 ;  // +-----+------+   0x1 << 1 == 2 divisions, 3 uv points 
-    unsigned level = 2 ;    // +--+--+--+---+   0x1 << 2 == 4 divisions, 5 uv points  
-    unsigned margin = 0 ;   // when > 0 skips the ends 
-
-    unsigned pointmask = POINT_SURFACE ; 
-    float epsilon = 1e-4 ;     // surface SDF band
-
-    // nnode::getSurfacePoints 
-    //     collects surface points in the frame of the top CSG node of the solid 
-    //     and then transforms them into the structural nd frame
-    //
-    //     ... hmm so better to keep model frame points with the csg rather than with the node ?
-    //     and then just transform them as needed for the different nodes that use that CSG solid ?
-    
-
-    glm::uvec4 tots = solid->getCompositePoints( surf, level, margin , pointmask, epsilon, global ? &nt : NULL );
-
-    if(m_verbosity > 3)
-    std::cout << "NScene::find_surface_points"
-              << " verbosity " << m_verbosity
-              << " n " << std::setw(6) << n->idx
-              << " tots (inside/surface/outside/selected) " << gpresent(tots) 
-              << " n.pv " << n->pvtag()
-              << std::endl ; 
-
-    if(is_dbgnode(n)) dump_surface_points(n) ;
+    update_aabb_r(m_root); 
+}
+void NScene::update_aabb_r(nd* n) 
+{
+    bool global = true ; 
+    n->aabb = calc_aabb( n, global ) ;   // probably makes more sense for this to go in NCSG, from whence transform as need ?
+    for(nd* c : n->children) update_aabb_r(c) ;
 }
 
-bool NScene::is_dbgnode( const nd* n) const 
-{ 
-    return std::find(m_dbgnode_list.begin(), m_dbgnode_list.end(), n->idx ) != m_dbgnode_list.end() ;
-}
+
+
 
 
 float NScene::sdf( const nd* n, const glm::vec3& q_) const 
@@ -541,10 +517,13 @@ void NScene::dump_surface_points( const nd* n ) const
     const nbbox& bb = n->aabb ; 
     const nd* p = n->parent ? n->parent : n ;  // only root should have no parent
 
+    NCSG* csg = getCSG(n->mesh);
+    const std::vector<glm::vec3>& surface_points = csg->getSurfacePoints();
+
     std::cout << "NScene::dump_surface_points"
               << " verbosity " << m_verbosity
               << " n " << std::setw(6) << n->idx
-              << " surf " << std::setw(6) << n->surf.size()
+              << " surface_points " << std::setw(6) << surface_points.size()
               << " n.pv " << n->pvtag()
               << ( is_dbgnode(n) ? " DEBUG_NODE " : " " )
               << std::endl 
@@ -552,10 +531,10 @@ void NScene::dump_surface_points( const nd* n ) const
               << std::endl 
               ; 
 
-    for(unsigned i=0 ; i < n->surf.size() ; i++)
+    for(unsigned i=0 ; i < surface_points.size() ; i++)
     {
-        glm::vec3 q = n->surf[i] ;        // global frame surface positions
-
+        glm::vec3 q = n->gtransform->apply_transform_t( surface_points[i] ) ;  // CSG frame surface positions into global 
+       
         float bb_sd = bb(q.x, q.y, q.z ) ; // distance to bbox (expect all -ve or zero)
         float n_sd = sdf(n, q );          // distance to surface of this node, expect all very close to zero
         float p_sd = sdf(p, q );          // distance to surface of parent node, expect all -ve (zero or +ve are coincident/impingement)
@@ -571,39 +550,10 @@ void NScene::dump_surface_points( const nd* n ) const
 }
 
 
-void NScene::update_aabb() 
-{
-    update_aabb_r(m_root); 
-}
-void NScene::update_aabb_r(nd* n) 
-{
-    bool global = true ; 
-    n->aabb = calc_aabb( n, global ) ; 
-    for(nd* c : n->children) update_aabb_r(c) ;
-}
-
-
-void NScene::update_surf() 
-{
-    LOG(info) << "NScene::update_surf"
-              << " verbosity " << m_verbosity
-              << " dbgnode " << m_dbgnode
-              ;
-
-    update_surf_r(m_root); 
-}
-void NScene::update_surf_r(nd* n) 
-{
-    bool global = true ; 
-    find_surface_points( n->surf, n, global );
-
-    for(nd* c : n->children) update_surf_r(c) ;
-}
-
 
 void NScene::check_surf_containment() 
 {
-    LOG(info) << "NScene::check_surf_containment (coc)"
+    LOG(info) << "NScene::check_surf_containment (csc)"
               << " verbosity " << m_verbosity 
               ;
 
@@ -611,14 +561,24 @@ void NScene::check_surf_containment()
 
     unsigned tot = getNumNd() ;
 
-    LOG(info) << "NScene::check_surf_containment (coc)"
+    LOG(info) << "NScene::check_surf_containment (csc)"
               << " verbosity " << m_verbosity 
               << " tot " << tot
               ; 
 }
-void NScene::check_surf_containment_r(const nd* node) 
+void NScene::check_surf_containment_r(const nd* n) 
 {
-    for(const nd* c : node->children) check_surf_containment_r(c) ;
+    if(m_verbosity > 3)
+    std::cout << "NScene::check_surf_containment_r"
+              << " verbosity " << m_verbosity
+              << " n " << std::setw(6) << n->idx
+              << " n.pv " << n->pvtag()
+              << std::endl ; 
+
+    if(is_dbgnode(n)) dump_surface_points(n) ;
+
+
+    for(const nd* c : n->children) check_surf_containment_r(c) ;
 }
 
 

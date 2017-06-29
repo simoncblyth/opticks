@@ -14,7 +14,6 @@
 #include "PLOG.hh"
 
 
-
 void nglmext::copyTransform( std::array<float,16>& dst, const glm::mat4& src )
 {
     const float* p = glm::value_ptr(src);
@@ -420,6 +419,24 @@ nmat4triple* nmat4triple::clone()
 {
     return new nmat4triple(t,v,q);
 }
+
+glm::vec3 nmat4triple::apply_transform_t(const glm::vec3& p_, const float w) const 
+{
+    glm::vec4 p(p_, w) ; 
+    p = t * p ; 
+    return glm::vec3(p);
+}
+
+glm::vec3 nmat4triple::apply_transform_v(const glm::vec3& p_, const float w) const 
+{
+    glm::vec4 p(p_, w) ; 
+    p = v * p ; 
+    return glm::vec3(p);
+}
+
+
+
+
 
 nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )
 {

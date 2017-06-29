@@ -86,6 +86,9 @@ class NPY_API NCSG {
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
+        const std::vector<glm::vec3>& getSurfacePoints() const ;
+    private:
+        void collect_surface_points();
     public:
         template<typename T> void setMeta(const char* key, T value);
     public:
@@ -188,7 +191,8 @@ class NPY_API NCSG {
         int         m_container ;  
         float       m_containerscale ;  
 
-         NTrianglesNPY* m_tris ; 
+        NTrianglesNPY*         m_tris ; 
+        std::vector<glm::vec3> m_surface_points ; 
 
 
 };

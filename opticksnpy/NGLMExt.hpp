@@ -68,6 +68,9 @@ struct NPY_API nmat4triple
 
     std::string digest();
 
+    glm::vec3 apply_transform_t( const glm::vec3& p, const float w=1.0f ) const ;
+    glm::vec3 apply_transform_v( const glm::vec3& p, const float w=1.0f ) const ;
+
 
     glm::mat4 t ; 
     glm::mat4 v ; 

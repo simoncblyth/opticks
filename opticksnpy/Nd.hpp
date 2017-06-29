@@ -49,7 +49,6 @@ struct NPY_API nd
 
 
    nbbox                  aabb ;  
-   std::vector<glm::vec3> surf ; 
 
 
    std::string desc();
