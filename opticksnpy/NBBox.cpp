@@ -3,7 +3,10 @@
 #include <iomanip>
 #include <cstring>
 
+#include "GLMFormat.hpp"
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
+#include <glm/gtx/component_wise.hpp>
 #include "NBBox.hpp"
 
 
@@ -295,8 +298,63 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
 
 
 
+float nbbox::operator()(float x_, float y_, float z_, const nmat4triple* t_ ) const 
+{
+    glm::vec4 p(x_,y_,z_, 1.0);
+
+    if(t_) p = t_->v * p ;  // apply inverse transform on query point 
+ 
+
+    glm::vec3 bmi(min.x, min.y, min.z);
+    glm::vec3 bmx(max.x, max.y, max.z);
+    glm::vec3 bce = (bmi + bmx)/2.f ; 
+    glm::vec3 bhs = (bmx - bmi)/2.f ; 
+
+    glm::vec3 q = glm::vec3(p) - bce ; 
+
+    // below works for a symmetric box at origin 
+    // ... in which case bmx is really the halfside
+    // so the above applies an inverse translation to the query point to
+    // dispose the box into that position 
+    // see NBBoxTest.cc:test_sdf
+
+    glm::vec3 d = glm::abs(q) - bhs  ;
+
+    float dmaxcomp = glm::compMax(d);
+
+    glm::vec3 dmax = glm::max( d, glm::vec3(0.f) );
+
+    float d_inside = fminf(dmaxcomp, 0.f);
+    float d_outside = glm::length( dmax );
+
+    return d_inside + d_outside ;       
+
+}
 
 
+void nbbox::scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4triple* t ) const 
+{
+    const nbbox& bb = *this ; 
+    std::cout 
+         << "nbbox::scan_sdf"
+         << "bb" << bb.desc()  
+         << std::endl 
+         << gpresent("ori", o) 
+         << gpresent("range", range) 
+         << ( t ? gpresent("t.t", t->t ) : "" )
+         << std::endl  
+         ;
+
+    for(float w=range.x ; w < range.y ; w+=range.z )
+        std::cout 
+                  << "         w " << std::setw(10) << std::fixed << std::setprecision(3) << w
+                  << " sd(w,w,w) " << std::setw(10) << std::fixed << std::setprecision(3) << bb(o.x+w,o.y+w,o.z+w,t)  
+                  << " sd(w,0,0) " << std::setw(10) << std::fixed << std::setprecision(3) << bb(o.x+w,o.y+0,o.z+0,t)  
+                  << " sd(0,w,0) " << std::setw(10) << std::fixed << std::setprecision(3) << bb(o.x+0,o.y+w,o.z+0,t)  
+                  << " sd(0,0,w) " << std::setw(10) << std::fixed << std::setprecision(3) << bb(o.x+0,o.y+0,o.z+w,t)  
+                  << std::endl 
+                  ;
+}
 
 
 std::string nbbox::description() const 

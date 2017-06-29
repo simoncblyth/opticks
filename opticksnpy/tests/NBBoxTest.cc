@@ -290,9 +290,51 @@ void test_default_copy_ctor()
 
     std::cout << " bb  " << bb.desc() << std::endl ; 
     std::cout << " cbb " << cbb.desc() << std::endl ; 
-
 }
 
+
+void test_sdf()
+{
+    LOG(info) << "test_sdf" ; 
+
+    glm::vec3 origin(0,0,0);
+    glm::vec3 range(-20,21,5);
+
+    nbbox bb0 = make_bbox( -10,-10,-10, 10,10,10 );
+    bb0.scan_sdf(origin, range );
+
+    nbbox bb1 = make_bbox( -5,-5,-5, 10,10,10 );
+    bb1.scan_sdf(origin, range );
+
+    nbbox bb2 = make_bbox( -5,-5,-5,  5,5,5 );
+    bb2.scan_sdf(origin, range );
+
+}
+void test_sdf_transformed()
+{
+    LOG(info) << "test_sdf_transformed" ; 
+
+    glm::vec3 origin(100,0,0);  // scanline around offset origin
+    glm::vec3 range(-20,21,5);
+
+    glm::vec3 tlate(100,0,0);
+    nmat4triple* t = nmat4triple::make_translate( tlate );
+
+    // although scanline positions are offset, 
+    // still get same as local results 
+    // because the inverse transform is applied 
+    // to the query point within the sdf evaluation
+
+    nbbox bb0 = make_bbox( -10,-10,-10, 10,10,10 );
+    bb0.scan_sdf(origin, range, t );
+
+    nbbox bb1 = make_bbox( -5,-5,-5, 10,10,10 );
+    bb1.scan_sdf(origin, range, t );
+
+    nbbox bb2 = make_bbox( -5,-5,-5,  5,5,5 );
+    bb2.scan_sdf(origin, range, t );
+
+}
 
 
 
@@ -307,10 +349,13 @@ int main(int argc, char** argv)
     //test_bbox_transform_loaded( argc > 1 ? argv[1] : path );
 
     //test_overlap();
-    test_positive_form();
+    //test_positive_form();
 
-    test_default_copy_ctor();
+    //test_default_copy_ctor();
 
+
+    test_sdf();
+    test_sdf_transformed();
 
     return 0 ; 
 }

@@ -895,7 +895,7 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
 }
 
 
-glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon ) const 
+glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon, const glm::mat4* tr ) const 
 {
     unsigned num_inside(0);
     unsigned num_outside(0);
@@ -915,7 +915,16 @@ glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<gl
           if( pt & pointmask ) 
           {
               num_select++ ;  
-              dest.push_back(p);
+              if(tr)
+              {
+                  glm::vec4 trp(p,1.0);   
+                  trp = (*tr) * trp ;  
+                  dest.push_back(glm::vec3(trp));
+              }
+              else
+              {
+                  dest.push_back(p);
+              }
           }
 
           switch(pt)
@@ -951,7 +960,7 @@ void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, in
 }
 
 
-glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon ) const 
+glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon, const glm::mat4* tr ) const 
 {
     NNodeFrameType fr = FRAME_GLOBAL ; // otherwise returned positions would be in mixed frames
 
@@ -969,7 +978,7 @@ glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned lev
         VV primsurf ;  
         prim->getSurfacePointsAll(primsurf, level, margin, fr );    // using the above branch
 
-        glm::uvec4 isos = selectBySDF(surf, primsurf, pointmask, epsilon ); 
+        glm::uvec4 isos = selectBySDF(surf, primsurf, pointmask, epsilon, tr ); 
         tot += isos ;  
 
         if(verbosity > 4) 

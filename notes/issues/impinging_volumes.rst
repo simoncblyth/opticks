@@ -1,21 +1,18 @@
 Impinging Volumes
 =====================
 
-
 Plan
 -------
-
 
 * start by testing each node bbox against its parent bbox 
 
   * within solid uncoincence done in NCSG::postimport, analogous
     place for volume overlap testing would be NScene/GScene ? 
 
-  * start with NScene::postimport
+  * start with NScene::postimport, now in NScene::postimportmesh
 
   * testing with: tgltf-t 
   
-
 Insights from RTCD p81
 -------------------------
 
@@ -270,17 +267,24 @@ NScene::check_containment checking bbox containment of all node/parent pairs
 
 * 30% of volumes have bbox containment issues, including PMT volumes
 
-  * perhaps a missing transform bug ? 
+  * bbox impingement doesnt mean solid impingement : it just provides a fast 
+    selection of possible collisions for more expensive object-object testing
+ 
+  * perhaps a missing transform bug ? perhaps but first check obj-obj collisions
+
   * all the mn and mx in (mm) in the below table 
     should be +ve, they are zero with coincidence and -ve with protrusion  
+
   * TODO: check the instanced are correctly treated here
 
 
 Are checking containment by comparing the globally transformed axis aligned bbox 
 of a node and its parent.
 
-* is there a better way to check containment ? 
+* is there a better way to check containment ? YES : obj-obj
+
 * rotational transforms change box dimensions (as bbox stays axis aligned), 
+
 * perhaps should transform into parent frame to make comparison ?
 
 

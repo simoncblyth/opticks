@@ -5,9 +5,21 @@
 
 #include "SDigest.hh"
 
+#include "BFile.hh"
+#include "BStr.hh"
+
 #include "Nd.hpp"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+
+
+
+std::string nd::pvtag(unsigned nch) const 
+{
+    std::string pvn = BFile::Name(pvname.c_str()) ;
+    std::string pvns = BStr::firstChars(pvn.c_str(), nch);  
+    return pvns ; 
+}
 
 
 std::string nd::desc()

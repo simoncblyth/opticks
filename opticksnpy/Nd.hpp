@@ -4,15 +4,21 @@
 #include <vector>
 #include <string>
 
+#include <glm/fwd.hpp>
+
 struct nd ; 
 struct nmat4triple ;
+
+#include "NBBox.hpp"
 
 /*
 
 nd : structural nodes from glTF
 ===================================
 
-* nd are populated from the glTF by NScene::import_r
+* nd kept minimal, most use via NScene 
+  
+  * nd are populated from the glTF by NScene::import_r
 
 
 */
@@ -42,6 +48,10 @@ struct NPY_API nd
    std::vector<nd*> _ancestors ; 
 
 
+   nbbox                  aabb ;  
+   std::vector<glm::vec3> surf ; 
+
+
    std::string desc();
    std::string detail();
    static nmat4triple* make_global_transform(nd* n) ; 
@@ -57,6 +67,9 @@ struct NPY_API nd
    void                    _collect_nodes_r(std::vector<nd*>& selection, const std::string& pdig) ;
    nd*                     _find_node_r(const std::string& pdig) ;
    void                    _collect_ancestors(nd* n, std::vector<nd*>& ancestors) ;
+
+
+   std::string             pvtag(unsigned nch=30) const ; 
 
    unsigned                get_progeny_count(); 
    const std::vector<nd*>& get_progeny(); 

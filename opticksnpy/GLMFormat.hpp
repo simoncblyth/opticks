@@ -75,6 +75,7 @@ NPY_API glm::quat   gquat(const std::string& s );
 NPY_API glm::mat4   gmat4(const std::string& s, bool flip=false, const char* delim=",");
 NPY_API glm::mat3   gmat3(const std::string& s, bool flip=false, const char* delim=",");
 
+NPY_API std::string gpresent(const glm::uvec4& v, unsigned wid=7);
 NPY_API std::string gpresent(const glm::vec4& v, unsigned prec=3, unsigned wid=10);
 NPY_API std::string gpresent(const glm::vec3& v, unsigned prec=3, unsigned wid=10);
 

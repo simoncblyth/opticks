@@ -2,6 +2,8 @@
 
 #include <glm/fwd.hpp>
 
+struct nmat4triple ; 
+
 #include "OpticksCSG.h"
 #include "NQuad.hpp"
 #include "NBBoxEnum.hpp"
@@ -10,6 +12,9 @@
 
 struct NPY_API nbbox 
 {
+    float operator()(float x_, float y_, float z_, const nmat4triple* t_=NULL ) const  ;
+    void scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4triple* t=NULL ) const ;
+
     void dump(const char* msg);
     void include(const nbbox& other );
     const char* desc() const;
@@ -87,6 +92,24 @@ inline NPY_API nbbox make_bbox(float zmin, float zmax, float ymin, float ymax)
     bb.empty = false ; 
 
     return bb ;
+}
+
+
+inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, bool invert=false, bool empty=false)
+{
+    nbbox bb ; 
+
+    assert( xmax > xmin );
+    assert( ymax > ymin );
+    assert( zmax > zmin );
+
+    bb.min = {xmin,ymin,zmin} ;
+    bb.max = {xmax,ymax,zmax} ;
+    bb.side = bb.max - bb.min ; 
+    bb.invert = invert ; 
+    bb.empty = empty  ; 
+
+    return bb ; 
 }
 
 

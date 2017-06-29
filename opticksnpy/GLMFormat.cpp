@@ -494,6 +494,20 @@ std::string gpresent(const glm::vec4& v, unsigned int prec, unsigned int wid)
     return ss.str();
 }
 
+std::string gpresent(const glm::uvec4& v, unsigned wid)
+{
+    std::stringstream ss ; 
+
+    ss << "( "
+       << std::setw(wid) << v.x 
+       << std::setw(wid) << v.y 
+       << std::setw(wid) << v.z
+       << std::setw(wid) << v.w 
+       << ")" ;
+
+    return ss.str();
+}
+
 
 
 

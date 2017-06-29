@@ -78,9 +78,12 @@ float nbox::sdf2(float x_, float y_, float z_) const
 {
     glm::vec4 p(x_,y_,z_,1.0); 
 
-    if(gtransform) p = gtransform->v * p ;
+    if(gtransform) p = gtransform->v * p ;  
 
     glm::vec3 bmx = bmax() ; 
+
+    // abs query point folds 3d space into +ve octant
+    // subtract bmx places box max at origin in this folded space  
 
     glm::vec3 d = glm::abs(glm::vec3(p)) - bmx  ;
 
@@ -96,8 +99,14 @@ float nbox::sdf2(float x_, float y_, float z_) const
    // see tests/NBoxTest.cc   sdf2 and sdf1 match despite code appearances
 }
 
-
-
+/*
+http://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+float sdBox( vec3 p, vec3 b )
+{
+  vec3 d = abs(p) - b;
+  return min(max(d.x,max(d.y,d.z)),0.0) + length(max(d,0.0));
+}
+*/
 
 
 

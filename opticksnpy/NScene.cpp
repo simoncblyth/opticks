@@ -397,22 +397,20 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 void NScene::postimportnd()
 {
+    const nd* dn = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
+    if( dn )
+    {
+        m_dbgnode_list.push_back(dn->idx);
+        if(dn->parent) m_dbgnode_list.push_back(dn->parent->idx);
+    }
+
     LOG(info) << "NScene::postimportnd" 
               << " numNd " << getNumNd()
               << " dbgnode " << m_dbgnode
+              << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity
                ; 
 
-/*
-    if(m_dbgnode > -1)
-    {
-        dumpNd(m_dbgnode);
-        dumpNd(m_dbgnode - 1 );  // TODO should access parent
-    }
-*/
-
-  //  if(SSys::IsHARIKARI())
-  //  assert( 0 && "NScene::postimportnd HARIKARI ");
 }
 
 void NScene::postimportmesh()
@@ -420,15 +418,15 @@ void NScene::postimportmesh()
     LOG(info) << "NScene::postimportmesh" 
               << " numNd " << getNumNd()
               << " dbgnode " << m_dbgnode
+              << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity
                ; 
 
-    //nd* node = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
-    //if(!node) return ; 
+    update_aabb();
+    check_aabb_containment();
 
-    update_bbox();
-
-    check_containment();
+    update_surf();
+    check_surf_containment();
 
 
     if(SSys::IsHARIKARI())
@@ -439,31 +437,40 @@ void NScene::postimportmesh()
 
 
 
-nbbox NScene::calc_bbox(const nd* node, bool global) const 
-{
-    unsigned mesh_idx = node->mesh ; 
 
+nnode* NScene::getSolidRoot(const nd* n) const 
+{
+    // provides mesh level CSG root nnode associated to the structural nd 
+    // NB this will be the same for all instances of that mesh within the nd structure
+
+    unsigned mesh_idx = n->mesh ; 
     NCSG* csg = getCSG(mesh_idx);
     assert(csg);
-
     nnode* root = csg->getRoot();
     assert(root);
+    return root ; 
+}
 
-    assert( node->gtransform );
-    const glm::mat4& node_t  = node->gtransform->t ; 
 
-    nbbox bb  = root->bbox();
+nbbox NScene::calc_aabb(const nd* n, bool global) const 
+{
+    assert( n->gtransform );
+    const glm::mat4& nt  = n->gtransform->t ; 
 
-    nbbox gbb = bb.transform(node_t) ; 
+    const nnode* solid = getSolidRoot(n);
+    assert(solid);
+
+    nbbox bb  = solid->bbox();
+    nbbox gbb = bb.transform(nt) ; 
 
     if(m_verbosity > 2)
     std::cout 
         << " get_bbox "
         << " verbosity " << m_verbosity 
-        << " mesh_idx "  << mesh_idx 
-        << " root "  << root->tag() 
+        << " n.mesh "  << n->mesh
+        << " solid.tag "  << solid->tag() 
         << std::endl 
-        << gpresent("node_t", node_t)
+        << gpresent("n.t", nt)
         << std::endl 
         << " bb  " <<  bb.desc() << std::endl 
         << " gbb " <<  gbb.desc() << std::endl 
@@ -472,38 +479,161 @@ nbbox NScene::calc_bbox(const nd* node, bool global) const
     return global ? gbb : bb ; 
 }
 
-void NScene::update_bbox() 
+
+void NScene::find_surface_points(std::vector<glm::vec3>& surf, const nd* n, bool global )
 {
-    m_bbox.clear();
-    update_bbox_r(m_root); 
+    assert( n->gtransform );
+    const glm::mat4& nt  = n->gtransform->t ; 
+
+    const nnode* solid = getSolidRoot(n);
+    assert(solid);
+
+    //unsigned level = 1 ;  // +-----+------+   0x1 << 1 == 2 divisions, 3 uv points 
+    unsigned level = 2 ;    // +--+--+--+---+   0x1 << 2 == 4 divisions, 5 uv points  
+    unsigned margin = 0 ;   // when > 0 skips the ends 
+
+    unsigned pointmask = POINT_SURFACE ; 
+    float epsilon = 1e-4 ;     // surface SDF band
+
+    // nnode::getSurfacePoints 
+    //     collects surface points in the frame of the top CSG node of the solid 
+    //     and then transforms them into the structural nd frame
+    //
+    //     ... hmm so better to keep model frame points with the csg rather than with the node ?
+    //     and then just transform them as needed for the different nodes that use that CSG solid ?
+    
+
+    glm::uvec4 tots = solid->getCompositePoints( surf, level, margin , pointmask, epsilon, global ? &nt : NULL );
+
+    if(m_verbosity > 3)
+    std::cout << "NScene::find_surface_points"
+              << " verbosity " << m_verbosity
+              << " n " << std::setw(6) << n->idx
+              << " tots (inside/surface/outside/selected) " << gpresent(tots) 
+              << " n.pv " << n->pvtag()
+              << std::endl ; 
+
+    if(is_dbgnode(n)) dump_surface_points(n) ;
 }
-void NScene::update_bbox_r(nd* node) 
+
+bool NScene::is_dbgnode( const nd* n) const 
+{ 
+    return std::find(m_dbgnode_list.begin(), m_dbgnode_list.end(), n->idx ) != m_dbgnode_list.end() ;
+}
+
+
+float NScene::sdf( const nd* n, const glm::vec3& q_) const 
+{
+    // distance from global frame query point to the surface of the solid associated to the structural nd
+
+    glm::vec4 q(q_,1.0); 
+
+    if(n->gtransform) q = n->gtransform->v * q ;  // apply inverse transform to take global position into frame of the structural nd 
+
+    const nnode* solid = getSolidRoot(n);
+
+    return (*solid)(q.x, q.y, q.z);
+}
+
+
+void NScene::dump_surface_points( const nd* n ) const 
+{
+    const nbbox& bb = n->aabb ; 
+    const nd* p = n->parent ? n->parent : n ;  // only root should have no parent
+
+    std::cout << "NScene::dump_surface_points"
+              << " verbosity " << m_verbosity
+              << " n " << std::setw(6) << n->idx
+              << " surf " << std::setw(6) << n->surf.size()
+              << " n.pv " << n->pvtag()
+              << ( is_dbgnode(n) ? " DEBUG_NODE " : " " )
+              << std::endl 
+              << " aabb " << bb.desc()
+              << std::endl 
+              ; 
+
+    for(unsigned i=0 ; i < n->surf.size() ; i++)
+    {
+        glm::vec3 q = n->surf[i] ;        // global frame surface positions
+
+        float bb_sd = bb(q.x, q.y, q.z ) ; // distance to bbox (expect all -ve or zero)
+        float n_sd = sdf(n, q );          // distance to surface of this node, expect all very close to zero
+        float p_sd = sdf(p, q );          // distance to surface of parent node, expect all -ve (zero or +ve are coincident/impingement)
+
+        std::cout
+               << " i " << std::setw(6) << i 
+               << " q " << gpresent(q)
+               << " bb_sd " << std::fixed << std::setprecision(3) << std::setw(10) << bb_sd
+               << " n_sd " << std::fixed << std::setprecision(3) << std::setw(10) << n_sd
+               << " p_sd " << std::fixed << std::setprecision(3) << std::setw(10) << p_sd
+               << std::endl ; 
+    }
+}
+
+
+void NScene::update_aabb() 
+{
+    update_aabb_r(m_root); 
+}
+void NScene::update_aabb_r(nd* n) 
 {
     bool global = true ; 
-
-    nbbox  bb = calc_bbox(  node, global ) ; 
-    m_bbox[node->idx] = bb ; 
-
-    for(nd* c : node->children) update_bbox_r(c) ;
-}
-
-nbbox NScene::get_bbox(unsigned nidx) const 
-{
-    return m_bbox.at(nidx);
+    n->aabb = calc_aabb( n, global ) ; 
+    for(nd* c : n->children) update_aabb_r(c) ;
 }
 
 
-void NScene::check_containment()  
+void NScene::update_surf() 
 {
-    LOG(info) << "NScene::check_containment"
+    LOG(info) << "NScene::update_surf"
+              << " verbosity " << m_verbosity
+              << " dbgnode " << m_dbgnode
+              ;
+
+    update_surf_r(m_root); 
+}
+void NScene::update_surf_r(nd* n) 
+{
+    bool global = true ; 
+    find_surface_points( n->surf, n, global );
+
+    for(nd* c : n->children) update_surf_r(c) ;
+}
+
+
+void NScene::check_surf_containment() 
+{
+    LOG(info) << "NScene::check_surf_containment (coc)"
               << " verbosity " << m_verbosity 
               ;
 
-    check_containment_r(m_root);
+    check_surf_containment_r(m_root);
 
     unsigned tot = getNumNd() ;
 
-    LOG(info) << "NScene::check_containment"
+    LOG(info) << "NScene::check_surf_containment (coc)"
+              << " verbosity " << m_verbosity 
+              << " tot " << tot
+              ; 
+}
+void NScene::check_surf_containment_r(const nd* node) 
+{
+    for(const nd* c : node->children) check_surf_containment_r(c) ;
+}
+
+
+
+void NScene::check_aabb_containment() 
+{
+    LOG(info) << "NScene::check_aabb_containment (cac)"
+              << " verbosity " << m_verbosity 
+              ;
+
+    check_aabb_containment_r(m_root);
+
+    unsigned tot = getNumNd() ;
+
+    LOG(info) << "NScene::check_aabb_containment (cac)"
               << " verbosity " << m_verbosity 
               << " tot " << tot
               << " err " << m_containment_err 
@@ -511,43 +641,33 @@ void NScene::check_containment()
               ; 
 }
 
-void NScene::check_containment_r(nd* node) 
-{
-    nd* parent = node->parent ; 
-    if(!parent) parent = node ;   // only root should not have parent
 
-    nbbox  nbb = get_bbox( node->idx ) ; 
-    nbbox  pbb = get_bbox( parent->idx ) ; 
+void NScene::check_aabb_containment_r(const nd* n) 
+{
+    const nd* p = n->parent ? n->parent : n ;  // only root should not have parent
+
+    const nbbox& nbb = n->aabb ;
+    const nbbox& pbb = p->aabb ; 
 
     float epsilon = 1e-5 ; 
 
     unsigned errmask = nbb.classify_containment( pbb, epsilon );
 
-    node->containment = errmask ;  
+    //n->containment = errmask ;  
 
     if(errmask) m_containment_err++ ; 
 
     //if(m_verbosity > 2 || ( errmask && m_verbosity > 0))
     {
-        glm::vec3 dmin( nbb.min.x - pbb.min.x, 
-                        nbb.min.y - pbb.min.y, 
-                        nbb.min.z - pbb.min.z );
-
-        glm::vec3 dmax( pbb.max.x - nbb.max.x, 
-                        pbb.max.y - nbb.max.y, 
-                        pbb.max.z - nbb.max.z );
-
-
-        std::string pvn = BFile::Name(node->pvname.c_str()) ;
-        std::string pvns = BStr::firstChars(pvn.c_str(), 30) ;  
-
+        glm::vec3 dmin( nbb.min.x - pbb.min.x, nbb.min.y - pbb.min.y, nbb.min.z - pbb.min.z ); 
+        glm::vec3 dmax( pbb.max.x - nbb.max.x, pbb.max.y - nbb.max.y, pbb.max.z - nbb.max.z ); 
         std::cout 
-             << "NSc::ccr"
-             << " n " << std::setw(6) << node->idx
-             << " p " << std::setw(6) << parent->idx 
+             << "NSc::cac"
+             << " n " << std::setw(6) << n->idx
+             << " p " << std::setw(6) << p->idx 
              << " mn(n-p) " << gpresent( dmin ) 
              << " mx(p-n) " << gpresent( dmax ) 
-             << " pv " << std::setw(30) <<  pvns
+             << " n.pv " << std::setw(30) <<  n->pvtag()
              << " err " << nbbox::containment_mask_string( errmask ) 
              << std::endl 
              ;
@@ -560,8 +680,10 @@ void NScene::check_containment_r(nd* node)
 
     }
 
-    for(nd* c : node->children) check_containment_r(c) ;
+    for(const nd* c : n->children) check_aabb_containment_r(c) ;
 }
+
+
 
 
 

@@ -307,6 +307,12 @@ void test_getSurfacePointsAll_Composite()
     float epsilon = 1e-5f ; 
     unsigned pointmask = POINT_SURFACE ; 
 
+
+    glm::vec3 scale(1000,1000,1000);
+    glm::mat4 sc = nglmext::make_scale( scale ); 
+    const glm::mat4* ndtr = &sc ;  // <-- mock structural transform 
+
+
     {
         nbox a = make_box(aa.x,aa.y,aa.z,aa.w);
         nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
@@ -320,7 +326,7 @@ void test_getSurfacePointsAll_Composite()
 
         ab.dump();
         std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
         ab.dumpPointsSDF(surf, epsilon);
         std::cout << "difference:(inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     }
@@ -337,7 +343,7 @@ void test_getSurfacePointsAll_Composite()
 
         ab.dump();
         std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
         ab.dumpPointsSDF(surf, epsilon);
         std::cout << "union: (inside/surface/outside/select)   " << glm::to_string(tot) << std::endl ; 
     }
@@ -354,7 +360,7 @@ void test_getSurfacePointsAll_Composite()
 
         ab.dump();
         std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon ) ;
+        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
         ab.dumpPointsSDF(surf, epsilon);
         std::cout << "intersection:  (inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     } 

@@ -6,6 +6,7 @@ class NTxt ;
 class NParameters ; 
 struct nd ; 
 struct nbbox ; 
+struct nnode ; 
 
 template<class T> class Counts ;
 
@@ -103,14 +104,24 @@ class NPY_API NScene : public NGLTF
         unsigned getNumRepeats();
 
     private:
-        // cross structural geometry node checking 
-        void update_bbox();
-        void update_bbox_r(nd* node);
-
-        void check_containment() ; 
-        void check_containment_r(nd* node) ; 
-        nbbox    calc_bbox(const nd* node, bool global) const ;
-        nbbox     get_bbox(unsigned nidx) const ;
+        bool is_dbgnode( const nd* n) const ;
+    private:
+        // cross structural node geometry checking 
+        void update_surf();
+        void update_surf_r(nd* node);
+        void check_surf_containment() ; 
+        void check_surf_containment_r(const nd* node) ; 
+        void find_surface_points(std::vector<glm::vec3>& surf, const nd* n, bool global);
+        void dump_surface_points( const nd* n ) const ;
+    private:
+        void update_aabb();
+        void update_aabb_r(nd* node);
+        void check_aabb_containment() ; 
+        void check_aabb_containment_r(const nd* node) ; 
+        nbbox calc_aabb(const nd* node, bool global) const ;
+    private:
+        nnode*    getSolidRoot(const nd* n) const ;
+        float    sdf( const nd* n, const glm::vec3& q_) const  ; 
 
     private:
         nd*                               m_root ; 
@@ -121,7 +132,6 @@ class NPY_API NScene : public NGLTF
        
         std::map<unsigned, unsigned>      m_mesh2ridx ;
         std::map<unsigned, unsigned>      m_repeat_count ;
-        std::map<unsigned, nbbox>         m_bbox ; 
 
 
         int                               m_dbgnode ; 
@@ -137,6 +147,7 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;
         std::vector<std::string>          m_repeat_candidates ;
+        std::vector<unsigned>             m_dbgnode_list ;
      
 
 

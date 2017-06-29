@@ -50,8 +50,8 @@ struct NPY_API nnode
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
 
-    glm::uvec4 getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon ) const ;
-    glm::uvec4 selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon ) const ;
+    glm::uvec4 getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon, const glm::mat4* tr ) const ;
+    glm::uvec4 selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon, const glm::mat4* tr) const ;
 
     void dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon ) const ;
     void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;
