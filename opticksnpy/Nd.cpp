@@ -12,6 +12,7 @@
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 
+#include "PLOG.hh"
 
 
 std::string nd::pvtag(unsigned nch) const 
@@ -59,9 +60,9 @@ std::string nd::detail()
 }
 
 
-nmat4triple* nd::make_global_transform(nd* n)
+const nmat4triple* nd::make_global_transform(const nd* n) // static
 {
-    std::vector<nmat4triple*> tvq ; 
+    std::vector<const nmat4triple*> tvq ; 
     while(n)
     {
         if(n->transform) tvq.push_back(n->transform);
@@ -72,8 +73,40 @@ nmat4triple* nd::make_global_transform(nd* n)
 }
 
 
+void nd::dump_transforms(const char* msg) 
+{
+    std::vector<nd*> anc ; 
+    _collect_ancestors(parent, anc );  // start collection from parent 
 
-void nd::_collect_ancestors(nd* n, std::vector<nd*>& ancestors)
+    //const std::vector<nd*>& anc = get_ancestors();
+
+    unsigned num_anc = anc.size();
+    LOG(info) << msg 
+              << " num_anc " << num_anc
+              ;
+
+    for(unsigned i=0 ; i < num_anc ; i++)
+    {
+         const nd* a = anc[i];
+         assert(a->transform );
+         std::cout
+                << " i " << std::setw(2) << i 
+                << " a.idx " << std::setw(6) << a->idx 
+                << std::endl 
+                <<  gpresent("a.tr.t", a->transform->t )
+                << std::endl ; 
+    }
+
+    std::cout
+            << " this.idx " << std::setw(6) << this->idx 
+            << std::endl 
+            <<  gpresent("this.tr.t", this->transform->t )
+            << std::endl ; 
+
+}
+
+
+void nd::_collect_ancestors(nd* n, std::vector<nd*>& ancestors) 
 {
     while(n)
     {
@@ -82,8 +115,11 @@ void nd::_collect_ancestors(nd* n, std::vector<nd*>& ancestors)
     }
     std::reverse( ancestors.begin(), ancestors.end() );
 }
+
+
 const std::vector<nd*>& nd::get_ancestors()
 {
+    // NB start collection from parent to avoid including self
     if(_ancestors.size() == 0) _collect_ancestors(parent, _ancestors ); 
     return _ancestors  ; 
 }

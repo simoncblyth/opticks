@@ -12,6 +12,14 @@ Plan
   * start with NScene::postimport, now in NScene::postimportmesh
 
   * testing with: tgltf-t 
+
+
+NEXT
+------
+
+* analyse to see if issues really always are always the same for every lv instance 
+
+
   
 Insights from RTCD p81
 -------------------------
@@ -30,6 +38,16 @@ Insights from RTCD p81
   * comparing in global frame has advantage of only need to compute the positioned bbox
     once, but disadvantage of being much further from origin (than local frame) so 
     more potential precision issues
+
+
+Float Precision
+-----------------
+
+* https://randomascii.wordpress.com/2012/02/13/dont-store-that-in-a-float/
+* http://www.tfinley.net/notes/cps104/floating.html
+* https://stackoverflow.com/questions/872544/what-range-of-numbers-can-be-represented-in-a-16-32-and-64-bit-ieee-754-syste
+* http://www.exploringbinary.com/the-spacing-of-binary-floating-point-numbers/
+
 
 
 How to do object-object testing ?
@@ -62,6 +80,289 @@ nsphere                 Y              N
 nzsphere                Y              Y
 ===================   =============  ================  ================= 
 
+
+
+
+Self node/sdf check : 8/12230 nodes are outside 1e-3 SDF epsilon band 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:tests blyth$ DBGNODE=3159 NSceneLoadTest 
+    2017-06-30 19:59:25.916 INFO  [2206366] [NGLTF::load@35] NGLTF::load path /tmp/blyth/opticks/tgltf-t/sc.gltf
+    2017-06-30 19:59:26.428 INFO  [2206366] [NGLTF::load@62] NGLTF::load DONE
+    2017-06-30 19:59:26.452 INFO  [2206366] [NScene::init@99] NScene::init START
+    2017-06-30 19:59:26.452 INFO  [2206366] [NScene::load_csg_metadata@207] NScene::load_csg_metadata verbosity 1 num_meshes 249
+    2017-06-30 19:59:26.867 INFO  [2206366] [NScene::postimportnd@411] NScene::postimportnd numNd 12230 dbgnode 3159 dbgnode_list 1 verbosity 1
+    2017-06-30 19:59:28.282 INFO  [2206366] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 19:59:28.682 INFO  [2206366] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 19:59:28.724 INFO  [2206366] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 19:59:30.318 INFO  [2206366] [NScene::postimportmesh@429] NScene::postimportmesh numNd 12230 dbgnode 3159 dbgnode_list 1 verbosity 1
+    2017-06-30 19:59:30.318 INFO  [2206366] [NScene::check_surf_containment@506] NScene::check_surf_containment (csc) verbosity 1
+    NSc::csp n     1 p     0 n.pv db-rock0xc15d358 
+    pp.classify(pp.local) - nsdf:      150(in/su:/ou/er)   0 150   0   0      0.000     0.000 ep 1.000000e-03 [0.000000e+00,0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   114(in/su:/ou/er)   0  75  39  39      0.000     0.062 ep 1.000000e-03 [0.000000e+00,6.250000e-02]
+    2017-06-30 19:59:32.072 WARN  [2206366] [NSDF::classify@74]  sd.size ZERO 
+    2017-06-30 19:59:32.103 WARN  [2206366] [NSDF::classify@74]  sd.size ZERO 
+    2017-06-30 19:59:33.218 WARN  [2206366] [NSDF::classify@74]  sd.size ZERO 
+    2017-06-30 19:59:33.249 WARN  [2206366] [NSDF::classify@74]  sd.size ZERO 
+    NSc::csp n  9207 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 148   2   2     -0.001     0.001 ep 1.000000e-03 [-9.765625e-04,1.464844e-03]
+    NSc::csp n  9241 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 148   2   2     -0.000     0.001 ep 1.000000e-03 [-4.882812e-04,1.464844e-03]
+    NSc::csp n  9817 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 147   3   3     -0.000     0.001 ep 1.000000e-03 [-4.882812e-04,1.464844e-03]
+    NSc::csp n  9836 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 149   1   1     -0.000     0.001 ep 1.000000e-03 [-4.882812e-04,1.464844e-03]
+    NSc::csp n  9885 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 147   3   3     -0.000     0.001 ep 1.000000e-03 [-4.882812e-04,1.464844e-03]
+    NSc::csp n 10079 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 145   5   5     -0.001     0.001 ep 1.000000e-03 [-9.765625e-04,1.464844e-03]
+    NSc::csp n 10110 p  3150 n.pv lvNearPoolOWS#pvVetoPmtNearOut 
+    pp.classify(pp.local) - nsdf:      122(in/su:/ou/er)   0 122   0   0      0.000    -0.000 ep 1.000000e-03 [0.000000e+00,-0.000000e+00]
+    nn.classify(nn.local) - nsdf: EE   150(in/su:/ou/er)   0 147   3   3     -0.001     0.001 ep 1.000000e-03 [-9.765625e-04,1.464844e-03]
+    2017-06-30 20:00:16.028 INFO  [2206366] [NScene::check_surf_containment@514] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr       0       0       0       8
+    2017-06-30 20:00:16.029 INFO  [2206366] [NScene::init@135] NScene::init DONE
+    simon:tests blyth$ 
+
+
+
+prioritization 
+~~~~~~~~~~~~~~~~~
+
+* impingements where the materials are the same probably do not matter ...
+
+
+lvid 66 : unbelievable big impingement  : trapezoid/convexpolyhedron machinery bug
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     62 tbool66--(){ cat << EOP
+     63 
+     64 import logging
+     65 log = logging.getLogger(__name__)
+     66 from opticks.ana.base import opticks_main
+     67 from opticks.analytic.csg import CSG  
+     68 args = opticks_main(csgpath="$TMP/tbool/66")
+     69 
+     70 CSG.boundary = args.testobject
+     71 CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
+     72 
+     73 
+     75 
+     76 a = CSG("trapezoid", param = [0.000,0.000,0.000,0.000],param1 = [0.000,0.000,0.000,0.000])
+     77 b = CSG("box3", param = [40.000,40.000,2228.500,0.000],param1 = [0.000,0.000,0.000,0.000])
+     78 b.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[-340.000,0.000,0.000,1.000]]
+     79 ab = CSG("difference", left=a, right=b)
+     80 
+     81 c = CSG("box3", param = [691.020,24.000,2238.500,0.000],param1 = [0.000,0.000,0.000,0.000])
+     82 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[345.510,0.000,0.000,1.000]]
+     83 abc = CSG("difference", left=ab, right=c)
+     84 
+     85 
+     86 
+
+
+
+::
+
+    NSc::csp n  4445 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
+    NSc::csp n  4446 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
+    NSc::csp n  4447 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
+    NSc::csp n  4448 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4449 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4450 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4451 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4452 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4453 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4454 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4455 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  4464 nlv  68 p  3155 n.pv     lvOIL#pvSstTopHub0xc2476b8pp(nn.local) - nsdf: EE   100(in:/su/ou/er)  75  25   0  25   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4465 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
+    NSc::csp n  4466 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
+    NSc::csp n  4467 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
+    NSc::csp n  4468 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
+
+::
+
+    simon:issues blyth$ opticks-;opticks-tbool 66
+    opticks-tbool : sourcing /tmp/blyth/opticks/tgltf/extras/66/tbool66.bash
+    args: 
+    [2017-06-30 20:53:33,769] p17880 {/Users/blyth/opticks/analytic/csg.py:392} INFO - CSG.Serialize : writing 2 trees to directory /tmp/blyth/opticks/tbool/66 
+    288 -rwxr-xr-x  1 blyth  staff  143804 Jun 29 13:25 /usr/local/opticks/lib/OKTest
+    proceeding : /usr/local/opticks/lib/OKTest --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tbool/66_name=66_mode=PyCsgInBox --torch --torchconfig type=sphere_photons=10000_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000_source=0,0,0_target=0,0,1_time=0.1_radius=100_distance=400_zenithazimuth=0,1,0,1_material=GdDopedLS_wavelength=500 --torchdbg --tag 1 --cat tbool --save
+    2017-06-30 20:53:34.033 INFO  [2232690] [OpticksDbg::postconfigure@49] OpticksDbg::postconfigure OpticksDbg  debug_photon  size: 0 elem: () other_photon  size: 0 elem: ()
+    2017-06-30 20:53:34.202 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 index 0 version (null) existsdir 1
+    2017-06-30 20:53:34.307 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 index 1 version (null) existsdir 1
+    2017-06-30 20:53:34.386 INFO  [2232690] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
+    2017-06-30 20:53:34.386 INFO  [2232690] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 38
+    2017-06-30 20:53:34.386 INFO  [2232690] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [GdDopedLS]
+    2017-06-30 20:53:34.387 INFO  [2232690] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 38,2,39,4
+    2017-06-30 20:53:34.392 INFO  [2232690] [GGeo::loadAnalyticPmt@772] GGeo::loadAnalyticPmt AnalyticPMTIndex 0 AnalyticPMTSlice ALL Path /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0
+    2017-06-30 20:53:34.401 WARN  [2232690] [GGeoTest::init@54] GGeoTest::init booting from m_ggeo 
+    2017-06-30 20:53:34.401 WARN  [2232690] [GMaker::init@171] GMaker::init booting from cache
+    2017-06-30 20:53:34.401 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 index 0 version (null) existsdir 1
+    2017-06-30 20:53:34.515 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 index 1 version (null) existsdir 1
+    2017-06-30 20:53:34.519 INFO  [2232690] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
+    2017-06-30 20:53:34.519 INFO  [2232690] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 38
+    2017-06-30 20:53:34.519 INFO  [2232690] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [GdDopedLS]
+    2017-06-30 20:53:34.520 INFO  [2232690] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 38,2,39,4
+    2017-06-30 20:53:34.523 INFO  [2232690] [GGeoTest::loadCSG@212] GGeoTest::loadCSG  csgpath /tmp/blyth/opticks/tbool/66 verbosity 0
+    2017-06-30 20:53:34.523 INFO  [2232690] [NCSG::Deserialize@984] NCSG::Deserialize VERBOSITY 0 basedir /tmp/blyth/opticks/tbool/66 txtpath /tmp/blyth/opticks/tbool/66/csg.txt nbnd 2
+    Assertion failed: (idx < m_num_planes), function import_planes, file /Users/blyth/opticks/opticksnpy/NCSG.cpp, line 764.
+    /Users/blyth/opticks/bin/op.sh: line 619: 18110 Abort trap: 6           /usr/local/opticks/lib/OKTest --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tbool/66_name=66_mode=PyCsgInBox --torch --torchconfig type=sphere_photons=10000_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000_source=0,0,0_target=0,0,1_time=0.1_radius=100_distance=400_zenithazimuth=0,1,0,1_material=GdDopedLS_wavelength=500 --torchdbg --tag 1 --cat tbool --save
+    /Users/blyth/opticks/bin/op.sh RC 134
+    simon:issues blyth$ 
+
+
+
+
+
+
+parent/node impingement test : avoiding precision issue does not resolve
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+NScene::check_surf_points::
+
+     624     // cross checking containment of a nodes points inside its parent 
+     625     // OR vice versa checking that parents points are outside the child node
+     626     // is the raison d'etre of this method
+     627     //
+     628     // coincidence is a problem, as well as impingement ... but try to 
+     629     // see how big the issue is
+     630     
+     631     pp.classify( nn.local, 1e-3, POINT_INSIDE | POINT_SURFACE );
+     632     nn.classify( pp.local, 1e-3, POINT_OUTSIDE | POINT_SURFACE );
+     633     err.x = pp.nsdf.tot.w ;
+     634     err.y = nn.nsdf.tot.w ;
+
+
+With above code (ie not treating coincidence as error) see 1836/12230 volumes with impingement
+
+
+
+Treating surface zeros as error almost half volumes has issue::
+
+    NSc::csp n 12219 nlv 235 p  3148 n.pv lvNearPoolDead#pvNearADE2DeadLpp(nn.local) - nsdf: EE    75(in:/su/ou/er)  45  30   0  30    -84.000     0.000 ep 1.000000e-03 [-8.400000e+01,0.000000e+00] 
+    NSc::csp n 12220 nlv 235 p  3148 n.pv lvNearPoolDead#pvNearADE2DeadLpp(nn.local) - nsdf: EE    75(in:/su/ou/er)  45  30   0  30    -84.000     0.000 ep 1.000000e-03 [-8.400000e+01,0.000000e+00] 
+    NSc::csp n 12221 nlv 237 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp(nn.local) - nsdf: EE   150(in:/su/ou/er) 105  45   0  45   -300.000     0.000 ep 1.000000e-03 [-3.000000e+02,0.000000e+00] 
+    NSc::csp n 12223 nlv 239 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp(nn.local) - nsdf: EE   150(in:/su/ou/er) 105  45   0  45   -300.000     0.000 ep 1.000000e-03 [-3.000000e+02,0.000000e+00] 
+    NSc::csp n 12225 nlv 241 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp(nn.local) - nsdf: EE   150(in:/su/ou/er) 105  45   0  45   -300.000     0.000 ep 1.000000e-03 [-3.000000e+02,0.000000e+00] 
+    NSc::csp n 12227 nlv 243 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp(nn.local) - nsdf: EE   150(in:/su/ou/er) 105  45   0  45   -300.000     0.000 ep 1.000000e-03 [-3.000000e+02,0.000000e+00] 
+    NSc::csp n 12229 nlv 245 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp(nn.local) - nsdf: EE   122(in:/su/ou/er)  49  24  49  73   -150.000   150.000 ep 1.000000e-03 [-1.500000e+02,1.500000e+02] 
+    2017-06-30 20:47:46.039 INFO  [2230698] [NScene::check_surf_containment@514] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr    5907    4370       0       0
+    2017-06-30 20:47:46.039 INFO  [2230698] [NScene::init@135] NScene::init DONE
+
+
+
+* notice that problems appear exactly the same for the different instances, so issue comes from lv level 
+
+
+
+
+::
+
+
+    NSc::csp n 11810 m 225 p  3150 n.pv lvNearPoolOWS#pvNearUnistruts#pp.classify(nn.local) - nsdf: EE   150(in:/su:/ou/er) 117   0  33  33    -39.000     1.000 ep 1.000000e-03 [-3.900000e+01,1.000000e+00] 
+    NSc::csp n 11811 m 225 p  3150 n.pv lvNearPoolOWS#pvNearUnistruts#pp.classify(nn.local) - nsdf: EE   150(in:/su:/ou/er) 117   0  33  33    -39.000     1.000 ep 1.000000e-03 [-3.900000e+01,1.000000e+00] 
+    NSc::csp n 11812 m 225 p  3150 n.pv lvNearPoolOWS#pvNearUnistruts#pp.classify(nn.local) - nsdf: EE   150(in:/su:/ou/er) 117   0  33  33    -39.000     1.000 ep 1.000000e-03 [-3.900000e+01,1.000000e+00] 
+    NSc::csp n 11813 m 225 p  3150 n.pv lvNearPoolOWS#pvNearUnistruts#pp.classify(nn.local) - nsdf: EE   150(in:/su:/ou/er) 117   0  33  33    -39.000     1.000 ep 1.000000e-03 [-3.900000e+01,1.000000e+00] 
+    NSc::csp n 12229 m 248 p  3147 n.pv lvNearHallBot#pvNearHallRadSlapp.classify(nn.local) - nsdf: EE   122(in:/su:/ou/er)  49  24  49  49   -150.000   150.000 ep 1.000000e-03 [-1.500000e+02,1.500000e+02] 
+    2017-06-30 20:30:02.405 INFO  [2222973] [NScene::check_surf_containment@514] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr    1836      83       0       0
+    2017-06-30 20:30:02.405 INFO  [2222973] [NScene::init@135] NScene::init DONE
+
+
+Different instances all with same::
+
+    simon:tests blyth$ DBGNODE=3159 NSceneLoadTest 
+    2017-06-30 20:20:26.579 INFO  [2218267] [NGLTF::load@35] NGLTF::load path /tmp/blyth/opticks/tgltf-t/sc.gltf
+    2017-06-30 20:20:27.096 INFO  [2218267] [NGLTF::load@62] NGLTF::load DONE
+    2017-06-30 20:20:27.121 INFO  [2218267] [NScene::init@99] NScene::init START
+    2017-06-30 20:20:27.121 INFO  [2218267] [NScene::load_csg_metadata@207] NScene::load_csg_metadata verbosity 1 num_meshes 249
+    2017-06-30 20:20:27.537 INFO  [2218267] [NScene::postimportnd@411] NScene::postimportnd numNd 12230 dbgnode 3159 dbgnode_list 1 verbosity 1
+    2017-06-30 20:20:28.966 INFO  [2218267] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 20:20:29.365 INFO  [2218267] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 20:20:29.407 INFO  [2218267] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-06-30 20:20:31.009 INFO  [2218267] [NScene::postimportmesh@429] NScene::postimportmesh numNd 12230 dbgnode 3159 dbgnode_list 1 verbosity 1
+    2017-06-30 20:20:31.009 INFO  [2218267] [NScene::check_surf_containment@506] NScene::check_surf_containment (csc) verbosity 1
+    2017-06-30 20:20:32.728 WARN  [2218267] [NSDF::classify@74]  sd.size ZERO 
+    2017-06-30 20:20:32.759 WARN  [2218267] [NSDF::classify@74]  sd.size ZERO 
+    NSc::csp n  3201 m  56 p  3200 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3207 m  56 p  3206 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3213 m  56 p  3212 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3219 m  56 p  3218 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3225 m  56 p  3224 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3231 m  56 p  3230 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3237 m  56 p  3236 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3243 m  56 p  3242 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3249 m  56 p  3248 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3255 m  56 p  3254 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3261 m  56 p  3260 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3267 m  56 p  3266 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3273 m  56 p  3272 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3279 m  56 p  3278 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3285 m  56 p  3284 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-04 [-2.923752e+01,3.130188e-01] 
+
+
+Some crazy big ones::
+
+    NSc::csp n  6007 m  56 p  6006 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp.classify(nn.local) - nsdf: EE   115(in:/su:/ou/er)  60  40  15  15    -29.238     0.313 ep 1.000000e-03 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  6086 m  69 p  6085 n.pv lvTopReflector#pvTopRefGap0xc2pp.classify(nn.local) - nsdf: EE    95(in:/su:/ou/er)  85   0  10  10     -9.995    10.000 ep 1.000000e-03 [-9.995000e+00,1.000000e+01] 
+    NSc::csp n  6089 m  72 p  6088 n.pv lvBotReflector#pvBotRefGap0xbfpp.classify(nn.local) - nsdf: EE   155(in:/su:/ou/er) 145   0  10  10     -9.995    10.000 ep 1.000000e-03 [-9.995000e+00,1.000000e+01] 
+    NSc::csp n  6108 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6109 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6110 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6111 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6112 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6113 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6114 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6115 m  77 p  4815 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp.classify(nn.local) - nsdf: EE   124(in:/su:/ou/er)   0  96  28  28      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+    NSc::csp n  6133 m  81 p  4815 n.pv lvOIL#pvSstInnVerRibs#SstInnVepp.classify(nn.local) - nsdf: EE   149(in:/su:/ou/er)  71  40  38  38   -120.000     0.031 ep 1.000000e-03 [-1.200000e+02,3.125000e-02] 
+    NSc::csp n  6134 m  81 p  4815 n.pv lvOIL#pvSstInnVerRibs#SstInnVepp.classify(nn.local) - nsdf: EE   149(in:/su:/ou/er)  71  40  38  38   -120.000     0.031 ep 1.000000e-03 [-1.200000e+02,3.125000e-02] 
+
+
+
+
+
+::
+
+    NSc::csp n  3149 nlv 234 p  3148 n.pv lvNearPoolDead#pvNearPoolLinerpp(nn.local) - nsdf: EE   134(in:/su/ou/er) 109  25   0  25    -84.000     0.000 ep 1.000000e-03 [-8.400000e+01,0.000000e+00] 
+    NSc::csp n  3150 nlv 232 p  3149 n.pv lvNearPoolLiner#pvNearPoolOWS0pp(nn.local) - nsdf: EE   122(in:/su/ou/er)  97  25   0  25     -8.000     0.000 ep 1.000000e-03 [-8.000000e+00,0.000000e+00] 
+    NSc::csp n  3151 nlv 213 p  3150 n.pv lvNearPoolOWS#pvNearPoolCurtaipp(nn.local) - nsdf: EE   122(in:/su/ou/er)  97  25   0  25  -1000.000     0.000 ep 1.000000e-03 [-1.000000e+03,0.000000e+00] 
+    NSc::csp n  3152 nlv 211 p  3151 n.pv lvNearPoolCurtain#pvNearPoolIWpp(nn.local) - nsdf: EE   182(in:/su/ou/er) 157  25   0  25     -8.000     0.000 ep 1.000000e-03 [-8.000000e+00,0.000000e+00] 
+    NSc::csp n  3157 nlv  37 p  3156 n.pv           lvOAV#pvLSO0xbf8e120pp(nn.local) - nsdf: EE   110(in:/su/ou/er)  85  25   0  25    -18.025     0.000 ep 1.000000e-03 [-1.802490e+01,0.000000e+00] 
+    NSc::csp n  3159 nlv  22 p  3158 n.pv           lvIAV#pvGDS0xbf6ab00pp(nn.local) - nsdf: EE   105(in:/su/ou/er)  80  25   0  25    -15.000     0.000 ep 1.000000e-03 [-1.500000e+01,0.000000e+00] DEBUG_NODE 
+    2017-06-30 20:47:00.885 WARN  [2230698] [NSDF::classify@74]  sd.size ZERO 
+    NSc::csp n  3163 nlv  27 p  3157 n.pv lvLSO#pvCtrGdsOflTfbInLso0xc2cpp(nn.local) - nsdf: EE    55(in:/su/ou/er)  50   5   0   5   -207.000     0.000 ep 1.000000e-03 [-2.070000e+02,0.000000e+00] 
+    NSc::csp n  3164 nlv  28 p  3157 n.pv lvLSO#pvCtrGdsOflInLso0xbf7425pp(nn.local) - nsdf: EE    75(in:/su/ou/er)  50  25   0  25   -347.560    -0.000 ep 1.000000e-03 [-3.475604e+02,-2.441406e-04] 
+    NSc::csp n  3167 nlv  30 p  3157 n.pv lvLSO#pvOcrGdsTfbInLso0xbfa181pp(nn.local) - nsdf: EE    25(in:/su/ou/er)  10   0  15  15     -9.528    66.378 ep 1.000000e-03 [-9.528076e+00,6.637841e+01] 
+    NSc::csp n  3168 nlv  31 p  3157 n.pv   lvLSO#pvOcrGdsInLso0xbf6d280pp(nn.local) - nsdf: EE    35(in:/su/ou/er)   5   0  30  30    -53.925    66.329 ep 1.000000e-03 [-5.392529e+01,6.632938e+01] 
+    NSc::csp n  3169 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs#pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.577148e-01] 
+    NSc::csp n  3170 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.575928e-01] 
+    NSc::csp n  3171 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.577148e-01] 
+    NSc::csp n  3172 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.575928e-01] 
+    NSc::csp n  3173 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.577148e-01] 
+    NSc::csp n  3174 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.575928e-01] 
+    NSc::csp n  3175 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.577148e-01] 
+    NSc::csp n  3176 nlv  32 p  3157 n.pv lvLSO#pvOavBotRibs#OavBotRibs:pp(nn.local) - nsdf: EE   150(in:/su/ou/er)  72  40  38  78   -197.000     0.158 ep 1.000000e-03 [-1.970000e+02,1.575928e-01] 
+    NSc::csp n  3177 nlv  33 p  3157 n.pv     lvLSO#pvOavBotHub0xbf21f78pp(nn.local) - nsdf: EE    75(in:/su/ou/er)  45  30   0  30   -197.000    -0.000 ep 1.000000e-03 [-1.970000e+02,-0.000000e+00] 
+    NSc::csp n  3195 nlv  40 p  3156 n.pv lvOAV#pvOcrGdsLsoInOav0xbfa3dfpp(nn.local) - nsdf: EE     5(in:/su/ou/er)   0   0   5   5      6.302    11.188 ep 1.000000e-03 [6.301849e+00,1.118755e+01] 
+    2017-06-30 20:47:00.916 WARN  [2230698] [NSDF::classify@74]  sd.size ZERO 
+    NSc::csp n  3199 nlv  47 p  3155 n.pv lvOIL#pvAdPmtArray#pvAdPmtArrapp(nn.local) - nsdf: EE    55(in:/su/ou/er)  25   0  30  30   -294.500     5.858 ep 1.000000e-03 [-2.945000e+02,5.857910e+00] 
+    NSc::csp n  3201 nlv  43 p  3200 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-03 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3202 nlv  44 p  3200 n.pv lvPmtHemiVacuum#pvPmtHemiBottopp(nn.local) - nsdf: EE    45(in:/su/ou/er)  25  20   0  20    -31.500     0.000 ep 1.000000e-03 [-3.150000e+01,0.000000e+00] 
+    NSc::csp n  3203 nlv  45 p  3200 n.pv lvPmtHemiVacuum#pvPmtHemiDynodpp(nn.local) - nsdf: EE    75(in:/su/ou/er)  45  30   0  30    -31.500    -0.000 ep 1.000000e-03 [-3.150000e+01,-0.000000e+00] 
+    NSc::csp n  3205 nlv  47 p  3155 n.pv lvOIL#pvAdPmtArray#pvAdPmtArrapp(nn.local) - nsdf: EE    55(in:/su/ou/er)  25   0  30  30   -294.500     5.858 ep 1.000000e-03 [-2.945000e+02,5.857910e+00] 
+    NSc::csp n  3207 nlv  43 p  3206 n.pv lvPmtHemiVacuum#pvPmtHemiCathopp(nn.local) - nsdf: EE   115(in:/su/ou/er)  60  40  15  55    -29.238     0.313 ep 1.000000e-03 [-2.923752e+01,3.130188e-01] 
+    NSc::csp n  3208 nlv  44 p  3206 n.pv lvPmtHemiVacuum#pvPmtHemiBottopp(nn.local) - nsdf: EE    45(in:/su/ou/er)  25  20   0  20    -31.500     0.000 ep 1.000000e-03 [-3.150000e+01,0.000000e+00] 
 
 
 

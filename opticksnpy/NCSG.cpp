@@ -58,7 +58,8 @@ NCSG::NCSG(const char* treedir)
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL)
+   m_tris(NULL),
+   m_surface_epsilon(1e-6)
 {
 }
 
@@ -83,7 +84,8 @@ NCSG::NCSG(nnode* root )
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL)
+   m_tris(NULL),
+   m_surface_epsilon(1e-6)
 {
    m_num_nodes = NumNodes(m_height);
 
@@ -499,10 +501,20 @@ void NCSG::import()
 
 void NCSG::postimport()
 {
+    postimport_uncoincide();
+    //postimport_autoscan();
+}
+
+
+void NCSG::postimport_uncoincide()
+{
     if(is_uncoincide()) m_root->uncoincide(m_verbosity);  // pairwise not helping much, try at tree level 
+}
 
-    float mmstep = 0.1f ; 
+void NCSG::postimport_autoscan()
+{
 
+   float mmstep = 0.1f ; 
     NScan scan(*m_root, m_verbosity);
     unsigned nzero = scan.autoscan(mmstep);
     const std::string& msg = scan.get_message();
@@ -511,7 +523,7 @@ void NCSG::postimport()
 
     if( !msg.empty() )
     {
-        LOG(warning) << "NCSG::postimport"
+        LOG(warning) << "NCSG::postimport_autoscan"
                      << " autoscan message " << msg 
                      ;
     }
@@ -519,7 +531,7 @@ void NCSG::postimport()
 
     if( !even_crossings )
     {
-        LOG(warning) << "NCSG::postimport"
+        LOG(warning) << "NCSG::postimport_autoscan"
                      << " autoscan odd crossings "
                      << " nzero " << nzero 
                      ;
@@ -527,7 +539,7 @@ void NCSG::postimport()
 
     //LOG(info) << "NCSG::postimport" ;
     std::cout 
-         << "NCSG::postimport"
+         << "NCSG::postimport_autoscan"
          << " nzero " << std::setw(4) << nzero 
          << " NScanTest " << std::left << std::setw(40) << getTreeDir()  << std::right
          << " soname " << std::setw(40) << soname()  
@@ -538,8 +550,10 @@ void NCSG::postimport()
          << std::endl 
          ;
 
-
 }
+
+
+
 
 
 
@@ -627,7 +641,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->transform = import_transform_triple( transform_idx ) ;
 
-        nmat4triple* gtransform = node->global_transform();   
+        const nmat4triple* gtransform = node->global_transform();   
 
         // see opticks/notes/issues/subtree_instances_missing_transform.rst
         //if(gtransform == NULL && m_usedglobally)
@@ -767,13 +781,13 @@ void NCSG::import_planes(nnode* node)
 }
 
 
-unsigned NCSG::addUniqueTransform( nmat4triple* gtransform_ )
+unsigned NCSG::addUniqueTransform( const nmat4triple* gtransform_ )
 {
     bool no_offset = m_gpuoffset.x == 0.f && m_gpuoffset.y == 0.f && m_gpuoffset.z == 0.f ;
 
     bool reverse = true ; // <-- apply transfrom at root of transform hierarchy (rather than leaf)
 
-    nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
+    const nmat4triple* gtransform = no_offset ? gtransform_ : gtransform_->make_translated(m_gpuoffset, reverse, "NCSG::addUniqueTransform" ) ;
 
 
     /*
@@ -1130,24 +1144,33 @@ int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosi
 }
 
 
-void NCSG::collect_surface_points()
+
+glm::uvec4 NCSG::collect_surface_points() 
+{
+    m_surface_points.clear();
+    return collect_surface_points( m_surface_points, m_root, m_verbosity, m_surface_epsilon );
+}
+
+glm::uvec4 NCSG::collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, unsigned verbosity, float epsilon ) // static
 {
     //unsigned level = 1 ;  // +-----+------+   0x1 << 1 == 2 divisions, 3 uv points 
     unsigned level = 2 ;    // +--+--+--+---+   0x1 << 2 == 4 divisions, 5 uv points  
     unsigned margin = 0 ;   // when > 0 skips the ends 
 
     unsigned pointmask = POINT_SURFACE ; 
-    float epsilon = 1e-4 ;     // surface SDF band
 
-    glm::uvec4 tots = m_root->getCompositePoints( m_surface_points, level, margin , pointmask, epsilon, NULL );
+    glm::uvec4 tots = root->getCompositePoints( surface_points, level, margin , pointmask, epsilon, NULL );
 
-    if(m_verbosity > 2)
+    if(verbosity > 2)
     LOG(info) << "NCSG::collect_surface_points"
               << " tots (inside/surface/outside/selected) " << gpresent(tots) 
-              << " surface_points " << m_surface_points.size()
+              << " surface_points " << surface_points.size()
               ;
 
+    return tots ; 
 }
+
+
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 
 {
     return m_surface_points ;
@@ -1156,6 +1179,11 @@ unsigned NCSG::getNumSurfacePoints() const
 {
     return m_surface_points.size() ;
 }
+float NCSG::getSurfaceEpsilon() const 
+{
+    return m_surface_epsilon ; 
+}
+
 
 
 

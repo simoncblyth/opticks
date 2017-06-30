@@ -19,11 +19,13 @@
 #include "NBBox.hpp"
 
 
+#include "NSDF.hpp"
 #include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
 #include "Nd.hpp"
 
+#include "N.hpp"
 #include "NScene.hpp"
 
 #include "PLOG.hh"
@@ -201,7 +203,7 @@ void NScene::load_csg_metadata()
 {
    // for debugging need the CSG metadata prior to loading the trees
     unsigned num_meshes = getNumMeshes();
-    if(m_verbosity > 1)
+    if(m_verbosity > 0)
     LOG(info) << "NScene::load_csg_metadata"
               << " verbosity " << m_verbosity 
               << " num_meshes " << num_meshes
@@ -227,7 +229,7 @@ void NScene::load_csg_metadata()
         std::string meta_soname = soname(mesh_id);
         assert( meta_soname.compare(soName) == 0) ; 
 
-        //if(m_verbosity > 3)
+        if(m_verbosity > 3)
         LOG(info) << "NScene::load_csg_metadata"
                   << " verbosity " << m_verbosity 
                   << " mesh_id " << std::setw(3) << mesh_id
@@ -386,6 +388,8 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 
+    
+
     for(int child : ynode->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
 
     m_nd[idx] = n ;
@@ -401,7 +405,7 @@ void NScene::postimportnd()
     if( dn )
     {
         m_dbgnode_list.push_back(dn->idx);
-        if(dn->parent) m_dbgnode_list.push_back(dn->parent->idx);
+        //if(dn->parent) m_dbgnode_list.push_back(dn->parent->idx);
     }
 
     LOG(info) << "NScene::postimportnd" 
@@ -429,8 +433,9 @@ void NScene::postimportmesh()
               << " verbosity " << m_verbosity
                ; 
 
-    update_aabb();
-    check_aabb_containment();
+    //update_aabb();
+    //check_aabb_containment();
+
     check_surf_containment();
 
     if(SSys::IsHARIKARI())
@@ -528,9 +533,6 @@ void NScene::check_surf_containment_r(const nd* n)
 
 
 
-
-
-
 float NScene::sdf_procedural( const nd* n, const glm::vec3& q_) const 
 {
     assert(0 && "dont use this use NSDF ");
@@ -547,189 +549,109 @@ float NScene::sdf_procedural( const nd* n, const glm::vec3& q_) const
 
 
 
-
-struct NSDF
+glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the surface points of a node against the SDF of its parent 
 {
-   /*
-   Applies inverse transform v to take global positions 
-   into frame of the structural nd 
-   where the CSG is placed, these positions local 
-   to the CSG can then be used with the CSG SDF to 
-   see the distance from the point to the surface of the 
-   solid.
-   */
+    //  DBGNODE=3159 NSceneLoadTest 
 
-    typedef std::vector<float>::const_iterator VFI ; 
-    NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse, float epsilon, unsigned expect)  
-        :
-        sdf(sdf),
-        inverse(inverse),
-        epsilon(epsilon),
-        expect(expect),
-        tot(0,0,0,0),
-        range(0,0)
-    {
-    }    
-    float operator()( const glm::vec3& q_ )
-    {
-        glm::vec4 q(q_,1.0); 
-        q = inverse * q ;  
-        return sdf(q.x, q.y, q.z);
-    }
+    glm::uvec4 err(0,0,0,0) ; 
+    bool dbgnode = is_dbgnode(n) ;
+    //if(!dbgnode) return err ; 
 
-    void apply( const std::vector<glm::vec3>& qq )
-    {
-        std::transform( qq.begin(), qq.end(), std::back_inserter(sd), *this );
-
-        classify();
-
-        if(sd.size() > 0)
-        {
-            std::pair<VFI, VFI> p = std::minmax_element(sd.begin(), sd.end());
-            range.x = *p.first ; 
-            range.y = *p.second ; 
-        }
-        else
-        {
-            LOG(warning) << " sd.size ZERO " ; 
-        }
-    }
-
-    void classify()
-    {
-        tot.x = 0 ; 
-        tot.y = 0 ; 
-        tot.z = 0 ; 
-        tot.w = 0 ; 
-
-        for(unsigned i=0 ; i < sd.size() ; i++)
-        {  
-            NNodePointType pt = NNodeEnum::PointClassify(sd[i], epsilon ); 
-            switch(pt)
-            {
-                case POINT_INSIDE : tot.x++ ; break ; 
-                case POINT_SURFACE: tot.y++ ; break ; 
-                case POINT_OUTSIDE: tot.z++ ; break ; 
-            }
-            if(pt & ~expect) tot.w++ ; 
-        }
-    } 
-
-    bool is_error() const { return tot.w > 0 ; }
-    bool is_empty() const { return sd.size() == 0 ; }
-
-    std::string desc() const 
-    {
-        std::stringstream ss ; 
-        ss 
-           << ( is_error() ? "**" : "  " ) 
-           << ( is_empty() ? "??" : "  " ) 
-           << std::setw(4) << sd.size()
-           << "("
-           << "in" << ( expect & POINT_INSIDE ? "*" : ""  )
-           << "/"
-           << "su" << ( expect & POINT_SURFACE ? "*" : "" )
-           << "/"
-           << "ou" << ( expect & POINT_OUTSIDE ? "*" : "" )
-           << "/"
-           << "er"
-           << ") "
-           << gpresent( tot, 3 )
-           << " "
-           << gpresent( range )
-           ;
-        return ss.str();
-    }
-
-
-    std::function<float(float,float,float)> sdf ; 
-    const glm::mat4                         inverse ; 
-    const float                             epsilon ; 
-    const unsigned                          expect  ; 
-    std::vector<float>                      sd ; 
-    glm::uvec4                              tot ; 
-    glm::vec2                               range ;                  
-
-
-};
-
-
-
-struct NSDFSolid : NSDF 
-{
-    NSDFSolid( const nd* n , const NCSG* csg, float epsilon, unsigned expect)
-       :
-       NSDF( csg->getRoot()->sdf(), n->gtransform->v, epsilon, expect )
-    {}
-};
-
-struct NSDFBBox : NSDF
-{
-    NSDFBBox( const nd* n, const NCSG* csg, float epsilon, unsigned expect )
-       :
-       NSDF( csg->getRoot()->bbox().sdf(), n->gtransform->v, epsilon, expect  )
-    {}
-};
-
-
-// Classifiying the surface points of a node against the SDF of its parent 
-
-glm::uvec4 NScene::check_surf_points( const nd* n ) const 
-{
     const nd* p = n->parent ? n->parent : n ;  // only root has no parent
 
-    NCSG* n_csg = getCSG(n->mesh);
-    NCSG* p_csg = getCSG(p->mesh);
 
-    std::vector<glm::vec3> surf ; // bring CSG solid surface positions into global using nd frame gtransform
-    n->gtransform->apply_transform_t( surf,  n_csg->getSurfacePoints() ); 
-    unsigned npt = surf.size() ;
-    assert( n_csg->getNumSurfacePoints() == npt );
-
-    float epsilon = 1e-4 ; 
-    float whopper_epsilon = 0.25 ;  // <-- maybe z-nudge explains the bigger than expected this-node sdf range ?
-    float ginormous_epsilon = 10 ; 
-
-    glm::mat4 id(1);
-    NSDF      tbsd( n->aabb.sdf(), id, epsilon, POINT_INSIDE|POINT_SURFACE  );  // loose bbox as uses nd frame transformed aabb
-    NSDFBBox  bsd( n, n_csg, epsilon        , POINT_INSIDE|POINT_SURFACE );   // checking the points of n against its (tighter local) bbox...
-    NSDFSolid nsd( n, n_csg, whopper_epsilon, POINT_SURFACE );      // distance to surface of this node 
-    NSDFSolid psd( p, p_csg, ginormous_epsilon, POINT_INSIDE|POINT_SURFACE  );      // distance to surface of parent node : (zero or +ve are coincident/impingement)
-
-    nsd.apply(surf);  
-    psd.apply(surf);  
-    bsd.apply(surf);
-    tbsd.apply(surf); 
+    //bool dump = dbgnode ; 
+    //bool dump = true ; 
+    //const_cast<nd*>(n)->dump_transforms("n->dump_transforms" ); 
+    //std::cout << gpresent( "n->tr->v" , n->transform->v ) << std::endl ;
+    //std::cout << gpresent( "p->tr->v" , p->transform->v ) << std::endl ;
 
 
-    glm::uvec4 err ; 
+    NCSG* ncsg = getCSG(n->mesh);
+    NCSG* pcsg = getCSG(p->mesh);
 
-    err.x = psd.tot.w ; 
-    err.y = nsd.tot.w ; 
-    err.z = bsd.tot.w ; 
-    err.w = tbsd.tot.w ; 
+    int nlvid = lvidx(n->mesh);
 
 
-    bool dump = err.x > 0 || npt == 0  ; 
-    //bool dump = err.y > 0 || npt == 0  ; 
+    const nnode* nroot = ncsg->getRoot();
+    const nnode* proot = pcsg->getRoot();
 
-    if( dump )
+    // N ctor collects eg pp.model CSG frame surface band points, 
+    // and transforms them with the ctor argument placement transform 
+    // into pp.local points, also the N ctor instanciates
+    // an NSDF instance with the sdf obtained from the nnode argument 
+    // and the inverse of the transform ... 
+    //
+    // Subsequenently calls to N::classify with points 
+    // in the operation frame uses the inverse of the placement
+    // transform to allow appropriate SDF values to be obtained.
+    //
+    // Using identity transform for parent node and n->transform
+    // for this node ... allows cross frame comparisons. 
+    // The p->transform is not relevant as are treating the parent
+    // as the base frame.
+    //
+    // It may be less confusing to  think about being in the parent 
+    // node with a placed child.
+    //
+    // Recall that surface points are obtained from parametric primitives
+    // by CSG/model frame SDF comparisons ... so surface points are in a narrow band around SDF zero
+    // depending on the surface_epsilon used to collect them from the primitives.
+
+
+    const nmat4triple* id = nmat4triple::make_identity() ;
+    N pp(proot, id);           
+    N nn(nroot, n->transform );
+
+
+
+/*
+    // checking sdf against of own local points is mainly a machinery test
+    // but also shows the kind of precision are getting 
+
+    pp.classify( pp.local, 1e-3, POINT_SURFACE );
+    nn.classify( nn.local, 1e-3, POINT_SURFACE );
+    err.z = pp.nsdf.tot.w ; 
+    err.w = nn.nsdf.tot.w ; 
+
+    if(err.z > 0 || err.w > 0)
     {
-        unsigned wid = 3 ;     
-        bool dbgnode = is_dbgnode(n) ;
-        //if(m_verbosity > 2 || dbgnode )
-        std::cout << "NSc::csp"
-                  << " n " << std::setw(5) << n->idx
-                  << " p " << std::setw(5) << p->idx
-                  << " npt " << std::setw(wid) << npt
-                  << " nsd " <<  nsd.desc()
-                  << " psd " <<  psd.desc()
-                //  << " bsd " <<  bsd.desc()
-                  << " n.pv " << n->pvtag()
-                  << ( dbgnode ? " DEBUG_NODE " : " " )
-                  << std::endl 
-                  ; 
+        std::cout << "NSc::csp" << " n " << std::setw(5) << n->idx << " p " << std::setw(5) << p->idx << " n.pv " << n->pvtag() << ( dbgnode ? " DEBUG_NODE " : " " ) << std::endl ; 
+        std::cout << "pp.classify(pp.local) " << pp.desc() << std::endl ; 
+        std::cout << "nn.classify(nn.local) " << nn.desc() << std::endl ; 
+        //nn.dump_points("nn.dump_points");
     }
+*/
+
+
+    // cross checking containment of a nodes points inside its parent 
+    // OR vice versa checking that parents points are outside the child node
+    // is the raison d'etre of this method
+    //
+    // coincidence is a problem, as well as impingement ... but try to 
+    // see how big the issue is
+
+    pp.classify( nn.local, 1e-3, POINT_INSIDE );
+    nn.classify( pp.local, 1e-3, POINT_OUTSIDE );
+    err.x = pp.nsdf.tot.w ; 
+    err.y = nn.nsdf.tot.w ; 
+
+    //if(dump)
+    //if(n->mesh == 56)
+    if(err.x > 0 || err.y > 0)
+    {
+        std::cout << "NSc::csp" 
+                  << " n " << std::setw(5) << n->idx 
+                  << " nlv " << std::setw(3) << nlvid 
+                  << " p " << std::setw(5) << p->idx 
+                  << " n.pv " << std::setw(30) << n->pvtag() 
+                  << "pp(nn.local) " << pp.desc()
+                  << ( dbgnode ? " DEBUG_NODE " : " " )
+                  << std::endl ; 
+
+      //  std::cout << "nn.classify(pp.local) " << nn.desc() << std::endl ; 
+    }
+
 
 
     return err ;  

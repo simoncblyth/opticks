@@ -41,19 +41,22 @@ struct NPY_API nd
    std::string      _progeny_digest ; 
 
    nd*              parent ; 
-   nmat4triple*     transform ; 
-   nmat4triple*     gtransform ; 
+   const nmat4triple*     transform ; 
+   const nmat4triple*     gtransform ; 
    std::vector<nd*> children ; 
    std::vector<nd*> _progeny ; 
    std::vector<nd*> _ancestors ; 
 
+
+    // this class needs major rework to constify due to the lazy approach 
 
    nbbox                  aabb ;  
 
 
    std::string desc();
    std::string detail();
-   static nmat4triple* make_global_transform(nd* n) ; 
+   static const nmat4triple* make_global_transform(const nd* n) ; 
+   void dump_transforms(const char* msg="nd::dump_transforms") ;
 
 
    static std::string      _make_digest(const std::vector<nd*>& nds, nd* extra);

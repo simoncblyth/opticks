@@ -246,8 +246,8 @@ void test_nmat4triple_make_translated()
     glm::vec3 tlat2(-100,0,0) ; 
 
     bool reverse(true);
-    nmat4triple* tt1 = tt0.make_translated( tlat2, reverse, "test_nmat4triple_make_translated" );
-    nmat4triple* tt2 = tt0.make_translated( tlat2, !reverse, "test_nmat4triple_make_translated" );
+    const nmat4triple* tt1 = tt0.make_translated( tlat2, reverse, "test_nmat4triple_make_translated" );
+    const nmat4triple* tt2 = tt0.make_translated( tlat2, !reverse, "test_nmat4triple_make_translated" );
 
     std::cout 
          << std::endl 
@@ -267,7 +267,7 @@ void test_nmat4triple_id_digest()
 {
     LOG(info) << "test_nmat4triple_id_digest" ; 
 
-    nmat4triple* id = nmat4triple::make_identity() ;
+    const nmat4triple* id = nmat4triple::make_identity() ;
     std::cout << " id " << *id << " dig " << id->digest() << std::endl ; 
 }
 
@@ -276,8 +276,8 @@ void test_apply_transform()
 {
     LOG(info) << "test_apply_transform" ;
  
-    nmat4triple* id = nmat4triple::make_identity() ;
-    nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
+    const nmat4triple* id = nmat4triple::make_identity() ;
+    const nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
 
     glm::vec3 p(1,2,3);
     glm::vec3 q = id->apply_transform_t( p );
@@ -297,7 +297,7 @@ void test_apply_transform_vec()
 {
     LOG(info) << "test_apply_transform_vec" ; 
 
-    nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
+    const nmat4triple* sc = nmat4triple::make_scale(10,10,10) ;
 
     std::vector<glm::vec3> src ; 
     src.push_back(glm::vec3(1,0,0));

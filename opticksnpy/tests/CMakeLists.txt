@@ -156,6 +156,8 @@ if(YoctoGL_FOUND)
        NSceneTest.cc
        NYMathTest.cc
        NYShapeTest.cc
+       NSDFTest.cc
+       NSceneLoadTest.cc
 )
 endif()
 

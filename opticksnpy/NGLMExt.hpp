@@ -44,23 +44,26 @@ struct NPY_API nmat4pair
 
 struct NPY_API nmat4triple
 {
-    static nmat4triple* make_translate(const glm::vec3& tlate);
-    static nmat4triple* make_rotate(   const glm::vec4& trot);
-    static nmat4triple* make_scale(    const glm::vec3& tsca);
+    static const nmat4triple* make_translate(const glm::vec3& tlate);
+    static const nmat4triple* make_rotate(   const glm::vec4& trot);
+    static const nmat4triple* make_scale(    const glm::vec3& tsca);
 
-    static nmat4triple* make_translate( const float x, const float y, const float z);
-    static nmat4triple* make_rotate(    const float x, const float y, const float z, const float w);
-    static nmat4triple* make_scale(     const float x, const float y, const float z);
+    static const nmat4triple* make_translate( const float x, const float y, const float z);
+    static const nmat4triple* make_rotate(    const float x, const float y, const float z, const float w);
+    static const nmat4triple* make_scale(     const float x, const float y, const float z);
 
-    static nmat4triple* product(const std::vector<nmat4triple*>& tt, bool reverse );
-    static nmat4triple* make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user  );
-    static nmat4triple* make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user);
-    static nmat4triple* make_identity();
+    static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, bool reverse);
+    static const nmat4triple* product(const nmat4triple* a, const nmat4triple* b, const nmat4triple* c, bool reverse);
+    static const nmat4triple* product(const std::vector<const nmat4triple*>& tt, bool reverse );
+    static const nmat4triple* make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user  );
+    static const nmat4triple* make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* user);
+    static const nmat4triple* make_identity();
     static void dump( const NPY<float>* buf, const char* msg="nmat4triple::dump");
     static void dump( const float* data4x4, const char* msg="nmat4triple::dump");
 
-    nmat4triple* clone();
-    nmat4triple* make_translated(const glm::vec3& tlate, bool reverse, const char* user );
+    const nmat4triple* clone() const ;
+    const nmat4triple* make_translated(const glm::vec3& tlate, bool reverse, const char* user ) const ;
+
     nmat4triple( const glm::mat4& transform ); 
     nmat4triple( const float* data ); 
     nmat4triple( const glm::mat4& transform, const glm::mat4& inverse, const glm::mat4& inverse_T ) 
@@ -70,7 +73,7 @@ struct NPY_API nmat4triple
             q(inverse_T) 
          {} ;
 
-    std::string digest();
+    std::string digest() const ;
 
     glm::vec3 apply_transform_t( const glm::vec3& p, const float w=1.0f ) const ;
     glm::vec3 apply_transform_v( const glm::vec3& p, const float w=1.0f ) const ;

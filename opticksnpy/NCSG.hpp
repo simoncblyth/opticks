@@ -86,10 +86,13 @@ class NPY_API NCSG {
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
+    public:
         const std::vector<glm::vec3>& getSurfacePoints() const ;
         unsigned getNumSurfacePoints() const ;
+        float    getSurfaceEpsilon() const ; 
+        static   glm::uvec4 collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, unsigned verbosity, float epsilon );
     private:
-        void collect_surface_points();
+        glm::uvec4 collect_surface_points();
     public:
         template<typename T> void setMeta(const char* key, T value);
     public:
@@ -157,6 +160,9 @@ class NPY_API NCSG {
     private:
         void import();
         void postimport();
+        void postimport_uncoincide();
+        void postimport_autoscan();
+
         nnode* import_r(unsigned idx, nnode* parent=NULL);
         nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
         nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
@@ -164,7 +170,7 @@ class NPY_API NCSG {
     private:
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);
-        unsigned addUniqueTransform( nmat4triple* gtransform );
+        unsigned addUniqueTransform( const nmat4triple* gtransform );
     private:
          // Serialize branch
         void export_r(nnode* node, unsigned idx);
@@ -192,7 +198,11 @@ class NPY_API NCSG {
         int         m_container ;  
         float       m_containerscale ;  
 
+        
+
         NTrianglesNPY*         m_tris ; 
+
+        float                  m_surface_epsilon ; 
         std::vector<glm::vec3> m_surface_points ; 
 
 

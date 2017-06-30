@@ -346,13 +346,13 @@ glm::mat4 nglmext::make_transform(const std::string& order)
 
 
 
-std::string nmat4pair::digest()
+std::string nmat4pair::digest() 
 {
     return SDigest::digest( (void*)this, sizeof(nmat4pair) );
 }
 
 
-std::string nmat4triple::digest()
+std::string nmat4triple::digest() const 
 {
     return SDigest::digest( (void*)this, sizeof(nmat4triple) );
 }
@@ -415,7 +415,7 @@ nmat4triple::nmat4triple(const glm::mat4& t_ )
 {
 }
 
-nmat4triple* nmat4triple::clone()
+const nmat4triple* nmat4triple::clone() const 
 {
     return new nmat4triple(t,v,q);
 }
@@ -448,34 +448,34 @@ void nmat4triple::apply_transform_v(std::vector<glm::vec3>& dst, const std::vect
 
 
 
-nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )
+const nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )
 {
     glm::mat4 t = nglmext::make_translate(tlate);
     return new nmat4triple(t);
 }
-nmat4triple* nmat4triple::make_scale( const glm::vec3& tsca )
+const nmat4triple* nmat4triple::make_scale( const glm::vec3& tsca )
 {
     glm::mat4 s = nglmext::make_scale(tsca);
     return new nmat4triple(s);
 }
-nmat4triple* nmat4triple::make_rotate( const glm::vec4& trot )
+const nmat4triple* nmat4triple::make_rotate( const glm::vec4& trot )
 {
     glm::mat4 r = nglmext::make_rotate(trot);
     return new nmat4triple(r);
 }
 
 
-nmat4triple* nmat4triple::make_translate( const float x, const float y, const float z)
+const nmat4triple* nmat4triple::make_translate( const float x, const float y, const float z)
 {
     glm::vec3 tmp(x,y,z);
     return make_translate(tmp);
 }
-nmat4triple* nmat4triple::make_scale( const float x, const float y, const float z)
+const nmat4triple* nmat4triple::make_scale( const float x, const float y, const float z)
 {
     glm::vec3 tmp(x,y,z);
     return make_scale(tmp);
 }
-nmat4triple* nmat4triple::make_rotate( const float x, const float y, const float z, const float w)
+const nmat4triple* nmat4triple::make_rotate( const float x, const float y, const float z, const float w)
 {
     glm::vec4 tmp(x,y,z,w);
     return make_rotate(tmp);
@@ -485,9 +485,24 @@ nmat4triple* nmat4triple::make_rotate( const float x, const float y, const float
 
 
 
+const nmat4triple* nmat4triple::product(const nmat4triple* a, const nmat4triple* b, bool reverse)
+{
+    std::vector<const nmat4triple*> triples ; 
+    triples.push_back(a);
+    triples.push_back(b);
+    return nmat4triple::product( triples, reverse );
+}
 
+const nmat4triple* nmat4triple::product(const nmat4triple* a, const nmat4triple* b, const nmat4triple* c, bool reverse)
+{
+    std::vector<const nmat4triple*> triples ; 
+    triples.push_back(a);
+    triples.push_back(b);
+    triples.push_back(c);
+    return nmat4triple::product( triples, reverse );
+}
 
-nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool reverse )
+const nmat4triple* nmat4triple::product(const std::vector<const nmat4triple*>& triples, bool reverse )
 {
 /*
     Use *reverse=true* when the triples are in reverse heirarchical order, ie when
@@ -522,27 +537,27 @@ nmat4triple* nmat4triple::product(const std::vector<nmat4triple*>& triples, bool
 }
 
 
-nmat4triple* nmat4triple::make_identity()
+const nmat4triple* nmat4triple::make_identity()
 {
     glm::mat4 identity(1.f); 
     return new nmat4triple(identity);
 }
 
 
-nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse, const char* user )
+const nmat4triple* nmat4triple::make_translated(const glm::vec3& tlate, bool reverse, const char* user ) const 
 {
     // reverse:true means the tlate happens at the root 
     // reverse:false means the tlate happens at the leaf
     return make_translated(this, tlate, reverse, user );
 }
 
-nmat4triple* nmat4triple::make_translated(nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user)
+const nmat4triple* nmat4triple::make_translated(const nmat4triple* src, const glm::vec3& tlate, bool reverse, const char* user)
 { 
     glm::mat4 tra = glm::translate(glm::mat4(1.f), tlate);
     return make_transformed(src, tra, reverse, user );
 }
 
-nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& txf, bool reverse, const char* /*user*/)
+const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const glm::mat4& txf, bool reverse, const char* /*user*/)
 {
     // reverse:true means the transform ordering is from leaf to root 
     // so when wishing to extend the hierarchy with a higher level root transform, 
@@ -555,7 +570,7 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
 */
 
     nmat4triple perturb( txf );
-    std::vector<nmat4triple*> triples ; 
+    std::vector<const nmat4triple*> triples ; 
 
     // HMM its confusing to reverse here 
     // because reversal is also done in nmat4triple::product
@@ -576,7 +591,7 @@ nmat4triple* nmat4triple::make_transformed(nmat4triple* src, const glm::mat4& tx
         triples.push_back(src);    
     }
 
-    nmat4triple* transformed = nmat4triple::product( triples, reverse );  
+    const nmat4triple* transformed = nmat4triple::product( triples, reverse );  
     return transformed ; 
 }
 

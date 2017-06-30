@@ -318,7 +318,7 @@ void test_sdf_transformed()
     glm::vec3 range(-20,21,5);
 
     glm::vec3 tlate(100,0,0);
-    nmat4triple* t = nmat4triple::make_translate( tlate );
+    const nmat4triple* t = nmat4triple::make_translate( tlate );
 
     // although scanline positions are offset, 
     // still get same as local results 

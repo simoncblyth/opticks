@@ -420,10 +420,10 @@ How to nudge to avoid a coincidence ?
     nmat4triple compensate(compensate_);
 
     bool reverse = true ;   // <-- think of the nudge as an origin frame inside the leaf 
-    std::vector<nmat4triple*> triples ; 
+    std::vector<const nmat4triple*> triples ; 
     triples.push_back(&compensate); 
     triples.push_back(transform); 
-    nmat4triple* compensated = nmat4triple::product(triples, reverse );
+    const nmat4triple* compensated = nmat4triple::product(triples, reverse );
 
     // cannot use make_translated as need the translation first ...
     // transform = transform->make_translated(tlate, reverse, "nbox::nudge" ); 

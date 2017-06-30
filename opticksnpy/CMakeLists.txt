@@ -353,8 +353,8 @@ endif()
 
 if(YoctoGL_FOUND)
    message("NPY.YoctoGL_FOUND")
-   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp)
-   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp)
+   list(APPEND SOURCES  NGLTF.cpp  NScene.cpp  NSDF.cpp N.cpp)
+   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSDF.hpp N.hpp)
 endif()
 
 

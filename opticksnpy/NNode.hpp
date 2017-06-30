@@ -91,8 +91,8 @@ struct NPY_API nnode
     void update_gtransforms();
     static void update_gtransforms_r(nnode* node);
 
-    nmat4triple* global_transform(); 
-    static nmat4triple* global_transform(nnode* n); 
+    const nmat4triple* global_transform(); 
+    static const nmat4triple* global_transform(nnode* n); 
 
     glm::vec3 apply_gtransform(const glm::vec4& v_) const ;
 
@@ -138,8 +138,8 @@ struct NPY_API nnode
     const char* label ; 
     const char* treedir ; 
 
-    nmat4triple* transform ; 
-    nmat4triple* gtransform ; 
+    const nmat4triple* transform ; 
+    const nmat4triple* gtransform ; 
     unsigned   gtransform_idx ; 
     bool  complement ; 
     int verbosity ; 

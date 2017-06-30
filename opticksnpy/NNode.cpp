@@ -158,14 +158,14 @@ unsigned nnode::_maxdepth(unsigned depth)  // recursive
 }
 
 
-nmat4triple* nnode::global_transform()
+const nmat4triple* nnode::global_transform()
 {
     return global_transform(this);
 }
 
-nmat4triple* nnode::global_transform(nnode* n)
+const nmat4triple* nnode::global_transform(nnode* n)
 {
-    std::vector<nmat4triple*> tvq ; 
+    std::vector<const nmat4triple*> tvq ; 
     while(n)
     {
         if(n->transform) tvq.push_back(n->transform);
