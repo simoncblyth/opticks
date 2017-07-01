@@ -7,6 +7,8 @@
 #include "NConvexPolyhedron.hpp"
 #include "Nuv.hpp"
 #include "NBBox.hpp"
+#include "NPlane.hpp"
+
 
 
 float nconvexpolyhedron::operator()(float x, float y, float z) const 
@@ -55,13 +57,13 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
 
 nbbox nconvexpolyhedron::bbox() const 
 {
-    nbbox bb = make_bbox();
+    nbbox bb = make_bbox_base();
     bb.min = make_nvec3(param2.f.x, param2.f.y, param2.f.z) ;
     bb.max = make_nvec3(param3.f.x, param3.f.y, param3.f.z) ;
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
 
@@ -209,12 +211,96 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
     return pos ; 
 }
 
+void nconvexpolyhedron::set_bbox(const nbbox& bb)
+{
+    param2.f.x = bb.min.x ;
+    param2.f.y = bb.min.y ;
+    param2.f.z = bb.min.z ;
+
+    param3.f.x = bb.max.x ;
+    param3.f.y = bb.max.y ;
+    param3.f.z = bb.max.z ;
+}
 
 
 
 
+nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1, float x2, float y2 ) // static
+{
+   /*
+    z-order verts
 
 
+                  6----------7
+                 /|         /|
+                / |        / |
+               4----------5  |
+               |  |       |  |                       
+               |  |       |  |         Z    
+               |  2-------|--3         |  Y
+               | /        | /          | /
+               |/         |/           |/
+               0----------1            +------ X
+                         
+
+    x1: x length at -z
+    y1: y length at -z
+
+    x2: x length at +z
+    y2: y length at +z
+
+    z:  z length
+
+    */
+
+    std::vector<glm::vec3> v(8) ; 
+                                    // ZYX
+    v[0] = { -x1/2., -y1/2. , -z } ;  // 000
+    v[1] = {  x1/2., -y1/2. , -z } ;  // 001 
+    v[2] = { -x1/2.,  y1/2. , -z } ;  // 010
+    v[3] = {  x1/2.,  y1/2. , -z } ;  // 011
+
+    v[4] = { -x2/2., -y2/2. ,  z } ;  // 100
+    v[5] = {  x2/2., -y2/2. ,  z } ;  // 101
+    v[6] = { -x2/2.,  y2/2. ,  z } ;  // 110
+    v[7] = {  x2/2.,  y2/2. ,  z } ;  // 111
+
+    std::vector<glm::vec4> p(6) ; 
+
+    p[0] = make_plane( v[3], v[7], v[5] ) ; // +X  
+    p[1] = make_plane( v[0], v[4], v[6] ) ; // -X
+    p[2] = make_plane( v[2], v[6], v[7] ) ; // +Y
+    p[3] = make_plane( v[1], v[5], v[4] ) ; // -Y
+    p[4] = make_plane( v[5], v[7], v[6] ) ; // +Z
+    p[5] = make_plane( v[3], v[1], v[0] ) ; // -Z
+
+    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr() ;
+    std::copy( p.begin() , p.end() , std::back_inserter(cpol->planes) ) ;
+
+    nbbox bb = nbbox::from_points( v );
+    cpol->set_bbox(bb);
+
+    return cpol ; 
+}
+
+
+nconvexpolyhedron* nconvexpolyhedron::make_transformed( const glm::mat4& t  ) const 
+{
+    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr() ;
+
+    for(unsigned i=0 ; i < planes.size() ; i++ )
+    {
+        nplane pl = make_plane(planes[i]);
+        glm::vec4 tpl = pl.make_transformed(t);
+        cpol->planes.push_back(tpl);  
+    }
+
+    nbbox bb = bbox();
+    nbbox tbb = bb.make_transformed(t);
+    cpol->set_bbox(tbb);
+
+    return cpol ; 
+}
 
 
 

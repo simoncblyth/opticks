@@ -22,9 +22,9 @@ N::N(const nnode* node, const nmat4triple* transform, float surface_epsilon )
 
 } 
 
-glm::uvec4 N::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned expect )
+glm::uvec4 N::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned expect, bool dump )
 {
-      nsdf.classify(qq, epsilon, expect);
+      nsdf.classify(qq, epsilon, expect, dump);
       return nsdf.tot ; 
 }
 
@@ -51,6 +51,7 @@ void N::dump_points(const char* msg)
                << std::endl 
                ;
 
+      // NB the length of local and model will not typically be the same as the queried points
       for(unsigned i=0 ; i < num ; i++) 
              std::cout 
                << " model " << gpresent( model[i] ) 

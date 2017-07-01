@@ -339,6 +339,8 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
     }
 }
 
+
+
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
     GNode* node = static_cast<GNode*>(solid);
@@ -651,6 +653,14 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
     return mm ; 
 }
 
+
+
+/*
+void GMergedMesh::dumpPostCache(const char* msg)
+{
+    LOG(info) << msg ; 
+}
+*/
 
 
 void GMergedMesh::dumpSolids(const char* msg)

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <vector>
 #include <glm/fwd.hpp>
 
 struct nmat4triple ; 
@@ -21,6 +22,9 @@ struct NPY_API nbbox
 
     void dump(const char* msg);
     void include(const nbbox& other );
+    void include(const glm::vec3& p);
+    static nbbox from_points(const std::vector<glm::vec3>& points);
+
     const char* desc() const;
     std::string description() const ; 
 
@@ -30,7 +34,7 @@ struct NPY_API nbbox
     unsigned classify_containment( const nbbox& container, float epsilon ) const ; // of this bbox against purported container
 
     // transform returns a transformed copy of the bbox
-    nbbox transform( const glm::mat4& t );
+    nbbox make_transformed( const glm::mat4& t ) const ;
     static void transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
     static void transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t );
 
@@ -85,7 +89,7 @@ inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
 
 
 // "ctor" assuming rotational symmetry around z axis
-inline NPY_API nbbox make_bbox(float zmin, float zmax, float ymin, float ymax)
+inline NPY_API nbbox make_bbox_zsymmetric(float zmin, float zmax, float ymin, float ymax)
 {
     nbbox bb ; 
 
@@ -98,10 +102,19 @@ inline NPY_API nbbox make_bbox(float zmin, float zmax, float ymin, float ymax)
     return bb ;
 }
 
+inline NPY_API nbbox make_bbox_base(bool invert=false, bool empty=false)
+{
+    nbbox bb ; 
+
+    bb.invert = invert ; 
+    bb.empty = empty  ; 
+ 
+    return bb ; 
+}
 
 inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, bool invert=false, bool empty=false)
 {
-    nbbox bb ; 
+    nbbox bb = make_bbox_base(invert, empty);
 
     assert( xmax > xmin );
     assert( ymax > ymin );
@@ -110,18 +123,17 @@ inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, f
     bb.min = {xmin,ymin,zmin} ;
     bb.max = {xmax,ymax,zmax} ;
     bb.side = bb.max - bb.min ; 
-    bb.invert = invert ; 
-    bb.empty = empty  ; 
 
     return bb ; 
 }
 
 
+/*
 inline NPY_API nbbox make_bbox()
 {
     return make_bbox(0,0,0,0) ;
 }
-
+*/
 
 
 

@@ -795,6 +795,17 @@ NPY<T>* NPY<T>::make_repeat(NPY<T>* src, unsigned int n)
 
 
 
+template <typename T>
+NPY<T>* NPY<T>::make(const std::vector<glm::vec4>& vals)
+{
+    NPY<T>* buf = NPY<T>::make(vals.size(), 4);
+    buf->zero();
+    for(unsigned i=0 ; i < vals.size() ; i++)  buf->setQuad(vals[i], i); 
+    return buf ; 
+}
+
+
+
 
 template <typename T>
 unsigned NPY<T>::count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )

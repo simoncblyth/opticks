@@ -10,7 +10,7 @@
 #include "NBBox.hpp"
 
 
-nbbox nbbox::transform( const glm::mat4& t )
+nbbox nbbox::make_transformed( const glm::mat4& t ) const 
 {
     nbbox tbb(*this) ; // <-- default copy ctor copies over "invert" and "empty"
     transform( tbb, *this, t );
@@ -407,6 +407,27 @@ void nbbox::include(const nbbox& other)
     max = nmaxf( max, other.max );
     side = max - min ; 
 }
+
+
+void nbbox::include(const glm::vec3& p)
+{
+    nvec3 pp = {p.x, p.y, p.z } ;
+
+    min = nminf( min, pp );
+    max = nmaxf( max, pp );
+    side = max - min ; 
+}
+
+nbbox nbbox::from_points(const std::vector<glm::vec3>& points)
+{
+    nbbox bb ;
+    bb.empty = false ; 
+    bb.invert = false ; 
+
+    for(unsigned i=0 ; i < points.size() ; i++) bb.include(points[i]) ;
+    return bb ; 
+}
+
 
 
 

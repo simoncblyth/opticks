@@ -17,6 +17,8 @@ def to_pyline(a, alabel="a", fmt="%.3f"):
         s = "None"
     elif a.shape == (4,):
         s = to_pylist(a, fmt)
+    elif a.shape == (3,):
+        s = to_pylist(a, fmt)
     elif a.shape == (4,4):
         ss = map(to_pylist, a )
         s = "[" + ",".join(ss) + "]"

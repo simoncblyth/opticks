@@ -17,8 +17,12 @@ Plan
 NEXT
 ------
 
-* analyse to see if issues really always are always the same for every lv instance 
+* sanity check transforms relative to the G4DAE branch 
 
+  * possibilites : lack of precision in GDML/glTF serialization of transforms
+  * i vaguely recall issue with transform serialization precision ?? Check GDML/glTF in this respect
+
+* analyse to see if issues really always are always the same for every lv instance 
 
   
 Insights from RTCD p81
@@ -139,87 +143,24 @@ prioritization
 * impingements where the materials are the same probably do not matter ...
 
 
-lvid 66 : unbelievable big impingement  : trapezoid/convexpolyhedron machinery bug
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+IavTopHub
+~~~~~~~~~~~~
 
 ::
 
-     62 tbool66--(){ cat << EOP
-     63 
-     64 import logging
-     65 log = logging.getLogger(__name__)
-     66 from opticks.ana.base import opticks_main
-     67 from opticks.analytic.csg import CSG  
-     68 args = opticks_main(csgpath="$TMP/tbool/66")
-     69 
-     70 CSG.boundary = args.testobject
-     71 CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
-     72 
-     73 
-     75 
-     76 a = CSG("trapezoid", param = [0.000,0.000,0.000,0.000],param1 = [0.000,0.000,0.000,0.000])
-     77 b = CSG("box3", param = [40.000,40.000,2228.500,0.000],param1 = [0.000,0.000,0.000,0.000])
-     78 b.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[-340.000,0.000,0.000,1.000]]
-     79 ab = CSG("difference", left=a, right=b)
-     80 
-     81 c = CSG("box3", param = [691.020,24.000,2238.500,0.000],param1 = [0.000,0.000,0.000,0.000])
-     82 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[345.510,0.000,0.000,1.000]]
-     83 abc = CSG("difference", left=ab, right=c)
-     84 
-     85 
-     86 
+      555     <polycone aunit="deg" deltaphi="360" lunit="mm" name="IavTopHub0xc405968" startphi="0">
+      556       <zplane rmax="100" rmin="75" z="0"/>
+      557       <zplane rmax="100" rmin="75" z="85.5603682281126"/>
+      558       <zplane rmax="150" rmin="75" z="85.5603682281126"/>
+      559       <zplane rmax="150" rmin="75" z="110.560368228113"/>
+      560     </polycone>
 
 
+    In [6]: so = sc.gdml.find_solids("IavTopHub0x")[0]
 
-::
+    In [7]: so
+    Out[7]: [63]             IavTopHub0xc405968  4 z:         [0.0, 85.5603682281126, 110.560368228113] rmax:                     [100.0, 150.0] rmin:              [75.0] 
 
-    NSc::csp n  4445 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
-    NSc::csp n  4446 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
-    NSc::csp n  4447 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCirpp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
-    NSc::csp n  4448 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4449 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4450 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4451 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4452 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4453 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4454 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4455 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
-    NSc::csp n  4464 nlv  68 p  3155 n.pv     lvOIL#pvSstTopHub0xc2476b8pp(nn.local) - nsdf: EE   100(in:/su/ou/er)  75  25   0  25   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
-    NSc::csp n  4465 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
-    NSc::csp n  4466 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
-    NSc::csp n  4467 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
-    NSc::csp n  4468 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
-
-::
-
-    simon:issues blyth$ opticks-;opticks-tbool 66
-    opticks-tbool : sourcing /tmp/blyth/opticks/tgltf/extras/66/tbool66.bash
-    args: 
-    [2017-06-30 20:53:33,769] p17880 {/Users/blyth/opticks/analytic/csg.py:392} INFO - CSG.Serialize : writing 2 trees to directory /tmp/blyth/opticks/tbool/66 
-    288 -rwxr-xr-x  1 blyth  staff  143804 Jun 29 13:25 /usr/local/opticks/lib/OKTest
-    proceeding : /usr/local/opticks/lib/OKTest --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tbool/66_name=66_mode=PyCsgInBox --torch --torchconfig type=sphere_photons=10000_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000_source=0,0,0_target=0,0,1_time=0.1_radius=100_distance=400_zenithazimuth=0,1,0,1_material=GdDopedLS_wavelength=500 --torchdbg --tag 1 --cat tbool --save
-    2017-06-30 20:53:34.033 INFO  [2232690] [OpticksDbg::postconfigure@49] OpticksDbg::postconfigure OpticksDbg  debug_photon  size: 0 elem: () other_photon  size: 0 elem: ()
-    2017-06-30 20:53:34.202 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 index 0 version (null) existsdir 1
-    2017-06-30 20:53:34.307 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 index 1 version (null) existsdir 1
-    2017-06-30 20:53:34.386 INFO  [2232690] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
-    2017-06-30 20:53:34.386 INFO  [2232690] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 38
-    2017-06-30 20:53:34.386 INFO  [2232690] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [GdDopedLS]
-    2017-06-30 20:53:34.387 INFO  [2232690] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 38,2,39,4
-    2017-06-30 20:53:34.392 INFO  [2232690] [GGeo::loadAnalyticPmt@772] GGeo::loadAnalyticPmt AnalyticPMTIndex 0 AnalyticPMTSlice ALL Path /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0
-    2017-06-30 20:53:34.401 WARN  [2232690] [GGeoTest::init@54] GGeoTest::init booting from m_ggeo 
-    2017-06-30 20:53:34.401 WARN  [2232690] [GMaker::init@171] GMaker::init booting from cache
-    2017-06-30 20:53:34.401 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/0 index 0 version (null) existsdir 1
-    2017-06-30 20:53:34.515 INFO  [2232690] [*GMergedMesh::load@632] GMergedMesh::load dir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 -> cachedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GMergedMesh/1 index 1 version (null) existsdir 1
-    2017-06-30 20:53:34.519 INFO  [2232690] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
-    2017-06-30 20:53:34.519 INFO  [2232690] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 38
-    2017-06-30 20:53:34.519 INFO  [2232690] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [GdDopedLS]
-    2017-06-30 20:53:34.520 INFO  [2232690] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 38,2,39,4
-    2017-06-30 20:53:34.523 INFO  [2232690] [GGeoTest::loadCSG@212] GGeoTest::loadCSG  csgpath /tmp/blyth/opticks/tbool/66 verbosity 0
-    2017-06-30 20:53:34.523 INFO  [2232690] [NCSG::Deserialize@984] NCSG::Deserialize VERBOSITY 0 basedir /tmp/blyth/opticks/tbool/66 txtpath /tmp/blyth/opticks/tbool/66/csg.txt nbnd 2
-    Assertion failed: (idx < m_num_planes), function import_planes, file /Users/blyth/opticks/opticksnpy/NCSG.cpp, line 764.
-    /Users/blyth/opticks/bin/op.sh: line 619: 18110 Abort trap: 6           /usr/local/opticks/lib/OKTest --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tbool/66_name=66_mode=PyCsgInBox --torch --torchconfig type=sphere_photons=10000_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000_source=0,0,0_target=0,0,1_time=0.1_radius=100_distance=400_zenithazimuth=0,1,0,1_material=GdDopedLS_wavelength=500 --torchdbg --tag 1 --cat tbool --save
-    /Users/blyth/opticks/bin/op.sh RC 134
-    simon:issues blyth$ 
 
 
 
@@ -264,8 +205,6 @@ Treating surface zeros as error almost half volumes has issue::
 
 
 * notice that problems appear exactly the same for the different instances, so issue comes from lv level 
-
-
 
 
 ::

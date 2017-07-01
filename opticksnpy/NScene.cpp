@@ -81,6 +81,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int dbgno
     m_num_global(0),
     m_num_csgskip(0),
     m_num_placeholder(0),
+    m_num_selected(0),
     m_csgskip_lvlist(NULL),
     m_placeholder_lvlist(NULL),
     m_node_count(0),
@@ -110,6 +111,8 @@ void NScene::init()
 
     compare_trees();
 
+
+/*
     count_progeny_digests();
 
     find_repeat_candidates();
@@ -120,6 +123,7 @@ void NScene::init()
 
     if(m_verbosity > 1)
     dumpRepeatCount(); 
+*/
 
     markGloballyUsedMeshes_r(m_root);
 
@@ -388,7 +392,8 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
 
-    
+    if(selected) m_num_selected++ ; 
+ 
 
     for(int child : ynode->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
 
@@ -410,11 +415,11 @@ void NScene::postimportnd()
 
     LOG(info) << "NScene::postimportnd" 
               << " numNd " << getNumNd()
+              << " num_selected " << m_num_selected
               << " dbgnode " << m_dbgnode
               << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity
                ; 
-
 }
 
 
@@ -470,7 +475,7 @@ nbbox NScene::calc_aabb(const nd* n, bool global) const
     assert(solid);
 
     nbbox bb  = solid->bbox();
-    nbbox gbb = bb.transform(nt) ; 
+    nbbox gbb = bb.make_transformed(nt) ; 
 
     if(m_verbosity > 2)
     std::cout 
@@ -519,12 +524,17 @@ void NScene::check_surf_containment()
 }
 void NScene::check_surf_containment_r(const nd* n) 
 {
+/*
     glm::uvec4 err = check_surf_points(n);
 
     if(err.x > 0) m_surferr.x++ ; 
     if(err.y > 0) m_surferr.y++ ; 
     if(err.z > 0) m_surferr.z++ ; 
     if(err.w > 0) m_surferr.w++ ; 
+*/
+
+    if(is_dbgnode(n)) debug_node(n);
+
 
     for(const nd* c : n->children) check_surf_containment_r(c) ;
 }
@@ -555,17 +565,15 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
 
     glm::uvec4 err(0,0,0,0) ; 
     bool dbgnode = is_dbgnode(n) ;
-    //if(!dbgnode) return err ; 
+    if(!dbgnode) return err ; 
 
     const nd* p = n->parent ? n->parent : n ;  // only root has no parent
-
 
     //bool dump = dbgnode ; 
     //bool dump = true ; 
     //const_cast<nd*>(n)->dump_transforms("n->dump_transforms" ); 
     //std::cout << gpresent( "n->tr->v" , n->transform->v ) << std::endl ;
     //std::cout << gpresent( "p->tr->v" , p->transform->v ) << std::endl ;
-
 
     NCSG* ncsg = getCSG(n->mesh);
     NCSG* pcsg = getCSG(p->mesh);
@@ -604,8 +612,6 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
     N nn(nroot, n->transform );
 
 
-
-/*
     // checking sdf against of own local points is mainly a machinery test
     // but also shows the kind of precision are getting 
 
@@ -614,14 +620,13 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
     err.z = pp.nsdf.tot.w ; 
     err.w = nn.nsdf.tot.w ; 
 
-    if(err.z > 0 || err.w > 0)
+    //if(err.z > 0 || err.w > 0)
     {
         std::cout << "NSc::csp" << " n " << std::setw(5) << n->idx << " p " << std::setw(5) << p->idx << " n.pv " << n->pvtag() << ( dbgnode ? " DEBUG_NODE " : " " ) << std::endl ; 
         std::cout << "pp.classify(pp.local) " << pp.desc() << std::endl ; 
         std::cout << "nn.classify(nn.local) " << nn.desc() << std::endl ; 
         //nn.dump_points("nn.dump_points");
     }
-*/
 
 
     // cross checking containment of a nodes points inside its parent 
@@ -638,18 +643,20 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
 
     //if(dump)
     //if(n->mesh == 56)
-    if(err.x > 0 || err.y > 0)
+    //if(err.x > 0 || err.y > 0)
     {
         std::cout << "NSc::csp" 
                   << " n " << std::setw(5) << n->idx 
                   << " nlv " << std::setw(3) << nlvid 
                   << " p " << std::setw(5) << p->idx 
                   << " n.pv " << std::setw(30) << n->pvtag() 
+                  << std::endl  
                   << "pp(nn.local) " << pp.desc()
+                  << std::endl  
+                  << "nn(pp.local) " << nn.desc()
                   << ( dbgnode ? " DEBUG_NODE " : " " )
                   << std::endl ; 
 
-      //  std::cout << "nn.classify(pp.local) " << nn.desc() << std::endl ; 
     }
 
 
@@ -660,6 +667,64 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
 
 
 
+void NScene::debug_node(const nd* n) const 
+{
+    bool dbgnode = is_dbgnode(n) ;
+    if(!dbgnode) return ; 
+
+    const nd* p = n->parent ? n->parent : n ;  // only root has no parent
+    int nlvid = lvidx(n->mesh);
+    int plvid = lvidx(p->mesh);
+
+    LOG(info) << "NScene::debug_node " 
+              << " n " << std::setw(5) << n->idx 
+              << " n.mesh " << std::setw(5) << n->mesh
+              << " n.lv " << std::setw(3) << nlvid 
+              << " p.lv " << std::setw(3) << plvid 
+              << " p " << std::setw(5) << p->idx 
+              << " n.pv " << std::setw(30) << n->pvtag()
+              ; 
+ 
+    const_cast<nd*>(n)->dump_transforms("n->dump_transforms" ); 
+
+    NCSG* ncsg = getCSG(n->mesh);
+    NCSG* pcsg = getCSG(p->mesh);
+
+
+    const nnode* nroot = ncsg->getRoot();
+    const nnode* proot = pcsg->getRoot();
+
+    const nmat4triple* id = nmat4triple::make_identity() ;
+    N pp(proot, id);           
+    N nn(nroot, n->transform );
+
+    nn.dump_points("nn.dump_points");
+
+
+    bool dump = true ; 
+    glm::uvec4 err(0,0,0,0);
+
+    LOG(info) << "pp.classify(pp.local)" ;
+    pp.classify( pp.local, 1e-3, POINT_SURFACE, dump );
+    err.z = pp.nsdf.tot.w ; 
+    std::cout << "pp.classify(pp.local) " << pp.desc() << std::endl ; 
+
+    LOG(info) << "nn.classify(nn.local)" ;
+    nn.classify( nn.local, 1e-3, POINT_SURFACE, dump );
+    err.w = nn.nsdf.tot.w ; 
+    std::cout << "nn.classify(nn.local) " << nn.desc() << std::endl ; 
+
+    LOG(info) << "pp.classify(nn.local)" ;
+    pp.classify( nn.local, 1e-3, POINT_INSIDE,  dump );
+    err.x = pp.nsdf.tot.w ; 
+    std::cout << "pp(nn.local) " << pp.desc() << std::endl   ;
+
+    LOG(info) << "nn.classify(pp.local)" ;
+    nn.classify( pp.local, 1e-3, POINT_OUTSIDE, dump );
+    err.y = nn.nsdf.tot.w ; 
+    std::cout << "nn(pp.local) " << nn.desc() << std::endl   ;
+
+}
 
 
 
@@ -733,14 +798,14 @@ void NScene::check_aabb_containment_r(const nd* n)
 
 
 
-
-
 void NScene::count_progeny_digests_r(nd* n)
 {
-    const std::string& pdig = n->get_progeny_digest();
-
-    m_digest_count->add(pdig.c_str());
-    m_node_count++ ; 
+    //if(n->selected)
+    {
+        const std::string& pdig = n->get_progeny_digest();
+        m_digest_count->add(pdig.c_str());
+        m_node_count++ ; 
+    }
 
     for(nd* c : n->children) count_progeny_digests_r(c) ;
 }
@@ -752,11 +817,10 @@ void NScene::count_progeny_digests()
     m_digest_count->sort(false);   // descending count order, ie most common subtrees first
 
     bool dump = false ;
-
     if(dump)
     m_digest_count->dump();
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     LOG(info) << "NScene::count_progeny_digests"
               << " verbosity " << m_verbosity 
               << " node_count " << m_node_count 

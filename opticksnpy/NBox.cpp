@@ -472,11 +472,11 @@ nbbox nbox::bbox_(NNodeFrameType fr) const
 
     if(fr == FRAME_LOCAL && transform)
     {
-        tbb = bb.transform(transform->t);
+        tbb = bb.make_transformed(transform->t);
     }
     else if(fr == FRAME_GLOBAL && gtransform)
     {
-        tbb = bb.transform(gtransform->t);
+        tbb = bb.make_transformed(gtransform->t);
     }
     return tbb ; 
 }
@@ -484,7 +484,7 @@ nbbox nbox::bbox_(NNodeFrameType fr) const
 nbbox nbox::bbox_(const nmat4triple* triple) const
 {
     nbbox bb = bbox_model();
-    return triple ? bb.transform(triple->t) : bb ; 
+    return triple ? bb.make_transformed(triple->t) : bb ; 
     // bbox transforms need TR not IR*IT as they apply directly to geometry 
     // unlike transforming the SDF point or ray tracing ray which needs the inverse irit 
 }

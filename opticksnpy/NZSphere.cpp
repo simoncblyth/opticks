@@ -39,14 +39,14 @@ nbbox nzsphere::bbox() const
     glm::vec3 c = center(); 
     float r = radius(); 
 
-    nbbox bb = make_bbox();
+    nbbox bb = make_bbox_base();
     bb.max = make_nvec3(c.x + r, c.y + r, zmax() );
     bb.min = make_nvec3(c.x - r, c.y - r, zmin() );
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
 glm::vec3 nzsphere::gseedcenter() const 

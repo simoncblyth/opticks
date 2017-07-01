@@ -49,7 +49,7 @@ void test_bbox_transform()
      nbbox tbb1 ;
      nbbox::transform( tbb1, bb, tr );
 
-     nbbox tbb = bb.transform(tr) ; 
+     nbbox tbb = bb.make_transformed(tr) ; 
 
      assert( tbb == tbb0 );
      assert( tbb == tbb1 );
@@ -78,7 +78,7 @@ void test_bbox_transform_loaded(const char* path)
     nbbox bb = a.bbox();
     std::cout << "bb " <<  bb.desc() << std::endl ; 
 
-    nbbox tbb = bb.transform(tr);
+    nbbox tbb = bb.make_transformed(tr);
     std::cout << "tbb " <<  tbb.desc() << std::endl ; 
 
 }
@@ -333,9 +333,25 @@ void test_sdf_transformed()
 
     nbbox bb2 = make_bbox( -5,-5,-5,  5,5,5 );
     bb2.scan_sdf(origin, range, t );
-
 }
 
+
+void test_from_points()
+{
+    LOG(info) << "test_from_points" ; 
+
+    std::vector<glm::vec3> pts ; 
+
+    pts.push_back( {1,0,0 } );
+    pts.push_back( {2,0,0 } );
+
+    nbbox bb = nbbox::from_points(pts);
+
+
+
+    std::cout << bb.desc() << std::endl ;     
+
+}
 
 
 
@@ -354,8 +370,9 @@ int main(int argc, char** argv)
     //test_default_copy_ctor();
 
 
-    test_sdf();
-    test_sdf_transformed();
+    //test_sdf();
+    //test_sdf_transformed();
+    test_from_points();
 
     return 0 ; 
 }

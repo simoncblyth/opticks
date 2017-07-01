@@ -322,10 +322,7 @@ void test_apply_transform_vec()
             << std::endl 
             ; 
     }
-
 }
-
-
 
 
 

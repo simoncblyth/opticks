@@ -422,6 +422,9 @@ obj1.meta.update(im)
 
 obj1.dump()
 
+#print obj1.as_python()
+
+
 CSG.Serialize([container, obj1], "$TMP/$FUNCNAME", outmeta=True )
 
 

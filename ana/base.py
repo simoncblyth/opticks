@@ -29,6 +29,8 @@ class Buf(np.ndarray): pass
 
 splitlines_ = lambda txtpath:file(txtpath).read().splitlines()
 
+def now_(fmt="%Y%m%d-%H%M"):
+    return datetime.datetime.now().strftime(fmt)
 
 def stamp_(path, fmt="%Y%m%d-%H%M"): 
    if path is None:

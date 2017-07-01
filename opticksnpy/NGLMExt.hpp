@@ -149,6 +149,12 @@ struct NPY_API nglmext
     static glm::mat4 make_rotate(const glm::vec4& axis_angle);
     static glm::mat4 make_scale(const glm::vec3& scal);
 
+    static glm::mat4 make_translate(const float x, const float y, const float z);
+    static glm::mat4 make_rotate(const float x, const float y, const float z, const float w);
+    static glm::mat4 make_scale(const float x, const float y, const float z);
+
+    static void transform_planes( NPY<float>* plan_buffer, const glm::mat4& placement );
+
 };
 
 

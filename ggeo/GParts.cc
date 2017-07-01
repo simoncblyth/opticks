@@ -15,6 +15,7 @@
 #include "NCSG.hpp"
 #include "NQuad.hpp"
 #include "NNode.hpp"
+#include "NPlane.hpp"
 #include "GLMFormat.hpp"
 
 #include "GVector.hh"
@@ -166,9 +167,13 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     bool usedglobally = tree->isUsedGlobally() ;   // see opticks/notes/issues/subtree_instances_missing_transform.rst
     //bool usedglobally = true ; 
 
+    NPY<float>* tree_tranbuf = tree->getGTransformBuffer() ;
+    NPY<float>* tree_planbuf = tree->getPlaneBuffer() ;
+    assert( tree_tranbuf );
+
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
-    NPY<float>* tranbuf = usedglobally ? tree->getGTransformBuffer()->clone() : tree->getGTransformBuffer() ; 
-    NPY<float>* planbuf = tree->getPlaneBuffer();  
+    NPY<float>* tranbuf = usedglobally ? tree_tranbuf->clone() : tree_tranbuf ; 
+    NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() :  tree_planbuf ;  
 
     // if any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
     //
@@ -516,8 +521,8 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
     {
         nmat4triple* tvq = m_tran_buffer->getMat4TriplePtr(i) ;
 
-        nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform" );
-                      //  ^^^^^^^^^^^^^^^^^^^^^^^ SUSPECT DOUBLE NEGATIVE RE REVERSED  ^^^^^^^
+        const nmat4triple* ntvq = nmat4triple::make_transformed( tvq, placement, reversed, "GParts::applyPlacementTransform" );
+                              //  ^^^^^^^^^^^^^^^^^^^^^^^ SUSPECT DOUBLE NEGATIVE RE REVERSED  ^^^^^^^
 
         m_tran_buffer->setMat4Triple( ntvq, i ); 
     }
@@ -527,11 +532,24 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
 
 
     assert(m_plan_buffer->hasShape(-1,4));
-    unsigned nplane = m_plan_buffer->getNumItems();
-    if(nplane > 0 ) assert(0 && "plane placement not implemented" );
+    unsigned num_plane = m_plan_buffer->getNumItems();
+
+    // Formerly all geometry that required planes (eg trapezoids) 
+    // was part of instanced solids... so this was not needed.
+    // BUT for debugging it is useful to be able to operate in global mode
+    // whilst testing small subsets of geometry
+    //
+    //if(num_plane > 0 ) assert(0 && "plane placement not implemented" );
+
+    if(num_plane > 0) 
+    {
+        m_plan_buffer->dump("planes before transform");
+        nglmext::transform_planes( m_plan_buffer, placement );
+        m_plan_buffer->dump("planes after transform");
+    }
+    
 
 }
-
 
 
 void GParts::add(GParts* other, unsigned verbosity )

@@ -846,6 +846,19 @@ class CSG(CSG_):
         pass
         return "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
 
+    def as_python_planes(self, node): 
+        assert len(node.planes) > 0
+        lines = []
+        lines.append("%s.planes = np.zeros( (%d,4), dtype=np.float32)" % (node.alabel, len(node.planes)))
+        for i in range(len(node.planes)):
+            line = to_pyline(node.planes[i], "%s.planes[%d]" % (node.alabel, i))
+            lines.append(line)
+        pass
+        lines.append("# convexpolyhedron are defined by planes and require manual aabbox definition")
+        lines.append(to_pyline(node.param2[:3], "%s.param2[:3]" % node.alabel))
+        lines.append(to_pyline(node.param3[:3], "%s.param3[:3]" % node.alabel))
+        lines.append("")
+        return lines
 
     def as_python(self):
         lines = []
@@ -860,6 +873,15 @@ class CSG(CSG_):
             if node.transform is not None:
                 line = to_pyline(node.transform, "%s.transform" % node.alabel )  
                 lines.append(line)    
+            pass
+
+            if len(node.planes) > 0:
+                plins = self.as_python_planes(node)
+                for plin in plins:
+                    lines.append(plin)
+                pass
+            pass
+
             if not node.is_primitive:
                 lines.append("")
             pass

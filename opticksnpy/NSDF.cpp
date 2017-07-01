@@ -17,24 +17,6 @@ NSDF::NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse
     {
     }
     
-float NSDF::operator()( const glm::vec3& q_ )
-{
-    glm::vec4 q(q_,1.0); 
-    q = inverse * q ; 
-    float sd = sdf(q.x, q.y, q.z);
-
-/*
-    std::cout 
-        << " q_ " << gpresent(q_) 
-        << " q "  << gpresent(q) 
-        << " sd " << std::scientific << sd 
-        << std::endl 
-        ;
-
-*/
-    return sd ; 
-}
-
 
 void NSDF::clear()
 {
@@ -53,7 +35,26 @@ void NSDF::clear()
     sd.clear();
 }
 
-void NSDF::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned expect )
+
+
+float NSDF::operator()( const glm::vec3& q_ )
+{
+    glm::vec4 q(q_,1.0); 
+    q = inverse * q ; 
+    float sd = sdf(q.x, q.y, q.z);
+
+    std::cout 
+        << " q_ " << gpresent(q_) 
+        << " q "  << gpresent(q) 
+        << " sd " << std::scientific << sd 
+        << std::endl 
+        ;
+
+    return sd ; 
+}
+
+
+void NSDF::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned expect, bool dump )
 {
     clear();
 
@@ -76,6 +77,9 @@ void NSDF::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned ex
 
     assert( qq.size() == sd.size());
 
+
+    glm::vec3 lqq(0,0,0);
+
     for(unsigned i=0 ; i < sd.size() ; i++)
     {  
         NNodePointType pt = NNodeEnum::PointClassify(sd[i], epsilon ); 
@@ -87,12 +91,22 @@ void NSDF::classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned ex
         }
         if(pt & ~expect) tot.w++ ; 
 
-/*
-        std::cout << "NSDF::classify" 
-                  << " i " << std::setw(4) << i 
-                  << " q " << qq[i]
-                  ;
-*/
+
+        
+
+        if(dump)
+        {
+            if(qq[i] != lqq)   // suppress repeated points 
+            std::cout << "NSDF::classify" 
+                      << " i " << std::setw(4) << i 
+                      << " q " << gpresent(qq[i])
+                      << " sd " << std::setw(10) << std::setprecision(5) << std::fixed << sd[i]
+                      << " sd(sci) " << std::setw(10) << std::scientific<< sd[i]
+                      << " pt " << NNodeEnum::PointType(pt)
+                      << std::endl 
+                      ;
+        }
+        lqq = qq[i] ;
 
     }
 } 

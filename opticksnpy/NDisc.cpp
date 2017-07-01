@@ -23,7 +23,7 @@
     
 nbbox ndisc::bbox() const 
 {
-    nbbox bb = make_bbox();
+    nbbox bb = make_bbox_base();
 
     float r = radius() ;
     glm::vec3 c = center(); 
@@ -34,7 +34,7 @@ nbbox ndisc::bbox() const
     bb.invert = complement ; 
     bb.empty = false ; 
 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
 

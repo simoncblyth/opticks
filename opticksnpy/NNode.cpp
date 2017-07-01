@@ -329,7 +329,7 @@ nbbox nnode::bbox() const
     if(verbosity > 0)
     LOG(info) << "nnode::bbox " << desc() ; 
 
-    nbbox bb = make_bbox() ; 
+    nbbox bb = make_bbox_base() ; 
     if(is_primitive())
     { 
         assert(0 && "nnode::bbox() needs to be overridden for all primitives" );

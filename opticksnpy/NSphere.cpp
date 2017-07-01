@@ -128,7 +128,7 @@ void nsphere::pdump(const char* msg) const
 
 nbbox nsphere::bbox() const 
 {
-    nbbox bb = make_bbox();
+    nbbox bb = make_bbox_base();
 
     float  r = radius(); 
     glm::vec3 c = center();
@@ -139,7 +139,7 @@ nbbox nsphere::bbox() const
     bb.invert = complement ; 
     bb.empty = false ; 
 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
 
@@ -211,7 +211,7 @@ npart nsphere::part() const
         LOG(warning) << "nsphere::part override bbox " ;  
         float z_ = z() ;  
         float r  = radius() ; 
-        nbbox bb = make_bbox(z_ - r, z_ + r, r, r);
+        nbbox bb = make_bbox_zsymmetric(z_ - r, z_ + r, r, r);
 
         p.setBBox(bb);
     }
@@ -226,7 +226,7 @@ npart nsphere::zlhs(const ndisk& dsk)
 
     float z_ = z() ;  
     float r  = radius() ; 
-    nbbox bb = make_bbox(z_ - r, dsk.z(), -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox_zsymmetric(z_ - r, dsk.z(), -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 
@@ -238,7 +238,7 @@ npart nsphere::zrhs(const ndisk& dsk)
 
     float z_ = z() ;  
     float r  = radius() ; 
-    nbbox bb = make_bbox(dsk.z(), z_ + r, -dsk.radius, dsk.radius);
+    nbbox bb = make_bbox_zsymmetric(dsk.z(), z_ + r, -dsk.radius, dsk.radius);
     p.setBBox(bb);
 
     return p ; 

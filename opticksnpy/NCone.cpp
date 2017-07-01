@@ -21,14 +21,14 @@
 
 nbbox ncone::bbox() const 
 {
-    nbbox bb = make_bbox();
+    nbbox bb = make_bbox_base();
     bb.max = make_nvec3(  rmax(),  rmax(), z2() );
     bb.min = make_nvec3( -rmax(), -rmax(), z1() );
     bb.side = bb.max - bb.min ; 
     bb.invert = complement ; 
     bb.empty = false ; 
 
-    return gtransform ? bb.transform(gtransform->t) : bb ; 
+    return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 
 float ncone::operator()(float x_, float y_, float z_) const 

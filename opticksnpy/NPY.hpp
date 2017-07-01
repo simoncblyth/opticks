@@ -109,6 +109,7 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_paired_transforms(NPY<T>* src, bool transpose=false);
        static NPY<T>* make_triple_transforms(NPY<T>* src);
        static NPY<T>* make_identity_transforms(unsigned n=1);
+       static NPY<T>* make(const std::vector<glm::vec4>& vals);
 
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_

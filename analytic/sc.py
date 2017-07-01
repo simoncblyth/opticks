@@ -453,6 +453,10 @@ def gdml2gltf_main( args ):
     path = args.gltfpath
     gltf = sc.save(path)
 
+
+    sc.gdml = gdml 
+    sc.tree = tree
+
     return sc
 
 

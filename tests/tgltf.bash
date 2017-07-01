@@ -70,6 +70,9 @@ tgltf--()
 
     local tmax=20   # too small for geometry yields maltese crosses 
 
+    
+       # --dbgnode 3159 \
+
     op.sh  \
             $cmdline \
             --debugger \
@@ -81,7 +84,6 @@ tgltf--()
             --animtimemax $tmax \
             --timemax $tmax \
             --dbganalytic \
-            --dbgnode 3159 \
             --tag $(tgltf-tag) --cat $(tgltf-det) \
             --save 
 }
@@ -94,30 +96,21 @@ tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
 
 tgltf-target(){ echo 3153 ; }
 
-tgltf-t()
+
+
+
+
+tgltf-t() { TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; } 
+tgltf-t-()
 {
-    local msg="=== $FUNCNAME :"
     op-  # needs OPTICKS_QUERY envvar 
-
     #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
-    export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
-  
+    #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
+    export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
     local gltfpath=$TMP/$FUNCNAME/sc.gltf
-    #if [ ! -f "$gltfpath" ]; then 
-        gdml2gltf.py --gltfpath $gltfpath
-    #fi
-
-
-
-
-
-
-    echo $msg running from gltfpath $gltfpath 
-    TGLTFPATH=$gltfpath tgltf-- $*
-
-    ## aiming for the gltf to have a standard path in geocache
+    gdml2gltf.py --gltfpath $gltfpath
+    echo $gltfpath
 }
-
 
 tgltf-tt-env(){
   #export OPTICKS_QUERY="range:3158:3160"

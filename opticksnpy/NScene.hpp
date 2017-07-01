@@ -112,6 +112,7 @@ class NPY_API NScene : public NGLTF
         void check_surf_containment() ; 
         void check_surf_containment_r(const nd* node) ; 
         glm::uvec4 check_surf_points( const nd* n ) const ;
+        void debug_node(const nd* node) const ; 
     private:
         void update_aabb();
         void update_aabb_r(nd* node);
@@ -140,6 +141,7 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_num_global ; 
         unsigned                          m_num_csgskip ; 
         unsigned                          m_num_placeholder ; 
+        unsigned                          m_num_selected ; 
         NTxt*                             m_csgskip_lvlist ; 
         NTxt*                             m_placeholder_lvlist ; 
         unsigned                          m_node_count ; 

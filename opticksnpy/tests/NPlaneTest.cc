@@ -1,9 +1,11 @@
 #include "NPlane.hpp"
 
+#include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 
-#include <iostream>
-#include <iomanip>
+#include "NPY_LOG.hh"
+#include "PLOG.hh"
+
 
 
 void test_sdf()
@@ -47,13 +49,67 @@ void test_intersect()
 
 }
 
-
-
-int main()
+void test_make_transformed()
 {
-    test_sdf();
+    LOG(info) << "test_make_transformed" ; 
+
+    nplane pl = make_plane( 0,0,1,10) ;
+    pl.pdump("pl");
+
+    glm::mat4 r = nglmext::make_rotate(0,1,0,90); 
+    glm::mat4 s = nglmext::make_scale(2,2,3); 
+    glm::mat4 t = nglmext::make_translate(20,20,100); 
+
+    std::vector<glm::mat4> tt ; 
+    tt.push_back(r);
+    tt.push_back(s);
+    tt.push_back(t);
+
+    for(unsigned i=0 ; i < tt.size() ; i++)
+    {
+        const glm::mat4& tr = tt[i] ;
+        std::cout << gpresent("tr", tr) << std::endl  ; 
+        glm::vec4 tpl = pl.make_transformed(tr);
+        std::cout << gpresent("tpl", tpl) << std::endl  ; 
+    }
+}
+
+void test_make_normal()
+{
+    glm::vec3 a(0,0,0) ;
+    glm::vec3 b(1,0,0) ;
+    glm::vec3 c(0,1,0) ;
+
+    glm::vec3 x = make_normal(a,b,c);
+    std::cout << gpresent("x", x ) << std::endl ; 
+}
+
+
+void test_make_plane3()
+{
+    glm::vec3 a(0,0,10) ;
+    glm::vec3 b(1,0,10) ;
+    glm::vec3 c(0,1,10) ;
+
+    glm::vec4 pl = make_plane(a,b,c);
+    std::cout << gpresent("pl", pl ) << std::endl ; 
+
+}
+
+
+
+
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    NPY_LOG__ ; 
+    //test_sdf();
     //test_intersect();
 
+    //test_spawn_transformed();
+    //test_make_normal();
+    test_make_plane3();
 
     return 0 ; 
 }

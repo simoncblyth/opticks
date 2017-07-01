@@ -12,6 +12,19 @@
 
 
 
+nconvexpolyhedron* test_load(const char* path)
+{
+    LOG(info) << "test_load " << path ;  
+    nnode* root = nnode::load(path, 1 );
+
+    assert(root->type == CSG_CONVEXPOLYHEDRON );
+    nconvexpolyhedron* cpol = (nconvexpolyhedron*)root  ;
+    cpol->verbosity = 1 ;  
+    cpol->pdump("cpol->pdump");
+
+    return cpol ; 
+}
+
 nconvexpolyhedron test_make()
 {
     nquad param ; 
@@ -31,11 +44,8 @@ nconvexpolyhedron test_make()
 
 void test_sdf(const nconvexpolyhedron* cpol)
 {
-
     std::cout << "cpol(50,50,50) = " << (*cpol)(50,50,50) << std::endl ;
     std::cout << "cpol(-50,-50,-50) = " << (*cpol)(-50,-50,-50) << std::endl ;
-
-
 
     for(float v=-400.f ; v <= 400.f ; v+= 100.f )
     {
@@ -94,9 +104,6 @@ void test_getSurfacePointsAll(const nconvexpolyhedron* cpol)
 {
     cpol->dump_planes(); 
 
-
-
-
     std::vector<glm::vec3> surf ; 
 
     unsigned level = 1 ;  // +---+---+
@@ -113,25 +120,87 @@ void test_getSurfacePointsAll(const nconvexpolyhedron* cpol)
 }
 
 
+void test_dumpSurfacePointsAll(const nconvexpolyhedron* cpol)
+{
+    cpol->dumpSurfacePointsAll("dumpSurfacePointsAll", FRAME_LOCAL);
+}
+
+
+
+
+nconvexpolyhedron* test_make_trapezoid()
+{
+   /*
+    z-order verts
+
+
+                  6----------7
+                 /|         /|
+                / |        / |
+               4----------5  |
+               |  |       |  |                       
+               |  |       |  |         Z    
+               |  2-------|--3         |  Y
+               | /        | /          | /
+               |/         |/           |/
+               0----------1            +------ X
+                         
+
+    x1: x length at -z
+    y1: y length at -z
+
+    x2: x length at +z
+    y2: y length at +z
+
+    z:  z length
+
+    */
+
+    float z  = 100 ; 
+    float x1 = 200 ; 
+    float y1 = 200 ; 
+    float x2 = 200 ; 
+    float y2 = 200 ; 
+  
+    nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
+
+    cpol->dump_planes();
+
+    return cpol ; 
+}
+
+
+void test_transform_planes(nconvexpolyhedron* cpol )
+{
+    NPY<float>* planbuf = NPY<float>::make(cpol->planes);
+    planbuf->dump("before");
+
+    glm::mat4 placement = nglmext::make_translate(1002,-5000,10);
+
+    nglmext::transform_planes(planbuf, placement );
+
+    planbuf->dump("after");
+}
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-
-    nnode* root = nnode::load(argc > 1 ?  argv[1] : "$TMP/tboolean-trapezoid--/1" , 1 );
-    assert(root->type == CSG_CONVEXPOLYHEDRON );
-    nconvexpolyhedron* cpol = (nconvexpolyhedron*)root  ;
-    cpol->verbosity = 1 ;  
-    cpol->pdump(argv[0]);
-
+    //const char* path = argc > 1 ?  argv[1] : "$TMP/tboolean-trapezoid--/1" ;
+    // nconvexpolyhedron*  cpol = test_load(path)
+    //
     //test_sdf(cpol);
     //test_intersect(cpol);
     //test_bbox(cpol);
     //test_getSurfacePointsAll(cpol);
+    //test_dumpSurfacePointsAll(cpol);
 
-     cpol->dumpSurfacePointsAll("dumpSurfacePointsAll", FRAME_LOCAL);
+    nconvexpolyhedron* cpol = test_make_trapezoid();
+    //test_dumpSurfacePointsAll(cpol);
+
+    test_transform_planes(cpol);
 
 
     return 0 ; 

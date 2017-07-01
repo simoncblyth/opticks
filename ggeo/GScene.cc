@@ -216,6 +216,9 @@ void GScene::compareTrees() const
         std::cout << " ana " << m_nodelib->desc() << std::endl ; 
         std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
     }
+
+
+    //m_tri_mm0->dumpSolids();
 }
 
 
@@ -637,7 +640,7 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMergedMesh
 {
-    unsigned num_repeats = m_scene->getNumRepeats(); // global 0 included
+    unsigned num_repeats = std::max<unsigned>(1u,m_scene->getNumRepeats()); // global 0 included
     unsigned nmm_created = 0 ; 
 
     if(m_verbosity > 0)

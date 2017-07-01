@@ -108,16 +108,25 @@ class OpticksQuery(object):
 
 
 
+def test_multirange():
+    q_ = "range:3155:3156,range:4448:4449"
+    q = OpticksQuery(q_)
+    print q 
+    s = filter(lambda i:q(i)[0] == True, range(3000,5000))
+    print s
+    assert s == [3155, 4448]
+    assert len(s) == 2, s  
+
+
+
 if __name__ == '__main__':
 
     logging.basicConfig(level=logging.INFO)
     #q_ = "range:10:21"
-    q_ = "index:4,depth:2"
+    #q_ = "index:4,depth:2"
 
+    test_multirange() 
 
-    q = OpticksQuery(q_)
-
-    print q 
 
 
 

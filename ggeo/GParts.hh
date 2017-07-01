@@ -144,6 +144,7 @@ class GGEO_API GParts {
         void setSensorSurface(const char* surface="lvPmtHemiCathodeSensorSurface");
         void setContainingMaterial(const char* material="MineralOil");
         void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity=0);
+
         void save(const char* dir);
     private:
         void registerBoundaries();

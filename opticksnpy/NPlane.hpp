@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 #include "NGLM.hpp"
 #include "NQuad.hpp"
 #include "NNode.hpp"
@@ -36,27 +38,34 @@ struct NPY_API nplane : nnode
     float operator()(float x, float y, float z) const ;
 
     bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect );
+    std::string desc() const  ; 
 
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
     void pdump(const char* msg="nplane::dump") const ;
 
-    glm::vec3 n ;  // normal
-    float     d ;  // signed distance to origin
+    glm::vec4 make_transformed(const glm::mat4& t) const ;
+
+    glm::vec3 point_in_plane() const ;
+    glm::vec4 get() const ;  
+    glm::vec3 normal() const ;  
+    float     distance_to_origin() const ; // signed 
 };
+
+
+inline NPY_API float     nplane::distance_to_origin() const { return param.f.w ; }
+inline NPY_API glm::vec3 nplane::normal() const { return glm::vec3(param.f.x,param.f.y,param.f.z); }
+inline NPY_API glm::vec4 nplane::get() const {    return glm::vec4(normal(),distance_to_origin()) ; }
 
 
 inline NPY_API void init_plane(nplane& plane, const nquad& param )
 {
     glm::vec3 n = glm::normalize(glm::vec3(param.f.x, param.f.y, param.f.z));
 
-    plane.n = n ; 
-    plane.d = param.f.w ; 
-
     plane.param.f.x = n.x ;
     plane.param.f.y = n.y ;
     plane.param.f.z = n.z ;
-    plane.param.f.w = plane.d  ;
+    plane.param.f.w = param.f.w  ;
 
 }
 inline NPY_API nplane make_plane(const nquad& param)
@@ -73,8 +82,35 @@ inline NPY_API nplane make_plane(float x, float y, float z, float w)
     return make_plane( param ); 
 }
 
+inline NPY_API nplane make_plane(const glm::vec4& par)
+{
+    nquad param ;  
+    param.f = {par.x,par.y,par.z,par.w} ;
+    return make_plane( param ); 
+}
 
 
+
+inline NPY_API glm::vec3 make_normal(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c)
+{   
+    glm::vec3 ba = b - a ; 
+    glm::vec3 ca = c - a ; 
+    glm::vec3 xx = glm::cross(ba, ca );
+    return glm::normalize(xx) ; 
+} 
+
+inline NPY_API glm::vec4 make_plane(const glm::vec3& normal, const glm::vec3 point)
+{
+    glm::vec3 n = glm::normalize(normal);
+    float     d = glm::dot(n, point);
+    return glm::vec4(n, d);
+}
+
+inline NPY_API glm::vec4 make_plane(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c)
+{
+    glm::vec3 n = make_normal( a, b, c );
+    return make_plane(n, a);
+}
 
 
 

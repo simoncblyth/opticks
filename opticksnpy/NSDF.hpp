@@ -23,7 +23,7 @@ struct NPY_API NSDF
     float operator()( const glm::vec3& q_ );
 
     void clear(); 
-    void classify( const std::vector<glm::vec3>& qq, float epsilon, unsigned expect)  ;
+    void classify( const std::vector<glm::vec3>& qq, float epsilon, unsigned expect, bool dump=false)  ;
 
     bool is_error() const ;
     bool is_empty() const ;

@@ -12,6 +12,7 @@ struct NPY_API nconvexpolyhedron : nnode
 
     bool intersect( const float tmin, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect ) const ;
 
+
     nbbox bbox() const ;
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
@@ -21,6 +22,10 @@ struct NPY_API nconvexpolyhedron : nnode
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
+    void set_bbox(const nbbox& bb) ;
+
+    static nconvexpolyhedron* make_trapezoid(float z, float x1, float y1, float x2, float y2 );   
+    nconvexpolyhedron* make_transformed( const glm::mat4& t ) const ;
 
     void pdump(const char* msg="nconvexpolyhedron::pdump") const ;
 };
@@ -40,5 +45,35 @@ inline NPY_API nconvexpolyhedron make_convexpolyhedron(const nquad& param, const
     init_convexpolyhedron(cpol, param, param1, param2, param3 );
     return cpol ;
 }
+
+inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr(const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3)
+{
+    nconvexpolyhedron* cpol = new nconvexpolyhedron ; 
+    nnode::Init(*cpol,CSG_CONVEXPOLYHEDRON) ; 
+    init_convexpolyhedron(*cpol, param, param1, param2, param3 );
+    return cpol ;
+}
+
+
+inline NPY_API nconvexpolyhedron make_convexpolyhedron()
+{
+    nquad param, param1, param2, param3 ; 
+    param.u = {0,0,0,0} ;
+    param1.u = {0,0,0,0} ;
+    param2.u = {0,0,0,0} ;
+    param3.u = {0,0,0,0} ;
+    return make_convexpolyhedron(param, param1, param2, param3 );
+}
+
+inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr()
+{
+    nquad param, param1, param2, param3 ; 
+    param.u = {0,0,0,0} ;
+    param1.u = {0,0,0,0} ;
+    param2.u = {0,0,0,0} ;
+    param3.u = {0,0,0,0} ;
+    return make_convexpolyhedron_ptr(param, param1, param2, param3 );
+}
+
 
 

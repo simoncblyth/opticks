@@ -4,6 +4,7 @@
 #include "SDigest.hh"
 #include "NPY.hpp"
 
+#include "NPlane.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -284,12 +285,32 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
 
 
 
+glm::mat4 nglmext::make_translate(const float x, const float y, const float z)
+{
+   glm::vec3 tlate(x,y,z);
+   return make_translate(tlate);
+}
+glm::mat4 nglmext::make_rotate(const float x, const float y, const float z, const float w)
+{
+   glm::vec4 aa(x,y,z,w);
+   return make_rotate(aa);
+}
+glm::mat4 nglmext::make_scale(const float x, const float y, const float z)
+{
+   glm::vec3 tsc(x,y,z);
+   return make_scale(tsc);
+}
+
+
 
 
 glm::mat4 nglmext::make_translate(const glm::vec3& tlat)
 {
     return glm::translate(glm::mat4(1.f), tlat);
 }
+
+
+
 glm::mat4 nglmext::make_rotate(const glm::vec4& axis_angle)
 {
     float angle = nglmext::angle_radians(axis_angle.w) ; 
@@ -593,6 +614,27 @@ const nmat4triple* nmat4triple::make_transformed(const nmat4triple* src, const g
 
     const nmat4triple* transformed = nmat4triple::product( triples, reverse );  
     return transformed ; 
+}
+
+
+void nglmext::transform_planes( NPY<float>* plan_buffer, const glm::mat4& placement ) //static
+{
+    // Formerly all geometry that required planes (eg trapezoids) 
+    // was part of instanced solids... so this was not needed.
+    // BUT for debugging it is useful to be able to operate in global mode
+    // whilst testing small subsets of geometry
+    //   
+    //if(nplane > 0 ) assert(0 && "plane placement not implemented" );
+    assert(plan_buffer->hasShape(-1,4));
+    unsigned num_plane = plan_buffer->getNumItems();
+    for(unsigned i=0 ; i < num_plane ; i++ )
+    {    
+        glm::vec4 pl = plan_buffer->getQuad(i);
+        nplane  plane = make_plane(pl);
+        glm::vec4 tpl = plane.make_transformed(placement);
+
+        plan_buffer->setQuad( tpl, i ); 
+    }    
 }
 
 

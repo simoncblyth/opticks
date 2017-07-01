@@ -203,6 +203,12 @@ def construct_transform(obj):
     rot = obj.rotation.xyz if obj.rotation is not None else None
     sca = obj.scale.xyz if obj.scale is not None else None
     order = "trs"
+
+    #elem = filter(None, [tla,rot,sca])
+    #if len(elem) > 1:
+    #    log.warning("construct_transform multi %s " % repr(obj))
+    #pass
+
     return make_transform( order, tla, rot, sca , three_axis_rotate=True, transpose_rotation=True, suppress_identity=False, dtype=np.float32 )
 
 

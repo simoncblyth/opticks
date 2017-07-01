@@ -9,11 +9,9 @@
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
 
-int main(int argc, char** argv)
-{
-    PLOG_(argc, argv);
-    GGEO_LOG__ ;
 
+void test_FromNode()
+{
     typedef std::vector<nnode*> VN ;
     VN nodes ; 
     nnode::Tests(nodes);
@@ -40,8 +38,16 @@ int main(int argc, char** argv)
         GParts* pts = GParts::make( tree, spec, verbosity ) ; 
         pts->dump("GPartsTest");
 
-
     }
+}
+
+
+
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    GGEO_LOG__ ;
 
     return 0 ;
 }
