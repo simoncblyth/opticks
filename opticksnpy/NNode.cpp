@@ -332,7 +332,8 @@ nbbox nnode::bbox() const
     nbbox bb = make_bbox_base() ; 
     if(is_primitive())
     { 
-        assert(0 && "nnode::bbox() needs to be overridden for all primitives" );
+        LOG(warning) << "nnode::bbox USE SHAPE SUBCLASS FOR PRIMITIVE BBOX  " ;   // TODO: upcasting 
+        //assert(0 && "nnode::bbox() needs to be overridden for all primitives" );
     } 
     else 
     {

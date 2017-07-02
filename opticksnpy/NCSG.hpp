@@ -108,7 +108,10 @@ class NPY_API NCSG {
         std::string smry();
     public:
         void dump(const char* msg="NCSG::dump");
+        void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;
+
         std::string desc();
+        std::string brief();
    public:
         void setIsUsedGlobally(bool usedglobally);
    public:

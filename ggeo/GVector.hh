@@ -86,6 +86,9 @@ struct GGEO_API gfloat3
     }
 
 
+    std::string desc() const ;
+
+
     float x,y,z ;
 };
 
@@ -134,6 +137,7 @@ struct GGEO_API gfloat4
         snprintf(s, 128, "gfloat4 %10.3f %10.3f %10.3f %10.3f ", x, y, z, w);
         return s ; 
     }
+    std::string desc() const ;
 
 
     float x,y,z,w ;
@@ -201,17 +205,9 @@ struct GGEO_API gbbox
        return gfloat4( cen.x, cen.y, cen.z, ext );
    } 
 
-   void Summary(const char* msg)
-   {
-       printf("%s min %10.3f %10.3f %10.3f  max %10.3f %10.3f %10.3f \n", msg, min.x, min.y, min.z, max.x, max.y, max.z );
-   }
-
-   std::string description()
-   {
-       char s[128] ;
-       snprintf(s, 128, "bb min %10.3f %10.3f %10.3f  max %10.3f %10.3f %10.3f ", min.x, min.y, min.z, max.x, max.y, max.z );
-       return s ; 
-   }
+   void Summary(const char* msg) const ;
+   std::string description() const ;
+   std::string desc() const ;
 
 
    gfloat3 min ; 

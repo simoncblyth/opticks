@@ -1,19 +1,47 @@
 
-lvid 66 : unbelievable big impingement  : trapezoid/convexpolyhedron machinery bug
-======================================================================================
+FIXED : lvid 66 : unbelievable big impingement  : trapezoid/convexpolyhedron machinery bug
+==============================================================================================
 
-
-* looking at visualization suggests deliberate impingement ... it looks 
-  too symmetrically positioned to be a bug  
-
-* BUT the visualizations vet different ...
-
-
+Issue *FIXED*
+---------------
 
 Parametric surface points from nodes using lvid 66 are impinging 1025mm into parent volume...
 
 * parametric bug ?
 * bbox bug ?
+
+* looking at visualization suggests deliberate impingement ... it looks 
+  too symmetrically positioned to be a bug  
+
+    * BUT visualizations are very different between branches ?
+
+* *FIXED* : was misinterpreting GDML trapezoid z by factor of 2 , found 
+  by comparison of mesh dumps from the G4DAE and GDML/glTF branches
+
+
+After fix : surface coincidence
+---------------------------------
+
+::
+
+    NSceneLoadTest 
+
+    NSc::csp n  4446 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCir pp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
+    NSc::csp n  4447 nlv  65 p  3155 n.pv lvOIL#pvSstBotCirRib#SstBotCir pp(nn.local) - nsdf: EE    33(in:/su/ou/er)  27   6   0   6   -430.000    -0.000 ep 1.000000e-03 [-4.300000e+02,-0.000000e+00] 
+    NSc::csp n  4448 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4449 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4450 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4451 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4452 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4453 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4454 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4455 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBT pp(nn.local) - nsdf: EE   121(in:/su/ou/er)  12 109   0 109   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
+    NSc::csp n  4456 nlv  67 p  3155 n.pv lvOIL#pvSstTopTshapeRibs#SstTo pp(nn.local) - nsdf:      129(in:/su/ou/er) 129   0   0   0   -339.421   -80.579 ep 1.000000e-03 [-3.394209e+02,-8.057910e+01] 
+    NSc::csp n  4457 nlv  67 p  3155 n.pv lvOIL#pvSstTopTshapeRibs#SstTo pp(nn.local) - nsdf:      129(in:/su/ou/er) 129   0   0   0   -339.421   -80.579 ep 1.000000e-03 [-3.394209e+02,-8.057910e+01] 
+
+
+Before fix : huge (1025mm) impingement
+----------------------------------------
 
 ::
 
@@ -78,6 +106,177 @@ Visualize 2 nodes in G4DAE branch::
 
 
 
+GDML/glTF CSG dumping : before z/2 trapezoid fix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    delta:tests blyth$ DBGMESH=SstTopRadiusRib0x NSceneMeshTest 
+    2017-07-02 15:36:15.554 INFO  [2656571] [NGLTF::load@35] NGLTF::load path /tmp/blyth/opticks/tgltf-t/sc.gltf
+    2017-07-02 15:36:16.064 INFO  [2656571] [NGLTF::load@62] NGLTF::load DONE
+    2017-07-02 15:36:16.089 INFO  [2656571] [NScene::init@126] NScene::init START
+    2017-07-02 15:36:16.089 INFO  [2656571] [NScene::load_csg_metadata@235] NScene::load_csg_metadata verbosity 1 num_meshes 249
+    2017-07-02 15:36:16.507 INFO  [2656571] [NScene::postimportnd@474] NScene::postimportnd numNd 12230 num_selected 2 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-07-02 15:36:16.676 INFO  [2656571] [NScene::count_progeny_digests@882] NScene::count_progeny_digests verbosity 1 node_count 12230 digest_size 249
+    2017-07-02 15:36:17.918 INFO  [2656571] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:36:18.317 INFO  [2656571] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:36:18.358 INFO  [2656571] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:36:19.943 INFO  [2656571] [NScene::postimportmesh@492] NScene::postimportmesh numNd 12230 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-07-02 15:36:19.943 INFO  [2656571] [NScene::check_surf_containment@569] NScene::check_surf_containment (csc) verbosity 1
+    2017-07-02 15:36:19.945 INFO  [2656571] [NScene::check_surf_containment@577] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr       0       0       0       0
+    2017-07-02 15:36:19.945 INFO  [2656571] [NScene::init@163] NScene::init DONE
+    2017-07-02 15:36:19.945 INFO  [2656571] [NScene::dumpCSG@395] NScene::dumpCSG num_csg 249 dbgmesh SstTopRadiusRib0x
+    2017-07-02 15:36:19.946 INFO  [2656571] [NCSG::dump@905] NCSG::dump
+     NCSG  ix   77 surfpoints  124 so SstTopRadiusRib0xc271720                 lv /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0
+    NCSG::dump (root) [ 0:di] OPER  v:0
+             L [ 1:di] OPER  v:0
+             L [ 3:co] PRIM  v:0 bb  mi  (-345.51  -10.00 -2228.50)  mx  ( 345.51   10.00 2228.50)  si  ( 691.02   20.00 4457.00) 
+             R [ 4:bo] PRIM  v:0 bb  mi  (-360.00  -20.00 -1114.25)  mx  (-320.00   20.00 1114.25)  si  (  40.00   40.00 2228.50) 
+             R [ 2:bo] PRIM  v:0 bb  mi  (   0.00  -12.00 -1119.25)  mx  ( 691.02   12.00 1119.25)  si  ( 691.02   24.00 2238.50) 
+     composite_bb  mi  (-345.51  -10.00 -2228.50)  mx  ( 345.51   10.00 2228.50)  si  ( 691.02   20.00 4457.00) 
+    NParameters::dump
+             lvname : /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0
+             soname : SstTopRadiusRib0xc271720
+          verbosity :               0
+         resolution :              20
+               poly :              IM
+             height :               2
+    2017-07-02 15:36:19.946 INFO  [2656571] [NCSG::dump_surface_points@1195] dsp num_sp 124 dmax 200
+     i    0 sp (      0.000    10.000     0.000)
+     i   25 sp (      0.000   -10.000     0.000)
+     i   50 sp (      0.000     0.000  2228.500)
+     i   75 sp (      0.000     0.000 -2228.500)
+     i  100 sp (      0.000    -6.000 -1119.250)
+     i  101 sp (      0.000     0.000 -1119.250)
+     i  102 sp (      0.000     6.000 -1119.250)
+     i  103 sp (      0.000    -6.000  1119.250)
+     i  104 sp (    172.755    -6.000  1119.250)
+     i  105 sp (      0.000     0.000  1119.250)
+     i  106 sp (    172.755     0.000  1119.250)
+     i  107 sp (      0.000     6.000  1119.250)
+     i  108 sp (    172.755     6.000  1119.250)
+     i  109 sp (      0.000     6.000 -1119.250)
+     i  110 sp (      0.000     0.000 -1119.250)
+     i  111 sp (      0.000    -6.000 -1119.250)
+     i  112 sp (      0.000     6.000  -559.625)
+     i  113 sp (      0.000     0.000  -559.625)
+     i  114 sp (      0.000    -6.000  -559.625)
+     i  115 sp (      0.000     6.000     0.000)
+     i  116 sp (      0.000     0.000     0.000)
+
+
+GDML/glTF dump after trapezoid z/2 fix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    delta:analytic blyth$ DBGMESH=SstTopRadiusRib0x NSceneMeshTest 
+    2017-07-02 15:51:06.974 INFO  [2660660] [NGLTF::load@35] NGLTF::load path /tmp/blyth/opticks/tgltf-t-/sc.gltf
+    2017-07-02 15:51:07.484 INFO  [2660660] [NGLTF::load@62] NGLTF::load DONE
+    2017-07-02 15:51:07.511 INFO  [2660660] [NScene::init@126] NScene::init START
+    2017-07-02 15:51:07.511 INFO  [2660660] [NScene::load_csg_metadata@235] NScene::load_csg_metadata verbosity 1 num_meshes 249
+    2017-07-02 15:51:07.928 INFO  [2660660] [NScene::postimportnd@474] NScene::postimportnd numNd 12230 num_selected 2 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-07-02 15:51:08.099 INFO  [2660660] [NScene::count_progeny_digests@882] NScene::count_progeny_digests verbosity 1 node_count 12230 digest_size 249
+    2017-07-02 15:51:09.342 INFO  [2660660] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:51:09.740 INFO  [2660660] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:51:09.782 INFO  [2660660] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-02 15:51:11.369 INFO  [2660660] [NScene::postimportmesh@492] NScene::postimportmesh numNd 12230 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-07-02 15:51:11.369 INFO  [2660660] [NScene::check_surf_containment@569] NScene::check_surf_containment (csc) verbosity 1
+    2017-07-02 15:51:11.371 INFO  [2660660] [NScene::check_surf_containment@577] NScene::check_surf_containment (csc) verbosity 1 tot 12230 surferr       0       0       0       0
+    2017-07-02 15:51:11.371 INFO  [2660660] [NScene::init@163] NScene::init DONE
+    2017-07-02 15:51:11.371 INFO  [2660660] [NScene::dumpCSG@395] NScene::dumpCSG num_csg 249 dbgmesh SstTopRadiusRib0x
+    2017-07-02 15:51:11.372 INFO  [2660660] [NCSG::dump@905] NCSG::dump
+     NCSG  ix   77 surfpoints  121 so SstTopRadiusRib0xc271720                 lv /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0
+    NCSG::dump (root) [ 0:di] OPER  v:0
+             L [ 1:di] OPER  v:0
+             L [ 3:co] PRIM  v:0 bb  mi  (-345.51  -10.00 -1114.25)  mx  ( 345.51   10.00 1114.25)  si  ( 691.02   20.00 2228.50) 
+             R [ 4:bo] PRIM  v:0 bb  mi  (-360.00  -20.00 -1114.25)  mx  (-320.00   20.00 1114.25)  si  (  40.00   40.00 2228.50) 
+             R [ 2:bo] PRIM  v:0 bb  mi  (   0.00  -12.00 -1119.25)  mx  ( 691.02   12.00 1119.25)  si  ( 691.02   24.00 2238.50) 
+     composite_bb  mi  (-345.51  -10.00 -1114.25)  mx  ( 345.51   10.00 1114.25)  si  ( 691.02   20.00 2228.50) 
+    NParameters::dump
+             lvname : /dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0
+             soname : SstTopRadiusRib0xc271720
+          verbosity :               0
+         resolution :              20
+               poly :              IM
+             height :               2
+    2017-07-02 15:51:11.372 INFO  [2660660] [NCSG::dump_surface_points@1195] dsp num_sp 121 dmax 200
+     i    0 sp (      0.000    10.000     0.000)
+     i   25 sp (      0.000   -10.000     0.000)
+     i   50 sp (      0.000     0.000  1114.250)
+     i   75 sp (      0.000     0.000 -1114.250)
+     i  100 sp (   -340.000   -10.000  1114.250)
+     i  101 sp (   -330.000   -10.000  1114.250)
+     i  102 sp (   -320.000   -10.000  1114.250)
+     i  103 sp (   -340.000     0.000  1114.250)
+     i  104 sp (   -330.000     0.000  1114.250)
+     i  105 sp (   -320.000     0.000  1114.250)
+     i  106 sp (   -340.000    10.000  1114.250)
+     i  107 sp (   -330.000    10.000  1114.250)
+     i  108 sp (   -320.000    10.000  1114.250)
+     i  109 sp (   -320.000   -10.000  1114.250)
+     i  110 sp (   -320.000     0.000  1114.250)
+     i  111 sp (   -320.000    10.000  1114.250)
+     i  112 sp (      0.000     6.000  -559.625)
+     i  113 sp (      0.000     0.000  -559.625)
+     i  114 sp (      0.000    -6.000  -559.625)
+     i  115 sp (      0.000     6.000     0.000)
+     i  116 sp (      0.000     0.000     0.000)
+     i  117 sp (      0.000    -6.000     0.000)
+     i  118 sp (      0.000     6.000   559.625)
+     i  119 sp (      0.000     0.000   559.625)
+     i  120 sp (      0.000    -6.000   559.625)
+
+
+G4DAE GMesh dumping from G4DAE 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    delta:opticksnpy blyth$ op --dsst --gmeshlib --dbgmesh SstTopRadiusRib0x
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --gmeshlib
+    240 -rwxr-xr-x  1 blyth  staff  120332 Jul  2 15:24 /usr/local/opticks/lib/GMeshLibTest
+    proceeding : /usr/local/opticks/lib/GMeshLibTest --dsst --gmeshlib --dbgmesh SstTopRadiusRib0x
+    2017-07-02 15:24:29.815 INFO  [2653035] [GMeshLib::loadMeshes@182] idpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.4d0ba6665a8a501401e989b108a23ae1.dae
+    2017-07-02 15:24:29.847 INFO  [2653035] [GMesh::dump@1119] GMesh::dump num_vertices 14 num_faces 24 num_solids 0 name SstTopRadiusRib0xc271720
+     low  -
+     high -
+     dim  -
+     cen  - extent 0
+     ce   (     0.000      0.000      0.000   1114.250)
+     bb.max   (   345.510     10.000   1114.250)
+     bb.min   (  -345.510    -10.000  -1114.250)
+        0 vtx (   -80.000    -10.000  -1114.250) nrm (     0.000      0.000     -1.000)
+        1 vtx (   -80.000     10.000  -1114.250) nrm (     0.000      0.000     -1.000)
+        2 vtx (    80.000     10.000  -1114.250) nrm (     0.000      0.000     -1.000)
+        3 vtx (    80.000    -10.000  -1114.250) nrm (     0.000      0.000     -1.000)
+        4 vtx (   345.510     10.000   1114.250) nrm (     0.993      0.000     -0.118)
+        5 vtx (   345.510    -10.000   1114.250) nrm (     0.993      0.000     -0.118)
+        6 vtx (  -345.510    -10.000   1114.250) nrm (     0.000     -0.000      1.000)
+        7 vtx (  -345.510     10.000   1114.250) nrm (     0.000     -0.000      1.000)
+        8 vtx (  -345.502     10.000   1114.180) nrm (    -0.993      0.000     -0.118)
+        9 vtx (  -345.502    -10.000   1114.180) nrm (    -0.993      0.000     -0.118)
+       10 vtx (  -319.949    -10.000    899.707) nrm (    -0.993     -0.000     -0.118)
+       11 vtx (  -319.949     10.000    899.707) nrm (    -0.993     -0.000     -0.118)
+       12 vtx (  -319.949     10.000   1114.180) nrm (    -0.000      1.000     -0.000)
+       13 vtx (  -319.949    -10.000   1114.180) nrm (     0.000     -1.000      0.000)
+
+    2017-07-02 15:24:29.847 INFO  [2653035] [GMesh::dump@1171]  num_faces 24
+     fac     0      0     1     2 
+     fac     1      0     2     3 
+     fac     2      4     5     3 
+     fac     3      4     3     2 
+     fac     4      6     5     4 
+     fac     5      6     4     7 
+     fac     6      8     9     6 
+     fac     7      6     7     8 
+     fac     8     10    11     1 
+     fac     9      1     0    10 
+     fac    10     12     8     7 
+
+
+
+
 Inspecting GDML
 --------------------
 
@@ -125,7 +324,6 @@ GDML::
 
     .  rotate 90 about Y ....    X -> Z,  Y->Y , Z-> -X 
                  
-
 
      6635       <physvol name="/dd/Geometry/AD/lvOIL#pvSstTopRadiusRibs#SstBTopRibs#SstTopRadiusRibRot0xc247fa0">
      6636         <volumeref ref="/dd/Geometry/AdDetails/lvSstTopRadiusRib0xc2716c0"/>

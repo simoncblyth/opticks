@@ -25,6 +25,7 @@ set(TEST_SOURCES
    BOpticksEventTest.cc
    LexicalCastTest.cc
    BBisectTest.cc
+   BConfigTest.cc
 
 )
 

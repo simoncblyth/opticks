@@ -46,7 +46,7 @@ void OpticksDbg::postconfigure()
    }
 
 
-   LOG(info) << "OpticksDbg::postconfigure" << description() ; 
+   LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
 
 

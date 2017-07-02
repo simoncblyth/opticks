@@ -80,6 +80,7 @@ set(SOURCES
   BOpticksResource.cc
   BDynamicDefine.cc
   BOpticksEvent.cc
+  BConfig.cc
 
 ) 
 
@@ -110,6 +111,7 @@ set(HEADERS
   BOpticksResource.hh
   BDynamicDefine.hh
   BOpticksEvent.hh
+  BConfig.hh
 
 )
 

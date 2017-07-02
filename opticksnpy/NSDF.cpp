@@ -9,6 +9,7 @@ NSDF::NSDF(std::function<float(float,float,float)> sdf, const glm::mat4& inverse
         :
         sdf(sdf),
         inverse(inverse),
+        verbosity(0),
         tot(0,0,0,0),
         range(0,0),
         epsilon(0),
@@ -43,6 +44,7 @@ float NSDF::operator()( const glm::vec3& q_ )
     q = inverse * q ; 
     float sd = sdf(q.x, q.y, q.z);
 
+    if(verbosity > 4)
     std::cout 
         << " q_ " << gpresent(q_) 
         << " q "  << gpresent(q) 

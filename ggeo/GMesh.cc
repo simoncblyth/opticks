@@ -578,17 +578,6 @@ GParts* GMesh::getParts()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
 void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
 {
    g_instance_count += 1 ; 
@@ -1127,21 +1116,37 @@ void GMesh::dumpNormals(const char* msg, unsigned int nmax)
 
 void GMesh::dump(const char* msg, unsigned int nmax)
 {
-    LOG(info) << msg  ;
-    LOG(info) << " num_vertices " << m_num_vertices 
+    LOG(info) << msg  
+              << " num_vertices " << m_num_vertices 
+              << " num_faces " << m_num_faces
+              << " num_solids " << m_num_solids
+              << " name " << ( m_name ? m_name : "-" )
               ;  
+
+    std::cout << " low  " << (m_low ?  m_low->desc() : "-" ) << std::endl ; 
+    std::cout << " high " << (m_high ? m_high->desc() : "-" ) << std::endl ; 
+    std::cout << " dim  " << (m_dimensions ? m_dimensions->desc() : "-" ) << std::endl ; 
+    std::cout << " cen  " << (m_center ? m_center->desc() : "-" ) << " extent " << m_extent << std::endl ; 
+    std::cout << " ce   " << (m_center_extent ? m_center_extent->desc() : "-" )  << std::endl ; 
+
+    if(m_bbox)
+    {
+        std::cout << " bb.max   " << m_bbox->max.desc()  << std::endl ; 
+        std::cout << " bb.min   " << m_bbox->min.desc()  << std::endl ; 
+    }
+
 
     for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
     {
         gfloat3& vtx = m_vertices[i] ;
-        printf(" vtx %5u  %10.3f %10.3f %10.3f \n", i, vtx.x, vtx.y, vtx.z );
-    } 
-
-    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
-    {
         gfloat3& nrm = m_normals[i] ;
-        printf(" nrm %5u  %10.3f %10.3f %10.3f \n", i, nrm.x, nrm.y, nrm.z );
+        std::cout << std::setw(5) << i 
+                  << " vtx " << vtx.desc() 
+                  << " nrm " << nrm.desc() 
+                  << std::endl ; 
+
     } 
+    std::cout << std::endl ;   
 
     if(hasTexcoords())
     { 
@@ -1163,8 +1168,7 @@ void GMesh::dump(const char* msg, unsigned int nmax)
     } 
 
 
-    LOG(info) << " num_faces " << m_num_faces 
-              ;  
+    LOG(info) << " num_faces " << m_num_faces ;  
 
     for(unsigned int i=0 ; i < std::min(nmax,m_num_faces) ; i++)
     {
@@ -1182,8 +1186,6 @@ void GMesh::dump(const char* msg, unsigned int nmax)
         } 
     }
 
-    LOG(info) << " num_solids " << m_num_solids
-              ;
 }
 
 
@@ -1314,6 +1316,8 @@ gfloat4 GMesh::findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_ve
 
 void GMesh::updateBounds()
 {
+    LOG(trace) << "GMesh::updateBounds " << m_num_vertices ; 
+
     gbbox*  bb = findBBox(m_vertices, m_num_vertices);
 
 
@@ -1710,6 +1714,8 @@ void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
 
 void GMesh::loadBuffers(const char* dir)
 {
+    LOG(trace) << "GMesh::loadBuffers " << dir ;  
+
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {
         std::string name = m_names[i];
@@ -1720,6 +1726,10 @@ void GMesh::loadBuffers(const char* dir)
         if(fs::exists(bufpath) && fs::is_regular_file(bufpath))
         { 
             loadBuffer(bufpath.string().c_str(), name.c_str());
+        }
+        else
+        {
+            LOG(trace) << "no such bufpath: " << bufpath ; 
         }
     } 
     updateBounds();

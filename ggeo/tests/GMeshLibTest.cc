@@ -30,12 +30,8 @@ int main(int argc, char** argv)
     GGEO_LOG__ ;
 
     Opticks ok(argc, argv);
-
-    ok.dump("before configure");
     ok.configure();
-    ok.dump("after configure");
-
-
+    //ok.dump("after configure");
 
     GMeshLib* ml = GMeshLib::load(&ok);
 
@@ -43,10 +39,9 @@ int main(int argc, char** argv)
 
     if(dbgmesh)
     {
-        LOG(info) << "dbgmesh " << dbgmesh ;  
         bool startswith = true ; 
         GMesh* mesh = ml->getMesh(dbgmesh, startswith);
-        mesh->dump();
+        mesh->dump("GMesh::dump", 50);
     }
     else
     {

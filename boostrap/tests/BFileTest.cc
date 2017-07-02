@@ -210,6 +210,57 @@ void test_SomeDir()
 
 
 
+
+
+void test_LastWriteTime()
+{
+    LOG(info) << "test_LastWriteTime" ; 
+
+    const char* path = "$TMP/a/b/c" ;
+    std::time_t* lwt = BFile::LastWriteTime(path);
+    std::time_t  now = std::time(NULL) ;
+
+
+    if(!lwt)
+    {
+        std::cout 
+          << " path " << path 
+          << " DOESNT EXIST "
+          << std::endl ; 
+    }
+    else
+    {
+        std::time_t age = (now - *lwt);
+        std::cout 
+          << " path " << path 
+          << " now " << now
+          << " age (s) " << age
+          << " BFile::LastWriteTime(path) " << *lwt
+          << std::endl 
+          ; 
+    }
+}
+
+
+void test_SinceLastWriteTime()
+{
+    LOG(info) << "test_SinceLastWriteTime" ; 
+    const char* path = "$TMP/a/b/c" ;
+    std::time_t* age = BFile::SinceLastWriteTime(path) ;
+    if(age)
+    {
+        std::cout 
+          << " path " << path 
+          << " age : BFile::SinceLastWriteTime(path) " << *age
+          << std::endl 
+          ; 
+    }
+}
+
+
+
+
+
 int main(int argc, char** argv)
 {
    PLOG_(argc, argv);
@@ -232,6 +283,9 @@ int main(int argc, char** argv)
    //test_RemoveDir();
    //test_RemoveDir_2();
 
+
+   test_LastWriteTime();
+   test_SinceLastWriteTime();
 
    return 0 ; 
 }

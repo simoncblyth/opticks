@@ -17,6 +17,7 @@
 #include "NPY.hpp"
 #include "NNode.hpp"
 #include "NBBox.hpp"
+#include "NSceneConfig.hpp"
 
 
 #include "NSDF.hpp"
@@ -52,15 +53,51 @@ NCSG* NScene::getCSG(unsigned mesh_idx) const
     return it == m_csg.end() ? NULL : it->second  ;
 }
 
+NCSG* NScene::findCSG(const char* q_soname, bool startswith) const 
+{
+    typedef std::map<unsigned,NCSG*>::const_iterator MUCI ;
+
+    NCSG* q_csg = NULL ; 
+
+    for(MUCI it=m_csg.begin() ; it != m_csg.end() ; it++)
+    {
+        unsigned mesh_idx = it->first ;
+        std::string _soname = soname(mesh_idx);
+
+        NCSG* csg = it->second ; 
+
+        bool pick = startswith ? BStr::StartsWith(_soname.c_str(), q_soname ) : strcmp(_soname.c_str(), q_soname ) == 0 ;    
+        if(pick)
+        {
+            q_csg = csg ; 
+            break ; 
+        }
+    }
+    return q_csg ; 
+} 
+
+    
+
+
 bool NScene::Exists(const char* base, const char* name)
 {
     return BFile::ExistsFile(base, name);
+}
+
+long NScene::SecondsSinceLastWrite(const char* base, const char* name)
+{
+    std::time_t* slwt = BFile::SinceLastWriteTime(base, name);
+    long age = slwt ? *slwt : -1 ; 
+    return age ;  
 }
 
 
 NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gltfconfig, int dbgnode) 
 {
     NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig, dbgnode) : NULL ;
+
+
+
     if(!scene)
         LOG(fatal) << "NScene:Load MISSING PATH" 
                    << " gltfbase " << gltfbase
@@ -68,13 +105,17 @@ NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gl
                    << " gltfconfig " << gltfconfig
                    ; 
 
+
     return scene ; 
 }
+
+
 
 
 NScene::NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
+    m_config(new NSceneConfig(config)),
     m_dbgnode(dbgnode),
     m_containment_err(0),
     m_verbosity(0),
@@ -86,7 +127,8 @@ NScene::NScene(const char* base, const char* name, const char* config, int dbgno
     m_placeholder_lvlist(NULL),
     m_node_count(0),
     m_label_count(0),
-    m_digest_count(new Counts<unsigned>("progenyDigest"))
+    m_digest_count(new Counts<unsigned>("progenyDigest")),
+    m_age(NScene::SecondsSinceLastWrite(base, name)) 
 {
     init_lvlists(base, name);
     init();
@@ -97,7 +139,10 @@ void NScene::init()
     load_asset_extras();  // includes verbosity from glTF 
 
     if(m_verbosity > 0)
-    LOG(info) << "NScene::init START" ;  
+    LOG(info) << "NScene::init START"
+              << " age(s) " << m_age 
+              << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
+              ;  
 
 
     load_csg_metadata();
@@ -360,8 +405,42 @@ void NScene::load_mesh_extras()
               << " m_num_placeholder " << m_num_placeholder
               ;
 
+}
 
 
+void NScene::dumpCSG(const char* dbgmesh, const char* msg) const 
+{
+    unsigned num_csg = m_csg.size() ;
+    LOG(info) << msg 
+              << " num_csg " << num_csg
+              << " dbgmesh " << ( dbgmesh ? dbgmesh : "-" )
+              ;
+
+    if(dbgmesh == NULL)
+    {
+        for(unsigned i=0 ; i < num_csg ; i++)
+        {
+            NCSG* csg = getCSG(i) ;
+            assert(csg);
+            std::cout << std::setw(4) << i 
+                      << csg->brief()
+                      << std::endl ; 
+        }
+    }
+    else
+    { 
+        bool startswith = true ; 
+        NCSG* csg = findCSG(dbgmesh, startswith) ;
+        if(csg)
+        {
+            csg->dump();
+            csg->dump_surface_points("dsp", 200);
+        }
+        else
+        {
+            LOG(warning) << "failed to findCSG with soname " << dbgmesh ; 
+        } 
+    }
 }
 
 
@@ -436,10 +515,14 @@ void NScene::postimportmesh()
               << " verbosity " << m_verbosity
                ; 
 
-    //update_aabb();
-    //check_aabb_containment();
+    m_config->dump("NScene::postimportmesh.cfg");
 
+    if(m_config->check_aabb_containment > 0)
+    check_aabb_containment();
+
+    if(m_config->check_surf_containment > 0)
     check_surf_containment();
+
 
     if(SSys::IsHARIKARI())
     assert( 0 && "NScene::postimportmesh HARIKARI");
@@ -522,17 +605,14 @@ void NScene::check_surf_containment()
 }
 void NScene::check_surf_containment_r(const nd* n) 
 {
-/*
     glm::uvec4 err = check_surf_points(n);
 
     if(err.x > 0) m_surferr.x++ ; 
     if(err.y > 0) m_surferr.y++ ; 
     if(err.z > 0) m_surferr.z++ ; 
     if(err.w > 0) m_surferr.w++ ; 
-*/
 
     if(is_dbgnode(n)) debug_node(n);
-
 
     for(const nd* c : n->children) check_surf_containment_r(c) ;
 }
@@ -559,51 +639,21 @@ float NScene::sdf_procedural( const nd* n, const glm::vec3& q_) const
 
 glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the surface points of a node against the SDF of its parent 
 {
-    //  DBGNODE=3159 NSceneLoadTest 
+    // intended to provide summary checking of all nodes, 
+    // for more verbose indivdual node dumping use NScene::debug_node
 
     glm::uvec4 err(0,0,0,0) ; 
     bool dbgnode = is_dbgnode(n) ;
-    if(!dbgnode) return err ; 
 
     const nd* p = n->parent ? n->parent : n ;  // only root has no parent
-
-    //bool dump = dbgnode ; 
-    //bool dump = true ; 
-    //const_cast<nd*>(n)->dump_transforms("n->dump_transforms" ); 
-    //std::cout << gpresent( "n->tr->v" , n->transform->v ) << std::endl ;
-    //std::cout << gpresent( "p->tr->v" , p->transform->v ) << std::endl ;
 
     NCSG* ncsg = getCSG(n->mesh);
     NCSG* pcsg = getCSG(p->mesh);
 
     int nlvid = lvidx(n->mesh);
 
-
     const nnode* nroot = ncsg->getRoot();
     const nnode* proot = pcsg->getRoot();
-
-    // N ctor collects eg pp.model CSG frame surface band points, 
-    // and transforms them with the ctor argument placement transform 
-    // into pp.local points, also the N ctor instanciates
-    // an NSDF instance with the sdf obtained from the nnode argument 
-    // and the inverse of the transform ... 
-    //
-    // Subsequenently calls to N::classify with points 
-    // in the operation frame uses the inverse of the placement
-    // transform to allow appropriate SDF values to be obtained.
-    //
-    // Using identity transform for parent node and n->transform
-    // for this node ... allows cross frame comparisons. 
-    // The p->transform is not relevant as are treating the parent
-    // as the base frame.
-    //
-    // It may be less confusing to  think about being in the parent 
-    // node with a placed child.
-    //
-    // Recall that surface points are obtained from parametric primitives
-    // by CSG/model frame SDF comparisons ... so surface points are in a narrow band around SDF zero
-    // depending on the surface_epsilon used to collect them from the primitives.
-
 
     const nmat4triple* id = nmat4triple::make_identity() ;
     N pp(proot, id);           
@@ -613,51 +663,45 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
     // checking sdf against of own local points is mainly a machinery test
     // but also shows the kind of precision are getting 
 
-    pp.classify( pp.local, 1e-3, POINT_SURFACE );
-    nn.classify( nn.local, 1e-3, POINT_SURFACE );
-    err.z = pp.nsdf.tot.w ; 
-    err.w = nn.nsdf.tot.w ; 
-
-    //if(err.z > 0 || err.w > 0)
+    bool self_check = false ;
+    if(self_check)
     {
+        pp.classify( pp.local, 1e-3, POINT_SURFACE );
+        nn.classify( nn.local, 1e-3, POINT_SURFACE );
+        err.z = pp.nsdf.tot.w ; 
+        err.w = nn.nsdf.tot.w ; 
+
         std::cout << "NSc::csp" << " n " << std::setw(5) << n->idx << " p " << std::setw(5) << p->idx << " n.pv " << n->pvtag() << ( dbgnode ? " DEBUG_NODE " : " " ) << std::endl ; 
         std::cout << "pp.classify(pp.local) " << pp.desc() << std::endl ; 
         std::cout << "nn.classify(nn.local) " << nn.desc() << std::endl ; 
-        //nn.dump_points("nn.dump_points");
     }
 
-
-    // cross checking containment of a nodes points inside its parent 
+    // Cross checking containment of a nodes points inside its parent 
     // OR vice versa checking that parents points are outside the child node
-    // is the raison d'etre of this method
+    // is the raison d'etre of this method.
     //
-    // coincidence is a problem, as well as impingement ... but try to 
+    // Coincidence is a problem, as well as impingement ... but try to 
     // see how big the issue is
 
     pp.classify( nn.local, 1e-3, POINT_INSIDE );
-    nn.classify( pp.local, 1e-3, POINT_OUTSIDE );
-    err.x = pp.nsdf.tot.w ; 
-    err.y = nn.nsdf.tot.w ; 
 
-    //if(dump)
-    //if(n->mesh == 56)
-    //if(err.x > 0 || err.y > 0)
+    //nn.classify( pp.local, 1e-3, POINT_OUTSIDE );
+    err.x = pp.nsdf.tot.w ; 
+    //err.y = nn.nsdf.tot.w ; 
+
     {
         std::cout << "NSc::csp" 
                   << " n " << std::setw(5) << n->idx 
                   << " nlv " << std::setw(3) << nlvid 
                   << " p " << std::setw(5) << p->idx 
                   << " n.pv " << std::setw(30) << n->pvtag() 
-                  << std::endl  
-                  << "pp(nn.local) " << pp.desc()
-                  << std::endl  
-                  << "nn(pp.local) " << nn.desc()
+                  << " pp(nn.local) " << pp.desc()
                   << ( dbgnode ? " DEBUG_NODE " : " " )
-                  << std::endl ; 
+                  ;
 
+        //std::cout << "nn(pp.local) " << nn.desc() ;
+        std::cout << std::endl  ;
     }
-
-
 
     return err ;  
 
@@ -667,6 +711,8 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
 
 void NScene::debug_node(const nd* n) const 
 {
+    //  DBGNODE=3159 NSceneLoadTest 
+
     bool dbgnode = is_dbgnode(n) ;
     if(!dbgnode) return ; 
 
@@ -738,7 +784,7 @@ void NScene::check_aabb_containment()
     LOG(info) << "NScene::check_aabb_containment (cac)"
               << " verbosity " << m_verbosity 
               ;
-
+    update_aabb();
     check_aabb_containment_r(m_root);
 
     unsigned tot = getNumNd() ;

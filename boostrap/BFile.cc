@@ -3,7 +3,7 @@
 #include "BFile.hh"
 
 #include <cstring>
-//#include <cstdlib>
+#include <ctime>
 #include <iostream>
 #include <iomanip>
 #include <vector>
@@ -11,6 +11,8 @@
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/filesystem/operations.hpp>
+
 namespace fs = boost::filesystem;
 
 
@@ -180,6 +182,41 @@ bool BFile::ExistsNativeDir(const std::string& native)
     fs::path fsp(native);
     return fs::exists(fsp) && fs::is_directory(fsp) ;
 }
+
+
+
+std::time_t* BFile::LastWriteTime(const char* path, const char* sub, const char* name)
+{
+    std::string psn = FormPath(path, sub, name) ;
+
+    std::time_t* t = NULL ;  
+    fs::path p(psn);
+    if(fs::exists(p))
+    {
+        t = new std::time_t( boost::filesystem::last_write_time( p ) );
+    }
+    return t ; 
+}
+
+
+
+std::time_t* BFile::SinceLastWriteTime(const char* path, const char* sub, const char* name)
+{
+    std::time_t age = NULL ;  
+    std::time_t* lwt = BFile::LastWriteTime(path, sub, name);
+    if(lwt)
+    {
+        std::time_t  now = std::time(NULL) ;
+        age = (now - *lwt);
+    }
+    return new std::time_t(age) ; 
+} 
+
+
+
+
+
+
 
 
 

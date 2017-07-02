@@ -9,6 +9,7 @@ class NParameters ;
 struct nd ; 
 struct nbbox ; 
 struct nnode ; 
+struct NSceneConfig ; 
 
 template<class T> class Counts ;
 
@@ -39,21 +40,24 @@ class NPY_API NScene : public NGLTF
 {
     public:
         static NScene* Load( const char* gltfbase, const char* gltfname, const char* gltfconfig, int dbgnode ) ;
+        static long SecondsSinceLastWrite(const char* base, const char* name);
         static bool Exists(const char* base, const char* name);
         NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx=0  );
+
+        void setAge(long age);
 
         nd*      getRoot() const ;
         unsigned getNumNd() const ; 
         nd*      getNd(unsigned node_idx) const ;
         NCSG*    getCSG(unsigned mesh_idx) const ;
+        NCSG*    findCSG(const char* soname, bool startswith) const ;
 
         void dumpNd(unsigned idx, const char* msg="NScene::dumpNd");
         void dumpNdTree(const char* msg="NScene::dumpNdTree");
+        void dumpCSG(const char* dbgmesh=NULL, const char* msg="NScene::dumpCSG") const  ; 
+
         unsigned getVerbosity();
         unsigned getTargetNode();
-
-
-
 
     private:
         void init();
@@ -134,6 +138,7 @@ class NPY_API NScene : public NGLTF
         std::map<unsigned, unsigned>      m_repeat_count ;
 
 
+        NSceneConfig*                     m_config ; 
         int                               m_dbgnode ; 
         unsigned                          m_containment_err ; 
         unsigned                          m_verbosity ; 
@@ -147,9 +152,9 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_node_count ; 
         unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;
+        long                              m_age ; 
         std::vector<std::string>          m_repeat_candidates ;
         std::vector<unsigned>             m_dbgnode_list ;
-
         glm::uvec4                        m_surferr ;  
      
 

@@ -33,15 +33,17 @@ struct NPY_API NSDF
 
     std::function<float(float,float,float)> sdf ; 
     const glm::mat4                         inverse ; 
+    unsigned                                verbosity ; 
 
     std::vector<float>                      sd ; 
     glm::uvec4                              tot ; 
     glm::vec2                               range ;                  
 
     // hang on to last classification prameters for dumping 
-    float    epsilon ; 
-    unsigned expect ; 
+    float                                   epsilon ; 
+    unsigned                                expect ; 
     const std::vector<glm::vec3>*           qqptr ; 
+
 
 
 };

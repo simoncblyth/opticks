@@ -745,9 +745,6 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 
 
 
-
-
-
 void NCSG::import_planes(nnode* node)
 {
     assert( node->has_planes() );
@@ -903,16 +900,37 @@ void NCSG::export_r(nnode* node, unsigned idx)
 }
 
 
-
-
 void NCSG::dump(const char* msg)
 {
-    LOG(info) << msg << " " << desc() ; 
+    LOG(info) << msg  ; 
+    std::cout << brief() << std::endl ; 
+
     if(!m_root) return ;
+
     m_root->dump("NCSG::dump (root)");
+
+    if(!m_root->is_primitive())
+    {
+        const nbbox& bb = m_root->bbox();
+        std::cout << " composite_bb " << bb.desc() << std::endl ; 
+    }
+
 
     if(m_meta)
     m_meta->dump(); 
+}
+
+std::string NCSG::brief()
+{
+    std::stringstream ss ; 
+    ss << " NCSG " 
+       << " ix " << std::setw(4) << m_index
+       << " surfpoints " << std::setw(4) << getNumSurfacePoints() 
+       << " so " << std::setw(40) << std::left << soname()
+       << " lv " << std::setw(40) << std::left << lvname()
+       ;
+
+    return ss.str();  
 }
 
 std::string NCSG::desc()
@@ -1169,6 +1187,32 @@ glm::uvec4 NCSG::collect_surface_points(std::vector<glm::vec3>& surface_points, 
 
     return tots ; 
 }
+
+
+void NCSG::dump_surface_points(const char* msg, unsigned dmax) const 
+{
+    unsigned num_sp = getNumSurfacePoints() ;
+    LOG(info) << msg 
+              << " num_sp " << num_sp 
+              << " dmax " << dmax
+              ;
+
+
+    glm::vec3 lsp ; 
+    for(unsigned i=0 ; i < std::min<unsigned>(num_sp,dmax) ; i++)
+    {
+        glm::vec3 sp = m_surface_points[i]; 
+        if(sp != lsp)
+        std::cout 
+            << " i " << std::setw(4) << i 
+            << " sp " << gpresent( sp ) 
+            << std::endl 
+            ;
+
+        lsp = sp ; 
+    }
+}
+
 
 
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 

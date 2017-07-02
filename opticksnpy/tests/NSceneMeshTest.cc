@@ -4,6 +4,7 @@
 #include "NScene.hpp"
 #include "NPY.hpp"
 
+
 #include "NPY_LOG.hh"
 #include "PLOG.hh"
 
@@ -13,13 +14,19 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    // $TMP/tgltf-t-/sc.gltf
+
+    //Opticks ok(argc, argv);  no opticks at this level
+    //ok.configure();
+
+    const char* dbgmesh = SSys::getenvvar("DBGMESH");
+    int dbgnode = SSys::getenvint("DBGNODE", -1) ; 
+
+    // $TMP/tgltf-t/sc.gltf
     const char* gltfbase = argc > 1 ? argv[1] : "$TMP/tgltf-t-" ;
     const char* gltfname = "sc.gltf" ;
-    const char* gltfconfig = "check_surf_containment=1,check_aabb_containment=0" ; 
+    const char* gltfconfig = "check_surf_containment=0,check_aabb_containment=0" ; 
 
     if(!NScene::Exists(gltfbase, gltfname))
-
     {
         LOG(warning) << "no such scene at"
                      << " base " << gltfbase
@@ -27,14 +34,11 @@ int main(int argc, char** argv)
                      ;
         return 0 ; 
     } 
-   
 
-    int dbgnode = SSys::getenvint("DBGNODE", -1) ; 
     NScene* scene = NScene::Load( gltfbase, gltfname, gltfconfig, dbgnode );
-
     assert(scene);
-    
-    //scene->dumpNdTree();
+
+    scene->dumpCSG(dbgmesh); 
 
 
     return 0 ; 

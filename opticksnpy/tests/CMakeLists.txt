@@ -154,10 +154,12 @@ endif()
 if(YoctoGL_FOUND)
    list(APPEND TEST_SOURCES  
        NSceneTest.cc
+       NSceneConfigTest.cc
        NYMathTest.cc
        NYShapeTest.cc
        NSDFTest.cc
        NSceneLoadTest.cc
+       NSceneMeshTest.cc
 )
 endif()
 

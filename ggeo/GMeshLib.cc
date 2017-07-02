@@ -194,6 +194,9 @@ void GMeshLib::loadMeshes(const char* idpath )
             const char* name = getMeshName(idx);
             assert(name);
 
+            // mesh->updateBounds(); // CAN THIS BE DONE IN LOAD ? Perhaps MM complications
+           // should have been done by GMesh::loadBuffers ?
+
             mesh->setIndex(idx);
             mesh->setName(strdup(name));
 

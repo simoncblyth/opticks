@@ -298,12 +298,11 @@ std::string BStr::ijoin( std::vector<int>& elem, char delim)
 
 
 
-std::vector<std::pair<std::string, std::string> > 
-BStr::ekv_split( const char* line_, char edelim, const char* kvdelim )
+
+void BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim )
 {
     const char* line = strdup(line_);
     typedef std::pair<std::string,std::string> KV ;  
-    std::vector<KV> ekv ; 
     std::istringstream f(line);
     std::string s;
     while (getline(f, s, edelim))
@@ -319,6 +318,13 @@ BStr::ekv_split( const char* line_, char edelim, const char* kvdelim )
             printf("stringutil.ekv_split ignoring malformed kv %s \n", s.c_str() );
         }
     }
+}
+
+
+std::vector<std::pair<std::string, std::string> >  BStr::ekv_split( const char* line_, char edelim, const char* kvdelim )
+{
+    std::vector<std::pair<std::string, std::string> > ekv ; 
+    ekv_split(ekv, line_, edelim, kvdelim);
     return ekv ;
 }
     
