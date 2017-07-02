@@ -273,6 +273,14 @@ int Opticks::getDbgNode()
    return m_cfg->getDbgNode();
 }
 
+const char* Opticks::getDbgMesh() const 
+{
+   const std::string& dbgmesh = m_cfg->getDbgMesh();
+   return dbgmesh.empty() ? NULL : dbgmesh.c_str() ;
+}
+
+
+
 
 const std::vector<int>&  Opticks::getDbgIndex()
 {
@@ -730,6 +738,21 @@ void Opticks::configure()
 
 
 
+
+
+void Opticks::dump(const char* msg) 
+{
+    LOG(info) << msg  ;
+
+    const char* dbgmesh = getDbgMesh();
+
+    std::cout
+         << " argline " << std::setw(30) << getArgLine() << std::endl 
+         << " dbgnode " << std::setw(30) << getDbgNode() << std::endl 
+         << " dbgmesh " << std::setw(30) << ( dbgmesh ? dbgmesh : "-" ) << std::endl
+         ;
+
+}
 
 
 void Opticks::Summary(const char* msg)

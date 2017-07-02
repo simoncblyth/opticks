@@ -38,6 +38,7 @@ class GMaterial ;
 class GSkinSurface ; 
 class GBorderSurface ; 
 
+class GMeshLib ; 
 class GNodeLib ; 
 class GGeoLib ;
 class GBndLib ;
@@ -140,7 +141,8 @@ class GGEO_API GGeo : public NConfigurable {
         void loadMergedMeshes(const char* idpath);
         void removeMergedMeshes(const char* idpath);
     public:
-        void save(const char* idpath);
+        //void save(const char* idpath);
+        void save();
     private:
         void saveMergedMeshes(const char* idpath);
     public:
@@ -230,8 +232,9 @@ class GGEO_API GGeo : public NConfigurable {
         unsigned int getNumRawBorderSurfaces();
     public:
         GScene*            getScene();
+        GMeshLib*          getMeshLib();  // unplaced meshes
         GNodeLib*          getNodeLib();
-        GGeoLib*           getGeoLib();
+        GGeoLib*           getGeoLib();  // merged meshes
         GGeoLib*           getTriGeoLib();
         GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
@@ -322,7 +325,7 @@ class GGEO_API GGeo : public NConfigurable {
         GTreeCheck*                   m_treecheck ; 
         GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
-        std::vector<GMesh*>           m_meshes ; 
+
 
 
         std::vector<GMaterial*>       m_materials ; 
@@ -342,6 +345,7 @@ class GGEO_API GGeo : public NConfigurable {
 
         NLookup*                      m_lookup ; 
 
+        GMeshLib*                     m_meshlib ; 
         GGeoLib*                      m_geolib ; 
         GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
 
@@ -368,7 +372,6 @@ class GGEO_API GGeo : public NConfigurable {
 
         std::map<unsigned int, unsigned int>                  m_mesh_usage ; 
         std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
-        GItemIndex*                   m_meshindex ; 
 
     private:
 

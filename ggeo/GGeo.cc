@@ -45,6 +45,8 @@ namespace fs = boost::filesystem;
 #include "GSkinSurface.hh"
 #include "GBorderSurface.hh"
 #include "GMaterial.hh"
+
+#include "GMeshLib.hh"
 #include "GNodeLib.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
@@ -53,8 +55,9 @@ namespace fs = boost::filesystem;
 #include "GSurLib.hh"
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
-#include "GSolid.hh"
 
+
+#include "GSolid.hh"
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
@@ -89,6 +92,7 @@ GGeo::GGeo(Opticks* opticks)
    m_treepresent(NULL), 
    m_loaded(false), 
    m_lookup(NULL), 
+   m_meshlib(NULL),
    m_geolib(NULL),
    m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
    m_nodelib(NULL),
@@ -105,7 +109,6 @@ GGeo::GGeo(Opticks* opticks)
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
-   m_meshindex(NULL),
    m_sensitive_count(0),
    m_volnames(false),
    m_cathode(NULL),
@@ -191,12 +194,6 @@ void GGeo::addRaw(GBorderSurface* surface)
 void GGeo::addRaw(GSkinSurface* surface)
 {
     m_skin_surfaces_raw.push_back(surface);
-}
-
-
-unsigned int GGeo::getNumMeshes()
-{
-    return m_meshes.size();
 }
 
 
@@ -290,10 +287,6 @@ GColorizer* GGeo::getColorizer()
 NSensorList* GGeo::getSensorList()
 {
     return m_sensor_list ; 
-}
-GItemIndex* GGeo::getMeshIndex()
-{
-    return m_meshindex ; 
 }
 
 
@@ -410,6 +403,7 @@ void GGeo::init()
 
    //////////////  below only when operating pre-cache //////////////////////////
 
+   m_meshlib = new GMeshLib(m_ok);
    m_geolib = new GGeoLib(m_ok);
 
    m_treecheck = new GTreeCheck(this) ;
@@ -436,7 +430,6 @@ void GGeo::init()
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
 
-   m_meshindex = new GItemIndex("MeshIndex") ; 
 
    unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
    const char* reldir = NULL ;  // <-- default location for GItemList persisting 
@@ -475,11 +468,13 @@ GGeoLib* GGeo::getTriGeoLib()
 {
     return m_geolib ; 
 }
-
 GGeoLib* GGeo::getGeoLib()
 {
     return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
 }
+
+
+
 
 GNodeLib* GGeo::getNodeLib()
 {
@@ -567,12 +562,12 @@ void GGeo::loadGeometry()
 {
     bool loaded = isLoaded() ;
     LOG(trace) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
-    const char* idpath = getIdPath() ;
+    //const char* idpath = getIdPath() ;
 
     if(!loaded)
     {
         loadFromG4DAE();
-        save(idpath);
+        save();
     }
     else
     {
@@ -629,8 +624,8 @@ void GGeo::loadFromCache()
     const char* reldir = NULL ; // default location of tri GItemList
     m_nodelib = GNodeLib::load(m_ok, reldir);
         
-    const char* idpath = m_ok->getIdPath() ;
-    m_meshindex = GItemIndex::load(idpath, "MeshIndex");
+    m_meshlib = GMeshLib::load(m_ok);
+
 
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
@@ -745,13 +740,13 @@ void GGeo::setupColors()
     LOG(trace) << "GGeo::setupColors DONE" ; 
 }
 
-void GGeo::save(const char* idpath)
+//void GGeo::save(const char* /*idpath*/)
+void GGeo::save()
 {
     m_geolib->saveToCache();
 
-    m_meshindex->save(idpath);
-
     // details of save handled within the class, not here 
+    m_meshlib->save();
     m_nodelib->save();
     m_materiallib->save();
     m_surfacelib->save();
@@ -838,7 +833,7 @@ void GGeo::updateBounds(GNode* node)
 void GGeo::Summary(const char* msg)
 {
     LOG(info) << msg
-              << " ms " << m_meshes.size()
+              << " ms " << m_meshlib->getNumMeshes()
               << " so " << m_nodelib->getNumSolids()
               << " mt " << m_materials.size()
               << " bs " << m_border_surfaces.size()
@@ -897,53 +892,29 @@ void GGeo::Details(const char* msg)
 
 
 
+//  via meshlib
+
+GMeshLib* GGeo::getMeshLib()
+{
+    return m_meshlib ; 
+}
+unsigned GGeo::getNumMeshes()
+{
+    return m_meshlib->getNumMeshes(); 
+}
+
+GItemIndex* GGeo::getMeshIndex()
+{
+    return m_meshlib->getMeshIndex() ; 
+}
 
 GMesh* GGeo::getMesh(unsigned int aindex)
 {
-    GMesh* mesh = NULL ; 
-    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
-    { 
-        if(m_meshes[i]->getIndex() == aindex )
-        {
-            mesh = m_meshes[i] ; 
-            break ; 
-        }
-    }
-    return mesh ;
+    return m_meshlib->getMesh(aindex);
 }  
-
-/*
-
-hmm the individual mesh aint going to be there post-cache 
-
-unsigned int GGeo::getNextMeshIndex()
-{
-    unsigned int mn(0) ;
-    unsigned int mx(0) ;
-    GMesh* mesh = NULL ; 
-    for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
-    { 
-        mesh = 
-
-    }
-}
-*/
-
-
-
 void GGeo::add(GMesh* mesh)
 {
-    m_meshes.push_back(mesh);
-
-    const char* name = mesh->getName();
-    unsigned int index = mesh->getIndex();
-
-    LOG(debug) << "GGeo::add (GMesh)"
-              << " index " << std::setw(4) << index 
-              << " name " << name 
-              ;
-
-    m_meshindex->add(name, index); 
+    m_meshlib->add(mesh);
 }
 
 

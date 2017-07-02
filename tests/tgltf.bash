@@ -107,6 +107,7 @@ tgltf-t-()
     #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
     #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
     export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
+    #export OPTICKS_QUERY="range:4448:4449"
     local gltfpath=$TMP/$FUNCNAME/sc.gltf
     gdml2gltf.py --gltfpath $gltfpath
     echo $gltfpath

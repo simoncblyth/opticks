@@ -199,7 +199,14 @@ void GBuffer::save(const char* path_)
     }
     assert(numElements*numItems*sizeof(T) == numBytes ); 
 
-    aoba::SaveArrayAsNumpy<T>( path.c_str() , numItems, numElements, (T*)data );  
+    if(data == NULL)
+    {
+        LOG(warning) << "GBuffer::save no data for " << path ; 
+    }
+    else
+    {
+        aoba::SaveArrayAsNumpy<T>( path.c_str() , numItems, numElements, (T*)data );  
+    }
 }
 
 

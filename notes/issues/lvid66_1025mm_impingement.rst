@@ -3,6 +3,13 @@ lvid 66 : unbelievable big impingement  : trapezoid/convexpolyhedron machinery b
 ======================================================================================
 
 
+* looking at visualization suggests deliberate impingement ... it looks 
+  too symmetrically positioned to be a bug  
+
+* BUT the visualizations vet different ...
+
+
+
 Parametric surface points from nodes using lvid 66 are impinging 1025mm into parent volume...
 
 * parametric bug ?
@@ -21,6 +28,7 @@ Parametric surface points from nodes using lvid 66 are impinging 1025mm into par
     NSc::csp n  4453 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
     NSc::csp n  4454 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
     NSc::csp n  4455 nlv  66 p  3155 n.pv lvOIL#pvSstTopRadiusRibs#SstBTpp(nn.local) - nsdf: EE   124(in:/su/ou/er)   0  96  28 124      0.000  1025.250 ep 1.000000e-03 [0.000000e+00,1.025250e+03] 
+
     NSc::csp n  4464 nlv  68 p  3155 n.pv     lvOIL#pvSstTopHub0xc2476b8pp(nn.local) - nsdf: EE   100(in:/su/ou/er)  75  25   0  25   -340.000     0.000 ep 1.000000e-03 [-3.400000e+02,0.000000e+00] 
     NSc::csp n  4465 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
     NSc::csp n  4466 nlv  69 p  3155 n.pv lvOIL#pvSstTopCirRib#SstTopCirpp(nn.local) - nsdf: EE    31(in:/su/ou/er)  26   5   0   5   -231.890     0.000 ep 1.000000e-03 [-2.318901e+02,0.000000e+00] 
@@ -275,6 +283,10 @@ tbool66 generated
 ~~~~~~~~~~~~~~~~~~~~~
 
 Its a trapezoid with two box3 subtracted.
+
+* however playing around its apparent that box b doesnt intersect with a (or c)
+  so are just getting a - c 
+
 
 ::
 

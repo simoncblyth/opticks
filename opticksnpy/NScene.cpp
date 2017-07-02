@@ -112,7 +112,6 @@ void NScene::init()
     compare_trees();
 
 
-/*
     count_progeny_digests();
 
     find_repeat_candidates();
@@ -123,7 +122,6 @@ void NScene::init()
 
     if(m_verbosity > 1)
     dumpRepeatCount(); 
-*/
 
     markGloballyUsedMeshes_r(m_root);
 

@@ -12,10 +12,17 @@
 #include <boost/regex.hpp>
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/algorithm/string/replace.hpp>
+#include <boost/algorithm/string/predicate.hpp>
 
 #include "BStr.hh"
 
 #include "PLOG.hh"
+
+
+bool BStr::StartsWith(const char* s, const char* q)
+{
+    return boost::starts_with(s, q);
+}
 
 
 bool BStr::listHasKey(const char* dlist, const char* key, const char* delim)

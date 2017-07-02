@@ -71,6 +71,7 @@ op-binary-name()
        --itemlist) echo GItemListTest ;;
         --gsource) echo GSourceTest ;;
         --gsrclib) echo GSourceLibTest ;;
+       --gmeshlib) echo GMeshLibTest ;;
        --resource) echo OpticksResourceTest ;;
         --opticks) echo OpticksTest ;;
           --pybnd) echo GBndLibTest.py ;;
@@ -300,7 +301,8 @@ op-geometry-query-dyb()
        KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
-       DSST)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
+    #   DSST)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
+       DSST)  echo "range:4448:4456" ;;   # just top radius ribs
     esac
     # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere
 }

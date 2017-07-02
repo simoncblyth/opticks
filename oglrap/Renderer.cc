@@ -260,7 +260,6 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     glBindVertexArray (m_vao);     
 
 
-
     //  nvert: vertices, normals, colors
     GBuffer* vbuf = m_drawable->getVerticesBuffer();
     GBuffer* nbuf = m_drawable->getNormalsBuffer();
@@ -268,7 +267,6 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 
     assert(vbuf->getNumBytes() == cbuf->getNumBytes());
     assert(nbuf->getNumBytes() == cbuf->getNumBytes());
-
     
     // 3*nface indices
     GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();

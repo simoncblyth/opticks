@@ -57,8 +57,10 @@ class NPY_API Index : public NSequence {
    public:
         std::string getPrefixedString(const char* tail);
         void setExt(const char* ext);
-        unsigned int getIndexLocal(const char* name, unsigned int missing=0);
-        unsigned int getIndexSource(const char* name, unsigned int missing=0);
+        unsigned getIndexLocal(const char* name, unsigned missing=0);
+        unsigned getIndexSource(const char* name, unsigned missing=0);
+        unsigned getIndexSourceStarting(const char* name, unsigned missing=0) ;
+
         unsigned int getIndexSourceTotal();
         float        getIndexSourceFraction(const char* name);
 

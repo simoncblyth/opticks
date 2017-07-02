@@ -7,6 +7,7 @@
 
 // brap-
 #include "BMap.hh"
+#include "BStr.hh"
 #include "BFile.hh"
 
 // npy-
@@ -196,6 +197,26 @@ unsigned int Index::getIndexSource(const char* name, unsigned int missing)
 {
     return m_source.count(name) == 1 ? m_source[name] : missing ; 
 }
+
+unsigned Index::getIndexSourceStarting(const char* name, unsigned int missing)
+{
+    typedef std::map<std::string, unsigned int> MSU ; 
+    unsigned source_idx = missing ;  
+    for(MSU::iterator it=m_source.begin() ; it != m_source.end() ; it++ ) 
+    {
+         std::string it_name = it->first ; 
+         unsigned it_idx = it->second ; 
+         if(BStr::StartsWith(it_name.c_str(), name))
+         {
+             source_idx = it_idx ; 
+             break ; 
+         } 
+    } 
+    return source_idx ; 
+}
+
+
+
 const char* Index::getNameLocal(unsigned int local, const char* missing)
 {
     typedef std::map<std::string, unsigned int> MSU ; 

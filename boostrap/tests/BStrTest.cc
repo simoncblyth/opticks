@@ -120,6 +120,17 @@ void test_patternPickField()
     }
 }
 
+void test_StartsWith()
+{
+    std::string s = "hello_cruel" ; 
+    std::string q = "hell" ; 
+
+    assert( BStr::StartsWith(s.c_str(), "hell") );
+    assert( !BStr::StartsWith(s.c_str(), " hell") );
+
+}
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -130,8 +141,9 @@ int main(int argc, char** argv)
     test_DAEIdToG4();
     test_isplit();
     test_ijoin();
-*/
     test_fsplit();
+*/
+    test_StartsWith();
 
     return 0 ; 
 }

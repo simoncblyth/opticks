@@ -211,6 +211,7 @@ class GGEO_API GMesh : public GDrawable {
   public:
       GMesh* makeDedupedCopy();
 
+      std::string desc() ;
       void Summary(const char* msg="GMesh::Summary");
       void dump(const char* msg="GMesh::dump", unsigned int nmax=10);
       void dumpNormals(const char* msg="GMesh::dumpNormals", unsigned int nmax=10);
@@ -254,7 +255,7 @@ class GGEO_API GMesh : public GDrawable {
       bool     isEmpty();
       unsigned getIndex();
       unsigned getNumVertices();
-      unsigned getNumColors();
+      //unsigned getNumColors();
       unsigned getNumFaces();
       unsigned getNumSolidsSelected();
       unsigned getNumSolids();

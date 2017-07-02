@@ -18,6 +18,7 @@ class BRAP_API BFile {
        static bool ExistsNativeDir(const std::string& native);
        static bool ExistsFile(const char* path, const char* sub=NULL, const char* name=NULL);
        static bool ExistsDir(const char* path, const char* sub=NULL, const char* name=NULL);
+       static void RemoveDir(const char* path, const char* sub=NULL, const char* name=NULL);
 
        static std::string CreateDir(const char* base, const char* asub=NULL, const char* bsub=NULL);
 

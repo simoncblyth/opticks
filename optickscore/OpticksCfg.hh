@@ -43,6 +43,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getPSlice();
      const std::string& getPrintIndex();
      const std::string& getDbgIndex();
+     const std::string& getDbgMesh() const ;
      const std::string& getOtherIndex();
      const std::string& getBuilder();
      const std::string& getTraverser();
@@ -124,6 +125,7 @@ private:
      std::string m_traverser  ;
      std::string m_dbgseqhis ;
      std::string m_dbgseqmat ;
+     std::string m_dbgmesh ;
 
      std::string m_fxreconfig ; 
      std::string m_fxabconfig ; 

@@ -70,6 +70,21 @@ void test_CreateDir()
    BFile::CreateDir("$TMP/a/b/c");
 }
 
+void test_RemoveDir()
+{
+   BFile::CreateDir("$TMP/a/b/c");
+   BFile::RemoveDir("$TMP/a/b/c");
+}
+
+void test_RemoveDir_2()
+{
+   BFile::CreateDir("$TMP","b","c");
+   BFile::RemoveDir("$TMP","b","c");
+}
+
+
+
+
 void test_ParentDir()
 {
     std::vector<std::string> ss ; 
@@ -213,7 +228,9 @@ int main(int argc, char** argv)
    //test_ChangeExt();
 
    //test_FormPath_reldir();
-   test_SomeDir();
+   //test_SomeDir();
+   //test_RemoveDir();
+   //test_RemoveDir_2();
 
 
    return 0 ; 

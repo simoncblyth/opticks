@@ -86,6 +86,7 @@ class OKCORE_API Opticks {
    public:
        void configure();  // invoked after commandline parsed
        std::string brief();
+       void dump(const char* msg="Opticks::dump") ;
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        void dumpParameters(const char* msg="Opticks::dumpParameters");
@@ -165,6 +166,7 @@ class OKCORE_API Opticks {
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
        int   getDbgNode();
+       const char* getDbgMesh() const ;
        float getFxRe();
        float getFxAb();
        float getFxSc();

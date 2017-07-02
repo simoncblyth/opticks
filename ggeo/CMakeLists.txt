@@ -123,6 +123,7 @@ set(SOURCES
     GMergedMesh.cc
     GGeo.cc
     GNodeLib.cc
+    GMeshLib.cc
 
 
 )

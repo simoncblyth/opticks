@@ -48,6 +48,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_traverser(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
+       m_dbgmesh(""),
        m_fxreconfig("0"),
        m_fxabconfig("0"),
        m_fxscconfig("0"),
@@ -413,6 +414,13 @@ void OpticksCfg<Listener>::init()
    snprintf(dbgnode,128, "Index of volume node for debugging, see OpticksHub::debugNode. Default %d", m_dbgnode);
    m_desc.add_options()
        ("dbgnode",  boost::program_options::value<int>(&m_dbgnode), dbgnode );
+
+
+   char dbgmesh[128];
+   snprintf(dbgmesh,128, "Name of mesh solid for debugging, see GMeshLibTest, invoke inside environment with --gmeshlib option. Default %s", m_dbgmesh.c_str());
+   m_desc.add_options()
+       ("dbgmesh",  boost::program_options::value<std::string>(&m_dbgmesh), dbgmesh );
+
 
 
    char stack[128];
@@ -844,6 +852,13 @@ const std::string& OpticksCfg<Listener>::getDbgIndex()
 {
     return m_dindex ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgMesh() const 
+{
+    return m_dbgmesh ;
+}
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getOtherIndex()
 {

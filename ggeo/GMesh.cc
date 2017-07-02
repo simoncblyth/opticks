@@ -2,6 +2,7 @@
 #include <cfloat>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 #include <cassert>
 #include <iomanip>
 #include <algorithm>
@@ -1151,10 +1152,14 @@ void GMesh::dump(const char* msg, unsigned int nmax)
         } 
     }
 
-    for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
+
+    if(m_colors)
     {
-        gfloat3& col = m_colors[i] ;
-        printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
+        for(unsigned int i=0 ; i < std::min(nmax,m_num_vertices) ; i++)
+        {
+            gfloat3& col = m_colors[i] ;
+            printf(" col %5u  %10.3f %10.3f %10.3f \n", i, col.x, col.y, col.z );
+        }
     } 
 
 
@@ -1180,6 +1185,26 @@ void GMesh::dump(const char* msg, unsigned int nmax)
     LOG(info) << " num_solids " << m_num_solids
               ;
 }
+
+
+
+
+std::string GMesh::desc() 
+{
+    std::stringstream ss ; 
+    unsigned nv = getNumVertices();
+    unsigned nf = getNumFaces();
+    //unsigned nc = getNumColors();
+    ss 
+        << " nv " << std::setw(6) << nv 
+        << " nf " << std::setw(6) << nf
+      //  << " nc " << std::setw(6) << nc
+        ;
+
+    return ss.str();
+}
+
+
 
 
 void GMesh::Summary(const char* msg)
@@ -1634,7 +1659,7 @@ GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir
     std::string cachedir = BFile::FormPath(dir, typedir, instancedir);
     bool existsdir = BFile::ExistsDir(dir, typedir, instancedir);
 
-    LOG(info) << "GMesh::load"
+    LOG(debug) << "GMesh::load"
               << " dir " << dir 
               << " typedir " << typedir 
               << " instancedir " << instancedir 

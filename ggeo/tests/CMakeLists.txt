@@ -74,6 +74,7 @@ set(TEST_SOURCES
     RecordsNPYTest.cc
 
     GSceneTest.cc
+    GMeshLibTest.cc
 
 )
 

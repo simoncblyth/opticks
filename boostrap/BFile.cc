@@ -332,6 +332,35 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 }
 
 
+
+
+void BFile::RemoveDir(const char* path, const char* sub, const char* name)
+{
+    std::string p = FormPath(path, sub, name) ;
+    assert(!p.empty());
+    fs::path dir(p);
+    bool exists = fs::exists(dir) ;
+
+    if(!exists)
+    {
+         std::cout << "BFile::RemoveDir"
+                   << " path does not exist " << p 
+                   << std::endl 
+                  ; 
+    }
+    else
+    {
+         std::cout << "BFile::RemoveDir"
+                   << " deleting path " << p 
+                   << std::endl 
+                  ; 
+        unsigned long long nrm = fs::remove_all(dir);
+        std::cout << "BFile::RemoveDir removed " << nrm << std::endl ; 
+    }
+}
+
+
+
 std::string BFile::CreateDir(const char* base, const char* asub, const char* bsub)
 {
 
