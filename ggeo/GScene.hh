@@ -7,6 +7,7 @@ class Opticks ;
 class OpticksEvent ; 
 
 class GNodeLib ; 
+class GMeshLib ; 
 class GItemList ; 
 class GGeo ; 
 class GSolid ; 
@@ -126,13 +127,16 @@ class GGEO_API GScene
     private:
         Opticks* m_ok ; 
         GGeo*    m_ggeo ; 
+        bool     m_analytic ; 
+        bool     m_loaded ; 
         int      m_gltf ; 
         NScene*  m_scene ; 
         int      m_num_nd ; 
         unsigned m_targetnode ; 
 
-        GGeoLib*  m_geolib ; 
-        GNodeLib* m_nodelib ; 
+        GGeoLib*      m_geolib ; 
+        GNodeLib*     m_nodelib ; 
+        GMeshLib*     m_meshlib ; 
 
         NSensorList*  m_sensor_list ; 
 
@@ -140,7 +144,9 @@ class GGEO_API GScene
         GMergedMesh*  m_tri_mm0 ; 
         GNodeLib*     m_tri_nodelib ; 
         GBndLib*      m_tri_bndlib ; 
+        GMeshLib*     m_tri_meshlib ; 
         GItemIndex*   m_tri_meshindex ; 
+
         GColorizer*   m_colorizer ; 
 
         unsigned     m_verbosity ; 

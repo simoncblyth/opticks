@@ -28,12 +28,19 @@ class GGEO_API GMeshLib
         friend class GGeo ; 
     public:
         static const unsigned MAX_MESH  ; 
-        static const char*    GMESHLIB_INDEX ; 
-        static const char*    GMESHLIB ; 
 
-        static GMeshLib* load(Opticks* ok);
+        static const char*    GMESHLIB_INDEX ; 
+        static const char*    GMESHLIB_INDEX_ANALYTIC ; 
+        static const char*    GetRelDirIndex(bool analytic);
+
+        static const char*    GMESHLIB ; 
+        static const char*    GMESHLIB_ANALYTIC ; 
+        static const char*    GetRelDir(bool analytic);
+
+        static GMeshLib* load(Opticks* ok, bool analytic);
     public:
-        GMeshLib(Opticks* opticks); 
+        GMeshLib(Opticks* opticks, bool analytic); 
+        bool isAnalytic() const ; 
         void add(GMesh* mesh);
         void dump(const char* msg="GMeshLib::dump") const;
     public:
@@ -55,6 +62,8 @@ class GGEO_API GMeshLib
         void removeMeshes(const char* idpath ) const ;
     private:
         Opticks*                      m_ok ; 
+        bool                          m_analytic ; 
+        const char*                   m_reldir ; 
         GItemIndex*                   m_meshindex ; 
         unsigned                      m_missing ; 
         std::vector<GMesh*>           m_meshes ; 

@@ -22,6 +22,7 @@
 #include "GParts.hh"
 #include "GGeoLib.hh"
 #include "GNodeLib.hh"
+#include "GMeshLib.hh"
 #include "GBndLib.hh"
 #include "GMatrix.hh"
 #include "GMesh.hh"
@@ -38,12 +39,16 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     :
     m_ok(ok),
     m_ggeo(ggeo),
+    m_analytic(true),
+    m_loaded(false),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
     m_geolib(new GGeoLib(m_ok)),
-    m_nodelib(new GNodeLib(m_ok, false, m_targetnode, "analytic/GScene/GNodeLib")),
+    //m_nodelib(new GNodeLib(m_ok, m_loaded, m_targetnode, "analytic/GScene/GNodeLib")),
+    m_nodelib(new GNodeLib(m_ok, m_analytic)),
+    m_meshlib(new GMeshLib(m_ok, m_analytic)),
 
     m_sensor_list(ggeo->getSensorList()),
     m_tri_geolib(ggeo->getTriGeoLib()),
@@ -51,7 +56,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
 
     m_tri_nodelib(ggeo->getNodeLib()),
     m_tri_bndlib(ggeo->getBndLib()),
-    m_tri_meshindex(ggeo->getMeshIndex()),
+    m_tri_meshlib(ggeo->getMeshLib()),
+    m_tri_meshindex(m_tri_meshlib->getMeshIndex()),
 
     m_colorizer(new GColorizer(m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
 
@@ -273,10 +279,11 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
              ;
 
         GMesh* mesh = GMesh::make_mesh(tris->getTris(), mesh_idx );
-
-        m_meshes[mesh_idx] = mesh ;
- 
         assert(mesh);
+        mesh->setCSG(csg);
+
+        //m_meshes[mesh_idx] = mesh ;
+        m_meshlib->add(mesh);
     }
     LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
 }
@@ -284,12 +291,14 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
 
 unsigned GScene::getNumMeshes() 
 {
-   return m_meshes.size();
+   return m_meshlib->getNumMeshes() ;
+   //return m_meshes.size();
 }
 GMesh* GScene::getMesh(unsigned r)
 {
-    assert( r < m_meshes.size() );
-    return m_meshes[r];
+    return m_meshlib->getMesh(r) ; 
+    //assert( r < m_meshes.size() );
+    //return m_meshes[r];
 }
 NCSG* GScene::getCSG(unsigned r) 
 {

@@ -9,26 +9,39 @@
 #include "GNodeLib.hh"
 
 
-GNodeLib* GNodeLib::load(Opticks* ok, const char* reldir)
+const char* GNodeLib::GetRelDir(bool analytic)
 {
-    // NB nodes are not persisted... those survive via GMergedMesh 
-    int gltftarget = ok->getGLTFTarget();
-    GNodeLib* nodelib = new GNodeLib(ok, true, gltftarget, reldir) ;
+    return strdup(analytic ? "GNodeLibAnalytic" : "GNodeLib") ;
+}
+
+GNodeLib* GNodeLib::load(Opticks* ok, bool analytic)
+{
+    GNodeLib* nodelib = new GNodeLib(ok, analytic) ;
+    nodelib->loadFromCache();
     return nodelib ; 
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode, const char* reldir)  
+void GNodeLib::loadFromCache()
+{
+    const char* idpath = m_ok->getIdPath() ;
+    m_pvlist = GItemList::load(idpath, "PVNames", m_reldir);
+    m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
+}
+
+
+
+GNodeLib::GNodeLib(Opticks* ok, bool analytic)  
     :
     m_ok(ok),
-    m_loaded(loaded),
-    m_targetnode(targetnode),
-    m_reldir(reldir ? strdup(reldir) : NULL),
+    m_analytic(analytic),
+    m_reldir(GetRelDir(analytic)),
     m_pvlist(NULL),
     m_lvlist(NULL)
 {
      
     // TODO: get rid of targetnode
 
+/*
     int gltftarget = ok->getGLTFTarget();
     assert( targetnode == 0);
     assert( gltftarget == 0);
@@ -41,37 +54,25 @@ GNodeLib::GNodeLib(Opticks* ok, bool loaded, unsigned targetnode, const char* re
                   ;
 
     assert( consistent && "MISMATCH BETWEEN GLTFTarget from config and from metadata, add option: --gltftarget <targetnode> "); 
+*/
 
 
-    init();
 }
 
+/*
 unsigned GNodeLib::getTargetNodeOffset() const 
 {
     return m_targetnode ; 
 }
 
-void GNodeLib::init()
-{
-    if(!m_loaded)
-    {
-        m_pvlist = new GItemList("PVNames", m_reldir) ; 
-        m_lvlist = new GItemList("LVNames", m_reldir) ; 
-    }
-    else
-    {
-        const char* idpath = m_ok->getIdPath() ;
-        m_pvlist = GItemList::load(idpath, "PVNames", m_reldir);
-        m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
-    }
-}
+*/
+
 
 void GNodeLib::save() const 
 {
     const char* idpath = m_ok->getIdPath() ;
     LOG(debug) << "GNodeLib::save"
               << " idpath " << idpath 
-              << " targetNodeOffset " << m_targetnode
               ;
     m_pvlist->save(idpath);
     m_lvlist->save(idpath);
@@ -84,7 +85,6 @@ std::string GNodeLib::desc() const
     std::stringstream ss ; 
 
     ss << "GNodeLib"
-       << " targetnode " << m_targetnode
        << " reldir " << ( m_reldir ? m_reldir : "-" )
        << " numPV " << getNumPV()
        << " numLV " << getNumLV()
@@ -165,6 +165,9 @@ void GNodeLib::add(GSolid* solid)
 */
               
     m_solidmap[index] = solid ; 
+
+    if(!m_pvlist) m_pvlist = new GItemList("PVNames", m_reldir) ; 
+    if(!m_lvlist) m_lvlist = new GItemList("LVNames", m_reldir) ; 
 
     m_lvlist->add(solid->getLVName()); 
     m_pvlist->add(solid->getPVName()); 

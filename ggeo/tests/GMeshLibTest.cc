@@ -33,7 +33,8 @@ int main(int argc, char** argv)
     ok.configure();
     //ok.dump("after configure");
 
-    GMeshLib* ml = GMeshLib::load(&ok);
+    bool analytic = false ; 
+    GMeshLib* ml = GMeshLib::load(&ok, analytic);
 
     const char* dbgmesh = ok.getDbgMesh();
 

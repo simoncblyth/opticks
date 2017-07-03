@@ -31,8 +31,11 @@ class GGEO_API GNodeLib
         friend class GGeo   ;  // for save 
         friend class GScene ;  // for save 
     public:
-        static GNodeLib* load(Opticks* ok, const char* reldir);
-        GNodeLib(Opticks* opticks, bool loaded, unsigned targetnode, const char* reldir); 
+        static const char* GetRelDir(bool analytic);
+        static GNodeLib* load(Opticks* ok, bool analytic);
+        void loadFromCache();
+    public:
+        GNodeLib(Opticks* opticks, bool analytic); 
         std::string desc() const ; 
     private:
         void save() const ;
@@ -40,7 +43,7 @@ class GGEO_API GNodeLib
         GItemList*   getPVList(); 
         GItemList*   getLVList(); 
     public:
-        unsigned getTargetNodeOffset() const ;
+        //unsigned getTargetNodeOffset() const ;
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
         void add(GSolid*    solid);
@@ -53,8 +56,8 @@ class GGEO_API GNodeLib
         const char* getLVName(unsigned int index) const ;
     private:
         Opticks*                           m_ok ;  
-        bool                               m_loaded ; 
-        unsigned                           m_targetnode ; 
+        bool                               m_analytic ; 
+        //unsigned                           m_targetnode ; 
         const char*                        m_reldir ; 
 
         GItemList*                         m_pvlist ; 

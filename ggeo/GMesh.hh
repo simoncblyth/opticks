@@ -4,6 +4,7 @@ struct NSlice ;
 template <typename T> class NPY ;
 class NPYBase ; 
 class GParts ; 
+class NCSG ; 
 
 
 template <typename T> class GMatrix ; 
@@ -218,6 +219,8 @@ class GGEO_API GMesh : public GDrawable {
   public:
       void setIndex(unsigned int index);
       void setName(const char* name);
+      void setCSG(const NCSG* csg);
+
       void setGeoCode(char geocode);
       void setInstanceSlice(NSlice* slice);
       void setFaceSlice(NSlice* slice);
@@ -228,6 +231,8 @@ class GGEO_API GMesh : public GDrawable {
       const char* getShortName();
       const char* getVersion();
       char getGeoCode();
+      const NCSG* getCSG() const ; 
+
       NSlice* getInstanceSlice();
       NSlice* getFaceSlice();
       NSlice* getPartSlice();
@@ -522,6 +527,7 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* m_analytic_geometry_buffer ; 
 
       //GParts*      m_parts ; 
+      const NCSG*    m_csg ; 
 
       unsigned int   m_verbosity ; 
 

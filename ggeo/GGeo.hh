@@ -188,7 +188,6 @@ class GGEO_API GGeo : public NConfigurable {
 
 
     public:
-        void add(GMesh*    mesh);
         void add(GMaterial* material);
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
@@ -204,8 +203,12 @@ class GGEO_API GGeo : public NConfigurable {
         void addRaw(GBorderSurface*  surface);
       
     public:
-        GItemIndex*  getMeshIndex(); 
-
+        // via meshlib
+        GMeshLib*          getMeshLib();  // unplaced meshes
+        unsigned           getNumMeshes();
+        GItemIndex*        getMeshIndex(); 
+        GMesh*             getMesh(unsigned index);  
+        void               add(GMesh*    mesh);
     public:
         void dumpRaw(const char* msg="GGeo::dumpRaw");
         void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties");
@@ -222,7 +225,6 @@ class GGEO_API GGeo : public NConfigurable {
         void traverse(GNode* node, unsigned int depth);
  
     public:
-        unsigned int getNumMeshes();
         unsigned int getNumMaterials();
         unsigned int getNumSkinSurfaces();
         unsigned int getNumBorderSurfaces();
@@ -232,7 +234,6 @@ class GGEO_API GGeo : public NConfigurable {
         unsigned int getNumRawBorderSurfaces();
     public:
         GScene*            getScene();
-        GMeshLib*          getMeshLib();  // unplaced meshes
         GNodeLib*          getNodeLib();
         GGeoLib*           getGeoLib();  // merged meshes
         GGeoLib*           getTriGeoLib();
@@ -254,7 +255,6 @@ class GGEO_API GGeo : public NConfigurable {
         OpticksAttrSeq*    getFlagNames(); 
         Opticks*           getOpticks();
     public:
-        GMesh* getMesh(unsigned int index);  
         GMaterial* getMaterial(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
@@ -320,6 +320,7 @@ class GGEO_API GGeo : public NConfigurable {
         glm::ivec4& getPickFace(); 
     private:
         Opticks*                      m_ok ;  
+        bool                          m_analytic ; 
         int                           m_gltf ; 
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 

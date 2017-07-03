@@ -86,6 +86,7 @@ const char* GGeo::PICKFACE = "pickface" ;
 GGeo::GGeo(Opticks* opticks)
   :
    m_ok(opticks), 
+   m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_treecheck(NULL), 
@@ -402,8 +403,8 @@ void GGeo::init()
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
-
-   m_meshlib = new GMeshLib(m_ok);
+ 
+   m_meshlib = new GMeshLib(m_ok, m_analytic);
    m_geolib = new GGeoLib(m_ok);
 
    m_treecheck = new GTreeCheck(this) ;
@@ -431,9 +432,11 @@ void GGeo::init()
    m_sourcelib  = new GSourceLib(m_ok);
 
 
-   unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
-   const char* reldir = NULL ;  // <-- default location for GItemList persisting 
-   m_nodelib = new GNodeLib(m_ok, false, targetnode, reldir );  // not loaded 
+   //unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
+   //const char* reldir = NULL ;  // <-- default location for GItemList persisting 
+   //m_nodelib = new GNodeLib(m_ok, false, targetnode, reldir );  // not loaded 
+
+   m_nodelib = new GNodeLib(m_ok, m_analytic ); 
    LOG(trace) << "GGeo::init DONE" ; 
 }
 
@@ -624,7 +627,8 @@ void GGeo::loadFromCache()
     const char* reldir = NULL ; // default location of tri GItemList
     m_nodelib = GNodeLib::load(m_ok, reldir);
         
-    m_meshlib = GMeshLib::load(m_ok);
+    bool analytic = false ; 
+    m_meshlib = GMeshLib::load(m_ok, analytic);
 
 
     bool constituents = true ; 
@@ -902,12 +906,10 @@ unsigned GGeo::getNumMeshes()
 {
     return m_meshlib->getNumMeshes(); 
 }
-
 GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshlib->getMeshIndex() ; 
 }
-
 GMesh* GGeo::getMesh(unsigned int aindex)
 {
     return m_meshlib->getMesh(aindex);

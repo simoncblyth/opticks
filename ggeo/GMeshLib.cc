@@ -12,19 +12,40 @@
 
 const unsigned GMeshLib::MAX_MESH = 500 ; 
 const char* GMeshLib::GMESHLIB_INDEX = "MeshIndex" ; 
-const char* GMeshLib::GMESHLIB = "GMeshLib" ; 
+const char* GMeshLib::GMESHLIB_INDEX_ANALYTIC = "MeshIndexAnalytic" ; 
 
-GMeshLib::GMeshLib(Opticks* ok) 
+const char* GMeshLib::GMESHLIB = "GMeshLib" ; 
+const char* GMeshLib::GMESHLIB_ANALYTIC = "GMeshLibAnalytic" ; 
+
+const char* GMeshLib::GetRelDir(bool analytic)
+{
+    return analytic ? GMESHLIB_ANALYTIC : GMESHLIB ;
+}
+const char* GMeshLib::GetRelDirIndex(bool analytic)
+{
+    return analytic ? GMESHLIB_INDEX_ANALYTIC : GMESHLIB_INDEX  ;
+}
+
+
+GMeshLib::GMeshLib(Opticks* ok, bool analytic) 
    :
    m_ok(ok),
+   m_analytic(analytic),
+   m_reldir(strdup(GetRelDir(analytic))),
    m_meshindex(NULL),
    m_missing(std::numeric_limits<unsigned>::max())
 {
 }
 
-GMeshLib* GMeshLib::load(Opticks* ok)
+
+bool GMeshLib::isAnalytic() const 
 {
-    GMeshLib* meshlib = new GMeshLib(ok);
+    return m_analytic ; 
+}
+
+GMeshLib* GMeshLib::load(Opticks* ok, bool analytic)
+{
+    GMeshLib* meshlib = new GMeshLib(ok, analytic);
     meshlib->loadFromCache(); 
     return meshlib ; 
 }
@@ -32,7 +53,7 @@ GMeshLib* GMeshLib::load(Opticks* ok)
 void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
-    m_meshindex = GItemIndex::load(idpath, GMESHLIB_INDEX);
+    m_meshindex = GItemIndex::load(idpath, GetRelDirIndex(m_analytic)) ;
 
     loadMeshes(idpath);
 }
@@ -144,12 +165,14 @@ GMesh* GMeshLib::getMesh(const char* name, bool startswith)
 
 void GMeshLib::add(GMesh* mesh)
 {
-    if(!m_meshindex) m_meshindex = new GItemIndex(GMESHLIB_INDEX)   ;
+    if(!m_meshindex) m_meshindex = new GItemIndex(GetRelDirIndex(m_analytic))   ;
 
     m_meshes.push_back(mesh);
 
     const char* name = mesh->getName();
     unsigned int index = mesh->getIndex();
+
+    assert(name) ; 
 
     LOG(info) << "GMeshLib::add (GMesh)"
               << " index " << std::setw(4) << index 
@@ -167,9 +190,9 @@ void GMeshLib::removeMeshes(const char* idpath ) const
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
         const char* sidx = BStr::itoa(idx);
-        if(BFile::ExistsDir(idpath, GMESHLIB, sidx))
+        if(BFile::ExistsDir(idpath, m_reldir, sidx))
         { 
-            BFile::RemoveDir(idpath, GMESHLIB, sidx); 
+            BFile::RemoveDir(idpath, m_reldir, sidx); 
         }
    } 
 }
@@ -183,7 +206,7 @@ void GMeshLib::loadMeshes(const char* idpath )
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
         const char* sidx = BStr::itoa(idx);
-        std::string spath = BFile::FormPath(idpath, GMESHLIB, sidx);
+        std::string spath = BFile::FormPath(idpath, m_reldir, sidx);
         const char* path = spath.c_str() ;
 
         if(BFile::ExistsDir(path))
@@ -226,7 +249,7 @@ void GMeshLib::saveMeshes(const char* idpath) const
         unsigned int idx = mesh->getIndex() ; 
         const char* sidx = BStr::itoa(idx);
 
-        mesh->save(idpath, GMESHLIB, sidx); 
+        mesh->save(idpath, m_reldir, sidx); 
     }
 }
 

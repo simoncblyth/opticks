@@ -161,10 +161,23 @@ GMesh::GMesh(unsigned int index,
       m_analytic_geometry_buffer(NULL),
 
       //m_parts(NULL),
+      m_csg(NULL),
       m_verbosity(0)
 {
      init(vertices, faces, normals, texcoords);
 }
+
+
+void GMesh::setCSG(const NCSG* csg)
+{
+    m_csg = csg ; 
+}
+const NCSG* GMesh::getCSG() const 
+{
+    return m_csg ; 
+}
+
+
 
 
 
