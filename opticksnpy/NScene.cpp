@@ -96,8 +96,6 @@ NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gl
 {
     NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig, dbgnode) : NULL ;
 
-
-
     if(!scene)
         LOG(fatal) << "NScene:Load MISSING PATH" 
                    << " gltfbase " << gltfbase

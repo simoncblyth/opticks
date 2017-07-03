@@ -172,8 +172,9 @@ class OKCORE_API Opticks {
        float getFxSc();
    public:
        // see GScene, NScene, NGLTF
-       const char* getGLTFBase();
-       const char* getGLTFName();
+       const char* getGLTFPath();   // <- standard above geocache position next to the .gdml and .dae
+       const char* getGLTFBase();   // <- testing only 
+       const char* getGLTFName();   // <- testing only 
        const char* getGLTFConfig();
        int         getGLTF();
        int         getGLTFTarget();

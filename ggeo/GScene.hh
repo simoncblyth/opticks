@@ -4,6 +4,7 @@
 #include <map>
 
 class Opticks ; 
+class OpticksQuery ; 
 class OpticksEvent ; 
 
 class GNodeLib ; 
@@ -115,10 +116,10 @@ class GGEO_API GScene : public GGeoBase
         guint4 getIdentity(unsigned idx) const ;
     private:
         GSolid* createVolumeTree(NScene* scene);
-        GSolid* createVolumeTree_r(nd* n, GSolid* parent, unsigned depth);
-        GSolid* createVolume(nd* n);
+        GSolid* createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool recursive_select );
+        GSolid* createVolume(nd* n, unsigned depth, bool& recursive_select );
         void transferIdentity( GSolid* node, const nd* n);
-        void transferMetadata( GSolid* node, const NCSG* csg, const nd* n);
+        void transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select );
         std::string lookupBoundarySpec( const GSolid* node, const nd* n) const ;
         void addNode(GSolid* node, nd* n);
     private:
@@ -139,7 +140,9 @@ class GGEO_API GScene : public GGeoBase
     private:
         GSolid*       getNode(unsigned node_idx);
     private:
-        Opticks* m_ok ; 
+        Opticks*      m_ok ; 
+        OpticksQuery* m_query ; 
+        
         GGeo*    m_ggeo ; 
         bool     m_analytic ; 
         bool     m_loaded ; 

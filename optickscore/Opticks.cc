@@ -587,14 +587,27 @@ NSlice* Opticks::getAnalyticPMTSlice()
 }
 
 
-const char* Opticks::getGLTFBase()
+
+const char* Opticks::getGLTFPath()
 {
-    return m_cfg->getGLTFBase().c_str() ; 
+    return m_resource->getGLTFPath() ;
+}
+const char* Opticks::getGLTFBase()   // config base and name only used whilst testing with gltf >= 100
+{
+    int gltf = getGLTF();
+    const char* path = getGLTFPath() ;
+    std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getGLTFBase() ;
+    return strdup(base.c_str()) ; 
 }
 const char* Opticks::getGLTFName()
 {
-    return m_cfg->getGLTFName().c_str() ; 
+    int gltf = getGLTF();
+    const char* path = getGLTFPath() ;
+    std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getGLTFName()  ;
+    return strdup(name.c_str()) ; 
 }
+
+
 const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 

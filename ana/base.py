@@ -100,6 +100,13 @@ def _opticks_gdmlpath(idpath):
     idfold = _opticks_idfold(idpath)
     return os.path.join(idfold, idfilename_gdml)
 
+def _opticks_gltfpath(idpath):
+    idfilename_dae = _opticks_idfilename(idpath)
+    base,ext = idfilename_dae.split(".")
+    idfilename_gltf = "%s.gltf" % base 
+    idfold = _opticks_idfold(idpath)
+    return os.path.join(idfold, idfilename_gltf)
+
 
 def _opticks_install_prefix(idpath):
     prefix = _dirname(idpath,4)
@@ -182,6 +189,7 @@ class OpticksEnv(object):
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
         self.setdefault("OPTICKS_DAEPATH",         _opticks_daepath(IDPATH))
         self.setdefault("OPTICKS_GDMLPATH",        _opticks_gdmlpath(IDPATH))
+        self.setdefault("OPTICKS_GLTFPATH",        _opticks_gltfpath(IDPATH))
         self.setdefault("OPTICKS_DATA_DIR",        _opticks_data_dir(IDPATH))
         self.setdefault("OPTICKS_EXPORT_DIR",      _opticks_export_dir(IDPATH))
         self.setdefault("OPTICKS_INSTALL_PREFIX",  _opticks_install_prefix(IDPATH))
@@ -314,7 +322,7 @@ def opticks_args(**kwa):
     apmtidx = kwa.get("apmtidx", 2 )
 
     csgpath = kwa.get("csgpath", "$TMP/tboolean-csg-pmt-py")
-    gltfpath = kwa.get("gltfpath", "$TMP/tgltf/tgltf-gdml--.gltf")
+    #gltfpath = kwa.get("gltfpath", "$TMP/tgltf/tgltf-gdml--.gltf")
     container = kwa.get("container","Rock//perfectAbsorbSurface/Vacuum") 
     testobject = kwa.get("testobject","Vacuum///GlassSchottF2" ) 
     gsel = kwa.get("gsel", "/dd/Geometry/PMT/lvPmtHemi0x" ) 
@@ -374,7 +382,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--addpath",   default=addpath, help="Path to detdesc xml file for topdown testing. %(default)s ")
     parser.add_argument(     "--yes", action="store_true", help="Confirm any YES dialogs. %(default)s ")
     parser.add_argument(     "--csgpath",   default=csgpath, help="Directory of the NCSG input serialization. %(default)s ")
-    parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
+    #parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
 

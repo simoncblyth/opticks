@@ -191,7 +191,8 @@ void test_ChangeExt()
 void test_SomeDir()
 {
     //const char* path = "$TMP/somedir/someotherdir" ; 
-    const char* path = "/dd/Geometry/PoolDetails/lvVertiCableTray#pvVertiCable0xbf5e7f0" ;
+    //const char* path = "/dd/Geometry/PoolDetails/lvVertiCableTray#pvVertiCable0xbf5e7f0" ;
+    const char* path = "/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf" ; 
 
     std::string name = BFile::Name(path) ;
     std::string stem = BFile::Stem(path);
@@ -200,6 +201,26 @@ void test_SomeDir()
 
     LOG(info) 
               << "test_SomeDir"
+              << " path " << path
+              << " name " << name
+              << " stem " << stem
+              << " dir " << dir
+              ;
+ 
+}
+
+void test_SomePath()
+{
+    //const char* path = "$TMP/somedir/someotherdir" ; 
+    //const char* path = "/dd/Geometry/PoolDetails/lvVertiCableTray#pvVertiCable0xbf5e7f0" ;
+    const char* path = "/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf" ; 
+
+    std::string name = BFile::Name(path) ;
+    std::string stem = BFile::Stem(path);
+    std::string dir = BFile::ParentDir(path) ;
+
+    LOG(info) 
+              << "test_SomePath"
               << " path " << path
               << " name " << name
               << " stem " << stem
@@ -281,12 +302,13 @@ int main(int argc, char** argv)
 
    //test_FormPath_reldir();
    //test_SomeDir();
+   test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
 
 
-   test_LastWriteTime();
-   test_SinceLastWriteTime();
+   //test_LastWriteTime();
+   //test_SinceLastWriteTime();
 
    return 0 ; 
 }

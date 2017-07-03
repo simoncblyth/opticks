@@ -610,6 +610,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
     std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
     std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
+    std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
     std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
     std::cerr << "query    : " <<  (m_query_string?m_query_string:"NULL") << std::endl; 
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 

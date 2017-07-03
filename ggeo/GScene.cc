@@ -13,6 +13,7 @@
 #include "NTrianglesNPY.hpp"
 #include "NSensorList.hpp"
 
+#include "OpticksQuery.hh"
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
@@ -45,6 +46,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     :
     GGeoBase(),
     m_ok(ok),
+    m_query(ok->getQuery()),
     m_ggeo(ggeo),
     m_analytic(true),
     m_loaded(false),
@@ -346,14 +348,13 @@ void GScene::dumpMeshes()
 
 
 
-
-
-
-
 GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
 {
     if(m_verbosity > 0)
-    LOG(info) << "GScene::createVolumeTree START verbosity " << m_verbosity  ; 
+    LOG(info) << "GScene::createVolumeTree START"
+              << "  verbosity " << m_verbosity  
+              << " query " << m_query->description()
+              ; 
     assert(scene);
 
     //scene->dumpNdTree("GScene::createVolumeTree");
@@ -363,7 +364,8 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 
     GSolid* parent = NULL ;
     unsigned depth = 0 ; 
-    GSolid* root = createVolumeTree_r( root_nd, parent, depth );
+    bool recursive_select = false ; 
+    GSolid* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
     assert(root);
 
     assert( m_nodes.size() == scene->getNumNd()) ;
@@ -374,15 +376,13 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 }
 
 
-GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth )
+GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool recursive_select  )
 {
     guint4 id = getIdentity(n->idx);
     guint4 ni = getNodeInfo(n->idx);
 
     unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GSolid index
     unsigned pidx = parent ? parent->getIndex() : 0 ; // partial parent index
-
-    //bool selected = m_query->selected(name, index, depth, recursive_select); 
  
 
     if(m_verbosity > 4)
@@ -404,14 +404,15 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth )
         assert( pidx + m_targetnode == ni.w );  // relative node indexing
     }
 
-    GSolid* node = createVolume(n);
+    GSolid* node = createVolume(n, depth, recursive_select );
     node->setParent(parent) ;   // tree hookup 
+
 
     typedef std::vector<nd*> VN ; 
     for(VN::const_iterator it=n->children.begin() ; it != n->children.end() ; it++)
     {
         nd* cn = *it ; 
-        GSolid* child = createVolumeTree_r(cn, node, depth+1);
+        GSolid* child = createVolumeTree_r(cn, node, depth+1, recursive_select );
         node->addChild(child);
     } 
     return node  ; 
@@ -426,13 +427,12 @@ GSolid* GScene::getNode(unsigned node_idx)
 }
 
 
-GSolid* GScene::createVolume(nd* n) // compare with AssimpGGeo::convertStructureVisit
+GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
 {
     assert(n);
     unsigned rel_node_idx = n->idx ;
     unsigned abs_node_idx = n->idx + m_targetnode  ;  
     assert(m_targetnode == 0);
-
 
     unsigned rel_mesh_idx = n->mesh ;   
     unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
@@ -449,7 +449,7 @@ GSolid* GScene::createVolume(nd* n) // compare with AssimpGGeo::convertStructure
    
     solid->setLevelTransform(ltransform); 
 
-    transferMetadata( solid, csg, n ); 
+    transferMetadata( solid, csg, n, depth, recursive_select ); 
     transferIdentity( solid, n ); 
 
     std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
@@ -482,8 +482,7 @@ GSolid* GScene::createVolume(nd* n) // compare with AssimpGGeo::convertStructure
     return solid ; 
 }
 
-
-void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n)
+void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select )
 {
     assert(n->repeatIdx > -1);
 
@@ -497,8 +496,13 @@ void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n)
     node->setPVName( pvname.c_str() );
     node->setLVName( lvn.c_str() );
 
-    bool selected = n->selected > 0 ;
+    //bool selected = n->selected > 0 ;
+    //node->setSelected( selected  );
+    // more convenient to do selection here than in the python gltf preparation
+
+    bool selected = m_query->selected(pvname.c_str(), n->idx, depth, recursive_select); 
     node->setSelected( selected  );
+
 
     if(selected) m_selected_count++ ; 
 }

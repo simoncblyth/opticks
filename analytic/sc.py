@@ -434,8 +434,15 @@ def gdml2gltf_main( args ):
     """
     main used by bin/gdml2gltf.py 
     """
+    # envvars are set within opticks_main
+    gdmlpath = os.environ['OPTICKS_GDMLPATH']   
+    gltfpath = os.environ['OPTICKS_GLTFPATH']  
 
-    gdml = GDML.parse()
+    assert gdmlpath.replace('.gdml','.gltf') == gltfpath 
+    assert gltfpath.replace('.gltf','.gdml') == gdmlpath 
+
+
+    gdml = GDML.parse(gdmlpath)
 
     tree = Tree(gdml.world)  
 
@@ -450,9 +457,8 @@ def gdml2gltf_main( args ):
     tg = sc.add_tree_gdml( tree.root, maxdepth=0)
 
 
-
-    path = args.gltfpath
-    gltf = sc.save(path)
+    #path = args.gltfpath
+    gltf = sc.save(gltfpath)
 
 
     sc.gdml = gdml 
