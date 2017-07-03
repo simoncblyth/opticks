@@ -96,28 +96,15 @@ tgltf-target(){ echo 3153 ; }
 
 
 
-#   dont set OPTICKS_QUERY geo selection here 
-#   do it with op-vi under an op argument  such as --dsst 
-#  
-#tgltf-tt-env(){
-#  #export OPTICKS_QUERY="range:3158:3160"
-#  export OPTICKS_QUERY="range:3159:3160"
-#}
-#tgltf-t-env()
-#{
-#    op-  # needs OPTICKS_QUERY envvar 
-#    #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
-#    #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
-#    export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
-#    #export OPTICKS_QUERY="range:4448:4449"
-#}
-#
-
-# 
 
 
 tgltf-t-notes(){ cat << EON
 
+Hmm currently the geoselection is applied to the gltf json 
+at python level... which means must keep regenerating the 
+gltf from the gdml every time want to change geoselection. 
+Thats a pain... better to apply the selection at C++ level 
+on loading the GLTF ? 
 
 Attempting to change geoselection via envvars in python
 or at this level in bash is too fragile ... instead 
@@ -126,7 +113,6 @@ an op options such as --dsst, in this way the
 same geoselection applies to both branches and 
 to python scripts : so long as they are 
 orchestrated by op.sh.
-
 
 When debugging geometry and changing geoselection, remember that need
 to regenerate geocache after geoselection or precache code changes... 
@@ -143,13 +129,20 @@ EON
 
 
 
+
+
 tgltf-t() { TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; } 
+tgltf-t-path(){ echo $TMP/${FUNCNAME/-path}-/sc.gltf ; }
+tgltf-t-rm(){ local gltfpath=$(tgltf-t-path) ; rm $gltfpath ;}
+tgltf-t-vi(){ local gltfpath=$(tgltf-t-path) ; vi ${gltfpath/.gltf}.pretty.gltf ;}
+tgltf-t-ls(){ local gltfpath=$(tgltf-t-path) ; ls -l ${gltfpath/.gltf}* ; }
 tgltf-t-()
 {
-    local gltfpath=$TMP/$FUNCNAME/sc.gltf
-    if [ ! -f "$gltfpath" ]; then 
-        gdml2gltf.py --gltfpath $gltfpath
-    fi 
+    local gltfpath=$(tgltf-t-path)
+
+    #tgltf-t-rm  # force regenerate every time
+
+    [ ! -f "$gltfpath" ] && gdml2gltf.py --gltfpath $gltfpath
     echo $gltfpath
 }
 

@@ -7,7 +7,8 @@
 #include "OpticksEvent.hh"
 #include "OpticksCfg.hh"
 
-#include "GGeo.hh"
+//#include "GGeo.hh"
+#include "GGeoBase.hh"
 
 // opticksgeo-
 #include "OpticksHub.hh"
@@ -68,6 +69,7 @@ OScene::OScene(OpticksHub* hub)
       m_ok(hub->getOpticks()),
       m_cfg(m_ok->getCfg()),
       m_ggeo(NULL),  // defer to avoid order brittleness
+      m_geolib(NULL),
 
       m_ocontext(NULL),
       m_ocolors(NULL),
@@ -105,7 +107,9 @@ void OScene::init()
     m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_cfg->getDebugIdx());
 
-    m_ggeo = m_hub->getGGeo();
+    //m_ggeo = m_hub->getGGeo();
+    m_ggeo = m_hub->getGGeoBase();
+    m_geolib = m_ggeo->getGeoLib();
 
     if(m_ggeo == NULL)
     {
@@ -132,7 +136,7 @@ void OScene::init()
 
 
     LOG(debug) << "OScene::init (OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ggeo, builder, traverser);
+    m_ogeo = new OGeo(m_ocontext, m_ok, m_geolib, builder, traverser);
     LOG(debug) << "OScene::init (OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
     LOG(debug) << "OScene::init (OGeo) -> convert" ;

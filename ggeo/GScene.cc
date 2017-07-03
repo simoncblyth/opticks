@@ -34,9 +34,16 @@
 
 #include "PLOG.hh"
 
+GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
+
+GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); } 
+GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); } 
+GSourceLib*       GScene::getSourceLib() {       return m_ggeo->getSourceLib(); } 
+
 
 GScene::GScene( Opticks* ok, GGeo* ggeo )
     :
+    GGeoBase(),
     m_ok(ok),
     m_ggeo(ggeo),
     m_analytic(true),
@@ -87,10 +94,7 @@ void GScene::dumpNode( unsigned nidx)
 
 
 
-GGeoLib* GScene::getGeoLib() 
-{
-    return m_geolib ; 
-}
+
 GNodeLib* GScene::getNodeLib()
 {
     return m_nodelib ; 
@@ -357,7 +361,9 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
     nd* root_nd = scene->getRoot() ;
     assert(root_nd->idx == 0 );
 
-    GSolid* root = createVolumeTree_r( root_nd, NULL );
+    GSolid* parent = NULL ;
+    unsigned depth = 0 ; 
+    GSolid* root = createVolumeTree_r( root_nd, parent, depth );
     assert(root);
 
     assert( m_nodes.size() == scene->getNumNd()) ;
@@ -368,13 +374,16 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 }
 
 
-GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
+GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth )
 {
     guint4 id = getIdentity(n->idx);
     guint4 ni = getNodeInfo(n->idx);
 
     unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GSolid index
     unsigned pidx = parent ? parent->getIndex() : 0 ; // partial parent index
+
+    //bool selected = m_query->selected(name, index, depth, recursive_select); 
+ 
 
     if(m_verbosity > 4)
     std::cout
@@ -402,7 +411,7 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent)
     for(VN::const_iterator it=n->children.begin() ; it != n->children.end() ; it++)
     {
         nd* cn = *it ; 
-        GSolid* child = createVolumeTree_r(cn, node);
+        GSolid* child = createVolumeTree_r(cn, node, depth+1);
         node->addChild(child);
     } 
     return node  ; 

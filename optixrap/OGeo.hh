@@ -11,7 +11,10 @@ class RayTraceConfig ;
 class Opticks ; 
 
 class OContext ; 
-class GGeo ; 
+
+//class GGeo ; 
+//class GGeoBase ; 
+class GGeoLib ; 
 class GMergedMesh ; 
 class GBuffer ; 
 template <typename S> class NPY ;
@@ -53,7 +56,7 @@ public:
     static const char* BUILDER ; 
     static const char* TRAVERSER ; 
 
-    OGeo(OContext* ocontext, GGeo* gg, const char* builder=NULL, const char* traverser=NULL);
+    OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder=NULL, const char* traverser=NULL);
     void setTop(optix::Group top);
     void setVerbose(bool verbose=true);
     const char* description(const char* msg="OGeo::description");
@@ -94,8 +97,9 @@ private:
     OContext*            m_ocontext ; 
     optix::Context       m_context ; 
     optix::Group         m_top ; 
-    GGeo*                m_ggeo ; 
+    //GGeoBase*            m_ggeo ; 
     Opticks*             m_ok ; 
+    GGeoLib*             m_geolib ;  
     const char*          m_builder ; 
     const char*          m_traverser ; 
     const char*          m_description ; 

@@ -92,6 +92,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        const char* getDAEPath();
        const char* getGDMLPath();
+       const char* getGLTFPath();
        const char* getQueryString();
        const char* getCtrl();
     public:
@@ -133,6 +134,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_geokey ;
        const char* m_daepath ;
        const char* m_gdmlpath ;
+       const char* m_gltfpath ;
        const char* m_query_string ;
        const char* m_ctrl ;
        const char* m_metapath ;

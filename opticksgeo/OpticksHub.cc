@@ -64,9 +64,11 @@ OpticksHub::OpticksHub(Opticks* ok)
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(ok),
+   m_gltf(m_ok->getGLTF()),
    m_run(m_ok->getRun()),
    m_geometry(NULL),
    m_ggeo(NULL),
+   m_gscene(NULL),
    m_composition(new Composition),
 #ifdef WITH_NPYSERVER
    m_delegate(NULL),
@@ -323,6 +325,15 @@ GGeo* OpticksHub::getGGeo()
 {
     return m_ggeo ; 
 }
+
+GGeoBase* OpticksHub::getGGeoBase()
+{
+   // analytic switch 
+    return m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
+}
+
+
+
 
 GMaterialLib* OpticksHub::getMaterialLib()
 {

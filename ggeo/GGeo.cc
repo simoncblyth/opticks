@@ -481,6 +481,7 @@ GNodeLib* GGeo::getNodeLib()
 {
     return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
 }
+
 GScene* GGeo::getScene()
 {
     return m_gscene ; 
@@ -1586,11 +1587,15 @@ void GGeo::dumpTree(const char* msg)
 }
 
 
-glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index)
+
+
+
+
+glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index) // TODO: move into geolib
 {
     GMergedMesh* mm0 = getMergedMesh(0);
     guint4* nodeinfo = mm0->getNodeInfo(); 
-    unsigned int nso = mm0->getNumSolids();  
+    unsigned int nso = mm0->getNumSolids();   // poor name, means volumes
     assert(index < nso );
 
     glm::ivec4 offset ; 

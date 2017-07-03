@@ -27,6 +27,8 @@ struct guint4 ;
 
 template<class T> class NPY ;
 
+#include "GGeoBase.hh"
+
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
@@ -71,17 +73,28 @@ instanciation in GGeo::loadFromGLTF.
 
 */
 
-class GGEO_API GScene 
+
+
+class GGEO_API GScene : public GGeoBase
 {
     public:
         GScene(Opticks* ok, GGeo* ggeo);
-        GGeoLib*  getGeoLib();
+        //GGeoLib*  getGeoLib();
         GNodeLib* getNodeLib();
 
         GMergedMesh* getMergedMesh(unsigned ridx);
         GSolid* getSolid(unsigned nidx);
         void dumpNode(unsigned nidx);
         void debugNodeIntersects(int dbgnode, OpticksEvent* evt);
+
+    public:
+        // GGeoBase interface
+        //Opticks*          getOpticks() ; 
+
+        GGeoLib*          getGeoLib() ; 
+        GBndLib*          getBndLib() ; 
+        GScintillatorLib* getScintillatorLib() ; 
+        GSourceLib*       getSourceLib() ; 
     private:
         void init();
         void prepareVertexColors();
@@ -102,7 +115,7 @@ class GGEO_API GScene
         guint4 getIdentity(unsigned idx) const ;
     private:
         GSolid* createVolumeTree(NScene* scene);
-        GSolid* createVolumeTree_r(nd* n, GSolid* parent);
+        GSolid* createVolumeTree_r(nd* n, GSolid* parent, unsigned depth);
         GSolid* createVolume(nd* n);
         void transferIdentity( GSolid* node, const nd* n);
         void transferMetadata( GSolid* node, const NCSG* csg, const nd* n);
@@ -160,6 +173,9 @@ class GGEO_API GScene
         std::map<unsigned, unsigned> m_abs2rel_mesh ; 
 
 };
+
+
+
 
 #include "GGEO_TAIL.hh"
 

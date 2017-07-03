@@ -5,7 +5,9 @@ class Timer ;
 class Opticks ;
 class OpticksHub ;
 template <typename> class OpticksCfg ;
-class GGeo ; 
+//class GGeo ; 
+class GGeoBase ; 
+class GGeoLib ; 
 
 class OContext ; 
 class OColors ; 
@@ -45,7 +47,9 @@ class OXRAP_API OScene {
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ;   
-       GGeo*                m_ggeo ; 
+       //GGeo*                m_ggeo ; 
+       GGeoBase*            m_ggeo ; 
+       GGeoLib*            m_geolib ; 
 
        OContext*         m_ocontext ; 
        OColors*          m_ocolors ; 

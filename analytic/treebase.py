@@ -216,7 +216,7 @@ class Node(object):
         if selected:
             self.__class__.selected_count+= 1 
             self.selected = 1
-            log_info("selected index %5d depth %2d name %s mat %s so %s" % (self.index, depth, self.pv.name, self.lv.material.shortname, self.lv.solid.name)) 
+            #log_info("selected index %5d depth %2d name %s mat %s so %s" % (self.index, depth, self.pv.name, self.lv.material.shortname, self.lv.solid.name)) 
         else:
             self.selected = 0
         pass 

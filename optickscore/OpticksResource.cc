@@ -65,6 +65,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_geokey(NULL),
        m_daepath(NULL),
        m_gdmlpath(NULL),
+       m_gltfpath(NULL),
        m_query_string(NULL),
        m_ctrl(NULL),
        m_metapath(NULL),
@@ -159,6 +160,10 @@ const char* OpticksResource::getDAEPath()
 const char* OpticksResource::getGDMLPath()
 {
     return m_gdmlpath ;
+}
+const char* OpticksResource::getGLTFPath()
+{
+    return m_gltfpath ;
 }
 const char* OpticksResource::getMetaPath()
 {
@@ -507,6 +512,8 @@ void OpticksResource::readEnvironment()
          m_metapath = strdup(metapath.c_str());
          std::string gdmlpath = makeSidecarPath(m_daepath, ".dae", ".gdml");
          m_gdmlpath = strdup(gdmlpath.c_str());
+         std::string gltfpath = makeSidecarPath(m_daepath, ".dae", ".gltf");
+         m_gltfpath = strdup(gltfpath.c_str());
     }
 
 

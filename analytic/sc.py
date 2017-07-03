@@ -254,7 +254,7 @@ class Sc(object):
 
 
         if selected:
-            log.info("\n\nselected nd %s \n\n%s\n\n" % (nd,  str(nd.mesh.csg.txt) ))
+            #log.info("\n\nselected nd %s \n\n%s\n\n" % (nd,  str(nd.mesh.csg.txt) ))
             self.selected.append(nd)
         pass
 
@@ -440,6 +440,7 @@ def gdml2gltf_main( args ):
     tree = Tree(gdml.world)  
 
     tree.apply_selection(args.query)   # sets node.selected "volume mask" 
+
      
     sc = Sc(maxcsgheight=3)
 
@@ -463,10 +464,7 @@ def gdml2gltf_main( args ):
 
 
 
-
-if __name__ == '__main__':
-
-
+def test_range():
     #q = "index:3159,depth:1"
     q = "range:3158:3160" 
     if q is not None: 
@@ -483,6 +481,14 @@ if __name__ == '__main__':
     print to_pyline(nd.gtr_mdot_r, "gtr")
 
     print tx
+
+
+
+
+if __name__ == '__main__':
+    from opticks.ana.base import opticks_main
+    args = opticks_main()
+    sc = gdml2gltf_main( args )
 
 
 

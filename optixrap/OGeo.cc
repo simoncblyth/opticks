@@ -20,7 +20,9 @@
 #include "OContext.hh"
 #include "OConfig.hh"
 
-#include "GGeo.hh"
+//#include "GGeo.hh"
+//#include "GGeoBase.hh"
+#include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GParts.hh"
 
@@ -119,11 +121,11 @@ const char* OGeo::TRAVERSER = "Bvh" ;
 
 
 
-OGeo::OGeo(OContext* ocontext, GGeo* gg, const char* builder, const char* traverser)
+OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder, const char* traverser)
            : 
            m_ocontext(ocontext),
-           m_ggeo(gg),
-           m_ok(m_ggeo->getOpticks()),
+           m_ok(ok),
+           m_geolib(geolib),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
            m_description(NULL),
@@ -160,7 +162,7 @@ const char* OGeo::description(const char* msg)
 
 void OGeo::convert()
 {
-    unsigned int nmm = m_ggeo->getNumMergedMesh();
+    unsigned int nmm = m_geolib->getNumMergedMesh();
 
     if(m_verbosity > 0)
     LOG(info) << "OGeo::convert START  numMergedMesh: " << nmm ;
@@ -202,7 +204,7 @@ void OGeo::convertMergedMesh(unsigned i)
     if(m_verbosity > 2)
     LOG(info) << "OGeo::convertMesh START " << i ; 
 
-    GMergedMesh* mm = m_ggeo->getMergedMesh(i); 
+    GMergedMesh* mm = m_geolib->getMergedMesh(i); 
 
     if( mm == NULL || mm->isSkip() || mm->isEmpty() )
     {

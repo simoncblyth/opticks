@@ -12,7 +12,10 @@ class OpticksGeometry ;
 class OpticksAttrSeq ; 
 class OpticksEvent ; 
 
-class GGeo ; 
+class GGeoBase ; 
+class GScene ; 
+class GGeo ;
+ 
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
@@ -111,6 +114,7 @@ class OKGEO_API OpticksHub {
        Composition*         getComposition();
        OpticksGeometry*     getGeometry();
        GGeo*                getGGeo();
+       GGeoBase*            getGGeoBase();
        GMaterialLib*        getMaterialLib();
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();
@@ -141,10 +145,12 @@ class OKGEO_API OpticksHub {
    private:
        SLog*            m_log ; 
        Opticks*         m_ok ; 
+       int              m_gltf ;
        OpticksRun*      m_run ; 
        bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 
        GGeo*            m_ggeo ;  
+       GScene*          m_gscene ;  
        Composition*     m_composition ; 
 
    private:

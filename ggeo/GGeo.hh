@@ -64,17 +64,24 @@ class GMergedMesh ;
 class NScene ; 
 class GScene ; 
 
+#include "GGeoBase.hh"
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
-class GGEO_API GGeo : public NConfigurable {
+class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         static const char* CATHODE_MATERIAL ; 
     public:
         // see GGeoCfg.hh
         static const char* PICKFACE ;   
         static const char* PREFIX ;
+    public:
+        // GGeoBase interface
+        GScintillatorLib* getScintillatorLib() ; 
+        GSourceLib*       getSourceLib() ; 
+        GBndLib*          getBndLib() ; 
+        GGeoLib*          getGeoLib() ; 
     public:
         const char* getPrefix();
         void configure(const char* name, const char* value);
@@ -186,7 +193,6 @@ class GGEO_API GGeo : public NConfigurable {
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
 
-
     public:
         void add(GMaterial* material);
         void add(GSkinSurface*  surface);
@@ -235,14 +241,10 @@ class GGEO_API GGeo : public NConfigurable {
     public:
         GScene*            getScene();
         GNodeLib*          getNodeLib();
-        GGeoLib*           getGeoLib();  // merged meshes
         GGeoLib*           getTriGeoLib();
-        GBndLib*           getBndLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GSurLib*           getSurLib();
-        GScintillatorLib*  getScintillatorLib();
-        GSourceLib*        getSourceLib();
         GPmt*              getPmt(); 
         NLookup*           getLookup(); 
     public:
@@ -258,7 +260,6 @@ class GGEO_API GGeo : public NConfigurable {
         GMaterial* getMaterial(unsigned int index);  
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
-
     public:
         void findScintillatorMaterials(const char* props);
         void dumpScintillatorMaterials(const char* msg="GGeo::dumpScintillatorMaterials");
@@ -311,7 +312,6 @@ class GGEO_API GGeo : public NConfigurable {
 
     public:
         GTreeCheck* getTreeCheck();
-        //GTreePresent* getTreePresent();
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
@@ -324,7 +324,6 @@ class GGEO_API GGeo : public NConfigurable {
         int                           m_gltf ; 
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
-        //GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
 
 
