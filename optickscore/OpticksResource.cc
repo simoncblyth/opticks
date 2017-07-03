@@ -627,6 +627,31 @@ void OpticksResource::Summary(const char* msg)
 }
 
 
+std::string OpticksResource::desc() const 
+{
+    std::stringstream ss ; 
+
+    std::time_t* slwt = BFile::SinceLastWriteTime(m_idpath); 
+    long seconds = slwt ? *slwt : -1 ;
+
+    float minutes = float(seconds)/float(60) ; 
+    float hours = float(seconds)/float(60*60) ; 
+    float days = float(seconds)/float(60*60*24) ; 
+
+    ss << "OpticksResource::desc"
+       << " digest " << ( m_digest ? m_digest : "NULL" )
+       << " age.tot_seconds " << std::setw(6) << seconds
+       << std::fixed << std::setprecision(3)  
+       << " age.tot_minutes " << std::setw(6) << minutes
+       << " age.tot_hours " << std::setw(6) << hours
+       << " age.tot_days " << std::setw(10) << days
+       ;
+
+    return ss.str();
+}
+
+
+
 
 glm::vec4 OpticksResource::getMeshfixFacePairingCriteria()
 {

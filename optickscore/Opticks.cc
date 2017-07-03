@@ -316,7 +316,7 @@ void Opticks::init()
 
     setDetector( m_resource->getDetector() );
 
-    LOG(trace) << "Opticks::init DONE " ;
+    LOG(info) << "Opticks::init DONE " << m_resource->desc()  ;
 }
 
 

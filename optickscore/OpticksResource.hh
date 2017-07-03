@@ -88,6 +88,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        bool idNameContains(const char* s); 
        void Summary(const char* msg="OpticksResource::Summary");
        void Dump(const char* msg="OpticksResource::Dump");
+       std::string desc() const ; 
     public:
        const char* getDAEPath();
        const char* getGDMLPath();

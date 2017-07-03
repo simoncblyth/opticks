@@ -7,6 +7,7 @@
 #include "GItemList.hh"
 #include "GSolid.hh"
 #include "GNodeLib.hh"
+#include "GTreePresent.hh"
 
 
 const char* GNodeLib::GetRelDir(bool analytic)
@@ -28,15 +29,14 @@ void GNodeLib::loadFromCache()
     m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
 }
 
-
-
 GNodeLib::GNodeLib(Opticks* ok, bool analytic)  
     :
     m_ok(ok),
     m_analytic(analytic),
     m_reldir(GetRelDir(analytic)),
     m_pvlist(NULL),
-    m_lvlist(NULL)
+    m_lvlist(NULL),
+    m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max
 {
 }
 
@@ -49,8 +49,11 @@ void GNodeLib::save() const
               ;
     m_pvlist->save(idpath);
     m_lvlist->save(idpath);
-}
 
+    GNode* top = getNode(0); 
+    m_treepresent->traverse(top);
+    m_treepresent->write(idpath, m_reldir);
+}
 
 
 std::string GNodeLib::desc() const 
@@ -152,12 +155,12 @@ void GNodeLib::add(GSolid* solid)
 }
 
 
-GSolid* GNodeLib::getSolid(unsigned index) 
+GSolid* GNodeLib::getSolid(unsigned index) const 
 {
     GSolid* solid = NULL ; 
     if(m_solidmap.find(index) != m_solidmap.end()) 
     {
-        solid = m_solidmap[index] ;
+        solid = m_solidmap.at(index) ;
         assert(solid->getIndex() == index);
     }
     return solid ; 
@@ -169,7 +172,7 @@ GSolid* GNodeLib::getSolidSimple(unsigned int index)
 }
 
 
-GNode* GNodeLib::getNode(unsigned index)
+GNode* GNodeLib::getNode(unsigned index) const 
 {
     GSolid* solid = getSolid(index);
     GNode* node = static_cast<GNode*>(solid); 

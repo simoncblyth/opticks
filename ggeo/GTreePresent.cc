@@ -17,6 +17,9 @@
 
 // elimnate state that is only used once, instead pass in as arguments when needed
 
+
+const char* GTreePresent::NONAME = "noname" ; 
+
 GTreePresent::GTreePresent(unsigned int depth_max, unsigned int sibling_max) 
        :
        m_depth_max(depth_max),
@@ -42,7 +45,9 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
     unsigned int numChildren = node->getNumChildren() ;
     int nodeIndex   = node->getIndex() ; 
     unsigned int ridx = node->getRepeatIndex();   
-    //const char* name = node->getName() ; 
+    const char* name = node->getName() ; 
+
+    if(!name) name = NONAME ; 
 
     //GSolid* solid = dynamic_cast<GSolid*>(node) ;
     //bool selected = solid->isSelected();
@@ -56,7 +61,7 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
        << "] " << std::setw(4) << numChildren   
        << " (" << std::setw(2) << ridx 
        << ") " << indent 
-       << "  " << node->getName()
+       << "  " << name
        << "  " << node->getMesh()->getName()
        << "  " << ( elide ? "..." : " " ) 
        ;
@@ -94,11 +99,11 @@ void GTreePresent::dump(const char* msg)
     std::copy(m_flat.begin(), m_flat.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
 }
 
-void GTreePresent::write(const char* dir)
+void GTreePresent::write(const char* dir, const char* reldir)
 {
-    BFile::CreateDir(dir);
+    BFile::CreateDir(dir, reldir);
 
-    std::string txtpath = BFile::FormPath(dir, "GTreePresent.txt");
+    std::string txtpath = BFile::FormPath(dir, reldir, "GTreePresent.txt");
     const char* path = txtpath.c_str();
     LOG(info) << "GTreePresent::write " << path ;  
     { 

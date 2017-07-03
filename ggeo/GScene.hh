@@ -85,6 +85,7 @@ class GGEO_API GScene
     private:
         void init();
         void prepareVertexColors();
+        void save() const ; 
     private:
         void dumpTriInfo() const ; 
         void compareTrees() const ;

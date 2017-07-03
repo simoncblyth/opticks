@@ -10,6 +10,9 @@
 #include "GMergedMesh.hh"
 #include "GSolid.hh"
 #include "GItemIndex.hh"
+
+#include "GNodeLib.hh"
+#include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 #include "GColorizer.hh"
@@ -18,9 +21,11 @@
 // trace/debug/info/warning/error/fatal
 
 
-GColorizer::GColorizer(GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
+GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, OpticksColors* colors, GColorizer::Style_t style ) 
        :
        m_target(NULL),
+       m_nodelib(nodelib),
+       m_geolib(geolib),
        m_blib(blib),
        m_slib(blib->getSurfaceLib()),
        m_colors(colors),
@@ -42,6 +47,12 @@ void GColorizer::setRepeatIndex(unsigned int ridx)
     m_repeat_index = ridx ; 
 }
 
+void GColorizer::writeVertexColors()
+{
+    GMergedMesh* mesh0 = m_geolib->getMergedMesh(0);
+    GSolid* root = m_nodelib->getSolid(0);
+    writeVertexColors( mesh0, root );
+}
 
 void GColorizer::writeVertexColors(GMergedMesh* mesh0, GSolid* root)
 {

@@ -90,7 +90,6 @@ GGeo::GGeo(Opticks* opticks)
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
    m_treecheck(NULL), 
-   m_treepresent(NULL), 
    m_loaded(false), 
    m_lookup(NULL), 
    m_meshlib(NULL),
@@ -305,10 +304,6 @@ GTreeCheck* GGeo::getTreeCheck()
 {
     return m_treecheck ;
 }
-GTreePresent* GGeo::getTreePresent()
-{
-    return m_treepresent ;
-}
 
 
 
@@ -406,13 +401,15 @@ void GGeo::init()
  
    m_meshlib = new GMeshLib(m_ok, m_analytic);
    m_geolib = new GGeoLib(m_ok);
+   m_nodelib = new GNodeLib(m_ok, m_analytic ); 
 
-   m_treecheck = new GTreeCheck(this) ;
+   //m_treecheck = new GTreeCheck(this) ;
+   m_treecheck = new GTreeCheck(m_geolib, m_nodelib) ;
+
    if(resource->isJuno())
        m_treecheck->setVertexMin(250);
 
 
-   m_treepresent = new GTreePresent(100, 1000);   // depth_max,sibling_max
 
 
    m_bndlib = new GBndLib(m_ok);
@@ -425,18 +422,17 @@ void GGeo::init()
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
    OpticksColors* colors = getColors();
-   m_colorizer = new GColorizer( m_bndlib, colors, style ); // colorizer needs full tree, so pre-cache only 
+
+   m_colorizer = new GColorizer( m_nodelib, m_geolib, m_bndlib, colors, style ); // colorizer needs full tree, so pre-cache only 
 
 
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
 
 
-   //unsigned targetnode = 0 ; // <-- ASSUMING FULL GEOMETRY : TODO THIS SHOULD BE CARRIED IN METADATA SOMEWHERE ? 
-   //const char* reldir = NULL ;  // <-- default location for GItemList persisting 
-   //m_nodelib = new GNodeLib(m_ok, false, targetnode, reldir );  // not loaded 
 
-   m_nodelib = new GNodeLib(m_ok, m_analytic ); 
+
+
    LOG(trace) << "GGeo::init DONE" ; 
 }
 
@@ -471,19 +467,20 @@ GGeoLib* GGeo::getTriGeoLib()
 {
     return m_geolib ; 
 }
+
+
+
+// hmm dont like this gltf switching .. better to switch at higher level GGeo/GScene ?
+//  ie provide an common base interface and then pass either GGeo or GScene to the user
+
 GGeoLib* GGeo::getGeoLib()
 {
     return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
 }
-
-
-
-
 GNodeLib* GGeo::getNodeLib()
 {
     return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
 }
-
 GScene* GGeo::getScene()
 {
     return m_gscene ; 
@@ -519,14 +516,6 @@ GMergedMesh* GGeo::getMergedMesh(unsigned int index)
 
     return mm ; 
 }
-
-GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
-{
-    GGeoLib* geolib = getGeoLib() ;
-    assert(geolib);
-    return geolib->makeMergedMesh(index, base, root, verbosity);
-}
-
 
 
 const char* GGeo::getIdPath()
@@ -1280,28 +1269,38 @@ void GGeo::prepareMeshes()
     { 
         bool deltacheck = true ; 
         m_treecheck->createInstancedMergedMeshes(deltacheck, verbosity);   // GTreeCheck::createInstancedMergedMeshes
+
     }
     else
     {
         LOG(warning) << "GGeo::prepareMeshes instancing inhibited " ;
         GNode* root = getNode(0);
-        makeMergedMesh(0, NULL, root, verbosity);  // ridx:0 rbase:NULL 
+        m_geolib->makeMergedMesh(0, NULL, root, verbosity);  // ridx:0 rbase:NULL 
+        // ^^^^  precache never needs analytic geolib ?
     }
     LOG(trace) << "GGeo::prepareMeshes DONE" ;
 }
 
 
+
+
+
+GMergedMesh* GGeo::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
+{
+    GGeoLib* geolib = getGeoLib() ;
+    assert(geolib);
+    return geolib->makeMergedMesh(index, base, root, verbosity);
+}
+
+
+
+
+
 void GGeo::prepareVertexColors()
 {
     // GColorizer needs full tree,  so have to use pre-cache
-
     LOG(trace) << "GGeo::prepareVertexColors START" ;
-
-    GMergedMesh* mesh0 = getMergedMesh(0);
-    GSolid* root = getSolid(0);
-
-    m_colorizer->writeVertexColors( mesh0, root );
-
+    m_colorizer->writeVertexColors();
     LOG(trace) << "GGeo::prepareVertexColors DONE " ;
 }
 

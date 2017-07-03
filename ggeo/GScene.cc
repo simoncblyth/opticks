@@ -45,8 +45,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
+
     m_geolib(new GGeoLib(m_ok)),
-    //m_nodelib(new GNodeLib(m_ok, m_loaded, m_targetnode, "analytic/GScene/GNodeLib")),
     m_nodelib(new GNodeLib(m_ok, m_analytic)),
     m_meshlib(new GMeshLib(m_ok, m_analytic)),
 
@@ -59,7 +59,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_tri_meshlib(ggeo->getMeshLib()),
     m_tri_meshindex(m_tri_meshlib->getMeshIndex()),
 
-    m_colorizer(new GColorizer(m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
+    m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
 
     m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
     m_root(NULL),
@@ -150,7 +150,7 @@ void GScene::init()
     // check consistency of the level transforms
     deltacheck_r(m_root, 0);
 
-    m_nodelib->save();
+    //m_nodelib->save();
 
     compareTrees();
 
@@ -163,26 +163,28 @@ void GScene::init()
 
     prepareVertexColors();
 
+
+    save(); 
+
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
 
     if(m_verbosity > 0)
     LOG(info) << "GScene::init DONE"
-
                 ;
 
 }
 
+void GScene::save() const 
+{
+    m_nodelib->save();
+    m_meshlib->save();
+}
 
 
 void GScene::prepareVertexColors()
 {
     LOG(info) << "GScene::prepareVertexColors START" ;
-
-    GMergedMesh* mesh0 = getMergedMesh(0);
-    GSolid* root = getSolid(0);
-
-    m_colorizer->writeVertexColors( mesh0, root );
-
+    m_colorizer->writeVertexColors();
     LOG(info) << "GScene::prepareVertexColors DONE " ;
 }
 

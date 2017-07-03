@@ -4,8 +4,9 @@
 #include <string>
 #include <vector>
 
-class GGeo ; 
-class GGeoLib ; 
+//class GGeo ; 
+class GGeoLib ;    // merged meshes 
+class GNodeLib ;   // GSolid nodes
 class GNode ; 
 class GSolid ; 
 class GBuffer ;
@@ -36,7 +37,7 @@ is used only precache.
 
 class GGEO_API GTreeCheck {
    public:
-        GTreeCheck(GGeo* ggeo);
+        GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib) ;
         void setRepeatMin(unsigned repeat_min);
         void setVertexMin(unsigned vertex_min);
    public:
@@ -83,10 +84,9 @@ class GGEO_API GTreeCheck {
         NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
         NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
    private:
-        void treePresent();
-   private:
-       GGeo*                     m_ggeo ; 
        GGeoLib*                  m_geolib ; 
+       GNodeLib*                 m_nodelib ; 
+
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 
        GSolid*                   m_root ; 

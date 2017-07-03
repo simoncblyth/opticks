@@ -51,7 +51,7 @@ class GPmt ;
 class GSurLib ; 
 
 class GTreeCheck ;
-class GTreePresent ;
+//class GTreePresent ;
 class GColorizer ; 
 class GGeoTest ;
 
@@ -311,7 +311,7 @@ class GGEO_API GGeo : public NConfigurable {
 
     public:
         GTreeCheck* getTreeCheck();
-        GTreePresent* getTreePresent();
+        //GTreePresent* getTreePresent();
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
@@ -324,7 +324,7 @@ class GGEO_API GGeo : public NConfigurable {
         int                           m_gltf ; 
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
-        GTreePresent*                 m_treepresent ; 
+        //GTreePresent*                 m_treepresent ; 
         bool                          m_loaded ;  
 
 

@@ -245,7 +245,8 @@ void test_LastWriteTime()
 void test_SinceLastWriteTime()
 {
     LOG(info) << "test_SinceLastWriteTime" ; 
-    const char* path = "$TMP/a/b/c" ;
+    //const char* path = "$TMP/a/b/c" ;
+    const char* path = "$TMP/a/b" ;
     std::time_t* age = BFile::SinceLastWriteTime(path) ;
     if(age)
     {

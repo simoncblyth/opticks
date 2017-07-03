@@ -96,17 +96,56 @@ tgltf-target(){ echo 3153 ; }
 
 
 
+#   dont set OPTICKS_QUERY geo selection here 
+#   do it with op-vi under an op argument  such as --dsst 
+#  
+#tgltf-tt-env(){
+#  #export OPTICKS_QUERY="range:3158:3160"
+#  export OPTICKS_QUERY="range:3159:3160"
+#}
+#tgltf-t-env()
+#{
+#    op-  # needs OPTICKS_QUERY envvar 
+#    #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
+#    #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
+#    export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
+#    #export OPTICKS_QUERY="range:4448:4449"
+#}
+#
+
+# 
+
+
+tgltf-t-notes(){ cat << EON
+
+
+Attempting to change geoselection via envvars in python
+or at this level in bash is too fragile ... instead 
+make OPTICKS_QUERY settings with op-vi under
+an op options such as --dsst, in this way the 
+same geoselection applies to both branches and 
+to python scripts : so long as they are 
+orchestrated by op.sh.
+
+
+When debugging geometry and changing geoselection, remember that need
+to regenerate geocache after geoselection or precache code changes... 
+
+::
+
+   tgltf-;tgltf-t --dsst -G 
+
+
+
+
+EON
+}
+
 
 
 tgltf-t() { TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; } 
 tgltf-t-()
 {
-    op-  # needs OPTICKS_QUERY envvar 
-    #export OPTICKS_QUERY="index:3159,depth:1"   # just the GdLS 
-    #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
-    export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
-    #export OPTICKS_QUERY="range:4448:4449"
-
     local gltfpath=$TMP/$FUNCNAME/sc.gltf
     if [ ! -f "$gltfpath" ]; then 
         gdml2gltf.py --gltfpath $gltfpath
@@ -114,18 +153,15 @@ tgltf-t-()
     echo $gltfpath
 }
 
-tgltf-tt-env(){
-  #export OPTICKS_QUERY="range:3158:3160"
-  export OPTICKS_QUERY="range:3159:3160"
-}
 
-
-tgltf-tt(){  tgltf-tt-env ; TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
-tgltf-tt-(){ tgltf-tt-env ; $FUNCNAME- | python $* ; }
+tgltf-tt(){  TGLTFPATH=$($FUNCNAME- 2>/dev/null) tgltf-- $* ; }
+tgltf-tt-(){ $FUNCNAME- | python $* ; }
 tgltf-tt--(){ cat << EOP
 
-
-# need same env in python and C++, so setting OPTICKS_QUERY here not a good place
+# need same env in python and C++, 
+# and also in analytic/non-analytic branches 
+# so set OPTICKS_QUERY with op-vi underneath an op argument like --dsst
+#
 
 import os, logging, sys, numpy as np
 

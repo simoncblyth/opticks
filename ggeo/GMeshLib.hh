@@ -26,6 +26,7 @@ GMeshLib
 class GGEO_API GMeshLib 
 {
         friend class GGeo ; 
+        friend class GScene ; 
     public:
         static const unsigned MAX_MESH  ; 
 

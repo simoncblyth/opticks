@@ -10,6 +10,8 @@ class GSolid ;
 class GNode ; 
 class GItemList ; 
 
+class GTreePresent ; 
+
 
 #include "GGEO_API_EXPORT.hh"
 
@@ -18,10 +20,6 @@ class GItemList ;
 GNodeLib
 ===========
 
-For partial geometries targetnode identifies
-the full geometry node traversal index of the root node.
-By definition this is zero for full geometry, it is obtained from 
-top level assert metadata of the GLTF.
 
 */
 
@@ -47,8 +45,8 @@ class GGEO_API GNodeLib
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
         void add(GSolid*    solid);
-        GNode* getNode(unsigned index); 
-        GSolid* getSolid(unsigned int index);  
+        GNode* getNode(unsigned index) const ; 
+        GSolid* getSolid(unsigned int index) const ;  
         GSolid* getSolidSimple(unsigned int index);  
         unsigned getNumSolids() const ;
     public:
@@ -57,11 +55,11 @@ class GGEO_API GNodeLib
     private:
         Opticks*                           m_ok ;  
         bool                               m_analytic ; 
-        //unsigned                           m_targetnode ; 
         const char*                        m_reldir ; 
 
         GItemList*                         m_pvlist ; 
         GItemList*                         m_lvlist ; 
+        GTreePresent*                      m_treepresent ; 
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         std::vector<GSolid*>               m_solids ; 

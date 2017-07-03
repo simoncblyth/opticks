@@ -9,8 +9,12 @@
 
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
-#include "GGeo.hh"
+
+//#include "GGeo.hh"
+
 #include "GGeoLib.hh"
+#include "GNodeLib.hh"
+
 #include "GSolid.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
@@ -24,10 +28,10 @@
 // the below criteria are finding fewer repeats, for DYB only the hemi pmt
 // TODO: retune
 
-GTreeCheck::GTreeCheck(GGeo* ggeo) 
+GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib) 
        :
-       m_ggeo(ggeo),
-       m_geolib(ggeo->getGeoLib()),
+       m_geolib(geolib),
+       m_nodelib(nodelib),
        m_repeat_min(120),
        m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
@@ -73,8 +77,6 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
     makeMergedMeshAndInstancedBuffers(verbosity);
     t("makeMergedMeshAndInstancedBuffers"); 
 
-    treePresent();
-    t("treePresent"); 
 
     t.stop();
     t.dump();
@@ -86,7 +88,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 
 void GTreeCheck::traverse()
 {
-    m_root = m_ggeo->getSolid(0);
+    m_root = m_nodelib->getSolid(0);
     assert(m_root);
 
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
@@ -115,7 +117,7 @@ void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
 void GTreeCheck::deltacheck()
 {
     // check consistency of the level transforms
-    m_root = m_ggeo->getSolid(0);
+    m_root = m_nodelib->getSolid(0);
     assert(m_root);
 
     deltacheck_r(m_root, 0);
@@ -371,21 +373,16 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 
 
 
-
-
-
-
-
-
-
 void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
-    GNode* root = m_ggeo->getNode(0);
+    GNode* root = m_nodelib->getNode(0);
     assert(root); 
     GNode* base = NULL ; 
 
 
-    GMergedMesh* mm0 = m_ggeo->makeMergedMesh(0, base, root, verbosity );
+    GMergedMesh* mm0 = m_geolib->makeMergedMesh(0, base, root, verbosity );
+
+
     makeInstancedBuffers(mm0, 0);  // ? instanced global too, for common structure
 
 
@@ -393,7 +390,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
     {
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
-         GMergedMesh* mm = m_ggeo->makeMergedMesh(ridx, rbase, root, verbosity ); 
+         GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity ); 
 
          makeInstancedBuffers(mm, ridx);
      
@@ -617,16 +614,5 @@ have non-zero index::
             [ 3208,    44,     1,     0],
             [ 3209,    45,     1,     0]],
 */
-
-void GTreeCheck::treePresent()
-{
-    GTreePresent* tp = m_ggeo->getTreePresent();
-    GNode* top = static_cast<GNode*>(m_ggeo->getSolid(0)) ; 
-    tp->traverse(top);
-    //tp->dump("GTreeCheck::createInstancedMergedMeshes GTreePresent");
-    tp->write(m_ggeo->getIdPath());
-} 
-
-
 
 

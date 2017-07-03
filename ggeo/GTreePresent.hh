@@ -20,13 +20,13 @@ Removed GGeo dependency, now pass in top node at use::
 class GGEO_API GTreePresent {
 
    // cf env/geant4/geometry/collada/g4daenode.py DAESubTree
-
+        static const char* NONAME ; 
    public:
         GTreePresent(unsigned int depth_max, unsigned int sibling_max );
    public:
         void traverse(GNode* top);
         void dump(const char* msg="GTreePresent::dump");
-        void write(const char* path);
+        void write(const char* path, const char* reldir);
    private:
         void traverse( GNode* node, unsigned int depth, unsigned int numSibling, unsigned int siblingIndex, bool elide);
    private:
