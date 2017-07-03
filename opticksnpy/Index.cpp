@@ -18,10 +18,11 @@
 #include "PLOG.hh"
 
 
-Index::Index(const char* itemtype, const char* title, bool onebased)
+Index::Index(const char* itemtype, const char* reldir, const char* title, bool onebased)
    : 
    NSequence(),
    m_itemtype(strdup(itemtype)),
+   m_reldir(reldir ? strdup(reldir) : NULL),
    m_title(title ? strdup(title) : strdup(itemtype)),
    m_ext(".json"),
    m_selected(0),
@@ -33,6 +34,12 @@ const char* Index::getItemType()
 {
     return m_itemtype ; 
 }
+const char* Index::getRelDir()
+{
+    return m_reldir ; 
+}
+
+
 const char* Index::getTitle()
 {
     return m_title ; 
@@ -296,8 +303,6 @@ void Index::dump(const char* msg)
     test(msg, true);
 }
 
-
-
 void Index::crossreference()
 {
    typedef std::vector<std::string> VS ; 
@@ -312,6 +317,7 @@ void Index::crossreference()
    }
 }
 
+/*
 std::string Index::directory(const char* pfold, const char* rfold)
 {
     std::stringstream ss ; 
@@ -325,21 +331,25 @@ void Index::save(const char* pfold, const char* rfold)
    std::string dir = directory(pfold, rfold);
    save(dir.c_str());
 }
+*/
 
 void Index::save(const char* idpath)
 {
+    std::string dir = BFile::FormPath(idpath, m_reldir) ; 
     std::string sname = getPrefixedString("Source") ;
     std::string lname = getPrefixedString("Local") ;
 
-    LOG(trace) << "Index::save"
+    LOG(info) << "Index::save"
               << " sname " << sname 
               << " lname " << lname 
               << " itemtype " << m_itemtype
               << " ext " << m_ext 
+              << " idpath " << idpath 
+              << " dir " << dir 
               ;
 
-    BMap<std::string, unsigned int>::save( &m_source, idpath, sname.c_str() );  
-    BMap<std::string, unsigned int>::save( &m_local , idpath, lname.c_str() );  
+    BMap<std::string, unsigned int>::save( &m_source, dir.c_str(), sname.c_str() );  
+    BMap<std::string, unsigned int>::save( &m_local , dir.c_str(), lname.c_str() );  
 
     LOG(trace) << "Index::save DONE" ;
 
@@ -349,43 +359,58 @@ std::string Index::getPrefixedString(const char* tail)
     std::string prefix(m_itemtype); 
     return prefix + tail + m_ext ; 
 }
-
 std::string Index::getPath(const char* idpath, const char* prefix)
 {
-     bool create_idpath_dir = true ; 
-     std::string path = BFile::preparePath(idpath, getPrefixedString(prefix).c_str(), create_idpath_dir);
-     return path;
+    std::string dir = BFile::FormPath(idpath, m_reldir) ; 
+    bool create_idpath_dir = true ; 
+    std::string path = BFile::preparePath(dir.c_str(), getPrefixedString(prefix).c_str(), create_idpath_dir);
+    return path;
 }
-
-
-
 bool Index::exists(const char* idpath)
 {
     if(!idpath) return false ;
-    bool sx = BFile::ExistsFile(idpath, getPrefixedString("Source").c_str());
-    bool lx = BFile::ExistsFile(idpath, getPrefixedString("Local").c_str());
+    std::string dir = BFile::FormPath(idpath, m_reldir) ; 
+    bool sx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Source").c_str());
+    bool lx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Local").c_str());
     return sx && lx ; 
 }
 
 void Index::loadMaps(const char* idpath)
 {
-    BMap<std::string, unsigned int>::load( &m_source, idpath, getPrefixedString("Source").c_str() );  
-    BMap<std::string, unsigned int>::load( &m_local , idpath, getPrefixedString("Local").c_str() );  
+    std::string dir = BFile::FormPath(idpath, m_reldir) ; 
+    BMap<std::string, unsigned int>::load( &m_source, dir.c_str(), getPrefixedString("Source").c_str() );  
+    BMap<std::string, unsigned int>::load( &m_local , dir.c_str(), getPrefixedString("Local").c_str() );  
 
     sortNames();
     crossreference();
 }
 
+/*
 Index* Index::load(const char* pfold, const char* rfold, const char* itemtype)
 {
    std::string dir = directory(pfold, rfold);
    return load(dir.c_str(), itemtype );
 }
+*/
 
-Index* Index::load(const char* idpath, const char* itemtype)
+
+void Index::dumpPaths(const char* idpath, const char* msg)
 {
+    std::string dir = BFile::FormPath(idpath, m_reldir) ; 
+    bool sx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Source").c_str());
+    bool lx = BFile::ExistsFile(dir.c_str(), getPrefixedString("Local").c_str());
 
-    Index* idx = new Index(itemtype);
+    LOG(info) << msg ;
+    LOG(info) 
+              << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source")
+              << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local")
+              ;
+}
+
+
+Index* Index::load(const char* idpath, const char* itemtype, const char* reldir)
+{
+    Index* idx = new Index(itemtype, reldir);
     if(idx->exists(idpath))
     {
        idx->loadMaps(idpath);
@@ -402,19 +427,5 @@ Index* Index::load(const char* idpath, const char* itemtype)
     }
     return idx ; 
 }
-
-void Index::dumpPaths(const char* idpath, const char* msg)
-{
-
-    bool sx = BFile::ExistsFile(idpath, getPrefixedString("Source").c_str());
-    bool lx = BFile::ExistsFile(idpath, getPrefixedString("Local").c_str());
-
-    LOG(info) << msg ;
-    LOG(info) 
-              << " Source:" << ( sx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Source")
-              << "  Local:" << ( lx ? "EXISTS " : "MISSING" ) << getPath(idpath, "Local")
-              ;
-}
-
 
 

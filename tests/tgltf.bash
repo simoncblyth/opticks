@@ -46,8 +46,6 @@ tgltf-pretty(){
 }
 
 
-
-
 tgltf--()
 {
     local msg="=== $FUNCNAME :"
@@ -108,8 +106,11 @@ tgltf-t-()
     #export OPTICKS_QUERY="range:3158:3160"   # 3158+3159
     export OPTICKS_QUERY="range:3155:3156,range:4448:4449"
     #export OPTICKS_QUERY="range:4448:4449"
+
     local gltfpath=$TMP/$FUNCNAME/sc.gltf
-    gdml2gltf.py --gltfpath $gltfpath
+    if [ ! -f "$gltfpath" ]; then 
+        gdml2gltf.py --gltfpath $gltfpath
+    fi 
     echo $gltfpath
 }
 

@@ -2060,10 +2060,11 @@ void OpticksEvent::loadIndex()
 {
     std::string tagdir_ = getTagDir();
     const char* tagdir = tagdir_.c_str();
+    const char* reldir = NULL ; 
 
-    m_seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_ );
-    m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_ );  
-    m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_ );
+    m_seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_, reldir );
+    m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_, reldir );  
+    m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_, reldir );
 
     LOG(info) << "OpticksEvent::loadIndex"
               << " tagdir " << tagdir 
@@ -2078,7 +2079,8 @@ void OpticksEvent::loadIndex()
 Index* OpticksEvent::loadNamedIndex( const char* typ, const char* tag, const char* udet, const char* name)
 {
     std::string tagdir = TagDir(udet, typ, tag);
-    Index* index = Index::load(tagdir.c_str(), name );
+    const char* reldir = NULL ; 
+    Index* index = Index::load(tagdir.c_str(), name, reldir);
 
     if(!index)
     {

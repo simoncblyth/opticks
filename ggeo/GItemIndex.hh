@@ -50,7 +50,7 @@ class GColorMap ;
 class GGEO_API GItemIndex {
    public:
         GItemIndex(Index* index);
-        GItemIndex(const char* itemtype);
+        GItemIndex(const char* itemtype, const char* reldir);
         void setTitle(const char* title);
    public:
         ///////// AIMING TO KILL ///////////////////////////////////////////////////////////
@@ -105,9 +105,9 @@ class GGEO_API GItemIndex {
    public:
         void loadIndex(const char* idpath, const char* override=NULL);
    private:
-        void init(const char* itemtype);
+        void init(const char* itemtype, const char* reldir);
    public:
-        static GItemIndex* load(const char* idpath, const char* itemtype);
+        static GItemIndex* load(const char* idpath, const char* itemtype, const char* reldir);
         void save(const char* idpath);
         void dump(const char* msg="GItemIndex::dump");
         void test(const char* msg="GItemIndex::test", bool verbose=true);

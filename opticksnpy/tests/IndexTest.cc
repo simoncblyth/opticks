@@ -10,8 +10,8 @@ int main(int argc , char** argv )
 {
    PLOG_(argc, argv);
 
-
-   Index idx("IndexTest");
+   const char* reldir = NULL ; 
+   Index idx("IndexTest", reldir);
    idx.add("red",1);
    idx.add("green",2);
    idx.add("blue",3);

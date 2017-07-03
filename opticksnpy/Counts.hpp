@@ -23,7 +23,7 @@ class NPY_API Counts {
           void save(const char* path);
           void save(const char* dir, const char* name);
     public:
-          Index* make_index(const char* itemtype);
+          Index* make_index(const char* itemtype, const char* reldir);
     public:
           Counts(const char* name="Counts");
     public:

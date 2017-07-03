@@ -40,7 +40,8 @@ int main()
     t.add("blue", 3); 
     t.dump();
 
-    Index* idx = t.make_index("testindex");
+    const char* reldir = NULL ; 
+    Index* idx = t.make_index("testindex", reldir);
     idx->dump();
  
 

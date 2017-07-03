@@ -34,6 +34,7 @@ class OKCORE_API Sparse {
        std::string dump_(const char* msg, bool slowcheck=false) const;    
    private:
        const char*      m_label ; 
+       const char*      m_reldir ; 
        NPY<T>*          m_source ; 
        bool             m_hexkey ; 
        unsigned int     m_num_unique ;

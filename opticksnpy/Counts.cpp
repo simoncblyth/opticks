@@ -183,9 +183,9 @@ Counts<T>* Counts<T>::load(const char* path)
 }
 
 template<typename T>
-Index* Counts<T>::make_index(const char* itemtype)
+Index* Counts<T>::make_index(const char* itemtype, const char* reldir)
 {
-    Index* index = new Index(itemtype);
+    Index* index = new Index(itemtype, reldir);
     for(VSTI it=m_counts.begin() ; it != m_counts.end() ; it++) index->add(it->first.c_str(), it->second);
     return index ; 
 }

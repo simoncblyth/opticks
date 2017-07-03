@@ -1577,7 +1577,7 @@ void GMesh::saveNPYBuffer(const char* path, const char* name)
     }
     else
     {
-        LOG(warning) << "GMesh::saveNPYBuffer"
+        LOG(debug) << "GMesh::saveNPYBuffer"
                      << " NULL buffer not saving "
                      << " path " << path
                      << " name " << name 

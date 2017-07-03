@@ -118,7 +118,7 @@ void Types::readMaterialsOld(const char* idpath, const char* name)
     makeMaterialAbbrev();
 }
 
-void Types::readMaterials(const char* /*idpath*/, const char* name)
+void Types::readMaterials(const char* /*idpath*/, const char* name, const char* reldir)
 {
     assert(strcmp(name, "GMaterialLib")==0);
 
@@ -126,7 +126,7 @@ void Types::readMaterials(const char* /*idpath*/, const char* name)
 
     //Index* index = Index::load( idpath, name );
 
-    Index* index = new Index(name);
+    Index* index = new Index(name, reldir);
 
     // hmm kludging up an index adds complication ? 
     // when not really needed for material names
@@ -497,7 +497,8 @@ void Types::readFlags(const char* path)
               << " pair count " << ups.size() ; 
 
 
-    m_flags = new Index("GFlagIndex");
+    const char* reldir = NULL ; 
+    m_flags = new Index("GFlagIndex", reldir);
     for(unsigned int i=0 ; i < ups.size() ; i++)
     {
         BRegex::upair_t p = ups[i];

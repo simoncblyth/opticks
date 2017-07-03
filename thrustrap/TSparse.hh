@@ -37,6 +37,7 @@ class THRAP_API TSparse {
    private:
       // input buffer slice specification
       const char* m_label ; 
+      const char* m_reldir ; 
       CBufSlice   m_source ; 
    private:
       unsigned int                 m_num_unique ; 

@@ -21,6 +21,38 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+TODO : tone down loading verbosity
+------------------------------------
+
+Currently dumping many thousands of lines...
+
+::
+
+    delta:opticks blyth$ op --dsst -G
+    288 -rwxr-xr-x  1 blyth  staff  143804 Jul  3 11:51 /usr/local/opticks/lib/OKTest
+    proceeding : /usr/local/opticks/lib/OKTest --dsst -G
+    2017-07-03 11:53:06.260 INFO  [2788361] [AssimpGGeo::load@131] AssimpGGeo::load  path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae query range:4448:4456 ctrl volnames verbosity 0
+    2017-07-03 11:53:06.260 INFO  [2788361] [AssimpImporter::import@195] AssimpImporter::import path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae flags 32779
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [REFLECTIVITY0xccef2e8] [REFLECTIVITY] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [RINDEX0xc0d2610] [RINDEX] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [3] [g4dae_opticalsurface_finish] 
+    ColladaLoader::BuildMaterialsExtras AddProperty [3] [g4dae_opticalsurface_finish] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [1] [g4dae_opticalsurface_model] 
+    ColladaLoader::BuildMaterialsExtras AddProperty [1] [g4dae_opticalsurface_model] 
+    ...
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [ABSLENGTH0xc358ff8] [ABSLENGTH] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [ABSLENGTH0xc34ea38] [ABSLENGTH] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [ABSLENGTH0xc0ff7e8] [ABSLENGTH] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [RINDEX0xbf9fc40] [RINDEX] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [ABSLENGTH0xc1782e8] [ABSLENGTH] 
+    ColladaLoader::BuildMaterialsExtras (all) AddProperty [RINDEX0xc356448] [RINDEX] 
+    2017-07-03 11:53:06.906 INFO  [2788361] [AssimpImporter::Summary@112] AssimpImporter::import DONE
+    2017-07-03 11:53:06.906 INFO  [2788361] [AssimpImporter::Summary@113] AssimpImporter::info m_aiscene  NumMaterials 78 NumMeshes 249
+
+
+
+
+
 Assimp on Windows
 -------------------
 

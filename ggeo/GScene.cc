@@ -280,7 +280,9 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
 
         GMesh* mesh = GMesh::make_mesh(tris->getTris(), mesh_idx );
         assert(mesh);
+
         mesh->setCSG(csg);
+        mesh->setName(strdup(soname.c_str()));
 
         //m_meshes[mesh_idx] = mesh ;
         m_meshlib->add(mesh);

@@ -29,6 +29,7 @@ class GGEO_API GMeshLib
     public:
         static const unsigned MAX_MESH  ; 
 
+        static const char*    GITEMINDEX ; 
         static const char*    GMESHLIB_INDEX ; 
         static const char*    GMESHLIB_INDEX_ANALYTIC ; 
         static const char*    GetRelDirIndex(bool analytic);

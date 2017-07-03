@@ -404,7 +404,9 @@ Index* SequenceNPY::makeSequenceCountsIndex(
               << " idxname " << idxname 
               << " maxidx " << maxidx 
               ;
-    Index* idx = new Index(idxname.c_str());
+
+    const char* reldir = NULL ; 
+    Index* idx = new Index(idxname.c_str(), reldir);
 
 
     // populate idx with the sequences having greater than cutoff ocurrences

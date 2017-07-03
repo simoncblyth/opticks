@@ -387,12 +387,11 @@ void BFile::RemoveDir(const char* path, const char* sub, const char* name)
     }
     else
     {
-         std::cout << "BFile::RemoveDir"
+         LOG(debug) << "BFile::RemoveDir"
                    << " deleting path " << p 
-                   << std::endl 
                   ; 
         unsigned long long nrm = fs::remove_all(dir);
-        std::cout << "BFile::RemoveDir removed " << nrm << std::endl ; 
+        LOG(debug) << "BFile::RemoveDir removed " << nrm ; 
     }
 }
 
@@ -402,11 +401,10 @@ std::string BFile::CreateDir(const char* base, const char* asub, const char* bsu
 {
 
 #ifdef DEBUG    
-    std::cerr << "BFile::CreateDir"
+    LOG(debug) << "BFile::CreateDir"
               << " base " << ( base ? base : "NULL" ) 
               << " asub " << ( asub ? asub : "NULL" ) 
               << " bsub " << ( bsub ? bsub : "NULL" ) 
-              << std::endl ;
               ;
 #endif
 
@@ -418,18 +416,16 @@ std::string BFile::CreateDir(const char* base, const char* asub, const char* bsu
     bool exists = fs::exists(dir) ;
 
 #ifdef DEBUG    
-    std::cerr << "BFile::CreateDir"
+    LOG(debug) << "BFile::CreateDir"
               << " ppath" << ppath
               << " exists " << exists 
-              << std::endl ;
               ;
 #endif
 
     if(!exists && fs::create_directories(dir))
     {    
-       std::cerr << "BFile::CreateDir"
+       LOG(debug) << "BFile::CreateDir"
                  << " created " << ppath
-                 << std::endl ;
                  ;
     }    
 

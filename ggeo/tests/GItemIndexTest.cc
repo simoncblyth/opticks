@@ -49,10 +49,12 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] << " tagdir " << tagdir ;  
 
 
+    const char* reldir = NULL ; 
+
 
     if(1)
     {
-        Index* seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_ );
+        Index* seqhis = Index::load(tagdir, OpticksConst::SEQHIS_NAME_, reldir);
         if(!seqhis)
         {
             LOG(error) << " NULL seqhis " ; 
@@ -83,7 +85,7 @@ int main(int argc, char** argv)
     }
     if(0)
     {
-        Index* seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_ );
+        Index* seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_, reldir );
         GItemIndex* m_seqmat = new GItemIndex(seqmat);
         m_seqmat->setTypes(&types);
         m_seqmat->setLabeller(GItemIndex::MATERIALSEQ);
@@ -92,7 +94,7 @@ int main(int argc, char** argv)
     }
     if(0)
     {
-        Index* bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_ );
+        Index* bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_, reldir );
         GItemIndex* m_bndidx = new GItemIndex(bndidx);
         dump(m_bndidx,"m_bndidx");
     }

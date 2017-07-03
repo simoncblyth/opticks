@@ -35,6 +35,7 @@ __constant__ unsigned long long dev_tsparse_lookup[TSPARSE_LOOKUP_N];
 template <typename T>
 TSparse<T>::TSparse(const char* label, CBufSlice source, bool hexkey ) :
         m_label(strdup(label)),
+        m_reldir(NULL),
         m_source(source),
         m_num_unique(0u),
         m_index_h(NULL),
@@ -53,7 +54,7 @@ Index* TSparse<T>::getIndex()
 template <typename T>
 void TSparse<T>::init()
 {
-    m_index_h = new Index(m_label);
+    m_index_h = new Index(m_label, m_reldir);
 }
 
 

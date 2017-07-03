@@ -16,14 +16,14 @@ class NPY_API Index : public NSequence {
    public:
         typedef std::vector<std::string> VS ;
    public:
-        Index(const char* itemtype, const char* title=NULL, bool onebased=true);
+        Index(const char* itemtype, const char* reldir, const char* title=NULL, bool onebased=true);
    public:
-        static Index* load(const char* pfold, const char* rfold, const char* itemtype);
-        static Index* load(const char* idpath, const char* itemtype);
-        static std::string directory(const char* pfold, const char* rfold);
+        //static Index* load(const char* pfold, const char* rfold, const char* itemtype);
+        static Index* load(const char* idpath, const char* itemtype, const char* reldir);
+        //static std::string directory(const char* pfold, const char* rfold);
+        //void save(const char* pfold, const char* rfold);
         bool exists(const char* idpath);
         void save(const char* idpath);
-        void save(const char* pfold, const char* rfold);
         std::string description();
    public:
        // debugging only
@@ -31,6 +31,7 @@ class NPY_API Index : public NSequence {
         void dumpPaths(const char* idpath, const char* msg="Index::dumpPaths");
    public:
         const char* getItemType();
+        const char* getRelDir();
         const char* getTitle();
         bool isOneBased();     
    public:
@@ -78,6 +79,7 @@ class NPY_API Index : public NSequence {
 
    private:
         const char*                          m_itemtype ; 
+        const char*                          m_reldir ; 
         const char*                          m_title ; 
         const char*                          m_ext ; 
         int                                  m_selected ; 

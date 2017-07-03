@@ -281,7 +281,8 @@ Index* OpticksFlags::parseFlags(const char* path)
     upairs_t ups ;
     BRegex::enum_regexsearch( ups, path ); 
 
-    Index* index = new Index("GFlags");
+    const char* reldir = NULL ; 
+    Index* index = new Index("GFlags", reldir);
     for(unsigned int i=0 ; i < ups.size() ; i++)
     {
         upair_t p = ups[i];

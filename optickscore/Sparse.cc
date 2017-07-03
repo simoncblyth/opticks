@@ -18,6 +18,7 @@ template <typename T>
 Sparse<T>::Sparse(const char* label, NPY<T>* source, bool hexkey) 
    :
    m_label(strdup(label)),
+   m_reldir(NULL),
    m_source(source),
    m_hexkey(hexkey),
    m_num_unique(0),
@@ -40,7 +41,7 @@ Index* Sparse<T>::getIndex()
 template <typename T>
 void Sparse<T>::init()
 {
-    m_index = new Index(m_label);
+    m_index = new Index(m_label, m_reldir);
 }
 
 template <typename T>

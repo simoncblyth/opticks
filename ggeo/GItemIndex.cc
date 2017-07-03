@@ -29,14 +29,14 @@
 #include "PLOG.hh"
 
 
-GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype)
+GItemIndex* GItemIndex::load(const char* idpath, const char* itemtype, const char* reldir)
 {
-    GItemIndex* idx = new GItemIndex(itemtype) ;    // itemname->index
+    GItemIndex* idx = new GItemIndex(itemtype, reldir) ;    // itemname->index
     idx->loadIndex(idpath);
     return idx ; 
 }
 
-GItemIndex::GItemIndex(const char* itemtype)
+GItemIndex::GItemIndex(const char* itemtype, const char* reldir)
    : 
    m_index(NULL),
    m_colors(NULL),
@@ -45,7 +45,7 @@ GItemIndex::GItemIndex(const char* itemtype)
    m_types(NULL),
    m_handler(NULL)
 {
-   init(itemtype);
+   init(itemtype, reldir);
    setLabeller(DEFAULT);
 }
 
@@ -127,18 +127,9 @@ const char* GItemIndex::getShortLabel(unsigned index)
 }
 
 
-    
-
-
-
-
-
-
-
-
-void GItemIndex::init(const char* itemtype)
+void GItemIndex::init(const char* itemtype, const char* reldir)
 {
-    m_index = new Index(itemtype);
+    m_index = new Index(itemtype, reldir);
 }
 
 void GItemIndex::setTitle(const char* title)
@@ -168,15 +159,21 @@ const char* GItemIndex::getSelectedLabel()
 void GItemIndex::loadIndex(const char* idpath, const char* override)
 {
     const char* itemtype = override ? override : m_index->getItemType() ;
+    const char* reldir = m_index->getRelDir();
+
     if(override)
     {
         LOG(warning)<<"GItemIndex::loadIndex using override itemtype " << itemtype << " instead of default " << m_index->getItemType() ;
     }
-    m_index = Index::load(idpath, itemtype);
+
+    // hmm stomps existing index ?
+    m_index = Index::load(idpath, itemtype, reldir);
+
     if(!m_index)
         LOG(warning) << "GItemIndex::loadIndex"
                      << " failed for "
                      << " idpath " << idpath
+                     << " reldir " << ( reldir ? reldir : "-" )
                      << " override " << ( override ? override : "NULL" )
                      ; 
 

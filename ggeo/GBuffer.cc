@@ -201,7 +201,7 @@ void GBuffer::save(const char* path_)
 
     if(data == NULL)
     {
-        LOG(warning) << "GBuffer::save no data for " << path ; 
+        LOG(debug) << "GBuffer::save no data for " << path ; 
     }
     else
     {

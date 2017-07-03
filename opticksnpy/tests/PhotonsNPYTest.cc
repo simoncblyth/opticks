@@ -44,7 +44,8 @@ int main(int argc, char** argv)
 
 
     const char* idpath = getenv("IDPATH");
-    Index* materials = Index::load(idpath, "GMaterialIndex");
+    const char* reldir = NULL ; 
+    Index* materials = Index::load(idpath, "GMaterialIndex", reldir);
 
     types.setMaterialsIndex(materials);
     types.dumpMaterials();

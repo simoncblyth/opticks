@@ -89,7 +89,7 @@ class NPY_API Types {
    public:
        void getMaterialStringTest();
        void readMaterialsOld(const char* idpath, const char* name="GMaterialIndexLocal.json");    
-       void readMaterials(const char* idpath, const char* name="GMaterialIndex");    
+       void readMaterials(const char* idpath, const char* name="GMaterialIndex", const char* reldir=NULL);    
        void dumpMaterials(const char* msg="Types::dumpMaterials");
        std::string findMaterialName(unsigned int index);
    private:

@@ -11,6 +11,7 @@
 
 
 const unsigned GMeshLib::MAX_MESH = 500 ; 
+const char* GMeshLib::GITEMINDEX = "GItemIndex" ; 
 const char* GMeshLib::GMESHLIB_INDEX = "MeshIndex" ; 
 const char* GMeshLib::GMESHLIB_INDEX_ANALYTIC = "MeshIndexAnalytic" ; 
 
@@ -53,7 +54,7 @@ GMeshLib* GMeshLib::load(Opticks* ok, bool analytic)
 void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
-    m_meshindex = GItemIndex::load(idpath, GetRelDirIndex(m_analytic)) ;
+    m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GetRelDirIndex(m_analytic)) ;
 
     loadMeshes(idpath);
 }
@@ -165,7 +166,7 @@ GMesh* GMeshLib::getMesh(const char* name, bool startswith)
 
 void GMeshLib::add(GMesh* mesh)
 {
-    if(!m_meshindex) m_meshindex = new GItemIndex(GetRelDirIndex(m_analytic))   ;
+    if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GetRelDirIndex(m_analytic))   ;
 
     m_meshes.push_back(mesh);
 
