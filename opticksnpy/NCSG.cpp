@@ -137,6 +137,8 @@ template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*) const
 
 //std::string NCSG::pvname(){ return getMeta<std::string>("pvname","-") ; }  // <-- NOT APPROPRIATE AS NCSG IS MESH LEVEL NOT NODE LEVEL
 
+// why no lvidx ?
+
 std::string NCSG::lvname() const { return getMeta<std::string>("lvname","-") ; }
 std::string NCSG::soname() const { return getMeta<std::string>("soname","-") ; }
 

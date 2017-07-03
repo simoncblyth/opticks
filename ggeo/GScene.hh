@@ -106,9 +106,15 @@ class GGEO_API GScene : public GGeoBase
         void modifyGeometry();
         void importMeshes(NScene* scene);
         void dumpMeshes();
+        void compareMeshes();
+        void compareMeshes_GMeshBB();
         GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
-        NCSG*  getCSG(unsigned mesh_idx);
+
+        NCSG* getCSG(unsigned mesh_idx);
+        NCSG* findCSG(const char* soname, bool startswith) const ;
+
+
         unsigned findTriMeshIndex(const char* soname) const ;
 
         // from triangulated branch mm0

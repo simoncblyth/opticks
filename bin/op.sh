@@ -233,6 +233,7 @@ op-geometry-name()
        --dfar) echo DFAR ;; 
        --dpib) echo DPIB ;; 
        --dsst) echo DSST ;; 
+       --dsst2) echo DSST2 ;; 
        --jpmt) echo JPMT ;; 
        --lxe)  echo LXE ;; 
 
@@ -255,6 +256,7 @@ op-geometry-desc()
       --dfar) echo "DayaBay Far Site" ;; 
       --dpib) echo "DayaBay PMT in Box of Mineral Oil Test Geometry" ;;
       --dsst) echo "DYB debugging SST rib impingement" ;;
+      --dsst2) echo "DYB debugging SST rib impingement" ;;
       --jpmt) echo "JUNO with PMTs" ;;
       --lxe)  echo "Geant4 LXe Liquid Xenon example" ;; 
    esac
@@ -285,7 +287,7 @@ op-geometry-setup()
     local geo=${OPTICKS_GEO:-DYB}
     op-geometry-unset 
     case $geo in 
-     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST) op-geometry-setup-dyb  $geo  ;;
+     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST|DSST2) op-geometry-setup-dyb  $geo  ;;
                              JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
@@ -302,7 +304,7 @@ op-geometry-query-dyb()
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
        DSST)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
-    #   DSST)  echo "range:4448:4456" ;;   # just top radius ribs
+       DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
     esac
     # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere
 }

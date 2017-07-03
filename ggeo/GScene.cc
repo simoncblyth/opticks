@@ -33,6 +33,9 @@
 #include "GMergedMesh.hh"
 
 
+
+
+
 #include "PLOG.hh"
 
 GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
@@ -137,14 +140,17 @@ void GScene::init()
     LOG(info) << "GScene::init START" ;
 
 
-    if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
 
     //modifyGeometry();  // try skipping the clear
 
     importMeshes(m_scene);
+
     if(m_verbosity > 1)
     dumpMeshes();
 
+    compareMeshes();
+
+    if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
 
     m_root = createVolumeTree(m_scene) ;
     assert(m_root);
@@ -299,20 +305,24 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
 }
 
 
+
+
 unsigned GScene::getNumMeshes() 
 {
    return m_meshlib->getNumMeshes() ;
-   //return m_meshes.size();
 }
 GMesh* GScene::getMesh(unsigned r)
 {
     return m_meshlib->getMesh(r) ; 
-    //assert( r < m_meshes.size() );
-    //return m_meshes[r];
 }
 NCSG* GScene::getCSG(unsigned r) 
 {
     return m_scene->getCSG(r);
+}
+
+NCSG* GScene::findCSG(const char* soname, bool startswith) const 
+{
+    return m_scene->findCSG(soname, startswith);
 }
 
 
@@ -344,6 +354,135 @@ void GScene::dumpMeshes()
          assert( a2r == r );
     }
 }
+
+void GScene::compareMeshes()
+{
+    compareMeshes_GMeshBB();
+}
+
+
+struct Delta 
+{
+    typedef std::pair<std::string, float> SF ; 
+    typedef std::vector<SF> VSF ;
+
+    void add(const char* name, float delta_)
+    {
+        delta.push_back(SF(name, delta_));
+    } 
+    bool operator()( const SF& a, const SF& b) const 
+    {
+        return a.second > b.second ; 
+    } 
+    void sort()
+    {
+        std::sort(delta.begin(), delta.end(), *this );
+    }
+    const std::string& getName(unsigned i)
+    {
+        return delta[i].first ; 
+    }
+    float getDiff(unsigned i)
+    {
+        return delta[i].second ; 
+    }
+
+    VSF delta ; 
+
+};
+
+
+
+void GScene::compareMeshes_GMeshBB()
+{
+    GMeshLib* ana = m_meshlib ; 
+    GMeshLib* tri = m_tri_meshlib ; 
+
+    unsigned num_meshes = ana->getNumMeshes() ;
+    unsigned num_meshes2 = tri->getNumMeshes() ;
+    assert( num_meshes == num_meshes2 );
+
+    float cut = 0.1 ;  // mm
+
+    unsigned num_discrepant(0);
+
+    bool startswith = false ; 
+
+    Delta delta ; 
+
+    for(unsigned i=0 ; i < num_meshes ; i++ )
+    {
+        GMesh* a = ana->getMesh(i);
+        const char* aname = a->getName() ; 
+        gbbox abb = a->getBBox(0) ; 
+
+        GMesh* b = tri->getMesh(aname, startswith);
+
+        gbbox bbb = b->getBBox(0) ; 
+
+        float delta_ = gbbox::MaxDiff(abb,bbb);
+        delta.add(aname, delta_);
+    }
+
+    delta.sort();
+
+    for(unsigned i=0 ; i < delta.delta.size() ; i++)
+    {
+        float dmax  = delta.getDiff(i);
+        if(dmax < cut) continue ; 
+        
+        std::string name = delta.getName(i);
+        GMesh* a = ana->getMesh(name.c_str(), startswith);
+        GMesh* b = tri->getMesh(name.c_str(), startswith);
+
+        NCSG*  csg = findCSG(name.c_str(), startswith);
+        assert( csg == a->getCSG() );  
+        unsigned a_mesh_id = a->getIndex();
+        int lvidx = m_scene->lvidx(a_mesh_id);
+
+        num_discrepant++ ;
+
+        gbbox aa = a->getBBox(0) ; 
+        gbbox bb = b->getBBox(0) ; 
+
+        glm::vec3 amn(aa.min.x, aa.min.y, aa.min.z);
+        glm::vec3 bmn(bb.min.x, bb.min.y, bb.min.z);
+        glm::vec3 dmn = amn - bmn ; 
+        glm::vec3 amx(aa.max.x, aa.max.y, aa.max.z);
+        glm::vec3 bmx(bb.max.x, bb.max.y, bb.max.z);
+        glm::vec3 dmx = amx - bmx ; 
+
+        std::cout 
+               << std::setw(10) << dmax
+               << std::setw(40) << name
+               << " lvidx " << std::setw(3) << lvidx 
+               << " amn " << gpresent(amn)
+               << " bmn " << gpresent(bmn)
+               << " dmn " << gpresent(dmn)
+               << " amx " << gpresent(amx)
+               << " bmx " << gpresent(bmx)
+               << " dmx " << gpresent(dmx)
+               << std::endl 
+               ;
+    }
+
+    LOG(info) << "GScene::compareMeshes_GMeshBB"
+              << " num_meshes " << num_meshes
+              << " cut " << cut 
+              << " num_discrepant " << num_discrepant
+              << " frac " << float(num_discrepant)/float(num_meshes)
+              ;
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

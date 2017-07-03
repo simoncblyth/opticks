@@ -53,6 +53,8 @@ NCSG* NScene::getCSG(unsigned mesh_idx) const
     return it == m_csg.end() ? NULL : it->second  ;
 }
 
+
+
 NCSG* NScene::findCSG(const char* q_soname, bool startswith) const 
 {
     typedef std::map<unsigned,NCSG*>::const_iterator MUCI ;
@@ -75,6 +77,18 @@ NCSG* NScene::findCSG(const char* q_soname, bool startswith) const
     }
     return q_csg ; 
 } 
+
+void NScene::collect_mesh_nodes(std::vector<unsigned>& nodes, unsigned mesh) const 
+{
+    collect_mesh_nodes_r(m_root, nodes, mesh);
+}
+void NScene::collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned mesh) const 
+{
+    if(n->mesh == mesh) nodes.push_back(n->idx);
+    for(nd* c : n->children) collect_mesh_nodes_r(c, nodes, mesh);
+}
+
+
 
     
 
@@ -433,6 +447,21 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
         {
             csg->dump();
             csg->dump_surface_points("dsp", 200);
+
+            unsigned mesh_id = csg->getIndex();
+            std::vector<unsigned> nodes ; 
+            collect_mesh_nodes(nodes, mesh_id);
+
+            std::cout << " csg.index (mesh_id) " << mesh_id
+                      << " num nodes " << nodes.size() 
+                      << std::endl ; 
+
+            std::cout << " node idx : " ; 
+            unsigned nmax = 10 ; 
+            for(unsigned i=0 ; i < std::min<unsigned>( nodes.size(), nmax) ; i++) std::cout << " " << nodes[i] ; 
+            std::cout << ( nodes.size() > nmax ? " ... " : " . " ) << std::endl ;     
+
+
         }
         else
         {
@@ -836,6 +865,8 @@ void NScene::check_aabb_containment_r(const nd* n)
 
     for(const nd* c : n->children) check_aabb_containment_r(c) ;
 }
+
+
 
 
 

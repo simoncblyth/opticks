@@ -16,6 +16,7 @@
 // huh why both ?
 //#include "numpy.hpp"
 #include "NGLM.hpp"
+
 #include "NPY.hpp"
 
 
@@ -2325,3 +2326,10 @@ GMesh* GMesh::make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshinde
 
 
 
+
+
+
+
+
+
+ 

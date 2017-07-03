@@ -59,13 +59,17 @@ class NPY_API NScene : public NGLTF
         unsigned getVerbosity();
         unsigned getTargetNode();
 
+    public:
+        // TODO: should be accessible from NCSG 
+        int  lvidx(unsigned mesh_id) const ;
+        void collect_mesh_nodes(std::vector<unsigned>& nodes, unsigned mesh) const ;
+        void collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned mesh) const ;
     private:
         void init();
         void init_lvlists(const char* base, const char* name);
         void write_lvlists();
     private:
         template<typename T> T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const ;
-        int         lvidx(unsigned mesh_id) const ;
         std::string lvname(unsigned mesh_id) const ;
         std::string soname(unsigned mesh_id) const ;
         int         height(unsigned mesh_id) const ;
@@ -117,6 +121,8 @@ class NPY_API NScene : public NGLTF
         void check_surf_containment_r(const nd* node) ; 
         glm::uvec4 check_surf_points( const nd* n ) const ;
         void debug_node(const nd* node) const ; 
+
+
     private:
         void update_aabb();
         void update_aabb_r(nd* node);
