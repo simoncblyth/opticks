@@ -55,16 +55,85 @@ olocal-()
 }
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
-
+opticks-idfold(){ echo $(dirname $IDPATH) ; }
 opticks-tbool-path(){ 
    local lvid=${1:-0} 
-   local path=$TMP/tgltf/extras/${lvid}/tbool${lvid}.bash
+   #local fold=$TMP/tgltf
+   local fold=$(opticks-idfold)
+   local path=$fold/extras/${lvid}/tbool${lvid}.bash
    echo $path 
 }
+opticks-nnt-path(){ 
+   local lvid=${1:-0} 
+   #local fold=$TMP/tgltf
+   local fold=$(opticks-idfold)
+   local path=$fold/extras/${lvid}/NNodeTest_${lvid}.cc
+   echo $path 
+}
+opticks-nnt-vi(){ 
+   local path=$(opticks-nnt-path ${1:-0})
+   vi $path
+}
+
+opticks-nnt-(){ 
+
+   local path=$1
+   local name=$(basename $path)   
+   local stem=${name/.cc}
+   local bindir=$(opticks-bindir)
+   local bin=$bindir/$stem
+
+   npy-
+   sysrap-
+   glm-
+   plog-
+ 
+   cat << EOL
+
+   clang -std=c++11  $path \
+            -I$(npy-sdir) \
+            -I$(sysrap-sdir) \
+            -I$(glm-dir) \
+            -I$(plog-dir)/include \
+             -lNPY \
+             -lSysRap \
+             -lc++ \
+             -L$(opticks-bindir) \
+             -Wl,-rpath,$(opticks-bindir) \
+             -o $bin
+   
+EOL
+}
+
+opticks-nnt()
+{
+   local msg="$FUNCNAME :"
+   local lvid=${1:-0} 
+   local path=$(opticks-nnt-path $lvid)
+   local name=$(basename $path)   
+   local stem=${name/.cc}
+
+   [ ! -f $path ] && echo $msg no such path && return
+
+   echo $msg compiling $path 
+
+   eval $($FUNCNAME- $path) 
+
+   which $stem
+
+   $stem
+   
+
+}
+
+
+
+
 opticks-tbool-vi(){ 
    local path=$(opticks-tbool-path ${1:-0})
    vi $path
 }
+
 opticks-tbool(){ 
    local msg="$FUNCNAME :"
    local lvid=${1:-0} 

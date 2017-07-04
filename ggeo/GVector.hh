@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cstdio>
 
+
+#include "NGLM.hpp"
 #include "NBBox.hpp"
 #include "NQuad.hpp"
 
@@ -48,6 +50,11 @@ struct GGEO_API gfloat3
     gfloat3(const gfloat3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
     gfloat3(const nvec3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
 
+    glm::vec3 as_vec3() const 
+    {
+        return glm::vec3(x,y,z);
+    }
+   
     bool operator==(const gfloat3& other) const 
     {
         return x == other.x && y == other.y && z == other.z   ;

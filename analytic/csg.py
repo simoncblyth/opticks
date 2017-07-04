@@ -19,9 +19,10 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.analytic.glm import make_trs, to_pyline
+from opticks.analytic.glm import make_trs, to_pyline, to_codeline
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
+from opticks.analytic.nnode_test_cpp import NNodeTestCPP
 
 
 Q0,Q1,Q2,Q3 = 0,1,2,3
@@ -510,10 +511,12 @@ class CSG(CSG_):
         metapath = self.metapath(treedir)
         json.dump(self.meta,file(metapath,"w"))
 
-
         lvidx = os.path.basename(treedir)
         tboolpath = self.tboolpath(treedir, lvidx)
         self.write_tbool(lvidx, tboolpath)
+
+        nntpath = self.nntpath(treedir, lvidx)
+        self.write_NNodeTest(lvidx, nntpath)
 
         nodepath = self.nodepath(treedir)
         np.save(nodepath, nodebuf)
@@ -545,7 +548,9 @@ class CSG(CSG_):
     @classmethod
     def tboolpath(cls, treedir, name):
         return os.path.join(treedir,"tbool%s.bash" % name) 
-
+    @classmethod
+    def nntpath(cls, treedir, name):
+        return os.path.join(treedir,"NNodeTest_%s.cc" % name) 
 
 
     @classmethod
@@ -815,36 +820,75 @@ class CSG(CSG_):
     def label(self, indent=""):
         return "%s %s;%s " % (indent, self.desc(self.typ),self.name )
 
-    def content_operator(self):
-        return "left=%s, right=%s" % ( self.left.alabel, self.right.alabel ) 
+    def content_operator(self, lang="py"):
+        fmt = "left=%s, right=%s" if lang == "py" else "&%s, &%s" 
+        return fmt % ( self.left.alabel, self.right.alabel )  
 
-    def content_primitive(self):
+    def content_operator_parenting(self, lang="py"):
+        if lang == "py":
+            return None
+        pass
+        return "%s.parent = &%s ; %s.parent = &%s ; " % (self.left.alabel, self.alabel, self.right.alabel, self.alabel )
+
+    def content_param(self, lang="py"):
         if self.param is not None:
-            param = to_pyline(self.param, "param")
+            param = to_codeline(self.param, "param" if lang == "py" else None, lang=lang) 
         else:
             param = None
         pass
+        return param 
+
+    def content_param1(self, lang="py"):
+        if lang == "cpp" and self.typ in [self.SPHERE, self.CONE]:   # one quad param shapes
+            return None 
+
         if self.param1 is not None:
-            param1 = to_pyline(self.param1, "param1")
+            param1 = to_codeline(self.param1, "param1" if lang == "py" else None, lang=lang) 
         else:
             param1 = None
         pass
+        return param1
 
+    def content_complement(self, lang="py"):
         if self.complement:
             complement = "complement = True"
         else:
             complement = None 
         pass
+        return complement
 
+    def content_transform(self, lang="py"):
+        if lang == "py":
+            line = to_codeline(self.transform, "%s.transform" % self.alabel, lang=lang )  
+        else:
+            line = to_codeline(self.transform, "%s.transform" % self.alabel, lang=lang )
+        pass
+        return line
+
+
+    def content_primitive(self, lang="py"):
+        param = self.content_param(lang)
+        param1 = self.content_param1(lang)
+        complement = self.content_complement(lang)
         return ",".join(filter(None,[param,param1,complement]))
 
-    def content(self):
+    def content(self, lang="py"):
         if self.is_primitive:
-            content_ = self.content_primitive()
+            content_ = self.content_primitive(lang=lang)
+            parenting_ = "" 
         else:
-            content_ = self.content_operator() 
+            content_ = self.content_operator(lang=lang) 
+            parenting_ = self.content_operator_parenting(lang=lang) 
         pass
-        return "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
+
+        if lang == "py":
+            code = "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
+        else:
+            type_ = "n%s" % self.desc(self.typ)
+            code = "%s %s = make_%s( %s ) ; %s.label = \"%s\" ; %s " % ( type_, self.alabel, self.desc(self.typ), content_, self.alabel, self.alabel, parenting_ )
+        pass
+        return code
+
 
     def as_python_planes(self, node): 
         assert len(node.planes) > 0
@@ -860,18 +904,18 @@ class CSG(CSG_):
         lines.append("")
         return lines
 
-    def as_python(self):
+    def as_code(self, lang="py"):
         lines = []
-        def as_python_r(node):
+        def as_code_r(node):
             if node is None:return
-            as_python_r(node.left) 
-            as_python_r(node.right) 
+            as_code_r(node.left) 
+            as_code_r(node.right) 
 
             # postorder visit
-            line = node.content()
+            line = node.content(lang)
             lines.append(line)    
             if node.transform is not None:
-                line = to_pyline(node.transform, "%s.transform" % node.alabel )  
+                line = node.content_transform(lang)
                 lines.append(line)    
             pass
 
@@ -886,18 +930,30 @@ class CSG(CSG_):
                 lines.append("")
             pass
         pass
-        as_python_r(self) 
+        as_code_r(self) 
         return "\n".join(lines)
 
+
     def as_tbool(self, name="esr"):
-        tbf = TBooleanBashFunction(name=name, root=self.alabel, body=self.as_python() )
+        tbf = TBooleanBashFunction(name=name, root=self.alabel, body=self.as_code(lang="py")  )
         return str(tbf)
+
+    def as_NNodeTest(self, name="esr"):
+        nnt  = NNodeTestCPP(name=name, root=self.alabel, body=self.as_code(lang="cpp")  )
+        return str(nnt)
 
     def dump_tbool(self, name):
         sys.stderr.write("\n"+self.as_tbool(name))
 
+    def dump_NNodeTest(self, name):
+        sys.stderr.write("\n"+self.as_NNodeTest(name))
+
     def write_tbool(self, name, path):
         file(path, "w").write("\n"+self.as_tbool(name))
+
+    def write_NNodeTest(self, name, path):
+        file(path, "w").write("\n"+self.as_NNodeTest(name))
+
 
     def _get_tag(self):
         return self.desc(self.typ)[0:2]
@@ -1137,6 +1193,24 @@ def test_balance():
     root.balance()
 
 
+def test_content_generate():
+    log.info("test_content_generate")
+
+    a = CSG("sphere", param=[0,0,-50,100], name="a") 
+    b = CSG("sphere", param=[0,0,-50,  99], name="b") 
+    b.transform = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1]] 
+
+    ab = a - b 
+
+    ab.analyse()
+    obj = ab 
+
+    for lang in "py cpp".split():
+        print lang
+        #print obj.content(lang)
+        print obj.as_code(lang)
+
+
 
 
 
@@ -1154,7 +1228,8 @@ if __name__ == '__main__':
     #test_positivize_2()
     #test_subdepth()
 
-    test_balance()
+    #test_balance()
+    test_content_generate()
 
 
    

@@ -127,6 +127,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.other  = NULL ;   // used by NOpenMesh 
     n.label = NULL ; 
     n.treedir = NULL ; 
+    n._dump = new NNodeDump(n) ; 
 
     n.transform = NULL ; 
     n.gtransform = NULL ; 
@@ -279,7 +280,6 @@ void nnode::get_composite_bbox( nbbox& bb ) const
 
     nbbox l_bb = left->bbox();
     nbbox r_bb = right->bbox();
-
 
     if(left->is_primitive())
     {
@@ -866,6 +866,8 @@ void nnode::dump_full(const char* msg) const
 {
     dump(msg);
 
+    dump_bbox(msg);
+
     dump_prim(msg);
 
     dump_transform(msg);
@@ -877,28 +879,39 @@ void nnode::dump_full(const char* msg) const
 
 void nnode::dump(const char* msg) const 
 {
-    NNodeDump d(*this);
-    d.dump(msg);
+    _dump->dump(msg);
 }
+
+void nnode::dump_label(const char* pfx, const char* msg) const 
+{
+    std::cout 
+         << std::setw(3) << (  pfx ? pfx : "-" ) << " " 
+         << std::setw(3) << (  msg ? msg : label ) << " " 
+         ; 
+}
+
+void nnode::dump_bbox(const char* msg) const 
+{
+    dump_label("bb",msg);
+    nbbox bb = bbox();
+    std::cout << bb.desc() << std::endl ; 
+}
+
 void nnode::dump_prim( const char* msg) const 
 {
-    NNodeDump d(*this);
-    d.dump_prim(msg);
+    _dump->dump_prim(msg);
 }
 void nnode::dump_gtransform( const char* msg) const 
 {
-    NNodeDump d(*this);
-    d.dump_gtransform(msg);
+    _dump->dump_gtransform(msg);
 }
 void nnode::dump_transform( const char* msg) const 
 {
-    NNodeDump d(*this);
-    d.dump_transform(msg);
+    _dump->dump_transform(msg);
 }
 void nnode::dump_planes( const char* msg) const 
 {
-    NNodeDump d(*this);
-    d.dump_planes(msg);
+    _dump->dump_planes(msg);
 }
 
 

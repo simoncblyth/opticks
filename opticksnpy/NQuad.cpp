@@ -18,6 +18,12 @@ void nvec3::dump(const char* msg) const
     printf("%20s : %10.4f %10.4f %10.4f  \n",msg, x,y,z ); 
 }
 
+glm::vec3 nvec3::as_vec3() const 
+{
+    return glm::vec3(x,y,z);
+}
+
+
 const char* nvec3::desc() const
 {
     char _desc[64];

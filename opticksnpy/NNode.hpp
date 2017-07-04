@@ -12,6 +12,7 @@
 struct nbbox ; 
 struct npart ; 
 struct nuv ; 
+class NNodeDump ; 
 
 // NGLMExt
 struct nmat4pair ; 
@@ -30,8 +31,6 @@ struct NPY_API nnode
     static nnode* load(const char* treedir, int verbosity);
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
-    virtual void dump(const char* msg="nnode::dump") const ;
-    virtual void pdump(const char* msg="nnode::pdump") const ; 
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
 
@@ -99,11 +98,18 @@ struct NPY_API nnode
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
 
-    void dump_full(const char* msg="nnode::dump_full") const ;
-    void dump_transform(const char* msg="nnode::dump_transform") const ;
-    void dump_gtransform(const char* msg="nnode::dump_gtransform") const ;
-    void dump_prim(const char* msg="nnode::dump_prim") const ;
-    void dump_planes(const char* msg="nnode::dump_planes") const ;
+
+
+    virtual void dump(const char* msg=NULL) const ;
+    virtual void pdump(const char* msg="nnode::pdump") const ; 
+
+    void dump_label(const char* pfx, const char* msg=NULL) const ;
+    void dump_full(const char* msg=NULL) const ;
+    void dump_bbox(const char* msg=NULL ) const ;
+    void dump_transform(const char* msg=NULL) const ;
+    void dump_gtransform(const char* msg=NULL) const ;
+    void dump_prim(const char* msg=NULL) const ;
+    void dump_planes(const char* msg=NULL) const ;
   
 
 
@@ -151,6 +157,8 @@ struct NPY_API nnode
     nquad param3 ; 
 
     std::vector<glm::vec4> planes ; 
+
+    NNodeDump* _dump ;
 
 };
 

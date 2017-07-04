@@ -909,14 +909,7 @@ void NCSG::dump(const char* msg)
 
     if(!m_root) return ;
 
-    m_root->dump("NCSG::dump (root)");
-
-    if(!m_root->is_primitive())
-    {
-        const nbbox& bb = m_root->bbox();
-        std::cout << " composite_bb " << bb.desc() << std::endl ; 
-    }
-
+    m_root->dump_full(NULL);   
 
     if(m_meta)
     m_meta->dump(); 

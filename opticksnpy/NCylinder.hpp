@@ -79,6 +79,9 @@ inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
     return n ; 
 }
 
+
+
+
 inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
 {
     nquad param, param1 ;
@@ -100,5 +103,22 @@ inline NPY_API ncylinder make_cylinder()
     float z2 = 15.f ; 
     return make_cylinder(radius,z1,z2); 
 }
+
+inline NPY_API ncylinder make_cylinder(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+{
+    // used by code generation 
+    assert( x0 == 0.f );
+    assert( y0 == 0.f );
+    assert( z0 == 0.f );
+    assert( z1 == 0.f );
+    assert( w1 == 0.f );
+
+    float radius_ = w0 ; 
+    float z1_ = x1 ; 
+    float z2_ = y1 ; 
+
+    return make_cylinder( radius_, z1_, z2_ );
+}
+
 
 

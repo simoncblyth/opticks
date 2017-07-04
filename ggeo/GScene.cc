@@ -433,6 +433,8 @@ void GScene::compareMeshes_GMeshBB()
         float dmax  = delta.getVal(i);
         if(dmax < cut) continue ; 
         
+        num_discrepant++ ;
+
         std::string name = delta.getKey(i);
 
         GMesh* a = ana->getMesh(name.c_str(), startswith);
@@ -448,17 +450,20 @@ void GScene::compareMeshes_GMeshBB()
         assert( csg == a->getCSG() );  
         unsigned a_mesh_id = a->getIndex();
         int lvidx = m_scene->lvidx(a_mesh_id);
+        nnode* root = csg->getRoot();
 
-        num_discrepant++ ;
 
         gbbox aa = a->getBBox(0) ; 
         gbbox bb = b->getBBox(0) ; 
+        nbbox cc = root->bbox();    // depends on my CSG tree primitive/composite bbox calc 
 
-        glm::vec3 amn(aa.min.x, aa.min.y, aa.min.z);
-        glm::vec3 bmn(bb.min.x, bb.min.y, bb.min.z);
+        glm::vec3 amn(with_csg_bbox ? cc.min.as_vec3() : aa.min.as_vec3());
+        glm::vec3 amx(with_csg_bbox ? cc.max.as_vec3() : aa.max.as_vec3());
+
+        glm::vec3 bmn(bb.min.as_vec3());
+        glm::vec3 bmx(bb.max.as_vec3());
+
         glm::vec3 dmn = amn - bmn ; 
-        glm::vec3 amx(aa.max.x, aa.max.y, aa.max.z);
-        glm::vec3 bmx(bb.max.x, bb.max.y, bb.max.z);
         glm::vec3 dmx = amx - bmx ; 
 
         std::cout 

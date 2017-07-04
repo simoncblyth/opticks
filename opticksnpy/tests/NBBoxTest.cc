@@ -12,7 +12,11 @@ NBBoxTest /tmp/blyth/opticks/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 
 #include "NPY.hpp"
 #include "NGenerator.hpp"
+
 #include "NBox.hpp"
+#include "NCylinder.hpp"
+#include "NCone.hpp"
+
 #include "NBBox.hpp"
 #include "NScan.hpp"
 
@@ -272,6 +276,67 @@ void test_positive_form()
 }
 
 
+void test_difference_bbox()
+{
+    LOG(info) << "test_difference_bbox " ;
+ 
+    float radius = 10.f ; 
+    float z1 = -1.f ; 
+    float z2 = 1.f ; 
+
+    ncylinder a = make_cylinder( radius     , z1, z2);   a.label = "A" ;     
+    ncylinder b = make_cylinder( radius-1.f , z1, z2);   b.label = "B" ;   
+
+    a.pdump("a");
+    b.pdump("b");
+
+    ndifference ab = make_difference( &a, &b ); 
+    ab.dump("a-b");
+}
+
+void test_intersection_cone_difference_bbox()
+{
+    LOG(info) << "test_intersection_cone_difference_bbox " ;
+
+
+    float radius = 10.f ; 
+    float z1 = -1.f ; 
+    float z2 = 1.f ; 
+    ncylinder a = make_cylinder( radius     , z1, z2);   a.label = "A" ;     
+    ncylinder b = make_cylinder( radius-1.f , z1, z2);   b.label = "B" ;   
+    // wide flat ring 
+
+    //a.pdump("a");
+    //b.pdump("b");
+
+    ndifference ab = make_difference( &a, &b ); 
+    //ab.dump("a-b");
+
+ 
+    // with cone in middle : too small to intersect 
+    //float r1 = 5. ; 
+    //float r2 = 4. ; 
+
+    // jumbo cone that contains the cylinders
+    //float r1 = 50. ; 
+    //float r2 = 40. ; 
+
+    // cone that intersects the cylinders
+    float r1 = radius - 2.f ; 
+    float r2 = radius + 2.f ; 
+
+
+    ncone c = make_cone( r1, z1, r2, z2 );
+
+    nintersection cab = make_intersection( &c, &ab );
+    cab.dump("c*(a-b)");
+}
+
+
+
+
+
+
 void test_default_copy_ctor()
 {
     LOG(info) << "test_default_copy_ctor" ; 
@@ -372,7 +437,9 @@ int main(int argc, char** argv)
 
     //test_sdf();
     //test_sdf_transformed();
-    test_from_points();
+    //test_from_points();
+    //test_difference_bbox();
+    test_intersection_cone_difference_bbox() ;
 
     return 0 ; 
 }

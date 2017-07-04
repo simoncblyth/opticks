@@ -48,6 +48,13 @@ struct NPY_API nmat4triple
     static const nmat4triple* make_rotate(   const glm::vec4& trot);
     static const nmat4triple* make_scale(    const glm::vec3& tsca);
 
+    static const nmat4triple* make_transform( 
+           const float x0, const float y0, const float z0, const float w0,
+           const float x1, const float y1, const float z1, const float w1, 
+           const float x2, const float y2, const float z2, const float w2, 
+           const float x3, const float y3, const float z3, const float w3 
+       );
+
     static const nmat4triple* make_translate( const float x, const float y, const float z);
     static const nmat4triple* make_rotate(    const float x, const float y, const float z, const float w);
     static const nmat4triple* make_scale(     const float x, const float y, const float z);

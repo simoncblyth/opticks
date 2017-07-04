@@ -7,25 +7,44 @@ import numpy as np
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",") 
 
 
-def to_pylist(a, fmt="%.3f"):
+def to_list(a, fmt="%.3f", lang="py"):
     s = ",".join(map(lambda _:fmt % _, list(a) )) 
-    return "[%s]" % s 
+    fmt = "[%s]" if lang == "py" else "%s" 
+    return fmt % s 
 
-def to_pyline(a, alabel="a", fmt="%.3f"):
-    assert alabel is not None
+def to_pylist(a, fmt="%.3f"):
+    return to_list(a, fmt, lang="py")
+
+def to_cpplist(a, fmt="%.3f"):
+    return to_list(a, fmt, lang="cpp")
+
+
+def to_pyline(a, alabel="a", fmt="%.3f", lang="py"):
     if a is None:
-        s = "None"
+        s = "None" if lang == "py" else "NULL"
     elif a.shape == (4,):
-        s = to_pylist(a, fmt)
+        s = to_list(a, fmt, lang=lang)
     elif a.shape == (3,):
-        s = to_pylist(a, fmt)
+        s = to_list(a, fmt, lang=lang)
     elif a.shape == (4,4):
-        ss = map(to_pylist, a )
-        s = "[" + ",".join(ss) + "]"
+        ss = map(to_pylist if lang=="py" else to_cpplist, a )
+        if lang == "py": 
+            s = "[" + ",".join(ss) + "]"
+        else:
+            s = "nmat4triple::make_transform(" + ",  ".join(ss) + ") ;"
+        pass
     else:
         pass
     pass
-    return "%s = %s" % (alabel, s)
+    return "%s" % s if alabel is None else "%s = %s" % (alabel, s)
+
+
+def to_codeline(a, alabel="a", fmt="%.3f", lang="py"):
+    return to_pyline(a, alabel, fmt, lang=lang) 
+
+
+
+
 
 
 def dot_(trs, reverse=False, left=False):

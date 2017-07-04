@@ -2,6 +2,115 @@
 lvid 30 OcrGdsTfbInLso0xbfa2370 : cone-z misinterpretation
 =============================================================
 
+
+HUH : THOUGHT FIXED BUT STILL SHOWS UP
+----------------------------------------
+
+
+   1214.74   OcrGdsTfbInLso0xbfa2370 lvidx  30 
+
+   amn (      0.000 -1279.737  -150.798) 
+   amx (    549.123     0.000   150.798) 
+
+   bmn (    484.130 -1279.740  -150.798) 
+   bmx (    549.130 -1214.740    87.691) 
+
+   dmn (   -484.130     0.003    -0.000) 
+   dmx (     -0.007  1214.740    63.107)
+
+
+Probably need to fix ncone::bbox too::
+
+    0690 nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
+     691 {
+     692     nquad p0 = getQuad(idx, 0);
+     693     nquad p1 = getQuad(idx, 1);
+     694     nquad p2 = getQuad(idx, 2);
+     695     nquad p3 = getQuad(idx, 3);
+     696 
+     697     if(m_verbosity > 2)
+     698     LOG(info) << "NCSG::import_primitive  "
+     699               << " idx " << idx
+     700               << " typecode " << typecode
+     701               << " csgname " << CSGName(typecode)
+     702               ;
+     703 
+     704     nnode* node = NULL ;
+     705     switch(typecode)
+     706     { 
+     707        case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ;
+     708        case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ;
+     709        case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ;
+     710        case CSG_BOX3:     node = new nbox(make_box3(p0))                ; break ;
+     711        case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ; 
+     712        case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ; 
+     713        case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ;
+     714        case CSG_DISC:     node = new ndisc(make_disc(p0, p1))           ; break ;
+     715        case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ;
+     716        case CSG_TRAPEZOID:  
+     717        case CSG_CONVEXPOLYHEDRON:  
+     718                           node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ;
+     719        default:           node = NULL ; break ; 
+     720     }       
+
+
+    53 inline NPY_API float ncone::r1() const { return param.f.x ; }            
+    54 inline NPY_API float ncone::z1() const { return param.f.y ; }
+    55 inline NPY_API float ncone::r2() const { return param.f.z ; }
+    56 inline NPY_API float ncone::z2() const { return param.f.w ; }  // z2 > z1
+    57 
+    58 // grow the cone on upwards on upper side (z2) or downwards on down side (z1)
+    59 inline NPY_API void  ncone::increase_z2(float dz){ assert( dz >= 0.f) ; param.f.w += dz ; } // z2 > z1
+    60 inline NPY_API void  ncone::decrease_z1(float dz){ assert( dz >= 0.f) ; param.f.y -= dz ; }
+    61 
+    62 inline NPY_API float ncone::zc() const { return (z1() + z2())/2.f ; }
+    63 inline NPY_API float ncone::rmax() const { return fmaxf( r1(), r2())  ; }
+    64 inline NPY_API float ncone::z0() const {  return (z2()*r1()-z1()*r2())/(r1()-r2()) ; }
+    65 inline NPY_API float ncone::tantheta() const { return (r2()-r1())/(z2()-z1()) ; }
+    66 inline NPY_API float ncone::x() const { return 0.f ; }
+    67 inline NPY_API float ncone::y() const { return 0.f ; }
+    68 inline NPY_API glm::vec3 ncone::center() const { return glm::vec3(x(),y(),zc()) ; }
+    69 inline NPY_API glm::vec2 ncone::cnormal() const { return glm::normalize( glm::vec2(z2()-z1(),r1()-r2()) ) ; }
+    70 inline NPY_API glm::vec2 ncone::csurface() const { glm::vec2 cn = cnormal() ; return glm::vec2( cn.y, -cn.x ) ; }
+    71 
+    72 
+    73 inline NPY_API void init_cone(ncone& n, const nquad& param)
+    74 {
+    75     n.param = param ; 
+    76     assert( n.z2() > n.z1() );
+    77 }              
+    78 
+    79 inline NPY_API ncone make_cone(const nquad& param)
+    80 {              
+    81     ncone n ;  
+    82     nnode::Init(n,CSG_CONE) ;
+    83     init_cone(n, param);
+    84     return n ;
+    85 }
+
+
+     547     def as_ncsg(self, only_inner=False):
+     548         pass
+     549         assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0.
+     550         has_inner = not only_inner and (self.rmin1 > 0. or self.rmin2 > 0. )
+     551         if has_inner:
+     552             inner = self.as_ncsg(only_inner=True)  # recursive call to make inner 
+     553         pass
+     554 
+     555         r1 = self.rmin1 if only_inner else self.rmax1
+     556         z1 = -self.z/2
+     557 
+     558         r2 = self.rmin2 if only_inner else self.rmax2
+     559         z2 = self.z/2
+     560   
+     561         cn = self.make_cone( r1,z1,r2,z2, self.name )
+     562 
+     563         return CSG("difference", left=cn, right=inner ) if has_inner else cn
+
+
+
+
+
 FIXED
 --------
 
@@ -121,7 +230,19 @@ Am I misinterpreting cone-z or tube-z
        bmn (    484.130 -1279.740  -150.798) dmn (   -484.130     0.003   150.798) 
        bmx (    549.130 -1214.740    87.691) dmx (     -0.007  1214.740    63.107)
 
- 
+
+       1214.74   OcrGdsTfbInLso0xbfa2370 lvidx  30    # after move to CSG bbox and z-centering of cone fixed
+       amn (      0.000 -1279.737  -150.798) 
+       amx (    549.123     0.000   150.798) 
+
+       bmn (    484.130 -1279.740  -150.798)    ## huh problem in xy too 
+       bmx (    549.130 -1214.740    87.691) 
+
+       dmn (   -484.130     0.003    -0.000) 
+       dmx (     -0.007  1214.740    63.107)
+
+
+
 
 
     simon:~ blyth$ op --dlv30 --gmeshlib --dbgmesh OcrGdsTfbInLso0xbfa2370
@@ -177,6 +298,8 @@ Am I misinterpreting cone-z or tube-z
                           disable_instancing : 0
     2017-07-04 11:29:38.826 INFO  [3055850] [NScene::init@202] NScene::init DONE
     2017-07-04 11:29:38.826 INFO  [3055850] [NScene::dumpCSG@434] NScene::dumpCSG num_csg 249 dbgmesh OcrGdsTfbInLso0xbfa2370
+
+
     2017-07-04 11:29:38.826 INFO  [3055850] [NCSG::dump@907] NCSG::dump
      NCSG  ix   43 surfpoints   25 so OcrGdsTfbInLso0xbfa2370                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInLso0xc3529c0
     NCSG::dump (root) [ 0:in] OPER  v:0
@@ -185,6 +308,11 @@ Am I misinterpreting cone-z or tube-z
              L [ 5:cy] PRIM  v:0 bb  mi  ( 484.12 -1279.74 -150.80)  mx  ( 549.12 -1214.74  150.80)  si  (  65.00   65.00  301.60) 
              R [ 6:cy] PRIM  v:0 bb  mi  ( 485.12 -1278.74 -152.31)  mx  ( 548.12 -1215.74  152.31)  si  (  63.00   63.00  304.61) 
      composite_bb  mi  (   0.00 -1279.74    0.00)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  150.80) 
+
+
+
+
+
     NParameters::dump
              lvname : /dd/Geometry/AdDetails/lvOcrGdsTfbInLso0xc3529c0
              soname : OcrGdsTfbInLso0xbfa2370
@@ -232,5 +360,193 @@ Am I misinterpreting cone-z or tube-z
 
 
 
+
+CSG bbox looks unreasonable
+-------------------------------
+
+::
+
+    2017-07-04 16:46:12.775 INFO  [3159338] [NCSG::dump@907] NCSG::dump
+    NCSG  ix   43 surfpoints   40 so OcrGdsTfbInLso0xbfa2370                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInLso0xc3529c0
+    NCSG::dump (root) [ 0:in] OPER  v:0
+             L [ 1:co] PRIM  v:0 bb  mi  (-5879.80 -5879.80 -150.80)  mx  (5879.80 5879.80  150.80)  si  (11759.59 11759.59  301.60)   ## FIXED z-centering 
+             R [ 2:di] OPER  v:0
+             L [ 5:cy] PRIM  v:0 bb  mi  ( 484.12 -1279.74 -150.80)  mx  ( 549.12 -1214.74  150.80)  si  (  65.00   65.00  301.60) 
+             R [ 6:cy] PRIM  v:0 bb  mi  ( 485.12 -1278.74 -152.31)  mx  ( 548.12 -1215.74  152.31)  si  (  63.00   63.00  304.61) 
+     composite_bb  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     ###                   ^^^^^                                  ^^^^^^ 
+     ### where did thise zeros come from ?
+
+       1214.74                 OcrGdsTfbInLso0xbfa2370 lvidx  30 
+
+             amn (      0.000 -1279.737  -150.798) bmn (    484.130 -1279.740  -150.798) dmn (   -484.130     0.003    -0.000) 
+             amx (    549.123     0.000   150.798) bmx (    549.130 -1214.740    87.691) dmx (     -0.007  1214.740    63.107)
+
+
+
+
+
+Succeed to Reproduce the issue in a small test
+-------------------------------------------------
+
+opticks-nnt-vi 30 
+
+Generated NNodeTest_30 now reproduces the zeros, after updating gtransforms::
+
+     01 
+      2 // generated by nnode_test_cpp.py : 20170704-2055 
+      3 
+      4 
+      5 #include "SSys.hh"
+      6 #include "NGLMExt.hpp"
+      7 #include "NNode.hpp"
+      8 #include "NPrimitives.hpp"
+      9 #include "PLOG.hh"
+     10 #include "NPY_LOG.hh"
+     11 
+     12 int main(int argc, char** argv)
+     13 {
+     14     PLOG_(argc, argv);
+     15     NPY_LOG__ ;
+     16 
+     17     // generated by nnode_test_cpp.py : 20170704-2055 
+     18     ncone a = make_cone( 5879.795,-150.798,125.000,150.798 ) ; a.label = "a" ;
+     19     ncylinder b = make_cylinder( 0.000,0.000,0.000,32.500,-150.798,150.798,0.000,0.000 ) ; b.label = "b" ;
+     20     ncylinder c = make_cylinder( 0.000,0.000,0.000,31.500,-152.306,152.306,0.000,0.000 ) ; c.label = "c" ;
+     21     ndifference bc = make_difference( &b, &c ) ; bc.label = "bc" ; b.parent = &bc ; c.parent = &bc ;
+     22     bc.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  516.623,-1247.237,0.000,1.000) ;
+     23 
+     24     nintersection abc = make_intersection( &a, &bc ) ; abc.label = "abc" ; a.parent = &abc ; bc.parent = &abc ;
+     25 
+     26 
+     27 
+     28     abc.update_gtransforms();
+     29     abc.verbosity = SSys::getenvint("VERBOSITY", 1) ;
+     30     abc.dump_full() ;
+     31 
+     32     return 0 ;
+     33 }
+
+::
+
+    simon:analytic blyth$ opticks-nnt 30
+    opticks-nnt : compiling /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/30/NNodeTest_30.cc
+    /usr/local/opticks/lib/NNodeTest_30
+     du abc [ 0:in abc] OPER  v:1 2017-07-04 21:05:01.044 INFO  [3235152] [nnode::bbox@392] nnode::bbox [ 0:in abc]
+    nbbox::CombineCSG  BB(A * B) 
+     L  mi  (-5879.79 -5879.79 -150.80)  mx  (5879.79 5879.79  150.80)  si  (11759.59 11759.59  301.60) 
+     R  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     C  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+    nnode::composite_bbox  left [ 0:co a] right [ 0:di bc] bb  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     bb  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+
+     du   a [ 0:co a] PRIM  v:0  bb  mi  (-5879.79 -5879.79 -150.80)  mx  (5879.79 5879.79  150.80)  si  (11759.59 11759.59  301.60) 
+     du  bc [ 0:di bc] OPER  v:0  bb  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+
+     du   b [ 0:cy b] PRIM  v:0  bb  mi  ( 484.12 -1279.74 -150.80)  mx  ( 549.12 -1214.74  150.80)  si  (  65.00   65.00  301.60) 
+     du   c [ 0:cy c] PRIM  v:0  bb  mi  ( 485.12 -1278.74 -152.31)  mx  ( 548.12 -1215.74  152.31)  si  (  63.00   63.00  304.61) 
+     bb abc 2017-07-04 21:05:01.045 INFO  [3235152] [nnode::bbox@392] nnode::bbox [ 0:in abc]
+    nbbox::CombineCSG  BB(A * B) 
+     L  mi  (-5879.79 -5879.79 -150.80)  mx  (5879.79 5879.79  150.80)  si  (11759.59 11759.59  301.60) 
+     R  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     C  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+    nnode::composite_bbox  left [ 0:co a] right [ 0:di bc] bb  mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     mi  (   0.00 -1279.74 -150.80)  mx  ( 549.12    0.00  150.80)  si  ( 549.12 1279.74  301.60) 
+     pr abc  nprim 3        co label a center {    0.0000    0.0000    0.0000} r1 5879.7949 r2 125.0000 rmax 5879.7949 z1 -150.7980 z2 150.7980 zc 0.0000 z0(apex) 157.3490 gseedcenter {    0.0000    0.0000    0.0000} gtransform 0
+            cy label b center {    0.0000    0.0000    0.0000} radius 32.5000 z1 -150.7980 z2 150.7980 gseedcenter {  516.6230 -1247.2371    0.0000} gtransform 1
+            cy label c center {    0.0000    0.0000    0.0000} radius 31.5000 z1 -152.3060 z2 152.3060 gseedcenter {  516.6230 -1247.2371    0.0000} gtransform 1
+     tr abc  NO transform 
+     tr   a  NO transform 
+     tr  bc       tr.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+              516.623 -1247.237   0.000   1.000 
+
+     tr   b  NO transform 
+     tr   c  NO transform 
+     gt abc  NO gtransform 
+     gt   a  NO gtransform 
+     gt  bc      gtr.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+              516.623 -1247.237   0.000   1.000 
+
+     gt   b      gtr.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+              516.623 -1247.237   0.000   1.000 
+
+     gt   c      gtr.t  1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+              516.623 -1247.237   0.000   1.000 
+
+     pl abc  num_planes 0
+    simon:analytic blyth$ 
+
+
+
+::
+
+ 12 int main(int argc, char** argv)
+ 13 {
+ 14     PLOG_(argc, argv);
+ 15     NPY_LOG__ ;
+ 16 
+ 17     // generated by nnode_test_cpp.py : 20170704-2006 
+ 18     ncone a = make_cone( 5879.795,-150.798,125.000,150.798 ) ; a.label = "a" ;
+ 19     ncylinder b = make_cylinder( 0.000,0.000,0.000,32.500,-150.798,150.798,0.000,0.000 ) ; b.label = "b" ;
+ 20     ncylinder c = make_cylinder( 0.000,0.000,0.000,31.500,-152.306,152.306,0.000,0.000 ) ; c.label = "c" ;
+ 21     ndifference bc = make_difference( &b, &c ) ; bc.label = "bc" ; b.parent = &bc ; c.parent = &bc ;
+ 22     bc.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  516.623,-1247.237,0.000,1.000) ;
+ 23 
+ 24     nintersection abc = make_intersection( &a, &bc ) ; abc.label = "abc" ; a.parent = &abc ; bc.parent = &abc ;
+ 25 
+ 26 
+ 27 
+ 28     abc.verbosity = SSys::getenvint("VERBOSITY", 1) ;
+ 29     abc.dump_full() ;
+ 30 
+ 31     return 0 ;
+ 32 }
+
+
+
+
+
+
+
+
+
+::
+
+    opticks-tbool-vi 30
+
+
+     75 
+     76 a = CSG("cone", param = [5879.795,-150.798,125.000,150.798],param1 = [0.000,0.000,0.000,0.000])
+
+     77 b = CSG("cylinder", param = [0.000,0.000,0.000,32.500],param1 = [-150.798,150.798,0.000,0.000])
+     78 c = CSG("cylinder", param = [0.000,0.000,0.000,31.500],param1 = [-152.306,152.306,0.000,0.000])
+     79 bc = CSG("difference", left=b, right=c)
+     80 bc.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[516.623,-1247.237,0.000,1.000]]
+ 
+    
+    # outer cy bbox.x.minmax
+    In [4]: 516.623 - 32.5, 516.623 + 32.5
+    Out[4]: (484.12300000000005, 549.123)
+
+    # outer cy bbox.y.minmax
+    In [5]: -1247.237 - 32.5, -1247.237 + 32.5
+    Out[5]: (-1279.737, -1214.737)
+                       
+
+
+
+
+     81 
+     82 abc = CSG("intersection", left=a, right=bc)
+     83 
+     84 
 
 

@@ -118,6 +118,8 @@ struct NPY_API nvec3 {
   nvec3( float x, float y, float z ) : x(x), y(y), z(z) {} ; 
 
 
+  glm::vec3 as_vec3() const ; 
+   
   void dump(const char* msg) const;
   const char* desc() const;
 

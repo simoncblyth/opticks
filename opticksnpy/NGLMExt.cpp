@@ -304,6 +304,9 @@ glm::mat4 nglmext::make_scale(const float x, const float y, const float z)
 
 
 
+
+
+
 glm::mat4 nglmext::make_translate(const glm::vec3& tlat)
 {
     return glm::translate(glm::mat4(1.f), tlat);
@@ -467,6 +470,26 @@ void nmat4triple::apply_transform_v(std::vector<glm::vec3>& dst, const std::vect
 }
 
 
+
+
+
+
+const nmat4triple* nmat4triple::make_transform( 
+           const float x0, const float y0, const float z0, const float w0,
+           const float x1, const float y1, const float z1, const float w1, 
+           const float x2, const float y2, const float z2, const float w2, 
+           const float x3, const float y3, const float z3, const float w3 
+       )  // static
+{
+    glm::mat4 t(1);
+
+    t[0] = glm::vec4(x0,y0,z0,w0); 
+    t[1] = glm::vec4(x1,y1,z1,w1); 
+    t[2] = glm::vec4(x2,y2,z2,w2); 
+    t[3] = glm::vec4(x3,y3,z3,w3); 
+
+    return new nmat4triple(t);
+}
 
 
 const nmat4triple* nmat4triple::make_translate( const glm::vec3& tlate )

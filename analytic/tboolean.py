@@ -125,7 +125,7 @@ class TBooleanBashFunction(dict):
          print self.tail
 
      def __str__(self):
-         return "\n".join([self.stamp, self.head, self.body, self.tail])  
+         return "\n".join([self.stamp, self.head, self.stamp, self.body, self.tail])  
 
 
 if __name__ == '__main__':
