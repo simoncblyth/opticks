@@ -43,6 +43,7 @@ set(SOURCES
     STimes.cc
     SLog.cc
     SBase36.cc
+    SSortKV.cc
     md5.cc
 ) 
 
@@ -62,6 +63,8 @@ set(HEADERS
     SRenderer.hh
     STimes.hh
     SLog.hh
+    SBase36.hh
+    SSortKV.hh
     OpticksCSG.h
 )
 

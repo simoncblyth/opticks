@@ -52,7 +52,7 @@ private:
     // explicit naming to avoid subclass confusion
     void countMergedMesh( GMergedMesh* other, bool selected );   
     void countSolid( GSolid*      solid, bool selected, unsigned verbosity  ); 
-    void countMesh( GMesh* mesh ); 
+    void countMesh( const GMesh* mesh ); 
 private:
     void mergeSolid( GSolid* solid, bool selected, unsigned verbosity );
     void mergeSolidIdentity( GSolid* solid, bool selected );

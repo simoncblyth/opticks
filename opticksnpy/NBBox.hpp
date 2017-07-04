@@ -20,6 +20,7 @@ struct NPY_API nbbox
     float sdf_(const glm::vec3& q, const nmat4triple* t_=NULL ) const  ;
     void scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4triple* t=NULL ) const ;
 
+
     void dump(const char* msg);
     void include(const nbbox& other );
     void include(const glm::vec3& p);
@@ -47,7 +48,7 @@ struct NPY_API nbbox
     bool find_overlap(nbbox& overlap, const nbbox& other);
 
 
-
+    void copy_from(const nbbox& src); 
 
 
     nvec4 center_extent() const ;
@@ -78,6 +79,18 @@ struct NPY_API nbbox
     bool  invert ; 
     bool  empty ; 
 };
+
+
+
+inline NPY_API void nbbox::copy_from(const nbbox& src)
+{
+    min = src.min ; 
+    max = src.max ; 
+    side = src.side ; 
+    invert = src.invert ; 
+    empty = src.empty ; 
+}
+
 
 
 inline NPY_API bool operator == (const nbbox& a , const nbbox& b )

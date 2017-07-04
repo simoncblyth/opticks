@@ -26,7 +26,9 @@ BOpticksResource::BOpticksResource(const char* envprefix)
      m_installcache_dir(NULL),
      m_rng_installcache_dir(NULL),
      m_okc_installcache_dir(NULL),
-     m_ptx_installcache_dir(NULL)
+     m_ptx_installcache_dir(NULL),
+     m_debugging_idpath(NULL),
+     m_debugging_idfold(NULL)
 {
     init();
 }
@@ -41,6 +43,7 @@ void BOpticksResource::init()
 {
     adoptInstallPrefix() ;
     setTopDownDirs();
+    setDebuggingIDPATH();
 }
 
 void BOpticksResource::adoptInstallPrefix()
@@ -86,6 +89,24 @@ void BOpticksResource::setTopDownDirs()
     m_ptx_installcache_dir = PTXInstallPath() ;  // eg  /usr/local/opticks/installcache/PTX
 }
 
+void BOpticksResource::setDebuggingIDPATH()
+{
+    // directories based on IDPATH envvar ... this is for debugging 
+    // and as workaround for npy level tests to access geometry paths 
+    // NB should only be used at that level... at higher levels use OpticksResource for this
+
+    
+    m_debugging_idpath = SSys::getenvvar("IDPATH") ;
+
+    if(!m_debugging_idpath) return ; 
+
+    std::string idfold = BFile::ParentDir(m_debugging_idpath) ;
+    m_debugging_idfold = strdup(idfold.c_str());
+
+}
+
+
+
 
 const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
 const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
@@ -95,6 +116,9 @@ const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OPTICKS_I
 const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
 const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
 const char* BOpticksResource::OKCInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "OKC"); }
+
+
+
 
 
 std::string BOpticksResource::PTXPath(const char* name, const char* target)
@@ -116,6 +140,9 @@ const char* BOpticksResource::getRNGInstallCacheDir() { return m_rng_installcach
 const char* BOpticksResource::getOKCInstallCacheDir() { return m_okc_installcache_dir ; } 
 const char* BOpticksResource::getPTXInstallCacheDir() { return m_ptx_installcache_dir ; } 
 
+
+const char* BOpticksResource::getDebuggingIDPATH() {    return m_debugging_idpath ; } 
+const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfold ; } 
 
 
 void BOpticksResource::Summary(const char* msg)
@@ -142,7 +169,8 @@ void BOpticksResource::Summary(const char* msg)
     std::string ptxpath_static = PTXPath(name); 
     std::cerr << "PTXPath(" << name << ") = " << ptxpath_static << std::endl ;   
 
-
+    std::cerr << "debugging_idpath  " << ( m_debugging_idpath ? m_debugging_idpath : "-" )<< std::endl ; 
+    std::cerr << "debugging_idfold  " << ( m_debugging_idfold ? m_debugging_idfold : "-" )<< std::endl ; 
 
 }
 

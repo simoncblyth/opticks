@@ -237,7 +237,7 @@ void test_positive_form()
         NScan scan(abcd, verbosity);
         scan.scan(sd0, origin, direction, range );
 
-        abcd.composite_bbox(bb0);
+        abcd.get_composite_bbox(bb0);
     }
     std::cout << "bb0 " << bb0.description() << std::endl ; 
 
@@ -256,7 +256,7 @@ void test_positive_form()
         NScan scan(abcd, verbosity);
         scan.scan(sd1, origin, direction, range );
 
-        abcd.composite_bbox(bb1);
+        abcd.get_composite_bbox(bb1);
 
         b.complement = false ;  
         c.complement = false ;  

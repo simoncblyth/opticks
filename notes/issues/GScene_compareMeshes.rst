@@ -1,19 +1,121 @@
-GScene compareMeshes
-========================
+GScene compareMeshes : bbox comparisons
+==========================================
+
+Some very different bbox obtained from GMesh from the two branches.
+
+* GMesh are an approximation of the real CSG geometry, but so 
+  long as polygonization is not a placeholder from a poly fail 
+  it is expected to match within ~0.2mm 
+
+* BUT ana branch polygonization has many fails .. 
+  so now comparing with the analytic prim/composite CSG bbox to avoid
+  this noise
+
+* real geometry check is to compare intersection positions between the two 
+  CSG implementations... 
+
+  * however mesh bbox pre-checking is convenient way to find big problems.
+
+  * bugs with polygonizations are non critical... 
+
+  * CSG bugs are critical
 
 
-Some very different bbox obtained from GMesh.
+bbox differences table
+-------------------------
+
+::
+
+     op --gltf 4           # dump the compare meshes table
+
+
+CAUSE FOUND : need to implement tube deltaphi
+-------------------------------------------------
+
+:doc:`lvid65`
+
+lvid 39 : FIXED : 1214.74 OcrGdsTfbInLso0xbfa2370 cone-z should be centered
+---------------------------------------------------------------------------------
+
+* :doc:`lvid30_cone_z_misinterpretation`
+
+lvid 185
+-----------
+
+* :doc:`lvid185`
+
+
+tri.GMesh.bbox vs ana.CSG.bbox diff table
+------------------------------------------------
+
+* avoiding ana branch poly fails reducues discrepant meshes to ~12 percent
+
+::
+
+   // vim :set nowrap
+   op --gltf 4
+
+    2017-07-04 14:48:42.362 INFO  [3127870] [GScene::importMeshes@317] GScene::importMeshes DONE num_meshes 249
+    2017-07-04 14:48:42.362 INFO  [3127870] [GScene::compareMeshes_GMeshBB@396] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 with_csg_bbox YES (csg bbox avoids ana branch polygonization issues) 
+       12005.8                      near_rock0xc04ba08 lvidx 247 amn ( -25000.000-25000.000-12995.000) bmn ( -25000.000-25000.000-12994.200) dmn (      0.000     0.000    -0.800) amx (  25000.000 25000.000 25000.000) bmx (  25000.000 25000.000 25000.000) dmx (      0.000     0.000     0.000)
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 amn (   1754.556   -92.444  -424.938) bmn (   1607.600     0.000  -498.500) dmn (    146.956   -92.444    73.562) amx (   2260.600  1423.667   424.938) bmx (   2262.150  1589.370   498.500) dmx (     -1.550  -165.703   -73.562)
+
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 amn (  -2000.000 -2000.000  -215.000) bmn (   1407.720    12.467  -215.000) dmn (  -3407.720 -2012.468     0.000) amx (   2000.000  2000.000   215.000) bmx (   1998.360  1404.240   215.000) dmx (      1.640   595.760     0.000)
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 amn (  -1220.000 -1220.000  -115.945) bmn (    854.653    10.020  -115.945) dmn (  -2074.653 -1230.020     0.000) amx (   1220.000  1220.000   115.945) bmx (   1218.680   854.688   115.945) dmx (      1.320   365.312     0.000)
+       # lv:65,lv:69 known cause : missing tube deltaphi handling 
+
+       1214.74                 OcrGdsTfbInLso0xbfa2370 lvidx  30 amn (    539.651 -1227.128  -127.967) bmn (    484.130 -1279.740  -150.798) dmn (     55.521    52.612    22.831) amx (    541.001 -1225.595    69.077) bmx (    549.130 -1214.740    87.691) dmx (     -8.129   -10.855   -18.614)
+           320                      SstTopHub0xc2643d8 lvidx  68 amn (   -220.500  -220.500  -340.000) bmn (   -220.500  -220.500  -340.000) dmn (      0.000     0.000     0.000) amx (    220.500   220.500     0.000) bmx (    220.500   220.500  -320.000) dmx (      0.000     0.000   320.000)
+       84.5234                 OcrCalLsoInOav0xc541388 lvidx  41 amn (   -728.306  1587.576   -56.310) bmn (   -728.313  1587.580   -50.919) dmn (      0.007    -0.004    -5.391) amx (   -628.306  1687.576    56.310) bmx (   -628.313  1687.580   -28.213) dmx (      0.007    -0.004    84.523)
+       64.4695                    OcrGdsInIav0xc405b10 lvidx  23 amn (    485.123 -1278.737   -44.720) bmn (    485.117 -1278.740   -37.759) dmn (      0.006     0.003    -6.960) amx (    548.123 -1215.737    44.720) bmx (    548.117 -1215.740   -19.750) dmx (      0.006     0.003    64.470)
+        63.159                    OcrGdsInLso0xbfa2190 lvidx  31 amn (    485.123 -1278.737  -258.298) bmn (    485.131 -1278.720  -251.054) dmn (     -0.008    -0.017    -7.244) amx (    548.123 -1215.737   258.298) bmx (    548.131 -1215.720   195.139) dmx (     -0.008    -0.017    63.159)
+       63.1589                    OcrGdsInOav0xc355130 lvidx  38 amn (    485.123 -1278.737   -56.310) bmn (    485.126 -1278.730   -27.581) dmn (     -0.003    -0.007   -28.730) amx (    548.123 -1215.737    56.310) bmx (    548.126 -1215.730    -6.849) dmx (     -0.003    -0.007    63.159)
+       63.1071                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 amn (    484.123 -1279.737   -56.310) bmn (    484.128 -1279.740   -27.612) dmn (     -0.005     0.003   -28.698) amx (    549.123 -1214.737    56.310) bmx (    549.128 -1214.740    -6.797) dmx (     -0.005     0.003    63.107)
+       62.1898                 OcrGdsLsoInOav0xc354118 lvidx  40 amn (    466.623 -1297.237   -56.310) bmn (    466.616 -1297.240   -28.580) dmn (      0.007     0.003   -27.730) amx (    566.623 -1197.237    56.310) bmx (    566.616 -1197.240    -5.879) dmx (      0.007     0.003    62.190)
+       55.9963               pmt-hemi-cathode0xc2f1ce8 lvidx  43 amn (   -128.000  -128.000     0.000) bmn (    -98.138   -98.147    55.996) dmn (    -29.862   -29.853   -55.996) amx (    128.000   128.000   128.000) bmx (     98.148    98.139   128.000) dmx (     29.852    29.861     0.000)
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 amn (    -32.080   -32.080  -218.666) bmn (    -32.500   -32.500  -219.413) dmn (      0.420     0.420     0.747) amx (     32.080    32.080   247.488) bmx (     32.500    32.500   247.488) dmx (     -0.420    -0.420    -0.000)
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 amn (    -98.000   -98.000     0.000) bmn (    -98.000   -98.000    26.218) dmn (      0.000     0.000   -26.218) amx (     98.000    98.000   214.596) bmx (     98.000    98.000   214.596) dmx (      0.000     0.000     0.000)
+            20               headon-pmt-mount0xc2a7670 lvidx  55 amn (    -51.377   -51.377  -120.000) bmn (    -36.850   -36.850  -100.000) dmn (    -14.528   -14.528   -20.000) amx (     51.377    51.377   100.000) bmx (     36.850    36.850   100.000) dmx (     14.528    14.528     0.000)
+       12.8687                   pmt-hemi-bot0xc22a958 lvidx  44 amn (    -99.000   -99.000   -99.000) bmn (    -98.143   -98.143   -99.000) dmn (     -0.857    -0.857     0.000) amx (     99.000    99.000     0.000) bmx (     98.143    98.143   -12.869) dmx (      0.857     0.857    12.869)
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 amn (  -2000.000  -100.000  -147.000) bmn (  -2000.000   -99.876  -135.000) dmn (      0.000    -0.124   -12.000) amx (   2000.000   100.000   147.000) bmx (   2000.070   100.124   146.908) dmx (     -0.070    -0.124     0.092)
+        10.035                   weight-shell0xc307920 lvidx 103 amn (    -10.002   -10.002   -28.444) bmn (    -10.035   -10.035   -18.475) dmn (      0.033     0.033    -9.969) amx (     10.002    10.002    28.444) bmx (     10.035    10.035    18.475) dmx (     -0.033    -0.033     9.969)
+        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 amn (    -10.007   -10.007   -24.844) bmn (    -10.035   -10.035   -14.865) dmn (      0.028     0.028    -9.979) amx (     10.007    10.007    24.844) bmx (     10.035    10.036    24.899) dmx (     -0.028    -0.029    -0.056)
+        10.035                   source-shell0xc2d62d0 lvidx 111 amn (    -10.007   -10.007   -24.844) bmn (    -10.035   -10.035   -14.865) dmn (      0.028     0.028    -9.979) amx (     10.007    10.007    24.844) bmx (     10.035    10.035    14.865) dmx (     -0.028    -0.028     9.979)
+        10.035               led-source-shell0xc3068f0 lvidx 100 amn (    -10.007   -10.007   -24.844) bmn (    -10.035   -10.035   -14.865) dmn (      0.028     0.028    -9.979) amx (     10.007    10.007    24.844) bmx (     10.035    10.035    14.865) dmx (     -0.028    -0.028     9.979)
+             5                      LsoOflTnk0xc17d928 lvidx 140 amn (   -920.000  -920.000   -10.000) bmn (   -920.042  -920.000    -5.000) dmn (      0.042     0.000    -5.000) amx (    920.000   920.000   170.000) bmx (    920.000   920.031   170.057) dmx (      0.000    -0.031    -0.057)
+         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 amn (    -98.000   -98.000     0.000) bmn (    -98.000   -98.000     3.882) dmn (      0.000     0.000    -3.882) amx (     98.000    98.000   214.596) bmx (     98.000    98.000   214.596) dmx (      0.000     0.000     0.000)
+         1.712                       pmt-hemi0xc0fed90 lvidx  47 amn (   -100.763  -100.763  -169.000) bmn (   -100.288  -100.288  -168.995) dmn (     -0.475    -0.475    -0.005) amx (    100.763   100.763   130.734) bmx (    100.288   100.288   131.000) dmx (      0.475     0.475    -0.266)
+       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 amn (  -1097.840   -50.000   -10.000) bmn (  -1097.840   -50.000   -10.000) dmn (      0.000     0.000     0.000) amx (   1097.840    50.000    10.000) bmx (   1096.830    50.000    10.000) dmx (      1.010     0.000     0.000)
+           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 amn ( -30500.000 -7500.000 -7500.000) bmn ( -30500.500 -7500.390 -7500.290) dmn (      0.500     0.390     0.290) amx (  13500.000  7500.000  7500.000) bmx (  13500.000  7500.000  7500.000) dmx (      0.000     0.000     0.000)
+      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 amn (   -100.000 -5871.000  -147.000) bmn (   -100.358 -5871.000  -147.196) dmn (      0.358     0.000     0.196) amx (    100.000  5871.000   147.000) bmx (    100.358  5871.000   147.196) dmx (     -0.358     0.000    -0.196)
+      0.119995                            oav0xc2ed7c8 lvidx  42 amn (  -2037.442 -2037.442 -1968.500) bmn (  -2040.070 -2040.120 -1968.500) dmn (      2.628     2.678     0.000) amx (   2037.442  2037.442  2125.092) bmx (   2039.930  2039.880  2126.210) dmx (     -2.488    -2.438    -1.118)
+    2017-07-04 14:48:42.381 INFO  [3127870] [GScene::compareMeshes_GMeshBB@478] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 with_csg_bbox YES num_discrepant 29 frac 0.116466
+    Assertion failed: (0 && "GScene::init early exit for gltf==4"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 157.
+
+
+
+GMesh bbox diff table
+-----------------------
+
+* 38 percent of meshes have bbox discrep : by comparison with above, most of these are from ana branch poly fails
 
 
 ::
 
+   // vim :set nowrap
    op --gltf 4
 
     2017-07-03 20:53:28.697 INFO  [2994395] [GScene::importMeshes@304] GScene::importMeshes DONE num_meshes 249
        3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 amn (  -2000.000 -2000.000  -215.000) bmn (   1407.720    12.467  -215.000) dmn (  -3407.720 -2012.468     0.000) amx (   2000.000  2000.000   215.000) bmx (   1998.360  1404.240   215.000) dmx (      1.640   595.760     0.000)
        2074.65               SstTopCirRibBase0xc264f78 lvidx  69 amn (  -1220.000 -1220.000  -115.945) bmn (    854.653    10.020  -115.945) dmn (  -2074.653 -1230.020     0.000) amx (   1220.000  1220.000   115.945) bmx (   1218.680   854.688   115.945) dmx (      1.320   365.312     0.000)
+       ## top 2 : are due to need to add tube deltaphi 
+
        1214.74                 OcrGdsTfbInLso0xbfa2370 lvidx  30 amn (      0.000 -1279.737     0.000) bmn (    484.130 -1279.740  -150.798) dmn (   -484.130     0.003   150.798) amx (    549.123     0.000   150.798) bmx (    549.130 -1214.740    87.691) dmx (     -0.007  1214.740    63.107)
+       ## FIXED : twas cone-z should be centered
+
         1155.6                       MOFTTube0xc046b40 lvidx 185 amn (    574.598   -29.010  -113.129) bmn (   -581.000  -581.000  -127.500) dmn (   1155.598   551.990    14.371) amx (    580.602    29.010   113.129) bmx (    581.000   581.000   127.500) dmx (     -0.398  -551.990   -14.371)
+       ## LEAVE ASIS : just failed poly  
+
        503.343                        GDBTube0xc213f68 lvidx 171 amn (    248.968   -18.171   -97.799) bmn (   -254.375  -254.375  -100.190) dmn (    503.343   236.204     2.391) amx (    254.172    18.171    97.799) bmx (    254.375   254.375   100.190) dmx (     -0.203  -236.204    -2.391)
        494.793                      GdsOflTnk0xc3d5160 lvidx 142 amn (   -165.248  -165.248   -30.000) bmn (   -660.041  -660.030   -30.002) dmn (    494.793   494.782     0.002) amx (    659.559   165.248   225.000) bmx (    660.041   660.030   225.010) dmx (     -0.482  -494.782    -0.010)
        337.053                      IavTopRib0xbf8e168 lvidx  36 amn (   -373.143   -25.000   -54.500) bmn (   -710.196   -25.000   -54.500) dmn (    337.053     0.000     0.000) amx (    710.196    25.000    54.500) bmx (    710.196    25.000    54.500) dmx (      0.000     0.000     0.000)
@@ -107,83 +209,6 @@ Some very different bbox obtained from GMesh.
        0.10289           MCBTopFlangeInterior0xc213c68 lvidx 181 amn (   -174.897  -174.897   -10.000) bmn (   -175.000  -175.000   -10.000) dmn (      0.103     0.103     0.000) amx (    174.897   174.897    10.000) bmx (    175.000   175.000    10.000) dmx (     -0.103    -0.103     0.000)
     2017-07-03 20:53:28.708 INFO  [2994395] [GScene::compareMeshes_GMeshBB@469] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 num_discrepant 95 frac 0.381526
     Assertion failed: (0 && "GScene::init early exit for gltf==4"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 153.
-
-::
-
-    simon:ggeo blyth$ DBGMESH=SstBotCirRibBase0x NSceneMeshTest 
-    2017-07-03 20:58:12.915 INFO  [2996117] [NGLTF::load@35] NGLTF::load path /tmp/blyth/opticks/tgltf-t-/sc.gltf
-    2017-07-03 20:58:13.431 INFO  [2996117] [NGLTF::load@62] NGLTF::load DONE
-    2017-07-03 20:58:13.457 INFO  [2996117] [NSceneConfig::NSceneConfig@12] NSceneConfig::NSceneConfig cfg check_surf_containment=0,check_aabb_containment=0
-            check_surf_containment :                    0
-            check_aabb_containment :                    0
-    2017-07-03 20:58:13.457 INFO  [2996117] [NScene::init@140] NScene::init START age(s) 12311 days   0.142
-    2017-07-03 20:58:13.457 INFO  [2996117] [NScene::load_csg_metadata@252] NScene::load_csg_metadata verbosity 1 num_meshes 249
-    2017-07-03 20:58:13.875 INFO  [2996117] [NScene::postimportnd@491] NScene::postimportnd numNd 12230 num_selected 12230 dbgnode -1 dbgnode_list 0 verbosity 1
-    2017-07-03 20:58:14.048 INFO  [2996117] [NScene::count_progeny_digests@866] NScene::count_progeny_digests verbosity 1 node_count 12230 digest_size 249
-    2017-07-03 20:58:15.328 INFO  [2996117] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
-    2017-07-03 20:58:15.727 INFO  [2996117] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
-    2017-07-03 20:58:15.769 INFO  [2996117] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
-    2017-07-03 20:58:17.358 INFO  [2996117] [NScene::postimportmesh@509] NScene::postimportmesh numNd 12230 dbgnode -1 dbgnode_list 0 verbosity 1
-                      check_surf_containment : 0
-                      check_aabb_containment : 0
-    2017-07-03 20:58:17.359 INFO  [2996117] [NScene::init@180] NScene::init DONE
-    2017-07-03 20:58:17.359 INFO  [2996117] [NScene::dumpCSG@412] NScene::dumpCSG num_csg 249 dbgmesh SstBotCirRibBase0x
-    2017-07-03 20:58:17.359 INFO  [2996117] [NCSG::dump@905] NCSG::dump
-     NCSG  ix   76 surfpoints   33 so SstBotCirRibBase0xc26e2d0                lv /dd/Geometry/AdDetails/lvSstBotCirRibBase0xc26e220
-    NCSG::dump (root) [ 0:di] OPER  v:0
-             L [ 1:di] OPER  v:0
-             L [ 3:di] OPER  v:0
-             L [ 7:cy] PRIM  v:0 bb  mi  (-2000.00 -2000.00 -215.00)  mx  (2000.00 2000.00  215.00)  si  (4000.00 4000.00  430.00) 
-             R [ 8:cy] PRIM  v:0 bb  mi  (-1980.00 -1980.00 -217.15)  mx  (1980.00 1980.00  217.15)  si  (3960.00 3960.00  434.30) 
-             R [ 4:bo] PRIM  v:0 bb  mi  ( 245.00  -12.50 -220.00)  mx  (2265.00   12.50  220.00)  si  (2020.00   25.00  440.00) 
-             R [ 2:bo] PRIM  v:0 bb  mi  ( 164.40  164.40 -220.00)  mx  (1610.44 1610.44  220.00)  si  (1446.03 1446.03  440.00) 
-     composite_bb  mi  (-2000.00 -2000.00 -215.00)  mx  (2000.00 2000.00  215.00)  si  (4000.00 4000.00  430.00) 
-    NParameters::dump
-             lvname : /dd/Geometry/AdDetails/lvSstBotCirRibBase0xc26e220
-             soname : SstBotCirRibBase0xc26e2d0
-          verbosity :               0
-         resolution :              20
-               poly :              IM
-             height :               3
-    2017-07-03 20:58:17.359 INFO  [2996117] [NCSG::dump_surface_points@1195] dsp num_sp 33 dmax 200
-     i    0 sp (     -0.000  2000.000  -215.000)
-     i    1 sp (  -2000.000    -0.000  -215.000)
-     i    2 sp (      0.000 -2000.000  -215.000)
-     i    3 sp (     -0.000  2000.000  -112.875)
-     i    4 sp (  -2000.000    -0.000  -112.875)
-     i    5 sp (      0.000 -2000.000  -112.875)
-     i    6 sp (     -0.000  2000.000   -10.750)
-     i    7 sp (  -2000.000    -0.000   -10.750)
-     i    8 sp (      0.000 -2000.000   -10.750)
-     i    9 sp (     -0.000  2000.000    91.375)
-     i   10 sp (  -2000.000    -0.000    91.375)
-     i   11 sp (      0.000 -2000.000    91.375)
-     i   12 sp (     -0.000  2000.000   193.500)
-     i   13 sp (  -2000.000    -0.000   193.500)
-     i   14 sp (      0.000 -2000.000   193.500)
-     i   15 sp (     -0.000  2000.000   215.000)
-     i   16 sp (  -2000.000    -0.000   215.000)
-     i   17 sp (      0.000 -2000.000   215.000)
-     i   18 sp (     -0.000  2000.000  -215.000)
-     i   19 sp (  -2000.000    -0.000  -215.000)
-     i   20 sp (      0.000 -2000.000  -215.000)
-     i   21 sp (     -0.000  1980.000  -114.004)
-     i   22 sp (  -1980.000    -0.000  -114.004)
-     i   23 sp (      0.000 -1980.000  -114.004)
-     i   24 sp (     -0.000  1980.000   -10.857)
-     i   25 sp (  -1980.000    -0.000   -10.857)
-     i   26 sp (      0.000 -1980.000   -10.857)
-     i   27 sp (     -0.000  1980.000    92.289)
-     i   28 sp (  -1980.000    -0.000    92.289)
-     i   29 sp (      0.000 -1980.000    92.289)
-     i   30 sp (     -0.000  1980.000   195.435)
-     i   31 sp (  -1980.000    -0.000   195.435)
-     i   32 sp (      0.000 -1980.000   195.435)
-     csg.index (mesh_id) 76 num nodes 16
-     node idx :  4440 4441 4442 4443 4444 4445 4446 4447 6100 6101 ... 
-
-
-     op --dsst2   
 
 
 

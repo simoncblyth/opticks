@@ -553,10 +553,10 @@ class Cone(Primitive):
         pass
 
         r1 = self.rmin1 if only_inner else self.rmax1 
-        z1 = 0
+        z1 = -self.z/2
 
         r2 = self.rmin2 if only_inner else self.rmax2 
-        z2 = self.z
+        z2 = self.z/2
    
         cn = self.make_cone( r1,z1,r2,z2, self.name )
 

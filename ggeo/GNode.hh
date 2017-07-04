@@ -15,7 +15,7 @@ class GSolid ;
 
 class GGEO_API GNode {
   public:
-      GNode(unsigned int index, GMatrix<float>* transform, GMesh* mesh);
+      GNode(unsigned int index, GMatrix<float>* transform, const GMesh* mesh);
       void setIndex(unsigned int index);
       virtual ~GNode();
 
@@ -73,7 +73,7 @@ class GGEO_API GNode {
       char*         getDescription();
       gfloat3*      getLow();
       gfloat3*      getHigh();
-      GMesh*        getMesh();
+      const GMesh*  getMesh();
       unsigned      getMeshIndex() const ;
 
   public:
@@ -140,7 +140,7 @@ class GGEO_API GNode {
       GMatrixF*           m_transform ; 
       GMatrixF*           m_ltransform ; 
   protected: 
-      GMesh*              m_mesh ; 
+      const GMesh*        m_mesh ; 
   private: 
       gfloat3*            m_low ; 
       gfloat3*            m_high ; 

@@ -81,7 +81,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
 int GMesh::g_instance_count = 0 ;
 
 
-bool GMesh::isEmpty()
+bool GMesh::isEmpty() const 
 {
     return m_num_vertices == 0 && m_num_faces == 0 ; 
 }
@@ -177,7 +177,14 @@ const NCSG* GMesh::getCSG() const
 {
     return m_csg ; 
 }
-
+void GMesh::setAlt(const GMesh* alt)
+{
+    m_alt = alt ; 
+}
+const GMesh* GMesh::getAlt() const 
+{
+    return m_alt ; 
+}
 
 
 
@@ -213,7 +220,7 @@ void GMesh::setVerbosity(unsigned int verbosity)
     m_verbosity = verbosity ; 
 }
 
-unsigned int GMesh::getVerbosity()
+unsigned int GMesh::getVerbosity() const 
 {
     return m_verbosity ; 
 }
@@ -223,11 +230,11 @@ void GMesh::setName(const char* name)
      m_name = name ? strdup(name) : NULL ;
      if(m_name) findShortName();
 }  
-const char* GMesh::getName()
+const char* GMesh::getName() const 
 {
      return m_name ; 
 }
-const char* GMesh::getShortName()
+const char* GMesh::getShortName() const 
 {
      return m_shortname ; 
 }
@@ -237,7 +244,7 @@ void GMesh::setVersion(const char* version)
 {
      m_version = version ? strdup(version) : NULL ;
 }  
-const char* GMesh::getVersion()
+const char* GMesh::getVersion() const 
 {
      return m_version ; 
 }
@@ -245,23 +252,23 @@ const char* GMesh::getVersion()
 
 
 
-unsigned int GMesh::getIndex()
+unsigned int GMesh::getIndex() const 
 {
     return m_index ; 
 }
-unsigned int GMesh::getNumVertices()
+unsigned int GMesh::getNumVertices() const 
 {
     return m_num_vertices ; 
 }
-unsigned int GMesh::getNumFaces()
+unsigned int GMesh::getNumFaces() const 
 {
     return m_num_faces ; 
 }
-unsigned int GMesh::getNumSolids()
+unsigned int GMesh::getNumSolids() const 
 {
     return m_num_solids ; 
 }
-unsigned int GMesh::getNumSolidsSelected()
+unsigned int GMesh::getNumSolidsSelected() const 
 {
     return m_num_solids_selected ; 
 }
@@ -293,7 +300,7 @@ void GMesh::setHigh(gfloat3* high)
 {
     m_high = high ;
 }
-bool GMesh::hasTexcoords()
+bool GMesh::hasTexcoords() const 
 {
     return m_texcoords != NULL ;
 }
@@ -342,14 +349,14 @@ gfloat2* GMesh::getTexcoords()
 }
 
 
-guint3*  GMesh::getFaces()
+guint3*  GMesh::getFaces() const 
 {
     return m_faces ;
 }
 
 
 // index is used from subclass
-gfloat4 GMesh::getCenterExtent(unsigned int index)
+gfloat4 GMesh::getCenterExtent(unsigned int index) const 
 {
     return m_center_extent[index] ;
 }
@@ -539,7 +546,7 @@ bool GMesh::hasITransformsBuffer()
 
 
 
-char GMesh::getGeoCode()
+char GMesh::getGeoCode() const 
 {
     return m_geocode ; 
 }
@@ -1113,7 +1120,7 @@ void GMesh::setColor(float r, float g, float b)
     }
 }
 
-void GMesh::dumpNormals(const char* msg, unsigned int nmax)
+void GMesh::dumpNormals(const char* msg, unsigned int nmax) const 
 {
     LOG(info) << msg  ;
     LOG(info) << " num_vertices " << m_num_vertices 
@@ -1126,9 +1133,7 @@ void GMesh::dumpNormals(const char* msg, unsigned int nmax)
     } 
 }
 
-
-
-void GMesh::dump(const char* msg, unsigned int nmax)
+void GMesh::dump(const char* msg, unsigned int nmax) const 
 {
     LOG(info) << msg  
               << " num_vertices " << m_num_vertices 
@@ -1205,7 +1210,7 @@ void GMesh::dump(const char* msg, unsigned int nmax)
 
 
 
-std::string GMesh::desc() 
+std::string GMesh::desc() const  
 {
     std::stringstream ss ; 
     unsigned nv = getNumVertices();
@@ -1220,12 +1225,8 @@ std::string GMesh::desc()
     return ss.str();
 }
 
-
-
-
-void GMesh::Summary(const char* msg)
+void GMesh::Summary(const char* msg) const 
 {
-
    LOG(info) << msg ;  
 
    printf("%s idx %u vx %u fc %u n %s sn %s \n",
@@ -1448,7 +1449,7 @@ void GMesh::updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform)
 
 
 
-gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
+gfloat3* GMesh::getTransformedVertices(GMatrixF& transform ) const 
 {
      gfloat3* vertices = new gfloat3[m_num_vertices];
      for(unsigned int i = 0; i < m_num_vertices; i++)
@@ -1462,7 +1463,7 @@ gfloat3* GMesh::getTransformedVertices(GMatrixF& transform )
      return vertices ;
 }
 
-gfloat3* GMesh::getTransformedNormals(GMatrixF& transform )
+gfloat3* GMesh::getTransformedNormals(GMatrixF& transform ) const 
 {
      gfloat3* normals = new gfloat3[m_num_vertices];
      for(unsigned int i = 0; i < m_num_vertices; i++)

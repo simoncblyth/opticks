@@ -35,7 +35,8 @@ struct NPY_API nnode
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
 
-    void composite_bbox( nbbox& bb ) const ;
+    void get_composite_bbox( nbbox& bb ) const ;
+    void get_primitive_bbox( nbbox& bb ) const ;
 
     virtual npart part() const ;
     virtual unsigned maxdepth();

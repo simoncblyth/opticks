@@ -39,10 +39,14 @@ class BRAP_API  BOpticksResource {
         const char* getPTXInstallCacheDir();
 
         std::string getPTXPath(const char* name, const char* target="OptiXRap");
+   public:       
+        const char* getDebuggingIDPATH();
+        const char* getDebuggingIDFOLD();
    private:
         void init();
         void adoptInstallPrefix();
         void setTopDownDirs();
+        void setDebuggingIDPATH();
 
         //void readG4Environment();
         //void readOpticksEnvironment();
@@ -56,6 +60,9 @@ class BRAP_API  BOpticksResource {
         const char* m_rng_installcache_dir ; 
         const char* m_okc_installcache_dir ; 
         const char* m_ptx_installcache_dir ; 
+   protected:
+        const char* m_debugging_idpath ; 
+        const char* m_debugging_idfold ; 
 };
 
 #include "BRAP_TAIL.hh"

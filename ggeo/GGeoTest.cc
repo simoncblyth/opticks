@@ -162,7 +162,10 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 
     GSolid* container = m_maker->make( index, type, param, spec) ;  // container box
-    container->getMesh()->setIndex(1000);
+
+    GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
+    mesh->setIndex(1000);
+
     container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
     container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
 

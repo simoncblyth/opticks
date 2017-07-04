@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <cstdio>
 
+#include "NBBox.hpp"
+#include "NQuad.hpp"
+
 #include "GMatrix.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -43,6 +46,7 @@ struct GGEO_API gfloat3
     gfloat3(float _x) : x(_x), y(_x), z(_x) {} ;
     gfloat3(float _x, float _y, float _z) : x(_x), y(_y), z(_z) {} ;
     gfloat3(const gfloat3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
+    gfloat3(const nvec3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
 
     bool operator==(const gfloat3& other) const 
     {
@@ -147,6 +151,8 @@ struct GGEO_API gfloat4
 
 
 
+
+// TODO: get rid of this, move to nbbox 
 struct GGEO_API gbbox 
 {
    static float MaxDiff( const gbbox& a, const gbbox& b);
@@ -155,6 +161,7 @@ struct GGEO_API gbbox
    gbbox(float s) :  min(gfloat3(-s)), max(gfloat3(s)) {} ; 
    gbbox(const gfloat3& _min, const gfloat3& _max) :  min(_min), max(_max) {} ; 
    gbbox(const gbbox& other ) : min(other.min), max(other.max) {} ;
+   gbbox(const nbbox& other ) : min(other.min), max(other.max) {} ;
 
    gfloat3 dimensions()
    {

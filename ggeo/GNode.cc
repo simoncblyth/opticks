@@ -23,7 +23,7 @@
 
 
 
-GNode::GNode(unsigned int index, GMatrixF* transform, GMesh* mesh) 
+GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh) 
     :
     m_selfdigest(true),
     m_index(index), 
@@ -59,7 +59,7 @@ gfloat3* GNode::getHigh()
 {
     return m_high ; 
 }
-GMesh* GNode::getMesh() 
+const GMesh* GNode::getMesh() 
 {
    return m_mesh ;
 }
@@ -226,7 +226,8 @@ void GNode::dump(const char* )
 
 void GNode::updateBounds(gfloat3& low, gfloat3& high )
 {
-    m_mesh->updateBounds(low, high, *m_transform); 
+   // TODO: reorg to avoid this... 
+    const_cast<GMesh*>(m_mesh)->updateBounds(low, high, *m_transform); 
 }
 
 void GNode::updateBounds()
@@ -448,7 +449,7 @@ unsigned int GNode::getProgenyNumVertices()
         for(NIT it=progeny.begin() ; it != progeny.end() ; it++)
         {
             GNode* node = *it ; 
-            GMesh* mesh = node->getMesh();
+            const GMesh* mesh = node->getMesh();
             num_vertices += mesh->getNumVertices();
         }
         GNode* extra = m_selfdigest ? this : NULL ; 

@@ -225,7 +225,7 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 
 void GMergedMesh::countSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
-    GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = solid->getMesh();
 
     m_num_solids += 1 ; 
 
@@ -244,7 +244,7 @@ void GMergedMesh::countSolid( GSolid* solid, bool selected, unsigned verbosity )
               ;
 }
 
-void GMergedMesh::countMesh( GMesh* mesh )
+void GMergedMesh::countMesh( const GMesh* mesh )
 {
     unsigned int nface = mesh->getNumFaces();
     unsigned int nvert = mesh->getNumVertices();
@@ -372,7 +372,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
     assert(dest);
     transform->copyTo(dest);
 
-    GMesh* mesh = solid->getMesh();   // triangulated
+    const GMesh* mesh = solid->getMesh();   // triangulated
     GParts* pts = solid->getParts();  // analytic 
 
     unsigned num_vert = mesh->getNumVertices();
@@ -437,7 +437,7 @@ void GMergedMesh::mergeSolidBBox( gfloat3* vertices, unsigned nvert )
 
 void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
 {
-    GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = solid->getMesh();
 
     unsigned nvert = mesh->getNumVertices();
     unsigned nface = mesh->getNumFaces();

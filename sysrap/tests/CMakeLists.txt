@@ -11,6 +11,7 @@ set(TEST_SOURCES
    SVecTest.cc
    SProcTest.cc
    SBase36Test.cc
+   SSortKVTest.cc
    SDigestTest.cc
    OpticksCMakeConfigTest.cc
    PLogTest.cc 

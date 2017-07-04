@@ -175,7 +175,15 @@ void NScene::init()
 
     dump_repeat_candidates();
 
-    labelTree();
+    if(m_config->disable_instancing > 0)
+    { 
+        LOG(warning) << "NScene::init disable_instancing via gltfconfig " ; 
+    }
+    else
+    { 
+        labelTree();
+    } 
+    
 
     if(m_verbosity > 1)
     dumpRepeatCount(); 
@@ -491,7 +499,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->depth = depth ;
     n->boundary = boundary ;
     n->pvname = pvname ; 
-    n->selected = selected ; 
+    n->selected = selected ;  // TODO: get rid of this, are now doing selection in GScene 
     n->containment = 0 ; 
     n->transform = new nmat4triple( ynode->matrix.data() ); 
     n->gtransform = nd::make_global_transform(n) ;   
@@ -873,12 +881,9 @@ void NScene::check_aabb_containment_r(const nd* n)
 
 void NScene::count_progeny_digests_r(nd* n)
 {
-    //if(n->selected)
-    {
-        const std::string& pdig = n->get_progeny_digest();
-        m_digest_count->add(pdig.c_str());
-        m_node_count++ ; 
-    }
+    const std::string& pdig = n->get_progeny_digest();
+    m_digest_count->add(pdig.c_str());
+    m_node_count++ ; 
 
     for(nd* c : n->children) count_progeny_digests_r(c) ;
 }

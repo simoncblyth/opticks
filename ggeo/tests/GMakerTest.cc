@@ -44,7 +44,7 @@ void GMakerTest::make()
 
     solid->Summary();
 
-    GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = solid->getMesh();
 
     mesh->dump();
 }
@@ -70,7 +70,7 @@ void GMakerTest::makeFromCSG()
 
         GSolid* solid = m_maker->makeFromCSG(csg, verbosity );
 
-        GMesh* mesh = solid->getMesh();
+        const GMesh* mesh = solid->getMesh();
 
         mesh->Summary();
 

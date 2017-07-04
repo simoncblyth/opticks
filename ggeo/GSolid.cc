@@ -20,7 +20,7 @@
 #include "GGEO_BODY.hh"
 
 
-GSolid::GSolid( unsigned int index, GMatrix<float>* transform, GMesh* mesh, unsigned int boundary, NSensor* sensor)
+GSolid::GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),

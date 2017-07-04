@@ -205,21 +205,23 @@ class GGEO_API GMesh : public GDrawable {
       void allocate();  // must first have set numVertices, numFaces, numSolids
       void deallocate(); 
       virtual ~GMesh();
-      void setVerbosity(unsigned int verbosity); 
-      unsigned int getVerbosity();
+      void setVerbosity(unsigned verbosity); 
+      unsigned getVerbosity() const ;
   private:
       void init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords);
   public:
       GMesh* makeDedupedCopy();
 
-      std::string desc() ;
-      void Summary(const char* msg="GMesh::Summary");
-      void dump(const char* msg="GMesh::dump", unsigned int nmax=10);
-      void dumpNormals(const char* msg="GMesh::dumpNormals", unsigned int nmax=10);
+      std::string desc() const ;
+      void Summary(const char* msg="GMesh::Summary") const ;
+      void dump(const char* msg="GMesh::dump", unsigned int nmax=10) const ;
+      void dumpNormals(const char* msg="GMesh::dumpNormals", unsigned int nmax=10) const ;
   public:
       void setIndex(unsigned int index);
       void setName(const char* name);
       void setCSG(const NCSG* csg);
+      void setAlt(const GMesh* alt);
+    
 
       void setGeoCode(char geocode);
       void setInstanceSlice(NSlice* slice);
@@ -227,11 +229,12 @@ class GGEO_API GMesh : public GDrawable {
       void setPartSlice(NSlice* slice);
       void setVersion(const char* version);
 
-      const char* getName();
-      const char* getShortName();
-      const char* getVersion();
-      char getGeoCode();
+      const char* getName() const ;
+      const char* getShortName() const ;
+      const char* getVersion() const ;
+      char getGeoCode() const ;
       const NCSG* getCSG() const ; 
+      const GMesh* getAlt() const ; 
 
       NSlice* getInstanceSlice();
       NSlice* getFaceSlice();
@@ -245,7 +248,7 @@ class GGEO_API GMesh : public GDrawable {
       gfloat3* getHigh();
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
-      gfloat4  getCenterExtent(unsigned int index);
+      gfloat4  getCenterExtent(unsigned int index) const ;
       //glm::vec4 getCenterExtent(unsigned int index);
 
 
@@ -257,16 +260,17 @@ class GGEO_API GMesh : public GDrawable {
       GMatrix<float>* getModelToWorld();
 
   public:
-      bool     isEmpty();
-      unsigned getIndex();
-      unsigned getNumVertices();
+      bool     isEmpty() const ;
+      unsigned getIndex() const ;
+      unsigned getNumVertices() const ;
       //unsigned getNumColors();
-      unsigned getNumFaces();
-      unsigned getNumSolidsSelected();
-      unsigned getNumSolids();
-      unsigned getNumTransforms();
+      unsigned getNumFaces() const ;
+      unsigned getNumSolidsSelected() const ;
+      unsigned getNumSolids() const ;
 
-      unsigned getNumITransforms();
+  public:
+      unsigned getNumTransforms() ;
+      unsigned getNumITransforms() ;
 
   public:
       // debug
@@ -277,9 +281,9 @@ class GGEO_API GMesh : public GDrawable {
       gfloat3*       getNormals();
       gfloat3*       getColors();
       gfloat2*       getTexcoords();
-      bool hasTexcoords();
+      bool hasTexcoords() const ;
   public:
-      guint3*        getFaces();
+      guint3*        getFaces() const ;
 
   public:
       static GMesh* load(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
@@ -433,8 +437,8 @@ class GGEO_API GMesh : public GDrawable {
       void setColor(float r, float g, float b);
  
   public:
-       gfloat3* getTransformedVertices(GMatrixF& transform );
-       gfloat3* getTransformedNormals(GMatrixF& transform );
+       gfloat3* getTransformedVertices(GMatrixF& transform ) const ;
+       gfloat3* getTransformedNormals(GMatrixF& transform ) const ;
 
   public:
       static gbbox*  findBBox(gfloat3* vertices, unsigned int num_vertices);
@@ -528,6 +532,7 @@ class GGEO_API GMesh : public GDrawable {
 
       //GParts*      m_parts ; 
       const NCSG*    m_csg ; 
+      const GMesh*   m_alt ; 
 
       unsigned int   m_verbosity ; 
 

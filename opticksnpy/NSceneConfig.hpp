@@ -9,5 +9,6 @@ struct NPY_API NSceneConfig : BConfig
 
     int check_surf_containment ; 
     int check_aabb_containment ; 
+    int disable_instancing     ;   // useful whilst debugging geometry subsets 
 };
 

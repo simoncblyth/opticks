@@ -273,7 +273,7 @@ npart nnode::part() const
 }
 
 
-void nnode::composite_bbox( nbbox& bb ) const 
+void nnode::get_composite_bbox( nbbox& bb ) const 
 {
     assert( left && right );
 
@@ -324,6 +324,68 @@ void nnode::composite_bbox( nbbox& bb ) const
 
 }  
 
+
+
+void nnode::get_primitive_bbox(nbbox& bb) const 
+{
+    assert(is_primitive());
+
+    const nnode* node = this ;  
+
+    if(node->type == CSG_SPHERE)
+    { 
+        const nsphere* n = dynamic_cast<const nsphere*>(node) ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else if(node->type == CSG_ZSPHERE)
+    {
+        nzsphere* n = (nzsphere*)node ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else if(node->type == CSG_BOX || node->type == CSG_BOX3)
+    {
+        nbox* n = (nbox*)node ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else if(node->type == CSG_SLAB || node->type == CSG_PLANE)
+    {
+        assert(0);
+    }
+    else if(node->type == CSG_CYLINDER)
+    {
+        ncylinder* n = (ncylinder*)node ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    } 
+    else if(node->type == CSG_DISC)
+    {
+        ndisc* n = (ndisc*)node ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else if(node->type == CSG_CONE)
+    {
+        ncone* n = (ncone*)node ;
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else if(node->type == CSG_CONVEXPOLYHEDRON)
+    {
+        nconvexpolyhedron* n = (nconvexpolyhedron*)node ; 
+        nbbox pp = n->bbox() ;
+        bb.copy_from(pp) ; 
+    }
+    else
+    {
+        LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+        assert(0);
+    }
+}
+
+
 nbbox nnode::bbox() const 
 {
     if(verbosity > 0)
@@ -332,12 +394,11 @@ nbbox nnode::bbox() const
     nbbox bb = make_bbox_base() ; 
     if(is_primitive())
     { 
-        LOG(warning) << "nnode::bbox USE SHAPE SUBCLASS FOR PRIMITIVE BBOX  " ;   // TODO: upcasting 
-        //assert(0 && "nnode::bbox() needs to be overridden for all primitives" );
+        get_primitive_bbox(bb);
     } 
     else 
     {
-        composite_bbox(bb);
+        get_composite_bbox(bb);
     }
     return bb ; 
 }
@@ -486,6 +547,12 @@ std::function<float(float,float,float)> nnode::sdf() const
     }
     return f ;
 }
+
+
+
+
+
+
 
 
 

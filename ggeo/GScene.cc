@@ -1,5 +1,9 @@
 #include "OpticksConst.hh"
 
+
+
+#include "SSortKV.hh"
+
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -298,6 +302,15 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         mesh->setCSG(csg);
         mesh->setName(strdup(soname.c_str()));
 
+        const char* aname = mesh->getName() ; 
+        GMesh* alt = m_tri_meshlib->getMesh(aname, false);
+        assert(alt);
+        mesh->setAlt(alt);
+
+        alt->setAlt(mesh);
+
+
+
         //m_meshes[mesh_idx] = mesh ;
         m_meshlib->add(mesh);
     }
@@ -361,38 +374,6 @@ void GScene::compareMeshes()
 }
 
 
-struct Delta 
-{
-    typedef std::pair<std::string, float> SF ; 
-    typedef std::vector<SF> VSF ;
-
-    void add(const char* name, float delta_)
-    {
-        delta.push_back(SF(name, delta_));
-    } 
-    bool operator()( const SF& a, const SF& b) const 
-    {
-        return a.second > b.second ; 
-    } 
-    void sort()
-    {
-        std::sort(delta.begin(), delta.end(), *this );
-    }
-    const std::string& getName(unsigned i)
-    {
-        return delta[i].first ; 
-    }
-    float getDiff(unsigned i)
-    {
-        return delta[i].second ; 
-    }
-
-    VSF delta ; 
-
-};
-
-
-
 void GScene::compareMeshes_GMeshBB()
 {
     GMeshLib* ana = m_meshlib ; 
@@ -407,33 +388,61 @@ void GScene::compareMeshes_GMeshBB()
     unsigned num_discrepant(0);
 
     bool startswith = false ; 
+    bool descending = true ; 
+    SSortKV delta(descending);
 
-    Delta delta ; 
+    bool with_csg_bbox = true ; 
+
+    LOG(info) << "GScene::compareMeshes_GMeshBB"
+              << " num_meshes " << num_meshes
+              << " cut " << cut 
+              << " with_csg_bbox " << ( with_csg_bbox ? "YES" : "NO" )
+              << " (csg bbox avoids ana branch polygonization issues) "
+              ;
 
     for(unsigned i=0 ; i < num_meshes ; i++ )
     {
         GMesh* a = ana->getMesh(i);
         const char* aname = a->getName() ; 
-        gbbox abb = a->getBBox(0) ; 
+
+        gbbox abb = a->getBBox(0) ;   // depends on my NPolygonization IM/HY/DCS/etc... 
+
+        NCSG* csg = findCSG(aname, startswith);
+        assert( csg == a->getCSG() );  
+        nnode* root = csg->getRoot();
+        nbbox cbb = root->bbox();    // depends on my CSG tree primitive/composite bbox calc 
 
         GMesh* b = tri->getMesh(aname, startswith);
+        const GMesh* b2 = a->getAlt();
+        assert( b == b2 );
 
-        gbbox bbb = b->getBBox(0) ; 
+        const GMesh* a2 = b->getAlt(); 
+        assert( a == a2 );
 
-        float delta_ = gbbox::MaxDiff(abb,bbb);
-        delta.add(aname, delta_);
+        gbbox bbb = b->getBBox(0) ;   // depends on G4 polygonization 
+
+        float diff = gbbox::MaxDiff( with_csg_bbox ? cbb : abb ,bbb) ;
+
+        delta.add(aname, diff);
     }
 
     delta.sort();
 
-    for(unsigned i=0 ; i < delta.delta.size() ; i++)
+    for(unsigned i=0 ; i < delta.getNum() ; i++)
     {
-        float dmax  = delta.getDiff(i);
+        float dmax  = delta.getVal(i);
         if(dmax < cut) continue ; 
         
-        std::string name = delta.getName(i);
+        std::string name = delta.getKey(i);
+
         GMesh* a = ana->getMesh(name.c_str(), startswith);
         GMesh* b = tri->getMesh(name.c_str(), startswith);
+
+        const GMesh* a2 = b->getAlt();
+        assert( a2 == a );
+        const GMesh* b2 = a->getAlt();
+        assert( b2 == b );
+
 
         NCSG*  csg = findCSG(name.c_str(), startswith);
         assert( csg == a->getCSG() );  
@@ -469,6 +478,7 @@ void GScene::compareMeshes_GMeshBB()
     LOG(info) << "GScene::compareMeshes_GMeshBB"
               << " num_meshes " << num_meshes
               << " cut " << cut 
+              << " with_csg_bbox " << ( with_csg_bbox ? "YES" : "NO" )
               << " num_discrepant " << num_discrepant
               << " frac " << float(num_discrepant)/float(num_meshes)
               ;
@@ -577,6 +587,10 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
     unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
 
     GMesh* mesh = getMesh(rel_mesh_idx);
+    const GMesh* altmesh = mesh->getAlt();
+    assert(altmesh);
+
+
     NCSG*   csg =  getCSG(rel_mesh_idx);
 
     glm::mat4 xf_global = n->gtransform->t ;    
@@ -584,7 +598,10 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
-    GSolid* solid = new GSolid( rel_node_idx, gtransform, mesh, UINT_MAX, NULL );     
+    // for odd gltf : use the tri GMesh within the analytic GSolid 
+    // for direct comparison of analytic ray trace with tri polygonization
+
+    GSolid* solid = new GSolid( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ), UINT_MAX, NULL );     
    
     solid->setLevelTransform(ltransform); 
 
@@ -697,7 +714,17 @@ void GScene::transferIdentity( GSolid* node, const nd* n)
     assert( abs_node_idx == tri_nodeIdx );
 
     assert( tri_meshIdx == abs_mesh_idx );
-    assert( check_id.y  == rel_mesh_idx );
+
+    if(m_gltf == 3)
+    {
+       // using tri mesh within ana
+        assert( check_id.y  == abs_mesh_idx );
+    }
+    else
+    {
+        assert( check_id.y  == rel_mesh_idx );
+    }
+
 
 /*
     if(!match_mesh_index)   // how is mesh idx used ?? does is need to be absolute ??
@@ -1001,7 +1028,7 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
     GSolid* solid = m_ggeo->getSolidAnalytic(dbgnode);
     GNodeLib* nlib = m_ggeo->getNodeLib();
 
-    GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = solid->getMesh();
     unsigned mesh_idx = mesh->getIndex();
     NCSG* csg = m_scene->getCSG(mesh_idx);
     nnode* root = csg->getRoot();

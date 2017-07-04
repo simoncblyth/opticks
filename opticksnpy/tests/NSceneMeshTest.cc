@@ -1,9 +1,10 @@
 
 #include "SSys.hh"
+#include "BOpticksResource.hh"
+
 
 #include "NScene.hpp"
 #include "NPY.hpp"
-
 
 #include "NPY_LOG.hh"
 #include "PLOG.hh"
@@ -15,16 +16,22 @@ int main(int argc, char** argv)
     NPY_LOG__ ; 
 
 
-    //Opticks ok(argc, argv);  no opticks at this level
-    //ok.configure();
+    BOpticksResource okr ;  // no Opticks at this level 
+
 
     const char* dbgmesh = SSys::getenvvar("DBGMESH");
     int dbgnode = SSys::getenvint("DBGNODE", -1) ; 
 
-    // $TMP/tgltf-t/sc.gltf
-    const char* gltfbase = argc > 1 ? argv[1] : "$TMP/tgltf-t-" ;
-    const char* gltfname = "sc.gltf" ;
+    const char* gltfbase = argc > 1 ? argv[1] : okr.getDebuggingIDFOLD() ;
+    const char* gltfname = "g4_00.gltf" ;
     const char* gltfconfig = "check_surf_containment=0,check_aabb_containment=0" ; 
+
+    LOG(info) << argv[0]
+              << " gltfbase " << gltfbase
+              << " gltfname " << gltfname
+              << " gltfconfig " << gltfconfig
+              ;
+
 
     if(!NScene::Exists(gltfbase, gltfname))
     {

@@ -100,8 +100,8 @@ void GColorizer::traverse(GSolid* root)
 void GColorizer::traverse_r( GNode* node, unsigned depth)
 {
     GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    GMesh* mesh = solid->getMesh();
-    unsigned int nvert = mesh->getNumVertices();
+    const GMesh* mesh = solid->getMesh();
+    unsigned nvert = mesh->getNumVertices();
 
 
     bool selected = solid->isSelected() && solid->getRepeatIndex() == m_repeat_index ;
