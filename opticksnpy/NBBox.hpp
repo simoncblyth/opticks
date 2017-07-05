@@ -31,6 +31,9 @@ struct NPY_API nbbox
     const char* desc() const;
     std::string description() const ; 
 
+
+    static bool inside_range(const float v, const float vmin, const float vmax ) ;
+  
     static NBBoxContainment_t classify_containment_1( float delta, float epsilon,  NBBoxContainment_t neg, NBBoxContainment_t eps, NBBoxContainment_t pos );
     static std::string containment_mask_string( unsigned mask );
     static const char* containment_name( NBBoxContainment_t cont );
@@ -43,7 +46,7 @@ struct NPY_API nbbox
 
 
     static bool HasOverlap(const nbbox& a, const nbbox& b );
-    static void SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap);
+    static void SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap, int verbosity );
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
     static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity );
 

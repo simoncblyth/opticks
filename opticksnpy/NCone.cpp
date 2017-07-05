@@ -21,8 +21,8 @@
 
 nbbox ncone::bbox() const 
 {
-    glm::vec3 mi(  rmax(),  rmax(), z2() );
-    glm::vec3 mx( -rmax(), -rmax(), z1() );
+    glm::vec3 mx(  rmax(),  rmax(), z2() );
+    glm::vec3 mi( -rmax(), -rmax(), z1() );
 
     nbbox bb = make_bbox(mi, mx, complement);
 

@@ -88,4 +88,52 @@ off the bottom.::
 
 
 
+Following implementation of bbox::SubtractOverlap in nbbox::CombineCSG that chops bboxes::
+
+    337     else if( op == CSG_DIFFERENCE )
+    338     {
+    339         if(!a.invert && !b.invert)
+    340         {
+    341             expr = " BB(A - B)  -> BB(A)  " ;  // hmm can do better than this by considering A - B ->  A*!B
+    342             //comb.include(a); 
+    343 
+    344             nbbox a_overlap ;
+    345             FindOverlap(a_overlap, a, b );
+    346             SubtractOverlap(comb, a, a_overlap);
+    347         }
+
+
+::
+
+    simon:opticks blyth$ opticks-nnt 247
+    opticks-nnt : compiling /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/247/NNodeTest_247.cc
+    /usr/local/opticks/lib/NNodeTest_247
+     du [ 0:di ab] OPER  v:1 2017-07-05 20:54:06.586 INFO  [3484843] [nnode::bbox@408] nnode::bbox [ 0:di ab]
+     i 0 j 1 k 2 jk_match N omax_i_inside N omin_i_inside N a.min[i] -25000.000 a.max[i]  25000.000 o.min[i] -25000.000 o.max[i]  25000.000
+     i 1 j 2 k 0 jk_match N omax_i_inside N omin_i_inside N a.min[i] -25000.000 a.max[i]  25000.000 o.min[i] -25000.000 o.max[i]  25000.000
+     i 2 j 0 k 1 jk_match Y omax_i_inside Y omin_i_inside N a.min[i] -25000.000 a.max[i]  25000.000 o.min[i] -25000.000 o.max[i] -12995.000
+    pulling up a.min ie chopping off below 
+    nbbox::CombineCSG  BB(A - B)  -> BB(A)  
+     L  mi ( -25000.000-25000.000-25000.000) mx (  25000.000 25000.000 25000.000) si (  50000.000 50000.000 50000.000)
+     R  mi ( -25005.000-25005.000-25005.000) mx (  25005.000 25005.000-12995.000) si (  50010.000 50010.000 12010.000)
+     C  mi ( -25000.000-25000.000-12995.000) mx (  25000.000 25000.000 25000.000) si (  50000.000 50000.000 37995.000)
+    nnode::composite_bbox  left [ 0:bo a]  right [ 0:bo b]  bb  mi ( -25000.000-25000.000-12995.000) mx (  25000.000 25000.000 25000.000) si (  50000.000 50000.000 37995.000)
+     bb  mi ( -25000.000-25000.000-12995.000) mx (  25000.000 25000.000 25000.000) si (  50000.000 50000.000 37995.000)
+
+     du [ 0:bo a]  PRIM  v:0  bb  mi ( -25000.000-25000.000-25000.000) mx (  25000.000 25000.000 25000.000) si (  50000.000 50000.000 50000.000)
+     gt [ 0:bo a]  NO gtransform 
+     du [ 0:bo b]  PRIM  v:0  bb  mi ( -25005.000-25005.000-25005.000) mx (  25005.000 25005.000-12995.000) si (  50010.000 50010.000 12010.000)
+     gt [ 0:bo b]       gt.t
+                1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -19000.000   1.000 
+
+     gt [ 0:di ab] NO gtransform 
+     gt [ 0:bo a]  NO gtransform 
+     gt [ 0:bo b]       gt.t
+                1.000   0.000   0.000   0.000 
+                0.000   1.000   0.000   0.000 
+                0.000   0.000   1.000   0.000 
+                0.000   0.000 -19000.000   1.000 
 

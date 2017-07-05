@@ -186,65 +186,87 @@ bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
 }
 
 
-void nbbox::SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap)
+bool nbbox::inside_range(const float v, const float vmin, const float vmax ) 
+{
+    return v > vmin && v < vmax ; 
+}
+
+void nbbox::SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& o, int verbosity )
 {
     /*
-    a_overlap must be the overlap of a with another box 
+    Overlap *o* must be the overlap of *a* with another box, this simplifies 
+    the conditions to handle.
     
-    This simplifies things...
-
     * small contained overlap cutaways (eg chopping off a corner or a hole in middle) 
       cannot be expressed as a bbox so they dont change the bbox : just leave at *a* 
 
     * overlaps need to be complete along two dimensions in order to 
-      result in a chop that can apply along the other axis 
+      be able to chop along the other axis 
+
+
+    * if there is a chop axis (say z), then just need to know whether
+      the need to change min.z or max.z to effect the chop
+
+
+       +-----------+
+       |  a        |
+       *- - - - - -*
+       |           |
+       |  o        |
+       +-----------+
 
     */
 
-    if(a_overlap.is_empty())
-    {
-        result = a ; 
-        return ; 
-    }
-
-    // looking for a pair of axes with complete coverage
-    // in order to be able to chop on the other axis
-
-    bool min_match[3] ;
-    bool max_match[3] ;
-
-    min_match[0] = a_overlap.min.x == a.min.x ;
-    min_match[1] = a_overlap.min.y == a.min.y ;
-    min_match[2] = a_overlap.min.z == a.min.z ;
-
-    max_match[0] = a_overlap.max.x == a.max.x ;
-    max_match[1] = a_overlap.max.y == a.max.y ;
-    max_match[2] = a_overlap.max.z == a.max.z ;
-
+    result = a ; 
+    if(o.is_empty()) return ; 
 
     for(unsigned i=0 ; i < 3 ; i++) // test each axis for potential chop, ie when there is complete coverage in other two directions
     {
         unsigned j = (i + 1) % 3 ;  
         unsigned k = (i + 2) % 3 ; 
 
-        bool jk_match = min_match[j] && min_match[k] && max_match[j] && max_match[k] ;
+        bool jk_match = 
+                         o.min[j] == a.min[j]  &&
+                         o.min[k] == a.min[k]  &&
+                         o.max[j] == a.max[j]  &&
+                         o.max[k] == a.max[k]   ;
 
+
+        bool omax_i_inside = inside_range(o.max[i], a.min[i], a.max[i]) ;
+        bool omin_i_inside = inside_range(o.min[i], a.min[i], a.max[i]) ;
+
+
+        if(verbosity > 2)
         std::cout 
                  << " i " << std::setw(1) << i
                  << " j " << std::setw(1) << j 
                  << " k " << std::setw(1) << k 
-                 << " jk_match " << ( jk_match ? "YES" : "NO" )
+                 << " jk_match " << ( jk_match ? "Y" : "N" )
+                 << " omax_i_inside " << ( omax_i_inside ? "Y" : "N" )
+                 << " omin_i_inside " << ( omin_i_inside ? "Y" : "N" )
+                 << " a.min[i] " << std::setw(10) << std::fixed << std::setprecision(3) << a.min[i]
+                 << " a.max[i] " << std::setw(10) << std::fixed << std::setprecision(3) << a.max[i]
+                 << " o.min[i] " << std::setw(10) << std::fixed << std::setprecision(3) << o.min[i]
+                 << " o.max[i] " << std::setw(10) << std::fixed << std::setprecision(3) << o.max[i]
                  << std::endl ; 
 
-         
+ 
+        if(omax_i_inside)
+        {
+            if(verbosity > 2)
+            std::cout << "pulling up a.min ie chopping off below " << std::endl ;
 
-     
+            result.min[i] = o.max[i] ;    
+        }
+        else if(omin_i_inside)
+        {
+            if(verbosity > 2)
+            std::cout << "pulling down a.max ie chopping off above " << std::endl ;
 
+            result.max[i] = o.min[i] ;    
+        }
     }
-
-    result = a ; 
 }
-
 
 
 
@@ -323,11 +345,16 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
         if(!a.invert && !b.invert)  
         {
             expr = " BB(A - B)  -> BB(A)  " ;  // hmm can do better than this by considering A - B ->  A*!B
-            //comb.include(a); 
+            comb.include(a); 
 
+/*
+        // needs more debug ... fixes some but makes many worse
             nbbox a_overlap ; 
             FindOverlap(a_overlap, a, b );
-            SubtractOverlap(comb, a, a_overlap);
+            SubtractOverlap(comb, a, a_overlap, verbosity);
+*/
+
+
         }
         else if( a.invert && b.invert)   
         {

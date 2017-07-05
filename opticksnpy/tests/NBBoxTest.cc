@@ -559,31 +559,69 @@ void test_FindOverlap()
     assert( ab.max.z == b.max.z );
 } 
 
-void test_SubtractOverlap()
+void test_SubtractOverlap_Below()
 {
-    LOG(info) << "test_SubtractOverlap" ;
+    LOG(info) << "test_SubtractOverlap_Below" ;
    
-
     nbbox a = make_bbox(-10,-10,-10,   10,10,10 );
     nbbox b = make_bbox(-11,-11,-11,   11,11, 0 );
 
-    nbbox ab = make_bbox() ; 
-    nbbox::FindOverlap(ab, a, b );
+    nbbox o = make_bbox() ; 
+    nbbox::FindOverlap(o, a, b );
 
-    nbbox a_b = make_bbox();
-    nbbox::SubtractOverlap(a_b, a, ab );
+    std::cout << " a " << a.desc() << std::endl ; 
+    std::cout << " b " << b.desc() << std::endl ; 
+    std::cout << " o " << o.desc() << std::endl ; 
 
-    std::cout << " a_b " << a_b.desc() << std::endl ; 
+    int verbosity = SSys::getenvint("VERBOSITY",0) ; 
+    nbbox d = make_bbox();
+    nbbox::SubtractOverlap(d, a, o, verbosity );
 
+    std::cout << " d " << d.desc() << std::endl ; 
+
+    assert( d.max.x == a.max.x );
+    assert( d.max.y == a.max.y );
+    assert( d.max.z == a.max.z );
  
-    assert( a_b.min.x = a.min.x );
-    assert( a_b.min.y = a.min.y );
-    assert( a_b.min.z = b.max.z );
-
-    assert( a_b.max.x = a.max.x );
-    assert( a_b.max.y = a.max.y );
-    assert( a_b.max.z = a.max.z );
+    assert( d.min.x == a.min.x );
+    assert( d.min.y == a.min.y );
+    assert( d.min.z == b.max.z );
 }
+
+
+void test_SubtractOverlap_Above()
+{
+    LOG(info) << "test_SubtractOverlap_Above" ;
+   
+    nbbox a = make_bbox(-10,-10,-10,   10,10,10 );
+    nbbox b = make_bbox(-11,-11,  0,   11,11,11 );
+
+    nbbox o = make_bbox() ; 
+    nbbox::FindOverlap(o, a, b );
+
+    std::cout << " a " << a.desc() << std::endl ; 
+    std::cout << " b " << b.desc() << std::endl ; 
+    std::cout << " o " << o.desc() << std::endl ; 
+
+    nbbox d = make_bbox();
+    int verbosity = SSys::getenvint("VERBOSITY",0) ; 
+    nbbox::SubtractOverlap(d, a, o, verbosity );
+
+    std::cout << " d " << d.desc() << std::endl ; 
+
+    // chopping of top doesnt change min 
+    assert( d.min.x == a.min.x );  
+    assert( d.min.y == a.min.y );
+    assert( d.min.z == a.min.z );
+ 
+    //  the chop brings max.z down to b.min.z
+    assert( d.max.x == a.max.x );
+    assert( d.max.y == a.max.y );
+    assert( d.max.z == b.min.z );
+}
+
+
+
 
 
 
@@ -593,27 +631,31 @@ int main(int argc, char** argv)
 
     NPY_LOG__ ; 
 
-    //test_bbox_transform();
 
     //const char* path = "$TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1/transforms.npy" ;
     //test_bbox_transform_loaded( argc > 1 ? argv[1] : path );
 
-    //test_overlap();
-    //test_positive_form();
+    /*
+    test_bbox_transform();
 
-    //test_default_copy_ctor();
+    test_overlap();
+    test_positive_form();
+    test_default_copy_ctor();
+
+    test_sdf();
+    test_sdf_transformed();
 
 
-    //test_sdf();
-    //test_sdf_transformed();
-    //test_from_points();
-    //test_difference_bbox();
-    //test_origin_offset_difference_bbox();
-    //test_intersection_cone_difference_bbox() ;
-    //test_difference_chop_bbox();
+    test_from_points();
+    test_difference_bbox();
+    test_origin_offset_difference_bbox();
+    test_intersection_cone_difference_bbox() ;
+    test_difference_chop_bbox();
 
-    //test_FindOverlap();
-    test_SubtractOverlap();
+    test_FindOverlap();
+    test_SubtractOverlap_Below();
+    */
+    test_SubtractOverlap_Above();
 
 
     return 0 ; 
