@@ -1,14 +1,12 @@
-
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
 #include "GItemList.hh"
-#include "GCSG.hh"
-
 #include "GMaker.hh"
 #include "GMergedMesh.hh"
 
 
+#include "GCSG.hh"
 #include "PLOG.hh"
 
 
@@ -32,6 +30,10 @@ const char* GCSG::TypeName(unsigned int typecode)
     }
     return NULL ; 
 }
+
+
+
+
 
 
 GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 
@@ -193,6 +195,8 @@ void GCSG::dump(const char* msg)
        printf("\n");
     }   
 }
+
+
 
 
 /*

@@ -14,8 +14,8 @@
 
 
 // huh why both ?
-//#include "numpy.hpp"
 #include "NGLM.hpp"
+#include "NBBox.hpp"
 
 #include "NPY.hpp"
 
@@ -655,6 +655,7 @@ void GMesh::allocate()
 
     setCenterExtent(new gfloat4[numSolids]);
     setBBox(new gbbox[numSolids]);
+    //setBBox(new nbbox[numSolids]);
     setMeshes(new unsigned[numSolids]);
     setNodeInfo(new guint4[numSolids]);
     setIdentity(new guint4[numSolids]);
@@ -1279,8 +1280,22 @@ gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
 {
     if(num_vertices == 0) return NULL ;
 
-    gbbox* bb = new gbbox (gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
 
+
+    std::vector<glm::vec3> points ; 
+
+    for( unsigned int i = 0; i < num_vertices ;++i )
+    {
+        gfloat3& v = vertices[i];
+        glm::vec3 p(v.x,v.y,v.z);
+        points.push_back(p);
+    }
+
+    nbbox nbb = nbbox::from_points(points);
+    gbbox* bb = new gbbox(nbb);
+
+/*
+    gbbox* bb = new gbbox (gfloat3(FLT_MAX), gfloat3(-FLT_MAX)) ; 
     for( unsigned int i = 0; i < num_vertices ;++i )
     {
         gfloat3& v = vertices[i];
@@ -1293,6 +1308,8 @@ gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
         bb->max.y = std::max( bb->max.y, v.y);
         bb->max.z = std::max( bb->max.z, v.z);
     }
+*/
+
     return bb ; 
 } 
 

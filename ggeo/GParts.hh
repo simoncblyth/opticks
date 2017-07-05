@@ -108,7 +108,7 @@ class GGEO_API GParts {
         std::string  getBoundaryName(unsigned int part);
         const char*  getTypeName(unsigned int part);
    private:
-        gbbox        getBBox(unsigned int i);
+        nbbox        getBBox(unsigned int i);
         gfloat3      getGfloat3(unsigned int i, unsigned int j, unsigned int k);
         float*       getValues(unsigned int i, unsigned int j, unsigned int k);
     public:

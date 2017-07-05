@@ -8,6 +8,8 @@
 #include "OpticksCSG.h"
 
 // npy-
+
+#include "NBBox.hpp"
 #include "NGLMExt.hpp"
 #include "NPY.hpp"
 #include "NSlice.hpp"
@@ -121,7 +123,11 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
     float size = param.w ;  
     //-------   
     // FIX: this is wrong for most solids 
-    gbbox bb(gfloat3(-size), gfloat3(size));  
+    //gbbox bb(gfloat3(-size), gfloat3(size));  
+     
+    nbbox bb = make_bbox(glm::vec3(-size), glm::vec3(size));  
+
+
     if(csgflag == CSG_ZSPHERE)
     {
         assert( 0 && "TODO: geometry specifics should live in nzsphere etc.. not here " );
@@ -998,11 +1004,13 @@ nivec4 GParts::getPrimInfo(unsigned int iprim)
     nivec4 pri = make_nivec4( *ptr, *(ptr+1), *(ptr+2), *(ptr+3) );
     return pri ;  
 }
-gbbox GParts::getBBox(unsigned int i)
+nbbox GParts::getBBox(unsigned int i)
 {
    gfloat3 min = getGfloat3(i, BBMIN_J, BBMIN_K );  
    gfloat3 max = getGfloat3(i, BBMAX_J, BBMAX_K );  
-   gbbox bb(min, max) ; 
+   //gbbox bb(min, max) ; 
+
+   nbbox bb = make_bbox(min.x, min.y, min.z, max.x, max.y, max.z);  
    return bb ; 
 }
 

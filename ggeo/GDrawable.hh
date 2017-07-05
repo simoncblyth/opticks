@@ -1,8 +1,16 @@
 #pragma once
 
 #include <vector>
+
 #include "GBuffer.hh"
 #include "GVector.hh"
+#include "GBBox.hh"
+
+//class GBuffer ; 
+//struct gfloat4 ; 
+//struct gfloat3 ; 
+//struct gbbox ; 
+
 
 template <typename T> class NPY ;
 
@@ -29,7 +37,7 @@ class GGEO_API GDrawable {
       virtual std::vector<unsigned int>& getDistinctBoundaries() = 0;
 
       virtual gfloat4 getCenterExtent(unsigned int index) const = 0 ;
-      virtual gbbox   getBBox(unsigned int index) = 0 ;
+      virtual gbbox     getBBox(unsigned int index) = 0 ;
       virtual unsigned int findContainer(gfloat3 p) = 0 ;
 
 };      

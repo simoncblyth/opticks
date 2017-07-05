@@ -7,6 +7,8 @@ class GParts ;
 class NCSG ; 
 
 
+//struct nbbox ; 
+
 template <typename T> class GMatrix ; 
 
 #include "GVector.hh"
@@ -254,6 +256,7 @@ class GGEO_API GMesh : public GDrawable {
 
       gbbox    getBBox(unsigned int index);
       gbbox*   getBBoxPtr();
+
       float* getTransform(unsigned int index);
       float* getITransform(unsigned int index);
       gfloat3* getDimensions();

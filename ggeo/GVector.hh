@@ -6,11 +6,11 @@
 #include <algorithm>
 #include <cstdio>
 
+//#include "NGLM.hpp"
+//#include <glm/gtx/component_wise.hpp>
+//#include "NBBox.hpp"
 
-#include "NGLM.hpp"
-#include "NBBox.hpp"
 #include "NQuad.hpp"
-
 #include "GMatrix.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -31,8 +31,6 @@ struct GGEO_API gfloat2
 };
 
 
-
-
 struct GGEO_API gfloat3 
 {
     static gfloat3 minimum(const gfloat3& a, const gfloat3& b)
@@ -50,10 +48,11 @@ struct GGEO_API gfloat3
     gfloat3(const gfloat3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
     gfloat3(const nvec3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
 
-    glm::vec3 as_vec3() const 
-    {
-        return glm::vec3(x,y,z);
-    }
+    //gfloat3(const glm::vec3& other ) : x(other.x), y(other.y), z(other.z)  {} ;
+    //glm::vec3 as_vec3() const 
+    //{
+    //    return glm::vec3(x,y,z);
+    //}
    
     bool operator==(const gfloat3& other) const 
     {
@@ -153,84 +152,6 @@ struct GGEO_API gfloat4
 
     float x,y,z,w ;
 };
-
-
-
-
-
-
-// TODO: get rid of this, move to nbbox 
-struct GGEO_API gbbox 
-{
-   static float MaxDiff( const gbbox& a, const gbbox& b);
-
-   gbbox() : min(gfloat3(0.f)), max(gfloat3(0.f)) {} ;
-   gbbox(float s) :  min(gfloat3(-s)), max(gfloat3(s)) {} ; 
-   gbbox(const gfloat3& _min, const gfloat3& _max) :  min(_min), max(_max) {} ; 
-   gbbox(const gbbox& other ) : min(other.min), max(other.max) {} ;
-   gbbox(const nbbox& other ) : min(other.min), max(other.max) {} ;
-
-   gfloat3 dimensions()
-   {
-       return gfloat3(max.x - min.x, max.y - min.y, max.z - min.z );
-   } 
-   gfloat3 center()
-   {
-       return gfloat3( (max.x + min.x)/2.0f , (max.y + min.y)/2.0f , (max.z + min.z)/2.0f ) ;
-   }
-
-   void enlarge(float factor)  //  multiple of extent
-   {
-       gfloat3 dim = dimensions();
-       float ext = extent(dim); 
-       float amount = ext*factor ; 
-       min -= gfloat3(amount) ;
-       max += gfloat3(amount) ;
-   }
-
-   void include(const gbbox& other)
-   { 
-       min = gfloat3::minimum( min, other.min ); 
-       max = gfloat3::maximum( max, other.max ); 
-   }
-
-   gbbox& operator *= (const GMatrixF& m)
-   {
-       min *= m ; 
-       max *= m ; 
-       return *this ;
-       // hmm rotations will make the new bbox not axis aligned... see nbbox::transform
-   }
-
-   float extent(const gfloat3& dim)
-   {
-       float _extent(0.f) ;
-       _extent = std::max( dim.x , _extent );
-       _extent = std::max( dim.y , _extent );
-       _extent = std::max( dim.z , _extent );
-       _extent = _extent / 2.0f ;         
-       return _extent ; 
-   }
-
-   gfloat4 center_extent()
-   {
-       gfloat3 cen = center();
-       gfloat3 dim = dimensions();
-       float ext = extent(dim); 
-
-       return gfloat4( cen.x, cen.y, cen.z, ext );
-   } 
-
-   void Summary(const char* msg) const ;
-   std::string description() const ;
-   std::string desc() const ;
-
-
-   gfloat3 min ; 
-   gfloat3 max ; 
-};
-
-
 
 
 

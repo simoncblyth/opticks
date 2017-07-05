@@ -1,5 +1,6 @@
 #include "GMatrix.hh"
 #include "GVector.hh"
+#include "GBBox.hh"
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"

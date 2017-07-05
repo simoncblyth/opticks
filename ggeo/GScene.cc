@@ -36,8 +36,7 @@
 #include "GColorizer.hh"
 #include "GMergedMesh.hh"
 
-
-
+#define AS_VEC3(q) glm::vec3((q).x, (q).y, (q).z) 
 
 
 #include "PLOG.hh"
@@ -457,11 +456,11 @@ void GScene::compareMeshes_GMeshBB()
         gbbox bb = b->getBBox(0) ; 
         nbbox cc = root->bbox();    // depends on my CSG tree primitive/composite bbox calc 
 
-        glm::vec3 amn(with_csg_bbox ? cc.min.as_vec3() : aa.min.as_vec3());
-        glm::vec3 amx(with_csg_bbox ? cc.max.as_vec3() : aa.max.as_vec3());
+        glm::vec3 amn(with_csg_bbox ? AS_VEC3(cc.min) : AS_VEC3(aa.min));
+        glm::vec3 amx(with_csg_bbox ? AS_VEC3(cc.max) : AS_VEC3(aa.max));
 
-        glm::vec3 bmn(bb.min.as_vec3());
-        glm::vec3 bmx(bb.max.as_vec3());
+        glm::vec3 bmn(AS_VEC3(bb.min));
+        glm::vec3 bmx(AS_VEC3(bb.max));
 
         glm::vec3 dmn = amn - bmn ; 
         glm::vec3 dmx = amx - bmx ; 

@@ -71,6 +71,7 @@ set(SOURCES
     GMatrix.cc
 
     GVector.cc
+    GBBox.cc
 
     GDrawable.cc
     GOpticalSurface.cc
