@@ -36,7 +36,6 @@ void nbbox::transform_brute(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
 
     tbb.min = { t_min.x , t_min.y, t_min.z } ;
     tbb.max = { t_max.x , t_max.y, t_max.z } ;
-    tbb.side = tbb.max - tbb.min ;
 }
 
 void nbbox::transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
@@ -63,7 +62,6 @@ void nbbox::transform(nbbox& tbb, const nbbox& bb, const glm::mat4& t )
 
     tbb.min = { t_min.x , t_min.y, t_min.z } ;
     tbb.max = { t_max.x , t_max.y, t_max.z } ;
-    tbb.side = tbb.max - tbb.min ;
 }
 
 std::string nbbox::containment_mask_string( unsigned mask )
@@ -166,11 +164,13 @@ bool nbbox::HasOverlap(const nbbox& a, const nbbox& b )
     return true ; 
 }
 
+
+
 bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
 {
     if(!HasOverlap(a,b)) 
     {
-        overlap.empty = true ; 
+        overlap.set_empty() ; 
         return false ; 
     }
 
@@ -181,8 +181,6 @@ bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
     overlap.max.x = fminf(a.max.x, b.max.x) ;
     overlap.max.y = fminf(a.max.y, b.max.y) ;
     overlap.max.z = fminf(a.max.z, b.max.z) ;
-
-    overlap.side = overlap.max - overlap.min ; 
 
     return true ; 
 }
@@ -202,7 +200,6 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
     std::string expr ; 
 
     comb.invert = false ; // set true for unbounders
-    comb.empty = false ;  // set true when no overlap found
 
     if(op == CSG_INTERSECTION )
     {
@@ -374,12 +371,15 @@ void nbbox::scan_sdf( const glm::vec3& o, const glm::vec3& range, const nmat4tri
 std::string nbbox::description() const 
 {
     std::stringstream ss ; 
+
+    nvec3 si = side();
+
     ss
         << " mi " << min.desc() 
         << " mx " << max.desc() 
-        << " si " << side.desc() 
+        << " si " << si.desc() 
         << ( invert ? " INVERTED" : "" )
-        << ( empty ? " EMPTY" : "" )
+        << ( is_empty() ? " EMPTY" : "" )
         ;
 
     return ss.str();
@@ -403,26 +403,39 @@ void nbbox::dump(const char* msg)
 
 void nbbox::include(const nbbox& other)
 {
-    min = nminf( min, other.min );
-    max = nmaxf( max, other.max );
-    side = max - min ; 
+    if(is_empty())
+    {
+        min = other.min ; 
+        max = other.max ;
+    }
+    else
+    { 
+        min = nminf( min, other.min );
+        max = nmaxf( max, other.max );
+    }
 }
-
 
 void nbbox::include(const glm::vec3& p)
 {
     nvec3 pp = {p.x, p.y, p.z } ;
-
-    min = nminf( min, pp );
-    max = nmaxf( max, pp );
-    side = max - min ; 
+    if(is_empty())
+    {
+        min = pp ; 
+        max = pp ; 
+    }
+    else
+    {
+        min = nminf( min, pp );
+        max = nmaxf( max, pp );
+    }
 }
 
 nbbox nbbox::from_points(const std::vector<glm::vec3>& points)
 {
-    nbbox bb ;
-    bb.empty = false ; 
-    bb.invert = false ; 
+    nbbox bb = make_bbox() ;
+
+    assert( bb.is_empty() );
+    assert( bb.invert == false );
 
     for(unsigned i=0 ; i < points.size() ; i++) bb.include(points[i]) ;
     return bb ; 

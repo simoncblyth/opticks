@@ -51,10 +51,12 @@ unsigned nnode::planeNum()
 }
 
 
+const unsigned nnode::desc_indent = 10 ; 
+
 std::string nnode::desc() const 
 {
     std::stringstream ss ; 
-    ss << tag() ; 
+    ss << std::setw(desc_indent) << std::left  << tag() ; 
     return ss.str();
 }
 
@@ -388,10 +390,25 @@ void nnode::get_primitive_bbox(nbbox& bb) const
 
 nbbox nnode::bbox() const 
 {
+    /*
+    The gtransforms are applied at the leaves, ie the bbox returned
+    from primitives already uses the full heirarchy of transforms 
+    collected from the tree by *update_gtransforms()*.  
+
+    Due to this it would be incorrect to apply gtransforms 
+    of composite nodes to their bbox as those gtransforms 
+    together with those of their progeny have already been 
+    applied down at the leaves.
+
+    Indeed without subnode bbox being in the same CSG tree top frame
+    it would not be possible to combine them.
+    */
+
     if(verbosity > 0)
     LOG(info) << "nnode::bbox " << desc() ; 
 
-    nbbox bb = make_bbox_base() ; 
+    nbbox bb = make_bbox() ; 
+
     if(is_primitive())
     { 
         get_primitive_bbox(bb);
@@ -449,6 +466,8 @@ float ndifference::operator()(float x, float y, float z) const
 
 void nnode::Tests(std::vector<nnode*>& nodes )
 {
+    // using default copy ctor to create nnode on heap
+
     nsphere* a = new nsphere(make_sphere(0.f,0.f,-50.f,100.f));
     nsphere* b = new nsphere(make_sphere(0.f,0.f, 50.f,100.f));
     nbox*    c = new nbox(make_box(0.f,0.f,0.f,200.f));
@@ -862,56 +881,28 @@ void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) /
 
 
 
-void nnode::dump_full(const char* msg) const 
-{
-    dump(msg);
-
-    dump_bbox(msg);
-
-    dump_prim(msg);
-
-    dump_transform(msg);
-
-    dump_gtransform(msg);
-
-    dump_planes(msg);
-}
 
 void nnode::dump(const char* msg) const 
 {
-    _dump->dump(msg);
+    if(msg) LOG(info) << msg ; 
+    _dump->dump();
 }
 
-void nnode::dump_label(const char* pfx, const char* msg) const 
+void nnode::dump_prim() const 
 {
-    std::cout 
-         << std::setw(3) << (  pfx ? pfx : "-" ) << " " 
-         << std::setw(3) << (  msg ? msg : label ) << " " 
-         ; 
+    _dump->dump_prim();
 }
-
-void nnode::dump_bbox(const char* msg) const 
+void nnode::dump_gtransform() const 
 {
-    dump_label("bb",msg);
-    nbbox bb = bbox();
-    std::cout << bb.desc() << std::endl ; 
+    _dump->dump_gtransform();
 }
-
-void nnode::dump_prim( const char* msg) const 
+void nnode::dump_transform() const 
 {
-    _dump->dump_prim(msg);
+    _dump->dump_transform();
 }
-void nnode::dump_gtransform( const char* msg) const 
+void nnode::dump_planes() const 
 {
-    _dump->dump_gtransform(msg);
-}
-void nnode::dump_transform( const char* msg) const 
-{
-    _dump->dump_transform(msg);
-}
-void nnode::dump_planes( const char* msg) const 
-{
-    _dump->dump_planes(msg);
+    _dump->dump_planes();
 }
 
 

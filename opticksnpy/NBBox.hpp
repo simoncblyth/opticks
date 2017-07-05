@@ -58,99 +58,89 @@ struct NPY_API nbbox
     bool contains( const nvec3& p, float epsilon=1e-4) const ; 
     bool contains( const nbbox& other, float epsilon=1e-4) const ; 
 
+    bool is_empty() const 
+    {
+        return min.x == 0. && min.y == 0. && min.z == 0. && max.x == 0. && max.y == 0. && max.z == 0.  ; 
+    }
+
+    void set_empty()
+    {
+        min.x = 0. ; 
+        min.y = 0. ; 
+        min.z = 0. ; 
+
+        max.x = 0. ; 
+        max.y = 0. ; 
+        max.z = 0. ; 
+    } 
+
+    nvec3 side() const 
+    {
+        return max - min ; 
+    }
 
     void expand(float delta)
     {
         min -= delta ; 
         max += delta ; 
-        side = max - min ; 
     } 
 
     void scale(float factor)
     {
         min *= factor ; 
         max *= factor ; 
-        side = max - min ; 
     } 
 
     nvec3 min ; 
     nvec3 max ; 
-    nvec3 side ; 
     bool  invert ; 
-    bool  empty ; 
 };
-
 
 
 inline NPY_API void nbbox::copy_from(const nbbox& src)
 {
     min = src.min ; 
     max = src.max ; 
-    side = src.side ; 
     invert = src.invert ; 
-    empty = src.empty ; 
 }
-
-
 
 inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
 {
-   return a.min == b.min && a.max == b.max && a.side == b.side ;  
+   return a.min == b.min && a.max == b.max ; 
 }
 
-
-
+inline NPY_API nbbox make_bbox()
+{
+    nbbox bb ; 
+    bb.set_empty();
+    bb.invert = false ; 
+    return bb ; 
+}
 
 // "ctor" assuming rotational symmetry around z axis
 inline NPY_API nbbox make_bbox_zsymmetric(float zmin, float zmax, float ymin, float ymax)
 {
-    nbbox bb ; 
-
+    nbbox bb = make_bbox();
     bb.min = make_nvec3( ymin, ymin, zmin ) ;
     bb.max = make_nvec3( ymax, ymax, zmax ) ;
-    bb.side = bb.max - bb.min ; 
     bb.invert = false ; 
-    bb.empty = false ; 
 
     return bb ;
 }
 
-inline NPY_API nbbox make_bbox_base(bool invert=false, bool empty=false)
+inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax)
 {
-    nbbox bb ; 
+    nbbox bb = make_bbox();
 
-    bb.invert = invert ; 
-    bb.empty = empty  ; 
- 
-    return bb ; 
-}
-
-inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, bool invert=false, bool empty=false)
-{
-    nbbox bb = make_bbox_base(invert, empty);
-
-    assert( xmax > xmin );
-    assert( ymax > ymin );
-    assert( zmax > zmin );
+    assert( xmax >= xmin );
+    assert( ymax >= ymin );
+    assert( zmax >= zmin );
 
     bb.min = {xmin,ymin,zmin} ;
     bb.max = {xmax,ymax,zmax} ;
-    bb.side = bb.max - bb.min ; 
 
     return bb ; 
 }
-
-
-/*
-inline NPY_API nbbox make_bbox()
-{
-    return make_bbox(0,0,0,0) ;
-}
-*/
-
-
-
-
 
 inline NPY_API float nbbox::extent(const nvec4& dim) 
 {
@@ -182,5 +172,4 @@ inline NPY_API nvec4 nbbox::center_extent() const
     ce.w = de.w ;  
     return ce ; 
 }
-
 

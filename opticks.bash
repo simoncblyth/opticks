@@ -77,7 +77,7 @@ opticks-nnt-vi(){
 
 opticks-nnt-(){ 
 
-   local path=$1
+   local path=${1:-/tmp/some/path/to/NNodeTest_LVID.cc}
    local name=$(basename $path)   
    local stem=${name/.cc}
    local bindir=$(opticks-bindir)

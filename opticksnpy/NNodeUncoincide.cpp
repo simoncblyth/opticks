@@ -214,8 +214,8 @@ unsigned NNodeUncoincide::uncoincide_union(nnode* a, nnode* b)
                << " B " << b->tag()
                ;
 
-    a->dump_full("uncoincide_union A");
-    b->dump_full("uncoincide_union B");
+    a->dump("uncoincide_union A");
+    b->dump("uncoincide_union B");
 
     /*
 

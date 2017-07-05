@@ -1,4 +1,17 @@
 #!/usr/bin/env python
+"""
+
+Regenerate the cpp for each mesh with::
+
+    gdml2gltf.py   # writes .gltf and extras beside the .gdml in standard IDFOLD location
+
+See::
+
+    opticks-nnt LVID
+    opticks-nnt-vi LVID
+
+
+"""
 import logging, os
 log = logging.getLogger(__name__)
 
@@ -22,7 +35,7 @@ template_tail = r"""
 
     %(root)s.update_gtransforms();
     %(root)s.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
-    %(root)s.dump_full() ; 
+    %(root)s.dump() ; 
 
     return 0 ;        
 }

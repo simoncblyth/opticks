@@ -131,13 +131,10 @@ nbbox nbox::bbox_model() const
     glm::vec3 bmi = bmin() ; 
     glm::vec3 bmx = bmax() ; 
 
-    nbbox bb ;
+    nbbox bb = make_bbox() ;
     bb.min = make_nvec3( bmi.x, bmi.y, bmi.z  );
     bb.max = make_nvec3( bmx.x, bmx.y, bmx.z  );
-    bb.side = bb.max - bb.min ; 
-
     bb.invert = complement ; 
-    bb.empty = false ; 
 
     return bb ; 
 }

@@ -40,6 +40,8 @@ struct NPY_API nnode
     virtual npart part() const ;
     virtual unsigned maxdepth();
     virtual unsigned _maxdepth(unsigned depth);
+
+    static const unsigned desc_indent ; 
     virtual std::string desc() const ;
     std::string tag() const ;
 
@@ -100,16 +102,13 @@ struct NPY_API nnode
 
 
 
-    virtual void dump(const char* msg=NULL) const ;
     virtual void pdump(const char* msg="nnode::pdump") const ; 
 
-    void dump_label(const char* pfx, const char* msg=NULL) const ;
-    void dump_full(const char* msg=NULL) const ;
-    void dump_bbox(const char* msg=NULL ) const ;
-    void dump_transform(const char* msg=NULL) const ;
-    void dump_gtransform(const char* msg=NULL) const ;
-    void dump_prim(const char* msg=NULL) const ;
-    void dump_planes(const char* msg=NULL) const ;
+    virtual void dump(const char* msg=NULL) const ;
+    void dump_prim() const ;
+    void dump_transform() const ;
+    void dump_gtransform() const ;
+    void dump_planes() const ;
   
 
 

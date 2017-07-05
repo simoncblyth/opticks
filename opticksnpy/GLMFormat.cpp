@@ -410,13 +410,19 @@ std::string gformat(const glm::mat3& m )
 }
 
 
+std::string gpresent_label(const char* label, unsigned lwid)
+{
+    std::stringstream ss ; 
+    ss << std::setw(lwid) << ( label ? label : " " ) ; 
+    return ss.str();
+}
 
 std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
 {
     std::stringstream ss ; 
     for(int i=0 ; i < 4 ; i++)
     {
-        ss << std::setw(lwid) << ( i == 0 ? label : " " ) ; 
+        ss << std::setw(lwid) << ( i == 0 && label ? label  : " " ) ; 
         for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
         ss << std::endl ; 
     }

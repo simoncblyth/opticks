@@ -74,7 +74,7 @@ void NScan::init()
     LOG(info) << desc() ; 
 
     if(m_verbosity > 3)
-    m_node.dump_full("NScan::init(nnode::dump_full)");
+    m_node.dump();
 }
 
 std::string NScan::desc() const 
@@ -103,9 +103,11 @@ void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::ve
 
     // prevent cage margin from being too small for objs that are thin along some axis
 
-    delta.x = std::max<float>(bb.side.x*sidescale, minmargin) ;
-    delta.y = std::max<float>(bb.side.y*sidescale, minmargin) ;
-    delta.z = std::max<float>(bb.side.z*sidescale, minmargin) ;
+    nvec3 bb_side = bb.side();
+
+    delta.x = std::max<float>(bb_side.x*sidescale, minmargin) ;
+    delta.y = std::max<float>(bb_side.y*sidescale, minmargin) ;
+    delta.z = std::max<float>(bb_side.z*sidescale, minmargin) ;
 
     bmin.x = bb.min.x - delta.x ;
     bmin.y = bb.min.y - delta.y ;

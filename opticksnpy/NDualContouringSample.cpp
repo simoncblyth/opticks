@@ -71,7 +71,6 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     std::function<float(float,float,float)> func = node->sdf();
 
     bb.scale(m_scale_bb);     // kinda assumes centered at origin, slightly enlarge
-    bb.side = bb.max - bb.min ; // TODO: see why this not set previously 
 
     glm::vec3 bb_min(bb.min.x, bb.min.y, bb.min.z );
     glm::vec3 bb_max(bb.max.x, bb.max.y, bb.max.z );
@@ -82,15 +81,18 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     // aiming to replace the NFieldGrid3 sledgehammer with a toothpick 
     int resolution = 1 << m_nominal ;
 
+    nvec3 bb_side = bb.side();
+
+
     FGLite fgl ; 
     fgl.func = &func ; 
 
     fgl.resolution = resolution ; 
     fgl.offset = offset ? glm::ivec3( -resolution/ 2) : glm::ivec3(0,0,0) ;
     fgl.elem_offset = -0.5f ; // for centered  
-    fgl.elem.x = bb.side.x/resolution ;
-    fgl.elem.y = bb.side.y/resolution ;
-    fgl.elem.z = bb.side.z/resolution ;
+    fgl.elem.x = bb_side.x/resolution ;
+    fgl.elem.y = bb_side.y/resolution ;
+    fgl.elem.z = bb_side.z/resolution ;
 
     glm::vec3 bb_center = bb_min + bb_max ;
     bb_center /= 2.f ;

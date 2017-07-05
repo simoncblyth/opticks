@@ -909,7 +909,7 @@ void NCSG::dump(const char* msg)
 
     if(!m_root) return ;
 
-    m_root->dump_full(NULL);   
+    m_root->dump("NCSG::dump");   
 
     if(m_meta)
     m_meta->dump(); 
@@ -1001,7 +1001,7 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
               << " nbnd " << nbnd 
               ;
 
-    nbbox container_bb = make_bbox_base() ; 
+    nbbox container_bb = make_bbox() ; 
 
     // order is reversed so that a tree with the "container" meta data tag at tree slot 0
     // is handled last, so container_bb will then have been adjusted to hold all the others...

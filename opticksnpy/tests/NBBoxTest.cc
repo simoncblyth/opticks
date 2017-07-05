@@ -294,6 +294,76 @@ void test_difference_bbox()
     ab.dump("a-b");
 }
 
+
+
+
+
+nnode* make_placed_dicycy(float rmin, float rmax, float zmin, float zmax, float tx, float ty, float tz)
+{
+    ncylinder* a = new ncylinder(make_cylinder( rmax , zmin, zmax));   a->label = "A" ;     
+    ncylinder* b = new ncylinder(make_cylinder( rmin , zmin, zmax));   b->label = "B" ;   
+
+    ndifference* ab = new ndifference(make_difference( a, b )); 
+
+    ab->transform  = nmat4triple::make_translate( tx, ty, tz );
+
+    a->parent = ab ; 
+    b->parent = ab ; 
+    ab->update_gtransforms();
+
+
+    return ab ; 
+
+}
+
+
+
+void test_origin_offset_difference_bbox()
+{
+    LOG(info) << "test_origin_offset_difference_bbox " ;
+
+    float rmax = 10.f ; 
+    float rmin = rmax - 1.0f ; 
+    float zmax = 1.f ; 
+    float zmin = -1.f ; 
+
+    float tx = 0.f ; 
+    float ty = 0.f ; 
+    float tz = 0.f ; 
+ 
+    for(int i=-1 ; i < 8 ; i++)   // place at origin and then in each octant
+    {
+        if( i > -1)
+        {
+            tx = i & 1 ? -100. : 100. ;  
+            ty = i & 2 ? -100. : 100. ; 
+            tz = i & 4 ? -100. : 100. ; 
+        }
+
+        nnode* ab = make_placed_dicycy(rmin, rmax, zmin, zmax, tx, ty, tz);
+
+        //ab->verbosity = 3 ; 
+        //ab->dump();
+
+        nbbox bb = ab->bbox() ;
+
+        std::cout << " bb " << bb.desc() << std::endl ; 
+
+        assert( bb.min.x == tx - rmax );
+        assert( bb.min.y == ty - rmax );
+        assert( bb.min.z == tz + zmin );
+
+        assert( bb.max.x == tx + rmax );
+        assert( bb.max.y == ty + rmax );
+        assert( bb.max.z == tz + zmax );
+    
+        //std::cout << std::endl << std::endl ; 
+    }
+}
+
+
+
+
 void test_intersection_cone_difference_bbox()
 {
     LOG(info) << "test_intersection_cone_difference_bbox " ;
@@ -345,10 +415,10 @@ void test_default_copy_ctor()
 
     bb.min = {-10,-10,-10} ;
     bb.max = { 10, 10, 10} ;
-    bb.side = bb.max - bb.min ; 
 
     bb.invert = true ; 
-    bb.empty = false ; 
+
+    assert( bb.is_empty() == false ); 
 
 
     nbbox cbb(bb) ;
@@ -439,7 +509,8 @@ int main(int argc, char** argv)
     //test_sdf_transformed();
     //test_from_points();
     //test_difference_bbox();
-    test_intersection_cone_difference_bbox() ;
+    test_origin_offset_difference_bbox();
+    //test_intersection_cone_difference_bbox() ;
 
     return 0 ; 
 }

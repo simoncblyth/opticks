@@ -135,10 +135,12 @@ glm::vec3 NConstructor<T>::position_bb(const glm::ivec3& ijk, int depth) const
 
     glm::vec3 frac_pos = dgrid->fpos(ijk);
 
+    nvec3 bb_side = m_bb.side(); 
+
     glm::vec3 world_pos ; 
-    world_pos.x = m_bb.min.x + frac_pos.x*m_bb.side.x ; 
-    world_pos.y = m_bb.min.y + frac_pos.y*m_bb.side.y ; 
-    world_pos.z = m_bb.min.z + frac_pos.z*m_bb.side.z ; 
+    world_pos.x = m_bb.min.x + frac_pos.x*bb_side.x ; 
+    world_pos.y = m_bb.min.y + frac_pos.y*bb_side.y ; 
+    world_pos.z = m_bb.min.z + frac_pos.z*bb_side.z ; 
 
     return world_pos ; 
 }
@@ -642,14 +644,14 @@ NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse
 
     if(m_verbosity > 10 ) assert(0 && "hari kari for verbosity > 10");
 
-    LOG(info) << "Manager::Maneger"
+    LOG(info) << "Manager::Manager"
               << " xyzExtent " << xyzExtent
               << " ijkExtent " << ijkExtent
               << " bbce " << bbce.desc()
               << " ce " << m_ce.desc()
               << " bb.min " << bb.min.desc() 
               << " bb.max " << bb.max.desc() 
-              << " bb.side " << bb.side.desc() 
+              << " bb.side " << bb.side().desc() 
               ;
 }
 

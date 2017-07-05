@@ -9,11 +9,14 @@ class NPY_API NNodeDump
     public:
         NNodeDump(const nnode& node);
 
-        void dump(const char* msg) const  ;
-        void dump_prim( const char* msg) const ;
-        void dump_transform( const char* msg) const ;
-        void dump_gtransform( const char* msg) const ;
-        void dump_planes( const char* msg) const ;
+        void dump() const  ;
+
+        void dump_label(const char* pfx) const ;
+        void dump_base() const ;
+        void dump_prim() const ;
+        void dump_transform() const ;
+        void dump_gtransform() const ;
+        void dump_planes() const ;
 
     private:
         const nnode& m_node ; 

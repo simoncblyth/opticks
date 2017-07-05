@@ -16,14 +16,35 @@ NNodeDump::NNodeDump(const nnode& node)
 {
 }
 
-void NNodeDump::dump(const char* msg) const 
+
+void NNodeDump::dump() const 
 {
-    m_node.dump_label("du", msg ) ; 
+    dump_base();
+    dump_gtransform();
+
+    if(m_node.verbosity > 1)
+    {
+        dump_prim();
+        dump_transform();
+        dump_planes();
+    }
+}
+
+void NNodeDump::dump_label(const char* pfx) const 
+{
+    std::cout 
+         << std::setw(3) << (  pfx ? pfx : "-" ) << " " 
+         << std::setw(nnode::desc_indent) << m_node.desc() 
+         ; 
+}
+
+void NNodeDump::dump_base() const 
+{
+    dump_label("du") ; 
 
     bool prim = m_node.is_primitive();
 
     std::cout 
-          << m_node.desc() 
           << ( prim ? " PRIM " : " OPER " )
           << " v:" << std::setw(1) << m_node.verbosity 
           << " " 
@@ -35,19 +56,21 @@ void NNodeDump::dump(const char* msg) const
     if(!prim)
     {
         std::cout << std::endl ; 
-        m_node.left->dump(NULL);
-        m_node.right->dump(NULL);
+        m_node.left->dump();
+        m_node.right->dump();
     }
 }
 
 
-void NNodeDump::dump_gtransform( const char* msg) const 
+
+void NNodeDump::dump_gtransform() const 
 {
-    m_node.dump_label("gt", msg) ; 
+    dump_label("gt") ; 
 
     if(m_node.gtransform)
     {
-        std::cout << gpresent("gtr.t", m_node.gtransform->t ) << std::endl ; 
+        std::cout << gpresent_label("gt.t") << std::endl ; 
+        std::cout << gpresent(NULL, m_node.gtransform->t ) << std::endl ; 
     }
     else
     {
@@ -56,18 +79,19 @@ void NNodeDump::dump_gtransform( const char* msg) const
 
     if(m_node.left && m_node.right)
     {
-        m_node.left->dump_gtransform(NULL);
-        m_node.right->dump_gtransform(NULL);
+        m_node.left->dump_gtransform();
+        m_node.right->dump_gtransform();
     }
 }
 
-void NNodeDump::dump_transform( const char* msg) const 
+void NNodeDump::dump_transform() const 
 {
-    m_node.dump_label("tr", msg) ; 
+    dump_label("tr") ; 
 
     if(m_node.transform)
     {
-        std::cout << gpresent("tr.t", m_node.transform->t ) << std::endl ; 
+        std::cout << gpresent_label("tr.t") << std::endl ; 
+        std::cout << gpresent(NULL, m_node.transform->t ) << std::endl ; 
     }
     else
     {
@@ -76,22 +100,22 @@ void NNodeDump::dump_transform( const char* msg) const
 
     if(m_node.left && m_node.right)
     {
-        m_node.left->dump_transform(NULL);
-        m_node.right->dump_transform(NULL);
+        m_node.left->dump_transform();
+        m_node.right->dump_transform();
     }
 }
 
 
 
-void NNodeDump::dump_prim( const char* msg) const 
+void NNodeDump::dump_prim() const 
 {
-    m_node.dump_label("pr", msg) ; 
+    dump_label("pr") ; 
 
     std::vector<const nnode*> prim ;
     m_node.collect_prim(prim);   
 
     unsigned num_prim = prim.size();
-    std::cout << " nprim " << num_prim ; 
+    std::cout << " nprim " << num_prim << std::endl ; 
 
     for(unsigned i=0 ; i < num_prim ; i++)
     {
@@ -118,9 +142,9 @@ void NNodeDump::dump_prim( const char* msg) const
 }
 
 
-void NNodeDump::dump_planes( const char* msg) const 
+void NNodeDump::dump_planes() const 
 {
-    m_node.dump_label("pl", msg) ; 
+    dump_label("pl") ; 
     unsigned num_planes = m_node.planes.size() ;
     std::cout  
               << " num_planes " << num_planes
@@ -138,9 +162,7 @@ void NNodeDump::dump_planes( const char* msg) const
                   << " dist " << dist
                   << std::endl ; 
     }
-
-
-
-
 }
+
+
 

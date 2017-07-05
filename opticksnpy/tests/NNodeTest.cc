@@ -108,11 +108,11 @@ void test_node_transforms()
     for(unsigned i=0 ; i < ncen ; i++) std::cout << i << " center:" << centers[i] << " dir:" << dirs[i] << std::endl ; 
 
     u.verbosity = 1 ;  
-    u.dump_prim("prim(v:1)"); 
+    u.dump("dump(v:1)"); 
 
     std::cout << std::endl ; 
     u.verbosity = 2 ;  
-    u.dump_prim("prim(v:2)"); 
+    u.dump("dump(v:2)"); 
 
     // hmm need to do this with rotations, as with translation order doesnt matter 
 }

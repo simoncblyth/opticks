@@ -108,6 +108,7 @@ int main(int argc, char** argv)
     glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z);
     glm::vec3 wbb_max(wbb.max.x, wbb.max.y, wbb.max.z);
 
+    nvec3 wbb_side = wbb.side();
 
     std::cout << "wbb_min " << wbb_min << std::endl ; 
     std::cout << "wbb_max " << wbb_max << std::endl ; 
@@ -124,6 +125,7 @@ int main(int argc, char** argv)
 
 
 
+
     int resolution = 1 << level ;
 
     FGLite fgl ; 
@@ -132,9 +134,9 @@ int main(int argc, char** argv)
     fgl.resolution = resolution ; 
     fgl.offset = glm::ivec3(0,0,0) ;
     fgl.elem_offset = -0.5f ; // for centered  
-    fgl.elem.x = wbb.side.x/resolution ;
-    fgl.elem.y = wbb.side.y/resolution ;
-    fgl.elem.z = wbb.side.z/resolution ;
+    fgl.elem.x = wbb_side.x/resolution ;
+    fgl.elem.y = wbb_side.y/resolution ;
+    fgl.elem.z = wbb_side.z/resolution ;
 
     fgl.min = wbb_min ;  
     fgl.max = wbb_max ;  
