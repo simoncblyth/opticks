@@ -3,8 +3,21 @@ lvid 30 OcrGdsTfbInLso0xbfa2370 : cone-z misinterpretation
 =============================================================
 
 
-HUH : THOUGHT FIXED BUT STILL SHOWS UP
-----------------------------------------
+
+
+After fixing the bbox zeros still appearing with Z offset issue
+------------------------------------------------------------------
+
+Note that several other volumes have very similar Z offset
+
+
+HUH : THOUGHT FIXED BUT STILL SHOWS UP : DUE TO BBOX ZEROS
+------------------------------------------------------------
+
+* FIXED the bbox zeros with : https://bitbucket.org/simoncblyth/opticks/commits/8a0d01995ae803e918385cf3fd12e3ede216ae35
+
+
+::
 
 
    1214.74   OcrGdsTfbInLso0xbfa2370 lvidx  30 

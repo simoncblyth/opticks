@@ -21,10 +21,10 @@
 
 nbbox ncone::bbox() const 
 {
-    nbbox bb = make_bbox();
-    bb.max = make_nvec3(  rmax(),  rmax(), z2() );
-    bb.min = make_nvec3( -rmax(), -rmax(), z1() );
-    bb.invert = complement ; 
+    glm::vec3 mi(  rmax(),  rmax(), z2() );
+    glm::vec3 mx( -rmax(), -rmax(), z1() );
+
+    nbbox bb = make_bbox(mi, mx, complement);
 
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }

@@ -128,14 +128,13 @@ void nsphere::pdump(const char* msg) const
 
 nbbox nsphere::bbox() const 
 {
-    nbbox bb = make_bbox();
 
     float  r = radius(); 
     glm::vec3 c = center();
 
-    bb.min = make_nvec3(c.x - r, c.y - r, c.z - r);
-    bb.max = make_nvec3(c.x + r, c.y + r, c.z + r);
-    bb.invert = complement ; 
+    glm::vec3 mi(c.x - r, c.y - r, c.z - r);
+    glm::vec3 mx(c.x + r, c.y + r, c.z + r);
+    nbbox bb = make_bbox(mi, mx, complement);
 
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }

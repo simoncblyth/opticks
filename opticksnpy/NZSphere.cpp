@@ -39,10 +39,10 @@ nbbox nzsphere::bbox() const
     glm::vec3 c = center(); 
     float r = radius(); 
 
-    nbbox bb = make_bbox();
-    bb.max = make_nvec3(c.x + r, c.y + r, zmax() );
-    bb.min = make_nvec3(c.x - r, c.y - r, zmin() );
-    bb.invert = complement ; 
+    glm::vec3 mx(c.x + r, c.y + r, zmax() );
+    glm::vec3 mi(c.x - r, c.y - r, zmin() );
+
+    nbbox bb = make_bbox(mi, mx, complement);
 
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }

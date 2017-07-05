@@ -21,6 +21,8 @@ Currently two flavors of box use nbox class
 
 struct nmat4triple ; 
 
+
+
 struct NPY_API nbox : nnode 
 {
     //  geometry modifiers
@@ -75,6 +77,10 @@ struct NPY_API nbox : nnode
     bool is_box3  ; 
 
 };
+
+
+
+
 
 // only methods that are specific to boxes 
 // and need to override the nnode need to be here 
@@ -140,18 +146,23 @@ inline NPY_API nbox make_box3(const nquad& p)
 }
 
 
-inline NPY_API nbox make_box(float x_, float y_, float z_, float w_)  // center and halfside
+inline NPY_API nbox make_box(float x, float y, float z, float w)  // center and halfside
 {
     nquad param ;
-    param.f =  {x_,y_,z_,w_} ;
+    param.f =  {x,y,z,w} ;
     return make_box( param ); 
 }
-inline NPY_API nbox make_box3(float x_, float y_, float z_) // three 
+inline NPY_API nbox make_box3(float x, float y, float z, float w=0.f) // three 
 {
+    assert( w == 0.f );  // used by code gen 
     nquad param ;
-    param.f =  {x_,y_,z_,0} ;
+    param.f =  {x,y,z,0} ;
     return make_box3( param ); 
 }
+
+
+
+
 
 
 

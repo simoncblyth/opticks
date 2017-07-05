@@ -185,6 +185,71 @@ bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
     return true ; 
 }
 
+
+void nbbox::SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap)
+{
+    /*
+    a_overlap must be the overlap of a with another box 
+    
+    This simplifies things...
+
+    * small contained overlap cutaways (eg chopping off a corner or a hole in middle) 
+      cannot be expressed as a bbox so they dont change the bbox : just leave at *a* 
+
+    * overlaps need to be complete along two dimensions in order to 
+      result in a chop that can apply along the other axis 
+
+    */
+
+    if(a_overlap.is_empty())
+    {
+        result = a ; 
+        return ; 
+    }
+
+    // looking for a pair of axes with complete coverage
+    // in order to be able to chop on the other axis
+
+    bool min_match[3] ;
+    bool max_match[3] ;
+
+    min_match[0] = a_overlap.min.x == a.min.x ;
+    min_match[1] = a_overlap.min.y == a.min.y ;
+    min_match[2] = a_overlap.min.z == a.min.z ;
+
+    max_match[0] = a_overlap.max.x == a.max.x ;
+    max_match[1] = a_overlap.max.y == a.max.y ;
+    max_match[2] = a_overlap.max.z == a.max.z ;
+
+
+    for(unsigned i=0 ; i < 3 ; i++) // test each axis for potential chop, ie when there is complete coverage in other two directions
+    {
+        unsigned j = (i + 1) % 3 ;  
+        unsigned k = (i + 2) % 3 ; 
+
+        bool jk_match = min_match[j] && min_match[k] && max_match[j] && max_match[k] ;
+
+        std::cout 
+                 << " i " << std::setw(1) << i
+                 << " j " << std::setw(1) << j 
+                 << " k " << std::setw(1) << k 
+                 << " jk_match " << ( jk_match ? "YES" : "NO" )
+                 << std::endl ; 
+
+         
+
+     
+
+    }
+
+    result = a ; 
+}
+
+
+
+
+
+
 bool nbbox::has_overlap(const nbbox& other)
 {
     return HasOverlap(*this, other);
@@ -257,8 +322,12 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
     {
         if(!a.invert && !b.invert)  
         {
-            expr = " BB(A - B)  -> BB(A)  " ;
-            comb.include(a); 
+            expr = " BB(A - B)  -> BB(A)  " ;  // hmm can do better than this by considering A - B ->  A*!B
+            //comb.include(a); 
+
+            nbbox a_overlap ; 
+            FindOverlap(a_overlap, a, b );
+            SubtractOverlap(comb, a, a_overlap);
         }
         else if( a.invert && b.invert)   
         {
@@ -291,6 +360,63 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
                ;
 
 }
+
+
+/*
+
+BB(A - B)
+=============
+
+How to calculate the box min/max from the
+subtraction of two boxes ?  ...
+
+* 1st calulate the overlap A*B 
+
+::
+
+         +----------+     
+         |          |
+         |          |
+         |          |
+         |          |
+         | A        | 
+         |          |
+     +---*----------*---+
+     |   |  A*B     |   |
+     |   +----------+   |
+     | B                |
+     +------------------+
+
+
+
+    A - B = A*!B
+
+    A - (A*B) 
+
+
+Comparing A with A*B i can enumerate the cases...
+ 
+
+
+
+With the overlap 
+
+         +----------+
+         |          |             
+         |          |             
+         |  A - B   |             
+         |          |             
+         |          |             
+         |          |
+         *----------*     
+
+         *----------*     
+         |   A*B    |
+         +----------+
+
+
+*/
+
 
 
 
@@ -372,12 +498,12 @@ std::string nbbox::description() const
 {
     std::stringstream ss ; 
 
-    nvec3 si = side();
+    glm::vec3 si = side();
 
     ss
-        << " mi " << min.desc() 
-        << " mx " << max.desc() 
-        << " si " << si.desc() 
+        << " mi " << gpresent(min)
+        << " mx " << gpresent(max) 
+        << " si " << gpresent(si) 
         << ( invert ? " INVERTED" : "" )
         << ( is_empty() ? " EMPTY" : "" )
         ;
@@ -397,8 +523,11 @@ const char* nbbox::desc() const
 void nbbox::dump(const char* msg)
 {
     printf("%s\n", msg);
-    min.dump("bb min");
-    max.dump("bb max");
+    std::cout 
+       << " bb.mi " << gpresent(min) 
+       << " bb.mx " << gpresent(max)
+       << std::endl ;
+ 
 }
 
 void nbbox::include(const nbbox& other)
@@ -410,25 +539,58 @@ void nbbox::include(const nbbox& other)
     }
     else
     { 
-        min = nminf( min, other.min );
-        max = nmaxf( max, other.max );
+        //min = nminf( min, other.min );
+        //max = nmaxf( max, other.max );
+        min = glm::min( min, other.min );
+        max = glm::max( max, other.max );
+
+
     }
 }
 
 void nbbox::include(const glm::vec3& p)
 {
-    nvec3 pp = {p.x, p.y, p.z } ;
+    //nvec3 pp = {p.x, p.y, p.z } ;
     if(is_empty())
     {
-        min = pp ; 
-        max = pp ; 
+        min = p ; 
+        max = p ; 
     }
     else
     {
-        min = nminf( min, pp );
-        max = nmaxf( max, pp );
+        //min = nminf( min, pp );
+        //max = nmaxf( max, pp );
+        min = glm::min( min, p );
+        max = glm::max( max, p );
+
+
     }
 }
+
+/*
+
+      +-  - - - -*   <--- included point pushing out the max, leaves min unchanged
+      .          | 
+      +-------+  .
+      |       |  |
+      |       |  .
+      |       |  |
+      +-------+- +
+
+      +-------+  
+      |    *  |     <-- interior point doesnt change min/max  
+      |       |  
+      |       |  
+      +-------+ 
+
+      +-------+-->--+  
+      |       |     |  
+      |       |     *  <--- side point pushes out max, leaves min unchanged
+      |       |     |
+      +-------+-----+ 
+
+*/
+
 
 nbbox nbbox::from_points(const std::vector<glm::vec3>& points)
 {
@@ -443,8 +605,13 @@ nbbox nbbox::from_points(const std::vector<glm::vec3>& points)
 
 
 
-
 bool nbbox::contains(const nvec3& p, float epsilon) const 
+{
+   glm::vec3 pp(p.x, p.y, p.z);
+   return contains(pp, epsilon);
+}
+
+bool nbbox::contains(const glm::vec3& p, float epsilon) const 
 {
     // allow epsilon excursions
     bool x_ok = p.x - min.x > -epsilon && p.x - max.x < epsilon ;
@@ -496,9 +663,6 @@ bool nbbox::contains(const nbbox& other, float epsilon ) const
 {
     return contains( other.min, epsilon ) && contains(other.max, epsilon ) ;
 } 
-
-
-
 
 
 

@@ -830,7 +830,26 @@ class CSG(CSG_):
         pass
         return "%s.parent = &%s ; %s.parent = &%s ; " % (self.left.alabel, self.alabel, self.right.alabel, self.alabel )
 
+
+
+    @classmethod
+    def num_param_quads(cls, typ):
+        npq = None
+        if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID]:
+            npq = 0
+        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX]:
+            npq = 1
+        elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC]:
+            npq = 2 
+        else:
+            assert 0, "add num_param_quads for typ %s " % cls.desc(typ) 
+        pass
+        return npq 
+
     def content_param(self, lang="py"):
+        if lang == "cpp" and self.num_param_quads(self.typ) == 0: 
+            return None 
+
         if self.param is not None:
             param = to_codeline(self.param, "param" if lang == "py" else None, lang=lang) 
         else:
@@ -839,7 +858,7 @@ class CSG(CSG_):
         return param 
 
     def content_param1(self, lang="py"):
-        if lang == "cpp" and self.typ in [self.SPHERE, self.CONE]:   # one quad param shapes
+        if lang == "cpp" and self.num_param_quads(self.typ) == 1:   
             return None 
 
         if self.param1 is not None:
@@ -865,6 +884,17 @@ class CSG(CSG_):
         pass
         return line
 
+    def content_type(self, lang="py"):
+        if lang == "py":
+            return ""
+        pass
+        if self.typ in [self.BOX3]:
+            type_ = "nbox" 
+        else:
+            type_ = "n%s" % self.desc(self.typ)
+        pass
+        return type_
+
 
     def content_primitive(self, lang="py"):
         param = self.content_param(lang)
@@ -884,7 +914,7 @@ class CSG(CSG_):
         if lang == "py":
             code = "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
         else:
-            type_ = "n%s" % self.desc(self.typ)
+            type_ = self.content_type(lang)
             code = "%s %s = make_%s( %s ) ; %s.label = \"%s\" ; %s " % ( type_, self.alabel, self.desc(self.typ), content_, self.alabel, self.alabel, parenting_ )
         pass
         return code

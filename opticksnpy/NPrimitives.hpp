@@ -14,13 +14,25 @@
 
 /*
 
-Primitives with z1/z2 parameters
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* nzsphere
-* ncylinder
-* ncone
-* ndisc
+
+
+===================   =============  ================  =================
+primitive              parametric     dec_z1/inc_z2 
+===================   =============  ================  ================= 
+nbox                    Y              N   
+ncone                   Y              Y                 kludged parametric endcap/body join
+nconvexpolyhedron       N(*)           N                 hmm : defined by planes ? minimally provide single point for each plane
+ncylinder               Y              Y                 kludged para 
+ndisc                   Y              Y                 kludged para + need flexibility wrt uv steps for different surfs : ie just 1+1 in z for disc
+nnode                   -              -   
+nplane                  -              -   
+nslab                   -              -   
+nsphere                 Y              N   
+nzsphere                Y              Y   
+===================   =============  ================  ================= 
+
+
 
 Primitives without z1/z2 parameters
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~

@@ -103,7 +103,7 @@ void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::ve
 
     // prevent cage margin from being too small for objs that are thin along some axis
 
-    nvec3 bb_side = bb.side();
+    glm::vec3 bb_side = bb.side();
 
     delta.x = std::max<float>(bb_side.x*sidescale, minmargin) ;
     delta.y = std::max<float>(bb_side.y*sidescale, minmargin) ;

@@ -12,6 +12,8 @@ struct nmat4triple ;
 
 #include "NPY_API_EXPORT.hh"
 
+
+
 struct NPY_API nbbox 
 {
     std::function<float(float,float,float)> sdf() const ;
@@ -41,6 +43,7 @@ struct NPY_API nbbox
 
 
     static bool HasOverlap(const nbbox& a, const nbbox& b );
+    static void SubtractOverlap(nbbox& result, const nbbox& a, const nbbox& a_overlap);
     static bool FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b );
     static void CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity );
 
@@ -56,6 +59,7 @@ struct NPY_API nbbox
     static float extent(const nvec4& dim);
 
     bool contains( const nvec3& p, float epsilon=1e-4) const ; 
+    bool contains( const glm::vec3& p, float epsilon=1e-4) const ; 
     bool contains( const nbbox& other, float epsilon=1e-4) const ; 
 
     bool is_empty() const 
@@ -74,7 +78,8 @@ struct NPY_API nbbox
         max.z = 0. ; 
     } 
 
-    nvec3 side() const 
+    //nvec3 side() const 
+    glm::vec3 side() const 
     {
         return max - min ; 
     }
@@ -91,9 +96,15 @@ struct NPY_API nbbox
         max *= factor ; 
     } 
 
-    nvec3 min ; 
-    nvec3 max ; 
+    //nvec3 min ; 
+    //nvec3 max ; 
+
+    glm::vec3 min ; 
+    glm::vec3 max ; 
     bool  invert ; 
+
+
+
 };
 
 
@@ -118,17 +129,11 @@ inline NPY_API nbbox make_bbox()
 }
 
 // "ctor" assuming rotational symmetry around z axis
-inline NPY_API nbbox make_bbox_zsymmetric(float zmin, float zmax, float ymin, float ymax)
-{
-    nbbox bb = make_bbox();
-    bb.min = make_nvec3( ymin, ymin, zmin ) ;
-    bb.max = make_nvec3( ymax, ymax, zmax ) ;
-    bb.invert = false ; 
 
-    return bb ;
-}
 
-inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax)
+
+
+inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, float ymax, float zmax, bool invert=false )
 {
     nbbox bb = make_bbox();
 
@@ -138,8 +143,19 @@ inline NPY_API nbbox make_bbox(float xmin, float ymin, float zmin, float xmax, f
 
     bb.min = {xmin,ymin,zmin} ;
     bb.max = {xmax,ymax,zmax} ;
+    bb.invert = invert ;
 
     return bb ; 
+}
+
+inline NPY_API nbbox make_bbox(const glm::vec3& min, const glm::vec3& max, bool invert=false)
+{
+    return make_bbox(min.x, min.y, min.z, max.x, max.y, max.z, invert );
+}
+
+inline NPY_API nbbox make_bbox_zsymmetric(float zmin, float zmax, float ymin, float ymax)
+{
+    return make_bbox( ymin,ymin, zmin, ymax, ymax, zmax) ;
 }
 
 inline NPY_API float nbbox::extent(const nvec4& dim) 

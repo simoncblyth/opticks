@@ -81,7 +81,8 @@ NTrianglesNPY* NDualContouringSample::operator()(nnode* node)
     // aiming to replace the NFieldGrid3 sledgehammer with a toothpick 
     int resolution = 1 << m_nominal ;
 
-    nvec3 bb_side = bb.side();
+    //nvec3 bb_side = bb.side();
+    glm::vec3 bb_side = bb.side();
 
 
     FGLite fgl ; 

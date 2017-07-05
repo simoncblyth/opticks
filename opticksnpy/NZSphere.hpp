@@ -132,3 +132,14 @@ inline NPY_API nzsphere make_zsphere()
     return make_zsphere(0.f, 0.f, 0.f, 100.f, -50.f, 70.f, ZSPHERE_PCAP|ZSPHERE_QCAP) ;
 }
 
+inline NPY_API nzsphere make_zsphere(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
+{
+    // used by code generation 
+    assert( z1 == 0.f );
+    assert( w1 == 0.f );
+    return make_zsphere( x0,y0,z0,w0,x1,y1, ZSPHERE_PCAP|ZSPHERE_QCAP );
+}
+
+
+
+

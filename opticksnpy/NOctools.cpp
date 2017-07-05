@@ -135,7 +135,7 @@ glm::vec3 NConstructor<T>::position_bb(const glm::ivec3& ijk, int depth) const
 
     glm::vec3 frac_pos = dgrid->fpos(ijk);
 
-    nvec3 bb_side = m_bb.side(); 
+    glm::vec3 bb_side = m_bb.side(); 
 
     glm::vec3 world_pos ; 
     world_pos.x = m_bb.min.x + frac_pos.x*bb_side.x ; 
@@ -649,9 +649,7 @@ NManager<T>::NManager( const unsigned ctrl,  const int nominal, const int coarse
               << " ijkExtent " << ijkExtent
               << " bbce " << bbce.desc()
               << " ce " << m_ce.desc()
-              << " bb.min " << bb.min.desc() 
-              << " bb.max " << bb.max.desc() 
-              << " bb.side " << bb.side().desc() 
+              << " bb " << bb.desc()
               ;
 }
 

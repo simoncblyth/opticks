@@ -57,10 +57,10 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
 
 nbbox nconvexpolyhedron::bbox() const 
 {
-    nbbox bb = make_bbox();
-    bb.min = make_nvec3(param2.f.x, param2.f.y, param2.f.z) ;
-    bb.max = make_nvec3(param3.f.x, param3.f.y, param3.f.z) ;
-    bb.invert = complement ; 
+    glm::vec3 mi(param2.f.x, param2.f.y, param2.f.z) ;
+    glm::vec3 mx(param3.f.x, param3.f.y, param3.f.z) ;
+    nbbox bb = make_bbox(mi, mx, complement);
+
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
 

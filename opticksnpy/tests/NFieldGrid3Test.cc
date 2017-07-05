@@ -108,7 +108,7 @@ int main(int argc, char** argv)
     glm::vec3 wbb_min(wbb.min.x, wbb.min.y, wbb.min.z);
     glm::vec3 wbb_max(wbb.max.x, wbb.max.y, wbb.max.z);
 
-    nvec3 wbb_side = wbb.side();
+    glm::vec3 wbb_side = wbb.side();
 
     std::cout << "wbb_min " << wbb_min << std::endl ; 
     std::cout << "wbb_max " << wbb_max << std::endl ; 
