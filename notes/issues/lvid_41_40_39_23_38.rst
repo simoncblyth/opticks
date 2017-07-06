@@ -2,7 +2,6 @@ Five volumes 41 40 39 23 38 with no par surface points
 ========================================================
 
 
-
 checking the csg type mask of offenders, using current default parsurf_level=2 
 ---------------------------------------------------------------------------------
 
@@ -21,6 +20,10 @@ checking the csg type mask of offenders, using current default parsurf_level=2
        ## above from tube deltaphi
 
         345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp   1468 difference box3 convexpolyhedron 
+       ## lvid 66 : this was FIXED for impingement by correcting trapezoid/convexpolyhedron z-centering 
+       ##           but trapezoid is know to have bad parsurface : just one point in normal directions
+
+
            320                      SstTopHub0xc2643d8 lvidx  68 nsp   1063 union cylinder 
        28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    856 difference cylinder cone 
        26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp   1186 union difference cylinder cone 

@@ -94,8 +94,14 @@ void NScene::collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned 
     for(nd* c : n->children) collect_mesh_nodes_r(c, nodes, mesh);
 }
 
-
-
+std::string NScene::present_mesh_nodes(std::vector<unsigned>& nodes, unsigned dmax) const 
+{
+     std::stringstream ss ; 
+     ss << " nds[" << std::setw(3) << nodes.size() << "] " ;  
+     for(unsigned i=0 ; i < std::min<unsigned>(nodes.size(), dmax) ; i++) ss << " " << nodes[i] ; 
+     ss << ( nodes.size() > dmax ? " ... " : " . " ) ;     
+     return ss.str();
+}
     
 
 
@@ -474,18 +480,10 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
             csg->dump_surface_points("dsp", 200);
 
             unsigned mesh_id = csg->getIndex();
+
             std::vector<unsigned> nodes ; 
             collect_mesh_nodes(nodes, mesh_id);
-
-            std::cout << " csg.index (mesh_id) " << mesh_id
-                      << " num nodes " << nodes.size() 
-                      << std::endl ; 
-
-            std::cout << " node idx : " ; 
-            unsigned nmax = 10 ; 
-            for(unsigned i=0 ; i < std::min<unsigned>( nodes.size(), nmax) ; i++) std::cout << " " << nodes[i] ; 
-            std::cout << ( nodes.size() > nmax ? " ... " : " . " ) << std::endl ;     
-
+            std::cout << present_mesh_nodes(nodes, 20) << std::endl ; 
 
         }
         else

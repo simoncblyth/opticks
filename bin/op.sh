@@ -235,6 +235,9 @@ op-geometry-name()
        --dsst) echo DSST ;; 
        --dsst2) echo DSST2 ;; 
        --dlv65) echo DLV65 ;; 
+       --dlv55) echo DLV55 ;; 
+       --dlv66) echo DLV66 ;; 
+       --dlv68) echo DLV68 ;; 
        --dlv30) echo DLV30 ;; 
        --dlv185) echo DLV185 ;; 
        --jpmt) echo JPMT ;; 
@@ -291,7 +294,7 @@ op-geometry-setup()
     local geo=${OPTICKS_GEO:-DYB}
     op-geometry-unset 
     case $geo in 
-     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST|DSST2|DLV*) op-geometry-setup-dyb  $geo  ;;
+     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*) op-geometry-setup-dyb  $geo  ;;
                              JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
@@ -307,10 +310,12 @@ op-geometry-query-dyb()
        KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
-       DSST)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
+       DLV66)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
        DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
        DLV65)  echo "range:3155:3156,range:4440:4441" ;;    # large BBox discrep
+       DLV68)  echo "range:3155:3156,range:4464:4465" ;;    # large BBox discrep
        DLV30)  echo "range:3155:3156,range:3167:3168" ;;    #
+       DLV55)  echo "range:3155:3156,range:4357:4358" ;;    #
       DLV185)  echo "range:3155:3156,range:4799:4800" ;;    #
     esac
     # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere

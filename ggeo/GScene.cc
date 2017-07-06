@@ -38,7 +38,6 @@
 
 #define AS_VEC3(q) glm::vec3((q).x, (q).y, (q).z) 
 
-
 #include "PLOG.hh"
 
 GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
@@ -154,7 +153,7 @@ void GScene::init()
 
     compareMeshes();
 
-    if(m_gltf == 4)  assert(0 && "GScene::init early exit for gltf==4" );
+    if(m_gltf == 4 || m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==4 or gltf==44" );
 
     m_root = createVolumeTree(m_scene) ;
     assert(m_root);
@@ -411,7 +410,6 @@ nbbox GScene::getBBox(const char* soname, NSceneConfigBBoxType bbty) const
 }
 
 
-
 void GScene::compareMeshes_GMeshBB()
 {
     GMeshLib* ana = m_meshlib ; 
@@ -427,8 +425,9 @@ void GScene::compareMeshes_GMeshBB()
 
     bool startswith = false ; 
     bool descending = true ; 
-    SSortKV delta(descending);
+    bool present_bb = m_gltf > 4  ; 
 
+    SSortKV delta(descending);
 
     NSceneConfigBBoxType bbty = m_scene->bbox_type() ; 
     const char* bbty_ = m_scene->bbox_type_string() ;
@@ -444,6 +443,8 @@ void GScene::compareMeshes_GMeshBB()
     for(unsigned i=0 ; i < num_meshes ; i++ )
     {
         GMesh* a = ana->getMesh(i);
+        unsigned mesh_idx = a->getIndex();
+        assert( mesh_idx == i );
         const char* soname = a->getName() ; 
 
         nbbox okbb = getBBox(soname, bbty );
@@ -466,7 +467,6 @@ void GScene::compareMeshes_GMeshBB()
         std::string name = delta.getKey(i);
         const char* soname = name.c_str(); 
 
-
         GMesh* a = ana->getMesh(soname, startswith);
         GMesh* b = tri->getMesh(soname, startswith);
 
@@ -481,6 +481,12 @@ void GScene::compareMeshes_GMeshBB()
         int lvidx = m_scene->lvidx(a_mesh_id);
         nnode* root = csg->getRoot();
 
+        std::vector<unsigned> nodes ; 
+        m_scene->collect_mesh_nodes(nodes, a_mesh_id );
+        std::string nodes_ = m_scene->present_mesh_nodes(nodes, 10) ; 
+
+        assert( nodes.size() > 0 );
+
         unsigned nsp = csg->getNumSurfacePoints();
 
         std::string typemask_ = root->get_type_mask_string() ; 
@@ -494,17 +500,27 @@ void GScene::compareMeshes_GMeshBB()
                << std::setw(40) << name
                << " lvidx " << std::setw(3) << lvidx 
                << " nsp " << std::setw(6) << nsp
-               << " " << typemask_ 
-     /*
+               ;
+
+        if(present_bb)
+        {
+            std::cout 
                << " amn " << gpresent(okbb.min)
                << " bmn " << gpresent(g4bb.min)
                << " dmn " << gpresent(dmn)
                << " amx " << gpresent(okbb.max)
                << " bmx " << gpresent(g4bb.max)
                << " dmx " << gpresent(dmx)
-     */ 
-               << std::endl 
                ;
+        }
+        else
+        {
+            std::cout 
+               << " " << std::setw(50) << typemask_ 
+               << " " << nodes_
+               ;
+        } 
+        std::cout << std::endl ;
     }
 
     LOG(info) << "GScene::compareMeshes_GMeshBB"

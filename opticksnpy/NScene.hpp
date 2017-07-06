@@ -68,6 +68,8 @@ class NPY_API NScene : public NGLTF
         // TODO: should be accessible from NCSG 
         int  lvidx(unsigned mesh_id) const ;
         void collect_mesh_nodes(std::vector<unsigned>& nodes, unsigned mesh) const ;
+        std::string present_mesh_nodes(std::vector<unsigned>& nodes, unsigned dmax=10) const ;
+    private:
         void collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned mesh) const ;
     private:
         void init();
