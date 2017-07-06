@@ -1,5 +1,143 @@
-Five volumes with no par surface points
-=========================================
+Five volumes 41 40 39 23 38 with no par surface points
+========================================================
+
+
+
+checking the csg type mask of offenders, using current default parsurf_level=2 
+---------------------------------------------------------------------------------
+
+* using adaptive parsurf_level to meet parsurf_target number of surface points, pushes the five volumes
+  down the chart ... 
+
+  * reaching level that suggests just a problem with parametric sampling of surface points for 
+    intersects between sub-objects of very different scale rather than with the actual CSG geometry
+
+::
+
+    2017-07-06 16:09:32.174 INFO  [3663887] [GScene::compareMeshes_GMeshBB@436] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 2 parsurf_target 500
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 nsp    507 intersection cylinder 
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp   1212 difference cylinder box3 
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 nsp   1728 intersection cylinder box3 
+       ## above from tube deltaphi
+
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp   1468 difference box3 convexpolyhedron 
+           320                      SstTopHub0xc2643d8 lvidx  68 nsp   1063 union cylinder 
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    856 difference cylinder cone 
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp   1186 union difference cylinder cone 
+            20               headon-pmt-mount0xc2a7670 lvidx  55 nsp   1233 union difference cylinder 
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 nsp   1458 union box3 
+        10.035               led-source-shell0xc3068f0 lvidx 100 nsp    567 union zsphere cylinder 
+        10.035                   source-shell0xc2d62d0 lvidx 111 nsp    567 union zsphere cylinder 
+        10.035                   weight-shell0xc307920 lvidx 103 nsp    567 union zsphere cylinder 
+        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 nsp    691 union sphere cylinder 
+       7.54053                   pmt-hemi-vac0xc21e248 lvidx  46 nsp    665 union intersection sphere cylinder 
+             5                      LsoOflTnk0xc17d928 lvidx 140 nsp    939 union intersection cylinder 
+        4.2583                    OcrGdsInLso0xbfa2190 lvidx  31 nsp    923 intersection difference cylinder cone 
+         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 nsp   1220 union difference cylinder cone 
+       1.25537                    source-assy0xc2d5d78 lvidx 112 nsp   1548 union zsphere cylinder 
+       1.25437            amcco60-source-assy0xc0b1df8 lvidx 132 nsp   1548 union zsphere cylinder 
+       1.25437                led-source-assy0xc3061d0 lvidx 105 nsp   1548 union zsphere cylinder 
+       1.17236                 OcrGdsLsoInOav0xc354118 lvidx  40 nsp    510 intersection difference cylinder cone ** 
+       1.02372                 OcrCalLsoInOav0xc541388 lvidx  41 nsp   1062 intersection difference cylinder cone ** 
+       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 nsp   1511 difference cylinder box3 
+      0.992975                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 nsp    600 intersection difference cylinder cone ** 
+      0.799805                      near_rock0xc04ba08 lvidx 247 nsp   1398 difference box3 
+      0.685471                    OcrGdsInIav0xc405b10 lvidx  23 nsp    882 intersection difference cylinder cone ** 
+      0.567066                    OcrGdsInOav0xc355130 lvidx  38 nsp    934 intersection difference cylinder cone ** 
+           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 nsp    972 union box3 
+      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 nsp   1458 union box3 
+      0.352921                 OcrGdsTfbInLso0xbfa2370 lvidx  30 nsp   1404 intersection difference cylinder cone 
+      0.247902                       pmt-hemi0xc0fed90 lvidx  47 nsp    674 union intersection sphere cylinder 
+        0.1313                   pmt-hemi-bot0xc22a958 lvidx  44 nsp   1309 difference zsphere 
+      0.119995                            oav0xc2ed7c8 lvidx  42 nsp    981 union cylinder cone 
+    2017-07-06 16:09:32.227 INFO  [3663887] [GScene::compareMeshes_GMeshBB@510] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF num_discrepant 33 frac 0.13253
+
+
+
+* bumping up parsurf_level to 4 increases nsp (numSurfPoints)  by factor of 10 for most, 
+  but "intersection difference cylinder cone" still far too low
+
+  * also unusably slow to increase this drastically for all
+
+
+::
+
+    2017-07-06 15:41:04.014 INFO  [3653718] [GScene::compareMeshes_GMeshBB@436] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 4
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 nsp    507 intersection cylinder 
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp    324 difference cylinder box3 
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 nsp    352 intersection cylinder box3 
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp   1468 difference box3 convexpolyhedron 
+           320                      SstTopHub0xc2643d8 lvidx  68 nsp   1063 union cylinder 
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    856 difference cylinder cone 
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp   1186 union difference cylinder cone 
+       24.0166                    OcrGdsInLso0xbfa2190 lvidx  31 nsp     70 intersection difference cylinder cone 
+            20               headon-pmt-mount0xc2a7670 lvidx  55 nsp   1233 union difference cylinder 
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 nsp   5202 union box3 
+       11.1432                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 nsp      5 intersection difference cylinder cone **
+       11.0913                    OcrGdsInOav0xc355130 lvidx  38 nsp      5 intersection difference cylinder cone **
+       10.6406                 OcrGdsLsoInOav0xc354118 lvidx  40 nsp      7 intersection difference cylinder cone **
+       10.5275                    OcrGdsInIav0xc405b10 lvidx  23 nsp      5 intersection difference cylinder cone **
+        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 nsp    691 union sphere cylinder 
+        10.035               led-source-shell0xc3068f0 lvidx 100 nsp   2023 union zsphere cylinder 
+        10.035                   weight-shell0xc307920 lvidx 103 nsp   2023 union zsphere cylinder 
+        10.035                   source-shell0xc2d62d0 lvidx 111 nsp   2023 union zsphere cylinder 
+       7.73041                 OcrCalLsoInOav0xc541388 lvidx  41 nsp      8 intersection difference cylinder cone **
+       7.54053                   pmt-hemi-vac0xc21e248 lvidx  46 nsp    665 union intersection sphere cylinder 
+             5                      LsoOflTnk0xc17d928 lvidx 140 nsp   3056 union intersection cylinder 
+       4.87451                 OcrGdsTfbInLso0xbfa2370 lvidx  30 nsp    152 intersection difference cylinder cone **
+         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 nsp   1220 union difference cylinder cone 
+       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 nsp   1511 difference cylinder box3 
+      0.799805                      near_rock0xc04ba08 lvidx 247 nsp   1398 difference box3 
+      0.628181                    source-assy0xc2d5d78 lvidx 112 nsp   5447 union zsphere cylinder 
+      0.627182            amcco60-source-assy0xc0b1df8 lvidx 132 nsp   5447 union zsphere cylinder 
+      0.627182                led-source-assy0xc3061d0 lvidx 105 nsp   5447 union zsphere cylinder 
+           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 nsp   3468 union box3 
+      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 nsp   5202 union box3 
+      0.247902                       pmt-hemi0xc0fed90 lvidx  47 nsp    674 union intersection sphere cylinder 
+        0.1313                   pmt-hemi-bot0xc22a958 lvidx  44 nsp    381 difference zsphere 
+      0.119995                            oav0xc2ed7c8 lvidx  42 nsp    981 union cylinder cone 
+
+
+
+::
+
+    2017-07-06 15:40:05.274 INFO  [3652910] [GScene::compareMeshes_GMeshBB@436] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 2
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 nsp     55 intersection cylinder 
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp     33 difference cylinder box3 
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 nsp     31 intersection cylinder box3 
+       1687.58                 OcrCalLsoInOav0xc541388 lvidx  41 nsp      0 intersection difference cylinder cone **
+       1297.24                 OcrGdsLsoInOav0xc354118 lvidx  40 nsp      0 intersection difference cylinder cone **
+       1279.74                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 nsp      0 intersection difference cylinder cone **
+       1278.74                    OcrGdsInIav0xc405b10 lvidx  23 nsp      0 intersection difference cylinder cone **
+       1278.73                    OcrGdsInOav0xc355130 lvidx  38 nsp      0 intersection difference cylinder cone **
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp    121 difference box3 convexpolyhedron 
+           320                      SstTopHub0xc2643d8 lvidx  68 nsp    100 union cylinder 
+       115.448                    OcrGdsInLso0xbfa2190 lvidx  31 nsp     15 intersection difference cylinder cone 
+        29.001                   pmt-hemi-vac0xc21e248 lvidx  46 nsp     55 union intersection sphere cylinder 
+       28.1631                       pmt-hemi0xc0fed90 lvidx  47 nsp     55 union intersection sphere cylinder 
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp     75 difference cylinder cone 
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp    110 union difference cylinder cone 
+       22.9608                 OcrGdsTfbInLso0xbfa2370 lvidx  30 nsp     40 intersection difference cylinder cone 
+            20               headon-pmt-mount0xc2a7670 lvidx  55 nsp    135 union difference cylinder 
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 nsp    450 union box3 
+        10.035               led-source-shell0xc3068f0 lvidx 100 nsp    175 union zsphere cylinder 
+        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 nsp     79 union sphere cylinder 
+        10.035                   source-shell0xc2d62d0 lvidx 111 nsp    175 union zsphere cylinder 
+        10.035                   weight-shell0xc307920 lvidx 103 nsp    175 union zsphere cylinder 
+       5.01849                    source-assy0xc2d5d78 lvidx 112 nsp    480 union zsphere cylinder 
+       5.01749                led-source-assy0xc3061d0 lvidx 105 nsp    480 union zsphere cylinder 
+       5.01749            amcco60-source-assy0xc0b1df8 lvidx 132 nsp    480 union zsphere cylinder 
+             5                      LsoOflTnk0xc17d928 lvidx 140 nsp    315 union intersection cylinder 
+         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 nsp    110 union difference cylinder cone 
+       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 nsp    129 difference cylinder box3 
+      0.799805                      near_rock0xc04ba08 lvidx 247 nsp    114 difference box3 
+           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 nsp    300 union box3 
+      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 nsp    450 union box3 
+        0.1313                   pmt-hemi-bot0xc22a958 lvidx  44 nsp     45 difference zsphere 
+      0.119995                            oav0xc2ed7c8 lvidx  42 nsp    110 union cylinder cone 
+    2017-07-06 15:40:05.312 INFO  [3652910] [GScene::compareMeshes_GMeshBB@509] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF num_discrepant 33 frac 0.13253
+
+
 
 
 
@@ -10,6 +148,8 @@ From CSG_BBOX_PARSURF against CSG_BBOX_G4POLY
 
 
 ::
+
+    op --gltf 4 
     
     2017-07-06 13:24:34.087 INFO  [3590380] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF
 
@@ -46,11 +186,13 @@ From CSG_BBOX_PARSURF against CSG_BBOX_G4POLY
 
 
 
-
 opticks-;opticks-nnt-vi 41 40 39 23 38
 -------------------------------------------
 
-All five are similar structure: (co-co)cy
+All five are similar structure: (co-co)cy 
+
+* issue appears to be due to the cones being huge compared to the cylinder, so 
+  the cone surface points are insufficient in the small region of the intersected cylinder 
 
 ::
 
@@ -90,5 +232,68 @@ Vizing the primitives, note very large flat cones with the cylinder poking thru 
      95 
      96 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
      97 CSG.Serialize([con, a,b,c], args.csgpath )
+
+
+
+Increasing parsurf_level yields some surface points
+------------------------------------------------------
+
+::
+
+    simon:analytic blyth$ opticks-;opticks-nnt 41
+    opticks-nnt : compiling /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/41/NNodeTest_41.cc
+     du [ 0:in abc] OPER  v:1 2017-07-06 15:05:47.933 INFO  [3634996] [nnode::bbox@414] nnode::bbox [ 0:in abc]
+    nbbox::CombineCSG  BB(A * B) 
+     L  mi (  -2273.932 -2273.932   -56.310) mx (   2273.932  2273.932    56.310) si (   4547.864  4547.864   112.620)
+     R  mi (   -728.306  1587.576  -106.310) mx (   -628.306  1687.576   106.310) si (    100.000   100.000   212.620)
+     C  mi (   -728.306  1587.576   -56.310) mx (   -628.306  1687.576    56.310) si (    100.000   100.000   112.620)
+    nnode::composite_bbox  left [ 0:di ab] right [ 0:cy c]  bb  mi (   -728.306  1587.576   -56.310) mx (   -628.306  1687.576    56.310) si (    100.000   100.000   112.620)
+     bb  mi (   -728.306  1587.576   -56.310) mx (   -628.306  1687.576    56.310) si (    100.000   100.000   112.620)
+
+    2017-07-06 15:05:47.935 INFO  [3634996] [NSceneConfig::NSceneConfig@41] NSceneConfig::NSceneConfig cfg [parsurf_level=4]
+                     parsurf_level :                    4
+    2017-07-06 15:05:47.935 INFO  [3634996] [NCSG::collect_surface_points@1186] NCSG::collect_surface_points verbosity 1
+                      check_surf_containment : 0
+                      check_aabb_containment : 0
+                          disable_instancing : 0
+                           csg_bbox_analytic : 0
+                               csg_bbox_poly : 0
+                            csg_bbox_parsurf : 0
+                             csg_bbox_g4poly : 0
+                               parsurf_level : 4
+                              parsurf_margin : 0
+    ...
+    NParameters::dump
+    2017-07-06 15:05:47.938 INFO  [3634996] [NCSG::dump_surface_points@1220] dsp num_sp 8 dmax 20
+     bbsp  mi (   -728.306  1587.576   -43.188) mx (   -628.306  1687.576   -30.564) si (    100.000   100.000    12.624)
+     i    0 sp (   -628.306  1637.576   -43.188)
+     i    1 sp (   -678.306  1687.576   -43.188)
+     i    2 sp (   -728.306  1637.576   -43.188)
+     i    3 sp (   -678.306  1587.576   -43.188)
+     i    4 sp (   -628.306  1637.576   -43.188)
+     i    5 sp (   -628.306  1637.576   -30.564)
+     i    6 sp (   -678.306  1587.576   -30.564)
+     i    7 sp (   -628.306  1637.576   -30.564)
+    /usr/local/opticks/lib/NNodeTest_41
+    simon:analytic blyth$ 
+
+
+
+::
+
+    parsurf_level 4 : bbsp  mi (   -728.306  1587.576   -43.188) mx (   -628.306  1687.576   -30.564) si (    100.000   100.000    12.624)
+    parsurf_level 5 : bbsp  mi (   -728.306  1587.576   -49.501) mx (   -628.306  1687.576   -30.564) si (    100.000   100.000    18.936)
+    parsurf_level 6 : bbsp  mi (   -728.306  1587.576   -49.501) mx (   -628.306  1687.576   -30.564) si (    100.000   100.000    18.936)
+
+    parsurf_level 10: bbsp  mi (   -728.306  1587.576   -50.092) mx (   -628.306  1687.576   -27.605) si (    100.000   100.000    22.487)
+        ## noticebly slow to handle huge numbers of prim points 
+
+
+::
+
+      1687.58                 OcrCalLsoInOav0xc541388 lvidx  41 
+
+      bmn (   -728.313  1587.580   -50.919) 
+      bmx (   -628.313  1687.580   -28.213) 
 
 

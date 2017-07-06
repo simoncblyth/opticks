@@ -59,6 +59,7 @@ class NPY_API NScene : public NGLTF
 
         unsigned getVerbosity();
         unsigned getTargetNode();
+        NSceneConfig* getConfig();
     public: 
          // from gltfconfig
          NSceneConfigBBoxType bbox_type() const ; 

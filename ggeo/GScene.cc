@@ -58,6 +58,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_loaded(false),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
+    m_scene_config( m_scene->getConfig()),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
@@ -436,6 +437,8 @@ void GScene::compareMeshes_GMeshBB()
               << " num_meshes " << num_meshes
               << " cut " << cut 
               << " bbty " << bbty_
+              << " parsurf_level " << m_scene_config->parsurf_level 
+              << " parsurf_target " << m_scene_config->parsurf_target 
               ;
 
     for(unsigned i=0 ; i < num_meshes ; i++ )
@@ -476,21 +479,30 @@ void GScene::compareMeshes_GMeshBB()
         NCSG*  csg = findCSG(soname, startswith); assert( csg == a->getCSG() );  
         unsigned a_mesh_id = a->getIndex();
         int lvidx = m_scene->lvidx(a_mesh_id);
-        //nnode* root = csg->getRoot();
+        nnode* root = csg->getRoot();
+
+        unsigned nsp = csg->getNumSurfacePoints();
+
+        std::string typemask_ = root->get_type_mask_string() ; 
 
         glm::vec3 dmn = okbb.min - g4bb.min ; 
         glm::vec3 dmx = okbb.max - g4bb.max ; 
+
 
         std::cout 
                << std::setw(10) << dmax
                << std::setw(40) << name
                << " lvidx " << std::setw(3) << lvidx 
+               << " nsp " << std::setw(6) << nsp
+               << " " << typemask_ 
+     /*
                << " amn " << gpresent(okbb.min)
                << " bmn " << gpresent(g4bb.min)
                << " dmn " << gpresent(dmn)
                << " amx " << gpresent(okbb.max)
                << " bmx " << gpresent(g4bb.max)
                << " dmx " << gpresent(dmx)
+     */ 
                << std::endl 
                ;
     }

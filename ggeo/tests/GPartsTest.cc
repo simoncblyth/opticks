@@ -33,7 +33,11 @@ void test_FromNode()
                   << " name " << name
                   ;
 
-        NCSG* tree = NCSG::FromNode( n , spec );  // TODO: eliminate spec from NCSG 
+        n->set_boundary(spec) ; 
+
+        const NSceneConfig* config = NULL ; 
+
+        NCSG* tree = NCSG::FromNode( n , config  );
 
         GParts* pts = GParts::make( tree, spec, verbosity ) ; 
         pts->dump("GPartsTest");

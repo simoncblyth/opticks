@@ -32,6 +32,12 @@
 #include "PLOG.hh"
 
 
+
+NSceneConfig* NScene::getConfig()
+{
+   return m_config ;  
+}
+
 unsigned NScene::getNumNd() const 
 {
    return m_nd.size();

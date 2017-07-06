@@ -23,6 +23,7 @@ class GColorizer ;
 class NCSG ; 
 class NSensorList ; 
 class NScene ; 
+struct NSceneConfig ; 
 struct nd ; 
 struct guint4 ; 
 
@@ -156,9 +157,10 @@ class GGEO_API GScene : public GGeoBase
         bool     m_analytic ; 
         bool     m_loaded ; 
         int      m_gltf ; 
-        NScene*  m_scene ; 
-        int      m_num_nd ; 
-        unsigned m_targetnode ; 
+        NScene*        m_scene ; 
+        NSceneConfig*  m_scene_config ; 
+        int            m_num_nd ; 
+        unsigned       m_targetnode ; 
 
         GGeoLib*      m_geolib ; 
         GNodeLib*     m_nodelib ; 

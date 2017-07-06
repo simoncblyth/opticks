@@ -17,9 +17,12 @@ log = logging.getLogger(__name__)
 
 template_head = r"""
 
+// regenerate with gdml2gltf.py 
+
 #include "SSys.hh"
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
+#include "NSceneConfig.hpp"
 #include "NNode.hpp"
 #include "NPrimitives.hpp"
 #include "PLOG.hh"
@@ -39,7 +42,11 @@ template_tail = r"""
     %(root)s.dump() ; 
 
     const char* boundary = "Rock//perfectAbsorbSurface/Vacuum" ;
-    NCSG* csg = NCSG::FromNode(&%(root)s, boundary);
+
+    %(root)s.set_boundary(boundary); 
+    const char* gltfconfig = "" ;  
+    const NSceneConfig* config = new NSceneConfig(gltfconfig);
+    NCSG* csg = NCSG::FromNode(&%(root)s, config);
     csg->dump();
     csg->dump_surface_points("dsp", 20);
 

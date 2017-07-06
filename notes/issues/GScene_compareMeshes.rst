@@ -34,6 +34,9 @@ CAUSE FOUND : need to implement tube deltaphi
 
 :doc:`lvid65`
 
+:doc:`lvidx_65_69_56_tube_deltaphi`
+
+
 lvid 39 : FIXED : 1214.74 OcrGdsTfbInLso0xbfa2370 cone-z should be centered
 ---------------------------------------------------------------------------------
 
@@ -49,7 +52,6 @@ lvid_41_40_39_23_38
 ----------------------
 
 * :doc:`lvid_41_40_39_23_38`
-
 
 try comparing CSG_BBOX_PARSURF against CSG_BBOX_G4POLY
 --------------------------------------------------------

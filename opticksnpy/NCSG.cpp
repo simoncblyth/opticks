@@ -20,6 +20,7 @@
 #include "NPrimitives.hpp"
 
 
+#include "NSceneConfig.hpp"
 #include "NScan.hpp"
 #include "NNode.hpp"
 #include "NBBox.hpp"
@@ -68,7 +69,7 @@ NCSG::NCSG(const char* treedir)
 NCSG::NCSG(nnode* root ) 
    :
    m_index(0),
-   m_verbosity(0),
+   m_verbosity(root->verbosity),
    m_usedglobally(false),
    m_root(root),
    m_treedir(NULL),
@@ -1180,25 +1181,67 @@ int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosi
 
 glm::uvec4 NCSG::collect_surface_points() 
 {
-    m_surface_points.clear();
-    return collect_surface_points( m_surface_points, m_root, m_verbosity, m_surface_epsilon );
+    if(m_verbosity > 2 )
+    LOG(info) << "NCSG::collect_surface_points"
+              << " verbosity " << m_verbosity 
+              ;
+
+    if(m_config && m_verbosity > 2) m_config->dump("NCSG::collect_surface_points");
+
+    return collect_surface_points( m_surface_points, m_root, m_config, m_verbosity, m_surface_epsilon );
 }
 
-glm::uvec4 NCSG::collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, unsigned verbosity, float epsilon ) // static
+glm::uvec4 NCSG::collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, const NSceneConfig* config,  unsigned verbosity, float epsilon ) // static
 {
-    //unsigned level = 1 ;  // +-----+------+   0x1 << 1 == 2 divisions, 3 uv points 
-    unsigned level = 2 ;    // +--+--+--+---+   0x1 << 2 == 4 divisions, 5 uv points  
-    unsigned margin = 0 ;   // when > 0 skips the ends 
+   /*
 
+               level                       divisions   (+1 for uv points)
+                 1    +-----+------+   0x1 << 1  =     2     
+                 2    +--+--+--+---+   0x1 << 2  =     4 
+                 3                     0x1 << 3  =     8 
+                 4                     0x1 << 4  =    16
+                 5                     0x1 << 5  =    32 
+                 6                     0x1 << 6  =    64 
+                 7                     0x1 << 7  =   128
+                 8                     0x1 << 8  =   256
+                 9                     0x1 << 9  =   512
+                10                     0x1 << 10 =  1024
+
+     * Divisions are then effectively squared to give uv samplings
+     * margin > 0 , skips both ends 
+
+     The below uses adaptive uv-levels, upping level from the configured
+     initial level up to 8 times or until the target number of points is exceeded.
+   */
+  
+    unsigned level = config ? config->parsurf_level : 2 ; 
+    unsigned margin = config ? config->parsurf_margin : 0 ; 
+    unsigned target = config ? config->parsurf_target : 200 ; 
     unsigned pointmask = POINT_SURFACE ; 
 
-    glm::uvec4 tots = root->getCompositePoints( surface_points, level, margin , pointmask, epsilon, NULL );
+    unsigned num_surface_points = 0 ; 
+    int countdown = 8 ; 
 
-    if(verbosity > 2)
-    LOG(info) << "NCSG::collect_surface_points"
-              << " tots (inside/surface/outside/selected) " << gpresent(tots) 
-              << " surface_points " << surface_points.size()
-              ;
+    glm::uvec4 tots ; 
+
+    while( num_surface_points < target && countdown-- )
+    {
+        surface_points.clear();
+        tots = root->getCompositePoints( surface_points, level, margin , pointmask, epsilon, NULL );
+
+        if(verbosity > 2)
+        std::cout 
+                  << " verbosity " << verbosity 
+                  << " countdown " << countdown  
+                  << " level " << level   
+                  << " target " << target
+                  << " num_surface_points " << num_surface_points
+                  << " tots (inside/surface/outside/selected) " << gpresent(tots)  
+                  << std::endl ; 
+ 
+        level++ ; 
+        num_surface_points = surface_points.size() ;
+    }
 
     return tots ; 
 }
@@ -1243,7 +1286,7 @@ nbbox NCSG::bbox_surface_points() const
 {
     unsigned num_sp = getNumSurfacePoints() ; 
     if(num_sp==0)  
-        LOG(warning) << "NCSG::bbox_surface_points NONE FOUND  " << brief() ;  
+        LOG(debug) << "NCSG::bbox_surface_points NONE FOUND : probably need larger parsurf_level   " << brief() ;  
 
     //assert(num_sp > 0 );
     return nbbox::from_points(getSurfacePoints());    

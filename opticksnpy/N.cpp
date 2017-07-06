@@ -7,13 +7,14 @@
 #include "NCSG.hpp"
 
 
-N::N(const nnode* node, const nmat4triple* transform, float surface_epsilon ) 
+N::N(const nnode* node, const nmat4triple* transform, const NSceneConfig* config, float surface_epsilon ) 
     : 
          node(node), 
          transform(transform),
+         config(config),
          nsdf(node->sdf(), transform->v)
 {
-         tots = NCSG::collect_surface_points( model, node, node->verbosity, surface_epsilon ) ;
+         tots = NCSG::collect_surface_points( model, node, config, node->verbosity, surface_epsilon ) ;
 
          transform->apply_transform_t( local, model );
 

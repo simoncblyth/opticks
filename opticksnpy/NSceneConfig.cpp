@@ -33,11 +33,14 @@ NSceneConfig::NSceneConfig(const char* cfg)
     csg_bbox_parsurf(0),
     csg_bbox_g4poly(0),
 
+    parsurf_target(200),
+    parsurf_level(2),
+    parsurf_margin(0),
+
     default_csg_bbty(CSG_BBOX_PARSURF)
 {
-
     LOG(info) << "NSceneConfig::NSceneConfig"
-              << " cfg " << ( cfg ? cfg : " NULL " )
+              << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
               ;
 
     bconfig->addInt("check_surf_containment", &check_surf_containment );
@@ -46,7 +49,10 @@ NSceneConfig::NSceneConfig(const char* cfg)
     bconfig->addInt("csg_bbox_analytic",      &csg_bbox_analytic);
     bconfig->addInt("csg_bbox_poly",          &csg_bbox_poly);
     bconfig->addInt("csg_bbox_parsurf",       &csg_bbox_parsurf);
-    bconfig->addInt("csg_bbox_g4poly",       &csg_bbox_g4poly);
+    bconfig->addInt("csg_bbox_g4poly",        &csg_bbox_g4poly);
+    bconfig->addInt("parsurf_target",         &parsurf_target);
+    bconfig->addInt("parsurf_level",          &parsurf_level);
+    bconfig->addInt("parsurf_margin",         &parsurf_margin);
 
     bconfig->parse();
 }

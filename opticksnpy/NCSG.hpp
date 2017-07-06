@@ -95,7 +95,7 @@ class NPY_API NCSG {
         const std::vector<glm::vec3>& getSurfacePoints() const ;
         unsigned getNumSurfacePoints() const ;
         float    getSurfaceEpsilon() const ; 
-        static   glm::uvec4 collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, unsigned verbosity, float epsilon );
+        static   glm::uvec4 collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, const NSceneConfig* config, unsigned verbosity, float epsilon );
     private:
         glm::uvec4 collect_surface_points();
     public:
