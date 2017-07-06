@@ -122,6 +122,17 @@ NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gl
 }
 
 
+// from gltfconfig
+NSceneConfigBBoxType NScene::bbox_type() const 
+{
+    return m_config->bbox_type();
+}
+const char* NScene::bbox_type_string() const 
+{
+    return m_config->bbox_type_string();
+}
+
+
 
 
 NScene::NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx)  

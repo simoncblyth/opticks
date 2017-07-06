@@ -12,8 +12,6 @@ struct nbbox ;
 
 struct GGEO_API gbbox 
 {
-   static float MaxDiff( const gbbox& a, const gbbox& b);
-
    gbbox() : min(gfloat3(0.f)), max(gfloat3(0.f)) {} ;
    gbbox(float s) :  min(gfloat3(-s)), max(gfloat3(s)) {} ; 
    gbbox(const gfloat3& _min, const gfloat3& _max) :  min(_min), max(_max) {} ; 

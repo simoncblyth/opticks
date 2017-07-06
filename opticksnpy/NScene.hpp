@@ -13,6 +13,7 @@ struct NSceneConfig ;
 
 template<class T> class Counts ;
 
+#include "NSceneConfig.hpp"  // for enums 
 #include "NGLTF.hpp"
 
 /*
@@ -58,7 +59,10 @@ class NPY_API NScene : public NGLTF
 
         unsigned getVerbosity();
         unsigned getTargetNode();
-
+    public: 
+         // from gltfconfig
+         NSceneConfigBBoxType bbox_type() const ; 
+         const char* bbox_type_string() const ;
     public:
         // TODO: should be accessible from NCSG 
         int  lvidx(unsigned mesh_id) const ;
@@ -121,7 +125,6 @@ class NPY_API NScene : public NGLTF
         void check_surf_containment_r(const nd* node) ; 
         glm::uvec4 check_surf_points( const nd* n ) const ;
         void debug_node(const nd* node) const ; 
-
 
     private:
         void update_aabb();

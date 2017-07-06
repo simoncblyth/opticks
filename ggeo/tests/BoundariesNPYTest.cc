@@ -11,6 +11,10 @@
 #include "GBndLib.hh"
 #include "BoundariesNPY.hpp"
 
+#include "PLOG.hh"
+#include "GGEO_LOG.hh"
+#include "NPY_LOG.hh"
+
 #include "GGEO_BODY.hh"
 
 
@@ -18,6 +22,10 @@
 
 int main(int argc, char** argv)
 {
+    PLOG_(argc, argv);
+    GGEO_LOG__ ; 
+    NPY_LOG__ ; 
+
     Opticks* opticks = new Opticks(argc, argv);
 
     GBndLib* blib = GBndLib::load(opticks, true );
@@ -25,11 +33,14 @@ int main(int argc, char** argv)
     blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for OpticksAttrSeq
     std::map<unsigned int, std::string> nm = qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
 
-    //qbnd->dump();
+    qbnd->dump();
     
     NPY<float>* dpho = NPY<float>::load("oxtorch", "1", "dayabay");
-    if(!dpho) return 0 ;
-
+    if(!dpho) 
+    {
+        LOG(warning) << " failed to load dpho event " ; 
+        return 0 ;
+    }
 
 
     //dpho->Summary();

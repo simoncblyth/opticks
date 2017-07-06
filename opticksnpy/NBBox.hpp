@@ -34,6 +34,9 @@ struct NPY_API nbbox
 
     static bool inside_range(const float v, const float vmin, const float vmax ) ;
   
+
+    static float MaxDiff( const nbbox& a, const nbbox& b);  
+
     static NBBoxContainment_t classify_containment_1( float delta, float epsilon,  NBBoxContainment_t neg, NBBoxContainment_t eps, NBBoxContainment_t pos );
     static std::string containment_mask_string( unsigned mask );
     static const char* containment_name( NBBoxContainment_t cont );
@@ -81,7 +84,6 @@ struct NPY_API nbbox
         max.z = 0. ; 
     } 
 
-    //nvec3 side() const 
     glm::vec3 side() const 
     {
         return max - min ; 
@@ -99,8 +101,6 @@ struct NPY_API nbbox
         max *= factor ; 
     } 
 
-    //nvec3 min ; 
-    //nvec3 max ; 
 
     glm::vec3 min ; 
     glm::vec3 max ; 

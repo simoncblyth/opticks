@@ -9,6 +9,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
+    //const char* gltfconfig = "check_surf_containment=3,other=1,check_aabb_containment=214,csg_bbox_poly=1" ; 
     const char* gltfconfig = "check_surf_containment=3,other=1,check_aabb_containment=214" ; 
 
     NSceneConfig cfg(gltfconfig);

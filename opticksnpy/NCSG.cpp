@@ -861,16 +861,6 @@ void NCSG::check_r(nnode* node)
 
 
 
-NCSG* NCSG::FromNode(nnode* root, const char* boundary)
-{
-    NCSG* tree = new NCSG(root);
-    tree->setBoundary( boundary );
-    tree->export_();
-    assert( tree->getGTransformBuffer() );
-
-    return tree ; 
-}
-
 void NCSG::export_()
 {
     assert(m_nodes);
@@ -908,6 +898,9 @@ void NCSG::dump(const char* msg)
     std::cout << brief() << std::endl ; 
 
     if(!m_root) return ;
+
+    nbbox bbsp = bbox_surface_points();
+    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
 
     m_root->dump("NCSG::dump");   
 
@@ -1081,25 +1074,37 @@ NCSG* NCSG::LoadCSG(const char* treedir)
 
 NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool polygonize)
 {
-     NCSG* tree = new NCSG(treedir) ; 
-     tree->setVerbosity(verbosity);
-     tree->setIsUsedGlobally(usedglobally);
+    NCSG* tree = new NCSG(treedir) ; 
+    tree->setVerbosity(verbosity);
+    tree->setIsUsedGlobally(usedglobally);
 
-     tree->load();
-     tree->import();
-     tree->export_();
+    tree->load();
+    tree->import();
+    tree->export_();
 
-     if(verbosity > 1) tree->dump("NCSG::LoadTree");
+    if(verbosity > 1) tree->dump("NCSG::LoadTree");
 
-     if(polygonize)
-     tree->polygonize();
+    if(polygonize)
+    tree->polygonize();
 
-     tree->collect_surface_points();
+    tree->collect_surface_points();
 
-     return tree ; 
+    return tree ; 
 
 }
-    
+
+NCSG* NCSG::FromNode(nnode* root, const char* boundary)
+{
+    NCSG* tree = new NCSG(root);
+    tree->setBoundary( boundary );
+    tree->export_();
+    assert( tree->getGTransformBuffer() );
+
+    tree->collect_surface_points();
+
+    return tree ; 
+}
+ 
 
 NTrianglesNPY* NCSG::polygonize()
 {
@@ -1193,6 +1198,10 @@ void NCSG::dump_surface_points(const char* msg, unsigned dmax) const
               ;
 
 
+    nbbox bbsp = bbox_surface_points();
+    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
+
+
     glm::vec3 lsp ; 
     for(unsigned i=0 ; i < std::min<unsigned>(num_sp,dmax) ; i++)
     {
@@ -1206,8 +1215,24 @@ void NCSG::dump_surface_points(const char* msg, unsigned dmax) const
 
         lsp = sp ; 
     }
+
 }
 
+nbbox NCSG::bbox_analytic() const 
+{
+    assert(m_root);
+    return m_root->bbox();
+}
+
+nbbox NCSG::bbox_surface_points() const 
+{
+    unsigned num_sp = getNumSurfacePoints() ; 
+    if(num_sp==0)  
+        LOG(warning) << "NCSG::bbox_surface_points no surface points need to collect_surface_points first " ;  
+
+    assert(num_sp > 0 );
+    return nbbox::from_points(getSurfacePoints());    
+}
 
 
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 
@@ -1222,8 +1247,5 @@ float NCSG::getSurfaceEpsilon() const
 {
     return m_surface_epsilon ; 
 }
-
-
-
 
 

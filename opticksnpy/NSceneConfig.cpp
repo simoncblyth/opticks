@@ -1,24 +1,91 @@
-
+#include "BConfig.hh"
 #include "PLOG.hh"
 #include "NSceneConfig.hpp"
 
+const char* NSceneConfig::CSG_BBOX_ANALYTIC_ = "CSG_BBOX_ANALYTIC" ; 
+const char* NSceneConfig::CSG_BBOX_POLY_     = "CSG_BBOX_POLY" ; 
+const char* NSceneConfig::CSG_BBOX_PARSURF_  = "CSG_BBOX_PARSURF" ; 
+const char* NSceneConfig::CSG_BBOX_G4POLY_  = "CSG_BBOX_G4POLY" ; 
+
+const char* NSceneConfig::BBoxType( NSceneConfigBBoxType bbty )
+{
+    const char* s = NULL ; 
+    switch( bbty )
+    {
+       case CSG_BBOX_ANALYTIC: s = CSG_BBOX_ANALYTIC_ ;break; 
+       case CSG_BBOX_POLY    : s = CSG_BBOX_POLY_     ;break; 
+       case CSG_BBOX_PARSURF : s = CSG_BBOX_PARSURF_  ;break; 
+       case CSG_BBOX_G4POLY  : s = CSG_BBOX_G4POLY_   ;break; 
+    }
+    return s ; 
+}
+
+
 NSceneConfig::NSceneConfig(const char* cfg)  
     :
-    BConfig(cfg),
+    bconfig(new BConfig(cfg)),
+
     check_surf_containment(0),
     check_aabb_containment(0),
-    disable_instancing(0)
+    disable_instancing(0),
+    csg_bbox_analytic(0),
+    csg_bbox_poly(0),
+    csg_bbox_parsurf(0),
+    csg_bbox_g4poly(0),
+
+    default_csg_bbty(CSG_BBOX_PARSURF)
 {
 
     LOG(info) << "NSceneConfig::NSceneConfig"
               << " cfg " << ( cfg ? cfg : " NULL " )
               ;
 
-    addInt("check_surf_containment", &check_surf_containment );
-    addInt("check_aabb_containment", &check_aabb_containment );
-    addInt("disable_instancing",     &disable_instancing );
+    bconfig->addInt("check_surf_containment", &check_surf_containment );
+    bconfig->addInt("check_aabb_containment", &check_aabb_containment );
+    bconfig->addInt("disable_instancing",     &disable_instancing );
+    bconfig->addInt("csg_bbox_analytic",      &csg_bbox_analytic);
+    bconfig->addInt("csg_bbox_poly",          &csg_bbox_poly);
+    bconfig->addInt("csg_bbox_parsurf",       &csg_bbox_parsurf);
+    bconfig->addInt("csg_bbox_g4poly",       &csg_bbox_g4poly);
 
-    parse();
+    bconfig->parse();
+}
+
+void NSceneConfig::dump(const char* msg) const
+{
+    bconfig->dump(msg);
+    LOG(info) << "bbox_type_string : " << bbox_type_string() ; 
+}
+
+const char* NSceneConfig::bbox_type_string() const 
+{
+    NSceneConfigBBoxType bbty = bbox_type() ;
+    return BBoxType(bbty);
+}
+
+
+NSceneConfigBBoxType NSceneConfig::bbox_type() const 
+{
+    NSceneConfigBBoxType bbty = default_csg_bbty ;
+
+    int csg_bbox_sum = !!(csg_bbox_analytic > 0) + !!(csg_bbox_poly > 0)  + !!(csg_bbox_parsurf > 0) + !!(csg_bbox_g4poly > 0) ; 
+    
+    if( csg_bbox_sum == 0  )
+    {
+        LOG(debug) << "no csg_bbox_ specified using default " ;
+    }
+    else if( csg_bbox_sum > 1  )
+    {
+        LOG(warning) << "multiple csg_bbox_ specified using default " ;
+    }
+    else if( csg_bbox_sum == 1)
+    {
+        if(      csg_bbox_analytic > 0) bbty = CSG_BBOX_ANALYTIC ;
+        else if( csg_bbox_poly    > 0)  bbty = CSG_BBOX_POLY ;
+        else if( csg_bbox_parsurf > 0)  bbty = CSG_BBOX_PARSURF ;
+        else if( csg_bbox_g4poly  > 0)  bbty = CSG_BBOX_G4POLY ;  // only available from GScene level 
+    }
+    return bbty ; 
 }
 
 

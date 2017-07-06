@@ -26,6 +26,7 @@ set(TEST_SOURCES
    LexicalCastTest.cc
    BBisectTest.cc
    BConfigTest.cc
+   BConfigConstituentTest.cc
 
 )
 

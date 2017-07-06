@@ -373,6 +373,44 @@ void GScene::compareMeshes()
 }
 
 
+nbbox GScene::getBBox(const char* soname, NSceneConfigBBoxType bbty) const 
+{
+    nbbox ubb ; 
+    const GMeshLib* ana = m_meshlib ; 
+    const GMeshLib* tri = m_tri_meshlib ; 
+
+    bool startswith = false ; 
+    NCSG* csg = findCSG(soname, startswith); 
+
+    if( bbty == CSG_BBOX_ANALYTIC )
+    {
+        nbbox abb = csg->bbox_analytic();         // depends on my CSG tree primitive/composite bbox calc 
+        ubb.copy_from(abb);
+    }
+    else if(bbty == CSG_BBOX_PARSURF )
+    {
+        nbbox sbb = csg->bbox_surface_points() ;  // depends on parametric surface points and their composite SDF epsilon selection
+        ubb.copy_from(sbb);
+    }
+    else if(bbty == CSG_BBOX_POLY )
+    {
+        GMesh* a = ana->getMesh(soname, startswith);
+        gbbox _pbb = a->getBBox(0) ;   // depends on my NPolygonization IM/HY/DCS/etc... 
+        nbbox pbb = make_bbox( _pbb.min.x, _pbb.min.y, _pbb.min.z, _pbb.max.x, _pbb.max.y, _pbb.max.z );
+        ubb.copy_from(pbb);
+    }
+    else if(bbty == CSG_BBOX_G4POLY )
+    {
+        GMesh* g4poly = tri->getMesh(soname, startswith);
+        gbbox _bbb = g4poly->getBBox(0) ;   // depends on G4 polygonization 
+        nbbox g4bb = make_bbox( _bbb.min.x, _bbb.min.y, _bbb.min.z, _bbb.max.x, _bbb.max.y, _bbb.max.z );
+        ubb.copy_from(g4bb);
+    }
+    return ubb ; 
+}
+
+
+
 void GScene::compareMeshes_GMeshBB()
 {
     GMeshLib* ana = m_meshlib ; 
@@ -390,39 +428,27 @@ void GScene::compareMeshes_GMeshBB()
     bool descending = true ; 
     SSortKV delta(descending);
 
-    bool with_csg_bbox = true ; 
+
+    NSceneConfigBBoxType bbty = m_scene->bbox_type() ; 
+    const char* bbty_ = m_scene->bbox_type_string() ;
 
     LOG(info) << "GScene::compareMeshes_GMeshBB"
               << " num_meshes " << num_meshes
               << " cut " << cut 
-              << " with_csg_bbox " << ( with_csg_bbox ? "YES" : "NO" )
-              << " (csg bbox avoids ana branch polygonization issues) "
+              << " bbty " << bbty_
               ;
 
     for(unsigned i=0 ; i < num_meshes ; i++ )
     {
         GMesh* a = ana->getMesh(i);
-        const char* aname = a->getName() ; 
+        const char* soname = a->getName() ; 
 
-        gbbox abb = a->getBBox(0) ;   // depends on my NPolygonization IM/HY/DCS/etc... 
+        nbbox okbb = getBBox(soname, bbty );
+        nbbox g4bb = getBBox(soname, CSG_BBOX_G4POLY );
 
-        NCSG* csg = findCSG(aname, startswith);
-        assert( csg == a->getCSG() );  
-        nnode* root = csg->getRoot();
-        nbbox cbb = root->bbox();    // depends on my CSG tree primitive/composite bbox calc 
+        float diff = nbbox::MaxDiff( okbb, g4bb) ;
 
-        GMesh* b = tri->getMesh(aname, startswith);
-        const GMesh* b2 = a->getAlt();
-        assert( b == b2 );
-
-        const GMesh* a2 = b->getAlt(); 
-        assert( a == a2 );
-
-        gbbox bbb = b->getBBox(0) ;   // depends on G4 polygonization 
-
-        float diff = gbbox::MaxDiff( with_csg_bbox ? cbb : abb ,bbb) ;
-
-        delta.add(aname, diff);
+        delta.add(soname, diff);
     }
 
     delta.sort();
@@ -435,45 +461,35 @@ void GScene::compareMeshes_GMeshBB()
         num_discrepant++ ;
 
         std::string name = delta.getKey(i);
-
-        GMesh* a = ana->getMesh(name.c_str(), startswith);
-        GMesh* b = tri->getMesh(name.c_str(), startswith);
-
-        const GMesh* a2 = b->getAlt();
-        assert( a2 == a );
-        const GMesh* b2 = a->getAlt();
-        assert( b2 == b );
+        const char* soname = name.c_str(); 
 
 
-        NCSG*  csg = findCSG(name.c_str(), startswith);
-        assert( csg == a->getCSG() );  
+        GMesh* a = ana->getMesh(soname, startswith);
+        GMesh* b = tri->getMesh(soname, startswith);
+
+        const GMesh* a2 = b->getAlt(); assert( a2 == a );
+        const GMesh* b2 = a->getAlt(); assert( b2 == b );
+
+        nbbox okbb = getBBox(soname, bbty );
+        nbbox g4bb = getBBox(soname, CSG_BBOX_G4POLY );
+
+        NCSG*  csg = findCSG(soname, startswith); assert( csg == a->getCSG() );  
         unsigned a_mesh_id = a->getIndex();
         int lvidx = m_scene->lvidx(a_mesh_id);
-        nnode* root = csg->getRoot();
+        //nnode* root = csg->getRoot();
 
-
-        gbbox aa = a->getBBox(0) ; 
-        gbbox bb = b->getBBox(0) ; 
-        nbbox cc = root->bbox();    // depends on my CSG tree primitive/composite bbox calc 
-
-        glm::vec3 amn(with_csg_bbox ? AS_VEC3(cc.min) : AS_VEC3(aa.min));
-        glm::vec3 amx(with_csg_bbox ? AS_VEC3(cc.max) : AS_VEC3(aa.max));
-
-        glm::vec3 bmn(AS_VEC3(bb.min));
-        glm::vec3 bmx(AS_VEC3(bb.max));
-
-        glm::vec3 dmn = amn - bmn ; 
-        glm::vec3 dmx = amx - bmx ; 
+        glm::vec3 dmn = okbb.min - g4bb.min ; 
+        glm::vec3 dmx = okbb.max - g4bb.max ; 
 
         std::cout 
                << std::setw(10) << dmax
                << std::setw(40) << name
                << " lvidx " << std::setw(3) << lvidx 
-               << " amn " << gpresent(amn)
-               << " bmn " << gpresent(bmn)
+               << " amn " << gpresent(okbb.min)
+               << " bmn " << gpresent(g4bb.min)
                << " dmn " << gpresent(dmn)
-               << " amx " << gpresent(amx)
-               << " bmx " << gpresent(bmx)
+               << " amx " << gpresent(okbb.max)
+               << " bmx " << gpresent(g4bb.max)
                << " dmx " << gpresent(dmx)
                << std::endl 
                ;
@@ -482,7 +498,7 @@ void GScene::compareMeshes_GMeshBB()
     LOG(info) << "GScene::compareMeshes_GMeshBB"
               << " num_meshes " << num_meshes
               << " cut " << cut 
-              << " with_csg_bbox " << ( with_csg_bbox ? "YES" : "NO" )
+              << " bbty " << bbty_
               << " num_discrepant " << num_discrepant
               << " frac " << float(num_discrepant)/float(num_meshes)
               ;

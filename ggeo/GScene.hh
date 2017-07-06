@@ -28,6 +28,8 @@ struct guint4 ;
 
 template<class T> class NPY ;
 
+
+#include "NSceneConfig.hpp"  // for enum
 #include "GGeoBase.hh"
 
 #include "GGEO_API_EXPORT.hh"
@@ -113,6 +115,7 @@ class GGEO_API GScene : public GGeoBase
 
         NCSG* getCSG(unsigned mesh_idx);
         NCSG* findCSG(const char* soname, bool startswith) const ;
+        nbbox getBBox(const char* soname, NSceneConfigBBoxType bbty) const ; 
 
 
         unsigned findTriMeshIndex(const char* soname) const ;

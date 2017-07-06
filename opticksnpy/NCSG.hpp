@@ -87,6 +87,9 @@ class NPY_API NCSG {
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
     public:
+        nbbox bbox_analytic() const ;
+        nbbox bbox_surface_points() const ;
+
         const std::vector<glm::vec3>& getSurfacePoints() const ;
         unsigned getNumSurfacePoints() const ;
         float    getSurfaceEpsilon() const ; 

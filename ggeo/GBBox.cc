@@ -98,21 +98,4 @@ std::string gbbox::desc() const
 }
 
 
-// hmm not good to mix lingo ... 
-float gbbox::MaxDiff( const gbbox& a, const gbbox& b)
-{
-    glm::vec3 amn(a.min.x, a.min.y, a.min.z);
-    glm::vec3 amx(a.max.x, a.max.y, a.max.z);
-
-    glm::vec3 bmn(b.min.x, b.min.y, b.min.z);
-    glm::vec3 bmx(b.max.x, b.max.y, b.max.z);
-
-    glm::vec3 dmn = glm::abs(amn - bmn) ;
-    glm::vec3 dmx = glm::abs(amx - bmx) ;
-
-    return std::max<float>( glm::compMax(dmn), glm::compMax(dmx) );
-}
-
-
-
 

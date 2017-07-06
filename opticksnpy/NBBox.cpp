@@ -283,7 +283,65 @@ bool nbbox::find_overlap(nbbox& overlap, const nbbox& other)
 
 void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t op, int verbosity )
 {
-    // see csgbbox- for searches for papers to help with an algebra of CSG bbox 
+/*
+
+Obtaining the BBOX of a CSG tree is non-trivial
+===================================================
+
+Alternative Approach
+----------------------
+
+* perhaps these complications can be avoiding by forming a bbox
+  from the composite parametric points (ie look at all parametric 
+  points of all primitives transformed into CSG tree root frame and 
+  make a selection based on their composite SDF values... points
+  within epsilon of zero are regarded as being on the composite 
+  surface). 
+
+  As the parametric points should start exactly at SDF zero 
+  for the primitives, and they are transformed only rather locally 
+  I expect that a very tight epsilon 1e-5 should be appropriate.
+
+
+Analytic BB(CSG) approach
+---------------------------
+
+* see csgbbox- for searches for papers to help with an algebra of CSG bbox 
+  and a look at how OpenSCAD and povray handle this  
+
+* best paper found on this by far is summarised below
+
+
+Computing CSG tree boundaries as algebraic expressions
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Marco Mazzetti  
+Luigi Ciminiera 
+
+* http://dl.acm.org/citation.cfm?id=164360.164416
+* ~/opticks_refs/csg_tree_boundaries_as_expressions_p155-mazzetti.pdf
+
+Summary of the paper:
+
+* bbox obtained from a CSG tree depends on evaluation order !!, 
+  as the bbox operation is not associative, 
+
+* solution is to rearrange the boolean expression tree into 
+  a canonical form (UOI : union-of-intersections, aka sum-of-products) 
+  which the paper states corresponds to the minimum bbox
+
+
+* upshot of this is that generally the bbox obtained will be overlarge
+
+* handling CSG difference requires defining an InnerBB 
+  corresponding to the maximum aabb that is completely inside the shape, 
+  then::
+
+      BB(A - B) = BB(A) - InnerBB(B)
+
+
+*/
+
     std::string expr ; 
 
     comb.invert = false ; // set true for unbounders
@@ -347,14 +405,13 @@ void nbbox::CombineCSG(nbbox& comb, const nbbox& a, const nbbox& b, OpticksCSG_t
             expr = " BB(A - B)  -> BB(A)  " ;  // hmm can do better than this by considering A - B ->  A*!B
             comb.include(a); 
 
-/*
-        // needs more debug ... fixes some but makes many worse
-            nbbox a_overlap ; 
-            FindOverlap(a_overlap, a, b );
-            SubtractOverlap(comb, a, a_overlap, verbosity);
-*/
-
-
+            bool experimental_bbox_subtraction = false ; // needs more dev ... fixes some but makes many worse, 
+            if(experimental_bbox_subtraction)
+            {
+                nbbox a_overlap ; 
+                FindOverlap(a_overlap, a, b );
+                SubtractOverlap(comb, a, a_overlap, verbosity);
+            } 
         }
         else if( a.invert && b.invert)   
         {
@@ -690,6 +747,19 @@ bool nbbox::contains(const nbbox& other, float epsilon ) const
 {
     return contains( other.min, epsilon ) && contains(other.max, epsilon ) ;
 } 
+
+
+
+
+
+float nbbox::MaxDiff( const nbbox& a, const nbbox& b)
+{
+    glm::vec3 dmn = glm::abs(a.min - b.min) ;
+    glm::vec3 dmx = glm::abs(a.max - b.max) ;
+
+    return std::max<float>( glm::compMax(dmn), glm::compMax(dmx) );
+}
+
 
 
 

@@ -117,11 +117,10 @@ opticks-nnt()
 
    echo $msg compiling $path 
 
-   eval $($FUNCNAME- $path) 
+   eval $($FUNCNAME- $path)  && $stem
 
    which $stem
 
-   $stem
    
 
 }

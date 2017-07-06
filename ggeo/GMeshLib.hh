@@ -47,14 +47,14 @@ class GGEO_API GMeshLib
         void dump(const char* msg="GMeshLib::dump") const;
     public:
         // methods working from the index, so work prior to loading meshes
-        unsigned    getMeshIndex(const char* name, bool startswith) ;
+        unsigned    getMeshIndex(const char* name, bool startswith) const ;
         const char* getMeshName(unsigned aindex) ; 
     public:
         //std::string desc() const ; 
         GItemIndex* getMeshIndex() ;
         unsigned    getNumMeshes() const ; 
         GMesh*      getMesh(unsigned aindex) const ;
-        GMesh*      getMesh(const char* name, bool startswith) ;
+        GMesh*      getMesh(const char* name, bool startswith) const ;
     private:
         void        loadFromCache();
         void        save() const ; 

@@ -77,7 +77,7 @@ const char* GMeshLib::getMeshName(unsigned aindex)
 {
     return m_meshindex->getNameSource(aindex);
 }
-unsigned GMeshLib::getMeshIndex(const char* name, bool startswith) 
+unsigned GMeshLib::getMeshIndex(const char* name, bool startswith)  const 
 {
     unsigned aindex = startswith ? 
           m_meshindex->getIndexSourceStarting(name, m_missing)
@@ -156,7 +156,7 @@ GMesh* GMeshLib::getMesh(unsigned aindex) const
 }  
 
 
-GMesh* GMeshLib::getMesh(const char* name, bool startswith)
+GMesh* GMeshLib::getMesh(const char* name, bool startswith) const 
 {
     unsigned aindex = getMeshIndex(name, startswith);
     return getMesh(aindex);
