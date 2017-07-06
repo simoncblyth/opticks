@@ -12,6 +12,8 @@
 struct nbbox ; 
 struct npart ; 
 struct nuv ; 
+struct NSceneConfig ; 
+
 class NNodeDump ; 
 
 // NGLMExt
@@ -28,7 +30,7 @@ struct NPY_API nnode
 
     std::function<float(float,float,float)> sdf() const ;
 
-    static nnode* load(const char* treedir, int verbosity);
+    static nnode* load(const char* treedir, const NSceneConfig* config=NULL);
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
     virtual const char* csgname(); 
@@ -125,6 +127,7 @@ struct NPY_API nnode
     static void get_type_mask_r(const nnode* node, unsigned& tymsk);
 
     void set_treedir(const char* treedir) ; 
+    void set_boundary(const char* boundary) ; 
 
     bool is_znudge_capable() const ;
     bool is_operator() const ;
@@ -143,6 +146,7 @@ struct NPY_API nnode
     nnode* other ; 
     const char* label ; 
     const char* treedir ; 
+    const char* boundary ; 
 
     const nmat4triple* transform ; 
     const nmat4triple* gtransform ; 

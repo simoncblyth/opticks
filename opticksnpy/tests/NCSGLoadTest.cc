@@ -12,6 +12,7 @@ Tests individual trees::
 
 #include "NPY.hpp"
 #include "NCSG.hpp"
+#include "NSceneConfig.hpp"
 #include "NNode.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -35,8 +36,13 @@ void test_LoadTree(const char* treedir)
          LOG(warning) << "test_LoadTree no such dir " << treedir ;
          return ; 
     }
+
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
  
-    NCSG* csg = NCSG::LoadTree(treedir, verbosity );
+    NCSG* csg = NCSG::LoadTree(treedir, config );
+
     assert(csg);
 }
 

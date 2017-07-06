@@ -59,6 +59,7 @@ struct nnode ;
 struct nmat4pair ; 
 struct nmat4triple ; 
 struct nbbox ; 
+struct NSceneConfig ; 
 
 class NParameters ; 
 class NTrianglesNPY ;
@@ -77,10 +78,11 @@ class NPY_API NCSG {
         static int DeserializeTrees(const char* base, std::vector<NCSG*>& trees, int verbosity ) ;
 
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
-        static NCSG* FromNode(nnode* root, const char* boundary);
 
-        static NCSG* LoadCSG(const char* treedir);
-        static NCSG* LoadTree(const char* treedir, bool usedglobally=false, int verbosity=0, bool polygonize=false );
+        static NCSG* FromNode(nnode* root, const NSceneConfig* config);
+        static NCSG* LoadCSG(const char* treedir, const NSceneConfig* config);
+        static NCSG* LoadTree(const char* treedir, const NSceneConfig* config, bool usedglobally=true, int verbosity=0, bool polygonize=false );
+
         static NParameters* LoadMetadata(const char* treedir);
         void updateContainer( nbbox& container ) const  ;
     public:
@@ -114,7 +116,7 @@ class NPY_API NCSG {
         void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;
 
         std::string desc();
-        std::string brief();
+        std::string brief() const ;
    public:
         void setIsUsedGlobally(bool usedglobally);
    public:
@@ -152,6 +154,7 @@ class NPY_API NCSG {
     private:
         // Deserialize branch 
         void setBoundary(const char* boundary);
+        void setConfig(const NSceneConfig* config);
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);
         bool     isComplement(unsigned idx);
@@ -199,7 +202,9 @@ class NPY_API NCSG {
         unsigned    m_num_planes ;
  
         unsigned    m_height ; 
-        const char* m_boundary ; 
+        const char*         m_boundary ; 
+        const NSceneConfig* m_config ; 
+
         glm::vec3   m_gpuoffset ; 
         int         m_container ;  
         float       m_containerscale ;  

@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "NSceneConfig.hpp"
 #include "NCSG.hpp"
 #include "NCSGBSP.hpp"
 
@@ -16,9 +17,12 @@ int main(int argc, char** argv)
 
     const char* treedir = argc > 1 ? argv[1] : "$TMP/tboolean-hyctrl--/1" ;
 
-    int verbosity = 2 ; 
 
-    NCSG* csg = NCSG::LoadTree(treedir, verbosity );
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+    NCSG* csg = NCSG::LoadTree(treedir, config );
 
     assert( csg );
 

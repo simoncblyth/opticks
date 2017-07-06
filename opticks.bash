@@ -70,9 +70,18 @@ opticks-nnt-path(){
    local path=$fold/extras/${lvid}/NNodeTest_${lvid}.cc
    echo $path 
 }
+opticks-nnt-paths(){
+    local arg
+    for arg in $* 
+    do
+        echo $(opticks-nnt-path $arg)
+    done
+}
+
 opticks-nnt-vi(){ 
-   local path=$(opticks-nnt-path ${1:-0})
-   vi $path
+   [[ $# -eq 0 ]] && echo expecting one or more lvidx integer arguments && return 
+   local paths=$(opticks-nnt-paths $*)
+   vi $paths
 }
 
 opticks-nnt-(){ 

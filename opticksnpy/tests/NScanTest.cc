@@ -11,6 +11,7 @@ NScanTest $TMP/tgltf/extras
 #include "NCSG.hpp"
 #include "NScan.hpp"
 #include "NNode.hpp"
+#include "NSceneConfig.hpp"
 
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
@@ -37,11 +38,17 @@ int main(int argc, char** argv)
         return 0 ; 
     }
 
+
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+
     int verbosity = 0 ; 
     std::vector<NCSG*> trees ;
     if(pathEndsWithInt(basedir))
     {
-        NCSG* csg = NCSG::LoadCSG(basedir);
+        NCSG* csg = NCSG::LoadCSG(basedir, config);
         if(csg) trees.push_back(csg);   
     }
     else

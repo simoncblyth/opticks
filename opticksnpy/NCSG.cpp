@@ -55,6 +55,7 @@ NCSG::NCSG(const char* treedir)
    m_num_planes(0),
    m_height(UINT_MAX),
    m_boundary(NULL),
+   m_config(NULL),
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
@@ -81,12 +82,16 @@ NCSG::NCSG(nnode* root )
    m_num_planes(0),
    m_height(root->maxdepth()),
    m_boundary(NULL),
+   m_config(NULL),
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
    m_tris(NULL),
    m_surface_epsilon(1e-6)
 {
+
+   setBoundary( root->boundary );
+
    m_num_nodes = NumNodes(m_height);
 
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
@@ -443,6 +448,13 @@ void NCSG::setBoundary(const char* boundary)
 {
     m_boundary = boundary ? strdup(boundary) : NULL ; 
 }
+
+void NCSG::setConfig(const NSceneConfig* config)
+{
+    m_config = config ; 
+}
+
+
 
 unsigned NCSG::getTypeCode(unsigned idx)
 {
@@ -908,7 +920,7 @@ void NCSG::dump(const char* msg)
     m_meta->dump(); 
 }
 
-std::string NCSG::brief()
+std::string NCSG::brief() const 
 {
     std::stringstream ss ; 
     ss << " NCSG " 
@@ -1058,23 +1070,24 @@ void NCSG::updateContainer( nbbox& container ) const
 
 
 
-NCSG* NCSG::LoadCSG(const char* treedir)
+NCSG* NCSG::LoadCSG(const char* treedir, const NSceneConfig* config)
 {
     if(!treedir || !BFile::ExistsDir(treedir))
     {
          LOG(warning) << "NCSG::LoadCSG no such dir " << treedir ;
          return NULL ; 
     }
-    int verbosity = 2 ; 
-    NCSG* csg = NCSG::LoadTree(treedir, verbosity );
+    NCSG* csg = NCSG::LoadTree(treedir, config);
     assert(csg);
     return csg ; 
 }
 
 
-NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool polygonize)
+NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config,  bool usedglobally, int verbosity, bool polygonize )
 {
     NCSG* tree = new NCSG(treedir) ; 
+
+    tree->setConfig(config);
     tree->setVerbosity(verbosity);
     tree->setIsUsedGlobally(usedglobally);
 
@@ -1093,10 +1106,12 @@ NCSG* NCSG::LoadTree(const char* treedir, bool usedglobally, int verbosity, bool
 
 }
 
-NCSG* NCSG::FromNode(nnode* root, const char* boundary)
+NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
 {
+    assert( root->boundary && "must root->set_boundary(spec) first" );
+
     NCSG* tree = new NCSG(root);
-    tree->setBoundary( boundary );
+    tree->setConfig(config);
     tree->export_();
     assert( tree->getGTransformBuffer() );
 
@@ -1228,9 +1243,9 @@ nbbox NCSG::bbox_surface_points() const
 {
     unsigned num_sp = getNumSurfacePoints() ; 
     if(num_sp==0)  
-        LOG(warning) << "NCSG::bbox_surface_points no surface points need to collect_surface_points first " ;  
+        LOG(warning) << "NCSG::bbox_surface_points NONE FOUND  " << brief() ;  
 
-    assert(num_sp > 0 );
+    //assert(num_sp > 0 );
     return nbbox::from_points(getSurfacePoints());    
 }
 

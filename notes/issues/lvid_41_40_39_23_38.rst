@@ -1,0 +1,94 @@
+Five volumes with no par surface points
+=========================================
+
+
+
+From CSG_BBOX_PARSURF against CSG_BBOX_G4POLY
+--------------------------------------------------------
+
+* see placeholder zeros : as no parametric surface points 
+
+
+::
+    
+    2017-07-06 13:24:34.087 INFO  [3590380] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF
+
+    2017-07-06 13:24:34.088 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   37 surfpoints    0 so OcrGdsInIav0xc405b10                     lv /dd/Geometry/AdDetails/lvOcrGdsInIav0xbf6dd58
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   37 surfpoints    0 so OcrGdsInIav0xc405b10                     lv /dd/Geometry/AdDetails/lvOcrGdsInIav0xbf6dd58
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   50 surfpoints    0 so OcrGdsLsoInOav0xc354118                  lv /dd/Geometry/AdDetails/lvOcrGdsLsoInOav0xbf8fd98
+    2017-07-06 13:24:34.121 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   50 surfpoints    0 so OcrGdsLsoInOav0xc354118                  lv /dd/Geometry/AdDetails/lvOcrGdsLsoInOav0xbf8fd98
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   51 surfpoints    0 so OcrGdsTfbInOav0xbf8f6c0                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInOav0xbfa35f8
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   51 surfpoints    0 so OcrGdsTfbInOav0xbf8f6c0                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInOav0xbfa35f8
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   52 surfpoints    0 so OcrGdsInOav0xc355130                     lv /dd/Geometry/AdDetails/lvOcrGdsInOav0xbfa3ab8
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   52 surfpoints    0 so OcrGdsInOav0xc355130                     lv /dd/Geometry/AdDetails/lvOcrGdsInOav0xbfa3ab8
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   53 surfpoints    0 so OcrCalLsoInOav0xc541388                  lv /dd/Geometry/AdDetails/lvOcrCalLsoInOav0xbfa4d90
+    2017-07-06 13:24:34.121 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   53 surfpoints    0 so OcrCalLsoInOav0xc541388                  lv /dd/Geometry/AdDetails/lvOcrCalLsoInOav0xbfa4d90
+
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 amn (  -2262.150 -2262.150  -498.500) bmn (   1607.600     0.000  -498.500) dmn (  -3869.750 -2262.150     0.000) amx (   2262.150  2262.150   498.500) bmx (   2262.150  1589.370   498.500) dmx (      0.000   672.780     0.000)
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 amn (  -2000.000 -2000.000  -215.000) bmn (   1407.720    12.467  -215.000) dmn (  -3407.720 -2012.468     0.000) amx (      0.000  2000.000   215.000) bmx (   1998.360  1404.240   215.000) dmx (  -1998.360   595.760     0.000)
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 amn (  -1220.000 -1220.000  -115.945) bmn (    854.653    10.020  -115.945) dmn (  -2074.653 -1230.020     0.000) amx (   1220.000  1220.000   115.945) bmx (   1218.680   854.688   115.945) dmx (      1.320   365.312     0.000)
+
+       1687.58                 OcrCalLsoInOav0xc541388 lvidx  41 amn (      0.000     0.000     0.000) bmn (   -728.313  1587.580   -50.919) dmn (    728.313 -1587.580    50.919) amx (      0.000     0.000     0.000) bmx (   -628.313  1687.580   -28.213) dmx (    628.313 -1687.580    28.213)
+       1297.24                 OcrGdsLsoInOav0xc354118 lvidx  40 amn (      0.000     0.000     0.000) bmn (    466.616 -1297.240   -28.580) dmn (   -466.616  1297.240    28.580) amx (      0.000     0.000     0.000) bmx (    566.616 -1197.240    -5.879) dmx (   -566.616  1197.240     5.879)
+       1279.74                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 amn (      0.000     0.000     0.000) bmn (    484.128 -1279.740   -27.612) dmn (   -484.128  1279.740    27.612) amx (      0.000     0.000     0.000) bmx (    549.128 -1214.740    -6.797) dmx (   -549.128  1214.740     6.797)
+       1278.74                    OcrGdsInIav0xc405b10 lvidx  23 amn (      0.000     0.000     0.000) bmn (    485.117 -1278.740   -37.759) dmn (   -485.117  1278.740    37.759) amx (      0.000     0.000     0.000) bmx (    548.117 -1215.740   -19.750) dmx (   -548.117  1215.740    19.750)
+       1278.73                    OcrGdsInOav0xc355130 lvidx  38 amn (      0.000     0.000     0.000) bmn (    485.126 -1278.730   -27.581) dmn (   -485.126  1278.730    27.581) amx (      0.000     0.000     0.000) bmx (    548.126 -1215.730    -6.849) dmx (   -548.126  1215.730     6.849)
+
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 amn (   -340.000   -10.000 -1114.250) bmn (   -345.510   -10.000 -1114.250) dmn (      5.510     0.000     0.000) amx (      0.000    10.000  1114.250) bmx (    345.510    10.000  1114.250) dmx (   -345.510     0.000     0.000)
+           320                      SstTopHub0xc2643d8 lvidx  68 amn (   -220.500  -220.500  -340.000) bmn (   -220.500  -220.500  -340.000) dmn (      0.000     0.000     0.000) amx (    220.500   220.500     0.000) bmx (    220.500   220.500  -320.000) dmx (      0.000     0.000   320.000)
+       115.448                    OcrGdsInLso0xbfa2190 lvidx  31 amn (    485.123 -1278.737  -135.606) bmn (    485.131 -1278.720  -251.054) dmn (     -0.008    -0.017   115.448) amx (    548.123 -1215.737   109.777) bmx (    548.131 -1215.720   195.139) dmx (     -0.008    -0.017   -85.362)
+        29.001                   pmt-hemi-vac0xc21e248 lvidx  46 amn (    -70.004   -70.004  -164.500) bmn (    -98.995   -99.003  -164.504) dmn (     28.992    29.000     0.004) amx (     70.004    70.004   128.000) bmx (     99.005    98.997   128.000) dmx (    -29.001   -28.993     0.000)
+ 
+
+
+
+
+opticks-;opticks-nnt-vi 41 40 39 23 38
+-------------------------------------------
+
+All five are similar structure: (co-co)cy
+
+::
+
+     22     // opticks-;opticks-nnt 23 
+     23     // opticks-;opticks-nnt-vi 23 
+     24 
+     25     ncone a = make_cone( 1806.610,-44.720,100.000,44.720 ) ; a.label = "a" ;
+     26     ncone b = make_cone( 1530.000,-38.127,75.000,38.127 ) ; b.label = "b" ;
+     27     b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-6.855,1.000) ;
+     28     ndifference ab = make_difference( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;
+     29 
+     30     ncylinder c = make_cylinder( 0.000,0.000,0.000,31.500,-94.720,94.720,0.000,0.000 ) ; c.label = "c" ;
+     31     c.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  516.623,-1247.237,0.000,1.000) ;
+     32     nintersection abc = make_intersection( &ab, &c ) ; abc.label = "abc" ; ab.parent = &abc ; c.parent = &abc ;
+     33 
+
+
+Vizing the primitives, note very large flat cones with the cylinder poking thru it::
+
+     78 # generated by tboolean.py : 20170706-1123 
+     79 # opticks-;opticks-tbool 41 
+     80 # opticks-;opticks-tbool-vi 41 
+     81 
+     82 
+     83 a = CSG("cone", param = [2273.932,-56.310,125.000,56.310],param1 = [0.000,0.000,0.000,0.000])
+     84 b = CSG("cone", param = [1949.081,-47.798,125.000,47.798],param1 = [0.000,0.000,0.000,0.000])
+     85 b.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,-9.012,1.000]]
+     86 ab = CSG("difference", left=a, right=b)
+     87 
+     88 c = CSG("cylinder", param = [0.000,0.000,0.000,50.000],param1 = [-106.310,106.310,0.000,0.000])
+     89 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[-678.306,1637.576,0.000,1.000]]
+     90 abc = CSG("intersection", left=ab, right=c)
+     91 
+     92 
+     93 
+     94 obj = abc
+     95 
+     96 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
+     97 CSG.Serialize([con, a,b,c], args.csgpath )
+
+

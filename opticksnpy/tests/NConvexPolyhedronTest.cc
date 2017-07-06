@@ -3,6 +3,7 @@
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
+#include "NSceneConfig.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -15,7 +16,11 @@
 nconvexpolyhedron* test_load(const char* path)
 {
     LOG(info) << "test_load " << path ;  
-    nnode* root = nnode::load(path, 1 );
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+    nnode* root = nnode::load(path, config );
 
     assert(root->type == CSG_CONVEXPOLYHEDRON );
     nconvexpolyhedron* cpol = (nconvexpolyhedron*)root  ;

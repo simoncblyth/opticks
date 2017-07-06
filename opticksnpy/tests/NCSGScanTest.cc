@@ -51,6 +51,7 @@ Scans individual CSG trees::
 #include "NCSG.hpp"
 #include "NNode.hpp"
 #include "NScan.hpp"
+#include "NSceneConfig.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
@@ -95,7 +96,12 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ;  
 
-    NCSG* csg = NCSG::LoadCSG( argc > 1 ? argv[1] : NULL );
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+    const char* treedir = argc > 1 ? argv[1] : NULL ;
+
+    NCSG* csg = NCSG::LoadCSG(treedir, config );
     if(!csg) return 0 ; 
 
     if(BStr::existsEnv("SCAN"))

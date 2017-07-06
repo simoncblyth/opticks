@@ -12,6 +12,7 @@
 
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
+#include "NSceneConfig.hpp"
 
 #include "NPY_LOG.hh"
 #include "PLOG.hh"
@@ -28,9 +29,11 @@ int main(int argc, char** argv)
 
     const char* treedir = argc > 1 ? argv[1] : "$TMP/tboolean-hybrid--/1" ;
 
-    int verbosity = 2 ; 
 
-    NCSG* tree = NCSG::LoadTree(treedir, verbosity );
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+    NCSG* tree = NCSG::LoadTree(treedir, config );
 
     assert( tree );
 

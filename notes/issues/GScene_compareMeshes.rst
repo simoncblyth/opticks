@@ -45,6 +45,76 @@ lvid 185
 * :doc:`lvid185`
 
 
+lvid_41_40_39_23_38
+----------------------
+
+* :doc:`lvid_41_40_39_23_38`
+
+
+try comparing CSG_BBOX_PARSURF against CSG_BBOX_G4POLY
+--------------------------------------------------------
+
+::
+    
+    2017-07-06 13:24:34.087 INFO  [3590380] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF
+
+    2017-07-06 13:24:34.088 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   37 surfpoints    0 so OcrGdsInIav0xc405b10                     lv /dd/Geometry/AdDetails/lvOcrGdsInIav0xbf6dd58
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   37 surfpoints    0 so OcrGdsInIav0xc405b10                     lv /dd/Geometry/AdDetails/lvOcrGdsInIav0xbf6dd58
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   50 surfpoints    0 so OcrGdsLsoInOav0xc354118                  lv /dd/Geometry/AdDetails/lvOcrGdsLsoInOav0xbf8fd98
+    2017-07-06 13:24:34.121 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   50 surfpoints    0 so OcrGdsLsoInOav0xc354118                  lv /dd/Geometry/AdDetails/lvOcrGdsLsoInOav0xbf8fd98
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   51 surfpoints    0 so OcrGdsTfbInOav0xbf8f6c0                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInOav0xbfa35f8
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   51 surfpoints    0 so OcrGdsTfbInOav0xbf8f6c0                  lv /dd/Geometry/AdDetails/lvOcrGdsTfbInOav0xbfa35f8
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   52 surfpoints    0 so OcrGdsInOav0xc355130                     lv /dd/Geometry/AdDetails/lvOcrGdsInOav0xbfa3ab8
+    2017-07-06 13:24:34.122 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   52 surfpoints    0 so OcrGdsInOav0xc355130                     lv /dd/Geometry/AdDetails/lvOcrGdsInOav0xbfa3ab8
+
+    2017-07-06 13:24:34.089 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   53 surfpoints    0 so OcrCalLsoInOav0xc541388                  lv /dd/Geometry/AdDetails/lvOcrCalLsoInOav0xbfa4d90
+    2017-07-06 13:24:34.121 WARN  [3590380] [NCSG::bbox_surface_points@1231] NCSG::bbox_surface_points NONE FOUND   NCSG  ix   53 surfpoints    0 so OcrCalLsoInOav0xc541388                  lv /dd/Geometry/AdDetails/lvOcrCalLsoInOav0xbfa4d90
+
+       3869.75               RadialShieldUnit0xc3d7da8 lvidx  56 amn (  -2262.150 -2262.150  -498.500) bmn (   1607.600     0.000  -498.500) dmn (  -3869.750 -2262.150     0.000) amx (   2262.150  2262.150   498.500) bmx (   2262.150  1589.370   498.500) dmx (      0.000   672.780     0.000)
+       3407.72               SstBotCirRibBase0xc26e2d0 lvidx  65 amn (  -2000.000 -2000.000  -215.000) bmn (   1407.720    12.467  -215.000) dmn (  -3407.720 -2012.468     0.000) amx (      0.000  2000.000   215.000) bmx (   1998.360  1404.240   215.000) dmx (  -1998.360   595.760     0.000)
+       2074.65               SstTopCirRibBase0xc264f78 lvidx  69 amn (  -1220.000 -1220.000  -115.945) bmn (    854.653    10.020  -115.945) dmn (  -2074.653 -1230.020     0.000) amx (   1220.000  1220.000   115.945) bmx (   1218.680   854.688   115.945) dmx (      1.320   365.312     0.000)
+
+       1687.58                 OcrCalLsoInOav0xc541388 lvidx  41 amn (      0.000     0.000     0.000) bmn (   -728.313  1587.580   -50.919) dmn (    728.313 -1587.580    50.919) amx (      0.000     0.000     0.000) bmx (   -628.313  1687.580   -28.213) dmx (    628.313 -1687.580    28.213)
+       1297.24                 OcrGdsLsoInOav0xc354118 lvidx  40 amn (      0.000     0.000     0.000) bmn (    466.616 -1297.240   -28.580) dmn (   -466.616  1297.240    28.580) amx (      0.000     0.000     0.000) bmx (    566.616 -1197.240    -5.879) dmx (   -566.616  1197.240     5.879)
+       1279.74                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 amn (      0.000     0.000     0.000) bmn (    484.128 -1279.740   -27.612) dmn (   -484.128  1279.740    27.612) amx (      0.000     0.000     0.000) bmx (    549.128 -1214.740    -6.797) dmx (   -549.128  1214.740     6.797)
+       1278.74                    OcrGdsInIav0xc405b10 lvidx  23 amn (      0.000     0.000     0.000) bmn (    485.117 -1278.740   -37.759) dmn (   -485.117  1278.740    37.759) amx (      0.000     0.000     0.000) bmx (    548.117 -1215.740   -19.750) dmx (   -548.117  1215.740    19.750)
+       1278.73                    OcrGdsInOav0xc355130 lvidx  38 amn (      0.000     0.000     0.000) bmn (    485.126 -1278.730   -27.581) dmn (   -485.126  1278.730    27.581) amx (      0.000     0.000     0.000) bmx (    548.126 -1215.730    -6.849) dmx (   -548.126  1215.730     6.849)
+
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 amn (   -340.000   -10.000 -1114.250) bmn (   -345.510   -10.000 -1114.250) dmn (      5.510     0.000     0.000) amx (      0.000    10.000  1114.250) bmx (    345.510    10.000  1114.250) dmx (   -345.510     0.000     0.000)
+           320                      SstTopHub0xc2643d8 lvidx  68 amn (   -220.500  -220.500  -340.000) bmn (   -220.500  -220.500  -340.000) dmn (      0.000     0.000     0.000) amx (    220.500   220.500     0.000) bmx (    220.500   220.500  -320.000) dmx (      0.000     0.000   320.000)
+       115.448                    OcrGdsInLso0xbfa2190 lvidx  31 amn (    485.123 -1278.737  -135.606) bmn (    485.131 -1278.720  -251.054) dmn (     -0.008    -0.017   115.448) amx (    548.123 -1215.737   109.777) bmx (    548.131 -1215.720   195.139) dmx (     -0.008    -0.017   -85.362)
+        29.001                   pmt-hemi-vac0xc21e248 lvidx  46 amn (    -70.004   -70.004  -164.500) bmn (    -98.995   -99.003  -164.504) dmn (     28.992    29.000     0.004) amx (     70.004    70.004   128.000) bmx (     99.005    98.997   128.000) dmx (    -29.001   -28.993     0.000)
+       28.1631                       pmt-hemi0xc0fed90 lvidx  47 amn (    -72.125   -72.125  -169.000) bmn (   -100.288  -100.288  -168.995) dmn (     28.163    28.163    -0.005) amx (     72.125    72.125   131.000) bmx (    100.288   100.288   131.000) dmx (    -28.163   -28.163     0.000)
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 amn (    -32.500   -32.500  -247.488) bmn (    -32.500   -32.500  -219.413) dmn (      0.000     0.000   -28.075) amx (     32.500    32.500   247.488) bmx (     32.500    32.500   247.488) dmx (      0.000     0.000    -0.000)
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 amn (    -98.000   -98.000     0.000) bmn (    -98.000   -98.000    26.218) dmn (      0.000     0.000   -26.218) amx (     98.000    98.000   214.596) bmx (     98.000    98.000   214.596) dmx (      0.000     0.000     0.000)
+       22.9608                 OcrGdsTfbInLso0xbfa2370 lvidx  30 amn (    484.123 -1279.737  -150.798) bmn (    484.130 -1279.740  -150.798) dmn (     -0.007     0.003    -0.000) amx (    549.123 -1214.737    64.730) bmx (    549.130 -1214.740    87.691) dmx (     -0.007     0.003   -22.961)
+            20               headon-pmt-mount0xc2a7670 lvidx  55 amn (    -51.500   -51.500  -120.000) bmn (    -36.850   -36.850  -100.000) dmn (    -14.650   -14.650   -20.000) amx (     51.500    51.500   100.000) bmx (     36.850    36.850   100.000) dmx (     14.650    14.650     0.000)
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 amn (  -2000.000  -100.000  -147.000) bmn (  -2000.000   -99.876  -135.000) dmn (      0.000    -0.124   -12.000) amx (   2000.000   100.000   147.000) bmx (   2000.070   100.124   146.908) dmx (     -0.070    -0.124     0.092)
+        10.035               led-source-shell0xc3068f0 lvidx 100 amn (    -10.035   -10.035   -24.900) bmn (    -10.035   -10.035   -14.865) dmn (      0.000     0.000   -10.035) amx (     10.035    10.035    24.900) bmx (     10.035    10.035    14.865) dmx (      0.000     0.000    10.035)
+        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 amn (    -10.035   -10.035   -24.900) bmn (    -10.035   -10.035   -14.865) dmn (      0.000     0.000   -10.035) amx (     10.035    10.035    24.900) bmx (     10.035    10.036    24.899) dmx (     -0.000    -0.001     0.000)
+        10.035                   source-shell0xc2d62d0 lvidx 111 amn (    -10.035   -10.035   -24.900) bmn (    -10.035   -10.035   -14.865) dmn (      0.000     0.000   -10.035) amx (     10.035    10.035    24.900) bmx (     10.035    10.035    14.865) dmx (      0.000     0.000    10.035)
+        10.035                   weight-shell0xc307920 lvidx 103 amn (    -10.035   -10.035   -28.510) bmn (    -10.035   -10.035   -18.475) dmn (      0.000     0.000   -10.035) amx (     10.035    10.035    28.510) bmx (     10.035    10.035    18.475) dmx (      0.000     0.000    10.035)
+       5.01849                    source-assy0xc2d5d78 lvidx 112 amn (    -10.035   -10.035   -97.285) bmn (    -10.036   -10.036   -97.286) dmn (      0.001     0.001     0.001) amx (     10.035    10.035   102.303) bmx (     10.036    10.036   107.321) dmx (     -0.001    -0.001    -5.018)
+       5.01749                led-source-assy0xc3061d0 lvidx 105 amn (    -10.035   -10.035   -97.285) bmn (    -10.036   -10.036   -97.286) dmn (      0.001     0.001     0.001) amx (     10.035    10.035   102.303) bmx (     10.036    10.036   107.320) dmx (     -0.001    -0.001    -5.017)
+       5.01749            amcco60-source-assy0xc0b1df8 lvidx 132 amn (    -10.035   -10.035   -97.285) bmn (    -10.036   -10.036   -97.286) dmn (      0.001     0.001     0.001) amx (     10.035    10.035   102.303) bmx (     10.036    10.036   107.320) dmx (     -0.001    -0.001    -5.017)
+             5                      LsoOflTnk0xc17d928 lvidx 140 amn (   -920.000  -920.000   -10.000) bmn (   -920.042  -920.000    -5.000) dmn (      0.042     0.000    -5.000) amx (    920.000   920.000   170.000) bmx (    920.000   920.031   170.057) dmx (      0.000    -0.031    -0.057)
+         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 amn (    -98.000   -98.000     0.000) bmn (    -98.000   -98.000     3.882) dmn (      0.000     0.000    -3.882) amx (     98.000    98.000   214.596) bmx (     98.000    98.000   214.596) dmx (      0.000     0.000     0.000)
+       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 amn (  -1097.840   -50.000   -10.000) bmn (  -1097.840   -50.000   -10.000) dmn (      0.000     0.000     0.000) amx (   1097.840    50.000    10.000) bmx (   1096.830    50.000    10.000) dmx (      1.010     0.000     0.000)
+      0.799805                      near_rock0xc04ba08 lvidx 247 amn ( -25000.000-25000.000-12995.000) bmn ( -25000.000-25000.000-12994.200) dmn (      0.000     0.000    -0.800) amx (  25000.000 25000.000 25000.000) bmx (  25000.000 25000.000 25000.000) dmx (      0.000     0.000     0.000)
+           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 amn ( -30500.000 -7500.000 -7500.000) bmn ( -30500.500 -7500.390 -7500.290) dmn (      0.500     0.390     0.290) amx (  13500.000  7500.000  7500.000) bmx (  13500.000  7500.000  7500.000) dmx (      0.000     0.000     0.000)
+      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 amn (   -100.000 -5871.000  -147.000) bmn (   -100.358 -5871.000  -147.196) dmn (      0.358     0.000     0.196) amx (    100.000  5871.000   147.000) bmx (    100.358  5871.000   147.196) dmx (     -0.358     0.000    -0.196)
+        0.1313                   pmt-hemi-bot0xc22a958 lvidx  44 amn (    -98.143   -98.143   -99.000) bmn (    -98.143   -98.143   -99.000) dmn (      0.000     0.000     0.000) amx (     98.143    98.143   -13.000) bmx (     98.143    98.143   -12.869) dmx (     -0.000    -0.000    -0.131)
+      0.119995                            oav0xc2ed7c8 lvidx  42 amn (  -2040.000 -2040.000 -1968.500) bmn (  -2040.070 -2040.120 -1968.500) dmn (      0.070     0.120     0.000) amx (   2040.000  2040.000  2126.121) bmx (   2039.930  2039.880  2126.210) dmx (      0.070     0.120    -0.089)
+    2017-07-06 13:24:34.126 INFO  [3590380] [GScene::compareMeshes_GMeshBB@498] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF num_discrepant 33 frac 0.13253
+    Assertion failed: (0 && "GScene::init early exit for gltf==4"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 156.
+    /Users/blyth/opticks/bin/op.sh: line 633: 17204 Abort trap: 6           /usr/local/opticks/lib/OKTest --gltf 4
+
+
+
+
 
 fixing the placed bbox difference bug moves lvid 30 down the chart
 -----------------------------------------------------------------------

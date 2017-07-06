@@ -2,6 +2,7 @@
 
 #include "NPY.hpp"
 #include "NCSG.hpp"
+#include "NSceneConfig.hpp"
 #include "NNode.hpp"
 
 #include "PLOG.hh"
@@ -26,7 +27,13 @@ void test_FromNode()
         assert( type > 0 && name != NULL );
 
 
-        NCSG* tree = NCSG::FromNode( n , spec );
+        n->set_boundary(spec);
+
+        const char* gltfconfig = "csg_bbox_parsurf=1" ;
+        const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+             
+
+        NCSG* tree = NCSG::FromNode( n , config );
         LOG(info) 
                 << " node.name " << std::setw(20) << name 
                 << " tree.desc " << tree->desc()

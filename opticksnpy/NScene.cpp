@@ -391,7 +391,7 @@ void NScene::load_mesh_extras()
         int verbosity = 0 ; 
         bool polygonize = true ; 
 
-        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), iug, verbosity, polygonize  ); 
+        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config, iug, verbosity, polygonize  ); 
         csg->setIndex(mesh_id);
 
         bool csgskip = csg->isSkip() ;

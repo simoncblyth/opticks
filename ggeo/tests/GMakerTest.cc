@@ -6,6 +6,7 @@
 #include "NGLM.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NSceneConfig.hpp"
 
 #include "Opticks.hh"
 
@@ -25,11 +26,13 @@ class GMakerTest
        void make();
        void makeFromCSG();
    private:
-       GMaker* m_maker ;  
+       Opticks* m_ok  ;
+       GMaker*  m_maker ;  
 };
 
 GMakerTest::GMakerTest(Opticks* ok)
    :
+   m_ok(ok),
    m_maker(new GMaker(ok))
 {
 }
@@ -59,12 +62,16 @@ void GMakerTest::makeFromCSG()
 
     unsigned verbosity = 1 ; 
 
+    const NSceneConfig* config = new NSceneConfig(m_ok->getGLTFConfig()); 
+
     for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
     {
         nnode* n = *it ; 
         n->dump();
 
-        NCSG* csg = NCSG::FromNode( n, spec );
+        n->set_boundary(spec);
+
+        NCSG* csg = NCSG::FromNode( n, config );
 
         csg->setMeta<std::string>("poly", "IM");
 

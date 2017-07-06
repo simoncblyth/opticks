@@ -25,7 +25,6 @@
 
 
 
-
 // see NNodeUncoincide::uncoincide_union
 float nnode::z1() const { assert(0 && "nnode::z1 needs override "); return 0 ; } 
 float nnode::z2() const { assert(0 && "nnode::z2 needs override "); return 0 ; } 
@@ -117,6 +116,12 @@ void nnode::set_treedir( const char* treedir_)
 {
     treedir = treedir_ ? strdup(treedir_) : NULL ; 
 }
+void nnode::set_boundary( const char* boundary_)
+{
+    boundary = boundary_ ? strdup(boundary_) : NULL ; 
+}
+
+
 
 void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 {
@@ -129,6 +134,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.other  = NULL ;   // used by NOpenMesh 
     n.label = NULL ; 
     n.treedir = NULL ; 
+    n.boundary = NULL ; 
     n._dump = new NNodeDump(n) ; 
 
     n.transform = NULL ; 
@@ -422,12 +428,13 @@ nbbox nnode::bbox() const
 
 
 
-nnode* nnode::load(const char* treedir, int verbosity)
+nnode* nnode::load(const char* treedir, const NSceneConfig* config)
 {
     bool usedglobally = false ; 
     bool polygonize = false ; 
+    int verbosity = 1 ; 
 
-    NCSG* tree = NCSG::LoadTree(treedir, usedglobally, verbosity, polygonize );
+    NCSG* tree = NCSG::LoadTree(treedir, config, usedglobally, verbosity, polygonize );
     nnode* root = tree->getRoot();
     return root ; 
 }
