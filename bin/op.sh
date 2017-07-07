@@ -234,11 +234,16 @@ op-geometry-name()
        --dpib) echo DPIB ;; 
        --dsst) echo DSST ;; 
        --dsst2) echo DSST2 ;; 
-       --dlv65) echo DLV65 ;; 
-       --dlv55) echo DLV55 ;; 
-       --dlv66) echo DLV66 ;; 
-       --dlv68) echo DLV68 ;; 
+       --dlv17) echo DLV17 ;; 
        --dlv30) echo DLV30 ;; 
+       --dlv46) echo DLV46 ;; 
+       --dlv55) echo DLV55 ;; 
+       --dlv65) echo DLV65 ;; 
+       --dlv66) echo DLV66 ;; 
+       --dlv67) echo DLV67 ;; 
+       --dlv68) echo DLV68 ;; 
+       --dlv103) echo DLV103 ;; 
+       --dlv140) echo DLV140 ;; 
        --dlv185) echo DLV185 ;; 
        --jpmt) echo JPMT ;; 
        --lxe)  echo LXE ;; 
@@ -310,12 +315,17 @@ op-geometry-query-dyb()
        KDYB)  echo "range:3159:3160" ;;  # 1 volume : pvGDS
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
-       DLV66)  echo "range:3155:3156,range:4448:4449" ;;   # 2 volumes SST and top radius ribs
        DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
-       DLV65)  echo "range:3155:3156,range:4440:4441" ;;    # large BBox discrep
-       DLV68)  echo "range:3155:3156,range:4464:4465" ;;    # large BBox discrep
+       DLV17)  echo "range:3155:3156,range:2436:2437" ;;    #
        DLV30)  echo "range:3155:3156,range:3167:3168" ;;    #
+       DLV46)  echo "range:3155:3156,range:3200:3201" ;;    #
        DLV55)  echo "range:3155:3156,range:4357:4358" ;;    #
+       DLV65)  echo "range:3155:3156,range:4440:4441" ;;  
+       DLV66)  echo "range:3155:3156,range:4448:4449" ;;  
+       DLV67)  echo "range:3155:3156,range:4456:4457" ;; 
+       DLV68)  echo "range:3155:3156,range:4464:4465" ;;    # 
+      DLV103)  echo "range:3155:3156,range:4543:4544" ;;    #
+      DLV140)  echo "range:3155:3156,range:4606:4607" ;;    #
       DLV185)  echo "range:3155:3156,range:4799:4800" ;;    #
     esac
     # range:3154:3155  SST  Stainless Steel/IWSWater not a good choice for an envelope, just get BULK_ABSORB without going anywhere

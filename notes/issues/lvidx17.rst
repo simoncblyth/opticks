@@ -1,6 +1,13 @@
-lvidx 17
-===========
+lvidx 17 : g4poly (coincident union) misses T-bottom  of the H girder
+========================================================================
 
+* notably there are box coincident faces at bottom and top
+
+* Huh : manual bb calc matces parsurfbb, note union coincidence at z=+-135 (but only thin)
+
+
+Issue : parsurfbb.min.z is -12 mm off from g4polybb.min.z
+--------------------------------------------------------------
 
 ::
 
@@ -9,11 +16,69 @@ lvidx 17
  
                           amn (  -2000.000  -100.000  -147.000) 
                           bmn (  -2000.000   -99.876  -135.000) 
-                          dmn (      0.000    -0.124   -12.000) 
+                          dmn (      0.000    -0.124   -12.000)   parsurfbb.min.z is -12 mm off from g4polybb.min.z
                           amx (   2000.000   100.000   147.000) 
                           bmx (   2000.070   100.124   146.908) 
                           dmx (     -0.070    -0.124     0.092)
 
+
+Viz
+----
+
+::
+
+   op --dlv17 --gltf 3 --gltconfig disable_instancing=1
+
+      raytrace noshow when disable instancing
+
+   op --dlv17 --gltf 3 
+
+      at first glance raytrace looks to match g4poly perfectly, 
+      but looking more closely it seems that the T-bottom of the H
+      misses tris : but its only 4% of the height thats missing
+      so not easy to see
+
+      In [12]: 12./(147*2.)
+      Out[12]: 0.04081632653061224
+
+
+
+G4DAE : min.z is -135 here !!
+--------------------------------------
+
+
+::
+
+      2841     <geometry id="near_side_long_hbeam0xbf3b5d0" name="near_side_long_hbeam0xbf3b5d0">
+      2842       <mesh>
+      2843         <source id="near_side_long_hbeam0xbf3b5d0-Pos">
+      2844           <float_array count="60" id="near_side_long_hbeam0xbf3b5d0-Pos-array">
+      2845                 -2000 -4 -135
+      2846                 2000 -4 -135
+      2847                 2000 4 -135
+      2848                 -2000 4 -135
+      2849                 -2000 -4 135
+      2850                 -2000 4 135
+      2851                 -1999.93 -99.876 134.908
+      2852                 2000.07 -99.876 134.908
+      2853                 2000.07 100.124 134.908
+      2854                 -1999.93 100.124 134.908
+      2855                 -1999.93 -99.876 146.908
+      2856                 2000.07 -99.876 146.908
+      2857                 2000.07 100.124 146.908
+      2858                 -1999.93 100.124 146.908
+      2859                 2000 4 134.908
+      2860                 -1999.93 4 134.908
+      2861                 -1999.93 4 135
+      2862                 2000 -4 134.908
+      2863                 -1999.93 -4 134.908
+      2864                 -1999.93 -4 135
+      2865 </float_array>
+
+
+
+Huh : manual bb calc matces parsurfbb, note union coincidence at z=+-135 
+------------------------------------------------------------------------------
 
 ::
 
@@ -27,9 +92,24 @@ lvidx 17
      84 b = CSG("box3", param = [4000.000,200.000,12.000,0.000],param1 = [0.000,0.000,0.000,0.000])
      85 b.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,141.000,1.000]]
      86 ab = CSG("union", left=a, right=b)
-     87 
+
+     ##  ab :  T-beam "girder" shape  4m  along-x        
+     ##
+     ##        a.z                          (  -135  ,   135 )     
+     ##        b.z  ( 141+ -6, 141+ 6 ) ->             ( 135,   147 )   
+     ##
+     ##       b(thin-z) transformed up in z to make the top of the T
+     ##  
      88 c = CSG("box3", param = [4000.000,200.000,12.000,0.000],param1 = [0.000,0.000,0.000,0.000])
      89 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,-141.000,1.000]]
+     ##
+     ##        c(thin-z) transformed down in z to make the bottom of the H 
+     ##        c.z        (-141 + -6, -141 + 6 ) -> ( -147,  -135 )
+     ##
+
+                147
+
+
      90 abc = CSG("union", left=ab, right=c)
      91 
      92 
@@ -38,6 +118,34 @@ lvidx 17
 
 
 
+GDML : Corresponds with my CSG python.
+----------------------------------------
+
+::
+
+
+      490     <box lunit="mm" name="near_middle_side_long_piece0xbf3b448" x="4000" y="8" z="270"/>
+      491     <box lunit="mm" name="near_up_side_long_piece0xbf3a830" x="4000" y="200" z="12"/>
+
+      492     <union name="near_middle_side_long_piece+ChildFornear_side_long_hbeam0xbf3aec0">
+      493       <first ref="near_middle_side_long_piece0xbf3b448"/>
+      494       <second ref="near_up_side_long_piece0xbf3a830"/>
+      495       <position name="near_middle_side_long_piece+ChildFornear_side_long_hbeam0xbf3aec0_pos" unit="mm" x="0" y="0" z="141"/>
+      496     </union>
+
+      497     <box lunit="mm" name="near_down_side_long_piece0xbf3af70" x="4000" y="200" z="12"/>
+
+      498     <union name="near_side_long_hbeam0xbf3b5d0">
+      499       <first ref="near_middle_side_long_piece+ChildFornear_side_long_hbeam0xbf3aec0"/>
+      500       <second ref="near_down_side_long_piece0xbf3af70"/>
+      501       <position name="near_side_long_hbeam0xbf3b5d0_pos" unit="mm" x="0" y="0" z="-141"/>
+      502     </union>
+
+
+
+
+bb deviation chart
+---------------------
 
 
 ::
