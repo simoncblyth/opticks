@@ -611,65 +611,52 @@ tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserial
 tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-complement-(){ $FUNCNAME- | python $* ; } 
 tboolean-complement--(){ cat << EOP 
+
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
 
-im = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
-#tr = dict(scale="1,1,2")
-tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,1")
-
-kwa = {}
-kwa.update(im)
-#kwa.update(tr)
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
 
 
 al = CSG("sphere", param=[0,0,50,100])   # mid-right-Y, conventional difference(top-sphere,bottom-sphere)
 ar = CSG("sphere", param=[0,0,-50,100])
 a = CSG("difference", left=al, right=ar, translate="0,200,0" )
-a.boundary = "$(tboolean-testobject)"
-a.meta.update(im)
 
 bl = CSG("sphere", param=[0,0,50,100])   # far-right-Y,     intersect(top-sphere, complement(bot-sphere) )      
 br = CSG("sphere", param=[0,0,-50,100], complement=True)
 b = CSG("intersection", left=bl, right=br, translate="0,400,0" )
-b.boundary = "$(tboolean-testobject)"
-b.meta.update(im)
-
 
 cl = CSG("sphere", param=[0,0, 50,100])  # mid left Y,  conventional difference(bot-sphere,top-sphere) 
 cr = CSG("sphere", param=[0,0,-50,100])
 c = CSG("difference", left=cr, right=cl, translate="0,-200,0" )
-c.boundary = "$(tboolean-testobject)"
-c.meta.update(im)
 
 dl = CSG("sphere", param=[0,0,50,100], complement=True)    #  far-left-Y  intersect( complement(top-sphere), bot-sphere )    #  bot-top
 dr = CSG("sphere", param=[0,0,-50,100])
 d = CSG("intersection", left=dl, right=dr, translate="0,-400,0" )
-d.boundary = "$(tboolean-testobject)"
-d.meta.update(im)
 
+#b.analyse()
+#b.dump_tbool("name")
+#b.dump_NNodeTest("name")
 
-
-
-
-
-
-CSG.Serialize([container, a, b, c, d ], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, a, b, c, d ], args.csgpath )
 
 """
-Complemented inside out sphere ray trace appears dark, it has inverted normals 
+Getting expected:
 
-# FIX: not getting the expected, A diff B = A intersect !B 
-       getting mirrored ? 
-
++ve Y : top - bottom
+-ve Y : bottom - top
 
 """
 
 EOP
 }
-
 
 tboolean-zsphere(){ TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- ; } 
 tboolean-zsphere-(){ $FUNCNAME- | python $* ; } 
@@ -1395,6 +1382,39 @@ EOP
 }
 
 
+tboolean-cyslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cyslab-(){  $FUNCNAME- | python $* ; } 
+tboolean-cyslab--(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+  
+ca = CSG("cylinder", param=[0,0,0,500], param1=[-100,100,0,0] )
+cb = CSG("cylinder", param=[0,0,0,400], param1=[-101,101,0,0] )
+cy = ca - cb 
+
+
+sa = CSG("slab", param=[1,1,0,0],param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
+sb = CSG("slab", param=[-1,1,0,0],param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
+
+cysa = cy*sa 
+cysb = cy*sb 
+cysasb = cy*sa*sb 
+
+obj = cysasb
+
+CSG.Serialize([container, obj], args.csgpath )
+
+EOP
+}
+
+
 
 
 tboolean-sphereslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
@@ -1403,27 +1423,19 @@ tboolean-sphereslab--(){ cat << EOP
 import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
   
-slab   = CSG("slab", param=[0,0,1,0],param1=[-500,100,0,0] )
-
-
-SLAB_ACAP = 0x1 << 0
-SLAB_BCAP = 0x1 << 1
-flags = SLAB_ACAP | SLAB_BCAP
-slab.param.view(np.uint32)[3] = flags 
-
-
+slab   = CSG("slab", param=[1,1,1,0],param1=[-500,100,0,0] )  # normalization done in NSlab.hpp/init_slab
 sphere = CSG("sphere", param=[0,0,0,500] )
 
+object = CSG("intersection", left=sphere, right=slab )
 
-
-
-object = CSG("intersection", left=sphere, right=slab, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
-
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 
 """
 
@@ -1446,6 +1458,20 @@ It appears can get away with infinite slab, which isnt bounded also,
 as only unbounded in "one" direction whereas half-space is much more
 unbounded : in half the directions.
 
+
+* note that without the caps enabled see nothing, because of this
+  the user setting of endcap flags is now diabled : they are always 
+  set to ON in NSlab.hpp
+
+
+#SLAB_ACAP = 0x1 << 0
+#SLAB_BCAP = 0x1 << 1
+#flags = SLAB_ACAP | SLAB_BCAP
+#flags = 0
+#slab.param.view(np.uint32)[3] = flags 
+
+
+
 """
 EOP
 }
@@ -1456,19 +1482,25 @@ tboolean-sphereplane-(){  $FUNCNAME- | python $* ; }
 tboolean-sphereplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
+CSG.boundary = args.testobject 
+CSG.kwa = dict(poly="IM", resolution="50", verbosity="1" )
+
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20", verbosity="0" )
   
-plane  = CSG("plane",  param=[0,0,1,100] )
+plane  = CSG("plane",  param=[0,0,1,100], complement=False )
 sphere = CSG("sphere", param=[0,0,0,500] )
 
-object = CSG("intersection", left=sphere, right=plane, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
+object = CSG("intersection", left=sphere, right=plane )
 
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 
 """
-Exibits wierdness, unbounded sub-objects such as planes are not valid CSG sub-objects within OpticksCSG 
+
+With or without complement on the place get visbility wierdness, 
+unbounded sub-objects such as planes are not valid CSG sub-objects within OpticksCSG 
 
 0. Polygonization looks correct
 1. only see the sphere surface from beneath the plane (ie beneath z=100)

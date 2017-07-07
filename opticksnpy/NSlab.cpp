@@ -1,6 +1,7 @@
 
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp> 
+#include "Nuv.hpp"
 #include "NSlab.hpp"
 
 /*
@@ -42,22 +43,26 @@ Consider CSG difference of near and far halfspaces
   View the planes as a half-spaces want to form CSG intersection
 
 
+  CSG 
+      union(l,r)     ->  min(l,r)
+      intersect(l,r) ->  max(l,r)
+      difference(l,r) -> max(l,-r)
+
 */
 
 float nslab::operator()(float x, float y, float z) const 
 {
     glm::vec4 q(x,y,z,1.0); 
     if(gtransform) q = gtransform->v * q ;
- 
-    float d = glm::dot(n, glm::vec3(q)) ; // distance from q to the nearest point on plane thru origin
-    float da =  d - a ;             
-    float db =  d - b  ;   // b > a
 
-    //  CSG 
-    //     union(l,r)     ->  min(l,r)
-    //     intersect(l,r) ->  max(l,r)
-    //     difference(l,r) -> max(l,-r)
-    //     
+    glm::vec3 n = normal();
+    float a_ = a();
+    float b_ = b();
+
+    float d = glm::dot(n, glm::vec3(q)) ; // distance from q to the nearest point on plane thru origin
+    float da =  d - a_ ;             
+    float db =  d - b_  ;   // b > a
+  
     float sd = fmaxf(db, -da)   ;
 
     return complement ? -sd : sd ; 
@@ -90,11 +95,16 @@ there are 3 possibilities depending in where t_min lies wrt t_near and t_far.
 
 bool nslab::intersect( const float t_min, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect )
 {
+
+    glm::vec3 n = normal();
+    float a_ = a();
+    float b_ = b();
+
     float idn = 1.f/glm::dot(ray_direction, n );  // <-- infinite when ray is perpendicular to normal 
     float on = glm::dot(ray_origin, n );
 
-    float ta = (a - on)*idn ; 
-    float tb = (b - on)*idn ; 
+    float ta = (a_ - on)*idn ; 
+    float tb = (b_ - on)*idn ; 
 
     float t_near = fminf(ta,tb);  // order the intersects 
     float t_far  = fmaxf(ta,tb);
@@ -106,8 +116,8 @@ bool nslab::intersect( const float t_min, const glm::vec3& ray_origin, const glm
      
      std::cout 
          << "nslab::intersect" 
-         << " a " << a 
-         << " b " << b 
+         << " a " << a_ 
+         << " b " << b_ 
          << " ta " << ta
          << " tb " << tb
          << " idn " << idn
@@ -129,16 +139,25 @@ bool nslab::intersect( const float t_min, const glm::vec3& ray_origin, const glm
 }
 
 
+glm::vec3 nslab::center() const
+{
+    glm::vec3 n = normal();
+    float a_ = a();
+    float b_ = b();
+    glm::vec3 center_ = n * (a_+b_)/2.f ;
+    return center_ ; 
+}
 
 
 glm::vec3 nslab::gseedcenter()
 {
-    glm::vec3 center = n * (a+b)/2.f ;
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
+    glm::vec3 center_ = center() ;
+    return gtransform == NULL ? center_ : glm::vec3( gtransform->t * glm::vec4(center_, 1.f ) ) ;
 }
 
 glm::vec3 nslab::gseeddir()
 {
+    glm::vec3 n = normal();
     glm::vec4 dir(n,0); 
     if(gtransform) dir = gtransform->t * dir ; 
     return glm::vec3(dir) ;
@@ -151,15 +170,72 @@ void nslab::pdump(const char* msg) const
     std::cout 
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )
-              << " n " << n
-              << " a  " << a
-              << " b (b>a) " << b
+              << " n " << normal()
+              << " a  " << a()
+              << " b (b>a) " << b()
               << " gtransform? " << !!gtransform
               << std::endl ; 
 
     if(verbosity > 1 && gtransform) std::cout << *gtransform << std::endl ;
 }
 
+
+
+unsigned nslab::par_nsurf() const 
+{
+   return 2 ; 
+}
+int nslab::par_euler() const 
+{
+   return 2 ; 
+}
+unsigned nslab::par_nvertices(unsigned /*nu*/, unsigned /*nv*/) const 
+{
+   return 0 ; 
+}
+
+glm::vec3 nslab::par_pos_model(const nuv& uv) const 
+{
+    glm::vec3 n = normal();
+
+    float sz = 500.f ;  // arbitrary square patch region of the slab planes
+
+    unsigned s = uv.s(); 
+    float fu = sz*(uv.fu() - 0.5f) ;  
+    float fv = sz*(uv.fv() - 0.5f) ;
+ 
+    glm::vec3 offset = fu*udir + fv*vdir ;  
+
+    glm::vec3 pos =  n * ( s == 0 ? a() : b() ) ; 
+    pos += offset ; 
+
+    return pos ; 
+}
+
+
+void nslab::define_uv_basis() 
+{
+    glm::vec3 n = normal();
+    nglmext::_define_uv_basis(n, udir, vdir) ;
+}
+
+
+/*
+
+
+                     | 
+                     | 
+           ----------b-----------
+                     |
+                     |
+                     |
+           ----------a-----------
+                     |
+                     |
+                     |
+                     0
+
+*/
 
 
 

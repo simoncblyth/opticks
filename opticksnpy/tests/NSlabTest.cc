@@ -1,8 +1,16 @@
-#include "NSlab.hpp"
-#include "NGLMExt.hpp"
-
 #include <iostream>
 #include <iomanip>
+
+#include "SSys.hh"
+
+#include "NGLMExt.hpp"
+#include "GLMFormat.hpp"
+#include "NCSG.hpp"
+#include "NSceneConfig.hpp"
+#include "NNode.hpp"
+
+#include "NSlab.hpp"
+#include "NSphere.hpp"
 
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
@@ -74,13 +82,67 @@ void test_intersect()
 
 
 
+void test_slab_sphere_intersection()
+{
+    nsphere a = make_sphere( 0.000,0.000,0.000,500.000 ) ; a.label = "a" ;   
+    nslab b = make_slab( 1.000,1.000,1.000,0.000,-500.000,100.000,0.000,0.000 ) ; b.label = "b" ;   
+    nintersection ab = make_intersection( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    
+    ab.update_gtransforms();
+    ab.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
+    ab.dump() ; 
+
+    const char* boundary = "Rock//perfectAbsorbSurface/Vacuum" ;
+
+    ab.set_boundary(boundary); 
+    const char* gltfconfig = "" ;  
+    const NSceneConfig* config = new NSceneConfig(gltfconfig);
+    NCSG* csg = NCSG::FromNode(&ab, config);
+    csg->dump();
+    csg->dump_surface_points("dsp", 20);
+
+}
+
+
+void test_slab_parsurf()
+{
+    nslab s = make_slab( 1.000,0.000,0.000,0.000,-500.000,100.000,0.000,0.000 ) ; s.label = "s" ;   
+
+
+    unsigned level = 4 ; 
+    int margin = 0 ; 
+
+    NNodeFrameType frty = FRAME_MODEL ; 
+
+    typedef std::vector<glm::vec3> VV ; 
+    VV primsurf ;  
+    s.getSurfacePointsAll(primsurf, level, margin, frty );    // using the above branch
+
+
+    for(unsigned i=0 ; i < primsurf.size() ; i++)
+    { 
+        std::cout << std::setw(5) << i 
+                  << " ps " << gpresent(primsurf[i])
+                  << std::endl ; 
+    }
+    
+
+
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    test_sdf();
-    test_intersect();
+    //test_sdf();
+    //test_intersect();
+
+    test_slab_sphere_intersection();
+    //test_slab_parsurf();
 
     return 0 ; 
 }

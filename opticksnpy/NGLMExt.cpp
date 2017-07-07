@@ -367,6 +367,49 @@ glm::mat4 nglmext::make_transform(const std::string& order)
 
 
 
+void nglmext::_pick_up( glm::vec3& up, const glm::vec3& dir ) // static
+{
+    std::vector<glm::vec3> axes ; 
+    axes.push_back( glm::vec3(1,0,0) );
+    axes.push_back( glm::vec3(0,1,0) );
+    axes.push_back( glm::vec3(0,0,1) );
+
+    for(unsigned i=0 ; i < axes.size() ; i++)
+    {   
+       glm::vec3 axis = axes[i] ;
+       float aul = glm::length(glm::cross(dir, axis));
+       if(aul > 0.f)
+       {
+           up = axis ; 
+           return ; 
+       }
+    }
+}
+
+void nglmext::_define_uv_basis( const glm::vec3& perp, glm::vec3& udir, glm::vec3& vdir   ) // static
+{
+    glm::vec3 up ;     
+    _pick_up(up, perp );
+
+    udir = glm::normalize(glm::cross(perp, up));
+    vdir = glm::normalize(glm::cross(udir, perp)); 
+
+    // see okc- View::getFocalBasis View::handleDegenerates
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -781,6 +824,7 @@ std::ostream& operator<< (std::ostream& out, const glm::mat3& v)
 
     return out;
 }
+
 
 
 

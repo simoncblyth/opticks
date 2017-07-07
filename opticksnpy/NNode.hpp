@@ -36,6 +36,7 @@ struct NPY_API nnode
     virtual const char* csgname(); 
     virtual nbbox bbox() const ;
 
+    void check_primitive_bb( const nbbox& bb) const  ;
     void get_composite_bbox( nbbox& bb ) const ;
     void get_primitive_bbox( nbbox& bb ) const ;
 
@@ -132,6 +133,7 @@ struct NPY_API nnode
     bool is_znudge_capable() const ;
     bool is_operator() const ;
     bool is_primitive() const ;
+    bool is_unbounded() const ;
     bool is_root() const ;
     bool is_bileaf() const ;
     bool has_planes();

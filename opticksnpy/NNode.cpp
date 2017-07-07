@@ -99,6 +99,12 @@ bool nnode::is_primitive() const
 {
     return left == NULL && right == NULL ; 
 }
+bool nnode::is_unbounded() const 
+{
+    return type == CSG_SLAB || type == CSG_PLANE ; 
+}
+
+
 bool nnode::is_root() const 
 {
     return parent == NULL ; 
@@ -282,45 +288,52 @@ npart nnode::part() const
 }
 
 
+void nnode::check_primitive_bb( const nbbox& bb) const 
+{
+    bool invert_is_complement = bb.invert == complement ;
+
+    if(!invert_is_complement)
+        LOG(fatal) << "nnode::check_primitive_bb"
+                      << " invert_is_complement FAIL "
+                      << " bb  " << bb.desc()
+                      << " node  " << desc()
+                      ;
+                     
+    assert( invert_is_complement );
+}
+
+
 void nnode::get_composite_bbox( nbbox& bb ) const 
 {
     assert( left && right );
 
+    bool l_unbound = left->is_unbounded();
+    bool r_unbound = right->is_unbounded();
+
+    assert( !(l_unbound && r_unbound) && " combination of two unbounded prmitives is not allowed " );
+
+
     nbbox l_bb = left->bbox();
     nbbox r_bb = right->bbox();
 
-    if(left->is_primitive())
+
+    if( left->is_unbounded() )
     {
-        bool l_invert_is_complement = l_bb.invert == left->complement ;
-
-        if(!l_invert_is_complement)
-           LOG(fatal) << "nnode::composite_bbox"
-                      << " l_invert_is_complement FAIL "
-                      << " l_bb  " << l_bb.desc()
-                      << " left  " << left->desc()
-                      ;
-                     
-
-        assert( l_invert_is_complement );
+        assert(l_bb.is_empty());
+        bb = r_bb ; 
     }
-
-    if(right->is_primitive())
+    else if( right->is_unbounded() )
     {
-
-        bool r_invert_is_complement = r_bb.invert == right->complement ;
-
-        if(!r_invert_is_complement)
-           LOG(fatal) << "nnode::composite_bbox"
-                      << " r_invert_is_complement FAIL "
-                      << " r_bb  " << r_bb.desc()
-                      << " right  " << right->desc()
-                      ;
-                     
-
-        assert( r_invert_is_complement );
+        assert(r_bb.is_empty());
+        bb = l_bb ; 
     }
-    
-    nbbox::CombineCSG(bb, l_bb, r_bb, type, verbosity  );
+    else
+    {
+        if(left->is_primitive()) left->check_primitive_bb(l_bb);
+        if(right->is_primitive()) right->check_primitive_bb(r_bb);
+
+        nbbox::CombineCSG(bb, l_bb, r_bb, type, verbosity  );
+    }
 
     if(verbosity > 0)
     std::cout << "nnode::composite_bbox "
@@ -340,7 +353,11 @@ void nnode::get_primitive_bbox(nbbox& bb) const
 
     const nnode* node = this ;  
 
-    if(node->type == CSG_SPHERE)
+    if(node->is_unbounded())
+    {
+        LOG(warning) << "nnode::get_primitive_bbox not providing bbox for unbounded primitive " ; 
+    }
+    else if(node->type == CSG_SPHERE)
     { 
         const nsphere* n = dynamic_cast<const nsphere*>(node) ;
         nbbox pp = n->bbox() ;
@@ -357,10 +374,6 @@ void nnode::get_primitive_bbox(nbbox& bb) const
         nbox* n = (nbox*)node ;
         nbbox pp = n->bbox() ;
         bb.copy_from(pp) ; 
-    }
-    else if(node->type == CSG_SLAB || node->type == CSG_PLANE)
-    {
-        assert(0);
     }
     else if(node->type == CSG_CYLINDER)
     {

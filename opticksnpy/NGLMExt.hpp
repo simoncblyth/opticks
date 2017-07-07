@@ -162,6 +162,12 @@ struct NPY_API nglmext
 
     static void transform_planes( NPY<float>* plan_buffer, const glm::mat4& placement );
 
+
+    static void _define_uv_basis( const glm::vec3& perp, glm::vec3& udir, glm::vec3& vdir   ) ; // static
+    static void _pick_up( glm::vec3& up, const glm::vec3& dir ); // static
+
+
+
 };
 
 

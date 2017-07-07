@@ -327,6 +327,63 @@ void test_apply_transform_vec()
 
 
 
+void get_directions(std::vector<glm::vec3>& dirs)
+{
+    dirs.push_back(glm::vec3(1,0,0));
+    dirs.push_back(glm::vec3(0,1,0));
+    dirs.push_back(glm::vec3(0,0,1));
+    dirs.push_back(glm::vec3(0,1,1));
+    dirs.push_back(glm::vec3(1,0,1));
+    dirs.push_back(glm::vec3(1,1,0));
+    dirs.push_back(glm::vec3(1,1,1));
+}
+
+
+void test_pick_up()
+{
+    LOG(info) << "test_pick_up" ; 
+
+    std::vector<glm::vec3> dirs ;
+    get_directions(dirs);
+
+    glm::vec3 up ; 
+    for(unsigned i=0 ; i < dirs.size() ; i++)
+    {
+        nglmext::_pick_up(up, dirs[i] );
+        std::cout << std::setw(2) << i 
+                  << " dir " << gpresent(dirs[i])
+                  << " up " << gpresent(up)
+                  << std::endl 
+                  ;
+    }
+}
+
+
+void test_define_uv_basis()
+{
+    LOG(info) << "test_define_uv_basis" ; 
+
+    std::vector<glm::vec3> dirs ;
+    get_directions(dirs);
+
+    glm::vec3 udir ; 
+    glm::vec3 vdir ; 
+    for(unsigned i=0 ; i < dirs.size() ; i++)
+    {
+        glm::vec3 perp = dirs[i] ;
+        nglmext::_define_uv_basis(perp, udir, vdir) ;
+
+        std::cout << std::setw(2) << i 
+                  << " perp " << gpresent(perp)
+                  << " udir " << gpresent(udir)
+                  << " vdir " << gpresent(vdir)
+                  << std::endl 
+                  ;
+    }
+}
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv) ; 
@@ -338,8 +395,12 @@ int main(int argc, char** argv)
     //test_nmat4triple_make_translated();
     //test_nmat4triple_id_digest();
 
-    test_apply_transform();
-    test_apply_transform_vec();
+    //test_apply_transform();
+    //test_apply_transform_vec();
+
+    test_pick_up() ;
+    test_define_uv_basis();
+
 
     return 0 ; 
 }

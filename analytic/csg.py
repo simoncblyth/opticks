@@ -837,9 +837,9 @@ class CSG(CSG_):
         npq = None
         if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID]:
             npq = 0
-        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX]:
+        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE]:
             npq = 1
-        elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC]:
+        elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB]:
             npq = 2 
         else:
             assert 0, "add num_param_quads for typ %s " % cls.desc(typ) 
@@ -870,11 +870,28 @@ class CSG(CSG_):
 
     def content_complement(self, lang="py"):
         if self.complement:
-            complement = "complement = True"
+            if lang == "py":
+                complement = "complement = True"
+            else:
+                complement = None 
+            pass
         else:
             complement = None 
         pass
         return complement
+
+    def content_complement_extras(self, lang="py"):
+        if self.complement:
+            if lang == "py":
+                complement = None
+            else:
+                complement = "%s.complement = true" % self.alabel
+            pass
+        else:
+            complement = None 
+        pass
+        return complement
+
 
     def content_transform(self, lang="py"):
         if lang == "py":
@@ -903,19 +920,29 @@ class CSG(CSG_):
         return ",".join(filter(None,[param,param1,complement]))
 
     def content(self, lang="py"):
+        extras = []  
         if self.is_primitive:
             content_ = self.content_primitive(lang=lang)
-            parenting_ = "" 
+            complement_ = self.content_complement_extras(lang=lang)
+            extras.extend(filter(None,[complement_]))
         else:
             content_ = self.content_operator(lang=lang) 
             parenting_ = self.content_operator_parenting(lang=lang) 
+            extras.extend(filter(None,[parenting_]))
+            assert not self.complement
+        pass
+
+        extras_ = " ; ".join(extras)
+
+        if len(extras) > 0:
+            extras_ += " ; "
         pass
 
         if lang == "py":
             code = "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
         else:
             type_ = self.content_type(lang)
-            code = "%s %s = make_%s( %s ) ; %s.label = \"%s\" ; %s " % ( type_, self.alabel, self.desc(self.typ), content_, self.alabel, self.alabel, parenting_ )
+            code = "%s %s = make_%s( %s ) ; %s.label = \"%s\" ; %s  " % ( type_, self.alabel, self.desc(self.typ), content_, self.alabel, self.alabel, extras_ )
         pass
         return code
 
