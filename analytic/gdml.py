@@ -387,12 +387,34 @@ class Primitive(Geometry):
         so = gg.solids(-1)   # pick last to allow composite booleans
         return so
 
+
+    @classmethod
+    def deltaphi_slab_segment(cls, obj, phi0, phi1, dist):
+        xyzw_ = lambda phi:(np.cos(phi*np.pi/180.), np.sin(phi*np.pi/180.),0,0)
+
+        slab_a = 0
+        slab_b = dist 
+
+        slab0 = CSG("slab", param=xyzw_(phi0+90),param1=[slab_a,slab_b,0,0] ) 
+        slab1 = CSG("slab", param=xyzw_(phi1-90),param1=[slab_a,slab_b,0,0] ) 
+
+        # flipped signs to get segment from intended quadrant
+        
+        obj_slab0 = CSG("intersection", left=obj, right=slab0 )
+        obj_slab0_slab1 = CSG("intersection", left=obj_slab0, right=slab1 )        
+
+        return obj_slab0_slab1
+
+
+
     def __repr__(self):
         return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
     """
     """
+    deltaphi_slab_segment_enabled = True
+
     @classmethod 
     def make_cylinder(cls, radius, z1, z2, name):
         cn = CSG("cylinder", name=name)
@@ -426,7 +448,23 @@ class Tube(Primitive):
             inner = None
         pass
         outer = self.make_cylinder(self.rmax, -hz, hz, self.name + "_outer" )
-        return  CSG("difference", left=outer, right=inner, name=self.name + "_difference" ) if has_inner else outer
+        tube = CSG("difference", left=outer, right=inner, name=self.name + "_difference" ) if has_inner else outer
+
+        has_deltaphi = self.deltaphi < 360
+        if has_deltaphi and self.deltaphi_slab_segment_enabled:
+
+             assert self.aunit == 'deg'
+             phi0 = self.startphi
+             phi1 = self.startphi + self.deltaphi
+             dist = self.rmax + 1
+             log.info("as_cylinder doing slab segmenting : name %s phi0 %s phi1 %s dist %s " % (self.name, phi0, phi1, dist))
+             tube_segment = self.deltaphi_slab_segment(tube, phi0, phi1, dist)
+             result = tube_segment
+             result.balance_disabled = True 
+        else:
+             result = tube
+        pass
+        return result
 
     def as_disc(self):
         hz = self.z/2.
@@ -445,6 +483,8 @@ class Tube(Primitive):
 
 
 class Sphere(Primitive):
+    deltaphi_slab_segment_enabled = False
+
     def as_ncsg(self, only_inner=False):
         pass
         assert self.aunit == "deg" and self.lunit == "mm"
@@ -502,7 +542,20 @@ class Sphere(Primitive):
         else: 
             ret = cn 
         pass
-        return ret
+
+        has_deltaphi = self.deltaphi < 360
+        if has_deltaphi and not only_inner and self.deltaphi_slab_segment_enabled:
+             assert self.aunit == 'deg'
+             phi0 = self.startphi
+             phi1 = self.startphi + self.deltaphi
+             rmax = self.rmax + 1
+             ret_segment = self.deltaphi_slab_segment(ret, phi0, phi1, rmax)
+             result = ret_segment
+        else:
+             result = ret
+        pass
+
+        return result
 
 
 

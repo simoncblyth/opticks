@@ -310,7 +310,13 @@ void nnode::get_composite_bbox( nbbox& bb ) const
     bool l_unbound = left->is_unbounded();
     bool r_unbound = right->is_unbounded();
 
-    assert( !(l_unbound && r_unbound) && " combination of two unbounded prmitives is not allowed " );
+    bool lr_unbound = l_unbound && r_unbound ;
+    if(lr_unbound)
+    {
+        LOG(warning) << "nnode::get_composite_bbox lr_unbound leave bb as is " ; 
+        return ; 
+    }   
+    //assert( !lr_unbound  && " combination of two unbounded prmitives is not allowed " );
 
 
     nbbox l_bb = left->bbox();

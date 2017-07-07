@@ -304,7 +304,19 @@ class Sc(object):
 
         overheight_ = lambda csg,maxheight:csg.height > maxheight and maxheight != 0
 
-        if not overheight_(rawcsg, maxcsgheight):
+
+        is_balance_disabled = rawcsg.is_balance_disabled() 
+
+        #log.info(" %s %s " % ( is_balance_disabled, rawcsg.name ))
+
+        is_overheight = overheight_(rawcsg, maxcsgheight)
+        if is_overheight:
+            if is_balance_disabled:
+                log.warning("tree is_overheight but marked balance_disabled leaving raw : %s " % rawcsg.name ) 
+                return rawcsg 
+            else:
+                log.debug("proceed to balance")
+        else:
             return rawcsg 
         pass
         log.debug("optimize_csg OVERHEIGHT h:%2d maxcsgheight:%d maxcsgheight2:%d %s " % (rawcsg.height,maxcsgheight, maxcsgheight2, rawcsg.name))

@@ -232,6 +232,27 @@ class CSG(CSG_):
         operators_r(self, 0)
         return list(ops)
 
+
+    def is_balance_disabled(self):
+        disabled = [] 
+        def is_balance_disabled_r(node, depth):
+            if node.left is None and node.right is None:
+                if node.balance_disabled:        
+                    disabled.append(node)
+                pass
+            else:
+                if node.balance_disabled:        
+                    disabled.append(node)
+                pass
+                is_balance_disabled_r(node.left, depth+1)
+                is_balance_disabled_r(node.right, depth+1)
+            pass
+        pass
+        is_balance_disabled_r(self, 0)
+
+        return len(disabled) > 0
+
+
     def is_positive_form(self):
         ops = self.operators_()
         return not CSG.DIFFERENCE in ops
@@ -642,7 +663,7 @@ class CSG(CSG_):
         self.scale = scale
         self._transform = None
         self.complement = complement
-
+        self.balance_disabled = False
         self.planes = []
 
 

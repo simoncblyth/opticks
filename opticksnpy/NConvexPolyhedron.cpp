@@ -205,6 +205,11 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
     assert( fabsf(glm::length(norm) - 1.f ) < epsilon ); 
 
     glm::vec3 pos = norm*dist ; 
+
+    // TODO: produce some more par points by using similar 
+    //       basis finding approach of nslab to populate a 
+    //       plane : and select points by SDF
+
   
     return pos ; 
 }

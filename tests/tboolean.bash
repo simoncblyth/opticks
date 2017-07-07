@@ -1388,6 +1388,7 @@ tboolean-cyslab--(){ cat << EOP
 import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+from opticks.analytic.gdml import Primitive  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 CSG.boundary = args.testobject
@@ -1400,19 +1401,97 @@ cb = CSG("cylinder", param=[0,0,0,400], param1=[-101,101,0,0] )
 cy = ca - cb 
 
 
-sa = CSG("slab", param=[1,1,0,0],param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
-sb = CSG("slab", param=[-1,1,0,0],param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
+startphi = 90
+deltaphi = 90 
 
-cysa = cy*sa 
-cysb = cy*sb 
-cysasb = cy*sa*sb 
+phi0 = startphi
+phi1 = startphi+deltaphi
+dist = 500+1     # make it rmax + smth 
 
-obj = cysasb
+cyseg = Primitive.deltaphi_slab_segment( cy, phi0, phi1, dist)
+
+if 0:
+    xyzw_ = lambda phi:(np.cos(phi*np.pi/180.), np.sin(phi*np.pi/180.),0,0)
+    sa = CSG("slab", param=xyzw_(phi0+90),param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
+    sb = CSG("slab", param=xyzw_(phi1-90),param1=[0,501,0,0] )  # normalization done in NSlab.hpp/init_slab
+    # flipped +-90 as was chopping in opposite side of cylinder
+    cysa = cy*sa 
+    cysb = cy*sb 
+    cyseg = cy*sa*sb 
+pass
+
+obj = cyseg
 
 CSG.Serialize([container, obj], args.csgpath )
 
+"""
+         
+         |
+         |     .
+         |     
+         |  .
+       \ | 
+         +--------x
+         |
+         V
+
+
+* slabs are defined by two planes with the same normal
+
+* notice that phi slab slicing doesnt work when viewed precisely end on 
+  from along the unbounded direction +-Z 
+
+  Rather than the segment, see the whole cylinder.
+
+  However its is difficult to get into that position without 
+  using G/Composition/Home(H) and the axial view buttons(+Z/-Z)
+
+  * unclear how this can be handled ?
+
+
+"""
+
+
 EOP
 }
+
+
+
+
+tboolean-spseg(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
+tboolean-spseg--(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+from opticks.analytic.gdml import Primitive  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG("sphere", param=[0,0,0,500] )
+b = CSG("sphere", param=[0,0,0,490] )
+d = a - b
+
+
+phi0 =  0
+phi1 = 90
+dist = 500 + 1
+
+s = Primitive.deltaphi_slab_segment( d, phi0, phi1, dist)
+
+
+CSG.Serialize([container, s], args.csgpath )
+
+"""
+"""
+EOP
+}
+
+
 
 
 

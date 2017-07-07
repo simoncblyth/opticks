@@ -18,6 +18,12 @@ struct NPY_API nconvexpolyhedron : nnode
     glm::vec3 gseeddir();
 
     glm::vec3 par_pos_model(const nuv& uv) const  ;
+
+    // TODO: produce some more par points by using similar 
+    //       basis finding approach of nslab to populate a 
+    //       plane : and select points by SDF
+
+
     unsigned  par_nsurf() const ; 
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
