@@ -1,5 +1,5 @@
-lvidx66 still shows up in 4th position
-=========================================
+lvidx66 (formerly in 4th) NOW IN POLE POSITION
+======================================================
 
 My manual bbox matches the g4poly one, but the parsurf one stops at zero in x, rotated into position 
 at Z-top of SST?
@@ -17,6 +17,29 @@ at Z-top of SST?
         amx (  **0.000**    10.000  1114.250)   <-- max.x  
         bmx (    345.510    10.000  1114.250) 
         dmx (   -345.510     0.000     0.000)
+
+
+
+
+
+parsurf surface points not getting above x=0 ? 
+-------------------------------------------------
+
+::
+
+    2017-07-08 15:57:07.412 INFO  [4096976] [NSceneConfig::dump@63] bbox_type_string : CSG_BBOX_PARSURF
+     verbosity 4 countdown 7 level 2 target 200 num_surface_points 0 tots (inside/surface/outside/selected)      25     121     304     121
+     verbosity 4 countdown 6 level 3 target 200 num_surface_points 121 tots (inside/surface/outside/selected)      81     408     969     408
+    2017-07-08 15:57:07.414 INFO  [4096976] [NCSG::dump@911] NCSG::dump
+     NCSG  ix    0 surfpoints  408 so -                                        lv -                                       
+     bbsp  mi (   -345.000   -10.000 -1114.250) mx (      0.000    10.000  1114.250) si (    345.000    20.000  2228.500)
+
+
+
+
+
+
+
 
 
 ::
@@ -102,6 +125,16 @@ at Z-top of SST?
      99 c = CSG("box3", param = [691.020,24.000,2238.500,0.000],param1 = [0.000,0.000,0.000,0.000])
     100 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[345.510,0.000,0.000,1.000]]
     101 abc = CSG("difference", left=ab, right=c)
+
+    /// boxes same z range : do not intersect
+    ///      
+    ///  b.x   -20,20                       ->  -360,-320 
+    ///  c.x   -691.02/2.+345.51,+691.02/2.+345.51          -> (0.0, 691.02)
+
+
+
+
+
     102 
     103 
     104 

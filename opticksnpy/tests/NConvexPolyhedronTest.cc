@@ -113,8 +113,9 @@ void test_getSurfacePointsAll(const nconvexpolyhedron* cpol)
 
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o
+    unsigned verbosity = 1 ; 
 
-    cpol->getSurfacePointsAll(surf, level, margin, FRAME_LOCAL );
+    cpol->getSurfacePointsAll(surf, level, margin, FRAME_LOCAL, verbosity);
 
     LOG(info) << "test_parametric"
               << " surf points " << surf.size()
@@ -203,9 +204,9 @@ int main(int argc, char** argv)
     //test_dumpSurfacePointsAll(cpol);
 
     nconvexpolyhedron* cpol = test_make_trapezoid();
-    //test_dumpSurfacePointsAll(cpol);
+    test_dumpSurfacePointsAll(cpol);
 
-    test_transform_planes(cpol);
+    //test_transform_planes(cpol);
 
 
     return 0 ; 

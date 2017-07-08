@@ -1050,11 +1050,11 @@ glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<gl
 
 
 
-void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr) const 
+void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const 
 {
     assert(is_primitive());
     unsigned ns = par_nsurf();
-    for(unsigned s = 0 ; s < ns ; s++) getSurfacePoints(surf, s, level, margin, fr) ;
+    for(unsigned s = 0 ; s < ns ; s++) getSurfacePoints(surf, s, level, margin, fr, verbosity) ;
 }
 
 
@@ -1074,7 +1074,7 @@ glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned lev
 
         typedef std::vector<glm::vec3> VV ; 
         VV primsurf ;  
-        prim->getSurfacePointsAll(primsurf, level, margin, fr );    // using the above branch
+        prim->getSurfacePointsAll(primsurf, level, margin, fr, verbosity );    // using the above branch
 
         glm::uvec4 isos = selectBySDF(surf, primsurf, pointmask, epsilon, tr ); 
         tot += isos ;  
@@ -1098,7 +1098,7 @@ glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned lev
 
 
 
-void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr) const 
+void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const 
 {
     /*
 
@@ -1123,6 +1123,23 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
     int ndiv = nu + 1 - 2*margin ;
     unsigned expect = ndiv*ndiv  ;  
     unsigned n0 = surf.size();
+
+
+    if(verbosity > 5)
+    {
+        std::cout
+                 << "nnode::getSurfacePoints"
+                 << " verbosity " << std::setw(3) << verbosity
+                 << " s " << std::setw(3) << s 
+                 << " nu " << std::setw(4) << nu 
+                 << " nv " << std::setw(4) << nv
+                 << " ndiv " << std::setw(5) << ndiv
+                 << " expect " << std::setw(6) << expect
+                 << " n0 " << std::setw(6) << n0
+                 << std::endl 
+                 ;
+    } 
+
 
     for (int v = margin; v <= (nv-margin) ; v++)
     {
@@ -1158,7 +1175,7 @@ void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const
               << std::endl ;     
 
     std::vector<glm::vec3> points ; 
-    getSurfacePointsAll( points, level, margin, fr ); 
+    getSurfacePointsAll( points, level, margin, fr, verbosity ); 
 
     float epsilon = 1e-5f ; 
     dumpPointsSDF(points, epsilon );

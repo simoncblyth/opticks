@@ -187,6 +187,8 @@ void test_getSurfacePoints()
 
      int ndiv = (1 << level) + 1 - 2*margin ;
      unsigned expect = ndiv*ndiv  ;  
+     unsigned verbosity = 1 ; 
+
 
      LOG(info) << "test_getSurfacePoints" 
                << " level " << level 
@@ -201,7 +203,7 @@ void test_getSurfacePoints()
      {    
          std::vector<glm::vec3> pts ; 
 
-         bx.getSurfacePoints(pts, s, level, margin, FRAME_LOCAL ) ;
+         bx.getSurfacePoints(pts, s, level, margin, FRAME_LOCAL, verbosity) ;
 
          assert( pts.size() == expect );
 

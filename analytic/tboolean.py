@@ -91,8 +91,8 @@ obj.dump("optimized")
 #uobjs = [raw]
 uobjs = [obj]
 
-con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
-CSG.Serialize([con,uobjs], args.csgpath )
+con = CSG("box",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
+CSG.Serialize([con]+uobjs, args.csgpath )
 
 EOP
 }

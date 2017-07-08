@@ -1411,12 +1411,16 @@ container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", n
 
 phi0,phi1,sz,sr = 0,45,200,300 
 
-planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+if 0:
+    planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+    obj = CSG("segment")
+    obj.planes = planes
+    obj.param2[:3] = bbox[0]
+    obj.param3[:3] = bbox[1]
+else:
+    obj = CSG.MakeSegment(phi0,phi1,sz,sr)
+pass
 
-obj = CSG("segment")
-obj.planes = planes
-obj.param2[:3] = bbox[0]
-obj.param3[:3] = bbox[1]
 
 obj.dump()
 

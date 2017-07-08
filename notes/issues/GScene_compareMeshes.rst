@@ -138,21 +138,25 @@ bbox differences : review the top of the chart
     Assertion failed: (0 && "GScene::init early exit for gltf==4"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 156.
 
 
-lvidx_65_69_56_tube_deltaphi (1,2,3)
-----------------------------------------
-
-* TODO : implement tube deltaphi
-
-* :doc:`lvid65`
-
-* :doc:`lvidx_65_69_56_tube_deltaphi`
-
 
 lvidx66_again (4)
 -------------------------------
 
 * :doc:`lvidx66_again`
 * suspect this issue is related to the trapezoid(convexpolyhedron) and manual bbox that they force
+
+
+
+lvidx_65_69_56_tube_deltaphi (1,2,3)  HAVE BEEN KNOCKED DONE TABLE
+--------------------------------------------------------------------
+
+* DONE : implement tube deltaphi via intersect with CSG_SEGMENT
+
+* :doc:`lvid65`
+
+* :doc:`lvidx_65_69_56_tube_deltaphi`
+
+
 
 
 lvidx68 (5) + lvidx55 (8) + lvidx17 (9) + lvidx103 (10) + lvidx131 (11)

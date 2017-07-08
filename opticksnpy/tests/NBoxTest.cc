@@ -179,8 +179,9 @@ void test_nudge()
     box.pdump("make_box3(2*h,2*h,2*h)");
 
 
+   
     std::vector<glm::vec3> before ; 
-    box.getSurfacePointsAll( before, level, margin, FRAME_LOCAL ); 
+    box.getSurfacePointsAll( before, level, margin, FRAME_LOCAL, box.verbosity); 
 
     assert(before.size() == 6 ); 
 
@@ -203,7 +204,7 @@ void test_nudge()
     box.pdump("make_box3(2*h,2*h,2*h) NUDGED");
 
     std::vector<glm::vec3> after ; 
-    box.getSurfacePointsAll( after, level, margin, FRAME_LOCAL ); 
+    box.getSurfacePointsAll( after, level, margin, FRAME_LOCAL, box.verbosity ); 
 
     assert(after.size() == 6 ); 
 
@@ -230,7 +231,7 @@ void test_getSurfacePointsAll()
     int margin = 1 ;      // o---*---o
 
     std::vector<glm::vec3> surf ; 
-    box.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL ); 
+    box.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL, box.verbosity ); 
 
     LOG(info) << "test_getSurfacePointsAll"
               << " surf " << surf.size()

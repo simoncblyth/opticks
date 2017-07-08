@@ -9,6 +9,8 @@
 #include "NBBox.hpp"
 #include "NPlane.hpp"
 
+#include "PLOG.hh"
+
 
 
 float nconvexpolyhedron::operator()(float x, float y, float z) const 
@@ -204,8 +206,20 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
     glm::vec3 norm(pl.x,pl.y,pl.z) ; 
     float dist = pl.w ; 
 
-    float epsilon = 1e-5 ; 
-    assert( fabsf(glm::length(norm) - 1.f ) < epsilon ); 
+    //float epsilon = 1e-5 ; 
+    float epsilon = 1e-4 ;   // loosen for NNodeTest codegen using 3 digits  
+    float delta = fabsf(glm::length(norm) - 1.f ) ;
+    bool normalized = delta < epsilon  ; 
+
+    if(!normalized)
+         LOG(fatal) << "nconvexpolyhedron::par_pos_model"
+                    << " norm not normalized " << gpresent(norm) 
+                    << " delta " << std::scientific << delta
+                    << " epsilon " << std::scientific << epsilon
+                    ;
+
+
+    assert(normalized); 
 
     glm::vec3 pos = norm*dist ; 
 
@@ -226,6 +240,12 @@ void nconvexpolyhedron::set_bbox(const nbbox& bb)
     param3.f.x = bb.max.x ;
     param3.f.y = bb.max.y ;
     param3.f.z = bb.max.z ;
+}
+
+
+void nconvexpolyhedron::set_planes( const std::vector<glm::vec4>& planes_ ) 
+{
+    std::copy( planes_.begin() , planes_.end(), std::back_inserter(planes) ) ;
 }
 
 
@@ -271,6 +291,8 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     v[6] = { -x2/2.,  y2/2. ,  z } ;  // 110
     v[7] = {  x2/2.,  y2/2. ,  z } ;  // 111
 
+    nbbox bb = nbbox::from_points( v );
+
     std::vector<glm::vec4> p(6) ; 
 
     p[0] = make_plane( v[3], v[7], v[5] ) ; // +X  
@@ -280,14 +302,16 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     p[4] = make_plane( v[5], v[7], v[6] ) ; // +Z
     p[5] = make_plane( v[3], v[1], v[0] ) ; // -Z
 
-    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr() ;
-    std::copy( p.begin() , p.end() , std::back_inserter(cpol->planes) ) ;
-
-    nbbox bb = nbbox::from_points( v );
-    cpol->set_bbox(bb);
+    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr();
+    cpol->set_planes( p) ; 
+    cpol->set_bbox( bb) ; 
 
     return cpol ; 
 }
+
+
+
+
 
 
 nconvexpolyhedron* nconvexpolyhedron::make_transformed( const glm::mat4& t  ) const 

@@ -28,9 +28,11 @@ struct NPY_API nconvexpolyhedron : nnode
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
+    void set_planes(const std::vector<glm::vec4>& planes_) ;
     void set_bbox(const nbbox& bb) ;
 
     static nconvexpolyhedron* make_trapezoid(float z, float x1, float y1, float x2, float y2 );   
+
     nconvexpolyhedron* make_transformed( const glm::mat4& t ) const ;
 
     void pdump(const char* msg="nconvexpolyhedron::pdump") const ;

@@ -19,7 +19,8 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.analytic.glm import make_trs, to_pyline, to_codeline
+from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist
+from opticks.analytic.prism import make_segment
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
 from opticks.analytic.nnode_test_cpp import NNodeTestCPP
@@ -464,6 +465,17 @@ class CSG(CSG_):
         return planes
 
 
+    @classmethod
+    def MakeSegment(cls, phi0, phi1, sz, sr ):
+        """see tboolean-segment- """
+        planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+        obj = CSG("segment")
+        obj.planes = planes
+        obj.param2[:3] = bbox[0]
+        obj.param3[:3] = bbox[1]
+        return obj
+
+
     def serialize(self, suppress_identity=False):
         """
         Array is sized for a complete tree, empty slots stay all zero
@@ -858,7 +870,6 @@ class CSG(CSG_):
         return "%s.parent = &%s ; %s.parent = &%s ; " % (self.left.alabel, self.alabel, self.right.alabel, self.alabel )
 
 
-
     @classmethod
     def num_param_quads(cls, typ):
         npq = None
@@ -885,7 +896,7 @@ class CSG(CSG_):
         return param 
 
     def content_param1(self, lang="py"):
-        if lang == "cpp" and self.num_param_quads(self.typ) == 1:   
+        if lang == "cpp" and self.num_param_quads(self.typ) < 2:   
             return None 
 
         if self.param1 is not None:
@@ -934,10 +945,23 @@ class CSG(CSG_):
         pass
         if self.typ in [self.BOX3]:
             type_ = "nbox" 
+        elif self.typ in [self.TRAPEZOID,self.SEGMENT,self.CONVEXPOLYHEDRON]:
+            type_ = "nconvexpolyhedron" 
         else:
             type_ = "n%s" % self.desc(self.typ)
         pass
         return type_
+
+    def content_maketype(self, lang="py"):
+        if lang == "py":
+            return self.desc(self.typ)
+        pass
+        if self.typ in [self.TRAPEZOID,self.SEGMENT,self.CONVEXPOLYHEDRON]:
+            maketype_ = "convexpolyhedron" 
+        else:
+            maketype_ = "%s" % self.desc(self.typ)
+        pass
+        return maketype_
 
 
     def content_primitive(self, lang="py"):
@@ -969,7 +993,8 @@ class CSG(CSG_):
             code = "%s = CSG(\"%s\", %s)" % (self.alabel, self.desc(self.typ), content_)
         else:
             type_ = self.content_type(lang)
-            code = "%s %s = make_%s( %s ) ; %s.label = \"%s\" ; %s  " % ( type_, self.alabel, self.desc(self.typ), content_, self.alabel, self.alabel, extras_ )
+            maketype_ = self.content_maketype(lang)
+            code = "%s %s = make_%s(%s) ; %s.label = \"%s\" ; %s  " % ( type_, self.alabel, maketype_, content_, self.alabel, self.alabel, extras_ )
         pass
         return code
 
@@ -988,6 +1013,24 @@ class CSG(CSG_):
         lines.append("")
         return lines
 
+
+    def as_cpp_planes(self, node): 
+        assert len(node.planes) > 0
+        lines = []
+        lines.append("std::vector<glm::vec4> planes ; ")
+        for i in range(len(node.planes)):
+            line = "planes.push_back(glm::vec4(%s));" % to_cpplist(node.planes[i])
+            lines.append(line)
+        pass
+        lines.append("// convexpolyhedron are defined by planes and require manual aabbox definition")
+        lines.append("//  npq : %s " % self.num_param_quads(node.typ) )
+        lines.append("nbbox bb = make_bbox( %s , %s ) ; " % ( to_cpplist(node.param2[:3]), to_cpplist(node.param3[:3])))
+        lines.append("%s.set_planes(planes);" % node.alabel)
+        lines.append("%s.set_bbox(bb);" % node.alabel )
+        lines.append("")
+        return lines
+
+
     def as_code(self, lang="py"):
         lines = []
         def as_code_r(node):
@@ -1004,7 +1047,7 @@ class CSG(CSG_):
             pass
 
             if len(node.planes) > 0:
-                plins = self.as_python_planes(node)
+                plins = self.as_python_planes(node) if lang == "py" else self.as_cpp_planes(node)
                 for plin in plins:
                     lines.append(plin)
                 pass

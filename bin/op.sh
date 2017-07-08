@@ -238,6 +238,7 @@ op-geometry-name()
        --dlv30) echo DLV30 ;; 
        --dlv46) echo DLV46 ;; 
        --dlv55) echo DLV55 ;; 
+       --dlv56) echo DLV56 ;; 
        --dlv65) echo DLV65 ;; 
        --dlv66) echo DLV66 ;; 
        --dlv67) echo DLV67 ;; 
@@ -320,6 +321,7 @@ op-geometry-query-dyb()
        DLV30)  echo "range:3155:3156,range:3167:3168" ;;    #
        DLV46)  echo "range:3155:3156,range:3200:3201" ;;    #
        DLV55)  echo "range:3155:3156,range:4357:4358" ;;    #
+       DLV56)  echo "range:3155:3156,range:4393:4394" ;;    #
        DLV65)  echo "range:3155:3156,range:4440:4441" ;;  
        DLV66)  echo "range:3155:3156,range:4448:4449" ;;  
        DLV67)  echo "range:3155:3156,range:4456:4457" ;; 

@@ -278,7 +278,8 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
 def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
     """
 
-    Prism intended for deltaphi intersecting 
+    Prism intended for deltaphi intersecting with
+    vertices 0 and 3 on the z-axis at -sz/2 and sz/2
 
     :: 
 

@@ -109,6 +109,7 @@ void test_slab_parsurf()
     nslab s = make_slab( 1.000,0.000,0.000,0.000,-500.000,100.000,0.000,0.000 ) ; s.label = "s" ;   
 
 
+    unsigned verbosity = 1 ; 
     unsigned level = 4 ; 
     int margin = 0 ; 
 
@@ -116,7 +117,7 @@ void test_slab_parsurf()
 
     typedef std::vector<glm::vec3> VV ; 
     VV primsurf ;  
-    s.getSurfacePointsAll(primsurf, level, margin, frty );    // using the above branch
+    s.getSurfacePointsAll(primsurf, level, margin, frty, verbosity );    // using the above branch
 
 
     for(unsigned i=0 ; i < primsurf.size() ; i++)

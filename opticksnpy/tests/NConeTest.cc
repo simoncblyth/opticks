@@ -94,7 +94,7 @@ void test_getSurfacePointsAll()
     unsigned level = 5 ;  // +---+---+
     int margin = 1 ;      // o---*---o
     std::vector<glm::vec3> surf ; 
-    cone.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL ); 
+    cone.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL, cone.verbosity); 
 
     LOG(info) << "test_getSurfacePointsAll"
               << " surf " << surf.size()

@@ -19,10 +19,12 @@ template_head = r"""
 
 // regenerate with gdml2gltf.py 
 
+#include <vector>
 #include "SSys.hh"
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NSceneConfig.hpp"
+#include "NBBox.hpp"
 #include "NNode.hpp"
 #include "NPrimitives.hpp"
 #include "PLOG.hh"
@@ -38,8 +40,10 @@ int main(int argc, char** argv)
 template_tail = r"""
 
     %(root)s.update_gtransforms();
-    %(root)s.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
-    %(root)s.dump() ; 
+
+    unsigned verbosity = SSys::getenvint("VERBOSITY", 1) ; 
+    %(root)s.verbosity = verbosity ; 
+    //%(root)s.dump() ; 
 
     const char* boundary = "Rock//perfectAbsorbSurface/Vacuum" ;
 
@@ -48,7 +52,7 @@ template_tail = r"""
     const NSceneConfig* config = new NSceneConfig(gltfconfig);
     NCSG* csg = NCSG::FromNode(&%(root)s, config);
     csg->dump();
-    csg->dump_surface_points("dsp", 20);
+    csg->dump_surface_points("dsp", verbosity > 2 ? 500 : 20 );
 
 
     return 0 ;        

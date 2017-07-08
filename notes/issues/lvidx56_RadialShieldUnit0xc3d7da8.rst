@@ -2,14 +2,22 @@ lvidx 56 RadialShieldUnit0xc3d7da8
 ======================================
 
 
+Viz : following move to CSG_SEGMENT python primitive (phi0,phi1,z,rmax) 
+--------------------------------------------------------------------------
+
+::
+
+   op --dlv56 --gltf 3   
+       looks reasonable : loada panels, each with 6 holes for PMTs : g4poly is kinda whacky 
+
+
+
+Issues with two slab intersects : AVOIDED BY MOVE TO CSG_SEGMENT
+-------------------------------------------------------------------
+
 * adding slab intersects pushes tree height above limit of 7
 * problem is that tree balancing rearranges to put two slabs together which doesnt work : produces empty raytrace
 * a single slab intersect does work however ... because no double unbounded ?
-
-* TODO : implement nsegmentphi primitive (phi0,phi1,z,rmax)  
-
-  * can then segment with a single intersect, adding only one level to the tree and avoiding unbounded-unbounded problems
-    that tree balancing throws up
 
 
 

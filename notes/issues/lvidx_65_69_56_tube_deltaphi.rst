@@ -10,7 +10,6 @@ TODO
   but that causes poor performance
 
 
-
 Intersect with nconvexpolyhedron rather than two slab intersects ?
 ----------------------------------------------------------------------
 
@@ -19,8 +18,6 @@ Advantages:
 * one less level of tree height
 * avoids unbound-unbound tree balancing issue
 * avoids segmenting not working when viewed from the unbound direction  
-
-
 
 
 Trapezoid is similar
@@ -74,6 +71,25 @@ Becoming an nconvexpolyhedron at nnode level::
      733     }
      734 
 
+
+
+
+
+
+Revisit again following move to CSG_SEGMENT
+-----------------------------------------------
+
+* no tree balancing problems 
+* much faster raytrace
+
+::
+
+   opticks-;opticks-tbool 56
+   opticks-;opticks-tbool 65
+   opticks-;opticks-tbool 69
+
+
+* ~/opticks_refs/lvidx_69_ring_box_cuts_artifact_at_pz_and_nz.png
 
 
 
