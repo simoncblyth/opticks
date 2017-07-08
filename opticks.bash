@@ -152,6 +152,19 @@ opticks-tbool(){
    tbool${lvid}
 }
 
+opticks-tbool-(){ 
+   local msg="$FUNCNAME :"
+   local lvid=${1:-0} 
+   local path=$(opticks-tbool-path $lvid)
+   echo $msg sourcing $path 
+   [ ! -f $path ] && echo $msg no such path && return
+   . $path
+   tbool${lvid}-
+}
+
+
+
+
 opticks-tscan-dir(){
    echo  $TMP/tgltf/extras/${1:-0}
 }

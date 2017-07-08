@@ -11,6 +11,103 @@ TODO
 
 
 
+Intersect with nconvexpolyhedron rather than two slab intersects ?
+----------------------------------------------------------------------
+
+Advantages:
+
+* one less level of tree height
+* avoids unbound-unbound tree balancing issue
+* avoids segmenting not working when viewed from the unbound direction  
+
+
+
+
+Trapezoid is similar
+~~~~~~~~~~~~~~~~~~~~~~
+
+* a set of planes and bbox are passed from python
+
+::
+
+     643 class Trapezoid(Primitive):
+     644     """
+     645     The GDML Trapezoid is formed using 5 dimensions:
+     646 
+     647     x1: x length at -z
+     648     x2: x length at +z
+     649     y1: y length at -z
+     650     y2: y length at +z
+     651     z:  z length
+     ...
+     741     def as_ncsg(self):
+     742         assert self.lunit == 'mm'
+     743         cn = CSG("trapezoid", name=self.name)
+     744         planes, verts, bbox = make_trapezoid(z=self.z, x1=self.x1, y1=self.y1, x2=self.x2, y2=self.y2 )
+     745         cn.planes = planes
+     746         cn.param2[:3] = bbox[0]
+     747         cn.param3[:3] = bbox[1]
+     748         return cn
+
+
+Becoming an nconvexpolyhedron at nnode level::
+
+     703 nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
+     704 {
+     705     nquad p0 = getQuad(idx, 0);
+     ...
+     718     switch(typecode)
+     719     {
+     720        case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ;
+     721        case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ;
+     722        case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ;
+     723        case CSG_BOX3:     node = new nbox(make_box3(p0))                ; break ;
+     724        case CSG_SLAB:     node = new nslab(make_slab(p0, p1))           ; break ;
+     725        case CSG_PLANE:    node = new nplane(make_plane(p0))             ; break ;
+     726        case CSG_CYLINDER: node = new ncylinder(make_cylinder(p0, p1))   ; break ;
+     727        case CSG_DISC:     node = new ndisc(make_disc(p0, p1))           ; break ;
+     728        case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ;
+     729        case CSG_TRAPEZOID:
+     730        case CSG_CONVEXPOLYHEDRON:
+     731                           node = new nconvexpolyhedron(make_convexpolyhedron(p0,p1,p2,p3))   ; break ;
+     732        default:           node = NULL ; break ;
+     733     }
+     734 
+
+
+
+
+
+Revisit following tube deltaphi via two slab intersects
+----------------------------------------------------------
+
+lvidx 56 : RadialShieldUnit : segmented ring with 6 cylinder cuts : tambourine  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* two slab intersects push tree height above max 7 : and tree balancing runs into slab-slab issue
+* :doc:`lvidx56_RadialShieldUnit0xc3d7da8` TODO: implement nsegmentphi to regain raytrace
+
+lvidx 65
+~~~~~~~~~
+
+* :doc:`lvidx65`
+
+* unclear cause of bbox diff 
+* suspiciously one subtracted box has no effect
+* needs nsegmentphi to avoid living unbalanced
+
+lvidx 69
+~~~~~~~~~~~
+
+* :doc:`lvidx69`
+
+* forced to use raw to get raytrace to work 
+* ~/opticks_refs/lvidx_69_ring_box_cuts_artifact.png
+
+* coincidence artifact at one box cut corner
+* fixing coincidence involving box is difficult as not z-nudgeable : need CSG_ZBOX ?
+
+
 Are the top 3 biggies all tube deltaphi ?
 --------------------------------------------
 
@@ -54,6 +151,10 @@ NCylinder : how to do phi segment SDF ? think 2 cutting planes
 
 * brought NSlab up to scratch 
 * tested slicing by slab intersects in tboolean-cyslab
+* high "CSG" level approach avoided the need to implement segmenting SDF, however 
+  perhaps an *nsegmentphi* primitive (phi0,phi1,z,rmax) composed of 5 planes 
+  would not be difficult (its just like trapezoid : a special case of nconvexpolyhedron)
+  with advantage of avoiding bloating the CSG tree with multiple slab intersects
 
 ::
 
@@ -210,54 +311,61 @@ Allowing double unbound
 ::
 
     opticks-;opticks-tbool 69   ## nothing visible
-
     opticks-:opticks-tbool 69   ## appears once disable tree balancing, segmenting works but note small artifact
 
-
     op --dlv65 --gltf 3  ## looks ok at a glance... need to revisit the numbers
-
 
 
 
 ::
 
 
+    op --gltf 4
+
     2017-07-07 20:54:11.485 INFO  [3968900] [GScene::importMeshes@316] GScene::importMeshes DONE num_meshes 249
     2017-07-07 20:54:11.485 INFO  [3968900] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 2 parsurf_target 200
-       377.713               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp    204        intersection difference cylinder slab box3   nds[ 16]  4440 4441 4442 4443 4444 4445 4446 4447 6100 6101 ... 
-        345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp    408                  difference box3 convexpolyhedron   nds[ 16]  4448 4449 4450 4451 4452 4453 4454 4455 6108 6109 ... 
        332.587               RadialShieldUnit0xc3d7da8 lvidx  56 nsp    288             intersection difference cylinder slab   nds[ 64]  4393 4394 4395 4396 4397 4398 4399 4400 4401 4402 ... 
-           320                      SstTopHub0xc2643d8 lvidx  68 nsp    317                                    union cylinder   nds[  2]  4464 6124 . 
-       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    243                          difference cylinder cone   nds[  2]  4515 6175 . 
-       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp    342                    union difference cylinder cone   nds[  2]  4511 6171 . 
-            20               headon-pmt-mount0xc2a7670 lvidx  55 nsp    365                         union difference cylinder   nds[ 12]  4357 4364 4371 4378 4385 4392 6017 6024 6031 6038 ... 
-            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 nsp    450                                        union box3   nds[  8]  2436 2437 2615 2616 2794 2795 2973 2974 . 
-        10.035               led-source-shell0xc3068f0 lvidx 100 nsp    567                            union zsphere cylinder   nds[  6]  4541 4629 4711 6201 6289 6371 . 
-        10.035                   weight-shell0xc307920 lvidx 103 nsp    567                            union zsphere cylinder   nds[ 36]  4543 4547 4558 4562 4591 4595 4631 4635 4646 4650 ... 
-        10.035        AmCCo60AcrylicContainer0xc0b23b8 lvidx 131 nsp    219                             union sphere cylinder   nds[  6]  4567 4655 4737 6227 6315 6397 . 
-        10.035                   source-shell0xc2d62d0 lvidx 111 nsp    567                            union zsphere cylinder   nds[  6]  4552 4640 4722 6212 6300 6382 . 
+       377.713               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp    204        intersection difference cylinder slab box3   nds[ 16]  4440 4441 4442 4443 4444 4445 4446 4447 6100 6101 ... 
        10.0198               SstTopCirRibBase0xc264f78 lvidx  69 nsp    242        intersection difference cylinder slab box3   nds[ 16]  4465 4466 4467 4468 4469 4470 4471 4472 6125 6126 ... 
-       8.09241                    OcrGdsInLso0xbfa2190 lvidx  31 nsp    287             intersection difference cylinder cone   nds[  2]  3168 4828 . 
-       7.54053                   pmt-hemi-vac0xc21e248 lvidx  46 nsp    665                union intersection sphere cylinder   nds[672]  3200 3206 3212 3218 3224 3230 3236 3242 3248 3254 ... 
-       5.01849                    source-assy0xc2d5d78 lvidx 112 nsp    480                            union zsphere cylinder   nds[  6]  4551 4639 4721 6211 6299 6381 . 
-       5.01749                led-source-assy0xc3061d0 lvidx 105 nsp    480                            union zsphere cylinder   nds[  6]  4540 4628 4710 6200 6288 6370 . 
-       5.01749            amcco60-source-assy0xc0b1df8 lvidx 132 nsp    480                            union zsphere cylinder   nds[  6]  4566 4654 4736 6226 6314 6396 . 
-             5                      LsoOflTnk0xc17d928 lvidx 140 nsp    315                       union intersection cylinder   nds[  2]  4606 6266 . 
-       4.87451                 OcrGdsTfbInLso0xbfa2370 lvidx  30 nsp    464             intersection difference cylinder cone   nds[  2]  3167 4827 . 
-         3.882                   OcrCalLsoPrt0xc1076b0 lvidx  85 nsp    351                    union difference cylinder cone   nds[  2]  4517 6177 . 
-         1.782                 OcrGdsTfbInOav0xbf8f6c0 lvidx  39 nsp    255             intersection difference cylinder cone   nds[  2]  3196 4856 . 
-       1.41823                 OcrCalLsoInOav0xc541388 lvidx  41 nsp    375             intersection difference cylinder cone   nds[  2]  3198 4858 . 
-       1.17236                 OcrGdsLsoInOav0xc354118 lvidx  40 nsp    510             intersection difference cylinder cone   nds[  2]  3195 4855 . 
-       1.01001                SstTopTshapeRib0xc272c80 lvidx  67 nsp    421                          difference cylinder box3   nds[ 16]  4456 4457 4458 4459 4460 4461 4462 4463 6116 6117 ... 
-      0.961575                    OcrGdsInOav0xc355130 lvidx  38 nsp    310             intersection difference cylinder cone   nds[  2]  3197 4857 . 
-      0.799805                      near_rock0xc04ba08 lvidx 247 nsp    382                                   difference box3   nds[  1]  1 . 
-      0.685471                    OcrGdsInIav0xc405b10 lvidx  23 nsp    294             intersection difference cylinder cone   nds[  2]  3160 4820 . 
-           0.5            near_hall_top_dwarf0xc0316c8 lvidx  21 nsp    300                                        union box3   nds[  1]  2 . 
-      0.358002                near_span_hbeam0xc2a27d8 lvidx   9 nsp    450                                        union box3   nds[ 18]  2359 2360 2432 2433 2434 2435 2611 2612 2613 2614 ... 
-      0.247902                       pmt-hemi0xc0fed90 lvidx  47 nsp    674                union intersection sphere cylinder   nds[672]  3199 3205 3211 3217 3223 3229 3235 3241 3247 3253 ... 
-        0.1313                   pmt-hemi-bot0xc22a958 lvidx  44 nsp    381                                difference zsphere   nds[672]  3202 3208 3214 3220 3226 3232 3238 3244 3250 3256 ... 
-      0.119995                            oav0xc2ed7c8 lvidx  42 nsp    294                               union cylinder cone   nds[  2]  3156 4816 . 
-    2017-07-07 20:54:11.545 INFO  [3968900] [GScene::compareMeshes_GMeshBB@526] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF num_discrepant 33 frac 0.13253
-    Assertion failed: (0 && "GScene::init early exit for gltf==4 or gltf==44"), function init, file /Users/blyth/opticks/ggeo/GScene.cc, line 156.
+
+::
+
+    op --gltf 44
+
+    2017-07-08 09:05:25.809 INFO  [3977702] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 2 parsurf_target 200
+       332.587               RadialShieldUnit0xc3d7da8 lvidx  56 nsp    288 amn (   1878.414     0.000  -498.500) bmn (   1607.600     0.000  -498.500) dmn (    270.814     0.000     0.000) amx (   2262.150  1256.783   498.500) bmx (   2262.150  1589.370   498.500) dmx (      0.000  -332.587     0.000)
+       377.713               SstBotCirRibBase0xc26e2d0 lvidx  65 nsp    204 amn (   1400.071   390.181  -215.000) bmn (   1407.720    12.467  -215.000) dmn (     -7.649   377.713     0.000) amx (   1961.571  1414.214   215.000) bmx (   1998.360  1404.240   215.000) dmx (    -36.789     9.974     0.000)
+       10.0198               SstTopCirRibBase0xc264f78 lvidx  69 nsp    242 amn (    848.528     0.000  -115.945) bmn (    854.653    10.020  -115.945) dmn (     -6.125   -10.020     0.000) amx (   1220.000   862.670   115.945) bmx (   1218.680   854.688   115.945) dmx (      1.320     7.982     0.000)
+
+
+
+
+disabling balancing is not a solution
+----------------------------------------
+
+::
+
+    delta:issues blyth$ gdml2gltf.py   
+    args: /Users/blyth/opticks/bin/gdml2gltf.py
+    [2017-07-08 10:36:34,417] p7179 {/Users/blyth/opticks/analytic/gdml.py:1046} INFO - parsing gdmlpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml 
+    [2017-07-08 10:36:34,460] p7179 {/Users/blyth/opticks/analytic/gdml.py:1060} INFO - wrapping gdml element  
+    [2017-07-08 10:36:35,393] p7179 {/Users/blyth/opticks/analytic/treebase.py:504} INFO - apply_selection OpticksQuery  range [] index 0 depth 0   Node.selected_count 12230 
+    [2017-07-08 10:36:35,393] p7179 {/Users/blyth/opticks/analytic/sc.py:357} INFO - add_tree_gdml START maxdepth:0 maxcsgheight:3 nodesCount:    0
+    [2017-07-08 10:36:35,394] p7179 {/Users/blyth/opticks/analytic/treebase.py:34} WARNING - returning DummyTopPV placeholder transform
+    [2017-07-08 10:36:36,325] p7179 {/Users/blyth/opticks/analytic/gdml.py:460} INFO - as_cylinder doing slab segmenting : name BlackCylinder0xc1762e8 phi0 0.0 phi1 44.6352759021 dist 2263.15 
+    [2017-07-08 10:36:36,327] p7179 {/Users/blyth/opticks/analytic/sc.py:315} WARNING - tree is_overheight but marked balance_disabled leaving raw : RadialShieldUnit0xc3d7da8 
+    [2017-07-08 10:36:36,352] p7179 {/Users/blyth/opticks/analytic/gdml.py:460} INFO - as_cylinder doing slab segmenting : name SstBotCirRibPri0xc26d4e0 phi0 0.0 phi1 45.0 dist 2001.0 
+    [2017-07-08 10:36:36,353] p7179 {/Users/blyth/opticks/analytic/sc.py:315} WARNING - tree is_overheight but marked balance_disabled leaving raw : SstBotCirRibBase0xc26e2d0 
+    [2017-07-08 10:36:36,363] p7179 {/Users/blyth/opticks/analytic/gdml.py:460} INFO - as_cylinder doing slab segmenting : name SstTopCirRibPri0xc2648b8 phi0 0.0 phi1 45.0 dist 1221.0 
+    [2017-07-08 10:36:36,365] p7179 {/Users/blyth/opticks/analytic/sc.py:315} WARNING - tree is_overheight but marked balance_disabled leaving raw : SstTopCirRibBase0xc264f78 
+    [2017-07-08 10:36:38,692] p7179 {/Users/blyth/opticks/analytic/sc.py:360} INFO - add_tree_gdml DONE maxdepth:0 maxcsgheight:3 nodesCount:12230 tlvCount:249  tgNd:                           top Nd ndIdx:  0 soIdx:0 nch:1 par:-1 matrix:[1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0]   
+    [2017-07-08 10:36:38,692] p7179 {/Users/blyth/opticks/analytic/sc.py:393} INFO - saving to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf 
+    [2017-07-08 10:36:39,155] p7179 {/Users/blyth/opticks/analytic/sc.py:382} INFO - save_extras /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras  : saved 249 
+    [2017-07-08 10:36:39,155] p7179 {/Users/blyth/opticks/analytic/sc.py:386} INFO - write 249 lines to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt 
+    [2017-07-08 10:36:39,989] p7179 {/Users/blyth/opticks/analytic/sc.py:402} INFO - also saving to /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.pretty.gltf 
+    delta:issues blyth$ 
+
+
+
 
 

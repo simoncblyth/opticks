@@ -436,6 +436,16 @@ EOP
 
 
 
+
+
+
+
+
+
+
+
+
+
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
@@ -1380,6 +1390,81 @@ object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testo
 CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
 EOP
 }
+
+
+
+
+
+tboolean-segment(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-segment-(){  $FUNCNAME- | python $* ; }
+tboolean-segment--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.prism import make_segment
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+
+phi0,phi1,sz,sr = 0,45,200,300 
+
+planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+
+obj = CSG("segment")
+obj.planes = planes
+obj.param2[:3] = bbox[0]
+obj.param3[:3] = bbox[1]
+
+obj.dump()
+
+CSG.Serialize([container, obj], args.csgpath )
+EOP
+}
+
+
+tboolean-cysegment(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cysegment-(){  $FUNCNAME- | python $* ; }
+tboolean-cysegment--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.prism import make_segment
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+
+phi0,phi1,sz,sr = 0,45,202,500*1.5
+
+# sr needs to be significantly more than the rmax are cutting 
+# to make a clean segment : otherwise the outside plane
+# cuts into the tube ... 
+# how much depends on the deltaphi 
+ 
+planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+seg = CSG("segment")
+seg.planes = planes
+seg.param2[:3] = bbox[0]
+seg.param3[:3] = bbox[1]
+  
+ca = CSG("cylinder", param=[0,0,0,500], param1=[-100,100,0,0] )
+cb = CSG("cylinder", param=[0,0,0,400], param1=[-101,101,0,0] )
+cy = ca - cb 
+
+obj = cy*seg
+
+obj.dump()
+
+CSG.Serialize([container, obj], args.csgpath )
+EOP
+}
+
+
 
 
 tboolean-cyslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 

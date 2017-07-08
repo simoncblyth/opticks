@@ -28,7 +28,10 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
     {
         const glm::vec4& plane = planes[i]; 
         glm::vec3 pnorm(plane.x, plane.y, plane.z );
-        assert( plane.w > 0.f );// <-- TODO: assert elsewhere in lifecycle
+
+        assert( plane.w >= 0.f );// <-- TODO: assert elsewhere in lifecycle
+        // for CSG_SEGMENT two planes include the origin, so allow zero
+
         float pdist = plane.w ; 
 
         float d0 = glm::dot(pnorm, glm::vec3(q)) ;   // distance from q to the normal plane thru origin

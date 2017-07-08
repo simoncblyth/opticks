@@ -68,6 +68,8 @@ import numpy as np
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+from opticks.analytic.sc import Sc
+
 args = opticks_main(csgpath="$TMP/tbool/%(name)s")
 
 CSG.boundary = args.testobject
@@ -76,10 +78,21 @@ CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
 """
 
 template_tail = r"""
-obj = %(root)s
+raw = %(root)s
+
+raw.dump("raw")
+
+maxcsgheight = 4
+maxcsgheight2 = 5
+obj = Sc.optimize_csg(raw, maxcsgheight, maxcsgheight2 ) 
+
+obj.dump("optimized")
+
+#uobjs = [raw]
+uobjs = [obj]
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
-CSG.Serialize([con, obj], args.csgpath )
+CSG.Serialize([con,uobjs], args.csgpath )
 
 EOP
 }

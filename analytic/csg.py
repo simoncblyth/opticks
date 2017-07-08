@@ -391,6 +391,9 @@ class CSG(CSG_):
         pass
         self.txt = txt
 
+
+
+
     is_root = property(lambda self:hasattr(self,'height') and hasattr(self,'totnodes'))
 
 
@@ -815,13 +818,16 @@ class CSG(CSG_):
         return n 
 
     def dump(self, msg="CSG.dump", detailed=False):
+        self.analyse()
         log.info(msg + " name:%s" % self.name)
         sys.stderr.write("%s" % repr(self) + "\n")
         if detailed:
             self.Dump(self)
         pass
-        self.analyse()
         sys.stderr.write("\n%s\n" % self.txt)
+
+
+
 
 
     @classmethod 
@@ -856,7 +862,7 @@ class CSG(CSG_):
     @classmethod
     def num_param_quads(cls, typ):
         npq = None
-        if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID]:
+        if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT]:
             npq = 0
         elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE]:
             npq = 1

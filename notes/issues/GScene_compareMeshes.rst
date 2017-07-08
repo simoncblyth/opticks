@@ -104,8 +104,8 @@ bbox differences : review the top of the chart
      4    345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp    408                  difference box3 convexpolyhedron   nds[ 16]  4448 4449 4450 4451 4452 4453 4454 4455 6108 6109 ... 
 
 
-
      5       320                      SstTopHub0xc2643d8 lvidx  68 nsp    317                                    union cylinder   nds[  2]  4464 6124 . 
+
      6   28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    243                          difference cylinder cone   nds[  2]  4515 6175 . 
      7   26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp    342                    union difference cylinder cone   nds[  2]  4511 6171 . 
      8        20               headon-pmt-mount0xc2a7670 lvidx  55 nsp    365                         union difference cylinder   nds[ 12]  4357 4364 4371 4378 4385 4392 6017 6024 6031 6038 ... 

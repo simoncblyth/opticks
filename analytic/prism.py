@@ -273,6 +273,79 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
 
 
 
+
+
+def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
+    """
+
+    Prism intended for deltaphi intersecting 
+
+    :: 
+
+               5 
+              / \
+             /   \
+         sr /     \ 
+           /       \
+          /         \
+         3-----------4       top plane at z = sz/2
+              sr
+
+ 
+               2 
+              / \
+             /   \
+         sr /     \ 
+           /       \
+          /         \
+         0-----------1        base plane at z = -sz/2
+              sr   (x1,y1)
+
+
+                                                     
+                                       Z    
+                                       |  Y
+                                       | /
+                                       |/
+                                       +------ X
+ 
+    """
+
+    xy_ = lambda phi:np.array([np.cos(phi*np.pi/180.), np.sin(phi*np.pi/180.)], dtype=dtype)
+
+    v = np.zeros( (6,3), dtype=dtype)   # verts
+
+    x0,y0 = 0.,0. 
+    x1,y1 = sr*xy_(phi0)
+    x2,y2 = sr*xy_(phi1)
+                                   
+    v[0] = [    x0,     y0 , -sz/2. ]  
+    v[1] = [    x1,     y1 , -sz/2. ]  
+    v[2] = [    x2,     y2 , -sz/2. ]  
+
+    v[3] = [    x0,     y0 ,  sz/2. ]  
+    v[4] = [    x1,     y1 ,  sz/2. ]  
+    v[5] = [    x2,     y2 ,  sz/2. ]  
+
+    p = np.zeros( (5,4), dtype=dtype)   # planes
+    p[0] = make_plane3( v[0], v[2], v[1] ) # -Z 
+    p[1] = make_plane3( v[3], v[4], v[5] ) # +Z
+    p[2] = make_plane3( v[0], v[1], v[3] ) # 
+    p[3] = make_plane3( v[0], v[3], v[5] ) # 
+    p[4] = make_plane3( v[2], v[5], v[4] ) # 
+
+    b = np.zeros( (2,3), dtype=dtype )  # bbox
+    for i in range(3):
+        b[0,i] = np.min(v[:,i])
+        b[1,i] = np.max(v[:,i])
+    pass
+    return p, v, b
+
+
+
+
+
+
 def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     """
     z-order verts
@@ -419,7 +492,8 @@ def make_icosahedron(scale=500., dtype=np.float32):
 if __name__ == '__main__':
     #p, v, b = make_prism( 45, 400,  400 )
     #p, v, b = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    p, v, b = make_icosahedron()
+    #p, v, b = make_icosahedron()
+    p, v, b = make_segment(0,45,100,200)
     pass
 
 

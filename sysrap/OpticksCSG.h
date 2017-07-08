@@ -24,7 +24,8 @@ typedef enum {
  CSG_TRAPEZOID=18,
  CSG_CONVEXPOLYHEDRON=19,
      CSG_DISC=20,
- CSG_UNDEFINED=21,
+   CSG_SEGMENT=21,
+ CSG_UNDEFINED=22,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101,
@@ -71,6 +72,7 @@ static const char* CSG_MULTICONE_     = "multicone" ;
 static const char* CSG_BOX3_          = "box3" ; 
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
+static const char* CSG_SEGMENT_       = "segment" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
@@ -97,6 +99,7 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
     else if(strcmp(nodename, CSG_MULTICONE_) == 0)      tc = CSG_MULTICONE ;
     else if(strcmp(nodename, CSG_TRAPEZOID_) == 0)      tc = CSG_TRAPEZOID ;
+    else if(strcmp(nodename, CSG_SEGMENT_) == 0)        tc = CSG_SEGMENT ;
     else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
     else if(strcmp(nodename, CSG_UNION_) == 0)          tc = CSG_UNION ;
@@ -134,6 +137,7 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_CONE:          s = CSG_CONE_          ; break ; 
         case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
         case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
+        case CSG_SEGMENT:       s = CSG_SEGMENT_     ; break ; 
         case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 
@@ -165,7 +169,7 @@ static bool CSGIsPrimitive(OpticksCSG_t type)
 
 static bool CSGHasPlanes(OpticksCSG_t type)
 {
-    return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON ) ; 
+    return (type == CSG_TRAPEZOID || type == CSG_CONVEXPOLYHEDRON || type == CSG_SEGMENT ) ; 
 }
 
 
