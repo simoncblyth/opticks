@@ -193,6 +193,8 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
 
     int umin = 0 ; int umax = nu ; 
     int vmin = 0 ; int vmax = nv ; 
+    unsigned p = 0 ; // prim_idx
+
 
     for (int s=0 ; s < ns ; s++ )
     {
@@ -200,7 +202,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
         {
             for (int u = umin; u <= umax ; u++) 
             {
-                nuv uv = make_uv(s,u,v,nu,nv);
+                nuv uv = make_uv(s,u,v,nu,nv,p);
 
                 glm::vec3 pos = node->par_pos_global(uv);
 

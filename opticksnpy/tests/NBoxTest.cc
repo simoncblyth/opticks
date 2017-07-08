@@ -109,6 +109,7 @@ void test_parametric()
 
     unsigned nu = 1 ; 
     unsigned nv = 1 ; 
+    unsigned p = 0 ; 
 
     for(unsigned s=0 ; s < nsurf ; s++)
     {
@@ -117,7 +118,7 @@ void test_parametric()
         for(unsigned u=0 ; u <= nu ; u++){
         for(unsigned v=0 ; v <= nv ; v++)
         {
-            nuv uv = make_uv(s,u,v,nu,nv );
+            nuv uv = make_uv(s,u,v,nu,nv, p );
 
             glm::vec3 p = box.par_pos_global(uv);
 
@@ -179,9 +180,11 @@ void test_nudge()
     box.pdump("make_box3(2*h,2*h,2*h)");
 
 
-   
-    std::vector<glm::vec3> before ; 
-    box.getSurfacePointsAll( before, level, margin, FRAME_LOCAL, box.verbosity); 
+    unsigned prim_idx = 0 ;   
+ 
+    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity); 
+
+    const std::vector<glm::vec3>& before = box.par_points ;
 
     assert(before.size() == 6 ); 
 
@@ -203,8 +206,8 @@ void test_nudge()
     box.nudge(nudge_face, delta);
     box.pdump("make_box3(2*h,2*h,2*h) NUDGED");
 
-    std::vector<glm::vec3> after ; 
-    box.getSurfacePointsAll( after, level, margin, FRAME_LOCAL, box.verbosity ); 
+    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity ); 
+    const std::vector<glm::vec3>& after = box.par_points ;
 
     assert(after.size() == 6 ); 
 
@@ -220,7 +223,7 @@ void test_nudge()
 }
 
 
-void test_getSurfacePointsAll()
+void test_getParPoints()
 {
     float h = 10.f ;  
     nbox box = make_box3(2*h,2*h,2*h); 
@@ -229,11 +232,12 @@ void test_getSurfacePointsAll()
 
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o
+    unsigned prim_idx = 0 ;   
 
-    std::vector<glm::vec3> surf ; 
-    box.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL, box.verbosity ); 
+    box.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, box.verbosity ); 
+    const std::vector<glm::vec3>& surf = box.par_points ; 
 
-    LOG(info) << "test_getSurfacePointsAll"
+    LOG(info) << "test_getParPoints"
               << " surf " << surf.size()
               ;
 
@@ -260,7 +264,7 @@ int main(int argc, char** argv)
     //test_box_box3();
     //test_nudge();
 
-    test_getSurfacePointsAll();
+    test_getParPoints();
 
     return 0 ; 
 }

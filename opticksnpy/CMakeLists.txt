@@ -145,6 +145,7 @@ set(SOURCES
     NNode.cpp
     NNodeEnum.cpp
     NNodeDump.cpp
+    NNodePoints.cpp
     NNodeUncoincide.cpp
 
     NBox.cpp

@@ -7,8 +7,6 @@
 #include <iomanip>
 
 
-
-
 float nuv::fu2pi(bool seamed) const 
 {
     unsigned u_  = u();
@@ -32,12 +30,6 @@ float nuv::fvpi() const
     float polar   = fv() * pi ;
     return polar ; 
 }
-
-
-
-
-
-
 
 
 bool nuv::is_interior(unsigned margin) const 
@@ -80,7 +72,10 @@ std::string nuv::desc() const
 {
     std::stringstream ss ; 
 
-    ss << "(" 
+    ss 
+       << "(" 
+       << std::setw(2) << p()
+       << "/"
        << std::setw(1) << s()
        << ";"
        << std::setw(2) << u() 
@@ -98,6 +93,7 @@ std::string nuv::detail() const
     std::stringstream ss ; 
 
     ss << "nuv "
+       << " p " << std::setw(2) << p()
        << " s " << std::setw(1) << s()
        << " u " << std::setw(3) << u() << "/" << std::setw(3) << nu() 
        << " v " << std::setw(3) << v() << "/" << std::setw(3) << nv() 

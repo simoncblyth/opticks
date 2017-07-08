@@ -105,17 +105,18 @@ void test_bbox(const nconvexpolyhedron* cpol)
 }
 
 
-void test_getSurfacePointsAll(const nconvexpolyhedron* cpol)
+void test_getSurfacePointsAll(nconvexpolyhedron* cpol)
 {
     cpol->dump_planes(); 
 
-    std::vector<glm::vec3> surf ; 
 
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o
     unsigned verbosity = 1 ; 
+    unsigned prim_idx = 0 ; 
 
-    cpol->getSurfacePointsAll(surf, level, margin, FRAME_LOCAL, verbosity);
+    cpol->collectParPoints(prim_idx, level, margin, FRAME_LOCAL, verbosity);
+    const std::vector<glm::vec3>& surf = cpol->par_points ; 
 
     LOG(info) << "test_parametric"
               << " surf points " << surf.size()

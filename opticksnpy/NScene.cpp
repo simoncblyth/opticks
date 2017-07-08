@@ -702,8 +702,8 @@ glm::uvec4 NScene::check_surf_points( const nd* n ) const // Classifiying the su
 
     int nlvid = lvidx(n->mesh);
 
-    const nnode* nroot = ncsg->getRoot();
-    const nnode* proot = pcsg->getRoot();
+    nnode* nroot = ncsg->getRoot();
+    nnode* proot = pcsg->getRoot();
 
     const nmat4triple* id = nmat4triple::make_identity() ;
     N pp(proot, id);           
@@ -785,8 +785,8 @@ void NScene::debug_node(const nd* n) const
     NCSG* pcsg = getCSG(p->mesh);
 
 
-    const nnode* nroot = ncsg->getRoot();
-    const nnode* proot = pcsg->getRoot();
+    nnode* nroot = ncsg->getRoot();
+    nnode* proot = pcsg->getRoot();
 
     const nmat4triple* id = nmat4triple::make_identity() ;
     N pp(proot, id);           

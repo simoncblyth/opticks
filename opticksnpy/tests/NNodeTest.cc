@@ -3,6 +3,7 @@
 #include "GLMFormat.hpp"
 
 #include "NNode.hpp"
+#include "NNodePoints.hpp"
 #include "NSphere.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
@@ -188,7 +189,7 @@ void test_getSurfacePoints()
      int ndiv = (1 << level) + 1 - 2*margin ;
      unsigned expect = ndiv*ndiv  ;  
      unsigned verbosity = 1 ; 
-
+     unsigned prim_idx = 0 ; 
 
      LOG(info) << "test_getSurfacePoints" 
                << " level " << level 
@@ -199,22 +200,17 @@ void test_getSurfacePoints()
                << " expect " << expect 
                 ; 
 
-     for(unsigned s = 0 ; s < ns ; s++)
-     {    
-         std::vector<glm::vec3> pts ; 
+     bx.collectParPoints(prim_idx, level, margin, FRAME_LOCAL, verbosity) ;
+     const std::vector<glm::vec3>& pts = bx.par_points ; 
 
-         bx.getSurfacePoints(pts, s, level, margin, FRAME_LOCAL, verbosity) ;
+     assert( pts.size() == expect*ns );
 
-         assert( pts.size() == expect );
-
-         for(unsigned i=0 ; i < pts.size() ; i++ ) 
-              std::cout 
-                  << " s " << s
-                  << " pts " << pts.size() 
-                  << " i " << i
-                  << " " 
-                  << glm::to_string(pts[i]) << std::endl ; 
-     }
+     for(unsigned i=0 ; i < pts.size() ; i++ ) 
+          std::cout 
+              << " pts " << pts.size() 
+              << " i " << i
+              << " " 
+              << glm::to_string(pts[i]) << std::endl ; 
 }
 
 
@@ -304,15 +300,11 @@ void test_getSurfacePointsAll_Composite()
     glm::vec4 aa(0,0,0,10);
     glm::vec4 bb(0,0,0,10);
 
-    unsigned level = 1 ; 
-    unsigned margin = 1 ; 
-    float epsilon = 1e-5f ; 
-    unsigned pointmask = POINT_SURFACE ; 
 
 
-    glm::vec3 scale(1000,1000,1000);
-    glm::mat4 sc = nglmext::make_scale( scale ); 
-    const glm::mat4* ndtr = &sc ;  // <-- mock structural transform 
+    //glm::vec3 scale(1000,1000,1000);
+    //glm::mat4 sc = nglmext::make_scale( scale ); 
+    //const glm::mat4* ndtr = &sc ;  // <-- mock structural transform 
 
 
     {
@@ -327,9 +319,10 @@ void test_getSurfacePointsAll_Composite()
         ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
         ab.dump();
-        std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
-        ab.dumpPointsSDF(surf, epsilon);
+
+        NNodePoints pts(&ab, NULL );
+        glm::uvec4 tot = pts.collect_surface_points();
+        pts.dump();
         std::cout << "difference:(inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     }
     {
@@ -344,9 +337,10 @@ void test_getSurfacePointsAll_Composite()
         ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
         ab.dump();
-        std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
-        ab.dumpPointsSDF(surf, epsilon);
+
+        NNodePoints pts(&ab, NULL );
+        glm::uvec4 tot = pts.collect_surface_points();
+        pts.dump();
         std::cout << "union: (inside/surface/outside/select)   " << glm::to_string(tot) << std::endl ; 
     }
     {
@@ -361,9 +355,10 @@ void test_getSurfacePointsAll_Composite()
         ab.update_gtransforms();  // recurse over tree using parent links to set gtransforms
 
         ab.dump();
-        std::vector<glm::vec3> surf ; 
-        glm::uvec4 tot = ab.getCompositePoints( surf, level, margin, pointmask, epsilon, ndtr ) ;
-        ab.dumpPointsSDF(surf, epsilon);
+
+        NNodePoints pts(&ab, NULL );
+        glm::uvec4 tot = pts.collect_surface_points();
+        pts.dump();
         std::cout << "intersection:  (inside/surface/outside/select)  " << glm::to_string(tot) << std::endl ; 
     } 
 }

@@ -23,6 +23,7 @@
 #include "NSceneConfig.hpp"
 #include "NScan.hpp"
 #include "NNode.hpp"
+#include "NNodePoints.hpp"
 #include "NBBox.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -45,6 +46,7 @@ NCSG::NCSG(const char* treedir)
    m_verbosity(0),
    m_usedglobally(false),
    m_root(NULL),
+   m_points(NULL),
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
@@ -72,6 +74,7 @@ NCSG::NCSG(nnode* root )
    m_verbosity(root->verbosity),
    m_usedglobally(false),
    m_root(root),
+   m_points(NULL),
    m_treedir(NULL),
    m_nodes(NULL),
    m_transforms(NULL),
@@ -922,6 +925,16 @@ void NCSG::dump(const char* msg)
     m_meta->dump(); 
 }
 
+void NCSG::dump_surface_points(const char* msg, unsigned dmax) const 
+{
+    if(!m_points) return ;
+    m_points->dump(msg, dmax );
+}
+
+
+
+
+
 std::string NCSG::brief() const 
 {
     std::stringstream ss ; 
@@ -1113,6 +1126,7 @@ NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
     assert( root->boundary && "must root->set_boundary(spec) first" );
 
     NCSG* tree = new NCSG(root);
+
     tree->setConfig(config);
     tree->export_();
     assert( tree->getGTransformBuffer() );
@@ -1179,103 +1193,15 @@ int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosi
 }
 
 
-
 glm::uvec4 NCSG::collect_surface_points() 
 {
-    if(m_verbosity > 2 )
-    LOG(info) << "NCSG::collect_surface_points"
-              << " verbosity " << m_verbosity 
-              ;
-
-    if(m_config && m_verbosity > 2) m_config->dump("NCSG::collect_surface_points");
-
-    return collect_surface_points( m_surface_points, m_root, m_config, m_verbosity, m_surface_epsilon );
-}
-
-glm::uvec4 NCSG::collect_surface_points(std::vector<glm::vec3>& surface_points, const nnode* root, const NSceneConfig* config,  unsigned verbosity, float epsilon ) // static
-{
-   /*
-
-               level                       divisions   (+1 for uv points)
-                 1    +-----+------+   0x1 << 1  =     2     
-                 2    +--+--+--+---+   0x1 << 2  =     4 
-                 3                     0x1 << 3  =     8 
-                 4                     0x1 << 4  =    16
-                 5                     0x1 << 5  =    32 
-                 6                     0x1 << 6  =    64 
-                 7                     0x1 << 7  =   128
-                 8                     0x1 << 8  =   256
-                 9                     0x1 << 9  =   512
-                10                     0x1 << 10 =  1024
-
-     * Divisions are then effectively squared to give uv samplings
-     * margin > 0 , skips both ends 
-
-     The below uses adaptive uv-levels, upping level from the configured
-     initial level up to 8 times or until the target number of points is exceeded.
-   */
-  
-    unsigned level = config ? config->parsurf_level : 2 ; 
-    unsigned margin = config ? config->parsurf_margin : 0 ; 
-    unsigned target = config ? config->parsurf_target : 200 ; 
-    unsigned pointmask = POINT_SURFACE ; 
-
-    unsigned num_surface_points = 0 ; 
-    int countdown = 8 ; 
-
-    glm::uvec4 tots ; 
-
-    while( num_surface_points < target && countdown-- )
-    {
-        surface_points.clear();
-        tots = root->getCompositePoints( surface_points, level, margin , pointmask, epsilon, NULL );
-
-        if(verbosity > 2)
-        std::cout 
-                  << " verbosity " << verbosity 
-                  << " countdown " << countdown  
-                  << " level " << level   
-                  << " target " << target
-                  << " num_surface_points " << num_surface_points
-                  << " tots (inside/surface/outside/selected) " << gpresent(tots)  
-                  << std::endl ; 
- 
-        level++ ; 
-        num_surface_points = surface_points.size() ;
-    }
-
-    return tots ; 
+    if(!m_points) m_points = new NNodePoints(m_root, m_config, m_verbosity);
+    return m_points->collect_surface_points();
 }
 
 
-void NCSG::dump_surface_points(const char* msg, unsigned dmax) const 
-{
-    unsigned num_sp = getNumSurfacePoints() ;
-    LOG(info) << msg 
-              << " num_sp " << num_sp 
-              << " dmax " << dmax
-              ;
 
 
-    nbbox bbsp = bbox_surface_points();
-    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
-
-
-    glm::vec3 lsp ; 
-    for(unsigned i=0 ; i < std::min<unsigned>(num_sp,dmax) ; i++)
-    {
-        glm::vec3 sp = m_surface_points[i]; 
-        if(sp != lsp)
-        std::cout 
-            << " i " << std::setw(4) << i 
-            << " sp " << gpresent( sp ) 
-            << std::endl 
-            ;
-
-        lsp = sp ; 
-    }
-
-}
 
 nbbox NCSG::bbox_analytic() const 
 {
@@ -1292,6 +1218,8 @@ nbbox NCSG::bbox_surface_points() const
     //assert(num_sp > 0 );
     return nbbox::from_points(getSurfacePoints(), m_verbosity);    
 }
+
+
 
 
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 

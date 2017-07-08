@@ -112,18 +112,17 @@ void test_slab_parsurf()
     unsigned verbosity = 1 ; 
     unsigned level = 4 ; 
     int margin = 0 ; 
+    unsigned prim_idx = 0 ;
 
     NNodeFrameType frty = FRAME_MODEL ; 
 
-    typedef std::vector<glm::vec3> VV ; 
-    VV primsurf ;  
-    s.getSurfacePointsAll(primsurf, level, margin, frty, verbosity );    // using the above branch
+    s.collectParPoints(prim_idx, level, margin, frty, verbosity );    // using the above branch
 
 
-    for(unsigned i=0 ; i < primsurf.size() ; i++)
+    for(unsigned i=0 ; i < s.par_points.size() ; i++)
     { 
         std::cout << std::setw(5) << i 
-                  << " ps " << gpresent(primsurf[i])
+                  << " ps " << gpresent(s.par_points[i])
                   << std::endl ; 
     }
     

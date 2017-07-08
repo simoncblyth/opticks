@@ -3,18 +3,21 @@
 #include <string>
 #include <vector>
 #include <functional>
-#include <glm/fwd.hpp>
 
 #include "OpticksCSG.h"
 #include "NQuad.hpp"
+#include "Nuv.hpp"
 #include "NPY_API_EXPORT.hh"
+
+#include <glm/fwd.hpp>
 
 struct nbbox ; 
 struct npart ; 
-struct nuv ; 
 struct NSceneConfig ; 
 
 class NNodeDump ; 
+class NNodePoints ; 
+//struct nuv ; 
 
 // NGLMExt
 struct nmat4pair ; 
@@ -55,13 +58,29 @@ struct NPY_API nnode
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
 
-    glm::uvec4 getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon, const glm::mat4* tr ) const ;
-    glm::uvec4 selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon, const glm::mat4* tr) const ;
+    //glm::uvec4 getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon, const glm::mat4* tr ) const ;
+    //glm::uvec4 selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon, const glm::mat4* tr) const ;
+    //void dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon ) const ;
 
-    void dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon ) const ;
+    //void getParPoints( std::vector<glm::vec3>& parpoi, unsigned prim_idx, unsigned level, unsigned margin, NNodeFrameType frty, unsigned verbosity  ) const;
+    //void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const ;
+    //void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const ;
+
+
+    // back-compat : to be reworked
     void dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const ;
-    void getSurfacePointsAll(       std::vector<glm::vec3>& surf,        unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const ;
-    void getSurfacePoints(          std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const ;
+    
+
+
+    void collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) ;
+    void collectParPoints(     unsigned prim_idx,            unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) ;
+
+    const std::vector<glm::vec3>& get_par_points() const ;
+    const std::vector<nuv>&       get_par_coords() const ;
+ 
+
+
+
 
     void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const ;
     void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
@@ -163,6 +182,8 @@ struct NPY_API nnode
     nquad param3 ; 
 
     std::vector<glm::vec4> planes ; 
+    std::vector<glm::vec3> par_points ; 
+    std::vector<nuv>       par_coords ; 
 
     NNodeDump* _dump ;
 

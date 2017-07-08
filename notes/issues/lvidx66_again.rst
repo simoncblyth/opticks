@@ -140,12 +140,12 @@ overview
      82 
      83 a = CSG("trapezoid", param = [0.000,0.000,0.000,0.000],param1 = [0.000,0.000,0.000,0.000])
      84 a.planes = np.zeros( (6,4), dtype=np.float32)
-     85 a.planes[0] = [0.993,0.000,-0.118,211.261]
-     86 a.planes[1] = [-0.993,0.000,-0.118,211.261]
-     87 a.planes[2] = [0.000,1.000,-0.000,10.000]
-     88 a.planes[3] = [0.000,-1.000,0.000,10.000]
-     89 a.planes[4] = [0.000,-0.000,1.000,1114.250]
-     90 a.planes[5] = [0.000,-0.000,-1.000,1114.250]
+     85 a.planes[0] = [0.993,0.000,-0.118,211.261]    # ~+X      \     /
+     86 a.planes[1] = [-0.993,0.000,-0.118,211.261]   # ~-X    .  \   /  .   
+     87 a.planes[2] = [0.000,1.000,-0.000,10.000]     # +Y
+     88 a.planes[3] = [0.000,-1.000,0.000,10.000]     # -Y 
+     89 a.planes[4] = [0.000,-0.000,1.000,1114.250]   # +Z  : coincident b.z +2228.5/2 
+     90 a.planes[5] = [0.000,-0.000,-1.000,1114.250]  # -Z  : coincident b.z -2228.5/2  
      91 # convexpolyhedron are defined by planes and require manual aabbox definition
      92 a.param2[:3] = [-345.510,-10.000,-1114.250]
      93 a.param3[:3] = [345.510,10.000,1114.250]
@@ -158,7 +158,11 @@ overview
     100 c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[345.510,0.000,0.000,1.000]]
     101 abc = CSG("difference", left=ab, right=c)
 
-    /// boxes same z range : do not intersect
+    /// parallel boxes same z range : 
+    ///
+    ///  action in x:  one thin, on thick, separated 
+    ///        ... both intersect the trapezoid in between them : one by a sliver, other substantially 
+    ///   
     ///      
     ///  b.x   -20,20                       ->  -360,-320 
     ///  c.x   -691.02/2.+345.51,+691.02/2.+345.51          -> (0.0, 691.02)

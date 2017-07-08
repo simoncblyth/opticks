@@ -526,12 +526,14 @@ void nbox::pdump(const char* msg) const
               << std::endl
               ;
 
+/*
     if(verbosity > 2)
     {
         dumpSurfacePointsAll("nbox::pdump", FRAME_MODEL );
         dumpSurfacePointsAll("nbox::pdump", FRAME_LOCAL );
         dumpSurfacePointsAll("nbox::pdump", FRAME_GLOBAL );
     }
+*/
 }
 
 

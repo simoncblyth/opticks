@@ -4,17 +4,21 @@
 #include "NGLMExt.hpp"
 #include "NSDF.hpp"
 #include "NNode.hpp"
+#include "NNodePoints.hpp"
 #include "NCSG.hpp"
 
 
-N::N(const nnode* node, const nmat4triple* transform, const NSceneConfig* config, float surface_epsilon ) 
+N::N(nnode* node, const nmat4triple* transform, const NSceneConfig* config, float surface_epsilon ) 
     : 
          node(node), 
          transform(transform),
          config(config),
+         points(new NNodePoints(node, config, surface_epsilon)),
          nsdf(node->sdf(), transform->v)
 {
-         tots = NCSG::collect_surface_points( model, node, config, node->verbosity, surface_epsilon ) ;
+
+         tots = points->collect_surface_points() ;
+         const std::vector<glm::vec3>& model = points->getCompositePoints();
 
          transform->apply_transform_t( local, model );
 

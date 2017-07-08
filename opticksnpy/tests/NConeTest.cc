@@ -1,3 +1,4 @@
+    unsigned prim_idx = 0 ;   
 #include <iostream>
 #include <iomanip>
 
@@ -53,6 +54,7 @@ void test_parametric()
 
     unsigned nu = 5 ; 
     unsigned nv = 5 ; 
+    unsigned prim_idx = 0 ; 
 
     for(unsigned s=0 ; s < nsurf ; s++)
     {
@@ -61,7 +63,7 @@ void test_parametric()
         for(unsigned u=0 ; u <= nu ; u++){
         for(unsigned v=0 ; v <= nv ; v++)
         {
-            nuv uv = make_uv(s,u,v,nu,nv );
+            nuv uv = make_uv(s,u,v,nu,nv, prim_idx );
 
             glm::vec3 p = cone.par_pos_model(uv);
 
@@ -93,8 +95,10 @@ void test_getSurfacePointsAll()
 
     unsigned level = 5 ;  // +---+---+
     int margin = 1 ;      // o---*---o
-    std::vector<glm::vec3> surf ; 
-    cone.getSurfacePointsAll( surf, level, margin, FRAME_LOCAL, cone.verbosity); 
+    unsigned prim_idx = 0 ; 
+
+    cone.collectParPoints( prim_idx, level, margin, FRAME_LOCAL, cone.verbosity); 
+    const std::vector<glm::vec3>& surf = cone.par_points  ; 
 
     LOG(info) << "test_getSurfacePointsAll"
               << " surf " << surf.size()

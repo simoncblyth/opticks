@@ -16,7 +16,9 @@
 #include "NQuad.hpp"
 #include "Nuv.hpp"
 #include "NBBox.hpp"
+
 #include "NNodeDump.hpp"
+#include "NNodePoints.hpp"
 #include "NNodeUncoincide.hpp"
 
 #include "NPrimitives.hpp"
@@ -975,11 +977,13 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
     assert( (nv - margin) > 0 );
     assert( (nu - margin) > 0 );
 
+    unsigned p = 0 ; 
+
     for (int v = margin; v <= (nv-margin)  ; v++)
     {
         for (int u = margin; u <= (nu-margin) ; u++) 
         {
-            nuv uv = make_uv(s,u,v,nu,nv);
+            nuv uv = make_uv(s,u,v,nu,nv, p);
 
             glm::vec3 pos = par_pos_(uv, fr);
 
@@ -994,112 +998,28 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
 }
 
 
-glm::uvec4 nnode::selectBySDF(std::vector<glm::vec3>& dest, const std::vector<glm::vec3>& source, unsigned pointmask, float epsilon, const glm::mat4* tr ) const 
+
+
+
+const std::vector<glm::vec3>& nnode::get_par_points() const 
 {
-    unsigned num_inside(0);
-    unsigned num_outside(0);
-    unsigned num_surface(0);
-    unsigned num_select(0);
-
-    std::function<float(float,float,float)> _sdf = sdf() ;
-
-    for(unsigned i=0 ; i < source.size() ; i++) 
-    {
-          glm::vec3 p = source[i] ;
-
-          float sd =  _sdf(p.x, p.y, p.z) ;
-          
-          NNodePointType pt = NNodeEnum::PointClassify(sd, epsilon ); 
-
-          if( pt & pointmask ) 
-          {
-              num_select++ ;  
-              if(tr)
-              {
-                  glm::vec4 trp(p,1.0);   
-                  trp = (*tr) * trp ;  
-                  dest.push_back(glm::vec3(trp));
-              }
-              else
-              {
-                  dest.push_back(p);
-              }
-          }
-
-          switch(pt)
-          {
-              case POINT_INSIDE  : num_inside++ ; break ; 
-              case POINT_SURFACE : num_surface++ ; break ; 
-              case POINT_OUTSIDE : num_outside++ ; break ; 
-          }
-
-/*
-          std::cout
-               << " i " << std::setw(4) << i 
-               << " p " << gpresent(p) 
-               << " pt " << std::setw(15) << NNodeEnum::PointType(pt)
-               << " sd(fx4) " << std::setw(10) << std::fixed << std::setprecision(4) << sd 
-               << " sd(sci) " << std::setw(10) << std::scientific << sd 
-               << " sd(def) " << std::setw(10) << std::defaultfloat  << sd 
-               << std::endl
-               ; 
-*/
-    }
-    return glm::uvec4(num_inside, num_surface, num_outside, num_select );
+    return par_points ; 
+}
+const std::vector<nuv>& nnode::get_par_coords() const 
+{
+    return par_coords ; 
 }
 
-
-
-
-void nnode::getSurfacePointsAll(std::vector<glm::vec3>& surf, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const 
+void nnode::collectParPoints(unsigned prim_idx, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) 
 {
     assert(is_primitive());
+    par_points.clear();
+    par_coords.clear();
     unsigned ns = par_nsurf();
-    for(unsigned s = 0 ; s < ns ; s++) getSurfacePoints(surf, s, level, margin, fr, verbosity) ;
+    for(unsigned sheet = 0 ; sheet < ns ; sheet++) collectParPointsSheet(prim_idx, sheet, level, margin, fr, verbosity) ;
 }
 
-
-glm::uvec4 nnode::getCompositePoints( std::vector<glm::vec3>& surf, unsigned level, int margin , unsigned pointmask, float epsilon, const glm::mat4* tr ) const 
-{
-    NNodeFrameType fr = FRAME_GLOBAL ; // otherwise returned positions would be in mixed frames
-
-    std::vector<const nnode*> primitives ; 
-    collect_prim(primitives);    // recursive collection of list of all primitives in tree
-    unsigned nprim = primitives.size();
-
-    glm::uvec4 tot(0,0,0,0);
-
-    for(unsigned i=0 ; i < nprim ; i++)
-    {
-        const nnode* prim = primitives[i] ; 
-
-        typedef std::vector<glm::vec3> VV ; 
-        VV primsurf ;  
-        prim->getSurfacePointsAll(primsurf, level, margin, fr, verbosity );    // using the above branch
-
-        glm::uvec4 isos = selectBySDF(surf, primsurf, pointmask, epsilon, tr ); 
-        tot += isos ;  
-
-        if(verbosity > 4) 
-        std::cout << "nnode::getSurfacePointsAll" 
-                  << " prim " << std::setw(3) << i 
-                  << " pointmask " << std::setw(20) << NNodeEnum::PointMask(pointmask)
-                  << " primsurf " << std::setw(6) << primsurf.size()
-                  << " num_inside " << std::setw(6) << isos.x
-                  << " num_surface " << std::setw(6) << isos.y
-                  << " num_outside " << std::setw(6) << isos.z
-                  << " num_select " << std::setw(6) << isos.w 
-                  << std::endl ; 
-                  ;
-
-    }
-    return tot ; 
-}
-
-
-
-
-void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) const 
+void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) 
 {
     /*
 
@@ -1116,6 +1036,7 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
           |   |   |
           +---+---+
     */
+    assert(is_primitive());
     int nu = 1 << level ; 
     int nv = 1 << level ; 
     assert( (nv - margin) > 0 );
@@ -1123,11 +1044,8 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
 
     int ndiv = nu + 1 - 2*margin ;
     unsigned expect = ndiv*ndiv  ;  
-    unsigned n0 = surf.size();
 
-
-
-
+    unsigned n0 = par_points.size();
 
 
     std::vector<const glm::vec3> uniq ; 
@@ -1136,15 +1054,17 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
     {
         for (int u = margin; u <= (nu-margin) ; u++) 
         {
-            nuv uv = make_uv(s,u,v,nu,nv);
+            nuv uv = make_uv(sheet,u,v,nu,nv, prim_idx);
             glm::vec3 pos = par_pos_(uv, fr );
-            surf.push_back(pos) ;
+
+            par_points.push_back(pos) ;
+            par_coords.push_back(uv) ;
 
             // tried std::set it didnt work
             if(std::find(uniq.begin(),uniq.end(), pos) == uniq.end())  uniq.push_back(pos);
         }
     }
-    unsigned n1 = surf.size();
+    unsigned n1 = par_points.size();
     unsigned n = n1 - n0 ; 
     assert( n == expect );
 
@@ -1152,9 +1072,10 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
     if(verbosity > 5)
     {
         std::cout
-                 << "nnode::getSurfacePoints"
+                 << "nnode::collectParPointsSheet"
                  << " verbosity " << std::setw(3) << verbosity
-                 << " s " << std::setw(3) << s 
+                 << " prim " << std::setw(3) << prim_idx 
+                 << " sheet " << std::setw(3) << sheet 
                  << " nu " << std::setw(4) << nu 
                  << " nv " << std::setw(4) << nv
                  << " ndiv " << std::setw(5) << ndiv
@@ -1166,44 +1087,32 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
                  << " uniq[0] " << ( uniq.size() > 0 ? gpresent(uniq[0]) : "" )
                  << std::endl 
                  ;
-
-
-
     } 
-
-
-
-
-
 }
-
-
-
-
 
 
 void nnode::dumpSurfacePointsAll(const char* msg, NNodeFrameType fr) const 
 {
     LOG(info) << msg << " nnode::dumpSurfacePointsAll " ; 
-
-    //unsigned level = 1 ;  // +---+---+
-    unsigned level = 4 ;  
-    int margin = 1 ;      // o---*---o
-
     std::cout 
               << NNodeEnum::FrameType(fr)
               << " verbosity " << verbosity     
-              << " uvlevel " << level     
-              << " uvmargin " << margin
               << std::endl ;     
 
+/*
     std::vector<glm::vec3> points ; 
-    getSurfacePointsAll( points, level, margin, fr, verbosity ); 
+    getParPoints( points, prim_idx, level, margin, fr, verbosity ); 
 
     float epsilon = 1e-5f ; 
     dumpPointsSDF(points, epsilon );
+*/
 }
 
+
+
+
+
+/*
 void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) const 
 {
     LOG(info) << "nnode::dumpPointsSDF"
@@ -1236,7 +1145,6 @@ void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) c
                ; 
     }
 
-
     LOG(info) << "nnode::dumpPointsSDF"
               << " points " << std::setw(6) << points.size()
               << " epsilon " << std::scientific << epsilon 
@@ -1246,8 +1154,5 @@ void nnode::dumpPointsSDF(const std::vector<glm::vec3>& points, float epsilon) c
               ;
 
 }
-
-
-
-
+*/
 

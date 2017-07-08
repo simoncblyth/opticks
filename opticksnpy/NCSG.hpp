@@ -62,6 +62,7 @@ struct nbbox ;
 struct NSceneConfig ; 
 
 class NParameters ; 
+class NNodePoints ; 
 class NTrianglesNPY ;
 
 class NPY_API NCSG {
@@ -185,10 +186,12 @@ class NPY_API NCSG {
         void export_r(nnode* node, unsigned idx);
         void export_();
     private:
-        unsigned    m_index ; 
-        int         m_verbosity ;  
-        bool        m_usedglobally ; 
-        nnode*      m_root ;  
+        unsigned     m_index ; 
+        int          m_verbosity ;  
+        bool         m_usedglobally ; 
+        nnode*       m_root ;  
+        NNodePoints* m_points ; 
+
         const char* m_treedir ; 
 
         NPY<float>* m_nodes ; 

@@ -32,6 +32,7 @@ void test_parametric()
 
     unsigned nu = 5 ; 
     unsigned nv = 5 ; 
+    unsigned prim_idx = 0 ; 
 
     for(unsigned s=0 ; s < nsurf ; s++)
     {
@@ -40,7 +41,7 @@ void test_parametric()
         for(unsigned u=0 ; u <= nu ; u++){
         for(unsigned v=0 ; v <= nv ; v++)
         {
-            nuv uv = make_uv(s,u,v,nu,nv );
+            nuv uv = make_uv(s,u,v,nu,nv, prim_idx );
 
             glm::vec3 p = cy.par_pos_model(uv);
 

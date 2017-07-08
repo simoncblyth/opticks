@@ -7,6 +7,7 @@ struct NPY_API nuv
     unsigned s() const {   return s_ & 0xffff ; } 
     unsigned u() const {   return u_ & 0xffff ; } 
     unsigned v() const {   return v_ & 0xffff ; } 
+    unsigned p() const {   return p_ ; }   // primitive index
 
     unsigned nu() const {  return u_ >> 16 ; } 
     unsigned nv() const {  return v_ >> 16 ; } ;
@@ -26,17 +27,20 @@ struct NPY_API nuv
     unsigned s_ ; 
     unsigned u_ ; 
     unsigned v_ ;
+    unsigned p_ ;
 };
 
 
 
-inline nuv make_uv(unsigned s, unsigned u, unsigned v, unsigned nu, unsigned nv)
+inline nuv make_uv(unsigned s, unsigned u, unsigned v, unsigned nu, unsigned nv, unsigned p)
 {
    nuv uv ; 
 
    uv.s_ = s ; 
    uv.u_ = (nu << 16) | u  ;
    uv.v_ = (nv << 16) | v  ;
+   uv.p_ = p ; 
+
 
    return uv ; 
 }

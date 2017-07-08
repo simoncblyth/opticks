@@ -1291,7 +1291,8 @@ gbbox* GMesh::findBBox(gfloat3* vertices, unsigned int num_vertices)
         points.push_back(p);
     }
 
-    nbbox nbb = nbbox::from_points(points);
+    unsigned verbosity = 0 ;  
+    nbbox nbb = nbbox::from_points(points, verbosity);
     gbbox* bb = new gbbox(nbb);
 
 /*

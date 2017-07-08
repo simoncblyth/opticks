@@ -10,6 +10,7 @@
 struct nnode ; 
 struct nmat4triple ;
 struct NSceneConfig ; 
+class NNodePoints ; 
 
 /*
 N : debugging structural nodes/SDF
@@ -41,7 +42,7 @@ depending on the surface_epsilon used to collect them from the primitives.
  
 struct NPY_API N 
 {
-    N(const nnode* node, const nmat4triple* transform, const NSceneConfig* config=NULL, float surface_epsilon=1e-6f );
+    N(nnode* node, const nmat4triple* transform, const NSceneConfig* config=NULL, float surface_epsilon=1e-6f );
     glm::uvec4 classify(const std::vector<glm::vec3>& qq, float epsilon, unsigned expect, bool dump=false);
     void dump_points(const char* msg);
     std::string desc() const ;
@@ -49,6 +50,7 @@ struct NPY_API N
     const nnode*           node ;
     const nmat4triple*     transform ; 
     const NSceneConfig*    config ; 
+    NNodePoints*           points ; 
 
     NSDF                   nsdf ; 
     glm::uvec4             tots ;
