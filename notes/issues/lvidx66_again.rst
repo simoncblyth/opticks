@@ -35,12 +35,44 @@ parsurf surface points not getting above x=0 ?
      bbsp  mi (   -345.000   -10.000 -1114.250) mx (      0.000    10.000  1114.250) si (    345.000    20.000  2228.500)
 
 
+surface point debugging
+---------------------------
+
+
+::
+
+    delta:ggeo blyth$ VERBOSITY=10 opticks-nnt 66
+    opticks-nnt : compiling /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/66/NNodeTest_66.cc
+    2017-07-08 16:29:29.929 INFO  [4115210] [NSceneConfig::NSceneConfig@42] NSceneConfig::NSceneConfig cfg []
+    2017-07-08 16:29:29.930 INFO  [4115210] [NCSG::collect_surface_points@1186] NCSG::collect_surface_points verbosity 10
+                      check_surf_containment : 0
+                      check_aabb_containment : 0
+                          disable_instancing : 0
+                           csg_bbox_analytic : 0
+                               csg_bbox_poly : 0
+                            csg_bbox_parsurf : 0
+                             csg_bbox_g4poly : 0
+                              parsurf_target : 200
+                               parsurf_level : 2
+                              parsurf_margin : 0
+    2017-07-08 16:29:29.930 INFO  [4115210] [NSceneConfig::dump@63] bbox_type_string : CSG_BBOX_PARSURF
+    nnode::getSurfacePoints verbosity  10 s   0 nu    4 nv    4 ndiv     5 expect     25 n0      0
+    nnode::getSurfacePoints verbosity  10 s   1 nu    4 nv    4 ndiv     5 expect     25 n0     25
+    nnode::getSurfacePoints verbosity  10 s   2 nu    4 nv    4 ndiv     5 expect     25 n0     50
+    nnode::getSurfacePoints verbosity  10 s   3 nu    4 nv    4 ndiv     5 expect     25 n0     75
+    nnode::getSurfacePoints verbosity  10 s   4 nu    4 nv    4 ndiv     5 expect     25 n0    100
+    nnode::getSurfacePoints verbosity  10 s   5 nu    4 nv    4 ndiv     5 expect     25 n0    125
+    nnode::getSurfacePointsAll prim   0 pointmask       POINT_SURFACE  primsurf    150 num_inside     25 num_surface    100 num_outside     25 num_select    100
+    nnode::getSurfacePoints verbosity  10 s   0 nu    4 nv    4 ndiv     5 expect     25 n0      0
+    nnode::getSurfacePoints verbosity  10 s   1 nu    4 nv    4 ndiv     5 expect     25 n0     25
+    nnode::getSurfacePoints verbosity  10 s   2 nu    4 nv    4 ndiv     5 expect     25 n0     50
 
 
 
 
 
-
+overview
+----------
 
 ::
 

@@ -3,6 +3,7 @@
 #include <cmath>
 #include <sstream>
 #include <iomanip>
+#include <set>
 
 
 #include "NGLM.hpp"
@@ -1125,6 +1126,29 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
     unsigned n0 = surf.size();
 
 
+
+
+
+
+    std::vector<const glm::vec3> uniq ; 
+
+    for (int v = margin; v <= (nv-margin) ; v++)
+    {
+        for (int u = margin; u <= (nu-margin) ; u++) 
+        {
+            nuv uv = make_uv(s,u,v,nu,nv);
+            glm::vec3 pos = par_pos_(uv, fr );
+            surf.push_back(pos) ;
+
+            // tried std::set it didnt work
+            if(std::find(uniq.begin(),uniq.end(), pos) == uniq.end())  uniq.push_back(pos);
+        }
+    }
+    unsigned n1 = surf.size();
+    unsigned n = n1 - n0 ; 
+    assert( n == expect );
+
+
     if(verbosity > 5)
     {
         std::cout
@@ -1136,22 +1160,21 @@ void nnode::getSurfacePoints(std::vector<glm::vec3>& surf, int s, unsigned level
                  << " ndiv " << std::setw(5) << ndiv
                  << " expect " << std::setw(6) << expect
                  << " n0 " << std::setw(6) << n0
+                 << " n1 " << std::setw(6) << n1
+                 << " n " << std::setw(6) << n
+                 << " uniq " << std::setw(6) << uniq.size()
+                 << " uniq[0] " << ( uniq.size() > 0 ? gpresent(uniq[0]) : "" )
                  << std::endl 
                  ;
+
+
+
     } 
 
 
-    for (int v = margin; v <= (nv-margin) ; v++)
-    {
-        for (int u = margin; u <= (nu-margin) ; u++) 
-        {
-            nuv uv = make_uv(s,u,v,nu,nv);
-            glm::vec3 pos = par_pos_(uv, fr );
-            surf.push_back(pos) ;
-        }
-    }
-    unsigned n1 = surf.size();
-    assert( n1 - n0 == expect );
+
+
+
 }
 
 

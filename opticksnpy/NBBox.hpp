@@ -26,7 +26,7 @@ struct NPY_API nbbox
     void dump(const char* msg);
     void include(const nbbox& other );
     void include(const glm::vec3& p);
-    static nbbox from_points(const std::vector<glm::vec3>& points);
+    static nbbox from_points(const std::vector<glm::vec3>& points, unsigned verbosity );
 
     const char* desc() const;
     std::string description() const ; 

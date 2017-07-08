@@ -509,7 +509,9 @@ void test_from_points()
     pts.push_back( {1,0,0 } );
     pts.push_back( {2,0,0 } );
 
-    nbbox bb = nbbox::from_points(pts);
+    unsigned verbosity = 1 ; 
+
+    nbbox bb = nbbox::from_points(pts, verbosity );
 
     std::cout << bb.desc() << std::endl ;     
 }

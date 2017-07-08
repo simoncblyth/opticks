@@ -291,7 +291,8 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     v[6] = { -x2/2.,  y2/2. ,  z } ;  // 110
     v[7] = {  x2/2.,  y2/2. ,  z } ;  // 111
 
-    nbbox bb = nbbox::from_points( v );
+    unsigned verbosity = 0 ; 
+    nbbox bb = nbbox::from_points( v, verbosity );
 
     std::vector<glm::vec4> p(6) ; 
 

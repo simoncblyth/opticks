@@ -1290,7 +1290,7 @@ nbbox NCSG::bbox_surface_points() const
         LOG(debug) << "NCSG::bbox_surface_points NONE FOUND : probably need larger parsurf_level   " << brief() ;  
 
     //assert(num_sp > 0 );
-    return nbbox::from_points(getSurfacePoints());    
+    return nbbox::from_points(getSurfacePoints(), m_verbosity);    
 }
 
 

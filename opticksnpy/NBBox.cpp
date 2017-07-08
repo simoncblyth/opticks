@@ -8,6 +8,7 @@
 #include "NGLMExt.hpp"
 #include <glm/gtx/component_wise.hpp>
 #include "NBBox.hpp"
+#include "PLOG.hh"
 
 
 nbbox nbbox::make_transformed( const glm::mat4& t ) const 
@@ -676,14 +677,36 @@ void nbbox::include(const glm::vec3& p)
 */
 
 
-nbbox nbbox::from_points(const std::vector<glm::vec3>& points)
+nbbox nbbox::from_points(const std::vector<glm::vec3>& points, unsigned verbosity)
 {
     nbbox bb = make_bbox() ;
 
     assert( bb.is_empty() );
     assert( bb.invert == false );
 
-    for(unsigned i=0 ; i < points.size() ; i++) bb.include(points[i]) ;
+    if(verbosity > 5)
+       LOG(info) << "nbbox::from_points"
+                 << " verbosity " << verbosity 
+                 << " num_points " << points.size()
+                 << " bb0 " << bb.desc()
+                 ;
+
+
+    for(unsigned i=0 ; i < points.size() ; i++) 
+    {
+        glm::vec3 p = points[i]; 
+
+        bb.include(p) ;
+
+        if(verbosity > 5)
+            std::cout 
+                 << " i " << std::setw(4) << i 
+                 << " p " << gpresent(p)
+                 << " bb " << bb.desc()
+                 << std::endl
+                 ;
+
+    }
     return bb ; 
 }
 
