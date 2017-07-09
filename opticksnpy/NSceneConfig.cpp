@@ -1,3 +1,6 @@
+
+#include <cmath>
+
 #include "BConfig.hh"
 #include "PLOG.hh"
 #include "NSceneConfig.hpp"
@@ -33,6 +36,7 @@ NSceneConfig::NSceneConfig(const char* cfg)
     csg_bbox_parsurf(0),
     csg_bbox_g4poly(0),
 
+    parsurf_epsilon(-5),
     parsurf_target(200),
     parsurf_level(2),
     parsurf_margin(0),
@@ -52,6 +56,7 @@ NSceneConfig::NSceneConfig(const char* cfg)
     bconfig->addInt("csg_bbox_poly",          &csg_bbox_poly);
     bconfig->addInt("csg_bbox_parsurf",       &csg_bbox_parsurf);
     bconfig->addInt("csg_bbox_g4poly",        &csg_bbox_g4poly);
+    bconfig->addInt("parsurf_epsilon",        &parsurf_epsilon);
     bconfig->addInt("parsurf_target",         &parsurf_target);
     bconfig->addInt("parsurf_level",          &parsurf_level);
     bconfig->addInt("parsurf_margin",         &parsurf_margin);
@@ -72,6 +77,13 @@ const char* NSceneConfig::bbox_type_string() const
     NSceneConfigBBoxType bbty = bbox_type() ;
     return BBoxType(bbty);
 }
+
+float NSceneConfig::get_parsurf_epsilon() const
+{
+    return std::pow(10, parsurf_epsilon );
+
+}
+
 
 
 NSceneConfigBBoxType NSceneConfig::bbox_type() const 

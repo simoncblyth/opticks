@@ -767,25 +767,34 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 void NCSG::import_planes(nnode* node)
 {
     assert( node->has_planes() );
+
+    nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
+    assert(cpol);
+
+
     unsigned iplane = node->planeIdx() ;
-    unsigned nplane = node->planeNum() ;
+    unsigned num_plane = node->planeNum() ;
     unsigned idx = iplane - 1 ; 
 
     if(m_verbosity > 3)
     LOG(info) << "NCSG::import_planes"
               << " iplane " << iplane
-              << " nplane " << nplane
+              << " num_plane " << num_plane
               ;
 
     assert( idx < m_num_planes );
-    assert( idx + nplane - 1 < m_num_planes );
+    assert( idx + num_plane - 1 < m_num_planes );
     assert( m_planes->hasShape(-1,4) );
     assert( node->planes.size() == 0u );
 
-    for(unsigned i=idx ; i < idx + nplane ; i++)
+
+    std::vector<glm::vec4> _planes ;  
+
+    for(unsigned i=idx ; i < idx + num_plane ; i++)
     {
         glm::vec4 plane = m_planes->getQuad(i) ;
-        node->planes.push_back(plane);    
+
+        _planes.push_back(plane);    
 
         if(m_verbosity > 3)
         std::cout << " plane " << std::setw(3) << i 
@@ -793,7 +802,9 @@ void NCSG::import_planes(nnode* node)
                   << std::endl ; 
 
     }
-    assert( node->planes.size() == nplane );
+    cpol->set_planes(_planes);     
+
+    assert( cpol->planes.size() == num_plane );
 }
 
 
@@ -1243,14 +1254,9 @@ nbbox NCSG::bbox_analytic() const
 
 nbbox NCSG::bbox_surface_points() const 
 {
-    unsigned num_sp = getNumSurfacePoints() ; 
-    if(num_sp==0)  
-        LOG(debug) << "NCSG::bbox_surface_points NONE FOUND : probably need larger parsurf_level   " << brief() ;  
-
-    //assert(num_sp > 0 );
-    return nbbox::from_points(getSurfacePoints(), m_verbosity);    
+    assert(m_points); 
+    return m_points->bbox_surface_points();
 }
-
 
 
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 

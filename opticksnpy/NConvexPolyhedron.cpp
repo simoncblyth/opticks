@@ -60,15 +60,18 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
 } 
 
 
-nbbox nconvexpolyhedron::bbox() const 
+nbbox nconvexpolyhedron::bbox_model() const 
 {
     glm::vec3 mi(param2.f.x, param2.f.y, param2.f.z) ;
     glm::vec3 mx(param3.f.x, param3.f.y, param3.f.z) ;
     nbbox bb = make_bbox(mi, mx, complement);
-
+    return bb ; 
+}
+nbbox nconvexpolyhedron::bbox() const 
+{
+    nbbox bb = bbox_model();
     return gtransform ? bb.make_transformed(gtransform->t) : bb ; 
 }
-
 
 
 bool nconvexpolyhedron::intersect( const float t_min, const glm::vec3& ray_origin, const glm::vec3& ray_direction, glm::vec4& isect ) const 
@@ -202,9 +205,12 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
     assert(s < planes.size() );
 
     glm::vec4 pl = planes[s];
+    glm::vec3 udir = udirs[s] ; 
+    glm::vec3 vdir = vdirs[s] ; 
 
     glm::vec3 norm(pl.x,pl.y,pl.z) ; 
     float dist = pl.w ; 
+
 
     //float epsilon = 1e-5 ; 
     float epsilon = 1e-4 ;   // loosen for NNodeTest codegen using 3 digits  
@@ -223,13 +229,34 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
 
     glm::vec3 pos = norm*dist ; 
 
-    // TODO: produce some more par points by using similar 
-    //       basis finding approach of nslab to populate a 
-    //       plane : and select points by SDF
+    nbbox bbm = bbox_model();
+    float diagonal = bbm.diagonal();
 
+    float sz = diagonal ;  // arbitrary square patch region of the slab planes
+    float fu = sz*(uv.fu() - 0.5f) ;  
+    float fv = sz*(uv.fv() - 0.5f) ;
+ 
+    glm::vec3 offset = fu*udir + fv*vdir ;  
+
+/*
+    std::cout 
+         << " diagonal " << diagonal
+         << " offset " << gpresent(offset)
+         << std::endl 
+         ;
+*/
+
+    pos += offset ; 
+
+    // NB this will produce points on the planes
+    // of the faces that protrude beyond the shape
+    // ... to get surf points only : select by SDF
   
     return pos ; 
 }
+
+
+
 
 void nconvexpolyhedron::set_bbox(const nbbox& bb)
 {
@@ -242,11 +269,61 @@ void nconvexpolyhedron::set_bbox(const nbbox& bb)
     param3.f.z = bb.max.z ;
 }
 
-
 void nconvexpolyhedron::set_planes( const std::vector<glm::vec4>& planes_ ) 
 {
     std::copy( planes_.begin() , planes_.end(), std::back_inserter(planes) ) ;
+    define_uv_basis();
 }
+
+void nconvexpolyhedron::define_uv_basis()
+{
+    nglmext::_define_uv_basis( planes, udirs, vdirs );
+
+    assert( planes.size() == udirs.size() );
+    assert( planes.size() == vdirs.size() );
+}
+
+
+
+void nconvexpolyhedron::dump_uv_basis(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    unsigned num_planes = planes.size() ;
+    unsigned num_udirs  = udirs.size() ;
+    unsigned num_vdirs  = vdirs.size() ;
+
+    std::cout  
+              << " num_planes " << num_planes
+              << " num_udirs " << num_udirs
+              << " num_vdirs " << num_vdirs
+              << std::endl 
+              ;
+
+    assert( num_planes == num_udirs  );
+    assert( num_planes == num_vdirs  );
+
+    for(unsigned i=0 ; i < num_planes ; i++)
+    {
+        glm::vec4 pl = planes[i];
+        glm::vec3 normal(pl);
+        float dist = pl.w ; 
+
+        glm::vec3 udir = udirs[i];
+        glm::vec3 vdir = vdirs[i];
+
+        std::cout << " i " << std::setw(2) << i 
+                  << " pl " << gpresent(pl)
+                  << " nlen " << glm::length(normal)
+                  << " dist " << dist
+                  << " udir " << gpresent(udir)
+                  << " vdir " << gpresent(vdir)
+                  << std::endl ; 
+    }
+}
+
+
+
+
 
 
 
@@ -280,16 +357,16 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     */
 
     std::vector<glm::vec3> v(8) ; 
-                                    // ZYX
-    v[0] = { -x1/2., -y1/2. , -z } ;  // 000
-    v[1] = {  x1/2., -y1/2. , -z } ;  // 001 
-    v[2] = { -x1/2.,  y1/2. , -z } ;  // 010
-    v[3] = {  x1/2.,  y1/2. , -z } ;  // 011
+                                         // ZYX
+    v[0] = { -x1/2., -y1/2. , -z/2. } ;  // 000
+    v[1] = {  x1/2., -y1/2. , -z/2. } ;  // 001 
+    v[2] = { -x1/2.,  y1/2. , -z/2. } ;  // 010
+    v[3] = {  x1/2.,  y1/2. , -z/2. } ;  // 011
 
-    v[4] = { -x2/2., -y2/2. ,  z } ;  // 100
-    v[5] = {  x2/2., -y2/2. ,  z } ;  // 101
-    v[6] = { -x2/2.,  y2/2. ,  z } ;  // 110
-    v[7] = {  x2/2.,  y2/2. ,  z } ;  // 111
+    v[4] = { -x2/2., -y2/2. ,  z/2. } ;  // 100
+    v[5] = {  x2/2., -y2/2. ,  z/2. } ;  // 101
+    v[6] = { -x2/2.,  y2/2. ,  z/2. } ;  // 110
+    v[7] = {  x2/2.,  y2/2. ,  z/2. } ;  // 111
 
     unsigned verbosity = 0 ; 
     nbbox bb = nbbox::from_points( v, verbosity );

@@ -397,7 +397,21 @@ void nglmext::_define_uv_basis( const glm::vec3& perp, glm::vec3& udir, glm::vec
     // see okc- View::getFocalBasis View::handleDegenerates
 }
 
+void nglmext::_define_uv_basis( const std::vector<glm::vec4>& perps, std::vector<glm::vec3>& udirs, std::vector<glm::vec3>& vdirs   ) // static
+{
+    for(unsigned i=0 ; i < perps.size() ; i++)
+    {
+        glm::vec3 perp(perps[i]);
 
+        glm::vec3 udir ; 
+        glm::vec3 vdir ; 
+        nglmext::_define_uv_basis(perp, udir, vdir) ;
+
+        udirs.push_back(udir);
+        vdirs.push_back(vdir);
+    }
+}
+ 
 
 
 

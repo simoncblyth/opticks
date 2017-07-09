@@ -1,6 +1,13 @@
 lvidx66 (formerly in 4th) NOW IN POLE POSITION
 ======================================================
 
+
+
+
+
+
+
+
 My manual bbox matches the g4poly one, but the parsurf one stops at zero in x, rotated into position 
 at Z-top of SST?
 
@@ -20,6 +27,15 @@ at Z-top of SST?
 
 
 
+Using loaded CSG vs generated NNodeTest 
+-------------------------------------------
+
+Should be the same, up to precision limitation from codegen with 3 digits.::
+
+    VERBOSITY=5 NCSGLoadTest 66
+    
+    opticks-;opticks-nnt 66
+
 
 
 parsurf surface points not getting above x=0 ? 
@@ -33,6 +49,53 @@ parsurf surface points not getting above x=0 ?
     2017-07-08 15:57:07.414 INFO  [4096976] [NCSG::dump@911] NCSG::dump
      NCSG  ix    0 surfpoints  408 so -                                        lv -                                       
      bbsp  mi (   -345.000   -10.000 -1114.250) mx (      0.000    10.000  1114.250) si (    345.000    20.000  2228.500)
+
+
+
+surface points with difference switch to union
+-----------------------------------------------
+
+Switch difference to union, most sheets from the three prim appear in the surface::
+
+
+    2017-07-09 12:29:25.022 INFO  [4321085] [NNodePoints::dump_sheets@322] NNodePoints::dump_sheets nps 16
+     prim_sheet     2 prim     0 sheet     2 count    25 ps_bbox  mi (      0.000    10.000    -0.000) mx (      0.000    10.000    -0.000) si (      0.000     0.000     0.000)
+     prim_sheet     3 prim     0 sheet     3 count    25 ps_bbox  mi (      0.000   -10.000     0.000) mx (      0.000   -10.000     0.000) si (      0.000     0.000     0.000)
+     prim_sheet     4 prim     0 sheet     4 count    25 ps_bbox  mi (      0.000    -0.000  1114.250) mx (      0.000    -0.000  1114.250) si (      0.000     0.000     0.000)
+     prim_sheet     5 prim     0 sheet     5 count    25 ps_bbox  mi (      0.000    -0.000 -1114.250) mx (      0.000    -0.000 -1114.250) si (      0.000     0.000     0.000)
+
+     prim_sheet   100 prim     1 sheet     0 count    25 ps_bbox  mi (   -360.000   -20.000 -1114.250) mx (   -320.000    20.000 -1114.250) si (     40.000    40.000     0.000)
+     prim_sheet   101 prim     1 sheet     1 count    25 ps_bbox  mi (   -360.000   -20.000  1114.250) mx (   -320.000    20.000  1114.250) si (     40.000    40.000     0.000)
+     prim_sheet   102 prim     1 sheet     2 count    25 ps_bbox  mi (   -360.000   -20.000 -1114.250) mx (   -360.000    20.000  1114.250) si (      0.000    40.000  2228.500)
+     prim_sheet   103 prim     1 sheet     3 count    25 ps_bbox  mi (   -320.000   -20.000 -1114.250) mx (   -320.000    20.000  1114.250) si (      0.000    40.000  2228.500)
+     prim_sheet   104 prim     1 sheet     4 count    25 ps_bbox  mi (   -360.000   -20.000 -1114.250) mx (   -320.000   -20.000  1114.250) si (     40.000     0.000  2228.500)
+     prim_sheet   105 prim     1 sheet     5 count    25 ps_bbox  mi (   -360.000    20.000 -1114.250) mx (   -320.000    20.000  1114.250) si (     40.000     0.000  2228.500)
+
+     prim_sheet   200 prim     2 sheet     0 count    25 ps_bbox  mi (      0.000   -12.000 -1119.250) mx (    691.020    12.000 -1119.250) si (    691.020    24.000     0.000)
+     prim_sheet   201 prim     2 sheet     1 count    25 ps_bbox  mi (      0.000   -12.000  1119.250) mx (    691.020    12.000  1119.250) si (    691.020    24.000     0.000)
+     prim_sheet   202 prim     2 sheet     2 count    16 ps_bbox  mi (      0.000   -12.000 -1119.250) mx (      0.000    12.000  1119.250) si (      0.000    24.000  2238.500)
+     prim_sheet   203 prim     2 sheet     3 count    25 ps_bbox  mi (    691.020   -12.000 -1119.250) mx (    691.020    12.000  1119.250) si (      0.000    24.000  2238.500)
+     prim_sheet   204 prim     2 sheet     4 count    25 ps_bbox  mi (      0.000   -12.000 -1119.250) mx (    691.020   -12.000  1119.250) si (    691.020     0.000  2238.500)
+     prim_sheet   205 prim     2 sheet     5 count    25 ps_bbox  mi (      0.000    12.000 -1119.250) mx (    691.020    12.000  1119.250) si (    691.020     0.000  2238.500)
+    /usr/local/opticks/lib/NNodeTest_66
+
+
+Back to difference, dump prim sheet bbox::
+
+    2017-07-09 12:25:14.731 INFO  [4320404] [NNodePoints::dump_sheets@322] NNodePoints::dump_sheets nps 7
+     prim_sheet     2 prim     0 sheet     2 count    81 ps_bbox  mi (      0.000    10.000    -0.000) mx (      0.000    10.000    -0.000) si (      0.000     0.000     0.000)
+     prim_sheet     3 prim     0 sheet     3 count    81 ps_bbox  mi (      0.000   -10.000     0.000) mx (      0.000   -10.000     0.000) si (      0.000     0.000     0.000)
+     prim_sheet     4 prim     0 sheet     4 count    81 ps_bbox  mi (      0.000    -0.000  1114.250) mx (      0.000    -0.000  1114.250) si (      0.000     0.000     0.000)
+     prim_sheet     5 prim     0 sheet     5 count    81 ps_bbox  mi (      0.000    -0.000 -1114.250) mx (      0.000    -0.000 -1114.250) si (      0.000     0.000     0.000)
+
+     prim_sheet   101 prim     1 sheet     1 count    30 ps_bbox  mi (   -345.000   -10.000  1114.250) mx (   -320.000    10.000  1114.250) si (     25.000    20.000     0.000)
+     prim_sheet   103 prim     1 sheet     3 count     5 ps_bbox  mi (   -320.000   -10.000  1114.250) mx (   -320.000    10.000  1114.250) si (      0.000    20.000     0.000)
+
+     prim_sheet   202 prim     2 sheet     2 count    49 ps_bbox  mi (      0.000    -9.000  -839.438) mx (      0.000     9.000   839.438) si (      0.000    18.000  1678.875)
+    /usr/local/opticks/lib/NNodeTest_66
+    delta:tests blyth$ 
+
+
 
 
 surface point debugging
@@ -149,6 +212,9 @@ overview
      91 # convexpolyhedron are defined by planes and require manual aabbox definition
      92 a.param2[:3] = [-345.510,-10.000,-1114.250]
      93 a.param3[:3] = [345.510,10.000,1114.250]
+
+
+
      94 
      95 b = CSG("box3", param = [40.000,40.000,2228.500,0.000],param1 = [0.000,0.000,0.000,0.000])
      96 b.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[-340.000,0.000,0.000,1.000]]
@@ -168,17 +234,30 @@ overview
     ///  c.x   -691.02/2.+345.51,+691.02/2.+345.51          -> (0.0, 691.02)
 
 
+::
 
-
-
-    102 
-    103 
-    104 
-    105 obj = abc
-    106 
-    107 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
-    108 CSG.Serialize([con, obj], args.csgpath )
-
+    2017-07-09 15:35:38.546 INFO  [4408151] [NNodePoints::dump_bb@352] NNodePoints::dump_bb num_prim_bb 3 num_prim_bb_selected  3
+     prim_bb 
+       0  mi (  -1166.632 -1166.632 -1183.410) mx (   1166.632  1166.632  1166.632) si (   2333.264  2333.264  2350.042)
+       1  mi (   -360.000   -20.000 -1114.250) mx (   -320.000    20.000  1114.250) si (     40.000    40.000  2228.500)
+       2  mi (      0.000   -12.000 -1119.250) mx (    691.020    12.000  1119.250) si (    691.020    24.000  2238.500)
+     prim_bb_selected 
+       0  mi (   -337.230   -10.000 -1114.250) mx (      0.000    10.000  1114.250) si (    337.230    20.000  2228.500)
+       1  mi (   -345.156   -10.000   905.328) mx (   -320.000    10.000  1114.250) si (     25.156    20.000   208.922)
+       2  mi (      0.000    -9.938 -1110.506) mx (      0.000     9.938  1110.506) si (      0.000    19.875  2221.012)
+    2017-07-09 15:35:38.546 INFO  [4408151] [NNodePoints::dump_sheets@387] NNodePoints::dump_sheets num_composite_points 90882 num_composite_coords 90882
+    2017-07-09 15:35:38.550 INFO  [4408151] [NNodePoints::dump_sheets@404] NNodePoints::dump_sheets nps 8
+     bbsp  mi (   -345.156   -10.000 -1114.250) mx (      0.000    10.000  1114.250) si (    345.156    20.000  2228.500)
+     prim_sheet     1 prim     0 sheet     1 count   669 ps_bbox  mi (   -319.484    -9.114 -1111.005) mx (    -80.722     9.114   898.236) si (    238.762    18.229  2009.241)
+     prim_sheet     2 prim     0 sheet     2 count  5817 ps_bbox  mi (   -319.001    10.000 -1111.946) mx (      0.000    10.000  1111.946) si (    319.001     0.000  2223.892)
+     prim_sheet     3 prim     0 sheet     3 count  5817 ps_bbox  mi (   -319.001   -10.000 -1111.946) mx (      0.000   -10.000  1111.946) si (    319.001     0.000  2223.892)
+     prim_sheet     4 prim     0 sheet     4 count   114 ps_bbox  mi (   -337.230    -9.114  1114.250) mx (      0.000     9.114  1114.250) si (    337.230    18.229     0.000)
+     prim_sheet     5 prim     0 sheet     5 count    27 ps_bbox  mi (    -72.914    -9.114 -1114.250) mx (      0.000     9.114 -1114.250) si (     72.914    18.229     0.000)
+     prim_sheet   101 prim     1 sheet     1 count 20898 ps_bbox  mi (   -345.156   -10.000  1114.250) mx (   -320.000    10.000  1114.250) si (     25.156    20.000     0.000)
+     prim_sheet   103 prim     1 sheet     3 count  3225 ps_bbox  mi (   -320.000   -10.000   905.328) mx (   -320.000    10.000  1114.250) si (      0.000    20.000   208.922)
+     prim_sheet   202 prim     2 sheet     2 count 54315 ps_bbox  mi (      0.000    -9.938 -1110.506) mx (      0.000     9.938  1110.506) si (      0.000    19.875  2221.012)
+    /usr/local/opticks/lib/NNodeTest_66
+    delta:opticks blyth$ 
 
 
 

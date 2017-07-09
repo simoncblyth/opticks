@@ -14,6 +14,7 @@ struct NPY_API nconvexpolyhedron : nnode
 
 
     nbbox bbox() const ;
+    nbbox bbox_model() const ;
     glm::vec3 gseedcenter();
     glm::vec3 gseeddir();
 
@@ -36,6 +37,14 @@ struct NPY_API nconvexpolyhedron : nnode
     nconvexpolyhedron* make_transformed( const glm::mat4& t ) const ;
 
     void pdump(const char* msg="nconvexpolyhedron::pdump") const ;
+
+
+    void define_uv_basis();
+    void dump_uv_basis(const char* msg="nconvexpolyhedron::dump_uv_basis") const; 
+
+    std::vector<glm::vec3> udirs ; 
+    std::vector<glm::vec3> vdirs ; 
+
 };
 
 inline NPY_API void init_convexpolyhedron(nconvexpolyhedron& cpol, const nquad& param, const nquad& param1, const nquad& param2, const nquad& param3 )

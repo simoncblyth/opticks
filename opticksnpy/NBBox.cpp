@@ -165,7 +165,10 @@ bool nbbox::HasOverlap(const nbbox& a, const nbbox& b )
     return true ; 
 }
 
-
+float nbbox::diagonal() const 
+{
+    return glm::length(max-min);
+}
 
 bool nbbox::FindOverlap(nbbox& overlap, const nbbox& a, const nbbox& b)
 {

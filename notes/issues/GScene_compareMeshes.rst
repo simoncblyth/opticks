@@ -41,6 +41,33 @@ Two lesser ones, must wait on CSG intersect comparisons
 
 
 
+
+After CSG_SEGMENT handles the tube deltaphi
+-----------------------------------------------
+
+
+::
+
+    2017-07-09 15:52:55.757 INFO  [4414162] [GScene::compareMeshes_GMeshBB@435] GScene::compareMeshes_GMeshBB num_meshes 249 cut 0.1 bbty CSG_BBOX_PARSURF parsurf_level 200 parsurf_target -5
+
+        345.51                SstTopRadiusRib0xc271720 lvidx  66 nsp    378                  difference box3 convexpolyhedron   nds[ 16]  4448 4449 4450 4451 4452 4453 4454 4455 6108 6109 ... 
+     
+           320                      SstTopHub0xc2643d8 lvidx  68 nsp    317                                    union cylinder   nds[  2]  4464 6124 . 
+
+       253.475               RadialShieldUnit0xc3d7da8 lvidx  56 nsp    301            intersection cylinder convexpolyhedron   nds[ 64]  4393 4394 4395 4396 4397 4398 4399 4400 4401 4402 ... 
+
+       28.0747              OcrGdsTfbInLsoOfl0xc2b5ba0 lvidx  83 nsp    243                          difference cylinder cone   nds[  2]  4515 6175 . 
+
+       26.2183                   OcrGdsLsoPrt0xc104978 lvidx  81 nsp    342                    union difference cylinder cone   nds[  2]  4511 6171 . 
+
+            20               headon-pmt-mount0xc2a7670 lvidx  55 nsp    441                         union difference cylinder   nds[ 12]  4357 4364 4371 4378 4385 4392 6017 6024 6031 6038 ... 
+
+            12           near_side_long_hbeam0xbf3b5d0 lvidx  17 nsp    450                                        union box3   nds[  8]  2436 2437 2615 2616 2794 2795 2973 2974 . 
+
+
+
+
+
 parsurf vs g4poly bbox chart
 ----------------------------------
 

@@ -60,6 +60,8 @@ struct NPY_API nbbox
     void copy_from(const nbbox& src); 
 
 
+    float diagonal() const ; 
+
     nvec4 center_extent() const ;
     nvec4 dimension_extent() const ;
     static float extent(const nvec4& dim);

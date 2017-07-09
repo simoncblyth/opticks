@@ -9,6 +9,14 @@ struct NPY_API nuv
     unsigned v() const {   return v_ & 0xffff ; } 
     unsigned p() const {   return p_ ; }   // primitive index
 
+    unsigned ps() const {  return p()*100 + s() ; } 
+
+    static unsigned ps_to_prim( unsigned ps_){ return ps_/100   ; }
+    static unsigned ps_to_sheet(unsigned ps_){ return ps_ % 100 ; }
+
+    bool matches(unsigned prim, unsigned sheet) const { return prim == p() && sheet == s() ; }
+
+
     unsigned nu() const {  return u_ >> 16 ; } 
     unsigned nv() const {  return v_ >> 16 ; } ;
 

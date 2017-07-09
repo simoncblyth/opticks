@@ -34,15 +34,18 @@ struct NPY_API NSceneConfig
     int  csg_bbox_parsurf ; 
     int  csg_bbox_g4poly ;   // only available from GScene level 
 
+    int parsurf_epsilon ;   // specified by exponent eg -5 for 1e-5 is typical 
     int parsurf_target ; 
     int parsurf_level ; 
     int parsurf_margin ; 
     int verbosity ; 
     int polygonize ; 
+
  
     NSceneConfigBBoxType default_csg_bbty ; 
     NSceneConfigBBoxType bbox_type() const ; 
     const char* bbox_type_string() const ; 
+    float get_parsurf_epsilon() const ;
 
 };
 

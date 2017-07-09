@@ -1,4 +1,6 @@
 
+#include <set>
+#include <map>
 #include <sstream>
 #include "OpticksCSG.h"
 
@@ -13,12 +15,12 @@
 #include "PLOG.hh"
 
 
-NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config, float epsilon)
+NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config)
     :
     m_root(root),
     m_config(config),
-    m_verbosity(config->verbosity),
-    m_epsilon(epsilon),
+    m_verbosity(config ? config->verbosity : root->verbosity),
+    m_epsilon(config ? config->get_parsurf_epsilon() : 1e-5),
     m_level(config ? config->parsurf_level : 2 ), 
     m_margin(config ? config->parsurf_margin : 0 ), 
     m_target(config ? config->parsurf_target : 200) 
@@ -26,6 +28,10 @@ NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config, float epsilon)
     init();
 }
 
+void NNodePoints::setEpsilon(float epsilon)
+{
+    m_epsilon = epsilon ; 
+}
 
 void NNodePoints::init()
 {
@@ -50,6 +56,15 @@ std::string NNodePoints::desc() const
 
 
 
+
+nbbox NNodePoints::bbox_surface_points() const 
+{
+    unsigned num_cp = getNumCompositePoints() ; 
+    if(num_cp==0)  
+        LOG(debug) << "NNodePoints::bbox_surface_points NONE FOUND : probably need larger parsurf_level   " << desc() ;  
+
+    return nbbox::from_points(getCompositePoints(), m_verbosity);    
+}
 
 const std::vector<glm::vec3>& NNodePoints::getCompositePoints() const 
 {
@@ -105,7 +120,7 @@ glm::uvec4 NNodePoints::collect_surface_points()
 
     while( num_composite_points < m_target && countdown-- )
     {
-        m_composite_points.clear();
+        clear();
         tots = collectCompositePoints( level, m_margin , pointmask);
 
         if(m_verbosity > 2)
@@ -125,6 +140,14 @@ glm::uvec4 NNodePoints::collect_surface_points()
     return tots ; 
 }
 
+void NNodePoints::clear()
+{
+    m_composite_points.clear();
+    m_composite_coords.clear();
+    m_prim_bb.clear();
+    m_prim_bb_selected.clear();
+}
+
 
 glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , unsigned pointmask ) 
 {
@@ -135,6 +158,15 @@ glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , uns
     for(unsigned prim_idx=0 ; prim_idx < num_prim ; prim_idx++)
     {
         nnode* prim = m_primitives[prim_idx] ; 
+
+        
+        if(m_verbosity > 4) 
+        LOG(info) << "NNodePoints::collectCompositePoints"
+                  << " prim_idx " << prim_idx 
+                  << " level " << level
+                  << " margin " << margin
+                  ;
+
 
         prim->collectParPoints(prim_idx, level, margin, FRAME_GLOBAL , m_verbosity );
 
@@ -176,6 +208,7 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
     unsigned num_surface(0);
     unsigned num_select(0);
 
+
     if(m_verbosity > 5) 
          LOG(info) << "NNodePoints::selectBySDF"
                    << " verbosity " << m_verbosity
@@ -184,6 +217,9 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
                    ;
 
     assert( num_prim_points == num_prim_coords );
+
+    std::vector<glm::vec3> _points ; 
+    std::vector<nuv> _coords ; 
 
     for(unsigned i=0 ; i < num_prim_points ; i++) 
     {
@@ -204,8 +240,8 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
           if( pt & pointmask ) 
           {
               num_select++ ;  
-              m_composite_points.push_back(p);
-              m_composite_coords.push_back(uv);
+              _points.push_back(p);
+              _coords.push_back(uv);
           }
 
           switch(pt)
@@ -226,8 +262,20 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
                << std::endl
                ; 
     }
+
+
+    std::copy( _points.begin(), _points.end(), std::back_inserter(m_composite_points) );
+    std::copy( _coords.begin(), _coords.end(), std::back_inserter(m_composite_coords) );
+
+    nbbox pbb =  nbbox::from_points( prim_points, m_verbosity);    
+    m_prim_bb.push_back(pbb);
+
+    nbbox sbb =  nbbox::from_points(     _points, m_verbosity);    
+    m_prim_bb_selected.push_back(sbb);
+
     return glm::uvec4(num_inside, num_surface, num_outside, num_select );
 }
+
 
 
 
@@ -237,12 +285,12 @@ void NNodePoints::dump(const char* msg, unsigned dmax) const
     LOG(info) << msg 
               << " num_composite_points " << num_composite_points
               << " dmax " << dmax
+              << " desc " << desc()
               ;
 
 
-    //nbbox bbsp = bbox_surface_points();
-    //std::cout << " bbsp " << bbsp.desc() << std::endl ; 
-
+    nbbox bbsp = bbox_surface_points();
+    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
 
     glm::vec3 lsp ; 
     for(unsigned i=0 ; i < std::min<unsigned>(num_composite_points,dmax) ; i++)
@@ -259,7 +307,155 @@ void NNodePoints::dump(const char* msg, unsigned dmax) const
 
         lsp = sp ; 
     }
+
+    dump_bb();
+    dump_sheets();
 }
+
+
+
+nbbox NNodePoints::selectPointsBBox( unsigned prim, unsigned sheet ) const 
+{
+    std::vector<glm::vec3> points ; 
+    std::vector<nuv> coords ; 
+    selectPoints(points, coords, prim, sheet);
+    return nbbox::from_points(points, m_verbosity );
+}
+ 
+
+void NNodePoints::selectPoints(std::vector<glm::vec3>& points, std::vector<nuv>& coords, unsigned prim, unsigned sheet) const 
+{
+    unsigned num_composite_points = m_composite_points.size() ;
+    unsigned num_composite_coords = m_composite_coords.size() ;
+    assert( num_composite_points == num_composite_coords );
+
+    for(unsigned i=0 ; i < num_composite_coords ; i++)
+    {
+        glm::vec3 p = m_composite_points[i]; 
+        nuv uv = m_composite_coords[i]; 
+        if(uv.matches(prim,sheet)) 
+        {
+            points.push_back(p) ;
+            coords.push_back(uv) ;
+        }
+    }
+}
+
+
+
+void NNodePoints::dump_bb() const 
+{
+    unsigned num_prim_bb = m_prim_bb.size();
+    unsigned num_prim_bb_selected = m_prim_bb_selected.size();
+
+
+    LOG(info) << "NNodePoints::dump_bb"
+              << " num_prim_bb " << num_prim_bb
+              << " num_prim_bb_selected  " << num_prim_bb_selected
+              ;
+
+    assert( num_prim_bb == m_primitives.size()  );
+    assert( num_prim_bb_selected == m_primitives.size()  );
+
+    std::cout << " prim_bb " << std::endl ; 
+    for(unsigned i=0 ; i < num_prim_bb ; i++)
+    {
+        std::cout << std::setw(4) << i 
+                  << " " << m_prim_bb[i].desc()
+                  << std::endl 
+                  ;
+    }
+
+    std::cout << " prim_bb_selected " << std::endl ; 
+    for(unsigned i=0 ; i < num_prim_bb ; i++)
+    {
+        std::cout << std::setw(4) << i 
+                  << " " << m_prim_bb_selected[i].desc()
+                  << std::endl 
+                  ;
+    }
+
+
+}
+
+
+void NNodePoints::dump_sheets() const 
+{
+    unsigned num_composite_points = m_composite_points.size() ;
+    unsigned num_composite_coords = m_composite_coords.size() ;
+
+    LOG(info) << "NNodePoints::dump_sheets"
+              << " num_composite_points " << num_composite_points
+              << " num_composite_coords " << num_composite_coords
+              ;
+
+    assert( num_composite_points == num_composite_coords );
+
+
+    typedef std::map<unsigned, unsigned> MUU ; 
+    MUU ps ; 
+
+    for(unsigned i=0 ; i < num_composite_coords ; i++)
+    {
+        nuv uv = m_composite_coords[i]; 
+        ps[uv.ps()]++ ;  // prim idx and sheet encoded into unsigned
+    }
+
+    LOG(info) << "NNodePoints::dump_sheets"
+              << " nps " << ps.size()
+               ;
+
+
+    nbbox bbsp = bbox_surface_points();
+    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
+
+    unsigned dmax = 200 ; 
+    unsigned num_pass = 1 ; 
+
+    for(unsigned pass=0 ; pass < num_pass ; pass++)
+    {
+        for(MUU::const_iterator it=ps.begin() ; it != ps.end() ; it++)
+        {
+             unsigned ps_ = it->first ; 
+             unsigned count = it->second ; 
+
+             unsigned prim = nuv::ps_to_prim(ps_);
+             unsigned sheet = nuv::ps_to_sheet(ps_);
+
+
+             std::vector<glm::vec3> points ; 
+             std::vector<nuv> coords ; 
+
+             selectPoints(points, coords, prim, sheet);
+
+             nbbox ps_bbox = nbbox::from_points(points, m_verbosity );
+
+             std::cout 
+                   << " prim_sheet " << std::setw(5) << ps_
+                   << " prim " << std::setw(5) << prim
+                   << " sheet " << std::setw(5) << sheet 
+                   << " count " << std::setw(5) << count 
+                   << " ps_bbox " << ps_bbox.desc()
+                   << std::endl ; 
+
+             if(pass == 1)
+             {
+                 for(unsigned i=0 ; i < std::min<unsigned>(points.size(), dmax) ; i++)
+                 {
+                    std::cout << " i " << std::setw(5) << i
+                              << " p " << gpresent(points[i])
+                              << " c " << coords[i].detail()
+                              << std::endl 
+                              ;
+                 }
+             } 
+        }
+    }
+
+}
+
+
+
 
 
 

@@ -13,9 +13,10 @@ N::N(nnode* node, const nmat4triple* transform, const NSceneConfig* config, floa
          node(node), 
          transform(transform),
          config(config),
-         points(new NNodePoints(node, config, surface_epsilon)),
+         points(new NNodePoints(node, config)),
          nsdf(node->sdf(), transform->v)
 {
+         points->setEpsilon(surface_epsilon);
 
          tots = points->collect_surface_points() ;
          const std::vector<glm::vec3>& model = points->getCompositePoints();

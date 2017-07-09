@@ -1,9 +1,12 @@
+
+#include "SSys.hh"
 #include "NCSG.hpp"
 #include "NConvexPolyhedron.hpp"
 #include "NBBox.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 #include "NSceneConfig.hpp"
+#include "NNodePoints.hpp"
 
 #include <iostream>
 #include <iomanip>
@@ -109,7 +112,6 @@ void test_getSurfacePointsAll(nconvexpolyhedron* cpol)
 {
     cpol->dump_planes(); 
 
-
     unsigned level = 1 ;  // +---+---+
     int margin = 1 ;      // o---*---o
     unsigned verbosity = 1 ; 
@@ -127,12 +129,11 @@ void test_getSurfacePointsAll(nconvexpolyhedron* cpol)
 }
 
 
+
 void test_dumpSurfacePointsAll(const nconvexpolyhedron* cpol)
 {
     cpol->dumpSurfacePointsAll("dumpSurfacePointsAll", FRAME_LOCAL);
 }
-
-
 
 
 nconvexpolyhedron* test_make_trapezoid()
@@ -163,7 +164,9 @@ nconvexpolyhedron* test_make_trapezoid()
 
     */
 
-    float z  = 100 ; 
+    LOG(info) << "test_make_trapezoid" ; 
+
+    float z  = 200 ; 
     float x1 = 200 ; 
     float y1 = 200 ; 
     float x2 = 200 ; 
@@ -172,9 +175,33 @@ nconvexpolyhedron* test_make_trapezoid()
     nconvexpolyhedron* cpol = nconvexpolyhedron::make_trapezoid( z,  x1,  y1,  x2,  y2 );
 
     cpol->dump_planes();
+    cpol->dump_uv_basis();
+
+    nbbox bb = cpol->bbox_model();
+    std::cout << "bbox_model " << bb.desc() << std::endl ; 
 
     return cpol ; 
 }
+
+
+void test_collect_surface_points(nconvexpolyhedron* cpol )
+{
+    LOG(info) << "test_collect_surface_points" ; 
+
+    cpol->verbosity = SSys::getenvint("VERBOSITY", 5) ; 
+
+    // observe that low parsurf_level dont cover the whole
+    // surface because meet target points count already ?
+
+    NSceneConfig config("parsurf_level=4");
+
+    NNodePoints pts(cpol, &config) ;  
+
+    pts.collect_surface_points();
+    pts.dump();
+}
+
+
 
 
 void test_transform_planes(nconvexpolyhedron* cpol )
@@ -205,7 +232,7 @@ int main(int argc, char** argv)
     //test_dumpSurfacePointsAll(cpol);
 
     nconvexpolyhedron* cpol = test_make_trapezoid();
-    test_dumpSurfacePointsAll(cpol);
+    test_collect_surface_points(cpol);
 
     //test_transform_planes(cpol);
 
