@@ -1,4 +1,5 @@
 
+#include <sstream>
 #include "OpticksCSG.h"
 
 #include "NGLMExt.hpp"
@@ -16,7 +17,7 @@ NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config, float epsilon)
     :
     m_root(root),
     m_config(config),
-    m_verbosity(root->verbosity),
+    m_verbosity(config->verbosity),
     m_epsilon(epsilon),
     m_level(config ? config->parsurf_level : 2 ), 
     m_margin(config ? config->parsurf_margin : 0 ), 
@@ -25,10 +26,30 @@ NNodePoints::NNodePoints(nnode* root, const NSceneConfig* config, float epsilon)
     init();
 }
 
+
 void NNodePoints::init()
 {
     m_root->collect_prim_for_edit(m_primitives);    // recursive collection of list of all primitives in tree
 }
+
+std::string NNodePoints::desc() const 
+{
+    std::stringstream ss; 
+
+    ss << "NNP"
+       << " verbosity " << m_verbosity
+       << " level " << m_level
+       << " margin " << m_margin
+       << " target " << m_target
+       << " num_prim " << m_primitives.size()
+       << " num_composite_points " << m_composite_points.size()
+       << " epsilon " << std::scientific << m_epsilon << std::defaultfloat 
+        ;
+    return ss.str();
+}
+
+
+
 
 const std::vector<glm::vec3>& NNodePoints::getCompositePoints() const 
 {

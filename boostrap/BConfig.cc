@@ -20,6 +20,7 @@ void BConfig::addInt(const char* k, int* ptr)
 
 void BConfig::parse()
 {
+    if(!cfg) return ; 
     BStr::ekv_split(ekv, cfg, ',', "=" );
     for(unsigned i=0 ; i < ekv.size() ; i++)
     {   

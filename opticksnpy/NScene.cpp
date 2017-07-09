@@ -153,7 +153,7 @@ NScene::NScene(const char* base, const char* name, const char* config, int dbgno
     m_config(new NSceneConfig(config)),
     m_dbgnode(dbgnode),
     m_containment_err(0),
-    m_verbosity(0),
+    m_verbosity(m_config->verbosity),
     m_num_global(0),
     m_num_csgskip(0),
     m_num_placeholder(0),
@@ -268,7 +268,20 @@ void NScene::write_lvlists()
 void NScene::load_asset_extras()
 {
     auto extras = m_gltf->asset.extras ; 
-    m_verbosity = extras["verbosity"]; 
+    unsigned extras_verbosity = extras["verbosity"]; 
+
+    if(extras_verbosity > m_verbosity)
+    {
+        LOG(warning) << "NScene::load_asset_extras"
+                     << " verbosity increase from scene gltf "
+                     << " extras_verbosity " << extras_verbosity
+                     << " m_verbosity " << m_verbosity
+                     ;
+
+        m_verbosity = extras_verbosity ; 
+       
+    }
+
     m_targetnode = extras["targetnode"]; 
 
     if(m_verbosity > 1)
@@ -400,10 +413,8 @@ void NScene::load_mesh_extras()
         std::string uri = extras["uri"] ; 
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
-        int verbosity = 0 ; 
-        bool polygonize = true ; 
 
-        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config, iug, verbosity, polygonize  ); 
+        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
         csg->setIndex(mesh_id);
 
         bool csgskip = csg->isSkip() ;
@@ -427,9 +438,12 @@ void NScene::load_mesh_extras()
 
 
         m_csg[mesh_id] = csg ; 
+    
+        int lvidx_ = lvidx(mesh_id);
 
         if(m_verbosity > 1)
         std::cout << " mId " << std::setw(4) << mesh_id 
+                  << " lvidx " << std::setw(4) << lvidx_
                   << " npr " << std::setw(4) << primitives.size() 
                   << " nam " << std::setw(65) << mesh->name 
                   << " iug " << std::setw(1) << iug 

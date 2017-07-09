@@ -12,6 +12,7 @@ class NPY_API NNodePoints
 {
     public:
         NNodePoints(nnode* root, const NSceneConfig* config, float epsilon=1e-5);
+        std::string desc() const ;
     public:
         glm::uvec4 collect_surface_points() ;
     public:

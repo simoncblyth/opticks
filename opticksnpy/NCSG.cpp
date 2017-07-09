@@ -916,8 +916,12 @@ void NCSG::dump(const char* msg)
 
     if(!m_root) return ;
 
-    nbbox bbsp = bbox_surface_points();
-    std::cout << " bbsp " << bbsp.desc() << std::endl ; 
+    unsigned nsp = getNumSurfacePoints();
+    if( nsp > 0)
+    {
+        nbbox bbsp = bbox_surface_points();
+        std::cout << " bbsp " << bbsp.desc() << std::endl ; 
+    }
 
     m_root->dump("NCSG::dump");   
 
@@ -1085,34 +1089,51 @@ void NCSG::updateContainer( nbbox& container ) const
 
 
 
-NCSG* NCSG::LoadCSG(const char* treedir, const NSceneConfig* config)
+
+ 
+
+
+NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
 {
     if(!treedir || !BFile::ExistsDir(treedir))
     {
          LOG(warning) << "NCSG::LoadCSG no such dir " << treedir ;
          return NULL ; 
     }
+    NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+
+    int verbosity = SSys::getenvint("VERBOSITY", 1) ;
+    if(verbosity != config->verbosity) 
+    {
+        LOG(info) << "NCSG::LoadCSG"
+                  << " setting verbosity from envvar " 
+                  << verbosity 
+                  ;   
+         config->verbosity = verbosity ; 
+    }
+
+
     NCSG* csg = NCSG::LoadTree(treedir, config);
     assert(csg);
     return csg ; 
 }
 
 
-NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config,  bool usedglobally, int verbosity, bool polygonize )
+NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 {
     NCSG* tree = new NCSG(treedir) ; 
 
     tree->setConfig(config);
-    tree->setVerbosity(verbosity);
-    tree->setIsUsedGlobally(usedglobally);
+    tree->setVerbosity(config->verbosity);
+    tree->setIsUsedGlobally(true);
 
     tree->load();
     tree->import();
     tree->export_();
 
-    if(verbosity > 1) tree->dump("NCSG::LoadTree");
+    if(config->verbosity > 1) tree->dump("NCSG::LoadTree");
 
-    if(polygonize)
+    if(config->polygonize)
     tree->polygonize();
 
     tree->collect_surface_points();
@@ -1195,8 +1216,19 @@ int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosi
 
 glm::uvec4 NCSG::collect_surface_points() 
 {
-    if(!m_points) m_points = new NNodePoints(m_root, m_config, m_verbosity);
-    return m_points->collect_surface_points();
+    //LOG(info) << "NCSG::collect_surface_points START " << brief() ; 
+
+    if(!m_points) 
+    {
+        //LOG(info) << "NCSG::collect_surface_points points ctor " ; 
+        m_points = new NNodePoints(m_root, m_config );
+    } 
+
+    glm::uvec4 tots = m_points->collect_surface_points();
+
+
+    //LOG(info) << "NCSG::collect_surface_points DONE " << m_points->desc()  ; 
+    return tots ; 
 }
 
 
@@ -1221,18 +1253,18 @@ nbbox NCSG::bbox_surface_points() const
 
 
 
-
 const std::vector<glm::vec3>& NCSG::getSurfacePoints() const 
 {
-    return m_surface_points ;
+    assert(m_points); 
+    return m_points->getCompositePoints();
 }
 unsigned NCSG::getNumSurfacePoints() const 
 {
-    return m_surface_points.size() ;
+    return m_points ? m_points->getNumCompositePoints() : 0 ;
 }
 float NCSG::getSurfaceEpsilon() const 
 {
-    return m_surface_epsilon ; 
+    return m_points ? m_points->getEpsilon() : -1.f ;
 }
 
 

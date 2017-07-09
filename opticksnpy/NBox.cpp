@@ -230,7 +230,9 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
     */
 
     //nbbox bb = bbox() ;  // NB bbox() has gtransform->t is already applied
-    nbbox bb = bbox_model() ;  // bbox_model() has no transforms applied
+    //nbbox bb = bbox_model() ;
+ 
+    const nbbox& bb = *_bbox_model ;   // from init_box
 
     glm::vec3 p ; 
 

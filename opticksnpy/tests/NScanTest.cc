@@ -41,14 +41,12 @@ int main(int argc, char** argv)
 
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
-    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
-
 
     int verbosity = 0 ; 
     std::vector<NCSG*> trees ;
     if(pathEndsWithInt(basedir))
     {
-        NCSG* csg = NCSG::LoadCSG(basedir, config);
+        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
         if(csg) trees.push_back(csg);   
     }
     else

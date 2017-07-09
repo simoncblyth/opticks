@@ -58,6 +58,7 @@ NConeTest.cc
 NConvexPolyhedronTest.cc
 
 NNodeTest.cc
+NNodePointsTest.cc
 
 NTesselateTest.cc
 

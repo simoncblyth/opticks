@@ -3,6 +3,7 @@
 #include "NGLM.hpp"
 #include "NNode.hpp"
 #include "NPart.hpp"
+#include "NBBox.hpp"
 
 #include "NPY_API_EXPORT.hh"
 
@@ -76,6 +77,8 @@ struct NPY_API nbox : nnode
     bool is_box   ;   // cannot const these without ctor
     bool is_box3  ; 
 
+
+
 };
 
 
@@ -121,6 +124,7 @@ inline NPY_API void init_box(nbox& b, const nquad& p )
     b.param = p ; 
     b.is_box = true ; 
     b.is_box3 = false ; 
+    b._bbox_model = new nbbox(b.bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
 
 }
 inline NPY_API void init_box3(nbox& b, const nquad& p )
@@ -128,6 +132,7 @@ inline NPY_API void init_box3(nbox& b, const nquad& p )
     b.param = p ; 
     b.is_box = false ; 
     b.is_box3 = true ; 
+    b._bbox_model = new nbbox(b.bbox_model()) ;   // bbox_model() has no transforms applied, so is available early
 }
 
 inline NPY_API nbox make_box(const nquad& p)

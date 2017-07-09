@@ -81,8 +81,8 @@ class NPY_API NCSG {
         static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
 
         static NCSG* FromNode(nnode* root, const NSceneConfig* config);
-        static NCSG* LoadCSG(const char* treedir, const NSceneConfig* config);
-        static NCSG* LoadTree(const char* treedir, const NSceneConfig* config, bool usedglobally=true, int verbosity=0, bool polygonize=false );
+        static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
+        static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
         static NParameters* LoadMetadata(const char* treedir);
         void updateContainer( nbbox& container ) const  ;

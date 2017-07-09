@@ -3,6 +3,12 @@ Tests individual trees::
 
     NCSGLoadTest $TMP/tboolean-csg-two-box-minus-sphere-interlocked-py-/1
 
+
+    NCSGLoadTest 0    
+    NCSGLoadTest 66    
+        # integer arguments are interpreted as lvidx and NCSG are 
+        # loaded from the standard extras dir located within IDFOLD
+
 **/
 
 #include <iostream>
@@ -21,30 +27,8 @@ Tests individual trees::
 #include "PLOG.hh"
 
 
- 
-void test_LoadTree(const char* treedir)
-{
-    int verbosity = 2 ;
-
-    LOG(info) << "test_LoadTree" 
-              << " treedir " << treedir
-              << " verbosity " << verbosity
-              ; 
-
-    if(!BFile::ExistsDir(treedir))
-    {
-         LOG(warning) << "test_LoadTree no such dir " << treedir ;
-         return ; 
-    }
-
-
-    const char* gltfconfig = "csg_bbox_parsurf=1" ;
-    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
- 
-    NCSG* csg = NCSG::LoadTree(treedir, config );
-
-    assert(csg);
-}
+#include "SSys.hh"
+#include "BOpticksResource.hh"
 
 
 
@@ -53,9 +37,13 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     NPY_LOG__ ;  
 
-    LOG(info) << " argc " << argc << " argv[0] " << argv[0] ;  
+    BOpticksResource okr ;  // no Opticks at this level 
+    std::string treedir = okr.getDebuggingTreedir(argc, argv);
 
-    test_LoadTree( argc > 1 ? argv[1] : "$TMP/csg_py/1" );
+    const char* config = NULL ; 
+    NCSG* csg = NCSG::LoadCSG( treedir.c_str(), config ); 
+
+    if(!csg) return 0 ; 
 
     return 0 ; 
 }

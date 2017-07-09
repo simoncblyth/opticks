@@ -452,11 +452,7 @@ nbbox nnode::bbox() const
 
 nnode* nnode::load(const char* treedir, const NSceneConfig* config)
 {
-    bool usedglobally = false ; 
-    bool polygonize = false ; 
-    int verbosity = 1 ; 
-
-    NCSG* tree = NCSG::LoadTree(treedir, config, usedglobally, verbosity, polygonize );
+    NCSG* tree = NCSG::LoadTree(treedir, config);
     nnode* root = tree->getRoot();
     return root ; 
 }
@@ -1048,7 +1044,7 @@ void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, 
     unsigned n0 = par_points.size();
 
 
-    std::vector<const glm::vec3> uniq ; 
+    //std::vector<const glm::vec3> uniq ; 
 
     for (int v = margin; v <= (nv-margin) ; v++)
     {
@@ -1061,7 +1057,7 @@ void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, 
             par_coords.push_back(uv) ;
 
             // tried std::set it didnt work
-            if(std::find(uniq.begin(),uniq.end(), pos) == uniq.end())  uniq.push_back(pos);
+            //if(std::find(uniq.begin(),uniq.end(), pos) == uniq.end())  uniq.push_back(pos);
         }
     }
     unsigned n1 = par_points.size();
@@ -1083,8 +1079,8 @@ void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, 
                  << " n0 " << std::setw(6) << n0
                  << " n1 " << std::setw(6) << n1
                  << " n " << std::setw(6) << n
-                 << " uniq " << std::setw(6) << uniq.size()
-                 << " uniq[0] " << ( uniq.size() > 0 ? gpresent(uniq[0]) : "" )
+            //     << " uniq " << std::setw(6) << uniq.size()
+            //     << " uniq[0] " << ( uniq.size() > 0 ? gpresent(uniq[0]) : "" )
                  << std::endl 
                  ;
     } 

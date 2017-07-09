@@ -8,6 +8,7 @@ namespace fs = boost::filesystem;
 #include "SSys.hh"
 
 #include "BFile.hh"
+#include "BStr.hh"
 #include "BOpticksResource.hh"
 
 // CMake generated defines from binary_dir/inc
@@ -103,6 +104,24 @@ void BOpticksResource::setDebuggingIDPATH()
     std::string idfold = BFile::ParentDir(m_debugging_idpath) ;
     m_debugging_idfold = strdup(idfold.c_str());
 
+}
+
+
+std::string BOpticksResource::getDebuggingTreedir(int argc, char** argv)
+{
+    int arg1 = BStr::atoi(argc > 1 ? argv[1] : "-1", -1 );
+
+    std::string treedir ; 
+    if(arg1 > -1) 
+    {   
+        const char* idfold = getDebuggingIDFOLD() ;
+        treedir = BFile::FormPath( idfold, "extras", BStr::itoa(arg1) ) ; 
+    }   
+    else
+    {   
+        treedir = argc > 1 ? argv[1] : "$TMP/csg_py/1" ;
+    }   
+    return treedir ; 
 }
 
 

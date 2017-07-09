@@ -186,6 +186,8 @@ struct NPY_API nnode
     std::vector<nuv>       par_coords ; 
 
     NNodeDump* _dump ;
+    nbbox*   _bbox_model ; 
+
 
 };
 

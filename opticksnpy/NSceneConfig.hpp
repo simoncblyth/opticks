@@ -37,6 +37,8 @@ struct NPY_API NSceneConfig
     int parsurf_target ; 
     int parsurf_level ; 
     int parsurf_margin ; 
+    int verbosity ; 
+    int polygonize ; 
  
     NSceneConfigBBoxType default_csg_bbty ; 
     NSceneConfigBBoxType bbox_type() const ; 

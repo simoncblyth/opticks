@@ -36,6 +36,8 @@ NSceneConfig::NSceneConfig(const char* cfg)
     parsurf_target(200),
     parsurf_level(2),
     parsurf_margin(0),
+    verbosity(0),
+    polygonize(1),
 
     default_csg_bbty(CSG_BBOX_PARSURF)
 {
@@ -53,6 +55,8 @@ NSceneConfig::NSceneConfig(const char* cfg)
     bconfig->addInt("parsurf_target",         &parsurf_target);
     bconfig->addInt("parsurf_level",          &parsurf_level);
     bconfig->addInt("parsurf_margin",         &parsurf_margin);
+    bconfig->addInt("verbosity",              &verbosity);
+    bconfig->addInt("polygonize",             &polygonize);
 
     bconfig->parse();
 }
