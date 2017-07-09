@@ -22,6 +22,8 @@ set(TEST_SOURCES
     OpRayleighTest.cc 
     CGROUPVELTest.cc 
 
+    CMakerTest.cc
+
 )
 
 

@@ -3,6 +3,8 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NCSG.hpp"
+#include "NNode.hpp"
 
 // ggeo-
 #include "GCSG.hh"
@@ -66,42 +68,6 @@ G4VSolid* CMaker::makeBox(const glm::vec4& param)
     return solid ; 
 }
 
-//G4VSolid* CMaker::makeSolid(char shapecode, const glm::vec4& param)
-G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
-{
-    G4VSolid* solid = NULL ; 
-    switch(type)
-    {
-        case CSG_BOX:   solid = makeBox(param);break;
-        case CSG_SPHERE:solid = makeSphere(param);break;
-        case CSG_UNION:
-        case CSG_INTERSECTION:
-        case CSG_DIFFERENCE:
-        case CSG_ZSPHERE:
-        case CSG_ZLENS:
-        case CSG_PMT:
-        case CSG_PRISM:
-        case CSG_TUBS:
-        case CSG_PARTLIST:
-        case CSG_CYLINDER:
-        case CSG_DISC:
-        case CSG_CONE:
-        case CSG_MULTICONE:
-        case CSG_BOX3:
-        case CSG_PLANE:
-        case CSG_SLAB:
-        case CSG_TRAPEZOID:
-        case CSG_ZERO:
-        case CSG_UNDEFINED:
-        case CSG_FLAGPARTLIST:
-        case CSG_FLAGNODETREE:
-        case CSG_FLAGINVISIBLE:
-        case CSG_CONVEXPOLYHEDRON:
-                         solid = NULL ; break ; 
-
-    }
-    return solid ; 
-} 
 
 
 G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
@@ -277,5 +243,76 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
    assert(solid) ; 
    return solid ; 
 }
+
+G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
+{
+    G4VSolid* solid = NULL ; 
+    switch(type)
+    {
+        case CSG_BOX:   solid = makeBox(param);break;
+        case CSG_SPHERE:solid = makeSphere(param);break;
+        case CSG_UNION:
+        case CSG_INTERSECTION:
+        case CSG_DIFFERENCE:
+        case CSG_ZSPHERE:
+        case CSG_ZLENS:
+        case CSG_PMT:
+        case CSG_PRISM:
+        case CSG_TUBS:
+        case CSG_PARTLIST:
+        case CSG_CYLINDER:
+        case CSG_DISC:
+        case CSG_CONE:
+        case CSG_MULTICONE:
+        case CSG_BOX3:
+        case CSG_PLANE:
+        case CSG_SLAB:
+        case CSG_TRAPEZOID:
+        case CSG_ZERO:
+        case CSG_UNDEFINED:
+        case CSG_FLAGPARTLIST:
+        case CSG_FLAGNODETREE:
+        case CSG_FLAGINVISIBLE:
+        case CSG_CONVEXPOLYHEDRON:
+        case CSG_SEGMENT:
+                         solid = NULL ; break ; 
+
+    }
+    return solid ; 
+} 
+
+
+G4VSolid* CMaker::makeSolid(NCSG* csg)
+{
+    // need to traverse the nnode tree (->left, ->right), 
+    // converting operators into G4Booleans and primitives into solids 
+    // and linkinf them into the booleans
+    // similar structure to NCSG::import_r
+    //
+
+    nnode* root_ = csg->getRoot();
+
+    G4VSolid* root = makeSolid_r(root_);
+
+    return root  ; 
+}
+
+G4VSolid* CMaker::makeSolid_r(const nnode* node)
+{
+
+    if( node->is_primitive() )
+    {
+        
+    }
+    else if(node->is_operator())
+    {
+        G4VSolid* left = makeSolid_r(node->left);
+        G4VSolid* right = makeSolid_r(node->right);
+    }
+
+    return NULL ; 
+}
+
+
 
 

@@ -4,6 +4,11 @@
 #include <string>
 
 #include "OpticksCSG.h"
+
+
+class NCSG ; 
+struct nnode ; 
+
 class GCSG ; 
 class G4VSolid;
 class Opticks ; 
@@ -36,12 +41,16 @@ class CFG4_API CMaker
     public:
         CMaker(Opticks* ok, int verbosity=0);
     public:
-        //G4VSolid* makeSolid(char shapecode, const glm::vec4& param);
         G4VSolid* makeSolid(OpticksCSG_t type, const glm::vec4& param);
         G4VSolid* makeBox(const glm::vec4& param);
         G4VSolid* makeSphere(const glm::vec4& param);
     public:
-        G4VSolid* makeSolid(GCSG* csg, unsigned int i); 
+        G4VSolid* makeSolid(GCSG* csg, unsigned int i);  // ancient CSG 
+    public:
+        // current CSG 
+        G4VSolid* makeSolid(NCSG* csg);                  
+    private:
+        G4VSolid* makeSolid_r(const nnode* node);
     private:
         Opticks* m_ok ; 
         int      m_verbosity ; 

@@ -55,7 +55,7 @@ class G4VSolid;
 /**
 
 CTestDetector
-~~~~~~~~~~~~~~
+=================
 
 *CTestDetector* is a :doc:`CDetector` subclass that
 constructs simple Geant4 detector test geometries based on commandline specifications
