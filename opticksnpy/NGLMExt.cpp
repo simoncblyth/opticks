@@ -285,11 +285,19 @@ float nglmext::compDiff2(const glm::mat4& a_ , const glm::mat4& b_, bool fractio
 
 
 
+
+
+glm::mat4 nglmext::make_transpose(const glm::mat4& t )
+{
+   return glm::transpose(t);
+}
+
 glm::mat4 nglmext::make_translate(const float x, const float y, const float z)
 {
    glm::vec3 tlate(x,y,z);
    return make_translate(tlate);
 }
+
 glm::mat4 nglmext::make_rotate(const float x, const float y, const float z, const float w)
 {
    glm::vec4 aa(x,y,z,w);

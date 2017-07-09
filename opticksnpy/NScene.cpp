@@ -413,9 +413,11 @@ void NScene::load_mesh_extras()
         std::string uri = extras["uri"] ; 
         std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
 
+        int lvidx_ = lvidx(mesh_id);
 
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
         csg->setIndex(mesh_id);
+
 
         bool csgskip = csg->isSkip() ;
         if(csgskip) 
@@ -439,7 +441,6 @@ void NScene::load_mesh_extras()
 
         m_csg[mesh_id] = csg ; 
     
-        int lvidx_ = lvidx(mesh_id);
 
         if(m_verbosity > 1)
         std::cout << " mId " << std::setw(4) << mesh_id 

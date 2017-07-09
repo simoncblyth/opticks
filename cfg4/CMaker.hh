@@ -4,7 +4,7 @@
 #include <string>
 
 #include "OpticksCSG.h"
-
+#include <glm/fwd.hpp>
 
 class NCSG ; 
 struct nnode ; 
@@ -13,6 +13,12 @@ class GCSG ;
 class G4VSolid;
 class Opticks ; 
 
+namespace HepGeom
+{
+   class Transform3D ; 
+}
+
+typedef HepGeom::Transform3D G4Transform3D;
 
 /**
 CMaker
@@ -51,6 +57,8 @@ class CFG4_API CMaker
         G4VSolid* makeSolid(NCSG* csg);                  
     private:
         G4VSolid* makeSolid_r(const nnode* node);
+        static G4Transform3D* ConvertTransform(const glm::mat4& t);
+        static G4VSolid*      ConvertPrimitive(const nnode* node);
     private:
         Opticks* m_ok ; 
         int      m_verbosity ; 

@@ -162,7 +162,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
 
 
 
-const char* nnode::csgname()
+const char* nnode::csgname() const
 {
    return CSGName(type);
 }

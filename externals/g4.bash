@@ -405,15 +405,20 @@ g4-cls-copy(){
    [ "$icc" != "" ] && echo cp $icc $iwd/$lname.icc
 }
 
-g4-cls(){
+
+g4-cls(){  g4-cls- source    $* ; }
+
+
+g4-cls-(){
    local iwd=$PWD
    g4-cd
-   local name=${1:-G4Scintillation}
+   local base=${1:-source}
+   local name=${2:-G4Scintillation}
 
-   local h=$(find source -name "$name.h")
-   local hh=$(find source -name "$name.hh")
-   local cc=$(find source -name "$name.cc")
-   local icc=$(find source -name "$name.icc")
+   local h=$(find $base -name "$name.h")
+   local hh=$(find $base -name "$name.hh")
+   local cc=$(find $base -name "$name.cc")
+   local icc=$(find $base -name "$name.icc")
 
    local vcmd="vi -R $h $hh $icc $cc"
    echo $vcmd
@@ -421,6 +426,11 @@ g4-cls(){
 
    cd $iwd
 }
+
+
+
+
+
 
 g4-look(){ 
    local iwd=$PWD

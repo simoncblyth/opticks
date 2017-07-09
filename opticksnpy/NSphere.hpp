@@ -74,9 +74,9 @@ inline NPY_API nsphere make_sphere(float x, float y, float z, float w)
     param.f = {x,y,z,w} ;
     return make_sphere(param);
 }
-inline NPY_API nsphere make_sphere()
+inline NPY_API nsphere make_sphere(float radius=100.f)
 {
-    return make_sphere(0.f,0.f,0.f,100.f);
+    return make_sphere(0.f,0.f,0.f,radius);
 }
 
 

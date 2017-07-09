@@ -3,8 +3,10 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NPrimitives.hpp"
 
 // ggeo-
 #include "GCSG.hh"
@@ -18,6 +20,7 @@
 #include "G4Transform3D.hh"
 
 #include "G4UnionSolid.hh"
+#include "G4SubtractionSolid.hh"
 #include "G4IntersectionSolid.hh"
 
 #include "globals.hh"
@@ -284,12 +287,6 @@ G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
 
 G4VSolid* CMaker::makeSolid(NCSG* csg)
 {
-    // need to traverse the nnode tree (->left, ->right), 
-    // converting operators into G4Booleans and primitives into solids 
-    // and linkinf them into the booleans
-    // similar structure to NCSG::import_r
-    //
-
     nnode* root_ = csg->getRoot();
 
     G4VSolid* root = makeSolid_r(root_);
@@ -299,20 +296,82 @@ G4VSolid* CMaker::makeSolid(NCSG* csg)
 
 G4VSolid* CMaker::makeSolid_r(const nnode* node)
 {
+    // hmm rmin/rmax is handled as a CSG subtraction
+    // so could collapse some operators into primitives
+
+    G4VSolid* result = NULL ; 
+
+    const char* name = node->csgname();
 
     if( node->is_primitive() )
     {
-        
+        result = ConvertPrimitive(node);        
     }
     else if(node->is_operator())
     {
         G4VSolid* left = makeSolid_r(node->left);
         G4VSolid* right = makeSolid_r(node->right);
-    }
 
-    return NULL ; 
+        assert(node->left->gtransform == NULL );
+
+        G4Transform3D* rtransform = ConvertTransform(node->right->gtransform->t);
+
+        if(node->type == CSG_UNION)
+        {
+            G4UnionSolid* uso = new G4UnionSolid( name, left, right, *rtransform );
+            result = uso ; 
+        }
+        else if(node->type == CSG_INTERSECTION)
+        {
+            G4IntersectionSolid* iso = new G4IntersectionSolid( name, left, right, *rtransform );
+            result = iso ; 
+        }
+        else if(node->type == CSG_DIFFERENCE)
+        {
+            G4SubtractionSolid* sso = new G4SubtractionSolid( name, left, right, *rtransform );
+            result = sso ; 
+        }
+    }
+    return result  ; 
 }
 
 
+
+class ConvertedG4Transform3D : public G4Transform3D 
+{
+   // inherit in order to use the protected ctor
+    public:
+        ConvertedG4Transform3D(const glm::mat4& m) :
+              G4Transform3D( 
+                               m[0].x, m[0].y, m[0].z, m[0].w ,
+                               m[1].x, m[1].y, m[1].z, m[1].w ,
+                               m[2].x, m[2].y, m[2].z, m[2].w ) 
+        {}
+};
+                
+
+
+G4Transform3D* CMaker::ConvertTransform(const glm::mat4& t) // static
+{
+    glm::mat4 tt = nglmext::make_transpose(t);
+    ConvertedG4Transform3D* ctr = new ConvertedG4Transform3D(tt);
+    return ctr  ; 
+}
+
+G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
+{
+    G4VSolid* result = NULL ; 
+    const char* name = node->csgname();
+    assert(name);
+
+    if(node->type == CSG_SPHERE)
+    {
+        nsphere* n = (nsphere*)node ; 
+        G4Sphere* sp = new G4Sphere( name, 0., n->radius(), 0., twopi, 0., pi);  
+        result = sp ; 
+    }
+
+    return result ; 
+}
 
 

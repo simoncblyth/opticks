@@ -36,7 +36,7 @@ struct NPY_API nnode
     static nnode* load(const char* treedir, const NSceneConfig* config=NULL);
     static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
 
-    virtual const char* csgname(); 
+    virtual const char* csgname() const ;  
     virtual nbbox bbox() const ;
 
     void check_primitive_bb( const nbbox& bb) const  ;
