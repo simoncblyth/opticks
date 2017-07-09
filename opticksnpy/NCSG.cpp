@@ -193,11 +193,22 @@ std::string NCSG::smry()
 }
 
 
-NParameters* NCSG::LoadMetadata(const char* treedir)
+NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
 {
-    std::string metapath = BFile::FormPath(treedir, "meta.json") ;
-    NParameters* meta = new NParameters ; 
-    meta->load_( metapath.c_str() );
+    // TODO:
+    //    per-node metadata, using metaNN.json ?
+    //    where NN is the inorder tree index 
+    //    which then gets associated to the appropriate node 
+    //
+    //    Need for access to Trd srcmeta
+
+    std::string metapath = idx == -1 ? BFile::FormPath(treedir, "meta.json") : BFile::FormPath(treedir, BStr::itoa(idx), "meta.json") ;
+    NParameters* meta = NULL  ; 
+    if(BFile::ExistsFile(metapath.c_str()))
+    {
+        meta = new NParameters ; 
+        meta->load_( metapath.c_str() );
+    } 
     return meta ; 
 }
 
@@ -214,6 +225,24 @@ void NCSG::loadMetadata()
     increaseVerbosity(verbosity);
 }
 
+void NCSG::loadNodeMetadata()
+{
+    assert(m_num_nodes > 0);
+    for(unsigned idx=0 ; idx < m_num_nodes ; idx++)
+    {
+        NParameters* nodemeta = LoadMetadata(m_treedir, idx);
+        if(!nodemeta) continue ; 
+        m_nodemeta[idx] = nodemeta ; 
+    } 
+}
+
+NParameters* NCSG::getNodeMetadata(unsigned idx) const 
+{
+    //typedef std::map<unsigned, NParameters*> MUP ; 
+    //MUP::const_iterator it = std::find(m_nodemeta.begin(), m_nodemeta.end(), idx) ;
+    //if(it == m_nodemeta.end()) return NULL ; 
+    return m_nodemeta.count(idx) == 1 ? m_nodemeta.at(idx) : NULL ; 
+}
 
 void NCSG::increaseVerbosity(int verbosity)
 {
@@ -339,6 +368,7 @@ void NCSG::load()
 
     loadMetadata();
     loadNodes();
+    loadNodeMetadata();
     LOG(debug) << "NCSG::load MIDDLE " ; 
     loadTransforms();
     loadPlanes();
@@ -675,9 +705,11 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
     }
     assert(node); 
 
+    NParameters* nodemeta = getNodeMetadata(idx);
+    if(nodemeta) node->meta = nodemeta ; 
+
     // Avoiding duplication between the operator and primitive branches 
     // in the above is not sufficient reason to put things here, so very late.
-
     return node ; 
 } 
 

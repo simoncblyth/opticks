@@ -45,6 +45,8 @@ int main(int argc, char** argv)
 
     if(!csg) return 0 ; 
 
+    csg->dump();
+
     return 0 ; 
 }
 

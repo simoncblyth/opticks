@@ -750,10 +750,13 @@ class Trapezoid(Primitive):
     def as_ncsg(self):
         assert self.lunit == 'mm' 
         cn = CSG("trapezoid", name=self.name)
-        planes, verts, bbox = make_trapezoid(z=self.z, x1=self.x1, y1=self.y1, x2=self.x2, y2=self.y2 )
+        planes, verts, bbox, meta = make_trapezoid(z=self.z, x1=self.x1, y1=self.y1, x2=self.x2, y2=self.y2 )
         cn.planes = planes
         cn.param2[:3] = bbox[0]
         cn.param3[:3] = bbox[1]
+
+        cn.meta.update(meta)
+
         return cn
 
 

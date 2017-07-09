@@ -98,11 +98,18 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
     For apex angle 90 degrees, hwidth = height 
     """
 
+
     def a_(xyz, dtype=np.float32):
         a = np.asarray(xyz, dtype=dtype)
         a /= np.sqrt(np.dot(a,a))
         return a 
 
+
+    srcmeta = dict(
+                src_type="prism",
+                src_angle=angle, 
+                src_height=height, 
+                 src_depth=depth)
 
     hwidth = height*np.tan((np.pi/180.)*angle/2.) 
     v = np.zeros( (6,3), dtype=dtype)
@@ -269,7 +276,7 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
     pass
 
 
-    return p, v, bbox
+    return p, v, bbox, srcmeta
 
 
 
@@ -312,6 +319,13 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
  
     """
 
+    srcmeta = dict( 
+                    src_type="segment",
+                    src_phi0=phi0, 
+                    src_phi1=phi1, 
+                    src_sz=sz, 
+                    src_sr=sr) 
+
     xy_ = lambda phi:np.array([np.cos(phi*np.pi/180.), np.sin(phi*np.pi/180.)], dtype=dtype)
 
     v = np.zeros( (6,3), dtype=dtype)   # verts
@@ -340,7 +354,7 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
     pass
-    return p, v, b
+    return p, v, b, srcmeta
 
 
 
@@ -373,6 +387,15 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     z:  z length
 
     """ 
+    srcmeta = dict(
+              src_type="trapezoid",
+              src_z=z,
+             src_x1=x1,
+             src_y1=y1,
+             src_x2=x2,
+             src_y2=y2
+           )         # prefix as NParameters/BList not supporting multilevel ?
+
     v = np.zeros( (8,3), dtype=dtype)   # verts
                                     # ZYX
     v[0] = [ -x1/2., -y1/2. , -z/2. ]  # 000
@@ -398,7 +421,8 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
     pass
-    return p, v, b
+
+    return p, v, b, srcmeta
 
 
 
@@ -415,6 +439,12 @@ def make_icosahedron(scale=500., dtype=np.float32):
     """
     CZ = 2./np.sqrt(5)
     SZ = 1./np.sqrt(5)
+
+    srcmeta = dict(
+                    src_type="icosahedron",
+                   src_scale=scale, 
+                    src_cz=cz, 
+                    src_sz=sz)
 
     C1 = np.cos( np.pi*18./180. )
     S1 = np.sin( np.pi*18./180. )
@@ -485,16 +515,16 @@ def make_icosahedron(scale=500., dtype=np.float32):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
     pass
-    return p, v, b
+    return p, v, b, srcmeta
 
 
 
 
 if __name__ == '__main__':
-    #p, v, b = make_prism( 45, 400,  400 )
-    #p, v, b = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    #p, v, b = make_icosahedron()
-    p, v, b = make_segment(0,45,100,200)
+    #p, v, b, srcmeta = make_prism( 45, 400,  400 )
+    #p, v, b, srcmeta = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    #p, v, b, srcmeta = make_icosahedron()
+    p, v, b, srcmeta = make_segment(0,45,100,200)
     pass
 
 

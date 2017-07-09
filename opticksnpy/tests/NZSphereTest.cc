@@ -21,16 +21,14 @@ void test_dumpSurfacePointsAll()
 
 void test_part()
 {
-    unsigned flags = 0 ; 
-    nzsphere s = make_zsphere(0,0,0,10,-5,5, flags);
+    nzsphere s = make_zsphere(0,0,0,10,-5,5);
     npart p = s.part();
     p.dump("p");
 }
 
 void test_bbox()
 {
-    unsigned flags = 0 ; 
-    nzsphere a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f, flags);
+    nzsphere a = make_zsphere(0.f,0.f,0.f,100.f, -50.f, 50.f);
     a.dump("zsph");
 
     nbbox bb = a.bbox();
@@ -39,12 +37,11 @@ void test_bbox()
 
 void test_sdf()
 {
-    unsigned flags = 0 ; 
     float radius = 10.f ; 
     float zdelta_min = -radius/2.f ; 
     float zdelta_max = radius/2.f ; 
 
-    nzsphere a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max, flags);
+    nzsphere a = make_zsphere(0.f,0.f,0.f,radius,zdelta_min,zdelta_max);
 
     for(float v=-2*radius ; v <= 2*radius ; v+= radius/10.f ) 
         std::cout 
@@ -70,12 +67,11 @@ void test_parametric()
     LOG(info) << "test_parametric" ;
 
 
-    unsigned flags = 0 ; 
     float radius = 10.f ; 
     float z1 = -radius/2.f ; 
     float z2 = radius/2.f ; 
 
-    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2, flags);
+    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2);
 
 
 
@@ -109,7 +105,25 @@ void test_parametric()
 }
 
 
+void test_deltaTheta()
+{
+    LOG(info) << "test_deltaTheta" ;
 
+    float radius = 10.f ; 
+    float z1 = -radius/2.f ; 
+    float z2 = radius/2.f ; 
+
+    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
+
+    
+    std::cout 
+         << " startTheta " << zs.startTheta()  
+         << " endTheta " << zs.endTheta()  
+         << " deltaTheta " << zs.deltaTheta()  
+         << std::endl
+         ;
+
+}
 
 
 
@@ -123,7 +137,9 @@ int main(int argc, char** argv)
     //test_sdf();
 
     //test_parametric();
-    test_dumpSurfacePointsAll();
+    //test_dumpSurfacePointsAll();
+
+    test_deltaTheta() ;
 
     return 0 ; 
 }

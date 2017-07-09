@@ -6,6 +6,7 @@
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NParameters.hpp"
 #include "NPrimitives.hpp"
 
 // ggeo-
@@ -15,6 +16,8 @@
 #include "G4Sphere.hh"
 #include "G4Box.hh"
 #include "G4Tubs.hh"
+#include "G4Cons.hh"
+#include "G4Trd.hh"
 
 #include "G4RotationMatrix.hh"
 #include "G4Transform3D.hh"
@@ -54,6 +57,7 @@ std::string CMaker::PVName(const char* shapename)
 }
 
 
+
 G4VSolid* CMaker::makeSphere(const glm::vec4& param)
 {
     G4double radius = param.w*mm ; 
@@ -70,8 +74,6 @@ G4VSolid* CMaker::makeBox(const glm::vec4& param)
     G4Box* solid = new G4Box("box_solid", x,y,z);
     return solid ; 
 }
-
-
 
 G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
 {
@@ -364,13 +366,118 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     const char* name = node->csgname();
     assert(name);
 
-    if(node->type == CSG_SPHERE)
+    // cf NCSG::import_primitive
+    if(node->type == CSG_SPHERE )
     {
         nsphere* n = (nsphere*)node ; 
         G4Sphere* sp = new G4Sphere( name, 0., n->radius(), 0., twopi, 0., pi);  
         result = sp ; 
     }
+    else if(node->type == CSG_ZSPHERE)
+    {
+        nzsphere* n = (nzsphere*)node ; 
 
+        double innerRadius = 0. ;
+        double outerRadius = n->radius() ;
+        double startPhi = 0. ; 
+        double deltaPhi = twopi ; 
+        double startTheta = n->startTheta() ; 
+        double deltaTheta = n->deltaTheta() ; 
+
+        G4Sphere* sp = new G4Sphere( name, innerRadius, outerRadius, startPhi, deltaPhi, startTheta, deltaTheta);  
+        result = sp ; 
+    }
+    else if(node->type == CSG_BOX || node->type == CSG_BOX3)
+    {
+        nbox* n = (nbox*)node ; 
+        glm::vec3 halfside = n->halfside();
+
+        G4Box* bx = new G4Box( name, halfside.x, halfside.y, halfside.z );
+        result = bx ; 
+    }
+    else if(node->type == CSG_CYLINDER)
+    {
+        ncylinder* n = (ncylinder*)node ; 
+
+        float z1 = n->z1() ; 
+        float z2 = n->z2() ;
+        assert( z2 > z1 && z2 == -z1 ); 
+        float hz = fabs(z1) ;
+
+        double innerRadius = 0. ;
+        double outerRadius = n->radius() ;
+        double zHalfLength = hz ;  // hmm will need transforms for nudged ?
+        double startPhi = 0. ; 
+        double deltaPhi = twopi ; 
+
+        G4Tubs* tb = new G4Tubs( name, innerRadius, outerRadius, zHalfLength, startPhi, deltaPhi );
+        result = tb ; 
+    }
+    else if(node->type == CSG_DISC)
+    {
+        ndisc* n = (ndisc*)node ; 
+
+        float z1 = n->z1() ; 
+        float z2 = n->z2() ;
+        assert( z2 > z1 && z2 == -z1 ); 
+        float hz = fabs(z1) ;
+
+        double innerRadius = 0. ;
+        double outerRadius = n->radius() ;
+        double zHalfLength = hz ;  // hmm will need transforms for nudged ?
+        double startPhi = 0. ; 
+        double deltaPhi = twopi ; 
+
+        G4Tubs* tb = new G4Tubs( name, innerRadius, outerRadius, zHalfLength, startPhi, deltaPhi );
+        result = tb ; 
+    }
+    else if(node->type == CSG_CONE)
+    {
+        ncone* n = (ncone*)node ; 
+
+        float z1 = n->z1() ; 
+        float z2 = n->z2() ;
+        assert( z2 > z1 && z2 == -z1 ); 
+        float hz = fabs(z1) ;
+
+        double innerRadius1 = 0. ; 
+        double innerRadius2 = 0. ; 
+        double outerRadius1 = n->r1() ; 
+        double outerRadius2 = n->r2() ; 
+        double zHalfLength = hz  ; 
+        double startPhi = 0. ; 
+        double deltaPhi = twopi ; 
+         
+        G4Cons* cn = new G4Cons( name, innerRadius1, outerRadius1, innerRadius2, outerRadius2, zHalfLength, startPhi, deltaPhi );
+        result = cn ; 
+    }
+    else if(node->type == CSG_TRAPEZOID || node->type == CSG_SEGMENT || node->type == CSG_CONVEXPOLYHEDRON)
+    {
+        NParameters* meta = node->meta ;  
+        assert(meta);
+
+        std::string src_type = meta->getStringValue("src_type");
+        if(src_type.compare("trapezoid")==0)
+        {
+            float src_z = meta->get<float>("src_z");
+            float src_x1 = meta->get<float>("src_x1");
+            float src_y1 = meta->get<float>("src_y1");
+            float src_x2 = meta->get<float>("src_x2");
+            float src_y2 = meta->get<float>("src_y2");
+
+            G4Trd* tr = new G4Trd( name, src_x1, src_x2, src_y1, src_y2, src_z ); 
+            result = tr ; 
+        }
+        else
+        {
+            assert(0);
+        }   
+    }
+    else
+    {
+        LOG(fatal) << "CMaker::ConvertPrimitive " << name ; 
+        assert(0);
+    }
     return result ; 
 }
 

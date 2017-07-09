@@ -84,7 +84,7 @@ class NPY_API NCSG {
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
-        static NParameters* LoadMetadata(const char* treedir);
+        static NParameters* LoadMetadata(const char* treedir, int idx=-1);
         void updateContainer( nbbox& container ) const  ;
     public:
         NTrianglesNPY* polygonize();
@@ -135,6 +135,9 @@ class NPY_API NCSG {
         NPY<float>*  getGTransformBuffer();
         NPY<float>*  getPlaneBuffer();
         NParameters* getMetaParameters();
+        NParameters* getNodeMetadata(unsigned idx) const ;
+
+
         unsigned     getNumNodes() const ;
         unsigned     getNumTransforms();
 
@@ -165,6 +168,7 @@ class NPY_API NCSG {
         void loadMetadata();
         void increaseVerbosity(int verbosity);
         void loadNodes();
+        void loadNodeMetadata();
         void loadTransforms();
         void loadPlanes();
     private:
@@ -200,6 +204,8 @@ class NPY_API NCSG {
         NPY<float>* m_planes ;
 
         NParameters* m_meta ; 
+        std::map<unsigned, NParameters*> m_nodemeta ; 
+
         unsigned    m_num_nodes ; 
         unsigned    m_num_transforms ; 
         unsigned    m_num_planes ;

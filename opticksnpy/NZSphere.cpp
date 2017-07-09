@@ -182,7 +182,6 @@ glm::vec3 nzsphere::par_pos_model(const nuv& uv) const
 
 
 
-
 void nzsphere::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_, const float z1_ , const float z2_, const bool has_z1cap_, const bool has_z2cap_ )  // static
 {
     unsigned  v  = uv.v(); 
@@ -232,8 +231,6 @@ zsphere
 
 
 */
-
-   
 
 
 

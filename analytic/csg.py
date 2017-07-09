@@ -537,6 +537,27 @@ class CSG(CSG_):
 
 
 
+    def save_nodemeta(self, treedir):
+        def save_nodemeta_r(node, idx):
+            nodemetapath = self.metapath(treedir,idx)
+            nodemeta = {}
+            nodemeta.update(node.meta)
+            nodemeta.update(idx=idx)
+
+            dir_ = os.path.dirname(nodemetapath)
+            if not os.path.exists(dir_):
+                os.makedirs(dir_)
+            pass 
+            json.dump(nodemeta,file(nodemetapath,"w"))
+
+            if node.left is not None and node.right is not None:
+                save_nodemeta_r(node.left, 2*idx+1)
+                save_nodemeta_r(node.right, 2*idx+2)
+            pass
+        pass
+        save_nodemeta_r(self,0)
+
+
     def save(self, treedir):
         if not os.path.exists(treedir):
             os.makedirs(treedir)
@@ -546,6 +567,8 @@ class CSG(CSG_):
 
         metapath = self.metapath(treedir)
         json.dump(self.meta,file(metapath,"w"))
+
+        self.save_nodemeta(treedir)
 
         lvidx = os.path.basename(treedir)
         tboolpath = self.tboolpath(treedir, lvidx)
@@ -576,8 +599,8 @@ class CSG(CSG_):
     def planepath(cls, treedir):
         return os.path.join(treedir,"planes.npy") 
     @classmethod
-    def metapath(cls, treedir):
-        return os.path.join(treedir,"meta.json") 
+    def metapath(cls, treedir, idx=-1):
+        return os.path.join(treedir,"meta.json") if idx == -1 else os.path.join(treedir,str(idx),"nodemeta.json")
     @classmethod
     def nodepath(cls, treedir):
         return os.path.join(treedir,"nodes.npy") 

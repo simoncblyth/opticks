@@ -473,9 +473,9 @@ if cube:
     planes = CSG.CubePlanes(200.)
     bbox = [[-201,-201,-201,0],[ 201, 201, 201,0]] 
 else:
-    #planes, verts, bbox = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    #planes, verts, bbox = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
-    planes, verts, bbox = make_icosahedron()
+    #planes, verts, bbox, srcmeta = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    planes, verts, bbox, srcmeta = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+    #planes, verts, bbox, srcmeta = make_icosahedron()
 pass
 
 obj.planes = planes
@@ -489,6 +489,7 @@ obj.param3[:3] = bbox[1]
 # from the set of planes
 #
 
+obj.meta.update(srcmeta)
 obj.meta.update(im)
 
 obj.dump()

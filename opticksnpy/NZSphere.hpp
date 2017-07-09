@@ -44,6 +44,10 @@ struct NPY_API nzsphere : nnode {
     float     r2() const  ; 
     float     rz(float z) const ; // radius of z-slice endcap
 
+    float  startTheta() const ; 
+    float  endTheta() const ; 
+    float  deltaTheta() const ; 
+
     glm::vec3 center() const  ; 
 
     float     z2() const ; 
@@ -99,6 +103,20 @@ inline NPY_API float nzsphere::rz(float z) const
     return sqrt(r*r - z*z) ;  
 }
 
+/*
+In [23]: np.arccos([1,0,-1])/np.pi
+Out[23]: array([ 0. ,  0.5,  1. ])
+*/ 
+
+inline float NPY_API nzsphere::startTheta() const { return acosf(z2()/radius()); }
+inline float NPY_API nzsphere::endTheta() const {   return acosf(z1()/radius()); }
+inline float NPY_API nzsphere::deltaTheta() const { return endTheta() - startTheta(); }
+
+
+
+
+
+
 
 inline NPY_API void init_zsphere(nzsphere& s, const nquad& param, const nquad& param1, const nquad& param2)
 {
@@ -116,20 +134,22 @@ inline NPY_API nzsphere make_zsphere(const nquad& param, const nquad& param1, co
     return n ; 
 }
 
-inline NPY_API nzsphere make_zsphere(float x_, float y_, float z_, float radius_, float z1_, float z2_, unsigned flags_=ZSPHERE_PCAP|ZSPHERE_QCAP)
+inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, float z1, float z2 )
 {
     nquad p0, p1, p2  ; 
 
-    p0.f = {x_,y_,z_,radius_} ;
-    p1.f = {z1_, z2_, 0,0} ;
-    p2.u = {flags_, 0,0,0};
+    unsigned flags = ZSPHERE_PCAP|ZSPHERE_QCAP ; // endcaps are now always ON, otherwise invalid solid
+
+    p0.f = {x,y,z,radius} ;
+    p1.f = {z1, z2, 0,0} ;
+    p2.u = {flags, 0,0,0};
 
     return make_zsphere(p0, p1, p2);
 }
 
 inline NPY_API nzsphere make_zsphere()
 {
-    return make_zsphere(0.f, 0.f, 0.f, 100.f, -50.f, 70.f, ZSPHERE_PCAP|ZSPHERE_QCAP) ;
+    return make_zsphere(0.f, 0.f, 0.f, 100.f, -50.f, 70.f );
 }
 
 inline NPY_API nzsphere make_zsphere(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1 )
@@ -137,7 +157,7 @@ inline NPY_API nzsphere make_zsphere(float x0, float y0, float z0, float w0, flo
     // used by code generation 
     assert( z1 == 0.f );
     assert( w1 == 0.f );
-    return make_zsphere( x0,y0,z0,w0,x1,y1, ZSPHERE_PCAP|ZSPHERE_QCAP );
+    return make_zsphere( x0,y0,z0,w0,x1,y1 );
 }
 
 

@@ -144,6 +144,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.label = NULL ; 
     n.treedir = NULL ; 
     n.boundary = NULL ; 
+    n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 
 
     n.transform = NULL ; 
