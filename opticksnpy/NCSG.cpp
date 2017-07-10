@@ -227,6 +227,8 @@ void NCSG::loadMetadata()
 
 void NCSG::loadNodeMetadata()
 {
+    // FIX: this idx is not same as real complete binary tree node_idx ?
+
     assert(m_num_nodes > 0);
     for(unsigned idx=0 ; idx < m_num_nodes ; idx++)
     {

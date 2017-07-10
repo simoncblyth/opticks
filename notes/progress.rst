@@ -201,6 +201,7 @@ Dont use colons in section text for easy title grepping.
 * groupvel debug 
 * high volume histo chisq numpy comparisons machinery 
 
+
 2016 Dec : g4gun, CSG research
 ----------------------------------
 
@@ -208,6 +209,7 @@ Dont use colons in section text for easy title grepping.
 * g4gun 
 * CHEP proceedings 
 * GPU CSG research 
+
 
 2017 Jan : presentations, proceedings, holidays
 -------------------------------------------------
@@ -217,8 +219,12 @@ Dont use colons in section text for easy title grepping.
 * PSROC presentation
 * PHP
 
+
 2017 Feb : GPU CSG raytracing prototyping
 -------------------------------------------
+
+CSG Engine : python prototyping, recursive into iterative
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * prototyping GPU CSG in python
 * Ulyanov iterative CSG paper pseudocode leads me astray
@@ -226,49 +232,185 @@ Dont use colons in section text for easy title grepping.
 * adopt XRT boolean lookup tables
 * learn how to migate recursive into iterative
 
+
 2017 Mar : GPU CSG raytracing implementation, SDF modelling, MC and DCS polygonization of CSG trees 
 -----------------------------------------------------------------------------------------------------
+
+CSG Engine : reiteration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * moving CSG python prototype to CUDA
 * reiteration, tree gymnastics
 * CSG stacks in CUDA
 * fix a real painful rare bug in tree reiteration  
-* OpticksCSG unification of type shape codes
 
+Solids : implicit modelling with SDFs
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* OpticksCSG unification of type shape codes
 * learn geometry modelling with implicit functions, SDFs
+
+Polygonization : Marching Cubes, Dual Contouring
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * start adding polygonization of CSG trees using SDF isosurface extraction
 * integrate marching cubes, MC
 * integrate dual contouring sample DCS, detour into getting Octree operational in acceptably performant,
   painful at the time, by got real experience of z-order curves, multi-res and morton codes
 
 
-2017 Apr : better polygonization with IM, applying GPU CSG to detdesc and GDML, adding primitives
-----------------------------------------------------------------------------------------------------
+2017 Apr : faster IM poly, lots of primitives, bit twiddle postorder pushes height limit, start with GDML
+----------------------------------------------------------------------------------------------------------
+
+Polygonization
+~~~~~~~~~~~~~~~~
 
 * integrate implicit mesher IM over a couple of days - much faster than MC or DCS 
   as uses continuation approach and produces prettier meshes
 * boot DCS out of Opticks into optional external 
+* conclude polygonization fails for cathode and base are a limitation of current poly techniques, 
+  need new approach to work with thin volumes, find candidate env-;csgparametric-
+
+Solids : lots of new primitives ncylinder, nzsphere, ncone, box3
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 * start adding transform handling to the CSG tree
 * add scaling transform support, debug normal transforms
 * fix implicit assumption of normalized ray directions bug in sphere intersection 
 * introduce python CSG geometry description into tboolean 
-* remove CSG tree height limitation by adoption of bit twiddling postorder, 
-  benefiting from morton code experience gained whilst debugging DCS Octree construction
-
 * implement ncylinder
 * implement nzsphere
+* implement ncone 
+* implement CSG_BOX3
+* polycones as unions of cones and cylinders
+* start looking at CSG tree balancing
+
+CSG Engine : bit twiddle postorder
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* remove CSG tree height limitation by adoption of bit twiddling postorder, 
+  benefiting from morton code experience gained whilst debugging DCS Octree construction
 
 * attempts to use unbounded and open geometry as CSG sub-objects drives home 
   the theory behind CSG - S means SOLID, endcaps are not optional 
 
-* conclude polygonization fails for cathode and base are a limitation of current poly techniques, 
-  need new approach to work with thin volumes, find candidate env-;csgparametric-
+Structure : jump ship to GDML
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * complete conversion of detdesc PMT into NCSG (no uncoincide yet)
-
 * conclude topdown detdesc parse too painful, jump ship to GDML
 * GDML parse turns out to be much easier
 * implement GDML tree querying to select general subtrees 
+
+
+
+2017 May : last primitive (trapezoid/convexpolyhedron), tree balancing, hybrid poly, scene structure
+-------------------------------------------------------------------------------------------------------
+
+Solids : trapezoid, nconvexpolyhedron : tree balancing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* tboolean-trapezoid : trapezoid, nconvexpolyhedron 
+* nconvexpolyhedron referencing sets of planes just like transforms referencing
+* icosahedron check 
+* investigate 22 deep CSG solids with binary tree height greater than 3 in DYB near geometry
+* implement complemented primitives : thru the chain from python CSG into npy NCSG, NNode, NPart and on into oxrap csg_intersect_part
+* Tubs with inner radius needs an inner nudge, making the inner subtracted cylinder slightly thicker than the outer one
+* handling poles and seams in sphere parametrisation 
+
+Polygonization : hybrid implicit/parametric
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* start HY : hybrid implicit/parametric polygonization
+* parametric primitive meshing with NHybridMesher code HY, test with tboolean-hybrid
+* try subdivide border tris approach to boolean mesh combinatio
+* adopt centroid splitting succeeds to stay manifold 
+
+Structure : gltf transport
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* start on GPU scene conversion sc.py, gltf, NScene, GScene
+* booting analytic gdml/gltf root from gdml snippets with tgltf-
+* repeat candidate finding/using (ie instanced analytic and polygonized subtrees) in NScene/GScene
+* integration with oyoctogl- : for gltf parsing
+* tgltf-gdml from oil maxdepth 3, now working with skipped overheight csg nodes (may 20th)
+
+
+2017 June : tapering poly dev, tree balancing, build out validation machinery, uncoincidence
+----------------------------------------------------------------------------------------------------
+
+Polygonization : move on HY poly taking too long
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* try subdivide border tris approach to boolean mesh combination, tboolean-hyctrl
+* decide to proceed regardless despite subdiv problems, forming a zippering approach
+
+Solids : analytic bbox combination, tree balancing positivize, ndisc
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* nbbox::CombineCSG avoids the crazy large bbox
+* CSG.subdepth to attempt tree balancing by rotation, swapping left right of UNION and INTERSECTIN nodes when that would improve balance
+* honouring the complement in bbox and sdf, testing with tboolean-positivize 
+* checking deep csg trees with tboolean-sc
+* nbox::nudge finding coincident surfaces in CSG difference and nudging them to avoid the speckled ghost surface issues
+* tboolean-uncoincide for debugging uncoincide failure 
+* tboolean-esr : investigate ESR speckles and pole artifacting, from degenerate cylinder
+* add disc primitive tboolean-disc as degenerate cylinder replacement
+* make CSG_DISC work as a CSG subobject in boolean expressions by adding otherside intersects and rigidly oriented normals
+* mono bileaf CSG tree balancing to handle mixed deep trees, used for unions of cylinders with inners done via subtraction
+
+Structure
+~~~~~~~~~~~~
+
+* completed transfer of node identity, boundary and sensor info, from triangulated G4DAE to analytic GDML/glTF branches in GScene
+* moving to absolute tree handling in gltf with selection mask gets steering of the branches much closer
+
+Validation : intersect point SDF, SDF scanning, containment(child surf vs parent SDF)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* factor GNodeLib out of GGeo to avoid duplication between GScene and GGeo, aiming to allow comparison of triangulated and analytic node trees
+* node names and order from full geometry traversals in analytic and triangulated branches are matching, see ana/nodelib.py
+* analytic geometry shakedown begins
+* prep automated intersect debug by passing OpticksEvent down from OpticksHub into GScene::debugNodeIntersects
+
+* autoscan all CSG trees looking for internal SDF zeros
+* tablulate zero crossing results for all trees, odd crossings almost all unions, no-crossing mostly subtraction
+* NScanTest not outside issue fixed via minimum absolute cage delta, all the approx 10 odd crossings CSG trees are cy/cy or cy/co unions in need of uncoincidence nudges
+
+* expand parametric surface coverage to most primitives, for object-object coincidence testing of bbox hinted coincidences
+* nnode::getCompositePoints collecting points on composite CSG solid surface using nnode::selectBySDF on the parametric points of the primitives
+
+
+* NScene::check_surf_points classifying node surface points against parent node SDF reveals many small coincidence/impingement issues 
+* avoiding precision issues in node/parent collision (coincidence/impingement) by using parent frame does not make issue go away
+
+
+
+2017 July : Solid level bbox Validations via  and fixes
+----------------------------------------------------------------------------------------------------
+
+Solids
+~~~~~~~~~
+
+* fix trapezoid misinterpretation (caused impingment) using new unplaced mesh dumping features added to both branches
+* fixed cone-z misinterpretation
+* added deltaphi imp via CSG_SEGMENT intersect, tboolean-cyslab tboolean-segment
+
+Validation : machinery for comparison G4DAE vs GDML/glTF geometries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* generalize GMeshLib to work in analytic and non-analytic branches, regularize GNodeLib to follow same persistency/reldir pattern
+* factor GMeshLib out of GGeo and add pre-placed base solid mesh persisting into/from geocache, see GMeshLibTest and --gmeshlib option
+* get nnode_test_cpp.py codegen to work with nconvexpolyhedron primitives defined by planes and bbox
+
+* impingement debug by comparison of GDML/glTF and G4DAE branches
+* comparing GMesh bbox between branches, reveals lots of discrepancies : GScene_compareMeshes.rst
+* bbox comparisons are productive : cone-z misinterp, missing tube deltaphi
+* csg composite/prim bbox avoids polyfail noise reduces discrepant meshes to 12 percent
+* moving to parsurf bbox, avoids overlarge analytic bbox with complicated CSG trees
+* adopting adaptive parsurf_level to reach a parsurf_target number of surface points knocks 5 lvidx down the chart
+* complete classification of top 25 parsurf vs g4poly bbox discrepancies, down to 1mm
+
 
 
 
