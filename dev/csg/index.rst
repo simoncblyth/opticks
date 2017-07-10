@@ -18,7 +18,6 @@ GParts.py
     indexed access to the partlist of a primitive for oldstyle CGS_FLAGPARTLIST 
 
 
-
 Development Exploration code
 ------------------------------
 

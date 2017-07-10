@@ -230,8 +230,7 @@ CSG Engine : python prototyping, recursive into iterative
 * Ulyanov iterative CSG paper pseudocode leads me astray
 * GPU binary tree serialization
 * adopt XRT boolean lookup tables
-* learn how to migate recursive into iterative
-
+* learn how to migrate recursive into iterative
 
 2017 Mar : GPU CSG raytracing implementation, SDF modelling, MC and DCS polygonization of CSG trees 
 -----------------------------------------------------------------------------------------------------

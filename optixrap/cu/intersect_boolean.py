@@ -24,6 +24,42 @@ It imports python classes generated from C enum headers::
     c_enums_to_python.py boolean_solid.h > boolean_solid.py 
 
 
+
+::
+
+  ===============  ===========  ============  ============== 
+   Union, tA < tB     Enter B     Exit B        Miss B
+   ===============  ===========  ===========  ==============
+   Enter A            ReturnA      LoopA        ReturnA
+   Exit A             ReturnA      ReturnB      ReturnA 
+   Miss A             ReturnB      ReturnB      ReturnMiss
+   ===============  ===========  ===========  ==============
+
+  ===============  ===========  ============  ============== 
+   Union, tB < tA     Enter B     Exit B        Miss B
+   ===============  ===========  ===========  ==============
+   Enter A            ReturnB      ReturnB      ReturnA
+   Exit A             LoopB        ReturnA      ReturnA 
+   Miss A             ReturnB      ReturnB      ReturnMiss
+   ===============  ===========  ===========  ==============
+
+
+
+                    ->                                                                         tA < tB                                     tB < tA 
+     Enter    Enter  ->       ReturnBIfCloser,ReturnAIfCloser                  ReturnAIfCloser RETURN_A                    ReturnBIfCloser RETURN_B 
+     Enter     Exit  ->       ReturnBIfCloser,AdvanceAAndLoop                    AdvanceAAndLoop LOOP_A                    ReturnBIfCloser RETURN_B 
+     Enter     Miss  ->                               ReturnA                          ReturnA RETURN_A                            ReturnA RETURN_A 
+      Exit    Enter  ->       AdvanceBAndLoop,ReturnAIfCloser                  ReturnAIfCloser RETURN_A                      AdvanceBAndLoop LOOP_B 
+      Exit     Exit  ->     ReturnAIfFarther,ReturnBIfFarther                 ReturnBIfFarther RETURN_B                   ReturnAIfFarther RETURN_A 
+      Exit     Miss  ->                               ReturnA                          ReturnA RETURN_A                            ReturnA RETURN_A 
+      Miss    Enter  ->                               ReturnB                          ReturnB RETURN_B                            ReturnB RETURN_B 
+      Miss     Exit  ->                               ReturnB                          ReturnB RETURN_B                            ReturnB RETURN_B 
+      Miss     Miss  ->                            ReturnMiss                    ReturnMiss RETURN_MISS                      ReturnMiss RETURN_MISS 
+
+
+
+
+
 """
 import sys, os, datetime, collections, numpy as np
 ndict = lambda:collections.defaultdict(ndict)     # for perl style hash-of-hash-of-hash-of...
