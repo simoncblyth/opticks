@@ -79,9 +79,6 @@ inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
     return n ; 
 }
 
-
-
-
 inline NPY_API ncylinder make_cylinder(float radius_, float z1_, float z2_)
 {
     nquad param, param1 ;

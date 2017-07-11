@@ -15,6 +15,45 @@
 /*
 
 
+Current primitives:
+
+=======================  =================   ==================
+ Type code                Python name         nnode sub-struct
+=======================  =================   ==================
+ CSG_SPHERE               sphere              nsphere 
+ CSG_ZSPHERE              zsphere             nzsphere
+ CSG_CYLINDER             cylinder            ncylinder  
+ CSG_CONE                 cone                ncone
+ CSG_DISC                 disc                ndisc
+ CSG_BOX3                 box3                nbox
+ CSG_BOX                  box                 nbox
+ CSG_CONVEXPOLYHEDRON     convexpolyhedron    nconvexpolyhedron
+ CSG_TRAPEZOID            trapezoid           nconvexpolyhedron
+ CSG_SEGMENT              segment             nconvexpolyhedron
+=======================  =================   ==================
+
+
+Machinery primitives or not currently used:
+
+=======================  =================  
+ Type code                Python name         
+=======================  =================  
+ CSG_PLANE                plane
+ CSG_SLAB                 slab
+ CSG_UNDEFINED             
+-----------------------  -----------------
+ CSG_PRISM                prism
+ CSG_PMT                  pmt
+ CSG_ZLENS                zlens
+ CSG_TUBS                 tubs
+ CSG_MULTICONE            multicone
+=======================  =================  
+
+
+
+
+
+
 
 
 ===================   =============  ================  =================

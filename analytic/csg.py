@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist
-from opticks.analytic.prism import make_segment
+from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
 from opticks.analytic.nnode_test_cpp import NNodeTestCPP
@@ -466,14 +466,38 @@ class CSG(CSG_):
 
 
     @classmethod
-    def MakeSegment(cls, phi0, phi1, sz, sr ):
+    def MakeConvexPolyhedron(cls, planes, verts, bbox, srcmeta, type_="convexpolyhedron"):
         """see tboolean-segment- """
-        planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
-        obj = CSG("segment")
+        obj = CSG(type_)
         obj.planes = planes
         obj.param2[:3] = bbox[0]
         obj.param3[:3] = bbox[1]
+        obj.meta.update(srcmeta)
         return obj
+
+    @classmethod
+    def MakeSegment(cls, phi0, phi1, sz, sr ):
+        """see tboolean-segment- """
+        planes, verts, bbox, srcmeta = make_segment(phi0,phi1,sz,sr)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "segment")
+
+    @classmethod
+    def MakeTrapezoid(cls, z=200, x1=160, y1=20, x2=691.02, y2=20):
+        planes, verts, bbox, srcmeta = make_trapezoid(z,x1,y1,x2,y2)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "trapezoid")
+
+    @classmethod
+    def MakeIcosahedron(cls, scale=100.):
+        planes, verts, bbox, srcmeta = make_icosahedron(scale=scale)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "trapezoid")
+
+
+
+
+
+
+
+
 
 
     def serialize(self, suppress_identity=False):

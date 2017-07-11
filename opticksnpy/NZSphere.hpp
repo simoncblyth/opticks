@@ -138,11 +138,11 @@ inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, fl
 {
     nquad p0, p1, p2  ; 
 
-    unsigned flags = ZSPHERE_PCAP|ZSPHERE_QCAP ; // endcaps are now always ON, otherwise invalid solid
+    //unsigned flags = ZSPHERE_PCAP|ZSPHERE_QCAP ; // endcaps are now always ON, otherwise invalid solid
 
     p0.f = {x,y,z,radius} ;
     p1.f = {z1, z2, 0,0} ;
-    p2.u = {flags, 0,0,0};
+    //p2.u = {flags, 0,0,0};
 
     return make_zsphere(p0, p1, p2);
 }

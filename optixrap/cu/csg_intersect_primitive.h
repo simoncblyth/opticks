@@ -702,9 +702,12 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
     // Cannot intersect when ray origin outside sphere and direction away from sphere.
     // Whether early exit speeds things up is another question ... 
 
-    const unsigned flags = q2.u.x ;
-    const bool QCAP = flags & ZSPHERE_QCAP ; 
-    const bool PCAP = flags & ZSPHERE_PCAP ;  
+    //const unsigned flags = q2.u.x ;
+    //const bool QCAP = flags & ZSPHERE_QCAP ; 
+    //const bool PCAP = flags & ZSPHERE_PCAP ;  
+
+    const bool QCAP = true ; 
+    const bool PCAP = true ;  
 
     const float2 zdelta = make_float2(q1.f);
     const float zmax = center.z + zdelta.y ; 

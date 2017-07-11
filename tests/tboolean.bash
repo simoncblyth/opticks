@@ -617,6 +617,62 @@ EOP
 
 
 
+tboolean-parade(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-parade-(){ $FUNCNAME- | python $* ; } 
+tboolean-parade--(){ cat << EOP 
+
+import logging, numpy as np
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+        
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+container = CSG("box", param=[0,0,0,1200], boundary=args.container, poly="MC", nx="20" )
+
+dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
+hy = dict(poly="HY", level="4", polycfg="contiguous=1,reversed=0,numsubdiv=0,offsave=1", verbosity="0" )
+
+
+CSG.boundary = args.testobject
+#CSG.kwa = dcs
+CSG.kwa = hy
+
+a = CSG("sphere", param=[0,0,0,100]) 
+b = CSG("zsphere", param=[0,0,0,100], param1=[-50,60,0,0]) 
+c = CSG("box3",param=[100,50,70,0]) 
+d = CSG("box",param=[0,0,10,50])
+e = CSG("cylinder",param=[0,0,0,100], param1=[-100,100,0,0])
+f = CSG("disc",param=[0,0,0,100], param1=[-1,1,0,0])
+g = CSG("cone", param=[100,-100,50,100])
+h = CSG.MakeTrapezoid(z=100, x1=80, y1=100, x2=100, y2=80)
+i = CSG.MakeSegment(phi0=0,phi1=45,sz=100,sr=100)
+j = CSG.MakeIcosahedron(scale=100.)
+
+prims = [a,b,c,d,e,f,g,h,i,j]
+
+h.meta.update(poly="IM", resolution="40")
+i.meta.update(poly="IM", resolution="40")
+j.meta.update(poly="IM", resolution="40")
+
+
+nprim = len(prims)
+hprim = nprim/2
+ygap = 200
+ysize = hprim*ygap
+yy = np.repeat(np.linspace(-ysize/2,ysize/2, hprim), 2)
+xx = np.tile(np.linspace(-ygap,ygap,2),hprim)
+for iprim, prim in enumerate(prims):
+    prim.translate = "%s,%s,0" % (xx[iprim],yy[iprim])
+pass
+
+CSG.Serialize([container] + prims, args.csgpath )
+
+EOP
+}
+
+
+
 
 tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
@@ -690,15 +746,15 @@ kwa.update(im)
 #zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
 zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
 
-ZSPHERE_QCAP = 0x1 << 1   # ZMAX
-ZSPHERE_PCAP = 0x1 << 0   # ZMIN
+# flag settings are now ignored
+#ZSPHERE_QCAP = 0x1 << 1   # ZMAX
+#ZSPHERE_PCAP = 0x1 << 0   # ZMIN
 #flags = ZSPHERE_QCAP | ZSPHERE_PCAP
-flags = ZSPHERE_QCAP | ZSPHERE_PCAP
+#flags = ZSPHERE_QCAP | ZSPHERE_PCAP
 #flags = ZSPHERE_QCAP
 #flags = ZSPHERE_PCAP
 #flags = 0 
-
-zsphere.param2.view(np.uint32)[0] = flags 
+#zsphere.param2.view(np.uint32)[0] = flags 
 
 CSG.Serialize([container, zsphere], "$TMP/$FUNCNAME" )
 
@@ -1108,11 +1164,11 @@ z2 *= scale
 #delta = 20.    # NO pole artifact visible
 #delta = 15.    # slight artifacting 
 #delta = 10.    # pole artifact, disappears axially 
-delta = 1.     # pole artifact, disappears axially   (scale:10 tiny artifact)
+#delta = 1.     # pole artifact, disappears axially   (scale:10 tiny artifact)
 #delta = 0.1    # pole artifact, does not disappear axially 
 #delta = 0.01   # pole artifact, does not disappear axially 
 #delta = 0.001  # pole artifact, does not disappear axially + RING SPECKLES, ~/opticks_refs/tboolean_esr_speckle_centered_on_pole_delta_10-3.png 
-#delta = 0.0001 # full metal speckle from all angles
+delta = 0.0001 # full metal speckle from all angles
 #delta = 0.     # zero makes the subtraction appear not to work, just get a disc not an annulus 
 
 z1d,z2d = z1-delta, z2+delta

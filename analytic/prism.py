@@ -443,8 +443,8 @@ def make_icosahedron(scale=500., dtype=np.float32):
     srcmeta = dict(
                     src_type="icosahedron",
                    src_scale=scale, 
-                    src_cz=cz, 
-                    src_sz=sz)
+                    src_cz=CZ, 
+                    src_sz=SZ)
 
     C1 = np.cos( np.pi*18./180. )
     S1 = np.sin( np.pi*18./180. )
