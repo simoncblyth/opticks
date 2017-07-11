@@ -353,7 +353,7 @@ class CSG(CSG_):
                 pass
             pass
             node.alabel = alabel
-            node.textra = " %s" % alabel
+            #node.textra = " %s" % alabel
         pass
         alabels_r(self) 
 
@@ -831,8 +831,12 @@ class CSG(CSG_):
 
     @classmethod
     def from_array(cls, arr):
+        """
+        Huh: looks incomplete, not loading params
+        """ 
         typ = int(arr.view(np.uint32)[Q2,W])
         itransform = int(arr.view(np.uint32)[Q3,W]) if typ < cls.SPHERE else 0 
+        complement = np.signbit( arr.view(np.float32)[Q3,W:W+1] )
 
         if typ in cls.CONVEX_POLYHEDRA:
             iplane = int(arr.view(np.uint32)[Q0,X])  
@@ -849,6 +853,7 @@ class CSG(CSG_):
             n.itransform = itransform if itransform > 0 else None
             n.iplane = iplane if iplane > 0 else None
             n.nplane = nplane if nplane > 0 else None
+            n.complement = complement 
         pass
         return n 
 
@@ -1362,13 +1367,22 @@ def test_content_generate():
 
 
 
-
+def test_load(lvidx):
+    idfold = os.environ['OPTICKS_IDFOLD']   # from opticks_main
+    base = os.path.join(idfold, "extras") 
+    tree = CSG.load(CSG.treedir(base, lvidx))      
+    return tree 
 
 
 
 if __name__ == '__main__':
     pass
-    logging.basicConfig(level=logging.INFO)
+
+    from opticks.ana.base import opticks_main
+    args = opticks_main()
+
+    
+
 
     #test_serialize_deserialize()
     #test_analyse()
@@ -1379,8 +1393,14 @@ if __name__ == '__main__':
     #test_subdepth()
 
     #test_balance()
-    test_content_generate()
+    #test_content_generate()
 
+
+    RSU = 56 
+    ESR = 57 
+    tree = test_load(ESR)
+    tree.analyse()
+    print tree.txt
 
    
 
