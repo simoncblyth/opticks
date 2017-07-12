@@ -20,6 +20,18 @@ typedef enum
 } NNodePointType ;
 
 
+
+
+typedef enum 
+{  
+   PAIR_MINMIN = 0 , 
+   PAIR_MINMAX = 1 , 
+   PAIR_MAXMIN = 2 , 
+   PAIR_MAXMAX = 3 
+}  NNodePairType ;
+
+
+
 typedef enum {
     JOIN_UNCLASSIFIED, 
     JOIN_COINCIDENT, 
@@ -44,6 +56,12 @@ class NPY_API NNodeEnum
         static const char* POINT_SURFACE_;
         static const char* POINT_OUTSIDE_;
         static const char* PointType(NNodePointType pt);
+
+        static const char* PAIR_MINMIN_;
+        static const char* PAIR_MINMAX_;
+        static const char* PAIR_MAXMIN_;
+        static const char* PAIR_MAXMAX_;
+        static const char* PairType(NNodePairType pair);
 
         static const char* JOIN_UNCLASSIFIED_ ;
         static const char* JOIN_COINCIDENT_ ;

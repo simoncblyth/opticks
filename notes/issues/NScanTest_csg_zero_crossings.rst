@@ -139,10 +139,11 @@ Status Check Revisit
 
 
 
-investigate nzero=3  (cy+cy)-co  "uncycodi"
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Lvidx 85 Uncoincide Fail
+---------------------------
 
+* :doc:`lvidx95_uncoincide_fail`
 
 
 

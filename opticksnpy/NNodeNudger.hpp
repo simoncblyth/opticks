@@ -18,6 +18,10 @@ Requirements for znudge-ability of primitives:
 
 * increase/decrease_z1/z2 controls 
 * r2()/r1() methods   TODO: generalization for a new CSG_ZBOX primitive
+
+
+NB canonical way of invoking this via NCSG::LoadCSG is sensitive to 
+VERBOSITY envvar. 
  
 
 ::
@@ -62,6 +66,9 @@ struct NPY_API NNodeNudger
     bool operator()( int i, int j)  ;
 
     void znudge();
+    void znudge_anypair();
+    void znudge_anypair(unsigned i, unsigned j);
+    void znudge_lineup();
 
     void dump(const char* msg="NNodeNudger::dump");
     void dump_qty(char qty, int wid=10);

@@ -18,8 +18,11 @@ See issues/NScanTest_csg_zero_crossings.rst
 * pairwise incoincidence is not helping much, 
   need to act at tree level 
 
-*/
 
+Canonically invoked after CSG import 
+via NCSG::postimport_uncoincide/nnode::uncoincide
+
+*/
 
 class NPY_API NNodeUncoincide
 {
@@ -31,6 +34,7 @@ class NPY_API NNodeUncoincide
     private:
         // treewise approach 
         unsigned uncoincide_treewise();
+        unsigned uncoincide_treewise_fiddle();
         unsigned uncoincide_uncyco(nnode* node);
     private:
         // pairwise approach 

@@ -248,6 +248,43 @@ std::string nnode::get_type_mask_string() const
 
 
 
+unsigned nnode::get_prim_mask() const 
+{
+    unsigned pmsk = 0 ;   
+    get_prim_mask_r(this, pmsk );
+    return pmsk ; 
+}
+void nnode::get_prim_mask_r(const nnode* node, unsigned& pmsk ) // static
+{
+    if(node->type < 32 && node->type >= CSG_SPHERE ) pmsk |= (0x1 << node->type) ;
+    if(node->left && node->right)
+    {
+        get_prim_mask_r(node->left, pmsk);
+        get_prim_mask_r(node->right, pmsk);
+    }
+} 
+std::string nnode::get_prim_mask_string() const 
+{
+    unsigned pmsk = get_prim_mask();
+    std::stringstream ss ; 
+    for(unsigned i=0 ; i < 32 ; i++) if(pmsk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
+    return ss.str();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 glm::vec3 nnode::apply_gtransform(const glm::vec4& v_) const 

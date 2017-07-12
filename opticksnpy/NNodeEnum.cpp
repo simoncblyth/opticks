@@ -8,6 +8,28 @@
 
 
 
+const char* NNodeEnum::PAIR_MINMIN_ = "PAIR_MINMIN" ; 
+const char* NNodeEnum::PAIR_MINMAX_ = "PAIR_MINMAX" ;
+const char* NNodeEnum::PAIR_MAXMIN_ = "PAIR_MAXMIN" ;
+const char* NNodeEnum::PAIR_MAXMAX_ = "PAIR_MAXMAX" ;
+
+const char* NNodeEnum::PairType(NNodePairType pair)
+{
+    const char* s = NULL ; 
+    switch(pair)
+    {
+       case PAIR_MINMIN : s = PAIR_MINMIN_ ; break ; 
+       case PAIR_MINMAX : s = PAIR_MINMAX_ ; break ; 
+       case PAIR_MAXMIN : s = PAIR_MAXMIN_ ; break ; 
+       case PAIR_MAXMAX : s = PAIR_MAXMAX_ ; break ; 
+    }
+    return s ; 
+}
+
+
+
+
+
 
 const char* NNodeEnum::JOIN_UNCLASSIFIED_ = "JOIN_UNCLASSIFIED" ; 
 const char* NNodeEnum::JOIN_COINCIDENT_ = "JOIN_COINCIDENT" ; 
@@ -50,6 +72,10 @@ NNodeJoinType NNodeEnum::JoinClassify( float za, float zb, float epsilon )
     } 
     return join ; 
 }
+
+
+
+
 
 
 

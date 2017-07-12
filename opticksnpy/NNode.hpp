@@ -148,6 +148,12 @@ struct NPY_API nnode
     unsigned    get_type_mask() const ;
     static void get_type_mask_r(const nnode* node, unsigned& tymsk);
 
+    std::string get_prim_mask_string() const ;
+    unsigned    get_prim_mask() const ;
+    static void get_prim_mask_r(const nnode* node, unsigned& tymsk);
+
+
+
     void set_treedir(const char* treedir) ; 
     void set_boundary(const char* boundary) ; 
 

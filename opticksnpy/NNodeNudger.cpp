@@ -1,6 +1,7 @@
 
 #include "PLOG.hh"
 
+#include "OpticksCSG.h"
 #include "NNode.hpp"
 #include "NNodeNudger.hpp"
 
@@ -44,15 +45,185 @@ bool NNodeNudger::operator()( int i, int j)
 
 void NNodeNudger::znudge()
 {
+    //znudge_lineup();
+    znudge_anypair();
+}
+
+/*
+
+              maxmax      +--+
+               /          |  |
+       +-----+--+---------+--+-----+
+       |     |  |           \      |
+       |     +--+          minmax  |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |                           |
+       |  maxmin   +--+            |
+       |    \      |  |            |
+       +---+--+----+--+------------+
+           |  |      \
+           +--+       minmin
+           
+
+      Label order just picks one of the
+      pair as first, eg smaller box in above
+      comparisons. 
+
+
+
+
+
+   * know how to handle siblings of union parent
+     with minmax or maxmin pair coincidence
+
+   * difference coincidence will often be non-siblings, eg 
+     (cy-cy)-co when the base of the subtracted cone lines up with 
+      the first cylinder ... perhaps should +ve-ize 
+
+
+            -
+         -    co
+       cy cy
+
+     +ve form:
+
+            *
+         *    !co
+       cy !cy
+
+
+     
+
+     Consider (cy - co) with coincident base...
+     solution is to grow co down, but how to 
+     detect in code ? 
+
+     When you get minmin coincidence ~~~
+     (min means low edge... so direction to grow
+      is clear ? Check parents of the pair and
+      operate on one with the "difference" parent, 
+      ie the one being subtracted) 
+
+     Nope they could both be being subtracted ?
+
+
+     A minmin coincidence after positivization, 
+     can always pull down the one with the complement ?
+
+
+
+                        +-----+
+                       /       \
+                      /         \
+             +-------*-------+   \
+             |      /        |    \
+             |     /         |     \
+             |    /          |      \
+             |   /           |       \
+             |  /            |        \
+             | /             |         \
+             |/              |          \
+             *               |           \
+            /|               |            \
+           / |               |        B    \
+          /  |  A            |              \
+         /   |               |               \
+        /    |               |                \
+       +-----+~~~~~~~~~~~~~~~+-----------------+
+
+           
+
+
+
+*/
+
+
+void NNodeNudger::znudge_anypair(unsigned i, unsigned j)
+{
+   // VERBOSITY=3 NScanTest 85 
+
+    LOG(info) << "NNodeNudger::znudge_anypair" 
+              << " i " << i
+              << " j " << j
+              ; 
+
+    int wid = 10 ; 
+    bool are_sibling = prim[i]->parent == prim[j]->parent ;  
+    OpticksCSG_t i_parent_type = prim[i]->parent->type ;
+    OpticksCSG_t j_parent_type = prim[j]->parent->type ;
+
+    for(unsigned p=0 ; p < 4 ; p++)
+    {
+        NNodePairType pair = (NNodePairType)p ; 
+
+        float zi, zj ; 
+        switch(pair)
+        {
+            case PAIR_MINMIN: { zi = bb[i].min.z ; zj = bb[j].min.z ; } ; break ;  
+            case PAIR_MINMAX: { zi = bb[i].min.z ; zj = bb[j].max.z ; } ; break ;  
+            case PAIR_MAXMIN: { zi = bb[i].max.z ; zj = bb[j].min.z ; } ; break ;  
+            case PAIR_MAXMAX: { zi = bb[i].max.z ; zj = bb[j].max.z ; } ; break ;  
+        }
+
+        NNodeJoinType join = NNodeEnum::JoinClassify( zi, zj, epsilon );
+        
+        if(verbosity > 2)
+        {
+             std::cout 
+             << " i: " << std::setw(15) << prim[i]->tag()
+             << " j: " << std::setw(15) << prim[j]->tag()
+             << " are_sibling " << ( are_sibling ? "Y" : "N" )
+             << " i_parent " << CSGName(i_parent_type) 
+             << " j_parent " << CSGName(j_parent_type) 
+             << " pair " << NNodeEnum::PairType(pair)
+             << " zi " << std::setw(wid) << std::fixed << std::setprecision(3) << zi
+             << " zj " << std::setw(wid) << std::fixed << std::setprecision(3) << zj
+             << " join " << NNodeEnum::JoinType(join)
+             << std::endl ; 
+        }
+    }
+}
+
+
+void NNodeNudger::znudge_anypair()
+{
+    unsigned num_prim = prim.size() ;
+    LOG(info) << "NNodeNudger::znudge_anypair" 
+              << " num_prim " << num_prim 
+              << " verbosity " << verbosity 
+              ; 
+    for(unsigned i=0 ; i < num_prim ; i++){
+    for(unsigned j=0 ; j < num_prim ; j++)
+    {
+        if( i < j ) znudge_anypair(i, j);  // all pairs once
+    }
+    }
+}
+   
+
+
+void NNodeNudger::znudge_lineup()
+{
      int wid = 10 ;
      float dz = 1.0f ; // perhaps should depend on z-range of prims ?   
+     unsigned num_prim = prim.size() ;
 
      if(verbosity > 0)
      LOG(info) << " znudge over prim pairs " 
+               << " verbosity " << verbosity 
+               << " num_prim " << num_prim
                << " dz " << dz
                 ; 
 
-     for(unsigned i=1 ; i < prim.size() ; i++)
+     for(unsigned i=1 ; i < num_prim ; i++)
      {
           unsigned ja = zorder[i-1] ; 
           unsigned jb = zorder[i] ; 

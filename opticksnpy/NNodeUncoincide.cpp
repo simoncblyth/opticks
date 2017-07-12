@@ -306,35 +306,71 @@ unsigned NNodeUncoincide::uncoincide_union(nnode* a, nnode* b)
 
 
 
+
+
 unsigned NNodeUncoincide::uncoincide_treewise()
 {
     assert( m_node->is_root() );
+    nnode* root = m_node ; 
+
+    unsigned prim_mask = root->get_prim_mask();
+
+    // TODO: investigate CSG_ZSPHERE too 
+    // TODO: hmm:perhaps can apply to any tree just select operable nodes to work with ...
+
+
+    bool proceed = prim_mask == CSGMASK_CYLINDER || prim_mask == (CSGMASK_CYLINDER | CSGMASK_CONE) ; 
+
+    LOG(info) << "NNodeUncoincide::uncoincide_treewise"
+              << " proceed " << ( proceed ? "Y" : "-" )
+              << " verbosity " << m_verbosity 
+              << " prim_mask " << root->get_prim_mask_string()
+              ;
+    if(proceed)
+    {
+        uncoincide_uncyco(root);
+    }
+
+    return 0 ; 
+}
+
+
+unsigned NNodeUncoincide::uncoincide_treewise_fiddle()
+{
+    assert( m_node->is_root() );
+
+    // suspect the z-nudging will work regardless 
+    // of the fiddling ... it just depends on 
+    // appropriate primitive types
 
     nnode* root = m_node ; 
     nnode* left = root->left ; 
     nnode* right = root->right ; 
 
-    unsigned typmsk = root->get_type_mask();
+    unsigned type_mask = root->get_type_mask();
+
 
     unsigned uncy     = CSGMASK_UNION | CSGMASK_CYLINDER ;
     unsigned uncyco   = CSGMASK_UNION | CSGMASK_CYLINDER | CSGMASK_CONE ;
     unsigned uncycodi = CSGMASK_UNION | CSGMASK_DIFFERENCE | CSGMASK_CYLINDER | CSGMASK_CONE ;
 
     bool root_di = root->type == CSG_DIFFERENCE ; 
-    bool root_uncy   = typmsk == uncy ;
-    bool root_uncyco = typmsk == uncyco ;
-    bool root_uncycodi = typmsk == uncycodi  ;
+    bool root_uncy   = type_mask == uncy ;
+    bool root_uncyco = type_mask == uncyco ;
+    bool root_uncycodi = type_mask == uncycodi  ;
+
+
 
     if(root_uncy || root_uncyco)
     {
-         uncoincide_uncyco(m_node);
+         uncoincide_uncyco(root);
     }
     else if( root_uncycodi )
     {
-        unsigned left_typmsk = left->get_type_mask();
+        unsigned left_type_mask = left->get_type_mask();
 
-        bool left_uncy   =  left_typmsk == uncy ;
-        bool left_uncyco =  left_typmsk == uncyco ;
+        bool left_uncy   =  left_type_mask == uncy ;
+        bool left_uncyco =  left_type_mask == uncyco ;
 
         if( root_di  && ( left_uncy || left_uncyco ))
         {
@@ -348,6 +384,7 @@ unsigned NNodeUncoincide::uncoincide_treewise()
             uncoincide_uncyco( left );
         }
     }
+
     return 0 ; 
 }
 
