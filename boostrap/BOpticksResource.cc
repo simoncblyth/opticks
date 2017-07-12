@@ -110,16 +110,20 @@ void BOpticksResource::setDebuggingIDPATH()
 std::string BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 {
     int arg1 = BStr::atoi(argc > 1 ? argv[1] : "-1", -1 );
-
+    const char* idfold = getDebuggingIDFOLD() ;
     std::string treedir ; 
+
     if(arg1 > -1) 
     {   
-        const char* idfold = getDebuggingIDFOLD() ;
         treedir = BFile::FormPath( idfold, "extras", BStr::itoa(arg1) ) ; 
     }   
+    else if( argc > 1)
+    {
+        treedir = argv[1] ;
+    }
     else
     {   
-        treedir = argc > 1 ? argv[1] : "$TMP/csg_py/1" ;
+        treedir = BFile::FormPath( idfold, "extras") ;
     }   
     return treedir ; 
 }

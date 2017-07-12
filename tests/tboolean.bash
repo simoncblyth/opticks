@@ -22,7 +22,6 @@ TODO
   Hmm but the sources need to correspond to geometry ...
   this needs an overhaul.
   
-  
 
 NOTES
 --------
@@ -2155,33 +2154,37 @@ tboolean-interlocked--()
 {
     cat << EOP 
 import math
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
   
 radius = 200 
 inscribe = 1.3*radius/math.sqrt(3)
 
 lbox = CSG("box",    param=[100,100,-100,inscribe])
 lsph = CSG("sphere", param=[100,100,-100,radius])
-left  = CSG("difference", left=lbox, right=lsph, boundary="$(tboolean-testobject)" )
+left  = CSG("difference", left=lbox, right=lsph )
 
 rbox = CSG("box",    param=[0,0,100,inscribe])
 rsph = CSG("sphere", param=[0,0,100,radius])
 
+tran = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,1.5" )
+right = CSG("difference", left=rbox, right=rsph, **tran)
 
-tran = dict(translate="0,0,200", rotate="1,1,1,45", scale="1,1,1.5" )
-right = CSG("difference", left=rbox, right=rsph, boundary="$(tboolean-testobject)", **tran)
+#dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
+im = dict(poly="IM", resolution="64", verbosity="0", ctrl="0" ) #seeds = "100,100,-100,0,0,300"
+obj = CSG("union", left=left, right=right, **im )
+#obj.translate = "0,-300,0"
+obj.meta.update(gpuoffset="0,600,0")
 
-dcs = dict(poly="DCS", nominal="7", coarse="6", threshold="1", verbosity="0")
 
-#seeds = "100,100,-100,0,0,300"
-im = dict(poly="IM", resolution="64", verbosity="0", ctrl="0" )
-object = CSG("union", left=left, right=right,  boundary="$(tboolean-testobject)", **im )
+#mc = dict(poly="MC", nx="20")
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="20" )
 
-mc = dict(poly="MC", nx="20")
-
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20" )
-
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, obj], args.csgpath )
 
 EOP
 }

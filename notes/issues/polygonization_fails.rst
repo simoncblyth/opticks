@@ -1,2 +1,0 @@
-Many Polygonization Fails
-

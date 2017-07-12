@@ -6,6 +6,7 @@ NScanTest $TMP/tgltf/extras
 
 #include "BStr.hh"
 #include "BFile.hh"
+#include "BOpticksResource.hh"
 
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -31,13 +32,18 @@ int main(int argc, char** argv)
     NPY_LOG__ ;  
 
 
+    BOpticksResource okr ;  // no Opticks at this level 
+    std::string treedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
+    const char* basedir = treedir.c_str(); 
+
+/*
     const char* basedir = argc > 1 ? argv[1] : NULL ;
     if(!basedir) 
     {
         LOG(warning) << "expecting base directory argument that contains CSG trees" ; 
         return 0 ; 
     }
-
+*/
 
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
@@ -135,12 +141,16 @@ int main(int argc, char** argv)
             bool with_message = scan->has_message() && nzero == MESSAGE_NZERO ; 
             unsigned nprim = root->get_num_prim() ; 
 
+
+
             if(with_nzero || with_message)
             {
                 std::cout 
                      << " i " << std::setw(4) << i 
                      << " nzero " << std::setw(4) << nzero 
-                     << " NScanTest " << std::left << std::setw(40) << csg->getTreeDir()  << std::right
+                     << " NScanTest " << std::setw(4) << csg->getTreeNameIdx()
+                     //<< std::left << std::setw(40) << csg->getTreeDir()  << std::right
+                     //<< " treeNameIdx " << csg->getTreeNameIdx()
                      << " soname " << std::setw(40) << csg->soname()  
                      << " tag " << std::setw(10) << root->tag()
                      << " nprim " << std::setw(4) << nprim

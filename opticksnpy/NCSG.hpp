@@ -123,6 +123,9 @@ class NPY_API NCSG {
    public:
         const char*  getBoundary() const ;
         const char*  getTreeDir() const ;
+        const char*  getTreeName() const ;
+        int          getTreeNameIdx() const ;  // will usually be the lvidx
+
         unsigned     getIndex() const ;
         int          getVerbosity() const ;
     public:

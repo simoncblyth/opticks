@@ -165,10 +165,14 @@ opticks-tbool-(){
 
 
 
-opticks-tscan-dir(){
-   echo  $TMP/tgltf/extras/${1:-0}
-}
+# reliance on envvars is appropriate for debugging only, not "production" 
+opticks-debugging-idpath(){ echo $IDPATH ; }
+opticks-debugging-idfold(){ echo $(dirname $(opticks-debugging-idpath)) ; }
 
+#opticks-tscan-dir(){ echo  $TMP/tgltf/extras/${1:-0} ; }
+opticks-tscan-dir(){ echo  $(opticks-debugging-idfold)/extras/${1:-0} ; }
+
+opticks-tscan-all(){ opticks-tscan / ; }
 opticks-tscan(){
    local msg="$FUNCNAME :"
    local lvid=${1:-0} 
@@ -178,9 +182,6 @@ opticks-tscan(){
    NScanTest $dir
 }
 
-opticks-tscan-all(){
-   opticks-tscan /
-}
 
 
 

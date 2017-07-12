@@ -11,6 +11,142 @@ by preventing NScan::init_cage coming up with too small a cage when thin along a
 
 
 
+
+
+NScanTest table (0.1 mm step)
+--------------------------------
+
+
+==========  =================  ===============
+ nzero        tots(%) (6/26)    tots(%) (7/12) 
+==========  =================  ===============
+  0            43 (17)           43 (17)
+  1             5  (2)            5 (2)
+  2           167 (67)           184 (74)
+  3             7  (3)             4 (2)
+  4            24 (10)            12 (5)
+  5             1                  0
+  7             1                  0
+ 11195          1                  1
+==========  =================  ===============
+
+
+
+Status Check Revisit
+---------------------
+
+
+
+
+::
+
+    simon:tests blyth$ NScanTest 
+    2017-07-12 15:21:52.607 INFO  [5010968] [NCSG::Deserialize@1080] NCSG::Deserialize VERBOSITY 0 basedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras txtpath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt nbnd 249
+    2017-07-12 15:21:52.672 INFO  [5010968] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-12 15:21:52.673 INFO  [5010968] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-12 15:21:52.695 INFO  [5010968] [NNodeUncoincide::uncoincide_treewise@340] NNodeUncoincide::uncoincide_tree TRYING root.left UNCOINCIDE_UNCYCO  root union difference cylinder cone  left union cylinder  right cone 
+    2017-07-12 15:21:52.706 INFO  [5010968] [NCSG::DeserializeTrees@1049] NCSG::DeserializeTrees /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras found trees : 249
+    2017-07-12 15:21:52.706 INFO  [5010968] [main@66]  NScanTest autoscan trees  basedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras ntree 249 verbosity 0
+
+    2017-07-12 15:21:55.644 INFO  [5010968] [main@102]  autoscan non-zero counts trees 249 mmstep 0.1
+     nzero    0 count   43 frac 0.172691
+     nzero    1 count    5 frac 0.0200803
+     nzero    2 count  184 frac 0.738956
+     nzero    3 count    4 frac 0.0160643
+     nzero    4 count   12 frac 0.0481928
+     nzero 11143 count    1 frac 0.00401606
+
+     nzero    0 count   43 frac 0.172691
+     i   17 nzero    0 NScanTest  231 soname       lvOutOutWaterPipeNear_Tub0xce5b598 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   18 nzero    0 NScanTest  230 soname        lvOutInWaterPipeNear_Tub0xce5b3f0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   29 nzero    0 NScanTest  219 soname                 out_Sid_ver_rib0xc212138 tag    [ 0:di] nprim    2 typ     difference box3  msg 
+     i   31 nzero    0 NScanTest  217 soname                 out_bot_ver_rib0xcd573e8 tag    [ 0:di] nprim    2 typ     difference box3  msg 
+     i   38 nzero    0 NScanTest  210 soname       lvInnOutWaterPipeNear_Tub0xc95a8a0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   39 nzero    0 NScanTest  209 soname        lvInnInWaterPipeNear_Tub0xc273850 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   48 nzero    0 NScanTest  200 soname                 table_panel_box0xc00f558 tag    [ 0:in] nprim    6 typ   intersection box3  msg 
+     i   54 nzero    0 NScanTest  194 soname                   pmt-base-ring0xc401a00 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   55 nzero    0 NScanTest  193 soname                    pmt-top-ring0xc2f0608 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   60 nzero    0 NScanTest  188 soname                   MOFTTopFlange0xc047418 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   63 nzero    0 NScanTest  185 soname                        MOFTTube0xc046b40 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   68 nzero    0 NScanTest  180 soname                    MCBTopFlange0xc213a48 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   70 nzero    0 NScanTest  178 soname                         MCBTube0xc20e0c0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   75 nzero    0 NScanTest  173 soname                    GDBTopFlange0xc20d820 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   77 nzero    0 NScanTest  171 soname                         GDBTube0xc213f68 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   86 nzero    0 NScanTest  162 soname            LSCalibTubAbvLidTub50xc17c6f8 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   87 nzero    0 NScanTest  161 soname            LSCalibTubAbvLidTub40xc17c470 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   88 nzero    0 NScanTest  160 soname            LSCalibTubAbvLidTub30xc17c220 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   89 nzero    0 NScanTest  159 soname            LSCalibTubAbvLidTub20xc17bfc8 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   90 nzero    0 NScanTest  158 soname            LSCalibTubAbvLidTub10xc17bd80 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   98 nzero    0 NScanTest  150 soname          GdLSCalibTubAbvLidTub50xc341080 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i   99 nzero    0 NScanTest  149 soname          GdLSCalibTubAbvLidTub40xc340e28 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  100 nzero    0 NScanTest  148 soname          GdLSCalibTubAbvLidTub30xc340bd0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  101 nzero    0 NScanTest  147 soname          GdLSCalibTubAbvLidTub20xc340980 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  102 nzero    0 NScanTest  146 soname          GdLSCalibTubAbvLidTub10xc3406d8 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  106 nzero    0 NScanTest  142 soname                       GdsOflTnk0xc3d5160 tag    [ 0:un] nprim   14 typ union intersection cylinder  msg 
+     i  107 nzero    0 NScanTest  141 soname                          LsoOfl0xc348ac0 tag    [ 0:un] nprim    6 typ union difference cylinder  msg 
+     i  108 nzero    0 NScanTest  140 soname                       LsoOflTnk0xc17d928 tag    [ 0:un] nprim    8 typ union intersection cylinder  msg 
+     i  112 nzero    0 NScanTest  136 soname                 AcrylicCylinder0xc3d3830 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  114 nzero    0 NScanTest  134 soname           NeutronShieldCylinder0xc3d3378 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  115 nzero    0 NScanTest  133 soname             GammaShieldCylinder0xc3d30f0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  151 nzero    0 NScanTest   97 soname                     BearingRing0xbf778c8 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  172 nzero    0 NScanTest   76 soname                    CtrLsoOflTfb0xc1797a8 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  179 nzero    0 NScanTest   69 soname                SstTopCirRibBase0xc264f78 tag    [ 0:in] nprim    7 typ intersection cylinder box3 convexpolyhedron  msg 
+     i  183 nzero    0 NScanTest   65 soname                SstBotCirRibBase0xc26e2d0 tag    [ 0:in] nprim    5 typ intersection cylinder box3 convexpolyhedron  msg 
+     i  184 nzero    0 NScanTest   64 soname                       SsTBotHub0xc26d1d0 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  186 nzero    0 NScanTest   62 soname                      BotRefHols0xc3cd380 tag    [ 0:in] nprim    6 typ intersection cylinder box3  msg 
+     i  189 nzero    0 NScanTest   59 soname                   TopRefCutHols0xbf9bd50 tag    [ 0:in] nprim    6 typ intersection cylinder  msg 
+     i  192 nzero    0 NScanTest   56 soname                RadialShieldUnit0xc3d7da8 tag    [ 0:in] nprim    9 typ intersection cylinder convexpolyhedron  msg 
+     i  193 nzero    0 NScanTest   55 soname                headon-pmt-mount0xc2a7670 tag    [ 0:un] nprim    4 typ union difference cylinder  msg 
+     i  200 nzero    0 NScanTest   48 soname                     AdPmtCollar0xc2c5260 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+     i  218 nzero    0 NScanTest   30 soname                  OcrGdsTfbInLso0xbfa2370 tag    [ 0:in] nprim    3 typ intersection difference cylinder cone  msg 
+     i  221 nzero    0 NScanTest   27 soname               CtrGdsOflTfbInLso0xbfa2d30 tag    [ 0:di] nprim    2 typ difference cylinder  msg 
+
+     nzero    1 count    5 frac 0.0200803
+     i  187 nzero    1 NScanTest   61 soname                BotRefGapCutHols0xc34bb28 tag    [ 0:in] nprim    5 typ intersection box3 disc  msg 
+     i  188 nzero    1 NScanTest   60 soname                   BotESRCutHols0xbfa7368 tag    [ 0:in] nprim    8 typ intersection box3 disc  msg 
+     i  190 nzero    1 NScanTest   58 soname                TopRefGapCutHols0xbf9cef8 tag    [ 0:in] nprim    5 typ   intersection disc  msg 
+     i  191 nzero    1 NScanTest   57 soname                   TopESRCutHols0xbf9de10 tag    [ 0:in] nprim    9 typ   intersection disc  msg 
+     i  205 nzero    1 NScanTest   43 soname                pmt-hemi-cathode0xc2f1ce8 tag    [ 0:un] nprim    4 typ union difference zsphere  msg 
+
+     ## all these just thin ... no problem
+
+
+     nzero    2 count  184 frac 0.738956
+
+     nzero    3 count    4 frac 0.0160643
+     i  163 nzero    3 NScanTest   85 soname                    OcrCalLsoPrt0xc1076b0 tag    [ 0:di] nprim    3 typ union difference cylinder cone  msg 
+     i  167 nzero    3 NScanTest   81 soname                    OcrGdsLsoPrt0xc104978 tag    [ 0:di] nprim    3 typ union difference cylinder cone  msg 
+     i  212 nzero    3 NScanTest   36 soname                       IavTopRib0xbf8e168 tag    [ 0:di] nprim    3 typ difference cone box3  msg 
+     i  219 nzero    3 NScanTest   29 soname                       OcrGdsPrt0xc352518 tag    [ 0:di] nprim    3 typ union difference cylinder cone  msg 
+
+     ## 4 real problem solids
+     ## 3 are same issue : (cy+cy)-co
+        
+         opticks-tbool-vi 85  : union of cylinders with cone subtracted (base of cone coincident with base of one cylinder)
+         opticks-tbool-vi 81  : ditto 
+         opticks-tbool-vi 29  : ditto 
+
+     ##  looks to be from bx-bx due to same y-dim
+         opticks-tbool-vi 36  :   thin artifact edge changes depending on view : (bx-bx)-co      y-dim of subtracted boxes are same
+        
+
+
+     nzero    4 count   12 frac 0.0481928
+
+     nzero 11143 count    1 frac 0.00401606
+     i  182 nzero 11143 NScanTest   66 soname                 SstTopRadiusRib0xc271720 tag    [ 0:di] nprim    3 typ difference box3 convexpolyhedron  msg 
+    simon:tests blyth$ 
+
+
+
+investigate nzero=3  (cy+cy)-co  "uncycodi"
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
+
+
 Tree level z-nudging of unions of cylinders and cones fixes most odd nzero crossings
 -----------------------------------------------------------------------------------------
 
@@ -196,7 +332,7 @@ Visualizing problem geometry
 -------------------------------
 
 tgltf-tt (sc.py) now standardly dumps tboolN.bash scripts into extras, so to 
-view some geometry, use *opticks-tbool N* when N is the *lvid* index::
+view some geometry, use *opticks-tbool N* when N is the *lvid* index
 
 ::
 
@@ -430,8 +566,6 @@ extras/66 fails to load : problem with planes
     /Users/blyth/opticks/bin/op.sh: line 619: 97334 Abort trap: 6           /usr/local/opticks/lib/OKTest --animtimemax 20 --timemax 20 --geocenter --eye 1,0,0 --dbganalytic --test --testconfig analytic=1_csgpath=/tmp/blyth/opticks/tbool/66_name=66_mode=PyCsgInBox --torch --torchconfig type=sphere_photons=10000_frame=-1_transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000_source=0,0,0_target=0,0,1_time=0.1_radius=100_distance=400_zenithazimuth=0,1,0,1_material=GdDopedLS_wavelength=500 --torchdbg --tag 1 --cat tbool --save
     /Users/blyth/opticks/bin/op.sh RC 134
     simon:issues blyth$ 
-
-
 
 
 

@@ -439,6 +439,20 @@ const char* NCSG::getTreeDir() const
 {
     return m_treedir ; 
 }
+
+const char* NCSG::getTreeName() const 
+{
+    std::string name = BFile::Name(m_treedir ? m_treedir : "-1") ; 
+    return strdup(name.c_str());
+}
+int NCSG::getTreeNameIdx() const 
+{
+    const char* name = getTreeName();
+    return BStr::atoi(name, -1);
+}
+
+
+
 unsigned NCSG::getIndex() const 
 {
     return m_index ; 
