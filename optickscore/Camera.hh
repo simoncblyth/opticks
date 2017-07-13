@@ -135,7 +135,7 @@ class OKCORE_API Camera : public NConfigurable  {
 
    public:
        typedef enum { PERSPECTIVE_CAMERA, OTHOGRAPHIC_CAMERA, NUM_CAMERA_STYLE } Style_t ;
-       void nextStyle();
+       void nextStyle(unsigned modifiers);
        void setStyle(Camera::Style_t style);
        Camera::Style_t getStyle();
 

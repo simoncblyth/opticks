@@ -11,6 +11,7 @@
 #include "GLMFormat.hpp"
 
 // okc-
+#include "OpticksConst.hh"
 #include "Camera.hh"
 #include "PLOG.hh"
 
@@ -174,7 +175,10 @@ void Camera::aim(float basis)
    setNear( a_near );
    setFar(  a_far );
 
-   setNearClip( a_near/10.f,  a_near*10.f) ;
+   //setNearClip( a_near/10.f,  a_near*10.f) ;
+   //setNearClip( a_near/10.f,  a_near*20.f) ;
+   setNearClip( a_near/10.f,  a_far ) ;
+
    setFarClip(  a_far/10.f,   a_far*10.f );
    setScaleClip( a_scale/10.f, a_scale*10.f );
 
@@ -199,8 +203,12 @@ void Camera::setChanged(bool changed)
 }
 
 
-void Camera::nextStyle()
+void Camera::nextStyle(unsigned modifiers)
 {
+    if(modifiers & OpticksConst::e_shift)
+    {
+        Summary("Camera::nextStyle Summary from D+shift");
+    }
     int next = (getStyle() + 1) % NUM_CAMERA_STYLE ; 
     setStyle( (Style_t)next ) ; 
 }

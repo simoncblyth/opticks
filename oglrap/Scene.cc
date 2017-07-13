@@ -948,6 +948,8 @@ void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
     int next = (m_render_style + 1) % NUM_RENDER_STYLE ; 
     m_render_style = (RenderStyle_t)next ; 
     applyRenderStyle();
+
+    m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
 }
 
 void Scene::applyRenderStyle()   

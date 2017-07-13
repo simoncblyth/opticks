@@ -421,7 +421,7 @@ void Interactor::key_pressed(unsigned int key)
             m_clipper->next(); 
             break;
         case GLFW_KEY_D:
-            m_camera->nextStyle(); 
+            m_camera->nextStyle(modifiers); 
             break;
         case GLFW_KEY_E:
             m_composition->nextGeometryStyle(); 

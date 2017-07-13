@@ -615,13 +615,13 @@ void Composition::initRotator()
 }
 
 
-void Composition::nextAnimatorMode(unsigned int modifiers)
+void Composition::nextAnimatorMode(unsigned modifiers)
 {
     if(!m_animator) initAnimator() ;
     m_animator->nextMode(modifiers);
 }
 
-void Composition::nextRotatorMode(unsigned int modifiers)
+void Composition::nextRotatorMode(unsigned modifiers)
 {
     if(!m_rotator) initRotator();
     m_rotator->nextMode(modifiers);
