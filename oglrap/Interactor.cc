@@ -359,7 +359,7 @@ const char* Interactor::keys =
 "\n P: Scene::nextPhotonStyle       dot/longline/shortline  "
 "\n Q: Scene::nextGlobalStyle      non-instanced geometry style: default/normalvec/none "
 "\n R: rotate mode toggle  drag around rotate around viewpoint " 
-"\n S: screen scale mode toggle  drag up/down to change screen scale " 
+"\n S: screen scale mode toggle  drag up/down to change screen scale (use in Orthographic) " 
 "\n T: Composition::nextViewMode " 
 "\n U: Composition::nextViewType, use to cycle thru view/altview : altview is InterpolatedView  " 
 "\n V: View::nextMode      rotate view, with shift modifier rotates in opposite direction "    

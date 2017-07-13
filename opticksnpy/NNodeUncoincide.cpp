@@ -31,7 +31,8 @@ unsigned NNodeUncoincide::uncoincide()
 
     if(m_node->is_root())
     {
-        rc = uncoincide_treewise();
+        rc = uncoincide_treewise_fiddle();
+        //rc = uncoincide_treewise();
     }
 
     // NB BELOW PAIRWISE APPROACH CURRENTLY NOT USED
@@ -339,9 +340,15 @@ unsigned NNodeUncoincide::uncoincide_treewise_fiddle()
 {
     assert( m_node->is_root() );
 
-    // suspect the z-nudging will work regardless 
-    // of the fiddling ... it just depends on 
-    // appropriate primitive types
+    /*
+    Suspect the z-nudging will work regardless 
+    of the fiddling ... it just depends on 
+    appropriate primitive types
+
+    Unfortunately more work is needed to make the above true...
+    the nudger was developed with fixing unions in mind, some 
+    generalization is needed to make it work for differences/intersections.
+    */
 
     nnode* root = m_node ; 
     nnode* left = root->left ; 

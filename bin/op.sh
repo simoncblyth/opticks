@@ -234,6 +234,7 @@ op-geometry-name()
        --dpib) echo DPIB ;; 
        --dsst) echo DSST ;; 
        --dsst2) echo DSST2 ;; 
+       --drv3155) echo DRV3155 ;; 
        --dlv17) echo DLV17 ;; 
        --dlv30) echo DLV30 ;; 
        --dlv46) echo DLV46 ;; 
@@ -300,7 +301,7 @@ op-geometry-setup()
     local geo=${OPTICKS_GEO:-DYB}
     op-geometry-unset 
     case $geo in 
-     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*) op-geometry-setup-dyb  $geo  ;;
+     DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*|DRV*) op-geometry-setup-dyb  $geo  ;;
                              JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
@@ -317,6 +318,7 @@ op-geometry-query-dyb()
        LDYB)  echo "range:3156:3157" ;;  # 1 volume : pvOAV
        MDYB)  echo "range:3201:3202,range:3153:3154"  ;;  # 2 volumes : first pmt-hemi-cathode and ADE  
        DSST2)  echo "range:3155:3156,range:4440:4448" ;;    # large BBox discrep
+       DRV3155) echo "index:3155,depth:20" ;;  
        DLV17)  echo "range:3155:3156,range:2436:2437" ;;    #
        DLV30)  echo "range:3155:3156,range:3167:3168" ;;    #
        DLV46)  echo "range:3155:3156,range:3200:3201" ;;    #

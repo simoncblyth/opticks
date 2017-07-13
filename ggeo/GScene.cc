@@ -705,10 +705,22 @@ void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsig
     // more convenient to do selection here than in the python gltf preparation
 
     bool selected = m_query->selected(pvname.c_str(), n->idx, depth, recursive_select); 
+
     node->setSelected( selected  );
 
-
     if(selected) m_selected_count++ ; 
+
+/*
+    LOG(info) << "GScene::transferMetadata"
+              << " idx " << std::setw(6) << n->idx
+              << " depth " << std::setw(6) << depth
+              << " recursive_select " << ( recursive_select ? "Y" : "N" )
+              << " selected " << ( selected ? "Y" : "N" )
+              ;
+*/
+
+
+
 }
 
 
@@ -811,17 +823,18 @@ std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const
     std::string tri_spec = m_tri_bndlib->shortname(tri);
 
    
-    std::string spec ; 
+    std::string spec = tri_spec ; 
+
+/*
     if(n->selected)
     {
-        LOG(warning) << " using ana_spec from n.boundary " << n->boundary <<  " for selected node " << n->idx  ; 
+        //LOG(warning) << " using ana_spec from n.boundary " << n->boundary <<  " for selected node " << n->idx  ; 
         spec = ana_spec ; 
     }
-    else
-    {
-        spec = tri_spec ; 
-    }
- 
+*/ 
+
+
+/*
     if(m_verbosity > 3  || n->selected)
     std::cout  
               << " nidx " << std::setw(5) << n->idx
@@ -834,7 +847,9 @@ std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const
               << " USING spec : " << spec 
               << std::endl 
               ;
-  
+*/  
+
+
     return spec ; 
 }
 

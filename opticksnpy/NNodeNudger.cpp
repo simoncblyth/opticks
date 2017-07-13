@@ -45,8 +45,8 @@ bool NNodeNudger::operator()( int i, int j)
 
 void NNodeNudger::znudge()
 {
-    //znudge_lineup();
-    znudge_anypair();
+    znudge_lineup();
+    //znudge_anypair();
 }
 
 /*

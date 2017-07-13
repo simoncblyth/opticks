@@ -32,56 +32,53 @@ OpticksQuery::OpticksQuery(const char* query)
     init();
 }
 
-const char* OpticksQuery::getQueryString()
+const char* OpticksQuery::getQueryString() const 
 {
     return m_query_string ; 
 }
-const char* OpticksQuery::getQueryName()
+const char* OpticksQuery::getQueryName() const
 {
     return m_query_name ; 
 }
-int OpticksQuery::getQueryIndex()
+int OpticksQuery::getQueryIndex() const 
 {
     return m_query_index ;  
 }
-int OpticksQuery::getQueryMerge()
+int OpticksQuery::getQueryMerge() const
 {
     return m_query_merge ;  
 }
-int OpticksQuery::getQueryDepth()
+int OpticksQuery::getQueryDepth() const 
 {
     return m_query_depth == 0 ? 100 : m_query_depth ;  
 }
-std::vector<unsigned int> OpticksQuery::getQueryRange()
+std::vector<unsigned int> OpticksQuery::getQueryRange() const 
 {
     return m_query_range ;  
 }
 
-bool OpticksQuery::isFlatSelection()
+bool OpticksQuery::isFlatSelection() const 
 {
     return m_flat_selection ; 
 }
-bool OpticksQuery::isNoSelection()
+bool OpticksQuery::isNoSelection() const 
 {
     return m_no_selection ; 
 }
 
 
-
-
-
 void OpticksQuery::init()
 {
     parseQuery(m_query_string);    
-    dumpQuery("OpticksQuery::init");    
+    dump("OpticksQuery::init");    
 }
 
-void OpticksQuery::dumpQuery(const char* msg)
+void OpticksQuery::dump(const char* msg) const 
 {
     LOG(info) << msg << description() ; 
 }
 
-std::string OpticksQuery::description()
+std::string OpticksQuery::description() const 
 {
    std::stringstream ss ;  
    ss 
@@ -89,6 +86,7 @@ std::string OpticksQuery::description()
       << " query_string " << m_query_string 
       << " query_name " <<  (m_query_name ? m_query_name : "NULL" )
       << " query_index " <<  m_query_index 
+      << " query_depth " <<  m_query_depth
       ;
 
    if(m_query_type == RANGE)
@@ -127,12 +125,12 @@ void OpticksQuery::parseQuery(const char* query)
 }
 
 
-OpticksQuery::OpticksQuery_t OpticksQuery::getQueryType()
+OpticksQuery::OpticksQuery_t OpticksQuery::getQueryType() const 
 {
     return m_query_type ; 
 }
 
-const char* OpticksQuery::getQueryTypeString()
+const char* OpticksQuery::getQueryTypeString() const 
 {
    const char* type = UNDEFINED_ ;
    switch(m_query_type)
