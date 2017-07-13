@@ -331,6 +331,8 @@ void OpticksGeometry::configureGeometry()
     for(int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        if(!mm) continue ; 
+
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
         if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
         {

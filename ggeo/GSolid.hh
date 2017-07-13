@@ -47,8 +47,6 @@ class GGEO_API GSolid : public GNode {
   public:
       GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh,  unsigned int boundary, NSensor* sensor);
   public:
-      void setSelected(bool selected);
-      bool isSelected();
   public:
       void setCSGFlag(OpticksCSG_t flag);
       void setCSGSkip(bool csgskip);
@@ -82,7 +80,6 @@ class GGEO_API GSolid : public GNode {
       OpticksCSG_t      m_csgflag ; 
       bool              m_csgskip ; 
       NSensor*          m_sensor ; 
-      bool              m_selected ;
       const char*       m_pvname ; 
       const char*       m_lvname ; 
       unsigned int      m_sensor_surface_index ; 

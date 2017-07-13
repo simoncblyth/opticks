@@ -55,6 +55,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_ggeo(ggeo),
     m_analytic(true),
     m_loaded(false),
+    m_honour_selection(true),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
     m_scene_config( m_scene->getConfig()),
@@ -910,7 +911,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          bool inside = ridx == 0 ? true : false ; 
 
-         const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside );
+         const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, m_honour_selection );
 
 
          if(instances.size() == 0)
@@ -984,7 +985,10 @@ void GScene::checkMergedMeshes()
               << " mia " << mia
               ;
 
-    assert(mia == 0 );
+    if(!m_honour_selection)
+    {
+        assert(mia == 0 );
+    }
 }
 
 
@@ -992,7 +996,7 @@ void GScene::checkMergedMeshes()
 void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx)
 {
     bool inside = ridx == 0 ; 
-    const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside );
+    const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, m_honour_selection );
     unsigned num_instances = instances.size(); 
 
     if(m_verbosity > 1) 

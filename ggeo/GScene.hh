@@ -154,8 +154,11 @@ class GGEO_API GScene : public GGeoBase
         OpticksQuery* m_query ; 
         
         GGeo*    m_ggeo ; 
+
         bool     m_analytic ; 
         bool     m_loaded ; 
+        bool     m_honour_selection ;
+
         int      m_gltf ; 
         NScene*        m_scene ; 
         NSceneConfig*  m_scene_config ; 

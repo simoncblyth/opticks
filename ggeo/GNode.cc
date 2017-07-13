@@ -26,6 +26,7 @@
 GNode::GNode(unsigned int index, GMatrixF* transform, const GMesh* mesh) 
     :
     m_selfdigest(true),
+    m_selected(true),
     m_index(index), 
     m_parent(NULL),
     m_description(NULL),
@@ -50,6 +51,17 @@ void GNode::setIndex(unsigned int index)
 {
     m_index = index ; 
 }
+
+void GNode::setSelected(bool selected)
+{
+    m_selected = selected ; 
+}
+bool GNode::isSelected()
+{
+   return m_selected ; 
+}
+
+
 
 gfloat3* GNode::getLow()
 {
@@ -507,10 +519,10 @@ std::vector<GNode*> GNode::findAllProgenyDigest(std::string& dig)
     collectAllProgenyDigest(match, dig );
     return match ;
 }
-std::vector<GNode*> GNode::findAllInstances(unsigned ridx, bool inside_self)
+std::vector<GNode*> GNode::findAllInstances(unsigned ridx, bool inside_self, bool honour_selection)
 {
     std::vector<GNode*> match ;
-    collectAllInstances(match, ridx, inside_self );
+    collectAllInstances(match, ridx, inside_self, honour_selection );
     return match ;
 }
 
@@ -530,7 +542,7 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
     }
 }
 
-void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside )
+void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection )
 {
     // NB when a node labelled with the target ridx is found... 
     // the traverse stops there...  
@@ -539,12 +551,15 @@ void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool 
     // the root node
     //
 
-    bool matched = getRepeatIndex()==ridx ;
+     
+    bool matched_ridx = getRepeatIndex()==ridx ; 
+    bool matched_selection = honour_selection ? m_selected : true ; 
+    bool matched = matched_ridx && matched_selection ;
 
     if(inside)
     {
         if(matched) match.push_back(this);
-        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside );
+        for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
     }
     else
     {
@@ -555,9 +570,7 @@ void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool 
         }
         else
         {
-            for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside );
+            for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectAllInstances(match, ridx, inside, honour_selection );
         }
     }
-
-
 }

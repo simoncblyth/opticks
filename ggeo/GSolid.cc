@@ -27,7 +27,6 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh
          m_csgflag(CSG_PARTLIST),
          m_csgskip(false),
          m_sensor(sensor),
-         m_selected(true),
          m_pvname(NULL),
          m_lvname(NULL),
          m_sensor_surface_index(0),
@@ -61,14 +60,6 @@ NSensor* GSolid::getSensor()
     return m_sensor ; 
 }
 
-void GSolid::setSelected(bool selected)
-{
-    m_selected = selected ; 
-}
-bool GSolid::isSelected()
-{
-   return m_selected ; 
-}
 
 void GSolid::setPVName(const char* pvname)
 {
