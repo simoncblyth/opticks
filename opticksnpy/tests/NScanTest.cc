@@ -17,14 +17,6 @@ NScanTest $TMP/tgltf/extras
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
-bool pathEndsWithInt(const char* path)
-{
-    int fallback = -666 ; 
-    std::string name = BFile::Name(path) ; 
-    int check = BStr::atoi(name.c_str(), fallback);
-    return check != fallback ; 
-}
-
 
 int main(int argc, char** argv)
 {
@@ -36,21 +28,12 @@ int main(int argc, char** argv)
     std::string treedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
     const char* basedir = treedir.c_str(); 
 
-/*
-    const char* basedir = argc > 1 ? argv[1] : NULL ;
-    if(!basedir) 
-    {
-        LOG(warning) << "expecting base directory argument that contains CSG trees" ; 
-        return 0 ; 
-    }
-*/
-
-
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
 
     int verbosity = 0 ; 
     std::vector<NCSG*> trees ;
-    if(pathEndsWithInt(basedir))
+
+    if(BFile::pathEndsWithInt(basedir))
     {
         NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
         if(csg) trees.push_back(csg);   

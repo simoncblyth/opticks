@@ -24,6 +24,8 @@
 #include "NScan.hpp"
 #include "NNode.hpp"
 #include "NNodePoints.hpp"
+#include "NNodeUncoincide.hpp"
+#include "NNodeNudger.hpp"
 #include "NBBox.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
@@ -37,16 +39,20 @@
 
 const char* NCSG::FILENAME = "csg.txt" ; 
 const unsigned NCSG::NTRAN = 3 ; 
+const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
 
 // ctor : booting via deserialization of directory 
 NCSG::NCSG(const char* treedir) 
    :
    m_index(0),
+   m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(0),
    m_usedglobally(false),
    m_root(NULL),
    m_points(NULL),
+   m_uncoincide(NULL),
+   m_nudger(NULL),
    m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
@@ -62,8 +68,7 @@ NCSG::NCSG(const char* treedir)
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL),
-   m_surface_epsilon(1e-6)
+   m_tris(NULL)
 {
 }
 
@@ -71,10 +76,13 @@ NCSG::NCSG(const char* treedir)
 NCSG::NCSG(nnode* root ) 
    :
    m_index(0),
+   m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(root->verbosity),
    m_usedglobally(false),
    m_root(root),
    m_points(NULL),
+   m_uncoincide(make_uncoincide()),
+   m_nudger(make_nudger()),
    m_treedir(NULL),
    m_nodes(NULL),
    m_transforms(NULL),
@@ -90,8 +98,7 @@ NCSG::NCSG(nnode* root )
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL),
-   m_surface_epsilon(1e-6)
+   m_tris(NULL)
 {
 
    setBoundary( root->boundary );
@@ -111,7 +118,18 @@ NCSG::NCSG(nnode* root )
    m_planes->zero();
 
    m_meta = new NParameters ; 
+}
 
+NNodeUncoincide* NCSG::make_uncoincide() const 
+{
+    return NULL ;  
+    //return new NNodeUncoincide(m_root, m_surface_epsilon, m_root->verbosity);
+}
+NNodeNudger* NCSG::make_nudger() const 
+{
+    LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+    NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
+    return nudger ; 
 }
 
 
@@ -552,6 +570,7 @@ void NCSG::import()
 
     m_root = import_r(0, NULL) ; 
     m_root->set_treedir(m_treedir) ; 
+    m_root->set_treeidx(getTreeNameIdx()) ; 
 
     postimport();
 
@@ -563,17 +582,50 @@ void NCSG::import()
 }
 
 
+unsigned NCSG::get_num_coincidence() const 
+{
+   assert(m_nudger);
+   return m_nudger->get_num_coincidence() ; 
+}
+std::string NCSG::desc_coincidence() const 
+{
+   assert(m_nudger);
+   return m_nudger->desc_coincidence() ; 
+}
+
+std::string NCSG::get_type_mask_string() const 
+{
+   assert(m_root);
+   return m_root->get_type_mask_string() ;
+}
+unsigned NCSG::get_type_mask() const 
+{
+   assert(m_root);
+   return m_root->get_type_mask() ;
+}
+unsigned NCSG::get_oper_mask() const 
+{
+   assert(m_root);
+   return m_root->get_oper_mask() ;
+}
+unsigned NCSG::get_prim_mask() const 
+{
+   assert(m_root);
+   return m_root->get_prim_mask() ;
+}
+
+
+
 void NCSG::postimport()
 {
-    postimport_uncoincide();
+    m_nudger = make_nudger() ; 
+
+    //m_uncoincide = make_uncoincide(); 
+    //m_uncoincide->uncoincide();
+
     //postimport_autoscan();
 }
 
-
-void NCSG::postimport_uncoincide()
-{
-    if(is_uncoincide()) m_root->uncoincide(m_verbosity);  // pairwise not helping much, try at tree level 
-}
 
 void NCSG::postimport_autoscan()
 {
@@ -690,8 +742,6 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 
         node->left->other = node->right ;   // used by NOpenMesh 
         node->right->other = node->left ; 
-
-        //if(is_uncoincide()) node->uncoincide();  // pairwise not helping much 
 
         // recursive calls after "visit" as full ancestry needed for transform collection once reach primitives
     }

@@ -6,8 +6,11 @@
 #include "NNodeEnum.hpp"
 #include "NPY_API_EXPORT.hh"
 
+
+
 struct nuv ; 
 struct nnode ; 
+struct NNodeNudger ; 
 
 /*
 NNodeUncoincide
@@ -27,11 +30,12 @@ via NCSG::postimport_uncoincide/nnode::uncoincide
 class NPY_API NNodeUncoincide
 {
     public:
-        NNodeUncoincide(nnode* node, unsigned verbosity);
+        NNodeUncoincide(nnode* node, float epsilon, unsigned verbosity );
     public:
         unsigned uncoincide();
 
     private:
+        void init();
         // treewise approach 
         unsigned uncoincide_treewise();
         unsigned uncoincide_treewise_fiddle();
@@ -44,8 +48,10 @@ class NPY_API NNodeUncoincide
         unsigned uncoincide_union(nnode* a, nnode* b) ;
 
     private:
-        nnode* m_node ; 
-        int    m_verbosity ; 
+        nnode*       m_node ; 
+        float        m_epsilon ; 
+        int          m_verbosity ; 
+        NNodeNudger* m_nudger ;   // NB are rejiging to put another nudger directly in NCSG
 
 };
 

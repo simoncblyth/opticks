@@ -60,9 +60,12 @@ struct nmat4pair ;
 struct nmat4triple ; 
 struct nbbox ; 
 struct NSceneConfig ; 
+struct NNodeNudger ; 
+
 
 class NParameters ; 
 class NNodePoints ; 
+class NNodeUncoincide ; 
 class NTrianglesNPY ;
 
 class NPY_API NCSG {
@@ -72,6 +75,7 @@ class NPY_API NCSG {
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
         static const char* FILENAME ; 
         static const unsigned NTRAN ; 
+        static const float SURFACE_EPSILON ; 
 
         static unsigned NumNodes(unsigned height);
         static bool Exists(const char* base);
@@ -85,10 +89,24 @@ class NPY_API NCSG {
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
         static NParameters* LoadMetadata(const char* treedir, int idx=-1);
+
+        NNodeUncoincide* make_uncoincide() const ;
+        NNodeNudger*     make_nudger() const ;
+        unsigned         get_num_coincidence() const ;
+        std::string      desc_coincidence() const ;
+
         void updateContainer( nbbox& container ) const  ;
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();
+
+
+    public:
+        // passthru to root
+        unsigned    get_type_mask() const ;
+        unsigned    get_oper_mask() const ;
+        unsigned    get_prim_mask() const ;
+        std::string get_type_mask_string() const ;
     public:
         nbbox bbox_analytic() const ;
         nbbox bbox_surface_points() const ;
@@ -194,10 +212,14 @@ class NPY_API NCSG {
         void export_();
     private:
         unsigned     m_index ; 
+        float        m_surface_epsilon ; 
         int          m_verbosity ;  
         bool         m_usedglobally ; 
-        nnode*       m_root ;  
-        NNodePoints* m_points ; 
+
+        nnode*           m_root ;  
+        NNodePoints*     m_points ; 
+        NNodeUncoincide* m_uncoincide ; 
+        NNodeNudger*     m_nudger ; 
 
         const char* m_treedir ; 
 
@@ -222,10 +244,7 @@ class NPY_API NCSG {
         float       m_containerscale ;  
 
         
-
         NTrianglesNPY*         m_tris ; 
-
-        float                  m_surface_epsilon ; 
         std::vector<glm::vec3> m_surface_points ; 
 
 

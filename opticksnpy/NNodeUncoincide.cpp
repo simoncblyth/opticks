@@ -13,11 +13,20 @@
 
 #include "NPrimitives.hpp"
 
-NNodeUncoincide::NNodeUncoincide(nnode* node, unsigned verbosity)
+NNodeUncoincide::NNodeUncoincide(nnode* node, float epsilon, unsigned verbosity )
    :
    m_node(node),
-   m_verbosity(verbosity)
+   m_epsilon(epsilon),
+   m_verbosity(verbosity),
+   m_nudger(new NNodeNudger(node, epsilon, verbosity))
 {
+   init();
+}
+
+
+void NNodeUncoincide::init()
+{
+   // m_nudger->collect_anypair();  now done standardly 
 }
 
 unsigned NNodeUncoincide::uncoincide()
@@ -400,13 +409,15 @@ unsigned NNodeUncoincide::uncoincide_treewise_fiddle()
 
 unsigned NNodeUncoincide::uncoincide_uncyco(nnode* node)
 {
+   // hmm cannot use m_nudger when node is not root
+
     float epsilon = 1e-5f ; 
     NNodeNudger zn(node, epsilon, m_verbosity) ; 
 
     if(m_verbosity > 2 )
     zn.dump("NNodeUncoincide::uncoincide_uncyco before znudge");
 
-    zn.znudge();
+   // zn.znudge();
 
     if(m_verbosity > 2 )
     zn.dump("NNodeUncoincide::uncoincide_uncyco after znudge");

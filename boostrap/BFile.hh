@@ -14,6 +14,7 @@ class BRAP_API BFile {
        static std::string Name(const char* path);
        static std::string ParentDir(const char* path);
        static std::string ChangeExt(const char* path, const char* ext=".json");
+       static bool pathEndsWithInt(const char* path); 
 
        static bool ExistsNativeFile(const std::string& native);
        static bool ExistsNativeDir(const std::string& native);

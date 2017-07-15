@@ -11,7 +11,8 @@ typedef enum {
    CSGMASK_CYLINDER     = 0x1 << CSG_CYLINDER, 
    CSGMASK_DISC         = 0x1 << CSG_DISC, 
    CSGMASK_CONE         = 0x1 << CSG_CONE,
-   CSGMASK_ZSPHERE      = 0x1 << CSG_ZSPHERE
+   CSGMASK_ZSPHERE      = 0x1 << CSG_ZSPHERE,
+   CSGMASK_BOX3         = 0x1 << CSG_BOX3
 
 } OpticksCSGMask_t ; 
 

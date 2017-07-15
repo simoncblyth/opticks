@@ -55,7 +55,7 @@ struct NPY_API nnode
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);
 
-    unsigned uncoincide(unsigned verbosity);
+    //unsigned uncoincide(unsigned verbosity);
     //bool can_uncoincide(const nnode* a, const nnode* b) const ;
 
 
@@ -144,16 +144,33 @@ struct NPY_API nnode
     static void collect_prim_for_edit_r(std::vector<nnode*>& prim, nnode* node) ;
 
 
+    void collect_monogroup( std::vector<const nnode*>& monogroup ) const ;
+    void collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t qtyp ) const ;
+    void collect_ancestors( std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) const ;
+    void collect_connectedtype_ancestors( std::vector<const nnode*>& ancestors) const ;
+
+    static void collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, OpticksCSG_t qtyp );
+    static void collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp);
+    static void collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp);
+
+    static bool is_same_union(const nnode* a, const nnode* b) ; // static
+    static bool is_same_monogroup(const nnode* a, const nnode* b, OpticksCSG_t op) ; // static
+
+
     std::string get_type_mask_string() const ;
-    unsigned    get_type_mask() const ;
-    static void get_type_mask_r(const nnode* node, unsigned& tymsk);
-
     std::string get_prim_mask_string() const ;
+    std::string get_oper_mask_string() const ;
+
+    unsigned    get_type_mask() const ;
     unsigned    get_prim_mask() const ;
-    static void get_prim_mask_r(const nnode* node, unsigned& tymsk);
+    unsigned    get_oper_mask() const ;
+
+    unsigned get_mask(NNodeType ntyp) const ;
+    static void get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk);
+    std::string get_mask_string(NNodeType ntyp) const ;
 
 
-
+    void set_treeidx(int idx) ; 
     void set_treedir(const char* treedir) ; 
     void set_boundary(const char* boundary) ; 
 
@@ -175,6 +192,7 @@ struct NPY_API nnode
     nnode* other ; 
     const char* label ; 
     const char* treedir ; 
+    int         treeidx ;   
     const char* boundary ; 
 
     const nmat4triple* transform ; 

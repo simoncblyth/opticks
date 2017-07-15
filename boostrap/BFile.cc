@@ -1,6 +1,7 @@
 
 #include "SSys.hh"
 #include "BFile.hh"
+#include "BStr.hh"
 
 #include <cstring>
 #include <ctime>
@@ -499,5 +500,13 @@ std::string BFile::ChangeExt( const char* path, const char* ext)
     return FormPath(dir.c_str(), name.c_str());
 }
 
+
+bool BFile::pathEndsWithInt(const char* path)
+{
+    int fallback = -666 ; 
+    std::string name = BFile::Name(path) ; 
+    int check = BStr::atoi(name.c_str(), fallback);
+    return check != fallback ; 
+}
 
 

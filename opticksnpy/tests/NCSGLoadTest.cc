@@ -13,6 +13,9 @@ Tests individual trees::
 
 #include <iostream>
 
+#include "SSys.hh"
+#include "OpticksCSGMask.h"
+
 #include "BFile.hh"
 #include "BStr.hh"
 
@@ -38,14 +41,69 @@ int main(int argc, char** argv)
     NPY_LOG__ ;  
 
     BOpticksResource okr ;  // no Opticks at this level 
-    std::string treedir = okr.getDebuggingTreedir(argc, argv);
+    std::string argdir = okr.getDebuggingTreedir(argc, argv);
 
-    const char* config = NULL ; 
-    NCSG* csg = NCSG::LoadCSG( treedir.c_str(), config ); 
+    const char* basedir = argdir.c_str(); 
+    const char* gltfconfig = NULL ; 
 
-    if(!csg) return 0 ; 
+    int verbosity = SSys::getenvint("VERBOSITY", 0);
 
-    csg->dump();
+    std::vector<NCSG*> trees ;
+    if(BFile::pathEndsWithInt(basedir))
+    {
+        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
+        if(csg) trees.push_back(csg);   
+    }
+    else
+    {
+        NCSG::DeserializeTrees( basedir, trees, verbosity );
+    }
+
+
+
+    unsigned num_tree = trees.size() ;
+    LOG(info) << " num_tree " << num_tree ; 
+
+
+    unsigned count_coincidence(0);
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        NCSG* csg = trees[i];
+        if(num_tree == 1) csg->dump();
+        unsigned num_coincidence = csg->get_num_coincidence();
+
+        unsigned mask = csg->get_oper_mask();
+        if(mask == CSGMASK_INTERSECTION ) 
+        {
+            LOG(info) << "skip intersection " ;             
+            continue ; 
+        }
+
+
+        if(num_coincidence > 0) 
+        {
+            LOG(info)
+                  << std::setw(40) << csg->soname()
+                  << " " << csg->get_type_mask_string()
+                  << csg->desc_coincidence() 
+                 ;
+            count_coincidence++ ; 
+        }
+    }
+
+    LOG(info) 
+          << " NCSGLoadTest trees " 
+          << " basedir " << basedir  
+          << " num_tree " << num_tree 
+          << " count_coincidence " << count_coincidence
+          << " frac " << float(count_coincidence)/float(num_tree)
+          << " verbosity " << verbosity 
+          ; 
+
+
+
+
+
 
     return 0 ; 
 }

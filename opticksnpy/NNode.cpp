@@ -116,15 +116,24 @@ bool nnode::is_bileaf() const
 {
     return !is_primitive() && left->is_primitive() && right->is_primitive() ; 
 }
+
 bool nnode::is_znudge_capable() const 
 {
-    return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_ZSPHERE || type == CSG_DISC ; 
+    return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_DISC ; 
+    //return type == CSG_CYLINDER || type == CSG_CONE || type == CSG_ZSPHERE || type == CSG_DISC ;    // ZSPHERE has radius constraints 
 }
 
 void nnode::set_treedir( const char* treedir_)
 {
     treedir = treedir_ ? strdup(treedir_) : NULL ; 
 }
+void nnode::set_treeidx(int treeidx_)
+{
+    treeidx = treeidx_ ; 
+}
+
+
+
 void nnode::set_boundary( const char* boundary_)
 {
     boundary = boundary_ ? strdup(boundary_) : NULL ; 
@@ -143,6 +152,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.other  = NULL ;   // used by NOpenMesh 
     n.label = NULL ; 
     n.treedir = NULL ; 
+    n.treeidx = -1 ; 
     n.boundary = NULL ; 
     n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 
@@ -197,6 +207,113 @@ const nmat4triple* nnode::global_transform(nnode* n)
     return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
 
+
+
+
+
+void nnode::collect_ancestors( std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) const 
+{
+    if(!parent) return ;   // start from parent to avoid collecting self
+    collect_ancestors_(parent, ancestors, qtyp);
+}
+void nnode::collect_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) // static
+{
+    while(n)
+    {
+        if(n->type == qtyp || qtyp == CSG_ZERO) ancestors.push_back(n);
+        n = n->parent ; 
+    }
+}
+
+
+
+void nnode::collect_connectedtype_ancestors( std::vector<const nnode*>& ancestors) const 
+{
+    if(!parent) return ;   // start from parent to avoid collecting self
+    collect_connectedtype_ancestors_(parent, ancestors, parent->type);
+}
+void nnode::collect_connectedtype_ancestors_( const nnode* n, std::vector<const nnode*>& ancestors, OpticksCSG_t qtyp) // static
+{
+    while(n && n->type == qtyp)
+    {
+        ancestors.push_back(n);
+        n = n->parent ; 
+    }
+}
+
+
+
+
+
+
+void nnode::collect_progeny( std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) const 
+{
+    if(left && right)  // start from left/right to avoid collecting self
+    {
+        collect_progeny_r(left, progeny, xtyp);
+        collect_progeny_r(right, progeny, xtyp);
+    }
+}
+void nnode::collect_progeny_r( const nnode* n, std::vector<const nnode*>& progeny, OpticksCSG_t xtyp ) // static
+{
+    if(n->type != xtyp || xtyp == CSG_ZERO)
+    {
+        if(std::find(progeny.begin(), progeny.end(), n) == progeny.end()) progeny.push_back(n);
+    }
+
+    if(n->left && n->right)
+    {
+        collect_progeny_r(n->left, progeny, xtyp);
+        collect_progeny_r(n->right, progeny, xtyp);
+    }   
+}
+
+
+void nnode::collect_monogroup( std::vector<const nnode*>& monogroup ) const 
+{
+   if(!parent) return ;    
+
+   // follow parent links collecting ancestors until reach ancestor of another CSG type
+   // eg on starting with a primitive of CSG_UNION parent finds 
+   // direct lineage ancestors that are also CSG_UNION
+
+   std::vector<const nnode*> connectedtype ; 
+   collect_connectedtype_ancestors(connectedtype);  
+
+   // then for each of those same type ancestors collect
+   // all progeny... eg for CSG_UNION parent this
+   // will collect all operators and primitives in the union
+
+   OpticksCSG_t xtyp = parent->type ;  // exclude the operators from the monogroup
+
+   for(unsigned c=0 ; c < connectedtype.size() ; c++)
+   {
+       const nnode* cu = connectedtype[c];
+       cu->collect_progeny( monogroup, xtyp ); 
+   }  
+}
+bool nnode::is_same_monogroup(const nnode* a, const nnode* b, OpticksCSG_t op)  // static
+{
+   if(!a->parent || !b->parent || a->parent->type != op || b->parent->type != op) return false ;  
+
+   std::vector<const nnode*> monogroup ; 
+   a->collect_monogroup(monogroup);
+
+   return std::find(monogroup.begin(), monogroup.end(), b ) != monogroup.end() ;
+}
+
+bool nnode::is_same_union(const nnode* a, const nnode* b) // static
+{
+   return is_same_monogroup(a,b, CSG_UNION ); 
+} 
+
+
+
+
+
+
+
+
 void nnode::update_gtransforms()
 {
     update_gtransforms_r(this);
@@ -218,68 +335,48 @@ void nnode::update_gtransforms_r(nnode* node)
 
 
 
-unsigned nnode::get_type_mask() const 
-{
-    unsigned typmsk = 0 ;   
-    get_type_mask_r(this, typmsk );
-    return typmsk ; 
-}
 
-void nnode::get_type_mask_r(const nnode* node, unsigned& typmsk ) // static
+
+unsigned nnode::get_type_mask() const { return get_mask(NODE_ALL) ; }
+unsigned nnode::get_prim_mask() const { return get_mask(NODE_PRIMITIVE) ; }
+unsigned nnode::get_oper_mask() const { return get_mask(NODE_OPERATOR) ; }
+
+std::string nnode::get_type_mask_string() const { return get_mask_string(NODE_ALL) ; }
+std::string nnode::get_prim_mask_string() const { return get_mask_string(NODE_PRIMITIVE) ; }
+std::string nnode::get_oper_mask_string() const { return get_mask_string(NODE_OPERATOR) ; }
+
+
+unsigned nnode::get_mask(NNodeType ntyp) const 
 {
-    if(node->type < 32 ) typmsk |= (0x1 << node->type) ;
+    unsigned msk = 0 ;   
+    get_mask_r(this, ntyp, msk );
+    return msk ; 
+}
+void nnode::get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk ) // static
+{
+    bool collect = false ;  
+    if(node->type < 32)
+    {
+       if(     ntyp == NODE_ALL) collect = true ; 
+       else if(ntyp == NODE_PRIMITIVE && node->type >= CSG_SPHERE ) collect = true  ;
+       else if(ntyp == NODE_OPERATOR  && (node->type == CSG_UNION || node->type == CSG_INTERSECTION || node->type == CSG_DIFFERENCE )) collect = true  ;
+    }
+    if(collect)  msk |= (0x1 << node->type) ;
+
+
     if(node->left && node->right)
     {
-        get_type_mask_r(node->left, typmsk);
-        get_type_mask_r(node->right, typmsk);
+        get_mask_r(node->left, ntyp, msk);
+        get_mask_r(node->right, ntyp, msk);
     }
 } 
-
-std::string nnode::get_type_mask_string() const 
+std::string nnode::get_mask_string(NNodeType ntyp) const 
 {
-    unsigned typmsk = get_type_mask();
+    unsigned msk = get_mask(ntyp);
     std::stringstream ss ; 
-    for(unsigned i=0 ; i < 32 ; i++) if(typmsk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
+    for(unsigned i=0 ; i < 32 ; i++) if(msk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
     return ss.str();
 }
-
-
-
-
-
-
-unsigned nnode::get_prim_mask() const 
-{
-    unsigned pmsk = 0 ;   
-    get_prim_mask_r(this, pmsk );
-    return pmsk ; 
-}
-void nnode::get_prim_mask_r(const nnode* node, unsigned& pmsk ) // static
-{
-    if(node->type < 32 && node->type >= CSG_SPHERE ) pmsk |= (0x1 << node->type) ;
-    if(node->left && node->right)
-    {
-        get_prim_mask_r(node->left, pmsk);
-        get_prim_mask_r(node->right, pmsk);
-    }
-} 
-std::string nnode::get_prim_mask_string() const 
-{
-    unsigned pmsk = get_prim_mask();
-    std::stringstream ss ; 
-    for(unsigned i=0 ; i < 32 ; i++) if(pmsk & (0x1 << i)) ss << CSGName((OpticksCSG_t)i) << " " ;   
-    return ss.str();
-}
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -970,13 +1067,15 @@ void nnode::dump_planes() const
 
 
 
+/*
+// move up to NCSG now that are operating from root..
 
 unsigned nnode::uncoincide(unsigned verbosity)
 {
     NNodeUncoincide unco(this, verbosity);
     return unco.uncoincide();
 }
-
+*/
 
 
 

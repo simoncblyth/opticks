@@ -20,6 +20,13 @@ typedef enum
 } NNodePointType ;
 
 
+typedef enum
+{  
+   NODE_ALL, 
+   NODE_OPERATOR, 
+   NODE_PRIMITIVE 
+
+} NNodeType ;
 
 
 typedef enum 
