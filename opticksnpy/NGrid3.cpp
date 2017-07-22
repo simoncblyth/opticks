@@ -123,7 +123,8 @@ IVec NGrid<FVec,IVec,DIM>::ijk(const int c) const
     assert(valid);
 
     morton3 loc(c);  
-    unsigned long long i, j, k ;  
+    //unsigned long long i, j, k ;
+    uint64_t i, j, k ;  
     loc.decode(i, j, k); 
     return IVec(i, j, k);
 }

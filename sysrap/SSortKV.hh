@@ -3,7 +3,7 @@
 #include <map>
 #include <string>
 #include <vector>
-
+#include <algorithm>
 #include "SYSRAP_API_EXPORT.hh"
  
 struct SYSRAP_API SSortKV 

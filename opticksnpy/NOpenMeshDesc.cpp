@@ -428,5 +428,5 @@ std::string NOpenMeshDesc<T>::operator()(const typename T::Point& pt) const
 }
 
 
-template struct NOpenMeshDesc<NOpenMeshType> ;
+template struct NPY_API NOpenMeshDesc<NOpenMeshType> ;
 

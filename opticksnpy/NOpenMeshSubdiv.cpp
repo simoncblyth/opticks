@@ -654,5 +654,5 @@ subdiv to be done, the below used mesh.split(eh, midpoint)
 
 
 
-template struct NOpenMeshSubdiv<NOpenMeshType> ;
+template struct NPY_API NOpenMeshSubdiv<NOpenMeshType> ;
 

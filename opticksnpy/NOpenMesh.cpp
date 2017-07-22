@@ -651,6 +651,6 @@ void NOpenMesh<T>::subdiv_test()
 
 
 
-template struct NOpenMesh<NOpenMeshType> ;
+template struct NPY_API NOpenMesh<NOpenMeshType> ;
 
 

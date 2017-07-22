@@ -59,7 +59,7 @@
 #define BOUNDARYSNAPPING_CC
 
 //== INCLUDES =================================================================
-
+#include <algorithm>
 #include <map>
 #include "BoundarySnappingT.hh"
 

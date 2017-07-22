@@ -48,7 +48,7 @@ void test_morton3d()
     for(unsigned loc=0 ; loc < 8 ; loc++)
     {
          morton3 m(loc);
-         ntvec3<unsigned long long> p = {0,0,0} ;
+         ntvec3<uint64_t> p = {0,0,0} ;
          m.decode(p.x, p.y, p.z ); 
          LOG(info) << " loc " << loc << " --> " << p.desc()  ;
     }

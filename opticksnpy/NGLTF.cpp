@@ -105,7 +105,7 @@ void NGLTF::collect()
         m_mesh_instances[mesh_id].push_back(node_id)  ;
 
 
-        for (auto child : node->children) stack.push_back( {child, xf} ); 
+        for (auto child : node->children) stack.push_back( std::make_tuple(child, xf) ); 
     }
 }
 

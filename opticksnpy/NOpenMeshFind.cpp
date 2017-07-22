@@ -700,5 +700,5 @@ typename T::VertexHandle NOpenMeshFind<T>::find_vertex_epsilon(P pt, const float
 
 
 
-template struct NOpenMeshFind<NOpenMeshType> ;
+template struct NPY_API NOpenMeshFind<NOpenMeshType> ;
 

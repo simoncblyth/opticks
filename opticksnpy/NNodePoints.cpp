@@ -1,4 +1,5 @@
-
+#include <ios>
+#include <iostream>
 #include <set>
 #include <map>
 #include <sstream>
@@ -49,7 +50,7 @@ std::string NNodePoints::desc() const
        << " target " << m_target
        << " num_prim " << m_primitives.size()
        << " num_composite_points " << m_composite_points.size()
-       << " epsilon " << std::scientific << m_epsilon << std::defaultfloat 
+       << " epsilon " << std::scientific << m_epsilon << std::fixed 
         ;
     return ss.str();
 }
@@ -258,7 +259,7 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
                << " pt " << std::setw(15) << NNodeEnum::PointType(pt)
                << " sd(fx4) " << std::setw(10) << std::fixed << std::setprecision(4) << sd 
                << " sd(sci) " << std::setw(10) << std::scientific << sd 
-               << " sd(def) " << std::setw(10) << std::defaultfloat  << sd 
+               << " sd(def) " << std::setw(10) << std::fixed  << sd 
                << std::endl
                ; 
     }

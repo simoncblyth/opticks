@@ -4,7 +4,7 @@
 #include "PLOG.hh"
 
 #include "Nuv.hpp"
-#include "NGLMext.hpp"
+#include "NGLMExt.hpp"
 #include "NOpenMesh.hpp"
 #include "NOpenMeshCfg.hpp"
 #include "NOpenMeshBuild.hpp"
@@ -852,5 +852,5 @@ void NOpenMeshBuild<T>::add_cube()
 
 
 
-template struct NOpenMeshBuild<NOpenMeshType> ;
+template struct NPY_API NOpenMeshBuild<NOpenMeshType> ;
 

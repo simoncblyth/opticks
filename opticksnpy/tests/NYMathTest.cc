@@ -14,7 +14,7 @@ int main(int argc, char** argv)
     std::cout << std::setw(15) << " ym::pif " << ym::pif << std::endl ; 
     std::cout << std::setw(15) << " ym::pi " << ym::pi << std::endl ; 
 
-    ym::vec4f v(1.,2.,3.,4.) ; 
+    ym::vec4f v{1.,2.,3.,4.} ; 
 
     std::cout << " v.x " << v.x << " v[0] " << v[0] << std::endl ;  
     std::cout << " v.y " << v.y << " v[1] " << v[1] << std::endl ;  
@@ -22,12 +22,12 @@ int main(int argc, char** argv)
     std::cout << " v.w " << v.w << " v[3] " << v[3] << std::endl ;  
 
 
-    ym::vec4f v0( 0., 1., 2., 3.) ; 
-    ym::vec4f v1(10.,11.,12.,13.) ; 
-    ym::vec4f v2(20.,21.,22.,23.) ; 
-    ym::vec4f v3(30.,31.,32.,33.) ; 
+    ym::vec4f v0{ 0., 1., 2., 3.} ; 
+    ym::vec4f v1{10.,11.,12.,13.} ; 
+    ym::vec4f v2{20.,21.,22.,23.} ; 
+    ym::vec4f v3{30.,31.,32.,33.} ; 
 
-    ym::mat4f m(v0,v1,v2,v3);
+    ym::mat4f m{v0,v1,v2,v3};
 
     assert( m.w.w == 33. );
     assert( m.w.z == 32. );

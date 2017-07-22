@@ -18,8 +18,8 @@ EOU
 odcs-edit(){ vi $(opticks-home)/cmake/Modules/FindDualContouringSample.cmake ; }
 odcs-url(){ echo https://github.com/simoncblyth/DualContouringSample ; }
 
-odcs-dir(){  echo $(opticks-prefix)/externals/dualcontouringsample ; }
-odcs-bdir(){ echo $(opticks-prefix)/externals/dualcontouringsample/dualcontouringsample.build ; }
+odcs-dir(){  echo $(opticks-prefix)/externals/DualContouringSample ; }
+odcs-bdir(){ echo $(opticks-prefix)/externals/DualcontouringSample/dualcontouringsample.build ; }
 
 odcs-cd(){  cd $(odcs-dir); }
 odcs-bcd(){ cd $(odcs-bdir) ; }

@@ -85,11 +85,11 @@ void nquad::dump(const char* msg) const
 
 
 
-template struct ntvec3<float>;
-template struct ntvec3<double>;
-template struct ntvec3<short>;
-template struct ntvec3<int>;
-template struct ntvec3<unsigned int>;
-template struct ntvec3<unsigned long long>;
-
+template struct NPY_API ntvec3<float>;
+template struct NPY_API ntvec3<double>;
+template struct NPY_API ntvec3<short>;
+template struct NPY_API ntvec3<int>;
+template struct NPY_API ntvec3<unsigned int>;
+template struct NPY_API ntvec3<unsigned long>;
+template struct NPY_API ntvec3<unsigned long long>;
 

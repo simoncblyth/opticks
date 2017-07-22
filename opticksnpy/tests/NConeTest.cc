@@ -111,7 +111,7 @@ void test_getSurfacePointsAll()
 
         std::cout << " p " << gpresent(p) 
                   << " sd " << sd
-                  << " sd(sci) " << std::scientific << sd << std::defaultfloat 
+                  << " sd(sci) " << std::scientific << sd << std::fixed 
                   << std::endl
                   ; 
     }
