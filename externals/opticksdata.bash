@@ -130,6 +130,7 @@ opticksdata-xpath(){
       dpib) echo $base/dpib/cfg4 ;; 
        lxe) echo $base/LXe/g4_00 ;;
       jpmt) echo $base/juno/test3 ;;
+      j1707) echo $base/juno1707/g4_00 ;; 
   esac
 
 #      dybf) echo $base/DayaBay_VGDX_20140414-1300/g4_00 ;;
@@ -146,6 +147,7 @@ DLIN
 DPIB
 JPMT
 LXE
+J1707
 EOT
 }
 

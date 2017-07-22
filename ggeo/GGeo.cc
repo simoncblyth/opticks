@@ -761,7 +761,7 @@ void GGeo::loadAnalyticPmt()
     LOG(info) << "GGeo::loadAnalyticPmt"
               << " AnalyticPMTIndex " << apmtidx
               << " AnalyticPMTSlice " << ( slice ? slice->description() : "ALL" )
-              << " Path " << m_pmt->getPath()
+              << " Path " << ( m_pmt ? m_pmt->getPath() : "-" ) 
               ;  
 
     if(m_pmt)

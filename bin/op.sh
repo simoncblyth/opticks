@@ -249,6 +249,7 @@ op-geometry-name()
        --dlv140) echo DLV140 ;; 
        --dlv185) echo DLV185 ;; 
        --jpmt) echo JPMT ;; 
+       --j1707) echo J1707 ;; 
        --lxe)  echo LXE ;; 
 
        --idyb) echo IDYB ;; 
@@ -303,7 +304,7 @@ op-geometry-setup()
     op-geometry-unset 
     case $geo in 
      DYB|IDYB|JDYB|KDYB|LDYB|MDYB|DLIN|DFAR|DSST2|DLV*|DRV*) op-geometry-setup-dyb  $geo  ;;
-                             JUNO|JPMT|JTST) op-geometry-setup-juno $geo  ;;
+                             JUNO|JPMT|JTST|J1707) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
     #op-geometry-setup-analytic
@@ -368,6 +369,10 @@ op-geometry-setup-juno()
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JTST
        export OPTICKS_QUERY="range:1:50000" 
        export OPTICKS_CTRL=""
+   elif [ "$geo" == "J1707" ]; then
+       export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1707
+       export OPTICKS_QUERY="range:1:50000" 
+       export OPTICKS_CTRL="volnames"
    fi
 }
 op-geometry-setup-misc()
