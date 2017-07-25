@@ -392,6 +392,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--gidx",  default=gidx, type=int, help="GDML index to pick target node from within gsel lvn selection, see tboolean-gdml. %(default)s ")
     parser.add_argument(     "--gltfsave", default=gltfsave, action="store_true", help="Save GDML parsed scene as glTF, see analytic/sc.py. %(default)s ")
     parser.add_argument(     "--lvnlist", default=lvnlist, help="Path to file containing list of lv names. %(default)s ")
+    parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

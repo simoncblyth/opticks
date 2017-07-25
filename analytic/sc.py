@@ -454,17 +454,22 @@ def gdml2gltf_main( args ):
     assert gltfpath.replace('.gltf','.gdml') == gdmlpath 
 
 
+    log.info("start GDML parse")
     gdml = GDML.parse(gdmlpath)
 
+    log.info("start treeify")
     tree = Tree(gdml.world)  
 
+    log.info("start apply_selection")
     tree.apply_selection(args.query)   # sets node.selected "volume mask" 
 
-     
+    log.info("start Sc.ctor")
     sc = Sc(maxcsgheight=3)
 
     sc.extras["verbosity"] = 1
     sc.extras["targetnode"] = 0   # args.query.query_range[0]   # hmm get rid of this ?
+
+    log.info("start Sc")
 
     tg = sc.add_tree_gdml( tree.root, maxdepth=0)
 

@@ -25,7 +25,9 @@ typedef enum {
  CSG_CONVEXPOLYHEDRON=19,
      CSG_DISC=20,
    CSG_SEGMENT=21,
- CSG_UNDEFINED=22,
+   CSG_ELLIPSOID=22,
+   CSG_TORUS=23,
+ CSG_UNDEFINED=24,
 
  CSG_FLAGPARTLIST=100,
  CSG_FLAGNODETREE=101,
@@ -73,6 +75,8 @@ static const char* CSG_BOX3_          = "box3" ;
 static const char* CSG_TRAPEZOID_     = "trapezoid" ; 
 static const char* CSG_CONVEXPOLYHEDRON_ = "convexpolyhedron" ; 
 static const char* CSG_SEGMENT_       = "segment" ; 
+static const char* CSG_ELLIPSOID_       = "ellipsoid" ; 
+static const char* CSG_TORUS_          = "torus" ; 
 static const char* CSG_UNDEFINED_     = "undefined" ; 
 
 static const char* CSG_FLAGPARTLIST_ = "flagpartlist" ; 
@@ -99,6 +103,8 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
     else if(strcmp(nodename, CSG_CONE_) == 0)           tc = CSG_CONE ;
     else if(strcmp(nodename, CSG_MULTICONE_) == 0)      tc = CSG_MULTICONE ;
     else if(strcmp(nodename, CSG_TRAPEZOID_) == 0)      tc = CSG_TRAPEZOID ;
+    else if(strcmp(nodename, CSG_ELLIPSOID_) == 0)      tc = CSG_ELLIPSOID ;
+    else if(strcmp(nodename, CSG_TORUS_) == 0)          tc = CSG_TORUS ;
     else if(strcmp(nodename, CSG_SEGMENT_) == 0)        tc = CSG_SEGMENT ;
     else if(strcmp(nodename, CSG_CONVEXPOLYHEDRON_) == 0) tc = CSG_CONVEXPOLYHEDRON ;
     else if(strcmp(nodename, CSG_INTERSECTION_) == 0)   tc = CSG_INTERSECTION ;
@@ -137,7 +143,9 @@ static const char* CSGName( OpticksCSG_t type )
         case CSG_CONE:          s = CSG_CONE_          ; break ; 
         case CSG_MULTICONE:     s = CSG_MULTICONE_     ; break ; 
         case CSG_TRAPEZOID:     s = CSG_TRAPEZOID_     ; break ; 
-        case CSG_SEGMENT:       s = CSG_SEGMENT_     ; break ; 
+        case CSG_ELLIPSOID:     s = CSG_ELLIPSOID_     ; break ; 
+        case CSG_TORUS:         s = CSG_TORUS_         ; break ; 
+        case CSG_SEGMENT:       s = CSG_SEGMENT_       ; break ; 
         case CSG_CONVEXPOLYHEDRON: s = CSG_CONVEXPOLYHEDRON_ ; break ; 
         case CSG_UNDEFINED:     s = CSG_UNDEFINED_     ; break ; 
         case CSG_FLAGPARTLIST:  s = CSG_FLAGPARTLIST_  ; break ; 

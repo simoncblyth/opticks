@@ -520,11 +520,21 @@ op-binary-setup()
     unset OPTICKS_ARGS
 
     if [ "$bin" != "" ]; then
-       export OPTICKS_BINARY=$(opticks-bindir)/$bin
+
+       local ubin
+       if [ "${bin: -3}" == ".py" ]; then
+           ubin=$(which $bin)
+       else
+           ubin=$(opticks-bindir)/$bin
+       fi
+
+       export OPTICKS_BINARY=$ubin
        # some commands should not be removed from the commandline
        # as they are needed by the binary 
+       echo ubin $ubin cfm $cfm cmdline $cmdline
+
        case $cfm in 
-         --surf|--scint|--oscint|--pmt) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
+         --surf|--scint|--oscint|--pmt|--j1707) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
                                      *) export OPTICKS_ARGS=$cmdline ;;
        esac
     fi 

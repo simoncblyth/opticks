@@ -183,7 +183,7 @@ from opticks.ana.base import opticks_main
 from opticks.ana.nbase import find_ranges
 from opticks.analytic.csg import CSG 
 from opticks.analytic.treebuilder import TreeBuilder
-from opticks.analytic.glm import make_trs, make_transform
+from opticks.analytic.glm import make_trs, make_transform, scale
 from opticks.analytic.prism import make_trapezoid
 
 import numpy as np
@@ -348,6 +348,10 @@ class Boolean(Geometry):
         return "\n".join([line, lrep_("l",self.first), lrep_("r",self.second)])
 
     def as_ncsg(self):
+
+        if not hasattr(self.first, 'as_ncsg'):
+            print self.first 
+        pass
         left = self.first.as_ncsg()
         right = self.second.as_ncsg()
         right.transform = self.secondtransform
@@ -565,6 +569,56 @@ class Sphere(Primitive):
         pass
 
         return result
+
+
+
+
+
+class Ellipsoid(Primitive):
+    ax = property(lambda self:self.att('ax', 0, typ=float))
+    by = property(lambda self:self.att('by', 0, typ=float))
+    cz = property(lambda self:self.att('cz', 0, typ=float))
+    zcut1 = property(lambda self:self.att('zcut1', 0, typ=float))
+    zcut2 = property(lambda self:self.att('zcut2', 0, typ=float))
+
+
+    def _get_semi_axes(self):
+        ax = self.ax
+        by = self.by
+        cz = self.cz
+        a = np.array([ax,by,cz], dtype=np.float32)
+        return a
+    semi_axes = property(_get_semi_axes)    
+
+
+    def as_ncsg(self):
+        ax = self.semi_axes
+        radius = ax.max()
+        ax /= radius
+
+        cn = CSG("ellipsoid", name=self.name)
+        cn.param[0] = 0
+        cn.param[1] = 0
+        cn.param[2] = 0
+        cn.param[3] = radius
+
+        cn.scale = scale(ax)   ## TODO: need to get this fed into node transforms without getting stomped
+ 
+        return cn
+
+
+class Torus(Primitive):
+    rtor = property(lambda self:self.att('rtor', 0, typ=float))
+
+    def as_ncsg(self):
+
+        cn = CSG("torus", name=self.name)
+        cn.param[0] = 0
+        cn.param[1] = 0
+        cn.param[2] = 0
+        cn.param[3] = self.rtor
+
+        return None
 
 
 
@@ -1031,7 +1085,9 @@ class GDML(G):
         "material":Material,
 
         "tube":Tube,
+        "torus":Torus,
         "sphere":Sphere,
+        "ellipsoid":Ellipsoid,
         "box":Box,
         "cone":Cone,
         "polycone":PolyCone,
@@ -1113,7 +1169,14 @@ class GDML(G):
         self.setup_world = self.elem.find("setup/world")
         self.worldvol = self.setup_world.attrib["ref"] if self.setup_world is not None else None
 
-        self.lv2so = dict([(v.idx, v.solid.idx) for v in self.volumes.values()])
+        vv = self.volumes.values()
+
+        vvs = filter(lambda v:hasattr(v,'solid'), vv)
+
+        log.info("vv %s vvs %s " % (len(vv),len(vvs)))
+        #for v in vvs:print repr(v)
+
+        self.lv2so = dict([(v.idx, v.solid.idx) for v in vvs])
 
 
 
