@@ -1620,7 +1620,10 @@ CSG.kwa = dict(poly="IM", resolution="50")
 
 container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
   
-a = CSG.MakeEllipsoid(axes=[100,200,100])
+#a = CSG.MakeEllipsoid(axes=[100,200,100] )
+#a = CSG.MakeEllipsoid(axes=[100,200,100], zcut1=-50, zcut2=50 )
+#a = CSG.MakeEllipsoid(axes=[100,200,100], zcut1=-50  )
+a = CSG.MakeEllipsoid(axes=[100,200,100], zcut1=-50  )
 
 a.translate = [300,300,0]
 

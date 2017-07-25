@@ -424,7 +424,7 @@ class Ellipsoid(Primitive):
 
     def as_ncsg(self):
         ax = self.semi_axes
-
+        cn = CSG.MakeEllipsoid(axes=ax, name=self.name, zcut1=self.zcut1, zcut2=self.zcut2)
         return cn
 
 

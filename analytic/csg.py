@@ -501,31 +501,42 @@ class CSG(CSG_):
 
 
     @classmethod
-    def MakeEllipsoid(cls, axes=[1,1,1], name="MakeEllipsoid"):
+    def MakeEllipsoid(cls, axes=[1,1,1], name="MakeEllipsoid", zcut1=None, zcut2=None):
 
-        ax = np.asarray(axes, dtype=np.float32)
-        src = ax.copy()
+        axyz = np.asarray(axes, dtype=np.float32)
 
-        radius = ax.max()
-        ax /= radius
+        ax = float(axyz[0])
+        by = float(axyz[1])
+        cz = float(axyz[2])
 
-        cn = CSG("ellipsoid", name=name)
+        zcut2 =  cz if zcut2 is None else float(zcut2)
+        zcut1 = -cz if zcut1 is None else float(zcut1)
+
+
+        srcmeta = dict(src_type="ellipsoid", src_ax=ax, src_by=by, src_cz=cz, src_zcut1=zcut1, src_zcut2=zcut2 )
+
+        scale = axyz/cz    ## NB scale is 1 in z, for simple z1/z2
+        z2 = zcut2
+        z1 = zcut1
+
+
+        cn = CSG("zsphere", name=name)
+
         cn.param[0] = 0
         cn.param[1] = 0
         cn.param[2] = 0
-        cn.param[3] = radius
+        cn.param[3] = cz
 
-        cn.scale = ax  
+        cn.param1[0] = z1
+        cn.param1[1] = z2
+        cn.param1[2] = 0
+        cn.param1[3] = 0
 
-        srcmeta = dict(
-                src_type="ellipsoid",
-                src_ax=float(src[0]), 
-                src_by=float(src[1]), 
-                src_cz=float(src[2])) 
+        cn.scale = scale
 
         cn.meta.update(srcmeta)
  
-        log.info("MakeEllipsoid ax %s scale %s " % (repr(ax), repr(cn.scale)))
+        log.info("MakeEllipsoid axyz %s scale %s " % (repr(axyz), repr(cn.scale)))
 
         return cn
 
@@ -958,7 +969,7 @@ class CSG(CSG_):
         npq = None
         if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT]:
             npq = 0
-        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.ELLIPSOID, cls.TORUS]:
+        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.TORUS]:
             npq = 1
         elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB]:
             npq = 2 
