@@ -92,8 +92,10 @@ void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
        parent->addChild(wrap);
    }
 
-   aiMatrix4x4 transform = wrap->getGlobalTransform() ; 
-   wrap->copyMeshes(transform);
+
+   // trying to live without this, which oubles memory
+   //aiMatrix4x4 transform = wrap->getGlobalTransform() ; 
+   //wrap->copyMeshes(transform);
 
    //if(m_wrap_index == 5000) wrap->ancestors();
 
@@ -102,7 +104,7 @@ void AssimpTree::visitWrap(std::vector<aiNode*> nodepath)
    { 
        if(parent) parent->summary("AssimpTree::traW--parent");
        wrap->summary("AssimpTree::traverseWrap");
-       dumpTransform("AssimpTree::traverseWrap transform", transform);
+       //dumpTransform("AssimpTree::traverseWrap transform", transform);
    }
 
    m_wrap_index++;

@@ -12,6 +12,7 @@ struct aiMesh ;
 
 class ASIRAP_API AssimpNode {
       friend class AssimpTree ; 
+      friend class AssimpSelection ; 
 
   public:
       AssimpNode(std::vector<aiNode*> nodepath, AssimpTree* tree);
@@ -49,6 +50,7 @@ class ASIRAP_API AssimpNode {
       void updateBounds();
       void updateBounds(aiVector3D& low, aiVector3D& high);
 
+  private:
       aiVector3D* getLow();
       aiVector3D* getHigh();
       aiVector3D* getCenter();

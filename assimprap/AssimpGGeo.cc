@@ -783,6 +783,9 @@ void AssimpGGeo::convertStructure(GGeo* gg)
 
     //gg->reportMeshUsage("AssimpGGeo::convertStructure reportMeshUsage");
 
+
+/*
+  // trying to avoi copy meshes
     if(m_selection)
     {
 
@@ -799,6 +802,8 @@ void AssimpGGeo::convertStructure(GGeo* gg)
         gg->setLow(low);
         gg->setHigh(high);
     }
+*/
+
 
     //gg->Summary("AssimpGGeo::convertStructure");
 }

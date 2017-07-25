@@ -63,6 +63,7 @@ public:
     // bounds
     void dump(const char* msg="AssimpSelection::dump");
     void bounds();
+private:
     aiVector3D* getLow();
     aiVector3D* getHigh();
     aiVector3D* getCenter();
