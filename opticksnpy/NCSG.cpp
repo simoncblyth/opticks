@@ -818,6 +818,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     nnode* node = NULL ;   
     switch(typecode)
     {
+       case CSG_ELLIPSOID: node = new nsphere(make_sphere(p0))           ; break ; 
        case CSG_SPHERE:   node = new nsphere(make_sphere(p0))           ; break ; 
        case CSG_ZSPHERE:  node = new nzsphere(make_zsphere(p0,p1,p2))   ; break ; 
        case CSG_BOX:      node = new nbox(make_box(p0))                 ; break ; 

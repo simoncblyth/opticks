@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
-from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist
+from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, make_scale
 from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
@@ -35,6 +35,14 @@ TREE_EXPECTED = map(TREE_NODES, range(10))   # [1, 3, 7, 15, 31, 63, 127, 255, 5
 
 fromstring_  = lambda s:np.fromstring(s, dtype=np.float32, sep=",")
 
+def from_arg_(s, dtype=np.float32,sep=","):
+   r = None 
+   if type(s) is str:
+       r = np.fromstring(s, dtype=dtype, sep=sep)
+   elif s is not None:
+       r = np.asarray(s, dtype=dtype) 
+   pass
+   return r
 
 
 class CSG(CSG_):
@@ -492,11 +500,34 @@ class CSG(CSG_):
         return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "trapezoid")
 
 
+    @classmethod
+    def MakeEllipsoid(cls, axes=[1,1,1], name="MakeEllipsoid"):
 
+        ax = np.asarray(axes, dtype=np.float32)
+        src = ax.copy()
 
+        radius = ax.max()
+        ax /= radius
 
+        cn = CSG("ellipsoid", name=name)
+        cn.param[0] = 0
+        cn.param[1] = 0
+        cn.param[2] = 0
+        cn.param[3] = radius
 
+        cn.scale = ax  
 
+        srcmeta = dict(
+                src_type="ellipsoid",
+                src_ax=float(src[0]), 
+                src_by=float(src[1]), 
+                src_cz=float(src[2])) 
+
+        cn.meta.update(srcmeta)
+ 
+        log.info("MakeEllipsoid ax %s scale %s " % (repr(ax), repr(cn.scale)))
+
+        return cn
 
 
 
@@ -749,21 +780,21 @@ class CSG(CSG_):
         return self._translate 
     def _set_translate(self, s):
         if s is None: s="0,0,0"
-        self._translate = fromstring_(s) 
+        self._translate = from_arg_(s) 
     translate = property(_get_translate, _set_translate)
 
     def _get_rotate(self):
         return self._rotate
     def _set_rotate(self, s):
         if s is None: s="0,0,1,0"
-        self._rotate = fromstring_(s)
+        self._rotate = from_arg_(s)
     rotate = property(_get_rotate, _set_rotate)
 
     def _get_scale(self):
         return self._scale
     def _set_scale(self, s):
-        if s is None: s="1,1,1"
-        self._scale = fromstring_(s)
+        if s is None: s=[1,1,1]
+        self._scale = from_arg_(s)
     scale = property(_get_scale, _set_scale)
 
     def _get_transform(self):
@@ -771,7 +802,7 @@ class CSG(CSG_):
             self._transform = make_trs(self._translate, self._rotate, self._scale ) 
         return self._transform
     def _set_transform(self, trs):
-        self._transform = np.asarray(trs, dtype=np.float32) if trs is not None else None
+        self._transform = from_arg_(trs)
     transform = property(_get_transform, _set_transform)
 
     def _get_param(self):
@@ -927,7 +958,7 @@ class CSG(CSG_):
         npq = None
         if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT]:
             npq = 0
-        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE]:
+        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.ELLIPSOID, cls.TORUS]:
             npq = 1
         elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB]:
             npq = 2 

@@ -1603,6 +1603,49 @@ EOP
 
 
 
+
+
+
+tboolean-ellipsoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
+tboolean-ellipsoid--(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+from opticks.analytic.gdml import Primitive  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG.MakeEllipsoid(axes=[100,200,100])
+
+a.translate = [300,300,0]
+
+
+#print a
+#print "scale:", a.scale
+
+CSG.Serialize([container, a], args.csgpath )
+
+"""
+
+* currently applying a scale to the ellipsoid will stomp on base scaling 
+  of the sphere 
+
+
+"""
+
+EOP
+}
+
+
+
+
+
+
 tboolean-spseg(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
 tboolean-spseg--(){ cat << EOP 

@@ -126,7 +126,7 @@ def dot_reduce(trs, reverse=False):
 
 
 
-def scale(arg=[1,2,3], m=None, dtype=np.float32):
+def make_scale(arg=[1,2,3], m=None, dtype=np.float32):
     """  
     Translation of glm::scale into numpy 
     /usr/local/opticks/externals/glm/glm-0.9.6.3/glm/gtc/matrix_transform.inl
@@ -275,7 +275,7 @@ def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=Tr
     m = np.eye(4, dtype=dtype) 
     for c in order:
         if c == 's':
-            m = scale(sca, m)
+            m = make_scale(sca, m)
         elif c == 'r':
             if three_axis_rotate:
                 m = rotate_three_axis(rot, m, transpose=transpose_rotation )
@@ -346,7 +346,7 @@ if __name__ == '__main__':
     rot = rotate([0,0,1,45])
     print "rot\n", rot 
 
-    sca = scale([1,2,3])
+    sca = make_scale([1,2,3])
     print "sca\n", sca
 
     test_make_transform()
