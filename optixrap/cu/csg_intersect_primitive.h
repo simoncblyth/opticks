@@ -1442,3 +1442,46 @@ and far ahead (aFAR > dd)
 
 */
 
+
+
+
+/*
+
+
+  http://www.cosinekitty.com/raytrace/chapter13_torus.html
+
+    (xx + yy + zz + RR - rr )^2 = 4RR(xx + yy)
+
+
+*/
+
+
+static __device__
+bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+
+    const float r = q0.f.z ; 
+    const float R = q0.f.w ;  // R > r by assertion, so torus has a hole
+
+    const float rr = r*r ; 
+    const float RR = R*R ; 
+   
+    const float3 m = ray_origin ;                  // n: ray direction vector (not normalized)
+    const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
+    const float3 d = make_float3(0.f, 0.f, 1.f );     // torus axis
+
+
+    float mm = dot(m, m) ; 
+    float nn = dot(n, n) ; 
+    float dd = dot(d, d) ;  
+    float nd = dot(n, d) ;
+    float md = dot(m, d) ;
+    float mn = dot(m, n) ; 
+    float k = mm - rr ; 
+
+
+
+
+
+    return false ; 
+}

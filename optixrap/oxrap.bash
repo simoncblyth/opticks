@@ -474,6 +474,7 @@ oxrap-tdir(){ echo $(opticks-home)/optixrap/tests ; }
 oxrap-idir(){ echo $(opticks-idir); }
 oxrap-bdir(){ echo $(opticks-bdir)/$(oxrap-rel) ; }
 
+oxrap-c(){   cd $(oxrap-sdir)/$1 ; }
 oxrap-cd(){   cd $(oxrap-sdir)/$1 ; }
 oxrap-scd(){  cd $(oxrap-sdir); }
 oxrap-tcd(){  cd $(oxrap-tdir); }

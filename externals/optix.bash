@@ -3033,6 +3033,7 @@ optix-download-cd(){   cd $(optix-download-dir) ; }
 optix-ftp(){ open https://ftpservices.nvidia.com ; }
 
 
+optix-c(){   cd $(optix-dir); }
 optix-cd(){  cd $(optix-dir); }
 optix-bcd(){ cd $(optix-samples-install-dir); }
 optix-scd(){ cd $(optix-sdir); }
