@@ -24,6 +24,7 @@ struct NPY_API nuv
     float   fv() const  { return float(v())/float(nv()) ; } 
 
     float  fu2pi(bool seamed=true) const ; 
+    float  fv2pi(bool seamed=true) const ; 
     float  fvpi() const ; 
 
     bool is_interior(unsigned margin=0) const ;

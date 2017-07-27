@@ -189,6 +189,7 @@ set(SOURCES
     cu/ORayleighTest.cu
 
     cu/intersect_analytic_test.cu
+    cu/Roots3And4Test.cu
 )
 
 
@@ -217,6 +218,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_OInterpolationTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_ORayleighTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_intersect_analytic_test.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_Roots3And4Test.cu.ptx
 )
 
 

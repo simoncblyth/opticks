@@ -24,6 +24,27 @@ float nuv::fu2pi(bool seamed) const
     return azimuth ; 
 }
 
+
+float nuv::fv2pi(bool seamed) const 
+{
+    unsigned v_  = v();
+    unsigned nv_ = nv();
+
+    // With seamed=true avoid numerical precision problems 
+    // by providing 0. at the 360 seam 
+ 
+    bool is_360_seam   = v_ == nv_ ;
+ 
+    float fv_ = seamed && is_360_seam ? 0.f : fv() ; 
+
+    const float pi = glm::pi<float>() ;
+    float v2pi = fv_ * 2.f * pi ;
+    return v2pi ; 
+}
+
+
+
+
 float nuv::fvpi() const 
 {
     const float pi = glm::pi<float>() ;

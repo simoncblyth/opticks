@@ -501,6 +501,13 @@ class CSG(CSG_):
 
 
     @classmethod
+    def MakeTorus(cls, R=100., r=10.):
+        assert R > r 
+        obj = CSG("torus", param=[0,0,r,R] )
+        return obj
+
+
+    @classmethod
     def MakeEllipsoid(cls, axes=[1,1,1], name="MakeEllipsoid", zcut1=None, zcut2=None):
 
         axyz = np.asarray(axes, dtype=np.float32)

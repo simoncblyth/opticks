@@ -53,6 +53,7 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
                 case CSG_CYLINDER:   csg_bounds_cylinder( pt.q0, pt.q1,        aabb, NULL ); break ;  
                 case CSG_DISC:       csg_bounds_disc(     pt.q0, pt.q1,        aabb, NULL ); break ;  
                 case CSG_CONE:       csg_bounds_cone(     pt.q0,               aabb, NULL ); break ;  
+                case CSG_TORUS:      csg_bounds_torus(    pt.q0,               aabb, NULL ); break ;  
                 case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,   aabb, NULL ); break ;  
                 default:                                                                     break ; 
             }
@@ -89,6 +90,7 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
                 case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,        aabb, &tr ); break ;     
                 case CSG_DISC:      csg_bounds_disc(     pt.q0, pt.q1,        aabb, &tr ); break ;     
                 case CSG_CONE:      csg_bounds_cone(     pt.q0,               aabb, &tr ); break ;
+                case CSG_TORUS:     csg_bounds_torus(    pt.q0,               aabb, &tr ); break ;  
                 case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,  aabb, &tr ); break ;  
                 default:                                                 break ; 
             }
@@ -126,6 +128,7 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_DISC:      valid_intersect = csg_intersect_disc(     pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_TORUS:     valid_intersect = csg_intersect_torus(    pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray.origin, ray.direction ) ; break ; 
         }
     }
@@ -162,6 +165,7 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_DISC:      valid_intersect = csg_intersect_disc(     pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
+            case CSG_TORUS:     valid_intersect = csg_intersect_torus(    pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray_origin, ray_direction ) ; break ; 
         }
 

@@ -3,6 +3,10 @@
 
 #include "robust_quadratic_roots.h"
 
+//#include "Roots3And4.h"
+#include "Vecgeom_Solve.h"
+
+
 rtBuffer<float4> planBuffer ;
 
 static __device__
@@ -1456,32 +1460,98 @@ and far ahead (aFAR > dd)
 */
 
 
+
+
+
+static __device__
+void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const float rminor = q0.f.z ;     
+    const float rmajor = q0.f.w ;    
+    const float rsum = rminor + rmajor ;  
+
+    rtPrintf("## csg_bounds_torus rmajor %f rminor %f rsum %f  \n", rmajor, rminor, rsum );
+
+    float3 mn = make_float3( -rsum, -rsum,  -rminor );
+    float3 mx = make_float3(  rsum,  rsum,   rminor );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
-
     const float r = q0.f.z ; 
     const float R = q0.f.w ;  // R > r by assertion, so torus has a hole
 
     const float rr = r*r ; 
     const float RR = R*R ; 
+    const float RR4 = R*R*4.0f ; 
+
+    const float& ox = ray_origin.x ; 
+    const float& oy = ray_origin.y ; 
+    //const float& oz = ray_origin.z ;
+
+    const float& sx = ray_direction.x ;
+    const float& sy = ray_direction.y ;
+    //const float& sz = ray_direction.z ;
+
+    // following cosinekitty nomenclature, sympy verified in torus.py
+    const float G = RR4*(sx*sx+sy*sy) ; 
+    const float H = 2.f*RR4*(ox*sx+oy*sy) ; 
+    const float I = RR4*(ox*ox+oy*oy) ;
+    const float J = dot(ray_direction, ray_direction) ;
+    const float K = 2.f*dot(ray_origin, ray_direction) ;
+    const float L = dot(ray_origin, ray_origin) + RR - rr ; 
+
+
+    float q[5]; 
+
+    q[4] = J*J ; 
+    q[3] = 2.f*J*K ; 
+    q[2] = 2.f*J*L + K*K - G ;
+    q[1] = 2.f*K*L - H ;
+    q[0] = L*L - I ;
+
+    q[3] /= q[4] ;
+    q[2] /= q[4] ;
+    q[1] /= q[4] ;
+    q[0] /= q[4] ;
+
+    float roots[4] ;   
+    int num_roots = SolveQuartic( q[3],q[2],q[1],q[0], roots ); 
+
+    // with the gems Root3And4 get segfault in createProgramFromPTX  
    
-    const float3 m = ray_origin ;                  // n: ray direction vector (not normalized)
-    const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
-    const float3 d = make_float3(0.f, 0.f, 1.f );     // torus axis
 
+    float4 cand = make_float4(RT_DEFAULT_MAX) ;  
+    int num_cand = 0 ;  
+    if(num_roots > 0)
+    {
+        for(int i=0 ; i < num_roots ; i++)
+        {
+            if(roots[i] > t_min ) setByIndex(cand, num_cand++, roots[i]) ; 
+        }   
+    }
+    
+    float t_cand = num_cand > 0 ? fminf(cand) : t_min ;   // smallest root bigger than t_min
+    bool valid_isect = t_cand > t_min ;
 
-    float mm = dot(m, m) ; 
-    float nn = dot(n, n) ; 
-    float dd = dot(d, d) ;  
-    float nd = dot(n, d) ;
-    float md = dot(m, d) ;
-    float mn = dot(m, n) ; 
-    float k = mm - rr ; 
-
-
-
-
-
-    return false ; 
+    if(valid_isect)
+    {        
+        const float3 p = ray_origin + t_cand*ray_direction ; 
+        const float alpha = 1.f - (R/sqrt(p.x*p.x+p.y*p.y)) ;   // see cosinekitty 
+        // how to normalize by construction ?
+        const float3 n = normalize(make_float3(alpha*p.x, alpha*p.y, p.z ));
+        isect.x = n.x ;  
+        isect.y = n.y ;  
+        isect.z = n.z ;  
+        isect.w = t_cand ; 
+    }
+    return valid_isect ; 
 }
+

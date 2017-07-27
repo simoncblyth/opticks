@@ -9,6 +9,7 @@
 #include "NDisc.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
+#include "NTorus.hpp"
 
 
 

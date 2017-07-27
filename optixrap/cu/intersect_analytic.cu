@@ -74,6 +74,9 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 #include "transform_test.h"
 #include "postorder.h"
 
+// huh undefined SolveQuartic when include here
+//#include "Roots3And4.h"
+
 #include "csg_intersect_primitive.h"
 #include "csg_intersect_part.h"
 #include "csg_intersect_boolean.h"

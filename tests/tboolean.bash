@@ -1601,9 +1601,27 @@ EOP
 }
 
 
+tboolean-torus(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-torus-(){  $FUNCNAME- | python $* ; } 
+tboolean-torus--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+#CSG.kwa = dict(poly="MC", resolution="100")
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG.MakeTorus(R=500, r=50)
+CSG.Serialize([container, a], args.csgpath )
 
 
-
+EOP
+}
 
 
 tboolean-ellipsoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 

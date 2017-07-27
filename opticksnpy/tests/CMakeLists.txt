@@ -47,6 +47,7 @@ NBoundingBoxTest.cc
 NPartTest.cc
 NSpectralTest.cc
 
+NTorusTest.cc
 NSphereTest.cc
 NZSphereTest.cc
 NBoxTest.cc

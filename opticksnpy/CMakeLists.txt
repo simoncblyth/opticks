@@ -162,6 +162,7 @@ set(SOURCES
 
     NQuad.cpp
     NSphere.cpp
+    NTorus.cpp
     NBBox.cpp
     NBBoxEnum.cpp
     NPart.cpp

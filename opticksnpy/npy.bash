@@ -254,6 +254,7 @@ npy-tdir(){ echo $(opticks-home)/opticksnpy/tests ; }
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
+npy-c(){   cd $(npy-sdir)/$1 ; }
 npy-cd(){   cd $(npy-sdir)/$1 ; }
 npy-scd(){  cd $(npy-sdir); }
 npy-tcd(){  cd $(npy-tdir); }

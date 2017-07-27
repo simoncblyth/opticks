@@ -22,6 +22,7 @@ set(TEST_SOURCES
     ORayleighTest.cc
 
     intersect_analytic_test.cc
+    Roots3And4Test.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

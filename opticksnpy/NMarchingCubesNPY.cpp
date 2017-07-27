@@ -11,6 +11,7 @@
 #include "NNode.hpp"
 #include "NSphere.hpp"
 #include "NBox.hpp"
+#include "NTorus.hpp"
 
 #include "PLOG.hh"
 
@@ -120,6 +121,14 @@ void NMarchingCubesNPY::march(nnode* node)
                 mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
             }
             break ;
+        case CSG_TORUS:
+            {
+                ntorus* n = (ntorus*)node ; 
+                mc::marching_cubes<double>(m_lower, m_upper, m_nx, m_ny, m_nz, *n, m_isovalue, m_vertices, m_polygons);
+            }
+            break ;
+
+
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
             assert(0);
