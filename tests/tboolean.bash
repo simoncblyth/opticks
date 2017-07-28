@@ -1616,8 +1616,19 @@ CSG.kwa = dict(poly="IM", resolution="50")
 
 container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
   
-a = CSG.MakeTorus(R=500, r=50)
+a = CSG.MakeTorus(R=100, r=50)
 CSG.Serialize([container, a], args.csgpath )
+
+"""
+
+* ~/opticks_refs/tboolean_torus_orthographic_artifact.png 
+* ~/opticks_refs/tboolean_torus_orthographic_artifact_extreme_near_axial.png
+
+
+* perspective projection ring artifacts
+* orthographic projection line artifacts
+
+"""
 
 
 EOP

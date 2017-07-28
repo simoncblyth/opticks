@@ -5,62 +5,8 @@
 
    (x*x + y*y + z*z + R*R + r*r)^2 = 4R*R(x*x + y*y)  
 
+
 ::
-
-    In [18]: (x*x + y*y + z*z + R*R - r*r)**2 - 4*R*R*(x*x + y*y)
-    Out[18]: -4*R**2*(x**2 + y**2) + (R**2 - r**2 + x**2 + y**2 + z**2)**2
-
-
-    In [29]: expr2
-    Out[29]: -4*R**2*((ox + sx*t)**2 + (oy + sy*t)**2) + (R**2 - r**2 + (ox + sx*t)**2 + (oy + sy*t)**2 + (oz + sz*t)**2)**2
-
-
-    In [35]: expand(expr2)
-    Out[35]: R**4 - 2*R**2*ox**2 - 4*R**2*ox*sx*t - 2*R**2*oy**2 - 4*R**2*oy*sy*t + 2*R**2*oz**2 + 4*R**2*oz*sz*t - 2*R**2*r**2 - 2*R**2*sx**2*t**2 - 2*R**2*sy**2*t**2 + 2*R**2*sz**2*t**2 + ox**4 + 4*ox**3*sx*t + 2*ox**2*oy**2 + 4*ox**2*oy*sy*t + 2*ox**2*oz**2 + 4*ox**2*oz*sz*t - 2*ox**2*r**2 + 6*ox**2*sx**2*t**2 + 2*ox**2*sy**2*t**2 + 2*ox**2*sz**2*t**2 + 4*ox*oy**2*sx*t + 8*ox*oy*sx*sy*t**2 + 4*ox*oz**2*sx*t + 8*ox*oz*sx*sz*t**2 - 4*ox*r**2*sx*t + 4*ox*sx**3*t**3 + 4*ox*sx*sy**2*t**3 + 4*ox*sx*sz**2*t**3 + oy**4 + 4*oy**3*sy*t + 2*oy**2*oz**2 + 4*oy**2*oz*sz*t - 2*oy**2*r**2 + 2*oy**2*sx**2*t**2 + 6*oy**2*sy**2*t**2 + 2*oy**2*sz**2*t**2 + 4*oy*oz**2*sy*t + 8*oy*oz*sy*sz*t**2 - 4*oy*r**2*sy*t + 4*oy*sx**2*sy*t**3 + 4*oy*sy**3*t**3 + 4*oy*sy*sz**2*t**3 + oz**4 + 4*oz**3*sz*t - 2*oz**2*r**2 + 2*oz**2*sx**2*t**2 + 2*oz**2*sy**2*t**2 + 6*oz**2*sz**2*t**2 - 4*oz*r**2*sz*t + 4*oz*sx**2*sz*t**3 + 4*oz*sy**2*sz*t**3 + 4*oz*sz**3*t**3 + r**4 - 2*r**2*sx**2*t**2 - 2*r**2*sy**2*t**2 - 2*r**2*sz**2*t**2 + sx**4*t**4 + 2*sx**2*sy**2*t**4 + 2*sx**2*sz**2*t**4 + sy**4*t**4 + 2*sy**2*sz**2*t**4 + sz**4*t**4
-
-    In [58]: factor(c4)
-    Out[58]: (sx**2 + sy**2 + sz**2)**2
-
-    In [59]: factor(c3)
-    Out[59]: 4*(sx**2 + sy**2 + sz**2)*(ox*sx + oy*sy + oz*sz)
-
-    In [60]: factor(c2)
-    Out[60]: -2*(R**2*sx**2 + R**2*sy**2 - R**2*sz**2 - 3*ox**2*sx**2 - ox**2*sy**2 - ox**2*sz**2 - 4*ox*oy*sx*sy - 4*ox*oz*sx*sz - oy**2*sx**2 - 3*oy**2*sy**2 - oy**2*sz**2 - 4*oy*oz*sy*sz - oz**2*sx**2 - oz**2*sy**2 - 3*oz**2*sz**2 + r**2*sx**2 + r**2*sy**2 + r**2*sz**2)
-
-    In [61]: factor(c1)
-    Out[61]: -4*(R**2*ox*sx + R**2*oy*sy - R**2*oz*sz - ox**3*sx - ox**2*oy*sy - ox**2*oz*sz - ox*oy**2*sx - ox*oz**2*sx + ox*r**2*sx - oy**3*sy - oy**2*oz*sz - oy*oz**2*sy + oy*r**2*sy - oz**3*sz + oz*r**2*sz)
-
-    In [62]: factor(c0)
-    Out[62]: R**4 - 2*R**2*ox**2 - 2*R**2*oy**2 + 2*R**2*oz**2 - 2*R**2*r**2 + ox**4 + 2*ox**2*oy**2 + 2*ox**2*oz**2 - 2*ox**2*r**2 + oy**4 + 2*oy**2*oz**2 - 2*oy**2*r**2 + oz**4 - 2*oz**2*r**2 + r**4
-
-
-    In [64]: solve(expr2, t )
-    Out[64]: 
-    [Piecewise((-sqrt(-2*(-((-2*R**2*sx**2 - 2*R**2*sy**2 + 2*R**2*sz**2 + 6*ox**2*sx**2 + 2*ox**2*sy**2 + 2*ox**2*sz**2 + 8*ox*oy*sx*sy + 8*ox*oz*sx*sz + 2*oy**2*sx**2 + 6*oy**2*sy**2 + 2*oy**2*sz**2 + 8*oy*oz*sy*sz + 2*oz**2*sx**2 + 2*oz**2*sy**2 + 6*oz**2*sz**2 - 2*r**2*sx**2 - 2*r**2*sy**2 - 2*r**2*sz**2)/(sx**4 + 2*sx**2*sy**2 + 2*sx**2*sz**2 + sy**4 + 2*sy**2*sz**2 + sz**4) - 3*(4*ox*sx + 4*oy*sy + 4*oz*sz)**2/(8*(sx**2 + sy**2 + sz**2)**2))**3/108 + ((-2*R**2*sx**2 - 2*R**2*sy**2 + 2*R**2*sz**2 + 6*ox**2*sx**2 + 2*ox**2*sy**2 + 2*ox**2*sz**2 + 8*ox*oy*sx*sy + 8*ox*oz*sx*sz + 2*oy**2*sx**2 + 6*oy**2*sy**2 + 2*oy**2*sz**2 + 8*oy*oz*sy*sz + 2*oz**2*sx**2 + 2*oz**2*sy**2 + 6*oz**2*sz**2 - 2*r**2*sx**2 - 2*r**2*sy**2 - 2*r**2*sz**2)/(sx**4 + 2*sx**2*sy**2 + 2*sx**2*sz**2 + sy**4 + 2*sy**2*sz**2 + sz**4) - 3*(4*ox*sx + 4*oy*sy + 4*oz*sz)**2/(8*(sx*
-...
-
-
-    In [66]: s = _64
-
-    In [68]: type(s)
-    Out[68]: list
-
-    In [69]: len(s)
-    Out[69]: 4
-
-    In [71]: type(s[0])
-    Out[71]: sympy.functions.elementary.piecewise.Piecewise
-
-    In [72]: type(s[1])
-    Out[72]: sympy.functions.elementary.piecewise.Piecewise
-
-    In [73]: type(s[2])
-    Out[73]: sympy.functions.elementary.piecewise.Piecewise
-
-    In [74]: type(s[3])
-    Out[74]: sympy.functions.elementary.piecewise.Piecewise
-
-
 
     In [56]: ex.subs([(ox,0),(oy,0),(oz,0),(sx,1),(sy,0),(sz,0)])
     Out[56]: -4*R**2*t**2 + (R**2 - r**2 + t**2)**2
@@ -76,10 +22,54 @@
 
 
 
+
+Issue is very wide scale range in coeffs causing numerical issue...
+
+Can rotation + quadrant symmetry be exploited ?  
+
+::
+
+    In [52]: circle.subs(ray)
+    Out[52]: -B**2 + (oz + sz*t)**2 + (-A + ox + sx*t)**2
+
+    In [54]: get_coeff( circle.subs(ray), t, 3 )
+    Out[54]: 
+    [A**2 - 2*A*ox - B**2 + ox**2 + oz**2,
+     -2*(A*sx - ox*sx - oz*sz),
+     sx**2 + sz**2]
+
+
+    cir_ray = get_coeff( circle.subs(ray), t, 3 )
+
+    discr = cir_ray[1]**2 -4*cir_ray[0]*cir_ray[2]
+
+
+Contrast with sphere intersecton
+
+ // Solving:  d t^2 + 2 b t +  c = 0 
+
+
+ 601     float c = dot(O, O)-radius*radius;
+ 600     float b = dot(O, D);
+ 602     float d = dot(D, D);
+
+ 603 
+ 604     float disc = b*b-d*c;
+
+
+* torus axis (0,0,1) and center (0,0,0) torus plane z=0 ie xy 
+* virtual ray cone axis (0,0,1) and apex (0,0,za) 
+
+  * huh : need the ray to intersect with axis line at apex
+
 """
 
-from sympy import symbols, Pow
+from sympy import symbols, Pow, sqrt
 from coeff import get_coeff, subs_coeff, print_coeff, expr_coeff
+
+isq3 = 1/sqrt(3) 
+
+
 
 def torus_0():
 
@@ -129,14 +119,22 @@ if 1:
 
 
     G,H,I,J,K,L = symbols("G H I J K L")
+
+
+    exG = 4*A*A*(sx*sx+sy*sy) 
+    exH = 8*A*A*(ox*sx+oy*sy)
+    exI = 4*A*A*(ox*ox+oy*oy)
+    exJ = sx*sx+sy*sy+sz*sz
+    exK = 2*(ox*sx+oy*sy+oz*sz)
+    exL = ox*ox+oy*oy+oz*oz+A*A-B*B
   
     simp1 = [
-        (4*A*A*(sx*sx+sy*sy),   G),
-        (8*A*A*(ox*sx+oy*sy),   H),
-        (4*A*A*(ox*ox+oy*oy),   I),
-        (sx*sx+sy*sy+sz*sz,     J),
-        (ox*sx+oy*sy+oz*sz,     K/2),   # fails to sub with 2 on other side
-        (ox*ox+oy*oy+oz*oz+A*A-B*B, L)] 
+        (exG, G),
+        (exH, H),
+        (exI, I),
+        (exJ, J),
+        (exK/2, K/2),   # fails to sub with 2 on other side
+        (exL, L)] 
 
     sq_lhs = _sq_lhs.subs(ray + simp0)
     rhs = _rhs.subs(ray + simp0)
@@ -159,6 +157,32 @@ if 1:
     c = get_coeff(ex, t, 5)
 
     print_coeff(c, "c")
+
+
+    exc = range(5)
+    exc[4] = exJ**2
+    exc[3] = 2*exJ*exK
+    exc[2] = -exG + 2*exJ*exL + exK**2
+    exc[1] = -exH + 2*exK*exL 
+    exc[0] = -exI + exL**2
+
+    subs = {}
+    subs["O->X+"] = [(ox,0),(oy,0),(oz,0),(sx,1),(sy,0),(sz,0)]
+    subs["zenith->-Z"] = [(ox,0),(oy,0),(oz,A),(sx,0),(sy,0),(sz,-1)]
+    subs["corner"] = [(ox,A),(oy,A),(oz,A),(sx,-isq3),(sy,-isq3),(sz,-isq3)]
+
+
+    radii = [(A, 500), (B, 50)]
+
+    for key in subs:
+        print "\n\n", key
+        for j, exc_ in enumerate(exc):
+            print "\n", j, exc_
+            print exc_.subs(subs[key])
+            print exc_.subs(subs[key]).subs(radii)
+    
+
+
 
     #return ex, cl
 

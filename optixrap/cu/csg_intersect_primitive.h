@@ -1494,11 +1494,29 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
     const float& ox = ray_origin.x ; 
     const float& oy = ray_origin.y ; 
-    //const float& oz = ray_origin.z ;
+    const float& oz = ray_origin.z ; 
 
     const float& sx = ray_direction.x ;
     const float& sy = ray_direction.y ;
-    //const float& sz = ray_direction.z ;
+    const float& sz = ray_direction.z ;
+
+
+    // try using ray-circle discriminant to skip SolveQuartic
+    // hmm for this to work must rotate line about z-axis to bring into
+    // the testing plane ... that means translate the ray to origin rotating 
+    // then untranslating...
+    // ... or  
+    // alternatively consider cone sphere intersect ?
+    /*
+    const float rc2 = sx*sx + sz*sz ; 
+    const float rc1_l = -2.f*(R*sx - ox*sx - oz*sz) ;
+    const float rc1_r = -2.f*(-R*sx - ox*sx - oz*sz) ;
+    const float rc0 = RR - 2.f*R*ox - rr + ox*ox + oz*oz ;
+    const float rc_discr_l = rc1_l*rc1_l - 4.f*rc2*rc0 ; 
+    const float rc_discr_r = rc1_r*rc1_r - 4.f*rc2*rc0 ; 
+    if(rc_discr_l < 0.f && rc_discr_r < 0.f) return false ; 
+    */
+
 
     // following cosinekitty nomenclature, sympy verified in torus.py
     const float G = RR4*(sx*sx+sy*sy) ; 
