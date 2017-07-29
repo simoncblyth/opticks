@@ -3,8 +3,12 @@ Adapting polynomial solvers from ./volumes/kernel/TorusImplementation2.h
 attempting to get operational inside OptiX 
 */
 
+#include "Solve.h"
+
+#ifdef __CUDACC__
 __device__ __host__
-static unsigned SolveCubic(float a, float b, float c, float *x) 
+#endif
+static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk ) 
 {
     // Find real solutions of the cubic equation : x^3 + a*x^2 + b*x + c = 0
     //                                                   a2      a1    a0
@@ -16,32 +20,100 @@ static unsigned SolveCubic(float a, float b, float c, float *x)
     const float inv6sq3    = 1.f / (6.f * sq3);
     unsigned int ireal = 1;
 
-    float p                = b - a * a * ott;                                      // ep: a1 - a2**2/3 
-    float q                = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;  // eq:  -a0 + a1*a2/3 - 2*a2**3/27   (signflip? )
-    float delta            = 4.f * p * p * p + 27.f * q * q;   // 27*jw3 : 4*p**3 + 27*q**2
+    float p                = b - a * a * ott;                                       
+    float q                = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
+    //
+    //  p, q are coefficients of depressed cubic :  z**3 + p*z + q = 0 
+    //  obtained by substitution  x -> z - a/3  
+    //
+  
+    float delta            = 4.f * p * p * p + 27.f * q * q;   
+
+    float ppp27 =  p*p*p/27.f ;  
+
+
+    //  Dividing delta by 27*4 yields the cubic discriminant:   
+    //
+    //        delta/(27*4 ) =  (p/3)**3 + (q/2)**2         
+    //
+    //  sqrt of discriminant is: 
+    //
+    //        sqrt(delta/(3*3*3*2*2)) = sqrt(delta)/(6*sqrt(3)) = sqrt(delta)*inv6sq3
+    //
+
     float t, u;
 
-    // cw3: [-p**3/27, -q, 1]   [ -(p/3)**3, -q, 1 ]
-
-    // q-roots     "-b+-sqrt(b*b-4*a*c) / 2*a "
-    //   -27*(q + sqrt(4*p**3/27 + q**2))/(2*p**3)
-    //   -27*(q - sqrt(4*p**3/27 + q**2))/(2*p**3)
-
-    if (delta >= 0.f) 
+    if (delta >= 0.f) // only one real root,  
     {
-        delta = sqrt(delta);   //  3*sqrt(discrim)
-        t     = (-3.f * q * sq3 + delta) * inv6sq3;  //  -3*q*sqrt(3)/(6*sqrt(3)) + 3*sqrt(discrim)/(6*sqrt(3)) =  -q/2 + sdisc/(2*sq3)  
-        u     = (3.f * q * sq3 + delta) * inv6sq3;   //   3*q*sqrt(3)/(6*sqrt(3)) + 3*sqrt(discrim)/(6*sqrt(3)) =   q/2 + sdisc/(2*sq3)
-        x[0]  = copysign(1.f, t) * cbrt(abs(t)) - copysign(1.f, u) * cbrt(abs(u)) - a * ott;   //  -a2/3 was original shift
+        delta = sqrt(delta);  
+        if( msk & SOLVE_VECGEOM )
+        {       
+            t     = (-3.f * q * sq3 + delta) * inv6sq3;  
+            u     = (3.f * q * sq3 + delta) * inv6sq3;  
+        }
+        else if(msk & SOLVE_UNOBFUSCATED)
+        {
+            float sdisc = delta*inv6sq3 ;
+            if( msk & SOLVE_ROBUSTQUAD )
+            {
+                t = q < 0.f ? -q/2.f + sdisc : ppp27/(q/2.f + sdisc)  ; 
+                u = t + q  ;
+            }
+            else
+            {
+                t = -q/2.f + sdisc ;
+                u =  q/2.f + sdisc ;
+            }
+        }
+        // Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
+        x[0]  = copysign(1.f, t) * cbrt(fabs(t)) - copysign(1.f, u) * cbrt(fabs(u)) - a * ott;  
+ 
     } 
     else 
     {
         delta = sqrt(-delta);
         t     = -0.5f * q;
-        u     = delta * inv6sq3;
-        x[0]  = 2.f * pow(t * t + u * u, 0.5f * ott) * cos(ott * atan2(u, t));
+        u     = delta * inv6sq3;      // sqrt of negated discrim :  sqrt( -[(p/3)**3 + (q/2)**2] )
+
+        if( msk & SOLVE_VECGEOM )
+        {       
+            x[0]  = 2.f * pow(t * t + u * u, 0.5f * ott) * cos(ott * atan2(u, t));
+        }
+        else if(msk & SOLVE_UNOBFUSCATED)
+        {
+            x[0]  = 2.f * sqrt(-p/3.f) * cos(ott * atan2(u, t)); 
+        }
+        
+        //  obfuscation ???
+        //
+        //       pow( t**2 + u**2, 0.5/3 ) 
+        //       pow( (q/2)**2 -[(p/3)**3 + (q/2)**2] , 0.5/3 ) 
+        //       pow(  (-p/3)**3 , 0.5/3 )
+        //       pow(  (-p/3) , 0.5 )
+        //       sqrt( -p/3 )         ## NB this branch implies p<0
+        //
+        //  Viete substitution (see eg Classical Algrebra, Roger Cooke, p78
+        //  Trisection identity motivates angle
+        //
+        //                    
+        //                    3*sqrt(3)
+        //       cos(phi) = -----------  * (-q/2)  =   sqrt( 27/(-p)**3 )* (-q/2)
+        //                   -p*sqrt(-p)
+        //
+        //       sin(phi) = sqrt( (q/2)**2 + (p/3)**3 ) * sqrt( 27/p**3 )
+        //
+        //        y = 2*sqrt(-p/3)*cos(1/3  * arccos(q/2* 3*sqrt(3)/p*sqrt(p)) ) 
+        //
+        //        
+
         x[0] -= a * ott;
     }
+
+
+    // polynomial long division 
+    //     x**3 + a x**2 + b x + x = 0 
+    //  (x-x0)( x**2 + (x+x0)x + b + a*x0 + x0**2 )   remainder is one degree less with x->x0
+    //     
 
     t     = x[0] * x[0] + a * x[0] + b;
     u     = a + x[0];
@@ -51,46 +123,29 @@ static unsigned SolveCubic(float a, float b, float c, float *x)
     {
         ireal = 3;
         delta = sqrt(delta);
-        // quadratic roots with potential for catastrophic subtraction
-        x[1]  = 0.5f * (-u - delta);
-        x[2]  = 0.5f * (-u + delta);
+   
+        if( msk & SOLVE_ROBUSTQUAD )
+        {
+            float tmp = u > 0.f ? 0.5f*(-u - delta) : 0.5f*(-u + delta) ; 
+            x[1] = tmp/1.f ; 
+            x[2] = t/tmp ; 
+        }
+        else
+        {
+            x[1]  = 0.5f * (-u - delta);
+            x[2]  = 0.5f * (-u + delta);
+        }
+
     }
     return ireal;
 }
 
 
-/*
-static __device__
-void robust_quadratic_roots(float& t1, float &t2, float& disc, float& sdisc, const float d, const float b, const float c)
-{
-    disc = b*b-d*c;
-    sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // real roots for sdisc > 0.f 
 
-#ifdef NAIVE_QUADRATIC
-    t1 = (-b - sdisc)/d ;
-    t2 = (-b + sdisc)/d ;  // t2 > t1 always, sdisc and d always +ve
-#else
-    // picking robust quadratic roots that avoid catastrophic subtraction 
-    float q = b > 0.f ? -(b + sdisc) : -(b - sdisc) ; 
-    float root1 = q/d  ; 
-    float root2 = c/q  ;
-    t1 = fminf( root1, root2 );
-    t2 = fmaxf( root1, root2 );
-#endif
-} 
-
-*/
-
-
-
-
-
-
-
-
-
+#ifdef __CUDACC__
 __device__ __host__
-static int SolveQuartic(float a, float b, float c, float d, float *x)
+#endif
+static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned msk  )
 {
     // Find real solutions of the quartic equation : x^4 + a*x^3 + b*x^2 + c*x + d = 0
     // Input: a,b,c,d
@@ -106,7 +161,7 @@ static int SolveQuartic(float a, float b, float c, float d, float *x)
     unsigned ireal = 0;
 
     // special case when f is zero
-    if (abs(f) < 1e-6f) 
+    if (fabs(f) < 1e-6f) 
     {
         delta = e * e - 4.f * g;
         if (delta < 0.f) return 0;
@@ -129,19 +184,19 @@ static int SolveQuartic(float a, float b, float c, float d, float *x)
         return ireal;
     }
 
-    if (abs(g) < 1e-6f) 
+    if (fabs(g) < 1e-6f) 
     {
         x[ireal++] = -0.25f * a;
         // this actually wants to solve a second order equation
         // we should specialize if it happens often
-        unsigned ncubicroots = SolveCubic(0, e, f, xx);
+        unsigned ncubicroots = SolveCubic(0, e, f, xx, msk );
         // this loop is not nice
         for (unsigned i = 0; i < ncubicroots; i++) x[ireal++] = xx[i] - 0.25f * a;
 
         return ireal;
     }
 
-    ireal = SolveCubic(2.f * e, e * e - 4.f * g, -f * f, xx);
+    ireal = SolveCubic(2.f * e, e * e - 4.f * g, -f * f, xx, msk);
 
     if (ireal == 1) 
     {
