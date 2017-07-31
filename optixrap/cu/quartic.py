@@ -1,41 +1,34 @@
 #!/usr/bin/env python
 
 """
-
-
 ::
 
-    In [166]: collect(expand(ex4), x )
-    Out[166]: c0 - c1*l + c2*l**2 - c3*l**3 + c4*l**4 + c4*x**4 + x**3*(c3 - 4*c4*l) + x**2*(c2 - 3*c3*l + 6*c4*l**2) + x*(c1 - 2*c2*l + 3*c3*l**2 - 4*c4*l**3)
+    In [194]: ex
+    Out[194]: -3*a**4/256 + a**3*z/8 + a**2*b/16 - 3*a**2*z**2/8 - a*b*z/2 - a*c/4 + b*z**2 + c*z + d + z**4
 
+    In [195]: ex.coeff(z, 0)
+    Out[195]: -3*a**4/256 + a**2*b/16 - a*c/4 + d    ## g
 
-    In [168]: collect(expand(ex4), x )
-    Out[168]: c0 - c1*c3/(4*c4) + c2*c3**2/(16*c4**2) - 3*c3**4/(256*c4**3) + c4*x**4 + x**2*(c2 - 3*c3**2/(8*c4)) + x*(c1 - c2*c3/(2*c4) + c3**3/(8*c4**2))
+    In [196]: ex.coeff(z, 1)     
+    Out[196]: a**3/8 - a*b/2 + c      ## f 
 
-    In [169]: collect(expand(ex4), x ).coeff(x, 0)
-    Out[169]: c0 - c1*c3/(4*c4) + c2*c3**2/(16*c4**2) - 3*c3**4/(256*c4**3)
+    In [197]: ex.coeff(z, 2)    
+    Out[197]: -3*a**2/8 + b       ## e
 
-    In [170]: collect(expand(ex4), x ).coeff(x, 1)
-    Out[170]: c1 - c2*c3/(2*c4) + c3**3/(8*c4**2)
+    In [198]: ex.coeff(z, 3)
+    Out[198]: 0
 
-    In [171]: collect(expand(ex4), x ).coeff(x, 2)
-    Out[171]: c2 - 3*c3**2/(8*c4)
-
-    In [172]: collect(expand(ex4), x ).coeff(x, 3)
-    Out[172]: 0
-
-    In [173]: collect(expand(ex4), x ).coeff(x, 4)
-    Out[173]: c4
-
-
+    In [199]: ex.coeff(z, 4)
+    Out[199]: 1
 
 """
 
-from sympy import expand, symbols, simplify, collect, factor, solve, Pow
+from sympy import expand, symbols, simplify, collect, factor, solve, Pow, Poly
+from sympy import I, E, re, im
 from coeff import get_coeff, get_coeff_, subs_coeff, print_coeff, expr_coeff
 
 
-if __name__ == '__main__':
+def quartic_0():
     a0,a1,a2,a3,a4 = symbols("a0 a1 a2 a3 a4")
     q0,q1,q2,q3,q4 = symbols("q0 q1 q2 q3 q4")
 
@@ -72,6 +65,129 @@ if __name__ == '__main__':
 
 
 
+def quartic_1():
+ 
+    x,z,l = symbols("x,z,l")
+    a,b,c,d= symbols("a,b,c,d")
 
+    ex = x**4 + a*x**3 + b*x**2 + c*x + d   
+    ex = expand(ex.subs(x, z-a/4 ))   # shift kills the x**3 term 
+
+    e,f,g = symbols("e,f,g")
+
+    #  x^4 + a*x^3 + b*x^2 + c*x + d = 0
+    #  z^4 +   0   + e z^2 + f z + g = 0 
+
+    e = ex.coeff(z, 2)    # -3*a**2/8 + b 
+    f = ex.coeff(z, 1)    # a**3/8 - a*b/2 + c
+    g = ex.coeff(z, 0)    # -3*a**4/256 + a**2*b/16 - a*c/4 + d 
+
+    # f = 0  -> degenerates to quadratic in z^2
+    #  z^4 + e z^2 + g = 0 
+
+
+"""
+
+In [10]: ex = 4*(u-e)*(u**2/4 - g)
+
+In [11]: eu = collect(expand(ex), u) ; eu 
+Out[11]: 4*e*g - e*u**2 - 4*g*u + u**3
+
+In [15]: Poly(eu,u).all_coeffs()
+Out[15]: [1, -e, -4*g, 4*e*g]
+
+"""
+
+
+class Quartic(object):
+    def __init__(self):
+        pass
+
+    poly = property(lambda self:Poly(self.expr, self.var))
+    coeff = property(lambda self:self.poly.all_coeffs())
+
+    gpoly = property(lambda self:Poly(self.gexpr, self.var))
+    gcoeff = property(lambda self:self.gpoly.all_coeffs())
+
+    def _set_iroot(self, args):
+
+        assert len(args) == 4
+        _z0, _z1, _z2, _z3 = args
+
+        self._z0 = _z0
+        self._z1 = _z1
+        self._z2 = _z2
+        self._z3 = _z3
+
+        x0,x1,x2,x3 = symbols("x0 x1 x2 x3", real=True)
+        y0,y1,y2,y3 = symbols("y0 y1 y2 y3", real=True)
+        z0,z1,z2,z3 = symbols("z0 z1 z2 z3")
+
+        z,x,y = symbols("z,x,y")
+
+        ezz = collect(expand((z-z0)*(z-z1)*(z-z2)*(z-z3)),z)
+        self.gexpr = ezz 
+
+        z0 = x0+I*y0
+        z1 = x1+I*y1
+        z2 = x2+I*y2
+        z3 = x3+I*y3
+
+        ez = collect(expand((z-z0)*(z-z1)*(z-z2)*(z-z3)),z)
+
+        xsub = [(x0, _z0.real),(x1,_z1.real),(x2,_z2.real),(x3,_z3.real)]
+        ysub = [(y0, _z0.imag),(y1,_z1.imag),(y2,_z2.imag),(y3,_z3.imag)]
+
+        expr = ez.subs( xsub + ysub )
+        var = z   
+        oroot = solve(expr, var) 
+
+        self.expr = expr
+        self.var = var 
+        self.oroot = oroot
+
+        allco = self.coeff
+        print "allco: %s " % repr(allco)
+        u,a,b,c,d = allco
+        assert u == 1
+        self.a = a 
+        self.b = b
+        self.c = c
+        self.d = d
+
+        dexpr = expand(expr.subs(z, y-a/4))
+        self.dexpr = dexpr
+
+        print self
+
+
+    def _get_iroot(self):
+        return self._z0, self._z1, self._z2, self._z3
+
+    iroot = property(_get_iroot, _set_iroot)
+
+
+    def __repr__(self):
+        lines = []
+        lines.append( repr(self.expr) )
+        lines.append( "a:%s b:%s c:%s d:%s  " % (self.a,self.b,self.c,self.d) )
+        lines.append( repr(self.dexpr) )
+        lines.append("complex coeff, descending ")
+        for i, co in enumerate(self.coeff):
+            lines.append("%s : %5s %5s " % (3-i, re(co), im(co) ))
+        pass
+        lines.append( "iroot: %s  (from input) " % repr(self.iroot) )
+        lines.append( "oroot: %s  (from solving the expression) " % repr(self.oroot) )
+
+        return "\n".join(lines)
+
+if __name__ == '__main__':
+
+   
+    qua = Quartic()
+    #qua.iroot = 1, 2, 3, 4
+    qua.iroot = 3, 2+5j, 2-5j, 1
+    #qua.iroot = 1, 1, 1, 1
+  
 
 

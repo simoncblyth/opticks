@@ -1614,9 +1614,15 @@ CSG.boundary = args.testobject
 #CSG.kwa = dict(poly="MC", resolution="100")
 CSG.kwa = dict(poly="IM", resolution="50")
 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,4], boundary=args.container, poly="MC", nx="20" )
   
-a = CSG.MakeTorus(R=100, r=50)
+#a = CSG.MakeTorus(R=100, r=50)
+a = CSG.MakeTorus(R=1, r=0.5)
+#a.scale = [100,100,100]
+
+
+
+
 CSG.Serialize([container, a], args.csgpath )
 
 """

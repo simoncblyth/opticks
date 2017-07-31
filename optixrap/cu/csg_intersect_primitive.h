@@ -1482,6 +1482,23 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 
+
+
+static __device__
+float cubic_delta2( const float a, const float b, const float c, const float d)
+{
+    // Neumark p5  :   a x^3 + b x^2 + c x + d = 0 
+    //
+    float tmp = 27.f*a*a*d + 2.f*b*b*b - 9.f*a*b*c ; 
+    float disc = b*b - 3.f*a*c ; 
+    float delta2 = tmp*tmp / (2.f*disc*disc*disc) ; 
+    return delta2 ;
+}
+
+
+
+#define TORUS_DEBUG 1
+
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
@@ -1494,12 +1511,9 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
     const float& ox = ray_origin.x ; 
     const float& oy = ray_origin.y ; 
-    const float& oz = ray_origin.z ; 
 
     const float& sx = ray_direction.x ;
     const float& sy = ray_direction.y ;
-    const float& sz = ray_direction.z ;
-
 
     // try using ray-circle discriminant to skip SolveQuartic
     // hmm for this to work must rotate line about z-axis to bring into
@@ -1508,6 +1522,9 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     // ... or  
     // alternatively consider cone sphere intersect ?
     /*
+    const float& oz = ray_origin.z ; 
+    const float& sz = ray_direction.z ;
+
     const float rc2 = sx*sx + sz*sz ; 
     const float rc1_l = -2.f*(R*sx - ox*sx - oz*sz) ;
     const float rc1_r = -2.f*(-R*sx - ox*sx - oz*sz) ;
@@ -1528,23 +1545,54 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
 
     float q[5]; 
-
     q[4] = J*J ; 
     q[3] = 2.f*J*K ; 
     q[2] = 2.f*J*L + K*K - G ;
     q[1] = 2.f*K*L - H ;
     q[0] = L*L - I ;
 
-    q[3] /= q[4] ;
-    q[2] /= q[4] ;
-    q[1] /= q[4] ;
-    q[0] /= q[4] ;
+    float qn[4] ; 
+    qn[3] = q[3]/q[4] ;
+    qn[2] = q[2]/q[4] ;
+    qn[1] = q[1]/q[4] ;
+    qn[0] = q[0]/q[4] ;
+
+
+#ifdef TORUS_DEBUG 
+    const float a = qn[3] ; 
+    const float b = qn[2] ; 
+    const float c = qn[1] ; 
+    const float d = qn[0] ; 
+
+    // coeff of depressed quartic
+    const float e     = b - 3.f * a * a / 8.f;
+    const float f     = c + a * a * a / 8.f - 0.5f * a * b;
+    const float g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
+
+    // switch x -> -x and multiplying by -1 , will flip even x^2, x^0 coeff signs    
+
+    float neumark[3] ;  // coeff of resolvent cubic
+    neumark[2] = 2.f*e ; 
+    neumark[1] = e*e - 4.f*g ;
+    neumark[0] = -f*f ;
+    float neumark_delta2 = cubic_delta2( 1.f, neumark[2], neumark[1], neumark[0] ); 
+    bool double_root = fabsf( neumark_delta2 - 1.0f ) < 1.e-3f ; 
+
+#endif
 
     float roots[4] ;   
-    int num_roots = SolveQuartic( q[3],q[2],q[1],q[0], roots ); 
 
-    // with the gems Root3And4 get segfault in createProgramFromPTX  
-   
+   // unsigned msk = SOLVE_VECGEOM  ;  // worst for artifcacting 
+   // unsigned msk = SOLVE_UNOBFUSCATED  ;  // reduced but still obvious
+   // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD ;  // getting some in-out wierdness
+   // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD | SOLVE_ROBUSTCUBIC_0 ;
+   unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;  // _0 ok
+   // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_1 ;  // in-out wierdness
+ 
+    unsigned path = 0 ; 
+
+    int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk, path ); 
+
 
     float4 cand = make_float4(RT_DEFAULT_MAX) ;  
     int num_cand = 0 ;  
@@ -1557,11 +1605,167 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     }
     
     float t_cand = num_cand > 0 ? fminf(cand) : t_min ;   // smallest root bigger than t_min
-    bool valid_isect = t_cand > t_min ;
+
+    const float3 p = ray_origin + t_cand*ray_direction ; 
+
+
+    const float2 qrz = make_float2(length(make_float2(p)) - R, p.z) ;  // (mid-circle-sdf, z)
+    const float  qsd = length(qrz) - r ;   // signed dist to torus
+    bool valid_qsd = fabsf(qsd) < 1e-3f ; 
+
+    // Can easily cut away fake intersects assumed caused by numerical problems 
+    // for some coeffient combinations using sdf... 
+    // but how to handle failed intersects ?
+    //
+    // Inverting !valid_qsd to see just the fakes
+    // suggests interior missing intersects and
+    // exterior fake intersects arise from same cause.
+    //
+    // So identifying cause of exterior fakes (eg some coeff going to zero)
+    // may potentially also fix interior missings.
+         
+
+
+
+#ifndef TORUS_DEBUG 
+    bool valid_isect = valid_qsd && t_cand > t_min ;
+#else
+    const float residual = (((q[4]*t_cand + q[3])*t_cand + q[2])*t_cand + q[1])*t_cand + q[0] ; 
+
+    //bool valid_isect = t_cand > t_min && !double_root ;   // double roots not source of artifacts
+    //bool valid_isect = t_cand > t_min  ;
+    //bool valid_isect = t_cand > t_min && qsd < -0.1f   ;
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) < 0.1f && fabsf(residual) > 0.1f  ; // ring artifact
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.1f && fabsf(residual) > 0.1f  ; //  nowt so ring is mostly from small neumark[0] ? 
+
+    //bool valid_isect = t_cand > t_min && fabsf(residual) < 0.1f  ;  // hailine ring crack
+    bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.0001f ;  // > 0.0001f artifact ring visible and chops thin ring band out of torus
+    //bool valid_isect = t_cand > t_min ;
+    //bool valid_isect = valid_qsd && t_cand > t_min ;
+
+    if(valid_isect) 
+    {
+
+        const float A = q[4] ; 
+        const float B = q[3] ; 
+        const float C = q[2] ; 
+        const float D = q[1] ; 
+        const float E = q[0] ; 
+
+        // Neumark p18 : Resolvent cubic has one zero root 
+        //  Hurwitz-Roth discriminant for oscillatory stability...
+        //  leads to two equal and opposite real roots when zero
+
+        const float HRD = B*C*D - B*B*E - A*D*D ;   // huh expecte to be small at problem points, but not so
+    
+        // Hmm perhaps pick resolvent cubic that avoid numerical problems ?
+        
+        rtPrintf(
+                 "torus"
+                 " num_roots %d "
+                 " num_cand %d "
+                 " t_cand %10.3g "
+                 " roots ( %10.3g, %10.3g, %10.3g, %10.3g)" 
+                 " residual %10.4f "
+                 " qsd %10.4f "
+                 "\n"
+                 ,
+                 num_roots
+                 ,
+                 num_cand
+                 ,
+                 t_cand
+                 ,
+                 roots[0], roots[1], roots[2], roots[3]
+                 ,
+                 residual
+                 ,
+                 qsd
+               );
+    }
+
+/*    
+
+
+                 " neumark_delta2 : %10.3g "
+                 ,
+                 neumark_delta2
+
+
+
+                 " qn( %10.3g, %10.3g, %10.3g, %10.3g)" 
+                 " efg( %10.3g, %10.3g, %10.3g )"
+                 " neumark( %10.3g, %10.3g, %10.3g )"
+
+                 qn[3],qn[2],qn[1],qn[0]
+                 ,
+                 e,f,g
+                 ,
+                 neumark[2],neumark[1],neumark[0]
+
+
+
+
+
+                 " HRD %10.4f "
+                 HRD
+ 
+
+                 " R %10.4f r %10.4f "
+                  R, r,                      // 1, 0.5
+
+
+                 " qsd %10.4f "
+                 qsd, 
+                 qsd    14.5927  
+
+                 " dir (%10.4g %10.4g %10.4g) "
+                 ray_direction.x, ray_direction.y, ray_direction.z,
+
+                 dir ( -0.001487 -0.0009288  -0.009845)    ## length of this sq uncomfortably small, following from non-norm for scaling 
+                 dir (  -0.07532     0.1403    -0.9872)    ## removing scaling in tboolean-torus makes more healthy
+
+
+                 " ori (%10.4g %10.4g %10.4g) "
+                 ray_origin.x, ray_origin.y, ray_origin.z,
+
+                 ori (    -0.103      2.134     -6.638)     ## as expect
+
+
+                 " GHIJKL( %10.3g, %10.3g, %10.3g, %10.3g, %10.3g, %10.3g)"     
+                 G,H,I,J,K,L
+
+                 GHIJKL(   1.23e-05,    -0.0152,        7.2,     0.0001,     -0.118,       36.1)   ## with scaling of 100
+                 GHIJKL(      0.745,      -5.72,       16.9,          1,      -7.62,       16.8)   ## without scaling J=1 norm ray dir
+    
+
+                 " q( %10.3g, %10.3g, %10.3g, %10.3g, %10.3g)"    
+                 q[4],q[3],q[2],q[1],q[0]     
+
+
+                 q(      1e-08,  -2.09e-05,     0.0308,      -20.8,   9.79e+03)    ##   v.small q[4] from J**2 from unnorm ray dir
+                 qsd   108.6718   q(          1,      -15.2,       90.6,       -249,        263)   ## more reasonable q when avoid scaling
+
+
+                 " qn( %10.3g, %10.3g, %10.3g, %10.3g)" 
+                 qn[3],qn[2],qn[1],qn[0],
+
+
+                 qsd    52.0278  q(          1,      -14.8,       86.5,       -233,        243) 
+                 qn(      -14.8,       86.5,       -233,        243)
+
+
+
+*/
+
+
+
+#endif
+
 
     if(valid_isect)
     {        
-        const float3 p = ray_origin + t_cand*ray_direction ; 
         const float alpha = 1.f - (R/sqrt(p.x*p.x+p.y*p.y)) ;   // see cosinekitty 
         // how to normalize by construction ?
         const float3 n = normalize(make_float3(alpha*p.x, alpha*p.y, p.z ));
@@ -1572,4 +1776,13 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     }
     return valid_isect ; 
 }
+
+
+/*
+
+   glm::vec2 q( glm::length(glm::vec2(p)) - rmajor() , p.z );
+    float sd = glm::length(q) - rminor() ;
+
+
+*/
 
