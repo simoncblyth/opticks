@@ -181,13 +181,166 @@ class Quartic(object):
 
         return "\n".join(lines)
 
+
+
+
+
+
+
+def neumark():
+    """
+
+
+    p12::
+
+        In [25]: ef
+        Out[25]: (A*x**2 + G*x + H)*(A*x**2 + g*x + h)
+
+        In [26]: expand(ef)
+        Out[26]: A**2*x**4 + A*G*x**3 + A*H*x**2 + A*g*x**3 + A*h*x**2 + G*g*x**2 + G*h*x + H*g*x + H*h
+
+        In [27]: expand(ef/A)
+        Out[27]: A*x**4 + G*x**3 + H*x**2 + g*x**3 + h*x**2 + G*g*x**2/A + G*h*x/A + H*g*x/A + H*h/A
+
+        In [28]: Poly(expand(ef/A),x).all_coeffs()
+        Out[28]: [A, G + g, (A*H + A*h + G*g)/A, (G*h + H*g)/A, H*h/A]
+
+        In [30]: Poly(ex,x).all_coeffs()
+        Out[30]: [A, B, C, D, E]
+
+    """
+    pass
+
+
+
+def cardano():
+    """
+
+
+    cy coeffs of depressed quartic:: 
+
+         [1, 
+          0, 
+         -3*a**2/8 + b, 
+          a**3/8 - a*b/2 + c, 
+          -3*a**4/256 + a**2*b/16 - a*c/4 + d]
+
+        In [53]: [2*e, e*e - 4* g, -f*f ]
+        Out[53]: 
+        [-3*a**2/4 + 2*b,
+         3*a**4/64 - a**2*b/4 + a*c - 4*d + (-3*a**2/8 + b)**2,
+         (-a**3/8 + a*b/2 - c)*(a**3/8 - a*b/2 + c)]
+
+        In [54]: map(expand, [2*e, e*e - 4* g, -f*f ])
+        Out[54]: 
+        [-3*a**2/4 + 2*b,
+         3*a**4/16 - a**2*b + a*c + b**2 - 4*d,
+         -a**6/64 + a**4*b/8 - a**3*c/4 - a**2*b**2/4 + a*b*c - c**2]
+
+    """
+    pass
+    a,b,c,d,x,y,z = symbols("a:d,x:z")
+    ex = x**4 + a*x**3 + b*x**2 + c*x + d
+    ey = expand(ex.subs(x,y-a/4))
+    cy = Poly(ey,y).all_coeffs()   
+    e,f,g = cy[2:] 
+
+
+
+
+def neumark():
+    A,B,C,D,E = symbols("A:E")
+    x = symbols("x")
+    ex = A*Pow(x,4)+B*Pow(x,3)+C*Pow(x,2)+D*Pow(x,1)+E*Pow(x,0)
+
+
+    G,g,H,h = symbols("G,g,H,h")
+    ef = (A*Pow(x,2)+G*Pow(x,1)+H)*(A*Pow(x,2)+g*Pow(x,1)+h)
+ 
+
+def ferrari():
+    """
+
+    In [2]: efac
+    Out[2]: (G*x + H + x**2)*(g*x + h + x**2)
+
+    In [3]: expand(efac)
+    Out[3]: G*g*x**2 + G*h*x + G*x**3 + H*g*x + H*h + H*x**2 + g*x**3 + h*x**2 + x**4
+
+    In [4]: Poly(expand(efac),x).all_coeffs()
+    Out[4]: [1, G + g, G*g + H + h, G*h + H*g, H*h]
+
+
+    Aim to factorize into two quaratics... so expand that an line up coeffs
+
+
+           1 = 1 
+           a = G + g 
+
+           b = G*g + H + h     
+
+     b - G*g = H + h 
+           d = h*H
+
+
+           c = G*h + H*g 
+   
+           G + g = a         # looks like sum of roots 
+           G*g + g*g = a*g
+
+      Subs G*g = x           # thinking of product of roots     
+
+            
+       
+
+      Must be discrim of the quad ??  (b^2-4ac for ax**2+bx+c )
+
+            e^2 = a^2 - b - y 
+                                x**2 - a x + (b+y)/4 = 0    ## x1+x2 = a, x1*x2 = (b+y)/4
+ 
+            f^2 = y^2/4 - d
+                                x**2 + y/2 x +  d  = 0 
+                               
+
+            ef  = a*(y/4) + c/2
+
+
+           h^2 - yh + d = 0 
+
+    Vieta
+            a x**2 + bx + c = 0   
+
+    * sum of roots     : x1+x2 = -b/a  
+    * product of roots :  x1x2 = c/a 
+
+    """
+    a,b,c,d,x,y,z = symbols("a:d,x:z")
+    g,G,h,H = symbols("g,G,h,H")
+    efac = (x**2+G*x+H)*(x**2+g*x+h)
+
+
+     
+    
+
+
 if __name__ == '__main__':
 
+
+    if 0:   
+        qua = Quartic()
+        #qua.iroot = 1, 2, 3, 4
+        qua.iroot = 3, 2+5j, 2-5j, 1
+        #qua.iroot = 1, 1, 1, 1
+    pass
    
-    qua = Quartic()
-    #qua.iroot = 1, 2, 3, 4
-    qua.iroot = 3, 2+5j, 2-5j, 1
-    #qua.iroot = 1, 1, 1, 1
-  
+    a,b,c,d,x,y,z = symbols("a:d,x:z")
+    g,G,h,H = symbols("g,G,h,H")
+    efac = (x**2+G*x+H)*(x**2+g*x+h)
+
+
+
+
+
+
 
 

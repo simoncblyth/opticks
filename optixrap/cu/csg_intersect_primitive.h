@@ -1575,6 +1575,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     neumark[2] = 2.f*e ; 
     neumark[1] = e*e - 4.f*g ;
     neumark[0] = -f*f ;
+
     float neumark_delta2 = cubic_delta2( 1.f, neumark[2], neumark[1], neumark[0] ); 
     bool double_root = fabsf( neumark_delta2 - 1.0f ) < 1.e-3f ; 
 
@@ -1589,9 +1590,10 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
    unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;  // _0 ok
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_1 ;  // in-out wierdness
  
-    unsigned path = 0 ; 
+    
 
-    int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk, path ); 
+    //int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
+    int num_roots = SolveQuarticPureNeumark( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
 
 
     float4 cand = make_float4(RT_DEFAULT_MAX) ;  
@@ -1639,9 +1641,9 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.1f && fabsf(residual) > 0.1f  ; //  nowt so ring is mostly from small neumark[0] ? 
 
     //bool valid_isect = t_cand > t_min && fabsf(residual) < 0.1f  ;  // hailine ring crack
-    bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.0001f ;  // > 0.0001f artifact ring visible and chops thin ring band out of torus
-    //bool valid_isect = t_cand > t_min ;
+    bool valid_isect = t_cand > t_min ;
     //bool valid_isect = valid_qsd && t_cand > t_min ;
 
     if(valid_isect) 

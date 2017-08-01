@@ -3,8 +3,11 @@
 #include <cassert>
 #include <complex> 
 #include <cmath>
+#include <iostream>
 
 #include "fascending.h"
+
+#define PURE_NEUMARK_DEBUG 1
 #include "Vecgeom_Solve.h"
 
 #include <sstream>
@@ -23,18 +26,10 @@ struct QuarticTest
     bool coeff ; 
     bool comp ; 
 
-    cplx  zr0[4] ;   // input roots 
-
+    cplx  inroots[4] ;   // input roots 
     cplx  zco[5] ;   // complex coeffs
     float co[5] ;    // real coeff
-    float dco[5] ;   // depressed cubic coeff
-
-    float r1[4] ;   // result real roots
-
-    float delta ;   
-    float disc ; 
-    float sdisc ; 
-
+    float roots[4] ;   // result real roots
 
     std::string desc_root(const float* a, unsigned n) const 
     {
@@ -51,29 +46,16 @@ struct QuarticTest
 
     void dump()
     {
-
         int wi = 7 ; 
-
         std::cout 
-            << " nr " << nr  ;
-            ;
-
-        std::cout << " zr0 " << desc_root(zr0, 3);
-       
-        std::cout 
-            << " r1 " << desc_root(r1, nr )
+            << " inroots " << desc_root(inroots, 4)
+            << " outroots " << nr  
+            << " { " << desc_root(roots, nr ) << " } "
             << " abcd ( " 
             << std::setw(wi) << co[3] << " " 
             << std::setw(wi) << co[2] << " " 
             << std::setw(wi) << co[1] << " " 
             << std::setw(wi) << co[0] << ") " 
-            << " efg ( " 
-            << std::setw(wi) << dco[2] << " " 
-            << std::setw(wi) << dco[1] << " " 
-            << std::setw(wi) << dco[0] << ") " 
-            << " delta " << delta
-            << " disc " << disc
-            << " sdisc " << sdisc
             << " " << SolveTypeMask(msk)
             << std::endl 
             ;
@@ -83,16 +65,29 @@ struct QuarticTest
     QuarticTest(cplx z0, cplx z1, cplx z2, cplx z3, unsigned msk_, bool coeff_ ) : num(4), nr(0), msk(msk_), coeff(coeff_), comp(true)
     {
         assert(!coeff);
-        zr0[0] = z0 ; 
-        zr0[1] = z1 ; 
-        zr0[2] = z2 ; 
-        zr0[3] = z3 ; 
+        inroots[0] = z0 ; 
+        inroots[1] = z1 ; 
+        inroots[2] = z2 ; 
+        inroots[3] = z3 ; 
 
         // see quartic.py 
-        zco[0] = -z0*z1*z2 ;
-        zco[1] =  z0*z1 + z0*z2 + z1*z2 ;
-        zco[2] = -z0 - z1 - z2 ;
-        zco[3] = cplx(1.f, 0.f) ; 
+        zco[0] =  z0*z1*z2*z3 ;
+        zco[1] =  -z0*z1*z2 - z0*z1*z3 - z0*z2*z3 - z1*z2*z3 ;
+        zco[2] = z0*z1 + z0*z2 + z0*z3 + z1*z2 + z1*z3 + z2*z3 ;
+        zco[3] = -z0 - z1 - z2 - z3 ;
+        zco[4] = cplx(1.f, 0.f) ; 
+
+/*
+
+from sympy import symbols, collect, expand   
+
+In [6]: z0,z1,z2,z3,z = symbols("z0,z1,z2,z3,z")
+In [7]: ezz = collect(expand((z-z0)*(z-z1)*(z-z2)*(z-z3)),z)
+In [8]: ezz
+Out[8]: z**4 + z**3*(-z0 - z1 - z2 - z3) + z**2*(z0*z1 + z0*z2 + z0*z3 + z1*z2 + z1*z3 + z2*z3) + z*(-z0*z1*z2 - z0*z1*z3 - z0*z2*z3 - z1*z2*z3) + z0*z1*z2*z3
+
+*/
+
 
         co[0] = std::real(zco[0]);
         co[1] = std::real(zco[1]);
@@ -107,91 +102,33 @@ struct QuarticTest
         solve(msk);    
     }
 
-    CubicTest(float x0, float x1, float x2, unsigned msk_, bool coeff_ ) : num(3), nr(0), msk(msk_), coeff(coeff_), comp(false) 
-    {
-        if(coeff)
-        {
-            zr0[0] = 0 ; 
-            zr0[1] = 0 ; 
-            zr0[2] = 0 ; 
-     
-            co[0] = x0 ; 
-            co[1] = x1 ; 
-            co[2] = x2 ; 
-            co[3] = 1.f ; 
-        } 
-        else
-        {
-            zr0[0] = x0 ; 
-            zr0[1] = x1 ; 
-            zr0[2] = x2 ; 
-            //fascending_ptr( 3, r0 );
-
-            co[0] = -x0*x1*x2 ;
-            co[1] =  x0*x1 + x0*x2 + x1*x2 ;
-            co[2] = -x0 - x1 - x2 ;
-            co[3] = 1.f ;          
-        }
-        solve(msk);    
-    }
-
     void solve(unsigned msk)
     { 
-        //  Original cubic  :   x^3 + a*x^2 + b*x + c = 0     // 1,a,b,c
-        //  Depressed cubic :   z^3 +   0   + p*z + q = 0     // 1,0,p,q   (from x->z-a/3 )   
- 
-        float a = co[2]; 
-        float b = co[1]; 
-        float c = co[0]; 
+        float a = co[3]; 
+        float b = co[2]; 
+        float c = co[1]; 
+        float d = co[0]; 
 
-        nr = SolveCubic( a,b,c, r1, msk );
-        fascending_ptr( nr, r1 );
-
-        // below for checking values of intermediates when precision goes to pot
-        const float ott = 1.f / 3.f;
-        const float sq3 = sqrt(3.f);
-        const float inv6sq3    = 1.f / (6.f * sq3);
-
-        const float p = b - a * a * ott;        
-        const float q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
-
-        dco[0] = q ;
-        dco[1] = p ;
-        dco[2] = 0 ;
-        dco[3] = 1 ;
-
-        delta = 4.f * p * p * p + 27.f * q * q;
-        disc = delta/(27.f*4.f) ; 
-        sdisc = sqrt(disc) ;  
-
-
-       //  Dividing delta by 27*4 yields the cubic discriminant:   
-       //
-       //        delta/(27*4 ) =  (p/3)**3 + (q/2)**2         
-       //
-       //  sqrt of discriminant is: 
-       //
-       //        sqrt(delta/(3*3*3*2*2)) = sqrt(delta)/(6*sqrt(3)) = sqrt(delta)*inv6sq3
-       //
+        //nr = SolveQuartic( a,b,c,d, roots, msk );
+        nr = SolveQuarticPureNeumark( a,b,c,d, roots, msk );
+        fascending_ptr( nr, roots );
 
         dump();   
     }
-
-
-
 
 };
 
 
 
-void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, float* sc, unsigned smsk )
+void test_quartic( cplx z0, cplx z1, cplx z2, cplx z3,  unsigned N, unsigned* msk, float* sc, unsigned smsk )
 { 
-    std::cout << " r0 : " << r0 ; 
-    std::cout << " r1 : " << r1 ; 
-    std::cout << " r2 : " << r2 ; 
+    std::cout << " z0 : " << z0 ; 
+    std::cout << " z1 : " << z1 ; 
+    std::cout << " z2 : " << z2 ;
+    std::cout << " z3 : " << z3 ;
     std::cout << std::endl ; 
 
-    for(unsigned i=0 ; i < N ; i++) CubicTest t(r0,r1,r2, msk[i], false) ;   
+    for(unsigned i=0 ; i < N ; i++) QuarticTest t(z0,z1,z2,z3, msk[i], false) ;   
     std::cout << std::endl ; 
 
     if(sc) 
@@ -203,71 +140,54 @@ void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, float* sc
 
         for(float s=sc[0] ; s < sc[1] ; s+=sc[2] )
         {
-            for(unsigned i=0 ; i < N ; i++) CubicTest t(r0*( smsk & 1 ? s : 1) ,r1*(smsk & 2 ? s : 1),r2*(smsk & 4 ? s : 1), msk[i], false) ;   
+            for(unsigned i=0 ; i < N ; i++) QuarticTest t(z0*( smsk & 1 ? s : 1) ,z1*(smsk & 2 ? s : 1),z2*(smsk & 4 ? s : 1), z3*(smsk & 8 ? s : 1), msk[i], false) ;   
             std::cout << std::endl ; 
         }
     }
 }
 
-void test_one_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
+void test_two_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
 {
-    std::cout << "test_one_real_root "  ;
+    std::cout << "test_two_real_root "  ;
 
-    cplx r0(3,0) ;   // z**3 - 7.0*z**2 + 41.0*z - 87.0      one real root
-    cplx r1(2,5) ;
-    cplx r2(2,-5) ;
+    cplx z0(1,0) ;  
+    cplx z1(2,0) ;
+    cplx z2(3,0) ;
+    cplx z3(4,0) ;
 
-    test_cubic(r0,r1,r2, N, msk, sc, smsk);
+/*
+
+In [5]: expand( (x-1)*(x-2)*(x-3)*(x-4) )
+Out[5]: x**4 - 10*x**3 + 35*x**2 - 50*x + 24
+
+*/
+
+
+    test_quartic(z0,z1,z2,z3, N, msk, sc, smsk);
 }
-
-
-void test_one_real_root_2(unsigned N, unsigned* msk, float* sc, unsigned smsk)
-{
-    std::cout << "test_one_real_root_2 "  ;
-
-    cplx r0(300,0) ;   
-    cplx r1(2,10) ;
-    cplx r2(2,-10) ;
-
-    test_cubic(r0,r1,r2, N, msk, sc, smsk);
-}
-
-void test_three_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
-{
-    std::cout << "test_three_real_root "  ;
-
-    cplx r0(1,0) ; 
-    cplx r1(2,0) ;
-    cplx r2(3,0) ;
-
-    test_cubic(r0,r1,r2, N, msk, sc, smsk );
-}
-
 
 int main()
 {
     static const unsigned N = 3 ; 
     unsigned msk[N] ; 
+
+    unsigned best = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ; 
+
     msk[0] = SOLVE_VECGEOM ;
     msk[1] = SOLVE_UNOBFUSCATED  ;
-    msk[2] = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD ;
+    msk[2] = best  ;
 
-//    test_one_real_root(N, msk, NULL, 0);
-    test_one_real_root_2(N, msk, NULL, 0);
-//    test_three_real_root(N, msk, NULL, 0);
-
+    test_two_real_root(N, msk, NULL, 0);
 
     // control which roots to scale
     //unsigned smsk = 7 ; 
     //unsigned smsk = 6 ; 
-    unsigned smsk = 1 ;  
+    unsigned smsk = 0 ;  
 
     if(smsk > 0)
     {
         float sc[3] = {1., 1000., 100. };
-
-        test_one_real_root(N, msk, sc, smsk);
-        test_three_real_root(N, msk,sc, smsk);
+        test_two_real_root(N, msk, sc, smsk);
     }
 
     return 0 ; 
