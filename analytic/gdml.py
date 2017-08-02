@@ -185,6 +185,9 @@ class Boolean(Geometry):
         pass
         left = self.first.as_ncsg()
         right = self.second.as_ncsg()
+        assert left, " left fail as_ncsg for first : %r self: %r " % (self.first, self)
+        assert right, "right fail as_ncsg for second : %r self: %r " % (self.second, self)
+
         right.transform = self.secondtransform
 
         cn = CSG(self.operation, name=self.name)
@@ -430,17 +433,9 @@ class Ellipsoid(Primitive):
 
 class Torus(Primitive):
     rtor = property(lambda self:self.att('rtor', 0, typ=float))
-
     def as_ncsg(self):
-
-        cn = CSG("torus", name=self.name)
-        cn.param[0] = 0
-        cn.param[1] = 0
-        cn.param[2] = 0
-        cn.param[3] = self.rtor
-
-        return None
-
+        cn = CSG.MakeTorus(R=self.rtor, r=self.rmax, name=self.name)
+        return cn
 
 
 class Box(Primitive):

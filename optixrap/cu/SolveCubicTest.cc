@@ -5,7 +5,7 @@
 #include <cmath>
 
 #include "fascending.h"
-#include "Vecgeom_Solve.h"
+#include "Solve.h"
 
 #include <sstream>
 #include <iostream>

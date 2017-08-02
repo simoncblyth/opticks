@@ -8,7 +8,7 @@
 #include "fascending.h"
 
 #define PURE_NEUMARK_DEBUG 1
-#include "Vecgeom_Solve.h"
+#include "Solve.h"
 
 #include <sstream>
 #include <iostream>

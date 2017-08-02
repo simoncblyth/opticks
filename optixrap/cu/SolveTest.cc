@@ -6,17 +6,18 @@
 #define SOLVE_QUARTIC_DEBUG 1
 #define PURE_NEUMARK_DEBUG 1
 
-#include "Vecgeom_Solve.h"
+typedef double Solve_t ;
+#include "Solve.h"
 
-void cubic_errors(float a,float b,float c, float* rts,float* rterr, float* rtdel,int nrts)
+void cubic_errors(Solve_t a,Solve_t b,Solve_t c, Solve_t* rts,Solve_t* rterr, Solve_t* rtdel,int nrts)
 {
-    float nought = 0.f ; 
-    float doub4 = 4.f ; 
-    float doub3 = 3.f ; 
-    float doub2 = 2.f ; 
-    float doub12 = 12.f ; 
-    float doub6 = 6.f ; 
-    float doub24 = 24.f ; 
+    Solve_t nought = 0.f ; 
+    Solve_t doub4 = 4.f ; 
+    Solve_t doub3 = 3.f ; 
+    Solve_t doub2 = 2.f ; 
+    Solve_t doub12 = 12.f ; 
+    Solve_t doub6 = 6.f ; 
+    Solve_t doub24 = 24.f ; 
 /*
 
 In [24]: ex = x**3 + a*x**2 + b*x + c
@@ -41,7 +42,7 @@ Out[27]: 6
         }
         else
         {   
-            float deriv = (doub3*rts[k]+doub2*a)*rts[k]+b  ;
+            Solve_t deriv = (doub3*rts[k]+doub2*a)*rts[k]+b  ;
             if (deriv != nought)
             {
                 rterr[k] = fabs(rtdel[k]/deriv);
@@ -59,15 +60,15 @@ Out[27]: 6
 }
 
 
-void quartic_errors(float a,float b,float c,float d, float* rts,float* rterr, float* rtdel,int nrts)
+void quartic_errors(Solve_t a,Solve_t b,Solve_t c,Solve_t d, Solve_t* rts,Solve_t* rterr, Solve_t* rtdel,int nrts)
 {
-    float nought = 0.f ; 
-    float doub4 = 4.f ; 
-    float doub3 = 3.f ; 
-    float doub2 = 2.f ; 
-    float doub12 = 12.f ; 
-    float doub6 = 6.f ; 
-    float doub24 = 24.f ; 
+    Solve_t nought = 0.f ; 
+    Solve_t doub4 = 4.f ; 
+    Solve_t doub3 = 3.f ; 
+    Solve_t doub2 = 2.f ; 
+    Solve_t doub12 = 12.f ; 
+    Solve_t doub6 = 6.f ; 
+    Solve_t doub24 = 24.f ; 
  
     /*
 
@@ -99,7 +100,7 @@ Out[22]: 24
         }
         else
         {   
-            float deriv = ((doub4*rts[k]+doub3*a)*rts[k]+doub2*b)*rts[k]+c ;
+            Solve_t deriv = ((doub4*rts[k]+doub3*a)*rts[k]+doub2*b)*rts[k]+c ;
             if (deriv != nought)
             {
                 rterr[k] = fabs(rtdel[k]/deriv);
@@ -124,16 +125,16 @@ Out[22]: 24
 
 
 
-void test_cubic(float p, float q, float r)
+void test_cubic(Solve_t p, Solve_t q, Solve_t r)
 {
     unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;
 
-    float xx[3] ; 
+    Solve_t xx[3] ; 
     unsigned ireal = SolveCubic(p, q, r, xx, msk);
  
-    //float crr  = cubic_real_root( p,q,r, msk );  // tis giving sqrt of largest root ?
-    //float clrr = cubic_lowest_real_root( p,q,r ) ;  // gives largest root
-    //float crr2 = crr*crr ;
+    //Solve_t crr  = cubic_real_root( p,q,r, msk );  // tis giving sqrt of largest root ?
+    //Solve_t clrr = cubic_lowest_real_root( p,q,r ) ;  // gives largest root
+    //Solve_t crr2 = crr*crr ;
 
     rtPrintf("test_cubic"
              " pqr (%g,%g,%g) "
@@ -146,8 +147,8 @@ void test_cubic(float p, float q, float r)
 
             );
 
-    float rterr[3] ; 
-    float rtdel[3] ; 
+    Solve_t rterr[3] ; 
+    Solve_t rtdel[3] ; 
     cubic_errors( p, q, r, xx, rterr, rtdel, ireal );
 
     for(unsigned i=0 ; i < ireal ; i++)
@@ -163,10 +164,10 @@ void test_cubic(float p, float q, float r)
 }
 
 
-void dump_quartic( float a, float b, float c, float d, float* xx, int nxx)
+void dump_quartic( Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t* xx, int nxx)
 {
-    float rterr[4] ; 
-    float rtdel[4] ; 
+    Solve_t rterr[4] ; 
+    Solve_t rtdel[4] ; 
 
     quartic_errors( a, b, c, d, xx, rterr, rtdel, nxx );
 
@@ -196,15 +197,15 @@ void dump_quartic( float a, float b, float c, float d, float* xx, int nxx)
 }
 
 
-void test_quartic(float a, float b, float c, float d)
+void test_quartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d)
 {
     unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;
 
-    float xx[4] ; 
+    Solve_t xx[4] ; 
     unsigned nxx = SolveQuartic(a, b, c, d, xx, msk);
     dump_quartic(a,b,c,d, xx, nxx);
 
-    float yy[4] ; 
+    Solve_t yy[4] ; 
     unsigned nyy = SolveQuarticPureNeumark(a, b, c, d, yy, msk);
     dump_quartic(a,b,c,d, yy, nyy);
 }
@@ -238,10 +239,10 @@ int main()
     //                              4c + 1 -c^2 = 0     c^2 - 4c - 1 = 0   c =  4 +- sqrt(16 + 1) / 2
     //  
 
-    float a = 1.f ; 
-    float b = 4.f ; 
-    float d = -1.f ; 
-    float c = c = (a*b + sqrt( a*b*a*b - 4.f*a*a*d ))/2.f ; 
+    Solve_t a = 1.f ; 
+    Solve_t b = 4.f ; 
+    Solve_t d = -1.f ; 
+    Solve_t c = c = (a*b + sqrt( a*b*a*b - 4.f*a*a*d ))/2.f ; 
     
      
     test_quartic( a, b, c, d );    

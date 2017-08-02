@@ -4,7 +4,9 @@
 #include "robust_quadratic_roots.h"
 
 //#include "Roots3And4.h"
-#include "Vecgeom_Solve.h"
+
+typedef double Solve_t ;
+#include "Solve.h"
 
 
 rtBuffer<float4> planBuffer ;
@@ -1536,19 +1538,22 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
 
     // following cosinekitty nomenclature, sympy verified in torus.py
-    const float G = RR4*(sx*sx+sy*sy) ; 
-    const float H = 2.f*RR4*(ox*sx+oy*sy) ; 
-    const float I = RR4*(ox*ox+oy*oy) ;
-    const float J = dot(ray_direction, ray_direction) ;
-    const float K = 2.f*dot(ray_origin, ray_direction) ;
-    const float L = dot(ray_origin, ray_origin) + RR - rr ; 
+
+    const float G = RR4*(sx*sx+sy*sy) ;                      // +
+    const float H = 2.f*RR4*(ox*sx+oy*sy) ;                  // +/-
+    const float I = RR4*(ox*ox+oy*oy) ;                      // +
+    const float J = dot(ray_direction, ray_direction) ;      // +
+    const float K = 2.f*dot(ray_origin, ray_direction) ;     // +/-
+    const float L = dot(ray_origin, ray_origin) + RR - rr ;  // +    R > r (by assertion)
 
     // A x**4 + B x**3 + C x**2 + D x + E = 0 
-    const float A_ = J*J ; 
-    const float B_ = 2.f*J*K ; 
-    const float C_ = 2.f*J*L + K*K - G ;
-    const float D_ = 2.f*K*L - H ;
-    const float E_ = L*L - I ;
+    const float A_ = J*J ;                                   // +
+    const float B_ = 2.f*J*K ;                               // +/-
+    const float C_ = 2.f*J*L + K*K - G ;                     // +/-
+    const float D_ = 2.f*K*L - H ;                           // +/-
+    const float E_ = L*L - I ;                               // +/-
+
+
     
 /*
     const float AOB = fabs(A_/B_);
@@ -1566,8 +1571,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const float C = reverse ? C_ : C_ ; 
     const float D = reverse ? B_ : D_ ; 
     const float E = reverse ? A_ : E_ ; 
-
-  
 
     float qn[4] ; 
     qn[3] = B/A ;
@@ -1598,9 +1601,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     bool double_root = fabsf( neumark_delta2 - 1.0f ) < 1.e-3f ; 
 
 #endif
-
-    float roots[4] ;   
-
    // unsigned msk = SOLVE_VECGEOM  ;  // worst for artifcacting 
    // unsigned msk = SOLVE_UNOBFUSCATED  ;  // reduced but still obvious
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD ;  // getting some in-out wierdness
@@ -1609,8 +1609,11 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_1 ;  // in-out wierdness
  
 
-    //int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
-    int num_roots = SolveQuarticPureNeumark( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
+
+    Solve_t roots[4] ;   
+    //int num_roots = SolveQuarticPureNeumark( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
+    int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
+
 
 
     float4 cand = make_float4(RT_DEFAULT_MAX) ;  

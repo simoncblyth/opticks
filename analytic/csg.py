@@ -501,9 +501,11 @@ class CSG(CSG_):
 
 
     @classmethod
-    def MakeTorus(cls, R=100., r=10.):
+    def MakeTorus(cls, R=100., r=10., name="MakeTorus"):
         assert R > r 
-        obj = CSG("torus", param=[0,0,r,R] )
+        srcmeta = dict(src_type="torus")
+        obj = CSG("torus", param=[0,0,r,R], name=name)
+        obj.meta.update(srcmeta)
         return obj
 
 

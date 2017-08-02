@@ -5,32 +5,33 @@ attempting to get operational inside OptiX
 
 #include "SolveEnum.h"
 
+
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk ) 
+static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned msk ) 
 {
     // Find real solutions of the cubic equation : x^3 + a*x^2 + b*x + c = 0
     //                                                   a2      a1    a0
     // Input: a,b,c
     // Output: x[3] real solutions
     // Returns number of real solutions (1 or 3)
-    const float ott        = 1.f / 3.f; 
-    const float sq3        = sqrt(3.f);
-    const float inv6sq3    = 1.f / (6.f * sq3);
+    const Solve_t ott        = 1.f / 3.f; 
+    const Solve_t sq3        = sqrt(3.f);
+    const Solve_t inv6sq3    = 1.f / (6.f * sq3);
     unsigned int ireal = 1;
 
-    const float p = b - a * a * ott;                                       
-    const float q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
-    const float p3 = p/3.f ; 
-    //const float p33 = p3*p3*p3 ;  
-    const float q2 = q/2.f ; 
+    const Solve_t p = b - a * a * ott;                                       
+    const Solve_t q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
+    const Solve_t p3 = p/3.f ; 
+    //const Solve_t p33 = p3*p3*p3 ;  
+    const Solve_t q2 = q/2.f ; 
 
-    //const float q22 = q2*q2 ; 
-    //const float disc = p33 + q22 ;  
+    //const Solve_t q22 = q2*q2 ; 
+    //const Solve_t disc = p33 + q22 ;  
 
 
-    float delta = 4.f * p * p * p + 27.f * q * q;   
+    Solve_t delta = 4.f * p * p * p + 27.f * q * q;   
 
     //  p, q are coefficients of depressed cubic :  z**3 + p*z + q = 0 
     //  obtained by substitution  x -> z - a/3  
@@ -44,7 +45,7 @@ static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk )
     //        sqrt(delta/(3*3*3*2*2)) = sqrt(delta)/(6*sqrt(3)) = sqrt(delta)*inv6sq3
     //
 
-    float t, u ;
+    Solve_t t, u ;
 
     if (delta >= 0.f) // only one real root,  Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
     {
@@ -61,14 +62,14 @@ static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk )
         }
         else if(msk & SOLVE_UNOBFUSCATED)
         {
-            float sdisc = delta*inv6sq3 ;
+            Solve_t sdisc = delta*inv6sq3 ;
 
             if( msk & SOLVE_ROBUST_VIETA )
             {
                 t = q2 < 0.f ? -q2 + sdisc : q2 + sdisc ;  
             
-                float tcu = copysign(1.f, t) * cbrt(fabs(t)) ; 
-                float ucu = p3 / tcu ;        
+                Solve_t tcu = copysign(1.f, t) * cbrt(fabs(t)) ; 
+                Solve_t ucu = p3 / tcu ;        
                
                 //  Evaluate the more numerically advantageous of the below branches t and u
                 //  and then get the other using Vieta subs:    
@@ -86,8 +87,8 @@ static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk )
                 t = -q2 + sdisc ;
                 u =  q2 + sdisc ;
 
-                float tcu = copysign(1.f, t) * cbrt(fabs(t)) ;
-                float ucu = copysign(1.f, u) * cbrt(fabs(u)) ; 
+                Solve_t tcu = copysign(1.f, t) * cbrt(fabs(t)) ;
+                Solve_t ucu = copysign(1.f, u) * cbrt(fabs(u)) ; 
       
                 x[0]  = tcu - ucu ;  
             }
@@ -154,7 +155,7 @@ static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk )
    
         if( msk & SOLVE_ROBUSTQUAD_1 )
         {
-            float tmp = u > 0.f ? 0.5f*(-u - delta) : 0.5f*(-u + delta) ; 
+            Solve_t tmp = u > 0.f ? 0.5f*(-u - delta) : 0.5f*(-u + delta) ; 
             x[1] = tmp ; 
             x[2] = t/tmp ; 
         }
@@ -177,18 +178,18 @@ static unsigned SolveCubic(float a, float b, float c, float *x, unsigned msk )
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static int qudrtc(float b, float c, float *rts, float disc, float offset )
+static int qudrtc(Solve_t b, Solve_t c, Solve_t *rts, Solve_t disc, Solve_t offset )
 {
 /* 
      solve the quadratic equation :  x**2+b*x+c = 0 
         c=0 ->   x(x+b) = x**2 + b*x = 0  -> x=0, x=-b
 
 */
-    float inv2 = 0.5f ;
+    Solve_t inv2 = 0.5f ;
     int nreal = 0 ;
     if(disc >= 0.f)
     {
-        float sdisc = sqrt(disc) ;
+        Solve_t sdisc = sqrt(disc) ;
         nreal = 2 ;
         rts[0] = b > 0.f ? -inv2*( b + sdisc) : -inv2*( b - sdisc)  ;
         rts[1] = rts[0] == 0.f ? -b : c/rts[0] ;
@@ -203,11 +204,11 @@ static int qudrtc(float b, float c, float *rts, float disc, float offset )
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static float cubic_real_root(float p, float q, float r, unsigned msk)
+static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
 {
-    float xx[3] ; 
+    Solve_t xx[3] ; 
     unsigned ireal = SolveCubic(p, q, r, xx, msk);
-    float h = 0.f ; 
+    Solve_t h = 0.f ; 
 
     if (ireal == 1) 
     {
@@ -234,7 +235,7 @@ static float cubic_real_root(float p, float q, float r, unsigned msk)
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static float cubic_lowest_real_root(float p, float q, float r)
+static Solve_t cubic_root_gem(Solve_t p, Solve_t q, Solve_t r)
 {
 /* 
      find the lowest real root of the cubic - 
@@ -260,23 +261,23 @@ static float cubic_lowest_real_root(float p, float q, float r)
      calls  acos3 
 */
 
-   float rt3 = sqrt(3.f);
-   float doub1 = 1.f ; 
-   float inv2 = 1.f/2.f ; 
-   float inv3 = 1.f/3.f ; 
-   float nought = 0.f ; 
+   Solve_t rt3 = sqrt(3.f);
+   Solve_t doub1 = 1.f ; 
+   Solve_t inv2 = 1.f/2.f ; 
+   Solve_t inv3 = 1.f/3.f ; 
+   Solve_t nought = 0.f ; 
 
    int nrts = 0 ;
-   float po3,po3sq,qo3;
-   float uo3,u2o3,uo3sq4,uo3cu4 ;
-   float v,vsq,wsq ;
-   float m,mcube,n;
-   float muo3,s,scube,t,cosk,sinsqk ;
-   float root;
+   Solve_t po3,po3sq,qo3;
+   Solve_t uo3,u2o3,uo3sq4,uo3cu4 ;
+   Solve_t v,vsq,wsq ;
+   Solve_t m,mcube,n;
+   Solve_t muo3,s,scube,t,cosk,sinsqk ;
+   Solve_t root;
 
-//   float curoot();
-//   float acos3();
-//   float sqrt(),fabs();
+//   Solve_t curoot();
+//   Solve_t acos3();
+//   Solve_t sqrt(),fabs();
 
    m = nought;
 
@@ -436,24 +437,24 @@ static float cubic_lowest_real_root(float p, float q, float r)
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned msk  )
+static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, unsigned msk  )
 {
     // Find real solutions of the quartic equation : x^4 + a*x^3 + b*x^2 + c*x + d = 0
     // Input: a,b,c,d
     // Output: x[4] - real solutions
     // Returns number of real solutions (0 to 3)
 
-    const float a4 = a/4.f ; 
+    const Solve_t a4 = a/4.f ; 
 
     // (1,0,e,f,g) are coeff of depressed quartic
-    const float e     = b - 3.f * a * a / 8.f;
-    const float f     = c + a * a * a / 8.f - 0.5f * a * b;
-    const float g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
+    const Solve_t e     = b - 3.f * a * a / 8.f;
+    const Solve_t f     = c + a * a * a / 8.f - 0.5f * a * b;
+    const Solve_t g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
 
     //  (1,p,q,r) are coeffs of resolvent cubic
-    const float p = 2.f * e ;
-    const float q = e * e - 4.f * g ;
-    const float r = -f * f ;
+    const Solve_t p = 2.f * e ;
+    const Solve_t q = e * e - 4.f * g ;
+    const Solve_t r = -f * f ;
 
 #ifdef SOLVE_QUARTIC_DEBUG
     rtPrintf("SolveQuartic"
@@ -467,9 +468,9 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
             );
 #endif
 
-    float xx[4] = { 1e10f, 1e10f, 1e10f, 1e10f };
-    float delta;
-    float h = 0.f;
+    Solve_t xx[4] = { 1e10f, 1e10f, 1e10f, 1e10f };
+    Solve_t delta;
+    Solve_t h = 0.f;
     unsigned ireal = 0;
 
     // special case when f is zero,
@@ -491,7 +492,7 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
     {
         delta = e * e - 4.f * g;
  
-        float quad[2] ; 
+        Solve_t quad[2] ; 
         int iquad = qudrtc( e,  g , quad, delta, 0.f ) ; 
         for(int i=0 ; i < iquad ; i++)
         {
@@ -543,30 +544,30 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
     // for torus. 
     //
 
-    //h = cubic_lowest_real_root( p, q, r );
-    h = cubic_real_root( p, q, r, msk );  // sqrt of cubic root
+    //h = cubic_root_gem( p, q, r );
+    h = cubic_sqroot( p, q, r, msk );  // sqrt of cubic root
 
     //if (h < 0.001f) return 0;  // hairline crack
 
     if (h <= 0.f) return 0;
 
   
-    float j = 0.5f * (e + h * h - f / h);   
+    Solve_t j = 0.5f * (e + h * h - f / h);   
 
     ireal = 0;
 
-    float dis1 = h * h - 4.f * j;  // discrim of 1st factored quadratic
+    Solve_t dis1 = h * h - 4.f * j;  // discrim of 1st factored quadratic
 
     ireal += qudrtc( h, j , x, dis1, -a4 ) ; 
 
-    float dis2 = h * h - 4.f * g / j;    // discrim of 2nd factored quadratic
+    Solve_t dis2 = h * h - 4.f * g / j;    // discrim of 2nd factored quadratic
 
     ireal += qudrtc( -h, g/j , x+ireal, dis2, -a4 ) ; 
 
 
     for(int i=0 ; i < ireal ; i++)
     {
-        float residual = (((x[i] + a)*x[i] + b)*x[i] + c)*x[i] + d ; 
+        Solve_t residual = (((x[i] + a)*x[i] + b)*x[i] + c)*x[i] + d ; 
 
         if(residual > 100.f )
         {
@@ -621,7 +622,7 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rts, unsigned msk  )
+static int SolveQuarticPureNeumark(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t* rts, unsigned msk  )
 {
    //  Neumark p12
     //
@@ -644,16 +645,16 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
     //   http://www.realtimerendering.com/resources/GraphicsGems/gemsv/ch1-1/quarcube.c
     //
 
-    const float nought = 0.f ; 
-    const float two = 2.f ; 
-    const float four = 4.f ; 
-    const float inv2 = 0.5f ; 
+    const Solve_t nought = 0.f ; 
+    const Solve_t two = 2.f ; 
+    const Solve_t four = 4.f ; 
+    const Solve_t inv2 = 0.5f ; 
 
-    const float asq = a*a ; 
+    const Solve_t asq = a*a ; 
 
-    const float p = -two*b ; 
-    const float q = b*b + a*c - four*d ; 
-    const float r = (c-a*b)*c + asq*d  ;  
+    const Solve_t p = -two*b ; 
+    const Solve_t q = b*b + a*c - four*d ; 
+    const Solve_t r = (c-a*b)*c + asq*d  ;  
 
 #ifdef PURE_NEUMARK_DEBUG
     rtPrintf(" PURE_NEUMARK_DEBUG " 
@@ -666,6 +667,10 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
             );
 #endif
      
+
+
+
+/*
     if (fabs(r) < 1e-3f)     
     {
         // Neumark p18 : constant term of (3.9) is zero -> resolvent cubic has one zero root
@@ -673,21 +678,24 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
         //    
         //     (A x**2 + B x + ( C - A*D/B )) * ( x**2 + D/B )  = 0 
         //     (  x**2 + a x + ( b - c/a ) ) * ( x**2 + c/a ) = 0     
+        //
+        //   
+
  
         int ireal = 0 ; 
  
-        float coa = c/a ; // perfect sq term   
+        Solve_t coa = c/a ; // perfect sq term   
         if(coa >= 0.f )
         {
-            float scoa = sqrt(coa) ; 
+            Solve_t scoa = sqrt(coa) ; 
             rts[ireal++] = scoa ; 
             rts[ireal++] = -scoa ; 
         }
              
-        float rdis = a * a - 4.f*(b-coa) ;
+        Solve_t rdis = a * a - 4.f*(b-coa) ;
         if(rdis > 0.f)
         {
-            float quad[2] ; 
+            Solve_t quad[2] ; 
             qudrtc( a, b-coa, quad, rdis, 0.f ) ;
             rts[ireal++] = quad[0] ; 
             rts[ireal++] = quad[1] ; 
@@ -703,43 +711,40 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
 
         return ireal;
     }
+*/
 
+    Solve_t y = cubic_root_gem( p, q, r );
 
-
-    //float y = cubic_real_root( p, q, r, msk );
-    float y = cubic_lowest_real_root( p, q, r );
-
-    //y = 25.f ; 
+ 
     if (y <= 0.f) return 0 ;
 
-
-    const float bmy = b - y ;
-    const float y4 = y*four ; 
-    const float d4 = d*four ;
-    const float bmysq = bmy*bmy ;
-    const float gdis = asq - y4 ;
-    const float hdis = bmysq - d4 ;
+    const Solve_t bmy = b - y ;
+    const Solve_t y4 = y*four ; 
+    const Solve_t d4 = d*four ;
+    const Solve_t bmysq = bmy*bmy ;
+    const Solve_t gdis = asq - y4 ;
+    const Solve_t hdis = bmysq - d4 ;
     if ( gdis < nought || hdis < nought ) return 0 ;
 
     // see Graphics Gems : Solving Quartics and Cubics for Graphics, Herbison-Evans
 
-    const float g1 = a*inv2 ;
-    const float h1 = bmy*inv2 ;
-    const float gerr = asq + y4 ;        // p9: asq - 4y  ??
-    const float herr = d > nought ? bmysq + d4 : hdis ; 
+    const Solve_t g1 = a*inv2 ;
+    const Solve_t h1 = bmy*inv2 ;
+    const Solve_t gerr = asq + y4 ;        // p9: asq - 4y  ??
+    const Solve_t herr = d > nought ? bmysq + d4 : hdis ; 
 
-    float g2 ; 
-    float h2 ; 
+    Solve_t g2 ; 
+    Solve_t h2 ; 
 
     if ( y < nought || herr*gdis > gerr*hdis )
     {
-        const float gdisrt = sqrt(gdis) ;
+        const Solve_t gdisrt = sqrt(gdis) ;
         g2 = gdisrt*inv2 ;
         h2 = gdisrt != nought ? (a*h1 - c)/gdisrt : nought ;
     }
     else
     {
-        const float hdisrt = sqrt(hdis) ;
+        const Solve_t hdisrt = sqrt(hdis) ;
         h2 = hdisrt*inv2 ;
         g2 = hdisrt != nought ? (a*h1 - c)/hdisrt : nought ;
     }
@@ -773,9 +778,9 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
 
     // note that in the following, the tests ensure non-zero denominators -  
 
-    float h ;
-    float hh ;
-    float hmax ; 
+    Solve_t h ;
+    Solve_t hh ;
+    Solve_t hmax ; 
 
     h = h1 - h2 ;
     hh = h1 + h2 ;
@@ -796,9 +801,9 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
     if ( hh <  -hmax) hh =  -hmax ;
 
 
-    float g ; 
-    float gg ; 
-    float gmax ; 
+    Solve_t g ; 
+    Solve_t gg ; 
+    Solve_t gmax ; 
 
     g = g1 - g2 ;
     gg = g1 + g2 ;
@@ -819,10 +824,10 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
     if (gg <  -gmax) gg =  -gmax ;
 
 
-    float v1[2],v2[2] ;
+    Solve_t v1[2],v2[2] ;
 
-    float disc1 = gg*gg - four*hh ;
-    float disc2 =  g*g - four*h ;
+    Solve_t disc1 = gg*gg - four*hh ;
+    Solve_t disc2 =  g*g - four*h ;
 
     int n1 = qudrtc(gg, hh,v1, disc1, nought ) ;
     int n2 = qudrtc( g,  h,v2, disc2, nought ) ;
@@ -850,9 +855,6 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
              )
              ;  
 #endif
-
-
-
 
     rts[0] = v1[0] ;
     rts[1] = v1[1] ;
