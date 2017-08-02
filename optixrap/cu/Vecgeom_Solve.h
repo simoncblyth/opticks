@@ -3,7 +3,7 @@ Adapting polynomial solvers from ./volumes/kernel/TorusImplementation2.h
 attempting to get operational inside OptiX 
 */
 
-#include "Solve.h"
+#include "SolveEnum.h"
 
 #ifdef __CUDACC__
 __device__ __host__
@@ -266,7 +266,7 @@ static float cubic_lowest_real_root(float p, float q, float r)
    float inv3 = 1.f/3.f ; 
    float nought = 0.f ; 
 
-   int nrts;
+   int nrts = 0 ;
    float po3,po3sq,qo3;
    float uo3,u2o3,uo3sq4,uo3cu4 ;
    float v,vsq,wsq ;
@@ -279,7 +279,6 @@ static float cubic_lowest_real_root(float p, float q, float r)
 //   float sqrt(),fabs();
 
    m = nought;
-   nrts = 0;
 
 /*
    if ( p > doubmax || p <  -doubmax)  // x**3 + p x**2 + q *x + r = 0 ->   x + p = 0   (p-dominant)
@@ -446,9 +445,27 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
 
     const float a4 = a/4.f ; 
 
-    float e     = b - 3.f * a * a / 8.f;
-    float f     = c + a * a * a / 8.f - 0.5f * a * b;
-    float g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
+    // (1,0,e,f,g) are coeff of depressed quartic
+    const float e     = b - 3.f * a * a / 8.f;
+    const float f     = c + a * a * a / 8.f - 0.5f * a * b;
+    const float g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
+
+    //  (1,p,q,r) are coeffs of resolvent cubic
+    const float p = 2.f * e ;
+    const float q = e * e - 4.f * g ;
+    const float r = -f * f ;
+
+#ifdef SOLVE_QUARTIC_DEBUG
+    rtPrintf("SolveQuartic"
+             " abcd (%g %g %g %g) " 
+             " pqr (%g %g %g) " 
+             "\n"
+             ,
+             a,b,c,d
+             ,
+             p,q,r
+            );
+#endif
 
     float xx[4] = { 1e10f, 1e10f, 1e10f, 1e10f };
     float delta;
@@ -462,8 +479,15 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
     // 
 
     //if (fabs(f) < 1e-6f) 
-    if (fabs(f) < 1e-3f)   // loosening reduces artifacts
-    //if (fabs(f) < 1e-1f)     // going extreme gives visible cut-out ring 
+    //if (fabs(f) < 1e-3f)   // loosening reduces artifacts
+    //if (fabs(r) < 1e-3f)   // loosening reduces artifacts
+    //if (fabs(f) < 1e-1f)   // going extreme gives visible cut-out ring 
+
+    // apply directly to r removes artifacts and seems not to cut 
+    // but this only works for small torus with major radii 1.
+    //
+
+    if (fabs(r) < 1e-3f)     
     {
         delta = e * e - 4.f * g;
  
@@ -482,13 +506,11 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
         return ireal;
     }
 
+
     // When g is zero : factor z, leaves depressed cubic 
     //   
     //         z^4 + e z^2 + f z + g = 0 
-    //    z * (z^3 + e z   + f )  = 0       ->  z = 0  as one root
-    //
-    //        (z^3 + e z   + f )  = 0 
-    //   
+    //    z * (z^3 + e z  + f )  = 0       ->  z = 0  root
 
     if (fabs(g) < 1e-6f)   
     {
@@ -501,8 +523,30 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
         return ireal;
     }
 
+    // when r is small < -1e-3
+    // a small cubic root is returned by the below with 
+    // a very large error > 25%  (from poly residual/deriv) 
+    // ... perhaps better to use another real root if there is one
+    // lack of const term means a zero root,
+    // but h=0 causes problem for j below ?
+    // 
+    // Neumark footnote on p14 has alt expression for just this case
+    //     
+    //
+    // changing from an f cut to an r cut above
+    // succeeds to eliminate artifacts without visible cutting
+    // BUT enlarging up from major radius 1. to 300. brings back the artifacts
+    //
+    // Attempting to use scaling producing wierd shape... scaling makes ray_direction
+    // real small to support.
+    // Perhaps move to normalized ray_direction for torus along, dropping non-uni support
+    // for torus. 
+    //
 
-    h = cubic_real_root( 2.f * e, e * e - 4.f * g, -f * f, msk );
+    //h = cubic_lowest_real_root( p, q, r );
+    h = cubic_real_root( p, q, r, msk );  // sqrt of cubic root
+
+    //if (h < 0.001f) return 0;  // hairline crack
 
     if (h <= 0.f) return 0;
 
@@ -511,16 +555,65 @@ static int SolveQuartic(float a, float b, float c, float d, float *x, unsigned m
 
     ireal = 0;
 
-    delta = h * h - 4.f * j;  // discrim of 1st factored quadratic
+    float dis1 = h * h - 4.f * j;  // discrim of 1st factored quadratic
 
-    ireal += qudrtc( h, j , x, delta, -a4 ) ; 
+    ireal += qudrtc( h, j , x, dis1, -a4 ) ; 
 
-    delta = h * h - 4.f * g / j;    // discrim of 2nd factored quadratic
+    float dis2 = h * h - 4.f * g / j;    // discrim of 2nd factored quadratic
 
-    ireal += qudrtc( -h, g/j , x+ireal, delta, -a4 ) ; 
+    ireal += qudrtc( -h, g/j , x+ireal, dis2, -a4 ) ; 
 
+
+    for(int i=0 ; i < ireal ; i++)
+    {
+        float residual = (((x[i] + a)*x[i] + b)*x[i] + c)*x[i] + d ; 
+
+        if(residual > 100.f )
+        {
+           rtPrintf(
+                 " ireal %d i %d root %g residual %g "
+                 " dis12 ( %g %g ) h %g "
+                 " pqr (%g %g %g ) "  
+                 " j g/j (%g %g ) "
+                 " \n"
+                 ,
+                 ireal
+                 ,
+                 i
+                 , 
+                 x[i]
+                 ,
+                 residual
+                 ,
+                 dis1, dis2, h
+                 ,
+                 p,q,r
+                 ,
+                 j, g/j
+                 
+            );
+                 
+        }
+
+    }
     return ireal;
 }
+
+
+/*
+                 " efg (%g %g %g ) "  
+                 e,f,g
+
+
+                 " abcd (%g %g %g %g ) "  
+                 a,b,c,d
+                 ,
+
+
+*/
+
+
+
 
 
 
@@ -557,9 +650,61 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
     const float inv2 = 0.5f ; 
 
     const float asq = a*a ; 
+
     const float p = -two*b ; 
     const float q = b*b + a*c - four*d ; 
     const float r = (c-a*b)*c + asq*d  ;  
+
+#ifdef PURE_NEUMARK_DEBUG
+    rtPrintf(" PURE_NEUMARK_DEBUG " 
+             " abcd (%g %g %g %g) "
+             " pqr ( %g %g %g ) "
+             ,
+             a,b,c,d
+             ,
+             p,q,r
+            );
+#endif
+     
+    if (fabs(r) < 1e-3f)     
+    {
+        // Neumark p18 : constant term of (3.9) is zero -> resolvent cubic has one zero root
+        // giving immediate factorization
+        //    
+        //     (A x**2 + B x + ( C - A*D/B )) * ( x**2 + D/B )  = 0 
+        //     (  x**2 + a x + ( b - c/a ) ) * ( x**2 + c/a ) = 0     
+ 
+        int ireal = 0 ; 
+ 
+        float coa = c/a ; // perfect sq term   
+        if(coa >= 0.f )
+        {
+            float scoa = sqrt(coa) ; 
+            rts[ireal++] = scoa ; 
+            rts[ireal++] = -scoa ; 
+        }
+             
+        float rdis = a * a - 4.f*(b-coa) ;
+        if(rdis > 0.f)
+        {
+            float quad[2] ; 
+            qudrtc( a, b-coa, quad, rdis, 0.f ) ;
+            rts[ireal++] = quad[0] ; 
+            rts[ireal++] = quad[1] ; 
+        } 
+
+#ifdef PURE_NEUMARK_DEBUG
+        rtPrintf(" PURE_NEUMARK_DEBUG small-r " 
+                 " r coa rdis ireal (%g %g %g ; %d ) "
+                 ,
+                 r,coa,rdis,ireal
+                 ); 
+#endif
+
+        return ireal;
+    }
+
+
 
     //float y = cubic_real_root( p, q, r, msk );
     float y = cubic_lowest_real_root( p, q, r );
@@ -601,26 +746,28 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
 
 
 #ifdef PURE_NEUMARK_DEBUG
-    std::cout << " PURE_NEUMARK_DEBUG " 
-              << " a " << a 
-              << " b " << b 
-              << " c " << c 
-              << " d " << d 
-              << " p " << p 
-              << " q " << q 
-              << " r " << r 
-              << " y " << y 
-              << " bmy " << bmy
-              << " gdis " << gdis
-              << " hdis " << hdis
-              << " g1 " << g1
-              << " h1 " << h1
-              << " g2 " << g2
-              << " h2 " << h2
-              << " gerr " << gerr
-              << " herr " << herr
-              << std::endl
-              ;  
+
+    rtPrintf(" PURE_NEUMARK_DEBUG " 
+             " abcd (%g %g %g %g) "
+             " pqr ( %g %g %g ) "
+             " y bmy (%g %g ) "
+             " gdis hdis (%g %g ) "
+             " g1 h1 g2 h2 (%g %g %g %g) "
+             " gerr herr (%g %g ) "
+             ,
+             a,b,c,d
+             ,
+             p,q,r
+             ,
+             y,bmy
+             ,
+             gdis, hdis
+             ,
+             g1, h1, g2, h2
+             ,
+             gerr, herr
+             );
+
 #endif
 
 
@@ -685,21 +832,23 @@ static int SolveQuarticPureNeumark(float a, float b, float c, float d, float* rt
 
 
 #ifdef PURE_NEUMARK_DEBUG
-    std::cout << " PURE_NEUMARK_DEBUG " 
-              << " gg " << gg
-              << " hh " << hh
-              << " disc1 " << disc1
-              << " n1 " << n1
-              << " v1[0] " << v1[0]
-              << " v1[1] " << v1[1]
-              << "  g " << gg
-              << "  h " << hh
-              << " disc2 " << disc2
-              << " n2 " << n1
-              << " v2[0] " << v2[0]
-              << " v2[1] " << v2[1]
-              << std::endl
-              ;  
+
+    rtPrintf(" PURE_NEUMARK_DEBUG " 
+             " gg hh disc1 n1 (%g %g %g ; %d) "
+             " v1[0] v1[1] ( %g %g ) "
+             " g h disc2 n2 (%g %g %g ; %d) "
+             " v2[0] v2[1] ( %g %g ) "
+             "\n"
+             ,
+             gg,hh,disc1,n1 
+             ,
+             v1[0],v1[1]
+             ,
+             g,h,disc2,n2
+             ,
+             v2[0],v2[1]
+             )
+             ;  
 #endif
 
 

@@ -1543,19 +1543,37 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const float K = 2.f*dot(ray_origin, ray_direction) ;
     const float L = dot(ray_origin, ray_origin) + RR - rr ; 
 
+    // A x**4 + B x**3 + C x**2 + D x + E = 0 
+    const float A_ = J*J ; 
+    const float B_ = 2.f*J*K ; 
+    const float C_ = 2.f*J*L + K*K - G ;
+    const float D_ = 2.f*K*L - H ;
+    const float E_ = L*L - I ;
+    
+/*
+    const float AOB = fabs(A_/B_);
+    const float EOD = fabs(E_/D_);    
 
-    float q[5]; 
-    q[4] = J*J ; 
-    q[3] = 2.f*J*K ; 
-    q[2] = 2.f*J*L + K*K - G ;
-    q[1] = 2.f*K*L - H ;
-    q[0] = L*L - I ;
+    const float score_AB = AOB + 1.f/AOB ; 
+    const float score_ED = EOD + 1.f/EOD ; 
+  
+    bool reverse = score_AB > score_ED ; 
+*/
+    bool reverse = false ; 
+
+    const float A = reverse ? E_ : A_ ; 
+    const float B = reverse ? D_ : B_ ; 
+    const float C = reverse ? C_ : C_ ; 
+    const float D = reverse ? B_ : D_ ; 
+    const float E = reverse ? A_ : E_ ; 
+
+  
 
     float qn[4] ; 
-    qn[3] = q[3]/q[4] ;
-    qn[2] = q[2]/q[4] ;
-    qn[1] = q[1]/q[4] ;
-    qn[0] = q[0]/q[4] ;
+    qn[3] = B/A ;
+    qn[2] = C/A ;
+    qn[1] = D/A ;
+    qn[0] = E/A ;
 
 
 #ifdef TORUS_DEBUG 
@@ -1590,7 +1608,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
    unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;  // _0 ok
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_1 ;  // in-out wierdness
  
-    
 
     //int num_roots = SolveQuartic( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
     int num_roots = SolveQuarticPureNeumark( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
@@ -1602,7 +1619,8 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     {
         for(int i=0 ; i < num_roots ; i++)
         {
-            if(roots[i] > t_min ) setByIndex(cand, num_cand++, roots[i]) ; 
+            float root = reverse ? 1.f/roots[i] : roots[i] ;  
+            if(root > t_min ) setByIndex(cand, num_cand++, root ) ; 
         }   
     }
     
@@ -1625,14 +1643,11 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     //
     // So identifying cause of exterior fakes (eg some coeff going to zero)
     // may potentially also fix interior missings.
-         
-
-
 
 #ifndef TORUS_DEBUG 
     bool valid_isect = valid_qsd && t_cand > t_min ;
 #else
-    const float residual = (((q[4]*t_cand + q[3])*t_cand + q[2])*t_cand + q[1])*t_cand + q[0] ; 
+    //const float residual = (((A*t_cand + B)*t_cand + C)*t_cand + D)*t_cand + E ; 
 
     //bool valid_isect = t_cand > t_min && !double_root ;   // double roots not source of artifacts
     //bool valid_isect = t_cand > t_min  ;
@@ -1643,48 +1658,52 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     //bool valid_isect = t_cand > t_min && fabsf(residual) < 0.1f  ;  // hailine ring crack
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.0001f ;  // > 0.0001f artifact ring visible and chops thin ring band out of torus
-    bool valid_isect = t_cand > t_min ;
+    //bool valid_isect = t_cand > t_min && fabsf(residual) > 0.1f ;
     //bool valid_isect = valid_qsd && t_cand > t_min ;
+    bool valid_isect = t_cand > t_min ;
 
     if(valid_isect) 
     {
-
-        const float A = q[4] ; 
-        const float B = q[3] ; 
-        const float C = q[2] ; 
-        const float D = q[1] ; 
-        const float E = q[0] ; 
-
         // Neumark p18 : Resolvent cubic has one zero root 
         //  Hurwitz-Roth discriminant for oscillatory stability...
         //  leads to two equal and opposite real roots when zero
 
-        const float HRD = B*C*D - B*B*E - A*D*D ;   // huh expecte to be small at problem points, but not so
+
+/*
+
+        const float NR2 = -2.f*C ; 
+        const float NR1 = C*C + B*D - 4.f*A*E ; 
+        const float NR0 = B*C*D - B*B*E - A*D*D ;   // huh expecte to be small at problem points, but not so
     
         // Hmm perhaps pick resolvent cubic that avoid numerical problems ?
         
         rtPrintf(
                  "torus"
                  " num_roots %d "
-                 " num_cand %d "
                  " t_cand %10.3g "
-                 " roots ( %10.3g, %10.3g, %10.3g, %10.3g)" 
+                 " ABCDE ( %10.3g %10.3g %10.3g %10.3g %10.3g ) "
+                 " NR ( %10.3g %10.3g %10.3g ) "  
                  " residual %10.4f "
                  " qsd %10.4f "
                  "\n"
                  ,
                  num_roots
                  ,
-                 num_cand
-                 ,
                  t_cand
                  ,
-                 roots[0], roots[1], roots[2], roots[3]
+                 A,B,C,D,E
+                 , 
+                 NR2,NR1,NR0
                  ,
                  residual
                  ,
                  qsd
                );
+
+
+*/
+
+
     }
 
 /*    
@@ -1707,6 +1726,10 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
                  neumark[2],neumark[1],neumark[0]
 
 
+                 " roots ( %10.3g, %10.3g, %10.3g, %10.3g)" 
+                 roots[0], roots[1], roots[2], roots[3]
+                 ,
+ 
 
 
 
@@ -1769,7 +1792,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     if(valid_isect)
     {        
         const float alpha = 1.f - (R/sqrt(p.x*p.x+p.y*p.y)) ;   // see cosinekitty 
-        // how to normalize by construction ?
         const float3 n = normalize(make_float3(alpha*p.x, alpha*p.y, p.z ));
         isect.x = n.x ;  
         isect.y = n.y ;  
@@ -1779,12 +1801,4 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     return valid_isect ; 
 }
 
-
-/*
-
-   glm::vec2 q( glm::length(glm::vec2(p)) - rmajor() , p.z );
-    float sd = glm::length(q) - rminor() ;
-
-
-*/
 
