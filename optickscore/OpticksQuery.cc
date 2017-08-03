@@ -16,6 +16,7 @@ const char* OpticksQuery::INDEX_ = "index" ;
 const char* OpticksQuery::MERGE_ = "merge" ; 
 const char* OpticksQuery::DEPTH_ = "depth" ; 
 const char* OpticksQuery::RANGE_ = "range" ; 
+const char* OpticksQuery::ALL_   = "all" ; 
 
 
 OpticksQuery::OpticksQuery(const char* query) 
@@ -87,6 +88,7 @@ std::string OpticksQuery::description() const
       << " query_name " <<  (m_query_name ? m_query_name : "NULL" )
       << " query_index " <<  m_query_index 
       << " query_depth " <<  m_query_depth
+      << " no_selection " <<  m_no_selection
       ;
 
    if(m_query_type == RANGE)
@@ -106,22 +108,23 @@ void OpticksQuery::parseQuery(const char* query)
    // "name:helo,index:yo,range:10"
    // split at "," and then extract values beyond the "token:" 
 
-   std::vector<std::string> elem ; 
-   BStr::split(elem, query, ',');
-
-   for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
-
-   if(elem.size() == 0)
+   if(strcmp(query,ALL_)==0) 
    {
-      m_no_selection = true ; 
+       m_no_selection = true ; 
    }
+   else
+   {
+       std::vector<std::string> elem ; 
+       BStr::split(elem, query, ',');
 
-   LOG(trace) << "OpticksQuery::parseQuery" 
-             << " query:[" << query << "]"
-             << " elements:" << elem.size()  
-             << " queryType:" << getQueryTypeString()
-             ;
+       for(unsigned int i=0 ; i < elem.size() ; i++ ) parseQueryElement( elem[i].c_str() );
 
+       LOG(trace) << "OpticksQuery::parseQuery" 
+                 << " query:[" << query << "]"
+                 << " elements:" << elem.size()  
+                 << " queryType:" << getQueryTypeString()
+                 ;
+   }
 }
 
 

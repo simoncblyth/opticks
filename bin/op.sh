@@ -371,7 +371,7 @@ op-geometry-setup-juno()
        export OPTICKS_CTRL=""
    elif [ "$geo" == "J1707" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1707
-       export OPTICKS_QUERY="range:1:50000" 
+       export OPTICKS_QUERY="all" 
        export OPTICKS_CTRL="volnames"
    fi
 }

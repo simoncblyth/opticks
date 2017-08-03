@@ -124,6 +124,19 @@ void test_range()
 }
 
 
+void test_all()
+{
+     OpticksQuery q("all");
+     q.dump(); 
+
+     Tree t(4) ; 
+     LOG(info) << "initial " << t.desc() ; 
+
+     t.select(&q) ; 
+     LOG(info) << "after select " << t.desc() ; 
+}
+
+
 void test_index()
 {
      OpticksQuery q("index:5,depth:10");
@@ -138,16 +151,14 @@ void test_index()
 
 
 
-
 int main(int argc, char** argv)
 {
      PLOG_(argc, argv);
      OKCORE_LOG__ ; 
 
-
      //test_range();
-     test_index();
-
+     test_all();
+     //test_index();
 
      return 0 ; 
 }
