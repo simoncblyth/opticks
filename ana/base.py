@@ -4,7 +4,7 @@ Mostly Non-numpy basics, just numpy configuration
 """
 
 import numpy as np
-import os, logging, json, ctypes, subprocess, argparse, sys, datetime
+import os, logging, json, ctypes, subprocess, argparse, sys, datetime, re
 from OpticksQuery import OpticksQuery 
 from enum import Enum 
 
@@ -40,6 +40,42 @@ def stamp_(path, fmt="%Y%m%d-%H%M"):
    else:
        return datetime.datetime.fromtimestamp(os.stat(path).st_ctime).strftime(fmt)
    pass
+
+
+def is_integer_string(s):
+    try:
+        int(s)
+        iis = True
+    except ValueError:
+        iis = False
+    pass
+    return iis
+
+def list_integer_subdirs(base):
+    """
+    return list of subdirs beneath base with names that are lexically integers, sorted as integers  
+    """
+    return list(sorted(map(int,filter(is_integer_string,os.listdir(os.path.expandvars(base))))))
+
+def dump_extras_meta(base, name="meta.json", fmt=" %(idx)5s : %(height)6s : %(lvname)-40s : %(soname)-40s : %(err)s "):
+    """
+    Tabulate content of meta.json files from subdirs with integer names
+    """
+    idxs = list_integer_subdirs(base)
+    assert idxs == range(len(idxs))
+
+    log.info("dump_extras_meta base:%s xbase:%s " % (base,expand_(base)))
+
+    keys = re.compile("\((\w*)\)").findall(fmt)
+    print fmt % dict(zip(keys,keys))
+
+    for idx in idxs:
+        meta = json_load_(os.path.join(base,str(idx),name))
+        meta['idx'] = idx
+        meta['err'] = meta.get('err',"-")
+        print fmt % meta
+    pass
+
 
 
 
@@ -181,9 +217,13 @@ class OpticksEnv(object):
         self.ext = {}
         self.env = {}
 
-        if not os.path.isdir(IDPATH): 
-            print "ana/base.py:OpticksEnv Invalid/missing IDPATH envvar [%s] " % IDPATH
+        if IDPATH == "$IDPATH":
+            print "ana/base.py:OpticksEnv missing IDPATH envvar [%s] " % IDPATH
             sys.exit(1)  
+
+        if not os.path.isdir(IDPATH): 
+            print "ana/base.py:OpticksEnv warning IDPATH directory does not exist [%s] " % IDPATH
+        pass  
  
         self.setdefault("OPTICKS_IDFOLD",          _opticks_idfold(IDPATH))
         self.setdefault("OPTICKS_IDFILENAME",      _opticks_idfilename(IDPATH))
@@ -393,6 +433,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--gltfsave", default=gltfsave, action="store_true", help="Save GDML parsed scene as glTF, see analytic/sc.py. %(default)s ")
     parser.add_argument(     "--lvnlist", default=lvnlist, help="Path to file containing list of lv names. %(default)s ")
     parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
+    parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 

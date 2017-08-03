@@ -76,6 +76,7 @@ op-binary-name()
         --opticks) echo OpticksTest ;;
           --pybnd) echo GBndLibTest.py ;;
          --pygdml) echo gdml2gltf.py ;;
+         --extras) echo extras.py ;;
              --mm) echo GMergedMeshTest ;;
         --testbox) echo GTestBoxTest ;;
          --geolib) echo GGeoLibTest ;;
@@ -307,7 +308,6 @@ op-geometry-setup()
                              JUNO|JPMT|JTST|J1707) op-geometry-setup-juno $geo  ;;
                               DPIB|DPMT|LXE) op-geometry-setup-misc $geo  ;;
     esac
-    #op-geometry-setup-analytic
 }
 op-geometry-query-dyb()
 {
@@ -535,7 +535,7 @@ op-binary-setup()
 
        case $cfm in 
          --surf|--scint|--oscint|--pmt|--j1707) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
-                                     *) export OPTICKS_ARGS=$cmdline ;;
+                                             *) export OPTICKS_ARGS=$cmdline ;;
        esac
     fi 
 
@@ -566,11 +566,23 @@ op-cmdline-parse()
 
 op-export()
 {
-   echo -n
+   local msg="=== $FUNCNAME :"
 
    # TODO: avoid need for any envvars (other than PATH) 
    #opticksdata-
    #opticksdata-export
+
+   ## but python scrips need IDPATH 
+
+   echo $msg OPTICKS_BINARY ${OPTICKS_BINARY}
+
+
+   if [ "${OPTICKS_BINARY: -3}" == ".py" ]; then
+       IDPATH=$(OpticksIDPATH ${OPTICKS_ARGS}  2>&1 > /dev/null)
+       export IDPATH
+       echo $msg IDPATH $IDPATH
+   fi 
+
 }
 
 
@@ -630,6 +642,8 @@ op-cmdline-parse
 runline=$(op-runline)
 
 
+
+
 op-export
 
 if [ "$sauce" == "1" ]; then
@@ -658,9 +672,15 @@ else
    ## but python analysis scripts needing access to geocache need this
 
    if [ -n "$OPTICKS_QUIET" ]; then 
-       >&2 ls -alst ${OPTICKS_BINARY}
+
+       if [ ${OPTICKS_BINARY/\/} == ${OPTICKS_BINARY} ]; then 
+           >&2 ls -alst $(which ${OPTICKS_BINARY})
+       else 
+           >&2 ls -alst ${OPTICKS_BINARY}
+       fi  
+
       # env | >&2 grep OPTICKS_ | sort  
-       >&2 echo proceeding : $runline
+       >&2 echo proceeding.. : $runline
    fi 
 
 
