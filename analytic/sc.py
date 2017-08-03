@@ -9,6 +9,7 @@ from opticks.ana.base import opticks_main, expand_, json_load_, json_save_, json
 from opticks.analytic.treebase import Tree
 from opticks.analytic.treebuilder import TreeBuilder
 from opticks.analytic.gdml import GDML
+from opticks.analytic.csg import CSG
 from opticks.analytic.glm import mdot_, mdotr_,  to_pyline
 from opticks.analytic.polyconfig import PolyConfig
 
@@ -138,7 +139,9 @@ class Sc(object):
         self.extras = {}
         self.maxcsgheight = maxcsgheight
         self.translate_node_count = 0 
+        self.add_node_count = 0 
         self.selected = []
+
 
     def _get_gltf(self):
         root = 0 
@@ -239,8 +242,6 @@ class Sc(object):
         ##      Presumably done here as it is then easy to access the lv ?
         ##
 
-        
-
         if getattr(nd.mesh,'csg',None) is None:
             #print msg 
             csg = self.translate_lv( node.lv, self.maxcsgheight )
@@ -284,6 +285,12 @@ class Sc(object):
         log.debug("translate_lv START %-15s %s  " % (solid.__class__.__name__, lv.name ))
 
         rawcsg = solid.as_ncsg()
+
+        if rawcsg is None:
+            err = "translate_lv solid.as_ncsg failed for solid %r lv %r " % ( solid, lv )
+            log.fatal(err)
+            rawcsg = CSG.MakeUndefined(err=err,lv=lv)     
+        pass 
         rawcsg.analyse()
 
         log.debug("translate_lv DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
@@ -301,9 +308,13 @@ class Sc(object):
 
     @classmethod
     def optimize_csg(self, rawcsg, maxcsgheight, maxcsgheight2):
-
+        """
+        :param rawcsg:
+        :param maxcsgheight:  tree balancing is for height > maxcsgheight
+        :param maxcsgheight2: error is raised if balanced tree height reamains > maxcsgheight2 
+        :return csg:  balanced csg tree
+        """
         overheight_ = lambda csg,maxheight:csg.height > maxheight and maxheight != 0
-
 
         is_balance_disabled = rawcsg.is_balance_disabled() 
 
@@ -327,10 +338,9 @@ class Sc(object):
 
         log.debug("optimize_csg compressed tree from height %3d to %3d " % (rawcsg.height, csg.height ))
 
-        assert not overheight_(csg, maxcsgheight2)
-
+        #assert not overheight_(csg, maxcsgheight2)
         if overheight_(csg, maxcsgheight2):
-            csg.meta.update(skip=1) 
+            csg.meta.update(err="optimize_csg.overheight csg.height %s maxcsgheight:%s maxcsgheight2:%s " % (csg.height,maxcsgheight,maxcsgheight2) ) 
         pass
 
         return csg 
@@ -338,7 +348,12 @@ class Sc(object):
 
 
     def add_tree_gdml(self, target, maxdepth=0):
+        self.add_node_count = 0 
         def build_r(node, depth=0):
+            self.add_node_count += 1 
+            if self.add_node_count % 1000 == 0:
+                log.info("add_tree_gdml count %s depth %s maxdepth %s " % (self.add_node_count,depth,maxdepth ))
+            pass 
             if maxdepth == 0 or depth < maxdepth:
                 nd = self.add_node_gdml(node, depth)
                 assert nd is not None
@@ -357,11 +372,13 @@ class Sc(object):
         log.info("add_tree_gdml START maxdepth:%d maxcsgheight:%d nodesCount:%5d" % (maxdepth, self.maxcsgheight, len(self.nodes)))
         #log.info("add_tree_gdml targetNode: %r " % (target))
         tg = build_r(target)
-        log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d  tgNd:%r " % (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_node_count, tg))
+        log.info("add_tree_gdml DONE maxdepth:%d maxcsgheight:%d nodesCount:%5d tlvCount:%d addNodeCount:%d tgNd:%r " % 
+             (maxdepth, self.maxcsgheight, len(self.nodes),self.translate_node_count, self.add_node_count, tg))
         return tg
 
     def save_extras(self, gdir):
         gdir = expand_(gdir)
+        self.dump_extras()
         extras_dir = os.path.join( gdir, "extras" )
         log.debug("save_extras %s " % extras_dir )
         if not os.path.exists(extras_dir):
@@ -381,13 +398,16 @@ class Sc(object):
 
         log.info("save_extras %s  : saved %d " % (extras_dir, count) )
 
-
         csgtxt_path = os.path.join(extras_dir, "csg.txt")
         log.info("write %d lines to %s " % (len(btxt), csgtxt_path))
         file(csgtxt_path,"w").write("\n".join(btxt))
 
-
- 
+    def dump_extras(self):
+        log.info("dump_extras %d " %  len(self.meshes)) 
+        for lvIdx, mesh in self.meshes.items():
+            soIdx = mesh.soIdx
+            print "lv %5d so %5d " % (lvIdx, soIdx)    
+        pass
 
     def save(self, path, load_check=True, pretty_also=True):
         log.info("saving to %s " % path )
@@ -407,6 +427,8 @@ class Sc(object):
             gltf2 = json_load_(path)
         pass
         return gltf
+
+
 
 
 
@@ -469,14 +491,14 @@ def gdml2gltf_main( args ):
     sc.extras["verbosity"] = 1
     sc.extras["targetnode"] = 0   # args.query.query_range[0]   # hmm get rid of this ?
 
-    log.info("start Sc")
+    log.info("start Sc.add_tree_gdml")
 
     tg = sc.add_tree_gdml( tree.root, maxdepth=0)
 
+    log.info("start Sc.add_tree_gdml DONE")
 
     #path = args.gltfpath
     gltf = sc.save(gltfpath)
-
 
     sc.gdml = gdml 
     sc.tree = tree

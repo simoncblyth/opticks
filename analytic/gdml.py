@@ -185,6 +185,7 @@ class Boolean(Geometry):
         pass
         left = self.first.as_ncsg()
         right = self.second.as_ncsg()
+
         assert left, " left fail as_ncsg for first : %r self: %r " % (self.first, self)
         assert right, "right fail as_ncsg for second : %r self: %r " % (self.second, self)
 
@@ -697,7 +698,23 @@ class PolyCone(Primitive):
 
 
     def prims(self):
+        """
+        Auto correct simple case of wrong z-order::
+
+               421     <polycone aunit="deg" deltaphi="360" lunit="mm" name="PMT_3inch_pmt_solid_cyl0x1c9da50" startphi="0">
+               422       <zplane rmax="30.001" rmin="0" z="-15.8745078663875"/>
+               423       <zplane rmax="30.001" rmin="0" z="-75.8755078663876"/>
+               424     </polycone>
+
+        """
         zp = self.zplane 
+        zz = map(lambda _:_.z, zp)
+ 
+        if len(zp) == 2 and zz[0] > zz[1]:
+           log.warning("Polycone swap misordered pair of zplanes for %s " % self.name)
+           zp = list(reversed(zp))
+        pass   
+
         prims = []
         for i in range(1,len(zp)):
             zp1 = zp[i-1]
@@ -711,7 +728,10 @@ class PolyCone(Primitive):
             if z2 == z1:
                 log.debug("skipping z2 == z1 zp" )
             else:
-                assert z2 > z1, (z2,z1)
+                #assert z2 > z1, (z2,z1)
+                if not z2 > z1:
+                    raise ValueError("Polycone bad z-order expect z2>z1 : but z1 %s z2 %s " % (z1,z2 ))
+                pass 
                 name = self.name + "_zp_%d" % i 
                 pr = Tube.make_cylinder( r1, z1, z2, name ) if r1 == r2 else Cone.make_cone( r1, z1, r2, z2, name )
                 prims.append(pr)
@@ -740,8 +760,12 @@ class PolyCone(Primitive):
 
     def as_ncsg(self):
         assert self.aunit == "deg" and self.lunit == "mm" and self.deltaphi == 360. and self.startphi == 0. 
-
-        prims = self.prims()
+        try:
+            prims = self.prims()
+        except ValueError as e:
+            log.fatal("Polycone.as_ncsg failed ValueError : %r " % e )  
+            return None 
+        pass
         cn = TreeBuilder.uniontree(prims, name=self.name + "_uniontree")
         inner = self.inner()
         #return CSG("difference", left=cn, right=inner ) if inner is not None else cn

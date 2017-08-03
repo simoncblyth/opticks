@@ -1601,6 +1601,34 @@ EOP
 }
 
 
+
+
+tboolean-undefined(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-undefined-(){  $FUNCNAME- | python $* ; } 
+tboolean-undefined--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,4], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG.MakeUndefined(name="$FUNCNAME", src_type="hello")
+
+CSG.Serialize([container, a], args.csgpath )
+
+
+EOP
+}
+
+
+
+
+
 tboolean-torus(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-torus-(){  $FUNCNAME- | python $* ; } 
 tboolean-torus--(){ cat << EOP 
@@ -1621,9 +1649,6 @@ a = CSG.MakeTorus(R=100, r=50)
 #a = CSG.MakeTorus(R=1, r=0.5)
 #a.scale = [100,100,100]
 
-
-
-
 CSG.Serialize([container, a], args.csgpath )
 
 """
@@ -1636,7 +1661,6 @@ CSG.Serialize([container, a], args.csgpath )
 * orthographic projection line artifacts
 
 """
-
 
 EOP
 }

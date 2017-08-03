@@ -218,7 +218,7 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
             std::cout << std::endl; 
         }
     }
-    assert(match);
+    //assert(match);
     return isirit ; 
 }
 

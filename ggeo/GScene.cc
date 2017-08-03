@@ -817,15 +817,27 @@ std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const
     guint4 tri = m_tri_bndlib->getBnd(tri_boundary);
     guint4 ana = m_tri_bndlib->parse( n->boundary.c_str());  // NO SURFACES
 
-    assert( ana.x == tri.x && "imat should match");  
-    assert( ana.w == tri.w && "omat should match");
+ 
+    //assert( ana.x == tri.x && "imat should match");  
+    //assert( ana.w == tri.w && "omat should match");
 
     std::string ana_spec = m_tri_bndlib->shortname(ana);
     std::string tri_spec = m_tri_bndlib->shortname(tri);
-
-   
     std::string spec = tri_spec ; 
 
+
+
+    if( !(ana.x == tri.x && ana.w == tri.w) )
+    {
+         LOG(warning) << "GScene::lookupBoundarySpec ana/tri imat/omat MISMATCH "
+                      << " tri " << tri.description()
+                      << " ana " << ana.description()
+                      << " tri_spec " << tri_spec
+                      << " ana_spec " << ana_spec
+                      << " spec " << spec
+                      ;
+    } 
+   
 /*
     if(n->selected)
     {

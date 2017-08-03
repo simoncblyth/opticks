@@ -31,7 +31,8 @@ class TreeBuilder(object):
             bileafs = tree.subtrees_(subdepth=1)
             balanced = cls.bileaftree(op, bileafs, tree.name+"_bileaf_balanced" )
         else:
-            log.warning("balancing trees of this structure not implemented")
+            log.warning("balancing trees of this structure not implemented, tree %r " % tree)
+            tree.meta.update(err="TreeBuilder.balance fail")
             balanced = tree
         pass
         return balanced

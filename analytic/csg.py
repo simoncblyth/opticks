@@ -360,12 +360,15 @@ class CSG(CSG_):
                     alabel = node.left.alabel + node.right.alabel
                 pass
             pass
+
+            reserved_words = ["def","in","if","else"]
+            if alabel in reserved_words:
+                alabel = alabel + "_"
+            pass 
             node.alabel = alabel
             #node.textra = " %s" % alabel
         pass
         alabels_r(self) 
-
-
 
 
     def analyse(self):
@@ -506,6 +509,12 @@ class CSG(CSG_):
         srcmeta = dict(src_type="torus")
         obj = CSG("torus", param=[0,0,r,R], name=name)
         obj.meta.update(srcmeta)
+        return obj
+
+    @classmethod
+    def MakeUndefined(cls, name="MakeUndefined", **kwa):
+        obj = CSG("undefined", name=name)
+        obj.meta.update(kwa)
         return obj
 
 
@@ -976,7 +985,7 @@ class CSG(CSG_):
     @classmethod
     def num_param_quads(cls, typ):
         npq = None
-        if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT]:
+        if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT, cls.UNDEFINED]:
             npq = 0
         elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.TORUS]:
             npq = 1
