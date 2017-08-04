@@ -1,5 +1,5 @@
-j1707.all insufficient GPU memory 
-====================================
+j1707.all insufficient GPU memory when using triangulate
+=============================================================
 
 NEXT
 -----
@@ -11,6 +11,14 @@ NEXT
 * rearrange geocache to allow changing geoselection without geocache recreation ?
   ie tie geocache lifecycle to the GDML/DAE contaning all the cached 
   ingredients that are then merged/instanced together at runtime
+
+
+
+op --j1707 --gltf 3  : works 
+----------------------------------
+
+* this is using fully analytic raytrace, together with fairly low poly G4 polygonization (--gltf 3)
+  which is less memory expensive than triangles 
 
 
 

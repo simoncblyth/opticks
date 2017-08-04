@@ -64,7 +64,7 @@ Contrast with sphere intersecton
 
 """
 
-from sympy import symbols, Pow, sqrt
+from sympy import symbols, Pow, sqrt, Matrix, sin, cos
 from coeff import get_coeff, subs_coeff, print_coeff, expr_coeff
 
 isq3 = 1/sqrt(3) 
@@ -96,8 +96,7 @@ def torus_0():
 
 
 
-#def torus_1():
-if 1:
+def torus_1():
     """
     http://www.cosinekitty.com/raytrace/chapter13_torus.html
 
@@ -184,12 +183,77 @@ if 1:
 
 
 
-    #return ex, cl
+    return ex, cl
 
 
 if __name__ == '__main__':
     pass
     #ex, c = torus_0()
     #ex, c = torus_1()
+
+    """
+    Torus rotational symmetry -> its a sphere swept around the axis.
+    Does that mean can do a bounding intersection test of a rotated 
+    ray and a sphere ? 
+
+    Can consider intersection of 
+    a ray rotated around torus axis (0,0,1) to put it into y=0 plane.
+
+    * oz -> oz_rot   (stays same)   
+    * ox^2 + oy^2 -> ox_rot^2 + oy_rot^2   (radial invariant + by design oy_rot = 0)            
+    * ox_rot = sqrt(ox^2+oy^2)  ...  ie rotated x is at the xy radius
+
+    Hmm can easily rotate to put ray origin into the y=0 plane, but  
+    ray direction will not generally be in that plane ? 
+    It will only be in that plane if the ray happens to intersect with the 
+    torus axis.   
+
+    Normal to the test y=0 plane is [1,0,0], 
+
+    It is the ray direction that needs to be rotated to 
+    be within the test plane 
+
+    * [sx,sy,sz].[1,0,0] = cos(phi)
+
+
+    * https://en.wikipedia.org/wiki/Rodrigues%27_rotation_formula
+
+    * vrot = v*cos(phi) + (k x v)*sin(phi) + k(k.v)(1-cos(phi))
+
+    *  
+
+    * u X v = ( u2 v3 - u3 v2, u3 v1 - u1 v3 , u1 v2 - u2 v1 )
+    
+    * u = k = [0,0,1]    u1=u2=0, u3=1   
+    * u X k = ( -v2, v1, 0 )
+
+    * Rotate [sx,sy,sz] and [ox,oy,oz] by phi about axis [0,0,1]
+    
+    * srot = [sx cos(phi) - sy sin(phi), sy cos(phi) + sx sin(phi) , sz ] 
+    * orot = [ox cos(phi) - oy sin(phi), oy cos(phi) + ox sin(phi) , oz ] 
+
+    
+    * srot.[1,0,0] = 1  ->   sx/sy = tan(phi)    phi=atan2(sx,sy)  
+
+
+
+    """ 
+    t,phi = symbols("t,phi")
+
+
+    zrot = Matrix([[cos(phi),-sin(phi),0,0],[sin(phi),cos(phi),0,0],[0,0,1,0],[0,0,0,1]])
+    sx,sy,sz = symbols("sx,sy,sz")
+    ox,oy,oz = symbols("ox,oy,oz")
+    o = Matrix([ox,oy,oz,1])
+    s = Matrix([sx,sy,sz,0])
+
+    
+    
+    srot = s*cos(phi) +  
+
+    r = o+t*s
+
+
+
 
 

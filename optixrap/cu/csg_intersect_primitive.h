@@ -1517,24 +1517,46 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const float& sx = ray_direction.x ;
     const float& sy = ray_direction.y ;
 
-    // try using ray-circle discriminant to skip SolveQuartic
-    // hmm for this to work must rotate line about z-axis to bring into
-    // the testing plane ... that means translate the ray to origin rotating 
-    // then untranslating...
-    // ... or  
-    // alternatively consider cone sphere intersect ?
-    /*
-    const float& oz = ray_origin.z ; 
-    const float& sz = ray_direction.z ;
+   
+    /* 
+    {
+        // Nope not working : leaves only whacky teardrop shape part of torus 
+        //
+        // Exploit the rotational symmetry of the torus to check first 
+        // a rotated ray against the sphere of radius r at [R,0,0] 
+        // where the ray rotation is so as to place its  
+        // direction vector parallel to a plane with normal [1,0,0] )  
+        //
+        //  (o + t s).(o + t s ) - rr = 0 
+        //   o.o - rr + 2 t s.o + t^2 s.s = 0 
+        //
 
-    const float rc2 = sx*sx + sz*sz ; 
-    const float rc1_l = -2.f*(R*sx - ox*sx - oz*sz) ;
-    const float rc1_r = -2.f*(-R*sx - ox*sx - oz*sz) ;
-    const float rc0 = RR - 2.f*R*ox - rr + ox*ox + oz*oz ;
-    const float rc_discr_l = rc1_l*rc1_l - 4.f*rc2*rc0 ; 
-    const float rc_discr_r = rc1_r*rc1_r - 4.f*rc2*rc0 ; 
-    if(rc_discr_l < 0.f && rc_discr_r < 0.f) return false ; 
-    */
+        const float& oz = ray_origin.z ; 
+        const float& sz = ray_direction.z ;
+        const float zphi = atan2(sx, sy) ;
+        const float3 srz = make_float3( sx*cos(zphi) - sy*sin(zphi), sy*cos(zphi) + sx*sin(zphi), sz) ; 
+        const float3 orz = make_float3( ox*cos(zphi) - oy*sin(zphi), oy*cos(zphi) + ox*sin(zphi), oz) ; 
+        const float3 orz_lhs = make_float3( orz.x + R, orz.y, orz.z );
+        const float3 orz_rhs = make_float3( orz.x - R, orz.y, orz.z ); 
+
+        // consider intersection with sphere of radius r centered at [R,0,0]
+
+        rtPrintf(" zphi %g srz (%g %g %g) orz (%g %g %g) \n",
+                  zphi, srz.x, srz.y, srz.x, orz.x, orz.y,orz.z ); 
+
+        float b_lhs = dot(orz_lhs, srz);
+        float c_lhs = dot(orz_lhs, orz_lhs) - rr;
+        float b_rhs = dot(orz_rhs, srz);
+        float c_rhs = dot(orz_rhs, orz_rhs) - rr;
+        float d = dot(srz, srz);
+
+        float disc_lhs = b_lhs*b_lhs-d*c_lhs ;
+        float disc_rhs = b_rhs*b_rhs-d*c_rhs ;
+
+        if(disc_lhs < 0.f && disc_rhs < 0.f) return false ; 
+    }
+    */   
+
 
 
     // following cosinekitty nomenclature, sympy verified in torus.py

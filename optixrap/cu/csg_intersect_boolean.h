@@ -1112,6 +1112,26 @@ void intersect_csg( const Prim& prim, const uint4& identity )
 
 
 
+// same interface as csg_intersect_part : intending to blur line
+// between primitives and composites to for example facilitate use
+// of a composite solid cy-cy bounding check for the torus
+//
+
+/*
+static __device__
+void csg_intersect_bileaf(const Prim& prim, const unsigned partIdx, const float& tt_min, float4& tt  )
+{
+    unsigned partOffset = prim.partOffset() ; 
+    unsigned nodeIdx = 1 ;    
+    unsigned leftIdx = nodeIdx*2 ;      
+    unsigned rightIdx = nodeIdx*2 + 1 ;  
+
+    Part pt = partBuffer[partOffset+nodeIdx-1] ;
+    OpticksCSG_t operation = (OpticksCSG_t)pt.typecode() ;
+
+}
+
+*/
 
 
 
