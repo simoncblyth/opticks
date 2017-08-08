@@ -580,6 +580,64 @@ bool csg_intersect_sphere(const quad& q0, const float& t_min, float4& isect, con
 
 
 
+static __device__
+void csg_intersect_sphere_test(unsigned long long photon_id)
+{   
+    const float R = 100.f ; 
+
+    quad q0 ; 
+    q0.f = make_float4(0.f, 0.f, 0.f, R ) ; 
+  
+    const float s = 0.5f ; 
+
+    const float3 ray_origin = make_float3( -2.f*R, 0.f, 0.f );
+    const float3 ray_direction = make_float3( s, 0.f, 0.f );
+
+    const float3& o = ray_origin ;
+    const float3& d = ray_direction ;
+
+    rtPrintf("//csg_intersect_sphere_test  o (%g %g %g) d (%g %g %g) \n", o.x, o.y, o.z, d.x, d.y, d.z ); 
+
+    float t_min = 0.f ; 
+    float4 isect = make_float4(0.f,0.f,0.f,0.f);
+
+    bool has_isect = csg_intersect_sphere(q0, t_min , isect, o, d );
+
+    if(!has_isect) 
+    {
+        rtPrintf("ERROR no isect \n");
+        return ; 
+    } 
+
+    float t = isect.w ; 
+
+    float3 x = make_float3( -R, 0.f, 0.f );
+    float3 p = ray_origin + t*ray_direction ;
+
+    float dist = x.x - o.x ; 
+    float t_expect = dist/s ;   // length/t-unit 
+
+
+    if(fabsf( p.x - x.x) > 0.01f )
+    {
+        rtPrintf("ERROR x_expect deviation %g %g \n",  p.x, x.x );
+        return ; 
+    }
+
+    if(fabsf( t_expect - t) > 0.0001f )
+    {
+        rtPrintf("ERROR t_expect deviation %g %g \n",  t, t_expect );
+        return ; 
+    }
+
+    rtPrintf("//csg_intersect_sphere_test  p (%g %g %g) t %g s %g t_expect %g \n", p.x,p.y,p.z, t, s, t_expect ); 
+}
+
+
+
+
+
+
 
 
 static __device__
@@ -1477,47 +1535,43 @@ void z_rotate_ray_align_x(const float3& o0, const float3& s0, float3& o, float3&
 
 
 
+/*
+     
 
+Normalization
+---------------
+
+In principal its better not to normalize ray_direction 
+in order to support non-uniform scaling, 
+but in practice even moderate scalings such as 100x typical whilst testing
+result in numerical issues from very small ray_direction.
+   
+Unnormalized using source length unit (mm) and whatever ray_direction
+length that any scaling causes::
+
+   ray(per-mm) = ray_origin + t * ray_direction 
+   ray(per-R)  = ray_origin/R_ + (t * ray_direction)/R_ 
+
+Changing length unit such that torus R=1. effects all terms, so 
+without amending 
+
+*/
 
 
 
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
+
     const float R_ = q0.f.w ;  // R > r by assertion, so torus has a hole
     const float r_ = q0.f.z ;  
+
     const float R = 1.f ;    // adopt length unit of R_ : for more stable numerical landscape  
     const float r = r_/R_ ; 
 
     const float ox = ray_origin.x/R_ ; 
     const float oy = ray_origin.y/R_ ; 
     const float oz = ray_origin.z/R_ ; 
-
-/*
-    const float R = q0.f.w ;  // R > r by assertion, so torus has a hole
-    const float r = q0.f.z ;  
-
-    const float ox = ray_origin.x ; 
-    const float oy = ray_origin.y ; 
-    const float oz = ray_origin.z ; 
-*/
-
-    const float rmax = R+r ; 
-    const float rmin = R-r ; 
-       
-    const float rr = r*r ; 
-    const float RR = R*R ; 
-    const float RR4 = RR*4.0f ; 
-
-    // In principal its better not to normalize ray_direction 
-    // in order to support non-uniform scaling, 
-    // but in practice even moderate scalings such as 100x typical whilst testing
-    // result in numerical issues from very small ray_direction.
-    //
-    //    o + t s
-    //    o + t|s| s/|s| 
-    //
-    //  for s = 0.1 ,  normalizing means that t will be *10
 
     const float ss = dot(ray_direction, ray_direction) ;     
     const float s = sqrt(ss) ; 
@@ -1526,7 +1580,36 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const float sy = ray_direction.y/s ;  
     const float sz = ray_direction.z/s ;
 
-    const float s_min = t_min*s ; 
+
+    // hmm scalings and R-norming are sorta doing same 
+    // thing that makes them confusing 
+    // s is the unit of t 
+
+    const float tscale = s*R_ ;
+    const float s_min = t_min/tscale ; 
+
+
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("R r (%g %g)  oxyz (%g %g %g) sxyz s (%g %g %g ; %g) t_min s_min  (%g %g) tscale %g  \n", 
+              R,r
+              ,
+              ox,oy,oz
+              ,
+              sx,sy,sz,s
+              ,
+              t_min, s_min , tscale
+             ); 
+
+
+#endif      
+
+
+    const float rmax = R+r ; 
+    const float rmin = R-r ; 
+ 
+    const float rr = r*r ; 
+    const float RR = R*R ; 
+    const float RR4 = RR*4.0f ; 
 
     /*
        Closest approach of ray (r = o + s t) to torus-axis (z), 
@@ -1616,14 +1699,18 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     }
     
     float s_cand = num_cand > 0 ? fminf(cand) : s_min ;   // smallest root bigger than t_min
-    float t_cand = s_cand/s ;   // back to un-normalized
+    float t_cand = s_cand*tscale ;                        // un-normalized un-scaled t 
+
 
     const float3 p0 = make_float3( ox + s_cand*sx, oy + s_cand*sy, oz + s_cand*sz )  ;   
-    const float3 p1 = make_float3( ox*R_ + s_cand*sx, oy*R_ + s_cand*sy, oz*R_ + s_cand*sz )  ; 
+    const float3 p1 = p0*R_ ;       
     const float3 p2 = ray_origin + t_cand*ray_direction ; 
 
+    //   p1 - ray_origin  
 
-    rtPrintf(" s %g st_can (%g %g)  p0 (%g %g %g) p1 (%g %g %g) p2 (%g %g %g) \n", 
+
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf(" s %g s_cand,t_cand (%g %g)  p0 (%g %g %g)  p1 (%g %g %g) p2 (%g %g %g) \n", 
                 s
                 ,
                 s_cand, t_cand
@@ -1634,6 +1721,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
                 , 
                 p2.x, p2.y, p2.z
             );
+#endif      
 
 
     const float pr = sqrt(p0.x*p0.x+p0.y*p0.y) ;   // <-- selecting artifact in hole 
@@ -1693,6 +1781,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
         // Hmm perhaps pick resolvent cubic that avoid numerical problems ?
         
 
+/*
         rtPrintf(" pr %g ray_origin (%g %g %g) ray_direction (%g %g %g ) p (%g %g %g) \n ",
                      pr
                      ,
@@ -1702,6 +1791,8 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
                      ,
                      p0.x, p0.y, p0.z
           );
+*/
+
 
 
 /*
@@ -1751,24 +1842,75 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
 
 static __device__
-void csg_intersect_torus_test(unsigned long long photon_id)
+void csg_intersect_torus_test_0(unsigned long long photon_id)
 {
+   // check in plane of torus, for normalization/scaling correctness
+
+    const float r = 10.f ; 
+    const float R = 100.f ; 
+
     quad q0 ; 
-    q0.f.z = 0.5f ; 
-    q0.f.w = 1.0f ; 
+    q0.f.z = r ; 
+    q0.f.w = R ; 
+
+    const float rmax = R+r ; 
+    const float rmin = R-r ; 
+
+    const float s = 2.0f ; 
+    const float3 ray_origin = make_float3( -2.f*rmax, 0.f, 0.f );
+    const float3 ray_direction = make_float3( s, 0.f, 0.f );
+
+    const float3& o = ray_origin ;
+    const float3& d = ray_direction ;
+
+    const float4 x_expect_ = make_float4( -rmax, -rmin, rmin, rmax );  
+
+    rtPrintf("// pid %llu \n", photon_id );
+
+    rtPrintf("// csg_intersect_torus_test  r R rmax (%g %g %g) ray_origin (%g %g %g) ray_direction (%g %g %g) \n"
+              ,
+              r,R,rmax
+              ,
+              o.x,o.y,o.z
+              ,
+              d.x,d.y,d.z
+            );
+
 
     float t_min = 0.f ; 
-    float3 ray_origin = make_float3(    -0.387017f,-0.122478f, 1.44327f );
-    float3 ray_direction = make_float3(  0.000778693f, 0.00168768f, -0.00982575f );
-
     float4 isect = make_float4(0.f,0.f,0.f,0.f);
-    bool has_isect = csg_intersect_torus(q0, t_min , isect, ray_origin, ray_direction );
 
-    float t = isect.w ;  
-    float3 p = ray_origin + t*ray_direction ; 
+    for(unsigned i=0 ; i < 4 ; i++)
+    {
+        bool has_isect = csg_intersect_torus(q0, t_min , isect, o, d );
 
-    rtPrintf("## csg_intersect_torus_test pid:%llu has_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
-                     photon_id, has_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+        if(!has_isect) 
+        {
+            rtPrintf("ERROR no isect \n");
+            break ; 
+        } 
+
+
+        float t = isect.w ;  
+
+        float3 p = ray_origin + t*ray_direction ; 
+
+        float x_expect = getByIndex(x_expect_, i ) ; 
+
+        if(fabsf( p.x - x_expect) > 0.01f )
+        {
+            rtPrintf("ERROR x_expect deviation p.x %g x_expect %g  t %g  \n",  p.x, x_expect, t );
+            break ; 
+ 
+        }
+
+        rtPrintf("// csg_intersect_torus_test t_min %10.4g x_expect p.x (%10g %10g)  isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
+                       t_min, x_expect, p.x, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+
+
+        t_min = t + 1e-4f  ; 
+
+   }
 
 }
 

@@ -29,6 +29,34 @@ Workaround Ideas
 * review code for non robust subtractions and find equivalent alt 
 
 
+
+
+
+
+
+intersect_analytic_test with s=1
+-----------------------------------
+
+
+::
+
+
+    simon:cu blyth$ intersect_analytic_test
+    2017-08-08 20:19:40.961 INFO  [2552272] [OptiXTest::init@39] OptiXTest::init cu intersect_analytic_test.cu ptxpath /usr/local/opticks/build/optixrap/OptiXRap_generated_intersect_analytic_test.cu.ptx raygen intersect_analytic_test exception exception
+    2017-08-08 20:19:40.994 INFO  [2552272] [OptiXTest::Summary@72] intersect_analytic_test cu intersect_analytic_test.cu ptxpath /usr/local/opticks/build/optixrap/OptiXRap_generated_intersect_analytic_test.cu.ptx raygen intersect_analytic_test exception exception
+    2017-08-08 20:19:40.994 INFO  [2552272] [OGeo::CreateInputUserBuffer@836] OGeo::CreateInputUserBuffer name planBuffer src shape 6,4 numBytes 96 elementSize 16 size 6
+## intersect_analytic_test 0
+    // pid 0 
+    // csg_intersect_torus_test  r R rmax (10 100 110) ray_origin (-220 0 0) ray_direction (1 0 0) 
+    // csg_intersect_torus_test t_min          0 x_expect p.x (      -110       -110)  isect:(    -1.000      0.000      0.000    110.000) p:(  -110.000      0.000      0.000) 
+    // csg_intersect_torus_test t_min        110 x_expect p.x (       -90   -90.0002)  isect:(     1.000     -0.000      0.000    130.000) p:(   -90.000      0.000      0.000) 
+    // csg_intersect_torus_test t_min        130 x_expect p.x (        90    90.0002)  isect:(    -1.000     -0.000      0.000    310.000) p:(    90.000      0.000      0.000) 
+    // csg_intersect_torus_test t_min        310 x_expect p.x (       110        110)  isect:(     1.000      0.000      0.000    330.000) p:(   110.000      0.000      0.000) 
+    save result npy to $TMP/oxrap/intersect_analytic_test.npy
+
+
+
+
 Switching off scaling, making ray_direction normalized to 1. much reduces artifacts
 --------------------------------------------------------------------------------------
 
