@@ -569,6 +569,7 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
     {
         Solve_t residual = (((x[i] + a)*x[i] + b)*x[i] + c)*x[i] + d ; 
 
+/*
         if(residual > 100.f )
         {
            rtPrintf(
@@ -595,6 +596,8 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
             );
                  
         }
+*/
+
 
     }
     return ireal;

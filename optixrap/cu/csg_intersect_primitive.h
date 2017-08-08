@@ -302,59 +302,13 @@ bool csg_intersect_cone(const quad& q0, const float& t_min, float4& isect, const
         float t_capn = fminf( t_cap1, t_cap2 );    // order caps
         float t_capf = fmaxf( t_cap1, t_cap2 );
 
+        // NB use of RT_DEFAULT_MAX to represent disqualified
+        // roots is crucial to picking closest  qualified root with 
+        // the simple fminf(tt) 
 
-        // SIMPLE WAY fminf(float4) : appears to work for single cone, but 
-        //  seeing issues when combine such cones within a union
-        //  with wierd mirror cone cutoffs as rotate around 
-        //  ... that was not using RT_DEFAULT_MAX 
-        //  
         float4 tt = make_float4( t_near, t_far, t_capn, t_capf );
         float t_cand = fminf(tt) ; 
         
-/*
-        float t_cand = t_min ; 
-        bool near_cap  = t_capn > t_min && t_capn < RT_DEFAULT_MAX ;
-        bool far_cap   = t_capf > t_min && t_capf < RT_DEFAULT_MAX ;
-        bool near_cone = t_near > t_min && t_near < RT_DEFAULT_MAX ;
-        bool far_cone  = t_far  > t_min && t_far  < RT_DEFAULT_MAX ;
-
-        unsigned code = 0u ; 
-        if(near_cap)  code |=  NEAR_CAP  ; 
-        if(near_cone) code |=  NEAR_OBJ ; 
-        if(far_cone)  code |=  FAR_OBJ  ; 
-        if(far_cap)   code |=  FAR_CAP  ; 
-         
-        switch(code)
-        { 
-            case                0u:   t_cand = t_min                   ; break ; 
-            case          NEAR_CAP:   t_cand = t_capn                  ; break ;
-            case          NEAR_OBJ:   t_cand = t_near                  ; break ;
-            case           FAR_OBJ:   t_cand = t_far                   ; break ;
-            case           FAR_CAP:   t_cand = t_capf                  ; break ;
-            case NEAR_CAP|NEAR_OBJ:   t_cand = fminf( t_capn, t_near ) ; break ;
-            case  NEAR_CAP|FAR_OBJ:   t_cand = fminf( t_capn, t_far)   ; break ;
-            case   FAR_CAP|FAR_OBJ:   t_cand = fminf( t_capf, t_far )  ; break ;
-            case  NEAR_OBJ|FAR_OBJ:   t_cand = fminf( t_near, t_far)   ; break ;
-            case  NEAR_CAP|FAR_CAP:   t_cand = fminf( t_capf, t_capn)  ; break ;
-
-            default:
-                 rtPrintf("## unhandled combi %x \n", code) ; break ; 
-        }
-*/
-
-
-        // HMM: 
-        //
-        // * cannot just pick the closest, as if one fails need to fall back to next 
-        //   however the correct priority order depends on the disposition of the ray
-        //
-        // * This approach really powerful way to build case logic by experiment (ie in incremental way) 
-        //   because it splayed the logical possibilities out into a long line of 16 possible combinations
-        //
-        // * Note that the ordering of the switch does not matter... as the code
-        //   composed of the 4 input bits can be combined in 16 possible ways from 0000 to 1111 
-        //
-
         valid_isect = t_cand > t_min && t_cand < RT_DEFAULT_MAX ;
         if(valid_isect)
         {
@@ -1501,128 +1455,141 @@ float cubic_delta2( const float a, const float b, const float c, const float d)
 
 #define TORUS_DEBUG 1
 
+
+
+static __device__
+void z_rotate_ray_align_x(const float3& o0, const float3& s0, float3& o, float3& s)
+{ 
+    const float phi = atan2(s0.x, s0.y) ;
+
+    //s.x = s0.x*cos(phi) - s0.y*sin(phi) ;  
+    s.x = 0.f ;                           // <-- by construction the rotation aims to make this very small 
+    s.y = s0.y*cos(phi) + s0.x*sin(phi) ;
+    s.z = s0.z ; 
+
+    o.x = o0.x*cos(phi) - o0.y*sin(phi) ;
+    o.y = o0.y*cos(phi) + o0.x*sin(phi) ;
+    o.z = o0.z ; 
+}
+ 
+
+
+
+
+
+
+
+
+
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
-    const float r = q0.f.z ; 
-    const float R = q0.f.w ;  // R > r by assertion, so torus has a hole
+    const float R_ = q0.f.w ;  // R > r by assertion, so torus has a hole
+    const float r_ = q0.f.z ;  
+    const float R = 1.f ;    // adopt length unit of R_ : for more stable numerical landscape  
+    const float r = r_/R_ ; 
 
+    const float ox = ray_origin.x/R_ ; 
+    const float oy = ray_origin.y/R_ ; 
+    const float oz = ray_origin.z/R_ ; 
+
+/*
+    const float R = q0.f.w ;  // R > r by assertion, so torus has a hole
+    const float r = q0.f.z ;  
+
+    const float ox = ray_origin.x ; 
+    const float oy = ray_origin.y ; 
+    const float oz = ray_origin.z ; 
+*/
+
+    const float rmax = R+r ; 
+    const float rmin = R-r ; 
+       
     const float rr = r*r ; 
     const float RR = R*R ; 
-    const float RR4 = R*R*4.0f ; 
+    const float RR4 = RR*4.0f ; 
 
-    const float& ox = ray_origin.x ; 
-    const float& oy = ray_origin.y ; 
+    // In principal its better not to normalize ray_direction 
+    // in order to support non-uniform scaling, 
+    // but in practice even moderate scalings such as 100x typical whilst testing
+    // result in numerical issues from very small ray_direction.
+    //
+    //    o + t s
+    //    o + t|s| s/|s| 
+    //
+    //  for s = 0.1 ,  normalizing means that t will be *10
 
-    const float& sx = ray_direction.x ;
-    const float& sy = ray_direction.y ;
+    const float ss = dot(ray_direction, ray_direction) ;     
+    const float s = sqrt(ss) ; 
 
+    const float sx = ray_direction.x/s ;
+    const float sy = ray_direction.y/s ;  
+    const float sz = ray_direction.z/s ;
+
+    const float s_min = t_min*s ; 
+
+    /*
+       Closest approach of ray (r = o + s t) to torus-axis (z), 
+       from turning point minimization xy radial distance squared
+
+            rxysq =  (ox + sx t)^2 + (oy + sy t)^2  
+
+                  = (ox^2 + oy^2) + 2t ( ox sx + oy sy ) + (sx^2 + sy^2) t^2  
+    
+      d(rxysq)/dt =    2 (ox sx + oy sy ) + 2t (sx^2 + sy^2 ) 
+         
+              -> tc = - (ox sx + oy sy)     at closest point 
+                        ---------------- 
+                         sx sx + sy sy 
    
-    /* 
+    */
+
+    const float oxox_oyoy = ox*ox + oy*oy ; 
+    const float oxsx_oysy = ox*sx + oy*sy ; 
+    const float sxsx_sysy = sx*sx + sy*sy ; 
+
+    const float tc = -oxsx_oysy/sxsx_sysy ;    
+    const float xc = ox + sx*tc ; 
+    const float yc = oy + sy*tc ; 
+    const float zc = oz + sz*tc ; 
+    const float rcrc = xc*xc + yc*yc ;   // square of distance to axis at closest approach 
+
+    const float rmax_rmax = rmax*rmax ; 
+    const float rmin_rmin = rmin*rmin ; 
+
+
+    if( rcrc > rmax_rmax )   // intersect not possible when closest approach to axis exceeds rmax
     {
-        // Nope not working : leaves only whacky teardrop shape part of torus 
-        //
-        // Exploit the rotational symmetry of the torus to check first 
-        // a rotated ray against the sphere of radius r at [R,0,0] 
-        // where the ray rotation is so as to place its  
-        // direction vector parallel to a plane with normal [1,0,0] )  
-        //
-        //  (o + t s).(o + t s ) - rr = 0 
-        //   o.o - rr + 2 t s.o + t^2 s.s = 0 
-        //
+        /*
+        rtPrintf("  R r rmax rmin (%g %g %g %g) xc yc zc (%g %g %g)  rcrc rmax_rmax (%g, %g)   \n",
+                       R,r,rmax,rmin, xc,yc,zc, rcrc, rmax_rmax   ); 
+        */
 
-        const float& oz = ray_origin.z ; 
-        const float& sz = ray_direction.z ;
-        const float zphi = atan2(sx, sy) ;
-        const float3 srz = make_float3( sx*cos(zphi) - sy*sin(zphi), sy*cos(zphi) + sx*sin(zphi), sz) ; 
-        const float3 orz = make_float3( ox*cos(zphi) - oy*sin(zphi), oy*cos(zphi) + ox*sin(zphi), oz) ; 
-        const float3 orz_lhs = make_float3( orz.x + R, orz.y, orz.z );
-        const float3 orz_rhs = make_float3( orz.x - R, orz.y, orz.z ); 
-
-        // consider intersection with sphere of radius r centered at [R,0,0]
-
-        rtPrintf(" zphi %g srz (%g %g %g) orz (%g %g %g) \n",
-                  zphi, srz.x, srz.y, srz.x, orz.x, orz.y,orz.z ); 
-
-        float b_lhs = dot(orz_lhs, srz);
-        float c_lhs = dot(orz_lhs, orz_lhs) - rr;
-        float b_rhs = dot(orz_rhs, srz);
-        float c_rhs = dot(orz_rhs, orz_rhs) - rr;
-        float d = dot(srz, srz);
-
-        float disc_lhs = b_lhs*b_lhs-d*c_lhs ;
-        float disc_rhs = b_rhs*b_rhs-d*c_rhs ;
-
-        if(disc_lhs < 0.f && disc_rhs < 0.f) return false ; 
+        return false ; 
     }
-    */   
-
-
 
     // following cosinekitty nomenclature, sympy verified in torus.py
-
-    const float G = RR4*(sx*sx+sy*sy) ;                      // +
-    const float H = 2.f*RR4*(ox*sx+oy*sy) ;                  // +/-
-    const float I = RR4*(ox*ox+oy*oy) ;                      // +
-    const float J = dot(ray_direction, ray_direction) ;      // +
-    const float K = 2.f*dot(ray_origin, ray_direction) ;     // +/-
-    const float L = dot(ray_origin, ray_origin) + RR - rr ;  // +    R > r (by assertion)
-
-    // A x**4 + B x**3 + C x**2 + D x + E = 0 
-    const float A_ = J*J ;                                   // +
-    const float B_ = 2.f*J*K ;                               // +/-
-    const float C_ = 2.f*J*L + K*K - G ;                     // +/-
-    const float D_ = 2.f*K*L - H ;                           // +/-
-    const float E_ = L*L - I ;                               // +/-
-
-
-    
-/*
-    const float AOB = fabs(A_/B_);
-    const float EOD = fabs(E_/D_);    
-
-    const float score_AB = AOB + 1.f/AOB ; 
-    const float score_ED = EOD + 1.f/EOD ; 
   
-    bool reverse = score_AB > score_ED ; 
-*/
-    bool reverse = false ; 
-
-    const float A = reverse ? E_ : A_ ; 
-    const float B = reverse ? D_ : B_ ; 
-    const float C = reverse ? C_ : C_ ; 
-    const float D = reverse ? B_ : D_ ; 
-    const float E = reverse ? A_ : E_ ; 
-
+    const float H = 2.f*RR4*(oxsx_oysy) ;         // +/-
+    const float G = RR4*(sxsx_sysy) ;             // +
+    const float I = RR4*(oxox_oyoy) ;             // +
+    const float J = 1.0f  ;    // normalized ray_direction                       // +
+    const float K = 2.f*(oxsx_oysy + oz*sz) ;     // +/-
+    const float L = oxox_oyoy + oz*oz + RR - rr ; // +    R > r (by assertion)
+   
+    // A x**4 + B x**3 + C x**2 + D x + E = 0 
+    const float A = J*J ;                                   // +
+    const float B = 2.f*J*K ;                               // +/-
+    const float C = 2.f*J*L + K*K - G ;                     // +/-
+    const float D = 2.f*K*L - H ;                           // +/-
+    const float E = L*L - I ;                               // +/-
+    
     float qn[4] ; 
     qn[3] = B/A ;
     qn[2] = C/A ;
     qn[1] = D/A ;
     qn[0] = E/A ;
 
-
-#ifdef TORUS_DEBUG 
-    const float a = qn[3] ; 
-    const float b = qn[2] ; 
-    const float c = qn[1] ; 
-    const float d = qn[0] ; 
-
-    // coeff of depressed quartic
-    const float e     = b - 3.f * a * a / 8.f;
-    const float f     = c + a * a * a / 8.f - 0.5f * a * b;
-    const float g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
-
-    // switch x -> -x and multiplying by -1 , will flip even x^2, x^0 coeff signs    
-
-    float neumark[3] ;  // coeff of resolvent cubic
-    neumark[2] = 2.f*e ; 
-    neumark[1] = e*e - 4.f*g ;
-    neumark[0] = -f*f ;
-
-    float neumark_delta2 = cubic_delta2( 1.f, neumark[2], neumark[1], neumark[0] ); 
-    bool double_root = fabsf( neumark_delta2 - 1.0f ) < 1.e-3f ; 
-
-#endif
    // unsigned msk = SOLVE_VECGEOM  ;  // worst for artifcacting 
    // unsigned msk = SOLVE_UNOBFUSCATED  ;  // reduced but still obvious
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD ;  // getting some in-out wierdness
@@ -1644,19 +1611,38 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     {
         for(int i=0 ; i < num_roots ; i++)
         {
-            float root = reverse ? 1.f/roots[i] : roots[i] ;  
-            if(root > t_min ) setByIndex(cand, num_cand++, root ) ; 
+            if(roots[i] > s_min ) setByIndex(cand, num_cand++, roots[i] ) ; 
         }   
     }
     
-    float t_cand = num_cand > 0 ? fminf(cand) : t_min ;   // smallest root bigger than t_min
+    float s_cand = num_cand > 0 ? fminf(cand) : s_min ;   // smallest root bigger than t_min
+    float t_cand = s_cand/s ;   // back to un-normalized
 
-    const float3 p = ray_origin + t_cand*ray_direction ; 
+    const float3 p0 = make_float3( ox + s_cand*sx, oy + s_cand*sy, oz + s_cand*sz )  ;   
+    const float3 p1 = make_float3( ox*R_ + s_cand*sx, oy*R_ + s_cand*sy, oz*R_ + s_cand*sz )  ; 
+    const float3 p2 = ray_origin + t_cand*ray_direction ; 
 
 
-    const float2 qrz = make_float2(length(make_float2(p)) - R, p.z) ;  // (mid-circle-sdf, z)
+    rtPrintf(" s %g st_can (%g %g)  p0 (%g %g %g) p1 (%g %g %g) p2 (%g %g %g) \n", 
+                s
+                ,
+                s_cand, t_cand
+                ,
+                p0.x, p0.y, p0.z 
+                ,
+                p1.x, p1.y, p1.z
+                , 
+                p2.x, p2.y, p2.z
+            );
+
+
+    const float pr = sqrt(p0.x*p0.x+p0.y*p0.y) ;   // <-- selecting artifact in hole 
+
+
+    const float2 qrz = make_float2(length(make_float2(p0)) - R, p0.z) ;  // (mid-circle-sdf, z)
     const float  qsd = length(qrz) - r ;   // signed dist to torus
-    bool valid_qsd = fabsf(qsd) < 1e-3f ; 
+    const float  aqsd = fabsf(qsd) ;      // dist to torus
+    bool valid_qsd = aqsd < 1e-3f ; 
 
     // Can easily cut away fake intersects assumed caused by numerical problems 
     // for some coeffient combinations using sdf... 
@@ -1672,20 +1658,27 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 #ifndef TORUS_DEBUG 
     bool valid_isect = valid_qsd && t_cand > t_min ;
 #else
-    //const float residual = (((A*t_cand + B)*t_cand + C)*t_cand + D)*t_cand + E ; 
+    const float residual = (((A*s_cand + B)*s_cand + C)*s_cand + D)*s_cand + E ; 
 
     //bool valid_isect = t_cand > t_min && !double_root ;   // double roots not source of artifacts
     //bool valid_isect = t_cand > t_min  ;
-    //bool valid_isect = t_cand > t_min && qsd < -0.1f   ;
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) < 0.1f && fabsf(residual) > 0.1f  ; // ring artifact
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.1f && fabsf(residual) > 0.1f  ; //  nowt so ring is mostly from small neumark[0] ? 
 
+    //bool valid_isect = t_cand > t_min && aqsd > 0.1f   ;
+    //bool valid_isect = t_cand > t_min && pr < 0.9f*rmin  ;     // artifact in the hole
+    bool valid_isect = t_cand > t_min ;    
+
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) < 0.1f && aqsd > 0.1f  ; // ring artifact
+    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.1f && aqsd > 0.1f  ; //  nowt so ring is mostly from small neumark[0] ? 
     //bool valid_isect = t_cand > t_min && fabsf(residual) < 0.1f  ;  // hailine ring crack
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
     //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.0001f ;  // > 0.0001f artifact ring visible and chops thin ring band out of torus
-    //bool valid_isect = t_cand > t_min && fabsf(residual) > 0.1f ;
+    //bool valid_isect = t_cand > t_min && fabsf(residual) > 1.f ;
     //bool valid_isect = valid_qsd && t_cand > t_min ;
-    bool valid_isect = t_cand > t_min ;
+    //bool valid_isect = t_cand > t_min && fabsf(C) > 1e-3f ; 
+
+     // requiring small C < 1e-3 chops central egg out, taking with it the artifact in the hole, but not the around artifact
+     // requiring small C < 1e-4 chops everything 
+     // requiring C > 1e-3 chops around side
 
     if(valid_isect) 
     {
@@ -1693,22 +1686,32 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
         //  Hurwitz-Roth discriminant for oscillatory stability...
         //  leads to two equal and opposite real roots when zero
 
-
-/*
-
         const float NR2 = -2.f*C ; 
         const float NR1 = C*C + B*D - 4.f*A*E ; 
         const float NR0 = B*C*D - B*B*E - A*D*D ;   // huh expecte to be small at problem points, but not so
     
         // Hmm perhaps pick resolvent cubic that avoid numerical problems ?
         
+
+        rtPrintf(" pr %g ray_origin (%g %g %g) ray_direction (%g %g %g ) p (%g %g %g) \n ",
+                     pr
+                     ,
+                     ox,oy,oz
+                     ,
+                     sx,sy,sz
+                     ,
+                     p0.x, p0.y, p0.z
+          );
+
+
+/*
         rtPrintf(
                  "torus"
                  " num_roots %d "
                  " t_cand %10.3g "
+                 " pr %10.3g "
                  " ABCDE ( %10.3g %10.3g %10.3g %10.3g %10.3g ) "
-                 " NR ( %10.3g %10.3g %10.3g ) "  
-                 " residual %10.4f "
+                "  neumark( %10.3g, %10.3g, %10.3g )"
                  " qsd %10.4f "
                  "\n"
                  ,
@@ -1716,114 +1719,57 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
                  ,
                  t_cand
                  ,
+                 pr
+                 ,
                  A,B,C,D,E
                  , 
-                 NR2,NR1,NR0
-                 ,
-                 residual
+                 neumark[2],neumark[1],neumark[0]
                  ,
                  qsd
                );
-
-
 */
 
 
     }
-
-/*    
-
-
-                 " neumark_delta2 : %10.3g "
-                 ,
-                 neumark_delta2
-
-
-
-                 " qn( %10.3g, %10.3g, %10.3g, %10.3g)" 
-                 " efg( %10.3g, %10.3g, %10.3g )"
-                 " neumark( %10.3g, %10.3g, %10.3g )"
-
-                 qn[3],qn[2],qn[1],qn[0]
-                 ,
-                 e,f,g
-                 ,
-                 neumark[2],neumark[1],neumark[0]
-
-
-                 " roots ( %10.3g, %10.3g, %10.3g, %10.3g)" 
-                 roots[0], roots[1], roots[2], roots[3]
-                 ,
- 
-
-
-
-                 " HRD %10.4f "
-                 HRD
- 
-
-                 " R %10.4f r %10.4f "
-                  R, r,                      // 1, 0.5
-
-
-                 " qsd %10.4f "
-                 qsd, 
-                 qsd    14.5927  
-
-                 " dir (%10.4g %10.4g %10.4g) "
-                 ray_direction.x, ray_direction.y, ray_direction.z,
-
-                 dir ( -0.001487 -0.0009288  -0.009845)    ## length of this sq uncomfortably small, following from non-norm for scaling 
-                 dir (  -0.07532     0.1403    -0.9872)    ## removing scaling in tboolean-torus makes more healthy
-
-
-                 " ori (%10.4g %10.4g %10.4g) "
-                 ray_origin.x, ray_origin.y, ray_origin.z,
-
-                 ori (    -0.103      2.134     -6.638)     ## as expect
-
-
-                 " GHIJKL( %10.3g, %10.3g, %10.3g, %10.3g, %10.3g, %10.3g)"     
-                 G,H,I,J,K,L
-
-                 GHIJKL(   1.23e-05,    -0.0152,        7.2,     0.0001,     -0.118,       36.1)   ## with scaling of 100
-                 GHIJKL(      0.745,      -5.72,       16.9,          1,      -7.62,       16.8)   ## without scaling J=1 norm ray dir
-    
-
-                 " q( %10.3g, %10.3g, %10.3g, %10.3g, %10.3g)"    
-                 q[4],q[3],q[2],q[1],q[0]     
-
-
-                 q(      1e-08,  -2.09e-05,     0.0308,      -20.8,   9.79e+03)    ##   v.small q[4] from J**2 from unnorm ray dir
-                 qsd   108.6718   q(          1,      -15.2,       90.6,       -249,        263)   ## more reasonable q when avoid scaling
-
-
-                 " qn( %10.3g, %10.3g, %10.3g, %10.3g)" 
-                 qn[3],qn[2],qn[1],qn[0],
-
-
-                 qsd    52.0278  q(          1,      -14.8,       86.5,       -233,        243) 
-                 qn(      -14.8,       86.5,       -233,        243)
-
-
-
-*/
-
-
 
 #endif
 
 
     if(valid_isect)
     {        
-        const float alpha = 1.f - (R/sqrt(p.x*p.x+p.y*p.y)) ;   // see cosinekitty 
-        const float3 n = normalize(make_float3(alpha*p.x, alpha*p.y, p.z ));
+        const float alpha = 1.f - (R/sqrt(p0.x*p0.x+p0.y*p0.y)) ;   // see cosinekitty 
+        const float3 n = normalize(make_float3(alpha*p0.x, alpha*p0.y, p0.z ));
         isect.x = n.x ;  
         isect.y = n.y ;  
         isect.z = n.z ;  
         isect.w = t_cand ; 
     }
     return valid_isect ; 
+}
+
+
+
+
+static __device__
+void csg_intersect_torus_test(unsigned long long photon_id)
+{
+    quad q0 ; 
+    q0.f.z = 0.5f ; 
+    q0.f.w = 1.0f ; 
+
+    float t_min = 0.f ; 
+    float3 ray_origin = make_float3(    -0.387017f,-0.122478f, 1.44327f );
+    float3 ray_direction = make_float3(  0.000778693f, 0.00168768f, -0.00982575f );
+
+    float4 isect = make_float4(0.f,0.f,0.f,0.f);
+    bool has_isect = csg_intersect_torus(q0, t_min , isect, ray_origin, ray_direction );
+
+    float t = isect.w ;  
+    float3 p = ray_origin + t*ray_direction ; 
+
+    rtPrintf("## csg_intersect_torus_test pid:%llu has_isect:%d isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
+                     photon_id, has_isect, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+
 }
 
 
