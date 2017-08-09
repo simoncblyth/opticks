@@ -3,9 +3,9 @@
 
 #include "robust_quadratic_roots.h"
 
-//#include "Roots3And4.h"
-
 typedef double Solve_t ;
+typedef double Torus_t ;
+
 #include "Solve.h"
 
 
@@ -1555,61 +1555,80 @@ length that any scaling causes::
 Changing length unit such that torus R=1. effects all terms, so 
 without amending 
 
+
+  
+To handle non-uniform scaling would need to factor
+scaling into largest common denom uniform 
+scaling with smaller variation on top of that.
+    
+Normalization by the length of ray_direction assumes uniform scaling 
+    
+Usually have t equivalence between frames as do not have numerical
+domain issues and can just live with scaled down qtys.
+     
+Scalings and R-norming are sorta doing same 
+thing that makes them confusing 
+s is the unit of t 
+
+The reason for scaling in first place was to allow 
+use of R ~ 1 : but then you get bitten in butt by 
+small sx,sy,sz,ox,oy,oz
+
+
 */
+
 
 
 
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
+    const Torus_t R_ = q0.f.w ;  
+    const Torus_t r_ = q0.f.z ;  // R_ > r_ by assertion, so torus has a hole   
 
-    const float R_ = q0.f.w ;  // R > r by assertion, so torus has a hole
-    const float r_ = q0.f.z ;  
+    const Torus_t ss = dot( ray_direction, ray_direction );
+    const Torus_t unit = sqrt(ss);   
+    //const Torus_t unit = R_ ;   
 
-    const float R = 1.f ;    // adopt length unit of R_ : for more stable numerical landscape  
-    const float r = r_/R_ ; 
+    const Torus_t sx = ray_direction.x/unit ;
+    const Torus_t sy = ray_direction.y/unit ;  
+    const Torus_t sz = ray_direction.z/unit ;
 
-    const float ox = ray_origin.x/R_ ; 
-    const float oy = ray_origin.y/R_ ; 
-    const float oz = ray_origin.z/R_ ; 
+    const Torus_t ox = ray_origin.x/unit ; 
+    const Torus_t oy = ray_origin.y/unit ; 
+    const Torus_t oz = ray_origin.z/unit ; 
 
-    const float ss = dot(ray_direction, ray_direction) ;     
-    const float s = sqrt(ss) ; 
+    const Torus_t R = R_/unit ; 
+    const Torus_t r = r_/unit ; 
 
-    const float sx = ray_direction.x/s ;
-    const float sy = ray_direction.y/s ;  
-    const float sz = ray_direction.z/s ;
-
-
-    // hmm scalings and R-norming are sorta doing same 
-    // thing that makes them confusing 
-    // s is the unit of t 
-
-    const float tscale = s*R_ ;
-    const float s_min = t_min/tscale ; 
-
-
+    // scaled ray dir, ori too close to origin for numerical comfort
+    // due to scale factors to enable use of small R_ r_ 
+    // so divide by unit to bring into viscinity of unity 
+    // but must treat all lengths same ... so the radii get blown up ???
+    // and upshot is the coeffs come out the same ???
+    //
+    // Need to check quartic coeff disparity to see what approach is best
+   
+    
 #ifdef CSG_INTERSECT_TORUS_TEST
-    rtPrintf("R r (%g %g)  oxyz (%g %g %g) sxyz s (%g %g %g ; %g) t_min s_min  (%g %g) tscale %g  \n", 
-              R,r
+    rtPrintf("// csg_intersect_torus R r unit (%g %g %g)  oxyz (%g %g %g) sxyz (%g %g %g ) t_min (%g)   \n", 
+              R, r, unit
               ,
               ox,oy,oz
               ,
-              sx,sy,sz,s
+              sx,sy,sz
               ,
-              t_min, s_min , tscale
+              t_min
              ); 
-
 
 #endif      
 
-
-    const float rmax = R+r ; 
-    const float rmin = R-r ; 
+    const Torus_t rmax = R+r ; 
+    const Torus_t rmin = R-r ; 
  
-    const float rr = r*r ; 
-    const float RR = R*R ; 
-    const float RR4 = RR*4.0f ; 
+    const Torus_t rr = r*r ; 
+    const Torus_t RR = R*R ; 
+    const Torus_t RR4 = RR*4.0f ; 
 
     /*
        Closest approach of ray (r = o + s t) to torus-axis (z), 
@@ -1624,21 +1643,20 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
               -> tc = - (ox sx + oy sy)     at closest point 
                         ---------------- 
                          sx sx + sy sy 
-   
     */
 
-    const float oxox_oyoy = ox*ox + oy*oy ; 
-    const float oxsx_oysy = ox*sx + oy*sy ; 
-    const float sxsx_sysy = sx*sx + sy*sy ; 
+    const Torus_t oxox_oyoy = ox*ox + oy*oy ; 
+    const Torus_t oxsx_oysy = ox*sx + oy*sy ; 
+    const Torus_t sxsx_sysy = sx*sx + sy*sy ; 
 
-    const float tc = -oxsx_oysy/sxsx_sysy ;    
-    const float xc = ox + sx*tc ; 
-    const float yc = oy + sy*tc ; 
-    const float zc = oz + sz*tc ; 
-    const float rcrc = xc*xc + yc*yc ;   // square of distance to axis at closest approach 
+    const Torus_t tc = -oxsx_oysy/sxsx_sysy ;    
+    const Torus_t xc = ox + sx*tc ; 
+    const Torus_t yc = oy + sy*tc ; 
+    const Torus_t zc = oz + sz*tc ; 
+    const Torus_t rcrc = xc*xc + yc*yc ;   // square of distance to axis at closest approach 
 
-    const float rmax_rmax = rmax*rmax ; 
-    const float rmin_rmin = rmin*rmin ; 
+    const Torus_t rmax_rmax = rmax*rmax ; 
+    const Torus_t rmin_rmin = rmin*rmin ; 
 
 
     if( rcrc > rmax_rmax )   // intersect not possible when closest approach to axis exceeds rmax
@@ -1653,25 +1671,51 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
     // following cosinekitty nomenclature, sympy verified in torus.py
   
-    const float H = 2.f*RR4*(oxsx_oysy) ;         // +/-
-    const float G = RR4*(sxsx_sysy) ;             // +
-    const float I = RR4*(oxox_oyoy) ;             // +
-    const float J = 1.0f  ;    // normalized ray_direction                       // +
-    const float K = 2.f*(oxsx_oysy + oz*sz) ;     // +/-
-    const float L = oxox_oyoy + oz*oz + RR - rr ; // +    R > r (by assertion)
+    const Torus_t H = 2.f*RR4*(oxsx_oysy) ;         // +/-
+    const Torus_t G = RR4*(sxsx_sysy) ;             // +
+    const Torus_t I = RR4*(oxox_oyoy) ;             // +
+    const Torus_t J = sxsx_sysy + sz*sz  ;          // +
+    const Torus_t K = 2.f*(oxsx_oysy + oz*sz) ;     // +/-
+    const Torus_t L = oxox_oyoy + oz*oz + RR - rr ; // +    R > r (by assertion)
    
     // A x**4 + B x**3 + C x**2 + D x + E = 0 
-    const float A = J*J ;                                   // +
-    const float B = 2.f*J*K ;                               // +/-
-    const float C = 2.f*J*L + K*K - G ;                     // +/-
-    const float D = 2.f*K*L - H ;                           // +/-
-    const float E = L*L - I ;                               // +/-
-    
-    float qn[4] ; 
-    qn[3] = B/A ;
-    qn[2] = C/A ;
-    qn[1] = D/A ;
-    qn[0] = E/A ;
+    // E (1/x)**4 + D (1/x)^3 + C (1/x)^2 + B (1/x) + A = 0     divide by x**4  
+
+
+    const Torus_t A = J*J ;                                   // +
+    const Torus_t B = 2.f*J*K ;                               // +/-
+    const Torus_t C = 2.f*J*L + K*K - G ;                     // +/-
+    const Torus_t D = 2.f*K*L - H ;                           // +/-
+    const Torus_t E = L*L - I ;                               // +/-
+
+/*
+    const Torus_t AOB = fabs(A/B);
+    const Torus_t EOD = fabs(E/D);
+    bool reverse = (EOD + 1./EOD) > (AOB + 1./AOB) ;     
+*/
+    bool reverse = false ; 
+
+    Torus_t qn[4] ; 
+    qn[3] = reverse ? D/E : B/A ;
+    qn[2] = reverse ? C/E : C/A ;
+    qn[1] = reverse ? B/E : D/A ;
+    qn[0] = reverse ? A/E : E/A ;
+
+
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("// csg_intersect_torus HGIJKL (%g %g %g %g %g %g)  ABCDE (%g %g %g %g %g ) \n", 
+              H,G,I,J,K,L
+              ,
+              A,B,C,D,E             
+             ); 
+
+    rtPrintf("// csg_intersect_torus qn (%g %g %g %g) reverse %d \n", 
+              qn[3],qn[2],qn[1],qn[0], reverse
+             ); 
+
+#endif      
+
+
 
    // unsigned msk = SOLVE_VECGEOM  ;  // worst for artifcacting 
    // unsigned msk = SOLVE_UNOBFUSCATED  ;  // reduced but still obvious
@@ -1680,7 +1724,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
    unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ;  // _0 ok
    // unsigned msk = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_1 ;  // in-out wierdness
  
-
 
     Solve_t roots[4] ;   
     //int num_roots = SolveQuarticPureNeumark( qn[3],qn[2],qn[1],qn[0], roots, msk ); 
@@ -1694,32 +1737,21 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     {
         for(int i=0 ; i < num_roots ; i++)
         {
-            if(roots[i] > s_min ) setByIndex(cand, num_cand++, roots[i] ) ; 
+            float root = reverse ? 1.f/roots[i] : roots[i] ; 
+            if(root > t_min ) setByIndex(cand, num_cand++, root ) ; 
         }   
     }
     
-    float s_cand = num_cand > 0 ? fminf(cand) : s_min ;   // smallest root bigger than t_min
-    float t_cand = s_cand*tscale ;                        // un-normalized un-scaled t 
+    float t_cand = num_cand > 0 ? fminf(cand) : t_min ;   // smallest root bigger than t_min
 
-
-    const float3 p0 = make_float3( ox + s_cand*sx, oy + s_cand*sy, oz + s_cand*sz )  ;   
-    const float3 p1 = p0*R_ ;       
-    const float3 p2 = ray_origin + t_cand*ray_direction ; 
-
-    //   p1 - ray_origin  
+    const float3 p0 = make_float3( ox + t_cand*sx, oy + t_cand*sy, oz + t_cand*sz )  ;   
 
 
 #ifdef CSG_INTERSECT_TORUS_TEST
-    rtPrintf(" s %g s_cand,t_cand (%g %g)  p0 (%g %g %g)  p1 (%g %g %g) p2 (%g %g %g) \n", 
-                s
-                ,
-                s_cand, t_cand
+    rtPrintf(" t_cand %g  p0 (%g %g %g) \n", 
+                t_cand
                 ,
                 p0.x, p0.y, p0.z 
-                ,
-                p1.x, p1.y, p1.z
-                , 
-                p2.x, p2.y, p2.z
             );
 #endif      
 
@@ -1746,7 +1778,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 #ifndef TORUS_DEBUG 
     bool valid_isect = valid_qsd && t_cand > t_min ;
 #else
-    const float residual = (((A*s_cand + B)*s_cand + C)*s_cand + D)*s_cand + E ; 
+    //const float residual = (((A*t_cand + B)*t_cand + C)*t_cand + D)*t_cand + E ; 
 
     //bool valid_isect = t_cand > t_min && !double_root ;   // double roots not source of artifacts
     //bool valid_isect = t_cand > t_min  ;
@@ -1781,8 +1813,8 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
         // Hmm perhaps pick resolvent cubic that avoid numerical problems ?
         
 
-/*
-        rtPrintf(" pr %g ray_origin (%g %g %g) ray_direction (%g %g %g ) p (%g %g %g) \n ",
+
+        rtPrintf(" pr %g float3 ori = make_float3(%10.4gf,%10.4gf,%10.4gf); float3 dir = make_float3(%10.4gf,%10.4gf,%10.4gf); p (%g %g %g) \n ",
                      pr
                      ,
                      ox,oy,oz
@@ -1791,7 +1823,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
                      ,
                      p0.x, p0.y, p0.z
           );
-*/
+
 
 
 
@@ -1841,29 +1873,115 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 
 
 
+
+
 static __device__
-void csg_intersect_torus_test_0(unsigned long long photon_id)
+void dump_TVQ(const Matrix4x4& T, const Matrix4x4& V, const Matrix4x4& Q)
+{
+    rtPrintf("// T(transform)\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n", 
+          T[0], T[1], T[2], T[3],  
+          T[4], T[5], T[6], T[7],  
+          T[8], T[9], T[10], T[11]
+         );  
+    rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", T[12], T[13], T[14], T[15] );
+
+    rtPrintf("// V(inverse)\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n", 
+          V[0], V[1], V[2], V[3],  
+          V[4], V[5], V[6], V[7],  
+          V[8], V[9], V[10], V[11]
+         );  
+    rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", V[12], V[13], V[14], V[15] );
+
+    rtPrintf("// Q(inverse-transposed)\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n%8.3f %8.3f %8.3f %8.3f\n", 
+          Q[0], Q[1], Q[2], Q[3],  
+          Q[4], Q[5], Q[6], Q[7],  
+          Q[8], Q[9], Q[10], Q[11]
+         );  
+    rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", Q[12], Q[13], Q[14], Q[15] );
+}
+ 
+
+
+static __device__
+void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
 {
    // check in plane of torus, for normalization/scaling correctness
 
     const float r = 10.f ; 
     const float R = 100.f ; 
+    const float rmax = R + r  ;  
+    const float rmin = R - r ; 
+
+
+/*
+   // SCALE TEST
+    float3 ori = make_float3( -rmax - r , 0.f, 0.f );  
+    float3 dir = make_float3( 1.f       , 0.f, 0.f );       
+    const float4  expect_ = make_float4( -rmax, -rmin, rmin, rmax );  
+ 
+*/
+
+
+   // HOLE TEST
+
+    // With delta 0. this produces part of the in-the-hole artifact ring in perspective proj, line in ortho.
+    // So what is different between the ring and those to the side that 
+    // correctly return no isect ?
+    //const float delta = 10.f ; 
+
+    const float delta = 0.f ; 
+    float3 ori = make_float3(     -64.6f+delta,    0.5311f,     394.7f); 
+    float3 dir = make_float3(     0.059f,   0.07738f,   -0.9953f);
+
+    //float3 ori = make_float3(     -64.6f,    0.5311f,     394.7f); 
+    //float3 dir = make_float3(     0.f,   0.f,   -1.f);
+
+
+
+
+
+
+    Ray ray = make_Ray( ori, dir, 0u, 0.f, RT_DEFAULT_MAX ); 
+
+
+
+    const float uscale = do_scale ? R : 1.f  ;  
+    rtPrintf("\n\n// csg_intersect_torus_scale_test uscale %g \n", uscale );
+
+
+    //////////// "world" frame above : scaling is implementation detail /////////////
+    const float r_ = r/uscale ; 
+    const float R_ = R/uscale ;     
+    const float3 scale_ = make_float3( uscale, uscale, uscale );
 
     quad q0 ; 
-    q0.f.z = r ; 
-    q0.f.w = R ; 
+    q0.f.z = r_ ; 
+    q0.f.w = R_ ; 
+ 
+    Matrix4x4 T = Matrix4x4::scale(scale_) ; 
+    Matrix4x4 V = T.inverse() ;
+    Matrix4x4 Q = V.transpose() ;
 
-    const float rmax = R+r ; 
-    const float rmin = R-r ; 
+    dump_TVQ(T,V,Q);
+    
+    // suspect matrix layout from these ctors is transposed
+    // wrt Opticks standard (following OpenGL) ... but 
+    // it does not matter for scaling, and use of these
+    // ctors is just for testing anyhow as it clearly
+    // is preferable to do such things once only CPU side.
 
-    const float s = 2.0f ; 
-    const float3 ray_origin = make_float3( -2.f*rmax, 0.f, 0.f );
-    const float3 ray_direction = make_float3( s, 0.f, 0.f );
+  
+    float4 origin    = make_float4( ray.origin.x,    ray.origin.y,    ray.origin.z,    1.f );  // w=1 for position  
+    float4 direction = make_float4( ray.direction.x, ray.direction.y, ray.direction.z, 0.f );  // w=0 for direction
+
+    origin    = origin * V ;     // world frame into primitive frame with inverse transform
+    direction = direction * V ;  // <-- will loose normalization with scaling, intersects MUST NOT assume normalized ray direction
+
+    float3 ray_origin    = make_float3( origin.x, origin.y, origin.z );
+    float3 ray_direction = make_float3( direction.x, direction.y, direction.z ); 
 
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
-
-    const float4 x_expect_ = make_float4( -rmax, -rmin, rmin, rmax );  
 
     rtPrintf("// pid %llu \n", photon_id );
 
@@ -1878,34 +1996,50 @@ void csg_intersect_torus_test_0(unsigned long long photon_id)
 
 
     float t_min = 0.f ; 
-    float4 isect = make_float4(0.f,0.f,0.f,0.f);
+    float4 tt = make_float4(0.f,0.f,0.f,0.f);
 
-    for(unsigned i=0 ; i < 4 ; i++)
+    for(unsigned i=0 ; i < 1 ; i++)
     {
-        bool has_isect = csg_intersect_torus(q0, t_min , isect, o, d );
+        bool valid_isect = csg_intersect_torus(q0, t_min , tt, o, d );
 
-        if(!has_isect) 
+        if(!valid_isect) 
         {
             rtPrintf("ERROR no isect \n");
             break ; 
         } 
 
 
-        float t = isect.w ;  
+        float4 ttn = make_float4( tt.x, tt.y, tt.z , 0.f );
+        ttn = ttn * Q   ;  // primitive frame normal into world frame, using inverse transform transposed
 
-        float3 p = ray_origin + t*ray_direction ; 
+        tt.x = ttn.x ; 
+        tt.y = ttn.y ; 
+        tt.z = ttn.z ; 
+            
+        float t = tt.w ;  
+        //
+        //  Ray trace magic keeps t the same both with and without scaling  
+        //       
+        //   For geometry transformed with T, inverse V, inverse-transposed Q
+        //
+        //            r =     o   +  t *  d
+        //        V * r = V * o   +  t * V * d 
+        //
 
-        float x_expect = getByIndex(x_expect_, i ) ; 
+        float3 p = ray.origin + t*ray.direction ; 
 
-        if(fabsf( p.x - x_expect) > 0.01f )
+
+/*
+        float expect = getByIndex(expect_, i ) ; 
+        if(fabsf( p.x - expect) > 2.f )
         {
-            rtPrintf("ERROR x_expect deviation p.x %g x_expect %g  t %g  \n",  p.x, x_expect, t );
-            break ; 
- 
+            rtPrintf("ERROR x expect deviation p.x %g expect %g  t %g  \n",  p.x, expect, t );
+            break ;  
         }
+*/
 
-        rtPrintf("// csg_intersect_torus_test t_min %10.4g x_expect p.x (%10g %10g)  isect:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
-                       t_min, x_expect, p.x, isect.x, isect.y, isect.z, isect.w, p.x, p.y, p.z ); 
+        rtPrintf("// csg_intersect_torus_test t_min %10.4g    tt:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
+                       t_min, tt.x, tt.y, tt.z, tt.w, p.x, p.y, p.z ); 
 
 
         t_min = t + 1e-4f  ; 

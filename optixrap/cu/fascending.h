@@ -1,16 +1,18 @@
 #pragma once
 
-void fswap_ptr(float* a, float* b)
+void fswap_ptr(Solve_t* a, Solve_t* b)
 {
-    float tmp = *a;
+    Solve_t tmp = *a;
     *a = *b;
     *b = tmp;
 }
-float* fmin_ptr(float* a, float* b)
+Solve_t* fmin_ptr(Solve_t* a, Solve_t* b)
 {
     return *a < *b ? a : b  ;  
 }
-void fascending_ptr(unsigned num, float* a )
+
+
+void fascending_ptr(unsigned num, Solve_t* a )
 {
     if(num == 3)
     {

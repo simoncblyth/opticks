@@ -34,6 +34,7 @@ Workaround Ideas
 
 
 
+
 intersect_analytic_test with s=1
 -----------------------------------
 
@@ -57,6 +58,251 @@ intersect_analytic_test with s=1
 
 
 
+in-the-hole artifact rings
+-----------------------------
+
+Examining artifact intersect in the hole obtained by dumping ray ori, dir.
+
+::
+
+    // csg_intersect_torus_scale_test uscale 100 
+    // T(transform)
+     100.000    0.000    0.000    0.000
+       0.000  100.000    0.000    0.000
+       0.000    0.000  100.000    0.000
+       0.000    0.000    0.000    1.000
+    // V(inverse)
+       0.010    0.000    0.000    0.000
+       0.000    0.010    0.000    0.000
+       0.000    0.000    0.010    0.000
+       0.000    0.000    0.000    1.000
+    // Q(inverse-transposed)
+       0.010    0.000    0.000    0.000
+       0.000    0.010    0.000    0.000
+       0.000    0.000    0.010    0.000
+       0.000    0.000    0.000    1.000
+    // pid 0 
+    // csg_intersect_torus_test  r R rmax (10 100 110) ray_origin (-0.646 0.005311 3.947) ray_direction (0.00059 0.0007738 -0.009953) 
+    // csg_intersect_torus R r unit (99.9955 9.99955 0.0100005)  oxyz (-64.5971 0.531076 394.682) sxyz (0.0589973 0.0773765 -0.995255 ) t_min (0)   
+    // csg_intersect_torus HGIJKL (-301570 378.678 1.66907e+08 1 -793.158 169846)  ABCDE (1 -1586.32 968414 -2.69128e+08 2.86808e+10 ) 
+    // csg_intersect_torus qn (-1586.32 968414 -2.69128e+08 2.86808e+10) reverse 0 
+    SolveQuartic abcd (-1586.32 968414 -2.69128e+08 2.86808e+10)  pqr (49526.8 4.08573e+08 -1.48348e+06) 
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   pqr (49526.8 4.08573e+08 -1.48348e+06)  ireal 3  xx (0.00211941 -39069.1 -10457.7)
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 0 xx 0.00211941 residual -617545  
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 1 xx -39069.1 residual -617545  
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 2 xx -10457.7 residual -617545  
+    // SOLVE_QUARTIC_DEBUG cubic_sqroot h 0.046037 
+    // SOLVE_QUARTIC_DEBUG solve-exit  ireal 4 i 0 root 367.46 residual 7.28441e+07  dis12 ( 3386.31 241742 ) h 0.046037  pqr (49526.8 4.08573e+08 -1.48348e+06 )  j g/j (-846.578 -60435.4 )  
+    // SOLVE_QUARTIC_DEBUG solve-exit  ireal 4 i 1 root 425.652 residual 7.28441e+07  dis12 ( 3386.31 241742 ) h 0.046037  pqr (49526.8 4.08573e+08 -1.48348e+06 )  j g/j (-846.578 -60435.4 )  
+    // SOLVE_QUARTIC_DEBUG solve-exit  ireal 4 i 2 root 642.438 residual 5.20213e+09  dis12 ( 3386.31 241742 ) h 0.046037  pqr (49526.8 4.08573e+08 -1.48348e+06 )  j g/j (-846.578 -60435.4 )  
+    // SOLVE_QUARTIC_DEBUG solve-exit  ireal 4 i 3 root 150.766 residual 5.19824e+09  dis12 ( 3386.31 241742 ) h 0.046037  pqr (49526.8 4.08573e+08 -1.48348e+06 )  j g/j (-846.578 -60435.4 )  
+     t_cand 150.766  p0 (-55.7023 12.1968 244.631) 
+     pr 57.022 float3 ori = make_float3(     -64.6f,    0.5311f,     394.7f); float3 dir = make_float3(     0.059f,   0.07738f,   -0.9953f); p (-55.7023 12.1968 244.631) 
+     // csg_intersect_torus_test t_min          0    tt:(     0.002     -0.000      0.010    150.766) p:(   -55.705     12.197    244.642) 
+    save result npy to $TMP/oxrap/intersect_analytic_test.npy
+    simon:issues blyth$ 
+
+
+
+Copying over pqr into SolveCubicTest gets close, see the small +ve cubic root has 60% error::
+
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1   -10457.7 0.00225949  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 0.000501256   -560315 ; -1.283e-08)
+     i 1 rt/err/del/frac ( -10457.7 0.00187265   -560315 ; -1.79069e-07)
+     i 2 rt/err/del/frac (0.00225949 0.00137139   -560315 ; 0.60695)
+    simon:cu blyth$ 
+
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1 0.00429867   -10457.7  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 0.00044495   -497375 ; -1.13888e-08)
+     i 1 rt/err/del/frac (0.00429867 0.000667799    272845 ; 0.15535)
+     i 2 rt/err/del/frac ( -10457.7 0.000740136   -221456 ; -7.07742e-08)
+    simon:cu blyth$ 
+
+
+
+Wow getting the precise result requires to use purely doubles, even doubles converted from constant floats mess up precision::
+
+    // constants converted from floats
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1 0.00429867   -10457.7  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 0.00044495   -497375 ; -1.13888e-08)
+     i 1 rt/err/del/frac (0.00429867 0.000667799    272845 ; 0.15535)
+     i 2 rt/err/del/frac ( -10457.7 0.000740136   -221456 ; -7.07742e-08)
+    simon:cu blyth$ 
+    simon:cu blyth$ 
+
+    // purely doubles
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1 0.00363087   -10457.7  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 1.80948e-12 -0.00202268 ; -4.63149e-17)
+     i 1 rt/err/del/frac (0.00363087 5.70431e-12 -0.00233063 ; 1.57106e-09)
+     i 2 rt/err/del/frac ( -10457.7 2.6574e-12 -0.00079512 ; -2.54109e-16)
+
+
+     137 static unsigned SolveCubicNumericalRecipe(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned )
+     138 {
+     139     //  p185 NUMERICAL RECIPES IN C 
+     140     //  x**3 + a x**2 + b x + x = 0 
+     141 
+     142     const Solve_t zero(0) ;  
+     143     const Solve_t one(1) ;  
+     144     const Solve_t three(3) ;  
+     145     const Solve_t othree = one/three ;
+     146     const Solve_t nine(9) ;  
+     147     const Solve_t two(2) ;  
+     148     const Solve_t twentyseven(27) ;
+     149     const Solve_t fiftyfour(54) ;
+     150     const Solve_t twpi = M_PI*two  ;
+     151 
+     152     const Solve_t a3 = a*othree ;
+     153     const Solve_t aa = a*a ;
+     154     const Solve_t Q = (aa - three*b)/nine ;
+     155     const Solve_t R = ((two*aa - nine*b)*a + twentyseven*c)/fiftyfour ;  // a,b,c real so Q,R real
+     156     const Solve_t R2 = R*R ;
+     157     const Solve_t Q3 = Q*Q*Q ;
+     158     const Solve_t R2_Q3 = R2 - Q3 ;
+     159 
+     160     unsigned nr =  R2_Q3 < zero ? 3u : 1u ;
+     161 
+     162     if( nr == 3 ) // three real roots
+     163     {
+     164          const Solve_t theta = acos( R/sqrt(Q3) );
+     165          const Solve_t qs = sqrt(Q);
+     166 
+     167          xx[0] = -two*qs*cos(theta*othree) - a3 ;
+     168          xx[1] = -two*qs*cos((theta+twpi)*othree) - a3 ;
+     169          xx[2] = -two*qs*cos((theta-twpi)*othree) - a3 ;
+     170     }
+     171     else
+     172     {
+     173          const Solve_t A = -copysign(one, R)*cbrt( fabs(R) +  sqrt(R2_Q3) ) ;
+     174          const Solve_t B = A != zero ? Q/A : zero ;
+     175 
+     176          xx[0] = (A + B) - a3  ; 
+     177     } 
+     178 
+     179 #ifdef SOLVE_QUARTIC_DEBUG
+     180     rtPrintf("// SOLVE_QUARTIC_DEBUG.SolveCubicNumericalRecipe  "
+     181              " abc (%20.10g %20.10g %20.10g) " 
+     182              " nr %u "
+     183              " xx (%g %g %g)"
+     184              "\n"
+     185              ,
+     186              a,b,c
+     187              ,
+     188              nr
+     189              ,
+     190              xx[0],xx[1],xx[2]
+     191             );
+     192 #endif
+     193     return nr ;
+     194 }   
+
+
+
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1 0.00363087   -10457.7  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 1.80948e-12 -0.00202268 ; -4.63149e-17)
+     i 1 rt/err/del/frac (0.00363087 5.70431e-12 -0.00233063 ; 1.57106e-09)
+     i 2 rt/err/del/frac ( -10457.7 2.6574e-12 -0.00079512 ; -2.54109e-16)
+
+
+
+
+
+
+::
+
+    In [40]: d,e = -2.69128e+08,2.86808e+10
+
+    In [43]: t = 150.766
+
+    In [44]: t*d + e
+    Out[44]: -11894552048.0
+
+    In [45]: t*d
+    Out[45]: -40575352048.0
+
+    In [46]: e
+    Out[46]: 28680800000.0
+
+    In [47]: (t*d)/e
+    Out[47]: -1.4147217667568548
+
+    n [50]: math.sqrt(2)
+    Out[50]: 1.4142135623730951
+
+
+
+
+Proper normalization suffers familiar artifacts
+--------------------------------------------------
+
+::
+
+    1583 static __device__
+    1584 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+    1585 {
+    1586     const Torus_t R_ = q0.f.w ;
+    1587     const Torus_t r_ = q0.f.z ;  // R_ > r_ by assertion, so torus has a hole   
+    1588 
+    1589     const Torus_t ss = dot( ray_direction, ray_direction );
+    1590     const Torus_t unit = sqrt(ss);
+    1591 
+    1592     const Torus_t sx = ray_direction.x/unit ;
+    1593     const Torus_t sy = ray_direction.y/unit ;
+    1594     const Torus_t sz = ray_direction.z/unit ;
+    1595 
+    1596     const Torus_t ox = ray_origin.x/unit ;
+    1597     const Torus_t oy = ray_origin.y/unit ;
+    1598     const Torus_t oz = ray_origin.z/unit ;
+    1599 
+    1600     const Torus_t R = R_/unit ;
+    1601     const Torus_t r = r_/unit ;
+    1602 
+    1603     // scaled ray dir, ori too close to origin for numerical comfort
+    1604     // due to scale factors to enable use of small R_ r_ 
+    1605     // so divide by unit to bring into viscinity of unity 
+    1606     // but must treat all lengths same ... so the radii get blown up ???
+    1607     // and upshot is the coeffs come out the same ???
+    1608     //
+    1609     // Need to check quartic coeff disparity to see what approach is best
+    1610 
+
+
+Arghh after implementing proper normalization using transform scaling etc 
+and a common length unit, end up with same coeffs whether use scaling 
+or not, and the same artifacts are manifest.
+
+The prior artifact remission occurred when trying to both normalize ray direction
+and length scale simultaneously with t scaling ???  So it probably corresponded
+to a very small torus or smth like that ?
+
+Actually its true it somehow scaling t-values to be smaller, would be beneficial::
+
+    In [30]: 100**4
+    Out[30]: 100000000
+
+::
+
+    In [34]: a,b,c,d,e = symbols("a,b,c,d,e")
+
+    In [35]: et = a*t**4 + b*t**3 + c*t**2 + d*t + e
+
+    In [36]: et
+    Out[36]: a*t**4 + b*t**3 + c*t**2 + d*t + e
+
+    In [37]: et.subs(t,t*100)
+    Out[37]: 100000000*a*t**4 + 1000000*b*t**3 + 10000*c*t**2 + 100*d*t + e
+
+    In [39]: et.subs(t,t/100)
+    Out[39]: a*t**4/100000000 + b*t**3/1000000 + c*t**2/10000 + d*t/100 + e
+
+
+
+
 Switching off scaling, making ray_direction normalized to 1. much reduces artifacts
 --------------------------------------------------------------------------------------
 
@@ -66,7 +312,6 @@ But small issues remain, possibly from coeff cuts (added for artifact reduction 
 * ~/opticks_refs/torus_normalized_ray_direction_cut_artifact
 
 Normalizing seems effective way to reduce coeff disparity.
-
 
 
 Select fakes artifact intersects in the hole

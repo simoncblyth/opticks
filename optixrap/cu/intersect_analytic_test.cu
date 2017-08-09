@@ -15,6 +15,7 @@
 #include "switches.h"
 #define DEBUG 1
 
+
 #include "boolean_solid.h"
 #include "hemi-pmt.h"
 
@@ -30,7 +31,9 @@ rtBuffer<Matrix4x4> tranBuffer;
 //#define CSG_INTERSECT_CONE_TEST 1
 //#define CSG_INTERSECT_CONVEXPOLYHEDRON_TEST 1
 #define CSG_INTERSECT_TORUS_TEST 1
+#define SOLVE_QUARTIC_DEBUG 1 
 #include "csg_intersect_primitive.h"
+
 
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 //rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
@@ -46,7 +49,10 @@ RT_PROGRAM void intersect_analytic_test()
 
     //csg_intersect_cone_test(photon_id);
     //csg_intersect_convexpolyhedron_test(photon_id);
-    csg_intersect_torus_test_0(photon_id);
+
+    csg_intersect_torus_scale_test(photon_id, false);
+    csg_intersect_torus_scale_test(photon_id, true );
+
     //csg_intersect_sphere_test(photon_id);
     
     output_buffer[photon_offset+0] = make_float4(40.f, 40.f, 40.f, 40.f);

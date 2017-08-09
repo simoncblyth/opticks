@@ -4,8 +4,16 @@
 #include <complex> 
 #include <cmath>
 
+
+typedef double Solve_t ;
 #include "fascending.h"
+
 #include "Solve.h"
+#include "SolveErrors.h"
+
+#include <stdio.h>
+#define rtPrintf printf
+
 
 #include <sstream>
 #include <iostream>
@@ -13,7 +21,7 @@
 #include <algorithm>
 
 
-typedef std::complex<float> cplx ; 
+typedef std::complex<Solve_t> cplx ; 
 
 struct CubicTest
 {
@@ -26,17 +34,21 @@ struct CubicTest
     cplx  zr0[3] ;   // input roots 
 
     cplx  zco[4] ;   // complex coeffs
-    float co[4] ;    // real coeff
-    float dco[4] ;   // depressed cubic coeff
 
-    float r1[3] ;   // result real roots
+    Solve_t co[4] ;    // real coeff
+    Solve_t dco[4] ;   // depressed cubic coeff
 
-    float delta ;   
-    float disc ; 
-    float sdisc ; 
+    Solve_t r1[3] ;   // result real roots
+    Solve_t rterr[3] ; 
+    Solve_t rtdel[3] ; 
 
 
-    std::string desc_root(const float* a, unsigned n) const 
+    Solve_t delta ;   
+    Solve_t disc ; 
+    Solve_t sdisc ; 
+
+
+    std::string desc_root(const Solve_t* a, unsigned n) const 
     {
          std::stringstream ss ; 
          for(unsigned i=0 ; i < n ; i++) ss << std::setw(10) << a[i] << " " ; 
@@ -70,6 +82,9 @@ struct CubicTest
             << " " << SolveTypeMask(msk)
             << std::endl 
             ;
+
+        dump_errors(); 
+
     }
 
 
@@ -99,7 +114,7 @@ struct CubicTest
         solve(msk);    
     }
 
-    CubicTest(float x0, float x1, float x2, unsigned msk_, bool coeff_ ) : num(3), nr(0), msk(msk_), coeff(coeff_), comp(false) 
+    CubicTest(Solve_t x0, Solve_t x1, Solve_t x2, unsigned msk_, bool coeff_ ) : num(3), nr(0), msk(msk_), coeff(coeff_), comp(false) 
     {
         if(coeff)
         {
@@ -127,25 +142,48 @@ struct CubicTest
         solve(msk);    
     }
 
+
+    void dump_errors()
+    {
+        for(unsigned i=0 ; i < nr ; i++)
+        {
+            rtPrintf(" i %d "
+                     "rt/err/del/frac (%9g %9g %9g ; %5g)\n"
+                     ,
+                     i 
+                     ,
+                     r1[i],rterr[i],rtdel[i], rterr[i]/r1[i]
+                     );
+        }
+    }
+
+
     void solve(unsigned msk)
     { 
         //  Original cubic  :   x^3 + a*x^2 + b*x + c = 0     // 1,a,b,c
         //  Depressed cubic :   z^3 +   0   + p*z + q = 0     // 1,0,p,q   (from x->z-a/3 )   
- 
-        float a = co[2]; 
-        float b = co[1]; 
-        float c = co[0]; 
 
-        nr = SolveCubic( a,b,c, r1, msk );
-        fascending_ptr( nr, r1 );
+        
+        Solve_t a = co[2]; 
+        Solve_t b = co[1]; 
+        Solve_t c = co[0]; 
+
+
+        nr = SolveCubicNumericalRecipe( a,b,c, r1, msk );
+        //nr = SolveCubic(              a,b,c, r1, msk );
+
+        //fascending_ptr( nr, r1 );
+
+        cubic_errors( a, b, c, r1, rterr, rtdel, nr );
+
 
         // below for checking values of intermediates when precision goes to pot
-        const float ott = 1.f / 3.f;
-        const float sq3 = sqrt(3.f);
-        const float inv6sq3    = 1.f / (6.f * sq3);
+        const Solve_t ott = 1.f / 3.f;
+        const Solve_t sq3 = sqrt(3.f);
+        const Solve_t inv6sq3    = 1.f / (6.f * sq3);
 
-        const float p = b - a * a * ott;        
-        const float q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
+        const Solve_t p = b - a * a * ott;        
+        const Solve_t q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
 
         dco[0] = q ;
         dco[1] = p ;
@@ -171,12 +209,11 @@ struct CubicTest
 
 
 
-
 };
 
 
 
-void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, float* sc, unsigned smsk )
+void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, Solve_t* sc, unsigned smsk )
 { 
     std::cout << " r0 : " << r0 ; 
     std::cout << " r1 : " << r1 ; 
@@ -193,7 +230,7 @@ void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, float* sc
         std::cout << " sc[2]: " << sc[2] ; 
         std::cout << std::endl ; 
 
-        for(float s=sc[0] ; s < sc[1] ; s+=sc[2] )
+        for(Solve_t s=sc[0] ; s < sc[1] ; s+=sc[2] )
         {
             for(unsigned i=0 ; i < N ; i++) CubicTest t(r0*( smsk & 1 ? s : 1) ,r1*(smsk & 2 ? s : 1),r2*(smsk & 4 ? s : 1), msk[i], false) ;   
             std::cout << std::endl ; 
@@ -201,7 +238,7 @@ void test_cubic( cplx r0, cplx r1, cplx r2, unsigned N, unsigned* msk, float* sc
     }
 }
 
-void test_one_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
+void test_one_real_root(unsigned N, unsigned* msk, Solve_t* sc, unsigned smsk)
 {
     std::cout << "test_one_real_root "  ;
 
@@ -213,7 +250,7 @@ void test_one_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
 }
 
 
-void test_one_real_root_2(unsigned N, unsigned* msk, float* sc, unsigned smsk)
+void test_one_real_root_2(unsigned N, unsigned* msk, Solve_t* sc, unsigned smsk)
 {
     std::cout << "test_one_real_root_2 "  ;
 
@@ -224,7 +261,7 @@ void test_one_real_root_2(unsigned N, unsigned* msk, float* sc, unsigned smsk)
     test_cubic(r0,r1,r2, N, msk, sc, smsk);
 }
 
-void test_three_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
+void test_three_real_root(unsigned N, unsigned* msk, Solve_t* sc, unsigned smsk)
 {
     std::cout << "test_three_real_root "  ;
 
@@ -236,32 +273,58 @@ void test_three_real_root(unsigned N, unsigned* msk, float* sc, unsigned smsk)
 }
 
 
-int main()
+
+void test_root_scan()
 {
     static const unsigned N = 3 ; 
     unsigned msk[N] ; 
     msk[0] = SOLVE_VECGEOM ;
     msk[1] = SOLVE_UNOBFUSCATED  ;
-    msk[2] = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD ;
+    //msk[2] = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTQUAD_1 ;
+    msk[2] = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ; 
+
 
 //    test_one_real_root(N, msk, NULL, 0);
     test_one_real_root_2(N, msk, NULL, 0);
 //    test_three_real_root(N, msk, NULL, 0);
 
-
     // control which roots to scale
     //unsigned smsk = 7 ; 
     //unsigned smsk = 6 ; 
-    unsigned smsk = 1 ;  
+    unsigned smsk = 0 ;  
 
     if(smsk > 0)
     {
-        float sc[3] = {1., 1000., 100. };
+        Solve_t sc[3] = {1., 1000., 100. };
 
         test_one_real_root(N, msk, sc, smsk);
         test_three_real_root(N, msk,sc, smsk);
     }
+}
 
+
+
+void test_coeff_artifact_ring_in_torus_hole_three_real_roots()
+{
+    unsigned msk  = SOLVE_UNOBFUSCATED | SOLVE_ROBUSTCUBIC_0 | SOLVE_ROBUSTCUBIC_1 | SOLVE_ROBUSTCUBIC_2 | SOLVE_ROBUSTQUAD_1 | SOLVE_ROBUST_VIETA  ; 
+
+    Solve_t p,q,r ;   
+
+    p = 49526.79994 ;        
+    q = 408572956.1 ;
+    r = -1483476.478 ;
+    
+    bool coeff = true ; 
+    CubicTest( r, q, p,  msk, coeff ); 
+}
+
+
+int main()
+{
+    test_coeff_artifact_ring_in_torus_hole_three_real_roots();
+
+    //test_root_scan();
+ 
     return 0 ; 
 }
 
