@@ -58,6 +58,82 @@ intersect_analytic_test with s=1
 
 
 
+
+GPU segv with pure double SolveCubicNumericalRecipe.h
+--------------------------------------------------------
+
+::
+
+    simon:cu blyth$ intersect_analytic_test
+    2017-08-10 10:19:42.377 INFO  [2804492] [OptiXTest::init@39] OptiXTest::init cu intersect_analytic_test.cu ptxpath /usr/local/opticks/build/optixrap/OptiXRap_generated_intersect_analytic_test.cu.ptx raygen intersect_analytic_test exception exception
+    Segmentation fault: 11
+    simon:cu blyth$ 
+
+
+
+* segv happens early, ptx level ?
+* somehow OptiX is implicated as pure CUDA in SolveCubicNumericalRecipeTest.cu does not have the issue.
+* binary code search points finger at **cbrt**
+
+
+Observe that difficult to determine root corresponds to "x = -r/q" 
+where "qx + r" x1_x0 is close to zero, from a subtraction of two large values. 
+
+Where "x = -r/q"    -> x^3 + p x^2 = 0   
+
+::
+
+    simon:cu blyth$ nvcc -arch=sm_30 SolveCubicNumericalRecipeTest.cu -run ; rm a.out
+    SolveCubicTest pqr (        49526.8     4.08573e+08    -1.48348e+06)  x^3 + p x^2 + q x + r = 0   -r/q 0.00363087   
+    nr 3  
+    xx[0] =        -39069.1  residual     -0.00236215  x3210 (   -5.96349e+13     7.55974e+13    -1.59626e+13    -1.48348e+06) x3_x2     1.59626e+13 x1_x0    -1.59626e+13 x3_x2_x1_x0     -0.00195312    
+    xx[1] =      0.00363087  residual      -0.0029249  x3210 (    4.78666e-08        0.652923     1.48348e+06    -1.48348e+06) x3_x2        0.652923 x1_x0       -0.655848 x3_x2_x1_x0      -0.0029249    
+    xx[2] =        -10457.7  residual    -0.000507358  x3210 (   -1.14369e+12     5.41643e+12    -4.27274e+12    -1.48348e+06) x3_x2     4.27274e+12 x1_x0    -4.27274e+12 x3_x2_x1_x0     -0.00146484    
+    simon:cu blyth$ 
+
+
+    // use_fast_math  should have no effect with doubles, just checkin
+
+    simon:cu blyth$ nvcc -arch=sm_30 -use_fast_math SolveCubicNumericalRecipeTest.cu -run ; rm a.out
+    SolveCubicTest pqr (        49526.8     4.08573e+08    -1.48348e+06)  x^3 + p x^2 + q x + r = 0   -r/q 0.00363087   
+    nr 3  
+    xx[0] =        -39069.1  residual     -0.00236215  x3210 (   -5.96349e+13     7.55974e+13    -1.59626e+13    -1.48348e+06) x3_x2     1.59626e+13 x1_x0    -1.59626e+13 x3_x2_x1_x0     -0.00195312    
+    xx[1] =      0.00363087  residual      -0.0029249  x3210 (    4.78666e-08        0.652923     1.48348e+06    -1.48348e+06) x3_x2        0.652923 x1_x0       -0.655848 x3_x2_x1_x0      -0.0029249    
+    xx[2] =        -10457.7  residual    -0.000507358  x3210 (   -1.14369e+12     5.41643e+12    -4.27274e+12    -1.48348e+06) x3_x2     4.27274e+12 x1_x0    -4.27274e+12 x3_x2_x1_x0     -0.00146484    
+    simon:cu blyth$ 
+
+
+Pure CUDA nvcc giving same as clang::
+
+    // purely doubles
+    simon:cu blyth$ clang SolveCubicTest.cc -lc++ && ./a.out && rm a.out
+     nr 3 zr0      (0,0)      (0,0)      (0,0)  r1   -39069.1 0.00363087   -10457.7  abc ( 49526.8 4.08573e+08 -1.48348e+06)  pq ( -4.09062e+08 2.25375e+12)  delta -1.36653e+26 disc -1.2653e+24 sdisc nan UNOBFUSCATED ROBUST_VIETA ROBUSTQUAD_1 ROBUSTCUBIC_0 ROBUSTCUBIC_1 ROBUSTCUBIC_2 
+     i 0 rt/err/del/frac ( -39069.1 1.80948e-12 -0.00202268 ; -4.63149e-17)
+     i 1 rt/err/del/frac (0.00363087 5.70431e-12 -0.00233063 ; 1.57106e-09)
+     i 2 rt/err/del/frac ( -10457.7 2.6574e-12 -0.00079512 ; -2.54109e-16)
+
+
+Spruce-ing up the old SolveCubicRoot to be pure double::
+
+    // csg_intersect_torus_test  r R rmax (10 100 110) ray_origin (-0.646 0.005311 3.947) ray_direction (0.00059 0.0007738 -0.009953) 
+    // csg_intersect_torus R r unit (99.9955 9.99955 0.0100005)  oxyz (-64.5971 0.531076 394.682) sxyz (0.0589973 0.0773765 -0.995255 ) t_min (0)   
+    // csg_intersect_torus HGIJKL (-301570 378.678 1.66907e+08 1 -793.158 169846)  ABCDE (1 -1586.32 968414 -2.69128e+08 2.86808e+10 ) 
+    // csg_intersect_torus qn (-1586.32 968414 -2.69128e+08 2.86808e+10) reverse 0 
+    SolveQuartic abcd (-1586.32 968414 -2.69128e+08 2.86808e+10)  pqr (49526.8 4.08573e+08 -1.48348e+06) 
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   pqr (         49526.79994          408572956.1         -1483476.478)  ireal 3  xx (0.00363087 -39069.1 -10457.7)
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 0 xx 0.00363087 residual 0.00265358  
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 1 xx -39069.1 residual 0.00728161  
+    // SOLVE_QUARTIC_DEBUG.cubic_sqroot   ireal 3 i 2 xx -10457.7 residual 0.00251214  
+    // SOLVE_QUARTIC_DEBUG cubic_sqroot h 0.0602567 
+     t_cand 0  p0 (-64.5971 0.531076 394.682) 
+    ERROR no isect 
+    save result npy to $TMP/oxrap/intersect_analytic_test.npy
+    simon:cu blyth$ 
+
+
+
+
+
 in-the-hole artifact rings
 -----------------------------
 

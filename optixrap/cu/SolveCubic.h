@@ -12,23 +12,33 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
     // Output: x[3] real solutions
     // Returns number of real solutions (1 or 3)
 
+    const Solve_t zero(0);
+    const Solve_t one(1);
+    const Solve_t two(2);
+    const Solve_t otwo = one/two ;
+    const Solve_t three(3);
+    const Solve_t four(4);
+    const Solve_t twentyseven(27);
 
-    const Solve_t ott        = 1.f / 3.f; 
-    const Solve_t sq3        = sqrt(3.f);
-    const Solve_t inv6sq3    = 1.f / (6.f * sq3);
-    unsigned int ireal = 1;
+    const Solve_t six(6);
+    const Solve_t ott = one/three ; 
+
+    //const Solve_t ott        = 1.f / 3.f; 
+    const Solve_t sq3        = sqrt(three);
+    const Solve_t inv6sq3    = one / (six * sq3);
+    unsigned ireal = 1;
 
     const Solve_t p = b - a * a * ott;                                       
-    const Solve_t q = c - a * b * ott + 2.f * a * a * a * ott * ott * ott;
-    const Solve_t p3 = p/3.f ; 
+    const Solve_t q = c - a * b * ott + two * a * a * a * ott * ott * ott;
+    const Solve_t p3 = p/three ; 
     //const Solve_t p33 = p3*p3*p3 ;  
-    const Solve_t q2 = q/2.f ; 
+    const Solve_t q2 = q/two ; 
 
     //const Solve_t q22 = q2*q2 ; 
     //const Solve_t disc = p33 + q22 ;  
 
 
-    Solve_t delta = 4.f * p * p * p + 27.f * q * q;   
+    Solve_t delta = four * p * p * p +  twentyseven * q * q;   
 
     //  p, q are coefficients of depressed cubic :  z**3 + p*z + q = 0 
     //  obtained by substitution  x -> z - a/3  
@@ -44,7 +54,7 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
 
     Solve_t t, u ;
 
-    if (delta >= 0.f) // only one real root,  Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
+    if (delta >= zero ) // only one real root,  Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
     {
         //path |= PATH_CUBIC_PDELTA ; 
 
@@ -52,9 +62,9 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
 
         if( msk & SOLVE_VECGEOM )
         {       
-            t     = (-3.f * q * sq3 + delta) * inv6sq3;  
-            u     = (3.f * q * sq3 + delta) * inv6sq3;  
-            x[0]  = copysign(1.f, t) * cbrt(fabs(t)) - copysign(1.f, u) * cbrt(fabs(u)) - a * ott;  
+            t     = (-three * q * sq3 + delta) * inv6sq3;  
+            u     = (three * q * sq3 + delta) * inv6sq3;  
+            x[0]  = copysign(one, t) * cbrt(fabs(t)) - copysign(one, u) * cbrt(fabs(u)) - a * ott;  
 
         }
         else if(msk & SOLVE_UNOBFUSCATED)
@@ -63,9 +73,9 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
 
             if( msk & SOLVE_ROBUST_VIETA )
             {
-                t = q2 < 0.f ? -q2 + sdisc : q2 + sdisc ;  
+                t = q2 < zero ? -q2 + sdisc : q2 + sdisc ;  
             
-                Solve_t tcu = copysign(1.f, t) * cbrt(fabs(t)) ; 
+                Solve_t tcu = copysign(one, t) * cbrt(fabs(t)) ; 
                 Solve_t ucu = p3 / tcu ;        
                
                 //  Evaluate the more numerically advantageous of the below branches t and u
@@ -77,15 +87,15 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
                 //
                 //  THIS TRICK YIELDS A LOT LESS ARTIFACTS FROM NUMERICAL IMPRECISION
             
-                x[0]  = q2 < 0.f ? tcu - ucu : ucu - tcu ;
+                x[0]  = q2 < zero ? tcu - ucu : ucu - tcu ;
             }
             else
             {
                 t = -q2 + sdisc ;
                 u =  q2 + sdisc ;
 
-                Solve_t tcu = copysign(1.f, t) * cbrt(fabs(t)) ;
-                Solve_t ucu = copysign(1.f, u) * cbrt(fabs(u)) ; 
+                Solve_t tcu = copysign(one, t) * cbrt(fabs(t)) ;
+                Solve_t ucu = copysign(one, u) * cbrt(fabs(u)) ; 
       
                 x[0]  = tcu - ucu ;  
             }
@@ -97,17 +107,17 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
         //path |= PATH_CUBIC_NDELTA ; 
 
         delta = sqrt(-delta);
-        t     = -0.5f * q;
+        t     = -otwo * q;
         u     = delta * inv6sq3;      // sqrt of negated discrim :  sqrt( -[(p/3)**3 + (q/2)**2] )
 
         // potentially should pick based on values for better numerical handling ?
         if( msk & SOLVE_VECGEOM )
         {       
-            x[0]  = 2.f * pow(t * t + u * u, 0.5f * ott) * cos(ott * atan2(u, t));
+            x[0]  = two * pow(t * t + u * u, otwo * ott) * cos(ott * atan2(u, t));
         }
         else if(msk & SOLVE_UNOBFUSCATED)
         {
-            x[0]  = 2.f * sqrt(-p/3.f) * cos(ott * atan2(u, t)); 
+            x[0]  = two * sqrt(-p3) * cos(ott * atan2(u, t)); 
         }
         
         //  obfuscation ???
@@ -143,23 +153,23 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
 
     t     = x[0] * x[0] + a * x[0] + b;
     u     = a + x[0];
-    delta = u * u - 4.f * t;
+    delta = u * u - four * t;
 
-    if (delta >= 0.f) 
+    if (delta >= zero) 
     {
         ireal = 3;
         delta = sqrt(delta);
    
         if( msk & SOLVE_ROBUSTQUAD_1 )
         {
-            Solve_t tmp = u > 0.f ? 0.5f*(-u - delta) : 0.5f*(-u + delta) ; 
+            Solve_t tmp = u > zero ? otwo*(-u - delta) : otwo*(-u + delta) ; 
             x[1] = tmp ; 
             x[2] = t/tmp ; 
         }
         else
         {
-            x[1]  = 0.5f * (-u - delta);
-            x[2]  = 0.5f * (-u + delta);
+            x[1]  = otwo * (-u - delta);
+            x[2]  = otwo * (-u + delta);
         }
 
     }

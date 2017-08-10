@@ -1,20 +1,23 @@
+#pragma once
 
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned ) 
+static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk ) 
 {
     //  p185 NUMERICAL RECIPES IN C 
     //  x**3 + a x**2 + b x + x = 0 
 
     const Solve_t zero(0) ; 
     const Solve_t one(1) ; 
-    const Solve_t three(3) ; 
-    const Solve_t othree = one/three ; 
-    const Solve_t nine(9) ; 
     const Solve_t two(2) ; 
+    const Solve_t three(3) ; 
+    const Solve_t nine(9) ; 
     const Solve_t twentyseven(27) ;
     const Solve_t fiftyfour(54) ;
+
+    const Solve_t othree = one/three ; 
+    const Solve_t otwo = one/two ; 
     const Solve_t twpi = M_PI*two  ;
    
     const Solve_t a3 = a*othree ; 
@@ -25,6 +28,7 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
     const Solve_t Q3 = Q*Q*Q ;
     const Solve_t R2_Q3 = R2 - Q3 ; 
 
+  
     unsigned nr ; 
 
     if( R2_Q3 < zero ) // three real roots
@@ -40,7 +44,18 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
     else
     {
          nr = 1 ; 
-         const Solve_t A = -copysign(one, R)*cbrt( fabs(R) +  sqrt(R2_Q3) ) ; 
+         const Solve_t R_R2_Q3 = fabs(R) + sqrt(R2_Q3) ; 
+
+         //const Solve_t croot = sqrt( R_R2_Q3 ) ;   // WRONG, but avoids segv
+         //const Solve_t croot = pow( R_R2_Q3, otwo ) ; 
+
+         // with OptiX get segv with either cbrt or pow of double, works OK pure CUDA
+         const Solve_t croot = cbrt( R_R2_Q3 ) ; 
+         //const Solve_t croot = pow( R_R2_Q3, othree ) ; 
+         //const Solve_t croot = one/rcbrt( R_R2_Q3 ) ;  
+         //const Solve_t croot = cbrtf( R_R2_Q3 ) ;   // float works, but means conversions, lower prec
+
+         const Solve_t A = -copysign(one, R)*croot  ; 
          const Solve_t B = A != zero ? Q/A : zero ; 
 
          xx[0] = (A + B) - a3  ;  
@@ -48,8 +63,6 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
          xx[2] = zero ; 
     }  
 
-
-/*
 #ifdef SOLVE_QUARTIC_DEBUG
     rtPrintf("// SOLVE_QUARTIC_DEBUG.SolveCubicNumericalRecipe "
              " abc (%g %g %g) " 
@@ -61,9 +74,6 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
              nr         
          );
 #endif
-*/
-
-
     return nr ; 
 }
 

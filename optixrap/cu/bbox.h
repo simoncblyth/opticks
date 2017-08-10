@@ -1,8 +1,8 @@
 #pragma once
 
-using namespace optix ; 
+//using namespace optix ; 
 
-__device__ void transform_bbox(Aabb* bb, const Matrix4x4* tr )
+__device__ void transform_bbox(optix::Aabb* bb, const optix::Matrix4x4* tr )
 {
    // http://dev.theomader.com/transform-bounding-boxes/
    // see: 
@@ -37,25 +37,34 @@ __device__ void transform_bbox(Aabb* bb, const Matrix4x4* tr )
 }
 
 
-__device__ Matrix4x4 make_test_matrix()
+__device__ optix::Matrix4x4 make_test_matrix()
 {
     float angle = M_PIf*45.f/180.f ; 
 
     float3 ax = make_float3(0.f, 0.f, 1.f );
     float3 tl = make_float3(0.f, 0.f, 100.f );
 
-    Matrix4x4 r = Matrix4x4::rotate( angle, ax ); 
-    Matrix4x4 t = Matrix4x4::translate( tl ); 
-    Matrix4x4 tr = t * r ; 
+    optix::Matrix4x4 r = optix::Matrix4x4::rotate( angle, ax ); 
+    optix::Matrix4x4 t = optix::Matrix4x4::translate( tl ); 
+    optix::Matrix4x4 tr = t * r ; 
 
     return tr ; 
 }
 
 
+
+/*
+
+// test_transform_bbox requires tranBuffer, use like this::
+//
+//     rtBuffer<optix::Matrix4x4> tranBuffer; 
+//     #include "bbox.h"
+//
+
 __device__ void test_transform_bbox()
 {
     int tranIdx = 0 ; 
-    Matrix4x4 tr = 2*tranIdx < tranBuffer.size() ? tranBuffer[2*tranIdx+0] : make_test_matrix() ; 
+    optix::Matrix4x4 tr = 2*tranIdx < tranBuffer.size() ? tranBuffer[2*tranIdx+0] : make_test_matrix() ; 
 
     unsigned size = tranBuffer.size() ;  // smth funny cannot directly rtPrintf a size
     rtPrintf("##test_transform_bbox tranBuffer size %u \n", size  );
@@ -63,7 +72,7 @@ __device__ void test_transform_bbox()
     float3 mn = make_float3(-100.f,-100.f,-100.f);
     float3 mx = make_float3( 100.f, 100.f, 100.f);
 
-    Aabb bb(mn, mx);
+    optix::Aabb bb(mn, mx);
 
     transform_bbox( &bb, &tr ) ; 
 
@@ -81,6 +90,6 @@ __device__ void test_transform_bbox()
 
 }
 
-
+*/
 
 

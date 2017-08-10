@@ -10,11 +10,12 @@ __device__ __host__
 #endif
 static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
 {
+    Solve_t zero(0);
+ 
     Solve_t xx[3] ; 
-
     unsigned ireal = SolveCubic(p, q, r, xx, msk);
 
-    Solve_t h = 0.f ; 
+    Solve_t h = zero ; 
 
 #ifdef SOLVE_QUARTIC_DEBUG
     rtPrintf("// SOLVE_QUARTIC_DEBUG.cubic_sqroot  "
@@ -53,7 +54,7 @@ static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
 
     if (ireal == 1) 
     {
-        if (xx[0] <= 0.f) return 0 ;
+        if (xx[0] <= zero) return 0 ;
         h = sqrt(xx[0]);
     } 
     else 
@@ -62,9 +63,9 @@ static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
         for (unsigned i = 0; i < 3; i++) 
         {
             h = xx[i];
-            if (h >= 0.f) break;
+            if (h >= zero) break;
         }
-        if (h <= 0.f) return 0;
+        if (h <= zero) return zero ;
         h = sqrt(h);
     }
 
@@ -86,16 +87,28 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
     // Output: x[4] - real solutions
     // Returns number of real solutions (0 to 3)
 
-    const Solve_t a4 = a/4.f ; 
+
+    const Solve_t zero(0) ; 
+    const Solve_t one(1) ; 
+    const Solve_t two(2) ; 
+    const Solve_t otwo(one/two) ; 
+    const Solve_t three(3) ; 
+    const Solve_t four(4) ; 
+    const Solve_t eight(8) ; 
+    const Solve_t sixteen(16) ; 
+    const Solve_t twofivesix(256) ; 
+
+    const Solve_t aa = a*a ; 
+    const Solve_t a4 = a/four ; 
 
     // (1,0,e,f,g) are coeff of depressed quartic
-    const Solve_t e     = b - 3.f * a * a / 8.f;
-    const Solve_t f     = c + a * a * a / 8.f - 0.5f * a * b;
-    const Solve_t g     = d - 3.f * a * a * a * a / 256.f + a * a * b / 16.f - a * c / 4.f;
+    const Solve_t e     = b - three * aa / eight ;
+    const Solve_t f     = c + a * aa / eight - otwo * a * b;
+    const Solve_t g     = d - three * aa * aa / twofivesix + aa * b / sixteen - a * c / four ;
 
     //  (1,p,q,r) are coeffs of resolvent cubic
-    const Solve_t p = 2.f * e ;
-    const Solve_t q = e * e - 4.f * g ;
+    const Solve_t p = two * e ;
+    const Solve_t q = e * e - four * g ;
     const Solve_t r = -f * f ;
 
 #ifdef SOLVE_QUARTIC_DEBUG
@@ -110,9 +123,9 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
             );
 #endif
 
-    Solve_t xx[4] = { 1e10f, 1e10f, 1e10f, 1e10f };
+    Solve_t xx[4] ;
     Solve_t delta;
-    Solve_t h = 0.f;
+    Solve_t h = zero ;
     unsigned ireal = 0;
 
     // special case when f is zero,
@@ -136,14 +149,14 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
        rtPrintf("// SOLVE_QUARTIC_DEBUG small-r %g \n", r );
 #endif
 
-        delta = e * e - 4.f * g;
+        delta = e * e - four * g;
  
         Solve_t quad[2] ; 
-        int iquad = SolveQuadratic( e,  g , quad, delta, 0.f ) ; 
+        int iquad = SolveQuadratic( e,  g , quad, delta, zero ) ; 
         for(int i=0 ; i < iquad ; i++)
         {
             h = quad[i] ;
-            if(h >= 0.f)
+            if(h >= zero)
             { 
                 h = sqrt(h);
                 x[ireal++] = -h - a4 ; 
@@ -167,9 +180,7 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
 
         x[ireal++] = -a4 ;   // z=0 root
 
-        //unsigned ncubicroots = SolveCubic(0, e, f, xx, msk );   // 0 as z**2 term already zero
-
-        unsigned ncubicroots = SolveCubic(0, e, f, xx, msk );   // 0 as z**2 term already zero
+        unsigned ncubicroots = SolveCubic(zero, e, f, xx, msk );   // 0 as z**2 term already zero
 
         for (unsigned i = 0; i < ncubicroots; i++) x[ireal++] = xx[i] - a4 ;
 
@@ -203,20 +214,18 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
     rtPrintf("// SOLVE_QUARTIC_DEBUG cubic_sqroot h %g \n", h );
 #endif
 
-    //if (h < 0.001f) return 0;  // hairline crack
-
-    if (h <= 0.f) return 0;
+     if (h <= zero) return 0;
 
   
-    Solve_t j = 0.5f * (e + h * h - f / h);   
+    Solve_t j = otwo * (e + h * h - f / h);   
 
     ireal = 0;
 
-    Solve_t dis1 = h * h - 4.f * j;  // discrim of 1st factored quadratic
+    Solve_t dis1 = h * h - four * j;  // discrim of 1st factored quadratic
 
     ireal += SolveQuadratic( h, j , x, dis1, -a4 ) ; 
 
-    Solve_t dis2 = h * h - 4.f * g / j;    // discrim of 2nd factored quadratic
+    Solve_t dis2 = h * h - four * g / j;    // discrim of 2nd factored quadratic
 
     ireal += SolveQuadratic( -h, g/j , x+ireal, dis2, -a4 ) ; 
 
@@ -313,8 +322,4 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
 
 
 */
-
-
-
-
 

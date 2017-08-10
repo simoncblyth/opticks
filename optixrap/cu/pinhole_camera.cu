@@ -1,7 +1,6 @@
 #include <optix_world.h>
 #include "helpers.h"  // make_color
 #include "color_lookup.h"
-#include "hemi-pmt.h"
 #include "PerRayData_radiance.h"
 
 using namespace optix;

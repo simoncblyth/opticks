@@ -161,6 +161,8 @@ Ericson, Real Time Collision Detection p196-198
 */
 
 
+#include "hemi-pmt.h"
+
 enum
 {
     ENDCAP_P = 0x1 <<  0,    

@@ -1,9 +1,6 @@
 #pragma once
 
 
-#include <string>
-#include <sstream>
-
 
 typedef enum 
 {
@@ -16,6 +13,13 @@ typedef enum
     SOLVE_ROBUSTCUBIC_2  = 0x1 << 6
 
 } SolveType_t ; 
+
+
+
+#ifndef __CUDACC__
+
+#include <string>
+#include <sstream>
 
 static const char* SOLVE_VECGEOM_      = "VECGEOM" ; 
 static const char* SOLVE_UNOBFUSCATED_ = "UNOBFUSCATED" ; 
@@ -53,5 +57,7 @@ static std::string SolveTypeMask(unsigned mask)
     }
     return ss.str();
 }
+
+#endif
 
 
