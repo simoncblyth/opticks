@@ -1,7 +1,5 @@
 #pragma once
 
-
-
 typedef enum 
 {
     SOLVE_VECGEOM        = 0x1 << 0,

@@ -101,9 +101,11 @@ void OScene::init()
 
     optix::Context context = optix::Context::create();
 
-    LOG(debug) << "OScene::init (OContext)" ;
+    unsigned stack_size_bytes = m_cfg->getStack() ;
+
+    LOG(info) << "OScene::init (OContext) stack_size_bytes: " << stack_size_bytes ;
     m_ocontext = new OContext(context, mode);
-    m_ocontext->setStackSize(m_cfg->getStack());
+    m_ocontext->setStackSize(stack_size_bytes);
     m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_cfg->getDebugIdx());
 

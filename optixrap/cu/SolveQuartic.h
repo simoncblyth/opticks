@@ -10,70 +10,12 @@ __device__ __host__
 #endif
 static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
 {
-    Solve_t zero(0);
- 
+    const Solve_t zero(0); 
     Solve_t xx[3] ; 
-    unsigned ireal = SolveCubic(p, q, r, xx, msk);
-
-    Solve_t h = zero ; 
-
-#ifdef SOLVE_QUARTIC_DEBUG
-    rtPrintf("// SOLVE_QUARTIC_DEBUG.cubic_sqroot  "
-             " pqr (%20.10g %20.10g %20.10g) " 
-             " ireal %u "
-             " xx (%g %g %g)"
-             "\n"
-             ,
-             p,q,r
-             ,
-             ireal
-             ,
-             xx[0],xx[1],xx[2]
-            );
-
-    for(int i=0 ; i < ireal ; i++)
-    {
-        Solve_t residual = ((xx[i] + p)*xx[i] + q)*xx[i] + r  ; 
-
-        rtPrintf(
-                 "// SOLVE_QUARTIC_DEBUG.cubic_sqroot  "
-                 " ireal %d i %d xx %g residual %g "
-                 " \n"
-                 ,
-                 ireal
-                 ,
-                 i
-                 , 
-                 xx[i]
-                 ,
-                 residual               
-            );               
-    }
-#endif
-
-
-    if (ireal == 1) 
-    {
-        if (xx[0] <= zero) return 0 ;
-        h = sqrt(xx[0]);
-    } 
-    else 
-    {
-        // 3 real solutions of the cubic
-        for (unsigned i = 0; i < 3; i++) 
-        {
-            h = xx[i];
-            if (h >= zero) break;
-        }
-        if (h <= zero) return zero ;
-        h = sqrt(h);
-    }
-
-    return h ; 
+    unsigned num_real_roots = SolveCubic(p, q, r, xx, msk);
+    Solve_t h = num_real_roots == 1 ?  xx[0] : ( xx[0] >= zero ? xx[0] : ( xx[1] >= zero ? xx[1] : xx[2] )) ; 
+    return h <= zero ? zero : sqrt(h) ; 
 }
-
-
-
 
 
 

@@ -32,6 +32,162 @@ OptiX Advanced Samples
 * https://github.com/nvpro-samples/optix_advanced_samples/tree/master/src/optixVox
 
 
+macrosim
+-----------
+
+* https://bitbucket.org/itom/macrosim/wiki/Home
+
+
+Things that make createPTXFromFile prone to segv
+----------------------------------------------------
+
+* lots of rtPrintf, keep ALL rtPrintf inside ifdef so can easily switch them all off
+
+* calling a function twice with 
+
+
+PTX njuffa (2014)
+--------------------
+
+* https://devtalk.nvidia.com/default/topic/788577/?comment=4365842
+
+
+PTX is a virtual instruction set that exposes little beyond instructions
+supported by GPU hardware. There are some exceptions for operations that are
+commonly present as instructions on other compute platforms, such as integer
+and floating-point division which are instructions at the PTX level, but really
+implemented as emulation routines "under the hood".
+
+GPU hardware provides minimal hardware support for the following higher
+single-precision operations: reciprocal, reciprocal square root, sine, cosine,
+exponentiation base 2, logarithm base 2. These are exposed via PTX. CUDA offers
+some device function intrinsics [such as__sinf(), __cosf()] which are thin
+wrappers around these PTX instructions. If CUDA code is built with
+-use_fast_math, some math library functions [such as sinf() and cosf()] are
+mapped automatically to the corresponding intrinsic. From your description
+above it sound slike this is how you may be building your code?
+
+You can find the supported PTX instructions in the document ptx_isa_4.1.pdf
+that ships with CUDA. For your purposes, you would want to consult section
+8.7.3 Floating-point instructions. For example, the PTX instruction "sin" is
+described in sub-section 8.7.3.18 with the following synopsis:
+
+sin.approx{.ftz}.f32 d, a;
+
+As can be seen, there is no double-precision version of this instruction (since
+no such hardware instruction exists in the GPU).
+
+Generally, the single-precision hardware implementations mentioned above are
+very high performance but "quick & dirty" since they were designed for use in
+graphics. Comprehensive math libraries for general computation obviously
+require many more functions and also typically need higher accuracy and better
+special case handling as prescribed by the IEEE-754 floating-point standard and
+the ISO C/C+ standards. Note also that the hardware does not provide any kind
+of higher double-precision operations.
+
+Like just about any other computing platform including x86 and ARM, CUDA
+therefore ships with a math library that sits on top of the assembly language
+level (i.e. upstream of PTX) in the software stack. In CUDA 6.5, the math
+library is provided as part of a device library. The documentation for this
+device library resides in a file called libdevice-users-guide.pdf that ships
+with CUDA. The actual code is in multiple files libdevice.compute_??.??.bc.
+Best I know these libraries are usable by tool chains other than CUDA and I
+believe there is at least one project which makes use of that.
+
+Here is a presentation from GTC 2013 that shows how GPU compilers are
+structured. On slide 11 it is shown where the contents of libdevice enters the
+flow inside the tool chain, well before the PTX assembly code is generated:
+
+http://on-demand.gputechconf.com/gtc/2013/presentations/S3185-Building-GPU-Compilers-libNVVM.pdf
+
+
+With CUDA 7.0 via soft link /Developer/NVIDIA/CUDA-7.0/doc
+
+* /usr/local/cuda/doc/pdf/ptx_isa_4.2.pdf
+* /usr/local/cuda/doc/pdf/libdevice-users-guide.pdf
+
+
+
+* https://devtalk.nvidia.com/default/topic/788577/?comment=4365842
+
+Single-precision math functions sinf() and cosf() normally map [like
+double-precision sin(), cos()] to functions in libdevice. But when you compile
+with -use_fast_math, they are replaced by the intrinsics __sinf() and __cosf(),
+which map directly to the PTX instructions `sin.ftz.f32` and `cos.ftz.f32`. As
+a consequence the resulting PTX would compile even without libdevice being part
+of the build.
+
+[Later:] As for MADC.HI, check your architecture target and PTX version number.
+My memory is hazy, but this instruction was only added three years ago or so.
+How the error relates to -use_fast_math, I have no clue.
+
+
+* 
+
+
+Please always provide the OptiX version you're having issues with.
+
+There have been fixes around the use of madc.hi inside OptiX 3.6.3, see 
+https://devtalk.nvidia.com/default/topic/779816/optix/optix-3-6-3-released/
+"Bug fix Double-precision cosine and other transcendentals now work properly, although ray tracing internals are still single-precision."
+
+If that doesnt' help, please provide a minimal reproducer in failing state to the OptiX team including the following information:
+OS version, OS bitness, OptiX version, CUDA toolkit version, installed GPU(s), display driver version.
+
+
+
+
+* https://devtalk.nvidia.com/default/topic/780372/?comment=4330651
+
+If I don't use -use_fast_math while generating .ptx files, I'll have runtime
+error: OptiX Error: Invalid value (Details: Function "RTresult
+_rtProgramCreateFromPTXFile(RTcontext, const char*, const char*,
+RTprogram_api**)" caught exception: defs/uses not defined for PTX instruction
+(Try --use_fast_math): madc.hi, [1310866]) (sample2.cxx:219)
+
+If I use -ftz -prec-div -prec-sqrt -fmad instead, I got the same error as using
+nothing.  Even if I use -ftz=true -prec-div=false -prec-sqrt=false -fmad=true
+to get the same effect as -use_fast_math, I got the same error. 
+
+Any ideas?  Thanks!
+
+
+
+Detlef Roettger (2016)
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://devtalk.nvidia.com/default/topic/930762/?comment=4857695
+
+OptiX doesn't support function call instructions inside PTX code unless they
+have been created via OptiX callable program mechanism.  Other function calls
+are always inlined. To make sure that happens in the CUDA to PTX compilation
+process already I'm declaring all functions in OptiX CUDA C++ with
+__forceinline__ __device__
+
+__inline__ alone is not enough, because that's just a hint and the CUDA
+compiler might decide to not inline a function if it's too big or has too many
+arguments. I've seen that happening.
+
+I'm using a define for that which looks like this:
+
+#ifndef RT_FUNCTION
+#define RT_FUNCTION __forceinline__ __device__
+#endif
+
+// Example: 
+RT_FUNCTION int random()
+{
+  return 4; // Random number, determined by fair dice roll! ;-)
+}
+
+Depending on how you use the callable program (bound to a variable or bindless
+via ID) there are also different scopes you can access!  Bound callable
+programs inherit the scope of the caller, bindless callable programs only have
+the context and themselves, the program, as scope. Means bindless callable
+programs cannot call rtTrace() or rtTransform*() functions for example.  Refer
+to the OptiX Programming Guide for more information.
+
+
 
 Refs describing GPU architecture evolution
 --------------------------------------------

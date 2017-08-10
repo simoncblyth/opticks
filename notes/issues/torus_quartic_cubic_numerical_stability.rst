@@ -58,6 +58,98 @@ intersect_analytic_test with s=1
 
 
 
+suspect cbrt segv may be resource issue
+------------------------------------------
+
+* sorta behaving like every call takes more stack ?? possibly nothing special about cbrt(double) other
+  that it corresponds to a large chunk of code 
+
+* why SolveCubic.h which is very similar to SolveCubicNumericalRecipe.h is less taxing ?
+
+  * it uses poly longdiv, resulting in less double precision trig 
+
+
+cbrtTest.cu::
+
+     76     unsigned nr = 0 ;  
+     77     Solve_t xx[3] ; 
+     78     nr = SolveCubic(p,q,r,xx, 0u ); 
+     79     nr = SolveCubic(p,q,r,xx, 0u ); 
+     80     //nr = SolveCubic(p,q,r,xx, 0u ); 
+     81     //nr = SolveCubic(p,q,r,xx, 0u ); 
+     82 
+     83     // HMM : doing twice works with default stacksize of 1024, more than twice segv in createProgramFromPTX
+     84     //       three times works with 2* stacksize 
+     85 
+       
+
+
+optixtest CubicRoot discrep
+-------------------------------
+
+::
+
+    simon:cu blyth$ t optixtest
+    optixtest () 
+    { 
+        local nam=${1:-cbrtTest};
+        local exe=/tmp/$nam;
+        local ptx=/tmp/$nam.ptx;
+        local cc=../tests/$nam.cc;
+        local cu=$nam.cu;
+        local ver=OptiX_380;
+        local inc=/Developer/$ver/include;
+        local lib=/Developer/$ver/lib64;
+        clang -std=c++11 -I/usr/local/cuda/include -I$inc -L$lib -loptix -lc++ -Wl,-rpath,$lib $cc -o $exe;
+        nvcc -arch=sm_30 -m64 -std=c++11 -use_fast_math -ptx $cu -I$inc -o $ptx;
+        echo $exe $ptx $nam;
+        $exe $ptx $nam
+    }
+
+
+
+Discrepancy for the tough root, between SolveCubicNumericalRecipe.h and SolveCubic.h::
+
+    simon:cu blyth$ optixtest
+    ./SolveCubicNumericalRecipe.h(20): warning: variable "otwo" was declared but never referenced
+
+    /tmp/cbrtTest /tmp/cbrtTest.ptx cbrtTest
+     ptxpath /tmp/cbrtTest.ptx raygen cbrtTest
+     ptxpath /tmp/cbrtTest.ptx raygen cbrtTest exception exception
+    cbrtTest crf:3.000000 crd:3  
+    SolveCubicTest pqr (        49526.8     4.08573e+08    -1.48348e+06)  x^3 + p x^2 + q x + r = 0   -r/q 0.00363087   
+    nr 3  
+    xx[0] =        -39069.1  residual     -0.00236215  x3210 (   -5.96349e+13     7.55974e+13    -1.59626e+13    -1.48348e+06) x3_x2     1.59626e+13 x1_x0    -1.59626e+13 x3_x2_x1_x0     -0.00195312    
+    xx[1] =      0.00363087  residual      -0.0029249  x3210 (    4.78666e-08        0.652923     1.48348e+06    -1.48348e+06) x3_x2        0.652923 x1_x0       -0.655848 x3_x2_x1_x0      -0.0029249    
+    xx[2] =        -10457.7  residual    -0.000507358  x3210 (   -1.14369e+12     5.41643e+12    -4.27274e+12    -1.48348e+06) x3_x2     4.27274e+12 x1_x0    -4.27274e+12 x3_x2_x1_x0     -0.00146484    
+    simon:cu blyth$ 
+    simon:cu blyth$ 
+    simon:cu blyth$ optixtest
+
+    /tmp/cbrtTest /tmp/cbrtTest.ptx cbrtTest
+     ptxpath /tmp/cbrtTest.ptx raygen cbrtTest
+     ptxpath /tmp/cbrtTest.ptx raygen cbrtTest exception exception
+    cbrtTest crf:3.000000 crd:3  
+    SolveCubicTest pqr (        49526.8     4.08573e+08    -1.48348e+06)  x^3 + p x^2 + q x + r = 0   -r/q 0.00363087   
+    nr 3  
+    xx[0] =    4.94066e-324  residual    -1.48348e+06  x3210 (              0               0    2.01862e-315    -1.48348e+06) x3_x2               0 x1_x0    -1.48348e+06 x3_x2_x1_x0    -1.48348e+06    
+    xx[1] =        -39069.1  residual    -1.48348e+06  x3210 (   -5.96349e+13     7.55974e+13    -1.59626e+13    -1.48348e+06) x3_x2     1.59626e+13 x1_x0    -1.59626e+13 x3_x2_x1_x0    -1.48348e+06    
+    xx[2] =        -10457.7  residual    -1.48348e+06  x3210 (   -1.14369e+12     5.41642e+12    -4.27273e+12    -1.48348e+06) x3_x2     4.27273e+12 x1_x0    -4.27274e+12 x3_x2_x1_x0    -1.48348e+06    
+    simon:cu blyth$ 
+
+
+Without use_fast_math get same, this is expected as should be done pure double::
+
+    SolveCubicTest pqr (        49526.8     4.08573e+08    -1.48348e+06)  x^3 + p x^2 + q x + r = 0   -r/q 0.00363087   
+    nr 3  
+    xx[0] =    4.94066e-324  residual    -1.48348e+06  x3210 (              0               0    2.01862e-315    -1.48348e+06) x3_x2               0 x1_x0    -1.48348e+06 x3_x2_x1_x0    -1.48348e+06    
+    xx[1] =        -39069.1  residual    -1.48348e+06  x3210 (   -5.96349e+13     7.55974e+13    -1.59626e+13    -1.48348e+06) x3_x2     1.59626e+13 x1_x0    -1.59626e+13 x3_x2_x1_x0    -1.48348e+06    
+    xx[2] =        -10457.7  residual    -1.48348e+06  x3210 (   -1.14369e+12     5.41642e+12    -4.27273e+12    -1.48348e+06) x3_x2     4.27273e+12 x1_x0    -4.27274e+12 x3_x2_x1_x0    -1.48348e+06    
+    simon:cu blyth$ 
+
+
+
+
 
 GPU segv with pure double SolveCubicNumericalRecipe.h
 --------------------------------------------------------

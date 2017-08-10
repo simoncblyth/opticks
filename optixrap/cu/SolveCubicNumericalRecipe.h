@@ -1,9 +1,9 @@
-#pragma once
+//#pragma once
 
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk ) 
+unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk ) 
 {
     //  p185 NUMERICAL RECIPES IN C 
     //  x**3 + a x**2 + b x + x = 0 
@@ -22,18 +22,17 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
    
     const Solve_t a3 = a*othree ; 
     const Solve_t aa = a*a ; 
+
     const Solve_t Q = (aa - three*b)/nine ;                                         
     const Solve_t R = ((two*aa - nine*b)*a + twentyseven*c)/fiftyfour ;  // a,b,c real so Q,R real
     const Solve_t R2 = R*R ; 
     const Solve_t Q3 = Q*Q*Q ;
     const Solve_t R2_Q3 = R2 - Q3 ; 
-
   
-    unsigned nr ; 
+    unsigned nr = R2_Q3 < zero ? 3 : 1 ; 
 
-    if( R2_Q3 < zero ) // three real roots
+    if( nr == 3 ) // three real roots
     { 
-         nr = 3 ; 
          const Solve_t theta = acos( R/sqrt(Q3) ); 
          const Solve_t qs = sqrt(Q); 
 
@@ -42,23 +41,20 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigne
          xx[2] = -two*qs*cos((theta-twpi)*othree) - a3 ; 
     }
     else
-    {
-         nr = 1 ; 
+    { 
          const Solve_t R_R2_Q3 = fabs(R) + sqrt(R2_Q3) ; 
 
-         //const Solve_t croot = sqrt( R_R2_Q3 ) ;   // WRONG, but avoids segv
-         //const Solve_t croot = pow( R_R2_Q3, otwo ) ; 
-
-         // with OptiX get segv with either cbrt or pow of double, works OK pure CUDA
+         // OptiX prone to segv in createPTXFromFile with either cbrt or pow of double, works OK pure CUDA
          const Solve_t croot = cbrt( R_R2_Q3 ) ; 
+
+         //const Solve_t croot = cbrtf( R_R2_Q3 ) ;   // float works, but means conversions, lower prec, torus artifacts
          //const Solve_t croot = pow( R_R2_Q3, othree ) ; 
          //const Solve_t croot = one/rcbrt( R_R2_Q3 ) ;  
-         //const Solve_t croot = cbrtf( R_R2_Q3 ) ;   // float works, but means conversions, lower prec
 
          const Solve_t A = -copysign(one, R)*croot  ; 
-         const Solve_t B = A != zero ? Q/A : zero ; 
+         const Solve_t B = A == zero ? zero : Q/A ; 
 
-         xx[0] = (A + B) - a3  ;  
+         xx[0] = A + B - a3  ;  
          xx[1] = zero ; 
          xx[2] = zero ; 
     }  

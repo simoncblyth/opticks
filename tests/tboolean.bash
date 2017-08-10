@@ -144,6 +144,9 @@ tboolean--(){
     local msg="=== $FUNCNAME :"
     local cmdline=$*
 
+    #local stack=4096
+    local stack=2180  # default
+
     local testconfig
     if [ -n "$TESTCONFIG" ]; then
         testconfig=${TESTCONFIG}
@@ -158,6 +161,7 @@ tboolean--(){
             --animtimemax 20 \
             --timemax 20 \
             --geocenter \
+            --stack $stack \
             --eye 1,0,0 \
             --dbganalytic \
             --test --testconfig "$testconfig" \

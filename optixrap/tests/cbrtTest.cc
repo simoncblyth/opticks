@@ -5,12 +5,18 @@ int main( int argc, char** argv )
 {
     optix::Context context = optix::Context::create();
 
+    RTsize stack_size_bytes = context->getStackSize() ;
+    stack_size_bytes *= 2 ; 
+    context->setStackSize(stack_size_bytes);
+   
+
     assert( argc == 3 );
     const char* ptxpath = argv[1] ;
     const char* raygen = argv[2] ;
 
     std::cout << " ptxpath " << ptxpath
               << " raygen " << raygen 
+              << " stack_size_bytes " << stack_size_bytes
               << std::endl ; 
 
     OptiXMinimalTest* test = new OptiXMinimalTest(context, ptxpath, raygen ) ;

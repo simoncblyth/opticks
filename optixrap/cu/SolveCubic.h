@@ -1,4 +1,4 @@
-
+#pragma once
 
 
 #ifdef __CUDACC__
@@ -23,7 +23,6 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
     const Solve_t six(6);
     const Solve_t ott = one/three ; 
 
-    //const Solve_t ott        = 1.f / 3.f; 
     const Solve_t sq3        = sqrt(three);
     const Solve_t inv6sq3    = one / (six * sq3);
     unsigned ireal = 1;
@@ -31,12 +30,7 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
     const Solve_t p = b - a * a * ott;                                       
     const Solve_t q = c - a * b * ott + two * a * a * a * ott * ott * ott;
     const Solve_t p3 = p/three ; 
-    //const Solve_t p33 = p3*p3*p3 ;  
     const Solve_t q2 = q/two ; 
-
-    //const Solve_t q22 = q2*q2 ; 
-    //const Solve_t disc = p33 + q22 ;  
-
 
     Solve_t delta = four * p * p * p +  twentyseven * q * q;   
 
@@ -56,8 +50,6 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
 
     if (delta >= zero ) // only one real root,  Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
     {
-        //path |= PATH_CUBIC_PDELTA ; 
-
         delta = sqrt(delta);  
 
         if( msk & SOLVE_VECGEOM )
@@ -175,10 +167,5 @@ static unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t *x, unsigned
     }
     return ireal;
 }
-
-
-
-
-
 
 

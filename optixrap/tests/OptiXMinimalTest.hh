@@ -1,7 +1,12 @@
 /*
+
 optixtest()
 {
-    local nam=cbrtTest
+    # expects to be invoked from optixrap/cu 
+    # and to find nam.cu ../tests/nam.cc
+
+    local nam=${1:-cbrtTest}
+
     local exe=/tmp/$nam
     local ptx=/tmp/$nam.ptx
 
@@ -9,16 +14,29 @@ optixtest()
     local cu=$nam.cu
 
     local ver=OptiX_380
+    #local ver=OptiX_400
     local inc=/Developer/$ver/include 
     local lib=/Developer/$ver/lib64 
 
-    clang -I/usr/local/cuda/include -I$inc -L$lib -loptix  -lc++  -Wl,-rpath,$lib  $cc  -o $exe
+    clang -std=c++11 -I/usr/local/cuda/include -I$inc -L$lib -loptix  -lc++  -Wl,-rpath,$lib  $cc  -o $exe
 
-    nvcc -arch=sm_30 -ptx $cu -I$inc -o $ptx
+    #nvcc -arch=sm_30 -m64 -std=c++11 -O2 -use_fast_math -ptx $cu -I$inc -o $ptx
 
+    #nvcc -arch=sm_30 -m64 -std=c++11  -use_fast_math -ptx $cu -I$inc -o $ptx
+    nvcc -arch=sm_30 -m64 -std=c++11   -ptx $cu -I$inc -o $ptx
+
+    #nvcc -arch=sm_30              -use_fast_math -ptx $cu -I$inc -o $ptx
+    #nvcc -arch=sm_30  -ptx $cu -I$inc -o $ptx
+
+    echo $exe $ptx $nam
+
+    #export OPTIX_API_CAPTURE=1
     $exe $ptx $nam
+    #unset OPTIX_API_CAPTURE
+
 }
 
+optixtest
 optixtest cbrtTest 
 optixtest intersect_analytic_test
 

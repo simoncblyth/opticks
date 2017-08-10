@@ -1,6 +1,9 @@
 #include <optix_world.h>
 #include "quad.h"
 #include "bbox.h"
+
+#define CSG_INTERSECT_TORUS_TEST 1
+
 #include "csg_intersect_torus.h"
 
 using namespace optix;
@@ -14,12 +17,15 @@ RT_PROGRAM void intersect_analytic_test()
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
 
+#ifdef CSG_INTERSECT_TORUS_TEST
     rtPrintf("// intersect_analytic_test %llu\n", photon_id);
+#endif
 
     //csg_intersect_cone_test(photon_id);
     //csg_intersect_convexpolyhedron_test(photon_id);
 
-    csg_intersect_torus_scale_test(photon_id, false);
+    //  calling the below double laden function twice is prone to segv in createPTXFromFile
+    //csg_intersect_torus_scale_test(photon_id, false);
     csg_intersect_torus_scale_test(photon_id, true );
 
     //csg_intersect_sphere_test(photon_id);

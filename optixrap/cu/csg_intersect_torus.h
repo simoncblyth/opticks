@@ -5,11 +5,6 @@ typedef double Torus_t ;
 
 #include "Solve.h"
 
-/*
-  http://www.cosinekitty.com/raytrace/chapter13_torus.html
-    (xx + yy + zz + RR - rr )^2 = 4RR(xx + yy)
-*/
-
 using namespace optix;
 
 static __device__
@@ -19,7 +14,9 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     const float rmajor = q0.f.w ;    
     const float rsum = rminor + rmajor ;  
 
-    rtPrintf("## csg_bounds_torus rmajor %f rminor %f rsum %f  \n", rmajor, rminor, rsum );
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  \n", rmajor, rminor, rsum );
+#endif
 
     float3 mn = make_float3( -rsum, -rsum,  -rminor );
     float3 mx = make_float3(  rsum,  rsum,   rminor );
@@ -284,13 +281,12 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
             );
 #endif      
 
+    //const float pr = sqrt(p0.x*p0.x+p0.y*p0.y) ;   // <-- selecting artifact in hole 
+    //const float2 qrz = make_float2(length(make_float2(p0)) - R, p0.z) ;  // (mid-circle-sdf, z)
+    //const float  qsd = length(qrz) - r ;   // signed dist to torus
+    //const float  aqsd = fabsf(qsd) ;      // dist to torus
+    //bool valid_qsd = aqsd < 1e-3f ; 
 
-    const float pr = sqrt(p0.x*p0.x+p0.y*p0.y) ;   // <-- selecting artifact in hole 
-
-    const float2 qrz = make_float2(length(make_float2(p0)) - R, p0.z) ;  // (mid-circle-sdf, z)
-    const float  qsd = length(qrz) - r ;   // signed dist to torus
-    const float  aqsd = fabsf(qsd) ;      // dist to torus
-    bool valid_qsd = aqsd < 1e-3f ; 
 
     // Can easily cut away fake intersects assumed caused by numerical problems 
     // for some coeffient combinations using sdf... 
@@ -303,82 +299,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     // So identifying cause of exterior fakes (eg some coeff going to zero)
     // may potentially also fix interior missings.
 
-#ifndef TORUS_DEBUG 
-    bool valid_isect = valid_qsd && t_cand > t_min ;
-#else
-    //const float residual = (((A*t_cand + B)*t_cand + C)*t_cand + D)*t_cand + E ; 
-
-    //bool valid_isect = t_cand > t_min && !double_root ;   // double roots not source of artifacts
-    //bool valid_isect = t_cand > t_min  ;
-
-    //bool valid_isect = t_cand > t_min && aqsd > 0.1f   ;
-    //bool valid_isect = t_cand > t_min && pr < 0.9f*rmin  ;     // artifact in the hole
     bool valid_isect = t_cand > t_min ;    
-
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) < 0.1f && aqsd > 0.1f  ; // ring artifact
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.1f && aqsd > 0.1f  ; //  nowt so ring is mostly from small neumark[0] ? 
-    //bool valid_isect = t_cand > t_min && fabsf(residual) < 0.1f  ;  // hailine ring crack
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.001f ;  // > 0.001f entirely avoids artifacting (following ROBUST fixes) but chops ring band out of torus
-    //bool valid_isect = t_cand > t_min && fabsf(neumark[0]) > 0.0001f ;  // > 0.0001f artifact ring visible and chops thin ring band out of torus
-    //bool valid_isect = t_cand > t_min && fabsf(residual) > 1.f ;
-    //bool valid_isect = valid_qsd && t_cand > t_min ;
-    //bool valid_isect = t_cand > t_min && fabsf(C) > 1e-3f ; 
-
-     // requiring small C < 1e-3 chops central egg out, taking with it the artifact in the hole, but not the around artifact
-     // requiring small C < 1e-4 chops everything 
-     // requiring C > 1e-3 chops around side
-
-    if(valid_isect) 
-    {
-        // Neumark p18 : Resolvent cubic has one zero root 
-        //  Hurwitz-Roth discriminant for oscillatory stability...
-        //  leads to two equal and opposite real roots when zero
-
-
-/*
-        rtPrintf(" pr %g float3 ori = make_float3(%10.4gf,%10.4gf,%10.4gf); float3 dir = make_float3(%10.4gf,%10.4gf,%10.4gf); p (%g %g %g) \n ",
-                     pr
-                     ,
-                     ox,oy,oz
-                     ,
-                     sx,sy,sz
-                     ,
-                     p0.x, p0.y, p0.z
-          );
-
-*/
-
-
-/*
-        rtPrintf(
-                 "torus"
-                 " num_roots %d "
-                 " t_cand %10.3g "
-                 " pr %10.3g "
-                 " ABCDE ( %10.3g %10.3g %10.3g %10.3g %10.3g ) "
-                "  neumark( %10.3g, %10.3g, %10.3g )"
-                 " qsd %10.4f "
-                 "\n"
-                 ,
-                 num_roots
-                 ,
-                 t_cand
-                 ,
-                 pr
-                 ,
-                 A,B,C,D,E
-                 , 
-                 neumark[2],neumark[1],neumark[0]
-                 ,
-                 qsd
-               );
-*/
-
-
-    }
-
-#endif
-
 
     if(valid_isect)
     {        
@@ -393,10 +314,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
 }
 
 
-
-
-
-
+#ifdef CSG_INTERSECT_TORUS_TEST
 static __device__
 void dump_TVQ(const Matrix4x4& T, const Matrix4x4& V, const Matrix4x4& Q)
 {
@@ -420,7 +338,10 @@ void dump_TVQ(const Matrix4x4& T, const Matrix4x4& V, const Matrix4x4& Q)
           Q[8], Q[9], Q[10], Q[11]
          );  
     rtPrintf("%8.3f %8.3f %8.3f %8.3f\n", Q[12], Q[13], Q[14], Q[15] );
+
 }
+#endif
+
  
 
 
@@ -434,7 +355,6 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
     const float rmax = R + r  ;  
     const float rmin = R - r ; 
 
-
 /*
    // SCALE TEST
     float3 ori = make_float3( -rmax - r , 0.f, 0.f );  
@@ -442,8 +362,6 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
     const float4  expect_ = make_float4( -rmax, -rmin, rmin, rmax );  
  
 */
-
-
    // HOLE TEST
 
     // With delta 0. this produces part of the in-the-hole artifact ring in perspective proj, line in ortho.
@@ -458,18 +376,9 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
     //float3 ori = make_float3(     -64.6f,    0.5311f,     394.7f); 
     //float3 dir = make_float3(     0.f,   0.f,   -1.f);
 
-
-
-
-
-
     Ray ray = make_Ray( ori, dir, 0u, 0.f, RT_DEFAULT_MAX ); 
 
-
-
     const float uscale = do_scale ? R : 1.f  ;  
-    rtPrintf("\n\n// csg_intersect_torus_scale_test uscale %g \n", uscale );
-
 
     //////////// "world" frame above : scaling is implementation detail /////////////
     const float r_ = r/uscale ; 
@@ -484,8 +393,12 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
     Matrix4x4 V = T.inverse() ;
     Matrix4x4 Q = V.transpose() ;
 
-    dump_TVQ(T,V,Q);
-    
+
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("\n\n// csg_intersect_torus_scale_test uscale %g \n", uscale );
+    dump_TVQ(T,V,Q); 
+#endif
+   
     // suspect matrix layout from these ctors is transposed
     // wrt Opticks standard (following OpenGL) ... but 
     // it does not matter for scaling, and use of these
@@ -505,8 +418,9 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
     const float3& o = ray_origin ;
     const float3& d = ray_direction ;
 
-    rtPrintf("// pid %llu \n", photon_id );
 
+#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("// pid %llu \n", photon_id );
     rtPrintf("// csg_intersect_torus_test  r R rmax (%g %g %g) ray_origin (%g %g %g) ray_direction (%g %g %g) \n"
               ,
               r,R,rmax
@@ -515,6 +429,7 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
               ,
               d.x,d.y,d.z
             );
+#endif
 
 
     float t_min = 0.f ; 
@@ -526,7 +441,9 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
 
         if(!valid_isect) 
         {
+#ifdef CSG_INTERSECT_TORUS_TEST
             rtPrintf("ERROR no isect \n");
+#endif 
             break ; 
         } 
 
@@ -538,17 +455,9 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
         tt.y = ttn.y ; 
         tt.z = ttn.z ; 
             
-        float t = tt.w ;  
-        //
-        //  Ray trace magic keeps t the same both with and without scaling  
-        //       
-        //   For geometry transformed with T, inverse V, inverse-transposed Q
-        //
-        //            r =     o   +  t *  d
-        //        V * r = V * o   +  t * V * d 
-        //
-
+        float t = tt.w ;   //  Ray trace magic keeps t the same both with and without scaling  
         float3 p = ray.origin + t*ray.direction ; 
+
 
 
 /*
@@ -560,9 +469,11 @@ void csg_intersect_torus_scale_test(unsigned long long photon_id, bool do_scale)
         }
 */
 
+#ifdef CSG_INTERSECT_TORUS_TEST
         rtPrintf("// csg_intersect_torus_test t_min %10.4g    tt:(%10.3f %10.3f %10.3f %10.3f) p:(%10.3f %10.3f %10.3f) \n",
                        t_min, tt.x, tt.y, tt.z, tt.w, p.x, p.y, p.z ); 
 
+#endif 
 
         t_min = t + 1e-4f  ; 
 
