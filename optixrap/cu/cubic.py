@@ -174,7 +174,32 @@ def cubic_1():
 
     ez = expr_coeff(cy, z)
     print "ez:%s " % ez
- 
+
+
+
+def cubic_3(a_,b_,c_):
+    """
+    In [78]: map(lambda _:_.evalf(), roots)
+    Out[78]: 
+    [-1.01943356184133 + 1.65198762834317*I,
+     -1.01943356184133 - 1.65198762834317*I,
+     -7.96113287631734]
+
+    """
+    x,a,b,c = symbols("x,a,b,c")
+
+    ex = x**3 + a*x**2 + b*x + c 
+
+    subs = [[a,a_],[b,b_],[c,c_]]
+
+    rts_ = solve(ex.subs(subs), x)
+
+    rts = map(lambda _:_.evalf(), rts_)
+
+    print "\n".join(map(str,rts_))
+    print rts
+
+    
  
 
 class Cubic(object):

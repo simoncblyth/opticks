@@ -46,6 +46,39 @@ Things that make createPTXFromFile prone to segv
 * calling a function twice with 
 
 
+
+RT_CALLABLE_PROGRAM (Extract from Manual)
+--------------------------------------------
+
+RT_CALLABLE_PROGRAMs can take arguments and return values just like other functions in CUDA, 
+whereas RT_PROGRAMs must return void.
+
+if you have a function that is invoked from many different places in your OptiX
+node graph, making it an RT_CALLABLE_PROGRAM can reduce code replication and
+compile time, and potentially improve runtime through increased warp
+utilization.  
+
+There are three pieces of callable programs. 
+
+1. the program you wish to call. 
+2. declaration of a proxy function used to call the callable program. 
+3. host code used to associate a callable program with the proxy function 
+   that will call it within the OptiX node graph.  
+
+Callable programs come in two variants, bound and bindless. 
+
+Bound programs 
+    invoked by direct use of a program bound to a variable through the
+    host API and inherit the semantic type and variable scope lookup 
+    as the calling program. 
+
+Bindless programs 
+    are called via an ID obtained from the RTprogram on the host and unlike 
+    bound programs do not inherit the semantic type or scope lookup of the calling program
+
+
+
+
 PTX njuffa (2014)
 --------------------
 

@@ -1,41 +1,59 @@
 /*
 
+optixtest-ver(){ echo OptiX_380 ; }
+optixtest-inc(){ echo /Developer/$(optixtest-ver)/include ; }
+optixtest-lib(){ echo /Developer/$(optixtest-ver)/lib64; }
+  
+optixtest-nvcc()
+{
+    local cu=$1 
+    local ptx=$2
+    local inc=$(optixtest-inc)
+
+    #nvcc -arch=sm_30 -m64 -std=c++11 -O2 -use_fast_math -ptx $cu -I$inc -o $ptx
+    #nvcc -arch=sm_30 -m64 -std=c++11  -use_fast_math -ptx $cu -I$inc -o $ptx
+    nvcc -arch=sm_30 -m64 -std=c++11   -ptx $cu -I$inc -o $ptx
+}
+
 optixtest()
 {
     # expects to be invoked from optixrap/cu 
     # and to find nam.cu ../tests/nam.cc
 
     local nam=${1:-cbrtTest}
+    local fun=${nam}Callable
 
     local exe=/tmp/$nam
     local ptx=/tmp/$nam.ptx
+    local ptxf=/tmp/$fun.ptx
 
     local cc=../tests/$nam.cc
     local cu=$nam.cu
+    local cuf=$fun.cu
 
-    local ver=OptiX_380
-    #local ver=OptiX_400
-    local inc=/Developer/$ver/include 
-    local lib=/Developer/$ver/lib64 
+    local inc=$(optixtest-inc)
+    local lib=$(optixtest-lib)
 
     clang -std=c++11 -I/usr/local/cuda/include -I$inc -L$lib -loptix  -lc++  -Wl,-rpath,$lib  $cc  -o $exe
 
-    #nvcc -arch=sm_30 -m64 -std=c++11 -O2 -use_fast_math -ptx $cu -I$inc -o $ptx
+    optixtest-nvcc $nam.cu $ptx
 
-    #nvcc -arch=sm_30 -m64 -std=c++11  -use_fast_math -ptx $cu -I$inc -o $ptx
-    nvcc -arch=sm_30 -m64 -std=c++11   -ptx $cu -I$inc -o $ptx
+    if [ -f "$cuf" ]; then
 
-    #nvcc -arch=sm_30              -use_fast_math -ptx $cu -I$inc -o $ptx
-    #nvcc -arch=sm_30  -ptx $cu -I$inc -o $ptx
+        optixtest-nvcc $cuf $ptxf
 
-    echo $exe $ptx $nam
+        echo $exe $ptx $nam exception $ptxf $fun
+        $exe $ptx $nam exception $ptxf $fun
 
-    #export OPTIX_API_CAPTURE=1
-    $exe $ptx $nam
-    #unset OPTIX_API_CAPTURE
+    else
+        echo $exe $ptx $nam
 
+        #export OPTIX_API_CAPTURE=1
+
+        $exe $ptx $nam
+        #unset OPTIX_API_CAPTURE
+    fi
 }
-
 optixtest
 optixtest cbrtTest 
 optixtest intersect_analytic_test
@@ -48,11 +66,16 @@ optixtest intersect_analytic_test
 
 struct OptiXMinimalTest 
 {
+   int    m_argc ; 
+   char** m_argv ; 
+
    const char* m_ptxpath ; 
    const char* m_raygen_name ; 
    const char* m_exception_name ; 
+   const char* m_callable_ptxpath ; 
+   const char* m_callable_name ; 
      
-   OptiXMinimalTest(optix::Context& context, const char* ptxpath, const char* raygen_name, const char* exception_name="exception"); 
+   OptiXMinimalTest(optix::Context& context, int argc, char** argv ); 
    std::string description();
 
    void init(optix::Context& context);  
@@ -66,11 +89,15 @@ struct OptiXMinimalTest
 #include <cstring>
 #include <cassert>
 
-OptiXMinimalTest::OptiXMinimalTest(optix::Context& context, const char* ptxpath, const char* raygen_name, const char* exception_name)
+OptiXMinimalTest::OptiXMinimalTest(optix::Context& context, int argc, char** argv )
     :
-    m_ptxpath(strdup(ptxpath)),
-    m_raygen_name(strdup(raygen_name)),
-    m_exception_name(strdup(exception_name))
+    m_argc(argc),
+    m_argv(argv),
+    m_ptxpath(         argc > 1 ? argv[1] : NULL),
+    m_raygen_name(     argc > 2 ? argv[2] : NULL),
+    m_exception_name(  argc > 3 ? argv[3] : NULL),
+    m_callable_ptxpath(argc > 4 ? argv[4] : NULL),
+    m_callable_name(   argc > 5 ? argv[5] : NULL)
 {
     init(context);
 }
@@ -78,6 +105,8 @@ OptiXMinimalTest::OptiXMinimalTest(optix::Context& context, const char* ptxpath,
 void OptiXMinimalTest::init(optix::Context& context)
 {
     context->setEntryPointCount( 1 );
+    context->setPrintEnabled(true);
+    context->setPrintBufferSize(2*2*2*8192);
 
     optix::Program raygenProg    = context->createProgramFromPTXFile(m_ptxpath, m_raygen_name);
     optix::Program exceptionProg = context->createProgramFromPTXFile(m_ptxpath, m_exception_name);
@@ -85,8 +114,20 @@ void OptiXMinimalTest::init(optix::Context& context)
     context->setRayGenerationProgram(0,raygenProg);
     context->setExceptionProgram(0,exceptionProg);
 
-    context->setPrintEnabled(true);
-    context->setPrintBufferSize(2*2*2*8192);
+    if(!m_callable_ptxpath) return ; 
+
+    optix::Buffer callable = context->createBuffer( RT_BUFFER_INPUT, RT_FORMAT_PROGRAM_ID, 1 );
+    int* callable_id = static_cast<int*>( callable->map() );
+
+    std::cout << " callable_ptxpath " << m_callable_ptxpath
+              << " callable_name "    << m_callable_name 
+              << std::endl ;  
+
+    optix::Program callableProg = context->createProgramFromPTXFile( m_callable_ptxpath, m_callable_name ); 
+    callable_id[0] = callableProg->getId();
+    callable->unmap();
+
+    raygenProg["callable"]->set( callable );
 
 }
 
@@ -96,7 +137,9 @@ std::string OptiXMinimalTest::description()
     ss  
               << " ptxpath " << m_ptxpath
               << " raygen " << m_raygen_name 
-              << " exception " << m_exception_name 
+              << " exception " << ( m_exception_name ? m_exception_name : "-" )
+              << " callable_ptxpath " << ( m_callable_ptxpath ?  m_callable_ptxpath : "-" )
+              << " callable_name " << ( m_callable_name ? m_callable_name  : "-" )
               ;
 
     return ss.str(); 

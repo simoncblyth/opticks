@@ -47,10 +47,38 @@ rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 
 rtBuffer<float4>  output_buffer;
 
+//rtBuffer<rtCallableProgramId<float(float,float)> > callable ;
+//rtBuffer<rtCallableProgramId<double(double,double)> > callable ;
+rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > callable ;
+
+
 RT_PROGRAM void cbrtTest()
 {
     unsigned long long photon_id = launch_index.x ;  
     unsigned int photon_offset = photon_id*4 ; 
+   
+
+    unsigned msk = 0u ; 
+    double a = 10.0 ; 
+    double b = 20.0 ; 
+    double c = 30.0 ; 
+
+    double rts[3] ; 
+    unsigned nrts ; 
+
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+    nrts = callable[0](a, b, c, rts, msk); 
+
+#ifdef CSG_INTERSECT_TORUS_TEST 
+    rtPrintf("cbrtTest callable a:%f b:%f c:%f nrts:%u rts (%g %g %g)  \n", a,b,c,nrts,rts[0],rts[1],rts[2] );
+#endif
    
 
     float twentyseven_f = 27.f ; 
@@ -78,8 +106,16 @@ RT_PROGRAM void cbrtTest()
     nr = SolveCubic(p,q,r,xx, 0u ); 
     nr = SolveCubic(p,q,r,xx, 0u ); 
     //nr = SolveCubic(p,q,r,xx, 0u ); 
-    //nr = SolveCubic(p,q,r,xx, 0u ); 
 
+    // NB : only one or 2 calls to simple inlined SolveCubic works 
+    //      before getting segv in createProgramFromPTX 
+    //      
+    //      contrast with above callable approach where calling many times seems
+    //      is not much of a resource burden
+    //      
+    //      It appears the heavy nature of GPU double precision math can be tamed 
+    //      by doing it via callables. 
+    //
     // HMM : doing twice works with default stacksize of 1024, more than twice segv in createProgramFromPTX
     //       three times works with 2* stacksize 
 
