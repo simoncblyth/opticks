@@ -512,6 +512,20 @@ class CSG(CSG_):
         return obj
 
     @classmethod
+    def MakeHyperboloid(cls, r0=100., zf=100., z1=-100., z2=100., name="MakeHyperboloid"):
+        """
+        Radius increases to sqrt(2)*r0 at z = +-zf
+        """
+        assert z2 > z1
+        assert r0 > 0
+        assert zf > 0
+        srcmeta = dict(src_type="hyperboloid")
+        obj = CSG("hyperboloid", param=[r0,zf,z1,z2], name=name)
+        obj.meta.update(srcmeta)
+        return obj
+
+
+    @classmethod
     def MakeUndefined(cls, name="MakeUndefined", **kwa):
         obj = CSG("undefined", name=name)
         obj.meta.update(kwa)
@@ -987,7 +1001,7 @@ class CSG(CSG_):
         npq = None
         if typ in [cls.CONVEXPOLYHEDRON, cls.TRAPEZOID, cls.SEGMENT, cls.UNDEFINED]:
             npq = 0
-        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.TORUS]:
+        elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.TORUS, cls.HYPERBOLOID]:
             npq = 1
         elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB]:
             npq = 2 

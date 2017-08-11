@@ -828,6 +828,7 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
        case CSG_DISC:     node = new ndisc(make_disc(p0, p1))           ; break ; 
        case CSG_CONE:     node = new ncone(make_cone(p0))               ; break ; 
        case CSG_TORUS:    node = new ntorus(make_torus(p0))             ; break ; 
+       case CSG_HYPERBOLOID:    node = new nhyperboloid(make_hyperboloid(p0))             ; break ; 
        case CSG_TRAPEZOID:  
        case CSG_SEGMENT:  
        case CSG_CONVEXPOLYHEDRON:  

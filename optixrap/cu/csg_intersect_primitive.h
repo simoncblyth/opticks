@@ -527,6 +527,128 @@ void csg_intersect_cone_test(unsigned long long photon_id)
 
 
 
+static __device__
+void csg_bounds_hyperboloid(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+{
+    const float r0 = q0.f.x ;
+    const float zf = q0.f.y ;
+    const float z1 = q0.f.z ;
+    const float z2 = q0.f.w ;
+
+    const float r0r0 = r0*r0 ; 
+    const float z1s = z1/zf ; 
+    const float z2s = z2/zf ; 
+
+    const float rr1 = r0r0 * ( z1s*z1s + 1.f ) ;
+    const float rr2 = r0r0 * ( z2s*z2s + 1.f ) ;
+    const float rmx = sqrtf(fmaxf( rr1, rr2 )) ; 
+    
+    float3 mn = make_float3(  -rmx,  -rmx,  z1 );
+    float3 mx = make_float3(   rmx,   rmx,  z2 );
+
+    Aabb tbb(mn, mx);
+    if(tr) transform_bbox( &tbb, tr );  
+
+    aabb->include(tbb);
+}
+
+
+static __device__
+bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+{
+   /*
+     http://mathworld.wolfram.com/One-SheetedHyperboloid.html
+
+      x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+      x^2 + y^2 - (r0^2/zf^2) * z^2 - r0^2  =  0 
+      x^2 + y^2 + A * z^2 + B   =  0 
+   
+      grad( x^2 + y^2 + A * z^2 + B ) =  [2 x, 2 y, A*2z ] 
+
+ 
+     (ox+t sx)^2 + (oy + t sy)^2 + A (oz+ t sz)^2 + B = 0 
+
+      t^2 ( sxsx + sysy + A szsz ) + 2*t ( oxsx + oysy + A * ozsz ) +  (oxox + oyoy + A * ozoz + B ) = 0 
+
+   */
+
+    const float r0 = q0.f.x ;
+    const float zf = q0.f.y ;
+    const float z1 = q0.f.z ;
+    const float z2 = q0.f.w ;
+
+    const float r0r0 = r0*r0 ;
+    const float z1s = z1/zf ; 
+    const float z2s = z2/zf ; 
+    const float rr1 = r0r0 * ( z1s*z1s + 1.f ) ;
+    const float rr2 = r0r0 * ( z2s*z2s + 1.f ) ;
+
+    const float A = -r0r0/(zf*zf) ;
+    const float B = -r0r0 ;  
+
+    const float& sx = ray_direction.x ; 
+    const float& sy = ray_direction.y ; 
+    const float& sz = ray_direction.z ;
+
+    const float& ox = ray_origin.x ; 
+    const float& oy = ray_origin.y ; 
+    const float& oz = ray_origin.z ;
+
+    const float d = sx*sx + sy*sy + A*sz*sz ; 
+    const float b = ox*sx + oy*sy + A*oz*sz ; 
+    const float c = ox*ox + oy*oy + A*oz*oz + B ; 
+    
+    float t1hyp, t2hyp, disc, sdisc ;   
+    robust_quadratic_roots(t1hyp, t2hyp, disc, sdisc, d, b, c); //  Solving:  d t^2 + 2 b t +  c = 0 
+
+    float idz = 1.f/ray_direction.z ; 
+    float t_z2cap = z2 - ray_origin.z*idz ;   // cap plane intersects,  t_min for cap not enabled
+    float t_z1cap = z1 - ray_origin.z*idz ;
+
+    const float3 pc1 = ray_origin + t_z1cap*ray_direction ; 
+    const float3 pc2 = ray_origin + t_z2cap*ray_direction ; 
+
+    float prr1 = pc1.x*pc1.x + pc1.y*pc1.y ; 
+    float prr2 = pc2.x*pc2.x + pc2.y*pc2.y ; 
+
+    if(prr1 > rr1) t_z1cap = t_min ; 
+    if(prr2 > rr2) t_z2cap = t_min ; 
+
+
+
+    const float4 t_cand_ = make_float4( 
+                                  t1hyp  >  t_min ? t1hyp : RT_DEFAULT_MAX ,
+                                  t2hyp   > t_min ? t2hyp : RT_DEFAULT_MAX ,
+                                  t_z2cap > t_min ? t_z2cap : RT_DEFAULT_MAX  ,
+                                  t_z1cap > t_min ? t_z1cap : RT_DEFAULT_MAX  ) ;
+
+    float t_cand = fminf( t_cand_ );  
+
+    bool valid_isect = t_cand > t_min ;
+    if(valid_isect)
+    {        
+        isect.w = t_cand ; 
+        if( t_cand == t1hyp || t_cand == t2hyp )
+        {
+            const float3 p = ray_origin + t_cand*ray_direction ; 
+            float3 n = normalize(make_float3( p.x,  p.y,  A*p.z )) ; 
+            isect.x = n.x ; 
+            isect.y = n.y ; 
+            isect.z = n.z ;      
+        }
+        else
+        {
+            isect.x = 0.f ; 
+            isect.y = 0.f ; 
+            isect.z = t_cand == t_z1cap ? -1.f : 1.f ;  
+        }
+    }
+    return valid_isect ; 
+}
+
+
+
+
 
 static __device__
 void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
@@ -732,24 +854,6 @@ bool csg_intersect_zsphere(const quad& q0, const quad& q1, const quad& q2, const
 
     float t1sph, t2sph, disc, sdisc ;   
     robust_quadratic_roots(t1sph, t2sph, disc, sdisc, d, b, c); //  Solving:  d t^2 + 2 b t +  c = 0 
-
-/*
-    float disc = b*b-d*c;
-    float sdisc = disc > 0.f ? sqrtf(disc) : 0.f ;   // ray has segment within sphere for sdisc > 0.f 
-
-#ifdef ZSPHERE_NUMERICALLY_UNSTABLY
-    float t1sph = (-b - sdisc)/d ;
-    float t2sph = (-b + sdisc)/d ;  // t2sph > t1sph always, sdisc and d always +ve
-#else
-    // picking robust quadratic roots that avoid catastrophic subtraction 
-    float q = b > 0.f ? -(b + sdisc) : -(b - sdisc) ; 
-    float root1 = q/d  ; 
-    float root2 = c/q  ;
-    float t1sph = fminf( root1, root2 );
-    float t2sph = fmaxf( root1, root2 );
-#endif
-*/
-
 
     float z1sph = ray_origin.z + t1sph*ray_direction.z ;  // sphere z intersects
     float z2sph = ray_origin.z + t2sph*ray_direction.z ; 

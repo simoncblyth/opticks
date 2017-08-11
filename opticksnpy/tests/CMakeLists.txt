@@ -48,6 +48,7 @@ NPartTest.cc
 NSpectralTest.cc
 
 NTorusTest.cc
+NHyperboloidTest.cc
 NSphereTest.cc
 NZSphereTest.cc
 NBoxTest.cc

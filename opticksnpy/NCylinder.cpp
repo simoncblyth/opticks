@@ -41,8 +41,9 @@ float ncylinder::operator()(float x_, float y_, float z_) const
     if(gtransform) p = gtransform->v * p ; 
 
     float dinf = glm::distance( glm::vec2(p.x, p.y), glm::vec2(x(), y()) ) - radius() ;  // <- no z-dep
-    float qcap_z = z2() ; 
-    float pcap_z = z1() ; 
+
+    float qcap_z = z2() ;  // typically +ve   z2>z1  
+    float pcap_z = z1() ;  // typically -ve
 
     float d_PQCAP = fmaxf( p.z - qcap_z, -(p.z - pcap_z) );
 

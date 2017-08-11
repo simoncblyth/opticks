@@ -10,6 +10,7 @@
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
 #include "NTorus.hpp"
+#include "NHyperboloid.hpp"
 
 
 
@@ -31,6 +32,8 @@ Current primitives:
  CSG_CONVEXPOLYHEDRON     convexpolyhedron    nconvexpolyhedron
  CSG_TRAPEZOID            trapezoid           nconvexpolyhedron
  CSG_SEGMENT              segment             nconvexpolyhedron
+ CSG_TORUS                torus               ntorus
+ CSG_HYPERBOLOID          hyperboloid         nhyperboloid
 =======================  =================   ==================
 
 

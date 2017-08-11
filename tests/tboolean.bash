@@ -1670,6 +1670,37 @@ EOP
 }
 
 
+
+
+
+tboolean-hyperboloid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-hyperboloid-(){  $FUNCNAME- | python $* ; } 
+tboolean-hyperboloid--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+#CSG.kwa = dict(poly="MC", resolution="100")
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG.MakeHyperboloid(r0=100, zf=100, z1=-100, z2=100)
+
+CSG.Serialize([container, a], args.csgpath )
+
+EOP
+}
+
+
+
+
+
+
+
 tboolean-ellipsoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
 tboolean-ellipsoid--(){ cat << EOP 
