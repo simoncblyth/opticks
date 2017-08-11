@@ -61,6 +61,7 @@ rtBuffer<uint4>  identityBuffer;   // from GMergedMesh::getAnalyticInstanceIdent
 
 rtBuffer<float4> prismBuffer ;   // TODO: migrate prism to use planBuffer
 
+rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > solve_callable ;
 
 // attributes communicate to closest hit program,
 // they must be set inbetween rtPotentialIntersection and rtReportIntersection
@@ -70,9 +71,7 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
-
 #include "bbox.h"
-#include "transform_test.h"
 #include "postorder.h"
 
 #include "csg_intersect_primitive.h"
@@ -86,15 +85,21 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 #include "intersect_prism.h"
 
 
+//#include "transform_test.h"
+//#include "solve_callable_test.h"
+
+
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     //if(primIdx == 0) transform_test();
+    //if(primIdx == 0) solve_callable_test();
 
     if(primIdx == 0)
     {
         unsigned partBuffer_size = partBuffer.size() ;
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
+
         rtPrintf("## intersect_analytic.cu:bounds pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
     }
 

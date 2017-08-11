@@ -1,37 +1,19 @@
 
-#include "OptiXMinimalTest.hh"
+#include "OptiXTest.hh"
 
-
-/*
 #include "OGeo.hh"
 #include "NPY.hpp"
 #include "OXRAP_LOG.hh"
 #include "PLOG.hh"
-*/
+
 
 int main( int argc, char** argv ) 
 {
-    //PLOG_(argc, argv);
-    //OXRAP_LOG__ ; 
+    PLOG_(argc, argv);
+    OXRAP_LOG__ ; 
 
     optix::Context context = optix::Context::create();
-
-    //OptiXTest* test = new OptiXTest(context, "intersect_analytic_test.cu", "intersect_analytic_test") ;
-
-    assert( argc == 1 || argc == 3 );
-
-   
-    const char* ptxpath = argc == 1 ? "/usr/local/opticks/installcache/PTX/OptiXRap_generated_intersect_analytic_test.cu.ptx" : argv[1] ;
-    const char* raygen = argc == 1 ? "intersect_analytic_test" : argv[2] ;
-
-    std::cout 
-       << " ptxpath " << ptxpath 
-       << " raygen " << raygen
-       << std::endl 
-       ;
-
-
-    OptiXMinimalTest* test = new OptiXMinimalTest(context, ptxpath, raygen ) ;
+    OptiXTest* test = new OptiXTest(context, "intersect_analytic_test.cu", "intersect_analytic_test") ;
 
     std::cout << test->description() << std::endl ; 
 
@@ -44,7 +26,7 @@ int main( int argc, char** argv )
     context["output_buffer"]->set(buffer);
 
 
-/*
+
     NPY<float>* planBuf = NPY<float>::make(6, 4) ;  
     planBuf->zero();
     float hsize = 200.f ;
@@ -60,7 +42,7 @@ int main( int argc, char** argv )
     unsigned verbosity = 3 ; 
     optix::Buffer planBuffer = OGeo::CreateInputUserBuffer<float>( context, planBuf,  4*4, "planBuffer", verbosity); 
     context["planBuffer"]->setBuffer(planBuffer);
-*/
+
 
 
     context->validate();
@@ -68,7 +50,7 @@ int main( int argc, char** argv )
     context->launch(0, width, height);
 
 
-/*
+
     NPY<float>* npy = NPY<float>::make(width, height, 4) ;
     npy->zero();
 
@@ -80,7 +62,7 @@ int main( int argc, char** argv )
     std::cerr << "save result npy to " << path << std::endl ; 
  
     npy->save(path);
-*/
+
 
 
     return 0;

@@ -1,3 +1,4 @@
+// run this using optixbash bash function from OptiXMinimalTest.hh 
 #include "OptiXMinimalTest.hh"
 
 

@@ -28,6 +28,8 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 }
 
 
+
+
 static __device__
 float cubic_delta2( const float a, const float b, const float c, const float d)
 {
@@ -38,8 +40,6 @@ float cubic_delta2( const float a, const float b, const float c, const float d)
     float delta2 = tmp*tmp / (2.f*disc*disc*disc) ; 
     return delta2 ;
 }
-
-
 
 static __device__
 void z_rotate_ray_align_x(const float3& o0, const float3& s0, float3& o, float3& s)

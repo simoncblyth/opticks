@@ -464,7 +464,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    if(m_verbosity > 2)
+    //if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry START" 
                  << " verbosity " << m_verbosity 
                  << " mm " << mm->getIndex()
@@ -535,8 +535,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
     geometry["analytic_version"]->setUint(analytic_version);
 
-    geometry->setIntersectionProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect"));
-    geometry->setBoundingBoxProgram(m_ocontext->createProgram("intersect_analytic.cu.ptx", "bounds"));
+    optix::Program intersectProg = m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect") ;
+    optix::Program boundsProg  =  m_ocontext->createProgram("intersect_analytic.cu.ptx", "bounds") ;
+
+    geometry->setIntersectionProgram(intersectProg );
+    geometry->setBoundingBoxProgram( boundsProg );
 
 
     //optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 

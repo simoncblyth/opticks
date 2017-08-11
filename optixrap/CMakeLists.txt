@@ -164,6 +164,7 @@ set(SOURCES
     OLaunchTest.cc
 
     OGeo.cc
+    OFunc.cc
 
     cu/pinhole_camera.cu
     cu/constantbg.cu
@@ -172,6 +173,7 @@ set(SOURCES
     cu/TriangleMesh.cu 
     cu/sphere.cu 
     cu/intersect_analytic.cu 
+    cu/solve_callable.cu 
     cu/generate.cu
     cu/textureTest.cu
     cu/bufferTest.cu
@@ -203,6 +205,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_intersect_analytic.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_solve_callable.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_textureTest.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_minimalTest.cu.ptx

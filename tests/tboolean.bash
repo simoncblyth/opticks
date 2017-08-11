@@ -1633,7 +1633,7 @@ EOP
 
 
 
-tboolean-torus(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-torus(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-torus-(){  $FUNCNAME- | python $* ; } 
 tboolean-torus--(){ cat << EOP 
 

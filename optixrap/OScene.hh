@@ -10,6 +10,7 @@ class GGeoBase ;
 class GGeoLib ; 
 
 class OContext ; 
+class OFunc ; 
 class OColors ; 
 class OGeo ; 
 class OBndLib ; 
@@ -52,6 +53,7 @@ class OXRAP_API OScene {
        GGeoLib*            m_geolib ; 
 
        OContext*         m_ocontext ; 
+       OFunc*            m_osolve ; 
        OColors*          m_ocolors ; 
        OGeo*             m_ogeo ; 
        OBndLib*          m_olib ; 

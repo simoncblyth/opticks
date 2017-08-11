@@ -1,32 +1,36 @@
 /*
 
+For optixtest bash function to build and run see ../tests/OptixMinimalTest.hh 
+
 This succeeds to reproduce the segv within createProgramFromPTXFile
 within intersect_analytic_test arising from SolveCubicNumericalRecipe.h cbrt(double). 
 But to do so had to almost duplicate it entirely.
 
-Need to isolate the issue better.
+* current working assumption is that double precision trig/cbrt etc functions
+  are heavy on the GPU requiring a lot of code, hence there is a tendency for
+  some particulary heavy functions like cbrt(double) to be the last straw
+  that breaks the camels back
 
-For optixtest bash function to build and run see ../tests/OptixMinimalTest.hh 
+  * evidence for this came from cbrtTest.cu where repeating a function
+    call triggered the segv
 
-
-Suspect issue related to --use-fast-math  and double precision
+* a promising solution to this issue is to reuse heavy double precision  
+  math functions like SolveCubic into RT_CALLABLE_PROGRAM to avoid the duplication
 
 * https://devtalk.nvidia.com/default/topic/735307/optix/strange-error-while-reading-a-ptx-file/2
-
 * https://devtalk.nvidia.com/default/topic/764148/double-precision-trigonometric-functions/#4282733
-
 * https://devtalk.nvidia.com/search/more/sitecommentsearch/optix%20double%20precision/
-
 
 */
 
 #include <optix_world.h>
 
-/*
+rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > callable ;
+
+
 #define SOLVE_QUARTIC_DEBUG 1
 typedef double Solve_t ; 
 #include "SolveCubicNumericalRecipe.h"
-*/
 
 /*
 #define SOLVE_QUARTIC_DEBUG 1
@@ -34,11 +38,13 @@ typedef double Solve_t ;
 #include "Solve.h"
 */
 
+
+/*
 #include "quad.h"
 #include "bbox.h"
-
 #define CSG_INTERSECT_TORUS_TEST 1
 #include "csg_intersect_torus.h"
+*/
 
 
 using namespace optix;
@@ -46,10 +52,6 @@ using namespace optix;
 rtDeclareVariable(uint2, launch_index, rtLaunchIndex, );
 
 rtBuffer<float4>  output_buffer;
-
-//rtBuffer<rtCallableProgramId<float(float,float)> > callable ;
-//rtBuffer<rtCallableProgramId<double(double,double)> > callable ;
-rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > callable ;
 
 
 RT_PROGRAM void cbrtTest()
@@ -77,7 +79,7 @@ RT_PROGRAM void cbrtTest()
     nrts = callable[0](a, b, c, rts, msk); 
 
 #ifdef CSG_INTERSECT_TORUS_TEST 
-    rtPrintf("cbrtTest callable a:%f b:%f c:%f nrts:%u rts (%g %g %g)  \n", a,b,c,nrts,rts[0],rts[1],rts[2] );
+    rtPrintf("cbrtTest SolveCubic_callable a:%f b:%f c:%f nrts:%u rts (%g %g %g)  \n", a,b,c,nrts,rts[0],rts[1],rts[2] );
 #endif
    
 

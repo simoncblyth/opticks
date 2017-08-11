@@ -4,7 +4,6 @@ attempting to get operational inside OptiX
 */
 
 
-
 #ifdef __CUDACC__
 __device__ __host__
 #endif
@@ -12,7 +11,10 @@ static Solve_t cubic_sqroot(Solve_t p, Solve_t q, Solve_t r, unsigned msk)
 {
     const Solve_t zero(0); 
     Solve_t xx[3] ; 
+
+    //unsigned num_real_roots = solve_callable[0](p, q, r, xx, msk);
     unsigned num_real_roots = SolveCubic(p, q, r, xx, msk);
+
     Solve_t h = num_real_roots == 1 ?  xx[0] : ( xx[0] >= zero ? xx[0] : ( xx[1] >= zero ? xx[1] : xx[2] )) ; 
     return h <= zero ? zero : sqrt(h) ; 
 }
@@ -123,6 +125,7 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
         x[ireal++] = -a4 ;   // z=0 root
 
         unsigned ncubicroots = SolveCubic(zero, e, f, xx, msk );   // 0 as z**2 term already zero
+        //unsigned ncubicroots = solve_callable[0](zero, e, f, xx, msk );   // 0 as z**2 term already zero
 
         for (unsigned i = 0; i < ncubicroots; i++) x[ireal++] = xx[i] - a4 ;
 

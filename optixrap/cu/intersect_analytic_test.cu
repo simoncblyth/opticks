@@ -1,9 +1,10 @@
 #include <optix_world.h>
+rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > solve_callable ;
+
 #include "quad.h"
 #include "bbox.h"
 
 #define CSG_INTERSECT_TORUS_TEST 1
-
 #include "csg_intersect_torus.h"
 
 using namespace optix;

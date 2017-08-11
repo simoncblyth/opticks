@@ -56,10 +56,13 @@ optixtest()
 }
 optixtest
 optixtest cbrtTest 
-optixtest intersect_analytic_test
-
 
 */
+
+/*
+ NB this is for minimal testing ... so only standard and optix headers are allowed
+*/
+
 
 #include <optixu/optixpp_namespace.h>
 #include <string>

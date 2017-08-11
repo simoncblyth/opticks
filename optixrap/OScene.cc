@@ -16,6 +16,7 @@
 
 // optixrap-
 #include "OContext.hh"
+#include "OFunc.hh"
 #include "OColors.hh"
 #include "OGeo.hh"
 #include "OBndLib.hh"
@@ -72,6 +73,7 @@ OScene::OScene(OpticksHub* hub)
       m_geolib(NULL),
 
       m_ocontext(NULL),
+      m_osolve(NULL),
       m_ocolors(NULL),
       m_ogeo(NULL),
       m_olib(NULL),
@@ -108,6 +110,11 @@ void OScene::init()
     m_ocontext->setStackSize(stack_size_bytes);
     m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
     m_ocontext->setDebugPhoton(m_cfg->getDebugIdx());
+
+    // solvers despite being used for geometry intersects have no dependencies
+    // as just pure functions : so place them accordingly 
+    m_osolve = new OFunc(m_ocontext, "solve_callable.cu.ptx", "solve_callable", "SolveCubicCallable" ) ; 
+    m_osolve->convert();
 
     //m_ggeo = m_hub->getGGeo();
     m_ggeo = m_hub->getGGeoBase();
