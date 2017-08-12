@@ -1688,7 +1688,8 @@ CSG.kwa = dict(poly="IM", resolution="50")
 
 container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
   
-a = CSG.MakeHyperboloid(r0=100, zf=100, z1=-100, z2=100)
+#a = CSG.MakeHyperboloid(r0=100, zf=100, z1=-100, z2=100)
+a = CSG.MakeHyperboloid(r0=100, zf=100, z1=0, z2=100)
 
 CSG.Serialize([container, a], args.csgpath )
 
