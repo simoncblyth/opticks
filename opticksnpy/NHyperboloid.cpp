@@ -30,7 +30,6 @@ One sheet, hyperbolic hyperboloid
 
 Specialize to surface of revolution,  a = b 
     
-
     x^2     y^2      z^2
     --- +  ----  -  ----   =   1      
     a^2     a^2      c^2 
@@ -42,6 +41,51 @@ Specialize to surface of revolution,  a = b
  
     x^2 +  y^2  =  a^2  * 2       # at z = zf   radius increases by sqrt(2)      
                      
+
+
+    x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+
+
+
+Getting close to a torus(r,R) neck shape
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    r0 = R - r   (at z=0)    waist radius of hyperboloid
+    w  = R       (at z=r)
+    
+Consider targetting a particular x^2 + y^2 =  ww 
+What zf is required to hit radius^2 of ww at z = zw     
+
+
+     ww = r0^2 ( (zw/zf)^2 + 1 )
+
+      ww - rr0
+     ------------- =  (zw/zf)^2  
+         rr0
+ 
+                          rr0
+        zf = zw * sqrt( -----------   )
+                        ww - rr0
+    
+
+ torus
+~~~~~~~~~~
+
+    (R - sqrt(x^2 + y^2))^2 = r^2 - z^2  
+
+     R - sqrt( x^2 + y^2)  =  sqrt( r^2 - z^2 )
+
+   
+     sqrt(x^2 + y^2 ) =  R - sqrt( r^2 - z^2 )
+
+     sqrt(x^2 + y^2 ) =  R -+ r     at z=0
+
+     sqrt(x^2 + y^2 ) =  R          at z=r 
+
+
+ 
+
+
 
 
 */

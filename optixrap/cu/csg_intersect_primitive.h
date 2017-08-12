@@ -575,6 +575,7 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
    */
 
     const float zero(0.f); 
+    const float one(1.f); 
 
     const float r0 = q0.f.x ;  // waist (z=0) radius 
     const float zf = q0.f.y ;  // at z=zf radius grows to  sqrt(2)*r0 
@@ -584,8 +585,8 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
     const float rr0 = r0*r0 ;
     const float z1s = z1/zf ; 
     const float z2s = z2/zf ; 
-    const float rr1 = rr0 * ( z1s*z1s + 1.f ) ; // radii squared at z=z1, z=z2
-    const float rr2 = rr0 * ( z2s*z2s + 1.f ) ;
+    const float rr1 = rr0 * ( z1s*z1s + one ) ; // radii squared at z=z1, z=z2
+    const float rr2 = rr0 * ( z2s*z2s + one ) ;
 
     const float A = -rr0/(zf*zf) ;
     const float B = -rr0 ;  
@@ -609,7 +610,7 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
     const float h2z = oz + t2hyp*sz ; 
 
     //  z = oz+t*sz -> t = (z - oz)/sz 
-    float osz = 1.f/sz ; 
+    float osz = one/sz ; 
     float t2cap = (z2 - oz)*osz ;   // cap plane intersects
     float t1cap = (z1 - oz)*osz ;
 
@@ -647,7 +648,7 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
         {
             isect.x = zero ; 
             isect.y = zero ; 
-            isect.z = t_cand == t1cap ? -1.f : 1.f ;  
+            isect.z = t_cand == t1cap ? -one : one ;  
         }
     }
     return valid_isect ; 

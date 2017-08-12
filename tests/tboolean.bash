@@ -1699,6 +1699,197 @@ EOP
 
 
 
+tboolean-12(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-12-(){  $FUNCNAME- | python $* ; } 
+tboolean-12--(){ cat << EOP 
+"""
+PMT Neck Modelling With Hyperboloid
+=====================================
+
+* replace "cy - to" with "hy"
+* npy/NHyperboloid.cpp re formulae
+
+
+* took approach of matching xx+yy of hyperboloid to the
+  torus at the z extremes of the cylinder
+
+  * hyp gives slightly fatter neck
+  * hyp is drastically cheaper
+  * matching at the middle is another possibility 
+
+
+hyperboloid zf to hit xx+yy = ww at z=zw
+
+                          rr0
+        zf = zw * sqrt( -----------   )
+                        ww - rr0
+
+hyperboloid 
+   sqrt(xx + yy) = sqrt( rr0 * (  (z/zf)^2  +  1 ) )
+
+                 = r0 * sqrt( (z/zf)^2 + 1) 
+    
+torus: 
+   sqrt(xx + yy) =  R - sqrt( rr - zz )
+
+
+                                  [cy frame]       [to/hy frame]
+      +-----------------------+    z = ch            z = 2*ch
+      |\                     /|
+      | \                   / |
+      |  \                 /  |
+      |   \               /   |
+      |    \             /    |
+      |     \           /     |
+      +------*----|----*------+    z = -ch           z = 0 
+      
+"""
+
+import math
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+from opticks.analytic.sc import Sc
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20" )
+
+
+
+class Tor(object):
+    def __init__(self, R, r):
+        self.R = R
+        self.r = r
+
+    def __repr__(self):
+        return "Tor r:%s R:%s " % (self.r, self.R )
+
+    def rz(self, z):
+        R = self.R
+        r = self.r
+        return R - math.sqrt(r*r-z*z)  
+   
+class Hyp(object):
+    def __init__(self, r0, zf, z1, z2):
+        self.r0 = r0
+        self.zf = zf
+        self.z1 = z1
+        self.z2 = z2
+
+    @classmethod
+    def ZF(cls, r0, zw, w ):
+        """ hyperboloid zf param to hit radius w, at z=zw """
+        rr0 = r0*r0
+        ww = w*w 
+        return zw*math.sqrt(rr0/(ww-rr0)) 
+
+    def __repr__(self):
+        return "Hyp r0:%s zf:%s z1:%s z2:%s " % (self.r0, self.zf, self.z1, self.z2 ) 
+
+    def rz(self, z):
+        R = self.R
+        r0 = self.r0
+        zf = self.zf
+        zs = z/zf 
+        return r0*math.sqrt( zs*zs + 1 )  
+ 
+
+
+R,r,ch,cz,cn = 97.000,52.010,23.783,-23.773,-195.227
+r0 = R - r 
+rr0 = r0*r0
+
+tor = Tor(R,r)
+assert tor.rz(0) == R - r 
+assert tor.rz(r) == R  
+
+# in torus/hyp frame cylinder top and bottom at
+
+ztop, zbot = ch - cz, -ch - cz  #     (47.556, -0.010000000000001563)
+rtop, rbot = tor.rz(ztop), tor.rz(zbot)
+
+zf = Hyp.ZF( rbot, ztop, rtop )
+hyp = Hyp( rbot, zf, zbot, ztop )
+
+
+
+
+a = CSG("zsphere", param = [0.000,0.000,0.000,179.000],param1 = [-179.000,179.000,0.000,0.000])
+a.transform = [[1.391,0.000,0.000,0.000],[0.000,1.391,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,0.000,1.000]]
+
+b = CSG("cylinder", param = [0.000,0.000,0.000,75.951],param1 = [-ch,ch,0.000,0.000])
+c = CSG("torus", param = [0.000,0.000,r,R],param1 = [0.000,0.000,0.000,0.000],complement = True)
+c.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,cz,1.000]]
+bc = CSG("intersection", left=b, right=c)
+bc.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,cn,1.000]]
+
+bc2 = CSG("hyperboloid", param = [hyp.r0,hyp.zf,hyp.z1,hyp.z2])
+bc2.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,cn+cz,1.000]]
+
+
+abc = CSG("union", left=a, right=bc)
+abc2 = CSG("union", left=a, right=bc2)
+
+
+d = CSG("cylinder", param = [0.000,0.000,0.000,45.010],param1 = [-57.510,57.510,0.000,0.000])
+d.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,-276.500,1.000]]
+
+abcd = CSG("union", left=abc, right=d)
+abcd2 = CSG("union", left=abc2, right=d)
+
+
+e = CSG("cylinder", param = [0.000,0.000,0.000,254.000],param1 = [-92.000,92.000,0.000,0.000],complement = True)
+e.transform = [[1.000,0.000,0.000,0.000],[0.000,1.000,0.000,0.000],[0.000,0.000,1.000,0.000],[0.000,0.000,92.000,1.000]]
+abcde = CSG("intersection", left=abcd, right=e)
+abcde2 = CSG("intersection", left=abcd2, right=e)
+
+
+raw = abcde
+raw2 = abcde2
+
+
+raw.dump("raw")
+raw2.dump("raw2")
+
+
+maxcsgheight = 4
+maxcsgheight2 = 5
+
+obj = Sc.optimize_csg(raw, maxcsgheight, maxcsgheight2 ) 
+obj2 = Sc.optimize_csg(raw2, maxcsgheight, maxcsgheight2 ) 
+
+obj.dump("optimized")
+obj2.dump("optimized")
+
+
+obj.translate = [-300,0,0]
+obj2.translate = [300,0,0]
+
+
+#uobjs = [raw]
+uobjs = [obj, obj2]
+
+
+con = CSG("box",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
+CSG.Serialize([con]+uobjs, args.csgpath )
+
+
+
+EOP
+}
+
+
+
+
+
+
+
+
+
+
 
 
 
