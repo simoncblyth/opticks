@@ -4,8 +4,13 @@ rtBuffer<rtCallableProgramId<unsigned(double,double,double,double*,unsigned)> > 
 #include "quad.h"
 #include "bbox.h"
 
+typedef double Solve_t ;
+#include "Solve.h"
+
 #define CSG_INTERSECT_TORUS_TEST 1
+typedef double Torus_t ;
 #include "csg_intersect_torus.h"
+
 
 using namespace optix;
 

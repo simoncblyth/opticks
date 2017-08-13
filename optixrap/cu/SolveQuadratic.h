@@ -3,7 +3,7 @@
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-static int SolveQuadratic(Solve_t b, Solve_t c, Solve_t *rts, Solve_t disc, Solve_t offset )
+static unsigned SolveQuadratic(Solve_t b, Solve_t c, Solve_t *rts, Solve_t disc, Solve_t offset )
 {
 /* 
      solve the quadratic equation :  x**2+b*x+c = 0 
@@ -14,7 +14,7 @@ static int SolveQuadratic(Solve_t b, Solve_t c, Solve_t *rts, Solve_t disc, Solv
     Solve_t one(1) ;
     Solve_t two(2) ;
     Solve_t otwo = one/two ;
-    int nreal = 0 ;
+    unsigned nreal = 0 ;
     if(disc >= zero)
     {
         Solve_t sdisc = sqrt(disc) ;

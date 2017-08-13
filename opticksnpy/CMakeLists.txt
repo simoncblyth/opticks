@@ -164,6 +164,8 @@ set(SOURCES
     NSphere.cpp
     NTorus.cpp
     NHyperboloid.cpp
+    NCubic.cpp
+
     NBBox.cpp
     NBBoxEnum.cpp
     NPart.cpp

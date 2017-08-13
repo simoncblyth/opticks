@@ -1,9 +1,15 @@
 
 #define TORUS_DEBUG 1
+
+
+/*
 typedef double Solve_t ;
 typedef double Torus_t ;
 
 #include "Solve.h"
+
+*/
+
 
 using namespace optix;
 

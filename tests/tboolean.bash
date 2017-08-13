@@ -1699,6 +1699,32 @@ EOP
 
 
 
+tboolean-cubic(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-cubic-(){  $FUNCNAME- | python $* ; } 
+tboolean-cubic--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+container = CSG("box", param=[0,0,0,40], boundary=args.container, poly="MC", nx="20" )
+  
+a = CSG.MakeCubic(A=0.0001, B=2, C=2, D=2, z1=-10, z2=10)
+
+CSG.Serialize([container, a], args.csgpath )
+
+EOP
+}
+
+
+
+
+
+
 tboolean-12(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-12-(){  $FUNCNAME- | python $* ; } 
 tboolean-12--(){ cat << EOP 

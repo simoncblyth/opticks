@@ -96,8 +96,8 @@ static int SolveQuartic(Solve_t a, Solve_t b, Solve_t c, Solve_t d, Solve_t *x, 
         delta = e * e - four * g;
  
         Solve_t quad[2] ; 
-        int iquad = SolveQuadratic( e,  g , quad, delta, zero ) ; 
-        for(int i=0 ; i < iquad ; i++)
+        unsigned iquad = SolveQuadratic( e,  g , quad, delta, zero ) ; 
+        for(unsigned i=0 ; i < iquad ; i++)
         {
             h = quad[i] ;
             if(h >= zero)

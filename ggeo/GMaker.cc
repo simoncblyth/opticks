@@ -70,6 +70,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_TORUS:
          case CSG_ELLIPSOID:
          case CSG_HYPERBOLOID:
+         case CSG_CUBIC:
                                 solid = NULL ; break ;
      }
      assert(solid);

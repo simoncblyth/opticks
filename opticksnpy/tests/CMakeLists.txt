@@ -49,6 +49,7 @@ NSpectralTest.cc
 
 NTorusTest.cc
 NHyperboloidTest.cc
+NCubicTest.cc
 NSphereTest.cc
 NZSphereTest.cc
 NBoxTest.cc

@@ -87,8 +87,11 @@ struct NPY_API nnode
     void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
 
 
+    glm::vec3 center() const  ;      // override if needed
+    glm::vec3 direction() const  ;   // override if needed
 
-    glm::vec3 gseeddir() const ;  // override if needed
+    glm::vec3 gseeddir() const ;     
+    glm::vec3 gseedcenter() const ;  
 
     glm::vec3 par_pos_(const nuv& uv, NNodeFrameType fr) const ;
     glm::vec3 par_pos_(const nuv& uv, const nmat4triple* triple) const ;
@@ -123,6 +126,7 @@ struct NPY_API nnode
     glm::vec3 apply_gtransform(const glm::vec4& v_) const ;
 
     void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity=0);
+    void collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs,  const nnode* p  );
 
 
 

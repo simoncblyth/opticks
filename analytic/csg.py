@@ -524,6 +524,13 @@ class CSG(CSG_):
         obj.meta.update(srcmeta)
         return obj
 
+    @classmethod
+    def MakeCubic(cls, A=1., B=1., C=1., D=1., z1=-100., z2=100., name="MakeCubic"):
+        assert z2 > z1
+        srcmeta = dict(src_type="cubic")
+        obj = CSG("cubic", param=[A,B,C,D], param1=[z1,z2,0,0], name=name)
+        obj.meta.update(srcmeta)
+        return obj
 
     @classmethod
     def MakeUndefined(cls, name="MakeUndefined", **kwa):
@@ -1003,7 +1010,7 @@ class CSG(CSG_):
             npq = 0
         elif typ in [cls.SPHERE, cls.CONE, cls.BOX3, cls.BOX, cls.PLANE, cls.TORUS, cls.HYPERBOLOID]:
             npq = 1
-        elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB]:
+        elif typ in [cls.ZSPHERE, cls.CYLINDER, cls.DISC, cls.SLAB, cls.CUBIC]:
             npq = 2 
         else:
             assert 0, "add num_param_quads for typ %s " % cls.desc(typ) 

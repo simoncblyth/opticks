@@ -11,7 +11,7 @@ using namespace optix;
 rtBuffer<float4> planBuffer ;
 
 static __device__
-void csg_bounds_convexpolyhedron(const unsigned& planeOffset, const Part& pt, optix::Aabb* aabb, optix::Matrix4x4* tr  )
+void csg_bounds_convexpolyhedron(const Part& pt, optix::Aabb* aabb, optix::Matrix4x4* tr, const unsigned& planeOffset )
 {
     const quad& q2 = pt.q2 ; 
     const quad& q3 = pt.q3 ; 
@@ -40,7 +40,7 @@ void csg_bounds_convexpolyhedron(const unsigned& planeOffset, const Part& pt, op
 
 
 static __device__
-bool csg_intersect_convexpolyhedron(const unsigned& planeOffset, const Part& pt, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+bool csg_intersect_convexpolyhedron(const Part& pt, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction, const unsigned& planeOffset )
 {
     unsigned planeIdx = pt.planeIdx() ; 
     unsigned planeNum = pt.planeNum() ; 
@@ -161,7 +161,7 @@ void csg_intersect_convexpolyhedron_test(unsigned long long photon_id)
         bool expect_has_isect = i == 0 ; 
 
         float4 isect = make_float4(0.f,0.f,0.f,0.f);
-        bool has_isect = csg_intersect_convexpolyhedron(planeOffset, pt, t_min , isect, ray_origin, ray_direction );
+        bool has_isect = csg_intersect_convexpolyhedron(pt, t_min , isect, ray_origin, ray_direction, planeOffset );
 
         float t = isect.w ;  
         float3 p = ray_origin + t*ray_direction ; 
@@ -653,6 +653,7 @@ bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect
     }
     return valid_isect ; 
 }
+
 
 
 

@@ -392,11 +392,33 @@ glm::vec3 nnode::apply_gtransform(const glm::vec4& v_) const
 }
 
 
-glm::vec3 nnode::gseeddir() const    // override in shapes if needed
+glm::vec3 nnode::center() const    // override in shapes if needed
 {
-    glm::vec4 dir(1,1,1,0); 
-    return apply_gtransform(dir);
+    glm::vec3 c(0,0,0); 
+    return c ;
 }
+glm::vec3 nnode::direction() const    // override in shapes if needed
+{
+    glm::vec3 d(1,1,1); 
+    return d ;
+}
+
+
+glm::vec3 nnode::gseeddir() const    
+{
+    glm::vec4 d(direction(), 0.f);
+    return apply_gtransform(d);
+}
+glm::vec3 nnode::gseedcenter() const 
+{
+    glm::vec4 c(center(),1.f);
+    return apply_gtransform(c);
+}
+
+
+
+
+
 
 
 npart nnode::part() const 
@@ -721,6 +743,7 @@ std::function<float(float,float,float)> nnode::sdf() const
         case CSG_CONE:           { ncone* n         = (ncone*)node          ; f = *n ; } break ; 
         case CSG_CONVEXPOLYHEDRON:{ nconvexpolyhedron* n = (nconvexpolyhedron*)node ; f = *n ; } break ; 
         case CSG_TORUS:          { ntorus* n = (ntorus*)node ; f = *n ; } break ; 
+        case CSG_CUBIC:          { ncubic* n = (ncubic*)node ; f = *n ; } break ; 
         case CSG_HYPERBOLOID:    { nhyperboloid* n = (nhyperboloid*)node ; f = *n ; } break ; 
         default:
             LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
@@ -881,9 +904,112 @@ void nnode::_par_pos_endcap(glm::vec3& pos,  const nuv& uv, const float r_, cons
 }
 
 
+void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs,  const nnode* p  )
+{
+     centers.push_back(p->gseedcenter()); 
+     dirs.push_back(p->gseeddir());
 
+/*
+    switch(p->type)
+    {
+        case CSG_SPHERE: 
+           {  
+               nsphere* n = (nsphere*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
 
+        case CSG_ZSPHERE: 
+           {  
+               nzsphere* n = (nzsphere*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+      
+        case CSG_BOX: 
+        case CSG_BOX3: 
+           {  
+               nbox* n = (nbox*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
 
+        case CSG_SLAB: 
+           {  
+               nslab* n = (nslab*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_PLANE: 
+           {  
+               nplane* n = (nplane*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_CYLINDER: 
+           {  
+               ncylinder* n = (ncylinder*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_DISC: 
+           {  
+               ndisc* n = (ndisc*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_CONE: 
+           {  
+               ncone* n = (ncone*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_TORUS: 
+           {  
+               ntorus* n = (ntorus*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_HYPERBOLOID: 
+           {  
+               nhyperboloid* n = (nhyperboloid*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        case CSG_CONVEXPOLYHEDRON: 
+           {  
+               nconvexpolyhedron* n = (nconvexpolyhedron*)p ;
+               centers.push_back(n->gseedcenter()); 
+               dirs.push_back(n->gseeddir());
+           }
+           break ;  
+
+        default:
+           {
+               LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;
+               assert(0) ;
+           }
+    }
+*/
+
+}
 
 
 
@@ -911,103 +1037,8 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
                   ;
 
 
-        switch(p->type)
-        {
-            case CSG_SPHERE: 
-               {  
-                   nsphere* n = (nsphere*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
+        collect_prim_centers( centers, dirs, p );
 
-            case CSG_ZSPHERE: 
-               {  
-                   nzsphere* n = (nzsphere*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-          
-            case CSG_BOX: 
-            case CSG_BOX3: 
-               {  
-                   nbox* n = (nbox*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_SLAB: 
-               {  
-                   nslab* n = (nslab*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_PLANE: 
-               {  
-                   nplane* n = (nplane*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
- 
-            case CSG_CYLINDER: 
-               {  
-                   ncylinder* n = (ncylinder*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_DISC: 
-               {  
-                   ndisc* n = (ndisc*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_CONE: 
-               {  
-                   ncone* n = (ncone*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_TORUS: 
-               {  
-                   ntorus* n = (ntorus*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_HYPERBOLOID: 
-               {  
-                   nhyperboloid* n = (nhyperboloid*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
-
-            case CSG_CONVEXPOLYHEDRON: 
-               {  
-                   nconvexpolyhedron* n = (nconvexpolyhedron*)p ;
-                   centers.push_back(n->gseedcenter()); 
-                   dirs.push_back(n->gseeddir());
-               }
-               break ;  
- 
-            default:
-               {
-                   LOG(fatal) << "nnode::collect_prim_centers unhanded shape type " << p->type << " name " << CSGName(p->type) ;
-                   assert(0) ;
-               }
-        }
     }
 }
 

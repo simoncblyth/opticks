@@ -281,7 +281,9 @@ G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
         case CSG_CONVEXPOLYHEDRON:
         case CSG_SEGMENT:
         case CSG_TORUS:
+        case CSG_CUBIC:
         case CSG_ELLIPSOID:
+        case CSG_HYPERBOLOID:
                          solid = NULL ; break ; 
 
     }

@@ -44,18 +44,23 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
         {
             switch(typecode)
             {
-                case CSG_SPHERE:     csg_bounds_sphere(   pt.q0,               aabb, NULL ); break ;
-                case CSG_ZSPHERE:    csg_bounds_zsphere(  pt.q0, pt.q1, pt.q2, aabb, NULL ); break ;
-                case CSG_BOX:        csg_bounds_box(      pt.q0,               aabb, NULL ); break ;
-                case CSG_BOX3:       csg_bounds_box3(     pt.q0,               aabb, NULL ); break ;
-                case CSG_SLAB:       csg_bounds_slab(     pt.q0, pt.q1,        aabb, NULL ); break ; 
-                case CSG_PLANE:      csg_bounds_plane(    pt.q0,               aabb, NULL ); break ;      
-                case CSG_CYLINDER:   csg_bounds_cylinder( pt.q0, pt.q1,        aabb, NULL ); break ;  
-                case CSG_DISC:       csg_bounds_disc(     pt.q0, pt.q1,        aabb, NULL ); break ;  
-                case CSG_CONE:       csg_bounds_cone(     pt.q0,               aabb, NULL ); break ;  
-                case CSG_TORUS:      csg_bounds_torus(    pt.q0,               aabb, NULL ); break ;  
-                case CSG_HYPERBOLOID: csg_bounds_hyperboloid(    pt.q0,               aabb, NULL ); break ;  
-                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,   aabb, NULL ); break ;  
+                case CSG_SPHERE:            csg_bounds_sphere(   pt.q0,               aabb, NULL ); break ;
+                case CSG_ZSPHERE:           csg_bounds_zsphere(  pt.q0, pt.q1, pt.q2, aabb, NULL ); break ;
+                case CSG_BOX:               csg_bounds_box(      pt.q0,               aabb, NULL ); break ;
+                case CSG_BOX3:              csg_bounds_box3(     pt.q0,               aabb, NULL ); break ;
+                case CSG_SLAB:              csg_bounds_slab(     pt.q0, pt.q1,        aabb, NULL ); break ; 
+                case CSG_PLANE:             csg_bounds_plane(    pt.q0,               aabb, NULL ); break ;      
+                case CSG_CYLINDER:          csg_bounds_cylinder( pt.q0, pt.q1,        aabb, NULL ); break ;  
+                case CSG_DISC:              csg_bounds_disc(     pt.q0, pt.q1,        aabb, NULL ); break ;  
+                case CSG_CONE:              csg_bounds_cone(     pt.q0,               aabb, NULL ); break ;  
+#ifdef WITH_TORUS
+                case CSG_TORUS:             csg_bounds_torus(    pt.q0,               aabb, NULL ); break ;  
+#endif
+#ifdef WITH_CUBIC
+                case CSG_CUBIC:             csg_bounds_cubic(    pt.q0, pt.q1,        aabb, NULL ); break ;  
+#endif
+                case CSG_HYPERBOLOID:       csg_bounds_hyperboloid(    pt.q0,         aabb, NULL ); break ;  
+                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( pt,          aabb, NULL, planOffset ); break ;  
                 default:                                                                     break ; 
             }
         }
@@ -91,9 +96,14 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
                 case CSG_CYLINDER:  csg_bounds_cylinder( pt.q0, pt.q1,        aabb, &tr ); break ;     
                 case CSG_DISC:      csg_bounds_disc(     pt.q0, pt.q1,        aabb, &tr ); break ;     
                 case CSG_CONE:      csg_bounds_cone(     pt.q0,               aabb, &tr ); break ;
+#ifdef WITH_TORUS
                 case CSG_TORUS:     csg_bounds_torus(    pt.q0,               aabb, &tr ); break ;  
-                case CSG_HYPERBOLOID: csg_bounds_hyperboloid(    pt.q0,               aabb, &tr ); break ;  
-                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( planOffset, pt,  aabb, &tr ); break ;  
+#endif
+#ifdef WITH_CUBIC
+                case CSG_CUBIC:     csg_bounds_cubic(    pt.q0, pt.q1,        aabb, &tr ); break ;  
+#endif
+                case CSG_HYPERBOLOID: csg_bounds_hyperboloid(    pt.q0,       aabb, &tr ); break ;  
+                case CSG_CONVEXPOLYHEDRON:  csg_bounds_convexpolyhedron( pt,  aabb, &tr, planOffset ); break ;  
                 default:                                                 break ; 
             }
         }
@@ -130,9 +140,14 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_DISC:      valid_intersect = csg_intersect_disc(     pt.q0, pt.q1,        tt_min, tt, ray.origin, ray.direction ) ; break ; 
             case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray.origin, ray.direction ) ; break ; 
+#ifdef WITH_TORUS
             case CSG_TORUS:            valid_intersect = csg_intersect_torus(          pt.q0,  tt_min, tt, ray.origin, ray.direction ) ; break ; 
+#endif
+#ifdef WITH_CUBIC
+            case CSG_CUBIC:            valid_intersect = csg_intersect_cubic( pt.q0, pt.q1,    tt_min, tt, ray.origin, ray.direction ) ; break ; 
+#endif
             case CSG_HYPERBOLOID:      valid_intersect = csg_intersect_hyperboloid(    pt.q0,  tt_min, tt, ray.origin, ray.direction ) ; break ; 
-            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray.origin, ray.direction ) ; break ; 
+            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( pt,   tt_min, tt, ray.origin, ray.direction, planOffset ) ; break ; 
         }
     }
     else
@@ -168,9 +183,14 @@ void csg_intersect_part(const Prim& prim, const unsigned partIdx, const float& t
             case CSG_CYLINDER:  valid_intersect = csg_intersect_cylinder( pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_DISC:      valid_intersect = csg_intersect_disc(     pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
             case CSG_CONE:      valid_intersect = csg_intersect_cone(     pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
+#ifdef WITH_TORUS
             case CSG_TORUS:     valid_intersect = csg_intersect_torus(    pt.q0,               tt_min, tt, ray_origin, ray_direction ) ; break ; 
+#endif
+#ifdef WITH_CUBIC
+            case CSG_CUBIC:     valid_intersect = csg_intersect_cubic(    pt.q0, pt.q1,        tt_min, tt, ray_origin, ray_direction ) ; break ; 
+#endif
             case CSG_HYPERBOLOID:      valid_intersect = csg_intersect_hyperboloid(    pt.q0,  tt_min, tt, ray_origin, ray_direction ) ; break ; 
-            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( planOffset, pt,   tt_min, tt, ray_origin, ray_direction ) ; break ; 
+            case CSG_CONVEXPOLYHEDRON: valid_intersect = csg_intersect_convexpolyhedron( pt,   tt_min, tt, ray_origin, ray_direction, planOffset ) ; break ; 
         }
 
         if(valid_intersect)

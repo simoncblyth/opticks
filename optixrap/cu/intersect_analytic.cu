@@ -71,19 +71,42 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
+//#define WITH_PARTLIST 1 
+#define WITH_CUBIC 1 
+//#define WITH_TORUS 1 
+
+// some resource issue, canna handle both cubic + torus together 
+//  currently have only 2 geometry types "analytic" and "triangulated"
+//  maybe split off more ??
+
 #include "bbox.h"
 #include "postorder.h"
 
 #include "csg_intersect_primitive.h"
+
+typedef double Solve_t ;
+#include "Solve.h"
+
+#ifdef WITH_TORUS
+typedef double Torus_t ;
 #include "csg_intersect_torus.h"
+#endif
+
+#ifdef WITH_CUBIC
+typedef double Cubic_t ;
+#include "csg_intersect_cubic.h"
+#endif
+
 #include "csg_intersect_part.h"
 #include "csg_intersect_boolean.h"
 
+
+#ifdef WITH_PARTLIST
 #include "intersect_ztubs.h"
 #include "intersect_zsphere.h"
 #include "intersect_box.h"
 #include "intersect_prism.h"
-
+#endif
 
 //#include "transform_test.h"
 //#include "solve_callable_test.h"
@@ -116,6 +139,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     {
         csg_bounds_prim(primIdx, prim, aabb); 
     }
+#ifdef WITH_PARTLIST
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
         unsigned partOffset  = prim.partOffset() ;  
@@ -139,6 +163,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
             }
         } 
     }
+#endif
     else
     {
         rtPrintf("## intersect_analytic.cu:bounds ABORT BAD primflag %d \n", primFlag );
@@ -197,6 +222,7 @@ RT_PROGRAM void intersect(int primIdx)
     {
         // do nothing : report no intersections for primitives marked with primFlag CSG_FLAGINVISIBLE 
     }  
+#ifdef WITH_PARTLIST
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
         for(unsigned int p=0 ; p < numParts ; p++)
@@ -228,6 +254,7 @@ RT_PROGRAM void intersect(int primIdx)
             }
         }
     } 
+#endif
 }
 
 

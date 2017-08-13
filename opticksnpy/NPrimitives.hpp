@@ -11,11 +11,10 @@
 #include "NConvexPolyhedron.hpp"
 #include "NTorus.hpp"
 #include "NHyperboloid.hpp"
-
+#include "NCubic.hpp"
 
 
 /*
-
 
 Current primitives:
 
@@ -34,6 +33,7 @@ Current primitives:
  CSG_SEGMENT              segment             nconvexpolyhedron
  CSG_TORUS                torus               ntorus
  CSG_HYPERBOLOID          hyperboloid         nhyperboloid
+ CSG_CUBIC                cubic               ncubic
 =======================  =================   ==================
 
 
