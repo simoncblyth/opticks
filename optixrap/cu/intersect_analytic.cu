@@ -72,8 +72,8 @@ rtDeclareVariable(float3, shading_normal, attribute shading_normal, );
 
 
 //#define WITH_PARTLIST 1 
-#define WITH_CUBIC 1 
-//#define WITH_TORUS 1 
+//#define WITH_CUBIC 1 
+#define WITH_TORUS 1 
 
 // some resource issue, canna handle both cubic + torus together 
 //  currently have only 2 geometry types "analytic" and "triangulated"
@@ -169,7 +169,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         rtPrintf("## intersect_analytic.cu:bounds ABORT BAD primflag %d \n", primFlag );
         return ; 
     }
-    rtPrintf("##intersect_analytic.cu:bounds primIdx %d primFlag %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, primFlag, 
+    rtPrintf("// intersect_analytic.cu:bounds primIdx %d primFlag %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, primFlag, 
         result[0],
         result[1],
         result[2],

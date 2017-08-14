@@ -20,10 +20,6 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     const float rmajor = q0.f.w ;    
     const float rsum = rminor + rmajor ;  
 
-#ifdef CSG_INTERSECT_TORUS_TEST
-    rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  \n", rmajor, rminor, rsum );
-#endif
-
     float3 mn = make_float3( -rsum, -rsum,  -rminor );
     float3 mx = make_float3(  rsum,  rsum,   rminor );
 
@@ -31,6 +27,15 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
     if(tr) transform_bbox( &tbb, tr );  
 
     aabb->include(tbb);
+
+
+//#ifdef CSG_INTERSECT_TORUS_TEST
+    rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  tr %d  \n", rmajor, rminor, rsum, !!tr );
+//#endif
+
+
+
+
 }
 
 
@@ -101,9 +106,7 @@ The reason for scaling in first place was to allow
 use of R ~ 1 : but then you get bitten in butt by 
 small sx,sy,sz,ox,oy,oz
 
-
 */
-
 
 
 

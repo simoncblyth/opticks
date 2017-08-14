@@ -441,14 +441,6 @@ EOP
 
 
 
-
-
-
-
-
-
-
-
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
@@ -1654,6 +1646,7 @@ a = CSG.MakeTorus(R=100, r=50)
 #a.scale = [100,100,100]
 
 CSG.Serialize([container, a], args.csgpath )
+#CSG.Serialize([a], args.csgpath )
 
 """
 

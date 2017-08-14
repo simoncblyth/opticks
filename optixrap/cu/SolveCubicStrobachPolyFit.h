@@ -70,8 +70,7 @@ unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk )
     eee=zero ;
     ee=zero ;
 
-    int iter=0 ; 
-    while(iter++ < 16)
+    for( int iter=0 ; iter < 16 ; iter++) 
     { 
         // --------
 

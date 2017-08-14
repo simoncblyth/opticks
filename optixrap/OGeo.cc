@@ -218,8 +218,6 @@ void OGeo::convertMergedMesh(unsigned i)
     // subsequent merged meshes contain repeated PMT geometry
     // that typically has analytic primitive intersection implementations  
 
-     
-
     if( i == 0 )
     {
         optix::Geometry gmm = makeGeometry(mm);
@@ -500,19 +498,6 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();
 
-    // mm instance transforms not used for analytic
-    /*
-    NPY<float>*    itransforms = mm->getITransformsBuffer();              
-    unsigned int numITransforms = itransforms ? itransforms->getNumItems() : 0  ;   
-    assert(idBuf->getNumItems() == numITransforms );
-
-    LOG(info)
-                 << "OGeo::makeAnalyticGeometry " 
-                 << " numITransforms(unused) " << numITransforms 
-                 ;
-    */ 
-
-
     //assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 
 
@@ -541,15 +526,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     geometry->setIntersectionProgram(intersectProg );
     geometry->setBoundingBoxProgram( boundsProg );
 
-
-    //optix::Buffer primBuffer = createInputBuffer<optix::uint4, unsigned int>( primBuf, RT_FORMAT_UNSIGNED_INT4, 1 , "primBuffer"); 
     assert(sizeof(int) == 4);
     optix::Buffer primBuffer = createInputUserBuffer<int>( primBuf,  4*4, "primBuffer"); 
     geometry["primBuffer"]->setBuffer(primBuffer);
     // hmm perhaps prim and id should be handled together ? 
 
-
-    //optix::Buffer partBuffer = createInputBuffer<optix::float4, float>( partBuf, RT_FORMAT_FLOAT4, 1 , "partBuffer"); 
     assert(sizeof(float) == 4);
     optix::Buffer partBuffer = createInputUserBuffer<float>( partBuf,  4*4*4, "partBuffer"); 
     geometry["partBuffer"]->setBuffer(partBuffer);
@@ -564,14 +545,11 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     optix::Buffer planBuffer = createInputUserBuffer<float>( planBuf,  4*4, "planBuffer"); 
     geometry["planBuffer"]->setBuffer(planBuffer);
 
-
-
     // TODO: prismBuffer is misnamed it contains planes, TODO:migrate to use the planBuffer
     optix::Buffer prismBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT);
     prismBuffer->setFormat(RT_FORMAT_FLOAT4);
     prismBuffer->setSize(5);
     geometry["prismBuffer"]->setBuffer(prismBuffer);
-
 
     if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry DONE" 
