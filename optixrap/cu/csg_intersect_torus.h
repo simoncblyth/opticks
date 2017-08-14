@@ -133,6 +133,10 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const Torus_t R = R_/unit ; 
     const Torus_t r = r_/unit ; 
 
+    // Note the parametric ray trace magic : so long as all
+    // lengths are scaled the same there is no impact on the parametric t
+    // as t is defined as a multiple of the ray direction vector
+    //
     // scaled ray dir, ori too close to origin for numerical comfort
     // due to scale factors to enable use of small R_ r_ 
     // so divide by unit to bring into viscinity of unity 

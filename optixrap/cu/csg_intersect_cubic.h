@@ -88,6 +88,41 @@ bool csg_intersect_cubic(const quad& q0, const quad& q1, const float& t_min, flo
 
      grad( x^2 + y^2 - A * z^3 - B * z^2 - C*z - D ) =  [2 x, 2 y, -3 A z^2 - 2 B z - C ] 
 
+
+
+
+      x^2 +  y^2  - A*z^3 - B*z^2 - C*z - D  = 0 
+
+
+     Consider changing the unit of length with the aim of bringing typical lengths
+     into ballpark of the unit cube, for numerical stability/precision reasons.
+     Choosing a unit length s=z2-z1 characteristic of the geometry.
+
+     Magic of parametric-t means there is no impact on it.
+
+     For example say z = 200,  with z1=-200, z2=200, s=z2-z1 = 400
+                     z = 200 = 400*0.5
+                     z = 200 = s*zs      where zs is scaled-z
+
+     Changing length unit corresponds for factoring off a constant from all lengths,
+     which will mean scaling coeefs ...
+
+      (xs*s)^2 +  (ys*s)^2  - A*(zs*s)^3 - B*(zs*s)^2 - C*(zs*s) - D  = 0 
+
+       xs^2 + ys^2 - A*s*zs^3 - B*zs^2 - (C/s)*zs - D/s^2 = 0     // dividing by s^2
+
+    
+       A -> s*A
+       B ->  B
+       C -> C*is
+       D -> D*is*is
+
+
+    :google:`polynomial scaling coeff numerical`
+
+    * https://math.stackexchange.com/questions/1384741/how-to-scale-polynomial-coefficients-for-root-finding-algorithms
+    * http://www.akiti.ca/rpoly_ak1_cpp.html
+
    */
 
     const Cubic_t zero(0); 
@@ -96,21 +131,27 @@ bool csg_intersect_cubic(const quad& q0, const quad& q1, const float& t_min, flo
     const Cubic_t three(3); 
     const Cubic_t four(4); 
 
-    const Cubic_t A = q0.f.x ;
+    const Cubic_t s = q1.f.y - q1.f.x ; // unscaled z2 - z1,  z2 > z1 by assertion, s +ve
+    //const Cubic_t s = one ; 
+    const Cubic_t is = one/s ;
+ 
+    const Cubic_t z1 = is*q1.f.x ; 
+    const Cubic_t z2 = is*q1.f.y ;
+   
+    const Cubic_t sx = is*ray_direction.x ; 
+    const Cubic_t sy = is*ray_direction.y ; 
+    const Cubic_t sz = is*ray_direction.z ;
+
+    const Cubic_t ox = is*ray_origin.x ; 
+    const Cubic_t oy = is*ray_origin.y ; 
+    const Cubic_t oz = is*ray_origin.z ;
+
+    // attempt to adjust cubic coeff to effect the unit length scaling 
+
+    const Cubic_t A = q0.f.x*s ;
     const Cubic_t B = q0.f.y ; 
-    const Cubic_t C = q0.f.z ; 
-    const Cubic_t D = q0.f.w ;  
-
-    const Cubic_t z1 = q1.f.x ;  // z2 > z1 by assertion
-    const Cubic_t z2 = q1.f.y ;
-
-    const Cubic_t sx = ray_direction.x ; 
-    const Cubic_t sy = ray_direction.y ; 
-    const Cubic_t sz = ray_direction.z ;
-
-    const Cubic_t ox = ray_origin.x ; 
-    const Cubic_t oy = ray_origin.y ; 
-    const Cubic_t oz = ray_origin.z ;
+    const Cubic_t C = q0.f.z*is ; 
+    const Cubic_t D = q0.f.w*is*is ;  
 
     const Cubic_t a = -A*sz*sz*sz ; 
     const Cubic_t b = -three*A*oz*sz*sz - B*sz*sz + sx*sx + sy*sy ; 
@@ -155,17 +196,18 @@ bool csg_intersect_cubic(const quad& q0, const quad& q1, const float& t_min, flo
     const float t2cap = (z2 - oz)*osz ;   // cap plane intersects
     const float t1cap = (z1 - oz)*osz ;
 
-    const float3 c1 = ray_origin + t1cap*ray_direction ; 
-    const float3 c2 = ray_origin + t2cap*ray_direction ; 
+    const float c1x = ox + t1cap*sx ; 
+    const float c1y = oy + t1cap*sy ; 
+    const float c2x = ox + t2cap*sx ; 
+    const float c2y = oy + t2cap*sy ; 
 
-    float crr1 = c1.x*c1.x + c1.y*c1.y ;   // radii squared at cap plane intersects
-    float crr2 = c2.x*c2.x + c2.y*c2.y ; 
+    float crr1 = c1x*c1x + c1y*c1y ;   // radii squared at cap plane intersects
+    float crr2 = c2x*c2x + c2y*c2y ; 
 
     // cap planes shape-of-revolution radii^2
     const float rr1 = RRZ(z1) ; 
     const float rr2 = RRZ(z2) ; 
  
-
     // NB must disqualify t < t_min at "front" and "back" 
     // as this potentially picks between intersects eg whilst near(t_min) scanning  
     //
@@ -189,10 +231,13 @@ bool csg_intersect_cubic(const quad& q0, const quad& q1, const float& t_min, flo
         isect.w = t_cand ; 
         if( t_cand == tcan[2] || t_cand == tcan[3] || t_cand == tcan[4] )
         {
-            const float3 p = ray_origin + t_cand*ray_direction ; 
+            const float px = ox + t_cand*sx ; 
+            const float py = oy + t_cand*sy ; 
+            const float pz = oz + t_cand*sz ; 
 
             // grad( x^2 + y^2 - A * z^3 - B * z^2 - C*z - D ) =  [2 x, 2 y, -3 A z^2 - 2 B z - C ] 
-            float3 n = normalize(make_float3( 2.f*p.x,  2.f*p.y,  -3.f*A*p.z*p.z -2.f*B*p.z - C  )) ;   
+
+            float3 n = normalize(make_float3( 2.f*px,  2.f*py,  -3.f*A*pz*pz -2.f*B*pz - C  )) ;   
             isect.x = n.x ; 
             isect.y = n.y ; 
             isect.z = n.z ;      

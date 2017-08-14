@@ -20,6 +20,7 @@ log = logging.getLogger(__name__)
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, make_scale
+from opticks.analytic.bezier import Bezier
 from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
@@ -531,6 +532,26 @@ class CSG(CSG_):
         obj = CSG("cubic", param=[A,B,C,D], param1=[z1,z2,0,0], name=name)
         obj.meta.update(srcmeta)
         return obj
+
+    @classmethod
+    def MakeCubicBezier(cls, zr, name="MakeCubicBezier"):
+        zr = np.asarray(zr) 
+        assert len(zr) > 2 and len(zr) <= 4, zr
+        z = zr[:,0]
+        r = zr[:,1]
+        rr = r*r 
+
+        zrr = np.zeros( (4,2), dtype=np.float32)
+        zrr[:,0] = z 
+        zrr[:,1] = rr 
+
+        z1 = z[0]
+        z2 = z[-1]
+        assert z2 > z1
+        zco = Bezier.ZCoeff(zrr) 
+        assert len(zco) == 4
+        A,B,C,D = zco
+        return cls.MakeCubic(A=A,B=B,C=C,D=D,z1=z1,z2=z2, name=name) 
 
     @classmethod
     def MakeUndefined(cls, name="MakeUndefined", **kwa):

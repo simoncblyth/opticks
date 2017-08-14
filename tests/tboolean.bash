@@ -1711,9 +1711,15 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution="50")
 
-container = CSG("box", param=[0,0,0,40], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,200], boundary=args.container, poly="MC", nx="20" )
   
-a = CSG.MakeCubic(A=0.0001, B=2, C=2, D=2, z1=-10, z2=10)
+#a = CSG.MakeCubic(A=0.0001, B=2, C=2, D=2, z1=-10, z2=10)   ## 
+
+a = CSG.MakeCubic(A=0.0001, B=2, C=10, D=2, z1=-10, z2=10) 
+
+#zrrs = [[-100,30],[-50,80],[50,30],[100,100]]
+#a = CSG.MakeCubicBezier(zrrs)
+
 
 CSG.Serialize([container, a], args.csgpath )
 
