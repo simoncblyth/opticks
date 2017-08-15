@@ -21,6 +21,15 @@ the torus (outside its bbox).
   intersect routines only get called if the bbox yields a hit ?
   
 
+
+HUH : Artifacts gone by moving to initial gamma using the SolveCubicPolyDiv method
+---------------------------------------------------------------------------------------
+
+
+* GPU double precision trig appears to be a black art 
+
+
+
 TODO
 ------
 

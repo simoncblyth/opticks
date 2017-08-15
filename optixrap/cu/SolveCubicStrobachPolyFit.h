@@ -1,46 +1,59 @@
 // /usr/local/env/geometry/quartic/quartic/strobach.cc
 
+
+
+
 #ifdef __CUDACC__
 __device__ __host__
 #endif
-void ApproxInitialGammaF(const Solve_t& a, const Solve_t& b, const Solve_t& c, Solve_t& gamma )
+void InitialGamma(const Solve_t& a, const Solve_t& b, const Solve_t& c, Solve_t& gamma )
 {
-    // NB using float version of of expensive stuff like cbrtf, 
-    //    as just need initial estimate of gamma which subsequently gets refined by the polyfit 
-    //
+    const Solve_t zero(0);
+    const Solve_t one(1);
+    const Solve_t two(2);
+    const Solve_t otwo = one/two ;
+    const Solve_t three(3);
+    const Solve_t four(4);
+    const Solve_t twentyseven(27);
 
-    const Solve_t zero(0) ; 
-    const Solve_t one(1) ; 
-    const Solve_t two(2) ; 
-    const Solve_t three(3) ; 
-    const Solve_t nine(9) ; 
-    const Solve_t twentyseven(27) ;
-    const Solve_t fiftyfour(54) ;
-    const Solve_t othree = one/three ; 
+    const Solve_t six(6);
+    const Solve_t ott = one/three ; 
 
-    const Solve_t a3 = a*othree ; 
-    const Solve_t aa = a*a ; 
+    const Solve_t sq3        = sqrt(three);
+    const Solve_t inv6sq3    = one / (six * sq3);
 
-    const Solve_t Q = (aa - three*b)/nine ;                                         
-    const Solve_t R = (a*(two*aa - nine*b) + twentyseven*c)/fiftyfour ;  // a,b,c real so Q,R real
-    const Solve_t R2 = R*R ; 
-    const Solve_t Q3 = Q*Q*Q ;
-    const Solve_t R2_Q3 = R2 - Q3 ; 
+    const Solve_t p = b - a * a * ott;                                       
+    const Solve_t q = c - a * b * ott + two * a * a * a * ott * ott * ott;
 
-    if( R2_Q3 < zero ) // three real roots
-    { 
-         const Solve_t theta = acos( R/sqrt(Q3) ); 
-         const Solve_t qs = sqrt(Q); 
-         gamma = two*qs*cos(theta*othree) - a3 ;
+
+    const Solve_t a3 = a/three ; 
+    const Solve_t p3 = p/three ; 
+    const Solve_t q2 = q/two ; 
+
+    Solve_t delta = four * p * p * p +  twentyseven * q * q;   
+
+    Solve_t t, u ;
+
+    if (delta >= zero ) // only one real root,  Cardanos formula for the depressed cubic with -a/3 shift to yield original cubic root
+    {
+        delta = sqrt(delta);      
+        Solve_t sdisc = delta*inv6sq3 ;
+
+        t = q2 < zero ? -q2 + sdisc : q2 + sdisc ;  
+            
+        Solve_t tcu = copysign(one, t) * cbrt(fabs(t)) ; 
+        Solve_t ucu = p3 / tcu ;        
+               
+        gamma  = q2 < zero ? -tcu + ucu + a3 : -ucu + tcu + a3  ;
+    } 
+    else 
+    {
+        delta = sqrt(-delta);
+        t     = -otwo * q;
+        u     = delta * inv6sq3;      // sqrt of negated discrim :  sqrt( -[(p/3)**3 + (q/2)**2] )
+
+        gamma  = -two * sqrt(-p3) * cos(ott * atan2(u, t)) + a3  ; 
     }
-    else
-    { 
-         const Solve_t R_R2_Q3 = fabs(R) + sqrt(R2_Q3) ; 
-         const Solve_t croot = cbrt( R_R2_Q3 ) ; 
-         const Solve_t A = -copysign(one, R)*croot  ; 
-         const Solve_t B = A == zero ? zero : Q/A ; 
-         gamma = -A - B + a3  ;
-   }  
 } 
 
 
@@ -51,9 +64,11 @@ __device__ __host__
 unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk ) 
 {
     Solve_t alfa,beta,gamma;
-    ApproxInitialGammaF(a,b,c,gamma);
+    InitialGamma(a,b,c,gamma);
 
-    Solve_t zero(0) ;
+    const Solve_t zero(0) ;
+    const Solve_t two(2) ;
+
     Solve_t e1,e2,e3 ;
     Solve_t u1,u2 ;
     Solve_t q1,q2,q3 ;
@@ -101,26 +116,22 @@ unsigned SolveCubic(Solve_t a, Solve_t b, Solve_t c, Solve_t* xx, unsigned msk )
 
         if(ee == zero || ee == eee || ee == eeee) break ; 
     }
-
    
     // c--------------------- Solve Quadratic Equation ---------------------
-    Solve_t cc1,diskr ;
-    cc1=alfa/2. ;
-    diskr=cc1*cc1-beta ;
+    const Solve_t cc1 = alfa/two ;
+    Solve_t diskr = cc1*cc1 - beta ;
+
+    unsigned nr = diskr > zero ? 3u : 1u ; 
 
     xx[0] = -gamma  ;  
-
-    unsigned nr = diskr > zero ? 3 : 1 ; 
     if(nr == 3)
     { 
          diskr =sqrt(diskr) ;
-         xx[1] = cc1 > 0. ? -cc1-diskr  : -cc1+diskr  ; 
+         xx[1] = cc1 > zero ? -cc1-diskr  : -cc1+diskr  ; 
          xx[2] = beta/xx[0] ;
     }
     return nr ; 
 }
-
-
 
 
 

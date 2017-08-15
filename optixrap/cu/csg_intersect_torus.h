@@ -32,12 +32,7 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 //#ifdef CSG_INTERSECT_TORUS_TEST
     rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  tr %d  \n", rmajor, rminor, rsum, !!tr );
 //#endif
-
-
-
-
 }
-
 
 
 
@@ -113,6 +108,70 @@ small sx,sy,sz,ox,oy,oz
 static __device__
 bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
+    /*
+    For sz!=0 rays to miss torus need both rrtop and rrbot to exceed fRRmax 
+    hmm not sufficient, rays that would intersect the sides of cylinder in z range.
+
+             
+               /                       / 
+              /                       /
+             *  +------------------+ *
+                |                  |/ 
+                |        +         / 
+                |                 /|
+          *     +----------------*-+ 
+         /                      /  
+        /                      /
+
+
+        x^2 + y^2 = r^2 
+
+        (fo.x+ t*fs.x)^ + ( fo.y+ t*fs.y)^2 = rcy^2
+
+        (sx*sx + sy*sy) t^2 + 2*t*( ox*sx + oy*sy ) + ox*ox+oy*oy - rcy^2 = 0  
+
+    */
+
+
+/*
+    const float3& fo = ray_origin ; 
+    const float3& fs = ray_direction ; 
+
+    const float& fr = q0.f.z ;
+    const float& fR = q0.f.w ;
+
+    if(fs.z == 0.f) 
+    {
+        if(fabsf(fo.z) > fr ) return false ;    
+    }
+    else 
+    {
+        const float fRRmax = (fR+fr)*(fR+fr) ; 
+
+        const float oszf = 1.f/fs.z ; 
+        const float ttop = (fr - fo.z)*oszf ;   // top/bot plane intersects
+        const float tbot = (-fr - fo.z)*oszf ;
+
+        const float xtop = fo.x+ttop*fs.x ; 
+        const float ytop = fo.y+ttop*fs.y ;
+
+        const float xbot = fo.x+tbot*fs.x ; 
+        const float ybot = fo.y+tbot*fs.y ;
+  
+        const float rrtop = xtop*xtop + ytop*ytop ; 
+        const float rrbot = xbot*xbot + ybot*ybot ; 
+
+
+        const float cy_d = fs.x*fs.x + fs.y*fs.y ; 
+        const float cy_b = fo.x*fs.x + fo.y*fs.y ;
+        const float cy_c = fo.x*fo.x + fo.y*fo.y - fRRmax  ;
+        const float cy_disc = cy_b*cy_b - cy_d*cy_c ; 
+
+        if(rrtop > fRRmax && rrbot > fRRmax && fabsf(fo.z) > fr) return false ;  
+    }
+*/
+
+
     const Torus_t zero(0) ; 
     const Torus_t one(1) ; 
     const Torus_t two(2) ; 
@@ -124,6 +183,7 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     const Torus_t ss = dot( ray_direction, ray_direction );
     const Torus_t unit = sqrt(ss);   
     //const Torus_t unit = R_ ;   
+
 
     const Torus_t sx = ray_direction.x/unit ;
     const Torus_t sy = ray_direction.y/unit ;  
@@ -147,6 +207,10 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     // and upshot is the coeffs come out the same ???
     //
     // Need to check quartic coeff disparity to see what approach is best
+
+
+    //  z = oz+t*sz -> t = (z - oz)/sz 
+
    
     
 #ifdef CSG_INTERSECT_TORUS_TEST

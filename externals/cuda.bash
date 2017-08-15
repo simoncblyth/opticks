@@ -14,6 +14,20 @@ See Also
 * cudatoolkit-
 
 
+CUDA CMake
+------------
+
+* https://devblogs.nvidia.com/parallelforall/building-cuda-applications-cmake/
+
+
+Avoid acos
+------------
+
+* https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
+
+
+
+
 OSX CUDA Driver
 -----------------
 
