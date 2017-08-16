@@ -9,6 +9,32 @@
 #include "NPY_LOG.hh"
 
 
+
+void test_FromNode_Meta()
+{
+    typedef std::vector<nnode*> VN ;
+    VN nodes ; 
+    nnode::Tests(nodes);
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+    const NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
+    const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
+
+ 
+    for(VN::const_iterator it=nodes.begin() ; it != nodes.end() ; it++)
+    {
+        nnode* n = *it ; 
+
+        n->set_boundary(spec);
+
+        NCSG* tree = NCSG::FromNode( n , config );
+
+        LOG(info) << "test_FromNode_0 " << tree->soname() ; 
+    }
+}
+
+
+
 void test_FromNode()
 {
     typedef std::vector<nnode*> VN ;
@@ -44,22 +70,28 @@ void test_FromNode()
 
 
 
-int main(int argc, char** argv)
+void test_DeserializeTrees(int argc, char** argv )
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
+    std::vector<NCSG*> trees ;
 
     int verbosity = 2 ; 
-
-    std::vector<NCSG*> trees ;
 
     const char* basedir = argc > 1 ? argv[0] : NULL ;
 
     int ntree = NCSG::DeserializeTrees( basedir, trees, verbosity );
     LOG(info) << " ntree " << ntree ; 
  
+}
 
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    NPY_LOG__ ;  
+
+    //test_DeserializeTrees(argc, argv);
     //test_FromNode();
+    test_FromNode_Meta();
 
     return 0 ; 
 }

@@ -45,6 +45,8 @@ const float NCSG::SURFACE_EPSILON = 1e-5f ;
 // ctor : booting via deserialization of directory 
 NCSG::NCSG(const char* treedir) 
    :
+   m_meta(NULL),
+   m_treedir(treedir ? strdup(treedir) : NULL),
    m_index(0),
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(0),
@@ -53,12 +55,10 @@ NCSG::NCSG(const char* treedir)
    m_points(NULL),
    m_uncoincide(NULL),
    m_nudger(NULL),
-   m_treedir(treedir ? strdup(treedir) : NULL),
    m_nodes(NULL),
    m_transforms(NULL),
    m_gtransforms(NULL),
    m_planes(NULL),
-   m_meta(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
@@ -75,6 +75,8 @@ NCSG::NCSG(const char* treedir)
 // ctor : booting from in memory node tree
 NCSG::NCSG(nnode* root ) 
    :
+   m_meta(NULL),
+   m_treedir(NULL),
    m_index(0),
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(root->verbosity),
@@ -83,12 +85,10 @@ NCSG::NCSG(nnode* root )
    m_points(NULL),
    m_uncoincide(make_uncoincide()),
    m_nudger(make_nudger()),
-   m_treedir(NULL),
    m_nodes(NULL),
    m_transforms(NULL),
    m_gtransforms(NULL),
    m_planes(NULL),
-   m_meta(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
@@ -127,7 +127,9 @@ NNodeUncoincide* NCSG::make_uncoincide() const
 }
 NNodeNudger* NCSG::make_nudger() const 
 {
-    LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+   // when test running from nnode there is no metadata or treedir
+   // LOG(info) << soname() << " treeNameIdx " << getTreeNameIdx() ; 
+
     NNodeNudger* nudger = new NNodeNudger(m_root, m_surface_epsilon, m_root->verbosity);
     return nudger ; 
 }
@@ -140,6 +142,7 @@ NNodeNudger* NCSG::make_nudger() const
 template<typename T>
 T NCSG::getMeta(const char* key, const char* fallback ) const 
 {
+    assert(m_meta) ;    
     return m_meta->get<T>(key, fallback) ;
 }
 
@@ -211,6 +214,46 @@ std::string NCSG::smry()
 }
 
 
+
+
+std::string NCSG::MetaPath(const char* treedir, int idx)
+{
+    std::string metapath = idx == -1 ? BFile::FormPath(treedir, "meta.json") : BFile::FormPath(treedir, BStr::itoa(idx), "meta.json") ;
+    return metapath ; 
+}
+
+bool NCSG::Exists(const char* treedir)
+{
+    return ExistsDir(treedir);
+}
+
+bool NCSG::ExistsDir(const char* treedir)
+{
+    if(!treedir || !BFile::ExistsDir(treedir) ) return false ; 
+    return true ; 
+}
+
+
+std::string NCSG::TxtPath(const char* treedir)
+{
+    std::string txtpath = BFile::FormPath(treedir, FILENAME) ;
+    return txtpath ; 
+}
+
+bool NCSG::ExistsTxt(const char* treedir)
+{
+    if(!ExistsDir(treedir)) return false ;  
+    std::string txtpath = TxtPath(treedir) ; 
+    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
+    return exists ; 
+}
+
+bool NCSG::ExistsMeta(const char* treedir, int idx)
+{
+    std::string metapath = MetaPath(treedir, idx) ;
+    return BFile::ExistsFile(metapath.c_str()) ;
+}
+
 NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
 {
     // TODO:
@@ -220,12 +263,12 @@ NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
     //
     //    Need for access to Trd srcmeta
 
-    std::string metapath = idx == -1 ? BFile::FormPath(treedir, "meta.json") : BFile::FormPath(treedir, BStr::itoa(idx), "meta.json") ;
     NParameters* meta = NULL  ; 
-    if(BFile::ExistsFile(metapath.c_str()))
+    if(ExistsMeta(treedir, idx))
     {
-        meta = new NParameters ; 
-        meta->load_( metapath.c_str() );
+         std::string metapath = MetaPath(treedir, idx) ;
+         meta = new NParameters ; 
+         meta->load_( metapath.c_str() );
     } 
     return meta ; 
 }
@@ -1082,13 +1125,6 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
-bool NCSG::Exists(const char* basedir)
-{
-    std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
-    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
-    return exists ; 
-}
-
 
 
 
@@ -1209,9 +1245,9 @@ void NCSG::updateContainer( nbbox& container ) const
 
 NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
 {
-    if(!treedir || !BFile::ExistsDir(treedir))
+    if(!Exists(treedir))
     {
-         LOG(warning) << "NCSG::LoadCSG no such dir " << treedir ;
+         LOG(warning) << "NCSG::LoadCSG no such dir OR does not contain tree " << treedir ;
          return NULL ; 
     }
     NSceneConfig* config = new NSceneConfig(gltfconfig) ; 
@@ -1235,6 +1271,17 @@ NCSG* NCSG::LoadCSG(const char* treedir, const char* gltfconfig)
 
 NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 {
+    if(!Exists(treedir) )
+    {
+         LOG(warning) << "NCSG::LoadTree no such treedir OR does not contain tree " 
+                      << " treedir: " << treedir 
+                      << " FILENAME: " << FILENAME 
+                      ;
+
+         return NULL ; 
+    }
+ 
+
     NCSG* tree = new NCSG(treedir) ; 
 
     tree->setConfig(config);

@@ -35,7 +35,13 @@ int main(int argc, char** argv)
 
     NCSG* tree = NCSG::LoadTree(treedir, config );
 
-    assert( tree );
+    //assert( tree );
+
+    if(!tree) 
+    {
+        LOG(fatal) << "NO treedir/tree " << treedir ;
+        return 0 ; 
+    }
 
     const nnode* root = tree->getRoot();
 

@@ -18,6 +18,47 @@ See also env-;yoctogl-
 
 
 
+
+gcc issue reported by YL Chan
+-------------------------------
+
+::
+
+    On Aug 15, 2017, at 9:56 PM, YL Chan
+
+    Turns out seems to be a bug in gcc5 :
+    https://github.com/nothings/stb/issues/280
+
+    syndrome:
+    yoctogl-
+    yoctogl--
+    ...
+    [ 80%] Linking CXX executable ygltf_reader
+    cd /home/roy/opticks/externals/yoctogl/yocto-gl.build/tests && /usr/bin/cmake -E cmake_link_script CMakeFiles/ygltf_reader.dir/link.txt --verbose=1
+    /usr/bin/c++    -fvisibility=hidden -Wall -Wno-unused-function -Wno-comment -Wno-deprecated -g   CMakeFiles/ygltf_reader.dir/ygltf_reader.cc.o  -o ygltf_reader -rdynamic ../libYoctoGL.so -Wl,-rpath,/home/roy/opticks/externals/yoctogl/yocto-gl.build:
+    /usr/bin/ld: ygltf_reader: hidden symbol `__cpu_model' in /usr/lib/gcc/x86_64-linux-gnu/5/libgcc.a(cpuinfo.o) is referenced by DSO
+    /usr/bin/ld: final link failed: Bad value
+    collect2: error: ld returned 1 exit status
+
+    The temp fix was to follow
+    https://github.com/nothings/stb/issues/280
+    and edit
+    /home/roy/opticks/externals/yoctogl/yocto-gl/yocto/ext/stb_image.h
+
+    After that opticks-- could complete
+
+    then I do:
+    $export LD_LIBRARY_PATH=/home/roy/opticks/externals/lib:/home/roy/opticks/externals/lib64:$LD_LIBRARY_PATH
+    $op.sh -G
+    $opticks-
+    $opticks-t
+    ...
+    ...
+    Total Test time (real) = 145.04 sec
+
+
+
+
 CMake install locations
 -------------------------
 

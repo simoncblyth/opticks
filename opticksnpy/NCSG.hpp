@@ -78,7 +78,6 @@ class NPY_API NCSG {
         static const float SURFACE_EPSILON ; 
 
         static unsigned NumNodes(unsigned height);
-        static bool Exists(const char* base);
         static int Deserialize(     const char* base, std::vector<NCSG*>& trees, int verbosity );
         static int DeserializeTrees(const char* base, std::vector<NCSG*>& trees, int verbosity ) ;
 
@@ -88,6 +87,15 @@ class NPY_API NCSG {
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
+
+
+        static std::string TxtPath(const char* treedir);
+        static bool Exists(const char* treedir);   // compat : pass thru to ExistsDir
+        static bool ExistsDir(const char* treedir);   // just checks existance of dir
+        static bool ExistsTxt(const char* treedir);  // looks for FILENAME (csg.txt) in the treedir
+
+        static std::string MetaPath(const char* treedir, int idx=-1);
+        static bool        ExistsMeta(const char* treedir, int idx=-1);
         static NParameters* LoadMetadata(const char* treedir, int idx=-1);
 
         NNodeUncoincide* make_uncoincide() const ;
@@ -211,6 +219,8 @@ class NPY_API NCSG {
         void export_r(nnode* node, unsigned idx);
         void export_();
     private:
+        NParameters* m_meta ; 
+        const char* m_treedir ; 
         unsigned     m_index ; 
         float        m_surface_epsilon ; 
         int          m_verbosity ;  
@@ -221,14 +231,11 @@ class NPY_API NCSG {
         NNodeUncoincide* m_uncoincide ; 
         NNodeNudger*     m_nudger ; 
 
-        const char* m_treedir ; 
-
         NPY<float>* m_nodes ; 
         NPY<float>* m_transforms ; 
         NPY<float>* m_gtransforms ; 
         NPY<float>* m_planes ;
 
-        NParameters* m_meta ; 
         std::map<unsigned, NParameters*> m_nodemeta ; 
 
         unsigned    m_num_nodes ; 

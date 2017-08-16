@@ -19,9 +19,15 @@ N::N(nnode* node, const nmat4triple* transform, const NSceneConfig* config, floa
          points->setEpsilon(surface_epsilon);
 
          tots = points->collect_surface_points() ;
-         const std::vector<glm::vec3>& model = points->getCompositePoints();
 
-         transform->apply_transform_t( local, model );
+         const std::vector<glm::vec3>& src = points->getCompositePoints();
+         for(unsigned i=0 ; i < src.size() ; i++)  model.push_back(src[i] ) ; 
+
+        // huh there is a local vector of vec3 named model ?
+
+         // populate local vector of vec3 with transformed points from src 
+         float w = 1.0f ; 
+         transform->apply_transform_t( local, model, w );
 
          num = model.size();
          assert( local.size() == num );

@@ -58,7 +58,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_honour_selection(true),
     m_gltf(m_ok->getGLTF()),
     m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
-    m_scene_config( m_scene->getConfig()),
+    m_scene_config( m_scene ? m_scene->getConfig() : NULL ),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
@@ -89,6 +89,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
 
 void GScene::dumpNode( unsigned nidx)
 {
+    if(!m_scene) return ; 
+
     nd* n = m_scene->getNd(nidx);
     LOG(info) << "GScene::dump_node" 
               << " nidx " << std::setw(6) << nidx

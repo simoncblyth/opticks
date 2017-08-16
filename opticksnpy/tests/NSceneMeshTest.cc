@@ -18,11 +18,11 @@ int main(int argc, char** argv)
 
     BOpticksResource okr ;  // no Opticks at this level 
 
-
     const char* dbgmesh = SSys::getenvvar("DBGMESH");
     int dbgnode = SSys::getenvint("DBGNODE", -1) ; 
 
     const char* gltfbase = argc > 1 ? argv[1] : okr.getDebuggingIDFOLD() ;
+
     const char* gltfname = "g4_00.gltf" ;
     const char* gltfconfig = "check_surf_containment=0,check_aabb_containment=0" ; 
 

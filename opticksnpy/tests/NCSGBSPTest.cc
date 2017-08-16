@@ -24,9 +24,13 @@ int main(int argc, char** argv)
 
     NCSG* csg = NCSG::LoadTree(treedir, config );
 
-    assert( csg );
+    if(!csg)
+    {
+        LOG(fatal) << "NO treedir/tree " << treedir ; 
+        return 0 ;  
+    }
 
-//    NCSGBSP bsp(csg);
+    // NCSGBSP bsp(csg);
 
 
     return 0 ; 

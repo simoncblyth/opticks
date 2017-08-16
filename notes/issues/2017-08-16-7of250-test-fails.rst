@@ -1,0 +1,216 @@
+opticks-t test fails
+========================
+
+
+System Hang From Interactive Ops whilst tests running
+------------------------------------------------------------
+
+Observed system hang, when using scrollback whilst tests are running...
+seems better to leave machine alone whilst the tests run.
+
+
+2017-08-16 14:00 Down to  2/250 fails
+-------------------------------------------------------
+
+::
+
+    99% tests passed, 2 tests failed out of 250
+
+    Total Test time (real) = 144.07 sec
+
+    The following tests FAILED:
+        223 - OptiXRapTest.OInterpolationTest (Failed)
+        238 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+
+
+
+NSceneMeshTest slow (30s) , fixed segv : with gltf only have one csg.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* sensitive to IDFOLD envvar, so may load huge geometries
+
+
+::
+
+    2017-08-16 14:16:34.735 INFO  [10844] [NScene::postimportnd@558] NScene::postimportnd numNd 290276 num_selected 290276 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-08-16 14:16:38.252 INFO  [10844] [NScene::count_progeny_digests@932] NScene::count_progeny_digests verbosity 1 node_count 290276 digest_size 35
+    2017-08-16 14:16:40.158 WARN  [10844] [*NCSG::LoadTree@1245] NCSG::LoadTree no such treedir OR does not contain tree  treedir: /usr/local/opticks/opticksdata/export/juno1707/extras/34 FILENAME: csg.txt
+    Process 5056 stopped
+    * thread #1: tid = 0x2a5c, 0x0000000100be18e2 libNPY.dylib`NCSG::setIndex(this=0x0000000000000000, index=0) + 18 at NCSG.cpp:506, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x10)
+        frame #0: 0x0000000100be18e2 libNPY.dylib`NCSG::setIndex(this=0x0000000000000000, index=0) + 18 at NCSG.cpp:506
+       503  
+       504  void NCSG::setIndex(unsigned index)
+       505  {
+    -> 506      m_index = index ; 
+       507  }
+       508  void NCSG::setVerbosity(int verbosity)
+       509  {
+    (lldb) bt
+    * thread #1: tid = 0x2a5c, 0x0000000100be18e2 libNPY.dylib`NCSG::setIndex(this=0x0000000000000000, index=0) + 18 at NCSG.cpp:506, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x10)
+      * frame #0: 0x0000000100be18e2 libNPY.dylib`NCSG::setIndex(this=0x0000000000000000, index=0) + 18 at NCSG.cpp:506
+        frame #1: 0x0000000100cedc03 libNPY.dylib`NScene::load_mesh_extras(this=0x0000000102f001d0) + 1571 at NScene.cpp:419
+        frame #2: 0x0000000100ce9349 libNPY.dylib`NScene::init(this=0x0000000102f001d0) + 1129 at NScene.cpp:218
+        frame #3: 0x0000000100ce823f libNPY.dylib`NScene::NScene(this=0x0000000102f001d0, base=0x0000000102d04490, name=0x000000010001066d, config=0x0000000100010678, dbgnode=-1, scene_idx=0) + 1503 at NScene.cpp:169
+        frame #4: 0x0000000100ce7bed libNPY.dylib`NScene::NScene(this=0x0000000102f001d0, base=0x0000000102d04490, name=0x000000010001066d, config=0x0000000100010678, dbgnode=-1, scene_idx=0) + 61 at NScene.cpp:170
+        frame #5: 0x0000000100ce79a1 libNPY.dylib`NScene::Load(gltfbase=0x0000000102d04490, gltfname=0x000000010001066d, gltfconfig=0x0000000100010678, dbgnode=-1) + 113 at NScene.cpp:123
+        frame #6: 0x00000001000051aa NSceneMeshTest`main(argc=1, argv=0x00007fff5fbfee20) + 1626 at NSceneMeshTest.cc:45
+        frame #7: 0x00007fff8774e5fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+::
+
+    (lldb) f 2
+    frame #2: 0x0000000100ce9349 libNPY.dylib`NScene::init(this=0x0000000102f001d0) + 1129 at NScene.cpp:218
+       215  
+       216      // move load_mesh_extras later so can know which meshes are non-instanced needing 
+       217      // gtransform slots for all primitives
+    -> 218      load_mesh_extras();
+       219  
+       220      postimportmesh();
+       221  
+    (lldb) 
+
+    (lldb) f 1
+    frame #1: 0x0000000100cedc03 libNPY.dylib`NScene::load_mesh_extras(this=0x0000000102f001d0) + 1571 at NScene.cpp:419
+       416          int lvidx_ = lvidx(mesh_id);
+       417  
+       418          NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
+    -> 419          csg->setIndex(mesh_id);
+       420  
+       421  
+       422          bool csgskip = csg->isSkip() ;
+    (lldb) p csg
+    (NCSG *) $0 = 0x0000000000000000
+    (lldb) p csgpath
+    (std::__1::string) $1 = "/usr/local/opticks/opticksdata/export/juno1707/extras/34"
+    (lldb) 
+
+    ## hmm thats the last shape, off by 1 ??
+
+
+
+Hmm only one csg.txt sitting up top ?::
+
+    simon:issues blyth$ l /usr/local/opticks/opticksdata/export/juno1707/extras/
+    total 8
+    drwxr-xr-x   8 blyth  staff  272 Aug 16 14:20 34
+    drwxr-xr-x  16 blyth  staff  544 Aug 12 14:23 12
+    drwxr-xr-x  16 blyth  staff  544 Aug 12 11:42 11
+    drwxr-xr-x  20 blyth  staff  680 Aug  7 12:25 23
+    drwxr-xr-x  18 blyth  staff  612 Aug  4 20:28 24
+    -rw-r--r--   1 blyth  staff  339 Aug  3 16:06 csg.txt
+    drwxr-xr-x  14 blyth  staff  476 Aug  3 15:12 9
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 15:08 33
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 15:08 32
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 15:08 31
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 15:07 30
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 15:07 29
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 15:06 28
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 15:05 27
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 15:00 26
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 15:00 25
+    drwxr-xr-x  18 blyth  staff  612 Aug  3 12:31 21
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:11 0
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 1
+    drwxr-xr-x  14 blyth  staff  476 Aug  3 12:01 10
+    drwxr-xr-x  14 blyth  staff  476 Aug  3 12:01 13
+    drwxr-xr-x  14 blyth  staff  476 Aug  3 12:01 14
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 15
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 16
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 17
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 18
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 19
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 2
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 20
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 22
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 3
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 4
+    drwxr-xr-x   8 blyth  staff  272 Aug  3 12:01 5
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 6
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 7
+    drwxr-xr-x  10 blyth  staff  340 Aug  3 12:01 8
+    simon:issues blyth$ 
+
+
+
+
+2017-08-16 12:00 Initially 7/250 fails
+-------------------------------------------------------
+
+::
+
+    97% tests passed, 7 tests failed out of 250
+
+    Total Test time (real) = 157.40 sec
+
+    The following tests FAILED:
+         42 - NPYTest.NOpenMeshCombineTest (OTHER_FAULT)   ## FIXED : TREE NON-EXISTANCE HANDLING 
+         43 - NPYTest.NPolygonizerTest (OTHER_FAULT)       ## FIXED : TREE NON-EXISTANCE HANDLING 
+         44 - NPYTest.NCSGBSPTest (OTHER_FAULT)            ## FIXED : TREE NON-EXISTANCE HANDLING  
+        187 - GGeoTest.GSceneTest (SEGFAULT)               ## FIXED : GLTF NON-EXISTANCE HANDLING 
+        122 - NPYTest.NSDFTest (SEGFAULT)                  ## FIXED local/model vector vec3 bug
+
+        223 - OptiXRapTest.OInterpolationTest (Failed)
+        238 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+
+    Errors while running CTest
+    opticks-t- : use -V to show output
+    simon:opticks blyth$ 
+
+
+
+OInterpolationTest : python post-analysis level fail re GBndLib.txt
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2017-08-16 14:00:35.742 INFO  [818676] [OLaunchTest::launch@61] OLaunchTest entry   0 width     761 height     123 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-08-16 14:00:35.742 INFO  [818676] [OContext::close@219] OContext::close numEntryPoint 1
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py", line 13, in <module>
+        blib = PropLib("GBndLib")
+      File "/Users/blyth/opticks/ana/proplib.py", line 126, in __init__
+        names = map(lambda _:_[:-1],file(npath).readlines())
+    IOError: [Errno 2] No such file or directory: '/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt'
+    2017-08-16 14:00:39.487 INFO  [818676] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
+    simon:opticksnpy blyth$ 
+
+
+CTestDetectorTest : GSurLib assert
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2017-08-16 14:01:53.471 INFO  [819073] [CTraverser::Traverse@128] CTraverser::Traverse DONE
+    2017-08-16 14:01:53.471 INFO  [819073] [CTraverser::Summary@104] CDetector::traverse numMaterials 5 numMaterialsWithoutMPT 0
+    2017-08-16 14:01:53.472 INFO  [819073] [CDetector::attachSurfaces@240] CDetector::attachSurfaces
+    2017-08-16 14:01:53.472 INFO  [819073] [GSurLib::examineSolidBndSurfaces@115] GSurLib::examineSolidBndSurfaces numSolids 7
+    2017-08-16 14:01:53.472 FATAL [819073] [GSurLib::examineSolidBndSurfaces@137] GSurLib::examineSolidBndSurfaces i(mm-idx)      6 node(ni.z)      0 node2(id.x)      0 boundary(id.z)      0 parent(ni.w) 4294967295 bname Vacuum///Vacuum lv __dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0
+    Assertion failed: (node == i), function examineSolidBndSurfaces, file /Users/blyth/opticks/ggeo/GSurLib.cc, line 147.
+    Abort trap: 6
+
+
+
+Linux/Ubuntu Fails
+----------------------
+
+Non-O fails Reported by YL_Chan on Ubuntu::
+
+        ## these ones i also see, and have now fixed 
+
+         42 - NPYTest.NOpenMeshCombineTest (SEGFAULT)
+         43 - NPYTest.NPolygonizerTest (SEGFAULT)
+         44 - NPYTest.NCSGBSPTest (SEGFAULT)
+        122 - NPYTest.NSDFTest (SEGFAULT)
+        187 - GGeoTest.GSceneTest (SEGFAULT)
+        175 - GGeoTest.GMakerTest (SEGFAULT)    ## NCSG::FromNode metadata handling 
+
+
+        ## working ok on OSX
+
+        004 - SysRapTest.SSysTest (Failed)     ## running a system command failing on Linux/Ubuntu ?
+         77 - NPYTest.NSlabTest (SEGFAULT)     ## self contained test surprised by the fail
+
