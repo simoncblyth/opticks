@@ -24,6 +24,7 @@
 #include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
+#include "NGLMCF.hpp"
 #include "Nd.hpp"
 
 #include "N.hpp"
@@ -150,6 +151,7 @@ const char* NScene::bbox_type_string() const
 NScene::NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
+    m_num_gltf_nodes(getNumNodes()),
     m_config(new NSceneConfig(config)),
     m_dbgnode(dbgnode),
     m_containment_err(0),
@@ -163,7 +165,10 @@ NScene::NScene(const char* base, const char* name, const char* config, int dbgno
     m_node_count(0),
     m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest")),
-    m_age(NScene::SecondsSinceLastWrite(base, name)) 
+    m_age(NScene::SecondsSinceLastWrite(base, name)),
+    m_triple_debug(true),
+    m_triple(NULL),
+    m_num_triple(0)
 {
     init_lvlists(base, name);
     init();
@@ -177,12 +182,33 @@ void NScene::init()
     LOG(info) << "NScene::init START"
               << " age(s) " << m_age 
               << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
+              << " num_gltf_nodes " << m_num_gltf_nodes
               ;  
 
+    if(m_triple_debug)
+    { 
+        m_triple = NPY<float>::make( m_num_gltf_nodes, 3, 4, 4 ); // debug TVQ collection
+        m_triple->zero();
+    }
 
     load_csg_metadata();
 
+    LOG(info) << "NScene::init import_r START " ; 
+
     m_root = import_r(0, NULL, 0); 
+
+    LOG(info) << "NScene::init import_r DONE " ; 
+
+    if(m_triple_debug)
+    {
+        LOG(info) << "NScene::init triple_debug "
+                  << " num_gltf_nodes " << m_num_gltf_nodes
+                  << " triple_mismatch " << m_num_triple_mismatch
+                  ;
+        m_triple->save("$TMP/NScene_triple.npy");
+    }
+ 
+
 
     postimportnd();
 
@@ -510,7 +536,35 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
 
 
 
+nmat4triple* NScene::make_triple( const float* data)
+{
+    // spell out nglmext::invert_trs for debugging discrepancies
 
+    glm::mat4 T = glm::make_mat4(data) ;
+    ndeco d = nglmext::polar_decomposition( T ) ;
+
+    glm::mat4 isirit = d.isirit ; 
+    glm::mat4 i_trs = glm::inverse( T ) ; 
+
+    NGLMCF cf(isirit, i_trs );
+
+    if(!cf.match) 
+    {
+        m_num_triple_mismatch++ ; 
+        //LOG(warning) << cf.desc("NScene::make_triple polar_decomposition inverse and straight inverse are mismatched " );
+    }
+
+    glm::mat4 V = isirit ;
+    glm::mat4 Q = glm::transpose(V) ;
+
+    nmat4triple* tvq = new nmat4triple(T, V, Q); 
+
+    if(m_triple)  // collecting triples for mismatch debugging 
+    {
+        m_triple->setMat4Triple( tvq , m_num_triple++ );
+    }
+    return tvq ; 
+}
 
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
@@ -531,7 +585,8 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->pvname = pvname ; 
     n->selected = selected ;  // TODO: get rid of this, are now doing selection in GScene 
     n->containment = 0 ; 
-    n->transform = new nmat4triple( ynode->matrix.data() ); 
+
+    n->transform = make_triple(ynode->matrix.data()) ; 
     n->gtransform = nd::make_global_transform(n) ;   
 
     if(selected) m_num_selected++ ; 
@@ -548,6 +603,9 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 void NScene::postimportnd()
 {
+
+
+
     const nd* dn = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
     if( dn )
     {

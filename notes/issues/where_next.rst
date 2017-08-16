@@ -25,6 +25,22 @@ Opticks now supports:
 
 
 
+
+TODO : j1707 review size of GPU buffers, any more instancing possible ? 
+--------------------------------------------------------------------------
+
+* potential reorg optix geometry into more objects 
+
+
+
+TODO : j1707 deep trees, expand balancing to handle ?
+---------------------------------------------------------
+
+
+
+
+
+
 TODO: get verbosity under control in GDML/glTF route especially GParts 
 -------------------------------------------------------------------------
 
@@ -38,7 +54,6 @@ Most of these are differences...
   to create +ve form tree (with signs all in the leaves as complements) 
   so then have a fully commutative CSG expression tree 
   that can easily be balanced
-
 
 
 TODO: polycone testing, general coincident surface testing(how?)

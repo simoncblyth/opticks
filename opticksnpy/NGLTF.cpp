@@ -259,12 +259,12 @@ glm::mat4 NGLTF::getTransformMatrix( unsigned node_idx )
 
 
 
+unsigned  NGLTF::getNumNodes() const 
+{
+   return m_gltf->nodes.size()  ;
+}
 
-
-
-
-
-ygltf::node_t* NGLTF::getNode(unsigned node_idx)
+ygltf::node_t* NGLTF::getNode(unsigned node_idx) const 
 {
     assert(node_idx < m_gltf->nodes.size() );   
     return &m_gltf->nodes.at(node_idx);

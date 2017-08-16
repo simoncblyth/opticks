@@ -208,6 +208,7 @@ set(SOURCES
 
     NTreeTools.cpp
     NGLMExt.cpp
+    NGLMCF.cpp
     NPolygonizer.cpp
 
     Nd.cpp

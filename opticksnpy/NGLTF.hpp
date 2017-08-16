@@ -52,7 +52,8 @@ class NPY_API NGLTF {
         void dumpAll();
         void dumpAllInstances( unsigned mesh_idx, unsigned maxdump=10u );
     public:
-        ygltf::node_t*  getNode(unsigned node_idx );
+        unsigned        getNumNodes() const  ;
+        ygltf::node_t*  getNode(unsigned node_idx ) const ;
         std::string     descFlatNode( unsigned node_idx );
         std::string     descNode( unsigned node_idx );
 

@@ -53,20 +53,6 @@ from opticks.analytic.csg import CSG
 from opticks.analytic.sc import Sc
 
 
-"""
-def translate_lv(lv):
-    solid = lv.solid
-
-    cn = solid.as_ncsg()
-    cn.analyse()
-
-    polyconfig = PolyConfig(lv.shortname)
-    cn.meta.update(polyconfig.meta )
-
-    return cn 
-"""
-
-
 if __name__ == '__main__':
 
     args = opticks_main()
@@ -116,12 +102,20 @@ if __name__ == '__main__':
     pass
 
 
-    container = CSG("box", name="container")
-    container.boundary = args.container
-    container.meta.update(PolyConfig("CONTAINER").meta)
+    container = None
+    if args.disco:
+        log.info("--disco option skipping container")
+    else:
+        log.info("adding container")
+        container = CSG("box", name="container")
+        container.boundary = args.container
+        container.meta.update(PolyConfig("CONTAINER").meta)
+    pass
 
     objs = []
-    objs.append(container)
+    if not container is None:
+        objs.append(container)
+    pass
     objs.extend(cns)
 
     CSG.Serialize(objs, args.csgpath, outmeta=True )  

@@ -2457,16 +2457,12 @@ tboolean-sstt2-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/l
 
 ## ntc: flat lozenge shape, a deep CSG tree
 
-tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
-tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0x ; }
+tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- $* 2>/dev/null) && tboolean--  ; }
+tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0x $* ; }
 
 
 tboolean-p0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-p0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel  /dd/Geometry/AdDetails/lvOcrGdsInIav0x ; }
-
-
-
-
 
 
 
@@ -2481,6 +2477,7 @@ tboolean-gdml-()
           $*
 }
 tboolean-gdml-translator(){ echo $(opticks-home)/analytic/translate_gdml.py ; }
+tboolean-gdml-translator-vi(){ vi $(tboolean-gdml-translator); }
 
 tboolean-gdml-check(){ tboolean-gdml- 2> /dev/null ; }
 tboolean-gdml-edit(){ vi $(tboolean-gdml-translator)   ; }

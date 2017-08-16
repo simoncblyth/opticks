@@ -305,6 +305,7 @@ oglrap-bdir(){ echo $(opticks-bdir)/oglrap ; }
 
 oglrap-bindir(){ echo $(oglrap-idir)/bin ; }
 
+oglrap-c(){    cd $(oglrap-sdir); }
 oglrap-cd(){   cd $(oglrap-sdir); }
 oglrap-scd(){  cd $(oglrap-sdir); }
 oglrap-tcd(){  cd $(oglrap-tdir); }
@@ -323,7 +324,7 @@ oglrap---(){     touch $(oglrap-apihh) ; oglrap--  ; }
 
 
 oglrap--(){        opticks--     $(oglrap-bdir) ; }
-oglrap-ctest(){    opticks-ctest $(oglrap-bdir) $* ; }
+oglrap-t(){       opticks-t $(oglrap-bdir) $* ; }
 oglrap-genproj(){  oglrap-scd ; opticks-genproj $(oglrap-name) $(oglrap-tag) ; }
 oglrap-gentest(){  oglrap-tcd ; opticks-gentest ${1:-Scene} $(oglrap-tag) ; }
 oglrap-txt(){     vi $(oglrap-sdir)/CMakeLists.txt $(oglrap-tdir)/CMakeLists.txt ; }

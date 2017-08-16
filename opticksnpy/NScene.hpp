@@ -9,8 +9,10 @@ class NParameters ;
 struct nd ; 
 struct nbbox ; 
 struct nnode ; 
+struct nmat4triple ; 
 struct NSceneConfig ; 
 
+template<class T> class NPY ;
 template<class T> class Counts ;
 
 #include "NSceneConfig.hpp"  // for enums 
@@ -96,6 +98,7 @@ class NPY_API NScene : public NGLTF
         void dump_repeat_candidates() const;
     private:
         nd*  import_r(int idx, nd* parent, int depth);
+        nmat4triple* make_triple( const float* data) ;
         void postimportnd();
 
         void dumpNdTree_r(nd* n);
@@ -150,6 +153,7 @@ class NPY_API NScene : public NGLTF
         std::map<unsigned, unsigned>      m_repeat_count ;
 
 
+        unsigned                          m_num_gltf_nodes ; 
         NSceneConfig*                     m_config ; 
         int                               m_dbgnode ; 
         unsigned                          m_containment_err ; 
@@ -168,6 +172,13 @@ class NPY_API NScene : public NGLTF
         std::vector<std::string>          m_repeat_candidates ;
         std::vector<unsigned>             m_dbgnode_list ;
         glm::uvec4                        m_surferr ;  
+
+        bool                              m_triple_debug ; 
+        NPY<float>*                       m_triple ; 
+        unsigned                          m_num_triple ; 
+        unsigned                          m_num_triple_mismatch ; 
+
+        
      
 
 

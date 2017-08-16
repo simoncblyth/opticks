@@ -6,6 +6,7 @@
 
 #include "NPlane.hpp"
 #include "NGLMExt.hpp"
+#include "NGLMCF.hpp"
 #include "GLMFormat.hpp"
 
 #include <glm/gtx/component_wise.hpp> 
@@ -131,7 +132,6 @@ ndeco nglmext::polar_decomposition( const glm::mat4& trs, bool verbose )
 } 
 
 
-
 glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
 {
     /**
@@ -161,64 +161,13 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
     glm::mat4 isirit = d.isirit ; 
     glm::mat4 i_trs = glm::inverse( trs ) ; 
 
+    NGLMCF cf(isirit, i_trs );
 
-    float epsilon_translation = 1e-3 ; 
-    float epsilon = 1e-5 ; 
-    float diff = compDiff(isirit, i_trs );
-    float diff2 = compDiff2(isirit, i_trs, false, epsilon, epsilon_translation );
-    float diffFractional = compDiff2(isirit, i_trs, true, epsilon, epsilon_translation  );
-
-    //float diffFractionalMax = 1e-4 ;  // <-- small row3 positions trip this  
-    float diffFractionalMax = 1e-3 ; 
-
-    bool match = diffFractional < diffFractionalMax ; 
-
-    if(!match)
+    if(!cf.match) 
     {
-       std::cout << "nglmext::invert_trs"
-                 << " polar_decomposition inverse and straight inverse are mismatched "
-                 << " epsilon " << epsilon
-                 << " diff " << diff 
-                 << " diff2 " << diff2 
-                 << " diffFractional " << diffFractional
-                 << " diffFractionalMax " << diffFractionalMax
-                 << std::endl << gpresent("trs", trs)
-                 << std::endl << gpresent("isirit", isirit)
-                 << std::endl << gpresent("i_trs ",i_trs)
-                 << std::endl ; 
-
-    
-
-        for(unsigned i=0 ; i < 4 ; i++)
-        {
-            for(unsigned j=0 ; j < 4 ; j++)
-            {
-
-                float a = isirit[i][j] ;
-                float b = i_trs[i][j] ;
-
-                float da = compDiff2(a,b, false, epsilon);
-                float df = compDiff2(a,b, true , epsilon);
-
-                bool ijmatch = df < diffFractionalMax ;
-
-                std::cout << "[" 
-                          << ( ijmatch ? "" : "**" ) 
-                          << std::setw(10) << a
-                          << ":"
-                          << std::setw(10) << b
-                          << ":"
-                          << std::setw(10) << da
-                          << ":"
-                          << std::setw(10) << df
-                          << ( ijmatch ? "" : "**" ) 
-                          << "]"
-                           ;
-            }
-            std::cout << std::endl; 
-        }
+        LOG(warning) << cf.desc("ngmext::invert_trs polar_decomposition inverse and straight inverse are mismatched " );
     }
-    //assert(match);
+
     return isirit ; 
 }
 

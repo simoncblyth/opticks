@@ -950,6 +950,7 @@ class GDML(G):
     def parse(cls, path=None):
         if path is None:
             path = os.environ['OPTICKS_GDMLPATH']   # set within opticks_main
+            log.info("gdmlpath defaulting to OPTICKS_GDMLPATH %s which is derived by opticks.ana.base from the IDPATH input envvar " % path )
         pass
         log.info("parsing gdmlpath %s " % path )
         gg = parse_(path)
