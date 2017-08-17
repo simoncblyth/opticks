@@ -1,13 +1,18 @@
 j1707 wire mode causes opengl GPU hang
 =========================================
 
+FIXED 
+------
+
+* non-empty render mode skipped WIRE restriction 
+
 
 Huh : I though I disabled wire mode already BUT
 ---------------------------------------------------
 
 ::
 
-    simon:issues blyth$ op --j1707 --tracer --gltf 3
+    simon:issues blyth$ op --j1707 --tracer --gltf 3   # then press B a few times
 
     ...
     Scene::nextGeometryStyle : none 
@@ -19,7 +24,6 @@ Huh : I though I disabled wire mode already BUT
     /Users/blyth/opticks/bin/op.sh: line 689: 12950 Abort trap: 6           /usr/local/opticks/lib/OTracerTest --j1707 --tracer --gltf 3
     /Users/blyth/opticks/bin/op.sh RC 134
     simon:issues blyth$ 
-
 
 
 Scene

@@ -84,11 +84,13 @@ class OGLRAP_API Scene : public NConfigurable {
         typedef enum { BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
         unsigned int getNumGeometryStyle(); // allows ro override the enum
+        Scene::GeometryStyle_t getGeometryStyle() const ; 
         void setNumGeometryStyle(unsigned int num_geometry_style); // used to disable WIRE style for JUNO
         void applyGeometryStyle();
         static const char* getGeometryStyleName(Scene::GeometryStyle_t style);
         const char* getGeometryStyleName();
         void nextGeometryStyle();
+        void dumpGeometryStyles(const char* msg); 
    public:
         void setWireframe(bool wire=true);
    public:

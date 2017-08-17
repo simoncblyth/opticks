@@ -1156,6 +1156,8 @@ unsigned int Scene::getNumGeometryStyle()
 void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
 {
     m_num_geometry_style = num_geometry_style ;
+
+    dumpGeometryStyles("Scene::setNumGeometryStyle");
 }
 
 
@@ -1170,17 +1172,38 @@ void Scene::setNumGlobalStyle(unsigned int num_global_style)
 }
 
 
+void Scene::dumpGeometryStyles(const char* msg)
+{
+    const GeometryStyle_t style0 = getGeometryStyle() ;
+    GeometryStyle_t style = style0 ; 
 
+    LOG(info) << msg << " (Scene::dumpGeometryStyles) " ; 
+
+    while( style != style0 )
+    {
+        nextGeometryStyle();
+        style = getGeometryStyle() ;
+    }
+ 
+    assert( style == style0 );
+
+}
+
+Scene::GeometryStyle_t Scene::getGeometryStyle() const 
+{
+    return m_geometry_style ;
+}
 
 
 
 void Scene::nextGeometryStyle()
 {
-    int next = (m_geometry_style + 1) % getNumGeometryStyle(); 
+    unsigned num_geometry_style = getNumGeometryStyle() ;
+    int next = (m_geometry_style + 1) % num_geometry_style ; 
     setGeometryStyle( (GeometryStyle_t)next );
 
     const char* stylename = getGeometryStyleName();
-    printf("Scene::nextGeometryStyle : %s \n", stylename);
+    printf("Scene::nextGeometryStyle : %s num_geometry_style %u m_num_geometry_style %u  \n", stylename, num_geometry_style, m_num_geometry_style );
 }
 
 void Scene::setGeometryStyle(GeometryStyle_t style)

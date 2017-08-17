@@ -44,11 +44,14 @@ class OGLRAP_API OpticksViz {
          Scene*         getScene(); 
          int            getTarget();
     public:
-         void prepareScene(const char* rendermode=NULL);
          void uploadGeometry();
          void uploadEvent();
          void indexPresentationPrep();
          void cleanup();
+    private:
+         void prepareScene(const char* rendermode=NULL);
+         void setupRendermode(const char* rendermode );
+         void setupRestrictions();
     private: 
          void uploadEvent(OpticksEvent* evt);
     private: 

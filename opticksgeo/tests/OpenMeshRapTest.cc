@@ -143,7 +143,7 @@ int main(int argc, char** argv)
 
     AssimpTree* tree = assimp.getTree();
 
-    AssimpGGeo agg(ggeo, tree, selection);
+    AssimpGGeo agg(ggeo, tree, selection, query );
 
     LOG(info) << " convert " ;
 

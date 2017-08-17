@@ -16,6 +16,7 @@ okg-tdir(){ echo $(opticks-home)/opticksgeo/tests ; }
 okg-idir(){ echo $(opticks-idir); } 
 okg-bdir(){ echo $(opticks-bdir)/opticksgeo ; }  
 
+okg-c(){    cd $(okg-dir); }
 okg-cd(){   cd $(okg-dir); }
 okg-icd(){  cd $(okg-idir); }
 okg-bcd(){  cd $(okg-bdir); }

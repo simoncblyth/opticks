@@ -20,6 +20,29 @@ To tabulate
 * buffer sizes, opengl(triangulated) optix (analytic+triangulated)
 
 
+From geocache creation : note all 290276 volumes listed for mm0 : check implications on buffer sizes
+-------------------------------------------------------------------------------------------------------
+
+::
+
+    op --j1707 -G
+
+    210     2017-08-17 14:05:30.538 INFO  [213429] [GTreeCheck::labelTree@377] GTreeCheck::labelTree count of non-zero setRepeatIndex 290254
+    211     2017-08-17 14:05:43.338 INFO  [213429] [*GTreeCheck::makeAnalyticInstanceIdentityBuffer@517] GTreeCheck::makeAnalyticInstanceIdentityBuffer  ridx 0 numPlacements 1 numSolids 290276
+    212     2017-08-17 14:05:43.596 INFO  [213429] [*GTreeCheck::makeAnalyticInstanceIdentityBuffer@517] GTreeCheck::makeAnalyticInstanceIdentityBuffer  ridx 1 numPlacements 36572 numSolids 5
+    213     2017-08-17 14:05:43.809 INFO  [213429] [*GTreeCheck::makeAnalyticInstanceIdentityBuffer@517] GTreeCheck::makeAnalyticInstanceIdentityBuffer  ridx 2 numPlacements 17739 numSolids 6
+    214     2017-08-17 14:05:44.019 INFO  [213429] [*GTreeCheck::makeAnalyticInstanceIdentityBuffer@517] GTreeCheck::makeAnalyticInstanceIdentityBuffer  ridx 3 numPlacements 480 numSolids 1
+    215     2017-08-17 14:05:44.229 INFO  [213429] [*GTreeCheck::makeAnalyticInstanceIdentityBuffer@517] GTreeCheck::makeAnalyticInstanceIdentityBuffer  ridx 4 numPlacements 480 numSolids 1
+    216
+
+    36572*5 + 17739*6 + 480*1 + 480*1 = 290254
+
+    290276 - 290254 = 22     ## 22 global volumes 
+
+    35 - 5 - 6 - 1 - 1 = 22   ## subtract 4 instances solid counts from total number of distinct solids (35)   gives the remainder
+ 
+
+
 Eyeballing source GDML
 ----------------------------------
 
@@ -40,6 +63,16 @@ Eyeballing source GDML
     lFasteners0x1506370     ~400
     lMaskVirtual0x1816910   ~18k 
     PMT_3inch_log0x1c9ef80  ~36k  
+
+
+After fix to catch lSteel GTreeCheck agrees::
+
+    2017-08-17 14:05:30.178 INFO  [213429] [GTreeCheck::dumpRepeatCandidates@305] GTreeCheck::dumpRepeatCandidates 
+     pdig 286d87035b7a25bf19d347835138861e ndig  36572 nprog      4 placements  36572 n PMT_3inch_log0x1c9ef80
+     pdig bae5cf200f4756b124f4c0563d9e12b1 ndig  17739 nprog      5 placements  17739 n lMaskVirtual0x1816910
+     pdig 45c48cce2e2d7fbdea1afc51c7c6ad26 ndig    480 nprog      0 placements    480 n lFasteners0x1506370
+     pdig c9f0f895fb98ab9159f51fd0297e236d ndig    480 nprog      0 placements    480 n lSteel0x14dde40
+
 
 ::
 

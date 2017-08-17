@@ -169,14 +169,29 @@ bool OpticksViz::hasOpt(const char* name)
     return m_hub->hasOpt(name);
 }
 
-void OpticksViz::prepareScene(const char* rendermode)
+void OpticksViz::setupRendermode(const char* rendermode )
 {
+    LOG(info) << "OpticksViz::setupRendermode [" << ( rendermode ? rendermode : "-" ) << "]"  ;
+
     if(rendermode)
     { 
-        LOG(warning) << "OpticksViz::prepareScene using non-standard rendermode " << rendermode ;
+        LOG(warning) << "using non-standard rendermode " << rendermode ;
         m_scene->setRenderMode(rendermode);
     } 
-    else if(m_ok->isJuno())
+    else
+    { 
+        if(m_ok->isJuno())
+        {
+            m_scene->setRenderMode("bb0,bb1,-global");
+        }
+    }
+    std::string rmode = m_scene->getRenderMode();
+    LOG(info) << "OpticksViz::setupRendermode rmode " << rmode ; 
+}
+
+void OpticksViz::setupRestrictions()
+{
+    if(m_ok->isJuno())
     {
         LOG(warning) << "disable GeometryStyle  WIRE for JUNO as too slow " ;
 
@@ -184,17 +199,19 @@ void OpticksViz::prepareScene(const char* rendermode)
         { 
             m_scene->setNumGeometryStyle(Scene::WIRE); 
         }
-
         m_scene->setNumGlobalStyle(Scene::GVISVEC); // disable GVISVEC, GVEC debug styles
-
-        m_scene->setRenderMode("bb0,bb1,-global");
-        std::string rmode = m_scene->getRenderMode();
-        LOG(info) << "App::prepareViz " << rmode ; 
     }
     else if(m_ok->isDayabay())
     {
         m_scene->setNumGlobalStyle(Scene::GVISVEC);   // disable GVISVEC, GVEC debug styles
     }
+}
+
+
+void OpticksViz::prepareScene(const char* rendermode)
+{
+    setupRendermode(rendermode);
+    setupRestrictions();
 
     BDynamicDefine* dd = m_ok->makeDynamicDefine(); 
     m_scene->write(dd);
