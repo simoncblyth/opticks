@@ -33,7 +33,7 @@ GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib)
        m_geolib(geolib),
        m_nodelib(nodelib),
        m_repeat_min(120),
-       m_vertex_min(300),   // aiming to include leaf? sStrut and sFasteners
+       m_vertex_min(300),  // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
        m_count(0),
        m_labels(0),
@@ -154,16 +154,69 @@ void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
+struct GRepeat
+{
+    unsigned   repeat_min ; 
+    unsigned   vertex_min ; 
+    unsigned    index ; 
+    std::string pdig ; 
+    unsigned    ndig ; 
+    GNode*      first ;   // cannot const as collection is deferred
+    unsigned    nprog ; 
+    unsigned    nvert ; 
+    bool        candidate ; 
+    bool        select ; 
+
+    bool isListed(const std::vector<std::string>& pdigs_)
+    {
+        return std::find(pdigs_.begin(), pdigs_.end(), pdig ) != pdigs_.end() ;   
+    }
+
+    GRepeat( unsigned repeat_min_, unsigned vertex_min_, unsigned index_, const std::string& pdig_, unsigned ndig_, GNode* first_ ) 
+          :
+          repeat_min(repeat_min_),
+          vertex_min(vertex_min_),
+          index(index_),
+          pdig(pdig_), 
+          ndig(ndig_), 
+          first(first_),
+          nprog(first->getProgenyCount()),
+          nvert(first->getProgenyNumVertices()),
+          // includes self when GNode.m_selfdigest is true
+          candidate(ndig > repeat_min && nvert > vertex_min ),
+          select(false)
+    {
+    }
+
+    std::string desc()
+    { 
+        std::stringstream ss ; 
+        ss    << ( candidate ? " ** " : "    " ) 
+              << ( select    ? " ## " : "    " ) 
+              << " idx "   << std::setw(3) << index 
+              << " pdig "  << std::setw(32) << pdig  
+              << " ndig "  << std::setw(6) << ndig
+              << " nprog " <<  std::setw(6) << nprog 
+              << " nvert " <<  std::setw(6) << nvert
+              << " n "     <<  first->getName() 
+              ;  
+        return ss.str();
+    }
+
+};
+
+
+
+// suspect problem with allowing leaf repeaters is that digesta are not-specific enough, 
+// so get bad matching 
+//
+//  allowing leaf repeaters results in too many, so place vertex count reqirement too 
+
+
 void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min)
 {
     unsigned int nall = m_digest_count->size() ; 
-
-    LOG(info) << "GTreeCheck::findRepeatCandidates"
-              << " nall " << nall 
-              << " repeat_min " << repeat_min 
-              << " vertex_min " << vertex_min 
-              << " candidates marked with ** "
-              ;
+    std::vector<GRepeat> cands ; 
 
     // over distinct subtrees (ie progeny digests)
     for(unsigned int i=0 ; i < nall ; i++)
@@ -171,35 +224,14 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
         std::pair<std::string,unsigned int>&  kv = m_digest_count->get(i) ;
 
         std::string& pdig = kv.first ; 
-        unsigned int ndig = kv.second ;                 // number of occurences of the progeny digest 
+        unsigned int ndig = kv.second ;  // number of occurences of the progeny digest 
 
-        GNode* node = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
+        GNode* first = m_root->findProgenyDigest(pdig) ; // first node that matches the progeny digest
 
-        // suspect problem with allowing leaf repeaters is that digesta are not-specific enough, 
-        // so get bad matching 
-        //
-        //  allowing leaf repeaters results in too many, so place vertex count reqirement too 
+        GRepeat cand(repeat_min, vertex_min,  i, pdig, ndig , first );
+        cands.push_back(cand) ;
 
-
-        unsigned int nprog = node->getProgenyCount() ;  // includes self when GNode.m_selfdigest is true
-        unsigned int nvert = node->getProgenyNumVertices() ;  // includes self when GNode.m_selfdigest is true
-
-       // hmm: maybe selecting based on  ndig*nvert 
-       // but need to also require ndig > smth as dont want to repeat things like the world 
-
-        bool select = ndig > repeat_min && nvert > vertex_min ;
-
-        if(i < 15) LOG(info) 
-                  << ( select ? "**" : "  " ) 
-                  << " i "     << std::setw(3) << i 
-                  << " pdig "  << std::setw(32) << pdig  
-                  << " ndig "  << std::setw(6) << ndig
-                  << " nprog " <<  std::setw(6) << nprog 
-                  << " nvert " <<  std::setw(6) << nvert
-                  << " n "     <<  node->getName() 
-                  ;  
-
-        if(select) m_repeat_candidates.push_back(pdig);
+        if(cand.candidate) m_repeat_candidates.push_back(pdig);        
     }
 
     // erase repeats that are enclosed within other repeats 
@@ -209,6 +241,24 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
          std::remove_if(m_repeat_candidates.begin(), m_repeat_candidates.end(), *this ),
          m_repeat_candidates.end()
     ); 
+
+    LOG(info) << "GTreeCheck::findRepeatCandidates"
+              << " nall " << nall 
+              << " repeat_min " << repeat_min 
+              << " vertex_min " << vertex_min 
+              << " cands " << cands.size()
+              << " reps " << m_repeat_candidates.size()
+              ;
+
+    std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
+    std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
+ 
+    for(unsigned i=0 ; i < cands.size() ; i++)
+    {
+        GRepeat& cand = cands[i];
+        cand.select = cand.isListed(m_repeat_candidates) ;
+        std::cout << cand.desc() << std::endl; 
+    }
     
 
 }

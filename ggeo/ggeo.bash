@@ -21,6 +21,7 @@ ggeo-bcd(){  cd $(ggeo-bdir); }
 ggeo-scd(){  cd $(ggeo-sdir)/$1; }
 ggeo-tcd(){  cd $(ggeo-tdir) ; }
 ggeo-cd(){  cd $(ggeo-sdir); }
+ggeo-c(){   cd $(ggeo-sdir); }
 
 ggeo-wipe(){
     local bdir=$(ggeo-bdir)

@@ -407,7 +407,10 @@ void GGeo::init()
    m_treecheck = new GTreeCheck(m_geolib, m_nodelib) ;
 
    if(resource->isJuno())
-       m_treecheck->setVertexMin(250);
+   {
+       m_treecheck->setVertexMin(10);  
+       //m_treecheck->setVertexMin(250);
+   } 
 
 
 
