@@ -430,6 +430,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     GNode* base = NULL ; 
 
 
+    // passes thru to GMergedMesh::create with management of the mm in GGeoLib
     GMergedMesh* mm0 = m_geolib->makeMergedMesh(0, base, root, verbosity );
 
 
@@ -466,8 +467,11 @@ void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx
 NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
 {
     // collecting transforms from GNode instances into a buffer
+    // getPlacement for ridx=0 just returns m_root (which always has identity transform)
+    // for ridx > 0 returns all GNode instances 
 
-    std::vector<GNode*> placements = getPlacements(ridx);
+    std::vector<GNode*> placements = getPlacements(ridx); 
+
     unsigned int ni = placements.size(); 
     if(ridx == 0)
         assert(ni == 1);

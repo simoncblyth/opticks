@@ -48,6 +48,7 @@ Crucial OptiX geometrical members:
 
 **/
 
+#include "OGeoStat.hh"
 
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API  OGeo 
@@ -62,9 +63,11 @@ public:
     const char* description(const char* msg="OGeo::description");
 public:
     void convert();
+
 private:
     void init();
     void convertMergedMesh(unsigned i);
+    void dumpStats(const char* msg="OGeo::dumpStats");
 public:
     template <typename T> static     optix::Buffer CreateInputUserBuffer(optix::Context& ctx, NPY<T>* src, unsigned elementSize, const char* name, unsigned verbosity);
 public:
@@ -106,9 +109,10 @@ private:
     unsigned             m_verbosity ; 
 private:
     // locals 
-    optix::GeometryGroup m_geometry_group ; 
-    optix::Group         m_repeated_group ; 
-    RayTraceConfig*      m_cfg ; 
+    optix::GeometryGroup  m_geometry_group ; 
+    optix::Group          m_repeated_group ; 
+    RayTraceConfig*       m_cfg ; 
+    std::vector<OGeoStat> m_stats ; 
 
 };
 

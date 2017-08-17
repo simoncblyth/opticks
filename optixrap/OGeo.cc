@@ -1,5 +1,6 @@
 
 #include "OGeo.hh"
+#include "OGeoStat.hh"
 #include "OContext.hh"
 
 #ifdef WITH_OPENGL
@@ -176,11 +177,11 @@ void OGeo::convert()
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
    
     LOG(trace) << "OGeo::convert"
-              << " geometryGroupCount " << geometryGroupCount
-              << " repeatedGroupCount " << repeatedGroupCount
+              << " geometryGroupCount(global) " << geometryGroupCount
+              << " repeatedGroupCount(instanced) " << repeatedGroupCount
               ;
 
-    if(geometryGroupCount > 0)
+    if(geometryGroupCount > 0)  
     {
          m_top->addChild(m_geometry_group);
          m_geometry_group->setAcceleration( makeAcceleration() );
@@ -194,8 +195,14 @@ void OGeo::convert()
 
     m_top->setAcceleration( makeAcceleration() );
 
+
+    
+
     if(m_verbosity > 0)
-    LOG(info) << "OGeo::convert DONE  numMergedMesh: " << nmm ;
+    {
+        LOG(info) << "OGeo::convert DONE  numMergedMesh: " << nmm ;
+        dumpStats();
+    }
 }
 
 
@@ -503,14 +510,13 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     unsigned analytic_version = pts->getAnalyticVersion();
 
+    OGeoStat stat(mm->getIndex(), numPrim, numPart, numTran, numPlan );
+    m_stats.push_back(stat);
+
     if(m_verbosity > 2)
     LOG(info) 
                  << "OGeo::makeAnalyticGeometry " 
-                 << " mmIndex " << mm->getIndex() 
-                 << " numPrim " << numPrim 
-                 << " numPart " << numPart
-                 << " numTran(triples) " << numTran
-                 << " numPlan " << numPlan
+                 << stat.desc()
                  << " analytic_version " << analytic_version
                  ;
 
@@ -560,6 +566,12 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     return geometry ; 
 }
 
+
+void OGeo::dumpStats(const char* msg)
+{
+    LOG(info) << msg << " num_stats " << m_stats.size() ; 
+    for(unsigned i=0 ; i < m_stats.size() ; i++) std::cout << m_stats[i].desc() << std::endl ; 
+}
 
 
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)

@@ -4,11 +4,18 @@ j1707 node accounting
 Issue : more than quarter million nodes
 -----------------------------------------
 
-* is that really the case ?
-* are they maximally instanced ? 
-* get a feeling for tree structure, is sibling instance grouping possible ? 
+* is that really the case ? YES
+* are they maximally instanced ?  ALMOST, 480x fastener+strut COULD BE SIBLING INSTANCED
+* get a feeling for tree structure
 
-  * somehow grouping 3inch together with 20inch would be big win ?
+
+Sibling Instance Grouping ?
+------------------------------
+
+* grouping 3inch together with 20inch unfortunately impossible : they have complicated layouts
+  that do not align to each other
+
+* BUT the 480x fastener+strut looks like it could be instanced together 
 
 
 To tabulate
@@ -18,6 +25,23 @@ To tabulate
 * instance counts, node counts per instance
 * node counts in non-instanced globals
 * buffer sizes, opengl(triangulated) optix (analytic+triangulated)
+
+
+Analytic Buffer counts
+------------------------
+
+::
+
+    2017-08-17 21:04:33.455 INFO  [348837] [OGeo::convert@203] OGeo::convert DONE  numMergedMesh: 5
+    2017-08-17 21:04:33.455 INFO  [348837] [OGeo::dumpStats@572] OGeo::dumpStats num_stats 5
+     mmIndex   0 numPrim    22 numPart   146 numTran(triples)    35 numPlan     0
+     mmIndex   1 numPrim     5 numPart     7 numTran(triples)     5 numPlan     0
+     mmIndex   2 numPrim     6 numPart   100 numTran(triples)    23 numPlan     0
+     mmIndex   3 numPrim     1 numPart     7 numTran(triples)     2 numPlan     0
+     mmIndex   4 numPrim     1 numPart     3 numTran(triples)     1 numPlan     0
+
+* TODO: check these : 100 parts for mmIndex  2 ?
+
 
 
 From geocache creation : note all 290276 volumes listed for mm0 : check implications on buffer sizes

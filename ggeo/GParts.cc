@@ -66,10 +66,10 @@ GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
         if(primflag == CSG_ZERO) 
             primflag = pf ; 
         else
-            assert(pf == primflag && "GParts::combine requires all GParts instances to have the same primFlag " );
+            assert(pf == primflag && "GParts::combine requires all GParts instances to have the same primFlag (either CSG_FLAGNODETREE or legacy CSG_FLAGPARTLIST)" );
+
 
         unsigned av = sp->getAnalyticVersion();
-        //LOG(info) << std::setw(3) << i << " " << "av " << av ; 
 
         if(analytic_version == 0)
             analytic_version = av ;
@@ -741,6 +741,11 @@ void GParts::makePrimBuffer()
 {
     // Derives prim buffer from the parts buffer
     //
+    // Primbuffer acts as an "index" providing cross
+    // referencing associating a primitive via
+    // offsets to the parts/nodes, transforms and planes
+    // relevant to the primitive.
+    // 
     unsigned int num_prim = 0 ; 
     if(isPartList())
     {

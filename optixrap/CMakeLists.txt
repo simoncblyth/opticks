@@ -164,6 +164,7 @@ set(SOURCES
     OLaunchTest.cc
 
     OGeo.cc
+    OGeoStat.cc
     OFunc.cc
 
     cu/pinhole_camera.cu
