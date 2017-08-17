@@ -234,7 +234,7 @@ void NScene::init()
     } 
     
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     dumpRepeatCount(); 
 
     markGloballyUsedMeshes_r(m_root);
@@ -1023,6 +1023,56 @@ void NScene::count_progeny_digests()
 }
 
 
+
+
+struct NRepeat
+{
+    unsigned   repeat_min ;  
+    unsigned    index ; 
+    std::string pdig ; 
+    unsigned    num_pdig ; 
+    nd*         first ;   // cannot const as collection is deferred
+    unsigned    num_progeny ; 
+    bool        candidate ; 
+    bool        select ; 
+    
+
+    bool isListed(const std::vector<std::string>& pdigs_)
+    {   
+        return std::find(pdigs_.begin(), pdigs_.end(), pdig ) != pdigs_.end() ;   
+    }   
+
+    NRepeat( unsigned repeat_min_, unsigned index_, const std::string& pdig_, unsigned num_pdig_, nd* first_ ) 
+          :   
+          repeat_min(repeat_min_),
+          index(index_),
+          pdig(pdig_), 
+          num_pdig(num_pdig_), 
+          first(first_),
+          num_progeny(first->get_progeny_count()),
+          candidate(num_pdig > repeat_min),
+          select(false)
+    {   
+    }   
+
+    std::string desc()
+    {   
+        std::stringstream ss ; 
+        ss    << ( candidate ? " ** " : "    " ) 
+              << ( select    ? " ## " : "    " ) 
+              << " idx "   << std::setw(3) << index 
+              << " pdig "  << std::setw(32) << pdig  
+              << " num_pdig "  << std::setw(6) << num_pdig
+              << " num_progeny " <<  std::setw(6) << num_progeny 
+             ;
+        return ss.str();
+    }
+};
+
+
+
+
+
 void NScene::find_repeat_candidates()
 {
    // hmm : this approach will not gang together siblings 
@@ -1036,8 +1086,9 @@ void NScene::find_repeat_candidates()
     LOG(info) << "NScene::find_repeat_candidates"
                << " verbosity " << m_verbosity 
                << " num_progeny_digests " << num_progeny_digests 
-               << " candidates marked with ** "
               ;   
+
+    std::vector<NRepeat> cands ; 
 
     for(unsigned i=0 ; i < num_progeny_digests ; i++)
     {   
@@ -1045,24 +1096,11 @@ void NScene::find_repeat_candidates()
 
         std::string& pdig = kv.first ; 
         unsigned int num_pdig = kv.second ;   
-
-        bool select = num_pdig > repeat_min ;
-
-/*
         nd* first = m_root->find_node(pdig) ;
-        unsigned num_progeny = first->get_progeny_count() ;  // includes self 
-        std::cout  
-                  << ( select ? "**" : "  " ) 
-                  << " i "         << std::setw(3) << i 
-                  << " pdig "      << std::setw(32) << pdig  
-                  << " num_pdig "  << std::setw(6) << num_pdig
-                  << " num_progeny "     <<  std::setw(6) << num_progeny
-                  << " meshmeta "  <<  meshmeta(first->mesh)
-                  << std::endl 
-                  ;
-*/
 
-        if(select) m_repeat_candidates.push_back(pdig);
+        NRepeat cand(repeat_min,  i, pdig, num_pdig , first );
+        cands.push_back(cand) ;
+        if(cand.candidate) m_repeat_candidates.push_back(pdig);
     }
 
     // erase repeats that are enclosed within other repeats 
@@ -1073,8 +1111,18 @@ void NScene::find_repeat_candidates()
          m_repeat_candidates.end()
     );
 
+    std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
+    std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
+
+    for(unsigned i=0 ; i < cands.size() ; i++)
+    {
+        NRepeat& cand = cands[i];
+        cand.select = cand.isListed(m_repeat_candidates) ;
+        std::cout << cand.desc() << " " << meshmeta(cand.first->mesh) << std::endl;
+    }
 
 }
+
 
 bool NScene::operator()(const std::string& pdig)
 {
@@ -1339,18 +1387,16 @@ void NScene::labelTree()
          }
     }
 
-    if(m_verbosity > 1)
-    LOG(info)<<"NScene::labelTree count of non-zero ridx labelTree_r " << m_label_count ;
+    //if(m_verbosity > 1)
+    LOG(info)<<"NScene::labelTree" 
+             << " label_count (non-zero ridx labelTree_r) " << m_label_count 
+             << " num_repeat_candidates " << m_repeat_candidates.size()
+             ;
 }
 
-#ifdef OLD_LABEL_TREE
-void NScene::labelTree_r(nd* n, unsigned /*ridx*/)
-{
-    unsigned ridx = deviseRepeatIndex_0(n) ;
-#else
+
 void NScene::labelTree_r(nd* n, unsigned ridx)
 {
-#endif
     n->repeatIdx = ridx ;
 
     if(m_repeat_count.count(ridx) == 0) m_repeat_count[ridx] = 0 ; 

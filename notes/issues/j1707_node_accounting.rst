@@ -40,7 +40,32 @@ From geocache creation : note all 290276 volumes listed for mm0 : check implicat
     290276 - 290254 = 22     ## 22 global volumes 
 
     35 - 5 - 6 - 1 - 1 = 22   ## subtract 4 instances solid counts from total number of distinct solids (35)   gives the remainder
- 
+
+
+NScene first/last mesh off-by-1 ? Where are the 22 ridx=0 global volumes ?
+------------------------------------------------------------------------------
+
+::
+
+    2017-08-17 17:39:00.235 INFO  [282274] [NScene::labelTree@1391] NScene::labelTree label_count (non-zero ridx labelTree_r) 290254 num_repeat_candidates 4
+    2017-08-17 17:39:00.235 INFO  [282274] [NScene::dumpRepeatCount@1429] NScene::dumpRepeatCount m_verbosity 1
+     ridx   1 count 182860
+     ridx   2 count 106434
+     ridx   3 count   480
+     ridx   4 count   480
+    2017-08-17 17:39:00.236 INFO  [282274] [NScene::dumpRepeatCount@1446] NScene::dumpRepeatCount totCount 290254
+
+
+::
+
+    36572*5 = 182860
+    17739*6 = 106434
+    480*1   =    480
+    480*1   =    480
+             --------
+              290254 
+
+
 
 
 Eyeballing source GDML

@@ -910,23 +910,26 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMergedMesh
 {
-    unsigned num_repeats = std::max<unsigned>(1u,m_scene->getNumRepeats()); // global 0 included
+    unsigned num_repeats = m_scene->getNumRepeats() ; //  number of non-zero ridx instances, typically small eg 4 for j1707
+    //unsigned num_repeats = std::max<unsigned>(1u,m_scene->getNumRepeats()); // global 0 was NOT included
+    unsigned num_ridx = 1u + num_repeats ; 
+
     unsigned nmm_created = 0 ; 
 
     if(m_verbosity > 0)
-    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers num_repeats " << num_repeats << " START " ;  
+    LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers.START "
+              << "  num_repeats " << num_repeats 
+              << "  num_ridx " << num_ridx 
+              ;  
 
-
-    for(unsigned ridx=0 ; ridx < num_repeats ; ridx++)
+    for(unsigned ridx=0 ; ridx < num_ridx ; ridx++)
     {
          if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
 
-
          bool inside = ridx == 0 ? true : false ; 
 
          const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, m_honour_selection );
-
 
          if(instances.size() == 0)
          {
@@ -970,6 +973,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
     if(m_verbosity > 0)
     LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers DONE"
               << " num_repeats " << num_repeats
+              << " num_ridx (including global 0) " << num_ridx 
               << " nmm_created " << nmm_created
               << " nmm " << nmm
                ; 
