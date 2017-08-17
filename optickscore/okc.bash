@@ -542,6 +542,7 @@ okc-bdir(){ echo $(opticks-bdir)/$(okc-rel) ; }
 okc-scd(){  cd $(okc-sdir); }
 okc-tcd(){  cd $(okc-sdir); }
 okc-cd(){   cd $(okc-sdir)/$1 ; }
+okc-c(){   cd $(okc-sdir)/$1 ; }
 okc-icd(){  cd $(okc-idir); }
 okc-bcd(){  cd $(okc-bdir); }
 

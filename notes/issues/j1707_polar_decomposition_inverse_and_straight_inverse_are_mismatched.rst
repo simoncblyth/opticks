@@ -71,6 +71,54 @@ Issue
 
 
 
+
+
+
+Frequency  10932./290276. ~ 4% of nodes
+-------------------------------------------
+
+::
+
+    simon:issues blyth$ du -h $TMP/NScene_triple.npy
+     53M    /tmp/blyth/opticks/NScene_triple.npy
+
+    In [3]: a = np.load(os.path.expandvars("$TMP/NScene_triple.npy"))
+
+    In [4]: a.shape
+    Out[4]: (290276, 3, 4, 4)
+
+
+
+::
+
+    simon:issues blyth$ op --j1707 --tracer --gltf 3 --debugger
+
+    (lldb) r
+    Process 24625 launched: '/usr/local/opticks/lib/OTracerTest' (x86_64)
+    dedupe skipping --tracer 
+    2017-08-16 21:07:40.141 INFO  [135691] [OpticksQuery::dump@79] OpticksQuery::init queryType undefined query_string all query_name NULL query_index 0 query_depth 0 no_selection 1
+    2017-08-16 21:07:40.141 INFO  [135691] [Opticks::init@319] Opticks::init DONE OpticksResource::desc digest a181a603769c1f98ad927e7367c7aa51 age.tot_seconds 1061267 age.tot_minutes 17687.783 age.tot_hours 294.796 age.tot_days     12.283
+    ...
+    2017-08-16 21:07:41.066 WARN  [135691] [*GPmt::load@44] GPmt::load resource does not exist /usr/local/opticks/opticksdata/export/juno/GPmt/0
+    2017-08-16 21:07:41.066 INFO  [135691] [GGeo::loadAnalyticPmt@761] GGeo::loadAnalyticPmt AnalyticPMTIndex 0 AnalyticPMTSlice ALL Path -
+    2017-08-16 21:07:41.066 INFO  [135691] [NGLTF::load@35] NGLTF::load path /usr/local/opticks/opticksdata/export/juno1707/g4_00.gltf
+    2017-08-16 21:07:50.826 INFO  [135691] [NGLTF::load@62] NGLTF::load DONE
+    2017-08-16 21:07:51.390 WARN  [135691] [NScene::load_asset_extras@301] NScene::load_asset_extras verbosity increase from scene gltf  extras_verbosity 1 m_verbosity 0
+    2017-08-16 21:07:51.391 INFO  [135691] [NScene::init@182] NScene::init START age(s) 1141263 days  13.209 num_gltf_nodes 290276
+    2017-08-16 21:07:51.478 INFO  [135691] [NScene::load_csg_metadata@336] NScene::load_csg_metadata verbosity 1 num_meshes 35
+    2017-08-16 21:07:51.485 INFO  [135691] [NScene::init@196] NScene::init import_r START 
+    2017-08-16 21:08:00.571 INFO  [135691] [NScene::init@200] NScene::init import_r DONE 
+    2017-08-16 21:08:00.571 INFO  [135691] [NScene::init@204] NScene::init triple_debug  num_gltf_nodes 290276 triple_mismatch 10932
+    2017-08-16 21:08:00.739 INFO  [135691] [NScene::postimportnd@616] NScene::postimportnd numNd 290276 num_selected 290276 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-08-16 21:08:04.303 INFO  [135691] [NScene::count_progeny_digests@990] NScene::count_progeny_digests verbosity 1 node_count 290276 digest_size 35
+    2017-08-16 21:08:06.837 INFO  [135691] [NScene::postimportmesh@634] NScene::postimportmesh numNd 290276 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-08-16 21:08:06.837 INFO  [135691] [BConfig::dump@39] NScene::postimportmesh.cfg eki 13
+
+
+
+
+
+
 ::
 
 

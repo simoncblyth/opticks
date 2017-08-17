@@ -275,6 +275,7 @@ assimprap-bcd(){  cd $(assimprap-bdir); }
 assimprap-scd(){  cd $(assimprap-sdir); }
 assimprap-tcd(){  cd $(assimprap-tdir); }
 
+assimprap-c(){   cd $(assimprap-sdir); }
 assimprap-cd(){  cd $(assimprap-sdir); }
 
 assimprap-wipe(){

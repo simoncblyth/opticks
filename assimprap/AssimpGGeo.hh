@@ -9,6 +9,7 @@ class GSurface ;
 class GMaterial ;
 class GSolid ; 
 class GMesh ; 
+class OpticksQuery ; 
 
 template <typename T> class GPropertyMap ; 
 
@@ -52,7 +53,7 @@ selected flags (GSolid::setSelected).
 
 class ASIRAP_API AssimpGGeo {
 public:
-    AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection);
+    AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection, OpticksQuery* query);
     int convert(const char* ctrl);
 private:
     void init();
@@ -108,6 +109,8 @@ private:
     GGeo*            m_ggeo ;
     AssimpTree*      m_tree ; 
     AssimpSelection* m_selection ;
+    OpticksQuery*    m_query ; 
+    bool             m_nosel ;
  
     float            m_domain_scale ; 
     float            m_values_scale ; 

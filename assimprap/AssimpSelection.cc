@@ -96,6 +96,7 @@ void AssimpSelection::init()
 
 bool AssimpSelection::contains(AssimpNode* node)
 {
+   // this is hot spot for geocache creation 
     return std::find(m_selection.begin(), m_selection.end(), node ) != m_selection.end() ;  
 }
 

@@ -65,11 +65,13 @@
 #include "PLOG.hh"
 
 
-AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection) 
+AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection, OpticksQuery* query) 
    : 
    m_ggeo(ggeo),
    m_tree(tree),
    m_selection(selection),
+   m_query(query),
+   m_nosel(query->isNoSelection()),
    m_domain_scale(1.f),
    m_values_scale(1.f),
    m_domain_reciprocal(true),
@@ -143,12 +145,17 @@ int AssimpGGeo::load(GGeo* ggeo)
 
     assimp.import();
 
+    LOG(info) << "AssimpGGeo::load select START " ; 
+
     AssimpSelection* selection = assimp.select(query);
+
+    LOG(info) << "AssimpGGeo::load select DONE  " ; 
+
 
     AssimpTree* tree = assimp.getTree();
 
 
-    AssimpGGeo agg(ggeo, tree, selection); 
+    AssimpGGeo agg(ggeo, tree, selection, query); 
 
     agg.setVerbosity(verbosity);
 
@@ -816,7 +823,7 @@ void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth
 
     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
 
-    bool selected = m_selection && m_selection->contains(node) ;  
+    bool selected = m_nosel ? true : m_selection && m_selection->contains(node) ;   // twas hotspot for geocache creation before nosel special case
 
     solid->setSelected(selected);
 
