@@ -103,7 +103,7 @@ class OGLRAP_API Frame : public Touchable {
 
    public:
        // Touchable 
-       unsigned int touch(int ix, int iy);
+       int touch(int ix, int iy);
    public:
        static float readDepth( int x, int y, int height );
        float readDepth( int x, int y);

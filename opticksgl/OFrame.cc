@@ -312,7 +312,7 @@ void OFrame::fill_PBO()
 
 
 // fulfil Touchable interface
-unsigned int OFrame::touch(int ix_, int iy_)
+int OFrame::touch(int ix_, int iy_)
 {
     assert(0);
     if(m_push_count == 0)

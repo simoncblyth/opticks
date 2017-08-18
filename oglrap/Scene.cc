@@ -847,7 +847,7 @@ void Scene::render()
 }
 
 
-unsigned int Scene::touch(int ix, int iy, float depth)
+int Scene::touch(int ix, int iy, float depth)
 {
     glm::vec3 t = m_composition->unProject(ix,iy, depth);
     gfloat3 gt(t.x, t.y, t.z );
@@ -862,7 +862,7 @@ unsigned int Scene::touch(int ix, int iy, float depth)
     }
 
 
-    unsigned int container = m_mesh0->findContainer(gt);
+    int container = m_mesh0->findContainer(gt);
     LOG(debug)<<"Scene::touch " 
              << " x " << t.x 
              << " y " << t.y 

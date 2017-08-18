@@ -191,6 +191,8 @@ const GMesh* GMesh::getAlt() const
 
 void GMesh::deallocate()
 {
+    
+
     delete[] m_vertices ;  
     delete[] m_normals ;  
     delete[] m_colors ;  

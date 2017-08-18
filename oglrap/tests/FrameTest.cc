@@ -3,6 +3,16 @@ Search for a .ppm image file on your system and pass to FrameTest
 
   SHADER_DIR=$(oglrap-sdir)/gl FrameTest /opt/local/lib/tk8.6/demos/images/teapot.ppm
 
+Use oglrap-frametest
+
+
+2017/8/18 
+   runs, but not popping up the window
+
+   * was missing the show 
+
+
+
 */
 
 #include "NGLM.hpp"
@@ -34,21 +44,19 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] << " ppmpath " << ppmpath ; 
 
-
-
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
-
 
     Frame frame(&ok) ; 
     Composition composition ; 
     Interactor interactor(&hub) ;
     Renderer renderer("tex") ; 
 
+    // canonical wiring in OpticksViz::init
+    interactor.setFrame(&frame);
     frame.setInteractor(&interactor);    // GLFW key and mouse events from frame to interactor
     //interactor.setComposition(&composition); // interactor changes camera, view, trackball 
     renderer.setComposition(&composition);  // composition provides matrices to renderer 
-
 
     Texture texture ;
     texture.loadPPM(ppmpath);
@@ -58,12 +66,18 @@ int main(int argc, char** argv)
     frame.setTitle("FrameTest");
     frame.init(); // creates OpenGL context 
 
+    frame.show();
+
     //composition.setModelToWorld(texture.getModelToWorldPtr(0));   // point at the geometry 
 
     gfloat4 ce = texture.getCenterExtent(0);
 
     glm::vec4 ce_(ce.x, ce.y, ce.z, ce.w);
-    composition.setCenterExtent(ce_); // point at the geometry 
+
+    LOG(info) << " ce (" << ce.x  << " " << ce.y << " " << ce.z << " " << ce.w << ")" ; 
+
+    bool autocam = true ; 
+    composition.setCenterExtent(ce_, autocam); // point at the geometry 
 
     composition.update();
     composition.Details("Composition::details");
@@ -83,7 +97,8 @@ int main(int argc, char** argv)
         renderer.render();
         glfwSwapBuffers(window);
     }
-    frame.exit();
+
+    frame.exit();  //
 
     return 0 ;
 }

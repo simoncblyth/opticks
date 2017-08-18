@@ -40,7 +40,7 @@ Analytic Buffer counts
      mmIndex   3 numPrim     1 numPart     7 numTran(triples)     2 numPlan     0
      mmIndex   4 numPrim     1 numPart     3 numTran(triples)     1 numPlan     0
 
-* TODO: check these : 100 parts for mmIndex  2 ?
+* adding the complete binary tree node counts from the heights of each reproduces the numPart 
 
 
 
@@ -88,6 +88,87 @@ NScene first/last mesh off-by-1 ? Where are the 22 ridx=0 global volumes ?
     480*1   =    480
              --------
               290254 
+
+
+
+Calc total parts for each mm by adding complete binary tree counts
+-------------------------------------------------------------------
+
+* nodes in binary tree of height h is 2^(h+1) - 1
+
+::
+
+    In [5]: 2**(1+np.arange(0,10))-1
+    Out[5]: array([   1,    3,    7,   15,   31,   63,  127,  255,  511, 1023])
+                      0     1     2     3     4     5     6     7     8     9
+
+
+::
+
+    // :set nowrap
+
+    2017-08-17 17:18:38.741 INFO  [276315] [NScene::init@196] NScene::init import_r START 
+    2017-08-17 17:18:47.493 INFO  [276315] [NScene::init@200] NScene::init import_r DONE 
+    2017-08-17 17:18:47.494 INFO  [276315] [NScene::init@204] NScene::init triple_debug  num_gltf_nodes 290276 triple_mismatch 10932
+    2017-08-17 17:18:47.665 INFO  [276315] [NScene::postimportnd@616] NScene::postimportnd numNd 290276 num_selected 290276 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-08-17 17:18:51.272 INFO  [276315] [NScene::count_progeny_digests@990] NScene::count_progeny_digests verbosity 1 node_count 290276 digest_size 35
+     (**) candidates fulfil repeat/vert cuts   
+     (##) selected survive contained-repeat disqualification 
+     **  ##  idx   0 pdig 68a31892bccd1741cc098d232c702605 num_pdig  36572 num_progeny      4 NScene::meshmeta mesh_id  22 lvidx  20 height  1 soname        PMT_3inch_pmt_solid0x1c9e270 lvname              PMT_3inch_log0x1c9ef80
+     **      idx   1 pdig 683529bb1b0fedc340f2ebce47468395 num_pdig  36572 num_progeny      0 NScene::meshmeta mesh_id  26 lvidx  19 height  0 soname       PMT_3inch_cntr_solid0x1c9e640 lvname         PMT_3inch_cntr_log0x1c9f1f0
+     **      idx   2 pdig c81fb13777b701cb8ce6cdb7f0661f1b num_pdig  36572 num_progeny      0 NScene::meshmeta mesh_id  25 lvidx  17 height  0 soname PMT_3inch_inner2_solid_ell_helper0x1c9e5d0 lvname       PMT_3inch_inner2_log0x1c9f120
+     **      idx   3 pdig 83a5a282f092aa7baf6982b54227bb54 num_pdig  36572 num_progeny      0 NScene::meshmeta mesh_id  24 lvidx  16 height  0 soname PMT_3inch_inner1_solid_ell_helper0x1c9e510 lvname       PMT_3inch_inner1_log0x1c9f050
+     **      idx   4 pdig 50308873a9847d1c2c2029b6c9de7eeb num_pdig  36572 num_progeny      2 NScene::meshmeta mesh_id  23 lvidx  18 height  0 soname PMT_3inch_body_solid_ell_ell_helper0x1c9e4a0 lvname         PMT_3inch_body_log0x1c9eef0
+
+     heights 1,0,0,0,0 -> nodes 3+1+1+1+1 = 7        
+                 
+
+     **      idx   5 pdig 27a989a1aeab2b96cedd2b6c4a7cba2f num_pdig  17739 num_progeny      0 NScene::meshmeta mesh_id  17 lvidx  10 height  2 soname                      sMask0x1816f50 lvname                      lMask0x18170e0
+     **      idx   6 pdig e39a411b54c3ce46fd382fef7f632157 num_pdig  17739 num_progeny      0 NScene::meshmeta mesh_id  21 lvidx  12 height  4 soname    PMT_20inch_inner2_solid0x1863010 lvname      PMT_20inch_inner2_log0x1863310
+     **      idx   7 pdig 74d8ce91d143cad52fad9d3661dded18 num_pdig  17739 num_progeny      0 NScene::meshmeta mesh_id  20 lvidx  11 height  4 soname    PMT_20inch_inner1_solid0x1814a90 lvname      PMT_20inch_inner1_log0x1863280
+     **      idx   8 pdig a80803364fbf92f1b083ebff420b6134 num_pdig  17739 num_progeny      2 NScene::meshmeta mesh_id  19 lvidx  13 height  3 soname      PMT_20inch_body_solid0x1813ec0 lvname        PMT_20inch_body_log0x1863160
+     **      idx   9 pdig 6b1283d04ffc8a27e19f84e2bec2ddd6 num_pdig  17739 num_progeny      3 NScene::meshmeta mesh_id  18 lvidx  14 height  3 soname       PMT_20inch_pmt_solid0x1813600 lvname             PMT_20inch_log0x18631f0
+     **  ##  idx  10 pdig 8cbe68d7d5c763820ff67b8088e0de98 num_pdig  17739 num_progeny      5 NScene::meshmeta mesh_id  16 lvidx  15 height  0 soname              sMask_virtual0x18163c0 lvname               lMaskVirtual0x1816910
+
+     heights 2,4,4,3,3,0 -> nodes 7+31+31+15+15+1 = 100 
+
+     **  ##  idx  11 pdig ad8b68a55505a09ac7578f32418904b3 num_pdig    480 num_progeny      0 NScene::meshmeta mesh_id  15 lvidx   9 height  2 soname                 sFasteners0x1506180 lvname                 lFasteners0x1506370
+
+     height 2 -> nodes 7
+
+     **  ##  idx  12 pdig f93b8bbbac89ea22bac0bf188ba49a61 num_pdig    480 num_progeny      0 NScene::meshmeta mesh_id  14 lvidx   8 height  1 soname                     sStrut0x14ddd50 lvname                     lSteel0x14dde40
+
+     height 1 -> nodes 3
+
+             idx  13 pdig 7e51746feafa7f2621f71943da8f603c num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  13 lvidx   6 height  1 soname                    sTarget0x14dd640 lvname                    lTarget0x14dd830
+             idx  14 pdig c1cb7d90c1b21d9244fb041363a01416 num_pdig      1 num_progeny      1 NScene::meshmeta mesh_id  12 lvidx   7 height  1 soname                   sAcrylic0x14dd0a0 lvname                   lAcrylic0x14dd290
+             idx  15 pdig 2a8e6c1bbc5183cd347725e7525758de num_pdig      1 num_progeny 290264 NScene::meshmeta mesh_id  11 lvidx  29 height  1 soname                sInnerWater0x14dcb00 lvname                lInnerWater0x14dccf0
+             idx  16 pdig 9c629989608370c2cfcdd13000efd779 num_pdig      1 num_progeny 290265 NScene::meshmeta mesh_id  10 lvidx  30 height  1 soname             sReflectorInCD0x14dc560 lvname             lReflectorInCD0x14dc750
+             idx  17 pdig d05b109737bc8db360f7c1d7c9e435ce num_pdig      1 num_progeny 290275 NScene::meshmeta mesh_id   0 lvidx  34 height  0 soname                     sWorld0x14d9850 lvname                     lWorld0x14d9c00
+             idx  18 pdig 1401822f0db9e6eecdff1c2bf1ccfdc7 num_pdig      1 num_progeny 290266 NScene::meshmeta mesh_id   9 lvidx  31 height  0 soname            sOuterWaterPool0x14dbc70 lvname            lOuterWaterPool0x14dbd60
+             idx  19 pdig 5b3b8c2e2e10f565302ca085917c5b6e num_pdig      1 num_progeny 290267 NScene::meshmeta mesh_id   8 lvidx  32 height  0 soname                sPoolLining0x14db2e0 lvname                lPoolLining0x14db8b0
+             idx  20 pdig b0b2c346a748c9d728a3d8820ab0f4fa num_pdig      1 num_progeny 290268 NScene::meshmeta mesh_id   7 lvidx  33 height  0 soname                sBottomRock0x14dab90 lvname                   lBtmRock0x14db220
+             idx  21 pdig 3d2f8900f2e49c02b481c2f717aa9020 num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id   6 lvidx   2 height  1 soname           Upper_Tyvek_tube0x2547990 lvname         lUpperChimneyTyvek0x2547c80
+             idx  22 pdig 4e44f1ac85cd60e3caa56bfd4afb675e num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id   5 lvidx   1 height  1 soname           Upper_Steel_tube0x2547890 lvname         lUpperChimneySteel0x2547bb0
+             idx  23 pdig 011ecee7d295c066ae68d4396215c3d0 num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id   4 lvidx   0 height  0 soname              Upper_LS_tube0x2547790 lvname            lUpperChimneyLS0x2547ae0
+             idx  24 pdig 0b6f5322017121bc6a01b06429b96ce1 num_pdig      1 num_progeny      3 NScene::meshmeta mesh_id   3 lvidx   3 height  0 soname              Upper_Chimney0x25476d0 lvname              lUpperChimney0x2547a50
+             idx  25 pdig 233607c26ba9bdb41341dd85c6e2d272 num_pdig      1 num_progeny      4 NScene::meshmeta mesh_id   2 lvidx   4 height  0 soname                   sExpHall0x14da850 lvname                   lExpHall0x14da8d0
+             idx  26 pdig 7f1ea14cfc666324859d3ab689041406 num_pdig      1 num_progeny      5 NScene::meshmeta mesh_id   1 lvidx   5 height  0 soname                   sTopRock0x14da370 lvname                   lTopRock0x14da5a0
+             idx  27 pdig 8ea531d2ec901e4d1bda3f1db96f6ff6 num_pdig      1 num_progeny      5 NScene::meshmeta mesh_id  27 lvidx  26 height  1 soname            upper_tubeTyvek0x254a890 lvname              lLowerChimney0x254aa20
+             idx  28 pdig 29bdbc822df2e6c13dcf4afe6913525f num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  28 lvidx  21 height  3 soname                   unionLS10x2548db0 lvname         lLowerChimneyTyvek0x254ab60
+             idx  29 pdig 70b48809e0305276c9defa82d51fb48c num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  29 lvidx  22 height  1 soname                AcrylicTube0x2548f40 lvname       lLowerChimneyAcrylic0x254ac30
+             idx  30 pdig 4db87140662bd68076ef786f7163cedc num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  30 lvidx  23 height  4 soname                 unionSteel0x2549960 lvname         lLowerChimneySteel0x254ad00
+             idx  31 pdig 6912d4b84d2d2e7f6cfd02bc50fe664b num_pdig      1 num_progeny      1 NScene::meshmeta mesh_id  31 lvidx  25 height  1 soname                   unionLS10x2549c00 lvname            lLowerChimneyLS0x254ad90
+             idx  32 pdig 817808d063b210535f9a3ebbf173ea3d num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  32 lvidx  24 height  5 soname               unionBlocker0x254a570 lvname       lLowerChimneyBlocker0x254ae60
+             idx  33 pdig e3f8899d3e08412c1a95878e3d4e9943 num_pdig      1 num_progeny      1 NScene::meshmeta mesh_id  33 lvidx  28 height  0 soname                  sSurftube0x2548170 lvname                  lSurftube0x254b8d0
+             idx  34 pdig 5ff05a9d6ad1d0373d6cfaf43a9d1228 num_pdig      1 num_progeny      0 NScene::meshmeta mesh_id  34 lvidx  27 height  0 soname               svacSurftube0x254ba10 lvname               lvacSurftube0x254ba90
+    2017-08-17 17:18:54.482 INFO  [276315] [NScene::postimportmesh@634] NScene::postimportmesh numNd 290276 dbgnode -1 dbgnode_list 0 verbosity 1
+    2017-08-17 17:18:54.482 INFO  [276315] [BConfig::dump@39] NScene::postimportmesh.cfg eki 13
+
+    heights  1,1,1,1,0,0,0,0,1,1,0,0,0,0,1,3,1,4,1,5,0,0 
+             3+3+3+3+1+1+1+1+3+3+1+1+1+1+3+15+3+31+3+63+1+1 = 146
+
+
 
 
 

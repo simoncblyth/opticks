@@ -1,5 +1,5 @@
 #version 400 core
-#pragma debug(on)
+//#pragma debug(on)
 
 uniform mat4 ModelViewProjection ;
 uniform mat4 ModelView ;

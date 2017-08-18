@@ -5,10 +5,23 @@
 
 #include "NPY.hpp"
 #include <glm/gtx/matrix_interpolation.hpp>
+#include <glm/gtc/random.hpp>
 
 #include "BStr.hh"
 
 #include "PLOG.hh"
+
+
+
+void test_linearRand()
+{
+    for(int i=0 ; i < 100 ; i++)
+    {
+        float v = glm::linearRand(10.f, 20.f);
+        std::cout << v << std::endl ;
+    }
+}
+
 
 
 void test_axisAngle()
@@ -452,6 +465,7 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+/*
     //test_decompose_tr_invert();
     //test_rotate();
 
@@ -469,6 +483,10 @@ int main(int argc, char** argv)
     test_axisAngle();
 
     test_mix();
+*/
+
+    test_linearRand();
+
 
     return 0 ; 
 }

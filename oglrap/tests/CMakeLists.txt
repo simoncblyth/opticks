@@ -5,12 +5,13 @@ project(${name})
 #file(GLOB TEST_CC_SRCS "*Test.cc")
 
 set(FRAGILE_TEST_SOURCES
+    FrameTest.cc
+
 ) 
 
 
 set(TEST_SOURCES
 
-    FrameTest.cc
     ModelToWorldTest.cc
     ProgTest.cc
 

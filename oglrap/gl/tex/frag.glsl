@@ -1,5 +1,5 @@
 #version 400 core
-#pragma debug(on)
+//#pragma debug(on)
 
 in vec3 colour;
 in vec2 texcoord;
@@ -23,11 +23,7 @@ void main ()
    if(NrmParam.z == 1)
    {
         if(depth < ScanParam.x || depth > ScanParam.y ) discard ;
-   }
-
-   
-
- 
+   } 
 }
 
 //

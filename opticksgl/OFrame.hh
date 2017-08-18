@@ -23,7 +23,7 @@ class OKGL_API OFrame : public Touchable {
        unsigned int getHeight();
     public:
        // fulfil Touchable interface
-       unsigned int touch(int ix, int iy);
+       int touch(int ix, int iy);
     private: 
          static void push_Buffer_to_Texture(optix::Buffer& buffer, int buffer_id, int texture_id, bool depth=false);
     private: 

@@ -530,6 +530,16 @@ Try samples
 
 
 
+
+OptiX 4.1.1 (Aug 2017)
+------------------------
+
+* https://developer.nvidia.com/designworks/optix/download
+
+
+
+
+
 OptiX 4 Released : 07/26/2016
 -------------------------------
 

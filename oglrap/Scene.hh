@@ -155,7 +155,7 @@ class OGLRAP_API Scene : public NConfigurable {
         unsigned int getTarget(); 
         void setTarget(unsigned int index=0, bool aim=true); 
 
-        unsigned int touch(int ix, int iy, float depth);
+        int touch(int ix, int iy, float depth);
         void setTouch(unsigned int index); 
         unsigned int getTouch();
         void jump(); 

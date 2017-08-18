@@ -5,6 +5,24 @@ gleq-env(){      olocal- ; opticks- ; }
 gleq-usage(){ cat << EOU
 
 
+From mountains- whilst trying to 
+port from SFML to GLFW/GLEW/GLEQ get 
+compilation issue (from compiling C as C++)::
+
+    make: *** [all] Error 2
+    [ 20%] Building CXX object CMakeFiles/Mountains.dir/main.cpp.o
+    In file included from /usr/local/env/graphics/opengl/mountains/main.cpp:17:
+    In file included from /usr/local/env/graphics/opengl/mountains/GLEQ.hh:7:
+    /usr/local/opticks/externals/gleq/gleq.h:274:23: error: assigning to 'char **' from incompatible type 'void *'
+        event->file.paths = malloc(count * sizeof(char*));
+                          ^ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    1 error generated.
+
+
+Fix easy, but why this has no effect in oglrap-:
+
+    event->file.paths = (char**)malloc(count * sizeof(char*));
+
 
 EOU
 }

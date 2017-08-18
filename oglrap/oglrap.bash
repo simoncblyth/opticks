@@ -28,6 +28,49 @@ Instancing Refs
 
 
 
+FrameTest cleanup error that hung system, forcing reboot
+------------------------------------------------------------
+
+
+* suspect cause of hang was due to another OpenGL context in limbo in another debugger session
+
+  * nope it happened again from a clean environment
+  * try to remember to cleanup windows and other debug sessions before getting graphical
+
+::
+
+    2017-08-18 16:36:25.817 DEBUG [510048] [Frame::setSize@194] Frame::setSize  width 524 height 585 coord2pixel 2
+    2017-08-18 16:36:28.595 INFO  [510048] [Frame::key_pressed@703] Frame::key_pressed escape
+    FrameTest(95194,0x7fff7263c310) malloc: *** error for object 0x1013df960: pointer being freed was not allocated
+    *** set a breakpoint in malloc_error_break to debug
+    Process 95194 stopped
+    * thread #1: tid = 0x7c860, 0x00007fff8c2db866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff8c2db866 libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill + 10:
+    -> 0x7fff8c2db866:  jae    0x7fff8c2db870            ; __pthread_kill + 20
+       0x7fff8c2db868:  movq   %rax, %rdi
+       0x7fff8c2db86b:  jmp    0x7fff8c2d8175            ; cerror_nocancel
+       0x7fff8c2db870:  retq   
+    (lldb) bt
+    * thread #1: tid = 0x7c860, 0x00007fff8c2db866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff8c2db866 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff8397835c libsystem_pthread.dylib`pthread_kill + 92
+        frame #2: 0x00007fff8a6c8b1a libsystem_c.dylib`abort + 125
+        frame #3: 0x00007fff8410007f libsystem_malloc.dylib`free + 411
+        frame #4: 0x000000010043bd07 libGGeo.dylib`GMesh::deallocate(this=0x00007fff5fbfe850) + 55 at GMesh.cc:194
+        frame #5: 0x000000010043bf12 libGGeo.dylib`GMesh::~GMesh(this=0x00007fff5fbfe850) + 34 at GMesh.cc:215
+        frame #6: 0x0000000100010cc5 FrameTest`Texture::~Texture(this=0x00007fff5fbfe850) + 21 at Texture.hh:26
+        frame #7: 0x0000000100007425 FrameTest`Texture::~Texture(this=0x00007fff5fbfe850) + 21 at Texture.hh:26
+        frame #8: 0x0000000100006c42 FrameTest`main(argc=4, argv=0x00007fff5fbfed98) + 2434 at FrameTest.cc:100
+        frame #9: 0x00007fff8774e5fd libdyld.dylib`start + 1
+        frame #10: 0x00007fff8774e5fd libdyld.dylib`start + 1
+    (lldb) 
+      [Restored]:
+    Last login: Fri Aug 18 16:42:14 on ttys003
+    simon:oglrap blyth$ 
+
+
+
 Switch Ortho to Frustum without "loosing" view
 -----------------------------------------------
 
@@ -343,18 +386,14 @@ oglrap-run(){
 
 oglrap-frametest()
 {
-   local path=${1:-/tmp/teapot.ppm}
+   #local path=${1:-/tmp/teapot.ppm}
+   local path=${1:-/opt/local/lib/tk8.6/demos/images/teapot.ppm}
    shift
-   local bin=$(oglrap-bindir)/FrameTest
+   local bin=FrameTest
    oglrap-export
-   $LLDB $bin $path $*
+   lldb $bin $path $* -- --OGLRAP trace
 }
 
-
-oglrap-frametest-lldb()
-{
-   LLDB=lldb oglrap-frametest $*
-}
 
 oglrap-progtest()
 {
