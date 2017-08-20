@@ -209,6 +209,10 @@ void OpticksCfg<Listener>::init()
        ("noinstanced",  "inhibit instancing, use when debugging few volumes") ;
 
    m_desc.add_options()
+       ("instcull",  "experimental instance culling via transform feedback pass to establish visible instances, see oglrap/Scene.cc") ;
+
+
+   m_desc.add_options()
        ("zbuf",  "experimental: enable OptiX Z-buffer rendering with ORenderer, OFrame ... ") ;
 
 

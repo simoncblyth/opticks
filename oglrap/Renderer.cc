@@ -13,6 +13,7 @@
 #include "NSlice.hpp"
 
 #include "Renderer.hh"
+#include "InstanceCuller.hh"
 #include "Prog.hh"
 #include "Composition.hh"
 #include "Texture.hh"
@@ -58,7 +59,9 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_has_tex(false),
     m_has_transforms(false),
     m_instanced(false),
-    m_wireframe(false)
+    m_instcull(false),
+    m_wireframe(false),
+    m_instance_culler(NULL)
 {
 }
 
@@ -72,6 +75,12 @@ void Renderer::setInstanced(bool instanced)
 {
     m_instanced = instanced ; 
 }
+void Renderer::setInstanceCuller(InstanceCuller* instance_culler)
+{
+    m_instance_culler = instance_culler ; 
+    m_instcull = instance_culler != NULL ;    
+}
+
 void Renderer::setWireframe(bool wireframe)
 {
     m_wireframe = wireframe ; 
@@ -308,6 +317,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 
 
 #ifdef OLD_TEMPLATED_UPLOAD
+    assert(0);
     m_vertices  = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
     m_colors    = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
     m_normals   = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
@@ -395,10 +405,11 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
         glEnableVertexAttribArray (vTransform + 2);   
         glEnableVertexAttribArray (vTransform + 3);   
 
-        glVertexAttribDivisor(vTransform + 0, 1);  // dictates instanced geometry shifts between instances
-        glVertexAttribDivisor(vTransform + 1, 1);
-        glVertexAttribDivisor(vTransform + 2, 1);
-        glVertexAttribDivisor(vTransform + 3, 1);
+        GLuint divisor = 1 ;   // number of instances between updates of attribute , >1 will land that many instances on top of each other
+        glVertexAttribDivisor(vTransform + 0, divisor);  // dictates instanced geometry shifts between instances
+        glVertexAttribDivisor(vTransform + 1, divisor);
+        glVertexAttribDivisor(vTransform + 2, divisor);
+        glVertexAttribDivisor(vTransform + 3, divisor);
     } 
 
     glEnable(GL_CLIP_DISTANCE0); 
@@ -452,6 +463,7 @@ void Renderer::check_uniforms()
         if(inrm)
         {
             m_itransform_location = m_shader->uniform("InstanceTransform",required); 
+            // huh, aint this an att rather than a uni ?
         } 
     } 
     else if(nrmvec)
@@ -570,6 +582,10 @@ void Renderer::bind()
     glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
     glBindTexture(GL_TEXTURE_2D,  m_texture_id );
 }
+
+
+
+
 
 
 void Renderer::render()

@@ -41,6 +41,7 @@
 
 #include "Composition.hh"
 #include "Renderer.hh"
+#include "InstanceCuller.hh"
 #include "Device.hh"
 #include "Rdr.hh"
 #include "Colors.hh"
@@ -400,6 +401,10 @@ void Scene::configure(const char* name, int value)
 }
 
 
+void Scene::setInstCull(bool instcull)
+{
+    m_instcull = instcull ; 
+}
 
 void Scene::setWireframe(bool wire)
 {
@@ -436,6 +441,7 @@ void Scene::initRenderersDebug()
     {
         m_instance_mode[i] = false ; 
         m_instance_renderer[i] = NULL ; 
+        m_instance_culler[i] = NULL ; 
 
         m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = NULL ;
@@ -466,8 +472,15 @@ void Scene::initRenderers()
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
         m_instance_mode[i] = false ; 
+
         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_instance_renderer[i]->setInstanced();
+
+        if(m_instcull)
+        {
+            m_instance_culler[i] = new InstanceCuller("inrmcull", m_shader_dir, m_shader_incl_path );
+            m_instance_renderer[i]->setInstanceCuller(m_instance_culler[i]);
+        }
 
         m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
@@ -532,6 +545,9 @@ void Scene::setComposition(Composition* composition)
         if(m_instance_renderer[i])
             m_instance_renderer[i]->setComposition(composition);
 
+        if(m_instance_culler[i])
+            m_instance_culler[i]->setComposition(composition);
+
         if(m_bbox_renderer[i])
             m_bbox_renderer[i]->setComposition(composition);
     }
@@ -591,6 +607,9 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
 void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 {
+    // hmm this is assuming one shot upload, for instance culler need to keep
+    // sending updating a mask over the instance transforms
+
     bool empty = mm->isEmpty();
     bool skip = mm->isSkip() ;
 
@@ -1002,7 +1021,8 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_instance_style(IVIS),
             m_render_style(R_PROJECTIVE),
             m_initialized(false),
-            m_time_fraction(0.f)
+            m_time_fraction(0.f),
+            m_instcull(true)
 {
 
     init();
@@ -1010,6 +1030,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {
         m_instance_renderer[i] = NULL ; 
+        m_instance_culler[i] = NULL ; 
         m_bbox_renderer[i] = NULL ; 
         m_instance_mode[i] = false ; 
         m_bbox_mode[i] = false ; 

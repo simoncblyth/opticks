@@ -116,6 +116,7 @@ set(SOURCES
     Frame.cc
 
     Renderer.cc
+    InstanceCuller.cc
     RendererCfg.cc
     AxisApp.cc
     OpticksViz.cc

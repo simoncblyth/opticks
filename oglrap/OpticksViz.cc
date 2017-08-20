@@ -187,6 +187,9 @@ void OpticksViz::setupRendermode(const char* rendermode )
     }
     std::string rmode = m_scene->getRenderMode();
     LOG(info) << "OpticksViz::setupRendermode rmode " << rmode ; 
+
+    m_scene->setInstCull( m_ok->hasOpt("instcull" ) );
+
 }
 
 void OpticksViz::setupRestrictions()

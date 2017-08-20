@@ -19,12 +19,23 @@ class GBoundaryLibMetadata ;
 
 // oglrap-
 class Renderer ; 
+class InstanceCuller ; 
 class Rdr ;
 class Device ; 
 class Composition ; 
 class Photons ; 
 class Colors ; 
 class Interactor ; 
+
+/*
+Scene
+======
+
+
+
+
+
+*/
 
 
 #include "NConfigurable.hpp"
@@ -93,6 +104,7 @@ class OGLRAP_API Scene : public NConfigurable {
         void dumpGeometryStyles(const char* msg); 
    public:
         void setWireframe(bool wire=true);
+        void setInstCull(bool instcull=true);
    public:
         typedef enum { GVIS, GINVIS, GVISVEC, GVEC, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
         unsigned int getNumGlobalStyle(); 
@@ -207,6 +219,7 @@ class OGLRAP_API Scene : public NConfigurable {
    private:
         unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
+        InstanceCuller*    m_instance_culler[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
@@ -248,6 +261,7 @@ class OGLRAP_API Scene : public NConfigurable {
         RenderStyle_t   m_render_style ; 
         bool            m_initialized ;  
         float           m_time_fraction ;  
+        bool            m_instcull ; 
 
 };
 

@@ -9,14 +9,23 @@
 #include "OGLRAP_BODY.hh"
 
 
-char* RendererBase::getShaderDir()
-{
-    return m_shaderdir ;
-}
-char* RendererBase::getShaderTag()
+
+
+const char* RendererBase::getShaderTag() const 
 {
     return m_shadertag ;
 }
+const char* RendererBase::getShaderDir() const 
+{
+    return m_shaderdir ;
+}
+const char* RendererBase::getInclPath() const 
+{
+    return m_incl_path ;
+}
+
+
+
 
 
 RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path)

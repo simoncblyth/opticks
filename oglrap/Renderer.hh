@@ -14,6 +14,7 @@ class GDrawable ;
 class GMergedMesh ; 
 class GBBoxMesh ; 
 class GBuffer ;
+class InstanceCuller ; 
 
 class Texture ; 
 
@@ -38,6 +39,7 @@ class OGLRAP_API Renderer : public RendererBase  {
   public:
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       void setInstanced(bool instanced=true);
+      void setInstanceCuller(InstanceCuller* instance_culler);
       void setWireframe(bool wireframe=true);
       virtual ~Renderer();
 
@@ -121,7 +123,9 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool m_has_tex ; 
       bool m_has_transforms ; 
       bool m_instanced ; 
+      bool m_instcull ; 
       bool m_wireframe ; 
+      InstanceCuller* m_instance_culler ; 
 };      
 
 

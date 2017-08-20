@@ -43,7 +43,12 @@ Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :
     }
     else
     {
-        LOG(fatal) << "Prog::Prog expected directory at " << m_tagdir ; 
+        LOG(fatal) << "Prog::Prog MISSING directory"
+                   << " tagd " << ( tag ? tag : "-" ) 
+                   << " tagdir " << tagdir 
+                   << " basedir " << ( basedir ? basedir : "-" )
+                   << " incl_path " << ( incl_path ? incl_path : "-" )
+                   ; 
     }
 }
 

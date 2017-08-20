@@ -128,7 +128,7 @@ void Rdr::setPrimitive(Primitive_t prim )
 
 void Rdr::dump_uploads_table(const char* msg)
 {
-    char* tag = getShaderTag();
+    const char* tag = getShaderTag();
     LOG(info) << msg << " Rdr tag: " << tag ; 
     typedef std::vector<MultiViewNPY*> VMVN ; 
     for(VMVN::const_iterator it=m_uploads.begin() ; it != m_uploads.end() ; it++)
@@ -168,7 +168,7 @@ void Rdr::upload(MultiViewNPY* mvn, bool debug)
     // MultiViewNPY are constrained to all refer to the same underlying NPY 
     // so only do upload and m_buffer creation for the first 
 
-    char* tag = getShaderTag();
+    const char* tag = getShaderTag();
    
     if(debug)
     {
