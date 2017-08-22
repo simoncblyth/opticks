@@ -31,6 +31,51 @@ class OpticksEvent ;
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+
+Composition
+=============
+
+Encapsulates
+
+* world frame center/extent *ce* of object of interest in geometry 
+* camera parameters near, far, zoom
+* viewpoint eye, look, up in model frame (ie relative to current ce of an object of interest)
+
+
+Pointers the Composition instance are held by:
+
+* AxisApp
+* Frame
+* GUI
+* InstanceCuller
+* Interactor  : for changing parameters
+* OpticksViz
+* Rdr
+* Renderer
+* Scene
+
+
+Primary purpose of composition is to supply uniforms to the shaders::
+
+    504 void Renderer::update_uniforms()
+    505 {
+    506     if(m_composition)
+    507     {
+    508         m_composition->update() ;
+    509         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
+    510         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+    511 
+    512 
+    513         glUniform4fv(m_param_location, 1, m_composition->getParamPtr());
+    514 
+    515         glUniform4fv(m_scanparam_location, 1, m_composition->getScanParamPtr());
+    516         glm::vec4 sp = m_composition->getScanParam();
+    517 
+
+
+**/
+
 class OKCORE_API Composition : public NConfigurable {
    public:
       friend class GUI ; 
@@ -242,8 +287,6 @@ class OKCORE_API Composition : public NConfigurable {
       View*      getView(); 
       Light*     getLight(); 
       Clipper*   getClipper(); 
-
-
       
       void setCamera(Camera* camera);
       void setView(View* view);

@@ -1,13 +1,18 @@
-#include "Composition.hh"
-#include "Camera.hh"
-#include "View.hh"
-
 #include <iomanip>
 #include <cassert>
 
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
+
+#include "Camera.hh"
+#include "View.hh"
+
+
+#include "Composition.hh"
+
+
+
 #include <boost/math/constants/constants.hpp>
 
 void test_rotate()
@@ -68,26 +73,6 @@ void test_center_extent()
    c.setCenterExtent(ce);
    c.update();
    c.dumpAxisData();
-}
-
-void test_setCenterExtent()
-{
-    glm::vec4 ce(100.,100.,100.,500.);
-    glm::vec3 sc(ce.w);
-    glm::vec3 tr(ce.x, ce.y, ce.z);
-
-    glm::vec3 isc(1.f/ce.w);
-
-    glm::mat4 m_model_to_world = glm::scale( glm::translate(glm::mat4(1.0), tr), sc); 
-
-    glm::mat4 m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
- 
-
-    glm::mat4 check = m_world_to_model * m_model_to_world ;
-
-    print(m_model_to_world, "m_model_to_world");
-    print(m_world_to_model, "m_world_to_model");
-    print(check, "check");
 }
 
 
@@ -181,19 +166,91 @@ void test_depth()
                  << std::endl ; 
 
    } 
+}
+
+
+
+
+
+/*
+
+w2m
+   scale+translate 3D object of arbitrary center/extent into unit box 
+
+
+      m2w 500.000   0.000   0.000   0.000 
+            0.000 500.000   0.000   0.000 
+            0.000   0.000 500.000   0.000 
+          100.000 100.000 100.000   1.000 
+
+      w2m   0.002   0.000   0.000   0.000 
+            0.000   0.002   0.000   0.000 
+            0.000   0.000   0.002   0.000 
+           -0.200  -0.200  -0.200   1.000 
+
+
+*/
+
+
+void test_setCenterExtent()
+{
+    glm::vec4 ce(100.,100.,100.,500.);
+    glm::vec3 sc(ce.w);              // scale factor from 1 to extent
+    glm::vec3 tr(ce.x, ce.y, ce.z);  // translation from origin to center
+
+    glm::vec3 isc(1.f/ce.w);
+
+    glm::mat4 m_model_to_world = glm::scale( glm::translate(glm::mat4(1.0), tr), sc); 
+
+    glm::mat4 m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr); 
+ 
+
+    glm::mat4 check = m_world_to_model * m_model_to_world ;
+
+    print(m_model_to_world, "m_model_to_world");
+    print(m_world_to_model, "m_world_to_model");
+    print(check, "check");
+
+
+   std::cout << gpresent("m2w", m_model_to_world ) << std::endl ; 
+   std::cout << gpresent("w2m", m_world_to_model ) << std::endl ; 
+
+
+   std::vector<glm::vec4> world ;
+   world.push_back( { ce.x       , ce.y        , ce.z       , 1.0 } );
+   world.push_back( { ce.x + ce.w, ce.y + ce.w,  ce.z + ce.w, 1.0 } );
+   world.push_back( { ce.x - ce.w, ce.y - ce.w,  ce.z - ce.w, 1.0 } );
+
+   for(unsigned i=0 ; i < world.size() ; i++)
+   {
+       const glm::vec4& wpos = world[i] ; 
+
+       glm::vec4 mpos = m_world_to_model * wpos ; 
+
+       std::cout 
+               << gpresent("w", wpos ) 
+               << gpresent("m", mpos ) 
+               << std::endl ; 
+
+
+   }
+
 
 
 
 }
+
+
 
 
 int main()
 {
-   test_rotate();
-   test_center_extent();
+   //test_rotate();
+   //test_center_extent();
    test_setCenterExtent();
-   test_depth();
+   //test_depth();
 
     
    return 0 ;
 }
+

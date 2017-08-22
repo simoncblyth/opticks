@@ -11,6 +11,19 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+
+View
+======
+
+
+
+
+
+
+
+**/
+
 class OKCORE_API View : public NConfigurable {
 public:
    typedef enum { STANDARD, INTERPOLATED, ORBITAL, TRACK, NUM_VIEW_TYPE } View_t ; 

@@ -24,6 +24,10 @@ set(TEST_SOURCES
     OpticksEventSpecTest.cc
     OpticksAnaTest.cc
     OpticksDbgTest.cc
+
+    CompositionTest.cc
+    ViewTest.cc
+
 )
 
 
@@ -36,7 +40,6 @@ set(TEST_SOURCES_NOK
     OpticksEventTest.cc
 
     BookmarksTest.cc
-    CompositionTest.cc
     InterpolatedViewTest.cc
 )
 
