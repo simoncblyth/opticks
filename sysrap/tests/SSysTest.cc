@@ -11,6 +11,8 @@ int main(int argc , char** argv )
     SYSRAP_LOG__ ; 
 
     int rc = SSys::run("tpmt.py");
+  
+    LOG(info) << argv[0] << " rc " << rc ; 
 
-    return rc ; 
+    return 0  ; 
 }

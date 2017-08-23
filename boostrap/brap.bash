@@ -131,6 +131,7 @@ brap-tdir(){ echo $(opticks-home)/boostrap/tests ; }
 brap-idir(){ echo $(opticks-idir); }
 brap-bdir(){ echo $(opticks-bdir)/$(brap-rel) ; }
 
+brap-c(){   cd $(brap-sdir); }
 brap-cd(){   cd $(brap-sdir); }
 brap-scd(){  cd $(brap-sdir); }
 brap-tcd(){  cd $(brap-tdir); }

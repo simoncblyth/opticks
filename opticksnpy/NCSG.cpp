@@ -229,7 +229,8 @@ bool NCSG::Exists(const char* treedir)
 
 bool NCSG::ExistsDir(const char* treedir)
 {
-    if(!treedir || !BFile::ExistsDir(treedir) ) return false ; 
+    if(!treedir) return false ; 
+    if(!BFile::ExistsDir(treedir)) return false ; 
     return true ; 
 }
 

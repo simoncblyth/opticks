@@ -25,8 +25,7 @@ int main(int argc, char** argv)
 
 
     BOpticksResource okr ;  // no Opticks at this level 
-    std::string treedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
-    const char* basedir = treedir.c_str(); 
+    const char* basedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
 
     const char* gltfconfig = "csg_bbox_parsurf=1" ;
 

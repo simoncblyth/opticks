@@ -38,7 +38,7 @@ class BRAP_API  BOpticksResource {
         const char* getOKCInstallCacheDir();
         const char* getPTXInstallCacheDir();
 
-        std::string getDebuggingTreedir(int argc, char** argv);
+        const char* getDebuggingTreedir(int argc, char** argv);
         std::string getPTXPath(const char* name, const char* target="OptiXRap");
    public:       
         const char* getDebuggingIDPATH();

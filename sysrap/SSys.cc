@@ -48,6 +48,13 @@ int SSys::run(const char* cmd)
               << " rc : " << rc
               ;
 
+    if(rc != 0)
+    LOG(warning) << "SSys::run FAILED with "
+                 << " cmd " << cmd 
+                 << " possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH "
+                 ;
+
+
     return rc ;  
 }
 

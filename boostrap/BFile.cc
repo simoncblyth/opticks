@@ -503,6 +503,7 @@ std::string BFile::ChangeExt( const char* path, const char* ext)
 
 bool BFile::pathEndsWithInt(const char* path)
 {
+    if(!path) return false ; 
     int fallback = -666 ; 
     std::string name = BFile::Name(path) ; 
     int check = BStr::atoi(name.c_str(), fallback);

@@ -40,9 +40,18 @@ bool OConfig::DefaultWithTop()
     switch(version)
     {
        case 3080:  with_top = false ;break; 
+       case 3090:  with_top = false ;break; 
        case 40000: with_top = true ;break;      
        default: assert(0 && "unexpected OPTIX_VERSION") ;break;
     }
+
+    if(version != 3080)
+        LOG(warning) << "OConfig::DefaultWithTop"
+                     << " proceeding with untested config " 
+                     << " OPTIX_VERSION " << version 
+                     << " with_top " << with_top
+                     ;
+
     return with_top ;
 }
 

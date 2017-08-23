@@ -107,7 +107,7 @@ void BOpticksResource::setDebuggingIDPATH()
 }
 
 
-std::string BOpticksResource::getDebuggingTreedir(int argc, char** argv)
+const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 {
     int arg1 = BStr::atoi(argc > 1 ? argv[1] : "-1", -1 );
     const char* idfold = getDebuggingIDFOLD() ;
@@ -125,7 +125,7 @@ std::string BOpticksResource::getDebuggingTreedir(int argc, char** argv)
     {   
         treedir = BFile::FormPath( idfold, "extras") ;
     }   
-    return treedir ; 
+    return treedir.empty() ? NULL : strdup(treedir.c_str()) ; 
 }
 
 

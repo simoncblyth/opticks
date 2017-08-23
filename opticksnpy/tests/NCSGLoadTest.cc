@@ -41,9 +41,8 @@ int main(int argc, char** argv)
     NPY_LOG__ ;  
 
     BOpticksResource okr ;  // no Opticks at this level 
-    std::string argdir = okr.getDebuggingTreedir(argc, argv);
 
-    const char* basedir = argdir.c_str(); 
+    const char* basedir = okr.getDebuggingTreedir(argc, argv);
     const char* gltfconfig = NULL ; 
 
     int verbosity = SSys::getenvint("VERBOSITY", 0);
