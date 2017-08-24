@@ -303,6 +303,7 @@ thrap-tdir(){ echo $(opticks-home)/thrustrap/tests ; }
 thrap-idir(){ echo $(opticks-idir) ; }
 thrap-bdir(){ echo $(opticks-bdir)/thrustrap ; }
 
+thrap-c(){    cd $(thrap-sdir); }
 thrap-cd(){   cd $(thrap-sdir); }
 thrap-scd(){  cd $(thrap-sdir); }
 thrap-tcd(){  cd $(thrap-tdir); }
@@ -319,7 +320,7 @@ thrap---(){     touch $(thrap-apihh) ; thrap--  ; }
 thrap-wipe(){ local bdir=$(thrap-bdir) ;  rm -rf $bdir ; }
 
 thrap--(){                   opticks-- $(thrap-bdir) ; } 
-thrap-ctest(){               opticks-ctest $(thrap-bdir) $* ; } 
+thrap-t(){                   opticks-t $(thrap-bdir) $* ; } 
 thrap-genproj() { thrap-scd ; opticks-genproj $(thrap-name) $(thrap-tag) ; } 
 thrap-gentest() { thrap-tcd ; opticks-gentest ${1:-TExample} $(thrap-tag) ; } 
 thrap-txt(){ vi $(thrap-sdir)/CMakeLists.txt $(thrap-tdir)/CMakeLists.txt ; } 

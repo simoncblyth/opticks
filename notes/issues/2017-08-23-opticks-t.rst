@@ -1,0 +1,87 @@
+Some opticks-t testing taking too long
+===================================================
+
+Many tests taking more than a second, 
+
+* probably due to envvar sensitivity pointing at heavy geometies
+* TODO: investigate the slow ones and arrange testing to use smaller geometries 
+
+
+::
+
+
+    simon:opticks blyth$ opticks-t
+    Test project /usr/local/opticks/build
+      ...
+            Start   4: SysRapTest.SSysTest
+      4/251 Test   #4: SysRapTest.SSysTest ..........................   Passed    1.13 sec
+
+            Start 100: NPYTest.NScanTest
+    100/251 Test #100: NPYTest.NScanTest ............................   Passed    3.18 sec
+
+            Start 118: NPYTest.NDualContouringSampleTest
+    118/251 Test #118: NPYTest.NDualContouringSampleTest ............   Passed    1.32 sec
+
+            Start 124: NPYTest.NSceneMeshTest
+    124/251 Test #124: NPYTest.NSceneMeshTest .......................   Passed    6.49 sec
+
+
+            Start 177: GGeoTest.GMakerTest
+    177/251 Test #177: GGeoTest.GMakerTest ..........................   Passed    3.81 sec
+
+            Start 191: AssimpRapTest.AssimpRapTest
+    191/251 Test #191: AssimpRapTest.AssimpRapTest ..................   Passed    3.22 sec
+
+            Start 193: AssimpRapTest.AssimpGGeoTest
+    193/251 Test #193: AssimpRapTest.AssimpGGeoTest .................   Passed    1.97 sec
+
+            Start 196: OpticksGeometryTest.OpenMeshRapTest
+    196/251 Test #196: OpticksGeometryTest.OpenMeshRapTest ..........   Passed    1.98 sec
+
+            Start 223: OptiXRapTest.OEventTest
+    223/251 Test #223: OptiXRapTest.OEventTest ......................   Passed    1.13 sec
+            Start 224: OptiXRapTest.OInterpolationTest
+    224/251 Test #224: OptiXRapTest.OInterpolationTest ..............***Failed    5.33 sec
+            Start 225: OptiXRapTest.ORayleighTest
+    225/251 Test #225: OptiXRapTest.ORayleighTest ...................   Passed    6.99 sec
+
+            Start 228: OKOPTest.OpIndexerTest
+    228/251 Test #228: OKOPTest.OpIndexerTest .......................   Passed    1.15 sec
+            Start 229: OKOPTest.OpSeederTest
+    229/251 Test #229: OKOPTest.OpSeederTest ........................   Passed    6.92 sec
+
+            Start 233: OKTest.OKTest
+    233/251 Test #233: OKTest.OKTest ................................   Passed    8.37 sec
+            Start 234: OKTest.OTracerTest
+    234/251 Test #234: OKTest.OTracerTest ...........................   Passed    1.45 sec
+
+            Start 236: OKTest.VizTest
+    236/251 Test #236: OKTest.VizTest ...............................   Passed    6.79 sec
+
+            Start 239: cfg4Test.CTestDetectorTest
+    239/251 Test #239: cfg4Test.CTestDetectorTest ...................***Exception: Other  3.02 sec
+            Start 240: cfg4Test.CGDMLDetectorTest
+    240/251 Test #240: cfg4Test.CGDMLDetectorTest ...................   Passed    1.05 sec
+
+            Start 242: cfg4Test.CG4Test
+    242/251 Test #242: cfg4Test.CG4Test .............................   Passed   12.11 sec
+
+            Start 246: cfg4Test.CCollectorTest
+    246/251 Test #246: cfg4Test.CCollectorTest ......................   Passed    9.80 sec
+            Start 247: cfg4Test.CInterpolationTest
+    247/251 Test #247: cfg4Test.CInterpolationTest ..................   Passed    1.48 sec
+            Start 248: cfg4Test.OpRayleighTest
+    248/251 Test #248: cfg4Test.OpRayleighTest ......................   Passed    1.40 sec
+
+            Start 251: okg4Test.OKG4Test
+    251/251 Test #251: okg4Test.OKG4Test ............................   Passed   19.73 sec
+
+    99% tests passed, 2 tests failed out of 251
+
+    Total Test time (real) = 134.61 sec
+
+    The following tests FAILED:
+        224 - OptiXRapTest.OInterpolationTest (Failed)
+        239 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+    Errors while running CTest
+
