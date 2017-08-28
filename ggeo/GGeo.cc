@@ -557,7 +557,7 @@ unsigned int GGeo::getMaterialLine(const char* shortname)
 void GGeo::loadGeometry()
 {
     bool loaded = isLoaded() ;
-    LOG(trace) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
+    LOG(info) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
     //const char* idpath = getIdPath() ;
 
     if(!loaded)
@@ -578,7 +578,7 @@ void GGeo::loadGeometry()
     setupLookup();
     setupColors();
     setupTyp();
-    LOG(trace) << "GGeo::loadGeometry DONE" ; 
+    LOG(info) << "GGeo::loadGeometry DONE" ; 
 }
 
 void GGeo::loadFromG4DAE()
@@ -614,7 +614,7 @@ bool GGeo::isValid()
 
 void GGeo::loadFromCache()
 {   
-    LOG(trace) << "GGeo::loadFromCache START" ; 
+    LOG(info) << "GGeo::loadFromCache START" ; 
 
     m_geolib = GGeoLib::load(m_ok);
     const char* reldir = NULL ; // default location of tri GItemList
@@ -634,12 +634,13 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_ok);
     m_sourcelib  = GSourceLib::load(m_ok);
 
-    LOG(trace) << "GGeo::loadFromCache DONE" ; 
+    LOG(info) << "GGeo::loadFromCache DONE" ; 
 }
 
 
 void GGeo::loadFromGLTF()
 {
+    LOG(info) << "GGeo::loadFromGLTF START" ; 
     if(!m_ok->isGLTF()) return ; 
 #ifdef WITH_YoctoGL
 
@@ -654,6 +655,7 @@ void GGeo::loadFromGLTF()
     LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
     assert(0);
 #endif
+    LOG(info) << "GGeo::loadFromGLTF DONE" ; 
 }
 
 

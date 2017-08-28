@@ -131,6 +131,48 @@ void test_StartsWith()
 }
 
 
+void test_ReplaceAll()
+{
+
+    const char* r = R"glsl(
+
+    uniform MatrixBlock  
+    {   
+        mat4 ModelViewProjection;
+    } ; 
+
+)glsl";
+
+    const char* s = R"glsl(
+
+    #version 400 core
+
+    $UniformBlock
+
+    layout (location = 0) in vec4 VertexPosition;
+    layout (location = 1) in mat4 VizInstanceTransform ;
+
+    void main()
+    {   
+        gl_Position = ModelViewProjection * VizInstanceTransform * VertexPosition ;
+    }   
+
+)glsl";
+
+
+    std::string tmpl = s ;
+    BStr::ReplaceAll(tmpl, "$UniformBlock", r );
+
+    std::cout << std::endl << tmpl <<  std::endl ;
+
+ 
+}
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -142,8 +184,10 @@ int main(int argc, char** argv)
     test_isplit();
     test_ijoin();
     test_fsplit();
-*/
     test_StartsWith();
+
+*/
+    test_ReplaceAll();
 
     return 0 ; 
 }

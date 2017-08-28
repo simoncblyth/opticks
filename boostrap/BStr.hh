@@ -48,6 +48,8 @@ class BRAP_API BStr {
      template <typename T>
      static const char* concat( const char* head, T body, const char* tail );
 
+     static void ReplaceAll(std::string& subject, const char* search, const char* replace) ;
+
 };
 
 

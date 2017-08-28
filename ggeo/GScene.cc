@@ -83,8 +83,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
 {
     init();
 
-    dumpNode(3158);
-    dumpNode(3159);
+    //dumpNode(3158);
+    //dumpNode(3159);
 }
 
 void GScene::dumpNode( unsigned nidx)
@@ -142,7 +142,7 @@ void GScene::init()
 
     m_ok->setVerbosity(m_verbosity);
 
-    if(m_verbosity > 0)
+    //if(m_verbosity > 0)
     LOG(info) << "GScene::init START" ;
 
 
@@ -186,9 +186,8 @@ void GScene::init()
 
     if(m_gltf == 444)  assert(0 && "GScene::init early exit for gltf==444" );
 
-    if(m_verbosity > 0)
-    LOG(info) << "GScene::init DONE"
-                ;
+    //if(m_verbosity > 0)
+    LOG(info) << "GScene::init DONE" ;
 
 }
 

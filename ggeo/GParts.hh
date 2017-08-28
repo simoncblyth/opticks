@@ -38,6 +38,95 @@ OR for test geometries it is created part-by-part using methods of the npy primi
    npy/NPart.hpp
    npy/NSphere.hpp 
 
+
+
+
+Lifecycle
+-----------
+
+
+Single Tree GParts created from from NCSG by GScene
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GParts are created from the NCSG in GScene::createVolume where they get attached to a GSolid.
+
+::
+
+    629 GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
+    630 {
+    ...
+    644     NCSG*   csg =  getCSG(rel_mesh_idx);
+
+    661     std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
+    662 
+    663     GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
+    664 
+    665     pts->setBndLib(m_tri_bndlib);
+    666 
+    667     solid->setParts( pts );
+
+
+Merged GParts are born with GMergedMesh
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     45 GMergedMesh::GMergedMesh(unsigned int index)
+     46        :
+     47        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
+     48        m_cur_vertices(0),
+     49        m_cur_faces(0),
+     50        m_cur_solid(0),
+     51        m_num_csgskip(0),
+     52        m_cur_base(NULL),
+     53        m_parts(new GParts())
+     54 {
+     55 }
+
+
+GParts merging happens via GMergedMesh::mergeSolidAnalytic
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    525 void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+    526 {
+    527     // analytic CSG combined at node level  
+    ...
+    535     if(transform && !transform->isIdentity())
+    536     {
+    537         pts->applyPlacementTransform(transform, verbosity );
+    538     }
+    539     m_parts->add(pts, verbosity);
+    540 }
+
+
+Primary GParts usage by OGeo::makeAnalyticGeometry feeding cu/intersect_analytic.cu
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    470 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
+    471 {
+    ...
+    480     GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry ");
+    481 
+    482     if(pts->getPrimBuffer() == NULL)
+    483     {
+    485         pts->close();
+    487     } 
+    ... 
+    496     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
+    497     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
+    498     NPY<float>*     planBuf = pts->getPlanBuffer(); assert(planBuf && planBuf->hasShape(-1,4));      // planes used for convex polyhedra such as trapezoid
+    499     NPY<int>*       primBuf = pts->getPrimBuffer(); assert(primBuf && primBuf->hasShape(-1,4));      // prim
+    500     NPY<unsigned>*  idBuf = mm->getAnalyticInstancedIdentityBuffer(); assert(idBuf && ( idBuf->hasShape(-1,4) || idBuf->hasShape(-1,1,4)));
+    501      // PmtInBox yielding -1,1,4 ?
+    502 
+
+
+
+
 **/
 
 
@@ -146,6 +235,7 @@ class GGEO_API GParts {
         void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity=0);
 
         void save(const char* dir);
+        static GParts* Load(const char* dir, const char* name);
     private:
         void registerBoundaries();
         void makePrimBuffer();

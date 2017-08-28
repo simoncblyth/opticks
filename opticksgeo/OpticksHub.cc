@@ -240,7 +240,7 @@ void OpticksHub::loadGeometry()
 {
     assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");
 
-    LOG(debug) << "OpticksHub::loadGeometry" ; 
+    LOG(info) << "OpticksHub::loadGeometry START" ; 
 
     m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
@@ -254,7 +254,7 @@ void OpticksHub::loadGeometry()
 
     m_ggeo->setComposition(m_composition);
 
-    LOG(debug) << "OpticksHub::loadGeometry DONE" ; 
+    LOG(info) << "OpticksHub::loadGeometry DONE" ; 
 }
 
 

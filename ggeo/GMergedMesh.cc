@@ -82,6 +82,7 @@ GParts* GMergedMesh::getParts()
 }
 void GMergedMesh::setParts(GParts* pts) // under protest, used by the old dirty analytic PMT handling 
 {
+    assert(0 && "GMergedMesh::setParts who is using this ? ");
     m_parts = pts ; 
 }
 

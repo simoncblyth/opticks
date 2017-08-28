@@ -6,6 +6,15 @@ j1707 : OpenGL LOD (Level of detail)
 * some instances will be close and some far, 
 
 
+Investigations
+------------------
+
+See::
+
+    env- ; instcull- ; icdemo 
+
+
+
 Unity 
 -------
 

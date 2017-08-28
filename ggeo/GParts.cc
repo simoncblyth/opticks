@@ -334,6 +334,13 @@ OpticksCSG_t GParts::getPrimFlag()
 
 void GParts::save(const char* dir)
 {
+   /*
+    Follow GMergedMesh pattern in geocache with index
+
+         <idpath>/GParts/0/partBuffer.npy
+
+    */
+
     if(!dir) return ; 
 
     const char* name = getName();    
@@ -346,7 +353,42 @@ void GParts::save(const char* dir)
     if(m_plan_buffer) m_plan_buffer->save(dir, name, "planBuffer.npy");    
 
     if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
+
 }
+
+
+GParts* GParts::Load(const char* dir, const char* name) // static
+{
+    if(!name) name = "GParts" ; 
+
+    LOG(info) << "GParts::Load " << name << " from " << dir ; 
+
+    NPY<float>* partBuf = NPY<float>::load(dir, name, "partBuffer.npy" );
+    NPY<float>* tranBuf = NPY<float>::load(dir, name, "tranBuffer.npy" );
+    NPY<float>* planBuf = NPY<float>::load(dir, name, "planBuffer.npy" );
+
+    GItemList* spec = NULL ; 
+    GBndLib*  bndlib = NULL ; 
+
+    GParts* parts = new GParts(partBuf,  tranBuf, planBuf, spec, bndlib) ;
+    
+    //NPY<float>* primBuf = NPY<float>::load(dir, name, "primBuffer.npy" );
+    //  check primBuf vs derived one ?
+
+    return parts  ; 
+}
+
+/*
+
+simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ l GMergedMesh/0/
+total 39992
+-rw-r--r--  1 blyth  staff       96 Jul 25 12:53 aiidentity.npy
+-rw-r--r--  1 blyth  staff   293600 Jul 25 12:53 bbox.npy
+-rw-r--r--  1 blyth  staff  1739344 Jul 25 12:53 boundaries.npy
+
+*/
+
+
 
 void GParts::setName(const char* name)
 {

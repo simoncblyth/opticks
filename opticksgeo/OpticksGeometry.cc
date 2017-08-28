@@ -44,6 +44,7 @@
 #define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
 
 
+// TODO: move to OK_PROFILE 
 #define TIMER(s) \
     { \
        if(m_ok)\
@@ -187,7 +188,7 @@ void OpticksGeometry::loadGeometry()
 {
     bool modify = m_ok->hasOpt("test") ;
 
-    LOG(debug) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
+    LOG(info) << "OpticksGeometry::loadGeometry START, modifyGeometry? " << modify  ; 
 
     loadGeometryBase(); //  usually from cache
 
@@ -213,12 +214,14 @@ void OpticksGeometry::loadGeometry()
 
     configureGeometry();
 
+    LOG(info) << "OpticksGeometry::loadGeometry DONE " ; 
     TIMER("loadGeometry");
 }
 
 
 void OpticksGeometry::loadGeometryBase()
 {
+    LOG(info) << "OpticksGeometry::loadGeometryBase START " ; 
     OpticksResource* resource = m_ok->getResource();
 
     if(m_ok->hasOpt("qe1"))
@@ -252,6 +255,7 @@ void OpticksGeometry::loadGeometryBase()
         }
     }
 
+    LOG(info) << "OpticksGeometry::loadGeometryBase DONE " ; 
     TIMER("loadGeometryBase");
 }
 
