@@ -102,7 +102,8 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
-    GGeoLib* geolib = GGeoLib::load(&ok); 
+    bool analytic = false ; 
+    GGeoLib* geolib = GGeoLib::Load(&ok, analytic); 
 
     GMergedMesh* mm0 = geolib->getMergedMesh(0);
     GMergedMesh* mm1 = geolib->getMergedMesh(1);

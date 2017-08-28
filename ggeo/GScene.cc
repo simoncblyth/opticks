@@ -62,7 +62,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
-    m_geolib(new GGeoLib(m_ok)),
+    m_geolib(new GGeoLib(m_ok, m_analytic)),
     m_nodelib(new GNodeLib(m_ok, m_analytic)),
     m_meshlib(new GMeshLib(m_ok, m_analytic)),
 

@@ -174,8 +174,11 @@ void GMaker::init()
     else
     {
         LOG(warning) << "GMaker::init booting from cache" ; 
-        m_geolib = GGeoLib::load(m_opticks);
-        m_bndlib = GBndLib::load(m_opticks, true );
+        bool analytic = false ; 
+        m_geolib = GGeoLib::Load(m_opticks, analytic);
+
+        bool constituents = true ; 
+        m_bndlib = GBndLib::load(m_opticks, constituents );
     }
 }
 

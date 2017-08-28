@@ -15,7 +15,7 @@ const char* GNodeLib::GetRelDir(bool analytic)
     return strdup(analytic ? "GNodeLibAnalytic" : "GNodeLib") ;
 }
 
-GNodeLib* GNodeLib::load(Opticks* ok, bool analytic)
+GNodeLib* GNodeLib::Load(Opticks* ok, bool analytic)
 {
     GNodeLib* nodelib = new GNodeLib(ok, analytic) ;
     nodelib->loadFromCache();

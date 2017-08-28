@@ -653,7 +653,11 @@ void NPY<T>::save(const char* raw)
 
     if(values == NULL && !allow_save_empty )
     {
-         LOG(fatal) << "NPY values NULL, buffer not allocated, SKIP attempt to save to  " << native ; 
+         LOG(fatal) << "NPY values NULL, SKIP attempt to save  " 
+                    << " itemcount " << itemcount
+                    << " itemshape " << itemshape
+                    << " native " << native 
+                    ; 
     }
     else
     {

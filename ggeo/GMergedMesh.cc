@@ -80,10 +80,11 @@ GParts* GMergedMesh::getParts()
 {
     return m_parts ; 
 }
-void GMergedMesh::setParts(GParts* pts) // under protest, used by the old dirty analytic PMT handling 
+void GMergedMesh::setParts(GParts* pts) 
 {
-    assert(0 && "GMergedMesh::setParts who is using this ? ");
     m_parts = pts ; 
+   // originally under protest as only used by the old dirty analytic PMT handling 
+   // but now that are persisting GParts, this is needed from GGeoLib 
 }
 
 

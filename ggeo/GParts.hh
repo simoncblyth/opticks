@@ -41,6 +41,8 @@ OR for test geometries it is created part-by-part using methods of the npy primi
 
 
 
+
+
 Lifecycle
 -----------
 
@@ -142,6 +144,12 @@ class GGEO_API GParts {
        static const char* CONTAINING_MATERIAL ; 
        static const char* SENSOR_SURFACE ; 
        static const int NTRAN ; 
+
+
+       static void BufferTags(std::vector<std::string>& tags)  ;
+       static const char* BufferName(const char* tag) ;
+       static NPY<float>* LoadBuffer(const char* dir, const char* tag);
+
     public:
         // buffer layout, must match locations in pmt-/tree.py:convert 
         enum { 
@@ -221,6 +229,8 @@ class GGEO_API GParts {
         NPY<float>*        getPartBuffer();
         NPY<float>*        getTranBuffer(); // inverse transforms IR*IT ie inverse of T*R 
         NPY<float>*        getPlanBuffer(); // planes used by convex polyhedra such as trapezoid
+        NPY<float>*        getBuffer(const char* tag) const ;
+
     public:
         void fulldump(const char* msg="GParts::fulldump");
         void dump(const char* msg="GParts::dump");
@@ -235,9 +245,9 @@ class GGEO_API GParts {
         void applyPlacementTransform(GMatrix<float>* placement, unsigned verbosity=0);
 
         void save(const char* dir);
-        static GParts* Load(const char* dir, const char* name);
+        static GParts* Load(const char* dir);
     private:
-        void registerBoundaries();
+        void registerBoundaries();  // convert the boundary spec names into integer codes using bndlib, setting into partBuffer
         void makePrimBuffer();
         void reconstructPartsPerPrim();
     private:

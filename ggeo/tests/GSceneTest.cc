@@ -20,6 +20,24 @@ GSceneTest --okcore debug --gltfname hello.gltf
 #include "GGEO_LOG.hh"
 
 
+struct GSceneTest
+{
+    Opticks* ok ;
+    GGeo* gg ; 
+
+    GSceneTest(Opticks* ok_) 
+        : 
+        ok(ok_),
+        gg(new GGeo(ok))
+    {
+        gg->loadFromCache();
+        gg->loadAnalyticFromCache();
+        gg->dumpStats();
+    }
+};
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -45,11 +63,8 @@ int main(int argc, char** argv)
               << " gltf " << gltf 
               ; 
 
-    GGeo gg(&ok);
-    gg.loadFromCache();
-    gg.loadFromGLTF();
-    gg.dumpStats();
-
+    GSceneTest gst(&ok);
+    assert(gst.gg);
 
 
     return 0 ; 

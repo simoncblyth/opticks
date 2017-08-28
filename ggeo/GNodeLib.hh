@@ -30,7 +30,7 @@ class GGEO_API GNodeLib
         friend class GScene ;  // for save 
     public:
         static const char* GetRelDir(bool analytic);
-        static GNodeLib* load(Opticks* ok, bool analytic);
+        static GNodeLib* Load(Opticks* ok, bool analytic);
         void loadFromCache();
     public:
         GNodeLib(Opticks* opticks, bool analytic); 

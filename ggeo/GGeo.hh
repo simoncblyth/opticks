@@ -71,6 +71,9 @@ class GScene ;
 
 class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
+        friend class  AssimpGGeo ; 
+        friend struct GSceneTest ; 
+    public:
         static const char* CATHODE_MATERIAL ; 
     public:
         // see GGeoCfg.hh
@@ -117,7 +120,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void loadGeometry(); 
         void loadFromCache();
         void loadFromG4DAE();  // AssimpGGeo::load
-        void loadFromGLTF();
+    private: 
+        void loadAnalyticFromGLTF();
+        void loadAnalyticFromCache();
 
         void afterConvertMaterials();
         void createSurLib();
@@ -145,13 +150,13 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
    private:
         void init(); 
-        void loadMergedMeshes(const char* idpath);
-        void removeMergedMeshes(const char* idpath);
+        //void loadMergedMeshes(const char* idpath);
+        //void removeMergedMeshes(const char* idpath);
     public:
-        //void save(const char* idpath);
         void save();
+        void saveAnalytic();
     private:
-        void saveMergedMeshes(const char* idpath);
+        //void saveMergedMeshes(const char* idpath);
     public:
         // pass thru to geolib
         GMergedMesh* makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity );

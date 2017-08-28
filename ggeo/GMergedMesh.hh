@@ -24,6 +24,7 @@ class GMergedMesh ;
 
 
 class GGEO_API GMergedMesh : public GMesh {
+    friend class GGeoLib ;         // for setParts hookup on loading 
     friend class GGeoTest ;         // for setParts analytic PMT kludge
     friend class OpticksGeometry ;  // for setParts analytic PMT kludge
 public:

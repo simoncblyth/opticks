@@ -52,7 +52,10 @@ GItemList* GItemList::load(const char* idpath, const char* itemtype, const char*
 void GItemList::load_(const char* idpath)
 {
    std::string txtname = m_itemtype + ".txt" ;  
-   std::string txtpath = BFile::FormPath(idpath, m_reldir.c_str(), txtname.c_str()) ;
+
+   const char* reldir = m_reldir.empty() ? NULL : m_reldir.c_str() ; 
+
+   std::string txtpath = BFile::FormPath(idpath, reldir, txtname.c_str()) ;
 
    if(BFile::ExistsFile(txtpath.c_str()))
    {
@@ -84,7 +87,8 @@ void GItemList::read_(const char* txtpath)
 void GItemList::save(const char* idpath)
 {
     std::string txtname = m_itemtype + ".txt" ; 
-    std::string txtpath = BFile::preparePath(idpath, m_reldir.c_str(), txtname.c_str() ); 
+    const char* reldir = m_reldir.empty() ? NULL : m_reldir.c_str() ; 
+    std::string txtpath = BFile::preparePath(idpath, reldir, txtname.c_str() ); 
     LOG(debug) << "GItemList::save writing to " << txtpath ;       
     save_(txtpath.c_str());
 }
@@ -106,8 +110,16 @@ GItemList* GItemList::Repeat( const char* itemtype, const char* name, unsigned n
 }
 
 
+const std::string& GItemList::getRelDir() const 
+{
+    return m_reldir ; 
+}
+
+
 GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
 {
+    // NULL reldir defaults to GITEMLIST, empty reldir "" results in no reldir
+
     m_itemtype = itemtype ? strdup(itemtype) : NULL ; 
     m_reldir   = reldir ? reldir : GITEMLIST ; 
 }

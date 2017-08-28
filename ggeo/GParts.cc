@@ -5,6 +5,7 @@
 #include <climits>
 
 
+#include "BStr.hh"
 #include "OpticksCSG.h"
 
 // npy-
@@ -32,8 +33,6 @@
 const char* GParts::CONTAINING_MATERIAL = "CONTAINING_MATERIAL" ;  
 const char* GParts::SENSOR_SURFACE = "SENSOR_SURFACE" ;  
 
-
-
 GParts* GParts::combine(GParts* onesub, unsigned verbosity)
 {
     // for consistency: need to combine even when only one sub
@@ -41,7 +40,6 @@ GParts* GParts::combine(GParts* onesub, unsigned verbosity)
     subs.push_back(onesub); 
     return GParts::combine(subs, verbosity );
 }
-
 
 GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
 {
@@ -104,8 +102,6 @@ GParts* GParts::make(const npart& pt, const char* spec)
 
     NPY<float>* planBuf = NPY<float>::make(0, 4 );
     planBuf->zero();
-
-
 
 
     partBuf->setPart( pt, 0u );
@@ -213,8 +209,6 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     } 
     assert( planbuf && planbuf->hasShape(-1,4));
 
-
-
     nnode* root = tree->getRoot(); 
     // hmm maybe should not use the nnode ? ie operate fully from the persistable buffers ?
 
@@ -247,9 +241,9 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     // now enable reuse of the old GParts by duplicating the spec 
     // for every node of the tree
 
-    GItemList* lspec = GItemList::Repeat("GParts", spec, ni ) ; 
+    const char* reldir = "" ;  // empty reldir avoids defaulting to GItemList  
 
-
+    GItemList* lspec = GItemList::Repeat("GParts", spec, ni, reldir) ; 
 
     GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
 
@@ -259,10 +253,10 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
 
 GParts::GParts(GBndLib* bndlib) 
       :
-      m_part_buffer(NULL),
-      m_tran_buffer(NULL),
-      m_plan_buffer(NULL),
-      m_bndspec(NULL),
+      m_part_buffer(NPY<float>::make(0, NJ, NK )),
+      m_tran_buffer(NPY<float>::make(0, NTRAN, 4, 4 )),
+      m_plan_buffer(NPY<float>::make(0, 4)),
+      m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
       m_bndlib(bndlib),
       m_name(NULL),
       m_prim_buffer(NULL),
@@ -271,6 +265,10 @@ GParts::GParts(GBndLib* bndlib)
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
 {
+      m_part_buffer->zero();
+      m_tran_buffer->zero();
+      m_plan_buffer->zero();
+ 
       init() ; 
 }
 GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
@@ -278,14 +276,17 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
       m_part_buffer(partBuf),
       m_tran_buffer(tranBuf),
       m_plan_buffer(planBuf),
-      m_bndspec(NULL),
+      m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
       m_bndlib(bndlib),
+      m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
+      m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
 {
-      init(spec) ; 
+      m_bndspec->add(spec);
+      init() ; 
 }
 GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
       :
@@ -294,24 +295,49 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
       m_plan_buffer(planBuf),
       m_bndspec(spec),
       m_bndlib(bndlib),
+      m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
+      m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
 {
+      assert(spec->getRelDir().empty() == true );
       init() ; 
 }
+
+
+void GParts::init()
+{
+    unsigned npart = m_part_buffer ? m_part_buffer->getNumItems() : 0 ;
+    unsigned nspec = m_bndspec ? m_bndspec->getNumItems() : 0  ;
+
+    bool match = npart == nspec ; 
+    if(!match) 
+    LOG(fatal) << "GParts::init"
+               << " parts/spec MISMATCH "  
+               << " npart " << npart 
+               << " nspec " << nspec
+               ;
+
+    assert(match);
+
+}
+
+
+
+
 
 void GParts::setPrimFlag(OpticksCSG_t primflag)
 {
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
     m_primflag = primflag ; 
 }
-bool GParts::isPartList()
+bool GParts::isPartList()  // LEGACY ANALYTIC, NOT LONG TO LIVE ?
 {
     return m_primflag == CSG_FLAGPARTLIST ;
 }
-bool GParts::isNodeTree()
+bool GParts::isNodeTree()  // ALMOST ALWAYS THIS ONE NOWADAYS
 {
     return m_primflag == CSG_FLAGNODETREE ;
 }
@@ -331,62 +357,112 @@ OpticksCSG_t GParts::getPrimFlag()
     return m_primflag ;
 }
 
+void GParts::BufferTags(std::vector<std::string>& tags) // static
+{
+    tags.push_back("part");
+    tags.push_back("tran");
+    tags.push_back("plan");
+   // tags.push_back("prim");
+}
+
+const char* GParts::BufferName(const char* tag) // static
+{
+    return BStr::concat(tag, "Buffer.npy", NULL) ;
+}
 
 void GParts::save(const char* dir)
 {
-   /*
-    Follow GMergedMesh pattern in geocache with index
-
-         <idpath>/GParts/0/partBuffer.npy
-
-    */
-
     if(!dir) return ; 
 
-    const char* name = getName();    
-    if(!name) name = "GParts" ; 
+    // resource organization handled by GGeoLib, that invokes this
 
-    LOG(info) << "GParts::save " << name << " to " << dir ; 
+    LOG(info) << "GParts::save dir " << dir ; 
+    std::vector<std::string> tags ; 
+    BufferTags(tags);
 
-    if(m_part_buffer) m_part_buffer->save(dir, name, "partBuffer.npy");     
-    if(m_tran_buffer) m_tran_buffer->save(dir, name, "tranBuffer.npy");    
-    if(m_plan_buffer) m_plan_buffer->save(dir, name, "planBuffer.npy");    
+    for(unsigned i=0 ; i < tags.size() ; i++)
+    {
+        const char* tag = tags[i].c_str();
+        const char* name = BufferName(tag);
+        NPY<float>* buf = getBuffer(tag);
+        if(buf)
+        {
+            unsigned num_items = buf->getShape(0);
+            if(num_items > 0)
+            { 
+                buf->save(dir, name);     
+            }
+        }
+    } 
+    if(m_prim_buffer) m_prim_buffer->save(dir, "primBuffer.npy");    
 
-    if(m_prim_buffer) m_prim_buffer->save(dir, name, "primBuffer.npy");    
+    if(m_bndspec) m_bndspec->save(dir); 
 
 }
 
 
-GParts* GParts::Load(const char* dir, const char* name) // static
+
+/*
+
+
+The bndspec GItemList belongs inside the GPartsAnalytic/0/ 
+not up within the default reldir of 
+
+
+simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ l GPartsAnalytic/0/
+total 40
+-rw-r--r--  1 blyth  staff  9424 Aug 28 18:59 partBuffer.npy
+-rw-r--r--  1 blyth  staff  6800 Aug 28 18:59 tranBuffer.npy
+simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ 
+simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ 
+simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ cat GItemList/GMaterialLib.txt
+Acrylic
+Air
+Copper
+
+
+
+*/
+
+
+
+
+
+
+
+NPY<float>* GParts::LoadBuffer(const char* dir, const char* tag) // static
 {
-    if(!name) name = "GParts" ; 
+    NPY<float>* buf = NPY<float>::load(dir, BufferName(tag) );
+    return buf ; 
+}
 
-    LOG(info) << "GParts::Load " << name << " from " << dir ; 
+GParts* GParts::Load(const char* dir) // static
+{
+    LOG(info) << "GParts::Load dir " << dir ; 
 
-    NPY<float>* partBuf = NPY<float>::load(dir, name, "partBuffer.npy" );
-    NPY<float>* tranBuf = NPY<float>::load(dir, name, "tranBuffer.npy" );
-    NPY<float>* planBuf = NPY<float>::load(dir, name, "planBuffer.npy" );
+    NPY<float>* partBuf = LoadBuffer(dir, "part");
+    NPY<float>* tranBuf = LoadBuffer(dir, "tran");
+    NPY<float>* planBuf = LoadBuffer(dir, "plan");
 
-    GItemList* spec = NULL ; 
+
+    // hmm what is appropriate for spec and bndlib these ? 
+    //
+    // bndlib has to be externally set, its a global thing 
+    // that is only needed by registerBoundaries
+    //
+    // spec is internal ...
+    //    
+
+    const char* reldir = "" ; // empty 
+    GItemList* bndspec = GItemList::load(dir, "GParts", reldir ) ; 
     GBndLib*  bndlib = NULL ; 
-
-    GParts* parts = new GParts(partBuf,  tranBuf, planBuf, spec, bndlib) ;
+    GParts* parts = new GParts(partBuf,  tranBuf, planBuf, bndspec, bndlib) ;
     
-    //NPY<float>* primBuf = NPY<float>::load(dir, name, "primBuffer.npy" );
+    //NPY<int>* primBuf = NPY<int>::load(dir, name, "primBuffer.npy" );
     //  check primBuf vs derived one ?
 
     return parts  ; 
 }
-
-/*
-
-simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ l GMergedMesh/0/
-total 39992
--rw-r--r--  1 blyth  staff       96 Jul 25 12:53 aiidentity.npy
--rw-r--r--  1 blyth  staff   293600 Jul 25 12:53 bbox.npy
--rw-r--r--  1 blyth  staff  1739344 Jul 25 12:53 boundaries.npy
-
-*/
 
 
 
@@ -482,48 +558,18 @@ NPY<float>* GParts::getPlanBuffer()
     return m_plan_buffer ; 
 }
 
-
-
-
-void GParts::init(const char* spec)
+NPY<float>* GParts::getBuffer(const char* tag) const 
 {
-    m_bndspec = new GItemList("GParts");
-    m_bndspec->add(spec);
-    init();
+    if(strcmp(tag,"part")==0) return m_part_buffer ; 
+    if(strcmp(tag,"tran")==0) return m_tran_buffer ; 
+    if(strcmp(tag,"plan")==0) return m_plan_buffer ; 
+ //   if(strcmp(tag,"prim")==0) return m_prim_buffer ; 
+    return NULL ; 
 }
 
-void GParts::init()
-{
-    if(m_part_buffer == NULL && m_tran_buffer == NULL && m_plan_buffer == NULL && m_bndspec == NULL)
-    {
-        LOG(trace) << "GParts::init creating empty part_buffer, tran_buffer and bndspec " ; 
 
-        m_part_buffer = NPY<float>::make(0, NJ, NK );
-        m_part_buffer->zero();
 
-        m_tran_buffer = NPY<float>::make(0, NTRAN, 4, 4 );
-        m_tran_buffer->zero();
 
-        m_plan_buffer = NPY<float>::make(0, 4);
-        m_plan_buffer->zero();
-
-        m_bndspec = new GItemList("GParts");
-    } 
-
-    unsigned npart = m_part_buffer->getNumItems() ;
-    unsigned nspec = m_bndspec->getNumItems() ;
-
-    bool match = npart == nspec ; 
-    if(!match) 
-    LOG(fatal) << "GParts::init"
-               << " parts/spec MISMATCH "  
-               << " npart " << npart 
-               << " nspec " << nspec
-               ;
-
-    assert(match);
-
-}
 
 unsigned int GParts::getNumParts()
 {
@@ -688,7 +734,7 @@ void GParts::close()
               ; 
 }
 
-void GParts::registerBoundaries()
+void GParts::registerBoundaries() // convert boundary spec names into integer codes using bndlib
 {
    assert(m_bndlib); 
    unsigned int nbnd = m_bndspec->getNumKeys() ; 
@@ -781,13 +827,18 @@ are added separtately, see GGeoTest::loadCSG.
 
 void GParts::makePrimBuffer()
 {
-    // Derives prim buffer from the parts buffer
-    //
-    // Primbuffer acts as an "index" providing cross
-    // referencing associating a primitive via
-    // offsets to the parts/nodes, transforms and planes
-    // relevant to the primitive.
-    // 
+    /*
+    Derives prim buffer from the part buffer
+    
+    Primbuffer acts as an "index" providing cross
+    referencing associating a primitive via
+    offsets to the parts/nodes, transforms and planes
+    relevant to the primitive.
+
+    prim/part/tran/plan buffers are used GPU side in cu/intersect_analytic.cu.
+    
+    */
+
     unsigned int num_prim = 0 ; 
     if(isPartList())
     {
@@ -887,7 +938,7 @@ void GParts::makePrimBuffer()
 
 void GParts::dumpPrim(unsigned primIdx)
 {
-    // following access pattern of oxrap/cu/hemi-pmt.cu::intersect
+    // following access pattern of oxrap/cu/intersect_analytic.cu::intersect
 
     NPY<int>*    primBuffer = getPrimBuffer();
     NPY<float>*  partBuffer = getPartBuffer();

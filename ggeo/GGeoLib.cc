@@ -1,12 +1,14 @@
 #include <cstring>
-#include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
-#include <boost/algorithm/string.hpp>
+
+#include "BStr.hh"
+#include "BFile.hh"
+
 
 #include "Opticks.hh"
 
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
+#include "GParts.hh"
 #include "GNode.hh"
 
 
@@ -14,15 +16,18 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-namespace fs = boost::filesystem;
-
 
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
+const char* GGeoLib::GPARTS = "GParts" ; 
 
-
-GGeoLib* GGeoLib::load(Opticks* opticks)
+const char* GGeoLib::getRelDir(const char* name)
 {
-    GGeoLib* glib = new GGeoLib(opticks);
+    return m_analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
+}
+
+GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic)
+{
+    GGeoLib* glib = new GGeoLib(opticks, analytic);
     glib->loadFromCache();
     return glib ; 
 }
@@ -33,6 +38,7 @@ std::string GGeoLib::desc() const
     std::stringstream ss ; 
 
     ss << "GGeoLib"
+       << ( m_analytic ? " ANALYTIC " : " TRIANGULATED " ) 
        << " numMergedMesh " << getNumMergedMesh()
        ; 
 
@@ -40,10 +46,11 @@ std::string GGeoLib::desc() const
 }
 
 
-GGeoLib::GGeoLib(Opticks* opticks) 
-     :
-     m_opticks(opticks),
-     m_mesh_version(NULL)
+GGeoLib::GGeoLib(Opticks* opticks, bool analytic) 
+    :
+    m_opticks(opticks),
+    m_analytic(analytic),
+    m_mesh_version(NULL)
 {
 }
 
@@ -72,69 +79,94 @@ void GGeoLib::loadFromCache()
 {
     const char* idpath = m_opticks->getIdPath() ;
     LOG(debug) << "GGeoLib::loadFromCache" ;
-    loadMergedMeshes(idpath);
+    loadConstituents(idpath);
 }
 
 void GGeoLib::saveToCache()
 {
     const char* idpath = m_opticks->getIdPath() ;
-    saveMergedMeshes(idpath);
+    saveConstituents(idpath);
 }
 
-void GGeoLib::removeMergedMeshes(const char* idpath )
+void GGeoLib::removeConstituents(const char* idpath )
 {
-   fs::path cachedir(idpath);
-
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
-        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
-        if(fs::exists(mmdir) && fs::is_directory(mmdir))
+        const char* sidx = BStr::itoa(ridx) ;
+        std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
+        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
+
+        const char* mmpath = smmpath.c_str();
+        const char* ptpath = sptpath.c_str();
+
+        if(BFile::ExistsDir(mmpath))
         {   
-            unsigned long long nrm = fs::remove_all(mmdir);
-            LOG(info) << "GGeoLib::removeMergedMeshes " << mmdir.string() 
-                      << " removed " << nrm 
-                      ; 
+            BFile::RemoveDir(mmpath); 
+            LOG(info) << "GGeoLib::removeConstituents " << mmpath ; 
+        }
+
+        if(BFile::ExistsDir(ptpath))
+        {   
+            BFile::RemoveDir(ptpath); 
+            LOG(info) << "GGeoLib::removeConstituents " << mmpath ; 
         }
    } 
 }
 
-void GGeoLib::loadMergedMeshes(const char* idpath )
+void GGeoLib::loadConstituents(const char* idpath )
 {
-   fs::path cachedir(idpath);
-
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
-        fs::path mmdir(cachedir / GMERGEDMESH / boost::lexical_cast<std::string>(ridx) );
-        if(fs::exists(mmdir) && fs::is_directory(mmdir))
-        {   
-            std::string spath = mmdir.string() ;
-            const char* path = spath.c_str() ;
-            LOG(debug) << "GGeoLib::loadMergedMeshes " << path ; 
-            m_merged_mesh[ridx] = GMergedMesh::load( path, ridx, m_mesh_version );
+        const char* sidx = BStr::itoa(ridx) ;
+        std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
+        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
+
+        const char* mmpath = smmpath.c_str();
+        const char* ptpath = sptpath.c_str();
+
+        GMergedMesh* mm = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
+        GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
+
+        if( mm )
+        {
+            mm->setParts(pt);
+            m_merged_mesh[ridx] = mm ; 
         }
         else
         {
-            LOG(debug) << "GGeoLib::loadMergedMeshes " 
+            if(pt) LOG(fatal) << "GGeoLib::loadConstituents"
+                              << " pt exists but mm doesn not " ;
+            assert(pt==NULL);
+            LOG(debug) << "GGeoLib::loadConstituents " 
                        << " no mmdir for ridx " << ridx 
                        ;
         }
    }
-   LOG(debug) << "GGeoLib::loadMergedMeshes" 
+   LOG(debug) << "GGeoLib::loadConstituents" 
              << " loaded "  << m_merged_mesh.size()
              ;
 }
 
-void GGeoLib::saveMergedMeshes(const char* idpath)
+void GGeoLib::saveConstituents(const char* idpath)
 {
-    removeMergedMeshes(idpath); // clean old meshes to avoid duplication when repeat counts go down 
+    removeConstituents(idpath); // clean old meshes to avoid duplication when repeat counts go down 
 
     typedef std::map<unsigned int,GMergedMesh*>::const_iterator MUMI ; 
     for(MUMI it=m_merged_mesh.begin() ; it != m_merged_mesh.end() ; it++)
     {
         unsigned int ridx = it->first ; 
-        GMergedMesh* mergedmesh = it->second ; 
-        assert(mergedmesh->getIndex() == ridx);
-        mergedmesh->save(idpath, GMERGEDMESH, boost::lexical_cast<std::string>(ridx).c_str()); 
+        const char* sidx = BStr::itoa(ridx) ;
+
+        GMergedMesh* mm = it->second ; 
+        assert(mm->getIndex() == ridx);
+        mm->save(idpath, getRelDir(GMERGEDMESH), sidx ); 
+
+        std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS), sidx );
+        const char* ptpath = sptpath.c_str();
+
+        GParts* pt = mm->getParts() ; 
+        if(pt)  pt->save(ptpath); 
+
     }
 }
 

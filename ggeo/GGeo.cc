@@ -398,9 +398,13 @@ void GGeo::init()
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
- 
+
+
+   // NB this m_analytic is always false
+   //    the analytic versions of these libs are born in GScene
+   assert( m_analytic == false );  
    m_meshlib = new GMeshLib(m_ok, m_analytic);
-   m_geolib = new GGeoLib(m_ok);
+   m_geolib = new GGeoLib(m_ok, m_analytic );
    m_nodelib = new GNodeLib(m_ok, m_analytic ); 
 
    //m_treecheck = new GTreeCheck(this) ;
@@ -558,7 +562,6 @@ void GGeo::loadGeometry()
 {
     bool loaded = isLoaded() ;
     LOG(info) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
-    //const char* idpath = getIdPath() ;
 
     if(!loaded)
     {
@@ -568,12 +571,22 @@ void GGeo::loadGeometry()
     else
     {
         loadFromCache();
+        //loadAnalyticFromCache();
     } 
 
 
     loadAnalyticPmt();
 
-    if(m_ok->isGLTF()) loadFromGLTF();
+
+
+    if(m_ok->isGLTF()) 
+    {
+        loadAnalyticFromGLTF();
+
+        saveAnalytic();
+        loadAnalyticFromCache(); // just here to test eveything at once
+    }
+
 
     setupLookup();
     setupColors();
@@ -598,31 +611,52 @@ void GGeo::loadFromG4DAE()
     LOG(trace) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
-void GGeo::afterConvertMaterials()
-{
-    LOG(debug) << "GGeo::afterConvertMaterials and before convertStructure" ; 
 
-    prepareMaterialLib(); 
-    prepareSurfaceLib(); 
+void GGeo::loadAnalyticFromGLTF()
+{
+    LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
+    if(!m_ok->isGLTF()) return ; 
+#ifdef WITH_YoctoGL
+
+    m_gscene = new GScene(m_ok, this); // GGeo needed for m_bndlib 
+    m_geolib_analytic = m_gscene->getGeoLib();
+    m_nodelib_analytic = m_gscene->getNodeLib();
+    // there is a meshlib inside GScene too 
+
+#else
+    LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
+    assert(0);
+#endif
+    LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ; 
 }
 
 
-bool GGeo::isValid()
+void GGeo::save()
 {
-    return m_bndlib->isValid() && m_materiallib->isValid() && m_surfacelib->isValid() ; 
+    m_geolib->saveToCache();
+    m_meshlib->save();
+    m_nodelib->save();
+    m_materiallib->save();
+    m_surfacelib->save();
+    m_scintillatorlib->save();
+    m_sourcelib->save();
+    m_bndlib->save();  
 }
 
+void GGeo::saveAnalytic()
+{ 
+    m_geolib_analytic->saveToCache();
+    m_nodelib_analytic->save();
+}
+ 
 void GGeo::loadFromCache()
 {   
     LOG(info) << "GGeo::loadFromCache START" ; 
-
-    m_geolib = GGeoLib::load(m_ok);
-    const char* reldir = NULL ; // default location of tri GItemList
-    m_nodelib = GNodeLib::load(m_ok, reldir);
-        
     bool analytic = false ; 
-    m_meshlib = GMeshLib::load(m_ok, analytic);
 
+    m_geolib = GGeoLib::Load(m_ok, analytic);
+    m_nodelib = GNodeLib::Load(m_ok, analytic);        
+    m_meshlib = GMeshLib::load(m_ok, analytic);
 
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
@@ -637,26 +671,29 @@ void GGeo::loadFromCache()
     LOG(info) << "GGeo::loadFromCache DONE" ; 
 }
 
-
-void GGeo::loadFromGLTF()
+void GGeo::loadAnalyticFromCache()
 {
-    LOG(info) << "GGeo::loadFromGLTF START" ; 
-    if(!m_ok->isGLTF()) return ; 
-#ifdef WITH_YoctoGL
-
-    m_gscene = new GScene(m_ok, this); // GGeo needed for m_bndlib 
-    m_geolib_analytic = m_gscene->getGeoLib();
-    m_nodelib_analytic = m_gscene->getNodeLib();
-
-    
-
-
-#else
-    LOG(fatal) << "GGeo::loadFromGLTF requires YoctoGL external " ; 
-    assert(0);
-#endif
-    LOG(info) << "GGeo::loadFromGLTF DONE" ; 
+    bool analytic = true ; 
+    m_geolib_analytic = GGeoLib::Load(m_ok, analytic );
+    m_nodelib_analytic = GNodeLib::Load(m_ok, analytic );
+   // meshlib ?
 }
+
+
+bool GGeo::isValid()
+{
+    return m_bndlib->isValid() && m_materiallib->isValid() && m_surfacelib->isValid() ; 
+}
+
+
+void GGeo::afterConvertMaterials()
+{
+    LOG(debug) << "GGeo::afterConvertMaterials and before convertStructure" ; 
+
+    prepareMaterialLib(); 
+    prepareSurfaceLib(); 
+}
+
 
 
 
@@ -737,21 +774,6 @@ void GGeo::setupColors()
     colors->setupCompositeColorBuffer( material_codes, flag_codes  );
 
     LOG(trace) << "GGeo::setupColors DONE" ; 
-}
-
-//void GGeo::save(const char* /*idpath*/)
-void GGeo::save()
-{
-    m_geolib->saveToCache();
-
-    // details of save handled within the class, not here 
-    m_meshlib->save();
-    m_nodelib->save();
-    m_materiallib->save();
-    m_surfacelib->save();
-    m_scintillatorlib->save();
-    m_sourcelib->save();
-    m_bndlib->save();  
 }
 
 

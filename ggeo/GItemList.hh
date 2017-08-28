@@ -24,6 +24,7 @@ class GGEO_API GItemList : public NSequence {
        void add(GItemList* other);
        void save(const char* idpath);
        void dump(const char* msg="GItemList::dump");
+       const std::string& getRelDir() const ;  
     public:
        GItemList* make_slice(const char* slice);
        GItemList* make_slice(NSlice* slice);

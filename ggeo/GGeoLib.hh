@@ -22,11 +22,12 @@ Container for GMergedMesh
 class GGEO_API GGeoLib {
     public:
         static const char* GMERGEDMESH ; 
+        static const char* GPARTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        static GGeoLib* load(Opticks* opticks);
+        static GGeoLib* Load(Opticks* opticks, bool analytic);
     public:
-        GGeoLib(Opticks* opticks);
+        GGeoLib(Opticks* opticks, bool analytic);
         std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;
@@ -35,9 +36,10 @@ class GGEO_API GGeoLib {
         void saveToCache();
         GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
     private:
-        void loadMergedMeshes(const char* idpath);
-        void removeMergedMeshes(const char* idpath);
-        void saveMergedMeshes(const char* idpath);
+        const char* getRelDir(const char* name);
+        void loadConstituents(const char* idpath);
+        void removeConstituents(const char* idpath);
+        void saveConstituents(const char* idpath);
     public:
         unsigned getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned int index);
@@ -46,6 +48,7 @@ class GGEO_API GGeoLib {
         void clear();
     private:
         Opticks* m_opticks ; 
+        bool     m_analytic ; 
         char*   m_mesh_version ;
         std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
 };

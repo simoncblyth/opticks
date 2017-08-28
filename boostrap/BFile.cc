@@ -438,7 +438,7 @@ std::string BFile::CreateDir(const char* base, const char* asub, const char* bsu
 std::string BFile::preparePath(const char* dir_, const char* reldir_, const char* name, bool create )
 {
     fs::path fpath(dir_);
-    fpath /= reldir_ ;
+    if(reldir_) fpath /= reldir_ ;
     return preparePath(fpath.string().c_str(), name, create);
 }
 

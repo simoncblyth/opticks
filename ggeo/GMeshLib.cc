@@ -204,6 +204,10 @@ void GMeshLib::removeMeshes(const char* idpath ) const
 void GMeshLib::loadMeshes(const char* idpath )
 {
    LOG(info) << "idpath "  << idpath ;  
+
+   // TODO: read the directory instead of just checking existance of MAX_MESH paths ?
+   //       (or use the index ?)
+
    for(unsigned int idx=0 ; idx < MAX_MESH ; ++idx)
    {   
         const char* sidx = BStr::itoa(idx);
@@ -252,6 +256,8 @@ void GMeshLib::saveMeshes(const char* idpath) const
 
         mesh->save(idpath, m_reldir, sidx); 
     }
+
+    // meshindex persisted first, up in GMeshLib::save
 }
 
 

@@ -8,6 +8,7 @@
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
+#include "NPY_LOG.hh"
 
 
 void test_FromNode()
@@ -46,12 +47,54 @@ void test_FromNode()
 }
 
 
+void test_save_empty()
+{
+    GParts pts ; 
+    pts.save("$TMP/GPartsTest_test_save_empty");
+}
+
+
+
+void test_save_load()
+{
+    const NSceneConfig* config = NULL ; 
+    const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
+
+    typedef std::vector<nnode*> VN ;
+    VN nodes ; 
+    nnode::Tests(nodes);
+
+    nnode* n = nodes[0] ;  
+    n->set_boundary(spec) ; 
+
+
+    NCSG* csg = NCSG::FromNode( n, config );
+
+    unsigned verbosity = 2 ; 
+    GParts* pts = GParts::make(csg, spec, verbosity ) ; 
+    pts->dump("pts");
+
+    const char* dir = "$TMP/GPartsTest_test_save" ;
+    pts->save(dir);
+    GParts* pts2 = GParts::Load(dir);
+
+    pts2->dump("pts2");
+
+
+}
+
+
+
 
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     GGEO_LOG__ ;
+    NPY_LOG__ ;
+
+    //test_save_empty();
+    test_save_load();
 
     return 0 ;
 }
