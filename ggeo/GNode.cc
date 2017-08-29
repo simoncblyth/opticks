@@ -316,6 +316,7 @@ std::vector<GNode*>& GNode::getProgeny()
     {
         // call on children, as wish to avoid collecting self  
         for(unsigned int i = 0; i < getNumChildren(); i++) getChild(i)->collectProgeny(m_progeny); 
+        m_progeny_count = m_progeny.size();
     }
     return m_progeny ; 
 }
@@ -480,15 +481,15 @@ std::string& GNode::getProgenyDigest()
     if(m_progeny_digest.empty())
     {
         std::vector<GNode*>& progeny = getProgeny();
-        m_progeny_count = progeny.size();
         GNode* extra = m_selfdigest ? this : NULL ; 
         m_progeny_digest = GNode::localDigest(progeny, extra) ; 
     }
     return m_progeny_digest ;
 }
 
-unsigned int GNode::getProgenyCount()
+unsigned int GNode::getLastProgenyCount()
 {
+   // oops : only gets set after getProgeny call
     return m_progeny_count ; 
 }
 
@@ -545,7 +546,7 @@ void GNode::collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig
 void GNode::collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection )
 {
     // NB when a node labelled with the target ridx is found... 
-    // the traverse stops there...  
+    // the traverse stops the descent there...  
     // ie there is no attempt to collect from inside the target node
     // ... this is why looking for instances of ridx 0 returns just one instance, 
     // the root node

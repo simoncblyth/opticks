@@ -113,7 +113,7 @@ class GGEO_API GNode {
       std::vector<GNode*>& getProgeny();
       std::string&         getProgenyDigest();
       std::string&         getLocalDigest();
-      unsigned int         getProgenyCount();
+      unsigned int         getLastProgenyCount();
       unsigned int         getProgenyNumVertices();  // includes self when m_selfdigest is true
       GNode*               findProgenyDigest(const std::string& pdig) ;
       std::vector<GNode*>  findAllProgenyDigest(std::string& dig);

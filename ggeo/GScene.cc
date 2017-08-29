@@ -82,9 +82,6 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_selected_count(0)
 {
     init();
-
-    //dumpNode(3158);
-    //dumpNode(3159);
 }
 
 void GScene::dumpNode( unsigned nidx)
@@ -919,23 +916,19 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
          if(m_verbosity > 1)
          LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers ridx " << ridx << " START " ;  
 
-         bool inside = ridx == 0 ? true : false ; 
+         bool inside = ridx == 0 ? false : false ; 
 
          const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
 
          assert( instances.size() > 0u );
 
-/*
-         if(instances.size() == 0)
-         {
-             LOG(warning) << "GScene::makeMergedMeshAndInstancedBuffers"
-                          << " no instances with ridx " << ridx
-                          ;
-             continue ; 
-         } 
-*/
-
          GSolid* instance0 = dynamic_cast<GSolid*>(instances[0]) ; 
+
+         if(ridx == 0 )
+         {
+             assert( instances.size() == 1 && instance0 == m_root );
+         }     
+   
 
          GSolid* base = ridx == 0 ? NULL : instance0 ; 
 

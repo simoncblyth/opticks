@@ -137,7 +137,9 @@ void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
     //GMatrixF* ltransform = solid->getLevelTransform();  
     GMatrixF* ctransform = solid->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
-    unsigned int nprogeny = node->getProgenyCount() ;
+
+    
+    unsigned int nprogeny = node->getLastProgenyCount() ;
 
     if(nprogeny > 0 ) 
             LOG(debug) 
@@ -182,7 +184,7 @@ struct GRepeat
           pdig(pdig_), 
           ndig(ndig_), 
           first(first_),
-          nprog(first->getProgenyCount()),
+          nprog(first->getLastProgenyCount()),
           nvert(first->getProgenyNumVertices()),
           // includes self when GNode.m_selfdigest is true
           candidate(ndig > repeat_min && nvert > vertex_min ),
@@ -326,7 +328,7 @@ void GTreeCheck::dumpRepeatCandidate(unsigned int index, bool verbose)
     std::cout  
                   << " pdig "  << std::setw(32) << pdig  
                   << " ndig "  << std::setw(6) << std::dec << ndig
-                  << " nprog " <<  std::setw(6) << std::dec << first->getProgenyCount() 
+                  << " nprog " <<  std::setw(6) << std::dec << first->getLastProgenyCount() 
                   << " placements " << std::setw(6) << placements.size()
                   << " n "          <<  first->getName() 
                   << std::endl 

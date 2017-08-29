@@ -50,14 +50,19 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     //         ... downstream this gets repeated further to every triangle
     //
 
-    unsigned int numProgeny = placements[0]->getProgenyCount();
-    unsigned int numSolids  = numProgeny + 1 ; 
+    std::vector<GNode*>& progeny0 = placements[0]->getProgeny();
+    unsigned numProgeny0 = placements[0]->getLastProgenyCount();
+    assert( progeny0.size() == numProgeny0 );
+
+
+    unsigned int numSolids  = numProgeny0 + 1 ; 
 
     // observe that each instance has only one sensor, so not need 
     // to repeat over the number of solids just one entry per instance
 
     LOG(info) << "GTree::makeAnalyticInstanceIdentityBuffer " 
               << " numPlacements " << numInstances
+              << " numProgeny0 " << numProgeny0      
               << " numSolids " << numSolids      
               ;
 
@@ -66,12 +71,13 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
         GNode* base = placements[i] ;
         unsigned ridx = base->getRepeatIndex();
 
-        assert( numProgeny == base->getProgenyCount() );  // repeated geometry for the instances, so the progeny counts must match 
         std::vector<GNode*>& progeny = base->getProgeny();
+        unsigned numProgeny = base->getLastProgenyCount();
+        assert( numProgeny == numProgeny0 );      // repeated geometry for the instances, so the progeny counts must match 
 
         bool progeny_match = progeny.size() == numProgeny ;
 
-        if(ridx > 0)
+        //if(ridx > 0)
         {
             if(!progeny_match)
                LOG(fatal) << "GTree::makeAnalyticInstanceIdentityBuffer"
@@ -149,8 +155,13 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
     */
 
     unsigned int numInstances = placements.size() ;
-    unsigned int numProgeny = placements[0]->getProgenyCount();
-    unsigned int numSolids  = numProgeny + 1 ; 
+
+
+    std::vector<GNode*>& progeny0 = placements[0]->getProgeny();
+    unsigned numProgeny0 = placements[0]->getLastProgenyCount();
+    assert( progeny0.size() == numProgeny0 );
+
+    unsigned int numSolids  = numProgeny0 + 1 ; 
     unsigned int num = numSolids*numInstances ; 
 
     NPY<unsigned int>* buf = NPY<unsigned int>::make(0, 4);
@@ -161,13 +172,14 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
 
         unsigned ridx = base->getRepeatIndex();
 
-        assert( numProgeny == base->getProgenyCount() && "repeated geometry for the instances, so the progeny counts must match");
 
         std::vector<GNode*>& progeny = base->getProgeny();
+        unsigned numProgeny = base->getLastProgenyCount();
+        assert( numProgeny == numProgeny0 && "repeated geometry for the instances, so the progeny counts must match");
 
         bool progeny_match = progeny.size() == numProgeny ;
 
-        if(ridx > 0)
+        //if(ridx > 0)
         {
            if(!progeny_match)
            LOG(fatal) << "GTree::makeInstanceIdentityBuffer"
