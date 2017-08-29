@@ -34,7 +34,7 @@ int main(int argc, char** argv)
     //ok.dump("after configure");
 
     bool analytic = false ; 
-    GMeshLib* ml = GMeshLib::load(&ok, analytic);
+    GMeshLib* ml = GMeshLib::Load(&ok, analytic);
 
     const char* dbgmesh = ok.getDbgMesh();
 

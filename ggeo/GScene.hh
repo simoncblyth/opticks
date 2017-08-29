@@ -81,8 +81,10 @@ instanciation in GGeo::loadFromGLTF.
 
 class GGEO_API GScene : public GGeoBase
 {
+   //    friend class GGeo ;  
     public:
-        GScene(Opticks* ok, GGeo* ggeo);
+        static GScene* Load(Opticks* ok, GGeo* ggeo) ;
+        GScene(Opticks* ok, GGeo* ggeo, bool loaded);
         //GGeoLib*  getGeoLib();
         GNodeLib* getNodeLib();
 
@@ -90,19 +92,18 @@ class GGEO_API GScene : public GGeoBase
         GSolid* getSolid(unsigned nidx);
         void dumpNode(unsigned nidx);
         void debugNodeIntersects(int dbgnode, OpticksEvent* evt);
+        void save() const ; 
 
     public:
         // GGeoBase interface
-        //Opticks*          getOpticks() ; 
-
+        const char*       getIdentifier();
         GGeoLib*          getGeoLib() ; 
         GBndLib*          getBndLib() ; 
         GScintillatorLib* getScintillatorLib() ; 
         GSourceLib*       getSourceLib() ; 
     private:
-        void init();
+        void initFromGLTF();
         void prepareVertexColors();
-        void save() const ; 
     private:
         void dumpTriInfo() const ; 
         void compareTrees() const ;
@@ -136,16 +137,9 @@ class GGEO_API GScene : public GGeoBase
         // compare tree calculated and persisted transforms
         void           deltacheck_r( GNode* node, unsigned int depth );
     private:
-        // these two methods formerly used m_ggeo to get to the m_ggeo/m_geolib 
-        // now moved to holding a separate m_geolib in here
         void         checkMergedMeshes();
         void         makeMergedMeshAndInstancedBuffers() ; 
 
-    private:
-        //void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx, bool honour_selection);
-        //NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
-        //NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
-        //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
     private:
         GSolid*       getNode(unsigned node_idx);
     private:
@@ -154,6 +148,16 @@ class GGEO_API GScene : public GGeoBase
         
         GGeo*    m_ggeo ; 
 
+        NSensorList*  m_sensor_list ; 
+
+        GGeoLib*      m_tri_geolib ; 
+        GMergedMesh*  m_tri_mm0 ; 
+        GNodeLib*     m_tri_nodelib ; 
+        GBndLib*      m_tri_bndlib ; 
+        GMeshLib*     m_tri_meshlib ; 
+        GItemIndex*   m_tri_meshindex ; 
+
+     
         bool     m_analytic ; 
         bool     m_loaded ; 
         bool     m_honour_selection ;
@@ -167,15 +171,6 @@ class GGEO_API GScene : public GGeoBase
         GGeoLib*      m_geolib ; 
         GNodeLib*     m_nodelib ; 
         GMeshLib*     m_meshlib ; 
-
-        NSensorList*  m_sensor_list ; 
-
-        GGeoLib*      m_tri_geolib ; 
-        GMergedMesh*  m_tri_mm0 ; 
-        GNodeLib*     m_tri_nodelib ; 
-        GBndLib*      m_tri_bndlib ; 
-        GMeshLib*     m_tri_meshlib ; 
-        GItemIndex*   m_tri_meshindex ; 
 
         GColorizer*   m_colorizer ; 
 

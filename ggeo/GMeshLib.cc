@@ -44,7 +44,7 @@ bool GMeshLib::isAnalytic() const
     return m_analytic ; 
 }
 
-GMeshLib* GMeshLib::load(Opticks* ok, bool analytic)
+GMeshLib* GMeshLib::Load(Opticks* ok, bool analytic)
 {
     GMeshLib* meshlib = new GMeshLib(ok, analytic);
     meshlib->loadFromCache(); 

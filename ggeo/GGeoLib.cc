@@ -8,7 +8,9 @@
 
 
 #include "Opticks.hh"
+#include "OpticksConst.hh"
 
+#include "GBndLib.hh"
 #include "GGeoLib.hh"
 #include "GMergedMesh.hh"
 #include "GParts.hh"
@@ -28,19 +30,18 @@ const char* GGeoLib::getRelDir(const char* name)
     return m_analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
 }
 
-GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic)
+GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic, GBndLib* bndlib)
 {
-    GGeoLib* glib = new GGeoLib(opticks, analytic);
+    GGeoLib* glib = new GGeoLib(opticks, analytic, bndlib);
     glib->loadFromCache();
     return glib ; 
 }
 
-
-
-GGeoLib::GGeoLib(Opticks* opticks, bool analytic) 
+GGeoLib::GGeoLib(Opticks* opticks, bool analytic, GBndLib* bndlib) 
     :
     m_opticks(opticks),
     m_analytic(analytic),
+    m_bndlib(bndlib),
     m_mesh_version(NULL)
 {
 }
@@ -73,7 +74,7 @@ void GGeoLib::loadFromCache()
     loadConstituents(idpath);
 }
 
-void GGeoLib::saveToCache()
+void GGeoLib::save()
 {
     const char* idpath = m_opticks->getIdPath() ;
     saveConstituents(idpath);
@@ -132,10 +133,18 @@ void GGeoLib::loadConstituents(const char* idpath )
 
         GMergedMesh* mm = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
         GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
+
+        if(pt)
+        {
+            pt->setBndLib(m_bndlib);
+        }
    
         if( mm )
         {
             mm->setParts(pt);
+            
+            mm->setGeoCode( m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED );  // assuming uniform : all analytic/triangulated GPU geom
+
             m_merged_mesh[ridx] = mm ; 
             ss << std::setw(3) << ridx << "," ; 
         }

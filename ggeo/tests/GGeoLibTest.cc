@@ -8,6 +8,7 @@
 
 #include "GBuffer.hh"
 #include "GMergedMesh.hh"
+#include "GBndLib.hh"
 #include "GGeoLib.hh"
 
 #include "GGEO_BODY.hh"
@@ -134,15 +135,19 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
+
+    bool constituents = true ; 
+    GBndLib* bndlib = GBndLib::load(&ok, constituents);
+
     bool analytic ; 
     analytic = false ; 
-    GGeoLib* geolib = GGeoLib::Load(&ok, analytic); 
+    GGeoLib* geolib = GGeoLib::Load(&ok, analytic, bndlib); 
     geolib->dump("geolib");
     test_GGeoLib(geolib);
 
 
     analytic = true ; 
-    GGeoLib* geolib_analytic = GGeoLib::Load(&ok, analytic); 
+    GGeoLib* geolib_analytic = GGeoLib::Load(&ok, analytic, bndlib ); 
     geolib_analytic->dump("geolib_analytic");   
     test_GGeoLib(geolib_analytic);
 

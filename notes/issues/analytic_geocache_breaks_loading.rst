@@ -11,6 +11,14 @@ Testing with DYB
     op --gltf 3 --debugger
 
 
+FIXED (?)
+----------
+
+
+* may be fixed by avoiding the duplicity
+
+
+
 Observations
 ---------------
 
@@ -20,6 +28,7 @@ Observations
   * ideally rename GTreeCheck to GTree and use it from GScene, but thats
     too much work... (non-adiabatic) easier to pluck off common pieces 
     and put them into other classes 
+
 
 
 

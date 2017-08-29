@@ -9,6 +9,7 @@ class GGeoLib ;
 
 class GGEO_API GGeoBase {
     public:
+        virtual const char*       getIdentifier() = 0 ; 
         virtual GScintillatorLib* getScintillatorLib() = 0 ; 
         virtual GSourceLib*       getSourceLib() = 0 ; 
         virtual GBndLib*          getBndLib() = 0 ; 

@@ -94,9 +94,9 @@ GGeo::GGeo(Opticks* opticks)
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
-   m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
+   //m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
    m_nodelib(NULL),
-   m_nodelib_analytic(NULL),
+   //m_nodelib_analytic(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -256,6 +256,12 @@ GSurLib* GGeo::getSurLib()
     return m_surlib ; 
 }
 
+const char*  GGeo::getIdentifier()
+{
+    return "GGeo" ; 
+}
+
+
 GScintillatorLib* GGeo::getScintillatorLib()
 {
     return m_scintillatorlib ; 
@@ -397,14 +403,23 @@ void GGeo::init()
 
    if(m_loaded) return ; 
 
-   //////////////  below only when operating pre-cache //////////////////////////
 
+
+   m_bndlib = new GBndLib(m_ok);
+   m_materiallib = new GMaterialLib(m_ok);
+   m_surfacelib  = new GSurfaceLib(m_ok);
+
+   m_bndlib->setMaterialLib(m_materiallib);
+   m_bndlib->setSurfaceLib(m_surfacelib);
+
+
+   //////////////  below only when operating pre-cache //////////////////////////
 
    // NB this m_analytic is always false
    //    the analytic versions of these libs are born in GScene
    assert( m_analytic == false );  
    m_meshlib = new GMeshLib(m_ok, m_analytic);
-   m_geolib = new GGeoLib(m_ok, m_analytic );
+   m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
    m_nodelib = new GNodeLib(m_ok, m_analytic ); 
 
    m_treecheck = new GTreeCheck(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
@@ -417,16 +432,6 @@ void GGeo::init()
        //m_treecheck->setVertexMin(250);
    } 
 */
-
-
-
-   m_bndlib = new GBndLib(m_ok);
-   m_materiallib = new GMaterialLib(m_ok);
-   m_surfacelib  = new GSurfaceLib(m_ok);
-
-   m_bndlib->setMaterialLib(m_materiallib);
-   m_bndlib->setSurfaceLib(m_surfacelib);
-
    //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
    OpticksColors* colors = getColors();
@@ -436,8 +441,6 @@ void GGeo::init()
 
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
-
-
 
 
 
@@ -471,24 +474,32 @@ void GGeo::add(GSkinSurface* surface)
 
 
 
+/*
 GGeoLib* GGeo::getTriGeoLib()
 {
     return m_geolib ; 
 }
 
+*/
 
 
 // hmm dont like this gltf switching .. better to switch at higher level GGeo/GScene ?
 //  ie provide an common base interface and then pass either GGeo or GScene to the user
+// BUT : there is no GScene postcache 
 
 GGeoLib* GGeo::getGeoLib()
 {
-    return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
+    //return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
+    return m_geolib ; 
 }
 GNodeLib* GGeo::getNodeLib()
 {
-    return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
+    //return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
+    return m_nodelib ; 
 }
+
+
+
 
 GScene* GGeo::getScene()
 {
@@ -617,9 +628,11 @@ void GGeo::loadAnalyticFromGLTF()
     if(!m_ok->isGLTF()) return ; 
 #ifdef WITH_YoctoGL
 
-    m_gscene = new GScene(m_ok, this); // GGeo needed for m_bndlib 
-    m_geolib_analytic = m_gscene->getGeoLib();
-    m_nodelib_analytic = m_gscene->getNodeLib();
+    bool loaded = false ; 
+    m_gscene = new GScene(m_ok, this, loaded); // GGeo needed for m_bndlib 
+
+    //m_geolib_analytic = m_gscene->getGeoLib();
+    //m_nodelib_analytic = m_gscene->getNodeLib();
     // there is a meshlib inside GScene too 
 
 #else
@@ -635,7 +648,7 @@ void GGeo::save()
     LOG(info) << "GGeo::save" ;
     m_geolib->dump("GGeo::save.geolib");
 
-    m_geolib->saveToCache();
+    m_geolib->save();
     m_meshlib->save();
     m_nodelib->save();
     m_materiallib->save();
@@ -648,21 +661,12 @@ void GGeo::save()
 void GGeo::saveAnalytic()
 { 
     LOG(info) << "GGeo::saveAnalytic" ;
-    m_geolib_analytic->dump("GGeo::saveAnalytic.geolib_analytic");
- 
-    m_geolib_analytic->saveToCache();
-    m_nodelib_analytic->save();
+    m_gscene->save();
 }
  
 void GGeo::loadFromCache()
 {   
     LOG(info) << "GGeo::loadFromCache START" ; 
-    bool analytic = false ; 
-
-    m_geolib = GGeoLib::Load(m_ok, analytic);
-    m_nodelib = GNodeLib::Load(m_ok, analytic);        
-    m_meshlib = GMeshLib::load(m_ok, analytic);
-
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
 
@@ -673,15 +677,23 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_ok);
     m_sourcelib  = GSourceLib::load(m_ok);
 
+
+
+    bool analytic = false ; 
+
+    m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
+    m_nodelib = GNodeLib::Load(m_ok, analytic);        
+    m_meshlib = GMeshLib::Load(m_ok, analytic);
+
+
+
     LOG(info) << "GGeo::loadFromCache DONE" ; 
 }
 
 void GGeo::loadAnalyticFromCache()
 {
     LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
-    bool analytic = true ; 
-    m_geolib_analytic = GGeoLib::Load(m_ok, analytic );
-    m_nodelib_analytic = GNodeLib::Load(m_ok, analytic );
+    m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
    // meshlib ?
     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
 }
@@ -703,12 +715,12 @@ void GGeo::afterConvertMaterials()
 
 
 
-
+/*
 GSolid* GGeo::getSolidAnalytic(unsigned idx)
 {
     return m_nodelib_analytic ? m_nodelib_analytic->getSolid(idx) : NULL ; 
 }
-
+*/
 
 
 

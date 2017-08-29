@@ -39,7 +39,7 @@ class GGEO_API GMeshLib
         static const char*    GMESHLIB_ANALYTIC ; 
         static const char*    GetRelDir(bool analytic);
 
-        static GMeshLib* load(Opticks* ok, bool analytic);
+        static GMeshLib* Load(Opticks* ok, bool analytic);
     public:
         GMeshLib(Opticks* opticks, bool analytic); 
         bool isAnalytic() const ; 

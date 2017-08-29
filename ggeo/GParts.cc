@@ -273,9 +273,9 @@ GParts::GParts(GBndLib* bndlib)
 }
 GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib) 
       :
-      m_part_buffer(partBuf),
-      m_tran_buffer(tranBuf),
-      m_plan_buffer(planBuf),
+      m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
+      m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
+      m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
       m_bndspec(new GItemList("GParts","")),   // empty reldir allows GParts.txt to be written directly at eg GPartsAnalytic/0/GParts.txt
       m_bndlib(bndlib),
       m_name(NULL),
@@ -290,9 +290,9 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
 }
 GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib) 
       :
-      m_part_buffer(partBuf),
-      m_tran_buffer(tranBuf),
-      m_plan_buffer(planBuf),
+      m_part_buffer(partBuf ? partBuf : NPY<float>::make(0, NJ, NK )),
+      m_tran_buffer(tranBuf ? tranBuf : NPY<float>::make(0, NTRAN, 4, 4 )),
+      m_plan_buffer(planBuf ? planBuf : NPY<float>::make(0, 4)),
       m_bndspec(spec),
       m_bndlib(bndlib),
       m_name(NULL),

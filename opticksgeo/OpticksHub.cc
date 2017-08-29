@@ -64,7 +64,7 @@ OpticksHub::OpticksHub(Opticks* ok)
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(ok),
-   m_gltf(m_ok->getGLTF()),
+   m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
    m_run(m_ok->getRun()),
    m_geometry(NULL),
    m_ggeo(NULL),
@@ -122,6 +122,11 @@ void OpticksHub::configure()
         return ; 
     }
 
+    m_gltf =  m_ok->getGLTF() ;
+    LOG(info) << "OpticksHub::configure"
+              << " m_gltf " << m_gltf 
+              ;
+
     bool compute = m_ok->isCompute();
     bool compute_opt = hasOpt("compute") ;
     if(compute && !compute_opt)
@@ -135,6 +140,7 @@ void OpticksHub::configure()
         m_ok->setExit(true);
         return ; 
     }
+
 
     if(!m_ok->isValid())
     {
@@ -251,6 +257,7 @@ void OpticksHub::loadGeometry()
     //      B : on GGeo loading in GGeo::setupLookup
 
     m_ggeo = m_geometry->getGGeo();
+    m_gscene = m_ggeo->getScene();
 
     m_ggeo->setComposition(m_composition);
 
@@ -268,11 +275,10 @@ void OpticksHub::anaEvent()
 
     if(dbgnode > -1) 
     {
-        GScene* scene = m_ggeo->getScene();
-        if(scene)
+        if(m_gscene)
         { 
             OpticksEvent* evt = m_run->getEvent();
-            scene->debugNodeIntersects( dbgnode, evt ); 
+            m_gscene->debugNodeIntersects( dbgnode, evt ); 
         }
         else
         {
@@ -329,7 +335,15 @@ GGeo* OpticksHub::getGGeo()
 GGeoBase* OpticksHub::getGGeoBase()
 {
    // analytic switch 
-    return m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
+
+    GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
+    LOG(info) << "OpticksHub::getGGeoBase"
+              << " analytic switch  "
+              << " m_gltf " << m_gltf
+              << " ggb " << ( ggb ? ggb->getIdentifier() : "NULL" )
+               ;
+
+    return ggb ; 
 }
 
 

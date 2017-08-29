@@ -43,31 +43,42 @@
 GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
 
 GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); } 
+
+
+
+const char*       GScene::getIdentifier(){       return "GScene" ;  }
 GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); } 
 GSourceLib*       GScene::getSourceLib() {       return m_ggeo->getSourceLib(); } 
 
 
-GScene::GScene( Opticks* ok, GGeo* ggeo )
+
+void GScene::save() const 
+{
+    m_geolib->dump("GScene::save");
+
+    m_geolib->save();
+    m_nodelib->save();
+    m_meshlib->save();
+}
+
+
+GScene* GScene::Load(Opticks* ok, GGeo* ggeo)
+{
+    bool loaded = true ; 
+    GScene* scene = new GScene(ok, ggeo, loaded); // GGeo needed for m_bndlib 
+    return scene ;  
+}
+
+
+GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     :
     GGeoBase(),
     m_ok(ok),
     m_query(ok->getQuery()),
     m_ggeo(ggeo),
-    m_analytic(true),
-    m_loaded(false),
-    m_honour_selection(true),
-    m_gltf(m_ok->getGLTF()),
-    m_scene_config( m_ok->getSceneConfig() ),
-    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_scene_config, m_ok->getDbgNode()) : NULL),
-    m_num_nd(m_scene ? m_scene->getNumNd() : -1),
-    m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
-
-    m_geolib(new GGeoLib(m_ok, m_analytic)),
-    m_nodelib(new GNodeLib(m_ok, m_analytic)),
-    m_meshlib(new GMeshLib(m_ok, m_analytic)),
 
     m_sensor_list(ggeo->getSensorList()),
-    m_tri_geolib(ggeo->getTriGeoLib()),
+    m_tri_geolib(ggeo->getGeoLib()),
     m_tri_mm0(m_tri_geolib->getMergedMesh(0)),
 
     m_tri_nodelib(ggeo->getNodeLib()),
@@ -75,14 +86,37 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_tri_meshlib(ggeo->getMeshLib()),
     m_tri_meshindex(m_tri_meshlib->getMeshIndex()),
 
+
+    m_analytic(true),
+    m_loaded(loaded),
+    m_honour_selection(true),
+    m_gltf(m_ok->getGLTF()),
+    m_scene_config( m_ok->getSceneConfig() ),
+    m_scene(loaded ? NULL : (m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_scene_config, m_ok->getDbgNode()) : NULL)),
+    m_num_nd(m_scene ? m_scene->getNumNd() : -1),
+    m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
+
+    m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib )   : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
+    m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic ) : new GNodeLib(m_ok, m_analytic)),
+    m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
+
     m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
 
     m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
     m_root(NULL),
     m_selected_count(0)
 {
-    init();
+
+
+    if(!m_loaded)
+    {
+        initFromGLTF();
+    }
 }
+
+
+
+
 
 void GScene::dumpNode( unsigned nidx)
 {
@@ -128,8 +162,7 @@ GSolid* GScene::getSolid(unsigned idx)
 }
 
 
-
-void GScene::init()
+void GScene::initFromGLTF()
 {
     if(!m_scene)
     {
@@ -186,12 +219,6 @@ void GScene::init()
     //if(m_verbosity > 0)
     LOG(info) << "GScene::init DONE" ;
 
-}
-
-void GScene::save() const 
-{
-    m_nodelib->save();
-    m_meshlib->save();
 }
 
 
@@ -938,8 +965,6 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          mm->addInstancedBuffers(instances);
 
-         //makeInstancedBuffers(mm, ridx, honour_selection );
-
          mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
 
          if(m_verbosity > 1)
@@ -1110,7 +1135,7 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
     // for the analytic glTF branch when the *dbgnode* option is used 
     // eg "--dbgnode 3159" is used 
 
-    GSolid* solid = m_ggeo->getSolidAnalytic(dbgnode);
+    GSolid* solid = m_nodelib->getSolid(dbgnode);
     GNodeLib* nlib = m_ggeo->getNodeLib();
 
     const GMesh* mesh = solid->getMesh();

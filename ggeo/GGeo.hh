@@ -81,6 +81,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         static const char* PREFIX ;
     public:
         // GGeoBase interface
+        const char*       getIdentifier();
         GScintillatorLib* getScintillatorLib() ; 
         GSourceLib*       getSourceLib() ; 
         GBndLib*          getBndLib() ; 
@@ -193,7 +194,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GNode* getNode(unsigned index); 
         GSolid* getSolid(unsigned int index);  
         GSolid* getSolidSimple(unsigned int index);  
-        GSolid* getSolidAnalytic(unsigned idx);
+        //GSolid* getSolidAnalytic(unsigned idx);
 
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
@@ -246,7 +247,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         GScene*            getScene();
         GNodeLib*          getNodeLib();
-        GGeoLib*           getTriGeoLib();
+        //GGeoLib*           getTriGeoLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GSurLib*           getSurLib();
@@ -352,10 +353,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         GMeshLib*                     m_meshlib ; 
         GGeoLib*                      m_geolib ; 
-        GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
+        //GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
 
         GNodeLib*                     m_nodelib ; 
-        GNodeLib*                     m_nodelib_analytic ; 
+        //GNodeLib*                     m_nodelib_analytic ; 
 
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 

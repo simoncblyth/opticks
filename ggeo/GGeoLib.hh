@@ -4,7 +4,7 @@
 #include <map>
 class Opticks ; 
 
-//class GGeo ; 
+class GBndLib ; 
 class GMergedMesh ; 
 class GNode ; 
 
@@ -25,15 +25,15 @@ class GGEO_API GGeoLib {
         static const char* GPARTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        static GGeoLib* Load(Opticks* opticks, bool analytic);
+        static GGeoLib* Load(Opticks* opticks, bool analytic, GBndLib* bndlib);
     public:
-        GGeoLib(Opticks* opticks, bool analytic);
+        GGeoLib(Opticks* opticks, bool analytic, GBndLib* bndlib);
         std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;
     public:
         void loadFromCache();
-        void saveToCache();
+        void save();
         GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
     private:
         const char* getRelDir(const char* name);
@@ -50,6 +50,7 @@ class GGEO_API GGeoLib {
     private:
         Opticks* m_opticks ; 
         bool     m_analytic ; 
+        GBndLib* m_bndlib ; 
         char*   m_mesh_version ;
         std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
 };

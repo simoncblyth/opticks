@@ -118,6 +118,12 @@ void OScene::init()
 
     //m_ggeo = m_hub->getGGeo();
     m_ggeo = m_hub->getGGeoBase();
+
+    LOG(info) << "OScene::init"
+              << " ggeobase identifier : " << m_ggeo->getIdentifier()
+              ;
+
+
     m_geolib = m_ggeo->getGeoLib();
 
     if(m_ggeo == NULL)
