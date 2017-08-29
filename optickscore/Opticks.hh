@@ -15,7 +15,10 @@ template <typename> class OpticksCfg ;
 class BDynamicDefine ; 
 class TorchStepNPY ; 
 class NState ;
+
 struct NSlice ;
+struct NSceneConfig ; 
+
 class NParameters ; 
 class NPropNames ; 
 class Timer ; 
@@ -179,6 +182,7 @@ class OKCORE_API Opticks {
        const char* getGLTFBase();   // <- testing only 
        const char* getGLTFName();   // <- testing only 
        const char* getGLTFConfig();
+       NSceneConfig* getSceneConfig();
        int         getGLTF();
        int         getGLTFTarget();
        bool        isGLTF();
@@ -329,6 +333,7 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* m_cfg ; 
        Timer*               m_timer ; 
        NParameters*          m_parameters ; 
+       NSceneConfig*        m_scene_config ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

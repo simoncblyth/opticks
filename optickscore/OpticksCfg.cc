@@ -78,7 +78,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_apmtidx(0),
        m_gltfbase("$TMP/nd"),
        m_gltfname("scene.gltf"),
-       m_gltfconfig("check_surf_containment=0,check_aabb_containment=0"),
+       m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
        m_gltf(0),
        m_gltftarget(0)
 {   

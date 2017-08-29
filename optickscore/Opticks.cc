@@ -28,6 +28,7 @@
 #include "NPropNames.hpp"
 #include "NLoad.hpp"
 #include "NSlice.hpp"
+#include "NSceneConfig.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -192,6 +193,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_cfg(NULL),
        m_timer(NULL),
        m_parameters(NULL),
+       m_scene_config(NULL),
        m_detector(NULL),
        m_event_count(0),
        m_domains_configured(false),
@@ -612,6 +614,17 @@ const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+
+NSceneConfig* Opticks::getSceneConfig()
+{
+    if(m_scene_config == NULL)
+    {
+        m_scene_config = new NSceneConfig(getGLTFConfig());
+    }
+    return m_scene_config ; 
+}
+
+
 int  Opticks::getGLTF()
 {
     return m_cfg->getGLTF(); 

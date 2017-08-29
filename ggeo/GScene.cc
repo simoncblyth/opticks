@@ -57,8 +57,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo )
     m_loaded(false),
     m_honour_selection(true),
     m_gltf(m_ok->getGLTF()),
-    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getGLTFConfig(), m_ok->getDbgNode()) : NULL),
-    m_scene_config( m_scene ? m_scene->getConfig() : NULL ),
+    m_scene_config( m_ok->getSceneConfig() ),
+    m_scene(m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_scene_config, m_ok->getDbgNode()) : NULL),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
@@ -538,15 +538,6 @@ void GScene::compareMeshes_GMeshBB()
 
 
 
-
-
-
-
-
-
-
-
-
 GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
 {
     if(m_verbosity > 0)
@@ -906,20 +897,22 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
-
 void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMergedMesh
 {
     unsigned num_repeats = m_scene->getNumRepeats() ; //  number of non-zero ridx instances, typically small eg 4 for j1707
-    //unsigned num_repeats = std::max<unsigned>(1u,m_scene->getNumRepeats()); // global 0 was NOT included
+
     unsigned num_ridx = 1u + num_repeats ; 
 
     unsigned nmm_created = 0 ; 
 
-    if(m_verbosity > 0)
+    //if(m_verbosity > 0)
     LOG(info) << "GScene::makeMergedMeshAndInstancedBuffers.START "
               << "  num_repeats " << num_repeats 
               << "  num_ridx " << num_ridx 
               ;  
+
+    bool honour_selection = false ;   // in order to match GTreeCheck 
+
 
     for(unsigned ridx=0 ; ridx < num_ridx ; ridx++)
     {
@@ -928,8 +921,11 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          bool inside = ridx == 0 ? true : false ; 
 
-         const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, m_honour_selection );
+         const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
 
+         assert( instances.size() > 0u );
+
+/*
          if(instances.size() == 0)
          {
              LOG(warning) << "GScene::makeMergedMeshAndInstancedBuffers"
@@ -937,8 +933,9 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
                           ;
              continue ; 
          } 
+*/
 
-         GSolid* instance0 = dynamic_cast<GSolid*>(instances[0]); 
+         GSolid* instance0 = dynamic_cast<GSolid*>(instances[0]) ; 
 
          GSolid* base = ridx == 0 ? NULL : instance0 ; 
 
@@ -946,7 +943,9 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          assert(mm);
 
-         makeInstancedBuffers(mm, ridx);
+         mm->addInstancedBuffers(instances);
+
+         //makeInstancedBuffers(mm, ridx, honour_selection );
 
          mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
 
@@ -978,8 +977,6 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
                ; 
 
     assert(nmm == nmm_created);
-
-
 }
 
 
@@ -1010,10 +1007,13 @@ void GScene::checkMergedMeshes()
 
 
 
-void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx)
+
+/*
+
+void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx, bool honour_selection)
 {
     bool inside = ridx == 0 ; 
-    const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, m_honour_selection );
+    const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
     unsigned num_instances = instances.size(); 
 
     if(m_verbosity > 1) 
@@ -1057,11 +1057,15 @@ NPY<float>* GScene::makeInstanceTransformsBuffer(const std::vector<GNode*>& inst
     return buf ; 
 }
 
-NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned /*ridx*/)   
+NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx)   
 {
     unsigned num_instances = instances.size(); 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 4);
     buf->zero(); 
+
+    // huh : this is not doing the solid duplication of GTreeCheck::makeInstanceIdentityBuffer  ???
+
+
     for(unsigned i=0 ; i < num_instances ; i++)
     {
         GSolid* instance = dynamic_cast<GSolid*>(instances[i]) ; 
@@ -1072,7 +1076,7 @@ NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& ins
     return buf ;  
 }
 
-NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNode*>& instances, unsigned /*ridx*/) 
+NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNode*>& instances, unsigned ridx) 
 {
     unsigned num_instances = instances.size(); 
     NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 1, 4);  //  TODO: unify shape aii and ii shape
@@ -1101,6 +1105,10 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNo
     }
     return buf ; 
 }
+
+*/
+
+
 
 
 void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)

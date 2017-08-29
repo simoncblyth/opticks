@@ -1851,9 +1851,14 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int numITransforms = getNumITransforms() ;
     if(numITransforms == 0)
     {
-        LOG(warning) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer only relevant to instanced meshes " ;
+        LOG(warning) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer only relevant to instanced meshes " 
+                     << " m_index " <<  m_index
+                     << " numITransforms " << numITransforms
+                     ;
         return NULL ; 
     }
+
+
     unsigned int numSolids = getNumSolids();
     unsigned int numFaces = getNumFaces() ;
     unsigned int numRepeatedIdentity = numITransforms*numFaces ;
@@ -1861,7 +1866,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     bool nodeinfo_ok = m_nodeinfo_buffer->getNumItems() == numSolids ;
     bool iidentity_ok = m_iidentity_buffer->getNumItems() == numSolids*numITransforms ;
 
-    if(!nodeinfo_ok)
+    //if(!nodeinfo_ok)
     LOG(fatal) 
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " nodeinfo_ok " << nodeinfo_ok
@@ -1869,7 +1874,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
                << " numSolids " << numSolids  
                ;
 
-    if(!iidentity_ok)
+    //if(!iidentity_ok)
     LOG(fatal) 
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " iidentity_ok " << iidentity_ok
@@ -2048,7 +2053,7 @@ for all 5 solids of each instance::
 GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
 {
     unsigned int numITransforms = getNumITransforms() ;
-    if(numITransforms > 0)
+    if(numITransforms > 1)  // formerly 0, but have moved to assigning identity buffer to non-instanced
     {
         LOG(warning) << "GMesh::makeFaceRepeatedIdentityBuffer only relevant to non-instanced meshes " ;
         return NULL ; 

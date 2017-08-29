@@ -2,6 +2,7 @@
 #include "SSys.hh"
 
 #include "NScene.hpp"
+#include "NSceneConfig.hpp"
 #include "NPY.hpp"
 
 #include "NPY_LOG.hh"
@@ -18,6 +19,9 @@ int main(int argc, char** argv)
     const char* gltfname = "sc.gltf" ;
     const char* gltfconfig = "check_surf_containment=1,check_aabb_containment=0" ; 
 
+
+
+
     if(!NScene::Exists(gltfbase, gltfname))
 
     {
@@ -30,7 +34,9 @@ int main(int argc, char** argv)
    
 
     int dbgnode = SSys::getenvint("DBGNODE", -1) ; 
-    NScene* scene = NScene::Load( gltfbase, gltfname, gltfconfig, dbgnode );
+
+    NSceneConfig* config = new NSceneConfig(gltfconfig);
+    NScene* scene = NScene::Load( gltfbase, gltfname, config, dbgnode );
 
     assert(scene);
     

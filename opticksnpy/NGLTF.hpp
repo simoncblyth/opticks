@@ -19,10 +19,12 @@ namespace ygltf
     struct mesh_t ;
 }
 
+struct NSceneConfig ; 
+
 class NPY_API NGLTF {
     public:
-        NGLTF(const char* base, const char* name, const char* config, unsigned scene_idx);
-        const char* getConfig();
+        NGLTF(const char* base, const char* name, const NSceneConfig* config, unsigned scene_idx);
+        const NSceneConfig* getConfig();
     private:
         void load();
         void collect();
@@ -60,7 +62,7 @@ class NPY_API NGLTF {
     protected:
         const char*     m_base ; 
         const char*     m_name ; 
-        const char*     m_config ; 
+        const NSceneConfig*   m_config ; 
         int             m_scene_idx ; 
         ygltf::glTF_t*  m_gltf ;  
         ygltf::fl_gltf* m_fgltf ;

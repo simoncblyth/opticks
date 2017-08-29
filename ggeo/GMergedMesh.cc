@@ -19,6 +19,7 @@
 #include "GGeo.hh"
 #include "GSolid.hh"
 #include "GParts.hh"
+#include "GTree.hh"
 #include "GMergedMesh.hh"
 
 
@@ -630,7 +631,7 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
     std::string cachedir = BFile::FormPath(dir, NULL, NULL);
     bool existsdir = BFile::ExistsDir(dir, NULL, NULL);
 
-    LOG(info) << "GMergedMesh::load"
+    LOG(debug) << "GMergedMesh::load"
               << " dir " << dir 
               << " -> cachedir " << cachedir
               << " index " << index
@@ -698,5 +699,23 @@ float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 {
     return index == 0 ? GMesh::getModelToWorldPtr(0) : NULL ;
 }
+
+
+
+void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
+{
+    // hmm for very large numbers of instances : probably better to defer this post-cache
+    // and/or use some thrust trickery to do the repeating at GPU upload stage
+
+    NPY<float>* itransforms = GTree::makeInstanceTransformsBuffer(placements); // collect GNode placement transforms into buffer
+    setITransformsBuffer(itransforms);
+
+    NPY<unsigned int>* iidentity  = GTree::makeInstanceIdentityBuffer(placements);
+    setInstancedIdentityBuffer(iidentity);
+
+    NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements);
+    setAnalyticInstancedIdentityBuffer(aii);
+}
+
 
 

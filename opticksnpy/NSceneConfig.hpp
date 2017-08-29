@@ -41,6 +41,9 @@ struct NPY_API NSceneConfig
     int verbosity ; 
     int polygonize ; 
 
+    int instance_repeat_min ; 
+    int instance_vertex_min ; 
+
  
     NSceneConfigBBoxType default_csg_bbty ; 
     NSceneConfigBBoxType bbox_type() const ; 

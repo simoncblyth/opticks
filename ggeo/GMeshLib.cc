@@ -175,7 +175,7 @@ void GMeshLib::add(GMesh* mesh)
 
     assert(name) ; 
 
-    LOG(info) << "GMeshLib::add (GMesh)"
+    LOG(debug) << "GMeshLib::add (GMesh)"
               << " index " << std::setw(4) << index 
               << " name " << name 
               ;

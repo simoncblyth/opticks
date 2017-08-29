@@ -1,3 +1,6 @@
+#include <sstream>
+#include <iostream>
+#include <iomanip>
 #include <cstring>
 
 #include "BStr.hh"
@@ -32,18 +35,6 @@ GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic)
     return glib ; 
 }
 
-
-std::string GGeoLib::desc() const 
-{
-    std::stringstream ss ; 
-
-    ss << "GGeoLib"
-       << ( m_analytic ? " ANALYTIC " : " TRIANGULATED " ) 
-       << " numMergedMesh " << getNumMergedMesh()
-       ; 
-
-    return ss.str();
-}
 
 
 GGeoLib::GGeoLib(Opticks* opticks, bool analytic) 
@@ -115,6 +106,21 @@ void GGeoLib::removeConstituents(const char* idpath )
 
 void GGeoLib::loadConstituents(const char* idpath )
 {
+   LOG(info) 
+             << "GGeoLib::loadConstituents"
+             << " idpath " << idpath 
+             ;
+             
+   LOG(info) 
+             << "GGeoLib::loadConstituents"
+             << " mm.reldir " << getRelDir(GMERGEDMESH)
+             << " gp.reldir " << getRelDir(GPARTS)
+             << " MAX_MERGED_MESH  " << MAX_MERGED_MESH 
+             ; 
+
+
+   std::stringstream ss ; 
+
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
         const char* sidx = BStr::itoa(ridx) ;
@@ -126,11 +132,12 @@ void GGeoLib::loadConstituents(const char* idpath )
 
         GMergedMesh* mm = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
         GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
-
+   
         if( mm )
         {
             mm->setParts(pt);
             m_merged_mesh[ridx] = mm ; 
+            ss << std::setw(3) << ridx << "," ; 
         }
         else
         {
@@ -142,8 +149,9 @@ void GGeoLib::loadConstituents(const char* idpath )
                        ;
         }
    }
-   LOG(debug) << "GGeoLib::loadConstituents" 
+   LOG(info) << "GGeoLib::loadConstituents" 
              << " loaded "  << m_merged_mesh.size()
+             << " ridx (" << ss.str() << ")" 
              ;
 }
 
@@ -207,6 +215,52 @@ void GGeoLib::eraseMergedMesh(unsigned int index)
 void GGeoLib::clear()
 {
     m_merged_mesh.clear(); 
+}
+
+
+
+
+std::string GGeoLib::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "GGeoLib"
+       << ( m_analytic ? " ANALYTIC " : " TRIANGULATED " ) 
+       << " numMergedMesh " << getNumMergedMesh()
+       ; 
+
+    return ss.str();
+}
+
+
+void GGeoLib::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info) << desc() ; 
+
+    unsigned nmm = getNumMergedMesh();
+
+    for(unsigned i=0 ; i < nmm ; i++)
+    {   
+        GMergedMesh* mm = getMergedMesh(i); 
+        const char geocode = mm ? mm->getGeoCode() : '-' ;
+        unsigned numSolids = mm ? mm->getNumSolids() : -1 ;
+        unsigned numFaces = mm ? mm->getNumFaces() : -1 ;
+        unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
+
+        std::cout << "mm" 
+                  << " i " << std::setw(3) << i 
+                  << " geocode " << std::setw(3) << geocode 
+                  << std::setw(5) << ( mm ? " " : "NULL" ) 
+                  << std::setw(5) << ( mm && mm->isSkip(  ) ? "SKIP" : " " ) 
+                  << std::setw(7) << ( mm && mm->isEmpty()  ? "EMPTY" : " " ) 
+                  << " numSolids " << std::setw(10) << numSolids
+                  << " numFaces  " << std::setw(10) << numFaces
+                  << " numITransforms  " << std::setw(10) << numITransforms
+                  << std::endl
+                  ;   
+
+    }
 }
 
 

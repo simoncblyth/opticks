@@ -165,13 +165,17 @@ void OGeo::convert()
 {
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    if(m_verbosity > 0)
+    //if(m_verbosity > 0)
     LOG(info) << "OGeo::convert START  numMergedMesh: " << nmm ;
+
+    m_geolib->dump("OGeo::convert GGeoLib" );
+
 
     for(unsigned i=0 ; i < nmm ; i++)
     {
         convertMergedMesh(i);
     }
+
     // all group and geometry_group need to have distinct acceleration structures
     unsigned int geometryGroupCount = m_geometry_group->getChildCount() ;
     unsigned int repeatedGroupCount = m_repeated_group->getChildCount() ;
@@ -610,7 +614,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
 
 
     GBuffer* id = NULL ; 
-    if(numITransforms > 0)
+    if(numITransforms > 0)  //  formerly 0 
     {
         id = mm->getFaceRepeatedInstancedIdentityBuffer();
         assert(id);

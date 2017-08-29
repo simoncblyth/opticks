@@ -41,6 +41,7 @@ class GGEO_API GGeoLib {
         void removeConstituents(const char* idpath);
         void saveConstituents(const char* idpath);
     public:
+        void dump(const char* msg="GGeoLib::dump");
         unsigned getNumMergedMesh() const ;
         GMergedMesh* getMergedMesh(unsigned int index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);

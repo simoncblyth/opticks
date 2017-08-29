@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+
+struct NSceneConfig ; 
+
 //class GGeo ; 
 class GGeoLib ;    // merged meshes 
 class GNodeLib ;   // GSolid nodes
@@ -37,7 +40,7 @@ is used only precache.
 
 class GGEO_API GTreeCheck {
    public:
-        GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib) ;
+        GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) ;
         void setRepeatMin(unsigned repeat_min);
         void setVertexMin(unsigned vertex_min);
    public:
@@ -60,7 +63,7 @@ class GGEO_API GTreeCheck {
         void           traverse_r( GNode* node, unsigned int depth ); 
         void           findRepeatCandidates(unsigned int repeat_min, unsigned int vertex_min);
         bool           isContainedRepeat( const std::string& pdig, unsigned int levels ) const ;
-        void           dumpRepeatCandidates();
+        void           dumpRepeatCandidates(unsigned dmax);
         void           dumpRepeatCandidate(unsigned int index, bool verbose=false);
    public:
         bool           operator()(const std::string& dig) ;
@@ -79,13 +82,15 @@ class GGEO_API GTreeCheck {
         // output side, operates via GGeo::makeMergedMesh, GGeoLib::makeMergedMesh, GMergedMesh::create
         //   GMergedMesh::traverse uses the repeat index ridx labels written into the node tree
         void           makeMergedMeshAndInstancedBuffers(unsigned verbosity);
-        void           makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
-        NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
-        NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
-        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
+
+        //void           makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
+        //NPY<float>*    makeInstanceTransformsBuffer(unsigned ridx);
+        //NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
+        //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
    private:
        GGeoLib*                  m_geolib ; 
        GNodeLib*                 m_nodelib ; 
+       NSceneConfig*             m_config ; 
 
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 

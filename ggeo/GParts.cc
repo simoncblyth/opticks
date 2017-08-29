@@ -302,7 +302,20 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
 {
-      assert(spec->getRelDir().empty() == true );
+     
+      const std::string& reldir = spec->getRelDir() ;
+      bool empty_rel = reldir.empty() ;
+      bool gpmt_0 = strcmp(reldir.c_str(), "GPmt/0")== 0 ; 
+
+      if(!gpmt_0)
+      {
+          if(!empty_rel)
+             LOG(warning) << "GParts::GParts"
+                          << " EXPECTING EMPTY RelDir [" << reldir << "]"
+                          ;
+          assert( empty_rel );
+      }
+ 
       init() ; 
 }
 
@@ -432,13 +445,15 @@ Copper
 
 NPY<float>* GParts::LoadBuffer(const char* dir, const char* tag) // static
 {
-    NPY<float>* buf = NPY<float>::load(dir, BufferName(tag) );
+    const char* name = BufferName(tag) ;
+    bool quietly = true ; 
+    NPY<float>* buf = NPY<float>::load(dir, name, quietly ) ;
     return buf ; 
 }
 
 GParts* GParts::Load(const char* dir) // static
 {
-    LOG(info) << "GParts::Load dir " << dir ; 
+    LOG(debug) << "GParts::Load dir " << dir ; 
 
     NPY<float>* partBuf = LoadBuffer(dir, "part");
     NPY<float>* tranBuf = LoadBuffer(dir, "tran");
@@ -637,10 +652,15 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
 
     if(num_plane > 0) 
     {
-        m_plan_buffer->dump("planes before transform");
+        if(verbosity > 3)
+        m_plan_buffer->dump("planes_before_transform");
+
         nglmext::transform_planes( m_plan_buffer, placement );
-        m_plan_buffer->dump("planes after transform");
+
+        if(verbosity > 3)
+        m_plan_buffer->dump("planes_after_transform");
     }
+    
     
 
 }

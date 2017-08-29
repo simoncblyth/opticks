@@ -18,10 +18,10 @@ Approach
 
 
 
+
+
 Where the time goes
 ----------------------
-
-
 
 Expensive parts of startup::
 
@@ -362,11 +362,11 @@ Example Log
          1.815        PMT_20inch_inner1_solid0x1814a90 lvidx  11 nsp    391         union intersection zsphere cylinder torus   nds[17739]  978 984 990 996 1002 1008 1014 1020 1026 1032 ... 
       0.127613PMT_3inch_inner2_solid_ell_helper0x1c9e5d0 lvidx  17 nsp    243                                           zsphere   nds[36572]  107411 107416 107421 107426 107431 107436 107441 107446 107451 107456 ... 
     2017-08-28 11:52:35.762 INFO  [1181753] [GScene::compareMeshes_GMeshBB@529] GScene::compareMeshes_GMeshBB num_meshes 35 cut 0.1 bbty CSG_BBOX_PARSURF num_discrepant 9 frac 0.257143
-    2017-08-28 11:52:35.762 INFO  [1181753] [*GScene::createVolumeTree@554] GScene::createVolumeTree START  verbosity 1 query  queryType undefined query_string all query_name NULL query_index 0 query_depth 0 no_selection 1
+    2017-08-28 11:52:35.762 INFO  [1181753] [GScene::createVolumeTree@554] GScene::createVolumeTree START  verbosity 1 query  queryType undefined query_string all query_name NULL query_index 0 query_depth 0 no_selection 1
     2017-08-28 11:52:35.763 INFO  [1181753] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GSurfaceLib TRIGGERED A CLOSE  shortname []
     2017-08-28 11:52:35.763 INFO  [1181753] [GPropertyLib::close@384] GPropertyLib::close type GSurfaceLib buf 15,2,39,4
     2017-08-28 11:52:35.763 WARN  [1181753] [GScene::lookupBoundarySpec@834] GScene::lookupBoundarySpec ana/tri imat/omat MISMATCH  tri  (  3, - , - ,  3)  ana  ( 10, - , - ,  3)  tri_spec Galactic///Galactic ana_spec Vacuum///Galactic spec Galactic///Galactic
-    2017-08-28 11:52:42.255 INFO  [1181753] [*GScene::createVolumeTree@574] GScene::createVolumeTree DONE num_nodes: 290276
+    2017-08-28 11:52:42.255 INFO  [1181753] [GScene::createVolumeTree@574] GScene::createVolumeTree DONE num_nodes: 290276
     2017-08-28 11:52:42.255 INFO  [1181753] [GScene::init@165] GScene::init createVolumeTrue selected_count 290276
     2017-08-28 11:52:43.019 INFO  [1181753] [GScene::makeMergedMeshAndInstancedBuffers@920] GScene::makeMergedMeshAndInstancedBuffers.START   num_repeats 4  num_ridx 5
     2017-08-28 11:52:56.381 INFO  [1181753] [GScene::makeMergedMeshAndInstancedBuffers@974] GScene::makeMergedMeshAndInstancedBuffers DONE num_repeats 4 num_ridx (including global 0) 5 nmm_created 5 nmm 5
@@ -406,7 +406,7 @@ Example Log
               4507.637 -3489.170 18648.242   1.000 
 
 
-    2017-08-28 11:52:56.772 INFO  [1181753] [*Opticks::makeSimpleTorchStep@1246] Opticks::makeSimpleTorchStep config  cfg NULL
+    2017-08-28 11:52:56.772 INFO  [1181753] [Opticks::makeSimpleTorchStep@1246] Opticks::makeSimpleTorchStep config  cfg NULL
     2017-08-28 11:52:56.772 INFO  [1181753] [OpticksGen::targetGenstep@130] OpticksGen::targetGenstep setting frame 3153 -0.6931,0.6589,0.2923,0.0000 0.6890,0.7248,0.0000,0.0000 -0.2119,0.2014,-0.9563,0.0000 4131.5161,-3927.2988,18648.2422,1.0000
     2017-08-28 11:52:56.772 FATAL [1181753] [GenstepNPY::setPolarization@221] GenstepNPY::setPolarization pol 0.0000,0.0000,0.0000,0.0000 npol nan,nan,nan,nan m_polw nan,nan,nan,430.0000
     2017-08-28 11:52:56.773 INFO  [1181753] [SLog::operator@15] OpticksHub::OpticksHub DONE
@@ -441,7 +441,7 @@ Example Log
     2017-08-28 11:52:59.495 INFO  [1181753] [SLog::operator@15] OScene::OScene DONE
     2017-08-28 11:52:59.495 WARN  [1181753] [OpEngine::init@65] OpEngine::init skip initPropagation as tracer mode is active  
     2017-08-28 11:52:59.495 INFO  [1181753] [SLog::operator@15] OpEngine::OpEngine DONE
-    2017-08-28 11:52:59.515 FATAL [1181753] [*OContext::addEntry@44] OContext::addEntry P
+    2017-08-28 11:52:59.515 FATAL [1181753] [OContext::addEntry@44] OContext::addEntry P
     2017-08-28 11:52:59.515 INFO  [1181753] [SLog::operator@15] OKGLTracer::OKGLTracer DONE
     2017-08-28 11:52:59.515 INFO  [1181753] [SLog::operator@15] OKPropagator::OKPropagator DONE
     OKMgr::init
@@ -467,3 +467,7 @@ Example Log
     Animator::step bump m_count 360 
     2017-08-28 11:53:40.741 INFO  [1181753] [Frame::key_pressed@703] Frame::key_pressed escape
     /Users/blyth/opticks/bin/op.sh RC 0
+
+
+
+

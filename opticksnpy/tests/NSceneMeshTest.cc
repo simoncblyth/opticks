@@ -4,6 +4,7 @@
 
 
 #include "NScene.hpp"
+#include "NSceneConfig.hpp"
 #include "NPY.hpp"
 
 #include "NPY_LOG.hh"
@@ -42,7 +43,8 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
-    NScene* scene = NScene::Load( gltfbase, gltfname, gltfconfig, dbgnode );
+    NSceneConfig* config = new NSceneConfig(gltfconfig);
+    NScene* scene = NScene::Load( gltfbase, gltfname, config, dbgnode );
     assert(scene);
 
     scene->dumpCSG(dbgmesh); 

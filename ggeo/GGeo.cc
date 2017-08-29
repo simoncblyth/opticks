@@ -407,15 +407,16 @@ void GGeo::init()
    m_geolib = new GGeoLib(m_ok, m_analytic );
    m_nodelib = new GNodeLib(m_ok, m_analytic ); 
 
-   //m_treecheck = new GTreeCheck(this) ;
-   m_treecheck = new GTreeCheck(m_geolib, m_nodelib) ;
+   m_treecheck = new GTreeCheck(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
+
+/*
    if(resource->isJuno())
    {
        m_treecheck->setVertexMin(10);  
        //m_treecheck->setVertexMin(250);
    } 
-
+*/
 
 
 
@@ -567,25 +568,23 @@ void GGeo::loadGeometry()
     {
         loadFromG4DAE();
         save();
+
+        if(m_ok->isGLTF()) 
+        {
+            loadAnalyticFromGLTF();
+            saveAnalytic();
+        }
     }
     else
     {
         loadFromCache();
-        //loadAnalyticFromCache();
+        if(m_ok->isGLTF()) 
+        {
+            loadAnalyticFromCache(); 
+        }
     } 
 
-
     loadAnalyticPmt();
-
-
-
-    if(m_ok->isGLTF()) 
-    {
-        loadAnalyticFromGLTF();
-
-        saveAnalytic();
-        loadAnalyticFromCache(); // just here to test eveything at once
-    }
 
 
     setupLookup();
@@ -633,6 +632,9 @@ void GGeo::loadAnalyticFromGLTF()
 
 void GGeo::save()
 {
+    LOG(info) << "GGeo::save" ;
+    m_geolib->dump("GGeo::save.geolib");
+
     m_geolib->saveToCache();
     m_meshlib->save();
     m_nodelib->save();
@@ -645,6 +647,9 @@ void GGeo::save()
 
 void GGeo::saveAnalytic()
 { 
+    LOG(info) << "GGeo::saveAnalytic" ;
+    m_geolib_analytic->dump("GGeo::saveAnalytic.geolib_analytic");
+ 
     m_geolib_analytic->saveToCache();
     m_nodelib_analytic->save();
 }
@@ -673,10 +678,12 @@ void GGeo::loadFromCache()
 
 void GGeo::loadAnalyticFromCache()
 {
+    LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
     bool analytic = true ; 
     m_geolib_analytic = GGeoLib::Load(m_ok, analytic );
     m_nodelib_analytic = GNodeLib::Load(m_ok, analytic );
    // meshlib ?
+    LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
 }
 
 

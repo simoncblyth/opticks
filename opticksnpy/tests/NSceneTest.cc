@@ -1,4 +1,5 @@
 #include "NScene.hpp"
+#include "NSceneConfig.hpp"
 #include "NPY.hpp"
 #include "NPY_LOG.hh"
 
@@ -45,7 +46,8 @@ int main(int argc, char** argv)
     int scene_idx = 0 ; 
 
 
-    NScene* scene = new NScene( base, name, config, dbgnode, scene_idx  ); 
+    NSceneConfig* config_ = new NSceneConfig(config);
+    NScene* scene = new NScene( base, name, config_, dbgnode, scene_idx  ); 
     assert(scene);
     scene->dump(argv[0]);
     scene->dumpNdTree();

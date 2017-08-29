@@ -119,7 +119,7 @@ long NScene::SecondsSinceLastWrite(const char* base, const char* name)
 }
 
 
-NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* gltfconfig, int dbgnode) 
+NScene* NScene::Load( const char* gltfbase, const char* gltfname, NSceneConfig* gltfconfig, int dbgnode) 
 {
     NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig, dbgnode) : NULL ;
 
@@ -148,11 +148,11 @@ const char* NScene::bbox_type_string() const
 
 
 
-NScene::NScene(const char* base, const char* name, const char* config, int dbgnode, int scene_idx)  
+NScene::NScene(const char* base, const char* name, NSceneConfig* config, int dbgnode, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
     m_num_gltf_nodes(getNumNodes()),
-    m_config(new NSceneConfig(config)),
+    m_config(config),
     m_dbgnode(dbgnode),
     m_containment_err(0),
     m_verbosity(m_config->verbosity),
@@ -1028,6 +1028,7 @@ void NScene::count_progeny_digests()
 struct NRepeat
 {
     unsigned   repeat_min ;  
+    unsigned   vertex_min ;  
     unsigned    index ; 
     std::string pdig ; 
     unsigned    num_pdig ; 
@@ -1042,9 +1043,10 @@ struct NRepeat
         return std::find(pdigs_.begin(), pdigs_.end(), pdig ) != pdigs_.end() ;   
     }   
 
-    NRepeat( unsigned repeat_min_, unsigned index_, const std::string& pdig_, unsigned num_pdig_, nd* first_ ) 
+    NRepeat( unsigned repeat_min_, unsigned vertex_min_,  unsigned index_, const std::string& pdig_, unsigned num_pdig_, nd* first_ ) 
           :   
           repeat_min(repeat_min_),
+          vertex_min(vertex_min_),
           index(index_),
           pdig(pdig_), 
           num_pdig(num_pdig_), 
@@ -1078,13 +1080,16 @@ void NScene::find_repeat_candidates()
    // hmm : this approach will not gang together siblings 
    //       that always appear together, only subtrees 
 
-    unsigned repeat_min = 4 ; 
+    unsigned repeat_min = m_config->instance_repeat_min ; 
+    unsigned vertex_min = m_config->instance_vertex_min ;  // hmm but dont have access to vertex counts at this stage 
 
     unsigned int num_progeny_digests = m_digest_count->size() ;
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     LOG(info) << "NScene::find_repeat_candidates"
                << " verbosity " << m_verbosity 
+               << " config.instance_repeat_min " << repeat_min
+               << " config.instance_vertex_min " << vertex_min
                << " num_progeny_digests " << num_progeny_digests 
               ;   
 
@@ -1098,7 +1103,7 @@ void NScene::find_repeat_candidates()
         unsigned int num_pdig = kv.second ;   
         nd* first = m_root->find_node(pdig) ;
 
-        NRepeat cand(repeat_min,  i, pdig, num_pdig , first );
+        NRepeat cand(repeat_min,vertex_min, i, pdig, num_pdig , first );
         cands.push_back(cand) ;
         if(cand.candidate) m_repeat_candidates.push_back(pdig);
     }
@@ -1114,7 +1119,10 @@ void NScene::find_repeat_candidates()
     std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
     std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
 
-    for(unsigned i=0 ; i < cands.size() ; i++)
+    unsigned num_cands = cands.size() ;
+    unsigned dmax = 20u ; 
+
+    for(unsigned i=0 ; i < std::min(num_cands, dmax) ; i++)
     {
         NRepeat& cand = cands[i];
         cand.select = cand.isListed(m_repeat_candidates) ;

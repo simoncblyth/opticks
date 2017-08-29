@@ -20,6 +20,8 @@ class GTreePresent ;
 GNodeLib
 ===========
 
+* NB very partially persisted only (just the pv/lv names), primarily a pre-cache operator
+
 
 */
 

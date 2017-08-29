@@ -93,24 +93,60 @@ void test_GlobalMergedMesh(GMergedMesh* mm)
 
 
 
+void test_getFaceRepeatedIdentityBuffer(GMergedMesh* mm)
+{
+    GBuffer* buf = mm->getFaceRepeatedIdentityBuffer();
+    assert(buf);
+}
+void test_getFaceRepeatedInstancedIdentityBuffer(GMergedMesh* mm)
+{
+    GBuffer* buf = mm->getFaceRepeatedInstancedIdentityBuffer();
+    assert(buf);
+}
+
+
+void test_GGeoLib(GGeoLib* geolib)
+{
+    unsigned nmm = geolib->getNumMergedMesh();
+    for(unsigned i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = geolib->getMergedMesh(i);
+        if(!mm) return ;  
+
+        if(i == 0)
+        {
+            //test_GlobalMergedMesh(mm);
+            test_getFaceRepeatedIdentityBuffer(mm);
+        }
+        else
+        {
+            //test_InstancedMergedMesh(mm);
+            test_getFaceRepeatedInstancedIdentityBuffer(mm);
+        }
+    }
+}
 
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    GGEO_LOG__ ;
 
     Opticks ok(argc, argv);
 
-    bool analytic = false ; 
+    bool analytic ; 
+    analytic = false ; 
     GGeoLib* geolib = GGeoLib::Load(&ok, analytic); 
+    geolib->dump("geolib");
+    test_GGeoLib(geolib);
 
-    GMergedMesh* mm0 = geolib->getMergedMesh(0);
-    GMergedMesh* mm1 = geolib->getMergedMesh(1);
 
-    test_InstancedMergedMesh(mm1);
-    test_GlobalMergedMesh(mm0);
-
+    analytic = true ; 
+    GGeoLib* geolib_analytic = GGeoLib::Load(&ok, analytic); 
+    geolib_analytic->dump("geolib_analytic");   
+    test_GGeoLib(geolib_analytic);
 
     return 0 ; 
 }
+
+

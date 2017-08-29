@@ -142,11 +142,10 @@ class GGEO_API GScene : public GGeoBase
         void         makeMergedMeshAndInstancedBuffers() ; 
 
     private:
-        void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx);
-
-        NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
-        NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
-        NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
+        //void         makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned ridx, bool honour_selection);
+        //NPY<float>* makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx);
+        //NPY<unsigned>* makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
+        //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx);
     private:
         GSolid*       getNode(unsigned node_idx);
     private:
@@ -160,8 +159,8 @@ class GGEO_API GScene : public GGeoBase
         bool     m_honour_selection ;
 
         int      m_gltf ; 
-        NScene*        m_scene ; 
         NSceneConfig*  m_scene_config ; 
+        NScene*        m_scene ; 
         int            m_num_nd ; 
         unsigned       m_targetnode ; 
 

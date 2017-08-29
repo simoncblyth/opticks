@@ -118,6 +118,7 @@ set(SOURCES
     GBBoxMesh.cc
     GColorizer.cc
 
+    GTree.cc
     GTreeCheck.cc
 
     GTraverse.cc

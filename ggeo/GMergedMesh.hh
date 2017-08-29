@@ -46,6 +46,7 @@ public:
     GMergedMesh(unsigned int index) ;
     GParts* getParts();
     std::string brief();
+    void addInstancedBuffers(const std::vector<GNode*>& placements);
 private:
     void setParts(GParts* pts); 
 private:

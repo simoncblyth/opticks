@@ -1,5 +1,6 @@
 
 // npy-
+#include "NSceneConfig.hpp"
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "NSensor.hpp"
@@ -10,7 +11,6 @@
 #include "GTreePresent.hh"
 #include "GMergedMesh.hh"
 
-//#include "GGeo.hh"
 
 #include "GGeoLib.hh"
 #include "GNodeLib.hh"
@@ -18,6 +18,7 @@
 #include "GSolid.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
+#include "GTree.hh"
 #include "GTreeCheck.hh"
 
 
@@ -28,12 +29,13 @@
 // the below criteria are finding fewer repeats, for DYB only the hemi pmt
 // TODO: retune
 
-GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib) 
+GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
        :
        m_geolib(geolib),
        m_nodelib(nodelib),
-       m_repeat_min(120),
-       m_vertex_min(300),  // aiming to include leaf? sStrut and sFasteners
+       m_config(config),
+       m_repeat_min(config->instance_repeat_min),
+       m_vertex_min(config->instance_vertex_min),  // aiming to include leaf? sStrut and sFasteners
        m_root(NULL),
        m_count(0),
        m_labels(0),
@@ -101,7 +103,7 @@ void GTreeCheck::traverse()
    
     // collect digests of repeated pieces of geometry into  m_repeat_candidates
     findRepeatCandidates(m_repeat_min, m_vertex_min); 
-    dumpRepeatCandidates();
+    dumpRepeatCandidates(20u);
 }
 
 void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
@@ -252,8 +254,11 @@ void GTreeCheck::findRepeatCandidates(unsigned int repeat_min, unsigned int vert
 
     std::cout << " (**) candidates fulfil repeat/vert cuts   "  << std::endl ;
     std::cout << " (##) selected survive contained-repeat disqualification " << std::endl ;
- 
-    for(unsigned i=0 ; i < cands.size() ; i++)
+
+    unsigned num_cand = cands.size() ; 
+    unsigned dmax = 20u ;  
+
+    for(unsigned i=0 ; i < std::min(num_cand, dmax) ; i++)
     {
         GRepeat& cand = cands[i];
         cand.select = cand.isListed(m_repeat_candidates) ;
@@ -300,10 +305,14 @@ bool GTreeCheck::isContainedRepeat( const std::string& pdig, unsigned int levels
 } 
 
 
-void GTreeCheck::dumpRepeatCandidates()
+void GTreeCheck::dumpRepeatCandidates(unsigned dmax)
 {
-    LOG(info) << "GTreeCheck::dumpRepeatCandidates " ;
-    for(unsigned int i=0 ; i < m_repeat_candidates.size() ; i++) dumpRepeatCandidate(i) ;
+    unsigned num_repcan = m_repeat_candidates.size() ; 
+    LOG(info) << "GTreeCheck::dumpRepeatCandidates" 
+              << " num_repcan " << num_repcan
+              << " dmax " << dmax
+               ;
+    for(unsigned int i=0 ; i < std::min(num_repcan, dmax) ; i++) dumpRepeatCandidate(i) ;
 }
 
 
@@ -420,9 +429,6 @@ GNode* GTreeCheck::getRepeatExample(unsigned int ridx)
 }
 
 
-
-
-
 void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 {
     GNode* root = m_nodelib->getNode(0);
@@ -434,239 +440,36 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     GMergedMesh* mm0 = m_geolib->makeMergedMesh(0, base, root, verbosity );
 
 
-    makeInstancedBuffers(mm0, 0);  // ? instanced global too, for common structure
+    std::vector<GNode*> placements = getPlacements(0);  // just m_root
+    assert(placements.size() == 1 );
+    mm0->addInstancedBuffers(placements);  // call for global for common structure 
 
 
-    unsigned int numRepeats = getNumRepeats();
-    for(unsigned int ridx=1 ; ridx <= numRepeats ; ridx++)  // 1-based index
+    unsigned numRepeats = getNumRepeats();
+    unsigned numRidx = numRepeats + 1 ; 
+ 
+    LOG(info) << "GTreeCheck::makeMergedMeshAndInstancedBuffers"
+              << " numRepeats " << numRepeats
+              << " numRidx " << numRidx
+              ;
+
+    for(unsigned int ridx=1 ; ridx < numRidx ; ridx++)  // 1-based index
     {
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
+
+         LOG(info) << "GTreeCheck::makeMergedMeshAndInstancedBuffers"
+                   << " ridx " << ridx 
+                   << " rbase " << rbase
+                   ;
+
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity ); 
 
-         makeInstancedBuffers(mm, ridx);
+         std::vector<GNode*> placements = getPlacements(ridx);
+
+         mm->addInstancedBuffers(placements);
      
          //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }
 }
-
-void GTreeCheck::makeInstancedBuffers(GMergedMesh* mergedmesh, unsigned int ridx)
-{
-     //mergedmesh->dumpSolids("GTreeCheck::makeInstancedBuffers dumpSolids");
-
-     NPY<float>* itransforms = makeInstanceTransformsBuffer(ridx); // collect GNode placement transforms into buffer
-     mergedmesh->setITransformsBuffer(itransforms);
-
-     NPY<unsigned int>* iidentity  = makeInstanceIdentityBuffer(ridx);
-     mergedmesh->setInstancedIdentityBuffer(iidentity);
-
-     NPY<unsigned int>* aii   = makeAnalyticInstanceIdentityBuffer(ridx);
-     mergedmesh->setAnalyticInstancedIdentityBuffer(aii);
-}
-
-
-NPY<float>* GTreeCheck::makeInstanceTransformsBuffer(unsigned int ridx)
-{
-    // collecting transforms from GNode instances into a buffer
-    // getPlacement for ridx=0 just returns m_root (which always has identity transform)
-    // for ridx > 0 returns all GNode instances 
-
-    std::vector<GNode*> placements = getPlacements(ridx); 
-
-    unsigned int ni = placements.size(); 
-    if(ridx == 0)
-        assert(ni == 1);
-
-    NPY<float>* buf = NPY<float>::make(0, 4, 4);
-    for(unsigned int i=0 ; i < ni ; i++)
-    {
-        GNode* place = placements[i] ;
-        GMatrix<float>* t = place->getTransform();
-        buf->add(t->getPointer(), 4*4*sizeof(float) );
-    } 
-    assert(buf->getNumItems() == ni);
-    return buf ; 
-}
-
-NPY<unsigned int>* GTreeCheck::makeAnalyticInstanceIdentityBuffer(unsigned int ridx) 
-{
-    // collect identity information for each of the repeated nodes (or subtrees)
-    // eg PMT sensor index
-
-    std::vector<GNode*> placements = getPlacements(ridx);
-    unsigned int numInstances = placements.size() ;
-    if(ridx == 0)
-        assert(numInstances == 1);
-
-
-    NPY<unsigned int>* buf = NPY<unsigned int>::make(numInstances, 1, 4); // huh non-analytic uses (-1,4)
-    buf->zero(); 
-
-    // NB the differences:
-    //
-    //    analytic
-    //         identity buffer has numInstances items (ie one entry for each repeated instance)
-    //
-    //    triangulated:  
-    //         identity buffer has numInstances*numSolids items (ie one entry for every solid of every instance)
-    //         ... downstream this gets repeated further to every triangle
-    //
-
-
-    unsigned int numProgeny = placements[0]->getProgenyCount();
-    unsigned int numSolids  = numProgeny + 1 ; 
-
-    // observe that each instance has only one sensor, so not need 
-    // to repeat over the number of solids just one entry per instance
-
-    LOG(info) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
-              << " ridx " << ridx
-              << " numPlacements " << numInstances
-              << " numSolids " << numSolids      
-              ;
-
-    for(unsigned int i=0 ; i < numInstances ; i++) // over instances of the same geometry
-    {
-        GNode* base = placements[i] ;
-        assert( numProgeny == base->getProgenyCount() );  // repeated geometry for the instances, so the progeny counts must match 
-        std::vector<GNode*>& progeny = base->getProgeny();
-        assert( progeny.size() == numProgeny );
-      
-        NSensor* sensor = NULL ;  
-        for(unsigned int s=0 ; s < numSolids ; s++ )
-        {
-            GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GSolid* solid = dynamic_cast<GSolid*>(node) ;
-            NSensor* ss = solid->getSensor();
-            //assert(ss); dont have JUNO sensor info
-
-            unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
-
-            if(sid > 0)
-            LOG(debug) << "GTreeCheck::makeAnalyticInstanceIdentityBuffer " 
-                      << " s " << std::setw(3) << s 
-                      << " sid " << std::setw(10) << std::hex << sid << std::dec 
-                      << " ss " << (ss ? ss->description() : "NULL" )
-                      ;
-
-            if(sid > 0 && ridx > 0)
-            {
-                assert(sensor == NULL && "not expecting more than one sensor solid with non-zero id within an instance of repeated geometry");
-                sensor = ss ; 
-            }
-        }
-
-        glm::uvec4 aii ; 
-
-        aii.x = base->getIndex();        
-        aii.y = i ;  // instance index (for triangulated this contains the mesh index)
-        aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
-        aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
-
-        buf->setQuadU(aii, i, 0); 
-        
-    }
-    return buf ; 
-}
-
-NPY<unsigned int>* GTreeCheck::makeInstanceIdentityBuffer(unsigned int ridx) 
-{
-    /*
-     Instances need to know the sensor they correspond 
-     even though their geometry is duplicated. 
-
-     For analytic geometry this is needed at the solid level 
-     ie need buffer of size:
-             #transforms * #solids-per-instance
-
-     For triangulated geometry this is needed at the triangle level
-     ie need buffer of size 
-             #transforms * #triangles-per-instance
-
-     The triangulated version can be created from the analytic one
-     by duplication according to the number of triangles.
-
-    */
-
-
-    std::vector<GNode*> placements = getPlacements(ridx);
-    unsigned int numInstances = placements.size() ;
-    unsigned int numProgeny = placements[0]->getProgenyCount();
-    unsigned int numSolids  = numProgeny + 1 ; 
-    unsigned int num = numSolids*numInstances ; 
-
-    NPY<unsigned int>* buf = NPY<unsigned int>::make(0, 4);
-    for(unsigned int i=0 ; i < numInstances ; i++)
-    {
-        GNode* base = placements[i] ;
-        assert( numProgeny == base->getProgenyCount() && "repeated geometry for the instances, so the progeny counts must match");
-        std::vector<GNode*>& progeny = base->getProgeny();
-        assert( progeny.size() == numProgeny );
-
-        for(unsigned int s=0 ; s < numSolids ; s++ )
-        {
-            GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-            guint4 id = solid->getIdentity();
-            buf->add(id.x, id.y, id.z, id.w ); 
-
-#ifdef DEBUG
-            std::cout  
-                  << " i " << i
-                  << " s " << s
-                  << " node/mesh/boundary/sensor " << id.x << "/" << id.y << "/" << id.z << "/" << id.w 
-                  << " nodeName " << node->getName()
-                  << std::endl 
-                  ;
-#endif
-        }
-    }
-    assert(buf->getNumItems() == num);
-    return buf ;  
-}
-
-
-/*
-
-::
-
-    In [1]: ii = np.load("iidentity.npy")
-
-    In [3]: ii.shape
-    Out[3]: (3360, 4)
-
-    In [4]: ii.reshape(-1,5,4)
-    Out[4]: 
-    array([[[ 3199,    47,    19,     1],
-            [ 3200,    46,    20,     2],
-            [ 3201,    43,    21,     3],
-            [ 3202,    44,     1,     4],
-            [ 3203,    45,     1,     5]],
-
-           [[ 3205,    47,    19,     6],
-            [ 3206,    46,    20,     7],
-            [ 3207,    43,    21,     8],
-            [ 3208,    44,     1,     9],
-            [ 3209,    45,     1,    10]],
-
-After requiring an associated sensor surface to provide the sensor index, only cathodes 
-have non-zero index::
-
-    In [1]: ii = np.load("iidentity.npy")
-
-    In [2]: ii.reshape(-1,5,4)
-    Out[2]: 
-    array([[[ 3199,    47,    19,     0],
-            [ 3200,    46,    20,     0],
-            [ 3201,    43,    21,     3],
-            [ 3202,    44,     1,     0],
-            [ 3203,    45,     1,     0]],
-
-           [[ 3205,    47,    19,     0],
-            [ 3206,    46,    20,     0],
-            [ 3207,    43,    21,     8],
-            [ 3208,    44,     1,     0],
-            [ 3209,    45,     1,     0]],
-*/
 
 

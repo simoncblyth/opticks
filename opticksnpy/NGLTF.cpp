@@ -7,11 +7,11 @@
 #include "NGLMExt.hpp"
 
 
-NGLTF::NGLTF(const char* base, const char* name, const char* config, unsigned scene_idx)
+NGLTF::NGLTF(const char* base, const char* name, const NSceneConfig* config, unsigned scene_idx)
    :
     m_base(base ? strdup(base) : NULL),
     m_name(name ? strdup(name) : NULL),
-    m_config(config ? strdup(config) : NULL),
+    m_config(config),
     m_scene_idx(scene_idx),
     m_gltf(NULL),
     m_fgltf(NULL)
@@ -21,7 +21,7 @@ NGLTF::NGLTF(const char* base, const char* name, const char* config, unsigned sc
 }
 
 
-const char* NGLTF::getConfig()
+const NSceneConfig* NGLTF::getConfig()
 {
     return m_config ; 
 }
