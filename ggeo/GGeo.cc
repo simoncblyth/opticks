@@ -472,29 +472,12 @@ void GGeo::add(GSkinSurface* surface)
 }
 
 
-
-
-/*
-GGeoLib* GGeo::getTriGeoLib()
-{
-    return m_geolib ; 
-}
-
-*/
-
-
-// hmm dont like this gltf switching .. better to switch at higher level GGeo/GScene ?
-//  ie provide an common base interface and then pass either GGeo or GScene to the user
-// BUT : there is no GScene postcache 
-
 GGeoLib* GGeo::getGeoLib()
 {
-    //return m_gltf > 0 ? m_geolib_analytic : m_geolib ; 
     return m_geolib ; 
 }
 GNodeLib* GGeo::getNodeLib()
 {
-    //return m_gltf > 0 ? m_nodelib_analytic : m_nodelib ; 
     return m_nodelib ; 
 }
 

@@ -45,6 +45,7 @@ GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib)
     m_mesh_version(NULL),
     m_verbosity(m_ok->getVerbosity())
 {
+    assert(bndlib);
 }
 
 unsigned int GGeoLib::getNumMergedMesh() const 
@@ -196,7 +197,8 @@ GMergedMesh* GGeoLib::makeMergedMesh(unsigned int index, GNode* base, GNode* roo
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {
-        m_merged_mesh[index] = GMergedMesh::create(index, base, root, verbosity );
+        GMergedMesh* mm = GMergedMesh::create(index, base, root, verbosity );
+        m_merged_mesh[index] = mm ;
     }
     return m_merged_mesh[index] ;
 }

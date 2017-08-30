@@ -1,6 +1,5 @@
-postcache_analytic_inviz
-============================
-
+FIXED : postcache_analytic_inviz
+==================================
 
 Issue 
 ----------
@@ -24,6 +23,33 @@ but nothing visible in tracer in raytrace mode.
 
 
     op --gltf 1 --tracer --restrictmesh 5   ##  ogl: just PMTs, ray: blank
+
+
+FIXED By persisting primBuf 
+---------------------------------
+
+
+* reason not to persist primBuf is for flexible testing : as it allows to dynamically 
+  add new boundaries to dynamically configured geometry  
+
+* but seems rather difficult to try to reconstruct the primBuf in any
+  other way, as it contains sub-buffer offsets recorded at each concat
+
+* single solid/prim GParts contain a bunch of buffers that get concatenated 
+  into a combo GParts via GParts::add
+
+::
+
+     667 void GParts::add(GParts* other, unsigned verbosity )
+     668 {
+
+
+
+::
+
+     op --gltf 3 -G --debugger
+     op --gltf 1  --debugger
+     op --gltf 1  --tracer
 
 
 
@@ -232,24 +258,6 @@ Smoking Gun : primBuffer creation relying on some vectors that are empty postcac
     2017-08-30 11:53:54.506 INFO  [1716695] [OGeo::dumpStats@587] OGeo::dumpStats num_stats 5
      mmIndex   0 numPrim     0 numPart 11984 numTran(triples)  5344 numPlan   672
      mmIndex   2 numPrim     0 numPart     1 numTran(triples)     1 numPlan     0
-
-
-
-Fix By Just persiting primBuf ? 
------------------------------------
-
-
-* reason not to persist primBuf is for flexible testing : as it allows to dynamically 
-  add new boundaries to dynamically configured geometry  
-
-* single solid/prim GParts contain a bunch of buffers that get concatenated 
-  into a combo GParts via GParts::add
-
-::
-
-     667 void GParts::add(GParts* other, unsigned verbosity )
-     668 {
-
 
 
 

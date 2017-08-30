@@ -51,7 +51,7 @@ GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_solid(0),
        m_num_csgskip(0),
        m_cur_base(NULL),
-       m_parts(new GParts())
+       m_parts(NULL)
 {
 } 
 
@@ -538,6 +538,8 @@ void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned
     {
         pts->applyPlacementTransform(transform, verbosity );
     }
+
+    if(!m_parts) m_parts = new GParts() ; 
     m_parts->add(pts, verbosity); 
 }
 

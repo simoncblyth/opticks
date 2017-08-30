@@ -677,6 +677,8 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
 
     GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
 
+    assert( m_tri_bndlib );
+
     pts->setBndLib(m_tri_bndlib);
 
     solid->setParts( pts );

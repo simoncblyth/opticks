@@ -344,11 +344,13 @@ assimp-edit(){ vi $(opticks-home)/cmake/Modules/FindAssimp.cmake ; }
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir).build ; }
 
+assimp-c(){   cd $(assimp-dir); }
 assimp-cd(){  cd $(assimp-dir); }
 assimp-bcd(){ cd $(assimp-bdir); }
 assimp-icd(){ cd $(assimp-idir); }
 
 assimp-fold-cd(){ cd $(assimp-fold); }
+assimp-fc(){      cd $(assimp-fold); }
 
 assimp-release-get(){
    local iwd=$PWD

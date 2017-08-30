@@ -140,6 +140,8 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     GParts* pts = GParts::make( csg, spec, verbosity );
 
+
+
     solid->setParts( pts );
 
     // TODO: fix vagueness regards GMaker and GGeoTest responsibilities
