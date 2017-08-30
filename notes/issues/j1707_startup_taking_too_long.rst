@@ -1,7 +1,5 @@
-j1707 Startup Taking Too Long 
-=================================
-
-
+FIXED : j1707 Startup Taking Too Long 
+=========================================
 
 Issue
 ---------
@@ -9,12 +7,144 @@ Issue
 Large 250k node j1707 geometry taking 50s to startup, as the new analytic
 geometry currently done post cache.
 
+FIXED 
+-------
+
+* moving analytic into cache brings launch-to-runloop under 5 seconds, 
+* once only geocache creation increased to 80 secs
+
+
 Approach
 ------------
 
 * move most of the processing pre-cache to minimize launch time
 * what gets to GPU is all coming out of serialized buffers so it is emminently possible to 
   get startup time to under 10s even with enormous geometries
+
+
+Moving analytic into cache : j1707 once only geocache creation taking 80 secs
+----------------------------------------------------------------------------------
+
+::
+
+    op --j1707 --gltf 3 -G 
+
+
+
+    simon:optixrap blyth$ op --j1707 --gltf 3 -G
+    288 -rwxr-xr-x  1 blyth  staff  143804 Aug 30 13:49 /usr/local/opticks/lib/OKTest
+    proceeding.. : /usr/local/opticks/lib/OKTest --j1707 --gltf 3 -G
+    2017-08-30 13:58:49.079 INFO  [1764927] [OpticksQuery::dump@79] OpticksQuery::init queryType undefined query_string all query_name NULL query_index 0 query_depth 0 no_selection 1
+    2017-08-30 13:58:49.079 INFO  [1764927] [Opticks::init@321] Opticks::init DONE OpticksResource::desc digest a181a603769c1f98ad927e7367c7aa51 age.tot_seconds 154305 age.tot_minutes 2571.750 age.tot_hours 42.862 age.tot_days      1.786
+    2017-08-30 13:58:49.080 INFO  [1764927] [Opticks::configure@763] Opticks::configure DONE  verbosity 0
+    2017-08-30 13:58:49.080 INFO  [1764927] [OpticksHub::configure@126] OpticksHub::configure m_gltf 3
+    ...
+    2017-08-30 14:00:12.134 INFO  [1764927] [OpticksGeometry::fixGeometry@293] OpticksGeometry::fixGeometry
+    2017-08-30 14:00:12.134 INFO  [1764927] [MFixer::fixMesh@37] MFixer::fixMesh NumSolids 290276 NumMeshes 35
+        10 (v  484 f  960 )  (t    2 oe    0) : x   273.945 : n 17739 : n*v8585676 :                                    sMask : 975,981,987,993,999, 
+        21 (v  430 f  874 )  (t    1 oe  210) : x  1965.000 : n     1 : n*v    430 :                                 unionLS1 : 290269, 
+        23 (v  700 f 1402 )  (t    3 oe   34) : x  1965.000 : n     1 : n*v    700 :                               unionSteel : 290271, 
+        24 (v  168 f  336 )  (t    3 oe    0) : x   500.024 : n     1 : n*v    168 :                             unionBlocker : 290273, 
+    2017-08-30 14:00:12.154 INFO  [1764927] [OpticksGeometry::loadGeometry@211] OpticksGeometry::loadGeometry early exit due to --nogeocache/-G option 
+    2017-08-30 14:00:12.154 INFO  [1764927] [Opticks::setExit@544] Opticks::setExit EXITING 
+    /Users/blyth/opticks/bin/op.sh RC 0
+    simon:optixrap blyth$ 
+
+
+
+Postcache analytic brings j1707 launch to runloop under 5 seconds
+---------------------------------------------------------------------
+
+::
+
+    simon:optixrap blyth$ op --j1707 --gltf 3 --tracer
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --tracer
+    ubin /usr/local/opticks/lib/OTracerTest cfm --tracer cmdline --j1707 --gltf 3 --tracer
+    === op-export : OPTICKS_BINARY /usr/local/opticks/lib/OTracerTest
+    288 -rwxr-xr-x  1 blyth  staff  145944 Aug 30 13:49 /usr/local/opticks/lib/OTracerTest
+    proceeding.. : /usr/local/opticks/lib/OTracerTest --j1707 --gltf 3 --tracer
+    dedupe skipping --tracer 
+    2017-08-30 14:02:42.536 INFO  [1766252] [OpticksQuery::dump@79] OpticksQuery::init queryType undefined query_string all query_name NULL query_index 0 query_depth 0 no_selection 1
+    2017-08-30 14:02:42.539 INFO  [1766252] [OpticksGeometry::loadGeometry@191] OpticksGeometry::loadGeometry START, modifyGeometry? 0
+    2017-08-30 14:02:42.539 INFO  [1766252] [OpticksGeometry::loadGeometryBase@224] OpticksGeometry::loadGeometryBase START 
+    2017-08-30 14:02:42.539 INFO  [1766252] [GGeo::loadGeometry@562] GGeo::loadGeometry START loaded 1 gltf 3
+    2017-08-30 14:02:42.539 INFO  [1766252] [GGeo::loadFromCache@659] GGeo::loadFromCache START
+    2017-08-30 14:02:42.540 INFO  [1766252] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
+    2017-08-30 14:02:42.540 INFO  [1766252] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 15
+    2017-08-30 14:02:42.540 INFO  [1766252] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [Acrylic]
+    2017-08-30 14:02:42.540 INFO  [1766252] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 15,2,39,4
+    2017-08-30 14:02:42.543 INFO  [1766252] [GGeoLib::loadConstituents@119] GGeoLib::loadConstituents idpath /usr/local/opticks/opticksdata/export/juno1707/g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    2017-08-30 14:02:42.543 INFO  [1766252] [GGeoLib::loadConstituents@124] GGeoLib::loadConstituents mm.reldir GMergedMesh gp.reldir GParts MAX_MERGED_MESH  10
+    2017-08-30 14:02:42.860 INFO  [1766252] [GGeoLib::loadConstituents@171] GGeoLib::loadConstituents loaded 5 ridx (  0,  1,  2,  3,  4,)
+
+    2017-08-30 14:02:43.442 INFO  [1766252] [GMeshLib::loadMeshes@206] idpath /usr/local/opticks/opticksdata/export/juno1707/g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    2017-08-30 14:02:43.453 INFO  [1766252] [GGeo::loadFromCache@676] GGeo::loadFromCache DONE
+    2017-08-30 14:02:43.453 INFO  [1766252] [GGeo::loadAnalyticFromCache@681] GGeo::loadAnalyticFromCache START
+    2017-08-30 14:02:43.453 INFO  [1766252] [GGeoLib::loadConstituents@119] GGeoLib::loadConstituents idpath /usr/local/opticks/opticksdata/export/juno1707/g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    2017-08-30 14:02:43.453 INFO  [1766252] [GGeoLib::loadConstituents@124] GGeoLib::loadConstituents mm.reldir GMergedMeshAnalytic gp.reldir GPartsAnalytic MAX_MERGED_MESH  10
+    2017-08-30 14:02:43.765 INFO  [1766252] [GGeoLib::loadConstituents@171] GGeoLib::loadConstituents loaded 5 ridx (  0,  1,  2,  3,  4,)
+    2017-08-30 14:02:44.375 INFO  [1766252] [GMeshLib::loadMeshes@206] idpath /usr/local/opticks/opticksdata/export/juno1707/g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    2017-08-30 14:02:44.475 INFO  [1766252] [GGeo::loadAnalyticFromCache@683] GGeo::loadAnalyticFromCache DONE
+    2017-08-30 14:02:44.476 WARN  [1766252] [GPmt::load@44] GPmt::load resource does not exist /usr/local/opticks/opticksdata/export/juno/GPmt/0
+    2017-08-30 14:02:44.476 INFO  [1766252] [GGeo::loadAnalyticPmt@792] GGeo::loadAnalyticPmt AnalyticPMTIndex 0 AnalyticPMTSlice ALL Path -
+    2017-08-30 14:02:44.482 INFO  [1766252] [GGeo::loadGeometry@598] GGeo::loadGeometry DONE
+    2017-08-30 14:02:44.482 INFO  [1766252] [OpticksGeometry::loadGeometryBase@258] OpticksGeometry::loadGeometryBase DONE 
+    2017-08-30 14:02:44.482 INFO  [1766252] [OpticksGeometry::loadGeometry@217] OpticksGeometry::loadGeometry DONE 
+    2017-08-30 14:02:44.482 INFO  [1766252] [OpticksHub::loadGeometry@264] OpticksHub::loadGeometry DONE
+    2017-08-30 14:02:44.482 INFO  [1766252] [Opticks::makeSimpleTorchStep@1263] Opticks::makeSimpleTorchStep config  cfg NULL
+    2017-08-30 14:02:44.482 INFO  [1766252] [OpticksGen::targetGenstep@130] OpticksGen::targetGenstep setting frame 3153 -0.6931,0.6589,0.2923,0.0000 0.6890,0.7248,0.0000,0.0000 -0.2119,0.2014,-0.9563,0.0000 4131.5200,-3927.3000,18648.1992,1.0000
+    2017-08-30 14:02:44.482 FATAL [1766252] [GenstepNPY::setPolarization@221] GenstepNPY::setPolarization pol 0.0000,0.0000,0.0000,0.0000 npol nan,nan,nan,nan m_polw nan,nan,nan,430.0000
+    2017-08-30 14:02:44.482 INFO  [1766252] [SLog::operator@15] OpticksHub::OpticksHub DONE
+    2017-08-30 14:02:44.483 FATAL [1766252] [OpticksHub::configureState@206] OpticksHub::configureState NState::description /Users/blyth/.opticks/juno/State state dir /Users/blyth/.opticks/juno/State
+    2017-08-30 14:02:44.485 INFO  [1766252] [OpticksViz::setupRendermode@174] OpticksViz::setupRendermode []
+    2017-08-30 14:02:44.485 WARN  [1766252] [OpticksViz::setupRendermode@178] using non-standard rendermode 
+    2017-08-30 14:02:44.485 INFO  [1766252] [OpticksViz::setupRendermode@189] OpticksViz::setupRendermode rmode axis,genstep,nopstep,photon,record,
+    2017-08-30 14:02:44.485 WARN  [1766252] [OpticksViz::setupRestrictions@199] disable GeometryStyle  WIRE for JUNO as too slow 
+    2017-08-30 14:02:44.485 INFO  [1766252] [Scene::dumpGeometryStyles@1201] Scene::setNumGeometryStyle (Scene::dumpGeometryStyles) 
+
+    2017-08-30 14:02:45.619 INFO  [1766252] [OpticksViz::uploadGeometry@251] Opticks time 0.0000,200.0000,50.0000,0.0000 space 0.0000,0.0000,0.0000,60000.0000 wavelength 60.0000,820.0000,20.0000,760.0000
+    2017-08-30 14:02:45.716 INFO  [1766252] [OpticksGeometry::setTarget@131] OpticksGeometry::setTarget  based on CenterExtent from m_mesh0  target 0 aim 1 ce  0 0 0 60000
+    2017-08-30 14:02:45.716 INFO  [1766252] [Composition::setCenterExtent@991] Composition::setCenterExtent ce 0.0000,0.0000,0.0000,60000.0000
+    2017-08-30 14:02:45.716 INFO  [1766252] [SLog::operator@15] OpticksViz::OpticksViz DONE
+    2017-08-30 14:02:45.844 INFO  [1766252] [OScene::init@108] OScene::init (OContext) stack_size_bytes: 2180
+    2017-08-30 14:02:45.844 INFO  [1766252] [OFunc::convert@28] OFunc::convert ptxname solve_callable.cu.ptx ctxname solve_callable funcnames  SolveCubicCallable num_funcs 1
+    2017-08-30 14:02:45.862 INFO  [1766252] [OFunc::convert@44] OFunc::convert id 1 name SolveCubicCallable
+    2017-08-30 14:02:45.862 INFO  [1766252] [OpticksHub::getGGeoBase@340] OpticksHub::getGGeoBase analytic switch   m_gltf 3 ggb GScene
+    2017-08-30 14:02:45.862 INFO  [1766252] [OScene::init@122] OScene::init ggeobase identifier : GScene
+    2017-08-30 14:02:45.862 INFO  [1766252] [OGeo::convert@169] OGeo::convert START  numMergedMesh: 5
+    2017-08-30 14:02:45.862 INFO  [1766252] [GGeoLib::dump@261] OGeo::convert GGeoLib
+    2017-08-30 14:02:45.862 INFO  [1766252] [GGeoLib::dump@262] GGeoLib ANALYTIC  numMergedMesh 5
+    mm i   0 geocode   A                  numSolids     290276 numFaces        9392 numITransforms           1
+    mm i   1 geocode   A                  numSolids          5 numFaces        1584 numITransforms       36572
+    mm i   2 geocode   A                  numSolids          6 numFaces        4704 numITransforms       17739
+    mm i   3 geocode   A                  numSolids          1 numFaces        1856 numITransforms         480
+    mm i   4 geocode   A                  numSolids          1 numFaces         192 numITransforms         480
+    2017-08-30 14:02:45.862 WARN  [1766252] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 0 mm 0
+    2017-08-30 14:02:45.862 WARN  [1766252] [OGeo::makeAnalyticGeometry@498] OGeo::makeAnalyticGeometry GParts::close NOT NEEDED 
+
+    2017-08-30 14:02:46.076 WARN  [1766252] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 0 mm 1
+    2017-08-30 14:02:46.077 WARN  [1766252] [OGeo::makeAnalyticGeometry@498] OGeo::makeAnalyticGeometry GParts::close NOT NEEDED 
+    2017-08-30 14:02:46.785 WARN  [1766252] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 0 mm 2
+    2017-08-30 14:02:46.785 WARN  [1766252] [OGeo::makeAnalyticGeometry@498] OGeo::makeAnalyticGeometry GParts::close NOT NEEDED 
+
+    2017-08-30 14:02:47.096 WARN  [1766252] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 0 mm 3
+    2017-08-30 14:02:47.096 WARN  [1766252] [OGeo::makeAnalyticGeometry@498] OGeo::makeAnalyticGeometry GParts::close NOT NEEDED 
+    2017-08-30 14:02:47.104 WARN  [1766252] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 0 mm 4
+    2017-08-30 14:02:47.104 WARN  [1766252] [OGeo::makeAnalyticGeometry@498] OGeo::makeAnalyticGeometry GParts::close NOT NEEDED 
+    2017-08-30 14:02:47.113 INFO  [1766252] [SLog::operator@15] OScene::OScene DONE
+    2017-08-30 14:02:47.113 WARN  [1766252] [OpEngine::init@65] OpEngine::init skip initPropagation as tracer mode is active  
+    2017-08-30 14:02:47.113 INFO  [1766252] [SLog::operator@15] OpEngine::OpEngine DONE
+    2017-08-30 14:02:47.131 FATAL [1766252] [OContext::addEntry@44] OContext::addEntry P
+    2017-08-30 14:02:47.131 INFO  [1766252] [SLog::operator@15] OKGLTracer::OKGLTracer DONE
+    2017-08-30 14:02:47.131 INFO  [1766252] [SLog::operator@15] OKPropagator::OKPropagator DONE
+    OKMgr::init
+       OptiXVersion :            3080
+    2017-08-30 14:02:47.131 INFO  [1766252] [SLog::operator@15] OKMgr::OKMgr DONE
+    2017-08-30 14:02:47.131 INFO  [1766252] [Bookmarks::create@249] Bookmarks::create : persisting state to slot 0
+    2017-08-30 14:02:47.131 INFO  [1766252] [Bookmarks::collect@273] Bookmarks::collect 0
+    2017-08-30 14:02:47.133 WARN  [1766252] [OpticksViz::prepareGUI@366] App::prepareGUI NULL TimesTable 
+    2017-08-30 14:02:47.133 INFO  [1766252] [OpticksViz::renderLoop@447] enter runloop 
+
 
 
 

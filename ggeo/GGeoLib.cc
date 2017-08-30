@@ -48,9 +48,13 @@ GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib)
     assert(bndlib);
 }
 
-unsigned int GGeoLib::getNumMergedMesh() const 
+unsigned GGeoLib::getNumMergedMesh() const 
 {
     return m_merged_mesh.size();
+}
+unsigned GGeoLib::getVerbosity() const 
+{
+    return m_verbosity ;
 }
 void GGeoLib::setMeshVersion(const char* mesh_version)
 {
@@ -60,6 +64,9 @@ const char* GGeoLib::getMeshVersion() const
 {
     return m_mesh_version ;
 }
+
+
+
 
 
 GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)

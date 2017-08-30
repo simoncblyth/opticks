@@ -127,6 +127,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rec
    const char* name = node->getName(); 
    unsigned int index = node->getIndex();
 
+/*
    if(m_count < 10)
    {
       LOG(info) << "AssimpSelection::selectNodes "
@@ -136,6 +137,7 @@ void AssimpSelection::selectNodes(AssimpNode* node, unsigned int depth, bool rec
                 << " name " << name 
                 ;
    } 
+*/
 
    bool selected = m_query->selected(name, index, depth, recursive_select);
 

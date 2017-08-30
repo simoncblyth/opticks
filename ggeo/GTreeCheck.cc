@@ -32,6 +32,7 @@
 GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
        :
        m_geolib(geolib),
+       m_verbosity(geolib->getVerbosity()),
        m_nodelib(nodelib),
        m_config(config),
        m_repeat_min(config->instance_repeat_min),
@@ -274,7 +275,8 @@ bool GTreeCheck::operator()(const std::string& dig)
 {
     bool cr = isContainedRepeat(dig, 3);
  
-    if(cr) LOG(info) 
+    if(cr && m_verbosity > 2) 
+         LOG(info) 
                   << "GTreeCheck::operator() "
                   << " pdig "  << std::setw(32) << dig  
                   << " disallowd as isContainedRepeat "
@@ -459,6 +461,7 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
     {
          GNode*   rbase  = getRepeatExample(ridx) ;    // <--- why not the parent ? off-by-one confusion here as to which transforms to include
 
+         if(m_verbosity > 2)
          LOG(info) << "GTreeCheck::makeMergedMeshAndInstancedBuffers"
                    << " ridx " << ridx 
                    << " rbase " << rbase

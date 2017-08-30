@@ -31,6 +31,7 @@ class GGEO_API GGeoLib {
         std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;
+        unsigned getVerbosity() const ;  
     public:
         void loadFromCache();
         void save();

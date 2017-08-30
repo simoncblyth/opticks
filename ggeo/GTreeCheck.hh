@@ -89,6 +89,7 @@ class GGEO_API GTreeCheck {
         //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
    private:
        GGeoLib*                  m_geolib ; 
+       unsigned                  m_verbosity ; 
        GNodeLib*                 m_nodelib ; 
        NSceneConfig*             m_config ; 
 

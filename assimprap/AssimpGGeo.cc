@@ -875,7 +875,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     if(!pnode) pnode=node ; 
 
     unsigned int nodeIndex = node->getIndex();
-    bool dbg = nodeIndex >= 3199 && nodeIndex <=3203 ; 
+    bool dbg = false ; // nodeIndex >= 3199 && nodeIndex <=3203 ; 
 
     aiMatrix4x4 g = node->getGlobalTransform();
     GMatrixF* gtransform = new GMATRIXF(g) ;
