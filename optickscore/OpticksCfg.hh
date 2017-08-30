@@ -77,6 +77,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getNumPhotonsPerG4Event(); 
      int          getLoaderVerbosity(); 
      int          getMeshVerbosity(); 
+     int          getVerbosity(); 
      int          getAnalyticPMTIndex(); 
 
 
@@ -155,6 +156,7 @@ private:
      int         m_num_photons_per_g4event;
      int         m_loaderverbosity ; 
      int         m_meshverbosity ; 
+     int         m_verbosity ; 
      int         m_apmtidx ; 
 
 

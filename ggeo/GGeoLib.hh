@@ -25,9 +25,9 @@ class GGEO_API GGeoLib {
         static const char* GPARTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
-        static GGeoLib* Load(Opticks* opticks, bool analytic, GBndLib* bndlib);
+        static GGeoLib* Load(Opticks* ok, bool analytic, GBndLib* bndlib);
     public:
-        GGeoLib(Opticks* opticks, bool analytic, GBndLib* bndlib);
+        GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib);
         std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;
@@ -48,10 +48,11 @@ class GGEO_API GGeoLib {
         void eraseMergedMesh(unsigned int index);
         void clear();
     private:
-        Opticks* m_opticks ; 
+        Opticks* m_ok ; 
         bool     m_analytic ; 
         GBndLib* m_bndlib ; 
         char*   m_mesh_version ;
+        int     m_verbosity ;
         std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
 };
 

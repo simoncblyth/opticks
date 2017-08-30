@@ -37,12 +37,13 @@ GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic, GBndLib* bndlib)
     return glib ; 
 }
 
-GGeoLib::GGeoLib(Opticks* opticks, bool analytic, GBndLib* bndlib) 
+GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib) 
     :
-    m_opticks(opticks),
+    m_ok(ok),
     m_analytic(analytic),
     m_bndlib(bndlib),
-    m_mesh_version(NULL)
+    m_mesh_version(NULL),
+    m_verbosity(m_ok->getVerbosity())
 {
 }
 
@@ -69,14 +70,14 @@ GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
 
 void GGeoLib::loadFromCache()
 {
-    const char* idpath = m_opticks->getIdPath() ;
+    const char* idpath = m_ok->getIdPath() ;
     LOG(debug) << "GGeoLib::loadFromCache" ;
     loadConstituents(idpath);
 }
 
 void GGeoLib::save()
 {
-    const char* idpath = m_opticks->getIdPath() ;
+    const char* idpath = m_ok->getIdPath() ;
     saveConstituents(idpath);
 }
 
@@ -137,6 +138,7 @@ void GGeoLib::loadConstituents(const char* idpath )
         if(pt)
         {
             pt->setBndLib(m_bndlib);
+            pt->setVerbosity(m_verbosity);
         }
    
         if( mm )
@@ -182,7 +184,10 @@ void GGeoLib::saveConstituents(const char* idpath)
         const char* ptpath = sptpath.c_str();
 
         GParts* pt = mm->getParts() ; 
-        if(pt)  pt->save(ptpath); 
+        if(pt)  
+        {          
+           pt->save(ptpath); 
+        }
 
     }
 }

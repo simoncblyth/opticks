@@ -485,10 +485,20 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     if(pts->getPrimBuffer() == NULL)
     {
-        if(m_verbosity > 4) LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close START " ; 
+        //if(m_verbosity > 4) 
+        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close START " ; 
+
         pts->close();
-        if(m_verbosity > 4) LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close DONE " ; 
+
+        //if(m_verbosity > 4) 
+        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close DONE " ; 
     }
+    else
+    {
+        LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close NOT NEEDED " ; 
+    }
+
+    
 
     if(m_verbosity > 3) pts->fulldump("OGeo::makeAnalyticGeometry") ;
 

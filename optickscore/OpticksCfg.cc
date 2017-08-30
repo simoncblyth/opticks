@@ -75,6 +75,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_num_photons_per_g4event(10000),
        m_loaderverbosity(0),
        m_meshverbosity(0),
+       m_verbosity(0),
        m_apmtidx(0),
        m_gltfbase("$TMP/nd"),
        m_gltfname("scene.gltf"),
@@ -606,6 +607,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("meshverbosity",  boost::program_options::value<int>(&m_meshverbosity), meshverbosity );
 
+   char verbosity[128];
+   snprintf(verbosity,128, "General Opticks Verbosity.  Default %d ", m_verbosity);
+   m_desc.add_options()
+       ("verbosity",  boost::program_options::value<int>(&m_verbosity), verbosity );
+
+
 
 
    ///////////////
@@ -1056,6 +1063,15 @@ int OpticksCfg<Listener>::getMeshVerbosity()
 {
     return m_meshverbosity ; 
 }
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getVerbosity()
+{
+    return m_verbosity ; 
+}
+
+
 
 
 template <class Listener>

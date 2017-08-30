@@ -573,14 +573,20 @@ unsigned int GGeo::getMaterialLine(const char* shortname)
 void GGeo::loadGeometry()
 {
     bool loaded = isLoaded() ;
-    LOG(info) << "GGeo::loadGeometry START" << " loaded " << loaded  ; 
+
+    int gltf = m_ok->getGLTF(); 
+
+    LOG(info) << "GGeo::loadGeometry START" 
+              << " loaded " << loaded 
+              << " gltf " << gltf
+              ; 
 
     if(!loaded)
     {
         loadFromG4DAE();
         save();
 
-        if(m_ok->isGLTF()) 
+        if(gltf > 0 && gltf < 10) 
         {
             loadAnalyticFromGLTF();
             saveAnalytic();
@@ -589,7 +595,7 @@ void GGeo::loadGeometry()
     else
     {
         loadFromCache();
-        if(m_ok->isGLTF()) 
+        if(gltf > 0 && gltf < 10)  
         {
             loadAnalyticFromCache(); 
         }
@@ -597,6 +603,11 @@ void GGeo::loadGeometry()
 
     loadAnalyticPmt();
 
+    if( gltf >= 10 )
+    {
+        LOG(info) << "GGeo::loadGeometry DEBUFFING loadAnalyticFromGLTF " ; 
+        loadAnalyticFromGLTF();
+    }
 
     setupLookup();
     setupColors();
@@ -630,10 +641,6 @@ void GGeo::loadAnalyticFromGLTF()
 
     bool loaded = false ; 
     m_gscene = new GScene(m_ok, this, loaded); // GGeo needed for m_bndlib 
-
-    //m_geolib_analytic = m_gscene->getGeoLib();
-    //m_nodelib_analytic = m_gscene->getNodeLib();
-    // there is a meshlib inside GScene too 
 
 #else
     LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
@@ -677,14 +684,10 @@ void GGeo::loadFromCache()
     m_scintillatorlib  = GScintillatorLib::load(m_ok);
     m_sourcelib  = GSourceLib::load(m_ok);
 
-
-
     bool analytic = false ; 
-
     m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
     m_nodelib = GNodeLib::Load(m_ok, analytic);        
     m_meshlib = GMeshLib::Load(m_ok, analytic);
-
 
 
     LOG(info) << "GGeo::loadFromCache DONE" ; 
@@ -694,7 +697,6 @@ void GGeo::loadAnalyticFromCache()
 {
     LOG(info) << "GGeo::loadAnalyticFromCache START" ; 
     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
-   // meshlib ?
     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ; 
 }
 

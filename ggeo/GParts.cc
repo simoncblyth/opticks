@@ -174,8 +174,8 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     assert( tree_tranbuf );
 
     NPY<float>* nodebuf = tree->getNodeBuffer();       // serialized binary tree
-    NPY<float>* tranbuf = usedglobally ? tree_tranbuf->clone() : tree_tranbuf ; 
-    NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() :  tree_planbuf ;  
+    NPY<float>* tranbuf = usedglobally                 ? tree_tranbuf->clone() : tree_tranbuf ; 
+    NPY<float>* planbuf = usedglobally && tree_planbuf ? tree_planbuf->clone() : tree_planbuf ;  
 
     // if any convexpolyhedron eg Trapezoids are usedglobally (ie non-instanced), will need:
     //
@@ -261,6 +261,7 @@ GParts::GParts(GBndLib* bndlib)
       m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
+      m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
@@ -281,6 +282,7 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
       m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
+      m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
@@ -298,6 +300,7 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
       m_name(NULL),
       m_prim_buffer(NULL),
       m_closed(false),
+      m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE)
@@ -390,6 +393,13 @@ void GParts::save(const char* dir)
     // resource organization handled by GGeoLib, that invokes this
 
     LOG(info) << "GParts::save dir " << dir ; 
+
+    if(!isClosed())
+    {
+        LOG(info) << "GParts::save pre-save closing, for primBuf   " ; 
+        close();
+    }    
+
     std::vector<std::string> tags ; 
     BufferTags(tags);
 
@@ -407,40 +417,10 @@ void GParts::save(const char* dir)
             }
         }
     } 
-    if(m_prim_buffer) m_prim_buffer->save(dir, "primBuffer.npy");    
+    if(m_prim_buffer) m_prim_buffer->save(dir, BufferName("prim"));    
 
     if(m_bndspec) m_bndspec->save(dir); 
-
 }
-
-
-
-/*
-
-
-The bndspec GItemList belongs inside the GPartsAnalytic/0/ 
-not up within the default reldir of 
-
-
-simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ l GPartsAnalytic/0/
-total 40
--rw-r--r--  1 blyth  staff  9424 Aug 28 18:59 partBuffer.npy
--rw-r--r--  1 blyth  staff  6800 Aug 28 18:59 tranBuffer.npy
-simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ 
-simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ 
-simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ cat GItemList/GMaterialLib.txt
-Acrylic
-Air
-Copper
-
-
-
-*/
-
-
-
-
-
 
 
 NPY<float>* GParts::LoadBuffer(const char* dir, const char* tag) // static
@@ -459,22 +439,22 @@ GParts* GParts::Load(const char* dir) // static
     NPY<float>* tranBuf = LoadBuffer(dir, "tran");
     NPY<float>* planBuf = LoadBuffer(dir, "plan");
 
-
     // hmm what is appropriate for spec and bndlib these ? 
     //
     // bndlib has to be externally set, its a global thing 
     // that is only needed by registerBoundaries
     //
-    // spec is internal ...
+    // spec is internal ... it needs to be saved with the GParts
     //    
 
-    const char* reldir = "" ; // empty 
+    const char* reldir = "" ;   // empty, signally inplace itemlist persisting
     GItemList* bndspec = GItemList::load(dir, "GParts", reldir ) ; 
     GBndLib*  bndlib = NULL ; 
     GParts* parts = new GParts(partBuf,  tranBuf, planBuf, bndspec, bndlib) ;
     
-    //NPY<int>* primBuf = NPY<int>::load(dir, name, "primBuffer.npy" );
-    //  check primBuf vs derived one ?
+    NPY<int>* primBuf = NPY<int>::load(dir, BufferName("prim") );
+    parts->setPrimBuffer(primBuf);
+    parts->setLoaded();
 
     return parts  ; 
 }
@@ -496,6 +476,8 @@ void GParts::setVerbosity(unsigned verbosity)
 }
 
 
+
+
 unsigned GParts::getAnalyticVersion()
 {
     return m_analytic_version ; 
@@ -512,9 +494,21 @@ bool GParts::isClosed()
 {
     return m_closed ; 
 }
+bool GParts::isLoaded()
+{
+    return m_loaded ; 
+}
+
+void GParts::setLoaded(bool loaded)
+{
+    m_loaded = loaded ; 
+}
+
+
 
 unsigned int GParts::getPrimNumParts(unsigned int prim_index)
 {
+   // DOES NOT WORK POSTCACHE
     return m_parts_per_prim.count(prim_index)==1 ? m_parts_per_prim[prim_index] : 0 ; 
 }
 
@@ -588,6 +582,7 @@ NPY<float>* GParts::getBuffer(const char* tag) const
 
 unsigned int GParts::getNumParts()
 {
+    // for combo GParts this is total of all prim
     if(!m_part_buffer)
     {
         LOG(error) << "GParts::getNumParts NULL part_buffer" ; 
@@ -660,8 +655,6 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
         if(verbosity > 3)
         m_plan_buffer->dump("planes_after_transform");
     }
-    
-    
 
 }
 
@@ -743,7 +736,11 @@ void GParts::close()
                ; 
 
     registerBoundaries();
-    makePrimBuffer(); 
+
+    if(!m_loaded)
+    {
+        makePrimBuffer(); 
+    }
 
     if(m_verbosity > 1)
     dumpPrimBuffer(); 
@@ -759,20 +756,28 @@ void GParts::registerBoundaries() // convert boundary spec names into integer co
    assert(m_bndlib); 
    unsigned int nbnd = m_bndspec->getNumKeys() ; 
    assert( getNumParts() == nbnd );
+
+   if(m_verbosity > 0)
+   LOG(info) << "GParts::registerBoundaries " 
+             << " verbosity " << m_verbosity
+             << " nbnd " << nbnd 
+             << " NumParts " << getNumParts() 
+             ;
+
    for(unsigned int i=0 ; i < nbnd ; i++)
    {
        const char* spec = m_bndspec->getKey(i);
        unsigned int boundary = m_bndlib->addBoundary(spec);
        setBoundary(i, boundary);
 
-       if(m_verbosity > 0)
+       if(m_verbosity > 1)
        LOG(info) << "GParts::registerBoundaries " 
-                << std::setw(3) << i 
-                << " " << std::setw(30) << spec
-                << " --> "
-                << std::setw(4) << boundary 
-                << " " << std::setw(30) << m_bndlib->shortname(boundary)
-                ;
+                 << " i " << std::setw(3) << i 
+                 << " " << std::setw(30) << spec
+                 << " --> "
+                 << std::setw(4) << boundary 
+                 << " " << std::setw(30) << m_bndlib->shortname(boundary)
+                 ;
 
    } 
 }
@@ -857,9 +862,26 @@ void GParts::makePrimBuffer()
 
     prim/part/tran/plan buffers are used GPU side in cu/intersect_analytic.cu.
     
+
+    Hmm looks impossible to do this prim Buffer derivation
+    postcache, as it is relying on the offsets collected 
+    at each concatentation. So will need to load the primBuf 
+
     */
 
     unsigned int num_prim = 0 ; 
+
+    if(m_verbosity > 0)
+    LOG(info) << "GParts::makePrimBuffer"
+              << " verbosity " << m_verbosity
+              << " isPartList " << isPartList()
+              << " isNodeTree " << isNodeTree()
+              << " parts_per_prim.size " << m_parts_per_prim.size()
+              << " part_per_add.size " << m_part_per_add.size()
+              << " tran_per_add.size " << m_tran_per_add.size()
+              << " plan_per_add.size " << m_plan_per_add.size()
+              ; 
+
     if(isPartList())
     {
         reconstructPartsPerPrim();
@@ -885,6 +907,7 @@ void GParts::makePrimBuffer()
               << " parts_per_prim.size " << m_parts_per_prim.size()
               << " part_per_add.size " << m_part_per_add.size()
               << " tran_per_add.size " << m_tran_per_add.size()
+              << " plan_per_add.size " << m_plan_per_add.size()
               ; 
 
     nivec4* priminfo = new nivec4[num_prim] ;

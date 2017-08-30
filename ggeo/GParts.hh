@@ -181,7 +181,6 @@ class GGEO_API GParts {
         void setVerbosity(unsigned verbosity); 
         void add(GParts* other, unsigned verbosity);
         void close();
-        bool isClosed();
         void enlargeBBox(unsigned int part, float epsilon=0.00001f);
         void enlargeBBoxAll(float epsilon=0.00001f);
     private:
@@ -189,9 +188,13 @@ class GGEO_API GParts {
         void init();        
     public: 
         const char*  getName();
+
         bool isPartList();
         bool isNodeTree();
         bool isInvisible();
+        bool isClosed();
+        bool isLoaded();
+
         void setInvisible();
 
         unsigned int getIndex(unsigned int part);
@@ -201,6 +204,8 @@ class GGEO_API GParts {
 
         unsigned getAnalyticVersion();
         void setAnalyticVersion(unsigned vers);
+    private: 
+        void setLoaded(bool loaded=true);
     public: 
         std::string  getBoundaryName(unsigned int part);
         const char*  getTypeName(unsigned int part);
@@ -276,6 +281,7 @@ class GGEO_API GParts {
     private:
         NPY<int>*          m_prim_buffer ; 
         bool               m_closed ; 
+        bool               m_loaded ; 
         MUU                m_parts_per_prim ;
         VU                 m_tran_per_add ; 
         VU                 m_part_per_add ; 

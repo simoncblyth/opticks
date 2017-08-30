@@ -5,13 +5,256 @@ postcache_analytic_inviz
 Issue 
 ----------
 
+Postcache analytic geometry appears to load, 
+but nothing visible in tracer in raytrace mode.
+
+
 ::
 
     op --gltf 1 --tracer --debugger
 
-Postcache analytic geometry appears to load, 
-but nothing visible in tracer.
+    op --gltf 1 --tracer --debugger --restrictmesh 3
 
+    op --gltf 1 --tracer --restrictmesh 0   ##  just global, ogl:OK, ray:blank
+    op --gltf 1 --tracer --restrictmesh 1   ##  EMPTY mesh, both blank
+
+    op --gltf 3 --tracer --restrictmesh 2   ##  ray:blank, ogl: bizarre few tris instanced, looks like broken polygonization (the --gltf 3 not getting thru ?)
+    op --gltf 1 --tracer --restrictmesh 2   ##  same as --gltf 3
+    //  --restrictmesh 3 and 4 similar to 2  
+
+
+    op --gltf 1 --tracer --restrictmesh 5   ##  ogl: just PMTs, ray: blank
+
+
+
+
+Debug analytic mode --gltf 10
+----------------------------------
+
+
+Analytic raytrace reappears with special --gltf 10 mode that 
+regrabs from GLTF : so the issue looks to be something lost in save/load.
+
+
+::
+
+    op --gltf 10 --tracer  
+
+    op --gltf 10 --tracer --restrictmesh 0
+         # ogl:only global 
+         # ray:everything ... restrictmesh ignored by the raytrace 
+
+
+::
+
+     573 void GGeo::loadGeometry()
+     574 {
+     575     bool loaded = isLoaded() ;
+     576 
+     577     int gltf = m_ok->getGLTF();
+     578 
+     579     LOG(info) << "GGeo::loadGeometry START"
+     580               << " loaded " << loaded
+     581               << " gltf " << gltf
+     582               ;
+     583 
+     584     if(!loaded)
+     585     {
+     586         loadFromG4DAE();
+     587         save();
+     588 
+     589         if(gltf > 0 && gltf < 10)
+     590         {
+     591             loadAnalyticFromGLTF();
+     592             saveAnalytic();
+     593         }
+     594     }
+     595     else
+     596     {
+     597         loadFromCache();
+     598         if(gltf > 0 && gltf < 10)
+     599         {
+     600             loadAnalyticFromCache();
+     601         }
+     602     }
+     603 
+     604     loadAnalyticPmt();
+     605     
+     606     if( gltf >= 10 )
+     607     {
+     608         LOG(info) << "GGeo::loadGeometry DEBUFFING loadAnalyticFromGLTF " ;
+     609         loadAnalyticFromGLTF();
+     610     }   
+     611     
+     612     setupLookup();
+     613     setupColors();
+     614     setupTyp();
+     615     LOG(info) << "GGeo::loadGeometry DONE" ;
+     616 }   
+
+
+
+Suceeding gltf 10 log
+------------------------
+
+::
+
+
+    op --gltf 10 --tracer  
+
+    2017-08-30 11:03:03.777 INFO  [1691027] [OGeo::convert@169] OGeo::convert START  numMergedMesh: 6
+    2017-08-30 11:03:03.777 INFO  [1691027] [GGeoLib::dump@247] OGeo::convert GGeoLib
+    2017-08-30 11:03:03.777 INFO  [1691027] [GGeoLib::dump@248] GGeoLib ANALYTIC  numMergedMesh 6
+    mm i   0 geocode   A                  numSolids      12230 numFaces     2288116 numITransforms           1
+    mm i   1 geocode   A            EMPTY numSolids          1 numFaces           0 numITransforms        1792
+    mm i   2 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   3 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   4 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   5 geocode   A                  numSolids          5 numFaces       10078 numITransforms         672
+    2017-08-30 11:03:03.778 WARN  [1691027] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 0
+    2017-08-30 11:03:04.079 WARN  [1691027] [OGeo::convertMergedMesh@222] OGeo::convertMesh skipping mesh 1
+    2017-08-30 11:03:04.079 WARN  [1691027] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 2
+    2017-08-30 11:03:04.150 WARN  [1691027] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 3
+    2017-08-30 11:03:04.164 WARN  [1691027] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 4
+    2017-08-30 11:03:04.179 WARN  [1691027] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 5
+    2017-08-30 11:03:04.191 INFO  [1691027] [OGeo::convert@207] OGeo::convert DONE  numMergedMesh: 6
+    2017-08-30 11:03:04.191 INFO  [1691027] [OGeo::dumpStats@577] OGeo::dumpStats num_stats 5
+     mmIndex   0 numPrim  3116 numPart 11984 numTran(triples)  5344 numPlan   672
+     mmIndex   2 numPrim     1 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   3 numPrim     1 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   4 numPrim     1 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   5 numPrim     5 numPart    41 numTran(triples)    12 numPlan     0
+    2017-08-30 11:03:04.193 INFO  [1691027] [OScene::init@172] OScene::init DONE
+    2017-08-30 11:03:04.193 INFO  [1691027] [SLog::operator@15] OScene::OScene DONE
+
+
+
+Upped Verbosity gltf 1 Fail : reveals all numPrim counts are zero
+---------------------------------------------------------------------
+
+::
+
+    op --gltf 1 --tracer --verbosity 1
+
+
+    2017-08-30 11:25:21.093 INFO  [1704646] [*OpticksHub::getGGeoBase@340] OpticksHub::getGGeoBase analytic switch   m_gltf 1 ggb GScene
+    2017-08-30 11:25:21.093 INFO  [1704646] [OScene::init@122] OScene::init ggeobase identifier : GScene
+    2017-08-30 11:25:21.094 INFO  [1704646] [OGeo::convert@169] OGeo::convert START  numMergedMesh: 6
+    2017-08-30 11:25:21.094 INFO  [1704646] [GGeoLib::dump@247] OGeo::convert GGeoLib
+    2017-08-30 11:25:21.094 INFO  [1704646] [GGeoLib::dump@248] GGeoLib ANALYTIC  numMergedMesh 6
+    mm i   0 geocode   A                  numSolids      12230 numFaces     2288116 numITransforms           1
+    mm i   1 geocode   A            EMPTY numSolids          1 numFaces           0 numITransforms        1792
+    mm i   2 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   3 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   4 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   5 geocode   A                  numSolids          5 numFaces       10078 numITransforms         672
+    2017-08-30 11:25:21.094 WARN  [1704646] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 0
+    2017-08-30 11:25:21.094 INFO  [1704646] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GSurfaceLib TRIGGERED A CLOSE  shortname []
+    2017-08-30 11:25:21.095 INFO  [1704646] [GPropertyLib::close@384] GPropertyLib::close type GSurfaceLib buf 48,2,39,4
+    2017-08-30 11:25:21.394 WARN  [1704646] [OGeo::convertMergedMesh@222] OGeo::convertMesh skipping mesh 1
+    2017-08-30 11:25:21.394 WARN  [1704646] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 2
+    2017-08-30 11:25:21.465 WARN  [1704646] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 3
+    2017-08-30 11:25:21.479 WARN  [1704646] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 4
+    2017-08-30 11:25:21.493 WARN  [1704646] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 5
+    2017-08-30 11:25:21.505 INFO  [1704646] [OGeo::convert@207] OGeo::convert DONE  numMergedMesh: 6
+    2017-08-30 11:25:21.505 INFO  [1704646] [OGeo::dumpStats@577] OGeo::dumpStats num_stats 5
+     mmIndex   0 numPrim     0 numPart 11984 numTran(triples)  5344 numPlan   672
+     mmIndex   2 numPrim     0 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   3 numPrim     0 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   4 numPrim     0 numPart     1 numTran(triples)     1 numPlan     0
+     mmIndex   5 numPrim     0 numPart    41 numTran(triples)    12 numPlan     0
+    2017-08-30 11:25:21.507 INFO  [1704646] [OScene::init@172] OScene::init DONE
+
+
+primBuf arrives NULL and GParts::close is being called::
+
+    2017-08-30 11:36:48.004 INFO  [1708299] [GPropertyLib::close@384] GPropertyLib::close type GSurfaceLib buf 48,2,39,4
+    2017-08-30 11:36:48.101 WARN  [1708299] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:36:48.317 WARN  [1708299] [OGeo::convertMergedMesh@222] OGeo::convertMesh skipping mesh 1
+    2017-08-30 11:36:48.317 WARN  [1708299] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 2
+    2017-08-30 11:36:48.317 WARN  [1708299] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:36:48.317 WARN  [1708299] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:36:48.389 WARN  [1708299] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 3
+    2017-08-30 11:36:48.389 WARN  [1708299] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:36:48.389 WARN  [1708299] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:36:48.404 WARN  [1708299] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 4
+    2017-08-30 11:36:48.404 WARN  [1708299] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:36:48.404 WARN  [1708299] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:36:48.418 WARN  [1708299] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 5
+    2017-08-30 11:36:48.418 WARN  [1708299] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:36:48.418 WARN  [1708299] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:36:48.430 INFO  [1708299] [OGeo::convert@207] OGeo::convert DONE  numMergedMesh: 6
+    2017-08-30 11:36:48.430 INFO  [1708299] [OGeo::dumpStats@587] OGeo::dumpStats num_stats 5
+
+
+
+Smoking Gun : primBuffer creation relying on some vectors that are empty postcache
+----------------------------------------------------------------------------------------
+
+::
+
+    2017-08-30 11:53:54.078 INFO  [1716695] [GGeoLib::dump@250] GGeoLib ANALYTIC  numMergedMesh 6
+    mm i   0 geocode   A                  numSolids      12230 numFaces     2288116 numITransforms           1
+    mm i   1 geocode   A            EMPTY numSolids          1 numFaces           0 numITransforms        1792
+    mm i   2 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   3 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   4 geocode   A                  numSolids          1 numFaces          12 numITransforms         864
+    mm i   5 geocode   A                  numSolids          5 numFaces       10078 numITransforms         672
+    2017-08-30 11:53:54.078 WARN  [1716695] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 0
+    2017-08-30 11:53:54.078 WARN  [1716695] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:53:54.078 INFO  [1716695] [GParts::registerBoundaries@764] GParts::registerBoundaries  verbosity 1 nbnd 11984 NumParts 11984
+    2017-08-30 11:53:54.078 INFO  [1716695] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GSurfaceLib TRIGGERED A CLOSE  shortname []
+    2017-08-30 11:53:54.079 INFO  [1716695] [GPropertyLib::close@384] GPropertyLib::close type GSurfaceLib buf 48,2,39,4
+    2017-08-30 11:53:54.170 INFO  [1716695] [GParts::makePrimBuffer@873] GParts::makePrimBuffer verbosity 1 isPartList 0 isNodeTree 1 parts_per_prim.size 0 part_per_add.size 0 tran_per_add.size 0 plan_per_add.size 0
+    2017-08-30 11:53:54.170 WARN  [1716695] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:53:54.392 WARN  [1716695] [OGeo::convertMergedMesh@222] OGeo::convertMesh skipping mesh 1
+    2017-08-30 11:53:54.392 WARN  [1716695] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 2
+    2017-08-30 11:53:54.392 WARN  [1716695] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:53:54.392 INFO  [1716695] [GParts::registerBoundaries@764] GParts::registerBoundaries  verbosity 1 nbnd 1 NumParts 1
+    2017-08-30 11:53:54.392 INFO  [1716695] [GParts::makePrimBuffer@873] GParts::makePrimBuffer verbosity 1 isPartList 0 isNodeTree 1 parts_per_prim.size 0 part_per_add.size 0 tran_per_add.size 0 plan_per_add.size 0
+    2017-08-30 11:53:54.392 WARN  [1716695] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:53:54.464 WARN  [1716695] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 3
+    2017-08-30 11:53:54.464 WARN  [1716695] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:53:54.464 INFO  [1716695] [GParts::registerBoundaries@764] GParts::registerBoundaries  verbosity 1 nbnd 1 NumParts 1
+    2017-08-30 11:53:54.464 INFO  [1716695] [GParts::makePrimBuffer@873] GParts::makePrimBuffer verbosity 1 isPartList 0 isNodeTree 1 parts_per_prim.size 0 part_per_add.size 0 tran_per_add.size 0 plan_per_add.size 0
+    2017-08-30 11:53:54.464 WARN  [1716695] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:53:54.478 WARN  [1716695] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 4
+    2017-08-30 11:53:54.478 WARN  [1716695] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:53:54.478 INFO  [1716695] [GParts::registerBoundaries@764] GParts::registerBoundaries  verbosity 1 nbnd 1 NumParts 1
+    2017-08-30 11:53:54.478 INFO  [1716695] [GParts::makePrimBuffer@873] GParts::makePrimBuffer verbosity 1 isPartList 0 isNodeTree 1 parts_per_prim.size 0 part_per_add.size 0 tran_per_add.size 0 plan_per_add.size 0
+    2017-08-30 11:53:54.478 WARN  [1716695] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:53:54.493 WARN  [1716695] [OGeo::makeAnalyticGeometry@477] OGeo::makeAnalyticGeometry START verbosity 1 mm 5
+    2017-08-30 11:53:54.493 WARN  [1716695] [OGeo::makeAnalyticGeometry@489] OGeo::makeAnalyticGeometry GParts::close START 
+    2017-08-30 11:53:54.493 INFO  [1716695] [GParts::registerBoundaries@764] GParts::registerBoundaries  verbosity 1 nbnd 41 NumParts 41
+    2017-08-30 11:53:54.493 INFO  [1716695] [GParts::makePrimBuffer@873] GParts::makePrimBuffer verbosity 1 isPartList 0 isNodeTree 1 parts_per_prim.size 0 part_per_add.size 0 tran_per_add.size 0 plan_per_add.size 0
+    2017-08-30 11:53:54.493 WARN  [1716695] [OGeo::makeAnalyticGeometry@494] OGeo::makeAnalyticGeometry GParts::close DONE 
+    2017-08-30 11:53:54.506 INFO  [1716695] [OGeo::convert@207] OGeo::convert DONE  numMergedMesh: 6
+    2017-08-30 11:53:54.506 INFO  [1716695] [OGeo::dumpStats@587] OGeo::dumpStats num_stats 5
+     mmIndex   0 numPrim     0 numPart 11984 numTran(triples)  5344 numPlan   672
+     mmIndex   2 numPrim     0 numPart     1 numTran(triples)     1 numPlan     0
+
+
+
+Fix By Just persiting primBuf ? 
+-----------------------------------
+
+
+* reason not to persist primBuf is for flexible testing : as it allows to dynamically 
+  add new boundaries to dynamically configured geometry  
+
+* single solid/prim GParts contain a bunch of buffers that get concatenated 
+  into a combo GParts via GParts::add
+
+::
+
+     667 void GParts::add(GParts* other, unsigned verbosity )
+     668 {
+
+
+
+
+Initial Fail
+-------------------
 
 
 ::

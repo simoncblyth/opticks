@@ -170,7 +170,7 @@ void GScene::initFromGLTF()
         return ; 
     }
 
-    m_ok->setVerbosity(m_verbosity);
+    if(m_verbosity > m_ok->getVerbosity()) m_ok->setVerbosity(m_verbosity);
 
     //if(m_verbosity > 0)
     LOG(info) << "GScene::init START" ;

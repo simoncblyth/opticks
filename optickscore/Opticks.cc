@@ -759,7 +759,11 @@ void Opticks::configure()
     m_photons_per_g4event = m_cfg->getNumPhotonsPerG4Event();
     m_dbg->postconfigure();
 
-    LOG(debug) << "Opticks::configure DONE " ;
+    m_verbosity = m_cfg->getVerbosity(); 
+    LOG(info) << "Opticks::configure DONE " 
+              << " verbosity " << m_verbosity 
+              ;
+
 }
 
 
