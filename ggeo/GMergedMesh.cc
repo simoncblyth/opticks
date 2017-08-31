@@ -22,6 +22,7 @@
 #include "GParts.hh"
 #include "GTree.hh"
 #include "GMergedMesh.hh"
+#include "GBBoxMesh.hh"
 
 
 #include "PLOG.hh"
@@ -44,7 +45,31 @@ bool GMergedMesh::isTriangulated() const
 
 
 
-GMergedMesh::GMergedMesh(unsigned int index)
+// expedient pass-thru ctor
+GMergedMesh::GMergedMesh(
+             unsigned index, 
+             gfloat3* vertices, 
+             unsigned num_vertices, 
+             guint3*  faces, 
+             unsigned num_faces, 
+             gfloat3* normals, 
+             gfloat2* texcoords
+         )
+       : 
+       GMesh(index, vertices, num_vertices, faces, num_faces, normals, texcoords),
+       m_cur_vertices(0),
+       m_cur_faces(0),
+       m_cur_solid(0),
+       m_cur_mergedmesh(0),
+       m_num_csgskip(0),
+       m_cur_base(NULL),
+       m_parts(NULL)
+{
+} 
+
+
+
+GMergedMesh::GMergedMesh(unsigned index)
        : 
        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
        m_cur_vertices(0),
@@ -271,27 +296,6 @@ void GMergedMesh::countMesh( const GMesh* mesh )
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
-
-    //assert(0 && "is this being used ?");  // users will probably need to accomodate new way of handling analytic...
-/*
-    // YEP : 
-    frame #4: 0x0000000100d79dcf libGGeo.dylib`GMergedMesh::mergeMergedMesh(this=0x000000010acf6200, other=0x000000010acf3390, selected=true) + 63 at GMergedMesh.cc:263
-    frame #5: 0x0000000100d79836 libGGeo.dylib`GMergedMesh::combine(index=0, mm=0x000000010acf3390, solids=0x00007fff5fbfd220, verbosity=1) + 870 at GMergedMesh.cc:140
-    frame #6: 0x0000000100d79468 libGGeo.dylib`GMergedMesh::combine(index=0, mm=0x000000010acf3390, solid=0x000000010acf5860, verbosity=1) + 664 at GMergedMesh.cc:115
-    frame #7: 0x0000000100d60419 libGGeo.dylib`GGeoTest::createPmtInBox(this=0x000000010ac4ea50) + 1209 at GGeoTest.cc:179
-    frame #8: 0x0000000100d5fb5e libGGeo.dylib`GGeoTest::create(this=0x000000010ac4ea50) + 126 at GGeoTest.cc:109
-    frame #9: 0x0000000100d5fa3d libGGeo.dylib`GGeoTest::modifyGeometry(this=0x000000010ac4ea50) + 157 at GGeoTest.cc:81
-    frame #10: 0x0000000100d842bc libGGeo.dylib`GGeo::modifyGeometry(this=0x0000000107b11ae0, config=0x0000000000000000) + 668 at GGeo.cc:819
-    frame #11: 0x00000001010f6844 libOpticksGeometry.dylib`OpticksGeometry::modifyGeometry(this=0x0000000107b12cb0) + 868 at OpticksGeometry.cc:263
-    frame #12: 0x00000001010f5d8c libOpticksGeometry.dylib`OpticksGeomettraceeloadGeometry(this=0x0000000107b12cb0) + 572 at OpticksGeometry.cc:200
-    frame #13: 0x00000001010f9e69 libOpticksGeometry.dylib`OpticksHub::loadGeometry(this=0x00007fff5fbfeae0) + 409 at OpticksHub.cc:243
-    frame #14: 0x00000001010f8ffd libOpticksGeometry.dylib`OpticksHub::init(this=0x00007fff5fbfeae0) + 77 at OpticksHub.cc:94
-    frame #15: 0x00000001010f8f00 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x00007fff5fbfeae0, ok=0x00007fff5fbfeb50) + 416 at OpticksHub.cc:81
-    frame #16: 0x00000001010f90dd libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x00007fff5fbfeae0, ok=0x00007fff5fbfeb50) + 29 at OpticksHub.cc:83
-    frame #17: 0x000000010000d026 CTestDetectorTest`main(argc=1, argv=0x00007fff5fbfee58) + 950 at CTestDetectorTest.cc:48
-    frame #18: 0x00007fff8a48b5fd libdyld.dylib`start + 1
-*/
-
 
     unsigned int nsolid = other->getNumSolids();
 
@@ -739,6 +743,8 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 
 GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // static
 {
+    assert(mms.size() > 0 );
+
     GMergedMesh* mm0 = mms[0] ; 
 
     GMergedMesh* com = new GMergedMesh( mm0->getIndex() ); 
@@ -766,6 +772,122 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
 }
 
 
+GMergedMesh*  GMergedMesh::MakeLODComposite(GMergedMesh* mm, unsigned levels ) // static
+{
+    assert( levels == 2 || levels == 3 );
+    gbbox bb = mm->getBBox(0);
 
+    std::vector<GMergedMesh*> comps ; 
+    comps.push_back(mm);
+
+    GMergedMesh* bbmm = CreateBBoxMesh(mm->getIndex(), bb );
+    comps.push_back(bbmm);
+
+    if(levels == 3)
+    {
+        GMergedMesh* qmm = CreateQuadMesh(mm->getIndex(), bb );
+        comps.push_back(qmm);
+    }
+
+    GMergedMesh* lodcomp = MakeComposite(comps);
+    return lodcomp ; 
+}
+
+
+
+
+GMergedMesh* GMergedMesh::CreateBBoxMesh(unsigned index, gbbox& bb ) // static
+{
+     // this was implemented as a workaround for GBBoxMesh not inheriting from GMergedMesh 
+
+     unsigned num_vertices = GBBoxMesh::NUM_VERTICES ; // 24 = 6*4  
+     gfloat3* vertices = new gfloat3[num_vertices] ; 
+     gfloat3* normals  = new gfloat3[num_vertices] ; 
+     gfloat2* texcoords  = NULL ; 
+
+     unsigned num_faces = GBBoxMesh::NUM_FACES  ;    // 12 = 6*2  2-tri for each bbox facet 
+     guint3* faces = new guint3[num_faces] ;
+
+     GBBoxMesh::twentyfour(bb, vertices, faces, normals);
+
+     GMergedMesh* bbmm = new GMergedMesh(
+             index, 
+             vertices, 
+             num_vertices, 
+             faces, 
+             num_faces, 
+             normals, 
+             texcoords
+         );
+
+    return bbmm ;   
+}
+
+GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
+{
+     unsigned num_vertices = 4 ; 
+     gfloat3* vertices = new gfloat3[num_vertices] ; 
+     gfloat3* normals  = new gfloat3[num_vertices] ; 
+     gfloat2* texcoords  = NULL ; 
+     unsigned num_faces = 4  ; 
+     guint3* faces = new guint3[num_faces] ;
+    
+       
+     gfloat3 dim = bb.dimensions() ;
+
+     /*
+           Y 
+           |
+           2----3
+           | .  |
+           |  . |
+           0----1   -> x  
+          
+     */
+
+     gfloat3 cen = bb.center(); 
+
+    // collapse the smallest dimension
+
+     if(dim.z <= dim.x && dim.z <= dim.x )
+     {
+         vertices[0] = gfloat3( bb.min.x ,  bb.min.y , cen.z  ) ; 
+         vertices[1] = gfloat3( bb.max.x ,  bb.min.y , cen.z  ) ;
+         vertices[2] = gfloat3( bb.min.x ,  bb.max.y , cen.z  ) ; 
+         vertices[3] = gfloat3( bb.max.x ,  bb.max.y , cen.z  ) ;
+     }
+     else if(dim.y <= dim.x && dim.y <= dim.z )
+     {
+         vertices[0] = gfloat3( bb.min.x ,  cen.y   ,   bb.min.z ) ; 
+         vertices[1] = gfloat3( bb.max.x ,  cen.y   ,   bb.min.z ) ;
+         vertices[2] = gfloat3( bb.min.x ,  cen.y   ,   bb.max.z ) ; 
+         vertices[3] = gfloat3( bb.max.x ,  cen.y   ,   bb.max.z ) ;
+     }
+     else if(dim.x <= dim.y && dim.x <= dim.z )
+     {
+         vertices[0] = gfloat3( cen.x , bb.min.y , bb.min.z ) ; 
+         vertices[1] = gfloat3( cen.x , bb.max.y , bb.min.z ) ;
+         vertices[2] = gfloat3( cen.x , bb.min.y , bb.max.z ) ; 
+         vertices[3] = gfloat3( cen.x , bb.max.y , bb.max.z ) ;
+     }
+     else
+     {
+         assert(0); 
+     }
+
+     GMergedMesh* qmm = new GMergedMesh(
+             index, 
+             vertices, 
+             num_vertices, 
+             faces, 
+             num_faces, 
+             normals, 
+             texcoords
+         );
+
+
+    return qmm ;   
+
+}
 
 

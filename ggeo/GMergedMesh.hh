@@ -41,18 +41,31 @@ private:
      void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
 
 public:
-    static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms ); // eg for LOD levels 
+    static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms );           // eg for LOD levels 
+    static GMergedMesh* MakeLODComposite(GMergedMesh* mm, unsigned levels=3 );   // 2/3 LOD levels 
+    static GMergedMesh* CreateBBoxMesh(unsigned index, gbbox& bb );
+    static GMergedMesh* CreateQuadMesh(unsigned index, gbbox& bb );
 public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity ) ;
 public:
-    GMergedMesh(unsigned int index) ;
+    GMergedMesh(unsigned index) ;
+    GMergedMesh(                // expedient pass-thru to GMesh ctor
+             unsigned index, 
+             gfloat3* vertices, 
+             unsigned num_vertices, 
+             guint3*  faces, 
+             unsigned num_faces, 
+             gfloat3* normals, 
+             gfloat2* texcoords
+         );
+public:
     GParts* getParts();
     std::string brief() const ;
     void addInstancedBuffers(const std::vector<GNode*>& placements);
-    int  getNumComponents() const ;
+   // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  
 private:
     void setParts(GParts* pts); 
 private:

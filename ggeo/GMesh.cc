@@ -92,9 +92,9 @@ bool GMesh::isEmpty() const
 
 GMesh::GMesh(unsigned int index, 
              gfloat3* vertices, 
-             unsigned int num_vertices, 
-             guint3* faces, 
-             unsigned int num_faces, 
+             unsigned num_vertices, 
+             guint3*  faces, 
+             unsigned num_faces, 
              gfloat3* normals, 
              gfloat2* texcoords
             ) 
@@ -595,18 +595,6 @@ NSlice* GMesh::getPartSlice()
     return m_pslice ; 
 }
 
-
-
-/*
-void GMesh::setParts(GParts* parts)
-{
-    m_parts = parts ; 
-}
-GParts* GMesh::getParts()
-{
-    return m_parts ; 
-}
-*/
 
 
 
