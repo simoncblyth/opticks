@@ -14,12 +14,23 @@ class GDrawable ;
 class GMergedMesh ; 
 class GBBoxMesh ; 
 class GBuffer ;
-class InstanceCuller ; 
+
+class InstLODCull ; 
 
 class Texture ; 
 
 #include "RendererBase.hh"
 #include "OGLRAP_API_EXPORT.hh"
+
+
+/**
+Renderer
+==========
+
+Multiple flavors of Renderer are residents of Scene.
+
+**/
+
 
 class OGLRAP_API Renderer : public RendererBase  {
   public:
@@ -39,7 +50,7 @@ class OGLRAP_API Renderer : public RendererBase  {
   public:
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       void setInstanced(bool instanced=true);
-      void setInstanceCuller(InstanceCuller* instance_culler);
+      void setInstLODCull(InstLODCull* instlodcull);
       void setWireframe(bool wireframe=true);
       virtual ~Renderer();
 
@@ -62,15 +73,11 @@ class OGLRAP_API Renderer : public RendererBase  {
 
   private:
       void upload_buffers(NSlice* islice, NSlice* fslice);
+      GBuffer* fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice);
 
-#ifdef OLD_TEMPLATED_UPLOAD
-      template <typename B>
-      GLuint upload(GLenum target, GLenum usage, B* buffer, const char* name=NULL);
-#else
       GLuint upload_GBuffer(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
       GLuint upload_NPY(    GLenum target, GLenum usage, NPY<float>* buffer, const char* name=NULL);
       GLuint upload(        GLenum target, GLenum usage, BBufSpec* bufspec, const char* name=NULL);
-#endif
 
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
@@ -123,9 +130,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool m_has_tex ; 
       bool m_has_transforms ; 
       bool m_instanced ; 
-      bool m_instcull ; 
       bool m_wireframe ; 
-      InstanceCuller* m_instance_culler ; 
+      InstLODCull* m_instlodcull ; 
 };      
 
 

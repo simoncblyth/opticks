@@ -13,7 +13,7 @@
 #include "NSlice.hpp"
 
 #include "Renderer.hh"
-#include "InstanceCuller.hh"
+#include "InstLODCull.hh"
 #include "Prog.hh"
 #include "Composition.hh"
 #include "Texture.hh"
@@ -59,9 +59,8 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_has_tex(false),
     m_has_transforms(false),
     m_instanced(false),
-    m_instcull(false),
     m_wireframe(false),
-    m_instance_culler(NULL)
+    m_instlodcull(NULL)
 {
 }
 
@@ -75,10 +74,10 @@ void Renderer::setInstanced(bool instanced)
 {
     m_instanced = instanced ; 
 }
-void Renderer::setInstanceCuller(InstanceCuller* instance_culler)
+void Renderer::setInstLODCull(InstLODCull* instlodcull)
 {
-    m_instance_culler = instance_culler ; 
-    m_instcull = instance_culler != NULL ;    
+    assert(m_instanced);
+    m_instlodcull = instlodcull ; 
 }
 
 void Renderer::setWireframe(bool wireframe)
@@ -102,34 +101,7 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 
 
-#ifdef OLD_TEMPLATED_UPLOAD
-template <typename B>
-GLuint Renderer::upload(GLenum target, GLenum usage, B* buffer, const char* name)
-{
-    GLuint buffer_id ; 
-    int prior_id = buffer->getBufferId();
-    if(prior_id == -1)
-    {
-        glGenBuffers(1, &buffer_id);
-        glBindBuffer(target, buffer_id);
 
-        glBufferData(target, buffer->getNumBytes(), buffer->getPointer(), usage);
-
-        buffer->setBufferId(buffer_id); 
-        buffer->setBufferTarget(target); 
-
-        LOG(debug) << "Renderer::upload " << name  ; 
-        //buffer->Summary(name);
-    }
-    else
-    {
-        buffer_id = prior_id ; 
-        LOG(debug) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
-        glBindBuffer(target, buffer_id);
-    }
-    return buffer_id ; 
-}
-#else
 GLuint Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const char* name)
 {
     BBufSpec* spec = buf->getBufSpec(); 
@@ -193,7 +165,6 @@ GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char*
     }
     return buffer_id ; 
 }
-#endif
 
 
 
@@ -242,6 +213,26 @@ Texture* Renderer::getTexture()
 }
 
 
+GBuffer* Renderer::fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice)
+{
+    assert(fslice);
+    LOG(warning) << "Renderer::fslice_element_buffer face slicing the indices buffer " << fslice->description() ; 
+
+    unsigned nelem = fbuf_orig->getNumElements();
+    assert(nelem == 1);
+
+    // temporarily reshape so can fslice at tri/face level 
+   
+    fbuf_orig->reshape(3);  // equivalent to NumPy buf.reshape(-1,3)  putting 3 triangle indices into each item 
+    GBuffer* fbuf = fbuf_orig->make_slice(fslice);
+    fbuf_orig->reshape(nelem);   // equivalent to NumPy buf.reshape(-1,1) 
+
+    fbuf->reshape(nelem);        // sliced buffer adopts shape of source, so reshape this too
+    assert(fbuf->getNumElements() == 1);
+    return fbuf ;  
+}
+
+
 void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
 {
     // as there are two GL_ARRAY_BUFFER for vertices and colors need
@@ -279,22 +270,9 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     
     // 3*nface indices
     GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();
-    GBuffer* fbuf = fbuf_orig ; 
-    if(fslice)
-    {
-        LOG(warning) << "Renderer::upload_buffers face slicing the indices buffer " << fslice->description() ; 
-        unsigned int nelem = fbuf_orig->getNumElements();
-        assert(nelem == 1);
-        fbuf_orig->reshape(3);  // equivalent to NumPy buf.reshape(-1,3)  putting 3 triangle indices into each item 
-        fbuf = fbuf_orig->make_slice(fslice);
-        fbuf_orig->reshape(nelem);   // equivalent to NumPy buf.reshape(-1,1) 
-        fbuf->reshape(nelem);        // sliced buffer adopts shape of source, so reshape this too
-        assert(fbuf->getNumElements() == 1);
-    }
-      
-
+    GBuffer* fbuf = fslice ? fslice_element_buffer(fbuf_orig, fslice) : fbuf_orig ; 
+    
     //printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
-
 
     GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
     setHasTex(tbuf != NULL);
@@ -302,6 +280,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     NPY<float>* ibuf_orig = m_drawable->getITransformsBuffer();
     NPY<float>* ibuf = ibuf_orig ;
     setHasTransforms(ibuf != NULL);
+
     if(islice)
     {
         LOG(warning) << "Renderer::upload_buffers instance slicing ibuf with " << islice->description() ;
@@ -316,27 +295,10 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     if(m_instanced) assert(hasTransforms()) ;
 
 
-#ifdef OLD_TEMPLATED_UPLOAD
-    assert(0);
-    m_vertices  = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
-    m_colors    = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
-    m_normals   = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
-    if(hasTex())
-    {
-        m_texcoords = upload<GBuffer>(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
-    }
-    if(hasTransforms())
-    {
-        m_transforms = upload<NPY<float> >(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
-        m_itransform_count = ibuf->getNumItems() ;
-    }
-    m_indices  = upload<GBuffer>(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
-    m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
-
-#else
     m_vertices  = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
     m_colors    = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
     m_normals   = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
+
     if(hasTex())
     {
         m_texcoords = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
@@ -350,7 +312,7 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
     m_indices  = upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
     m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
 
-#endif
+
     LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
 
     GLboolean normalized = GL_FALSE ; 

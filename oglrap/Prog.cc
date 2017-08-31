@@ -1,11 +1,15 @@
 #include <cstdio>
 #include <iostream>
+#include <sstream>
 
 #include "Prog.hh"
+#include "ProgLog.hh"
 #include "Shdr.hh"
 
 #include "BFile.hh"
 #include "PLOG.hh"
+
+// https://www.khronos.org/opengl/wiki/Shader_Compilation
 
 
 const char* GL_type_to_string (GLenum type);
@@ -22,9 +26,37 @@ void Prog::setInclPath(const char* path)
     m_incl_path = path ; 
 }
 
+void Prog::setVerbosity(unsigned verbosity)
+{   
+    m_verbosity = verbosity ; 
+}
 
-Prog::Prog(const char* basedir, const char* tag, const char* incl_path) :
-   m_tagdir(NULL)
+void Prog::setNoFrag(bool nofrag)
+{   
+    m_nofrag = nofrag ; 
+}
+
+
+
+std::string Prog::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << " Prog " 
+       << " tag:" << m_tag
+       << " verbosity:" << m_verbosity 
+       ;
+
+    return ss.str();
+}
+
+
+
+Prog::Prog(const char* basedir, const char* tag, const char* incl_path) 
+    :
+    m_tagdir(NULL), 
+    m_tag(strdup(tag)),
+    m_verbosity(0)
 {
     if(basedir == NULL )
     {
@@ -86,10 +118,36 @@ void Prog::readSources(const char* tagdir)
     }     
 }
 
+void Prog::createOnly()
+{
+    if(m_verbosity > 0) LOG(info) << "Prog::createOnly" << desc() ;
+ 
+    create();
+}
+
+void Prog::linkAndValidate()
+{
+    if(m_verbosity > 0) LOG(info) << "Prog::linkAndValidate" << desc()  ; 
+
+    link();
+    validate();
+    collectLocations();
+}
+
 void Prog::createAndLink()
 {
-    LOG(debug) << "Prog::createAndLink tagdir " << m_tagdir ; 
+    if(m_verbosity > 0) LOG(info) << "Prog::createAndlink" << desc()  ; 
 
+    create();
+    link();
+    validate();
+    collectLocations();
+    //Print("Prog::createAndLink");
+}
+
+
+void Prog::create()
+{
     m_id = glCreateProgram();
 
     for(unsigned int i=0 ; i<m_shaders.size() ; i++)
@@ -98,10 +156,6 @@ void Prog::createAndLink()
         shdr->createAndCompile();           
         glAttachShader (m_id, shdr->getId());
     }
-    link();
-    validate();
-    collectLocations();
-    //Print("Prog::createAndLink");
 }
 
 void Prog::link()
@@ -122,6 +176,8 @@ void Prog::link()
 
 void Prog::validate()
 {
+    if(m_verbosity > 0) LOG(info) << "Prog::validate" << desc()  ; 
+
     glValidateProgram (m_id);
 
     int params = -1;
@@ -130,9 +186,20 @@ void Prog::validate()
     if (GL_TRUE != params) 
     {
         _print_program_info_log();
-        Print("Prog::validate ERROR"); 
-        LOG(fatal) << "Prog::validate failure for tagdir [" << m_tagdir << "]"  ; 
-        exit(1);
+
+        ProgLog prl(m_id) ;
+
+        if(m_nofrag && prl.is_no_frag_shader() )
+        {
+            LOG(info) << "ignoring lack of frag shader "  ; 
+        } 
+        else
+        {
+            prl.dump("Prog::validate");
+            Print("Prog::validate ERROR"); 
+            LOG(fatal) << "Prog::validate failure for tagdir [" << m_tagdir << "] EXITING "  ; 
+            exit(1);
+        }
     }
 }
 
@@ -190,16 +257,15 @@ GLint Prog::uniform(const char* name_, bool required)
 
 
 
-
 void Prog::_print_program_info_log()
 {
-    int max_length = 2048;
-    int actual_length = 0;
-    char log[2048];
+    LOG(info) << "Prog::_print_program_info_log" << desc() ; 
 
-    glGetProgramInfoLog (m_id, max_length, &actual_length, log);
+    ProgLog prl(m_id) ;
+    prl.dump("Prog::_print_program_info_log");
 
-    printf ("Prog::_print_program_info_log id %u:\n%s", m_id, log);
+    LOG(info) << " NO_FRAGMENT_SHADER " << prl.is_no_frag_shader() ;  
+
 }
 
 

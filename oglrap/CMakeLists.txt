@@ -99,6 +99,7 @@ set(SOURCES
     Device.cc
     Shdr.cc
     Prog.cc
+    ProgLog.cc
     Colors.cc
     Demo.cc
     Touchable.cc
@@ -116,7 +117,7 @@ set(SOURCES
     Frame.cc
 
     Renderer.cc
-    InstanceCuller.cc
+    InstLODCull.cc
     RendererCfg.cc
     AxisApp.cc
     OpticksViz.cc

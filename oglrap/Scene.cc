@@ -41,7 +41,7 @@
 
 #include "Composition.hh"
 #include "Renderer.hh"
-#include "InstanceCuller.hh"
+#include "InstLODCull.hh"
 #include "Device.hh"
 #include "Rdr.hh"
 #include "Colors.hh"
@@ -111,80 +111,6 @@ const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
    } 
    return NULL ; 
 }
-
-const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
-{
-   switch(style)
-   {
-      case BBOX:return BBOX_ ; break; 
-      case NORM:return NORM_ ; break; 
-      case NONE:return NONE_ ; break; 
-      case WIRE:return WIRE_ ; break; 
-      case NORM_BBOX:return NORM_BBOX_ ; break; 
-      case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
-      default: assert(0); break ; 
-   } 
-   return NULL ; 
-}
-
-const char* Scene::getGeometryStyleName()
-{
-   return getGeometryStyleName(m_geometry_style);
-}
-
-
-
-void Scene::applyGeometryStyle()  // B:key 
-{
-    bool inst(false) ; 
-    bool bbox(false) ; 
-    bool wire(false) ; 
-
-    switch(m_geometry_style)
-    {
-      case BBOX:
-             inst = false ; 
-             bbox = true ; 
-             wire = false ; 
-             break;
-      case NORM:
-             inst = true ;
-             bbox = false ; 
-             wire = false ; 
-             break;
-      case NONE:
-             inst = false ;
-             bbox = false ; 
-             wire = false ; 
-             break;
-      case WIRE:
-             inst = true ;
-             bbox = false ; 
-             wire = true ; 
-             break;
-      case NORM_BBOX:
-             inst = true ; 
-             bbox = true ; 
-             wire = false ; 
-             break;
-      case NUM_GEOMETRY_STYLE:
-             assert(0);
-             break;
-   }
-
-   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
-   {
-       m_instance_mode[i] = inst ; 
-       m_bbox_mode[i] = bbox ; 
-   }
-
-   setWireframe(wire);
-
-
-
-}
-
-
 
 
 
@@ -441,7 +367,7 @@ void Scene::initRenderersDebug()
     {
         m_instance_mode[i] = false ; 
         m_instance_renderer[i] = NULL ; 
-        m_instance_culler[i] = NULL ; 
+        m_instance_lodcull[i] = NULL ; 
 
         m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = NULL ;
@@ -478,8 +404,9 @@ void Scene::initRenderers()
 
         if(m_instcull)
         {
-            m_instance_culler[i] = new InstanceCuller("inrmcull", m_shader_dir, m_shader_incl_path );
-            m_instance_renderer[i]->setInstanceCuller(m_instance_culler[i]);
+            m_instance_lodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path );
+            m_instance_lodcull[i]->setVerbosity(2);
+            m_instance_renderer[i]->setInstLODCull(m_instance_lodcull[i]);
         }
 
         m_bbox_mode[i] = false ; 
@@ -545,8 +472,8 @@ void Scene::setComposition(Composition* composition)
         if(m_instance_renderer[i])
             m_instance_renderer[i]->setComposition(composition);
 
-        if(m_instance_culler[i])
-            m_instance_culler[i]->setComposition(composition);
+        if(m_instance_lodcull[i])
+            m_instance_lodcull[i]->setComposition(composition);
 
         if(m_bbox_renderer[i])
             m_bbox_renderer[i]->setComposition(composition);
@@ -617,16 +544,23 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
     { 
 
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
-        LOG(trace)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer  ;
+        LOG(info)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer << " instcull " << m_instcull ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
+
 
         if(m_instance_renderer[m_num_instance_renderer])
         {
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
+
+            if(m_instcull && m_instance_lodcull[m_num_instance_renderer] )
+            {
+                m_instance_lodcull[m_num_instance_renderer]->upload(mm);
+            }
         }
+
 
         LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
@@ -908,7 +842,7 @@ void Scene::jump()
 
 void Scene::setTarget(unsigned int target, bool aim)
 {
-    m_hub->setTarget(target, aim);
+    m_hub->setTarget(target, aim); // sets center_extent in Composition via okg-/OpticksHub/OpticksGeometry
 }
 unsigned int Scene::getTarget()
 {
@@ -916,46 +850,10 @@ unsigned int Scene::getTarget()
 }
 
 
-/*
-void Scene::setTarget(unsigned int target, bool aim)
-{
-    if(m_mesh0 == NULL)
-    {
-        LOG(info) << "Scene::setTarget " << target << " deferring as geometry not loaded " ; 
-        m_target_deferred = target ; 
-        return ; 
-    }
-    m_target = target ; 
-
-    gfloat4 ce_ = m_mesh0->getCenterExtent(target);
-
-    glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ); 
-
-    LOG(info)<<"Scene::setTarget " 
-             << " target " << target 
-             << " aim " << aim
-             << " ce " 
-             << " " << ce.x 
-             << " " << ce.y 
-             << " " << ce.z 
-             << " " << ce.w 
-             ;
-
-    m_composition->setCenterExtent(ce, aim); 
-}
-
-
-unsigned int Scene::getTargetDeferred()
-{
-    return m_target_deferred ; 
-}
-*/
 
 
 
-
-
-void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
+void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projective, Raytraced, Composite 
 {
     bool nudge = modifiers & OpticksConst::e_shift ;
     if(nudge)
@@ -970,6 +868,23 @@ void Scene::nextRenderStyle(unsigned int modifiers)  // O:key
 
     m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
 }
+
+bool Scene::isProjectiveRender()
+{
+   return m_render_style == R_PROJECTIVE ;
+}
+bool Scene::isRaytracedRender()
+{
+   return m_render_style == R_RAYTRACED ;
+}
+bool Scene::isCompositeRender()
+{
+   return m_render_style == R_COMPOSITE ;
+}
+
+
+ 
+
 
 void Scene::applyRenderStyle()   
 {
@@ -1003,8 +918,6 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_mesh0(NULL),
             m_composition(NULL),
             m_colorbuffer(NULL),
-            //m_target(0),
-            //m_target_deferred(0),
             m_touch(0),
             m_global_mode(false),
             m_globalvec_mode(false),
@@ -1022,7 +935,8 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_render_style(R_PROJECTIVE),
             m_initialized(false),
             m_time_fraction(0.f),
-            m_instcull(true)
+            m_instcull(true),
+            m_verbosity(0)
 {
 
     init();
@@ -1030,13 +944,17 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {
         m_instance_renderer[i] = NULL ; 
-        m_instance_culler[i] = NULL ; 
+        m_instance_lodcull[i] = NULL ; 
         m_bbox_renderer[i] = NULL ; 
         m_instance_mode[i] = false ; 
         m_bbox_mode[i] = false ; 
     }
 }
 
+void Scene::setVerbosity(unsigned verbosity)
+{
+    m_verbosity = verbosity ;
+}
 
 
 const char* Scene::getShaderDir()
@@ -1170,6 +1088,8 @@ void Scene::nextPhotonStyle()
 
 
 
+////// GeometryStyle (B-key) /////////////////////
+
 unsigned int Scene::getNumGeometryStyle()
 {
     return m_num_geometry_style == 0 ? int(NUM_GEOMETRY_STYLE) : m_num_geometry_style ;
@@ -1180,18 +1100,6 @@ void Scene::setNumGeometryStyle(unsigned int num_geometry_style)
 
     dumpGeometryStyles("Scene::setNumGeometryStyle");
 }
-
-
-
-unsigned int Scene::getNumGlobalStyle()
-{
-    return m_num_global_style == 0 ? int(NUM_GLOBAL_STYLE) : m_num_global_style ;
-}
-void Scene::setNumGlobalStyle(unsigned int num_global_style)
-{
-    m_num_global_style = num_global_style ;
-}
-
 
 void Scene::dumpGeometryStyles(const char* msg)
 {
@@ -1207,15 +1115,12 @@ void Scene::dumpGeometryStyles(const char* msg)
     }
  
     assert( style == style0 );
-
 }
 
 Scene::GeometryStyle_t Scene::getGeometryStyle() const 
 {
     return m_geometry_style ;
 }
-
-
 
 void Scene::nextGeometryStyle()
 {
@@ -1233,14 +1138,96 @@ void Scene::setGeometryStyle(GeometryStyle_t style)
     applyGeometryStyle();
 }
 
+const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
+{
+   switch(style)
+   {
+      case BBOX:return BBOX_ ; break; 
+      case NORM:return NORM_ ; break; 
+      case NONE:return NONE_ ; break; 
+      case WIRE:return WIRE_ ; break; 
+      case NORM_BBOX:return NORM_BBOX_ ; break; 
+      case NUM_GEOMETRY_STYLE:assert(0) ; break ; 
+      default: assert(0); break ; 
+   } 
+   return NULL ; 
+}
+
+const char* Scene::getGeometryStyleName()
+{
+   return getGeometryStyleName(m_geometry_style);
+}
+
+void Scene::applyGeometryStyle()  // B:key 
+{
+    bool inst(false) ; 
+    bool bbox(false) ; 
+    bool wire(false) ; 
+
+    switch(m_geometry_style)
+    {
+      case BBOX:
+             inst = false ; 
+             bbox = true ; 
+             wire = false ; 
+             break;
+      case NORM:
+             inst = true ;
+             bbox = false ; 
+             wire = false ; 
+             break;
+      case NONE:
+             inst = false ;
+             bbox = false ; 
+             wire = false ; 
+             break;
+      case WIRE:
+             inst = true ;
+             bbox = false ; 
+             wire = true ; 
+             break;
+      case NORM_BBOX:
+             inst = true ; 
+             bbox = true ; 
+             wire = false ; 
+             break;
+      case NUM_GEOMETRY_STYLE:
+             assert(0);
+             break;
+   }
+
+   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   {
+       m_instance_mode[i] = inst ; 
+       m_bbox_mode[i] = bbox ; 
+   }
+
+   setWireframe(wire);
+}
+
+
+
+
+
+
+
+// GlobalStyle (Q key)
+
+unsigned int Scene::getNumGlobalStyle()
+{
+    return m_num_global_style == 0 ? int(NUM_GLOBAL_STYLE) : m_num_global_style ;
+}
+void Scene::setNumGlobalStyle(unsigned int num_global_style)
+{
+    m_num_global_style = num_global_style ;
+}
+
 void Scene::nextGlobalStyle()
 {
     int next = (m_global_style + 1) % getNumGlobalStyle() ; 
     m_global_style = (GlobalStyle_t)next ; 
     applyGlobalStyle();
 }
-
-
 
 void Scene::applyGlobalStyle()
 {
@@ -1280,22 +1267,8 @@ void Scene::applyGlobalStyle()
 
 
 
+///  InstanceStyle(I key)
 
-bool Scene::isProjectiveRender()
-{
-   return m_render_style == R_PROJECTIVE ;
-}
-bool Scene::isRaytracedRender()
-{
-   return m_render_style == R_RAYTRACED ;
-}
-bool Scene::isCompositeRender()
-{
-   return m_render_style == R_COMPOSITE ;
-}
-
-
- 
 
 
 void Scene::nextInstanceStyle()
@@ -1329,8 +1302,5 @@ void Scene::applyInstanceStyle()  // I:key
    } 
 
 }
-
-
-
 
 

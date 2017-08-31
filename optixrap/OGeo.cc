@@ -473,7 +473,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 
 optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 {
-    //if(m_verbosity > 2)
+    if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry START" 
                  << " verbosity " << m_verbosity 
                  << " mm " << mm->getIndex()
@@ -485,16 +485,17 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     if(pts->getPrimBuffer() == NULL)
     {
-        //if(m_verbosity > 4) 
+        if(m_verbosity > 4) 
         LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close START " ; 
 
         pts->close();
 
-        //if(m_verbosity > 4) 
+        if(m_verbosity > 4) 
         LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close DONE " ; 
     }
     else
     {
+        if(m_verbosity > 2)
         LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close NOT NEEDED " ; 
     }
 

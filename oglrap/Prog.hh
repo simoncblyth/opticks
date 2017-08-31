@@ -12,10 +12,20 @@ class Shdr ;
 #include "OGLRAP_HEAD.hh"
 
 class OGLRAP_API Prog {
+//      static const char* LOG_NO_FRAGMENT_SHADER ; 
    public:
       Prog(const char* basedir, const char* tag, const char* incl_path=NULL);
 
+      void setNoFrag(bool nofrag);
+      void setVerbosity(unsigned verbosity);
       void createAndLink();
+
+      void createOnly();
+      void linkAndValidate();
+
+
+      std::string desc() const ; 
+
       void Summary(const char* msg);
       void Print(const char* msg);
       GLuint getId();
@@ -40,6 +50,7 @@ class OGLRAP_API Prog {
       static const char* GL_type_to_string(GLenum type); 
 
    private:
+      void create();
       void link();
       void validate();
       void collectLocations();
@@ -50,6 +61,7 @@ class OGLRAP_API Prog {
    private:
       bool                     m_live ;
       char*                    m_tagdir ;
+      const char*              m_tag  ;
       GLuint                   m_id ;
       std::vector<std::string> m_names;
       std::vector<GLenum>      m_codes;
@@ -63,7 +75,9 @@ class OGLRAP_API Prog {
       TypMap_t  m_atype ;
       TypMap_t  m_utype ;
 
-       std::string              m_incl_path ; 
+      std::string              m_incl_path ; 
+      unsigned   m_verbosity ; 
+      bool       m_nofrag ; 
 
 };
 

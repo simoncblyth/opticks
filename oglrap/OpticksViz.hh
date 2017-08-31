@@ -25,6 +25,16 @@ class SLauncher ;
 
 #include "OGLRAP_API_EXPORT.hh"
 
+/**
+OpticksViz
+===========
+
+Canonical m_viz instances are residents of the top level managers: ok/OKMgr.hh okg4/OKG4Mgr.hh opticksgl/OKGLTracer.hh
+
+
+**/
+
+
 class OGLRAP_API OpticksViz {
          friend class AxisApp ; 
     public:

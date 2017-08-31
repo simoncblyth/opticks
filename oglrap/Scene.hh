@@ -19,7 +19,7 @@ class GBoundaryLibMetadata ;
 
 // oglrap-
 class Renderer ; 
-class InstanceCuller ; 
+class InstLODCull ; 
 class Rdr ;
 class Device ; 
 class Composition ; 
@@ -31,7 +31,59 @@ class Interactor ;
 Scene
 ======
 
+Canonical m_scene instance is a resident of OpticksViz
 
+
+
+
+
+=======================  ===========      ===========   ==================================================================================
+Constituent               Class            Shader Tag    Notes
+=======================  ===========      ===========   ==================================================================================
+m_global_renderer         Renderer         nrm
+m_globalvec_renderer      Renderer         nrmvec        global renderer with face normals represented by geometry shader generated lines
+m_raytrace_renderer       Renderer         tex           great big quad rendering of raytrace texture obtained from OptiX
+m_instance_renderer[i]    Renderer         inrm          
+m_instance_lodcull[i]     InstLODCull      inrmcull      WIP
+m_bbox_renderer[i]        Renderer         inrm   
+m_axis_renderer           Rdr              axis
+m_genstep_renderer        Rdr              p2l
+m_nopstep_renderer        Rdr              nop           LINE_STRIP primitive
+m_photon_renderer         Rdr              pos
+m_record_renderer         Rdr              rec           LINE_STRIP primitive
+m_altrecord_renderer      Rdr              altrec        LINE_STRIP primitive
+m_devrecord_renderer      Rdr              devrec        LINE_STRIP primitive
+=======================  ===========      ===========   ==================================================================================
+
+
+uploadGeometryGlobal
+    uploads to m_global_renderer  and m_globalvec_renderer
+
+uploadGeometryInstanced
+    uploads to m_instance_renderer[i] and m_bbox_renderer[i] the bbox mesh being generated from the GMergedMesh 
+
+uploadAxis
+    uploads to m_axis_renderer
+
+uploadEvent
+    uploads to m_genstep_renderer, m_nopstep_renderer, m_photon_renderer, m_record_renderer, m_altrecord_renderer, m_devrecord_renderer
+
+uploadEventSelection
+    uploads to m_photon_renderer, m_record_renderer, m_altrecord_renderer, m_devrecord_renderer
+
+
+Despite appearances buffers are not uploaded more than once, however binding must be done for every renderer.
+
+
+
+GeometryStyle (B key)
+    what combination of bbox and instances to render
+
+GlobalStyle (Q key)
+    control global and globalvec rendering of non-instanced geometry
+
+InstanceStyle (I key)
+    control instance rendering (some overlap with GeometryStyle) 
 
 
 
@@ -80,10 +132,12 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* BBOX4  ;
 
    public:
+        void setVerbosity(unsigned verbosity);
         void setRenderMode(const char* s);
         std::string getRenderMode();
         void dump_uploads_table(const char* msg="Scene::dump_uploads_table");
    public:
+        // P-key
         typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
         void setRecordStyle(Scene::RecordStyle_t style);
         Scene::RecordStyle_t getRecordStyle();
@@ -91,6 +145,7 @@ class OGLRAP_API Scene : public NConfigurable {
         const char* getRecordStyleName();
         void nextPhotonStyle();
    public:
+        // B-key
         // disabled styles after NUM_GEOMETRY_STYLE
         typedef enum { BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
@@ -106,19 +161,22 @@ class OGLRAP_API Scene : public NConfigurable {
         void setWireframe(bool wire=true);
         void setInstCull(bool instcull=true);
    public:
+        // Q-key 
         typedef enum { GVIS, GINVIS, GVISVEC, GVEC, NUM_GLOBAL_STYLE } GlobalStyle_t ;  
         unsigned int getNumGlobalStyle(); 
         void setNumGlobalStyle(unsigned int num_global_style); // used to disable GVISVEC GVEC styles for JUNO
-        void nextGlobalStyle();  // key Q (quiet)
+        void nextGlobalStyle();  
         void applyGlobalStyle();
    public:
+        // O-key
         typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
-        void nextRenderStyle(unsigned int modifiers);  // key O (formerly optix render mode toggle)
+        void nextRenderStyle(unsigned int modifiers); 
         void applyRenderStyle();
         bool isProjectiveRender();
         bool isRaytracedRender();
         bool isCompositeRender();
    public:
+        // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  
         void nextInstanceStyle();
         void applyInstanceStyle();
@@ -219,7 +277,7 @@ class OGLRAP_API Scene : public NConfigurable {
    private:
         unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
-        InstanceCuller*    m_instance_culler[MAX_INSTANCE_RENDERER] ; 
+        InstLODCull* m_instance_lodcull[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 
@@ -262,6 +320,7 @@ class OGLRAP_API Scene : public NConfigurable {
         bool            m_initialized ;  
         float           m_time_fraction ;  
         bool            m_instcull ; 
+        unsigned        m_verbosity ; 
 
 };
 

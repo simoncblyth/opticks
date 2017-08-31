@@ -27,9 +27,6 @@
 #include "Scene.hh"
 #include "Interactor.hh"
 
-//#include <GLFW/glfw3.h>   // for the key definitions maybe recode to avoid this include 
-
-
 #ifdef GUI_
 #include <ImGui/imgui.h>
 #endif
@@ -137,18 +134,6 @@ void Interactor::applyGUIStyle()  // G:key
 
 
 
-
-
-
-/*
-bool* Interactor::getModeAddress(const char* name)
-{
-    if(strcmp(name, GUI_MODE)==0) return &m_gui_mode ;
-    return NULL ;
-}
-*/
-
-
 void Interactor::setScene(Scene* scene)
 {
     m_scene = scene ; 
@@ -181,24 +166,6 @@ unsigned int Interactor::getContainer()
 {
     return m_container ;  
 }
-
-
-/*
-bool Interactor::isOptiXMode()
-{ 
-    return m_optix_mode > 0 ; 
-}
-void Interactor::setOptiXMode(int optix_mode)
-{
-    m_optix_mode =  optix_mode ; 
-    m_changed = true ; 
-}
-int Interactor::getOptiXMode()
-{ 
-    return m_optix_mode ; 
-}
-*/
-
 
 
 unsigned int Interactor::getOptiXResolutionScale()
@@ -235,12 +202,6 @@ void Interactor::nextOptiXResolutionScale(unsigned int modifiers)
 
 
 
-
-/*
-const char* Interactor::GUIMODE    = "gui" ; 
-const char* Interactor::SCRUBMODE  = "scrub" ; 
-*/
-
 void Interactor::gui()
 {
 #ifdef GUI_
@@ -258,21 +219,8 @@ void Interactor::configureI(const char* /*name*/, std::vector<int> values)
     LOG(debug) << "Interactor::configureI";
     if(values.empty()) return ;
 
-    /*
-    if(strcmp(name, OPTIXMODE) == 0)
-    {
-        int last = values.back();
-        setOptiXMode(last);
-    }
-    */
 }
 
-
-
-//void Interactor::setBookmarks(Bookmarks* bookmarks)
-//{
-//    m_bookmarks = bookmarks ;
-//}
 
 void Interactor::setComposition(Composition* composition)
 {
