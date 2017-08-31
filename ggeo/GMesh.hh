@@ -2,6 +2,8 @@
 
 struct NSlice ; 
 template <typename T> class NPY ;
+#include "NGLM.hpp"
+
 class NPYBase ; 
 class GParts ; 
 class NCSG ; 
@@ -195,6 +197,10 @@ class GGEO_API GMesh : public GDrawable {
       static const char* iidentity_ ;     // guint4: node, mesh, boundary, sensor
       static const char* aiidentity_ ;    
 
+      // composited GMergedMesh eg for LOD levels 
+      static const char* components_ ;    
+
+
       static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
       static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
 
@@ -254,7 +260,7 @@ class GGEO_API GMesh : public GDrawable {
       //glm::vec4 getCenterExtent(unsigned int index);
 
 
-      gbbox    getBBox(unsigned int index);
+      gbbox    getBBox(unsigned int index) const ;
       gbbox*   getBBoxPtr();
 
       float* getTransform(unsigned int index);
@@ -270,6 +276,8 @@ class GGEO_API GMesh : public GDrawable {
       unsigned getNumFaces() const ;
       unsigned getNumSolidsSelected() const ;
       unsigned getNumSolids() const ;
+      int      getNumComponents() const ;
+      void     dumpComponents(const char* msg="GMesh::dumpComponents") const ;
 
   public:
       unsigned getNumTransforms() ;
@@ -335,6 +343,7 @@ class GGEO_API GMesh : public GDrawable {
       void setITransformsBuffer(NPY<float>* buf);
       void setInstancedIdentityBuffer(NPY<unsigned int>* buf);
       void setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf);
+      void setComponentsBuffer(NPY<unsigned>* buf);
   public:
       bool hasTransformsBuffer(); 
       bool hasITransformsBuffer(); 
@@ -359,7 +368,9 @@ class GGEO_API GMesh : public GDrawable {
       NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
       NPY<float>*        getITransformsBuffer();
       NPY<unsigned int>* getInstancedIdentityBuffer(); 
-
+  public:
+      // for composited GMergedMesh, eg for LOD levels 
+      NPY<unsigned>*     getComponentsBuffer();
   public:
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);
@@ -385,10 +396,10 @@ class GGEO_API GMesh : public GDrawable {
       virtual unsigned int*  getBoundaries();
       virtual unsigned int*  getSensors();
 
-      virtual guint4*        getNodeInfo();
+      virtual guint4*        getNodeInfo() const ;
       virtual guint4         getNodeInfo(unsigned int index);
 
-      virtual guint4*        getIdentity();
+      virtual guint4*        getIdentity() const ;
       virtual guint4         getIdentity(unsigned int index);
 
       virtual guint4*        getInstancedIdentity();
@@ -454,6 +465,7 @@ class GGEO_API GMesh : public GDrawable {
       void setNumVertices(unsigned int num_vertices);
       void setNumFaces(   unsigned int num_faces);
       void setNumSolids(unsigned int num_solids);
+      void setComponent(const glm::uvec4& eidx, unsigned icomp );
 
   public:
       // analytic geometry standin for OptiX
@@ -461,16 +473,17 @@ class GGEO_API GMesh : public GDrawable {
       //GParts* getParts();
 
   protected:
-      unsigned int    m_index ;
+      unsigned     m_index ;
 
-      unsigned int    m_num_vertices ;
-      unsigned int    m_num_faces ;
-      unsigned int    m_num_solids  ;         // used from GMergedMesh subclass
-      unsigned int    m_num_solids_selected  ;
+      unsigned     m_num_vertices ;
+      unsigned     m_num_faces ;
+      unsigned     m_num_solids  ;         // used from GMergedMesh subclass
+      unsigned     m_num_solids_selected  ;
+      unsigned     m_num_mergedmesh ;
 
-      unsigned int*   m_nodes ; 
-      unsigned int*   m_boundaries ; 
-      unsigned int*   m_sensors ; 
+      unsigned*    m_nodes ; 
+      unsigned*    m_boundaries ; 
+      unsigned*    m_sensors ; 
  
       gfloat3*        m_vertices ;
       gfloat3*        m_normals ;
@@ -524,9 +537,11 @@ class GGEO_API GMesh : public GDrawable {
   private:
       // instancing related  buffers created by GTreeCheck 
       NPY<float>*        m_itransforms_buffer ;
-      NPY<unsigned int>* m_iidentity_buffer ;
-      NPY<unsigned int>* m_aiidentity_buffer ; 
-
+      NPY<unsigned>*     m_iidentity_buffer ;
+      NPY<unsigned>*     m_aiidentity_buffer ; 
+  protected:
+      // Composited MM components, offset recording 
+      NPY<unsigned>*     m_components_buffer ;   
   private:
       // transients
       GBuffer* m_facerepeated_identity_buffer ;

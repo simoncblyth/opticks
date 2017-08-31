@@ -9,6 +9,7 @@
 // npy-
 #include "Timer.hpp"
 #include "NSensor.hpp"
+#include "NPY.hpp"
 
 // opticks-
 #include "Opticks.hh"
@@ -28,15 +29,15 @@
 
 
 
-bool GMergedMesh::isSkip()
+bool GMergedMesh::isSkip() const
 {
    return m_geocode == OpticksConst::GEOCODE_SKIP ;  
 }
-bool GMergedMesh::isAnalytic()
+bool GMergedMesh::isAnalytic() const 
 {
    return m_geocode == OpticksConst::GEOCODE_ANALYTIC ;  
 }
-bool GMergedMesh::isTriangulated()
+bool GMergedMesh::isTriangulated() const 
 {
    return m_geocode == OpticksConst::GEOCODE_TRIANGULATED ;  
 }
@@ -49,6 +50,7 @@ GMergedMesh::GMergedMesh(unsigned int index)
        m_cur_vertices(0),
        m_cur_faces(0),
        m_cur_solid(0),
+       m_cur_mergedmesh(0),
        m_num_csgskip(0),
        m_cur_base(NULL),
        m_parts(NULL)
@@ -56,7 +58,7 @@ GMergedMesh::GMergedMesh(unsigned int index)
 } 
 
 
-std::string GMergedMesh::brief()
+std::string GMergedMesh::brief() const 
 {
     std::stringstream ss ; 
 
@@ -70,11 +72,11 @@ std::string GMergedMesh::brief()
        << " numFaces " << std::setw(7) << getNumFaces()
        << " numSolids " << std::setw(5) << getNumSolids()
        << " numSolidsSelected " << std::setw(5) << getNumSolidsSelected()
+  //     << " numComponents " << std::setw(5) << getNumComponents()
        ;
 
     return ss.str();
 }
-
 
 
 GParts* GMergedMesh::getParts()
@@ -151,6 +153,10 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 
 
 
+
+
+
+
 GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
 {
     // for instanced meshes the base is set to the first occurence of the 
@@ -210,17 +216,20 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 {
     unsigned int nsolid = other->getNumSolids();
 
+    m_num_mergedmesh += 1 ; 
+
     m_num_solids += nsolid ;
 
     if(selected)
     {
         m_num_solids_selected += 1 ;
-        countMesh( other ); 
+        countMesh( other );     // increment m_num_vertices, m_num_faces
     }
 
     if(m_verbosity > 1)
     LOG(info) << "GMergedMesh::count other GMergedMesh  " 
               << " selected " << selected
+              << " num_mergedmesh " << m_num_mergedmesh 
               << " num_solids " << m_num_solids 
               << " num_solids_selected " << m_num_solids_selected 
               ;
@@ -274,7 +283,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
     frame #9: 0x0000000100d5fa3d libGGeo.dylib`GGeoTest::modifyGeometry(this=0x000000010ac4ea50) + 157 at GGeoTest.cc:81
     frame #10: 0x0000000100d842bc libGGeo.dylib`GGeo::modifyGeometry(this=0x0000000107b11ae0, config=0x0000000000000000) + 668 at GGeo.cc:819
     frame #11: 0x00000001010f6844 libOpticksGeometry.dylib`OpticksGeometry::modifyGeometry(this=0x0000000107b12cb0) + 868 at OpticksGeometry.cc:263
-    frame #12: 0x00000001010f5d8c libOpticksGeometry.dylib`OpticksGeometry::loadGeometry(this=0x0000000107b12cb0) + 572 at OpticksGeometry.cc:200
+    frame #12: 0x00000001010f5d8c libOpticksGeometry.dylib`OpticksGeomettraceeloadGeometry(this=0x0000000107b12cb0) + 572 at OpticksGeometry.cc:200
     frame #13: 0x00000001010f9e69 libOpticksGeometry.dylib`OpticksHub::loadGeometry(this=0x00007fff5fbfeae0) + 409 at OpticksHub.cc:243
     frame #14: 0x00000001010f8ffd libOpticksGeometry.dylib`OpticksHub::init(this=0x00007fff5fbfeae0) + 77 at OpticksHub.cc:94
     frame #15: 0x00000001010f8f00 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x00007fff5fbfeae0, ok=0x00007fff5fbfeb50) + 416 at OpticksHub.cc:81
@@ -331,6 +340,13 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
     unsigned* boundary_indices = other->getBoundaries();
     unsigned* sensor_indices = other->getSensors();
 
+
+    // needs to be here, prior to incrementing m_cur_faces, m_cur_vertices
+    glm::uvec4 eidx(m_cur_faces, nface, m_cur_vertices, nvert ); 
+    setComponent(eidx, m_cur_mergedmesh ); 
+    m_cur_mergedmesh++ ; 
+
+
     if(selected)
     {
         mergeSolidVertices( nvert, vertices, normals );
@@ -340,6 +356,10 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
         m_cur_faces    += nface ;
         // offsets within the flat arrays
     }
+
+
+
+
 }
 
 
@@ -657,15 +677,7 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
 
 
 
-/*
-void GMergedMesh::dumpPostCache(const char* msg)
-{
-    LOG(info) << msg ; 
-}
-*/
-
-
-void GMergedMesh::dumpSolids(const char* msg)
+void GMergedMesh::dumpSolids(const char* msg) const 
 {
     gfloat4 ce0 = getCenterExtent(0) ;
     LOG(info) << msg << " ce0 " << ce0.description() ; 
@@ -697,6 +709,8 @@ void GMergedMesh::dumpSolids(const char* msg)
 
 
 
+
+
 float* GMergedMesh::getModelToWorldPtr(unsigned int index)
 {
     return index == 0 ? GMesh::getModelToWorldPtr(0) : NULL ;
@@ -718,6 +732,40 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
     NPY<unsigned int>* aii   = GTree::makeAnalyticInstanceIdentityBuffer(placements);
     setAnalyticInstancedIdentityBuffer(aii);
 }
+
+
+
+
+
+GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // static
+{
+    GMergedMesh* mm0 = mms[0] ; 
+
+    GMergedMesh* com = new GMergedMesh( mm0->getIndex() ); 
+    com->setVerbosity(mm0 ? mm0->getVerbosity() : 0 );
+
+    for(unsigned i=0 ; i < mms.size() ; i++)
+    {
+        GMergedMesh* mm = mms[i] ;
+        com->countMergedMesh(mm, true);
+    } 
+
+    com->allocate(); 
+ 
+    for(unsigned i=0 ; i < mms.size() ; i++)
+    {
+        GMergedMesh* mm = mms[i] ;
+        com->mergeMergedMesh(mm, true);
+    } 
+
+    //com->updateBounds(); ?
+
+    com->dumpSolids("GMergedMesh::MakeComposite");
+   
+    return com ; 
+}
+
+
 
 
 

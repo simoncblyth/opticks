@@ -6,7 +6,7 @@ Issue
 
 ::
 
-    op --j1707 --gltf 3 --tracer
+    op --j1707 --gltf 3 --tracer --instcull
 
 
 Huge geometry, > 250k Volumes, 18k instances + 38k instances
@@ -72,6 +72,140 @@ How to structure ?
 
 * LODCull needs to be an optional constituent of the instanced oglrap-/Renderer 
   depending on instance transform counts exceeding a minimum as configured in oglrap-/Scene
+
+
+Need to LODify GMergedMesh 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hmm similar to the below but need to retain the offsets for each component of the LOD,
+to allow drawing them individually.
+
+::
+
+    GMergedMesh* GMergedMesh::combine 
+    void GMergedMesh::mergeMergedMesh
+
+
+Hmm need sidecar NPY<int> buffer to hold the offsets...
+
+
+::
+
+    127 void ICDemo::renderScene()
+    128 {
+    129     std::string status = getStatus();
+    130     float t = frame->updateWindowTitle(status.c_str());
+    131     //std::cout << status << std::endl ; 
+    132 
+    133     updateUniform(t);
+    134 
+    135 #ifdef WITH_LOD
+    136     cull->applyFork() ;
+    137     cull->applyForkStreamQueryWorkaround() ;
+    138     cull->dump("ICDemo::renderScene");
+    139     //cull->pullback() ; 
+    140 
+    141     glUseProgram(draw->prog->program);
+    142 
+    143     for(unsigned lod=0 ; lod < num_lod ; lod++)
+    144     {
+    145         glBindVertexArray( use_cull ? this->drawVertexArray[lod] : this->allVertexArray);
+    146 
+    147         unsigned num_draw = use_cull ? clod->at(lod)->query_count : geom->num_inst ;
+    148         if(num_draw == 0) continue ;
+    149 
+    150         const glm::uvec4& eidx = (*geom->eidx)[lod] ;
+    151         glDrawElementsInstanced(GL_TRIANGLES, eidx.y, GL_UNSIGNED_INT, (void*)(eidx.x*sizeof(unsigned)), num_draw  ) ;
+    152     }
+
+    ///         element offset and num elements for each level are needed
+
+::
+
+    069 Prim* Prim::Concatenate( std::vector<Prim*> prims )
+     70 {
+     71     uint32_t ebufSize = 0;
+     72     uint32_t vbufSize = 0;
+     73 
+     74     for(uint32_t p=0 ; p < prims.size() ; p++)
+     75     {
+     76         Prim* prim = prims[p];
+     77         ebufSize += prim->ebuf->num_items ;
+     78         vbufSize += prim->vbuf->num_items ;
+     79     }
+     80 
+     81     uint32_t* edat =  new uint32_t[ebufSize] ;
+     82     glm::vec4* vdat = new glm::vec4[vbufSize];
+     83 
+     84     Prim* concat = new Prim ;
+     85 
+     86     std::vector<glm::uvec4>& eidx = concat->eidx ;
+     87     concat->ebuf = new Buf( ebufSize , sizeof(uint32_t)*ebufSize , edat );
+     88     concat->vbuf = new Buf( vbufSize , sizeof(glm::vec4)*vbufSize , vdat );
+     89 
+     90     unsigned eOffset = 0;
+     91     unsigned vOffset = 0;
+     92 
+     93     for(uint32_t p=0 ; p < prims.size() ; p++)
+     94     {
+     95         Prim* prim = prims[p];
+     96         uint32_t num_elem = prim->ebuf->num_items ;
+     97         uint32_t num_vert = prim->vbuf->num_items ;
+     98 
+     99         for (uint32_t e=0; e < num_elem ; e++) edat[eOffset+e] = *((uint32_t*)prim->ebuf->ptr + e) + vOffset ;
+    100 
+    101         eidx.push_back( {  eOffset, num_elem, vOffset, num_vert } );
+    102 
+    103         memcpy( (void*)( vdat + vOffset ), prim->vbuf->ptr , prim->vbuf->num_bytes );
+    104         eOffset += num_elem ;
+    105         vOffset += num_vert ;
+    106     }
+    107 
+    108     concat->bb = BB::FromBuf(concat->vbuf);
+    109     concat->ce = concat->bb->get_center_extent();
+    110 
+    111     return concat ;
+    112 }
+
+
+
+
+Add Components to GMergedMesh, testing with GMergedMeshTest (--mm)
+--------------------------------------------------------------------
+
+::
+
+    simon:ggeo blyth$ op --j1707 --mm --debugger
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --mm
+    ubin /usr/local/opticks/lib/GMergedMeshTest cfm --mm cmdline --j1707 --mm --debugger
+    === op-export : OPTICKS_BINARY /usr/local/opticks/lib/GMergedMeshTest
+    264 -rwxr-xr-x  1 blyth  staff  133956 Aug 31 19:39 /usr/local/opticks/lib/GMergedMeshTest
+    proceeding.. : lldb /usr/local/opticks/lib/GMergedMeshTest -- --j1707 --mm --debugger
+    (lldb) target create "/usr/local/opticks/lib/GMergedMeshTest"
+    Current executable set to '/usr/local/opticks/lib/GMergedMeshTest' (x86_64).
+    (lldb) settings set -- target.run-args  "--j1707" "--mm" "--debugger"
+    (lldb) r
+    Process 10573 launched: '/usr/local/opticks/lib/GMergedMeshTest' (x86_64)
+    2017-08-31 19:39:40.142 INFO  [2117533] [GMergedMesh::dumpSolids@683] GMergedMesh::MakeComposite ce0 gfloat4      0.002      0.001    -17.937     57.939 
+
+    ...
+
+    0 ni[nf/nv/nidx/pidx] (528,266,107408, 11)  id[nidx,midx,bidx,sidx]  (107408, 20, 15,  0) 
+    1 ni[nf/nv/nidx/pidx] (432,218,107409,107408)  id[nidx,midx,bidx,sidx]  (107409, 18, 16,  0) 
+    2 ni[nf/nv/nidx/pidx] (240,122,107410,107409)  id[nidx,midx,bidx,sidx]  (107410, 16, 20,  0) 
+    3 ni[nf/nv/nidx/pidx] (288,146,107411,107409)  id[nidx,midx,bidx,sidx]  (107411, 17, 21,  0) 
+    4 ni[nf/nv/nidx/pidx] ( 96, 50,107412,107408)  id[nidx,midx,bidx,sidx]  (107412, 19, 13,  0) 
+    5 ni[nf/nv/nidx/pidx] (528,266,107408, 11)  id[nidx,midx,bidx,sidx]  (107408, 20, 15,  0) 
+    6 ni[nf/nv/nidx/pidx] (432,218,107409,107408)  id[nidx,midx,bidx,sidx]  (107409, 18, 16,  0) 
+    7 ni[nf/nv/nidx/pidx] (240,122,107410,107409)  id[nidx,midx,bidx,sidx]  (107410, 16, 20,  0) 
+    8 ni[nf/nv/nidx/pidx] (288,146,107411,107409)  id[nidx,midx,bidx,sidx]  (107411, 17, 21,  0) 
+    9 ni[nf/nv/nidx/pidx] ( 96, 50,107412,107408)  id[nidx,midx,bidx,sidx]  (107412, 19, 13,  0) 
+
+    2017-08-31 19:39:40.143 INFO  [2117533] [GMesh::dumpComponents@1029] test_GMergedMesh_MakeComposite.dumpComponents numComponents 2
+       0      0    1584       0     802
+       1   1584    1584     802     802
+
+
 
 
 

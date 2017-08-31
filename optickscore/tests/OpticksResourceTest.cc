@@ -1,4 +1,5 @@
 // op --resource
+// op --j1707 --resource
 
 #include "Opticks.hh"
 #include "OpticksResource.hh"
@@ -29,8 +30,8 @@ int main(int argc, char** argv, char** /*envp*/)
 {
     PLOG_(argc, argv);
 
-    Opticks op(argc, argv) ;
-    OpticksResource res(&op) ;  // TODO: remove duplication of envprefix beween both these
+    Opticks ok(argc, argv) ;
+    OpticksResource res(&ok) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();
     return 0 ; 
 }

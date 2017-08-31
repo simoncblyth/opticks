@@ -9,6 +9,9 @@
 #include <vector>
 #include <string>
 
+
+template <typename T> class NPY ;
+
 class Opticks ; 
 
 class GGeo ; 
@@ -38,6 +41,8 @@ private:
      void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
 
 public:
+    static GMergedMesh* MakeComposite(std::vector<GMergedMesh*> mms ); // eg for LOD levels 
+public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
@@ -45,8 +50,9 @@ public:
 public:
     GMergedMesh(unsigned int index) ;
     GParts* getParts();
-    std::string brief();
+    std::string brief() const ;
     void addInstancedBuffers(const std::vector<GNode*>& placements);
+    int  getNumComponents() const ;
 private:
     void setParts(GParts* pts); 
 private:
@@ -70,7 +76,8 @@ public:
 
     // TODO: below is only usage of GGeo here, move this elsewhere... into GGeo ?
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
-    void dumpSolids(const char* msg="GMergedMesh::dumpSolids");
+public:
+    void dumpSolids(const char* msg="GMergedMesh::dumpSolids") const ;
 public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
     void   setCurrentBase(GNode* base);
@@ -79,20 +86,20 @@ public:
     bool   isInstanced(); 
 public:
     // geocodes used to communicate between ggv- oglrap- optixrap-
-    bool   isSkip(); 
-    bool   isAnalytic(); 
-    bool   isTriangulated(); 
+    bool   isSkip() const ; 
+    bool   isAnalytic() const ; 
+    bool   isTriangulated() const ; 
 private:
     // transients that do not need persisting, persistables are down in GMesh
     unsigned     m_cur_vertices ;
     unsigned     m_cur_faces ;
     unsigned     m_cur_solid ;
+    unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
     GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
-  
      
 };
 

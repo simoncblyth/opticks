@@ -15,6 +15,7 @@
 
 // huh why both ?
 #include "NGLM.hpp"
+#include "GLMFormat.hpp"
 #include "NBBox.hpp"
 
 #include "NPY.hpp"
@@ -51,6 +52,7 @@ const char* GMesh::identity_       = "identity" ;
 const char* GMesh::itransforms_    = "itransforms" ;
 const char* GMesh::iidentity_       = "iidentity" ;
 const char* GMesh::aiidentity_      = "aiidentity" ;
+const char* GMesh::components_      = "components" ;
 
 
 void GMesh::nameConstituents(std::vector<std::string>& names)
@@ -75,6 +77,7 @@ void GMesh::nameConstituents(std::vector<std::string>& names)
     names.push_back(itransforms_); 
     names.push_back(iidentity_); 
     names.push_back(aiidentity_); 
+    names.push_back(components_); 
 }
 
 
@@ -103,6 +106,7 @@ GMesh::GMesh(unsigned int index,
       m_num_faces(num_faces),
       m_num_solids(0),
       m_num_solids_selected(0),
+      m_num_mergedmesh(0),
 
       m_nodes(NULL),          
       m_boundaries(NULL),
@@ -156,6 +160,7 @@ GMesh::GMesh(unsigned int index,
       m_itransforms_buffer(NULL),
       m_iidentity_buffer(NULL),
       m_aiidentity_buffer(NULL),
+      m_components_buffer(NULL),
 
       m_facerepeated_identity_buffer(NULL),
       m_facerepeated_iidentity_buffer(NULL),
@@ -365,7 +370,7 @@ gfloat4 GMesh::getCenterExtent(unsigned int index) const
 
 
 
-gbbox GMesh::getBBox(unsigned int index)
+gbbox GMesh::getBBox(unsigned int index) const 
 {
     return m_bbox[index] ;
 }
@@ -415,7 +420,7 @@ unsigned int GMesh::getMeshIndice(unsigned int index)
 
 
 
-guint4* GMesh::getNodeInfo()
+guint4* GMesh::getNodeInfo() const 
 {
     return m_nodeinfo ; 
 }
@@ -424,7 +429,7 @@ guint4 GMesh::getNodeInfo(unsigned int index)
     return m_nodeinfo[index] ; 
 }
 
-guint4* GMesh::getIdentity()
+guint4* GMesh::getIdentity() const 
 {
     return m_identity ; 
 }
@@ -504,13 +509,17 @@ GBuffer*  GMesh::getIdentityBuffer()
 {
     return m_identity_buffer ;
 }
-NPY<unsigned int>*  GMesh::getInstancedIdentityBuffer()
+NPY<unsigned>*  GMesh::getInstancedIdentityBuffer()
 {
     return m_iidentity_buffer ;
 }
-NPY<unsigned int>*  GMesh::getAnalyticInstancedIdentityBuffer()
+NPY<unsigned>*  GMesh::getAnalyticInstancedIdentityBuffer()
 {
     return m_aiidentity_buffer ;
+}
+NPY<unsigned>*  GMesh::getComponentsBuffer()
+{
+    return m_components_buffer ;
 }
 
 
@@ -985,6 +994,59 @@ void GMesh::setAnalyticInstancedIdentityBuffer(NPY<unsigned int>* buf)
 {
     m_aiidentity_buffer = buf ;
 }
+
+
+
+
+
+
+
+void GMesh::setComponentsBuffer(NPY<unsigned>* buf)
+{
+    m_components_buffer = buf ;
+}
+
+int GMesh::getNumComponents() const 
+{
+    return m_components_buffer ? m_components_buffer->getShape(0) : -1 ; 
+}
+
+void GMesh::setComponent(const glm::uvec4& eidx, unsigned icomp )
+{
+    assert( m_num_mergedmesh > 0 && "MUST GMergedMesh::countMergedMesh before GMesh::setComponent ");
+    if(!m_components_buffer) 
+    {
+         NPY<unsigned>* comp = NPY<unsigned>::make(m_num_mergedmesh, 4);
+         comp->zero();
+         setComponentsBuffer(comp); 
+    }
+    assert( icomp < m_num_mergedmesh );
+    m_components_buffer->setQuad(eidx, icomp );
+}
+ 
+void GMesh::dumpComponents(const char* msg) const 
+{
+    LOG(info) << msg 
+              << " numComponents " << getNumComponents() 
+               ;
+
+    if(getNumComponents() < 1 ) return ;
+    unsigned num_comp = getNumComponents();
+    for(unsigned icomp=0 ; icomp < num_comp ; icomp++)
+    {
+         glm::uvec4 eidx = m_components_buffer->getQuad(icomp);
+         std::cout << std::setw(4) << icomp
+                   << gpresent(eidx)
+                   << std::endl 
+                   ;
+
+    }
+
+}
+
+
+
+
 
 
 
@@ -1564,7 +1626,8 @@ bool GMesh::isNPYBuffer(const char* name)
            ( 
               strcmp( name, aiidentity_) == 0  ||
               strcmp( name, iidentity_) == 0  ||
-              strcmp( name, itransforms_) == 0  
+              strcmp( name, itransforms_) == 0  ||
+              strcmp( name, components_) == 0  
            );
 }
 
@@ -1584,7 +1647,7 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
     {
         if(isFloatBuffer(name))     buffer->save<float>(path);
         else if(isIntBuffer(name))  buffer->save<int>(path);
-        else if(isUIntBuffer(name)) buffer->save<unsigned int>(path);
+        else if(isUIntBuffer(name)) buffer->save<unsigned>(path);
         else 
            printf("GMesh::saveBuffer WARNING NOT saving uncharacterized buffer %s into %s \n", name, path );
     }
@@ -1613,13 +1676,13 @@ NPYBase* GMesh::getNPYBuffer(const char* name)
     if(     strcmp(name, aiidentity_)  == 0) buf = getAnalyticInstancedIdentityBuffer();
     else if(strcmp(name, iidentity_) == 0)   buf = getInstancedIdentityBuffer();
     else if(strcmp(name, itransforms_) == 0) buf = getITransformsBuffer();
+    else if(strcmp(name, components_) == 0)  buf = getComponentsBuffer();
     return buf ; 
 }
 
 
 void GMesh::loadNPYBuffer(const char* path, const char* name)
 {
-
     LOG(debug) << "GMesh::loadNPYBuffer" 
               << " name " << name
               << " path " << path 
@@ -1627,18 +1690,23 @@ void GMesh::loadNPYBuffer(const char* path, const char* name)
 
     if(strcmp(name, aiidentity_) == 0)
     {
-        NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
+        NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setAnalyticInstancedIdentityBuffer(buf);
     }
     else if(strcmp(name, iidentity_) == 0)
     {
-        NPY<unsigned int>* buf = NPY<unsigned int>::load(path) ;
+        NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
         setInstancedIdentityBuffer(buf);
     }
     else if(strcmp(name, itransforms_) == 0)
     {
         NPY<float>* buf = NPY<float>::load(path) ;
         setITransformsBuffer(buf);
+    }
+    else if(strcmp(name, components_) == 0)
+    {
+        NPY<unsigned>* buf = NPY<unsigned>::load(path) ;
+        setComponentsBuffer(buf);
     }
     else
     {
