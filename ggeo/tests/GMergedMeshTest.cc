@@ -70,6 +70,18 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
 }
 
 
+void test_GMergedMesh_MakeLODComposite(GMergedMesh* mm, unsigned levels)
+{
+    GMergedMesh* comp = GMergedMesh::MakeLODComposite(mm, levels);
+
+    comp->dumpSolids("test_GMergedMesh_MakeLODComposite.dumpSolids");
+    comp->dumpComponents("test_GMergedMesh_MakeLODComposite.dumpComponents");
+
+}
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -88,7 +100,9 @@ int main(int argc, char** argv)
     } 
 
     //test_GMergedMesh_Dump(mm); 
-    test_GMergedMesh_MakeComposite(mm); 
+    //test_GMergedMesh_MakeComposite(mm); 
+    test_GMergedMesh_MakeLODComposite(mm,2) ; 
+    //test_GMergedMesh_MakeLODComposite(mm,3) ; 
 
 
     return 0 ;

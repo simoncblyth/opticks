@@ -18,6 +18,7 @@ class NState ;
 
 struct NSlice ;
 struct NSceneConfig ; 
+struct NLODConfig ; 
 
 class NParameters ; 
 class NPropNames ; 
@@ -187,6 +188,10 @@ class OKCORE_API Opticks {
        int         getGLTFTarget();
        bool        isGLTF();
    public:
+       const char* getLODConfigString();
+       NLODConfig* getLODConfig();
+       int         getLOD();
+   public:
        NSlice*  getAnalyticPMTSlice();
        unsigned getAnalyticPMTIndex();
    public:
@@ -334,6 +339,7 @@ class OKCORE_API Opticks {
        Timer*               m_timer ; 
        NParameters*          m_parameters ; 
        NSceneConfig*        m_scene_config ; 
+       NLODConfig*          m_lod_config ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

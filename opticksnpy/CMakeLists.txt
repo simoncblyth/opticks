@@ -233,6 +233,7 @@ set(SOURCES
     Nuv.cpp
 
     BoundarySnappingT.cc
+    NLODConfig.cpp
 
 )
 
@@ -327,6 +328,10 @@ NFieldGrid3.hpp
 NTreeTools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp
+
+NLODConfig.hpp
+
+
 
 )
 

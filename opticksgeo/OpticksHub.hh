@@ -16,6 +16,7 @@ class GGeoBase ;
 class GScene ; 
 class GGeo ;
  
+class GGeoLib ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
@@ -115,6 +116,7 @@ class OKGEO_API OpticksHub {
        OpticksGeometry*     getGeometry();
        GGeo*                getGGeo();
        GGeoBase*            getGGeoBase();
+       GGeoLib*             getGeoLib();
        GMaterialLib*        getMaterialLib();
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();

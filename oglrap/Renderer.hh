@@ -118,6 +118,7 @@ class OGLRAP_API Renderer : public RendererBase  {
    private:
       unsigned int m_itransform_count ;
       long         m_draw_count ;
+      int          m_num_lod ; 
       GLsizei      m_indices_count ;
   private:
       GDrawable*   m_drawable ;

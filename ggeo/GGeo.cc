@@ -94,9 +94,7 @@ GGeo::GGeo(Opticks* opticks)
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
-   //m_geolib_analytic(NULL),  // see GGeo::loadFromGLTF
    m_nodelib(NULL),
-   //m_nodelib_analytic(NULL),
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
@@ -808,7 +806,7 @@ void GGeo::loadAnalyticPmt()
 
 void GGeo::modifyGeometry(const char* config)
 {
-    // NB only invoked with test option : "ggv --test" 
+    // NB only invoked with test option : "op --test" 
     //   controlled from OpticksGeometry::loadGeometry 
 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);

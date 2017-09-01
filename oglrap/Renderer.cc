@@ -49,6 +49,7 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_depthTex_location(-1),
     m_itransform_count(0),
     m_draw_count(0),
+    m_num_lod(0),
     m_indices_count(0),
     m_drawable(NULL),
     m_geometry(NULL),
@@ -174,24 +175,38 @@ GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char*
 void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
     m_bboxmesh = bboxmesh ;
+    m_num_lod = 0 ; 
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_bboxmesh);
     NSlice* islice = m_bboxmesh->getInstanceSlice();
     NSlice* fslice = m_bboxmesh->getFaceSlice();
     upload_buffers(islice, fslice);
 }
-void Renderer::upload(GMergedMesh* geometry, bool /*debug*/)
+void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
 {
-    m_geometry = geometry ;
+    m_num_lod = mm->getNumComponents();
+
+    m_geometry = mm ;
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_geometry);
     NSlice* islice = m_geometry->getInstanceSlice();
     NSlice* fslice = m_geometry->getFaceSlice();
     upload_buffers(islice, fslice);
+
+
+    LOG(info) << "Renderer::upload"
+              << " m_num_lod " << m_num_lod 
+              << " m_indices_count " << m_indices_count
+               ;
+
+    mm->dumpComponents("Renderer::upload"); 
+
+
 }
 
 void Renderer::upload(Texture* texture, bool /*debug*/)
 {
+    m_num_lod = 0 ; 
     setTexture(texture);
 
     NSlice* islice = NULL ; 
@@ -577,7 +592,9 @@ void Renderer::render()
     }
     else
     {
+
         glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
+
     }
     // indices_count would be 3 for a single triangle, 30 for ten triangles
 

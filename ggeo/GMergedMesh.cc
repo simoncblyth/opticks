@@ -62,8 +62,7 @@ GMergedMesh::GMergedMesh(
        m_cur_solid(0),
        m_cur_mergedmesh(0),
        m_num_csgskip(0),
-       m_cur_base(NULL),
-       m_parts(NULL)
+       m_cur_base(NULL)
 {
 } 
 
@@ -77,8 +76,7 @@ GMergedMesh::GMergedMesh(unsigned index)
        m_cur_solid(0),
        m_cur_mergedmesh(0),
        m_num_csgskip(0),
-       m_cur_base(NULL),
-       m_parts(NULL)
+       m_cur_base(NULL)
 {
 } 
 
@@ -101,18 +99,6 @@ std::string GMergedMesh::brief() const
        ;
 
     return ss.str();
-}
-
-
-GParts* GMergedMesh::getParts()
-{
-    return m_parts ; 
-}
-void GMergedMesh::setParts(GParts* pts) 
-{
-    m_parts = pts ; 
-   // originally under protest as only used by the old dirty analytic PMT handling 
-   // but now that are persisting GParts, this is needed from GGeoLib 
 }
 
 
@@ -741,6 +727,10 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 
 
 
+
+
+
+
 GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // static
 {
     assert(mms.size() > 0 );
@@ -790,6 +780,9 @@ GMergedMesh*  GMergedMesh::MakeLODComposite(GMergedMesh* mm, unsigned levels ) /
     }
 
     GMergedMesh* lodcomp = MakeComposite(comps);
+
+    lodcomp->stealIdentity(mm);
+    
     return lodcomp ; 
 }
 
@@ -820,60 +813,30 @@ GMergedMesh* GMergedMesh::CreateBBoxMesh(unsigned index, gbbox& bb ) // static
              texcoords
          );
 
+     bbmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
+
+     unsigned* node_indices = bbmm->getNodes();
+     unsigned* boundary_indices = bbmm->getBoundaries();
+     unsigned* sensor_indices = bbmm->getSensors();
+
+     assert( node_indices );
+     assert( boundary_indices );
+     assert( sensor_indices );
+
+
     return bbmm ;   
 }
 
 GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
 {
-     unsigned num_vertices = 4 ; 
+     unsigned num_vertices = 8 ; 
      gfloat3* vertices = new gfloat3[num_vertices] ; 
      gfloat3* normals  = new gfloat3[num_vertices] ; 
      gfloat2* texcoords  = NULL ; 
      unsigned num_faces = 4  ; 
+    
      guint3* faces = new guint3[num_faces] ;
     
-       
-     gfloat3 dim = bb.dimensions() ;
-
-     /*
-           Y 
-           |
-           2----3
-           | .  |
-           |  . |
-           0----1   -> x  
-          
-     */
-
-     gfloat3 cen = bb.center(); 
-
-    // collapse the smallest dimension
-
-     if(dim.z <= dim.x && dim.z <= dim.x )
-     {
-         vertices[0] = gfloat3( bb.min.x ,  bb.min.y , cen.z  ) ; 
-         vertices[1] = gfloat3( bb.max.x ,  bb.min.y , cen.z  ) ;
-         vertices[2] = gfloat3( bb.min.x ,  bb.max.y , cen.z  ) ; 
-         vertices[3] = gfloat3( bb.max.x ,  bb.max.y , cen.z  ) ;
-     }
-     else if(dim.y <= dim.x && dim.y <= dim.z )
-     {
-         vertices[0] = gfloat3( bb.min.x ,  cen.y   ,   bb.min.z ) ; 
-         vertices[1] = gfloat3( bb.max.x ,  cen.y   ,   bb.min.z ) ;
-         vertices[2] = gfloat3( bb.min.x ,  cen.y   ,   bb.max.z ) ; 
-         vertices[3] = gfloat3( bb.max.x ,  cen.y   ,   bb.max.z ) ;
-     }
-     else if(dim.x <= dim.y && dim.x <= dim.z )
-     {
-         vertices[0] = gfloat3( cen.x , bb.min.y , bb.min.z ) ; 
-         vertices[1] = gfloat3( cen.x , bb.max.y , bb.min.z ) ;
-         vertices[2] = gfloat3( cen.x , bb.min.y , bb.max.z ) ; 
-         vertices[3] = gfloat3( cen.x , bb.max.y , bb.max.z ) ;
-     }
-     else
-     {
-         assert(0); 
-     }
 
      GMergedMesh* qmm = new GMergedMesh(
              index, 
@@ -884,6 +847,137 @@ GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
              normals, 
              texcoords
          );
+
+
+     qmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
+
+
+    unsigned* node_indices = qmm->getNodes();
+    unsigned* boundary_indices = qmm->getBoundaries();
+    unsigned* sensor_indices = qmm->getSensors();
+
+    assert( node_indices );
+    assert( boundary_indices );
+    assert( sensor_indices );
+
+
+
+       
+     gfloat3 dim = bb.dimensions() ;
+
+     gfloat3 cen = bb.center(); 
+
+     // collapse the smallest dimension
+
+     faces[0] = guint3( 0,1,2) ;
+     faces[1] = guint3( 2,1,3) ;
+     faces[2] = guint3( 4,6,5) ;
+     faces[3] = guint3( 6,7,5) ;
+
+     if(dim.z <= dim.x && dim.z <= dim.y )  
+     {
+
+         /*
+           Smallest in Z
+
+
+                Y
+                | 
+                |
+                |
+                +----- X
+               /
+              /
+             Z
+
+       Need to dupe verts as need slots for opposed normals
+
+               Y 
+               |
+               2----3
+               | .  |
+               |  . |
+               0----1----> X    +Z normals 
+              /
+             /        (0,1,2) (2,1,3)
+            Z
+ 
+               Y 
+               |
+               6----7
+               | .  |
+               |  . |
+               4----5---- X     -Z normals
+              /
+             /
+            Z       (4,6,5) (6,7,5) 
+
+              
+         */
+
+         vertices[0] = gfloat3( bb.min.x , bb.min.y , cen.z  ) ; 
+         vertices[1] = gfloat3( bb.max.x , bb.min.y , cen.z  ) ;
+         vertices[2] = gfloat3( bb.min.x , bb.max.y , cen.z  ) ; 
+         vertices[3] = gfloat3( bb.max.x , bb.max.y , cen.z  ) ;
+
+         for(unsigned i=0 ; i < 4 ; i++) vertices[4+i] = vertices[i] ; 
+         for(unsigned i=0 ; i < 8 ; i++) normals[i] = gfloat3( 0.f, 0.f, i < 4 ? 1.f : -1.f )  ;
+ 
+     }
+     else if(dim.y <= dim.x && dim.y <= dim.z ) // smallest in y 
+     {
+
+         /*
+
+                Z
+                | 
+                |
+                |
+                +----- X
+               /
+              /
+            -Y
+
+         */
+
+         vertices[0] = gfloat3( bb.min.x , cen.y , bb.min.z ) ; 
+         vertices[1] = gfloat3( bb.max.x , cen.y , bb.min.z ) ;
+         vertices[2] = gfloat3( bb.min.x , cen.y , bb.max.z ) ; 
+         vertices[3] = gfloat3( bb.max.x , cen.y , bb.max.z ) ;
+
+         for(unsigned i=0 ; i < 4 ; i++) vertices[4+i] = vertices[i] ; 
+         for(unsigned i=0 ; i < 8 ; i++) normals[i] = gfloat3( 0.f, ( i < 4 ? -1.f : 1.f ), 0.f )  ;
+
+     }
+     else if(dim.x <= dim.y && dim.x <= dim.z )  // smallest in x 
+     {
+         /*
+
+                Z
+                | 
+                |
+                |
+                +----- Y
+               /
+              /
+             X
+
+         */
+
+         vertices[0] = gfloat3( cen.x , bb.min.y , bb.min.z ) ; 
+         vertices[1] = gfloat3( cen.x , bb.max.y , bb.min.z ) ;
+         vertices[2] = gfloat3( cen.x , bb.min.y , bb.max.z ) ; 
+         vertices[3] = gfloat3( cen.x , bb.max.y , bb.max.z ) ;
+
+         for(unsigned i=0 ; i < 4 ; i++) vertices[4+i] = vertices[i] ; 
+         for(unsigned i=0 ; i < 8 ; i++) normals[i] = gfloat3( ( i < 4 ? 1.f : -1.f ), 0.f , 0.f  )  ;
+
+     }
+     else
+     {
+         assert(0); 
+     }
+
 
 
     return qmm ;   

@@ -207,6 +207,215 @@ Add Components to GMergedMesh, testing with GMergedMeshTest (--mm)
 
 
 
+How to test the LOD ? Need option to switch on LOD creation/render for use from tboolean-
+----------------------------------------------------------------------------------------------------
+
+::
+
+    tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 
+
+    ## psychedelic flickery mess for outer box, with the quad mesh 3rd level 
+    ##  ... so the levels are getting there 
+
+::
+
+    2017-09-01 16:58:51.115 INFO  [2338535] [OpticksViz::uploadGeometry@251] Opticks time 0.0000,20.0000,20.0000,0.0000 space 0.0000,0.0000,0.0000,400.0000 wavelength 60.0000,820.0000,20.0000,760.0000
+    2017-09-01 16:58:51.141 INFO  [2338535] [Renderer::upload@197] Renderer::upload m_num_lod 3 m_indices_count 11736
+    2017-09-01 16:58:51.141 INFO  [2338535] [GMesh::dumpComponents@1073] Renderer::upload numComponents 3
+       0      0    3896       0   11688
+       1   3896      12   11688      24
+       2   3908       4   11712       8
+    2017-09-01 16:58:51.144 INFO  [2338535] [Renderer::upload@197] Renderer::upload m_num_lod 3 m_indices_count 11736
+    2017-09-01 16:58:51.144 INFO  [2338535] [GMesh::dumpComponents@1073] Renderer::upload numComponents 3
+       0      0    3896       0   11688
+       1   3896      12   11688      24
+       2   3908       4   11712       8
+    2017-09-01 16:58:51.144 INFO  [2338535] [Opt
+
+
+::
+
+    335     glm::uvec4 eidx(m_cur_faces, nface, m_cur_vertices, nvert );
+
+
+::
+
+    In [1]: 11688+24+8
+    Out[1]: 11720
+
+    In [2]: 3896+12+4
+    Out[2]: 3912
+
+    In [3]: (3896+12+4)*3
+    Out[3]: 11736
+
+
+
+
+::
+
+    147         unsigned num_draw = use_cull ? clod->at(lod)->query_count : geom->num_inst ;
+    148         if(num_draw == 0) continue ;
+    149 
+    150         const glm::uvec4& eidx = (*geom->eidx)[lod] ;
+    151         glDrawElementsInstanced(GL_TRIANGLES, eidx.y, GL_UNSIGNED_INT, (void*)(eidx.x*sizeof(unsigned)), num_draw  ) ;
+    152     }
+    153 
+
+
+
+
+
+* LOD is a global thing, do not need individual solid control, 
+  so use standard OpticksCfg to configure/control via --lod N --lodconfig "levels=2"
+
+* each CSG tree yields a GSolid, with associated GParts
+
+* the GSolids are combined to form the GMergedMesh 
+
+
+
+Unclear where to do the LODing... for now::
+
+
+    078 void GGeoTest::modifyGeometry()
+     79 {
+     80     const char* csgpath = m_config->getCsgPath();
+     81     bool analytic = m_config->getAnalytic();
+     82 
+     83     if(csgpath) assert(analytic == true);
+     84 
+     85     GMergedMesh* tmm_ = create();
+     86 
+     87     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;
+     88 
+     89 
+     90     char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
+     91     tmm->setGeoCode( geocode );
+     92 
+     93     if(tmm->isTriangulated())
+     94     {
+     95         tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
+     96     }
+     97 
+     98     //tmm->dump("GGeoTest::modifyGeometry tmm ");
+     99     m_geolib->clear();
+    100     m_geolib->setMergedMesh( 0, tmm );
+    101 }
+
+
+
+
+Which gets invoked::
+
+    265 void OpticksGeometry::modifyGeometry()
+    266 {
+    267     assert(m_ok->hasOpt("test"));
+    268     LOG(debug) << "OpticksGeometry::modifyGeometry" ;
+    269 
+    270     std::string testconf = m_fcfg->getTestConfig();
+    271     
+    272     m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
+    273 
+    274     
+    275     if(m_ggeo->getMeshVerbosity() > 2)
+    276     {   
+    277         GMergedMesh* mesh0 = m_ggeo->getMergedMesh(0);
+    278         if(mesh0)
+    279         {   
+    280             mesh0->dumpSolids("OpticksGeometry::modifyGeometry mesh0");
+    281             mesh0->save("$TMP", "GMergedMesh", "modifyGeometry") ;
+    282         }
+    283     }
+    284 
+    285     
+    286     TIMER("modifyGeometry");
+    287 }
+
+
+
+     809 void GGeo::modifyGeometry(const char* config)
+     810 {
+     811     // NB only invoked with test option : "ggv --test" 
+     812     //   controlled from OpticksGeometry::loadGeometry 
+     813 
+     814     GGeoTestConfig* gtc = new GGeoTestConfig(config);
+     815 
+     816     LOG(trace) << "GGeo::modifyGeometry"
+     817               << " config [" << ( config ? config : "" ) << "]" ;
+     818 
+     819     assert(m_geotest == NULL);
+     820 
+     821     m_geotest = new GGeoTest(m_ok, gtc, this);
+     822     m_geotest->modifyGeometry();
+     823 
+     824 }
+
+
+    098 GMergedMesh* GGeoTest::create()
+     99 {
+    100     //TODO: unify all these modes into CSG 
+    101     //      whilst still supporting the old partlist approach 
+    102 
+    103     const char* csgpath = m_config->getCsgPath();
+    104     const char* mode = m_config->getMode();
+    105 
+    106     GMergedMesh* tmm = NULL ;
+    107 
+    108     if( mode != NULL && strcmp(mode, "PmtInBox") == 0)
+    109     {
+    110         tmm = createPmtInBox();
+    111     }
+    112     else
+    113     {
+    114         std::vector<GSolid*> solids ;
+    115         if(csgpath != NULL)
+    116         {
+    117             assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");
+    118             loadCSG(csgpath, solids);
+    119         }
+    120         else
+    121         {
+    122             unsigned int nelem = m_config->getNumElements();
+    123             assert(nelem > 0);
+    124             if(     strcmp(mode, "BoxInBox") == 0) createBoxInBox(solids);
+    125             else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ;
+    126         }
+    127         tmm = combineSolids(solids);
+    128     }
+    129     assert(tmm);
+    130     return tmm ;
+    131 }
+
+
+    327 GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
+    328 {
+    329     unsigned verbosity = 3 ;
+    330     GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids, verbosity );
+    331 
+    332     unsigned nelem = solids.size() ;
+    333     GTransforms* txf = GTransforms::make(nelem); // identities
+    334     GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
+    335 
+    336     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());
+    337     tri->setITransformsBuffer(txf->getBuffer());
+    338 
+    339     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
+    340 
+    341     if(m_opticks->hasOpt("dbganalytic"))
+    342     {
+    343         GParts* pts = tri->getParts();
+    344         pts->setName(m_config->getName());
+    345         const char* msg = "GGeoTest::combineSolids --dbganalytic" ;
+    346         pts->Summary(msg);
+    347         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
+    348     }
+    349     // collected pts are converted into primitives in GParts::makePrimBuffer
+    350     return tri ;
+    351 }
+
+
+
 
 
 Testing InstLODCull

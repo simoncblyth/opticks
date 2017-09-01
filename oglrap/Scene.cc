@@ -33,7 +33,7 @@
 // ggeo-
 #include "GMergedMesh.hh"
 #include "GBBoxMesh.hh"
-#include "GGeo.hh"
+#include "GGeoLib.hh"
 
 
 // oglrap-
@@ -534,21 +534,16 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
 void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 {
-    // hmm this is assuming one shot upload, for instance culler need to keep
-    // sending updating a mask over the instance transforms
-
     bool empty = mm->isEmpty();
     bool skip = mm->isSkip() ;
 
     if(!skip && !empty)
     { 
-
         assert(m_num_instance_renderer < MAX_INSTANCE_RENDERER) ;
         LOG(info)<< "Scene::uploadGeometryInstanced instance renderer " << m_num_instance_renderer << " instcull " << m_instcull ;
 
         NPY<float>* ibuf = mm->getITransformsBuffer();
         assert(ibuf);
-
 
         if(m_instance_renderer[m_num_instance_renderer])
         {
@@ -561,7 +556,6 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             }
         }
 
-
         LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
         GBBoxMesh* bb = GBBoxMesh::create(mm); assert(bb);
 
@@ -570,9 +564,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             m_bbox_renderer[m_num_instance_renderer]->upload(bb);
             m_bbox_mode[m_num_instance_renderer] = true ; 
         }
-
         m_num_instance_renderer++ ; 
-
     }
     else
     {
@@ -586,18 +578,17 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 
 void Scene::uploadGeometry()
 {
-    // currently invoked from ggeoview main
-    assert(m_ggeo && "must setGeometry first");
-    unsigned int nmm = m_ggeo->getNumMergedMesh();
+    // invoked by OpticksViz::uploadGeometry
+    assert(m_geolib && "must setGeometry first");
+    unsigned int nmm = m_geolib->getNumMergedMesh();
 
     LOG(debug) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
 
-
     for(unsigned int i=0 ; i < nmm ; i++)
     {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        GMergedMesh* mm = m_geolib->getMergedMesh(i);
         if(!mm) continue ; 
 
         LOG(debug) << "Scene::uploadGeometry " 
@@ -882,10 +873,6 @@ bool Scene::isCompositeRender()
    return m_render_style == R_COMPOSITE ;
 }
 
-
- 
-
-
 void Scene::applyRenderStyle()   
 {
     // nothing to do, style is honoured by  Scene::render
@@ -895,6 +882,7 @@ void Scene::applyRenderStyle()
 Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_path, const char* shader_dynamic_dir) 
             :
             m_hub(hub),
+            m_ok(hub->getOpticks()),
             m_shader_dir(shader_dir ? strdup(shader_dir): NULL ),
             m_shader_dynamic_dir(shader_dynamic_dir ? strdup(shader_dynamic_dir): NULL),
             m_shader_incl_path(shader_incl_path ? strdup(shader_incl_path): NULL),
@@ -914,7 +902,8 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_altrecord_renderer(NULL),
             m_devrecord_renderer(NULL),
             m_photons(NULL),
-            m_ggeo(NULL),
+            //m_ggeo(NULL),
+            m_geolib(NULL),
             m_mesh0(NULL),
             m_composition(NULL),
             m_colorbuffer(NULL),
@@ -966,15 +955,13 @@ const char* Scene::getShaderInclPath()
     return m_shader_incl_path ;
 }
 
+void Scene::setGeometry(GGeoLib* geolib)
+{
+    m_geolib = geolib ;
+}
 
-void Scene::setGeometry(GGeo* gg)
-{
-    m_ggeo = gg ;
-}
-GGeo* Scene::getGeometry()
-{
-    return m_ggeo ; 
-}
+
+
 
 void Scene::setInteractor(Interactor* interactor)
 {

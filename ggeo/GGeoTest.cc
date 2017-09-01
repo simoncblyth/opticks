@@ -9,6 +9,7 @@
 #include "NCSG.hpp"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+#include "NLODConfig.hpp"
 
 // opticks-
 #include "Opticks.hh"
@@ -34,9 +35,11 @@
 #include "PLOG.hh"
 
 
-GGeoTest::GGeoTest(Opticks* opticks, GGeoTestConfig* config, GGeo* ggeo) 
+GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo) 
     : 
-    m_opticks(opticks),
+    m_ok(ok),
+    m_lodconfig(ok->getLODConfig()),
+    m_lod(ok->getLOD()),
     m_config(config),
     m_ggeo(ggeo),
     m_geolib(NULL),
@@ -57,12 +60,12 @@ void GGeoTest::init()
     }
     else
     {
-        LOG(warning) << "GGeoTest::init booting from m_opticks cache" ; 
+        LOG(warning) << "GGeoTest::init booting from m_ok cache" ; 
         bool analytic = false ; 
-        m_bndlib = GBndLib::load(m_opticks, true );
-        m_geolib = GGeoLib::Load(m_opticks, analytic, m_bndlib );
+        m_bndlib = GBndLib::load(m_ok, true );
+        m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib );
     }
-    m_maker = new GMaker(m_opticks);
+    m_maker = new GMaker(m_ok);
 }
 
 
@@ -79,7 +82,10 @@ void GGeoTest::modifyGeometry()
 
     if(csgpath) assert(analytic == true);
 
-    GMergedMesh* tmm = create();
+    GMergedMesh* tmm_ = create();
+
+    GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
+
 
     char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
     tmm->setGeoCode( geocode );
@@ -338,7 +344,7 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
 
-    if(m_opticks->hasOpt("dbganalytic"))
+    if(m_ok->hasOpt("dbganalytic"))
     {
         GParts* pts = tri->getParts();
         pts->setName(m_config->getName());
@@ -349,6 +355,9 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
     // collected pts are converted into primitives in GParts::makePrimBuffer
     return tri ; 
 }
+
+
+
 
 GMergedMesh* GGeoTest::loadPmt()
 {

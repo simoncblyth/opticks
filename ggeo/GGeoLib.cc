@@ -6,6 +6,7 @@
 #include "BStr.hh"
 #include "BFile.hh"
 
+#include "NLODConfig.hpp"
 
 #include "Opticks.hh"
 #include "OpticksConst.hh"
@@ -40,6 +41,8 @@ GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic, GBndLib* bndlib)
 GGeoLib::GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib) 
     :
     m_ok(ok),
+    m_lodconfig(m_ok->getLODConfig()), 
+    m_lod(m_ok->getLOD()), 
     m_analytic(analytic),
     m_bndlib(bndlib),
     m_mesh_version(NULL),
@@ -66,13 +69,20 @@ const char* GGeoLib::getMeshVersion() const
 }
 
 
+/*
+GMergedMesh* GGeoLib::getMergedMeshDev(unsigned index)
+{
+    return m_lod > 0  ? makeMergedMeshLOD(index) : getMergedMesh(index) ; 
+}
+*/
 
 
-
-GMergedMesh* GGeoLib::getMergedMesh(unsigned int index)
+GMergedMesh* GGeoLib::getMergedMesh(unsigned index)
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
+
     GMergedMesh* mm = m_merged_mesh[index] ;
+
     return mm ; 
 }
 
@@ -143,6 +153,9 @@ void GGeoLib::loadConstituents(const char* idpath )
         GMergedMesh* mm = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
         GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
 
+        // hmm test geometry doesnt come this way ...
+        //GMergedMesh* mm = m_lod > 0 ? GMergedMesh::MakeLODComposite(mm_, m_lodconfig->levels ) : mm_ ;         
+
         if(pt)
         {
             pt->setBndLib(m_bndlib);
@@ -196,11 +209,36 @@ void GGeoLib::saveConstituents(const char* idpath)
         {          
            pt->save(ptpath); 
         }
-
     }
 }
 
-GMergedMesh* GGeoLib::makeMergedMesh(unsigned int index, GNode* base, GNode* root, unsigned verbosity )
+
+/*
+GMergedMesh* GGeoLib::makeMergedMeshLOD(unsigned index)
+{
+    if(m_lodconfig->verbosity > 0)
+       LOG(info) << "GGeoLib::makeMergedMeshLOD" 
+                 << " lod.verbosity " << m_lodconfig->verbosity
+                 << " lod.levels " << m_lodconfig->levels
+                  ;
+ 
+       ; 
+
+    if(m_merged_mesh_lod.find(index) == m_merged_mesh_lod.end())
+    {
+        GMergedMesh* mm = getMergedMesh(index);
+        assert(mm);
+
+        GMergedMesh* mmlod = GMergedMesh::MakeLODComposite(mm, m_lodconfig->levels );        
+        m_merged_mesh_lod[index] = mmlod ;
+    }    
+    return m_merged_mesh_lod[index] ;
+}
+
+*/
+
+
+GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity )
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end())
     {

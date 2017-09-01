@@ -253,7 +253,7 @@ void OpticksViz::uploadGeometry()
     m_composition->setTimeDomain(        m_ok->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
 
-    m_scene->setGeometry(m_hub->getGGeo());
+    m_scene->setGeometry(m_hub->getGeoLib());
 
     m_scene->uploadGeometry();
 

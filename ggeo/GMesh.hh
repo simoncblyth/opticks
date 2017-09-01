@@ -435,6 +435,7 @@ class GGEO_API GMesh : public GDrawable {
       void setTexcoords(gfloat2* texcoords);
   private:
       void setFaces(guint3* faces);
+      void setFacesQty(guint3* faces);
   private:
       void setBBox(gbbox* bb);
       void setTransforms(float* transforms);
@@ -469,8 +470,9 @@ class GGEO_API GMesh : public GDrawable {
 
   public:
       // analytic geometry standin for OptiX
-      //void setParts(GParts* parts);
-      //GParts* getParts();
+      void setParts(GParts* parts);
+      GParts* getParts();
+      void stealIdentity(GMesh* other);
 
   protected:
       unsigned     m_index ;
@@ -548,11 +550,12 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* m_facerepeated_iidentity_buffer ;
       GBuffer* m_analytic_geometry_buffer ; 
 
-      //GParts*      m_parts ; 
       const NCSG*    m_csg ; 
       const GMesh*   m_alt ; 
 
       unsigned int   m_verbosity ; 
+  protected:
+      GParts*        m_parts ;
 
 };
 

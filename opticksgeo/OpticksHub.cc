@@ -332,6 +332,14 @@ GGeo* OpticksHub::getGGeo()
     return m_ggeo ; 
 }
 
+GGeoLib* OpticksHub::getGeoLib()
+{
+    return m_ggeo->getGeoLib() ; 
+}
+
+
+
+
 GGeoBase* OpticksHub::getGGeoBase()
 {
    // analytic switch 

@@ -81,7 +81,9 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltfname("scene.gltf"),
        m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
        m_gltf(0),
-       m_gltftarget(0)
+       m_gltftarget(0),
+       m_lodconfig("levels=2,verbosity=3"),
+       m_lod(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -671,6 +673,20 @@ void OpticksCfg<Listener>::init()
 
 
 
+   char lodconfig[128];
+   snprintf(lodconfig,128, "String configuring LOD (level-of-detail) meshing, which is controlled with --lod option. Default %s ", m_lodconfig.c_str() );
+   m_desc.add_options()
+       ("lodconfig",   boost::program_options::value<std::string>(&m_lodconfig), lodconfig );
+
+   char lod[128];
+   snprintf(lod,128, "Integer controlling LOD (level-of-detail) meshing. Default %d ", m_lod );
+   m_desc.add_options()
+       ("lod",  boost::program_options::value<int>(&m_lod), lod );
+
+
+
+
+
 
 
     // the below formerly called size seems not to be working, so use simpler size above 
@@ -1113,6 +1129,21 @@ int OpticksCfg<Listener>::getGLTFTarget()
 }
 
 
+
+
+
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getLODConfig()
+{
+   return m_lodconfig ; 
+}
+
+template <class Listener>
+int OpticksCfg<Listener>::getLOD()
+{
+    return m_lod ; 
+}
 
 
 

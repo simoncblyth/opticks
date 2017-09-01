@@ -201,6 +201,9 @@ void OpticksGeometry::loadGeometry()
 
     if(modify) modifyGeometry() ;
 
+    // hmm is this modify approach still needed ? perhaps just loadTestGeometry ?
+    // probably the issue is GGeo does too much ...
+
 
     fixGeometry();
 
@@ -265,6 +268,7 @@ void OpticksGeometry::modifyGeometry()
     LOG(debug) << "OpticksGeometry::modifyGeometry" ;
 
     std::string testconf = m_fcfg->getTestConfig();
+
     m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
 
 

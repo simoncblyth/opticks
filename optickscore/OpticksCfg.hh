@@ -87,6 +87,12 @@ class OKCORE_API OpticksCfg : public BCfg {
      int                getGLTF();
      int                getGLTFTarget();
 
+     const std::string& getLODConfig();
+     int                getLOD();
+
+
+
+
 private:
      void init();
 private:
@@ -165,6 +171,12 @@ private:
      std::string m_gltfconfig ;
      int         m_gltf ;  
      int         m_gltftarget ;  
+
+
+     std::string m_lodconfig ;
+     int         m_lod ;  
+
+
 
 
 };

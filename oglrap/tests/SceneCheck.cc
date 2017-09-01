@@ -21,6 +21,7 @@
 
 
 GGeo*        m_ggeo = NULL ;
+GGeoLib*     m_geolib = NULL ;
 
 Composition* m_composition = NULL ;
 Scene*       m_scene = NULL ;
@@ -50,6 +51,8 @@ int main(int argc, char** argv)
     m_ggeo = new GGeo(m_opticks);
     m_ggeo->loadFromCache();
     m_ggeo->dumpStats();
+
+    m_geolib = m_ggeo->getGeoLib();
 
     // see App::initViz
 
@@ -94,7 +97,7 @@ int main(int argc, char** argv)
 
     m_ggeo->setComposition(m_composition);
 
-    m_scene->setGeometry(m_ggeo);
+    m_scene->setGeometry(m_geolib);
     m_scene->uploadGeometry();
 
     bool autocam = true ;

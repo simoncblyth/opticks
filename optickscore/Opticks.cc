@@ -29,6 +29,7 @@
 #include "NLoad.hpp"
 #include "NSlice.hpp"
 #include "NSceneConfig.hpp"
+#include "NLODConfig.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -614,6 +615,30 @@ const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+
+
+
+const char* Opticks::getLODConfigString()
+{
+    return m_cfg->getLODConfig().c_str() ; 
+}
+int  Opticks::getLOD()
+{
+    return m_cfg->getLOD(); 
+}
+NLODConfig* Opticks::getLODConfig()
+{
+    if(m_lod_config == NULL)
+    {
+        m_lod_config = new NLODConfig(getLODConfigString());
+    }
+    return m_lod_config ; 
+}
+
+
+
+
+
 
 NSceneConfig* Opticks::getSceneConfig()
 {

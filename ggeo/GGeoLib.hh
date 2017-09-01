@@ -2,6 +2,8 @@
 
 #include <string>
 #include <map>
+
+struct NLODConfig ; 
 class Opticks ; 
 
 class GBndLib ; 
@@ -36,6 +38,7 @@ class GGEO_API GGeoLib {
         void loadFromCache();
         void save();
         GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
+        //GMergedMesh* makeMergedMeshLOD(unsigned index) ;
     private:
         const char* getRelDir(const char* name);
         void loadConstituents(const char* idpath);
@@ -44,17 +47,21 @@ class GGEO_API GGeoLib {
     public:
         void dump(const char* msg="GGeoLib::dump");
         unsigned getNumMergedMesh() const ;
-        GMergedMesh* getMergedMesh(unsigned int index);
+        GMergedMesh* getMergedMesh(unsigned index);
+        //GMergedMesh* getMergedMeshDev(unsigned index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);
         void clear();
     private:
         Opticks* m_ok ; 
+        NLODConfig* m_lodconfig ; 
+        int      m_lod ;  
         bool     m_analytic ; 
         GBndLib* m_bndlib ; 
         char*   m_mesh_version ;
         int     m_verbosity ;
         std::map<unsigned,GMergedMesh*>  m_merged_mesh ; 
+        //std::map<unsigned,GMergedMesh*>  m_merged_mesh_lod ; 
 };
 
 #include "GGEO_TAIL.hh"

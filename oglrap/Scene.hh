@@ -7,6 +7,7 @@ class BDynamicDefine ;
 
 template <typename T> class NPY ; 
 
+class Opticks ; 
 class OpticksHub ; 
 class OpticksEvent ; 
 class MultiViewNPY ;
@@ -14,7 +15,7 @@ class MultiViewNPY ;
 // ggeo-
 class GDrawable ;
 class GMergedMesh ;
-class GGeo ;
+class GGeoLib ;
 class GBoundaryLibMetadata ;
 
 // oglrap-
@@ -31,11 +32,17 @@ class Interactor ;
 Scene
 ======
 
+Manages OpenGL rendering of geometry and event data.
+
+* In principal could have multiple flavors of "Scene" targetting different Graphics
+  APIs (eg Metal, Vulkan, DirectX, OpenGL ES, SceneKit ) 
+
+* Thus things that are not dependant on OpenGL should be done elsewhere, 
+  eg LODification of meshes would need to be done for all Scene flavors,
+  so it does not belong here, up in OpticksViz is more appropriate 
+
+
 Canonical m_scene instance is a resident of OpticksViz
-
-
-
-
 
 =======================  ===========      ===========   ==================================================================================
 Constituent               Class            Shader Tag    Notes
@@ -205,8 +212,7 @@ class OGLRAP_API Scene : public NConfigurable {
         void setComposition(Composition* composition);
         void setPhotons(Photons* photons);
    public:
-        void setGeometry(GGeo* gg);
-        GGeo* getGeometry();
+        void setGeometry(GGeoLib* geolib);
         void uploadGeometry(); 
    private:
         void uploadGeometryGlobal(GMergedMesh* mm);
@@ -221,6 +227,7 @@ class OGLRAP_API Scene : public NConfigurable {
       //
       //  void setTarget(unsigned int index=0, bool aim=true); 
       //  unsigned int getTargetDeferred();
+
 
         unsigned int getTarget(); 
         void setTarget(unsigned int index=0, bool aim=true); 
@@ -267,7 +274,9 @@ class OGLRAP_API Scene : public NConfigurable {
         float         getTimeFraction();
 
    private:
+        
         OpticksHub*  m_hub ; 
+        Opticks*     m_ok ;     // think twice before using this, is the feature OpenGL specific ? Does it belong here ?
         char*        m_shader_dir ; 
         char*        m_shader_dynamic_dir ; 
         char*        m_shader_incl_path ; 
@@ -293,7 +302,7 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*         m_devrecord_renderer ; 
    private:
         Photons*     m_photons ; 
-        GGeo*        m_ggeo ;
+        GGeoLib*       m_geolib ;
         GMergedMesh* m_mesh0 ; 
         Composition* m_composition ;
         NPY<unsigned char>*     m_colorbuffer ;

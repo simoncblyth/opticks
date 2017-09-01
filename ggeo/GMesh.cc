@@ -166,12 +166,31 @@ GMesh::GMesh(unsigned int index,
       m_facerepeated_iidentity_buffer(NULL),
       m_analytic_geometry_buffer(NULL),
 
-      //m_parts(NULL),
       m_csg(NULL),
-      m_verbosity(0)
+      m_verbosity(0),
+      m_parts(NULL)
 {
      init(vertices, faces, normals, texcoords);
 }
+
+
+
+
+void GMesh::stealIdentity(GMesh* other)
+{
+    setParts(other->getParts());
+    setITransformsBuffer( other->getITransformsBuffer() );
+    setInstancedIdentityBuffer( other->getInstancedIdentityBuffer() );
+    setAnalyticInstancedIdentityBuffer( other->getAnalyticInstancedIdentityBuffer() );
+
+
+    // hmm passing everything over is too complicated, maybe better to do LODification inplace
+    //     to avoid this        
+}
+
+
+
+
 
 
 void GMesh::setCSG(const NCSG* csg)
@@ -402,7 +421,7 @@ float* GMesh::getModelToWorldPtr(unsigned int /*index*/)
 }
 
 
-unsigned int* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
+unsigned* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
 {
     return m_nodes ;
 }
@@ -596,6 +615,18 @@ NSlice* GMesh::getPartSlice()
 }
 
 
+GParts* GMesh::getParts()
+{
+    return m_parts ; 
+}
+void GMesh::setParts(GParts* pts) 
+{
+    m_parts = pts ; 
+   // originally under protest as only used by the old dirty analytic PMT handling 
+   // but now that are persisting GParts, this is needed from GGeoLib 
+}
+
+
 
 
 void GMesh::init(gfloat3* vertices, guint3* faces, gfloat3* normals, gfloat2* texcoords)
@@ -642,12 +673,15 @@ void GMesh::allocate()
 
         // consolidate into guint4 
 
-        setFaces(        new guint3[numFaces]);
+        guint3* faces = new guint3[numFaces] ;
+        setFacesQty(faces);
 
-        // TODO: consolidate into uint4 with one spare
+/*
+        setFaces(        new guint3[numFaces]);
         setNodes(        new unsigned[numFaces]);
         setBoundaries(   new unsigned[numFaces]);
         setSensors(      new unsigned[numFaces]);
+*/
 
     }
 
@@ -664,6 +698,28 @@ void GMesh::allocate()
 }
 
 
+
+void GMesh::setFacesQty(guint3* faces )
+{
+    // TODO: consolidate into uint4 with one spare
+    if(m_num_faces == 0) return ;      
+
+    if(faces)
+    {
+        setFaces( faces );
+    }
+
+    setNodes(        new unsigned[m_num_faces]);
+    setBoundaries(   new unsigned[m_num_faces]);
+    setSensors(      new unsigned[m_num_faces]);
+
+    for(unsigned i=0 ; i < m_num_faces ; i++)
+    {
+        m_nodes[i] = 0u ; 
+        m_boundaries[i] = 0u ; 
+        m_sensors[i] = 0u ; 
+    }
+}
 
 
 
@@ -1093,7 +1149,7 @@ void GMesh::setIndicesBuffer(GBuffer* buffer)
 }
 
 
-void GMesh::setNodes(unsigned int* nodes)   // only makes sense to use from single subclasses instances like GMergedMesh 
+void GMesh::setNodes(unsigned* nodes)   // only makes sense to use from single subclasses instances like GMergedMesh 
 {
     m_nodes = nodes ;
     m_nodes_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_nodes, sizeof(unsigned int), 1 ) ;
@@ -1114,11 +1170,11 @@ void GMesh::setNodesBuffer(GBuffer* buffer)
 }
 
 
-void GMesh::setBoundaries(unsigned int* boundaries)
+void GMesh::setBoundaries(unsigned* boundaries)
 {
     m_boundaries = boundaries ;
-    m_boundaries_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_boundaries, sizeof(unsigned int), 1 ) ;
-    assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
+    m_boundaries_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_boundaries, sizeof(unsigned), 1 ) ;
+    assert(sizeof(unsigned) == sizeof(unsigned)*1);
 }
 void GMesh::setBoundariesBuffer(GBuffer* buffer)
 {
@@ -1137,21 +1193,21 @@ void GMesh::setBoundariesBuffer(GBuffer* buffer)
 
 
 
-void GMesh::setSensors(unsigned int* sensors)
+void GMesh::setSensors(unsigned* sensors)
 {
     m_sensors = sensors ;
-    m_sensors_buffer = new GBuffer( sizeof(unsigned int)*m_num_faces, (void*)m_sensors, sizeof(unsigned int), 1 ) ;
-    assert(sizeof(unsigned int) == sizeof(unsigned int)*1);
+    m_sensors_buffer = new GBuffer( sizeof(unsigned)*m_num_faces, (void*)m_sensors, sizeof(unsigned), 1 ) ;
+    assert(sizeof(unsigned) == sizeof(unsigned)*1);
 }
 void GMesh::setSensorsBuffer(GBuffer* buffer)
 {
     m_sensors_buffer = buffer ; 
     if(!buffer) return ;
 
-    m_sensors = (unsigned int*)buffer->getPointer();
+    m_sensors = (unsigned*)buffer->getPointer();
 
-    unsigned int numBytes = buffer->getNumBytes();
-    unsigned int num_sensors = numBytes/sizeof(unsigned int);
+    unsigned numBytes = buffer->getNumBytes();
+    unsigned num_sensors = numBytes/sizeof(unsigned);
     assert(m_num_faces == num_sensors);   // must load indices before sensors, for m_num_faces
 }
 

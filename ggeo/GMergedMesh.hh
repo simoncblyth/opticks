@@ -17,7 +17,6 @@ class Opticks ;
 class GGeo ; 
 class GNode ;
 class GSolid ; 
-class GParts ; 
 class GMergedMesh ; 
 
 #include "GMesh.hh"
@@ -62,12 +61,10 @@ public:
              gfloat2* texcoords
          );
 public:
-    GParts* getParts();
     std::string brief() const ;
     void addInstancedBuffers(const std::vector<GNode*>& placements);
    // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  
 private:
-    void setParts(GParts* pts); 
 private:
     // NB cannot treat GMergedMesh as a GMesh wrt calling getNumSolids 
     // explicit naming to avoid subclass confusion
@@ -110,7 +107,6 @@ private:
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  
-    GParts*      m_parts ; 
     std::map<unsigned int, unsigned int> m_mesh_usage ; 
 
      

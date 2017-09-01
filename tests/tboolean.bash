@@ -4,10 +4,145 @@ tboolean-usage(){ cat << \EOU
 
 tboolean- 
 ======================================================
+ 
+FUNCTIONS
+----------
+
+The tboolean- geometry test functions mostly follow the same 
+pattern of sub-functions eg:
+
+tboolean-box-- 
+   emit to stdout python code describing geometry
+tboolean-box- 
+   runs the above python code, serializing the geometry description into directory $TMP/tboolean-box-
+tboolean-box
+   run opticks in "--test" mode loading the above written geometry 
+
+
+Mostly Working (Sep 1, 2017) Other than those marked
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* some have poor/missing polygonizations, but all have OK raytrace
+
+  
+tboolean-box
+tboolean-cone
+tboolean-prism
+tboolean-trapezoid
+tboolean-uniontree
+tboolean-parade
+tboolean-complement
+tboolean-zsphere
+tboolean-union-zsphere
+tboolean-difference-zsphere
+tboolean-hybrid
+tboolean-hyctrl
+tboolean-uncoincide
+tboolean-disc
+tboolean-esr
+    speckle in the hole
+tboolean-sc
+    constructs single solid obtained from GDML parsing 
+tboolean-positivize
+    NOT WORKING
+
+tboolean-bsu
+tboolean-bsd
+tboolean-bsi
+    boxsphere union, intersection, difference 
+
+tboolean-segment
+tboolean-cysegment
+tboolean-cyslab
+    NOT WORKING
+tboolean-undefined
+    NOT WORKING
+   
+tboolean-torus
+tboolean-hyperboloid
+tboolean-cubic
+    NOT WORKING
+
+tboolean-12
+    PMT Neck Modelling With Hyperboloid, compared to cylinder - torus
+    
+tboolean-ellipsoid
+tboolean-spseg
+    NOT WORKING
+
+
+tboolean-sphereslab
+tboolean-sphereplane
+    exhibits view dependent geometry, from use of unbounded plane in CSG 
+
+
+tboolean-boxplane
+    exhibits view dependent geometry, from use of unbounded plane in CSG 
+tboolean-plane
+tboolean-cy
+tboolean-cylinder
+    cylinder with 3 cylinders subtracted 
+tboolean-fromstring
+    geometry parsed from GDML string
+tboolean-unbalanced
+tboolean-deep
+
+tboolean-0q
+tboolean-0
+    NOT WORKING
+   
+tboolean-gds0
+tboolean-oav
+    includes ribs at base
+tboolean-iav
+tboolean-sst
+    NOT WORKING 
+tboolean-gds
+tboolean-pmt
+    missing poly for several solids
+
+tboolean-sstt
+tboolean-sstt2
+    trapezoid
+tboolean-ntc
+    pool cover flat lozenge
+
+tboolean-p0
+tboolean-dd
+    NOT WORKING 
+ 
+tboolean-interlocked
+    several box minus sphere, with gpuoffset
 
 
 
+Not Working (Sep 1, 2017)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+tboolean-positivize
+     AttributeError: 'CSG' object has no attribute 'subdepth'  
+
+tboolean-cyslab
+     AttributeError: type object 'Primitive' has no attribute 'deltaphi_slab_segment'
+
+tboolean-spseg
+    AttributeError: type object 'Primitive' has no attribute 'deltaphi_slab_segment'
+
+tboolean-undefined
+     2017-09-01 14:46:03.887 FATAL [2268207] [*NCSG::import_primitive@887] NCSG::import_primitive TYPECODE NOT IMPLEMENTED  idx 0 typecode 26 csgname undefined
+
+tboolean-cubic
+     invisible raytrace
+
+tboolean-0q
+tboolean-0
+     Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_umaxmin, file /Users/blyth/opticks/opticksnpy/NNodeNudger.cpp, line 413.
+
+tboolean-sst
+     Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_umaxmin, file /Users/blyth/opticks/opticksnpy/NNodeNudger.cpp, line 413.
+
+tboolean-dd
+     ImportError: No module named treebase
 
 
 TODO
@@ -25,7 +160,7 @@ TODO
 
   Hmm but the sources need to correspond to geometry ...
   this needs an overhaul.
-  
+ 
 
 NOTES
 --------
@@ -43,8 +178,8 @@ is not implemented so the visualization
 of photon paths is not operational.
 
 
-bash test geometry configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DEPECATED old test geometry configuration
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * CSG tree is defined in breadth first or level order
 
@@ -140,6 +275,9 @@ tboolean-tag(){  echo 1 ; }
 tboolean-det(){  echo boolean ; }
 tboolean-src(){  echo torch ; }
 tboolean-args(){ echo  --det $(tboolean-det) --src $(tboolean-src) ; }
+
+tboolean-ls-(){ grep TESTCONFIG= $BASH_SOURCE ; }
+tboolean-ls(){ $FUNCNAME- | perl -ne 'm/(\S*)\(\)/ && print "$1\n" ' -   ; }
 
 tboolean--(){
 
@@ -413,26 +551,27 @@ container.meta.update(PolyConfig("CONTAINER").meta)
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
 angle, height, depth = 45, 200, 300
-planes, verts, bbox = make_prism(angle, height, depth)
+planes, verts, bbox, srcmeta = make_prism(angle, height, depth)
 
-obj1 = CSG("convexpolyhedron")
-obj1.boundary = args.testobject
-obj1.planes = planes
-obj1.param2[:3] = bbox[0]
-obj1.param3[:3] = bbox[1]
+obj = CSG("convexpolyhedron")
+obj.boundary = args.testobject
+obj.planes = planes
+obj.param2[:3] = bbox[0]
+obj.param3[:3] = bbox[1]
 
 # unlike other solids, need to manually set bbox for solids stored as a 
 # set of planes in NConvexPolyhedron as cannot easily derive the bbox 
 # from the set of planes
 
-obj1.meta.update(im)
+obj.meta.update(srcmeta)
+obj.meta.update(im)
 
-obj1.dump()
+obj.dump()
 
-#print obj1.as_python()
+#print obj.as_python()
 
 
-CSG.Serialize([container, obj1], "$TMP/$FUNCNAME", outmeta=True )
+CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
 
 
 EOP
@@ -1313,7 +1452,7 @@ log.info("BALANCED:\n"+str(obj.txt))
 
 obj.meta.update(verbosity="1")
 obj.dump(msg="BALANCED", detailed=True)
-obj.dump_tboolean(name="esr")
+#obj.dump_tboolean(name="esr")
 
 
 CSG.Serialize([container, obj], outdir )
@@ -1422,9 +1561,9 @@ EOP
 
 
 
-tboolean-bsu(){ TESTCONFIG=$(tboolean-boxsphere union)        tboolean-- ; }
-tboolean-bsd(){ TESTCONFIG=$(tboolean-boxsphere difference)   tboolean-- ; }
-tboolean-bsi(){ TESTCONFIG=$(tboolean-boxsphere intersection) tboolean-- ; }
+tboolean-bsu(){ TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- ; }
+tboolean-bsd(){ TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- ; }
+tboolean-bsi(){ TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- ; }
 tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
 tboolean-boxsphere--(){ cat << EOP 
 import math
@@ -1506,7 +1645,7 @@ phi0,phi1,sz,sr = 0,45,202,500*1.5
 # cuts into the tube ... 
 # how much depends on the deltaphi 
  
-planes, verts, bbox = make_segment(phi0,phi1,sz,sr)
+planes, verts, bbox, srcmeta = make_segment(phi0,phi1,sz,sr)
 seg = CSG("segment")
 seg.planes = planes
 seg.param2[:3] = bbox[0]
@@ -2365,6 +2504,7 @@ EON
 }
 
 
+tboolean-0q(){  TESTCONFIG="analytic=1_csgpath=$TMP/tboolean-0-_name=tboolean-0-_mode=PyCsgInBox" && tboolean--  ; }
 tboolean-0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
 tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
