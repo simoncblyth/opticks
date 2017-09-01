@@ -16,8 +16,11 @@ class GBBoxMesh ;
 class GBuffer ;
 
 class InstLODCull ; 
-
 class Texture ; 
+
+struct DrawElements ; 
+
+
 
 #include "RendererBase.hh"
 #include "OGLRAP_API_EXPORT.hh"
@@ -46,6 +49,7 @@ class OGLRAP_API Renderer : public RendererBase  {
 
   enum { TEX_UNIT_0 , TEX_UNIT_1 } ;
 
+  enum { MAX_LOD = 3 } ;
 
   public:
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
@@ -83,6 +87,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
       bool hasTransforms(){ return m_has_transforms ; }
       void setHasTransforms(bool hastr){ m_has_transforms = hastr ; }
+      void setupDraws(GMergedMesh* mm);
 
       void check_uniforms();
       void update_uniforms();   
@@ -91,6 +96,10 @@ class OGLRAP_API Renderer : public RendererBase  {
 
   private:
       GLuint m_vao ; 
+      DrawElements* m_draw[MAX_LOD] ; 
+      unsigned      m_draw_num ; 
+      unsigned      m_draw_0 ; 
+      unsigned      m_draw_1 ; 
   private:
       // buffer id
       GLuint m_vertices ;
@@ -118,7 +127,6 @@ class OGLRAP_API Renderer : public RendererBase  {
    private:
       unsigned int m_itransform_count ;
       long         m_draw_count ;
-      int          m_num_lod ; 
       GLsizei      m_indices_count ;
   private:
       GDrawable*   m_drawable ;
@@ -133,6 +141,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool m_instanced ; 
       bool m_wireframe ; 
       InstLODCull* m_instlodcull ; 
+
+
 };      
 
 

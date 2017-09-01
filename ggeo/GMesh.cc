@@ -1055,6 +1055,12 @@ int GMesh::getNumComponents() const
     return m_components_buffer ? m_components_buffer->getShape(0) : -1 ; 
 }
 
+void GMesh::getComponent( glm::uvec4& eidx, unsigned icomp ) const 
+{
+     eidx = m_components_buffer->getQuad(icomp);
+}
+
+
 void GMesh::setComponent(const glm::uvec4& eidx, unsigned icomp )
 {
     assert( m_num_mergedmesh > 0 && "MUST GMergedMesh::countMergedMesh before GMesh::setComponent ");
@@ -1078,7 +1084,8 @@ void GMesh::dumpComponents(const char* msg) const
     unsigned num_comp = getNumComponents();
     for(unsigned icomp=0 ; icomp < num_comp ; icomp++)
     {
-         glm::uvec4 eidx = m_components_buffer->getQuad(icomp);
+         glm::uvec4 eidx ;
+         getComponent( eidx, icomp );
          std::cout << std::setw(4) << icomp
                    << gpresent(eidx)
                    << std::endl 

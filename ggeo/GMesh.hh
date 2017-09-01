@@ -467,6 +467,7 @@ class GGEO_API GMesh : public GDrawable {
       void setNumFaces(   unsigned int num_faces);
       void setNumSolids(unsigned int num_solids);
       void setComponent(const glm::uvec4& eidx, unsigned icomp );
+      void getComponent(      glm::uvec4& eidx, unsigned icomp ) const ;
 
   public:
       // analytic geometry standin for OptiX

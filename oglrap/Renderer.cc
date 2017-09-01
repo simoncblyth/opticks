@@ -1,7 +1,5 @@
 #include <cstdint>
 
-#include <GL/glew.h>
-
 // brap-
 #include "BBufSpec.hh"
 
@@ -11,6 +9,12 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "NSlice.hpp"
+
+
+
+#include <GL/glew.h>
+
+
 
 #include "Renderer.hh"
 #include "InstLODCull.hh"
@@ -27,12 +31,38 @@
 
 #include "PLOG.hh"
 
+
+
+
+struct DrawElements
+{
+    DrawElements( GLenum mode_ , GLsizei count_ , GLenum  type_ , void* indices_ , GLsizei  primcount_ )
+        :
+        mode(mode_),
+        count(count_),
+        type(type_),
+        indices(indices_),
+        primcount(primcount_)
+    {}
+
+    GLenum  mode  ; 
+    GLsizei count ; 
+    GLenum  type ; 
+    void*  indices ; 
+    GLsizei  primcount ;   // only for Instanced
+};
+
+
+
 const char* Renderer::PRINT = "print" ; 
 
 
 Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     :
     RendererBase(tag, dir, incl_path),
+    m_draw_num(0),
+    m_draw_0(0),
+    m_draw_1(1),
     m_texcoords(0),
     m_mv_location(-1),
     m_mvp_location(-1),
@@ -49,7 +79,6 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_depthTex_location(-1),
     m_itransform_count(0),
     m_draw_count(0),
-    m_num_lod(0),
     m_indices_count(0),
     m_drawable(NULL),
     m_geometry(NULL),
@@ -127,8 +156,9 @@ GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const 
     BBufSpec* spec = buf->getBufSpec(); 
 
     GLuint id = upload(target, usage, spec, name );
-
     buf->setBufferId(id);
+
+
     buf->setBufferTarget(target);
 
     LOG(trace) << "Renderer::upload_NPY    " 
@@ -139,6 +169,11 @@ GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const 
 
     return id ;
 }
+
+
+
+
+
 
 GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char* name)
 {
@@ -175,43 +210,36 @@ GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char*
 void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
     m_bboxmesh = bboxmesh ;
-    m_num_lod = 0 ; 
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_bboxmesh);
     NSlice* islice = m_bboxmesh->getInstanceSlice();
     NSlice* fslice = m_bboxmesh->getFaceSlice();
     upload_buffers(islice, fslice);
+
+    setupDraws( NULL ) ; 
 }
 void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
 {
-    m_num_lod = mm->getNumComponents();
-
     m_geometry = mm ;
+
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     m_drawable = static_cast<GDrawable*>(m_geometry);
     NSlice* islice = m_geometry->getInstanceSlice();
     NSlice* fslice = m_geometry->getFaceSlice();
     upload_buffers(islice, fslice);
 
-
-    LOG(info) << "Renderer::upload"
-              << " m_num_lod " << m_num_lod 
-              << " m_indices_count " << m_indices_count
-               ;
-
-    mm->dumpComponents("Renderer::upload"); 
-
-
+    setupDraws( mm );
 }
 
 void Renderer::upload(Texture* texture, bool /*debug*/)
 {
-    m_num_lod = 0 ; 
     setTexture(texture);
 
     NSlice* islice = NULL ; 
     NSlice* fslice = NULL ; 
     upload_buffers(islice, fslice);
+
+    setupDraws( NULL) ; 
 }
 
 void Renderer::setTexture(Texture* texture)
@@ -225,6 +253,63 @@ void Renderer::setTexture(Texture* texture)
 Texture* Renderer::getTexture()
 {
     return m_texture ;
+}
+
+
+
+
+
+
+
+
+void Renderer::setupDraws(GMergedMesh* mm)
+{
+    // note distinction between: 
+    //   1. a non-LOD draw 
+    //   2. LOD set of one level 
+    
+    int num_comp = mm ? mm->getNumComponents() : 0  ; 
+
+    if(mm == NULL || num_comp < 1 )
+    {
+        m_draw[0] = new DrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, m_itransform_count );
+        m_draw_num = 1 ;  
+        m_draw_0 = 0 ; 
+        m_draw_1 = 1 ; 
+
+        // indices_count would be 3 for a single triangle, 30 for ten triangles
+    }
+    else
+    {
+        LOG(info) << "Renderer::setupDraws"
+                  << " m_indices_count " << m_indices_count
+                   ;
+
+        unsigned lod = 0 ; // full detail 
+        //unsigned lod = 1 ; // bbox standin
+        //unsigned lod = 2 ;   // quad standin
+
+        mm->dumpComponents("Renderer::upload"); 
+
+        assert( num_comp > 0 ) ;
+
+        m_draw_num = num_comp ; 
+        m_draw_0 = lod ; 
+        m_draw_1 = m_draw_0 + 1 ; 
+
+        for(unsigned i=0 ; i < m_draw_num ; i++)
+        {
+            glm::uvec4 eidx ;
+            mm->getComponent(eidx, i );
+
+            unsigned offset_face = eidx.x ;
+            unsigned num_face = eidx.y ;
+            GLsizei count = num_face*3 ; 
+            void* offset_indices = (void*)(offset_face*3*sizeof(unsigned)) ; 
+
+            m_draw[i] = new DrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, offset_indices, 0 );
+        }
+    }
 }
 
 
@@ -324,6 +409,8 @@ void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
         m_transforms = upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
         m_itransform_count = ibuf->getNumItems() ;
     }
+
+
     m_indices  = upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
     m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
 
@@ -563,8 +650,6 @@ void Renderer::bind()
 
 
 
-
-
 void Renderer::render()
 { 
     glUseProgram(m_program);
@@ -582,6 +667,9 @@ void Renderer::render()
         glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
     }
 
+
+
+#ifdef OLD_DRAW
     if(m_instanced)
     {
         // primcount : Specifies the number of instances of the specified range of indices to be rendered.
@@ -594,12 +682,28 @@ void Renderer::render()
     {
 
         glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
-
+       // indices_count would be 3 for a single triangle, 30 for ten triangles
     }
-    // indices_count would be 3 for a single triangle, 30 for ten triangles
+#else
 
+    // hmm drawing multiple LOD levels only needed with dynamic LOD 
+    // normally stick to single level
 
-    //
+    for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
+    {
+        const DrawElements& draw = *m_draw[i] ;   
+        if(m_instanced)
+        { 
+            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, draw.primcount  ) ;
+        }
+        else
+        {
+            glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
+        }
+    }
+
+#endif
+
     // TODO: try offsetting into the indices buffer using : (void*)(offset * sizeof(GLuint))
     //       eg to allow wireframing for selected volumes
     //
@@ -607,6 +711,7 @@ void Renderer::render()
     //
     //       http://stackoverflow.com/questions/9431923/using-an-offset-with-vbos-in-opengl
     //
+
 
     if(m_wireframe)
     {

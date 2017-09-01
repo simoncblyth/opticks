@@ -4,9 +4,9 @@ j1707_250k_volumes_render_slowly_with_full_tri
 Issue
 --------
 
-::
 
-    op --j1707 --gltf 3 --tracer --instcull
+
+
 
 
 Huge geometry, > 250k Volumes, 18k instances + 38k instances
@@ -16,6 +16,35 @@ Huge geometry, > 250k Volumes, 18k instances + 38k instances
 
 This is without any culling or LOD.
 
+
+
+
+Thoughts
+-------------
+
+* LOD is a global thing, do not need individual solid control, 
+  so use standard OpticksCfg to configure/control via --lod N --lodconfig "levels=2"
+
+* each CSG tree yields a GSolid, with associated GParts
+
+* the GSolids are combined to form the GMergedMesh 
+
+
+
+Test Commands
+-------------------
+
+::
+
+
+    op --j1707 --gltf 3 --tracer --instcull
+
+        ## currently just tests that InstLODCull shader compiles 
+
+
+    tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 
+
+        ## check LODification and rendering of test geometry   
 
 
 LODCull for all instances or just the PMTs ? JUST PMTs
@@ -29,6 +58,8 @@ LODCull for all instances or just the PMTs ? JUST PMTs
   
 
 ::
+
+    // :set nowrap
 
    2017-08-28 11:52:34.748 INFO  [1181753] [NScene::dumpRepeatCount@1429] NScene::dumpRepeatCount m_verbosity 1
      ridx   1 count 182860   ## 36572*(4+1) = 182860   PMT_3inch_pmt_solid0x1c9e270    (progeny 4)
@@ -74,7 +105,7 @@ How to structure ?
   depending on instance transform counts exceeding a minimum as configured in oglrap-/Scene
 
 
-Need to LODify GMergedMesh 
+DONE : LODify GMergedMesh 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Hmm similar to the below but need to retain the offsets for each component of the LOD,
@@ -119,6 +150,11 @@ Hmm need sidecar NPY<int> buffer to hold the offsets...
     152     }
 
     ///         element offset and num elements for each level are needed
+
+
+
+DONE : Prim::Concatenate equivalent LODification in GMergedMesh::MakeLODComposite
+-----------------------------------------------------------------------------------
 
 ::
 
@@ -265,14 +301,8 @@ How to test the LOD ? Need option to switch on LOD creation/render for use from 
 
 
 
-
-* LOD is a global thing, do not need individual solid control, 
-  so use standard OpticksCfg to configure/control via --lod N --lodconfig "levels=2"
-
-* each CSG tree yields a GSolid, with associated GParts
-
-* the GSolids are combined to form the GMergedMesh 
-
+LOD checking with test geometry
+-----------------------------------------
 
 
 Unclear where to do the LODing... for now::
@@ -417,12 +447,111 @@ Which gets invoked::
 
 
 
-
-Testing InstLODCull
+LOD/Cull forking 
 ----------------------
+
+How to proceed:
+
+* tidy VAO usage, for easy switching between the LODed transforms buffers 
+
+* basis buffers too "evolved", use simple buffer with OpenGL capabilities
+  similar to instcull- Buf ?
+
+* Renderer treats buffers as transients just passing thru, 
+  would be simpler to follow the instcull first class citizen buffers approach, 
+  and give then OpenGL skills
+
+
+* changing upload_GBuffer and upload_NPY to return a Buf holding vitals
+  probably sufficient
+
+
+
+icdemo uses a Buf4 to manage the forked instance transform buffers::
+
+
+     68 void ICDemo::init()
+     69 {
+     70     geom->vbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+     71     geom->ebuf->upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+     72     geom->ibuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+     73 
+     74 #ifdef WITH_LOD
+     75     // clod houses multiple buffers to grab the LOD forked instance transforms
+     76     clod->x = geom->ibuf->cloneZero(); // CPU allocates and fills with zeros
+     77     clod->y = geom->ibuf->cloneZero();
+     78     clod->z = geom->ibuf->cloneZero();
+     79 
+     80     clod->x->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY);  // GPU allocates only, no copying 
+     81     clod->y->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY);
+     82     clod->z->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY);
+     83 
+     84     //clod->devnull = new Buf(0,0,NULL);  // suspect zero-sized buffer is handled different, so use 1-byte buffer
+     85     clod->devnull = new Buf(0,1,NULL);
+     86     clod->devnull->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY);  // zero sized buffer used with workaround
+     87 
+     88     
+     89     cull->setupFork(geom->ibuf, clod) ;
+     90 
+
 
 ::
 
-    op --j1707 --gltf 3 --tracer --instcull
+    327 void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
+    328 {
+    ...
+    371     NPY<float>* ibuf_orig = m_drawable->getITransformsBuffer();
+    372     NPY<float>* ibuf = ibuf_orig ;
+    373     setHasTransforms(ibuf != NULL);
+    374 
+    375     if(islice)
+    376     {
+    377         LOG(warning) << "Renderer::upload_buffers instance slicing ibuf with " << islice->description() ;
+    378         ibuf = ibuf_orig->make_slice(islice);
+    379     }
+    ...
+    386     if(m_instanced) assert(hasTransforms()) ;
+    ...
+    398     if(hasTransforms())
+    399     {
+    400         m_transforms = upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
+    401         m_itransform_count = ibuf->getNumItems() ;
+    402     }
+
+    ///  buffer id also stored inside ibuf 
+
+::
+
+    229  void NPYBase::setBufferId(int buffer_id)
+    230 {
+    231     m_buffer_id = buffer_id  ;
+    232 }
+    233  int NPYBase::getBufferId() const
+    234 {
+    235     return m_buffer_id ;
+    236 }
+
+
+::
+
+    154 GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const char* name)
+    155 {
+    156     BBufSpec* spec = buf->getBufSpec();
+    157 
+    158     GLuint id = upload(target, usage, spec, name );
+    159 
+    160     buf->setBufferId(id);
+    161     buf->setBufferTarget(target);
+    162 
+    163     LOG(trace) << "Renderer::upload_NPY    "
+    164               << std::setw(20) << name
+    165               << " id " << std::setw(4) << id
+    166               << " bytes " << std::setw(10) << spec->num_bytes
+    167               ;
+    168 
+    169     return id ;
+    170 }
+
+
 
 

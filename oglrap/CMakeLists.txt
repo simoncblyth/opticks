@@ -107,6 +107,8 @@ set(SOURCES
     Photons.cc
     GUI.cc
 
+    RBuf.cc
+    RBuf4.cc
     RendererBase.cc
     Rdr.cc
     InteractorCfg.cc
