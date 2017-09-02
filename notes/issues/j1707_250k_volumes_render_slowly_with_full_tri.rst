@@ -32,10 +32,27 @@ Thoughts
     makes less sense ... 
 
 
-Next 
+DONE
 ------
 
-*  Renderer : separate buffer uploading from VAO creation, with buffer id parameters 
+*  Renderer tidy up : buffer, VAO handling
+
+
+Next
+------
+
+* work out how to split duties between
+
+::
+  
+   Scene
+   Renderer
+   InstLODCull
+
+
+* hmm am thinking to do mostly inside Renderer
+  (ie the role of ICDemo is taken by Renderer)
+  as its that which is using the forked buffers to render from 
 
 
 
@@ -54,6 +71,8 @@ Test Commands
     tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 
 
         ## check LODification and rendering of test geometry   
+
+
 
 
 LODCull for all instances or just the PMTs ? JUST PMTs

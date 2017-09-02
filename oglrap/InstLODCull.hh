@@ -2,6 +2,8 @@
 
 #include <string>
 
+
+struct RBuf4 ; 
 struct BBufSpec ; 
 template <typename T> class NPY ; 
 
@@ -12,6 +14,17 @@ class Composition ;
 
 #include "RendererBase.hh"
 #include "OGLRAP_API_EXPORT.hh"
+
+/**
+InstLODCull
+=============
+
+Provisioned from Scene, used from paired Renderer
+
+
+
+**/
+
 
 class OGLRAP_API InstLODCull : public RendererBase  {
   public:
@@ -41,6 +54,7 @@ class OGLRAP_API InstLODCull : public RendererBase  {
       unsigned     m_num_instance ; 
       bool         m_enabled ; 
 
+      RBuf4*       m_fork ; 
  
    
 

@@ -10,6 +10,10 @@ template <typename T> class NPY ;
 
 class Composition ;
 
+
+struct RBuf ; 
+struct RBuf4 ; 
+
 class GDrawable ; 
 class GMergedMesh ; 
 class GBBoxMesh ; 
@@ -39,12 +43,13 @@ class OGLRAP_API Renderer : public RendererBase  {
   public:
 
   static const char* PRINT ;  
+
   enum Attrib_IDs { 
-        vPosition=0, 
-           vColor=1, 
-          vNormal=2,
-          vTexcoord=3,
-          vTransform=4
+                  vPosition=0, 
+                     vColor=1, 
+                    vNormal=2,
+                  vTexcoord=3,
+                 vTransform=4
     };
 
   enum { TEX_UNIT_0 , TEX_UNIT_1 } ;
@@ -60,13 +65,14 @@ class OGLRAP_API Renderer : public RendererBase  {
 
   public: 
       //////////  CPU side buffer setup  ///////////////////
+      /// HMM DOES THE RENDERER NEED TO KNOW THE DIFFERENCE BETWEEN THESE ?
       void upload(GBBoxMesh* bboxmesh, bool debug=false);
       void upload(GMergedMesh* geometry, bool debug=false);
       void upload(Texture* texture, bool debug=false);
   private: 
+      void setDrawable(GDrawable* drawable); 
       void setTexture(Texture* texture);
       Texture* getTexture() const ; 
-       void setDrawable(GDrawable* drawable); 
       GBuffer* fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice);
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
@@ -75,10 +81,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setupDraws(GMergedMesh* mm);
   private: 
       //////////  GPU side buffer setup  ///////////////////
-      void upload_GBuffer(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
-      void upload_NPY(    GLenum target, GLenum usage, NPY<float>* buffer, const char* name=NULL);
-      GLuint upload(        GLenum target, GLenum usage, BBufSpec* bufspec, const char* name=NULL);
       void upload();
+      void setupInstanceFork();
 
   public: 
       void bind();
@@ -86,18 +90,18 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setComposition(Composition* composition);
       Composition* getComposition(); 
   public: 
-  public: 
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
       void Print(const char* msg="Renderer::Print");
 
   private:
 
-      GLuint createVertexArray(NPY<float>* ibuf);
+      GLuint createVertexArray(RBuf* instanceBuffer);
 
       void check_uniforms();
       void update_uniforms();   
 
+      void dump(RBuf* buf);
       void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
   private:
@@ -107,12 +111,16 @@ class OGLRAP_API Renderer : public RendererBase  {
       unsigned      m_draw_0 ; 
       unsigned      m_draw_1 ; 
   private:
-      GBuffer*  m_vbuf ;  // verts
-      GBuffer*  m_nbuf ;  // normals
-      GBuffer*  m_cbuf ;  // colors
-      GBuffer*  m_tbuf ;  // textures
-      GBuffer*  m_fbuf ;  // faces/element/indices 
-      NPY<float>*  m_ibuf ;  // instance transforms 
+
+      RBuf*   m_vbuf ; 
+      RBuf*   m_nbuf ; 
+      RBuf*   m_cbuf ; 
+      RBuf*   m_tbuf ; 
+      RBuf*   m_fbuf ; 
+      RBuf*   m_ibuf ; 
+
+      RBuf4*  m_ifork ; 
+
   private:
       // locations determined by *check_uniforms* and used by *update_uniforms* 
       // to update the "constants" available to shaders

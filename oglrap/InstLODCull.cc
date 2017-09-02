@@ -29,7 +29,8 @@ InstLODCull::InstLODCull(const char* tag, const char* dir, const char* incl_path
     m_geometry(NULL),
     m_itransforms(NULL),
     m_num_instance(0),
-    m_enabled(false)
+    m_enabled(false),
+    m_fork(NULL)
 {
 }
 
@@ -135,3 +136,8 @@ void InstLODCull::initShader()
     link_shader();
 
 } 
+
+
+// /Users/blyth/env/graphics/opengl/instcull/LODCullShader.cc
+
+

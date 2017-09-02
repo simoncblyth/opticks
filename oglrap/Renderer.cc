@@ -16,6 +16,9 @@
 
 
 
+#include "RBuf.hh"
+#include "RBuf4.hh"
+
 #include "Renderer.hh"
 #include "InstLODCull.hh"
 #include "Prog.hh"
@@ -70,6 +73,8 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_tbuf(NULL),
     m_fbuf(NULL),
     m_ibuf(NULL),
+
+    m_ifork(NULL),
 
     m_mv_location(-1),
     m_mvp_location(-1),
@@ -141,7 +146,6 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 //////////  CPU side buffer setup  ///////////////////
 
-
 void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
     m_bboxmesh = bboxmesh ;
@@ -186,106 +190,46 @@ void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
     NSlice* fslice = drawable->getFaceSlice();
  
     //  nvert: vertices, normals, colors
-    m_vbuf = m_drawable->getVerticesBuffer();
-    m_nbuf = m_drawable->getNormalsBuffer();
-    m_cbuf = m_drawable->getColorsBuffer();
+    m_vbuf = MAKE_RBUF(m_drawable->getVerticesBuffer());
+    m_nbuf = MAKE_RBUF(m_drawable->getNormalsBuffer());
+    m_cbuf = MAKE_RBUF(m_drawable->getColorsBuffer());
 
     assert(m_vbuf->getNumBytes() == m_cbuf->getNumBytes());
     assert(m_nbuf->getNumBytes() == m_cbuf->getNumBytes());
  
     // 3*nface indices
     GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();
-    m_fbuf = fslice ? fslice_element_buffer(fbuf_orig, fslice) : fbuf_orig ; 
+    GBuffer* fbuf = fslice ? fslice_element_buffer(fbuf_orig, fslice) : fbuf_orig ;
+
+    m_fbuf = MAKE_RBUF(fbuf) ;
     
-    m_tbuf = m_drawable->getTexcoordsBuffer();
+    m_tbuf = MAKE_RBUF(m_drawable->getTexcoordsBuffer());
     setHasTex(m_tbuf != NULL);
 
-    NPY<float>* ibuf = m_drawable->getITransformsBuffer();
-    setHasTransforms(ibuf != NULL);
+    NPY<float>* ibuf_orig = m_drawable->getITransformsBuffer();
 
     if(islice)
         LOG(warning) << "Renderer::setDrawable instance slicing ibuf with " << islice->description() ;
 
-    m_ibuf = islice ? ibuf->make_slice(islice) :  ibuf ; 
+    NPY<float>* ibuf = islice ? ibuf_orig->make_slice(islice) :  ibuf_orig ;
 
-    bool debug = false ; 
-    if(debug)
-    {
-        dump( m_vbuf->getPointer(),m_vbuf->getNumBytes(),m_vbuf->getNumElements()*sizeof(float),0,m_vbuf->getNumItems() ); 
-    }
-
-    if(m_instanced) assert(hasTransforms()) ;
+    m_ibuf = MAKE_RBUF(ibuf) ; 
+    setHasTransforms(m_ibuf != NULL);
 }
 
 
 
-
-GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char* name)
+void Renderer::setupInstanceFork()
 {
-    GLuint buffer_id ; 
-    int prior_id = spec->id ;
+    assert(m_ibuf) ;
+    assert(m_instanced) ;
+    assert(m_instlodcull) ;
 
-    if(prior_id == -1)
-    {
-        glGenBuffers(1, &buffer_id);
-        glBindBuffer(target, buffer_id);
-
-        glBufferData(target, spec->num_bytes, spec->ptr , usage);
-
-        spec->id = buffer_id ; 
-        spec->target = target ; 
-
-        LOG(info) << "Renderer::upload " << std::setw(20) << name << " id " << buffer_id << " (FIRST) "  ; 
-        //buffer->Summary(name);
-    }
-    else
-    {
-        buffer_id = prior_id ; 
-        LOG(info) << "Renderer::upload " << std::setw(20) << name << " id " << buffer_id << " (BIND TO PRIOR) " ; 
-        glBindBuffer(target, buffer_id);
-    }
-    return buffer_id ; 
-}
+    m_ifork = RBuf4::MakeFork(m_ibuf, 3 );
 
 
-void Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const char* name)
-{
-    if(!buf) return   ; 
-
-    BBufSpec* spec = buf->getBufSpec(); 
-
-    GLuint id = upload(target, usage, spec, name );
-
-    buf->setBufferId(id);
-    buf->setBufferTarget(target);
-
-    LOG(trace) << "Renderer::upload_GBuffer" 
-              << std::setw(20) << name 
-              << " id " << std::setw(4) << id
-              << " bytes " << std::setw(10) << spec->num_bytes
-              ; 
 
 }
-
-void Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const char* name)
-{
-    if(!buf) return   ; 
-    BBufSpec* spec = buf->getBufSpec(); 
-
-    GLuint id = upload(target, usage, spec, name );
-    buf->setBufferId(id);
-
-
-    buf->setBufferTarget(target);
-
-    LOG(trace) << "Renderer::upload_NPY    " 
-              << std::setw(20) << name 
-              << " id " << std::setw(4) << id
-              << " bytes " << std::setw(10) << spec->num_bytes
-              ; 
-
-}
-
 
 
 void Renderer::upload()
@@ -302,14 +246,13 @@ void Renderer::upload()
 }
 
 
-GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
+GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
 {
     /*
      With ICDemo do VAO creation after uploading all buffers... 
      somehow that doesnt work here (gives unexpected "broken" render of instances)
      perhaps because there are multiple renderers ? Anyhow doesnt matter as uploads are not-redone.
 
-     
      * as multiple GL_ARRAY_BUFFER in use must bind the appropriate ones prior to glVertexAttribPointer
        in order to capture the (buffer,attrib) "coordinates" into the VAO
 
@@ -324,11 +267,11 @@ GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
      VAO creation needs to be before the uploads in order for it 
      to capture this state.
     
-     As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
-     no need to repeat the bind, but doing so for clarity
+     * although there is only a single GL_ELEMENT_ARRAY_BUFFER 
+       within this context recall that there are multiple Renderers and Rdr 
+       sharing the same OpenGL context so it is necessary to repeat the binding  
      
-     TODO: consider adopting the more flexible ViewNPY approach used for event data
-    
+     TODO: consider adopting the more flexible ViewNPY approach used for event data    
     */
 
     GLuint vao ; 
@@ -336,12 +279,16 @@ GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
     glBindVertexArray (vao);     
 
     // NB already uploaded buffers are just bind not uploaded again
-    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_vbuf, "vertices");
-    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_cbuf, "colors" );
-    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_nbuf, "normals" );
-    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_tbuf, "texcoords" );
-    upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, m_fbuf, "indices");
-    upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  instanceBuffer , "transforms");
+
+    m_vbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    m_cbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    m_nbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+    if(m_tbuf) m_tbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+    m_fbuf->upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+    if(instanceBuffer) instanceBuffer->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW );
 
     m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
     m_indices_count = m_fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
@@ -368,7 +315,7 @@ GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
     glVertexAttribPointer(vColor, m_cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
     glEnableVertexAttribArray (vColor);   
 
-    if(hasTex())
+    if(m_tbuf)
     {
         glBindBuffer (GL_ARRAY_BUFFER, m_tbuf->getBufferId()  );
         glVertexAttribPointer(vTexcoord, m_tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
@@ -377,7 +324,7 @@ GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_fbuf->getBufferId() );
 
-    if(hasTransforms())
+    if(instanceBO > 0)
     {
         LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
         glBindBuffer (GL_ARRAY_BUFFER, instanceBO);
@@ -723,6 +670,14 @@ void Renderer::render()
 
 
 
+
+
+
+
+void Renderer::dump(RBuf* buf)
+{
+    dump( buf->getPointer(),buf->getNumBytes(),buf->getNumElements()*sizeof(float),0,buf->getNumItems() );    
+}
 
 
 void Renderer::dump(void* data, unsigned int /*nbytes*/, unsigned int stride, unsigned long offset, unsigned int count )

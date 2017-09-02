@@ -13,6 +13,18 @@ RBuf4::RBuf4()
 {
 }
 
+
+void RBuf4::set(unsigned i, RBuf* b) 
+{
+    switch(i)
+    {
+        case 0: x = b ; break ; 
+        case 1: y = b ; break ; 
+        case 2: z = b ; break ; 
+        case 3: w = b ; break ; 
+    }  
+}
+
 RBuf* RBuf4::at(unsigned i) const 
 {
     RBuf* b = NULL ; 
@@ -47,4 +59,27 @@ std::string RBuf4::desc() const
 
     return ss.str();
 }
+
+
+
+RBuf4* RBuf4::MakeFork(const RBuf* src, unsigned num)
+{
+    assert( num < 4 && num > 0 );
+    RBuf4* fork = new RBuf4 ; 
+
+    for(unsigned i=0 ; i < num ; i++)
+    {
+        RBuf* b = src->cloneZero() ;
+        fork->set(i, b );
+        b->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY) ;
+    }
+    fork->devnull = new RBuf(0,1,0,NULL);  // 1-byte buffer used with workaround
+    fork->devnull->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY)  ;
+
+    return fork ; 
+}
+
+
+
+
 

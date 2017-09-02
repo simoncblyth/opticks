@@ -9,17 +9,33 @@
 
 #include "OGLRAP_API_EXPORT.hh"
 
+
+#define MAKE_RBUF(buf) ((buf) ? new RBuf((buf)->getNumItems(), (buf)->getNumBytes(), (buf)->getNumElements(), (buf)->getPointer() ) : NULL )
+
+
 struct OGLRAP_API RBuf
 {
+    static const unsigned UNSET ; 
+
     unsigned id ; 
     unsigned num_items ;
     unsigned num_bytes ;
+    unsigned num_elements ;
     int      query_count ; 
     void*    ptr ;
 
     unsigned item_bytes() const ;
 
-    RBuf(unsigned num_items_, unsigned num_bytes_, void* ptr_) ;
+
+
+    void* getPointer() const { return ptr ; } ;
+    unsigned getBufferId() const { return id ; } ;
+    unsigned getNumItems() const { return num_items ; } ;
+    unsigned getNumBytes() const { return num_bytes ; } ;
+    unsigned getNumElements() const { return num_elements ; } ;
+
+
+    RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_, void* ptr_) ;
     RBuf* cloneNull() const ;
     RBuf* cloneZero() const ;
     
