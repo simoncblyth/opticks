@@ -63,7 +63,14 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_draw_num(0),
     m_draw_0(0),
     m_draw_1(1),
-    m_texcoords(0),
+
+    m_vbuf(NULL),
+    m_nbuf(NULL),
+    m_cbuf(NULL),
+    m_tbuf(NULL),
+    m_fbuf(NULL),
+    m_ibuf(NULL),
+
     m_mv_location(-1),
     m_mvp_location(-1),
     m_clip_location(-1),
@@ -77,6 +84,7 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_pickface_location(-1),
     m_colorTex_location(-1),
     m_depthTex_location(-1),
+
     m_itransform_count(0),
     m_draw_count(0),
     m_indices_count(0),
@@ -131,46 +139,83 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 
 
+//////////  CPU side buffer setup  ///////////////////
 
-GLuint Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const char* name)
+
+void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
-    BBufSpec* spec = buf->getBufSpec(); 
-
-    GLuint id = upload(target, usage, spec, name );
-
-    buf->setBufferId(id);
-    buf->setBufferTarget(target);
-
-    LOG(trace) << "Renderer::upload_GBuffer" 
-              << std::setw(20) << name 
-              << " id " << std::setw(4) << id
-              << " bytes " << std::setw(10) << spec->num_bytes
-              ; 
-
-    return id ;
+    m_bboxmesh = bboxmesh ;
+    assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
+    setDrawable(bboxmesh);
+    upload();
+    setupDraws(NULL) ; 
+}
+void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
+{
+    m_geometry = mm ;
+    assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
+    setDrawable(mm);
+    upload();
+    setupDraws(mm);
+}
+void Renderer::upload(Texture* texture, bool /*debug*/)
+{
+    assert( m_geometry == NULL && m_bboxmesh == NULL );  // exclusive 
+    setTexture(texture);
+    upload();
+    setupDraws(NULL) ; 
+}
+void Renderer::setTexture(Texture* texture)
+{
+    m_texture = texture ;
+    m_texture_id = texture->getId();
+    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
+    setDrawable(texture);
+}
+Texture* Renderer::getTexture() const 
+{
+    return m_texture ;
 }
 
-
-GLuint Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const char* name)
+void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
 {
-    BBufSpec* spec = buf->getBufSpec(); 
+    assert(drawable);
+    m_drawable = drawable ;
 
-    GLuint id = upload(target, usage, spec, name );
-    buf->setBufferId(id);
+    NSlice* islice = drawable->getInstanceSlice();
+    NSlice* fslice = drawable->getFaceSlice();
+ 
+    //  nvert: vertices, normals, colors
+    m_vbuf = m_drawable->getVerticesBuffer();
+    m_nbuf = m_drawable->getNormalsBuffer();
+    m_cbuf = m_drawable->getColorsBuffer();
 
+    assert(m_vbuf->getNumBytes() == m_cbuf->getNumBytes());
+    assert(m_nbuf->getNumBytes() == m_cbuf->getNumBytes());
+ 
+    // 3*nface indices
+    GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();
+    m_fbuf = fslice ? fslice_element_buffer(fbuf_orig, fslice) : fbuf_orig ; 
+    
+    m_tbuf = m_drawable->getTexcoordsBuffer();
+    setHasTex(m_tbuf != NULL);
 
-    buf->setBufferTarget(target);
+    NPY<float>* ibuf = m_drawable->getITransformsBuffer();
+    setHasTransforms(ibuf != NULL);
 
-    LOG(trace) << "Renderer::upload_NPY    " 
-              << std::setw(20) << name 
-              << " id " << std::setw(4) << id
-              << " bytes " << std::setw(10) << spec->num_bytes
-              ; 
+    if(islice)
+        LOG(warning) << "Renderer::setDrawable instance slicing ibuf with " << islice->description() ;
 
-    return id ;
+    m_ibuf = islice ? ibuf->make_slice(islice) :  ibuf ; 
+
+    bool debug = false ; 
+    if(debug)
+    {
+        dump( m_vbuf->getPointer(),m_vbuf->getNumBytes(),m_vbuf->getNumElements()*sizeof(float),0,m_vbuf->getNumItems() ); 
+    }
+
+    if(m_instanced) assert(hasTransforms()) ;
 }
-
-
 
 
 
@@ -190,70 +235,175 @@ GLuint Renderer::upload(GLenum target, GLenum usage, BBufSpec* spec, const char*
         spec->id = buffer_id ; 
         spec->target = target ; 
 
-        LOG(debug) << "Renderer::upload " << name  ; 
+        LOG(info) << "Renderer::upload " << std::setw(20) << name << " id " << buffer_id << " (FIRST) "  ; 
         //buffer->Summary(name);
     }
     else
     {
         buffer_id = prior_id ; 
-        LOG(debug) << "Renderer::upload binding to prior buffer : " << buffer_id ; 
+        LOG(info) << "Renderer::upload " << std::setw(20) << name << " id " << buffer_id << " (BIND TO PRIOR) " ; 
         glBindBuffer(target, buffer_id);
     }
     return buffer_id ; 
 }
 
 
-
-
-
-
-void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
+void Renderer::upload_GBuffer(GLenum target, GLenum usage, GBuffer* buf, const char* name)
 {
-    m_bboxmesh = bboxmesh ;
-    assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
-    m_drawable = static_cast<GDrawable*>(m_bboxmesh);
-    NSlice* islice = m_bboxmesh->getInstanceSlice();
-    NSlice* fslice = m_bboxmesh->getFaceSlice();
-    upload_buffers(islice, fslice);
+    if(!buf) return   ; 
 
-    setupDraws( NULL ) ; 
-}
-void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
-{
-    m_geometry = mm ;
+    BBufSpec* spec = buf->getBufSpec(); 
 
-    assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
-    m_drawable = static_cast<GDrawable*>(m_geometry);
-    NSlice* islice = m_geometry->getInstanceSlice();
-    NSlice* fslice = m_geometry->getFaceSlice();
-    upload_buffers(islice, fslice);
+    GLuint id = upload(target, usage, spec, name );
 
-    setupDraws( mm );
+    buf->setBufferId(id);
+    buf->setBufferTarget(target);
+
+    LOG(trace) << "Renderer::upload_GBuffer" 
+              << std::setw(20) << name 
+              << " id " << std::setw(4) << id
+              << " bytes " << std::setw(10) << spec->num_bytes
+              ; 
+
 }
 
-void Renderer::upload(Texture* texture, bool /*debug*/)
+void Renderer::upload_NPY(GLenum target, GLenum usage, NPY<float>* buf, const char* name)
 {
-    setTexture(texture);
+    if(!buf) return   ; 
+    BBufSpec* spec = buf->getBufSpec(); 
 
-    NSlice* islice = NULL ; 
-    NSlice* fslice = NULL ; 
-    upload_buffers(islice, fslice);
+    GLuint id = upload(target, usage, spec, name );
+    buf->setBufferId(id);
 
-    setupDraws( NULL) ; 
+
+    buf->setBufferTarget(target);
+
+    LOG(trace) << "Renderer::upload_NPY    " 
+              << std::setw(20) << name 
+              << " id " << std::setw(4) << id
+              << " bytes " << std::setw(10) << spec->num_bytes
+              ; 
+
 }
 
-void Renderer::setTexture(Texture* texture)
+
+
+void Renderer::upload()
 {
-    m_texture = texture ;
-    m_texture_id = texture->getId();
-    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
-    m_drawable = static_cast<GDrawable*>(m_texture);
+    m_vao = createVertexArray(m_ibuf);
+
+    make_shader();  // requires VAO bound to pass validation
+
+    glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
+
+    glEnable(GL_CLIP_DISTANCE0); 
+ 
+    check_uniforms();
 }
 
-Texture* Renderer::getTexture()
+
+GLuint Renderer::createVertexArray(NPY<float>* instanceBuffer)
 {
-    return m_texture ;
+    /*
+     With ICDemo do VAO creation after uploading all buffers... 
+     somehow that doesnt work here (gives unexpected "broken" render of instances)
+     perhaps because there are multiple renderers ? Anyhow doesnt matter as uploads are not-redone.
+
+     
+     * as multiple GL_ARRAY_BUFFER in use must bind the appropriate ones prior to glVertexAttribPointer
+       in order to capture the (buffer,attrib) "coordinates" into the VAO
+
+     * getNumElements gives 3 for both vertex and color items
+
+     * enum values vPosition, vNormal, vColor, vTexcoord are duplicating layout numbers in the nrm/vert.glsl  
+
+     Without glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
+     got a blank despite being bound in the upload 
+     when VAO creation was after upload. 
+    
+     VAO creation needs to be before the uploads in order for it 
+     to capture this state.
+    
+     As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
+     no need to repeat the bind, but doing so for clarity
+     
+     TODO: consider adopting the more flexible ViewNPY approach used for event data
+    
+    */
+
+    GLuint vao ; 
+    glGenVertexArrays (1, &vao); 
+    glBindVertexArray (vao);     
+
+    // NB already uploaded buffers are just bind not uploaded again
+    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_vbuf, "vertices");
+    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_cbuf, "colors" );
+    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_nbuf, "normals" );
+    upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  m_tbuf, "texcoords" );
+    upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, m_fbuf, "indices");
+    upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  instanceBuffer , "transforms");
+
+    m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
+    m_indices_count = m_fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
+
+    LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
+
+
+    GLuint instanceBO = instanceBuffer ? instanceBuffer->getBufferId() : 0u ;
+
+
+    GLboolean normalized = GL_FALSE ; 
+    GLsizei stride = 0 ;
+    const GLvoid* offset = NULL ;
+ 
+    glBindBuffer (GL_ARRAY_BUFFER, m_vbuf->getBufferId() );
+    glVertexAttribPointer(vPosition, m_vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vPosition);  
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_nbuf->getBufferId() );
+    glVertexAttribPointer(vNormal, m_nbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vNormal);  
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_cbuf->getBufferId() );
+    glVertexAttribPointer(vColor, m_cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vColor);   
+
+    if(hasTex())
+    {
+        glBindBuffer (GL_ARRAY_BUFFER, m_tbuf->getBufferId()  );
+        glVertexAttribPointer(vTexcoord, m_tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+        glEnableVertexAttribArray (vTexcoord);   
+    }
+
+    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_fbuf->getBufferId() );
+
+    if(hasTransforms())
+    {
+        LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
+        glBindBuffer (GL_ARRAY_BUFFER, instanceBO);
+
+        uintptr_t qsize = sizeof(GLfloat) * 4 ;
+        GLsizei matrix_stride = qsize * 4 ;
+
+        glVertexAttribPointer(vTransform + 0 , 4, GL_FLOAT, normalized, matrix_stride, (void*)0 );
+        glVertexAttribPointer(vTransform + 1 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize));
+        glVertexAttribPointer(vTransform + 2 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*2));
+        glVertexAttribPointer(vTransform + 3 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*3));
+
+        glEnableVertexAttribArray (vTransform + 0);   
+        glEnableVertexAttribArray (vTransform + 1);   
+        glEnableVertexAttribArray (vTransform + 2);   
+        glEnableVertexAttribArray (vTransform + 3);   
+
+        GLuint divisor = 1 ;   // number of instances between updates of attribute , >1 will land that many instances on top of each other
+        glVertexAttribDivisor(vTransform + 0, divisor);  // dictates instanced geometry shifts between instances
+        glVertexAttribDivisor(vTransform + 1, divisor);
+        glVertexAttribDivisor(vTransform + 2, divisor);
+        glVertexAttribDivisor(vTransform + 3, divisor);
+    } 
+    return vao ; 
 }
+
 
 
 
@@ -332,161 +482,6 @@ GBuffer* Renderer::fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice)
     return fbuf ;  
 }
 
-
-void Renderer::upload_buffers(NSlice* islice, NSlice* fslice)
-{
-    // as there are two GL_ARRAY_BUFFER for vertices and colors need
-    // to bind them again (despite bound in upload) in order to 
-    // make the desired one active when create the VertexAttribPointer :
-    // the currently active buffer being recorded "into" the VertexAttribPointer 
-    //
-    // without 
-    //     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
-    // got a blank despite being bound in the upload 
-    // when VAO creation was after upload. It appears necessary to 
-    // moving VAO creation to before the upload in order for it 
-    // to capture this state.
-    //
-    // As there is only one GL_ELEMENT_ARRAY_BUFFER there is 
-    // no need to repeat the bind, but doing so for clarity
-    //
-    // TODO: adopt the more flexible ViewNPY approach used for event data
-    //
-    bool debug = false ; 
-
-    assert(m_drawable);
-
-    glGenVertexArrays (1, &m_vao); // OSX: undefined without glew 
-    glBindVertexArray (m_vao);     
-
-
-    //  nvert: vertices, normals, colors
-    GBuffer* vbuf = m_drawable->getVerticesBuffer();
-    GBuffer* nbuf = m_drawable->getNormalsBuffer();
-    GBuffer* cbuf = m_drawable->getColorsBuffer();
-
-    assert(vbuf->getNumBytes() == cbuf->getNumBytes());
-    assert(nbuf->getNumBytes() == cbuf->getNumBytes());
-    
-    // 3*nface indices
-    GBuffer* fbuf_orig = m_drawable->getIndicesBuffer();
-    GBuffer* fbuf = fslice ? fslice_element_buffer(fbuf_orig, fslice) : fbuf_orig ; 
-    
-    //printf("Renderer::upload_buffers vbuf %p nbuf %p cbuf %p fbuf %p \n", vbuf, nbuf, cbuf, fbuf );
-
-    GBuffer* tbuf = m_drawable->getTexcoordsBuffer();
-    setHasTex(tbuf != NULL);
-
-    NPY<float>* ibuf_orig = m_drawable->getITransformsBuffer();
-    NPY<float>* ibuf = ibuf_orig ;
-    setHasTransforms(ibuf != NULL);
-
-    if(islice)
-    {
-        LOG(warning) << "Renderer::upload_buffers instance slicing ibuf with " << islice->description() ;
-        ibuf = ibuf_orig->make_slice(islice); 
-    }
-
-    if(debug)
-    {
-        dump( vbuf->getPointer(),vbuf->getNumBytes(),vbuf->getNumElements()*sizeof(float),0,vbuf->getNumItems() ); 
-    }
-
-    if(m_instanced) assert(hasTransforms()) ;
-
-
-    m_vertices  = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  vbuf, "vertices");
-    m_colors    = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  cbuf, "colors" );
-    m_normals   = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  nbuf, "normals" );
-
-    if(hasTex())
-    {
-        m_texcoords = upload_GBuffer(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  tbuf, "texcoords" );
-    }
-
-    if(hasTransforms())
-    {
-        m_transforms = upload_NPY(GL_ARRAY_BUFFER, GL_STATIC_DRAW,  ibuf, "transforms");
-        m_itransform_count = ibuf->getNumItems() ;
-    }
-
-
-    m_indices  = upload_GBuffer(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW, fbuf, "indices");
-    m_indices_count = fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
-
-
-    LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
-
-    GLboolean normalized = GL_FALSE ; 
-    GLsizei stride = 0 ;
-
-    const GLvoid* offset = NULL ;
- 
-    // the vbuf and cbuf NumElements refer to the number of elements 
-    // within the vertex and color items ie 3 in both cases
-
-    // CAUTION enum values vPosition, vNormal, vColor, vTexcoord 
-    //         are duplicating layout numbers in the nrm/vert.glsl  
-    // THIS IS FRAGILE
-    //
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_vertices);
-    glVertexAttribPointer(vPosition, vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vPosition);  
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_normals);
-    glVertexAttribPointer(vNormal, nbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vNormal);  
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_colors);
-    glVertexAttribPointer(vColor, cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vColor);   
-
-    if(hasTex())
-    {
-        glBindBuffer (GL_ARRAY_BUFFER, m_texcoords);
-        glVertexAttribPointer(vTexcoord, tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-        glEnableVertexAttribArray (vTexcoord);   
-    }
-
-    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_indices);
-
-    if(hasTransforms())
-    {
-        LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
-        glBindBuffer (GL_ARRAY_BUFFER, m_transforms);
-
-        uintptr_t qsize = sizeof(GLfloat) * 4 ;
-        GLsizei matrix_stride = qsize * 4 ;
-
-        glVertexAttribPointer(vTransform + 0 , 4, GL_FLOAT, normalized, matrix_stride, (void*)0 );
-        glVertexAttribPointer(vTransform + 1 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize));
-        glVertexAttribPointer(vTransform + 2 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*2));
-        glVertexAttribPointer(vTransform + 3 , 4, GL_FLOAT, normalized, matrix_stride, (void*)(qsize*3));
-
-        glEnableVertexAttribArray (vTransform + 0);   
-        glEnableVertexAttribArray (vTransform + 1);   
-        glEnableVertexAttribArray (vTransform + 2);   
-        glEnableVertexAttribArray (vTransform + 3);   
-
-        GLuint divisor = 1 ;   // number of instances between updates of attribute , >1 will land that many instances on top of each other
-        glVertexAttribDivisor(vTransform + 0, divisor);  // dictates instanced geometry shifts between instances
-        glVertexAttribDivisor(vTransform + 1, divisor);
-        glVertexAttribDivisor(vTransform + 2, divisor);
-        glVertexAttribDivisor(vTransform + 3, divisor);
-    } 
-
-    glEnable(GL_CLIP_DISTANCE0); 
- 
-    make_shader();
-
-    glUseProgram(m_program);  // moved prior to check uniforms following Rdr::upload
-
-    LOG(trace) <<  "Renderer::upload_buffers after make_shader " ; 
-    check_uniforms();
-    LOG(trace) <<  "Renderer::upload_buffers after check_uniforms " ; 
-
-}
 
 
 void Renderer::check_uniforms()
@@ -780,10 +775,10 @@ void Renderer::dump(void* data, unsigned int /*nbytes*/, unsigned int stride, un
 void Renderer::dump(const char* msg)
 {
     printf("%s\n", msg );
-    printf("vertices  %u \n", m_vertices);
-    printf("normals   %u \n", m_normals);
-    printf("colors    %u \n", m_colors);
-    printf("indices   %u \n", m_indices);
+    printf("vertices  %u \n", m_vbuf->getBufferId());
+    printf("normals   %u \n", m_nbuf->getBufferId());
+    printf("colors    %u \n", m_cbuf->getBufferId());
+    printf("indices   %u \n", m_fbuf->getBufferId());
     printf("nelem     %d \n", m_indices_count);
     printf("hasTex    %d \n", hasTex());
     printf("shaderdir %s \n", getShaderDir());

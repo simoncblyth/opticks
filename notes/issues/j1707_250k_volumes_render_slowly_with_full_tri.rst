@@ -4,19 +4,12 @@ j1707_250k_volumes_render_slowly_with_full_tri
 Issue
 --------
 
-
-
-
-
-
 Huge geometry, > 250k Volumes, 18k instances + 38k instances
 
 * performant in bbox mode, 60-30 fps gives nice interactivity
 * (hit B key to shift mode) bogs down in full tri mode ~3 fps gives painful interactivity
 
 This is without any culling or LOD.
-
-
 
 
 Thoughts
@@ -28,6 +21,22 @@ Thoughts
 * each CSG tree yields a GSolid, with associated GParts
 
 * the GSolids are combined to form the GMergedMesh 
+
+
+* when have many renderers such as oglrap Scene does it make sense for the 
+  renderers to be the seat of buffer control ... 
+
+  * YES it does : because each renderer handles different geometry and instance transforms
+
+  * however many uniforms are common between shaders, so repeating uniform updating for all renderers
+    makes less sense ... 
+
+
+Next 
+------
+
+*  Renderer : separate buffer uploading from VAO creation, with buffer id parameters 
+
 
 
 

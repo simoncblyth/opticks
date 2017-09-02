@@ -59,35 +59,41 @@ class OGLRAP_API Renderer : public RendererBase  {
       virtual ~Renderer();
 
   public: 
-      void upload(GMergedMesh* geometry, bool debug=false);
+      //////////  CPU side buffer setup  ///////////////////
       void upload(GBBoxMesh* bboxmesh, bool debug=false);
+      void upload(GMergedMesh* geometry, bool debug=false);
       void upload(Texture* texture, bool debug=false);
+  private: 
+      void setTexture(Texture* texture);
+      Texture* getTexture() const ; 
+       void setDrawable(GDrawable* drawable); 
+      GBuffer* fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice);
+      bool hasTex(){ return m_has_tex ; }
+      void setHasTex(bool hastex){ m_has_tex = hastex ; }
+      bool hasTransforms(){ return m_has_transforms ; }
+      void setHasTransforms(bool hastr){ m_has_transforms = hastr ; }
+      void setupDraws(GMergedMesh* mm);
+  private: 
+      //////////  GPU side buffer setup  ///////////////////
+      void upload_GBuffer(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
+      void upload_NPY(    GLenum target, GLenum usage, NPY<float>* buffer, const char* name=NULL);
+      GLuint upload(        GLenum target, GLenum usage, BBufSpec* bufspec, const char* name=NULL);
+      void upload();
+
   public: 
       void bind();
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
   public: 
-      void setTexture(Texture* texture);
-      Texture* getTexture(); 
   public: 
       void configureI(const char* name, std::vector<int> values);
       void dump(const char* msg="Renderer::dump");
       void Print(const char* msg="Renderer::Print");
 
   private:
-      void upload_buffers(NSlice* islice, NSlice* fslice);
-      GBuffer* fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice);
 
-      GLuint upload_GBuffer(GLenum target, GLenum usage, GBuffer* buffer, const char* name=NULL);
-      GLuint upload_NPY(    GLenum target, GLenum usage, NPY<float>* buffer, const char* name=NULL);
-      GLuint upload(        GLenum target, GLenum usage, BBufSpec* bufspec, const char* name=NULL);
-
-      bool hasTex(){ return m_has_tex ; }
-      void setHasTex(bool hastex){ m_has_tex = hastex ; }
-      bool hasTransforms(){ return m_has_transforms ; }
-      void setHasTransforms(bool hastr){ m_has_transforms = hastr ; }
-      void setupDraws(GMergedMesh* mm);
+      GLuint createVertexArray(NPY<float>* ibuf);
 
       void check_uniforms();
       void update_uniforms();   
@@ -101,13 +107,12 @@ class OGLRAP_API Renderer : public RendererBase  {
       unsigned      m_draw_0 ; 
       unsigned      m_draw_1 ; 
   private:
-      // buffer id
-      GLuint m_vertices ;
-      GLuint m_normals ;
-      GLuint m_colors ;
-      GLuint m_texcoords ;
-      GLuint m_indices ;
-      GLuint m_transforms ;
+      GBuffer*  m_vbuf ;  // verts
+      GBuffer*  m_nbuf ;  // normals
+      GBuffer*  m_cbuf ;  // colors
+      GBuffer*  m_tbuf ;  // textures
+      GBuffer*  m_fbuf ;  // faces/element/indices 
+      NPY<float>*  m_ibuf ;  // instance transforms 
   private:
       // locations determined by *check_uniforms* and used by *update_uniforms* 
       // to update the "constants" available to shaders

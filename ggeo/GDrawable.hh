@@ -29,6 +29,9 @@ class GGEO_API GDrawable {
       virtual GBuffer* getTransformsBuffer() = 0;
       virtual GBuffer* getIdentityBuffer() = 0;
 
+      virtual  NSlice* getInstanceSlice() = 0 ; 
+      virtual  NSlice* getFaceSlice() = 0 ; 
+  
       virtual NPY<float>*        getITransformsBuffer() = 0;
       virtual NPY<unsigned int>* getInstancedIdentityBuffer() = 0;
 
