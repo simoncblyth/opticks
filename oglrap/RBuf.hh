@@ -23,6 +23,7 @@ struct OGLRAP_API RBuf
     unsigned num_elements ;
     int      query_count ; 
     void*    ptr ;
+    bool     gpu_resident ; 
 
     unsigned item_bytes() const ;
 
@@ -36,8 +37,10 @@ struct OGLRAP_API RBuf
 
 
     RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_, void* ptr_) ;
+
     RBuf* cloneNull() const ;
     RBuf* cloneZero() const ;
+    RBuf* clone() const ;
     
     void upload(GLenum target, GLenum usage );
     void uploadNull(GLenum target, GLenum usage );

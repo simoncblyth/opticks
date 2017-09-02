@@ -62,19 +62,29 @@ std::string RBuf4::desc() const
 
 
 
-RBuf4* RBuf4::MakeFork(const RBuf* src, unsigned num)
+RBuf4* RBuf4::MakeFork(const RBuf* src, int num, int debug_clone_slot )
 {
     assert( num < 4 && num > 0 );
     RBuf4* fork = new RBuf4 ; 
 
-    for(unsigned i=0 ; i < num ; i++)
+    for(int i=0 ; i < num ; i++)
     {
-        RBuf* b = src->cloneZero() ;
+        RBuf* b = NULL ; 
+
+        if( i == debug_clone_slot )
+        {
+             b = src->clone() ;
+             b->gpu_resident = false ;    // non-GPU residents need to be actually uploaded from host  
+        }
+        else
+        {
+             b = src->cloneZero() ;
+             b->gpu_resident = true ;   // GPU residents are not uploaded, CPU side is a monicker
+        }
         fork->set(i, b );
-        b->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY) ;
+
     }
     fork->devnull = new RBuf(0,1,0,NULL);  // 1-byte buffer used with workaround
-    fork->devnull->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY)  ;
 
     return fork ; 
 }

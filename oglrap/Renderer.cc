@@ -1,3 +1,5 @@
+#include <iostream>
+#include <sstream>
 #include <cstdint>
 
 // brap-
@@ -53,6 +55,19 @@ struct DrawElements
     GLenum  type ; 
     void*  indices ; 
     GLsizei  primcount ;   // only for Instanced
+
+    std::string desc() const 
+    {
+        std::stringstream ss ; 
+        ss << "DrawElements"
+           << " count " << count 
+           << " type " << type
+           << " indices " << indices
+           << " primcount " << primcount 
+           ;
+        return ss.str(); 
+    }
+
 };
 
 
@@ -103,7 +118,10 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_has_transforms(false),
     m_instanced(false),
     m_wireframe(false),
-    m_instlodcull(NULL)
+    m_instlodcull(NULL),
+    m_num_lod(-1),
+    m_test_lod(0),
+    m_type(NULL)
 {
 }
 
@@ -112,6 +130,15 @@ Renderer::~Renderer()
 {
 }
 
+void Renderer::setType(const char* type)
+{
+    m_type = type ; 
+}
+
+void Renderer::setNumLOD(int num_lod)
+{
+    m_num_lod = num_lod ; 
+}
 
 void Renderer::setInstanced(bool instanced)
 {
@@ -146,10 +173,32 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 //////////  CPU side buffer setup  ///////////////////
 
+
+std::string Renderer::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "Renderer"
+       << " tag " << getShaderTag()
+       << " type " << ( m_type ? m_type : "-" )
+       << " idx " << ( m_drawable ? m_drawable->getIndex() : -1 )
+       << " instlodcull " << ( m_instlodcull ? "YES" : "NO" )
+       << " num_lod " << m_num_lod 
+       ;
+
+    return ss.str();
+}
+
+
+const char* Renderer::GBBoxMesh_ = "GBBoxMesh" ; 
+const char* Renderer::GMergedMesh_ = "GMergedMesh" ; 
+const char* Renderer::Texture_ = "Texture" ; 
+
 void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 {
     m_bboxmesh = bboxmesh ;
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
+    setType(GBBoxMesh_);
     setDrawable(bboxmesh);
     upload();
     setupDraws(NULL) ; 
@@ -157,6 +206,10 @@ void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
 void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
 {
     m_geometry = mm ;
+    unsigned num_comp = mm->getNumComponents();
+    setNumLOD(num_comp);
+    setType(GMergedMesh_);
+
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
     setDrawable(mm);
     upload();
@@ -165,6 +218,7 @@ void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
 void Renderer::upload(Texture* texture, bool /*debug*/)
 {
     assert( m_geometry == NULL && m_bboxmesh == NULL );  // exclusive 
+    setType(Texture_);
     setTexture(texture);
     upload();
     setupDraws(NULL) ; 
@@ -219,22 +273,17 @@ void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
 
 
 
-void Renderer::setupInstanceFork()
-{
-    assert(m_ibuf) ;
-    assert(m_instanced) ;
-    assert(m_instlodcull) ;
-
-    m_ifork = RBuf4::MakeFork(m_ibuf, 3 );
-
-
-
-}
-
-
 void Renderer::upload()
 {
-    m_vao = createVertexArray(m_ibuf);
+    if(m_instlodcull && m_num_lod > 0)
+    {
+        createVertexArrayLOD(); 
+    } 
+    else
+    {
+        m_vao[0] = createVertexArray(m_ibuf);
+    }
+
 
     make_shader();  // requires VAO bound to pass validation
 
@@ -243,6 +292,26 @@ void Renderer::upload()
     glEnable(GL_CLIP_DISTANCE0); 
  
     check_uniforms();
+}
+
+
+void Renderer::createVertexArrayLOD()
+{
+    // Initially tried cloning and uploading of forked buffers prior
+    // to VAO creation, this didnt fly ... got the usual black screen for instanced renders
+    // Instead rejig to keep all OpenGL setup within the VAO "context".
+    //
+    // Buf cloning/forking prior to that just copies buffer vital stats
+    // and sets the gpu_resident property to control which buffers need the upload 
+    //
+ 
+    int debug_clone_slot = m_test_lod ; // <-- actually clone and mark as **NOT** GPU resident : SO WILL BE UPLOADED (FOR DEBUGGING PRIOR TO TXF OPERATIONAL)
+
+    m_ifork = RBuf4::MakeFork(m_ibuf, m_num_lod, debug_clone_slot  );
+  
+    int num_vao = m_num_lod ; 
+
+    for(int i=0 ; i < num_vao ; i++) m_vao[i] = createVertexArray(m_ifork->at(i)); 
 }
 
 
@@ -278,52 +347,34 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
     glGenVertexArrays (1, &vao); 
     glBindVertexArray (vao);     
 
-    // NB already uploaded buffers are just bind not uploaded again
-
-    m_vbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    m_cbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-    m_nbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-
-    if(m_tbuf) m_tbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
-
-    m_fbuf->upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
-
-    if(instanceBuffer) instanceBuffer->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW );
-
-    m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
-    m_indices_count = m_fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
-
-    LOG(trace) << "Renderer::upload_buffers uploading transforms : itransform_count " << m_itransform_count ;
-
+    if(instanceBuffer) 
+    {
+        if(instanceBuffer->gpu_resident)
+        {
+            instanceBuffer->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY );
+        }
+        else
+        {
+            instanceBuffer->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW );
+        } 
+    }
 
     GLuint instanceBO = instanceBuffer ? instanceBuffer->getBufferId() : 0u ;
+    m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
+
+    std::cout << "Renderer::createVertexArray"
+              << " vao " << vao 
+              << " itransform_count " << m_itransform_count 
+              << " instanceBO  " << instanceBO  
+              << " desc " << desc()
+              << std::endl
+               ;
 
 
     GLboolean normalized = GL_FALSE ; 
     GLsizei stride = 0 ;
     const GLvoid* offset = NULL ;
  
-    glBindBuffer (GL_ARRAY_BUFFER, m_vbuf->getBufferId() );
-    glVertexAttribPointer(vPosition, m_vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vPosition);  
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_nbuf->getBufferId() );
-    glVertexAttribPointer(vNormal, m_nbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vNormal);  
-
-    glBindBuffer (GL_ARRAY_BUFFER, m_cbuf->getBufferId() );
-    glVertexAttribPointer(vColor, m_cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-    glEnableVertexAttribArray (vColor);   
-
-    if(m_tbuf)
-    {
-        glBindBuffer (GL_ARRAY_BUFFER, m_tbuf->getBufferId()  );
-        glVertexAttribPointer(vTexcoord, m_tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
-        glEnableVertexAttribArray (vTexcoord);   
-    }
-
-    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_fbuf->getBufferId() );
-
     if(instanceBO > 0)
     {
         LOG(trace) << "Renderer::upload_buffers setup instance transform attributes " ;
@@ -348,6 +399,42 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
         glVertexAttribDivisor(vTransform + 2, divisor);
         glVertexAttribDivisor(vTransform + 3, divisor);
     } 
+
+
+
+    // NB already uploaded buffers are just bind not uploaded again
+
+    m_vbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    m_cbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+    m_nbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+    if(m_tbuf) m_tbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
+
+    m_fbuf->upload(GL_ELEMENT_ARRAY_BUFFER, GL_STATIC_DRAW);
+    m_indices_count = m_fbuf->getNumItems(); // number of indices, would be 3 for a single triangle
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_vbuf->getBufferId() );
+    glVertexAttribPointer(vPosition, m_vbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vPosition);  
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_nbuf->getBufferId() );
+    glVertexAttribPointer(vNormal, m_nbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vNormal);  
+
+    glBindBuffer (GL_ARRAY_BUFFER, m_cbuf->getBufferId() );
+    glVertexAttribPointer(vColor, m_cbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+    glEnableVertexAttribArray (vColor);   
+
+    if(m_tbuf)
+    {
+        glBindBuffer (GL_ARRAY_BUFFER, m_tbuf->getBufferId()  );
+        glVertexAttribPointer(vTexcoord, m_tbuf->getNumElements(), GL_FLOAT, normalized, stride, offset);
+        glEnableVertexAttribArray (vTexcoord);   
+    }
+
+    glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_fbuf->getBufferId() );
+
+
     return vao ; 
 }
 
@@ -382,7 +469,9 @@ void Renderer::setupDraws(GMergedMesh* mm)
                   << " m_indices_count " << m_indices_count
                    ;
 
-        unsigned lod = 0 ; // full detail 
+        unsigned lod = m_test_lod ;  
+
+        //unsigned lod = 1 ; // full detail 
         //unsigned lod = 1 ; // bbox standin
         //unsigned lod = 2 ;   // quad standin
 
@@ -404,10 +493,66 @@ void Renderer::setupDraws(GMergedMesh* mm)
             GLsizei count = num_face*3 ; 
             void* offset_indices = (void*)(offset_face*3*sizeof(unsigned)) ; 
 
-            m_draw[i] = new DrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, offset_indices, 0 );
+            m_draw[i] = new DrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, offset_indices, m_itransform_count );
         }
     }
 }
+
+
+
+
+
+
+
+void Renderer::render()
+{ 
+    glUseProgram(m_program);
+
+    update_uniforms();
+
+    glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
+    glBindTexture(GL_TEXTURE_2D,  m_texture_id );
+
+    // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
+    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    glEnable (GL_BLEND);
+
+    if(m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    // hmm drawing multiple LOD levels only needed with dynamic LOD 
+    // normally stick to single level
+
+    for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
+    {
+        glBindVertexArray (m_vao[i]);
+        const DrawElements& draw = *m_draw[i] ;   
+        if(m_instanced)
+        { 
+            std::cout << desc() << " Draw:" << draw.desc() << std::endl ; 
+            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, draw.primcount  ) ;
+        }
+        else
+        {
+            glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
+        }
+    }
+
+    if(m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+    m_draw_count += 1 ; 
+
+    glBindVertexArray(0);
+
+    glUseProgram(0);
+}
+
+
+
+
+
+
+
+
 
 
 GBuffer* Renderer::fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice)
@@ -581,94 +726,6 @@ void Renderer::update_uniforms()
 }
 
 
-void Renderer::bind()
-{
-    glBindVertexArray (m_vao);
-
-    glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
-    glBindTexture(GL_TEXTURE_2D,  m_texture_id );
-}
-
-
-
-
-void Renderer::render()
-{ 
-    glUseProgram(m_program);
-
-    update_uniforms();
-
-    bind();
-
-    // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
-    glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
-    glEnable (GL_BLEND);
-
-    if(m_wireframe)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-    }
-
-
-
-#ifdef OLD_DRAW
-    if(m_instanced)
-    {
-        // primcount : Specifies the number of instances of the specified range of indices to be rendered.
-        //             ie repeat sending the same set of vertices down the pipeline
-        //
-        GLsizei primcount = m_itransform_count ;  
-        glDrawElementsInstanced( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, primcount  ) ;
-    }
-    else
-    {
-
-        glDrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL ) ; 
-       // indices_count would be 3 for a single triangle, 30 for ten triangles
-    }
-#else
-
-    // hmm drawing multiple LOD levels only needed with dynamic LOD 
-    // normally stick to single level
-
-    for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
-    {
-        const DrawElements& draw = *m_draw[i] ;   
-        if(m_instanced)
-        { 
-            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, draw.primcount  ) ;
-        }
-        else
-        {
-            glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
-        }
-    }
-
-#endif
-
-    // TODO: try offsetting into the indices buffer using : (void*)(offset * sizeof(GLuint))
-    //       eg to allow wireframing for selected volumes
-    //
-    //       need number of faces for every volume, so can cumsum*3 to get the indice offsets and counts 
-    //
-    //       http://stackoverflow.com/questions/9431923/using-an-offset-with-vbos-in-opengl
-    //
-
-
-    if(m_wireframe)
-    {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    }
-
-
-    m_draw_count += 1 ; 
-
-    glBindVertexArray(0);
-
-    glUseProgram(0);
-}
-
-
 
 
 
@@ -744,6 +801,6 @@ void Renderer::dump(const char* msg)
 
 void Renderer::Print(const char* msg)
 {
-    printf("Renderer::%s tag %s nelem %d vao %d \n", msg, getShaderTag(), m_indices_count, m_vao );
+    printf("Renderer::%s tag %s nelem %d vao %d \n", msg, getShaderTag(), m_indices_count, m_vao[0] );
 }
 

@@ -7,7 +7,7 @@ struct RBuf ;
 
 struct OGLRAP_API RBuf4
 {
-    static RBuf4* MakeFork(const RBuf* src, unsigned num);
+    static RBuf4* MakeFork(const RBuf* src, int num, int debug_clone_slot=-1 );
 
     RBuf* x ;
     RBuf* y ;

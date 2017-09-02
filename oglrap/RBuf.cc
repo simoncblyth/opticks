@@ -17,7 +17,8 @@ RBuf::RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_ , vo
     num_bytes(num_bytes_),
     num_elements(num_elements_),
     query_count(-1),
-    ptr(ptr_)
+    ptr(ptr_),
+    gpu_resident(false)
 {
 }
 
@@ -40,6 +41,15 @@ RBuf* RBuf::cloneZero() const
     memset(b->ptr, 0, num_bytes );
     return b ; 
 }
+
+RBuf* RBuf::clone() const 
+{
+    RBuf* b = new RBuf(num_items, num_bytes, num_elements, new char[num_bytes]) ;
+    memcpy(b->ptr, ptr, num_bytes );
+    return b ; 
+}
+
+
 
 
 

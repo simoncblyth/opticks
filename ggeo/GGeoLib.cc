@@ -69,13 +69,6 @@ const char* GGeoLib::getMeshVersion() const
 }
 
 
-/*
-GMergedMesh* GGeoLib::getMergedMeshDev(unsigned index)
-{
-    return m_lod > 0  ? makeMergedMeshLOD(index) : getMergedMesh(index) ; 
-}
-*/
-
 
 GMergedMesh* GGeoLib::getMergedMesh(unsigned index)
 {
@@ -150,11 +143,8 @@ void GGeoLib::loadConstituents(const char* idpath )
         const char* mmpath = smmpath.c_str();
         const char* ptpath = sptpath.c_str();
 
-        GMergedMesh* mm = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
+        GMergedMesh* mm_ = BFile::ExistsDir(mmpath) ? GMergedMesh::load( mmpath, ridx, m_mesh_version ) : NULL ; 
         GParts*      pt = BFile::ExistsDir(ptpath) ? GParts::Load( ptpath ) : NULL ; 
-
-        // hmm test geometry doesnt come this way ...
-        //GMergedMesh* mm = m_lod > 0 ? GMergedMesh::MakeLODComposite(mm_, m_lodconfig->levels ) : mm_ ;         
 
         if(pt)
         {
@@ -162,8 +152,14 @@ void GGeoLib::loadConstituents(const char* idpath )
             pt->setVerbosity(m_verbosity);
         }
    
-        if( mm )
+        if( mm_ )
         {
+            // equivalent for test geometry in GGeoTest::modifyGeometry
+
+            bool lodify = ridx > 0 && m_lod > 0 && m_lodconfig->instanced_lodify_onload > 0 ;  // NB not global 
+
+            GMergedMesh* mm = lodify  ? GMergedMesh::MakeLODComposite(mm_, m_lodconfig->levels ) : mm_ ;         
+
             mm->setParts(pt);
             
             mm->setGeoCode( m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED );  // assuming uniform : all analytic/triangulated GPU geom

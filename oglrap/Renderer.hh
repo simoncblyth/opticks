@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cstddef>
+#include <string>
 #include <vector>
 
 struct BBufSpec ; 
@@ -43,6 +44,10 @@ class OGLRAP_API Renderer : public RendererBase  {
   public:
 
   static const char* PRINT ;  
+  static const char* GMergedMesh_ ;
+  static const char* GBBoxMesh_ ;
+  static const char* Texture_ ;
+  
 
   enum Attrib_IDs { 
                   vPosition=0, 
@@ -62,7 +67,10 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setInstLODCull(InstLODCull* instlodcull);
       void setWireframe(bool wireframe=true);
       virtual ~Renderer();
-
+      std::string desc() const ; 
+  private:
+      void setNumLOD(int num_lod);
+      void setType(const char* type);
   public: 
       //////////  CPU side buffer setup  ///////////////////
       /// HMM DOES THE RENDERER NEED TO KNOW THE DIFFERENCE BETWEEN THESE ?
@@ -85,7 +93,6 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setupInstanceFork();
 
   public: 
-      void bind();
       void render();
       void setComposition(Composition* composition);
       Composition* getComposition(); 
@@ -95,7 +102,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       void Print(const char* msg="Renderer::Print");
 
   private:
-
+      //void bind();
+      void createVertexArrayLOD();
       GLuint createVertexArray(RBuf* instanceBuffer);
 
       void check_uniforms();
@@ -105,7 +113,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       void dump(void* data, unsigned int nbytes, unsigned int stride, unsigned long offset, unsigned int count );
 
   private:
-      GLuint m_vao ; 
+      GLuint m_vao[MAX_LOD] ; 
       DrawElements* m_draw[MAX_LOD] ; 
       unsigned      m_draw_num ; 
       unsigned      m_draw_0 ; 
@@ -154,6 +162,9 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool m_instanced ; 
       bool m_wireframe ; 
       InstLODCull* m_instlodcull ; 
+      int          m_num_lod ; 
+      int          m_test_lod ; 
+      const char*  m_type ; 
 
 
 };      

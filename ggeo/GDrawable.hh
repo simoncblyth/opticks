@@ -6,11 +6,6 @@
 #include "GVector.hh"
 #include "GBBox.hh"
 
-//class GBuffer ; 
-//struct gfloat4 ; 
-//struct gfloat3 ; 
-//struct gbbox ; 
-
 
 template <typename T> class NPY ;
 
@@ -20,6 +15,7 @@ class GGEO_API GDrawable {
   public:
       virtual ~GDrawable(){}
 
+      virtual unsigned getIndex() const = 0;
       virtual GBuffer* getVerticesBuffer() = 0;
       virtual GBuffer* getNormalsBuffer() = 0;
       virtual GBuffer* getColorsBuffer() = 0;

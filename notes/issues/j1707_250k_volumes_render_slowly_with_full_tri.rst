@@ -67,6 +67,9 @@ Test Commands
 
         ## currently just tests that InstLODCull shader compiles 
 
+    op --j1707 --gltf 3 --tracer --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger 
+
+
 
     tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 
 
