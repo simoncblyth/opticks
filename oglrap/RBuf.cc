@@ -6,6 +6,7 @@
 
 #include "GLMFormat.hpp"
 #include "RBuf.hh"
+#include "PLOG.hh"
 
 
 const unsigned RBuf::UNSET = -1 ; 
@@ -18,9 +19,12 @@ RBuf::RBuf(unsigned num_items_, unsigned num_bytes_, unsigned num_elements_ , vo
     num_elements(num_elements_),
     query_count(-1),
     ptr(ptr_),
-    gpu_resident(false)
+    gpu_resident(false),
+    max_dump(4),
+    debug_index(-1)
 {
 }
+
 
 unsigned RBuf::item_bytes() const 
 {
@@ -86,7 +90,7 @@ void RBuf::dump(const char* msg) const
     }
     else if( ib == sizeof(float)*4*4 )
     {
-        for(unsigned i=0 ; i < std::min(num_items, 10u) ; i++ ) 
+        for(unsigned i=0 ; i < std::min(num_items, max_dump) ; i++ ) 
         {        
              const glm::mat4& m = *((glm::mat4*)ptr + i ) ;  
              std::cout << gpresent("m",m) << std::endl ; 
@@ -99,10 +103,7 @@ void RBuf::dump(const char* msg) const
 std::string RBuf::brief() const 
 {
     std::stringstream ss ; 
-
-    //ss << " (" << num_items << "/" << query_count << ") " ; 
     ss << " (" << query_count << ") " ; 
-
     return ss.str();
 }
 
@@ -112,12 +113,14 @@ std::string RBuf::desc() const
     std::stringstream ss ; 
 
     ss << "RBuf"
+       << " debug_index " << debug_index  
        << " id " << id  
        << " num_items " << num_items  
        << " num_bytes " << num_bytes
        << " num_elements " << num_elements
        << " item_bytes() " << item_bytes()
        << " query_count " << query_count
+       << " gpu_resident " << ( gpu_resident ? "YES" : "NO" ) 
        ; 
 
     return ss.str();
@@ -130,7 +133,6 @@ void RBuf::upload(GLenum target, GLenum usage )
         glGenBuffers(1, &this->id);
         glBindBuffer(target, this->id);
         glBufferData(target, this->num_bytes, this->ptr, usage);
-        //glBindBuffer(target, 0);
     }
     else
     {
@@ -145,13 +147,34 @@ void RBuf::uploadNull(GLenum target, GLenum usage )
         glGenBuffers(1, &this->id);
         glBindBuffer(target, this->id);
         glBufferData(target, this->num_bytes, NULL, usage);
-        //glBindBuffer(target, 0);
     }
     else
     {
         glBindBuffer(target, this->id);
     }
 }
+
+bool RBuf::isUploaded() const 
+{
+   return this->id != UNSET ; 
+}
+
+
+
+void RBuf::pullback(unsigned stream )
+{
+    if(this->ptr == NULL)
+    {
+         LOG(fatal) << "RBuf::pullback requires CPU side allocated buffers " ;
+    }
+    else
+    {
+        glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, stream, this->id ); // <-- without thus pullback same content each time
+        glGetBufferSubData(GL_TRANSFORM_FEEDBACK_BUFFER, 0, this->num_bytes, this->ptr );
+    }
+}
+
+
 
 
 RBuf* RBuf::Make(const std::vector<glm::vec4>& vert) 

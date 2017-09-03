@@ -24,10 +24,11 @@ struct OGLRAP_API RBuf
     int      query_count ; 
     void*    ptr ;
     bool     gpu_resident ; 
+    unsigned max_dump ; 
+    int      debug_index ; 
 
     unsigned item_bytes() const ;
-
-
+    bool isUploaded() const  ;
 
     void* getPointer() const { return ptr ; } ;
     unsigned getBufferId() const { return id ; } ;
@@ -44,6 +45,7 @@ struct OGLRAP_API RBuf
     
     void upload(GLenum target, GLenum usage );
     void uploadNull(GLenum target, GLenum usage );
+    void pullback(unsigned stream );
 
     std::string desc() const ;
     std::string brief() const ;

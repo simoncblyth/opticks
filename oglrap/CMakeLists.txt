@@ -116,6 +116,7 @@ set(SOURCES
     Scene.cc
     SceneCfg.cc
 
+    G.cc
     Frame.cc
 
     Renderer.cc
@@ -149,6 +150,7 @@ SET(HEADERS
     StateGUI.hh
     Demo.hh
     Prog.hh
+    G.hh
     Shdr.hh
     Touchable.hh
     GUI.hh

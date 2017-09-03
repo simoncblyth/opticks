@@ -75,7 +75,6 @@ void RendererBase::make_shader()
 void RendererBase::create_shader()
 {
     m_shader->createOnly();
-    //m_shader->Summary("RendererBase::make_shader");
     m_program = m_shader->getId(); 
 }
 

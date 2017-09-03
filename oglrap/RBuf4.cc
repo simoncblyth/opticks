@@ -1,21 +1,25 @@
+#include <iostream>
 #include <sstream>
 #include <cstddef>
+
 #include "RBuf.hh"
 #include "RBuf4.hh"
+#include "PLOG.hh"
 
 RBuf4::RBuf4()
     :
     x(NULL),
     y(NULL),
     z(NULL),
-    w(NULL),
-    devnull(NULL)
+    w(NULL)
+//    devnull(NULL)
 {
 }
 
 
 void RBuf4::set(unsigned i, RBuf* b) 
 {
+    if(b) b->debug_index = i ; 
     switch(i)
     {
         case 0: x = b ; break ; 
@@ -54,11 +58,17 @@ std::string RBuf4::desc() const
        << " y " << ( y ? y->brief() : "-" )
        << " z " << ( z ? z->brief() : "-" )
        << " w " << ( w ? w->brief() : "-" )
-       << " devnull " << ( devnull ? devnull->brief() : "-" )
+    //   << " devnull " << ( devnull ? devnull->brief() : "-" )
        ;
 
     return ss.str();
 }
+
+void RBuf4::dump() const 
+{
+    LOG(info) << desc() ; 
+}
+
 
 
 
@@ -78,17 +88,45 @@ RBuf4* RBuf4::MakeFork(const RBuf* src, int num, int debug_clone_slot )
         }
         else
         {
-             b = src->cloneZero() ;
+             b = src->cloneZero() ;     // <-- CPU side alloc just needed for debug pullbacks
              b->gpu_resident = true ;   // GPU residents are not uploaded, CPU side is a monicker
         }
         fork->set(i, b );
 
     }
-    fork->devnull = new RBuf(0,1,0,NULL);  // 1-byte buffer used with workaround
+    //fork->devnull = new RBuf(0,1,0,NULL);  // 1-byte buffer used with workaround
 
     return fork ; 
 }
 
+
+
+RBuf4* RBuf4::MakeDevNull(unsigned num_buf , unsigned num_bytes )
+{
+    assert( num_buf < 4 );
+    RBuf4* fork = new RBuf4 ; 
+
+    for(unsigned i=0 ; i < num_buf ; i++)
+    {
+        RBuf* b = new RBuf(0,num_bytes,0,NULL);  // 1-byte buffer used with workaround
+        b->gpu_resident = true ;   // GPU residents are not uploaded, CPU side is a marker
+        fork->set(i, b );
+    }
+    return fork ; 
+}
+
+
+void RBuf4::uploadNull(GLenum target, GLenum usage )
+{
+    for(int i=0 ; i < 4 ; i++)
+    {
+        RBuf* b = at(i) ; 
+        if(b)
+        {
+           b->uploadNull(target, usage);
+        }
+    } 
+}
 
 
 

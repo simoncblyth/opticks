@@ -4,6 +4,9 @@
 #include <string>
 #include <vector>
 
+
+#define QUERY_WORKAROUND 1
+
 struct BBufSpec ; 
 struct NSlice ; 
 
@@ -74,13 +77,11 @@ class OGLRAP_API Renderer : public RendererBase  {
   public: 
       //////////  CPU side buffer setup  ///////////////////
       /// HMM DOES THE RENDERER NEED TO KNOW THE DIFFERENCE BETWEEN THESE ?
-      void upload(GBBoxMesh* bboxmesh, bool debug=false);
-      void upload(GMergedMesh* geometry, bool debug=false);
-      void upload(Texture* texture, bool debug=false);
+      void upload(GBBoxMesh* bboxmesh);
+      void upload(GMergedMesh* geometry);
+      void upload(Texture* texture);
   private: 
       void setDrawable(GDrawable* drawable); 
-      void setTexture(Texture* texture);
-      Texture* getTexture() const ; 
       GBuffer* fslice_element_buffer(GBuffer* fbuf_orig, NSlice* fslice);
       bool hasTex(){ return m_has_tex ; }
       void setHasTex(bool hastex){ m_has_tex = hastex ; }
@@ -114,8 +115,9 @@ class OGLRAP_API Renderer : public RendererBase  {
 
   private:
       GLuint m_vao[MAX_LOD] ; 
+      GLuint m_vao_all  ; 
+
       DrawElements* m_draw[MAX_LOD] ; 
-      unsigned      m_draw_num ; 
       unsigned      m_draw_0 ; 
       unsigned      m_draw_1 ; 
   private:
@@ -127,8 +129,10 @@ class OGLRAP_API Renderer : public RendererBase  {
       RBuf*   m_fbuf ; 
       RBuf*   m_ibuf ; 
 
-      RBuf4*  m_ifork ; 
-
+      RBuf4*  m_dst ; 
+#ifdef QUERY_WORKAROUND
+      RBuf4*  m_dst_devnull ; 
+#endif
   private:
       // locations determined by *check_uniforms* and used by *update_uniforms* 
       // to update the "constants" available to shaders
@@ -161,9 +165,13 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool m_has_transforms ; 
       bool m_instanced ; 
       bool m_wireframe ; 
+
       InstLODCull* m_instlodcull ; 
+      bool         m_instlodcull_enabled ; 
       int          m_num_lod ; 
       int          m_test_lod ; 
+      bool         m_use_lod ; 
+
       const char*  m_type ; 
 
 

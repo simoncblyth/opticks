@@ -9,6 +9,7 @@
 #include "Shdr.hh"
 #include <GL/glew.h>
 
+#include "G.hh"
 #include "PLOG.hh"
 
 
@@ -35,17 +36,36 @@ GLuint Shdr::getId()
 
 void Shdr::createAndCompile()
 {
+    std::string err = G::ErrCheck("Shdr::createAndCompile.-1", false);
+
+    if(!err.empty())
+    {
+        LOG(info) << "Shdr::createAndCompile"
+                  << " m_type " << G::Shader(m_type)
+                  << " err " << err
+                  ;
+
+        Print("Shdr::createAndCompile ERR"); 
+
+        assert(0);
+    }
+
+
     m_id = glCreateShader(m_type);
+    G::ErrCheck("Shdr::createAndCompile.0", true);
 
     const char* content_c = m_content.c_str();
 
     glShaderSource (m_id, 1, &content_c, NULL);
+    G::ErrCheck("Shdr::createAndCompile.1", true);
 
     glCompileShader (m_id);
+    G::ErrCheck("Shdr::createAndCompile.2", true);
 
     int params = -1;
 
     glGetShaderiv (m_id, GL_COMPILE_STATUS, &params);
+    G::ErrCheck("Shdr::createAndCompile.3", true);
 
     if (GL_TRUE != params) 
     {
@@ -55,6 +75,8 @@ void Shdr::createAndCompile()
 
         exit(1); 
     } 
+
+    G::ErrCheck("Shdr::createAndCompile.4", true);
 }
 
 
@@ -66,6 +88,7 @@ void Shdr::_print_shader_info_log()
     char log[2048];
 
     glGetShaderInfoLog(m_id, max_length, &actual_length, log);
+    G::ErrCheck("Shdr::_print_shader_info_log", true);
 
     printf ("shader info log for GL index %u:\n%s\n", m_id, log);
 }

@@ -8,12 +8,12 @@ struct RBuf ;
 struct OGLRAP_API RBuf4
 {
     static RBuf4* MakeFork(const RBuf* src, int num, int debug_clone_slot=-1 );
+    static RBuf4* MakeDevNull(unsigned num_buf, unsigned num_bytes );
 
     RBuf* x ;
     RBuf* y ;
     RBuf* z ;
     RBuf* w ;
-    RBuf* devnull ;
 
     RBuf4();
 
@@ -22,6 +22,11 @@ struct OGLRAP_API RBuf4
     unsigned num_buf() const ;
 
     std::string desc() const ;
+    void dump() const ;
+
+
+    void uploadNull(GLenum target, GLenum usage );
+ 
 
 
 };

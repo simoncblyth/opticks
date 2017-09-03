@@ -1,4 +1,5 @@
 #include <iostream>
+#include <iomanip>
 #include <sstream>
 #include <cstdint>
 
@@ -60,10 +61,10 @@ struct DrawElements
     {
         std::stringstream ss ; 
         ss << "DrawElements"
-           << " count " << count 
-           << " type " << type
-           << " indices " << indices
-           << " primcount " << primcount 
+           << " count " << std::setw(10) << count 
+           << " type " << std::setw(10) << type
+           << " indices " << std::setw(10) << indices
+           << " primcount " << std::setw(10) << primcount 
            ;
         return ss.str(); 
     }
@@ -78,7 +79,6 @@ const char* Renderer::PRINT = "print" ;
 Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     :
     RendererBase(tag, dir, incl_path),
-    m_draw_num(0),
     m_draw_0(0),
     m_draw_1(1),
 
@@ -89,7 +89,10 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_fbuf(NULL),
     m_ibuf(NULL),
 
-    m_ifork(NULL),
+    m_dst(NULL),
+#ifdef QUERY_WORKAROUND
+    m_dst_devnull(NULL),
+#endif
 
     m_mv_location(-1),
     m_mvp_location(-1),
@@ -118,9 +121,14 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_has_transforms(false),
     m_instanced(false),
     m_wireframe(false),
+
     m_instlodcull(NULL),
+    m_instlodcull_enabled(false),
+
     m_num_lod(-1),
     m_test_lod(0),
+    m_use_lod(true), 
+
     m_type(NULL)
 {
 }
@@ -169,10 +177,7 @@ void Renderer::configureI(const char* name, std::vector<int> values )
     if(strcmp(name, PRINT)==0) Print("Renderer::configureI");
 }
 
-
-
 //////////  CPU side buffer setup  ///////////////////
-
 
 std::string Renderer::desc() const 
 {
@@ -189,51 +194,47 @@ std::string Renderer::desc() const
     return ss.str();
 }
 
-
 const char* Renderer::GBBoxMesh_ = "GBBoxMesh" ; 
 const char* Renderer::GMergedMesh_ = "GMergedMesh" ; 
 const char* Renderer::Texture_ = "Texture" ; 
 
-void Renderer::upload(GBBoxMesh* bboxmesh, bool /*debug*/)
+void Renderer::upload(GBBoxMesh* bboxmesh)
 {
     m_bboxmesh = bboxmesh ;
     assert( m_geometry == NULL && m_texture == NULL );  // exclusive 
     setType(GBBoxMesh_);
+
     setDrawable(bboxmesh);
     upload();
     setupDraws(NULL) ; 
 }
-void Renderer::upload(GMergedMesh* mm, bool /*debug*/)
+void Renderer::upload(GMergedMesh* mm)
 {
     m_geometry = mm ;
     unsigned num_comp = mm->getNumComponents();
     setNumLOD(num_comp);
+
     setType(GMergedMesh_);
 
     assert( m_texture == NULL && m_bboxmesh == NULL );  // exclusive 
+
     setDrawable(mm);
     upload();
     setupDraws(mm);
 }
-void Renderer::upload(Texture* texture, bool /*debug*/)
+void Renderer::upload(Texture* texture)
 {
     assert( m_geometry == NULL && m_bboxmesh == NULL );  // exclusive 
     setType(Texture_);
-    setTexture(texture);
+
+    m_texture = texture ;
+    m_texture_id = texture->getId();
+
+    setDrawable(texture);
     upload();
     setupDraws(NULL) ; 
 }
-void Renderer::setTexture(Texture* texture)
-{
-    m_texture = texture ;
-    m_texture_id = texture->getId();
-    assert( m_geometry == NULL && m_bboxmesh == NULL ); // exclusive
-    setDrawable(texture);
-}
-Texture* Renderer::getTexture() const 
-{
-    return m_texture ;
-}
+
 
 void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
 {
@@ -275,9 +276,22 @@ void Renderer::setDrawable(GDrawable* drawable) // CPU side buffer setup
 
 void Renderer::upload()
 {
-    if(m_instlodcull && m_num_lod > 0)
+    unsigned num_instances = m_ibuf ? m_ibuf->getNumItems() : 0 ;
+
+    m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
+    // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
+
+    if(m_instlodcull_enabled) 
     {
         createVertexArrayLOD(); 
+
+#ifdef QUERY_WORKAROUND
+        m_instlodcull->setupFork(m_ibuf, m_dst, m_dst_devnull );
+#else
+        m_instlodcull->setupFork(m_ibuf, m_dst, NULL );
+#endif
+
+        m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
     } 
     else
     {
@@ -303,15 +317,23 @@ void Renderer::createVertexArrayLOD()
     //
     // Buf cloning/forking prior to that just copies buffer vital stats
     // and sets the gpu_resident property to control which buffers need the upload 
-    //
+
+    assert( m_instlodcull_enabled ); 
  
-    int debug_clone_slot = m_test_lod ; // <-- actually clone and mark as **NOT** GPU resident : SO WILL BE UPLOADED (FOR DEBUGGING PRIOR TO TXF OPERATIONAL)
+    //int debug_clone_slot = m_test_lod ; // <-- actually clone and mark as **NOT** GPU resident : SO **WILL** BE UPLOADED (FOR DEBUGGING PRIOR TO TXF OPERATIONAL)
+    int debug_clone_slot = -1 ; //  -1 : relying on txf to populate all the gpu buffers
 
-    m_ifork = RBuf4::MakeFork(m_ibuf, m_num_lod, debug_clone_slot  );
-  
-    int num_vao = m_num_lod ; 
+    m_dst = RBuf4::MakeFork(m_ibuf, m_num_lod, debug_clone_slot  );
 
-    for(int i=0 ; i < num_vao ; i++) m_vao[i] = createVertexArray(m_ifork->at(i)); 
+
+    for(int i=0 ; i < m_num_lod ; i++) m_vao[i] = createVertexArray(m_dst->at(i));   // vao for rendering with the derived instance transforms
+
+#ifdef QUERY_WORKAROUND
+    unsigned num_bytes = 1 ; 
+    m_dst_devnull = RBuf4::MakeDevNull(m_num_lod, num_bytes );
+    m_dst_devnull->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY );
+#endif
+
 }
 
 
@@ -351,6 +373,7 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
     {
         if(instanceBuffer->gpu_resident)
         {
+            assert( m_instlodcull_enabled ); 
             instanceBuffer->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY );
         }
         else
@@ -400,8 +423,6 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
         glVertexAttribDivisor(vTransform + 3, divisor);
     } 
 
-
-
     // NB already uploaded buffers are just bind not uploaded again
 
     m_vbuf->upload(GL_ARRAY_BUFFER, GL_STATIC_DRAW);
@@ -434,16 +455,8 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER, m_fbuf->getBufferId() );
 
-
     return vao ; 
 }
-
-
-
-
-
-
-
 
 
 void Renderer::setupDraws(GMergedMesh* mm)
@@ -454,10 +467,9 @@ void Renderer::setupDraws(GMergedMesh* mm)
     
     int num_comp = mm ? mm->getNumComponents() : 0  ; 
 
-    if(mm == NULL || num_comp < 1 )
+    if(mm == NULL || num_comp < 1 || m_instlodcull_enabled == false )
     {
         m_draw[0] = new DrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, m_itransform_count );
-        m_draw_num = 1 ;  
         m_draw_0 = 0 ; 
         m_draw_1 = 1 ; 
 
@@ -465,25 +477,28 @@ void Renderer::setupDraws(GMergedMesh* mm)
     }
     else
     {
+        assert( m_instlodcull_enabled );
+
         LOG(info) << "Renderer::setupDraws"
                   << " m_indices_count " << m_indices_count
                    ;
 
-        unsigned lod = m_test_lod ;  
-
         //unsigned lod = 1 ; // full detail 
         //unsigned lod = 1 ; // bbox standin
         //unsigned lod = 2 ;   // quad standin
+        //unsigned lod = m_test_lod ;  
 
         mm->dumpComponents("Renderer::upload"); 
 
         assert( num_comp > 0 ) ;
 
-        m_draw_num = num_comp ; 
-        m_draw_0 = lod ; 
-        m_draw_1 = m_draw_0 + 1 ; 
+        //m_draw_0 = lod ; 
+        //m_draw_1 = m_draw_0 + 1 ; 
 
-        for(unsigned i=0 ; i < m_draw_num ; i++)
+        m_draw_0 = 0 ; 
+        m_draw_1 = num_comp ; 
+
+        for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
         {
             glm::uvec4 eidx ;
             mm->getComponent(eidx, i );
@@ -499,13 +514,19 @@ void Renderer::setupDraws(GMergedMesh* mm)
 }
 
 
-
-
-
-
-
 void Renderer::render()
 { 
+    if( m_instlodcull_enabled )
+    {
+        m_instlodcull->update_uniforms() ;
+        m_instlodcull->applyFork() ;
+        m_instlodcull->applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
+
+        if(m_draw_count < 3)
+        m_instlodcull->pullback() ;
+
+    }
+
     glUseProgram(m_program);
 
     update_uniforms();
@@ -519,16 +540,42 @@ void Renderer::render()
 
     if(m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    // hmm drawing multiple LOD levels only needed with dynamic LOD 
-    // normally stick to single level
 
-    for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
+    if( m_instlodcull_enabled )
     {
-        glBindVertexArray (m_vao[i]);
-        const DrawElements& draw = *m_draw[i] ;   
-        if(m_instanced)
+        assert(m_instanced);
+
+        unsigned tot_primcount = 0 ; 
+
+        for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
         { 
-            std::cout << desc() << " Draw:" << draw.desc() << std::endl ; 
+            glBindVertexArray ( m_use_lod ? m_vao[i] : m_vao_all );
+
+            const DrawElements& draw = *m_draw[i] ;   
+
+            unsigned lod_primcount = m_use_lod ? m_dst->at(i)->query_count : draw.primcount ; 
+
+            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, lod_primcount  ) ;
+
+            tot_primcount += lod_primcount ; 
+
+            std::cout << desc() 
+                      << " Draw:" << draw.desc() 
+                      << " lod_primcount " << lod_primcount
+                     << std::endl ; 
+        }
+        std::cout << desc() 
+                  << " tot_primcount " << tot_primcount
+                  << " m_itransform_count " << m_itransform_count
+                  << std::endl ; 
+        
+    }
+    else
+    {
+        glBindVertexArray ( m_vao[0] );
+        const DrawElements& draw = *m_draw[0] ;   
+        if(m_instanced)
+        {
             glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, draw.primcount  ) ;
         }
         else
@@ -536,6 +583,7 @@ void Renderer::render()
             glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
         }
     }
+
 
     if(m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
@@ -656,7 +704,8 @@ void Renderer::update_uniforms()
 {
     if(m_composition)
     {
-        m_composition->update() ;
+        m_composition->update() ;  // huh : why repeat this in every renderer ?
+
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
 

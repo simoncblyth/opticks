@@ -5,6 +5,7 @@
 #include "Prog.hh"
 #include "ProgLog.hh"
 #include "Shdr.hh"
+#include "G.hh"
 
 #include "BFile.hh"
 #include "PLOG.hh"
@@ -120,14 +121,14 @@ void Prog::readSources(const char* tagdir)
 
 void Prog::createOnly()
 {
-    if(m_verbosity > 0) LOG(info) << "Prog::createOnly" << desc() ;
+    if(m_verbosity > 1) LOG(info) << "Prog::createOnly" << desc() ;
  
     create();
 }
 
 void Prog::linkAndValidate()
 {
-    if(m_verbosity > 0) LOG(info) << "Prog::linkAndValidate" << desc()  ; 
+    if(m_verbosity > 1) LOG(info) << "Prog::linkAndValidate" << desc()  ; 
 
     link();
     validate();
@@ -136,7 +137,7 @@ void Prog::linkAndValidate()
 
 void Prog::createAndLink()
 {
-    if(m_verbosity > 0) LOG(info) << "Prog::createAndlink" << desc()  ; 
+    if(m_verbosity > 1) LOG(info) << "Prog::createAndlink" << desc()  ; 
 
     create();
     link();
@@ -155,7 +156,10 @@ void Prog::create()
         Shdr* shdr = m_shaders[i];
         shdr->createAndCompile();           
         glAttachShader (m_id, shdr->getId());
+        G::ErrCheck("Prog::create.loop", true);
     }
+
+    G::ErrCheck("Prog::create", true);
 }
 
 void Prog::link()
@@ -176,7 +180,7 @@ void Prog::link()
 
 void Prog::validate()
 {
-    if(m_verbosity > 0) LOG(info) << "Prog::validate" << desc()  ; 
+    if(m_verbosity > 1) LOG(info) << "Prog::validate" << desc()  ; 
 
     glValidateProgram (m_id);
 
@@ -185,16 +189,17 @@ void Prog::validate()
 
     if (GL_TRUE != params) 
     {
-        _print_program_info_log();
 
         ProgLog prl(m_id) ;
 
         if(m_nofrag && prl.is_no_frag_shader() )
         {
+            if(m_verbosity > 1)
             LOG(info) << "ignoring lack of frag shader "  ; 
         } 
         else
         {
+            _print_program_info_log();
             prl.dump("Prog::validate");
             Print("Prog::validate ERROR"); 
             LOG(fatal) << "Prog::validate failure for tagdir [" << m_tagdir << "] EXITING "  ; 

@@ -51,7 +51,7 @@ m_global_renderer         Renderer         nrm
 m_globalvec_renderer      Renderer         nrmvec        global renderer with face normals represented by geometry shader generated lines
 m_raytrace_renderer       Renderer         tex           great big quad rendering of raytrace texture obtained from OptiX
 m_instance_renderer[i]    Renderer         inrm          
-m_instance_lodcull[i]     InstLODCull      inrmcull      WIP
+m_instlodcull[i]          InstLODCull      inrmcull      WIP
 m_bbox_renderer[i]        Renderer         inrm   
 m_axis_renderer           Rdr              axis
 m_genstep_renderer        Rdr              p2l
@@ -286,7 +286,7 @@ class OGLRAP_API Scene : public NConfigurable {
    private:
         unsigned int m_num_instance_renderer ; 
         Renderer*    m_geometry_renderer ; 
-        InstLODCull* m_instance_lodcull[MAX_INSTANCE_RENDERER] ; 
+        InstLODCull* m_instlodcull[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_instance_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_bbox_renderer[MAX_INSTANCE_RENDERER] ; 
         Renderer*    m_global_renderer ; 

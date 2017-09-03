@@ -13,6 +13,8 @@ class Shdr ;
 
 class OGLRAP_API Prog {
 //      static const char* LOG_NO_FRAGMENT_SHADER ; 
+
+        friend class InstLODCull ; 
    public:
       Prog(const char* basedir, const char* tag, const char* incl_path=NULL);
 

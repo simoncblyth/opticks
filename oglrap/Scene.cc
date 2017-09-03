@@ -367,7 +367,7 @@ void Scene::initRenderersDebug()
     {
         m_instance_mode[i] = false ; 
         m_instance_renderer[i] = NULL ; 
-        m_instance_lodcull[i] = NULL ; 
+        m_instlodcull[i] = NULL ; 
 
         m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = NULL ;
@@ -404,9 +404,9 @@ void Scene::initRenderers()
 
         if(m_instcull)
         {
-            m_instance_lodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path );
-            m_instance_lodcull[i]->setVerbosity(2);
-            m_instance_renderer[i]->setInstLODCull(m_instance_lodcull[i]);
+            m_instlodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path );
+            m_instlodcull[i]->setVerbosity(1);
+            m_instance_renderer[i]->setInstLODCull(m_instlodcull[i]);
         }
 
         m_bbox_mode[i] = false ; 
@@ -472,8 +472,8 @@ void Scene::setComposition(Composition* composition)
         if(m_instance_renderer[i])
             m_instance_renderer[i]->setComposition(composition);
 
-        if(m_instance_lodcull[i])
-            m_instance_lodcull[i]->setComposition(composition);
+        if(m_instlodcull[i])
+            m_instlodcull[i]->setComposition(composition);
 
         if(m_bbox_renderer[i])
             m_bbox_renderer[i]->setComposition(composition);
@@ -550,10 +550,11 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
 
-            if(m_instcull && m_instance_lodcull[m_num_instance_renderer] )
-            {
-                m_instance_lodcull[m_num_instance_renderer]->upload(mm);
-            }
+            // instlodcull is controlled from paired instance_renderer, not from up here in Scene
+            //if(m_instcull && m_instlodcull[m_num_instance_renderer] )
+            //{
+            //    m_instlodcull[m_num_instance_renderer]->upload(mm);
+            //}
         }
 
         LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
@@ -582,7 +583,7 @@ void Scene::uploadGeometry()
     assert(m_geolib && "must setGeometry first");
     unsigned int nmm = m_geolib->getNumMergedMesh();
 
-    LOG(debug) << "Scene::uploadGeometry"
+    LOG(info) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
 
@@ -591,7 +592,7 @@ void Scene::uploadGeometry()
         GMergedMesh* mm = m_geolib->getMergedMesh(i);
         if(!mm) continue ; 
 
-        LOG(debug) << "Scene::uploadGeometry " 
+        LOG(info) << "Scene::uploadGeometry " 
                   << i 
                   << " geoCode " << mm->getGeoCode() ; 
 
@@ -933,7 +934,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {
         m_instance_renderer[i] = NULL ; 
-        m_instance_lodcull[i] = NULL ; 
+        m_instlodcull[i] = NULL ; 
         m_bbox_renderer[i] = NULL ; 
         m_instance_mode[i] = false ; 
         m_bbox_mode[i] = false ; 
