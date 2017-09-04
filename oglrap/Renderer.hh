@@ -68,6 +68,9 @@ class OGLRAP_API Renderer : public RendererBase  {
       Renderer(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
       void setInstanced(bool instanced=true);
       void setInstLODCull(InstLODCull* instlodcull);
+      bool isInstLODCullEnabled() const  ;
+      void cull(); 
+
       void setWireframe(bool wireframe=true);
       virtual ~Renderer();
       std::string desc() const ; 

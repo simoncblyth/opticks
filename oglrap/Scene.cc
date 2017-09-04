@@ -755,6 +755,19 @@ void Scene::dump_uploads_table(const char* msg)
 }
 
 
+
+void Scene::preRenderCompute()
+{
+    for(unsigned int i=0; i<m_num_instance_renderer; i++)
+    {
+        if(m_instance_mode[i] && m_instance_renderer[i] && m_instance_renderer[i]->isInstLODCullEnabled() ) 
+        {
+            m_instance_renderer[i]->cull() ;
+        }
+    }
+}
+
+
 void Scene::renderGeometry()
 {
     if(m_global_mode && m_global_renderer)       m_global_renderer->render();
@@ -811,6 +824,7 @@ void Scene::render()
     }
 */
 
+    preRenderCompute();
     renderGeometry();
     renderEvent();
 

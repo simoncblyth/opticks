@@ -148,6 +148,11 @@ void Renderer::setType(const char* type)
 }
 
 
+bool Renderer::isInstLODCullEnabled() const 
+{
+   return m_instlodcull_enabled ;
+}
+
 
 void Renderer::setLOD(int lod)
 {
@@ -309,27 +314,18 @@ void Renderer::upload()
     unsigned num_instances = m_ibuf ? m_ibuf->getNumItems() : 0 ;
 
     m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
+    // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
         
     m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
-
-    // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
 
     if(m_instlodcull_enabled) 
     {
         createVertexArrayLOD(); 
-
-#ifdef QUERY_WORKAROUND
-        m_instlodcull->setupFork(m_ibuf, m_dst, m_dst_devnull );
-#else
-        m_instlodcull->setupFork(m_ibuf, m_dst, NULL );
-#endif
-
     } 
     else
     {
         m_vao[0] = createVertexArray(m_ibuf);
     }
-
 
     make_shader();  // requires VAO bound to pass validation
 
@@ -357,13 +353,15 @@ void Renderer::createVertexArrayLOD()
 
     m_dst = RBuf4::MakeFork(m_ibuf, m_num_lod, debug_clone_slot  );
 
-
     for(int i=0 ; i < m_num_lod ; i++) m_vao[i] = createVertexArray(m_dst->at(i));   // vao for rendering with the derived instance transforms
 
 #ifdef QUERY_WORKAROUND
     unsigned num_bytes = 1 ; 
     m_dst_devnull = RBuf4::MakeDevNull(m_num_lod, num_bytes );
     m_dst_devnull->uploadNull(GL_ARRAY_BUFFER, GL_DYNAMIC_COPY );
+    m_instlodcull->setupFork(m_ibuf, m_dst, m_dst_devnull );
+#else
+    m_instlodcull->setupFork(m_ibuf, m_dst, NULL );
 #endif
 
 }
@@ -565,15 +563,15 @@ void Renderer::setupDraws(GMergedMesh* mm)
 }
 
 
+void Renderer::cull()
+{
+    assert( m_instlodcull_enabled );
+    m_instlodcull->launch();
+}
+
 void Renderer::render()
 { 
-    if( m_instlodcull_enabled )
-    {
-
-
-
-        m_instlodcull->launch();
-    }
+    // if(m_instlodcull_enabled) cull();   moved to Scene::preRenderCompute 
 
     glUseProgram(m_program);
 
@@ -754,7 +752,7 @@ void Renderer::update_uniforms()
 {
     if(m_composition)
     {
-        m_composition->update() ;  
+        //m_composition->update() ;  
         //    moved up to Scene::render repeat this in every renderer ?
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());

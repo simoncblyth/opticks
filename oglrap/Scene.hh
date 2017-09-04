@@ -252,6 +252,7 @@ class OGLRAP_API Scene : public NConfigurable {
         void uploadRecordAttr(MultiViewNPY* attr, bool debug=false);
    public:
         void render();
+        void preRenderCompute();
         void renderGeometry();
         void renderEvent();
 

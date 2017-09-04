@@ -121,6 +121,66 @@ perhaps doing all the culling (transform feedback) up front
 ie before any rendering of this frame can avoid going haywire.
 
 
+Variable LODCut distances ? 
+--------------------------------
+
+Hmm, perhaps LODcut distances should depend on FOV and other view/cam params, not just be a fixed constant distance ? 
+How big the thing is on the near plane ? To avoid obvious LOD transitions somehow ?
+
+
+Decoupling InstLODCull ?
+---------------------------
+
+Suspect the coupled approach, will cause loadsa context shifts 
+on the GPU when more than one instance Renderer is live... 
+
+The renderer needs to stay paired to instlodcull, as it has to
+get the counts (hmm it can do that via the RBuf ?).
+
+
+::
+
+    568 void Renderer::render()
+    569 {
+    570     if( m_instlodcull_enabled )
+    571     {
+    572         m_instlodcull->launch();
+    573     }   
+    574     
+    575     glUseProgram(m_program);
+    576     
+    577     update_uniforms();
+    578     
+    579     glActiveTexture(GL_TEXTURE0 + TEX_UNIT_0 );
+    580     glBindTexture(GL_TEXTURE_2D,  m_texture_id );
+    581     
+    582     // https://www.opengl.org/archives/resources/faq/technical/transparency.htm
+    583     glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); 
+    584     glEnable (GL_BLEND);
+    585     
+    586     if(m_wireframe) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    587     
+    588     
+    589     if( m_instlodcull_enabled )
+    590     {
+    591         assert(m_instanced);
+    592         
+    593         for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
+    594         {
+    595             glBindVertexArray ( m_use_lod ? m_vao[i] : m_vao_all );
+    596 
+    597             const DrawElements& draw = *m_draw[i] ;
+    598 
+    599             m_lod_counts[i] = m_use_lod ? m_dst->at(i)->query_count : draw.primcount ;
+    600 
+    601             glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, m_lod_counts[i]  ) ;
+    602 
+    603         }
+    604         //if(m_verbosity > 0)
+    605         std::cout << desc() << std::endl ;
+
+
+
 
 Test Commands
 -------------------
