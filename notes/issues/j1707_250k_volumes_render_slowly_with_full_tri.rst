@@ -114,6 +114,7 @@ Test Commands
 
         ## 
 
+    op --j1707 --gltf 3 --tracer --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.5,0.5,0.1
 
 
     tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 

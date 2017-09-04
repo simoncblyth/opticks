@@ -13,6 +13,7 @@
 #include "GLMFormat.hpp"
 #include "NSlice.hpp"
 
+#include "Opticks.hh"
 
 
 #include <GL/glew.h>
@@ -128,9 +129,12 @@ Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     m_num_lod(-1),
     m_test_lod(0),
     m_use_lod(true), 
+    m_lod(0),
 
     m_type(NULL)
 {
+
+    for(unsigned i=0 ; i < MAX_LOD ; i++) m_lod_counts[i] = 0 ; 
 }
 
 
@@ -143,10 +147,18 @@ void Renderer::setType(const char* type)
     m_type = type ; 
 }
 
+
+
+void Renderer::setLOD(int lod)
+{
+    m_lod = lod ; 
+}
+
 void Renderer::setNumLOD(int num_lod)
 {
     m_num_lod = num_lod ; 
 }
+
 
 void Renderer::setInstanced(bool instanced)
 {
@@ -179,16 +191,34 @@ void Renderer::configureI(const char* name, std::vector<int> values )
 
 //////////  CPU side buffer setup  ///////////////////
 
-std::string Renderer::desc() const 
+std::string Renderer::brief() const 
 {
     std::stringstream ss ; 
-
-    ss << "Renderer"
+    ss << " Renderer "
        << " tag " << getShaderTag()
        << " type " << ( m_type ? m_type : "-" )
        << " idx " << ( m_drawable ? m_drawable->getIndex() : -1 )
+       ;
+    return ss.str();
+}
+
+
+std::string Renderer::desc() const 
+{
+    std::stringstream ss ; 
+    ss << brief()    
        << " instlodcull " << ( m_instlodcull ? "YES" : "NO" )
+       << " lod " << m_lod 
        << " num_lod " << m_num_lod 
+       << " m_itransform_count " << m_itransform_count
+       << " lod_counts "
+       << " (" 
+       << std::setw(7) << m_lod_counts[0] << " "
+       << std::setw(7) << m_lod_counts[1] << " "
+       << std::setw(7) << m_lod_counts[2] << " "
+       << ")"
+       << " tot " 
+       << std::setw(7) << m_lod_counts[0]+m_lod_counts[1]+m_lod_counts[2]
        ;
 
     return ss.str();
@@ -279,6 +309,9 @@ void Renderer::upload()
     unsigned num_instances = m_ibuf ? m_ibuf->getNumItems() : 0 ;
 
     m_instlodcull_enabled = m_instlodcull && m_num_lod > 0 && num_instances > InstLODCull::INSTANCE_MINIMUM ;
+        
+    m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
+
     // Renderer::upload(GMergedMesh*) sets num_lod from mm components, >0 only for instanced mm
 
     if(m_instlodcull_enabled) 
@@ -291,7 +324,6 @@ void Renderer::upload()
         m_instlodcull->setupFork(m_ibuf, m_dst, NULL );
 #endif
 
-        m_vao_all = createVertexArray(m_ibuf);   // DEBUGGING ONLY 
     } 
     else
     {
@@ -385,6 +417,7 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
     GLuint instanceBO = instanceBuffer ? instanceBuffer->getBufferId() : 0u ;
     m_itransform_count = instanceBuffer ? instanceBuffer->getNumItems() : 0 ;
 
+    if(m_verbosity > 3)
     std::cout << "Renderer::createVertexArray"
               << " vao " << vao 
               << " itransform_count " << m_itransform_count 
@@ -459,57 +492,75 @@ GLuint Renderer::createVertexArray(RBuf* instanceBuffer)
 }
 
 
-void Renderer::setupDraws(GMergedMesh* mm)
+
+
+void Renderer::setupDrawsLOD(GMergedMesh* mm)
 {
-    // note distinction between: 
-    //   1. a non-LOD draw 
-    //   2. LOD set of one level 
+    assert(mm);
+
+    mm->dumpComponents("Renderer::setupDrawsLOD"); 
     
     int num_comp = mm ? mm->getNumComponents() : 0  ; 
+    assert( num_comp > 0 ) ;
 
-    if(mm == NULL || num_comp < 1 || m_instlodcull_enabled == false )
+    for(int i=0 ; i < num_comp ; i++)
     {
-        m_draw[0] = new DrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, m_itransform_count );
-        m_draw_0 = 0 ; 
-        m_draw_1 = 1 ; 
+        glm::uvec4 eidx ;
+        mm->getComponent(eidx, i );
 
+        unsigned offset_face = eidx.x ;
+        unsigned num_face = eidx.y ;
+        GLsizei count = num_face*3 ; 
+        void* offset_indices = (void*)(offset_face*3*sizeof(unsigned)) ; 
+
+        m_draw[i] = new DrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, offset_indices, m_itransform_count );
+        // indices_count would be 3 for a single triangle, 30 for ten triangles
+    }
+
+    if(m_lod > 0)
+    {
+        m_draw_0 = 0 ; 
+        m_draw_1 = num_comp ; 
+    }
+    else
+    {
+        m_draw_0 = -m_lod ; 
+        m_draw_1 = -m_lod + 1; 
+    }
+
+    LOG(warning) << "Renderer::setupDrawsLOD"
+                 << " num_comp " << num_comp 
+                 << " m_lod " << m_lod 
+                 << " m_draw_0 " << m_draw_0
+                 << " m_draw_1 " << m_draw_1
+                 ;
+
+}
+
+
+
+void Renderer::setupDraws(GMergedMesh* mm)
+{   
+    int num_comp = mm ? mm->getNumComponents() : 0  ; 
+
+    //bool one_draw = mm == NULL || num_comp < 1 || m_instlodcull_enabled == false ;
+    bool one_draw = mm == NULL || num_comp < 1 ;
+
+    LOG(info) << "Renderer::setupDraws"
+              << brief()
+              << " num_comp " << num_comp 
+              << " m_lod " << m_lod 
+              << " one_draw " << ( one_draw ? "YES" : "NO" )
+              ;
+
+    if(one_draw)
+    {
+        m_draw[0] = new DrawElements( GL_TRIANGLES, m_indices_count, GL_UNSIGNED_INT, NULL, m_itransform_count );     
         // indices_count would be 3 for a single triangle, 30 for ten triangles
     }
     else
     {
-        assert( m_instlodcull_enabled );
-
-        LOG(info) << "Renderer::setupDraws"
-                  << " m_indices_count " << m_indices_count
-                   ;
-
-        //unsigned lod = 1 ; // full detail 
-        //unsigned lod = 1 ; // bbox standin
-        //unsigned lod = 2 ;   // quad standin
-        //unsigned lod = m_test_lod ;  
-
-        mm->dumpComponents("Renderer::upload"); 
-
-        assert( num_comp > 0 ) ;
-
-        //m_draw_0 = lod ; 
-        //m_draw_1 = m_draw_0 + 1 ; 
-
-        m_draw_0 = 0 ; 
-        m_draw_1 = num_comp ; 
-
-        for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
-        {
-            glm::uvec4 eidx ;
-            mm->getComponent(eidx, i );
-
-            unsigned offset_face = eidx.x ;
-            unsigned num_face = eidx.y ;
-            GLsizei count = num_face*3 ; 
-            void* offset_indices = (void*)(offset_face*3*sizeof(unsigned)) ; 
-
-            m_draw[i] = new DrawElements( GL_TRIANGLES, count, GL_UNSIGNED_INT, offset_indices, m_itransform_count );
-        }
+        setupDrawsLOD(mm);
     }
 }
 
@@ -539,33 +590,33 @@ void Renderer::render()
     {
         assert(m_instanced);
 
-        unsigned tot_primcount = 0 ; 
-
         for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
         { 
             glBindVertexArray ( m_use_lod ? m_vao[i] : m_vao_all );
 
             const DrawElements& draw = *m_draw[i] ;   
 
-            unsigned lod_primcount = m_use_lod ? m_dst->at(i)->query_count : draw.primcount ; 
+            m_lod_counts[i] = m_use_lod ? m_dst->at(i)->query_count : draw.primcount ;
 
-            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, lod_primcount  ) ;
+            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, m_lod_counts[i]  ) ;
 
-            tot_primcount += lod_primcount ; 
-
-            if(m_verbosity > 1)
-            std::cout << desc() 
-                      << " Draw:" << draw.desc() 
-                      << " lod_primcount " << lod_primcount
-                     << std::endl ; 
         }
-        if(m_verbosity > 1)
-        std::cout << desc() 
-                  << " tot_primcount " << tot_primcount
-                  << " m_itransform_count " << m_itransform_count
-                  << std::endl ; 
-        
+        //if(m_verbosity > 0)
+        std::cout << desc() << std::endl ; 
     }
+    else if( m_lod < 0)   // debugging LOD rendering 
+    {
+        for(unsigned i=m_draw_0 ; i < m_draw_1 ; i++)
+        { 
+            glBindVertexArray ( m_vao_all );
+
+            const DrawElements& draw = *m_draw[i] ;   
+
+            m_lod_counts[i] = draw.primcount ;
+
+            glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, m_lod_counts[i]  ) ;
+        }
+    } 
     else
     {
         glBindVertexArray ( m_vao[0] );
@@ -700,7 +751,7 @@ void Renderer::update_uniforms()
 {
     if(m_composition)
     {
-        // m_composition->update() ;  
+        m_composition->update() ;  
         //    moved up to Scene::render repeat this in every renderer ?
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
@@ -749,8 +800,8 @@ void Renderer::update_uniforms()
             glEnable(GL_CLIP_DISTANCE0); 
         }
 
-        if(m_draw_count == 0)
-            print( m_composition->getClipPlanePtr(), "Renderer::update_uniforms ClipPlane", 4);
+        //if(m_draw_count == 0)
+        //    print( m_composition->getClipPlanePtr(), "Renderer::update_uniforms ClipPlane", 4);
 
     } 
     else

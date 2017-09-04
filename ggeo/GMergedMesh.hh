@@ -44,6 +44,7 @@ public:
     static GMergedMesh* MakeLODComposite(GMergedMesh* mm, unsigned levels=3 );   // 2/3 LOD levels 
     static GMergedMesh* CreateBBoxMesh(unsigned index, gbbox& bb );
     static GMergedMesh* CreateQuadMesh(unsigned index, gbbox& bb );
+    static bool CheckFacesQty(const GMergedMesh* mm);
 public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );

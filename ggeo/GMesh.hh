@@ -392,9 +392,9 @@ class GGEO_API GMesh : public GDrawable {
       virtual void setBoundaries(unsigned int* boundaries);
       virtual void setSensors(   unsigned int* sensors);
   public:
-      virtual unsigned int*  getNodes();
-      virtual unsigned int*  getBoundaries();
-      virtual unsigned int*  getSensors();
+      virtual unsigned int*  getNodes() const ;
+      virtual unsigned int*  getBoundaries() const ;
+      virtual unsigned int*  getSensors() const ;
 
       virtual guint4*        getNodeInfo() const ;
       virtual guint4         getNodeInfo(unsigned int index);

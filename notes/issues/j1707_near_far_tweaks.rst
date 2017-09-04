@@ -13,6 +13,9 @@ Workaround is to target a smaller volume and ajust eye point
 
 
     op --j1707 --gltf 3 --tracer  --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.5,0.5,0.0
+    op --j1707 --gltf 3 --tracer  --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.5,0.5,0.0
+    op --j1707 --gltf 3 --tracer  --instcull --lod 1 --debugger 
+    op --j1707 --gltf 3 --tracer  --instcull --lod 1 --debugger --target 12 --eye 0.5,0.5,0.0
 
 
 

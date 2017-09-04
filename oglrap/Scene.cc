@@ -24,6 +24,7 @@
 #include "MultiViewNPY.hpp"
 
 // opticks-
+#include "Opticks.hh"
 #include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 
@@ -547,14 +548,10 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
 
         if(m_instance_renderer[m_num_instance_renderer])
         {
+            m_instance_renderer[m_num_instance_renderer]->setLOD(m_ok->getLOD());
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
             m_instance_mode[m_num_instance_renderer] = true ; 
 
-            // instlodcull is controlled from paired instance_renderer, not from up here in Scene
-            //if(m_instcull && m_instlodcull[m_num_instance_renderer] )
-            //{
-            //    m_instlodcull[m_num_instance_renderer]->upload(mm);
-            //}
         }
 
         LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
@@ -789,13 +786,14 @@ void Scene::render()
 
     m_composition->update();
 
+/*
     if(m_render_count < 1)
     {
         m_composition->Details("Scene::render.1st");
         m_composition->dumpFrustum("Scene::render.1st");
         m_composition->dumpCorners("Scene::render.1st");
     }
-
+*/
 
     renderGeometry();
     renderEvent();

@@ -777,6 +777,16 @@ GMergedMesh*  GMergedMesh::MakeLODComposite(GMergedMesh* mm, unsigned levels ) /
     assert( levels == 2 || levels == 3 );
     gbbox bb = mm->getBBox(0);
 
+
+    bool cfq = CheckFacesQty(mm);
+
+    if(!cfq)
+    {
+        LOG(warning) << "GMergedMesh::MakeLODComposite mm misses sensors/boundaries/nodes invoking setFacesQty " ; 
+        mm->setFacesQty(NULL); 
+    }
+
+
     std::vector<GMergedMesh*> comps ; 
     comps.push_back(mm);
 
@@ -823,32 +833,40 @@ GMergedMesh* GMergedMesh::CreateBBoxMesh(unsigned index, gbbox& bb ) // static
              texcoords
          );
 
-     bbmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
+    bbmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
 
-     unsigned* node_indices = bbmm->getNodes();
-     unsigned* boundary_indices = bbmm->getBoundaries();
-     unsigned* sensor_indices = bbmm->getSensors();
-
-     assert( node_indices );
-     assert( boundary_indices );
-     assert( sensor_indices );
-
+    bool cfq = CheckFacesQty(bbmm); 
+    assert(cfq);
 
     return bbmm ;   
 }
 
+
+bool GMergedMesh::CheckFacesQty(const GMergedMesh* mm)
+{
+     unsigned* node_indices = mm->getNodes();
+     unsigned* boundary_indices = mm->getBoundaries();
+     unsigned* sensor_indices = mm->getSensors();
+
+     //assert( node_indices );
+     //assert( boundary_indices );
+     //assert( sensor_indices );
+
+     return node_indices && boundary_indices && sensor_indices ;
+}
+
 GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
 {
-     unsigned num_vertices = 8 ; 
-     gfloat3* vertices = new gfloat3[num_vertices] ; 
-     gfloat3* normals  = new gfloat3[num_vertices] ; 
-     gfloat2* texcoords  = NULL ; 
-     unsigned num_faces = 4  ; 
+    unsigned num_vertices = 8 ; 
+    gfloat3* vertices = new gfloat3[num_vertices] ; 
+    gfloat3* normals  = new gfloat3[num_vertices] ; 
+    gfloat2* texcoords  = NULL ; 
+    unsigned num_faces = 4  ; 
     
-     guint3* faces = new guint3[num_faces] ;
+    guint3* faces = new guint3[num_faces] ;
     
 
-     GMergedMesh* qmm = new GMergedMesh(
+    GMergedMesh* qmm = new GMergedMesh(
              index, 
              vertices, 
              num_vertices, 
@@ -859,18 +877,10 @@ GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
          );
 
 
-     qmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
+    qmm->setFacesQty(NULL); // allocate and zeros: nodes, boundaries and sensors
 
-
-    unsigned* node_indices = qmm->getNodes();
-    unsigned* boundary_indices = qmm->getBoundaries();
-    unsigned* sensor_indices = qmm->getSensors();
-
-    assert( node_indices );
-    assert( boundary_indices );
-    assert( sensor_indices );
-
-
+    bool cfq = CheckFacesQty(qmm); 
+    assert(cfq);
 
        
      gfloat3 dim = bb.dimensions() ;

@@ -71,6 +71,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       void setWireframe(bool wireframe=true);
       virtual ~Renderer();
       std::string desc() const ; 
+      std::string brief() const ; 
+      void setLOD(int lod);
   private:
       void setNumLOD(int num_lod);
       void setType(const char* type);
@@ -88,6 +90,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       bool hasTransforms(){ return m_has_transforms ; }
       void setHasTransforms(bool hastr){ m_has_transforms = hastr ; }
       void setupDraws(GMergedMesh* mm);
+      void setupDrawsLOD(GMergedMesh* mm);
   private: 
       //////////  GPU side buffer setup  ///////////////////
       void upload();
@@ -120,6 +123,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       DrawElements* m_draw[MAX_LOD] ; 
       unsigned      m_draw_0 ; 
       unsigned      m_draw_1 ; 
+      unsigned      m_lod_counts[MAX_LOD] ; 
   private:
 
       RBuf*   m_vbuf ; 
@@ -171,6 +175,7 @@ class OGLRAP_API Renderer : public RendererBase  {
       int          m_num_lod ; 
       int          m_test_lod ; 
       bool         m_use_lod ; 
+      int          m_lod ; 
 
       const char*  m_type ; 
 

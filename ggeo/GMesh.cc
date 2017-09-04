@@ -429,7 +429,7 @@ float* GMesh::getModelToWorldPtr(unsigned int /*index*/)
 }
 
 
-unsigned* GMesh::getNodes()   // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
+unsigned* GMesh::getNodes() const    // CAUTION ONLY MAKES SENSE FROM GMergedMesh SUBCLASS 
 {
     return m_nodes ;
 }
@@ -476,11 +476,11 @@ guint4 GMesh::getInstancedIdentity(unsigned int index)
 
 
 
-unsigned int* GMesh::getBoundaries()
+unsigned int* GMesh::getBoundaries() const 
 {
     return m_boundaries ;
 }
-unsigned int* GMesh::getSensors()
+unsigned int* GMesh::getSensors() const 
 {
     return m_sensors ;
 }

@@ -82,7 +82,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
        m_gltf(0),
        m_gltftarget(0),
-       m_lodconfig("levels=2,verbosity=3"),
+       m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
        m_target(0)
 {   

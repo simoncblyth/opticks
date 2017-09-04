@@ -10,7 +10,7 @@ NLODConfig::NLODConfig(const char* cfg)
     :
     bconfig(new BConfig(cfg)),
     verbosity(0),
-    levels(1),
+    levels(3),
     instanced_lodify_onload(0)
 {
     LOG(info) << "NLODConfig::NLODConfig"
