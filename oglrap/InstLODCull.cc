@@ -304,13 +304,13 @@ void InstLODCull::launch()
     applyFork() ;
     applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
 
-/*
+
     if(m_launch_count < 3)
     {
         LOG(info) << "InstLODCull::launch count " << m_launch_count ; 
         pullback() ;
     }
-*/
+
 
     m_launch_count++ ;
 }
