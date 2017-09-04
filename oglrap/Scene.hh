@@ -330,6 +330,7 @@ class OGLRAP_API Scene : public NConfigurable {
         float           m_time_fraction ;  
         bool            m_instcull ; 
         unsigned        m_verbosity ; 
+        unsigned        m_render_count ; 
 
 };
 

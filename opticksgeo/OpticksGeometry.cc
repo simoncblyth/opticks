@@ -25,6 +25,7 @@
 #include "GPmt.hh"
 #include "GParts.hh"
 #include "GMergedMesh.hh"
+#include "GNodeLib.hh"
 #include "GGeo.hh"
 
 // assimpwrap
@@ -115,6 +116,7 @@ glm::vec4 OpticksGeometry::getCenterExtent()
 void  OpticksGeometry::setTarget(unsigned target, bool aim)
 {
     // formerly of oglrap-/Scene
+    // invoked by OpticksViz::uploadGeometry OpticksViz::init
 
    if(m_mesh0 == NULL)
     {    
@@ -124,11 +126,30 @@ void  OpticksGeometry::setTarget(unsigned target, bool aim)
     }    
     m_target = target ; 
 
-    gfloat4 ce_ = m_mesh0->getCenterExtent(target);
 
-    glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ); 
+    GNodeLib* nodelib = m_ggeo->getNodeLib();
 
-    LOG(info)<<"OpticksGeometry::setTarget " 
+    unsigned num_solids = m_mesh0->getNumSolids();
+
+    LOG(info) << "OpticksGeometry::setTarget"
+              << " num_solids " << num_solids 
+              ;
+    for(unsigned i=0 ; i < std::min(num_solids, 20u) ; i++)
+    {
+         glm::vec4 ce_ = m_mesh0->getCE(i);
+         std::cout << " " << std::setw(3) << i 
+                   << " " << ( i == target ? "**" : "  " ) 
+                   << std::setw(50) << nodelib->getLVName(i)
+                   << " " 
+                   << gpresent( "ce", ce_ )
+                   
+                   ;
+    }
+
+    glm::vec4 ce = m_mesh0->getCE(target);
+
+
+    LOG(fatal)<<"OpticksGeometry::setTarget " 
              << " based on CenterExtent from m_mesh0 "
              << " target " << target 
              << " aim " << aim

@@ -83,7 +83,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltf(0),
        m_gltftarget(0),
        m_lodconfig("levels=2,verbosity=3"),
-       m_lod(0)
+       m_lod(0),
+       m_target(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -684,6 +685,11 @@ void OpticksCfg<Listener>::init()
        ("lod",  boost::program_options::value<int>(&m_lod), lod );
 
 
+   char target[128];
+   snprintf(target,128, "Integer controlling center_extent target. Default %d ", m_target );
+   m_desc.add_options()
+       ("target",  boost::program_options::value<int>(&m_target), target );
+
 
 
 
@@ -1143,6 +1149,13 @@ template <class Listener>
 int OpticksCfg<Listener>::getLOD()
 {
     return m_lod ; 
+}
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getTarget()
+{
+    return m_target ; 
 }
 
 

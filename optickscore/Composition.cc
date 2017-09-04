@@ -10,6 +10,7 @@
 #include <climits>
 
 #include <boost/math/constants/constants.hpp>
+#include "BStr.hh"
 #include "NGLM.hpp"
 
 
@@ -130,8 +131,8 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 Composition::Composition()
   :
-  m_model_to_world(),
-  m_world_to_model(),
+  m_model2world(),
+  m_world2model(),
   m_extent(1.0f),
   m_center_extent(),
   m_pickphoton(0,0,0,0), 
@@ -326,11 +327,11 @@ glm::vec4& Composition::getParam()
 }
 glm::mat4& Composition::getModelToWorld()
 {
-    return m_model_to_world ; 
+    return m_model2world ; 
 }
 glm::mat4& Composition::getWorldToModel()
 {
-    return m_world_to_model ; 
+    return m_world2model ; 
 }
 
 
@@ -762,19 +763,19 @@ unsigned int Composition::tick()
 
 std::string Composition::getEyeString()
 {
-    glm::vec4 eye  = m_view->getEye(m_model_to_world);
+    glm::vec4 eye  = m_view->getEye(m_model2world);
     return gformat(eye) ;
 }
 
 std::string Composition::getLookString()
 {
-    glm::vec4 look  = m_view->getLook(m_model_to_world);
+    glm::vec4 look  = m_view->getLook(m_model2world);
     return gformat(look) ;
 }
 
 std::string Composition::getGazeString()
 {
-    glm::vec4 gaze  = m_view->getGaze(m_model_to_world);
+    glm::vec4 gaze  = m_view->getGaze(m_model2world);
     return gformat(gaze) ;
 }
 
@@ -984,8 +985,8 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
 
     glm::vec3 isc(1.f/ce.w);
 
-    m_model_to_world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
-    m_world_to_model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
+    m_model2world = glm::scale(glm::translate(glm::mat4(1.0), tr), sc); 
+    m_world2model = glm::translate( glm::scale(glm::mat4(1.0), isc), -tr);   // see tests/CompositionTest.cc
 
 
     LOG(info) << "Composition::setCenterExtent"
@@ -993,8 +994,8 @@ void Composition::setCenterExtent(const glm::vec4& ce, bool autocam)
               ;
 
     LOG(debug) << "Composition::setCenterExtent"
-              << " model_to_world " << gformat(m_model_to_world)
-              << " world_to_model " << gformat(m_world_to_model)
+              << " model2world " << gformat(m_model2world)
+              << " world2model " << gformat(m_world2model)
               ;
 
     m_extent = ce.w ; 
@@ -1033,10 +1034,10 @@ void Composition::setLookW(const glm::vec4& lookw)
     glm::vec4 _lookw(lookw);
     _lookw.w = 1.0f ; 
 
-    glm::vec4 look = m_world_to_model * _lookw ; 
+    glm::vec4 look = m_world2model * _lookw ; 
 
     LOG(debug) << "Composition::setLookW" 
-               << " world_to_model " << gformat(m_world_to_model) 
+               << " world2model " << gformat(m_world2model) 
                << " lookw: " << gformat(lookw)
                << " look: " << gformat(look)
                ;
@@ -1048,10 +1049,10 @@ void Composition::setEyeW(const glm::vec4& eyew)
 {
     glm::vec4 _eyew(eyew);
     _eyew.w = 1.0f ; 
-    glm::vec4 eye = m_world_to_model * _eyew ; 
+    glm::vec4 eye = m_world2model * _eyew ; 
 
     LOG(debug) << "Composition::setEyeW" 
-               << " world_to_model " << gformat(m_world_to_model) 
+               << " world2model " << gformat(m_world2model) 
                << " eyew: " << gformat(eyew)
                << " eye: " << gformat(eye)
                ;
@@ -1066,11 +1067,11 @@ void Composition::setUpW(const glm::vec4& upw)
     _upw.w = 0.0f ; 
     _upw *= m_extent ; // scale length of up vector
 
-    glm::vec4 up = m_world_to_model * _upw ; 
+    glm::vec4 up = m_world2model * _upw ; 
     glm::vec4 upn = glm::normalize(up) ;
 
     LOG(info)  << "Composition::setUpW" 
-               << " world_to_model " << gformat(m_world_to_model) 
+               << " world2model " << gformat(m_world2model) 
                << " upw: " << gformat(upw)
                << " up: " << gformat(up)
                << " upn: " << gformat(upn)
@@ -1097,7 +1098,7 @@ void Composition::setEyeGUI(const glm::vec3& gui)
     eyew.z = m_extent*gui.z ;  
     eyew.w = 1.0f ;  
 
-    glm::vec4 eye = m_world_to_model * eyew ; 
+    glm::vec4 eye = m_world2model * eyew ; 
 
     LOG(info) << "Composition::setEyeGUI extent " << m_extent  ; 
     print(eyew, "eyew");
@@ -1117,11 +1118,11 @@ void Composition::aim(glm::vec4& ce, bool verbose)
      if(verbose)
      {
          print(ce, "Composition::aim ce (world frame)"); 
-         print(m_model_to_world, "Composition::aim m2w");
+         print(m_model2world, "Composition::aim m2w");
 
-         glm::vec4 eye  = m_view->getEye(m_model_to_world); // world frame
-         glm::vec4 look = m_view->getLook(m_model_to_world);
-         glm::vec4 gaze = m_view->getGaze(m_model_to_world);
+         glm::vec4 eye  = m_view->getEye(m_model2world); // world frame
+         glm::vec4 look = m_view->getLook(m_model2world);
+         glm::vec4 gaze = m_view->getGaze(m_model2world);
 
          print(eye,  "Composition::aim eye ");
          print(look, "Composition::aim look ");
@@ -1349,13 +1350,13 @@ void Composition::setChanged(bool changed)
 
 
 
-glm::vec4 Composition::transformWorldToEye(const glm::vec4& world)
+glm::vec4 Composition::transformWorldToEye(const glm::vec4& world) const 
 {
     return m_world2eye * world ; 
 }
 
 
-glm::vec4 Composition::transformEyeToWorld(const glm::vec4& eye)
+glm::vec4 Composition::transformEyeToWorld(const glm::vec4& eye) const 
 {
     //  m_world2eye/m_eye2world incorporates the trackballing and rotation
     return m_eye2world * eye ; 
@@ -1445,7 +1446,7 @@ void Composition::update()
     //      m_trackball
     //
     // view inputs are in model coordinates (model coordinates are all within -1:1)
-    // model_to_world matrix constructed from geometry center and extent
+    // model2world matrix constructed from geometry center and extent
     // is used to construct the lookat matrix 
     //
     //   eye frame : centered on the eye
@@ -1469,7 +1470,7 @@ void Composition::update()
 
 
 
-    m_view->getTransforms(m_model_to_world, m_world2camera, m_camera2world, m_gaze );   // model_to_world is input, the others are updated
+    m_view->getTransforms(m_model2world, m_world2camera, m_camera2world, m_gaze );   // model2world is input, the others are updated
 
     // the eye2look look2eye pair allows trackball rot to be applied around the look 
     m_gazelength = glm::length(m_gaze);
@@ -1499,11 +1500,11 @@ void Composition::update()
 
     m_world2clip_isnorm = m_world2clip * m_domain_isnorm  ;   // inverse snorm (signed normalization)
 
-    m_clipplane = m_clipper->getClipPlane(m_model_to_world) ;
+    m_clipplane = m_clipper->getClipPlane(m_model2world) ;
 
-    m_light_position = m_light->getPosition(m_model_to_world);
+    m_light_position = m_light->getPosition(m_model2world);
 
-    m_light_direction = m_light->getDirection(m_model_to_world);
+    m_light_direction = m_light->getDirection(m_model2world);
 
 
     //print(m_light_position, "Composition::update m_light_position");
@@ -1587,7 +1588,7 @@ void Composition::dumpAxisData(const char* msg)
     ax.dump(msg);
 }
 
-glm::vec3 Composition::getNDC(const glm::vec4& position_world)
+glm::vec3 Composition::getNDC(const glm::vec4& position_world) const 
 {
     const glm::vec4 position_eye = transformWorldToEye(position_world);
     glm::mat4 projection = m_camera->getProjection();
@@ -1595,11 +1596,84 @@ glm::vec3 Composition::getNDC(const glm::vec4& position_world)
     return glm::vec3(ndc.x/ndc.w, ndc.y/ndc.w, ndc.z/ndc.w) ; 
 }
 
-glm::vec3 Composition::getNDC2(const glm::vec4& position_world)
+glm::vec3 Composition::getNDC2(const glm::vec4& position_world) const 
 {
     glm::vec4 ndc = m_world2clip * position_world ; 
     return glm::vec3(ndc.x/ndc.w, ndc.y/ndc.w, ndc.z/ndc.w) ; 
 }
+
+
+void Composition::dumpFrustum(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    std::vector<glm::vec4> world ;
+    std::vector<std::string> labels ;
+    m_camera->getFrustumVert(world, labels) ;
+    dumpPoints(world, labels);
+}
+
+void Composition::dumpCorners(const char* msg) const 
+{   
+    LOG(info) << msg ; 
+    std::vector<glm::vec4> world ;
+    std::vector<std::string> labels ;
+    getCorners(world, labels);     
+    dumpPoints(world, labels);
+}
+
+
+void Composition::getCorners(std::vector<glm::vec4>& corners, std::vector<std::string>& labels) const 
+{
+    const glm::vec4& ce = m_center_extent ; 
+    corners.push_back( glm::vec4( ce.x       , ce.y        , ce.z       , 1.0 ) );
+    labels.push_back("center");
+    for(unsigned i=0 ; i < 8 ; i++)
+    {
+        corners.push_back( 
+            glm::vec4( 
+              i & 1 ? ce.x + ce.w : ce.x - ce.w ,  
+              i & 2 ? ce.y + ce.w : ce.y - ce.w ,
+              i & 4 ? ce.z + ce.w : ce.z - ce.w ,
+              1.f
+            ));
+        labels.push_back(BStr::concat<int>("corner-", i, NULL));
+    }
+}
+
+
+
+
+void Composition::dumpPoints(const std::vector<glm::vec4>& world, const std::vector<std::string>& labels) const 
+{
+   for(unsigned i=0 ; i < world.size() ; i++)
+   {
+       const glm::vec4& wpos = world[i] ;
+
+       glm::vec3 ndc = getNDC(wpos) ;
+       glm::vec3 ndc2 = getNDC2(wpos) ;
+
+       std::cout
+               << "(" << std::setw(2) << i << ") " 
+               << labels[i] << std::endl 
+               << gpresent("world",  wpos )
+               << gpresent("model",  m_world2model  * wpos )
+               << gpresent("camera", m_world2camera * wpos )
+               << gpresent("eye",    m_world2eye * wpos )
+               << gpresent("clip",   m_world2clip * wpos )
+               << gpresent("ndc",    ndc )
+               << gpresent("ndc2",   ndc2 )
+               << std::endl
+               ;
+
+   }
+}
+
+
+
+
+
+
+
 
 
 
@@ -1691,7 +1765,7 @@ void Composition::getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3
    glm::vec3 vnorm ;  
    glm::vec3 gaze ;  
 
-   m_view->getFocalBasis( m_model_to_world, e,unorm,vnorm, gaze );
+   m_view->getFocalBasis( m_model2world, e,unorm,vnorm, gaze );
 
    float tanYfov = m_camera->getTanYfov();
    float aspect = m_camera->getAspect();
@@ -1758,6 +1832,11 @@ void Composition::Details(const char* msg)
     print(m_camera2world, "m_camera2world");
     print(m_trackballing, "m_trackballing");
     print(m_itrackballing, "m_itrackballing");
+
+
+    std::cout << gpresent( "w2e(MV)", m_world2eye ) << std::endl ; 
+    std::cout << gpresent( "w2c(MVP)", m_world2clip ) << std::endl ; 
+
 }
 
 

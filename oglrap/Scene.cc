@@ -787,8 +787,20 @@ void Scene::render()
         if(raytraced) return ; 
     }
 
+    m_composition->update();
+
+    if(m_render_count < 1)
+    {
+        m_composition->Details("Scene::render.1st");
+        m_composition->dumpFrustum("Scene::render.1st");
+        m_composition->dumpCorners("Scene::render.1st");
+    }
+
+
     renderGeometry();
     renderEvent();
+
+    m_render_count++ ; 
 }
 
 
@@ -903,7 +915,6 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_altrecord_renderer(NULL),
             m_devrecord_renderer(NULL),
             m_photons(NULL),
-            //m_ggeo(NULL),
             m_geolib(NULL),
             m_mesh0(NULL),
             m_composition(NULL),
@@ -926,7 +937,8 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_initialized(false),
             m_time_fraction(0.f),
             m_instcull(true),
-            m_verbosity(0)
+            m_verbosity(0),
+            m_render_count(0)
 {
 
     init();

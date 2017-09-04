@@ -735,12 +735,22 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
 {
     assert(mms.size() > 0 );
 
+    unsigned nmm = mms.size();
+
     GMergedMesh* mm0 = mms[0] ; 
 
     GMergedMesh* com = new GMergedMesh( mm0->getIndex() ); 
-    com->setVerbosity(mm0 ? mm0->getVerbosity() : 0 );
 
-    for(unsigned i=0 ; i < mms.size() ; i++)
+    unsigned verbosity = mm0 ? mm0->getVerbosity() : 0 ;
+
+    LOG(info) << "GMergedMesh::MakeComposite"
+              << " verbosity " << verbosity 
+              << " nmm " << nmm 
+              ;
+
+    com->setVerbosity(verbosity );
+
+    for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = mms[i] ;
         com->countMergedMesh(mm, true);
@@ -748,7 +758,7 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
 
     com->allocate(); 
  
-    for(unsigned i=0 ; i < mms.size() ; i++)
+    for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = mms[i] ;
         com->mergeMergedMesh(mm, true);

@@ -13,14 +13,16 @@ void main()
     vec4 InstancePosition = InstanceTransform[3] ; 
     vec4 IClip = ModelViewProjection * InstancePosition ;    
 
-    /*     
+
+    /*
+         
     float f = 0.8f ; 
     objectVisible = 
          ( IClip.x < IClip.w*f && IClip.x > -IClip.w*f  ) &&
          ( IClip.y < IClip.w*f && IClip.y > -IClip.w*f  ) &&
          ( IClip.z < IClip.w*f && IClip.z > -IClip.w*f  ) ? 1 : 0 ; 
     
-    */
+    */ 
 
     //objectVisible = InstancePosition.y > 200.f ? 1 : 0 ; 
 

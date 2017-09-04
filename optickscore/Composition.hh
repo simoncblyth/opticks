@@ -272,8 +272,8 @@ class OKCORE_API Composition : public NConfigurable {
       void getEyeUVW_no_trackball(glm::vec3& eye, glm::vec3& U, glm::vec3& V, glm::vec3& W);
       void getLookAt(glm::mat4& lookat);
   public: 
-      glm::vec3 getNDC(const glm::vec4& position_world);
-      glm::vec3 getNDC2(const glm::vec4& position_world);
+      glm::vec3 getNDC(const glm::vec4& position_world) const ;
+      glm::vec3 getNDC2(const glm::vec4& position_world) const ;
       float getNDCDepth(const glm::vec4& position_world);
       float getClipDepth(const glm::vec4& position_world);
   private: 
@@ -302,8 +302,8 @@ class OKCORE_API Composition : public NConfigurable {
       float getFar();
   public:
       // position of the observer "Viewpoint" and the observed "Lookpoint" using m_eye_to_world/m_world_to_eye
-      glm::vec4 transformWorldToEye(const glm::vec4& world);
-      glm::vec4 transformEyeToWorld(const glm::vec4& eye);
+      glm::vec4 transformWorldToEye(const glm::vec4& world) const ;
+      glm::vec4 transformEyeToWorld(const glm::vec4& eye) const ;
       glm::vec4 getLookpoint();
       glm::vec4 getViewpoint();
       glm::vec4 getUpdir();
@@ -373,11 +373,15 @@ class OKCORE_API Composition : public NConfigurable {
       NPY<float>* getAxisData();
       MultiViewNPY* getAxisAttr();
       void dumpAxisData(const char* msg="Composition::dumpAxisData");
-
+  public:
+      void dumpFrustum(const char* msg="Composition::dumpFrustum") const ;
+      void dumpCorners(const char* msg="Composition::dumpCorners") const ;
+      void dumpPoints(const std::vector<glm::vec4>& world, const std::vector<std::string>& labels) const  ;
+      void getCorners(std::vector<glm::vec4>& corners, std::vector<std::string>& labels) const  ; 
   private:
       // inputs 
-      glm::mat4 m_model_to_world ; 
-      glm::mat4 m_world_to_model ; 
+      glm::mat4 m_model2world ; 
+      glm::mat4 m_world2model ; 
       float     m_extent ; 
       glm::vec4 m_center_extent ; 
       glm::vec4 m_domain_center_extent ; 

@@ -518,13 +518,7 @@ void Renderer::render()
 { 
     if( m_instlodcull_enabled )
     {
-        m_instlodcull->update_uniforms() ;
-        m_instlodcull->applyFork() ;
-        m_instlodcull->applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
-
-        if(m_draw_count < 3)
-        m_instlodcull->pullback() ;
-
+        m_instlodcull->launch();
     }
 
     glUseProgram(m_program);
@@ -559,11 +553,13 @@ void Renderer::render()
 
             tot_primcount += lod_primcount ; 
 
+            if(m_verbosity > 1)
             std::cout << desc() 
                       << " Draw:" << draw.desc() 
                       << " lod_primcount " << lod_primcount
                      << std::endl ; 
         }
+        if(m_verbosity > 1)
         std::cout << desc() 
                   << " tot_primcount " << tot_primcount
                   << " m_itransform_count " << m_itransform_count
@@ -704,7 +700,8 @@ void Renderer::update_uniforms()
 {
     if(m_composition)
     {
-        m_composition->update() ;  // huh : why repeat this in every renderer ?
+        // m_composition->update() ;  
+        //    moved up to Scene::render repeat this in every renderer ?
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
         glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());

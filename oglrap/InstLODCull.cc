@@ -35,8 +35,9 @@ InstLODCull::InstLODCull(const char* tag, const char* dir, const char* incl_path
     m_dst(NULL),
     m_num_instance(0),
     m_num_lod(0),
+    m_launch_count(0),
     //m_lodcut(-0.5f, 0.5f, 0.f, 0.f ),
-    m_lodcut(-500.f, 0.f, 0.f, 0.f ),
+    m_lodcut(-5000.f, 5000.f, 0.f, 0.f ),
     m_mv_location(-1),
     m_mvp_location(-1),
     m_lodcut_location(-1)
@@ -93,6 +94,7 @@ void InstLODCull::applyFork()
 {
     // http://rastergrid.com/blog/2010/10/gpu-based-dynamic-geometry-lod/
 
+    if(m_verbosity > 1)
     LOG(info) << "InstLODCull::applyFork"
               << " m_num_lod " << m_num_lod
               << " m_num_instance " << m_num_instance
@@ -123,31 +125,8 @@ void InstLODCull::applyFork()
 
     for (unsigned i=0; i< m_num_lod; i++)
         glGetQueryObjectiv(m_lodQuery[i], GL_QUERY_RESULT, &m_dst->at(i)->query_count);
-
-   //  http://apprize.info/programming/opengl_1/13.html
-   //
-   //    querying will likely stall the pipeline
-   //    to avoid that could check if the result is available 
-   //    first with GL_QUERY_RESULT_AVAILABLE
-   //    before making the actual query ...
-   //
-   //    The outcome of applyFork is updated instance buffers for 
-   //    each LOD and corresponding counts..   Need to know
-   //    the counts to properly use these buffers.
-   //
-   //    
-   //    But how to organize deferred querying ?
-   //
-   //    Hmm would be complicated... would need to have a 2nd set of
-   //    instance buffers and ping-pong between them ?
-   //
-   //    Actually maybe not so complicated ... could simply not run applyFork
-   //    for every frame ... it dont matter if the LOD piles are a bit behind
-   //
-
-
+  
 }
-
 
 
 void InstLODCull::applyForkStreamQueryWorkaround()
@@ -170,7 +149,7 @@ void InstLODCull::applyForkStreamQueryWorkaround()
 
 */
 
-
+    if(m_verbosity > 1)
     LOG(info) << "InstLODCull::applyForkStreamQueryWorkaround"
               << " m_src->num_items " << m_src->num_items
               ;
@@ -180,9 +159,9 @@ void InstLODCull::applyForkStreamQueryWorkaround()
 
     unsigned i0 = 1 ; // no need to repeat stream 0 query, that one works
 
-    // perhaps need a full set of devnull buffers ?
-
     // pointing tranform feedback at devnull : to avoid data movement 
+    // is done via the m_workaroundVAO
+
     //for (unsigned i=i0; i < m_num_lod ; i++)
     //    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, i, m_dst_devnull->at(i)->id );
 
@@ -200,10 +179,6 @@ void InstLODCull::applyForkStreamQueryWorkaround()
     for (unsigned i=i0 ; i < m_num_lod ; i++)
         glGetQueryObjectiv(m_lodQuery[i], GL_QUERY_RESULT, &m_dst->at(i)->query_count);
 
-    // back to standard stream buffers
-    //for (unsigned i=i0 ; i < m_num_lod ; i++)
-    //    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, i, m_dst->at(i)->id );
-
 }
 
 
@@ -216,7 +191,6 @@ void InstLODCull::pullback()
     for(unsigned i=0 ; i < m_num_lod ; i++)
     {
         RBuf* buf = m_dst->at(i) ;
-
         buf->pullback(i);
         buf->dump("InstLODCull::pullback");
     }
@@ -324,8 +298,29 @@ void InstLODCull::initShader()
 
 
 
-void InstLODCull::update_uniforms()   // hmm need MVP too 
+void InstLODCull::launch()
+{   
+    update_uniforms() ;
+    applyFork() ;
+    applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
+
+/*
+    if(m_launch_count < 3)
+    {
+        LOG(info) << "InstLODCull::launch count " << m_launch_count ; 
+        pullback() ;
+    }
+*/
+
+    m_launch_count++ ;
+}
+
+
+
+void InstLODCull::update_uniforms()   
 {
+    glUseProgram(m_program);
+
     glUniform4fv( m_lodcut_location, 1, glm::value_ptr(m_lodcut));
     glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());

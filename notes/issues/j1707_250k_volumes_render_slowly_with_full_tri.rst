@@ -55,6 +55,49 @@ Next
   as its that which is using the forked buffers to render from 
 
 
+Frustum Cull Kills All
+-------------------------
+
+::
+
+    In [1]: t = np.load("/usr/local/opticks/opticksdata/export/juno1707/g4_00.a181a603769c1f98ad927e7367c7aa51.dae/GMergedMesh/1/itransforms.npy")
+
+    In [2]: t.shape
+    Out[2]: (36572, 4, 4)
+
+    In [3]: t[0]
+    Out[3]: 
+    array([[    -0.9822,     -0.1732,      0.0732,      0.    ],
+           [    -0.1736,      0.9848,      0.    ,      0.    ],
+           [    -0.0721,     -0.0127,     -0.9973,      0.    ],
+           [  1402.84  ,    247.359 ,  19397.8008,      1.    ]], dtype=float32)
+
+    In [6]: t[:,3,0]
+    Out[6]: array([ 1402.84 ,  1233.64 ,   915.64 , ...,  -529.089,    -0.   ,   529.089], dtype=float32)
+
+    In [7]: t[:,3,0].min()
+    Out[7]: -19449.4
+
+    In [8]: t[:,3,0].max()
+    Out[8]: 19449.4
+
+
+    In [13]: plt.hist(t[:,3,0], bins=100)   ## uniform across the globe
+
+    In [17]: t[:,3,1].max()
+    Out[17]: 19447.5
+
+    In [18]: t[:,3,1].min()
+    Out[18]: -19447.5
+
+    In [19]: t[:,3,2].min()
+    Out[19]: -19447.6
+
+    In [20]: t[:,3,2].max()
+    Out[20]: 19397.801
+
+
+
 
 
 Test Commands
@@ -68,6 +111,8 @@ Test Commands
         ## currently just tests that InstLODCull shader compiles 
 
     op --j1707 --gltf 3 --tracer --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger 
+
+        ## 
 
 
 

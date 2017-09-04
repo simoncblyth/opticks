@@ -417,6 +417,29 @@ std::string gpresent_label(const char* label, unsigned lwid)
     return ss.str();
 }
 
+
+
+
+
+std::string gfromstring(const glm::mat4& m, bool flip)
+{
+    std::stringstream ss ; 
+
+    ss << "np.fromstring("  ;
+    ss << "\"" ;
+
+    for(int i=0 ; i < 4 ; i++)
+    for(int j=0 ; j < 4 ; j++)
+        ss << ( flip ? m[j][i] : m[i][j] ) << " " ; 
+        
+    ss << "\"" ;
+    ss << ", dtype=np.float32, sep=\" \").reshape(4,4) " ;
+
+    return ss.str();
+}
+
+
+
 std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )
 {
     std::stringstream ss ; 
@@ -426,8 +449,13 @@ std::string gpresent(const char* label, const glm::mat4& m, unsigned prec, unsig
         for(int j=0 ; j < 4 ; j++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << ( flip ? m[j][i] : m[i][j] ) << " " ; 
         ss << std::endl ; 
     }
+    ss << gfromstring(m, flip) <<  std::endl ; 
     return ss.str();
 }
+
+
+
+
 
 
 std::string gpresent(const char* label, const glm::mat3& m, unsigned prec, unsigned wid, unsigned lwid, bool flip )

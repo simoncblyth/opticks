@@ -469,7 +469,7 @@ void Rdr::update_uniforms()
 
     if(m_composition)
     {
-        m_composition->update() ;
+        // m_composition->update() ; moved up to Scene::render
 
         glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
 

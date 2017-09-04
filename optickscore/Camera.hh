@@ -195,11 +195,14 @@ class OKCORE_API Camera : public NConfigurable  {
      void setBasis(float basis);
      void setYfov(float yfov_degrees);  // alternative way to set zoom (= 1./tan(yfov/2))
   public:
-     float getBasis();
-     float getNear();
-     float getFar();
-     float getZoom();
-     float getScale();
+     float getBasis() const ;
+     float getNear() const ;
+     float getFar() const ;
+     float getQ() const ;
+     float getZoom() const ;
+     float getScale() const ;
+
+     void getFrustumVert(std::vector<glm::vec4>& vert, std::vector<std::string>& labels ) const  ; 
   public:
      float getNearMin();
      float getNearMax();
@@ -216,16 +219,16 @@ class OKCORE_API Camera : public NConfigurable  {
      float* getScalePtr();
      bool* getParallelPtr();
   public:
-     float getDepth();
+     float getDepth() const ;
   public:
-     float getYfov();
-     float getTanYfov();
+     float getYfov() const ;
+     float getTanYfov() const ;
   public:
      // the below top/bottom/left/right formerly scaled with  m_near,  now scaling with m_scale
-     float getTop();
-     float getBottom();
-     float getLeft();
-     float getRight();
+     float getTop() const ;
+     float getBottom() const ;
+     float getLeft() const ;
+     float getRight() const ;
   public:
      void Print(const char* msg="Camera::Print");
      void Summary(const char* msg="Camera::Summary");

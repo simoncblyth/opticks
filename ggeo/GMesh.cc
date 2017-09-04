@@ -387,6 +387,14 @@ gfloat4 GMesh::getCenterExtent(unsigned int index) const
     return m_center_extent[index] ;
 }
 
+glm::vec4 GMesh::getCE(unsigned int index) const 
+{
+    gfloat4 ce_ = getCenterExtent(index);
+    glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ) ; 
+    return ce  ;
+}
+
+
 
 
 gbbox GMesh::getBBox(unsigned int index) const 

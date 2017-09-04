@@ -626,6 +626,7 @@ int  Opticks::getLOD()
 {
     return m_cfg->getLOD(); 
 }
+
 NLODConfig* Opticks::getLODConfig()
 {
     if(m_lod_config == NULL)
@@ -634,8 +635,6 @@ NLODConfig* Opticks::getLODConfig()
     }
     return m_lod_config ; 
 }
-
-
 
 
 
@@ -662,7 +661,17 @@ bool Opticks::isGLTF()
 {
     return getGLTF() > 0 ; 
 }
-  
+ 
+
+int  Opticks::getTarget()
+{
+    return m_cfg->getTarget(); 
+}
+
+
+
+
+ 
 unsigned Opticks::getVerbosity() const 
 {
     return m_verbosity ; 

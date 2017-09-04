@@ -89,6 +89,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getLODConfig();
      int                getLOD();
+     int                getTarget();
 
 
 
@@ -176,6 +177,7 @@ private:
      std::string m_lodconfig ;
      int         m_lod ;  
 
+     int         m_target ;  
 
 
 

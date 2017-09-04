@@ -313,26 +313,20 @@ void Camera::setScale(float scale)
 
 
 
-float Camera::getBasis(){ return m_basis ; } 
+float Camera::getBasis() const { return m_basis ; } 
+float Camera::getNear() const  {  return m_near ; }
+float Camera::getFar() const {   return m_far ;  }
+float Camera::getQ()  const {  return m_far/m_near  ; }
+float Camera::getZoom() const {  return m_zoom ; } 
+float Camera::getScale() const { return m_parallel ? m_scale  : m_near ; }
 
-float Camera::getNear(){  return m_near ; }
-float Camera::getFar(){   return m_far ;  }
-float Camera::getZoom(){  return m_zoom ; } 
+float Camera::getDepth() const {   return m_far - m_near ; }
+float Camera::getTanYfov() const { return 1.f/m_zoom ; }  // actually tan(Yfov/2)
 
-
-
-
-
-
-float Camera::getScale(){ return m_parallel ? m_scale  : m_near ; }
-
-float Camera::getDepth(){   return m_far - m_near ; }
-float Camera::getTanYfov(){ return 1.f/m_zoom ; }  // actually tan(Yfov/2)
-
-float Camera::getTop(){    return getScale() / m_zoom ; }
-float Camera::getBottom(){ return -getScale() / m_zoom ; }
-float Camera::getLeft(){   return -m_aspect * getScale() / m_zoom ; } 
-float Camera::getRight(){  return  m_aspect * getScale() / m_zoom ; } 
+float Camera::getTop() const {    return getScale() / m_zoom ; }
+float Camera::getBottom() const { return -getScale() / m_zoom ; }
+float Camera::getLeft() const {   return -m_aspect * getScale() / m_zoom ; } 
+float Camera::getRight() const {  return  m_aspect * getScale() / m_zoom ; } 
 
 void Camera::setYfov(float yfov)
 {
@@ -345,7 +339,7 @@ void Camera::setYfov(float yfov)
     float zoom = 1.f/tan(yfov*0.5f*pi/180.f );
     setZoom( zoom );
 }
-float Camera::getYfov()
+float Camera::getYfov() const 
 {
     float pi = boost::math::constants::pi<float>() ;
     return 2.f*atan(1.f/m_zoom)*180.f/pi ;
@@ -507,6 +501,43 @@ glm::mat4 Camera::getFrustum()
 {
     return glm::frustum( getLeft(), getRight(), getBottom(), getTop(), getNear(), getFar() );
 }
+
+
+
+void Camera::getFrustumVert(std::vector<glm::vec4>& vert, std::vector<std::string>& labels) const 
+{
+    /*
+      Near and far are defined as positive 
+      but the position of near and far planes
+      in the camera frame is along -ve z at 
+    
+              z = -near 
+              z = -far 
+    */
+
+    float near_ = getNear();
+    float far_ = getFar();
+    float q = getQ();
+
+    vert.push_back( glm::vec4( getLeft(),  getBottom(), -near_ , 1.f ) );
+    labels.push_back("near-bottom-left");
+    vert.push_back( glm::vec4( getRight(), getBottom(), -near_ , 1.f ) );
+    labels.push_back("near-bottom-right");
+    vert.push_back( glm::vec4(  getRight(), getTop(),    -near_ , 1.f ) );
+    labels.push_back("near-top-right");
+    vert.push_back( glm::vec4( getLeft(),  getTop(),    -near_ , 1.f ) );
+    labels.push_back("near-top-left");
+
+    vert.push_back( glm::vec4( q*getLeft(),  q*getBottom(), -far_  , 1.f ) );
+    labels.push_back("far-bottom-left");
+    vert.push_back( glm::vec4( q*getRight(), q*getBottom(), -far_  , 1.f ) );
+    labels.push_back("far-bottom-right");
+    vert.push_back( glm::vec4( q*getRight(), q*getTop(),    -far_  , 1.f ) );
+    labels.push_back("far-top-right");
+    vert.push_back( glm::vec4( q*getLeft(),  q*getTop(),    -far_  , 1.f ) );
+    labels.push_back("far-top-left");
+}
+
 
 
 

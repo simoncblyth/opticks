@@ -257,8 +257,8 @@ class GGEO_API GMesh : public GDrawable {
   public:
       gfloat3* getCenter();  // TODO: move all users to CenterExtent
       gfloat4  getCenterExtent(unsigned int index) const ;
+      glm::vec4 getCE(unsigned int index) const ;
       //glm::vec4 getCenterExtent(unsigned int index);
-
 
       gbbox    getBBox(unsigned int index) const ;
       gbbox*   getBBoxPtr();
