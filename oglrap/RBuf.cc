@@ -177,6 +177,16 @@ void RBuf::pullback(unsigned stream )
 
 
 
+void RBuf::bind(unsigned stream )
+{
+    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, stream, this->id ); 
+}
+
+
+
+
+
+
 RBuf* RBuf::Make(const std::vector<glm::vec4>& vert) 
 {     
     unsigned num_item = vert.size();

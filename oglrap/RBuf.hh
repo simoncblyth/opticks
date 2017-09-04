@@ -46,6 +46,7 @@ struct OGLRAP_API RBuf
     void upload(GLenum target, GLenum usage );
     void uploadNull(GLenum target, GLenum usage );
     void pullback(unsigned stream );
+    void bind(unsigned stream );
 
     std::string desc() const ;
     std::string brief() const ;

@@ -105,9 +105,6 @@ void InstLODCull::applyFork()
     glUseProgram(m_program);
     glBindVertexArray(m_forkVAO);
 
-    //for (unsigned i=0; i< m_num_lod ; i++) 
-    //    glBindBufferBase(GL_TRANSFORM_FEEDBACK_BUFFER, i, m_dst->at(i)->id );
-
 
     glEnable(GL_RASTERIZER_DISCARD);
 
@@ -181,20 +178,6 @@ void InstLODCull::applyForkStreamQueryWorkaround()
 
 }
 
-
-
-void InstLODCull::pullback()
-{
-    m_src->pullback(0);
-    m_src->dump("InstLODCull::pullback.src");
-
-    for(unsigned i=0 ; i < m_num_lod ; i++)
-    {
-        RBuf* buf = m_dst->at(i) ;
-        buf->pullback(i);
-        buf->dump("InstLODCull::pullback");
-    }
-}
 
 
 GLuint InstLODCull::createForkVertexArray(RBuf* src, RBuf4* dst) 
@@ -305,15 +288,32 @@ void InstLODCull::launch()
     applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
 
 
+/*
     if(m_launch_count < 3)
     {
         LOG(info) << "InstLODCull::launch count " << m_launch_count ; 
         pullback() ;
     }
+*/
 
+    m_dst->bind(); // bind back the m_dst buffers after the workaround targetting m_dst_devnull
 
     m_launch_count++ ;
 }
+
+
+
+
+void InstLODCull::pullback()
+{
+    m_src->pullback(0);
+    m_src->dump("InstLODCull::pullback.src");
+    m_dst->pullback( "InstLODCull::pullback.m_dst");   
+}
+
+
+
+
 
 
 

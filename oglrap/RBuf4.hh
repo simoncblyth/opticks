@@ -27,6 +27,8 @@ struct OGLRAP_API RBuf4
 
     void uploadNull(GLenum target, GLenum usage );
  
+    void pullback(const char* msg="RBuf4::pullback");
+    void bind();
 
 
 };

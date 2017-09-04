@@ -128,6 +128,28 @@ void RBuf4::uploadNull(GLenum target, GLenum usage )
     } 
 }
 
+void RBuf4::pullback(const char* msg)
+{
+    for(int i=0 ; i < 4 ; i++)
+    {
+        RBuf* b = at(i) ; 
+        if(b)
+        {
+            b->pullback(i);
+            b->dump(msg);
+        }
+    }
+}
+
+void RBuf4::bind()
+{
+    for(int i=0 ; i < 4 ; i++)
+    {
+        RBuf* b = at(i) ; 
+        if(b) b->bind(i);
+    }
+}
+
 
 
 
