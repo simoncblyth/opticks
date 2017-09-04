@@ -397,8 +397,7 @@ void Scene::initRenderers()
 
     m_colors = new Colors(m_device);
 
-
-    m_context = new RContext ; 
+    m_context = new RContext ;  // UBO provisioning for InstLODCull
 
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
     m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
@@ -414,7 +413,7 @@ void Scene::initRenderers()
 
         if(m_instcull)
         {
-            m_instlodcull[i] = new InstLODCull(m_context, "inrmcull", m_shader_dir, m_shader_incl_path);
+            m_instlodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path);
             m_instlodcull[i]->setVerbosity(1);
             m_instance_renderer[i]->setInstLODCull(m_instlodcull[i]);
         }
@@ -463,6 +462,8 @@ void Scene::initRenderers()
 void Scene::setComposition(Composition* composition)
 {
     // HMM better to use hub ? to avoid this lot ?
+    //     actually best to move to 1 or 2 UBO 
+    //     updated from Scene, then most Renderers wont need composition ? 
 
     m_composition = composition ; 
 
@@ -481,9 +482,6 @@ void Scene::setComposition(Composition* composition)
     {
         if(m_instance_renderer[i])
             m_instance_renderer[i]->setComposition(composition);
-
-        if(m_instlodcull[i])
-            m_instlodcull[i]->setComposition(composition);
 
         if(m_bbox_renderer[i])
             m_bbox_renderer[i]->setComposition(composition);
@@ -591,6 +589,10 @@ void Scene::uploadGeometry()
     LOG(info) << "Scene::uploadGeometry"
               << " nmm " << nmm
               ;
+
+    m_context->init();  // UBO setup
+
+
 
     for(unsigned int i=0 ; i < nmm ; i++)
     {
@@ -792,7 +794,13 @@ void Scene::render()
         if(raytraced) return ; 
     }
 
+
     m_composition->update();
+    const glm::vec4& lodcut = m_composition->getLODCut();
+    const glm::mat4& world2eye = m_composition->getWorld2Eye();
+    const glm::mat4& world2clip = m_composition->getWorld2Clip(); 
+    m_context->update( world2clip, world2eye , lodcut ); 
+
 
 /*
     if(m_render_count < 1)

@@ -102,7 +102,7 @@ Frustum Cull Kills All
 Interference between InstLODCull when doing to more than one instance
 ------------------------------------------------------------------------
 
-Getting sensible render with avoid two active InstLODCull
+Getting sensible render only when avoid two active InstLODCull
 
 ::
 
@@ -114,6 +114,11 @@ Getting sensible render with avoid two active InstLODCull
 
     op --j1707 --gltf 3 --tracer  --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.7,0.7,0. --rendermode +bb0,+in1,+in2,+in3,-global
 
+
+
+Hmm, the culling was organized within each instance renderer...
+perhaps doing all the culling (transform feedback) up front 
+ie before any rendering of this frame can avoid going haywire.
 
 
 

@@ -295,6 +295,7 @@ class OKCORE_API Composition : public NConfigurable {
 
   public: 
       // getters of inputs 
+      const glm::vec4& getLODCut() const ;
       glm::mat4& getModelToWorld();
       glm::mat4& getWorldToModel();
       float getExtent();
@@ -380,6 +381,7 @@ class OKCORE_API Composition : public NConfigurable {
       void getCorners(std::vector<glm::vec4>& corners, std::vector<std::string>& labels) const  ; 
   private:
       // inputs 
+      glm::vec4 m_lodcut ; 
       glm::mat4 m_model2world ; 
       glm::mat4 m_world2model ; 
       float     m_extent ; 

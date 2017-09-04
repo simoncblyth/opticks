@@ -131,6 +131,7 @@ const char* Composition::getGeometryStyleName(Composition::GeometryStyle_t style
 
 Composition::Composition()
   :
+  m_lodcut(5000.f,10000.f,0.f,0.f),
   m_model2world(),
   m_world2model(),
   m_extent(1.0f),
@@ -333,6 +334,13 @@ glm::mat4& Composition::getWorldToModel()
 {
     return m_world2model ; 
 }
+
+const glm::vec4& Composition::getLODCut() const 
+{
+    return m_lodcut ; 
+}
+
+
 
 
 float Composition::getExtent()

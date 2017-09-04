@@ -3,7 +3,6 @@
 #include <GL/glew.h>
 
 #include "G.hh"
-#include "RContext.hh"
 #include "RBuf.hh"
 #include "RBuf4.hh"
 #include "Composition.hh"
@@ -22,30 +21,15 @@ InstLODCull::~InstLODCull()
 {
 }
 
-void InstLODCull::setComposition(Composition* composition)
-{
-    m_composition = composition ;
-}
 
-
-InstLODCull::InstLODCull(RContext* context, const char* tag, const char* dir, const char* incl_path)
+InstLODCull::InstLODCull(const char* tag, const char* dir, const char* incl_path)
     :
     RendererBase(tag, dir, incl_path, true),
-    m_context(context),
-    m_composition(NULL),
     m_src(NULL),
     m_dst(NULL),
     m_num_instance(0),
     m_num_lod(0),
-    m_launch_count(0),
-    //m_lodcut(-0.5f, 0.5f, 0.f, 0.f ),
-    //m_lodcut(-5000.f, 5000.f, 0.f, 0.f )
-    m_lodcut(5000.f, 10000.f, 0.f, 0.f )
-
-   // m_mv_location(-1),
-   // m_mvp_location(-1),
-   // m_lodcut_location(-1)
-    // hmm if lowest LOD dist is less than near, never get to see the best level 
+    m_launch_count(0)
 {
 }
 
@@ -68,9 +52,6 @@ void InstLODCull::setupFork(RBuf* src, RBuf4* dst, RBuf4* dst_devnull )
     // invoked from Renderer::upload, for each LOD level generate output count queries 
     // and bind tranform feedback stream output buffers, 
     // create single forking VAO
-
-    m_context->init();
-
 
     m_src = src ; 
     m_dst = dst ; 
@@ -111,7 +92,6 @@ void InstLODCull::applyFork()
 
     glUseProgram(m_program);
     glBindVertexArray(m_forkVAO);
-
 
     glEnable(GL_RASTERIZER_DISCARD);
 
@@ -240,8 +220,6 @@ GLuint InstLODCull::createForkVertexArray(RBuf* src, RBuf4* dst)
     G::ErrCheck("InstLODCull::createForkVertexArray.4", true);
     return vertexArray;
 }
-
-
   
 void InstLODCull::initShader()
 {
@@ -279,83 +257,29 @@ void InstLODCull::initShader()
     link_shader();
     G::ErrCheck("InstLODCull::initShader.2", true );
 
-    check_uniforms();
-    G::ErrCheck("InstLODCull::initShader.3", true );
-
     if(m_verbosity > 1)
     LOG(info) << "InstLODCull::initShader DONE " << desc() ; 
 } 
 
 
-
 void InstLODCull::launch()
 {   
-    update_uniforms() ;
     applyFork() ;
-    applyForkStreamQueryWorkaround() ;  // workaround gives haywire render
-
-
-/*
-    if(m_launch_count < 3)
-    {
-        LOG(info) << "InstLODCull::launch count " << m_launch_count ; 
-        pullback() ;
-    }
-*/
-
+    applyForkStreamQueryWorkaround() ;  
     m_dst->bind(); // bind back the m_dst buffers after the workaround targetting m_dst_devnull
 
+    //if(m_launch_count < 3) pullback() ;
     m_launch_count++ ;
 }
 
 
-
-
 void InstLODCull::pullback()
 {
+    LOG(info) << "InstLODCull::pullback launch_count " << m_launch_count ; 
     m_src->pullback(0);
     m_src->dump("InstLODCull::pullback.src");
     m_dst->pullback( "InstLODCull::pullback.m_dst");   
 }
 
 
-void InstLODCull::update_uniforms()   
-{
-    const glm::mat4& world2eye = m_composition->getWorld2Eye();
-    const glm::mat4& world2clip = m_composition->getWorld2Clip();
- 
-    m_context->update( world2clip, world2eye , m_lodcut ); 
-
-/*
-    glUseProgram(m_program);
-    glUniform4fv( m_lodcut_location, 1, glm::value_ptr(m_lodcut));
-    glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
-    glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
-*/
-
-}
-
-
-void InstLODCull::check_uniforms()
-{
-
-/*
-    bool required = true ;
-    m_shader->dumpUniforms();
-
-    m_lodcut_location = m_shader->uniform("LODCUT", required );
-    m_mvp_location = m_shader->uniform("ModelViewProjection", required); 
-    m_mv_location =  m_shader->uniform("ModelView",           required);      
-
-    LOG(info) << "InstLODCull::check_uniforms"
-              << " lodcut_location " << m_lodcut_location
-              << " mvp_location " << m_mvp_location
-              << " mv_location " << m_mv_location
-              ;
-
-
-    G::ErrCheck("InstLODCull::check_uniforms", true);
-*/
-     
-}
 

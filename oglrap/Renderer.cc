@@ -569,6 +569,9 @@ void Renderer::render()
 { 
     if( m_instlodcull_enabled )
     {
+
+
+
         m_instlodcull->launch();
     }
 
