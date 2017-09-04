@@ -121,6 +121,7 @@ set(SOURCES
 
     Renderer.cc
     InstLODCull.cc
+    RContext.cc
     RendererCfg.cc
     AxisApp.cc
     OpticksViz.cc

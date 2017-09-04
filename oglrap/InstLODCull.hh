@@ -3,6 +3,7 @@
 #include <string>
 
 
+struct RContext ; 
 struct RBuf ; 
 struct RBuf4 ; 
 class Composition ; 
@@ -34,7 +35,7 @@ class OGLRAP_API InstLODCull : public RendererBase
        enum { LOD_MAX = 4 } ; 
        static const unsigned LOC_InstanceTransform ;
 
-       InstLODCull(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
+       InstLODCull(RContext* context, const char* tag, const char* dir=NULL, const char* incl_path=NULL);
        virtual ~InstLODCull();
 
        void setComposition(Composition* composition);
@@ -51,6 +52,7 @@ class OGLRAP_API InstLODCull : public RendererBase
        void applyForkStreamQueryWorkaround();
        void pullback();
   private:
+       RContext*    m_context ; 
        Composition* m_composition ;
        RBuf*        m_src ; 
        RBuf4*       m_dst ; 
@@ -68,9 +70,9 @@ class OGLRAP_API InstLODCull : public RendererBase
        glm::vec4    m_lodcut ;    // hmm if lowest LOD dist is less than near, never get to see the best level 
 
 
-       GLint  m_mv_location ;
-       GLint  m_mvp_location ;
-       GLint  m_lodcut_location ; 
+       //GLint  m_mv_location ;
+       //GLint  m_mvp_location ;
+       //GLint  m_lodcut_location ; 
      
 
 

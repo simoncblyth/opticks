@@ -16,7 +16,7 @@ class OGLRAP_API Prog {
 
         friend class InstLODCull ; 
    public:
-      Prog(const char* basedir, const char* tag, const char* incl_path=NULL);
+      Prog(const char* basedir, const char* tag, const char* incl_path=NULL, bool ubo=false );
 
       void setNoFrag(bool nofrag);
       void setVerbosity(unsigned verbosity);
@@ -64,6 +64,7 @@ class OGLRAP_API Prog {
       bool                     m_live ;
       char*                    m_tagdir ;
       const char*              m_tag  ;
+      bool                     m_ubo ; 
       GLuint                   m_id ;
       std::vector<std::string> m_names;
       std::vector<GLenum>      m_codes;

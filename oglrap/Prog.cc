@@ -53,10 +53,11 @@ std::string Prog::desc() const
 
 
 
-Prog::Prog(const char* basedir, const char* tag, const char* incl_path) 
+Prog::Prog(const char* basedir, const char* tag, const char* incl_path, bool ubo) 
     :
     m_tagdir(NULL), 
     m_tag(strdup(tag)),
+    m_ubo(ubo),
     m_verbosity(0)
 {
     if(basedir == NULL )
@@ -212,6 +213,8 @@ void Prog::collectLocations()
 {
     bool print = false ; 
     traverseActive(Attribute, print);
+
+    if(!m_ubo)
     traverseActive(Uniform, print);
 }
 

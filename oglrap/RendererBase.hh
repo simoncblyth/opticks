@@ -17,7 +17,7 @@ Hmm ShaderBase would be a better name, in light of transform feedback
 #include "OGLRAP_API_EXPORT.hh"
 class OGLRAP_API RendererBase {
    public:
-      RendererBase(const char* tag, const char* dir=NULL, const char* incl_path=NULL);
+      RendererBase(const char* tag, const char* dir=NULL, const char* incl_path=NULL, bool ubo=false);
       const char* getShaderTag() const ; 
       const char* getShaderDir() const ; 
       const char* getInclPath() const ; 

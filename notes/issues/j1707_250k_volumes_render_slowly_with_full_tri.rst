@@ -99,11 +99,29 @@ Frustum Cull Kills All
 
 
 
+Interference between InstLODCull when doing to more than one instance
+------------------------------------------------------------------------
+
+Getting sensible render with avoid two active InstLODCull
+
+::
+
+    # 0:3inch 1:20inch 
+
+    --rendermode +bb0,+in1,+in2,+in3,-global   ## sensible render 
+    --rendermode +in0,+in1,+in2,+in3,-global   ## double up crazy render 
+
+
+    op --j1707 --gltf 3 --tracer  --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.7,0.7,0. --rendermode +bb0,+in1,+in2,+in3,-global
+
+
+
 
 Test Commands
 -------------------
 
 ::
+
 
 
     op --j1707 --gltf 3 --tracer --instcull
@@ -114,7 +132,7 @@ Test Commands
 
         ## 
 
-    op --j1707 --gltf 3 --tracer --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.5,0.5,0.1
+    op --j1707 --gltf 3 --tracer --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" --debugger --target 12 --eye 0.5,0.5,-:0.1
 
 
     tboolean-;tboolean-torus --lod 1 --lodconfig "levels=3,verbosity=2" --debugger 

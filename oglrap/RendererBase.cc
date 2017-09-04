@@ -39,7 +39,7 @@ void RendererBase::setNoFrag(bool nofrag)
 
 
 
-RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path)
+RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_path, bool ubo)
     :
     m_shader(NULL),
     m_program(-1),
@@ -49,7 +49,7 @@ RendererBase::RendererBase(const char* tag, const char* dir, const char* incl_pa
     m_incl_path(incl_path ? strdup(incl_path) : getenv("SHADER_INCL_PATH"))
 {
     // no OpenGL context needed, just reads sources
-    m_shader = new Prog(m_shaderdir, m_shadertag, m_incl_path ); 
+    m_shader = new Prog(m_shaderdir, m_shadertag, m_incl_path, ubo ); 
 }
 
 

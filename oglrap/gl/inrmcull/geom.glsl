@@ -1,9 +1,11 @@
 #version 400 
 
-//uniform mat4 ModelViewProjection ;
-uniform mat4 ModelView ;
 
-uniform vec4 LODCUT ; 
+#incl InstLODCullContext.h
+
+//uniform mat4 ModelViewProjection ;
+//uniform mat4 ModelView ;
+//uniform vec4 LODCUT ; 
 
 layout(points) in; 
 layout(points, max_vertices = 1) out;
@@ -35,12 +37,13 @@ void main()
     {
         vec4 InstancePosition = tr[3] ;
         vec4 IEye = ModelView * InstancePosition ;
-        //float distance = length(IEye.xyz) ;
-        float distance = InstancePosition.x  ;
+        float distance = length(IEye.xyz) ;
+        //float distance = InstancePosition.x  ;
         //float distance = IEye.y  ;
-
         // must use the uniforms
-        int lod = distance < LODCUT.x ? 2 : ( distance < LODCUT.y ? 0 : 1 ) ;
+
+        int lod = distance < LODCUT.x ? 0 : ( distance < LODCUT.y ? 1 : 2 ) ;
+
         //int lod = distance < LODCUT.x ? 1 : 2  ; 
 
         switch(lod)

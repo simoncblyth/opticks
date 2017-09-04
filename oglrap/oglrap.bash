@@ -399,3 +399,20 @@ oglrap-progtest()
 {
    SHADER_DIR=~/env/graphics/ggeoview/gl $(oglrap-bindir)/ProgTest
 }
+
+oglrap-instcull()
+{
+    oglrap-c
+
+    op --j1707 \
+       --gltf 3 \
+       --tracer \
+       --instcull --lod 1 --lodconfig "levels=3,verbosity=2,instanced_lodify_onload=1" \
+       --debugger \
+       --target 12 --eye 0.7,0.7,0. \
+       --rendermode +bb0,+in1,+in2,+in3,-global
+
+}
+
+
+

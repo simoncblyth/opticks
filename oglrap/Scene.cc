@@ -42,6 +42,7 @@
 
 #include "Composition.hh"
 #include "Renderer.hh"
+#include "RContext.hh"
 #include "InstLODCull.hh"
 #include "Device.hh"
 #include "Rdr.hh"
@@ -92,6 +93,7 @@ const char* Scene::REC_ = "point" ;
 const char* Scene::ALTREC_ = "line" ; 
 const char* Scene::DEVREC_ = "vector" ; 
 
+const char* Scene::ASIS_ = "asis" ; 
 const char* Scene::BBOX_ = "bbox" ; 
 const char* Scene::NORM_ = "norm" ;   
 const char* Scene::NONE_ = "none" ;   
@@ -159,6 +161,10 @@ void Scene::write(BDynamicDefine* dd)
 void Scene::setRenderMode(const char* s)
 {
     // setting renderer toggles
+
+    LOG(info) << "Scene::setRenderMode" 
+              << " [" << s  << "] "
+              ;
 
     std::vector<std::string> elem ; 
     boost::split(elem, s, boost::is_any_of(","));
@@ -391,6 +397,9 @@ void Scene::initRenderers()
 
     m_colors = new Colors(m_device);
 
+
+    m_context = new RContext ; 
+
     m_global_renderer = new Renderer("nrm", m_shader_dir, m_shader_incl_path );
     m_globalvec_renderer = new Renderer("nrmvec", m_shader_dir, m_shader_incl_path );
     m_raytrace_renderer = new Renderer("tex", m_shader_dir, m_shader_incl_path );
@@ -398,19 +407,19 @@ void Scene::initRenderers()
    // small array of instance renderers to handle multiple assemblies of repeats 
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
-        m_instance_mode[i] = false ; 
+        //m_instance_mode[i] = false ; 
 
         m_instance_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_instance_renderer[i]->setInstanced();
 
         if(m_instcull)
         {
-            m_instlodcull[i] = new InstLODCull("inrmcull", m_shader_dir, m_shader_incl_path );
+            m_instlodcull[i] = new InstLODCull(m_context, "inrmcull", m_shader_dir, m_shader_incl_path);
             m_instlodcull[i]->setVerbosity(1);
             m_instance_renderer[i]->setInstLODCull(m_instlodcull[i]);
         }
 
-        m_bbox_mode[i] = false ; 
+        //m_bbox_mode[i] = false ; 
         m_bbox_renderer[i] = new Renderer("inrm", m_shader_dir, m_shader_incl_path );
         m_bbox_renderer[i]->setInstanced();
         m_bbox_renderer[i]->setWireframe(false);  // wireframe is much slower than filled
@@ -524,7 +533,7 @@ void Scene::uploadGeometryGlobal(GMergedMesh* mm)
 
         n_global++ ; 
         assert(n_global == 1);
-        m_global_mode = true ;
+        //m_global_mode = true ;
     }
     else
     {
@@ -550,8 +559,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
         {
             m_instance_renderer[m_num_instance_renderer]->setLOD(m_ok->getLOD());
             m_instance_renderer[m_num_instance_renderer]->upload(mm);
-            m_instance_mode[m_num_instance_renderer] = true ; 
-
+            //m_instance_mode[m_num_instance_renderer] = true ; 
         }
 
         LOG(trace)<< "Scene::uploadGeometryInstanced bbox renderer " << m_num_instance_renderer  ;
@@ -560,7 +568,7 @@ void Scene::uploadGeometryInstanced(GMergedMesh* mm)
         if(m_bbox_renderer[m_num_instance_renderer])
         {
             m_bbox_renderer[m_num_instance_renderer]->upload(bb);
-            m_bbox_mode[m_num_instance_renderer] = true ; 
+            //m_bbox_mode[m_num_instance_renderer] = true ; 
         }
         m_num_instance_renderer++ ; 
     }
@@ -926,7 +934,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_photon_mode(true),
             m_record_mode(true),
             m_record_style(ALTREC),
-            m_geometry_style(BBOX),
+            m_geometry_style(ASIS),
             m_num_geometry_style(0),
             m_global_style(GVIS),
             m_num_global_style(0),
@@ -1140,6 +1148,7 @@ const char* Scene::getGeometryStyleName(Scene::GeometryStyle_t style)
 {
    switch(style)
    {
+      case ASIS:return ASIS_ ; break; 
       case BBOX:return BBOX_ ; break; 
       case NORM:return NORM_ ; break; 
       case NONE:return NONE_ ; break; 
@@ -1164,6 +1173,8 @@ void Scene::applyGeometryStyle()  // B:key
 
     switch(m_geometry_style)
     {
+      case ASIS:
+             break; 
       case BBOX:
              inst = false ; 
              bbox = true ; 
@@ -1194,13 +1205,18 @@ void Scene::applyGeometryStyle()  // B:key
              break;
    }
 
-   for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+   if(m_geometry_style != ASIS)
    {
-       m_instance_mode[i] = inst ; 
-       m_bbox_mode[i] = bbox ; 
+       for(unsigned int i=0 ; i < m_num_instance_renderer ; i++ ) 
+       {
+           m_instance_mode[i] = inst ; 
+           m_bbox_mode[i] = bbox ; 
+       }
+       setWireframe(wire);
    }
 
-   setWireframe(wire);
+   LOG(fatal) << "Scene::applyGeometryStyle" ; 
+   //assert(0);
 }
 
 

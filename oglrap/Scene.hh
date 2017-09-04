@@ -19,6 +19,9 @@ class GGeoLib ;
 class GBoundaryLibMetadata ;
 
 // oglrap-
+
+struct RContext ; 
+
 class Renderer ; 
 class InstLODCull ; 
 class Rdr ;
@@ -118,6 +121,8 @@ class OGLRAP_API Scene : public NConfigurable {
         static const char* ALTREC_ ; 
         static const char* DEVREC_ ; 
    public:
+        // GeometryStyle
+        static const char* ASIS_ ; 
         static const char* BBOX_ ; 
         static const char* NORM_ ; 
         static const char* NONE_ ; 
@@ -154,7 +159,7 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         // B-key
         // disabled styles after NUM_GEOMETRY_STYLE
-        typedef enum { BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
+        typedef enum { ASIS, BBOX, NORM, NONE, WIRE, NUM_GEOMETRY_STYLE, NORM_BBOX } GeometryStyle_t ;
         void setGeometryStyle(Scene::GeometryStyle_t style);
         unsigned int getNumGeometryStyle(); // allows ro override the enum
         Scene::GeometryStyle_t getGeometryStyle() const ; 
@@ -282,6 +287,8 @@ class OGLRAP_API Scene : public NConfigurable {
         char*        m_shader_incl_path ; 
         Device*      m_device ; 
         Colors*      m_colors ; 
+        RContext*    m_context ; 
+
         Interactor*  m_interactor ; 
    private:
         unsigned int m_num_instance_renderer ; 

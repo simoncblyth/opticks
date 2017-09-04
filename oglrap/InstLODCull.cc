@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 
 #include "G.hh"
+#include "RContext.hh"
 #include "RBuf.hh"
 #include "RBuf4.hh"
 #include "Composition.hh"
@@ -27,9 +28,10 @@ void InstLODCull::setComposition(Composition* composition)
 }
 
 
-InstLODCull::InstLODCull(const char* tag, const char* dir, const char* incl_path)
+InstLODCull::InstLODCull(RContext* context, const char* tag, const char* dir, const char* incl_path)
     :
-    RendererBase(tag, dir, incl_path),
+    RendererBase(tag, dir, incl_path, true),
+    m_context(context),
     m_composition(NULL),
     m_src(NULL),
     m_dst(NULL),
@@ -37,10 +39,12 @@ InstLODCull::InstLODCull(const char* tag, const char* dir, const char* incl_path
     m_num_lod(0),
     m_launch_count(0),
     //m_lodcut(-0.5f, 0.5f, 0.f, 0.f ),
-    m_lodcut(-5000.f, 5000.f, 0.f, 0.f ),
-    m_mv_location(-1),
-    m_mvp_location(-1),
-    m_lodcut_location(-1)
+    //m_lodcut(-5000.f, 5000.f, 0.f, 0.f )
+    m_lodcut(5000.f, 10000.f, 0.f, 0.f )
+
+   // m_mv_location(-1),
+   // m_mvp_location(-1),
+   // m_lodcut_location(-1)
     // hmm if lowest LOD dist is less than near, never get to see the best level 
 {
 }
@@ -64,6 +68,9 @@ void InstLODCull::setupFork(RBuf* src, RBuf4* dst, RBuf4* dst_devnull )
     // invoked from Renderer::upload, for each LOD level generate output count queries 
     // and bind tranform feedback stream output buffers, 
     // create single forking VAO
+
+    m_context->init();
+
 
     m_src = src ; 
     m_dst = dst ; 
@@ -312,25 +319,28 @@ void InstLODCull::pullback()
 }
 
 
-
-
-
-
-
 void InstLODCull::update_uniforms()   
 {
-    glUseProgram(m_program);
+    const glm::mat4& world2eye = m_composition->getWorld2Eye();
+    const glm::mat4& world2clip = m_composition->getWorld2Clip();
+ 
+    m_context->update( world2clip, world2eye , m_lodcut ); 
 
+/*
+    glUseProgram(m_program);
     glUniform4fv( m_lodcut_location, 1, glm::value_ptr(m_lodcut));
     glUniformMatrix4fv(m_mv_location, 1, GL_FALSE,  m_composition->getWorld2EyePtr());
     glUniformMatrix4fv(m_mvp_location, 1, GL_FALSE, m_composition->getWorld2ClipPtr());
+*/
+
 }
 
 
 void InstLODCull::check_uniforms()
 {
-    bool required = true ;
 
+/*
+    bool required = true ;
     m_shader->dumpUniforms();
 
     m_lodcut_location = m_shader->uniform("LODCUT", required );
@@ -345,7 +355,7 @@ void InstLODCull::check_uniforms()
 
 
     G::ErrCheck("InstLODCull::check_uniforms", true);
-
+*/
      
 }
 
