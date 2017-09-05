@@ -23,5 +23,6 @@ Contents:
    tests/index
    ana/index
 
+   docs/integration
    
 

@@ -7,6 +7,60 @@ negative n eg -12 for December of last year.
 Dont use colons in section text for easy title grepping.
 
 
+
+2017 September
+----------------
+
+Big Geometry
+~~~~~~~~~~~~~~~
+
+* Eureka : avoiding having two InstLODCull active regains sanity, with this proviso frustum culling and LOD forking are both working
+* InstLODCull simplifications from moving uniform handling to UBO in RContext
+
+
+2017 August : ellipsoid, torus solve-quartic troubles, hyperboloid, SOR
+---------------------------------------------------------------------------
+
+Overview
+~~~~~~~~~~~
+
+* implemented the primitives needed for JUNO : torus was difficult, also 
+  implemented hyperboloid  : perhaps we can look into replacing torus with 
+  hyperboloid for the PMT (it is much much easier computationally: just quadratics rather than quartics)
+
+* moved analytic geometry processing pre-cache : so launch time is 
+  reduced from ~50 s to < 5 s
+
+* improved OpenGL visualisation performance using 
+  instance frustum culling and variable level-of-detail meshes for instances (=PMTs) based on 
+  distance to the instance.  These techniques use GPU compute (OpenGL transform feedback) 
+  prior to rendering each frame to skip instances that are not visible and replace distant instances with simpler
+  geometry.   The improved performance will make it much easier to capture movies…
+
+  As Macs only go to OpenGL 4.1 : I am limited to techniques available to that version 
+  which means no OpenGL compute shaders.  I could of use CUDA interop techniques but 
+  if possible it is better to stick with OpenGL for visualisation as that  can work on AMD 
+  (and perhaps even Intel) GPUs, meaning much more users can benefit from it.
+
+
+Solids
+~~~~~~~~~
+
+* using doubles for quartic/cubic Solve now seems inevitable, issues are much reduced with doubles but not entirely fixed
+* op --j1707 --gltf 3 : fully analytic raytrace works, not having any triangles saves gobs of GPU memory : investigate ways to skip torus intersects
+* start on hyperbolic hyperboloid of one sheet, hope to model PMT neck with hyperboloid rather than subtracted torus
+* torus artifacts gone, after move SolveCubicStrobachPolyFit to use initial gamma using SolveCubicPolyDivision instead of the cursed SolveCubicNumeric
+
+Big Geometry
+~~~~~~~~~~~~~~~
+
+* investigate OpenGL LOD and Culling for coping with big geometry
+* start checking whats needed to enable instance culling, over in  env- instcull-
+* moving analytic GScene into geocache fixes j1707 slow startup, reducing from 50 secs to under 5 secs
+* threading LODified meshes thru GGeoLib/GGeoTest
+* prep for bringing dynamic GPU LOD fork+frustum culling like env- instcull- into oglrap-, plan to use first class citizen RBuf (of Renderer) to simplify the buffer juggling
+
+
 2017 July : Solid level bbox Validations via  and fixes
 ----------------------------------------------------------------------------------------------------
 
@@ -16,6 +70,9 @@ Solids
 * fix trapezoid misinterpretation (caused impingment) using new unplaced mesh dumping features added to both branches
 * fixed cone-z misinterpretation
 * added deltaphi imp via CSG_SEGMENT intersect, tboolean-cyslab tboolean-segment
+* start on primitives needed for juno1707
+* add zcut ellipsoid by using zsphere with scaling adjusted to be 1 for z
+* investigate torus artifacts, by looking into cubic approach
 
 Validation : machinery for comparison G4DAE vs GDML/glTF geometries
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -31,7 +88,6 @@ Validation : machinery for comparison G4DAE vs GDML/glTF geometries
 * moving to parsurf bbox, avoids overlarge analytic bbox with complicated CSG trees
 * adopting adaptive parsurf_level to reach a parsurf_target number of surface points knocks 5 lvidx down the chart
 * complete classification of top 25 parsurf vs g4poly bbox discrepancies, down to 1mm
-
 
 
 
@@ -163,7 +219,6 @@ Structure : jump ship to GDML
 * implement GDML tree querying to select general subtrees 
 
 
-
 2017 Mar : GPU CSG raytracing implementation, SDF modelling, MC and DCS polygonization of CSG trees 
 -----------------------------------------------------------------------------------------------------
 
@@ -188,8 +243,6 @@ Polygonization : Marching Cubes, Dual Contouring
 * integrate marching cubes, MC
 * integrate dual contouring sample DCS, detour into getting Octree operational in acceptably performant,
   painful at the time, by got real experience of z-order curves, multi-res and morton codes
-
-
 
 
 2017 Feb : GPU CSG raytracing prototyping
@@ -241,6 +294,7 @@ CSG Engine : python prototyping, recursive into iterative
 * step-by-step comparisons within the propagations
 * tlaser testing 
 * tconcentric chisq guided iteration 
+
 
 2016 Sep : mostly G4/Opticks interop
 ----------------------------------------
