@@ -625,6 +625,7 @@ opticks-find(){
    local iwd=$PWD
    opticks-scd
 
+   find . -name '*.sh' -exec grep $opt $str {} \;
    find . -name '*.bash' -exec grep $opt $str {} \;
    find . -name '*.cu' -exec grep $opt $str {} \;
    find . -name '*.cc' -exec grep $opt $str {} \;
@@ -808,6 +809,7 @@ opticks-export-mingw()
 ########## building opticks docs 
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
+opticks-rdocs(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
 opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
    local htmldirbb=$HOME/simoncblyth.bitbucket.org/opticks 

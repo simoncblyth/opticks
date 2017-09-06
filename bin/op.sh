@@ -49,6 +49,7 @@ op-binary-name()
           --tcfg4) echo CG4Test ;;
            --okg4) echo OKG4Test ;;
          --tracer) echo OTracerTest ;;
+      --gdml2gltf) echo gdml2gltf.py ;;
             --mat) echo GMaterialLibTest ;;
            --cmat) echo CMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
@@ -75,7 +76,6 @@ op-binary-name()
        --resource) echo OpticksResourceTest ;;
         --opticks) echo OpticksTest ;;
           --pybnd) echo GBndLibTest.py ;;
-         --pygdml) echo gdml2gltf.py ;;
          --extras) echo extras.py ;;
              --mm) echo GMergedMeshTest ;;
         --testbox) echo GTestBoxTest ;;
@@ -110,6 +110,7 @@ op-binary-desc()
           --tcfg4) echo "Geant4 comparison simulation of simple test geometries " ;; 
            --okg4) echo "Integrated Geant4/Opticks runing allowing G4GUN steps to be directly Opticks GPU propagated. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
+      --gdml2gltf) echo "Once only geometry conversion of GDML input into GLTF file needed for analytic geocache creation" ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
             --bnd) echo "Dump boundaries of a geometry, eg op --bnd --jpmt " ;; 
@@ -276,6 +277,7 @@ op-geometry-desc()
       --dlv65) echo "DYB cycybobo lvid 65 " ;;
       --jpmt) echo "JUNO with PMTs" ;;
       --lxe)  echo "Geant4 LXe Liquid Xenon example" ;; 
+      --j1707)  echo "JUNO with ~36k 3inch PMTs, ~18k 20inch PMTs, torus guide tube " ;; 
    esac
 }
          

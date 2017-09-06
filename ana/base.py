@@ -406,7 +406,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
     parser.add_argument(     "--nosmry", dest="smry", action="store_false", help="smry SeqAna table  ")
     parser.add_argument(     "--pybnd",  action="store_true", help="Avoid error from op binary selection flag. ")
-    parser.add_argument(     "--pygdml",  action="store_true", help="Avoid error from op binary selection flag. ")
+    parser.add_argument(     "--gdml2gltf",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--promat", default=promat, action="store_true", help="Present progressively masked seqmat frequency tables for step by step checking. Default %(default)s ")
     parser.add_argument(     "--rehist", default=rehist, action="store_true", help="Recreate hists rather than loading persisted ones. Default %(default)s ")
