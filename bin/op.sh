@@ -32,6 +32,17 @@ To save typing add the below bash function to your .bash_profile::
    op(){ op.sh $* ; }
 
 
+Commandline Help
+------------------
+
+Lists of geometry config arguments and executable selection are provided by the help
+
+::
+
+    op --help
+
+
+
 
 EOU
 }
