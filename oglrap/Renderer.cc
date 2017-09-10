@@ -605,13 +605,8 @@ void Renderer::render()
             glDrawElementsInstanced( draw.mode, draw.count, draw.type,  draw.indices, m_lod_counts[i]  ) ;
 
         }
-<<<<<<< local
-        //if(m_verbosity > 0)
-        //std::cout << desc() << std::endl ; 
-=======
         if(m_verbosity > 0)
             std::cout << desc() << std::endl ; 
->>>>>>> other
     }
     else if( m_lod < 0)   // debugging LOD rendering 
     {
