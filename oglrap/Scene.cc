@@ -3,6 +3,7 @@
 #include <cassert>
 #include <cstring>
 #include <string>
+#include <sstream>
 #include <vector>
 
 #include <boost/algorithm/string.hpp>
@@ -118,7 +119,32 @@ const char* Scene::getRecordStyleName(Scene::RecordStyle_t style)
 
 
 
+const char* Scene::R_PROJECTIVE_ = "R_PROJECTIVE" ;
+const char* Scene::R_RAYTRACED_  = "R_RAYTRACED" ; 
+const char* Scene::R_COMPOSITE_  = "R_COMPOSITE" ; 
+const char* Scene::RenderStyle(RenderStyle_t style)
+{
+    const char* s = NULL ; 
+    switch(style)
+    { 
+       case R_PROJECTIVE: s = R_PROJECTIVE_ ; break ; 
+       case R_RAYTRACED:  s = R_RAYTRACED_  ; break ; 
+       case R_COMPOSITE:  s = R_COMPOSITE_  ; break ; 
+       case NUM_RENDER_STYLE: s = "ERR"     ; break ; 
+    }
+    return s ; 
+}
 
+
+const char* Scene::getRenderStyleString() const 
+{
+    return RenderStyle(getRenderStyle()) ; 
+}
+
+Scene::RenderStyle_t Scene::getRenderStyle() const 
+{
+    return m_render_style ; 
+}
 
 
 
@@ -206,7 +232,7 @@ void Scene::setRenderMode(const char* s)
     }
 }
 
-std::string Scene::getRenderMode()
+std::string Scene::getRenderMode() const 
 {
     const char* delim = "," ; 
 
@@ -767,7 +793,6 @@ void Scene::preRenderCompute()
     }
 }
 
-
 void Scene::renderGeometry()
 {
     if(m_global_mode && m_global_renderer)       m_global_renderer->render();
@@ -795,8 +820,27 @@ void Scene::renderEvent()
     }
 }
 
+
+std::string Scene::desc() const 
+{
+    bool raytraced = isRaytracedRender() ;
+    bool composite = isCompositeRender() ;
+    std::stringstream ss ; 
+    ss 
+       << " Scene.render_count " << m_render_count
+       << ( raytraced ? " raytraced " : " " )
+       << ( composite ? " composite " : " " )
+       << " RenderStyle "  << getRenderStyleString() 
+       << " RenderMode "  << getRenderMode() 
+       ;
+
+    return ss.str();
+}
+
 void Scene::render()
 {
+    LOG(info) << desc() ; 
+
     bool raytraced = isRaytracedRender() ;
     bool composite = isCompositeRender() ;
 
@@ -804,6 +848,7 @@ void Scene::render()
     {
         if(m_raytrace_renderer)
             m_raytrace_renderer->render() ;
+  
         if(raytraced) return ; 
     }
 
@@ -901,15 +946,18 @@ void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projectiv
     m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
 }
 
-bool Scene::isProjectiveRender()
+
+
+
+bool Scene::isProjectiveRender() const 
 {
    return m_render_style == R_PROJECTIVE ;
 }
-bool Scene::isRaytracedRender()
+bool Scene::isRaytracedRender() const 
 {
    return m_render_style == R_RAYTRACED ;
 }
-bool Scene::isCompositeRender()
+bool Scene::isCompositeRender() const 
 {
    return m_render_style == R_COMPOSITE ;
 }
@@ -917,6 +965,8 @@ bool Scene::isCompositeRender()
 void Scene::applyRenderStyle()   
 {
     // nothing to do, style is honoured by  Scene::render
+
+
 }
 
 

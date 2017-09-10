@@ -44,7 +44,8 @@ OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate)
       m_interactor(m_viz->getInteractor()),
       m_oframe(NULL),
       m_orenderer(NULL),
-      m_otracer(NULL)
+      m_otracer(NULL),
+      m_trace_count(0)
 {
     init();
     (*m_log)("DONE");
@@ -108,12 +109,23 @@ void OKGLTracer::render()
             m_otracer->setResolutionScale(scale) ;
             m_otracer->trace_();
             m_oframe->push_PBO_to_Texture();
+
+
+            if(m_trace_count == 0 )
+            {
+                LOG(info) << "OKGLTracer::render snapping first raytrace frame " ; 
+                m_ocontext->snap();
+            }
+
+
+            m_trace_count++ ; 
         }
         else
         {
             // dont bother tracing when no change in geometry
         }
     }
+    
 }   
 
 

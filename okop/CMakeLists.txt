@@ -100,6 +100,9 @@ set(SOURCES
     OpIndexer_.cu
     OpIndexerApp.cc
     OpEngine.cc
+    OpMgr.cc
+    OpPropagator.cc
+    OpTracer.cc
 )
 
 set(HEADERS

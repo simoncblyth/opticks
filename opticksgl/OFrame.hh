@@ -9,6 +9,17 @@ class Texture ;
 #include "Touchable.hh"
 #include "OKGL_API_EXPORT.hh"
 
+/**
+
+OFrame
+=======
+
+* glue class allowing OptiX raytrace to be pushed into OpenGL texture
+* houses a reference to the OptiX raytrace **output_buffer**
+
+
+**/
+
 class OKGL_API OFrame : public Touchable {
     public:
        OFrame(optix::Context& context, unsigned int width, unsigned int height ); 

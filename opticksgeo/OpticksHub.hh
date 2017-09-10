@@ -102,6 +102,7 @@ class OKGEO_API OpticksHub {
    private:
        void configureEvent(OpticksEvent* evt);
    public:
+       void setupCompositionTargetting() ;
        void setTarget(unsigned target=0, bool aim=true);
        unsigned getTarget();
    public:

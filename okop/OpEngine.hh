@@ -22,12 +22,23 @@ class OpIndexer ;
 OpEngine
 =========
 
-Canonical m_engine instance resides in ok-/OKPropagator
+OpEngine takes a central role, it holds the OScene
+which creates the OptiX context holding the GPU geometry
+and all GPU buffers.
+
+
+Canonical OpEngine instance m_engine resides in ok-/OKPropagator 
+which resides as m_propagator at top level in ok-/OKMgr
+
+* BUT: ok- depends on OpenGL ... need compute only equivalents okop-/OpPropagator okop/OpMgr
+
 
 NB OpEngine is ONLY AT COMPUTE LEVEL, FOR THE FULL PICTURE NEED TO SEE ONE LEVEL UP 
    IN ok-
    OKPropagator::uploadEvent 
    OKPropagator::downloadEvent
+
+
 
   
 **/

@@ -618,6 +618,7 @@ opticks-t--()
 
 
 opticks-lfind(){ opticks-find $1 -l ; }
+opticks-f(){ opticks-find $* ; }
 opticks-find(){
    local str=${1:-ENV_HOME}
    local opt=${2:--H}

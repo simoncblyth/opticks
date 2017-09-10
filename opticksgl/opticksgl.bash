@@ -35,6 +35,7 @@ opticksgl-tdir(){ echo $(opticks-home)/opticksgl/tests ; }
 opticksgl-idir(){ echo $(opticks-idir) ; }
 opticksgl-bdir(){ echo $(opticks-bdir)/$(opticksgl-rel) ; }
 
+opticksgl-c(){    cd $(opticksgl-sdir); }
 opticksgl-cd(){   cd $(opticksgl-sdir); }
 opticksgl-scd(){  cd $(opticksgl-sdir); }
 opticksgl-tcd(){  cd $(opticksgl-tdir); }

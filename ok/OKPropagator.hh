@@ -33,6 +33,10 @@ Methods intended to operate above the
 level of the compute/interop split.
 
 
+* core functionality of this could be down in okop ?
+
+
+
 **/
 
 

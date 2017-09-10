@@ -646,9 +646,6 @@ CUDA OSX libc++
 
 
 
-
-
-
 CUDA Release Notes
 -------------------
 

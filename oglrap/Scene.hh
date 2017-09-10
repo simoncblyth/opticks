@@ -146,8 +146,9 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         void setVerbosity(unsigned verbosity);
         void setRenderMode(const char* s);
-        std::string getRenderMode();
+        std::string getRenderMode() const ;
         void dump_uploads_table(const char* msg="Scene::dump_uploads_table");
+        std::string desc() const ;
    public:
         // P-key
         typedef enum { REC, ALTREC, DEVREC, NUM_RECORD_STYLE } RecordStyle_t ;
@@ -182,11 +183,19 @@ class OGLRAP_API Scene : public NConfigurable {
    public:
         // O-key
         typedef enum { R_PROJECTIVE, R_RAYTRACED, R_COMPOSITE,  NUM_RENDER_STYLE } RenderStyle_t ;  
+        static const char* R_PROJECTIVE_ ; 
+        static const char* R_RAYTRACED_ ; 
+        static const char* R_COMPOSITE_ ; 
+        static const char* RenderStyle(RenderStyle_t style);
+
+        Scene::RenderStyle_t getRenderStyle() const  ;
+        const char*   getRenderStyleString() const  ;
+
         void nextRenderStyle(unsigned int modifiers); 
         void applyRenderStyle();
-        bool isProjectiveRender();
-        bool isRaytracedRender();
-        bool isCompositeRender();
+        bool isProjectiveRender() const ;
+        bool isRaytracedRender() const ;
+        bool isCompositeRender() const ;
    public:
         // I-key
         typedef enum { IVIS, IINVIS, NUM_INSTANCE_STYLE } InstanceStyle_t ;  

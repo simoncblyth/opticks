@@ -76,6 +76,7 @@ void OFrame::init(unsigned int width, unsigned int height)
     LOG(debug) << "OFrame::init size(" << width << "," << height << ")  texture_id " << m_texture_id ;
 
 
+    // single pixel touch buffer
     m_touch_buffer = m_context->createBuffer( RT_BUFFER_OUTPUT, RT_FORMAT_UNSIGNED_INT4, 1, 1);
 
     m_context["touch_buffer"]->set( m_touch_buffer );

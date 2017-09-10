@@ -26,7 +26,7 @@ oglrap                 oglrap-          OGLRap            BASE GGeo GLEW GLFW Im
 cudarap                cudarap-         CUDARap           PLog SysRap CUDA (ssl) 
 thrustrap              thrustrap-       ThrustRap         OpticksBoost PLog SysRap BoostRap GLM NPY CUDA CUDARap 
 optixrap               oxrap-           OptiXRap          BASE GGeo Assimp AssimpRap CUDARap ThrustRap
-okop                   okop-            OKOP              BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap      
+okop                   okop-            OKOP              BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksGeometry     
 opticksgl              opticksgl-       OpticksGL         BASE GGeo OptiX OptiXRap CUDA CUDARap ThrustRap OpticksOp Assimp AssimpRap GLEW GLFW OGLRap 
 ok                     ok-              OK                BASE GGeo Assimp AssimpRap OpenMesh OpenMeshRap OpticksGeometry GLEW GLFW ImGui OGLRap 
 cfg4                   cfg4-            cfg4              BASE GGeo Geant4 EnvXercesC [G4DAE] 

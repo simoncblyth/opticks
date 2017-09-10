@@ -6,6 +6,51 @@ class OContext ;
 class Composition ; 
 struct STimes ; 
 
+/**
+OTracer
+=========
+
+Instance m_otracer is resident of opticksgl/OKGLTracer.hh 
+
+
+output_buffer
+--------------
+
+OTracer relies on, externally setup 
+
+* output_buffer
+* geometry top_object 
+
+
+* output_buffer typically setup and managed by opticksgl/OFrame.hh
+  (done like this as for OpenGL interop the OpenGL buffer needs to be 
+  created first, then the OptiX reference to that GPU buffer is made)
+
+* a few tests also "manually" setup an output_buffer 
+  eg optixrap/tests/intersect_analytic_test.cc
+  but that is not the same format a the pinhole output buffer
+
+
+oxrap/cu/pinhole_camera.cu
+----------------------------
+
+::
+
+   18 rtBuffer<uchar4, 2>   output_buffer;
+
+trace_
+--------
+
+* passes composition data (viewpoint, camera param) 
+  into OptiX context 
+
+* launches OptiX pinhole camera raytrace writing into 
+  pure OptiX output_buffer
+
+
+
+**/
+
 #include "OXRAP_API_EXPORT.hh"
 class OXRAP_API OTracer {
    public:

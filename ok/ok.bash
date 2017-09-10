@@ -1118,6 +1118,7 @@ ok-tdir(){ echo $(opticks-home)/ok/tests ; }
 ok-idir(){ echo $(opticks-idir) ; }
 ok-bdir(){ echo $(opticks-bdir)/ok; }
 
+ok-c(){    cd $(ok-sdir)/$1 ; }
 ok-cd(){   cd $(ok-sdir)/$1 ; }
 ok-scd(){  cd $(ok-sdir); }
 ok-tcd(){  cd $(ok-tdir); }

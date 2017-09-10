@@ -64,6 +64,7 @@ op-binary-name()
             --mat) echo GMaterialLibTest ;;
            --cmat) echo CMaterialLibTest ;;
            --surf) echo GSurfaceLibTest ;;
+           --snap) echo OpTest ;;
             --bnd) echo GBndLibTest ;;
   --ctestdetector) echo CTestDetectorTest ;;
   --cgdmldetector) echo CGDMLDetectorTest ;;
@@ -124,6 +125,7 @@ op-binary-desc()
       --gdml2gltf) echo "Once only geometry conversion of GDML input into GLTF file needed for analytic geocache creation" ;;
             --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
+           --snap) echo "Pure compute raytrace snapshot of geometry. " ;;
             --bnd) echo "Dump boundaries of a geometry, eg op --bnd --jpmt " ;; 
   --ctestdetector) echo "Test Geant4 simple detector construction using class cfg4-/CTestDetector " ;; 
   --cgdmldetector) echo "Test Geant4 GDML full detector construction using cfg4-/CGDMLDetector " ;; 

@@ -17,6 +17,7 @@
 
 // optixrap-
 #include "STimes.hh"
+#include "SPPM.hh"
 #include "OConfig.hh"
 #include "OContext.hh"
 
@@ -569,6 +570,65 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool seed)
     }
     return format ; 
 }
+
+
+
+
+void OContext::snap(const char* path)
+{
+    optix::Buffer output_buffer = m_context["output_buffer"]->getBuffer() ; 
+
+    RTsize width, height, depth ;
+    output_buffer->getSize(width, height, depth);
+
+    LOG(info) 
+         << "OContext::snap"
+         << " path " << path 
+         << " width " << width
+         << " width " << (int)width
+         << " height " << height
+         << " height " << (int)height
+         << " depth " << depth
+         ;   
+
+    void* ptr = output_buffer->map() ; 
+
+    int ncomp = 4 ;   
+    SPPM::write(path,  (unsigned char*)ptr , width, height, ncomp );
+
+    output_buffer->unmap(); 
+}
+
+
+void OContext::save(const char* path)
+{
+    optix::Buffer output_buffer = m_context["output_buffer"]->getBuffer() ;
+
+    RTsize width, height, depth ;
+    output_buffer->getSize(width, height, depth);
+
+    LOG(info)
+         << "OContext::save"
+         << " width " << width
+         << " width " << (int)width
+         << " height " << height
+         << " height " << (int)height
+         << " depth " << depth
+         ;
+
+    NPY<unsigned char>* npy = NPY<unsigned char>::make(width, height, 4) ;
+    npy->zero();
+
+    void* ptr = output_buffer->map() ;
+    npy->read( ptr );
+
+    output_buffer->unmap();
+
+    npy->save(path);
+}
+
+
+
 
 
 

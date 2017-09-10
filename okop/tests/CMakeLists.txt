@@ -8,6 +8,7 @@ set(TEST_SOURCES
     OpSeederTest.cc
     dirtyBufferTest
     compactionTest
+    OpTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

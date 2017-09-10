@@ -14,7 +14,8 @@
 #include <float.h>
 
 typedef double Solve_t ; 
-#include "SolveCubicNumericalRecipe.h"
+//#include "SolveCubicNumericalRecipe.h"
+#include "SolveCubic.h"
 
 __global__ void SolveCubicTest(double f)
 {

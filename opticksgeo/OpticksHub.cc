@@ -494,6 +494,30 @@ void OpticksHub::setTarget(unsigned target, bool aim)
     m_geometry->setTarget(target, aim );
 }
 
+
+
+void OpticksHub::setupCompositionTargetting()
+{
+    bool autocam = true ; 
+
+    // handle commandline --target option that needs loaded geometry 
+    unsigned deferred_target = m_geometry->getTargetDeferred();   // default to 0 
+    unsigned cmdline_target = m_ok->getTarget();
+
+    LOG(info) << "OpticksHub::setupCompositionTargetting"
+              << " deferred_target " << deferred_target
+              << " cmdline_target " << cmdline_target
+               ;   
+
+    m_geometry->setTarget(cmdline_target, autocam);
+}
+
+
+
+
+
+
+
 void OpticksHub::target()
 {
     int target = m_geometry ? m_geometry->getTarget() : 0 ;

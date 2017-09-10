@@ -160,6 +160,7 @@ okop-bdir(){ echo $(opticks-bdir)/$(okop-rel) ; }
 
 okop-bin(){  echo $(okop-idir)/bin/${1:-OpIndexerTest} ; }
 
+okop-c(){    cd $(okop-sdir); }
 okop-cd(){   cd $(okop-sdir); }
 okop-scd(){  cd $(okop-sdir); }
 okop-tcd(){  cd $(okop-tdir); }
@@ -181,10 +182,6 @@ okop-t(){                  opticks-t $(okop-bdir) $* ; }
 okop-genproj() { okop-scd ; opticks-genproj $(okop-name) $(okop-tag) ; } 
 okop-gentest() { okop-tcd ; opticks-gentest ${1:-OExample} $(okop-tag) ; } 
 okop-txt(){ vi $(okop-sdir)/CMakeLists.txt $(okop-tdir)/CMakeLists.txt ; } 
-
-
-
-
 
 
 
@@ -262,5 +259,23 @@ okop-index-op(){
        echo $path
    done
 }
+
+
+okop-snap()
+{
+    ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
+    op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0.
+    libpng-;libpng-- /tmp/snap.ppm
+}
+
+
+okop-snap-gui()
+{
+    ## to make a snap, need to switch to OptiX render mode with "O" key once GUI has launched
+    op  --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0. --rendermode +bb0,+in1,+in2,+in3,-global
+    libpng-;libpng-- /tmp/snap.ppm
+}
+
+
 
 

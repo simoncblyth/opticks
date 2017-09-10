@@ -35,6 +35,7 @@ set(SOURCES
     PLOG.cc 
     SProc.cc
     SSys.cc
+    SPPM.cc
     SVec.cc
     SDigest.cc
     SArrayDigest.cc

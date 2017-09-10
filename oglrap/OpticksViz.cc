@@ -260,18 +260,8 @@ void OpticksViz::uploadGeometry()
 
     m_scene->uploadGeometry();
 
-    bool autocam = true ; 
 
-    // handle commandline --target option that needs loaded geometry 
-    unsigned deferred_target = m_geometry->getTargetDeferred();   // default to 0 
-    unsigned cmdline_target = m_ok->getTarget();
-
-    LOG(info) << "OpticksViz::uploadGeometry targetting"
-              << " deferred_target " << deferred_target
-              << " cmdline_target " << cmdline_target
-               ; 
-
-    m_geometry->setTarget(cmdline_target, autocam);
+    m_hub->setupCompositionTargetting();
 
 }
 

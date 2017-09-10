@@ -43,6 +43,8 @@ class OXRAP_API OContext {
             OContext::Mode_t getMode();
             bool isCompute();
             bool isInterop();
+            void snap(const char* path="/tmp/snap.ppm");
+            void save(const char* path="/tmp/snap.npy");
      public:
             void setStackSize(unsigned int stacksize);
             void setPrintIndex(const std::string& pindex);
