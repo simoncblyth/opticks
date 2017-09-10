@@ -22,7 +22,8 @@ tboolean-box
 Mostly Working (Sep 1, 2017) Other than those marked
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* some have poor/missing polygonizations, but all have OK raytrace
+* some have poor/missing polygonizations, but all should have an OK raytrace 
+  unless marked otherwise below
 
   
 tboolean-box

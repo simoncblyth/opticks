@@ -40,13 +40,92 @@ CUDA Driver Version 7.0.29
 GPU Driver Version 8.26.26 310.40.45f01
 
 
-Release History
------------------
+
+SDU
+-----
+
+* http://www.anandtech.com/show/8729/nvidia-launches-tesla-k80-gk210-gpu
+
+::
+
+    [simon@GPU ~]$ cp -R /usr/local/cuda-8.0/samples/  cuda-8.0-samples
+    [simon@GPU cuda-8.0-samples]$ which nvcc
+    /usr/local/cuda-8.0/bin/nvcc
+    [simon@GPU cuda-8.0-samples]$ make
+
+    ...
+    [@] mkdir -p ../../bin/x86_64/linux/release
+    [@] cp simpleGL ../../bin/x86_64/linux/release
+    make[1]: Leaving directory `/home/simon/cuda-8.0-samples/2_Graphics/simpleGL'
+    >>> WARNING - libGL.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<
+    >>> WARNING - libGLU.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<
+    >>> WARNING - libX11.so not found, refer to CUDA Getting Started Guide for how to find and install them. <<<
+
+
+    simon@GPU cuda-8.0-samples]$ bin/x86_64/linux/release/deviceQuery
+    bin/x86_64/linux/release/deviceQuery Starting...
+
+     CUDA Device Query (Runtime API) version (CUDART static linking)
+
+    Detected 4 CUDA Capable device(s)
+
+    Device 0: "Tesla K80"
+      CUDA Driver Version / Runtime Version          8.0 / 8.0
+      CUDA Capability Major/Minor version number:    3.7
+      Total amount of global memory:                 11440 MBytes (11995578368 bytes)
+      (13) Multiprocessors, (192) CUDA Cores/MP:     2496 CUDA Cores
+      GPU Max Clock rate:                            824 MHz (0.82 GHz)
+      Memory Clock rate:                             2505 Mhz
+      Memory Bus Width:                              384-bit
+      L2 Cache Size:                                 1572864 bytes
+
+    ...
+
+
+
+
+DOCS
+-------
+
+* http://developer.download.nvidia.com/compute/cuda/7.5/Prod/docs/sidebar/CUDA_Quick_Start_Guide.pdf
+
+CUDA Linux
+-------------
+
+* http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+
+Native Linux Distribution Support 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+    
+    Disto       Kernel  GCC     GLIBC 
+
+    CUDA 8.0, 7.5 same
+
+    RHEL 7.x    3.10    4.8.2   2.17    
+    RHEL 6.x    2.6.32  4.4.7   2.12
+
+
+EPEL : Extra Packages for Enterprise Linux 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://fedoraproject.org/wiki/EPEL
+
+
+
+
+
+CUDA Release History
+----------------------
 
 * https://developer.nvidia.com/cuda-toolkit-archive
 
 ::
 
+
+    CUDA Toolkit 8.0 (Feb 2017)
+    CUDA Toolkit 7.5 (Sept 2015)
     CUDA Toolkit 7.0 (March2015)
     CUDA Toolkit 6.5 (August 2014)
     CUDA Toolkit 6.0 (April 2014)
