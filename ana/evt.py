@@ -22,6 +22,10 @@ from opticks.ana.mattype import MatType
 from opticks.ana.metadata import Metadata
 
 
+def count_nonzero(a):
+    return np.sum(a != 0)
+
+if not hasattr(np, 'count_nonzero'): np.count_nonzero = count_nonzero
 
 pdict_ = lambda d:" ".join(["%s:%s" % kv for kv in d.items()])
 costheta_ = lambda a,b:np.sum(a * b, axis = 1)/(vnorm(a)*vnorm(b)) 
@@ -1607,21 +1611,21 @@ if __name__ == '__main__':
     ok = opticks_main()
 
 
-    #a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
-    #print a.seqhis_ana.table[0:20]
+    a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
+    print a.seqhis_ana.table[0:20]
 
-    b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
+    # b = Evt(tag="-%s"%ok.utag, src=ok.src, det=ok.det, args=ok)
 
-    print b.his[:20]
+    # print b.his[:20]
 
-    #b.selflg = "TO|BT|DR|SC|RE"
+    # #b.selflg = "TO|BT|DR|SC|RE"
 
 
-    sel = "PFLAGS_DEBUG"  
-    b.sel = sel
-    log.info("sel %s nsel %d " % (sel, b.nsel))
-    if b.nsel > 0:
-        print b.his, b.mat, b.flg, b.psel_dindex()
+    # sel = "PFLAGS_DEBUG"  
+    # b.sel = sel
+    # log.info("sel %s nsel %d " % (sel, b.nsel))
+    # if b.nsel > 0:
+    #     print b.his, b.mat, b.flg, b.psel_dindex()
 
 
 

@@ -91,7 +91,10 @@ def array_digest(a):
 
 def count_unique_sorted(vals):
     vals = vals.astype(np.uint64)
-    cu = count_unique(vals)
+    try:
+        cu = count_unique(vals)
+    except TypeError:
+        cu = count_unique_old(vals)
     cu = cu[np.argsort(cu[:,1])[::-1]]  # descending frequency order
     return cu.astype(np.uint64)
 
