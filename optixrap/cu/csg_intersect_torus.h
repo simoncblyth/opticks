@@ -358,12 +358,16 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
             );
 #endif      
 
+#ifdef CSG_INTERSECT_TORUS_BAD
     //const float pr = sqrt(p0.x*p0.x+p0.y*p0.y) ;   // <-- selecting artifact in hole 
     const float2 qrz = make_float2(length(make_float2(p0)) - R, p0.z) ;  // (mid-circle-sdf, z)
     const float  qsd = length(qrz) - r ;   // signed dist to torus
     const float  aqsd = fabsf(qsd) ;      // dist to torus
     bool bad_qsd = aqsd > 1e-5f ; 
-
+    bool valid_isect = aqsd && t_cand > t_min ;    
+#else
+    bool valid_isect = t_cand > t_min;
+#endif
 
     // Can easily cut away fake intersects assumed caused by numerical problems 
     // for some coeffient combinations using sdf... 
@@ -376,7 +380,6 @@ bool csg_intersect_torus(const quad& q0, const float& t_min, float4& isect, cons
     // So identifying cause of exterior fakes (eg some coeff going to zero)
     // may potentially also fix interior missings.
 
-    bool valid_isect = aqsd && t_cand > t_min ;    
 
     if(valid_isect)
     {        
