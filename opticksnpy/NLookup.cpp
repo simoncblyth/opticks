@@ -63,9 +63,18 @@ void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* ap
     for(MSU::const_iterator it=A.begin() ; it != A.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
-        if(strncmp(name, aprefix, strlen(aprefix)) == 0)
+
+        if(aprefix)
+        { 
+            if(strncmp(name, aprefix, strlen(aprefix)) == 0)
+            {
+                std::string shortname = name + strlen(aprefix) ;
+                m_A[shortname] = it->second ;  
+            }
+        }
+        else
         {
-            std::string shortname = name + strlen(aprefix) ;
+            std::string shortname = name  ;
             m_A[shortname] = it->second ;  
         }
     }
@@ -80,9 +89,18 @@ void NLookup::setB( const std::map<std::string, unsigned int>& B, const char* bp
     for(MSU::const_iterator it=B.begin() ; it != B.end() ; it++)
     {
         const char* name = it->first.c_str() ; 
-        if(strncmp(name, bprefix, strlen(bprefix)) == 0)
+        
+        if(bprefix)
         {
-            std::string shortname = name + strlen(bprefix) ;
+            if(strncmp(name, bprefix, strlen(bprefix)) == 0)
+            {
+                std::string shortname = name + strlen(bprefix) ;
+                m_B[shortname] = it->second ;  
+            }
+        }
+        else
+        {
+            std::string shortname = name  ;
             m_B[shortname] = it->second ;  
         }
     }

@@ -91,10 +91,7 @@ opticksdata-url-ssh(){ echo ssh://hg@bitbucket.org/simoncblyth/opticksdata ; }
 opticksdata-info(){ cat << EOM
 
    opticksdata-url       : $(opticksdata-url)
-   opticksdata-url-ssh   : $(opticksdata-url)
-
-
-
+   opticksdata-url-ssh   : $(opticksdata-url-ssh)
 
 EOM
 }
@@ -102,13 +99,10 @@ EOM
 opticksdata-hgrc-vi(){
    opticksdata-cd 
 
-   cat << EOM
+   opticksdata-info 
 
+   echo $msg SWITCH TO SSH BY UPDATING URLS 
 
-
-EOM
-
-   echo TO SWITCH URLS CHANGE 
    vi .hg/hgrc
 
 }
