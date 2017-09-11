@@ -185,8 +185,23 @@ void OContext::cleanUp()
 
 
 optix::Program OContext::createProgram(const char* filename, const char* progname )
-{
-    return m_cfg->createProgram(filename, progname);
+{  
+
+    LOG(info) << "OContext::createProgram START "
+              << " filename " << filename
+              << " progname " << progname
+              ;
+
+    optix::Program prog = m_cfg->createProgram(filename, progname);
+
+
+    LOG(info) << "OContext::createProgram DONE "
+              << " filename " << filename
+              << " progname " << progname
+              ;
+
+    return prog ; 
+
 }
 
 unsigned int OContext::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
