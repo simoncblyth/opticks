@@ -84,7 +84,36 @@ opticksdata-env(){      olocal- ; opticks- ;  }
 opticksdata-dir(){ echo $(opticks-prefix)/opticksdata ; }
 opticksdata-cd(){  cd $(opticksdata-dir); }
 
-opticksdata-url(){ echo http://bitbucket.org/simoncblyth/opticksdata ; }
+opticksdata-url(){       echo http://bitbucket.org/simoncblyth/opticksdata ; }
+opticksdata-url-ssh(){ echo ssh://hg@bitbucket.org/simoncblyth/opticksdata ; }
+
+
+opticksdata-info(){ cat << EOM
+
+   opticksdata-url       : $(opticksdata-url)
+   opticksdata-url-ssh   : $(opticksdata-url)
+
+
+
+
+EOM
+}
+
+opticksdata-hgrc-vi(){
+   opticksdata-cd 
+
+   cat << EOM
+
+
+
+EOM
+
+   echo TO SWITCH URLS CHANGE 
+   vi .hg/hgrc
+
+}
+
+
 
 opticksdata-get(){
    local msg="$FUNCNAME :"

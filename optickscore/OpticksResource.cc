@@ -35,7 +35,7 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
-const char* OpticksResource::JUNO    = "juno" ; 
+const char* OpticksResource::JUNO    = "juno1707" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
 const char* OpticksResource::DPIB    = "PmtInBox" ; 
 const char* OpticksResource::OTHER   = "other" ; 
@@ -315,7 +315,6 @@ void OpticksResource::identifyGeometry()
        const char* detector = getMetaValue("detector") ;
        if(detector)
        {
-
            if(     strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
            else if(strcmp(detector, JUNO)    == 0) m_juno = true ; 
            else if(strcmp(detector, DPIB)    == 0) m_dpib = true ; 
@@ -378,7 +377,7 @@ void OpticksResource::assignDetectorName()
 {
    std::map<std::string, std::string> detname ; 
 
-   detname[JUNO]    = "juno" ;
+   detname[JUNO]    = "juno1707" ;
    detname[DAYABAY] = "DayaBay" ;
    detname[DPIB]    = "dpib" ;
    detname[OTHER]   = "other" ;

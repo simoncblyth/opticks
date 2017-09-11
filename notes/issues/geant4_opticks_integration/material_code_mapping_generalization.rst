@@ -6,6 +6,206 @@ map these to actual materials it is necessary to have
 a code to material name mapping. 
 
 
+Where is genstep path configured ?
+----------------------------------
+
+
+::
+
+    delta:optickscore blyth$ grep cerenkov *.*
+    Opticks.cc:    else if(m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
+    OpticksCfg.cc:       ("cerenkov,c",  "load cerenkov gensteps") ;
+    OpticksCfg.cc:       ("natural,n",  "load natural gensteps containing a mixture of scintillation and cerenkov steps") ;
+    OpticksEvent.cc:    m_abbrev[genstep_] = "gs" ;    // input gs are named: cerenkov, scintillation but for posterity need common output tag
+    OpticksEvent.hh:      scintillation or cerenkov
+    OpticksEvent.hh:      //    typ: cerenkov/scintillaton/torch/g4gun
+    OpticksFlags.cc:const char* OpticksFlags::cerenkov_          = "cerenkov" ;
+    OpticksFlags.cc:       case CERENKOV     :name = cerenkov_      ;break;
+    OpticksFlags.cc:    else if(strcmp(type,cerenkov_)==0)      code = CERENKOV ;
+    OpticksFlags.hh:       static const char* cerenkov_ ;
+    delta:optickscore blyth$ 
+
+::
+
+     933 unsigned int Opticks::getSourceCode()
+     934 {
+     935     unsigned int code ;
+     936     if(     m_cfg->hasOpt("natural"))       code = NATURAL ;     // doing (CERENKOV | SCINTILLATION) would entail too many changes 
+     937     else if(m_cfg->hasOpt("cerenkov"))      code = CERENKOV ;
+     938     else if(m_cfg->hasOpt("scintillation")) code = SCINTILLATION ;
+     939     else if(m_cfg->hasOpt("torch"))         code = TORCH ;
+     940     else if(m_cfg->hasOpt("machinery"))     code = MACHINERY ;
+     941     else if(m_cfg->hasOpt("g4gun"))         code = G4GUN ;
+     942     else                                    code = TORCH ;
+     943     return code ;
+     944 }
+
+
+
+::
+
+    054 void OpticksGen::initInputGensteps()
+     55 {
+     56     if(m_ok->isNoInputGensteps())
+     57     {
+     58         LOG(warning) << "OpticksGen::initInputGensteps SKIP as isNoInputGensteps " ;
+     59         return ;
+     60     }
+     61 
+     62     const char* type = m_ok->getSourceType();
+     63     unsigned code = m_ok->getSourceCode();
+     64     LOG(debug) << "OpticksGen::initInputGensteps"
+     65                << " code " << code
+     66                << " type " << type
+     67                ;
+     68 
+     69 
+     70     NPY<float>* gs = NULL ;
+     71 
+     72     if( code == FABRICATED || code == MACHINERY  )
+     73     {
+     74         m_fabstep = makeFabstep();
+     75         gs = m_fabstep->getNPY();
+     76     }
+     77     else if(code == TORCH)
+     78     {
+     79         m_torchstep = makeTorchstep() ;
+     80         gs = m_torchstep->getNPY();
+     81     }
+     82     else if( code == CERENKOV || code == SCINTILLATION || code == NATURAL )
+     83     {
+     84         gs = loadGenstepFile("GS_LOADED,GS_LEGACY");
+     85     }
+     86     else if( code == G4GUN  )
+     87     {
+     88         if(m_ok->existsGenstepPath())
+     89         {
+     90              gs = loadGenstepFile("GS_LOADED");
+     91         }
+     92         else
+     93         {
+     94              std::string path = m_ok->getGenstepPath();
+     95              LOG(warning) <<  "G4GUN running, but no gensteps at " << path
+     96                           << " LIVE G4 is required to provide the gensteps "
+     97                           ;
+     98         }
+     99     }
+    100     setInputGensteps(gs);
+    101 }
+
+
+::
+
+    200 NPY<float>* OpticksGen::loadGenstepFile(const char* label)
+    201 {
+    202     NPY<float>* gs = m_ok->loadGenstep();
+    203     if(gs == NULL)
+    204     {
+    205         LOG(fatal) << "OpticksGen::loadGenstepFile FAILED" ;
+    206         m_ok->setExit(true);
+    207         return NULL ;
+    208     }
+    209     gs->setLookup(m_lookup);
+    210 
+    211     int modulo = m_cfg->getModulo();
+    212 
+    213     NParameters* parameters = gs->getParameters();
+    214     parameters->add<int>("Modulo", modulo );
+    215     if(modulo > 0)
+    216     {
+    217         parameters->add<std::string>("genstepOriginal",   gs->getDigestString()  );
+    218         LOG(warning) << "OptickGen::loadGenstepFile applying modulo scaledown " << modulo ;
+    219         gs = NPY<float>::make_modulo(gs, modulo);
+    220         parameters->add<std::string>("genstepModulo",   gs->getDigestString()  );
+    221     }
+    222     gs->addActionControl(OpticksActionControl::Parse(label));
+    223     return gs ;
+    224 }
+
+::
+
+    1221 std::string Opticks::getGenstepPath()
+    1222 {
+    1223     const char* det = m_spec->getDet();
+    1224     const char* typ = m_spec->getTyp();
+    1225     const char* tag = m_spec->getTag();
+    1226 
+    1227     std::string path = NLoad::GenstepsPath(det, typ, tag);
+    1228     return path ;
+    1229 }
+    1230 
+    1231 bool Opticks::existsGenstepPath()
+    1232 {
+    1233     std::string path = getGenstepPath();
+    1234     return BFile::ExistsFile(path.c_str());
+    1235 }
+    1236 
+    1237 
+    1238 NPY<float>* Opticks::loadGenstep()
+    1239 {
+    1240     std::string path = getGenstepPath();
+    1241     NPY<float>* gs = NPY<float>::load(path.c_str());
+    1242     if(!gs)
+    1243     {
+    1244         LOG(warning) << "Opticks::loadGenstep"
+    1245                      << " FAILED TO LOAD GENSTEPS FROM "
+    1246                      << " path " << path
+    1247                      ;
+    1248         return NULL ;
+    1249     }
+    1250     return gs ;
+    1251 }
+
+
+     08 std::string NLoad::GenstepsPath(const char* det, const char* typ, const char* tag)
+      9 {
+     10     const char* gensteps_dir = BOpticksResource::GenstepsDir();  // eg /usr/local/opticks/opticksdata/gensteps
+     11     BOpticksEvent::SetOverrideEventBase(gensteps_dir) ;
+     12     BOpticksEvent::SetLayoutVersion(1) ;
+     13 
+     14     const char* stem = "" ; // backward compat stem of gensteps
+     15     std::string path = BOpticksEvent::path(det, typ, tag, stem, ".npy");
+     16 
+     17     BOpticksEvent::SetOverrideEventBase(NULL) ;
+     18     BOpticksEvent::SetLayoutVersionDefault() ;
+     19 
+     20     return path ;
+     21 }
+     22 
+     23 NPY<float>* NLoad::Gensteps(const char* det, const char* typ, const char* tag)
+     24 {
+     25     std::string path = GenstepsPath(det, typ, tag);
+     26     NPY<float>* gs = NPY<float>::load(path.c_str()) ;
+     27     return gs ;
+     28 }
+
+
+     302 void Opticks::init()
+     303 {
+     304     m_mode = new OpticksMode(hasArg(COMPUTE_ARG_)) ;
+     305 
+     306     m_cfg = new OpticksCfg<Opticks>("opticks", this,false);
+     307 
+     308     m_timer = new Timer("Opticks::");
+     309 
+     310     m_timer->setVerbose(true);
+     311 
+     312     m_timer->start();
+     313 
+     314     m_parameters = new NParameters ;
+     315 
+     316     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
+     317 
+     318     m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
+     319 
+     320     setDetector( m_resource->getDetector() );
+     321 
+     322     LOG(info) << "Opticks::init DONE " << m_resource->desc()  ;
+     323 }
+
+
+
+
 Review Genstep
 ----------------
 

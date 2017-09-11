@@ -1225,6 +1225,15 @@ std::string Opticks::getGenstepPath()
     const char* tag = m_spec->getTag();
 
     std::string path = NLoad::GenstepsPath(det, typ, tag);
+
+    LOG(info) << "Opticks::getGenstepPath"
+              << " det " << det 
+              << " typ " << typ 
+              << " tag " << tag
+              << " path " << path
+              ; 
+
+
     return path ; 
 }
 
