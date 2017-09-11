@@ -37,6 +37,7 @@ tjuno--(){
 
     op.sh  \
             $cmdline \
+            --j1707 --gltf 3 \
             --animtimemax 200 \
             --timemax 200 \
             --geocenter \
