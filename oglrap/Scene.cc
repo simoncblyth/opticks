@@ -839,7 +839,7 @@ std::string Scene::desc() const
 
 void Scene::render()
 {
-    LOG(info) << desc() ; 
+    //LOG(info) << desc() ; 
 
     bool raytraced = isRaytracedRender() ;
     bool composite = isCompositeRender() ;

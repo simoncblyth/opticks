@@ -6,6 +6,104 @@ map these to actual materials it is necessary to have
 a code to material name mapping. 
 
 
+
+env/chroma/G4DAEChroma
+------------------------- 
+
+* gdc-
+* ~/env/chroma/G4DAEChroma
+
+NB the ChromaMaterialMap.json is an input to the generation of gensteps, 
+the actual values of the codes are immaterial... so long as the map covers
+all materials and the codea are unique.
+
+
+
+Mapping Codes ?
+-----------------
+
+::
+
+    delta:ggeo blyth$ op --j1707 --bnd
+    === op-cmdline-binary-match : finds 1st argument with associated binary : --bnd
+    ubin /usr/local/opticks/lib/GBndLibTest cfm --bnd cmdline --j1707 --bnd
+    === op-export : OPTICKS_BINARY /usr/local/opticks/lib/GBndLibTest
+    248 -rwxr-xr-x  1 blyth  staff  126532 Sep 11 15:35 /usr/local/opticks/lib/GBndLibTest
+    proceeding.. : /usr/local/opticks/lib/GBndLibTest --j1707 --bnd
+    2017-09-11 20:13:15.746 INFO  [1207704] [main@28] /usr/local/opticks/lib/GBndLibTest
+    2017-09-11 20:13:15.748 INFO  [1207704] [main@32]  ok 
+    2017-09-11 20:13:15.748 INFO  [1207704] [main@36]  loaded blib 
+    2017-09-11 20:13:15.749 INFO  [1207704] [GMaterialLib::postLoadFromCache@67] GMaterialLib::postLoadFromCache  nore 0 noab 0 nosc 0 xxre 0 xxab 0 xxsc 0 fxre 0 fxab 0 fxsc 0 groupvel 1
+    2017-09-11 20:13:15.749 INFO  [1207704] [GMaterialLib::replaceGROUPVEL@552] GMaterialLib::replaceGROUPVEL  ni 15
+    2017-09-11 20:13:15.749 INFO  [1207704] [GPropertyLib::getIndex@338] GPropertyLib::getIndex type GMaterialLib TRIGGERED A CLOSE  shortname [Acrylic]
+    2017-09-11 20:13:15.749 INFO  [1207704] [GPropertyLib::close@384] GPropertyLib::close type GMaterialLib buf 15,2,39,4
+    2017-09-11 20:13:15.750 INFO  [1207704] [main@40]  loaded all  blib 0x7fc7bb404a30 mlib 0x7fc7bb4055f0 slib 0x7fc7bb427200
+    2017-09-11 20:13:15.750 INFO  [1207704] [GBndLib::dump@830] GBndLib::dump
+    2017-09-11 20:13:15.750 INFO  [1207704] [GBndLib::dump@832] GBndLib::dump ni 27
+     (  0) om:                 Galactic os:                                is:                                im:                 Galactic ( 3,-1,-1, 3)
+     (  1) om:                 Galactic os:                                is:                                im:                     Rock ( 3,-1,-1, 6)
+     (  2) om:                     Rock os:                                is:                                im:                      Air ( 6,-1,-1, 1)
+     (  3) om:                      Air os:                                is:                                im:                      Air ( 1,-1,-1, 1)
+     (  4) om:                      Air os:                                is:                                im:                       LS ( 1,-1,-1, 4)
+     (  5) om:                      Air os:                                is:                                im:                    Steel ( 1,-1,-1, 7)
+     (  6) om:                      Air os:                                is:                                im:                    Tyvek ( 1,-1,-1, 9)
+     (  7) om:                     Rock os:                                is:                                im:                    Tyvek ( 6,-1,-1, 9)
+     (  8) om:                    Tyvek os:                                is:                                im:                vetoWater ( 9,-1,-1,12)
+     (  9) om:                vetoWater os:                 CDTyvekSurface is:                                im:                    Tyvek (12, 0,-1, 9)
+     ( 10) om:                    Tyvek os:                                is:                                im:                    Water ( 9,-1,-1,11)
+     ( 11) om:                    Water os:                                is:                                im:                  Acrylic (11,-1,-1, 0)
+     ( 12) om:                  Acrylic os:                                is:                                im:                       LS ( 0,-1,-1, 4)
+     ( 13) om:                    Water os:                                is:                                im:                    Steel (11,-1,-1, 7)
+     ( 14) om:                    Water os:                                is:                                im:                   Copper (11,-1,-1, 2)
+     ( 15) om:                    Water os:                                is:                                im:                    Water (11,-1,-1,11)
+     ( 16) om:                    Water os:                                is:                                im:                    Pyrex (11,-1,-1, 5)
+     ( 17) om:                    Pyrex os:                                is:                                im:                    Pyrex ( 5,-1,-1, 5)
+     ( 18) om:                    Pyrex os:PMT_20inch_photocathode_logsurf2 is:                                im:                   Vacuum ( 5, 4,-1,10)
+     ( 19) om:                    Pyrex os:                                is:     PMT_20inch_mirror_logsurf1 im:                   Vacuum ( 5,-1, 2,10)
+     ( 20) om:                    Pyrex os:PMT_3inch_photocathode_logsurf2 is:                                im:                   Vacuum ( 5, 8,-1,10)
+     ( 21) om:                    Pyrex os:                                is:      PMT_3inch_absorb_logsurf1 im:                   Vacuum ( 5,-1, 5,10)
+     ( 22) om:                    Water os:                                is:                                im:                    Tyvek (11,-1,-1, 9)
+     ( 23) om:                    Water os:                                is:                                im:                       LS (11,-1,-1, 4)
+     ( 24) om:                       LS os:                                is:                                im:                    Steel ( 4,-1,-1, 7)
+     ( 25) om:                    Water os:                      Tube_surf is:                                im:                   Teflon (11, 9,-1, 8)
+     ( 26) om:                   Teflon os:                                is:                                im:                   Vacuum ( 8,-1,-1,10)
+    2017-09-11 20:13:15.751 INFO  [1207704] [int>::save@633] NPYBase::save creating directories [/tmp/blyth/opticks/GBndLib]/tmp/blyth/opticks/GBndLib/GBndLibIndex.npy
+    2017-09-11 20:13:15.751 INFO  [1207704] [int>::save@636] NPYBase::save created directories [/tmp/blyth/opticks/GBndLib]
+    2017-09-11 20:13:15.751 INFO  [1207704] [GPropertyLib::close@384] GPropertyLib::close type GBndLib buf 27,4,2,39,4
+    2017-09-11 20:13:15.752 INFO  [1207704] [BFile::preparePath@462] preparePath : created directory /tmp/blyth/opticks/GItemList
+    2017-09-11 20:13:15.752 INFO  [1207704] [main@59]  after blib saveToCache 
+    2017-09-11 20:13:15.752 INFO  [1207704] [main@61]  after blib saveOpticalBuffer 
+    /Users/blyth/opticks/bin/op.sh RC 0
+    delta:ggeo blyth$ 
+
+
+
+    delta:ggeo blyth$ op --j1707 --mat | grep material
+    256 -rwxr-xr-x  1 blyth  staff  129960 Sep 11 15:35 /usr/local/opticks/lib/GMaterialLibTest
+    proceeding.. : /usr/local/opticks/lib/GMaterialLibTest --j1707 --mat
+    the required argument for option '--materialprefix' is missing
+    2017-09-11 20:18:46.595 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  0       material m:Acrylic k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Acrylic
+    2017-09-11 20:18:46.595 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  1       material m:Air k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Air
+    2017-09-11 20:18:46.596 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  2       material m:Copper k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Copper
+    2017-09-11 20:18:46.596 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  3       material m:Galactic k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Galactic
+    2017-09-11 20:18:46.597 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  4       material m:LS k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w LS
+    2017-09-11 20:18:46.597 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  5       material m:Pyrex k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Pyrex
+    2017-09-11 20:18:46.598 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  6       material m:Rock k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Rock
+    2017-09-11 20:18:46.598 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  7       material m:Steel k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Steel
+    2017-09-11 20:18:46.599 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  8       material m:Teflon k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Teflon
+    2017-09-11 20:18:46.599 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>::  9       material m:Tyvek k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Tyvek
+    2017-09-11 20:18:46.600 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 10       material m:Vacuum k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Vacuum
+    2017-09-11 20:18:46.600 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 11       material m:Water k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w Water
+    2017-09-11 20:18:46.601 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 12       material m:vetoWater k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w vetoWater
+    2017-09-11 20:18:46.601 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 13       material m:GlassSchottF2 k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w GlassSchottF2
+    2017-09-11 20:18:46.602 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 14       material m:MainH2OHale k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w MainH2OHale
+    2017-09-11 20:18:46.602 WARN  [1209203] [GMaterialLib::dump@701] GPropertyMap<T>:: 15       material m:GlassSchottF2 k:refractive_index absorption_length scattering_length reemission_prob group_velocity extra_y extra_z extra_w GlassSchottF2
+
+
+
+
+
+
 Where is genstep path configured ?
 ----------------------------------
 
