@@ -1335,6 +1335,7 @@ std::string Opticks::getG4GunConfig()
 }
 
 
+const char* Opticks::getExampleMaterialNames() { return m_resource->getExampleMaterialNames(); }
 const char* Opticks::getDefaultMaterial() { return m_resource->getDefaultMaterial(); }
 const char* Opticks::getDetector() { return m_resource->getDetector(); }
 bool Opticks::isJuno() {    return m_resource->isJuno(); }

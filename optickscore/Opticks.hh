@@ -114,6 +114,7 @@ class OKCORE_API Opticks {
        // from OpticksResource
        const char* getDetector();
        const char* getDefaultMaterial();
+       const char* getExampleMaterialNames();
        bool isJuno();
        bool isDayabay();
        bool isPmtInBox();

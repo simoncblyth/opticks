@@ -56,6 +56,12 @@ const char* OpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ;
 const char* OpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
 const char* OpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
 
+const char* OpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
+const char* OpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
+const char* OpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
+
+
+
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
        BOpticksResource(envprefix),
@@ -348,11 +354,25 @@ void OpticksResource::assignDefaultMaterial()
     m_default_material =  DEFAULT_MATERIAL_OTHER ; 
     if(m_juno)    m_default_material = DEFAULT_MATERIAL_JUNO ;
     if(m_dayabay) m_default_material = DEFAULT_MATERIAL_DYB ;
+
+    m_example_matnames =  EXAMPLE_MATNAMES_OTHER ; 
+    if(m_juno)    m_example_matnames = EXAMPLE_MATNAMES_JUNO ;
+    if(m_dayabay) m_example_matnames = EXAMPLE_MATNAMES_DYB ;
+
+
 }
+
 const char* OpticksResource::getDefaultMaterial()
 {
     return m_default_material ; 
 }
+
+const char* OpticksResource::getExampleMaterialNames()
+{
+    return m_example_matnames ; 
+}
+
+
 
 void OpticksResource::assignDetectorName()
 {
@@ -626,6 +646,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "material_map  : " <<  (m_material_map?m_material_map:"NULL") << std::endl; 
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
+    std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
     std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  
 
     typedef std::map<std::string, std::string> SS ;

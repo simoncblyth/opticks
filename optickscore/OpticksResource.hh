@@ -38,6 +38,12 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static const char* DEFAULT_MATERIAL_DYB ;
        static const char* DEFAULT_MATERIAL_JUNO ;
        static const char* DEFAULT_MATERIAL_OTHER ;
+
+    public:
+       static const char* EXAMPLE_MATNAMES_DYB ;
+       static const char* EXAMPLE_MATNAMES_JUNO ;
+       static const char* EXAMPLE_MATNAMES_OTHER ;
+ 
     public:
        static bool existsFile(const char* path);
        static bool existsFile(const char* dir, const char* name);
@@ -64,6 +70,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
        const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
+       const char* getExampleMaterialNames();  // comma delimited list of short material names
     public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
@@ -168,6 +175,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_resource_base ;
        const char* m_material_map  ;
        const char* m_default_material  ;
+       const char* m_example_matnames  ;
        
    private:
        std::map<std::string, std::string> m_metadata ;  
