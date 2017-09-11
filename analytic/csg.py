@@ -20,7 +20,7 @@ log = logging.getLogger(__name__)
 # bring in enum values from sysrap/OpticksCSG.h
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, make_scale
-from opticks.analytic.bezier import Bezier
+#from opticks.analytic.bezier import Bezier
 from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction

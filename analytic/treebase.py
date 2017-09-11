@@ -13,7 +13,7 @@ treebase.py
 """
 
 import logging, hashlib, sys, os
-from collections import Counter
+# from collections import Counter
 import numpy as np
 np.set_printoptions(precision=2) 
 
@@ -290,9 +290,9 @@ class Node(object):
         """
         """
         lvn = [c.lv.name for c in self.children]
-        lvc = Counter(lvn) 
-        for k,v in sorted(lvc.items(), key=lambda kv:kv[1]):
-            print " %5d : %s " % (v, k )
+        # lvc = Counter(lvn) 
+        # for k,v in sorted(lvc.items(), key=lambda kv:kv[1]):
+        #     print " %5d : %s " % (v, k )
 
 
     def dump(self, msg="Node.dump"):

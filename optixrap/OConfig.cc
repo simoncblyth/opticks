@@ -42,6 +42,7 @@ bool OConfig::DefaultWithTop()
        case 3080:  with_top = false ;break; 
        case 3090:  with_top = false ;break; 
        case 40000: with_top = true ;break;      
+       case 40101: with_top = false ;break;      
        default: assert(0 && "unexpected OPTIX_VERSION") ;break;
     }
 
