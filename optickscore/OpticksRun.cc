@@ -69,9 +69,6 @@ OpticksEvent* OpticksRun::getCurrentEvent()
 }
 
 
-
-
-
 void OpticksRun::setGensteps(NPY<float>* gensteps)
 {
     bool no_gensteps = gensteps == NULL ; 
@@ -83,7 +80,9 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
     bool progenitor=true ; 
-    const char* oac_label = NULL ; 
+
+    const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
+
     m_g4evt->setGenstepData(gensteps, progenitor, oac_label);
 
     passBaton();  

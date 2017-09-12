@@ -53,9 +53,9 @@ void OpticksGen::setInputGensteps(NPY<float>* gs)
 
 void OpticksGen::initInputGensteps()
 {
-    if(m_ok->isNoInputGensteps())
+    if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
-        LOG(warning) << "OpticksGen::initInputGensteps SKIP as isNoInputGensteps " ; 
+        LOG(warning) << "OpticksGen::initInputGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
         return ; 
     } 
 

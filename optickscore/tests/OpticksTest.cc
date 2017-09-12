@@ -59,6 +59,14 @@ void test_getGDMLPath(Opticks* opticks)
 }
 
 
+void test_getMaterialMap(Opticks* ok)
+{
+    assert(ok);
+    const char* path = ok->getMaterialMap();
+    test_path("getMaterialMap", path);
+}
+
+
 
 
 
@@ -86,6 +94,7 @@ int main(int argc, char** argv)
     test_MaterialSequence();  
     test_getDAEPath(&ok);  
     test_getGDMLPath(&ok);  
+    test_getMaterialMap(&ok);  
 
 
 

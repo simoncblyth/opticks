@@ -29,6 +29,7 @@ okg4-tcd(){  cd $(okg4-tdir); }
 
 okg4-dir(){  echo $(okg4-sdir) ; }
 okg4-cd(){   cd $(okg4-dir); }
+okg4-c(){   cd $(okg4-dir); }
 
 
 okg4-name(){ echo okg4 ; }

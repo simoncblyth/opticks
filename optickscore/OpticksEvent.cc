@@ -1077,6 +1077,11 @@ void OpticksEvent::importGenstepData(NPY<float>* gs, const char* oac_label)
     {
         translateLegacyGensteps(gs);
     }
+    else if(oac("GS_EMBEDDED"))
+    {
+        std::cerr << "OpticksEvent::importGenstepData GS_EMBEDDED " << std::endl ; 
+        translateLegacyGensteps(gs);
+    }
     else if(oac("GS_TORCH"))
     {
         LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
