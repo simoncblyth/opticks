@@ -541,8 +541,30 @@ opticks-configure-local-boost()
 
   
 
-#opticks-config(){ echo Debug ; }
-opticks-config(){ echo RelWithDebInfo ; }
+
+opticks_config_cflags()
+{
+    echo -I
+}
+opticks_config_libs()
+{
+    echo -L
+}
+
+opticks_config()
+{
+   local arg
+   for arg in $* ; do 
+       case $arg in
+          --cflags)  opticks_config_cflags ;; 
+          --libs)    opticks_config_libs   ;; 
+       esac
+   done
+}
+
+
+#opticks-config-type(){ echo Debug ; }
+opticks-config-type(){ echo RelWithDebInfo ; }
 opticks--(){     
 
    local msg="$FUNCNAME : "
@@ -555,7 +577,7 @@ opticks--(){
 
    cd $bdir
 
-   cmake --build . --config $(opticks-config) --target ${1:-install}
+   cmake --build . --config $(opticks-config-type) --target ${1:-install}
 
    cd $iwd
 }
@@ -1037,5 +1059,25 @@ EOC
 
 }
 
+
+opticks-lib-ext()
+{
+   case $(uname) in 
+     Linux) echo so ;; 
+     Darwin) echo dylib ;; 
+   esac
+}
+
+
+opticks-lib-ls()
+{
+    local ext=$(opticks-lib-ext)
+
+    cd $(opticks-prefix)/lib
+    ls -1 *.$ext | perl -pe "s/.$ext//" - | perl -pe "s/^lib//" - 
+
+
+
+}
 
 

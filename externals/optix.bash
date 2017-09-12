@@ -77,6 +77,27 @@ Bindless programs
     bound programs do not inherit the semantic type or scope lookup of the calling program
 
 
+OptiX 4.1.1
+-------------
+
+* https://developer.nvidia.com/designworks/optix/download
+
+Graphics Driver : Linux: driver version 367.35 or later is required.
+
+Operating System: Windows 7/8.1/10 64-bit; Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit; Mac OS 10.9 or higher
+
+CUDA Toolkit: It is not required to have any CUDA toolkit installed in order to run OptiX-based applications.
+
+CUDA Toolkit 6.5, 7.0, or 7.5: OptiX 4.0 has been built with CUDA 7.5, but any
+specified toolkit should work when compiling PTX for OptiX. If an application
+links against both the OptiX library and the CUDA runtime on Linux, it is
+recommended to use the same version of CUDA that was used to build OptiX. OptiX
+supports running with NVIDIA Parallel Nsight but does not currently support
+kernel debugging. In addition, it is not recommended to compile PTX code using
+any -G (debug) flags to nvcc.
+
+
+
 
 
 PTX njuffa (2014)

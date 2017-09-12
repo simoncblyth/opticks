@@ -21,6 +21,8 @@ add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
 
+
+
 set(DUMP ON)
 if(DUMP)
    # https://cmake.org/Wiki/CMake_Useful_Variables
@@ -113,6 +115,9 @@ endif(REST)
 
 # collects version defines, currently only OXRAP_OPTIX_VERSION and CFG4_G4VERSION_NUMBER
 configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
+
+# generate opticks-config into lib dir
+include(OpticksConfigureConfigScript)
 
 
 
