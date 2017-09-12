@@ -31,6 +31,9 @@ class OKOP_API OpMgr {
    public:
        void propagate();
        void addGenstep( float* data, unsigned num_float );
+       void saveEmbeddedGensteps(const char* path) const ;
+       void loadEmbeddedGensteps(const char* path);
+
        unsigned getNumGensteps() const ;
        unsigned getNumHits() const ;
 

@@ -4,6 +4,17 @@ class Opticks ;
 class OpticksEvent ; 
 template <typename T> class NPY ; 
 
+/**
+OpticksRun
+===========
+
+Dual G4/Opticks event handling with batton passing 
+between g4evt and evt regarding the gensteps. 
+
+
+**/
+
+
 
 #include "OKCORE_API_EXPORT.hh"
 class OKCORE_API OpticksRun 

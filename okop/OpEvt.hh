@@ -17,6 +17,9 @@ class OKOP_API OpEvt {
          void addGenstep( float* data, unsigned num_float );
          unsigned getNumGensteps() const ; 
          NPY<float>* getEmbeddedGensteps();
+
+         void saveEmbeddedGensteps(const char* path) const ;
+         void loadEmbeddedGensteps(const char* path);
     private:          
          NPY<float>* m_genstep ; 
 

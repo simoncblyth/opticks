@@ -82,7 +82,9 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)
 
     assert(m_evt && m_g4evt && "must OpticksRun::createEvent prior to OpticksRun::setGensteps");
 
-    m_g4evt->setGenstepData(gensteps);
+    bool progenitor=true ; 
+    const char* oac_label = NULL ; 
+    m_g4evt->setGenstepData(gensteps, progenitor, oac_label);
 
     passBaton();  
 }

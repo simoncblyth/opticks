@@ -197,3 +197,18 @@ void OpMgr::snap()
 }
 
 
+
+void OpMgr::saveEmbeddedGensteps(const char* path) const 
+{
+    assert(m_opevt);
+    m_opevt->saveEmbeddedGensteps(path);
+}
+void OpMgr::loadEmbeddedGensteps(const char* path)
+{
+    assert(m_opevt);
+    m_opevt->loadEmbeddedGensteps(path);
+}
+
+
+
+

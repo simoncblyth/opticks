@@ -26,3 +26,18 @@ NPY<float>* OpEvt::getEmbeddedGensteps()
     return m_genstep ; 
 }
 
+
+
+void OpEvt::loadEmbeddedGensteps(const char* path)
+{
+    m_genstep = NPY<float>::load(path) ; 
+}
+
+void OpEvt::saveEmbeddedGensteps(const char* path) const 
+{
+    if(!m_genstep) return ; 
+    m_genstep->save(path) ; 
+}
+
+
+
