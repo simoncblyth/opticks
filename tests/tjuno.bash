@@ -125,3 +125,13 @@ tjuno-torchconfig()
 }
 
 
+tjuno-validate() {
+    SRC=${1:-cerenkov}; shift
+    TAG=${1:-1}; shift
+
+    # run simulation
+    op.sh --j1707 --gltf 3 --${SRC} --tag ${TAG} --compute --save
+    # run analysis
+    tevt.py --det juno1707 --src ${SRC} --tag ${TAG}
+
+}

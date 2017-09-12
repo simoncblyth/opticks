@@ -235,10 +235,15 @@ void OContext::close()
     LOG(info) << "OContext::close numEntryPoint " << num ; 
 
     m_context->setEntryPointCount( num );
+
+    LOG(info) << "OContext::close setEntryPointCount done." ;
  
     if(m_verbose) m_cfg->dump("OContext::close");
 
     m_cfg->apply();
+
+    LOG(info) << "OContext::close m_cfg->apply() done." ;
+
 }
 
 
@@ -272,10 +277,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     {
         double t0, t1 ; 
         t0 = BTimer::RealTime();
-
+        LOG(info) << "OContext::launch VALIDATE START" ;
         m_context->validate();
-
+        LOG(info) << "OContext::launch VALIDATE DONE" ;
         t1 = BTimer::RealTime();
+        LOG(info) << "OContext::launch VALIDATE time: " << (t1-t0) ;
         if(times) times->validate  += t1 - t0 ;
     }
 
@@ -283,10 +289,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     {
         double t0, t1 ; 
         t0 = BTimer::RealTime();
-
+        LOG(info) << "OContext::launch COMPILE START" ;
         m_context->compile();
-
+        LOG(info) << "OContext::launch COMPILE DONE" ;
         t1 = BTimer::RealTime();
+        LOG(info) << "OContext::launch COMPILE time: " << (t1-t0) ;
         if(times) times->compile  += t1 - t0 ;
     }
 
@@ -295,10 +302,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     {
         double t0, t1 ; 
         t0 = BTimer::RealTime();
-
+        LOG(info) << "OContext::launch PRELAUNCH START" ;
         m_context->launch( entry, 0, 0); 
-
+	LOG(info) << "OContext::launch PRELAUNCH DONE" ;
         t1 = BTimer::RealTime();
+        LOG(info) << "OContext::launch PRELAUNCH time: " << (t1-t0) ;
         if(times) times->prelaunch  += t1 - t0 ;
     }
 
@@ -307,10 +315,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     {
         double t0, t1 ; 
         t0 = BTimer::RealTime();
-
+        LOG(info) << "OContext::launch LAUNCH START" ;
         m_context->launch( entry, width, height ); 
-
+	LOG(info) << "OContext::launch LAUNCH DONE" ;
         t1 = BTimer::RealTime();
+	LOG(info) << "OContext::launch LAUNCH time: " << (t1-t0) ;
         if(times) times->launch  += t1 - t0 ;
     }
 
@@ -343,6 +352,8 @@ void OContext::upload(optix::Buffer& buffer, NPY<T>* npy)
         rtBufferGetDevicePointer(buffer->get(), 0, &d_ptr);
         cudaMemcpy(d_ptr, npy->getBytes(), numBytes, cudaMemcpyHostToDevice);
         buffer->markDirty();
+        if(verbose) LOG(info) << npy->description("UPLOAD_WITH_CUDA markDirty DONE") ;
+
     }
     else
     {
