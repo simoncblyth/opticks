@@ -46,7 +46,7 @@ fi
 scriptloc=`dirname $script`
 
 
-echo scriptloc $scriptloc
+# echo scriptloc $scriptloc
 
 
 #-----------------------------------------------------------------------
