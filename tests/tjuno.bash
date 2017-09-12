@@ -132,6 +132,6 @@ tjuno-validate() {
     # run simulation
     op.sh --j1707 --gltf 3 --${SRC} --tag ${TAG} --compute --save
     # run analysis
-    python opticks/ana/tevt.py --det juno1707 --src ${SRC} --tag ${TAG}
+    tevt.py --det juno1707 --src ${SRC} --tag ${TAG}
 
 }
