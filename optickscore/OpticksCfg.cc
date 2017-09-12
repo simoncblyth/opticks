@@ -279,6 +279,10 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("live",   "get gensteps direct from live Geant4") ; 
 
+   m_desc.add_options()
+       ("embedded",  "get gensteps direct from host into which Opticks is embedded via OpMgr interface") ; 
+
+
 
    m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;

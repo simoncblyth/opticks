@@ -950,6 +950,13 @@ bool Opticks::isFabricatedGensteps()
     return code == TORCH || code == MACHINERY ;  
 }
 
+
+bool Opticks::isEmbedded() const 
+{
+    return hasOpt("embedded");
+}
+
+
 bool Opticks::isLiveGensteps()
 {  
     return hasOpt("live");
@@ -1324,7 +1331,7 @@ unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
 unsigned Opticks::getRecordMax() {   return m_cfg->getRecordMax() ; }
 
 float Opticks::getEpsilon() {            return m_cfg->getEpsilon()  ; }
-bool Opticks::hasOpt(const char* name) { return m_cfg->hasOpt(name); }
+bool Opticks::hasOpt(const char* name) const { return m_cfg->hasOpt(name); }
 
 bool Opticks::operator()(const char* name) const 
 {

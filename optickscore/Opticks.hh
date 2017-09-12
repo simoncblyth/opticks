@@ -97,7 +97,7 @@ class OKCORE_API Opticks {
        void Summary(const char* msg="Opticks::Summary");
        void dumpArgs(const char* msg="Opticks::dumpArgs");
        void dumpParameters(const char* msg="Opticks::dumpParameters");
-       bool hasOpt(const char* name);
+       bool hasOpt(const char* name) const ;
        bool operator()(const char* name) const ; 
        void cleanup();
        void postpropagate();
@@ -235,6 +235,9 @@ class OKCORE_API Opticks {
 
        bool                 isNoInputGensteps();          // eg when loading a prior propagation
        bool                 isLiveGensteps();             // --live option indicating get gensteps from G4 directly
+       bool                 isEmbedded() const ;          // --embedded option indicating get gensteps via OpMgr API 
+
+
        bool                 isFabricatedGensteps();       // TORCH or MACHINERY source
        const char*          getSourceType();
        const char*          getEventTag();

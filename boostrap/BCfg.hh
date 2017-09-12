@@ -66,7 +66,7 @@ public:
     BCfg(const char* name, bool live);
     bool isLive();
     const char* getName();
-    bool hasOpt(const char* opt);   
+    bool hasOpt(const char* opt) const ;   
 
 public:
     // holding others 

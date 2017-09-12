@@ -6,6 +6,7 @@ class OpticksHub ;
 class OpticksGen ; 
 class OpticksRun ; 
 class OpticksIdx; 
+class OpEvt ;
 
 class OpPropagator ; 
 
@@ -28,7 +29,11 @@ class OKOP_API OpMgr {
        OpMgr(int argc, char** argv, const char* argforced=0 );
        virtual ~OpMgr();
    public:
-       //void propagate();
+       void propagate();
+       void addGenstep( float* data, unsigned num_float );
+       unsigned getNumGensteps() const ;
+       unsigned getNumHits() const ;
+
        void snap();
    private:
        void init();
@@ -43,6 +48,7 @@ class OKOP_API OpMgr {
        OpticksRun*    m_run ; 
        OpPropagator*  m_propagator ; 
        int            m_count ;  
+       OpEvt*         m_opevt ; 
        
 };
 

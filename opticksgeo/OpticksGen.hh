@@ -26,6 +26,7 @@ Canonical m_gen instance is member of ok/OKMgr OR okg4/OKG4Mgr
 
 class OKGEO_API OpticksGen 
 { 
+        friend class OpMgr ;  // for setInputGensteps
     public:
         OpticksGen(OpticksHub* hub);
     public:
@@ -40,6 +41,7 @@ class OKGEO_API OpticksGen
         NPY<float>*          loadGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:
+       //  FabStepNPY and TorchStepNPY are specializations of GenstepNPY
         void                 targetGenstep( GenstepNPY* gs );
         void                 setMaterialLine( GenstepNPY* gs );
     private:

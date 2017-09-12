@@ -43,7 +43,7 @@ const std::string& BCfg::getCommandLine()
     return m_commandline ; 
 }
 
-bool BCfg::hasOpt(const char* opt)
+bool BCfg::hasOpt(const char* opt) const 
 { 
    std::vector<std::string> elem;
    boost::split(elem,opt,boost::is_any_of("|")); 

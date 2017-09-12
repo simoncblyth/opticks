@@ -101,6 +101,7 @@ set(SOURCES
     OpIndexerApp.cc
     OpEngine.cc
     OpMgr.cc
+    OpEvt.cc
     OpPropagator.cc
     OpTracer.cc
 )
