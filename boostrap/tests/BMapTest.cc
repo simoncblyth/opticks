@@ -4,6 +4,8 @@
 
 #include "BRAP_LOG.hh"
 #include "PLOG.hh"
+#include <boost/property_tree/ptree.hpp>
+#include "BJSONParser.hh"
 
 const char* pathSU = "$TMP/BMapTestSU.json" ; 
 const char* pathUS = "$TMP/BMapTestUS.json" ;
@@ -64,15 +66,55 @@ void test_loadIni()
 }
 
 
+void test_LoadJSONString_() {
+
+    namespace pt = boost::property_tree;
+
+    pt::ptree t;
+    std::stringstream pippo("{\"size\":1000,\"reserved\":100,\"list\": {\"122\":1,\"123\":3}}");
+    // std::stringstream pippo;
+    // pippo << "{\"size\":1000,\"reserved\":100,\"list\": {\"122\":1,\"123\":3}}";
+    pt::read_json(pippo,t);
+    pt::write_json(pippo,t,false);
+    pippo.seekg(0,pippo.beg);
+    pt::read_json(pippo,t);
+
+    std::cout << "done. " << std::endl;
+}
+
 void test_LoadJSONString()
 {
-   std::map<std::string, std::string> md ;
+   std::map<std::string, unsigned> md ;
 
-   const char* json = "{\"hello\":\"world\"}" ; 
+   //const char* json = "{\"hello\":\"world\"}" ; 
    //const char* json = "{}" ; 
+   std::map<std::string, int> mattbl;
+   mattbl["LS"] = 48;
+   mattbl["Acrylic"] = 24;
+   std::stringstream ss;
 
-   BMap<std::string, std::string>::LoadJSONString(&md, json, 0 );
-   BMap<std::string, std::string>::dump(&md, "LoadJSONString");
+   ss << "{" << std::endl;
+   for (std::map<std::string, int>::iterator it = mattbl.begin();
+        it != mattbl.end(); ++it) {
+       ss << "\"" << it->first << "\"" << ":" << it->second << "," << std::endl;
+   }
+   ss << "\"" << "ENDMAT" << "\"" << ":999999" << std::endl;
+   ss << "}" << std::endl;
+   std::string json_string = ss.str();
+   const char* json = json_string.c_str() ; 
+   std::cout << json << std::endl;
+
+   // namespace pt = boost::property_tree;
+
+   // std::cout << "READ JSON start." << std::endl;
+
+   // pt::ptree t;
+   // std::stringstream pippo(json);
+   // pt::read_json(pippo,t);
+   // std::cout << "READ JSON done." << std::endl;
+
+   BMap<std::string, unsigned>::LoadJSONString(&md, json, 0 );
+   BMap<std::string, unsigned>::dump(&md, "LoadJSONString");
 
 }
 
@@ -98,6 +140,7 @@ int main(int argc, char** argv)
 
 */
 
+    test_LoadJSONString_();
     test_LoadJSONString();
 
     return 0 ; 

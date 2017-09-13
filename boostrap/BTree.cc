@@ -65,6 +65,7 @@ int BTree::loadJSONString(pt::ptree& t , const char* json)
 {
     std::stringstream ss ; 
     ss << json ; 
+    // ss.seekg(0, ss.beg);
 
     pt::read_json(ss, t );
        
