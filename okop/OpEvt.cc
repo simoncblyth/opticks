@@ -40,4 +40,12 @@ void OpEvt::saveEmbeddedGensteps(const char* path) const
 }
 
 
+void OpEvt::resetGensteps() 
+{
+    m_genstep->reset();
+    assert( getNumGensteps() == 0 );
+}
+
+
+
 

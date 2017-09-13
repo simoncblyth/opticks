@@ -161,7 +161,10 @@ void OpMgr::propagate()
                 m_run->saveEvent();
                 if(!production) m_hub->anaEvent();
             }
+
             m_run->resetEvent();
+
+            m_opevt->resetGensteps(); 
 
             m_ok->postpropagate();
         }

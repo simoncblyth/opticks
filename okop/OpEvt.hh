@@ -20,6 +20,8 @@ class OKOP_API OpEvt {
 
          void saveEmbeddedGensteps(const char* path) const ;
          void loadEmbeddedGensteps(const char* path);
+
+         void resetGensteps();
     private:          
          NPY<float>* m_genstep ; 
 
