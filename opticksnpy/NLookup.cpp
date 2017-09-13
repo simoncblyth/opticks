@@ -53,6 +53,13 @@ void NLookup::mockB(const char* bdir, const char* bname)
 }
 
 
+void NLookup::setA( const char* json )
+{
+    BMap<std::string, unsigned>::LoadJSONString(&m_A, json, 0 );
+    BMap<std::string, unsigned>::dump(&m_A, "NLookup::setA" );
+}
+
+
 void NLookup::setA( const std::map<std::string, unsigned int>& A, const char* aprefix, const char* alabel )
 {
     assert(!m_closed);

@@ -242,6 +242,13 @@ void OpticksHub::overrideMaterialMapA(const std::map<std::string, unsigned>& A, 
     m_lookup->setA( A, "", msg);
 }
 
+void OpticksHub::overrideMaterialMapA(const char* jsonA )
+{
+    m_lookup->setA( jsonA );
+}
+
+
+
 void OpticksHub::loadGeometry()
 {
     assert(m_geometry == NULL && "OpticksHub::loadGeometry should only be called once");

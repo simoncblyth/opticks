@@ -211,7 +211,7 @@ void OpMgr::loadEmbeddedGensteps(const char* path)
 
 void OpMgr::setLookup(const char* json)
 {
-    // m_hub->
+    m_hub->overrideMaterialMapA(json);
 }
 
 

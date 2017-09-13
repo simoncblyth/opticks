@@ -62,6 +62,7 @@ OpticksHub
 class OKGEO_API OpticksHub {
 
     // friends using overrideMaterialMapA
+       friend class OpMgr ; 
        friend class OKG4Mgr ; 
 
     // friends using getEvent
@@ -85,6 +86,7 @@ class OKGEO_API OpticksHub {
        void configureServer();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
+       void overrideMaterialMapA(const char* jsonA );
    public:
        void add(BCfg* cfg);
    public:
