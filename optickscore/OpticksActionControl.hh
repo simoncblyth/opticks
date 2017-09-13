@@ -12,14 +12,16 @@ class OKCORE_API OpticksActionControl {
                 GS_FABRICATED  = 0x1 << 2,
                 GS_TRANSLATED  = 0x1 << 3,
                 GS_TORCH       = 0x1 << 4,
-                GS_LEGACY      = 0x1 << 5
+                GS_LEGACY      = 0x1 << 5,
+                GS_EMBEDDED    = 0x1 << 6
              };  
     public:
         static const char* GS_LOADED_  ; 
         static const char* GS_FABRICATED_ ; 
         static const char* GS_TRANSLATED_ ; 
         static const char* GS_TORCH_ ; 
-        static const char* GS_LEGACY_ ; 
+        static const char* GS_LEGACY_ ;
+        static const char* GS_EMBEDDED_;
     public:
         static std::string Description(unsigned long long ctrl);
         static unsigned long long Parse(const char* ctrl, char delim=',');

@@ -66,7 +66,10 @@ void OpEngine::init()
    }
    else
    {
+       LOG(warning) << "OpEngine::init initPropagation START" ;
        initPropagation(); 
+       LOG(warning) << "OpEngine::init initPropagation DONE" ;
+
    }
 }
 
