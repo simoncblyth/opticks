@@ -1002,8 +1002,10 @@ void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
     OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 
     bool gs_legacy = oac.isSet("GS_LEGACY") ; 
+    bool gs_embedded = oac.isSet("GS_EMBEDDED") ; 
 
-    if(!gs_legacy) return ; 
+    if(!(gs_legacy || gs_embedded)) return ; 
+
     assert(!gs_torch); // there are no legacy torch files ?
 
     if(gs->isGenstepTranslated())
@@ -1011,6 +1013,13 @@ void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
         LOG(warning) << "OpticksEvent::translateLegacyGensteps already translated " ;
         return ; 
     }
+
+
+    std::cerr << "OpticksEvent::translateLegacyGensteps"
+              << " gs_legacy " << ( gs_legacy ? "Y" : "N" )
+              << " gs_embedded " << ( gs_embedded ? "Y" : "N" )
+              << std::endl 
+              ;
 
     gs->setGenstepTranslated();
 
