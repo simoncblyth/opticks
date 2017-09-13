@@ -1008,9 +1008,10 @@ void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
 
     assert(!gs_torch); // there are no legacy torch files ?
 
-    if(gs->isGenstepTranslated())
+
+    if(gs->isGenstepTranslated() && gs_legacy) // gs_embedded needs translation relabelling every time
     {
-        LOG(warning) << "OpticksEvent::translateLegacyGensteps already translated " ;
+        LOG(warning) << "OpticksEvent::translateLegacyGensteps already translated and gs_legacy  " ;
         return ; 
     }
 
