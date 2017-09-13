@@ -63,6 +63,14 @@
 
 #include "PLOG.hh"
 
+static struct OKCLOGInit {
+    OKCLOGInit() {
+
+        PLOG_(0, 0);
+
+    }
+} s_okcloginit;
+
 
 #define TIMER(s) \
     { \

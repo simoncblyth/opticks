@@ -32,6 +32,14 @@ using namespace optix ;
 
 #include "PLOG.hh"
 
+static struct OXRAPPLOGInit {
+    OXRAPPLOGInit() {
+
+        PLOG_(0, 0);
+
+    }
+} s_oxrapploginit;
+
 
 void OPropagator::setOverride(unsigned int override_)
 {
