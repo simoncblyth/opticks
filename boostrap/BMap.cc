@@ -58,6 +58,11 @@ int  BMap<A,B>::load( std::map<A,B>* mp, const char* path, unsigned int depth )
     return bmp.load(path, depth);  
 }
 
+
+
+
+
+
 template <typename A, typename B>
 void BMap<A,B>::dump( std::map<A,B>* mp, const char* msg) 
 {
@@ -144,6 +149,35 @@ int BMap<A,B>::load(const char* path, unsigned int depth)
     pt::ptree t;
     int rc = BTree::loadTree(t, fpath.c_str() );
 
+    import(t, depth);
+
+    return rc ; 
+}
+
+
+
+template <typename A, typename B>
+int  BMap<A,B>::LoadJSONString( std::map<A,B>* mp, const char* json, unsigned int depth )
+{
+    BMap<A,B> bmp(mp);
+    return bmp.loadJSONString(json, depth);  
+}
+
+
+template<typename A, typename B> 
+int BMap<A,B>::loadJSONString( const char* json, unsigned int depth) 
+{
+    pt::ptree t;
+    int rc = BTree::loadJSONString(t, json );
+    import(t, depth);
+    return rc ; 
+}
+
+
+
+template<typename A, typename B> 
+void BMap<A,B>::import(const pt::ptree& t, unsigned depth)
+{
     if(depth == 0)
     {
         BOOST_FOREACH( pt::ptree::value_type const& ab, t.get_child("") )
@@ -184,8 +218,8 @@ int BMap<A,B>::load(const char* path, unsigned int depth)
     else
         assert(0) ;
 
-    return rc ; 
 }
+
 
 
 

@@ -2,6 +2,7 @@
 #include "BTree.hh"
 
 #include <string>
+#include <sstream>
 
 #include <boost/property_tree/ptree.hpp>
 #include <boost/property_tree/ini_parser.hpp>
@@ -60,5 +61,14 @@ int BTree::loadTree(pt::ptree& t , const char* path)
     return 0 ; 
 }
 
+int BTree::loadJSONString(pt::ptree& t , const char* json)
+{
+    std::stringstream ss ; 
+    ss << json ; 
+
+    pt::read_json(ss, t );
+       
+    return 0 ; 
+}
 
 

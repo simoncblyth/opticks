@@ -64,6 +64,17 @@ void test_loadIni()
 }
 
 
+void test_LoadJSONString()
+{
+   std::map<std::string, std::string> md ;
+
+   const char* json = "{\"hello\":\"world\"}" ; 
+   //const char* json = "{}" ; 
+
+   BMap<std::string, std::string>::LoadJSONString(&md, json, 0 );
+   BMap<std::string, std::string>::dump(&md, "LoadJSONString");
+
+}
 
 
 
@@ -74,7 +85,8 @@ int main(int argc, char** argv)
     BRAP_LOG__ ;
 
     LOG(info) << argv[0] ;
-  
+
+/*  
     test_saveMapSU();
     test_loadMapSU();
 
@@ -83,6 +95,10 @@ int main(int argc, char** argv)
 
     test_saveIni();
     test_loadIni();
+
+*/
+
+    test_LoadJSONString();
 
     return 0 ; 
 }
