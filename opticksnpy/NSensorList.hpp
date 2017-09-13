@@ -25,7 +25,8 @@ class NPY_API NSensorList {
     private:
         void read(const char* path);
         void add(NSensor* sensor);
-        NSensor* createSensor(std::vector<std::string>& elem );
+        NSensor* createSensor_v1(std::vector<std::string>& elem ); // 6 columns
+        NSensor* createSensor_v2(std::vector<std::string>& elem ); // 3 columns
         unsigned int parseHexString(std::string& str);
 
     private:

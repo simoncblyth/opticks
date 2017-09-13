@@ -137,7 +137,8 @@ void NSensorList::read(const char* path)
     std::string line ; 
     std::vector<std::string> elem ; 
 
-    unsigned expected = 6 ;
+    unsigned expected_v1 = 6 ;
+    unsigned expected_v2 = 3 ; // VolTraverseIdx   PMTID   isSD
     unsigned count(0);
     while(std::getline(in, line))
     {   
@@ -154,18 +155,23 @@ void NSensorList::read(const char* path)
         elem.clear();
         BStr::split(elem, line.c_str(), ' ');
 
-        if(elem.size() != expected) 
+        bool expected = elem.size() == expected_v1 or elem.size() == expected_v2;
+        if(not expected) {
              LOG(fatal) 
                   << "NSensorList::read"
                   << line 
                   << " elem " << elem.size()
                   << " expected " << expected
                   ;
+        }
 
-        assert(elem.size() == expected );
+        assert(expected);
 
 
-        NSensor* sensor = createSensor(elem);
+        NSensor* sensor = 0;
+        if (elem.size()==expected_v1) sensor = createSensor_v1(elem);
+        else if (elem.size()==expected_v2) sensor = createSensor_v2(elem);
+
         if(sensor) add(sensor);
 
         //if(count < 10) printf("[%lu] %s \n", elem.size(), line.c_str());
@@ -176,6 +182,10 @@ void NSensorList::read(const char* path)
               << " path " << path 
               << " desc " << description() 
               ; 
+
+    LOG(info) << "NSensorList::read "
+	      << " found " << m_sensors.size() << " sensors. "
+	      ;
 }
 
 
@@ -190,7 +200,7 @@ std::string NSensorList::description()
 }
 
 
-NSensor* NSensorList::createSensor(std::vector<std::string>& elem )
+NSensor* NSensorList::createSensor_v1(std::vector<std::string>& elem )
 {
 
     unsigned int nodeIndex  = boost::lexical_cast<unsigned int>(elem[0]); 
@@ -208,6 +218,21 @@ NSensor* NSensorList::createSensor(std::vector<std::string>& elem )
     return sensor ; 
 }
 
+
+NSensor* NSensorList::createSensor_v2(std::vector<std::string>& elem )
+{
+    unsigned int nodeIndex  = boost::lexical_cast<unsigned int>(elem[0]); // vol traverse id
+    unsigned int id         = boost::lexical_cast<unsigned int>(elem[1]); // pmtid
+    unsigned int is_sd      = boost::lexical_cast<unsigned int>(elem[2]); // 0 or 1
+
+    NSensor* sensor(NULL);
+    if(is_sd) {
+        unsigned int index = m_sensors.size() ;    // 0-based in tree node order
+
+        sensor = new NSensor(index, id, NULL, nodeIndex);
+    }
+    return sensor;
+}
 
 void NSensorList::add(NSensor* sensor)
 {

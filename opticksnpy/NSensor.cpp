@@ -18,7 +18,7 @@ NSensor::NSensor(unsigned int index, unsigned int id, const char* node_name, uns
        :
        m_index(index),
        m_id(id),
-       m_node_name(strdup(node_name)),
+       m_node_name(node_name?strdup(node_name):NULL),
        m_node_index(node_index)
 {
 }

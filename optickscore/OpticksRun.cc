@@ -205,7 +205,7 @@ void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
 
-    assert(m_g4step == NULL && "OpticksRun::importGenstepData can only do this once ");
+    // assert(m_g4step == NULL && "OpticksRun::importGenstepData can only do this once ");
     m_g4step = new G4StepNPY(gs);    
 
     OpticksActionControl oac(gs->getActionControlPtr());
