@@ -141,8 +141,8 @@ struct NPY_API nivec3
 {
   // non-quad -> not used in unions -> give it a CTOR
 
-  nivec3( int x, int y, int z ) : x(x), y(y), z(z) {} ; 
-  nivec3( int x ) : x(x), y(x), z(x) {} ; 
+  nivec3( int x_, int y_, int z_ ) : x(x_), y(y_), z(z_) {} ; 
+  nivec3( int x_ ) : x(x_), y(x_), z(x_) {} ; 
 
   const char* desc() const ;
   void dump(const char* msg) const ;
