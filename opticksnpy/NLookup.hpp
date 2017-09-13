@@ -20,6 +20,7 @@ class NPY_API NLookup {
    public:  
        NLookup();
        void close(const char* msg="NLookup::close");
+       bool isClosed() const ; 
     
        const std::map<std::string, unsigned int>& getA();
        const std::map<std::string, unsigned int>& getB();

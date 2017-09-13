@@ -140,13 +140,25 @@ void NLookup::loadB(const char* bdir, const char* bname, const char* /*bprefix*/
     setB(B, "", "NLookup::loadB");
 }
 
+
+bool NLookup::isClosed() const
+{
+    return m_closed ; 
+}
+
 void NLookup::close(const char* msg)
 {
+    if(isClosed())
+    {
+        LOG(info) << "NLookup::close " << msg 
+                  << " CLOSED ALREADY : SKIPPING "
+                  ;
+
+    }
 
     LOG(info) << msg << brief() ;
 
     assert(m_alabel && m_blabel) ; // have to setA and setB before close
-
 
     crossReference();
 
