@@ -440,7 +440,7 @@ optix::Material OGeo::makeMaterial()
 
 optix::GeometryInstance OGeo::makeGeometryInstance(optix::Geometry geometry, optix::Material material)
 {
-    LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
+    // LOG(debug) << "OGeo::makeGeometryInstance material1  " ; 
 
     std::vector<optix::Material> materials ;
     materials.push_back(material);
