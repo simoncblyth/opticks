@@ -153,6 +153,7 @@ void NLookup::close(const char* msg)
         LOG(info) << "NLookup::close " << msg 
                   << " CLOSED ALREADY : SKIPPING "
                   ;
+        return ; 
 
     }
 
