@@ -534,7 +534,7 @@ void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, cons
     LOG(debug) << msg ; 
     typedef std::map<std::string, unsigned int> MSU ; 
     for(MSU::const_iterator it = msu.begin() ; it != msu.end() ; it++)
-        LOG(debug) << std::setw(5) << it->second 
+        LOG(info) << std::setw(5) << it->second 
                    << std::setw(30) << it->first 
                    ;
 }
@@ -563,6 +563,15 @@ const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMap()
 }
 void GBndLib::dumpMaterialLineMap(const char* msg)
 {
+    LOG(info) << "GBndLib::dumpMaterialLineMap" ; 
+
+    if(m_materialLineMap.size() == 0) fillMaterialLineMap(m_materialLineMap) ;
+
+
+    LOG(info) << "GBndLib::dumpMaterialLineMap" 
+              << " m_materialLineMap.size()  " << m_materialLineMap.size() 
+              ; 
+
     dumpMaterialLineMap(m_materialLineMap, msg );
 }
 

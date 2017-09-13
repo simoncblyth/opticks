@@ -48,6 +48,10 @@ int main(int argc, char** argv)
     blib->setSurfaceLib(slib);
     blib->dump();
 
+    blib->dumpMaterialLineMap();
+
+
+
 
     // writing to geocache in tests not allowed
     // as needs to work from shared install
