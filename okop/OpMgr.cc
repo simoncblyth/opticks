@@ -209,6 +209,9 @@ void OpMgr::loadEmbeddedGensteps(const char* path)
     m_opevt->loadEmbeddedGensteps(path);
 }
 
-
+void OpMgr::setLookup(const char* json)
+{
+    // m_hub->
+}
 
 

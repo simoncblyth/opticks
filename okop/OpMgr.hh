@@ -33,6 +33,7 @@ class OKOP_API OpMgr {
        void addGenstep( float* data, unsigned num_float );
        void saveEmbeddedGensteps(const char* path) const ;
        void loadEmbeddedGensteps(const char* path);
+       void setLookup(const char* json);
 
        unsigned getNumGensteps() const ;
        unsigned getNumHits() const ;
