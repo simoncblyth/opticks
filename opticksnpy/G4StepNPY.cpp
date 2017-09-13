@@ -17,7 +17,8 @@ G4StepNPY::G4StepNPY(NPY<float>* npy)
        :  
        m_npy(npy),
        m_lookup(NULL),
-       m_total_photons(0)
+       m_total_photons(0),
+       m_apply_lookup_count(0)
 {
 }
 
@@ -328,7 +329,6 @@ bool G4StepNPY::applyLookup(unsigned int index)
 {
     assert(m_lookup);
 
-
     std::vector<float>& data = m_npy->m_data ; 
     uif_t uif ; 
 
@@ -425,6 +425,11 @@ bool G4StepNPY::isScintillationStep(unsigned int i)
 
 void G4StepNPY::applyLookup(unsigned int jj, unsigned int kk)
 {
+
+    assert(m_apply_lookup_count == 0 );
+    m_apply_lookup_count++ ; 
+
+
     unsigned int nfail = 0 ;
 
     unsigned int ni = m_npy->m_ni ;

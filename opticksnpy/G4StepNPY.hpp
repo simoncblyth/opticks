@@ -52,6 +52,9 @@ class NPY_API G4StepNPY {
         int                m_total_photons ; 
         std::map<int, int> m_lookup_fails ; 
         std::map<int, int> m_lookup_ok ; 
+
+        unsigned m_apply_lookup_count ; 
+
  
 };
 

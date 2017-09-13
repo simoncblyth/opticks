@@ -1044,6 +1044,7 @@ void OpticksEvent::translateLegacyGensteps(NPY<float>* gs)
 
     m_g4step->setLookup(lookup);   
     m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+
     // replaces original material indices with material lines
     // for easy access to properties using boundary_lookup GPU side
 
