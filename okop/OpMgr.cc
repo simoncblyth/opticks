@@ -143,6 +143,8 @@ void OpMgr::propagate()
         NPY<float>* embedded_gensteps = m_opevt ? m_opevt->getEmbeddedGensteps() : NULL ; 
         if(embedded_gensteps)
         {
+            embedded_gensteps->setLookup(m_hub->getLookup());
+
             m_gen->setInputGensteps(embedded_gensteps);   // m_gen adds some spec 
             m_run->createEvent(0);
             m_run->setGensteps(m_gen->getInputGensteps()); 
