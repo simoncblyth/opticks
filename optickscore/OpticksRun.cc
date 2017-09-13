@@ -1,6 +1,12 @@
+#include "NParameters.hpp"
+#include "NLookup.hpp"
+
 #include "Opticks.hh"
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
+#include "OpticksActionControl.hh"
+
+#include "G4StepNPY.hpp"
 
 #include "PLOG.hh"
 
@@ -8,10 +14,23 @@ OpticksRun::OpticksRun(Opticks* ok)
    :
    m_ok(ok),
    m_g4evt(NULL),
-   m_evt(NULL)
+   m_evt(NULL),
+   m_g4step(NULL),
+   m_parameters(new NParameters) 
 {
     OK_PROFILE("OpticksRun::OpticksRun");
 }
+
+
+std::string OpticksRun::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "Run " 
+       ;
+    return ss.str();
+}
+
+
 void OpticksRun::createEvent(unsigned tagoffset)
 {
     m_ok->setTagOffset(tagoffset);
@@ -82,8 +101,10 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)
     bool progenitor=true ; 
 
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
+ 
+    importGenstepData(gensteps, oac_label) ;
 
-    m_g4evt->setGenstepData(gensteps, progenitor, oac_label);
+    m_g4evt->setGenstepData(gensteps, progenitor);
 
     passBaton();  
 }
@@ -170,9 +191,139 @@ void OpticksRun::loadEvent()
             exit(EXIT_FAILURE);
         }
     }
+}
 
 
 
+
+
+
+void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
+{
+    NParameters* gsp = gs->getParameters();
+    m_parameters->append(gsp);
+
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+
+    assert(m_g4step == NULL && "OpticksRun::importGenstepData can only do this once ");
+    m_g4step = new G4StepNPY(gs);    
+
+    OpticksActionControl oac(gs->getActionControlPtr());
+    if(oac_label)
+    {
+        LOG(debug) << "OpticksRun::importGenstepData adding oac_label " << oac_label ; 
+        oac.add(oac_label);
+    }
+
+
+    LOG(debug) << "OpticksRun::importGenstepData"
+               << brief()
+               << " shape " << gs->getShapeString()
+               << " " << oac.description("oac")
+               ;
+
+    if(oac("GS_LEGACY"))
+    {
+        translateLegacyGensteps(gs);
+    }
+    else if(oac("GS_EMBEDDED"))
+    {
+        std::cerr << "OpticksEvent::importGenstepData GS_EMBEDDED " << std::endl ; 
+        translateLegacyGensteps(gs);
+    }
+    else if(oac("GS_TORCH"))
+    {
+        LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
+        m_g4step->checklabel(TORCH); 
+    }
+    else if(oac("GS_FABRICATED"))
+    {
+        m_g4step->checklabel(FABRICATED); 
+    }
+    else
+    {
+        LOG(debug) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
+        m_g4step->checklabel(CERENKOV, SCINTILLATION);
+    }
+
+    m_g4step->countPhotons();
+
+    LOG(debug) 
+         << " Keys "
+         << " TORCH: " << TORCH 
+         << " CERENKOV: " << CERENKOV 
+         << " SCINTILLATION: " << SCINTILLATION  
+         << " G4GUN: " << G4GUN  
+         ;
+
+     LOG(debug) 
+         << " counts " 
+         << m_g4step->description()
+         ;
 
 }
+
+
+G4StepNPY* OpticksRun::getG4Step()
+{
+    return m_g4step ; 
+}
+
+
+void OpticksRun::translateLegacyGensteps(NPY<float>* gs)
+{
+    OpticksActionControl oac(gs->getActionControlPtr());
+    bool gs_torch = oac.isSet("GS_TORCH") ; 
+    bool gs_legacy = oac.isSet("GS_LEGACY") ; 
+    bool gs_embedded = oac.isSet("GS_EMBEDDED") ; 
+
+    if(!(gs_legacy || gs_embedded)) return ; 
+
+    assert(!gs_torch); // there are no legacy torch files ?
+
+
+    if(gs->isGenstepTranslated() && gs_legacy) // gs_embedded needs translation relabelling every time
+    {
+        LOG(warning) << "OpticksRun::translateLegacyGensteps already translated and gs_legacy  " ;
+        return ; 
+    }
+
+
+    std::cerr << "OpticksRun::translateLegacyGensteps"
+              << " gs_legacy " << ( gs_legacy ? "Y" : "N" )
+              << " gs_embedded " << ( gs_embedded ? "Y" : "N" )
+              << std::endl 
+              ;
+
+    gs->setGenstepTranslated();
+
+    NLookup* lookup = gs->getLookup();
+    if(!lookup)
+            LOG(fatal) << "OpticksRun::translateLegacyGensteps"
+                       << " IMPORT OF LEGACY GENSTEPS REQUIRES gs->setLookup(NLookup*) "
+                       << " PRIOR TO OpticksRun::setGenstepData(gs) "
+                       ;
+
+    assert(lookup); 
+
+    m_g4step->relabel(CERENKOV, SCINTILLATION); 
+
+    // CERENKOV or SCINTILLATION codes are used depending on 
+    // the sign of the pre-label 
+    // this becomes the ghead.i.x used in cu/generate.cu
+    // which dictates what to generate
+
+    lookup->close("OpticksRun::translateLegacyGensteps GS_LEGACY");
+
+    m_g4step->setLookup(lookup);   
+    m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+
+    // replaces original material indices with material lines
+    // for easy access to properties using boundary_lookup GPU side
+
+}
+
+
+
+
 

@@ -1,8 +1,12 @@
 #pragma once 
 
+#include <string>
+
 class Opticks ; 
 class OpticksEvent ; 
 template <typename T> class NPY ; 
+class G4StepNPY ; 
+class NParameters ;
 
 /**
 OpticksRun
@@ -27,6 +31,8 @@ class OKCORE_API OpticksRun
         OpticksEvent* getEvent();
         OpticksEvent* getG4Event();
         OpticksEvent* getCurrentEvent(); // either G4 or OK evt depending on options
+        G4StepNPY*    getG4Step(); 
+        std::string brief() const ;
 
         void setGensteps(NPY<float>* gs);
         bool hasGensteps();
@@ -37,8 +43,15 @@ class OKCORE_API OpticksRun
         void saveEvent(); 
         void anaEvent(); // analysis based on saved evts 
     private:
+       void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
+       void translateLegacyGensteps(NPY<float>* gs);
+
+    private:
         Opticks*       m_ok ; 
         OpticksEvent*  m_g4evt ; 
         OpticksEvent*  m_evt ; 
+        G4StepNPY*     m_g4step ; 
+        NParameters*   m_parameters ;
+
 
 };

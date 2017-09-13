@@ -174,7 +174,7 @@ void OpticksIdx::indexSeqHost()
         std::vector<int> counts = seq->getCounts();
         delete seq ; 
 
-        G4StepNPY* g4step = evt->getG4Step();
+        G4StepNPY* g4step = m_run->getG4Step();
         assert(g4step && "OpticksIdx::indexSeqHost requires G4StepNPY, created in translate"); 
         g4step->checkCounts(counts, "OpticksIdx::indexSeqHost checkCounts"); 
     }

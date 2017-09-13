@@ -20,7 +20,7 @@ class MultiViewNPY ;
 class RecordsNPY ; 
 class PhotonsNPY ; 
 class BoundariesNPY ; 
-class G4StepNPY ; 
+//class G4StepNPY ; 
 class HitsNPY ; 
 class NPYSpec ; 
 
@@ -164,20 +164,16 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* hit_  ;
    public:
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
-       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true, const char* oac_label=NULL);
+       void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
 
 
-       G4StepNPY* getG4Step(); 
        void zero();
        void dumpDomains(const char* msg="OpticksEvent::dumpDomains");
    public:
        void addBufferControl(const char* name, const char* ctrl_);
        int seedDebugCheck(const char* msg="OpticksEvent::seedDebugCheck");
-   private:
-       void importGenstepDataLoaded(NPY<float>* gs);
-       void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
-       void translateLegacyGensteps(NPY<float>* gs);
+  private:
        void setBufferControl(NPYBase* data);
 
    public:
@@ -238,6 +234,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void loadBuffers(bool verbose=true);
 
    private:
+       void importGenstepDataLoaded(NPY<float>* gs);
        void loadBuffersImportSpec(NPYBase* npy, NPYSpec* spec);
    public: 
        void createBuffers(NPY<float>* gs=NULL); 
@@ -366,7 +363,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        OpticksBufferControl*  m_seed_ctrl ; 
        OpticksDomain*        m_domain ; 
 
-       G4StepNPY*      m_g4step ; 
+       //G4StepNPY*      m_g4step ; 
        ViewNPY*        m_genstep_vpos ;
 
        MultiViewNPY*   m_genstep_attr ;
