@@ -356,6 +356,7 @@ cfg4-tcd(){  cd $(cfg4-tdir); }
 
 cfg4-dir(){  echo $(cfg4-sdir) ; }
 cfg4-cd(){   cd $(cfg4-dir); }
+cfg4-c(){    cd $(cfg4-dir); }
 
 
 cfg4-name(){ echo cfg4 ; }

@@ -268,6 +268,15 @@ okop-snap()
     libpng-;libpng-- /tmp/snap.ppm
 }
 
+okop-propagate()
+{
+    ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
+    op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0.
+    libpng-;libpng-- /tmp/snap.ppm
+}
+
+
+
 
 okop-snap-gui()
 {
