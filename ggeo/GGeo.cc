@@ -401,6 +401,7 @@ void GGeo::init()
 
    if(m_loaded) return ; 
 
+   //////////////  below only when operating pre-cache //////////////////////////
 
 
    m_bndlib = new GBndLib(m_ok);
@@ -409,9 +410,6 @@ void GGeo::init()
 
    m_bndlib->setMaterialLib(m_materiallib);
    m_bndlib->setSurfaceLib(m_surfacelib);
-
-
-   //////////////  below only when operating pre-cache //////////////////////////
 
    // NB this m_analytic is always false
    //    the analytic versions of these libs are born in GScene
