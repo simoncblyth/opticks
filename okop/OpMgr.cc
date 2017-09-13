@@ -141,20 +141,28 @@ void OpMgr::propagate()
     else if(ok.isEmbedded())
     {
         NPY<float>* embedded_gensteps = m_opevt ? m_opevt->getEmbeddedGensteps() : NULL ; 
+
         if(embedded_gensteps)
         {
             embedded_gensteps->setLookup(m_hub->getLookup());
 
-            m_gen->setInputGensteps(embedded_gensteps);   // m_gen adds some spec 
+            bool compute = true ; 
+
+            embedded_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
+
             m_run->createEvent(0);
-            m_run->setGensteps(m_gen->getInputGensteps()); 
+
+            m_run->setGensteps(embedded_gensteps); 
+
             m_propagator->propagate();
+
             if(ok("save")) 
             {
                 m_run->saveEvent();
                 if(!production) m_hub->anaEvent();
             }
             m_run->resetEvent();
+
             m_ok->postpropagate();
         }
         else
