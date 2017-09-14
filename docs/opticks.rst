@@ -7,6 +7,7 @@ Get Opticks
 Clone the repository from bitbucket::
 
    hg clone http://bitbucket.org/simoncblyth/opticks 
+   hg clone ssh://hg@bitbucket.org/simoncblyth/opticks   # via SSH for developers 
 
 Connect the opticks bash functions to your shell by adding a line to your .bash_profile
 and configure the location of the install with the LOCAL_BASE environment variable::
