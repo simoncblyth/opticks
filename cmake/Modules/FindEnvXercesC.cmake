@@ -34,6 +34,7 @@ FIND_LIBRARY(XERCESC_LIBRARY
    PATHS
      ${XERCESC_ROOT_DIR}/lib
      /usr/lib 
+     /usr/lib64
      /usr/local/lib
      /opt/local/lib
    DOC "The name of the xerces-c library"

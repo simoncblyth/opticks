@@ -234,6 +234,7 @@ opticks-bindir(){ echo $(opticks-prefix)/lib ; }   ## use lib for executables fo
 
 opticks-xdir(){   echo $(opticks-fold)/externals ; }  ## try putting externals above the build identity 
 
+opticks-c(){    cd $(opticks-dir) ; }
 opticks-cd(){   cd $(opticks-dir) ; }
 opticks-icd(){  cd $(opticks-idir); }
 opticks-bcd(){  cd $(opticks-bdir); }
@@ -249,6 +250,8 @@ opticks-optix-install-dir(){
      GTL) echo ${MYENVTOP}/OptiX ;;
     H5H2) echo ${MYENVTOP}/OptiX ;;
        X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;
+    #SDUGPU) echo /root/NVIDIA-OptiX-SDK-4.1.1-linux64 ;;
+    SDUGPU) echo /home/simon/NVIDIA-OptiX-SDK-4.1.1-linux64 ;;
        *) echo /tmp ;;
     esac
 }
@@ -261,6 +264,7 @@ opticks-compute-capability(){
      GTL) echo 30 ;;
     H5H2) echo 50 ;;
        X) echo 52 ;; 
+  SDUGPU) echo 37 ;; 
        *) echo  0 ;;
     esac
 }

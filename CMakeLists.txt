@@ -114,7 +114,11 @@ endif(REST)
 
 
 # collects version defines, currently only OXRAP_OPTIX_VERSION and CFG4_G4VERSION_NUMBER
+message("top.OXRAP_OPTIX_VERSION ${OXRAP_OPTIX_VERSION} ")
+
 configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
+
+
 
 # generate opticks-config into lib dir
 include(OpticksConfigureConfigScript)
