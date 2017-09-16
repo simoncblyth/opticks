@@ -780,12 +780,20 @@ CSG.kwa = hy
 a = CSG("sphere", param=[0,0,0,100]) 
 b = CSG("zsphere", param=[0,0,0,100], param1=[-50,60,0,0]) 
 c = CSG("box3",param=[100,50,70,0]) 
-d = CSG("box",param=[0,0,10,50])
+
+#d = CSG("box",param=[0,0,10,50])
+d = CSG.MakeTrapezoid(z=100, x1=80, y1=100, x2=100, y2=80)
+
+
 e = CSG("cylinder",param=[0,0,0,100], param1=[-100,100,0,0])
 f = CSG("disc",param=[0,0,0,100], param1=[-1,1,0,0])
 g = CSG("cone", param=[100,-100,50,100])
-h = CSG.MakeTrapezoid(z=100, x1=80, y1=100, x2=100, y2=80)
-i = CSG.MakeSegment(phi0=0,phi1=45,sz=100,sr=100)
+
+#h = CSG.MakeTrapezoid(z=100, x1=80, y1=100, x2=100, y2=80)
+#i = CSG.MakeSegment(phi0=0,phi1=45,sz=100,sr=100)
+
+h = CSG.MakeTorus(R=70, r=30)
+i = CSG.MakeHyperboloid(r0=80, zf=100, z1=-100, z2=100)
 j = CSG.MakeIcosahedron(scale=100.)
 
 prims = [a,b,c,d,e,f,g,h,i,j]
