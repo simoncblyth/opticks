@@ -1,4 +1,5 @@
 
+// nvcc -arch=sm_37 SolveCubicNumericalRecipeTest.cu -run ; rm a.out
 // nvcc -arch=sm_30 SolveCubicNumericalRecipeTest.cu -run ; rm a.out
 // nvcc -arch=sm_30 -I/Developer/OptiX/include SolveCubicNumericalRecipeTest.cu -run ; rm a.out
 
@@ -8,7 +9,7 @@
 // CUDART_INF_F
 #include "math_constants.h"
 
-#include <optix_world.h>
+//#include <optix_world.h>
 
 #include <stdio.h>
 #include <float.h>

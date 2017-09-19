@@ -47,8 +47,28 @@ void GNodeLib::save() const
     LOG(debug) << "GNodeLib::save"
               << " idpath " << idpath 
               ;
-    m_pvlist->save(idpath);
-    m_lvlist->save(idpath);
+
+    if(m_pvlist)
+    {
+        m_pvlist->save(idpath);
+    }
+    else
+    {
+        LOG(warning) << "GNodeLib::save pvlist NULL " ; 
+    }
+
+
+    if(m_lvlist)
+    {
+        m_lvlist->save(idpath);
+    }
+    else
+    {
+        LOG(warning) << "GNodeLib::save lvlist NULL " ; 
+    }
+
+
+
 
     GNode* top = getNode(0); 
     m_treepresent->traverse(top);

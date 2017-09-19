@@ -10,7 +10,6 @@ include(EnvBuildOptions)
 find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)   
 
 
-
 ###### Find #define OPTIX_VERSION by parsing optix.h set variable at parent scope 
 #
 # OptiX not playing ball with CMake version conventions, even EXACT has no teeth, 
@@ -264,7 +263,6 @@ set(HEADERS
     OBufBase.hh
     OBufPair.hh 
 )
-
 
 set(OX_HEADERS
 

@@ -79,7 +79,8 @@ OScene::OScene(OpticksHub* hub)
       m_olib(NULL),
       m_oscin(NULL),
       m_osrc(NULL),
-      m_verbosity(m_ok->getVerbosity())
+      m_verbosity(m_ok->getVerbosity()),
+      m_use_osolve(false)
 {
       init();
       (*m_log)("DONE");
@@ -113,8 +114,12 @@ void OScene::init()
 
     // solvers despite being used for geometry intersects have no dependencies
     // as just pure functions : so place them accordingly 
-    m_osolve = new OFunc(m_ocontext, "solve_callable.cu.ptx", "solve_callable", "SolveCubicCallable" ) ; 
-    m_osolve->convert();
+    if(m_use_osolve)
+    {  
+        m_osolve = new OFunc(m_ocontext, "solve_callable.cu.ptx", "solve_callable", "SolveCubicCallable" ) ; 
+        m_osolve->convert();
+    }
+
 
     //m_ggeo = m_hub->getGGeo();
     m_ggeo = m_hub->getGGeoBase();

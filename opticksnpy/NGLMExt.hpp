@@ -98,7 +98,7 @@ struct NPY_API nmat4triple
 
 struct NPY_API ntransformer
 {
-    ntransformer( const glm::mat4& t, const float w ) : t(t),w(w) {} ;
+    ntransformer( const glm::mat4& t_, const float w_ ) : t(t_),w(w_) {} ;
 
     glm::vec3 operator()(const glm::vec3& p_) const 
     {

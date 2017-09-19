@@ -60,6 +60,7 @@ class OXRAP_API OScene {
        OScintillatorLib* m_oscin ; 
        OSourceLib*       m_osrc ; 
        unsigned          m_verbosity ; 
+       bool              m_use_osolve ; 
 
 };
 

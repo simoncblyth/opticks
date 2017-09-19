@@ -62,7 +62,15 @@ void GMeshLib::loadFromCache()
 void GMeshLib::save() const
 {
     const char* idpath = m_ok->getIdPath() ;
-    m_meshindex->save(idpath);
+
+    if(m_meshindex)
+    {
+        m_meshindex->save(idpath);
+    }
+    else
+    {
+        LOG(warning) << "GMeshLib::save m_meshindex NULL " ; 
+    }
 
     saveMeshes(idpath);
 }

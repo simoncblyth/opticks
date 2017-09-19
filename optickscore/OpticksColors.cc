@@ -153,6 +153,7 @@ nvec3 OpticksColors::getPsychedelic(unsigned int num)
     unsigned int index = num_colors > 0 ? num % num_colors : 0 ;
     const char* cname = getNamePsychedelic(index);    
 
+/*
     LOG(trace) << "OpticksColors::getPsychedelic"
               << " num " << num 
               << " index " << index
@@ -160,6 +161,7 @@ nvec3 OpticksColors::getPsychedelic(unsigned int num)
               << " cname " << ( cname ? cname : "NULL" )
               ;
 
+*/
     return getColor( cname );
 }
 

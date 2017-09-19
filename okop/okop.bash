@@ -27,6 +27,27 @@ Zeroing With OpenGL ?
 
 
 
+SDUGPU
+--------
+
+::
+
+	2017-09-15 15:12:06.505 INFO  [108721] [OContext::createProgram@190] OContext::createProgram START  filename solve_callable.cu.ptx progname SolveCubicCallable
+	2017-09-15 15:12:06.505 VERB  [108721] [OConfig::createProgram@65] OConfig::createProgram path /usr/local/opticks/installcache/PTX/OptiXRap_generated_solve_callable.cu.ptx
+	2017-09-15 15:12:06.505 DEBUG [108721] [OConfig::createProgram@71] OConfig::createProgram /usr/local/opticks/installcache/PTX/OptiXRap_generated_solve_callable.cu.ptx:SolveCubicCallable
+	terminate called after throwing an instance of 'optix::Exception'
+	  what():  Parse error (Details: Function "RTresult _rtProgramCreateFromPTXFile(RTcontext, const char*, const char*, RTprogram_api**)" caught exception: /usr/local/opticks/installcache/PTX/OptiXRap_generated_solve_callable.cu.ptx: error: Failed to parse input PTX string
+	/usr/local/opticks/installcache/PTX/OptiXRap_generated_solve_callable.cu.ptx, line 10; fatal   : Unsupported .target 'sm_37'
+	Cannot parse input PTX string
+	)
+	/home/simon/opticks/bin/op.sh: line 704: 108721 Aborted                 /usr/local/opticks/lib/OpTest --size 1920,1080,1 --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0.
+	/home/simon/opticks/bin/op.sh RC 134
+	[simon@localhost opticks]$ 
+
+
+
+
+
 Still There 
 ----------------------------
 
@@ -265,7 +286,7 @@ okop-snap()
 {
     ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
     op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0.
-    libpng-;libpng-- /tmp/snap.ppm
+    # libpng-;libpng-- /tmp/snap.ppm
 }
 
 okop-propagate()

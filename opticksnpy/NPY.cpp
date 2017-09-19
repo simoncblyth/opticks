@@ -141,11 +141,12 @@ void NPY<T>::updateDigests()
     for(unsigned i=0 ; i < ni ; i++) 
     {
         std::string item_digest = getItemDigestString(i) ;
-        VS::const_iterator begin = m_digests.begin();
-        VS::const_iterator end   = m_digests.end();
-        VS::const_iterator prior = std::find(begin, end, item_digest) ;
 
-        if( prior == end )
+        VS::const_iterator begin_ = m_digests.begin();
+        VS::const_iterator end_   = m_digests.end();
+        VS::const_iterator prior_ = std::find(begin_, end_, item_digest) ;
+
+        if( prior_ == end_ )
         { 
             m_digests.push_back(item_digest) ;
         }

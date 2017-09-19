@@ -576,9 +576,9 @@ T GAry<T>::maxdiff(GAry<T>* a, GAry<T>* b, bool dump)
 }
 
 template <typename T>
-GAry<T>* GAry<T>::reciprocal(T scale)
+GAry<T>* GAry<T>::reciprocal(T scale_)
 {
-    return reciprocal(this, scale);
+    return reciprocal(this, scale_);
 }
 
 
@@ -724,15 +724,15 @@ GAry<T>* GAry<T>::mid()
 }  // average of values at bin edges, ie linear approximation of mid bin "y" value 
 
 template <typename T>
-GAry<T>* GAry<T>::reversed(bool reciprocal, T scale)
+GAry<T>* GAry<T>::reversed(bool reciprocal_, T scale_)
 { 
-     return np_reversed(this, reciprocal, scale) ; 
+     return np_reversed(this, reciprocal_, scale_) ; 
 }
 
 template <typename T>
-GAry<T>* GAry<T>::sliced(int ifr, int ito)
+GAry<T>* GAry<T>::sliced(int ifr_, int ito_)
 { 
-     return np_sliced(this, ifr, ito) ; 
+     return np_sliced(this, ifr_, ito_) ; 
 }
 
 

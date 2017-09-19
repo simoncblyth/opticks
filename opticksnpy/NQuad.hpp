@@ -114,8 +114,8 @@ struct NPY_API nvec3 {
    // no CTOR, due to implicit use from bbox
 
   nvec3() : x(0), y(0), z(0) {} ; 
-  nvec3( float x ) : x(x), y(x), z(x) {} ; 
-  nvec3( float x, float y, float z ) : x(x), y(y), z(z) {} ; 
+  nvec3( float x_ ) : x(x_), y(x_), z(x_) {} ; 
+  nvec3( float x_, float y_, float z_ ) : x(x_), y(y_), z(z_) {} ; 
 
 
   glm::vec3 as_vec3() const ; 
