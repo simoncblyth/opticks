@@ -234,6 +234,7 @@ set(SOURCES
 
     BoundarySnappingT.cc
     NLODConfig.cpp
+    NSnapConfig.cpp
 
 )
 

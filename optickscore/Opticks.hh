@@ -19,6 +19,7 @@ class NState ;
 struct NSlice ;
 struct NSceneConfig ; 
 struct NLODConfig ; 
+struct NSnapConfig ; 
 
 class NParameters ; 
 class NPropNames ; 
@@ -189,6 +190,8 @@ class OKCORE_API Opticks {
        int         getGLTFTarget();
        bool        isGLTF();
    public:
+       const char* getSnapConfigString();
+       NSnapConfig* getSnapConfig();
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
        int         getLOD();
@@ -345,6 +348,7 @@ class OKCORE_API Opticks {
        NParameters*          m_parameters ; 
        NSceneConfig*        m_scene_config ; 
        NLODConfig*          m_lod_config ; 
+       NSnapConfig*         m_snap_config ; 
    private:
        const char*          m_detector ; 
        unsigned             m_event_count ; 

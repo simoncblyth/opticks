@@ -30,6 +30,7 @@
 #include "NSlice.hpp"
 #include "NSceneConfig.hpp"
 #include "NLODConfig.hpp"
+#include "NSnapConfig.hpp"
 
 // okc-
 #include "OpticksPhoton.h"
@@ -618,6 +619,11 @@ const char* Opticks::getGLTFConfig()
 
 
 
+
+const char* Opticks::getSnapConfigString()
+{
+    return m_cfg->getSnapConfig().c_str() ; 
+}
 const char* Opticks::getLODConfigString()
 {
     return m_cfg->getLODConfig().c_str() ; 
@@ -635,6 +641,19 @@ NLODConfig* Opticks::getLODConfig()
     }
     return m_lod_config ; 
 }
+
+
+NSnapConfig* Opticks::getSnapConfig()
+{
+    if(m_snap_config == NULL)
+    {
+        m_snap_config = new NSnapConfig(getSnapConfigString());
+    }
+    return m_snap_config ; 
+}
+
+
+
 
 
 

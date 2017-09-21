@@ -1,5 +1,7 @@
 #pragma once
 
+struct NSnapConfig ; 
+
 class SLog ; 
 
 // okc-
@@ -35,6 +37,8 @@ class OKOP_API OpTracer : public SRenderer {
        SLog*            m_log ; 
        OpEngine*        m_ope ; 
        OpticksHub*      m_hub ; 
+       Opticks*         m_ok ; 
+       NSnapConfig*     m_snap_config ; 
        bool             m_immediate ; 
 
        OContext*        m_ocontext ; 

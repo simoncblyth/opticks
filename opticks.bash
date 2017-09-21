@@ -264,7 +264,7 @@ opticks-compute-capability(){
      GTL) echo 30 ;;
     H5H2) echo 50 ;;
        X) echo 52 ;; 
-  SDUGPU) echo 37 ;; 
+  SDUGPU) echo 30 ;; 
        *) echo  0 ;;
     esac
 }
@@ -485,7 +485,7 @@ opticks-cmake(){
    cd $iwd
 }
 
-opticks-cmake-modify(){
+opticks-cmake-modify-ex1(){
   local msg="=== $FUNCNAME : "
   local bdir=$(opticks-bdir)
   local bcache=$bdir/CMakeCache.txt
@@ -493,12 +493,30 @@ opticks-cmake-modify(){
   opticks-bcd
   g4-
   xercesc- 
+
   cmake \
        -DGeant4_DIR=$(g4-cmake-dir) \
        -DXERCESC_LIBRARY=$(xercesc-library) \
        -DXERCESC_INCLUDE_DIR=$(xercesc-include-dir) \
           . 
 }
+
+opticks-cmake-modify-ex2(){
+  local msg="=== $FUNCNAME : "
+  local bdir=$(opticks-bdir)
+  local bcache=$bdir/CMakeCache.txt
+  [ ! -f "$bcache" ] && echo $msg requires a preexisting $bcache from prior opticks-cmake run && return 
+  opticks-bcd
+
+  cmake \
+       -DCOMPUTE_CAPABILITY=$(opticks-compute-capability) \
+          . 
+}
+
+
+
+
+
 
 
 opticks-wipe(){

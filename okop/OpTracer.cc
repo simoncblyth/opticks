@@ -4,9 +4,12 @@
 // npy-
 #include "NGLM.hpp"
 #include "NPY.hpp"
+#include "NSnapConfig.hpp"
 
 // okc-
+#include "Opticks.hh"
 #include "Composition.hh"
+
 
 // okg-
 #include "OpticksHub.hh"
@@ -28,6 +31,8 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
       m_log(new SLog("OpTracer::OpTracer")),
       m_ope(ope),
       m_hub(hub),
+      m_ok(hub->getOpticks()),
+      m_snap_config(m_ok->getSnapConfig()),
       m_immediate(immediate),
 
       m_ocontext(NULL),   // defer 
@@ -80,6 +85,8 @@ void OpTracer::render()
 
 void OpTracer::snap()
 {
+    m_snap_config->dump();
+
     LOG(info) << "OpTracer::snap START" ;
     render();
     LOG(info) << "OpTracer::snap DONE " ;

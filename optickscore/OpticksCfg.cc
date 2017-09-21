@@ -35,6 +35,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_testconfig(""),
        m_state_tag(""),
        m_materialprefix("/dd/Materials/"),
+       m_snapconfig(""),
        m_zexplodeconfig("-5564.975,1000."),  // -(5564.950 + 5565.000)/2.0 = -5564.975
        m_meshversion(""),
        m_rendermode(""),
@@ -397,6 +398,10 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("zexplodeconfig",   boost::program_options::value<std::string>(&m_zexplodeconfig), "zexplode configuration" );
+
+   m_desc.add_options()
+       ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm) configuration" );
+
 
 
    char apmtidx[128];
@@ -841,13 +846,19 @@ const std::string& OpticksCfg<Listener>::getExportConfig()
     return m_exportconfig ;
 }
 
-
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getSnapConfig()
+{
+    return m_snapconfig ;
+}
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getZExplodeConfig()
 {
     return m_zexplodeconfig ;
 }
+
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getMeshVersion()
 {

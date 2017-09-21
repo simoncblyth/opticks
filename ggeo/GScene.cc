@@ -1177,7 +1177,8 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
     unsigned num_seq  = seq->getShape(0); 
     assert(num_pho == num_seq);
 
-    unsigned long long seqhis, seqmat ; 
+    unsigned long long seqhis ; 
+    unsigned long long seqmat ; 
 
     //unsigned long long TO_SA =  0x8dull ;
     //unsigned long long seqhis_select = TO_SA ; 
@@ -1252,13 +1253,13 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
  
     for(MQC::const_iterator it=tot.begin() ; it != tot.end() ; it++)
     {
-        unsigned long long seqhis = it->first ; 
+        unsigned long long seqhis_ = it->first ; 
         unsigned tot_ = it->second ; 
-        unsigned exc_ = exc[seqhis];
+        unsigned exc_ = exc[seqhis_];
         float frac = exc_/tot_ ; 
 
         std::cout 
-             << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec
+             << " seqhis " << std::setw(16) << std::hex << seqhis_ << std::dec
              << " tot " << std::setw(6) << tot_ 
              << " exc " << std::setw(6) << exc_
              << " exc/tot " << std::setw(6) << frac

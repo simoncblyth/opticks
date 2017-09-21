@@ -496,9 +496,9 @@ unsigned OpticksHub::getTarget()
 {
    return m_geometry->getTarget();
 }
-void OpticksHub::setTarget(unsigned target, bool aim)
+void OpticksHub::setTarget(unsigned target_, bool aim_)
 {
-    m_geometry->setTarget(target, aim );
+    m_geometry->setTarget(target_, aim_ );
 }
 
 
@@ -527,15 +527,15 @@ void OpticksHub::setupCompositionTargetting()
 
 void OpticksHub::target()
 {
-    int target = m_geometry ? m_geometry->getTarget() : 0 ;
+    int target_ = m_geometry ? m_geometry->getTarget() : 0 ;
     bool geocenter  = hasOpt("geocenter");
     bool autocam = true ; 
 
     OpticksEvent* evt = m_run->getEvent();
 
-    if(target != 0)
+    if(target_ != 0)
     {
-        LOG(info) << "OpticksHub::target SKIP as geometry target already set  " << target ; 
+        LOG(info) << "OpticksHub::target SKIP as geometry target already set  " << target_ ; 
     }
     else if(geocenter && m_geometry != NULL )
     {

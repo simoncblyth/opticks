@@ -80,6 +80,20 @@ SDU GPU Notes
         )
 
 
+Checking the OptiX precompiled samples and similarly when building the samples find all have target sm_30::
+
+    [simon@localhost ptx]$ pwd
+    /home/simon/NVIDIA-OptiX-SDK-4.1.1-linux64/SDK-precompiled-samples/ptx
+    [simon@localhost ptx]$ grep \.target *.ptx 
+    cuda_compile_ptx_generated_phong.cu.ptx:.target sm_30
+    cuda_compile_ptx_generated_triangle_mesh.cu.ptx:.target sm_30
+    optixBuffersOfBuffers_generated_constantbg.cu.ptx:.target sm_30
+    optixBuffersOfBuffers_generated_optixBuffersOfBuffers.cu.ptx:.target sm_30
+    optixBuffersOfBuffers_generated_parallelogram.cu.ptx:.target sm_30
+
+
+
+
         (gdb) bt
         #0  0x000000356a432925 in raise () from /lib64/libc.so.6
         #1  0x000000356a434105 in abort () from /lib64/libc.so.6

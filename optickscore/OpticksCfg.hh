@@ -35,6 +35,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getStateTag();
      const std::string& getMaterialPrefix();
 
+     const std::string& getSnapConfig();
      const std::string& getZExplodeConfig();
      const std::string& getMeshVersion();
      const std::string& getRenderMode();
@@ -120,6 +121,7 @@ private:
      std::string m_state_tag ;
      std::string m_materialprefix ;
 
+     std::string m_snapconfig ;
      std::string m_zexplodeconfig ;
      std::string m_meshversion ;
      std::string m_rendermode ;

@@ -11,7 +11,7 @@ struct SYSRAP_API SSortKV
     typedef std::pair<std::string, float> KV ; 
     typedef std::vector<KV> VKV ;
 
-    SSortKV(bool descending) : descending(descending) {} 
+    SSortKV(bool descending_) : descending(descending_) {} 
 
     void add(const char* k, float v)
     {    

@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     ok.ana();
   
     return ok.getRC();
-};
+}
 
 /**
 
