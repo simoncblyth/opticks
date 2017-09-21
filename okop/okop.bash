@@ -285,7 +285,7 @@ okop-index-op(){
 okop-snap()
 {
     ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
-    local snapconfig="steps=10,eyestartz=0.,eyestopz=1."
+    local snapconfig="steps=10,eyestartz=0.,eyestopz=1.,prefix=/tmp/okop_snap,postfix=.ppm"
     op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0. --snapconfig $snapconfig
     # libpng-;libpng-- /tmp/snap.ppm
 }

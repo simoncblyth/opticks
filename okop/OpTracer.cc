@@ -37,7 +37,8 @@ OpTracer::OpTracer(OpEngine* ope, OpticksHub* hub, bool immediate)
 
       m_ocontext(NULL),   // defer 
       m_composition(m_hub->getComposition()),
-      m_otracer(NULL)
+      m_otracer(NULL),
+      m_count(0)
 {
     init();
     (*m_log)("DONE");
@@ -77,44 +78,49 @@ void OpTracer::prepareTracer()
 
 void OpTracer::render()
 {     
-    m_hub->setupCompositionTargetting();
+    if(m_count == 0 )
+    {
+        m_hub->setupCompositionTargetting();
+        m_otracer->setResolutionScale(1) ;
+    }
 
-    m_otracer->setResolutionScale(1) ;
     m_otracer->trace_();
+    m_count++ ; 
 }   
 
 
-std::string OpTracer::getSnapPath(unsigned index)
-{
-    std::stringstream ss ;
-    ss <<  m_snap_config->prefix ; 
-    ss <<  index ; 
-    ss <<  m_snap_config->postfix ; 
-    return ss.str();
-}
-
 void OpTracer::snap()
 {
+    LOG(info) << "OpTracer::snap START" ;
     m_snap_config->dump();
 
-    const std::string
+    int num_steps = m_snap_config->steps ; 
+    float eyestartz = m_snap_config->eyestartz ; 
+    float eyestopz = m_snap_config->eyestopz ; 
 
-    for(unsigned i=0 ; i < m_snap_config->steps ; i++)
+    for(int i=0 ; i < num_steps ; i++)
     {
-         
+        std::string path = m_snap_config->getSnapPath(i) ; 
 
+        float frac = num_steps > 1 ? float(i)/float(num_steps-1) : 0.f ; 
+        float eyez = eyestartz + (eyestopz-eyestartz)*frac ; 
+
+        std::cout << " i " << std::setw(5) << i 
+                  << " eyez " << std::setw(10) << eyez
+                  << " path " << path 
+                  << std::endl ;         
+   
+        m_composition->setEyeZ( eyez ); 
+
+        render();
+
+        m_ocontext->snap(path.c_str());
     }
 
-
-
-    LOG(info) << "OpTracer::snap START" ;
-    render();
-    LOG(info) << "OpTracer::snap DONE " ;
-
-
-    m_ocontext->save("/tmp/snap.npy");
-    m_ocontext->snap("/tmp/snap.ppm");
+    //m_ocontext->save("/tmp/snap.npy");
+    //m_ocontext->snap("/tmp/snap.ppm");
    
+    LOG(info) << "OpTracer::snap DONE " ;
 
 }
   

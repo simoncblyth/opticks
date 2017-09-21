@@ -181,6 +181,21 @@ void View::setEye( float _x, float _y, float _z)
 #endif
 }  
 
+
+void View::setEyeX(float _x)
+{
+    m_eye.x = _x ;   
+}
+void View::setEyeY(float _y)
+{
+    m_eye.y = _y ;   
+}
+void View::setEyeZ(float _z)
+{
+    m_eye.z = _z ;   
+}
+
+
 void View::setLook(float _x, float _y, float _z)
 {
     m_look.x = _x ;  

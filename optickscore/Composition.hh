@@ -254,6 +254,10 @@ class OKCORE_API Composition : public NConfigurable {
       void setLookW(const glm::vec4& lookw);
       void setLookW(std::string lookw);
   public:
+      void setEyeX(float _x);
+      void setEyeY(float _y);
+      void setEyeZ(float _z);
+
       void setEyeW(const glm::vec4& eyew);
       void setEyeW(std::string eyew);
   public:

@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 
-#include <glm/glm.hpp>
+//#include <glm/glm.hpp>
+#include "NGLM.hpp"
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 

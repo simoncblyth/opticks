@@ -1117,6 +1117,18 @@ void Composition::setEyeGUI(const glm::vec3& gui)
 }
 
 
+void Composition::setEyeX(float _x)
+{
+    m_view->setEyeX(_x);
+}
+void Composition::setEyeY(float _y)
+{
+    m_view->setEyeY(_y);
+}
+void Composition::setEyeZ(float _z)
+{
+    m_view->setEyeZ(_z);
+}
 
 
 

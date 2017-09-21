@@ -44,6 +44,7 @@ class OKOP_API OpTracer : public SRenderer {
        OContext*        m_ocontext ; 
        Composition*     m_composition ; 
        OTracer*         m_otracer ;
+       unsigned         m_count ; 
 
    //    NPY<unsigned char>*   m_npy ; 
 

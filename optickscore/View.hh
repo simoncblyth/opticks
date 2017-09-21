@@ -61,6 +61,11 @@ public:
    void home(); 
 
    void setEye( float _x, float _y, float _z);
+   void setEyeX( float _x);
+   void setEyeY( float _y);
+   void setEyeZ( float _z);
+
+
    void setLook(float _x, float _y, float _z);
    void setUp(  float _x, float _y, float _z);
    void handleDegenerates();
