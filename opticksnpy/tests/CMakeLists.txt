@@ -132,6 +132,7 @@ NOpenMeshCombineTest.cc
 NPolygonizerTest.cc
 NCSGBSPTest.cc
 NuvTest.cc
+NSnapConfigTest.cc
 
 )
 

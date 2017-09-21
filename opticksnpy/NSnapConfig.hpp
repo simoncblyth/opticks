@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+
 struct BConfig ; 
 
 #include "NPY_API_EXPORT.hh"
@@ -14,5 +16,13 @@ struct NPY_API NSnapConfig
     int steps ; 
     float eyestartz ; 
     float eyestopz ; 
+    std::string prefix ; 
+    std::string postfix ; 
+
+
+    std::string getSnapPath(unsigned index);
+
+
+
 };
 

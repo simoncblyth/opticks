@@ -83,9 +83,29 @@ void OpTracer::render()
     m_otracer->trace_();
 }   
 
+
+std::string OpTracer::getSnapPath(unsigned index)
+{
+    std::stringstream ss ;
+    ss <<  m_snap_config->prefix ; 
+    ss <<  index ; 
+    ss <<  m_snap_config->postfix ; 
+    return ss.str();
+}
+
 void OpTracer::snap()
 {
     m_snap_config->dump();
+
+    const std::string
+
+    for(unsigned i=0 ; i < m_snap_config->steps ; i++)
+    {
+         
+
+    }
+
+
 
     LOG(info) << "OpTracer::snap START" ;
     render();

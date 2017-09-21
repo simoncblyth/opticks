@@ -399,6 +399,12 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("zexplodeconfig",   boost::program_options::value<std::string>(&m_zexplodeconfig), "zexplode configuration" );
 
+
+
+
+   m_desc.add_options()
+       ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
+
    m_desc.add_options()
        ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm) configuration" );
 

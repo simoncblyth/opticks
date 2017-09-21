@@ -25,7 +25,6 @@ struct BRAP_API BConfig
     void addInt(  const char* k, int* ptr);
     void addFloat(const char* k, float* ptr);
     void addString(const char* k, std::string* ptr);
-//    template <typename T> void add<T>(const char* k, T* ptr);
 
 
     BConfig(const char* cfg);

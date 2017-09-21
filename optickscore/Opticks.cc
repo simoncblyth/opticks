@@ -748,7 +748,8 @@ void Opticks::checkOptionValidity()
 
 void Opticks::configure()
 {
-    //dumpArgs("Opticks::configure");  
+    dumpArgs("Opticks::configure");  
+
 
     m_cfg->commandline(m_argc, m_argv);
 
@@ -792,7 +793,7 @@ void Opticks::configure()
 
     std::string prefdir = getPreferenceDir(type, subtype);  
 
-    LOG(debug) << "Opticks::configure " 
+    LOG(info) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
                << " m_position " << gformat(m_position)
                << " prefdir " << prefdir

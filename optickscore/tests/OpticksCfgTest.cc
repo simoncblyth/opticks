@@ -1,3 +1,5 @@
+#include "NSnapConfig.hpp"
+
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
 
@@ -10,11 +12,11 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    Opticks* opticks = new Opticks(argc, argv);
+    Opticks* ok = new Opticks(argc, argv);
 
     BCfg* cfg  = new BCfg("umbrella", false) ;
 
-    BCfg* ocfg = new OpticksCfg<Opticks>("opticks", opticks,false);
+    BCfg* ocfg = new OpticksCfg<Opticks>("opticks", ok,false);
 
     cfg->add(ocfg);
 
@@ -26,6 +28,12 @@ int main(int argc, char** argv)
 
 
     ocfg->dump("dump");
+
+
+    NSnapConfig* sc = ok->getSnapConfig();
+    sc->dump("SnapConfig");
+
+
 
 
     return 0 ; 
