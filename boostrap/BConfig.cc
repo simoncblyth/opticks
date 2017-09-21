@@ -16,10 +16,13 @@ void BConfig::addInt(const char* k, int* ptr)
 {
     eki.push_back(KI(k, ptr)); 
 }
-
 void BConfig::addFloat(const char* k, float* ptr)
 {
     ekf.push_back(KF(k, ptr)); 
+}
+void BConfig::addString(const char* k, std::string* ptr)
+{
+    eks.push_back(KS(k, ptr)); 
 }
 
 
@@ -42,6 +45,13 @@ void BConfig::parse()
             if(strcmp(kf.first.c_str(),kv.first.c_str()) == 0) *kf.second = BStr::atof(kv.second.c_str()) ; 
         }   
 
+        for(unsigned j=0 ; j < eks.size() ; j++)
+        {   
+            KS ks = eks[j] ; 
+            if(strcmp(ks.first.c_str(),kv.first.c_str()) == 0) *ks.second = kv.second.c_str() ; 
+        }   
+
+
     }   
     //dump("BConfig::parse");
 }
@@ -50,11 +60,26 @@ void BConfig::dump(const char* msg) const
 {
     LOG(info) << msg  ; 
 
-    dump_eki();
-    dump_ekf();
     dump_ekv();
 
+    dump_eki();
+    dump_ekf();
+    dump_eks();
+
 }
+
+void BConfig::dump_ekv() const 
+{
+    LOG(info) << " ekv " << ekv.size() ; 
+    for(unsigned i=0 ; i < ekv.size() ; i++)
+    {   
+        KV kv = ekv[i] ; 
+        std::cout << std::setw(30) << kv.first << " : " << std::setw(20) << kv.second << std::endl ; 
+    }
+}
+
+
+
 
 void BConfig::dump_eki() const 
 {
@@ -76,15 +101,17 @@ void BConfig::dump_ekf() const
     }
 }
 
-void BConfig::dump_ekv() const 
+void BConfig::dump_eks() const 
 {
-    LOG(info) << " ekv " << ekv.size() ; 
-    for(unsigned i=0 ; i < ekv.size() ; i++)
+    LOG(info) << " eks " << eks.size() ; 
+    for(unsigned i=0 ; i < eks.size() ; i++)
     {   
-        KV kv = ekv[i] ; 
-        std::cout << std::setw(30) << kv.first << " : " << std::setw(20) << kv.second << std::endl ; 
+        KS ks = eks[i] ; 
+        std::cout << std::setw(30) << ks.first << " : " << std::setw(20) << *ks.second << std::endl ; 
     }
 }
+
+
 
 
 
