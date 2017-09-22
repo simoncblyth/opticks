@@ -497,9 +497,6 @@ rebuild accelerations structures etc.)
 
 
 
-
-
-
 Downloading OptiX
 -------------------
 
@@ -520,7 +517,12 @@ Delete the symbolic link before exploding the downloaded package installer::
     drwxr-xr-x  7 root  admin  238 Jan 22  2015 OptiX_301
     drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
 
+
     simon:Developer blyth$ sudo rm OptiX
+
+
+
+
 
 
 Replace the symbolic link afterwards::
@@ -537,6 +539,21 @@ Replace the symbolic link afterwards::
     drwxr-xr-x  7 root  admin  238 Dec 18  2014 OptiX_370b2
 
 
+Check 411 on Mac
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:Developer blyth$ sudo rm OptiX
+
+    open /Users/blyth/Downloads/NVIDIA-OptiX-SDK-4.1.1-mac64-22553582.dmg  # GUI installer
+
+    simon:Developer blyth$ sudo mv OptiX OptiX_411
+    simon:Developer blyth$ sudo ln -s OptiX_380 OptiX
+
+
+
+
 Try samples
 -------------
 
@@ -548,6 +565,142 @@ Try samples
     simon:SDK-precompiled-samples blyth$ open optixTutorial.app
     LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX_400/SDK-precompiled-samples/optixTutorial.app.
     simon:SDK-precompiled-samples blyth$ 
+
+
+
+    sudo launchctl stop com.apple.security.syspolicy 
+    sudo launchctl start com.apple.security.syspolicy 
+
+
+Stopping com.apple.security.syspolicy doesnt fix
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some launch permissions issue ?::
+
+    simon:SDK-precompiled-samples blyth$ sudo launchctl stop com.apple.security.syspolicy
+    Password:
+    simon:SDK-precompiled-samples blyth$ open optixMeshViewer.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX_411/SDK-precompiled-samples/optixMeshViewer.app.
+    simon:SDK-precompiled-samples blyth$ sudo launchctl start com.apple.security.syspolicy
+    simon:SDK-precompiled-samples blyth$ open optixMeshViewer.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Developer/OptiX_411/SDK-precompiled-samples/optixMeshViewer.app.
+    simon:SDK-precompiled-samples blyth$ 
+
+
+try building 411 samples
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    simon:build blyth$ which nvcc
+    simon:build blyth$ cuda-
+    simon:build blyth$ which nvcc
+    /Developer/NVIDIA/CUDA-7.0/bin/nvcc
+    simon:build blyth$ 
+    simon:build blyth$ 
+    simon:build blyth$ cmake ../SDK
+    -- The C compiler identification is AppleClang 6.0.0.6000057
+    -- The CXX compiler identification is AppleClang 6.0.0.6000057
+    -- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc
+    -- Check for working C compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/cc -- works
+    -- Detecting C compiler ABI info
+    -- Detecting C compiler ABI info - done
+    -- Detecting C compile features
+    -- Detecting C compile features - done
+    -- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++
+    -- Check for working CXX compiler: /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ -- works
+    -- Detecting CXX compiler ABI info
+    -- Detecting CXX compiler ABI info - done
+    -- Detecting CXX compile features
+    -- Detecting CXX compile features - done
+    -- Checking to see if CXX compiler accepts flag -Wno-unused-result
+    -- Checking to see if CXX compiler accepts flag -Wno-unused-result - yes
+    -- Performing Test SSE_41_AVAILABLE
+    -- Performing Test SSE_41_AVAILABLE - Success
+    -- Looking for pthread.h
+    -- Looking for pthread.h - found
+    -- Looking for pthread_create
+    -- Looking for pthread_create - found
+    -- Found Threads: TRUE  
+    -- Found CUDA: /Developer/NVIDIA/CUDA-7.0 (found suitable version "7.0", minimum required is "5.0") 
+    -- Found OpenGL: /System/Library/Frameworks/OpenGL.framework  
+    -- Found GLUT: /System/Library/Frameworks/GLUT.framework  
+    -- Configuring done
+    CMake Warning (dev):
+      Policy CMP0042 is not set: MACOSX_RPATH is enabled by default.  Run "cmake
+      --help-policy CMP0042" for policy details.  Use the cmake_policy command to
+      set the policy and suppress this warning.
+
+      MACOSX_RPATH is not specified for the following targets:
+
+       sutil_sdk
+
+    This warning is for project developers.  Use -Wno-dev to suppress it.
+
+    -- Generating done
+    -- Build files have been written to: /Developer/OptiX/build
+
+
+
+
+Some succeed others giving ptx assembly aborted::
+
+
+    simon:bin blyth$ ./optixDynamicGeometry 
+    Using multi-acceleration mode
+    Creating geometry ... done
+    Validating ... done
+    Preprocessing scene ... OptiX Error: 'Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: ptxas application ptx input, line 504; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 515; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 526; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 537; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 582; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 595; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 608; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 621; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1019; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1020; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1021; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1023; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1053; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1055; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1057; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1059; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1229; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1231; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1233; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 1235; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas fatal   : Ptx assembly aborted due to errors returned (209): No binary for GPU)'
+
+    simon:bin blyth$ ./optixPathTracer 
+    OptiX Error: 'Unknown error (Details: Function "RTresult _rtContextLaunch2D(RTcontext, unsigned int, RTsize, RTsize)" caught exception: Encountered a CUDA error: ptxas application ptx input, line 250; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 253; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 255; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 257; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 291; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 296; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 301; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas application ptx input, line 306; error   : Argument 1 of instruction 'tex': .texref or .u64 register expected
+    ptxas fatal   : Ptx assembly aborted due to errors returned (209): No binary for GPU)'
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error
+    Abort trap: 6
+    simon:bin blyth$ 
+
+
+
+talonmies
+~~~~~~~~~~~
+
+* https://stackoverflow.com/questions/15168965/cuda-error-cuda-error-no-binary-for-gpu
+
+Try to compile the PTX with the toolchain yourself::
+
+    $ ptxas -arch=sm_20 own.ptx 
+    ptxas own.ptx, line 24; error   : Arguments mismatch for instruction 'mov'
+    ptxas own.ptx, line 24; error   : Unknown symbol 'func_retval0'
+    ptxas own.ptx, line 24; error   : Label expected for forward reference of 'func_retval0'
+    ptxas fatal   : Ptx assembly aborted due to errors
 
 
 

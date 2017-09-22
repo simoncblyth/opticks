@@ -301,6 +301,7 @@ tboolean--(){
 
     op.sh  \
             $cmdline \
+            --rendermode +global \
             --animtimemax 20 \
             --timemax 20 \
             --geocenter \
