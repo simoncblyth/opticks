@@ -110,12 +110,13 @@ void OKGLTracer::render()
             m_otracer->trace_();
             m_oframe->push_PBO_to_Texture();
 
-
+/*
             if(m_trace_count == 0 )
             {
                 LOG(info) << "OKGLTracer::render snapping first raytrace frame " ; 
                 m_ocontext->snap();
             }
+*/
 
 
             m_trace_count++ ; 
