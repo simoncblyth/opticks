@@ -282,13 +282,35 @@ okop-index-op(){
 }
 
 
+
+okop-snap-tag(){ echo 0 ; }
+okop-snap-base(){ echo /tmp/okop_snap ; }
+okop-snap-dir(){  echo $(okop-snap-base)/$(okop-snap-tag) ; }
+okop-snap-cd(){  cd $(okop-snap-dir) ; }
+
 okop-snap()
 {
     ## intended to give same snap as okop-snap-gui, must OpticksHub::setupCompositionTargetting for this to be so
-    local snapconfig="steps=10,eyestartz=0.,eyestopz=1.,prefix=/tmp/okop_snap,postfix=.ppm"
+    local snapdir=$(okop-snap-dir)
+    mkdir -p $snapdir
+
+    local snapconfig="steps=100,eyestartz=0.,eyestopz=0.1,prefix=${snapdir}/,postfix=.ppm"
+
     op --snap --j1707 --gltf 3 --tracer --target 12 --eye 0.85,0.85,0. --snapconfig $snapconfig
-    # libpng-;libpng-- /tmp/snap.ppm
 }
+
+okop-snap-mp4()
+{
+    okop-snap-cd
+    local tag=$(basename $PWD)
+    local mp4=${tag}.mp4
+
+    ffmpeg -i %05d.ppm -pix_fmt yuv420p $mp4
+
+    scp $mp4 D:
+}
+
+
 
 okop-propagate()
 {

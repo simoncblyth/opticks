@@ -14,6 +14,7 @@ struct NPY_API NSnapConfig
 
     int verbosity ; 
     int steps ; 
+    int fmtwidth ; 
     float eyestartz ; 
     float eyestopz ; 
     std::string prefix ; 
@@ -21,6 +22,7 @@ struct NPY_API NSnapConfig
 
 
     std::string getSnapPath(unsigned index);
+    static std::string SnapIndex(unsigned index, unsigned width);
 
 
 
