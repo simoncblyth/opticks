@@ -17,6 +17,34 @@ This is tested by imguitest-
 
 
 
+CMake issue reported by Axel 
+-------------------------------
+
+The command: imgui-configure gives::
+
+    CMake Error at CMakeLists.txt:10 (include):
+      include could not find load file:
+
+        EnvBuildOptions
+
+This is due to dirty OPTICKS_HOME envvar dependency in the CMakeLists.txt::
+
+      1 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+      2 # this file is copied from imgui-edir to imgui-sdir by imgui-get
+      3 set(name ImGui)
+      4 project(${name})
+      5 
+      6 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
+      7                       "$ENV{OPTICKS_HOME}/cmake/Modules"
+      8           )
+      9 
+     10 include(EnvBuildOptions)
+
+
+
+Other issues
+---------------
+
 
 Fail to find 
 

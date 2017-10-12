@@ -6,18 +6,31 @@ Get Opticks
 
 Clone the repository from bitbucket::
 
+   cd 
    hg clone http://bitbucket.org/simoncblyth/opticks 
    hg clone ssh://hg@bitbucket.org/simoncblyth/opticks   # via SSH for developers 
 
+Bash setup, envvars
+---------------------
+
 Connect the opticks bash functions to your shell by adding a line to your .bash_profile
-and configure the location of the install with the LOCAL_BASE environment variable::
+and configure the location of the install with the LOCAL_BASE environment variable 
+and the location of the source with the OPTICKS_HOME envvar::
 
    opticks-(){ . $HOME/opticks/opticks.bash && opticks-env $* ; }
    export LOCAL_BASE=/usr/local   
+   export OPTICKS_HOME=$HOME/opticks
 
 The first line defines the bash function *opticks-* that is termed a precursor function 
 as running it will define other functions all starting with *opticks-* such as *opticks-vi*
 and *opticks-usage*.
+
+Some further .bash_profile setup simplifies use of Opticks binaries and analysis scripts::
+
+    op(){ op.sh $* ; } 
+
+    export PYTHONPATH=$HOME
+    export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$PATH
 
 
 Opticks Installation Overview
@@ -215,6 +228,14 @@ For a full build with CUDA and OptiX configure with::
                       -DOptiX_INSTALL_DIR=/Developer/OptiX \
                       -DCOMPUTE_CAPABILITY=52 \
                       -DBOOST_ROOT=$(boost-prefix) 
+
+Another configure example::
+
+    opticks-configure -DCUDA_TOOLKIT_ROOT_DIR=/usr/local/cuda-7.0 \ 
+                      -DOptiX_INSTALL_DIR=/home/gpu/NVIDIA-OptiX-SDK-3.8.0-linux64/ \ 
+                      -DCOMPUTE_CAPABILITY=52 \
+                      -DBOOST_ROOT=/usr/local/lib
+
 
 
 The argument `-DCOMPUTE_CAPABILITY=52` specifies to compile for compute capability 5.2 architectures 

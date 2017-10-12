@@ -2,7 +2,7 @@ oyoctogl-src(){      echo externals/oyoctogl.bash ; }
 oyoctogl-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oyoctogl-src)} ; }
 oyoctogl-vi(){       vi $(oyoctogl-source) ; }
 oyoctogl-env(){      olocal- ; opticks- ; }
-oyoctogl-usage(){ cat << EOU
+oyoctogl-usage(){ cat << 'EOU'
 
 Yocto-GL as Opticks External
 ====================================
