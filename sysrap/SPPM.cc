@@ -77,6 +77,7 @@ void SPPM::write( const char* filename, const unsigned char* image, int width, i
 
   std::cout << "Wrote file " << filename << std::endl;
 
+  delete[] data;
 
 }
 
