@@ -32,6 +32,7 @@ using namespace optix ;
 
 #include "PLOG.hh"
 
+#ifdef ELOG_WORKAROUND
 static struct OXRAPPLOGInit {
     OXRAPPLOGInit() {
 
@@ -39,6 +40,8 @@ static struct OXRAPPLOGInit {
 
     }
 } s_oxrapploginit;
+#endif
+
 
 
 void OPropagator::setOverride(unsigned int override_)

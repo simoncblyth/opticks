@@ -63,6 +63,8 @@
 
 #include "PLOG.hh"
 
+
+#ifdef ELOG_WORKAROUND
 static struct OKCLOGInit {
     OKCLOGInit() {
 
@@ -70,6 +72,7 @@ static struct OKCLOGInit {
 
     }
 } s_okcloginit;
+#endif 
 
 
 #define TIMER(s) \

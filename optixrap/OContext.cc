@@ -304,7 +304,7 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
         t0 = BTimer::RealTime();
         LOG(info) << "OContext::launch PRELAUNCH START" ;
         m_context->launch( entry, 0, 0); 
-	LOG(info) << "OContext::launch PRELAUNCH DONE" ;
+        LOG(info) << "OContext::launch PRELAUNCH DONE" ;
         t1 = BTimer::RealTime();
         LOG(info) << "OContext::launch PRELAUNCH time: " << (t1-t0) ;
         if(times) times->prelaunch  += t1 - t0 ;
@@ -315,11 +315,11 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
     {
         double t0, t1 ; 
         t0 = BTimer::RealTime();
-        LOG(info) << "OContext::launch LAUNCH START" ;
+        LOG(debug) << "OContext::launch LAUNCH START" ;
         m_context->launch( entry, width, height ); 
-	LOG(info) << "OContext::launch LAUNCH DONE" ;
+        LOG(debug) << "OContext::launch LAUNCH DONE" ;
         t1 = BTimer::RealTime();
-	LOG(info) << "OContext::launch LAUNCH time: " << (t1-t0) ;
+        LOG(info) << "OContext::launch LAUNCH time: " << (t1-t0) ;
         if(times) times->launch  += t1 - t0 ;
     }
 

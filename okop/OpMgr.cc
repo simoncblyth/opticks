@@ -48,6 +48,10 @@ class NConfigurable ;
        }\
     }
 
+
+
+
+#ifdef ELOG_WORKAROUND
 static struct OpMgrPLOGInit {
     OpMgrPLOGInit() {
 
@@ -68,6 +72,7 @@ static struct OpMgrPLOGInit {
 
     }
 } s_opmgrploginit;
+#endif
 
 
 OpMgr::OpMgr(int argc, char** argv, const char* argforced ) 
