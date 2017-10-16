@@ -1,7 +1,6 @@
 Can OptiX Selector Defer Expensive CSG ?
 ===========================================
 
-
 Overview
 ---------
 
@@ -134,6 +133,230 @@ Looks like will need a separate selector for every instance... for instance iden
                Acceleration
 
 
+Rules
+~~~~~~~
+
+* Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+* Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+* GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+* Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+
+Where to put Selector ? 
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Given that the same gmm is used for all pergi... 
+it would seem most appropriate to arrange the selector in common also, 
+as all instances have the same simplified version of their geometry too..
+BUT: selector needs to house 
+
+
+How to form a simplified analytic instance ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+How to select ?
+~~~~~~~~~~~~~~~~~
+
+Just like the OpenGL LOD : the level-of-detail decision needs access to: 
+
+* instance position  (could get this using rtGetTransform, BUT tis known already in OGeo so set as visit program attribute)
+* instance "size" 
+
+When distance from ray.origin to instance (transform center) exceeds instance size
+can select just the outer ?  
+
+
+
+Program Variable Transformation
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From the visit program, ray.origin appears to be in object space ? But instance position is in World space.
+
+::
+
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+
+
+
+
+
+Recall that rays have a projective transformation applied to them upon encountering Transform nodes during traversal. 
+The transformed ray is said to be in object space, while the original ray is said to be in world space.
+Programs with access to the rtCurrentRay semantic operate in the spaces summarized in Table 7:
+
+Table 7 Space of rtCurrentRay for Each Program Type
+
+===============  =============
+Program           Space
+===============  =============
+Ray Generation    World
+Closest Hit       World
+Any Hit           Object
+Miss              World
+Intersection      Object
+Visit             Object
+===============  =============
+
+To facilitate transforming variables from one space to another, OptiX’s CUDA C API provides a set of functions::
+
+   ￼__device__ float3 rtTransformPoint(  RTtransformkind kind, const float3& p )
+    __device__ float3 rtTransformVector( RTtransformkind kind, const float3& v ) 
+    __device__ float3 rtTransformNormal( RTtransformkind kind, const float3& n )
+    __device__ void rtGetTransform( RTtransformkind kind, float matrix[16] )
+
+The first three functions transform a float3, interpreted as a point, vector,
+or normal vector, from object to world space or vice versa depending on the
+value of a RTtransformkind flag passed as an argument. rtGetTransform returns
+the four-by-four matrix representing the current transformation from object to
+world space (or vice versa depending on the RTtransformkind argument). For best
+performance, use the rtTransform functions rather than performing your own
+explicit matrix multiplication with the result of rtGetTransform.
+
+A common use case of variable transformation occurs when interpreting
+attributes passed from the intersection program to the closest hit program.
+Intersection programs often produce attributes, such as normal vectors, in
+object space. Should a closest hit program wish to consume that attribute, it
+often must transform the attribute from object space to world space:
+
+::
+
+    float3 n = rtTransformNormal( RT_OBJECT_TO_WORLD, normal );
+
+
+
+After apply the transform get into ballpark::
+
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+    visit_instance 1  ray.origin (-20419.215 -799359.688  -6529.901)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
+
+
+
+
+
+Attempt to test with selector between the analytic and triangulated geometry
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* got slow OGeo convert, and GPU mem limit when tried making geo for each instance
+
+
+* need to arrange a view with just instances to check the --raylod, 
+  restrictmesh seems not to do it ?
+
+
+::
+
+    op --raylod --debugger --gltf 3  --tracer
+
+    op --raylod --debugger --gltf 3  --tracer --restrictmesh 5
+
+
+
+
+    op --debugger --gltf 3  --tracer --rendermode +in0,+in1,+in2,+in3,+in4,+in5
+
+    op --debugger --gltf 3  --tracer --rendermode +in3
+          # just PMTs in OpenGL, raytrace full geo (analytic)
+
+    op --debugger --gltf 3  --tracer --rendermode +in3 --restrictmesh 3
+          # OpenGL disappeared, raytrace still full geo (analytic)
+
+
+
+    op --raylod --debugger --gltf 3  --tracer --rendermode +in3 
+
+
+
+
+
+Huh, renderer and mesh indices not aligned ?   
+
+* inconsistent criteria ?
+
+* TODO: get the name of the instanced mesh into the interface, or at least dump it 
+
+
+::
+
+    2017-10-16 19:27:59.433 INFO  [511521] [GGeoLib::dump@298] GGeoLib ANALYTIC  numMergedMesh 6
+    mm i   0 geocode   A                  numSolids      12230 numFaces      403712 numITransforms           1 numITransforms*numSolids       12230
+    mm i   1 geocode   A            EMPTY numSolids          1 numFaces           0 numITransforms        1792 numITransforms*numSolids        1792
+    mm i   2 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   3 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   4 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   5 geocode   A                  numSolids          5 numFaces        2928 numITransforms         672 numITransforms*numSolids        3360
+     num_total_volumes 12230 num_instanced_volumes 7744 num_global_volumes 4486
+    2017-10-16 19:27:59.433 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.656 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.656 WARN  [511521] [OGeo::convertMergedMesh@229] OGeo::convertMesh skipping mesh 1
+    2017-10-16 19:27:59.656 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.660 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1997] GMesh::makeFaceRepeatedInstancedIdentityBuffer nodeinfo_ok 1 nodeinfo_buffer_items 1 numSolids 1
+    2017-10-16 19:27:59.660 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@2005] GMesh::makeFaceRepeatedInstancedIdentityBuffer iidentity_ok 1 iidentity_buffer_items 864 numFaces (sum of faces in numSolids)12 numITransforms 864 numSolids*numITransforms 864 numRepeatedIdentity 10368
+    [ 2] (     0/   864 )         ip-20119.562 -796322.625 -9913.898   1.000 
+    [ 2] (     1/   864 )         ip-20253.062 -796409.000 -9822.100   1.000 
+    [ 2] (     2/   864 )         ip-20119.562 -796322.625 -9730.301   1.000 
+    [ 2] (     3/   864 )         ip-19251.227 -795760.875 -9766.898   1.000 
+    [ 2] (     4/   864 )         ip-19384.727 -795847.250 -9675.100   1.000 
+    [ 2] (     5/   864 )         ip-19251.227 -795760.875 -9583.301   1.000 
+    [ 2] (     6/   864 )         ip-21102.336 -796958.375 -9766.898   1.000 
+    [ 2] (     7/   864 )         ip-21235.836 -797044.750 -9675.100   1.000 
+    [ 2] (     8/   864 )         ip-21102.336 -796958.375 -9583.301   1.000 
+    [ 2] (     9/   864 )         ip-20119.398 -796322.875 -7676.898   1.000 
+    2017-10-16 19:27:59.756 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.756 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1997] GMesh::makeFaceRepeatedInstancedIdentityBuffer nodeinfo_ok 1 nodeinfo_buffer_items 1 numSolids 1
+    2017-10-16 19:27:59.756 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@2005] GMesh::makeFaceRepeatedInstancedIdentityBuffer iidentity_ok 1 iidentity_buffer_items 864 numFaces (sum of faces in numSolids)12 numITransforms 864 numSolids*numITransforms 864 numRepeatedIdentity 10368
+    [ 3] (     0/   864 )         ip-20079.611 -796362.250 -9934.684   1.000 
+    [ 3] (     1/   864 )         ip-20243.338 -796468.188 -9822.100   1.000 
+    [ 3] (     2/   864 )         ip-20079.611 -796362.250 -9709.517   1.000 
+    [ 3] (     3/   864 )         ip-19211.277 -795800.500 -9787.684   1.000 
+    [ 3] (     4/   864 )         ip-19375.004 -795906.438 -9675.100   1.000 
+    [ 3] (     5/   864 )         ip-19211.277 -795800.500 -9562.517   1.000 
+    [ 3] (     6/   864 )         ip-21062.387 -796998.062 -9787.684   1.000 
+    [ 3] (     7/   864 )         ip-21226.113 -797104.000 -9675.100   1.000 
+    [ 3] (     8/   864 )         ip-21062.387 -796998.062 -9562.517   1.000 
+    [ 3] (     9/   864 )         ip-20079.449 -796362.500 -7697.684   1.000 
+    2017-10-16 19:27:59.790 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.790 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1997] GMesh::makeFaceRepeatedInstancedIdentityBuffer nodeinfo_ok 1 nodeinfo_buffer_items 1 numSolids 1
+    2017-10-16 19:27:59.790 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@2005] GMesh::makeFaceRepeatedInstancedIdentityBuffer iidentity_ok 1 iidentity_buffer_items 864 numFaces (sum of faces in numSolids)12 numITransforms 864 numSolids*numITransforms 864 numRepeatedIdentity 10368
+    [ 4] (     0/   864 )         ip-20066.975 -796431.500 -9887.918   1.000 
+    [ 4] (     1/   864 )         ip-20162.691 -796493.438 -9822.100   1.000 
+    [ 4] (     2/   864 )         ip-20066.975 -796431.500 -9756.282   1.000 
+    [ 4] (     3/   864 )         ip-19198.641 -795869.750 -9740.918   1.000 
+    [ 4] (     4/   864 )         ip-19294.357 -795931.688 -9675.100   1.000 
+    [ 4] (     5/   864 )         ip-19198.641 -795869.750 -9609.282   1.000 
+    [ 4] (     6/   864 )         ip-21049.750 -797067.312 -9740.918   1.000 
+    [ 4] (     7/   864 )         ip-21145.467 -797129.188 -9675.100   1.000 
+    [ 4] (     8/   864 )         ip-21049.750 -797067.312 -9609.282   1.000 
+    [ 4] (     9/   864 )         ip-20066.812 -796431.750 -7650.918   1.000 
+    2017-10-16 19:27:59.823 WARN  [511521] [OGeo::convertMergedMesh@224]  RayLOD enabled 
+    2017-10-16 19:27:59.823 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@1997] GMesh::makeFaceRepeatedInstancedIdentityBuffer nodeinfo_ok 1 nodeinfo_buffer_items 5 numSolids 5
+    2017-10-16 19:27:59.823 FATAL [511521] [*GMesh::makeFaceRepeatedInstancedIdentityBuffer@2005] GMesh::makeFaceRepeatedInstancedIdentityBuffer iidentity_ok 1 iidentity_buffer_items 3360 numFaces (sum of faces in numSolids)2928 numITransforms 672 numSolids*numITransforms 3360 numRepeatedIdentity 1967616
+    [ 5] (     0/   672 )         ip-16572.898 -801469.625 -8842.500   1.000 
+    [ 5] (     1/   672 )         ip-16166.072 -801019.375 -8842.500   1.000 
+    [ 5] (     2/   672 )         ip-15889.641 -800479.188 -8842.500   1.000 
+    [ 5] (     3/   672 )         ip-15762.440 -799885.875 -8842.500   1.000 
+    [ 5] (     4/   672 )         ip-15793.142 -799279.812 -8842.500   1.000 
+    [ 5] (     5/   672 )         ip-15979.650 -798702.375 -8842.500   1.000 
+    [ 5] (     6/   672 )         ip-16309.258 -798192.875 -8842.500   1.000 
+    [ 5] (     7/   672 )         ip-16759.500 -797786.062 -8842.500   1.000 
+    [ 5] (     8/   672 )         ip-17299.695 -797509.625 -8842.500   1.000 
+    [ 5] (     9/   672 )         ip-17893.031 -797382.438 -8842.500   1.000 
 
 
 

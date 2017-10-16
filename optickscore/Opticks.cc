@@ -437,6 +437,11 @@ bool Opticks::isTracer() const
     return m_cfg->hasOpt("tracer") ;
 }
 
+bool Opticks::isRayLOD() const
+{
+    return m_cfg->hasOpt("raylod") ;
+}
+
 
 
 

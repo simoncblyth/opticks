@@ -172,6 +172,7 @@ set(SOURCES
     cu/material1_propagate.cu 
     cu/TriangleMesh.cu 
     cu/sphere.cu 
+    cu/visit_instance.cu
     cu/intersect_analytic.cu 
     cu/solve_callable.cu 
     cu/generate.cu
@@ -204,6 +205,7 @@ set(OX_PTXS
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_material1_propagate.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_TriangleMesh.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_sphere.cu.ptx
+    ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_visit_instance.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_intersect_analytic.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_solve_callable.cu.ptx
     ${CMAKE_CURRENT_BINARY_DIR}/${name}_generated_generate.cu.ptx

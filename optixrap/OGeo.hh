@@ -78,13 +78,16 @@ public:
     
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
-    optix::Group   makeRepeatedGroup(GMergedMesh* mm);
+    optix::Group   makeRepeatedGroup(GMergedMesh* mm, bool lod );
 
 private:
+    void setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
     optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
     optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
     optix::Material         makeMaterial();
     optix::GeometryInstance makeGeometryInstance(optix::Geometry geometry, optix::Material material);
+    optix::GeometryGroup     makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel );
+    optix::Selector          makeSelector(GMergedMesh* mm, optix::Geometry tri, optix::Geometry ana, optix::Material material, optix::Acceleration accel, unsigned index);
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);

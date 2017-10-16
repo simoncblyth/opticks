@@ -695,15 +695,22 @@ void OpticksCfg<Listener>::init()
        ("lodconfig",   boost::program_options::value<std::string>(&m_lodconfig), lodconfig );
 
    char lod[128];
-   snprintf(lod,128, "Integer controlling LOD (level-of-detail) meshing. Default %d ", m_lod );
+   snprintf(lod,128, "integer controlling lod (level-of-detail) meshing. default %d ", m_lod );
    m_desc.add_options()
        ("lod",  boost::program_options::value<int>(&m_lod), lod );
+
+
+   m_desc.add_options()
+       ("raylod",  "Switch on experimental OptiX raytrace LOD via ray/instances based geometry selectors , see oxrap/OGeo.cc:makeSelector. This is entirely distinct from the OpenGL mesh based LOD.") ;
+
+
 
 
    char target[128];
    snprintf(target,128, "Integer controlling center_extent target. Default %d ", m_target );
    m_desc.add_options()
        ("target",  boost::program_options::value<int>(&m_target), target );
+
 
 
 
