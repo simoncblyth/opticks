@@ -3452,6 +3452,7 @@ optix-jump(){
    cd $iwd
 }
 optix-old(){   optix-jump 301 ; }
+optix-new(){   optix-jump 411 ; }
 optix-beta(){  optix-jump 370b2 ; }
 
 optix-linux-name(){
@@ -3464,6 +3465,7 @@ optix-linux-name(){
 
 optix-version(){
    case $(optix-name) in 
+     OptiX_411)   echo 4.1.1 ;;
      OptiX_400)   echo 4.0.0 ;;
      OptiX_380)   echo 3.8.0 ;;
      OptiX_301)   echo 3.0.2 ;;
@@ -3473,6 +3475,7 @@ optix-version(){
 
 optix-vernum(){
    case $(optix-name) in 
+     OptiX_411)   echo 411 ;;
      OptiX_400)   echo 400 ;;
      OptiX_380)   echo 380 ;;
      OptiX_301)   echo 302 ;;
@@ -3480,8 +3483,9 @@ optix-vernum(){
   esac
 }
 
-
-
+optix-header(){ echo $(optix-prefix)/include/optix.h ; }
+optix-hversion(){ perl -ne 's,#define OPTIX_VERSION (\d*)\s*,$1, && print "$1\n"' $(optix-header) ; }
+   
 
 optix-linux-jump(){
     local vers=${1:-351}

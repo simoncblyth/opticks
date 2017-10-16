@@ -563,6 +563,12 @@ op-binary-setup()
 
     OPTICKS_ARGS="$presentation ${OPTICKS_ARGS} " 
 
+
+    if [ "${OPTICKS_ARGS/rendermode}" == "${OPTICKS_ARGS}" ]
+    then 
+        OPTICKS_ARGS="--rendermode +global,+in0,+axis" 
+    fi 
+
 }
 
 

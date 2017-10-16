@@ -187,7 +187,7 @@ void OContext::cleanUp()
 optix::Program OContext::createProgram(const char* filename, const char* progname )
 {  
 
-    LOG(info) << "OContext::createProgram START "
+    LOG(debug) << "OContext::createProgram START "
               << " filename " << filename
               << " progname " << progname
               ;
@@ -195,7 +195,7 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
     optix::Program prog = m_cfg->createProgram(filename, progname);
 
 
-    LOG(info) << "OContext::createProgram DONE "
+    LOG(debug) << "OContext::createProgram DONE "
               << " filename " << filename
               << " progname " << progname
               ;

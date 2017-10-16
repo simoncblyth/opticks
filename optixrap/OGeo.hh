@@ -39,11 +39,13 @@ Crucial OptiX geometrical members:
 
 
 *(optix::Group)m_top*
+     group holding the below
 
 *(optix::GeometryGroup)m_geometry_group*
+     single child converted from merged mesh zero, with global geometry
 
 *(optix::Group)m_repeated_group*
-
+     usually multiple children (order ~5) converted from merged mesh > 0, with instanced geometry 
 
 
 **/
@@ -77,20 +79,15 @@ public:
     template <typename T>            optix::Buffer createInputUserBuffer(NPY<T>* src, unsigned elementSize, const char* name);
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm);
-    //optix::Group   PRIOR_makeRepeatedGroup(GMergedMesh* mm, unsigned int limit=0);
-
 
 private:
     optix::Acceleration     makeAcceleration(const char* builder=NULL, const char* traverser=NULL);
     optix::Geometry         makeGeometry(GMergedMesh* mergedmesh);
     optix::Material         makeMaterial();
     optix::GeometryInstance makeGeometryInstance(optix::Geometry geometry, optix::Material material);
-    //optix::GeometryInstance makeGeometryInstance(GMergedMesh* mergedmesh);
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
-private:
-    //optix::Buffer PRIOR_makeAnalyticGeometryIdentityBuffer(GMergedMesh* mm, unsigned int numSolidsMesh);
 private:
     void dump(const char* msg, const float* m);
 
@@ -100,7 +97,6 @@ private:
     OContext*            m_ocontext ; 
     optix::Context       m_context ; 
     optix::Group         m_top ; 
-    //GGeoBase*            m_ggeo ; 
     Opticks*             m_ok ; 
     GGeoLib*             m_geolib ;  
     const char*          m_builder ; 

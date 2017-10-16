@@ -183,7 +183,7 @@ void OpticksViz::setupRendermode(const char* rendermode )
     } 
     else
     { 
-        if(m_ok->isJuno())
+        if(m_ok->isJuno())  // hmm: dirty, can such stuff "default argument setup" be done at bash level
         {
             m_scene->setRenderMode("bb0,bb1,-global");
         }

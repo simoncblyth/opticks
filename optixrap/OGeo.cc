@@ -252,6 +252,16 @@ void OGeo::convertMergedMesh(unsigned i)
 
 
 
+
+/*
+optix::Group OGeo::makeRepeatedGroupLOD(GMergedMesh* mm)
+{
+
+}
+*/
+
+
+
 optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
 {
     NPY<float>* itransforms = mm->getITransformsBuffer();
@@ -299,10 +309,18 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
         // proliferating *pergi* so can assign an instance index to it 
         optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
         pergi["instance_index"]->setUint( i );
+  
+        // What other geo types can hold variables ? 
+        //     "Geometry" and "Material" can, 
+        //     but doesnt help for instance_index as only one of those
 
         optix::GeometryGroup perxform = m_context->createGeometryGroup();
         perxform->addChild(pergi);
         perxform->setAcceleration( accel );
+
+        //  Could the perxform GeometryGroup be common to all ?
+        //     NO, needs to be a separate GeometryGroup into which to place 
+        //     the distinct pergi GeometryInstance required for instanced identity   
 
         xform->setChild(perxform);
 
@@ -319,10 +337,10 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
    After instance ID possible
    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-          assembly        (Group) 
+          assembly        (Group)                1:1 with instanced merged mesh
              xform        (Transform)
                perxform   (GeometryGroup)
-                 pergi    (GeometryInstance)      
+                 pergi    (GeometryInstance)       distinct pergi for every instance, with instance_index assigned  
                      gmm  (Geometry)               the same gmm and mat are child of all xform/perxform/pergi
                      mat  (Material) 
              xform        (Transform)
@@ -331,6 +349,28 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm)
                      gmm  (Geometry)
                      mat  (Material) 
              ...
+
+
+
+
+   Where to put Selector ? 
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+   Given that the same gmm is used for all pergi... 
+   it would seem most appropriate to arrange the selector in common also, 
+   as all instances have the same simplified version of their geometry too..
+   BUT: selector needs to house 
+
+
+   *  Group contains : rtGroup, rtGeometryGroup, rtTransform, or rtSelector
+   *  Transform houses single child : rtGroup, rtGeometryGroup, rtTransform, or rtSelector   (NB not GeometryInstance)
+   *  GeometryGroup is a container for an arbitrary number of geometry instances, and must be assigned an Acceleration
+   *  Selector contains : rtGroup, rtGeometryGroup, rtTransform, and rtSelector
+
+   How to form a simplified analytic instance ?
+   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
 */
 }
 
@@ -453,6 +493,7 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 {
     optix::Geometry geometry ; 
     const char geocode = mergedmesh->getGeoCode();
+
     if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
     {
         geometry = makeTriangulatedGeometry(mergedmesh);
