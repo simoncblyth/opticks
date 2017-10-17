@@ -890,6 +890,13 @@ int Opticks::getMultiEvent()
 {    
     return m_cfg->getMultiEvent();
 }
+int Opticks::getRestrictMesh()
+{    
+    return m_cfg->getRestrictMesh();
+}
+
+
+
 
 float Opticks::getTimeMin()
 {

@@ -681,12 +681,15 @@ void OpticksCfg<Listener>::init()
        ("gltftarget",  boost::program_options::value<int>(&m_gltftarget), gltftarget );
 
 
-   char gltf[128];
-   snprintf(gltf,128, "Integer controlling  glTF geometry file loading, 0 means NO.  Default %d ", m_gltf );
    m_desc.add_options()
-       ("gltf",  boost::program_options::value<int>(&m_gltf), gltf );
-
-
+       ("gltf",  boost::program_options::value<int>(&m_gltf), 
+             "Integer controlling  glTF analytic geometry file loading. "
+             "The default of zero uses old triangulated approach "
+             "Non-zero values use glTF analytic geometry. "
+             ""
+             "gltf == 3 combines G4 triangulation for OpenGL viz (lowpoly and more reliable that home grown poly)   "
+             "with glTF analytic for raytrace and simulation (see GScene::createVolume)  "                 
+       );
 
 
    char lodconfig[128];

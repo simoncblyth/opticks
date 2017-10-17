@@ -230,6 +230,7 @@ class OKCORE_API Opticks {
        NState*              getState();
    public:
        int                  getMultiEvent();
+       int                  getRestrictMesh();
        unsigned int         getSourceCode();
        char                 getEntryCode();    // G:generate S:seedTest T:trivial
        const char*          getEntryName();    

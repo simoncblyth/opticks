@@ -2,10 +2,15 @@ opticks-(){         source $(opticks-source) && opticks-env $* ; }
 opticks-src(){      echo opticks.bash ; }
 opticks-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticks-src)} ; }
 opticks-vi(){       vi $(opticks-source) ; }
+opticks-help(){ opticks-usage ; }
 opticks-usage(){   cat << \EOU
 
 OPTICKS BASH FUNCTIONS
 ========================
+
+*opticks-rdocs*
+     open browser on the remote html documentation
+     https://simoncblyth.bitbucket.io/opticks/index.html
 
 *opticks-docs*
      open browser on the local html documentation

@@ -60,6 +60,7 @@ OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
    m_ok(m_hub->getOpticks()),
+   m_gltf(m_ok->getGLTF()),
    m_composition(m_hub->getComposition()),
    m_fcfg(m_ok->getCfg()),
    m_ggeo(NULL),
@@ -236,7 +237,7 @@ void OpticksGeometry::loadGeometry()
         m_ok->setExit(true); 
     }
 
-    configureGeometry();
+    // configureGeometry();  moved up to OpticksHub::init 
 
     LOG(info) << "OpticksGeometry::loadGeometry DONE " ; 
     TIMER("loadGeometry");
@@ -267,7 +268,7 @@ void OpticksGeometry::loadGeometryBase()
         m_ggeo->getGeoLib()->setMeshVersion(meshversion.c_str());
     }
 
-    m_ggeo->loadGeometry();   // potentially from cache 
+    m_ggeo->loadGeometry();   // potentially from cache : for gltf > 0 loads both tri and ana geometry 
         
     if(m_ggeo->getMeshVerbosity() > 2)
     {
@@ -336,14 +337,23 @@ void OpticksGeometry::fixGeometry()
 
 
 
-void OpticksGeometry::configureGeometry()
+
+void OpticksGeometry::configureGeometryOld()
 {
+    /*
+    Moved config up to OpticksHub::configureGeometry
+
+    Slicing that can only be applied equally all mm makes
+    little sense now that hame multiple instanced meshes.
+    It was just for debug anyway.
+    */
+
     int restrict_mesh = m_fcfg->getRestrictMesh() ;  
     int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
 
     int nmm = m_ggeo->getNumMergedMesh();
 
-    LOG(debug) << "OpticksGeometry::configureGeometry" 
+    LOG(info) << "OpticksGeometry::configureGeometry" 
               << " restrict_mesh " << restrict_mesh
               << " analytic_mesh " << analytic_mesh
               << " nmm " << nmm
@@ -357,14 +367,20 @@ void OpticksGeometry::configureGeometry()
     NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
     NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
 
+
     for(int i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
         if(!mm) continue ; 
 
         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+
+
+
         if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
         {
+            assert( 0 && "NOT NEEDED ANYMORE : NEW FULL ANALYTIC APPROACH MEANS CAN GET RID OF THIS ?");
+
             GPmt* pmt = m_ggeo->getPmt(); 
             assert(pmt && "analyticmesh requires PMT resource");
 
@@ -378,6 +394,8 @@ void OpticksGeometry::configureGeometry()
             mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);      
             mm->setParts(analytic);  
         }
+
+
         if(i>0) mm->setInstanceSlice(islice);
 
         // restrict to non-global for now

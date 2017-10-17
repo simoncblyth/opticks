@@ -47,12 +47,14 @@ class OKGEO_API OpticksGeometry {
        void modifyGeometry();
        void fixGeometry();
        void registerGeometry();
-       void configureGeometry(); 
+   private:
+       void configureGeometryOld(); 
    private:
        void init();
    private:
        OpticksHub*          m_hub ; 
        Opticks*             m_ok ; 
+       int                  m_gltf ; 
        Composition*         m_composition ; 
        OpticksCfg<Opticks>* m_fcfg ;
        GGeo*                m_ggeo ; 

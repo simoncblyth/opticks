@@ -10,11 +10,12 @@ ray tracing CSG trees.
 
 Perhaps CSG tree ray tracing can be deferred until actually needed by 
 replacing the complicated CSG trees for PMT instances with just their
-outer volumes for rays originating outside the bbox ?
+outer volumes for rays originating outside the bbox ? Or beyond some
+distance from instance transform center.
  
 
-OptiX Geometry Selector
--------------------------
+OptiX Geometry Selector (from 4.1.1 manual)
+---------------------------------------------
 
 A selector is similar to a group in that it is a collection of higher level
 graph nodes. The number of nodes in the collection is set by
@@ -277,6 +278,7 @@ Attempt to test with selector between the analytic and triangulated geometry
     op --debugger --gltf 3  --tracer --rendermode +in3 --restrictmesh 3
           # OpenGL disappeared, raytrace still full geo (analytic)
 
+    op --debugger --gltf 3  --tracer --rendermode +in1 --restrictmesh 3
 
 
     op --raylod --debugger --gltf 3  --tracer --rendermode +in3 
@@ -284,8 +286,173 @@ Attempt to test with selector between the analytic and triangulated geometry
 
 
 
+ISSUE : ana + tri ggeolib with inconsistent settings 
+------------------------------------------------------
+
+
+* regularize in OpticksGeometry::configureGeometryTriAna
+
+
+
+::
+
+    2017-10-17 15:44:53.647 INFO  [640131] [GGeoLib::dump@299] GGeoLib TRIANGULATED  numMergedMesh 6 ptr 0x105e3eca0
+    mm i   0 geocode   K      SKIP        numSolids      12230 numFaces      403712 numITransforms           1 numITransforms*numSolids       12230
+    mm i   1 geocode   K      SKIP  EMPTY numSolids          1 numFaces           0 numITransforms        1792 numITransforms*numSolids        1792
+    mm i   2 geocode   K      SKIP        numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   3 geocode   K      SKIP        numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   4 geocode   K      SKIP        numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   5 geocode   T                  numSolids          5 numFaces        2928 numITransforms         672 numITransforms*numSolids        3360
+     num_total_volumes 12230 num_instanced_volumes 7744 num_global_volumes 4486
+
+
+    2017-10-17 15:44:53.829 INFO  [640131] [GGeoLib::dump@299] GGeoLib ANALYTIC  numMergedMesh 6 ptr 0x108413550
+    mm i   0 geocode   A                  numSolids      12230 numFaces      403712 numITransforms           1 numITransforms*numSolids       12230
+    mm i   1 geocode   A            EMPTY numSolids          1 numFaces           0 numITransforms        1792 numITransforms*numSolids        1792
+    mm i   2 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   3 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   4 geocode   A                  numSolids          1 numFaces          12 numITransforms         864 numITransforms*numSolids         864
+    mm i   5 geocode   A                  numSolids          5 numFaces        2928 numITransforms         672 numITransforms*numSolids        3360
+     num_total_volumes 12230 num_instanced_volumes 7744 num_global_volumes 4486
+
+
+
+::
+
+
+    248 void OpticksViz::uploadGeometry()
+    249 {
+    250     NPY<unsigned char>* colors = m_hub->getColorBuffer();
+    251 
+    252     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
+    253 
+    254     LOG(info) << m_ok->description();
+    255 
+    256     m_composition->setTimeDomain(        m_ok->getTimeDomain() );
+    257     m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
+    258 
+    259     m_scene->setGeometry(m_hub->getGeoLib());
+    260 
+    261     m_scene->uploadGeometry();
+    262 
+    263 
+    264     m_hub->setupCompositionTargetting();
+    265 
+    266 }
+
+
+    342 GGeoLib* OpticksHub::getGeoLib()
+    343 {
+    344     return m_ggeo->getGeoLib() ;
+    345 }
+    346 
+
+    471 GGeoLib* GGeo::getGeoLib()
+    472 {
+    473     return m_geolib ;
+    474 }
+
+
+
+OScene::
+
+    124     //m_ggeo = m_hub->getGGeo();
+    125     m_ggeo = m_hub->getGGeoBase();
+    126 
+    127     LOG(info) << "OScene::init"
+    128               << " ggeobase identifier : " << m_ggeo->getIdentifier()
+    129               ;
+    130 
+    131 
+    132     m_geolib = m_ggeo->getGeoLib();
+    133 
+
+
+
+gltf switch::
+
+    350 GGeoBase* OpticksHub::getGGeoBase()
+    351 {
+    352    // analytic switch 
+    353 
+    354     GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ;
+    355     LOG(info) << "OpticksHub::getGGeoBase"
+    356               << " analytic switch  "
+    357               << " m_gltf " << m_gltf
+    358               << " ggb " << ( ggb ? ggb->getIdentifier() : "NULL" )
+    359                ;
+    360 
+    361     return ggb ;
+    362 }
+    363 
+
+
+
+
+getRestrictMesh
+------------------
+
+
+::
+
+    339 void OpticksGeometry::configureGeometry()
+    340 {
+    341     int restrict_mesh = m_fcfg->getRestrictMesh() ;
+    342     int analytic_mesh = m_fcfg->getAnalyticMesh() ;
+    343 
+    344     int nmm = m_ggeo->getNumMergedMesh();
+    345 
+    346     LOG(debug) << "OpticksGeometry::configureGeometry"
+    347               << " restrict_mesh " << restrict_mesh
+    348               << " analytic_mesh " << analytic_mesh
+    349               << " nmm " << nmm
+    350               ;
+    351 
+    352     std::string instance_slice = m_fcfg->getISlice() ;;
+    353     std::string face_slice = m_fcfg->getFSlice() ;;
+    354     std::string part_slice = m_fcfg->getPSlice() ;;
+    355 
+    356     NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ;
+    357     NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ;
+    358     NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ;
+    359 
+    360     for(int i=0 ; i < nmm ; i++)
+    361     {
+    362         GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+    363         if(!mm) continue ;
+    364 
+    365         if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);
+    366         if(analytic_mesh > -1 && i == analytic_mesh && i > 0)
+    367         {
+    368             GPmt* pmt = m_ggeo->getPmt();
+    369             assert(pmt && "analyticmesh requires PMT resource");
+    370 
+    371             GParts* analytic = pmt->getParts() ;
+    372             // TODO: the strings should come from config, as detector specific
+    373 
+    374             analytic->setVerbosity(m_verbosity);
+    375             analytic->setContainingMaterial("MineralOil");
+    376             analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
+    377 
+    378             mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);
+    379             mm->setParts(analytic);
+    380         }
+    381         if(i>0) mm->setInstanceSlice(islice);
+    382 
+    383         // restrict to non-global for now
+    384         if(i>0) mm->setFaceSlice(fslice);
+    385         if(i>0) mm->setPartSlice(pslice);
+    386     }
+    387 
+    388     TIMER("configureGeometry");
+    389 }
+
+
+
+
 
 Huh, renderer and mesh indices not aligned ?   
+-----------------------------------------------
 
 * inconsistent criteria ?
 

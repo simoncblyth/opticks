@@ -30,6 +30,8 @@
 
 // ggeo-
 #include "GItemIndex.hh"
+#include "GMergedMesh.hh"
+#include "GGeoLib.hh"
 #include "GScene.hh"
 #include "GGeo.hh"
 
@@ -38,6 +40,7 @@
 #include "OpticksPhoton.h"
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
+#include "OpticksConst.hh"
 #include "OpticksEvent.hh"
 #include "OpticksColors.hh"
 #include "OpticksActionControl.hh"
@@ -95,11 +98,30 @@ void OpticksHub::init()
     configureServer();
     configureCompositionSize();
     configureLookupA();
+
     loadGeometry() ;    
+    configureGeometry() ;    
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
 }
+
+
+std::string OpticksHub::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "OpticksHub"
+       << " m_ggeo " << m_ggeo
+       << " m_gscene " << m_gscene
+       << " m_geometry " << m_geometry
+       << " m_gen " << m_gen
+       << " m_gun " << m_gun
+       ;  
+
+    return ss.str();
+}
+
 
 void OpticksHub::configure()
 {
@@ -273,6 +295,79 @@ void OpticksHub::loadGeometry()
 
 
 
+void OpticksHub::configureGeometry()
+{
+    if(m_gltf==0) 
+    { 
+        configureGeometryTri();
+    }
+    else
+    {
+        configureGeometryTriAna();
+    }
+}
+
+void OpticksHub::configureGeometryTri()
+{
+    int restrict_mesh = m_ok->getRestrictMesh() ;  
+    int nmm = m_ggeo->getNumMergedMesh();
+
+    LOG(info) << "OpticksHub::configureGeometryTri" 
+              << " restrict_mesh " << restrict_mesh
+              << " nmm " << nmm
+              ;
+
+    for(int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
+        if(!mm) continue ; 
+        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+    }
+}
+
+void OpticksHub::configureGeometryTriAna()
+{
+    int restrict_mesh = m_ok->getRestrictMesh() ;  
+
+    LOG(info) << "OpticksHub::configureGeometryTriAna" 
+              << " restrict_mesh " << restrict_mesh
+              << " desc " << desc() 
+              ;
+
+    GGeoBase* ana_g = getGGeoBaseAna(); 
+    GGeoBase* tri_g = getGGeoBaseTri(); 
+
+    GGeoLib* ana = ana_g ? ana_g->getGeoLib() : NULL ; 
+    GGeoLib* tri = tri_g ? tri_g->getGeoLib() : NULL ; 
+
+    int nmm_a = ana->getNumMergedMesh();
+    int nmm_t = tri->getNumMergedMesh();
+
+    assert( nmm_a == nmm_t );
+
+    for(int i=0 ; i < nmm_a ; i++)
+    {
+        GMergedMesh* mm_a = ana->getMergedMesh(i);
+        GMergedMesh* mm_t = tri->getMergedMesh(i);
+        assert( mm_a && mm_t );  
+
+        if(restrict_mesh > -1 && i != restrict_mesh ) 
+        {
+            mm_a->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+            mm_t->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+        }
+    }
+}
+
+
+
+
+
+
+
+
+
+
 void OpticksHub::anaEvent()
 {
     int dbgnode = m_ok->getDbgNode();
@@ -345,7 +440,15 @@ GGeoLib* OpticksHub::getGeoLib()
 }
 
 
+GGeoBase* OpticksHub::getGGeoBaseAna()
+{
+    return m_gscene ? dynamic_cast<GGeoBase*>(m_gscene) : NULL ; 
+}
 
+GGeoBase* OpticksHub::getGGeoBaseTri()
+{
+    return m_ggeo ? dynamic_cast<GGeoBase*>(m_ggeo) : NULL ; 
+}
 
 GGeoBase* OpticksHub::getGGeoBase()
 {

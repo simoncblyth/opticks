@@ -286,6 +286,7 @@ std::string GGeoLib::desc() const
     ss << "GGeoLib"
        << ( m_analytic ? " ANALYTIC " : " TRIANGULATED " ) 
        << " numMergedMesh " << getNumMergedMesh()
+       << " ptr " << this
        ; 
 
     return ss.str();

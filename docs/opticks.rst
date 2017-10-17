@@ -317,6 +317,52 @@ photon propagations loaded from file.
 This mode is not tested often, so provide copy/paste errors if it fails for you.
 
 
+Geant4 Dependency
+-------------------
+
+Opticks is structured as a collection of packages 
+organized by their local and external dependencies, see :doc:`overview` for a table.
+Only the two very highest level packages depend on Geant4. 
+
+cfg4
+     validation comparisons
+okg4
+     integrated Opticks+G4 for “gun running"
+
+
+Opticks dependency on Geant4 is intended to be loose 
+in order to allow working with multiple G4 versions (within a certain version range), 
+using version preprocessor macros to accommodate differences.  
+So please send copy/paste reports of incompatibilities together with G4 versions.
+
+The weak G4 dependency allows you to test most of Opticks even 
+without G4 installed.  
+
+
+Embedded Opticks 
+--------------------
+
+In production, Opticks is intended to be run in an embedded mode 
+where, Geant4 and Opticks communicate via “gensteps” and “hits” 
+without using any Geant4 headers. This works via some 
+Geant4 dependant glue code within each detectors simulation framework 
+that does the below:
+
+* inhibits CPU generation of optical photons from G4Scintillation and G4Cerenkov processes, 
+  instead "gensteps" are collected
+
+* invokes embedded Opticks (typically at the end of each event) 
+  passing the collected "gensteps" across to Opticks which performs the 
+  propagation 
+
+* pulls back the PMT hits and populates standard Geant4 hit collections with these
+
+
+Once the details of the above integration have been revisted for JUNO example 
+integration code will be provided within the Opticks repository. 
+
+
+
 Testing Installation
 ----------------------
 

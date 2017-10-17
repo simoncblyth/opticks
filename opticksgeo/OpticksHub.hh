@@ -45,8 +45,6 @@ class numpydelegate ;
 template <typename> class numpyserver ;
 #endif
 
-
-
 /**
 
 OpticksHub
@@ -54,6 +52,16 @@ OpticksHub
 
 * Non-viz, hostside intersection of config, geometry and event
 * Intended to operate at event level, not below 
+
+
+Crucial Methods
+------------------
+
+GGeoBase* getGGeoBase()
+    Effects triangulated/analytic switch by returning downcast 
+    of either m_gscene (analytic) or m_ggeo (triangulated)
+    based on configured gltf value.
+
 
 **/
 
@@ -82,7 +90,12 @@ class OKGEO_API OpticksHub {
        void init();
        void configure();
        void configureCompositionSize();
+
        void loadGeometry();
+       void configureGeometry(); 
+       void configureGeometryTri(); 
+       void configureGeometryTriAna(); 
+
        void configureServer();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
@@ -117,8 +130,12 @@ class OKGEO_API OpticksHub {
    public:
        Composition*         getComposition();
        OpticksGeometry*     getGeometry();
+   public:
        GGeo*                getGGeo();
-       GGeoBase*            getGGeoBase();
+       GGeoBase*            getGGeoBase(); // downcast: ( m_gltf ? m_gscene : m_ggeo )
+       GGeoBase*            getGGeoBaseAna();
+       GGeoBase*            getGGeoBaseTri();
+   public:
        GGeoLib*             getGeoLib();
        GMaterialLib*        getMaterialLib();
        GSurfaceLib*         getSurfaceLib();
@@ -139,7 +156,7 @@ class OKGEO_API OpticksHub {
        OpticksAttrSeq*      getMaterialNames();
        OpticksAttrSeq*      getBoundaryNames();
        std::map<unsigned int, std::string> getBoundaryNamesMap();
-
+       std::string          desc() const ;
    public:
        OpticksRun*          getRun();
        OpticksGen*          getGen();
