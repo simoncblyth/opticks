@@ -12,6 +12,182 @@ Perhaps CSG tree ray tracing can be deferred until actually needed by
 replacing the complicated CSG trees for PMT instances with just their
 outer volumes for rays originating outside the bbox ? Or beyond some
 distance from instance transform center.
+
+
+Current Working 
+------------------
+
+::
+
+
+    op --debugger --gltf 3  --tracer --rendermode +in0 --restrictmesh 5
+          
+          # After OpticksHub::configureGeometry fix
+          # to apply restrict equally to tri and ana this
+          # now shows just analytic PMTs in OpenGL and raytrace
+
+    op --debugger --gltf 0  --tracer --rendermode +in0 --restrictmesh 5
+          
+          # After OGeo::convert fix to only OGeo::makeAnalyticGeometry  for gltf > 0 
+          # this succeeds to show just triangulated PMTs in both OpenGL and raytrace
+         
+
+Current Issue
+------------------
+
+* putting the crash down to Chrome GPU contention, moral: runs tests with mimimal apps running, 
+  especially avoid Safari, Chrome, Mail
+
+::
+
+    op --raylod --debugger --gltf 3  --tracer --rendermode +in0 --restrictmesh 5
+
+          # trying to check if the visit_instance selector really kicks in 
+          #  ... getting a bizarre little ice cream cone just at PMT cathode position, 
+          # all at level 1
+          #
+          # looking closer it seems to be a quadrant of a fan from the front of the triangulated
+          # PMT ... switching to dump only on getting a level 0, see none even when trying 
+          # to navigate real close 
+
+
+::
+
+    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+
+
+Changing cut to 100000mm (100m) means results in everything showing at level 0, see normal analytic PMTs::
+
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
+
+
+Changing cut to 12m, starts OK with tri PMTs then crashes on getting close.  This forced a reboot, relaunching, Chrome comes up in a stuck state. 
+Possibly there was GPU contention coming from Chrome ?
+
+Rerunning with only (Finder+Terminal) observe from a distance the broken triangulated fans, as get close, all instances change at once to the 
+normal analytic PMTs, backing away the broken tri fans all reappear at once...
+
+
+::
+
+    2017-10-17 20:24:59.254 INFO  [31358] [OContext::launch@322] OContext::launch LAUNCH time: 0.216804
+    visit_instance: level 0 size  12000.000 distance  11889.045    origin (-19308.762 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.045    origin (-19308.762 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.045    origin (-19308.762 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.040    origin (-19308.715 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.045    origin (-19308.762 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.040    origin (-19308.715 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.040    origin (-19308.715 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.040    origin (-19308.715 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+    visit_instance: level 0 size  12000.000 distance  11889.045    origin (-19308.762 -806742.875  -6574.506) instance_position (-17951.662 -795436.938  -3156.400  12000.000)  
+
+::
+
+    [ 5] (     0/   672 )         ip-16572.898 -801469.625 -8842.500   1.000 
+    [ 5] (     1/   672 )         ip-16166.072 -801019.375 -8842.500   1.000 
+    [ 5] (     2/   672 )         ip-15889.641 -800479.188 -8842.500   1.000 
+    [ 5] (     3/   672 )         ip-15762.440 -799885.875 -8842.500   1.000 
+    [ 5] (     4/   672 )         ip-15793.142 -799279.812 -8842.500   1.000 
+    [ 5] (   667/   672 )         ip-17951.662 -795436.938 -8458.400   1.000 
+    [ 5] (   668/   672 )         ip-16627.082 -795720.875 -6128.400   1.000 
+    [ 5] (   669/   672 )         ip-17951.662 -795436.938 -6128.400   1.000 
+    [ 5] (   670/   672 )         ip-16627.082 -795720.875 -3156.400   1.000 
+    [ 5] (   671/   672 )         ip-17951.662 -795436.938 -3156.400   1.000 
+    2017-10-17 20:24:32.463 INFO  [31358] [SLog::operator@15] OScene::OScene DONE
+
+
+
+
+* Why all at once ?
+
+::
+
+    358             // level0 : best/most expensive 
+    359             // level1 : cheaper alternative
+    360             optix::GeometryInstance level0 = makeGeometryInstance( ana , mat );
+    361             optix::GeometryInstance level1 = makeGeometryInstance( tri , mat );
+    362 
+    363             level0["instance_index"]->setUint( i );
+    364             level1["instance_index"]->setUint( i );
+    365 
+    366             optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel);
+    367             optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel);
+    368 
+    369             optix::Selector selector = m_context->createSelector();
+    370             selector->setChildCount(2) ;
+    371             selector->setChild(0, gg0 );
+    372             selector->setChild(1, gg1 );
+    373             selector->setVisitProgram( visit );
+    374 
+    375             float instance_size = 12000.f ; // mm   TODO: get from bbox/extent? 
+    376 
+    377             visit["instance_position"]->setFloat( optix::make_float4( ipos.x, ipos.y, ipos.z, instance_size ));
+    378             // hmm only one visit prog... so maybe this is overwriting the setting ... 
+    379             // so end up with position of final instance 
+    380             // need to put on the GeometryInstance ? Hmm but the visit is to pick between them ?
+    381 
+    382             xform->setChild(selector);
+
+
+
+
+
+Tri Mode assert
+--------------------
+
+::
+
+
+    op --debugger --gltf 0  --tracer --rendermode +in0 --restrictmesh 5
+          #
+          #  asserts for lack of GParts in OGeo::makeAnalyticGeometry 
+          #  ... this is from attempt to make both ana and tri 
+          #  GPU geometries when ana not enabled 
+
+
+    (lldb) bt
+    * thread #1: tid = 0xac029, 0x00007fff8ae12866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff8ae12866 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff824af35c libsystem_pthread.dylib`pthread_kill + 92
+        frame #2: 0x00007fff891ffb1a libsystem_c.dylib`abort + 125
+        frame #3: 0x00007fff891c99bf libsystem_c.dylib`__assert_rtn + 321
+        frame #4: 0x00000001035c1c1b libOptiXRap.dylib`OGeo::makeAnalyticGeometry(this=0x0000000115dcfd10, mm=0x000000010781b200) + 571 at OGeo.cc:609
+        frame #5: 0x00000001035bfa7f libOptiXRap.dylib`OGeo::makeRepeatedGroup(this=0x0000000115dcfd10, mm=0x000000010781b200, lod=false) + 1439 at OGeo.cc:299
+        frame #6: 0x00000001035bdf07 libOptiXRap.dylib`OGeo::convertMergedMesh(this=0x0000000115dcfd10, i=5) + 1671 at OGeo.cc:250
+        frame #7: 0x00000001035bd2b4 libOptiXRap.dylib`OGeo::convert(this=0x0000000115dcfd10) + 340 at OGeo.cc:178
+        frame #8: 0x00000001035b66e4 libOptiXRap.dylib`OScene::init(this=0x000000011261fc70) + 6196 at OScene.cc:163
+        frame #9: 0x00000001035b4e4d libOptiXRap.dylib`OScene::OScene(this=0x000000011261fc70, hub=0x0000000105e00180) + 317 at OScene.cc:85
+        frame #10: 0x00000001035b6c9d libOptiXRap.dylib`OScene::OScene(this=0x000000011261fc70, hub=0x0000000105e00180) + 29 at OScene.cc:87
+        frame #11: 0x0000000103b4cd56 libOKOP.dylib`OpEngine::OpEngine(this=0x000000011261fc10, hub=0x0000000105e00180) + 182 at OpEngine.cc:43
+        frame #12: 0x0000000103b4d21d libOKOP.dylib`OpEngine::OpEngine(this=0x000000011261fc10, hub=0x0000000105e00180) + 29 at OpEngine.cc:55
+        frame #13: 0x0000000103c44a44 libOK.dylib`OKPropagator::OKPropagator(this=0x0000000112615d70, hub=0x0000000105e00180, idx=0x00000001095e2700, viz=0x00000001095e5b20) + 196 at OKPropagator.cc:44
+        frame #14: 0x0000000103c44bbd libOK.dylib`OKPropagator::OKPropagator(this=0x0000000112615d70, hub=0x0000000105e00180, idx=0x00000001095e2700, viz=0x00000001095e5b20) + 45 at OKPropagator.cc:52
+        frame #15: 0x0000000103c44377 libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfe9f8, argc=9, argv=0x00007fff5fbfead8, argforced=0x000000010001580d) + 663 at OKMgr.cc:43
+        frame #16: 0x0000000103c4464b libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfe9f8, argc=9, argv=0x00007fff5fbfead8, argforced=0x000000010001580d) + 43 at OKMgr.cc:49
+        frame #17: 0x000000010000a95d OTracerTest`main(argc=9, argv=0x00007fff5fbfead8) + 1373 at OTracerTest.cc:64
+        frame #18: 0x00007fff862855fd libdyld.dylib`start + 1
+        frame #19: 0x00007fff862855fd libdyld.dylib`start + 1
+    (lldb) f 4
+    frame #4: 0x00000001035c1c1b libOptiXRap.dylib`OGeo::makeAnalyticGeometry(this=0x0000000115dcfd10, mm=0x000000010781b200) + 571 at OGeo.cc:609
+       606  
+       607      // when using --test eg PmtInBox or BoxInBox the mesh is fabricated in GGeoTest
+       608  
+    -> 609      GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
+       610  
+       611      if(pts->getPrimBuffer() == NULL)
+
+
+
+
  
 
 OptiX Geometry Selector (from 4.1.1 manual)
@@ -278,19 +454,12 @@ Attempt to test with selector between the analytic and triangulated geometry
     op --debugger --gltf 3  --tracer --rendermode +in3 --restrictmesh 3
           # OpenGL disappeared, raytrace still full geo (analytic)
 
-    op --debugger --gltf 3  --tracer --rendermode +in1 --restrictmesh 3
-
-
-    op --raylod --debugger --gltf 3  --tracer --rendermode +in3 
-
-
-
 
 ISSUE : ana + tri ggeolib with inconsistent settings 
 ------------------------------------------------------
 
 
-* regularize in OpticksGeometry::configureGeometryTriAna
+* regularize in OpticksHub::configureGeometryTriAna
 
 
 
@@ -524,6 +693,7 @@ Huh, renderer and mesh indices not aligned ?
     [ 5] (     7/   672 )         ip-16759.500 -797786.062 -8842.500   1.000 
     [ 5] (     8/   672 )         ip-17299.695 -797509.625 -8842.500   1.000 
     [ 5] (     9/   672 )         ip-17893.031 -797382.438 -8842.500   1.000 
+
 
 
 

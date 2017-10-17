@@ -87,7 +87,6 @@ private:
     optix::Material         makeMaterial();
     optix::GeometryInstance makeGeometryInstance(optix::Geometry geometry, optix::Material material);
     optix::GeometryGroup     makeGeometryGroup(optix::GeometryInstance gi, optix::Acceleration accel );
-    optix::Selector          makeSelector(GMergedMesh* mm, optix::Geometry tri, optix::Geometry ana, optix::Material material, optix::Acceleration accel, unsigned index);
 private:
     optix::Geometry         makeAnalyticGeometry(GMergedMesh* mergedmesh);
     optix::Geometry         makeTriangulatedGeometry(GMergedMesh* mergedmesh);
@@ -101,6 +100,7 @@ private:
     optix::Context       m_context ; 
     optix::Group         m_top ; 
     Opticks*             m_ok ; 
+    int                  m_gltf ; 
     GGeoLib*             m_geolib ;  
     const char*          m_builder ; 
     const char*          m_traverser ; 

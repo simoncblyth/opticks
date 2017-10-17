@@ -14,5 +14,11 @@ struct NPY_API NSlice {
 
      const char* description();
      unsigned int count();
+
+     bool isHead(unsigned index, unsigned window);
+     bool isTail(unsigned index, unsigned window);
+     bool isMargin(unsigned index, unsigned window);
+
+
 };
 

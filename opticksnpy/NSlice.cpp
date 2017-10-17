@@ -44,6 +44,31 @@ unsigned int NSlice::count()
     return n ;  
 }
 
+bool NSlice::isTail(unsigned index, unsigned window)
+{
+    int h = high ; 
+    int i = index ; 
+    int o = i - h ; 
+    int w = window ; 
+    return o < 0 && -o <= w ; 
+}
+
+bool NSlice::isHead(unsigned index, unsigned window)
+{
+    int l = low ; 
+    int i = index ; 
+    int o = i - l ; 
+    int w = window ; 
+    return o >= 0 && o < w ; 
+}
+
+bool NSlice::isMargin(unsigned index, unsigned window)
+{
+    return isTail(index, window) || isHead(index, window) ;
+}
+
+
+
 
 NSlice::NSlice(const char* slice, const char* delim)
 {

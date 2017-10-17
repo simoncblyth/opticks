@@ -128,6 +128,7 @@ OGeo::OGeo(OContext* ocontext, Opticks* ok, GGeoLib* geolib, const char* builder
            : 
            m_ocontext(ocontext),
            m_ok(ok),
+           m_gltf(ok->getGLTF()),
            m_geolib(geolib),
            m_builder(builder ? strdup(builder) : BUILDER),
            m_traverser(traverser ? strdup(traverser) : TRAVERSER),
@@ -286,23 +287,30 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
               << " islice " << islice->description() 
               ; 
 
-
-    //float* tptr = (float*)itransforms->getPointer(); 
-
     optix::Group assembly = m_context->createGroup();
     assembly->setChildCount(islice->count());
 
+    optix::Geometry tri, ana, gmm ; 
 
     // this approach not appropriate for big geometry, as too many tris...
     // but conveniently visibly different
-    optix::Geometry tri = makeTriangulatedGeometry(mm);
-    optix::Geometry ana = makeAnalyticGeometry(mm);
+    tri = makeTriangulatedGeometry(mm);
+
+    if(m_gltf > 0)
+    {
+        ana = makeAnalyticGeometry(mm) ;
+    }
+
     //optix::Geometry gmm = makeGeometry(mm);
-    optix::Geometry gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri : ana ; 
+    gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri : ana ; 
 
 
     optix::Material mat = makeMaterial();
     optix::Program visit = m_ocontext->createProgram("visit_instance.cu.ptx", "visit_instance");
+
+    float instance_size = 1000.f ; // mm   TODO: get from bbox/extent? 
+    visit["instance_size"]->setFloat( instance_size );
+
 
     optix::Acceleration accel = makeAcceleration() ;
     // common accel for all instances 
@@ -321,7 +329,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
         //const float* tdata2 = tptr + 16*i ; 
         //for(unsigned j=0 ; j < 16 ; j++) assert( *(tdata2+j) == *(tdata+j) ) ;  
 
-        if(i < 10 )
+        if(islice->isMargin(i,5))
         std::cout
              << "[" 
              << std::setw(2) << mm->getIndex() 
@@ -346,12 +354,22 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
         }
         else
         {
-            optix::Selector selector = makeSelector( mm, tri, ana, mat, accel, i ); 
-            selector->setVisitProgram( visit );
+            // level0 : best/most expensive 
+            // level1 : cheaper alternative
+            optix::GeometryInstance level0 = makeGeometryInstance( ana , mat ); 
+            optix::GeometryInstance level1 = makeGeometryInstance( tri , mat ); 
 
-            float instance_size = 200.f ; // mm   TODO: get from bbox/extent? 
+            level0["instance_index"]->setUint( i );  
+            level1["instance_index"]->setUint( i );  
 
-            visit["instance_position"]->setFloat( optix::make_float4( ipos.x, ipos.y, ipos.z, instance_size ));
+            optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel);    
+            optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel);    
+         
+            optix::Selector selector = m_context->createSelector();
+            selector->setChildCount(2) ; 
+            selector->setChild(0, gg0 );
+            selector->setChild(1, gg1 ); 
+            selector->setVisitProgram( visit );           
 
             xform->setChild(selector);   
         }
@@ -359,31 +377,6 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
     return assembly ;
 }
 
-
-
-optix::Selector OGeo::makeSelector(GMergedMesh* mm, optix::Geometry tri, optix::Geometry ana, optix::Material material, optix::Acceleration accel, unsigned index)
-{
-    // proliferating *GeometryInstance* so can assign instance index : for identity 
-
-    // NB dont make geometry in here, else will be repeating it GPU side for every instance 
-    // ... and rapidly running out of GPU memory 
- 
-
-    optix::GeometryInstance gi0 = makeGeometryInstance(tri , material); 
-    gi0["instance_index"]->setUint( index );  
-    optix::GeometryGroup gg0 = makeGeometryGroup(gi0, accel);    
- 
-    optix::GeometryInstance gi1 = makeGeometryInstance( ana, material); 
-    gi1["instance_index"]->setUint( index );  
-    optix::GeometryGroup gg1 = makeGeometryGroup(gi1, accel);    
- 
-    optix::Selector selector = m_context->createSelector();
-    selector->setChildCount(2) ; 
-    selector->setChild(0, gg0 );
-    selector->setChild(1, gg1 ); 
-
-    return selector ; 
-}
 
 
 /*
