@@ -312,8 +312,11 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
     visit["instance_size"]->setFloat( instance_size );
 
 
-    optix::Acceleration accel = makeAcceleration() ;
-    // common accel for all instances 
+    optix::Acceleration accel[2] ;
+
+    accel[0] = makeAcceleration() ;
+    accel[1] = makeAcceleration() ;
+    // common accel for all instances : so long as the same geometry 
 
     unsigned int ichild = 0 ; 
 
@@ -349,7 +352,7 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
             // proliferating *pergi* so can assign an instance index to it 
             optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
             pergi["instance_index"]->setUint( i );  
-            optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel);    
+            optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0]);    
             xform->setChild(perxform);  
         }
         else
@@ -362,8 +365,8 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
             level0["instance_index"]->setUint( i );  
             level1["instance_index"]->setUint( i );  
 
-            optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel);    
-            optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel);    
+            optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel[0]);    
+            optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel[1]);    
          
             optix::Selector selector = m_context->createSelector();
             selector->setChildCount(2) ; 
