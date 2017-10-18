@@ -52,6 +52,7 @@ Darwin, now::
     simon:opticks blyth$ 
 
 
+
 Darwin, this morning::
 
     97% tests passed, 7 tests failed out of 254
@@ -173,17 +174,9 @@ FIXED OpTest : failed rtContextCompile from missing genstep_buffer
 CTestDetectorTest : GSurLib assert 
 --------------------------------------
 
+* :doc:`failing-cfg4-CTestDetectorTest-uses-ancient-PMTInBox-geometry`
 
-::
 
-    2017-10-18 18:00:08.092 INFO  [182369] [CTraverser::Traverse@128] CTraverser::Traverse DONE
-    2017-10-18 18:00:08.092 INFO  [182369] [CTraverser::Summary@104] CDetector::traverse numMaterials 5 numMaterialsWithoutMPT 0
-    2017-10-18 18:00:08.092 INFO  [182369] [CDetector::attachSurfaces@240] CDetector::attachSurfaces
-    2017-10-18 18:00:08.092 INFO  [182369] [GSurLib::examineSolidBndSurfaces@115] GSurLib::examineSolidBndSurfaces numSolids 7
-    2017-10-18 18:00:08.092 FATAL [182369] [GSurLib::examineSolidBndSurfaces@137] GSurLib::examineSolidBndSurfaces i(mm-idx)      6 node(ni.z)      0 node2(id.x)      0 boundary(id.z)      0 parent(ni.w) 4294967295 bname Vacuum///Vacuum lv __dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0
-    Assertion failed: (node == i), function examineSolidBndSurfaces, file /Users/blyth/opticks/ggeo/GSurLib.cc, line 147.
-    Abort trap: 6
-    simon:opticks blyth$ 
 
 
 

@@ -3,6 +3,37 @@ oxrap OInterpolationTest asserts at python level for lack of IDPATH GBndLib.txt
 
 
 
+Hmm SG Fail
+------------
+
+::
+
+    2017-10-18 20:14:23.329 INFO  [30557] [OContext::close@245] OContext::close m_cfg->apply() done.
+    2017-10-18 20:14:28.137 INFO  [30557] [OContext::launch@322] OContext::launch LAUNCH time: 4.80798
+    No handlers could be found for logger "opticks.ana.proplib"
+    Traceback (most recent call last):
+      File "/home/simon/opticks/optixrap/tests/OInterpolationTest_interpol.py", line 20, in <module>
+        c = np.load(os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+      File "/usr/local/anaconda2/lib/python2.7/site-packages/numpy/lib/npyio.py", line 370, in load
+        fid = open(file, "rb")
+    IOError: [Errno 2] No such file or directory: '/tmp/simon/opticks/InterpolationTest/CInterpolationTest_interpol.npy'
+    2017-10-18 20:14:28.272 INFO  [30557] [SSys::run@46] python /home/simon/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
+    2017-10-18 20:14:28.272 WARN  [30557] [SSys::run@52] SSys::run FAILED with  cmd python /home/simon/opticks/optixrap/tests/OInterpolationTest_interpol.py possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH 
+    [simon@localhost opticks]$ 
+
+    [simon@localhost opticks]$ ll /tmp/simon/opticks/InterpolationTest/CInterpolationTest_interpol.npy
+    ls: cannot access /tmp/simon/opticks/InterpolationTest/CInterpolationTest_interpol.npy: No such file or directory
+
+    [simon@localhost opticks]$ ll /tmp/simon/opticks/InterpolationTest/
+    total 11712
+    drwxrwxr-x. 2 simon simon     4096 Oct 18 20:10 GBndLib
+    drwxrwxr-x. 2 simon simon     4096 Oct 18 20:10 GItemList
+    -rw-rw-r--. 1 simon simon 11981264 Oct 18 20:14 OInterpolationTest_interpol.npy
+    [simon@localhost opticks]$ 
+
+
+
+
 Oct 2017 : FIXED old chestnut 
 ---------------------------------------
 
