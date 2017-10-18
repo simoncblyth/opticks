@@ -91,7 +91,19 @@ int main(int argc, char** argv)
 
     Opticks ok(argc, argv);
 
-    GMergedMesh* mm = GMergedMesh::load(&ok, 1);
+    // hmm geometry and mesh index dependant, 
+    // changes to repeat finding algo GTreeCheck will change 
+    // indices and counts
+
+    //unsigned index = 1 ;  //  zero-faces
+    //unsigned index = 2 ;  // works
+    //unsigned index = 3 ;  // works
+    //unsigned index = 4 ;  // works
+    unsigned index = 5 ;  // works    
+    //unsigned index = 6 ;    // NULL mm    
+
+
+    GMergedMesh* mm = GMergedMesh::load(&ok, index);
 
     if(!mm)
     {
@@ -99,7 +111,24 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
-    //test_GMergedMesh_Dump(mm); 
+    unsigned numFaces =  mm->getNumFaces() ;
+    unsigned numSolids =  mm->getNumSolids() ;
+
+    LOG(info) << argv[0] 
+              << " numFaces " << numFaces
+              << " numSolids " << numSolids
+               ; 
+
+
+    if(numFaces == 0)
+    {
+        LOG(error) << "zero faces" ;
+        return 0 ; 
+    }
+
+
+    test_GMergedMesh_Dump(mm); 
+
     //test_GMergedMesh_MakeComposite(mm); 
     test_GMergedMesh_MakeLODComposite(mm,2) ; 
     //test_GMergedMesh_MakeLODComposite(mm,3) ; 

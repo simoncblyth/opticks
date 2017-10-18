@@ -4,7 +4,10 @@
 #include "NCSG.hpp"
 #include "NNode.hpp"
 
+#include "Opticks.hh"
+
 #include "GParts.hh"
+#include "GBndLib.hh"
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
@@ -47,15 +50,16 @@ void test_FromNode()
 }
 
 
-void test_save_empty()
+void test_save_empty(GBndLib* bndlib)
 {
     GParts pts ; 
+    pts.setBndLib(bndlib);
     pts.save("$TMP/GPartsTest_test_save_empty");
 }
 
 
 
-void test_save_load()
+void test_save_load(GBndLib* bndlib)
 {
     const NSceneConfig* config = NULL ; 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ;
@@ -75,7 +79,10 @@ void test_save_load()
     pts->dump("pts");
 
     const char* dir = "$TMP/GPartsTest_test_save" ;
-    pts->save(dir);
+    pts->setBndLib(bndlib);
+    pts->save(dir);  // asserts in here for lack of bndlib
+
+
     GParts* pts2 = GParts::Load(dir);
 
     pts2->dump("pts2");
@@ -93,8 +100,14 @@ int main(int argc, char** argv)
     GGEO_LOG__ ;
     NPY_LOG__ ;
 
-    //test_save_empty();
-    test_save_load();
+
+    Opticks ok(argc, argv);
+
+    bool constituents = true ; 
+    GBndLib* bndlib = GBndLib::load(&ok, constituents);
+
+    test_save_empty(bndlib);
+    test_save_load(bndlib);
 
     return 0 ;
 }
