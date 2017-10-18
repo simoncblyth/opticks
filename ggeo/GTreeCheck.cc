@@ -469,9 +469,9 @@ void GTreeCheck::makeMergedMeshAndInstancedBuffers(unsigned verbosity)
 
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, rbase, root, verbosity ); 
 
-         std::vector<GNode*> placements = getPlacements(ridx);
+         std::vector<GNode*> placements_ = getPlacements(ridx);
 
-         mm->addInstancedBuffers(placements);
+         mm->addInstancedBuffers(placements_);
      
          //mm->reportMeshUsage( ggeo, "GTreeCheck::CreateInstancedMergedMeshes reportMeshUsage (instanced)");
     }

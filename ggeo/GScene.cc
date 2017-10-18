@@ -1177,15 +1177,13 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
     unsigned num_seq  = seq->getShape(0); 
     assert(num_pho == num_seq);
 
-    unsigned long long seqhis ; 
-    unsigned long long seqmat ; 
+    unsigned long long seqhis_ ; 
+    //unsigned long long seqmat_ ; 
 
     //unsigned long long TO_SA =  0x8dull ;
     //unsigned long long seqhis_select = TO_SA ; 
-
-   // unsigned count_select(0); 
-   // unsigned count_excursion(0); 
-
+    // unsigned count_select(0); 
+    // unsigned count_excursion(0); 
 
     typedef std::map<unsigned long long, unsigned> MQC ;
     MQC tot ; 
@@ -1203,14 +1201,12 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
         float sd = sdf(lpos.x, lpos.y, lpos.z);
         float asd = std::abs(sd) ;
 
-        seqhis = seq->getValue(i,0,0);
-        seqmat = seq->getValue(i,0,1);
+        seqhis_ = seq->getValue(i,0,0);
+        //seqmat_ = seq->getValue(i,0,1);
         
-        tot[seqhis]++;
-        if(asd > epsilon) exc[seqhis]++ ;  
+        tot[seqhis_]++;
+        if(asd > epsilon) exc[seqhis_]++ ;  
    }
-
-
 
 
 
@@ -1253,13 +1249,13 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
  
     for(MQC::const_iterator it=tot.begin() ; it != tot.end() ; it++)
     {
-        unsigned long long seqhis_ = it->first ; 
+        unsigned long long _seqhis = it->first ; 
         unsigned tot_ = it->second ; 
-        unsigned exc_ = exc[seqhis_];
+        unsigned exc_ = exc[_seqhis];
         float frac = exc_/tot_ ; 
 
         std::cout 
-             << " seqhis " << std::setw(16) << std::hex << seqhis_ << std::dec
+             << " seqhis " << std::setw(16) << std::hex << _seqhis << std::dec
              << " tot " << std::setw(6) << tot_ 
              << " exc " << std::setw(6) << exc_
              << " exc/tot " << std::setw(6) << frac

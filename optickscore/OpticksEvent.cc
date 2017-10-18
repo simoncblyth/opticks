@@ -250,8 +250,8 @@ unsigned int OpticksEvent::getNumNopsteps()
 
 void OpticksEvent::resizeToZero()
 {
-    bool resize = true ; 
-    setNumPhotons(0, resize);
+    bool resize_ = true ; 
+    setNumPhotons(0, resize_);
 }
 
 void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
@@ -981,8 +981,8 @@ void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
     {
         m_num_gensteps = m_genstep_data->getShape(0) ;
         unsigned int num_photons = m_genstep_data->getUSum(0,3);
-        bool resize = progenitor ; 
-        setNumPhotons(num_photons, resize); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
+        bool resize_ = progenitor ; 
+        setNumPhotons(num_photons, resize_); // triggers a resize   <<<<<<<<<<<<< SPECIAL HANDLING OF GENSTEP <<<<<<<<<<<<<<
     }
 }
 

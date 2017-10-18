@@ -16,6 +16,7 @@ namespace fs = boost::filesystem;
 
 #include "PLOG.hh"
 
+
 // ctor takes ownership of a copy of the inputs 
 
 template <typename T>
@@ -178,11 +179,11 @@ unsigned NPY<T>::addItemUnique(NPY<T>* other, unsigned item)
     std::string item_digest = other->getItemDigestString(item);
 
     typedef std::vector<std::string> VS ; 
-    VS::const_iterator begin = m_digests.begin();
-    VS::const_iterator end   = m_digests.end();
-    VS::const_iterator prior = std::find(begin, end, item_digest) ;
+    VS::const_iterator begin_ = m_digests.begin();
+    VS::const_iterator end_   = m_digests.end();
+    VS::const_iterator prior_ = std::find(begin_, end_, item_digest) ;
 
-    int index = prior == end ? -1 : std::distance( begin, prior ) ;
+    int index = prior_ == end_ ? -1 : std::distance( begin_, prior_ ) ;
 
     if( index  == -1 )
     {
@@ -428,7 +429,7 @@ void NPY<T>::qdump(const char* msg)
 
 
 template <typename T>
-T NPY<T>::maxdiff(NPY<T>* other, bool dump)
+T NPY<T>::maxdiff(NPY<T>* other, bool dump_)
 {
     unsigned int nv = getNumValues(0);
     unsigned int no = getNumValues(0);
@@ -444,7 +445,7 @@ T NPY<T>::maxdiff(NPY<T>* other, bool dump)
 
         T df = std::fabs(v - o);
 
-        if(dump && df > 1e-5)
+        if(dump_ && df > 1e-5)
              std::cout 
                  << "( " << std::setw(10) << i << "/" 
                  << std::setw(10) << nv << ")   "
@@ -553,15 +554,15 @@ NPY<T>* NPY<T>::load(const char* dir, const char* name, bool quietly)
 template <typename T>
 void NPY<T>::save(const char* dir, const char* name)
 {
-    std::string path = NPYBase::path(dir, name);
-    save(path.c_str());
+    std::string path_ = NPYBase::path(dir, name);
+    save(path_.c_str());
 }
 
 template <typename T>
 void NPY<T>::save(const char* dir, const char* reldir, const char* name)
 {
-    std::string path = NPYBase::path(dir, reldir, name);
-    save(path.c_str());
+    std::string path_ = NPYBase::path(dir, reldir, name);
+    save(path_.c_str());
 }
 
 
@@ -569,8 +570,8 @@ void NPY<T>::save(const char* dir, const char* reldir, const char* name)
 template <typename T>
 bool NPY<T>::exists(const char* dir, const char* name)
 {
-    std::string path = NPYBase::path(dir, name);
-    return exists(path.c_str());
+    std::string path_ = NPYBase::path(dir, name);
+    return exists(path_.c_str());
 }
 
 
@@ -589,8 +590,8 @@ NPY<T>* NPY<T>::load(const char* tfmt, const char* source, const char* tag, cons
 template <typename T>
 void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(det, source, tag, tfmt );
-    save(path.c_str());
+    std::string path_ = NPYBase::path(det, source, tag, tfmt );
+    save(path_.c_str());
 }
 
 
@@ -598,8 +599,8 @@ void NPY<T>::save(const char* tfmt, const char* source, const char* tag, const c
 template <typename T>
 bool NPY<T>::exists(const char* tfmt, const char* source, const char* tag, const char* det)
 {
-    std::string path = NPYBase::path(det, source, tag, tfmt );
-    return exists(path.c_str());
+    std::string path_ = NPYBase::path(det, source, tag, tfmt );
+    return exists(path_.c_str());
 }
 
 
@@ -607,8 +608,8 @@ bool NPY<T>::exists(const char* tfmt, const char* source, const char* tag, const
 template <typename T>
 bool NPY<T>::exists(const char* path_)
 {
-    fs::path path(path_);
-    return fs::exists(path) && fs::is_regular_file(path); 
+    fs::path _path(path_);
+    return fs::exists(_path) && fs::is_regular_file(_path); 
 }
 
 
@@ -626,8 +627,8 @@ void NPY<T>::save(const char* raw)
         LOG(info) << "NPY::save native np.load(\"" << native << "\") " ; 
     }
 
-    fs::path path(native);
-    fs::path dir = path.parent_path();
+    fs::path _path(native);
+    fs::path dir = _path.parent_path();
 
     if(!fs::exists(dir))
     {   
@@ -640,7 +641,7 @@ void NPY<T>::save(const char* raw)
     else
     {
         if(m_verbose || GLOBAL_VERBOSE) 
-            LOG(info) << "NPY::save dir exists \"" << path.string() << "\" " ; 
+            LOG(info) << "NPY::save dir exists \"" << _path.string() << "\" " ; 
     }
 
 
@@ -665,10 +666,6 @@ void NPY<T>::save(const char* raw)
         aoba::SaveArrayAsNumpy<T>(native.c_str(), itemcount, itemshape.c_str(), values );
     }
 }
-
-
-
-
 
 
 template <typename T>
