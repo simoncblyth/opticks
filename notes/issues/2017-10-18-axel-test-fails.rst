@@ -24,11 +24,11 @@ and the installation could be completed.
         169 - GGeoTest.GPartsTest (OTHER_FAULT)                     # FIXED : GParts requires associated GBndLib to be able to save
         180 - GGeoTest.GMergedMeshTest (OTHER_FAULT)                # FIXED : add protection for zero face mesh (index 1, a skipped mesh?)
         226 - OptiXRapTest.OInterpolationTest (Failed)              # FIXED : with GBndLib::saveAllOverride to save dynamic GBndLib inside TMP, and analysis script path overhaul
+        234 - OKOPTest.OpTest (OTHER_FAULT)                         # FIXED : avoid rtContextCompilation FAIL from lack of genstep buffer via argforced --tracer mode
+        231 - OKOPTest.OpSeederTest (OTHER_FAULT)                   # FIXED : missing spec on fabricated gensteps 
+        239 - OKTest.VizTest (OTHER_FAULT)                          # FIXED : missing spec on fabricated gensteps
 
-        231 - OKOPTest.OpSeederTest (OTHER_FAULT)
-        234 - OKOPTest.OpTest (OTHER_FAULT)
-        239 - OKTest.VizTest (OTHER_FAULT)
-        242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)              # I ALSO SEE THESE FAILS
+        242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)              # STILL FAILING 
 
          85 - NPYTest.NNodeDumpTest (SEGFAULT)
         179 - GGeoTest.GMakerTest (SEGFAULT)
@@ -39,21 +39,32 @@ and the installation could be completed.
     Errors while running CTest
 
 
-Darwin::
+Darwin, now::
+
+    99% tests passed, 1 tests failed out of 254
+
+    Total Test time (real) = 127.12 sec
+
+    The following tests FAILED:
+        242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+    simon:opticks blyth$ 
+
+
+Darwin, this morning::
 
     97% tests passed, 7 tests failed out of 254
 
     Total Test time (real) = 130.72 sec
 
     The following tests FAILED:
-        169 - GGeoTest.GPartsTest (OTHER_FAULT)               # now fixed
-        180 - GGeoTest.GMergedMeshTest (OTHER_FAULT)          # now fixed
-        226 - OptiXRapTest.OInterpolationTest (Failed)        # now fixed
-
-        231 - OKOPTest.OpSeederTest (OTHER_FAULT)             # both buffer control assert 
-        239 - OKTest.VizTest (OTHER_FAULT)
-
-        234 - OKOPTest.OpTest (OTHER_FAULT)                   # genstep missing causing OptiX compilation fail
+        169 - GGeoTest.GPartsTest (OTHER_FAULT)              
+        180 - GGeoTest.GMergedMeshTest (OTHER_FAULT)         
+        226 - OptiXRapTest.OInterpolationTest (Failed)       
+        231 - OKOPTest.OpSeederTest (OTHER_FAULT)           
+        239 - OKTest.VizTest (OTHER_FAULT)                    
+        234 - OKOPTest.OpTest (OTHER_FAULT)                 
         242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)        
 
     Errors while running CTest
@@ -67,9 +78,13 @@ FIXED : OInterpolationTest : old chestnut, python analysis level missing file GI
 * :doc:`OInterpolationTest_Missing_GBndLib_txt`
 
 
+FIXED : OpSeederTest VizTest both assert : OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
+------------------------------------------------------------------------------------------------------
 
-OpSeederTest VizTest both assert : OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
------------------------------------------------------------------------------------------------
+FIXED with:: 
+
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));  
+
 
 ::
 
@@ -95,8 +110,54 @@ OpSeederTest VizTest both assert : OpticksEvent::setBufferControl FATAL: BUFFER 
     simon:opticks blyth$ 
 
 
-OpTest : failed rtContextCompile from missing genstep_buffer
------------------------------------------------------------------
+::
+
+     765 void OpticksEvent::setBufferControl(NPYBase* data)
+     766 {
+     767     NPYSpec* spec = data->getBufferSpec();
+     768     const char* name = data->getBufferName();
+     769 
+     770     if(!spec)
+     771     {
+     772 
+     773         LOG(fatal) << "OpticksEvent::setBufferControl"
+     774                      << " SKIPPED FOR " << name
+     775                      << " AS NO spec "
+     776                      ;
+     777 
+     778         NParameters* param = data->getParameters();
+     779         if(param)
+     780             param->dump("OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC");
+     781         assert(0);
+     782         return ;
+     783     }
+     784 
+     785 
+     786     OpticksBufferControl ctrl(data->getBufferControlPtr());
+     787     ctrl.add(spec->getCtrl());
+     788 
+
+
+::
+
+    simon:optickscore blyth$ opticks-find setBufferSpec 
+    ./okop/OpMgr.cc:            embedded_gensteps->setBufferSpec(OpticksEvent::GenstepSpec(compute));
+    ./optickscore/OpticksEvent.cc:    npy->setBufferSpec(spec);
+    ./optickscore/OpticksEvent.cc:    recsel1->setBufferSpec(m_recsel_spec);  
+    ./optickscore/OpticksRun.cc:    gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+    ./opticksgeo/OpticksGen.cc:        gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+    ./opticksnpy/NPY.cpp:    npy->setBufferSpec(argspec);  // also sets BufferName
+    ./opticksnpy/NPYBase.cpp:    dst->setBufferSpec(spec ? spec->clone() : NULL);
+    ./opticksnpy/NPYBase.cpp:void NPYBase::setBufferSpec(NPYSpec* spec)
+    ./opticksnpy/NPYBase.hpp:       void         setBufferSpec(NPYSpec* spec);
+    simon:opticks blyth$ 
+
+
+
+FIXED OpTest : failed rtContextCompile from missing genstep_buffer
+----------------------------------------------------------------------
+
+* avoid rtContextCompilation FAIL from lack of genstep buffer via argforced --tracer mode
 
 ::
 
@@ -106,6 +167,7 @@ OpTest : failed rtContextCompile from missing genstep_buffer
       Invalid value (Details: Function "RTresult _rtContextCompile(RTcontext)" caught exception: Initalization of non-primitive type genstep_buffer:  Buffer object, [1769674])
       Abort trap: 6
       simon:opticks blyth$ 
+
 
 
 CTestDetectorTest : GSurLib assert 

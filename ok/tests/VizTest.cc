@@ -68,6 +68,9 @@ int main(int argc, char** argv)
 
     FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();
+    bool compute = false ; 
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));  
+
 
 
     int multi = ok.getMultiEvent();

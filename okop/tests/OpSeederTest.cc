@@ -68,6 +68,10 @@ int main(int argc, char** argv)
     FabStepNPY* fab = gen->makeFabstep();
     NPY<float>* gs = fab->getNPY();
 
+    bool compute = true ; 
+    gs->setBufferSpec(OpticksEvent::GenstepSpec(compute));  
+ 
+
     int multi = ok.getMultiEvent();
     char entryCode = ok.getEntryCode();
 
@@ -78,7 +82,7 @@ int main(int argc, char** argv)
         OpticksEvent* evt = hub.getEvent();
         assert(evt->isMachineryType() && "--machinery type is forced as this writes non-standardOpticksEvents which would otherwise cause test failures for event reading tests" ); 
 
-        evt->setGenstepData(gs);
+        evt->setGenstepData(gs);   // <-- asserts in here, OpticksEvent::setBufferControl FATAL: BUFFER LACKS SPEC
 
         oevt.upload();                        // uploads gensteps, creates buffers at 1st upload, resizes on subsequent uploads
 
