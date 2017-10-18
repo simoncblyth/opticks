@@ -31,17 +31,18 @@ OInterpolationTest
 class OInterpolationTest 
 {
     public:
-         OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd);
+         OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base);
          void launch(optix::Context& context);
          int ana();
     private:
          Opticks*    m_ok ;
          bool        m_interpol ; 
          const char* m_progname ; 
-         const char* m_path ; 
+         const char* m_name ; 
          const char* m_ana ; 
          OContext*   m_ocontext;
-         OBndLib*    m_obnd ; 
+         OBndLib*    m_obnd ;
+         const char* m_base ;  
          unsigned    m_nb ; 
          unsigned    m_nx ; 
          unsigned    m_ny ; 
@@ -50,29 +51,30 @@ class OInterpolationTest
 
 
 
-OInterpolationTest::OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd)
+OInterpolationTest::OInterpolationTest(Opticks* ok, OContext* ocontext, OBndLib* obnd, const char* base)
    :
      m_ok(ok),
      m_interpol(!ok->hasOpt("nointerpol")),
      m_progname( m_interpol ? "OInterpolationTest" : "OIdentityTest" ),
-     m_path(NULL),
+     m_name(NULL),
      m_ana(NULL),
      m_ocontext(ocontext),
      m_obnd(obnd),
+     m_base(strdup(base)), 
      m_nb(obnd->getNumBnd()), 
      m_out(NULL)
 {
      
     if(m_interpol)
     {
-        m_path = "$TMP/InterpolationTest/OInterpolationTest_interpol.npy" ;
+        m_name = "OInterpolationTest_interpol.npy" ;
         m_ana = "$OPTICKS_HOME/optixrap/tests/OInterpolationTest_interpol.py" ;
         m_nx = 820 - 60 + 1 ;     // 761 : 1 nm steps 
         m_ny = m_obnd->getHeight();  // total number of float4 props
     }
     else  // identity 
     {
-        m_path = "$TMP/InterpolationTest/OInterpolationTest_identity.npy" ;
+        m_name = "OInterpolationTest_identity.npy" ;
         m_ana = "$OPTICKS_HOME/optixrap/tests/OInterpolationTest_identity.py" ;
         m_nx = m_obnd->getWidth();   // number of wavelength samples
         m_ny = m_obnd->getHeight();  // total number of float4 props
@@ -87,7 +89,8 @@ void OInterpolationTest::launch(optix::Context& context)
               << " nx " << std::setw(5) << m_nx
               << " ny " << std::setw(5) << m_ny
               << " progname " << std::setw(30) << m_progname
-              << " path " << m_path 
+              << " name " << m_name 
+              << " base " << m_base 
               ;
 
     optix::Buffer buffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, m_nx, m_ny);
@@ -101,7 +104,7 @@ void OInterpolationTest::launch(optix::Context& context)
     m_out = NPY<float>::make(m_nx, m_ny, 4);
     m_out->read( buffer->map() );
     buffer->unmap(); 
-    m_out->save(m_path);
+    m_out->save(m_base, m_name);
 }
 
 
@@ -130,14 +133,18 @@ int main(int argc, char** argv)
     OContext* ocontext = sc.getOContext();
     optix::Context context = ocontext->getContext();
 
+    const char* base = "$TMP/InterpolationTest"  ; 
+
     OBndLib* obnd = sc.getOBndLib();
 
-    // SUSPECT BELOW MAY FIX TEST FAIL : BUT NEED TO TEST SOMEHOW BEFORE DOING THIS
-    //GBndLib* gbnd = hub.getBndLib();
-    //gbnd->close();
-    //gbnd->saveToCache()  
+    GBndLib* blib = obnd->getBndLib();
+    blib->saveAllOverride(base);     
 
-    OInterpolationTest tst(&ok , ocontext, obnd);
+    // Not appropriate to write into geocache from a test
+    // BUT ok to override write into $TMP, allowing 
+    // python analysis to pick up the potentially dynamic boundary names
+
+    OInterpolationTest tst(&ok , ocontext, obnd, base);
     tst.launch(context);
     return tst.ana();
 

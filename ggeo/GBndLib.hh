@@ -92,6 +92,8 @@ class GGEO_API GBndLib : public GPropertyLib {
        void saveIndexBuffer();
        void saveOpticalBuffer();
   public:
+       void saveAllOverride(const char* dir="$TMP");
+  public:
        NPY<unsigned int>* createIndexBuffer();
        NPY<unsigned int>* createOpticalBuffer();
   public:
@@ -143,5 +145,6 @@ class GGEO_API GBndLib : public GPropertyLib {
 };
 
 #include "GGEO_TAIL.hh"
+
 
 

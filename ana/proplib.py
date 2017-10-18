@@ -90,7 +90,15 @@ class PropLib(object):
     B_ISUR = 2
     B_IMAT = 3
 
-    def __init__(self, kls="GMaterialLib", data=None, names=None):
+
+    @classmethod
+    def load_GBndLib(cls, base):
+        t = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLib.npy")))
+        o = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLibOptical.npy")))
+        blib = cls("GBndLib", data=t, names=os.path.join(base,"GItemList/GBndLib.txt"), optical=o )
+        return blib 
+
+    def __init__(self, kls="GMaterialLib", data=None, names=None, optical=None):
         """
         :param kls:
         :param data: 
@@ -158,9 +166,13 @@ class PropLib(object):
         pass
 
         if kls == "GBndLib":
-            opticalpath = idp_("%(kls)s/%(kls)sOptical.npy" % locals())
-            self.optical = np.load(opticalpath)
-            self.paths.append(opticalpath)
+            if optical is None:
+                opticalpath = idp_("%(kls)s/%(kls)sOptical.npy" % locals())
+                self.optical = np.load(opticalpath)
+                self.paths.append(opticalpath)
+            else:
+                self.optical = optical  
+            pass
             self.dat = Dat(data, names, "omat osur isur imat".split(), "g0 g1".split() )
             self.bnd = Bnd(names) 
         pass
@@ -259,7 +271,7 @@ if __name__ == '__main__':
 
     mlib = PropLib("GMaterialLib") 
     slib = PropLib("GSurfaceLib") 
-    blib = PropLib("GBndLib") 
+    #blib = PropLib("GBndLib") 
 
 
 if 0:

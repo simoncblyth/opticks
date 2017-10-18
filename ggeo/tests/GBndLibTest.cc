@@ -11,6 +11,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
+#include "GItemList.hh"
 
 
 #include "PLOG.hh"
@@ -51,11 +52,15 @@ int main(int argc, char** argv)
     blib->dumpMaterialLineMap();
 
 
+    GItemList* names0 = blib->getNames();
+    //assert(names0) ;  
+    if(names0 == NULL) LOG(warning) << "GBndLib::getNames.0 NULL " ; 
 
 
     // writing to geocache in tests not allowed
     // as needs to work from shared install
 
+/*
     ok.setIdPathOverride("$TMP");
 
     blib->save();             // only saves the guint4 bnd index
@@ -65,7 +70,27 @@ int main(int argc, char** argv)
     LOG(info) << " after blib saveOpticalBuffer " ; 
 
     ok.setIdPathOverride(NULL);
-    
+
+*/
+    blib->saveAllOverride("$TMP");
+
+
+
+
+    GItemList* names1 = blib->getNames();
+    //assert(names1) ;  
+    if(names1 == NULL) 
+    {
+        LOG(warning) << "GBndLib::getNames.1 NULL " ; 
+    }
+    else
+    {
+        LOG(info) << "GBndLib::getNames.1 non-null " ; 
+        names1->dump("names1"); 
+    } 
+
+
+   
 
 
 

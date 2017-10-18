@@ -869,5 +869,21 @@ void GBndLib::dumpBoundaries(std::vector<unsigned int>& boundaries, const char* 
 }
 
 
+void GBndLib::saveAllOverride(const char* dir)
+{
+    LOG(info) << "GBndLib::saveAllOverride" ;
+ 
+    m_ok->setIdPathOverride(dir);
+
+    save();             // only saves the guint4 bnd index
+    saveToCache();      // save float buffer too for comparison with wavelength.npy from GBoundaryLib with GBndLibTest.npy 
+    saveOpticalBuffer();
+
+    m_ok->setIdPathOverride(NULL);
+}
+
+
+
+
 
  

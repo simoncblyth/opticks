@@ -2,6 +2,90 @@ oxrap OInterpolationTest asserts at python level for lack of IDPATH GBndLib.txt
 ==================================================================================
 
 
+
+Oct 2017 : FIXED old chestnut 
+---------------------------------------
+
+* FIXED using GBndLib::saveAllOverride and overhaul of paths in the analysis scripts
+
+
+
+::
+
+
+    2017-10-18 16:04:47.536 INFO  [151806] [OLaunchTest::init@50] OLaunchTest entry   0 width       1 height       1 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-10-18 16:04:47.536 INFO  [151806] [OLaunchTest::launch@61] OLaunchTest entry   0 width     761 height     123 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-10-18 16:04:47.536 INFO  [151806] [OContext::close@235] OContext::close numEntryPoint 1
+    2017-10-18 16:04:47.536 INFO  [151806] [OContext::close@239] OContext::close setEntryPointCount done.
+    2017-10-18 16:04:47.548 INFO  [151806] [OContext::close@245] OContext::close m_cfg->apply() done.
+    2017-10-18 16:04:50.920 INFO  [151806] [OContext::launch@322] OContext::launch LAUNCH time: 3.37147
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py", line 13, in <module>
+        blib = PropLib("GBndLib")
+      File "/Users/blyth/opticks/ana/proplib.py", line 126, in __init__
+        names = map(lambda _:_[:-1],file(npath).readlines())
+    IOError: [Errno 2] No such file or directory: '/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt'
+    2017-10-18 16:04:51.075 INFO  [151806] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
+    2017-10-18 16:04:51.075 WARN  [151806] [SSys::run@52] SSys::run FAILED with  cmd python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH 
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+
+
+
+Old geocache have the missing file::
+
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ mdfind GBndLib.txt
+    /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt
+    /usr/local/env/geant4/geometry/export/juno/test3.fcc8b4dc9474af8826b29bf172452160.dae/GItemList/GBndLib.txt
+    /Users/simon/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt
+
+    simon:issues blyth$ cat /usr/local/env/geant4/geometry/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GBndLib.txt
+    Vacuum///Vacuum
+    Vacuum///Rock
+    Rock///Air
+    Air/NearPoolCoverSurface//PPE
+    Air///Aluminium
+    Aluminium///Foam
+    Foam///Bakelite
+    Bakelite///Air
+    Air///MixGas
+    Air///Air
+    Air///Iron
+    Rock///Rock
+    Rock///DeadWater
+    DeadWater/NearDeadLinerSurface//Tyvek
+    Tyvek//NearOWSLinerSurface/OwsWater
+    OwsWater///Tyvek
+    ...
+
+
+
+* m_names GItemList is handled in base class GPropertyLib
+* GBndLib is special (as boundaries can be dynamically added to test geometry) 
+* dynamic nature means GBndLib must be closed before the names are set 
+* GBndLibTest saves such a file to $TMP/GItemList/GBndLib.txt 
+
+::
+
+    simon:ggeo blyth$ opticks-find setNames
+    ./ggeo/GPropertyLib.cc:    setNames(other->getNames());  // need setter for m_attrnames hookup
+    ./ggeo/GPropertyLib.cc:    setNames(names);
+    ./ggeo/GPropertyLib.cc:    setNames(names); 
+    ./ggeo/GPropertyLib.cc:void GPropertyLib::setNames(GItemList* names)
+    ./ggeo/tests/BoundariesNPYTest.cc:    blib->close();     //  BndLib is dynamic so requires a close before setNames is called setting the sequence for OpticksAttrSeq
+    ./ggeo/GPropertyLib.hh:        void setNames(GItemList* names);
+    simon:opticks blyth$ 
+
+
+
+
+
+
+
+
+June 2017
+------------
+
 ::
 
     99% tests passed, 3 tests failed out of 234

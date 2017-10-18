@@ -15,6 +15,7 @@ public:
     OBndLib(optix::Context& ctx, GBndLib* lib);
 public:
     unsigned getNumBnd();
+    GBndLib* getBndLib(); 
 
     void setDebugBuffer(NPY<float>* npy);
 

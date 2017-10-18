@@ -18,6 +18,12 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
 {
 }
 
+
+GBndLib* OBndLib::getBndLib()
+{
+    return m_lib ; 
+}
+
 unsigned OBndLib::getNumBnd()
 {
     return m_lib->getNumBnd() ;

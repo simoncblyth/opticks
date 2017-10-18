@@ -7,12 +7,12 @@ from opticks.ana.proplib import PropLib
 np.set_printoptions(precision=3, suppress=True)
 
 
-
 if __name__ == '__main__':
 
-    blib = PropLib("GBndLib")
+    base = "$TMP/InterpolationTest"
+    blib = Proplib.load_GBndLib(base)
     names = blib.names
-    t = np.load(os.path.expandvars("$IDPATH/GBndLib/GBndLib.npy"))
+    t = blib.data # boundary texture data
 
     #interpol = False 
     interpol = True
@@ -22,8 +22,8 @@ if __name__ == '__main__':
     else:
        ext, nl = "identity", 39
 
-    o = np.load(os.path.expandvars("$TMP/InterpolationTest/OInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
-    c = np.load(os.path.expandvars("$TMP/InterpolationTest/CInterpolationTest_%s.npy" % ext)).reshape(-1,4,2,nl,4) 
+    o = np.load(os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+    c = np.load(os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
 
     if not interpol:
        assert np.all(t == o)
