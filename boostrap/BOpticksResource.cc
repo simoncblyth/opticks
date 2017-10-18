@@ -111,14 +111,17 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 {
     int arg1 = BStr::atoi(argc > 1 ? argv[1] : "-1", -1 );
     const char* idfold = getDebuggingIDFOLD() ;
+
     std::string treedir ; 
 
     if(arg1 > -1) 
     {   
+        // 1st argument is an integer
         treedir = BFile::FormPath( idfold, "extras", BStr::itoa(arg1) ) ; 
     }   
     else if( argc > 1)
     {
+        // otherwise string argument
         treedir = argv[1] ;
     }
     else

@@ -24,15 +24,18 @@ int main(int argc, char** argv)
 
     std::string desc = cfg->getDescString();
 
-    LOG(info) << " desc " << desc ;
+    LOG(info) << "desc... " << desc ;
 
+    LOG(info) << "ocfg... "  ;
 
     ocfg->dump("dump");
 
+    LOG(info) << "sc... "  ;
 
     NSnapConfig* sc = ok->getSnapConfig();
     sc->dump("SnapConfig");
 
+    LOG(info) << "DONE "  ;
 
 
 

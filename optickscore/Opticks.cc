@@ -196,6 +196,8 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_timer(NULL),
        m_parameters(NULL),
        m_scene_config(NULL),
+       m_lod_config(NULL),
+       m_snap_config(NULL),
        m_detector(NULL),
        m_event_count(0),
        m_domains_configured(false),
