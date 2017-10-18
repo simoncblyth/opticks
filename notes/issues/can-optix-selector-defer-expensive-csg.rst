@@ -8,7 +8,7 @@ Ray tracing geometries composed of millions of triangles, or
 manually partitioned analytic geometries is substantially faster than
 ray tracing CSG trees.
 
-Perhaps CSG tree ray tracing can be deferred until actually needed by 
+Perhaps CSG tree ray tracing can be deferred (or simplified) until actually needed by 
 replacing the complicated CSG trees for PMT instances with just their
 outer volumes for rays originating outside the bbox ? Or beyond some
 distance from instance transform center.
@@ -22,21 +22,86 @@ Current Working
 
     op --debugger --gltf 3  --tracer --rendermode +in0 --restrictmesh 5
           
-          # After OpticksHub::configureGeometry fix
-          # to apply restrict equally to tri and ana this
-          # now shows just analytic PMTs in OpenGL and raytrace
+          # just analytic PMTs in raytrace, just triangulated in OpenGL
+          #
+          # (required OpticksHub::configureGeometry fix to apply restrictmesh equally to tri and ana)
+
 
     op --debugger --gltf 0  --tracer --rendermode +in0 --restrictmesh 5
           
-          # After OGeo::convert fix to only OGeo::makeAnalyticGeometry  for gltf > 0 
-          # this succeeds to show just triangulated PMTs in both OpenGL and raytrace
-         
+          # just triangulated PMTs in OpenGL and raytrace
+          #
+          # (required OGeo::convert fix to only OGeo::makeAnalyticGeometry  for gltf > 0 )
 
-Current Issue
-------------------
 
-* putting the crash down to Chrome GPU contention, moral: runs tests with mimimal apps running, 
-  especially avoid Safari, Chrome, Mail
+    op --raylod --debugger --gltf 3  --tracer --rendermode +in0 --restrictmesh 5
+
+          # just analytic PMTs in raytrace, just triangulated in OpenGL 
+          #
+          # --raylod (raytrace LOD) 
+          #       causes a simplified analytic geometry (just outer volume) 
+          #       to be used for rays with instance OBJECT frame length(ray.origin) > instance_bounding_radius      
+          #
+          #       In order to see any difference you need to position viewpoint close to some PMT
+          #       instances and use near scanning(*n* then swipe up/down) to cut into the volume, 
+          #       then vary position (*z* or *x*) and repeat the near scanning.  
+          #       Only when very close should the multiple volumes of PMT innards be visible.
+          #  
+
+
+HMM : perhaps should enable OpenGL LOD in parallel to raytrace LOD ?
+------------------------------------------------------------------------
+
+Actually, need to revisit OpenGL LOD.  The raytrace way of making simplified geometry
+from the outer volume is better than the bbox LOD levels.
+
+
+
+DONE : outer volume only geometry for lod level 1
+----------------------------------------------------
+
+* used lazy LOD approach of not changing buffers, just ignoring most of them for
+  LOD level 1 
+
+
+Making triangulated OptiX geometry from mm uses pre-combined buffers, ie all 
+the solids data are already concatenated into single buffers, the data accessed with.::
+
+    mm->getVerticesBuffer()
+    mm->getIndicesBuffer()
+    mm->getFaceRepeatedInstancedIdentityBuffer()  OR mm->getFaceRepeatedIdentityBuffer()
+ 
+Similarly for analytic OptiX geometry with the data already combined via GParts addition.::
+
+     537 void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+     538 {
+     539     // analytic CSG combined at node level  
+     ...
+     547     if(transform && !transform->isIdentity())
+     548     {
+     549         pts->applyPlacementTransform(transform, verbosity );
+     550     }
+     551 
+     552     if(!m_parts) m_parts = new GParts() ;
+     553     m_parts->add(pts, verbosity);
+     554 }
+
+
+Hmm, can the 1st solids info be fished out of the combined ?
+
+* hmm maybe trivial for analytic, just set numPrim to 1 ?
+* for triangulated maybe just need the facecount for 1st prim 
+
+
+
+FIXED : ice cream cone partial PMT instance geometry
+---------------------------------------------------------
+          
+This ice cream cone issue turned out to be due to incorrect sharing of an 
+acceleration structure between the ana and tri versions of the geometry.
+          
+* Can only share accel for exactly the same geometry.
+          
 
 ::
 
@@ -51,31 +116,25 @@ Current Issue
           # to navigate real close 
 
 
-::
+UNREPRODUCIBLE CRASH  : GPU contension assumed
+--------------------------------------------------
 
-    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
-    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
-    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
-    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
-    visit_instance: level 1 size    200.000 distance  11552.091    origin (-18418.697 -805074.750   3195.391) instance_position (-17951.662 -795436.938  -3156.400    200.000)  
+* putting the crash down to Chrome GPU contention, moral: runs tests with minimal apps running, 
+  especially avoid Safari, Chrome, Mail
 
-
-Changing cut to 100000mm (100m) means results in everything showing at level 0, see normal analytic PMTs::
-
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-    visit_instance: level 0 size 100000.000 distance  13083.132    origin (-18672.469 -807356.625   2188.674) instance_position (-17951.662 -795436.938  -3156.400 100000.000)  
-
-
-Changing cut to 12m, starts OK with tri PMTs then crashes on getting close.  This forced a reboot, relaunching, Chrome comes up in a stuck state. 
+Changing cut to 12m, starts OK with tri PMTs then crashes on getting close.  
+This forced a reboot, relaunching, Chrome comes up in a stuck state, requiring force kill.
 Possibly there was GPU contention coming from Chrome ?
+
+
+FIXED : All instances changing at once
+-------------------------------------------
 
 Rerunning with only (Finder+Terminal) observe from a distance the broken triangulated fans, as get close, all instances change at once to the 
 normal analytic PMTs, backing away the broken tri fans all reappear at once...
 
+The all-at-once identified to be due to overwrite of instance position on the visit prog, all instances
+had the position of the last instance.
 
 ::
 
@@ -107,42 +166,9 @@ normal analytic PMTs, backing away the broken tri fans all reappear at once...
 
 
 
-* Why all at once ?
 
-::
-
-    358             // level0 : best/most expensive 
-    359             // level1 : cheaper alternative
-    360             optix::GeometryInstance level0 = makeGeometryInstance( ana , mat );
-    361             optix::GeometryInstance level1 = makeGeometryInstance( tri , mat );
-    362 
-    363             level0["instance_index"]->setUint( i );
-    364             level1["instance_index"]->setUint( i );
-    365 
-    366             optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel);
-    367             optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel);
-    368 
-    369             optix::Selector selector = m_context->createSelector();
-    370             selector->setChildCount(2) ;
-    371             selector->setChild(0, gg0 );
-    372             selector->setChild(1, gg1 );
-    373             selector->setVisitProgram( visit );
-    374 
-    375             float instance_size = 12000.f ; // mm   TODO: get from bbox/extent? 
-    376 
-    377             visit["instance_position"]->setFloat( optix::make_float4( ipos.x, ipos.y, ipos.z, instance_size ));
-    378             // hmm only one visit prog... so maybe this is overwriting the setting ... 
-    379             // so end up with position of final instance 
-    380             // need to put on the GeometryInstance ? Hmm but the visit is to pick between them ?
-    381 
-    382             xform->setChild(selector);
-
-
-
-
-
-Tri Mode assert
---------------------
+FIXED : Tri Mode assert
+--------------------------
 
 ::
 
@@ -331,6 +357,8 @@ BUT: selector needs to house
 How to form a simplified analytic instance ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* used lazy LOD, just setting primCount to restrict to outermost volume for LOD level 1
+
 
 How to select ?
 ~~~~~~~~~~~~~~~~~
@@ -342,7 +370,6 @@ Just like the OpenGL LOD : the level-of-detail decision needs access to:
 
 When distance from ray.origin to instance (transform center) exceeds instance size
 can select just the outer ?  
-
 
 
 Program Variable Transformation
@@ -362,9 +389,6 @@ From the visit program, ray.origin appears to be in object space ? But instance 
     visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
     visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
     visit_instance 1  ray.origin (   152.681    541.562    167.953)  instance_position (-17951.658 -795436.938  -3156.400      1.000)  
-
-
-
 
 
 Recall that rays have a projective transformation applied to them upon encountering Transform nodes during traversal. 
@@ -455,12 +479,10 @@ Attempt to test with selector between the analytic and triangulated geometry
           # OpenGL disappeared, raytrace still full geo (analytic)
 
 
-ISSUE : ana + tri ggeolib with inconsistent settings 
+FIXED : ana + tri ggeolib with inconsistent settings 
 ------------------------------------------------------
 
-
 * regularize in OpticksHub::configureGeometryTriAna
-
 
 
 ::
@@ -620,10 +642,12 @@ getRestrictMesh
 
 
 
-Huh, renderer and mesh indices not aligned ?   
+Renderer and mesh indices not aligned ?   
 -----------------------------------------------
 
-* inconsistent criteria ?
+* inconsistent criteria ? 
+
+  * no, seems just the renderer has dynamic index, not tied to index of geometry 
 
 * TODO: get the name of the instanced mesh into the interface, or at least dump it 
 
@@ -693,6 +717,10 @@ Huh, renderer and mesh indices not aligned ?
     [ 5] (     7/   672 )         ip-16759.500 -797786.062 -8842.500   1.000 
     [ 5] (     8/   672 )         ip-17299.695 -797509.625 -8842.500   1.000 
     [ 5] (     9/   672 )         ip-17893.031 -797382.438 -8842.500   1.000 
+
+
+
+
 
 
 

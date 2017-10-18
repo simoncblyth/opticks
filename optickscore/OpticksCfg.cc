@@ -704,9 +704,11 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("raylod",  "Switch on experimental OptiX raytrace LOD via ray/instances based geometry selectors , see oxrap/OGeo.cc:makeSelector. This is entirely distinct from the OpenGL mesh based LOD.") ;
-
-
+       ("raylod",  
+              "Switch on experimental OptiX raytrace level-of-detail (LOD) via visit_instance.cu based geometry selectors" 
+              "See oxrap/OGeo.cc:makeRepeatedGroup and notes/issues/can-optix-selector-defer-expensive-csg.rst "
+              ""
+              "This is entirely distinct from the OpenGL mesh based LOD.") ;
 
 
    char target[128];

@@ -382,19 +382,26 @@ guint3*  GMesh::getFaces() const
 
 
 // index is used from subclass
-gfloat4 GMesh::getCenterExtent(unsigned int index) const 
+gfloat4 GMesh::getCenterExtent(unsigned index) const 
 {
     return m_center_extent[index] ;
 }
 
-glm::vec4 GMesh::getCE(unsigned int index) const 
+glm::vec4 GMesh::getCE(unsigned index) const 
 {
     gfloat4 ce_ = getCenterExtent(index);
     glm::vec4 ce(ce_.x, ce_.y, ce_.z, ce_.w ) ; 
     return ce  ;
 }
 
-
+float GMesh::getBoundingRadiusCE(unsigned index) const
+{
+    // radius of the origin centered sphere that contains all of the solid
+    // without safety margin
+    glm::vec4 ce = getCE(index) ;
+    float bounding_radius = glm::length(glm::vec3(ce)) + ce.w ;
+    return bounding_radius ; 
+}
 
 
 gbbox GMesh::getBBox(unsigned int index) const 

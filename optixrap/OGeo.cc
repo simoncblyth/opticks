@@ -220,8 +220,8 @@ void OGeo::convertMergedMesh(unsigned i)
 
     GMergedMesh* mm = m_geolib->getMergedMesh(i); 
 
-    bool rlod = m_ok->isRayLOD() ; 
-    if(rlod) 
+    bool raylod = m_ok->isRayLOD() ; 
+    if(raylod) 
     LOG(warning) << " RayLOD enabled " ; 
     
 
@@ -239,7 +239,7 @@ void OGeo::convertMergedMesh(unsigned i)
 
     if( i == 0 )
     {
-        optix::Geometry gmm = makeGeometry(mm);
+        optix::Geometry gmm = makeGeometry(mm, 0);
         optix::Material mat = makeMaterial();
         optix::GeometryInstance gi = makeGeometryInstance(gmm,mat);
         gi["instance_index"]->setUint( 0u );  // so same code can run Instanced or not 
@@ -248,7 +248,7 @@ void OGeo::convertMergedMesh(unsigned i)
     }
     else
     {
-        optix::Group group = makeRepeatedGroup(mm, rlod);
+        optix::Group group = makeRepeatedGroup(mm, raylod);
         group->setAcceleration( makeAcceleration() );
         m_repeated_group->addChild(group); 
     }
@@ -261,10 +261,12 @@ void OGeo::convertMergedMesh(unsigned i)
 
 
 
-optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
+optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool raylod)
 {
     const char geocode = mm->getGeoCode();
     assert( geocode == OpticksConst::GEOCODE_TRIANGULATED || geocode == OpticksConst::GEOCODE_ANALYTIC ) ;
+
+    float instance_bounding_radius = mm->getBoundingRadiusCE(0) ; 
 
     NPY<float>* itransforms = mm->getITransformsBuffer();
 
@@ -285,93 +287,75 @@ optix::Group OGeo::makeRepeatedGroup(GMergedMesh* mm, bool lod)
               << " numIdentity " << numIdentity  
               << " numSolids " << numSolids  
               << " islice " << islice->description() 
+              << " instance_bounding_radius " << instance_bounding_radius
               ; 
 
     optix::Group assembly = m_context->createGroup();
     assembly->setChildCount(islice->count());
 
-    optix::Geometry tri, ana, gmm ; 
+    optix::Geometry tri[2], ana[2], gmm ; 
 
-    // this approach not appropriate for big geometry, as too many tris...
-    // but conveniently visibly different
-    tri = makeTriangulatedGeometry(mm);
+    tri[0] = makeTriangulatedGeometry(mm, 0u );
+    tri[1] = makeTriangulatedGeometry(mm, 1u );
 
     if(m_gltf > 0)
     {
-        ana = makeAnalyticGeometry(mm) ;
+        ana[0] = makeAnalyticGeometry(mm, 0u ) ; 
+        ana[1] = makeAnalyticGeometry(mm, 1u ) ; 
     }
 
-    //optix::Geometry gmm = makeGeometry(mm);
-    gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri : ana ; 
-
+    gmm = geocode == OpticksConst::GEOCODE_TRIANGULATED ? tri[0]  : ana[0] ; 
 
     optix::Material mat = makeMaterial();
     optix::Program visit = m_ocontext->createProgram("visit_instance.cu.ptx", "visit_instance");
 
-    float instance_size = 1000.f ; // mm   TODO: get from bbox/extent? 
-    visit["instance_size"]->setFloat( instance_size );
-
+    visit["instance_bounding_radius"]->setFloat( instance_bounding_radius*2.f );
+    // radius of outermost solid origin centered bounding sphere with safety margin
+    // see notes/issues/can-optix-selector-defer-expensive-csg.rst
 
     optix::Acceleration accel[2] ;
-
     accel[0] = makeAcceleration() ;
     accel[1] = makeAcceleration() ;
     // common accel for all instances : so long as the same geometry 
 
-    unsigned int ichild = 0 ; 
-
+    unsigned ichild = 0 ; 
     for(unsigned int i=islice->low ; i<islice->high ; i+=islice->step)
     {
         optix::Transform xform = m_context->createTransform();
-
         glm::mat4 m4 = itransforms->getMat4(i) ; 
         const float* tdata = glm::value_ptr(m4) ;  
         
-        glm::vec4 ipos = m4[3] ; 
-
-        //const float* tdata2 = tptr + 16*i ; 
-        //for(unsigned j=0 ; j < 16 ; j++) assert( *(tdata2+j) == *(tdata+j) ) ;  
-
-        if(islice->isMargin(i,5))
-        std::cout
-             << "[" 
-             << std::setw(2) << mm->getIndex() 
-             << "]" 
-             << " (" 
-             << std::setw(6) << i << "/" << std::setw(6) << numTransforms 
-             << " ) "   
-             << gpresent(" ip",ipos) 
-             ;
- 
         setTransformMatrix(xform, tdata); 
         assembly->setChild(ichild, xform);
         ichild++ ;
 
-        if(!lod)
+        if(raylod == false)
         {
             // proliferating *pergi* so can assign an instance index to it 
             optix::GeometryInstance pergi = makeGeometryInstance(gmm, mat); 
             pergi["instance_index"]->setUint( i );  
             optix::GeometryGroup perxform = makeGeometryGroup(pergi, accel[0]);    
+
             xform->setChild(perxform);  
         }
         else
         {
-            // level0 : best/most expensive 
-            // level1 : cheaper alternative
-            optix::GeometryInstance level0 = makeGeometryInstance( ana , mat ); 
-            optix::GeometryInstance level1 = makeGeometryInstance( tri , mat ); 
+            optix::GeometryInstance gi[2] ; 
+            optix::GeometryGroup    gg[2] ; 
 
-            level0["instance_index"]->setUint( i );  
-            level1["instance_index"]->setUint( i );  
+            gi[0] = makeGeometryInstance( ana[0] , mat );  // level0 : most precise/expensive used for ray.origin inside instance sphere
+            gi[1] = makeGeometryInstance( ana[1] , mat );  // level1 : cheaper alternative used for ray.origin outside instance sphere
 
-            optix::GeometryGroup gg0 = makeGeometryGroup(level0, accel[0]);    
-            optix::GeometryGroup gg1 = makeGeometryGroup(level1, accel[1]);    
+            gi[0]["instance_index"]->setUint( i );  
+            gi[1]["instance_index"]->setUint( i );  
+
+            gg[0] = makeGeometryGroup(gi[0], accel[0]);    
+            gg[1] = makeGeometryGroup(gi[1], accel[1]);    
          
             optix::Selector selector = m_context->createSelector();
             selector->setChildCount(2) ; 
-            selector->setChild(0, gg0 );
-            selector->setChild(1, gg1 ); 
+            selector->setChild(0, gg[0] );
+            selector->setChild(1, gg[1] ); 
             selector->setVisitProgram( visit );           
 
             xform->setChild(selector);   
@@ -418,6 +402,43 @@ void OGeo::setTransformMatrix(optix::Transform& xform, const float* tdata )
     xform->setMatrix(transpose, m.getData(), 0); 
     //dump("OGeo::setTransformMatrix", m.getData());
 }
+
+
+void OGeo::dumpTransforms( const char* msg, GMergedMesh* mm )
+{
+    LOG(info) << msg ; 
+
+    NPY<float>* itransforms = mm->getITransformsBuffer();
+
+    NSlice* islice = mm->getInstanceSlice(); 
+
+    unsigned numTransforms = islice->count();
+
+    if(!islice) islice = new NSlice(0, itransforms->getNumItems()) ;
+
+    for(unsigned i=islice->low ; i<islice->high ; i+=islice->step)
+    {
+        glm::mat4 m4 = itransforms->getMat4(i) ; 
+
+        //const float* tdata = glm::value_ptr(m4) ;  
+        
+        glm::vec4 ipos = m4[3] ; 
+
+        if(islice->isMargin(i,5))
+        std::cout
+             << "[" 
+             << std::setw(2) << mm->getIndex() 
+             << "]" 
+             << " (" 
+             << std::setw(6) << i << "/" << std::setw(6) << numTransforms 
+             << " ) "   
+             << gpresent(" ip",ipos) 
+             ;
+     }
+}
+
+
+
 
 /*
 
@@ -566,18 +587,18 @@ optix::GeometryGroup OGeo::makeGeometryGroup(optix::GeometryInstance gi, optix::
 }
 
 
-optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
+optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
 {
     optix::Geometry geometry ; 
     const char geocode = mergedmesh->getGeoCode();
 
     if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
     {
-        geometry = makeTriangulatedGeometry(mergedmesh);
+        geometry = makeTriangulatedGeometry(mergedmesh, lod);
     }
     else if(geocode == OpticksConst::GEOCODE_ANALYTIC)
     {
-        geometry = makeAnalyticGeometry(mergedmesh);
+        geometry = makeAnalyticGeometry(mergedmesh, lod);
     }
     else
     {
@@ -588,15 +609,12 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh)
 }
 
 
-
-
-
-
-optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
+optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 {
     if(m_verbosity > 2)
     LOG(warning) << "OGeo::makeAnalyticGeometry START" 
                  << " verbosity " << m_verbosity 
+                 << " lod " << lod
                  << " mm " << mm->getIndex()
                  ; 
 
@@ -619,15 +637,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
         if(m_verbosity > 2)
         LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close NOT NEEDED " ; 
     }
-
     
 
     if(m_verbosity > 3) pts->fulldump("OGeo::makeAnalyticGeometry") ;
-
-    //pts->setName("analytic");
-    //pts->fulldump("OGeo::makeAnalyticGeometry") ;
-    //pts->save("$TMP/OGeo_makeAnalyticGeometry");  // as here are now ~22 mm this just overwites..
-
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
@@ -641,6 +653,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
     unsigned numPart = partBuf->getNumItems();
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();
+
+    unsigned int numSolids = mm->getNumSolids();
+    assert( numPrim == numSolids && "Sanity check failed " );
 
     //assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 
@@ -659,8 +674,10 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm)
 
     optix::Geometry geometry = m_context->createGeometry();
 
-    geometry->setPrimitiveCount( numPrim );
-    geometry["primitive_count"]->setUint( numPrim );  // needed GPU side, for instanced offsets 
+    assert( numPrim >= 1 );
+    geometry->setPrimitiveCount( lod > 0 ? 1 : numPrim );  // lazy lod, dont change buffers, just ignore all but the 1st prim for lod > 0
+
+    geometry["primitive_count"]->setUint( numPrim );       // needed GPU side, for instanced offset into buffers 
     geometry["analytic_version"]->setUint(analytic_version);
 
     optix::Program intersectProg = m_ocontext->createProgram("intersect_analytic.cu.ptx", "intersect") ;
@@ -711,7 +728,7 @@ void OGeo::dumpStats(const char* msg)
 }
 
 
-optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
+optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 {
     // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
     // and use folding by 3 in createInputBuffer
@@ -730,20 +747,45 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     geometry->setIntersectionProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_intersect"));
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
-    unsigned int numSolids = mm->getNumSolids();
-    unsigned int numFaces = mm->getNumFaces();
-    unsigned int numITransforms = mm->getNumITransforms();
 
-    geometry->setPrimitiveCount(numFaces);
-    assert(geometry->getPrimitiveCount() == numFaces);
-    geometry["primitive_count"]->setUint( geometry->getPrimitiveCount() );  // needed for instanced offsets 
+    unsigned numSolids = mm->getNumSolids();
+    unsigned numFaces = mm->getNumFaces();
+    unsigned numITransforms = mm->getNumITransforms();
+    unsigned numFaces0 = mm->getNodeInfo(0).x ; 
 
-    LOG(trace) << "OGeo::makeTriangulatedGeometry " 
+    LOG(info) << "OGeo::makeTriangulatedGeometry " 
+              << " lod " << lod
               << " mmIndex " << mm->getIndex() 
               << " numFaces (PrimitiveCount) " << numFaces
+              << " numFaces0 (Outermost) " << numFaces0
               << " numSolids " << numSolids
               << " numITransforms " << numITransforms 
               ;
+             
+
+    unsigned numFacesTotal = 0 ;  
+    for(unsigned i=0 ; i < numSolids ; i++)
+    {
+         guint4 ni = mm->getNodeInfo(i) ;
+         numFacesTotal += ni.x ; 
+         guint4 id = mm->getIdentity(i) ;
+         guint4 ii = mm->getInstancedIdentity(i) ;
+         glm::vec4 ce = mm->getCE(i) ; 
+
+         std::cout 
+             << std::setw(5)  << i     
+             << " ni[nf/nv/nidx/pidx]"  << ni.description()
+             << " id[nidx,midx,bidx,sidx] " << id.description() 
+             << " ii[] " << ii.description() 
+             << " " << gpresent("ce", ce ) 
+             ;    
+    }
+    assert( numFacesTotal == numFaces ) ; 
+
+    geometry->setPrimitiveCount(lod > 0 ? numFaces0 : numFaces ); // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
+
+    geometry["primitive_count"]->setUint( numFaces );  
+    // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
 
 
     GBuffer* id = NULL ; 
@@ -786,7 +828,6 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     optix::Buffer indexBuffer = createInputBuffer<optix::int3>( mm->getIndicesBuffer(), RT_FORMAT_INT3, 3 , "indexBuffer");  // need the 3 to fold for faces
     geometry["indexBuffer"]->setBuffer(indexBuffer);
 
-
     optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT3, 0);
     geometry["tangentBuffer"]->setBuffer(emptyBuffer);
     geometry["bitangentBuffer"]->setBuffer(emptyBuffer);
@@ -794,7 +835,6 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm)
     geometry["texCoordBuffer"]->setBuffer(emptyBuffer);
  
     return geometry ; 
-
 }
 
 

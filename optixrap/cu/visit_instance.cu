@@ -5,12 +5,12 @@
 using namespace optix;
 
 rtDeclareVariable(optix::Ray, ray, rtCurrentRay, );
-rtDeclareVariable(float, instance_size, , );
+rtDeclareVariable(float, instance_bounding_radius , , );
 
 RT_PROGRAM void visit_instance()
 {
     const float distance = length( ray.origin ) ;  // Visit program ray.origin is in OBJECT frame
-    const unsigned level = distance < instance_size ? 0u : 1u ;  
+    const unsigned level = distance < instance_bounding_radius ? 0u : 1u ;  
     rtIntersectChild( level );
 }
 
@@ -35,11 +35,11 @@ RT_PROGRAM void visit_instance_WORLD()
     const float3 offset = orig - ipos  ;  
     const float distance = length( offset ) ; 
     const float distance1 = length( ray.origin ) ; 
-    const unsigned level = distance < instance_size ? 0u : 1u ;  
+    const unsigned level = distance < instance_bounding_radius ? 0u : 1u ;  
 
-    rtPrintf("visit_instance_WORLD: level %d instance_size %10.3f distance %10.3f distance1 %10.3f  orig (%10.3f %10.3f %10.3f) ipos (%10.3f %10.3f %10.3f)  \n", 
+    rtPrintf("visit_instance_WORLD: level %d instance_bounding_radius %10.3f distance %10.3f distance1 %10.3f  orig (%10.3f %10.3f %10.3f) ipos (%10.3f %10.3f %10.3f)  \n", 
           level, 
-          instance_size,
+          instance_bounding_radius,
           distance,
           distance1,
           orig.x, orig.y, orig.z,
