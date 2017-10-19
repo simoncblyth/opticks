@@ -198,6 +198,16 @@ void BOpticksResource::Summary(const char* msg)
     std::cerr << "debugging_idpath  " << ( m_debugging_idpath ? m_debugging_idpath : "-" )<< std::endl ; 
     std::cerr << "debugging_idfold  " << ( m_debugging_idfold ? m_debugging_idfold : "-" )<< std::endl ; 
 
+    std::string usertmpdir = BFile::FormPath("$TMP") ; 
+    std::cerr << "usertmpdir ($TMP) " <<  usertmpdir << std::endl ; 
+
+    std::string usertmptestdir = BFile::FormPath("$TMPTEST") ; 
+    std::cerr << "($TMPTEST)        " <<  usertmptestdir << std::endl ; 
+
+
+
+
+
 }
 
 

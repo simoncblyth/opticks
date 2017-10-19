@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
-import os, numpy as np
 TORCH = 4096 
 
+import os, numpy as np
+from opticks.ana.base import opticks_main
+
 if __name__ == '__main__':
-    np.set_printoptions(suppress=True, precision=3 )
+    args = opticks_main()
+ 
     a = np.load(os.path.expandvars("$TMP/trivialCheck.npy"))
     i = a.view(np.int32)
 

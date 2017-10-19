@@ -1,30 +1,34 @@
 #!/usr/bin/env python
 """
 
+
+
+
 ::
 
    ipython -i  OInterpolationTest_identity.py
 
-
 """
+
 import os, numpy as np
-
+from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
-
-np.set_printoptions(precision=3, suppress=True)
-
-
 
 if __name__ == '__main__':
 
-    blib = PropLib("GBndLib")
+    args = opticks_main()
+
+
+    base = "$TMP/InterpolationTest"
+    blib = PropLib.load_GBndLib(base)
     names = blib.names
-    t = np.load(os.path.expandvars("$IDPATH/GBndLib/GBndLib.npy"))
 
-    nl = 39
-    o = np.load(os.path.expandvars("$TMP/InterpolationTest/OInterpolationTest_identity.npy")).reshape(-1,4,2,nl,4) 
-    c = np.load(os.path.expandvars("$TMP/InterpolationTest/CInterpolationTest_identity.npy")).reshape(-1,4,2,nl,4) 
+    t = blib.data # boundary texture data
 
+    ext, nl = "identity", 39
+    o = np.load(os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+    c = np.load(os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+    
     assert np.all(t == o)
 
     assert len(t) == len(names)

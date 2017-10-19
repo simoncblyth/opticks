@@ -1,12 +1,15 @@
 #!/usr/bin/env python
 
 import os, numpy as np
+from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
 
 np.set_printoptions(precision=3, suppress=True)
 
 
 if __name__ == '__main__':
+
+    args = opticks_main()
 
     base = "$TMP/InterpolationTest"
     blib = PropLib.load_GBndLib(base)

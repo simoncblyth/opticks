@@ -728,6 +728,39 @@ void OGeo::dumpStats(const char* msg)
 }
 
 
+void OGeo::dumpSolids(const char* msg, GMergedMesh* mm)
+{
+    assert(mm);
+    unsigned numSolids = mm->getNumSolids();
+    unsigned numFaces = mm->getNumFaces();
+
+    LOG(info) << msg 
+              << " numSolids " << numSolids
+              << " numFaces " << numFaces
+              << " mmIndex " << mm->getIndex()
+             ; 
+
+    unsigned numFacesTotal = 0 ;  
+    for(unsigned i=0 ; i < numSolids ; i++)
+    {
+         guint4 ni = mm->getNodeInfo(i) ;
+         numFacesTotal += ni.x ; 
+         guint4 id = mm->getIdentity(i) ;
+         guint4 ii = mm->getInstancedIdentity(i) ;
+         glm::vec4 ce = mm->getCE(i) ; 
+
+         std::cout 
+             << std::setw(5)  << i     
+             << " ni[nf/nv/nidx/pidx]"  << ni.description()
+             << " id[nidx,midx,bidx,sidx] " << id.description() 
+             << " ii[] " << ii.description() 
+             << " " << gpresent("ce", ce ) 
+             ;    
+    }
+    assert( numFacesTotal == numFaces ) ; 
+}
+
+
 optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
 {
     // index buffer items are the indices of every triangle vertex, so divide by 3 to get faces 
@@ -762,31 +795,10 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
               << " numITransforms " << numITransforms 
               ;
              
-
-    unsigned numFacesTotal = 0 ;  
-    for(unsigned i=0 ; i < numSolids ; i++)
-    {
-         guint4 ni = mm->getNodeInfo(i) ;
-         numFacesTotal += ni.x ; 
-         guint4 id = mm->getIdentity(i) ;
-         guint4 ii = mm->getInstancedIdentity(i) ;
-         glm::vec4 ce = mm->getCE(i) ; 
-
-         std::cout 
-             << std::setw(5)  << i     
-             << " ni[nf/nv/nidx/pidx]"  << ni.description()
-             << " id[nidx,midx,bidx,sidx] " << id.description() 
-             << " ii[] " << ii.description() 
-             << " " << gpresent("ce", ce ) 
-             ;    
-    }
-    assert( numFacesTotal == numFaces ) ; 
-
     geometry->setPrimitiveCount(lod > 0 ? numFaces0 : numFaces ); // lazy LOD, ie dont change buffer, just ignore most of it for lod > 0 
 
     geometry["primitive_count"]->setUint( numFaces );  
     // needed for instanced offsets into buffers, so must describe the buffer, NOT the intent 
-
 
     GBuffer* id = NULL ; 
     if(numITransforms > 0)  //  formerly 0 

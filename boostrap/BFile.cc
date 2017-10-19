@@ -60,8 +60,7 @@ void dump(boost::cmatch& m)
 }
 
 
-
-std::string usertmpdir(const char* base="/tmp", const char* sub="opticks")
+std::string usertmpdir(const char* base, const char* sub, const char* rel )
 {
     fs::path p(base) ; 
 
@@ -73,10 +72,15 @@ std::string usertmpdir(const char* base="/tmp", const char* sub="opticks")
 
     if(user) p /= user ;
     if(sub) p /= sub ; 
+    if(rel) p /= rel ; 
 
     std::string x = p.string() ; 
     return x ; 
 }
+
+
+
+
 
 
 std::string expandvar(const char* s)
@@ -103,12 +107,17 @@ std::string expandvar(const char* s)
 
            if(evalue.compare("TMP")==0) //  TMP envvar not defined
            {
-               evalue = usertmpdir();
+               evalue = usertmpdir("/tmp","opticks", NULL);
                LOG(trace) << "expandvar replacing TMP with " << evalue ; 
+           }
+           else if(evalue.compare("TMPTEST")==0) 
+           {
+               evalue = usertmpdir("/tmp","opticks","test");
+               LOG(trace) << "expandvar replacing TMPTEST with " << evalue ; 
            }
            else if(evalue.compare("OPTICKS_EVENT_BASE")==0) 
            {
-               evalue = usertmpdir();
+               evalue = usertmpdir("/tmp","opticks",NULL);
                LOG(trace) << "expandvar replacing OPTICKS_EVENT_BASE  with " << evalue ; 
            }
 

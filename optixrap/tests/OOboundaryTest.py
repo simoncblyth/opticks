@@ -5,10 +5,11 @@
 
    ipython -i $(optixrap-sdir)/tests/OOboundaryTest.py 
 
-
 """
-import os, logging, numpy as np
-log = logging.getLogger(__name__)
+
+import os, numpy as np
+from opticks.ana.base import opticks_main
+
 
 def load(tag, name, reshape=None):
     dir_ = os.path.expandvars("$TMP/%s" % name)
@@ -22,9 +23,7 @@ def load(tag, name, reshape=None):
     return a 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)
-    np.set_printoptions(suppress=True, precision=3)
-
+    args = opticks_main()
     #name = "OOboundaryTest" 
     name = "OOboundaryLookupTest" 
 

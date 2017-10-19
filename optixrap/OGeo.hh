@@ -80,6 +80,7 @@ public:
 public:
     optix::Group   makeRepeatedGroup(GMergedMesh* mm, bool lod );
     void dumpTransforms( const char* msg, GMergedMesh* mm );
+    void dumpSolids(const char* msg, GMergedMesh* mm);
 
 private:
     void setTransformMatrix(optix::Transform& xform, const float* tdata ) ;
