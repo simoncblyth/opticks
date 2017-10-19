@@ -536,12 +536,14 @@ op-binary-setup()
 
     if [ "$bin" != "" ]; then
 
-       local ubin
-       if [ "${bin: -3}" == ".py" ]; then
-           ubin=$(which $bin)
-       else
-           ubin=$(opticks-bindir)/$bin
-       fi
+       #local ubin
+       #if [ "${bin: -3}" == ".py" ]; then
+       #    ubin=$(which $bin)
+       #else
+       #    ubin=$(opticks-bindir)/$bin
+       #fi
+
+       local ubin=$(which $bin)
 
        export OPTICKS_BINARY=$ubin
        # some commands should not be removed from the commandline
@@ -660,7 +662,7 @@ op-malloc()
 }
 
 
-opticks-
+#opticks-
 op-cmdline-parse
 
 runline=$(op-runline)

@@ -28,6 +28,32 @@ PLOG test fails with gcc5
 * :doc:`PLOG-test-fails-with-gcc5`
 
 
+op.sh script missing opticks- on Ubuntu 
+------------------------------------------
+
+Axel::
+
+    Additionally, I noticed problems with the op.sh script. 
+    The command op --help works as described. But every other options like (-h or -G) gives back the following error:
+
+    /home/gpu/opticks/bin/op.sh: line 663: opticks-: command not found
+    /home/gpu/opticks/bin/op.sh: line 543: opticks-bindir: command not found
+    ubin /OKTest cfm cmdline -h
+    === op-export : OPTICKS_BINARY /OKTest
+    ls: cannot access '/OKTest': No such file or directory
+    proceeding.. : /OKTest --size 1920,1080,1 -h
+    /home/gpu/opticks/bin/op.sh: line 713: /OKTest: No such file or directory
+    /home/gpu/opticks/bin/op.sh RC 127
+    Is this connected to the failing tests? I checked all the variables and have no idea, why the command opticks- is not found in this case.
+
+
+Curious the shebang line of the script  uses “#!/bin/bash -l” which should cause
+it to source the .bash_profile that contains the setup (?).
+In anycase as opticks- was used so little by op.sh, I have removed it, 
+thus depending entirely on the PATH being setup correctly 
+to find Opticks executables and scripts.  Which is a cleaner way.
+
+
 FIXED : OInterpolationTest : analysis scripts need to use opticks_main otherwise depend on TMP envvar   
 --------------------------------------------------------------------------------------------------------
 
@@ -70,10 +96,6 @@ wherein it gets defined internally within the python environ::
     2017-10-19 14:27:05.139 INFO  [304911] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
     2017-10-19 14:27:05.139 WARN  [304911] [SSys::run@52] SSys::run FAILED with  cmd python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py possibly you need to set export PATH=$OPTICKS_HOME/ana:$OPTICKS_HOME/bin:/usr/local/opticks/lib:$PATH 
     simon:boostrap blyth$ 
-
-
-
-
 
 
 

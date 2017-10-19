@@ -212,7 +212,7 @@ std::time_t* BFile::LastWriteTime(const char* path, const char* sub, const char*
 
 std::time_t* BFile::SinceLastWriteTime(const char* path, const char* sub, const char* name)
 {
-    std::time_t age ;  
+    std::time_t age(0) ;  
     std::time_t* lwt = BFile::LastWriteTime(path, sub, name);
     if(lwt)
     {
