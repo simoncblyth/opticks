@@ -238,12 +238,16 @@ watching for a stomper with lldb
        182        logpath(_logpath_parse(argc_, argv_)),
        183        logmax(3)
        184  {
+
     (lldb) br del 1 
     1 breakpoints deleted; 0 breakpoint locations disabled.
+
     (lldb) watchpoint set variable this->argc
     Watchpoint created: Watchpoint 1: addr = 0x7fff5fbfed88 size = 4 state = enabled type = w
         watchpoint spec = 'this->argc'
         new value: 0
+
+
     (lldb) c
     Process 65014 resuming
     Process 65014 stopped
@@ -287,6 +291,30 @@ watching for a stomper with lldb
     (lldb) exit
     Quitting LLDB will kill one or more processes. Do you really want to proceed: [Y/n] 
     simon:sysrap blyth$ 
+
+
+
+watching for a stomper with gdb
+------------------------------------
+
+Expect very similar to above, unfortunately the Linux install I have access to 
+has gdb 7.2::
+
+   gdb OpticksTest 
+
+   (gdb) b PLOG::PLOG
+   (gdb) r
+   (gdb) del 1 
+   (gdb) watch -location this->argc        ## this requires gdb 7.3+          
+   (gdb) c
+
+
+
+
+
+
+
+
 
 
 
