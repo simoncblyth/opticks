@@ -49,6 +49,7 @@ class GGEO_API GGeoTest {
        GMergedMesh* loadPmt();
     private:
        Opticks*         m_ok ; 
+       bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 
        GGeoTestConfig*  m_config ; 

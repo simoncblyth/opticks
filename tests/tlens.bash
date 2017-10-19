@@ -60,18 +60,27 @@ tlens-src(){ echo torch ; }
 tlens-args() {        echo  --det $(tlens-det) --src $(tlens-src) ; }
 tlens-py() {          tlens.py  $(tlens-args) $* ; } 
 
-tlens--()
+
+tlens-medium(){ echo Vacuum ; }
+tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
+tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
+
+tlens-testconfig()
 {
-    type $FUNCNAME
-    local pol=${1:-s}
-    case $pol in  
-        s) tag=1 ;;
-        p) tag=2 ;;
-    esac
-    echo  pol $pol tag $tag
+    local test_config=(
+                 name=$FUNCNAME
+                 mode=BoxInBox
+                 analytic=1
 
-    local material=GlassSchottF2
+                 node=box   parameters=-1,1,0,700           boundary=$(tlens-container)
+                 node=zlens parameters=641.2,641.2,-600,600 boundary=$(tlens-testobject)
+               )
+     echo "$(join _ ${test_config[@]})" 
+}
 
+tlens-torchconfig()
+{
+    local pol=$1
     local torch_config=(
                  type=disc
                  photons=500000
@@ -84,16 +93,38 @@ tlens--()
                  radius=100
                  distance=500
                  zenithazimuth=0,1,0,1
-                 material=Vacuum
+                 material=$(tlens-medium)
                )
 
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
+     echo "$(join _ ${torch_config[@]})" 
+}
 
-                 shape=box   parameters=-1,1,0,700           boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=lens  parameters=641.2,641.2,-600,600 boundary=Vacuum///$material
-               )
+
+tlens--()
+{
+    type $FUNCNAME
+    local pol=${1:-s}
+    case $pol in  
+        s) tag=1 ;;
+        p) tag=2 ;;
+    esac
+    echo  pol $pol tag $tag
+
+
+    local testconfig
+    if [ -n "$TESTCONFIG" ]; then
+        testconfig=${TESTCONFIG}
+    else
+        testconfig=$(tlens-testconfig)
+    fi
+
+    local torchconfig
+    if [ -n "$TORCHCONFIG" ]; then
+        torchconfig=${TORCHCONFIG}
+    else
+        torchconfig=$(tlens-torchconfig $pol)
+    fi
+
 
     op.sh  \
             $* \
@@ -102,8 +133,8 @@ tlens--()
             --geocenter \
             --eye 0,1,0 \
             --up  1,0,0 \
-            --test --testconfig "$(join _ ${test_config[@]})" \
-            --torch --torchconfig "$(join _ ${torch_config[@]})" \
+            --test --testconfig "$testconfig" \
+            --torch --torchconfig "$torchconfig" \
             --torchdbg \
             --save --tag $tag --cat $(tlens-det)
 }

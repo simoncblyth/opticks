@@ -42,26 +42,37 @@ tbox-tag(){ echo 1 ; }
 tbox-det(){ echo BoxInBox ; }
 tbox-src(){ echo torch ; }
 
-tbox--(){
-    local cmdline=$*
-    local tag=$(tbox-tag)
-    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
-
-    local photons=500000
-    if [ "${cmdline/--dbg}" != "${cmdline}" ]; then
-        photons=1
-    fi
 
 
-    #local nm=380
-    local nm=480
 
+tbox-m2(){ echo Vacuum ; }
+
+#tbox-m2(){ echo GlassSchottF2 ; }
+#tbox-m2(){ echo MainH2OHale ; }
+#tbox-m2(){ echo GdDopedLS ; }
+#tbox-m2(){ echo MineralOil ; }
+
+
+tbox-testconfig()
+{
+    local test_config=(
+                 name=$FUNCNAME
+                 mode=BoxInBox
+                 analytic=1
+
+                 node=box parameters=0,0,0,300 boundary=Rock//perfectAbsorbSurface/$(tbox-m2) 
+                 node=box parameters=0,0,0,100 boundary=$(tbox-m2)///Pyrex 
+
+                 ) 
+    echo "$(join _ ${test_config[@]})" 
+}
+
+tbox-torchconfig()
+{
     local torch_config=(
                  type=disclin
-                 photons=$photons
-                 wavelength=$nm 
+                 photons=500000
+                 wavelength=480
                  frame=1
                  source=0,0,299
                  target=0,0,0
@@ -69,33 +80,39 @@ tbox--(){
                  zenithazimuth=0,1,0,1
                  material=Vacuum
                )
+    echo "$(join _ ${torch_config[@]})" 
+}
 
 
-    #local material=MineralOil
-    local material=GdDopedLS
+tbox--(){
+    local cmdline=$*
+    local tag=$(tbox-tag)
 
-    local test_config=(
-                 mode=BoxInBox
-                 analytic=1
+    local testconfig
+    if [ -n "$TESTCONFIG" ]; then
+        testconfig=${TESTCONFIG}
+    else
+        testconfig=$(tbox-testconfig)
+    fi
 
-                 shape=box
-                 boundary=Rock//perfectAbsorbSurface/$material
-                 parameters=0,0,0,300
-
-                 shape=box
-                 boundary=$material///Pyrex
-                 parameters=0,0,0,100
-                   ) 
+    local torchconfig
+    if [ -n "$TORCHCONFIG" ]; then
+        torchconfig=${TORCHCONFIG}
+    else
+        torchconfig=$(tbox-torchconfig $pol)
+    fi
 
     op.sh \
-       --test --testconfig "$(join _ ${test_config[@]})" \
-       --torch --torchconfig "$(join _ ${torch_config[@]})" \
-       --animtimemax 10 \
-       --timemax 10 \
-       --cat $(tbox-det) --tag $tag --save  \
-       --eye 0.5,0.5,0.0 \
-       $* 
+        --test --testconfig "$testconfig" \
+        --torch --torchconfig "$torchconfig" \
+        --animtimemax 10 \
+        --timemax 10 \
+        --cat $(tbox-det) --tag $tag --save  \
+        --eye 0.5,0.5,0.0 \
+        --rendermode +global \
+        $* 
 }
+
 tbox-args(){  echo  --tag $(tbox-tag) --det $(tbox-det) --src $(tbox-src) ; }
 tbox-py(){    tbox.py  $(tbox-args) $* ; } 
 tbox-ipy(){   ipython -i $(which tbox.py) --  $(tbox-args) $* ; } 

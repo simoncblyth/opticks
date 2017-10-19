@@ -45,6 +45,25 @@ integration tests, which are a few generations behind.
 * :doc:`revive-old-style-tboolean` 
 
 
+Status
+-------
+
+tlens
+    zlens not showing up
+
+treflect
+    working to some extent
+
+tbox
+    working to some extent
+
+others
+    not yet revisited
+
+
+
+
+
 tlens-t
 ------------
 

@@ -38,6 +38,7 @@
 GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo) 
     : 
     m_ok(ok),
+    m_dbganalytic(m_ok->hasOpt("dbganalytic")),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
     m_config(config),
@@ -125,7 +126,12 @@ GMergedMesh* GGeoTest::create()
         }
         else
         {
-            unsigned int nelem = m_config->getNumElements();
+            unsigned nelem = m_config->getNumElements();
+            if(nelem == 0)
+            {
+                LOG(fatal) << " nelem zero  " ; 
+                m_config->dump("GGeoTest::create ERROR numElements==0 " ); 
+            }
             assert(nelem > 0);
             if(     strcmp(mode, "BoxInBox") == 0) createBoxInBox(solids); 
             else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
@@ -304,7 +310,6 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
     //
     // collected pts are converted into primitives in GParts::makePrimBuffer
     //
-    int primIdx(-1) ; 
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
@@ -313,22 +318,17 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
         assert(pts);
         assert(pts->isPartList());
 
-
         OpticksCSG_t csgflag = solid->getCSGFlag(); 
         int flags = csgflag ;
 
-        //if(flags == CSG_PARTLIST) primIdx++ ;   // constituents dont merit new primIdx
-        // huh ... aint PARTLIST now primflag not CSGFlag ?
-
         pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, primIdx ); 
+        pts->setNodeIndex(0u, 0 );  // seems nodeIndex not used for CSG_FLAGPARTLIST 
         pts->setTypeCode(0u, flags);
 
         pts->setBndLib(m_bndlib);
 
         LOG(info) << "GGeoTest::createBoxInBox"
                   << " i " << std::setw(3) << i 
-                  << " primIdx " << std::setw(3) << primIdx
                   << " csgflag " << std::setw(5) << csgflag 
                   << std::setw(20) << CSGName(csgflag)
                   << " pts " << pts 
@@ -354,14 +354,13 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
 
     if(pts0->isPartList())
     {
-        pts->setPartList();  // hmm too late ?
-        assert( pts->isPartList()) ; 
+        pts->setPartList();  // not too late, needed only for primBuffer creation which happens last 
     } 
 
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
 
-    if(m_ok->hasOpt("dbganalytic"))
+    if(m_dbganalytic)
     {
         GParts* pts = tri->getParts();
         pts->setName(m_config->getName());

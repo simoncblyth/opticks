@@ -175,7 +175,9 @@ void npart::setParam1(float x, float y, float z, float w)
 
 void npart::setBBox(const nbbox& bb)
 {
-    assert(VERSION == 0u);  
+    assert(VERSION == 0u || VERSION == 1u);
+    // used by CSG_ZLENS GMaker::makeZSphereIntersect
+  
 
     assert( BBMIN_J == 2 && BBMIN_K == 0 );
     q2.f.x = bb.min.x ; 
