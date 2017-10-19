@@ -1,4 +1,5 @@
 #include <cstring>
+#include <cassert>
 #include <iostream>
 #include <algorithm>
 #include <string>
@@ -6,6 +7,9 @@
 #include "PLOG.hh"
 
 PLOG* PLOG::instance = NULL ; 
+
+
+//#define PLOG_DBG 1
 
 
 void PLOG::_dump(const char* msg, int argc, char** argv)
@@ -19,12 +23,14 @@ void PLOG::_dump(const char* msg, int argc, char** argv)
 
 int PLOG::_parse(int argc, char** argv, const char* fallback)
 {
-    // Simple commandline parse to find global logging level
+    // Parse arguments case insensitively looking for --VERBOSE --info --error etc.. returning global logging level
+
+    assert( argc < 30 && " argc sanity check fail "); 
 
     std::string ll = fallback ; 
     for(int i=1 ; i < argc ; ++i )
     {
-        std::string arg(argv[i]);
+        std::string arg(argv[i] ? argv[i] : "");
         std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
         if(arg.compare("--trace")==0)   ll = "VERBOSE" ; 
         if(arg.compare("--verbose")==0) ll = "VERBOSE" ; 
@@ -51,6 +57,8 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 
 const char* PLOG::_logpath_parse(int argc, char** argv)
 {
+    assert( argc < 30 && " argc sanity check fail "); 
+    //  Construct logfile path based on executable name argv[0] with .log appended 
     std::string lp(argc > 0 ? argv[0] : "default") ; 
     lp += ".log" ; 
     return strdup(lp.c_str());
@@ -71,6 +79,8 @@ int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const 
     // Both prefix and the arguments are lowercased before comparison.
     //
 
+    assert( argc < 30 && " argc sanity check fail "); 
+
     std::string pfx(prefix);
     std::transform(pfx.begin(), pfx.end(), pfx.begin(), ::tolower);
     std::string apfx("--");
@@ -79,11 +89,14 @@ int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const 
     std::string ll(fallback) ;
     for(int i=1 ; i < argc ; ++i )
     {
-        std::string arg(argv[i]);
+        char* ai = argv[i] ;
+        char* aj = i + 1 < argc ? argv[i+1] : NULL ; 
+
+        std::string arg(ai ? ai : "");
         std::transform(arg.begin(), arg.end(), arg.begin(), ::tolower);
         //std::cerr << arg << std::endl ; 
 
-        if(arg.compare(apfx) == 0 && i + 1 < argc ) ll.assign(argv[i+1]) ;
+        if(arg.compare(apfx) == 0 && aj != NULL ) ll.assign(aj) ;
     }
 
     std::transform(ll.begin(), ll.end(), ll.begin(), ::toupper);
@@ -109,7 +122,7 @@ int PLOG::parse(const char* fallback)
 {
     int ll = _parse(argc, argv, fallback);
 
-#ifdef DBG
+#ifdef PLOG_DBG
     std::cerr << "PLOG::parse"
               << " fallback " << fallback
               << " level " << ll 
@@ -130,7 +143,7 @@ int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
     int ll =  _prefixlevel_parse(argc, argv, fallback, prefix);
 
-#ifdef DBG
+#ifdef PLOG_DBG
     std::cerr << "PLOG::prefixlevel_parse"
               << " fallback " << fallback
               << " prefix " << prefix 
