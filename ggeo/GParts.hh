@@ -196,6 +196,8 @@ class GGEO_API GParts {
         bool isLoaded();
 
         void setInvisible();
+        void setPartList();
+        void setNodeTree();
 
         unsigned int getIndex(unsigned int part);
         unsigned int getTypeCode(unsigned int part);

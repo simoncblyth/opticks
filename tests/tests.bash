@@ -110,7 +110,7 @@ tests-t(){
 
        if [ "$rc" != "0" ]; then 
            echo $msg WARNING : FAILURE OF $bash : RC $rc
-           break 
+           #break 
        fi
    done   
 }

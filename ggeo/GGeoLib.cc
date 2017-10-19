@@ -121,16 +121,12 @@ void GGeoLib::loadConstituents(const char* idpath )
 {
    LOG(info) 
              << "GGeoLib::loadConstituents"
-             << " idpath " << idpath 
-             ;
-             
-   LOG(info) 
-             << "GGeoLib::loadConstituents"
              << " mm.reldir " << getRelDir(GMERGEDMESH)
              << " gp.reldir " << getRelDir(GPARTS)
              << " MAX_MERGED_MESH  " << MAX_MERGED_MESH 
              ; 
 
+   LOG(info) << idpath ;
 
    std::stringstream ss ; 
 

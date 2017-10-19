@@ -639,7 +639,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     }
     
 
-    if(m_verbosity > 3) pts->fulldump("OGeo::makeAnalyticGeometry") ;
+    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("OGeo::makeAnalyticGeometry --dbganalytic") ;
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
@@ -655,7 +655,24 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     unsigned numPlan = planBuf->getNumItems();
 
     unsigned int numSolids = mm->getNumSolids();
-    assert( numPrim == numSolids && "Sanity check failed " );
+
+
+    if( pts->isNodeTree() )
+    {
+        bool match = numPrim == numSolids ;
+        if(!match)
+        {
+            LOG(fatal) << " MISMATCH (numPrim != numSolids) "
+                       << " numSolids " << numSolids 
+                       << " numPrim " << numPrim 
+                       << " numPart " << numPart 
+                       << " numTran " << numTran 
+                       << " numPlan " << numPlan 
+                       ; 
+        }
+        assert( match && "Sanity check failed " );
+    }
+
 
     //assert( numPrim < 10 );  // expecting small number
     assert( numTran <= numPart ) ; 

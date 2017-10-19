@@ -407,7 +407,8 @@ tboolean-container(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
 tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
-tboolean-bib-box()
+tboolean-bib-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-()
 {
     local test_config=(
                  mode=BoxInBox
@@ -421,8 +422,8 @@ tboolean-bib-box()
      echo "$(join _ ${test_config[@]})" 
 }
 
-
-tboolean-bib-box-small-offset-sphere()
+tboolean-bib-box-small-offset-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-small-offset-sphere-()
 {
     local test_config=(
                  mode=BoxInBox
@@ -438,7 +439,9 @@ tboolean-bib-box-small-offset-sphere()
      echo "$(join _ ${test_config[@]})" 
 }
 
-tboolean-bib-box-sphere()
+
+tboolean-bib-box-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-sphere-()
 {
     local operation=${1:-difference}
     local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")

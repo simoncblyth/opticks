@@ -90,10 +90,13 @@ OInterpolationTest : missing file
 ------------------------------------
 
 * missing '/tmp/simon/opticks/InterpolationTest/CInterpolationTest_interpol.npy' 
+* suspect the missing npy comes from cfg4 which is not yet installed on SG
 
 
 ORayleighTest : rayleigh_buffer dimension ?
 -------------------------------------------
+
+* OptiX version issue presumably, SG is with 411 ? D with 380
 
 ::
 

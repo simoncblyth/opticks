@@ -444,6 +444,11 @@ bool Opticks::isRayLOD() const
     return m_cfg->hasOpt("raylod") ;
 }
 
+bool Opticks::isMaterialDbg() const
+{
+    return m_cfg->hasOpt("materialdbg") ;
+}
+
 
 
 

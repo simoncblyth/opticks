@@ -431,7 +431,8 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    NPY<float>* triangles = tris->getBuffer();
+    //NPY<float>* triangles = tris->getBuffer();
+    NPY<float>* triangles = tris->getTris();
 
     glm::mat4 txf = tris->getTransform(); 
 

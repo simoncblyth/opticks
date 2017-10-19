@@ -531,7 +531,7 @@ GItemList* GBndLib::createNames()
 
 void GBndLib::dumpMaterialLineMap(std::map<std::string, unsigned int>& msu, const char* msg)
 { 
-    LOG(debug) << msg ; 
+    LOG(info) << msg ; 
     typedef std::map<std::string, unsigned int> MSU ; 
     for(MSU::const_iterator it = msu.begin() ; it != msu.end() ; it++)
         LOG(info) << std::setw(5) << it->second 
@@ -553,7 +553,11 @@ void GBndLib::fillMaterialLineMap( std::map<std::string, unsigned int>& msu)
         if(msu.count(imat) == 0) msu[imat] = getLine(i, IMAT) ; // incorrectly 0 until 2016/3/13
         if(msu.count(omat) == 0) msu[omat] = getLine(i, OMAT) ; // incorrectly 1 until 2016/3/13
     }
-    dumpMaterialLineMap(msu, "GBndLib::fillMaterialLineMap");
+
+    if(m_ok->isMaterialDbg())
+    {
+        dumpMaterialLineMap(msu, "GBndLib::fillMaterialLineMap (--materialdbg) ");
+    }
 }
 
 const std::map<std::string, unsigned int>& GBndLib::getMaterialLineMap()

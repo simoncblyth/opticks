@@ -215,9 +215,9 @@ unsigned GGeoTestConfig::getNumElements()
                << " ntra (transforms) " << ntra
                ; 
 
-    assert( equal && "need equal number of boundaries, parameters, transforms and nodes");
+    //assert( equal && "need equal number of boundaries, parameters, transforms and nodes");
     //assert(nbnd > 0);
-    return nbnd ; 
+    return equal ? nbnd : 0u ; 
 }
 
 

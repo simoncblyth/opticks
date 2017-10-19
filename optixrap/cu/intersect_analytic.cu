@@ -71,7 +71,7 @@ rtDeclareVariable(float3, geometric_normal, attribute geometric_normal, );
 rtDeclareVariable(float3, shading_normal, attribute shading_normal, ); 
 
 
-//#define WITH_PARTLIST 1 
+#define WITH_PARTLIST 1 
 //#define WITH_CUBIC 1 
 #define WITH_TORUS 1 
 

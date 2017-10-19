@@ -349,7 +349,7 @@ void GParts::setPrimFlag(OpticksCSG_t primflag)
     assert(primflag == CSG_FLAGNODETREE || primflag == CSG_FLAGPARTLIST || primflag == CSG_FLAGINVISIBLE );
     m_primflag = primflag ; 
 }
-bool GParts::isPartList()  // LEGACY ANALYTIC, NOT LONG TO LIVE ?
+bool GParts::isPartList()  // LEGACY ANALYTIC, NOT LONG TO LIVE ? ACTUALLY ITS FASTER SO BETTER TO KEEP ALIVE
 {
     return m_primflag == CSG_FLAGPARTLIST ;
 }
@@ -365,6 +365,18 @@ void GParts::setInvisible()
 {
     setPrimFlag(CSG_FLAGINVISIBLE);
 }
+void GParts::setPartList()
+{
+    setPrimFlag(CSG_FLAGPARTLIST);
+}
+void GParts::setNodeTree()
+{
+    setPrimFlag(CSG_FLAGNODETREE);
+}
+
+
+
+
 
 
 

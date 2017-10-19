@@ -809,14 +809,9 @@ void GGeo::modifyGeometry(const char* config)
 
     GGeoTestConfig* gtc = new GGeoTestConfig(config);
 
-    LOG(trace) << "GGeo::modifyGeometry" 
-              << " config [" << ( config ? config : "" ) << "]" ; 
-
     assert(m_geotest == NULL);
-
     m_geotest = new GGeoTest(m_ok, gtc, this);
     m_geotest->modifyGeometry();
-
 }
 
 

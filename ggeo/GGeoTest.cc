@@ -288,10 +288,13 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
         assert(oktype);
 
         GSolid* solid = m_maker->make(i, type, param, spec );   
+        GParts* pts = solid->getParts();
+        assert(pts);
+        pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
+
         solids.push_back(solid);
     }
 
-    int primIdx(-1) ; 
 
     // Boolean geometry (precursor to proper CSG Trees) 
     // is implemented by allowing 
@@ -301,6 +304,7 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
     //
     // collected pts are converted into primitives in GParts::makePrimBuffer
     //
+    int primIdx(-1) ; 
 
     for(unsigned int i=0 ; i < solids.size() ; i++)
     {
@@ -312,7 +316,9 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
 
         OpticksCSG_t csgflag = solid->getCSGFlag(); 
         int flags = csgflag ;
-        if(flags == CSG_PARTLIST) primIdx++ ;   // constituents dont merit new primIdx
+
+        //if(flags == CSG_PARTLIST) primIdx++ ;   // constituents dont merit new primIdx
+        // huh ... aint PARTLIST now primflag not CSGFlag ?
 
         pts->setIndex(0u, i);
         pts->setNodeIndex(0u, primIdx ); 
@@ -341,6 +347,17 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
 
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
+
+
+    GParts* pts0 = solids[0]->getParts();
+    GParts* pts = tri->getParts();
+
+    if(pts0->isPartList())
+    {
+        pts->setPartList();  // hmm too late ?
+        assert( pts->isPartList()) ; 
+    } 
+
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
 

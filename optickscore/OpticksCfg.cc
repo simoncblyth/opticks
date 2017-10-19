@@ -357,6 +357,10 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
+       ("materialdbg",  "dump details of material lookup, ok.isMaterialDbg() ") ;
+
+
+   m_desc.add_options()
        ("steppingdbg",  "dump details of cfg4 stepping") ;
 
    m_desc.add_options()
