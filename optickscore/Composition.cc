@@ -136,14 +136,24 @@ Composition::Composition()
   m_world2model(),
   m_extent(1.0f),
   m_center_extent(),
+  m_domain_center_extent(),
+  m_domain_isnorm(),
+  m_domain_time(),
+  m_domain_color(),
+  m_light_position(),
+  m_light_direction(),
   m_pickphoton(0,0,0,0), 
   m_pickface(0,0,0,0), 
   m_recselect(), 
   m_colorparam(int(POL1),0,0,0), 
   m_selection(-INT_MAX,-INT_MAX,-INT_MAX,-INT_MAX),  // not 0, as that is liable to being meaningful
+  m_flags(),
   m_pick( 1,0,0,0),      // initialize modulo scaledown to 1, 0 causes all invisible 
+  m_pick_f(),
   m_param(1.f,0.030f,0.f,0.f),        // x: scaling of genstep DeltaPosition, y: vector length dfrac
   m_scanparam(0.f,1.0f,0.5f,0.01f),   // ct scan  x:clip-z-cut y:slice-width
+  m_nrmparam(DEF_NORMAL,NRMCOL_GEOMETRY,0,0),
+  m_animated(false),
   m_animator(NULL),
   m_rotator(NULL),
   m_camera(NULL),
