@@ -1086,20 +1086,28 @@ void GParts::dumpPrimBuffer(const char* msg)
 }
 
 
-void GParts::dumpPrimInfo(const char* msg)
+void GParts::dumpPrimInfo(const char* msg, unsigned lim )
 {
-    unsigned int numPrim = getNumPrim() ;
-    LOG(info) << msg << " (part_offset, parts_for_prim, tran_offset, plan_offset) numPrim:" << numPrim  ;
+    unsigned numPrim = getNumPrim() ;
+    unsigned ulim = std::min( numPrim, lim ) ; 
 
-    for(unsigned int i=0 ; i < numPrim ; i++)
+    LOG(info) << msg 
+              << " (part_offset, parts_for_prim, tran_offset, plan_offset) "
+              << " numPrim: " << numPrim 
+              << " ulim: " << ulim 
+              ;
+
+    for(unsigned i=0 ; i < numPrim ; i++)
     {
+        if( ulim != 0 &&  i > ulim && i < numPrim - ulim ) continue ;    
+
         nivec4 pri = getPrimInfo(i);
         LOG(info) << pri.desc() ;
     }
 }
 
 
-void GParts::Summary(const char* msg)
+void GParts::Summary(const char* msg, unsigned lim)
 {
     LOG(info) << msg 
               << " num_parts " << getNumParts() 
@@ -1116,8 +1124,13 @@ void GParts::Summary(const char* msg)
         assert( nparts == nparts2 );
     }
 
-    for(unsigned int i=0 ; i < getNumParts() ; i++)
+    unsigned numParts = getNumParts() ;
+    unsigned ulim = std::min( numParts, lim ) ; 
+
+    for(unsigned i=0 ; i < numParts ; i++)
     {
+        if( ulim != 0 &&  i > ulim && i < numParts - ulim ) continue ; 
+   
         std::string bn = getBoundaryName(i);
         printf(" part %2u : node %2u type %2u boundary [%3u] %s  \n", i, getNodeIndex(i), getTypeCode(i), getBoundary(i), bn.c_str() ); 
     }
@@ -1273,11 +1286,13 @@ std::string GParts::getBoundaryName(unsigned int part)
 
 
 
-void GParts::fulldump(const char* msg)
+void GParts::fulldump(const char* msg, unsigned lim)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg 
+              << " lim " << lim 
+              ; 
 
-    dump(msg);
+    dump(msg, lim);
     Summary(msg);
 
     NPY<float>* partBuf = getPartBuffer();
@@ -1287,21 +1302,29 @@ void GParts::fulldump(const char* msg)
     primBuf->dump("primBuf:partOffset/numParts/primIndex/0");
 }
 
-void GParts::dump(const char* msg)
+void GParts::dump(const char* msg, unsigned lim)
 {
-    LOG(info) << "GParts::dump " << msg ; 
+    LOG(info) << msg
+              << " lim " << lim 
+              ; 
 
-    dumpPrimInfo(msg);
+    dumpPrimInfo(msg, lim);
 
     NPY<float>* buf = m_part_buffer ; 
     assert(buf);
     assert(buf->getDimensions() == 3);
 
-    unsigned int ni = buf->getShape(0) ;
-    unsigned int nj = buf->getShape(1) ;
-    unsigned int nk = buf->getShape(2) ;
+    unsigned ni = buf->getShape(0) ;
+    unsigned nj = buf->getShape(1) ;
+    unsigned nk = buf->getShape(2) ;
 
-    LOG(info) << "GParts::dump ni " << ni ; 
+    unsigned ulim = std::min( ni, lim ) ; 
+
+    LOG(info) << "GParts::dump"
+              << " ni " << ni 
+              << " lim " << lim
+              << " ulim " << ulim
+              ; 
 
     assert( nj == NJ );
     assert( nk == NK );
@@ -1310,8 +1333,10 @@ void GParts::dump(const char* msg)
 
     uif_t uif ; 
 
-    for(unsigned int i=0; i < ni; i++)
+    for(unsigned i=0; i < ni; i++)
     {   
+       if( ulim != 0 &&  i > ulim && i < ni - ulim ) continue ;    
+
        unsigned int tc = getTypeCode(i);
        unsigned int id = getIndex(i);
        unsigned int bnd = getBoundary(i);

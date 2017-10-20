@@ -80,6 +80,40 @@ ANALYSIS EXERCISE
 
 EOU
 }
+
+
+tpmt-notes(){ cat << \EON
+
+Failed to load the old style analytic PMT ?::
+ 
+    (lldb) bt
+    * thread #1: tid = 0x7f0ed, 0x00000001020edc1c libGGeo.dylib`GPmt::getParts(this=0x0000000000000000) + 12 at GPmt.cc:158, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x18)
+      * frame #0: 0x00000001020edc1c libGGeo.dylib`GPmt::getParts(this=0x0000000000000000) + 12 at GPmt.cc:158
+        frame #1: 0x0000000102117942 libGGeo.dylib`GGeoTest::loadPmt(this=0x0000000108bf43a0) + 546 at GGeoTest.cc:391
+        frame #2: 0x0000000102115700 libGGeo.dylib`GGeoTest::createPmtInBox(this=0x0000000108bf43a0) + 864 at GGeoTest.cc:173
+        frame #3: 0x0000000102114e5e libGGeo.dylib`GGeoTest::create(this=0x0000000108bf43a0) + 126 at GGeoTest.cc:117
+        frame #4: 0x0000000102114cfd libGGeo.dylib`GGeoTest::modifyGeometry(this=0x0000000108bf43a0) + 157 at GGeoTest.cc:86
+        frame #5: 0x0000000102140772 libGGeo.dylib`GGeo::modifyGeometry(this=0x0000000105d15090, config=0x0000000108bf3080) + 274 at GGeo.cc:814
+        frame #6: 0x00000001022a4844 libOpticksGeometry.dylib`OpticksGeometry::modifyGeometry(this=0x0000000105d13e60) + 868 at OpticksGeometry.cc:294
+        frame #7: 0x00000001022a3aec libOpticksGeometry.dylib`OpticksGeometry::loadGeometry(this=0x0000000105d13e60) + 572 at OpticksGeometry.cc:224
+        frame #8: 0x00000001022a81b9 libOpticksGeometry.dylib`OpticksHub::loadGeometry(this=0x0000000105d0d630) + 409 at OpticksHub.cc:282
+        frame #9: 0x00000001022a720d libOpticksGeometry.dylib`OpticksHub::init(this=0x0000000105d0d630) + 77 at OpticksHub.cc:102
+        frame #10: 0x00000001022a7110 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105d0d630, ok=0x0000000105c21d50) + 432 at OpticksHub.cc:88
+        frame #11: 0x00000001022a72fd libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x0000000105d0d630, ok=0x0000000105c21d50) + 29 at OpticksHub.cc:90
+        frame #12: 0x0000000103c481e6 libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfe5e8, argc=26, argv=0x00007fff5fbfe6c8, argforced=0x0000000000000000) + 262 at OKMgr.cc:46
+        frame #13: 0x0000000103c4864b libOK.dylib`OKMgr::OKMgr(this=0x00007fff5fbfe5e8, argc=26, argv=0x00007fff5fbfe6c8, argforced=0x0000000000000000) + 43 at OKMgr.cc:49
+        frame #14: 0x000000010000adad OKTest`main(argc=26, argv=0x00007fff5fbfe6c8) + 1373 at OKTest.cc:58
+        frame #15: 0x00007fff869e95fd libdyld.dylib`start + 1
+        frame #16: 0x00007fff869e95fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+EON
+
+}
+
+
+
 tpmt-env(){      olocal- ;  }
 tpmt-dir(){ echo $(opticks-home)/tests ; }
 tpmt-cd(){  cd $(tpmt-dir); }
@@ -162,9 +196,9 @@ tpmt--(){
 
     [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
 
-    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
+    #if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
+    #    tag=-$tag  
+    #fi 
     ## hmm suspect tag negation no longer needed, as doing both at once ???
 
     local anakey
@@ -194,6 +228,7 @@ tpmt--(){
        --eye 0.0,-0.5,0.0 \
        --geocenter \
        --apmtidx $apmtidx \
+       --rendermode +global,+axis \
        $* 
 
 }
@@ -238,7 +273,7 @@ tpmt-alt(){
                  mode=PmtInBox
                  analytic=1
 
-                 shape=sphere
+                 node=sphere
                  boundary=Rock//perfectAbsorbSurface/MineralOil
                  parameters=-1,1,0,300
                    ) 
@@ -246,6 +281,7 @@ tpmt-alt(){
    op.sh --tracer \
           --test --testconfig "$(join _ ${test_config[@]})" \
           --eye 0.5,0.5,0.0 \
+          --rendermode +global,+axis \
            $*  
 }
 

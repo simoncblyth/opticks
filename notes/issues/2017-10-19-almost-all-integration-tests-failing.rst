@@ -48,19 +48,10 @@ integration tests, which are a few generations behind.
 Status
 -------
 
-tlens
-    zlens not showing up
+Dump status with::
 
-treflect
-    working to some extent
-
-tbox
-    working to some extent
-
-others
-    not yet revisited
-
-
+    tests-
+    tests-status
 
 
 

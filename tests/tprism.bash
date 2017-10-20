@@ -125,8 +125,8 @@ tprism--(){
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-                 shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=prism parameters=60,300,300,200   boundary=Vacuum///$material
+                 node=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=prism parameters=60,300,300,200   boundary=Vacuum///$material
                )
 
 
@@ -139,7 +139,10 @@ tprism--(){
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag --cat $(tprism-det)
+            --save --tag $tag --cat $(tprism-det) \
+            --rendermode +global,+axis
+
+
 
     local RC=$?
     echo $FUNCNAME RC $RC

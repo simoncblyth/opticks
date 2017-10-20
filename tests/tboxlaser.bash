@@ -56,11 +56,11 @@ tboxlaser--(){
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box
+                 node=box
                  boundary=Rock//perfectAbsorbSurface/$m1
                  parameters=0,0,0,300
 
-                 shape=box
+                 node=box
                  boundary=$m1///$m2
                  parameters=0,0,0,100
                    ) 
@@ -72,6 +72,7 @@ tboxlaser--(){
        --timemax 10 \
        --cat boxlaser --tag $tag --save  \
        --eye 0.5,0.5,0.0 \
+       --rendermode +global,+axis \
        $* 
 }
 tboxlaser-args(){  echo  --tag $(tboxlaser-tag) --det boxlaser --src torch ; }
@@ -92,8 +93,6 @@ tboxlaser-vg4()
 {
     tboxlaser-- --okg4 --vizg4 --load $*
 }
-
-
 
 tboxlaser-tfx()
 {

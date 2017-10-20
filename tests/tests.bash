@@ -52,6 +52,104 @@ All the tests can be invoked via the `tests-t` function::
 EOU
 }
 
+tests-status(){ cat << EOS
+
+
+STATUS OF INTEGRATION TESTS
+===============================
+
+The note "working to some extent" means qualitatively operational, 
+ie the tname-- function yields what is visually expected 
+without any analysis checks of the events produced.
+
+
+tboolean
+    mostly working 
+
+tbox
+    working to some extent
+
+tboxlaser
+    working to some extent
+
+tconcentric
+    working to some extent
+
+tdefault
+    working to some extent
+
+tg4gun
+    working to some extent
+
+tgltf
+    working to some extent
+
+    * odd viewpoint 
+    * disabled numPrim == numSolids sanity check in OGeo::makeAnalyticGeometry
+
+tjuno
+    working to some extent
+
+    Thoughts:
+
+    * implemented raylod with instances in mind but 
+      the benefits of outershelling to speedup raytrace will actual be felt 
+      much more for the global geometry : so when PMTs not visible you dont 
+      have to pay the price for them  
+
+    * same comment is true of the OpenGL geometry, have so far mainly considered 
+      the instances wrt LOD
+
+tlaser
+    working to some extent
+
+tlens
+
+    * old style zlens not working : noshow in raytrace
+    * TODO: migrate to using python CSG geometry to define lens shapes, eliminate the old zlens
+
+tnewton
+    working to some extent
+
+    * using old style manual prism definition, would benefit from CSG trapezoid
+
+tpmt
+    FAIL : segv in GGeoTest::createPmtInBox  see tpmt-notes
+
+tprism
+    working to some extent
+
+trainbow
+    working to some extent
+
+treflect
+    working to some extent
+
+tviz
+    DOESNT FOLLOW PATTERN : NEEDS REVISIT, USING OLD OPTIONS ?
+
+twhite
+    working to some extent
+
+
+
+NEXT
+------
+
+* tpmt
+* tlens
+
+
+
+
+EOS
+}
+
+
+
+
+
+
 
 tests-env(){
     olocal-
@@ -61,10 +159,16 @@ tests-env(){
 tests-dir(){  echo $(opticks-home)/tests ; }
 tests-cd(){   cd $(tests-dir); }
 
+
+tests-bash(){ tests-bash- | perl -p -e 's,.bash,,g' -  ; }
 tests-bash-(){
    tests-cd
    ls -1 *.bash | grep -v ttemplate.bash | grep -v tests.bash 
 }
+
+
+
+
 tests-enabled-(){ cat << EOT
 treflect
 tbox

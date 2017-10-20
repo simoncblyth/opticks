@@ -8,21 +8,21 @@ tnewton- : Pencil beam incident on Glass prism
 Pencil beam of five wavelengths incident on GlassSchottF2 prism.
 
 
-`tnewton-vi`
+tnewton-vi
     edit the bash functions 
 
-`tnewton--`
+tnewton--
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
-`tnewton-py s/p`
+tnewton-py s/p
     plots simulated prism deviation angle against analytic expectation
 
-`tnewton-test`
+tnewton-test
     does both s and p simulation in compute mode and runs the py check 
 
 
 
-Running with `--tcfg4` option to use geant4 simulation runs into 
+Running with --tcfg4 option to use geant4 simulation runs into 
 missing prism implementation for geant4, causing missing solid warning
 and segv. 
 
@@ -87,8 +87,8 @@ tnewton--(){
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-                 shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=prism parameters=60,300,300,200   boundary=Vacuum///$material
+                 node=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=prism parameters=60,300,300,200   boundary=Vacuum///$material
                )
 
     op.sh  \
@@ -100,9 +100,8 @@ tnewton--(){
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag --cat $det
-
-
+            --save --tag $tag --cat $det \
+            --rendermode +global,+axis
 
 }
  

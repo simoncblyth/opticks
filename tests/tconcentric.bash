@@ -62,6 +62,7 @@ tconcentric--(){
        --timemax $timemax \
        --cat $(tconcentric-det) --tag $(tconcentric-tag) --save  \
        --eye 0,5,0 \
+       --rendermode +global,+axis \
        $* 
 }
 
@@ -89,7 +90,6 @@ tconcentric-tt-dbg()
 {
     tconcentric-tt \
             --debugger $*
-
 }
 
 tconcentric-v()
@@ -134,29 +134,29 @@ tconcentric-testconfig()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=sphere
+                 node=sphere
                  boundary=StainlessSteel///Acrylic
                  parameters=0,0,0,$(( 5000 + 5 ))
 
-                 shape=sphere
+                 node=sphere
                  boundary=Acrylic//RSOilSurface/MineralOil
                  parameters=0,0,0,$(( 5000 - 5 ))
 
 
-                 shape=sphere
+                 node=sphere
                  boundary=MineralOil///Acrylic
                  parameters=0,0,0,$(( 4000 + 5 ))
 
-                 shape=sphere
+                 node=sphere
                  boundary=Acrylic///LiquidScintillator
                  parameters=0,0,0,$(( 4000 - 5 ))
 
 
-                 shape=sphere
+                 node=sphere
                  boundary=LiquidScintillator///Acrylic
                  parameters=0,0,0,$(( 3000 + 5 ))
 
-                 shape=sphere
+                 node=sphere
                  boundary=Acrylic///GdDopedLS
                  parameters=0,0,0,$(( 3000 - 5 ))
 

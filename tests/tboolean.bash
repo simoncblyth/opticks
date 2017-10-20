@@ -297,11 +297,10 @@ tboolean--(){
         testconfig=$(tboolean-testconfig)
     fi 
 
-    #        --rendermode "-axis" \
 
     op.sh  \
             $cmdline \
-            --rendermode +global \
+            --rendermode +global,+axis \
             --animtimemax 20 \
             --timemax 20 \
             --geocenter \

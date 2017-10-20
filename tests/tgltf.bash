@@ -83,7 +83,8 @@ tgltf--()
             --timemax $tmax \
             --dbganalytic \
             --tag $(tgltf-tag) --cat $(tgltf-det) \
-            --save 
+            --save \
+            --rendermode +global,+axis,+in
 }
 
 

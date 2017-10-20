@@ -61,7 +61,10 @@ tlaser--(){
             --timemax 15 \
             --eye 0,1,0 \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
-            --save --tag $tag --cat laser
+            --save --tag $tag --cat laser \
+            --rendermode +global,+axis,+in
+
+
 
 
 

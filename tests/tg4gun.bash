@@ -92,6 +92,7 @@ EOI
        --okg4 \
        --cat G4Gun --tag $tag --save \
        --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
+       --rendermode +global,+axis,+in0,+in1,+in2,+in3,+in4,+in5 \
        $* 
 }
 

@@ -249,7 +249,7 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    GMesh* mesh = GMesh::make_mesh(tris->getBuffer(), meshindex);
+    GMesh* mesh = GMesh::make_mesh(tris->getTris(), meshindex);
     //mesh->dumpNormals("GMaker::makePrism normals", 24);
 
     glm::mat4 txf = tris->getTransform(); 
@@ -431,7 +431,6 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    //NPY<float>* triangles = tris->getBuffer();
     NPY<float>* triangles = tris->getTris();
 
     glm::mat4 txf = tris->getTransform(); 

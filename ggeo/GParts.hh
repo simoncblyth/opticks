@@ -239,11 +239,11 @@ class GGEO_API GParts {
         NPY<float>*        getBuffer(const char* tag) const ;
 
     public:
-        void fulldump(const char* msg="GParts::fulldump");
-        void dump(const char* msg="GParts::dump");
-        void dumpPrimInfo(const char* msg="GParts::dumpPrimInfo");
+        void fulldump(const char* msg="GParts::fulldump", unsigned lim=10 );
+        void dump(const char* msg="GParts::dump", unsigned lim=10 );
+        void dumpPrimInfo(const char* msg="GParts::dumpPrimInfo", unsigned lim=10 );
         void dumpPrimBuffer(const char* msg="GParts::dumpPrimBuffer");
-        void Summary(const char* msg="GParts::Summary");
+        void Summary(const char* msg="GParts::Summary", unsigned lim=10 );
     private:
         void dumpPrim(unsigned primIdx);
     public:

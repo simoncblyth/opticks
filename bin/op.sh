@@ -4,7 +4,6 @@
 op-(){    . $(which op.sh) ; } 
 op-vi(){ vi $(which op.sh) ; } 
 
-
 cmdline="$*"
 
 op-usage(){ cat << \EOU
@@ -42,10 +41,128 @@ Lists of geometry config arguments and executable selection are provided by the 
     op --help
 
 
+Auto-communication of geocache location to scripts with IDPATH envvar
+-----------------------------------------------------------------------
+
+The IDPATH is an envvar that points to the geocache directory. The envvar
+is internally set by op.sh using the OpticksIDPATH executable together with the 
+geometry selecting argument parsing done by op.sh. This happens  
+prior to running the primary executable or script. This "internal" envvar 
+is actually only needed for python analysis scripts.
+
+Sometimes it is convenient to run analysis scripts directly, ie not 
+via the op.sh machinery. In this case it is necessary to manually set the 
+IDPATH in your environment corresponding to the intended geometry.
+
+
+Geometry Selection
+---------------------
+
+Geometry selection is currently split between the op.sh bash script 
+and C++ (okc-/OpticksResource), with several internal envvars 
+used to effect the communication. See *op-geometry-setup-notes* for details.
+
+This split approach is convenient for development however it 
+does force Opticks scripts and executables to be used via op.sh.
+Bare use of the executables is only appropriate with the default geometry.
+A potential future development is to move the geo setup entirely into C++. 
 
 
 EOU
 }
+
+
+op-geometry-setup-notes(){ cat << EON
+
+FUNCTIONS
+~~~~~~~~~~
+
+*op-geometry-unset*
+
+    unset the output envvars 
+
+*op-geometry-name arg*
+
+    checks arg to see if it is a geometry selection arg, if so emits 
+    the corresponding tag eg DYB for argument --dyb or JPMT for argument --jpmt
+
+*op-cmdline-geometry-match*
+
+    loops over commandline arguments checking for geometry selection
+    args, the first tag found eg DYB or JPMT is set as the 
+    value of the OPTICKS_GEO envvar  
+
+    Multiple similar tags typically correspond to different geometry selections 
+    within a single detector geometry .dae file.
+
+    * DYB,IDYB,JDYB,KDYB,..  
+    * JUNO,JPMT,JTST
+
+*op-geometry-setup tag*
+
+    OPTICKS_GEO envvar (or tag argument) is a high level tag 
+    that identifies a detector and potentially a selection of that detectors 
+    geometrical volumes.
+
+    The value of the tag leads to the setting of envvars which are 
+    specific to the particular geometry.
+
+ENVVARS
+~~~~~~~~~
+
+OPTICKS_GEO
+
+    mainly for internal use of op.sh, set based on commandline arguments
+    its value results in the setting of the other envvars listed below
+
+OPTICKS_GEOKEY
+
+    names another envvar that contains the path to the .dae
+    eg OPTICKSDATA_DAEPATH_DYB
+
+    The OPTICKSDATA_ envvars are internally set via an ini file
+    \$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini
+    The indirection is used to isolate paths which may be different
+    for every installation from general handling.
+
+OPTICKS_QUERY
+
+    volume selection, eg range:3153:12221
+
+OPTICKS_CONTROL
+
+    influnces the geometry import, currently
+
+OPTICKS_MESHFIX
+
+    names of meshes to be fixed eg iav, oav
+  
+OPTICKS_MESHFIX_CFG
+
+     configuration of meshfixing 
+
+
+Questions
+~~~~~~~~~~~~~
+
+Do I recall correctly ? Geometry selection arguments are baked 
+into the geocache director name digest so changing geometry selection 
+arguments like the OPTICKS_QUERY volume range will require 
+a rebuild of the geocache, unless that configuration 
+has been used previously.
+
+
+EON
+}
+
+
+
+
+
+
+
+
+
 
 #op-binary-name-default(){ echo GGeoViewTest ; }
 #op-binary-name-default(){ echo OpticksMgrTest ; }
@@ -154,89 +271,6 @@ op-geometry-unset()
     unset OPTICKS_CTRL
     unset OPTICKS_MESHFIX
     unset OPTICKS_MESHFIX_CFG
-}
-
-op-geometry-setup-notes(){ cat << EON
-
-FUNCTIONS
-~~~~~~~~~~
-
-*op-geometry-unset*
-
-    unset the output envvars 
-
-*op-geometry-name arg*
-
-    checks arg to see if it is a geometry selection arg, if so emits 
-    the corresponding tag eg DYB for argument --dyb or JPMT for argument --jpmt
-
-*op-cmdline-geometry-match*
-
-    loops over commandline arguments checking for geometry selection
-    args, the first tag found eg DYB or JPMT is set as the 
-    value of the OPTICKS_GEO envvar  
-
-    Multiple similar tags typically correspond to different geometry selections 
-    within a single detector geometry .dae file.
-
-    * DYB,IDYB,JDYB,KDYB,..  
-    * JUNO,JPMT,JTST
-
-*op-geometry-setup tag*
-
-    OPTICKS_GEO envvar (or tag argument) is a high level tag 
-    that identifies a detector and potentially a selection of that detectors 
-    geometrical volumes.
-
-    The value of the tag leads to the setting of envvars which are 
-    specific to the particular geometry.
-
-ENVVARS
-~~~~~~~~~
-
-OPTICKS_GEO
-
-    mainly for internal use of op.sh, set based on commandline arguments
-    its value results in the setting of the other envvars listed below
-
-OPTICKS_GEOKEY
-
-    names another envvar that contains the path to the .dae
-    eg OPTICKSDATA_DAEPATH_DYB
-
-    The OPTICKSDATA_ envvars are internally set via an ini file
-    \$OPTICKS_INSTALL_PREFIX/opticksdata/config/opticksdata.ini
-    The indirection is used to isolate paths which may be different
-    for every installation from general handling.
-
-OPTICKS_QUERY
-
-    volume selection, eg range:3153:12221
-
-OPTICKS_CONTROL
-
-    influnces the geometry import, currently
-
-OPTICKS_MESHFIX
-
-    names of meshes to be fixed eg iav, oav
-  
-OPTICKS_MESHFIX_CFG
-
-     configuration of meshfixing 
-
-
-Questions
-~~~~~~~~~~~~~
-
-Do I recall correctly ? Geometry selection arguments are baked 
-into the geocache director name digest so changing geometry selection 
-arguments like the OPTICKS_QUERY volume range will require 
-a rebuild of the geocache, unless that configuration 
-has been used previously.
-
-
-EON
 }
 
 op-geometry-names(){ type op-geometry-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; } 
@@ -408,7 +442,7 @@ op-geometry-setup-misc()
     fi 
 }
 
-op-geometry-setup-analytic()
+op-envdump()
 {
     local msg="=== $FUNCNAME :"
     echo $msg 
@@ -476,6 +510,9 @@ op-cmdline-specials()
        export OPTICKS_MALLOC=1
    fi
    if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
+       export OPTICKS_DBG=1
+   fi
+   if [ "${cmdline/-D}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
    fi
    if [ "${cmdline/--load}" != "${cmdline}" ]; then
@@ -662,12 +699,26 @@ op-malloc()
 }
 
 
+op-ls()
+{
+   if [ -n "$OPTICKS_QUIET" ]; then 
+
+       if [ ${OPTICKS_BINARY/\/} == ${OPTICKS_BINARY} ]; then 
+           >&2 ls -alst $(which ${OPTICKS_BINARY})
+       else 
+           >&2 ls -alst ${OPTICKS_BINARY}
+       fi  
+
+   fi 
+}
+
+
+
+
 #opticks-
 op-cmdline-parse
 
 runline=$(op-runline)
-
-
 
 
 op-export
@@ -693,24 +744,12 @@ else
 
    IDPATH=$(OpticksIDPATH ${OPTICKS_ARGS}  2>&1 > /dev/null)  
 
-   ## capture only stderr, the directory 
-   ## NB Opticks executables do not need IDPATH envvar 
-   ## but python analysis scripts needing access to geocache need this
+   op-ls
+   #op-malloc 
 
    if [ -n "$OPTICKS_QUIET" ]; then 
-
-       if [ ${OPTICKS_BINARY/\/} == ${OPTICKS_BINARY} ]; then 
-           >&2 ls -alst $(which ${OPTICKS_BINARY})
-       else 
-           >&2 ls -alst ${OPTICKS_BINARY}
-       fi  
-
-      # env | >&2 grep OPTICKS_ | sort  
        >&2 echo proceeding.. : $runline
-   fi 
-
-
-   #op-malloc 
+   fi
 
    eval $runline
    RC=$?

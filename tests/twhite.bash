@@ -81,8 +81,8 @@ twhite--(){
     local test_config=(
                  mode=BoxInBox
                  analytic=1
-                 shape=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=prism parameters=60,300,300,200   boundary=Vacuum///$material
+                 node=box   parameters=-1,1,0,700       boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=prism parameters=60,300,300,200   boundary=Vacuum///$material
                )
 
     op.sh  \
@@ -94,7 +94,9 @@ twhite--(){
             --test --testconfig "$(join _ ${test_config[@]})" \
             --torch --torchconfig "$(join _ ${torch_config[@]})" \
             --torchdbg \
-            --save --tag $tag --cat $det
+            --save --tag $tag --cat $det \
+            --rendermode +global,+axis
+
 }
 
 twhite-args(){ echo --tag $(twhite-tag ${1:-s}) --det $(twhite-det) --src $(twhite-src) ;  }

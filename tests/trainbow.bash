@@ -101,7 +101,8 @@ trainbow--(){
             --test --testconfig "$(trainbow-testconfig)" --dbganalytic \
             --torch --torchconfig "$(trainbow-torchconfig $pol)" \
             --tag $tag --cat $(trainbow-det) \
-            --save
+            --save \
+            --rendermode +global,+axis
 
         #    --torchdbg \
 }
@@ -150,8 +151,8 @@ trainbow-testconfig()
                  mode=BoxInBox
                  analytic=1
 
-                 shape=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
-                 shape=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
+                 node=box      parameters=0,0,0,1200           boundary=Rock//perfectAbsorbSurface/Vacuum
+                 node=sphere   parameters=0,0,0,100            boundary=Vacuum///$material
                )
 
      echo "$(join _ ${test_config[@]})" 

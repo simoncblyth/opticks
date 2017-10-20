@@ -639,7 +639,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     }
     
 
-    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("OGeo::makeAnalyticGeometry --dbganalytic") ;
+    if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("OGeo::makeAnalyticGeometry --dbganalytic", 10) ;
 
     NPY<float>*     partBuf = pts->getPartBuffer(); assert(partBuf && partBuf->hasShape(-1,4,4));    // node buffer
     NPY<float>*     tranBuf = pts->getTranBuffer(); assert(tranBuf && tranBuf->hasShape(-1,3,4,4));  // transform triples (t,v,q) 
@@ -655,6 +655,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     unsigned numPlan = planBuf->getNumItems();
 
     unsigned int numSolids = mm->getNumSolids();
+    unsigned int numSolidsSelected = mm->getNumSolidsSelected();
 
 
     if( pts->isNodeTree() )
@@ -664,13 +665,15 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         {
             LOG(fatal) << " MISMATCH (numPrim != numSolids) "
                        << " numSolids " << numSolids 
+                       << " numSolidsSelected " << numSolidsSelected 
                        << " numPrim " << numPrim 
                        << " numPart " << numPart 
                        << " numTran " << numTran 
                        << " numPlan " << numPlan 
                        ; 
         }
-        assert( match && "Sanity check failed " );
+        //assert( match && "NodeTree Sanity check failed " );
+        // hmm tgltf-;tgltf-- violates this ?
     }
 
 

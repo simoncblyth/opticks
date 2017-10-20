@@ -16,12 +16,9 @@ tjuno-cd(){  cd $(tjuno-dir); }
 join(){ local IFS="$1"; shift; echo "$*"; }
 
 tjuno-tag(){  echo 1 ; }
-tjuno-det(){  echo boolean ; }
+tjuno-det(){  echo j1707 ; }
 tjuno-src(){  echo torch ; }
 tjuno-args(){ echo  --det $(tjuno-det) --src $(tjuno-src) ; }
-
-tjuno-ls-(){ grep TESTCONFIG= $BASH_SOURCE ; }
-tjuno-ls(){ $FUNCNAME- | perl -ne 'm/(\S*)\(\)/ && print "$1\n" ' -   ; }
 
 tjuno--(){
 
@@ -32,8 +29,6 @@ tjuno--(){
 
     #local stack=4096
     local stack=2180  # default
-
-    #        --rendermode "-axis" \
 
     op.sh  \
             $cmdline \
@@ -47,6 +42,7 @@ tjuno--(){
             --torch --torchconfig "$(tjuno-torchconfig)" \
             --torchdbg \
             --tag $(tjuno-tag) --cat $(tjuno-det) \
+            --rendermode +global,+axis,+in \
             --save 
 }
 
@@ -129,9 +125,7 @@ tjuno-validate() {
     SRC=${1:-cerenkov}; shift
     TAG=${1:-1}; shift
 
-    # run simulation
     op.sh --j1707 --gltf 3 --${SRC} --tag ${TAG} --compute --save
-    # run analysis
     tevt.py --det juno1707 --src ${SRC} --tag ${TAG}
 
 }

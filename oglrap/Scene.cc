@@ -218,9 +218,18 @@ void Scene::setRenderMode(const char* s)
         } 
         if(strncmp(el, _INSTANCE, strlen(_INSTANCE))==0) 
         {
-             unsigned int ins = boost::lexical_cast<unsigned int>(el+strlen(_INSTANCE)) ;
-             if(ins < MAX_INSTANCE_RENDERER)
-                  *(m_instance_mode+ins) = setting ;  
+             const char* idx = el+strlen(_INSTANCE) ;
+             if(strlen(idx) == 0)  // +in
+             {
+                  for(unsigned ins=0 ; ins < MAX_INSTANCE_RENDERER ; ins++) 
+                     *(m_instance_mode+ins) = setting ;  
+             }
+             else         // +in0 +in1 ...
+             {
+                 unsigned int ins = boost::lexical_cast<unsigned int>(idx) ;
+                 if(ins < MAX_INSTANCE_RENDERER)
+                      *(m_instance_mode+ins) = setting ;  
+             }
         } 
         
         if(strcmp(el, GLOBAL)==0)  m_global_mode = setting ; 
