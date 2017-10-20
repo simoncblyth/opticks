@@ -4,11 +4,190 @@ tpmt broken by OpticksCSG enum move
 * shape/operator enum unification to use sysrap/OpticksCSG.{h,py} is incomplete
 * tpmt broken due to mis-interpretation of part buffer
 
-overview
-----------
+
+2017-10-20 tpmt-- broken (again)
+--------------------------------------
+
+Following some effort to clean up GGeoTest::makePmtInBox
+still finding failure symptom that the raytrace of the PMT is missing.
+
+Also wierd container box distortion, possible bad bbox ?
+
+
+old overview
+--------------
 
 * DONE: old PMT serialization needs to be rebuilt with new unified enum   
 * rebuilt analytic PMT and stored into opticksdata with non-default apmtidx slot 1 (not committed)
+
+
+2017-10-20 issue : boundaries not getting into the GParts ?
+------------------------------------------------------------
+
+* seems the bndspec is OK, but this is not being treated as
+  the input ? Instead the bnd in the .npy which are all zero
+  is the input.
+
+
+::
+
+    simon:opticks blyth$ cat /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0/GPmt_boundaries.txt
+    CONTAINING_MATERIAL///Pyrex
+    CONTAINING_MATERIAL///Pyrex
+    CONTAINING_MATERIAL///Pyrex
+    CONTAINING_MATERIAL///Pyrex
+    Pyrex///OpaqueVacuum
+    Pyrex/SENSOR_SURFACE//Bialkali
+    Pyrex/SENSOR_SURFACE//Bialkali
+    Pyrex///Vacuum
+    Bialkali///Vacuum
+    Bialkali///Vacuum
+    OpaqueVacuum///Vacuum
+    Vacuum///OpaqueVacuum
+
+
+::
+
+    tpmt-;tpmt-- -PV    # just init for debug
+
+    2017-10-20 18:22:21.843 INFO  [627696] [GGeoTest::createPmtInBox@293] GGeoTest::createPmtInBox  spec Rock/NONE/perfectAbsorbSurface/MineralOil container_inner_material MineralOil
+    2017-10-20 18:22:21.845 INFO  [627696] [GPmt::dump@167] GGeoTest::loadPmt (GPmt)pmt --dbganalytic  m_index 0 m_path /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0 m_parts 0x7f98c5ccc180 m_csg 0x7f98c5ccb990 m_bndlib 0x7f98c3e049d0
+    2017-10-20 18:22:21.845 INFO  [627696] [GParts::Summary@1120] GGeoTest::loadPmt (GParts)pts --dbganalytic  num_parts 12 num_prim 0
+     part  0 : node  0 type  1 boundary [  0] Vacuum///Vacuum  
+     part  1 : node  0 type  1 boundary [  0] Vacuum///Vacuum  
+     part  2 : node  0 type  1 boundary [  0] Vacuum///Vacuum  
+     part  3 : node  0 type  2 boundary [  0] Vacuum///Vacuum  
+     part  4 : node  1 type  1 boundary [  0] Vacuum///Vacuum  
+     part  5 : node  1 type  1 boundary [  0] Vacuum///Vacuum  
+     part  6 : node  1 type  1 boundary [  0] Vacuum///Vacuum  
+     part  7 : node  1 type  2 boundary [  0] Vacuum///Vacuum  
+     part  8 : node  2 type  1 boundary [  0] Vacuum///Vacuum  
+     part  9 : node  2 type  1 boundary [  0] Vacuum///Vacuum  
+     part 10 : node  3 type  1 boundary [  0] Vacuum///Vacuum  
+     part 11 : node  4 type  2 boundary [  0] Vacuum///Vacuum  
+    2017-10-20 18:22:21.845 INFO  [627696] [*GMergedMesh::combine@138] GMergedMesh::combine making new mesh  index 0 solids 1 verbosity 3
+    2017-10-20 18:22:21.845 INFO  [627696] [GSolid::Dump@204] GMergedMesh::combine (source solids) numSolid 1
+
+
+    GPmtTest   # shows same issue ... 
+
+
+
+
+
+Review NCSG::Deserialize boundary handling
+---------------------------------------------
+
+* In tboolean- the boundary strings are
+  planted in the python, which get serialized into
+  the csg.txt
+
+::
+
+    cat /tmp/blyth/opticks/tboolean-torus--/csg.txt 
+    Rock//perfectAbsorbSurface/Vacuum
+    Vacuum///GlassSchottF2
+
+
+* each NCSG tree has only a single boundary spec string
+  which gets set in NCSG::Deserialize
+
+::
+
+    1153 int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
+    1154 {
+    ....
+    1157     std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
+    ....
+    1166     NTxt bnd(txtpath.c_str());
+    1167     bnd.read();
+    1169 
+    1170     unsigned nbnd = bnd.getNumLines();
+    ....
+    1181     // order is reversed so that a tree with the "container" meta data tag at tree slot 0
+    1182     // is handled last, so container_bb will then have been adjusted to hold all the others...
+    1183     // allowing the auto-bbox setting of the container
+    1184 
+    1185     for(unsigned j=0 ; j < nbnd ; j++)
+    1186     {
+    1187         unsigned i = nbnd - 1 - j ;
+    1188         std::string treedir = BFile::FormPath(basedir, BStr::itoa(i));
+    1189 
+    1190         NCSG* tree = new NCSG(treedir.c_str());
+    1191         tree->setIndex(i);
+    1192         tree->setVerbosity( verbosity );
+    1193         tree->setBoundary( bnd.getLine(i) );
+
+
+
+::
+
+     165 GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
+     166 {
+     167     assert(spec);
+     168 
+     ...
+     238     // GParts originally intended to handle lists of parts each of which 
+     239     // must have an associated boundary spec. When holding CSG trees there 
+     240     // is really only a need for a single common boundary, but for
+     241     // now enable reuse of the old GParts by duplicating the spec 
+     242     // for every node of the tree
+     243 
+     244     const char* reldir = "" ;  // empty reldir avoids defaulting to GItemList  
+     245 
+     246     GItemList* lspec = GItemList::Repeat("GParts", spec, ni, reldir) ;
+     247 
+     248     GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
+     249 
+     250     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
+     251     return pts ;
+     252 }
+
+
+* hmm does GParts::close translate the spec into boundary int and write into partBuffer ?
+  YEP : void GParts::registerBoundaries() // convert boundary spec names into integer codes using bndlib
+
+::
+
+    200 RT_PROGRAM void intersect(int primIdx)
+    201 {
+    202     const Prim& prim    = primBuffer[primIdx];
+    203 
+    204     unsigned partOffset  = prim.partOffset() ;
+    205     unsigned numParts    = prim.numParts() ;
+    206     unsigned primFlag    = prim.primFlag() ;
+    207 
+    208     uint4 identity = identityBuffer[instance_index] ;
+    209 
+    210 
+    211     if(primFlag == CSG_FLAGNODETREE)
+    212     {
+    213         Part pt0 = partBuffer[partOffset + 0] ;
+    214 
+    215         identity.z = pt0.boundary() ;        // replace placeholder zero with test analytic geometry root node boundary
+    216 
+    217         evaluative_csg( prim, identity );
+    218         //intersect_csg( prim, identity );
+    219 
+    220     }
+    221     else if(primFlag == CSG_FLAGINVISIBLE)
+    222     {
+    223         // do nothing : report no intersections for primitives marked with primFlag CSG_FLAGINVISIBLE 
+    224     }
+    225 #ifdef WITH_PARTLIST
+    226     else if(primFlag == CSG_FLAGPARTLIST)
+    227     {
+    228         for(unsigned int p=0 ; p < numParts ; p++)
+    229         {
+    230             Part pt = partBuffer[partOffset + p] ;
+    231 
+    232             identity.z = pt.boundary() ;
+    233 
+
+
+
+
+
 
 revisit tpmt--
 ----------------
@@ -40,8 +219,6 @@ The --apmtidx 1 option results in loading::
     193        $*
     194 
     195 }
-
-
 
 
 root cause of difficulty

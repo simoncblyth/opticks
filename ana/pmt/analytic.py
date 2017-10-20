@@ -3,13 +3,13 @@
 import os, logging, sys
 log = logging.getLogger(__name__)
 import numpy as np
+
+from opticks.analytic.treebase import Tree
+
 from opticks.ana.base import opticks_main, Buf
-
-from ddbase import Dddb
-from ddpart import ddpart_manual_mixin
-
-from treebase import Tree
-from treepart import treepart_manual_mixin
+from opticks.ana.pmt.ddbase import Dddb
+from opticks.ana.pmt.ddpart import ddpart_manual_mixin
+from opticks.ana.pmt.treepart import treepart_manual_mixin
 
 
 from GPmt import GPmt

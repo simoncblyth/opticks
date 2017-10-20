@@ -5,7 +5,6 @@
 #include "GMaker.hh"
 #include "GMergedMesh.hh"
 
-
 #include "GCSG.hh"
 #include "PLOG.hh"
 
@@ -15,7 +14,6 @@ const char* GCSG::SPHERE_ = "Sphere" ;
 const char* GCSG::TUBS_   = "Tubs" ;
 const char* GCSG::UNION_    = "Union" ;
 const char* GCSG::INTERSECTION_  = "Intersection" ;
-
 
 const char* GCSG::TypeName(unsigned int typecode)
 {
@@ -31,18 +29,12 @@ const char* GCSG::TypeName(unsigned int typecode)
     return NULL ; 
 }
 
-
-
-
-
-
 GCSG::GCSG(NPY<float>* buffer, GItemList* materials, GItemList* lvnames, GItemList* pvnames) 
       :
       m_csg_buffer(buffer),
       m_materials(materials),
       m_lvnames(lvnames),
       m_pvnames(pvnames)
-
 {
 }
       
@@ -50,7 +42,6 @@ NPY<float>* GCSG::getCSGBuffer()
 {
     return m_csg_buffer ; 
 }
-
 
 bool GCSG::isUnion(unsigned int i)
 {
@@ -225,14 +216,11 @@ GMergedMesh* GCSG::makeMergedMesh()
                   << std::setw(4) << i 
                   << " nix " << std::setw(5) << nix 
                   ; 
-
     
     }
-
     return mm ; 
 }
 */
-
 
 
 

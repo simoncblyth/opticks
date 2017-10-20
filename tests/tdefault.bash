@@ -40,7 +40,9 @@ tdefault--(){
             --eye 0,1,0 \
             --torch \
             --save --tag $tag --cat default \
-            --rendermode +global,+axis,+in0,+in1,+in2,+in3,+in4,+in5
+            --rendermode +global,+axis,+in 
+
+
 
 }
  

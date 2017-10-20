@@ -603,7 +603,10 @@ NSlice* Opticks::getAnalyticPMTSlice()
 }
 
 
-
+const char* Opticks::getSensorSurface()
+{
+    return m_resource->getSensorSurface() ;
+}
 const char* Opticks::getGLTFPath()
 {
     return m_resource->getGLTFPath() ;

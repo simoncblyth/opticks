@@ -104,123 +104,49 @@ void GGeoTest::modifyGeometry()
 
 GMergedMesh* GGeoTest::create()
 {
-    //TODO: unify all these modes into CSG 
-    //      whilst still supporting the old partlist approach 
-
     const char* csgpath = m_config->getCsgPath();
     const char* mode = m_config->getMode();
+    unsigned nelem = m_config->getNumElements();
+
+    assert( mode );
+    if(nelem == 0)
+    {
+        LOG(fatal) << " nelem zero  " ; 
+        m_config->dump("GGeoTest::create ERROR numElements==0 " ); 
+    }
+    assert(nelem > 0);
+
+    LOG(info) << "GGeoTest::create START " << " mode " << mode ;
 
     GMergedMesh* tmm = NULL ; 
+    std::vector<GSolid*> solids ; 
 
-    if( mode != NULL && strcmp(mode, "PmtInBox") == 0)
+    if(csgpath != NULL)
+    {
+        assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
+        loadCSG(csgpath, solids);
+        tmm = combineSolids(solids, NULL);
+    }
+    else if(strcmp(mode, "BoxInBox") == 0) 
+    {
+        createBoxInBox(solids); 
+        labelPartList(solids) ;
+        tmm = combineSolids(solids, NULL);
+    }
+    else if( strcmp(mode, "PmtInBox") == 0)
     {
         tmm = createPmtInBox(); 
     }
-    else
-    {
-        std::vector<GSolid*> solids ; 
-        if(csgpath != NULL)
-        {
-            assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
-            loadCSG(csgpath, solids);
-        }
-        else
-        {
-            unsigned nelem = m_config->getNumElements();
-            if(nelem == 0)
-            {
-                LOG(fatal) << " nelem zero  " ; 
-                m_config->dump("GGeoTest::create ERROR numElements==0 " ); 
-            }
-            assert(nelem > 0);
-            if(     strcmp(mode, "BoxInBox") == 0) createBoxInBox(solids); 
-            else  LOG(warning) << "GGeoTest::create mode not recognized " << mode ; 
-        }
-        tmm = combineSolids(solids);
+    else 
+    { 
+        LOG(fatal) << "GGeoTest::create mode not recognized " << mode ; 
+        assert(0);
     }
+
     assert(tmm);
+    LOG(info) << "GGeoTest::create DONE " << " mode " << mode ;
     return tmm ; 
 }
-
-GMergedMesh* GGeoTest::createPmtInBox()
-{
-    // somewhat dirtily associates analytic geometry with triangulated for the PMT 
-    //
-    //   * detdesc parsed analytic geometry in GPmt (see pmt-ecd dd.py tree.py etc..)
-    //   * instance-1 GMergedMesh 
-    //
-    // using prior DYB specific knowledge...
-    // mergedMesh-repeat-candidate-1 is the triangulated PMT 5-solids 
-    //
-    // assumes single container 
-
-    OpticksCSG_t type = m_config->getTypeCode(0);
-
-    const char* spec = m_config->getBoundary(0);
-    glm::vec4 param = m_config->getParameters(0);
-    const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
-
-    int verbosity = m_config->getVerbosity();
-
-    LOG(info) << "GGeoTest::createPmtInBox " 
-              << " type " << type
-              << " csgName " << CSGName(type)
-              << " spec " << spec 
-              << " container_inner_material " << container_inner_material
-              << " param " << gformat(param) 
-              ; 
-
-    GMergedMesh* mmpmt = loadPmt();
-    unsigned int index = mmpmt->getNumSolids() ;
-
-
-    GSolid* container = m_maker->make( index, type, param, spec) ;  // container box
-
-    GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
-    mesh->setIndex(1000);
-
-    container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
-    container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
-
-
-    // THIS IS THE DIRTY ASPECT
-    //
-    //    COMBINING A LOADED PMT MESH THAT JUST HAPPENS TO CORRESPOND 
-    //    WITH THE ANALYTIC PARTLIST GEOMETRY
-    //
-    //    TODO: Use NPolygonizer to generate the mesh from the partlist ??
-    //
-    //
-
-    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
-
-    if(verbosity > 1)
-        triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
-
-    GParts* analytic = triangulated->getParts();
-
-    analytic->setBndLib(m_bndlib) ; // GUESS-WORK TO FIX FAILING CTestDetectorTest
-
-
-    analytic->setContainingMaterial(container_inner_material);    // match outer material of PMT with inner material of the box
-    analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface") ; // kludge, TODO: investigate where triangulated gets this from
-    analytic->close();
-
-    // needed by OGeo::makeAnalyticGeometry
-
-    NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
-    NPY<float>* itransforms = mmpmt->getITransformsBuffer();
-
-    assert(idBuf);
-    assert(itransforms);
-
-    triangulated->setAnalyticInstancedIdentityBuffer(idBuf);
-    triangulated->setITransformsBuffer(itransforms);
-
-    return triangulated ; 
-}
-
-
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {
@@ -263,55 +189,16 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     }
 }
 
-
-void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
+void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
 {
-    unsigned int nelem = m_config->getNumElements();
-
-    for(unsigned int i=0 ; i < nelem ; i++)
-    {
-        std::string node = m_config->getNodeString(i);
-        OpticksCSG_t type = m_config->getTypeCode(i);
-
-        const char* spec = m_config->getBoundary(i);
-        glm::vec4 param = m_config->getParameters(i);
-        glm::mat4 trans = m_config->getTransform(i);
-        unsigned int boundary = m_bndlib->addBoundary(spec);
-
-        LOG(info) << "GGeoTest::createBoxInBox" 
-                  << " i " << std::setw(2) << i 
-                  << " node " << std::setw(20) << node
-                  << " type " << std::setw(2) << type 
-                  << " csgName " << std::setw(15) << CSGName(type)
-                  << " spec " << spec
-                  << " boundary " << boundary
-                  << " param " << gformat(param)
-                  << " trans " << gformat(trans)
-                  ;
-
-        bool oktype = type < CSG_UNDEFINED ;  
-        if(!oktype) LOG(fatal) << "GGeoTest::createBoxInBox configured node not implemented " << node ;
-        assert(oktype);
-
-        GSolid* solid = m_maker->make(i, type, param, spec );   
-        GParts* pts = solid->getParts();
-        assert(pts);
-        pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
-
-        solids.push_back(solid);
-    }
-
-
-    // Boolean geometry (precursor to proper CSG Trees) 
-    // is implemented by allowing 
-    // a single "primitive" to be composed of multiple
+    // PartList geometry (the precursor to proper CSG Trees, usually defined in python CSG) 
+    // is implemented by allowing a single "primitive" to be composed of multiple
     // "parts", the association from part to prim being 
     // controlled via the primIdx attribute of each part.
     //
     // collected pts are converted into primitives in GParts::makePrimBuffer
-    //
-
-    for(unsigned int i=0 ; i < solids.size() ; i++)
+  
+    for(unsigned i=0 ; i < solids.size() ; i++)
     {
         GSolid* solid = solids[i];
         GParts* pts = solid->getParts();
@@ -327,7 +214,7 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
 
         pts->setBndLib(m_bndlib);
 
-        LOG(info) << "GGeoTest::createBoxInBox"
+        LOG(info) << "GGeoTest::labelPartList"
                   << " i " << std::setw(3) << i 
                   << " csgflag " << std::setw(5) << csgflag 
                   << std::setw(20) << CSGName(csgflag)
@@ -336,10 +223,117 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
     }
 }
 
-GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
+GSolid* GGeoTest::makeSolidFromConfig( unsigned i )
+{
+    std::string node = m_config->getNodeString(i);
+    OpticksCSG_t type = m_config->getTypeCode(i);
+
+    const char* spec = m_config->getBoundary(i);
+    glm::vec4 param = m_config->getParameters(i);
+    glm::mat4 trans = m_config->getTransform(i);
+    unsigned boundary = m_bndlib->addBoundary(spec);
+
+    LOG(info) << "GGeoTest::makeSolidFromConfig" 
+              << " i " << std::setw(2) << i 
+              << " node " << std::setw(20) << node
+              << " type " << std::setw(2) << type 
+              << " csgName " << std::setw(15) << CSGName(type)
+              << " spec " << spec
+              << " boundary " << boundary
+              << " param " << gformat(param)
+              << " trans " << gformat(trans)
+              ;
+
+    bool oktype = type < CSG_UNDEFINED ;  
+    if(!oktype) LOG(fatal) << "GGeoTest::makeSolidFromConfig configured node not implemented " << node ;
+    assert(oktype);
+
+    GSolid* solid = m_maker->make(i, type, param, spec );   
+    GParts* pts = solid->getParts();
+    assert(pts);
+    pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
+    pts->setBndLib(m_bndlib) ; 
+
+    return solid ; 
+}
+
+void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
+{
+    unsigned nelem = m_config->getNumElements();
+    for(unsigned i=0 ; i < nelem ; i++)
+    {
+        GSolid* solid = makeSolidFromConfig(i);
+        solids.push_back(solid);
+    }
+}
+
+
+void GGeoTest::finalizeAnalytic(GParts* pts, const char* containingMaterial)
+{
+    const char* sensorSurface = m_ok->getSensorSurface();
+    pts->setContainingMaterial(containingMaterial);    // match outer material of PMT with inner material of the box
+    pts->setSensorSurface(sensorSurface) ;
+    pts->setBndLib(m_bndlib) ; 
+    pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
+    pts->close();      // registerBoundaries, makePrimBuffer
+}
+
+
+GMergedMesh* GGeoTest::createPmtInBox()
+{
+    assert( m_config->getNumElements() == 1 && "GGeoTest::createPmtInBox expecting single container " );
+
+    GSolid* container = makeSolidFromConfig(0); 
+    const char* spec = m_config->getBoundary(0);
+    const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
+    int verbosity = m_config->getVerbosity();
+
+    GMergedMesh* mmpmt = loadPmtDirty();
+    assert(mmpmt);
+
+    unsigned pmtNumSolids = mmpmt->getNumSolids() ; 
+    container->setIndex( pmtNumSolids );
+
+    LOG(info) << "GGeoTest::createPmtInBox " 
+              << " spec " << spec 
+              << " container_inner_material " << container_inner_material
+              << " pmtNumSolids " << pmtNumSolids
+              ; 
+
+
+    GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
+    mesh->setIndex(1000);
+    
+    container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
+    container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
+
+    GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
+    // hmm this is putting the container at the end... does that matter ?
+
+    //if(verbosity > 1)
+    triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
+
+    GParts* analytic = triangulated->getParts();
+
+    finalizeAnalytic( analytic, container_inner_material );
+
+    // needed by OGeo::makeAnalyticGeometry
+    NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
+    NPY<float>* itransforms = mmpmt->getITransformsBuffer();
+
+    assert(idBuf);
+    assert(itransforms);
+
+    triangulated->setAnalyticInstancedIdentityBuffer(idBuf);
+    triangulated->setITransformsBuffer(itransforms);
+
+    return triangulated ; 
+}
+
+GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* mm0)
 {
     unsigned verbosity = 3 ; 
-    GMergedMesh* tri = GMergedMesh::combine( 0, NULL, solids, verbosity );
+    GMergedMesh* tri = GMergedMesh::combine( 0, mm0, solids, verbosity );
 
     unsigned nelem = solids.size() ; 
     GTransforms* txf = GTransforms::make(nelem); // identities
@@ -348,7 +342,6 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
 
-
     GParts* pts0 = solids[0]->getParts();
     GParts* pts = tri->getParts();
 
@@ -356,7 +349,6 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
     {
         pts->setPartList();  // not too late, needed only for primBuffer creation which happens last 
     } 
-
 
     //  OGeo::makeAnalyticGeometry  requires AII and IT buffers to have same item counts
 
@@ -372,24 +364,33 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids)
     return tri ; 
 }
 
-
-
-
-GMergedMesh* GGeoTest::loadPmt()
+GMergedMesh* GGeoTest::loadPmtDirty()
 {
+    // DIRTY ASSOCIATION BETWEEN OLD STYLE ANALYTIC GPmt AND TRIANGULATED GMergedMesh 
+    //
+    // GPmt 
+    //    detdesc parsed analytic geometry (see pmt-ecd dd.py tree.py etc..)
+    //
+
     const char* pmtpath = m_config->getPmtPath();
     int verbosity = m_config->getVerbosity();
+    assert(pmtpath);
 
-    GMergedMesh* mmpmt = pmtpath == NULL ? m_geolib->getMergedMesh(1) : GMergedMesh::load(pmtpath);
+    GMergedMesh* mmpmt = GMergedMesh::load(pmtpath);
 
-    if(mmpmt == NULL) LOG(fatal) << "GGeoTest::loadPmt FAILED " << pmtpath ;
+    if(mmpmt == NULL) LOG(fatal) << "GGeoTest::loadPmtDirty FAILED " << pmtpath ;
     assert(mmpmt);
 
-    if(verbosity > 1) mmpmt->dumpSolids("GGeoTest::loadPmt GMergedMesh::dumpSolids (before:mmpmt) ");
+    if(verbosity > 1) mmpmt->dumpSolids("GGeoTest::loadPmtDirty GMergedMesh::dumpSolids (before:mmpmt) ");
 
     GPmt* pmt = m_ggeo->getPmt();
-    mmpmt->setParts(pmt->getParts()); // associating the analytic GPmt with the triangulated GMergedMesh 
+    if(!pmt) LOG(fatal) << "GPmt pmt NULL from GGeo::getPmt " ;
+    assert( pmt && "GGeoTest::loadPmtDirty GGeo::getPmt returned NULL " );
 
+    GParts* pts = pmt->getParts();
+ 
+    mmpmt->setParts(pts); 
+    
     return mmpmt ; 
 }
 

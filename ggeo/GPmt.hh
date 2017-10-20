@@ -8,7 +8,6 @@ class GParts ;
 class GCSG ; 
 class GBndLib ; 
 
-
 /**
 
 GPmt
@@ -18,6 +17,9 @@ Analytic PMT description obtained from parsing DetDesc
 see python scripts in ~/opticks/ana/pmt (formerly ~/env/nuwa/detdesc/pmt/)
 and pmt- bash functions 
 
+This is mostly succeeded by full CSG tree, however still trying to 
+keeping this alive for tpmt- and as the manually partitioned geometry 
+is really fast to raytrace.
 
 **/
 
@@ -35,26 +37,25 @@ class GGEO_API GPmt {
    public:
        GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index);
        void setPath(const char* path);
+       void dump(const char* msg="GPmt::dump");
    public:
        void addContainer(gbbox& bb, const char* bnd );
    private:
        void loadFromCache(NSlice* slice);    
        void setParts(GParts* parts);
        void setCSG(GCSG* csg);
- 
    public:
-       GParts* getParts();
-       GCSG*   getCSG();
+       GParts*     getParts();
+       GCSG*       getCSG();
        const char* getPath();
        unsigned    getIndex(); 
    private:
-       Opticks*           m_cache ; 
+       Opticks*           m_ok ; 
        GBndLib*           m_bndlib ; 
        unsigned int       m_index ;
        GParts*            m_parts ;
        GCSG*              m_csg ;
        const char*        m_path ;
 };
-
 
 

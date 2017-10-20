@@ -32,8 +32,15 @@ GPmt* GPmt::load(Opticks* ok, GBndLib* bndlib, unsigned int index, NSlice* slice
     GPmt* pmt = NULL ; 
     OpticksResource* resource = ok->getResource();
     std::string path = resource->getPmtPath(index); 
+    bool exists = OpticksResource::existsFile(path.c_str(), FILENAME) ;
 
-    if(OpticksResource::existsFile(path.c_str(), FILENAME))
+    LOG(info) << "GPmt::load"
+              << " index " << index 
+              << " exists " << ( exists ? "Y" : "N" )
+              << " path " << path 
+              ;    
+
+    if(exists)
     {
         pmt = new GPmt(ok, bndlib, index);
         pmt->loadFromCache(slice);
@@ -68,7 +75,7 @@ const unsigned GPmt::NTRAN = 3 ;
 
 void GPmt::loadFromCache(NSlice* slice)
 {
-    OpticksResource* resource = m_cache->getResource();
+    OpticksResource* resource = m_ok->getResource();
 
     //const char* base = resource->getIdPath();
     const char* base = resource->getDetectorBase();
@@ -115,6 +122,17 @@ void GPmt::loadFromCache(NSlice* slice)
     }
 
 
+    LOG(info) << "GPmt::loadFromCache"
+              << " bndSpec_orig " << bndSpec_orig
+              << " bndSpec " << bndSpec
+              << " materials " << materials
+              << " lvnames " << lvnames
+              << " pvnames " << pvnames
+              << " slice " << slice 
+              ;
+
+
+    //if(bndSpec) bndSpec->dump("(GItemList)bndSpec->dump()"); 
 
     NPY<float>* tranBuf = NPY<float>::make(0,NTRAN,4,4);
     tranBuf->zero();
@@ -126,21 +144,22 @@ void GPmt::loadFromCache(NSlice* slice)
     parts->setAnalyticVersion(getIndex());
     parts->setPrimFlag(CSG_FLAGPARTLIST);
 
+    //parts->close() ; // apropos here ? NO : get OMAT-unset-error. Perhaps setContainingMaterial before close ?
+
     setParts(parts);
 
     GCSG* csg = new GCSG(csgBuf, materials, lvnames, pvnames ) ;
     setCSG(csg);
 
+    //GItemList* bndSpec2 = parts->getBndSpec();
+    //if(bndSpec2) bndSpec2->dump("(GItemList)bndSpec2->dump()"); 
+     
 }
 
 
-
-
-
-
-GPmt::GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index) 
+GPmt::GPmt(Opticks* ok, GBndLib* bndlib, unsigned int index) 
     :
-    m_cache(cache),
+    m_ok(ok),
     m_bndlib(bndlib),
     m_index(index),
     m_parts(NULL),
@@ -148,6 +167,20 @@ GPmt::GPmt(Opticks* cache, GBndLib* bndlib, unsigned int index)
     m_path(NULL)
 {
 }
+
+
+void GPmt::dump(const char* msg)
+{
+    LOG(info) << msg 
+              << " m_index " << m_index
+              << " m_path " << ( m_path ? m_path : "-" ) 
+              << " m_parts " << m_parts
+              << " m_csg " << m_csg
+              << " m_bndlib " << m_bndlib
+              ;
+
+}
+
 
 void GPmt::setParts(GParts* parts)
 {
@@ -167,7 +200,6 @@ GCSG* GPmt::getCSG()
     return m_csg ; 
 }
 
-
 void GPmt::setPath(const char* path)
 {
     m_path = path ? strdup(path) : NULL  ; 
@@ -180,13 +212,6 @@ unsigned GPmt::getIndex()
 {
     return m_index ; 
 }
-
-
-
-
-
-
-
 
 
 

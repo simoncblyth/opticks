@@ -14,7 +14,8 @@ from geom import Part
 
 log = logging.getLogger(__name__)
 
-from treebase import Node, Tree
+
+from opticks.analytic.treebase import Tree, Node
 
 
 class NodePartitioner(object):

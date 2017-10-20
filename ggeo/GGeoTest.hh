@@ -40,13 +40,17 @@ class GGEO_API GGeoTest {
     private:
        GMergedMesh* create();
     private:
-       GMergedMesh* combineSolids( std::vector<GSolid*>& solids);
-
+       GMergedMesh* combineSolids( std::vector<GSolid*>& solids, GMergedMesh* mm0);
+       GSolid* makeSolidFromConfig( unsigned i );
        void loadCSG(const char* csgpath, std::vector<GSolid*>& solids );
-       GMergedMesh* createPmtInBox();
-       void createBoxInBox(std::vector<GSolid*>& solids);
 
-       GMergedMesh* loadPmt();
+       void createBoxInBox(std::vector<GSolid*>& solids);
+       GMergedMesh* createPmtInBox();
+
+       void labelPartList( std::vector<GSolid*>& solids );
+       void finalizeAnalytic(GParts* pts, const char* containingMaterial);
+
+       GMergedMesh* loadPmtDirty();
     private:
        Opticks*         m_ok ; 
        bool             m_dbganalytic ; 

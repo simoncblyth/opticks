@@ -60,6 +60,10 @@ const char* OpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidSci
 const char* OpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
 const char* OpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
 
+const char* OpticksResource::SENSOR_SURFACE_DYB = "lvPmtHemiCathodeSensorSurface" ;
+const char* OpticksResource::SENSOR_SURFACE_JUNO = "SS-JUNO-UNKNOWN" ; 
+const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ; 
+
 
 
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
@@ -101,7 +105,9 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_detector_base(NULL),
        m_resource_base(NULL),
        m_material_map(NULL),
-       m_default_material(NULL)
+       m_default_material(NULL),
+       m_example_matnames(NULL),
+       m_sensor_surface(NULL)
 
 {
     init();
@@ -358,6 +364,10 @@ void OpticksResource::assignDefaultMaterial()
     if(m_juno)    m_example_matnames = EXAMPLE_MATNAMES_JUNO ;
     if(m_dayabay) m_example_matnames = EXAMPLE_MATNAMES_DYB ;
 
+    m_sensor_surface = SENSOR_SURFACE_OTHER ; 
+    if(m_juno)   m_sensor_surface =  SENSOR_SURFACE_JUNO  ; 
+    if(m_dayabay) m_sensor_surface = SENSOR_SURFACE_DYB ; 
+
 
 }
 
@@ -365,11 +375,15 @@ const char* OpticksResource::getDefaultMaterial()
 {
     return m_default_material ; 
 }
-
 const char* OpticksResource::getExampleMaterialNames()
 {
     return m_example_matnames ; 
 }
+const char* OpticksResource::getSensorSurface()
+{
+    return m_sensor_surface ; 
+}
+
 
 
 
@@ -646,6 +660,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
     std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
+    std::cerr << "sensor_surface    : " <<  (m_sensor_surface ? m_sensor_surface : "NULL" ) << std::endl; 
     std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  
 
     typedef std::map<std::string, std::string> SS ;

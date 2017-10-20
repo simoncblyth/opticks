@@ -110,6 +110,8 @@ void OKMgr::propagate()
 
 void OKMgr::visualize()
 {
+    const Opticks& ok = *m_ok ; 
+    if(ok("noviz")) return ; 
     if(m_viz) m_viz->visualize();
 }
 

@@ -113,6 +113,7 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("nopropagate,P",  "inhibit generation/propagation") ;
 
+
    m_desc.add_options()
        ("noevent,E",  "inhibit event handling") ;
 
@@ -205,7 +206,7 @@ void OpticksCfg<Listener>::init()
        ("optixviz",  "Enable OptiXViz, needed in load mode where ordinarily OptiX is not enabled as no propagation is done.") ;
 
    m_desc.add_options()
-       ("noviz,V",  "just generate, propagate and save : no visualization") ;
+       ("noviz,V",  "just generate, propagate and save : no visualization, (OKMgr level)") ;
 
    m_desc.add_options()
        ("noindex,I",  "no photon/record indexing") ;

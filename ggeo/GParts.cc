@@ -728,9 +728,17 @@ void GParts::add(GParts* other, unsigned verbosity )
 void GParts::setContainingMaterial(const char* material)
 {
     // for flexibility persisted GParts should leave the outer containing material
-    // set to a default marker name, to allow the GParts to be placed within other geometry
+    // set to a default marker name such as "CONTAINING_MATERIAL", 
+    // to allow the GParts to be placed within other geometry
 
-    m_bndspec->replaceField(0, GParts::CONTAINING_MATERIAL, material );
+    unsigned field    = 0 ; 
+    const char* from  = GParts::CONTAINING_MATERIAL ;
+    const char* to    = material  ;
+    const char* delim = "/" ;     
+
+    m_bndspec->replaceField(field, from, to, delim );
+
+    // all field zero *from* occurences are replaced with *to* 
 }
 
 void GParts::setSensorSurface(const char* surface)

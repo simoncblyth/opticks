@@ -8,6 +8,8 @@ class GMergedMesh ;
 GCSG
 ======
 
+* **GCSG predates full CSG tree implemented in NCSG**
+
 Provides convenient access to csg NPY buffer created with python.
 
 Users

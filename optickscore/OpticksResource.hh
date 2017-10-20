@@ -40,6 +40,11 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static const char* DEFAULT_MATERIAL_OTHER ;
 
     public:
+       static const char* SENSOR_SURFACE_DYB ;
+       static const char* SENSOR_SURFACE_JUNO ;
+       static const char* SENSOR_SURFACE_OTHER ;
+
+    public:
        static const char* EXAMPLE_MATNAMES_DYB ;
        static const char* EXAMPLE_MATNAMES_JUNO ;
        static const char* EXAMPLE_MATNAMES_OTHER ;
@@ -71,6 +76,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
        const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
        const char* getExampleMaterialNames();  // comma delimited list of short material names
+       const char* getSensorSurface(); 
     public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
@@ -176,6 +182,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_material_map  ;
        const char* m_default_material  ;
        const char* m_example_matnames  ;
+       const char* m_sensor_surface  ;
        
    private:
        std::map<std::string, std::string> m_metadata ;  

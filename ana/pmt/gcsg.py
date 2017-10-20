@@ -229,7 +229,7 @@ class GCSG(object):
         data = np.zeros([len(flat),4,4],dtype=np.float32)
         offset = 0 
         for cn in gcsg:
-            assert type(cn) is GCSG 
+            assert type(cn) is GCSG, (cn, type(cn))
             offset = cls.serialize_r(data, offset, cn)
         pass
         log.info("GCSG.serialize tot flattened %s final offset %s " % (len(flat), offset))
