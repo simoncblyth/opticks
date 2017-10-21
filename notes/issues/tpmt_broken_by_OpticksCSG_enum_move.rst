@@ -39,15 +39,83 @@ Vague recollections
 
 
 
+
+
+Slice testing to isolate z-offset part
+-----------------------------------------------
+
+Formation 4-4-2-1-1-(1) slicing prim by prim
+
+::
+
+    tpmt-;tpmt-- --apmtslice 0:4   (4)
+    tpmt-;tpmt-- --apmtslice 4:8   (4)
+        # expected PMT shape
+        # near scan cutting into cylinder : not dark on inside ?
+
+    tpmt-;tpmt-- --apmtslice 3:4   
+        # just the tubs : open shape (!) bright on inside ?
+        # TODO: use CSG tubs with partlist ?
+
+    tpmt-;tpmt-- --apmtslice 8:10   (2)
+        # just cathode
+        # GPmtTest --apmtidx 2 --apmtslice 8:10
+
+    tpmt-;tpmt-- --apmtslice 10:11  (1)
+        # z-shifted 
+        # hemisphere missing transform
+        # GPmtTest --apmtidx 2 --apmtslice 10:11
+
+    tpmt-;tpmt-- --apmtslice 11:12  (1)
+        # z-shifted 
+        # tubs missing transform : its looks symetrical in z 
+        # GPmtTest --apmtidx 2 --apmtslice 11:12
+         
+
+
+
+::
+
+    GPmtTest --apmtidx 2 --apmtslice 10:11
+
+    2017-10-21 18:23:51.168 INFO  [64542] [GParts::dump@1380] GParts::dump ni 1 lim 20 ulim 1
+         0.0000      0.0000      0.0000     98.0000 
+         0.0000      0.0000     123 <-bnd        0 <-INDEX    bn OpaqueVacuum///Vacuum 
+       -97.1514    -97.1514    -98.0000           5 (sphere) TYPECODE 
+        97.1514     97.1514    -12.8687           3 (nodeIndex) 
+
+::
+
+    GPmtTest --apmtidx 2 --apmtslice 11:12
+    ...
+
+    2017-10-21 18:18:34.213 INFO  [63388] [GParts::dump@1380] GParts::dump ni 1 lim 20 ulim 1
+         0.0000      0.0000      0.0000     27.5000 
+       166.0000      0.0000      30 <-bnd        0 <-INDEX    bn Vacuum///OpaqueVacuum 
+       -27.5000    -27.5000    -83.0000          11 (tubs) TYPECODE 
+        27.5000     27.5000     83.0000           4 (nodeIndex) 
+
+
+
+The two physvol offsets not being honoured::
+
+    105 
+    106     <physvol name="pvPmtHemiBottom"
+    107          logvol="/dd/Geometry/PMT/lvPmtHemiBottom">
+    108       <posXYZ z="PmtHemiFaceOff+PmtHemiBellyOff"/>
+    109     </physvol>
+    110 
+    111     <physvol name="pvPmtHemiDynode"
+    112          logvol="/dd/Geometry/PMT/lvPmtHemiDynode">
+    113       <posXYZ z="-0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness"/>
+    114     </physvol>
+
+
+
 GPU dumping : note parallelised shuffle
 --------------------------------------------
 
 * suspect the part to prim assoc for primIdx 0 wrong...
-
-
-
-
-
 
 ::
 
@@ -109,80 +177,12 @@ Expecting 4 not 5 parts for 1st::
     2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (  12   -1    0    0) 
     2017-10-21 16:39:52.022 INFO  [34449] [GParts::dump@1380] GParts::dump ni 13 lim 10 ulim 10
 
-         0.0000      0.0000     69.0000    102.0000 
-         0.0000      0.0000      27 <-bnd        0 <-INDEX    bn MineralOil///Pyrex 
-      -101.1682   -101.1682    -23.8382           5 (sphere) TYPECODE 
-       101.1682    101.1682     56.0000           0 (nodeIndex) 
-
-         0.0000      0.0000     43.0000    102.0000 
-         0.0000      0.0000      27 <-bnd        1 <-INDEX    bn MineralOil///Pyrex 
-      -101.1682   -101.1682     56.0000           5 (sphere) TYPECODE 
-       101.1682    101.1682    100.0698           0 (nodeIndex) 
-
-         0.0000      0.0000      0.0000    131.0000 
-         0.0000      0.0000      27 <-bnd        2 <-INDEX    bn MineralOil///Pyrex 
-       -84.5402    -84.5402    100.0698           5 (sphere) TYPECODE 
-        84.5402     84.5402    131.0000           0 (nodeIndex) 
-
-         0.0000      0.0000    -84.5000     42.2500 
-       169.0000      0.0000      27 <-bnd        3 <-INDEX    bn MineralOil///Pyrex 
-       -42.2500    -42.2500   -169.0000          11 (tubs) TYPECODE 
-        42.2500     42.2500    -23.8382           0 (nodeIndex) 
-
-
-         0.0000      0.0000     69.0000     99.0000 
-         0.0000      0.0000     123 <-bnd        4 <-INDEX    bn Pyrex///OpaqueVacuum 
-       -98.1428    -98.1428    -21.8869           5 (sphere) TYPECODE 
-        98.1428     98.1428     56.0000           1 (nodeIndex) 
-
-         0.0000      0.0000     43.0000     99.0000 
-         0.0000      0.0000     124 <-bnd        5 <-INDEX    bn Pyrex/lvPmtHemiCathodeSensorSurface//Bialkali 
-       -98.1428    -98.1428     56.0000           5 (sphere) TYPECODE 
-        98.1428     98.1428     98.0465           1 (nodeIndex) 
-
-         0.0000      0.0000      0.0000    128.0000 
-         0.0000      0.0000     124 <-bnd        6 <-INDEX    bn Pyrex/lvPmtHemiCathodeSensorSurface//Bialkali 
-       -82.2854    -82.2854     98.0465           5 (sphere) TYPECODE 
-        82.2854     82.2854    128.0000           1 (nodeIndex) 
-
-         0.0000      0.0000    -81.5000     39.2500 
-       166.0000      0.0000      28 <-bnd        7 <-INDEX    bn Pyrex///Vacuum 
-       -39.2500    -39.2500   -164.5000          11 (tubs) TYPECODE 
-        39.2500     39.2500    -21.8869           1 (nodeIndex) 
-
-
-         0.0000      0.0000      0.0000    127.9500 
-         0.0000      0.0000     125 <-bnd        8 <-INDEX    bn Bialkali///Vacuum 
-       -82.2478    -82.2478     98.0128           5 (sphere) TYPECODE 
-        82.2478     82.2478    127.9500           2 (nodeIndex) 
-
-         0.0000      0.0000     43.0000     98.9500 
-         0.0000      0.0000     125 <-bnd        9 <-INDEX    bn Bialkali///Vacuum 
-       -98.0932    -98.0932     55.9934           5 (sphere) TYPECODE 
-        98.0932     98.0932     98.0128           2 (nodeIndex) 
-
-         0.0000      0.0000      0.0000     98.0000 
-         0.0000      0.0000     126 <-bnd       10 <-INDEX    bn OpaqueVacuum///Vacuum 
-       -97.1514    -97.1514    -98.0000           5 (sphere) TYPECODE 
-        97.1514     97.1514    -12.8687           3 (nodeIndex) 
-
-         0.0000      0.0000      0.0000     27.5000 
-       166.0000      0.0000      30 <-bnd       11 <-INDEX    bn Vacuum///OpaqueVacuum 
-       -27.5000    -27.5000    -83.0000          11 (tubs) TYPECODE 
-        27.5000     27.5000     83.0000           4 (nodeIndex) 
-
-         0.0000      0.0000      0.0000    400.0000 
-         0.0000      0.0000     127 <-bnd       12 <-INDEX    bn Rock//perfectAbsorbSurface/MineralOil 
-      -400.0100   -400.0100   -400.0100           6 (box) TYPECODE 
-       400.0100    400.0100    400.0100           0 (nodeIndex) 
-
-
-
 ::
 
     GPmtTest --apmtidx 2   //  4-4-2-1-1 ... so combination is incorrectly adding to 1st prim
 
 
+Yep fixed by setNodeIndex for the container GParts.
 
 
 

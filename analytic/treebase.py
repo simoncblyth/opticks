@@ -146,6 +146,9 @@ class Node(object):
 
         node.posXYZ = node.pv.find_(postype) if node.pv is not None else None
 
+        ## HMM ? is this missing node.lv transforms ? See ddbase.py Elem._get_children
+
+
         #node.dump("visitWrap_")
         return node
 

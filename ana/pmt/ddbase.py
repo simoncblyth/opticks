@@ -319,6 +319,8 @@ class Elem(E):
             ## OR use a different class to hold the original lv   
             ##    together with its posXYZ ?
             ##
+            ## 2017-10-21 : why not just attach to self (the pv) ? see treebase.py:Node.create
+            ## 
 
             if posXYZ is not None:
                 log.info("children... %s passing pv posXYZ to lv %s  " % (self.name, repr(lv))) 
