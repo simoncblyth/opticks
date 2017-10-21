@@ -117,13 +117,13 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     //if(primIdx == 0) transform_test();
     //if(primIdx == 0) solve_callable_test();
 
-    if(primIdx >= 0)
+    if(primIdx == 0)
     {
         unsigned partBuffer_size = partBuffer.size() ;
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
 
-        rtPrintf("## intersect_analytic.cu:bounds primIdx:%4d pts:%4d pln:%4d trs:%4d \n", primIdx, partBuffer_size, planBuffer_size, tranBuffer_size ); 
+        rtPrintf("## intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
     }
 
 
@@ -151,9 +151,26 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         { 
             Part pt = partBuffer[partOffset + p] ; 
             unsigned typecode = pt.typecode() ; 
+            unsigned boundary = pt.boundary() ; 
 
-            identity.z = pt.boundary() ;  // boundary from partBuffer (see ggeo-/GPmt)
-            // ^^^^ needed ? why not other branch ?
+            identity.z = boundary ;  // boundary from partBuffer (see ggeo-/GPmt)
+
+            rtPrintf("// primIdx:%2d  p:%2d bnd:%3d typ:%3d pt.q2.f ( %10.4f %10.4f %10.4f %10.4f ) pt.q3.f ( %10.4f %10.4f %10.4f %10.4f ) \n", 
+                    primIdx,
+                    p,
+                    boundary,
+                    typecode,
+
+                    pt.q2.f.x,
+                    pt.q2.f.y,
+                    pt.q2.f.z,
+                    pt.q2.f.w,
+
+                    pt.q3.f.x,
+                    pt.q3.f.y,
+                    pt.q3.f.z,
+                    pt.q3.f.w
+                    );
 
             if(typecode == CSG_PRISM) 
             {

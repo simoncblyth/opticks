@@ -200,7 +200,14 @@ void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
         int flags = csgflag ;
 
         pts->setIndex(0u, i);
-        pts->setNodeIndex(0u, 0 );  // seems nodeIndex not used for CSG_FLAGPARTLIST 
+        pts->setNodeIndex(0u, 0 );  
+        //
+        // for CSG_FLAGPARTLIST the nodeIndex is crucially used to associate parts to their prim 
+        // setting all to zero is structuring all parts into a single prim ... 
+        // can get away with that for BoxInBox (for now)
+        // but would definitely not work for PmtInBox 
+        //
+
         pts->setTypeCode(0u, flags);
 
         pts->setBndLib(m_bndlib);
@@ -214,7 +221,7 @@ void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
     }
 }
 
-GSolid* GGeoTest::makeSolidFromConfig( unsigned i )
+GSolid* GGeoTest::makeSolidFromConfig( unsigned i ) // setup nodeIndex here ?
 {
     std::string node = m_config->getNodeString(i);
     OpticksCSG_t type = m_config->getTypeCode(i);
@@ -275,7 +282,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     assert(mmpmt);
 
     unsigned pmtNumSolids = mmpmt->getNumSolids() ; 
-    container->setIndex( pmtNumSolids );
+    container->setIndex( pmtNumSolids );   // <-- HMM: MAYBE THIS SHOULD FEED INTO GParts::setNodeIndex ?
 
     LOG(info) << "GGeoTest::createPmtInBox " 
               << " spec " << spec 
@@ -287,8 +294,12 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMesh* mesh = const_cast<GMesh*>(container->getMesh()); // TODO: reorg to avoid 
     mesh->setIndex(1000);
     
-    container->getParts()->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
-    container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
+    GParts* cpts = container->getParts() ;
+
+    cpts->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
+    cpts->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
+    cpts->setNodeIndex(0, pmtNumSolids);   // NodeIndex used to associate parts to their prim, fixed 5-4-2-1-1 issue yielding 4-4-2-1-1-1
+
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
 

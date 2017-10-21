@@ -567,7 +567,12 @@ void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned
     }
 
     if(!m_parts) m_parts = new GParts() ; 
+
+
     m_parts->add(pts, verbosity); 
+
+
+
 }
 
 

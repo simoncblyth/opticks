@@ -38,6 +38,154 @@ Vague recollections
 
 
 
+
+GPU dumping : note parallelised shuffle
+--------------------------------------------
+
+* suspect the part to prim assoc for primIdx 0 wrong...
+
+
+
+
+
+
+::
+
+    ## intersect_analytic.cu:bounds buffer sizes pts:  13 pln:   0 trs:   0 
+    // primIdx: 0  p: 0 bnd: 27 typ:  5 pt.q2.f (  -101.1682  -101.1682   -23.8382     0.0000 ) pt.q3.f (   101.1682   101.1682    56.0000     0.0000 ) 
+    // primIdx: 1  p: 0 bnd:124 typ:  5 pt.q2.f (   -98.1428   -98.1428    56.0000     0.0000 ) pt.q3.f (    98.1428    98.1428    98.0465     0.0000 ) 
+    // primIdx: 2  p: 0 bnd:125 typ:  5 pt.q2.f (   -98.0932   -98.0932    55.9934     0.0000 ) pt.q3.f (    98.0932    98.0932    98.0128     0.0000 ) 
+    // primIdx: 3  p: 0 bnd: 30 typ: 11 pt.q2.f (   -27.5000   -27.5000   -83.0000     0.0000 ) pt.q3.f (    27.5000    27.5000    83.0000     0.0000 ) 
+    // primIdx: 4  p: 0 bnd:127 typ:  6 pt.q2.f (  -400.0100  -400.0100  -400.0100     0.0000 ) pt.q3.f (   400.0100   400.0100   400.0100     0.0000 ) 
+    // primIdx: 0  p: 1 bnd: 27 typ:  5 pt.q2.f (  -101.1682  -101.1682    56.0000     0.0000 ) pt.q3.f (   101.1682   101.1682   100.0698     0.0000 ) 
+    // primIdx: 1  p: 1 bnd:124 typ:  5 pt.q2.f (   -82.2854   -82.2854    98.0465     0.0000 ) pt.q3.f (    82.2854    82.2854   128.0000     0.0000 ) 
+    // primIdx: 2  p: 1 bnd:126 typ:  5 pt.q2.f (   -97.1514   -97.1514   -98.0000     0.0000 ) pt.q3.f (    97.1514    97.1514   -12.8687     0.0000 ) 
+    // primIdx: 0  p: 2 bnd: 27 typ:  5 pt.q2.f (   -84.5402   -84.5402   100.0698     0.0000 ) pt.q3.f (    84.5402    84.5402   131.0000     0.0000 ) 
+    // primIdx: 1  p: 2 bnd: 28 typ: 11 pt.q2.f (   -39.2500   -39.2500  -164.5000     0.0000 ) pt.q3.f (    39.2500    39.2500   -21.8869     0.0000 ) 
+    // primIdx: 0  p: 3 bnd: 27 typ: 11 pt.q2.f (   -42.2500   -42.2500  -169.0000     0.0000 ) pt.q3.f (    42.2500    42.2500   -23.8382     0.0000 ) 
+    // primIdx: 1  p: 3 bnd:125 typ:  5 pt.q2.f (   -82.2478   -82.2478    98.0128     0.0000 ) pt.q3.f (    82.2478    82.2478   127.9500     0.0000 ) 
+    // primIdx: 0  p: 4 bnd:123 typ:  5 pt.q2.f (   -98.1428   -98.1428   -21.8869     0.0000 ) pt.q3.f (    98.1428    98.1428    56.0000     0.0000 ) 
+
+
+    // manually unshuffled 
+
+    ## intersect_analytic.cu:bounds buffer sizes pts:  13 pln:   0 trs:   0 
+    // primIdx: 0  p: 0 bnd: 27 typ:  5 pt.q2.f (  -101.1682  -101.1682   -23.8382     0.0000 ) pt.q3.f (   101.1682   101.1682    56.0000     0.0000 ) 
+    // primIdx: 0  p: 1 bnd: 27 typ:  5 pt.q2.f (  -101.1682  -101.1682    56.0000     0.0000 ) pt.q3.f (   101.1682   101.1682   100.0698     0.0000 ) 
+    // primIdx: 0  p: 2 bnd: 27 typ:  5 pt.q2.f (   -84.5402   -84.5402   100.0698     0.0000 ) pt.q3.f (    84.5402    84.5402   131.0000     0.0000 ) 
+    // primIdx: 0  p: 3 bnd: 27 typ: 11 pt.q2.f (   -42.2500   -42.2500  -169.0000     0.0000 ) pt.q3.f (    42.2500    42.2500   -23.8382     0.0000 ) 
+
+    // primIdx: 0  p: 4 bnd:123 typ:  5 pt.q2.f (   -98.1428   -98.1428   -21.8869     0.0000 ) pt.q3.f (    98.1428    98.1428    56.0000     0.0000 ) 
+    ^^^^^^^^^^  
+
+    // primIdx: 1  p: 0 bnd:124 typ:  5 pt.q2.f (   -98.1428   -98.1428    56.0000     0.0000 ) pt.q3.f (    98.1428    98.1428    98.0465     0.0000 ) 
+    // primIdx: 1  p: 1 bnd:124 typ:  5 pt.q2.f (   -82.2854   -82.2854    98.0465     0.0000 ) pt.q3.f (    82.2854    82.2854   128.0000     0.0000 ) 
+    // primIdx: 1  p: 2 bnd: 28 typ: 11 pt.q2.f (   -39.2500   -39.2500  -164.5000     0.0000 ) pt.q3.f (    39.2500    39.2500   -21.8869     0.0000 ) 
+    // primIdx: 1  p: 3 bnd:125 typ:  5 pt.q2.f (   -82.2478   -82.2478    98.0128     0.0000 ) pt.q3.f (    82.2478    82.2478   127.9500     0.0000 ) 
+
+    // primIdx: 2  p: 0 bnd:125 typ:  5 pt.q2.f (   -98.0932   -98.0932    55.9934     0.0000 ) pt.q3.f (    98.0932    98.0932    98.0128     0.0000 ) 
+    // primIdx: 2  p: 1 bnd:126 typ:  5 pt.q2.f (   -97.1514   -97.1514   -98.0000     0.0000 ) pt.q3.f (    97.1514    97.1514   -12.8687     0.0000 ) 
+
+    // primIdx: 3  p: 0 bnd: 30 typ: 11 pt.q2.f (   -27.5000   -27.5000   -83.0000     0.0000 ) pt.q3.f (    27.5000    27.5000    83.0000     0.0000 ) 
+
+    // primIdx: 4  p: 0 bnd:127 typ:  6 pt.q2.f (  -400.0100  -400.0100  -400.0100     0.0000 ) pt.q3.f (   400.0100   400.0100   400.0100     0.0000 ) 
+
+
+
+    // intersect_analytic.cu:bounds primIdx 0 primFlag 100 partOffset   0 numParts   5  min  -101.1682  -101.1682  -169.0000 max   101.1682   101.1682   131.0000 
+    // intersect_analytic.cu:bounds primIdx 1 primFlag 100 partOffset   5 numParts   4  min   -98.1428   -98.1428  -164.5000 max    98.1428    98.1428   128.0000 
+    // intersect_analytic.cu:bounds primIdx 2 primFlag 100 partOffset   9 numParts   2  min   -98.0932   -98.0932   -98.0000 max    98.0932    98.0932    98.0128 
+    // intersect_analytic.cu:bounds primIdx 3 primFlag 100 partOffset  11 numParts   1  min   -27.5000   -27.5000   -83.0000 max    27.5000    27.5000    83.0000 
+    // intersect_analytic.cu:bounds primIdx 4 primFlag 100 partOffset  12 numParts   1  min  -400.0100  -400.0100  -400.0100 max   400.0100   400.0100   400.0100 
+
+
+Expecting 4 not 5 parts for 1st::
+
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1135] OGeo::makeAnalyticGeometry --dbganalytic (part_offset, parts_for_prim, tran_offset, plan_offset)  numPrim: 5 ulim: 5
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (   0   -5    0    0) 
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (   5   -4    0    0) 
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (   9   -2    0    0) 
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (  11   -1    0    0) 
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dumpPrimInfo@1146]  (  12   -1    0    0) 
+    2017-10-21 16:39:52.022 INFO  [34449] [GParts::dump@1380] GParts::dump ni 13 lim 10 ulim 10
+
+         0.0000      0.0000     69.0000    102.0000 
+         0.0000      0.0000      27 <-bnd        0 <-INDEX    bn MineralOil///Pyrex 
+      -101.1682   -101.1682    -23.8382           5 (sphere) TYPECODE 
+       101.1682    101.1682     56.0000           0 (nodeIndex) 
+
+         0.0000      0.0000     43.0000    102.0000 
+         0.0000      0.0000      27 <-bnd        1 <-INDEX    bn MineralOil///Pyrex 
+      -101.1682   -101.1682     56.0000           5 (sphere) TYPECODE 
+       101.1682    101.1682    100.0698           0 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    131.0000 
+         0.0000      0.0000      27 <-bnd        2 <-INDEX    bn MineralOil///Pyrex 
+       -84.5402    -84.5402    100.0698           5 (sphere) TYPECODE 
+        84.5402     84.5402    131.0000           0 (nodeIndex) 
+
+         0.0000      0.0000    -84.5000     42.2500 
+       169.0000      0.0000      27 <-bnd        3 <-INDEX    bn MineralOil///Pyrex 
+       -42.2500    -42.2500   -169.0000          11 (tubs) TYPECODE 
+        42.2500     42.2500    -23.8382           0 (nodeIndex) 
+
+
+         0.0000      0.0000     69.0000     99.0000 
+         0.0000      0.0000     123 <-bnd        4 <-INDEX    bn Pyrex///OpaqueVacuum 
+       -98.1428    -98.1428    -21.8869           5 (sphere) TYPECODE 
+        98.1428     98.1428     56.0000           1 (nodeIndex) 
+
+         0.0000      0.0000     43.0000     99.0000 
+         0.0000      0.0000     124 <-bnd        5 <-INDEX    bn Pyrex/lvPmtHemiCathodeSensorSurface//Bialkali 
+       -98.1428    -98.1428     56.0000           5 (sphere) TYPECODE 
+        98.1428     98.1428     98.0465           1 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    128.0000 
+         0.0000      0.0000     124 <-bnd        6 <-INDEX    bn Pyrex/lvPmtHemiCathodeSensorSurface//Bialkali 
+       -82.2854    -82.2854     98.0465           5 (sphere) TYPECODE 
+        82.2854     82.2854    128.0000           1 (nodeIndex) 
+
+         0.0000      0.0000    -81.5000     39.2500 
+       166.0000      0.0000      28 <-bnd        7 <-INDEX    bn Pyrex///Vacuum 
+       -39.2500    -39.2500   -164.5000          11 (tubs) TYPECODE 
+        39.2500     39.2500    -21.8869           1 (nodeIndex) 
+
+
+         0.0000      0.0000      0.0000    127.9500 
+         0.0000      0.0000     125 <-bnd        8 <-INDEX    bn Bialkali///Vacuum 
+       -82.2478    -82.2478     98.0128           5 (sphere) TYPECODE 
+        82.2478     82.2478    127.9500           2 (nodeIndex) 
+
+         0.0000      0.0000     43.0000     98.9500 
+         0.0000      0.0000     125 <-bnd        9 <-INDEX    bn Bialkali///Vacuum 
+       -98.0932    -98.0932     55.9934           5 (sphere) TYPECODE 
+        98.0932     98.0932     98.0128           2 (nodeIndex) 
+
+         0.0000      0.0000      0.0000     98.0000 
+         0.0000      0.0000     126 <-bnd       10 <-INDEX    bn OpaqueVacuum///Vacuum 
+       -97.1514    -97.1514    -98.0000           5 (sphere) TYPECODE 
+        97.1514     97.1514    -12.8687           3 (nodeIndex) 
+
+         0.0000      0.0000      0.0000     27.5000 
+       166.0000      0.0000      30 <-bnd       11 <-INDEX    bn Vacuum///OpaqueVacuum 
+       -27.5000    -27.5000    -83.0000          11 (tubs) TYPECODE 
+        27.5000     27.5000     83.0000           4 (nodeIndex) 
+
+         0.0000      0.0000      0.0000    400.0000 
+         0.0000      0.0000     127 <-bnd       12 <-INDEX    bn Rock//perfectAbsorbSurface/MineralOil 
+      -400.0100   -400.0100   -400.0100           6 (box) TYPECODE 
+       400.0100    400.0100    400.0100           0 (nodeIndex) 
+
+
+
+::
+
+    GPmtTest --apmtidx 2   //  4-4-2-1-1 ... so combination is incorrectly adding to 1st prim
+
+
+
+
+
 old overview
 --------------
 
