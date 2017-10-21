@@ -33,6 +33,10 @@ Usage example::
     Enter YES to proceed... 
 
 
+Skip the prompt::
+
+     pmt-analytic --yes
+
 
 
 TESTS
@@ -76,7 +80,7 @@ gcsg.py
      CSG serializarion is however used via ggeo/GCSG for 
      the creation the Geant4 test geometry, including the PMT
 
-     NB GCSG was my initial take on CSG that never worked on GPU, 
+     NB ggeo/GCSG was my initial take on CSG that never worked on GPU, 
      the new way npy/NCSG was designed for GPU using a binary tree
      serialization to get over to GPU side 
      
@@ -464,13 +468,13 @@ EOU
 }
 
 pmt-cd(){  cd $(pmt-edir); }
+pmt-c(){   cd $(pmt-edir); }
 pmt-ocd(){ cd $(pmt-dir) ; }
 
 pmt-xml(){ vi $(pmt-dir)/hemi-pmt.xml ; }
 
 pmt-dir(){ echo $(local-base)/env/dyb/NuWa-trunk/dybgaudi/Detector/XmlDetDesc/DDDB/PMT ; }
 pmt-edir(){ echo $(opticks-home)/ana/pmt ; }
-
 
 pmt-pdf(){ open ~/opticks_refs/Detdesc_Solids.pdf ~/opticks_refs/Detdesc_lhcbdtd.pdf  ; }
 pmt-gg(){ open ~/opticks_refs/GDMLmanual.pdf ; }
@@ -481,9 +485,7 @@ pmt-dcd(){  cd $(pmt-ddir) ; }
 pmt-dfind(){
   local iwd=$PWD
   pmt-dcd
-  find . -name '*.xml' -exec grep -H ${1:-lvPmtHemi} {} \;
-
-  
+  find . -name '*.xml' -exec grep -H ${1:-lvPmtHemi} {} \; 
 }
 
 pmt-export(){  
@@ -502,7 +504,7 @@ pmt-i(){
 #pmt-run(){      python $(pmt-edir)/${1:-pmt}.py  ; }
 #pmt-ddpart(){   python $(pmt-edir)/ddpart.py  ; }
 #pmt-treepart(){ python $(pmt-edir)/treepart.py $*  ; }
-#pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
+pmt-analytic(){ python $(pmt-edir)/analytic.py $*  ; }
 #pmt-gcsg(){     python $(pmt-edir)/gcsg.py $*  ; }
 #
 

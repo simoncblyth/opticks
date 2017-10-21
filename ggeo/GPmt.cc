@@ -144,7 +144,16 @@ void GPmt::loadFromCache(NSlice* slice)
     parts->setAnalyticVersion(getIndex());
     parts->setPrimFlag(CSG_FLAGPARTLIST);
 
-    //parts->close() ; // apropos here ? NO : get OMAT-unset-error. Perhaps setContainingMaterial before close ?
+    //parts->close() ; // apropos here ? NO : get OMAT-unset-error. Must setContainingMaterial before close ?
+
+    const char* sensorSurface = m_ok->getSensorSurface();
+    const char* medium = m_ok->getAnalyticPMTMedium() ; 
+
+    parts->setContainingMaterial(medium);   
+    parts->setSensorSurface(sensorSurface) ;
+    parts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
+    parts->close();      // registerBoundaries, makePrimBuffer
+
 
     setParts(parts);
 
@@ -179,6 +188,17 @@ void GPmt::dump(const char* msg)
               << " m_bndlib " << m_bndlib
               ;
 
+    GParts* pts = getParts();
+    LOG(fatal) << "GPmt.GParts::dump" ; 
+    pts->dump("GParts::dump", 20 );
+
+    /*
+    GCSG* csg = getCSG();
+    csg->dump("GCSG::dump");
+    */ 
+
+    LOG(fatal) << "GPmt.GParts::Summary" ; 
+    pts->Summary(); 
 }
 
 

@@ -117,13 +117,13 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
     //if(primIdx == 0) transform_test();
     //if(primIdx == 0) solve_callable_test();
 
-    if(primIdx == 0)
+    if(primIdx >= 0)
     {
         unsigned partBuffer_size = partBuffer.size() ;
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
 
-        rtPrintf("## intersect_analytic.cu:bounds pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
+        rtPrintf("## intersect_analytic.cu:bounds primIdx:%4d pts:%4d pln:%4d trs:%4d \n", primIdx, partBuffer_size, planBuffer_size, tranBuffer_size ); 
     }
 
 
@@ -132,8 +132,12 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
-    const Prim prim    = primBuffer[primIdx]; 
+    const Prim prim    = primBuffer[primIdx];
+ 
     unsigned primFlag    = prim.primFlag() ;  
+    unsigned partOffset  = prim.partOffset() ;  
+    unsigned numParts    = prim.numParts() ; 
+
 
     if(primFlag == CSG_FLAGNODETREE || primFlag == CSG_FLAGINVISIBLE )  
     {
@@ -142,8 +146,6 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 #ifdef WITH_PARTLIST
     else if(primFlag == CSG_FLAGPARTLIST)  
     {
-        unsigned partOffset  = prim.partOffset() ;  
-        unsigned numParts    = prim.numParts() ; 
 
         for(unsigned int p=0 ; p < numParts ; p++)
         { 
@@ -169,7 +171,11 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         rtPrintf("## intersect_analytic.cu:bounds ABORT BAD primflag %d \n", primFlag );
         return ; 
     }
-    rtPrintf("// intersect_analytic.cu:bounds primIdx %d primFlag %d min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", primIdx, primFlag, 
+    rtPrintf("// intersect_analytic.cu:bounds primIdx %d primFlag %d partOffset %3d numParts %3d  min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
+        primIdx, 
+        primFlag, 
+        partOffset,
+        numParts,
         result[0],
         result[1],
         result[2],

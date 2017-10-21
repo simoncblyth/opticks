@@ -137,7 +137,7 @@ tpmt-testconfig()
                  pmtpath=$(tpmt-pmtpath)
                  control=$testverbosity,0,0,0
                  analytic=1
-                 node=box    parameters=0,0,0,300   boundary=Rock/NONE/perfectAbsorbSurface/$material
+                 node=box    parameters=0,0,0,400   boundary=Rock/NONE/perfectAbsorbSurface/$material
                    ) 
 
     echo "$(join _ ${test_config[@]})" 
@@ -205,8 +205,8 @@ tpmt--(){
 
 
 
-    local apmtidx=0  
-    #local apmtidx=2 
+    #local apmtidx=0  
+    local apmtidx=2 
 
     ## 1 -> non-existing /usr/local/opticks/opticksdata/export/DayaBay/GPmt/1/
     

@@ -592,6 +592,8 @@ optix::Geometry OGeo::makeGeometry(GMergedMesh* mergedmesh, unsigned lod)
     optix::Geometry geometry ; 
     const char geocode = mergedmesh->getGeoCode();
 
+    LOG(info) << "OGeo::makeGeometry geocode " << geocode ; 
+
     if(geocode == OpticksConst::GEOCODE_TRIANGULATED)
     {
         geometry = makeTriangulatedGeometry(mergedmesh, lod);
@@ -622,6 +624,9 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
 
     GParts* pts = mm->getParts(); assert(pts && "GMergedMesh with GEOCODE_ANALYTIC must have associated GParts, see GGeo::modifyGeometry "); 
 
+
+
+
     if(pts->getPrimBuffer() == NULL)
     {
         if(m_verbosity > 4) 
@@ -638,6 +643,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         LOG(warning) << "OGeo::makeAnalyticGeometry GParts::close NOT NEEDED " ; 
     }
     
+    LOG(info) << "OGeo::makeAnalyticGeometry pts: " << pts->desc() ; 
 
     if(m_verbosity > 3 || m_ok->hasOpt("dbganalytic")) pts->fulldump("OGeo::makeAnalyticGeometry --dbganalytic", 10) ;
 
@@ -663,7 +669,7 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
         bool match = numPrim == numSolids ;
         if(!match)
         {
-            LOG(fatal) << " MISMATCH (numPrim != numSolids) "
+            LOG(fatal) << " NodeTree : MISMATCH (numPrim != numSolids) "
                        << " numSolids " << numSolids 
                        << " numSolidsSelected " << numSolidsSelected 
                        << " numPrim " << numPrim 

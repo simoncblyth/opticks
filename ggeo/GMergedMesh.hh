@@ -81,7 +81,7 @@ private:
     void mergeSolidBBox( gfloat3* vertices, unsigned nvert );
     void mergeSolidDump( GSolid* solid);
 private:
-    void mergeMergedMesh( GMergedMesh* other, bool selected );
+    void mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity );
 public:
     float* getModelToWorldPtr(unsigned int index);
 

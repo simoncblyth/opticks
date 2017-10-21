@@ -4,14 +4,38 @@ tpmt broken by OpticksCSG enum move
 * shape/operator enum unification to use sysrap/OpticksCSG.{h,py} is incomplete
 * tpmt broken due to mis-interpretation of part buffer
 
+Vague recollections
+---------------------
+
+* GCSG not used for raytrace ? It exists just to allow Geant4 CSG re-creation of geometry ?
+
 
 2017-10-20 tpmt-- broken (again)
 --------------------------------------
 
-Following some effort to clean up GGeoTest::makePmtInBox
-still finding failure symptom that the raytrace of the PMT is missing.
+1. Following some effort to clean up GGeoTest::makePmtInBox
+   still finding failure symptom that the raytrace of the PMT is missing.
 
-Also wierd container box distortion, possible bad bbox ?
+2. Also wierd container box distortion, possible bad bbox ?  This turns out to 
+   be too tight a far causing clipping. 
+
+3. Found the default apmtidx of 0 loads analytic PMT with old enum codes, 
+   created a new one in slot 2.  
+
+   TODO: commit fixed analytic PMT into opticksdata slot 0 once this issue is resolved 
+
+4. Found that the GParts from the loaded PMT was not getting combined with the
+   container. After fixing that get OptiX hard crash at launch, forcing 
+   reboot. To just do init and avoid crash do::
+
+      tpmt-;tpmt-- -PV   ## --nopropagate --noviz
+
+   Cause of crash was omitting GParts::setPartList for the combi GParts,
+   so a PartList was being interpreted as a NodeTree.
+
+5. Now get a raytrace, but with a z-slipped dynode : several relative positions
+   seem wrong.
+
 
 
 old overview
@@ -27,6 +51,8 @@ old overview
 * seems the bndspec is OK, but this is not being treated as
   the input ? Instead the bnd in the .npy which are all zero
   is the input.
+
+  * just need to GParts::close in order to registerBoundaries
 
 
 ::

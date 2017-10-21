@@ -33,7 +33,7 @@ class GPmt(object):
         return self.xpath.replace(".npy","_%s.txt" % att)
 
     def gcsgpath(self):
-        return self.xpath.replace(".npy","_gcsg.npy")
+        return self.xpath.replace(".npy","_csg.npy")
 
 
     def save(self):
@@ -52,6 +52,7 @@ class GPmt(object):
         pass
         if hasattr(self.buf,"gcsg"):
             path = self.gcsgpath()
+            log.info("serializing gcsg to %s " % path) 
             gcsgbuf = GCSG.serialize_list(self.buf.gcsg)
             if gcsgbuf is not None:
                 log.info("saving gcsg to %s " % path)

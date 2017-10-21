@@ -55,6 +55,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getFxScConfig();
      const std::string& getFxAbConfig();
      const std::string& getAnalyticPMTSlice();
+     const std::string& getAnalyticPMTMedium();
 
      float        getEpsilon(); 
      int          getRngMax(); 
@@ -168,7 +169,7 @@ private:
      int         m_verbosity ; 
      int         m_apmtidx ; 
 
-
+     std::string m_apmtmedium ; 
      std::string m_gltfbase ; 
      std::string m_gltfname ;
      std::string m_gltfconfig ;

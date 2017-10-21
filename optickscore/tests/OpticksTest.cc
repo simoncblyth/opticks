@@ -67,36 +67,27 @@ void test_getMaterialMap(Opticks* ok)
 }
 
 
-
-
-
-
 int main(int argc, char** argv)
 {
     PLOG_(argc,argv);
     LOG(info) << argv[0] ;
-
 
     SYSRAP_LOG__ ; 
     BRAP_LOG__ ; 
     NPY_LOG__ ; 
     OKCORE_LOG__ ; 
      
-
     Opticks ok(argc, argv);
+    ok.configure();
 
     ok.Summary();
 
-
-    ok.configure();
     LOG(info) << "OpticksTest::main aft configure" ;
  
     test_MaterialSequence();  
     test_getDAEPath(&ok);  
     test_getGDMLPath(&ok);  
     test_getMaterialMap(&ok);  
-
-
 
     return 0 ;
 }

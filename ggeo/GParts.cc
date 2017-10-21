@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <cstdio>
 #include <cassert>
+#include <sstream>
 #include <climits>
 
 
@@ -264,7 +265,8 @@ GParts::GParts(GBndLib* bndlib)
       m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE)
+      m_primflag(CSG_FLAGNODETREE),
+      m_medium(NULL)
 {
       m_part_buffer->zero();
       m_tran_buffer->zero();
@@ -285,7 +287,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
       m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE)
+      m_primflag(CSG_FLAGNODETREE),
+      m_medium(NULL)
 {
       m_bndspec->add(spec);
       init() ; 
@@ -303,20 +306,31 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
       m_loaded(false),
       m_verbosity(0),
       m_analytic_version(0),
-      m_primflag(CSG_FLAGNODETREE)
+      m_primflag(CSG_FLAGNODETREE),
+      m_medium(NULL)
 {
      
       const std::string& reldir = spec->getRelDir() ;
       bool empty_rel = reldir.empty() ;
-      bool gpmt_0 = strcmp(reldir.c_str(), "GPmt/0")== 0 ; 
 
-      if(!gpmt_0)
+      //bool gpmt_0 = strcmp(reldir.c_str(), "GPmt/0")== 0 ; 
+
+      bool is_gpmt = !empty_rel && reldir.find("GPmt/") == 0 ; 
+
+      if(is_gpmt)
+      {
+          LOG(info) << "GParts::GParts detected is_gpmt " << reldir ; 
+      } 
+      else
       {
           if(!empty_rel)
              LOG(warning) << "GParts::GParts"
-                          << " EXPECTING EMPTY RelDir [" << reldir << "]"
+                          << " EXPECTING EMPTY RelDir FOR NON GPmt GParts [" << reldir << "]"
                           ;
           assert( empty_rel );
+          //  WHY ?
+          //  RELDIR IS GItemList ctor argument which 
+          //  GPmt::loadFromCache plants the relative PmtPath in ? 
       }
  
       init() ; 
@@ -361,6 +375,13 @@ bool GParts::isInvisible()
 {
     return m_primflag == CSG_FLAGINVISIBLE ;
 }
+
+const char* GParts::getPrimFlagString() const 
+{
+    return CSGName(m_primflag); 
+}
+
+
 void GParts::setInvisible()
 {
     setPrimFlag(CSG_FLAGINVISIBLE);
@@ -731,6 +752,13 @@ void GParts::setContainingMaterial(const char* material)
     // set to a default marker name such as "CONTAINING_MATERIAL", 
     // to allow the GParts to be placed within other geometry
 
+    if(m_medium)
+       LOG(fatal) << "setContainingMaterial called already " << m_medium 
+       ;
+
+    assert( m_medium == NULL && "GParts::setContainingMaterial WAS CALLED ALREADY " );
+    m_medium = strdup(material); 
+
     unsigned field    = 0 ; 
     const char* from  = GParts::CONTAINING_MATERIAL ;
     const char* to    = material  ;
@@ -750,7 +778,12 @@ void GParts::setSensorSurface(const char* surface)
 
 void GParts::close()
 {
-    if(m_verbosity > 1)
+    if(isClosed()) LOG(fatal) << "closed already " ;
+    assert(!isClosed()); 
+    m_closed = true ; 
+
+
+    //if(m_verbosity > 1)
     LOG(info) << "GParts::close START "
               << " verbosity " << m_verbosity 
                ; 
@@ -765,7 +798,7 @@ void GParts::close()
     if(m_verbosity > 1)
     dumpPrimBuffer(); 
 
-    if(m_verbosity > 1)
+    //if(m_verbosity > 1)
     LOG(info) << "GParts::close DONE " 
               << " verbosity " << m_verbosity 
               ; 
@@ -1146,6 +1179,19 @@ void GParts::Summary(const char* msg, unsigned lim)
 
 
 
+std::string GParts::desc()
+{
+    std::stringstream ss ; 
+    ss 
+       << " GParts "
+       << " primflag " << std::setw(20) << getPrimFlagString()
+       << " numParts " << std::setw(4) << getNumParts()
+       << " numPrim " << std::setw(4) << getNumPrim()
+       ;
+
+    return ss.str(); 
+}
+
 
 unsigned int GParts::getNumPrim()
 {
@@ -1312,8 +1358,11 @@ void GParts::fulldump(const char* msg, unsigned lim)
 
 void GParts::dump(const char* msg, unsigned lim)
 {
+
+
     LOG(info) << msg
               << " lim " << lim 
+              << " pbuf " << m_part_buffer->getShapeString()
               ; 
 
     dumpPrimInfo(msg, lim);

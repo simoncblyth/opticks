@@ -184,6 +184,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_resource(NULL),
        m_state(NULL),
        m_apmtslice(NULL),
+       m_apmtmedium(NULL),
 
        m_exit(false),
        m_compute(false),
@@ -252,6 +253,7 @@ void Opticks::ana()
 {
    m_ana->run();
 }
+
 
 bool Opticks::isDbgPhoton(int record_id)
 {
@@ -449,6 +451,11 @@ bool Opticks::isMaterialDbg() const
     return m_cfg->hasOpt("materialdbg") ;
 }
 
+bool Opticks::isDbgAnalytic() const
+{
+    return m_cfg->hasOpt("dbganalytic") ;
+}
+
 
 
 
@@ -590,6 +597,24 @@ float Opticks::getFxSc()
 unsigned Opticks::getAnalyticPMTIndex()
 {
     return m_cfg->getAnalyticPMTIndex();
+}
+
+const char* Opticks::getAnalyticPMTMedium()
+{
+    if(m_apmtmedium == NULL)
+    {
+        std::string cmed = m_cfg->getAnalyticPMTMedium() ;
+        std::string dmed = m_resource->getDefaultMedium()  ; 
+        LOG(info) 
+            << " cmed " << cmed 
+            << " cmed.empty " << cmed.empty()
+            << " dmed " << dmed 
+            << " dmed.empty " << dmed.empty()
+            ;
+
+        m_apmtmedium = !cmed.empty() ? strdup(cmed.c_str()) : strdup(dmed.c_str()) ;
+    }
+    return m_apmtmedium ;
 }
 
 NSlice* Opticks::getAnalyticPMTSlice()
@@ -863,6 +888,12 @@ void Opticks::Summary(const char* msg)
               ; 
 
     m_resource->Summary(msg);
+
+    std::cout
+        << std::setw(40) << " AnalyticPMTMedium "
+        << std::setw(40) << getAnalyticPMTMedium()
+        << std::endl
+        ;
 
     LOG(info) << msg << "DONE" ; 
 }

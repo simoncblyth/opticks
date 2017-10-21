@@ -7,7 +7,7 @@ GCSG
   ONCE NCSG BINARY-TREE APPROACH HAS PERCOLATED THRU FULL CHAIN
 
 * GCSG uses a first child, last child approach which is
-  not convenient CSG evaluation on GPU
+  not convenient for CSG evaluation on GPU
 
 * Renamed from "CSG" to "GCSG" to avoid confusion with "NCSG" and dev.csg.csg:CSG 
   and associate this with corresponding C++ side class ggeo/GCSG.
@@ -227,12 +227,25 @@ class GCSG(object):
             log.debug(" %s:%s " % (k, repr(p))) 
 
         data = np.zeros([len(flat),4,4],dtype=np.float32)
+
+        log.info(" dump gcsg repr, count  %d " % len(gcsg) ) 
+        for i,cn in enumerate(gcsg):
+            print i, repr(cn)
+        log.info(" dump gcsg type, count  %d " % len(gcsg) ) 
+        for i,cn in enumerate(gcsg):
+            is_gcsg = type(cn).__name__ == "GCSG" 
+            print i, type(cn), type(cn).__name__, "YES" if is_gcsg else "NO"
+
+        # curious "type(cn) is GCSG" is failing for : <class 'opticks.ana.pmt.gcsg.GCSG'> 
+        # so check on the name instead
+
         offset = 0 
         for cn in gcsg:
-            assert type(cn) is GCSG, (cn, type(cn))
+            assert type(cn).__name__ == "GCSG", (cn, type(cn).__name__)
             offset = cls.serialize_r(data, offset, cn)
         pass
-        log.info("GCSG.serialize tot flattened %s final offset %s " % (len(flat), offset))
+
+        log.info("GCSG.serialize tot len(flat) %s final offset %s " % (len(flat), offset))
         assert offset == len(flat)
         buf = data.view(Buf) 
         return buf
@@ -251,7 +264,7 @@ class GCSG(object):
         nodeindex = 0
         parentindex = 0 
 
-        if type(obj) is GCSG:
+        if type(obj).__name__ == "GCSG":
             log.debug("**serialize offset %s typ %s [%s] (%s)" % (offset,obj.typ,repr(obj),repr(obj.node)))
             nchild = len(obj.children)
             payload = obj.ele if nchild == 0 else obj    # CSG nodes wrapping single elem, kinda different 

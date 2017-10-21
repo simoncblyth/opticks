@@ -139,9 +139,13 @@ const char* GCSG::getPVName(unsigned int nodeindex)
 
 void GCSG::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    NPY<float>* buf = getCSGBuffer() ;
+    LOG(info) << msg 
+              << " m_csg_buffer " << buf->getShapeString()
+               ; 
 
-    NPY<float>* buf = m_csg_buffer ; 
+    //buf->dump("CSG Buffer");
+ 
     assert(buf);
     assert(buf->getDimensions() == 3);
 

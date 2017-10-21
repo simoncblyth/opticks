@@ -202,6 +202,7 @@ class OKCORE_API Opticks {
    public:
        NSlice*  getAnalyticPMTSlice();
        unsigned getAnalyticPMTIndex();
+       const char* getAnalyticPMTMedium();
    public:
        OpticksCfg<Opticks>* getCfg();
        const char*          getRenderMode();
@@ -316,6 +317,7 @@ class OKCORE_API Opticks {
        bool isTracer() const;
        bool isRayLOD() const ; // raytrace LOD via OptiX selector based on ray origin wrt instance position 
        bool isMaterialDbg() const ; 
+       bool isDbgAnalytic() const ; 
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
@@ -340,6 +342,7 @@ class OKCORE_API Opticks {
        OpticksResource*     m_resource ; 
        NState*              m_state ; 
        NSlice*              m_apmtslice ; 
+       const char*          m_apmtmedium ; 
    private:
        bool             m_exit ; 
        bool             m_compute ; 

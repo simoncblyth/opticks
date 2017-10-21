@@ -153,7 +153,7 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 
     com->allocate(); 
  
-    if(mm) com->mergeMergedMesh(mm, true);
+    if(mm) com->mergeMergedMesh(mm, true, verbosity );
     for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true, verbosity ) ;
 
     com->updateBounds();
@@ -161,9 +161,6 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
    
     return com ; 
 }
-
-
-
 
 
 
@@ -279,9 +276,25 @@ void GMergedMesh::countMesh( const GMesh* mesh )
 }
 
 
-void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
+void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
+
+
+    // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
+    GParts* pts = other->getParts(); 
+
+    if(pts && !m_parts) 
+    {
+        m_parts = new GParts() ; 
+        if(pts->isPartList()) m_parts->setPartList();
+    }
+
+    if(pts)
+    {
+        m_parts->add( pts, verbosity );
+    }
+
 
     unsigned int nsolid = other->getNumSolids();
 
@@ -346,16 +359,14 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected )
         m_cur_faces    += nface ;
         // offsets within the flat arrays
     }
-
-
-
-
 }
-
 
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
+    LOG(info) << "GMergedMesh::mergeSolid selected " << ( selected ? "YES" : "NO" ) ;  
+    
+
     GNode* node = static_cast<GNode*>(solid);
     GNode* base = getCurrentBase();
     unsigned ridx = solid->getRepeatIndex() ;  
@@ -538,10 +549,16 @@ void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned
 {
     // analytic CSG combined at node level  
 
+    LOG(info) << "GMergedMesh::mergeSolidAnalytic" 
+              << " pts " << ( pts ? pts->desc() : "-" )
+               ; 
+
+
     if(!pts)
     {
-        LOG(debug) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
-        return ; 
+        LOG(fatal) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
+        //return ; 
+        assert(pts);
     }
 
     if(transform && !transform->isIdentity())
@@ -761,7 +778,7 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
     for(unsigned i=0 ; i < nmm ; i++)
     {
         GMergedMesh* mm = mms[i] ;
-        com->mergeMergedMesh(mm, true);
+        com->mergeMergedMesh(mm, true, verbosity );
     } 
 
     //com->updateBounds(); ?

@@ -38,12 +38,14 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static const char* DEFAULT_MATERIAL_DYB ;
        static const char* DEFAULT_MATERIAL_JUNO ;
        static const char* DEFAULT_MATERIAL_OTHER ;
-
+    public:
+       static const char* DEFAULT_MEDIUM_DYB ;
+       static const char* DEFAULT_MEDIUM_JUNO ;
+       static const char* DEFAULT_MEDIUM_OTHER ;
     public:
        static const char* SENSOR_SURFACE_DYB ;
        static const char* SENSOR_SURFACE_JUNO ;
        static const char* SENSOR_SURFACE_OTHER ;
-
     public:
        static const char* EXAMPLE_MATNAMES_DYB ;
        static const char* EXAMPLE_MATNAMES_JUNO ;
@@ -75,6 +77,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
        const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
+       const char* getDefaultMedium();    // PMT medium material name 
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
     public:
@@ -181,6 +184,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_resource_base ;
        const char* m_material_map  ;
        const char* m_default_material  ;
+       const char* m_default_medium  ;
        const char* m_example_matnames  ;
        const char* m_sensor_surface  ;
        

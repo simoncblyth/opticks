@@ -48,7 +48,7 @@ class GGEO_API GGeoTest {
        GMergedMesh* createPmtInBox();
 
        void labelPartList( std::vector<GSolid*>& solids );
-       void finalizeAnalytic(GParts* pts, const char* containingMaterial);
+       //void finalizeAnalytic(GParts* pts, const char* containingMaterial);
 
        GMergedMesh* loadPmtDirty();
     private:

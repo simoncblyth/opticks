@@ -794,10 +794,14 @@ void GGeo::loadAnalyticPmt()
 
     if(m_pmt)
     {
-        LOG(trace) << "GGeo::loadAnalyticPmt SUCCEEDED "
-                   << m_pmt->getPath()   
-                    ;
+
+        LOG(trace) << "GGeo::loadAnalyticPmt SUCCEEDED " << m_pmt->getPath()   ; 
+        if(m_ok->isDbgAnalytic())
+        {
+            m_pmt->dump("GPmt::dump --dbganalytic " );
+       }
     }
+    
 }
 
 

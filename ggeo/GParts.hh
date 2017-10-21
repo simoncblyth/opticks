@@ -231,6 +231,7 @@ class GGEO_API GParts {
         unsigned int       getNumPrim();
         unsigned int       getNumParts();
         unsigned int       getPrimNumParts(unsigned int prim_index);
+        std::string        desc(); 
     public:
         NPY<int>*          getPrimBuffer();
         NPY<float>*        getPartBuffer();
@@ -265,6 +266,8 @@ class GGEO_API GParts {
         void setPlanBuffer(NPY<float>* plan_buffer);
         void setPrimFlag(OpticksCSG_t primflag);
         OpticksCSG_t getPrimFlag(); 
+        const char*  getPrimFlagString() const ; 
+
     private:
        unsigned int getUInt(unsigned int part, unsigned int j, unsigned int k);
        void         setUInt(unsigned int part, unsigned int j, unsigned int k, unsigned int value);
@@ -291,6 +294,7 @@ class GGEO_API GParts {
         unsigned           m_verbosity ; 
         unsigned           m_analytic_version ; 
         OpticksCSG_t       m_primflag ; 
+        const char*        m_medium ; 
 
 };
 

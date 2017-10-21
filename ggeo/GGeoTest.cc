@@ -38,7 +38,7 @@
 GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo) 
     : 
     m_ok(ok),
-    m_dbganalytic(m_ok->hasOpt("dbganalytic")),
+    m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
     m_config(config),
@@ -157,10 +157,8 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
               ; 
 
     std::vector<NCSG*> trees ;
-
     int rc = NCSG::Deserialize( csgpath, trees, verbosity );
     assert(rc == 0);
-
     unsigned ntree = trees.size() ;
 
     LOG(info) << "GGeoTest::loadCSG " << csgpath << " got " << ntree << " trees " ; 
@@ -169,22 +167,15 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     for(unsigned i=0 ; i < ntree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
-
         NCSG* tree = trees[i] ; 
-
         GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
-
         GParts* pts = solid->getParts();
-
         pts->setIndex(0u, i);
-
         if(pts->isPartList())  // not doing this for NodeTree
         {
             pts->setNodeIndexAll(primIdx ); 
         }
-
         pts->setBndLib(m_bndlib);
-
         solids.push_back(solid);
     }
 }
@@ -268,17 +259,6 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
 }
 
 
-void GGeoTest::finalizeAnalytic(GParts* pts, const char* containingMaterial)
-{
-    const char* sensorSurface = m_ok->getSensorSurface();
-    pts->setContainingMaterial(containingMaterial);    // match outer material of PMT with inner material of the box
-    pts->setSensorSurface(sensorSurface) ;
-    pts->setBndLib(m_bndlib) ; 
-    pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
-    pts->close();      // registerBoundaries, makePrimBuffer
-}
-
-
 GMergedMesh* GGeoTest::createPmtInBox()
 {
     assert( m_config->getNumElements() == 1 && "GGeoTest::createPmtInBox expecting single container " );
@@ -286,6 +266,9 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GSolid* container = makeSolidFromConfig(0); 
     const char* spec = m_config->getBoundary(0);
     const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
+    const char* medium = m_ok->getAnalyticPMTMedium();
+    assert( strcmp( container_inner_material, medium ) == 0 );
+
     int verbosity = m_config->getVerbosity();
 
     GMergedMesh* mmpmt = loadPmtDirty();
@@ -308,14 +291,11 @@ GMergedMesh* GGeoTest::createPmtInBox()
     container->getParts()->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
+
     // hmm this is putting the container at the end... does that matter ?
 
     //if(verbosity > 1)
     triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
-
-    GParts* analytic = triangulated->getParts();
-
-    finalizeAnalytic( analytic, container_inner_material );
 
     // needed by OGeo::makeAnalyticGeometry
     NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();

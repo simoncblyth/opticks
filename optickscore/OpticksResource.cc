@@ -56,6 +56,11 @@ const char* OpticksResource::DEFAULT_MATERIAL_DYB  = "GdDopedLS" ;
 const char* OpticksResource::DEFAULT_MATERIAL_JUNO = "LS" ; 
 const char* OpticksResource::DEFAULT_MATERIAL_OTHER = "Water" ; 
 
+const char* OpticksResource::DEFAULT_MEDIUM_DYB  = "MineralOil" ; 
+const char* OpticksResource::DEFAULT_MEDIUM_JUNO = "Water" ; 
+const char* OpticksResource::DEFAULT_MEDIUM_OTHER = "Water" ; 
+
+
 const char* OpticksResource::EXAMPLE_MATNAMES_DYB = "GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali" ;
 const char* OpticksResource::EXAMPLE_MATNAMES_JUNO = "LS,Acrylic" ; 
 const char* OpticksResource::EXAMPLE_MATNAMES_OTHER = "LS,Acrylic" ; 
@@ -106,6 +111,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_resource_base(NULL),
        m_material_map(NULL),
        m_default_material(NULL),
+       m_default_medium(NULL),
        m_example_matnames(NULL),
        m_sensor_surface(NULL)
 
@@ -360,6 +366,10 @@ void OpticksResource::assignDefaultMaterial()
     if(m_juno)    m_default_material = DEFAULT_MATERIAL_JUNO ;
     if(m_dayabay) m_default_material = DEFAULT_MATERIAL_DYB ;
 
+    m_default_medium =  DEFAULT_MEDIUM_OTHER ; 
+    if(m_juno)    m_default_medium = DEFAULT_MEDIUM_JUNO ;
+    if(m_dayabay) m_default_medium = DEFAULT_MEDIUM_DYB ;
+
     m_example_matnames =  EXAMPLE_MATNAMES_OTHER ; 
     if(m_juno)    m_example_matnames = EXAMPLE_MATNAMES_JUNO ;
     if(m_dayabay) m_example_matnames = EXAMPLE_MATNAMES_DYB ;
@@ -374,6 +384,10 @@ void OpticksResource::assignDefaultMaterial()
 const char* OpticksResource::getDefaultMaterial()
 {
     return m_default_material ; 
+}
+const char* OpticksResource::getDefaultMedium()
+{
+    return m_default_medium ; 
 }
 const char* OpticksResource::getExampleMaterialNames()
 {
@@ -661,6 +675,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
     std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
     std::cerr << "sensor_surface    : " <<  (m_sensor_surface ? m_sensor_surface : "NULL" ) << std::endl; 
+    std::cerr << "default_medium    : " <<  (m_default_medium ? m_default_medium : "NULL" ) << std::endl; 
     std::cerr << "------ from " << ( m_metapath ? m_metapath : "NULL" ) << " -------- " << std::endl ;  
 
     typedef std::map<std::string, std::string> SS ;

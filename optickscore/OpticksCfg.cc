@@ -78,6 +78,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_meshverbosity(0),
        m_verbosity(0),
        m_apmtidx(0),
+       m_apmtmedium(""),
        m_gltfbase("$TMP/nd"),
        m_gltfname("scene.gltf"),
        m_gltfconfig("check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0"),
@@ -420,6 +421,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("apmtidx",  boost::program_options::value<int>(&m_apmtidx), apmtidx );
 
+   m_desc.add_options()
+       ("apmtmedium",   boost::program_options::value<std::string>(&m_apmtmedium), "material name of PMT medium" );
 
 
    char modulo[128];
@@ -983,6 +986,13 @@ const std::string& OpticksCfg<Listener>::getAnalyticPMTSlice()
 {
     return m_apmtslice  ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnalyticPMTMedium()
+{
+    return m_apmtmedium  ;
+}
+
 
 
 
