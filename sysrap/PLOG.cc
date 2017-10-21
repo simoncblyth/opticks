@@ -120,7 +120,12 @@ int PLOG::parse(plog::Severity _fallback)
 }
 int PLOG::parse(const char* fallback)
 {
+
+#ifdef STOMP_DEBUG
+    int ll = _parse(args._argc, args._argv, fallback);
+#else
     int ll = _parse(argc, argv, fallback);
+#endif
 
 #ifdef PLOG_DBG
     std::cerr << "PLOG::parse"
@@ -141,7 +146,11 @@ int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 }
 int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
+#ifdef STOMP_DEBUG
+    int ll =  _prefixlevel_parse(args._argc, args._argv, fallback, prefix);
+#else
     int ll =  _prefixlevel_parse(argc, argv, fallback, prefix);
+#endif
 
 #ifdef PLOG_DBG
     std::cerr << "PLOG::prefixlevel_parse"
@@ -176,8 +185,12 @@ const char* PLOG::name()
 
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
+#ifdef STOMP_DEBUG
+      args(argc_, argv_),
+#else
       argc(argc_),
       argv(argv_),
+#endif
       level(info),
       logpath(_logpath_parse(argc_, argv_)),
       logmax(3)

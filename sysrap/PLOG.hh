@@ -104,13 +104,26 @@ and Windows.
 
 struct PLOG ; 
 
+
+#define STOMP_DEBUG 1 
+
+#ifdef STOMP_DEBUG 
+#include "SAr.hh"
+#endif
+
 struct SYSRAP_API PLOG 
 {
+
+#ifdef STOMP_DEBUG 
+    SAr    args ; 
+#else 
     int    argc ; 
     char** argv ;
-    int   level ; 
+#endif
+
+    int         level ; 
     const char* logpath ; 
-    int   logmax ; 
+    int         logmax ; 
 
     PLOG(int argc, char** argv, const char* fallback="VERBOSE", const char* prefix=NULL );
 
