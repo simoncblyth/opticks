@@ -110,7 +110,7 @@ tboolean-ntc
 
 tboolean-p0
 tboolean-dd
-    NOT WORKING 
+    revived detdesc to NCSG conversion python, possible z-offset/halving issue with 5th solid (cylinder)
  
 tboolean-interlocked
     several box minus sphere, with gpuoffset
@@ -141,9 +141,6 @@ tboolean-0
 
 tboolean-sst
      Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_umaxmin, file /Users/blyth/opticks/opticksnpy/NNodeNudger.cpp, line 413.
-
-tboolean-dd
-     ImportError: No module named treebase
 
 
 TODO

@@ -42,12 +42,13 @@ import logging
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
-from opticks.ana.pmt.ddbase import Dddb
-from opticks.ana.pmt.treebase import Tree
-from opticks.ana.pmt.ncsgconverter import NCSGConverter
-from opticks.ana.pmt.polyconfig import PolyConfig
 
-from opticks.dev.csg.csg import CSG  
+from opticks.analytic.treebase import Tree
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG
+
+from opticks.ana.pmt.ddbase import Dddb
+from opticks.ana.pmt.ncsgconverter import NCSGConverter
 
 
 
@@ -96,6 +97,8 @@ if __name__ == '__main__':
 
         log.info("obj.translate: %s " % (obj.translate) )
         log.info("obj.transform: \n%s " % (obj.transform) )
+
+        obj.analyse()  # labelling etc..
 
         objs.append(obj)
 

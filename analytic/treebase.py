@@ -10,6 +10,21 @@ treebase.py
   into a homogenous Node trees (PV,LV)/(PV,LV)/...
 
 
+Users
+-------
+
+analytic/sc.py
+    parsing/conversion of GLTF into NCSG serialization    
+
+ana/pmt/treepart.py
+    uses treepart_manual_mixin to add *parts*, *num_parts* methods
+    to both treebase.Node and treebase.Tree and *convert* to treebase.Tree
+
+ana/pmt/analytic.py
+    parsing/conversion of DETDESC XML using ana/pmt/treepart.py
+
+
+
 """
 
 import logging, hashlib, sys, os
@@ -46,7 +61,8 @@ class Node(object):
     treebase.Node
     ===============
 
-    Collects GDML elements into more easily navigable tree structure...
+    Collects XML elements into more easily navigable tree structure...
+    Via mixin techniques this works with both GDML and detdesc sources.
 
     pv 
        opticks.ana.pmt.gdml.PhysVol : placement of the node
@@ -162,7 +178,7 @@ class Node(object):
         """
         self.volpath = volpath
         self.digest = self.md5digest( volpath[0:len(volpath)] )
-        self.pdigest = self.md5digest( volpath[0:len(volpath)-2] )
+        self.pdigest = self.md5digest( volpath[0:len(volpath)-2] ) # parent digest 
 
         # Node constituents are set by Tree
         self.parent = None
@@ -528,10 +544,6 @@ class Tree(object):
         top = DummyTopPV()
         ancestors = [top] # dummy to regularize striping TOP-LV-PV-LV 
         self.root = self.create_r(self.base, ancestors)
-
-
-
-
 
 
     def create_r(self, vol, ancestors):

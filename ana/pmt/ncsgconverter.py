@@ -1,21 +1,51 @@
 #!/usr/bin/env python
 """
+ana/pmt/ncsgconverter.py
+===========================
 
-See tboolean-pmt for testing of the conversion of 
-detdesc XML analytic geometry into NCSG input serialization
-via: $(tboolean-dir)/tboolean_pmt.py  (tboolean-pmt-edit)
+Translation of detdesc XML defined anaytic PMT into NCSG input serialization.
+This probably predated GDML parsing, and it not much more than a curiosity.
+Although this may allow direct comparison of the same PMT geometry 
+using different generations of analytic approaches.
+
+::
+
+    2645 tboolean-dd(){          TESTCONFIG=$(tboolean-dd- 2>/dev/null)     tboolean-- $* ; }
+    2646 tboolean-dd-()
+    2647 {       
+    2648     python $(tboolean-dir)/tboolean_dd.py \
+    2649           --csgpath $TMP/$FUNCNAME \
+    2650           --container $(tboolean-container)  \
+    2651           --testobject $(tboolean-testobject)  
+    2652 
+    2653     # got too long for here-string  so broke out into script
+    2654 }
+    2655 tboolean-dd-check(){ tboolean-dd- 2> /dev/null ; }
+    2656 tboolean-dd-edit(){ vi $(tboolean-dir)/tboolean_dd.py  ; }
+    2657 tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean-dd-/1 ; }
+    2658 
+
+::
+
+    delta:pmt blyth$ opticks-find NCSGConverter 
+    ./ana/pmt/ncsgconverter.py:class NCSGConverter(object):
+    ./ana/pmt/ncsgconverter.py:    cn = NCSGConverter.ConvertLV( tr.root.lv )
+    ./tests/tboolean_dd.py:from opticks.ana.pmt.ncsgconverter import NCSGConverter
+    ./tests/tboolean_dd.py:        obj = NCSGConverter.ConvertLV( lv )
+    delta:opticks blyth$ 
 
 
 """
-
 import os, logging, sys, math, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
-from opticks.dev.csg.csg import CSG 
+from opticks.analytic.csg import CSG
 
 from ddbase import Dddb, Sphere, Tubs, Intersection, Union, Subtraction 
-from treebase import Tree
+
+from opticks.analytic.treebase import Tree
+
 
 
 class NCSGConverter(object):
@@ -143,11 +173,18 @@ class NCSGConverter(object):
     @classmethod
     def convert_Tubs(cls, en):
         cn = CSG("cylinder", name=en.name)
+
         cn.param[0] = en.xyz[0] 
         cn.param[1] = en.xyz[1] 
-        cn.param[2] = en.xyz[2]
+        cn.param[2] = 0    ## hmm this z is ignored in NCylinder 
         cn.param[3] = en.outerRadius.value 
-        cn.param1[0] = en.sizeZ.value
+
+        zoff = en.xyz[2]
+
+        hz = en.sizeZ.value/2.
+        cn.param1[0] = -hz + zoff
+        cn.param1[1] =  hz + zoff   # direct offsetting or use transform ?
+
 
         PCAP = 0x1 << 0 
         QCAP = 0x1 << 1 

@@ -19,6 +19,10 @@ from opticks.analytic.treebase import Tree, Node
 
 
 class NodePartitioner(object):
+    """
+    All NodePartitioner methods are added to treebase.Node 
+    on calling the below treepart_manual_mixin function 
+    """ 
     def parts(self):
         """
         Divvy up geometry into parts that 
@@ -41,6 +45,10 @@ class NodePartitioner(object):
 
 
 class TreePartitioner(object):
+    """
+    All TreePartitioner methods are added to treebase.Tree
+    on calling the below treepart_manual_mixin function 
+    """ 
     @classmethod
     def num_parts(cls):
         nn = cls.num_nodes()

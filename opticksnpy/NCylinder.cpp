@@ -22,6 +22,19 @@
 #include "NCylinder.h"
 
 
+
+
+NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 )
+{
+    n.param = param ; 
+    n.param1 = param1 ;
+
+    bool z_ascending = n.z2() > n.z1() ;
+    if(!z_ascending) n.pdump("init_cylinder z_ascending FAIL ");
+    assert( z_ascending  );
+}
+
+
 nbbox ncylinder::bbox() const 
 {
     float r = radius();

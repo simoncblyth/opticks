@@ -2,7 +2,6 @@
 """
 gdml.py : parsing GDML
 =========================
-
        
 
 """
@@ -44,6 +43,9 @@ def construct_transform(obj):
 
 
 class G(object):
+    """
+    Base wrapper type for lxml parsed GDML elements 
+    """
     pvtype = 'PhysVol'
     lvtype = 'Volume'
     postype = 'position'
@@ -1117,13 +1119,5 @@ if __name__ == '__main__':
     test_gdml_fromstring()
     test_primitive_fromstring()
 
-
-
-
-
-
-
-
-   
 
 

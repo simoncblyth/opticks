@@ -109,12 +109,17 @@ GMergedMesh* GGeoTest::create()
     unsigned nelem = m_config->getNumElements();
 
     assert( mode );
-    if(nelem == 0)
-    {
-        LOG(fatal) << " nelem zero  " ; 
-        m_config->dump("GGeoTest::create ERROR numElements==0 " ); 
+
+    if(csgpath == NULL)
+    { 
+        if(nelem == 0 )
+        {
+            LOG(fatal) << " NULL csgpath and config nelem zero  " ; 
+            m_config->dump("GGeoTest::create ERROR csgpath==NULL && nelem==0 " ); 
+        }
+        assert(nelem > 0);
     }
-    assert(nelem > 0);
+
 
     LOG(info) << "GGeoTest::create START " << " mode " << mode ;
 

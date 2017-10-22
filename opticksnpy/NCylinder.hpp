@@ -63,13 +63,7 @@ inline NPY_API void  ncylinder::decrease_z1(float dz){ assert( dz >= 0.f) ; para
 
 
 
-inline NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 )
-{
-    n.param = param ; 
-    n.param1 = param1 ;
-
-    assert( n.z2() > n.z1() );
-}
+NPY_API void init_cylinder(ncylinder& n, const nquad& param, const nquad& param1 );
 
 inline NPY_API ncylinder make_cylinder(const nquad& param, const nquad& param1 )
 {

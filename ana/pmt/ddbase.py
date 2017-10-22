@@ -3,23 +3,18 @@
 ddbase.py : Detdesc parsing into wrapped Elem tree
 ====================================================
 
-
 Questions 
 -----------
-
 
 Fly in ointment is that there is detdesc xml generation
 which means cannot understand whats going on from sources
 alone.
 
-
-Detdesc Cross File Referencing
--------------------------------------
-
+ABANDONED : Detdesc Cross File Referencing
+----------------------------------------------
 
 Catalog declares things that can be referenced from other files and
-defines the references for them eg /dd/Geometr
-
+defines the references for them eg /dd/Geometry
 
 DDDB/geometry.xml::
 
@@ -46,8 +41,6 @@ DDDB/PMT/geometry.xml::
      11     <logvolref href="hemi-pmt.xml#lvPmtHemi"/>
      12     <logvolref href="hemi-pmt.xml#lvPmtHemiwPmtHolder"/>
      13     <logvolref href="hemi-pmt.xml#lvAdPmtCollar"/>
-
-
 
 
 ::
@@ -166,8 +159,10 @@ class Att(object):
         return "%s : %s " % (self.expr, self.value)
 
 
-
 class E(object):
+    """
+    Element base type, providing lxml elem lookup and wrapping 
+    """
     lvtype = 'Logvol'
     pvtype = 'Physvol'
     postype = 'posXYZ'
@@ -177,9 +172,15 @@ class E(object):
     shortname = property(lambda self:self.name)   # for correspondence with GDML branch 
 
     def __init__(self, elem, g=None):
+        """
+        :param elem: lxml parsed DetDesc XML element
+        :param g: registry object 
+
+        The registry object (Dddb class) is planted at top level 
+        and passed along to all E instances.
+        """
         self.elem = elem 
         self.g = g 
-
 
     def att(self, k, dflt=None):
         v = self.elem.attrib.get(k, None)
@@ -218,8 +219,6 @@ class E(object):
 
     def __repr__(self):
         return "%15s : %s " % ( self.elem.tag, repr(self.elem.attrib) )
-
-
 
 
 
@@ -304,12 +303,30 @@ class Elem(E):
 
         NB bits of geometry of a Logvol are not regarded as children, 
         but rather are constitutent to it.
+
+        Issue
+        ~~~~~~~ 
+
+        The two physvol offsets not being honoured::
+
+            105 
+            106     <physvol name="pvPmtHemiBottom"
+            107          logvol="/dd/Geometry/PMT/lvPmtHemiBottom">
+            108       <posXYZ z="PmtHemiFaceOff+PmtHemiBellyOff"/>
+            109     </physvol>
+            110 
+            111     <physvol name="pvPmtHemiDynode"
+            112          logvol="/dd/Geometry/PMT/lvPmtHemiDynode">
+            113       <posXYZ z="-0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness"/>
+            114     </physvol>
+
         """
         if type(self) is Physvol:
             posXYZ = self.find_("./posXYZ")
             lvn = self.logvolref.split("/")[-1]
             lv = self.g.logvol_(lvn)
 
+            assert getattr(lv,'posXYZ',None) == None,  ("_get_children stomping on posXYZ ", lv)
             lv.posXYZ = posXYZ   
     
             ## Hmm: Associating a posXYZ to an lv should probably be done 
@@ -323,7 +340,10 @@ class Elem(E):
             ## 
 
             if posXYZ is not None:
+                log.info("children... posXYZ %s  " % (repr(posXYZ))) 
                 log.info("children... %s passing pv posXYZ to lv %s  " % (self.name, repr(lv))) 
+            pass
+
             return [lv]
 
         elif type(self) is Logvol:
@@ -335,7 +355,6 @@ class Elem(E):
 
     children = property(_get_children)
 
-
     def comps(self):
         """
         :return comps: immediate constituents of an Elem, not recursive
@@ -346,9 +365,6 @@ class Elem(E):
 
     def geometry(self):
         return filter(lambda c:c.is_geometry, self.comps())
-
-
-
 
 
 class Logvol(Elem):
@@ -599,11 +615,6 @@ class Context(object):
 
 
 
-
-    
-
-
-
 class Ref(E):
     href = property(lambda self:self.elem.attrib['href'])
 
@@ -670,11 +681,14 @@ class Catalog(E):
 
 
 
-
-
-
 class DD(E):
+    """
+    CAUTION
+        This was an initial foray into parsing 
+        multi-file detdesc that was abandoned.  
+        Jumped ship to single file GDML parsing, that turned out to be much easier.
 
+    """
     ddr = {}
 
     kls = {

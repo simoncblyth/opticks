@@ -475,7 +475,6 @@ def gdml2gltf_main( args ):
     assert gdmlpath.replace('.gdml','.gltf') == gltfpath 
     assert gltfpath.replace('.gltf','.gdml') == gdmlpath 
 
-
     log.info("start GDML parse")
     gdml = GDML.parse(gdmlpath)
 
@@ -506,9 +505,6 @@ def gdml2gltf_main( args ):
     return sc
 
 
-
-
-
 def test_range():
     #q = "index:3159,depth:1"
     q = "range:3158:3160" 
@@ -526,8 +522,6 @@ def test_range():
     print to_pyline(nd.gtr_mdot_r, "gtr")
 
     print tx
-
-
 
 
 if __name__ == '__main__':
