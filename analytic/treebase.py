@@ -159,8 +159,13 @@ class Node(object):
         node.pv = pv
         node.lv = lv
 
+        if node.pv is not None:
+            node.posXYZ = node.pv.find_(postype) 
+        else:
+            node.posXYZ = None
+        pass
 
-        node.posXYZ = node.pv.find_(postype) if node.pv is not None else None
+        log.info("################ node.posXYZ:%r  node:%r " % (node.posXYZ, node) )
 
         ## HMM ? is this missing node.lv transforms ? See ddbase.py Elem._get_children
 

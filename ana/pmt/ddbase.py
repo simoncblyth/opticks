@@ -257,17 +257,47 @@ class Elem(E):
     def link_prior_posXYZ(cls, ls, base=None):
         """
         Attach any *posXYZ* instances in the list to preceeding primitives
+
+        Singular base linking is needed to honour posXYZ applied on a pv 
+        which gets hooked onto the referenced lv and where the lv yields a primitive.
+
+       ::
+
+            105 
+            106     <physvol name="pvPmtHemiBottom"
+            107          logvol="/dd/Geometry/PMT/lvPmtHemiBottom">
+            108       <posXYZ z="PmtHemiFaceOff+PmtHemiBellyOff"/>
+            109     </physvol>
+            110 
+            111     <physvol name="pvPmtHemiDynode"
+            112          logvol="/dd/Geometry/PMT/lvPmtHemiDynode">
+            113       <posXYZ z="-0.5*PmtHemiGlassBaseLength+PmtHemiGlassThickness"/>
+            114     </physvol>
+
+ 
         """
-        for i in range(1,len(ls)):   # start from 1 to avoid list wraparound ?
-            if base is not None and ls[i-1].is_primitive:
-                ls[i-1].posXYZ = base 
+        log.info("link_prior_posXYZ lls %d base %r " % (len(ls), base))
+        if len(ls) > 1:
+            for i in range(1,len(ls)):   # start from 1 to avoid list wraparound ?
+                if base is not None and ls[i-1].is_primitive:
+                    ls[i-1].posXYZ = base 
+                pass
+                if ls[i].is_posXYZ and ls[i-1].is_primitive:
+                    if ls[i-1].posXYZ is not None:
+                        cls.combine_posXYZ(ls[i-1], ls[i])
+                    else:
+                        ls[i-1].posXYZ = ls[i] 
+                    log.debug("linking %s to %s " % (ls[i], ls[i-1]))
+                pass
             pass
-            if ls[i].is_posXYZ and ls[i-1].is_primitive:
-                if ls[i-1].posXYZ is not None:
-                    cls.combine_posXYZ(ls[i-1], ls[i])
-                else:
-                    ls[i-1].posXYZ = ls[i] 
-                log.debug("linking %s to %s " % (ls[i], ls[i-1]))
+        elif len(ls) == 1:
+            if base is not None and ls[0].is_primitive:
+                log.info(" link_prior_posXYZ doing singular base link " ) 
+                ls[0].posXYZ = base
+            pass
+        else:
+            pass
+            
 
     def _get_desc(self):
         return "%10s %15s %s " % (type(self).__name__, self.xyz, self.name )
@@ -304,10 +334,7 @@ class Elem(E):
         NB bits of geometry of a Logvol are not regarded as children, 
         but rather are constitutent to it.
 
-        Issue
-        ~~~~~~~ 
-
-        The two physvol offsets not being honoured::
+        Fixed Issue of physvol offsets not being honoured::
 
             105 
             106     <physvol name="pvPmtHemiBottom"
@@ -333,10 +360,16 @@ class Elem(E):
             ##      on a clone of the lv ?  As there may be multiple such placements
             ##      and dont want prior placements to get stomped on.
             ##
-            ## OR use a different class to hold the original lv   
-            ##    together with its posXYZ ?
+            ##      But as checked above the stomping doesnt happen.
             ##
-            ## 2017-10-21 : why not just attach to self (the pv) ? see treebase.py:Node.create
+            ##      Leaving ASIS because detdesc parsing is a deadend 
+            ##      that was only ever applied to simple PMT, and have no
+            ##      plans to develop it further, GDML parsing being much 
+            ##      more useful.
+            ##
+            ## 2017-10-21 
+            ##     why not just attach to self (the pv) ? see treebase.py:Node.create
+            ##     Because nexus of control of partitioning operates on LV, not PV 
             ## 
 
             if posXYZ is not None:

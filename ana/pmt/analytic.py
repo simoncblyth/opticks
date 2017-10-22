@@ -51,23 +51,22 @@ if __name__ == '__main__':
     log.info("\n\nTree(lv) \n")
     tr = Tree(lv)
 
+    log.info("\n\nDump Tree \n")
+    tr.dump()
+
+    log.info("\n\nPartition Tree into parts list **ddpart.py:ElemPartitioner.parts** IS THE HUB \n")
     parts = tr.parts()
 
-    log.info("\n\nDump parts \n")
+    log.info("\n\nDump parts : type(parts):%s \n", type(parts))
     for pt in parts:
         print pt
 
     assert hasattr(parts, 'gcsg') and len(parts.gcsg) > 0
-    log.info("\n\nConvert parts to Buf \n")
+    log.info("\n\nConvert parts to Buf (convert method mixed in from treepart.py applying as_quads to each part) \n")
     buf = tr.convert(parts)
-
-    log.info("\n\nDump Tree \n")
-    tr.dump()
-
     assert type(buf) is Buf 
 
     log.info("\n\nmake GPmt from Buf \n")
-
     gp = GPmt(apmtpath, buf ) 
 
     log.info("\n\nsave GPmt\n")

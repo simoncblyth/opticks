@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-dd.py
-=======
+ddpart.py
+===========
 
 Approach:
 
@@ -9,6 +9,15 @@ Approach:
   lxml find into do-everything Elem subclass appropriate to the tags of the elements
 
 * primary purpose is the Elem.parts method, trace back from there to understand
+
+
+Crucial Methods 
+-----------------
+
+ElemPartitioner.parts
+     nexus of control of the partitioning, which gets manually mixed into Elem
+
+
 
 
 Need to play some mixin tricks 
@@ -385,6 +394,10 @@ class ElemPartitioner(object):
 
         comps = self.findall_("./*")  # one lev only
         self.link_prior_posXYZ(comps, base)
+
+        if not base is None:
+            log.info("&&&&&&&&&&&&&&&& name:%s  ncomp:%d c0:%r ElemPartitioner.parts base translate %r " % (self.name, len(comps), comps[0],  base) )         
+        pass
 
         rparts = Parts()
 

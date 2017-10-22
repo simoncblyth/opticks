@@ -10,8 +10,8 @@ Vague recollections
 * GCSG not used for raytrace ? It exists just to allow Geant4 CSG re-creation of geometry ?
 
 
-2017-10-20 tpmt-- broken (again)
---------------------------------------
+2017-10-20 tpmt-- broken (again) : QUALITATIVELY FIXED
+-----------------------------------------------------------
 
 1. Following some effort to clean up GGeoTest::makePmtInBox
    still finding failure symptom that the raytrace of the PMT is missing.
@@ -33,11 +33,8 @@ Vague recollections
    Cause of crash was omitting GParts::setPartList for the combi GParts,
    so a PartList was being interpreted as a NodeTree.
 
-5. Now get a raytrace, but with a z-slipped dynode : several relative positions
-   seem wrong.
-
-
-
+5. Now get a raytrace, but with a z-slipped dynode : two relative positions wrong.
+   Fixed : posXYZ applied at physvol level were not getting linked thru to the primitives.  
 
 
 
@@ -97,7 +94,10 @@ Formation 4-4-2-1-1-(1) slicing prim by prim
 
 
 
-The two physvol offsets not being honoured::
+FIXED : two physvol offsets not being honoured
+--------------------------------------------------
+
+::
 
     105 
     106     <physvol name="pvPmtHemiBottom"

@@ -92,7 +92,7 @@ class TreePartitioner(object):
     @classmethod
     def convert(cls, parts, explode=0.):
         """
-        :param parts: array of parts
+        :param parts: array of parts, essentially just a list of part instances
         :return: np.array buffer of parts
 
         Tree.convert

@@ -96,6 +96,8 @@ tjuno
 tlaser
     working to some extent
 tlens
+    NOT WORKING 
+
     * old style zlens not working : noshow in raytrace
     * TODO: migrate to using python CSG geometry to define lens shapes, eliminate the old zlens
 
@@ -105,9 +107,9 @@ tnewton
     * using old style manual prism definition, would benefit from CSG trapezoid
 
 tpmt
-    FAIL : segv in GGeoTest::createPmtInBox  see tpmt-notes
+    now working to some extent, see :doc:`../notes/issues/tpmt_broken_by_OpticksCSG_enum_move` 
 
-    see :doc:`../notes/issues/tpmt_broken_by_OpticksCSG_enum_move`
+    TODO: commit update enum analytic geometry into opticksdata slot 0 
 
 tprism
     working to some extent
