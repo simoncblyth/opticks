@@ -88,7 +88,7 @@ OScene::OScene(OpticksHub* hub)
 
 void OScene::init()
 {
-    if(m_verbosity > 0)
+    //if(m_verbosity > 0)
     LOG(info) << "OScene::init START" ; 
 
     m_timer->setVerbose(true);
@@ -102,7 +102,9 @@ void OScene::init()
 
     OContext::Mode_t mode = m_ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
+    LOG(info) << "OScene::init optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
+    LOG(info) << "OScene::init optix::Context::create() DONE " ; 
 
     unsigned stack_size_bytes = m_cfg->getStack() ;
 

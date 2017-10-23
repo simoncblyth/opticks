@@ -30,7 +30,9 @@ int main(int argc, char** argv)
 {
     // Number of CUDA devices
     int devCount;
+    printf( " argv[0] %s cudaGetDeviceCount START \n", argv[0] );
     cudaGetDeviceCount(&devCount);
+    printf( " argv[0] %s cudaGetDeviceCount DONE \n", argv[0] );
 
     bool quiet = argc > 1 && strlen(argv[1]) > 0 && argv[1][0] == 'q' ; 
 

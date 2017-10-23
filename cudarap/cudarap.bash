@@ -395,6 +395,7 @@ cudarap-ibin(){ echo $(cudarap-idir)/lib/cuRANDWrapperTest ; }
 cudarap-rng-dir(){ echo $(local-base)/env/CUDARap/rngcache ; }
 cudarap-rng(){  ls -l $(cudarap-rng-dir) ; }
 
+cudarap-c(){    cd $(cudarap-sdir); }
 cudarap-cd(){   cd $(cudarap-sdir); }
 cudarap-scd(){  cd $(cudarap-sdir); }
 cudarap-tcd(){  cd $(cudarap-tdir); }
