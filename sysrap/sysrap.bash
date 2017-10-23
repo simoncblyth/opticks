@@ -42,6 +42,7 @@ sysrap-wipe(){    local bdir=$(sysrap-bdir) ; rm -rf $bdir ; }
 
 sysrap--(){       opticks-- $(sysrap-bdir) ; } 
 sysrap-t(){       opticks-t $(sysrap-bdir) $* ; } 
+sysrap-ts(){      opticks-ts $(sysrap-bdir) $* ; } 
 sysrap-genproj(){ sysrap-scd ; opticks-genproj $(sysrap-name) $(sysrap-tag) ; } 
 sysrap-gentest(){ sysrap-tcd ; opticks-gentest ${1:-SCheck} $(sysrap-tag) ; } 
 sysrap-txt(){     vi $(sysrap-sdir)/CMakeLists.txt $(sysrap-tdir)/CMakeLists.txt ; } 

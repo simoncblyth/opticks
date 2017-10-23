@@ -626,6 +626,8 @@ opticks-prepare-installcache()
 opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
 opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
 
+
+
 opticks-t-()
 {
    # 
@@ -652,13 +654,34 @@ opticks-t-()
        bdir=$(opticks-bdir) 
    fi
 
+
    cd $bdir
 
-   opticks-t-- $*
+   local log=ctest.log
+   #opticks-t-- $*
+
+   date          | tee $log
+   ctest $* 2>&1 | tee -a $log
+   date          | tee -a $log
 
    cd $iwd
-   echo $msg use -V to show output 
+   echo $msg use -V to show output, ctest output written to $bdir/ctest.log
 }
+
+opticks-ts()
+{
+   ## list tests taking longer than 1 second
+   local arg=$1
+   if [ "${arg:0:1}" == "/" -a -d "$arg" ]; then
+       bdir=$arg
+       shift
+   else
+       bdir=$(opticks-bdir) 
+   fi
+   perl -n -e 'm,[123456789]\.\d{2} sec, && print  ' $bdir/ctest.log
+}
+
+
 
 opticks-t--()
 {
