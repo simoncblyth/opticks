@@ -292,11 +292,10 @@ assimprap---(){     touch $(assimprap-apihh) ; assimprap--  ; }
 
 
 assimprap--(){        opticks--     $(assimprap-bdir) ; }
-assimprap-ctest(){    opticks-ctest $(assimprap-bdir) $* ; }
+assimprap-t(){        opticks-t     $(assimprap-bdir) $* ; }
 assimprap-genproj(){  assimprap-scd ; opticks-genproj $(assimprap-name) $(assimprap-tag) ; }
 assimprap-gentest(){  assimprap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(assimprap-tag) ; }
 assimprap-txt(){ vi $(assimprap-sdir)/CMakeLists.txt $(assimprap-tdir)/CMakeLists.txt ; } 
-
 
 
 

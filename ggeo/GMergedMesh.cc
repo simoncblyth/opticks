@@ -364,8 +364,7 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 
 void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
-    LOG(info) << "GMergedMesh::mergeSolid selected " << ( selected ? "YES" : "NO" ) ;  
-    
+   
 
     GNode* node = static_cast<GNode*>(solid);
     GNode* base = getCurrentBase();
@@ -399,8 +398,21 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
     const GMesh* mesh = solid->getMesh();   // triangulated
     GParts* pts = solid->getParts();  // analytic 
 
+
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
+
+
+    LOG(trace) << "GMergedMesh::mergeSolid "
+               << " m_cur_solid " << std::setw(6) << m_cur_solid
+               << " pts (normally NULL) " << pts
+               << " selected " << ( selected ? "YES" : "NO" ) 
+               << " num_vert " << std::setw(5) << num_vert
+               << " num_face " << std::setw(5) << num_face
+               ;  
+
+    //assert(pts);
+ 
 
     guint3* faces = mesh->getFaces();
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
@@ -549,16 +561,16 @@ void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned
 {
     // analytic CSG combined at node level  
 
-    LOG(info) << "GMergedMesh::mergeSolidAnalytic" 
-              << " pts " << ( pts ? pts->desc() : "-" )
-               ; 
+    LOG(debug) << "GMergedMesh::mergeSolidAnalytic" 
+               << " pts (often NULL) " << ( pts ? pts->desc() : "-" )
+                ; 
 
 
     if(!pts)
     {
-        LOG(fatal) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
-        //return ; 
-        assert(pts);
+        LOG(debug) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
+        return ; 
+        //assert(pts);
     }
 
     if(transform && !transform->isIdentity())
