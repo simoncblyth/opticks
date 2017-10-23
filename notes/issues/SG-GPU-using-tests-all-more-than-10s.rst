@@ -3,11 +3,226 @@ SG-GPU-using-tests-all-more-than-10s
 
 SG tests that use GPU have a big overhead.
 
-* startup "pedestal" ?
+* startup "pedestal" : YES, driver not holding onto GPU devices in headless server, unless run daemon
+* try masking out GPUs : made no difference
 
-* TODO: see where the times is taken
-* try masking out GPUs
 
+FIXED : using daemon nvidia-persistenced 
+----------------------------------------------
+
+Total test time without G4 ~119s::
+
+
+    238/241 Test #238: OKTest.OTracerTest ...........................   Passed    2.05 sec
+            Start 239: OKTest.LogTest
+    239/241 Test #239: OKTest.LogTest ...............................   Passed    0.02 sec
+            Start 240: OKTest.VizTest
+    240/241 Test #240: OKTest.VizTest ...............................   Passed    8.95 sec
+            Start 241: OKTest.TrivialTest
+    241/241 Test #241: OKTest.TrivialTest ...........................   Passed    0.02 sec
+
+    100% tests passed, 0 tests failed out of 241
+
+    Total Test time (real) = 118.74 sec
+    opticks-t- : use -V to show output
+    [simon@localhost opticks]$ 
+    [simon@localhost opticks]$ 
+
+
+Search 
+-------
+
+* :google:`cuda overhead`
+* :google:`cuda startup time`
+* :google:`cuda init seconds`
+* :google:`nvidia persistence mode`
+
+* https://devtalk.nvidia.com/default/topic/480579/?comment=3445429
+
+
+Deprecated Persistence Mode
+-------------------------------
+
+* http://docs.nvidia.com/deploy/driver-persistence/index.html#persistence-mode
+
+
+nvidia-persistenced
+----------------------
+
+::
+
+    [root@localhost opticks]# man nvidia-persistenced
+    [root@localhost opticks]# nvidia-persistenced
+    [root@localhost opticks]# ps aux | grep nvidia
+    root     136020 73.1  0.0   8352   728 ?        Ss   15:42   0:08 nvidia-persistenced
+    root     136022  0.0  0.0 103256   852 pts/1    S+   15:42   0:00 grep nvidia
+    [root@localhost opticks]# 
+
+
+After starting the daemon no init delay::
+
+    [root@localhost opticks]# nvidia-smi
+    Mon Oct 23 15:43:11 2017       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 367.48                 Driver Version: 367.48                    |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  Tesla K80           On   | 0000:05:00.0     Off |                    0 |
+    | N/A   33C    P8    26W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  Tesla K80           On   | 0000:06:00.0     Off |                    0 |
+    | N/A   27C    P8    28W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   2  Tesla K80           On   | 0000:84:00.0     Off |                    0 |
+    | N/A   29C    P8    25W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   3  Tesla K80           On   | 0000:85:00.0     Off |                    0 |
+    | N/A   28C    P8    30W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID  Type  Process name                               Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+    +-----------------------------------------------------------------------------+
+    [root@localhost opticks]# 
+
+
+
+
+Also see 10s with nvidia-smi
+------------------------------
+
+::
+
+    [simon@localhost opticks]$ date ; nvidia-smi ; date 
+    Mon Oct 23 15:31:22 CST 2017
+    Mon Oct 23 15:31:32 2017       
+    +-----------------------------------------------------------------------------+
+    | NVIDIA-SMI 367.48                 Driver Version: 367.48                    |
+    |-------------------------------+----------------------+----------------------+
+    | GPU  Name        Persistence-M| Bus-Id        Disp.A | Volatile Uncorr. ECC |
+    | Fan  Temp  Perf  Pwr:Usage/Cap|         Memory-Usage | GPU-Util  Compute M. |
+    |===============================+======================+======================|
+    |   0  Tesla K80           Off  | 0000:05:00.0     Off |                    0 |
+    | N/A   38C    P0    57W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   1  Tesla K80           Off  | 0000:06:00.0     Off |                    0 |
+    | N/A   31C    P0    66W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   2  Tesla K80           Off  | 0000:84:00.0     Off |                    0 |
+    | N/A   32C    P0    57W / 149W |      0MiB / 11439MiB |      0%      Default |
+    +-------------------------------+----------------------+----------------------+
+    |   3  Tesla K80           Off  | 0000:85:00.0     Off |                    0 |
+    | N/A   30C    P0    72W / 149W |      0MiB / 11439MiB |     97%      Default |
+    +-------------------------------+----------------------+----------------------+
+                                                                                   
+    +-----------------------------------------------------------------------------+
+    | Processes:                                                       GPU Memory |
+    |  GPU       PID  Type  Process name                               Usage      |
+    |=============================================================================|
+    |  No running processes found                                                 |
+    +-----------------------------------------------------------------------------+
+    Mon Oct 23 15:31:32 CST 2017
+    [simon@localhost opticks]$ 
+
+
+
+
+nvidia-smi
+-------------
+
+::
+
+    [simon@localhost opticks]$ nvidia-smi -h
+    NVIDIA System Management Interface -- v367.48
+
+    NVSMI provides monitoring information for Tesla and select Quadro devices.
+    The data is presented in either a plain text or an XML format, via stdout or a file.
+    NVSMI also provides several management operations for changing the device state.
+
+    Note that the functionality of NVSMI is exposed through the NVML C-based
+    library. See the NVIDIA developer website for more information about NVML.
+    Python wrappers to NVML are also available.  The output of NVSMI is
+    not guaranteed to be backwards compatible; NVML and the bindings are backwards
+    compatible.
+
+    http://developer.nvidia.com/nvidia-management-library-nvml/
+    http://pypi.python.org/pypi/nvidia-ml-py/
+    Supported products:
+    - Full Support
+        - All Tesla products, starting with the Fermi architecture
+        - All Quadro products, starting with the Fermi architecture
+        - All GRID products, starting with the Kepler architecture
+        - GeForce Titan products, starting with the Kepler architecture
+    - Limited Support
+        - All Geforce products, starting with the Fermi architecture
+    nvidia-smi [OPTION1 [ARG1]] [OPTION2 [ARG2]] ...
+
+        -h,   --help                Print usage information and exit.
+
+    ...
+
+
+
+10s for optix::Context::create ?
+----------------------------------------------
+
+::
+
+    [simon@localhost optixrap]$ ORayleighTest 
+    ...
+    2017-10-23 15:01:18.275 INFO  [135699] [Opticks::makeSimpleTorchStep@1386] Opticks::makeSimpleTorchStep config  cfg NULL
+    2017-10-23 15:01:18.275 INFO  [135699] [SLog::operator@15] OpticksHub::OpticksHub DONE
+    2017-10-23 15:01:18.275 INFO  [135699] [OScene::init@92] OScene::init START
+    2017-10-23 15:01:18.275 INFO  [135699] [OScene::init@105] OScene::init optix::Context::create() START 
+    2017-10-23 15:01:28.225 INFO  [135699] [OScene::init@107] OScene::init optix::Context::create() DONE 
+    2017-10-23 15:01:28.225 INFO  [135699] [OScene::init@111] OScene::init (OContext) stack_size_bytes: 2180
+    2017-10-23 15:01:28.225 INFO  [135699] [OScene::init@129] OScene::init ggeobase identifier : GGeo
+
+
+::
+
+    089 void OScene::init()
+     90 {
+     91     //if(m_verbosity > 0)
+     92     LOG(info) << "OScene::init START" ;
+     93 
+     94     m_timer->setVerbose(true);
+     95     m_timer->start();
+     96 
+     97     std::string builder_   = m_cfg->getBuilder();
+     98     std::string traverser_ = m_cfg->getTraverser();
+     99     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
+    100     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
+    101 
+    102 
+    103     OContext::Mode_t mode = m_ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
+    104 
+    105     LOG(info) << "OScene::init optix::Context::create() START " ;
+    106     optix::Context context = optix::Context::create();
+    107     LOG(info) << "OScene::init optix::Context::create() DONE " ;
+    108 
+
+
+
+Get same ~10s with one-by-one masking:: 
+
+     1059  CUDA_VISIBLE_DEVICES=0 ORayleighTest 
+     1060  CUDA_VISIBLE_DEVICES=1 ORayleighTest 
+     1061  CUDA_VISIBLE_DEVICES=2 ORayleighTest 
+     1062  CUDA_VISIBLE_DEVICES=3 ORayleighTest 
+
+
+Same delay seen with pure-CUDA cudaGetDevicePropertiesTest
+
+
+
+10s pedestal for all GPU using tests ?
+-------------------------------------------
 
 ::
 
