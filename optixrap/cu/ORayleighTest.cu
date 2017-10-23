@@ -11,7 +11,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtBuffer<curandState, 1>       rng_states ;
 
-rtBuffer<float4>  rayleigh_buffer;
+rtBuffer<float4,2>  rayleigh_buffer;
 
 
 // HMM : NOT GOOD THAT SO MUCH BAGGAGE NEEDED TO TEST rayleigh.h
@@ -51,10 +51,16 @@ RT_PROGRAM void ORayleighTest()
  
     rayleigh_scatter( p, rng );
 
-    rayleigh_buffer[ generate_offset + 0] = make_float4( o.direction.x,     o.direction.y,     o.direction.z,     0.f );
-    rayleigh_buffer[ generate_offset + 1] = make_float4( o.polarization.x,  o.polarization.y,  o.polarization.z,  0.f );
-    rayleigh_buffer[ generate_offset + 2] = make_float4( p.direction.x,     p.direction.y,     p.direction.z,     0.f );
-    rayleigh_buffer[ generate_offset + 3] = make_float4( p.polarization.x,  p.polarization.y,  p.polarization.z,  0.f );
+
+    uint2 u0 = make_uint2( unsigned(generate_id), 0u ) ;
+    uint2 u1 = make_uint2( unsigned(generate_id), 1u ) ;
+    uint2 u2 = make_uint2( unsigned(generate_id), 2u ) ;
+    uint2 u3 = make_uint2( unsigned(generate_id), 3u ) ;
+
+    rayleigh_buffer[u0] = make_float4( o.direction.x,     o.direction.y,     o.direction.z,     0.f );
+    rayleigh_buffer[u1] = make_float4( o.polarization.x,  o.polarization.y,  o.polarization.z,  0.f );
+    rayleigh_buffer[u2] = make_float4( p.direction.x,     p.direction.y,     p.direction.z,     0.f );
+    rayleigh_buffer[u3] = make_float4( p.polarization.x,  p.polarization.y,  p.polarization.z,  0.f );
 }
 
 
