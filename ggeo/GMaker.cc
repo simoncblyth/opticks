@@ -44,7 +44,7 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_PRISM:        solid = makePrism(param, spec); break;
          case CSG_SPHERE:       solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
          case CSG_ZSPHERE:      solid = makeZSphere(param) ; break;
-         case CSG_ZLENS:        solid = makeZSphereIntersect(param, spec) ; break;   // composite handled by adding child node
+         case CSG_ZLENS:        solid = makeZSphereIntersect_DEAD(param, spec) ; break;   // composite handled by adding child node
          case CSG_INTERSECTION: solid = makeBox(param); break ;    // boolean intersect
          case CSG_UNION:        solid = makeBox(param); break ;    // boolean union
          case CSG_DIFFERENCE:   solid = makeBox(param); break ;    // boolean difference
@@ -363,15 +363,25 @@ void GMaker::makeBooleanComposite(char shapecode, std::vector<GSolid*>& /*solids
     // but tis just for viz so could use bbox placeholder ?
 }
 
-GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
+GSolid* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
 {
+    assert(0 && "NOT WORKING, NO POINT FIXING : AS NCSG APPROACH SO MUCH BETTER SEE tlens-- " );
+
     // parameters of two spheres with offset z positions used
-    // to create
+    // to create a lens shape composed of 2 back-to-back zspheres
 
     float a_radius = param.x ; 
     float b_radius = param.y ; 
     float a_zpos   = param.z ;
     float b_zpos   = param.w ; 
+
+    LOG(info) << "GMaker::makeZSphereIntersect"
+              << " a_radius " << a_radius 
+              << " b_radius " << b_radius 
+              << " a_zpos " << a_zpos
+              << " b_zpos " << b_zpos
+              ;
+
 
     assert(b_zpos > a_zpos); 
 
@@ -395,12 +405,22 @@ GSolid* GMaker::makeZSphereIntersect(glm::vec4& param, const char* spec)
     ndisk d = nsphere::intersect(a,b) ;   // from NPlane.hpp, not same as ndisc (degenerated ncylinder)
     float zd = d.z();
 
-    npart ar = a.zrhs(d);
+    d.dump("ndisk from nsphere::intersect" ); 
+    LOG(info) << "ndisk::dump DONE " ; 
+
+
+    // two CSG_SPHERE part
+    npart ar = a.zrhs(d); 
     npart bl = b.zlhs(d);
+
+    ar.dump("ar: a.zrhs(d) ");
+    bl.dump("bl: b.zlhs(d) ");
+
 
     glm::vec3 a_center = a.center();
     glm::vec3 b_center = b.center();
 
+    // ctmin, ctmax, zpos, radius
     glm::vec4 arhs_param( a.costheta(zd), 1.f, a_center.z, a.radius()) ;
     glm::vec4 blhs_param( -1, b.costheta(zd),  b_center.z, b.radius()) ;
 

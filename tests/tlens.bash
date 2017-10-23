@@ -12,6 +12,15 @@ tlens- : Disc shaped beam of white light incident on convex lens
 `tlens--`
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
+`tlens-convex`
+    works as expected, qualitatively
+
+`tlens-concave`
+    NOT WORKING : photons unmoved, boundary issue ?
+
+
+
+
 
 Theory
 ---------
@@ -43,7 +52,8 @@ EXERCISE
     * plot distributions for the subset using **matplotlib**  
     * interpret the plot
 
-   
+  
+ 
 
 
 EOU
@@ -65,18 +75,102 @@ tlens-medium(){ echo Vacuum ; }
 tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
-tlens-testconfig()
-{
-    local test_config=(
-                 name=$FUNCNAME
-                 mode=BoxInBox
-                 analytic=1
 
-                 node=box   parameters=-1,1,0,700           boundary=$(tlens-container)
-                 node=zlens parameters=641.2,641.2,-600,600 boundary=$(tlens-testobject)
-               )
-     echo "$(join _ ${test_config[@]})" 
+tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- $* ; }
+tlens-convex-(){ $FUNCNAME- | python $* ; }  
+tlens-convex--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME", testobject="$(tlens-testobject)", container="$(tlens-container)" )
+
+container = CSG("box", param=[-1,1,0,700], boundary=args.container, poly="MC", nx="20" )
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+
+al = CSG("sphere", param=[0,0,-600,641.2])   
+ar = CSG("sphere", param=[0,0, 600,641.2])
+lens = CSG("intersection", left=al, right=ar )
+
+CSG.Serialize([container, lens ], args.csgpath )
+
+EOP
 }
+
+
+tlens-concave(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- $* ; }
+tlens-concave-(){ $FUNCNAME- | python $* ; }  
+tlens-concave--(){ cat << EOP 
+
+import logging 
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME", testobject="$(tlens-testobject)", container="$(tlens-container)" )
+
+cr = 300.
+cz = 100.
+
+sz = (cz*cz + cr*cr)/(2.*cz )
+sr = sz
+
+log.info( " cr %s cz %s sr %s sz %s " % (cr,cz,sr,sz ))
+
+
+container = CSG("box", param=[0,0,0,sz], boundary=args.container, poly="MC", nx="20" )
+log.info(" container.boundary : %s " % container.boundary )
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+
+cy = CSG("cylinder", param=[0,0,0,cr], param1=[-cz,cz,0,0])   
+ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
+al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
+
+lens = cy - ar - al 
+
+#la = CSG("intersection", left=cy, right=ar )
+
+log.info(" lens.boundary : %s " % lens.boundary )
+
+
+CSG.Serialize([container, lens ], args.csgpath )
+
+"""
+
+          (-cz,cr)      (+cz,cr)
+               +---------+ 
+               |    |    |
+               |    |    |
+               |    |    |
+               |    |    |                                
+      ---------|----0----|-----------+------------------   --> Z
+               |    |    |         (sz
+               |    |    |
+               |    |    |
+               |    |    |
+               +---------+ 
+
+    Find parameters of sphere that goes thru points (0,0) and (cz,cr)
+
+       sz = sr 
+
+      (sz - cz)^2 + cr^2 = sr^2
+
+        sz^2 - 2 sz cz + cz^2 + cr^2 = sz^2
+ 
+                sz = (cz^2 + cr^2)/(2*cz)
+
+
+"""
+
+EOP
+}
+
+
 
 tlens-torchconfig()
 {
@@ -115,7 +209,7 @@ tlens--()
     if [ -n "$TESTCONFIG" ]; then
         testconfig=${TESTCONFIG}
     else
-        testconfig=$(tlens-testconfig)
+        testconfig=$(tlens-convex-)
     fi
 
     local torchconfig
@@ -136,7 +230,8 @@ tlens--()
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$torchconfig" \
             --torchdbg \
-            --save --tag $tag --cat $(tlens-det)
+            --save --tag $tag --cat $(tlens-det) \
+            --rendermode +global,+axis
 }
 
 tlens-t()

@@ -47,7 +47,7 @@ class GGEO_API GMaker {
        static GSolid* makePrism(glm::vec4& param, const char* spec);
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);
-       static GSolid* makeZSphereIntersect(glm::vec4& param, const char* spec);
+       static GSolid* makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec);
        static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
        static GSolid* makeBox(gbbox& bbox);
    private:

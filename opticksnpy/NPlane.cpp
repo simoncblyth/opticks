@@ -103,7 +103,7 @@ void ndisk::dump(const char* msg)
 {
     char dmsg[128];
     snprintf(dmsg, 128, "ndisk radius %10.4f %s \n", radius, msg );
-    plane.dump(dmsg);
+    plane.pdump(dmsg);
 }
 
 

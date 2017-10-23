@@ -96,10 +96,12 @@ tjuno
 tlaser
     working to some extent
 tlens
-    NOT WORKING 
 
-    * old style zlens not working : noshow in raytrace
-    * TODO: migrate to using python CSG geometry to define lens shapes, eliminate the old zlens
+    Migrated to python NCSG geometry to define lens shapes
+
+    * old style zlens abdandoned, not worth fixing as NCSG approach so much better 
+
+    TODO: eliminate the old broken zlens code
 
 tnewton
     working to some extent
