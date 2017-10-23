@@ -1,16 +1,13 @@
 2017-10-19-almost-all-integration-tests-failing
 ==================================================
 
+2017-10-23 tests-t All 9 enabled tests now working 
+-------------------------------------------------------
 
-
-2017-10-23 tests-t
------------------------
-
-* mostly outdated python analysis scripts
+* fixes were mostly updating outdated python analysis scripts
 
 ::
 
-    simon:tests blyth$ tests-
     simon:tests blyth$ tests-t
     ==                     treflect-t ==  ->    0 
     ==                         tbox-t ==  ->    0 
@@ -18,8 +15,9 @@
     ==                      tnewton-t ==  ->    0 
     ==                       twhite-t ==  ->    0 
     ==                         tpmt-t ==  ->    0 
-    ==                     trainbow-t ==  ->    1 
-    WARNING : FAILURE OF trainbow.bash : RC 1
+    ==                     trainbow-t ==  ->    0 
+    ==                        tlens-t ==  ->    0 
+    ==                       tg4gun-t ==  ->    0 
     simon:tests blyth$ 
 
 
@@ -37,89 +35,6 @@
     tg4gun
 
 
-
-trainbow-t 
-~~~~~~~~~~~~
-
-Hmm using the ancient --tcfg4 ?
-
-::
-
-    simon:ana blyth$ t trainbow-t
-    trainbow-t () 
-    { 
-        trainbow-pol s;
-        trainbow-pol p
-    }
-
-    simon:ana blyth$ t trainbow-pol
-    trainbow-pol () 
-    { 
-        local pol=${1:-s};
-        shift;
-        trainbow-- --${pol}pol --compute;
-        trainbow-- --${pol}pol --tcfg4;
-        trainbow-cf $pol
-    }
-    simon:ana blyth$ 
-
-
-::
-
-    [2017-10-23 17:01:02,037] p81853 {/Users/blyth/opticks/ana/evt.py:469} DEBUG - init_sequence START
-    [2017-10-23 17:01:02,037] p81853 {/Users/blyth/opticks/ana/nload.py:45} DEBUG - tagdir_ det rainbow typ torch tag -6 layout 2 DEFAULT_DIR_TEMPLATE $OPTICKS_EVENT_BASE/evt/$1/$2/$3 
-    [2017-10-23 17:01:02,037] p81853 {/Users/blyth/opticks/ana/nload.py:46} DEBUG - tagdir_ type(tag) <type 'str'> 
-    [2017-10-23 17:01:02,037] p81853 {/Users/blyth/opticks/ana/nload.py:62} DEBUG - tagdir_ tmpl $OPTICKS_EVENT_BASE/evt/rainbow/torch/-6 
-    [2017-10-23 17:01:02,037] p81853 {/Users/blyth/opticks/ana/evt.py:475} DEBUG -  ph missing ==> no history aka seqhis_ana  
-    Traceback (most recent call last):
-      File "/Users/blyth/opticks/ana/trainbow.py", line 187, in <module>
-        b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec, args=args)
-      File "/Users/blyth/opticks/ana/evt.py", line 219, in __init__
-        self.psel = psel      # psel property setter
-      File "/Users/blyth/opticks/ana/evt.py", line 785, in _set_psel
-        self._init_selection(psel)
-      File "/Users/blyth/opticks/ana/evt.py", line 705, in _init_selection
-        self.c4_ = self.c4
-    AttributeError: 'Evt' object has no attribute 'c4'
-    simon:ana blyth$ trainbow.py --det rainbow --src torch --tag 6 --loglevel debug
-
-
-The G4 evt lacks c4::
-
-    185     try:
-    186         a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec, args=args)
-    187         b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec, args=args)
-    188     except IOError as err:
-    189         log.fatal(err)
-    190         sys.exit(args.mrc)
-    191 
-
-
-
-Ancient tcfg4 should be replaced with okg4 ?
-------------------------------------------------
-
-::
-
-    simon:tests blyth$ grep tcfg4 *.*
-    tbox.bash:`tbox-- --tcfg4` 
-    tbox.bash:`tbox-- --tcfg4 --load`
-    tg4gun.bash:#       --tcfg4 \
-    tnewton.bash:Running with --tcfg4 option to use geant4 simulation runs into 
-    tpmt.bash:`tpmt-- --tcfg4` 
-    tpmt.bash:`tpmt-- --tcfg4 --load`
-    tpmt.bash:    #if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-    tpmt.bash:#    tpmt--  --tcfg4
-    tpmt.bash:tpmt-v-g4() { tpmt-- --load --tcfg4 ; } 
-    trainbow.bash:    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-    trainbow.bash:   trainbow-- --${pol}pol --tcfg4
-    trainbow.bash:trainbow-v-g4(){  trainbow-- $* --load --tcfg4 ; } 
-    ttemplate.bash:`ttemplate-- --tcfg4` 
-    ttemplate.bash:`ttemplate-- --tcfg4 --load`
-    ttemplate.bash:    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-    ttemplate.bash:    ttemplate--  --tcfg4
-    ttemplate.bash:ttemplate-v-g4() { ttemplate-- --load --tcfg4 ; } 
-    simon:tests blyth$ 
 
 2017-10-19 tests-t fails
 -------------------------

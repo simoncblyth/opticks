@@ -13,19 +13,19 @@ ttemplate- : Integration Tests Template
     create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
 
 `ttemplate-- --compute`
-    create Opticks geometry, simulates photons in compute mode, saves evt file
+    create Opticks geometry with OKTest, simulates, saves
 
-`ttemplate-- --tcfg4` 
-    create Geant4 geometry, simulates photons, saves evt file
+`ttemplate-- --okg4` 
+    create Opticks and Geant4 geometry with OKG4Test executable, simulates, saves 
 
-`ttemplate-- --tcfg4 --load`
+`ttemplate-- --vizg4 --load`
     visualize the Geant4 simulated photon propagation 
 
 `ttemplate-cf`
     compare Opticks and Geant4 material/flag sequence histories
 
 
-`ttemplate-test`
+`ttemplate-t`
     simulates with Opticks and Geant4 and compares the results 
 
 
@@ -93,10 +93,6 @@ ttemplate--(){
                  parameters=0,0,0,300
                    ) 
 
-    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
-
 
    op.sh \
        --test --testconfig "$(join _ ${test_config[@]})" \
@@ -123,15 +119,12 @@ ttemplate-ana()
 
 ttemplate-test()
 {
-    ttemplate--  --compute 
-    ttemplate--  --tcfg4
+    ttemplate--  --okg4 --compute 
     ttemplate-cf
     ttemplate-cf-distrib
 }
 
-ttemplate-v-g4() { ttemplate-- --load --tcfg4 ; } 
+ttemplate-vg4() {  ttemplate-- --load --vizg4 ; } 
 ttemplate-v() {    ttemplate-- --load ; } 
-
-
 
 

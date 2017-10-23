@@ -14,15 +14,11 @@ tpmt- : Opticks Simulation PMT Tests
 `tpmt-- --compute`
     create Opticks geometry, simulates photons in compute mode, saves evt file
 
-`tpmt-- --tcfg4` 
-    create Geant4 geometry, simulates photons, saves evt file
-
 `tpmt-- --okg4 --compute` 
     creates Geant4 geometry, performs both Opticks and Geant4 torch photon propagations, 
     saves both G4 and OK evt to file following negated G4 convention
 
-
-`tpmt-- --tcfg4 --load`
+`tpmt-- --vizg4 --load`
     visualize the Geant4 simulated photon propagation 
 
 `tpmt-cf`
@@ -191,18 +187,12 @@ tpmt--(){
 
     [ -z "$OPTICKS_INSTALL_PREFIX" ] && echo missing envvar OPTICKS_INSTALL_PREFIX && return 
 
-    #if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-    #    tag=-$tag  
-    #fi 
-    ## hmm suspect tag negation no longer needed, as doing both at once ???
-
     local anakey
     if [ "${cmdline/--okg4}" != "${cmdline}" ]; then
         anakey=tpmt   ## compare OK and G4 evt histories
     else
         anakey=tevt    ## just dump OK history table
     fi 
-
 
 
     #local apmtidx=0  
@@ -241,18 +231,11 @@ tpmt-cf-distrib() { tpmt_distrib.py  $(tpmt-args) ; }
 tpmt-skimmer() {    tpmt_skimmer.py  $(tpmt-args) ; } 
 
 
-#tpmt-gen()
-#{
-#    tpmt--  --compute 
-#    tpmt--  --tcfg4
-#}
-
 tpmt-ana()
 {
     tpmt-cf
     tpmt-cf-distrib
 }
-
 
 tpmt-t()
 {
@@ -260,14 +243,8 @@ tpmt-t()
     tpmt-- --okg4 --compute
 }
 
-tpmt-v-g4() { tpmt-- --load --tcfg4 ; } 
-
 tpmt-v() {    tpmt-- --load $* ; } 
-tpmt-vg4() {  tpmt-- --load --vizg4 ; } 
-
-
-
-
+tpmt-vg4() {  tpmt-- --load --vizg4 ; }   ## --vizg4 -> OpticksRun::getEvent returns G4 evt 
 
 tpmt-alt(){
    local test_config=(
@@ -285,6 +262,5 @@ tpmt-alt(){
           --rendermode +global,+axis \
            $*  
 }
-
 
 

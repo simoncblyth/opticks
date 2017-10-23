@@ -1,10 +1,32 @@
 tcfg4 bash level option
 ==========================
 
-The tcfg4 bash level option was
-formerly used to negate the tag
-indicating G4 processing to create Opticks 
-events.
+op.sh level executable switches, okg4/tcfg4/* -> OKG4Test/CG4Test/OKTest 
+-----------------------------------------------------------------------------
+
+The tcfg4 bash level option was formerly used to 
+create Opticks format "G4" events, using 
+a bash level convention of negating the tag.
+
+
+::
+
+    169 op-binary-name-default(){ echo OKTest ; }
+    170 
+    171 op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" ' - ; }
+    172 op-binary-name()
+    173 {
+    174    case $1 in
+    175          --idpath) echo OpticksIDPATH ;;
+    176            --keys) echo InteractorKeys ;;
+    177           --tcfg4) echo CG4Test ;;
+    178            --okg4) echo OKG4Test ;;
+    179          --tracer) echo OTracerTest ;;
+    180       --gdml2gltf) echo gdml2gltf.py ;;
+
+
+Current approach for comparisons is bi-simulation with okg4
+--------------------------------------------------------------
 
 This was replaced on moving to bi-simulation 
 whereby Opticks and G4 events are standardly 
@@ -43,6 +65,22 @@ both created at once.
 
 
 
+Former way of producing G4 and Opticks events for comparison 
+--------------------------------------------------------------
+
+The two launches are now replaced with a single --okg4 one.
+
+::
+
+    238 #tpmt-gen()
+    239 #{
+    240 #    tpmt--  --compute 
+    241 #    tpmt--  --tcfg4
+    242 #}
+
+
+Convention of tag negation with tcfg4 was required.  This
+same convention is now automatic.
 
 ::
 
@@ -69,11 +107,11 @@ both created at once.
     204     fi
 
 
-
-
-
 Ancient tcfg4 should be replaced with okg4 ?
 ------------------------------------------------
+
+* YES: almost all use of tcfg4 is now a bug 
+
 
 ::
 

@@ -198,7 +198,8 @@ if __name__ == '__main__':
 
 
     lmx = 20  
-    hcf = a.history.table.compare(b.history.table)
+    #hcf = a.history.table.compare(b.history.table)
+    hcf = a.his.compare(b.his)
     if len(hcf.lines) > lmx:
         hcf.sli = slice(0,lmx)
     print hcf 
@@ -209,7 +210,8 @@ if __name__ == '__main__':
 ## EXERCISE : ENABLE THE BELOW PLOTS AND INTERPRET WHAT YOU GET 
 
 if 0:
-    seqs = a.history.table.labels[:5] 
+    #seqs = a.history.table.labels[:5] 
+    seqs = a.his.labels[:5] 
     for seq in seqs:
         qa =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=[seq], not_=not_, rec=rec, args=args)
         qb =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=[seq], not_=not_, rec=rec, args=args)

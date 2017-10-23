@@ -74,20 +74,6 @@ tg4gun--()
                    ) 
           # mm, ns, MeV
 
-   local inimac=/tmp/$USER/opticks/g4ini.mac
-   mkdir -p $(dirname $inimac)
-   cat << EOI > $inimac
-/OpNovice/phys/verbose 0
-/run/particle/verbose 1
-EOI
-
-#   op.sh \
-#       --tcfg4 \
-#       --cat G4Gun --tag $tag --save \
-#       --g4inimac "$inimac" \
-#       --g4gun --g4gundbg --g4gunconfig "$(join _ ${g4gun_config[@]})" \
-#       $* 
-
    op.sh \
        --okg4 \
        --cat G4Gun --tag $tag --save \
@@ -100,7 +86,7 @@ EOI
 tg4gun-t()
 {
     tg4gun-
-    tg4gun-- $*
+    tg4gun-- $* --compute
 }
 
 tg4gun-v()

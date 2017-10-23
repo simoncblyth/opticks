@@ -10,15 +10,15 @@ tbox- : Pyrex Cube inside Mineral Oil Cube Test
     edit the bash functions 
 
 `tbox--`
-    create Opticks geometry, simulates photons in interop mode, visualize, saves evt file 
+    create Opticks geometry, simulates photons in interop mode, visualize, saves evt 
 
 `tbox-- --compute`
-    create Opticks geometry, simulates photons in compute mode, saves evt file
+    create Opticks geometry, simulates photons in compute mode, saves evt 
 
-`tbox-- --tcfg4` 
-    create Geant4 geometry, simulates photons, saves evt file
+`tbox-- --okg4` 
+    create Opticks and Geant4 geometry, simulates photons with both Opticks and G4, saves two evt 
 
-`tbox-- --tcfg4 --load`
+`tbox-- --vizg4 --load`
     visualize the Geant4 simulated photon propagation 
 
 `tbox-cf`

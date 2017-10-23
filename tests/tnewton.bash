@@ -21,10 +21,8 @@ tnewton-test
     does both s and p simulation in compute mode and runs the py check 
 
 
-
-Running with --tcfg4 option to use geant4 simulation runs into 
-missing prism implementation for geant4, causing missing solid warning
-and segv. 
+Running geant4 simulation runs into missing prism implementation for geant4, 
+causing missing solid warning and segv. 
 
 
 

@@ -66,10 +66,6 @@ trainbow-poltag()
    esac
 }
 
-
-
-
-
 trainbow--(){
 
     local msg="=== $FUNCNAME :"
@@ -87,9 +83,6 @@ trainbow--(){
     fi  
 
     local tag=$(trainbow-poltag $pol)
-    if [ "${cmdline/--tcfg4}" != "${cmdline}" ]; then
-        tag=-$tag  
-    fi 
     echo $msg pol $pol tag $tag 
 
     op.sh  \
@@ -159,7 +152,6 @@ trainbow-testconfig()
 }
 
 
-
 trainbow-cf() 
 {       
    local pol=${1:-s}
@@ -168,14 +160,22 @@ trainbow-cf()
    trainbow.py $(trainbow-args) --tag $tag $* 
 } 
 
+trainbow-icf(){   
+   local pol=${1:-s}
+   shift 
+   local tag=$(trainbow-poltag ${pol}) 
+
+   echo "enter: %debug " 
+   ipython -i $(which trainbow.py) --  $(trainbow-args) --tag $tag $* 
+}
+
+
 trainbow-pol()
 {
    local pol=${1:-s}
    shift 
 
-   trainbow-- --${pol}pol --compute
-   trainbow-- --${pol}pol --tcfg4
-
+   trainbow-- --${pol}pol --okg4 --compute
    trainbow-cf $pol
 }
 
@@ -186,8 +186,8 @@ trainbow-t()
    trainbow-pol p
 }
 
-trainbow-v-g4(){  trainbow-- $* --load --tcfg4 ; } 
-trainbow-v() {    trainbow-- $* --load ; } 
+trainbow-vg4(){  trainbow-- $* --load --vizg4 ; } 
+trainbow-v() {   trainbow-- $* --load ; } 
 
 
 
