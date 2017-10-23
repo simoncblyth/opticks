@@ -28,8 +28,8 @@ if __name__ == '__main__':
     b_seqs = []
 
     try:
-        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs)
-        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs)
+        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs, args=args)
+        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs, args=args)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

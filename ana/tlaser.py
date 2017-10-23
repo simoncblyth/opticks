@@ -35,8 +35,8 @@ if __name__ == '__main__':
 
 
     try:
-        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs, dbgseqhis=args.dbgseqhis)
-        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs, dbgseqhis=args.dbgseqhis)
+        a = Evt(tag="%s" % args.utag, src=args.src, det=args.det, seqs=a_seqs, dbgseqhis=args.dbgseqhis, args=args)
+        b = Evt(tag="-%s" % args.utag , src=args.src, det=args.det, seqs=b_seqs, dbgseqhis=args.dbgseqhis, args=args )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

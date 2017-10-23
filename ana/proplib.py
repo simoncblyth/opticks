@@ -199,7 +199,7 @@ class PropLib(object):
         return self.names.index(name)
 
     def interp(self, name, wavelengths, k=0):
-        idx = self.names.index(name)
+        idx = list(self.names).index(name)
         return np.interp( wavelengths, self.domain, self.data[idx][0][:,k] ) 
  
     def __call__(self, name):

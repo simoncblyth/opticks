@@ -598,7 +598,7 @@ if __name__ == '__main__':
     seqs = ["TO BT BT SA"]
 
     try:
-        sel = Evt(tag=args.tag, det=args.det, seqs=seqs) 
+        sel = Evt(tag=args.tag, det=args.det, seqs=seqs, args=args) 
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

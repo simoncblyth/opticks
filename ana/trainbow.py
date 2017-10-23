@@ -183,8 +183,8 @@ if __name__ == '__main__':
     seqs = []
 
     try:
-        a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec)
-        b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec)
+        a = Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=seqs, not_=not_, rec=rec, args=args)
+        b = Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=seqs, not_=not_, rec=rec, args=args)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)    
@@ -211,8 +211,8 @@ if __name__ == '__main__':
 if 0:
     seqs = a.history.table.labels[:5] 
     for seq in seqs:
-        qa =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=[seq], not_=not_, rec=rec)
-        qb =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=[seq], not_=not_, rec=rec)
+        qa =  Evt(tag=tag, src=src, det=det, label="%s Op" % label, seqs=[seq], not_=not_, rec=rec, args=args)
+        qb =  Evt(tag="-%s" % tag, src=src, det=det, label="%s G4" % label, seqs=[seq], not_=not_, rec=rec, args=args)
 
         cf_plot(qa, qb, label=label + " " + seq, log_=log_, ylim=[0.8,4e4],ylim2=None)
 

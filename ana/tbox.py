@@ -5,10 +5,9 @@ tbox.py : BoxInBox Opticks vs Geant4 comparisons
 
 Without and with cfg4 runs::
 
-   ggv-;ggv-box-test 
-   ggv-;ggv-box-test --tcfg4 
+   tbox-;tbox-t 
 
-Visualize the cfg4 created evt in interop mode viewer::
+Visualize the cg4 created evt in interop mode viewer::
 
    ggv-;ggv-box-test --tcfg4 --load
 
@@ -239,8 +238,8 @@ if __name__ == '__main__':
     plt.close()
 
     try:
-        a = Evt(tag="%s" % args.tag, src=args.src, det=args.det)
-        b = Evt(tag="-%s" % args.tag , src=args.src, det=args.det)
+        a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, args=args)
+        b = Evt(tag="-%s" % args.tag , src=args.src, det=args.det, args=args )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc) 
@@ -252,8 +251,11 @@ if 1:
     c2max = args.c2max
     c2max = None
 
+    log.info("\n\nEvt.compare_table.0\n")
     Evt.compare_table(a,b, "seqhis_ana seqmat_ana".split(), lmx=20, c2max=c2max, cf=False)
+    log.info("\n\nEvt.compare_table.1\n")
     Evt.compare_table(a,b, "seqhis_ana seqhis_ana_2 seqhis_ana_3 seqhis_ana_4 seqmat_ana".split(), lmx=20, c2max=c2max, cf=True)
+    log.info("\n\nEvt.compare_table.2\n")
     Evt.compare_table(a,b, "pflags_ana hflags_ana".split(), lmx=20, c2max=c2max )
 
 
@@ -285,8 +287,8 @@ if 0:
     sel = "TO BT BT SA" 
     nst = len(sel.split())
 
-    sa = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=[sel])
-    sb = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=[sel])
+    sa = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=[sel], args=args)
+    sb = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=[sel], args=args )
 
     if sa.valid:
         print "sa(Op)"

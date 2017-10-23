@@ -373,7 +373,7 @@ if __name__ == '__main__':
 
 
     try:
-        evt = Evt(tag=tag, det=args.det, src=args.src, seqs=seqs, label=label)
+        evt = Evt(tag=tag, det=args.det, src=args.src, seqs=seqs, label=label, args=args )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

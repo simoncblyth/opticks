@@ -89,7 +89,7 @@ if __name__ == '__main__':
     plt.ion()
 
     try:
-        sel = Evt(tag=args.tag, det=args.det, src=args.src, seqs=["TO BT BT SA"])  # newton, uses single incident angle
+        sel = Evt(tag=args.tag, det=args.det, src=args.src, seqs=["TO BT BT SA"], args=args)  # newton, uses single incident angle
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

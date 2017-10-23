@@ -154,7 +154,7 @@ class Evt(object):
         if label is None:
             label = evt.label + " sel %s " % (repr(seqs)) 
         pass
-        sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, maxrec=evt.maxrec, rec=evt.rec, dbg=dbg )
+        sel = cls(tag=evt.tag, src=evt.src, det=evt.det, seqs=seqs, not_=not_ , label=label, maxrec=evt.maxrec, rec=evt.rec, dbg=dbg, args=evt.args )
         return sel 
 
 
@@ -177,7 +177,7 @@ class Evt(object):
         self.seqs = seqs
         self.flv = "seqhis"  # default for selections
 
-
+        self.args = args
         self.terse = args.terse
         self.dbgseqhis = args.dbgseqhis
         self.dbgmskhis = args.dbgmskhis

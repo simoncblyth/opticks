@@ -30,7 +30,7 @@ class OKCORE_API OpticksRun
     public:
         OpticksEvent* getEvent();
         OpticksEvent* getG4Event();
-        OpticksEvent* getCurrentEvent(); // either G4 or OK evt depending on options
+        OpticksEvent* getCurrentEvent(); // returns OK evt unless G4 option specified : --vizg4 or --evtg4 
         G4StepNPY*    getG4Step(); 
         std::string brief() const ;
 

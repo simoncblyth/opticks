@@ -225,8 +225,8 @@ if __name__ == '__main__':
     args = opticks_main(det="reflect",stag="1", ptag="2")
 
     try:
-        es = Evt(tag=args.stag, label="S", det=args.det)
-        ep = Evt(tag=args.ptag, label="P", det=args.det)
+        es = Evt(tag=args.stag, label="S", det=args.det, args=args)
+        ep = Evt(tag=args.ptag, label="P", det=args.det, args=args)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc) 

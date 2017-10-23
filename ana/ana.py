@@ -117,7 +117,7 @@ def angle_plot(fig, evts, irec=0, axis=[0,0,1], origin=[0,0,-200], nb=100):
 if __name__ == '__main__':
     args = opticks_main(tag="5", det="rainbow", src="torch")
     try:
-        evt = Evt(tag=args.tag, det=args.det, src=args.src)
+        evt = Evt(tag=args.tag, det=args.det, src=args.src, args=args)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc) 

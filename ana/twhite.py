@@ -67,7 +67,7 @@ if __name__ == '__main__':
     ## tag = "15"     ## so added tag 15,16 to ggv-rainbow with wavelength=0 which is default black body 
 
     try:
-        evt = Evt(tag=args.tag, det=args.det, src=args.src)
+        evt = Evt(tag=args.tag, det=args.det, src=args.src, args=args )
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)

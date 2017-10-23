@@ -95,8 +95,8 @@ if __name__ == '__main__':
     nb = len(bseqs[0].split())
 
     try:
-        a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=aseqs)
-        b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=bseqs)
+        a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, seqs=aseqs, args=args)
+        b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, seqs=bseqs, args=args)
     except IOError as err:
         log.fatal(err)
         sys.exit(args.mrc)
