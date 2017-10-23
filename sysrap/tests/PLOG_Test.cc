@@ -57,6 +57,10 @@ int main(int, char** argv_)
 
         SArgs* a = new SArgs(argv_[0], t.c_str()) ;
 
+
+        if(PLOG::instance != NULL) PLOG::instance = NULL ; 
+
+
         PLOG* pl = j == 0 ?
                              new PLOG(a->argc, a->argv, fallback ) 
                           :

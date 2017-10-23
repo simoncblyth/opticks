@@ -87,6 +87,8 @@ int main(int /*argc_*/, char** argv_)
 
         const char* uprefix = j == 0 ? NULL : prefix ; 
 
+        if(PLOG::instance != NULL) PLOG::instance = NULL ; 
+
         PLOG* pl = new PLOG(a->argc, a->argv, fallback, uprefix );
 
         std::stringstream ss ; 
