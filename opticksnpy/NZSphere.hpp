@@ -97,10 +97,10 @@ inline NPY_API void nzsphere::check() const
     assert( zmax() > zmin() ); 
 }
 
-inline NPY_API float nzsphere::rz(float z) const 
+inline NPY_API float nzsphere::rz(float z_) const 
 {
     float r = radius(); 
-    return sqrt(r*r - z*z) ;  
+    return sqrt(r*r - z_*z_) ;  
 }
 
 /*

@@ -13,10 +13,10 @@
 
 
 
-NNodeNudger::NNodeNudger(nnode* root, float epsilon, unsigned /*verbosity*/) 
+NNodeNudger::NNodeNudger(nnode* root_, float epsilon_, unsigned /*verbosity*/) 
      :
-     root(root),
-     epsilon(epsilon), 
+     root(root_),
+     epsilon(epsilon_), 
      verbosity(SSys::getenvint("VERBOSITY",1)),
      znudge_count(0)
 {

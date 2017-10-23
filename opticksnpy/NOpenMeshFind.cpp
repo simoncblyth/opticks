@@ -107,7 +107,7 @@ typename T::FaceHandle NOpenMeshFind<T>::first_face(NOpenMeshFindType sel, int p
 template <typename T>
 typename T::FaceHandle NOpenMeshFind<T>::first_face(const std::vector<FH>& faces, NOpenMeshFindType sel, int param) const 
 {
-    typedef typename T::ConstFaceIter        FI ; 
+    //typedef typename T::ConstFaceIter        FI ; 
     FH first ;  
     for( unsigned i=0 ; i < faces.size() ; i++)
     {
@@ -552,12 +552,12 @@ int NOpenMeshFind<T>::find_boundary_loops()
 {
     //LOG(info) << "find_boundary_loops" ; 
 
-    typedef typename T::FaceHalfedgeIter    FHI ; 
+    //typedef typename T::FaceHalfedgeIter    FHI ; 
     typedef typename T::ConstEdgeIter       CEI ; 
     typedef typename T::EdgeHandle          EH ; 
     typedef typename T::HalfedgeHandle      HEH ; 
 
-    typedef std::vector<HEH>              VHEH ; 
+    //typedef std::vector<HEH>              VHEH ; 
 
     unsigned he_bnd[3] ; 
     he_bnd[0] = 0 ; 

@@ -86,7 +86,7 @@ bool npart::isPrimitive()
 
 void npart::traverse( npart* tree, unsigned numNodes, unsigned i )
 {
-    assert( i >= 0 && i < numNodes );
+    assert( i < numNodes );
 
     npart* node = tree + i ; 
     bool prim = node->isPrimitive();

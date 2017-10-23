@@ -119,7 +119,7 @@ std::string NOpenMeshDesc<T>::vertices() const
 template <typename T>
 std::string NOpenMeshDesc<T>::faces() const 
 {
-    typedef typename T::VertexHandle   VH ; 
+    //typedef typename T::VertexHandle   VH ; 
     typedef typename T::FaceHandle     FH ; 
     typedef typename T::ConstFaceIter  FI ; 
 
@@ -142,7 +142,7 @@ std::string NOpenMeshDesc<T>::faces() const
 template <typename T>
 std::string NOpenMeshDesc<T>::edges() const 
 {
-    typedef typename T::VertexHandle   VH ; 
+    //typedef typename T::VertexHandle   VH ; 
     typedef typename T::EdgeHandle     EH ; 
     typedef typename T::ConstEdgeIter  EI ; 
 
@@ -214,7 +214,7 @@ template <typename T>
 std::string NOpenMeshDesc<T>::operator()(const typename T::EdgeHandle eh) const 
 {
     typedef typename T::HalfedgeHandle      HEH ; 
-    typedef typename T::VertexHandle        VH ; 
+    //typedef typename T::VertexHandle        VH ; 
     typedef typename T::FaceHandle          FH ; 
 
     std::stringstream ss ; 
@@ -370,7 +370,7 @@ void NOpenMeshDesc<T>::dump_faces(const char* msg ) const
 
     typedef typename T::FaceIter            FI ; 
     typedef typename T::ConstFaceVertexIter FVI ; 
-    typedef typename T::Point               P ; 
+    //typedef typename T::Point               P ; 
 
     for( FI f=mesh.faces_begin() ; f != mesh.faces_end(); ++f ) 
     {

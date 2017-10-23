@@ -51,11 +51,11 @@ VERBOSITY envvar.
 
 struct NPY_API NNodeCoincidence 
 {
-    NNodeCoincidence(nnode* i, nnode* j, NNodePairType p) 
+    NNodeCoincidence(nnode* i_, nnode* j_, NNodePairType p_) 
          :
-         i(i),
-         j(j),
-         p(p),
+         i(i_),
+         j(j_),
+         p(p_),
          fixed(false)
     {} ;
 

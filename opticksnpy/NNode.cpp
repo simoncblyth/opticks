@@ -1013,15 +1013,15 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
 
 
 
-void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity)
+void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<glm::vec3>& dirs, int verbosity_)
 {
     std::vector<const nnode*> prim ; 
     collect_prim(prim);    // recursive collection of list of all primitives in tree
     unsigned nprim = prim.size();
 
-    if(verbosity > 0)
+    if(verbosity_ > 0)
     LOG(info) << "nnode::collect_prim_centers"
-              << " verbosity " << verbosity
+              << " verbosity " << verbosity_
               << " nprim " << nprim 
               ;
 
@@ -1029,7 +1029,7 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
     {
         const nnode* p = prim[i] ; 
 
-        if(verbosity > 1 )
+        if(verbosity_ > 1 )
         LOG(info) << "nnode::collect_prim_centers"
                   << " i " << i 
                   << " type " << p->type 
@@ -1129,7 +1129,7 @@ unsigned nnode::uncoincide(unsigned verbosity)
 
 
 
-void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
+void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other_, float epsilon, unsigned level, int margin, NNodeFrameType fr) const 
 {
     /*
     Checking the disposition of parametric points of parametric surfaces of this node 
@@ -1148,11 +1148,11 @@ void nnode::getCoincident(std::vector<nuv>& coincident, const nnode* other, floa
      unsigned ns = par_nsurf();
      for(unsigned s = 0 ; s < ns ; s++)
      {    
-         getCoincidentSurfacePoints(coincident, s, level, margin, other, epsilon, fr) ;
+         getCoincidentSurfacePoints(coincident, s, level, margin, other_, epsilon, fr) ;
      }
 }
 
-void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const 
+void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned level, int margin, const nnode* other_, float epsilon, NNodeFrameType fr) const 
 {
     int nu = 1 << level ; 
     int nv = 1 << level ; 
@@ -1169,7 +1169,7 @@ void nnode::getCoincidentSurfacePoints(std::vector<nuv>& surf, int s, unsigned l
 
             glm::vec3 pos = par_pos_(uv, fr);
 
-            float other_sdf = other->sdf_(pos, fr );
+            float other_sdf = other_->sdf_(pos, fr );
 
             if( fabs(other_sdf) < epsilon )  
             {
@@ -1192,16 +1192,16 @@ const std::vector<nuv>& nnode::get_par_coords() const
     return par_coords ; 
 }
 
-void nnode::collectParPoints(unsigned prim_idx, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) 
+void nnode::collectParPoints(unsigned prim_idx, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity_) 
 {
     assert(is_primitive());
     par_points.clear();
     par_coords.clear();
     unsigned ns = par_nsurf();
-    for(unsigned sheet = 0 ; sheet < ns ; sheet++) collectParPointsSheet(prim_idx, sheet, level, margin, fr, verbosity) ;
+    for(unsigned sheet = 0 ; sheet < ns ; sheet++) collectParPointsSheet(prim_idx, sheet, level, margin, fr, verbosity_) ;
 }
 
-void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity) 
+void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity_) 
 {
     /*
 
@@ -1251,11 +1251,11 @@ void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, 
     assert( n == expect );
 
 
-    if(verbosity > 5)
+    if(verbosity_ > 5)
     {
         std::cout
                  << "nnode::collectParPointsSheet"
-                 << " verbosity " << std::setw(3) << verbosity
+                 << " verbosity " << std::setw(3) << verbosity_
                  << " prim " << std::setw(3) << prim_idx 
                  << " sheet " << std::setw(3) << sheet 
                  << " nu " << std::setw(4) << nu 

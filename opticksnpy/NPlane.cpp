@@ -69,8 +69,8 @@ glm::vec3 nplane::point_in_plane() const
 
 glm::vec3 nplane::gseedcenter()
 {
-    glm::vec3 center = point_in_plane();
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
+    glm::vec3 center_ = point_in_plane();
+    return gtransform == NULL ? center_ : glm::vec3( gtransform->t * glm::vec4(center_, 1.f ) ) ;
 }
 
 glm::vec3 nplane::gseeddir()

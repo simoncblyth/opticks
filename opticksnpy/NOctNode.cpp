@@ -6,18 +6,6 @@
 #include "PLOG.hh"
 
 
-const char* NOCTName(NOctNode_t type)
-{
-    switch(type)
-    {
-       case NOCT_ZERO:     return NOCT_ZERO_     ; break ; 
-       case NOCT_INTERNAL: return NOCT_INTERNAL_ ; break ; 
-       case NOCT_LEAF:     return NOCT_LEAF_     ; break ; 
-    }
-    return NULL ; 
-}
-
-
 const nivec3 NOctNode::OFFSETS[] = 
 {
    nivec3(0,0,0),
@@ -48,7 +36,7 @@ std::string NOctNode::desc()
     std::stringstream ss ; 
     nivec3 max = min + size*OFFSETS[7] ; 
     ss 
-        << NOCTName(type)
+        << NOctNodeEnum::NOCTName(type)
         <<  " min " << min.desc() 
         <<  " max " << max.desc() 
         << " size " << size

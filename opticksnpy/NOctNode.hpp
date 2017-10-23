@@ -35,27 +35,12 @@ Not so useful as complete octrees extrememly wasteful
 #include "NQuad.hpp"
 #include "NPY_API_EXPORT.hh"
 
-
-typedef enum 
-{
-   NOCT_ZERO, 
-   NOCT_INTERNAL, 
-   NOCT_LEAF 
-}           NOctNode_t ;
-
-
-static const char* NOCT_ZERO_     = "ZERO" ;
-static const char* NOCT_INTERNAL_ = "INTERNAL" ;
-static const char* NOCT_LEAF_     = "LEAF" ;
-
-static NPY_API const char* NOCTName(NOctNode_t type);
-
-
 struct NPY_API NLeafData
 {
    int corners ; 
 };
 
+#include "NOctNodeEnum.hpp"
 
 struct NPY_API NOctNode
 {

@@ -358,9 +358,12 @@ void NCSG::loadNodes()
 
     m_height = UINT_MAX ; 
     int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
-    while(h--) if(TREE_NODES(h) == m_num_nodes) m_height = h ; 
 
-    assert(m_height >= 0); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
+    unsigned complete_nodes = TREE_NODES(h) ;
+
+    while(h--) if(complete_nodes == m_num_nodes) m_height = h ; 
+
+    assert(m_height != UINT_MAX); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
 }
 
 

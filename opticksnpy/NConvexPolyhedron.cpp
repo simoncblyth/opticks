@@ -24,7 +24,7 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
    // * does this need to distinguish cases of being inside and outside the planes
    // * is this assuming origin is inside the convexpolyhedron ? 
 
-    int verbosity = 0 ; 
+    int verbosity_ = 0 ; 
 
     for(unsigned i=0 ; i < num_planes ; i++)
     {
@@ -41,7 +41,7 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
          
         float d = d0 - pdist ; 
 
-        if(verbosity > 2)
+        if(verbosity_ > 2)
         std::cout 
              << " pl: " << gpresent(plane)
              << " " << std::setw(10) << d 
@@ -82,7 +82,7 @@ bool nconvexpolyhedron::intersect( const float t_min, const glm::vec3& ray_origi
     glm::vec3 t0_normal(0.f);
     glm::vec3 t1_normal(0.f);
 
-    int verbosity = 0 ; 
+    int verbosity_ = 0 ; 
     unsigned num_planes = planes.size(); 
 
     for(unsigned i=0 ; i < num_planes && t0 < t1  ; i++)
@@ -97,7 +97,7 @@ bool nconvexpolyhedron::intersect( const float t_min, const glm::vec3& ray_origi
 
         float t_cand = (pdist - glm::dot(pnorm, ray_origin))/denom;
    
-        if(verbosity > 2) std::cout << "nconvexpolyhedron::intersect"
+        if(verbosity_ > 2) std::cout << "nconvexpolyhedron::intersect"
                                     << " i " << i
                                     << " t_cand " << t_cand 
                                     << " denom " << denom 
@@ -155,8 +155,8 @@ bool nconvexpolyhedron::intersect( const float t_min, const glm::vec3& ray_origi
 
 glm::vec3 nconvexpolyhedron::gseedcenter()
 {
-    glm::vec3 center(0.f,0.f,0.f) ;
-    return gtransform == NULL ? center : glm::vec3( gtransform->t * glm::vec4(center, 1.f ) ) ;
+    glm::vec3 center_(0.f,0.f,0.f) ;
+    return gtransform == NULL ? center_ : glm::vec3( gtransform->t * glm::vec4(center_, 1.f ) ) ;
 }
 
 glm::vec3 nconvexpolyhedron::gseeddir()

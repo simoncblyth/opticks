@@ -369,11 +369,11 @@ void NOpenMesh<T>::dump_border_faces(const char* msg, char side)
 
     typedef typename T::FaceHandle          FH ; 
     typedef typename T::VertexHandle        VH ; 
-    typedef typename T::EdgeHandle          EH ; 
+    //typedef typename T::EdgeHandle          EH ; 
     typedef typename T::HalfedgeHandle      HEH ; 
     typedef typename T::FaceIter            FI ; 
-    typedef typename T::ConstFaceVertexIter FVI ; 
-    typedef typename T::ConstFaceEdgeIter   FEI ; 
+    //typedef typename T::ConstFaceVertexIter FVI ; 
+    //typedef typename T::ConstFaceEdgeIter   FEI ; 
     typedef typename T::ConstFaceHalfedgeIter   FHI ; 
     typedef typename T::Point               P ; 
 

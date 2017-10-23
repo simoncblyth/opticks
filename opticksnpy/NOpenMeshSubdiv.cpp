@@ -144,7 +144,7 @@ void NOpenMeshSubdiv<T>::init_subdivider()
 {
    assert(0 && "thus composite divider aint working, just hangs " );
 
-   typedef typename Adaptive::RuleInterfaceT<T>  Rule ; 
+   //typedef typename Adaptive::RuleInterfaceT<T>  Rule ; 
    typedef typename Adaptive::Tvv3<T> Tvv3_r ; 
    typedef typename Adaptive::VF<T>   VF_r ; 
    typedef typename Adaptive::FF<T>   FF_r ; 
