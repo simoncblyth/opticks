@@ -196,7 +196,16 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
       logmax(3)
 {
    level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
+
+   assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
    instance = this ; 
+
+   std::cerr << "PLOG::PLOG " 
+             << " instance " << instance 
+             << " this " << this 
+             << std::endl
+             ;
+
 }
 
 

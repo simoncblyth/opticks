@@ -22,6 +22,68 @@
 
 
 
+Updates from Axel 2017-10-21
+-------------------------------
+
+::
+
+
+
+    Hi Simon,
+
+    I ran:
+    cudarap-
+    cudarap-prepare-installcache
+
+    This reduced the failing tests to:
+
+    98% tests passed, 6 tests failed out of 254
+
+    Total Test time (real) = 153.28 sec
+
+    The following tests FAILED:
+        134 - OpticksCoreTest.OpticksTest (OTHER_FAULT)
+        226 - OptiXRapTest.OInterpolationTest (Failed)
+        242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+        243 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
+        244 - cfg4Test.CGeometryTest (OTHER_FAULT)
+        250 - cfg4Test.CInterpolationTest (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+    So it's the same basis as before.
+
+    Axel
+
+
+
+    Hi Simon,
+
+    I started from scratch again, and the op.sh script is working now (at least the command "op -h). 
+    However, there are a few new errors now:
+
+    96% tests passed, 11 tests failed out of 254
+
+    Total Test time (real) = 101.88 sec
+
+    The following tests FAILED:
+        134 - OpticksCoreTest.OpticksTest (OTHER_FAULT)
+        226 - OptiXRapTest.OInterpolationTest (Failed)
+        227 - OptiXRapTest.ORayleighTest (OTHER_FAULT)
+        231 - OKOPTest.OpSeederTest (OTHER_FAULT)
+        236 - OKTest.OKTest (OTHER_FAULT)
+        239 - OKTest.VizTest (OTHER_FAULT)
+        242 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+        243 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
+        244 - cfg4Test.CGeometryTest (OTHER_FAULT)
+        250 - cfg4Test.CInterpolationTest (OTHER_FAULT)
+        254 - okg4Test.OKG4Test (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+
+
+
+
+
 PLOG test fails with gcc5
 -----------------------------
 

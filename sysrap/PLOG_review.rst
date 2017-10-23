@@ -155,6 +155,8 @@ PLOG.hh
     128     static const char* _logpath_parse(int argc, char** argv);
     129 
     130     static PLOG* instance ;
+    ...     ^^^^^^^^^^^^^^^^^^^^^^^^^^ static singleton instance : possibly source of stomp problems with recent gcc ?
+
     131 };
     132 
     133 

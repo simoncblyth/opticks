@@ -487,3 +487,122 @@ gdb CInterpolationTest
 
 
 
+
+Watching PLOG::instance with lldb
+-------------------------------------
+
+
+::
+
+    simon:opticks blyth$ lldb OpticksTest 
+    (lldb) target create "OpticksTest"
+    Current executable set to 'OpticksTest' (x86_64).
+    (lldb) watchpoint set variable PLOG::instance
+    error: invalid frame                           ## need to build the stack frames first 
+    (lldb) b PLOG::PLOG
+    Breakpoint 1: no locations (pending).
+    WARNING:  Unable to resolve breakpoint to any actual locations.
+    (lldb) r
+    Process 54869 launched: '/usr/local/opticks/lib/OpticksTest' (x86_64)
+    2 locations added to breakpoint 1
+    Process 54869 stopped
+    * thread #1: tid = 0x2e53d, 0x000000010088abaf libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 31 at PLOG.cc:209, queue = 'com.apple.main-thread', stop reason = breakpoint 1.2
+        frame #0: 0x000000010088abaf libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 31 at PLOG.cc:209
+       206               << std::endl
+       207               ;
+       208  
+    -> 209  }
+       210  
+       211  
+       212  
+    (lldb) watchpoint set variable PLOG::instance
+    Watchpoint created: Watchpoint 1: addr = 0x10089ca10 size = 8 state = enabled type = w
+        declare @ '/Users/blyth/opticks/sysrap/PLOG.hh:143'
+        watchpoint spec = 'PLOG::instance'
+        new value: 0x0000000000000000
+    (lldb) c
+    Process 54869 resuming
+    Process 54869 stopped
+    * thread #1: tid = 0x2e53d, 0x000000010088aa3f libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 31 at PLOG.cc:197, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x000000010088aa3f libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 31 at PLOG.cc:197
+       194        level(info),
+       195        logpath(_logpath_parse(argc_, argv_)),
+       196        logmax(3)
+    -> 197  {
+       198     level = prefix == NULL ?  parse(fallback) : prefixlevel_parse(fallback, prefix ) ;    
+       199  
+       200     assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
+    (lldb) c
+    Process 54869 resuming
+    SAr _argc 1 (  OpticksTest ) 
+    Process 54869 stopped
+    * thread #1: tid = 0x2e53d, 0x000000010088ab2f libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 271 at PLOG.cc:203, queue = 'com.apple.main-thread', stop reason = watchpoint 1
+        frame #0: 0x000000010088ab2f libSysRap.dylib`PLOG::PLOG(this=0x00007fff5fbfedb8, argc_=1, argv_=0x00007fff5fbfee10, fallback=0x000000010001034a, prefix=0x0000000000000000) + 271 at PLOG.cc:203
+       200     assert( instance == NULL && "ONLY EXPECTING A SINGLE PLOG INSTANCE" );
+       201     instance = this ; 
+       202  
+    -> 203     std::cerr << "PLOG::PLOG " 
+       204               << " instance " << instance 
+       205               << " this " << this 
+       206               << std::endl
+
+    Watchpoint 1 hit:
+    old value: 0x0000000000000000
+    new value: 0x00007fff5fbfedb8
+    (lldb) c
+    Process 54869 resuming
+    PLOG::PLOG  instance 0x7fff5fbfedb8 this 0x7fff5fbfedb8
+    2017-10-23 12:08:27.029 INFO  [189757] [main@73] OpticksTest
+    2017-10-23 12:08:27.031 INFO  [189757] [OpticksQuery::dump@79] OpticksQuery::init queryType range query_string range:3153:12221 query_name NULL query_index 0 query_depth 0 no_selection 0 nrange 2 : 3153 : 12221
+    2017-10-23 12:08:27.032 INFO  [189757] [Opticks::init@327] Opticks::init DONE OpticksResource::desc digest 96ff965744a2f6b78c24e33c80d3a4cd age.tot_seconds 4756924 age.tot_minutes 79282.070 age.tot_hours 1321.368 age.tot_days     55.057
+    2017-10-23 12:08:27.032 INFO  [189757] [Opticks::dumpArgs@768] Opticks::configure argc 1
+      0 : OpticksTest
+    2017-10-23 12:08:27.032 INFO  [189757] [Opticks::configure@836] Opticks::configure  m_size 2880,1704,2,0 m_position 200,200,0,0 prefdir $HOME/.opticks/dayabay/State
+    2017-10-23 12:08:27.032 INFO  [189757] [Opticks::configure@857] Opticks::configure DONE  verbosity 0
+    2017-10-23 12:08:27.032 INFO  [189757] [Opticks::Summary@884] Opticks::Summary sourceCode 4096 sourceType torch mode INTEROP_MODE
+    Opticks::Summary
+    install_prefix    : /usr/local/opticks
+    opticksdata_dir   : /usr/local/opticks/opticksdata
+    resource_dir      : /usr/local/opticks/opticksdata/resource
+    valid    : valid
+    envprefix: OPTICKS_
+    geokey   : OPTICKSDATA_DAEPATH_DYB
+    daepath  : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    gdmlpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
+    gltfpath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+    metapath : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+    query    : range:3153:12221
+    ctrl     : volnames
+    digest   : 96ff965744a2f6b78c24e33c80d3a4cd
+    idpath   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+    idpath_tmp NULL
+    idfold   : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
+    idname   : DayaBay_VGDX_20140414-1300
+    idbase   : /usr/local/opticks/opticksdata/export
+    detector : dayabay
+    detector_name : DayaBay
+    detector_base : /usr/local/opticks/opticksdata/export/DayaBay
+    material_map  : /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json
+    getPmtPath(0) : /usr/local/opticks/opticksdata/export/DayaBay/GPmt/0
+    meshfix  : iav,oav
+    example_matnames  : GdDopedLS,Acrylic,LiquidScintillator,MineralOil,Bialkali
+    sensor_surface    : lvPmtHemiCathodeSensorSurface
+    default_medium    : MineralOil
+    ------ from /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini -------- 
+                          AnalyticPMTMedium 2017-10-23 12:08:27.034 INFO  [189757] [*Opticks::getAnalyticPMTMedium@608]  cmed  cmed.empty 1 dmed MineralOil dmed.empty 0
+    MineralOil
+    2017-10-23 12:08:27.034 INFO  [189757] [Opticks::Summary@898] Opticks::SummaryDONE
+    2017-10-23 12:08:27.035 INFO  [189757] [main@85] OpticksTest::main aft configure
+    2017-10-23 12:08:27.035 INFO  [189757] [Opticks::MaterialSequence@1363] Opticks::MaterialSequence seqmat 123456789abcdef
+    2017-10-23 12:08:27.035 INFO  [189757] [*Opticks::Material@1355] Opticks::Material populating global G_MATERIAL_NAMES 
+    2017-10-23 12:08:27.035 FATAL [189757] [NTxt::read@65] NTxt::read failed to open /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae/GItemList/GMaterialLib
+    2017-10-23 12:08:27.035 INFO  [189757] [test_MaterialSequence@23] OpticksTest::main seqmat 123456789abcdef MaterialSequence NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL NULL 
+    2017-10-23 12:08:27.035 INFO  [189757] [test_path@38] getDAEPath path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae npath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae exists 1
+    2017-10-23 12:08:27.035 INFO  [189757] [test_path@38] getGDMLPath path /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml npath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml exists 1
+    2017-10-23 12:08:27.035 INFO  [189757] [test_path@38] getMaterialMap path /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json npath /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json exists 1
+    Process 54869 exited with status = 0 (0x00000000) 
+    (lldb) 
+
+
+
+
