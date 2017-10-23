@@ -1,8 +1,10 @@
 #!/usr/bin/env python
 
-import os, numpy as np
+import os,sys, numpy as np, logging
 from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
+
+log = logging.getLogger(__name__)
 
 np.set_printoptions(precision=3, suppress=True)
 
@@ -19,9 +21,26 @@ if __name__ == '__main__':
 
     ext, nl = "interpol", 820-60+1
 
-    o = np.load(os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
-    c = np.load(os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))).reshape(-1,4,2,nl,4) 
+    opath = os.path.expandvars(os.path.join(base,"OInterpolationTest_%s.npy" % ext))
+    cpath = os.path.expandvars(os.path.join(base,"CInterpolationTest_%s.npy" % ext))
+
+
+    opath_exists = os.path.exists(opath)
+    cpath_exists = os.path.exists(cpath)
+    log.info(" opath : %s : %s " % ( "Y" if opath_exists else "N", opath  ))
+    log.info(" cpath : %s : %s " % ( "Y" if cpath_exists else "N", cpath  ))
+
+    if not (opath_exists and cpath_exists):
+        log.warning("cannot proceed as missing input file ") 
+        sys.exit(0) 
+    pass
+
+       
+
+    o = np.load(opath).reshape(-1,4,2,nl,4) 
+    c = np.load(cpath).reshape(-1,4,2,nl,4) 
     
+
     assert len(t) == len(names)
     assert len(t) == len(o) 
     assert len(t) == len(c) 

@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import os, numpy as np
+import logging
+log = logging.getLogger(__name__)
 
 from opticks.ana.proplib import PropLib
 

@@ -3,6 +3,25 @@ oxrap OInterpolationTest asserts at python level for lack of IDPATH GBndLib.txt
 
 
 
+FIXED : OInterpolationTest PASS depending on CInterpolationTest having been run recently (/tmp unwiped) 
+----------------------------------------------------------------------------------------------------------
+
+First run failing for lack of CInterpolationTest_interpol.npy
+
+::
+
+    simon:optixrap blyth$ ll /tmp/blyth/opticks/InterpolationTest/
+    total 48336
+    drwxr-xr-x    3 blyth  wheel       102 Oct 23 11:00 GItemList
+    drwxr-xr-x    5 blyth  wheel       170 Oct 23 11:00 GBndLib
+    -rw-r--r--    1 blyth  wheel  12370912 Oct 23 11:01 CInterpolationTest_interpol.npy
+    drwxr-xr-x    6 blyth  wheel       204 Oct 23 11:01 .
+    drwxr-xr-x  170 blyth  wheel      5780 Oct 23 11:01 ..
+    -rw-r--r--    1 blyth  wheel  12370896 Oct 23 11:02 OInterpolationTest_interpol.npy
+    simon:optixrap blyth$ 
+
+
+
 Hmm SG Fail
 ------------
 
@@ -32,13 +51,10 @@ Hmm SG Fail
     [simon@localhost opticks]$ 
 
 
-
-
 Oct 2017 : FIXED old chestnut 
 ---------------------------------------
 
 * FIXED using GBndLib::saveAllOverride and overhaul of paths in the analysis scripts
-
 
 
 ::
