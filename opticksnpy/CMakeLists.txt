@@ -198,6 +198,7 @@ set(SOURCES
     NMarchingCubesNPY.cpp
 
     NCSG.cpp
+    NCSGList.cpp
     NOctNodeEnum.cpp
     NOctNode.cpp
 

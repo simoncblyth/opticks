@@ -106,6 +106,7 @@ class OKGEO_API OpticksHub {
        void configureGeometry(); 
        void configureGeometryTri(); 
        void configureGeometryTriAna(); 
+       void configureGeometryTest(); 
    private:
        void configureServer();
        void configureLookupA();

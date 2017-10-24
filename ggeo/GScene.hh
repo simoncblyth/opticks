@@ -92,7 +92,7 @@ class GGEO_API GScene : public GGeoBase
         GMergedMesh* getMergedMesh(unsigned ridx);
         GSolid* getSolid(unsigned nidx);
         void dumpNode(unsigned nidx);
-        void debugNodeIntersects(int dbgnode, OpticksEvent* evt);
+        void anaEvent(OpticksEvent* evt);
         void save() const ; 
 
     public:

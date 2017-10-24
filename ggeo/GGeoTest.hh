@@ -1,7 +1,9 @@
 #pragma once
 
 struct NLODConfig ; 
+class NCSGList ; 
 class Opticks ; 
+class OpticksEvent ; 
 
 class GGeoTestConfig ; 
 class GGeoBase ; 
@@ -36,6 +38,11 @@ class GGEO_API GGeoTest {
        GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase=NULL);
        void dump(const char* msg="GGeoTest::dump");
        void modifyGeometry();
+
+       unsigned getNumTrees();
+       NCSG* getTree(unsigned index);
+       void anaEvent(OpticksEvent* evt);
+
     private:
        void init();
     private:
@@ -61,6 +68,7 @@ class GGEO_API GGeoTest {
        GBndLib*         m_bndlib ; 
        GPmtLib*         m_pmtlib ; 
        GMaker*          m_maker ; 
+       NCSGList*        m_csglist ; 
        unsigned int     m_verbosity ;
 
 };

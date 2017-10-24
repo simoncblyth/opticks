@@ -7,12 +7,17 @@
 // npy-
 #include "NSlice.hpp"
 #include "NCSG.hpp"
+#include "NCSGList.hpp"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include "NLODConfig.hpp"
 
-// opticks-
+
+
+
+// okc-
 #include "Opticks.hh"
+#include "OpticksEventAna.hh"
 #include "OpticksConst.hh"
 
 
@@ -48,6 +53,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase)
     m_bndlib(NULL),
     m_pmtlib(NULL),
     m_maker(NULL),
+    m_csglist(NULL),
     m_verbosity(0)
 {
     init();
@@ -90,7 +96,6 @@ void GGeoTest::modifyGeometry()
     GMergedMesh* tmm_ = create();
 
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
-
 
     char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
     tmm->setGeoCode( geocode );
@@ -157,6 +162,50 @@ GMergedMesh* GGeoTest::create()
     return tmm ; 
 }
 
+
+
+
+NCSG* GGeoTest::getTree(unsigned index)
+{
+    return m_csglist->getTree(index);
+}
+unsigned GGeoTest::getNumTrees()
+{
+    return m_csglist->getNumTrees();
+}
+
+
+void GGeoTest::anaEvent(OpticksEvent* evt)
+{
+    int dbgnode = m_ok->getDbgNode();
+
+    NCSG* csg = getTree(dbgnode);
+
+    LOG(info) << "GGeoTest::anaEvent " 
+              << " dbgnode " << dbgnode
+              << " csg " << csg
+              << " evt " << evt
+              ;
+
+
+    assert( csg ) ;  
+
+
+    OpticksEventAna ana(evt, csg);
+    ana.dump("GGeoTest::anaEvent");
+
+
+    
+
+
+
+}
+
+
+
+
+
+
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {
     int verbosity = m_config->getVerbosity();
@@ -165,10 +214,16 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
               << " verbosity " << verbosity
               ; 
 
-    std::vector<NCSG*> trees ;
-    int rc = NCSG::Deserialize( csgpath, trees, verbosity );
-    assert(rc == 0);
-    unsigned ntree = trees.size() ;
+    //std::vector<NCSG*> trees ;
+    //int rc = NCSG::Deserialize( csgpath, trees, verbosity );
+    //assert(rc == 0);
+    //unsigned ntree = trees.size() ;
+
+    assert( m_csglist == NULL );
+
+    m_csglist = new NCSGList(csgpath, verbosity );
+    unsigned ntree = m_csglist->getNumTrees() ;
+   
 
     LOG(info) << "GGeoTest::loadCSG " << csgpath << " got " << ntree << " trees " ; 
 
@@ -176,7 +231,8 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     for(unsigned i=0 ; i < ntree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
-        NCSG* tree = trees[i] ; 
+        //NCSG* tree = trees[i] ; 
+        NCSG* tree = m_csglist->getTree(i) ; 
         GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);

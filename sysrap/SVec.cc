@@ -32,3 +32,5 @@ T SVec<T>::MaxDiff(const std::vector<T>& a, const std::vector<T>& b, bool dump)
 
 template struct SVec<float>;
 template struct SVec<double>;
+
+

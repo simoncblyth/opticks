@@ -7,7 +7,10 @@
 class Index ; 
 
 
+
+
 #include "OKCORE_API_EXPORT.hh"
+
 class OKCORE_API OpticksFlags {
     public:
        static const char* ENUM_HEADER_PATH ;  

@@ -403,7 +403,11 @@ unsigned OpticksHub::getTarget()
 
 void OpticksHub::configureGeometry()
 {
-    if(m_gltf==0) 
+    if(m_ok->isTest())
+    {
+        configureGeometryTest();
+    }
+    else if(m_gltf==0) 
     { 
         configureGeometryTri();
     }
@@ -475,34 +479,47 @@ void OpticksHub::configureGeometryTriAna()
     }
 }
 
+void OpticksHub::configureGeometryTest()
+{
+    int restrict_mesh = m_ok->getRestrictMesh() ;  
+    GGeoBase* ggb = getGGeoBase();   // either ana or tri depending on gltf
+    GGeoLib*  lib = ggb->getGeoLib() ; 
+    int nmm = lib->getNumMergedMesh();
 
+    for(int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = lib->getMergedMesh(i);
+        assert( mm );  
 
+        if(restrict_mesh > -1 && i != restrict_mesh ) 
+        {
+            mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
+        }
+    }
+    // actually unlikely to need restrictmesh with --test 
 
-
-
-
+}
 
 
 
 void OpticksHub::anaEvent()
 {
-    int dbgnode = m_ok->getDbgNode();
-    LOG(info) << "OpticksHub::anaEvent" 
-              << " dbgnode " << dbgnode
-              ;
+    LOG(info) << "OpticksHub::anaEvent" ;
 
-    if(dbgnode > -1) 
+    OpticksEvent* evt = m_run->getEvent();
+
+    if(m_geotest)
     {
-        if(m_gscene)
-        { 
-            OpticksEvent* evt = m_run->getEvent();
-            m_gscene->debugNodeIntersects( dbgnode, evt ); 
-        }
-        else
-        {
-            LOG(warning) << "--dbgnode only implemented for glTF branch " ;  
-        } 
+        m_geotest->anaEvent( evt );  
     }
+    else if(m_gscene)
+    { 
+        m_gscene->anaEvent( evt ); 
+    }
+    else
+    {
+        LOG(warning) << "--dbgnode only implemented for glTF branch " ;  
+    } 
 
 
     m_run->anaEvent();

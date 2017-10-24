@@ -1131,11 +1131,13 @@ NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNo
 
 
 
-void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
+void GScene::anaEvent(OpticksEvent* evt)
 {
     // gets invoked from OpticksHub::anaEvent 
     // for the analytic glTF branch when the *dbgnode* option is used 
     // eg "--dbgnode 3159" is used 
+
+    int dbgnode = m_ok->getDbgNode();
 
     GSolid* solid = m_nodelib->getSolid(dbgnode);
     GNodeLib* nlib = m_ggeo->getNodeLib();
@@ -1147,10 +1149,13 @@ void GScene::debugNodeIntersects(int dbgnode, OpticksEvent* evt)
 
     std::function<float(float,float,float)> sdf = root->sdf();
 
+    // TODO : move some of this into OpticksEventAna
+
+
     float epsilon = 0.1 ; 
     //float epsilon = 0.05 ;   //  2798/100,000
 
-    LOG(info) << "OpticksHub::debugNode " << dbgnode << " epsilon " << epsilon  ;
+    LOG(info) << "GScene::anaEvent " << dbgnode << " epsilon " << epsilon  ;
     LOG(info) << " nodelib " << nlib->desc() ;
     LOG(info) << " solid " <<  ( solid ? solid->description() : " NONE " )  ; 
     LOG(info) << " csg.meta " << csg->meta() ; 

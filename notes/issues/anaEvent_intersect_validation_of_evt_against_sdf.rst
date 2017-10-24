@@ -1,4 +1,3 @@
-
 anaEvent_intersect_validation_of_evt_against_sdf
 =========================================================
 
@@ -378,6 +377,21 @@ Huh : which GGeoLib should --test --gltf 1 modify ?
         frame #12: 0x00007fff880d35fd libdyld.dylib`start + 1
     (lldb) 
 
+
+
+
+
+
+
+for intersect checking with test geometry the GScene aint very helpful
+-------------------------------------------------------------------------
+
+* need to put fingers on the nnode SDF for the test geometry 
+* split off anaEvent handling for ggeotest 
+
+::
+
+    tlens-;tlens-concave --gltf 1 --dbgnode 1 -D
 
 
 

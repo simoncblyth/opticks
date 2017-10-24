@@ -124,16 +124,16 @@ container = CSG("box", param=[0,0,0,sz], boundary=args.container, poly="MC", nx=
 log.info(" container.boundary : %s " % container.boundary )
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(poly="IM", resolution="50", verbosity="1", ctrl="0" )
+CSG.kwa = dict(poly="IM", resolution="50", verbosity="0", ctrl="0" )
 
 cy = CSG("cylinder", param=[0,0,0,cr], param1=[-cz,cz,0,0])   
-ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
-al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
+#ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
+#al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
 
 #lens = cy - ar - al 
 #lens = cy - al 
-#lens = cy  
-lens = al  
+lens = cy  
+#lens = al  
 
 #la = CSG("intersection", left=cy, right=ar )
 

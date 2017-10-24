@@ -71,6 +71,7 @@ set(SOURCES
     OpticksDbg.cc
     OpticksDomain.cc
     OpticksEventSpec.cc
+    OpticksEventAna.cc
     OpticksEvent.cc
     OpticksRun.cc
     OpticksEntry.cc
