@@ -60,7 +60,6 @@ OpticksGeometry::OpticksGeometry(OpticksHub* hub)
    :
    m_hub(hub),
    m_ok(m_hub->getOpticks()),
-   m_gltf(m_ok->getGLTF()),
    m_composition(m_hub->getComposition()),
    m_fcfg(m_ok->getCfg()),
    m_ggeo(NULL),
@@ -95,7 +94,7 @@ void OpticksGeometry::init()
     m_ggeo->setLookup(m_hub->getLookup());
 }
 
-glm::vec4 OpticksGeometry::getCenterExtent()
+glm::vec4 OpticksGeometry::getCenterExtent() // TODO: not-tri specific -> move 
 {
 
     if(!m_mesh0)
@@ -114,7 +113,7 @@ glm::vec4 OpticksGeometry::getCenterExtent()
 
 
 
-void  OpticksGeometry::setTarget(unsigned target, bool aim)
+void  OpticksGeometry::setTarget(unsigned target, bool aim)  
 {
     // formerly of oglrap-/Scene
     // invoked by OpticksViz::uploadGeometry OpticksViz::init
@@ -237,7 +236,6 @@ void OpticksGeometry::loadGeometry()
         m_ok->setExit(true); 
     }
 
-    // configureGeometry();  moved up to OpticksHub::init 
 
     LOG(info) << "OpticksGeometry::loadGeometry DONE " ; 
     TIMER("loadGeometry");
@@ -286,12 +284,16 @@ void OpticksGeometry::loadGeometryBase()
 
 void OpticksGeometry::modifyGeometry()
 {
-    assert(m_ok->hasOpt("test"));
+    //assert(m_ok->hasOpt("test"));
+    assert( m_ok->isTest() );
+
     LOG(debug) << "OpticksGeometry::modifyGeometry" ;
 
-    std::string testconf = m_fcfg->getTestConfig();
+    //std::string testconf = m_fcfg->getTestConfig();
+    //m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
 
-    m_ggeo->modifyGeometry( testconf.empty() ? NULL : testconf.c_str() );
+    const char* testconf = m_ok->getTestConfig() ;
+    m_ggeo->modifyGeometry( testconf );
 
 
     if(m_ggeo->getMeshVerbosity() > 2)
@@ -336,75 +338,6 @@ void OpticksGeometry::fixGeometry()
 }
 
 
-
-
-void OpticksGeometry::configureGeometryOld()
-{
-    /*
-    Moved config up to OpticksHub::configureGeometry
-
-    Slicing that can only be applied equally all mm makes
-    little sense now that hame multiple instanced meshes.
-    It was just for debug anyway.
-    */
-
-    int restrict_mesh = m_fcfg->getRestrictMesh() ;  
-    int analytic_mesh = m_fcfg->getAnalyticMesh() ; 
-
-    int nmm = m_ggeo->getNumMergedMesh();
-
-    LOG(info) << "OpticksGeometry::configureGeometry" 
-              << " restrict_mesh " << restrict_mesh
-              << " analytic_mesh " << analytic_mesh
-              << " nmm " << nmm
-              ;
-
-    std::string instance_slice = m_fcfg->getISlice() ;;
-    std::string face_slice = m_fcfg->getFSlice() ;;
-    std::string part_slice = m_fcfg->getPSlice() ;;
-
-    NSlice* islice = !instance_slice.empty() ? new NSlice(instance_slice.c_str()) : NULL ; 
-    NSlice* fslice = !face_slice.empty() ? new NSlice(face_slice.c_str()) : NULL ; 
-    NSlice* pslice = !part_slice.empty() ? new NSlice(part_slice.c_str()) : NULL ; 
-
-
-    for(int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = m_ggeo->getMergedMesh(i);
-        if(!mm) continue ; 
-
-        if(restrict_mesh > -1 && i != restrict_mesh ) mm->setGeoCode(OpticksConst::GEOCODE_SKIP);      
-
-
-
-        if(analytic_mesh > -1 && i == analytic_mesh && i > 0) 
-        {
-            assert( 0 && "NOT NEEDED ANYMORE : NEW FULL ANALYTIC APPROACH MEANS CAN GET RID OF THIS ?");
-
-            GPmt* pmt = m_ggeo->getPmt(); 
-            assert(pmt && "analyticmesh requires PMT resource");
-
-            GParts* analytic = pmt->getParts() ;
-            // TODO: the strings should come from config, as detector specific
-
-            analytic->setVerbosity(m_verbosity); 
-            analytic->setContainingMaterial("MineralOil");       
-            analytic->setSensorSurface("lvPmtHemiCathodeSensorSurface");
-
-            mm->setGeoCode(OpticksConst::GEOCODE_ANALYTIC);      
-            mm->setParts(analytic);  
-        }
-
-
-        if(i>0) mm->setInstanceSlice(islice);
-
-        // restrict to non-global for now
-        if(i>0) mm->setFaceSlice(fslice);   
-        if(i>0) mm->setPartSlice(pslice);   
-    }
-
-    TIMER("configureGeometry"); 
-}
 
 
 

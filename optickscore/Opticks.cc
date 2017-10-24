@@ -662,7 +662,16 @@ const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
+const char* Opticks::getTestConfig()
+{
+    const std::string& tc = m_cfg->getTestConfig() ;
+    return tc.empty() ? NULL : tc.c_str() ; 
+}
 
+bool Opticks::isTest()
+{
+    return m_cfg->hasOpt("test");
+}
 
 
 

@@ -40,13 +40,13 @@
 
 #include "PLOG.hh"
 
+const char*       GScene::getIdentifier(){       return "GScene" ;  }
 GGeoLib*          GScene::getGeoLib() {          return m_geolib ; } 
 
+
+// for some libs there is no analytic variant 
 GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); } 
-
-
-
-const char*       GScene::getIdentifier(){       return "GScene" ;  }
+GPmtLib*          GScene::getPmtLib() {          return m_ggeo->getPmtLib(); } 
 GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); } 
 GSourceLib*       GScene::getSourceLib() {       return m_ggeo->getSourceLib(); } 
 

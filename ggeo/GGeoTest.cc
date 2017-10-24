@@ -20,6 +20,7 @@
 #include "GGeo.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
+#include "GPmtLib.hh"
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
 #include "GSolid.hh"
@@ -45,6 +46,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo)
     m_ggeo(ggeo),
     m_geolib(NULL),
     m_bndlib(NULL),
+    m_pmtlib(NULL),
     m_maker(NULL),
     m_verbosity(0)
 {
@@ -58,6 +60,7 @@ void GGeoTest::init()
         LOG(warning) << "GGeoTest::init booting from m_ggeo " ; 
         m_geolib = m_ggeo->getGeoLib();
         m_bndlib = m_ggeo->getBndLib();
+        m_pmtlib = m_ggeo->getPmtLib();
     }
     else
     {
@@ -65,6 +68,7 @@ void GGeoTest::init()
         bool analytic = false ; 
         m_bndlib = GBndLib::load(m_ok, true );
         m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib );
+        m_pmtlib = GPmtLib::load(m_ok, m_bndlib );  
     }
     m_maker = new GMaker(m_ok);
 }
@@ -283,7 +287,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     int verbosity = m_config->getVerbosity();
 
-    GMergedMesh* mmpmt = loadPmtDirty();
+    //GMergedMesh* mmpmt = loadPmtDirty();
+    GMergedMesh* mmpmt = m_pmtlib->getPmt() ;
     assert(mmpmt);
 
     unsigned pmtNumSolids = mmpmt->getNumSolids() ; 
@@ -360,33 +365,4 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* 
     return tri ; 
 }
 
-GMergedMesh* GGeoTest::loadPmtDirty()
-{
-    // DIRTY ASSOCIATION BETWEEN OLD STYLE ANALYTIC GPmt AND TRIANGULATED GMergedMesh 
-    //
-    // GPmt 
-    //    detdesc parsed analytic geometry (see pmt-ecd dd.py tree.py etc..)
-    //
-
-    const char* pmtpath = m_config->getPmtPath();
-    int verbosity = m_config->getVerbosity();
-    assert(pmtpath);
-
-    GMergedMesh* mmpmt = GMergedMesh::load(pmtpath);
-
-    if(mmpmt == NULL) LOG(fatal) << "GGeoTest::loadPmtDirty FAILED " << pmtpath ;
-    assert(mmpmt);
-
-    if(verbosity > 1) mmpmt->dumpSolids("GGeoTest::loadPmtDirty GMergedMesh::dumpSolids (before:mmpmt) ");
-
-    GPmt* pmt = m_ggeo->getPmt();
-    if(!pmt) LOG(fatal) << "GPmt pmt NULL from GGeo::getPmt " ;
-    assert( pmt && "GGeoTest::loadPmtDirty GGeo::getPmt returned NULL : probably you need option : --apmtload  " );
-
-    GParts* pts = pmt->getParts();
- 
-    mmpmt->setParts(pts); 
-    
-    return mmpmt ; 
-}
 

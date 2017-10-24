@@ -14,6 +14,7 @@ class GGeo ;
 class GSolid ; 
 class GNode ; 
 class GBndLib ; 
+class GPmtLib ; 
 class GGeoLib ; 
 class GMesh ; 
 class GMergedMesh ; 
@@ -99,6 +100,7 @@ class GGEO_API GScene : public GGeoBase
         const char*       getIdentifier();
         GGeoLib*          getGeoLib() ; 
         GBndLib*          getBndLib() ; 
+        GPmtLib*          getPmtLib() ; 
         GScintillatorLib* getScintillatorLib() ; 
         GSourceLib*       getSourceLib() ; 
     private:

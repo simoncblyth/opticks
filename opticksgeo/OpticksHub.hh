@@ -15,6 +15,7 @@ class OpticksEvent ;
 class GGeoBase ; 
 class GScene ; 
 class GGeo ;
+class GPmt ; 
  
 class GGeoLib ;
 class GMaterialLib ; 

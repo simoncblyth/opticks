@@ -668,6 +668,21 @@ opticks-t-()
    echo $msg use -V to show output, ctest output written to $bdir/ctest.log
 }
 
+
+opticks-tl()
+{
+   local arg=$1
+   if [ "${arg:0:1}" == "/" -a -d "$arg" ]; then
+       bdir=$arg
+       shift
+   else
+       bdir=$(opticks-bdir) 
+   fi
+   ls -l $bdir/ctest.log
+   cat $bdir/ctest.log
+}
+
+
 opticks-ts()
 {
    ## list tests taking longer than 1 second

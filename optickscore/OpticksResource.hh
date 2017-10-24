@@ -88,6 +88,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        std::string getObjectPath(const char* name, unsigned int ridx);
        std::string getDetectorPath(const char* name, unsigned int ridx);
        std::string getMergedMeshPath(unsigned int ridx);
+
+       std::string getBasePath(const char* rel); // wildcard path relative to IdBase export dir 
        std::string getPmtPath(unsigned int index, bool relative=false);
        std::string getPropertyLibDir(const char* name);
     public:

@@ -6,6 +6,7 @@ class GSourceLib ;
 class GScintillatorLib ; 
 class GBndLib ; 
 class GGeoLib ; 
+class GPmtLib ; 
 
 class GGEO_API GGeoBase {
     public:
@@ -14,4 +15,5 @@ class GGEO_API GGeoBase {
         virtual GSourceLib*       getSourceLib() = 0 ; 
         virtual GBndLib*          getBndLib() = 0 ; 
         virtual GGeoLib*          getGeoLib() = 0 ; 
+        virtual GPmtLib*          getPmtLib() = 0 ; 
 };

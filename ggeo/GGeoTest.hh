@@ -7,6 +7,7 @@ class GGeoTestConfig ;
 class GGeo ; 
 class GGeoLib ; 
 class GBndLib ; 
+class GPmtLib ; 
 class GMaker ; 
 class GMergedMesh ; 
 class GSolid ; 
@@ -49,8 +50,7 @@ class GGEO_API GGeoTest {
 
        void labelPartList( std::vector<GSolid*>& solids );
        //void finalizeAnalytic(GParts* pts, const char* containingMaterial);
-
-       GMergedMesh* loadPmtDirty();
+       //GMergedMesh* loadPmtDirty();
     private:
        Opticks*         m_ok ; 
        bool             m_dbganalytic ; 
@@ -60,6 +60,7 @@ class GGEO_API GGeoTest {
        GGeo*            m_ggeo ; 
        GGeoLib*         m_geolib ; 
        GBndLib*         m_bndlib ; 
+       GPmtLib*         m_pmtlib ; 
        GMaker*          m_maker ; 
        unsigned int     m_verbosity ;
 

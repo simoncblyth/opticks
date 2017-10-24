@@ -24,7 +24,6 @@ class GMakerTest
    public:
        GMakerTest(Opticks* ok);
        void makeSphere();
-       void makeZLens();
        void makeFromCSG();
    private:
        Opticks* m_ok  ;
@@ -53,20 +52,7 @@ void GMakerTest::makeSphere()
     mesh->dump();
 }
 
-void GMakerTest::makeZLens()
-{
-    glm::vec4 param(641.2,641.2,-600,600) ; 
 
-    const char* spec = "Vacuum///GlassSchottF2" ; 
-
-    GSolid* solid = m_maker->make(0u, CSG_ZLENS, param, spec );
-
-    solid->Summary();
-
-    const GMesh* mesh = solid->getMesh();
-
-    mesh->dump();
-}
 
 
 void GMakerTest::makeFromCSG()
@@ -113,8 +99,8 @@ int main(int argc, char** argv)
     
     GMakerTest tst(&ok);
 
-    //tst.makeFromCSG();
-    tst.makeZLens();
+    tst.makeSphere();
+    tst.makeFromCSG();
 
 }
 

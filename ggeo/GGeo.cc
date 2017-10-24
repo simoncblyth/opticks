@@ -64,7 +64,7 @@ namespace fs = boost::filesystem;
 #include "GColorizer.hh"
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
-#include "GPmt.hh"
+#include "GPmtLib.hh"
 #include "GScene.hh"
 
 #include "GMergedMesh.hh"
@@ -101,7 +101,7 @@ GGeo::GGeo(Opticks* opticks)
    m_surlib(NULL),
    m_scintillatorlib(NULL),
    m_sourcelib(NULL),
-   m_pmt(NULL),
+   m_pmtlib(NULL),
    m_colorizer(NULL),
    m_geotest(NULL),
    m_sensor_list(NULL),
@@ -268,10 +268,6 @@ GSourceLib* GGeo::getSourceLib()
 {
     return m_sourcelib ; 
 }
-GPmt* GGeo::getPmt()
-{
-    return m_pmt ; 
-}
 
 void GGeo::setLookup(NLookup* lookup)
 {
@@ -421,14 +417,6 @@ void GGeo::init()
    m_treecheck = new GTreeCheck(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
 
-/*
-   if(resource->isJuno())
-   {
-       m_treecheck->setVertexMin(10);  
-       //m_treecheck->setVertexMin(250);
-   } 
-*/
-   //GColorizer::Style_t style  = GColorizer::SURFACE_INDEX ;  // rather grey 
    GColorizer::Style_t style = GColorizer::PSYCHEDELIC_NODE ;
    OpticksColors* colors = getColors();
 
@@ -438,7 +426,7 @@ void GGeo::init()
    m_scintillatorlib  = new GScintillatorLib(m_ok);
    m_sourcelib  = new GSourceLib(m_ok);
 
-
+   m_pmtlib = NULL ; 
 
    LOG(trace) << "GGeo::init DONE" ; 
 }
@@ -476,8 +464,10 @@ GNodeLib* GGeo::getNodeLib()
 {
     return m_nodelib ; 
 }
-
-
+GPmtLib* GGeo::getPmtLib()
+{
+    return m_pmtlib ; 
+}
 
 
 GScene* GGeo::getScene()
@@ -582,7 +572,9 @@ void GGeo::loadGeometry()
 
 
     if(m_ok->isAnalyticPMTLoad())
-    loadAnalyticPmt();
+    {
+        m_pmtlib = GPmtLib::load(m_ok, m_bndlib );
+    }
 
     if( gltf >= 10 )
     {
@@ -779,36 +771,6 @@ void GGeo::setupColors()
 }
 
 
-void GGeo::loadAnalyticPmt()
-{
-    NSlice* slice = m_ok->getAnalyticPMTSlice();
-
-    unsigned apmtidx = m_ok->getAnalyticPMTIndex();
-
-    m_pmt = GPmt::load( m_ok, m_bndlib, apmtidx, slice ); 
-
-    LOG(info) << "GGeo::loadAnalyticPmt"
-              << " AnalyticPMTIndex " << apmtidx
-              << " AnalyticPMTSlice " << ( slice ? slice->description() : "ALL" )
-              << " m_pmt " << m_pmt 
-              << " Path " << ( m_pmt ? m_pmt->getPath() : "-" ) 
-              ;  
-
-    if(m_pmt)
-    {
-
-        LOG(trace) << "GGeo::loadAnalyticPmt SUCCEEDED " << m_pmt->getPath()   ; 
-        if(m_ok->isDbgAnalytic())
-        {
-            m_pmt->dump("GPmt::dump --dbganalytic " );
-       }
-    }
-    
-}
-
-
-
-
 void GGeo::modifyGeometry(const char* config)
 {
     // NB only invoked with test option : "op --test" 
@@ -820,9 +782,6 @@ void GGeo::modifyGeometry(const char* config)
     m_geotest = new GGeoTest(m_ok, gtc, this);
     m_geotest->modifyGeometry();
 }
-
-
-
 
 
 
@@ -1226,6 +1185,7 @@ void GGeo::prepareSurfaceLib()
 }
 
 
+//////////////////////  TODO : MOVE SCINT HANDLING INTO THE LIB
 
 void GGeo::prepareScintillatorLib()
 {
@@ -1283,6 +1243,13 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 {
     return index < m_scintillators_raw.size() ? m_scintillators_raw[index] : NULL ; 
 }
+
+
+//////////////////////
+
+
+
+
 
 
 

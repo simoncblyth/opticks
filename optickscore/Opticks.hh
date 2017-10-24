@@ -193,6 +193,9 @@ class OKCORE_API Opticks {
        int         getGLTFTarget();
        bool        isGLTF();
    public:
+       bool        isTest();
+       const char* getTestConfig();
+   public:
        const char* getSnapConfigString();
        NSnapConfig* getSnapConfig();
        const char* getLODConfigString();

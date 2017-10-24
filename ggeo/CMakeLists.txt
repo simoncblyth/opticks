@@ -99,6 +99,7 @@ set(SOURCES
 
     GSource.cc
     GSourceLib.cc
+    GPmtLib.cc
 
     GBndLib.cc
     GParts.cc

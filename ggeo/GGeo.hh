@@ -46,7 +46,7 @@ class GMaterialLib ;
 class GSurfaceLib ;
 class GScintillatorLib ;
 class GSourceLib ;
-class GPmt ; 
+class GPmtLib ; 
 
 class GSurLib ; 
 
@@ -136,7 +136,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setupTyp();
     public:
         // configureGeometry stage additions
-        void loadAnalyticPmt();
     public:
         void prepareMaterialLib();
         void prepareSurfaceLib();
@@ -251,7 +250,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
         GSurLib*           getSurLib();
-        GPmt*              getPmt(); 
+        GPmtLib*           getPmtLib(); 
         NLookup*           getLookup(); 
     public:
         void  setLookup(NLookup* lookup);
@@ -364,7 +363,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GSurLib*                      m_surlib ; 
         GScintillatorLib*             m_scintillatorlib ; 
         GSourceLib*                   m_sourcelib ; 
-        GPmt*                         m_pmt ; 
+        GPmtLib*                      m_pmtlib ; 
 
         GColorizer*                   m_colorizer ; 
         GGeoTest*                     m_geotest ;  

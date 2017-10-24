@@ -17,6 +17,11 @@
 
 //    "pmtpath=$IDPATH_DPIB_PMT/GMergedMesh/0_"
 
+
+// TODO: OpticksResource::getBasePath("dpib/GMergedMesh/0") 
+//       is now used by GPmtLib ... so no need for pmtpath below ?
+//
+
 const char* GGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
     "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"

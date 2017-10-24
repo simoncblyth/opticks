@@ -18,6 +18,7 @@
 
 // ggeo-
 #include "GMaker.hh"
+#include "GPmtLib.hh"
 #include "GPmt.hh"
 #include "GCSG.hh"
 #include "GMaterial.hh"
@@ -275,7 +276,10 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
     LOG(trace) << "CTestDetector::makePMT" ; 
 
-    GPmt* pmt = m_ggeo->getPmt();  
+    //GPmt* pmt = m_ggeo->getPmt();  
+    GPmtLib* pmtlib = m_ggeo->getPmtLib();
+    GPmt* pmt = pmtlib->getLoadedAnalyticPmt();
+  
     GCSG* csg = pmt ? pmt->getCSG() : NULL ;
 
     if(csg == NULL)

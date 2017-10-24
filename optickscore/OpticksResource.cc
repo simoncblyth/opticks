@@ -672,6 +672,8 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
     std::cerr << "material_map  : " <<  (m_material_map?m_material_map:"NULL") << std::endl; 
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
+    std::cerr << "getMMPath(0)  : " <<  (m_detector_base?getMergedMeshPath(0):"-") << std::endl; 
+    std::cerr << "getBasePath(?): " <<  (m_idbase?getBasePath("?"):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
     std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
     std::cerr << "sensor_surface    : " <<  (m_sensor_surface ? m_sensor_surface : "NULL" ) << std::endl; 
@@ -729,6 +731,16 @@ std::string OpticksResource::getMergedMeshPath(unsigned int index)
 {
     return getObjectPath("GMergedMesh", index);
 }
+
+std::string OpticksResource::getBasePath(const char* rel)
+{
+    assert(m_idbase);
+    fs::path dir(m_idbase);
+    if(rel) dir /= rel ;
+    return dir.string() ;
+}
+
+
 
 std::string OpticksResource::getPmtPath(unsigned int index, bool relative)
 {
