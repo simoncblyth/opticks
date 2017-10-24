@@ -98,6 +98,7 @@ set(SOURCES
 
     OKGEO_LOG.cc
     OpticksGeometry.cc
+    OpticksAim.cc
     OpticksHub.cc
     OpticksGen.cc
     OpticksGun.cc

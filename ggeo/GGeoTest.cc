@@ -17,7 +17,7 @@
 
 
 #include "GVector.hh"
-#include "GGeo.hh"
+#include "GGeoBase.hh"
 #include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GPmtLib.hh"
@@ -36,14 +36,14 @@
 #include "PLOG.hh"
 
 
-GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo) 
+GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase) 
     : 
     m_ok(ok),
     m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
     m_config(config),
-    m_ggeo(ggeo),
+    m_ggeobase(ggeobase),
     m_geolib(NULL),
     m_bndlib(NULL),
     m_pmtlib(NULL),
@@ -55,12 +55,12 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo)
 
 void GGeoTest::init()
 {
-    if(m_ggeo)
+    if(m_ggeobase)
     {
-        LOG(warning) << "GGeoTest::init booting from m_ggeo " ; 
-        m_geolib = m_ggeo->getGeoLib();
-        m_bndlib = m_ggeo->getBndLib();
-        m_pmtlib = m_ggeo->getPmtLib();
+        LOG(warning) << "GGeoTest::init booting from m_ggeobase " ; 
+        m_geolib = m_ggeobase->getGeoLib();
+        m_bndlib = m_ggeobase->getBndLib();
+        m_pmtlib = m_ggeobase->getPmtLib();
     }
     else
     {

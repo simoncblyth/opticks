@@ -7,6 +7,8 @@ class GScintillatorLib ;
 class GBndLib ; 
 class GGeoLib ; 
 class GPmtLib ; 
+class GNodeLib ; 
+class GMergedMesh ; 
 
 class GGEO_API GGeoBase {
     public:
@@ -16,4 +18,6 @@ class GGEO_API GGeoBase {
         virtual GBndLib*          getBndLib() = 0 ; 
         virtual GGeoLib*          getGeoLib() = 0 ; 
         virtual GPmtLib*          getPmtLib() = 0 ; 
+        virtual GNodeLib*         getNodeLib() = 0 ; 
+        virtual GMergedMesh*      getMergedMesh(unsigned index) = 0 ; 
 };

@@ -4,7 +4,7 @@ class SLog ;
 class Opticks ; 
 class OpticksHub ; 
 class OpticksRun ; 
-class OpticksGeometry ; 
+//class OpticksGeometry ; 
 class OpticksEvent ; 
 class OpticksIdx ; 
 class Composition ; 
@@ -78,7 +78,7 @@ class OGLRAP_API OpticksViz {
          OpticksHub*   m_hub ; 
          Opticks*      m_ok ; 
          OpticksRun*   m_run ; 
-         OpticksGeometry* m_geometry ; 
+         //OpticksGeometry* m_geometry ; 
          OpticksIdx*   m_idx ; 
          bool          m_immediate ; 
          int           m_interactivity ; 

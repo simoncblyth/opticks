@@ -88,7 +88,7 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME", testobject="$(tlens-testobject)", 
 container = CSG("box", param=[-1,1,0,700], boundary=args.container, poly="MC", nx="20" )
 
 CSG.boundary = args.testobject
-CSG.kwa = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
 
 al = CSG("sphere", param=[0,0,-600,641.2])   
 ar = CSG("sphere", param=[0,0, 600,641.2])

@@ -2,6 +2,8 @@
 
 #include <string>
 #include <map>
+#include <glm/fwd.hpp>
+
 
 class SLog ; 
 class BCfg ; 
@@ -23,6 +25,9 @@ class GSurfaceLib ;
 class GBndLib ; 
 class GSurLib ; 
 class GScintillatorLib ; 
+class GMergedMesh ;
+class GNodeLib ;
+class GGeoTest ;
 
 class Composition ; 
 class Bookmarks ; 
@@ -30,6 +35,7 @@ class Bookmarks ;
 class OpticksGen ; 
 class OpticksGun ; 
 class OpticksRun ; 
+class OpticksAim ; 
 
 class GItemIndex ; 
 
@@ -87,16 +93,20 @@ class OKGEO_API OpticksHub {
        friend class OpticksIdx ; 
    public:
        OpticksHub(Opticks* opticks);
-   private:
+
+   public:
+  private:
        void init();
        void configure();
        void configureCompositionSize();
 
        void loadGeometry();
+       void modifyGeometry(); 
+       void registerGeometry(); 
        void configureGeometry(); 
        void configureGeometryTri(); 
        void configureGeometryTriAna(); 
-
+   private:
        void configureServer();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);
@@ -107,7 +117,9 @@ class OKGEO_API OpticksHub {
        bool         hasOpt(const char* name);
        bool         isCompute();
    public:
-       
+       GMergedMesh* getMergedMesh( unsigned index );
+       GNodeLib*    getNodeLib() ; 
+       void         dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpSolids" );  
    public:
        std::string    getG4GunConfig();
        NPY<float>*    getInputGensteps();
@@ -117,12 +129,13 @@ class OKGEO_API OpticksHub {
        void anaEvent();
    private:
        void configureEvent(OpticksEvent* evt);
-   public:
-       void setupCompositionTargetting() ;
-       void setTarget(unsigned target=0, bool aim=true);
-       unsigned getTarget();
-   public:
-   public:
+  public:
+       // via OpticksAim
+       void            setupCompositionTargetting();
+       void            target();   // point composition at geocenter or the m_evt (last created)
+       void            setTarget(unsigned target=0, bool aim=true);
+       unsigned        getTarget();
+  public:
        // Torchstep is here are it needs geometry for targetting 
        // getter used by CGenerator::makeTorchSource so that cfg4-
        // reuses the same torch 
@@ -162,7 +175,6 @@ class OKGEO_API OpticksHub {
        OpticksRun*          getRun();
        OpticksGen*          getGen();
    public:
-       void target();   // point composition at geocenter or the m_evt (last created)
        void configureState(NConfigurable* scene);
        void cleanup();
    private:
@@ -190,6 +202,10 @@ class OKGEO_API OpticksHub {
    private:
        OpticksGen*          m_gen ; 
        OpticksGun*          m_gun ; 
+       OpticksAim*          m_aim ;
+ 
+       GGeoTest*            m_geotest ; 
+
 
 
 

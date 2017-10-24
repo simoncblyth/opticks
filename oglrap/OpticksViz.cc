@@ -64,7 +64,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
-    m_geometry(m_hub->getGeometry()),
+    //m_geometry(m_hub->getGeometry()),
     m_idx(idx),
     m_immediate(immediate),
     m_interactivity(m_ok->getInteractivityLevel()),
@@ -267,7 +267,7 @@ void OpticksViz::uploadGeometry()
 
 int OpticksViz::getTarget()
 {   
-   return m_geometry->getTarget() ; 
+   return m_hub->getTarget() ; 
 }
 
 

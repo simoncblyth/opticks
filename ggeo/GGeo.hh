@@ -53,7 +53,6 @@ class GSurLib ;
 class GTreeCheck ;
 //class GTreePresent ;
 class GColorizer ; 
-class GGeoTest ;
 
 class GItemIndex ; 
 class GItemList ; 
@@ -127,8 +126,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         void afterConvertMaterials();
         void createSurLib();
-    public:
-        void modifyGeometry(const char* config);
     public:
         // post-load setup
         void setupLookup();
@@ -366,7 +363,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GPmtLib*                      m_pmtlib ; 
 
         GColorizer*                   m_colorizer ; 
-        GGeoTest*                     m_geotest ;  
 
         NSensorList*                  m_sensor_list ; 
 

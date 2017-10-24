@@ -62,8 +62,8 @@ namespace fs = boost::filesystem;
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
 #include "GColorizer.hh"
-#include "GGeoTestConfig.hh"
-#include "GGeoTest.hh"
+//#include "GGeoTestConfig.hh"
+//#include "GGeoTest.hh"
 #include "GPmtLib.hh"
 #include "GScene.hh"
 
@@ -103,7 +103,6 @@ GGeo::GGeo(Opticks* opticks)
    m_sourcelib(NULL),
    m_pmtlib(NULL),
    m_colorizer(NULL),
-   m_geotest(NULL),
    m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
@@ -770,18 +769,6 @@ void GGeo::setupColors()
     LOG(trace) << "GGeo::setupColors DONE" ; 
 }
 
-
-void GGeo::modifyGeometry(const char* config)
-{
-    // NB only invoked with test option : "op --test" 
-    //   controlled from OpticksGeometry::loadGeometry 
-
-    GGeoTestConfig* gtc = new GGeoTestConfig(config);
-
-    assert(m_geotest == NULL);
-    m_geotest = new GGeoTest(m_ok, gtc, this);
-    m_geotest->modifyGeometry();
-}
 
 
 

@@ -10,6 +10,10 @@
 #include "NPY.hpp"
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
+
+#define GLMVEC4(g) glm::vec4((g).x,(g).y,(g).z,(g).w) 
+
+
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 //#include "NParameters.hpp"
@@ -32,8 +36,11 @@
 #include "GItemIndex.hh"
 #include "GMergedMesh.hh"
 #include "GGeoLib.hh"
+#include "GNodeLib.hh"
 #include "GScene.hh"
 #include "GGeo.hh"
+#include "GGeoTestConfig.hh"
+#include "GGeoTest.hh"
 
 // okc-
 #include "Bookmarks.hh"
@@ -51,6 +58,7 @@
 #include "OpticksGen.hh"
 #include "OpticksGun.hh"
 #include "OpticksRun.hh"
+#include "OpticksAim.hh"
 #include "OpticksGeometry.hh"
 
 #include "PLOG.hh"
@@ -83,7 +91,10 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_lookup(new NLookup()),
    m_bookmarks(NULL),
    m_gen(NULL),
-   m_gun(NULL)
+   m_gun(NULL),
+   m_aim(NULL),
+   m_geotest(NULL)
+
 {
    init();
    (*m_log)("DONE");
@@ -99,11 +110,14 @@ void OpticksHub::init()
     configureCompositionSize();
     configureLookupA();
 
+    m_aim = new OpticksAim(this) ; 
+
     loadGeometry() ;    
     configureGeometry() ;    
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
+
 }
 
 
@@ -281,6 +295,7 @@ void OpticksHub::loadGeometry()
 
     m_geometry->loadGeometry();   
 
+
     //   Lookup A and B are now set ...
     //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
     //      B : on GGeo loading in GGeo::setupLookup
@@ -288,10 +303,101 @@ void OpticksHub::loadGeometry()
     m_ggeo = m_geometry->getGGeo();
     m_gscene = m_ggeo->getScene();
 
+    if(m_ok->isTest())
+    {
+        LOG(info) << "OpticksHub::loadGeometry --test modifying geometry" ; 
+        modifyGeometry();
+    }
+    else
+    {
+        LOG(info) << "OpticksHub::loadGeometry NOT modifying geometry" ; 
+    }
+
+    registerGeometry();
+
+
     m_ggeo->setComposition(m_composition);
 
     LOG(info) << "OpticksHub::loadGeometry DONE" ; 
 }
+
+
+
+
+void OpticksHub::modifyGeometry()
+{
+    assert(m_ok->isTest());
+
+    // NB only invoked with test option : "op --test" 
+    //   controlled from OpticksGeometry::loadGeometry 
+
+    LOG(info) << "OpticksHub::modifyGeometry START" ;
+
+    const char* testconf = m_ok->getTestConfig() ;
+
+    GGeoTestConfig* gtc = new GGeoTestConfig(testconf);
+
+
+    GGeoBase* ggeobase = getGGeoBase();  // ana OR tri depending on --gltf
+
+
+    assert(m_geotest == NULL);
+    m_geotest = new GGeoTest(m_ok, gtc, ggeobase);
+    m_geotest->modifyGeometry();
+
+    GMergedMesh* mesh0 = getMergedMesh(0);
+    if(mesh0)
+    { 
+        mesh0->dumpSolids("OpticksHub::modifyGeometry mesh0");
+        mesh0->save("$TMP", "GMergedMesh", "modifyGeometry") ;
+    }
+
+    LOG(info) << "OpticksHub::modifyGeometry DONE" ;
+}
+
+
+GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
+{
+    GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf
+    return ggb->getMergedMesh(index);
+}
+
+GNodeLib* OpticksHub::getNodeLib()
+{
+    GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf
+    return ggb->getNodeLib();
+}
+
+
+
+void OpticksHub::registerGeometry()
+{
+    LOG(fatal) << "OpticksHub::registerGeometry" ; 
+    GMergedMesh* mm0 = getMergedMesh(0);
+    assert(mm0);
+    m_aim->registerGeometry( mm0 );
+}
+
+void OpticksHub::setupCompositionTargetting()
+{
+    m_aim->setupCompositionTargetting();
+}
+void OpticksHub::target()   // point composition at geocenter or the m_evt (last created)
+{
+    m_aim->target();
+}
+void OpticksHub::setTarget(unsigned target, bool aim)
+{
+    m_aim->setTarget(target, aim);
+}
+unsigned OpticksHub::getTarget()
+{
+    return m_aim->getTarget();
+}
+ 
+
+
+
 
 
 
@@ -605,67 +711,6 @@ OpticksEvent* OpticksHub::getEvent()
 }
 
 
-unsigned OpticksHub::getTarget()
-{
-   return m_geometry->getTarget();
-}
-void OpticksHub::setTarget(unsigned target_, bool aim_)
-{
-    m_geometry->setTarget(target_, aim_ );
-}
-
-
-
-void OpticksHub::setupCompositionTargetting()
-{
-    bool autocam = true ; 
-
-    // handle commandline --target option that needs loaded geometry 
-    unsigned deferred_target = m_geometry->getTargetDeferred();   // default to 0 
-    unsigned cmdline_target = m_ok->getTarget();
-
-    LOG(info) << "OpticksHub::setupCompositionTargetting"
-              << " deferred_target " << deferred_target
-              << " cmdline_target " << cmdline_target
-               ;   
-
-    m_geometry->setTarget(cmdline_target, autocam);
-}
-
-
-
-
-
-
-
-void OpticksHub::target()
-{
-    int target_ = m_geometry ? m_geometry->getTarget() : 0 ;
-    bool geocenter  = hasOpt("geocenter");
-    bool autocam = true ; 
-
-    OpticksEvent* evt = m_run->getEvent();
-
-    if(target_ != 0)
-    {
-        LOG(info) << "OpticksHub::target SKIP as geometry target already set  " << target_ ; 
-    }
-    else if(geocenter && m_geometry != NULL )
-    {
-        glm::vec4 mmce = m_geometry->getCenterExtent();
-        m_composition->setCenterExtent( mmce , autocam );
-        LOG(info) << "OpticksHub::target (geocenter) mmce " << gformat(mmce) ; 
-    }
-    else if(evt && evt->hasGenstepData())
-    {
-        glm::vec4 gsce = evt->getGenstepCenterExtent();  // need to setGenStepData before this will work 
-        m_composition->setCenterExtent( gsce , autocam );
-        LOG(info) << "OpticksHub::target"
-                  << " evt " << evt->brief()
-                  << " gsce " << gformat(gsce) 
-                  ; 
-    }
-}
 
 
 
@@ -692,5 +737,35 @@ void OpticksHub::cleanup()
     if(m_server) m_server->stop();
 #endif
 }
+
+
+
+
+void OpticksHub::dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg )  
+{
+    assert( mm );
+    unsigned num_solids = mm->getNumSolids();
+
+    LOG(info) << "OpticksHub::dumpSolids "
+              << msg 
+              << " num_solids " << num_solids 
+              ;
+
+    bool test = m_ok->isTest() ; 
+
+    GNodeLib* nodelib = getNodeLib();
+    for(unsigned i=0 ; i < std::min(num_solids, 20u) ; i++)
+    {
+         glm::vec4 ce_ = mm->getCE(i);
+         std::cout << " " << std::setw(3) << i 
+                   << " " << ( i == cursor ? "**" : "  " ) 
+                   << std::setw(50) << ( test ? "test" : nodelib->getLVName(i) )
+                   << " " 
+                   << gpresent( "ce", ce_ )
+                   ;
+    }
+}
+
+
 
 

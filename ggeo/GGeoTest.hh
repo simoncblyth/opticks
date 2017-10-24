@@ -4,7 +4,7 @@ struct NLODConfig ;
 class Opticks ; 
 
 class GGeoTestConfig ; 
-class GGeo ; 
+class GGeoBase ; 
 class GGeoLib ; 
 class GBndLib ; 
 class GPmtLib ; 
@@ -33,7 +33,7 @@ Controlled from OpticksGeometry::modifyGeometry
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest {
     public:
-       GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeo* ggeo=NULL);
+       GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase=NULL);
        void dump(const char* msg="GGeoTest::dump");
        void modifyGeometry();
     private:
@@ -49,15 +49,14 @@ class GGEO_API GGeoTest {
        GMergedMesh* createPmtInBox();
 
        void labelPartList( std::vector<GSolid*>& solids );
-       //void finalizeAnalytic(GParts* pts, const char* containingMaterial);
-       //GMergedMesh* loadPmtDirty();
+
     private:
        Opticks*         m_ok ; 
        bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 
        GGeoTestConfig*  m_config ; 
-       GGeo*            m_ggeo ; 
+       GGeoBase*        m_ggeobase ; 
        GGeoLib*         m_geolib ; 
        GBndLib*         m_bndlib ; 
        GPmtLib*         m_pmtlib ; 

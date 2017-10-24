@@ -203,6 +203,7 @@ PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
    std::cerr << "PLOG::PLOG " 
              << " instance " << instance 
              << " this " << this 
+             << " logpath " << logpath
              << std::endl
              ;
 

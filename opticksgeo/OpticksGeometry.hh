@@ -45,20 +45,15 @@ class OKGEO_API OpticksGeometry {
        void loadGeometry();
   public:
        GGeo*           getGGeo();
-
-       unsigned        getTarget();
-       void            setTarget(unsigned target=0, bool aim=true);
-       unsigned        getTargetDeferred();
-
-       glm::vec4       getCenterExtent();
+       //glm::vec4       getCenterExtent();
        OpticksAttrSeq* getMaterialNames();
        OpticksAttrSeq* getBoundaryNames();
        std::map<unsigned int, std::string> getBoundaryNamesMap();
   private: 
        void loadGeometryBase();
-       void modifyGeometry();
        void fixGeometry();
-       void registerGeometry();
+       //void modifyGeometry();
+       //void registerGeometry();
    private:
        void init();
    private:
@@ -68,9 +63,9 @@ class OKGEO_API OpticksGeometry {
        Composition*         m_composition ; 
        OpticksCfg<Opticks>* m_fcfg ;
        GGeo*                m_ggeo ; 
-       GMergedMesh*         m_mesh0 ;  
-       unsigned             m_target ;
-       unsigned             m_target_deferred ;
+       //GMergedMesh*         m_mesh0 ;  
+       //unsigned             m_target ;
+       //unsigned             m_target_deferred ;
        unsigned             m_verbosity ;
      
 
