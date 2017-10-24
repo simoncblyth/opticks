@@ -594,6 +594,12 @@ float Opticks::getFxSc()
     return BStr::atof(fxsc.c_str(), 0);
 }
 
+
+bool Opticks::isAnalyticPMTLoad()
+{
+    return m_cfg->hasOpt("apmtload");
+}
+
 unsigned Opticks::getAnalyticPMTIndex()
 {
     return m_cfg->getAnalyticPMTIndex();

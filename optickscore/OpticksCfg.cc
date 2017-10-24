@@ -415,6 +415,9 @@ void OpticksCfg<Listener>::init()
        ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm) configuration" );
 
 
+   m_desc.add_options()
+       ("apmtload",  "Load Analytic PMT : Opticks::isAnalyticPMTLoad, see GGeo::loadGeometry. "
+                     "This option prevents always loading the analytic PMT, as it is normally not used") ;
 
    char apmtidx[128];
    snprintf(apmtidx,128, "Analytic PMT index. Default %d", m_apmtidx);

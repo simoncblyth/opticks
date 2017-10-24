@@ -381,7 +381,7 @@ GMergedMesh* GGeoTest::loadPmtDirty()
 
     GPmt* pmt = m_ggeo->getPmt();
     if(!pmt) LOG(fatal) << "GPmt pmt NULL from GGeo::getPmt " ;
-    assert( pmt && "GGeoTest::loadPmtDirty GGeo::getPmt returned NULL " );
+    assert( pmt && "GGeoTest::loadPmtDirty GGeo::getPmt returned NULL : probably you need option : --apmtload  " );
 
     GParts* pts = pmt->getParts();
  

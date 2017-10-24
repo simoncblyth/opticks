@@ -217,6 +217,7 @@ tpmt--(){
        --animtimemax 10 \
        --eye 0.0,-0.5,0.0 \
        --geocenter \
+       --apmtload \
        --apmtidx $apmtidx \
        --dbganalytic \
        --rendermode +global,+axis \
@@ -257,6 +258,7 @@ tpmt-alt(){
                    ) 
 
    op.sh --tracer \
+          --apmtload \
           --test --testconfig "$(join _ ${test_config[@]})" \
           --eye 0.5,0.5,0.0 \
           --rendermode +global,+axis \

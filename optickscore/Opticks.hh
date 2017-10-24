@@ -201,6 +201,7 @@ class OKCORE_API Opticks {
        int         getTarget();
    public:
        NSlice*  getAnalyticPMTSlice();
+       bool     isAnalyticPMTLoad();
        unsigned getAnalyticPMTIndex();
        const char* getAnalyticPMTMedium();
    public:

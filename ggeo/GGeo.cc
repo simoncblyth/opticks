@@ -580,6 +580,8 @@ void GGeo::loadGeometry()
         }
     } 
 
+
+    if(m_ok->isAnalyticPMTLoad())
     loadAnalyticPmt();
 
     if( gltf >= 10 )

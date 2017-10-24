@@ -334,8 +334,8 @@ void OpticksHub::configureGeometryTriAna()
               << " desc " << desc() 
               ;
 
-    GGeoBase* ana_g = getGGeoBaseAna(); 
-    GGeoBase* tri_g = getGGeoBaseTri(); 
+    GGeoBase* ana_g = getGGeoBaseAna();   // GScene downcast
+    GGeoBase* tri_g = getGGeoBaseTri();   // GGeo downcast
 
     GGeoLib* ana = ana_g ? ana_g->getGeoLib() : NULL ; 
     GGeoLib* tri = tri_g ? tri_g->getGeoLib() : NULL ; 
@@ -343,7 +343,17 @@ void OpticksHub::configureGeometryTriAna()
     int nmm_a = ana->getNumMergedMesh();
     int nmm_t = tri->getNumMergedMesh();
 
-    assert( nmm_a == nmm_t );
+    bool match = nmm_a == nmm_t ; 
+    if(!match)
+    {
+        LOG(fatal) << "OpticksHub::configureGeometryTriAna"
+                   << " MISMATCH "
+                   << " nmm_a " << nmm_a 
+                   << " nmm_t " << nmm_t
+                   ; 
+    }
+
+    assert( match );
 
     for(int i=0 ; i < nmm_a ; i++)
     {
