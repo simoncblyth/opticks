@@ -86,6 +86,7 @@ NPY_API std::string gfromstring(const glm::mat4& m, bool flip=false) ;
 NPY_API std::string gpresent(const char* label, const glm::mat4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
 NPY_API std::string gpresent(const char* label, const glm::mat3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10, bool flip=false );
 NPY_API std::string gpresent(const char* label, const glm::vec4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );
+NPY_API std::string gpresent_(const char* label, const glm::vec4& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );
 NPY_API std::string gpresent(const char* label, const glm::vec3& m, unsigned prec=3, unsigned wid=7, unsigned lwid=10 );
 
 

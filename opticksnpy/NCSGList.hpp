@@ -9,6 +9,7 @@ class NPY_API NCSGList
 {
    public:
      NCSGList(const char* csgpath, unsigned verbosity);
+     void dump(const char* msg="NCSGList::dump");
 
    public:
      NCSG*    getTree(unsigned index);

@@ -24,6 +24,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_listener(listener),
        m_size(""),
        m_position(""),
+       m_dbgcsgpath(""),
        m_logname(""),
        m_exportconfig(""),
        m_torchconfig(""),
@@ -659,6 +660,10 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
+       ("dbgcsgpath",   boost::program_options::value<std::string>(&m_dbgcsgpath),
+         "Path to directory containing NCSG trees for debugging, loaded via NCSGList.");
+
+   m_desc.add_options()
        ("logname",   boost::program_options::value<std::string>(&m_logname),
          "name of logfile");
 
@@ -754,6 +759,12 @@ void OpticksCfg<Listener>::init()
 
 
 
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgCSGPath()
+{
+    return m_dbgcsgpath ;
+}
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getLogName()

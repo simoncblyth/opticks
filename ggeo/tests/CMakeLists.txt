@@ -3,13 +3,6 @@ set(name GGeoTest)
 project(${name})
 
 
-set(OBSOLETE_TESTS
-
-    GGeoTestTest.cc
-
-)
-
-
 set(TEST_SOURCES
 
     GConstantTest.cc
@@ -56,6 +49,7 @@ set(TEST_SOURCES
     GGeoLibTest.cc
 
     GGeoTest.cc
+    GGeoTestConfigTest.cc
     GMakerTest.cc
 
     GMergedMeshTest.cc

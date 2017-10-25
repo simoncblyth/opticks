@@ -368,6 +368,15 @@ const char* Opticks::getRenderMode()
     return renderMode.c_str();
 }
 
+const char* Opticks::getDbgCSGPath()
+{
+    const std::string& dbgcsgpath = m_cfg->getDbgCSGPath();
+    return dbgcsgpath.empty() ? NULL : dbgcsgpath.c_str();
+}
+
+
+
+
 OpticksRun* Opticks::getRun()
 {
     return m_run ;  
@@ -1185,6 +1194,7 @@ OpticksEventSpec* Opticks::getEventSpec()
 OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
 {
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+    evt->setOpticks(this);
     evt->loadBuffers();
     return evt ; 
 }

@@ -1,18 +1,32 @@
 
 #include <iostream>
 #include "RecordsNPY.hpp"
+#include "NGLM.hpp"
+#include "GLMFormat.hpp"
 
+#include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventDump.hh"
 
 #include "PLOG.hh"
 
 OpticksEventDump::OpticksEventDump(OpticksEvent* evt ) 
-   :
-   m_evt(evt),
-   m_noload( evt ? evt->isNoLoad() : true )
+    :
+    m_ok(evt->getOpticks()),
+    m_evt(evt),
+    m_noload( evt ? evt->isNoLoad() : true ),
+    m_records(NULL)
 {
+    init();
 }
+
+
+void OpticksEventDump::init()
+{
+    assert(m_ok);
+    setupRecordsNPY();
+}
+
 
 void OpticksEventDump::dump(const char* msg)
 {
@@ -45,40 +59,27 @@ void OpticksEventDump::Summary(const char* msg)
 
 void OpticksEventDump::dumpRecords(const char* msg)
 {
+    for(unsigned photon_id=0 ; photon_id < 5 ; photon_id++ ) dumpRecords(msg, photon_id );
+}
+
+void OpticksEventDump::dumpRecords(const char* msg, unsigned photon_id )
+{
     LOG(info) << msg ; 
     if(m_noload) return ; 
 
-    unsigned int maxrec = m_evt->getMaxRec() ;
-
-    NPY<short>* rx = m_evt->getRecordData();
-    assert(rx && rx->hasData());
-
-    LOG(info) << "OpticksEventDump::dumpRecords " 
-              << " shape " << rx->getShapeString() 
-              ;
-
-    RecordsNPY* rec ; 
-    
-    rec = new RecordsNPY(rx, maxrec);
-    //m_rec->setTypes(types);
-    //m_rec->setTyp(typ);
-    rec->setDomains(m_evt->getFDomain()) ;
-
-    for(unsigned photon_id=0 ; photon_id < 10 ; photon_id++ )
+    unsigned maxrec = m_evt->getMaxRec() ;
+    for(unsigned r=0 ; r < maxrec ; r++)
     {
-        for(unsigned r=0 ; r < maxrec ; r++)
-        {
-            //unsigned int record_id = photon_id*m_maxrec + r ;
-            unsigned i = photon_id ;
-            unsigned j = r ;
-
-            rec->dumpRecord(i,j,"dumpRecord (i,j)");
-        }
+        m_records->dumpRecord(photon_id,r,"dumpRecord (i,j)");
     }
 
+    std::vector<glm::vec4> posts ; 
+    glm::vec4 ldd = m_records->getLengthDistanceDurationPosts(posts, photon_id ); 
+
+    for(unsigned p=0 ; p < posts.size() ; p++)
+        std::cout << gpresent( "post", posts[p] ) ; 
+
 }
-
-
 
 
 void OpticksEventDump::dumpPhotonData(const char* msg)
@@ -111,6 +112,33 @@ void OpticksEventDump::dumpPhotonData(NPY<float>* photons)
     }  
 }
 
+
+
+
+void OpticksEventDump::setupRecordsNPY()
+{
+    if(m_noload || m_records) return ; 
+
+    NPY<short>* rx = m_evt->getRecordData();
+    assert(rx && rx->hasData());
+    unsigned maxrec = m_evt->getMaxRec() ;
+
+    Types* types = m_ok->getTypes();
+    Typ* typ = m_ok->getTyp();
+
+    RecordsNPY* rec = new RecordsNPY(rx, maxrec);
+
+    rec->setTypes(types);
+    rec->setTyp(typ);
+    rec->setDomains(m_evt->getFDomain()) ;
+
+    LOG(info) << "OpticksEvent::setupRecordsNPY " 
+              << " shape " << rx->getShapeString() 
+              ;
+
+    m_evt->setRecordsNPY(rec);
+    m_records = rec ; 
+} 
 
 
 

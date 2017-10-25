@@ -3,6 +3,8 @@
 #include "NCSG.hpp"
 #include "NCSGList.hpp"
 
+#include "PLOG.hh"
+
 NCSGList::NCSGList(const char* csgpath, unsigned verbosity)
    :
    m_csgpath(strdup(csgpath)),
@@ -21,4 +23,29 @@ unsigned NCSGList::getNumTrees()
 {
     return m_trees.size();
 }
+
+
+void NCSGList::dump(const char* msg)
+{
+    LOG(info) << msg ; 
+
+    unsigned numTrees = getNumTrees() ;
+
+    std::cout << " csgpath " << m_csgpath
+              << " verbosity " << m_verbosity 
+              << " numTrees " << numTrees
+              << std::endl 
+              ;
+
+
+    for(unsigned i=0 ; i < numTrees ; i++)
+    {
+         NCSG* tree = getTree(i);
+         std::cout << tree->desc() << std::endl ;
+    }
+
+    
+
+}
+
 

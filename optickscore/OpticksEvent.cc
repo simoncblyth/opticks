@@ -119,6 +119,8 @@ OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
      return new OpticksEvent(offspec) ; 
 }
 
+Opticks* OpticksEvent::getOpticks(){ return m_ok ; }
+
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
           OpticksEventSpec(spec),
@@ -371,6 +373,9 @@ MultiViewNPY* OpticksEvent::getRecselAttr(){ return m_recsel_attr ; }
 MultiViewNPY* OpticksEvent::getSequenceAttr(){ return m_sequence_attr ; }
 MultiViewNPY* OpticksEvent::getSeedAttr(){   return m_seed_attr ; }
 MultiViewNPY* OpticksEvent::getHitAttr(){    return m_hit_attr ; }
+
+
+
 
 
 

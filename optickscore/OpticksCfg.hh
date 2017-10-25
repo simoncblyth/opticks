@@ -15,6 +15,7 @@ class OKCORE_API OpticksCfg : public BCfg {
 
      const std::string& getSize();
      const std::string& getPosition();
+     const std::string& getDbgCSGPath();
      const std::string& getLogName();
      const std::string& getConfigPath();
      const std::string& getEventTag();
@@ -102,6 +103,7 @@ private:
      Listener*   m_listener ; 
      std::string m_size ;
      std::string m_position ;
+     std::string m_dbgcsgpath ;
      std::string m_logname ;
      std::string m_event_cat ;
      std::string m_event_tag ;

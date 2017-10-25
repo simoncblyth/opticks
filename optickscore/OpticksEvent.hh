@@ -117,6 +117,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        // set by Opticks::makeEvent OpticksRun::createEvent
        void           setSibling(OpticksEvent* sibling);
        void           setOpticks(Opticks* ok);
+       Opticks*       getOpticks();
        void           setId(int id);
    public:
        OpticksEvent*  getSibling();

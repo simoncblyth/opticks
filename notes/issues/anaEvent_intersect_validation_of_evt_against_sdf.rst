@@ -605,85 +605,87 @@ tlens.py step-by-step rec positions
 
 
 
+
+tlens-ana
+-------------
+
+* dumpExcursions is for final photon position... so not so informative
+* dumpStepByStepCSGExcursion shows SDF values for each tree for each rec pos : need cumulative way to represent that 
+
+
 ::
 
-    simon:optickscore blyth$ tlens-load
-    SAr _argc 6 (  EvtLoadTest --torch --tag 1 --cat lens ) 
-    PLOG::PLOG  instance 0x7fff5a85cd58 this 0x7fff5a85cd58 logpath EvtLoadTest.log
-    2017-10-25 16:12:01.015 INFO  [768165] [OpticksQuery::dump@79] OpticksQuery::init queryType range query_string range:3153:12221 query_name NULL query_index 0 query_depth 0 no_selection 0 nrange 2 : 3153 : 12221
-    2017-10-25 16:12:01.016 INFO  [768165] [Opticks::init@327] Opticks::init DONE OpticksResource::desc digest 96ff965744a2f6b78c24e33c80d3a4cd age.tot_seconds 4944338 age.tot_minutes 82405.633 age.tot_hours 1373.427 age.tot_days     57.226
-    2017-10-25 16:12:01.016 INFO  [768165] [Opticks::dumpArgs@783] Opticks::configure argc 6
-      0 : EvtLoadTest
+    simon:opticksnpy blyth$ tlens-ana
+    2017-10-25 20:20:42.751 INFO  [877648] [Opticks::dumpArgs@792] Opticks::configure argc 10
+      0 : OpticksEventAnaTest
       1 : --torch
       2 : --tag
       3 : 1
       4 : --cat
       5 : lens
+      6 : --dbgcsgpath
+      7 : /tmp/blyth/opticks/tlens-concave--
+      8 : --dbgnode
+      9 : 0
     ...
-    RecordsNPY::setDomains ce vec4       0.000      0.000      0.000    500.000 
-    RecordsNPY::setDomains td vec4       0.000      7.000      7.000      0.000 
-    RecordsNPY::setDomains wd vec4      60.000    820.000     20.000    760.000 
+    2017-10-25 20:20:44.285 INFO  [877648] [OpticksEventDump::setupRecordsNPY@135] OpticksEvent::setupRecordsNPY  shape 500000,10,2,4
+    2017-10-25 20:20:44.305 INFO  [877648] [OpticksEventAna::countExcursions@94] OpticksEventAna::countExcursions pho_num 500000 epsilon 0.1 dbgseqhis 0 dbgseqhis                                                 
+    2017-10-25 20:20:44.489 INFO  [877648] [OpticksEventAna::countExcursions@137] OpticksEventAna::countExcursions pho_num 500000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-10-25 20:20:44.729 INFO  [877648] [OpticksEventAna::countExcursions@137] OpticksEventAna::countExcursions pho_num 500000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-10-25 20:20:44.729 INFO  [877648] [OpticksEventAna::dump@60] GGeoTest::anaEvent OpticksEventAna pho 500000,4,4 seq 500000,1,2
 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    2017-10-25 20:20:44.729 INFO  [877648] [OpticksEventAna::dumpExcursions@153] OpticksEventAna::dumpExcursions seqhis ending AB or truncated seqhis : exc expected 
+    2017-10-25 20:20:44.729 INFO  [877648] [OpticksEventAna::dumpExcursions@163]  counts and fractions on surface of each tree (within SDF epsilon) 
 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+     seqhis             8ccd                 TO BT BT SA                                      tot 442101 surf (       0 442101 )  frac (   0.000  1.000 ) 
+     seqhis              8bd                 TO BR SA                                         tot  29493 surf (       0  29493 )  frac (   0.000  1.000 ) 
+     seqhis            8cbcd                 TO BT BR BT SA                                   tot  26267 surf (       0  26267 )  frac (   0.000  1.000 ) 
+     seqhis           8cbbcd                 TO BT BR BR BT SA                                tot   1522 surf (       0   1522 )  frac (   0.000  1.000 ) 
+     seqhis            86ccd                 TO BT BT SC SA                                   tot    123 surf (       0    123 )  frac (   0.000  1.000 ) 
+     seqhis              4cd                 TO BT AB                                         tot     90 surf (       0      0 )  frac (   0.000  0.000 ) 
+     seqhis          8cbbbcd                 TO BT BR BR BR BT SA                             tot     82 surf (       0     82 )  frac (   0.000  1.000 ) 
+     seqhis              86d                 TO SC SA                                         tot     65 surf (       0     65 )  frac (   0.000  1.000 ) 
+     seqhis            8c6cd                 TO BT SC BT SA                                   tot     38 surf (       0     38 )  frac (   0.000  1.000 ) 
+     seqhis          8cc6ccd                 TO BT BT SC BT BT SA                             tot     30 surf (       0     30 )  frac (   0.000  1.000 ) 
+     seqhis           8cb6cd                 TO BT SC BR BT SA                                tot     30 surf (       0     30 )  frac (   0.000  1.000 ) 
+     seqhis       bbbbbbb6cd                 TO BT SC BR BR BR BR BR BR BR                    tot     24 surf (      24      0 )  frac (   1.000  0.000 ) 
+     seqhis            8cc6d                 TO SC BT BT SA                                   tot     24 surf (       0     24 )  frac (   0.000  1.000 ) 
+     seqhis         8cbc6ccd                 TO BT BT SC BT BR BT SA                          tot     16 surf (       0     16 )  frac (   0.000  1.000 ) 
+     seqhis             4ccd                 TO BT BT AB                                      tot     13 surf (       0      0 )  frac (   0.000  0.000 ) 
+     seqhis           86cbcd                 TO BT BR BT SC SA                                tot     12 surf (       0     12 )  frac (   0.000  1.000 ) 
+     seqhis               4d                 TO AB                                            tot     10 surf (       0      0 )  frac (   0.000  0.000 ) 
 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
-
-    2017-10-25 16:12:02.554 INFO  [768165] [OpticksEventDump::dumpPhotonData@88] OpticksEventDump::dumpPhotonData
-    OpticksEventDump::dumpPhotonData (500000,4,4)  NumBytes(0) 32000000 NumBytes(1) 64 NumValues(0) 8000000 NumValues(1) 16{}
-     ph        0   ux 3263409383   fxyzw    -65.838     -7.065    500.000      3.239 
-     ph        1   ux 3255297200   fxyzw    -33.973     58.732    500.000      3.223 
-     ph        2   ux 1101012430   fxyzw     20.015     45.843    500.000      3.244 
-     ph        3   ux 3254928994   fxyzw    -32.569    -62.343   -500.000      2.101 
-     ph        4   ux 1094666881   fxyzw     11.956     19.677    500.000      3.201 
+    2017-10-25 20:20:44.730 INFO  [877648] [OpticksEventAna::dumpStepByStepCSGExcursions@207] OpticksEventAna::dumpStepByStepCSGExcursions photon_id 0 num_pos 10 num_tree 2 seqhis             8ccd                 TO BT BT SA                                     
+          post-65.844  -7.065 -299.997   0.100     199.997   -200.003
+          post-65.844  -7.065 -99.994   0.767      -0.006   -400.006
+          post-65.844  -7.065  99.994   1.905      -0.006   -400.006
+          post-65.844  -7.065 500.000   3.239     400.000      0.000
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+    2017-10-25 20:20:44.730 INFO  [877648] [OpticksEventAna::dumpStepByStepCSGExcursions@207] OpticksEventAna::dumpStepByStepCSGExcursions photon_id 1 num_pos 10 num_tree 2 seqhis             8ccd                 TO BT BT SA                                     
+          post-33.967  58.733 -299.997   0.100     199.997   -200.003
+          post-33.967  58.733 -99.994   0.767      -0.006   -400.006
+          post-33.967  58.733  99.994   1.889      -0.006   -400.006
+          post-33.967  58.733 500.000   3.223     400.000      0.000
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+    2017-10-25 20:20:44.730 INFO  [877648] [OpticksEventAna::dumpStepByStepCSGExcursions@207] OpticksEventAna::dumpStepByStepCSGExcursions photon_id 2 num_pos 10 num_tree 2 seqhis             8ccd                 TO BT BT SA                                     
+          post 20.020  45.839 -299.997   0.100     199.997   -200.003
+          post 20.020  45.839 -99.994   0.767      -0.006   -400.006
+          post 20.020  45.839  99.994   1.910      -0.006   -400.006
+          post 20.020  45.839 500.000   3.244     400.000      0.000
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
+          post  0.000   0.000   0.000   0.000 
 

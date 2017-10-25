@@ -33,7 +33,9 @@ okg---(){     touch $(okg-apihh) ; okg--  ; }
 
 
 okg--(){        opticks--     $(okg-bdir) ; }
-okg-ctest(){    opticks-ctest $(okg-bdir) $* ; }
+okg-t(){        opticks-t  $(okg-bdir) $* ; }
+okg-tl(){       opticks-tl $(okg-bdir) $* ; }
+
 okg-genproj(){  okg-scd ; opticks-genproj $(okg-name) $(okg-tag) ; }
 okg-gentest(){  okg-tcd ; opticks-gentest ${1:-OpticksGeometry} $(okg-tag) ; }
 

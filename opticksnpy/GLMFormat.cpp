@@ -491,6 +491,14 @@ std::string gpresent(const char* label, const glm::vec4& m, unsigned prec, unsig
     return ss.str();
 }
 
+std::string gpresent_(const char* label, const glm::vec4& m, unsigned prec, unsigned wid, unsigned lwid )
+{
+    std::stringstream ss ; 
+    ss << std::setw(lwid) << label ; 
+    for(int i=0 ; i < 4 ; i++) ss << std::setprecision(prec) << std::fixed << std::setw(wid) << m[i]  << " " ; 
+    return ss.str();
+}
+
 
 
 

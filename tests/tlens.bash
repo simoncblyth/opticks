@@ -84,11 +84,15 @@ tlens-medium(){ echo Vacuum ; }
 tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
-tlens-load(){ EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
+#tlens-load(){  lldb -- EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
+tlens-ana(){  OpticksEventAnaTest --torch  --tag 1 --cat $(tlens-det) --dbgcsgpath "$TMP/tlens-concave--" --dbgnode 0   ; }
+
 tlens-pload(){ tevt.py   $(tlens-args) --tag 1  ; }
 tlens-py() {   tlens.py  $(tlens-args) $* ; } 
 tlens-ipy() {  ipython -i -- $(which tlens.py)  $(tlens-args) $* ; } 
  
+
+
 
 tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-convex-(){ $FUNCNAME- | python $* ; }  
@@ -112,6 +116,8 @@ CSG.Serialize([container, lens ], args.csgpath )
 
 EOP
 }
+
+
 
 
 tlens-concave(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
@@ -141,12 +147,12 @@ CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution="50", verbosity="0", ctrl="0" )
 
 cy = CSG("cylinder", param=[0,0,0,cr], param1=[-cz,cz,0,0])   
-#ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
-#al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
+ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
+al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
 
-#lens = cy - ar - al 
+lens = cy - ar - al 
 #lens = cy - al 
-lens = cy  
+#lens = cy  
 #lens = al  
 
 #la = CSG("intersection", left=cy, right=ar )

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "NGLM.hpp"
 #include "Types.hpp"
 
@@ -47,8 +48,9 @@ class NPY_API RecordsNPY {
        // geometric properties of photon path
        glm::vec4 getCenterExtent(unsigned int photon_id);
        glm::vec4 getLengthDistanceDuration(unsigned int photon_id);
+       glm::vec4 getLengthDistanceDurationPosts(std::vector<glm::vec4>& posts, unsigned int photon_id);
    private:
-       void tracePath(unsigned int photon_id, float& length, float& distance, float& duration );
+       void tracePath(unsigned int photon_id, std::vector<glm::vec4>& posts, float& length, float& distance, float& duration );
    private:
        void setCenterExtent(glm::vec4& ce);
        void setTimeDomain(glm::vec4& td);

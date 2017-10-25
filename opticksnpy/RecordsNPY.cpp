@@ -238,9 +238,9 @@ float RecordsNPY::uncharnorm_wavelength(unsigned char value)
 
 
 
-void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distance, float& duration )
+void RecordsNPY::tracePath(unsigned int photon_id, std::vector<glm::vec4>& posts, float& length, float& distance, float& duration )
 {
-    std::vector<glm::vec4> posts ; 
+    assert( m_flat == false );
 
     for(unsigned int r=0 ; r < m_maxrec ; r++ )
     {
@@ -278,12 +278,28 @@ void RecordsNPY::tracePath(unsigned int photon_id, float& length, float& distanc
 
 glm::vec4 RecordsNPY::getLengthDistanceDuration(unsigned int photon_id)
 {
+    std::vector<glm::vec4> posts ; 
     float length(0.f) ;
     float distance(0.f) ;
     float duration(0.f)  ;
-    tracePath(photon_id, length, distance, duration );
+    tracePath(photon_id, posts, length, distance, duration );
     return glm::vec4(length, distance, 0.f, duration );
 }
+
+
+glm::vec4 RecordsNPY::getLengthDistanceDurationPosts(std::vector<glm::vec4>& posts, unsigned int photon_id)
+{
+    float length(0.f) ;
+    float distance(0.f) ;
+    float duration(0.f)  ;
+    tracePath(photon_id, posts, length, distance, duration );
+    return glm::vec4(length, distance, 0.f, duration );
+}
+
+
+
+
+
 
 
 glm::vec4 RecordsNPY::getCenterExtent(unsigned int photon_id)
