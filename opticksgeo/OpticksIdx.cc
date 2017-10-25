@@ -142,7 +142,7 @@ void OpticksIdx::indexEvtOld()
 
     if(rx && rx->hasData())
     {
-        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec(), evt->isFlat());
+        RecordsNPY* rec = new RecordsNPY(rx, evt->getMaxRec());
         rec->setTypes(types);
         rec->setTyp(typ);
         rec->setDomains(evt->getFDomain()) ;

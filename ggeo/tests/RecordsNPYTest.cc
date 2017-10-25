@@ -79,8 +79,7 @@ int main(int argc, char** argv)
 
 
     unsigned int maxrec = 10 ; 
-    bool flat = true ; 
-    RecordsNPY* rec = new RecordsNPY(rx, maxrec, flat);
+    RecordsNPY* rec = new RecordsNPY(rx, maxrec);
     rec->setDomains(fd);
     rec->setTypes(types);
     rec->setTyp(typ);

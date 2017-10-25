@@ -19,11 +19,11 @@
 
 #include "PLOG.hh"
 
-RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat)
+RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec)
     :
     m_records(records),
     m_maxrec(maxrec),
-    m_flat(flat),
+    m_flat(false),
     m_types(NULL),
     m_typ(NULL)
 {
@@ -129,6 +129,17 @@ float RecordsNPY::unshortnorm_time(short v, unsigned int k )
 
 void RecordsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned int j, unsigned int k)
 {
+    /*
+    1373     def rpost_(self, recs):
+    1374         """
+    1375         NB recs can be a slice, eg slice(0,5) for 1st 5 step records of each photon
+    ....
+    1390         """
+    1391         center, extent = self.post_center_extent()
+    1392         p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center
+    1393         return p
+    1394 
+    */
     glm::uvec4 v = m_records->getQuadU( i, j, k);
     post.x = unshortnorm_position(v.x, 0);
     post.y = unshortnorm_position(v.y, 1);
@@ -138,7 +149,16 @@ void RecordsNPY::unpack_position_time(glm::vec4& post, unsigned int i, unsigned 
 
 void RecordsNPY::unpack_polarization_wavelength(glm::vec4& polw, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1)
 {
-
+    /*
+    1203     def rpolw_(self, recs):
+    1204         """
+    1205         Unlike rpol_ this works with irec slices, 
+    1206         BUT note that the wavelength returned in 4th column is 
+    1207         not decompressed correctly.
+    1208         Due to shape shifting it is not easy to remove
+    1209         """
+    1210         return self.rx[:,recs,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.  
+    */
     ucharfour v = m_records->getUChar4( i, j, k, l0, l1 ); 
 
     polw.x =  uncharnorm_polarization(v.x);  
@@ -333,8 +353,7 @@ void RecordsNPY::unpack_material_flags(glm::uvec4& flag, unsigned int photon_id 
     bool unset = m_records->isUnsetItem(i, j);
     assert(!unset);
 
-    //unpack_material_flags(flag, i,j,1, 2, 3);  // i,j,k0,k1
-    unpack_material_flags(flag, i,1,0, 2, 3);  // i,j,k0,k1
+    unpack_material_flags(flag, i,j,1, 2, 3);  // i,j,k0,k1
 }
 
 
@@ -389,23 +408,13 @@ void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
     // flat records means that the photon_id and record number occupy the i slot 
     // formerly records was flat 
 
-    //assert(j == 0) ; // when flat ??? otherwise this has the rec index 
+    //LOG(info) << "RecordsNPY::dumpRecord ij " << i  << "," << j ;
 
-    if(j != 0)
-    {
-       LOG(info) << "RecordsNPY::dumpRecord ij " << i  << "," << j ;
-    }
+    unpack_position_time(           post, i, j, 0 );       // i,j,k
+    unpack_polarization_wavelength( polw, i, j, 1, 0, 1 ); // i,j,k,l0,l1
 
-    unpack_position_time(           post, i, 0, 0 );       // i,j,k
-
-   // unpack_polarization_wavelength( polw, i, j, 1, 0, 1 ); // i,j,k,l0,l1
-   // unpack_material_flags(          flag, i, j, 1, 2, 3);  // i,j,k,l0,l1
-   // unpack_material_flags_i(       iflag, i, j, 1, 2, 3);  // i,j,k,l0,l1
-
-    unpack_polarization_wavelength( polw, i, 1, 0, 0, 1 ); // i,j,k,l0,l1
-
-    unpack_material_flags(          flag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
-    unpack_material_flags_i(       iflag, i, 1, 0, 2, 3);  // i,j,k,l0,l1
+    unpack_material_flags(          flag, i, j, 1, 2, 3);  // i,j,k,l0,l1
+    unpack_material_flags_i(       iflag, i, j, 1, 2, 3);  // i,j,k,l0,l1
 
     // for debug see npy-/evt.py 
 

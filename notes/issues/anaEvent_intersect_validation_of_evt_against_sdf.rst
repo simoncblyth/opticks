@@ -539,4 +539,151 @@ Interp Record Data
 
 
 
+tlens.py step-by-step rec positions
+------------------------------------
+
+::
+
+    tlens-;tlens-ipy
+    ...
+
+    In [13]: evt.rpost_(slice(0,5))
+    Out[13]: 
+    A()sliced
+    A([[[     -65.844,   -7.065, -299.997,    0.1  ],
+            [ -65.844,   -7.065,  -99.994,    0.767],
+            [ -65.844,   -7.065,   99.994,    1.905],
+            [ -65.844,   -7.065,  500.   ,    3.239],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[ -33.967,   58.733, -299.997,    0.1  ],
+            [ -33.967,   58.733,  -99.994,    0.767],
+            [ -33.967,   58.733,   99.994,    1.889],
+            [ -33.967,   58.733,  500.   ,    3.223],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+           [[  20.02 ,   45.839, -299.997,    0.1  ],
+            [  20.02 ,   45.839,  -99.994,    0.767],
+            [  20.02 ,   45.839,   99.994,    1.91 ],
+            [  20.02 ,   45.839,  500.   ,    3.244],
+            [   0.   ,    0.   ,    0.   ,    0.   ]],
+
+
+
+::
+
+    1373     def rpost_(self, recs):
+    1374         """
+    1375         NB recs can be a slice, eg slice(0,5) for 1st 5 step records of each photon
+    ....
+    1390         """
+    1391         center, extent = self.post_center_extent()
+    1392         p = self.rx[:,recs,0].astype(np.float32)*extent/32767.0 + center
+    1393         return p
+    1394 
+
+    1203     def rpolw_(self, recs):
+    1204         """
+    1205         Unlike rpol_ this works with irec slices, 
+    1206         BUT note that the wavelength returned in 4th column is 
+    1207         not decompressed correctly.
+    1208         Due to shape shifting it is not easy to remove
+    1209         """
+    1210         return self.rx[:,recs,1,0:2].copy().view(np.uint8).astype(np.float32)/127.-1.
+
+
+
+::
+
+    In [16]: evt.rx.shape
+    Out[16]: (500000, 10, 2, 4)
+
+
+::
+
+    2017-10-25 16:12:02.552 INFO  [768165] [OpticksEventDump::dumpRecords@56] OpticksEventDump::dumpRecords  shape 500000,10,2,4
+
+
+
+::
+
+    simon:optickscore blyth$ tlens-load
+    SAr _argc 6 (  EvtLoadTest --torch --tag 1 --cat lens ) 
+    PLOG::PLOG  instance 0x7fff5a85cd58 this 0x7fff5a85cd58 logpath EvtLoadTest.log
+    2017-10-25 16:12:01.015 INFO  [768165] [OpticksQuery::dump@79] OpticksQuery::init queryType range query_string range:3153:12221 query_name NULL query_index 0 query_depth 0 no_selection 0 nrange 2 : 3153 : 12221
+    2017-10-25 16:12:01.016 INFO  [768165] [Opticks::init@327] Opticks::init DONE OpticksResource::desc digest 96ff965744a2f6b78c24e33c80d3a4cd age.tot_seconds 4944338 age.tot_minutes 82405.633 age.tot_hours 1373.427 age.tot_days     57.226
+    2017-10-25 16:12:01.016 INFO  [768165] [Opticks::dumpArgs@783] Opticks::configure argc 6
+      0 : EvtLoadTest
+      1 : --torch
+      2 : --tag
+      3 : 1
+      4 : --cat
+      5 : lens
+    ...
+    RecordsNPY::setDomains ce vec4       0.000      0.000      0.000    500.000 
+    RecordsNPY::setDomains td vec4       0.000      7.000      7.000      0.000 
+    RecordsNPY::setDomains wd vec4      60.000    820.000     20.000    760.000 
+
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        0 post (      -65.84      -7.07    -300.00         0.10) polw (   -0.71   0.88  -0.61   817.02) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        1 post (      -33.97      58.73    -300.00         0.10) polw (   -0.39   0.94  -0.93   104.71) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        2 post (       20.02      45.84    -300.00         0.10) polw (   -0.75  -0.96   0.48    92.78) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        3 post (      -32.56     -62.35    -300.00         0.10) polw (    0.34   0.94  -0.92   775.29) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+    dumpRecord (i,j)        4 post (       11.96      19.67    -300.00         0.10) polw (   -0.87  -0.98  -0.93    74.90) flag.x/m1 103:                    notyp flag.y/m2 230:                    notyp iflag.z [  7] notyps 
+
+    2017-10-25 16:12:02.554 INFO  [768165] [OpticksEventDump::dumpPhotonData@88] OpticksEventDump::dumpPhotonData
+    OpticksEventDump::dumpPhotonData (500000,4,4)  NumBytes(0) 32000000 NumBytes(1) 64 NumValues(0) 8000000 NumValues(1) 16{}
+     ph        0   ux 3263409383   fxyzw    -65.838     -7.065    500.000      3.239 
+     ph        1   ux 3255297200   fxyzw    -33.973     58.732    500.000      3.223 
+     ph        2   ux 1101012430   fxyzw     20.015     45.843    500.000      3.244 
+     ph        3   ux 3254928994   fxyzw    -32.569    -62.343   -500.000      2.101 
+     ph        4   ux 1094666881   fxyzw     11.956     19.677    500.000      3.201 
 

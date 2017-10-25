@@ -1372,7 +1372,7 @@ class Evt(object):
 
     def rpost_(self, recs):
         """
-        NB recs can be a slice, eg slice(0,5)
+        NB recs can be a slice, eg slice(0,5) for 1st 5 step records of each photon
 
         Record compression can be regarded as a very early choice of binning, 
         as cannot use other binnings without suffering from artifacts

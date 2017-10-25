@@ -13,7 +13,7 @@
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    NPY_LOG__ ; 
+    //NPY_LOG__ ; 
     OKCORE_LOG__ ; 
 
     Opticks ok(argc, argv);

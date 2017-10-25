@@ -59,9 +59,7 @@ void OpticksEventDump::dumpRecords(const char* msg)
 
     RecordsNPY* rec ; 
     
-    //bool flat = false ; 
-    bool flat = true ; 
-    rec = new RecordsNPY(rx, maxrec, flat);
+    rec = new RecordsNPY(rx, maxrec);
     //m_rec->setTypes(types);
     //m_rec->setTyp(typ);
     rec->setDomains(m_evt->getFDomain()) ;

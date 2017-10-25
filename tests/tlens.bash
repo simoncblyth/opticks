@@ -78,7 +78,6 @@ tlens-det(){ echo lens ; }
 tlens-src(){ echo torch ; }
 
 tlens-args() {        echo  --det $(tlens-det) --src $(tlens-src) ; }
-tlens-py() {          tlens.py  $(tlens-args) $* ; } 
 
 
 tlens-medium(){ echo Vacuum ; }
@@ -86,6 +85,9 @@ tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 tlens-load(){ EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
+tlens-pload(){ tevt.py   $(tlens-args) --tag 1  ; }
+tlens-py() {   tlens.py  $(tlens-args) $* ; } 
+tlens-ipy() {  ipython -i -- $(which tlens.py)  $(tlens-args) $* ; } 
  
 
 tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }

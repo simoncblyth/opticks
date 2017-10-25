@@ -12,7 +12,7 @@ class Typ ;
 
 class NPY_API RecordsNPY {
    public:  
-       RecordsNPY(NPY<short>* records, unsigned int maxrec, bool flat); 
+       RecordsNPY(NPY<short>* records, unsigned int maxrec); 
    public:  
        NPY<short>*           getRecords();
        void                  setTypes(Types* types);
