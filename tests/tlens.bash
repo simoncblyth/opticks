@@ -63,7 +63,11 @@ EXERCISE
     * interpret the plot
 
   
- 
+TIPS
+------
+
+* when making analysis only code changes, can load event and NCSG geometry and run analysis
+  with tlens-ana no need to rerun simulation every time 
 
 
 EOU
@@ -85,7 +89,20 @@ tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 #tlens-load(){  lldb -- EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
-tlens-ana(){  OpticksEventAnaTest --torch  --tag 1 --cat $(tlens-det) --dbgcsgpath "$TMP/tlens-concave--" --dbgnode 0   ; }
+tlens-ana(){  
+
+    #local dbgseqhis=0x8cbc6d   # TO SC BT BR BT SA 
+    local dbgseqhis=0x8cc6d   # TO SC BT BT SA
+    #local dbgseqhis=0x8ccd   # TO BT BT SA
+
+    local dbgcsgpath=$TMP/tlens-concave--
+    #local dbgcsgpath=$TMP/tlens-convex--
+
+    OpticksEventAnaTest --torch  --tag 1 --cat $(tlens-det) --dbgcsgpath "$dbgcsgpath" --dbgnode 0  --dbgseqhis $dbgseqhis ; 
+
+    # hmm : need to split storage locations based on the csgpath ? otherwise using wrong evt with geometry 
+
+}
 
 tlens-pload(){ tevt.py   $(tlens-args) --tag 1  ; }
 tlens-py() {   tlens.py  $(tlens-args) $* ; } 

@@ -191,8 +191,28 @@ void OpticksEventAna::dumpExcursions()
 
 void OpticksEventAna::dumpStepByStepCSGExcursions()
 {
-    for(unsigned photon_id=0 ; photon_id < 5 ; photon_id++)
-         dumpStepByStepCSGExcursions(photon_id) ;
+    unsigned count = 0 ;
+    unsigned dumpmax = 10 ;
+    for(unsigned i=0 ; i < m_pho_num ; i++)
+    { 
+         unsigned photon_id=i ; 
+         unsigned long long seqhis_ = m_seq->getValue(photon_id,0,0);
+       
+         if(seqhis_ == m_dbgseqhis)
+         {
+             count++ ; 
+             if(count < dumpmax)
+             dumpStepByStepCSGExcursions(photon_id) ;
+         }
+    }
+
+    LOG(info) << "OpticksEventAna::dumpStepByStepCSGExcursions"
+              << " m_dbgseqhis " 
+              << std::setw(16) << std::hex << m_dbgseqhis << std::dec
+              << " count " << count 
+              << " dumpmax " << dumpmax 
+              ;
+
 }
 
 
