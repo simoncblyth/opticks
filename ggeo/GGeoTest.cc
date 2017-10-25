@@ -184,6 +184,7 @@ void GGeoTest::anaEvent(OpticksEvent* evt)
     LOG(info) << "GGeoTest::anaEvent " 
               << " dbgnode " << dbgnode
               << " csg " << csg
+              << " numTrees " << getNumTrees()
               << " evt " << evt
               ;
 
@@ -191,7 +192,7 @@ void GGeoTest::anaEvent(OpticksEvent* evt)
     assert( csg ) ;  
 
 
-    OpticksEventAna ana(evt, csg);
+    OpticksEventAna ana(m_ok, evt, csg);
     ana.dump("GGeoTest::anaEvent");
 
 

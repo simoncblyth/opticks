@@ -329,8 +329,6 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void Summary(const char* msg="OpticksEvent::Summary");
        std::string  brief();
        std::string  description(const char* msg="OpticksEvent::description");
-       void         dumpPhotonData();
-       static void  dumpPhotonData(NPY<float>* photon_data);
 
        bool         isInterop();
        bool         isCompute();

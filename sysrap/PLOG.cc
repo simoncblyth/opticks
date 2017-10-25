@@ -8,6 +8,7 @@
 
 PLOG* PLOG::instance = NULL ; 
 
+#define MAXARGC 50 
 
 //#define PLOG_DBG 1
 
@@ -25,7 +26,7 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 {
     // Parse arguments case insensitively looking for --VERBOSE --info --error etc.. returning global logging level
 
-    assert( argc < 30 && " argc sanity check fail "); 
+    assert( argc < MAXARGC && " argc sanity check fail "); 
 
     std::string ll = fallback ; 
     for(int i=1 ; i < argc ; ++i )
@@ -57,7 +58,7 @@ int PLOG::_parse(int argc, char** argv, const char* fallback)
 
 const char* PLOG::_logpath_parse(int argc, char** argv)
 {
-    assert( argc < 30 && " argc sanity check fail "); 
+    assert( argc < MAXARGC && " argc sanity check fail "); 
     //  Construct logfile path based on executable name argv[0] with .log appended 
     std::string lp(argc > 0 ? argv[0] : "default") ; 
     lp += ".log" ; 
@@ -79,7 +80,7 @@ int PLOG::_prefixlevel_parse(int argc, char** argv, const char* fallback, const 
     // Both prefix and the arguments are lowercased before comparison.
     //
 
-    assert( argc < 30 && " argc sanity check fail "); 
+    assert( argc < MAXARGC && " argc sanity check fail "); 
 
     std::string pfx(prefix);
     std::transform(pfx.begin(), pfx.end(), pfx.begin(), ::tolower);

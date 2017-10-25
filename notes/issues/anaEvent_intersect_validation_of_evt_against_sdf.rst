@@ -14,23 +14,29 @@ Thoughts
 -----------
 
 I have vague recollections of implementing some of this functionality already.  
-It needs to be found and elevated
-to be available as a standard option.
+It needs to be found and elevated to be available as a standard option.
 
 * mentioned in :doc:`analytic_geometry_shakedown` see --dbgnode option within --gltf branch.
 
-* BUT: --test geometry and --gltf currently not working together, so cannot use --dbgnode with test geometry
 
-* trying to fix that runs into the GGeo monolith  :doc:`breaking_up_GGeo_monolith`
+Ideas
+------
+
+* recording node indices together with intersects (in some intersect debug mode)
+  would allow SDF zero checks of all intersects, even in full geometries
 
 
-Simplify structure by 
 
+FIXED : incompatibility of --test geometry and --gltf
+---------------------------------------------------------
+
+Fix required some refactoring, breaking somes pieces off 
+the GGeo monolith  :doc:`breaking_up_GGeo_monolith`
+
+* chop GPmtLib out of GGeo 
+* repurpose OpticksGeometry to be more of an OpticksGGeo
+* chop OpticksAim out of OpticksGeometry and OpticksHub 
 * migrate GGeoTest from GGeo up to OpticksHub 
-
-
-  
-* make some inroads into the monolith by chopping off GPmtLib 
 
 
 Searching commits
@@ -238,7 +244,7 @@ How does gltf effect test geometry ?
 Migrate GGeoTest to OpticksHub
 -----------------------------------
 
-Move GGeoTest to like up in OpticksHub ?
+Move GGeoTest to live up in OpticksHub ?
 
 * not OpticksGeometry as that is GGeo tri focussed, whereas
   OpticksHub treats ana and tri on equal footing 
@@ -338,8 +344,8 @@ postpropagate currently just looking a time/memory profiles
 
 
 
-geometry --test with --gltf 1 asserts
---------------------------------------
+FIXED : geometry --test with --gltf 1 asserts
+------------------------------------------------
 
 Huh : which GGeoLib should --test --gltf 1 modify ?
 
@@ -379,22 +385,157 @@ Huh : which GGeoLib should --test --gltf 1 modify ?
 
 
 
+FIXED : for intersect checking with test geometry the GScene::anaEvent aint very helpful
+--------------------------------------------------------------------------------------------
 
-
-
-
-for intersect checking with test geometry the GScene aint very helpful
--------------------------------------------------------------------------
-
-* need to put fingers on the nnode SDF for the test geometry 
-* split off anaEvent handling for ggeotest 
+* need to put fingers on the nnode SDF for the test geometry
+* split off anaEvent handling for ggeotest into  GGeoTest::anaEvent
 
 ::
 
-    tlens-;tlens-concave --gltf 1 --dbgnode 1 -D
+    tlens-;tlens-concave --gltf 1 --dbgnode 1 -D   ## huh: OpenGL viz not working with gltf 1 ?
+    tlens-;tlens-concave --dbgnode 1 --dbgseqhis  
 
 
 
+
+
+
+::
+
+
+    tlens-;tlens-concave --dbgnode 1 --dbgseqhis 0x8ccd
+
+        ## note order reversal, node 1 is the container box
+        ## every few exc : because most photons end up being SA absorbed on the container walls
+
+    2017-10-25 13:28:13.039 INFO  [712140] [OpticksEventAna::dumpExcursions@120] OpticksEventAna::dumpExcursions seqhis ending AB or truncated seqhis : exc expected 
+     seqhis               4d                 TO AB                                            tot     10 exc     10 exc/tot  1.000
+     seqhis              4cd                 TO BT AB                                         tot     90 exc     90 exc/tot  1.000
+     seqhis              86d                 TO SC SA                                         tot     65 exc      0 exc/tot  0.000
+     seqhis              8bd                 TO BR SA                                         tot  29493 exc      0 exc/tot  0.000
+     seqhis             4bcd                 TO BT BR AB                                      tot      4 exc      4 exc/tot  1.000
+     seqhis             4ccd                 TO BT BT AB                                      tot     13 exc     13 exc/tot  1.000
+     seqhis             86bd                 TO BR SC SA                                      tot      4 exc      0 exc/tot  0.000
+     seqhis             8b6d                 TO SC BR SA                                      tot      4 exc      0 exc/tot  0.000
+     seqhis             8ccd                 TO BT BT SA                                      tot 442101 exc      0 exc/tot  0.000
+     seqhis            4bbcd                 TO BT BR BR AB                                   tot      1 exc      1 exc/tot  1.000
+     seqhis            4cbcd                 TO BT BR BT AB                                   tot      1 exc      1 exc/tot  1.000
+     seqhis            86ccd                 TO BT BT SC SA                                   tot    123 exc      0 exc/tot  0.000
+     seqhis            8c6cd                 TO BT SC BT SA                                   tot     38 exc      0 exc/tot  0.000
+     seqhis            8cbcd                 TO BT BR BT SA                                   tot  26267 exc      0 exc/tot  0.000
+     seqhis            8cc6d                 TO SC BT BT SA                                   tot     24 exc      0 exc/tot  0.000
+     seqhis           86cbcd                 TO BT BR BT SC SA                                tot     12 exc      0 exc/tot  0.000
+     seqhis           8b6ccd                 TO BT BT SC BR SA                                tot      9 exc      0 exc/tot  0.000
+     seqhis           8c6bcd                 TO BT BR SC BT SA                                tot      2 exc      0 exc/tot  0.000
+     seqhis           8cb6cd                 TO BT SC BR BT SA                                tot     30 exc      0 exc/tot  0.000
+     seqhis           8cbbcd                 TO BT BR BR BT SA                                tot   1522 exc      0 exc/tot  0.000
+     seqhis           8cbc6d                 TO SC BT BR BT SA                                tot      4 exc      0 exc/tot  0.000
+     seqhis           8cc6bd                 TO BR SC BT BT SA                                tot      5 exc      0 exc/tot  0.000
+     seqhis          86cbbcd                 TO BT BR BR BT SC SA                             tot      1 exc      0 exc/tot  0.000
+     seqhis          8cbb6cd                 TO BT SC BR BR BT SA                             tot      2 exc      0 exc/tot  0.000
+     seqhis          8cbbbcd                 TO BT BR BR BR BT SA                             tot     82 exc      0 exc/tot  0.000
+     seqhis          8cbbc6d                 TO SC BT BR BR BT SA                             tot      2 exc      0 exc/tot  0.000
+     seqhis          8cbc6bd                 TO BR SC BT BR BT SA                             tot      1 exc      0 exc/tot  0.000
+     seqhis          8cc6ccd                 TO BT BT SC BT BT SA                             tot     30 exc      0 exc/tot  0.000
+     seqhis         8cbbb6cd                 TO BT SC BR BR BR BT SA                          tot      3 exc      0 exc/tot  0.000
+     seqhis         8cbbbbcd                 TO BT BR BR BR BR BT SA                          tot      5 exc      0 exc/tot  0.000
+     seqhis         8cbbbc6d                 TO SC BT BR BR BR BT SA                          tot      1 exc      0 exc/tot  0.000
+     seqhis         8cbc6ccd                 TO BT BT SC BT BR BT SA                          tot     16 exc      0 exc/tot  0.000
+     seqhis         8cc6cbcd                 TO BT BR BT SC BT BT SA                          tot      3 exc      0 exc/tot  0.000
+     seqhis        8cbbb6bcd                 TO BT BR SC BR BR BR BT SA                       tot      1 exc      0 exc/tot  0.000
+     seqhis        8cbbbb6cd                 TO BT SC BR BR BR BR BT SA                       tot      1 exc      0 exc/tot  0.000
+     seqhis        8cbbbbbcd                 TO BT BR BR BR BR BR BT SA                       tot      1 exc      0 exc/tot  0.000
+     seqhis        8cbc6cbcd                 TO BT BR BT SC BT BR BT SA                       tot      1 exc      0 exc/tot  0.000
+     seqhis       8cbbbbb6cd                 TO BT SC BR BR BR BR BR BT SA                    tot      1 exc      0 exc/tot  0.000
+     seqhis       8cbbc6cbcd                 TO BT BR BT SC BT BR BR BT SA                    tot      1 exc      0 exc/tot  0.000
+     seqhis       bbbbbb6bcd                 TO BT BR SC BR BR BR BR BR BR                    tot      2 exc      2 exc/tot  1.000
+     seqhis       bbbbbbb6cd                 TO BT SC BR BR BR BR BR BR BR                    tot     24 exc     24 exc/tot  1.000
+
+
+
+
+    tlens-;tlens-concave --dbgnode 0 --dbgseqhis 0x8ccd
+
+         ## 0 : is the lens (which whilst warming up is just a cylinder)
+         ## 1 : is container box
+
+         ## almost everything is OFF the lens, because the photons end up absorbed on container walls
+         ## only a few truncated BR end with photon positions on the object 
+
+         ## for intersect checking, either look at less precise step-by-step records or change object to have a perfectAbsorber
+
+
+    2017-10-25 13:28:29.159 INFO  [712523] [OpticksEventAna::dumpExcursions@120] OpticksEventAna::dumpExcursions seqhis ending AB or truncated seqhis : exc expected 
+     seqhis               4d                 TO AB                                            tot     10 exc     10 exc/tot  1.000
+     seqhis              4cd                 TO BT AB                                         tot     90 exc     90 exc/tot  1.000
+     seqhis              86d                 TO SC SA                                         tot     65 exc     65 exc/tot  1.000
+     seqhis              8bd                 TO BR SA                                         tot  29493 exc  29493 exc/tot  1.000
+     seqhis             4bcd                 TO BT BR AB                                      tot      4 exc      4 exc/tot  1.000
+     seqhis             4ccd                 TO BT BT AB                                      tot     13 exc     13 exc/tot  1.000
+     seqhis             86bd                 TO BR SC SA                                      tot      4 exc      4 exc/tot  1.000
+     seqhis             8b6d                 TO SC BR SA                                      tot      4 exc      4 exc/tot  1.000
+     seqhis             8ccd                 TO BT BT SA                                      tot 442101 exc 442101 exc/tot  1.000
+     seqhis            4bbcd                 TO BT BR BR AB                                   tot      1 exc      1 exc/tot  1.000
+     seqhis            4cbcd                 TO BT BR BT AB                                   tot      1 exc      1 exc/tot  1.000
+     seqhis            86ccd                 TO BT BT SC SA                                   tot    123 exc    123 exc/tot  1.000
+     seqhis            8c6cd                 TO BT SC BT SA                                   tot     38 exc     38 exc/tot  1.000
+     seqhis            8cbcd                 TO BT BR BT SA                                   tot  26267 exc  26267 exc/tot  1.000
+     seqhis            8cc6d                 TO SC BT BT SA                                   tot     24 exc     24 exc/tot  1.000
+     seqhis           86cbcd                 TO BT BR BT SC SA                                tot     12 exc     12 exc/tot  1.000
+     seqhis           8b6ccd                 TO BT BT SC BR SA                                tot      9 exc      9 exc/tot  1.000
+     seqhis           8c6bcd                 TO BT BR SC BT SA                                tot      2 exc      2 exc/tot  1.000
+     seqhis           8cb6cd                 TO BT SC BR BT SA                                tot     30 exc     30 exc/tot  1.000
+     seqhis           8cbbcd                 TO BT BR BR BT SA                                tot   1522 exc   1522 exc/tot  1.000
+     seqhis           8cbc6d                 TO SC BT BR BT SA                                tot      4 exc      4 exc/tot  1.000
+     seqhis           8cc6bd                 TO BR SC BT BT SA                                tot      5 exc      5 exc/tot  1.000
+     seqhis          86cbbcd                 TO BT BR BR BT SC SA                             tot      1 exc      1 exc/tot  1.000
+     seqhis          8cbb6cd                 TO BT SC BR BR BT SA                             tot      2 exc      2 exc/tot  1.000
+     seqhis          8cbbbcd                 TO BT BR BR BR BT SA                             tot     82 exc     82 exc/tot  1.000
+     seqhis          8cbbc6d                 TO SC BT BR BR BT SA                             tot      2 exc      2 exc/tot  1.000
+     seqhis          8cbc6bd                 TO BR SC BT BR BT SA                             tot      1 exc      1 exc/tot  1.000
+     seqhis          8cc6ccd                 TO BT BT SC BT BT SA                             tot     30 exc     30 exc/tot  1.000
+     seqhis         8cbbb6cd                 TO BT SC BR BR BR BT SA                          tot      3 exc      3 exc/tot  1.000
+     seqhis         8cbbbbcd                 TO BT BR BR BR BR BT SA                          tot      5 exc      5 exc/tot  1.000
+     seqhis         8cbbbc6d                 TO SC BT BR BR BR BT SA                          tot      1 exc      1 exc/tot  1.000
+     seqhis         8cbc6ccd                 TO BT BT SC BT BR BT SA                          tot     16 exc     16 exc/tot  1.000
+     seqhis         8cc6cbcd                 TO BT BR BT SC BT BT SA                          tot      3 exc      3 exc/tot  1.000
+     seqhis        8cbbb6bcd                 TO BT BR SC BR BR BR BT SA                       tot      1 exc      1 exc/tot  1.000
+     seqhis        8cbbbb6cd                 TO BT SC BR BR BR BR BT SA                       tot      1 exc      1 exc/tot  1.000
+     seqhis        8cbbbbbcd                 TO BT BR BR BR BR BR BT SA                       tot      1 exc      1 exc/tot  1.000
+     seqhis        8cbc6cbcd                 TO BT BR BT SC BT BR BT SA                       tot      1 exc      1 exc/tot  1.000
+     seqhis       8cbbbbb6cd                 TO BT SC BR BR BR BR BR BT SA                    tot      1 exc      1 exc/tot  1.000
+     seqhis       8cbbc6cbcd                 TO BT BR BT SC BT BR BR BT SA                    tot      1 exc      1 exc/tot  1.000
+     seqhis       bbbbbb6bcd                 TO BT BR SC BR BR BR BR BR BR                    tot      2 exc      0 exc/tot  0.000
+     seqhis       bbbbbbb6cd                 TO BT SC BR BR BR BR BR BR BR                    tot     24 exc      0 exc/tot  0.000
+
+
+
+
+
+Interp Record Data
+--------------------
+
+* done at python level, but need in C++ for easy comparison against SDFs, or get SDFs into python ?
+
+
+::
+
+    simon:optickscore blyth$ opticks-find getRecordData
+    ./cfg4/CRecorder.cc:    m_records = m_evt->getRecordData();
+    ./ggeo/tests/RecordsNPYTest.cc:    NPY<short>* rx = evt->getRecordData();
+    ./oglrap/Rdr.cc:    NPY<short>* rx = evt->getRecordData();
+    ./okop/OpZeroer.cc:    NPY<short>* record = evt->getRecordData(); 
+    ./optickscore/OpticksEvent.cc:NPY<short>* OpticksEvent::getRecordData()
+    ./optickscore/OpticksEvent.cc:    NPY<short>* rx = getRecordData() ;
+    ./optickscore/OpticksEvent.cc:    NPY<short>* rx = getRecordData();    
+    ./optickscore/tests/OpticksEventTest.cc:    NPY<short>* rx = m_evt->getRecordData();
+    ./opticksgeo/OpticksIdx.cc:    NPY<short>* rx = evt->getRecordData();
+    ./optixrap/OEvent.cc:    NPY<short>* rx = evt->getRecordData() ;
+    ./optixrap/OEvent.cc:    NPY<short>* rx = evt->getRecordData() ; 
+    ./optixrap/OEvent.cc:        NPY<short>* rx = evt->getRecordData();
+    ./optickscore/OpticksEvent.hh:       NPY<short>*          getRecordData();
+    simon:opticks blyth$ 
 
 
 

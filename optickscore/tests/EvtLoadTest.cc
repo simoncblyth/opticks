@@ -1,22 +1,39 @@
 // op --tevtload
+// tlens-load 
 
+#include "OKCORE_LOG.hh"
+#include "NPY_LOG.hh"
+
+#include "Opticks.hh"
 #include "OpticksEvent.hh"
-#include "Indexer.hh"
-#include "BLog.hh"
+#include "OpticksEventDump.hh"
+
+#include "PLOG.hh"
 
 int main(int argc, char** argv)
 {
-    BLog nl(argc, argv);
+    PLOG_(argc, argv);
+    NPY_LOG__ ; 
+    OKCORE_LOG__ ; 
 
-    const char* typ = "torch" ; 
-    const char* tag = "4" ; 
-    const char* det = "dayabay" ; 
-    const char* cat = "PmtInBox" ; 
- 
-    OpticksEvent* evt = OpticksEvent::load(typ, tag, det, cat) ;
-    assert(evt);   
+    Opticks ok(argc, argv);
+    ok.configure();
 
-    LOG(info) << evt->getShapeString() ; 
+    bool ok_ = true ; 
+    unsigned tagoffset = 0 ; 
+
+    OpticksEvent* evt = ok.loadEvent(ok_, tagoffset);
+
+    if(!evt)
+    {
+        LOG(fatal) << "failed to load evt " ; 
+        return 0 ; 
+    }
+
+
+    OpticksEventDump dmp(evt);
+    dmp.dump();
+
 
 
     return 0 ; 

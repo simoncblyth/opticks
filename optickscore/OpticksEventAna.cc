@@ -1,16 +1,23 @@
 #include <sstream>
 
 #include "NPY.hpp"
+#include "GLMFormat.hpp"
 #include "NNode.hpp"
 #include "NCSG.hpp"
 
+#include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksEventAna.hh"
 #include "PLOG.hh"
 
-OpticksEventAna::OpticksEventAna( OpticksEvent* evt, NCSG* csg )
+OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSG* csg )
     :
+    m_ok(ok),
+    m_epsilon(0.1f),
+    m_dbgseqhis(m_ok->getDbgSeqhis()),
+    m_dbgseqmat(m_ok->getDbgSeqmat()),
+
     m_evt(evt),
     m_pho(evt->getPhotonData()),
     m_seq(evt->getSequenceData()),
@@ -18,8 +25,7 @@ OpticksEventAna::OpticksEventAna( OpticksEvent* evt, NCSG* csg )
     m_seq_num(m_seq->getShape(0)),
     m_csg(csg),
     m_root(csg->getRoot()),
-    m_sdf(m_root->sdf()),
-    m_epsilon(0.1f)
+    m_sdf(m_root->sdf())
 {
     init();
 }
@@ -35,8 +41,8 @@ void OpticksEventAna::dump(const char* msg)
 {
     LOG(info) << msg << " " << desc() ; 
 
-    m_pho->dump();
-    m_seq->dump();
+    //m_pho->dump();
+    //m_seq->dump();
 
     dumpExcursions();
 
@@ -53,13 +59,23 @@ std::string OpticksEventAna::desc()
 }
 
 
-
 void OpticksEventAna::countExcursions()
 {
-    unsigned long long seqhis_ ; 
 
+    LOG(info) << "OpticksEventAna::countExcursions"
+              << " pho_num " << m_pho_num
+              << " epsilon " << m_epsilon 
+              << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
+              << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
+              ;
+              
+    unsigned count = 0 ; 
+ 
     for(unsigned i=0 ; i < m_pho_num ; i++)
     {
+        unsigned long long seqhis_ = m_seq->getValue(i,0,0);
+        //unsigned long long seqmat_ = m_seq->getValue(i,0,1);
+
         glm::vec4 post = m_pho->getQuad(i,0,0);
         glm::vec4 pos(post);
         pos.w = 1.0f ; 
@@ -68,13 +84,35 @@ void OpticksEventAna::countExcursions()
         glm::vec4 lpos = pos ; 
         float sd = m_sdf(lpos.x, lpos.y, lpos.z);
         float asd = std::abs(sd) ;
+        bool exc = asd > m_epsilon ;
 
-        seqhis_ = m_seq->getValue(i,0,0);
-        //seqmat_ = seq->getValue(i,0,1);
-        
+        if(seqhis_ == m_dbgseqhis )
+        {
+            if( count < 100 )
+            {
+                std::cout 
+                          << " sd " << std::setw(10) << sd 
+                          << " " << ( exc ? "OFF" : "ON " )
+                          << " " << gpresent("post", post)  
+                          ;
+            }
+            count++ ; 
+        }
+
         m_tot[seqhis_]++;
-        if(asd > m_epsilon) m_exc[seqhis_]++ ;  
+        if(exc) m_exc[seqhis_]++ ;  
    }
+
+
+    LOG(info) << "OpticksEventAna::countExcursions"
+              << " pho_num " << m_pho_num
+              << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
+              << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
+              << " count " << count 
+              ;
+ 
+
+
 }
 
 void OpticksEventAna::dumpExcursions()

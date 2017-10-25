@@ -21,7 +21,7 @@ struct SYSRAP_API SAr
         _argc( argc_ ),
         _argv( new char*[argc_] )
     {
-        assert( argc_ < 30 && "argc_ sanity check " );
+        assert( argc_ < 100 && "argc_ sanity check " );
         for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
         dump();
     }

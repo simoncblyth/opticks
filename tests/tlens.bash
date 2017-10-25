@@ -19,6 +19,16 @@ tlens- : Disc shaped beam of white light incident on convex lens
     NOT WORKING : photons unmoved, boundary issue ?
 
 
+Ideas
+-------
+
+Currently there is a frailty from the separate specification
+of test geometry dimensions and test photon source positions,
+from the implicit coupling.  
+
+* decouple how ? how to pin source onto geometry 
+
+
 
 
 
@@ -75,8 +85,10 @@ tlens-medium(){ echo Vacuum ; }
 tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
+tlens-load(){ EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
+ 
 
-tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- $* ; }
+tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-convex-(){ $FUNCNAME- | python $* ; }  
 tlens-convex--(){ cat << EOP 
 
@@ -100,7 +112,7 @@ EOP
 }
 
 
-tlens-concave(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- $* ; }
+tlens-concave(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-concave-(){ $FUNCNAME- | python $* ; }  
 tlens-concave--(){ cat << EOP 
 
@@ -185,7 +197,7 @@ tlens-torchconfig()
                  frame=-1
                  transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
                  target=0,0,0
-                 source=0,0,-600
+                 source=0,0,-300
                  time=0.1
                  radius=100
                  distance=500
@@ -204,6 +216,7 @@ tlens--()
     case $pol in  
         s) tag=1 ;;
         p) tag=2 ;;
+        *) echo "tlens-- expects s/p argument " && sleep 100000000 ;;
     esac
     echo  pol $pol tag $tag
 

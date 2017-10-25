@@ -1278,30 +1278,6 @@ that is derived from the sequence data by indexing is used::
 }
 
 
-void OpticksEvent::dumpPhotonData()
-{
-    if(!m_photon_data) return ;
-    dumpPhotonData(m_photon_data);
-}
-
-void OpticksEvent::dumpPhotonData(NPY<float>* photons)
-{
-    std::cout << photons->description("OpticksEvent::dumpPhotonData") << std::endl ;
-
-    for(unsigned int i=0 ; i < photons->getShape(0) ; i++)
-    {
-        if(i%10000 == 0)
-        {
-            unsigned int ux = photons->getUInt(i,0,0); 
-            float fx = photons->getFloat(i,0,0); 
-            float fy = photons->getFloat(i,0,1); 
-            float fz = photons->getFloat(i,0,2); 
-            float fw = photons->getFloat(i,0,3); 
-            printf(" ph  %7u   ux %7u   fxyzw %10.3f %10.3f %10.3f %10.3f \n", i, ux, fx, fy, fz, fw );             
-        }
-    }  
-}
-
 
 
 void OpticksEvent::Summary(const char* msg)

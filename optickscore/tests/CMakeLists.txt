@@ -28,16 +28,17 @@ set(TEST_SOURCES
     CompositionTest.cc
     ViewTest.cc
 
+    EvtLoadTest.cc
+
 )
 
 
 set(TEST_SOURCES_NOK 
 
+    OpticksEventTest.cc
     OpticksAppTest.cc
 
-    EvtLoadTest.cc
     NGunConfigTest.cc
-    OpticksEventTest.cc
 
     BookmarksTest.cc
     InterpolatedViewTest.cc

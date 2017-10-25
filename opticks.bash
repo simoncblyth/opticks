@@ -693,7 +693,9 @@ opticks-ts()
    else
        bdir=$(opticks-bdir) 
    fi
-   perl -n -e 'm,[123456789]\.\d{2} sec, && print  ' $bdir/ctest.log
+   #perl -n -e 'm,[123456789]\.\d{2} sec, && print  ' $bdir/ctest.log   ## this missins 10.00 20.00
+   grep " sec" $bdir/ctest.log | grep -v " 0.* sec" - 
+
 }
 
 
