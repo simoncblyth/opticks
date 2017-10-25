@@ -34,11 +34,10 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    LOG(info) << argv[0] ;
-
     CFG4_LOG__ ; 
     GGEO_LOG__ ; 
 
+    LOG(info) << argv[0] ;
     Opticks ok(argc, argv);
     OpticksHub hub(&ok) ;
     CGeometry cg(&hub);

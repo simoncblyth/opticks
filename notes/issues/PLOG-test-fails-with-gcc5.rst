@@ -8,6 +8,77 @@ PLOG Review
 * :doc:`../../sysrap/PLOG_review`
 
 
+
+
+What is special about the 4 failing tests ?
+----------------------------------------------
+
+Graping at straws all 4 failing tests "LOG(info) << argv[0]" 
+between PLOG_ and PKG_LOG__ this is kinda dirty using logging 
+prior to the logging being fully setup.
+
+
+::
+
+    The following tests FAILED:
+        135 - OpticksCoreTest.OpticksTest (OTHER_FAULT)
+        244 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
+        245 - cfg4Test.CGeometryTest (OTHER_FAULT)
+        251 - cfg4Test.CInterpolationTest (OTHER_FAULT)
+    Errors while running CTest
+    opticks-t- : use -V to show output
+
+
+
+OpticksTest::
+
+     70 int main(int argc, char** argv)
+     71 {
+     72     PLOG_(argc,argv);
+     73     LOG(info) << argv[0] ;
+     74 
+     75     SYSRAP_LOG__ ;
+     76     BRAP_LOG__ ;
+     77     NPY_LOG__ ;
+     78     OKCORE_LOG__ ;
+     79 
+     80     Opticks ok(argc, argv);
+     81     ok.configure();
+     82 
+     83     ok.Summary();
+     84 
+     85     LOG(info) << "OpticksTest::main aft configure" ;
+     86 
+     87     test_MaterialSequence();
+     88     test_getDAEPath(&ok);
+     89     test_getGDMLPath(&ok);
+     90     test_getMaterialMap(&ok);
+     91 
+     92     return 0 ;
+     93 }
+
+
+CGDMLDetectorTest::
+
+     31 int main(int argc, char** argv)
+     32 {
+     33     PLOG_(argc, argv);
+     34 
+     35     LOG(info) << argv[0] ;
+     36 
+     37     CFG4_LOG__ ;
+     38     GGEO_LOG__ ;
+     39 
+     40     Opticks ok(argc, argv);
+     ..
+
+
+
+
+
+
+
+
 2017-10-19 Axel (Linux gcc5) reports test fails
 -------------------------------------------------
 

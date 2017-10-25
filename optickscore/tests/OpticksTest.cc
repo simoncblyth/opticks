@@ -70,13 +70,13 @@ void test_getMaterialMap(Opticks* ok)
 int main(int argc, char** argv)
 {
     PLOG_(argc,argv);
-    LOG(info) << argv[0] ;
 
     SYSRAP_LOG__ ; 
     BRAP_LOG__ ; 
     NPY_LOG__ ; 
     OKCORE_LOG__ ; 
      
+    LOG(info) << argv[0] ;
     Opticks ok(argc, argv);
     ok.configure();
 
