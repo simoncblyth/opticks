@@ -27,20 +27,12 @@ int main(int argc, char** argv)
         return 0 ; 
     }
 
-    const char* dbgcsgpath = ok.getDbgCSGPath();
-    int dbgnode = ok.getDbgNode(); 
-
-    if(!dbgcsgpath)
-    {
-         LOG(fatal) << " missing --dbgcsgpath " ; 
-         return 0 ;  
-    }
-
-    LOG(info) << " dbgcsgpath : " << dbgcsgpath 
-              << " dbgnode : " << dbgnode  
+    const char* geopath = evt->getGeoPath();
+    LOG(info) 
+              << " geopath : " << ( geopath ? geopath : "-" )
                ; 
 
-    NCSGList csglist(dbgcsgpath, ok.getVerbosity() );
+    NCSGList csglist(geopath, ok.getVerbosity() );
     csglist.dump();
 
     OpticksEventAna ana(&ok, evt, &csglist);

@@ -146,6 +146,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setTimeStamp(const char* tstamp);
        void setCreator(const char* executable);
        void setEntryCode(char entryCode);
+   public:
+        const char* getGeoPath();
+   private:
+       std::string getTestCSGPath();
+       void setTestCSGPath(const char* testcsgpath);
    private:
        void setRngMax(unsigned int rng_max);
        void init();
@@ -409,6 +414,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        STimes*  m_launch_times ; 
 
        OpticksEvent*  m_sibling ; 
+       const char*    m_geopath ; 
 
 };
 

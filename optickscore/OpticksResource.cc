@@ -113,7 +113,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_default_material(NULL),
        m_default_medium(NULL),
        m_example_matnames(NULL),
-       m_sensor_surface(NULL)
+       m_sensor_surface(NULL),
+       m_testcsgpath(NULL)
 
 {
     init();
@@ -433,6 +434,22 @@ void OpticksResource::assignDetectorName()
    std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
    m_material_map = strdup(cmm.c_str());
 }
+
+
+
+void OpticksResource::setTestCSGPath(const char* testcsgpath)
+{
+    m_testcsgpath = testcsgpath ? strdup(testcsgpath) : NULL ; 
+}
+
+const char* OpticksResource::getTestCSGPath()
+{
+    return m_testcsgpath  ;
+}
+
+
+
+
 
 void OpticksResource::readG4Environment()
 {

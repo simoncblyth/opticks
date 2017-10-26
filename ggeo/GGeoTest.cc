@@ -14,6 +14,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksEventAna.hh"
 #include "OpticksConst.hh"
 
@@ -41,6 +42,7 @@
 GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase) 
     : 
     m_ok(ok),
+    m_resource(ok->getResource()),
     m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
@@ -137,6 +139,8 @@ GMergedMesh* GGeoTest::create()
         assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
         loadCSG(csgpath, solids);
         tmm = combineSolids(solids, NULL);
+
+        m_resource->setTestCSGPath(csgpath); // take note of path, for inclusion in event metadata
     }
     else if(strcmp(mode, "BoxInBox") == 0) 
     {

@@ -577,7 +577,7 @@ void GGeo::loadGeometry()
 
     if( gltf >= 10 )
     {
-        LOG(info) << "GGeo::loadGeometry DEBUFFING loadAnalyticFromGLTF " ; 
+        LOG(info) << "GGeo::loadGeometry DEBUGGING loadAnalyticFromGLTF " ; 
         loadAnalyticFromGLTF();
     }
 
@@ -1875,4 +1875,11 @@ std::vector<std::string> GGeo::getTags()
 }
 
 
+
+void GGeo::anaEvent(OpticksEvent* evt)
+{
+    LOG(warning) << "GGeo::anaEvent" 
+                 << " evt " << evt 
+                 ;
+}
 

@@ -80,7 +80,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getDefaultMedium();    // PMT medium material name 
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
-    public:
+   public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
        std::string getRelativePath(const char* path); 
@@ -113,6 +113,10 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getGLTFPath();
        const char* getQueryString();
        const char* getCtrl();
+    public:
+       // used to communicate test geometry config from geometry loading to test event writing 
+       void        setTestCSGPath(const char* testcsgpath);
+       const char* getTestCSGPath(); 
     public:
        // split these off as cannot assume users can write into geocache
        void saveFlags(const char* dir);
@@ -189,6 +193,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_default_medium  ;
        const char* m_example_matnames  ;
        const char* m_sensor_surface  ;
+   private:
+       const char* m_testcsgpath ;
        
    private:
        std::map<std::string, std::string> m_metadata ;  

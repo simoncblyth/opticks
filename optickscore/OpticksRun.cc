@@ -2,6 +2,7 @@
 #include "NLookup.hpp"
 
 #include "Opticks.hh"
+#include "OpticksResource.hh"
 #include "OpticksRun.hh"
 #include "OpticksEvent.hh"
 #include "OpticksActionControl.hh"
@@ -48,8 +49,10 @@ void OpticksRun::createEvent(unsigned tagoffset)
     m_evt->setSibling(m_g4evt);
     m_g4evt->setSibling(m_evt);
 
+   
     std::string tstamp = m_g4evt->getTimeStamp();
     m_evt->setTimeStamp( tstamp.c_str() );        // align timestamps
+
 
     LOG(debug) << "OpticksRun::createEvent(" 
               << tagoffset 
@@ -61,9 +64,26 @@ void OpticksRun::createEvent(unsigned tagoffset)
               << "] DONE "
               ; 
 
+    annotateEvent();
+
     OK_PROFILE("OpticksRun::createEvent.END");
 }
 
+void OpticksRun::annotateEvent()
+{
+    OpticksResource* resource = m_ok->getResource();
+    const char* testcsgpath = resource->getTestCSGPath();
+    LOG(info) << "OpticksRun::annotateEvent"
+              << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
+              ;
+
+    if(testcsgpath)
+    {
+  
+         m_evt->setTestCSGPath(testcsgpath);
+         m_g4evt->setTestCSGPath(testcsgpath);
+    }
+}
 void OpticksRun::resetEvent()
 {
     OK_PROFILE("OpticksRun::resetEvent.BEG");

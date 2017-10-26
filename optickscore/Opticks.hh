@@ -388,7 +388,6 @@ class OKCORE_API Opticks {
        glm::uvec4           m_position ; 
        unsigned             m_verbosity ; 
 
-
 };
 
 #include "OKCORE_TAIL.hh"

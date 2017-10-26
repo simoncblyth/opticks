@@ -329,7 +329,7 @@ void OpticksHub::modifyGeometry()
     assert(m_ok->isTest());
 
     // NB only invoked with test option : "op --test" 
-    //   controlled from OpticksGeometry::loadGeometry 
+    //   controlled from OpticksHub::loadGeometry 
 
     LOG(info) << "OpticksHub::modifyGeometry START" ;
 
@@ -518,7 +518,7 @@ void OpticksHub::anaEvent()
     }
     else
     {
-        LOG(warning) << "--dbgnode only implemented for glTF branch " ;  
+        m_ggeo->anaEvent( evt ); 
     } 
 
 

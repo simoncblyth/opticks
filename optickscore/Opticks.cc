@@ -620,7 +620,7 @@ const char* Opticks::getAnalyticPMTMedium()
     {
         std::string cmed = m_cfg->getAnalyticPMTMedium() ;
         std::string dmed = m_resource->getDefaultMedium()  ; 
-        LOG(info) 
+        LOG(trace) 
             << " cmed " << cmed 
             << " cmed.empty " << cmed.empty()
             << " dmed " << dmed 
@@ -916,6 +916,12 @@ void Opticks::Summary(const char* msg)
     std::cout
         << std::setw(40) << " AnalyticPMTMedium "
         << std::setw(40) << getAnalyticPMTMedium()
+        << std::endl
+        << std::setw(40) << " GLTFBase "
+        << std::setw(40) << getGLTFBase()
+        << std::endl
+        << std::setw(40) << " GLTFName "
+        << std::setw(40) << getGLTFName()
         << std::endl
         ;
 

@@ -88,20 +88,16 @@ tlens-medium(){ echo Vacuum ; }
 tlens-container(){ echo Rock//perfectAbsorbSurface/$(tlens-medium) ; }
 tlens-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
-#tlens-load(){  lldb -- EvtLoadTest --torch  --tag 1 --cat $(tlens-det) ; }
-tlens-ana(){  
-
+tlens-ana-(){  
+    local msg="$FUNCNAME :"
     #local dbgseqhis=0x8cbc6d   # TO SC BT BR BT SA 
     local dbgseqhis=0x8cc6d   # TO SC BT BT SA
     #local dbgseqhis=0x8ccd   # TO BT BT SA
 
-    local dbgcsgpath=$TMP/tlens-concave--
-    #local dbgcsgpath=$TMP/tlens-convex--
+    local testname=${TESTNAME}
+    [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000 
 
-    OpticksEventAnaTest --torch  --tag 1 --cat $(tlens-det) --dbgcsgpath "$dbgcsgpath" --dbgnode 0  --dbgseqhis $dbgseqhis ; 
-
-    # hmm : need to split storage locations based on the csgpath ? otherwise using wrong evt with geometry 
-
+    OpticksEventAnaTest --torch  --tag 1 --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis ; 
 }
 
 tlens-pload(){ tevt.py   $(tlens-args) --tag 1  ; }
@@ -110,8 +106,8 @@ tlens-ipy() {  ipython -i -- $(which tlens.py)  $(tlens-args) $* ; }
  
 
 
-
-tlens-convex(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
+tlens-convex-a(){ TESTNAME=${FUNCNAME/-a} tlens-ana- ; }
+tlens-convex(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-convex-(){ $FUNCNAME- | python $* ; }  
 tlens-convex--(){ cat << EOP 
 
@@ -135,9 +131,8 @@ EOP
 }
 
 
-
-
-tlens-concave(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
+tlens-concave-a(){ TESTNAME=${FUNCNAME/-a} tlens-ana- ; }
+tlens-concave(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-concave-(){ $FUNCNAME- | python $* ; }  
 tlens-concave--(){ cat << EOP 
 
@@ -251,6 +246,7 @@ tlens--()
 {
     type $FUNCNAME
     local pol=${1:-s}
+    local tag
     case $pol in  
         s) tag=1 ;;
         p) tag=2 ;;
@@ -273,6 +269,13 @@ tlens--()
         torchconfig=$(tlens-torchconfig $pol)
     fi
 
+    local testname
+    if [ -n "$TESTNAME" ]; then
+        testname=${TESTNAME}
+    else
+        testname=$(tlens-det)
+    fi
+
 
     op.sh  \
             $* \
@@ -284,7 +287,7 @@ tlens--()
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$torchconfig" \
             --torchdbg \
-            --save --tag $tag --cat $(tlens-det) \
+            --save --tag $tag --cat $testname \
             --rendermode +global,+axis
 }
 

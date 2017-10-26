@@ -43,15 +43,16 @@ class OKCORE_API OpticksRun
         void saveEvent(); 
         void anaEvent(); // analysis based on saved evts 
     private:
-       void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
-       void translateLegacyGensteps(NPY<float>* gs);
+        void annotateEvent(); 
+        void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
+        void translateLegacyGensteps(NPY<float>* gs);
 
     private:
-        Opticks*       m_ok ; 
-        OpticksEvent*  m_g4evt ; 
-        OpticksEvent*  m_evt ; 
-        G4StepNPY*     m_g4step ; 
-        NParameters*   m_parameters ;
+        Opticks*         m_ok ; 
+        OpticksEvent*    m_g4evt ; 
+        OpticksEvent*    m_evt ; 
+        G4StepNPY*       m_g4step ; 
+        NParameters*     m_parameters ;
 
 
 };

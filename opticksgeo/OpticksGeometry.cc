@@ -134,13 +134,12 @@ void OpticksGeometry::loadGeometry()
         return ; 
     }
 
-    //bool modify = m_ok->hasOpt("test") ;
-    //if(modify) modifyGeometry() ;
 
+    // modifyGeometry moved up to OpticksHub
 
     fixGeometry();
 
-    //registerGeometry();
+    //registerGeometry moved up to OpticksHub
 
     if(!m_ok->isGeocache())
     {

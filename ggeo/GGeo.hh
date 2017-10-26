@@ -19,6 +19,7 @@ class TorchStepNPY ;
 
 // okc-
 class Opticks ; 
+class OpticksEvent ; 
 class OpticksColors ; 
 class OpticksFlags ; 
 class OpticksResource ; 
@@ -152,6 +153,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         void save();
         void saveAnalytic();
+        void anaEvent(OpticksEvent* evt);
     private:
         //void saveMergedMeshes(const char* idpath);
     public:

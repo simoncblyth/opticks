@@ -3,6 +3,7 @@
 struct NLODConfig ; 
 class NCSGList ; 
 class Opticks ; 
+class OpticksResource ; 
 class OpticksEvent ; 
 
 class GGeoTestConfig ; 
@@ -59,6 +60,7 @@ class GGEO_API GGeoTest {
 
     private:
        Opticks*         m_ok ; 
+       OpticksResource* m_resource ; 
        bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 

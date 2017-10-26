@@ -187,7 +187,9 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
 
           m_prelaunch_times(new STimes),
           m_launch_times(new STimes),
-          m_sibling(NULL)
+          m_sibling(NULL),
+          m_geopath(NULL)
+
 {
     init();
 }
@@ -582,6 +584,8 @@ void OpticksEvent::init()
 }
 
 
+
+
 NPYBase* OpticksEvent::getData(const char* name)
 {
     NPYBase* data = NULL ; 
@@ -651,6 +655,57 @@ std::string OpticksEvent::getCreator()
 {
     return m_parameters->get<std::string>("Creator", "NONE");
 }
+
+
+void OpticksEvent::setTestCSGPath(const char* testcsgpath)
+{
+    m_parameters->add<std::string>("TestCSGPath", testcsgpath ? testcsgpath : "NULL" );
+}
+std::string OpticksEvent::getTestCSGPath()
+{
+    return m_parameters->get<std::string>("TestCSGPath", "NONE");
+}
+
+const char* OpticksEvent::getGeoPath()
+{
+    if(m_geopath == NULL)
+    {
+        // only test geopath for now 
+        std::string testcsgpath_ = getTestCSGPath();
+
+        const char* testcsgpath = testcsgpath_.empty() ? NULL : testcsgpath_.c_str() ;
+        const char* dbgcsgpath = m_ok->getDbgCSGPath();
+        const char* geopath = testcsgpath ? testcsgpath : ( dbgcsgpath ? dbgcsgpath : NULL ) ; 
+
+        if( testcsgpath && dbgcsgpath && strcmp(testcsgpath, dbgcsgpath) != 0)
+        {
+
+            LOG(warning) << "OpticksEvent::getGeoPath"
+                         << " BOTH testcsgpath and dbgcsgpath DEFINED AND DIFFERENT "
+                         << " testcsgpath " << testcsgpath
+                         << " dbgcsgpath " <<  dbgcsgpath
+                         << " geopath " <<  geopath
+                         ;
+        }
+ 
+        m_geopath = geopath ? strdup(geopath) : NULL ; 
+
+
+        if( geopath == NULL )
+        {
+            LOG(warning) << "OpticksEvent::getGeoPath"
+                         << " FAILED TO RESOLVE GeoPath "
+                         << " WORKAROUND EG USE --dbgcsgpath "
+                          ; 
+        }
+
+    }
+    return m_geopath ; 
+}
+
+
+
+
 
 void OpticksEvent::setEntryCode(char entryCode)
 {
