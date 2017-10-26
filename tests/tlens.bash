@@ -157,17 +157,30 @@ sr = sz
 log.info( " cr %s cz %s sr %s sz %s " % (cr,cz,sr,sz ))
 
 
-container = CSG("box", param=[0,0,0,sz], boundary=args.container, poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,2*sz], boundary=args.container, poly="MC", nx="20" )
 log.info(" container.boundary : %s " % container.boundary )
 
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution="50", verbosity="0", ctrl="0" )
 
 cy = CSG("cylinder", param=[0,0,0,cr], param1=[-cz,cz,0,0])   
+bx = CSG("box3",     param=[cr,cr,cz,0] )   
+
+
 ar = CSG("sphere", param=[0,0, sz,sr], complement=False)
 al = CSG("sphere", param=[0,0,-sz,sr], complement=False)
 
-lens = cy - ar - al 
+delta = 0.1
+
+# z1,z2 relative to zsphere center (?)
+
+br = CSG("zsphere", param=[0,0, sz,sr], param1=[-sr         , -sr+cz+delta,0,0], complement=False)
+bl = CSG("zsphere", param=[0,0,-sz,sr], param1=[ sr-cz-delta,     sr,0,0], complement=False)
+
+
+#lens = cy - ar - al 
+lens = cy - br - bl 
+#lens = bx - br - bl 
 #lens = cy - al 
 #lens = cy  
 #lens = al  
@@ -221,7 +234,7 @@ tlens-torchconfig()
                  mode=${pol}pol,wavelengthSource
                  frame=-1
                  transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-                 target=0,0,0
+                 target=0,50,0
                  source=0,0,-300
                  time=0.1
                  radius=100

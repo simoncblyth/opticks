@@ -52,7 +52,7 @@ inline NPY_API float ncylinder::z() const { return 0.f ; }   // <--- where is th
 inline NPY_API float ncylinder::radius() const { return param.f.w ; }
 inline NPY_API float ncylinder::r1()     const { return param.f.w ; } // so can treat like a cone in NNodeUncoincide
 inline NPY_API float ncylinder::r2()     const { return param.f.w ; }
-inline NPY_API glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),z()) ; }
+inline NPY_API glm::vec3 ncylinder::center() const { return glm::vec3(x(),y(),0.f) ; }
 
 inline NPY_API float ncylinder::z2() const { return param1.f.y ; }
 inline NPY_API float ncylinder::z1() const { return param1.f.x ; }

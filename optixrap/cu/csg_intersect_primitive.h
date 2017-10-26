@@ -1145,14 +1145,15 @@ bool csg_intersect_slab(const quad& q0, const quad& q1, const float& t_min, floa
 static __device__
 void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
-    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
+    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    // 2017-10-27 center.z was formerly zeroed
     const float   radius = q0.f.w ; 
 
     const float    z1 = q1.f.x  ; 
     const float    z2 = q1.f.y  ; 
 
-    rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f  radius %7.3f z1 %7.3f z2 %7.3f \n",
-          center.x, center.y, radius, z1, z2 );
+
+    rtPrintf("## csg_bounds_cylinder center %7.3f %7.3f (%7.3f =0)  radius %7.3f z1 %7.3f z2 %7.3f \n",
+          center.x, center.y, center.z, radius, z1, z2 );
 
     const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
     const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
@@ -1167,18 +1168,18 @@ void csg_bounds_cylinder(const quad& q0, const quad& q1, optix::Aabb* aabb, opti
 static __device__
 void csg_bounds_disc(const quad& q0, const quad& q1, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 {
-    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    
-    const float   inner  = q0.f.z ; 
+    const float3  center = make_float3(q0.f.x, q0.f.y, 0.f ) ;    // 2017-10-27 center.z was formerly zeroed
+    const float   inner  = q0.f.z ;   // NB usurped z for inner radius
     const float   radius = q0.f.w ; 
 
     const float    z1 = q1.f.x  ; 
     const float    z2 = q1.f.y  ; 
 
-    rtPrintf("## csg_bounds_disc center %7.3f %7.3f  inner %7.3f radius %7.3f  z1 %7.3f z2 %7.3f \n",
+    rtPrintf("## csg_bounds_disc center %7.3f %7.3f no-z inner %7.3f radius %7.3f  z1 %7.3f z2 %7.3f \n",
           center.x, center.y, inner, radius, z1, z2 );
 
-    const float3 bbmin = make_float3( center.x - radius, center.y - radius, z1 );
-    const float3 bbmax = make_float3( center.x + radius, center.y + radius, z2 );
+    const float3 bbmin = make_float3( center.x - radius, center.y - radius,  z1 );
+    const float3 bbmax = make_float3( center.x + radius, center.y + radius,  z2 );
 
     Aabb tbb(bbmin, bbmax);
     if(tr) transform_bbox( &tbb, tr );  
@@ -1381,7 +1382,7 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
     bool PCAP = true ; 
     bool QCAP = true ; 
 
-    const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame
+    const float3 m = ray_origin - position ;          // m: ray origin in cylinder frame (cylinder origin at base point P)
     const float3 n = ray_direction ;                  // n: ray direction vector (not normalized)
     const float3 d = make_float3(0.f, 0.f, sizeZ );   // d: (PQ) cylinder axis vector (not normalized)
 

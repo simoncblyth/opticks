@@ -112,6 +112,7 @@ typedef double Cubic_t ;
 //#include "solve_callable_test.h"
 
 
+
 RT_PROGRAM void bounds (int primIdx, float result[6])
 {
     //if(primIdx == 0) transform_test();
@@ -123,7 +124,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         unsigned planBuffer_size = planBuffer.size() ;
         unsigned tranBuffer_size = tranBuffer.size() ;
 
-        rtPrintf("## intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
+        rtPrintf("// intersect_analytic.cu:bounds buffer sizes pts:%4d pln:%4d trs:%4d \n", partBuffer_size, planBuffer_size, tranBuffer_size ); 
     }
 
 
@@ -132,7 +133,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     uint4 identity = identityBuffer[instance_index] ;  // instance_index from OGeo is 0 for non-instanced
 
-    const Prim prim    = primBuffer[primIdx];
+    const Prim& prim    = primBuffer[primIdx];
  
     unsigned primFlag    = prim.primFlag() ;  
     unsigned partOffset  = prim.partOffset() ;  
@@ -141,7 +142,26 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
     if(primFlag == CSG_FLAGNODETREE || primFlag == CSG_FLAGINVISIBLE )  
     {
+        // identity not strictly needed for bounds, but repeating whats done in intersect for debug convenience
+        Part pt0 = partBuffer[partOffset + 0] ;
+        unsigned typecode0 = pt0.typecode() ; 
+        unsigned boundary0 = pt0.boundary() ;  
+
         csg_bounds_prim(primIdx, prim, aabb); 
+
+        rtPrintf("// intersect_analytic.cu:bounds.NODETREE primIdx:%2d  bnd0:%3d typ0:%3d "
+                 " min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
+                    primIdx,
+                    boundary0,
+                    typecode0,
+                    result[0],
+                    result[1],
+                    result[2],
+                    result[3],
+                    result[4],
+                    result[5]
+                );
+
     }
 #ifdef WITH_PARTLIST
     else if(primFlag == CSG_FLAGPARTLIST)  
@@ -155,7 +175,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
 
             identity.z = boundary ;  // boundary from partBuffer (see ggeo-/GPmt)
 
-            rtPrintf("// primIdx:%2d  p:%2d bnd:%3d typ:%3d pt.q2.f ( %10.4f %10.4f %10.4f %10.4f ) pt.q3.f ( %10.4f %10.4f %10.4f %10.4f ) \n", 
+            rtPrintf("// intersect_analytic.cu:bounds.PARTLIST primIdx:%2d  p:%2d bnd:%3d typ:%3d pt.q2.f ( %10.4f %10.4f %10.4f %10.4f ) pt.q3.f ( %10.4f %10.4f %10.4f %10.4f ) \n", 
                     primIdx,
                     p,
                     boundary,
@@ -188,11 +208,16 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         rtPrintf("## intersect_analytic.cu:bounds ABORT BAD primflag %d \n", primFlag );
         return ; 
     }
-    rtPrintf("// intersect_analytic.cu:bounds primIdx %d primFlag %d partOffset %3d numParts %3d  min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
+    //rtPrintf("// intersect_analytic.cu:bounds primIdx %d primFlag %d partOffset %3d numParts %3d  min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
+/*
+    rtPrintf("// intersect_analytic.cu:bounds primIdx %d instance %2d id ( %3d %3d %3d %3d ) "
+            " min %10.4f %10.4f %10.4f max %10.4f %10.4f %10.4f \n", 
         primIdx, 
-        primFlag, 
-        partOffset,
-        numParts,
+        instance_index,
+        identity.x, 
+        identity.y, 
+        identity.z, 
+        identity.w, 
         result[0],
         result[1],
         result[2],
@@ -200,6 +225,7 @@ RT_PROGRAM void bounds (int primIdx, float result[6])
         result[4],
         result[5]
         );
+*/
 
 }
 
@@ -229,7 +255,6 @@ RT_PROGRAM void intersect(int primIdx)
     unsigned primFlag    = prim.primFlag() ;  
 
     uint4 identity = identityBuffer[instance_index] ; 
-
 
     if(primFlag == CSG_FLAGNODETREE)  
     { 

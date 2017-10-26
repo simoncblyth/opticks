@@ -294,6 +294,13 @@ tboolean--(){
         testconfig=$(tboolean-testconfig)
     fi 
 
+    local torchconfig
+    if [ -n "$TORCHCONFIG" ]; then
+        torchconfig=${TORCHCONFIG}
+    else
+        torchconfig=$(tboolean-torchconfig)
+    fi 
+
 
     op.sh  \
             $cmdline \
@@ -305,7 +312,7 @@ tboolean--(){
             --eye 1,0,0 \
             --dbganalytic \
             --test --testconfig "$testconfig" \
-            --torch --torchconfig "$(tboolean-torchconfig)" \
+            --torch --torchconfig "$torchconfig" \
             --torchdbg \
             --tag $(tboolean-tag) --cat $(tboolean-det) \
             --save 
@@ -323,44 +330,42 @@ tboolean-enum(){
 
 
 
+tboolean-pol(){ echo s ; }
+tboolean-wavelength(){ echo 500 ; }
+tboolean-photons(){ echo 100000 ; }
+tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000 ; }
 
-
-
-tboolean-torchconfig()
+tboolean-torchconfig-disc()
 {
-
-    local pol=${1:-s}
-    local wavelength=500
-    local identity=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-
-    #local photons=1000000
-    local photons=100000
-    #local photons=1
-
-    local torch_config_disc=(
+    local from_default=0,0,599
+    local from=${1:-$from_default}
+    local torch_config=(
                  type=disc
-                 photons=$photons
+                 photons=$(tboolean-photons)
                  mode=fixpol
                  polarization=1,1,0
                  frame=-1
-                 transform=$identity
-                 source=0,0,599
+                 transform=$(tboolean-identity)
+                 source=$from
                  target=0,0,0
                  time=0.1
                  radius=300
                  distance=200
                  zenithazimuth=0,1,0,1
                  material=Vacuum
-                 wavelength=$wavelength 
+                 wavelength=$(tboolean-wavelength)
                )
+    echo "$(join _ ${torch_config[@]})" 
+}
 
-
+tboolean-torchconfig-discaxial()
+{
     local discaxial_target=0,0,0
-    local torch_config_discaxial=(
+    local torch_config=(
                  type=discaxial
-                 photons=$photons
+                 photons=$(tboolean-photons)
                  frame=-1
-                 transform=$identity
+                 transform=$(tboolean-identity)
                  source=$discaxial_target
                  target=0,0,0
                  time=0.1
@@ -368,31 +373,36 @@ tboolean-torchconfig()
                  distance=400
                  zenithazimuth=0,1,0,1
                  material=Vacuum
-                 wavelength=$wavelength 
+                 wavelength=$(tboolean-wavelength)
                )
+   echo "$(join _ ${torch_config[@]})" 
+}
 
-
-
-    local torch_config_sphere=(
+tboolean-torchconfig-sphere()
+{
+    local torch_config=(
                  type=sphere
-                 photons=10000
+                 photons=$(tboolean-photons)
                  frame=-1
-                 transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,1000.000,1.000
+                 transform=$(tboolean-identity)
                  source=0,0,0
                  target=0,0,1
                  time=0.1
                  radius=100
                  distance=400
                  zenithazimuth=0,1,0,1
-                 material=GdDopedLS
-                 wavelength=$wavelength 
+                 material=Vacuum
+                 wavelength=$(tboolean-wavelength)
                )
+   echo "$(join _ ${torch_config[@]})" 
+}
 
 
 
-    #echo "$(join _ ${torch_config_discaxial[@]})" 
-    #echo "$(join _ ${torch_config_disc[@]})" 
-    echo "$(join _ ${torch_config_sphere[@]})" 
+tboolean-torchconfig()
+{
+    #tboolean-torchconfig-disc
+    tboolean-torchconfig-discaxial
 }
 
 
@@ -1794,9 +1804,6 @@ container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx
   
 a = CSG.MakeTorus(R=100, r=50)
 
-#a = CSG.MakeTorus(R=1, r=0.5)
-#a.scale = [100,100,100]
-
 CSG.Serialize([container, a], args.csgpath )
 #CSG.Serialize([a], args.csgpath )
 
@@ -2320,35 +2327,54 @@ ra = 200
 z1 = -100
 z2 = 100
 
-#a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
+a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
 #a = CSG("disc", param=[0,0,0,ra], param1=[-0.01,0.01,0,0] )
-a = CSG("zsphere", param=[0,0,0,ra], param1=[z1,z2,0,0] )
-
-ZSPHERE_QCAP = 0x1 << 1   # ZMAX
-ZSPHERE_PCAP = 0x1 << 0   # ZMIN
-flags = ZSPHERE_QCAP | ZSPHERE_PCAP
-a.param2.view(np.uint32)[0] = flags 
-
+#a = CSG("zsphere", param=[0,0,0,ra], param1=[z1,z2,0,0] )
 
 
 obj = a 
 
-
 CSG.Serialize([container, obj], args.csgpath )
-
-"""
-
-Currently need to kludge ncylinder::_par_pos_body to not join endcap and body to avoid:: 
-
-    2017-06-28 12:36:37.651 INFO  [1576409] [>::add_parametric_primitive@181] NOpenMeshBuild<T>::add_parametric_primitive verbosity 1 ns 3 nu 32 nv 32 num_vert(raw) 3267 cfg.epsilon 1e-05 ctrl 0
-    PolyMeshT::add_face: complex edge
-    Assertion failed: (mesh.is_valid_handle(f)), function add_face_, file /Users/blyth/opticks/opticksnpy/NOpenMeshBuild.cpp, line 96.
-
-"""
-
 
 EOP
 }
+
+
+
+
+
+#tboolean-cyd-torch-(){ tboolean-torchconfig-disc 1,1,599 ; }  ## non-axial works
+tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 ; }  ## axial fails to intersect
+tboolean-cyd(){ TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
+tboolean-cyd-(){  $FUNCNAME- | python $* ; } 
+tboolean-cyd--(){ cat << EOP 
+import numpy as np
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(verbosity="1", poly="IM", resolution="4" )
+
+container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="4", verbosity="0" )
+
+ra = 200 
+z1 = -100
+z2 = 100
+delta = 0.1
+
+a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
+b = CSG("sphere", param=[0,0,z2,ra/2]  )
+
+obj = a - b 
+
+CSG.Serialize([container, obj], args.csgpath )
+
+EOP
+}
+
+
+
 
 
 

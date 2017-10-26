@@ -30,7 +30,7 @@ void csg_bounds_torus(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  )
 
 
 //#ifdef CSG_INTERSECT_TORUS_TEST
-    rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  tr %d  \n", rmajor, rminor, rsum, !!tr );
+ //   rtPrintf("// csg_bounds_torus rmajor %f rminor %f rsum %f  tr %d  \n", rmajor, rminor, rsum, !!tr );
 //#endif
 }
 
