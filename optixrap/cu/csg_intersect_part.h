@@ -27,8 +27,15 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
     unsigned numNodes = TREE_NODES(height) ;      
 
 #ifdef CSG_BOUNDS_DEBUG
-
-    rtPrintf("##csg_bounds_prim CSG_FLAGNODETREE primIdx %3d partOffset %3d numParts %3d height %2d numNodes %2d tranBuffer_size %3u \n", primIdx, partOffset, numParts, height, numNodes, tranBuffer_size );
+    rtPrintf("//csg_bounds_prim CSG_FLAGNODETREE "
+             " primIdx %3d partOffset %3d "
+             " numParts %3d -> height %2d -> numNodes %2d "
+             " tranBuffer_size %3u "
+             "\n", 
+             primIdx, partOffset, 
+             numParts, height, numNodes, 
+             tranBuffer_size 
+             );
 
 #endif
 
@@ -49,10 +56,15 @@ void csg_bounds_prim(int primIdx, const Prim& prim, optix::Aabb* aabb )
 
 
 #ifdef CSG_BOUNDS_DEBUG
- 
-
-        rtPrintf("##csg_bounds_prim primIdx %3d nodeIdx %2u depth %2d elev %2d typecode %2u tranOffset %2d gtransformIdx %2u complement %d \n", primIdx, nodeIdx, depth, elev, typecode, tranOffset, gtransformIdx, complement );
-
+/*
+        rtPrintf("//csg_bounds_prim "
+                 " primIdx %3d nodeIdx %2u depth %2d elev %2d "
+                 " typecode %2u tranOffset %2d gtransformIdx %2u complement %d" 
+                 " \n", 
+                  primIdx, nodeIdx, depth, elev, 
+                  typecode, tranOffset, gtransformIdx, complement
+                  );
+*/
 #endif
 
         if(gtransformIdx == 0)

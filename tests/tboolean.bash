@@ -2370,7 +2370,6 @@ container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", r
 ra = 200 
 z1 = -100
 z2 = 100
-delta = 0.1
 
 a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
 b = CSG("sphere", param=[0,0,z2,ra/2]  )
@@ -2378,6 +2377,20 @@ b = CSG("sphere", param=[0,0,z2,ra/2]  )
 obj = a - b 
 
 CSG.Serialize([container, obj], args.csgpath )
+
+"""  
+                Z
+                |
+                
+         +---.---+---.---+ (200,100) 
+         |   .       .   |
+         |     .   .     |   
+     ----|-------^-------|---- X
+         |               |   
+         |               |   
+         +---------------+
+
+"""
 
 EOP
 }

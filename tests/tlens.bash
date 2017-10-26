@@ -144,7 +144,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgpath="$TMP/$FUNCNAME", testobject="$(tlens-testobject)", container="$(tlens-container)" )
 
 cr = 300.
-cz = 100.
+cz = 30.
 
 sz = (cz*cz + cr*cr)/(2.*cz )
 sr = sz

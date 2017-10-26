@@ -5,6 +5,8 @@
 
 #include "robust_quadratic_roots.h"
 
+#define CSG_BOUNDS_DBG 1
+
 
 using namespace optix;
 
@@ -669,6 +671,16 @@ void csg_bounds_sphere(const quad& q0, optix::Aabb* aabb, optix::Matrix4x4* tr  
     Aabb tbb(mn, mx);
     if(tr) transform_bbox( &tbb, tr );  
 
+#ifdef CSG_BOUNDS_DBG
+    rtPrintf("// csg_intersect_primitive.h:csg_bounds_sphere "
+             " tbb.min ( %10.4f %10.4f %10.4f ) "
+             " tbb.max ( %10.4f %10.4f %10.4f ) "
+             "\n",
+             tbb.m_min.x, tbb.m_min.y, tbb.m_min.z, 
+             tbb.m_max.x, tbb.m_max.y, tbb.m_max.z
+             );
+                     
+#endif
     aabb->include(tbb);
 }
 
