@@ -9,6 +9,14 @@ tlens-convex appears as expected, focussing the parallel beam,
 but photons are ignoring tlens-concave : they sail thru the lens without intersect.
 
 
+FIXED : thru-going cylinder axial intersects 
+-----------------------------------------------------
+
+* cylinder axial intersects was failing to pick the other intersect 
+  (via tmin cutting) for thru going axial photons 
+
+
+
 tlens-convex : CSG intersection of two spheres
 ------------------------------------------------
 
@@ -131,8 +139,16 @@ possible causes
     no need for CSG, just the issue is easily hidden by other non-axial photon intersects
 
   * tboolean-cy appears to work as expected : so CSG tree somehow involved :
-    NOPE NOT SO : to see the issue have to shoot only axial photons otherwise
-    lack of intersects is hidden
+   
+
+* to see the issue have to shoot only axial photons otherwise
+  lack of intersects is hidden, but CSG tree is implicated because 
+  for a cylinder with sphere chopped out of endcap : only the axial 
+  fail to intersect with the sphere 
+  
+
+ 
+
 
 
 Issue reproduced with single cylinder and axial photons
@@ -140,10 +156,15 @@ Issue reproduced with single cylinder and axial photons
 
 ::
 
+   tboolean-;tboolean-cyd
+
+
+::
+
     2344 
     2345 
     2346 #tboolean-cyd-torch-(){ tboolean-torchconfig-disc 1,1,599 ; }  ## non-axial works
-    2347 tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 ; }  ## axial fails to intersect
+    2347 tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 90 ; }  ## axial fails to intersect
     2348 tboolean-cyd(){ TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
     2349 tboolean-cyd-(){  $FUNCNAME- | python $* ; }
     2350 tboolean-cyd--(){ cat << EOP 
@@ -172,6 +193,105 @@ Issue reproduced with single cylinder and axial photons
     2373 EOP
     2374 }
     2375 
+
+
+
+
+Arrange a pencil of 10 photons that all miss CSG intersect::
+
+    2017-10-26 14:56:13.296 INFO  [981246] [OPropagator::prelaunch@160] 1 : (0;10,1) prelaunch_times vali,comp,prel,lnch  0.0001 3.4517 0.1311 0.0000
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1360169472.0000) ori (   71.7140    29.2040   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1301596672.0000) ori (   83.7070    21.2881   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1587358208.0000) ori (    0.0240    17.7782   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1286056448.0000) ori (   88.5440     2.9255   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1300255232.0000) ori (  -81.8082    28.3031   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1455383040.0000) ori (   31.4812    51.2286   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1383789056.0000) ori (   58.5882    44.4151   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1564381696.0000) ori (  -21.0230   -21.1772   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1447647744.0000) ori (   61.3282     6.9006   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin     0.1000 abc (    0.0000     0.0000 -1433725440.0000) ori (  -62.1522    17.1455   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1360169472.0000) ori (   71.7140    29.2040   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1301596672.0000) ori (   83.7070    21.2881   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1587358208.0000) ori (    0.0240    17.7782   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1286056448.0000) ori (   88.5440     2.9255   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1300255232.0000) ori (  -81.8082    28.3031   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1455383040.0000) ori (   31.4812    51.2286   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1383789056.0000) ori (   58.5882    44.4151   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1564381696.0000) ori (  -21.0230   -21.1772   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1447647744.0000) ori (   61.3282     6.9006   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder tmin   499.1000 abc (    0.0000     0.0000 -1433725440.0000) ori (  -62.1522    17.1455   599.0000) dir (    0.0000     0.0000    -1.0000)  
+    2017-10-26 14:56:13.310 INFO  [981246] [OContext::launch@322] OContext::launch LAUNCH time: 0.014029
+
+::
+
+    2017-10-26 15:01:31.894 INFO  [982826] [OPropagator::prelaunch@160] 1 : (0;10,1) prelaunch_times vali,comp,prel,lnch  0.0001 3.4215 0.1315 0.0000
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1360169472.0000)  m (   71.7140    29.2040   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1301596672.0000)  m (   83.7070    21.2881   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1587358208.0000)  m (    0.0240    17.7782   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1286056448.0000)  m (   88.5440     2.9255   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1300255232.0000)  m (  -81.8082    28.3031   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1455383040.0000)  m (   31.4812    51.2286   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1383789056.0000)  m (   58.5882    44.4151   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1564381696.0000)  m (  -21.0230   -21.1772   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1447647744.0000)  m (   61.3282     6.9006   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1433725440.0000)  m (  -62.1522    17.1455   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1360169472.0000)  m (   71.7140    29.2040   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1301596672.0000)  m (   83.7070    21.2881   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1587358208.0000)  m (    0.0240    17.7782   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1286056448.0000)  m (   88.5440     2.9255   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1300255232.0000)  m (  -81.8082    28.3031   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1455383040.0000)  m (   31.4812    51.2286   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1383789056.0000)  m (   58.5882    44.4151   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1564381696.0000)  m (  -21.0230   -21.1772   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1447647744.0000)  m (   61.3282     6.9006   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    // csg_intersect_cylinder  tmin   499.1000 abc (    0.0000     0.0000 -1433725440.0000)  m (  -62.1522    17.1455   699.0000)  n (    0.0000     0.0000    -1.0000)  
+    2017-10-26 15:01:31.908 INFO  [982826] [OContext::launch@322] OContext::launch LAUNCH time: 0.014078
+
+
+::
+
+    2017-10-26 15:08:52.081 INFO  [985131] [OPropagator::prelaunch@160] 1 : (0;10,1) prelaunch_times vali,comp,prel,lnch  0.0001 3.5851 0.1323 0.0000
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1360167936.0000)  m (   71.7140    29.2040   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1301597184.0000)  m (   83.7070    21.2881   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1587356672.0000)  m (    0.0240    17.7782   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1286056960.0000)  m (   88.5440     2.9255   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1300255744.0000)  m (  -81.8082    28.3031   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1455381504.0000)  m (   31.4812    51.2286   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1383789568.0000)  m (   58.5882    44.4151   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1564382208.0000)  m (  -21.0230   -21.1772   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1447648256.0000)  m (   61.3282     6.9006   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 abc (    0.0000     0.0000 -1433725952.0000)  m (  -62.1522    17.1455   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin     0.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1360167936.0000)  m (   71.7140    29.2040   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1301597184.0000)  m (   83.7070    21.2881   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1587356672.0000)  m (    0.0240    17.7782   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1286056960.0000)  m (   88.5440     2.9255   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1300255744.0000)  m (  -81.8082    28.3031   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1455381504.0000)  m (   31.4812    51.2286   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1383789568.0000)  m (   58.5882    44.4151   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1564382208.0000)  m (  -21.0230   -21.1772   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1447648256.0000)  m (   61.3282     6.9006   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 abc (    0.0000     0.0000 -1433725952.0000)  m (  -62.1522    17.1455   700.0000)  d (    0.0000     0.0000   200.0000)  
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    // csg_intersect_cylinder  tmin   500.1000 tcan   500.0000  md 140000.0000 t_pcap_ax   700.0000 t_qcap_ax   500.0000 
+    2017-10-26 15:08:52.096 INFO  [985131] [OContext::launch@322] OContext::launch LAUNCH time: 0.014978
 
 
 

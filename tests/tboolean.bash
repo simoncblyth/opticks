@@ -337,19 +337,25 @@ tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,
 
 tboolean-torchconfig-disc()
 {
-    local from_default=0,0,599
-    local from=${1:-$from_default}
+    local source_default=0,0,599
+    local radius_default=300
+    local photons_default=100000
+
+    local source_=${1:-$source_default}
+    local radius=${2:-$radius_default}
+    local photons=${3:-$photons_default}
+
     local torch_config=(
                  type=disc
-                 photons=$(tboolean-photons)
+                 photons=$photons
                  mode=fixpol
                  polarization=1,1,0
                  frame=-1
                  transform=$(tboolean-identity)
-                 source=$from
+                 source=${source_}
                  target=0,0,0
                  time=0.1
-                 radius=300
+                 radius=${radius}
                  distance=200
                  zenithazimuth=0,1,0,1
                  material=Vacuum
@@ -2344,7 +2350,10 @@ EOP
 
 
 #tboolean-cyd-torch-(){ tboolean-torchconfig-disc 1,1,599 ; }  ## non-axial works
-tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 ; }  ## axial fails to intersect
+#tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 300 ; }  ## axial rays fails to intersect with the sphere dimple
+tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,600 90 1000000 ; }  ## axial rays fails to intersect, with the sphere dimple
+
+
 tboolean-cyd(){ TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
 tboolean-cyd-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyd--(){ cat << EOP 

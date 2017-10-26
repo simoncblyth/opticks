@@ -234,7 +234,7 @@ tlens-torchconfig()
                  mode=${pol}pol,wavelengthSource
                  frame=-1
                  transform=1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000
-                 target=0,50,0
+                 target=0,0,0
                  source=0,0,-300
                  time=0.1
                  radius=100

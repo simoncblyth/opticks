@@ -1362,10 +1362,14 @@ so no point.
 
 */
 
+
+//#define CSG_DEBUG_CYLINDER_AXIAL 1
+
 static __device__
 bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
 {
     // ascii art explanation in intersect_ztubs.h
+
 
 #ifdef WITH_CYLINDER_INNER
     const float inner  = q0.f.z ; 
@@ -1406,6 +1410,22 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
 
     float t_cand = t_min ; 
 
+
+#ifdef CSG_DEBUG_CYLINDER_AXIAL
+    rtPrintf("// csg_intersect_cylinder "
+               " tmin %10.4f abc (%10.4f %10.4f %10.4f) "
+               " m (%10.4f %10.4f %10.4f) " 
+               " d (%10.4f %10.4f %10.4f) "
+               " \n",
+               t_min, 
+               a, b, c, 
+               m.x, m.y, m.z, 
+               d.x, d.y, d.z 
+             );
+
+#endif
+
+
     // axial ray endcap handling 
     if(fabs(a) < 1e-6f)     
     {
@@ -1416,20 +1436,23 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
          
         if(md < 0.f )     // ray origin on P side
         {
-            t_cand = PCAP ? t_PCAP_AX : ( QCAP ? t_QCAP_AX : t_min ) ;
+            t_cand = t_PCAP_AX > t_min ? t_PCAP_AX : t_QCAP_AX ;
         } 
         else if(md > dd )  // ray origin on Q side 
         {
-            t_cand = QCAP ? t_QCAP_AX : ( PCAP ? t_PCAP_AX : t_min ) ;
+            t_cand = t_QCAP_AX > t_min ? t_QCAP_AX : t_PCAP_AX ;
         }
         else              // ray origin inside,   nd > 0 ray along +d towards Q  
         {
-            t_cand = nd > 0 ? ( QCAP ? t_QCAP_AX : t_min ) : ( PCAP ? t_PCAP_AX : t_min ) ;  
+            t_cand = nd > 0 ? t_QCAP_AX : t_PCAP_AX ;  
         }
 
         unsigned endcap = t_cand == t_PCAP_AX ? CYLINDER_ENDCAP_P : ( t_cand == t_QCAP_AX ? CYLINDER_ENDCAP_Q : 0 ) ;
 
+
+    
         bool has_axial_intersect = t_cand > t_min && endcap > 0 ;
+
         if(has_axial_intersect)
         {
             float sign = endcap == CYLINDER_ENDCAP_P ? -1.f : 1.f ;  
@@ -1438,6 +1461,20 @@ bool csg_intersect_cylinder(const quad& q0, const quad& q1, const float& t_min, 
             isect.z = sign*dnorm.z ; 
             isect.w = t_cand ;      
         }
+
+
+#ifdef CSG_DEBUG_CYLINDER_AXIAL
+        rtPrintf("// csg_intersect_cylinder "
+                 " tmin %10.4f tcan %10.4f  md %10.4f dd %10.4f t_pcap_ax %10.4f t_qcap_ax %10.4f endcap %u has_axial_intersect %d "
+                 " isect (%10.4f %10.4f %10.4f %10.4f) "
+                 "\n",
+                 t_min, t_cand, md, dd, t_PCAP_AX, t_QCAP_AX, endcap, has_axial_intersect, 
+                 isect.x, isect.y, isect.z, isect.w
+               );
+ 
+#endif
+
+
         return has_axial_intersect ;
     }   // end-of-axial-ray endcap handling 
     
