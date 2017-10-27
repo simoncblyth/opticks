@@ -98,6 +98,11 @@ void OpticksEventAna::countExcursions()
               << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
               ;
               
+    // as photon positions are final ones, this
+    // aint so useful for intersect checking : as the photons
+    // mostly end up being absorbed on container walls 
+
+    bool dump = false ; 
  
     for(unsigned tree = 0 ; tree < m_tree_num ; tree++ )
     {
@@ -118,9 +123,11 @@ void OpticksEventAna::countExcursions()
             float asd = std::abs(sd) ;
             bool surf = asd < m_epsilon ;
 
+
             if(seqhis_ == m_dbgseqhis )
             {
-                if( count < 100 )
+
+                if( count < 100 && dump )
                 {
                     std::cout 
                               << " sd " << std::setw(10) << sd 

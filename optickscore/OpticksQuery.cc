@@ -71,7 +71,7 @@ bool OpticksQuery::isNoSelection() const
 void OpticksQuery::init()
 {
     parseQuery(m_query_string);    
-    dump("OpticksQuery::init");    
+    //dump("OpticksQuery::init");    
 }
 
 void OpticksQuery::dump(const char* msg) const 

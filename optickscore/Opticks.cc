@@ -324,7 +324,7 @@ void Opticks::init()
 
     setDetector( m_resource->getDetector() );
 
-    LOG(info) << "Opticks::init DONE " << m_resource->desc()  ;
+    LOG(debug) << "Opticks::init DONE " << m_resource->desc()  ;
 }
 
 
@@ -857,7 +857,7 @@ void Opticks::configure()
 
     std::string prefdir = getPreferenceDir(type, subtype);  
 
-    LOG(info) << "Opticks::configure " 
+    LOG(debug) << "Opticks::configure " 
                << " m_size " << gformat(m_size)
                << " m_position " << gformat(m_position)
                << " prefdir " << prefdir
@@ -878,7 +878,7 @@ void Opticks::configure()
     m_dbg->postconfigure();
 
     m_verbosity = m_cfg->getVerbosity(); 
-    LOG(info) << "Opticks::configure DONE " 
+    LOG(debug) << "Opticks::configure DONE " 
               << " verbosity " << m_verbosity 
               ;
 
@@ -1200,8 +1200,17 @@ OpticksEventSpec* Opticks::getEventSpec()
 OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
 {
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
+
     evt->setOpticks(this);
     evt->loadBuffers();
+
+
+    LOG(info) << "Opticks::loadEvent"
+              << " tagdir " << evt->getTagDir() 
+              << " " << ( evt->isNoLoad() ? "FAILED" : "SUCEEDED" )
+              ; 
+
+
     return evt ; 
 }
 

@@ -37,6 +37,7 @@ EOU
 plog-env(){      opticks- ;  }
 plog-dir(){  echo $(opticks-prefix)/externals/plog ; }
 plog-idir(){ echo $(opticks-prefix)/externals/plog/include/plog ; }
+plog-c(){    cd $(plog-dir); }
 plog-cd(){   cd $(plog-dir); }
 plog-icd(){  cd $(plog-idir); }
 

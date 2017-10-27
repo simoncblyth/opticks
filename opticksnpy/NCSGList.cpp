@@ -31,7 +31,8 @@ void NCSGList::dump(const char* msg)
 
     unsigned numTrees = getNumTrees() ;
 
-    std::cout << " csgpath " << m_csgpath
+    std::cout << "NCSGList::dump"
+              << " csgpath " << m_csgpath
               << " verbosity " << m_verbosity 
               << " numTrees " << numTrees
               << std::endl 

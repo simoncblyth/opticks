@@ -1,3 +1,13 @@
+/**
+OpticksEventAnaTest
+=====================
+
+Pulling together an evt and the NCSGList geometry 
+it came from, for intersect tests.
+
+
+**/
+
 #include "OKCORE_LOG.hh"
 #include "NPY_LOG.hh"
 
@@ -13,7 +23,7 @@
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    //NPY_LOG__ ; 
+    NPY_LOG__ ; 
     OKCORE_LOG__ ; 
 
     Opticks ok(argc, argv);
@@ -21,7 +31,7 @@ int main(int argc, char** argv)
 
     OpticksEvent* evt = ok.loadEvent();
 
-    if(!evt)
+    if(!evt || evt->isNoLoad())
     {
         LOG(fatal) << "failed to load evt " ; 
         return 0 ; 

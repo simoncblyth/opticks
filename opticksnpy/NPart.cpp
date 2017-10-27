@@ -11,7 +11,20 @@
 
 unsigned npart::VERSION = 1 ;   // could become an enumerated LAYOUT bitfield if need more granularity 
 
+/*
 
+
+        0   1   2   3 
+       
+    0   .   .   .   .
+
+    1   .   .   .   .
+  
+    2   .   .   .   tc
+
+    3   .   .   .   gt
+
+*/
 
 
 void npart::setTypeCode(OpticksCSG_t typecode)
@@ -51,12 +64,10 @@ void npart::setGTransform(unsigned gtransform_idx, bool complement)
 
 void npart::setLeft(unsigned left)
 {
-    //assert( LEFT_J == 0 && LEFT_K == 3 );  // note same location as primitive param.w
     qx.u.w = left ; 
 }
 void npart::setRight(unsigned right)
 {
-    //assert( RIGHT_J == 1 && RIGHT_K == 3 );
     qx.u.w = right ; 
 }
 unsigned npart::getLeft()

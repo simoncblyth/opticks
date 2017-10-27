@@ -12,7 +12,7 @@ struct NPY_API npart
     nquad q0 ;  // x,y,z,w (float): param 
     nquad q1 ;  // x,y,z,w (uint) -/index/boundary/flags
     nquad q2 ;  // x,y,z (float):bbmin   w(uint):typecode  
-    nquad q3 ;  // x,y,z (float):bbmax
+    nquad q3 ;  // x,y,z (float):bbmax   
 
     nquad qx ;  // <- CPU only 
  
@@ -34,10 +34,15 @@ struct NPY_API npart
 
 
     OpticksCSG_t getTypeCode();
-    bool isPrimitive();
+    bool isPrimitive();   // from TypeCode
+
+
 
     //NB same memory used for different purposes for CSG operator nodes
     //   distinguish usage typecode or isPrimitive
+
+    // left/right are persisted in qx (which is only available CPU side) 
+    // on GPU left/right is inferred from complete binary tree buffer index
 
     void setLeft(unsigned left);
     void setRight(unsigned right);

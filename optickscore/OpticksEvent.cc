@@ -1078,7 +1078,7 @@ void OpticksEvent::setSeedData(NPY<unsigned>* seed_data)
     m_seed_data = seed_data  ;
     if(!seed_data)
     {
-        LOG(warning) << "OpticksEvent::setSeedData seed_data NULL " ;
+        LOG(debug) << "OpticksEvent::setSeedData seed_data NULL " ;
         return ; 
     }
 
@@ -1092,7 +1092,7 @@ void OpticksEvent::setHitData(NPY<float>* hit_data)
     m_hit_data = hit_data  ;
     if(!hit_data)
     {
-        LOG(warning) << "OpticksEvent::setHitData hit_data NULL " ;
+        LOG(debug) << "OpticksEvent::setHitData hit_data NULL " ;
         return ; 
     }
 
@@ -1553,7 +1553,7 @@ void OpticksEvent::importParameters()
 {
     std::string mode_ = m_parameters->get<std::string>("mode"); 
     OpticksMode* mode = new OpticksMode(mode_.c_str());
-    LOG(info) << "OpticksEvent::importParameters "
+    LOG(debug) << "OpticksEvent::importParameters "
               << " mode_ " << mode_ 
               << " --> " << mode->description() ; 
     setMode(mode);
@@ -1746,7 +1746,7 @@ void OpticksEvent::loadBuffers(bool verbose)
     assert(num_recsel == 0 || num_records == num_recsel );
 
 
-    LOG(info) << "OpticksEvent::load shape(0) before reshaping "
+    LOG(debug) << "OpticksEvent::load shape(0) before reshaping "
               << " num_genstep " << num_genstep
               << " num_nopstep " << num_nopstep
               << " [ "
@@ -2002,7 +2002,7 @@ void OpticksEvent::loadIndex()
     m_seqmat = Index::load(tagdir, OpticksConst::SEQMAT_NAME_, reldir );  
     m_bndidx = Index::load(tagdir, OpticksConst::BNDIDX_NAME_, reldir );
 
-    LOG(info) << "OpticksEvent::loadIndex"
+    LOG(debug) << "OpticksEvent::loadIndex"
               << " tagdir " << tagdir 
               << " seqhis " << m_seqhis 
               << " seqmat " << m_seqmat 

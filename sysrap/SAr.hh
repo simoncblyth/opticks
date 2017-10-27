@@ -1,9 +1,5 @@
 #pragma once
 
-#include <cstring>
-#include <cassert>
-#include <iostream>
-
 /**
 struct SAr
 ==============
@@ -16,26 +12,11 @@ struct SAr
 
 struct SYSRAP_API SAr
 {
-    SAr( int argc_ , char** argv_ ) 
-        :
-        _argc( argc_ ),
-        _argv( new char*[argc_] )
-    {
-        assert( argc_ < 100 && "argc_ sanity check " );
-        for(int i=0 ; i < argc_ ; i++ ) _argv[i] = strdup(argv_[i]) ; 
-        dump();
-    }
-
-    void dump()
-    {
-        std::cout << "SAr _argc " << _argc << " ( " ; 
-        for(int i=0 ; i < _argc ; i++ ) std::cout << " " << _argv[i] ; 
-        std::cout << " ) " << std::endl ;  
-    } 
+    SAr( int argc_ , char** argv_ ) ;
+    void dump();
 
     int    _argc ;
     char** _argv ; 
-
 };
 
 
