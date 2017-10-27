@@ -277,6 +277,21 @@ tboolean-args(){ echo  --det $(tboolean-det) --src $(tboolean-src) ; }
 tboolean-ls-(){ grep TESTCONFIG= $BASH_SOURCE ; }
 tboolean-ls(){ $FUNCNAME- | perl -ne 'm/(\S*)\(\)/ && print "$1\n" ' -   ; }
 
+
+tboolean-ana-(){
+    local msg="$FUNCNAME :"
+
+    #local dbgseqhis=0x8cbc6d   # TO SC BT BR BT SA 
+    #local dbgseqhis=0x8cc6d    # TO SC BT BT SA
+    local dbgseqhis=0x8ccd      # TO BT BT SA
+
+    local testname=${TESTNAME}
+    [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
+
+    OpticksEventAnaTest --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis ;
+}
+
+
 tboolean--(){
 
     tboolean-
@@ -291,15 +306,24 @@ tboolean--(){
     if [ -n "$TESTCONFIG" ]; then
         testconfig=${TESTCONFIG}
     else
-        testconfig=$(tboolean-testconfig)
+        testconfig=$(tboolean-testconfig 2>/dev/null)
     fi 
 
     local torchconfig
     if [ -n "$TORCHCONFIG" ]; then
         torchconfig=${TORCHCONFIG}
     else
-        torchconfig=$(tboolean-torchconfig)
+        torchconfig=$(tboolean-torchconfig 2>/dev/null)
     fi 
+
+
+    local testname
+    if [ -n "$TESTNAME" ]; then
+        testname=${TESTNAME}
+    else
+        testname=$(tboolean-det)
+    fi  
+
 
 
     op.sh  \
@@ -314,7 +338,7 @@ tboolean--(){
             --test --testconfig "$testconfig" \
             --torch --torchconfig "$torchconfig" \
             --torchdbg \
-            --tag $(tboolean-tag) --cat $(tboolean-det) \
+            --tag $(tboolean-tag) --cat $testname \
             --save 
 }
 
@@ -419,7 +443,8 @@ tboolean-container(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
 tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
-tboolean-bib-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bib-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
 tboolean-bib-box-()
 {
     local test_config=(
@@ -434,7 +459,8 @@ tboolean-bib-box-()
      echo "$(join _ ${test_config[@]})" 
 }
 
-tboolean-bib-box-small-offset-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-small-offset-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bib-box-small-offset-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
 tboolean-bib-box-small-offset-sphere-()
 {
     local test_config=(
@@ -452,7 +478,8 @@ tboolean-bib-box-small-offset-sphere-()
 }
 
 
-tboolean-bib-box-sphere(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
+tboolean-bib-box-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bib-box-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
 tboolean-bib-box-sphere-()
 {
     local operation=${1:-difference}
@@ -477,8 +504,8 @@ tboolean-bib-box-sphere-()
 
 
 
-
-tboolean-box(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- ; } 
+tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- ; } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 
@@ -486,7 +513,7 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box")
 container.boundary = args.container
@@ -516,7 +543,8 @@ EOP
 
 
 tboolean-cone-scan(){ SCAN="0,0,100,1,0,0,0,300,10" NCSGScanTest $TMP/tboolean-cone--/1 ; }
-tboolean-cone(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cone-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
 
@@ -547,10 +575,8 @@ CSG.Serialize([container, obj], args.csgpath )
 EOP
 }
 
-
-
-
-tboolean-prism(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
+tboolean-prism-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-prism(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
 tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
 
@@ -559,7 +585,7 @@ from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 from opticks.analytic.prism import make_prism  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box")
 container.boundary = args.container
@@ -584,25 +610,16 @@ obj.meta.update(srcmeta)
 obj.meta.update(im)
 
 obj.dump()
-
 #print obj.as_python()
 
-
-CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
-
+CSG.Serialize([container, obj], args.csgpath, outmeta=True )
 
 EOP
-
 }
 
-
-
-
-
-
-
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
-tboolean-trapezoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-trapezoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
@@ -611,7 +628,7 @@ from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.prism import make_trapezoid, make_icosahedron
 from opticks.analytic.csg import CSG  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box")
 container.boundary = args.container
@@ -649,14 +666,15 @@ obj.meta.update(im)
 
 obj.dump()
 
-CSG.Serialize([container, obj], "$TMP/$FUNCNAME", outmeta=True )
+CSG.Serialize([container, obj], args.csgpath, outmeta=True )
 EOP
 }
 
 
 
 
-tboolean-uniontree(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- || echo $FUNCNAME : ERROR : investigate with : $FUNCNAME-  ; } 
+tboolean-uniontree-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-uniontree(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- || echo $FUNCNAME : ERROR : investigate with : $FUNCNAME-  ; } 
 tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
 tboolean-uniontree--(){ cat << EOP 
 
@@ -666,7 +684,7 @@ from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 from opticks.analytic.treebuilder import TreeBuilder 
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box")
 container.boundary = args.container
@@ -698,7 +716,7 @@ ut.boundary = args.container
 ut.meta.update(im)
 ut.dump()
 
-CSG.Serialize([container, ut], "$TMP/$FUNCNAME", outmeta=True )
+CSG.Serialize([container, ut], args.csgpath, outmeta=True )
 
 
 """
@@ -772,7 +790,8 @@ EOP
 
 
 
-tboolean-parade(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-parade-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-parade(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-parade-(){ $FUNCNAME- | python $* ; } 
 tboolean-parade--(){ cat << EOP 
 
@@ -838,7 +857,8 @@ EOP
 
 
 tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
-tboolean-complement(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-complement-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-complement(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-complement-(){ $FUNCNAME- | python $* ; } 
 tboolean-complement--(){ cat << EOP 
 
@@ -888,12 +908,17 @@ Getting expected:
 EOP
 }
 
-tboolean-zsphere(){ TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- ; } 
 tboolean-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-zsphere--(){ cat << EOP 
 
 import numpy as np
+
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -909,17 +934,7 @@ kwa.update(im)
 #zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
 zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
 
-# flag settings are now ignored
-#ZSPHERE_QCAP = 0x1 << 1   # ZMAX
-#ZSPHERE_PCAP = 0x1 << 0   # ZMIN
-#flags = ZSPHERE_QCAP | ZSPHERE_PCAP
-#flags = ZSPHERE_QCAP | ZSPHERE_PCAP
-#flags = ZSPHERE_QCAP
-#flags = ZSPHERE_PCAP
-#flags = 0 
-#zsphere.param2.view(np.uint32)[0] = flags 
-
-CSG.Serialize([container, zsphere], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, zsphere], args.csgpath )
 
 EOP
 }
@@ -927,12 +942,15 @@ EOP
 
 
 
-tboolean-union-zsphere(){ TESTCONFIG=$(tboolean-union-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-union-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-union-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-union-zsphere--(){ cat << EOP 
 
 import numpy as np
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -942,27 +960,13 @@ kwa = {}
 kwa.update(im)
 
 
-ZSPHERE_QCAP = 0x1 << 1   # ZMAX
-ZSPHERE_PCAP = 0x1 << 0   # ZMIN
-flags = ZSPHERE_QCAP | ZSPHERE_PCAP
-
 lzs = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
-lzs.param2.view(np.uint32)[0] = flags   
-
 rzs = CSG("zsphere", param=[0,0,0,500], param1=[300,400,0,0] ,param2=[0,0,0,0] )
-rzs.param2.view(np.uint32)[0] = flags
 
 uzs = CSG("union", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
 
-CSG.Serialize([container, uzs], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, uzs],  args.csgpath )
 
-"""
-Observe wierdness when caps are off:
-
-* wrong sub-object appears in front of other...
-* hmm maybe fundamental closed-sub-object-limitation again 
-
-"""
 
 EOP
 }
@@ -972,12 +976,16 @@ EOP
 
 
 
-tboolean-difference-zsphere(){ TESTCONFIG=$(tboolean-difference-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-difference-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-difference-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-difference-zsphere--(){ cat << EOP 
 
 import numpy as np
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
@@ -986,19 +994,13 @@ im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0", seeds="0,0,0,1,0,
 kwa = {}
 kwa.update(im)
 
-ZSPHERE_QCAP = 0x1 << 1   # ZMAX
-ZSPHERE_PCAP = 0x1 << 0   # ZMIN
-both = ZSPHERE_QCAP | ZSPHERE_PCAP
 
 lzs = CSG("zsphere", param=[0,0,0,500], param1=[-100,100,0,0],param2=[0,0,0,0] )
-lzs.param2.view(np.uint32)[0] = both   
-
 rzs = CSG("zsphere", param=[0,0,0,400], param1=[-101,101,0,0] ,param2=[0,0,0,0] )
-rzs.param2.view(np.uint32)[0] = both
 
 dzs = CSG("difference", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
 
-CSG.Serialize([container, dzs], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, dzs], args.csgpath )
 
 """
 
@@ -1025,11 +1027,15 @@ EOP
 
 
 
-tboolean-hybrid(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-hybrid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-hybrid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-hybrid-combinetest(){ lldb NOpenMeshCombineTest -- $TMP/${FUNCNAME/-combinetest}--/1 ; }
 tboolean-hybrid-(){ $FUNCNAME- | python $* ; } 
 tboolean-hybrid--(){ cat << EOP
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
@@ -1041,9 +1047,7 @@ obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly=
 
 # only root node poly and polycfg are obeyed, and distributed to the entire tree
 
-CSG.Serialize([container, obj ], "$TMP/$FUNCNAME" )
-#CSG.Serialize([container, box ], "$TMP/$FUNCNAME" )
-#CSG.Serialize([container, box, sph ], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, obj ],  args.csgpath )
 
 
 """
@@ -1067,12 +1071,16 @@ Out[1]: 172.62386856978961
 EOP
 }
 
-tboolean-hyctrl(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-hyctrl-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-hyctrl(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-hyctrl-polytest-lldb(){ lldb NPolygonizerTest -- $TMP/${FUNCNAME/-polytest-lldb}--/1 ; }
 tboolean-hyctrl-polytest(){           NPolygonizerTest    $TMP/${FUNCNAME/-polytest}--/1 ; }
 tboolean-hyctrl-(){ $FUNCNAME- | python $* ; } 
 tboolean-hyctrl--(){ cat << EOP
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box",   name="container",  param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="1" )
 
@@ -1096,7 +1104,7 @@ box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY"
 
 
 
-CSG.Serialize([container, box  ], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, box  ], args.csgpath )
 
 EOP
 }
@@ -1106,10 +1114,14 @@ EOP
 
 
 
-tboolean-boxsphere(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-boxsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-boxsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-boxsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-boxsphere--(){ cat << EOP
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("sphere",           param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="10" )
 
@@ -1118,7 +1130,7 @@ sph = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", transl
 
 object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 EOP
 }
 
@@ -1126,11 +1138,10 @@ EOP
 
 
 tboolean-uncoincide-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
-tboolean-uncoincide(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-uncoincide-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-uncoincide(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-uncoincide-(){ $FUNCNAME- | python $* ; } 
 tboolean-uncoincide--(){ cat << EOP
-
-outdir = "$TMP/$FUNCNAME"
 
 import logging
 log = logging.getLogger(__name__)
@@ -1138,13 +1149,27 @@ log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1", poly="IM", resolution="20" )
 
 # container=1 metadata causes sphere/box to be auto sized to contain other trees
 container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)", poly="HY", level="5" )
+
+
+a = CSG("box3", param=[400,400,100,0] )
+b = CSG("box3", param=[300,300,50,0], translate="0,0,25" )
+
+obj = a - b
+obj.meta.update(uncoincide="1")  # 0:disable uncoincidence nudging
+
+obj.translate = "0,0,100"
+obj.scale = "1,1,1.5"
+obj.rotate = "1,0,0,45"
+
+CSG.Serialize([container, obj],  args.csgpath )
+
 
 log.info(r"""
 
@@ -1237,19 +1262,6 @@ frames is needed.
 
 
 """)
-
-a = CSG("box3", param=[400,400,100,0] )
-b = CSG("box3", param=[300,300,50,0], translate="0,0,25" )
-
-obj = a - b
-obj.meta.update(uncoincide="1")  # 0:disable uncoincidence nudging
-
-obj.translate = "0,0,100"
-obj.scale = "1,1,1.5"
-obj.rotate = "1,0,0,45"
-
-CSG.Serialize([container, obj], outdir )
-
 EOP
 }
 
@@ -1257,21 +1269,19 @@ EOP
 
 
 
-tboolean-disc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-disc-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-disc(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-disc-(){ $FUNCNAME- | python $* ; } 
 tboolean-disc--(){ cat << EOP
-
-outdir = "$TMP/$FUNCNAME"
-obj_ = "$(tboolean-testobject)"
-con_ = "$(tboolean-container)"
 
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
 
-CSG.boundary = obj_
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1",poly="IM")
 
 delta = 1.0 
@@ -1285,8 +1295,8 @@ b = CSG("disc", param = [1000.000,0.000,0.000,223.000],param1 = [z1d,z2d,0.000,0
 
 obj = a - b 
 
-con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
-CSG.Serialize([con, obj], outdir )
+con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)" , poly="HY", level="5" )
+CSG.Serialize([con, obj], args.csgpath )
 
 EOP
 }
@@ -1296,21 +1306,21 @@ EOP
 
 
 
-tboolean-esr(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-esr-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-esr(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-esr-(){ $FUNCNAME- | python $* ; } 
 tboolean-esr--(){ cat << EOP
 
-outdir = "$TMP/$FUNCNAME"
-obj_ = "$(tboolean-testobject)"
 con_ = "$(tboolean-container)"
 
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
 
-CSG.boundary = obj_
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1",poly="IM")
 
 z1,z2 = -0.050,0.050
@@ -1363,7 +1373,7 @@ pass
 
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
-CSG.Serialize([con, obj], outdir )
+CSG.Serialize([con, obj], args.csgpath )
 
 
 """
@@ -1419,11 +1429,11 @@ tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnp
 # jump into ipython session with the python streamed from a bash function
 
 tboolean-sc-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
-tboolean-sc(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-sc-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sc(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sc-(){ $FUNCNAME- | python $* ; } 
 tboolean-sc--(){ cat << EOP
 
-outdir = "$TMP/$FUNCNAME"
 
 import logging
 log = logging.getLogger(__name__)
@@ -1435,7 +1445,7 @@ from opticks.analytic.sc import Sc
 from opticks.analytic.treebase import Tree
 from opticks.analytic.treebuilder import TreeBuilder
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 
 CSG.boundary = "$(tboolean-testobject)"
@@ -1480,7 +1490,7 @@ obj.dump(msg="BALANCED", detailed=True)
 #obj.dump_tboolean(name="esr")
 
 
-CSG.Serialize([container, obj], outdir )
+CSG.Serialize([container, obj], args.csgpath )
 
 """
 
@@ -1503,7 +1513,8 @@ EOP
 
 
 
-tboolean-positivize(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-positivize-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-positivize(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-positivize-(){ $FUNCNAME- | python $* ; } 
 tboolean-positivize--(){ cat << EOP
 
@@ -1513,9 +1524,8 @@ from opticks.ana.base import opticks_main
 
 from opticks.analytic.csg import CSG  
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-outdir = "$TMP/$FUNCNAME"
 CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(poly="IM", resolution="40", verbosity="1" )
 
@@ -1551,8 +1561,7 @@ c.analyse()
 log.info("C\n"+str(c.txt))
 
 
-CSG.Serialize([container, a, b, c  ], outdir )
-#CSG.Serialize([container, a ],  outdir )
+CSG.Serialize([container, a, b, c  ], args.csgpath )
 
 log.info(r"""
 
@@ -1586,13 +1595,19 @@ EOP
 
 
 
-tboolean-bsu(){ TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- ; }
-tboolean-bsd(){ TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- ; }
-tboolean-bsi(){ TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- ; }
+tboolean-bsu-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bsd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bsi-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-bsu(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- ; }
+tboolean-bsd(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- ; }
+tboolean-bsi(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- ; }
 tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
 tboolean-boxsphere--(){ cat << EOP 
 import math
+from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
@@ -1607,7 +1622,7 @@ sph = CSG("sphere", param=[0,0,0,radius], **rtran)
 
 object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 EOP
 }
 
@@ -1615,7 +1630,8 @@ EOP
 
 
 
-tboolean-segment(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-segment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-segment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-segment-(){  $FUNCNAME- | python $* ; }
 tboolean-segment--(){ cat << EOP 
 
@@ -1649,7 +1665,8 @@ EOP
 }
 
 
-tboolean-cysegment(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cysegment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cysegment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-cysegment-(){  $FUNCNAME- | python $* ; }
 tboolean-cysegment--(){ cat << EOP 
 
@@ -1691,7 +1708,8 @@ EOP
 
 
 
-tboolean-cyslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cyslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cyslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-cyslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyslab--(){ cat << EOP 
 import numpy as np
@@ -1767,7 +1785,8 @@ EOP
 
 
 
-tboolean-undefined(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-undefined-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-undefined(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-undefined-(){  $FUNCNAME- | python $* ; } 
 tboolean-undefined--(){ cat << EOP 
 
@@ -1793,7 +1812,8 @@ EOP
 
 
 
-tboolean-torus(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-torus-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-torus(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-torus-(){  $FUNCNAME- | python $* ; } 
 tboolean-torus--(){ cat << EOP 
 
@@ -1831,7 +1851,8 @@ EOP
 
 
 
-tboolean-hyperboloid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-hyperboloid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-hyperboloid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-hyperboloid-(){  $FUNCNAME- | python $* ; } 
 tboolean-hyperboloid--(){ cat << EOP 
 
@@ -1857,7 +1878,8 @@ EOP
 
 
 
-tboolean-cubic(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-cubic-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cubic(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-cubic-(){  $FUNCNAME- | python $* ; } 
 tboolean-cubic--(){ cat << EOP 
 
@@ -1889,7 +1911,8 @@ EOP
 
 
 
-tboolean-12(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-12-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-12(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-12-(){  $FUNCNAME- | python $* ; } 
 tboolean-12--(){ cat << EOP 
 """
@@ -2083,7 +2106,8 @@ EOP
 
 
 
-tboolean-ellipsoid(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-ellipsoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-ellipsoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
 tboolean-ellipsoid--(){ cat << EOP 
 import numpy as np
@@ -2126,7 +2150,8 @@ EOP
 
 
 
-tboolean-spseg(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-spseg-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-spseg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
 tboolean-spseg--(){ cat << EOP 
 import numpy as np
@@ -2151,11 +2176,8 @@ dist = 500 + 1
 
 s = Primitive.deltaphi_slab_segment( d, phi0, phi1, dist)
 
-
 CSG.Serialize([container, s], args.csgpath )
 
-"""
-"""
 EOP
 }
 
@@ -2164,7 +2186,8 @@ EOP
 
 
 
-tboolean-sphereslab(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-sphereslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sphereslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
 tboolean-sphereslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereslab--(){ cat << EOP 
 import numpy as np
@@ -2211,20 +2234,14 @@ unbounded : in half the directions.
   set to ON in NSlab.hpp
 
 
-#SLAB_ACAP = 0x1 << 0
-#SLAB_BCAP = 0x1 << 1
-#flags = SLAB_ACAP | SLAB_BCAP
-#flags = 0
-#slab.param.view(np.uint32)[3] = flags 
-
-
 
 """
 EOP
 }
 
 
-tboolean-sphereplane(){ TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-sphereplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sphereplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
 tboolean-sphereplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
@@ -2257,12 +2274,13 @@ unbounded sub-objects such as planes are not valid CSG sub-objects within Optick
 EOP
 }
 
-tboolean-boxplane(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-boxplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-boxplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
 tboolean-boxplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-boxplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
 
@@ -2270,7 +2288,7 @@ plane  = CSG("plane",  param=[0,0,1,100] )
 box    = CSG("box", param=[0,0,0,200]  )
 object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 
 """
 #. Analogous issue to tboolean-sphere-plane
@@ -2280,12 +2298,13 @@ EOP
 
 
 
-tboolean-plane(){ TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-plane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-plane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
 tboolean-plane-(){ $FUNCNAME- | python $* ; } 
 tboolean-plane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20", verbosity="0" )
 
@@ -2293,7 +2312,7 @@ bigbox = CSG("box", param=[0,0,0,999] )
 plane  = CSG("plane",  param=[0,0,1,100] )
 object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
-CSG.Serialize([container, object], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, object], args.csgpath )
 
 """
 
@@ -2316,7 +2335,8 @@ EOP
 
 
 
-tboolean-cy(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-cy-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cy(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-cy-(){  $FUNCNAME- | python $* ; } 
 tboolean-cy--(){ cat << EOP 
 import numpy as np
@@ -2350,11 +2370,12 @@ EOP
 
 
 #tboolean-cyd-torch-(){ tboolean-torchconfig-disc 1,1,599 ; }  ## non-axial works
-#tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 300 ; }  ## axial rays fails to intersect with the sphere dimple
-tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,600 90 1000000 ; }  ## axial rays fails to intersect, with the sphere dimple
+#tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,599 300 ; }  ## FIXED: axial rays fails to intersect with the sphere dimple
+tboolean-cyd-torch-(){ tboolean-torchconfig-disc 0,0,600 90 1000000 ; }  ## FIXED: axial rays fails to intersect, with the sphere dimple
 
 
-tboolean-cyd(){ TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
+tboolean-cyd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cyd(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) TORCHCONFIG=$($FUNCNAME-torch-) tboolean-- $* ; }
 tboolean-cyd-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyd--(){ cat << EOP 
 import numpy as np
@@ -2404,16 +2425,15 @@ EOP
 
 
 
-tboolean-cylinder(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-cylinder-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cylinder(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-cylinder-(){  $FUNCNAME- | python $* ; } 
 tboolean-cylinder--(){ cat << EOP 
 import numpy as np
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
 
-
-outdir = "$TMP/$FUNCNAME"
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 CSG.boundary = "$(tboolean-testobject)"
 CSG.kwa = dict(verbosity="1", poly="IM", resolution="30" )
@@ -2438,7 +2458,7 @@ obj = a - b - c - d
 #obj.rotate = "1,1,1,45"
 
 
-CSG.Serialize([container, obj], outdir )
+CSG.Serialize([container, obj], args.csgpath )
 
 """
 Failed to reproduce the ESR speckles, from tboolean-sc
@@ -2452,7 +2472,8 @@ EOP
 
 
 
-tboolean-fromstring(){  TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-fromstring-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-fromstring(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
 tboolean-fromstring-(){ $FUNCNAME- | python ; }
 tboolean-fromstring--(){ cat << EOP
 
@@ -2460,7 +2481,7 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 from opticks.analytic.gdml import Primitive
 
-args = opticks_main()
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 
 so = Primitive.fromstring(r"""<tube aunit="deg" deltaphi="360" lunit="mm" name="AdPmtCollar0xc2c5260" rmax="106" rmin="105" startphi="0" z="12.7"/>""")
@@ -2470,7 +2491,7 @@ obj.boundary = "$(tboolean-testobject)"
 
 container = CSG("box", param=[0,0,0,200], boundary="$(tboolean-container)", poly="IM", resolution="20" )
 
-CSG.Serialize([container, obj], "$TMP/$FUNCNAME" )
+CSG.Serialize([container, obj], args.csgpath )
 
 EOP
 }
@@ -2480,18 +2501,16 @@ EOP
 
 
 
-tboolean-unbalanced(){  TESTCONFIG=$($FUNCNAME-)  tboolean-- ; }
+tboolean-unbalanced-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-unbalanced(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-)  tboolean-- ; }
 tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
-tboolean-unbalanced--()
-{
-    local material=$(tboolean-material)
-    local base=$TMP/$FUNCNAME 
-    cat << EOP 
+tboolean-unbalanced--(){  cat << EOP 
 import math, logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
  
 radius = 200 
@@ -2508,8 +2527,7 @@ object.dump()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
 
-CSG.Serialize([container, object], "$base" )
-
+CSG.Serialize([container, object], args.csgpath )
 
 EOP
 }
@@ -2518,7 +2536,8 @@ EOP
 
 
 
-tboolean-deep(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-deep-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-deep(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-deep-(){ local n=14 ; tboolean-gdml- $TMP/${FUNCNAME}$n --gsel $($FUNCNAME- $n) --gmaxdepth 1 ; }
 tboolean-deep--(){  $FUNCNAME- | sed -n ${1:-1}p ; }
 tboolean-deep---(){ cat << EOD
@@ -2561,53 +2580,46 @@ EON
 }
 
 
-tboolean-0q(){  TESTCONFIG="analytic=1_csgpath=$TMP/tboolean-0-_name=tboolean-0-_mode=PyCsgInBox" && tboolean--  ; }
-tboolean-0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-0q(){  TESTNAME=$FUNCNAME TESTCONFIG="analytic=1_csgpath=$TMP/tboolean-0-_name=tboolean-0-_mode=PyCsgInBox" && tboolean--  ; }
+tboolean-0-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-0(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel 0 ; }
 tboolean-0-deserialize(){ VERBOSITY=0 lldb NCSGDeserializeTest -- $TMP/tboolean-0- ; }
 tboolean-0-polygonize(){  VERBOSITY=0 lldb NCSGPolygonizeTest  -- $TMP/tboolean-0- ; }
 
-tboolean-gds0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-gds0-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-gds0(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-gds0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvGDS0x ; }
 
-tboolean-oav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-oav-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-oav(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-oav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvOAV0x ; }
 
-tboolean-iav(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-iav-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-iav(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-iav-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvIAV0x ; }
 
-tboolean-sst(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-sst-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sst(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sst-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AD/lvSST0x --gmaxdepth 3 ; }
 
 
 
 
 
-
-
-
-tboolean-gds(){ TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
+tboolean-gds-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-gds(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-gds-(){ $FUNCNAME- | python $* ; } 
 tboolean-gds--(){ cat << EOP
-
-
-# In [15]: c.mesh.csg.dump_tboolean("gds")
-
-outdir = "$TMP/$FUNCNAME"
-obj_ = "Acrylic//perfectAbsorbSurface/GdDopedLS"
-
-
-con_ = "$(tboolean-container)"
-
 import logging
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-args = opticks_main()
 
-CSG.boundary = obj_
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.boundary = "Acrylic//perfectAbsorbSurface/GdDopedLS"
 CSG.kwa = dict(verbosity="0", poly="IM", resolution="20")
-
 
 a = CSG("cylinder", param = [0.000,0.000,0.000,1550.000],param1 = [-1535.000,1535.000,0.000,0.000])
 b = CSG("cone", param = [1520.000,3070.000,75.000,3145.729],param1 = [0.000,0.000,0.000,0.000])
@@ -2624,23 +2636,16 @@ abc.transform = [[0.543,-0.840,0.000,0.000],[0.840,0.543,0.000,0.000],[0.000,0.0
 
 obj = abc
 
-
-con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
-CSG.Serialize([con, obj], outdir )
-
+container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)" , poly="HY", level="5" )
+CSG.Serialize([container, obj], args.csgpath )
 
 EOP
 }
 
 
 
-
-
-
-
-
-
-tboolean-pmt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-pmt-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-pmt(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-pmt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PMT/lvPmtHemi0x ; }
 
 
@@ -2648,21 +2653,25 @@ tboolean-pmt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PMT/lvPmtHemi
 
 ### trapezoid examples
 
-tboolean-sstt(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-sstt-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sstt(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sstt-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstTopRadiusRib0x ; }
 # contains a trapezoid as part of, thats the real skinny one 
 
-tboolean-sstt2(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-sstt2-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sstt2(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-sstt2-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/AdDetails/lvSstInnVerRibBase0x ; }
 
 
 ## ntc: flat lozenge shape, a deep CSG tree
 
-tboolean-ntc(){  TESTCONFIG=$($FUNCNAME- $* 2>/dev/null) && tboolean--  ; }
+tboolean-ntc-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-ntc(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- $* 2>/dev/null) && tboolean--  ; }
 tboolean-ntc-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel /dd/Geometry/PoolDetails/lvNearTopCover0x $* ; }
 
 
-tboolean-p0(){  TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
+tboolean-p0-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-p0(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) && tboolean--  ; }
 tboolean-p0-(){ tboolean-gdml- $TMP/$FUNCNAME --gsel  /dd/Geometry/AdDetails/lvOcrGdsInIav0x ; }
 
 
@@ -2687,7 +2696,8 @@ tboolean-gdml-ip(){  tboolean-cd ; ipython tboolean_gdml.py -i ; }
 
 
 
-tboolean-dd(){          TESTCONFIG=$(tboolean-dd- 2>/dev/null)     tboolean-- $* ; }
+tboolean-dd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-dd(){   TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-dd- 2>/dev/null)     tboolean-- $* ; }
 tboolean-dd-()
 {       
     python $(tboolean-dir)/tboolean_dd.py \
@@ -2704,11 +2714,10 @@ tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean
 
 
 
-tboolean-interlocked(){  TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-interlocked-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-interlocked(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
 tboolean-interlocked-(){ $FUNCNAME- | python $* ; }
-tboolean-interlocked--()
-{
-    cat << EOP 
+tboolean-interlocked--(){ cat << EOP 
 import math
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  

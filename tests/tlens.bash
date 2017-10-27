@@ -130,7 +130,6 @@ CSG.Serialize([container, lens ], args.csgpath )
 EOP
 }
 
-
 tlens-concave-a(){ TESTNAME=${FUNCNAME/-a} tlens-ana- ; }
 tlens-concave(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tlens-- s $* ; }
 tlens-concave-(){ $FUNCNAME- | python $* ; }  
@@ -259,14 +258,14 @@ tlens--()
     if [ -n "$TESTCONFIG" ]; then
         testconfig=${TESTCONFIG}
     else
-        testconfig=$(tlens-convex-)
+        testconfig=$(tlens-convex- 2>/dev/null)
     fi
 
     local torchconfig
     if [ -n "$TORCHCONFIG" ]; then
         torchconfig=${TORCHCONFIG}
     else
-        torchconfig=$(tlens-torchconfig $pol)
+        torchconfig=$(tlens-torchconfig $pol 2>/dev/null)
     fi
 
     local testname
