@@ -14,6 +14,8 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NCSG.hpp"
+#include "NCSGList.hpp"
 #include "GLMFormat.hpp"
 
 // ggeo-
@@ -22,10 +24,14 @@
 #include "GPmt.hh"
 #include "GCSG.hh"
 #include "GMaterial.hh"
+#include "GGeoTest.hh"
 #include "GGeoTestConfig.hh"
 #include "GSur.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
+#include "GSolidList.hh"
+#include "GSolid.hh"
+#include "GMesh.hh"
 
 // g4-
 #include "CFG4_PUSH.hh"
@@ -57,11 +63,12 @@
 
 
 
-CTestDetector::CTestDetector(OpticksHub* hub, GGeoTestConfig* config, OpticksQuery* query)
-  : 
-  CDetector(hub, query),
-  m_config(config),
-  m_maker(NULL)
+CTestDetector::CTestDetector(OpticksHub* hub, GGeoTest* geotest, OpticksQuery* query)
+    : 
+    CDetector(hub, query),
+    m_geotest(geotest),
+    m_config(geotest->getConfig()),
+    m_maker(new CMaker(m_ok))
 {
     init();
 }
@@ -79,8 +86,6 @@ void CTestDetector::init()
     }
 
 
-    m_maker = new CMaker(m_ok);
-
     LOG(trace) << "CTestDetector::init CMaker created" ; 
 
     G4VPhysicalVolume* top = makeDetector();
@@ -90,19 +95,115 @@ void CTestDetector::init()
     setTop(top) ; 
 }
 
-bool CTestDetector::isPmtInBox()
-{
-    const char* mode = m_config->getMode();
-    return strcmp(mode, "PmtInBox") == 0 ;
-}
-bool CTestDetector::isBoxInBox()
-{
-    const char* mode = m_config->getMode();
-    return strcmp(mode, "BoxInBox") == 0 ;
-}
-
 
 G4VPhysicalVolume* CTestDetector::makeDetector()
+{
+    return m_config->isNCSG() ? makeDetector_NCSG() : makeDetector_OLD() ;
+}
+
+
+G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
+{
+    const char* csgpath = m_config->getCsgPath() ;
+    NCSGList* csglist = m_geotest->getCSGList();
+    GSolidList* solist = m_geotest->getSolidList();
+
+    assert( csgpath );
+    assert( csglist );
+    assert( solist );
+
+    unsigned numTrees = csglist->getNumTrees();
+    unsigned numSolids = solist->getNumSolids();
+
+    LOG(info) << "CTestDetector::makeDetector_NCSG"
+              << " csgpath " << csgpath
+              << " numTrees " << numTrees 
+              << " numSolids " << numSolids 
+              ;
+
+    assert( numSolids == numTrees );
+
+    // contrast with GGeoTest::loadCSG
+    std::vector<G4VSolid*> g4solids ; 
+   
+
+    G4LogicalVolume* mother = NULL ; 
+    G4VPhysicalVolume* ppv = NULL ; 
+    G4VPhysicalVolume* top = NULL ; 
+     
+    for(unsigned i=0 ; i < numTrees ; i++) 
+    {
+        // reversed order to start with outermost 
+
+        unsigned tree = numTrees-1-i ;
+
+        GSolid* kso = solist->getSolid(tree); 
+        const GMesh* mesh = kso->getMesh();
+        const NCSG* csg = mesh->getCSG();
+        const NCSG* csg2 = csglist->getTree(tree);
+        assert( csg == csg2 );
+        const char* spec = csg->getBoundary();
+
+        unsigned boundary0 = kso->getBoundary();
+
+        // m_blib is CBndLib instance from CDetector base
+        //        that contains a GBndLib instance
+        //
+        // trying to just use boundary0 : find the index invalid 
+        // test geometry often uses dynamic omat/osur/isur/imat 
+        // combinations that are not persisted to the bndlib
+        // so must add the spec : in order to make the boundary index valid
+        //
+
+        unsigned boundary = m_blib->addBoundary(spec);
+
+        LOG(info) 
+             << " i " << i 
+             << " tree " << tree 
+             << " boundary0 " << boundary0
+             << " boundary " << boundary
+             << " csg.bnd " << spec
+             ;
+
+        GMaterial* imat = m_blib->getInnerMaterial(boundary); 
+        GSur* isur      = m_blib->getInnerSurface(boundary); 
+        GSur* osur      = m_blib->getOuterSurface(boundary); 
+
+        //WHY?  just copying _OLD
+        if(isur) isur->setBorder();
+        if(osur) osur->setBorder();
+
+        if(isur) isur->dump("isur");
+        if(osur) osur->dump("osur");
+
+        LOG(info) 
+             << " i " << i 
+             << " boundary " << boundary
+             << " imat " << imat 
+             << " isur " << isur 
+             << " osur " << osur 
+             ;
+
+        const G4Material* material = m_mlib->convertMaterial(imat);
+        G4VSolid* solid = m_maker->makeSolid( csg ); 
+
+        OpticksCSG_t type = csg->getRootType() ;
+        const char* nodename = CSGName(type);
+        std::string lvn = CMaker::LVName(nodename);
+        std::string pvn = CMaker::PVName(nodename);
+
+        G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
+        G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
+ 
+        if(top == NULL) top = pv ; 
+        if(ppv == NULL) ppv = pv ; 
+        mother = lv ;  
+    }
+    return top ; 
+}
+
+
+G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
 {
    // analagous to ggeo-/GGeoTest::CreateBoxInBox
    // but need to translate from a surface based geometry spec into a volume based one
@@ -112,30 +213,27 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
    //
     GMergedMesh* mm = m_ggeo->getMergedMesh(0);
     unsigned numSolidsMesh = mm->getNumSolids();
-    unsigned int numSolidsConfig = m_config->getNumElements();
+    unsigned numSolidsConfig = m_config->getNumElements();
 
-    bool is_pib = isPmtInBox() ;
-    bool is_bib = isBoxInBox() ;
-    // CsgInBox not yet handled
+    bool is_pib  = m_config->isPmtInBox() ;
+    bool is_bib  = m_config->isBoxInBox() ;
 
-    LOG(info)  << "CTestDetector::makeDetector"
+    LOG(info)  << "CTestDetector::makeDetector_OLD "
                << " PmtInBox " << is_pib
                << " BoxInBox " << is_bib
                << " numSolidsMesh " << numSolidsMesh
                << " numSolidsConfig " << numSolidsConfig 
               ;
 
-    assert( ( is_pib || is_bib ) && "CTestDetector::makeDetector mode not recognized");
-
+    assert( ( is_pib || is_bib ) && "CTestDetector::makeDetector_OLD mode not recognized");
 
     if(is_bib)
     {
         if( numSolidsMesh != numSolidsConfig )
         {
-             mm->dumpSolids("CTestDetector::makeDetector (solid count inconsistent)");
+             mm->dumpSolids("CTestDetector::makeDetector_OLD (solid count inconsistent)");
         }
-        assert( numSolidsMesh == numSolidsConfig );
-        // bound to fail for PmtInBox
+        assert( numSolidsMesh == numSolidsConfig ); // bound to fail for PmtInBox
     }
     else if(is_pib)
     {
@@ -143,13 +241,12 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
 
     if(m_verbosity > 0)
-    m_config->dump("CTestDetector::makeDetector");
+    m_config->dump("CTestDetector::makeDetector_OLD");
 
 
     G4VPhysicalVolume* ppv = NULL ;    // parent pv
     G4VPhysicalVolume* top = NULL ;  
     G4LogicalVolume* mother = NULL ; 
-
 
 
     for(unsigned int i=0 ; i < numSolidsConfig ; i++)
@@ -162,19 +259,10 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
         if(i > 0) ni->w = i - 1  ;  // set parent in test mesh node info, assuming simple Russian doll geometry 
 
         LOG(info) 
-                  << "ni(" 
-                  << std::setw(10) << ni->x << ","
-                  << std::setw(10) << ni->y << ","
-                  << std::setw(10) << ni->z << ","
-                  << std::setw(10) << ni->w << ")"
-                  << "id(" 
-                  << std::setw(10) << id->x << ","
-                  << std::setw(10) << id->y << ","
-                  << std::setw(10) << id->z << ","
-                  << std::setw(10) << id->w << ")"
+                  << "ni " << ni->description()  
+                  << "id " << id->description() 
                   ;
 
-        
         unsigned boundary0 = id->z ; 
         unsigned boundary = m_blib->addBoundary(spec);
 
@@ -231,7 +319,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
         OpticksCSG_t type = m_config->getTypeCode(i) ;
         const char* nodename = CSGName(type);
-
         std::string lvn = CMaker::LVName(nodename);
         std::string pvn = CMaker::PVName(nodename);
 
@@ -260,7 +347,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
     if(is_pib)
     {
-        makePMT(mother);
+        makePMT_OLD(mother);
     }
 
     //m_mlib->dumpMaterials("CTestDetector::Construct CPropLib::dumpMaterials");
@@ -270,11 +357,13 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 }
 
 
-void CTestDetector::makePMT(G4LogicalVolume* container)
+
+
+void CTestDetector::makePMT_OLD(G4LogicalVolume* container)
 {
     // try without creating an explicit node tree 
 
-    LOG(trace) << "CTestDetector::makePMT" ; 
+    LOG(trace) << "CTestDetector::makePMT_OLD" ; 
 
     //GPmt* pmt = m_ggeo->getPmt();  
     GPmtLib* pmtlib = m_ggeo->getPmtLib();
@@ -284,18 +373,18 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
     if(csg == NULL)
     {
-        LOG(fatal) << " CTestDetector::makePMT NULL csg from CPropLib " ;
+        LOG(fatal) << " CTestDetector::makePMT_OLD NULL csg from CPropLib " ;
         setValid(false);
         return ; 
     }   
     
     //if(m_verbosity > 1)
-    csg->dump("CTestDetector::makePMT");
+    csg->dump("CTestDetector::makePMT_OLD");
 
     unsigned int ni = csg->getNumItems();
 
     //if(m_verbosity > 0)
-    LOG(info) << "CTestDetector::makePMT" 
+    LOG(info) << "CTestDetector::makePMT_OLD" 
               << " csg items " << ni 
               ; 
 
@@ -313,7 +402,7 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
         const char* pvn = csg->getPVName(nix-1);
 
         if(m_verbosity > 0)
-        LOG(info) << "CTestDetector::makePMT" 
+        LOG(info) << "CTestDetector::makePMT_OLD" 
                   << " csg items " << ni 
                   << " index " << std::setw(3) << index 
                   << " nix " << std::setw(3) << nix 
@@ -321,7 +410,7 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
                   << " pvn " << pvn 
                   ; 
 
-        G4LogicalVolume* logvol = makeLV(csg, index );
+        G4LogicalVolume* logvol = makeLV_OLD(csg, index );
 
         lvm[nix-1] = logvol ;
 
@@ -344,7 +433,7 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
         // suspect that G4DAE COLLADA export omits/messes this up somehow, for the Bottom at least
 
         if(m_verbosity > 0)
-        LOG(info) << "CTestDetector::makePMT"
+        LOG(info) << "CTestDetector::makePMT_OLD"
                   << " index " << index 
                   << " x " << tlate.x()
                   << " y " << tlate.y()
@@ -360,11 +449,11 @@ void CTestDetector::makePMT(G4LogicalVolume* container)
 
     }
 
-    kludgePhotoCathode();
+    kludgePhotoCathode_OLD();
 }
 
 
-void CTestDetector::kludgePhotoCathode()
+void CTestDetector::kludgePhotoCathode_OLD()
 {
    // HMM THIS IS A DIRTY KLUDGE ..
    //
@@ -380,7 +469,7 @@ void CTestDetector::kludgePhotoCathode()
    // See :doc:`notes/issues/geant4_opticks_integration/surlib_with_test_geometry` 
    //
 
-    LOG(info) << "CTestDetector::kludgePhotoCathode" ;
+    LOG(info) << "CTestDetector::kludgePhotoCathode_OLD" ;
 
     float effi = 1.f ; 
     float refl = 0.f ; 
@@ -404,7 +493,7 @@ void CTestDetector::kludgePhotoCathode()
 }
 
 
-G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
+G4LogicalVolume* CTestDetector::makeLV_OLD(GCSG* csg, unsigned int i)
 {
     unsigned int ix = csg->getNodeIndex(i); 
 
@@ -422,7 +511,7 @@ G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
 
     if(m_verbosity > 0)
     LOG(info) 
-           << "CTestDetector::makeLV "
+           << "CTestDetector::makeLV_OLD "
            << "  i " << std::setw(2) << i  
            << " ix " << std::setw(2) << ix  
            << " lvn " << std::setw(2) << lvn

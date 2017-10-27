@@ -54,7 +54,7 @@ class CFG4_API CMaker
         G4VSolid* makeSolid_OLD(GCSG* csg, unsigned int i); 
     public:
         // current CSG 
-        G4VSolid* makeSolid(NCSG* csg);                  
+        G4VSolid* makeSolid(const NCSG* csg);                  
     private:
         G4VSolid* makeSolid_r(const nnode* node);
         static G4Transform3D* ConvertTransform(const glm::mat4& t);

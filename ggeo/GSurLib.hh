@@ -24,9 +24,6 @@ At instanciation in GSurLib::init:
      nodeinfo stored for each solid determine physical volume pairs 
      and logical volumes for each of the surfaces, record these into the GSur  
 
-     TODO: get this to work with test geometry... 
-
-
 *assignType*
      invokes GSur::assignType on each instance, setting type for U for unused surfaces
      Observe that the "perfect*" surfaces that are often used with test geometry
@@ -38,10 +35,61 @@ surfaces of all solids.
 However it turns out not be be possible to make such a determination, 
 so a cheat based on names of bordersurfaces grepped from the .dae is used.
 
+
+TODO: equivalents for GGeoTest(NCSG) and GScene(GDML2GLTF) geometries
+------------------------------------------------------------------------
+
+Can GBndLib distinguish just by osur&isur OR osur^isur ? 
+
+G4LogicalSkinSurface
+    surface surrounding a single logical volume
+    ("directionless" equal action from either side) 
+
+    * opticks:  isur && osur && (isur == osur)
+
+G4LogicalBorderSurface
+    surfaces defined by the boundary of two physical volumes
+    ("directional" : action only in prescribed pv order)
+
+    * opticks:  (!!isur)^(!!osur) 
+
+
+Opticks boundary indices are ascribed onto GSolid/GNode 
+(ie at tree level) so can definitely hold the G4 model.
+The question is more on the details of implementing it 
+and conversion to it.
+
+Current GBndLib has no cases of both osur and isur, so
+all surfaces are border with directionality and none are 
+skin.  
+
+Perhaps GSurLib was used for fix this up by cheating with names.
+
+GGeoTest(NCSG)
+~~~~~~~~~~~~~~~~
+
+Expanding to test geometry : primary remit is to enable the expression 
+in G4 optical surfaces the same intent as implemented 
+in Opticks surfaces.
+
+* distinguishing border/skin is clear from the GBndLib 
+
+  * actually the distinction often mute for the common perfectAbsorbSurface, 
+    because typically never get photons from outside 
+
+
+GScene(GDML2GLTF)
+~~~~~~~~~~~~~~~~~~~~~
+
+
+
+
 **/
 
 #include <set>
 #include <vector>
+
+class Opticks ; 
 
 class GGeo ;
 class GSur ; 
@@ -55,7 +103,7 @@ class GGEO_API GSurLib
          friend class CDetector ; 
     public:
          static const unsigned UNSET ;  
-         static void pushBorderSurfaces(std::vector<std::string>& names);
+         static void pushBorderSurfacesDYB(std::vector<std::string>& names);
          bool isBorderSurface(const char* name);
     public:
          GSurLib(GGeo* gg);
@@ -76,6 +124,7 @@ class GGEO_API GSurLib
          std::string desc(const std::set<unsigned>& bnd);
     public:
          GGeo*                 m_ggeo ;
+         Opticks*              m_ok ; 
          GSurfaceLib*          m_slib ; 
          GBndLib*              m_blib ; 
          bool                  m_closed ; 

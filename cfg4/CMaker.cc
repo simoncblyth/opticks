@@ -18,6 +18,7 @@
 #include "G4Tubs.hh"
 #include "G4Cons.hh"
 #include "G4Trd.hh"
+#include "G4Torus.hh"
 
 #include "G4RotationMatrix.hh"
 #include "G4Transform3D.hh"
@@ -288,7 +289,7 @@ G4VSolid* CMaker::makeSolid_OLD(OpticksCSG_t type, const glm::vec4& param)
 } 
 
 
-G4VSolid* CMaker::makeSolid(NCSG* csg)
+G4VSolid* CMaker::makeSolid(const NCSG* csg)
 {
     nnode* root_ = csg->getRoot();
 
@@ -401,6 +402,19 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 
         G4Box* bx = new G4Box( name, halfside.x, halfside.y, halfside.z );
         result = bx ; 
+    }
+    else if(node->type == CSG_TORUS)
+    {
+        ntorus* n = (ntorus*)node ; 
+
+        double innerRadius = 0. ;
+        double outerRadius = n->rminor();
+        double sweptRadius = n->rmajor(); 
+        double startPhi = 0. ;
+        double deltaPhi = twopi ;
+
+        G4Torus* ts = new G4Torus( name, innerRadius, outerRadius, sweptRadius, startPhi, deltaPhi );
+        result = ts ;  
     }
     else if(node->type == CSG_CYLINDER)
     {

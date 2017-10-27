@@ -27,6 +27,7 @@
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
 #include "GSolid.hh"
+#include "GSolidList.hh"
 #include "GMaker.hh"
 #include "GItemList.hh"
 #include "GParts.hh"
@@ -37,6 +38,22 @@
 #include "GGeoTest.hh"
 
 #include "PLOG.hh"
+
+
+
+GSolidList* GGeoTest::getSolidList()
+{
+    return m_solist ; 
+}
+
+NCSGList* GGeoTest::getCSGList()
+{
+    return m_csglist ; 
+}
+GGeoTestConfig* GGeoTest::getConfig()
+{
+    return m_config ; 
+}
 
 
 GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase) 
@@ -53,6 +70,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase)
     m_pmtlib(NULL),
     m_maker(NULL),
     m_csglist(NULL),
+    m_solist(NULL),
     m_verbosity(0)
 {
     init();
@@ -88,6 +106,7 @@ void GGeoTest::dump(const char* msg)
 void GGeoTest::modifyGeometry()
 {
     const char* csgpath = m_config->getCsgPath();
+
     bool analytic = m_config->getAnalytic(); 
 
     if(csgpath) assert(analytic == true);
@@ -97,6 +116,7 @@ void GGeoTest::modifyGeometry()
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
     char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
+
     tmm->setGeoCode( geocode );
 
     if(tmm->isTriangulated()) 
@@ -132,29 +152,34 @@ GMergedMesh* GGeoTest::create()
     LOG(info) << "GGeoTest::create START " << " mode " << mode ;
 
     GMergedMesh* tmm = NULL ; 
-    std::vector<GSolid*> solids ; 
+    //std::vector<GSolid*> solids ; 
 
-    if(csgpath != NULL)
+    m_solist = new GSolidList() ; 
+    std::vector<GSolid*>& solids = m_solist->getList();
+
+    if(m_config->isNCSG())
     {
-        assert( strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
+        assert( csgpath && strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
         loadCSG(csgpath, solids);
+        assert( m_csglist );
+
         tmm = combineSolids(solids, NULL);
 
         m_resource->setTestCSGPath(csgpath); // take note of path, for inclusion in event metadata
     }
-    else if(strcmp(mode, "BoxInBox") == 0) 
+    else if(m_config->isBoxInBox()) 
     {
         createBoxInBox(solids); 
         labelPartList(solids) ;
         tmm = combineSolids(solids, NULL);
     }
-    else if( strcmp(mode, "PmtInBox") == 0)
+    else if(m_config->isPmtInBox())
     {
         tmm = createPmtInBox(); 
     }
     else 
     { 
-        LOG(fatal) << "GGeoTest::create mode not recognized " << mode ; 
+        LOG(fatal) << "GGeoTest::create mode not recognized [" << mode << "]" ; 
         assert(0);
     }
 

@@ -11,7 +11,7 @@ CBndLib::CBndLib(OpticksHub* hub)
     m_hub(hub),
     m_bndlib(m_hub->getBndLib()),
     m_matlib(m_hub->getMaterialLib()),
-    m_surlib(m_hub->getSurLib())
+    m_surlib(m_hub->getSurLib())  // invokes the deferred GGeo::createSurLib, if CDetector didnt invoke 1st 
 {
 }
 

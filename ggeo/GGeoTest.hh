@@ -14,6 +14,7 @@ class GPmtLib ;
 class GMaker ; 
 class GMergedMesh ; 
 class GSolid ; 
+class GSolidList ; 
 
 /**
 
@@ -39,11 +40,16 @@ class GGEO_API GGeoTest {
        GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase=NULL);
        void dump(const char* msg="GGeoTest::dump");
        void modifyGeometry();
-
-       unsigned getNumTrees();
-       NCSG* getTree(unsigned index);
+    public:
+       GGeoTestConfig* getConfig();
+    public:
+       NCSGList*       getCSGList();
+       unsigned        getNumTrees();
+       NCSG*           getTree(unsigned index);
+    public:
+       GSolidList*     getSolidList();
+    public:
        void anaEvent(OpticksEvent* evt);
-
     private:
        void init();
     private:
@@ -71,6 +77,7 @@ class GGEO_API GGeoTest {
        GPmtLib*         m_pmtlib ; 
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
+       GSolidList*      m_solist ; 
        unsigned int     m_verbosity ;
 
 };

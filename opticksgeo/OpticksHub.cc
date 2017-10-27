@@ -356,6 +356,12 @@ void OpticksHub::modifyGeometry()
 }
 
 
+
+GGeoTest* OpticksHub::getGGeoTest()
+{
+    return m_geotest ; 
+}
+
 GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
 {
     GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf

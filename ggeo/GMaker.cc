@@ -121,6 +121,8 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
+    mesh->setCSG(csg);
+
     glm::mat4 txf = tris->getTransform(); 
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));

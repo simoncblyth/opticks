@@ -8,6 +8,7 @@ class OpticksHub ;
 class OpticksQuery ; 
 
 // ggeo-
+class GGeoTest ; 
 class GGeoTestConfig ; 
 class GMaterial ;
 class GCSG ; 
@@ -61,25 +62,32 @@ CTestDetector
 constructs simple Geant4 detector test geometries based on commandline specifications
 parsed and represented by an instance of :doc:`../ggeo/GGeoTestConfig`.
 
+Canonical instance resides in CGeometry and is instanciated by CGeometry::init
+when --test option is used.
+
+
 **/
 
 
 class CFG4_API CTestDetector : public CDetector
 {
  public:
-    CTestDetector(OpticksHub* hub, GGeoTestConfig* config, OpticksQuery* query=NULL);
+    CTestDetector(OpticksHub* hub, GGeoTest* geotest, OpticksQuery* query=NULL);
   private:
     void init();
-  public:
-    bool isPmtInBox();
-    bool isBoxInBox();
-  private:
-    G4VPhysicalVolume* makeDetector();
-    void makePMT(G4LogicalVolume* mother);
-    void kludgePhotoCathode();
-    G4LogicalVolume* makeLV(GCSG* csg, unsigned int i);
 
   private:
+    G4VPhysicalVolume* makeDetector();
+    G4VPhysicalVolume* makeDetector_NCSG();
+
+  private:
+    G4VPhysicalVolume* makeDetector_OLD();
+    void               makePMT_OLD(G4LogicalVolume* mother);
+    void               kludgePhotoCathode_OLD();
+    G4LogicalVolume*   makeLV_OLD(GCSG* csg, unsigned int i);
+
+  private:
+    GGeoTest*          m_geotest ; 
     GGeoTestConfig*    m_config ; 
     CMaker*            m_maker ; 
 

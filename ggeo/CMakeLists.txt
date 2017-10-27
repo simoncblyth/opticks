@@ -111,6 +111,7 @@ set(SOURCES
     GTreePresent.cc
 
     GSolid.cc
+    GSolidList.cc
     GGeoLib.cc
     GGeoCfg.cc
     GGeoTest.cc

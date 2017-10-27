@@ -25,6 +25,17 @@ class OpticksQuery ;
 
 #include "PLOG.hh"
 
+
+CMaterialLib* CGeometry::getPropLib()
+{
+   return m_lib ; 
+}
+CDetector* CGeometry::getDetector()
+{
+   return m_detector; 
+}
+
+
 CGeometry::CGeometry(OpticksHub* hub) 
    :
    m_hub(hub),
@@ -39,28 +50,21 @@ CGeometry::CGeometry(OpticksHub* hub)
    init();
 }
 
-CMaterialLib* CGeometry::getPropLib()
-{
-   return m_lib ; 
-}
-CDetector* CGeometry::getDetector()
-{
-   return m_detector; 
-}
-
-
-
-
 void CGeometry::init()
 {
     CDetector* detector = NULL ; 
     if(m_ok->hasOpt("test"))
     {
         LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
-        std::string testconfig = m_cfg->getTestConfig();
-        GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
+
+        // hmm : any reason why not to boot from the GGeoTest ? rather than the config ?
+        //std::string testconfig = m_cfg->getTestConfig();
+        //GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
+
+        GGeoTest* ggt = m_hub->getGGeoTest();  assert(ggt) ;
+
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
-        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, ggtc, query)) ; 
+        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, ggt, query)) ; 
     }
     else
     {

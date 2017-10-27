@@ -1,5 +1,17 @@
+/*
+
+Q: Where/What uses this ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+
+*/
+
+
 #include <algorithm>
 #include <iomanip>
+
+#include "Opticks.hh"
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
@@ -34,6 +46,7 @@ GSur* GSurLib::getSur(unsigned i)
 GSurLib::GSurLib(GGeo* gg) 
     : 
     m_ggeo(gg),
+    m_ok(gg->getOpticks()),
     m_slib(gg->getSurfaceLib()),
     m_blib(gg->getBndLib()),
     m_closed(false)
@@ -48,7 +61,7 @@ GSurfaceLib* GSurLib::getSurfaceLib()
 }
 
 
-void GSurLib::pushBorderSurfaces(std::vector<std::string>& names)
+void GSurLib::pushBorderSurfacesDYB(std::vector<std::string>& names)
 {
     // cheat determination of bordersurfaces by looking at the .dae
     // these have directionality, the other **skin** surfaces do not
@@ -69,7 +82,13 @@ bool GSurLib::isBorderSurface(const char* name)
 
 void GSurLib::init()
 {
-    pushBorderSurfaces(m_bordersurface);
+    if(m_ok->isTest())
+    {
+    }
+    else if(m_ok->isDayabay())
+    {
+        pushBorderSurfacesDYB(m_bordersurface);
+    }
     collectSur();
 }
 

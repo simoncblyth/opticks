@@ -150,6 +150,7 @@ class OKGEO_API OpticksHub {
        GGeoBase*            getGGeoBase(); // downcast: ( m_gltf ? m_gscene : m_ggeo )
        GGeoBase*            getGGeoBaseAna();
        GGeoBase*            getGGeoBaseTri();
+       GGeoTest*            getGGeoTest();
    public:
        GGeoLib*             getGeoLib();
        GMaterialLib*        getMaterialLib();

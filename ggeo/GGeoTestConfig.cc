@@ -97,6 +97,23 @@ bool GGeoTestConfig::getAnalytic()
 }
 
 
+
+bool GGeoTestConfig::isNCSG()
+{
+    return m_csgpath != NULL  ; 
+}
+bool GGeoTestConfig::isPmtInBox()
+{
+    return strcmp(m_mode, "PmtInBox") == 0 ; 
+}
+bool GGeoTestConfig::isBoxInBox()
+{
+    return strcmp(m_mode, "BoxInBox") == 0 ; 
+}
+
+
+
+
 const char* GGeoTestConfig::getMode()
 {
     return m_mode ; 

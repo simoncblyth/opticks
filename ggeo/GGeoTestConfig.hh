@@ -25,6 +25,10 @@ The Geant4 usage is done via :doc:`../cfg4/CTestDetector`.
 
 **/
 
+
+
+
+
 class GGEO_API GGeoTestConfig {
     public:
       // NODE is a generalization of the former SHAPE argument
@@ -61,6 +65,10 @@ class GGEO_API GGeoTestConfig {
        static const char* OFFSETS_ ; 
        static const char* NAME_ ; 
     public:
+       //static const char* E_PmtInBox ; 
+       //static const char* E_BoxInBox ; 
+       //static const char* E_NCSG ; 
+    public:
        GGeoTestConfig(const char* config);
        int getVerbosity();
     private:
@@ -92,6 +100,10 @@ class GGEO_API GGeoTestConfig {
        std::string getNodeString(unsigned int i); 
 
        bool      getAnalytic();
+       bool      isPmtInBox();
+       bool      isBoxInBox();
+       bool      isNCSG();
+
        const char* getMode();
        const char* getPmtPath();
        const char* getCsgPath();
