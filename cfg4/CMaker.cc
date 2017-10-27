@@ -41,7 +41,6 @@ CMaker::CMaker(Opticks* ok, int verbosity)
 {
 }   
 
-
 std::string CMaker::LVName(const char* shapename)
 {
     std::stringstream ss ; 
@@ -56,16 +55,14 @@ std::string CMaker::PVName(const char* shapename)
     return ss.str();
 }
 
-
-
-G4VSolid* CMaker::makeSphere(const glm::vec4& param)
+G4VSolid* CMaker::makeSphere_OLD(const glm::vec4& param)
 {
     G4double radius = param.w*mm ; 
     G4Sphere* solid = new G4Sphere("sphere_solid", 0., radius, 0., twopi, 0., pi);  
     return solid ; 
 }
 
-G4VSolid* CMaker::makeBox(const glm::vec4& param)
+G4VSolid* CMaker::makeBox_OLD(const glm::vec4& param)
 {
     G4double extent = param.w*mm ; 
     G4double x = extent;
@@ -75,7 +72,7 @@ G4VSolid* CMaker::makeBox(const glm::vec4& param)
     return solid ; 
 }
 
-G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
+G4VSolid* CMaker::makeSolid_OLD(GCSG* csg, unsigned int index)
 {
    // hmm this is somewhat specialized to known structure of DYB PMT
    //  eg intersections are limited to 3 ?
@@ -119,8 +116,8 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        G4RotationMatrix ab_rot ; 
        G4Transform3D    ab_transform(ab_rot, bpos  );
 
-       G4VSolid* asol = makeSolid(csg, a );
-       G4VSolid* bsol = makeSolid(csg, b );
+       G4VSolid* asol = makeSolid_OLD(csg, a );
+       G4VSolid* bsol = makeSolid_OLD(csg, b );
 
        G4UnionSolid* uso = new G4UnionSolid( ab_name.c_str(), asol, bsol, ab_transform );
        solid = uso ; 
@@ -161,9 +158,9 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
        G4ThreeVector jpos(csg->getX(j)*mm, csg->getY(j)*mm, csg->getZ(j)*mm);
        G4ThreeVector kpos(csg->getX(k)*mm, csg->getY(k)*mm, csg->getZ(k)*mm);
 
-       G4VSolid* isol = makeSolid(csg, i );
-       G4VSolid* jsol = makeSolid(csg, j );
-       G4VSolid* ksol = makeSolid(csg, k );
+       G4VSolid* isol = makeSolid_OLD(csg, i );
+       G4VSolid* jsol = makeSolid_OLD(csg, j );
+       G4VSolid* ksol = makeSolid_OLD(csg, k );
 
        G4RotationMatrix ij_rot ; 
        G4Transform3D    ij_transform(ij_rot, jpos  );
@@ -249,13 +246,13 @@ G4VSolid* CMaker::makeSolid(GCSG* csg, unsigned int index)
    return solid ; 
 }
 
-G4VSolid* CMaker::makeSolid(OpticksCSG_t type, const glm::vec4& param)
+G4VSolid* CMaker::makeSolid_OLD(OpticksCSG_t type, const glm::vec4& param)
 {
     G4VSolid* solid = NULL ; 
     switch(type)
     {
-        case CSG_BOX:   solid = makeBox(param);break;
-        case CSG_SPHERE:solid = makeSphere(param);break;
+        case CSG_BOX:   solid = makeBox_OLD(param);break;
+        case CSG_SPHERE:solid = makeSphere_OLD(param);break;
         case CSG_UNION:
         case CSG_INTERSECTION:
         case CSG_DIFFERENCE:
@@ -366,6 +363,12 @@ G4Transform3D* CMaker::ConvertTransform(const glm::mat4& t) // static
 
 G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 {
+    /*
+    G4 has inner imps that would allow some Opticks operators to be
+    expressed as G4 primitives. 
+
+    */
+
     G4VSolid* result = NULL ; 
     const char* name = node->csgname();
     assert(name);
@@ -479,7 +482,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     }
     else
     {
-        LOG(fatal) << "CMaker::ConvertPrimitive " << name ; 
+        LOG(fatal) << "CMaker::ConvertPrimitive MISSING IMP FOR  " << name ; 
         assert(0);
     }
     return result ; 

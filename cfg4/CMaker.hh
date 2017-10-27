@@ -47,11 +47,11 @@ class CFG4_API CMaker
     public:
         CMaker(Opticks* ok, int verbosity=0);
     public:
-        G4VSolid* makeSolid(OpticksCSG_t type, const glm::vec4& param);
-        G4VSolid* makeBox(const glm::vec4& param);
-        G4VSolid* makeSphere(const glm::vec4& param);
-    public:
-        G4VSolid* makeSolid(GCSG* csg, unsigned int i);  // ancient CSG 
+        // primordial CSG
+        G4VSolid* makeSolid_OLD(OpticksCSG_t type, const glm::vec4& param);
+        G4VSolid* makeBox_OLD(const glm::vec4& param);
+        G4VSolid* makeSphere_OLD(const glm::vec4& param);
+        G4VSolid* makeSolid_OLD(GCSG* csg, unsigned int i); 
     public:
         // current CSG 
         G4VSolid* makeSolid(NCSG* csg);                  

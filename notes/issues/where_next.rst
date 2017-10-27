@@ -81,6 +81,8 @@ TODO: thin solid polygonization
 TODO : Push CSG node tree support thru to cfg4
 ------------------------------------------------
 
+* :doc:`ncsg_support_in_cfg4`
+
 Add:
 
 * creation of Geant4 geometries from the CSG node tree description.

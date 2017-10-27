@@ -9,6 +9,9 @@ ISSUE : GPU side bbox not CSG difference/intersection aware
   makeing GPU bounds are greater than the CPU ones ...
 
 
+* **NB: THIS IS NOT YET FIXED : NEED TO SET BBOX ON ROOT NODE**
+
+
 Approach
 ------------
 
@@ -21,7 +24,7 @@ Approach
 * copy from CPU ?
 
   * YEP : no choice
-  * does the root node (which is always a CSG operation node) 
+  * does the root node (which is either a single primitive or a CSG operation node) 
     have spare slots in quads 2,3 ? 
 
 

@@ -244,7 +244,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
                   << std::setw(20) << gformat(param)
                   ;   
 
-        G4VSolid* solid = m_maker->makeSolid(type, param);  
+        G4VSolid* solid = m_maker->makeSolid_OLD(type, param);  
 
         G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
 
@@ -416,7 +416,7 @@ G4LogicalVolume* CTestDetector::makeLV(GCSG* csg, unsigned int i)
 
     const G4Material* material = m_mlib->makeG4Material(matname) ;
 
-    G4VSolid* solid = m_maker->makeSolid(csg, i );
+    G4VSolid* solid = m_maker->makeSolid_OLD(csg, i );
 
     G4LogicalVolume* logvol = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn);
 
