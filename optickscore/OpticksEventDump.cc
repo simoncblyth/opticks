@@ -6,6 +6,7 @@
 
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
+#include "OpticksEventStat.hh"
 #include "OpticksEventDump.hh"
 
 #include "PLOG.hh"
@@ -14,40 +15,47 @@ OpticksEventDump::OpticksEventDump(OpticksEvent* evt )
     :
     m_ok(evt->getOpticks()),
     m_evt(evt),
+    m_stat(new OpticksEventStat(evt,0)),
     m_noload( evt ? evt->isNoLoad() : true ),
-    m_records(NULL)
+    m_records( evt ? evt->getRecordsNPY() : NULL )
 {
     init();
 }
 
-
 void OpticksEventDump::init()
 {
     assert(m_ok);
-    setupRecordsNPY();
 }
-
 
 void OpticksEventDump::dump(const char* msg)
 {
     Summary(msg);
     dumpRecords();
     dumpPhotonData();
-
 }
-
-
 
 void OpticksEventDump::Summary(const char* msg)
 {
     LOG(info) << msg ; 
+    const char* geopath = m_evt->getGeoPath();
 
     std::cout 
-        << "TagDir:" << m_evt->getTagDir() << std::endl 
-        << "ShapeString:" << m_evt->getShapeString() << std::endl 
-        << "Loaded " << ( m_noload ? "NO" : "YES" ) 
+        << std::setw(20) 
+        << "TagDir:" 
+        << m_evt->getTagDir() 
+        << std::endl 
+        << std::setw(20) 
+        << "ShapeString:" << m_evt->getShapeString() 
+        << std::endl 
+        << std::setw(20) 
+        << "Loaded " << ( m_noload ? "NO" : "YES" )   
+        << std::endl
+        << std::setw(20) 
+        << "GeoPath " 
+        << ( geopath ? geopath : "-" ) 
         << std::endl 
         ;
+
 
     if(m_noload) return ; 
 
@@ -78,7 +86,6 @@ void OpticksEventDump::dumpRecords(const char* msg, unsigned photon_id )
 
     for(unsigned p=0 ; p < posts.size() ; p++)
         std::cout << gpresent( "post", posts[p] ) ; 
-
 }
 
 
@@ -91,7 +98,6 @@ void OpticksEventDump::dumpPhotonData(const char* msg)
     if(!photons) return ;
     dumpPhotonData(photons);
 }
-
 
 void OpticksEventDump::dumpPhotonData(NPY<float>* photons)
 {
@@ -111,34 +117,6 @@ void OpticksEventDump::dumpPhotonData(NPY<float>* photons)
         }
     }  
 }
-
-
-
-
-void OpticksEventDump::setupRecordsNPY()
-{
-    if(m_noload || m_records) return ; 
-
-    NPY<short>* rx = m_evt->getRecordData();
-    assert(rx && rx->hasData());
-    unsigned maxrec = m_evt->getMaxRec() ;
-
-    Types* types = m_ok->getTypes();
-    Typ* typ = m_ok->getTyp();
-
-    RecordsNPY* rec = new RecordsNPY(rx, maxrec);
-
-    rec->setTypes(types);
-    rec->setTyp(typ);
-    rec->setDomains(m_evt->getFDomain()) ;
-
-    LOG(info) << "OpticksEvent::setupRecordsNPY " 
-              << " shape " << rx->getShapeString() 
-              ;
-
-    m_evt->setRecordsNPY(rec);
-    m_records = rec ; 
-} 
 
 
 

@@ -23,7 +23,7 @@
 
 // cfg4-
 #include "CMaterialLib.hh"
-#include "CTraverser.hh"
+#include "CTraverser.hh"    // m_traverser resides in base 
 
 // g4-
 #include "G4LogicalVolume.hh"

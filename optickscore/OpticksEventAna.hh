@@ -12,7 +12,7 @@ class RecordsNPY ;
 
 class Opticks ; 
 class OpticksEvent ; 
-class OpticksEventDump ; 
+class OpticksEventStat ; 
 
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
@@ -28,7 +28,7 @@ Ideas
 ------
 
 Handle multiple SDFs from NCSGList to check all nodes in 
-test geometry ... so can infer the nodeindex 
+test geometry ... so cwan infer the nodeindex 
 from each photon position (excluding bulk positions, SC, AB )
 
 
@@ -39,11 +39,7 @@ from each photon position (excluding bulk positions, SC, AB )
 class OKCORE_API OpticksEventAna
 {
        typedef std::function<float(float,float,float)> SDF ; 
-       typedef std::map<unsigned long long, unsigned>  MQC ;
-       typedef std::pair<unsigned long long, unsigned>   PQC ;
-       typedef typename std::vector<PQC>  VPQC ;
 
-       static bool PQC_desc( const PQC& a, const PQC& b){ return b.second < a.second ; }
 
    public:
        OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist );
@@ -52,7 +48,6 @@ class OKCORE_API OpticksEventAna
 
    private:
        void init();
-       void countTotals();
        void countExcursions();
        void dumpExcursions();
        void dumpStepByStepCSGExcursions();
@@ -72,10 +67,9 @@ class OKCORE_API OpticksEventAna
        unsigned                 m_tree_num ; 
 
        SDF*                     m_sdflist ; 
-       MQC*                     m_surf ; 
-       MQC                      m_total ; 
- 
-       OpticksEventDump*        m_dmp ; 
+
+
+       OpticksEventStat*        m_stat ; 
        RecordsNPY*              m_records ; 
 
        NPY<float>*              m_pho  ; 

@@ -715,6 +715,9 @@ void GGeo::createSurLib()
     frame #12: 0x00000001000139be OKG4Test`main(argc=21, argv=0x00007fff5fbfe748) + 1486 at OKG4Test.cc:56
 */
 
+    assert( m_surlib == NULL );
+
+/*
     if(m_surlib)
     {
         LOG(warning) << "recreating GSurLib" ; 
@@ -724,6 +727,11 @@ void GGeo::createSurLib()
     {
         LOG(info) << "deferred creation of GSurLib " ; 
     }
+*/
+
+   if(m_ok->isDbgSurf())
+   LOG(info) << "[--dbgsurf] deferred creation of GSurLib " ; 
+
 
     m_surlib = new GSurLib(this) ; 
     //m_surlib->dump("GGeo::createSurLib");

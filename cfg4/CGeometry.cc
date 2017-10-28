@@ -75,7 +75,6 @@ void CGeometry::init()
     }
 
     detector->attachSurfaces();
-    //m_csurlib->convert(detector);
 
     m_detector = detector ; 
     m_lib = detector->getPropLib();

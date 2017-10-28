@@ -74,7 +74,6 @@ CTestDetector::CTestDetector(OpticksHub* hub, GGeoTest* geotest, OpticksQuery* q
 }
 
 
-
 void CTestDetector::init()
 {
     LOG(trace) << "CTestDetector::init" ; 
@@ -85,14 +84,13 @@ void CTestDetector::init()
         setVerbosity(1);
     }
 
-
     LOG(trace) << "CTestDetector::init CMaker created" ; 
 
     G4VPhysicalVolume* top = makeDetector();
 
     LOG(trace) << "CTestDetector::init makeDetector DONE" ; 
 
-    setTop(top) ; 
+    setTop(top) ;  // <-- kicks off CTraverser
 }
 
 
@@ -108,6 +106,8 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     NCSGList* csglist = m_geotest->getCSGList();
     GSolidList* solist = m_geotest->getSolidList();
 
+    GMergedMesh* tmm = m_geotest->getMergedMesh() ;
+
     assert( csgpath );
     assert( csglist );
     assert( solist );
@@ -119,6 +119,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
               << " csgpath " << csgpath
               << " numTrees " << numTrees 
               << " numSolids " << numSolids 
+              << " tmm " << tmm
               ;
 
     assert( numSolids == numTrees );

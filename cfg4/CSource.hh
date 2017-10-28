@@ -1,5 +1,7 @@
 #pragma once
 
+class Opticks ; 
+
 class CRecorder ; 
 class G4Event ; 
 class G4ParticleDefinition ;
@@ -18,7 +20,7 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     friend class CTorchSource ; 
     friend class CGunSource ; 
   public:
-    CSource(int verbosity);
+    CSource(Opticks* ok, int verbosity);
     void setRecorder(CRecorder* recorder);
     void setParticle(const char* name);
     virtual ~CSource();
@@ -48,6 +50,8 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     G4ThreeVector         GetParticleMomentumDirection() const ;
     G4double              GetParticleEnergy() const ;
     G4double              GetParticleTime() const;
+  protected: 
+    Opticks*              m_ok ;  
   private:
     CRecorder*            m_recorder ; 
     G4int                 m_num;

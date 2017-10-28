@@ -3,6 +3,8 @@
 #include <vector>
 #include <string>
 
+class Opticks ; 
+
 template <typename T> class GPropertyMap ; 
 class GSur ; 
 class GSurLib ; 
@@ -47,13 +49,17 @@ class CFG4_API CSurLib
     protected:
          void convert(CDetector* detector);
     private:
+         // lookup G4 pv1,pv2 from volume pair indices
          G4LogicalBorderSurface* makeBorderSurface(GSur* sur, unsigned ivp, G4OpticalSurface* os);
+         // lookup G4 lv via name 
          G4LogicalSkinSurface*   makeSkinSurface(  GSur* sur, unsigned ilv, G4OpticalSurface* os);
          G4OpticalSurface*       makeOpticalSurface(GSur* sur);
          void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap);
          void setDetector(CDetector* detector);
     private:
          GSurLib*       m_surlib ; 
+         Opticks*       m_ok ; 
+         bool           m_dbgsurf ; 
          GSurfaceLib*   m_surfacelib ; 
          CDetector*     m_detector ; 
 

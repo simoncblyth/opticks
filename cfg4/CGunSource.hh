@@ -9,7 +9,7 @@ class NGunConfig ;
 class CFG4_API CGunSource: public CSource
 {
   public:
-    CGunSource(int verbosity);
+    CGunSource(Opticks* ok, int verbosity);
     virtual ~CGunSource();
     void configure(NGunConfig* gc);
   private:

@@ -11,6 +11,16 @@ template <typename T> class NPY ;
 
 #include "CFG4_API_EXPORT.hh"
 
+/**
+
+CGenerator
+===========
+
+Canonical m_generator instance is CG4 resident instanciated within it.    
+
+
+**/
+
 class CFG4_API CGenerator 
 {
    public:

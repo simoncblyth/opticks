@@ -40,6 +40,7 @@ class GGEO_API GGeoTest {
        GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase=NULL);
        void dump(const char* msg="GGeoTest::dump");
        void modifyGeometry();
+       GMergedMesh* getMergedMesh();
     public:
        GGeoTestConfig* getConfig();
     public:
@@ -79,6 +80,7 @@ class GGEO_API GGeoTest {
        NCSGList*        m_csglist ; 
        GSolidList*      m_solist ; 
        unsigned int     m_verbosity ;
+       GMergedMesh*     m_mm ; 
 
 };
 

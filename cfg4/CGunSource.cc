@@ -20,9 +20,9 @@
 
 
 
-CGunSource::CGunSource(int verbosity)  
+CGunSource::CGunSource(Opticks* ok, int verbosity)  
     :
-    CSource(verbosity),
+    CSource(ok, verbosity),
     m_config(NULL)
 {
     init();

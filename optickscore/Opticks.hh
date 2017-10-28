@@ -324,6 +324,9 @@ class OKCORE_API Opticks {
        bool isRayLOD() const ; // raytrace LOD via OptiX selector based on ray origin wrt instance position 
        bool isMaterialDbg() const ; 
        bool isDbgAnalytic() const ; 
+       bool isDbgSurf() const ; 
+       bool isDbgTorch() const ; 
+
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);

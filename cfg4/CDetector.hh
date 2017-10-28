@@ -70,7 +70,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  protected:
     void               setValid(bool valid); 
  public: 
-    // from traverser
+    // from traverser : pv and lv are collected into vectors by CTraverser::AncestorVisit
     const G4VPhysicalVolume* getPV(unsigned index);
     const G4LogicalVolume*   getLV(unsigned index);
     const G4LogicalVolume*   getLV(const char* name);
@@ -99,6 +99,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     OpticksHub*        m_hub ;
  protected: 
     Opticks*           m_ok ;
+    bool               m_dbgsurf ; 
     GGeo*              m_ggeo ; 
     CBndLib*           m_blib ; 
     GSurLib*           m_gsurlib ; 

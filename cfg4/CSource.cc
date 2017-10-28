@@ -22,8 +22,9 @@ CSource::part_prop_t::part_prop_t()
 }
 
 
-CSource::CSource(int verbosity)  
+CSource::CSource(Opticks* ok, int verbosity)  
     :
+    m_ok(ok),
     m_recorder(NULL),
 	m_num(1),
 	m_time(0.0),

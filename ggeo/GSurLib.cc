@@ -1,11 +1,4 @@
-/*
-
-Q: Where/What uses this ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-
-
-*/
+// See notes/issues/surface_review.rst
 
 
 #include <algorithm>
@@ -41,12 +34,23 @@ GSur* GSurLib::getSur(unsigned i)
     return i < numSur ? m_surs[i] : NULL ; 
 }
 
+GSurfaceLib* GSurLib::getSurfaceLib()
+{
+   return m_slib ; 
+}
+
+Opticks* GSurLib::getOpticks()
+{
+   return m_ok ;  
+}
+
 
 
 GSurLib::GSurLib(GGeo* gg) 
     : 
     m_ggeo(gg),
     m_ok(gg->getOpticks()),
+    m_dbgsurf(m_ok->isDbgSurf()),
     m_slib(gg->getSurfaceLib()),
     m_blib(gg->getBndLib()),
     m_closed(false)
@@ -55,9 +59,20 @@ GSurLib::GSurLib(GGeo* gg)
 }
 
 
-GSurfaceLib* GSurLib::getSurfaceLib()
+void GSurLib::init()
 {
-   return m_slib ; 
+    if(m_dbgsurf) LOG(info) << "[--dbgsurf] GSurLib::init" ; 
+    if(m_ok->isDayabay())
+    {
+        pushBorderSurfacesDYB(m_bordersurface);
+        if(m_dbgsurf) 
+           LOG(info) << "[--dbgsurf] GSurLib::init m_bordersurface.size " << m_bordersurface.size() ; 
+    }
+
+    // even with test geometries, still want to have access to the 
+    // cheat surface classifications in the basis geometry 
+
+    collectSur();
 }
 
 
@@ -75,42 +90,53 @@ void GSurLib::pushBorderSurfacesDYB(std::vector<std::string>& names)
     names.push_back("NearDeadLinerSurface");
 }
 
+
 bool GSurLib::isBorderSurface(const char* name)
 {
     return std::find(m_bordersurface.begin(), m_bordersurface.end(), name ) != m_bordersurface.end() ; 
 }
 
-void GSurLib::init()
-{
-    if(m_ok->isTest())
-    {
-    }
-    else if(m_ok->isDayabay())
-    {
-        pushBorderSurfacesDYB(m_bordersurface);
-    }
-    collectSur();
-}
 
 void GSurLib::collectSur()
 {
     unsigned nsur = m_slib->getNumSurfaces();
-    LOG(info) << " nsur " << nsur ; 
+
+    if(m_dbgsurf) 
+         LOG(info) << "[--dbgsurf]" 
+                   << " m_slib numSurfaces " << nsur
+                   ;
+
+
     for(unsigned i=0 ; i < nsur ; i++)
     {
         GPropertyMap<float>* pm = m_slib->getSurface(i);  
         const char* name = pm->getName();
         char type = isBorderSurface(name) ? 'B' : 'S' ;   // border or skin surface 
+
+        if(m_dbgsurf)
+            LOG(info) << "[--dbgsurf]"
+                      << " i " << std::setw(3) << i 
+                      << " type " << type
+                      << " name " << name
+                      ;
+
         GSur* sur = new GSur(pm, type);
         add(sur);
     }
 }
 
+
 void GSurLib::close()
 {
+    if(m_dbgsurf) 
+         LOG(info) << "[--dbgsurf] GSurLib::close START " ;
+
     m_closed = true ; 
     examineSolidBndSurfaces();  
     assignType();
+
+    if(m_dbgsurf) 
+         LOG(info) << "[--dbgsurf] GSurLib::close DONE " ;
 }
 
 bool GSurLib::isClosed()
@@ -119,75 +145,104 @@ bool GSurLib::isClosed()
 }
 
 
+void GSurLib::getSurfacePair(std::pair<GSur*,GSur*>& osur_isur, unsigned boundary)
+{
+    guint4 bnd = m_blib->getBnd(boundary);
+
+    if(m_dbgsurf)
+        LOG(info) << " GSurLib::getSurfacePair "
+                  << " bnd " << std::setw(50) << bnd.description() 
+                  ;
+
+    unsigned osur_ = bnd.y ; 
+    unsigned isur_ = bnd.z ; 
+
+    GSur* isur = isur_ == UNSET ? NULL : getSur(isur_);
+    GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
+ 
+    osur_isur.first  = osur ; 
+    osur_isur.second = isur ; 
+}
+
+
 
 void GSurLib::examineSolidBndSurfaces()
 {
     // this is deferred to CDetector::attachSurfaces 
     // to allow CTestDetector to fixup mesh0 info 
+    //
+    // hmm GGeoTest(NCSG) has another mm 
+    // even though the polygonization is often not good
+    // that doesnt prevent the below from being able to work.
 
     GGeo* gg = m_ggeo ; 
 
     GMergedMesh* mm = gg->getMergedMesh(0) ;
-
     unsigned numSolids = mm->getNumSolids();
 
-    LOG(info) << "GSurLib::examineSolidBndSurfaces" 
+    if(m_dbgsurf)
+    LOG(info) << "[--dbgsurf] GSurLib::examineSolidBndSurfaces" 
               << " numSolids " << numSolids
+              << " mm " << mm 
               ; 
 
-    for(unsigned i=0 ; i < numSolids ; i++)
+
+    // lookup surface pair for each boundary 
+    // and invoke methods that will allow 
+    // G4 surface creation to find the appropriate pv and lv arguments 
+
+    unsigned node_mismatch(0);
+    unsigned node2_mismatch(0);
+
+    // hmm for test geometry the lv returned are the global ones, not the test geometry ones
+    // and the boundary names look wrong too
+    //
+    // hmm for test geometry where are creating the 
+    // lv, pv it would be simpler to do this during creation rather than 
+    // afterwards
+
+    bool reverse = true ; 
+
+    for(unsigned j=0 ; j < numSolids ; j++)
     {
-        guint4 id = mm->getIdentity(i);
-        guint4 ni = mm->getNodeInfo(i);
+        unsigned i = reverse ? numSolids - 1 - j : j ; 
+
         const char* lv = gg->getLVName(i) ;
 
-        // hmm for test geometry the lv returned are the global ones, not the test geometry ones
-        // and the boundary names look wrong too
+        guint4 identity = mm->getIdentity(i);
+        unsigned node2 = identity.x ;
+        unsigned boundary = identity.z ;
 
-        unsigned node = ni.z ;
-        unsigned parent = ni.w ;
-
-        unsigned node2 = id.x ;
-        unsigned boundary = id.z ;
+        guint4 nodeinfo = mm->getNodeInfo(i);
+        unsigned node = nodeinfo.z ;
+        unsigned parent = nodeinfo.w ;
 
         std::string bname = m_blib->shortname(boundary);
 
-        if(node != i)
-           LOG(fatal) << "GSurLib::examineSolidBndSurfaces"
-                      << " i(mm-idx) " << std::setw(6) << i
+        // j not i, as order reversal elsewhere (for auto-containment ?)
+        if( node != j ) node_mismatch++ ;
+        if( node2 != j ) node2_mismatch++ ;
+        
+        std::pair<GSur*,GSur*> osur_isur ; 
+        getSurfacePair(osur_isur, boundary );
+
+        GSur* osur = osur_isur.first ; 
+        GSur* isur = osur_isur.second ; 
+
+        if(m_dbgsurf)
+           LOG(info) << "GSurLib::examineSolidBndSurfaces"
+                      << " j " << std::setw(6) << j
+                      << " i(so-idx) " << std::setw(6) << i
                       << " node(ni.z) " << std::setw(6) << node
                       << " node2(id.x) " << std::setw(6) << node2
                       << " boundary(id.z) " << std::setw(6) << boundary
                       << " parent(ni.w) " << std::setw(6) << parent 
+                      << " nodeinfo " << std::setw(50) << nodeinfo.description() 
                       << " bname " << bname
                       << " lv " << ( lv ? lv : "NULL" )
+                      << ( isur ? " isur" : "" )
+                      << ( osur ? " osur" : "" )
                       ;
-
-        assert( node == i );
-
-
-        //unsigned mesh = id.y ;
-        //unsigned sensor = id.w ;
-        assert( node2 == i );
-        
-        guint4 bnd = m_blib->getBnd(boundary);
-
-        //unsigned omat_ = bnd.x ; 
-        unsigned osur_ = bnd.y ; 
-        unsigned isur_ = bnd.z ; 
-        //unsigned imat_ = bnd.w ; 
-
-
-        GSur* isur = isur_ == UNSET ? NULL : getSur(isur_);
-        GSur* osur = osur_ == UNSET ? NULL : getSur(osur_);
-
-
-        LOG(debug) << std::setw(3) << i 
-                  << " nodeinfo " << std::setw(50) << ni.description() 
-                  << " bnd " << std::setw(50) << bnd.description() 
-                  << ( isur ? " isur" : "" )
-                  << ( osur ? " osur" : "" )
-                  ;
 
 
         // the reason for the order swap between osur and isur is explained below
@@ -204,6 +259,14 @@ void GSurLib::examineSolidBndSurfaces()
             isur->addLV(lv);
         } 
     }
+
+    LOG(info) 
+       << " node_mismatch " << node_mismatch
+       << " node2_mismatch " << node2_mismatch
+       ;
+
+    assert( node_mismatch == 0 );
+    assert( node2_mismatch == 0 );
 } 
 
 /**

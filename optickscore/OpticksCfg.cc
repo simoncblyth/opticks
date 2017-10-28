@@ -322,6 +322,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dbganalytic", "debug analytic test geometry see ggeo/GGeoTest"); 
 
+   m_desc.add_options()
+       ("dbgsurf", "debug surface handling see notes/issues/surface_review.rst "); 
+
 
 
 

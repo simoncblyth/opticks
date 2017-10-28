@@ -9,6 +9,7 @@ template <typename T> class NPY ;
 class RecordsNPY ; 
 class Opticks ;
 class OpticksEvent ;
+class OpticksEventStat ;
  
 class OKCORE_API OpticksEventDump 
 {
@@ -16,7 +17,6 @@ class OKCORE_API OpticksEventDump
        OpticksEventDump( OpticksEvent* evt );
    private:
        void init();
-       void setupRecordsNPY();
    public:
        void Summary(const char* msg="OpticksEventDump::Summary");
        void dump(const char* msg="OpticksEventDump::dump");
@@ -27,10 +27,11 @@ class OKCORE_API OpticksEventDump
        static void  dumpPhotonData(NPY<float>* photon_data);
 
    private:
-       Opticks*      m_ok ; 
-       OpticksEvent* m_evt ; 
-       bool          m_noload ; 
-       RecordsNPY*   m_records ; 
+       Opticks*          m_ok ; 
+       OpticksEvent*     m_evt ; 
+       OpticksEventStat* m_stat ; 
+       bool              m_noload ; 
+       RecordsNPY*       m_records ; 
 };
 
 #include "OKCORE_TAIL.hh"

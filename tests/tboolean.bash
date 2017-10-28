@@ -19,6 +19,29 @@ tboolean-box
    run opticks in "--test" mode loading the above written geometry 
 
 
+
+Debug Workflow
+~~~~~~~~~~~~~~~~
+
+::
+
+    tboolean-;
+
+    tboolean-torus --okg4 -D --dbgsurf
+       ## bi-simulation from --okg4
+
+    tboolean-torus --okg4 --load --vizg4
+       ## visualize the G4 evt 
+
+    tboolean-torus-a
+       ## OpticksEventCompareTest OR other such exe
+
+    tboolean-torus-a --vizg4 
+       ## load the G4 event, for dumping etc..
+
+
+
+
 Mostly Working (Sep 1, 2017) Other than those marked
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -288,7 +311,11 @@ tboolean-ana-(){
     local testname=${TESTNAME}
     [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
 
-    OpticksEventAnaTest --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis ;
+    #local exe=OpticksEventAnaTest 
+    #local exe=OpticksEventCompareTest 
+    local exe=OpticksEventDumpTest 
+
+    $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
 
 
@@ -388,6 +415,7 @@ tboolean-torchconfig-disc()
     echo "$(join _ ${torch_config[@]})" 
 }
 
+
 tboolean-torchconfig-discaxial()
 {
     local discaxial_target=0,0,0
@@ -431,8 +459,8 @@ tboolean-torchconfig-sphere()
 
 tboolean-torchconfig()
 {
-    #tboolean-torchconfig-disc
-    tboolean-torchconfig-discaxial
+    tboolean-torchconfig-disc
+    #tboolean-torchconfig-discaxial
 }
 
 
@@ -505,7 +533,7 @@ tboolean-bib-box-sphere-()
 
 
 tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- ; } 
+tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
 
@@ -544,7 +572,7 @@ EOP
 
 tboolean-cone-scan(){ SCAN="0,0,100,1,0,0,0,300,10" NCSGScanTest $TMP/tboolean-cone--/1 ; }
 tboolean-cone-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
 tboolean-cone--(){ cat << EOP 
 
@@ -619,7 +647,7 @@ EOP
 
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
@@ -791,7 +819,7 @@ EOP
 
 
 tboolean-parade-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-parade(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-parade(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-parade-(){ $FUNCNAME- | python $* ; } 
 tboolean-parade--(){ cat << EOP 
 
@@ -858,7 +886,7 @@ EOP
 
 tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-complement-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-complement(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-complement(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-complement-(){ $FUNCNAME- | python $* ; } 
 tboolean-complement--(){ cat << EOP 
 
@@ -909,7 +937,7 @@ EOP
 }
 
 tboolean-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- ; } 
+tboolean-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-zsphere--(){ cat << EOP 
 
@@ -943,7 +971,7 @@ EOP
 
 
 tboolean-union-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-union-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-union-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-union-zsphere--(){ cat << EOP 
 
@@ -977,7 +1005,7 @@ EOP
 
 
 tboolean-difference-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-difference-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-difference-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-difference-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-difference-zsphere--(){ cat << EOP 
 
@@ -1598,9 +1626,9 @@ EOP
 tboolean-bsu-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-bsd-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-bsi-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-bsu(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- ; }
-tboolean-bsd(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- ; }
-tboolean-bsi(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- ; }
+tboolean-bsu(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- union)        tboolean-- $* ; }
+tboolean-bsd(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- difference)   tboolean-- $* ; }
+tboolean-bsi(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-boxsphere- intersection) tboolean-- $* ; }
 tboolean-boxsphere-(){ $FUNCNAME- $* | python  ; } 
 tboolean-boxsphere--(){ cat << EOP 
 import math
@@ -1631,7 +1659,7 @@ EOP
 
 
 tboolean-segment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-segment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-segment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-segment-(){  $FUNCNAME- | python $* ; }
 tboolean-segment--(){ cat << EOP 
 
@@ -1666,7 +1694,7 @@ EOP
 
 
 tboolean-cysegment-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-cysegment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cysegment(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-cysegment-(){  $FUNCNAME- | python $* ; }
 tboolean-cysegment--(){ cat << EOP 
 
@@ -1709,7 +1737,7 @@ EOP
 
 
 tboolean-cyslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-cyslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-cyslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-cyslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-cyslab--(){ cat << EOP 
 import numpy as np
@@ -1786,7 +1814,7 @@ EOP
 
 
 tboolean-undefined-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-undefined(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-undefined(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-undefined-(){  $FUNCNAME- | python $* ; } 
 tboolean-undefined--(){ cat << EOP 
 
@@ -1813,7 +1841,16 @@ EOP
 
 
 tboolean-torus-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-torus(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-torus()
+{
+    #local photons=100000
+    local photons=10
+ 
+    TESTNAME=$FUNCNAME \
+    TESTCONFIG=$($FUNCNAME- 2>/dev/null) \
+    TORCHCONFIG=$(tboolean-torchconfig-disc 0,0,350 150 $photons) \
+    tboolean-- $* ; 
+} 
 tboolean-torus-(){  $FUNCNAME- | python $* ; } 
 tboolean-torus--(){ cat << EOP 
 
@@ -2107,7 +2144,7 @@ EOP
 
 
 tboolean-ellipsoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-ellipsoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-ellipsoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-ellipsoid-(){  $FUNCNAME- | python $* ; } 
 tboolean-ellipsoid--(){ cat << EOP 
 import numpy as np
@@ -2151,7 +2188,7 @@ EOP
 
 
 tboolean-spseg-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-spseg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-spseg(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-spseg-(){  $FUNCNAME- | python $* ; } 
 tboolean-spseg--(){ cat << EOP 
 import numpy as np
@@ -2187,7 +2224,7 @@ EOP
 
 
 tboolean-sphereslab-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-sphereslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; } 
+tboolean-sphereslab(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-sphereslab-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereslab--(){ cat << EOP 
 import numpy as np
@@ -2241,7 +2278,7 @@ EOP
 
 
 tboolean-sphereplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-sphereplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-sphereplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-sphereplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphereplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
@@ -2275,7 +2312,7 @@ EOP
 }
 
 tboolean-boxplane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-boxplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-boxplane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
 tboolean-boxplane-(){  $FUNCNAME- | python $* ; } 
 tboolean-boxplane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
@@ -2299,7 +2336,7 @@ EOP
 
 
 tboolean-plane-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-plane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- ; }
+tboolean-plane(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; }
 tboolean-plane-(){ $FUNCNAME- | python $* ; } 
 tboolean-plane--(){ cat << EOP 
 from opticks.ana.base import opticks_main
@@ -2473,7 +2510,7 @@ EOP
 
 
 tboolean-fromstring-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-fromstring(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-fromstring(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-fromstring-(){ $FUNCNAME- | python ; }
 tboolean-fromstring--(){ cat << EOP
 
@@ -2502,7 +2539,7 @@ EOP
 
 
 tboolean-unbalanced-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-unbalanced(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-)  tboolean-- ; }
+tboolean-unbalanced(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-)  tboolean-- $* ; }
 tboolean-unbalanced-(){ $FUNCNAME- | python $*  ; }
 tboolean-unbalanced--(){  cat << EOP 
 import math, logging
@@ -2715,7 +2752,7 @@ tboolean-dd-scan(){ SCAN="0,0,127.9,0,0,1,0,0.1,0.01" NCSGScanTest $TMP/tboolean
 
 
 tboolean-interlocked-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-interlocked(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- ; }
+tboolean-interlocked(){  TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME-) tboolean-- $* ; }
 tboolean-interlocked-(){ $FUNCNAME- | python $* ; }
 tboolean-interlocked--(){ cat << EOP 
 import math

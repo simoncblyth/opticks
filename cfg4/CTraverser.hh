@@ -20,6 +20,7 @@ class G4LogicalSkinSurface ;
 // fwd-decl difficult due to typedef 
 
 // okc-
+class Opticks ; 
 class OpticksQuery ; 
 
 // npy-
@@ -30,7 +31,7 @@ class NBoundingBox ;
 
 /**
 CTraverser
-~~~~~~~~~~~
+=============
 
 Recursively traverses a Geant4 geometry tree, collecting 
 instances of G4Material and determining the bounding box
@@ -40,9 +41,12 @@ selection of the geometry to be determined.
 
 *CTraverser* is an internal constituent of :doc:`CDetector`
 
+
+TODO: get rid of the VolumeTreeTraverse
+
+
 **/
 
-// TODO: get rid of the VolumeTreeTraverse
 
 
 #include "CFG4_API_EXPORT.hh"
@@ -53,7 +57,7 @@ class CFG4_API CTraverser {
         static const char* GROUPVEL ; 
     public:
         // need-to-know-basis: leads to more focussed, quicker to understand and easier to test code
-        CTraverser(G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query);
+        CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query);
     private:
         void init();
     public:
@@ -89,8 +93,8 @@ class CFG4_API CTraverser {
     public:
         unsigned getNumPV();
         unsigned getNumLV();
-        const G4VPhysicalVolume* getPV(unsigned index);
-        const G4LogicalVolume*   getLV(unsigned index);
+        const G4VPhysicalVolume* getPV(unsigned index); // index lookup of m_pvs vector
+        const G4LogicalVolume*   getLV(unsigned index); // index lookup of m_lvs vector
         const G4LogicalVolume*   getLV(const char* name);
     public:
         NPY<float>*  getGlobalTransforms();
@@ -121,6 +125,7 @@ class CFG4_API CTraverser {
         bool hasMaterialWithoutMPT(G4Material* material) ; 
         void addMaterialWithoutMPT(G4Material* material) ; 
     private:
+        Opticks*                       m_ok ; 
         G4VPhysicalVolume*             m_top ; 
         NBoundingBox*                  m_bbox ; 
         OpticksQuery*                  m_query ; 

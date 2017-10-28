@@ -37,6 +37,7 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   : 
   m_hub(hub),
   m_ok(m_hub->getOpticks()),
+  m_dbgsurf(m_ok->isDbgSurf()),
   m_ggeo(m_hub->getGGeo()),
   m_blib(new CBndLib(m_hub)),
   m_gsurlib(m_hub->getSurLib()),   // invokes the deferred GGeo::createSurLib  
@@ -74,6 +75,26 @@ void CDetector::setTop(G4VPhysicalVolume* top)
     m_top = top ; 
     traverse(m_top);
 }
+
+void CDetector::traverse(G4VPhysicalVolume* /*top*/)
+{
+    // invoked from CGDMLDetector::init OR CTestDetector::init via CDetector::setTop
+
+    if(m_dbgsurf)
+         LOG(info) << "[--dbgsurf] CDetector::traverse START " ;
+    
+    m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query ); 
+    m_traverser->Traverse();
+    m_traverser->Summary("CDetector::traverse");
+
+    if(m_dbgsurf)
+         LOG(info) << "[--dbgsurf] CDetector::traverse DONE " ;
+ 
+}
+
+
+
+
 G4VPhysicalVolume* CDetector::Construct()
 {
     return m_top ; 
@@ -98,14 +119,6 @@ void CDetector::setVerbosity(unsigned int verbosity)
 }
 
 
-
-void CDetector::traverse(G4VPhysicalVolume* /*top*/)
-{
-    // invoked from CGDMLDetector::init via setTop
-    m_traverser = new CTraverser(m_top, m_bbox, m_query ); 
-    m_traverser->Traverse();
-    m_traverser->Summary("CDetector::traverse");
-}
 
 void CDetector::dumpLV(const char* msg)
 { 
@@ -237,15 +250,19 @@ CDetector::~CDetector()
 
 void CDetector::attachSurfaces()
 {
-    LOG(info) << "CDetector::attachSurfaces" ;
+    // invoked from CGeometry::init immediately after CTestDetector or GDMLDetector instanciation
 
+    if(m_dbgsurf)
+        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  " ;
 
-    
     m_gsurlib->close();
  
     m_csurlib = new CSurLib(m_gsurlib);
 
     m_csurlib->convert(this);     
+
+    if(m_dbgsurf)
+        LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;
 
 } 
 

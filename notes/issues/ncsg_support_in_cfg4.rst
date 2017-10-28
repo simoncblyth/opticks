@@ -8,6 +8,77 @@ Direct CSG intersect comparisons between Opticks and G4 using Opticks
 defined test geometries, eg invoked by the tboolean- tests 
 using --okg4 to switch on bi-simulation.
 
+For example, get the below to work and pass validation comparisons::
+
+    tboolean-;
+
+    tboolean-torus --okg4 -D --dbgsurf
+       ## bi-simulation
+
+    tboolean-torus --okg4 --load --vizg4
+       ## visualize the G4 evt 
+
+    tboolean-torus-a
+       ## OpticksEventCompareTest OR other such exe
+
+    tboolean-torus-a --vizg4 
+       ## load the G4 event, for dumping etc..
+
+
+
+STATUS
+---------
+
+* bi-simulation and analysis runs
+* torch source translation into G4 fails to reproduce expected source photons 
+
+
+
+Torch Config Convert
+------------------------
+::
+
+   cfg4/CGenerator.cc
+   cfg4/CTorchSource.cc
+
+
+
+
+::
+
+    115 CG4::CG4(OpticksHub* hub)
+    116    :
+    117      m_hub(hub),
+    118      m_ok(m_hub->getOpticks()),
+    119      m_run(m_ok->getRun()),
+    120      m_cfg(m_ok->getCfg()),
+    121      m_physics(new CPhysics(this)),
+    122      m_runManager(m_physics->getRunManager()),
+    123      m_geometry(new CGeometry(m_hub)),
+    124      m_hookup(m_geometry->hookup(this)),
+    125      m_lib(m_geometry->getPropLib()),
+    126      m_detector(m_geometry->getDetector()),
+    127      m_generator(new CGenerator(m_hub, this)),
+    128      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
+    129      m_recorder(new CRecorder(m_ok, m_geometry, m_generator->isDynamic())),
+    130      //m_rec(new Rec(m_ok, m_geometry, m_generator->isDynamic())), 
+    131      m_steprec(new CStepRec(m_ok, m_generator->isDynamic())),
+    132      m_visManager(NULL),
+    133      m_uiManager(NULL),
+    134      m_ui(NULL),
+    135      m_pga(new CPrimaryGeneratorAction(m_generator->getSource())),
+    136      m_sa(new CSteppingAction(this, m_generator->isDynamic())),
+    137      m_ta(new CTrackingAction(this)),
+    138      m_ra(new CRunAction(m_hub)),
+    139      m_ea(new CEventAction(this)),
+    140      m_initialized(false)
+    141 {
+    142      OK_PROFILE("CG4::CG4");
+    143      init();
+    144 }
+
+
+
 
 Overview
 ----------

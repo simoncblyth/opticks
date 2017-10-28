@@ -54,6 +54,10 @@ GGeoTestConfig* GGeoTest::getConfig()
 {
     return m_config ; 
 }
+GMergedMesh* GGeoTest::getMergedMesh()
+{
+    return m_mm ; 
+}
 
 
 GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase) 
@@ -71,7 +75,8 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase)
     m_maker(NULL),
     m_csglist(NULL),
     m_solist(NULL),
-    m_verbosity(0)
+    m_verbosity(0),
+    m_mm(NULL)
 {
     init();
 }
@@ -127,7 +132,9 @@ void GGeoTest::modifyGeometry()
     //tmm->dump("GGeoTest::modifyGeometry tmm ");
     m_geolib->clear();
     m_geolib->setMergedMesh( 0, tmm );
+    m_mm = tmm ; 
 }
+
 
 
 GMergedMesh* GGeoTest::create()

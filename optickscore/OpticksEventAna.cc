@@ -10,7 +10,7 @@
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
-#include "OpticksEventDump.hh"
+#include "OpticksEventStat.hh"
 #include "OpticksEventAna.hh"
 #include "PLOG.hh"
 
@@ -26,10 +26,10 @@ OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csgl
     m_tree_num(csglist->getNumTrees()),
 
     m_sdflist(new SDF[m_tree_num]), 
-    m_surf(new MQC[m_tree_num]), 
 
-    m_dmp(new OpticksEventDump(evt)),   
-    m_records(m_evt->getRecordsNPY()),   // setupRecordsNPY done by OpticksEventDump
+    m_stat(new OpticksEventStat(evt, m_tree_num)),   
+
+    m_records(m_evt->getRecordsNPY()),   // setupRecordsNPY done by OpticksEventStat
     m_pho(evt->getPhotonData()),
     m_seq(evt->getSequenceData()),
     m_pho_num(m_pho->getShape(0)),
@@ -48,9 +48,6 @@ void OpticksEventAna::init()
         nnode* root = csg->getRoot();
         m_sdflist[i] = root->sdf() ; 
     }
-
-
-    countTotals();
     countExcursions();
 }
 
@@ -62,7 +59,7 @@ void OpticksEventAna::dump(const char* msg)
     //m_pho->dump();
     //m_seq->dump();
 
-    dumpExcursions();
+    m_stat->dump("per-seqhis per-tree counts on NCSG tree surface"  );
 
     dumpStepByStepCSGExcursions();
 
@@ -78,19 +75,9 @@ std::string OpticksEventAna::desc()
     return ss.str();
 }
 
-void OpticksEventAna::countTotals()
-{
-    for(unsigned i=0 ; i < m_pho_num ; i++)
-    {  
-        unsigned long long seqhis_ = m_seq->getValue(i,0,0);
-        m_total[seqhis_]++;   // <- same for all trees
-    }
-}
-
 
 void OpticksEventAna::countExcursions()
 {
-
     LOG(info) << "OpticksEventAna::countExcursions"
               << " pho_num " << m_pho_num
               << " epsilon " << m_epsilon 
@@ -138,7 +125,9 @@ void OpticksEventAna::countExcursions()
                 count++ ; 
             }
 
-            if(surf) m_surf[tree][seqhis_]++ ;  
+            //if(surf) m_surf[tree][seqhis_]++ ;  
+            if(surf) 
+                 m_stat->increment(tree, seqhis_) ;  
        }
 
         LOG(info) << "OpticksEventAna::countExcursions"
@@ -148,50 +137,10 @@ void OpticksEventAna::countExcursions()
                   << " count " << count 
                   ;
      
-
    }
 
-
 }
 
-
-void OpticksEventAna::dumpExcursions()
-{
-    LOG(info) << "OpticksEventAna::dumpExcursions"
-              << " seqhis ending AB or truncated seqhis : exc expected "
-              ; 
-
-
-    // copy map into vector of pairs to allow sort into descending tot order
-    VPQC vpqc ; 
-    for(MQC::const_iterator it=m_total.begin() ; it != m_total.end() ; it++) vpqc.push_back(PQC(it->first,it->second));
-    std::sort( vpqc.begin(), vpqc.end(), PQC_desc ); 
-
-    LOG(info) << " counts and fractions on surface of each tree (within SDF epsilon) " ; 
-
-    for(VPQC::const_iterator it=vpqc.begin() ; it != vpqc.end() ; it++)
-    {
-        unsigned long long _seqhis = it->first ; 
-        unsigned tot_ = it->second ; 
-        if(tot_ < 10 ) continue ; 
-
-        std::cout 
-             << " seqhis " << std::setw(16) << std::hex << _seqhis << std::dec
-             << " " << std::setw(64) << OpticksFlags::FlagSequence( _seqhis, true )
-             << " tot " << std::setw(6) << tot_ 
-             ;
-
-        std::cout << " surf ( "  ;
-        for(unsigned tree=0 ; tree < m_tree_num ; tree++ ) std::cout << " " << std::setw(6) << m_surf[tree][_seqhis]  ;
-        std::cout << " ) " ;
-
-        std::cout << " frac ( "  ;
-        for(unsigned tree=0 ; tree < m_tree_num ; tree++ ) std::cout << " " << std::setw(6) << float(m_surf[tree][_seqhis])/float(tot_)  ;
-        std::cout << " ) " ;
-
-        std::cout << std::endl ; 
-    }
-}
 
 
 
@@ -219,9 +168,7 @@ void OpticksEventAna::dumpStepByStepCSGExcursions()
               << " count " << count 
               << " dumpmax " << dumpmax 
               ;
-
 }
-
 
 void OpticksEventAna::dumpStepByStepCSGExcursions(unsigned photon_id )
 { 

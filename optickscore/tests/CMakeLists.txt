@@ -30,6 +30,8 @@ set(TEST_SOURCES
 
     EvtLoadTest.cc
     OpticksEventAnaTest.cc
+    OpticksEventCompareTest.cc
+    OpticksEventDumpTest.cc
 
 )
 

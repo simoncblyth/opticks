@@ -20,6 +20,9 @@ with different volume pairs OR
 multiple G4LogicalSkinSurface each with 
 different logical volumes.
 
+Hmm seems very overcomplicated...
+
+
 **/
 
 class GGEO_API GSur 
@@ -38,9 +41,11 @@ class GGEO_API GSur
          void dump(const char* msg="GSur::dump");
 
          char getType();
+
          bool isBorder();
          bool isSkin();
          bool isUnused();
+
          void setBorder();
          void setSkin();
          void setUnused();
@@ -72,12 +77,13 @@ class GGEO_API GSur
          GPropertyMap<float>*  m_pmap  ;
          char                  m_type ; 
     private:
-
+         // vector of node indices which use the surface property map as inner/outer
          std::vector<unsigned> m_ivol ; 
          std::vector<unsigned> m_ovol ; 
 
-         std::set<unsigned> m_ibnd ; 
-         std::set<unsigned> m_obnd ; 
+         // set of unique boundary indices which use the surface property map as inner/outer
+         std::set<unsigned> m_ibnd ;  // 
+         std::set<unsigned> m_obnd ;  //  
 
          std::set<std::pair<unsigned,unsigned> >       m_pvp ; 
          std::set<std::string>                         m_slv ; 

@@ -12,6 +12,7 @@
 #include "CFG4_POP.hh"
 
 // okc-
+#include "Opticks.hh"
 #include "OpticksQuery.hh"
 
 // npy-
@@ -28,8 +29,9 @@
 const char* CTraverser::GROUPVEL = "GROUPVEL" ; 
 
 
-CTraverser::CTraverser(G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
+CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery* query) 
    :
+   m_ok(ok),
    m_top(top),
    m_bbox(bbox),
    m_query(query),
@@ -42,6 +44,14 @@ CTraverser::CTraverser(G4VPhysicalVolume* top, NBoundingBox* bbox, OpticksQuery*
    m_center_extent(NULL)
 {
    init();
+}
+
+
+void CTraverser::init()
+{
+    m_ltransforms = NPY<float>::make(0, 4, 4);
+    m_gtransforms = NPY<float>::make(0, 4, 4);
+    m_center_extent = NPY<float>::make(0, 4);
 }
 
 
@@ -91,14 +101,6 @@ NPY<float>* CTraverser::getCenterExtent()
 
 
 
-void CTraverser::init()
-{
-    m_ltransforms = NPY<float>::make(0, 4, 4);
-    m_gtransforms = NPY<float>::make(0, 4, 4);
-    m_center_extent = NPY<float>::make(0, 4);
-}
-
-
 void CTraverser::Summary(const char* msg)
 {
     LOG(info) << msg 
@@ -115,6 +117,8 @@ std::string CTraverser::description()
     ss 
        << " numSelected " << getNumSelected()
        << " bbox " << m_bbox->description()
+       << " pvs.size " << m_pvs.size()
+       << " lvs.size " << m_lvs.size()
        ;
 
     return ss.str();
@@ -122,10 +126,18 @@ std::string CTraverser::description()
 
 void CTraverser::Traverse()
 {
-    LOG(info) << "CTraverser::Traverse" ;
+    if(m_ok->isDbgSurf())
+        LOG(info) << "[--dbgsurf] CTraverser::Traverse START " ;
+
     VolumeTreeTraverse();
     AncestorTraverse();
-    LOG(info) << "CTraverser::Traverse DONE" ;
+
+    if(m_ok->isDbgSurf())
+    {
+        LOG(info) << "[--dbgsurf] CTraverser::Traverse DONE" 
+                  << description() 
+                  ;
+    }
 }
 
 void CTraverser::VolumeTreeTraverse()
@@ -148,7 +160,7 @@ void CTraverser::AncestorTraverse()
 
      AncestorTraverse(ancestors, m_top, 0, false);
 
-     LOG(info) << "CTraverser::AncestorTraverse " << description() ;
+     LOG(debug) << "CTraverser::AncestorTraverse " << description() ;
 }
 
 
@@ -214,7 +226,7 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
     collectTransformT(m_gtransforms, T );
     m_pvnames.push_back(pv->GetName());
     m_pvs.push_back(pv);
-    m_lvs.push_back(lv);
+    m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
 
     std::string lvn = lv->GetName();
     m_lvm[lvn] = lv ; 

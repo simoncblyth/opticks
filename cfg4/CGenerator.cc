@@ -133,7 +133,7 @@ CSource* CGenerator::makeTorchSource()
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
 
     int verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
-    CSource* source  = static_cast<CSource*>(new CTorchSource( torch, verbosity)); 
+    CSource* source  = static_cast<CSource*>(new CTorchSource( m_ok, torch, verbosity)); 
     return source ; 
 }
 
@@ -179,7 +179,7 @@ CSource* CGenerator::makeG4GunSource()
     setNumPhotonsPerG4Event(0); 
 
     int verbosity = m_cfg->hasOpt("g4gundbg") ? 10 : 0 ; 
-    CGunSource* gun = new CGunSource(verbosity) ;
+    CGunSource* gun = new CGunSource(m_ok, verbosity) ;
     gun->configure(gc);      
 
     CSource* source  = static_cast<CSource*>(gun);

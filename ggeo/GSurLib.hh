@@ -4,6 +4,10 @@
 GSurLib
 ==========
 
+To understand GSurLib it is best to first study its primary 
+user CSurLib::convert noting the ingredients required 
+to create the G4 surfaces.
+
 GSurLib and the contained GSur are created post-cache
 as a constituent of GGeo in GGeo::createSurLib.
 This creation is deferred until GGeo::getSurLib which 
@@ -11,6 +15,7 @@ normally occurs at CG4/CGeometry/CSurLib instanciation
 
 GSurLib facilitates recreation of G4LogicalBorderSurface and G4LogicalSkinSurface 
 instances that are missing from the CGDMLDetector.
+
 
 At instanciation in GSurLib::init:
 
@@ -88,6 +93,7 @@ GScene(GDML2GLTF)
 
 #include <set>
 #include <vector>
+#include <utility>
 
 class Opticks ; 
 
@@ -109,9 +115,13 @@ class GGEO_API GSurLib
          GSurLib(GGeo* gg);
          void dump(const char* msg="GSurLib::dump");
          GSurfaceLib* getSurfaceLib();
+         Opticks*     getOpticks();
 
          unsigned getNumSur();
          GSur* getSur(unsigned index);
+
+        void getSurfacePair(std::pair<GSur*,GSur*>& osur_isur, unsigned boundary);
+
 
          bool isClosed();
     private:
@@ -125,6 +135,7 @@ class GGEO_API GSurLib
     public:
          GGeo*                 m_ggeo ;
          Opticks*              m_ok ; 
+         bool                  m_dbgsurf ; 
          GSurfaceLib*          m_slib ; 
          GBndLib*              m_blib ; 
          bool                  m_closed ; 

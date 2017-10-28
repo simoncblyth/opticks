@@ -25,7 +25,7 @@ Canonical instance lives in CGenerator
 class CFG4_API CTorchSource: public CSource
 {
   public:
-    CTorchSource(TorchStepNPY* torch, unsigned int verbosity);
+    CTorchSource(Opticks* ok, TorchStepNPY* torch, unsigned int verbosity);
   private:
     void init();
     void configure();
@@ -35,6 +35,7 @@ class CFG4_API CTorchSource: public CSource
     void SetVerbosity(int vL);  // override
   private:
     TorchStepNPY*         m_torch ;
+    bool                  m_torchdbg ; 
     G4SPSPosDistribution* m_posGen;
     G4SPSAngDistribution* m_angGen;
     G4SPSEneDistribution* m_eneGen;

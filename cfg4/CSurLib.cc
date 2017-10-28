@@ -8,6 +8,8 @@
 
 #include "BStr.hh"
 
+#include "Opticks.hh"
+
 #include "GVector.hh"
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
@@ -72,6 +74,8 @@ G4SurfaceType Type(unsigned type_)
 CSurLib::CSurLib(GSurLib* surlib) 
    :
    m_surlib(surlib),
+   m_ok(surlib->getOpticks()),
+   m_dbgsurf(m_ok->isDbgSurf()),
    m_surfacelib(surlib->getSurfaceLib()),
    m_detector(NULL)
 {
@@ -127,7 +131,9 @@ void CSurLib::convert(CDetector* detector)
 {
     setDetector(detector);
     unsigned numSur = m_surlib->getNumSur();
-    LOG(info) << "CSurLib::convert  numSur " << numSur  ;   
+
+    if(m_dbgsurf)
+    LOG(info) << "[--dbgsurf] CSurLib::convert  numSur " << numSur  ;   
     for(unsigned i=0 ; i < numSur ; i++)
     {   
         GSur* sur = m_surlib->getSur(i);
@@ -206,6 +212,7 @@ G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
 }
 
 
+// lookup G4 pv1,pv2 from volume indices recorded in pairs
 G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4OpticalSurface* os)
 {
     GPropertyMap<float>* pmap = sur->getPMap();
@@ -226,6 +233,10 @@ G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4Op
     return lbs ; 
 }
 
+
+
+
+// lookup G4 lv via name 
 G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4OpticalSurface* os)
 {
     GPropertyMap<float>* pmap = sur->getPMap();

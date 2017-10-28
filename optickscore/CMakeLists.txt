@@ -72,6 +72,8 @@ set(SOURCES
     OpticksDomain.cc
     OpticksEventSpec.cc
     OpticksEventAna.cc
+    OpticksEventStat.cc
+    OpticksEventCompare.cc
     OpticksEventDump.cc
     OpticksEvent.cc
     OpticksRun.cc

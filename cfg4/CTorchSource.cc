@@ -7,6 +7,8 @@
 #include "TorchStepNPY.hpp"
 #include "GLMFormat.hpp"
 
+#include "Opticks.hh"
+
 // cfg4-
 #include "CTorchSource.hh"
 #include "CRecorder.hh"
@@ -32,10 +34,11 @@
 #include "PLOG.hh"
 
 
-CTorchSource::CTorchSource(TorchStepNPY* torch, unsigned int verbosity)  
+CTorchSource::CTorchSource(Opticks* ok, TorchStepNPY* torch, unsigned int verbosity)  
     :
-    CSource(verbosity),
+    CSource(ok, verbosity),
     m_torch(torch),
+    m_torchdbg(ok->isDbgTorch()),
     m_posGen(NULL),
     m_angGen(NULL),
     m_eneGen(NULL),
@@ -83,14 +86,26 @@ CTorchSource::~CTorchSource()
 
 void CTorchSource::configure()
 {
-    m_torch->Summary("CTorchSource::configure");
-    LOG(fatal) << m_torch->description();
+    unsigned numPhotons = m_torch->getNumPhotons();
+    unsigned numPhotonsPerG4Event = m_torch->getNumPhotonsPerG4Event();
+    unsigned n = numPhotons < numPhotonsPerG4Event ? numPhotons : numPhotonsPerG4Event ;
 
-    unsigned int n = m_torch->getNumPhotonsPerG4Event();
+    if(m_torchdbg)
+    {
+        m_torch->Summary("[--torchdbg] CTorchSource::configure");
+        LOG(info) << m_torch->description();
+
+        LOG(info)
+           << " numPhotons " << numPhotons 
+           << " numPhotonsPerG4Event " << numPhotonsPerG4Event
+           << " n " << n 
+           ;
+    }
+
+
     SetNumberOfParticles(n);
 
     setParticle("opticalphoton");
-
 
     float w = m_torch->getWavelength() ; 
     if(w > 0.f)
@@ -257,17 +272,18 @@ void CTorchSource::SetVerbosity(int vL)
 void CTorchSource::GeneratePrimaryVertex(G4Event *evt) 
 {
     assert(m_definition);
-
-	if (m_verbosityLevel > 1)
-		G4cout << " NumberOfParticlesToBeGenerated: "
-				<< m_num << G4endl;
+    if (m_verbosityLevel > 1)
+        LOG(info) << " NumberOfParticlesToBeGenerated: "
+				  << m_num 
+                  << " verbosityLevel " << m_verbosityLevel 
+                   ;
 
     part_prop_t& pp = m_pp.Get();
 
 
-
     glm::vec3 polarization = m_torch->getPolarization() ;
     G4ThreeVector fixpol(polarization.x, polarization.y, polarization.z);   
+
     // hmm starting as 0.0000,5005.0000,0.0000 
     //      some frame tranform ???
     //
@@ -291,7 +307,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
 		pp.energy = m_eneGen->GenerateOne(m_definition);
 
-/*
+        if(m_torchdbg && i < 10) 
         LOG(info) << "CTorchSource::GeneratePrimaryVertex"
                   << " i " << std::setw(6) << i 
                   << " posx " << pp.position.x()
@@ -301,11 +317,10 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
                   << " diry " << pp.momentum_direction.y()
                   << " dirz " << pp.momentum_direction.z()
                   ;
-*/
 
 
-		if (m_verbosityLevel >= 2)
-			G4cout << "Creating primaries and assigning to vertex" << G4endl;
+		//if (m_verbosityLevel >= 2)
+		//	G4cout << "Creating primaries and assigning to vertex" << G4endl;
 		// create new primaries and set them to the vertex
 
 
@@ -374,7 +389,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
         }
 
 
-		if (m_verbosityLevel > 1) {
+		if (m_verbosityLevel > 2) {
 			G4cout << "Particle name: "
 					<< m_definition->GetParticleName() << G4endl;
 			G4cout << "       Energy: " << pp.energy << G4endl;
