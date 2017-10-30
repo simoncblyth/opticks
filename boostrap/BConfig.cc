@@ -78,9 +78,6 @@ void BConfig::dump_ekv() const
     }
 }
 
-
-
-
 void BConfig::dump_eki() const 
 {
     LOG(info) << " eki " << eki.size() ; 
@@ -111,7 +108,20 @@ void BConfig::dump_eks() const
     }
 }
 
+std::string BConfig::desc() const 
+{
+    std::stringstream ss ; 
 
+    ss
+       << " cfg " << ( cfg ? cfg : "-" )
+       << " ekv " << ekv.size()
+       << " eki " << eki.size()
+       << " ekf " << ekf.size()
+       << " eks " << eks.size()
+       ;
+ 
+    return ss.str();
+}
 
 
 

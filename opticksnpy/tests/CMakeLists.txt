@@ -69,6 +69,8 @@ NNodePointsTest.cc
 NTesselateTest.cc
 
 
+NEmitPhotonsNPYTest.cc
+
 
 _BoundariesNPYTest.cc
 _RecordsNPYTest.cc

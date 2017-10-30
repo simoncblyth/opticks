@@ -36,5 +36,8 @@ struct BRAP_API BConfig
     void dump_ekf() const ; 
     void dump_eks() const ; 
 
+    std::string desc() const ; 
+
+
 };
 

@@ -237,6 +237,8 @@ set(SOURCES
     BoundarySnappingT.cc
     NLODConfig.cpp
     NSnapConfig.cpp
+    NEmitConfig.cpp
+    NEmitPhotonsNPY.cpp
 
 )
 

@@ -39,6 +39,7 @@ class OpticksAim ;
 
 class GItemIndex ; 
 
+class NCSG ; 
 class NState ; 
 class NLookup ; 
 class NConfigurable ; 
@@ -151,6 +152,7 @@ class OKGEO_API OpticksHub {
        GGeoBase*            getGGeoBaseAna();
        GGeoBase*            getGGeoBaseTri();
        GGeoTest*            getGGeoTest();
+       NCSG*                findEmitter() const ; 
    public:
        GGeoLib*             getGeoLib();
        GMaterialLib*        getMaterialLib();

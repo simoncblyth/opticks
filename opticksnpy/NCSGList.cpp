@@ -14,18 +14,36 @@ NCSGList::NCSGList(const char* csgpath, unsigned verbosity)
     assert( rc == 0 );
 }
 
-NCSG* NCSGList::getTree(unsigned index)
+NCSG* NCSGList::getTree(unsigned index) const 
 {
     return m_trees[index] ;
 }
 
-unsigned NCSGList::getNumTrees()
+unsigned NCSGList::getNumTrees() const 
 {
     return m_trees.size();
 }
 
 
-void NCSGList::dump(const char* msg)
+NCSG* NCSGList::findEmitter() const 
+{
+    unsigned numTrees = getNumTrees() ;
+    NCSG* emitter = NULL ; 
+    for(unsigned i=0 ; i < numTrees ; i++)
+    {
+        NCSG* tree = getTree(i);
+        if(tree->isEmit())
+        {
+           assert( emitter == NULL && "not expecting more than one emitter" );
+           emitter = tree ;
+        }
+    }
+    return emitter ; 
+}
+
+
+
+void NCSGList::dump(const char* msg) const 
 {
     LOG(info) << msg ; 
 

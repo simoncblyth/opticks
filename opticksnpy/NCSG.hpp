@@ -134,11 +134,14 @@ class NPY_API NCSG {
         int treeindex() const ;
         int depth() const ;
         int nchild() const ;
-        int emit() const ;
         bool isSkip() const ;
         bool is_uncoincide() const ;
         std::string meta() const ;
         std::string smry();
+    public:
+        bool isEmit() const ;
+        int emit() const ;
+        const char* emitconfig() const ;
     public:
         void dump(const char* msg="NCSG::dump");
         void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;

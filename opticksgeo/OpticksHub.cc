@@ -357,6 +357,15 @@ void OpticksHub::modifyGeometry()
 
 
 
+
+NCSG* OpticksHub::findEmitter() const  
+{
+    return m_geotest == NULL ? NULL : m_geotest->findEmitter() ; 
+}
+
+
+
+
 GGeoTest* OpticksHub::getGGeoTest()
 {
     return m_geotest ; 

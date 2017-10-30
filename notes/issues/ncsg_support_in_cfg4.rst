@@ -78,6 +78,13 @@ The emit functionality needs to be general enough to allow users providing
 other means to generate photons too (provide some API that enables external photon generation?).
 
 
+Where to coordinate ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* okg-/OpticksGen ?
+
+
+
 STATUS
 ---------
 

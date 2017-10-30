@@ -46,10 +46,20 @@ GSolidList* GGeoTest::getSolidList()
     return m_solist ; 
 }
 
-NCSGList* GGeoTest::getCSGList()
+NCSGList* GGeoTest::getCSGList() const 
 {
     return m_csglist ; 
 }
+
+NCSG* GGeoTest::findEmitter() const 
+{
+    return m_csglist->findEmitter() ; 
+}
+
+
+
+
+
 GGeoTestConfig* GGeoTest::getConfig()
 {
     return m_config ; 
@@ -198,11 +208,11 @@ GMergedMesh* GGeoTest::create()
 
 
 
-NCSG* GGeoTest::getTree(unsigned index)
+NCSG* GGeoTest::getTree(unsigned index) const 
 {
     return m_csglist->getTree(index);
 }
-unsigned GGeoTest::getNumTrees()
+unsigned GGeoTest::getNumTrees() const 
 {
     return m_csglist->getNumTrees();
 }

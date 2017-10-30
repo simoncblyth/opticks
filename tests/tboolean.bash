@@ -1863,7 +1863,7 @@ CSG.boundary = args.testobject
 #CSG.kwa = dict(poly="MC", resolution="100")
 CSG.kwa = dict(poly="IM", resolution="50")
 
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=-1 )
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=-1, emitconfig="photons=600000,wavelength=380,time=0.2" )
   
 a = CSG.MakeTorus(R=100, r=50)
 

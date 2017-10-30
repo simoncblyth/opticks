@@ -9,11 +9,12 @@ class NPY_API NCSGList
 {
    public:
      NCSGList(const char* csgpath, unsigned verbosity);
-     void dump(const char* msg="NCSGList::dump");
+     void dump(const char* msg="NCSGList::dump") const ;
 
    public:
-     NCSG*    getTree(unsigned index);
-     unsigned getNumTrees();
+     NCSG*    getTree(unsigned index) const ;
+     NCSG*    findEmitter() const ;
+     unsigned getNumTrees() const ;
 
    private:
       const char*        m_csgpath ; 

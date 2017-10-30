@@ -44,9 +44,10 @@ class GGEO_API GGeoTest {
     public:
        GGeoTestConfig* getConfig();
     public:
-       NCSGList*       getCSGList();
-       unsigned        getNumTrees();
-       NCSG*           getTree(unsigned index);
+       NCSGList*       getCSGList() const ;
+       NCSG*           findEmitter() const ;
+       unsigned        getNumTrees() const ;
+       NCSG*           getTree(unsigned index) const ;
     public:
        GSolidList*     getSolidList();
     public:

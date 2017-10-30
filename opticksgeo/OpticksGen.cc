@@ -1,4 +1,5 @@
 
+#include "NCSG.hpp"
 #include "NPY.hpp"
 #include "FabStepNPY.hpp"
 #include "TorchStepNPY.hpp"
@@ -18,6 +19,7 @@
 
 #include "PLOG.hh"
 
+
 OpticksGen::OpticksGen(OpticksHub* hub) 
    :
    m_hub(hub),
@@ -27,13 +29,17 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_ggeo(hub->getGGeo()),
    m_torchstep(NULL),
    m_fabstep(NULL),
-   m_input_gensteps(NULL)
+   m_input_gensteps(NULL),
+   m_emitter(hub->findEmitter()),
+   m_input_photons(NULL)
 {
     init() ;
 }
 
 void OpticksGen::init()
 {
+    if(m_emitter) initInputPhotons();
+
     initInputGensteps();
 }
 
@@ -50,6 +56,34 @@ void OpticksGen::setInputGensteps(NPY<float>* gs)
         gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
     }
 }
+
+void OpticksGen::initInputPhotons()
+{
+    assert(m_emitter);
+
+    int emit = m_emitter->emit();
+
+    LOG(info) << "OpticksGen::initInputPhotons"
+              << " emit " << emit 
+               ; 
+
+
+    // from cu/generate.cu
+    // will need a marker genstep with gencode indicating to 
+    // get photons from input_photon_buffer rather than
+    // use more efficient GPU generation
+    //
+    //  position  : from emitter NCSG 
+    //  direction : from emitter NCSG normal, flipped in/out by emit value
+    //
+    //  time, weight, wavelength  : needs to come from emitconfig, with default values
+    //  polarization  : calculated based on some high level emitconfig control 
+    //
+    // number of photons to generate : from emitconfig
+
+    
+}
+
 
 void OpticksGen::initInputGensteps()
 {
