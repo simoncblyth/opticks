@@ -53,6 +53,7 @@ NCubicTest.cc
 NSphereTest.cc
 NZSphereTest.cc
 NBoxTest.cc
+NNode2Test.cc
 NSlabTest.cc
 NPlaneTest.cc
 NCylinderTest.cc
@@ -86,6 +87,7 @@ NMarchingCubesNPYTest.cc
 NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
+NCSGListTest.cc
 NScanTest.cc
 
 NCSGPolygonizeTest.cc 

@@ -26,6 +26,58 @@ For example, get the below to work and pass validation comparisons::
 
 
 
+
+Implement emit
+---------------
+
+::
+
+    delta:opticks blyth$ cat /tmp/blyth/opticks/tboolean-torus--/0/meta.json 
+    {"nx": "20", "emit": -1, "poly": "MC"}delta:opticks blyth$ 
+    delta:opticks blyth$ 
+
+
+IDEAS
+------
+
+Need more automated way to configure torch photon sources for geometry testing
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+When there are ~100 different geometries to test it is impractical
+to tweak torchconfig for each, so move to attaching emit config 
+onto pieces of geometry (just primitives initially).
+
+Python level config can feed into NCSG metadata, that 
+is searched for on loading geometry. 
+
+* *emit -1/0/1*  : use int to control direction
+* *emitconfig string* options to NCSG 
+*  a CSG point/light primitive, just for placing "emit" light sources would be useful
+
+NB need to continue to support the old custom torch config too, sometimes
+the control of polariziation and specific positions is required 
+eg for lens/reflect/prism testing
+
+Aiming to be able to loop over large numbers of test geometries auto running okg4
+simulations and running analysis match validations. 
+
+Focus first on small test geometries, once fixed issues there can consider
+full geometry testing.
+
+What this will require:
+
+* add geometric normal methods to all nnode primitives
+  (these already exist GPU side, just need to duplicate them CPU side).
+  This is to allow generation of photon directions
+  at random parametric points on the surface of the primitive
+
+* revive support for CPU side photons copied to GPU : not efficient, but its
+  just for testing (perhaps add emit mode in addition to torch) 
+ 
+The emit functionality needs to be general enough to allow users providing 
+other means to generate photons too (provide some API that enables external photon generation?).
+
+
 STATUS
 ---------
 

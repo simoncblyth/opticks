@@ -175,6 +175,7 @@ std::string NCSG::soname() const { return getMeta<std::string>("soname","-") ; }
 int NCSG::treeindex() const { return getMeta<int>("treeindex","-1") ; }
 int NCSG::depth() const {     return getMeta<int>("depth","-1") ; }
 int NCSG::nchild() const {    return getMeta<int>("nchild","-1") ; }
+int NCSG::emit()   const {    return getMeta<int>("emit","0") ; }
 
 bool NCSG::isSkip() const {       return getMeta<int>("skip","0") == 1 ; }
 bool NCSG::is_uncoincide() const { return getMeta<int>("uncoincide","1") == 1 ; }
@@ -190,6 +191,7 @@ std::string NCSG::meta() const
        << " soname " << soname() 
        << " isSkip " << isSkip()
        << " is_uncoincide " << is_uncoincide()
+       << " emit " << emit()
        ;
 
     return ss.str();

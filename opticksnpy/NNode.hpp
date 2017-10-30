@@ -11,6 +11,8 @@
 
 #include <glm/fwd.hpp>
 
+class BRng ; 
+
 struct nbbox ; 
 struct npart ; 
 struct NSceneConfig ; 
@@ -80,9 +82,6 @@ struct NPY_API nnode
     const std::vector<nuv>&       get_par_coords() const ;
  
 
-
-
-
     void getCoincidentSurfacePoints(std::vector<nuv>& coincident, int s, unsigned level, int margin, const nnode* other, float epsilon, NNodeFrameType fr) const ;
     void getCoincident(             std::vector<nuv>& coincident, const nnode* other, float epsilon=1e-5f, unsigned level=1, int margin=1, NNodeFrameType fr=FRAME_LOCAL) const ;
 
@@ -100,12 +99,21 @@ struct NPY_API nnode
 
 
     virtual glm::vec3 par_pos_model(const nuv& uv) const ;
+    virtual void      par_posnrm_model(glm::vec3& pos, glm::vec3& nrm, unsigned sheet, float fu, float fv ) const ;        
+
+
     virtual unsigned  par_nsurf() const ;
     virtual int       par_euler() const ; 
     virtual unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     virtual void      nudge(unsigned s, float delta);
 
     static void _par_pos_endcap(glm::vec3& pos,  const nuv& uv, const float r_, const float z_ ) ; 
+
+
+
+    void generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total ) const   ;
+    void generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const ;
+
 
 
     // see NNodeUncoincide

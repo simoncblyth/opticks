@@ -81,6 +81,7 @@ set(SOURCES
   BDynamicDefine.cc
   BOpticksEvent.cc
   BConfig.cc
+  BRng.cc
 
 ) 
 

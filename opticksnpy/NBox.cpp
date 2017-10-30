@@ -196,8 +196,37 @@ unsigned  nbox::par_nvertices(unsigned nu, unsigned nv) const
 
 
 
+
+
+
 glm::vec3 nbox::par_pos_model( const nuv& uv) const 
 {
+    unsigned s = uv.s() ; 
+    assert(s < par_nsurf());
+
+    float fu = uv.fu() ;
+    float fv = uv.fv() ;
+
+    glm::vec3 pos ; 
+    glm::vec3 nrm ; 
+    par_posnrm_model(pos, nrm, s, fu, fv  );
+
+/*
+    std::cout << "nbox::par_pos_model"
+              << " uv " << glm::to_string(uv) 
+              << " pos " << glm::to_string(pos)
+              << " nrm " << glm::to_string(nrm)
+              << std::endl 
+               ; 
+*/
+
+    return pos ; 
+}
+
+
+
+void nbox::par_posnrm_model( glm::vec3& p, glm::vec3& n, unsigned s, float fu, float fv ) const 
+{ 
     /*
 
                  6-----------7
@@ -232,9 +261,6 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
     //nbbox bb = bbox() ;  // NB bbox() has gtransform->t is already applied
     //nbbox bb = bbox_model() ;
  
-    const nbbox& bb = *_bbox_model ;   // from init_box
-
-    glm::vec3 p ; 
 
     //   1 - uv[0] 
     //
@@ -247,25 +273,30 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
     //            (x,z) -> (u,v)
     // 
 
-    unsigned s = uv.s() ; 
-    unsigned iu = uv.u() ; 
-    unsigned iv = uv.v() ;
-    unsigned nu = uv.nu() ; 
-    unsigned nv = uv.nv();
 
-    assert(s < par_nsurf());
-    float fu = float(iu)/float(nu) ;
-    float fv = float(iv)/float(nv) ;
+    const nbbox& bb = *_bbox_model ;   // from init_box
 
+    p.x = 0.f ; 
+    p.y = 0.f ; 
+    p.z = 0.f ; 
+
+    n.x = 0.f ; 
+    n.y = 0.f ; 
+    n.z = 0.f ; 
+
+
+ 
     switch(s)
     {
         case 0:{    // -Z
+                  n.z = -1.f ; 
                   p.x = glm::mix( bb.min.x, bb.max.x, 1 - fu ) ;
                   p.y = glm::mix( bb.min.y, bb.max.y, fv ) ;
                   p.z = bb.min.z ;
                } 
                ; break ;
         case 1:{   // +Z
+                  n.z = 1.f ; 
                   p.x = glm::mix( bb.min.x, bb.max.x, fu ) ;
                   p.y = glm::mix( bb.min.y, bb.max.y, fv ) ;
                   p.z = bb.max.z ;
@@ -274,12 +305,14 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
 
 
         case 2:{   // -X
+                  n.x = -1.f ; 
                   p.x = bb.min.x ;
                   p.y = glm::mix( bb.min.y, bb.max.y, 1 - fu ) ;
                   p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                } 
                ; break ;
         case 3:{   // +X
+                  n.x =  1.f ; 
                   p.x = bb.max.x ;
                   p.y = glm::mix( bb.min.y, bb.max.y, fu ) ;
                   p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
@@ -289,12 +322,14 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
 
 
         case 4:{  // -Y
+                  n.y = -1.f ; 
                   p.x = glm::mix( bb.min.x, bb.max.x, fu ) ;
                   p.y = bb.min.y ;
                   p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
                } 
                ; break ;
         case 5:{  // +Y
+                  n.y = 1.f ; 
                   p.x = glm::mix( bb.min.x, bb.max.x, 1 - fu ) ;
                   p.y = bb.max.y ;
                   p.z = glm::mix( bb.min.z, bb.max.z, fv ) ;
@@ -302,15 +337,7 @@ glm::vec3 nbox::par_pos_model( const nuv& uv) const
                ; break ;
     }
 
-/*
-    std::cout << "nbox::par_pos_model"
-              << " uv " << glm::to_string(uv) 
-              << " p " << glm::to_string(p)
-              << std::endl 
-               ; 
-*/
     
-    return p ; 
 }
 
 

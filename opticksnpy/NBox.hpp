@@ -55,9 +55,13 @@ struct NPY_API nbox : nnode
     nbbox bbox_global() const ;
     nbbox bbox() const ;
 
-    // parametric surface positions 
+    // parametric surface positions and outward normals
 
     glm::vec3 par_pos_model(const nuv& uv) const ;  // no transforms, bare model
+    
+    //void par_posnrm_model(glm::vec3& pos, glm::vec3& nrm, const nuv& uv) const ;  
+    void par_posnrm_model(glm::vec3& pos, glm::vec3& nrm, unsigned s, float fu, float fv) const ;  
+
     unsigned  par_nsurf() const ;
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ;
     int       par_euler() const ; 

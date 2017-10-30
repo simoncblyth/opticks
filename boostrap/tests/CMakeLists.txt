@@ -27,6 +27,7 @@ set(TEST_SOURCES
    BBisectTest.cc
    BConfigTest.cc
    BConfigConstituentTest.cc
+   BRngTest.cc
 
 )
 

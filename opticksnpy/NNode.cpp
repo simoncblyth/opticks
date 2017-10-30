@@ -5,6 +5,7 @@
 #include <iomanip>
 #include <set>
 
+#include "BRng.hh"
 
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
@@ -809,11 +810,7 @@ float nnode::sdf_(const glm::vec3& , NNodeFrameType ) const
 
 
 
-glm::vec3 nnode::par_pos_model(const nuv& ) const 
-{
-    assert(0 && "nnode::par_pos_model needs override in all primitives ");
-    return glm::vec3(0);
-}
+
 
 
 glm::vec3 nnode::par_pos_(const nuv& uv, NNodeFrameType fty) const 
@@ -835,6 +832,10 @@ glm::vec3 nnode::par_pos_(const nuv& uv, const nmat4triple* triple) const
     if(triple) tpos = triple->t * tpos ;   // <-- direct transform, not inverse
     return glm::vec3(tpos) ; 
 }
+
+
+
+
 
 glm::vec3 nnode::par_pos_local( const nuv& uv) const { return par_pos_(uv, transform) ; }
 glm::vec3 nnode::par_pos_global(const nuv& uv) const { return par_pos_(uv, gtransform) ; }
@@ -1192,11 +1193,63 @@ const std::vector<nuv>& nnode::get_par_coords() const
     return par_coords ; 
 }
 
+
+
+
+glm::vec3 nnode::par_pos_model(const nuv& ) const 
+{
+    assert(0 && "nnode::par_pos_model needs override in all primitives ");
+    return glm::vec3(0);
+}
+
+void nnode::par_posnrm_model(glm::vec3& , glm::vec3& , unsigned, float, float ) const 
+{
+    assert(0 && "nnode::par_posnrm_model needs override in all primitives ");
+}
+
+
+
+
+void nnode::generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total ) const  
+{
+    unsigned ns = par_nsurf();
+    unsigned cumsum = 0 ; 
+    BRng rng ;  // hmm this repeats every time : need to handle globally, seeding?
+
+    for(unsigned sheet = 0 ; sheet < ns ; sheet++) 
+    {
+        unsigned num = sheet == ns - 1 ? num_total - cumsum : num_total/ns  ; 
+        generateParPointsSheet(points, normals, rng, sheet, num ) ;
+        cumsum += num ; 
+    }
+}
+void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const 
+{
+    glm::vec3 pos ; 
+    glm::vec3 nrm ; 
+
+    for(unsigned i=0 ; i < num ; i++)
+    {
+        float fu = rng() ;
+        float fv = rng() ;
+
+        par_posnrm_model( pos, nrm, sheet, fu, fv );        
+
+        points.push_back(pos);
+        normals.push_back(nrm);
+    }
+}
+
+
+
+
+
 void nnode::collectParPoints(unsigned prim_idx, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity_) 
 {
     assert(is_primitive());
     par_points.clear();
     par_coords.clear();
+
     unsigned ns = par_nsurf();
     for(unsigned sheet = 0 ; sheet < ns ; sheet++) collectParPointsSheet(prim_idx, sheet, level, margin, fr, verbosity_) ;
 }
@@ -1204,6 +1257,9 @@ void nnode::collectParPoints(unsigned prim_idx, unsigned level, int margin, NNod
 void nnode::collectParPointsSheet(unsigned prim_idx, int sheet, unsigned level, int margin, NNodeFrameType fr, unsigned verbosity_) 
 {
     /*
+
+     prim_idx 
+          gets persisted into the coordinates, to enable untangling which primitive easily 
 
      level 1  
           (1 << 1) = 2 divisions in u and v,  +1 for endpost -> 3 points in u and v 

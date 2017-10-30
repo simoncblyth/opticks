@@ -68,6 +68,53 @@ glm::vec3 nsphere::par_pos_model(const nuv& uv) const
     return pos ; 
 }
 
+
+
+
+
+void nsphere::par_posnrm_model( glm::vec3& pos, glm::vec3& nrm, unsigned s, float fu, float fv ) const 
+{ 
+    assert(s == 0);
+
+    glm::vec3 c = center();
+
+    pos.x = c.x ; 
+    pos.y = c.y ; 
+    pos.z = c.z ; 
+
+    nrm.x = 0.f ; 
+    nrm.y = 0.f ; 
+    nrm.z = 0.f ; 
+
+    float r_ = radius();
+    bool is_north_pole = fv == 0.f ;  // highly unlikely for dice to land on the poles
+    bool is_south_pole = fv == 1.f ; 
+
+    if(is_north_pole || is_south_pole) 
+    {
+        pos += glm::vec3(0,0,is_north_pole ? r_ : -r_ ) ; 
+        nrm.z = is_north_pole ? 1.f : -1.f ;         
+    }   
+    else
+    {
+        const float pi = glm::pi<float>() ;
+        float azimuth = 2.f*pi*fu ; 
+        float polar = pi*fu ; 
+
+        float ca = cosf(azimuth);
+        float sa = sinf(azimuth);
+        float cp = cosf(polar);
+        float sp = sinf(polar);
+
+        pos += glm::vec3( r_*ca*sp, r_*sa*sp, r_*cp );
+ 
+        nrm.x = ca*sp ; 
+        nrm.y = sa*sp ; 
+        nrm.z = cp ; 
+    } 
+}
+
+
 void nsphere::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ )  // static
 {
     unsigned  v  = uv.v(); 
@@ -87,8 +134,10 @@ void nsphere::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ )  //
     else
     { 
         bool seamed = true ; 
+
         float azimuth = uv.fu2pi(seamed); 
         float polar = uv.fvpi() ; 
+
         float ca = cosf(azimuth);
         float sa = sinf(azimuth);
         float cp = cosf(polar);
@@ -97,6 +146,7 @@ void nsphere::_par_pos_body(glm::vec3& pos,  const nuv& uv, const float r_ )  //
         pos += glm::vec3( r_*ca*sp, r_*sa*sp, r_*cp );
     }
 }
+
 
 
 
@@ -111,7 +161,28 @@ glm::vec3 nsphere::gseedcenter() const
 
 void nsphere::pdump(const char* msg) const 
 {
-    nnode::dump();
+/*
+Avoid some unintended recursion here
+
+ frame #24077: 0x0000000100b7a3c3 libNPY.dylib`NNodeDump::dump_prim(this=0x0000000102d03c50) const + 531 at NNodeDump.cpp:125
+    frame #24078: 0x0000000100b79d3f libNPY.dylib`NNodeDump::dump(this=0x0000000102d03c50) const + 63 at NNodeDump.cpp:27
+    frame #24079: 0x0000000100b557ce libNPY.dylib`nnode::dump(this=0x00007fff5fbfec40, msg=0x0000000000000000) const + 270 at NNode.cpp:1098
+    frame #24080: 0x0000000100ba75f3 libNPY.dylib`nsphere::pdump(this=0x00007fff5fbfec40, msg=0x0000000100d6d78d) const + 51 at NSphere.cpp:114
+    frame #24081: 0x0000000100b7a3c3 libNPY.dylib`NNodeDump::dump_prim(this=0x0000000102d03c50) const + 531 at NNodeDump.cpp:125
+    frame #24082: 0x0000000100b79d3f libNPY.dylib`NNodeDump::dump(this=0x0000000102d03c50) const + 63 at NNodeDump.cpp:27
+    frame #24083: 0x0000000100b557ce libNPY.dylib`nnode::dump(this=0x00007fff5fbfec40, msg=0x0000000000000000) const + 270 at NNode.cpp:1098
+    frame #24084: 0x0000000100ba75f3 libNPY.dylib`nsphere::pdump(this=0x00007fff5fbfec40, msg=0x0000000100d6d78d) const + 51 at NSphere.cpp:114
+    frame #24085: 0x0000000100b7a3c3 libNPY.dylib`NNodeDump::dump_prim(this=0x0000000102d03c50) const + 531 at NNodeDump.cpp:125
+    frame #24086: 0x0000000100b79d3f libNPY.dylib`NNodeDump::dump(this=0x0000000102d03c50) const + 63 at NNodeDump.cpp:27
+    frame #24087: 0x0000000100b557ce libNPY.dylib`nnode::dump(this=0x00007fff5fbfec40, msg=0x0000000000000000) const + 270 at NNode.cpp:1098
+    frame #24088: 0x0000000100ba75f3 libNPY.dylib`nsphere::pdump(this=0x00007fff5fbfec40, msg=0x00000001000113f3) const + 51 at NSphere.cpp:114
+    frame #24089: 0x0000000100005591 NNode2Test`test_generateParPoints_sphere() + 97 at NNode2Test.cc:52
+    frame #24090: 0x00000001000057c4 NNode2Test`main(argc=1, argv=0x00007fff5fbfee00) + 468 at NNode2Test.cc:65
+    frame #24091: 0x00007fff880d35fd libdyld.dylib`start + 1
+
+*/
+
+   // nnode::dump();  // <-- THIS CAUSES UNINTENDED RECURSION
     std::cout 
               << std::setw(10) << msg 
               << " label " << ( label ? label : "no-label" )

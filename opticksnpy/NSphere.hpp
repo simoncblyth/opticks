@@ -34,6 +34,9 @@ struct NPY_API nsphere : nnode {
 
     unsigned  par_nsurf() const ; 
     glm::vec3 par_pos_model(const nuv& uv) const  ;
+    void par_posnrm_model( glm::vec3& pos, glm::vec3& nrm, unsigned s, float fu, float fv ) const  ;
+
+
     int       par_euler() const ; 
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 

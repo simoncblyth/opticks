@@ -134,6 +134,7 @@ class NPY_API NCSG {
         int treeindex() const ;
         int depth() const ;
         int nchild() const ;
+        int emit() const ;
         bool isSkip() const ;
         bool is_uncoincide() const ;
         std::string meta() const ;
