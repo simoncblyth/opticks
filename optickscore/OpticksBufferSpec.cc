@@ -28,6 +28,7 @@ INTEROP mode GPU buffer access C:create R:read W:write
                  OpenGL     OptiX              Thrust 
 
    gensteps       CR       R (gen/prop)       R (seeding)
+   source         CR       R (gen/prop)       -
 
    photons        CR       W (gen/prop)       W (seeding)
    sequence                W (gen/prop)
@@ -83,6 +84,20 @@ const char* OpticksBufferSpec::genstep_interop_ = "OPTIX_INPUT_ONLY"  ;
 
 
 
+#if OXRAP_OPTIX_VERSION == 3080 || OXRAP_OPTIX_VERSION == 3090 
+
+const char* OpticksBufferSpec::source_compute_ = "OPTIX_NON_INTEROP,OPTIX_INPUT_ONLY"  ;
+const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
+
+#elif OXRAP_OPTIX_VERSION == 400000 || OXRAP_OPTIX_VERSION == 40000 ||  OXRAP_OPTIX_VERSION == 40101
+
+const char* OpticksBufferSpec::source_compute_ = "OPTIX_INPUT_ONLY,UPLOAD_WITH_CUDA,BUFFER_COPY_ON_DIRTY,VERBOSE_MODE"  ;
+const char* OpticksBufferSpec::source_interop_ = "OPTIX_INPUT_ONLY"  ; 
+
+#endif
+
+
+
 const char* OpticksBufferSpec::record_compute_ = "OPTIX_OUTPUT_ONLY"  ;
 const char* OpticksBufferSpec::record_interop_ = "OPTIX_OUTPUT_ONLY"  ;
 
@@ -122,6 +137,7 @@ const char* OpticksBufferSpec::Get(const char* name, bool compute )
     if(     strcmp(name, OpticksEvent::genstep_)==0)  bspc = compute ? genstep_compute_ : genstep_interop_ ; 
     else if(strcmp(name, OpticksEvent::nopstep_)==0)  bspc = compute ? nopstep_compute_ : nopstep_interop_ ; 
     else if(strcmp(name, OpticksEvent::photon_)==0)   bspc = compute ? photon_compute_  : photon_interop_ ;
+    else if(strcmp(name, OpticksEvent::source_)==0)   bspc = compute ? source_compute_  : source_interop_ ;
     else if(strcmp(name, OpticksEvent::record_)==0)   bspc = compute ? record_compute_  : record_interop_ ;
     else if(strcmp(name, OpticksEvent::phosel_)==0)   bspc = compute ? phosel_compute_  : phosel_interop_ ;
     else if(strcmp(name, OpticksEvent::recsel_)==0)   bspc = compute ? recsel_compute_  : recsel_interop_ ;

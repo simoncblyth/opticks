@@ -162,6 +162,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* genstep_ ;
        static const char* nopstep_ ;
        static const char* photon_ ;
+       static const char* source_ ;
        static const char* record_  ;
        static const char* phosel_ ;
        static const char* recsel_  ;
@@ -232,6 +233,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void saveNopstepData(); 
        void saveGenstepData(); 
        void savePhotonData(); 
+       void saveSourceData(); 
        void saveRecordData(); 
        void saveSequenceData(); 
        void saveSeedData(); 
@@ -247,6 +249,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void createSpec(); 
    private:
        void setPhotonData(NPY<float>* photon_data);
+       void setSourceData(NPY<float>* source_data);
        void setSequenceData(NPY<unsigned long long>* history_data);
        void setSeedData(NPY<unsigned>* seed_data);
        void setHitData(NPY<float>* hit_data);
@@ -267,12 +270,14 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setIDomain(NPY<int>* idom);
    public:
        bool                 hasPhotonData();
+       bool                 hasSourceData();
        bool                 hasGenstepData();
        const glm::vec4&     getGenstepCenterExtent();
    public:
        NPY<float>*          getGenstepData();
        NPY<float>*          getNopstepData();
        NPY<float>*          getPhotonData();
+       NPY<float>*          getSourceData();
        NPY<short>*          getRecordData();
        NPY<unsigned char>*  getPhoselData();
        NPY<unsigned char>*  getRecselData();
@@ -306,6 +311,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY* getGenstepAttr();
        MultiViewNPY* getNopstepAttr();
        MultiViewNPY* getPhotonAttr();
+       MultiViewNPY* getSourceAttr();
        MultiViewNPY* getRecordAttr();
        MultiViewNPY* getPhoselAttr();
        MultiViewNPY* getRecselAttr();
@@ -319,6 +325,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int getNumGensteps();
        unsigned int getNumNopsteps();
        unsigned int getNumPhotons();
+       unsigned int getNumSource();
        unsigned int getNumRecords();
    public:
        // idom persisted 
@@ -356,6 +363,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*           m_genstep_data ;
        NPY<float>*           m_nopstep_data ;
        NPY<float>*           m_photon_data ;
+       NPY<float>*           m_source_data ;
        NPY<short>*           m_record_data ;
        NPY<unsigned char>*   m_phosel_data ;
        NPY<unsigned char>*   m_recsel_data ;
@@ -364,6 +372,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<float>*              m_hit_data ;
 
        OpticksBufferControl*  m_photon_ctrl ; 
+       OpticksBufferControl*  m_source_ctrl ; 
        OpticksBufferControl*  m_seed_ctrl ; 
        OpticksDomain*        m_domain ; 
 
@@ -373,6 +382,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        MultiViewNPY*   m_genstep_attr ;
        MultiViewNPY*   m_nopstep_attr ;
        MultiViewNPY*   m_photon_attr  ;
+       MultiViewNPY*   m_source_attr  ;
        MultiViewNPY*   m_record_attr  ;
        MultiViewNPY*   m_phosel_attr  ;
        MultiViewNPY*   m_recsel_attr  ;
@@ -388,6 +398,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        unsigned int    m_num_gensteps ; 
        unsigned int    m_num_nopsteps ; 
        unsigned int    m_num_photons ; 
+       unsigned int    m_num_source ; 
 
        Index*          m_seqhis ; 
        Index*          m_seqmat ; 
@@ -403,6 +414,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPYSpec* m_genstep_spec ;  
        NPYSpec* m_nopstep_spec ;  
        NPYSpec* m_photon_spec ;  
+       NPYSpec* m_source_spec ;  
        NPYSpec* m_record_spec ;  
        NPYSpec* m_phosel_spec ;  
        NPYSpec* m_recsel_spec ;  

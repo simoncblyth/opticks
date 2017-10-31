@@ -61,6 +61,9 @@ void OpticksGen::initFromEmitter()
 
     NPY<float>* gs = m_emitter->getFabStepData();
     assert( gs );
+
+    gs->setAux((void*)iox); // under-radar association of input photons with the fabricated genstep
+
     setInputGensteps(gs);
 
     LOG(info) << "OpticksGen::initFromEmitter getting input photons and shim genstep "
