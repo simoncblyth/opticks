@@ -1220,6 +1220,8 @@ void OpticksEvent::setPhotonData(NPY<float>* photon_data)
 
 void OpticksEvent::setSourceData(NPY<float>* source_data)
 {
+    if(!source_data) return ; 
+
     setBufferControl(source_data);
 
     m_source_data = source_data  ;

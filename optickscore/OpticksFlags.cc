@@ -24,6 +24,7 @@ const char* OpticksFlags::ZERO_              = "." ;
 const char* OpticksFlags::NATURAL_           = "NATURAL" ;
 const char* OpticksFlags::FABRICATED_        = "FABRICATED" ;
 const char* OpticksFlags::MACHINERY_         = "MACHINERY" ;
+const char* OpticksFlags::EMITSOURCE_        = "EMITSOURCE" ;
 
 const char* OpticksFlags::CERENKOV_          = "CERENKOV" ;
 const char* OpticksFlags::SCINTILLATION_     = "SCINTILLATION" ;
@@ -52,6 +53,7 @@ const char* OpticksFlags::_ZERO              = "  " ;
 const char* OpticksFlags::_NATURAL           = "NL" ;
 const char* OpticksFlags::_FABRICATED        = "FD" ;
 const char* OpticksFlags::_MACHINERY         = "MY" ;
+const char* OpticksFlags::_EMITSOURCE        = "SO" ;
 
 const char* OpticksFlags::_CERENKOV          = "CK" ;
 const char* OpticksFlags::_SCINTILLATION     = "SI" ;
@@ -77,6 +79,7 @@ const char* OpticksFlags::machinery_         = "machinery" ;
 const char* OpticksFlags::cerenkov_          = "cerenkov" ;
 const char* OpticksFlags::scintillation_     = "scintillation" ;
 const char* OpticksFlags::torch_             = "torch" ; 
+const char* OpticksFlags::emitsource_        = "emitsource" ; 
 const char* OpticksFlags::g4gun_             = "g4gun" ; 
 const char* OpticksFlags::other_             = "other" ;
 
@@ -105,6 +108,7 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case NATURAL:          s=NATURAL_ ;break; 
         case FABRICATED:       s=FABRICATED_ ;break; 
         case MACHINERY:        s=MACHINERY_;break; 
+        case EMITSOURCE:       s=EMITSOURCE_;break; 
         default:               s=BAD_FLAG_  ;
                                LOG(warning) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -137,6 +141,7 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case NATURAL:          s=_NATURAL ;break; 
         case FABRICATED:       s=_FABRICATED ;break; 
         case MACHINERY:        s=_MACHINERY;break; 
+        case EMITSOURCE:       s=_EMITSOURCE;break; 
         default:               s=_BAD_FLAG  ;
                                LOG(warning) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
@@ -202,6 +207,7 @@ const char* OpticksFlags::SourceType( int code )
        case SCINTILLATION:name = SCINTILLATION_ ;break;
        case TORCH        :name = TORCH_         ;break;
        case G4GUN        :name = G4GUN_         ;break;
+       case EMITSOURCE   :name = EMITSOURCE_    ;break;
        default           :name = OTHER_         ;break; 
     }
     return name ; 
@@ -219,6 +225,7 @@ const char* OpticksFlags::SourceTypeLowercase( int code )
        case SCINTILLATION:name = scintillation_ ;break;
        case TORCH        :name = torch_         ;break;
        case G4GUN        :name = g4gun_         ;break;
+       case EMITSOURCE   :name = emitsource_    ;break;
        default           :name = other_         ;break; 
     }
     return name ; 
@@ -234,6 +241,7 @@ unsigned int OpticksFlags::SourceCode(const char* type)
     else if(strcmp(type,cerenkov_)==0)      code = CERENKOV ;
     else if(strcmp(type,scintillation_)==0) code = SCINTILLATION ;
     else if(strcmp(type,g4gun_)==0)         code = G4GUN ;
+    else if(strcmp(type,emitsource_)==0)    code = EMITSOURCE ;
     return code ; 
 }
 

@@ -42,6 +42,7 @@ int main(int argc, char** argv)
     LOG(info) << argv[0] ; 
 
     //const char* forced = "--test --apmtload " ;   // huh : why the --test ? that signifyies modify geometry 
+    //  guess that the fail with the forced is because the default moified test bib geometry is not reversed
     const char* forced = NULL ; 
 
     Opticks ok(argc, argv, forced);

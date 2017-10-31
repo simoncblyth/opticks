@@ -188,6 +188,7 @@ set(SOURCES
     CStepRec.cc
     CGunSource.cc
     CTorchSource.cc
+    CInputPhotonSource.cc
 
     CEventAction.cc
     CSteppingAction.cc

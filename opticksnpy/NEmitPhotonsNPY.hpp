@@ -18,6 +18,7 @@ class NPY_API NEmitPhotonsNPY
       NEmitPhotonsNPY(NCSG* csg, unsigned gencode);
 
       NPY<float>* getPhotons() const ;
+      FabStepNPY* getFabStep() const ;
       NPY<float>* getFabStepData() const ;
       std::string desc() const  ;
 

@@ -326,6 +326,7 @@ class OKCORE_API Opticks {
        bool isDbgAnalytic() const ; 
        bool isDbgSurf() const ; 
        bool isDbgTorch() const ; 
+       bool isDbgSource() const ; 
 
    public:
        // methods required by BCfg listener classes

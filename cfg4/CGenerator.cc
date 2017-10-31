@@ -1,7 +1,9 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 #include "OpticksCfg.hh"
+#include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
+
 #include "CG4.hh"
 
 #include "NGLM.hpp"
@@ -11,6 +13,7 @@
 
 #include "CTorchSource.hh"
 #include "CGunSource.hh"
+#include "CInputPhotonSource.hh"
 
 #include "CDetector.hh"
 #include "CGenerator.hh"
@@ -36,15 +39,17 @@ CGenerator::CGenerator(OpticksHub* hub, CG4* g4)
 
 void CGenerator::init()
 {
-    unsigned code = m_ok->getSourceCode();
+    unsigned code = m_hub->getSourceCode();
+    const char* sourceType = OpticksFlags::SourceType(code);
 
-    LOG(trace) << "CGenerator::init" 
+    LOG(info) << "CGenerator::init" 
               << " code " << code
-              << " type " << m_ok->getSourceType()
+              << " type " << sourceType
               ; 
 
     if(     code == G4GUN) setSource(makeG4GunSource());
     else if(code == TORCH) setSource(makeTorchSource());
+    else if(code == EMITSOURCE) setSource(makeInputPhotonSource());
     else                   assert(0);
 }
 
@@ -132,10 +137,47 @@ CSource* CGenerator::makeTorchSource()
     setNumG4Event( torch->getNumG4Event()); 
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
 
-    int verbosity = m_cfg->hasOpt("torchdbg") ? 10 : 0 ; 
+    int verbosity = m_ok->isDbgTorch() ? 10 : 0 ; 
     CSource* source  = static_cast<CSource*>(new CTorchSource( m_ok, torch, verbosity)); 
     return source ; 
 }
+
+
+CSource* CGenerator::makeInputPhotonSource()
+{
+    LOG(info) << "CGenerator::makeInputPhotonSource " ; 
+    NPY<float>* inputPhotons = m_hub->getInputPhotons();
+    GenstepNPY* gsnpy = m_hub->getGenstepNPY();
+
+    int verbosity = m_ok->isDbgSource() ? 10 : 0 ; 
+    CSource* source  = static_cast<CSource*>(new CInputPhotonSource( m_ok, inputPhotons, gsnpy, verbosity)); 
+    return source ; 
+}
+
+
+/*
+unsigned CGenerator::getNumG4Event()
+{
+    unsigned int num_photons = getNumPhotons();
+    unsigned int ppe = m_num_photons_per_g4event ; 
+    unsigned int num_g4event ; 
+    if(num_photons < ppe)
+    {   
+        num_g4event = 1 ; 
+    }   
+    else
+    {   
+        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
+        num_g4event = num_photons / ppe ; 
+    }   
+    return num_g4event ; 
+}
+
+*/
+
+
+
+
 
 CSource* CGenerator::makeG4GunSource()
 {

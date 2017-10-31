@@ -1,6 +1,32 @@
 propagating_CPU_side_input_photons
 =====================================
 
+centralize setNumPhotonsPerG4Event ?
+--------------------------------------
+
+
+What does torch step need to know this ? Tis it not a CG4 detail ?
+
+::
+
+    simon:opticks blyth$ opticks-find setNumPhotonsPerG4Event
+    ./cfg4/CGenerator.cc:void CGenerator::setNumPhotonsPerG4Event(unsigned num)
+    ./cfg4/CGenerator.cc:        evt->setNumPhotonsPerG4Event(getNumPhotonsPerG4Event()) ; 
+    ./cfg4/CGenerator.cc:    setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
+    ./cfg4/CGenerator.cc:    setNumPhotonsPerG4Event(0); 
+    ./optickscore/Opticks.cc:    torchstep->setNumPhotonsPerG4Event(photons_per_g4event);
+    ./optickscore/OpticksEvent.cc:void OpticksEvent::setNumPhotonsPerG4Event(unsigned int n)
+    ./cfg4/CGenerator.hh:       void setNumPhotonsPerG4Event(unsigned num);
+    ./optickscore/OpticksEvent.hh:       void setNumPhotonsPerG4Event(unsigned int n);
+    ./opticksnpy/GenstepNPY.cpp:void GenstepNPY::setNumPhotonsPerG4Event(unsigned int n)
+    ./opticksnpy/TorchStepNPY.cpp:void TorchStepNPY::setNumPhotonsPerG4Event(unsigned int n)
+    ./opticksnpy/GenstepNPY.hpp:       void setNumPhotonsPerG4Event(unsigned int n);
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+
+
+
 
 Machinery revolves around gensteps
 -----------------------------------

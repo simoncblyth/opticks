@@ -342,37 +342,6 @@ glm::vec4& TorchStepNPY::getPolarizationLocal()
 
 
 
-/*
-// used from cfg4-
-void TorchStepNPY::setNumPhotonsPerG4Event(unsigned int n)
-{
-    m_num_photons_per_g4event = n ; 
-}
-unsigned int TorchStepNPY::getNumPhotonsPerG4Event()
-{
-    return m_num_photons_per_g4event ;
-}
-unsigned int TorchStepNPY::getNumG4Event()
-{
-    unsigned int num_photons = getNumPhotons();
-    unsigned int ppe = m_num_photons_per_g4event ; 
-    unsigned int num_g4event ; 
-    if(num_photons < ppe)
-    {
-        num_g4event = 1 ; 
-    }
-    else
-    {
-        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
-        num_g4event = num_photons / ppe ; 
-    }
-    return num_g4event ; 
-}
-
-*/
-
-
-
 
 bool TorchStepNPY::isIncidentSphere()
 {

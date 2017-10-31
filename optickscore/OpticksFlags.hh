@@ -22,6 +22,7 @@ class OKCORE_API OpticksFlags {
        static const char* MACHINERY_ ;
        static const char* TORCH_ ;
        static const char* G4GUN_ ;   
+       static const char* EMITSOURCE_ ;   
        static const char* OTHER_ ;
     public:
        static const char* cerenkov_ ;
@@ -31,6 +32,7 @@ class OKCORE_API OpticksFlags {
        static const char* machinery_ ;
        static const char* torch_ ;
        static const char* g4gun_ ;
+       static const char* emitsource_ ;
        static const char* other_ ;
     public:
        static const char* ZERO_ ;
@@ -52,6 +54,7 @@ class OKCORE_API OpticksFlags {
        static const char* _FABRICATED ;
        static const char* _MACHINERY ;
        static const char* _G4GUN ;   
+       static const char* _EMITSOURCE ;   
        static const char* _CERENKOV ;
        static const char* _SCINTILLATION ;
        static const char* _TORCH ;

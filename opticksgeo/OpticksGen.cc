@@ -34,10 +34,17 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE) : NULL ),
-   m_input_photons(NULL)
+   m_input_photons(NULL),
+   m_source_code( m_emitter ? EMITSOURCE : m_ok->getSourceCode() )
 {
     init() ;
 }
+
+unsigned OpticksGen::getSourceCode() const 
+{
+    return m_source_code ;  
+}
+
 
 void OpticksGen::init()
 {
@@ -52,12 +59,12 @@ void OpticksGen::init()
 }
 
 
-
-
 void OpticksGen::initFromEmitter()
 {
     NPY<float>* iox = m_emitter->getPhotons();
     setInputPhotons(iox);
+
+    m_fabstep = m_emitter->getFabStep();
 
     NPY<float>* gs = m_emitter->getFabStepData();
     assert( gs );
@@ -70,7 +77,6 @@ void OpticksGen::initFromEmitter()
     gs->addActionControl(OpticksActionControl::Parse(oac_));
 
     OpticksActionControl oac(gs->getActionControlPtr());
-
     setInputGensteps(gs);
 
     LOG(info) << "OpticksGen::initFromEmitter getting input photons and shim genstep "
@@ -142,6 +148,34 @@ NPY<float>* OpticksGen::getInputGensteps() const
 {
     return m_input_gensteps ; 
 }
+
+FabStepNPY* OpticksGen::getFabStep() const 
+{
+    return m_fabstep ; 
+}
+
+GenstepNPY* OpticksGen::getGenstepNPY() const 
+{
+    unsigned source_code = getSourceCode();
+
+    GenstepNPY* gsnpy = NULL ; 
+
+    if(source_code == TORCH)
+    {
+        gsnpy = dynamic_cast<GenstepNPY*>(getTorchstep()) ;
+    } 
+    else if( source_code == EMITSOURCE )
+    {
+        gsnpy = dynamic_cast<GenstepNPY*>(getFabStep());
+    }
+    return gsnpy ; 
+}
+
+
+
+
+
+
 NPY<float>* OpticksGen::getInputPhotons() const
 {
     return m_input_photons ; 
@@ -169,10 +203,7 @@ void OpticksGen::setInputPhotons(NPY<float>* iox)
 
 
 
-
-TorchStepNPY* OpticksGen::getTorchstep()   
-// needed by CGenerator, full details of the torchstep are used in cfg4-/CTorchSource to 
-// duplicate the on GPU generation done by Opticks torchstep.h on the CPU for Geant4  
+TorchStepNPY* OpticksGen::getTorchstep() const // used by CGenerator for  cfg4-/CTorchSource duplication
 {
     return m_torchstep ; 
 }

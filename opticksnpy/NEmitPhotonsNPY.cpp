@@ -6,7 +6,6 @@
 #include "NNode.hpp"
 
 
-
 #include "FabStepNPY.hpp"
 #include "NEmitConfig.hpp"
 #include "NEmitPhotonsNPY.hpp"
@@ -32,7 +31,10 @@ NPY<float>* NEmitPhotonsNPY::getPhotons() const
 {
     return m_photons ; 
 }
-
+FabStepNPY* NEmitPhotonsNPY::getFabStep() const 
+{
+    return m_fabstep ; 
+}
 NPY<float>* NEmitPhotonsNPY::getFabStepData() const 
 {
     return m_fabstep_npy ; 

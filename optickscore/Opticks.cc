@@ -473,6 +473,10 @@ bool Opticks::isDbgTorch() const
 {
     return m_cfg->hasOpt("torchdbg") ;
 }
+bool Opticks::isDbgSource() const
+{
+    return m_cfg->hasOpt("sourcedbg") ;
+}
 
 
 
@@ -1055,6 +1059,9 @@ unsigned int Opticks::getSourceCode()
     else                                    code = TORCH ;
     return code ;
 }
+
+
+
 
 
 bool Opticks::isFabricatedGensteps()

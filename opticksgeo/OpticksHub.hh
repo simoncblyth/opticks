@@ -14,6 +14,7 @@ class OpticksGeometry ;
 class OpticksAttrSeq ; 
 class OpticksEvent ; 
 
+class GenstepNPY  ; 
 class GGeoBase ; 
 class GScene ; 
 class GGeo ;
@@ -96,6 +97,7 @@ class OKGEO_API OpticksHub {
        OpticksHub(Opticks* opticks);
 
    public:
+       unsigned getSourceCode() const ; 
   private:
        void init();
        void configure();
@@ -125,6 +127,7 @@ class OKGEO_API OpticksHub {
    public:
        std::string    getG4GunConfig();
        NPY<float>*    getInputGensteps();
+       NPY<float>*    getInputPhotons();
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();
        void createEvent(unsigned tagoffset=0);
@@ -142,6 +145,7 @@ class OKGEO_API OpticksHub {
        // getter used by CGenerator::makeTorchSource so that cfg4-
        // reuses the same torch 
        TorchStepNPY*        getTorchstep(); 
+       GenstepNPY*          getGenstepNPY();
 
    public:
        Composition*         getComposition();

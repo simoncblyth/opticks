@@ -116,6 +116,11 @@ void OEvent::createBuffers(OpticksEvent* evt)
         m_context["source_buffer"]->set( m_source_buffer );
         m_source_buf = new OBuf("source", m_source_buffer);
     } 
+    else
+    {
+
+
+    }
 #endif
 
 

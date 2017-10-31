@@ -40,6 +40,7 @@ class CFG4_API CGenerator
        void setGensteps(NPY<float>* gensteps);
        void setSource(CSource* source);
     private:
+       CSource* makeInputPhotonSource();
        CSource* makeTorchSource();
        CSource* makeG4GunSource();
    private:

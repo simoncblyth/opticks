@@ -14,6 +14,18 @@ class G4PrimaryVertex ;
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
+
+/**
+CSource
+=========
+
+Base class of CTorchSource and CGunSource
+
+
+
+**/
+
+
 class CFG4_API CSource : public G4VPrimaryGenerator
 {
   public:

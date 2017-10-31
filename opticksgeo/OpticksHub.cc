@@ -121,6 +121,8 @@ void OpticksHub::init()
 }
 
 
+
+
 std::string OpticksHub::desc() const 
 {
     std::stringstream ss ; 
@@ -552,6 +554,22 @@ std::string OpticksHub::getG4GunConfig()
 TorchStepNPY* OpticksHub::getTorchstep()   // needed by CGenerator
 {
     return m_gen->getTorchstep() ; 
+}
+
+GenstepNPY* OpticksHub::getGenstepNPY()   // needed by CGenerator
+{
+    return m_gen->getGenstepNPY() ; 
+}
+
+
+NPY<float>* OpticksHub::getInputPhotons()   // needed by CGenerator
+{
+    return m_gen->getInputPhotons() ; 
+}
+
+unsigned OpticksHub::getSourceCode() const 
+{
+    return m_gen->getSourceCode() ; 
 }
 
 NPY<float>* OpticksHub::getInputGensteps()

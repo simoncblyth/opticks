@@ -309,6 +309,12 @@ void OpticksCfg<Listener>::init()
        ("torchdbg",  "dump details of torch config") ;
 
    m_desc.add_options()
+       ("sourcedbg",  "dump details of emitsource ") ;
+
+
+
+
+   m_desc.add_options()
        ("dbgflags",  "debug bad flags" );
 
    m_desc.add_options()
