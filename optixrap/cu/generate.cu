@@ -381,6 +381,11 @@ RT_PROGRAM void generate()
     }
 
 
+
+
+
+
+
     // initial quadrant 
     uifchar4 c4 ; 
     c4.uchar_.x = 
@@ -539,6 +544,9 @@ RT_PROGRAM void generate()
 
     rng_states[photon_id] = rng ;
 }
+
+
+
 
 RT_PROGRAM void exception()
 {

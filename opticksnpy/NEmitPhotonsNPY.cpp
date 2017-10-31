@@ -1,5 +1,6 @@
 #include "GLMFormat.hpp"
 
+#include "NGLMExt.hpp"
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
@@ -37,7 +38,6 @@ std::string NEmitPhotonsNPY::desc() const
 
 void NEmitPhotonsNPY::init()
 {
-
     assert( m_emit == 1 || m_emit == -1 );
 
     m_data->zero();   
@@ -56,7 +56,6 @@ void NEmitPhotonsNPY::init()
     assert( points.size() == numPhoton );
     assert( normals.size() == numPhoton );
 
-
     float fdir = float(m_emit);  // +1 out -1 in 
     float ftime = m_cfg->time ;  // ns
     float fweight = m_cfg->weight ;
@@ -70,23 +69,7 @@ void NEmitPhotonsNPY::init()
         glm::vec3 dir(nrm) ; 
         dir *= fdir ; 
 
-        glm::vec3 adir(dir);
-        glm::vec3 least_parallel_axis(0) ; 
-
-        if( adir.x <= adir.y && adir.x <= adir.z )
-        {
-            least_parallel_axis.x = 1.f ; 
-        }
-        else if( adir.y <= adir.x && adir.y <= adir.z )
-        {
-            least_parallel_axis.y = 1.f ; 
-        }
-        else
-        {
-            least_parallel_axis.z = 1.f ; 
-        }
-
-        glm::vec3 pol = glm::normalize( glm::cross( least_parallel_axis, dir )) ; 
+        glm::vec3 pol = nglmext::pick_transverse_direction( dir, i < 10 );
 
         if(i<10)
         {
@@ -94,14 +77,10 @@ void NEmitPhotonsNPY::init()
                       << " pos " << gpresent(pos)
                       << " nrm " << gpresent(nrm)
                       << " dir " << gpresent(dir)
-                      << " adir " << gpresent(adir)
-                      << " lpa " << gpresent(least_parallel_axis)
                       << " pol " << gpresent(pol)
                       << std::endl 
                       ;
-
         }
-
     
 
         glm::vec4 q0(     pos.x,      pos.y,      pos.z,  ftime );

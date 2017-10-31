@@ -137,6 +137,9 @@ struct NPY_API nglmext
     static std::array<float, 16> _float4x4_mul( const std::array<float, 16>& a, const std::array<float, 16>& b) ;
     static const std::array<float, 16> _identity_float4x4 ;
 
+    static glm::vec3 least_parallel_axis( const glm::vec3& dir );
+    static glm::vec3 pick_transverse_direction( const glm::vec3& dir, bool dump=false) ;
+
     static glm::mat4 invert_tr( const glm::mat4& tr ); 
     static glm::mat4* invert_tr( const glm::mat4* tr ); 
 

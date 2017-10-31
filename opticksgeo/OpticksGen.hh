@@ -10,6 +10,7 @@ class GGeo ;
 class GenstepNPY ; 
 class TorchStepNPY ; 
 class FabStepNPY ; 
+class NEmitPhotonsNPY ; 
 
 #include "OKGEO_API_EXPORT.hh"
 
@@ -49,6 +50,7 @@ class OKGEO_API OpticksGen
         void                 setMaterialLine( GenstepNPY* gs );
     private:
         void                 setInputGensteps(NPY<float>* igs);
+        void                 setInputPhotons(NPY<float>* iox);
     private:
         OpticksHub*           m_hub ; 
         Opticks*              m_ok ; 
@@ -58,7 +60,8 @@ class OKGEO_API OpticksGen
         TorchStepNPY*         m_torchstep ;
         FabStepNPY*           m_fabstep ;  
         NPY<float>*           m_input_gensteps ; 
-        NCSG*                 m_emitter ; 
+        NCSG*                 m_csg_emit ; 
+        NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
 };
 

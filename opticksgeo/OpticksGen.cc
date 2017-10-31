@@ -3,6 +3,8 @@
 #include "NPY.hpp"
 #include "FabStepNPY.hpp"
 #include "TorchStepNPY.hpp"
+#include "NEmitPhotonsNPY.hpp"
+
 #include "NParameters.hpp"
 #include "GLMFormat.hpp"
 
@@ -30,7 +32,8 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_torchstep(NULL),
    m_fabstep(NULL),
    m_input_gensteps(NULL),
-   m_emitter(hub->findEmitter()),
+   m_csg_emit(hub->findEmitter()),
+   m_emitter(NULL),
    m_input_photons(NULL)
 {
     init() ;
@@ -38,7 +41,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
 
 void OpticksGen::init()
 {
-    if(m_emitter) initInputPhotons();
+    if(m_csg_emit) initInputPhotons();
 
     initInputGensteps();
 }
@@ -57,14 +60,28 @@ void OpticksGen::setInputGensteps(NPY<float>* gs)
     }
 }
 
+void OpticksGen::setInputPhotons(NPY<float>* iox)
+{
+    m_input_photons = iox ;  
+}
+
+
 void OpticksGen::initInputPhotons()
 {
-    assert(m_emitter);
+    assert(m_csg_emit);
 
-    int emit = m_emitter->emit();
+    int emit = m_csg_emit->emit();
+
+    m_emitter = new NEmitPhotonsNPY(m_csg_emit);
+
+    NPY<float>* input_photons = m_emitter->getNPY();
+
+    setInputPhotons(input_photons);
+
 
     LOG(info) << "OpticksGen::initInputPhotons"
               << " emit " << emit 
+              << " input_photons " << m_input_photons->getNumItems()
                ; 
 
 

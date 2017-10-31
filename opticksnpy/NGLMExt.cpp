@@ -16,6 +16,47 @@
 #include "PLOG.hh"
 
 
+
+glm::vec3 nglmext::least_parallel_axis( const glm::vec3& dir )
+{
+    glm::vec3 adir(glm::abs(dir));
+    glm::vec3 lpa(0) ; 
+
+    if( adir.x <= adir.y && adir.x <= adir.z )
+    {
+        lpa.x = 1.f ; 
+    }
+    else if( adir.y <= adir.x && adir.y <= adir.z )
+    {
+        lpa.y = 1.f ; 
+    }
+    else
+    {
+        lpa.z = 1.f ; 
+    }
+    return lpa ; 
+}
+
+glm::vec3 nglmext::pick_transverse_direction( const glm::vec3& dir, bool dump)
+{
+    glm::vec3 lpa = least_parallel_axis(dir) ;
+    glm::vec3 trd = glm::normalize( glm::cross( lpa, dir )) ; 
+
+    if(dump)
+    {
+        std::cout 
+                  << "nglext::pick_transverse_direction"
+                  << " dir " << gpresent(dir)
+                  << " lpa " << gpresent(lpa)
+                  << " trd " << gpresent(trd)
+                  << std::endl 
+                  ;
+    }
+    return trd ; 
+}
+
+
+
 void nglmext::copyTransform( std::array<float,16>& dst, const glm::mat4& src )
 {
     const float* p = glm::value_ptr(src);
