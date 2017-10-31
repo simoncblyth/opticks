@@ -20,9 +20,8 @@ OpticksGen
 
 High level genstep control.
 Canonical m_gen instance is member of ok/OKMgr OR okg4/OKG4Mgr
-That is instanciated by OpticksHub::init after the geometry
+which is instanciated by OpticksHub::init after the geometry
 has been loaded.
-
 
 */
 
@@ -33,15 +32,17 @@ class OKGEO_API OpticksGen
     public:
         OpticksGen(OpticksHub* hub);
     public:
-        NPY<float>*          getInputGensteps();
+        NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
+        NPY<float>*          getInputGensteps() const ;
         TorchStepNPY*        getTorchstep();
     public:
         FabStepNPY*          makeFabstep();  
     private:
         void                 init();
-        void                 initInputGensteps();
-        void                 initInputPhotons();
+        void                 initFromGensteps();
+        void                 initFromEmitter();
     private:
+        NPY<float>*          makeInputGensteps(unsigned code);
         NPY<float>*          loadGenstepFile(const char* label);
         TorchStepNPY*        makeTorchstep();
     private:

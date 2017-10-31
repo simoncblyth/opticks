@@ -135,6 +135,7 @@ class GGEO_API GSurLib
     public:
          GGeo*                 m_ggeo ;
          Opticks*              m_ok ; 
+         bool                  m_is_test ; 
          bool                  m_dbgsurf ; 
          GSurfaceLib*          m_slib ; 
          GBndLib*              m_blib ; 

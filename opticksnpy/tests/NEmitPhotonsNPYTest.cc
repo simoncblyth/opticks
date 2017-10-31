@@ -5,12 +5,14 @@ NEmitPhotonsNPYTest $TMP/tboolean-torus--
 #include <cstdlib>
 #include <cfloat>
 
+#include "SSys.hh"
 #include "NGLMExt.hpp"
 
 #include "GLMFormat.hpp"
 
 #include "NPY_LOG.hh"
 #include "BRAP_LOG.hh"
+#include "SYSRAP_LOG.hh"
 
 #include "NCSGList.hpp"
 #include "NEmitPhotonsNPY.hpp"
@@ -21,6 +23,7 @@ NEmitPhotonsNPYTest $TMP/tboolean-torus--
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    SYSRAP_LOG__ ;  
     NPY_LOG__ ;  
     BRAP_LOG__ ;  
 
@@ -47,11 +50,21 @@ int main(int argc, char** argv)
         return 0 ; 
     }
 
-    NEmitPhotonsNPY ep(csg) ;
+    unsigned EMITTER = 0x1 << 18 ; 
+    unsigned gencode = EMITTER ; 
 
-    NPY<float>* ox = ep.getNPY();
+    NEmitPhotonsNPY ep(csg, gencode) ;
+
+    NPY<float>* ox = ep.getPhotons();
     ox->dump();
 
+    NPY<float>* gs = ep.getFabStepData();
+    gs->dump();
+
+
+    const char* path = "$TMP/NEmitPhotonsNPYTest_fabstep.npy" ;
+    gs->save(path);
+    SSys::npdump(path, "np.int32");
 
 
 

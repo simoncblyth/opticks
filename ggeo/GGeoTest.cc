@@ -53,7 +53,7 @@ NCSGList* GGeoTest::getCSGList() const
 
 NCSG* GGeoTest::findEmitter() const 
 {
-    return m_csglist->findEmitter() ; 
+    return m_csglist ? m_csglist->findEmitter() : NULL ; 
 }
 
 

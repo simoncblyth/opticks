@@ -341,13 +341,10 @@ RT_PROGRAM void generate()
     } 
 #endif 
 
+
     curandState rng = rng_states[photon_id];
-
-    // not combining State and PRD as assume minimal PRD advantage exceeds copying cost 
-
     State s ;   
     Photon p ;  
-
 
     if(gencode == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
     {
@@ -404,6 +401,9 @@ RT_PROGRAM void generate()
 
 
 
+
+    
+
     //rtPrintf("(generate.cu) p0 %10.4f %10.4f %10.4f  \n", p.position.x, p.position.y, p.position.z );
 
     int bounce = 0 ; 
@@ -430,6 +430,9 @@ RT_PROGRAM void generate()
     slot = 0 ; 
     record_offset = 0 ; 
 #endif
+
+
+
 
     PerRayData_propagate prd ;
 

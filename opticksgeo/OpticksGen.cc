@@ -33,7 +33,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_fabstep(NULL),
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
-   m_emitter(NULL),
+   m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITTER) : NULL ),
    m_input_photons(NULL)
 {
     init() ;
@@ -41,85 +41,58 @@ OpticksGen::OpticksGen(OpticksHub* hub)
 
 void OpticksGen::init()
 {
-    if(m_csg_emit) initInputPhotons();
-
-    initInputGensteps();
-}
-
-
-NPY<float>* OpticksGen::getInputGensteps()
-{
-    return m_input_gensteps ; 
-}
-void OpticksGen::setInputGensteps(NPY<float>* gs)
-{
-    m_input_gensteps = gs ;  
-    if(gs)  // will be NULL for G4GUN for example
+    if(m_emitter) 
     {
-        gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+        initFromEmitter();
+    }
+    else
+    { 
+        initFromGensteps();
     }
 }
 
-void OpticksGen::setInputPhotons(NPY<float>* iox)
+
+
+
+void OpticksGen::initFromEmitter()
 {
-    m_input_photons = iox ;  
-}
+    NPY<float>* iox = m_emitter->getPhotons();
+    setInputPhotons(iox);
 
+    NPY<float>* gs = m_emitter->getFabStepData();
+    assert( gs );
+    setInputGensteps(gs);
 
-void OpticksGen::initInputPhotons()
-{
-    assert(m_csg_emit);
-
-    int emit = m_csg_emit->emit();
-
-    m_emitter = new NEmitPhotonsNPY(m_csg_emit);
-
-    NPY<float>* input_photons = m_emitter->getNPY();
-
-    setInputPhotons(input_photons);
-
-
-    LOG(info) << "OpticksGen::initInputPhotons"
-              << " emit " << emit 
+    LOG(info) << "OpticksGen::initFromEmitter getting input photons and shim genstep "
               << " input_photons " << m_input_photons->getNumItems()
-               ; 
-
-
-    // from cu/generate.cu
-    // will need a marker genstep with gencode indicating to 
-    // get photons from input_photon_buffer rather than
-    // use more efficient GPU generation
-    //
-    //  position  : from emitter NCSG 
-    //  direction : from emitter NCSG normal, flipped in/out by emit value
-    //
-    //  time, weight, wavelength  : needs to come from emitconfig, with default values
-    //  polarization  : calculated based on some high level emitconfig control 
-    //
-    // number of photons to generate : from emitconfig
-
-    
+              ; 
 }
 
-
-void OpticksGen::initInputGensteps()
+void OpticksGen::initFromGensteps()
 {
     if(m_ok->isNoInputGensteps() || m_ok->isEmbedded())
     {
-        LOG(warning) << "OpticksGen::initInputGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
+        LOG(warning) << "OpticksGen::initFromGensteps SKIP as isNoInputGensteps OR isEmbedded  " ; 
         return ; 
     } 
 
     const char* type = m_ok->getSourceType();
     unsigned code = m_ok->getSourceCode();
-    LOG(debug) << "OpticksGen::initInputGensteps" 
+
+    LOG(debug) << "OpticksGen::initFromGensteps" 
                << " code " << code
                << " type " << type
                ;
 
+    NPY<float>* gs = makeInputGensteps(code) ; 
+    assert( gs );
+    setInputGensteps(gs);
+}
 
+
+NPY<float>* OpticksGen::makeInputGensteps(unsigned code)
+{
     NPY<float>* gs = NULL ; 
-
     if( code == FABRICATED || code == MACHINERY  )
     {
         m_fabstep = makeFabstep();
@@ -148,8 +121,38 @@ void OpticksGen::initInputGensteps()
                           ;
         }
     }
-    setInputGensteps(gs);
+    return gs ; 
 }
+
+
+
+
+NPY<float>* OpticksGen::getInputGensteps() const 
+{
+    return m_input_gensteps ; 
+}
+NPY<float>* OpticksGen::getInputPhotons() const
+{
+    return m_input_photons ; 
+}
+
+void OpticksGen::setInputGensteps(NPY<float>* gs)
+{
+    m_input_gensteps = gs ;  
+    if(gs)  // will be NULL for G4GUN for example
+    {
+        gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
+    }
+}
+
+void OpticksGen::setInputPhotons(NPY<float>* iox)
+{
+    m_input_photons = iox ;  
+}
+
+
+
+
 
 
 TorchStepNPY* OpticksGen::getTorchstep()   

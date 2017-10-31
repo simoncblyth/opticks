@@ -115,10 +115,7 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        void setMode(const char* s );
        void setType(const char* s );
    public:
-       // slots used by Geant4 only (not Opticks) from cfg4- 
-       void setNumPhotonsPerG4Event(unsigned int n);
-       unsigned int getNumPhotonsPerG4Event(); 
-       unsigned int getNumG4Event();
+
        bool isIncidentSphere();
        bool isDisc();
        bool isDiscLinear();
@@ -157,9 +154,8 @@ class NPY_API TorchStepNPY : public GenstepNPY {
        glm::vec4    m_tgt ;
        glm::vec4    m_pol ;
        glm::vec3    m_dir ;
-  private:
-       unsigned int m_num_photons_per_g4event ;
- 
+
+
 };
 
 #include "NPY_TAIL.hh"

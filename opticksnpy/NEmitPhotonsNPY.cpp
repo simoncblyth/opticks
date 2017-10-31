@@ -5,28 +5,40 @@
 #include "NCSG.hpp"
 #include "NNode.hpp"
 
+
+
+#include "FabStepNPY.hpp"
 #include "NEmitConfig.hpp"
 #include "NEmitPhotonsNPY.hpp"
 
 #include "PLOG.hh"
 
 
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg)
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode)
     :
     m_csg(csg),
     m_emit(csg->emit()),
     m_cfg_( csg->emitconfig() ),
     m_cfg( new NEmitConfig( m_cfg_ )),
     m_root( csg->getRoot()),
-    m_data(NPY<float>::make(m_cfg->photons, 4, 4))
+    m_photons(NPY<float>::make(m_cfg->photons, 4, 4)),
+    m_fabstep(new FabStepNPY(gencode, 1, m_cfg->photons)),
+    m_fabstep_npy(m_fabstep->getNPY())
 {
     init();
 }
 
-NPY<float>* NEmitPhotonsNPY::getNPY() const 
+NPY<float>* NEmitPhotonsNPY::getPhotons() const 
 {
-    return m_data ; 
+    return m_photons ; 
 }
+
+NPY<float>* NEmitPhotonsNPY::getFabStepData() const 
+{
+    return m_fabstep_npy ; 
+}
+
+
 
 std::string NEmitPhotonsNPY::desc() const 
 {
@@ -40,11 +52,11 @@ void NEmitPhotonsNPY::init()
 {
     assert( m_emit == 1 || m_emit == -1 );
 
-    m_data->zero();   
+    m_photons->zero();   
 
     m_cfg->dump();
 
-    unsigned numPhoton = m_data->getNumItems();
+    unsigned numPhoton = m_photons->getNumItems();
     LOG(info) << desc() 
               << " numPhoton " << numPhoton 
                ;
@@ -88,19 +100,13 @@ void NEmitPhotonsNPY::init()
         glm::vec4 q2(     pol.x,      pol.y,      pol.z,  fwavelength );
         glm::uvec4 u3(   0,0,0,0 );   // flags 
 
-        m_data->setQuad( q0, i, 0 );
-        m_data->setQuad( q1, i, 1 );
-        m_data->setQuad( q2, i, 2 );
-        m_data->setQuad( u3, i, 3 );  
+        m_photons->setQuad( q0, i, 0 );
+        m_photons->setQuad( q1, i, 1 );
+        m_photons->setQuad( q2, i, 2 );
+        m_photons->setQuad( u3, i, 3 );  
     }   
 }
 
-
-NPY<float>* NEmitPhotonsNPY::make(NCSG* csg)
-{
-    NEmitPhotonsNPY* ep = new NEmitPhotonsNPY(csg);
-    return ep->getNPY();
-}
 
 
 

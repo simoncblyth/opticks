@@ -33,11 +33,20 @@ Instead need input_photon buffer ? Suspect best to keep that
 separate from the output photons buffer.
 
 
-Need to split propagation out from generate.cu to avoid 
-code duplication with a new CPU "propagate" photons entry point.
+Avoid overheads with separate "propagate" entrypoint ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Splitting off propagation from generate.cu is a major undertaking 
+from current state of cu/generate.cu 
+
+Perhaps can aim in that direction, but 
+too much global state buffers etc.. to pass into methods.
 
 
 
+
+Generation mechanics
+---------------------------
 
 cu/generate.cu::
 

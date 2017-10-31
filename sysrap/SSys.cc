@@ -66,12 +66,15 @@ int SSys::npdump(const char* path, const char* nptype, const char* postview )
        << " a=np.load(os.path.expandvars(\"" << path << "\")) ;"
        << " print a.shape ;"
        << " print a.view(" << nptype << ")" << ( postview ? postview : "" ) << " ;"
-       << " sys.exit(214) ' " 
+       << " sys.exit(0) ' " 
     ;    
 
     std::string cmd = ss.str();
     return run(cmd.c_str());
 }
+
+
+
 
 
 

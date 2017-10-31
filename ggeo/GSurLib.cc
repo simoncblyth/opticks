@@ -50,6 +50,7 @@ GSurLib::GSurLib(GGeo* gg)
     : 
     m_ggeo(gg),
     m_ok(gg->getOpticks()),
+    m_is_test(m_ok->isTest()),
     m_dbgsurf(m_ok->isDbgSurf()),
     m_slib(gg->getSurfaceLib()),
     m_blib(gg->getBndLib()),
@@ -201,7 +202,7 @@ void GSurLib::examineSolidBndSurfaces()
     // lv, pv it would be simpler to do this during creation rather than 
     // afterwards
 
-    bool reverse = true ; 
+    bool reverse = m_is_test ? true : false  ; 
 
     for(unsigned j=0 ; j < numSolids ; j++)
     {

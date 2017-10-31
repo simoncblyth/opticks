@@ -48,8 +48,8 @@ OpticksEventStat::OpticksEventStat(OpticksEvent* evt, unsigned num_cat)
     m_records(CreateRecordsNPY(evt)),
     m_pho(evt->getPhotonData()),
     m_seq(evt->getSequenceData()),
-    m_pho_num(m_pho->getShape(0)),
-    m_seq_num(m_seq->getShape(0)),
+    m_pho_num(m_pho ? m_pho->getShape(0) : 0),
+    m_seq_num(m_seq ? m_seq->getShape(0) : 0),
     m_counts(new MQC[num_cat]), 
     m_totmin(2)
 {

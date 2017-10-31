@@ -41,6 +41,14 @@ class NPY_API GenstepNPY {
        void addStep(bool verbose=false); // increments m_step_index
        unsigned getNumStep();
 
+       // slots used by Geant4 only (not Opticks) from cfg4- 
+       void setNumPhotonsPerG4Event(unsigned int n);
+       unsigned int getNumPhotonsPerG4Event(); 
+       unsigned int getNumG4Event();
+
+
+
+
        NPY<float>* getNPY();
        void         addActionControl(unsigned long long  action_control);
 
@@ -132,7 +140,9 @@ class NPY_API GenstepNPY {
        glm::ivec4   m_frame ;
        glm::mat4    m_frame_transform ; 
        bool         m_frame_targetted ; 
-
+  private:
+       unsigned int m_num_photons_per_g4event ;
+ 
 
 };
 

@@ -41,7 +41,9 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
-    const char* forced = "--test --apmtload " ; 
+    //const char* forced = "--test --apmtload " ;   // huh : why the --test ? that signifyies modify geometry 
+    const char* forced = NULL ; 
+
     Opticks ok(argc, argv, forced);
     ok.setModeOverride( OpticksMode::CFG4_MODE );  // override COMPUTE/INTEROP mode, as those do not apply to CFG4
 

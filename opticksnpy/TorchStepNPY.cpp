@@ -278,8 +278,7 @@ void TorchStepNPY::set(Param_t p, const char* s)
 
 TorchStepNPY::TorchStepNPY(unsigned genstep_type, unsigned int num_step, const char* config) 
        :  
-       GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG ),
-       m_num_photons_per_g4event(10000)
+       GenstepNPY(genstep_type,  num_step, config ? strdup(config) : DEFAULT_CONFIG )
 {
    init();
 }
@@ -343,7 +342,7 @@ glm::vec4& TorchStepNPY::getPolarizationLocal()
 
 
 
-
+/*
 // used from cfg4-
 void TorchStepNPY::setNumPhotonsPerG4Event(unsigned int n)
 {
@@ -369,6 +368,8 @@ unsigned int TorchStepNPY::getNumG4Event()
     }
     return num_g4event ; 
 }
+
+*/
 
 
 

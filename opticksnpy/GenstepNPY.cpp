@@ -29,10 +29,48 @@ GenstepNPY::GenstepNPY(unsigned genstep_type, unsigned num_step, const char* con
        m_beam(0,0,0,0),
        m_frame(-1,0,0,0),
        m_frame_transform(1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1),
-       m_frame_targetted(false)
+       m_frame_targetted(false),
+       m_num_photons_per_g4event(10000)
 {
     m_npy->zero();
 }
+
+
+
+
+
+// used from cfg4-
+void GenstepNPY::setNumPhotonsPerG4Event(unsigned int n)
+{
+    m_num_photons_per_g4event = n ; 
+}
+unsigned int GenstepNPY::getNumPhotonsPerG4Event()
+{
+    return m_num_photons_per_g4event ;
+}
+unsigned int GenstepNPY::getNumG4Event()
+{
+    unsigned int num_photons = getNumPhotons();
+    unsigned int ppe = m_num_photons_per_g4event ; 
+    unsigned int num_g4event ; 
+    if(num_photons < ppe)
+    {
+        num_g4event = 1 ; 
+    }
+    else
+    {
+        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
+        num_g4event = num_photons / ppe ; 
+    }
+    return num_g4event ; 
+}
+
+
+
+
+
+
+
 
 void GenstepNPY::addActionControl(unsigned long long  action_control)
 {
