@@ -36,6 +36,38 @@ struct Photon
 
 
 
+
+
+__device__ void pload( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset)
+{
+    const float4& post = pbuffer[photon_offset+0];
+    const float4& dirw = pbuffer[photon_offset+1];
+    const float4& polw = pbuffer[photon_offset+2];
+    const float4& flags = pbuffer[photon_offset+3];
+
+    p.position.x = post.x ; 
+    p.position.y = post.y ; 
+    p.position.z = post.z ;
+    p.time = post.w ;
+
+    p.direction.x = dirw.x ; 
+    p.direction.y = dirw.y ; 
+    p.direction.z = dirw.z ;
+    p.weight = dirw.w ;
+
+    p.polarization.x = polw.x ; 
+    p.polarization.y = polw.y ; 
+    p.polarization.z = polw.z ;
+    p.wavelength = polw.w ;
+
+    p.flags.f.x = flags.x ; 
+    p.flags.f.y = flags.y ; 
+    p.flags.f.z = flags.z ; 
+    p.flags.f.w = flags.w ; 
+}
+
+
+
 __device__ void psave( Photon& p, optix::buffer<float4>& pbuffer, unsigned int photon_offset)
 {
     pbuffer[photon_offset+0] = make_float4( p.position.x,    p.position.y,    p.position.z,     p.time ); 

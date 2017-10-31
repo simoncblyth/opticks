@@ -20,7 +20,7 @@ enum
     FABRICATED        = 0x1 << 15,
     NATURAL           = 0x1 << 16,
     MACHINERY         = 0x1 << 17,
-    EMITTER           = 0x1 << 18
+    EMITSOURCE        = 0x1 << 18
 }; 
 
 //  only ffs 0-15 make it into the record so debug flags only beyond 15 

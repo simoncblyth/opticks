@@ -85,6 +85,7 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 
 rtBuffer<float4>               genstep_buffer;
 rtBuffer<float4>               photon_buffer;
+rtBuffer<float4>               source_buffer;
 
 #ifdef WITH_RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
@@ -211,11 +212,15 @@ RT_PROGRAM void trivial()
 #endif
     unsigned int genstep_offset = genstep_id*GNUMQUAD ; 
 
-    //rtPrintf("(trivial) genstep_id %u \n", genstep_id );
-    //rtPrintf("(trivial) genstep_offset %u \n", genstep_offset );
 
     union quad ghead ; 
     ghead.f = genstep_buffer[genstep_offset+0]; 
+
+    int gencode = ghead.i.x ; 
+
+    rtPrintf("(trivial) genstep_id %u genstep_offset %u gencode %d \n", genstep_id, genstep_offset, gencode );
+
+
    
     quad indices ;  
     indices.u.x = photon_id ; 
@@ -376,10 +381,13 @@ RT_PROGRAM void generate()
         generate_torch_photon(p, ts, rng );         
         s.flag = TORCH ;  
     }
-
-
-
-
+    else if(gencode == EMITSOURCE)
+    {
+        // source_buffer is input only, photon_buffer output only, 
+        // photon_offset is same for both these buffers
+        pload(p, source_buffer, photon_offset ); 
+        s.flag = TORCH ;  
+    }
 
 
 

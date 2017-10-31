@@ -60,6 +60,7 @@ m_axis_renderer           Rdr              axis
 m_genstep_renderer        Rdr              p2l
 m_nopstep_renderer        Rdr              nop           LINE_STRIP primitive
 m_photon_renderer         Rdr              pos
+m_source_renderer         Rdr              pos
 m_record_renderer         Rdr              rec           LINE_STRIP primitive
 m_altrecord_renderer      Rdr              altrec        LINE_STRIP primitive
 m_devrecord_renderer      Rdr              devrec        LINE_STRIP primitive
@@ -109,6 +110,7 @@ class OGLRAP_API Scene : public NConfigurable {
         const char* getPrefix();
    public:
         static const char* PHOTON ;
+        static const char* SOURCE ;
         static const char* AXIS ;
         static const char* GENSTEP ;
         static const char* NOPSTEP ;
@@ -280,6 +282,7 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*          getGenstepRenderer();
         Rdr*          getNopstepRenderer();
         Rdr*          getPhotonRenderer();
+        Rdr*          getSourceRenderer();
         Rdr*          getRecordRenderer();
         Rdr*          getRecordRenderer(RecordStyle_t style);
         Composition*  getComposition();
@@ -314,6 +317,7 @@ class OGLRAP_API Scene : public NConfigurable {
         Rdr*         m_genstep_renderer ; 
         Rdr*         m_nopstep_renderer ; 
         Rdr*         m_photon_renderer ; 
+        Rdr*         m_source_renderer ; 
         Rdr*         m_record_renderer ; 
         Rdr*         m_altrecord_renderer ; 
         Rdr*         m_devrecord_renderer ; 
@@ -334,6 +338,7 @@ class OGLRAP_API Scene : public NConfigurable {
         bool         m_genstep_mode ; 
         bool         m_nopstep_mode ; 
         bool         m_photon_mode ; 
+        bool         m_source_mode ; 
         bool         m_record_mode ; 
    private:
         RecordStyle_t   m_record_style ; 

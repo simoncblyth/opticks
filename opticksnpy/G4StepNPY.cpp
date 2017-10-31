@@ -221,6 +221,8 @@ int G4StepNPY::getNumPhotonsCounted()
 
 void G4StepNPY::checklabel(int xlabel, int ylabel)
 {
+    // genstep labels must match  
+
     unsigned numStep = m_npy->getNumItems();
     unsigned mismatch = 0 ;  
 

@@ -5,6 +5,24 @@
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+OpticksActionControl
+======================
+
+Used to label gensteps via::
+
+    272 void NPYBase::addActionControl(unsigned long long control)
+    273 {
+    274     m_action_control |= control ;
+    275 }
+    276 void NPYBase::setActionControl(unsigned long long control)
+    277 {
+    278     m_action_control = control ;
+    279 }
+
+**/
+
+
 class OKCORE_API OpticksActionControl {
     public:
         enum {
@@ -13,7 +31,8 @@ class OKCORE_API OpticksActionControl {
                 GS_TRANSLATED  = 0x1 << 3,
                 GS_TORCH       = 0x1 << 4,
                 GS_LEGACY      = 0x1 << 5,
-                GS_EMBEDDED    = 0x1 << 6
+                GS_EMBEDDED    = 0x1 << 6,
+                GS_EMITSOURCE  = 0x1 << 7
              };  
     public:
         static const char* GS_LOADED_  ; 
@@ -22,6 +41,7 @@ class OKCORE_API OpticksActionControl {
         static const char* GS_TORCH_ ; 
         static const char* GS_LEGACY_ ;
         static const char* GS_EMBEDDED_;
+        static const char* GS_EMITSOURCE_;
     public:
         static std::string Description(unsigned long long ctrl);
         static unsigned long long Parse(const char* ctrl, char delim=',');

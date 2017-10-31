@@ -50,8 +50,8 @@ int main(int argc, char** argv)
         return 0 ; 
     }
 
-    unsigned EMITTER = 0x1 << 18 ; 
-    unsigned gencode = EMITTER ; 
+    unsigned EMITSOURCE = 0x1 << 18 ; 
+    unsigned gencode = EMITSOURCE ; 
 
     NEmitPhotonsNPY ep(csg, gencode) ;
 

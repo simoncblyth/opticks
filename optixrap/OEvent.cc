@@ -44,9 +44,15 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    m_context(ocontext->getContext()),
    m_evt(NULL),
    m_photonMarkDirty(false),
+#ifdef WITH_SOURCE
+   m_sourceMarkDirty(false),
+#endif
    m_seedMarkDirty(false),
    m_genstep_buf(NULL),
    m_photon_buf(NULL),
+#ifdef WITH_SOURCE
+   m_source_buf(NULL),
+#endif
 #ifdef WITH_RECORD
    m_record_buf(NULL),
    m_sequence_buf(NULL),
@@ -95,6 +101,24 @@ void OEvent::createBuffers(OpticksEvent* evt)
 
     m_context["photon_buffer"]->set( m_photon_buffer );
     m_photon_buf = new OBuf("photon", m_photon_buffer);
+
+
+
+#ifdef WITH_SOURCE
+    NPY<float>* source = evt->getSourceData() ; 
+    if(source)
+    {
+        OpticksBufferControl* sourceCtrl = evt->getSourceCtrl();
+        m_sourceMarkDirty = sourceCtrl->isSet("BUFFER_COPY_ON_DIRTY") ;
+
+        m_source_buffer = m_ocontext->createBuffer<float>( source, "source");
+
+        m_context["source_buffer"]->set( m_source_buffer );
+        m_source_buf = new OBuf("source", m_source_buffer);
+    } 
+#endif
+
+
 
 
 #ifdef WITH_RECORD
@@ -146,6 +170,22 @@ void OEvent::markDirty()
 
 #endif
 
+
+
+#ifdef WITH_SOURCE
+     if(m_sourceMarkDirty)
+     {
+         LOG(info) << "OEvent::markDirty(source) PROCEED" ;
+         m_source_buffer->markDirty();   
+     }
+     else
+     {
+         LOG(debug) << "OEvent::markDirty(source) SKIP " ;
+     }
+#endif
+
+
+
 /*
 2016-09-12 20:50:24.482 INFO  [438131] [OEvent::markDirtyPhotonBuffer@98] OEvent::markDirtyPhotonBuffer
 libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Unknown error (Details: Function "RTresult _rtBufferMarkDirty(RTbuffer)" caught exception: Mark dirty only allowed on buffers created with RT_BUFFER_COPY_ON_DIRTY, file:/Users/umber/workspace/rel4.0-mac64-build-Release/sw/wsapps/raytracing/rtsdk/rel4.0/src/Objects/Buffer.cpp, line: 867)
@@ -180,6 +220,15 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     assert(photon);
     OContext::resizeBuffer<float>(m_photon_buffer,  photon, "photon");
 
+#ifdef WITH_SOURCE
+    NPY<float>* source = evt->getSourceData() ; 
+    if(source)
+    {
+        OContext::resizeBuffer<float>(m_source_buffer,  source, "source");
+    }
+#endif
+
+
 #ifdef WITH_RECORD
     NPY<short>* rx = evt->getRecordData() ; 
     assert(rx);
@@ -189,7 +238,6 @@ void OEvent::resizeBuffers(OpticksEvent* evt)
     assert(sq);
     OContext::resizeBuffer<unsigned long long>(m_sequence_buffer, sq , "sequence");
 #endif
-
 }
 
 
@@ -216,6 +264,12 @@ unsigned OEvent::upload(OpticksEvent* evt)
         resizeBuffers(evt);
     }
     unsigned npho = uploadGensteps(evt);
+    unsigned nsrc = uploadSource(evt);
+
+    if( nsrc > 0 )
+    {
+        assert( nsrc == npho ); 
+    }
 
     LOG(debug)<<"OEvent::upload id " << evt->getId() << " DONE "  ;
 
@@ -243,6 +297,30 @@ unsigned OEvent::uploadGensteps(OpticksEvent* evt)
     }
     return npho ; 
 }
+
+unsigned OEvent::uploadSource(OpticksEvent* evt)
+{
+    NPY<float>* source =  evt->getSourceData() ;
+    if(!source) return 0 ; 
+
+    unsigned nsrc = evt->getNumSource();
+
+    if(m_ocontext->isCompute()) 
+    {
+        LOG(info) << "OEvent::uploadSource (COMPUTE) id " << evt->getId() << " " << source->getShapeString() << " -> " << nsrc  ;
+        OContext::upload<float>(m_source_buffer, source);
+    }
+    else if(m_ocontext->isInterop())
+    {
+        assert(source->getBufferId() > 0); 
+        LOG(info) << "OEvent::uploadSource (INTEROP) SKIP OpenGL BufferId " << source->getBufferId()  ;
+    }
+    return nsrc ; 
+
+}
+
+
+
 
 
 void OEvent::downloadPhotonData() 

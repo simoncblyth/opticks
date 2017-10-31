@@ -108,7 +108,7 @@ OpticksEvent* OpticksRun::getCurrentEvent()
 }
 
 
-void OpticksRun::setGensteps(NPY<float>* gensteps)
+void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr to OKG4Mgr 
 {
     bool no_gensteps = gensteps == NULL ; 
     if(no_gensteps) LOG(fatal) << "OpticksRun::setGensteps given NULL gensteps" ; 
@@ -122,9 +122,19 @@ void OpticksRun::setGensteps(NPY<float>* gensteps)
 
     const char* oac_label = m_ok->isEmbedded() ? "GS_EMBEDDED" : NULL ; 
  
-    importGenstepData(gensteps, oac_label) ;
+    m_g4step = importGenstepData(gensteps, oac_label) ;
 
     m_g4evt->setGenstepData(gensteps, progenitor);
+
+    if(hasActionControl(gensteps, "GS_EMITSOURCE"))
+    {
+        void* aux = gensteps->getAux();
+        assert( aux );
+
+        NPY<float>* emitsource = (NPY<float>*)aux ; 
+        m_g4evt->setSourceData( emitsource ); 
+    }
+
 
     passBaton();  
 }
@@ -133,14 +143,14 @@ void OpticksRun::passBaton()
 {
     NPY<float>* nopstep = m_g4evt->getNopstepData() ;
     NPY<float>* genstep = m_g4evt->getGenstepData() ;
+    NPY<float>* source  = m_g4evt->getSourceData() ;
 
     LOG(info) << "OpticksRun::passBaton"
               << " nopstep " << nopstep
               << " genstep " << genstep
+              << " source " << source
               ;
 
-
-   //
    // Not-cloning as these buffers are not actually distinct 
    // between G4 and OK.
    //
@@ -151,6 +161,8 @@ void OpticksRun::passBaton()
 
     m_evt->setNopstepData(nopstep);  
     m_evt->setGenstepData(genstep);
+    m_evt->setSourceData(source);
+
 }
 
 bool OpticksRun::hasGensteps()
@@ -218,7 +230,7 @@ void OpticksRun::loadEvent()
 
 
 
-void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
+G4StepNPY* OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 {
     NParameters* gsp = gs->getParameters();
     m_parameters->append(gsp);
@@ -226,15 +238,15 @@ void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
     gs->setBufferSpec(OpticksEvent::GenstepSpec(m_ok->isCompute()));
 
     // assert(m_g4step == NULL && "OpticksRun::importGenstepData can only do this once ");
-    m_g4step = new G4StepNPY(gs);    
+    G4StepNPY* g4step = new G4StepNPY(gs);    
 
     OpticksActionControl oac(gs->getActionControlPtr());
+
     if(oac_label)
     {
         LOG(debug) << "OpticksRun::importGenstepData adding oac_label " << oac_label ; 
         oac.add(oac_label);
     }
-
 
     LOG(debug) << "OpticksRun::importGenstepData"
                << brief()
@@ -244,29 +256,33 @@ void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
     if(oac("GS_LEGACY"))
     {
-        translateLegacyGensteps(gs);
+        translateLegacyGensteps(g4step);
     }
     else if(oac("GS_EMBEDDED"))
     {
         std::cerr << "OpticksEvent::importGenstepData GS_EMBEDDED " << std::endl ; 
-        translateLegacyGensteps(gs);
+        translateLegacyGensteps(g4step);
     }
     else if(oac("GS_TORCH"))
     {
         LOG(debug) << " checklabel of torch steps  " << oac.description("oac") ; 
-        m_g4step->checklabel(TORCH); 
+        g4step->checklabel(TORCH); 
     }
     else if(oac("GS_FABRICATED"))
     {
-        m_g4step->checklabel(FABRICATED); 
+        g4step->checklabel(FABRICATED); 
+    }
+    else if(oac("GS_EMITSOURCE"))
+    {
+        g4step->checklabel(EMITSOURCE); 
     }
     else
     {
         LOG(debug) << " checklabel of non-legacy (collected direct) gensteps  " << oac.description("oac") ; 
-        m_g4step->checklabel(CERENKOV, SCINTILLATION);
+        g4step->checklabel(CERENKOV, SCINTILLATION);
     }
 
-    m_g4step->countPhotons();
+    g4step->countPhotons();
 
     LOG(debug) 
          << " Keys "
@@ -278,8 +294,11 @@ void OpticksRun::importGenstepData(NPY<float>* gs, const char* oac_label)
 
      LOG(debug) 
          << " counts " 
-         << m_g4step->description()
+         << g4step->description()
          ;
+
+
+    return g4step ; 
 
 }
 
@@ -290,8 +309,18 @@ G4StepNPY* OpticksRun::getG4Step()
 }
 
 
-void OpticksRun::translateLegacyGensteps(NPY<float>* gs)
+
+bool OpticksRun::hasActionControl(NPYBase* npy, const char* label)
 {
+    OpticksActionControl oac(npy->getActionControlPtr());
+    return oac.isSet(label) ;
+} 
+ 
+
+void OpticksRun::translateLegacyGensteps(G4StepNPY* g4step)
+{
+    NPY<float>* gs = g4step->getNPY();
+
     OpticksActionControl oac(gs->getActionControlPtr());
     bool gs_torch = oac.isSet("GS_TORCH") ; 
     bool gs_legacy = oac.isSet("GS_LEGACY") ; 
@@ -326,7 +355,7 @@ void OpticksRun::translateLegacyGensteps(NPY<float>* gs)
 
     assert(lookup); 
 
-    m_g4step->relabel(CERENKOV, SCINTILLATION); 
+    g4step->relabel(CERENKOV, SCINTILLATION); 
 
     // CERENKOV or SCINTILLATION codes are used depending on 
     // the sign of the pre-label 
@@ -335,15 +364,12 @@ void OpticksRun::translateLegacyGensteps(NPY<float>* gs)
 
     lookup->close("OpticksRun::translateLegacyGensteps GS_LEGACY");
 
-    m_g4step->setLookup(lookup);   
-    m_g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
+    g4step->setLookup(lookup);   
+    g4step->applyLookup(0, 2);  // jj, kk [1st quad, third value] is materialIndex
 
     // replaces original material indices with material lines
     // for easy access to properties using boundary_lookup GPU side
 
 }
-
-
-
 
 

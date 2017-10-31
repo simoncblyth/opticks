@@ -70,6 +70,7 @@ const char* Scene::getPrefix()
 
 const char* Scene::AXIS   = "axis" ; 
 const char* Scene::PHOTON = "photon" ; 
+const char* Scene::SOURCE = "source" ; 
 const char* Scene::GENSTEP = "genstep" ; 
 const char* Scene::NOPSTEP = "nopstep" ; 
 const char* Scene::GLOBAL  = "global" ; 
@@ -237,6 +238,7 @@ void Scene::setRenderMode(const char* s)
         if(strcmp(el, GENSTEP)==0) m_genstep_mode = setting ; 
         if(strcmp(el, NOPSTEP)==0) m_nopstep_mode = setting ; 
         if(strcmp(el, PHOTON)==0)  m_photon_mode = setting ; 
+        if(strcmp(el, SOURCE)==0)  m_source_mode = setting ; 
         if(strcmp(el, RECORD)==0)  m_record_mode = setting ; 
     }
 }
@@ -252,6 +254,7 @@ std::string Scene::getRenderMode() const
     if(m_genstep_mode) ss << GENSTEP << delim ; 
     if(m_nopstep_mode) ss << NOPSTEP << delim ; 
     if(m_photon_mode) ss << PHOTON << delim ; 
+    if(m_source_mode) ss << SOURCE << delim ; 
     if(m_record_mode) ss << RECORD << delim ; 
 
     for(unsigned int i=0 ; i<MAX_INSTANCE_RENDERER ; i++) if(m_instance_mode[i]) ss << _INSTANCE << i << delim ; 
@@ -285,12 +288,14 @@ void Scene::gui()
      ImGui::Checkbox(GENSTEP,  &m_genstep_mode);
      ImGui::Checkbox(NOPSTEP,  &m_nopstep_mode);
      ImGui::Checkbox(PHOTON,   &m_photon_mode);
+     ImGui::Checkbox(SOURCE,   &m_source_mode);
      ImGui::Checkbox(RECORD,   &m_record_mode);
     // ImGui::Text(" target: %u ", m_target );
-     ImGui::Text(" genstep %d nopstep %d photon %d record %d \n", 
+     ImGui::Text(" genstep %d nopstep %d photon %d source %d record %d \n", 
              ( m_genstep_renderer ? m_genstep_renderer->getCountDefault() : -1 ),
              ( m_nopstep_renderer ? m_nopstep_renderer->getCountDefault() : -1 ),
              ( m_photon_renderer ? m_photon_renderer->getCountDefault() : -1 ),
+             ( m_source_renderer ? m_source_renderer->getCountDefault() : -1 ),
              ( m_record_renderer ? m_record_renderer->getCountDefault() : -1 )
      );
 
@@ -405,6 +410,9 @@ void Scene::initRenderersDebug()
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
 
+    m_source_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
+
+
     for( unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++)
     {
         m_instance_mode[i] = false ; 
@@ -470,6 +478,9 @@ void Scene::initRenderers()
 
     m_photon_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
 
+    m_source_renderer = new Rdr(m_device, "pos", m_shader_dir, m_shader_incl_path );
+
+
     //
     // RECORD RENDERING USES AN UNPARTIONED BUFFER OF ALL RECORDS
     // SO THE GEOMETRY SHADERS HAVE TO THROW INVALID STEPS AS DETERMINED BY
@@ -533,6 +544,10 @@ void Scene::setComposition(Composition* composition)
 
     if(m_photon_renderer)
         m_photon_renderer->setComposition(composition);
+
+    if(m_source_renderer)
+        m_source_renderer->setComposition(composition);
+
 
     if(m_record_renderer)
         m_record_renderer->setComposition(composition);
@@ -733,6 +748,9 @@ void Scene::uploadEvent(OpticksEvent* evt)
     if(m_photon_renderer)
          m_photon_renderer->upload(evt->getPhotonAttr());
 
+    if(m_source_renderer)
+         m_source_renderer->upload(evt->getSourceAttr());
+
 
     uploadRecordAttr(evt->getRecordAttr());
 
@@ -781,6 +799,9 @@ void Scene::dump_uploads_table(const char* msg)
     if(m_photon_renderer)
         m_photon_renderer->dump_uploads_table("photon");
 
+    if(m_source_renderer)
+        m_source_renderer->dump_uploads_table("source");
+
     if(m_record_renderer)
         m_record_renderer->dump_uploads_table("record");
 
@@ -823,6 +844,7 @@ void Scene::renderEvent()
     if(m_genstep_mode && m_genstep_renderer)  m_genstep_renderer->render();  
     if(m_nopstep_mode && m_nopstep_renderer)  m_nopstep_renderer->render();  
     if(m_photon_mode  && m_photon_renderer)   m_photon_renderer->render();
+    if(m_source_mode  && m_source_renderer)   m_source_renderer->render();
     if(m_record_mode)
     {
         Rdr* rdr = getRecordRenderer();
@@ -1000,6 +1022,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_genstep_renderer(NULL),
             m_nopstep_renderer(NULL),
             m_photon_renderer(NULL),
+            m_source_renderer(NULL),
             m_record_renderer(NULL),
             m_altrecord_renderer(NULL),
             m_devrecord_renderer(NULL),
@@ -1015,6 +1038,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_genstep_mode(true),
             m_nopstep_mode(true),
             m_photon_mode(true),
+            m_source_mode(false),
             m_record_mode(true),
             m_record_style(ALTREC),
             m_geometry_style(ASIS),
@@ -1129,6 +1153,10 @@ Rdr* Scene::getNopstepRenderer()
 Rdr* Scene::getPhotonRenderer()
 {
     return m_photon_renderer ; 
+}
+Rdr* Scene::getSourceRenderer()
+{
+    return m_source_renderer ; 
 }
 
 

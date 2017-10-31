@@ -66,6 +66,7 @@ class OXRAP_API OEvent
             RECORD   = 0x1 << 3, 
             SEQUENCE = 0x1 << 4,
             SEED     = 0x1 << 5,
+            SOURCE   = 0x1 << 6,
             DOWNLOAD_DEFAULT  = PHOTON | RECORD | SEQUENCE 
             };
     public:
@@ -77,12 +78,18 @@ class OXRAP_API OEvent
     private:
         unsigned upload(OpticksEvent* evt);
         unsigned uploadGensteps(OpticksEvent* evt);
+#ifdef WITH_SOURCE
+        unsigned uploadSource(OpticksEvent* evt);
+#endif
         unsigned downloadHits(OpticksEvent* evt);
     public:
         OContext*     getOContext();
         OpticksEvent* getEvent();
         OBuf* getSeedBuf();
         OBuf* getPhotonBuf();
+#ifdef WITH_SOURCE
+        OBuf* getSourceBuf();
+#endif
         OBuf* getGenstepBuf();
 #ifdef WITH_RECORD
         OBuf* getSequenceBuf();
@@ -102,10 +109,16 @@ class OXRAP_API OEvent
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 
         bool            m_photonMarkDirty ; 
+#ifdef WITH_SOURCE
+        bool            m_sourceMarkDirty ; 
+#endif
         bool            m_seedMarkDirty ; 
     protected:
         optix::Buffer   m_genstep_buffer ; 
         optix::Buffer   m_photon_buffer ; 
+#ifdef WITH_SOURCE
+        optix::Buffer   m_source_buffer ; 
+#endif
 #ifdef WITH_RECORD
         optix::Buffer   m_record_buffer ; 
         optix::Buffer   m_sequence_buffer ; 
@@ -114,6 +127,9 @@ class OXRAP_API OEvent
     private:
         OBuf*           m_genstep_buf ;
         OBuf*           m_photon_buf ;
+#ifdef WITH_SOURCE
+        OBuf*           m_source_buf ;
+#endif
 #ifdef WITH_RECORD
         OBuf*           m_record_buf ;
         OBuf*           m_sequence_buf ;

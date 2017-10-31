@@ -5,6 +5,7 @@
 class Opticks ; 
 class OpticksEvent ; 
 template <typename T> class NPY ; 
+class NPYBase ; 
 class G4StepNPY ; 
 class NParameters ;
 
@@ -44,8 +45,9 @@ class OKCORE_API OpticksRun
         void anaEvent(); // analysis based on saved evts 
     private:
         void annotateEvent(); 
-        void importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
-        void translateLegacyGensteps(NPY<float>* gs);
+        G4StepNPY* importGenstepData(NPY<float>* gs, const char* oac_label=NULL);
+        void translateLegacyGensteps(G4StepNPY* g4step);
+        bool hasActionControl(NPYBase* npy, const char* label);
 
     private:
         Opticks*         m_ok ; 

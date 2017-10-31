@@ -805,6 +805,12 @@ NPYSpec* OpticksEvent::SeedSpec(bool compute)
 {
     return new NPYSpec(seed_     ,  0,1,1,0,0,      NPYBase::UINT      , OpticksBufferSpec::Get(seed_, compute)) ;
 }
+NPYSpec* OpticksEvent::SourceSpec(bool compute)
+{
+    return new NPYSpec(source_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(source_, compute)) ;
+}
+
+
 
 void OpticksEvent::createSpec()
 {
@@ -814,10 +820,10 @@ void OpticksEvent::createSpec()
 
     m_genstep_spec = GenstepSpec(compute);
     m_seed_spec    = SeedSpec(compute);
+    m_source_spec  = SourceSpec(compute);
 
     m_hit_spec      = new NPYSpec(hit_       , 0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(hit_, compute));
     m_photon_spec   = new NPYSpec(photon_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(photon_, compute)) ;
-    m_source_spec   = new NPYSpec(source_   ,  0,4,4,0,0,      NPYBase::FLOAT     ,  OpticksBufferSpec::Get(source_, compute)) ;
     m_record_spec   = new NPYSpec(record_   ,  0,maxrec,2,4,0, NPYBase::SHORT     ,  OpticksBufferSpec::Get(record_, compute)) ;
     //   SHORT -> RT_FORMAT_SHORT4 and size set to  num_quads = num_photons*maxrec*2  
 
@@ -872,6 +878,10 @@ void OpticksEvent::setBufferControl(NPYBase* data)
     }
 
 
+    // OpticksBufferControl argument is a pointer to 64-bit int 
+    // living inside the NPYBase which has its contents 
+    // defined by the below
+    
     OpticksBufferControl ctrl(data->getBufferControlPtr());
     ctrl.add(spec->getCtrl());
 
@@ -893,7 +903,7 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
 
     // NB allocation is deferred until zeroing and they start at 0 items anyhow
     //
-    // NB by default gs = false and genstep buffer creation is excluded, 
+    // NB by default gs = NULL and genstep buffer creation is excluded, 
     //    those coming externally
     //    however they are needed for "template" zero events 
     //
@@ -910,8 +920,8 @@ void OpticksEvent::createBuffers(NPY<float>* gs)
     NPY<float>* pho = NPY<float>::make(m_photon_spec); // must match GPU side photon.h:PNUMQUAD
     setPhotonData(pho);   
 
-    NPY<float>* src = NPY<float>::make(m_source_spec);
-    setSourceData(src);   
+    //NPY<float>* src = NPY<float>::make(m_source_spec);
+    //setSourceData(src);   
 
     NPY<unsigned long long>* seq = NPY<unsigned long long>::make(m_sequence_spec); 
     setSequenceData(seq);   
@@ -1041,11 +1051,14 @@ void OpticksEvent::importDomainsBuffer()
 
 void OpticksEvent::setGenstepData(NPY<float>* genstep_data, bool progenitor)
 {
+    // gets called for OpticksRun::m_g4evt from OpticksRun::setGensteps by OKMgr::propagate 
+
     /**
     :param genstep_data:
     :param progenitor:
     :param oac_label:   adds to the OpticksActionControl to customize the import for different genstep types 
     **/
+
 
     int nitems = NPYBase::checkNumItems(genstep_data);
     if(nitems < 1)
@@ -1140,6 +1153,12 @@ OpticksBufferControl* OpticksEvent::getPhotonCtrl()
 {
    return m_photon_ctrl ; 
 }
+
+OpticksBufferControl* OpticksEvent::getSourceCtrl()
+{
+   return m_source_ctrl ; 
+}
+
 
 
 
