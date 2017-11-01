@@ -7,6 +7,9 @@ from opticks.ana.base import opticks_main
 log = logging.getLogger(__name__)
 
 class Ctx(dict):
+    """
+    Utility providing conversions between various ways of addressing comparison histograms
+    """
     DET = "concentric"
     TAG = "1"
     BASE = "$TMP/CFH"
@@ -38,6 +41,17 @@ class Ctx(dict):
         """
         :param seq0: sequence label such as 'TO RE RE RE RE BT BT BT SC BR BR BR BR BR BR BR'
         :return reclabel list: with each irec highlighted sequentially 
+
+        Example::
+
+            In [9]: rl[:5]
+            Out[9]: 
+            ['[TO] BT BT BT BT SA',
+             'TO [BT] BT BT BT SA',
+             'TO BT [BT] BT BT SA',
+             'TO BT BT [BT] BT SA',
+             'TO BT BT BT [BT] SA']
+
 
         reclabs are strings of up to 16*3+2 = 50 chars
         """

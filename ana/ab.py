@@ -21,6 +21,9 @@ log = logging.getLogger(__name__)
 
 class AB(object):
     """
+    AB : Event Pair comparison
+    =============================
+
     Selection examples::
 
          ab.sel = ".6ccd"             

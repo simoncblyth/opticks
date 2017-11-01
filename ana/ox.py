@@ -7,6 +7,7 @@ ox.py: Load final photons
 
     ox.py --det PmtInBox --tag 10 --src torch 
     ox.py --det dayabay  --tag 1  --src torch 
+    ox.py --det tboolean-torus  --tag 1  --src torch 
 
 Jump into interactive::
 
@@ -29,4 +30,6 @@ if __name__ == '__main__':
          sys.exit(args.mrc)
 
      log.info("loaded ox %s %s shape %s " %  (ox.path, ox.stamp, repr(ox.shape)))
+
+     print ox
 

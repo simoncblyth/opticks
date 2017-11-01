@@ -2,6 +2,9 @@
 OpticksEventCompareTest
 ========================
 
+See eg tboolean-torus-a
+
+
 **/
 
 #include "OKCORE_LOG.hh"

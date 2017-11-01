@@ -6,7 +6,7 @@ Mostly Non-numpy basics, just numpy configuration
 import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys, datetime, re
 from OpticksQuery import OpticksQuery 
-from enum import Enum 
+from opticks.ana.enum import Enum 
 
 log = logging.getLogger(__name__) 
 

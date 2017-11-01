@@ -9,6 +9,15 @@ testing NCSG emit attached to container
 
 
     tboolean-;tboolean-torus -D --okg4 --sourcedbg
+        # bi-simulate
+
+    tboolean-;tboolean-torus -D --okg4 --sourcedbg  --load --vizg4
+        # load above evt, viz g4
+
+    tboolean-;tboolean-torus -D --okg4 --sourcedbg  --load 
+        # load above evt, viz ok    
+
+    ## visually indistinguishable g4 and ok evts
 
 
 

@@ -99,6 +99,11 @@ BoxInBox tests
     BoxInBox Opticks vs Geant4 history sequence comparisons analogous to **tpmt.py**
     see :doc:`../tests/tbox`
 
+**tboxlaser.py**
+    Looks like simple event comparison, without using AB/CF etc..
+    TODO: use the generic AB machinery to do the same
+
+
 Rainbow Tests
 ---------------
 
@@ -117,6 +122,17 @@ Rainbow Tests
 **sphere.py**
     SphereReflect intersection, polarization calculation and spatial plot
 
+
+Scatter Tests
+---------------
+
+**rayleigh.py**
+    Without selection scatter distrib plots from arrays created by:
+
+    optixrap/tests/ORayleighTest.cc 
+    cfg4/tests/OpRayleighTest.cc
+
+
 Source Tests
 --------------
 
@@ -124,10 +140,53 @@ Source Tests
     Compare wavelength spectrum from :doc:`../tests/twhite` against analytic Planck distribution
 
 **planck.py**
-    Planck black body formula
+    Planck black body formula : CDF technique dev, plotting
 
-Prism Tests
--------------
+
+Full Geometry Tests
+----------------------
+
+**tdefault.py**
+     tests within default full geometry, using CF (older than the AB/CFH machinery?)
+
+**tdefault_distrib.py**
+     tests within default full geometry, using cf,cfplot
+
+**tlaser.py**
+     okg4 comparisons manually using Evt (not the newer AB)
+
+**tlaser_distrib.py**
+     okg4 comparisons using CF (not the newer CFH)
+
+
+Analytic/NCSG Geometry tests
+-----------------------------
+
+**analytic_boundary_dbg.py**
+    analysis of photon_buffer written by oxrap/cu/generate.cu:tracetest
+
+    TODO: rename, too special case to share name with tboolean-   
+
+**tgltf.py** 
+    Shakedown analytic geometry, with analytic geometry transform access
+
+Concentric Tests : idealised spherical DYB AD
+----------------------------------------------
+
+**tconcentric.py**
+     comparison using AB, with scatter polarization debug/plotting
+     see tconcentric-i
+
+**tconcentric_distrib.py**
+     comparison histo mass production with 
+     see tconcentric-d
+
+
+Lens/Prism Tests
+------------------
+
+**tlens.py**
+    Single Evt dumping, no comparisons
 
 **tprism.py**
     Comparison of simulation with analytic expectations for deviation angle vs incident angle,
@@ -135,6 +194,7 @@ Prism Tests
 
 **prism_spectrum.py**
     Compare ggv-newton evts with PrismExpected
+
 
 Reflection Tests
 ------------------- 
@@ -165,12 +225,57 @@ Geometry Infrastructure
 
 :doc:`proplib`
     Access to geocache via PropLib
+
+**bnd.py**
+    testing PropLib usage to access material and surface properties
  
 :doc:`mergedmesh`
     Access geometrical data such as positions, transforms of volumes of the geometry
 
 **geometry.py**
     Shape, Ray, Plane, Intersect, IntersectFrame : simple intersect calulations
+
+
+
+Event Comparison Infrastructure
+-----------------------------------
+
+**tokg4.py**
+    loads evt pair and compares at Evt level
+
+**ab.py**
+    event pair comparison with AB class. Used by cfh.py, cfplot.py, tconcentric.py, tconcentric_distrib.py
+
+**abstat.py**
+    history table slicing, selection. Used by ab.py, cfh.py
+
+**make_rst_table.py**
+    pure python utility used by ab.py abstat.py 
+
+**cf.py**
+    Sliced history CF spawning.      
+    Used by tdefault.py tdefault_distrib.py tlaser_distrib.py tpmt_distrib.py
+
+**decompression.py**
+    Deco : utils for re-binning domain compressed values that avoid binning artifacts
+
+    Used from : ab.py cf.py 
+
+  
+**cfh.py**
+    CFH : persistable comparison histograms and chi2, with random access via path specification
+
+    ipython -i $(which cfh.py) -- /tmp/blyth/opticks/CFH/concentric/1/TO_BT_BT_BT_BT_SA/0/X
+
+    Used from : ab.py cf.py cfhload.py cfplot.py tconcentric.py 
+
+**cfhload.py**
+    Testing cfh.py CFH
+
+**ctx.py**
+    Ctx : Utility providing conversions between various ways of addressing comparison histograms
+
+    Used from : ab.py cfh.py evt.py
 
 
 Event Infrastructure
@@ -180,14 +285,33 @@ Event Infrastructure
     Loads single event and dumps constituent array dimensions and photon history tables
 
 **evt.py**
-    loads event data
+    loads event data : used by many ~30 other scripts
+
+**tmeta.py**
+    loads and dumps a single events metadata 
+
+    tmeta.py --det tboolean-torus --tag 1
+
 
 **base.py** 
     internal envvar setup based on input envvar IDPATH 
     json and ini loading with Abbrev and ItemList classes 
 
+**ok.py** 
+    test of opticks_main arg parsing/defaults  
+
+**enum.py** 
+    parsing C++ enum into python dict. Used by base.py 
+ 
 **nload.py**
     numpy array and .ini metadata loading with clases A, I, II
+
+**ox.py**
+    load just final photons, testing nload and arg parsing  
+
+**ph.py**
+    load ph photon seqhis, dumping progressing SeqAna sequences
+
 
 **nbase.py**
     pure numpy utility functions: count_unique, count_unique_sorted, chi2, decompression_bins 
@@ -196,8 +320,17 @@ Event Infrastructure
     SeqType conversions of long integer sequence codes to abbreviation string sequences like  "TO BT BR BR BT SA"
     SeqTable presenting frequencies of different sequences 
 
+    Used by : evt.py hismask.py histype.py mattype.py
+
 **histype.py**
-    HisType (SeqType subclass) and tests
+    HisType (SeqType subclass) and tests of history table formation and dumping.
+    Used by ab.py cf.py evt.py seq.py. With entry point::
+
+        histype.py --det tboolean-torus --tag -1 --src torch 
+
+**hismask.py**
+    converts seqhis into a mask, not the usual sequence : used by evt.py pflags.py
+
         
 **mattype.py**
     MatType (SeqType subclass) and tests
@@ -206,8 +339,16 @@ Event Infrastructure
     fit genstep xyz vs time, to obtain parametric eqn for the viewpoint tracking 
     used to create videos, see `vids-`
 
+**genstep_merge.py** 
+    combine Cerenkov and scintillation gensteps in natural ones
+
+
 **ana.py**
     geometrical and plotting utils
+
+**OpticksQuery.py**
+    analog of okc/OpticksQuery.cc geometry selection string parsing available from opticks_main args.query 
+
 
 
 Plotting Infrastructure
@@ -228,7 +369,7 @@ Metadata Infrastructure
     comparisons of evt digests and simulation times 
 
 **ncensus.py**
-    event census with array shape dumping 
+    event census looking across many events with array shape dumping 
 
 
 Color Infrastructure
@@ -256,8 +397,9 @@ analytic_cf_triangulated.py
 nopstep_viz_debug.py
      creates fake nopstep (non-photon step) for visualization debugging
 
-mesh.py
-     debugging mesh structure, comparing multiple meshes
+mm_buffer.py 
+     debugging mesh buffer structure
+
 
 dae.py
      simple XML COLLADA parsing of .dae for debugging 
@@ -285,6 +427,41 @@ IndexerTest.py
 
 polarization.py
      checking magnitude of polarization for Opticks and G4 rainbow events
+
+ana.py
+     misc old analysis funcs. Used from tprism.py, treflect.py
+
+cf5d.py
+     5d Proplib comparison (dev code ?)
+
+dat.py 
+     Dat : For interactive exploration of dimension > 3  arrays
+
+dbgseed.py
+     old dev script used from oks-dbgseed
+
+gltf.py
+     dev exploration of precision of transforms parsed from GLTF geometry json files
+
+gs.py
+     example of pure numpy dumping of opticks buffers
+
+nodelib.py 
+     check analytic and triangulates LVNames, PVNames lists 
+
+old_cfplot.py
+     looks ancient
+
+pflags.py
+     debugging inconsistent pflags in CFG4 evt
+
+seqmat.py
+     debugging seqmat mismatch, zeros.
+
+truncation.py
+     pseudo duplication of oxrap/cu/generate.cu for easy thinking about truncation
+     and thinking about seqhis steered propagations 
+
 
 
 EON
@@ -443,3 +620,33 @@ ana-rstcheck()
 
 
 
+
+ana-mod-ls-()
+{  
+   ana-cd 
+   ls -1 *.py
+}
+
+ana-mod-from()
+{
+   local module
+   ana-mod-ls- | while read module 
+   do
+       ana-mod-from- ${module/.py} 
+   done
+}
+
+ana-mod-from-()
+{
+   local msg="=== $FUNCNAME : "
+   local module=${1:-cf}
+   #echo
+   echo $msg module $module used from :
+   ana-cd
+   $FUNCNAME- $module
+}
+
+ana-mod-from--()
+{
+    grep -l from\ opticks.ana.${1:-cf}\  *.py 
+}

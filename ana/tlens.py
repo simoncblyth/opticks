@@ -1,8 +1,5 @@
 #!/usr/bin/env python
 """
-
-
-
 ::
 
     In [13]: evt.rpost_(slice(0,5))

@@ -312,8 +312,8 @@ tboolean-ana-(){
     [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
 
     #local exe=OpticksEventAnaTest 
-    #local exe=OpticksEventCompareTest 
-    local exe=OpticksEventDumpTest 
+    local exe=OpticksEventCompareTest 
+    #local exe=OpticksEventDumpTest 
 
     $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
