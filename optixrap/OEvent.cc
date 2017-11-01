@@ -110,17 +110,14 @@ void OEvent::createBuffers(OpticksEvent* evt)
     {
         OpticksBufferControl* sourceCtrl = evt->getSourceCtrl();
         m_sourceMarkDirty = sourceCtrl->isSet("BUFFER_COPY_ON_DIRTY") ;
-
         m_source_buffer = m_ocontext->createBuffer<float>( source, "source");
-
-        m_context["source_buffer"]->set( m_source_buffer );
-        m_source_buf = new OBuf("source", m_source_buffer);
     } 
     else
     {
-
-
+        m_source_buffer = m_ocontext->createEmptyBufferF4();
     }
+    m_context["source_buffer"]->set( m_source_buffer );
+    m_source_buf = new OBuf("source", m_source_buffer);
 #endif
 
 

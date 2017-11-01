@@ -80,6 +80,8 @@ class OXRAP_API OContext {
             static void           download(optix::Buffer& buffer, NPY<T>* npy);
 
      public:
+            optix::Buffer createEmptyBufferF4() ;
+
             template<typename T>
             optix::Buffer  createBuffer(NPY<T>* npy, const char* name);  
      private:

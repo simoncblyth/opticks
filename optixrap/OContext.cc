@@ -411,6 +411,15 @@ void OContext::download(optix::Buffer& buffer, NPY<T>* npy)
 
 
 
+
+
+optix::Buffer OContext::createEmptyBufferF4() 
+{
+    optix::Buffer emptyBuffer = m_context->createBuffer(RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_FLOAT4, 0);
+    return emptyBuffer ;
+}
+
+
 template <typename T>
 optix::Buffer OContext::createBuffer(NPY<T>* npy, const char* name)
 {

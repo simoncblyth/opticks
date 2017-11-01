@@ -35,6 +35,9 @@ Machinery revolves around gensteps
 * OpticksRun::setGensteps with gensteps from OpticksGen 
   currently done at the highest level...
 
+* handle input photons by associating them to a shim gensteps using the void* NPY::getAux 
+
+
 ::
 
     067 void OKMgr::propagate()
