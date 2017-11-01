@@ -306,7 +306,9 @@ tboolean-ana-(){
 
     #local dbgseqhis=0x8cbc6d   # TO SC BT BR BT SA 
     #local dbgseqhis=0x8cc6d    # TO SC BT BT SA
-    local dbgseqhis=0x8ccd      # TO BT BT SA
+    #local dbgseqhis=0x8ccd      # TO BT BT SA
+    local dbgseqhis=0x86d        # TO SC SA
+
 
     local testname=${TESTNAME}
     [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
@@ -317,6 +319,13 @@ tboolean-ana-(){
 
     $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
+
+tboolean-py-(){
+    local testname=${TESTNAME}
+    tboolean.py --det $testname --tag $(tboolean-tag)
+}
+
+
 
 
 tboolean--(){
@@ -385,6 +394,10 @@ tboolean-pol(){ echo s ; }
 tboolean-wavelength(){ echo 500 ; }
 tboolean-photons(){ echo 100000 ; }
 tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000 ; }
+
+
+tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2" ; }
+
 
 tboolean-torchconfig-disc()
 {
@@ -532,6 +545,7 @@ tboolean-bib-box-sphere-()
 
 
 
+tboolean-box-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
@@ -543,10 +557,10 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box")
+emit = -1 
+container = CSG("box", emit=emit, emitconfig="$(tboolean-emitconfig)" )
 container.boundary = args.container
 container.meta.update(PolyConfig("CONTAINER").meta)
-
 
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
@@ -1839,10 +1853,52 @@ EOP
 
 
 
+tboolean-empty-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-empty-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-empty()
+{
+    local photons=100000
+    #local photons=10
+ 
+    TESTNAME=$FUNCNAME \
+    TESTCONFIG=$($FUNCNAME- 2>/dev/null) \
+    TORCHCONFIG=$(tboolean-torchconfig-disc 0,0,350 150 $photons) \
+    tboolean-- $* ; 
+} 
 
+tboolean-empty-(){  $FUNCNAME- | python $* ; } 
+tboolean-empty--(){ cat << EOP 
+
+import logging
+log = logging.getLogger("$FUNCNAME")
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+log.info("args.container : %r " % args.container)
+log.info("args.testobject : %r " % args.testobject)
+
+CSG.boundary = args.testobject
+CSG.kwa = dict(poly="IM", resolution="50")
+
+emit = -1
+
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=emit, emitconfig="$(tboolean-emitconfig)" )
+  
+CSG.Serialize([container], args.csgpath )
+
+
+EOP
+}
+
+
+
+
+tboolean-torus-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-torus-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-torus()
 {
+
     local photons=100000
     #local photons=10
  
@@ -1854,35 +1910,28 @@ tboolean-torus()
 tboolean-torus-(){  $FUNCNAME- | python $* ; } 
 tboolean-torus--(){ cat << EOP 
 
+import logging
+log = logging.getLogger("$FUNCNAME")
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
+log.info("args.container : %r " % args.container)
+log.info("args.testobject : %r " % args.testobject)
 
 CSG.boundary = args.testobject
 #CSG.kwa = dict(poly="MC", resolution="100")
 CSG.kwa = dict(poly="IM", resolution="50")
 
-emitconfig = "photons=600000,wavelength=380,time=0.2"
 emit = -1
 
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=emit, emitconfig=emitconfig )
+container = CSG("box3", param=[2*150+1,2*150+1,2*50+1,0], boundary=args.container, poly="IM", nx="20", emit=emit, emitconfig="$(tboolean-emitconfig)" )
   
 a = CSG.MakeTorus(R=100, r=50)
 
 CSG.Serialize([container, a], args.csgpath )
 #CSG.Serialize([a], args.csgpath )
 
-"""
-
-* ~/opticks_refs/tboolean_torus_orthographic_artifact.png 
-* ~/opticks_refs/tboolean_torus_orthographic_artifact_extreme_near_axial.png
-
-
-* perspective projection ring artifacts
-* orthographic projection line artifacts
-
-"""
 
 EOP
 }
