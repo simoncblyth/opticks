@@ -188,6 +188,7 @@ set(SOURCES
 
     SequenceNPY.cpp
     PhotonsNPY.cpp
+    NPho.cpp
     RecordsNPY.cpp
     HitsNPY.cpp
     BoundariesNPY.cpp

@@ -40,18 +40,38 @@ CGenerator::CGenerator(OpticksHub* hub, CG4* g4)
 void CGenerator::init()
 {
     unsigned code = m_hub->getSourceCode();
+    CSource* source = initSource(code) ;
+    setSource(source);
+}
+
+
+CSource* CGenerator::initSource(unsigned code)
+{
     const char* sourceType = OpticksFlags::SourceType(code);
 
-    LOG(info) << "CGenerator::init" 
+    LOG(info) << "CGenerator::makeSource" 
               << " code " << code
               << " type " << sourceType
               ; 
 
-    if(     code == G4GUN) setSource(makeG4GunSource());
-    else if(code == TORCH) setSource(makeTorchSource());
-    else if(code == EMITSOURCE) setSource(makeInputPhotonSource());
-    else                   assert(0);
+    CSource* source = NULL ;  
+
+    if(     code == G4GUN)      source = initG4GunSource();
+    else if(code == TORCH)      source = initTorchSource();
+    else if(code == EMITSOURCE) source = initInputPhotonSource();
+
+    assert(source) ;
+
+    return source ; 
 }
+
+
+
+
+
+
+
+
 
 
 void CGenerator::setSource(CSource* source)
@@ -106,6 +126,8 @@ bool CGenerator::hasGensteps()
 
 void CGenerator::configureEvent(OpticksEvent* evt)
 {
+   // invoked from CG4::initEvent/CG4::propagate 
+
    if(hasGensteps())
    {
         LOG(info) << "CGenerator:configureEvent"
@@ -126,13 +148,15 @@ void CGenerator::configureEvent(OpticksEvent* evt)
     }
 }
 
-CSource* CGenerator::makeTorchSource()
+CSource* CGenerator::initTorchSource()
 {
-    LOG(trace) << "CGenerator::makeTorchSource " ; 
+    LOG(trace) << "CGenerator::initTorchSource " ; 
 
     TorchStepNPY* torch = m_hub->getTorchstep();
 
-    setGensteps( torch->getNPY() );  // sets the number of photons and preps buffers (unallocated)
+    setGensteps( torch->getNPY() );  
+    // triggers the event init 
+
     setDynamic(false);
     setNumG4Event( torch->getNumG4Event()); 
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
@@ -143,46 +167,34 @@ CSource* CGenerator::makeTorchSource()
 }
 
 
-CSource* CGenerator::makeInputPhotonSource()
+CSource* CGenerator::initInputPhotonSource()
 {
-    LOG(info) << "CGenerator::makeInputPhotonSource " ; 
+    LOG(info) << "CGenerator::initInputPhotonSource " ; 
     NPY<float>* inputPhotons = m_hub->getInputPhotons();
+    NPY<float>* inputGensteps = m_hub->getInputGensteps();
     GenstepNPY* gsnpy = m_hub->getGenstepNPY();
 
+    assert( inputPhotons );
+    assert( inputGensteps );
+    assert( gsnpy );
+
+    setGensteps(inputGensteps);
+    setDynamic(false);
+
     int verbosity = m_ok->isDbgSource() ? 10 : 0 ; 
-    CSource* source  = static_cast<CSource*>(new CInputPhotonSource( m_ok, inputPhotons, gsnpy, verbosity)); 
+    CInputPhotonSource* cips = new CInputPhotonSource( m_ok, inputPhotons, gsnpy, verbosity) ;
+
+    setNumG4Event( cips->getNumG4Event() );
+    setNumPhotonsPerG4Event( cips->getNumPhotonsPerG4Event() );
+
+    CSource* source  = static_cast<CSource*>(cips); 
     return source ; 
 }
 
-
-/*
-unsigned CGenerator::getNumG4Event()
-{
-    unsigned int num_photons = getNumPhotons();
-    unsigned int ppe = m_num_photons_per_g4event ; 
-    unsigned int num_g4event ; 
-    if(num_photons < ppe)
-    {   
-        num_g4event = 1 ; 
-    }   
-    else
-    {   
-        assert( num_photons % ppe == 0 && "expecting num_photons to be exactly divisible by NumPhotonsPerG4Event " );
-        num_g4event = num_photons / ppe ; 
-    }   
-    return num_g4event ; 
-}
-
-*/
-
-
-
-
-
-CSource* CGenerator::makeG4GunSource()
+CSource* CGenerator::initG4GunSource()
 {
     std::string gunconfig = m_hub->getG4GunConfig() ; // NB via OpticksGun in the hub, not directly from Opticks
-    LOG(trace) << "CGenerator::makeG4GunSource " 
+    LOG(trace) << "CGenerator::initG4GunSource " 
                << " gunconfig " << gunconfig
                 ; 
 
@@ -197,7 +209,7 @@ CSource* CGenerator::makeG4GunSource()
     if(frameIndex < numTransforms )
     {
         const char* pvname = detector->getPVName(frameIndex);
-        LOG(info) << "CGenerator::makeG4GunSource "
+        LOG(info) << "CGenerator::initG4GunSource "
                        << " frameIndex " << frameIndex 
                        << " numTransforms " << numTransforms 
                        << " pvname " << pvname 
@@ -208,7 +220,7 @@ CSource* CGenerator::makeG4GunSource()
     }
     else
     {
-        LOG(fatal) << "CGenerator::makeG4GunSource gun config frameIndex not in detector"
+        LOG(fatal) << "CGenerator::initG4GunSource gun config frameIndex not in detector"
                    << " frameIndex " << frameIndex
                    << " numTransforms " << numTransforms
                           ;
@@ -227,7 +239,4 @@ CSource* CGenerator::makeG4GunSource()
     CSource* source  = static_cast<CSource*>(gun);
     return source ; 
 }
-
-
-
 

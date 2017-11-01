@@ -9,6 +9,7 @@ set(TEST_SOURCES
    STimesTest.cc
    SEnvTest.cc
    SSysTest.cc
+   STrancheTest.cc
    SVecTest.cc
    SSeqTest.cc
    SProcTest.cc

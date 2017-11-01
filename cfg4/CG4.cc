@@ -279,12 +279,6 @@ void CG4::interactive()
 }
 
 
-
-
-
-
-
-
 void CG4::initEvent(OpticksEvent* evt)
 {
     m_generator->configureEvent(evt);

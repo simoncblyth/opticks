@@ -81,9 +81,6 @@ CTorchSource::~CTorchSource()
 
 
 
-
-
-
 void CTorchSource::configure()
 {
     unsigned numPhotons = m_torch->getNumPhotons();
@@ -240,20 +237,6 @@ void CTorchSource::configure()
     //for(unsigned int i=0 ; i < 10 ; i++) G4cout << Format(angGen->GenerateOne(), "angGen") << G4endl ; 
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

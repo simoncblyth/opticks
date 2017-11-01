@@ -3,20 +3,20 @@
 #include "CSource.hh"
 
 
-CPrimaryGeneratorAction::CPrimaryGeneratorAction(CSource* generator)
+CPrimaryGeneratorAction::CPrimaryGeneratorAction(CSource* source)
     : 
     G4VUserPrimaryGeneratorAction(), 
-    m_generator(generator)
+    m_source(source)
 {
 }
 
 void CPrimaryGeneratorAction::GeneratePrimaries(G4Event* event)
 {
-    m_generator->GeneratePrimaryVertex(event);
+    m_source->GeneratePrimaryVertex(event);
 }
 
 CPrimaryGeneratorAction::~CPrimaryGeneratorAction()
 {
-    delete m_generator;
+    delete m_source;
 }
 

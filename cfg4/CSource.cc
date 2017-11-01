@@ -27,6 +27,7 @@ CSource::CSource(Opticks* ok, int verbosity)
     m_ok(ok),
     m_recorder(NULL),
 	m_num(1),
+    m_definition(NULL),
 	m_time(0.0),
 	m_polarization(1.0,0.0,0.0),
     m_verbosityLevel(verbosity)
@@ -41,10 +42,8 @@ CSource::~CSource()
 
 void CSource::setRecorder(CRecorder* recorder)
 {
-   m_recorder = recorder ;  
+    m_recorder = recorder ;  
 }
-
-
 
 
 void CSource::SetNumberOfParticles(G4int num) 

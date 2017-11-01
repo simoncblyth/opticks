@@ -25,26 +25,28 @@ class CFG4_API CGenerator
 {
    public:
        CGenerator(OpticksHub* hub, CG4* g4);
-       CSource* getSource();
+   public:
+       void        configureEvent(OpticksEvent* evt);
+   public:
+       CSource*    getSource();
        bool        isDynamic();
        unsigned    getNumG4Event();
        unsigned    getNumPhotonsPerG4Event();
        NPY<float>* getGensteps();
-       bool hasGensteps();
-       void configureEvent(OpticksEvent* evt);
-    private:
+       bool        hasGensteps();
+   private:
        void init();
+       CSource* initSource(unsigned code);
+       CSource* initInputPhotonSource();
+       CSource* initTorchSource();
+       CSource* initG4GunSource();
+    private:
        void setDynamic(bool dynamic);
        void setNumG4Event(unsigned num);
        void setNumPhotonsPerG4Event(unsigned num);
        void setGensteps(NPY<float>* gensteps);
        void setSource(CSource* source);
-    private:
-       CSource* makeInputPhotonSource();
-       CSource* makeTorchSource();
-       CSource* makeG4GunSource();
    private:
-       
        OpticksHub*           m_hub ;
        Opticks*              m_ok ;
        OpticksCfg<Opticks>*  m_cfg ;

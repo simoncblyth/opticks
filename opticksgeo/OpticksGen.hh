@@ -36,6 +36,7 @@ class OKGEO_API OpticksGen
     public:
         NPY<float>*          getInputPhotons() const ;    // currently only used for NCSG emitter testing 
         NPY<float>*          getInputGensteps() const ;
+        //NPY<float>*          getEmitterGensteps() const ;
 
         FabStepNPY*          getFabStep() const  ;
         TorchStepNPY*        getTorchstep() const ;
@@ -58,6 +59,7 @@ class OKGEO_API OpticksGen
         void                 setMaterialLine( GenstepNPY* gs );
     private:
         void                 setInputGensteps(NPY<float>* igs);
+       // void                 setEmitterGensteps(NPY<float>* emitter_gs);
         void                 setInputPhotons(NPY<float>* iox);
     private:
         OpticksHub*           m_hub ; 
@@ -70,6 +72,7 @@ class OKGEO_API OpticksGen
         NPY<float>*           m_input_gensteps ; 
         NCSG*                 m_csg_emit ; 
         NEmitPhotonsNPY*      m_emitter ; 
+      //  NPY<float>*           m_emitter_gensteps ; 
         NPY<float>*           m_input_photons ; 
         unsigned              m_source_code ; 
   

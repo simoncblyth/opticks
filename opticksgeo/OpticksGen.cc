@@ -34,6 +34,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE) : NULL ),
+  // m_emitter_gensteps(NULL),
    m_input_photons(NULL),
    m_source_code( m_emitter ? EMITSOURCE : m_ok->getSourceCode() )
 {
@@ -59,8 +60,12 @@ void OpticksGen::init()
 }
 
 
+
 void OpticksGen::initFromEmitter()
 {
+    // emitter bits and pieces get dressed up 
+    // perhaps make a class to do this ?   
+
     NPY<float>* iox = m_emitter->getPhotons();
     setInputPhotons(iox);
 
@@ -84,6 +89,22 @@ void OpticksGen::initFromEmitter()
               << " oac : " << oac.description("oac") 
               ; 
 }
+
+
+
+/*
+void OpticksGen::setEmitterGensteps(NPY<float>* gs)
+{
+    m_emitter_gensteps = gs ;  
+}
+NPY<float>* OpticksGen::getEmitterGensteps() const 
+{
+    return m_emitter_gensteps ;
+}
+*/
+
+
+
 
 void OpticksGen::initFromGensteps()
 {

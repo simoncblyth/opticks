@@ -19,10 +19,12 @@ class G4PrimaryVertex ;
 CSource
 =========
 
-Base class of CTorchSource and CGunSource
+Base class of CTorchSource, CGunSource, CInputPhotonSource
 
-
-
+The specialized prime method GeneratePrimaryVertex 
+is invoked from CPrimaryGeneratorAction::GeneratePrimaries
+by the Geant4 framework.
+       
 **/
 
 
@@ -64,7 +66,6 @@ class CFG4_API CSource : public G4VPrimaryGenerator
     G4double              GetParticleTime() const;
   protected: 
     Opticks*              m_ok ;  
-  private:
     CRecorder*            m_recorder ; 
     G4int                 m_num;
     G4ParticleDefinition* m_definition;
@@ -77,6 +78,7 @@ class CFG4_API CSource : public G4VPrimaryGenerator
         part_prop_t();
     };
     G4Cache<part_prop_t>  m_pp;
+
     G4double              m_time;
     G4ThreeVector         m_polarization;
     G4int                 m_verbosityLevel;

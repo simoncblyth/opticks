@@ -1,8 +1,20 @@
 propagating_CPU_side_input_photons
 =====================================
 
-centralize setNumPhotonsPerG4Event ?
---------------------------------------
+
+testing NCSG emit attached to container
+-------------------------------------------
+
+::
+
+
+    tboolean-;tboolean-torus -D --okg4 --sourcedbg
+
+
+
+
+centralize setNumPhotonsPerG4Event ? NOT YET
+------------------------------------------------
 
 
 What does torch step need to know this ? Tis it not a CG4 detail ?
@@ -24,7 +36,6 @@ What does torch step need to know this ? Tis it not a CG4 detail ?
     simon:opticks blyth$ 
     simon:opticks blyth$ 
     simon:opticks blyth$ 
-
 
 
 

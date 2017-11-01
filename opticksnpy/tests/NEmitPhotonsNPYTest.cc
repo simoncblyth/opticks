@@ -16,6 +16,7 @@ NEmitPhotonsNPYTest $TMP/tboolean-torus--
 
 #include "NCSGList.hpp"
 #include "NEmitPhotonsNPY.hpp"
+#include "NPho.hpp"
 #include "NPY.hpp"
 
 #include "PLOG.hh"
@@ -66,6 +67,11 @@ int main(int argc, char** argv)
     gs->save(path);
     SSys::npdump(path, "np.int32");
 
+
+    NPho ph(ox) ;
+    unsigned modulo = 10000 ; 
+    unsigned margin = 10 ; 
+    ph.dump(modulo, margin); 
 
 
     return 0 ; 

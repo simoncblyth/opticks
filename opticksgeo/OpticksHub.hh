@@ -126,7 +126,8 @@ class OKGEO_API OpticksHub {
        void         dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpSolids" );  
    public:
        std::string    getG4GunConfig();
-       NPY<float>*    getInputGensteps();
+       NPY<float>*    getInputGensteps() const ;
+       //NPY<float>*    getEmitterGensteps() const ;
        NPY<float>*    getInputPhotons();
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();

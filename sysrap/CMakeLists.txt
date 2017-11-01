@@ -37,6 +37,7 @@ set(SOURCES
     SProc.cc
     SSys.cc
     SSeq.cc
+    STranche.cc
     SAr.cc
     SPPM.cc
     SVec.cc

@@ -1,8 +1,12 @@
 #include "CFG4_BODY.hh"
 #include <cmath>
 
+// sysrap-
+#include "STranche.hh"
+
 // npy-
 #include "NPY.hpp"
+#include "NPho.hpp"
 #include "GLMFormat.hpp"
 #include "GenstepNPY.hpp"
 
@@ -27,22 +31,29 @@
 
 #include "PLOG.hh"
 
+unsigned CInputPhotonSource::getNumG4Event() const 
+{
+    return m_tranche->num_tranche ; 
+}
+unsigned CInputPhotonSource::getNumPhotonsPerG4Event() const
+{
+    return m_numPhotonsPerG4Event ;
+}
+
 
 CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, GenstepNPY* gsnpy, unsigned int verbosity)  
     :
     CSource(ok, verbosity),
     m_sourcedbg(ok->isDbgSource()),
-    m_input_photons(input_photons),
+    m_pho(new NPho(input_photons)),
     m_gsnpy(gsnpy), 
-    m_primary(NPY<float>::make(0,4,4))
+    m_numPhotonsPerG4Event(m_gsnpy->getNumPhotonsPerG4Event()),
+    m_numPhotons(m_pho->getNumPhotons()),
+    m_tranche(new STranche(m_numPhotons,m_numPhotonsPerG4Event)),
+    m_primary(NPY<float>::make(0,4,4)),
+    m_gpv_count(0)
 {
-    init();
-}
-
-
-void CInputPhotonSource::init()
-{
-
+    setParticle("opticalphoton");
 }
 
 
@@ -52,85 +63,82 @@ CInputPhotonSource::~CInputPhotonSource()
 
 
 
-void CInputPhotonSource::configure()
+G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 {
-    unsigned numPhotons = m_input_photons->getNumItems();
-    unsigned numPhotonsPerG4Event = m_gsnpy->getNumPhotonsPerG4Event();
-    unsigned n = numPhotons < numPhotonsPerG4Event ? numPhotons : numPhotonsPerG4Event ;
+    part_prop_t& pp = m_pp.Get();
 
-    if(m_sourcedbg)
-    {
-        LOG(info) << "[--sourcedbg] CInputPhotonSource::configure" 
-                  << " gsnpy " << m_gsnpy->brief()
-                  << " numPhotons " << numPhotons 
-                  << " numPhotonsPerG4Event " << numPhotonsPerG4Event
-                  << " n " << n 
-                  ;
-    }
+    glm::vec4 post = m_pho->getPositionTime(pho_index) ; 
+    glm::vec4 dirw = m_pho->getDirectionWeight(pho_index) ; 
+    glm::vec4 polw = m_pho->getPolarizationWavelength(pho_index) ; 
 
-    SetNumberOfParticles(n);
+    pp.position.set(post.x, post.y, post.z);
+    float time = post.w ; 
 
-    setParticle("opticalphoton");
+    G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position, time );
 
+    pp.momentum_direction.set(dirw.x, dirw.y ,dirw.z);
+
+    G4ThreeVector pol ; 
+    pol.set(polw.x, polw.y, polw.z );
+
+    G4double weight = dirw.w ;  // usually 1.0
+    G4double wavelength = polw.w ;  // nm 
+    G4double energy = h_Planck*c_light/wavelength ;
+    pp.energy = energy ;
+
+    if(m_sourcedbg && pho_index < 10) 
+    LOG(info) << "CInputPhotonSource::convertPhoton"
+              << " pho_index " << std::setw(6) << pho_index 
+              << " nm " << wavelength
+              << " wt " << weight
+              << " time " << time
+              << " pos (" 
+              << " " << pp.position.x()
+              << " " << pp.position.y()
+              << " " << pp.position.z()
+              << " )"
+              << " dir ("
+              << " " << pp.momentum_direction.x()
+              << " " << pp.momentum_direction.y()
+              << " " << pp.momentum_direction.z()
+              << " )"
+              << " pol ("
+              << " " << pol.x()
+              << " " << pol.y()
+              << " " << pol.z()
+              << " )"
+              ;
+
+    G4double mass = m_definition->GetPDGMass();
+    G4double charge = m_definition->GetPDGCharge();
+
+    G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
+    particle->SetKineticEnergy(pp.energy );
+    particle->SetMass( mass );
+    particle->SetMomentumDirection( pp.momentum_direction );
+    particle->SetCharge( charge );
+    particle->SetPolarization(pol); 
+    particle->SetWeight(weight);
+
+    vertex->SetPrimary(particle);
+
+    return vertex ; 
 }
-
-
 
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
-
-
-/*
-    part_prop_t& pp = m_pp.Get();
-
+    unsigned n = m_tranche->tranche_size(m_gpv_count) ; 
+    SetNumberOfParticles(n);
+    assert( m_num == int(n) );
 	for (G4int i = 0; i < m_num; i++) 
     {
-	    pp.position = m_posGen->GenerateOne();
-
-        G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position,m_time);
-
-		pp.momentum_direction = m_angGen->GenerateOne();
-
-		pp.energy = m_eneGen->GenerateOne(m_definition);
-
-        if(m_torchdbg && i < 10) 
-        LOG(info) << "CInputPhotonSource::GeneratePrimaryVertex"
-                  << " i " << std::setw(6) << i 
-                  << " posx " << pp.position.x()
-                  << " posy " << pp.position.y()
-                  << " posz " << pp.position.z()
-                  << " dirx " << pp.momentum_direction.x()
-                  << " diry " << pp.momentum_direction.y()
-                  << " dirz " << pp.momentum_direction.z()
-                  ;
-
-
-		//if (m_verbosityLevel >= 2)
-		//	G4cout << "Creating primaries and assigning to vertex" << G4endl;
-		// create new primaries and set them to the vertex
-
-
-        G4double mass = m_definition->GetPDGMass();
-        G4double charge = m_definition->GetPDGCharge();
-
-		G4PrimaryParticle* particle = new G4PrimaryParticle(m_definition);
-		particle->SetKineticEnergy(pp.energy );
-		particle->SetMass( mass );
-		particle->SetMomentumDirection( pp.momentum_direction );
-		particle->SetCharge( charge );
-
-	    particle->SetWeight(weight);
-
-		vertex->SetPrimary(particle);
+        unsigned pho_index = m_tranche->global_index( m_gpv_count,  i) ;
+        G4PrimaryVertex* vertex = convertPhoton(pho_index);
         evt->AddPrimaryVertex(vertex);
-
         collectPrimary(vertex);
-
 	}
-*/
-
-
+    m_gpv_count++ ; 
 }
 
 

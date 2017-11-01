@@ -572,11 +572,17 @@ unsigned OpticksHub::getSourceCode() const
     return m_gen->getSourceCode() ; 
 }
 
-NPY<float>* OpticksHub::getInputGensteps()
+NPY<float>* OpticksHub::getInputGensteps() const 
 {
     return m_gen->getInputGensteps();
 }
 
+/*
+NPY<float>* OpticksHub::getEmitterGensteps() const 
+{
+    return m_gen->getEmitterGensteps();
+}
+*/
 
 
 bool OpticksHub::hasOpt(const char* name)
