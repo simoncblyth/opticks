@@ -99,7 +99,7 @@ void nsphere::par_posnrm_model( glm::vec3& pos, glm::vec3& nrm, unsigned s, floa
     {
         const float pi = glm::pi<float>() ;
         float azimuth = 2.f*pi*fu ; 
-        float polar = pi*fu ; 
+        float polar = pi*fv ;   // FIXED lissajous, fu->fv  
 
         float ca = cosf(azimuth);
         float sa = sinf(azimuth);

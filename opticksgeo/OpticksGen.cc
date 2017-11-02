@@ -34,7 +34,6 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
    m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE) : NULL ),
-  // m_emitter_gensteps(NULL),
    m_input_photons(NULL),
    m_source_code( m_emitter ? EMITSOURCE : m_ok->getSourceCode() )
 {
@@ -76,6 +75,8 @@ void OpticksGen::initFromEmitter()
 
     gs->setAux((void*)iox); // under-radar association of input photons with the fabricated genstep
 
+    // this gets picked up by OpticksRun::setGensteps 
+
 
     const char* oac_ = "GS_EMITSOURCE" ;  
 
@@ -89,19 +90,6 @@ void OpticksGen::initFromEmitter()
               << " oac : " << oac.description("oac") 
               ; 
 }
-
-
-
-/*
-void OpticksGen::setEmitterGensteps(NPY<float>* gs)
-{
-    m_emitter_gensteps = gs ;  
-}
-NPY<float>* OpticksGen::getEmitterGensteps() const 
-{
-    return m_emitter_gensteps ;
-}
-*/
 
 
 

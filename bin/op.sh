@@ -240,7 +240,8 @@ op-binary-desc()
            --okg4) echo "Integrated Geant4/Opticks runing allowing G4GUN steps to be directly Opticks GPU propagated. " ;; 
          --tracer) echo "Fast OpenGL viz and OptiX tracing, NO propagation. From ggeoview-/tests. Used for simple geometry/machinery checking"  ;;
       --gdml2gltf) echo "Once only geometry conversion of GDML input into GLTF file needed for analytic geocache creation" ;;
-            --mat) echo "Dump properties of material identified by 0-based index , eg op --mat 0 " ;;
+            --mat) echo "Dump properties of material identified by 0-based index OR shortname , eg op --mat 0 " ;;
+           --cmat) echo "Dump converted properties of material identified by 0-based index OR shortname, eg op --mat 0 " ;;
            --surf) echo "Dump properties of surface identified by 0-based index , eg op --surf 0 " ;;
            --snap) echo "Pure compute raytrace snapshot of geometry. " ;;
             --bnd) echo "Dump boundaries of a geometry, eg op --bnd --jpmt " ;; 

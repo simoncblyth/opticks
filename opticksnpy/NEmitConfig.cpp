@@ -5,7 +5,7 @@
 #include "NEmitConfig.hpp"
 
 
-const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0" ; 
+const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0,posdelta=0.0" ; 
 
 NEmitConfig::NEmitConfig(const char* cfg)  
     :
@@ -14,7 +14,8 @@ NEmitConfig::NEmitConfig(const char* cfg)
     photons(100),
     wavelength(400),
     time(0.01f),
-    weight(1.0f)
+    weight(1.0f),
+    posdelta(0.f)
 {
     LOG(info) << "NEmitConfig::NEmitConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
@@ -25,6 +26,7 @@ NEmitConfig::NEmitConfig(const char* cfg)
     bconfig->addInt("wavelength", &wavelength );
     bconfig->addFloat("time", &time );
     bconfig->addFloat("weight", &weight );
+    bconfig->addFloat("posdelta", &posdelta );
 
     bconfig->parse();
 }

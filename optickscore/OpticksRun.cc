@@ -133,6 +133,11 @@ void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY H
 
         NPY<float>* emitsource = (NPY<float>*)aux ; 
         m_g4evt->setSourceData( emitsource ); 
+
+        LOG(fatal) << "OpticksRun::setGensteps.GS_EMITSOURCE"
+                   << " emitsource " << emitsource->getShapeString()
+                   ;
+
     }
 
 

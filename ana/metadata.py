@@ -14,9 +14,10 @@ import os, re, logging
 import numpy as np
 log = logging.getLogger(__name__)
 
-from opticks.ana.base import opticks_environment
-from opticks.ana.base import ini_, json_
+from opticks.ana.base import opticks_main
+from opticks.ana.base import ini_, json_, splitlines_
 
+from opticks.ana.nload import tagdir_
 
 
 class DateParser(object):
@@ -124,6 +125,7 @@ class Metadata(object):
     recordData = property(lambda self:self.parameters.get('recordData',"no-recordData") )
     sequenceData = property(lambda self:self.parameters.get('sequenceData',"no-sequenceData") )
     numPhotons = property(lambda self:int(self.parameters.get('NumPhotons',"-1")) )
+    TestCSGPath = property(lambda self:self.parameters.get('TestCSGPath',"no-TestCSGPath") )
 
     def _flags(self):
         flgs = 0 
@@ -139,6 +141,15 @@ class Metadata(object):
 
     def __repr__(self):
         return "%60s %32s %32s %7d %10.4f %s " % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate, self.mode )
+
+
+    def _get_csgbnd(self):
+        csgtxt = os.path.join(self.TestCSGPath, "csg.txt")
+        csgbnd = splitlines_(csgtxt) if os.path.exists(csgtxt) else []
+        return csgbnd
+    csgbnd = property(_get_csgbnd)
+  
+
 
     def dump(self):
         for k,v in self.parameters.items():
@@ -280,20 +291,31 @@ def test_metadata():
     md = Metadata(td)
 
 
-
-
-if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO)    
-
-    #test_catdir()
-    #test_metadata()
-
-
-    from opticks.ana.nload import tagdir_
+def test_tagdir():
     td = os.path.expandvars("/tmp/$USER/opticks/evt/boolean/torch/1")
     md = Metadata(td)
-
     print md
 
 
+
+if __name__ == '__main__':
+    ok = opticks_main() 
+    #print ok
+
+    det = ok.det
+    src = ok.src
+    tag = ok.tag
+
+    td = tagdir_(det, src, tag )
+    print "td", td
+
+    md = Metadata(td)
+    print "md", md
+
+    md.dump()
+
+    csgpath = md.TestCSGPath
+    print "csgpath", csgpath
+
+    print "csgbnd", md.csgbnd
   

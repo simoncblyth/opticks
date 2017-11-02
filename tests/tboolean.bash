@@ -320,10 +320,8 @@ tboolean-ana-(){
     $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
 
-tboolean-py-(){
-    local testname=${TESTNAME}
-    tboolean.py --det $testname --tag $(tboolean-tag)
-}
+tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
+tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 
 
 
@@ -396,7 +394,7 @@ tboolean-photons(){ echo 100000 ; }
 tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000 ; }
 
 
-tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2" ; }
+tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1" ; }
 
 
 tboolean-torchconfig-disc()
@@ -562,19 +560,13 @@ container = CSG("box", emit=emit, emitconfig="$(tboolean-emitconfig)" )
 container.boundary = args.container
 container.meta.update(PolyConfig("CONTAINER").meta)
 
-im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
 
-#tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
-#tr = dict(scale="2,2,2", rotate="1,1,1,45")
-
-kwa = {}
-kwa.update(im)
-#kwa.update(tr)
 
 box_param = [0,0,0,200]
 box3_param = [300,300,200,0] 
 
-box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)", **kwa )
+box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)" )
 box.dump()
 
 
@@ -1855,42 +1847,53 @@ EOP
 
 tboolean-empty-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-empty-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-empty()
-{
-    local photons=100000
-    #local photons=10
- 
-    TESTNAME=$FUNCNAME \
-    TESTCONFIG=$($FUNCNAME- 2>/dev/null) \
-    TORCHCONFIG=$(tboolean-torchconfig-disc 0,0,350 150 $photons) \
-    tboolean-- $* ; 
-} 
-
+tboolean-empty(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-empty-(){  $FUNCNAME- | python $* ; } 
 tboolean-empty--(){ cat << EOP 
 
-import logging
-log = logging.getLogger("$FUNCNAME")
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
-log.info("args.container : %r " % args.container)
-log.info("args.testobject : %r " % args.testobject)
 
 CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution="50")
 
-emit = -1
-
-container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=emit, emitconfig="$(tboolean-emitconfig)" )
-  
+container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
 CSG.Serialize([container], args.csgpath )
-
 
 EOP
 }
 
+
+tboolean-sphere-m(){ TESTNAME=${FUNCNAME/-m} tboolean-m- $* ; } 
+tboolean-sphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-sphere-(){  $FUNCNAME- | python $* ; } 
+tboolean-sphere--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+#m_object = "GlassSchottF2"
+m_object = "Pyrex"
+#m_object = "MainH2OHale"
+m_media = "Vacuum"
+
+b_container = "Rock//perfectAbsorbSurface/%s" % m_media
+
+CSG.boundary = "%s///%s" % (m_media, m_object )
+CSG.kwa = dict(poly="IM", resolution="40")
+
+container = CSG("box",    param=[0,0,0,11.0], boundary=b_container, emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM", resolution="40" )  
+sphere = CSG("sphere",    param=[0,0,0,10.0] )
+
+CSG.Serialize([container, sphere], args.csgpath )
+
+EOP
+}
 
 
 

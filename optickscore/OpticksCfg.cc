@@ -368,6 +368,16 @@ void OpticksCfg<Listener>::init()
 
 
 
+
+   m_desc.add_options()
+       ("mat",  "Placeholder to avoid warning from GMaterialLibTest, op --mat   ") ;
+
+
+   m_desc.add_options()
+       ("cmat",  "Placeholder for exe choosing option, CMaterialLibTest, op --cmat   ") ;
+
+
+
    m_desc.add_options()
        ("materialdbg",  "dump details of material lookup, ok.isMaterialDbg() ") ;
 

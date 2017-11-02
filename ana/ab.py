@@ -99,7 +99,13 @@ class AB(object):
         abn = "AB(%s,%s,%s)  %s %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec )
         abr = "A %s " % self.a.brief 
         bbr = "B %s " % self.b.brief 
-        return "\n".join([abn, abr, bbr])
+
+        amd = ",".join(self.a.metadata.csgbnd)
+        bmd = ",".join(self.b.metadata.csgbnd)
+
+        assert amd == bmd
+
+        return "\n".join([abn, abr,bbr, bmd])
 
     def __str__(self):
         lmx = self.ok.lmx

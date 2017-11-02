@@ -1225,13 +1225,29 @@ void nnode::generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::v
 }
 void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const 
 {
+
     glm::vec3 pos ; 
     glm::vec3 nrm ; 
+
+    LOG(trace) << "nnode::generateParPointsSheet"
+              << " sheet " << sheet 
+              << " num " << num
+              ;
+
+    bool dump = false ; 
 
     for(unsigned i=0 ; i < num ; i++)
     {
         float fu = rng() ;
         float fv = rng() ;
+
+        if(dump)
+        std::cout 
+             << " i " << std::setw(10) << i 
+             << " fu " << std::setw(10) << fu  
+             << " fv " << std::setw(10) << fv
+             << std::endl 
+             ;  
 
         par_posnrm_model( pos, nrm, sheet, fu, fv );        
 

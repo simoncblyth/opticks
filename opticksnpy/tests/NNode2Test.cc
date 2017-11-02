@@ -31,7 +31,9 @@ void test_generateParPoints(const nnode* n, unsigned num_gen)
         std::cout 
             << " i " << std::setw(4) << i 
             << " pos " << gpresent(pos)
+            << " plen " << std::setw(10) << glm::length(pos)
             << " nrm " << gpresent(nrm)
+            << " nlen " << std::setw(10) << glm::length(nrm)
             << std::endl
             ;
     }

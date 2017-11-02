@@ -22,6 +22,7 @@ struct NPY_API NEmitConfig
 
     float time ; 
     float weight ; 
+    float posdelta ;  // nudge photon start position along its direction 
 
 
 };

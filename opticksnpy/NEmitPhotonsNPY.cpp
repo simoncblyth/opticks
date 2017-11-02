@@ -13,9 +13,10 @@
 #include "PLOG.hh"
 
 
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode)
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, bool emitdbg)
     :
     m_csg(csg),
+    m_emitdbg(emitdbg),
     m_emit(csg->emit()),
     m_cfg_( csg->emitconfig() ),
     m_cfg( new NEmitConfig( m_cfg_ )),
@@ -56,9 +57,11 @@ void NEmitPhotonsNPY::init()
 
     m_photons->zero();   
 
+    if(m_emitdbg)
     m_cfg->dump();
 
     unsigned numPhoton = m_photons->getNumItems();
+
     LOG(info) << desc() 
               << " numPhoton " << numPhoton 
                ;
@@ -74,17 +77,27 @@ void NEmitPhotonsNPY::init()
     float ftime = m_cfg->time ;  // ns
     float fweight = m_cfg->weight ;
     float fwavelength = m_cfg->wavelength ; // nm
+    float fposdelta = m_cfg->posdelta ; 
 
     for(unsigned i=0 ; i < numPhoton ; i++)
     {   
-        const glm::vec3& pos = points[i] ; 
         const glm::vec3& nrm = normals[i] ; 
+
+        glm::vec3 pos(points[i]);
 
         glm::vec3 dir(nrm) ; 
         dir *= fdir ; 
 
-        glm::vec3 pol = nglmext::pick_transverse_direction( dir, i < 10 );
+        if(fposdelta != 0.)  // nudge photon start position along its direction 
+        {
+            pos += dir*fposdelta ; 
+        }
 
+        //bool dump = i < 10 ; 
+        bool dump = false ; 
+        glm::vec3 pol = nglmext::pick_transverse_direction( dir, dump );
+
+/*
         if(i<10)
         {
             std::cout << " i " << std::setw(6) << i 
@@ -95,7 +108,7 @@ void NEmitPhotonsNPY::init()
                       << std::endl 
                       ;
         }
-    
+*/  
 
         glm::vec4 q0(     pos.x,      pos.y,      pos.z,  ftime );
         glm::vec4 q1(     dir.x,      dir.y,      dir.z,  fweight );

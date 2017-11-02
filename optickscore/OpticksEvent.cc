@@ -1582,8 +1582,9 @@ void OpticksEvent::saveSeedData()
 
 void OpticksEvent::saveSourceData()
 {
-    //NPY<float>* so = getSourceData();
-    //if(so) so->save("so", m_typ,  m_tag, m_udet);
+    // source data originates CPU side, and is INPUT_ONLY to GPU side
+    NPY<float>* so = getSourceData();
+    if(so) so->save("so", m_typ,  m_tag, m_udet);
 }
 
 

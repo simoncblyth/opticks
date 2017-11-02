@@ -21,7 +21,6 @@ NEXT
   maybe add MaxVacuum with FLT_MAX extreme absorption_length   scattering_length
 
 
-
 SC/AB in Vacuum
 ------------------
 
@@ -63,6 +62,297 @@ SC/AB in Vacuum
                      200                   1               1e+06               1e+06                   0             299.792
 
 
+
+
+
+MainH2OHale sphere-in-box : good agreement
+---------------------------------------------
+
+::
+
+    [2017-11-02 15:27:32,091] p47470 {/Users/blyth/opticks/ana/ab.py:133} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-sphere)  None 0 
+    A tboolean-sphere/torch/  1 :  20171102-1527 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/1/fdom.npy 
+    B tboolean-sphere/torch/ -1 :  20171102-1527 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/-1/fdom.npy 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///MainH2OHale
+    .                seqhis_ana  1:tboolean-sphere   -1:tboolean-sphere        c2        ab        ba 
+    .                             600000    600000        17.45/10 =  1.75  (pval:0.065 prob:0.935)  
+    0000     343380    344103             0.76  TO BT BT SA
+    0001     210643    210641             0.00  TO SA
+    0002      26154     25966             0.68  TO BR SA
+    0003      16090     15731             4.05  TO BT BR BT SA
+    0004       2419      2278             4.23  TO BT BR BR BT SA
+    0005        689       675             0.14  TO BT BR BR BR BT SA
+    0006        265       270             0.05  TO BT BR BR BR BR BT SA
+    0007        153       127             2.41  TO BT BR BR BR BR BR BT SA
+    0008         80        78             0.03  TO BT BR BR BR BR BR BR BR BR
+    0009         69        55             1.58  TO BT BR BR BR BR BR BR BT SA
+    0010         37        55             3.52  TO BT BR BR BR BR BR BR BR BT
+    0011          8         7             0.00  TO BT AB
+    0012          8         5             0.00  TO SC SA
+    0013          3         3             0.00  TO BT SC BT SA
+    0014          0         2             0.00  TO AB
+    0015          0         1             0.00  TO BT BT SC BT BT SA
+    0016          0         1             0.00  TO BT BT SC BR SA
+    0017          1         1             0.00  TO BT SC BR BT SA
+    0018          0         1             0.00  TO SC BT BR BT SA
+    0019          1         0             0.00  TO SC BT BT SA
+    .                             600000    600000        17.45/10 =  1.75  (pval:0.065 prob:0.935)  
+
+
+Why MainH2OHale so good ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :doc:`material_review`
+
+
+
+
+Pyrex sphere-in-box very messed up : must be material conversion issue ?
+---------------------------------------------------------------------------
+
+
+
+finely binned prop values of --mat are not being dumped with --cmat ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    op --cmat Pyrex
+    op --mat Pyrex
+
+
+Converted G4 Pyrex absorbing immediately 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    simon:opticks blyth$ tboolean-;tboolean-sphere-p
+    args: /Users/blyth/opticks/ana/tboolean.py --det tboolean-sphere --tag 1
+    ok.smry 1 
+    [2017-11-02 15:22:11,429] p46943 {/Users/blyth/opticks/ana/tboolean.py:17} INFO - tag 1 src torch det tboolean-sphere c2max 2.0 ipython False 
+    [2017-11-02 15:22:11,429] p46943 {/Users/blyth/opticks/ana/ab.py:80} INFO - AB.load START smry 1 
+    [2017-11-02 15:22:11,463] p46943 {/Users/blyth/opticks/ana/evt.py:392} WARNING -  x : -11.000  11.000 : tot 600000 over 278 0.000  under 265 0.000 : mi    -11.000 mx     11.000  
+    [2017-11-02 15:22:11,472] p46943 {/Users/blyth/opticks/ana/evt.py:392} WARNING -  y : -11.000  11.000 : tot 600000 over 262 0.000  under 286 0.000 : mi    -11.000 mx     11.000  
+    [2017-11-02 15:22:11,479] p46943 {/Users/blyth/opticks/ana/evt.py:392} WARNING -  z : -11.000  11.000 : tot 600000 over 282 0.000  under 285 0.000 : mi    -11.000 mx     11.000  
+    [2017-11-02 15:22:12,223] p46943 {/Users/blyth/opticks/ana/ab.py:96} INFO - AB.load DONE 
+    [2017-11-02 15:22:12,226] p46943 {/Users/blyth/opticks/ana/ab.py:131} INFO - AB.init_point START
+    [2017-11-02 15:22:12,228] p46943 {/Users/blyth/opticks/ana/ab.py:133} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-sphere)  None 0 
+    A tboolean-sphere/torch/  1 :  20171102-1521 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/1/fdom.npy 
+    B tboolean-sphere/torch/ -1 :  20171102-1521 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/-1/fdom.npy 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///Pyrex
+    .                seqhis_ana  1:tboolean-sphere   -1:tboolean-sphere        c2        ab        ba 
+    .                             600000    600000    691731.17/13 = 53210.09  (pval:0.000 prob:1.000)  
+    0000       5217    356055        340705.35  TO BT AB
+    0001     326726         0        326726.00  TO BT BT SA
+    0002     210643    210643             0.00  TO SA
+    0003      33063     33297             0.83  TO BR SA
+    0004      19223         0         19223.00  TO BT BR BT SA
+    0005       3108         0          3108.00  TO BT BR BR BT SA
+    0006        839         0           839.00  TO BT BR BR BR BT SA
+    0007        356         0           356.00  TO BT BR AB
+    0008        308         0           308.00  TO BT BR BR BR BR BT SA
+    0009        183         0           183.00  TO BT BR BR BR BR BR BT SA
+    0010         94         0            94.00  TO BT BR BR BR BR BR BR BT SA
+    0011         92         0            92.00  TO BT BR BR BR BR BR BR BR BR
+    0012         56         0            56.00  TO BT BR BR AB
+    0013         40         0            40.00  TO BT BR BR BR BR BR BR BR BT
+    0014         18         0             0.00  TO BT BR BR BR AB
+    0015         10         0             0.00  TO BT BR BR BR BR AB
+    0016          8         5             0.00  TO SC SA
+    0017          5         0             0.00  TO BT BR BR BR BR BR AB
+    0018          4         0             0.00  TO BT BR BR BR BR BR BR BR AB
+    0019          4         0             0.00  TO BT SC BT SA
+    .                             600000    600000    691731.17/13 = 53210.09  (pval:0.000 prob:1.000)  
+
+
+sphere-in-box OKish
+----------------------
+
+::
+
+    simon:opticks blyth$ tboolean-;tboolean-sphere-p
+
+
+    [2017-11-02 15:11:41,610] p46299 {/Users/blyth/opticks/ana/ab.py:133} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-sphere)  None 0 
+    A tboolean-sphere/torch/  1 :  20171102-1436 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/1/fdom.npy 
+    B tboolean-sphere/torch/ -1 :  20171102-1436 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-sphere/torch/-1/fdom.npy 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    .                seqhis_ana  1:tboolean-sphere   -1:tboolean-sphere        c2        ab        ba 
+    .                             600000    600000       194.16/10 = 19.42  (pval:0.000 prob:1.000)  
+    0000     312582    317268            34.86  TO BT BT SA
+    0001     210643    210641             0.00  TO SA
+    0002      44427     41861            76.31  TO BR SA            <<<< Opticks relecting more
+    0003      25335     23872            43.50  TO BT BR BT SA
+    0004       4641      4156            26.74  TO BT BR BR BT SA
+    0005       1276      1135             8.25  TO BT BR BR BR BT SA
+    0006        473       497             0.59  TO BT BR BR BR BR BT SA
+    0007        246       206             3.54  TO BT BR BR BR BR BR BT SA
+    0008        153       149             0.05  TO BT BR BR BR BR BR BR BR BR
+    0009        129       123             0.14  TO BT BR BR BR BR BR BR BT SA
+    0010         71        66             0.18  TO BT BR BR BR BR BR BR BR BT
+    0011          8         8             0.00  TO BT AB
+    0012          8         8             0.00  TO SC SA
+    0013          1         4             0.00  TO SC BT BT SA
+    0014          3         1             0.00  TO BT SC BT SA
+    0015          1         2             0.00  TO BT SC BR BR BR BR BR BR BR
+    0016          1         1             0.00  TO BT SC BR BT SA
+    0017          1         0             0.00  TO BT BR AB
+    0018          1         0             0.00  TO BT BR SC BR BR BR BR BR BR
+    0019          0         1             0.00  TO BT BR BR SC BR BR BR BR BR
+    .                             600000    600000       194.16/10 = 19.42  (pval:0.000 prob:1.000)  
+
+
+::
+
+    simon:opticks blyth$ tboolean-;tboolean-sphere-a
+    2017-11-02 14:37:55.348 INFO  [2328424] [Opticks::dumpArgs@806] Opticks::configure argc 10
+      0 : OpticksEventCompareTest
+      1 : --torch
+      2 : --tag
+      3 : 1
+      4 : --cat
+      5 : tboolean-sphere
+      6 : --dbgnode
+      7 : 0
+      8 : --dbgseqhis
+      9 : 0x86d
+    ...
+
+    2017-11-02 14:37:59.018 INFO  [2328424] [*OpticksEventStat::CreateRecordsNPY@33] OpticksEventStat::CreateRecordsNPY  shape 600000,10,2,4
+    2017-11-02 14:37:59.047 INFO  [2328424] [OpticksEventCompare::dump@20] cf(evt,g4evt)
+    2017-11-02 14:37:59.047 INFO  [2328424] [OpticksEventStat::dump@86] A evt Evt /tmp/blyth/opticks/evt/tboolean-sphere/torch/1 20171102_143639 /usr/local/opticks/lib/OKG4Test totmin 2
+     seqhis             8ccd                 TO BT BT SA                                      tot 312582
+     seqhis               8d                 TO SA                                            tot 210643
+     seqhis              8bd                 TO BR SA                                         tot  44427   <<<< opticks reflecting more
+     seqhis            8cbcd                 TO BT BR BT SA                                   tot  25335
+     seqhis           8cbbcd                 TO BT BR BR BT SA                                tot   4641
+     seqhis          8cbbbcd                 TO BT BR BR BR BT SA                             tot   1276
+     seqhis         8cbbbbcd                 TO BT BR BR BR BR BT SA                          tot    473
+     seqhis        8cbbbbbcd                 TO BT BR BR BR BR BR BT SA                       tot    246
+     seqhis       bbbbbbbbcd                 TO BT BR BR BR BR BR BR BR BR                    tot    153
+     seqhis       8cbbbbbbcd                 TO BT BR BR BR BR BR BR BT SA                    tot    129
+     seqhis       cbbbbbbbcd                 TO BT BR BR BR BR BR BR BR BT                    tot     71
+     seqhis              4cd                 TO BT AB                                         tot      8
+     seqhis              86d                 TO SC SA                                         tot      8
+     seqhis            8c6cd                 TO BT SC BT SA                                   tot      3
+    2017-11-02 14:37:59.047 INFO  [2328424] [OpticksEventStat::dump@86] B evt Evt /tmp/blyth/opticks/evt/tboolean-sphere/torch/-1 20171102_143639 /usr/local/opticks/lib/OKG4Test totmin 2
+     seqhis             8ccd                 TO BT BT SA                                      tot 317268
+     seqhis               8d                 TO SA                                            tot 210641
+     seqhis              8bd                 TO BR SA                                         tot  41861
+     seqhis            8cbcd                 TO BT BR BT SA                                   tot  23872
+     seqhis           8cbbcd                 TO BT BR BR BT SA                                tot   4156
+     seqhis          8cbbbcd                 TO BT BR BR BR BT SA                             tot   1135
+     seqhis         8cbbbbcd                 TO BT BR BR BR BR BT SA                          tot    497
+     seqhis        8cbbbbbcd                 TO BT BR BR BR BR BR BT SA                       tot    206
+     seqhis       bbbbbbbbcd                 TO BT BR BR BR BR BR BR BR BR                    tot    149
+     seqhis       8cbbbbbbcd                 TO BT BR BR BR BR BR BR BT SA                    tot    123
+     seqhis       cbbbbbbbcd                 TO BT BR BR BR BR BR BR BR BT                    tot     66
+     seqhis              4cd                 TO BT AB                                         tot      8
+     seqhis              86d                 TO SC SA                                         tot      8
+     seqhis            8cc6d                 TO SC BT BT SA                                   tot      4
+     seqhis       bbbbbbb6cd                 TO BT SC BR BR BR BR BR BR BR                    tot      2
+    simon:opticks blyth$ 
+
+
+
+sphere-in-sphere : G4 barfing loadsa warnings : "Logic error: snxt = kInfinity"
+------------------------------------------------------------------------------------
+
+* INTERIM CONCLUSION : **G4 doesnt like normal incidence onto a sphere** ? 
+
+* no such issue from box-in-box or sphere-in-box ?
+
+* perhaps edge problem : are starting the photon on the outer sphere (edge of the world) 
+
+  * NOPE : adding NEmitConfig.posdelta to nudge start position along 
+    its direction (the normal) doesnt avoid the issue
+
+* for easy debug use spheres of 100mm and 10mm
+
+
+::
+
+    tboolean-;tboolean-sphere --okg4
+    ...
+
+    *** This is just a warning message. ***
+    -------- WWWW -------- G4Exception-END --------- WWWW -------
+
+
+    -----------------------------------------------------------
+        *** Dump for solid - sphere ***
+        ===================================================
+     Solid type: G4Sphere
+     Parameters: 
+        inner radius: 0 mm 
+        outer radius: 10 mm 
+        starting phi of segment  : 0 degrees 
+        delta phi of segment     : 360 degrees 
+        starting theta of segment: 0 degrees 
+        delta theta of segment   : 180 degrees 
+    -----------------------------------------------------------
+
+    -------- WWWW ------- G4Exception-START -------- WWWW -------
+    *** G4Exception : GeomSolids1002
+          issued by : G4Sphere::DistanceToOut(p,v,..)
+    Logic error: snxt = kInfinity  ???
+    Position:
+
+    p.x() = -0.05812894200256247 mm
+    p.y() = 0.1384359192676456 mm
+    p.z() = -9.998881795334469 mm
+
+    Rp = 10.00000903173157 mm
+
+    Direction:
+
+    v.x() = 0.005812884243438132
+    v.y() = -0.01384358278837826
+    v.z() = 0.9998872764428766
+
+    Proposed distance :
+
+    snxt = 9e+99 mm
+
+    *** This is just a warning message. ***
+    -------- WWWW -------- G4Exception-END --------- WWWW -------
+
+
+
+
+FIXED : tboolean-sphere : sphere in sphere bizarre lissajoux like pattern
+-----------------------------------------------------------------------------
+
+Fixed by saving source photons with the OpticksEvent, 
+observing incomplete coverage with so.py 
+and fixing bug in nsphere::par_posnrm_model
+ 
+::
+
+    ipython -i $(which so.py) -- --det tboolean-sphere --tag 1 --src torch 
+
+    In [4]: v = so[:,0,:3]
+
+    In [8]: from opticks.ana.nbase import vnorm
+
+    In [9]: vnorm(v)
+    Out[9]: 
+    A()sliced
+    A([ 400.,  400.,  400., ...,  400.,  400.,  400.], dtype=float32)
+
+
+    In [12]: v[:,0].min()
+    Out[12]: 
+    A()sliced
+    A(-400.0, dtype=float32)
+
+    In [13]: v[:,0].max()    ## this should be +400 
+    Out[13]: 
+    A()sliced
+    A(108.86621856689453, dtype=float32)
 
 
 tboolean-box also shows BR discrep
