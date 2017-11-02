@@ -26,7 +26,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_position(""),
        m_dbgcsgpath(""),
        m_logname(""),
-       m_exportconfig(""),
+       m_exportconfig("$TMP"),
        m_torchconfig(""),
        m_g4gunconfig(""),
        m_g4inimac(""),

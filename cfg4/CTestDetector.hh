@@ -63,7 +63,9 @@ constructs simple Geant4 detector test geometries based on commandline specifica
 parsed and represented by an instance of :doc:`../ggeo/GGeoTestConfig`.
 
 Canonical instance resides in CGeometry and is instanciated by CGeometry::init
-when --test option is used.
+when --test option is used. After the instanciation the CDetector::attachSurfaces
+is invoked.
+
 
 
 **/

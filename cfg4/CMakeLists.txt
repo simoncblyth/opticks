@@ -174,6 +174,7 @@ set(SOURCES
     OpStatus.cc
     Format.cc
     CTraverser.cc
+    CCheck.cc
     State.cc
 
     CSource.cc

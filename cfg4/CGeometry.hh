@@ -28,6 +28,7 @@ class CFG4_API CGeometry
        std::map<std::string, unsigned>& getMaterialMap();        
    private:
        void init();
+       void export_();
    private:
        OpticksHub*          m_hub ; 
 

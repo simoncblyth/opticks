@@ -10,6 +10,7 @@ set(_TEST_SOURCES
 set(TEST_SOURCES
 
     CMaterialLibTest.cc
+    CMaterialTest.cc
     CTestDetectorTest.cc
     CGDMLDetectorTest.cc
     CGeometryTest.cc

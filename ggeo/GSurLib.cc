@@ -6,7 +6,9 @@
 
 #include "Opticks.hh"
 
-#include "GGeo.hh"
+#include "GGeoBase.hh"
+#include "GGeoLib.hh"
+#include "GNodeLib.hh"
 #include "GMergedMesh.hh"
 #include "GSurfaceLib.hh"
 #include "GPropertyMap.hh"
@@ -24,7 +26,7 @@ void GSurLib::add(GSur* sur)
 {
     m_surs.push_back(sur);
 }
-unsigned GSurLib::getNumSur()
+unsigned GSurLib::getNumSur() const 
 {
     return m_surs.size();
 }
@@ -44,16 +46,15 @@ Opticks* GSurLib::getOpticks()
    return m_ok ;  
 }
 
-
-
-GSurLib::GSurLib(GGeo* gg) 
+GSurLib::GSurLib(Opticks* ok, GGeoBase* ggb) 
     : 
-    m_ggeo(gg),
-    m_ok(gg->getOpticks()),
+    m_ok(ok),
+    m_geolib(ggb->getGeoLib()),
+    m_nodelib(ggb->getNodeLib()),
+    m_blib(m_geolib->getBndLib()),
+    m_slib(m_blib->getSurfaceLib()),
     m_is_test(m_ok->isTest()),
     m_dbgsurf(m_ok->isDbgSurf()),
-    m_slib(gg->getSurfaceLib()),
-    m_blib(gg->getBndLib()),
     m_closed(false)
 {
     init();
@@ -150,10 +151,14 @@ void GSurLib::getSurfacePair(std::pair<GSur*,GSur*>& osur_isur, unsigned boundar
 {
     guint4 bnd = m_blib->getBnd(boundary);
 
+
+/*
     if(m_dbgsurf)
         LOG(info) << " GSurLib::getSurfacePair "
                   << " bnd " << std::setw(50) << bnd.description() 
                   ;
+
+*/
 
     unsigned osur_ = bnd.y ; 
     unsigned isur_ = bnd.z ; 
@@ -176,9 +181,8 @@ void GSurLib::examineSolidBndSurfaces()
     // even though the polygonization is often not good
     // that doesnt prevent the below from being able to work.
 
-    GGeo* gg = m_ggeo ; 
 
-    GMergedMesh* mm = gg->getMergedMesh(0) ;
+    GMergedMesh* mm = m_geolib->getMergedMesh(0) ;
     unsigned numSolids = mm->getNumSolids();
 
     if(m_dbgsurf)
@@ -204,11 +208,30 @@ void GSurLib::examineSolidBndSurfaces()
 
     bool reverse = m_is_test ? true : false  ; 
 
+    if(m_dbgsurf)
+    {
+        LOG(info) << "GSurLib::examineSolidBndSurfaces [--dbgsurf] "
+                  << " numSolids " << numSolids 
+                  ;
+     
+        for(unsigned j=0 ; j < numSolids ; j++)
+        {
+            unsigned i = reverse ? numSolids - 1 - j : j ; 
+            const char* lv = m_nodelib->getLVName(i) ;
+            std::cout  
+                     << " j " << std::setw(6) << j
+                     << " i(so-idx) " << std::setw(6) << i
+                     << " lv " << ( lv ? lv : "NULL" ) 
+                     << std::endl
+                     ;
+        }
+    }
+
+
     for(unsigned j=0 ; j < numSolids ; j++)
     {
         unsigned i = reverse ? numSolids - 1 - j : j ; 
-
-        const char* lv = gg->getLVName(i) ;
+        const char* lv = m_nodelib->getLVName(i) ;
 
         guint4 identity = mm->getIdentity(i);
         unsigned node2 = identity.x ;
@@ -231,20 +254,19 @@ void GSurLib::examineSolidBndSurfaces()
         GSur* isur = osur_isur.second ; 
 
         if(m_dbgsurf)
-           LOG(info) << "GSurLib::examineSolidBndSurfaces"
-                      << " j " << std::setw(6) << j
-                      << " i(so-idx) " << std::setw(6) << i
-                      << " node(ni.z) " << std::setw(6) << node
-                      << " node2(id.x) " << std::setw(6) << node2
-                      << " boundary(id.z) " << std::setw(6) << boundary
-                      << " parent(ni.w) " << std::setw(6) << parent 
-                      << " nodeinfo " << std::setw(50) << nodeinfo.description() 
-                      << " bname " << bname
-                      << " lv " << ( lv ? lv : "NULL" )
-                      << ( isur ? " isur" : "" )
-                      << ( osur ? " osur" : "" )
-                      ;
-
+        std::cout  
+                 << " j " << std::setw(6) << j
+                 << " i(so-idx) " << std::setw(6) << i
+                 << " node(ni.z) " << std::setw(6) << node
+                 << " node2(id.x) " << std::setw(6) << node2
+                 << " boundary(id.z) " << std::setw(6) << boundary
+                 << " parent(ni.w) " << std::setw(6) << parent 
+                 << " nodeinfo " << std::setw(20) << nodeinfo.description() 
+                 << " bname " << bname
+                 << ( isur ? " isur" : "" )
+                 << ( osur ? " osur" : "" )
+                 << std::endl
+                 ;
 
         // the reason for the order swap between osur and isur is explained below
         if(osur)
@@ -322,9 +344,26 @@ std::string GSurLib::desc(const std::set<unsigned>& bnd)
 }
 
 
+
+std::string GSurLib::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "GSurLib"
+       << " " << ( m_closed ? " CLOSED " : " WARNING-NOT-CLOSED "  )
+       << " numSur " << getNumSur()
+       ;
+
+    return ss.str();
+}
+
+
+
+
 void GSurLib::dump(const char* msg)
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg 
+              << " desc " << desc() ; 
 
     unsigned numSur = getNumSur();
     for(unsigned i=0 ; i < numSur ; i++)

@@ -4,6 +4,13 @@
 GSurLib
 ==========
 
+PERHAPS MIS-PLACED IT BELONGS IN cfg4- 
+
+See::
+
+    GSurLibTest --dbgsurf
+
+
 To understand GSurLib it is best to first study its primary 
 user CSurLib::convert noting the ingredients required 
 to create the G4 surfaces.
@@ -93,11 +100,14 @@ GScene(GDML2GLTF)
 
 #include <set>
 #include <vector>
+#include <string>
 #include <utility>
 
 class Opticks ; 
 
-class GGeo ;
+class GGeoBase ;
+class GGeoLib ;
+class GNodeLib ;
 class GSur ; 
 class GSurfaceLib ; 
 class GBndLib ; 
@@ -110,35 +120,43 @@ class GGEO_API GSurLib
     public:
          static const unsigned UNSET ;  
          static void pushBorderSurfacesDYB(std::vector<std::string>& names);
-         bool isBorderSurface(const char* name);
+         bool        isBorderSurface(const char* name);
     public:
-         GSurLib(GGeo* gg);
+         GSurLib(Opticks* ok, GGeoBase* ggb);
+         void close();   // invoked by CDetector after potential mesh mods have been made
+
+    public:
+         std::string desc() const ; 
          void dump(const char* msg="GSurLib::dump");
          GSurfaceLib* getSurfaceLib();
          Opticks*     getOpticks();
 
-         unsigned getNumSur();
-         GSur* getSur(unsigned index);
+    public:
+         unsigned     getNumSur() const ;
+         GSur*        getSur(unsigned index);
 
-        void getSurfacePair(std::pair<GSur*,GSur*>& osur_isur, unsigned boundary);
-
-
-         bool isClosed();
+         void         getSurfacePair(std::pair<GSur*,GSur*>& osur_isur, unsigned boundary);
+         bool         isClosed();
     private:
          void init();
          void collectSur();
-         void close();   // invoked by CDetector after potential mesh mods have been made
+
+
          void examineSolidBndSurfaces();
          void assignType();
          void add(GSur* surf);
+
          std::string desc(const std::set<unsigned>& bnd);
+
     public:
-         GGeo*                 m_ggeo ;
          Opticks*              m_ok ; 
+         GGeoLib*              m_geolib ;
+         GNodeLib*             m_nodelib ;
+         GBndLib*              m_blib ; 
+         GSurfaceLib*          m_slib ; 
+
          bool                  m_is_test ; 
          bool                  m_dbgsurf ; 
-         GSurfaceLib*          m_slib ; 
-         GBndLib*              m_blib ; 
          bool                  m_closed ; 
 
          std::vector<GSur*>        m_surs ; 

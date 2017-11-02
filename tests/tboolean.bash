@@ -322,8 +322,7 @@ tboolean-ana-(){
 
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
-
-
+tboolean-g-(){ lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 
 tboolean--(){
@@ -1869,6 +1868,7 @@ EOP
 tboolean-sphere-m(){ TESTNAME=${FUNCNAME/-m} tboolean-m- $* ; } 
 tboolean-sphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-sphere-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf ; } 
 tboolean-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-sphere-(){  $FUNCNAME- | python $* ; } 
 tboolean-sphere--(){ cat << EOP 
@@ -1887,10 +1887,12 @@ b_container = "Rock//perfectAbsorbSurface/%s" % m_media
 CSG.boundary = "%s///%s" % (m_media, m_object )
 CSG.kwa = dict(poly="IM", resolution="40")
 
+
+outer = CSG("box", param=[0,0,0,12.0], boundary="Vacuum///Rock" )
 container = CSG("box",    param=[0,0,0,11.0], boundary=b_container, emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM", resolution="40" )  
 sphere = CSG("sphere",    param=[0,0,0,10.0] )
 
-CSG.Serialize([container, sphere], args.csgpath )
+CSG.Serialize([outer, container, sphere], args.csgpath )
 
 EOP
 }

@@ -1,6 +1,9 @@
 #include <string>
 class OpticksQuery ; 
 
+#include "BFile.hh"
+
+
 #include "OpticksHub.hh"
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
@@ -57,12 +60,7 @@ void CGeometry::init()
     {
         LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
 
-        // hmm : any reason why not to boot from the GGeoTest ? rather than the config ?
-        //std::string testconfig = m_cfg->getTestConfig();
-        //GGeoTestConfig* ggtc = new GGeoTestConfig( testconfig.empty() ? NULL : testconfig.c_str() );
-
         GGeoTest* ggt = m_hub->getGGeoTest();  assert(ggt) ;
-
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
         detector  = static_cast<CDetector*>(new CTestDetector(m_hub, ggt, query)) ; 
     }
@@ -117,6 +115,7 @@ void CGeometry::postinitialize()
     assert( clib );
     clib->postinitialize();
 
+    export_();
 }
 
 CMaterialBridge* CGeometry::getMaterialBridge()
@@ -135,6 +134,20 @@ std::map<std::string, unsigned>& CGeometry::getMaterialMap()
 {
     assert(m_material_table);
     return m_material_table->getMaterialMap();
+}
+
+void CGeometry::export_()
+{
+    bool expo = m_cfg->hasOpt("export");
+    if(!expo) return ; 
+    std::string expodir = m_cfg->getExportConfig();
+    if(expodir.size() == 0) return ; 
+    
+    std::string daepath = BFile::FormPath(expodir.c_str(),"CGeometry.dae" );
+    m_detector->export_dae(daepath.c_str());
+
+    std::string gdmlpath = BFile::FormPath(expodir.c_str(),"CGeometry.gdml" );
+    m_detector->export_gdml(gdmlpath.c_str());
 }
 
 

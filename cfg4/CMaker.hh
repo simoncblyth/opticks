@@ -42,8 +42,8 @@ at a higher level eg by CTestDetector.
 class CFG4_API CMaker 
 {
     public:
-        static std::string PVName(const char* shapename);
-        static std::string LVName(const char* shapename);
+        static std::string PVName(const char* shapename, int idx=-1);
+        static std::string LVName(const char* shapename, int idx=-1);
     public:
         CMaker(Opticks* ok, int verbosity=0);
     public:

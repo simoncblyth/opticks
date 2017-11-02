@@ -76,34 +76,6 @@ int main(int argc, char** argv)
 
 
 
-/*
-    // TODO: move below into CGeometry?
-
-    bool expo = m_cfg->hasOpt("export");
-    std::string expoconfig = m_cfg->getExportConfig();
-
-    if(expo && expoconfig.size() > 0)
-    { 
-        const G4String path = expoconfig ; 
-
-        LOG(info) << "export to " << expoconfig ; 
-
-#ifdef WITH_G4DAE 
-        G4DAEParser* g4dae = new G4DAEParser ;
-
-        G4bool refs = true ;
-        G4bool recreatePoly = false ; 
-        G4int nodeIndex = -1 ;   // so World is volume 0 
-
-        g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
-#else
-        LOG(warning) << " export requires WITH_G4DAE " ; 
-#endif
-
-    }
-*/
-
-
 
     return 0 ; 
 }

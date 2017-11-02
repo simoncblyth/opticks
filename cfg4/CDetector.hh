@@ -18,6 +18,7 @@ class CBndLib ;
 class CSurLib ; 
 class CMaterialLib ; 
 class CTraverser ; 
+class CCheck ; 
 
 // g4-
 class G4VPhysicalVolume;
@@ -95,6 +96,9 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  public: 
     // via bbox
     const glm::vec4& getCenterExtent();
+ public: 
+    void  export_gdml(const char* path_);
+    void  export_dae(const char* path_);
  private:
     OpticksHub*        m_hub ;
  protected: 
@@ -110,6 +114,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     CMaterialLib*      m_mlib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
+    CCheck*            m_check ; 
     NBoundingBox*      m_bbox ; 
     int                m_verbosity ; 
     bool               m_valid ;

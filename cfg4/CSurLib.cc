@@ -220,10 +220,26 @@ G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4Op
     guint4 pair = sur->getVolumePair(ivp);
     unsigned ipv1 = pair.x ; 
     unsigned ipv2 = pair.y ; 
+
+    if(m_dbgsurf)
+    LOG(info) << "CSurLib::makeBorderSurface"
+              << " name " << name 
+              << " ipv1 " << ipv1
+              << " ipv2 " << ipv2
+              << " pv1 " << pv1
+              << " pv2 " << pv2
+              ;
+
     assert(pair.w == ivp);
+
+    assert( ipv1 != GSurLib::UNSET && "CSurLib::makeBorderSurface ipv1 UNSET" );
+    assert( ipv2 != GSurLib::UNSET && "CSurLib::makeBorderSurface ipv2 UNSET" );
 
     const G4VPhysicalVolume* pv1 = m_detector->getPV(ipv1);    
     const G4VPhysicalVolume* pv2 = m_detector->getPV(ipv2);    
+
+    assert( pv1 );
+    assert( pv2 );     
 
     G4LogicalBorderSurface* lbs = new G4LogicalBorderSurface(name,
              const_cast<G4VPhysicalVolume*>(pv1),
@@ -247,7 +263,8 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
     
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
-    LOG(debug) << "CSurLib::makeSkinSurface"
+    if(m_dbgsurf)
+    LOG(info) << "CSurLib::makeSkinSurface"
               << " ilv " << std::setw(5) << ilv
               << " name " << std::setw(35) << name
               << " lvn " << std::setw(35) << lvn 

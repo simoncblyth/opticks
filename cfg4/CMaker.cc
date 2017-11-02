@@ -42,17 +42,19 @@ CMaker::CMaker(Opticks* ok, int verbosity)
 {
 }   
 
-std::string CMaker::LVName(const char* shapename)
+std::string CMaker::LVName(const char* shapename, int idx)
 {
     std::stringstream ss ; 
     ss << shapename << "_log" ; 
+    if(idx > -1) ss << idx ; 
     return ss.str();
 }
 
-std::string CMaker::PVName(const char* shapename)
+std::string CMaker::PVName(const char* shapename, int idx)
 {
     std::stringstream ss ; 
     ss << shapename << "_phys" ; 
+    if(idx > -1) ss << idx ; 
     return ss.str();
 }
 

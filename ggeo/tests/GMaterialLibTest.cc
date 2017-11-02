@@ -120,7 +120,7 @@ int main(int argc, char** argv)
     LOG(info) << " after dump " ; 
 
 
-    test_interpolatingCopyCtor(mlib);
+    //test_interpolatingCopyCtor(mlib);
 
 
     return 0 ;

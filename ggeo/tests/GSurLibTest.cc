@@ -17,22 +17,6 @@
 #include "GGEO_LOG.hh"
 
 
-void test_GSurLib(GGeo* gg)
-{
-    GSurLib* surlib = gg->getSurLib();
-    if(surlib) 
-    {
-        LOG(info) << " using surlib from GGeo " ; 
-    }
-    else
-    {
-        LOG(info) << " instanciating surlib " ; 
-        surlib = new GSurLib(gg);
-    } 
-    surlib->dump("test_GSurLib");
-}
-
-
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -40,11 +24,18 @@ int main(int argc, char** argv)
     GGEO_LOG__ ;
 
     Opticks ok(argc, argv);
+    ok.configure();
+
     GGeo gg(&ok);
     gg.loadFromCache();
     gg.dumpStats();
 
-    test_GSurLib(&gg);
+
+    GSurLib gsl(&ok, &gg);
+
+    gsl.close();
+    gsl.dump();
+
 
     return 0 ; 
 }

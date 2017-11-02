@@ -30,6 +30,8 @@ class GGEO_API GGeoLib {
         static GGeoLib* Load(Opticks* ok, bool analytic, GBndLib* bndlib);
     public:
         GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib);
+
+        GBndLib* getBndLib() const ; 
         std::string desc() const ; 
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;

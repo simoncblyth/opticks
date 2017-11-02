@@ -42,9 +42,9 @@ class GGEO_API GBndLib : public GPropertyLib {
             };
   public:
        void save();
-       static GBndLib* load(Opticks* cache, bool constituents=false);
+       static GBndLib* load(Opticks* ok, bool constituents=false);
   public:
-       GBndLib(Opticks* cache);
+       GBndLib(Opticks* ok);
   private:
        void init(); 
   public:

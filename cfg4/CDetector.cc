@@ -6,6 +6,7 @@
 
 // g4-
 #include "G4PVPlacement.hh"
+#include "G4GDMLParser.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -28,6 +29,7 @@
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
 #include "CDetector.hh"
+#include "CCheck.hh"
 
 #include "PLOG.hh"
 
@@ -47,6 +49,7 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   m_mlib(new CMaterialLib(m_hub)),
   m_top(NULL),
   m_traverser(NULL),
+  m_check(NULL),
   m_bbox(new NBoundingBox),
   m_verbosity(0),
   m_valid(true)
@@ -73,7 +76,9 @@ void CDetector::setValid(bool valid)
 void CDetector::setTop(G4VPhysicalVolume* top)
 {
     m_top = top ; 
+
     traverse(m_top);
+
 }
 
 void CDetector::traverse(G4VPhysicalVolume* /*top*/)
@@ -82,6 +87,10 @@ void CDetector::traverse(G4VPhysicalVolume* /*top*/)
 
     if(m_dbgsurf)
          LOG(info) << "[--dbgsurf] CDetector::traverse START " ;
+
+
+    m_check = new CCheck(m_ok, m_top );
+
     
     m_traverser = new CTraverser(m_ok, m_top, m_bbox, m_query ); 
     m_traverser->Traverse();
@@ -267,6 +276,54 @@ void CDetector::attachSurfaces()
 } 
 
 
+
+
+void CDetector::export_dae(const char* path_)
+{
+    const G4String path = path_ ; 
+    LOG(info) << "export to " << path_ ; 
+
+    G4VPhysicalVolume* world_pv = getTop();
+    assert( world_pv  );
+
+#ifdef WITH_G4DAE 
+    G4DAEParser* g4dae = new G4DAEParser ;
+
+    G4bool refs = true ;
+    G4bool recreatePoly = false ; 
+    G4int nodeIndex = -1 ;   // so World is volume 0 
+
+    g4dae->Write(path, world_pv, refs, recreatePoly, nodeIndex );
+#else
+    LOG(warning) << " export requires WITH_G4DAE " ; 
+#endif
+}
+
+
+
+void CDetector::export_gdml(const char* path_)
+{
+
+    m_check->checkSurf();
+ 
+
+    const G4String path = path_ ; 
+    LOG(info) << "export to " << path_ ; 
+
+    G4VPhysicalVolume* world_pv = getTop();
+    assert( world_pv  );
+
+//#ifdef WITH_G4GDML 
+    G4GDMLParser* g4gdml = new G4GDMLParser ;
+    G4bool refs = true ;
+    G4String schemaLocation = "" ; 
+
+    g4gdml->Write(path, world_pv, refs, schemaLocation );
+//#else
+//    LOG(warning) << " export_gdml requires WITH_G4GDML " ; 
+//#endif
+
+}
 
 
 

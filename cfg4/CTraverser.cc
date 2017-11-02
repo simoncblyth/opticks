@@ -371,7 +371,7 @@ G4Transform3D CTraverser::VolumeTreeTraverse(const G4LogicalVolume* const lv, co
          // G4Transform3D P(rot,physvol->GetObjectTranslation());  GDML does this : not inverting the rotation portion 
          G4Transform3D P(invrot,physvol->GetObjectTranslation());
 
-         VisitPV(physvol, invR*P*daughterR);
+         VisitPV(physvol, invR*P*daughterR);  // postorder (visit after recursive call)
 
         // This mimicks what is done in g4dae/src/G4DAEWriteStructure.cc which follows GDML (almost) 
         // despite trying to look like it accounts for all the transforms through the tree

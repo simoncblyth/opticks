@@ -49,7 +49,7 @@ class GScintillatorLib ;
 class GSourceLib ;
 class GPmtLib ; 
 
-class GSurLib ; 
+//class GSurLib ; 
 
 class GTreeCheck ;
 //class GTreePresent ;
@@ -126,7 +126,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void loadAnalyticFromCache();
 
         void afterConvertMaterials();
-        void createSurLib();
+        //void createSurLib();
     public:
         // post-load setup
         void setupLookup();
@@ -245,10 +245,11 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         GScene*            getScene();
         GNodeLib*          getNodeLib();
-        //GGeoLib*           getTriGeoLib();
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
-        GSurLib*           getSurLib();
+
+        //GSurLib*           getSurLib();
+
         GPmtLib*           getPmtLib(); 
         NLookup*           getLookup(); 
     public:
@@ -359,7 +360,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
-        GSurLib*                      m_surlib ; 
+        //GSurLib*                      m_surlib ; 
         GScintillatorLib*             m_scintillatorlib ; 
         GSourceLib*                   m_sourcelib ; 
         GPmtLib*                      m_pmtlib ; 

@@ -31,6 +31,12 @@ const char* GGeoLib::getRelDir(const char* name)
     return m_analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
 }
 
+GBndLib* GGeoLib::getBndLib() const 
+{
+    return m_bndlib ; 
+}
+
+
 GGeoLib* GGeoLib::Load(Opticks* opticks, bool analytic, GBndLib* bndlib)
 {
     GGeoLib* glib = new GGeoLib(opticks, analytic, bndlib);

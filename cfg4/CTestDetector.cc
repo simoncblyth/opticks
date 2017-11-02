@@ -177,21 +177,26 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         if(isur) isur->dump("isur");
         if(osur) osur->dump("osur");
 
+        const G4Material* material = m_mlib->convertMaterial(imat);
+        G4VSolid* solid = m_maker->makeSolid( csg ); 
+
+        OpticksCSG_t type = csg->getRootType() ;
+        const char* nodename = CSGName(type);
+
+        std::string lvn = CMaker::LVName(nodename, i);
+        std::string pvn = CMaker::PVName(nodename, i);
+
         LOG(info) 
              << " i " << i 
              << " boundary " << boundary
              << " imat " << imat 
              << " isur " << isur 
              << " osur " << osur 
+             << " lvn " << lvn 
+             << " pvn " << pvn 
+             << " mat " << material->GetName()
              ;
 
-        const G4Material* material = m_mlib->convertMaterial(imat);
-        G4VSolid* solid = m_maker->makeSolid( csg ); 
-
-        OpticksCSG_t type = csg->getRootType() ;
-        const char* nodename = CSGName(type);
-        std::string lvn = CMaker::LVName(nodename);
-        std::string pvn = CMaker::PVName(nodename);
 
         G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
         G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);

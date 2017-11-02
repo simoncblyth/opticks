@@ -98,7 +98,7 @@ GGeo::GGeo(Opticks* opticks)
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
-   m_surlib(NULL),
+   //m_surlib(NULL),
    m_scintillatorlib(NULL),
    m_sourcelib(NULL),
    m_pmtlib(NULL),
@@ -247,11 +247,8 @@ GSurfaceLib* GGeo::getSurfaceLib()
 {
     return m_surfacelib ; 
 }
-GSurLib* GGeo::getSurLib()
-{
-    if(m_surlib == NULL) createSurLib();
-    return m_surlib ; 
-}
+
+
 
 const char*  GGeo::getIdentifier()
 {
@@ -690,52 +687,24 @@ void GGeo::afterConvertMaterials()
 
 
 /*
-GSolid* GGeo::getSolidAnalytic(unsigned idx)
+GSurLib* GGeo::getSurLib()
 {
-    return m_nodelib_analytic ? m_nodelib_analytic->getSolid(idx) : NULL ; 
+    if(m_surlib == NULL) createSurLib();
+    return m_surlib ; 
 }
-*/
-
-
-
 void GGeo::createSurLib()
 {
-/*
-    This is deferred until called upon by CG4/CGeometry so any test geometry mesh0 modifications 
-    will have been done already when called...
-
-    frame #4: 0x0000000101d1cfce libGGeo.dylib`GGeo::createSurLib(this=0x0000000109900410) + 46 at GGeo.cc:637
-    frame #5: 0x0000000101d1cf8e libGGeo.dylib`GGeo::getSurLib(this=0x0000000109900410) + 46 at GGeo.cc:259
-    frame #6: 0x0000000103e2eebb libcfg4.dylib`CGeometry::CGeometry(this=0x000000010e38fa60, hub=0x000000010980b170) + 91 at CGeometry.cc:33
-    frame #7: 0x0000000103e2f56d libcfg4.dylib`CGeometry::CGeometry(this=0x000000010e38fa60, hub=0x000000010980b170) + 29 at CGeometry.cc:43
-    frame #8: 0x0000000103ec8cc9 libcfg4.dylib`CG4::CG4(this=0x000000010e153de0, hub=0x000000010980b170) + 217 at CG4.cc:113
-    frame #9: 0x0000000103ec919d libcfg4.dylib`CG4::CG4(this=0x000000010e153de0, hub=0x000000010980b170) + 29 at CG4.cc:134
-    frame #10: 0x0000000103faffb3 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe660, argc=21, argv=0x00007fff5fbfe748) + 547 at OKG4Mgr.cc:35
-    frame #11: 0x0000000103fb0203 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe660, argc=21, argv=0x00007fff5fbfe748) + 35 at OKG4Mgr.cc:41
-    frame #12: 0x00000001000139be OKG4Test`main(argc=21, argv=0x00007fff5fbfe748) + 1486 at OKG4Test.cc:56
-*/
-
     assert( m_surlib == NULL );
 
-/*
-    if(m_surlib)
-    {
-        LOG(warning) << "recreating GSurLib" ; 
-        delete m_surlib ; 
-    }
-    else
-    {
-        LOG(info) << "deferred creation of GSurLib " ; 
-    }
-*/
 
    if(m_ok->isDbgSurf())
    LOG(info) << "[--dbgsurf] deferred creation of GSurLib " ; 
 
-
-    m_surlib = new GSurLib(this) ; 
+    m_surlib = new GSurLib(m_ok, this) ; 
     //m_surlib->dump("GGeo::createSurLib");
 }
+*/
+
 
 
 

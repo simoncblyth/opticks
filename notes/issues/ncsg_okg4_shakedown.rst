@@ -21,6 +21,82 @@ NEXT
   maybe add MaxVacuum with FLT_MAX extreme absorption_length   scattering_length
 
 
+
+try checking the G4 geometry by exporting it 
+-----------------------------------------------
+
+::
+
+
+    simon:optickscore blyth$ tboolean-;tboolean-sphere-g --export 
+    (lldb) target create "CTestDetectorTest"
+    Current executable set to 'CTestDetectorTest' (x86_64).
+    (lldb) settings set -- target.run-args  "--test" "--testconfig" "analytic=1_csgpath=/tmp/blyth/opticks/tboolean-sphere--_name=tboolean-sphere--_mode=PyCsgInBox" "--export"
+    (lldb) r
+    Process 64968 launched: '/usr/local/opticks/lib/CTestDetectorTest' (x86_64)
+    2017-11-02 18:44:35.529 INFO  [2406779] [main@42] CTestDetectorTest
+      0 : CTestDetectorTest
+      1 : --test
+      2 : --testconfig
+      3 : analytic=1_csgpath=/tmp/blyth/opticks/tboolean-sphere--_name=tboolean-sphere--_mode=PyCsgInBox
+      4 : --export
+    2017-11-02 18:44:35.705 INFO  [2406779] [NSensorList::read@186] NSensorList::read  found 6888 sensors. 
+
+
+    (lldb) f 4
+    frame #4: 0x0000000101c776d3 libG4persistency.dylib`G4GDMLWriteStructure::BorderSurfaceCache(this=0x000000010da00800, bsurf=<unavailable>) + 291 at G4GDMLWriteStructure.cc:245
+       242  
+       243     const G4String volumeref1 = GenerateName(bsurf->GetVolume1()->GetName(),
+       244                                              bsurf->GetVolume1());
+    -> 245     const G4String volumeref2 = GenerateName(bsurf->GetVolume2()->GetName(),
+       246                                              bsurf->GetVolume2());
+       247     xercesc::DOMElement* volumerefElement1 = NewElement("physvolref");
+       248     xercesc::DOMElement* volumerefElement2 = NewElement("physvolref");
+    (lldb) f 5
+    frame #5: 0x0000000101c791af libG4persistency.dylib`G4GDMLWriteStructure::TraverseVolumeTree(this=0x000000010da00800, volumePtr=0x0000000112f43770, depth=0) + 4367 at G4GDMLWriteStructure.cc:525
+       522                     
+       523             PhysvolWrite(volumeElement,physvol,invR*P*daughterR,ModuleName);
+       524           }
+    -> 525         BorderSurfaceCache(GetBorderSurface(physvol));
+       526       }
+       527  
+       528     if (cexport)  { ExportEnergyCuts(volumePtr); }
+    (lldb) bt
+    * thread #1: tid = 0x24b97b, 0x0000000101c606cb libG4persistency.dylib`G4GDMLWrite::GenerateName(G4String const&, void const*) [inlined] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__get_short_size() const at string:1683, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x18)
+        frame #0: 0x0000000101c606cb libG4persistency.dylib`G4GDMLWrite::GenerateName(G4String const&, void const*) [inlined] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__get_short_size() const at string:1683
+        frame #1: 0x0000000101c606cb libG4persistency.dylib`G4GDMLWrite::GenerateName(G4String const&, void const*) [inlined] std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::size() const at string:1398
+        frame #2: 0x0000000101c606cb libG4persistency.dylib`G4GDMLWrite::GenerateName(G4String const&, void const*) [inlined] std::__1::basic_stringstream<char, std::__1::char_traits<char>, std::__1::allocator<char> >::basic_stringstream(this=0x0000000101cb31a8, __wch=<unavailable>) at ostream:1068
+        frame #3: 0x0000000101c606cb libG4persistency.dylib`G4GDMLWrite::GenerateName(this=0x0000000000000000, name=0x0000000000000018, ptr=0x0000000000000000) + 331 at G4GDMLWrite.cc:126
+        frame #4: 0x0000000101c776d3 libG4persistency.dylib`G4GDMLWriteStructure::BorderSurfaceCache(this=0x000000010da00800, bsurf=<unavailable>) + 291 at G4GDMLWriteStructure.cc:245
+      * frame #5: 0x0000000101c791af libG4persistency.dylib`G4GDMLWriteStructure::TraverseVolumeTree(this=0x000000010da00800, volumePtr=0x0000000112f43770, depth=0) + 4367 at G4GDMLWriteStructure.cc:525
+        frame #6: 0x0000000101c612d3 libG4persistency.dylib`G4GDMLWrite::Write(this=0x000000010da00800, fname=0x00007fff5fbfdad8, logvol=0x0000000112f43770, setSchemaLocation=<unavailable>, depth=0, refs=<unavailable>) + 1587 at G4GDMLWrite.cc:228
+        frame #7: 0x000000010171176c libcfg4.dylib`G4GDMLParser::Write(this=0x0000000112f8d880, filename=0x00007fff5fbfdad8, pvol=0x0000000112f42200, refs=true, schemaLocation=0x00007fff5fbfd950) + 236 at G4GDMLParser.icc:68
+        frame #8: 0x00000001017109a7 libcfg4.dylib`CDetector::export_gdml(this=0x0000000112f3c600, path_=0x0000000112f9a0a0) + 599 at CDetector.cc:309
+        frame #9: 0x000000010168a436 libcfg4.dylib`CGeometry::export_(this=0x0000000112f3c590) + 1558 at CGeometry.cc:155
+        frame #10: 0x0000000101689e06 libcfg4.dylib`CGeometry::postinitialize(this=0x0000000112f3c590) + 438 at CGeometry.cc:123
+        frame #11: 0x0000000101736d0b libcfg4.dylib`CG4::postinitialize(this=0x00007fff5fbfe840) + 683 at CG4.cc:221
+        frame #12: 0x00000001017369fc libcfg4.dylib`CG4::initialize(this=0x00007fff5fbfe840) + 540 at CG4.cc:176
+        frame #13: 0x00000001017367a5 libcfg4.dylib`CG4::init(this=0x00007fff5fbfe840) + 21 at CG4.cc:150
+        frame #14: 0x000000010173677c libcfg4.dylib`CG4::CG4(this=0x00007fff5fbfe840, hub=0x00007fff5fbfe8f8) + 1564 at CG4.cc:143
+        frame #15: 0x00000001017367cd libcfg4.dylib`CG4::CG4(this=0x00007fff5fbfe840, hub=0x00007fff5fbfe8f8) + 29 at CG4.cc:144
+        frame #16: 0x000000010000ca29 CTestDetectorTest`main(argc=5, argv=0x00007fff5fbfecb8) + 969 at CTestDetectorTest.cc:53
+        frame #17: 0x00007fff880d35fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+::
+
+    g4-cls G4GDMLWriteStructure
+
+
+Hmm probably because have a border surface on the world.
+
+Argh ... nope need to rejig GSurLib to work with analytic geometry.
+
+
+
+
+
 SC/AB in Vacuum
 ------------------
 
