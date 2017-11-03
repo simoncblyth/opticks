@@ -183,7 +183,7 @@ void NSensorList::read(const char* path)
               << " desc " << description() 
               ; 
 
-    LOG(info) << "NSensorList::read "
+    LOG(debug) << "NSensorList::read "
 	      << " found " << m_sensors.size() << " sensors. "
 	      ;
 }

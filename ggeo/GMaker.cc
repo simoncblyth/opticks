@@ -125,14 +125,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     NTrianglesNPY* tris = csg->polygonize();
 
-    LOG(info) << "GMaker::makeFromCSG" 
-              << " verbosity " << verbosity 
-              << " index " << index 
-              << " boundary-spec " << spec 
-              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
-              << " trisMsg " << ( tris ? tris->getMessage() : "" )
-              ; 
-
 
     //nnode* root = csg->getRoot() ;
 
@@ -172,6 +164,18 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     // TODO: fix vagueness regards GMaker and GGeoTest responsibilities
 
+
+
+    LOG(info) << "GMaker::makeFromCSG" 
+              << " verbosity " << verbosity 
+              << " index " << index 
+              << " boundary-spec " << spec 
+              << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
+              << " trisMsg " << ( tris ? tris->getMessage() : "" )
+              ; 
+
+
+
     return solid ; 
 }
 
@@ -202,11 +206,15 @@ void GMaker::init()
     else
     {
         LOG(warning) << "GMaker::init booting from cache" ; 
+        LOG(warning) << "GMaker::init booting from cache" ; 
+        LOG(warning) << "GMaker::init booting from cache" ; 
+        LOG(warning) << "GMaker::init booting from cache" ; 
+        LOG(warning) << "GMaker::init booting from cache" ; 
+
         bool constituents = true ; 
         m_bndlib = GBndLib::load(m_opticks, constituents );
         bool analytic = false ; 
         m_geolib = GGeoLib::Load(m_opticks, analytic, m_bndlib );
-
     }
 }
 
@@ -494,7 +502,4 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
     return solid ; 
 }
-
-
-
 

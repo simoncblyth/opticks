@@ -642,7 +642,8 @@ void GGeo::saveAnalytic()
  
 void GGeo::loadFromCache()
 {   
-    LOG(info) << "GGeo::loadFromCache START" ; 
+    LOG(debug) << "GGeo::loadFromCache START" ; 
+
     bool constituents = true ; 
     m_bndlib = GBndLib::load(m_ok, constituents);    // interpolation potentially happens in here
 
@@ -660,8 +661,7 @@ void GGeo::loadFromCache()
     m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
     m_meshlib = GMeshLib::Load(m_ok, analytic);
 
-
-    LOG(info) << "GGeo::loadFromCache DONE" ; 
+    LOG(debug) << "GGeo::loadFromCache DONE" ; 
 }
 
 void GGeo::loadAnalyticFromCache()

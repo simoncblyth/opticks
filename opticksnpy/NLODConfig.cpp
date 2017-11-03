@@ -13,7 +13,7 @@ NLODConfig::NLODConfig(const char* cfg)
     levels(3),
     instanced_lodify_onload(0)
 {
-    LOG(info) << "NLODConfig::NLODConfig"
+    LOG(trace) << "NLODConfig::NLODConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
               ;
 

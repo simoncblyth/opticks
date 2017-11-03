@@ -62,7 +62,7 @@ void NEmitPhotonsNPY::init()
 
     unsigned numPhoton = m_photons->getNumItems();
 
-    LOG(info) << desc() 
+    LOG(debug) << desc() 
               << " numPhoton " << numPhoton 
                ;
 

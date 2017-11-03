@@ -17,7 +17,7 @@ NEmitConfig::NEmitConfig(const char* cfg)
     weight(1.0f),
     posdelta(0.f)
 {
-    LOG(info) << "NEmitConfig::NEmitConfig"
+    LOG(debug) << "NEmitConfig::NEmitConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
               ;
 

@@ -1208,7 +1208,7 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
     unsigned nbnd = bnd.getNumLines();
 
-    LOG(info) << "NCSG::Deserialize"
+    LOG(debug) << "NCSG::Deserialize"
               << " VERBOSITY " << verbosity 
               << " basedir " << basedir 
               << " txtpath " << txtpath 
