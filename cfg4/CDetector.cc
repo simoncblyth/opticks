@@ -40,7 +40,8 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   m_hub(hub),
   m_ok(m_hub->getOpticks()),
   m_dbgsurf(m_ok->isDbgSurf()),
-  m_ggeo(m_hub->getGGeo()),
+  m_ggb(m_hub->getGGeoBase()),
+  //m_ggeo(m_hub->getGGeo()),
   m_blib(new CBndLib(m_hub)),
   m_gsurlib(m_hub->getSurLib()),   // invokes the deferred GGeo::createSurLib  
   m_csurlib(NULL),

@@ -20,22 +20,47 @@ class GTreePresent ;
 GNodeLib
 ===========
 
-* NB very partially persisted only (just the pv/lv names), primarily a pre-cache operator
+Collection of GSolid/GNode instances with access by index.
+NB only pv/lv names are persisted, not the solids/nodes.
+Initially primarily a pre-cache operator, but access to pv/lv names also 
+relevant post-cache.
 
+There are several canonical m_nodelib instances:
+
+*GGeo::init precache non-analytic*
+
+     874 void GGeo::add(GSolid* solid)
+     875 {
+     876     m_nodelib->add(solid);
+     877 }
+
+
+*GScene::GScene analytic*
+
+     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic ) : new GNodeLib(m_ok, m_analytic)), 
+
+     893 void GScene::addNode(GSolid* node, nd* n)
+     894 {
+     895     unsigned node_idx = n->idx ;
+     896     assert(m_nodes.count(node_idx) == 0);
+     897     m_nodes[node_idx] = node ;
+     898 
+     899     // TODO ... get rid of above, use the nodelib 
+     900     m_nodelib->add(node);
+     901 }
 
 */
-
 
 class GGEO_API GNodeLib 
 {
         friend class GGeo   ;  // for save 
         friend class GScene ;  // for save 
     public:
-        static const char* GetRelDir(bool analytic);
-        static GNodeLib* Load(Opticks* ok, bool analytic);
+        static const char* GetRelDir(bool analytic, bool test);
+        static GNodeLib* Load(Opticks* ok, bool analytic, bool test);
         void loadFromCache();
     public:
-        GNodeLib(Opticks* opticks, bool analytic); 
+        GNodeLib(Opticks* opticks, bool analytic, bool test); 
         std::string desc() const ; 
     private:
         void save() const ;
@@ -57,6 +82,7 @@ class GGEO_API GNodeLib
     private:
         Opticks*                           m_ok ;  
         bool                               m_analytic ; 
+        bool                               m_test ; 
         const char*                        m_reldir ; 
 
         GItemList*                         m_pvlist ; 
@@ -65,8 +91,6 @@ class GGEO_API GNodeLib
     private:
         std::map<unsigned int, GSolid*>    m_solidmap ; 
         std::vector<GSolid*>               m_solids ; 
-
 };
  
-
 

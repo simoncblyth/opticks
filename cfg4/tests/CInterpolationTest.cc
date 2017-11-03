@@ -11,7 +11,9 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
-#include "GGeo.hh"
+//#include "GGeo.hh"
+#include "GVector.hh"
+#include "GGeoBase.hh"
 #include "GMaterialLib.hh"
 #include "GBndLib.hh"
 
@@ -63,8 +65,8 @@ int main(int argc, char** argv)
     CSurfaceBridge*  sbr = g4.getSurfaceBridge();
     //mbr->dump();
 
-    GGeo* gg = hub.getGGeo();
-    GBndLib* blib = gg->getBndLib(); 
+    GGeoBase* ggb = hub.getGGeoBase();
+    GBndLib* blib = ggb->getBndLib(); 
 
     bool interpolate = ok.hasOpt("nointerpol") ? false : true ; 
 

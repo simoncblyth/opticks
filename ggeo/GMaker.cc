@@ -100,6 +100,23 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
 }
 
 
+std::string GMaker::LVName(const char* shapename, int idx)
+{
+    std::stringstream ss ; 
+    ss << shapename << "_log" ; 
+    if(idx > -1) ss << idx ; 
+    return ss.str();
+}
+
+std::string GMaker::PVName(const char* shapename, int idx)
+{
+    std::stringstream ss ; 
+    ss << shapename << "_phys" ; 
+    if(idx > -1) ss << idx ; 
+    return ss.str();
+}
+
+
 GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 {
     unsigned index = csg->getIndex();
@@ -137,11 +154,18 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     solid->setSensor( NULL );      
 
-    solid->setCSGFlag( csg->getRootType() );
-  
+
+    OpticksCSG_t type = csg->getRootType() ;
+
+    const char* shapename = CSGName(type); 
+    std::string lvn = GMaker::LVName(shapename, index); 
+    std::string pvn = GMaker::PVName(shapename, index); 
+    
+    solid->setPVName( strdup(pvn.c_str()) );
+    solid->setLVName( strdup(lvn.c_str()) );
+    solid->setCSGFlag( type );
 
     GParts* pts = GParts::make( csg, spec, verbosity );
-
 
 
     solid->setParts( pts );

@@ -41,6 +41,7 @@
 #include "GGeo.hh"
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
+#include "GSurLib.hh"
 
 // okc-
 #include "Bookmarks.hh"
@@ -93,7 +94,8 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gen(NULL),
    m_gun(NULL),
    m_aim(NULL),
-   m_geotest(NULL)
+   m_geotest(NULL),
+   m_gsurlib(NULL)
 
 {
    init();
@@ -127,7 +129,10 @@ std::string OpticksHub::desc() const
 {
     std::stringstream ss ; 
 
+    GGeoBase* ggb = getGGeoBase(); 
+
     ss << "OpticksHub"
+       << " encumbent " << ( ggb ? ggb->getIdentifier() : "-" ) 
        << " m_ggeo " << m_ggeo
        << " m_gscene " << m_gscene
        << " m_geometry " << m_geometry
@@ -308,7 +313,12 @@ void OpticksHub::loadGeometry()
     if(m_ok->isTest())
     {
         LOG(info) << "OpticksHub::loadGeometry --test modifying geometry" ; 
-        modifyGeometry();
+
+        assert(m_geotest == NULL);
+
+        GGeoBase* basis = getGGeoBase(); // ana OR tri depending on --gltf
+
+        m_geotest = createTestGeometry(basis);
     }
     else
     {
@@ -326,7 +336,7 @@ void OpticksHub::loadGeometry()
 
 
 
-void OpticksHub::modifyGeometry()
+GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 {
     assert(m_ok->isTest());
 
@@ -339,22 +349,18 @@ void OpticksHub::modifyGeometry()
 
     GGeoTestConfig* gtc = new GGeoTestConfig(testconf);
 
+    GGeoTest* testgeo = new GGeoTest(m_ok, gtc, basis);
 
-    GGeoBase* ggeobase = getGGeoBase();  // ana OR tri depending on --gltf
-
-
-    assert(m_geotest == NULL);
-    m_geotest = new GGeoTest(m_ok, gtc, ggeobase);
-    m_geotest->modifyGeometry();
-
-    GMergedMesh* mesh0 = getMergedMesh(0);
+    GMergedMesh* mesh0 = testgeo->getMergedMesh(0);  
     if(mesh0)
     { 
-        mesh0->dumpSolids("OpticksHub::modifyGeometry mesh0");
-        mesh0->save("$TMP", "GMergedMesh", "modifyGeometry") ;
+        mesh0->dumpSolids("OpticksHub::createTestGeometry mesh0");
+        mesh0->save("$TMP", "GMergedMesh", "createTestGeometry") ;
     }
 
-    LOG(info) << "OpticksHub::modifyGeometry DONE" ;
+    LOG(info) << "OpticksHub::createTestGeometry DONE" ;
+
+    return testgeo ; 
 }
 
 
@@ -384,6 +390,21 @@ GNodeLib* OpticksHub::getNodeLib()
     GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf
     return ggb->getNodeLib();
 }
+
+
+glm::mat4 OpticksHub::getTransform(int index)
+{
+    glm::mat4 vt ; 
+    if(index > -1)
+    {    
+        GMergedMesh* mesh0 = getMergedMesh(0);
+        float* transform = mesh0 ? mesh0->getTransform(index) : NULL ;
+        if(transform) vt = glm::make_mat4(transform) ;
+    }    
+    return vt ;  
+}
+
+
 
 
 
@@ -525,6 +546,8 @@ void OpticksHub::anaEvent()
 
     OpticksEvent* evt = m_run->getEvent();
 
+    // hmm add anaEvent to GGeoBase ?
+
     if(m_geotest)
     {
         m_geotest->anaEvent( evt );  
@@ -601,33 +624,42 @@ OpticksCfg<Opticks>* OpticksHub::getCfg()
 {
     return m_fcfg ; 
 }
+
+
+
+
 GGeo* OpticksHub::getGGeo()
 {
     return m_ggeo ; 
 }
-
 GGeoLib* OpticksHub::getGeoLib()
 {
     return m_ggeo->getGeoLib() ; 
 }
 
 
-GGeoBase* OpticksHub::getGGeoBaseAna()
+
+
+
+GGeoBase* OpticksHub::getGGeoBaseAna() const 
 {
     return m_gscene ? dynamic_cast<GGeoBase*>(m_gscene) : NULL ; 
 }
 
-GGeoBase* OpticksHub::getGGeoBaseTri()
+GGeoBase* OpticksHub::getGGeoBaseTri() const 
 {
     return m_ggeo ? dynamic_cast<GGeoBase*>(m_ggeo) : NULL ; 
 }
 
-GGeoBase* OpticksHub::getGGeoBase()
+GGeoBase* OpticksHub::getGGeoBaseTest() const 
 {
-   // analytic switch 
+    return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : NULL ; 
+}
 
+GGeoBase* OpticksHub::getGGeoBasePrimary() const 
+{
     GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
-    LOG(info) << "OpticksHub::getGGeoBase"
+    LOG(info) << "OpticksHub::getGGeoBasePrimary"
               << " analytic switch  "
               << " m_gltf " << m_gltf
               << " ggb " << ( ggb ? ggb->getIdentifier() : "NULL" )
@@ -635,30 +667,38 @@ GGeoBase* OpticksHub::getGGeoBase()
 
     return ggb ; 
 }
-
-
-
-
-GMaterialLib* OpticksHub::getMaterialLib()
+GGeoBase* OpticksHub::getGGeoBase() const 
 {
-    return m_ggeo ? m_ggeo->getMaterialLib() : NULL ; 
+    return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : getGGeoBasePrimary() ; 
 }
-GSurfaceLib* OpticksHub::getSurfaceLib()
+
+
+
+
+
+
+
+GSurLib* OpticksHub::createSurLib(GGeoBase* ggb)
 {
-    return m_ggeo ? m_ggeo->getSurfaceLib() : NULL ; 
+    GSurLib* gsl = new GSurLib(m_ok, ggb ); 
+    return gsl ; 
 }
-GBndLib* OpticksHub::getBndLib()
-{
-    return m_ggeo ? m_ggeo->getBndLib() : NULL ; 
-}
+
 GSurLib* OpticksHub::getSurLib()
 {
-    return m_ggeo ? m_ggeo->getSurLib() : NULL ; 
+    if( m_gsurlib == NULL )
+    {
+        // this method motivating making GGeoTest into a GGeoBase : ie standard geo provider
+        GGeoBase* ggb = getGGeoBase();    // three-way choice 
+        m_gsurlib = createSurLib(ggb) ;
+    }
+    return m_gsurlib ; 
 }
-GScintillatorLib* OpticksHub::getScintillatorLib()
-{
-    return m_ggeo ? m_ggeo->getScintillatorLib() : NULL ; 
-}
+
+GMaterialLib*     OpticksHub::getMaterialLib(){      return m_ggeo ? m_ggeo->getMaterialLib() : NULL ; }
+GSurfaceLib*      OpticksHub::getSurfaceLib() {      return m_ggeo ? m_ggeo->getSurfaceLib() : NULL ; }
+GBndLib*          OpticksHub::getBndLib() {          return m_ggeo ? m_ggeo->getBndLib() : NULL ; }
+GScintillatorLib* OpticksHub::getScintillatorLib() { return m_ggeo ? m_ggeo->getScintillatorLib() : NULL ; }
 
 
 

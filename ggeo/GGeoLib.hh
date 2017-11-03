@@ -19,6 +19,14 @@ GGeoLib
 
 Container for GMergedMesh
 
+Instances::
+
+    simon:opticks blyth$ opticks-find GGeoLib\(  | grep new
+    ./ggeo/GGeo.cc:   m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
+    ./ggeo/GGeoLib.cc:    GGeoLib* glib = new GGeoLib(opticks, analytic, bndlib);
+    ./ggeo/GScene.cc:    m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib )   : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
+
+
 */
 
 class GGEO_API GGeoLib {

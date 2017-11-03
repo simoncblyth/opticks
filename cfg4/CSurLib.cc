@@ -226,8 +226,6 @@ G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4Op
               << " name " << name 
               << " ipv1 " << ipv1
               << " ipv2 " << ipv2
-              << " pv1 " << pv1
-              << " pv2 " << pv2
               ;
 
     assert(pair.w == ivp);

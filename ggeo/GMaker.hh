@@ -35,6 +35,9 @@ Principal instances
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GMaker {
        friend class GMakerTest ; 
+    public:
+        static std::string PVName(const char* shapename, int idx=-1);
+        static std::string LVName(const char* shapename, int idx=-1);
    public:
        GMaker(Opticks* opticks, GGeo* ggeo=NULL);
    public:

@@ -161,6 +161,7 @@ class GGEO_API GScene : public GGeoBase
 
      
         bool     m_analytic ; 
+        bool     m_testgeo ; 
         bool     m_loaded ; 
         bool     m_honour_selection ;
 

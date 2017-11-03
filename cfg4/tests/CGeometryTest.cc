@@ -6,7 +6,9 @@
 #include "Opticks.hh"
 #include "OpticksHub.hh"
 
-#include "GGeo.hh"
+//#include "GGeo.hh"
+#include "GGeoBase.hh"
+#include "GBndLib.hh"
 #include "GMaterialLib.hh"
 
 // cfg4-
@@ -63,9 +65,10 @@ int main(int argc, char** argv)
     //sst.dump("CGeometryTest CSkinSurfaceTable");
 
    
-    GGeo* gg = hub.getGGeo();
-    GMaterialLib* mlib = gg->getMaterialLib(); 
-    GSurfaceLib*  slib = gg->getSurfaceLib(); 
+    GGeoBase* ggb = hub.getGGeoBase();
+    GBndLib* blib = ggb->getBndLib(); 
+    GMaterialLib* mlib = blib->getMaterialLib(); 
+    GSurfaceLib*  slib = blib->getSurfaceLib(); 
 
     CMaterialBridge mbr(mlib) ;
     mbr.dump("CGeometryTest"); 

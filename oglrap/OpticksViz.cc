@@ -15,6 +15,7 @@
 
 
 #include "GItemIndex.hh"
+#include "GGeoBase.hh"
 
 
 // okc-
@@ -64,7 +65,7 @@ OpticksViz::OpticksViz(OpticksHub* hub, OpticksIdx* idx, bool immediate)
     m_hub(hub),
     m_ok(hub->getOpticks()),
     m_run(m_ok->getRun()),
-    //m_geometry(m_hub->getGeometry()),
+    m_ggb(m_hub->getGGeoBase()),
     m_idx(idx),
     m_immediate(immediate),
     m_interactivity(m_ok->getInteractivityLevel()),
@@ -247,6 +248,10 @@ void OpticksViz::prepareScene(const char* rendermode)
 
 void OpticksViz::uploadGeometry()
 {
+    LOG(fatal) << "OpticksViz::uploadGeometry"
+               << " hub " << m_hub->desc()
+               ;
+
     NPY<unsigned char>* colors = m_hub->getColorBuffer();
 
     m_scene->uploadColorBuffer( colors );  //     oglrap-/Colors preps texture, available to shaders as "uniform sampler1D Colors"
@@ -256,7 +261,7 @@ void OpticksViz::uploadGeometry()
     m_composition->setTimeDomain(        m_ok->getTimeDomain() );
     m_composition->setDomainCenterExtent(m_ok->getSpaceDomain());
 
-    m_scene->setGeometry(m_hub->getGeoLib());
+    m_scene->setGeometry(m_ggb->getGeoLib());
 
     m_scene->uploadGeometry();
 

@@ -74,7 +74,7 @@ is invoked.
 class CFG4_API CTestDetector : public CDetector
 {
  public:
-    CTestDetector(OpticksHub* hub, GGeoTest* geotest, OpticksQuery* query=NULL);
+    CTestDetector(OpticksHub* hub, OpticksQuery* query=NULL);
   private:
     void init();
 

@@ -27,7 +27,10 @@
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
 #include "GSolid.hh"
+
+#include "GNodeLib.hh"
 #include "GSolidList.hh"
+
 #include "GMaker.hh"
 #include "GItemList.hh"
 #include "GParts.hh"
@@ -41,36 +44,30 @@
 
 
 
-GSolidList* GGeoTest::getSolidList()
-{
-    return m_solist ; 
-}
+GSolidList*     GGeoTest::getSolidList(){       return m_solist ; }  // <-- TODO: elim, use GNodeLib
 
-NCSGList* GGeoTest::getCSGList() const 
-{
-    return m_csglist ; 
-}
-
-NCSG* GGeoTest::findEmitter() const 
-{
-    return m_csglist ? m_csglist->findEmitter() : NULL ; 
-}
+NCSGList*       GGeoTest::getCSGList() const  { return m_csglist ;  }
+GGeoTestConfig* GGeoTest::getConfig() {         return m_config ; }
+NCSG* GGeoTest::findEmitter() const  {          return m_csglist ? m_csglist->findEmitter() : NULL ; }
 
 
+// pass along from basis
+GScintillatorLib* GGeoTest::getScintillatorLib(){ return m_basis->getScintillatorLib() ; }
+GSourceLib*       GGeoTest::getSourceLib(){       return m_basis->getSourceLib() ; }
+
+// local copy of m_basis pointer
+GPmtLib*          GGeoTest::getPmtLib(){          return m_pmtlib ; }
+GBndLib*          GGeoTest::getBndLib(){          return m_bndlib ;  }
+
+// locally customized 
+const char*       GGeoTest::getIdentifier(){               return "GGeoTest" ; }
+GMergedMesh*      GGeoTest::getMergedMesh(unsigned index){ return m_geolib->getMergedMesh(index) ; }
+GGeoLib*          GGeoTest::getGeoLib(){                   return m_geolib ; }
+GNodeLib*         GGeoTest::getNodeLib(){                  return m_nodelib ; }
 
 
 
-GGeoTestConfig* GGeoTest::getConfig()
-{
-    return m_config ; 
-}
-GMergedMesh* GGeoTest::getMergedMesh()
-{
-    return m_mm ; 
-}
-
-
-GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase) 
+GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* basis) 
     : 
     m_ok(ok),
     m_resource(ok->getResource()),
@@ -78,59 +75,40 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* ggeobase)
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
     m_config(config),
-    m_ggeobase(ggeobase),
-    m_geolib(NULL),
-    m_bndlib(NULL),
-    m_pmtlib(NULL),
-    m_maker(NULL),
+    m_analytic(config->getAnalytic()),
+    m_test(true),
+    m_basis(basis),
+    m_bndlib(basis->getBndLib()),
+    m_pmtlib(basis->getPmtLib()),
+    m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
+    m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
+    m_maker(new GMaker(m_ok)),
     m_csglist(NULL),
     m_solist(NULL),
-    m_verbosity(0),
-    m_mm(NULL)
+    m_verbosity(0)
 {
     init();
-}
-
-void GGeoTest::init()
-{
-    if(m_ggeobase)
-    {
-        LOG(warning) << "GGeoTest::init booting from m_ggeobase " ; 
-        m_geolib = m_ggeobase->getGeoLib();
-        m_bndlib = m_ggeobase->getBndLib();
-        m_pmtlib = m_ggeobase->getPmtLib();
-    }
-    else
-    {
-        LOG(warning) << "GGeoTest::init booting from m_ok cache" ; 
-        bool analytic = false ; 
-        m_bndlib = GBndLib::load(m_ok, true );
-        m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib );
-        m_pmtlib = GPmtLib::load(m_ok, m_bndlib );  
-    }
-    m_maker = new GMaker(m_ok);
 }
 
 
 void GGeoTest::dump(const char* msg)
 {
-    LOG(info) << msg  
-              ; 
+    LOG(info) << msg  ; 
 }
 
-void GGeoTest::modifyGeometry()
+
+void GGeoTest::init()
 {
+    assert(m_basis); 
+
     const char* csgpath = m_config->getCsgPath();
-
-    bool analytic = m_config->getAnalytic(); 
-
-    if(csgpath) assert(analytic == true);
+    if(csgpath) assert(m_analytic == true);
 
     GMergedMesh* tmm_ = create();
 
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
-    char geocode =  analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
+    char geocode =  m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
 
     tmm->setGeoCode( geocode );
 
@@ -139,12 +117,9 @@ void GGeoTest::modifyGeometry()
         tmm->setITransformsBuffer(NULL); // avoiding FaceRepeated complications 
     } 
 
-    //tmm->dump("GGeoTest::modifyGeometry tmm ");
-    m_geolib->clear();
-    m_geolib->setMergedMesh( 0, tmm );
-    m_mm = tmm ; 
-}
+    m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
+}
 
 
 GMergedMesh* GGeoTest::create()
@@ -268,7 +243,10 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
             pts->setNodeIndexAll(primIdx ); 
         }
         pts->setBndLib(m_bndlib);
-        solids.push_back(solid);
+
+
+        solids.push_back(solid);  // <-- TODO: eliminate 
+        m_nodelib->add(solid);
     }
 }
 
@@ -353,7 +331,9 @@ void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
     for(unsigned i=0 ; i < nelem ; i++)
     {
         GSolid* solid = makeSolidFromConfig(i);
-        solids.push_back(solid);
+        solids.push_back(solid);  // <-- TODO: eliminate
+
+        m_nodelib->add(solid);
     }
 }
 

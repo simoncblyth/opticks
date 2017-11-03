@@ -8,7 +8,8 @@
 #include "NParameters.hpp"
 #include "GLMFormat.hpp"
 
-#include "GGeo.hh"
+#include "GGeoBase.hh"
+#include "GBndLib.hh"
 
 #include "OpticksPhoton.h"
 #include "Opticks.hh"
@@ -27,8 +28,9 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_hub(hub),
    m_ok(hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
+   m_ggb(hub->getGGeoBase()),
+   m_blib(m_ggb->getBndLib()),
    m_lookup(hub->getLookup()),
-   m_ggeo(hub->getGGeo()),
    m_torchstep(NULL),
    m_fabstep(NULL),
    m_input_gensteps(NULL),
@@ -231,11 +233,11 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         LOG(info) << "OpticksGen::targetGenstep frame targetted already  " << gformat(gs->getFrameTransform()) ;  
     }    
     else 
-    {    
-        if(m_ggeo)
+    {   
+        if(m_hub)
         {
             glm::ivec4& iframe = gs->getFrame();
-            glm::mat4 transform = m_ggeo->getTransform( iframe.x );
+            glm::mat4 transform = m_hub->getTransform( iframe.x );
             LOG(info) << "OpticksGen::targetGenstep setting frame " << iframe.x << " " << gformat(transform) ;  
             gs->setFrameTransform(transform);
         }
@@ -243,15 +245,16 @@ void OpticksGen::targetGenstep( GenstepNPY* gs )
         {
             LOG(warning) << "OpticksGen::targetGenstep SKIP AS NO GEOMETRY " ; 
         }
+
     }    
 }
 
 
 void OpticksGen::setMaterialLine( GenstepNPY* gs )
 {
-    if(!m_ggeo)
+    if(!m_blib)
     {
-        LOG(warning) << "OpticksGen::setMaterialLine no ggeo, skip setting material line " ;
+        LOG(warning) << "OpticksGen::setMaterialLine no blib, skip setting material line " ;
         return ; 
     }
 
@@ -265,7 +268,7 @@ void OpticksGen::setMaterialLine( GenstepNPY* gs )
       LOG(fatal) << "NULL material from GenstepNPY, probably missed material in torch config" ;
    assert(material);
 
-   unsigned int matline = m_ggeo->getMaterialLine(material);
+   unsigned int matline = m_blib->getMaterialLine(material);
    gs->setMaterialLine(matline);  
 
    LOG(debug) << "OpticksGen::setMaterialLine"

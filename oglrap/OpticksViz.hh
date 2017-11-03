@@ -1,26 +1,37 @@
 #pragma once
 
+// sysrap-
 class SLog ; 
+class SRenderer ; 
+class SLauncher ; 
+
+// npy-
+template <typename T> class NPY ; 
+
+// ggeo-
+class GGeoBase ; 
+class GItemIndex ; 
+
+// okc-
 class Opticks ; 
-class OpticksHub ; 
 class OpticksRun ; 
-//class OpticksGeometry ; 
 class OpticksEvent ; 
-class OpticksIdx ; 
 class Composition ; 
 class OpticksEvent ; 
 class Types ; 
+
+// okg-
+class OpticksHub ; 
+class OpticksIdx ; 
+
+// oglrap-
 class Scene ; 
 class Frame ; 
+
 struct GLFWwindow ; 
 class Interactor ; 
-class GItemIndex ; 
 class Photons ; 
 class GUI ; 
-template <typename T> class NPY ; 
-
-class SRenderer ; 
-class SLauncher ; 
 
 
 #include "OGLRAP_API_EXPORT.hh"
@@ -78,7 +89,8 @@ class OGLRAP_API OpticksViz {
          OpticksHub*   m_hub ; 
          Opticks*      m_ok ; 
          OpticksRun*   m_run ; 
-         //OpticksGeometry* m_geometry ; 
+         GGeoBase*     m_ggb ; 
+
          OpticksIdx*   m_idx ; 
          bool          m_immediate ; 
          int           m_interactivity ; 

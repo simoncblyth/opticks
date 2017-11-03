@@ -10,7 +10,8 @@ class OpticksResource ;
 class OpticksQuery ; 
 
 // gg-
-class GGeo ; 
+//class GGeo ; 
+class GGeoBase ; 
 class GSurLib ; 
 
 // cfg4-
@@ -104,7 +105,8 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  protected: 
     Opticks*           m_ok ;
     bool               m_dbgsurf ; 
-    GGeo*              m_ggeo ; 
+    GGeoBase*          m_ggb ; 
+    //GGeo*              m_ggeo ; 
     CBndLib*           m_blib ; 
     GSurLib*           m_gsurlib ; 
     CSurLib*           m_csurlib ; 

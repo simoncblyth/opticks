@@ -63,11 +63,11 @@
 
 
 
-CTestDetector::CTestDetector(OpticksHub* hub, GGeoTest* geotest, OpticksQuery* query)
+CTestDetector::CTestDetector(OpticksHub* hub, OpticksQuery* query)
     : 
     CDetector(hub, query),
-    m_geotest(geotest),
-    m_config(geotest->getConfig()),
+    m_geotest(hub->getGGeoTest()),
+    m_config(m_geotest->getConfig()),
     m_maker(new CMaker(m_ok))
 {
     init();
@@ -104,9 +104,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
     const char* csgpath = m_config->getCsgPath() ;
     NCSGList* csglist = m_geotest->getCSGList();
-    GSolidList* solist = m_geotest->getSolidList();
+    GSolidList* solist = m_geotest->getSolidList(); // <-- move to GNodeLib
 
-    GMergedMesh* tmm = m_geotest->getMergedMesh() ;
+    GMergedMesh* tmm = m_geotest->getMergedMesh(0) ;
 
     assert( csgpath );
     assert( csglist );
@@ -217,7 +217,8 @@ G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
    // creates Russian doll geometry layer by layer, starting from the outermost 
    // hooking up mother volume to prior 
    //
-    GMergedMesh* mm = m_ggeo->getMergedMesh(0);
+    GMergedMesh* mm = m_ggb->getMergedMesh(0);
+
     unsigned numSolidsMesh = mm->getNumSolids();
     unsigned numSolidsConfig = m_config->getNumElements();
 
@@ -371,8 +372,7 @@ void CTestDetector::makePMT_OLD(G4LogicalVolume* container)
 
     LOG(trace) << "CTestDetector::makePMT_OLD" ; 
 
-    //GPmt* pmt = m_ggeo->getPmt();  
-    GPmtLib* pmtlib = m_ggeo->getPmtLib();
+    GPmtLib* pmtlib = m_ggb->getPmtLib();
     GPmt* pmt = pmtlib->getLoadedAnalyticPmt();
   
     GCSG* csg = pmt ? pmt->getCSG() : NULL ;

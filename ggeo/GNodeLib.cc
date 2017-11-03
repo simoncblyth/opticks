@@ -10,14 +10,20 @@
 #include "GTreePresent.hh"
 
 
-const char* GNodeLib::GetRelDir(bool analytic)
+const char* GNodeLib::GetRelDir(bool analytic, bool test)
 {
-    return strdup(analytic ? "GNodeLibAnalytic" : "GNodeLib") ;
+    std::stringstream ss ; 
+    ss << "GNodeLib" ; 
+    if(analytic) ss << "Analytic" ; 
+    if(test)     ss << "Test" ; 
+
+    std::string s = ss.str() ;
+    return strdup(s.c_str()) ;
 }
 
-GNodeLib* GNodeLib::Load(Opticks* ok, bool analytic)
+GNodeLib* GNodeLib::Load(Opticks* ok, bool analytic, bool test)
 {
-    GNodeLib* nodelib = new GNodeLib(ok, analytic) ;
+    GNodeLib* nodelib = new GNodeLib(ok, analytic, test) ;
     nodelib->loadFromCache();
     return nodelib ; 
 }
@@ -29,11 +35,12 @@ void GNodeLib::loadFromCache()
     m_lvlist = GItemList::load(idpath, "LVNames", m_reldir);
 }
 
-GNodeLib::GNodeLib(Opticks* ok, bool analytic)  
+GNodeLib::GNodeLib(Opticks* ok, bool analytic, bool test)  
     :
     m_ok(ok),
     m_analytic(analytic),
-    m_reldir(GetRelDir(analytic)),
+    m_test(test),
+    m_reldir(GetRelDir(analytic,test)),
     m_pvlist(NULL),
     m_lvlist(NULL),
     m_treepresent(new GTreePresent(100, 1000))   // depth_max,sibling_max

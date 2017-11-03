@@ -62,8 +62,6 @@ namespace fs = boost::filesystem;
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
 #include "GColorizer.hh"
-//#include "GGeoTestConfig.hh"
-//#include "GGeoTest.hh"
 #include "GPmtLib.hh"
 #include "GScene.hh"
 
@@ -406,9 +404,11 @@ void GGeo::init()
    // NB this m_analytic is always false
    //    the analytic versions of these libs are born in GScene
    assert( m_analytic == false );  
+   bool testgeo = false ;  
+
    m_meshlib = new GMeshLib(m_ok, m_analytic);
    m_geolib = new GGeoLib(m_ok, m_analytic, m_bndlib );
-   m_nodelib = new GNodeLib(m_ok, m_analytic ); 
+   m_nodelib = new GNodeLib(m_ok, m_analytic, testgeo ); 
 
    m_treecheck = new GTreeCheck(m_geolib, m_nodelib, m_ok->getSceneConfig() ) ;
 
@@ -654,8 +654,10 @@ void GGeo::loadFromCache()
     m_sourcelib  = GSourceLib::load(m_ok);
 
     bool analytic = false ; 
+    bool testgeo = false ; 
+
     m_geolib = GGeoLib::Load(m_ok, analytic, m_bndlib);
-    m_nodelib = GNodeLib::Load(m_ok, analytic);        
+    m_nodelib = GNodeLib::Load(m_ok, analytic, testgeo );        
     m_meshlib = GMeshLib::Load(m_ok, analytic);
 
 
@@ -1446,13 +1448,12 @@ void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
          const char* lv = getLVName(ni.z);
          printf( " %6d %6d %6d %6d lv %50s pv %s  \n", ni.x , ni.y, ni.z, ni.w, lv, pv );
     }
-
 }
 
 
 
 
-glm::mat4 GGeo::getTransform(int index)
+glm::mat4 GGeo::getTransform(int index) // TRY TO MOVE TO HUB
 {
     glm::mat4 vt ;
     if(index > -1)
@@ -1463,6 +1464,9 @@ glm::mat4 GGeo::getTransform(int index)
     }
     return vt ;  
 }
+
+
+
 
 
 glm::vec4 GGeo::getCenterExtent(unsigned int target, unsigned int merged_mesh_index )

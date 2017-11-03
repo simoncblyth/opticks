@@ -104,7 +104,8 @@ class OKGEO_API OpticksHub {
        void configureCompositionSize();
 
        void loadGeometry();
-       void modifyGeometry(); 
+       GGeoTest* createTestGeometry(GGeoBase* basis);
+
        void registerGeometry(); 
        void configureGeometry(); 
        void configureGeometryTri(); 
@@ -127,7 +128,6 @@ class OKGEO_API OpticksHub {
    public:
        std::string    getG4GunConfig();
        NPY<float>*    getInputGensteps() const ;
-       //NPY<float>*    getEmitterGensteps() const ;
        NPY<float>*    getInputPhotons();
        OpticksEvent*  getG4Event();
        OpticksEvent*  getEvent();
@@ -151,21 +151,37 @@ class OKGEO_API OpticksHub {
    public:
        Composition*         getComposition();
        OpticksGeometry*     getGeometry();
+
    public:
+       GGeoBase*            getGGeoBase() const ; // downcast of the encumbent: GGeoTest/GScene/GGeo 
+
+   public:
+       // via encumbent 
+       glm::mat4            getTransform(int index);
+
+   private:
+       GGeoBase*            getGGeoBaseAna() const ;
+       GGeoBase*            getGGeoBaseTri() const ;
+       GGeoBase*            getGGeoBasePrimary() const ;  // either Ana or Tri 
+       GGeoBase*            getGGeoBaseTest() const ;    // downcast of GGeoTest
+   private:
        GGeo*                getGGeo();
-       GGeoBase*            getGGeoBase(); // downcast: ( m_gltf ? m_gscene : m_ggeo )
-       GGeoBase*            getGGeoBaseAna();
-       GGeoBase*            getGGeoBaseTri();
-       GGeoTest*            getGGeoTest();
-       NCSG*                findEmitter() const ; 
+   private:
+       friend class CTestDetector ; 
+       GGeoTest*            getGGeoTest();  
    public:
-       GGeoLib*             getGeoLib();
+       NCSG*                findEmitter() const ; 
+   private:
+       GGeoLib*             getGeoLib();   // direct from GGeo
+   public:
        GMaterialLib*        getMaterialLib();
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();
        GScintillatorLib*    getScintillatorLib();
        GSurLib*             getSurLib();   //  getter triggers creation in GGeo::createSurLib from mesh0
-
+   private:
+       GSurLib*             createSurLib(GGeoBase* ggb);
+   public:
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
        std::string          getCfgString();
@@ -214,6 +230,7 @@ class OKGEO_API OpticksHub {
        OpticksAim*          m_aim ;
  
        GGeoTest*            m_geotest ; 
+       GSurLib*             m_gsurlib ;  
 
 
 

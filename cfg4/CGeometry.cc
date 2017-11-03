@@ -10,7 +10,7 @@ class OpticksQuery ;
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
-#include "GGeoTestConfig.hh"
+
 #include "GSurLib.hh"
 #include "GSur.hh"
 
@@ -59,10 +59,8 @@ void CGeometry::init()
     if(m_ok->hasOpt("test"))
     {
         LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
-
-        GGeoTest* ggt = m_hub->getGGeoTest();  assert(ggt) ;
         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
-        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, ggt, query)) ; 
+        detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query)) ; 
     }
     else
     {

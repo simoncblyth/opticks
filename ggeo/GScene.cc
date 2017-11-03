@@ -88,6 +88,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
 
 
     m_analytic(true),
+    m_testgeo(false),
     m_loaded(loaded),
     m_honour_selection(true),
     m_gltf(m_ok->getGLTF()),
@@ -97,7 +98,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib )   : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
-    m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic ) : new GNodeLib(m_ok, m_analytic)),
+    m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo ) : new GNodeLib(m_ok, m_analytic, m_testgeo )),
     m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
 
     m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
