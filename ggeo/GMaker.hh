@@ -14,8 +14,6 @@ class NCSG ;
 struct gbbox ; 
 struct nnode ; 
 
-class GGeo ; 
-class GGeoLib ; 
 class GBndLib ; 
 class GSolid ; 
 class GMesh ; 
@@ -25,9 +23,7 @@ class GMesh ;
 GMaker
 =======
 
-Principal instances
-
-* m_maker member of GGeoTest 
+Only one canonical instance m_maker resides in GGeoTest 
 
 
 **/
@@ -39,7 +35,7 @@ class GGEO_API GMaker {
         static std::string PVName(const char* shapename, int idx=-1);
         static std::string LVName(const char* shapename, int idx=-1);
    public:
-       GMaker(Opticks* opticks, GGeo* ggeo=NULL);
+       GMaker(Opticks* ok, GBndLib* blib);
    public:
        GSolid* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
        GSolid* makeFromCSG(NCSG* csg, unsigned verbosity );
@@ -58,9 +54,7 @@ class GGEO_API GMaker {
        static NTrianglesNPY* makeSubdivSphere(unsigned int nsubdiv=3, const char* type="I");
        static GSolid* makeSphere(NTrianglesNPY* tris);
    private:
-       Opticks*  m_opticks ; 
-       GGeo*     m_ggeo ; 
-       GGeoLib*  m_geolib ; 
+       Opticks*  m_ok ; 
        GBndLib*  m_bndlib ; 
 };
 

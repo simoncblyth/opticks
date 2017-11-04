@@ -217,31 +217,51 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 }
 
 
-// NB what is appropriate for a merged mesh is not for a mesh ... wrt counting solids
-// so cannot lump the below together using GMesh base class
-
-void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
+void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
 {
-    unsigned int nsolid = other->getNumSolids();
+    GSolid* solid = dynamic_cast<GSolid*>(node) ;
 
-    m_num_mergedmesh += 1 ; 
+    int idx = getIndex() ;
+    assert(idx > -1 ) ; 
 
-    m_num_solids += nsolid ;
+    unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
+    unsigned ridx = solid->getRepeatIndex() ;
 
-    if(selected)
+    bool repsel =  idx == -1 || ridx == uidx ;
+    bool csgskip = solid->isCSGSkip() ; 
+    bool selected_ =  solid->isSelected() && repsel ;
+    bool selected = selected_ && !csgskip ;
+
+    if(pass == PASS_COUNT)
     {
-        m_num_solids_selected += 1 ;
-        countMesh( other );     // increment m_num_vertices, m_num_faces
+         if(selected_ && csgskip) m_num_csgskip++ ; 
     }
 
-    if(m_verbosity > 1)
-    LOG(info) << "GMergedMesh::count other GMergedMesh  " 
-              << " selected " << selected
-              << " num_mergedmesh " << m_num_mergedmesh 
-              << " num_solids " << m_num_solids 
-              << " num_solids_selected " << m_num_solids_selected 
-              ;
+    if(verbosity > 1)
+          LOG(info)
+                  << "GMergedMesh::traverse_r"
+                  << " verbosity " << verbosity
+                  << " node " << node 
+                  << " solid " << solid 
+                  << " solid.pts " << solid->getParts()
+                  << " depth " << depth 
+                  << " NumChildren " << node->getNumChildren()
+                  << " pass " << pass
+                  << " selected " << selected
+                  << " csgskip " << csgskip
+                  ; 
+
+
+    switch(pass)
+    {
+       case PASS_COUNT:    countSolid(solid, selected, verbosity)  ;break;
+       case PASS_MERGE:    mergeSolid(solid, selected, verbosity)  ;break;
+               default:    assert(0)                    ;break;
+    }
+
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
 }
+
 
 void GMergedMesh::countSolid( GSolid* solid, bool selected, unsigned verbosity )
 {
@@ -275,11 +295,117 @@ void GMergedMesh::countMesh( const GMesh* mesh )
     m_mesh_usage[meshIndex] += 1 ;  // which meshes contribute to the mergedmesh
 }
 
+void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
+{
+    // NB what is appropriate for a merged mesh is not for a mesh ... wrt counting solids
+    // so cannot lump the below together using GMesh base class
+
+    unsigned int nsolid = other->getNumSolids();
+
+    m_num_mergedmesh += 1 ; 
+
+    m_num_solids += nsolid ;
+
+    if(selected)
+    {
+        m_num_solids_selected += 1 ;
+        countMesh( other );     // increment m_num_vertices, m_num_faces
+    }
+
+    if(m_verbosity > 1)
+    LOG(info) << "GMergedMesh::count other GMergedMesh  " 
+              << " selected " << selected
+              << " num_mergedmesh " << m_num_mergedmesh 
+              << " num_solids " << m_num_solids 
+              << " num_solids_selected " << m_num_solids_selected 
+              ;
+}
+
+
+
+void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
+{
+    GNode* node = static_cast<GNode*>(solid);
+    GNode* base = getCurrentBase();
+    unsigned ridx = solid->getRepeatIndex() ;  
+
+    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
+
+    // GMergedMesh::create invokes GMergedMesh::mergeSolid from node tree traversal 
+    // via the recursive GMergedMesh::traverse_r 
+    //
+    // GNode::getRelativeTransform
+    //     relative transform calculated from the product of ancestor transforms
+    //     after the base node (ie traverse ancestors starting from root to this node
+    //     but only collect transforms after the base node : which is required to be 
+    //     an ancestor of this node)
+    //
+    // GNode::getTransform
+    //     global transform, ie product of all transforms from root to this node
+    //  
+    //
+    // When node == base the transform is identity
+    //
+    if( node == base ) assert( transform->isIdentity() ); 
+    if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
+
+
+    float* dest = getTransform(m_cur_solid);
+    assert(dest);
+    transform->copyTo(dest);
+
+    const GMesh* mesh = solid->getMesh();   // triangulated
+    GParts* pts = solid->getParts();  // analytic 
+
+
+    unsigned num_vert = mesh->getNumVertices();
+    unsigned num_face = mesh->getNumFaces();
+
+
+    LOG(trace) << "GMergedMesh::mergeSolid "
+               << " m_cur_solid " << std::setw(6) << m_cur_solid
+               << " pts (normally NULL) " << pts
+               << " selected " << ( selected ? "YES" : "NO" ) 
+               << " num_vert " << std::setw(5) << num_vert
+               << " num_face " << std::setw(5) << num_face
+               ;  
+
+    //assert(pts);
+ 
+
+    guint3* faces = mesh->getFaces();
+    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
+    gfloat3* normals  = mesh->getTransformedNormals(*transform);  
+
+    if(verbosity > 3) mergeSolidDump(solid);
+    mergeSolidBBox(vertices, num_vert);
+    mergeSolidIdentity(solid, selected );
+
+    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+
+    if(selected)
+    {
+        mergeSolidVertices( num_vert, vertices, normals );
+
+        unsigned* node_indices     = solid->getNodeIndices();
+        unsigned* boundary_indices = solid->getBoundaryIndices();
+        unsigned* sensor_indices   = solid->getSensorIndices();
+
+        mergeSolidFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
+
+        mergeSolidAnalytic( pts, transform, verbosity );
+
+        // offsets with the flat arrays
+        m_cur_vertices += num_vert ;  
+        m_cur_faces    += num_face ; 
+    }
+}
+
+
 
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
     // solids are present irrespective of selection as prefer absolute solid indexing 
-
 
     // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
     GParts* pts = other->getParts(); 
@@ -294,7 +420,6 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
     {
         m_parts->add( pts, verbosity );
     }
-
 
     unsigned int nsolid = other->getNumSolids();
 
@@ -358,87 +483,6 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
         m_cur_vertices += nvert ;
         m_cur_faces    += nface ;
         // offsets within the flat arrays
-    }
-}
-
-
-void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
-{
-   
-
-    GNode* node = static_cast<GNode*>(solid);
-    GNode* base = getCurrentBase();
-    unsigned ridx = solid->getRepeatIndex() ;  
-
-    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
-
-    // GMergedMesh::create invokes GMergedMesh::mergeSolid from node tree traversal 
-    // via the recursive GMergedMesh::traverse_r 
-    //
-    // GNode::getRelativeTransform
-    //     relative transform calculated from the product of ancestor transforms
-    //     after the base node (ie traverse ancestors starting from root to this node
-    //     but only collect transforms after the base node : which is required to be 
-    //     an ancestor of this node)
-    //
-    // GNode::getTransform
-    //     global transform, ie product of all transforms from root to this node
-    //  
-    //
-    // When node == base the transform is identity
-    //
-    if( node == base ) assert( transform->isIdentity() ); 
-    if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
-
-
-    float* dest = getTransform(m_cur_solid);
-    assert(dest);
-    transform->copyTo(dest);
-
-    const GMesh* mesh = solid->getMesh();   // triangulated
-    GParts* pts = solid->getParts();  // analytic 
-
-
-    unsigned num_vert = mesh->getNumVertices();
-    unsigned num_face = mesh->getNumFaces();
-
-
-    LOG(trace) << "GMergedMesh::mergeSolid "
-               << " m_cur_solid " << std::setw(6) << m_cur_solid
-               << " pts (normally NULL) " << pts
-               << " selected " << ( selected ? "YES" : "NO" ) 
-               << " num_vert " << std::setw(5) << num_vert
-               << " num_face " << std::setw(5) << num_face
-               ;  
-
-    //assert(pts);
- 
-
-    guint3* faces = mesh->getFaces();
-    gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
-    gfloat3* normals  = mesh->getTransformedNormals(*transform);  
-
-    if(verbosity > 1) mergeSolidDump(solid);
-    mergeSolidBBox(vertices, num_vert);
-    mergeSolidIdentity(solid, selected );
-
-    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
-
-    if(selected)
-    {
-        mergeSolidVertices( num_vert, vertices, normals );
-
-        unsigned* node_indices     = solid->getNodeIndices();
-        unsigned* boundary_indices = solid->getBoundaryIndices();
-        unsigned* sensor_indices   = solid->getSensorIndices();
-
-        mergeSolidFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
-
-        mergeSolidAnalytic( pts, transform, verbosity );
-
-        // offsets with the flat arrays
-        m_cur_vertices += num_vert ;  
-        m_cur_faces    += num_face ; 
     }
 }
 
@@ -587,51 +631,6 @@ void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned
 
 }
 
-
-void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
-{
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-
-    int idx = getIndex() ;
-    assert(idx > -1 ) ; 
-
-    unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
-    unsigned ridx = solid->getRepeatIndex() ;
-
-    bool repsel =  idx == -1 || ridx == uidx ;
-    bool csgskip = solid->isCSGSkip() ; 
-    bool selected_ =  solid->isSelected() && repsel ;
-    bool selected = selected_ && !csgskip ;
-
-    if(pass == PASS_COUNT)
-    {
-         if(selected_ && csgskip) m_num_csgskip++ ; 
-    }
-
-    if(verbosity > 1)
-          LOG(info)
-                  << "GMergedMesh::traverse_r"
-                  << " verbosity " << verbosity
-                  << " node " << node 
-                  << " solid " << solid 
-                  << " solid.pts " << solid->getParts()
-                  << " depth " << depth 
-                  << " NumChildren " << node->getNumChildren()
-                  << " pass " << pass
-                  << " selected " << selected
-                  << " csgskip " << csgskip
-                  ; 
-
-
-    switch(pass)
-    {
-       case PASS_COUNT:    countSolid(solid, selected, verbosity)  ;break;
-       case PASS_MERGE:    mergeSolid(solid, selected, verbosity)  ;break;
-               default:    assert(0)                    ;break;
-    }
-
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) traverse_r(node->getChild(i), depth + 1, pass, verbosity );
-}
 
 
 

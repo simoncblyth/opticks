@@ -206,7 +206,8 @@ void GSurLib::examineSolidBndSurfaces()
     // lv, pv it would be simpler to do this during creation rather than 
     // afterwards
 
-    bool reverse = m_is_test ? true : false  ; 
+    //bool reverse = m_is_test ? true : false  ; 
+    bool reverse = false  ; 
 
     if(m_dbgsurf)
     {

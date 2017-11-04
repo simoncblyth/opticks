@@ -67,22 +67,22 @@ GNodeLib*         GGeoTest::getNodeLib(){                  return m_nodelib ; }
 
 
 
-GGeoTest::GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* basis) 
+GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis) 
     : 
     m_ok(ok),
+    m_config(new GGeoTestConfig(ok->getTestConfig())),
     m_resource(ok->getResource()),
     m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
-    m_config(config),
-    m_analytic(config->getAnalytic()),
+    m_analytic(m_config->getAnalytic()),
     m_test(true),
     m_basis(basis),
     m_bndlib(basis->getBndLib()),
     m_pmtlib(basis->getPmtLib()),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
-    m_maker(new GMaker(m_ok)),
+    m_maker(new GMaker(m_ok, m_bndlib)),
     m_csglist(NULL),
     m_solist(NULL),
     m_verbosity(0)
@@ -118,6 +118,9 @@ void GGeoTest::init()
     } 
 
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
+
+    // tmm->save("$TMP", "GMergedMesh", "GGeoTest_init") ;
+
 
 }
 
@@ -216,26 +219,38 @@ void GGeoTest::anaEvent(OpticksEvent* evt)
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {
     int verbosity = m_config->getVerbosity();
-    LOG(info) << "GGeoTest::loadCSG " 
-              << " csgpath " << csgpath
-              << " verbosity " << verbosity
-              ; 
-
 
     assert( m_csglist == NULL );
     m_csglist = new NCSGList(csgpath, verbosity );
     unsigned ntree = m_csglist->getNumTrees() ;
    
-
-    LOG(info) << "GGeoTest::loadCSG " << csgpath << " got " << ntree << " trees " ; 
+    LOG(info) << "GGeoTest::loadCSG START " 
+             << " csgpath " << csgpath 
+             << " ntree " << ntree 
+             << " verbosity " << verbosity
+             ; 
 
     int primIdx(-1) ; 
+
+
+    // assuming tree order from outermost to innermost volume 
+    GSolid* prior = NULL ; 
+
     for(unsigned i=0 ; i < ntree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
         NCSG* tree = m_csglist->getTree(i) ; 
         GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
+
+        if(prior)
+        {
+            solid->setParent(prior);
+            prior->addChild(solid);
+        }
+        prior = solid ; 
+
+
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
         if(pts->isPartList())  // not doing this for NodeTree
@@ -248,6 +263,10 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         solids.push_back(solid);  // <-- TODO: eliminate 
         m_nodelib->add(solid);
     }
+
+
+    LOG(info) << "GGeoTest::loadCSG DONE " ; 
+
 }
 
 void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
@@ -396,6 +415,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* mm0)
 {
+    LOG(info) << "GGeoTest::combineSolids START " ; 
+
     unsigned verbosity = 3 ; 
     GMergedMesh* tri = GMergedMesh::combine( 0, mm0, solids, verbosity );
 
@@ -425,6 +446,10 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* 
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
     // collected pts are converted into primitives in GParts::makePrimBuffer
+
+
+    LOG(info) << "GGeoTest::combineSolids DONE " ; 
+
     return tri ; 
 }
 

@@ -27,6 +27,8 @@
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "GGEO_LOG.hh"
+#include "OKCORE_LOG.hh"
+#include "OKGEO_LOG.hh"
 #include "CFG4_LOG.hh"
 #include "PLOG.hh"
 
@@ -37,6 +39,8 @@ int main(int argc, char** argv)
     BRAP_LOG__ ; 
     NPY_LOG__ ; 
     GGEO_LOG__ ; 
+    OKCORE_LOG__ ; 
+    OKGEO_LOG__ ; 
     CFG4_LOG__ ; 
 
     LOG(info) << argv[0] ; 

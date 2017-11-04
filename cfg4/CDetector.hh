@@ -98,8 +98,8 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     // via bbox
     const glm::vec4& getCenterExtent();
  public: 
-    void  export_gdml(const char* path_);
-    void  export_dae(const char* path_);
+    void  export_gdml(const char* dir, const char* name);
+    void  export_dae(const char* dir, const char* name);
  private:
     OpticksHub*        m_hub ;
  protected: 

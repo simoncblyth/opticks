@@ -29,7 +29,9 @@
 #include "GSur.hh"
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
-#include "GSolidList.hh"
+
+#include "GNodeLib.hh"
+
 #include "GSolid.hh"
 #include "GMesh.hh"
 
@@ -102,21 +104,20 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
 G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
-    const char* csgpath = m_config->getCsgPath() ;
     NCSGList* csglist = m_geotest->getCSGList();
-    GSolidList* solist = m_geotest->getSolidList(); // <-- move to GNodeLib
+    GNodeLib* nolib = m_geotest->getNodeLib();
 
     GMergedMesh* tmm = m_geotest->getMergedMesh(0) ;
 
-    assert( csgpath );
     assert( csglist );
-    assert( solist );
+    assert( nolib );
 
     unsigned numTrees = csglist->getNumTrees();
-    unsigned numSolids = solist->getNumSolids();
+
+    //unsigned numSolids = solist->getNumSolids();
+    unsigned numSolids = nolib->getNumSolids();
 
     LOG(info) << "CTestDetector::makeDetector_NCSG"
-              << " csgpath " << csgpath
               << " numTrees " << numTrees 
               << " numSolids " << numSolids 
               << " tmm " << tmm
@@ -134,17 +135,18 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
      
     for(unsigned i=0 ; i < numTrees ; i++) 
     {
-        // reversed order to start with outermost 
+        //unsigned tree = numTrees-1-i ; // now switching order in NCSG::Deserialize to original outermost first
+        unsigned tree = i ;
+        GSolid* kso = nolib->getSolid(tree); 
 
-        unsigned tree = numTrees-1-i ;
-
-        GSolid* kso = solist->getSolid(tree); 
         const GMesh* mesh = kso->getMesh();
         const NCSG* csg = mesh->getCSG();
-        const NCSG* csg2 = csglist->getTree(tree);
-        assert( csg == csg2 );
-        const char* spec = csg->getBoundary();
+        { 
+            const NCSG* csg2 = csglist->getTree(tree);
+            assert( csg == csg2 );
+        }
 
+        const char* spec = csg->getBoundary();
         unsigned boundary0 = kso->getBoundary();
 
         // m_blib is CBndLib instance from CDetector base
@@ -181,10 +183,18 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         G4VSolid* solid = m_maker->makeSolid( csg ); 
 
         OpticksCSG_t type = csg->getRootType() ;
-        const char* nodename = CSGName(type);
+        const char* shapename = CSGName(type);
 
-        std::string lvn = CMaker::LVName(nodename, i);
-        std::string pvn = CMaker::PVName(nodename, i);
+
+        const char* lvn = kso->getLVName();
+        const char* pvn = kso->getPVName();
+
+        assert( lvn );
+        assert( pvn );
+
+
+        //std::string lvn = CMaker::LVName(shapename, i);
+        //std::string pvn = CMaker::PVName(shapename, i);
 
         LOG(info) 
              << " i " << i 
@@ -192,14 +202,15 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
              << " imat " << imat 
              << " isur " << isur 
              << " osur " << osur 
+             << " shapename " << shapename
              << " lvn " << lvn 
              << " pvn " << pvn 
              << " mat " << material->GetName()
              ;
 
 
-        G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), lvn.c_str(), 0,0,0);
-        G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, pvn.c_str(),mother,false,0);
+        G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
+        G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
  
         if(top == NULL) top = pv ; 
         if(ppv == NULL) ppv = pv ; 

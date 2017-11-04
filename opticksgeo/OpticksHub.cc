@@ -340,23 +340,9 @@ GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 {
     assert(m_ok->isTest());
 
-    // NB only invoked with test option : "op --test" 
-    //   controlled from OpticksHub::loadGeometry 
+    LOG(info) << "OpticksHub::createTestGeometry START" ;
 
-    LOG(info) << "OpticksHub::modifyGeometry START" ;
-
-    const char* testconf = m_ok->getTestConfig() ;
-
-    GGeoTestConfig* gtc = new GGeoTestConfig(testconf);
-
-    GGeoTest* testgeo = new GGeoTest(m_ok, gtc, basis);
-
-    GMergedMesh* mesh0 = testgeo->getMergedMesh(0);  
-    if(mesh0)
-    { 
-        mesh0->dumpSolids("OpticksHub::createTestGeometry mesh0");
-        mesh0->save("$TMP", "GMergedMesh", "createTestGeometry") ;
-    }
+    GGeoTest* testgeo = new GGeoTest(m_ok, basis);
 
     LOG(info) << "OpticksHub::createTestGeometry DONE" ;
 

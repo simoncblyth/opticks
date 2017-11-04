@@ -15,8 +15,6 @@
 #include "OpticksCSG.h"
 
 // ggeo-
-#include "GGeo.hh"
-#include "GGeoLib.hh"
 #include "GBndLib.hh"
 #include "GParts.hh"
 #include "GBBoxMesh.hh"
@@ -27,6 +25,27 @@
 #include "GMaker.hh"
 
 #include "PLOG.hh"
+
+
+GMaker::GMaker(Opticks* ok, GBndLib* blib)
+    :
+    m_ok(ok),
+    m_bndlib(blib)   // required for adding boundaries and returning indices for them 
+{
+    init();
+}
+
+
+void GMaker::init()
+{
+    assert( m_bndlib );
+}
+
+
+
+
+
+
 
 
 GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
@@ -103,16 +122,18 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
 std::string GMaker::LVName(const char* shapename, int idx)
 {
     std::stringstream ss ; 
-    ss << shapename << "_log" ; 
+    ss << shapename << "_lv" ; 
     if(idx > -1) ss << idx ; 
+    ss << "_" ; 
     return ss.str();
 }
 
 std::string GMaker::PVName(const char* shapename, int idx)
 {
     std::stringstream ss ; 
-    ss << shapename << "_phys" ; 
+    ss << shapename << "_pv" ; 
     if(idx > -1) ss << idx ; 
+    ss << "_" ; 
     return ss.str();
 }
 
@@ -181,42 +202,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
 
 
-
-GMaker::GMaker(Opticks* opticks, GGeo* ggeo)
-    :
-    m_opticks(opticks),
-    m_ggeo(ggeo),
-    m_geolib(NULL),
-    m_bndlib(NULL)
-{
-    init();
-}
-
-
-
-
-void GMaker::init()
-{
-    if(m_ggeo)
-    {
-        LOG(warning) << "GMaker::init booting from m_ggeo" ; 
-        m_geolib = m_ggeo->getGeoLib();
-        m_bndlib = m_ggeo->getBndLib();
-    }
-    else
-    {
-        LOG(warning) << "GMaker::init booting from cache" ; 
-        LOG(warning) << "GMaker::init booting from cache" ; 
-        LOG(warning) << "GMaker::init booting from cache" ; 
-        LOG(warning) << "GMaker::init booting from cache" ; 
-        LOG(warning) << "GMaker::init booting from cache" ; 
-
-        bool constituents = true ; 
-        m_bndlib = GBndLib::load(m_opticks, constituents );
-        bool analytic = false ; 
-        m_geolib = GGeoLib::Load(m_opticks, analytic, m_bndlib );
-    }
-}
 
 
 GSolid* GMaker::makeBox(glm::vec4& param)

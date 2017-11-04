@@ -1233,13 +1233,16 @@ int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbos
 
         tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
         tree->import();  // input m_nodes buffer into CSG nnode tree 
-        tree->updateContainer(container_bb);
+        tree->updateContainer(container_bb); // for non-container trees updates container_bbox, for the container trees adopts the bbox 
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
         LOG(debug) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
 
         trees.push_back(tree);  
     }
+
+    // back into original source order with outer first eg [outer, container, sphere]  
+    std::reverse( trees.begin(), trees.end() );
 
     return 0 ; 
 }

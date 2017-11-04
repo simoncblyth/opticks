@@ -27,6 +27,7 @@ const char* GGeoTestConfig::DEFAULT_CONFIG =
     "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
     "analytic=1_"
+    "outerfirst=1_"
     "node=box_"
     "boundary=Rock/NONE/perfectAbsorbSurface/MineralOil_"
     "parameters=0,0,0,300_"
@@ -45,6 +46,7 @@ const char* GGeoTestConfig::TRANSFORM_ = "transform";
 const char* GGeoTestConfig::CSGPATH_ = "csgpath"; 
 const char* GGeoTestConfig::OFFSETS_ = "offsets"; 
 const char* GGeoTestConfig::NAME_ = "name"; 
+const char* GGeoTestConfig::OUTERFIRST_ = "outerfirst"; 
 
 
 
@@ -58,6 +60,7 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_name(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
+    m_outerfirst(1,0,0,0),
     m_debug(1.f,0.f,0.f,0.f),
     m_control(0,0,0,0)
 {
@@ -94,6 +97,11 @@ bool GGeoTestConfig::getAnalytic()
 {
     bool analytic = m_analytic.x > 0 ;
     return analytic ; 
+}
+
+bool GGeoTestConfig::getOuterFirst()
+{
+    return m_outerfirst.x > 0 ;
 }
 
 
@@ -188,6 +196,7 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,CSGPATH_)==0)    arg = CSGPATH ; 
     else if(strcmp(k,OFFSETS_)==0)    arg = OFFSETS ; 
     else if(strcmp(k,NAME_)==0)       arg = NAME ; 
+    else if(strcmp(k,OUTERFIRST_)==0)  arg = OUTERFIRST ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -212,6 +221,7 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case CSGPATH        : setCsgPath(s)        ;break;
         case OFFSETS        : setOffsets(s)        ;break;
         case NAME           : setName(s)           ;break;
+        case OUTERFIRST     : setOuterFirst(s)     ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -321,6 +331,14 @@ void GGeoTestConfig::setAnalytic(const char* s)
     std::string ss(s);
     m_analytic = givec4(ss);
 }
+
+void GGeoTestConfig::setOuterFirst(const char* s)
+{
+    std::string ss(s);
+    m_outerfirst = givec4(ss);
+}
+
+
 
 
 void GGeoTestConfig::setDebug(const char* s)

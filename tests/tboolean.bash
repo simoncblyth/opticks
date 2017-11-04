@@ -569,7 +569,7 @@ box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)" )
 box.dump()
 
 
-CSG.Serialize([container, box], args.csgpath, outmeta=True )
+CSG.Serialize([container, box], args.csgpath )
 EOP
 }
 
@@ -645,7 +645,7 @@ obj.meta.update(im)
 obj.dump()
 #print obj.as_python()
 
-CSG.Serialize([container, obj], args.csgpath, outmeta=True )
+CSG.Serialize([container, obj], args.csgpath )
 
 EOP
 }
@@ -699,7 +699,7 @@ obj.meta.update(im)
 
 obj.dump()
 
-CSG.Serialize([container, obj], args.csgpath, outmeta=True )
+CSG.Serialize([container, obj], args.csgpath)
 EOP
 }
 
@@ -749,7 +749,7 @@ ut.boundary = args.container
 ut.meta.update(im)
 ut.dump()
 
-CSG.Serialize([container, ut], args.csgpath, outmeta=True )
+CSG.Serialize([container, ut], args.csgpath)
 
 
 """

@@ -27,13 +27,14 @@ Canonical instance m_geotest resides in OpticksHub and is instanciated
 only when the --test geometry option is active.  This happens
 after standard geometry is loaded via OpticksHub::modifyGeometry.
 
-
 Rejig
 -------
 
-Moving towards GGeoTest becoming a GGeoBase subclass (just like GGeo and GScene)
-in order to avoid the dirty GGeoTest::modifyGeometry which clears out the 
-GGeoLib and replaces with the fabricated GMergedMesh 
+* GGeoTest is now a GGeoBase subclass (just like GGeo and GScene)
+
+* GGeoTest now has its own GGeoLib, to avoid dirty modifyGeometry
+  appropach which cleared the basis mm
+
 
 
 **/
@@ -42,7 +43,7 @@ GGeoLib and replaces with the fabricated GMergedMesh
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
     public:
-       GGeoTest(Opticks* ok, GGeoTestConfig* config, GGeoBase* basis=NULL);
+       GGeoTest(Opticks* ok, GGeoBase* basis=NULL);
     private:
        void init();
     public:
@@ -82,11 +83,11 @@ class GGEO_API GGeoTest : public GGeoBase {
 
     private:
        Opticks*         m_ok ; 
+       GGeoTestConfig*  m_config ; 
        OpticksResource* m_resource ; 
        bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 
-       GGeoTestConfig*  m_config ; 
        bool             m_analytic ; 
        bool             m_test ; 
     private:

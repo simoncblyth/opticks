@@ -22,12 +22,7 @@ simple test geometries.   The specification is used
 by both Geant4 and Opticks to create corresponding geometries.
 The Geant4 usage is done via :doc:`../cfg4/CTestDetector`.
 
-
 **/
-
-
-
-
 
 class GGEO_API GGeoTestConfig {
     public:
@@ -46,6 +41,7 @@ class GGEO_API GGeoTestConfig {
                       CSGPATH,
                       OFFSETS,
                       NAME,
+                      OUTERFIRST,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -61,9 +57,10 @@ class GGEO_API GGeoTestConfig {
        static const char* CONTROL_ ; 
        static const char* PMTPATH_ ; 
        static const char* TRANSFORM_ ; 
-       static const char* CSGPATH_ ;   // not yet used
+       static const char* CSGPATH_ ;   
        static const char* OFFSETS_ ; 
        static const char* NAME_ ; 
+       static const char* OUTERFIRST_ ; 
     public:
        //static const char* E_PmtInBox ; 
        //static const char* E_BoxInBox ; 
@@ -80,6 +77,7 @@ class GGEO_API GGeoTestConfig {
        void setMode(const char* s);
        void setFrame(const char* s);
        void setAnalytic(const char* s);
+       void setOuterFirst(const char* s);
        void setDebug(const char* s);
        void setControl(const char* s);
        void setPmtPath(const char* s);
@@ -100,6 +98,7 @@ class GGEO_API GGeoTestConfig {
        std::string getNodeString(unsigned int i); 
 
        bool      getAnalytic();
+       bool      getOuterFirst();
        bool      isPmtInBox();
        bool      isBoxInBox();
        bool      isNCSG();
@@ -128,8 +127,10 @@ class GGEO_API GGeoTestConfig {
        const char*  m_pmtpath ; 
        const char*  m_csgpath ; 
        const char*  m_name ; 
+
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;
+       glm::ivec4   m_outerfirst ;
        glm::vec4    m_debug ;
        glm::ivec4   m_control ;
        std::vector<std::string> m_nodes ; 

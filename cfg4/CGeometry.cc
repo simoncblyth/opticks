@@ -138,14 +138,21 @@ void CGeometry::export_()
 {
     bool expo = m_cfg->hasOpt("export");
     if(!expo) return ; 
-    std::string expodir = m_cfg->getExportConfig();
-    if(expodir.size() == 0) return ; 
+    //std::string expodir = m_cfg->getExportConfig();
     
-    std::string daepath = BFile::FormPath(expodir.c_str(),"CGeometry.dae" );
-    m_detector->export_dae(daepath.c_str());
 
-    std::string gdmlpath = BFile::FormPath(expodir.c_str(),"CGeometry.gdml" );
-    m_detector->export_gdml(gdmlpath.c_str());
+    const char* expodir = "$TMP/CGeometry" ;
+
+    if(BFile::ExistsDir(expodir))
+    {   
+        BFile::RemoveDir(expodir); 
+        LOG(info) << "CGeometry::export_ removed " << expodir ; 
+    }   
+
+    BFile::CreateDir(expodir);
+    m_detector->export_dae(expodir, "CGeometry.dae");
+    m_detector->export_gdml(expodir, "CGeometry.gdml");
+
 }
 
 

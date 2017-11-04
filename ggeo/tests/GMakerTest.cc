@@ -12,6 +12,7 @@
 
 #include "GMesh.hh"
 #include "GSolid.hh"
+#include "GBndLib.hh"
 #include "GMaker.hh"
 
 #include "PLOG.hh"
@@ -22,7 +23,7 @@
 class GMakerTest 
 {
    public:
-       GMakerTest(Opticks* ok);
+       GMakerTest(Opticks* ok, GBndLib* blib);
        void makeSphere();
        void makeFromCSG();
    private:
@@ -30,10 +31,10 @@ class GMakerTest
        GMaker*  m_maker ;  
 };
 
-GMakerTest::GMakerTest(Opticks* ok)
+GMakerTest::GMakerTest(Opticks* ok, GBndLib* blib)
    :
    m_ok(ok),
-   m_maker(new GMaker(ok))
+   m_maker(new GMaker(ok, blib))
 {
 }
 
@@ -96,8 +97,11 @@ int main(int argc, char** argv)
     GGEO_LOG__ ;
 
     Opticks ok(argc, argv);
+    ok.configure();
+
+    GBndLib* blib = GBndLib::load(&ok, true ); 
     
-    GMakerTest tst(&ok);
+    GMakerTest tst(&ok, blib);
 
     tst.makeSphere();
     tst.makeFromCSG();

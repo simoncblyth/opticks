@@ -37,21 +37,30 @@ std::string guint4::description() const
     std::stringstream ss ; 
     unsigned umax = std::numeric_limits<unsigned>::max() ;
 
-    ss << " (" << std::setw(3) << x << "," ;
 
-    if(y == umax)
-        ss << " - " ;
-    else
-        ss << std::setw(3) << y  ;
+    ss << " (" ;
+
+    if(x == umax) ss << "---" ;
+    else          ss << std::setw(3) << x ;
+
+    ss << "," ;
+
+    if(y == umax) ss << "---" ;
+    else          ss << std::setw(3) << y  ;
             
     ss << "," ;
 
-    if(z == umax)
-        ss << " - " ;
-    else
-        ss << std::setw(3) << z  ;
+    if(z == umax) ss << "---" ;
+    else          ss << std::setw(3) << z  ;
  
-    ss << "," << std::setw(3) << w << ") " ; 
+    ss << "," ;
+
+    if(w == umax) ss << "---" ;
+    else          ss << std::setw(3) << w  ;
+ 
+
+    ss << ")" ;
+
 
     return ss.str(); 
 }

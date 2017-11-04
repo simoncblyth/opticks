@@ -8,6 +8,12 @@
 #include "G4PVPlacement.hh"
 #include "G4GDMLParser.hh"
 
+
+
+// brap-
+#include "BFile.hh"
+
+
 // npy-
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
@@ -279,8 +285,10 @@ void CDetector::attachSurfaces()
 
 
 
-void CDetector::export_dae(const char* path_)
+void CDetector::export_dae(const char* dir, const char* name)
 {
+    std::string path_ = BFile::FormPath(dir, name);
+
     const G4String path = path_ ; 
     LOG(info) << "export to " << path_ ; 
 
@@ -302,27 +310,23 @@ void CDetector::export_dae(const char* path_)
 
 
 
-void CDetector::export_gdml(const char* path_)
+void CDetector::export_gdml(const char* dir, const char* name)
 {
-
+    std::string path_ = BFile::FormPath(dir, name);
+ 
     m_check->checkSurf();
  
-
     const G4String path = path_ ; 
     LOG(info) << "export to " << path_ ; 
 
     G4VPhysicalVolume* world_pv = getTop();
     assert( world_pv  );
 
-//#ifdef WITH_G4GDML 
     G4GDMLParser* g4gdml = new G4GDMLParser ;
     G4bool refs = true ;
     G4String schemaLocation = "" ; 
 
     g4gdml->Write(path, world_pv, refs, schemaLocation );
-//#else
-//    LOG(warning) << " export_gdml requires WITH_G4GDML " ; 
-//#endif
 
 }
 

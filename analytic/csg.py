@@ -52,7 +52,9 @@ class CSG(CSG_):
     """
     NJ, NK = 4, 4
     FILENAME = "csg.txt"
+    METANAME = "csgmeta.json"
     CONVEX_POLYHEDRA = [CSG_.TRAPEZOID]
+
 
     def depth_(self, label=False):
         """Label tree nodes with their depth from the root, return maxdepth"""
@@ -419,10 +421,21 @@ class CSG(CSG_):
         return os.path.join(base, cls.FILENAME )
 
     @classmethod
-    def Serialize(cls, trees, base, outmeta=True):
+    def Metapath(cls, base):
+        return os.path.join(base, cls.METANAME )
+
+    @classmethod
+    def SaveMeta(cls, base, topmeta={}):
+        path = cls.Metapath(base)
+        json.dump(topmeta,file(path,"w"))
+
+
+    @classmethod
+    def Serialize(cls, trees, base, outerfirst=1):
         """
         :param trees: list of CSG instances of solid root nodes
         :param base: directory to save the tree serializations, under an indexed directory 
+        :param outerfirst: when 1 signifies that the first listed tree contains is the outermost volume 
         """
         assert type(trees) is list 
         assert type(base) is str and len(base) > 5, ("invalid base directory %s " % base)
@@ -440,10 +453,10 @@ class CSG(CSG_):
         cls.CheckNonBlank(boundaries)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
 
-        if outmeta:
-            meta = dict(mode="PyCsgInBox", name=os.path.basename(base), analytic=1, csgpath=base)
-            meta_fmt_ = lambda meta:"_".join(["%s=%s" % kv for kv in meta.items()])
-            print meta_fmt_(meta)  # communicates to tboolean--
+        csgmeta = dict(mode="PyCsgInBox", name=os.path.basename(base), analytic=1, csgpath=base, outerfirst=outerfirst )
+        meta_fmt_ = lambda meta:"_".join(["%s=%s" % kv for kv in meta.items()])
+        print meta_fmt_(csgmeta)  # communicates to tboolean--
+        cls.SaveMeta(base, csgmeta)     # read by NCSG::Deserialize
         pass
 
     @classmethod
