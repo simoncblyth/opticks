@@ -17,8 +17,9 @@ NEXT
 * do some purely positional checks : profiting from the identical input photons 
   maybe add MaxVacuum with FLT_MAX extreme absorption_length   scattering_length
 
-try checking the G4 geometry by exporting it 
------------------------------------------------
+
+FIXED : Check of G4 geometry via GDML export fails : incomplete bordersurf
+--------------------------------------------------------------------------------
 
 * :doc:`ncsg_ggeotest_ctestdetector_cannot_gdml_export`
 
@@ -113,8 +114,6 @@ Why MainH2OHale so good ?
 Pyrex sphere-in-box very messed up : must be material conversion issue ?
 ---------------------------------------------------------------------------
 
-
-
 finely binned prop values of --mat are not being dumped with --cmat ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -124,8 +123,27 @@ finely binned prop values of --mat are not being dumped with --cmat ?
     op --mat Pyrex
 
 
+
+Tangent : NCSG emitonly metadata
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Some CSG metadata that marks geometry as emitter lightsource only, which 
+can skip from geometry point of view, would allow convenient planting of
+emitters of any shape/position.
+
+
 Converted G4 Pyrex absorbing immediately 
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* debug attempt failed to materialize anything within G4 code
+* so try rebuild G4 with Debug config (it was using RelWithDebInfo)  
+
+
+Debug Ideas
+~~~~~~~~~~~~~~
+
+* put photon source inside pyrex : so all photons act the same for ease of debug
+
 
 ::
 

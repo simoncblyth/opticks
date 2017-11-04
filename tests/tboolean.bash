@@ -1865,6 +1865,39 @@ EOP
 }
 
 
+
+tboolean-media-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-media-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-media(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-media-(){  $FUNCNAME- | python $* ; } 
+tboolean-media--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+media = "Pyrex"
+boundary = "Rock///%s" % media
+
+container = CSG("box", param=[0,0,0,400], boundary=boundary, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
+
+CSG.Serialize([container], args.csgpath )
+
+
+"""
+* cannot use a surface on the world with G4, as no pv to bordersurf to 
+"""
+
+EOP
+}
+
+
+
+
+
+
+
 tboolean-sphere-m(){ TESTNAME=${FUNCNAME/-m} tboolean-m- $* ; } 
 tboolean-sphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 

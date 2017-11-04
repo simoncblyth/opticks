@@ -12,9 +12,14 @@
 
 #include "Opticks.hh"
 
+#include "GConstant.hh"
+
+
 // cfg4-
 #include "CInputPhotonSource.hh"
 #include "CRecorder.hh"
+
+
 
 
 // g4-
@@ -82,8 +87,20 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
     pol.set(polw.x, polw.y, polw.z );
 
     G4double weight = dirw.w ;  // usually 1.0
-    G4double wavelength = polw.w ;  // nm 
-    G4double energy = h_Planck*c_light/wavelength ;
+
+
+    G4double wavelength_nm = polw.w ;  // nm 
+    G4double energy_eV = GConstant::hc_eVnm/wavelength_nm ;   // GConstant::hc_eVnm = 1239.841875  (see GConstantTest) 
+    G4double energy_MeV = energy_eV*1e-6 ;   
+
+    // cf CMPT::addProperty   
+
+    G4double wavelength = double(polw.w)*nm ;  
+    G4double energy = h_Planck*c_light/wavelength ;  
+
+    assert( fabs(energy-energy_MeV) < 1e-12 );
+
+
     pp.energy = energy ;
 
     if(m_sourcedbg && pho_index < 10) 

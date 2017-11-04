@@ -217,7 +217,10 @@ g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }
 g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
 
 
-g4-bdir(){ echo $(g4-dir).build ; }
+g4-config(){ echo Debug ; }
+#g4-config(){ echo RelWithDebInfo ; }
+
+g4-bdir(){ echo $(g4-dir).$(g4-config).build ; }
 
 g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
@@ -351,8 +354,6 @@ g4-cmake-modify-adopt-macports-xercesc()
 
 
 
-#g4-config(){ echo Debug ; }
-g4-config(){ echo RelWithDebInfo ; }
 g4-build(){
    g4-bcd
    cmake --build . --config $(g4-config) --target ${1:-install}
@@ -430,7 +431,16 @@ g4-cls-(){
 
 
 
+g4-look-info(){ cat << EOI
+g4-look : vim -R at line of G4 source file
+==================================================
 
+Examples::
+
+   g4-look G4RunManagerKernel.cc:707  
+
+EOI
+}
 
 g4-look(){ 
    local iwd=$PWD

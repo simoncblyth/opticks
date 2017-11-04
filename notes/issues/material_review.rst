@@ -253,5 +253,18 @@ CMaterialLibTest : does conversions
     op --cmat
 
 
+lldb
+------
+
+::
+
+    tboolean-;tboolean-sphere --okg4 -D
+
+    (lldb) b CG4::CG4
+
+
+
+
+
 
 

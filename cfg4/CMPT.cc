@@ -146,6 +146,8 @@ void CMPT::addProperty(const char* lkey,  GProperty<float>* prop, bool spline)
         float fnm = prop->getDomain(j) ;
         float fval = prop->getValue(j) ; 
 
+        // cf CInputPhotonSource::convertPhoton
+
         G4double wavelength = G4double(fnm)*nm ; 
         G4double energy = h_Planck*c_light/wavelength ;
 
