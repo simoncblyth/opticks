@@ -10,6 +10,79 @@ okg4-material-drastic-difference
 
 
 
+
+Are Opticks MISS and Geant4 fWorldBoundary fully equivalent ?
+-----------------------------------------------------------------
+
+tboolean-media geometry is just a single cube "World" of Pyrex. 
+
+* Opticks manages to BR off the edge of the World
+
+  * kinda surprising : no m2 ?  
+  * Actually there is an m2 with Opticks, because you set 
+    boundaries onto volumes (here it is Rock///Pyrex) which 
+    works even when there is one volume
+
+
+Does an Opticks single volume geometry needs to be translated 
+into a Geant4 two volume one ?  
+
+Wont that just defer the issue ?
+
+An Opticks MISS means just that, there was no geometry to hit 
+in that direction. Presumbly within a volume based rep 
+the containing volume needs to be infinite ? 
+
+What needs to be done practiclly to get okg4 equivalence ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* make NCSG clone-able and nnode enlarge-able (can restrict imps to just box and sphere)
+
+  * hmm can cheat the clone by a separate deserialize of the first (outer) tree
+  * auto-container already has size to fit capability 
+
+* then can dynamically (ie no persistent rep) create a wrapper CSG volume 
+  (in CTestDetector) just to translate the opticks outer boundant omat 
+  into a volume for G4 consumption 
+  
+
+
+After fWorldBoundary -> MISS
+--------------------------------
+
+
+::
+
+    AB(1,torch,tboolean-media)  None 0 
+    A tboolean-media/torch/  1 :  20171105-1125 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/1/fdom.npy 
+    B tboolean-media/torch/ -1 :  20171105-1125 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/-1/fdom.npy 
+    Rock///Pyrex
+    .                seqhis_ana  1:tboolean-media   -1:tboolean-media        c2        ab        ba 
+    .                             600000    600000     10744.40/8 = 1343.05  (pval:0.000 prob:1.000)  
+    0000     299543    308655           136.52  TO MI
+    0001     289569    290952             3.29  TO AB
+    0002       5233         0          5233.00  TO BR MI
+    0003       5102         0          5102.00  TO BR AB
+    0004        142       303            58.25  TO SC MI
+    0005         98        90             0.34  TO SC AB
+    0006         89         0            89.00  TO BR BR AB
+    0007         84         0            84.00  TO BR BR MI
+    0008         38         0            38.00  TO SC BR MI
+    0009         30         0             0.00  TO SC BR AB
+    0010         15         0             0.00  TO SC BR BR AB
+    0011         12         0             0.00  TO SC BR BR BR AB
+    0012         10         0             0.00  TO SC BR BR BR BR AB
+    0013         10         0             0.00  TO SC BR BR MI
+    0014          8         0             0.00  TO SC BR BR BR BR BR AB
+    0015          5         0             0.00  TO SC BR BR BR BR BR BR BR BR
+    0016          3         0             0.00  TO BR SC MI
+    0017          2         0             0.00  TO SC BR BR BR BR BR BR AB
+    0018          2         0             0.00  TO SC BR BR BR MI
+    0019          2         0             0.00  TO BR BR BR MI
+    .                             600000    600000     10744.40/8 = 1343.05  (pval:0.000 prob:1.000)  
+
+
+
 After energy fix for input photons  : the about of bulk AB is close
 ---------------------------------------------------------------------
 

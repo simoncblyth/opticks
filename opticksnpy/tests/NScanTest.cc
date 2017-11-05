@@ -9,6 +9,7 @@ NScanTest $TMP/tgltf/extras
 #include "BOpticksResource.hh"
 
 #include "NPY.hpp"
+#include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NScan.hpp"
 #include "NNode.hpp"
@@ -18,41 +19,16 @@ NScanTest $TMP/tgltf/extras
 #include "NPY_LOG.hh"
 
 
-int main(int argc, char** argv)
+
+void test_scan( const std::vector<NCSG*>& trees )
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
-
-
-    BOpticksResource okr ;  // no Opticks at this level 
-    const char* basedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
-
-    const char* gltfconfig = "csg_bbox_parsurf=1" ;
-
-    int verbosity = 0 ; 
-    std::vector<NCSG*> trees ;
-
-    if(BFile::pathEndsWithInt(basedir))
-    {
-        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
-        if(csg) trees.push_back(csg);   
-    }
-    else
-    {
-        NCSG::DeserializeTrees( basedir, trees, verbosity );
-    }
-
     int ntree = trees.size() ; 
-    verbosity = ntree == 1 ? 4 : 0 ; 
+    int verbosity = ntree == 1 ? 4 : 0 ; 
 
     LOG(info) 
           << " NScanTest autoscan trees " 
-          << " basedir " << basedir  
           << " ntree " << ntree 
-          << " verbosity " << verbosity 
           ; 
-
-
 
     const unsigned MESSAGE_NZERO = 1000001 ;  
 
@@ -143,6 +119,44 @@ int main(int argc, char** argv)
             }
         }
     }
+
+
+}
+
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    NPY_LOG__ ;  
+
+
+    BOpticksResource okr ;  // no Opticks at this level 
+    const char* basedir = okr.getDebuggingTreedir(argc, argv);  // uses debugging only IDPATH envvar
+
+    const char* gltfconfig = "csg_bbox_parsurf=1" ;
+
+    int verbosity = 0 ; 
+
+    if(BFile::pathEndsWithInt(basedir))
+    {
+        std::vector<NCSG*> trees ;
+        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
+        if(csg) trees.push_back(csg);   
+        test_scan(trees); 
+    }
+    else
+    {
+        NCSGList* ls = NCSGList::Load(basedir, verbosity ); 
+        if(!ls)
+        {
+            LOG(warning) << " no basedir " << basedir ; 
+            return 0 ; 
+        }
+
+        const std::vector<NCSG*>& trees = ls->getTrees() ;
+        test_scan(trees); 
+    }
+
     return 0 ; 
 }
 

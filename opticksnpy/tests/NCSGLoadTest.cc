@@ -20,6 +20,7 @@ Tests individual trees::
 #include "BStr.hh"
 
 #include "NPY.hpp"
+#include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NSceneConfig.hpp"
 #include "NNode.hpp"
@@ -35,30 +36,8 @@ Tests individual trees::
 
 
 
-int main(int argc, char** argv)
+void test_coincidence( const std::vector<NCSG*>& trees )
 {
-    PLOG_(argc, argv);
-    NPY_LOG__ ;  
-
-    BOpticksResource okr ;  // no Opticks at this level 
-
-    const char* basedir = okr.getDebuggingTreedir(argc, argv);
-    const char* gltfconfig = NULL ; 
-
-    int verbosity = SSys::getenvint("VERBOSITY", 0);
-
-    std::vector<NCSG*> trees ;
-    if(BFile::pathEndsWithInt(basedir))
-    {
-        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
-        if(csg) trees.push_back(csg);   
-    }
-    else
-    {
-        NCSG::DeserializeTrees( basedir, trees, verbosity );
-    }
-
-
 
     unsigned num_tree = trees.size() ;
     LOG(info) << " num_tree " << num_tree ; 
@@ -69,21 +48,24 @@ int main(int argc, char** argv)
     {
         NCSG* csg = trees[i];
         if(num_tree == 1) csg->dump();
+
         unsigned num_coincidence = csg->get_num_coincidence();
 
         unsigned mask = csg->get_oper_mask();
+
         if(mask == CSGMASK_INTERSECTION ) 
         {
             LOG(info) << "skip intersection " ;             
             continue ; 
         }
 
-
         if(num_coincidence > 0) 
         {
             LOG(info)
-                  << std::setw(40) << csg->soname()
-                  << " " << csg->get_type_mask_string()
+                  << std::setw(40) 
+                  << csg->soname()
+                  << " " 
+                  << csg->get_type_mask_string()
                   << csg->desc_coincidence() 
                  ;
             count_coincidence++ ; 
@@ -92,17 +74,38 @@ int main(int argc, char** argv)
 
     LOG(info) 
           << " NCSGLoadTest trees " 
-          << " basedir " << basedir  
           << " num_tree " << num_tree 
           << " count_coincidence " << count_coincidence
           << " frac " << float(count_coincidence)/float(num_tree)
-          << " verbosity " << verbosity 
           ; 
+}
 
 
 
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    NPY_LOG__ ;  
 
+    BOpticksResource okr ;  // no Opticks at this level 
 
+    const char* basedir = okr.getDebuggingTreedir(argc, argv);
+    const char* gltfconfig = NULL ; 
+    int verbosity = SSys::getenvint("VERBOSITY", 0);
+
+    if(BFile::pathEndsWithInt(basedir))
+    {
+        std::vector<NCSG*> trees ;    
+        NCSG* csg = NCSG::LoadCSG(basedir, gltfconfig);
+        if(csg) trees.push_back(csg);   
+        test_coincidence(trees);
+    }
+    else
+    {
+        NCSGList* ls = NCSGList::Load( basedir, verbosity );
+        const std::vector<NCSG*>& trees = ls->getTrees() ;    
+        test_coincidence(trees);
+    }
 
     return 0 ; 
 }

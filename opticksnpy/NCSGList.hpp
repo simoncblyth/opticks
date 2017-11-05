@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 #include "NCSG.hpp"
 
@@ -7,19 +8,27 @@
 
 class NPY_API NCSGList 
 {
-   public:
-     NCSGList(const char* csgpath, unsigned verbosity);
-     void dump(const char* msg="NCSGList::dump") const ;
+    public:
+        static const char* FILENAME ; 
+        static NCSGList* Load(const char* csgpath, int verbosity) ;
+        static bool      ExistsDir(const char* dir);
 
-   public:
-     NCSG*    getTree(unsigned index) const ;
-     NCSG*    findEmitter() const ;
-     unsigned getNumTrees() const ;
+        NCSGList(const char* csgpath, int verbosity);
+        void load() ;
+        void dump(const char* msg="NCSGList::dump") const ;
+    public:
+        std::string getTreeDir(unsigned idx);
+        NCSG*    getTree(unsigned index) const ;
+        NCSG*    findEmitter() const ;
+        unsigned getNumTrees() const ;
+        int      polygonize();
 
-   private:
-      const char*        m_csgpath ; 
-      unsigned           m_verbosity ; 
-      std::vector<NCSG*> m_trees ; 
+        std::vector<NCSG*>& getTrees(); 
+
+    private:
+        const char*        m_csgpath ; 
+        int                m_verbosity ; 
+        std::vector<NCSG*> m_trees ; 
 
 };
  

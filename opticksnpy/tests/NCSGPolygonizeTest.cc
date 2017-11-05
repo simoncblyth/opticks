@@ -12,6 +12,7 @@ Tests directories of multiple trees::
 #include "BFile.hh"
 
 #include "NPY.hpp"
+#include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
 #include "NGLMExt.hpp"
@@ -22,18 +23,15 @@ Tests directories of multiple trees::
 
 
  
-void test_Polygonize(const char* basedir, int verbosity, std::vector<NCSG*>& trees)
+void test_Polygonize(const char* basedir, int verbosity )
 {
-    if(!BFile::ExistsDir(basedir))
+    NCSGList* ls = NCSGList::Load(basedir, verbosity );
+    if(!ls)
     {
          LOG(warning) << "test_Polygonize no such dir " << basedir ;
          return ; 
     }
-
-    int rc0 = NCSG::Deserialize(basedir, trees, verbosity );  // revive CSG node tree for each solid
-    assert(rc0 == 0 );
-
-    int rc1 = NCSG::Polygonize(basedir, trees, verbosity );
+    int rc1 = ls->polygonize();
     assert(rc1 == 0 );
 }
 
@@ -48,8 +46,7 @@ int main(int argc, char** argv)
               << " VERBOSITY " << verbosity 
               ;  
 
-    std::vector<NCSG*> trees ; 
-    test_Polygonize( argc > 1 ? argv[1] : "$TMP/csg_py", verbosity, trees);
+    test_Polygonize( argc > 1 ? argv[1] : "$TMP/csg_py", verbosity );
 
     return 0 ; 
 }

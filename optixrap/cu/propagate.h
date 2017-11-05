@@ -1,21 +1,6 @@
 #pragma once
 
 
-__device__ void propagate( Photon& p, State& s, curandState &rng)
-{
-
-
-
-
-}
-
-
-
-
-
-
-
-
 
 /*
 propagate_to_boundary absorb/scatter/sail ? 

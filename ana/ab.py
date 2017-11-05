@@ -105,7 +105,11 @@ class AB(object):
 
         assert amd == bmd
 
-        return "\n".join([abn, abr,bbr, bmd])
+        acsgp = self.a.metadata.TestCSGPath
+        bcsgp = self.b.metadata.TestCSGPath
+        assert acsgp == bcsgp
+
+        return "\n".join(filter(None,[abn, abr,bbr, amd, acsgp]))
 
     def __str__(self):
         lmx = self.ok.lmx

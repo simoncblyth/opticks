@@ -12,6 +12,7 @@ Tests directories of multiple trees::
 #include "BStr.hh"
 
 #include "NPY.hpp"
+#include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
 #include "NGLMExt.hpp"
@@ -24,20 +25,18 @@ Tests directories of multiple trees::
  
 void test_Deserialize(const char* basedir, int verbosity)
 {
-    std::vector<NCSG*> trees ; 
 
-    if(!BFile::ExistsDir(basedir))
-    {
-         LOG(warning) << "test_Deserialize no such dir " << basedir ;
-         return ; 
-    }
+     NCSGList* ls = NCSGList::Load(basedir, verbosity );
+     if( ls == NULL )
+     {
+          LOG(warning) << "failed to NCSGList::Load from " << basedir ; 
+          return ; 
+     }
 
-    int rc = NCSG::Deserialize(basedir, trees, verbosity );
-
-    unsigned ntree = trees.size();
+    unsigned ntree = ls->getNumTrees();
     for(unsigned i=0 ; i < ntree ; i++)
     {
-        NCSG* tree = trees[i]; 
+        NCSG* tree = ls->getTree(i); 
         nnode* root = tree->getRoot();
         LOG(info) << " root.desc : " << root->desc() ;
 
@@ -45,7 +44,7 @@ void test_Deserialize(const char* basedir, int verbosity)
         nodes->dump(); 
 
     }
-    assert(rc == 0 );
+
 }
 
 int main(int argc, char** argv)

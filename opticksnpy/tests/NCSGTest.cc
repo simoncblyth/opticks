@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "NPY.hpp"
+#include "NCSGList.hpp"
 #include "NCSG.hpp"
 #include "NSceneConfig.hpp"
 #include "NNode.hpp"
@@ -72,13 +73,21 @@ void test_FromNode()
 
 void test_DeserializeTrees(int argc, char** argv )
 {
-    std::vector<NCSG*> trees ;
 
     int verbosity = 2 ; 
 
     const char* basedir = argc > 1 ? argv[0] : NULL ;
 
-    int ntree = NCSG::DeserializeTrees( basedir, trees, verbosity );
+    NCSGList* ls = NCSGList::Load( basedir, verbosity );
+
+    if(!ls)
+    {
+        LOG(warning) << " no such dir " << basedir ; 
+        return ; 
+    }
+
+    unsigned ntree = ls->getNumTrees();
+
     LOG(info) << " ntree " << ntree ; 
  
 }

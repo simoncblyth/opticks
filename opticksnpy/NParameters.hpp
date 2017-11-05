@@ -17,7 +17,7 @@ class NPY_API NParameters {
        typedef std::vector<std::string>              VS ; 
    public:
        NParameters();
-       const std::vector<std::pair<std::string,std::string> >& getVec() ;
+      const std::vector<std::pair<std::string,std::string> >& getVec() ;
 
        std::string getStringValue(const char* name) const ;
    public:

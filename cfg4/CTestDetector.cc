@@ -1,11 +1,6 @@
 #include "CFG4_BODY.hh"
 // cfg4-
 
-//
-//  ggv-;ggv-pmt-test --cfg4
-//  ggv-;ggv-pmt-test --cfg4 --load 1
-//
-
 #include <map>
 
 // okc-
@@ -105,16 +100,16 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
     NCSGList* csglist = m_geotest->getCSGList();
+    assert( csglist );
+
+
     GNodeLib* nolib = m_geotest->getNodeLib();
 
     GMergedMesh* tmm = m_geotest->getMergedMesh(0) ;
 
-    assert( csglist );
     assert( nolib );
 
     unsigned numTrees = csglist->getNumTrees();
-
-    //unsigned numSolids = solist->getNumSolids();
     unsigned numSolids = nolib->getNumSolids();
 
     LOG(info) << "CTestDetector::makeDetector_NCSG"
@@ -132,21 +127,24 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     G4LogicalVolume* mother = NULL ; 
     G4VPhysicalVolume* ppv = NULL ; 
     G4VPhysicalVolume* top = NULL ; 
-     
+    
+
+    //bool top_shim = true ; 
+    //GSolid* outer = nolib->getSolid(0) ; 
+
+
     for(unsigned i=0 ; i < numTrees ; i++) 
     {
-        //unsigned tree = numTrees-1-i ; // now switching order in NCSG::Deserialize to original outermost first
         unsigned tree = i ;
+
         GSolid* kso = nolib->getSolid(tree); 
 
         const GMesh* mesh = kso->getMesh();
+
         const NCSG* csg = mesh->getCSG();
-        { 
-            const NCSG* csg2 = csglist->getTree(tree);
-            assert( csg == csg2 );
-        }
 
         const char* spec = csg->getBoundary();
+
         unsigned boundary0 = kso->getBoundary();
 
         // m_blib is CBndLib instance from CDetector base
@@ -168,6 +166,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
              << " csg.bnd " << spec
              ;
 
+        //GMaterial* omat = m_blib->getOuterMaterial(boundary); 
         GMaterial* imat = m_blib->getInnerMaterial(boundary); 
         GSur* isur      = m_blib->getInnerSurface(boundary); 
         GSur* osur      = m_blib->getOuterSurface(boundary); 
@@ -185,16 +184,11 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         OpticksCSG_t type = csg->getRootType() ;
         const char* shapename = CSGName(type);
 
-
         const char* lvn = kso->getLVName();
         const char* pvn = kso->getPVName();
 
         assert( lvn );
         assert( pvn );
-
-
-        //std::string lvn = CMaker::LVName(shapename, i);
-        //std::string pvn = CMaker::PVName(shapename, i);
 
         LOG(info) 
              << " i " << i 

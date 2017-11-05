@@ -1165,124 +1165,6 @@ std::string NCSG::desc()
     return ss.str();  
 }
 
-
-
-
-int NCSG::DeserializeTrees(const char* basedir, std::vector<NCSG*>& trees, int verbosity)
-{
-    if(!NCSG::Exists(basedir))
-    {
-        LOG(warning) << "NCSG::DeserializeTrees missing base " << basedir ; 
-        return 0; 
-    }
-    NCSG::Deserialize( basedir, trees, verbosity );
-
-    LOG(info) << "NCSG::DeserializeTrees " << basedir << " found trees : " << trees.size() ;
-
-    if(verbosity > 3)
-    { 
-        for(unsigned i=0 ; i < trees.size() ; i++) trees[i]->dump("NCSG::DeserializeTrees");
-    }
-
-    return trees.size();
-}
-
-
-
-int NCSG::Deserialize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
-{
-    assert(trees.size() == 0);
-
-    std::string txtpath = BFile::FormPath(basedir, FILENAME) ;
-    bool exists = BFile::ExistsFile(txtpath.c_str() ); 
-
-    if(!exists) LOG(fatal) << "NCSG::Deserialize"
-                           << " file does not exist " 
-                           << txtpath 
-                           ;
-    assert(exists); 
-
-    NTxt bnd(txtpath.c_str());
-    bnd.read();
-    //bnd.dump("NCSG::Deserialize");    
-
-    unsigned nbnd = bnd.getNumLines();
-
-    LOG(debug) << "NCSG::Deserialize"
-              << " VERBOSITY " << verbosity 
-              << " basedir " << basedir 
-              << " txtpath " << txtpath 
-              << " nbnd " << nbnd 
-              ;
-
-    nbbox container_bb = make_bbox() ; 
-
-    // order is reversed so that a tree with the "container" meta data tag at tree slot 0
-    // is handled last, so container_bb will then have been adjusted to hold all the others...
-    // allowing the auto-bbox setting of the container
-
-    for(unsigned j=0 ; j < nbnd ; j++)
-    {
-        unsigned i = nbnd - 1 - j ;    
-        std::string treedir = BFile::FormPath(basedir, BStr::itoa(i));  
-
-        NCSG* tree = new NCSG(treedir.c_str());
-        tree->setIndex(i);
-        tree->setVerbosity( verbosity );
-        tree->setBoundary( bnd.getLine(i) );
-
-        tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
-        tree->import();  // input m_nodes buffer into CSG nnode tree 
-        tree->updateContainer(container_bb); // for non-container trees updates container_bbox, for the container trees adopts the bbox 
-        tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
-
-        LOG(debug) << "NCSG::Deserialize [" << i << "] " << tree->desc() ; 
-
-        trees.push_back(tree);  
-    }
-
-    // back into original source order with outer first eg [outer, container, sphere]  
-    std::reverse( trees.begin(), trees.end() );
-
-    return 0 ; 
-}
-
-
-void NCSG::updateContainer( nbbox& container ) const 
-{
-    LOG(debug) << "NCSG::updateContainer START " ; 
-
-    nnode* root = getRoot();
-    //root->dump("root");
-
-    nbbox root_bb = root->bbox();
-
-    if(!isContainer())
-    {  
-        container.include(root_bb); 
-    }
-    else
-    {
-        float scale = getContainerScale() ;
-        LOG(info) << "NCSG::updateContainer"
-                  << " root " << root->desc()
-                  << " container " << container.desc()
-                  << " scale " << scale
-                  ;
-        nnode::AdjustToFit(root, container, scale );         
-    }
-
-    LOG(debug) << "NCSG::updateContainer DONE"
-              << " root_bb " << root_bb.desc()
-              << " container " << container.desc()
-              ;
-
-}
-
-
-
-
-
  
 
 
@@ -1395,27 +1277,6 @@ unsigned NCSG::getNumTriangles()
     return m_tris ? m_tris->getNumTriangles() : 0 ; 
 }
 
-int NCSG::Polygonize(const char* basedir, std::vector<NCSG*>& trees, int verbosity )
-{
-    unsigned ntree = trees.size();
-    assert(ntree > 0);
-
-    LOG(info) << "NCSG::Polygonize"
-              << " basedir " << basedir
-              << " verbosity " << verbosity 
-              << " ntree " << ntree
-              ;
-
-    int rc = 0 ; 
-    for(unsigned i=0 ; i < ntree ; i++)
-    {
-        NCSG* tree = trees[i]; 
-        tree->setVerbosity(verbosity);
-        tree->polygonize();
-        if(tree->getTris() == NULL) rc++ ; 
-    }     
-    return rc ; 
-}
 
 
 glm::uvec4 NCSG::collect_surface_points() 
@@ -1465,5 +1326,41 @@ float NCSG::getSurfaceEpsilon() const
 {
     return m_points ? m_points->getEpsilon() : -1.f ;
 }
+
+
+
+
+
+void NCSG::updateContainer( nbbox& container ) const 
+{
+    LOG(debug) << "NCSG::updateContainer START " ; 
+
+    nnode* root = getRoot();
+    //root->dump("root");
+
+    nbbox root_bb = root->bbox();
+
+    if(!isContainer())
+    {  
+        container.include(root_bb); 
+    }
+    else
+    {
+        float scale = getContainerScale() ;
+        LOG(info) << "NCSG::updateContainer"
+                  << " root " << root->desc()
+                  << " container " << container.desc()
+                  << " scale " << scale
+                  ;
+        nnode::AdjustToFit(root, container, scale );         
+    }
+
+    LOG(debug) << "NCSG::updateContainer DONE"
+              << " root_bb " << root_bb.desc()
+              << " container " << container.desc()
+              ;
+
+}
+
 
 

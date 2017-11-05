@@ -69,6 +69,7 @@ class NNodeUncoincide ;
 class NTrianglesNPY ;
 
 class NPY_API NCSG {
+        friend class  NCSGList ; 
         friend struct NCSGLoadTest ; 
         typedef std::map<std::string, nnode*> MSN ; 
     public:
@@ -77,17 +78,11 @@ class NPY_API NCSG {
         static const unsigned NTRAN ; 
         static const float SURFACE_EPSILON ; 
 
-        static unsigned NumNodes(unsigned height);
-        static int Deserialize(     const char* base, std::vector<NCSG*>& trees, int verbosity );
-        static int DeserializeTrees(const char* base, std::vector<NCSG*>& trees, int verbosity ) ;
-
-        static int Polygonize( const char* base, std::vector<NCSG*>& trees, int verbosity );
-
         static NCSG* FromNode(nnode* root, const NSceneConfig* config);
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
-
+        static unsigned NumNodes(unsigned height);
 
         static std::string TxtPath(const char* treedir);
         static bool Exists(const char* treedir);   // compat : pass thru to ExistsDir
@@ -257,7 +252,6 @@ class NPY_API NCSG {
         
         NTrianglesNPY*         m_tris ; 
         std::vector<glm::vec3> m_surface_points ; 
-
 
 };
 

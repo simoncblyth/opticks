@@ -67,14 +67,31 @@ void test_bool()
 
 }
 
+void test_default_copy_ctor()
+{
+    NParameters a ;
+    a.add<std::string>("red", "g");
+    a.add<std::string>("green", "g");
+    a.add<std::string>("blue", "b");
+    a.dump("a");
+
+    NParameters b(a) ;
+    b.dump("b");
+}
+
+
 
 int main()
 {
+   /*
     test_basic();
     test_save_load();
     test_set();
     test_bool_nonexisting();
     test_bool();
+   */
+
+    test_default_copy_ctor();
 
     return 0 ; 
 }
