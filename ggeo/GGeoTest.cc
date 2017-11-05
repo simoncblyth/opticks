@@ -225,6 +225,10 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     m_csglist = NCSGList::Load(csgpath, verbosity );
     assert( m_csglist );
 
+    // NB universe wrapper solid is not needed here at Opticks level, 
+    //    it is required over in CTestDetector::makeDetector_NCSG
+    //    to make the cfg4 Geant4 translation of the test geometry
+
     unsigned ntree = m_csglist->getNumTrees() ;
    
     LOG(info) << "GGeoTest::loadCSG START " 

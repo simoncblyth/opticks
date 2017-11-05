@@ -75,6 +75,14 @@ struct NPY_API nbbox
         return min.x == 0. && min.y == 0. && min.z == 0. && max.x == 0. && max.y == 0. && max.z == 0.  ; 
     }
 
+    bool is_equal(const nbbox& other) const 
+    {
+        return min.x == other.min.x && min.y == other.min.y && min.z == other.min.z && max.x == other.max.x && max.y == other.max.y && max.z == other.max.z && invert == other.invert   ; 
+    }
+
+
+
+
     void set_empty()
     {
         min.x = 0. ; 

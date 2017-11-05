@@ -1,5 +1,6 @@
 #include <cstring>
 
+#include "BBnd.hh"
 #include "BStr.hh"
 #include "BFile.hh"
 
@@ -33,8 +34,6 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity)
     return ls ;
 } 
 
-
-
 NCSGList::NCSGList(const char* csgpath, int verbosity)
     :
     m_csgpath(strdup(csgpath)),
@@ -43,20 +42,18 @@ NCSGList::NCSGList(const char* csgpath, int verbosity)
     m_universe(NULL),
     m_container_bbox()  
 {
+    init();
 }
-
 
 void NCSGList::init()
 {
     init_bbox(m_container_bbox) ;
-
 }
 
 NCSG* NCSGList::getUniverse() const 
 {
     return m_universe ; 
 }
-
 
 std::vector<NCSG*>& NCSGList::getTrees()
 {
@@ -67,7 +64,6 @@ std::string NCSGList::getTreeDir(unsigned idx) const
 {
     return BFile::FormPath(m_csgpath, BStr::itoa(idx));  
 }
-
 
 void NCSGList::load()
 {
@@ -104,16 +100,16 @@ void NCSGList::load()
     // but because of the export of the resultant bbox it aint easy to fix
     //
 
-    m_universe = loadTree(0) ; 
 
     for(unsigned j=0 ; j < nbnd ; j++)
     {
-        unsigned idx = nbnd - 1 - j ;     // idx 0 is last 
+        unsigned idx = nbnd - 1 - j ;     // idx 0 is handled last 
+    
+        const char* boundary = m_bndspec->getLine(idx);
 
-        NCSG* tree = loadTree(idx);
+        NCSG* tree = loadTree(idx, boundary);
 
         nbbox bba = tree->bbox_analytic();  
-
 
        // for non-container trees updates m_container_bbox, for the container trees adopts the bbox 
         if(!tree->isContainer())
@@ -126,7 +122,6 @@ void NCSGList::load()
             tree->adjustToFit(m_container_bbox, scale );
         }
       
-
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
         LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
@@ -137,12 +132,35 @@ void NCSGList::load()
     // back into original source order with outer first eg [outer, container, sphere]  
     std::reverse( m_trees.begin(), m_trees.end() );
 
+
+    m_universe = createUniverse(1.1);
+}
+
+        
+
+NCSG* NCSGList::createUniverse(float scale) const 
+{
+    const char* bnd0 = m_bndspec->getLine(0);
+    const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
+
+    LOG(info) << "NCSGList::createUniverse"
+              << " bnd0 " << bnd0 
+              << " ubnd " << ubnd
+              << " scale " << scale
+              ;
+ 
+    NCSG* universe = loadTree(0, ubnd ) ;    // cheat clone 
+
+    assert( !universe->isContainer() );
+
+    universe->adjustToFit( m_container_bbox, scale ); 
+
+    return universe ; 
 }
 
 
-NCSG* NCSGList::loadTree(unsigned idx) const 
+NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const 
 {
-    const char* boundary = m_bndspec->getLine(idx);
     std::string treedir = getTreeDir(idx);
 
     NCSG* tree = new NCSG(treedir.c_str());
@@ -156,8 +174,6 @@ NCSG* NCSGList::loadTree(unsigned idx) const
 
     return tree ; 
 }
-
-
 
 
 
@@ -265,6 +281,27 @@ void NCSGList::dump(const char* msg) const
 {
     dumpDesc(msg);
     dumpMeta(msg);
+}
+
+void NCSGList::dumpUniverse(const char* msg) const 
+{
+    LOG(info) << msg
+              << " csgpath " << m_csgpath
+              ;
+
+    NCSG* tree = getUniverse();
+
+    std::cout 
+         << " meta " 
+         << std::endl 
+         << tree->meta() 
+         << std::endl 
+         << " desc " 
+         << std::endl 
+         << tree->desc() 
+         << std::endl 
+         ;
+
 }
 
 

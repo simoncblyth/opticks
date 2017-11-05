@@ -32,6 +32,7 @@ int main(int argc, char** argv)
 
     ls->dumpDesc();
     ls->dumpMeta();
+    ls->dumpUniverse();
 
 
     return 0 ; 

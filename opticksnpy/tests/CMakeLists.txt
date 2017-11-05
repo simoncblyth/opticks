@@ -55,6 +55,7 @@ NCubicTest.cc
 NSphereTest.cc
 NZSphereTest.cc
 NBoxTest.cc
+NBox2Test.cc
 NNode2Test.cc
 NSlabTest.cc
 NPlaneTest.cc

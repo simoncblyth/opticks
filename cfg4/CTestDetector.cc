@@ -97,11 +97,16 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 }
 
 
+G4LogicalVolume* CTestDetector::makeUniverseWrapper_NCSG(const NCSG* uni)
+{
+    return NULL ; 
+}
+
+
 G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
     NCSGList* csglist = m_geotest->getCSGList();
     assert( csglist );
-
 
     GNodeLib* nolib = m_geotest->getNodeLib();
 
@@ -128,11 +133,6 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     G4VPhysicalVolume* ppv = NULL ; 
     G4VPhysicalVolume* top = NULL ; 
     
-
-    //bool top_shim = true ; 
-    //GSolid* outer = nolib->getSolid(0) ; 
-
-
     for(unsigned i=0 ; i < numTrees ; i++) 
     {
         unsigned tree = i ;

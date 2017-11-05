@@ -7,6 +7,9 @@
 class OpticksHub ; 
 class OpticksQuery ; 
 
+// npy-
+class NCSG ; 
+
 // ggeo-
 class GGeoTest ; 
 class GGeoTestConfig ; 
@@ -81,6 +84,7 @@ class CFG4_API CTestDetector : public CDetector
   private:
     G4VPhysicalVolume* makeDetector();
     G4VPhysicalVolume* makeDetector_NCSG();
+    G4LogicalVolume*   makeUniverseWrapper_NCSG(const NCSG* uni);
 
   private:
     G4VPhysicalVolume* makeDetector_OLD();

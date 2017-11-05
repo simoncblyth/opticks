@@ -481,10 +481,23 @@ How to nudge to avoid a coincidence ?
 void nbox::adjustToFit(const nbbox& bb, float scale)
 {
     nquad qce ; 
-    qce.f = bb.center_extent() ; 
-    qce.f.w *= scale ; 
 
-    init_box( *this, qce );
+    if(is_box3)
+    {
+        // NB box3 always centered, see NBox2Test
+        qce.f.x = scale*(fabs(bb.min.x) + fabs(bb.max.x)) ; 
+        qce.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) ; 
+        qce.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) ; 
+        qce.f.w = 0.f ; 
+        init_box3( *this, qce );
+    }
+    else
+    {
+        qce.f = bb.center_extent() ; 
+        qce.f.w *= scale ; 
+        init_box( *this, qce );
+    }
+
 }
 
 

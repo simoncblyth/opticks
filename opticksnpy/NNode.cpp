@@ -696,7 +696,7 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
 void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale) 
 {
-    if( root->type == CSG_BOX )
+    if( root->type == CSG_BOX || root->type == CSG_BOX3)
     {
         nbox* box = dynamic_cast<nbox*>(root)  ;
         assert(box) ; 

@@ -16,17 +16,19 @@ class NPY_API NCSGList
         static const char* FILENAME ; 
         static NCSGList* Load(const char* csgpath, int verbosity) ;
         static bool      ExistsDir(const char* dir);
+        static const char* MakeUniverseBoundary( const char* boundary0 );
 
         NCSGList(const char* csgpath, int verbosity);
     private:
         void init() ;
         void load() ;
-        NCSG* loadTree(unsigned idx) const ;
-
+        NCSG* loadTree(unsigned idx, const char* boundary) const ;
+        NCSG* createUniverse(float scale) const ;
     public:
         void dump(const char* msg="NCSGList::dump") const ;
         void dumpDesc(const char* msg="NCSGList::dumpDesc") const ;
         void dumpMeta(const char* msg="NCSGList::dumpMeta") const ;
+        void dumpUniverse(const char* msg="NCSGList::dumpUniverse") const ;
     public:
         std::string getTreeDir(unsigned idx) const ;
 
