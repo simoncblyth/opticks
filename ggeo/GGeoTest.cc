@@ -221,7 +221,10 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     int verbosity = m_config->getVerbosity();
 
     assert( m_csglist == NULL );
-    m_csglist = new NCSGList(csgpath, verbosity );
+
+    m_csglist = NCSGList::Load(csgpath, verbosity );
+    assert( m_csglist );
+
     unsigned ntree = m_csglist->getNumTrees() ;
    
     LOG(info) << "GGeoTest::loadCSG START " 
@@ -415,6 +418,8 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
 GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* mm0)
 {
+    // TODO: eliminate, instead use GNodeLib::createMergeMesh 
+
     LOG(info) << "GGeoTest::combineSolids START " ; 
 
     unsigned verbosity = 3 ; 

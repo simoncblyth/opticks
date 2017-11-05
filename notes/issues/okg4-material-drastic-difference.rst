@@ -33,18 +33,22 @@ An Opticks MISS means just that, there was no geometry to hit
 in that direction. Presumbly within a volume based rep 
 the containing volume needs to be infinite ? 
 
-What needs to be done practiclly to get okg4 equivalence ?
+What needs to be done practically to get okg4 equivalence ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * make NCSG clone-able and nnode enlarge-able (can restrict imps to just box and sphere)
 
   * hmm can cheat the clone by a separate deserialize of the first (outer) tree
   * auto-container already has size to fit capability 
+ 
 
 * then can dynamically (ie no persistent rep) create a wrapper CSG volume 
   (in CTestDetector) just to translate the opticks outer boundant omat 
   into a volume for G4 consumption 
-  
+ 
+
+* to manage this have expanded NCSGList, providing a context for the multi-tree NCSG statics 
+ 
 
 
 After fWorldBoundary -> MISS

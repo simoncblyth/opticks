@@ -1331,35 +1331,20 @@ float NCSG::getSurfaceEpsilon() const
 
 
 
-void NCSG::updateContainer( nbbox& container ) const 
+void NCSG::adjustToFit( const nbbox& container, float scale ) const 
 {
-    LOG(debug) << "NCSG::updateContainer START " ; 
+    LOG(debug) << "NCSG::adjustToFit START " ; 
 
     nnode* root = getRoot();
-    //root->dump("root");
 
     nbbox root_bb = root->bbox();
-
-    if(!isContainer())
-    {  
-        container.include(root_bb); 
-    }
-    else
-    {
-        float scale = getContainerScale() ;
-        LOG(info) << "NCSG::updateContainer"
-                  << " root " << root->desc()
-                  << " container " << container.desc()
-                  << " scale " << scale
-                  ;
-        nnode::AdjustToFit(root, container, scale );         
-    }
+ 
+    nnode::AdjustToFit(root, container, scale );         
 
     LOG(debug) << "NCSG::updateContainer DONE"
               << " root_bb " << root_bb.desc()
               << " container " << container.desc()
               ;
-
 }
 
 

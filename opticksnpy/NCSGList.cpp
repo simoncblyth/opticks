@@ -38,8 +38,23 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity)
 NCSGList::NCSGList(const char* csgpath, int verbosity)
     :
     m_csgpath(strdup(csgpath)),
-    m_verbosity(verbosity)
+    m_verbosity(verbosity),
+    m_bndspec(NULL),
+    m_universe(NULL),
+    m_container_bbox()  
 {
+}
+
+
+void NCSGList::init()
+{
+    init_bbox(m_container_bbox) ;
+
+}
+
+NCSG* NCSGList::getUniverse() const 
+{
+    return m_universe ; 
 }
 
 
@@ -48,7 +63,7 @@ std::vector<NCSG*>& NCSGList::getTrees()
     return m_trees ; 
 }
 
-std::string NCSGList::getTreeDir(unsigned idx)
+std::string NCSGList::getTreeDir(unsigned idx) const 
 {
     return BFile::FormPath(m_csgpath, BStr::itoa(idx));  
 }
@@ -67,11 +82,11 @@ void NCSGList::load()
                            ;
     assert(exists); 
 
-    NTxt bnd(txtpath.c_str());
-    bnd.read();
-    bnd.dump("NCSGList::load");    
+    m_bndspec = new NTxt(txtpath.c_str());
+    m_bndspec->read();
+    m_bndspec->dump("NCSGList::load");    
 
-    unsigned nbnd = bnd.getNumLines();
+    unsigned nbnd = m_bndspec->getNumLines();
 
     LOG(info) << "NCSGList::load"
               << " VERBOSITY " << m_verbosity 
@@ -80,28 +95,41 @@ void NCSGList::load()
               << " nbnd " << nbnd 
               ;
 
-    nbbox container_bb = make_bbox() ; 
 
     // order is reversed so that a tree with the "container" meta data tag at tree slot 0
     // is handled last, so container_bb will then have been adjusted to hold all the others...
     // allowing the auto-bbox setting of the container
+    //
+    // this order flipping feels kludgy, 
+    // but because of the export of the resultant bbox it aint easy to fix
+    //
+
+    m_universe = loadTree(0) ; 
 
     for(unsigned j=0 ; j < nbnd ; j++)
     {
-        unsigned i = nbnd - 1 - j ;    
-        std::string treedir = BFile::FormPath(m_csgpath, BStr::itoa(i));  
+        unsigned idx = nbnd - 1 - j ;     // idx 0 is last 
 
-        NCSG* tree = new NCSG(treedir.c_str());
-        tree->setIndex(i);
-        tree->setVerbosity( m_verbosity );
-        tree->setBoundary( bnd.getLine(i) );
+        NCSG* tree = loadTree(idx);
 
-        tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
-        tree->import();  // input m_nodes buffer into CSG nnode tree 
-        tree->updateContainer(container_bb); // for non-container trees updates container_bbox, for the container trees adopts the bbox 
+        nbbox bba = tree->bbox_analytic();  
+
+
+       // for non-container trees updates m_container_bbox, for the container trees adopts the bbox 
+        if(!tree->isContainer())
+        {
+            m_container_bbox.include(bba);
+        } 
+        else if(tree->isContainer())
+        {
+            float scale = tree->getContainerScale(); // hmm should be prop of the list not the tree ? 
+            tree->adjustToFit(m_container_bbox, scale );
+        }
+      
+
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
 
-        LOG(debug) << "NCSGList::load [" << i << "] " << tree->desc() ; 
+        LOG(debug) << "NCSGList::load [" << idx << "] " << tree->desc() ; 
 
         m_trees.push_back(tree);  
     }
@@ -111,6 +139,23 @@ void NCSGList::load()
 
 }
 
+
+NCSG* NCSGList::loadTree(unsigned idx) const 
+{
+    const char* boundary = m_bndspec->getLine(idx);
+    std::string treedir = getTreeDir(idx);
+
+    NCSG* tree = new NCSG(treedir.c_str());
+
+    tree->setIndex(idx);
+    tree->setVerbosity( m_verbosity );
+    tree->setBoundary( boundary );
+
+    tree->load();    // m_nodes, the user input serialization buffer (no bbox from user input python)
+    tree->import();  // input m_nodes buffer into CSG nnode tree 
+
+    return tree ; 
+}
 
 
 
@@ -168,13 +213,14 @@ NCSG* NCSGList::findEmitter() const
 
 
 
-void NCSGList::dump(const char* msg) const 
+
+void NCSGList::dumpDesc(const char* msg) const 
 {
     LOG(info) << msg ; 
 
     unsigned numTrees = getNumTrees() ;
 
-    std::cout << "NCSGList::dump"
+    std::cout << "NCSGList::dumpDesc"
               << " csgpath " << m_csgpath
               << " verbosity " << m_verbosity 
               << " numTrees " << numTrees
@@ -184,8 +230,41 @@ void NCSGList::dump(const char* msg) const
     for(unsigned i=0 ; i < numTrees ; i++)
     {
          NCSG* tree = getTree(i);
-         std::cout << tree->desc() << std::endl ;
+         std::cout 
+             << " tree " << std::setw(2) << i << " "
+             << tree->desc() 
+             << std::endl ;
     }
+}
+
+void NCSGList::dumpMeta(const char* msg) const 
+{
+    LOG(info) << msg ; 
+
+    unsigned numTrees = getNumTrees() ;
+
+    std::cout << "NCSGList::dumpMeta"
+              << " csgpath " << m_csgpath
+              << " verbosity " << m_verbosity 
+              << " numTrees " << numTrees
+              << std::endl 
+              ;
+
+    for(unsigned i=0 ; i < numTrees ; i++)
+    {
+         NCSG* tree = getTree(i);
+         std::cout 
+             << " tree " << std::setw(2) << i << " "
+             << tree->meta() 
+             << std::endl ;
+    }
+}
+
+
+void NCSGList::dump(const char* msg) const 
+{
+    dumpDesc(msg);
+    dumpMeta(msg);
 }
 
 

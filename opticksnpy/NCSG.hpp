@@ -98,7 +98,7 @@ class NPY_API NCSG {
         unsigned         get_num_coincidence() const ;
         std::string      desc_coincidence() const ;
 
-        void updateContainer( nbbox& container ) const  ;
+        void adjustToFit( const nbbox& container, float scale ) const ;
     public:
         NTrianglesNPY* polygonize();
         NTrianglesNPY* getTris();

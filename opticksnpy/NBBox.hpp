@@ -125,11 +125,16 @@ inline NPY_API bool operator == (const nbbox& a , const nbbox& b )
    return a.min == b.min && a.max == b.max ; 
 }
 
+inline NPY_API void init_bbox(nbbox& bb)
+{
+    bb.set_empty();
+    bb.invert = false ; 
+}
+
 inline NPY_API nbbox make_bbox()
 {
     nbbox bb ; 
-    bb.set_empty();
-    bb.invert = false ; 
+    init_bbox(bb);
     return bb ; 
 }
 
