@@ -12,7 +12,7 @@
 
 // okc-
 #include "Opticks.hh"
-#include "OpticksFlags.h"
+#include "OpticksQuadrant.h"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 
@@ -376,7 +376,7 @@ void CRecorder::initEvent(OpticksEvent* evt)
         assert(m_record_max == 0 );
 
         // shapes must match OpticksEvent::createBuffers
-        // TODO: avoid this duplicity 
+        // TODO: avoid this duplicity using the spec
 
         m_dynamic_records = NPY<short>::make(1, m_steps_per_photon, 2, 4) ;
         m_dynamic_records->zero();
@@ -592,7 +592,7 @@ bool CRecorder::LiveRecordStep()
     unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage );
 
 
-    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
@@ -851,6 +851,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
+    bool miss = ( flag & MISS ) != 0 ;  
+
+
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ; // constrain slot to inclusive range (0,m_steps_per_photon-1) 
 
     m_record_truncate = slot == m_steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
@@ -941,7 +944,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     if(m_bounce_truncate) m_step_action |= BOUNCE_TRUNCATE ; 
 
 
-    bool done = m_bounce_truncate || m_record_truncate || absorb ;   
+    bool done = m_bounce_truncate || m_record_truncate || absorb || miss ;   
 
     if(done && m_dynamic)
     {

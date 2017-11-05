@@ -3,8 +3,6 @@
 
 #include "G4StepPoint.hh"
 #include "Opticks.hh"
-#include "OpticksFlags.h"
-
 
 #include "OpStatus.hh"
 #include "CBoundaryProcess.hh"
@@ -267,7 +265,8 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     } 
     else if(transportation && status == fWorldBoundary )
     {
-        flag = SURFACE_ABSORB ;   // kludge for fWorldBoundary - no surface handling yet 
+        //flag = SURFACE_ABSORB ;   // former kludge for fWorldBoundary - no surface handling yet 
+        flag = MISS ; 
     }
     else
     {

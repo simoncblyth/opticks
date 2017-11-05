@@ -11,7 +11,7 @@
 #define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
 
 #include "OpticksPhoton.h"
-#include "OpticksFlags.h"
+#include "OpticksQuadrant.h"
 
 enum { BREAK, CONTINUE, PASS, START, RETURN }; // return value from propagate_to_boundary
 

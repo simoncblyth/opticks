@@ -162,7 +162,7 @@ set(HEADERS
     Composition.hh
 
     OpticksPhoton.h
-    OpticksFlags.h
+    OpticksQuadrant.h
 )
 
 
