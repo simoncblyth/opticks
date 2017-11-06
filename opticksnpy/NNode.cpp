@@ -1208,15 +1208,37 @@ void nnode::par_posnrm_model(glm::vec3& , glm::vec3& , unsigned, float, float ) 
 }
 
 
-
-
-void nnode::generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total ) const  
+void nnode::selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) const 
 {
-    unsigned ns = par_nsurf();
+    unsigned nsa = par_nsurf();
+
+    if( sheetmask == 0 ) // all sheets
+    {
+        for(unsigned sheet = 0 ; sheet < nsa ; sheet++) sheets.push_back(sheet) ;
+    }
+    else
+    {
+        for(unsigned sheet = 0 ; sheet < nsa ; sheet++) if((sheetmask & (0x1 << sheet)) != 0  ) sheets.push_back(sheet) ;
+    } 
+
+    LOG(info) << "nnode::selectSheets"
+              << " nsa " << nsa
+              << " sheetmask " << std::hex << sheetmask << std::dec
+              << " ns " << sheets.size() 
+              ;
+}
+
+
+void nnode::generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const  
+{
+    std::vector<unsigned> sheets ; 
+    selectSheets(sheets, sheetmask);
+    unsigned ns = sheets.size() ; 
+
     unsigned cumsum = 0 ; 
     BRng rng ;  // hmm this repeats every time : need to handle globally, seeding?
 
-    for(unsigned sheet = 0 ; sheet < ns ; sheet++) 
+    for(unsigned sheet = 0 ; sheet < ns  ; sheet++) 
     {
         unsigned num = sheet == ns - 1 ? num_total - cumsum : num_total/ns  ; 
         generateParPointsSheet(points, normals, rng, sheet, num ) ;

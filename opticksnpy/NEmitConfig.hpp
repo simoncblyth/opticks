@@ -24,6 +24,8 @@ struct NPY_API NEmitConfig
     float weight ; 
     float posdelta ;  // nudge photon start position along its direction 
 
+    std::string sheetmask ; 
+
 
 };
 

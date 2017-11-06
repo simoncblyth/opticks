@@ -16,5 +16,13 @@ int main(int argc, char** argv)
      assert( x1 == a1 ); 
 
 
+     unsigned long long x2 = 0xfedcba9876543210 ; 
+     unsigned long long a2 = BHex<unsigned long long>::hex_lexical_cast("0xfedcba9876543210") ; 
+     assert( x2 == a2 ); 
+
+
+
+
+
     return 0 ; 
 }

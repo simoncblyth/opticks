@@ -3,6 +3,11 @@
 
 #include <map>
 
+
+// brap-
+#include "BStr.hh"
+
+
 // okc-
 #include "OpticksHub.hh"
 #include "Opticks.hh"
@@ -97,115 +102,84 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 }
 
 
-G4LogicalVolume* CTestDetector::makeUniverseWrapper_NCSG(const NCSG* uni)
+
+G4VPhysicalVolume* CTestDetector::makeVolume(const NCSG* csg, const char* lvn, const char* pvn)
 {
-    return NULL ; 
+    // m_blib is CBndLib instance from CDetector base
+    //        that contains a GBndLib instance
+    //
+    // test geometry often uses dynamic omat/osur/isur/imat 
+    // combinations that are not persisted to the bndlib
+    // so must add the spec : in order to make the boundary index valid
+    //
+    assert( csg );
+    assert( lvn );
+    assert( pvn );
+
+    const char* spec = csg->getBoundary();
+    unsigned boundary = m_blib->addBoundary(spec);
+    LOG(info)  << " csg.spec " << spec << " boundary " << boundary ;
+
+    GMaterial* imat = m_blib->getInnerMaterial(boundary); 
+    GSur* isur      = m_blib->getInnerSurface(boundary); 
+    GSur* osur      = m_blib->getOuterSurface(boundary); 
+
+    // hmm sometimes skin ??
+    if(isur) isur->setBorder();
+    if(osur) osur->setBorder();
+
+    if(isur) isur->dump("isur");
+    if(osur) osur->dump("osur");
+
+    const G4Material* material = m_mlib->convertMaterial(imat);
+    G4VSolid* solid = m_maker->makeSolid( csg ); 
+
+    G4LogicalVolume* mother = NULL ; 
+    G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
+    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
+
+    return pv ; 
 }
+
+G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
+{
+    OpticksCSG_t type = csg->getRootType() ;
+    const char* shapename = CSGName(type);
+    const char* lvn = BStr::concat<const char*>("UniverseLV_", shapename, NULL); 
+    const char* pvn = BStr::concat<const char*>("UniversePV_", shapename, NULL ); 
+    return makeVolume(csg, lvn, pvn );
+}
+
 
 
 G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
-    NCSGList* csglist = m_geotest->getCSGList();
-    assert( csglist );
-
     GNodeLib* nolib = m_geotest->getNodeLib();
-
-    GMergedMesh* tmm = m_geotest->getMergedMesh(0) ;
-
     assert( nolib );
-
-    unsigned numTrees = csglist->getNumTrees();
     unsigned numSolids = nolib->getNumSolids();
 
     LOG(info) << "CTestDetector::makeDetector_NCSG"
-              << " numTrees " << numTrees 
               << " numSolids " << numSolids 
-              << " tmm " << tmm
               ;
 
-    assert( numSolids == numTrees );
+    //NCSG* universe = m_geotest->getUniverse();
+    NCSG* universe = NULL ;
 
-    // contrast with GGeoTest::loadCSG
-    std::vector<G4VSolid*> g4solids ; 
-   
-
-    G4LogicalVolume* mother = NULL ; 
-    G4VPhysicalVolume* ppv = NULL ; 
-    G4VPhysicalVolume* top = NULL ; 
+    G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ; 
+    G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ; 
     
-    for(unsigned i=0 ; i < numTrees ; i++) 
+    G4VPhysicalVolume* ppv = NULL ; 
+    for(unsigned i=0 ; i < numSolids ; i++) 
     {
-        unsigned tree = i ;
-
-        GSolid* kso = nolib->getSolid(tree); 
-
-        const GMesh* mesh = kso->getMesh();
-
-        const NCSG* csg = mesh->getCSG();
-
-        const char* spec = csg->getBoundary();
-
-        unsigned boundary0 = kso->getBoundary();
-
-        // m_blib is CBndLib instance from CDetector base
-        //        that contains a GBndLib instance
-        //
-        // trying to just use boundary0 : find the index invalid 
-        // test geometry often uses dynamic omat/osur/isur/imat 
-        // combinations that are not persisted to the bndlib
-        // so must add the spec : in order to make the boundary index valid
-        //
-
-        unsigned boundary = m_blib->addBoundary(spec);
-
-        LOG(info) 
-             << " i " << i 
-             << " tree " << tree 
-             << " boundary0 " << boundary0
-             << " boundary " << boundary
-             << " csg.bnd " << spec
-             ;
-
-        //GMaterial* omat = m_blib->getOuterMaterial(boundary); 
-        GMaterial* imat = m_blib->getInnerMaterial(boundary); 
-        GSur* isur      = m_blib->getInnerSurface(boundary); 
-        GSur* osur      = m_blib->getOuterSurface(boundary); 
-
-        //WHY?  just copying _OLD
-        if(isur) isur->setBorder();
-        if(osur) osur->setBorder();
-
-        if(isur) isur->dump("isur");
-        if(osur) osur->dump("osur");
-
-        const G4Material* material = m_mlib->convertMaterial(imat);
-        G4VSolid* solid = m_maker->makeSolid( csg ); 
-
-        OpticksCSG_t type = csg->getRootType() ;
-        const char* shapename = CSGName(type);
-
+        GSolid* kso = nolib->getSolid(i); 
         const char* lvn = kso->getLVName();
         const char* pvn = kso->getPVName();
+        const GMesh* mesh = kso->getMesh();
+        const NCSG* csg = mesh->getCSG();
 
-        assert( lvn );
-        assert( pvn );
+        G4VPhysicalVolume* pv = makeVolume( csg , lvn , pvn );
+        G4LogicalVolume* lv = pv->GetLogicalVolume() ;
 
-        LOG(info) 
-             << " i " << i 
-             << " boundary " << boundary
-             << " imat " << imat 
-             << " isur " << isur 
-             << " osur " << osur 
-             << " shapename " << shapename
-             << " lvn " << lvn 
-             << " pvn " << pvn 
-             << " mat " << material->GetName()
-             ;
-
-
-        G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
-        G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
- 
         if(top == NULL) top = pv ; 
         if(ppv == NULL) ppv = pv ; 
         mother = lv ;  

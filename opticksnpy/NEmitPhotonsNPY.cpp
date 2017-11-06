@@ -1,3 +1,5 @@
+
+#include "BHex.hh"
 #include "GLMFormat.hpp"
 
 #include "NGLMExt.hpp"
@@ -57,8 +59,7 @@ void NEmitPhotonsNPY::init()
 
     m_photons->zero();   
 
-    if(m_emitdbg)
-    m_cfg->dump();
+    if(m_emitdbg) m_cfg->dump();
 
     unsigned numPhoton = m_photons->getNumItems();
 
@@ -68,7 +69,12 @@ void NEmitPhotonsNPY::init()
 
     std::vector<glm::vec3> points ; 
     std::vector<glm::vec3> normals ; 
-    m_root->generateParPoints( points, normals, numPhoton );
+
+    std::string sheetmask_ = m_cfg->sheetmask ; 
+    unsigned sheetmask = BHex<unsigned>::hex_lexical_cast( sheetmask_.c_str() ) ;
+
+
+    m_root->generateParPoints( points, normals, numPhoton, sheetmask );
 
     assert( points.size() == numPhoton );
     assert( normals.size() == numPhoton );

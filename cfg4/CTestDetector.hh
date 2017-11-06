@@ -84,7 +84,8 @@ class CFG4_API CTestDetector : public CDetector
   private:
     G4VPhysicalVolume* makeDetector();
     G4VPhysicalVolume* makeDetector_NCSG();
-    G4LogicalVolume*   makeUniverseWrapper_NCSG(const NCSG* uni);
+    G4VPhysicalVolume* makeVolume(const NCSG* csg, const char* lvn, const char* pvn);
+    G4VPhysicalVolume* makeVolumeUniverse(const NCSG* csg);
 
   private:
     G4VPhysicalVolume* makeDetector_OLD();

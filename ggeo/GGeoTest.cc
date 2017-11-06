@@ -44,11 +44,12 @@
 
 
 
-GSolidList*     GGeoTest::getSolidList(){       return m_solist ; }  // <-- TODO: elim, use GNodeLib
+GSolidList*     GGeoTest::getSolidList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
 
-NCSGList*       GGeoTest::getCSGList() const  { return m_csglist ;  }
-GGeoTestConfig* GGeoTest::getConfig() {         return m_config ; }
-NCSG* GGeoTest::findEmitter() const  {          return m_csglist ? m_csglist->findEmitter() : NULL ; }
+NCSGList*       GGeoTest::getCSGList() const  {  return m_csglist ;  }
+GGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
+NCSG*           GGeoTest::findEmitter() const  { return m_csglist ? m_csglist->findEmitter() : NULL ; }
+NCSG*           GGeoTest::getUniverse() const  { return m_csglist ? m_csglist->getUniverse() : NULL ; }
 
 
 // pass along from basis

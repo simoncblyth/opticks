@@ -51,6 +51,42 @@ What needs to be done practically to get okg4 equivalence ?
  
 
 
+Huh worse with universe wrapper ?
+------------------------------------
+
+* hmm simplifiy input photons to being all from one direction for easier debug 
+  with an emit mask 
+
+
+::
+
+    Rock///Pyrex
+    /tmp/blyth/opticks/tboolean-media--
+    .                seqhis_ana  1:tboolean-media   -1:tboolean-media        c2        ab        ba 
+    .                             600000    600000    398560.81/8 = 49820.10  (pval:0.000 prob:1.000)  
+    0000     299543    598924         99757.68  TO MI
+    0001     289569       546        287935.11  TO AB
+    0002       5233         0          5233.00  TO BR MI
+    0003       5102         0          5102.00  TO BR AB
+    0004        142       530           224.02  TO SC MI
+    0005         98         0            98.00  TO SC AB
+    0006         89         0            89.00  TO BR BR AB
+    0007         84         0            84.00  TO BR BR MI
+    0008         38         0            38.00  TO SC BR MI
+    0009         30         0             0.00  TO SC BR AB
+    0010         15         0             0.00  TO SC BR BR AB
+    0011         12         0             0.00  TO SC BR BR BR AB
+    0012         10         0             0.00  TO SC BR BR BR BR AB
+    0013         10         0             0.00  TO SC BR BR MI
+    0014          8         0             0.00  TO SC BR BR BR BR BR AB
+    0015          5         0             0.00  TO SC BR BR BR BR BR BR BR BR
+    0016          3         0             0.00  TO BR SC MI
+    0017          2         0             0.00  TO SC BR BR BR BR BR BR AB
+    0018          2         0             0.00  TO SC BR BR BR MI
+    0019          2         0             0.00  TO BR BR BR MI
+    .                             600000    600000    398560.81/8 = 49820.10  (pval:0.000 prob:1.000)  
+
+
 After fWorldBoundary -> MISS
 --------------------------------
 

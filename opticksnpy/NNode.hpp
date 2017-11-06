@@ -110,8 +110,8 @@ struct NPY_API nnode
     static void _par_pos_endcap(glm::vec3& pos,  const nuv& uv, const float r_, const float z_ ) ; 
 
 
-
-    void generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total ) const   ;
+    void selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) const ;
+    void generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const   ;
     void generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const ;
 
 

@@ -63,6 +63,7 @@ class GGEO_API GGeoTest : public GGeoBase {
     public:
        GGeoTestConfig* getConfig();
        NCSGList*       getCSGList() const ;
+       NCSG*           getUniverse() const ;
        NCSG*           findEmitter() const ;
        unsigned        getNumTrees() const ;
        NCSG*           getTree(unsigned index) const ;

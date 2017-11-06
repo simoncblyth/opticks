@@ -393,7 +393,11 @@ tboolean-photons(){ echo 100000 ; }
 tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000 ; }
 
 
-tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1" ; }
+# sheetmask
+#    0x1  : sheet 0 only
+#    0x3f : sheets 0:6 
+
+tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" ; }  
 
 
 tboolean-torchconfig-disc()
@@ -1868,6 +1872,7 @@ EOP
 
 tboolean-media-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-media-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-media-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf ; } 
 tboolean-media(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-media-(){  $FUNCNAME- | python $* ; } 
 tboolean-media--(){ cat << EOP 
