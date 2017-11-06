@@ -18,6 +18,8 @@ if __name__ == '__main__':
 
     ab = AB(ok)
     print ab
+    print ab.a.metadata
+    print ab.a.metadata.csgmeta0
 
     if not ok.ipython:
         log.info("early exit as non-interactive")

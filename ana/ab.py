@@ -905,4 +905,8 @@ if __name__ == '__main__':
     ok = opticks_main()
     ab = AB(ok)
     print ab
+
+    print ab.a.metadata
+
+
     

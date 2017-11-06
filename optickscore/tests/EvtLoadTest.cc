@@ -32,7 +32,7 @@ int main(int argc, char** argv)
 
 
     OpticksEventDump dmp(evt);
-    dmp.dump();
+    dmp.dump(0);
 
 
 

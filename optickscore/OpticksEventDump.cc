@@ -17,7 +17,10 @@ OpticksEventDump::OpticksEventDump(OpticksEvent* evt )
     m_evt(evt),
     m_stat(new OpticksEventStat(evt,0)),
     m_noload( evt ? evt->isNoLoad() : true ),
-    m_records( evt ? evt->getRecordsNPY() : NULL )
+    m_records( evt ? evt->getRecordsNPY() : NULL ),
+    m_photons( evt ? evt->getPhotonData() : NULL ),
+    m_seq( evt ? evt->getSequenceData() : NULL),
+    m_num_photons(m_photons ? m_photons->getShape(0) : 0 )
 {
     init();
 }
@@ -25,19 +28,24 @@ OpticksEventDump::OpticksEventDump(OpticksEvent* evt )
 void OpticksEventDump::init()
 {
     assert(m_ok);
+
+    if( m_photons && m_seq )
+    {
+        assert( m_photons->getShape(0)  == m_seq->getShape(0)  );
+    }
+
 }
 
-void OpticksEventDump::dump(const char* msg)
+unsigned OpticksEventDump::getNumPhotons() const 
 {
-    Summary(msg);
-    dumpRecords();
-    dumpPhotonData();
+    return m_num_photons ; 
 }
 
-void OpticksEventDump::Summary(const char* msg)
+void OpticksEventDump::Summary(const char* msg) const 
 {
     LOG(info) << msg ; 
     const char* geopath = m_evt->getGeoPath();
+    std::cout << m_photons->description() << std::endl ;
 
     std::cout 
         << std::setw(20) 
@@ -65,57 +73,62 @@ void OpticksEventDump::Summary(const char* msg)
 
 
 
-void OpticksEventDump::dumpRecords(const char* msg)
+void OpticksEventDump::dump(unsigned photon_id) const 
 {
-    for(unsigned photon_id=0 ; photon_id < 5 ; photon_id++ ) dumpRecords(msg, photon_id );
+    if(m_noload) return ; 
+    LOG(info) 
+         << " tagdir " << m_evt->getTagDir()
+         << " photon_id " << photon_id ; 
+    dumpRecords(photon_id);
+    dumpPhotonData(photon_id);
 }
 
-void OpticksEventDump::dumpRecords(const char* msg, unsigned photon_id )
+void OpticksEventDump::dumpRecords(unsigned photon_id ) const 
 {
-    LOG(info) << msg ; 
-    if(m_noload) return ; 
+    if( photon_id >= m_num_photons ) return ; 
 
-    unsigned maxrec = m_evt->getMaxRec() ;
-    for(unsigned r=0 ; r < maxrec ; r++)
+    std::vector<NRec> recs ; 
+    glm::vec4 ldd = m_records->getLengthDistanceDurationRecs(recs, photon_id ); 
+
+    for(unsigned p=0 ; p < recs.size() ; p++)
     {
-        m_records->dumpRecord(photon_id,r,"dumpRecord (i,j)");
+        const NRec& rec = recs[p] ; 
+        if( rec.post.w == 0 ) continue ; 
+
+
+        //unsigned hflg = rec.flag.w ;  //    3: (MISS = 0x1 << 2)   13: (TORCH = 0x1 << 12)
+
+        std::cout 
+            << std::setw(40) 
+            << gpresent(rec.post,2,11) 
+            << std::setw(40) 
+            << gpresent(rec.polw,2,7) 
+            << std::setw(40) 
+            << gpresent( rec.flag )  // m1, m2, bnd, hflg     
+            << std::setw(10) 
+            << rec.hs
+            << std::setw(10) 
+            << rec.m1
+            << std::setw(10) 
+            << rec.m2
+            << std::endl 
+            ;
     }
-
-    std::vector<glm::vec4> posts ; 
-    glm::vec4 ldd = m_records->getLengthDistanceDurationPosts(posts, photon_id ); 
-
-    for(unsigned p=0 ; p < posts.size() ; p++)
-        std::cout << gpresent( "post", posts[p] ) ; 
 }
 
 
-void OpticksEventDump::dumpPhotonData(const char* msg)
+void OpticksEventDump::dumpPhotonData(unsigned photon_id) const 
 {
-    LOG(info) << msg ; 
-    if(m_noload) return ; 
+    if( photon_id >= m_num_photons ) return ; 
+    
+    unsigned i = photon_id ; 
+    unsigned int ux = m_photons->getUInt(i,0,0); 
+    float fx = m_photons->getFloat(i,0,0); 
+    float fy = m_photons->getFloat(i,0,1); 
+    float fz = m_photons->getFloat(i,0,2); 
+    float fw = m_photons->getFloat(i,0,3); 
 
-    NPY<float>* photons = m_evt->getPhotonData();
-    if(!photons) return ;
-    dumpPhotonData(photons);
-}
-
-void OpticksEventDump::dumpPhotonData(NPY<float>* photons)
-{
-    std::cout << photons->description("OpticksEventDump::dumpPhotonData") << std::endl ;
-
-    for(unsigned int i=0 ; i < photons->getShape(0) ; i++)
-    {
-        //if(i%10000 == 0)
-        if(i < 10)
-        {
-            unsigned int ux = photons->getUInt(i,0,0); 
-            float fx = photons->getFloat(i,0,0); 
-            float fy = photons->getFloat(i,0,1); 
-            float fz = photons->getFloat(i,0,2); 
-            float fw = photons->getFloat(i,0,3); 
-            printf(" ph  %7u   ux %7u   fxyzw %10.3f %10.3f %10.3f %10.3f \n", i, ux, fx, fy, fz, fw );             
-        }
-    }  
+    printf(" ph  %7u   ux %7u   fxyzw %10.3f %10.3f %10.3f %10.3f \n", i, ux, fx, fy, fz, fw );             
 }
 
 

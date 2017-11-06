@@ -18,20 +18,21 @@ class OKCORE_API OpticksEventDump
    private:
        void init();
    public:
-       void Summary(const char* msg="OpticksEventDump::Summary");
-       void dump(const char* msg="OpticksEventDump::dump");
-       void dumpRecords(const char* msg="OpticksEventDump::dumpRecords");
-       void dumpRecords(const char* msg, unsigned photon_id );
-
-       void         dumpPhotonData(const char* msg="OpticksEventDump::dumpPhotonData");
-       static void  dumpPhotonData(NPY<float>* photon_data);
-
+       void Summary(const char* msg="OpticksEventDump::Summary") const ;
+       void dump(unsigned photon_id) const ;
+       unsigned getNumPhotons() const ;
+   private:
+       void dumpRecords(unsigned photon_id ) const ;
+       void dumpPhotonData(unsigned photon_id) const ;
    private:
        Opticks*          m_ok ; 
        OpticksEvent*     m_evt ; 
        OpticksEventStat* m_stat ; 
        bool              m_noload ; 
        RecordsNPY*       m_records ; 
+       NPY<float>*       m_photons ; 
+       NPY<unsigned long long>* m_seq ;
+       unsigned          m_num_photons ; 
 };
 
 #include "OKCORE_TAIL.hh"

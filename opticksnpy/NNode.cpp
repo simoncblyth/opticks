@@ -694,19 +694,19 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
 
 
-void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale) 
+void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale, float delta ) 
 {
     if( root->type == CSG_BOX || root->type == CSG_BOX3)
     {
         nbox* box = dynamic_cast<nbox*>(root)  ;
         assert(box) ; 
-        box->adjustToFit(container, scale );
+        box->adjustToFit(container, scale, delta );
     }
     else if( root->type == CSG_SPHERE )
     {
         nsphere* sph = dynamic_cast<nsphere*>(root)  ;
         assert(sph) ; 
-        sph->adjustToFit(container, scale );
+        sph->adjustToFit(container, scale, delta );
     }
     else
     {

@@ -301,17 +301,28 @@ tboolean-ls-(){ grep TESTCONFIG= $BASH_SOURCE ; }
 tboolean-ls(){ $FUNCNAME- | perl -ne 'm/(\S*)\(\)/ && print "$1\n" ' -   ; }
 
 
+tboolean-seqhis()
+{ 
+   case $1 in 
+     "TO MI"            ) echo 0x3d ;;
+     "TO AB"            ) echo 0x4d ;;
+     "TO SC BT BR BT SA") echo 0x8cbc6d ;;
+     "TO SC BT BT SA"   ) echo 0x8cc6d  ;;
+     "TO BT BT SA"      ) echo 0x8ccd  ;;
+     "TO SC SA"         ) echo 0x86d  ;;
+     "TO BR MI"         ) echo 0x3bd  ;;
+   esac
+}
+
+
 tboolean-ana-(){
     local msg="$FUNCNAME :"
 
-    #local dbgseqhis=0x8cbc6d   # TO SC BT BR BT SA 
-    #local dbgseqhis=0x8cc6d    # TO SC BT BT SA
-    #local dbgseqhis=0x8ccd      # TO BT BT SA
-    local dbgseqhis=0x86d        # TO SC SA
-
-
     local testname=${TESTNAME}
     [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
+
+    #local dbgseqhis=$(tboolean-seqhis "TO MI")
+    local dbgseqhis=$(tboolean-seqhis "TO BR MI")
 
     #local exe=OpticksEventAnaTest 
     local exe=OpticksEventCompareTest 
@@ -322,7 +333,7 @@ tboolean-ana-(){
 
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
-tboolean-g-(){ lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
+tboolean-g-(){  CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 
 tboolean--(){
@@ -1883,6 +1894,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 media = "Pyrex"
+#media = "Vacuum"
 boundary = "Rock///%s" % media
 
 container = CSG("box", param=[0,0,0,400], boundary=boundary, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  

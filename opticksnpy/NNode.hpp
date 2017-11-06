@@ -37,7 +37,7 @@ struct NPY_API nnode
     std::function<float(float,float,float)> sdf() const ;
 
     static nnode* load(const char* treedir, const NSceneConfig* config=NULL);
-    static void AdjustToFit(nnode* node, const nbbox& bb, float scale) ;
+    static void AdjustToFit(nnode* node, const nbbox& bb, float scale, float delta ) ;
 
     virtual const char* csgname() const ;  
     virtual nbbox bbox() const ;

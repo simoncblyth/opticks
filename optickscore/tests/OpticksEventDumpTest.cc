@@ -34,7 +34,8 @@ int main(int argc, char** argv)
     }
 
     OpticksEventDump dump(evt);
-    dump.dump();
+
+    dump.dump(0);
 
     return 0 ; 
 }

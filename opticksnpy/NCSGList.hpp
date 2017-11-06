@@ -23,7 +23,7 @@ class NPY_API NCSGList
         void init() ;
         void load() ;
         NCSG* loadTree(unsigned idx, const char* boundary) const ;
-        NCSG* createUniverse(float scale) const ;
+        NCSG* createUniverse(float scale, float delta) const ;
     public:
         void dump(const char* msg="NCSGList::dump") const ;
         void dumpDesc(const char* msg="NCSGList::dumpDesc") const ;

@@ -2165,3 +2165,17 @@ int OpticksEvent::seedDebugCheck(const char* msg)
 
 
 
+unsigned long long  OpticksEvent::getSeqHis(unsigned photon_id ) const 
+{
+    unsigned long long sh = m_sequence_data ? m_sequence_data->getValue(photon_id,0,0) : 0 ;
+    return sh ;
+}
+
+unsigned long long  OpticksEvent::getSeqMat(unsigned photon_id ) const 
+{
+    unsigned long long sm = m_sequence_data ? m_sequence_data->getValue(photon_id,0,1) : 0 ;
+    return sm ;
+}
+
+
+

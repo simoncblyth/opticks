@@ -150,6 +150,12 @@ class Metadata(object):
     csgbnd = property(_get_csgbnd)
   
 
+    def _get_csgmeta0(self):
+        csgmeta0_ = os.path.join(self.TestCSGPath, "0", "meta.json")
+        csgmeta0 = json_(csgmeta0_) if os.path.exists(csgmeta0_) else []
+        return csgmeta0
+    csgmeta0 = property(_get_csgmeta0)
+       
 
     def dump(self):
         for k,v in self.parameters.items():

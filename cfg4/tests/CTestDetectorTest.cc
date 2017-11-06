@@ -34,7 +34,8 @@
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv)
+    //PLOG_(argc, argv)
+    PLOG_COLOR(argc, argv)
 
     BRAP_LOG__ ; 
     NPY_LOG__ ; 

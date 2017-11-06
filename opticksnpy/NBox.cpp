@@ -478,16 +478,16 @@ How to nudge to avoid a coincidence ?
 
 
 
-void nbox::adjustToFit(const nbbox& bb, float scale)
+void nbox::adjustToFit(const nbbox& bb, float scale, float delta )
 {
     nquad qce ; 
 
     if(is_box3)
     {
         // NB box3 always centered, see NBox2Test
-        qce.f.x = scale*(fabs(bb.min.x) + fabs(bb.max.x)) ; 
-        qce.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) ; 
-        qce.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) ; 
+        qce.f.x = scale*(fabs(bb.min.x) + fabs(bb.max.x)) + delta ; 
+        qce.f.y = scale*(fabs(bb.min.y) + fabs(bb.max.y)) + delta ; 
+        qce.f.z = scale*(fabs(bb.min.z) + fabs(bb.max.z)) + delta ; 
         qce.f.w = 0.f ; 
         init_box3( *this, qce );
     }
@@ -495,6 +495,8 @@ void nbox::adjustToFit(const nbbox& bb, float scale)
     {
         qce.f = bb.center_extent() ; 
         qce.f.w *= scale ; 
+        qce.f.w += delta ; 
+  
         init_box( *this, qce );
     }
 

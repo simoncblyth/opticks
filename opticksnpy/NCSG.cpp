@@ -1331,7 +1331,7 @@ float NCSG::getSurfaceEpsilon() const
 
 
 
-void NCSG::adjustToFit( const nbbox& container, float scale ) const 
+void NCSG::adjustToFit( const nbbox& container, float scale, float delta ) const 
 {
     LOG(debug) << "NCSG::adjustToFit START " ; 
 
@@ -1339,7 +1339,7 @@ void NCSG::adjustToFit( const nbbox& container, float scale ) const
 
     nbbox root_bb = root->bbox();
  
-    nnode::AdjustToFit(root, container, scale );         
+    nnode::AdjustToFit(root, container, scale, delta );         
 
     LOG(debug) << "NCSG::updateContainer DONE"
               << " root_bb " << root_bb.desc()

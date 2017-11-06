@@ -96,8 +96,11 @@ void OpticksEventAna::countExcursions()
         unsigned count = 0 ; 
         for(unsigned i=0 ; i < m_pho_num ; i++)
         { 
-            unsigned long long seqhis_ = m_seq->getValue(i,0,0);
+            //unsigned long long seqhis_ = m_seq->getValue(i,0,0);
             //unsigned long long seqmat_ = m_seq->getValue(i,0,1);
+
+            unsigned long long seqhis_ = m_evt->getSeqHis(i);
+
 
             glm::vec4 post = m_pho->getQuad(i,0,0);
             glm::vec4 pos(post);
@@ -175,20 +178,20 @@ void OpticksEventAna::dumpStepByStepCSGExcursions(unsigned photon_id )
     unsigned long long seqhis_ = m_seq->getValue(photon_id,0,0);
     //unsigned long long seqmat_ = m_seq->getValue(i,0,1);
 
-    std::vector<glm::vec4> posts ; 
-    glm::vec4 ldd = m_records->getLengthDistanceDurationPosts(posts, photon_id ); 
+    std::vector<NRec> recs ; 
+    glm::vec4 ldd = m_records->getLengthDistanceDurationRecs(recs, photon_id ); 
 
     LOG(info) << "OpticksEventAna::dumpStepByStepCSGExcursions"
               << " photon_id " << photon_id 
-              << " num_pos " << posts.size()
+              << " num_recs " << recs.size()
               << " num_tree " << m_tree_num
               << " seqhis " << std::setw(16) << std::hex << seqhis_ << std::dec
               << " " << std::setw(64) << OpticksFlags::FlagSequence( seqhis_, true )
               ;
     
-    for(unsigned p=0 ; p < posts.size() ; p++)
+    for(unsigned p=0 ; p < recs.size() ; p++)
     {         
-        const glm::vec4& post = posts[p]  ;
+        const glm::vec4& post = recs[p].post  ;
         std::cout << gpresent_( "post", post ) ; 
 
         glm::vec4 lpos(post) ;

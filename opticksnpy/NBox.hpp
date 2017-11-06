@@ -28,7 +28,7 @@ struct NPY_API nbox : nnode
 {
     //  geometry modifiers
 
-    void adjustToFit(const nbbox& container_bb, float scale);
+    void adjustToFit(const nbbox& container_bb, float scale, float delta );
     void nudge(unsigned s, float delta);
 
     // signed distance functions

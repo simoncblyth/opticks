@@ -212,11 +212,12 @@ nbbox nsphere::bbox() const
 
 
 
-void nsphere::adjustToFit(const nbbox& bb, float scale)
+void nsphere::adjustToFit(const nbbox& bb, float scale, float delta)
 {
     nquad qce ; 
     qce.f = bb.center_extent() ; 
     qce.f.w *= scale ; 
+    qce.f.w += delta ;
 
     init_sphere( *this, qce );
 }

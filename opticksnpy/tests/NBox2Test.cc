@@ -26,7 +26,7 @@ void test_adjustToFit()
 
     LOG(info) << " cc ( enlarged bbox ) " << cc.desc() ; 
 
-    box.adjustToFit( cc , 1.f );    
+    box.adjustToFit( cc , 1.f, 0.f );    
 
     box.pdump("after adjustToFit make_box3(2*h,2*h,2*h)");
 
@@ -34,7 +34,13 @@ void test_adjustToFit()
 
     assert( cc.is_equal(cc2) );
 
-    
+    box.adjustToFit( cc , 1.f, 1.f );    
+   
+    nbbox cc3 = box.bbox_model();
+
+    assert( !cc.is_equal(cc3) );
+ 
+    LOG(info) << " cc3 ( enlarged bbox ) " << cc.desc() ; 
 
 
 }

@@ -262,6 +262,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        std::string getTagDir(const char* anno=NULL); // anno usually NULL, sometimes the timestamp
        static std::string TagDir(const char* det, const char* typ, const char* tag, const char* anno=NULL);
+   public:
+       unsigned long long getSeqHis(unsigned photon_id) const ; 
+       unsigned long long getSeqMat(unsigned photon_id) const ; 
    private:
        void saveParameters();
        void loadParameters();

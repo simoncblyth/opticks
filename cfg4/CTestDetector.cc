@@ -103,7 +103,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector()
 
 
 
-G4VPhysicalVolume* CTestDetector::makeVolume(const NCSG* csg, const char* lvn, const char* pvn)
+G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* lvn, const char* pvn, G4LogicalVolume* mother )
 {
     // m_blib is CBndLib instance from CDetector base
     //        that contains a GBndLib instance
@@ -116,10 +116,11 @@ G4VPhysicalVolume* CTestDetector::makeVolume(const NCSG* csg, const char* lvn, c
     assert( lvn );
     assert( pvn );
 
+    
+
+
     const char* spec = csg->getBoundary();
     unsigned boundary = m_blib->addBoundary(spec);
-    LOG(info)  << " csg.spec " << spec << " boundary " << boundary ;
-
     GMaterial* imat = m_blib->getInnerMaterial(boundary); 
     GSur* isur      = m_blib->getInnerSurface(boundary); 
     GSur* osur      = m_blib->getOuterSurface(boundary); 
@@ -134,9 +135,18 @@ G4VPhysicalVolume* CTestDetector::makeVolume(const NCSG* csg, const char* lvn, c
     const G4Material* material = m_mlib->convertMaterial(imat);
     G4VSolid* solid = m_maker->makeSolid( csg ); 
 
-    G4LogicalVolume* mother = NULL ; 
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
     G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
+
+
+    LOG(fatal) 
+          << " csg.spec " << spec 
+          << " boundary " << boundary 
+          << " mother " << ( mother ? mother->GetName() : "-" )
+          << " lv " << ( lv ? lv->GetName() : "-" )
+          << " pv " << ( pv ? pv->GetName() : "-" )
+          << " mat " << ( material ? material->GetName() : "-" )
+          ;
 
     return pv ; 
 }
@@ -147,7 +157,8 @@ G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
     const char* shapename = CSGName(type);
     const char* lvn = BStr::concat<const char*>("UniverseLV_", shapename, NULL); 
     const char* pvn = BStr::concat<const char*>("UniversePV_", shapename, NULL ); 
-    return makeVolume(csg, lvn, pvn );
+
+    return makeChildVolume(csg, lvn, pvn, NULL  );
 }
 
 
@@ -162,8 +173,8 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
               << " numSolids " << numSolids 
               ;
 
-    //NCSG* universe = m_geotest->getUniverse();
-    NCSG* universe = NULL ;
+    NCSG* universe = m_geotest->getUniverse();
+    //NCSG* universe = NULL ;
 
     G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ; 
     G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ; 
@@ -177,11 +188,13 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
         const GMesh* mesh = kso->getMesh();
         const NCSG* csg = mesh->getCSG();
 
-        G4VPhysicalVolume* pv = makeVolume( csg , lvn , pvn );
+        G4VPhysicalVolume* pv = makeChildVolume( csg , lvn , pvn, mother );
+
         G4LogicalVolume* lv = pv->GetLogicalVolume() ;
 
         if(top == NULL) top = pv ; 
         if(ppv == NULL) ppv = pv ; 
+
         mother = lv ;  
     }
     return top ; 

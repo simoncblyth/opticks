@@ -11,15 +11,37 @@ class Typ ;
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+
+struct NPY_API NRec
+{
+    glm::vec4 post ; 
+    glm::vec4 polw ; 
+    glm::uvec4 flag ; 
+    glm::ivec4 iflag ; 
+
+    const char* m1 ; 
+    const char* m2 ; 
+    const char* hs ; 
+
+};
+
+
 class NPY_API RecordsNPY {
-   public:  
-       RecordsNPY(NPY<short>* records, unsigned int maxrec); 
-   public:  
-       NPY<short>*           getRecords();
-       void                  setTypes(Types* types);
-       void                  setTyp(Typ* typ);
-       unsigned int          getMaxRec();
-       bool                  isFlat();
+    public:  
+        RecordsNPY(NPY<short>* records, unsigned int maxrec); 
+    public:  
+        NPY<short>*           getRecords();
+        void                  setTypes(Types* types);
+        void                  setTyp(Typ* typ);
+        unsigned int          getMaxRec();
+        bool                  isFlat();
+
+        void                  dumpTyp(const char* msg="RecordsNPY::dumpTyp") const ;
+
+        std::string m1String( const glm::uvec4& flag );
+        std::string m2String( const glm::uvec4& flag );
+        std::string historyString( const glm::uvec4& flag );
+
    public:  
        NPY<unsigned long long>* makeSequenceArray(Types::Item_t etype);
 
@@ -41,6 +63,9 @@ class NPY_API RecordsNPY {
        void unpack_material_flags(glm::uvec4& flag, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1);
        void unpack_material_flags_i(glm::ivec4& flag, unsigned int i, unsigned int j, unsigned int k, unsigned int l0, unsigned int l1);
 
+       void unpack( NRec& rec, unsigned i, unsigned j );
+       void unpack( glm::vec4& post, glm::vec4& polw, glm::uvec4& uflag, glm::ivec4& iflag, unsigned i, unsigned j );
+
        void dumpRecord(unsigned int i, unsigned int j, const char* msg="rec");
        void dumpRecords(const char* msg="RecordsNPY::dumpRecords", unsigned int ndump=5);
 
@@ -48,9 +73,9 @@ class NPY_API RecordsNPY {
        // geometric properties of photon path
        glm::vec4 getCenterExtent(unsigned int photon_id);
        glm::vec4 getLengthDistanceDuration(unsigned int photon_id);
-       glm::vec4 getLengthDistanceDurationPosts(std::vector<glm::vec4>& posts, unsigned int photon_id);
+       glm::vec4 getLengthDistanceDurationRecs(std::vector<NRec>& recs, unsigned int photon_id);
    private:
-       void tracePath(unsigned int photon_id, std::vector<glm::vec4>& posts, float& length, float& distance, float& duration );
+       void tracePath(unsigned int photon_id, std::vector<NRec>& recs, float& length, float& distance, float& duration );
    private:
        void setCenterExtent(glm::vec4& ce);
        void setTimeDomain(glm::vec4& td);

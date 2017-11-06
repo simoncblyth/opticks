@@ -119,7 +119,8 @@ void NCSGList::load()
         else if(tree->isContainer())
         {
             float scale = tree->getContainerScale(); // hmm should be prop of the list not the tree ? 
-            tree->adjustToFit(m_container_bbox, scale );
+            float delta = 0.f ; 
+            tree->adjustToFit(m_container_bbox, scale, delta );
         }
       
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
@@ -133,12 +134,12 @@ void NCSGList::load()
     std::reverse( m_trees.begin(), m_trees.end() );
 
 
-    m_universe = createUniverse(1.1);
+    m_universe = createUniverse(1., 1.);
 }
 
         
 
-NCSG* NCSGList::createUniverse(float scale) const 
+NCSG* NCSGList::createUniverse(float scale, float delta) const 
 {
     const char* bnd0 = m_bndspec->getLine(0);
     const char* ubnd = BBnd::DuplicateOuterMaterial( bnd0 ); 
@@ -147,13 +148,14 @@ NCSG* NCSGList::createUniverse(float scale) const
               << " bnd0 " << bnd0 
               << " ubnd " << ubnd
               << " scale " << scale
+              << " delta " << delta
               ;
  
     NCSG* universe = loadTree(0, ubnd ) ;    // cheat clone 
 
     assert( !universe->isContainer() );
 
-    universe->adjustToFit( m_container_bbox, scale ); 
+    universe->adjustToFit( m_container_bbox, scale, delta ); 
 
     return universe ; 
 }

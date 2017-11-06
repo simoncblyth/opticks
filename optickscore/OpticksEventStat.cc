@@ -1,8 +1,6 @@
 
 #include <iostream>
 #include "RecordsNPY.hpp"
-
-
 #include "Opticks.hh"
 #include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
@@ -24,6 +22,7 @@ RecordsNPY* OpticksEventStat::CreateRecordsNPY(OpticksEvent* evt) // static
     Types* types = ok->getTypes();
     Typ* typ = ok->getTyp();
 
+
     RecordsNPY* rec = new RecordsNPY(rx, maxrec);
 
     rec->setTypes(types);
@@ -37,6 +36,8 @@ RecordsNPY* OpticksEventStat::CreateRecordsNPY(OpticksEvent* evt) // static
     evt->setRecordsNPY(rec);
     return rec ; 
 } 
+
+
 
 
 OpticksEventStat::OpticksEventStat(OpticksEvent* evt, unsigned num_cat)
@@ -54,6 +55,8 @@ OpticksEventStat::OpticksEventStat(OpticksEvent* evt, unsigned num_cat)
     m_totmin(2)
 {
     init();
+
+ 
 }
 
 
