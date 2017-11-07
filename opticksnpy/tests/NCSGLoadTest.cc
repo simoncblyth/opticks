@@ -90,6 +90,16 @@ int main(int argc, char** argv)
     BOpticksResource okr ;  // no Opticks at this level 
 
     const char* basedir = okr.getDebuggingTreedir(argc, argv);
+
+    LOG(info) << "basedir:" << basedir ; 
+
+    if( basedir == NULL )
+    {
+        LOG(warning) << " this test operates beneath Opticks level, so it requires IDPATH envvar to locate the geocache " 
+                     << " or provide directory path to persisted NCSG trees on commandline "  ;
+        return 0 ; 
+    }
+
     const char* gltfconfig = NULL ; 
     int verbosity = SSys::getenvint("VERBOSITY", 0);
 
