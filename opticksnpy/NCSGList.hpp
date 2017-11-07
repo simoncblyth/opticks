@@ -28,11 +28,11 @@ class NPY_API NCSGList
         void dump(const char* msg="NCSGList::dump") const ;
         void dumpDesc(const char* msg="NCSGList::dumpDesc") const ;
         void dumpMeta(const char* msg="NCSGList::dumpMeta") const ;
-        void dumpUniverse(const char* msg="NCSGList::dumpUniverse") const ;
+        void dumpUniverse(const char* msg="NCSGList::dumpUniverse")  ; // not-const as may create
     public:
         std::string getTreeDir(unsigned idx) const ;
 
-        NCSG*    getUniverse() const ;
+        NCSG*    getUniverse() ;   // not-const as may create
         NCSG*    getTree(unsigned index) const ;
         NCSG*    findEmitter() const ;
         unsigned getNumTrees() const ;
