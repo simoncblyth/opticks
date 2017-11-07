@@ -1,32 +1,39 @@
 
 #include <iomanip>
+#include <iostream>
+#include <sstream>
+#include <fstream>
+#include <cstring>
+
 #include <boost/lexical_cast.hpp>
 
+#include "BFile.hh"
 #include "NMeta.hpp"
-#include "NJS.hpp"
 
 #include "PLOG.hh"
 
 
-NMeta::NMeta()
+NMeta::NMeta(const NMeta& other)
     :
-    m_js(new NJS)
+    m_js(other.cjs())
+{
+}
+
+NMeta::NMeta() 
+    : 
+    m_js()
 {
 }
 
 nlohmann::json& NMeta::js()
 {
-    return m_js->js() ; 
+    return m_js ; 
 }  
- 
-void NMeta::load(const char* path)
+
+const nlohmann::json& NMeta::cjs() const 
 {
-    m_js->read(path);
-}
-void NMeta::load(const char* dir, const char* name)
-{
-    m_js->read(dir, name);
-}
+    return m_js ; 
+} 
 
 NMeta* NMeta::Load(const char* path0)
 {
@@ -41,33 +48,49 @@ NMeta* NMeta::Load(const char* dir, const char* name)
     return m ; 
 }
 
+
+void NMeta::load(const char* path)
+{
+    read(path);
+}
+void NMeta::load(const char* dir, const char* name)
+{
+    read(dir, name);
+}
+
 void NMeta::save(const char* path) const 
 {
-    m_js->write(path);
+    write(path);
 }
 void NMeta::save(const char* dir, const char* name) const
 {
-    m_js->write(dir, name);
+    write(dir, name);
 }
 
 
 
 void NMeta::dump() const 
 {
-    nlohmann::json& js = m_js->js();
-    LOG(info) << js.dump(4) ; 
+    LOG(info) << m_js.dump(4) ; 
 }
+
+void NMeta::dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    std::cout << m_js.dump(4) << std::endl ; 
+}
+
+
 
 
 void NMeta::setObj(const char* name, NMeta* obj)
 {
-    nlohmann::json& js = m_js->js();
-    js[name] = obj->js(); 
+    m_js[name] = obj->js(); 
 }
 
 NMeta* NMeta::getObj(const char* name)
 {
-    nlohmann::json& this_js = js();
+    nlohmann::json& this_js = m_js ;
 
     NMeta* obj = new NMeta ; 
     nlohmann::json& obj_js = obj->js();
@@ -78,10 +101,8 @@ NMeta* NMeta::getObj(const char* name)
 
 void NMeta::updateKeys() 
 {
-    nlohmann::json& _js = js();
-
     m_keys.clear();
-    for (nlohmann::json::const_iterator it = _js.begin(); it != _js.end(); ++it) 
+    for (nlohmann::json::const_iterator it = m_js.begin(); it != m_js.end(); ++it) 
     {
         m_keys.push_back( it.key() );
     }
@@ -89,9 +110,8 @@ void NMeta::updateKeys()
 
 std::string NMeta::desc(unsigned wid)
 {
-    nlohmann::json& _js = js();
     std::stringstream ss ; 
-    ss << std::setw(wid) << _js ; 
+    ss << std::setw(wid) << m_js ; 
     return ss.str();
 }
 
@@ -111,24 +131,68 @@ const char* NMeta::getKey(unsigned idx) const
 template <typename T>
 void NMeta::set(const char* name, T value)
 {
-    nlohmann::json& js = m_js->js();
-    js[name] = value ; 
+    m_js[name] = value ; 
 }
 
 template <typename T>
 T NMeta::get(const char* name, const char* fallback) const 
 {
-    nlohmann::json& js = m_js->js();
-    return js.count(name) == 1 ? js[name].get<T>() : boost::lexical_cast<T>(fallback);
+    return m_js.count(name) == 1 ? m_js[name].get<T>() : boost::lexical_cast<T>(fallback);
 }
 
 template <typename T>
 T NMeta::get(const char* name) const 
 {
-    nlohmann::json& js = m_js->js();
-    assert( js.count(name) == 1  );
-    return js[name].get<T>() ;
+    assert( m_js.count(name) == 1  );
+    return m_js[name].get<T>() ;
 }
+
+
+
+
+
+
+
+void NMeta::read(const char* path0, const char* path1)
+{
+    std::string path = BFile::FormPath(path0, path1);
+
+    LOG(info) << "read from " << path ; 
+
+    std::ifstream in(path.c_str(), std::ios::in);
+
+    if(!in.is_open()) 
+    {   
+        LOG(fatal) << "NMeta::read failed to open " << path ; 
+        return ;
+    }   
+    in >> m_js ; 
+}
+
+void NMeta::write(const char* path0, const char* path1) const 
+{
+    std::string path = BFile::FormPath(path0, path1);
+
+    std::string pdir = BFile::ParentDir(path.c_str());
+
+    BFile::CreateDir(pdir.c_str()); 
+
+    LOG(info) << "write to " << path ; 
+
+    std::ofstream out(path.c_str(), std::ios::out);
+
+    if(!out.is_open()) 
+    {   
+        LOG(fatal) << "NMeta::write failed to open" << path ; 
+        return ;
+    }   
+
+    out << m_js ; 
+
+    out.close();
+}
+
+
 
 
 template NPY_API void NMeta::set(const char* name, bool value);
@@ -154,11 +218,5 @@ template NPY_API std::string  NMeta::get(const char* name, const char* fallback)
 template NPY_API float        NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API char         NMeta::get(const char* name, const char* fallback) const ;
 
-
-/*
-template NPY_API void NMeta::set(const char* name, nlohmann::json value);
-template NPY_API nlohmann::json  NMeta::get(const char* name) const ;
-template NPY_API nlohmann::json  NMeta::get(const char* name, const char* fallback) const ;
-*/
 
 

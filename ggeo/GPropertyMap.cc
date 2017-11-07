@@ -14,8 +14,11 @@ namespace fs = boost::filesystem;
 #include "BStr.hh"
 #include "BDir.hh"
 
-// ggeo-
+// npy-
+#include "NMeta.hpp"
 
+
+// ggeo-
 
 #include "GAry.hh"
 #include "GProperty.hh"
@@ -38,7 +41,8 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
       m_sensor(other ? other->isSensor() : false),
       m_valid(other ? other->isValid() : false),
       m_standard_domain(domain),
-      m_optical_surface(other ? other->getOpticalSurface() : NULL )
+      m_optical_surface(other ? other->getOpticalSurface() : NULL ),
+      m_meta(other ? other->getMeta() : NULL)
 {
 
     findShortName();

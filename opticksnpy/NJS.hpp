@@ -20,9 +20,11 @@ Convenience wrapper for JSON read/write
 class NPY_API NJS {
    public:
        NJS(); 
+       NJS(const NJS& other); 
        NJS(const nlohmann::json& js ); 
    public:
        nlohmann::json& js();
+       const nlohmann::json& cjs() const ;
        void read(const char* path0, const char* path1=NULL);
        void write(const char* path0, const char* path1=NULL) const ;
        void dump(const char* msg="NJS::dump") const ; 

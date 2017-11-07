@@ -76,14 +76,38 @@ void test_write_read()
     m.dump();  
 }
 
+void test_copy_ctor()
+{
+    NMeta m ; 
+    m.set<int>("red", 1);
+    m.set<int>("green", 2);
+    m.set<int>("blue", 3);
+    m.set<float>("pi", 3.1415);
+    m.set<std::string>("name", "yo");
+
+    assert( m.getNumKeys() == 5 );
+
+    m.dump();  
+
+    NMeta mc(m);  
+    mc.dump("copy-ctor");
+
+    assert( mc.getNumKeys() == 5 );
+
+
+}
+ 
+
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    //test_write_read();
+    test_write_read();
     test_composable();
+    test_copy_ctor();
 
     return 0 ; 
 }

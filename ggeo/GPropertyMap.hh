@@ -9,6 +9,7 @@ template <typename T> class GPropertyMap ;
 template <typename T> class GProperty ; 
 template <typename T> class GDomain ; 
 
+class NMeta ; 
 class GOpticalSurface ; 
 
 // TODO: const correctness would be good, although painful to implement
@@ -39,6 +40,7 @@ class GGEO_API GPropertyMap {
       bool hasShortName(const char* name);
       bool hasDefinedName();
       bool hasNameEnding(const char* end);
+      NMeta* getMeta() const ; 
 
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
@@ -102,6 +104,7 @@ class GGEO_API GPropertyMap {
 
       unsigned int getNumProperties() const ;
 
+
   public:
       GProperty<T>* getPropertyByIndex(int index) ;
       const char* getPropertyNameByIndex(int index) ;
@@ -123,6 +126,9 @@ class GGEO_API GPropertyMap {
 
       GDomain<T>*      m_standard_domain ; 
       GOpticalSurface* m_optical_surface ; 
+
+      NMeta*      m_meta ; 
+
 
 };
 

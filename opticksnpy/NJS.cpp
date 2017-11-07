@@ -14,9 +14,18 @@
 #endif
 
 
+
+
+
 NJS::NJS()
    :
    m_js()
+{
+}
+
+NJS::NJS(const NJS& other)
+   :
+   m_js(other.cjs())
 {
 }
 
@@ -30,6 +39,12 @@ nlohmann::json& NJS::js()
 {
     return m_js ; 
 }  
+
+const nlohmann::json& NJS::cjs() const 
+{
+    return m_js ; 
+} 
+
  
 
 void NJS::read(const char* path0, const char* path1)

@@ -4,10 +4,9 @@
 #include <string>
 
 #include "NPY_API_EXPORT.hh"
+#include "NYJSON.hpp"
 #include "NPY_HEAD.hh"
-#include "NJS.hpp"
 
-//class NJS ; 
 
 class NPY_API NMeta {
    public:
@@ -15,7 +14,10 @@ class NPY_API NMeta {
        static NMeta* Load(const char* dir, const char* name);
    public:
        NMeta();
+       NMeta(const NMeta& other);
+
        nlohmann::json& js();
+       const nlohmann::json& cjs() const ;
    public:
        const char* getKey(unsigned idx) const ;
        unsigned    getNumKeys() ; // non-const may updateKeys
@@ -33,11 +35,18 @@ class NPY_API NMeta {
        void save(const char* path) const ;
        void save(const char* dir, const char* name) const ;
        void dump() const ; 
+       void dump(const char* msg) const ; 
    public:
        void load(const char* path);
        void load(const char* dir, const char* name);
+
    private:
-       NJS* m_js ; 
+       // formerly used separate NJS, but that makes copy-ctor confusing 
+       void read(const char* path0, const char* path1=NULL);
+       void write(const char* path0, const char* path1=NULL) const ;
+ 
+   private:
+       nlohmann::json  m_js ;  
        std::vector<std::string> m_keys ; 
 
 };
