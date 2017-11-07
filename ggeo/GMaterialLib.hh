@@ -130,6 +130,8 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        GMaterial*  createStandardMaterial(GMaterial* src);
    private:
+       GMaterial*  makeRaw(const char* name);
+   private:
        // post-cache
        void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:

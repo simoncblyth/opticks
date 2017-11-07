@@ -743,6 +743,12 @@ GMaterial* GMaterialLib::getMaterial(unsigned int index)
 }
 
 
+GMaterial* GMaterialLib::makeRaw(const char* name)
+{
+    GMaterial* raw = new GMaterial(name, getNumMaterials() );
+    return raw ; 
+}
+
 void GMaterialLib::addTestMaterials()
 {
     typedef std::pair<std::string, std::string> SS ; 
@@ -775,7 +781,7 @@ void GMaterialLib::addTestMaterials()
         GProperty<float>* rif = GProperty<float>::load(path.c_str());
         if(!rif) continue ; 
 
-        GMaterial* raw = new GMaterial(name.c_str(), getNumMaterials() );
+        GMaterial* raw = makeRaw(name.c_str());
         raw->addPropertyStandardized( GMaterialLib::refractive_index_local, rif ); 
         
         add(raw);

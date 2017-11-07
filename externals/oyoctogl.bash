@@ -193,6 +193,7 @@ oyoctogl-bdir(){ echo $(opticks-prefix)/externals/yoctogl/yocto-gl.build ; }
 
 
 oyoctogl-cd(){  cd $(oyoctogl-dir); }
+oyoctogl-c(){   cd $(oyoctogl-dir); }
 oyoctogl-bcd(){ cd $(oyoctogl-bdir) ; }
 
 oyoctogl-fullwipe()

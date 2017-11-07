@@ -333,7 +333,7 @@ tboolean-ana-(){
 
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
-tboolean-g-(){  CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
+tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 
 tboolean--(){
@@ -1895,7 +1895,7 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 media = "Pyrex"
 #media = "Vacuum"
-boundary = "Rock///%s" % media
+boundary = "Rock//perfectAbsorbSurface/%s" % media
 
 container = CSG("box", param=[0,0,0,400], boundary=boundary, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
 
@@ -1903,6 +1903,7 @@ CSG.Serialize([container], args.csgpath )
 
 
 """
+
 * cannot use a surface on the world with G4, as no pv to bordersurf to 
 """
 

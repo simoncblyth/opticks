@@ -2,14 +2,18 @@
 
 #include <vector>
 
+/** 
+GSurfaceLib
+==============
 
+Skin and Border surfaces have an associated optical surface 
+that is lodged inside GPropertyMap
+in addition to 1(for skin) or 2(for border) volume names
 
+* huh : where are these names persisted ?
+    
 
-
-// skin and border surfaces have an associated optical surface 
-// that is lodged inside GPropertyMap
-// in addition to 1(for skin) or 2(for border) volume names
-//     
+**/
 
 struct guint4 ; 
 class GOpticalSurface ; 
