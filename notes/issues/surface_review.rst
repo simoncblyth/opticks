@@ -28,6 +28,19 @@ Improved PropLib Persisting with JSON metadata
 Added NJS json infrastructure to enable full fidelity 
 metadata to be stored with persisted PropLib. 
 
+Where to tack the metadata ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Adding surfaces/materials is not a common thing to do, so:
+ 
+* global metadata for the entire PropLibs, dict-of-dict style 
+  top level keys being the material/surface names 
+
+
+* uses NParameters ? That already has BList string,string persisting 
+
+
+
 
 Vague Recollection of the history of this..
 ---------------------------------------------
@@ -94,6 +107,56 @@ GGeoTest : Test Geometry Flow
 
 * construction of GGeoTest geometry from NCSG, the surfaces 
   referred to by name within the boundary specification
+
+
+
+GSurfaceLib::save
+--------------------
+
+::
+
+
+    051 void GSurfaceLib::save()
+     52 {
+     53     saveToCache();
+    ///  from GPropertyLib::saveToCache
+     54     saveOpticalBuffer();
+     55 }
+                  
+     73 void GSurfaceLib::saveOpticalBuffer()
+     74 {   
+     75     NPY<unsigned int>* ibuf = createOpticalBuffer();
+     76     saveToCache(ibuf, "Optical") ;
+     77     setOpticalBuffer(ibuf);
+     78 }
+
+
+    418 void GPropertyLib::saveToCache()
+    419 {
+    420 
+    421     LOG(trace) << "GPropertyLib::saveToCache" ;
+    422 
+    423 
+    424     if(!isClosed()) close();
+    425 
+    426     if(m_buffer)
+    427     {
+    428         std::string dir = getCacheDir();
+    429         std::string name = getBufferName();
+    430         m_buffer->save(dir.c_str(), name.c_str());
+    431     }
+    432 
+    433     if(m_names)
+    434     {
+    435         m_names->save(m_resource->getIdPath());
+    436     }
+    437 
+    438     LOG(trace) << "GPropertyLib::saveToCache DONE" ;
+    439 
+    440 }
+
+
+
 
 
 GSurLib formerly of GGeo, now moved to OpticksHub

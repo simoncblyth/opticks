@@ -26,15 +26,15 @@ NJS::NJS(const nlohmann::json& js)
 {
 }
 
-nlohmann::json& NJS::get()
+nlohmann::json& NJS::js()
 {
     return m_js ; 
 }  
  
 
-void NJS::read(const char* path_)
+void NJS::read(const char* path0, const char* path1)
 {
-    std::string path = BFile::FormPath(path_);
+    std::string path = BFile::FormPath(path0, path1);
 
     LOG(info) << "read from " << path ; 
 
@@ -48,9 +48,9 @@ void NJS::read(const char* path_)
     in >> m_js ; 
 }
 
-void NJS::write(const char* path_) const 
+void NJS::write(const char* path0, const char* path1) const 
 {
-    std::string path = BFile::FormPath(path_);
+    std::string path = BFile::FormPath(path0, path1);
 
     std::string pdir = BFile::ParentDir(path.c_str());
 

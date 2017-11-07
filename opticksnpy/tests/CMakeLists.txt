@@ -176,6 +176,7 @@ if(YoctoGL_FOUND)
        NSceneMeshTest.cc
        NYJSONTest.cc
        NJSTest.cc
+       NMetaTest.cc
 )
 endif()
 

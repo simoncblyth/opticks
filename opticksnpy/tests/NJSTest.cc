@@ -23,7 +23,7 @@ void test_write_read()
     njs2.read(path);
     njs2.dump();
 
-    json& js2 = njs2.get() ;
+    json& js2 = njs2.js() ;
     LOG(info) << "js2:" << js2.dump(4) ; 
 }
 

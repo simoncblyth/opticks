@@ -181,6 +181,40 @@ bool test_save( const json& js, const char* path)
 }
 
 
+void test_get_explicit()
+{
+    json j2 = {
+      {"pi", 3.141},
+      {"happy", true},
+      {"name", "Niels"},
+      {"nothing", nullptr},
+      {"answer", {
+        {"everything", 42}
+      }},
+      {"list", {1, 0, 2}},
+      {"object", {
+        {"currency", "USD"},
+        {"value", 42.99}
+      }}
+    };
+
+
+    std::string name = j2["name"].get<std::string>() ; 
+    float fpi = j2["pi"].get<float>() ;
+    int ipi = j2["pi"].get<int>() ;
+    unsigned uans = j2["answer"]["everything"].get<unsigned>(); 
+
+    LOG(info) 
+        << " name " << name  
+        << " fpi " << fpi  
+        << " ipi " << ipi  
+        << " uans " << uans
+        ; 
+
+
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -195,7 +229,7 @@ int main(int argc, char** argv)
     */
 
     
-
+    test_get_explicit();
 
 
     return 0 ; 
