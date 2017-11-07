@@ -16,6 +16,8 @@ void test_composable()
     m1.set<float>("pi", 3.1415);
     m1.set<std::string>("name", "yo");
 
+    assert( m1.getNumKeys() == 5 ); 
+
     NMeta m2 ; 
     m2.set<int>("cyan", 7);
     m2.set<int>("red", 100);
@@ -24,12 +26,38 @@ void test_composable()
     m2.set<float>("pi", 3.1415);
     m2.set<std::string>("name", "yo");
 
+    assert( m2.getNumKeys() == 6 ); 
+
     NMeta m ;
-    m.set("m1", &m1 );
-    m.set("m2", &m2 );
+    m.setObj("m1", &m1 );
+    m.setObj("m2", &m2 );
+    m.setObj("m3", &m2 );
+    m.setObj("m4", &m2 );
+
+    unsigned xkey = 4 ; 
+    assert( m.getNumKeys() == xkey ); 
 
     m.dump();  
     m.save(path);
+
+
+
+    NMeta* ml = NMeta::Load(path);
+    ml->dump();
+
+    unsigned num_key = ml->getNumKeys() ;
+    assert( num_key == xkey );
+
+    for(unsigned i=0 ; i < num_key ; i++)
+    {
+        const char* key = ml->getKey(i);
+        NMeta* lm = ml->getObj(key);
+        LOG(info) 
+            << " i " << i 
+            << " key " << key 
+            << " lm " << lm->desc()
+            ; 
+    }
 }
 
 

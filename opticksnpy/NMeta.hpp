@@ -1,5 +1,8 @@
 #pragma once
 
+#include <vector>
+#include <string>
+
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 #include "NJS.hpp"
@@ -14,7 +17,14 @@ class NPY_API NMeta {
        NMeta();
        nlohmann::json& js();
    public:
-       void set(const char* name, NMeta* obj); 
+       const char* getKey(unsigned idx) const ;
+       unsigned    getNumKeys() ; // non-const may updateKeys
+       std::string desc(unsigned wid=0);
+   private:
+       void        updateKeys();
+   public:
+       void   setObj(const char* name, NMeta* obj); 
+       NMeta* getObj(const char* name);
    public:
        template <typename T> void set(const char* name, T value);
        template <typename T> T get(const char* name) const ;
@@ -28,6 +38,7 @@ class NPY_API NMeta {
        void load(const char* dir, const char* name);
    private:
        NJS* m_js ; 
+       std::vector<std::string> m_keys ; 
 
 };
 

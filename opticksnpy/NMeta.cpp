@@ -1,4 +1,5 @@
 
+#include <iomanip>
 #include <boost/lexical_cast.hpp>
 
 #include "NMeta.hpp"
@@ -13,13 +14,11 @@ NMeta::NMeta()
 {
 }
 
-
 nlohmann::json& NMeta::js()
 {
     return m_js->js() ; 
 }  
  
-
 void NMeta::load(const char* path)
 {
     m_js->read(path);
@@ -51,6 +50,8 @@ void NMeta::save(const char* dir, const char* name) const
     m_js->write(dir, name);
 }
 
+
+
 void NMeta::dump() const 
 {
     nlohmann::json& js = m_js->js();
@@ -58,10 +59,52 @@ void NMeta::dump() const
 }
 
 
-void NMeta::set(const char* name, NMeta* obj)
+void NMeta::setObj(const char* name, NMeta* obj)
 {
     nlohmann::json& js = m_js->js();
     js[name] = obj->js(); 
+}
+
+NMeta* NMeta::getObj(const char* name)
+{
+    nlohmann::json& this_js = js();
+
+    NMeta* obj = new NMeta ; 
+    nlohmann::json& obj_js = obj->js();
+    obj_js = this_js[name] ; 
+
+    return obj ; 
+}
+
+void NMeta::updateKeys() 
+{
+    nlohmann::json& _js = js();
+
+    m_keys.clear();
+    for (nlohmann::json::const_iterator it = _js.begin(); it != _js.end(); ++it) 
+    {
+        m_keys.push_back( it.key() );
+    }
+}
+
+std::string NMeta::desc(unsigned wid)
+{
+    nlohmann::json& _js = js();
+    std::stringstream ss ; 
+    ss << std::setw(wid) << _js ; 
+    return ss.str();
+}
+
+unsigned NMeta::getNumKeys() 
+{
+    updateKeys() ;
+    return m_keys.size();
+}
+
+const char* NMeta::getKey(unsigned idx) const 
+{
+    assert( idx < m_keys.size() );
+    return m_keys[idx].c_str() ; 
 }
 
 
