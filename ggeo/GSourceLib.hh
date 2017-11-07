@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+class NMeta ; 
 class Opticks ; 
 class GItemList ;
 class GSource ; 
@@ -29,6 +30,7 @@ class GGEO_API GSourceLib : public GPropertyLib {
        void import();
        void sort();
        NPY<float>* createBuffer();
+       NMeta*      createMeta();
        GItemList*  createNames();
     private:
         void init();

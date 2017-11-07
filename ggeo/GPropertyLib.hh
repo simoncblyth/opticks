@@ -18,6 +18,9 @@
 template <typename T> class NPY ;
 class NPYBase ; 
 
+class NMeta ; 
+
+
 class Opticks ; 
 class OpticksResource ; 
 class OpticksAttrSeq ; 
@@ -30,7 +33,10 @@ template <typename T> class GPropertyMap ;
 struct guint4 ; 
 
 
-/*
+/**
+GPropertyLib
+==============
+
 See GMaterialLib.hh for description of lifecycle of all GPropertyLib subclasses
 
 delta:ggeo blyth$ grep public\ GPropertyLib *.hh
@@ -41,8 +47,7 @@ GScintillatorLib.hh:class GScintillatorLib : public GPropertyLib {
 GSourceLib.hh      :class GSourceLib : public GPropertyLib {
 GSurfaceLib.hh     :class GSurfaceLib : public GPropertyLib {
 
-*/
-
+**/
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -102,7 +107,9 @@ class GGEO_API GPropertyLib {
         virtual void import() = 0 ; 
         virtual void sort() = 0 ; 
         virtual NPY<float>* createBuffer() = 0;
+        virtual NMeta*      createMeta() = 0;
         virtual GItemList*  createNames() = 0;
+
     public:
         GProperty<float>*    getPropertyOrDefault(GPropertyMap<float>* pmap, const char* pname);
         GProperty<float>*    getProperty(GPropertyMap<float>* pmap, const char* dkey);
@@ -132,6 +139,7 @@ class GGEO_API GPropertyLib {
 
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
+        NMeta*       getMeta() const  ;
         GItemList*   getNames();
         OpticksAttrSeq*    getAttrNames();
         std::string getAbbr(const char* key);
@@ -141,13 +149,17 @@ class GGEO_API GPropertyLib {
        void loadFromCache();
     public:
         void setBuffer(NPY<float>* buf);
+        void setMeta(NMeta* meta);
         void setNames(GItemList* names);
     protected:
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
+    protected:
         NPY<float>*                          m_buffer ; 
+        NMeta*                               m_meta ; 
         OpticksAttrSeq*                      m_attrnames ; // attributed name list 
         GItemList*                           m_names ;     // simple name list 
+    protected:
         const char*                          m_type ; 
         const char*                          m_comptype ; 
         GDomain<float>*                      m_standard_domain ;  

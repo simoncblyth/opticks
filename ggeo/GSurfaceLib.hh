@@ -15,6 +15,7 @@ in addition to 1(for skin) or 2(for border) volume names
 
 **/
 
+class NMeta ; 
 struct guint4 ; 
 class GOpticalSurface ; 
 class GSkinSurface ; 
@@ -65,6 +66,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
        NPY<float>* createBuffer();
+       NMeta*      createMeta();
        GItemList*  createNames();
    public:
        NPY<float>* createBufferForTex2d();

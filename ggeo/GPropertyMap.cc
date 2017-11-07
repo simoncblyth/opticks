@@ -32,6 +32,21 @@ template <typename T>
 const char* GPropertyMap<T>::NOT_DEFINED = "-" ;
 
 template <typename T>
+NMeta* GPropertyMap<T>::getMeta() const 
+{
+    return m_meta ; 
+}
+
+template <typename T>
+template <typename S>
+void GPropertyMap<T>::setMetaKV(const char* key, S val)  
+{
+    return m_meta->set(key, val) ; 
+}
+
+
+
+template <typename T>
 GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain) 
       : 
       m_name(other ? other->getName() : NOT_DEFINED ),
@@ -42,10 +57,9 @@ GPropertyMap<T>::GPropertyMap(GPropertyMap<T>* other, GDomain<T>* domain)
       m_valid(other ? other->isValid() : false),
       m_standard_domain(domain),
       m_optical_surface(other ? other->getOpticalSurface() : NULL ),
-      m_meta(other ? other->getMeta() : NULL)
+      m_meta(other && other->getMeta() ? new NMeta(*other->getMeta()) :  new NMeta) 
 {
-
-    findShortName();
+    init();
 
     if(m_standard_domain)
     {
@@ -70,14 +84,16 @@ GPropertyMap<T>::GPropertyMap(const char* name)
     : 
     m_shortname(NULL),
     m_standard_domain(NULL),
-    m_optical_surface(NULL)
+    m_optical_surface(NULL),
+    m_meta(new NMeta)
 {
    m_name = name ;   // m_name is std::string, no need for strdup 
    m_index = UINT_MAX ;
    m_sensor = false ;
    m_valid = false ;
    m_type = "" ;
-   findShortName();
+
+   init();
 }
 
 template <typename T>
@@ -87,12 +103,14 @@ GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* 
    m_sensor(false),
    m_valid(false),
    m_standard_domain(NULL),
-   m_optical_surface(optical_surface)
+   m_optical_surface(optical_surface),
+   m_meta(new NMeta)
 {
    // set the std::string
    m_name = name ; 
    m_type = type ; 
-   findShortName();
+
+   init();
 }
 
 template <typename T>
@@ -102,6 +120,23 @@ GPropertyMap<T>::~GPropertyMap()
 
 
 
+template <class T>
+void GPropertyMap<T>::init()
+{
+   findShortName();
+   collectMeta();
+}
+
+
+
+template <class T>
+void GPropertyMap<T>::collectMeta()
+{
+    m_meta->set<int>("index", m_index );
+    m_meta->set<std::string>("shortname", m_shortname );
+    m_meta->set<std::string>("name", m_name );
+    m_meta->set<std::string>("type", m_type );
+}
 
 
 
@@ -338,6 +373,7 @@ void GPropertyMap<T>::findShortName(const char* prefix)
 {
     const char* name = m_name.empty() ? NOT_DEFINED : m_name.c_str() ; 
     m_shortname = FindShortName(name, prefix );  
+
 }
 
 
@@ -830,4 +866,8 @@ head of the implementation.
 
 template class GPropertyMap<float>;
 template class GPropertyMap<double>;
+
+template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, std::string value);
+
+
 

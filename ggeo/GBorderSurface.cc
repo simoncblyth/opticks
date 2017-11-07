@@ -32,11 +32,11 @@ void GBorderSurface::setBorderSurface(const char* pv1, const char* pv2)
 }
 
 
-char* GBorderSurface::getBorderSurfacePV1()
+char* GBorderSurface::getPV1()
 {
     return m_bordersurface_pv1 ; 
 }
-char* GBorderSurface::getBorderSurfacePV2()
+char* GBorderSurface::getPV2()
 {
     return m_bordersurface_pv2 ; 
 }

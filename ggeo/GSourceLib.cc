@@ -144,6 +144,10 @@ GItemList*  GSourceLib::createNames()
     return names ; 
 }
  
+NMeta*  GSourceLib::createMeta()
+{
+    return NULL ; 
+}
 
 
 GProperty<float>* GSourceLib::constructInvertedSourceCDF(GPropertyMap<float>* pmap)

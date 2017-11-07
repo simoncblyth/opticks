@@ -55,6 +55,7 @@ Lifecycle of all property lib are similar:
 */
 #include <vector>
 
+class NMeta ; 
 class GMaterial ; 
 class GItemList ; 
 
@@ -104,6 +105,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        bool setMaterialPropertyValues(const char* matname, const char* propname, float val); // post-import modification
 
        NPY<float>* createBuffer();
+       NMeta*      createMeta();
        GItemList*  createNames();
    private:
        void replaceGROUPVEL(bool debug=false);  // triggered in postLoadFromCache with --groupvel option

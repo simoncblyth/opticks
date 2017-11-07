@@ -144,6 +144,13 @@ void GBndLib::saveOpticalBuffer()
 
 
 
+NMeta* GBndLib::createMeta()
+{
+    return NULL ; 
+}
+
+
+
 void GBndLib::createDynamicBuffers()
 {
     NPY<float>* buf = createBuffer();

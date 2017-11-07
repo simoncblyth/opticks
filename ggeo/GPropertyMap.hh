@@ -29,6 +29,9 @@ class GGEO_API GPropertyMap {
       GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL);
 
       virtual ~GPropertyMap();
+  private:
+      void init();
+      void collectMeta();
   public:
       void save(const char* path);
       static GPropertyMap<T>* load(const char* path, const char* name, const char* type);
@@ -40,7 +43,9 @@ class GGEO_API GPropertyMap {
       bool hasShortName(const char* name);
       bool hasDefinedName();
       bool hasNameEnding(const char* end);
+
       NMeta* getMeta() const ; 
+      template <typename S> void setMetaKV(const char* key, S value);
 
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);

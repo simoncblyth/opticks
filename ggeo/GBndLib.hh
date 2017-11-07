@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 
+class NMeta ; 
 class Opticks ; 
 
 struct guint4 ; 
@@ -121,6 +122,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<float>* createBufferOld();
   public:
        GItemList* createNames();
+       NMeta*      createMeta();
        NPY<float>* createBuffer();
        void import();
        void sort();

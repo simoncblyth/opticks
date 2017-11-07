@@ -1,5 +1,6 @@
 #include <cassert>
 #include "NPY.hpp"
+#include "NMeta.hpp"
 
 #include "GDomain.hh"
 #include "GAry.hh"
@@ -92,6 +93,12 @@ void GScintillatorLib::import()
     LOG(debug) << "GScintillatorLib::import "  ; 
     //m_buffer->Summary("GScintillatorLib::import");
 }
+
+NMeta* GScintillatorLib::createMeta()
+{
+    return NULL ; 
+}
+
 
 NPY<float>* GScintillatorLib::createBuffer()
 {

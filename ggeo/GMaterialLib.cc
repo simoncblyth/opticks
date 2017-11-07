@@ -309,6 +309,10 @@ unsigned int GMaterialLib::getMaterialIndex(const GMaterial* qmaterial)
 }
 
 
+NMeta* GMaterialLib::createMeta()
+{
+    return NULL ; 
+}
 
 
 NPY<float>* GMaterialLib::createBuffer()

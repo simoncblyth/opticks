@@ -1,6 +1,6 @@
-// ggv --surf
-// ggv --surf 6        // summary of all and detail of just the one index
-// ggv --surf lvPmtHemiCathodeSensorSurface
+// op --surf
+// op --surf 6        // summary of all and detail of just the one index
+// op --surf lvPmtHemiCathodeSensorSurface
 
 
 #include "Opticks.hh"

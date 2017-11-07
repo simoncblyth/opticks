@@ -14,6 +14,7 @@
 
 // npy-
 #include "NGLM.hpp"
+#include "NMeta.hpp"
 #include "NPY.hpp"
 
 // optickscore-
@@ -71,12 +72,12 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 
 
 
-
 GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
     :
      m_ok(other->getOpticks()),
      m_resource(NULL),
      m_buffer(NULL),
+     m_meta(NULL),
      m_attrnames(NULL),
      m_names(NULL),
      m_type(strdup(other->getType())),
@@ -98,6 +99,7 @@ GPropertyLib::GPropertyLib(Opticks* ok, const char* type)
      m_ok(ok),
      m_resource(NULL),
      m_buffer(NULL),
+     m_meta(NULL),
      m_attrnames(NULL),
      m_names(NULL),
      m_type(strdup(type)),
@@ -124,6 +126,9 @@ const char* GPropertyLib::getComponentType()
 {
     return m_comptype ; 
 }
+
+
+
 
 GPropertyLib::~GPropertyLib()
 {
@@ -199,6 +204,19 @@ NPY<float>* GPropertyLib::getBuffer()
 {
     return m_buffer ;
 }
+
+
+void GPropertyLib::setMeta(NMeta* meta)
+{
+    m_meta = meta ;
+}
+NMeta* GPropertyLib::getMeta() const 
+{
+    return m_meta ; 
+}
+
+
+
 
 GItemList* GPropertyLib::getNames()
 {
@@ -373,13 +391,11 @@ void GPropertyLib::close()
     sort();
     LOG(trace) << "GPropertyLib::close after sort " ;
 
-    GItemList* names = createNames();
-    LOG(trace) << "GPropertyLib::close " 
-               << " names " << names 
-               ;
+    // create methods from sub-class specializations
 
-
-    NPY<float>* buf = createBuffer() ;
+    GItemList* names = createNames();  
+    NPY<float>* buf = createBuffer() ;  
+    NMeta* meta = createMeta();
 
     LOG(info) << "GPropertyLib::close"
               << " type " << m_type 
@@ -390,10 +406,14 @@ void GPropertyLib::close()
 
     setNames(names);
     setBuffer(buf);
+    setMeta(meta);
     setClosed();
 
     LOG(trace) << "GPropertyLib::close DONE" ;
 }
+
+
+
 
 void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
 {

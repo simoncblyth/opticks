@@ -1,8 +1,11 @@
 #pragma once
 
 #include <vector>
+
+class NMeta ; 
 class Opticks ; 
 class GItemList ;
+
 template <typename T> class GPropertyMap ;
 
 #include "GPropertyLib.hh"
@@ -30,6 +33,7 @@ class GGEO_API GScintillatorLib : public GPropertyLib {
        void import();
        void sort();
        NPY<float>* createBuffer();
+       NMeta*      createMeta();
        GItemList*  createNames();
     private:
         void init();

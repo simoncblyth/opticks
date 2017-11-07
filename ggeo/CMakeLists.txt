@@ -207,14 +207,20 @@ SET(ALL_HEADERS
 
 find_package(YoctoGL )
 
+
 if(YoctoGL_FOUND)
-   list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
    message("GGEO.YoctoGL_FOUND")
-   list(APPEND SOURCES GScene.cc)
+   list(APPEND INCLUDE_DIRS ${YoctoGL_INCLUDE_DIRS})
+   list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
+   list(APPEND LIBRARIES ${YoctoGL_LIBRARIES})
+
+   list(APPEND SOURCES 
+               GScene.cc 
+               GPropertyMap.cc
+       )
 else()
     message("GGEO.YoctoGL_NOT_FOUND")
 endif()
-message("GGEO.DEFINITIONS : ${DEFINITIONS}")
 
 
 

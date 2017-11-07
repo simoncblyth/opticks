@@ -6,6 +6,15 @@ class GOpticalSurface ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/**
+GBorderSurface
+================
+
+
+
+
+**/
+
 class GGEO_API GBorderSurface : public GPropertyMap<float> {
   public:
       GBorderSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface );
@@ -15,8 +24,8 @@ class GGEO_API GBorderSurface : public GPropertyMap<float> {
 
   public:
       void setBorderSurface(const char* pv1, const char* pv2);
-      char* getBorderSurfacePV1();
-      char* getBorderSurfacePV2();
+      char* getPV1();
+      char* getPV2();
 
   public:
       bool matches(const char* pv1, const char* pv2);

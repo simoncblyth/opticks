@@ -1,5 +1,6 @@
 #include <iomanip>
 
+#include "NMeta.hpp"
 #include "NGLM.hpp"
 #include "NPY.hpp"
 
@@ -201,11 +202,21 @@ void GSurfaceLib::init()
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
+    std::string bpv1 = raw->getPV1() ;
+    std::string bpv2 = raw->getPV2() ;
+ 
+    raw->setMetaKV("bpv1", bpv1 );
+    raw->setMetaKV("bpv2", bpv2 );
+
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     add(surf);
 }
 void GSurfaceLib::add(GSkinSurface* raw)
 {
+    std::string sslv = raw->getSkinSurfaceVol() ;
+
+    raw->setMetaKV("sslv", sslv );
+
     LOG(trace) << "GSurfaceLib::add(GSkinSurface*) " << ( raw ? raw->getName() : "NULL" ) ;
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     add(surf);
@@ -438,6 +449,24 @@ GItemList* GSurfaceLib::createNames()
     }
     return names ; 
 }
+
+
+NMeta* GSurfaceLib::createMeta()
+{
+    NMeta* libmeta = new NMeta ; 
+    unsigned int ni = getNumSurfaces();
+    for(unsigned int i=0 ; i < ni ; i++)
+    {
+        GPropertyMap<float>* surf = m_surfaces[i] ;
+        const char* key = surf->getShortName() ;
+        NMeta* surfmeta = surf->getMeta();
+        assert( surfmeta );
+        libmeta->setObj(key, surfmeta );  
+    }
+    return libmeta ; 
+}
+
+
 
 
 NPY<float>* GSurfaceLib::createBuffer()
