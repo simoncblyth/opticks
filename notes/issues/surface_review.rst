@@ -39,6 +39,25 @@ Adding surfaces/materials is not a common thing to do, so:
 
 * uses NParameters ? That already has BList string,string persisting 
 
+* developed NMeta using nlohmann::json for this 
+* placed m_meta into GPropertyMap/GPropertyLib 
+
+
+New metadata infrastructure operational via geocache::
+
+    simon:ggeo blyth$ op --surf 6
+    ...
+    2017-11-07 21:12:30.368 INFO  [3558034] [GPropertyMap<float>::dumpMeta@146] GSurfaceLib::dump.index
+    2017-11-07 21:12:30.368 INFO  [3558034] [NMeta::dump@74] {
+        "index": 6,
+        "name": "lvPmtHemiCathodeSensorSurface",
+        "shortname": "lvPmtHemiCathodeSensorSurface",
+        "sslv": "__dd__Geometry__PMT__lvPmtHemiCathode0xc2cdca0",
+        "type": "surface"
+    }
+    /Users/blyth/opticks/bin/op.sh RC 0
+    simon:ggeo blyth$ 
+    simon:ggeo blyth$ 
 
 
 

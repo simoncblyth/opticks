@@ -617,11 +617,15 @@ void GSurfaceLib::importForTex2d()
     for(unsigned int i=0 ; i < ni ; i++)
     {
         const char* key = m_names->getKey(i);
+
         LOG(debug) << std::setw(3) << i 
                    << " " << key ;
 
         GOpticalSurface* os = NULL ;
-        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os);
+
+        NMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
+
+        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os, surfmeta );
 
         for(unsigned int j=0 ; j < nj ; j++)
         {
@@ -747,6 +751,9 @@ void GSurfaceLib::dump( unsigned int index )
     assert(surf->getIndex() == index ); 
     std::string desc = optical.description() + surf->description() ; 
     dump(surf, desc.c_str());
+
+    surf->dumpMeta("GSurfaceLib::dump.index");
+
 }
 
 void GSurfaceLib::dump(GPropertyMap<float>* surf)

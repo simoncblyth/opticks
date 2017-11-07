@@ -39,6 +39,7 @@ unsigned int GPropertyLib::NUM_MATSUR = BOUNDARY_NUM_MATSUR  ;    // 4 material/
 unsigned int GPropertyLib::NUM_PROP = BOUNDARY_NUM_PROP  ; 
 unsigned int GPropertyLib::NUM_FLOAT4 = BOUNDARY_NUM_FLOAT4  ; 
 
+const char* GPropertyLib::METANAME = "GPropertyLibMetadata.json" ; 
 
 
 void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
@@ -448,12 +449,18 @@ void GPropertyLib::saveToCache()
         std::string dir = getCacheDir(); 
         std::string name = getBufferName();
         m_buffer->save(dir.c_str(), name.c_str());   
+
+        if(m_meta)
+        {
+            m_meta->save(dir.c_str(),  METANAME ); 
+        }
     }
 
     if(m_names)
     {
         m_names->save(m_resource->getIdPath());
     }
+
 
     LOG(trace) << "GPropertyLib::saveToCache DONE" ; 
 
@@ -474,7 +481,10 @@ void GPropertyLib::loadFromCache()
   
     NPY<float>* buf = NPY<float>::load(dir.c_str(), name.c_str()); 
 
+    NMeta* meta = NMeta::Load(dir.c_str(), METANAME ) ; 
+
     setBuffer(buf); 
+    setMeta(meta) ; 
 
     GItemList* names = GItemList::load(m_resource->getIdPath(), m_type);
     setNames(names); 

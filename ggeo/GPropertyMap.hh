@@ -26,13 +26,14 @@ class GGEO_API GPropertyMap {
   public:
       GPropertyMap(GPropertyMap* other, GDomain<T>* domain=NULL);  // used for interpolation when domain provided
       GPropertyMap(const char* name);
-      GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL);
+      GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface=NULL, NMeta* meta=NULL);
 
       virtual ~GPropertyMap();
   private:
       void init();
       void collectMeta();
   public:
+      void dumpMeta(const char* msg="GPropertyMap::dumpMeta") const ;
       void save(const char* path);
       static GPropertyMap<T>* load(const char* path, const char* name, const char* type);
   public:

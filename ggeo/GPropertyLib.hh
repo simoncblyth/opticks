@@ -57,6 +57,7 @@ class GGEO_API GPropertyLib {
         static unsigned int NUM_MATSUR ;    // number of material/surfaces in the boundary 
         static unsigned int NUM_PROP ; 
         static unsigned int NUM_FLOAT4 ; 
+        static const char* METANAME ; 
     public:
         static const char* material ; 
         static const char* surface ;

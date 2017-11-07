@@ -13,6 +13,7 @@
 
 #include "GGEO_BODY.hh"
 #include "GGEO_LOG.hh"
+#include "NPY_LOG.hh"
 #include "PLOG.hh"
 
 int main(int argc, char** argv)
@@ -20,6 +21,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     GGEO_LOG__ ; 
+    NPY_LOG__ ; 
 
     Opticks* opticks = new Opticks(argc, argv);
 

@@ -96,15 +96,17 @@ GPropertyMap<T>::GPropertyMap(const char* name)
    init();
 }
 
+
+// this ctor is used in eg GSurfaceLib::importForTex2d
 template <typename T>
-GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface) 
+GPropertyMap<T>::GPropertyMap(const char* name, unsigned int index, const char* type, GOpticalSurface* optical_surface, NMeta* meta) 
    : 
    m_index(index), 
    m_sensor(false),
    m_valid(false),
    m_standard_domain(NULL),
    m_optical_surface(optical_surface),
-   m_meta(new NMeta)
+   m_meta(meta ? new NMeta(*meta) : new NMeta)
 {
    // set the std::string
    m_name = name ; 
@@ -137,6 +139,15 @@ void GPropertyMap<T>::collectMeta()
     m_meta->set<std::string>("name", m_name );
     m_meta->set<std::string>("type", m_type );
 }
+
+template <class T>
+void GPropertyMap<T>::dumpMeta(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    m_meta->dump();
+}
+
+
 
 
 
