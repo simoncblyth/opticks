@@ -24,6 +24,7 @@ set(TEST_SOURCES
     GSourceTest.cc
     GSourceLibTest.cc
     GBndLibTest.cc
+    GBndLibInitTest.cc
 
     GMeshTest.cc
     GNodeTest.cc

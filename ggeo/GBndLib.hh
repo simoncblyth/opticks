@@ -12,22 +12,23 @@ template <typename T> class GPropertyMap ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 
-//
-// *GBndLib* differs from *GMaterialLib* and *GSurfaceLib* in that 
-// creation of its float buffer needs to be deferred post cache 
-// in order to allow dynamic addition of boundaries for eg analytic
-// geometry inside-outs and for test boxes 
-//
-// Instead the index buffer is used for persisting, which contains
-// indices of materials and surfaces imat/omat/isur/osur 
-//
-// The boundary buffer is created dynamically by pulling the 
-// relevant bytes from the material and surface libs. 
-// 
-// Former *GBoundaryLib* encompassed uint4 optical_buffer that 
-// contained surface properties from GOpticalSurface, that
-// is now moved to *GSurfaceLib*   
-//
+/**
+GBndLib
+=========
+
+*GBndLib* differs from *GMaterialLib* and *GSurfaceLib* in that 
+creation of its float buffer is deferred post cache 
+to allow dynamic addition of boundaries for eg analytic
+geometry inside-outs and for test boxes 
+
+Instead the index buffer is used for persisting, which contains
+indices of materials and surfaces imat/omat/isur/osur 
+
+The boundary buffer is created dynamically by pulling the 
+relevant bytes from the material and surface libs. 
+
+**/
+ 
 
 #include "GPropertyLib.hh"
 #include "GGEO_API_EXPORT.hh"
@@ -80,8 +81,9 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        unsigned int addBoundary( const char* spec, bool flip=false) ;
        unsigned int addBoundary( const char* omat, const char* osur, const char* isur, const char* imat) ;
-  private:
        // Bnd are only added if not already present
+  private:
+       friend class GBndLibTest ; 
        void add(const guint4& bnd);
        guint4 add(const char* spec, bool flip=false);
        guint4 add(const char* omat, const char* osur, const char* isur, const char* imat);
@@ -136,10 +138,12 @@ class GGEO_API GBndLib : public GPropertyLib {
        void setSurfaceLib(GSurfaceLib* slib);
        GMaterialLib* getMaterialLib();
        GSurfaceLib*  getSurfaceLib();
+
   private:
        GMaterialLib*        m_mlib ; 
        GSurfaceLib*         m_slib ; 
        std::vector<guint4>  m_bnd ; 
+
        NPY<unsigned int>*   m_index_buffer ;  
        NPY<unsigned int>*   m_optical_buffer ;  
        std::map<std::string, unsigned int> m_materialLineMap ;

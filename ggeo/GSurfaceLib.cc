@@ -247,35 +247,44 @@ const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static
 
 void GSurfaceLib::add(GBorderSurface* raw)
 {
-    std::string bpv1 = raw->getPV1() ;
-    std::string bpv2 = raw->getPV2() ;
- 
-    raw->setMetaKV(BPV1, bpv1 );
-    raw->setMetaKV(BPV2, bpv2 );
-
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
+    addBorderSurface(surf, raw->getPV1(), raw->getPV2() );
+}
+
+
+void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2)
+{
+   // method to help with de-conflation of surface props and location
+    std::string bpv1 = pv1 ;
+    std::string bpv2 = pv2 ;
+    surf->setMetaKV(BPV1, bpv1 );
+    surf->setMetaKV(BPV2, bpv2 );
     add(surf);
 }
+
 void GSurfaceLib::add(GSkinSurface* raw)
 {
-    std::string sslv = raw->getSkinSurfaceVol() ;
-
-    raw->setMetaKV(SSLV, sslv );
-
-    LOG(trace) << "GSurfaceLib::add(GSkinSurface*) " << ( raw ? raw->getName() : "NULL" ) ;
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
+    addSkinSurface( surf, raw->getSkinSurfaceVol() );
+}
+
+
+void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_ )
+{
+   // method to help with de-conflation of surface props and location
+    std::string sslv = sslv_ ;
+    surf->setMetaKV(SSLV, sslv );
     add(surf);
 }
+
+
 
 void GSurfaceLib::add(GPropertyMap<float>* surf)
 {
     assert(!isClosed());
-   
     GPropertyMap<float>* ssurf = createStandardSurface(surf) ;
-
     addDirect(ssurf);
 }
-
 
 void GSurfaceLib::addDirect(GPropertyMap<float>* surf)
 {

@@ -45,6 +45,8 @@ GGeoLib*          GScene::getGeoLib() {          return m_geolib ; }
 
 
 // for some libs there is no analytic variant 
+GMaterialLib*     GScene::getMaterialLib() {     return m_ggeo->getMaterialLib(); } 
+GSurfaceLib*      GScene::getSurfaceLib() {      return m_ggeo->getSurfaceLib(); } 
 GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); } 
 GPmtLib*          GScene::getPmtLib() {          return m_ggeo->getPmtLib(); } 
 GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); } 

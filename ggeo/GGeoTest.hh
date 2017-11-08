@@ -8,10 +8,14 @@ class OpticksEvent ;
 
 class GGeoTestConfig ; 
 class GGeoBase ; 
+
 class GGeoLib ; 
+class GMaterialLib ; 
+class GSurfaceLib ; 
 class GBndLib ; 
 class GPmtLib ; 
 class GNodeLib ; 
+
 class GMaker ; 
 class GMergedMesh ; 
 class GSolid ; 
@@ -39,6 +43,7 @@ Rejig
 
 **/
 
+
 #include "GGeoBase.hh"
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
@@ -57,7 +62,12 @@ class GGEO_API GGeoTest : public GGeoBase {
        GScintillatorLib* getScintillatorLib() ;
        GSourceLib*       getSourceLib() ;
        GPmtLib*          getPmtLib() ;
-       GBndLib*          getBndLib() ;    // <-- maybe this one should be cloned/modified wrt base ?
+    public:
+       // at least surf and bnd libs need to be modified relative to base
+       // as there are location specifics in those
+       GMaterialLib*     getMaterialLib();
+       GSurfaceLib*      getSurfaceLib();
+       GBndLib*          getBndLib() ;    
     public:
        void dump(const char* msg="GGeoTest::dump");
     public:
@@ -94,6 +104,8 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        // base geometry and libs taken from it
        GGeoBase*        m_basis ; 
+       GMaterialLib*    m_mlib ; 
+       GSurfaceLib*     m_slib ; 
        GBndLib*         m_bndlib ; 
        GPmtLib*         m_pmtlib ; 
     private:

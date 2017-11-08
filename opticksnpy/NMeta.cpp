@@ -206,6 +206,7 @@ template NPY_API void NMeta::set(const char* name, unsigned int value);
 template NPY_API void NMeta::set(const char* name, std::string value);
 template NPY_API void NMeta::set(const char* name, float value);
 template NPY_API void NMeta::set(const char* name, char value);
+//template NPY_API void NMeta::set(const char* name, const char* value);
 
 
 template NPY_API bool         NMeta::get(const char* name) const ;
@@ -214,6 +215,7 @@ template NPY_API unsigned int NMeta::get(const char* name) const ;
 template NPY_API std::string  NMeta::get(const char* name) const ;
 template NPY_API float        NMeta::get(const char* name) const ;
 template NPY_API char         NMeta::get(const char* name) const ;
+//template NPY_API const char*  NMeta::get(const char* name) const ;
 
 
 template NPY_API bool         NMeta::get(const char* name, const char* fallback) const ;
@@ -222,6 +224,7 @@ template NPY_API unsigned int NMeta::get(const char* name, const char* fallback)
 template NPY_API std::string  NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API float        NMeta::get(const char* name, const char* fallback) const ;
 template NPY_API char         NMeta::get(const char* name, const char* fallback) const ;
+//template NPY_API const char*  NMeta::get(const char* name, const char* fallback) const ;
 
 
 

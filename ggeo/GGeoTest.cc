@@ -59,6 +59,8 @@ GSourceLib*       GGeoTest::getSourceLib(){       return m_basis->getSourceLib()
 // local copy of m_basis pointer
 GPmtLib*          GGeoTest::getPmtLib(){          return m_pmtlib ; }
 GBndLib*          GGeoTest::getBndLib(){          return m_bndlib ;  }
+GSurfaceLib*      GGeoTest::getSurfaceLib(){      return m_slib ;  }
+GMaterialLib*     GGeoTest::getMaterialLib(){     return m_mlib ;  }
 
 // locally customized 
 const char*       GGeoTest::getIdentifier(){               return "GGeoTest" ; }
@@ -79,6 +81,8 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_analytic(m_config->getAnalytic()),
     m_test(true),
     m_basis(basis),
+    m_mlib(basis->getMaterialLib()),
+    m_slib(basis->getSurfaceLib()),
     m_bndlib(basis->getBndLib()),
     m_pmtlib(basis->getPmtLib()),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),

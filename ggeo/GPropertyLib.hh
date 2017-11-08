@@ -99,6 +99,7 @@ class GGEO_API GPropertyLib {
         GDomain<float>*      getStandardDomain();
         unsigned int         getStandardDomainLength();
         void                 dumpDomain(const char* msg="GPropertyLib::dumpDomain");
+        void                 dumpNames(const char* msg="GPropertyLib::dumpNames") const  ; 
     public:
         GPropertyMap<float>* getDefaults();
         GProperty<float>*    getDefaultProperty(const char* name);
@@ -141,7 +142,7 @@ class GGEO_API GPropertyLib {
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
         NMeta*       getMeta() const  ;
-        GItemList*   getNames();
+        GItemList*   getNames() const ;
         OpticksAttrSeq*    getAttrNames();
         std::string getAbbr(const char* key);
     public:

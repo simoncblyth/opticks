@@ -945,6 +945,7 @@ template class GPropertyMap<float>;
 template class GPropertyMap<double>;
 
 template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, std::string value);
+//template GGEO_API void GPropertyMap<float>::setMetaKV(const char* name, const char* value);
 
 
 

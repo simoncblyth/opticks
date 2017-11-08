@@ -11,6 +11,7 @@
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
+#include "GVector.hh"
 #include "GItemList.hh"
 
 
@@ -18,6 +19,28 @@
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "GGEO_LOG.hh"
+
+
+class GBndLibTest 
+{
+    public:
+        GBndLibTest(GBndLib* blib) : m_blib(blib) {} ;
+        void test_add();
+    private:
+        GBndLib* m_blib ; 
+};
+
+void GBndLibTest::test_add()
+{
+    const char* spec = "Vacuum/lvPmtHemiCathodeSensorSurface//Bialkali" ; // omat/osur/isur/imat
+    //assert(blib->contains(spec));
+    bool flip = true ; 
+    m_blib->add(spec, flip);
+
+    m_blib->setBuffer(m_blib->createBuffer());
+    m_blib->getBuffer()->save("$TMP/bbuf.npy");
+}
+
 
 int main(int argc, char** argv)
 {
@@ -51,70 +74,19 @@ int main(int argc, char** argv)
 
     blib->dumpMaterialLineMap();
 
+    assert( blib->getNames() == NULL && " expect NULL names before the close ") ; 
 
-    GItemList* names0 = blib->getNames();
-    //assert(names0) ;  
-    if(names0 == NULL) LOG(warning) << "GBndLib::getNames.0 NULL " ; 
+    blib->saveAllOverride("$TMP"); // writing to geocache in tests not allowed, as needs to work from shared install
 
+    assert( blib->getNames() != NULL && " expect non-NULL names after the close ") ; 
 
-    // writing to geocache in tests not allowed
-    // as needs to work from shared install
+    blib->dumpNames("names");
 
-/*
-    ok.setIdPathOverride("$TMP");
+    //test_add(blib);
 
-    blib->save();             // only saves the guint4 bnd index
-    blib->saveToCache();      // save float buffer too for comparison with wavelength.npy from GBoundaryLib with GBndLibTest.npy 
-    LOG(info) << " after blib saveToCache " ; 
-    blib->saveOpticalBuffer();
-    LOG(info) << " after blib saveOpticalBuffer " ; 
-
-    ok.setIdPathOverride(NULL);
-
-*/
-    blib->saveAllOverride("$TMP");
-
-
-
-
-    GItemList* names1 = blib->getNames();
-    //assert(names1) ;  
-    if(names1 == NULL) 
-    {
-        LOG(warning) << "GBndLib::getNames.1 NULL " ; 
-    }
-    else
-    {
-        LOG(info) << "GBndLib::getNames.1 non-null " ; 
-        names1->dump("names1"); 
-    } 
-
-
-   
-
-
-
-/*
-    const char* spec = "Vacuum/lvPmtHemiCathodeSensorSurface//Bialkali" ; // omat/osur/isur/imat
-    assert(blib->contains(spec));
-    bool flip = true ; 
-    blib->add(spec, flip);
-    blib->setBuffer(blib->createBuffer());
-    blib->getBuffer()->save("$TMP/bbuf.npy");
-
-*/
-
+ 
     return 0 ; 
 }
 
 
-/*
-
-   running on empty dumps an npy file that causes a crash on subsequent run:
-
-      PS C:\Users\ntuhep> rm  C:\tmp\TestIDPATH\GBndLib\GBndLibIndex.npy
- 
-
-
-*/
 

@@ -219,7 +219,7 @@ NMeta* GPropertyLib::getMeta() const
 
 
 
-GItemList* GPropertyLib::getNames()
+GItemList* GPropertyLib::getNames() const 
 {
     return m_names ;
 }
@@ -709,5 +709,21 @@ void GPropertyLib::saveRaw()
 }
 
 
+
+void GPropertyLib::dumpNames(const char* msg) const 
+{
+    LOG(info) << msg ; 
+   
+    GItemList* names_ = getNames();
+    if(names_ == NULL) 
+    {
+        LOG(warning) << "GPropertyLib::dumpNames names NULL " ; 
+    }
+    else
+    {
+        LOG(info) << "GPropertyLib::dumpNames non-null " ; 
+        names_->dump("names_"); 
+    } 
+}
 
 

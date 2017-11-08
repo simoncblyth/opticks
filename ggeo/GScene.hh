@@ -13,9 +13,13 @@ class GItemList ;
 class GGeo ; 
 class GSolid ; 
 class GNode ; 
+
+class GSurfaceLib ; 
+class GMaterialLib ; 
 class GBndLib ; 
 class GPmtLib ; 
 class GGeoLib ; 
+
 class GMesh ; 
 class GMergedMesh ; 
 class GItemIndex ; 
@@ -99,6 +103,8 @@ class GGEO_API GScene : public GGeoBase
         // GGeoBase interface
         const char*       getIdentifier();
         GGeoLib*          getGeoLib() ; 
+        GSurfaceLib*      getSurfaceLib() ; 
+        GMaterialLib*     getMaterialLib() ; 
         GBndLib*          getBndLib() ; 
         GPmtLib*          getPmtLib() ; 
         GScintillatorLib* getScintillatorLib() ; 

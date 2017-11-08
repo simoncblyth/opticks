@@ -85,10 +85,14 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void setFakeEfficiency(float fake_efficiency);
        GPropertyMap<float>* makePerfect(const char* name, float detect_, float absorb_, float reflect_specular_, float reflect_diffuse_);
        void addPerfectSurfaces();
-   public:
-       void add(GSkinSurface* ss);
-       void add(GBorderSurface* bs);
-       void add(GPropertyMap<float>* surf);
+    public:
+        // methods to assist with de-conflation of surface props and location
+        void addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2);
+        void addSkinSurface(GPropertyMap<float>* surf, const char* sslv_ );
+    public:
+        void add(GSkinSurface* ss);
+        void add(GBorderSurface* bs);
+        void add(GPropertyMap<float>* surf);
    private:
        void addDirect(GPropertyMap<float>* surf);
    public:

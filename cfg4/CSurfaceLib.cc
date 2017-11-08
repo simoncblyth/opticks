@@ -26,8 +26,6 @@
 #include "PLOG.hh"
 
 
-
-
 CSurfaceLib::CSurfaceLib(GSurfaceLib* surfacelib) 
    :
    m_surfacelib(surfacelib),
@@ -37,13 +35,11 @@ CSurfaceLib::CSurfaceLib(GSurfaceLib* surfacelib)
 {
 }
 
-
 void CSurfaceLib::setDetector(CDetector* detector)
 {
     assert(m_detector == NULL);
     m_detector = detector ; 
 }
-
 
 std::string CSurfaceLib::brief()
 {

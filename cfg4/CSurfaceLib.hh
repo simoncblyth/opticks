@@ -72,6 +72,5 @@ class CFG4_API CSurfaceLib
 
          std::vector<G4LogicalBorderSurface*> m_border ; 
          std::vector<G4LogicalSkinSurface*>   m_skin ; 
-
-
 };
+
