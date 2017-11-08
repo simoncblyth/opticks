@@ -62,7 +62,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     bool              m_dynamic ; 
     CGeometry*        m_geometry ; 
     CMaterialBridge*  m_material_bridge ; 
-    CMaterialLib*     m_clib ; 
+    CMaterialLib*     m_mlib ; 
     CRecorder*        m_recorder   ; 
     CStepRec*         m_steprec   ; 
     int               m_verbosity ; 

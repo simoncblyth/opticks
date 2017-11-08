@@ -95,13 +95,11 @@ CStepRec* CG4::getStepRec()
 {
     return m_steprec ; 
 }
-CMaterialLib* CG4::getPropLib()
-{
-    return m_lib ; 
-}
+
+
 CMaterialLib* CG4::getMaterialLib()
 {
-    return m_lib ; 
+    return m_mlib ; 
 }
 
 
@@ -122,7 +120,7 @@ CG4::CG4(OpticksHub* hub)
      m_runManager(m_physics->getRunManager()),
      m_geometry(new CGeometry(m_hub)),
      m_hookup(m_geometry->hookup(this)),
-     m_lib(m_geometry->getPropLib()),
+     m_mlib(m_geometry->getMaterialLib()),
      m_detector(m_geometry->getDetector()),
      m_generator(new CGenerator(m_hub, this)),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA

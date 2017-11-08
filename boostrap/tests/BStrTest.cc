@@ -10,6 +10,56 @@
 #include "PLOG.hh"
 
 
+void test_index_all()
+{
+    LOG(info) << "." ; 
+
+    std::vector<std::string> v ; 
+    v.push_back("red");
+    v.push_back("green");
+    v.push_back("red");
+    v.push_back("blue");
+
+    std::vector<unsigned> ii ; 
+    ii.clear();
+    assert( BStr::index_all(ii, v, "red") == 2 );
+    assert( ii.size() == 2 );
+
+    ii.clear(); 
+    assert( BStr::index_all(ii, v, "green") == 1 );
+    assert( ii.size() == 1 );
+
+    ii.clear(); 
+    assert( BStr::index_all(ii, v, "blue") == 1 );
+    assert( ii.size() == 1 );
+
+    ii.clear(); 
+    assert( BStr::index_all(ii, v, "cyan") == 0 );
+    assert( ii.size() == 0 );
+}
+
+
+
+void test_index_first()
+{
+    LOG(info) << "." ; 
+
+    std::vector<std::string> v ; 
+    v.push_back("red");
+    v.push_back("green");
+    v.push_back("blue");
+
+    assert( BStr::index_first(v, "red") == 0 );
+    assert( BStr::index_first(v, "green") == 1 );
+    assert( BStr::index_first(v, "blue") == 2 );
+    assert( BStr::index_first(v, "cyan") == -1 );
+}
+
+
+
+
+
+
 void test_ijoin()
 {
     std::vector<int> elem ; 
@@ -185,9 +235,11 @@ int main(int argc, char** argv)
     test_ijoin();
     test_fsplit();
     test_StartsWith();
-
-*/
     test_ReplaceAll();
+*/
+
+    test_index_first();
+    test_index_all();
 
     return 0 ; 
 }

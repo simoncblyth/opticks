@@ -41,6 +41,15 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        static const char* extra_z ; 
        static const char* extra_w ; 
   public:
+       static const char* AssignSurfaceType( NMeta* surfmeta );
+       static const char* BORDERSURFACE ;  
+       static const char* SKINSURFACE ;  
+       static const char* TESTSURFACE ;  
+  public:
+       static const char* BPV1 ;  
+       static const char* BPV2 ;  
+       static const char* SSLV ;  
+  public:
        // some model-mismatch translation required for surface properties
        static const char* EFFICIENCY ; 
        static const char* REFLECTIVITY ; 

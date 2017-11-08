@@ -93,6 +93,7 @@ class CFG4_API CTraverser {
     public:
         unsigned getNumPV();
         unsigned getNumLV();
+        const G4VPhysicalVolume* getPV(const char* name); // find index from m_pvnames, then use below
         const G4VPhysicalVolume* getPV(unsigned index); // index lookup of m_pvs vector
         const G4LogicalVolume*   getLV(unsigned index); // index lookup of m_lvs vector
         const G4LogicalVolume*   getLV(const char* name);

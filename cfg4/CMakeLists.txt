@@ -183,7 +183,9 @@ set(SOURCES
     CRecorder.cc
     CDetector.cc
     CGDMLDetector.cc
+    COptical.cc
     CSurLib.cc
+    CSurfaceLib.cc
     CMaker.cc
     CTestDetector.cc
     CStepRec.cc

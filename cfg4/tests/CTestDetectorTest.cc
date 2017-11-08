@@ -72,8 +72,8 @@ int main(int argc, char** argv)
 
     detector->setVerbosity(2) ;
 
-    CMaterialLib* clib = detector->getPropLib() ;
-    assert(clib); 
+    CMaterialLib* mlib = detector->getMaterialLib() ;
+    assert(mlib); 
 
     G4VPhysicalVolume* world_pv = detector->getTop();
     assert(world_pv);

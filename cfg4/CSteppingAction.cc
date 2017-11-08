@@ -100,7 +100,7 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_dynamic(dynamic),
    m_geometry(g4->getGeometry()),
    m_material_bridge(NULL),
-   m_clib(g4->getPropLib()),
+   m_mlib(g4->getMaterialLib()),
    m_recorder(g4->getRecorder()),
    m_steprec(g4->getStepRec()),
    m_verbosity(m_recorder->getVerbosity()),

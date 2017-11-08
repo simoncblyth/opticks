@@ -19,13 +19,35 @@ full chain in flux is too much to handle.
   in persisting and the GSurLib workaround that got out of control 
 
 
+
+Hmm GDML reconstruction does nothing special : BUT there are ptrs on names
+----------------------------------------------------------------------------
+
+* TODO: confirm assumption that ptr in pv names mean they are all unique ? 
+  (ie different name for each traversal index)
+
+  * for lv : i guess no, lv are recycled greatly 
+
+
+* :doc:`surface_review_gdml`
+
+::
+
+    simon:ggeo blyth$ opticks-find setPVName
+    ./assimprap/AssimpGGeo.cc:        solid->setPVName(pv);
+    ./ggeo/GMaker.cc:    solid->setPVName( strdup(pvn.c_str()) );
+    ./ggeo/GScene.cc:    node->setPVName( pvname.c_str() );
+    ./ggeo/GSolid.cc:void GSolid::setPVName(const char* pvname)
+    ./ggeo/GSolid.hh:      void setPVName(const char* pvname);
+    simon:opticks blyth$ 
+
+
+
+
 Improved PropLib Persisting with JSON metadata
 ----------------------------------------------------
 
-* adding a GItemList txt list string to every surface carying 
-  some metadata OR even adopting some standard naming  
-
-Added NJS json infrastructure to enable full fidelity 
+Added NMeta json infrastructure to enable full fidelity 
 metadata to be stored with persisted PropLib. 
 
 Where to tack the metadata ?
@@ -36,11 +58,15 @@ Adding surfaces/materials is not a common thing to do, so:
 * global metadata for the entire PropLibs, dict-of-dict style 
   top level keys being the material/surface names 
 
+* current NParameters uses BList string,string persisting 
+  which restricts it to a single level
 
-* uses NParameters ? That already has BList string,string persisting 
-
-* developed NMeta using nlohmann::json for this 
-* placed m_meta into GPropertyMap/GPropertyLib 
+* developed NMeta using nlohmann::json for more flexible metadata
+ 
+* placed m_meta into GPropertyMap/GPropertyLib, the maps correpond to 
+  individual surf/mat etc.. and the libs to collections of those :
+  NMeta is composable allowing the lib to amalgamate all meta data 
+  prior to save and then distribute it on load  
 
 
 New metadata infrastructure operational via geocache::
@@ -81,9 +107,116 @@ Subsequently cfg4 means need to reconstitute the G4 border/skin objects. Althoug
 it is in principal possible to disentangle these from the boundaries, 
 it aint at all simple : resulting in complex workarounds in GSurLib/CSurLib/GSur/...
 
-Solution: improve the PropLib persisting with some metadata so that the G4 geometry 
-can be reconstructed without jumping thru hoops. Going back a few steps avoids the 
-complexity of operating at just the last step.
+Solution: improve the GPropLib persisting with some NMeta metadata 
+so that the G4 geometry can be reconstructed without jumping thru hoops. 
+Going back a few steps avoids the complexity of operating at just the last step.
+
+
+
+Potential Missing Surfaces ?
+--------------------------------------
+
+Do the original G4 border/skin surfaces survive the journey ? 
+
+* TODO: a full geometry workflow test, but with a simple enough geometry to illustrate the issues 
+
+* assumption of one location for a named PV pair is incorrect ?
+  (because node graph, not tree)
+
+* using traversal indices may be a way to flatten the graph into a tree
+  and avoid the issue
+
+Perhaps : 
+
+* get all the traversal indices of each PV name 
+  and then do parent/child relation checks to reconstruct 
+  valid border surface pairs ?
+
+* for skin surfaces using logical name lookup should be ok
+
+PV Addressing
+---------------
+
+* CTraverser.m_pvnames are without the ptr
+
+::
+
+
+    (lldb) p m_pvnames
+    (std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >) $3 = size=12230 {
+      [0] = "World_PV"
+      [1] = "/dd/Structure/Sites/db-rock"
+      [2] = "/dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop"
+      [3] = "/dd/Geometry/Sites/lvNearHallTop#pvNearTopCover"
+      [4] = "/dd/Geometry/Sites/lvNearHallTop#pvNearTeleRpc#pvNearTeleRpc:1"
+      [5] = "/dd/Geometry/RPC/lvRPCMod#pvRPCFoam"
+
+
+    (lldb) p name
+    (const char *) $4 = 0x000000010b2d7f60 "__dd__Geometry__Sites__lvNearHallBot--pvNearPoolDead0xc13c018"
+    (lldb) p BStr::DAEIdToG4(name)
+    (char *) $5 = 0x000000010b2d8ff0 "/dd/Geometry/Sites/lvNearHallBot--pvNearPoolDead"
+
+
+
+GSurfaceLib model
+------------------
+
+When a set of surface props are attached at multiple locations 
+(bpv1/bpv2 pairs or sslv) then the surface must be repeated.
+
+* ie surface identity incorporates location 
+
+
+
+CSurLib instanciated by CDetector::attachSurfaces from CGeometry::init
+-------------------------------------------------------------------------
+
+::
+
+    267 void CDetector::attachSurfaces()
+    268 {
+    269     // invoked from CGeometry::init immediately after CTestDetector or GDMLDetector instanciation
+    270 
+    271     if(m_dbgsurf)
+    272         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  " ;
+    273 
+    274     m_gsurlib->close();
+    275 
+    276     m_csurlib = new CSurLib(m_gsurlib);
+    277 
+    278     m_csurlib->convert(this);
+    279 
+    280     if(m_dbgsurf)
+    281         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;
+    282 
+    283 }
+    284 
+
+
+     56 void CGeometry::init()
+     57 {
+     58     CDetector* detector = NULL ; 
+     59     if(m_ok->hasOpt("test"))
+     60     {
+     61         LOG(fatal) << "CGeometry::init G4 simple test geometry " ; 
+     62         OpticksQuery* query = NULL ;  // normally no OPTICKS_QUERY geometry subselection with test geometries
+     63         detector  = static_cast<CDetector*>(new CTestDetector(m_hub, query)) ;
+     64     }
+     65     else
+     66     {
+     67         // no options here: will load the .gdml sidecar of the geocache .dae 
+     68         LOG(fatal) << "CGeometry::init G4 GDML geometry " ;
+     69         OpticksQuery* query = m_ok->getQuery();
+     70         detector  = static_cast<CDetector*>(new CGDMLDetector(m_hub, query)) ;
+     71     }
+     72 
+     73     detector->attachSurfaces();
+     74 
+     75     m_detector = detector ;
+     76     m_lib = detector->getPropLib();
+     77 }
+
 
 
 
@@ -111,7 +244,11 @@ GScene : Full Analytic Geometry Flow
 
 * export G4 border/skin into GDML together with everything else
 
-* python GDML parsing into GLTF json
+  * NB GDML looses some material/surf info, so the GDML flow is
+    not standalone (even in current GDML, let alone some old GDML exports 
+    that are still supporting)... So it needs to be used together with G4DAE
+
+* python GDML parsing into GLTF json 
 
 * NGLTF/NScene/GScene parsing of GLTF, yielding GScene/GSurfaceLib
 
@@ -127,6 +264,38 @@ GGeoTest : Test Geometry Flow
 * construction of GGeoTest geometry from NCSG, the surfaces 
   referred to by name within the boundary specification
 
+
+Fundamental surface difference between full/test geometries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Notice the fundamental difference wrt surfaces between full and test geometries, 
+
+* full geometries have original "truth" sslv,bspv1,bspv2 names
+  locating the surfaces which are NOW passed forward from the G4 geometry 
+  into GGeo/GSurfaceLib(GPropLib) using NMeta/json to survive the geocache 
+  this should allow simple reconstruction of a G4 geometry from the GGeo one  
+
+* hmm : what about surface identity, presumably this means there is duplication
+  of same surface properties into different locations ?
+
+* test geometries must create "truth" regarding surface locations as they go along
+   
+  * base geometry surfaces are referenced for their properties, NOT LOCATIONS 
+
+  * locations specified by base geometry sslv/bspv1/bspv2 names are 
+    not applicable to test geometries which have entirely different names for the volumes
+
+
+GSurfaceLib -> CSurfaceLib translation of both full and test geometries ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Suspect easiest to make test geometry to look just like full geometry
+as soon as possible by giving them the requisite metadata names.
+
+Perhaps:
+
+* dynamically apply modifications to base surface locations 
+* when are the names coming from (GMaker ?) 
 
 
 GSurfaceLib::save
@@ -173,9 +342,6 @@ GSurfaceLib::save
     438     LOG(trace) << "GPropertyLib::saveToCache DONE" ;
     439 
     440 }
-
-
-
 
 
 GSurLib formerly of GGeo, now moved to OpticksHub

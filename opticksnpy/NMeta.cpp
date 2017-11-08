@@ -147,6 +147,11 @@ T NMeta::get(const char* name) const
     return m_js[name].get<T>() ;
 }
 
+bool NMeta::hasItem(const char* name) const 
+{
+    return m_js.count(name) == 1 ;
+}
+
 
 
 

@@ -12,11 +12,18 @@ class OpticksQuery ;
 // gg-
 //class GGeo ; 
 class GGeoBase ; 
-class GSurLib ; 
 
 // cfg4-
 class CBndLib ; 
+
+
+// want to kill these 2
+class GSurLib ; 
 class CSurLib ; 
+
+
+class CSurfaceLib ; 
+
 class CMaterialLib ; 
 class CTraverser ; 
 class CCheck ; 
@@ -66,7 +73,8 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     virtual G4VPhysicalVolume* Construct();
  public: 
     NBoundingBox*      getBoundingBox();
-    CMaterialLib*      getPropLib();
+    CSurfaceLib*       getSurfaceLib() const ;
+    CMaterialLib*      getMaterialLib() const ;
     G4VPhysicalVolume* getTop();
     bool               isValid();
  protected:
@@ -74,6 +82,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
  public: 
     // from traverser : pv and lv are collected into vectors by CTraverser::AncestorVisit
     const G4VPhysicalVolume* getPV(unsigned index);
+    const G4VPhysicalVolume* getPV(const char* name);
     const G4LogicalVolume*   getLV(unsigned index);
     const G4LogicalVolume*   getLV(const char* name);
 
@@ -114,6 +123,7 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;
     CMaterialLib*      m_mlib ; 
+    CSurfaceLib*       m_slib ; 
     G4VPhysicalVolume* m_top ;
     CTraverser*        m_traverser ; 
     CCheck*            m_check ; 

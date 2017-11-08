@@ -11,6 +11,11 @@
 #include "G4SystemOfUnits.hh"
 #include "CFG4_POP.hh"
 
+
+// brap-
+#include "BStr.hh"
+
+
 // okc-
 #include "Opticks.hh"
 #include "OpticksQuery.hh"
@@ -295,6 +300,43 @@ const G4VPhysicalVolume* CTraverser::getPV(unsigned index)
 {
     return index < m_pvs.size() ? m_pvs[index] : NULL ;  
 }
+
+const G4VPhysicalVolume* CTraverser::getPV(const char* name)
+{
+    int index = BStr::index_first(m_pvnames, name) ;
+
+    std::vector<unsigned> indices ; 
+    int num_indices = BStr::index_all( indices, m_pvnames, name) ;
+
+    LOG(info) << "CTraverser::getPV"
+              << " name " << name
+              << " index " << index 
+              << " num_indices " << num_indices
+              ;     
+
+
+    assert( m_pvs.size() == m_pvnames.size() );
+
+    bool valid = index > -1 && unsigned(index) < m_pvs.size()  ;
+
+    if(!valid)
+    {
+        LOG(fatal) << "CTraverser::getPV" 
+                   << " name " << name 
+                   << " index " << index 
+                   << " m_pvs " << m_pvs.size()
+                   << " m_pvnames " << m_pvnames.size()
+                   ;
+    }
+    assert( valid );
+    const G4VPhysicalVolume* pv = getPV(index) ;
+    assert( pv );
+    return pv ;   
+}
+
+
+
+
 unsigned CTraverser::getNumLV()
 {
     return m_lvs.size();

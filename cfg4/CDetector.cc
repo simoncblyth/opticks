@@ -27,11 +27,18 @@
 #include "OpticksQuery.hh"
 
 #include "GGeo.hh"
+
+
+// want to eradicate
 #include "GSurLib.hh"
+#include "CSurLib.hh"
+
+// replacing with
+#include "CSurfaceLib.hh"
+
 
 // cfg4-
 #include "CBndLib.hh"
-#include "CSurLib.hh"
 #include "CMaterialLib.hh"
 #include "CTraverser.hh"
 #include "CDetector.hh"
@@ -47,13 +54,13 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   m_ok(m_hub->getOpticks()),
   m_dbgsurf(m_ok->isDbgSurf()),
   m_ggb(m_hub->getGGeoBase()),
-  //m_ggeo(m_hub->getGGeo()),
   m_blib(new CBndLib(m_hub)),
-  m_gsurlib(m_hub->getSurLib()),   // invokes the deferred GGeo::createSurLib  
-  m_csurlib(NULL),
+  m_gsurlib(m_hub->getSurLib()),       // invokes the deferred GGeo::createSurLib  
+  m_csurlib(new CSurLib(m_gsurlib)),
   m_query(query),
   m_resource(m_ok->getResource()),
   m_mlib(new CMaterialLib(m_hub)),
+  m_slib(new CSurfaceLib(m_hub->getSurfaceLib())),   // << WIP 
   m_top(NULL),
   m_traverser(NULL),
   m_check(NULL),
@@ -120,10 +127,18 @@ G4VPhysicalVolume* CDetector::getTop()
     return m_top ; 
 }
 
-CMaterialLib* CDetector::getPropLib()
+CMaterialLib* CDetector::getMaterialLib() const 
 {
     return m_mlib ; 
 }
+CSurfaceLib* CDetector::getSurfaceLib() const 
+{
+    return m_slib ; 
+}
+
+
+
+
 NBoundingBox* CDetector::getBoundingBox()
 {
     return m_bbox ; 
@@ -209,6 +224,13 @@ const G4VPhysicalVolume* CDetector::getPV(unsigned index)
 {
    return m_traverser->getPV(index); 
 }
+const G4VPhysicalVolume* CDetector::getPV(const char* name)
+{
+   return m_traverser->getPV(name); 
+}
+
+
+
 const G4LogicalVolume* CDetector::getLV(unsigned index)
 {
    return m_traverser->getLV(index); 
@@ -271,11 +293,13 @@ void CDetector::attachSurfaces()
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  " ;
 
-    m_gsurlib->close();
- 
-    m_csurlib = new CSurLib(m_gsurlib);
 
+    m_slib->convert(this);
+
+
+    m_gsurlib->close();  // close the GSurLib
     m_csurlib->convert(this);     
+
 
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;

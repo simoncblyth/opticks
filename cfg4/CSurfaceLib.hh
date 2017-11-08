@@ -6,8 +6,6 @@
 class Opticks ; 
 
 template <typename T> class GPropertyMap ; 
-class GSur ; 
-class GSurLib ; 
 class GSurfaceLib ; 
 
 class G4OpticalSurface ; 
@@ -21,13 +19,20 @@ class CDetector ;
 #include "CFG4_API_EXPORT.hh"
 
 /**
-CSurLib
-========
+CSurfaceLib
+=============
 
-AIMING TO REPLACE THIS WITH CSurfaceLib : SEE :doc:`notes/issues/surface_review`
+See :doc:`notes/issues/surface_review` 
 
+* CSurfaceLib is aiming to eliminate the kludgy classes (GSur/GSurLib/CSurLib)
+  by using a simpler direct from GSurfaceLib approach : made possible
+  by improved GPropLib NMeta persisting 
+  
 
-CSurLib is a constituent of CGeometry that is instanciated with CGeometry. 
+Predecessor CSurLib
+~~~~~~~~~~~~~~~~~~~~~
+
+Canonical m_csurlib was a constituent of CDetector that is instanciated  
 The `convert(CDetector* detector)` method is invoked from CGeometry::init 
 this creates G4LogicalBorderSurface and G4LogicalSkinSurface together with 
 their associated optical surfaces. 
@@ -43,30 +48,26 @@ Hmm how to apply to CTestDetector ? PV indices are all different.
 
 **/
 
-class CFG4_API CSurLib 
+class CFG4_API CSurfaceLib 
 {
          friend class CDetector ;
          friend class CGeometry ;
     public:
-         CSurLib(GSurLib* surlib);
+         CSurfaceLib(GSurfaceLib* surlib);
          std::string brief();
-         unsigned getNumSur();
-         GSur* getSur(unsigned index);
     protected:
          void convert(CDetector* detector);
     private:
-         // lookup G4 pv1,pv2 from volume pair indices
-         G4LogicalBorderSurface* makeBorderSurface(GSur* sur, unsigned ivp, G4OpticalSurface* os);
-         // lookup G4 lv via name 
-         G4LogicalSkinSurface*   makeSkinSurface(  GSur* sur, unsigned ilv, G4OpticalSurface* os);
-         G4OpticalSurface*       makeOpticalSurface(GSur* sur);
+         G4LogicalBorderSurface* makeBorderSurface( GPropertyMap<float>* surf, G4OpticalSurface* os);
+         G4LogicalSkinSurface*   makeSkinSurface(   GPropertyMap<float>* surf, G4OpticalSurface* os);
+         G4OpticalSurface*       makeOpticalSurface(GPropertyMap<float>* surf);
+
          void addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap);
          void setDetector(CDetector* detector);
     private:
-         GSurLib*       m_surlib ; 
+         GSurfaceLib*   m_surfacelib ; 
          Opticks*       m_ok ; 
          bool           m_dbgsurf ; 
-         GSurfaceLib*   m_surfacelib ; 
          CDetector*     m_detector ; 
 
          std::vector<G4LogicalBorderSurface*> m_border ; 

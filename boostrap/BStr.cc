@@ -24,6 +24,24 @@ bool BStr::StartsWith(const char* s, const char* q)
     return boost::starts_with(s, q);
 }
 
+int BStr::index_first( const std::vector<std::string>& elem, const char* item )
+{
+    typedef std::vector<std::string> VS ; 
+    VS::const_iterator it = std::find( elem.begin(), elem.end(), item );
+    return it == elem.end() ? -1 :  it - elem.begin() ; 
+}
+
+int BStr::index_all( std::vector<unsigned>& indices, const std::vector<std::string>& elem, const char* item )
+{
+    for(unsigned i=0 ; i < elem.size() ; i++) if(elem[i].compare(item) == 0) indices.push_back(i) ; 
+    return indices.size();
+}
+
+
+
+
+
+
 
 bool BStr::listHasKey(const char* dlist, const char* key, const char* delim)
 {  

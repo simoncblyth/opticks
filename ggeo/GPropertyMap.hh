@@ -46,7 +46,10 @@ class GGEO_API GPropertyMap {
       bool hasNameEnding(const char* end);
 
       NMeta* getMeta() const ; 
-      template <typename S> void setMetaKV(const char* key, S value);
+      template <typename S> 
+      void setMetaKV(const char* key, S value);
+      bool hasMetaItem(const char* key ) const ;
+
 
       std::string getShortNameString();
       std::string getPDigestString(int ifr, int ito);
@@ -63,17 +66,24 @@ class GGEO_API GPropertyMap {
       //char* trimSuffixPrefix(const char* origname, const char* prefix=NULL);
 
   public:
+      std::string brief() const ; 
       const char* getName();    // names like __dd__Materials__Nylon0xc3aa360 or __dd__Geometry__AdDetails__AdSurfacesNear__SSTWaterSurfaceNear2
       unsigned int getIndex();  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       const char* getType();
 
-      bool isSurface();
-      bool isSkinSurface();
-      bool isBorderSurface();
-      bool isMaterial();
+      bool isSurface() const ;
+      bool isTestSurface() const ;
+      bool isSkinSurface() const ;
+      bool isBorderSurface() const ;
+      bool isMaterial() const ;
       bool hasNonZeroProperty(const char* pname) ;
      
-
+   public:
+      // from metadata
+      std::string getBPV1() const ; 
+      std::string getBPV2() const ; 
+      std::string getSSLV() const ; 
+  public:
       void setSensor(bool sensor=true); // set in AssimpGGeo::convertSensors
       bool isSensor();
 

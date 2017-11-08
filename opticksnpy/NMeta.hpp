@@ -31,6 +31,7 @@ class NPY_API NMeta {
        template <typename T> void set(const char* name, T value);
        template <typename T> T get(const char* name) const ;
        template <typename T> T get(const char* name, const char* fallback) const ;
+       bool hasItem(const char* name) const ;
    public:
        void save(const char* path) const ;
        void save(const char* dir, const char* name) const ;

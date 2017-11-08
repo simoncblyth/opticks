@@ -2,6 +2,7 @@
 
 #include "G4MaterialPropertiesTable.hh"
 #include "G4OpticalSurface.hh"
+
 #include "G4LogicalBorderSurface.hh"
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalVolume.hh"
@@ -15,11 +16,9 @@
 #include "GPropertyMap.hh"
 #include "GOpticalSurface.hh"
 #include "GSurfaceLib.hh"
-#include "GSurLib.hh"
-#include "GSur.hh"
 
 #include "CMPT.hh"
-#include "CSurLib.hh"
+#include "CSurfaceLib.hh"
 #include "COptical.hh"
 #include "COpticalSurface.hh"
 #include "CDetector.hh"
@@ -27,31 +26,30 @@
 #include "PLOG.hh"
 
 
-CSurLib::CSurLib(GSurLib* surlib) 
+
+
+CSurfaceLib::CSurfaceLib(GSurfaceLib* surfacelib) 
    :
-   m_surlib(surlib),
-   m_ok(surlib->getOpticks()),
+   m_surfacelib(surfacelib),
+   m_ok(surfacelib->getOpticks()),
    m_dbgsurf(m_ok->isDbgSurf()),
-   m_surfacelib(surlib->getSurfaceLib()),
    m_detector(NULL)
 {
 }
 
 
-void CSurLib::setDetector(CDetector* detector)
+void CSurfaceLib::setDetector(CDetector* detector)
 {
     assert(m_detector == NULL);
     m_detector = detector ; 
 }
 
 
-std::string CSurLib::brief()
+std::string CSurfaceLib::brief()
 {
     std::stringstream ss; 
 
-    ss << "CSurLib " 
-       << " num CSur " << m_surlib->getNumSur()
-       << " --> "
+    ss << "CSurfaceLib " 
        << " numBorderSurface " << m_border.size() 
        << " numSkinSurface " << m_skin.size() 
        ;
@@ -61,85 +59,67 @@ std::string CSurLib::brief()
 
 
 
-unsigned CSurLib::getNumSur()
-{
-    return m_surlib->getNumSur();
-}
-GSur* CSurLib::getSur(unsigned index)
-{
-   return m_surlib->getSur(index); 
-}
-
-
-
 // called by CGeometry::init for both CGDMLDetector and CTestDetector branches
 //
 // TODO:converse method would seems more appropriate
 //
-//       detector->attachSurfaces(CSurLib* ) 
+//       detector->attachSurfaces(CSurfaceLib* ) 
 //
 
 
-
-
-void CSurLib::convert(CDetector* detector)
+void CSurfaceLib::convert(CDetector* detector)
 {
-    assert(m_surlib->isClosed()); // typically closed in CDetector::attachSurfaces
+    //assert(m_surfacelib->isClosed()); 
+    if(!m_surfacelib->isClosed())
+    {
+        LOG(info) << "CSurfaceLib::convert closing surfacelib " ; 
+        m_surfacelib->close();
+    }
 
-    setDetector(detector);
-    unsigned numSur = m_surlib->getNumSur();
+    // CDetector required by makeBorderSurface makeSkinSurface to access the G4 lv and pv 
+    setDetector(detector);  
+
+    unsigned num_surf = m_surfacelib->getNumSurfaces() ; 
 
     if(m_dbgsurf)
-    LOG(info) << "[--dbgsurf] CSurLib::convert  numSur " << numSur  ;   
-    for(unsigned i=0 ; i < numSur ; i++)
-    {   
-        GSur* sur = m_surlib->getSur(i);
+    LOG(info) << "[--dbgsurf] CSurfaceLib::convert  num_surf " << num_surf  ;   
 
-        if(sur->isBorder()) 
+    for(unsigned i=0 ; i < num_surf ; i++)
+    {   
+        GPropertyMap<float>* surf = m_surfacelib->getSurface(i);
+
+        if(surf->isBorderSurface()) 
         {
-             G4OpticalSurface* os = makeOpticalSurface(sur);
-             unsigned nvp = sur->getNumVolumePair();
-             for(unsigned ivp=0 ; ivp < nvp ; ivp++) 
-             {
-                 G4LogicalBorderSurface* lbs = makeBorderSurface(sur, ivp, os);
-                 m_border.push_back(lbs);
-             }
+             G4OpticalSurface* os = makeOpticalSurface(surf);
+             G4LogicalBorderSurface* lbs = makeBorderSurface(surf, os);
+             m_border.push_back(lbs);
         }
-        else if(sur->isSkin())
+        else if(surf->isSkinSurface())
         {
-             G4OpticalSurface* os = makeOpticalSurface(sur);
-             unsigned nlv = sur->getNumLV();
-             for(unsigned ilv=0 ; ilv < nlv ; ilv++) 
-             {
-                 G4LogicalSkinSurface* lss = makeSkinSurface(sur, ilv, os);
-                 m_skin.push_back(lss);
-             }
+             G4OpticalSurface* os = makeOpticalSurface(surf);
+             G4LogicalSkinSurface* lss = makeSkinSurface(surf, os);
+             m_skin.push_back(lss);
         } 
         else
         {
-              LOG(trace) << "CSurLib::convert SKIPPED GSur index " << i << " : " << sur->brief() ;  
+              LOG(trace) << "CSurfaceLib::convert SKIPPED surface index " << i << " : " << surf->brief() ;  
         }
     }   
     LOG(info) << brief();
 }
 
 
-G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
+G4OpticalSurface* CSurfaceLib::makeOpticalSurface(GPropertyMap<float>* surf )
 {
-    bool bs = sur->isBorder();
-    bool ss = sur->isSkin(); 
-    assert( bs ^ ss );
-    const char* flavor = bs ? "border" : "skin" ; 
+    GOpticalSurface* os_ = surf->getOpticalSurface();
 
-    GPropertyMap<float>* pmap = sur->getPMap();
-    GOpticalSurface* os_ = pmap->getOpticalSurface();
     const char* name = os_->getName() ;
-    guint4 optical = os_->getOptical();
+    guint4 optical   = os_->getOptical();
 
 
     G4OpticalSurface* os = new G4OpticalSurface(name);
 
-    G4OpticalSurfaceModel model = COptical::Model(1) ;   // 0:glisur, 1:unified (no SPECULARSPIKE SPECULARLOBE, just Lambertian?)
+    G4OpticalSurfaceModel model = COptical::Model(1) ; 
     G4OpticalSurfaceFinish finish = COptical::Finish(optical.z) ;  //  polished,,,ground,,, 
     G4SurfaceType type = COptical::Type(optical.y) ;   // dielectric_metal, dielectric_dielectric
 
@@ -147,44 +127,45 @@ G4OpticalSurface* CSurLib::makeOpticalSurface(GSur* sur)
     os->SetFinish(finish);
     os->SetType(type);
 
-
-    LOG(debug) << "CSurLib::makeOpticalSurface " 
-              << std::setw(10) << flavor 
-              << COpticalSurface::Brief(os) 
-              ;
+    LOG(debug) << "CSurfaceLib::makeOpticalSurface " 
+               << COpticalSurface::Brief(os) 
+               ;
 
     G4MaterialPropertiesTable* mpt = new G4MaterialPropertiesTable();
     os->SetMaterialPropertiesTable(mpt);
 
-    addProperties(mpt,  pmap);
+    addProperties(mpt,  surf);
 
     return os ; 
 }
 
 
 // lookup G4 pv1,pv2 from volume indices recorded in pairs
-G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4OpticalSurface* os)
+G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
 {
-    GPropertyMap<float>* pmap = sur->getPMap();
-    const char* name = pmap->getName() ;
-    guint4 pair = sur->getVolumePair(ivp);
-    unsigned ipv1 = pair.x ; 
-    unsigned ipv2 = pair.y ; 
+    const char* name = surf->getName() ;
+
+    //  queasy about using name lookup for PV
+    //  see notes/issues/surface_review.rst#Potential_Missing_Surfaces
+
+    std::string bpv1 = surf->getBPV1();
+    std::string bpv2 = surf->getBPV2();
+
+    char* pvn1 = BStr::DAEIdToG4(bpv1.c_str());
+    char* pvn2 = BStr::DAEIdToG4(bpv2.c_str());
+
 
     if(m_dbgsurf)
-    LOG(info) << "CSurLib::makeBorderSurface"
+    LOG(info) << "CSurfaceLib::makeBorderSurface"
               << " name " << name 
-              << " ipv1 " << ipv1
-              << " ipv2 " << ipv2
+              << " bpv1 " << bpv1
+              << " bpv2 " << bpv2
+              << " pvn1 " << pvn1
+              << " pvn2 " << pvn2
               ;
 
-    assert(pair.w == ivp);
-
-    assert( ipv1 != GSurLib::UNSET && "CSurLib::makeBorderSurface ipv1 UNSET" );
-    assert( ipv2 != GSurLib::UNSET && "CSurLib::makeBorderSurface ipv2 UNSET" );
-
-    const G4VPhysicalVolume* pv1 = m_detector->getPV(ipv1);    
-    const G4VPhysicalVolume* pv2 = m_detector->getPV(ipv2);    
+    const G4VPhysicalVolume* pv1 = m_detector->getPV(pvn1);    
+    const G4VPhysicalVolume* pv2 = m_detector->getPV(pvn2);    
 
     assert( pv1 );
     assert( pv2 );     
@@ -198,25 +179,17 @@ G4LogicalBorderSurface* CSurLib::makeBorderSurface(GSur* sur, unsigned ivp, G4Op
 }
 
 
-
-
 // lookup G4 lv via name 
-G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4OpticalSurface* os)
+G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
 {
-    GPropertyMap<float>* pmap = sur->getPMap();
-    const char* name = pmap->getName() ;
-    const char* daelvn = sur->getLV(ilv);       // assuming LV identity is 1-to-1 with name 
-
-    char* lvn = BStr::DAEIdToG4(daelvn);
-    
+    const char* name = surf->getName() ;
+    char* lvn = BStr::DAEIdToG4(name);
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
     if(m_dbgsurf)
-    LOG(info) << "CSurLib::makeSkinSurface"
-              << " ilv " << std::setw(5) << ilv
+    LOG(info) << "CSurfaceLib::makeSkinSurface"
               << " name " << std::setw(35) << name
               << " lvn " << std::setw(35) << lvn 
-              << " daelvn " << std::setw(35) << daelvn 
               << " lv " << ( lv ? lv->GetName() : "NULL" )
               ;
 
@@ -226,7 +199,7 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
 
 
 
-void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap)
+void CSurfaceLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>* pmap)
 {
     /**
     Property values hail from GSurfaceLib::createStandardSurface  
@@ -241,7 +214,7 @@ void CSurLib::addProperties(G4MaterialPropertiesTable* mpt_, GPropertyMap<float>
 
     //unsigned   nprop = pmap->getNumProperties();
     //const char* name = pmap->getShortName();
-    //LOG(info) << "CSurLib::addProperties " << name ;  
+    //LOG(info) << "CSurfaceLib::addProperties " << name ;  
 
     GProperty<float>* detect = pmap->getProperty(GSurfaceLib::detect);
     GProperty<float>* absorb = pmap->getProperty(GSurfaceLib::absorb);

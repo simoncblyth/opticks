@@ -14,6 +14,10 @@ template <typename T> class GPropertyMap ;
 GSur
 =====
 
+AIMING TO ELIMINATE THIS : SEE :doc:`notes/issues/surface_review`
+
+
+
 A single GSur can correspond to 
 multiple G4LogicalBorderSurface each 
 with different volume pairs OR 

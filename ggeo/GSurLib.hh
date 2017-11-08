@@ -4,6 +4,9 @@
 GSurLib
 ==========
 
+AIMING TO ELIMINATE THIS : SEE :doc:`notes/issues/surface_review`
+
+
 PERHAPS MIS-PLACED IT BELONGS IN cfg4- 
 
 See::

@@ -29,6 +29,10 @@ class BRAP_API BStr {
 
      static std::string patternPickField(std::string str, std::string ptn, int num );
      static std::string ijoin( std::vector<int>& elem, char delim);
+
+     static int index_first(                                 const std::vector<std::string>& elem, const char* item );
+     static int index_all(   std::vector<unsigned>& indices, const std::vector<std::string>& elem, const char* item );
+
      static void isplit( std::vector<int>& elem, const char* line, char delim );
      static void usplit( std::vector<unsigned>& elem, const char* line, char delim );
      static void fsplit( std::vector<float>& elem, const char* line, char delim );

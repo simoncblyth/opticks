@@ -21,8 +21,9 @@ class CFG4_API CGeometry
        CGeometry(OpticksHub* hub);
        bool hookup(CG4* g4);
        void postinitialize();   // invoked by CG4::postinitialize after Geant4 geometry constructed
-       CMaterialLib*  getPropLib();
-       CDetector* getDetector();
+   public:
+       CMaterialLib*    getMaterialLib();
+       CDetector*       getDetector();
        CMaterialBridge* getMaterialBridge();
        CSurfaceBridge*  getSurfaceBridge();
        std::map<std::string, unsigned>& getMaterialMap();        
@@ -35,7 +36,7 @@ class CFG4_API CGeometry
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 
        CDetector*           m_detector ; 
-       CMaterialLib*        m_lib ; 
+       CMaterialLib*        m_mlib ; 
        CMaterialTable*      m_material_table ; 
        CMaterialBridge*     m_material_bridge ; 
        CSurfaceBridge*      m_surface_bridge ; 

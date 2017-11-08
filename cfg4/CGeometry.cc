@@ -29,9 +29,9 @@ class OpticksQuery ;
 #include "PLOG.hh"
 
 
-CMaterialLib* CGeometry::getPropLib()
+CMaterialLib* CGeometry::getMaterialLib()
 {
-   return m_lib ; 
+   return m_mlib ; 
 }
 CDetector* CGeometry::getDetector()
 {
@@ -45,7 +45,7 @@ CGeometry::CGeometry(OpticksHub* hub)
    m_ok(m_hub->getOpticks()),
    m_cfg(m_ok->getCfg()),
    m_detector(NULL),
-   m_lib(NULL),
+   m_mlib(NULL),
    m_material_table(NULL),
    m_material_bridge(NULL),
    m_surface_bridge(NULL)
@@ -73,7 +73,7 @@ void CGeometry::init()
     detector->attachSurfaces();
 
     m_detector = detector ; 
-    m_lib = detector->getPropLib();
+    m_mlib = detector->getMaterialLib();
 }
 
 
@@ -109,7 +109,7 @@ void CGeometry::postinitialize()
     // was surprised to find that CMaterialLib is that comes from detector is not 
     // converted as standard the materoal converts are called individually 
 
-    CMaterialLib* clib = m_lib ; 
+    CMaterialLib* clib = m_mlib ; 
     assert( clib );
     clib->postinitialize();
 

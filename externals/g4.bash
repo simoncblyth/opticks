@@ -227,6 +227,7 @@ g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
 
 
 g4-ecd(){  cd $(g4-edir); }
+g4-c(){    cd $(g4-dir); }
 g4-cd(){   cd $(g4-dir); }
 g4-icd(){  cd $(g4-prefix); }
 g4-bcd(){  cd $(g4-bdir); }

@@ -25,6 +25,7 @@ namespace fs = boost::filesystem;
 #include "GDomain.hh"
 #include "GOpticalSurface.hh"
 #include "GPropertyMap.hh"
+#include "GSurfaceLib.hh"
 
 #include "PLOG.hh"
 
@@ -43,6 +44,44 @@ void GPropertyMap<T>::setMetaKV(const char* key, S val)
 {
     return m_meta->set(key, val) ; 
 }
+
+template <typename T>
+bool GPropertyMap<T>::hasMetaItem(const char* key) const 
+{
+    return m_meta->hasItem(key) ; 
+}
+
+
+template <typename T>
+std::string GPropertyMap<T>::getBPV1() const 
+{
+    assert( m_type.compare(GSurfaceLib::BORDERSURFACE) == 0 ) ; 
+    std::string bpv1 = m_meta->get<std::string>( GSurfaceLib::BPV1 ) ;  
+    assert( !bpv1.empty() );
+    return bpv1 ; 
+}
+template <typename T>
+std::string GPropertyMap<T>::getBPV2() const 
+{
+    assert( m_type.compare(GSurfaceLib::BORDERSURFACE) == 0 ) ; 
+    std::string bpv2 = m_meta->get<std::string>( GSurfaceLib::BPV2 ) ;  
+    assert( !bpv2.empty() );
+    return bpv2 ; 
+}
+template <typename T>
+std::string GPropertyMap<T>::getSSLV() const 
+{
+    assert( m_type.compare(GSurfaceLib::SKINSURFACE) == 0 ) ; 
+    std::string sslv = m_meta->get<std::string>( GSurfaceLib::SSLV ) ;  
+    assert( !sslv.empty() );
+    return sslv ; 
+}
+
+
+
+
+
+
 
 
 
@@ -130,6 +169,20 @@ void GPropertyMap<T>::init()
 }
 
 
+template <typename T>
+std::string GPropertyMap<T>::brief() const 
+{
+    std::stringstream ss ; 
+    ss << "GPropertyMap " 
+       << " type " << m_type 
+       << " name " << m_name
+       ; 
+
+    return ss.str();
+}
+
+
+
 
 template <class T>
 void GPropertyMap<T>::collectMeta()
@@ -138,12 +191,15 @@ void GPropertyMap<T>::collectMeta()
     m_meta->set<std::string>("shortname", m_shortname );
     m_meta->set<std::string>("name", m_name );
     m_meta->set<std::string>("type", m_type );
+
 }
 
 template <class T>
 void GPropertyMap<T>::dumpMeta(const char* msg) const 
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg 
+              << " m_type : " << m_type
+              ;
     m_meta->dump();
 }
 
@@ -425,28 +481,38 @@ const char* GPropertyMap<T>::getType()
     return m_type.c_str();
 }
 
-template <typename T>
-bool GPropertyMap<T>::isSkinSurface()
-{
-    return m_type == "skinsurface" ;
+
+template <typename T> 
+bool GPropertyMap<T>::isSkinSurface() const 
+{ 
+    return m_type.compare(GSurfaceLib::SKINSURFACE) == 0 ;
 }
 
 template <typename T>
-bool GPropertyMap<T>::isBorderSurface()
+bool GPropertyMap<T>::isBorderSurface() const 
 {
-    return m_type == "bordersurface" ;
-}
-template <typename T>
-bool GPropertyMap<T>::isMaterial()
-{
-    return m_type == "material" ;
+    return m_type.compare(GSurfaceLib::BORDERSURFACE) == 0 ;
 }
 
 template <typename T>
-bool GPropertyMap<T>::isSurface()
+bool GPropertyMap<T>::isTestSurface() const
 {
-    return m_type == "surface" || m_type == "skinsurface" || m_type == "bordersurface" ;
+    return m_type.compare(GSurfaceLib::TESTSURFACE) == 0 ;
 }
+
+
+template <typename T>
+bool GPropertyMap<T>::isSurface() const 
+{
+    return isTestSurface() || isSkinSurface() || isBorderSurface() ;
+}
+
+template <typename T>
+bool GPropertyMap<T>::isMaterial() const 
+{
+    return m_type.compare("material") == 0 ;
+}
+
 
 
 

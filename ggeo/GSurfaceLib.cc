@@ -1,5 +1,8 @@
 #include <iomanip>
 
+#include "BStr.hh"
+
+
 #include "NMeta.hpp"
 #include "NGLM.hpp"
 #include "NPY.hpp"
@@ -33,6 +36,13 @@ const char* GSurfaceLib::extra_y          = "extra_y" ;
 const char* GSurfaceLib::extra_z          = "extra_z" ;
 const char* GSurfaceLib::extra_w          = "extra_w" ;
 
+const char* GSurfaceLib::BPV1             = "bpv1" ;
+const char* GSurfaceLib::BPV2             = "bpv2" ;
+const char* GSurfaceLib::SSLV             = "sslv" ;
+
+const char* GSurfaceLib::SKINSURFACE      = "skinsurface" ;
+const char* GSurfaceLib::BORDERSURFACE    = "bordersurface" ;
+const char* GSurfaceLib::TESTSURFACE      = "testsurface" ;
 
 
 const char* GSurfaceLib::REFLECTIVITY = "REFLECTIVITY" ;
@@ -200,13 +210,48 @@ void GSurfaceLib::init()
 }
 
 
+
+
+
+const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static 
+{
+     assert( surfmeta );
+     const char* surftype = NULL ; 
+
+     if( surfmeta->hasItem(SSLV)) 
+     { 
+         surftype = SKINSURFACE ; 
+     }
+     else if( surfmeta->hasItem(BPV1) && surfmeta->hasItem(BPV2) ) 
+     {
+         surftype = BORDERSURFACE ; 
+     }
+     else 
+     {
+         std::string name = surfmeta->get<std::string>("name");
+         if( BStr::StartsWith( name.c_str(), "perfect" ) )
+         {
+             surftype = TESTSURFACE ; 
+         }
+     }
+
+     
+     if( surftype == NULL )
+     {
+         LOG(fatal) << "GSurfaceLib::assignSurfaceType FAILED " ; 
+         surfmeta->dump();
+     }
+     assert( surftype );
+     return surftype ; 
+}
+
 void GSurfaceLib::add(GBorderSurface* raw)
 {
     std::string bpv1 = raw->getPV1() ;
     std::string bpv2 = raw->getPV2() ;
  
-    raw->setMetaKV("bpv1", bpv1 );
-    raw->setMetaKV("bpv2", bpv2 );
+    raw->setMetaKV(BPV1, bpv1 );
+    raw->setMetaKV(BPV2, bpv2 );
 
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
     add(surf);
@@ -215,7 +260,7 @@ void GSurfaceLib::add(GSkinSurface* raw)
 {
     std::string sslv = raw->getSkinSurfaceVol() ;
 
-    raw->setMetaKV("sslv", sslv );
+    raw->setMetaKV(SSLV, sslv );
 
     LOG(trace) << "GSurfaceLib::add(GSkinSurface*) " << ( raw ? raw->getName() : "NULL" ) ;
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
@@ -267,7 +312,7 @@ void GSurfaceLib::sort()
 
 guint4 GSurfaceLib::createOpticalSurface(GPropertyMap<float>* src)
 {
-   assert(src->isSkinSurface() || src->isBorderSurface() || src->isSurface());
+   assert(src->isSkinSurface() || src->isBorderSurface() || src->isTestSurface());
    GOpticalSurface* os = src->getOpticalSurface();
    assert(os && "all skin/boundary surface expected to have associated OpticalSurface");
    guint4 optical = os->getOptical();
@@ -457,7 +502,7 @@ NMeta* GSurfaceLib::createMeta()
     unsigned int ni = getNumSurfaces();
     for(unsigned int i=0 ; i < ni ; i++)
     {
-        GPropertyMap<float>* surf = m_surfaces[i] ;
+        GPropertyMap<float>* surf = getSurface(i) ;
         const char* key = surf->getShortName() ;
         NMeta* surfmeta = surf->getMeta();
         assert( surfmeta );
@@ -603,6 +648,7 @@ void GSurfaceLib::import()
 
 
 
+
 void GSurfaceLib::importForTex2d()
 {
     unsigned int ni = m_buffer->getShape(0); // surfaces
@@ -625,7 +671,9 @@ void GSurfaceLib::importForTex2d()
 
         NMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
 
-        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i,"surface", os, surfmeta );
+        const char* surftype = AssignSurfaceType(surfmeta) ;
+
+        GPropertyMap<float>* surf = new GPropertyMap<float>(key,i, surftype, os, surfmeta );
 
         for(unsigned int j=0 ; j < nj ; j++)
         {

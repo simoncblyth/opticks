@@ -84,7 +84,6 @@ class CFG4_API CG4
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
         CMaterialLib*  getMaterialLib();
-        CMaterialLib*  getPropLib();
         CDetector*     getDetector();
         NPY<float>*    getGensteps();
    private:
@@ -96,7 +95,7 @@ class CFG4_API CG4
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 
         bool                  m_hookup ; 
-        CMaterialLib*         m_lib ; 
+        CMaterialLib*         m_mlib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
    private:
