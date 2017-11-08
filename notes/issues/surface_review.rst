@@ -20,27 +20,95 @@ full chain in flux is too much to handle.
 
 
 
-Hmm GDML reconstruction does nothing special : BUT there are ptrs on names
-----------------------------------------------------------------------------
-
-* TODO: confirm assumption that ptr in pv names mean they are all unique ? 
-  (ie different name for each traversal index)
-
-  * for lv : i guess no, lv are recycled greatly 
-
-
-* :doc:`surface_review_gdml`
+Tests
+----------------------
 
 ::
 
-    simon:ggeo blyth$ opticks-find setPVName
-    ./assimprap/AssimpGGeo.cc:        solid->setPVName(pv);
-    ./ggeo/GMaker.cc:    solid->setPVName( strdup(pvn.c_str()) );
-    ./ggeo/GScene.cc:    node->setPVName( pvname.c_str() );
-    ./ggeo/GSolid.cc:void GSolid::setPVName(const char* pvname)
-    ./ggeo/GSolid.hh:      void setPVName(const char* pvname);
-    simon:opticks blyth$ 
+    op -G    # create geocache
 
+    op --okg4 -D --dbgsurf    # load geocache and convert to G4
+        
+
+
+FIXED : CTraverser::getPV failing to find a bordersurface PV
+--------------------------------------------------------------
+
+* fix entailed keeping the ptr suffix on pv, lv names, 
+  in a couple of places including invokation of G4GDMLParser
+
+* TODO: check the analytic route via GLTF does the same 
+
+
+::
+
+    op --okg4 -D --dbgsurf 
+
+
+    simon:GNodeLib blyth$ grep 0xc13c018 PVNames.txt 
+    __dd__Geometry__Sites__lvNearHallBot--pvNearPoolDead0xc13c018
+    simon:GNodeLib blyth$ 
+
+    (lldb) p name
+    (const char *) $0 = 0x000000010b420640 "/dd/Geometry/Sites/lvNearHallBot--pvNearPoolDead0xc13c018"
+
+::
+
+    (lldb) p m_pvnames
+    (std::__1::vector<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >, std::__1::allocator<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> > > >) $2 = size=12230 {
+      [0] = "World_PV"
+      [1] = "/dd/Structure/Sites/db-rock"
+      [2] = "/dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop"
+      [3] = "/dd/Geometry/Sites/lvNearHallTop#pvNearTopCover"
+      [4] = "/dd/Geometry/Sites/lvNearHallTop#pvNearTeleRpc#pvNearTeleRpc:1"
+
+
+These m_pvnames are collected from the reconstructed "tree" in CTraverser::AncestorVisit
+
+Is G4GDMLParser trimming ptrs ? YEP: it was, reconfigured in CGDMLDetector
+ 
+::
+
+    g4-cls G4GDMLParser
+
+
+::
+
+    30868     <volume name="/dd/Geometry/Sites/lvNearHallBot0xbf89c60">
+    30869       <materialref ref="/dd/Materials/Rock0xc0300c8"/>
+    30870       <solidref ref="near_hall_bot0xbf3d718"/>
+    30871       <physvol name="/dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018">
+    30872         <volumeref ref="/dd/Geometry/Pool/lvNearPoolDead0xc2dc490"/>
+    30873         <position name="/dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018_pos" unit="mm" x="0" y="0" z="150"/>
+    30874       </physvol>
+
+
+
+
+
+Hmm GDML reconstruction does nothing special : BUT there are ptrs on names
+----------------------------------------------------------------------------
+
+* NB **Appending ptr in pv names does not mean they are all unique**, as the PV get repeated 
+
+* reading GDML code makes me think that this may have been assumed 
+
+* for lv : i guess no, lv are recycled greatly 
+
+::
+
+    simon:GNodeLib blyth$ wc -l LVNames.txt
+       12230 LVNames.txt
+    simon:GNodeLib blyth$ wc -l PVNames.txt
+       12230 PVNames.txt
+    simon:GNodeLib blyth$ cat LVNames.txt | sort | uniq | wc -l 
+         249
+    simon:GNodeLib blyth$ cat PVNames.txt | sort | uniq | wc -l 
+        5643
+
+
+* :doc:`surface_review_gdml`
+* :doc:`surface_review_dae`
 
 
 

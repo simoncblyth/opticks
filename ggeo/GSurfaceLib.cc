@@ -426,7 +426,7 @@ GPropertyMap<float>* GSurfaceLib::makePerfect(const char* name, float detect_, f
     GOpticalSurface* os = new GOpticalSurface(name, type, model, finish, value);
 
     unsigned int index = 1000 ;   // does this matter ? 
-    GPropertyMap<float>* dst = new GPropertyMap<float>(name, index, "surface", os);
+    GPropertyMap<float>* dst = new GPropertyMap<float>(name, index, TESTSURFACE, os);
     dst->setStandardDomain(getStandardDomain());
 
     dst->addProperty( detect          , _detect          );

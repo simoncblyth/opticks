@@ -207,7 +207,8 @@ G4LogicalSkinSurface* CSurLib::makeSkinSurface(GSur* sur, unsigned ilv, G4Optica
     const char* name = pmap->getName() ;
     const char* daelvn = sur->getLV(ilv);       // assuming LV identity is 1-to-1 with name 
 
-    char* lvn = BStr::DAEIdToG4(daelvn);
+    bool trimPtr = false ; 
+    char* lvn = BStr::DAEIdToG4(daelvn, trimPtr);
     
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 

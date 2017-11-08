@@ -326,6 +326,8 @@ imgui-icd(){  cd $(imgui-idir); }
 imgui-bcd(){  cd $(imgui-bdir); }
 imgui-scd(){  cd $(imgui-sdir); }
 
+imgui-EnvBuildOptions(){ echo $OPTICKS_HOME/cmake/Modules/EnvBuildOptions.cmake ; }
+imgui-EnvBuildOptions-ls(){ ls -l $(${FUNCNAME/-ls}) ; }
 
 imgui-info(){ cat << EOI
 
@@ -338,6 +340,13 @@ $FUNCNAME
     imgui-bdir : $(imgui-bdir)
     imgui-sdir : $(imgui-sdir)
     imgui-dir  : $(imgui-dir)
+
+    OPTICKS_HOME : $OPTICKS_HOME
+    opticks-home  : $(opticks-home)
+
+    imgui-EnvBuildOptions : $(imgui-EnvBuildOptions)
+    imgui-EnvBuildOptions-ls : $(imgui-EnvBuildOptions-ls)
+
    
     imgui-url  : $(imgui-url)
 

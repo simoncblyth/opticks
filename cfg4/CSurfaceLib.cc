@@ -151,8 +151,9 @@ G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf
     std::string bpv1 = surf->getBPV1();
     std::string bpv2 = surf->getBPV2();
 
-    char* pvn1 = BStr::DAEIdToG4(bpv1.c_str());
-    char* pvn2 = BStr::DAEIdToG4(bpv2.c_str());
+    bool trimPtr = false ; 
+    char* pvn1 = BStr::DAEIdToG4(bpv1.c_str(), trimPtr);
+    char* pvn2 = BStr::DAEIdToG4(bpv2.c_str(), trimPtr );
 
 
     if(m_dbgsurf)
@@ -183,7 +184,9 @@ G4LogicalBorderSurface* CSurfaceLib::makeBorderSurface(GPropertyMap<float>* surf
 G4LogicalSkinSurface* CSurfaceLib::makeSkinSurface(GPropertyMap<float>* surf, G4OpticalSurface* os)
 {
     const char* name = surf->getName() ;
-    char* lvn = BStr::DAEIdToG4(name);
+
+    bool trimPtr = false ; 
+    char* lvn = BStr::DAEIdToG4(name, trimPtr);
     const G4LogicalVolume* lv = m_detector->getLV(lvn);
 
     if(m_dbgsurf)

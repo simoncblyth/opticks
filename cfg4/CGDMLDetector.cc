@@ -76,12 +76,16 @@ void CGDMLDetector::init()
 
 
     bool validate = false ; 
+    bool trimPtr = false ; 
 
     G4String gpath = npath ; 
     LOG(trace) << "parse " << gpath ; 
 
 
     G4GDMLParser parser;
+
+    parser.SetStripFlag(trimPtr);
+
     parser.Read(gpath, validate);
 
     setTop(parser.GetWorldVolume());   // invokes *CDetector::traverse*

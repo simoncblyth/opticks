@@ -135,13 +135,14 @@ void test_afterLastOrAll()
     test_afterLastOrAll_("me/","me/") ; 
 }
 
-void test_DAEIdToG4_(const char* daeid, const char* x_g4name)
+void test_DAEIdToG4_(const char* daeid, const char* x_g4name, bool trimPtr)
 {
-    char* g4name = BStr::DAEIdToG4(daeid);
+    char* g4name = BStr::DAEIdToG4(daeid, trimPtr);
     bool match = strcmp( g4name, x_g4name  ) == 0 ;
 
-    if(!match)
-       LOG(fatal) << "MISMATCH"
+    if(!match) 
+    LOG(debug) 
+                  << " " << ( match ? "match" : "MISMATCH" )
                   << " daeid " << daeid 
                   << " g4name " << g4name 
                   << " x_g4name " << x_g4name 
@@ -152,7 +153,14 @@ void test_DAEIdToG4_(const char* daeid, const char* x_g4name)
 
 void test_DAEIdToG4()
 {
-    test_DAEIdToG4_("__dd__Geometry__PoolDetails__lvLegInIWSTub0xc400e40", "/dd/Geometry/PoolDetails/lvLegInIWSTub" );
+    test_DAEIdToG4_("__dd__Geometry__PoolDetails__lvLegInIWSTub0xc400e40", "/dd/Geometry/PoolDetails/lvLegInIWSTub", true );
+    test_DAEIdToG4_("__dd__Geometry__PoolDetails__lvLegInIWSTub0xc400e40", "/dd/Geometry/PoolDetails/lvLegInIWSTub0xc400e40", false );
+
+    test_DAEIdToG4_(
+    "__dd__Geometry__Sites__lvNearHallBot--pvNearPoolDead0xc13c018",
+    "/dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018",
+    false);
+
 }
 
 
@@ -230,16 +238,17 @@ int main(int argc, char** argv)
 /*
     test_patternPickField();
     test_afterLastOrAll();
-    test_DAEIdToG4();
     test_isplit();
     test_ijoin();
     test_fsplit();
     test_StartsWith();
     test_ReplaceAll();
-*/
 
     test_index_first();
     test_index_all();
+*/
+
+    test_DAEIdToG4();
 
     return 0 ; 
 }

@@ -1036,6 +1036,14 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     {
         solid->setPVName(pv);
         solid->setLVName(lv);
+
+        // these names have the ptr 
+        /*
+        LOG(info) 
+           << " pv " << pv 
+           << " lv " << lv 
+           ;
+        */ 
     }
 
 

@@ -230,6 +230,7 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
     collectTransformT(m_gtransforms, T );
     m_pvnames.push_back(pv->GetName());
+
     m_pvs.push_back(pv);
     m_lvs.push_back(lv);  // <-- hmm will be many of the same lv in m_lvs 
 
