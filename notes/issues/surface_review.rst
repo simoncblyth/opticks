@@ -1,6 +1,24 @@
 surface_review
 ================
 
+NEXT
+-----
+
+1. get GSurfaceLib/GBndLib going for test geometry
+
+2. CSurfaceLib convert with test geometry
+
+3. check CSurfaceLib conversion from full geometry
+
+4. compare with old CSurLib/GSurLib/GSur approach
+
+5. adopt new approach 
+
+6. consign CSurLib/GSurLib/GSur to attic
+
+
+
+
 Surface Overhaul Approach
 ---------------------------
 
@@ -19,7 +37,6 @@ full chain in flux is too much to handle.
   in persisting and the GSurLib workaround that got out of control 
 
 
-
 Tests
 ----------------------
 
@@ -31,46 +48,10 @@ Tests
         
 
 
+Surfaces With Test Geometry
+------------------------------
 
-How to handle test geometry in CSurfaceLib::convert ?
-------------------------------------------------------------
-
-**Best way** 
-    prepare the GSurfaceLib in a manner such that CSurfaceLib 
-    doesnt need to know if test/full geometry.
-
-
-Cause of confusion is the conflation of two things:
-
-* surface properties
-* surface location (specified by sslv/bpv1/bpv2)
-
-With test geometry wish to reuse some surface properties, 
-from the base geometry but need to totally change surface location
-to suit the boundary spec coming down the pipe.
-
-So need to derive a separate GSurfaceLib from scratch that is able to 
-draw from the basis one for surface properties. This implies 
-creating a from scratch GBndLib too.
-
-Added some methods to GSurfaceLib to allow passing props from basis into 
-a new lib with different locations::   
-
-     89         // methods to assist with de-conflation of surface props and location
-     90         void addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2);
-     91         void addSkinSurface(GPropertyMap<float>* surf, const char* sslv_ );
-
-
-GGeoTest : GMaterialLib from base + AbInitio GBndLib/GSurfaceLib  
----------------------------------------------------------------------
-
-* dev in GBndLibInitTest 
-
-* How to handle surface indices in the bndlib ? GBndLib buffers are dynamic to handle added surfaces, so may just work ?
-
-
-
-
+* :doc:`surface_review_test_geometry`
 
 
 FIXED : CTraverser::getPV failing to find a bordersurface PV
