@@ -33,71 +33,93 @@ tboolean-media
 
     simon:ggeo blyth$ tboolean-;tboolean-media -D --okg4 --dbgsurf --dbgbnd 
 
-Hmm need to get GSurLib outa the picture...::
+* moved GSurLib outa way 
 
-    2017-11-09 20:07:42.054 FATAL [4038096] [CGeometry::init@61] CGeometry::init G4 simple test geometry 
-    2017-11-09 20:07:42.054 INFO  [4038096] [GSurLib::init@66] [--dbgsurf] GSurLib::init
-    2017-11-09 20:07:42.054 INFO  [4038096] [GSurLib::init@71] [--dbgsurf] GSurLib::init m_bordersurface.size 8
-    2017-11-09 20:07:42.054 INFO  [4038096] [GSurLib::collectSur@107] [--dbgsurf] m_slib numSurfaces 1
-    2017-11-09 20:07:42.054 INFO  [4038096] [GSurLib::collectSur@119] [--dbgsurf] i   0 type S name perfectAbsorbSurface
-    2017-11-09 20:07:42.054 INFO  [4038096] [CPropLib::init@66] CPropLib::init
-    2017-11-09 20:07:42.054 INFO  [4038096] [CPropLib::initCheckConstants@118] CPropLib::initCheckConstants mm 1 MeV 1 nanosecond 1 ns 1 nm 1e-06 GC::nanometer 1e-06 h_Planck 4.13567e-12 GC::h_Planck 4.13567e-12 c_light 299.792 GC::c_light 299.792 dscale 0.00123984
-    2017-11-09 20:07:42.054 INFO  [4038096] [*CTestDetector::makeDetector_NCSG@172] CTestDetector::makeDetector_NCSG numSolids 1
-    2017-11-09 20:07:42.054 INFO  [4038096] [*NCSGList::createUniverse@155] NCSGList::createUniverse bnd0 Rock//perfectAbsorbSurface/Pyrex ubnd Rock///Rock scale 1 delta 1
-    2017-11-09 20:07:42.055 INFO  [4038096] [GPropertyLib::getIndex@366] GPropertyLib::getIndex type GSurfaceLib TRIGGERED A CLOSE  shortname []
-    2017-11-09 20:07:42.056 INFO  [4038096] [GPropertyLib::close@410] GPropertyLib::close type GSurfaceLib buf 48,2,39,4
-    2017-11-09 20:07:42.056 INFO  [4038096] [GBndLib::addBoundary@329] [--dbgbnd]  spec Rock///Rock flip 0 bnd  ( 11,---,---, 11) boundary 11
-    2017-11-09 20:07:42.057 FATAL [4038096] [*CTestDetector::makeChildVolume@142]  csg.spec Rock///Rock boundary 11 mother - lv UniverseLV_box pv UniversePV_box mat Rock
-    2017-11-09 20:07:42.057 INFO  [4038096] [GBndLib::addBoundary@329] [--dbgbnd]  spec Rock//perfectAbsorbSurface/Pyrex flip 0 bnd  ( 11,---, 45, 13) boundary 123
-    2017-11-09 20:07:42.057 FATAL [4038096] [*CTestDetector::makeChildVolume@142]  csg.spec Rock//perfectAbsorbSurface/Pyrex boundary 123 mother UniverseLV_box lv box_lv0_ pv box_pv0_ mat Pyrex
-    2017-11-09 20:07:42.057 INFO  [4038096] [CDetector::traverse@103] [--dbgsurf] CDetector::traverse START 
-    2017-11-09 20:07:42.057 INFO  [4038096] [CTraverser::Traverse@135] [--dbgsurf] CTraverser::Traverse START 
-    2017-11-09 20:07:42.057 INFO  [4038096] [CTraverser::Traverse@142] [--dbgsurf] CTraverser::Traverse DONE numSelected 2 bbox NBoundingBox low -401.0000,-401.0000,-401.0000 high 401.0000,401.0000,401.0000 ce 0.0000,0.0000,0.0000,401.0000 pvs.size 2 lvs.size 2
-    2017-11-09 20:07:42.057 INFO  [4038096] [CTraverser::Summary@111] CDetector::traverse numMaterials 2 numMaterialsWithoutMPT 0
-    2017-11-09 20:07:42.057 INFO  [4038096] [CDetector::traverse@114] [--dbgsurf] CDetector::traverse DONE 
-    2017-11-09 20:07:42.057 INFO  [4038096] [CDetector::attachSurfaces@294] [--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  
-    2017-11-09 20:07:42.057 INFO  [4038096] [CSurfaceLib::convert@81] [--dbgsurf] CSurfaceLib::convert  num_surf 48
-    2017-11-09 20:07:42.057 INFO  [4038096] [*CSurfaceLib::makeSkinSurface@189] CSurfaceLib::makeSkinSurface name                NearPoolCoverSurface lvn                NearPoolCoverSurface lv NULL
-    2017-11-09 20:07:42.057 INFO  [4038096] [*CSurfaceLib::makeBorderSurface@156] CSurfaceLib::makeBorderSurface name NearDeadLinerSurface bpv1 __dd__Geometry__Sites__lvNearHallBot--pvNearPoolDead0xc13c018 bpv2 __dd__Geometry__Pool__lvNearPoolDead--pvNearPoolLiner0xbf4b270 pvn1 /dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018 pvn2 /dd/Geometry/Pool/lvNearPoolDead#pvNearPoolLiner0xbf4b270
-    2017-11-09 20:07:42.057 INFO  [4038096] [*CTraverser::getPV@312] CTraverser::getPV name /dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018 index -1 num_indices 0
-    2017-11-09 20:07:42.057 FATAL [4038096] [*CTraverser::getPV@325] CTraverser::getPV name /dd/Geometry/Sites/lvNearHallBot#pvNearPoolDead0xc13c018 index -1 m_pvs 2 m_pvnames 2
-    Assertion failed: (valid), function getPV, file /Users/blyth/opticks/cfg4/CTraverser.cc, line 332.
-    Process 77555 stopped
-    * thread #1: tid = 0x3d9dd0, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+* CDetector was grabbing the wrong ggeo GSurfaceLib
+
+  * extended 3-way ggb dispensing in OpticksHub to slib 
+
+::  
+
+     m_slib(new CSurfaceLib(m_hub->getSurfaceLib())), 
+
+
+
+TODO : mlib should have just materials used, not all basis materials
+----------------------------------------------------------------------
+
+* follow the new surface lib pattern for the mlib, ie
+  copy into it only the materials used in the test geometry
+  
+
+::
+
+     80 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
+     81     :
+     82     m_ok(ok),
+     83     m_config(new GGeoTestConfig(ok->getTestConfig())),
+     84     m_resource(ok->getResource()),
+     85     m_dbgbnd(m_ok->isDbgBnd()),
+     86     m_dbganalytic(m_ok->isDbgAnalytic()),
+     87     m_lodconfig(ok->getLODConfig()),
+     88     m_lod(ok->getLOD()),
+     89     m_analytic(m_config->getAnalytic()),
+     90     m_test(true),
+     91     m_basis(basis),
+     92     //m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
+     93     m_mlib(basis->getMaterialLib()),
+     94     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
+     95     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
+     96     m_pmtlib(basis->getPmtLib()),
+
+
+
+ISSUE : okg4 material conversion for test geometry
+----------------------------------------------------
+
+::
+
+    tboolean-;tboolean-media -D --okg4 --dbgsurf --dbgbnd 
+
+
+    2017-11-09 21:01:37.199 INFO  [4062273] [*CMaterialLib::makeG4Material@142] CMaterialLib::makeMaterial matname LiquidScintillator material 0x1122a1c30
+    2017-11-09 21:01:37.199 INFO  [4062273] [*CMaterialLib::makeG4Material@142] CMaterialLib::makeMaterial matname MineralOil material 0x1122a2440
+    2017-11-09 21:01:37.199 FATAL [4062273] [*CPropLib::makeMaterialPropertiesTable@224] CPropLib::makeMaterialPropertiesTable material with SENSOR_MATERIAL name Bialkali but no sensor_surface 
+    Assertion failed: (surf), function makeMaterialPropertiesTable, file /Users/blyth/opticks/cfg4/CPropLib.cc, line 229.
+    Process 86713 stopped
+    * thread #1: tid = 0x3dfc41, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
         frame #0: 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10
     libsystem_kernel.dylib`__pthread_kill + 10:
     -> 0x7fff8cc60866:  jae    0x7fff8cc60870            ; __pthread_kill + 20
        0x7fff8cc60868:  movq   %rax, %rdi
        0x7fff8cc6086b:  jmp    0x7fff8cc5d175            ; cerror_nocancel
        0x7fff8cc60870:  retq   
-    (lldb) 
-
     (lldb) bt
-    * thread #1: tid = 0x3d9dd0, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+    * thread #1: tid = 0x3dfc41, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
       * frame #0: 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10
         frame #1: 0x00007fff842fd35c libsystem_pthread.dylib`pthread_kill + 92
         frame #2: 0x00007fff8b04db1a libsystem_c.dylib`abort + 125
         frame #3: 0x00007fff8b0179bf libsystem_c.dylib`__assert_rtn + 321
-        frame #4: 0x00000001043ad145 libcfg4.dylib`CTraverser::getPV(this=0x00000001110a9ea0, name=0x00000001110ad240) + 1701 at CTraverser.cc:332
-        frame #5: 0x00000001043cd784 libcfg4.dylib`CDetector::getPV(this=0x0000000111099d60, name=0x00000001110ad240) + 36 at CDetector.cc:229
-        frame #6: 0x00000001043dabb8 libcfg4.dylib`CSurfaceLib::makeBorderSurface(this=0x000000011109a280, surf=0x000000010a11c7e0, os=0x00000001110ac810) + 1352 at CSurfaceLib.cc:164
-        frame #7: 0x00000001043d9d05 libcfg4.dylib`CSurfaceLib::convert(this=0x000000011109a280, detector=0x0000000111099d60) + 709 at CSurfaceLib.cc:90
-        frame #8: 0x00000001043ce459 libcfg4.dylib`CDetector::attachSurfaces(this=0x0000000111099d60) + 265 at CDetector.cc:297
-        frame #9: 0x0000000104346bba libcfg4.dylib`CGeometry::init(this=0x0000000111099cf0) + 762 at CGeometry.cc:73
-        frame #10: 0x00000001043468b0 libcfg4.dylib`CGeometry::CGeometry(this=0x0000000111099cf0, hub=0x0000000109640ca0) + 112 at CGeometry.cc:53
-        frame #11: 0x0000000104346c1d libcfg4.dylib`CGeometry::CGeometry(this=0x0000000111099cf0, hub=0x0000000109640ca0) + 29 at CGeometry.cc:54
-        frame #12: 0x00000001043f6d86 libcfg4.dylib`CG4::CG4(this=0x000000010be5ea50, hub=0x0000000109640ca0) + 214 at CG4.cc:120
-        frame #13: 0x00000001043f731d libcfg4.dylib`CG4::CG4(this=0x000000010be5ea50, hub=0x0000000109640ca0) + 29 at CG4.cc:142
-        frame #14: 0x00000001044f1cc3 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe430, argc=29, argv=0x00007fff5fbfe510) + 547 at OKG4Mgr.cc:35
-        frame #15: 0x00000001044f1f53 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe430, argc=29, argv=0x00007fff5fbfe510) + 35 at OKG4Mgr.cc:41
-        frame #16: 0x00000001000132ee OKG4Test`main(argc=29, argv=0x00007fff5fbfe510) + 1486 at OKG4Test.cc:56
-        frame #17: 0x00007fff880d35fd libdyld.dylib`start + 1
+        frame #4: 0x000000010434f962 libcfg4.dylib`CPropLib::makeMaterialPropertiesTable(this=0x00000001122534d0, ggmat=0x000000010a26b280) + 834 at CPropLib.cc:229
+        frame #5: 0x00000001043679a4 libcfg4.dylib`CMaterialLib::convertMaterial(this=0x00000001122534d0, kmat=0x000000010a26b280) + 2004 at CMaterialLib.cc:198
+        frame #6: 0x0000000104367cd2 libcfg4.dylib`CMaterialLib::makeG4Material(this=0x00000001122534d0, matname=0x000000011229c4b1) + 66 at CMaterialLib.cc:141
+        frame #7: 0x0000000104365e19 libcfg4.dylib`CMaterialLib::fillMaterialValueMap(this=0x00000001122534d0, vmp=0x0000000112253570, _matnames=0x000000010440ae98, key=0x0000000104408803, nm=430) + 825 at CMaterialLib.cc:386
+        frame #8: 0x0000000104365aba libcfg4.dylib`CMaterialLib::fillMaterialValueMap(this=0x00000001122534d0) + 74 at CMaterialLib.cc:55
+        frame #9: 0x0000000104366e25 libcfg4.dylib`CMaterialLib::postinitialize(this=0x00000001122534d0) + 21 at CMaterialLib.cc:87
+        frame #10: 0x000000010434731d libcfg4.dylib`CGeometry::postinitialize(this=0x0000000112253380) + 429 at CGeometry.cc:114
+        frame #11: 0x00000001043f78bb libcfg4.dylib`CG4::postinitialize(this=0x000000010d1180a0) + 683 at CG4.cc:219
+        frame #12: 0x00000001043f75ac libcfg4.dylib`CG4::initialize(this=0x000000010d1180a0) + 540 at CG4.cc:174
+        frame #13: 0x00000001043f7355 libcfg4.dylib`CG4::init(this=0x000000010d1180a0) + 21 at CG4.cc:148
+        frame #14: 0x00000001043f732c libcfg4.dylib`CG4::CG4(this=0x000000010d1180a0, hub=0x000000010a00ed20) + 1564 at CG4.cc:141
+        frame #15: 0x00000001043f737d libcfg4.dylib`CG4::CG4(this=0x000000010d1180a0, hub=0x000000010a00ed20) + 29 at CG4.cc:142
+        frame #16: 0x00000001044f1cc3 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe430, argc=29, argv=0x00007fff5fbfe518) + 547 at OKG4Mgr.cc:35
+        frame #17: 0x00000001044f1f53 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe430, argc=29, argv=0x00007fff5fbfe518) + 35 at OKG4Mgr.cc:41
+        frame #18: 0x00000001000132ee OKG4Test`main(argc=29, argv=0x00007fff5fbfe518) + 1486 at OKG4Test.cc:56
+        frame #19: 0x00007fff880d35fd libdyld.dylib`start + 1
+        frame #20: 0x00007fff880d35fd libdyld.dylib`start + 1
     (lldb) 
 
 
-CDetector is grabbing the wrong GSurfaceLib ::
-
-     m_slib(new CSurfaceLib(m_hub->getSurfaceLib())), 
 
 
 
