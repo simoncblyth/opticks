@@ -6,14 +6,20 @@
 class OpticksHub ; 
 class GBndLib ; 
 class GMaterialLib ; 
-class GSurLib ; 
+class GSurfaceLib ; 
 
 class GMaterial ; 
-class GSur ; 
+
+//class GSurLib ; 
+//class GSur ; 
 
 /**
 CBndLib
 ===============
+
+Q: why ? 
+
+Eliminate this class : it does too little
 
 **/
 
@@ -25,13 +31,17 @@ class CFG4_API CBndLib
     public:
         GMaterial*        getOuterMaterial(unsigned boundary);
         GMaterial*        getInnerMaterial(unsigned boundary);
-        GSur*             getOuterSurface(unsigned boundary);
-        GSur*             getInnerSurface(unsigned boundary);
+        GPropertyMap<float>* getOuterSurface(unsigned boundary);
+        GPropertyMap<float>* getInnerSurface(unsigned boundary);
+
+        //GSur*             getOuterSurface(unsigned boundary);
+        //GSur*             getInnerSurface(unsigned boundary);
     private:
         OpticksHub*      m_hub ; 
-        GBndLib*         m_bndlib ; 
-        GMaterialLib*    m_matlib ; 
-        GSurLib*         m_surlib ; 
+        GBndLib*         m_blib ; 
+        GMaterialLib*    m_mlib ; 
+        GSurfaceLib*     m_slib ; 
+        //GSurLib*         m_slib ; 
 
 };
 

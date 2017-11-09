@@ -41,7 +41,8 @@
 #include "GGeo.hh"
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
-#include "GSurLib.hh"
+
+//#include "GSurLib.hh"
 
 // okc-
 #include "Bookmarks.hh"
@@ -94,8 +95,8 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gen(NULL),
    m_gun(NULL),
    m_aim(NULL),
-   m_geotest(NULL),
-   m_gsurlib(NULL)
+   m_geotest(NULL)
+   //m_gsurlib(NULL)
 
 {
    init();
@@ -316,7 +317,7 @@ void OpticksHub::loadGeometry()
 
         assert(m_geotest == NULL);
 
-        GGeoBase* basis = getGGeoBase(); // ana OR tri depending on --gltf
+        GGeoBase* basis = getGGeoBasePrimary(); // ana OR tri depending on --gltf
 
         m_geotest = createTestGeometry(basis);
     }
@@ -363,18 +364,6 @@ NCSG* OpticksHub::findEmitter() const
 GGeoTest* OpticksHub::getGGeoTest()
 {
     return m_geotest ; 
-}
-
-GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
-{
-    GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf
-    return ggb->getMergedMesh(index);
-}
-
-GNodeLib* OpticksHub::getNodeLib()
-{
-    GGeoBase* ggb = getGGeoBase();  // ana OR tri depending on --gltf
-    return ggb->getNodeLib();
 }
 
 
@@ -661,17 +650,48 @@ GGeoBase* OpticksHub::getGGeoBase() const
 
 
 
+GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getMergedMesh(index);
+}
+GNodeLib* OpticksHub::getNodeLib()
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getNodeLib();
+}
+GMaterialLib* OpticksHub::getMaterialLib()
+{  
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getMaterialLib() ; 
+}
+GSurfaceLib* OpticksHub::getSurfaceLib() 
+{   
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getSurfaceLib() ; 
+}
+GBndLib* OpticksHub::getBndLib() 
+{   
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getBndLib() ; 
+}
+GScintillatorLib* OpticksHub::getScintillatorLib() 
+{ 
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getScintillatorLib() ;
+}
 
 
 
-GSurLib* OpticksHub::createSurLib(GGeoBase* ggb)
+/*
+GSurLib* OpticksHub::createSurLib(GGeoBase* ggb)  // KILL
 {
     GSurLib* gsl = new GSurLib(m_ok, ggb ); 
     return gsl ; 
 }
 
-GSurLib* OpticksHub::getSurLib()
-{
+GSurLib* OpticksHub::getSurLib() // KILL
+{ 
     if( m_gsurlib == NULL )
     {
         // this method motivating making GGeoTest into a GGeoBase : ie standard geo provider
@@ -680,13 +700,7 @@ GSurLib* OpticksHub::getSurLib()
     }
     return m_gsurlib ; 
 }
-
-GMaterialLib*     OpticksHub::getMaterialLib(){      return m_ggeo ? m_ggeo->getMaterialLib() : NULL ; }
-GSurfaceLib*      OpticksHub::getSurfaceLib() {      return m_ggeo ? m_ggeo->getSurfaceLib() : NULL ; }
-GBndLib*          OpticksHub::getBndLib() {          return m_ggeo ? m_ggeo->getBndLib() : NULL ; }
-GScintillatorLib* OpticksHub::getScintillatorLib() { return m_ggeo ? m_ggeo->getScintillatorLib() : NULL ; }
-
-
+*/
 
 
 

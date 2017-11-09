@@ -116,21 +116,25 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     assert( lvn );
     assert( pvn );
 
-    
-
+   
 
     const char* spec = csg->getBoundary();
     unsigned boundary = m_blib->addBoundary(spec);
     GMaterial* imat = m_blib->getInnerMaterial(boundary); 
-    GSur* isur      = m_blib->getInnerSurface(boundary); 
-    GSur* osur      = m_blib->getOuterSurface(boundary); 
 
+    //GPropertyMap<float>* isur = m_blib->getInnerSurface(boundary); 
+    //GPropertyMap<float>* osur = m_blib->getOuterSurface(boundary); 
+
+
+
+    //GSur* isur      = m_blib->getInnerSurface(boundary); 
+    //GSur* osur      = m_blib->getOuterSurface(boundary); 
     // hmm sometimes skin ??
-    if(isur) isur->setBorder();
-    if(osur) osur->setBorder();
+    //if(isur) isur->setBorder();
+    //if(osur) osur->setBorder();
 
-    if(isur) isur->dump("isur");
-    if(osur) osur->dump("osur");
+    //if(isur) isur->dump("isur");
+    //if(osur) osur->dump("osur");
 
     const G4Material* material = m_mlib->convertMaterial(imat);
     G4VSolid* solid = m_maker->makeSolid( csg ); 
@@ -155,6 +159,9 @@ G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
 {
     OpticksCSG_t type = csg->getRootType() ;
     const char* shapename = CSGName(type);
+
+    // TODO: same name as GGeoTest::UNIVERSE_PV ...
+
     const char* lvn = BStr::concat<const char*>("UniverseLV_", shapename, NULL); 
     const char* pvn = BStr::concat<const char*>("UniversePV_", shapename, NULL ); 
 
@@ -199,6 +206,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     }
     return top ; 
 }
+
+
+
 
 
 G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
@@ -287,14 +297,16 @@ G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
         //assert(boundary == boundary0);  
 
         GMaterial* imat = m_blib->getInnerMaterial(boundary); 
-        GSur* isur      = m_blib->getInnerSurface(boundary); 
-        GSur* osur      = m_blib->getOuterSurface(boundary); 
 
-        if(isur) isur->setBorder();
-        if(osur) osur->setBorder();
+        GPropertyMap<float>* isur      = m_blib->getInnerSurface(boundary); 
+        GPropertyMap<float>* osur      = m_blib->getOuterSurface(boundary); 
 
-        if(isur) isur->dump("isur");
-        if(osur) osur->dump("osur");
+        //GSur* isur      = m_blib->getInnerSurface(boundary); 
+        //GSur* osur      = m_blib->getOuterSurface(boundary); 
+        //if(isur) isur->setBorder();
+        //if(osur) osur->setBorder();
+        //if(isur) isur->dump("isur");
+        //if(osur) osur->dump("osur");
 
         LOG(info) 
                   << " spec " << std::setw(50) << spec

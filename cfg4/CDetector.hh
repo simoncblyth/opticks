@@ -18,8 +18,8 @@ class CBndLib ;
 
 
 // want to kill these 2
-class GSurLib ; 
-class CSurLib ; 
+//class GSurLib ; 
+//class CSurLib ; 
 
 
 class CSurfaceLib ; 
@@ -115,10 +115,9 @@ class CFG4_API CDetector : public G4VUserDetectorConstruction
     Opticks*           m_ok ;
     bool               m_dbgsurf ; 
     GGeoBase*          m_ggb ; 
-    //GGeo*              m_ggeo ; 
     CBndLib*           m_blib ; 
-    GSurLib*           m_gsurlib ; 
-    CSurLib*           m_csurlib ; 
+    //GSurLib*           m_gsurlib ; 
+    //CSurLib*           m_csurlib ; 
  private:
     OpticksQuery*      m_query ;
     OpticksResource*   m_resource ;

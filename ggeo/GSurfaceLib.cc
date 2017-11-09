@@ -978,6 +978,8 @@ GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i) const
 
 GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const 
 {
+    if(!name) return NULL ; 
+
     GPropertyMap<float>* surf = NULL ; 
     for(unsigned i=0 ; i < m_surfaces.size() ; i++)
     {

@@ -30,8 +30,8 @@
 
 
 // want to eradicate
-#include "GSurLib.hh"
-#include "CSurLib.hh"
+//#include "GSurLib.hh"
+//#include "CSurLib.hh"
 
 // replacing with
 #include "CSurfaceLib.hh"
@@ -55,8 +55,8 @@ CDetector::CDetector(OpticksHub* hub, OpticksQuery* query)
   m_dbgsurf(m_ok->isDbgSurf()),
   m_ggb(m_hub->getGGeoBase()),
   m_blib(new CBndLib(m_hub)),
-  m_gsurlib(m_hub->getSurLib()),       // invokes the deferred GGeo::createSurLib  
-  m_csurlib(new CSurLib(m_gsurlib)),
+  //m_gsurlib(m_hub->getSurLib()),       // invokes the deferred GGeo::createSurLib  
+  //m_csurlib(new CSurLib(m_gsurlib)),
   m_query(query),
   m_resource(m_ok->getResource()),
   m_mlib(new CMaterialLib(m_hub)),
@@ -296,10 +296,10 @@ void CDetector::attachSurfaces()
 
     m_slib->convert(this);
 
-
+/*
     m_gsurlib->close();  // close the GSurLib
     m_csurlib->convert(this);     
-
+*/
 
     if(m_dbgsurf)
         LOG(info) << "[--dbgsurf] CDetector::attachSurfaces DONE " ;

@@ -24,7 +24,9 @@ class GGeoLib ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
-class GSurLib ; 
+
+//class GSurLib ; 
+
 class GScintillatorLib ; 
 class GMergedMesh ;
 class GNodeLib ;
@@ -178,9 +180,9 @@ class OKGEO_API OpticksHub {
        GSurfaceLib*         getSurfaceLib();
        GBndLib*             getBndLib();
        GScintillatorLib*    getScintillatorLib();
-       GSurLib*             getSurLib();   //  getter triggers creation in GGeo::createSurLib from mesh0
+       //GSurLib*             getSurLib();   //  getter triggers creation in GGeo::createSurLib from mesh0
    private:
-       GSurLib*             createSurLib(GGeoBase* ggb);
+       //GSurLib*             createSurLib(GGeoBase* ggb);
    public:
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
@@ -230,7 +232,7 @@ class OKGEO_API OpticksHub {
        OpticksAim*          m_aim ;
  
        GGeoTest*            m_geotest ; 
-       GSurLib*             m_gsurlib ;  
+       //GSurLib*             m_gsurlib ;  
 
 
 
