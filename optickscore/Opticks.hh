@@ -325,6 +325,7 @@ class OKCORE_API Opticks {
        bool isMaterialDbg() const ; 
        bool isDbgAnalytic() const ; 
        bool isDbgSurf() const ; 
+       bool isDbgBnd() const ; 
        bool isDbgTorch() const ; 
        bool isDbgSource() const ; 
 

@@ -140,6 +140,8 @@ std::string GMaker::PVName(const char* shapename, int idx)
 
 GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 {
+    bool dbgbnd = bndlib->isDbgBnd();
+
     unsigned index = csg->getIndex();
 
     const char* spec = csg->getBoundary();  
@@ -161,7 +163,20 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
-    unsigned boundary = bndlib->addBoundary(spec);  // only adds if not existing
+    bool flip = false ; 
+    bool create_unknown_surf = false ; 
+
+    unsigned boundary = bndlib->addBoundary(spec, flip, create_unknown_surf);  // only adds if not existing
+
+    if(dbgbnd)
+    {
+        LOG(error) 
+                   << "[--dbgbnd]"
+                   << " spec " << spec
+                   << " boundary " << boundary 
+                   ;
+    }
+
 
     solid->setBoundary(boundary);     // unlike ctor these create arrays
 

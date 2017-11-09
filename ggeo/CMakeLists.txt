@@ -101,6 +101,7 @@ set(SOURCES
     GSourceLib.cc
     GPmtLib.cc
 
+    GBnd.cc
     GBndLib.cc
     GParts.cc
     GPmt.cc

@@ -469,6 +469,11 @@ bool Opticks::isDbgSurf() const
 {
     return m_cfg->hasOpt("dbgsurf") ;
 }
+bool Opticks::isDbgBnd() const
+{
+    return m_cfg->hasOpt("dbgbnd") ;
+}
+
 bool Opticks::isDbgTorch() const
 {
     return m_cfg->hasOpt("torchdbg") ;

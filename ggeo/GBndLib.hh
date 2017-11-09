@@ -21,12 +21,26 @@ creation of its float buffer is deferred post cache
 to allow dynamic addition of boundaries for eg analytic
 geometry inside-outs and for test boxes 
 
-Instead the index buffer is used for persisting, which contains
-indices of materials and surfaces imat/omat/isur/osur 
 
-The boundary buffer is created dynamically by pulling the 
-relevant bytes from the material and surface libs. 
 
+Buffers
+---------
+
+index_buffer
+    guint4 material and surface indices imat/omat/isur/osur
+
+optical_buffer
+    optical surface property integers
+
+boundary_buffer
+     float4 memcopy zip of material and surface property buffers, 
+     used to construct GPU texture.  
+     Created dynamically by pulling the relevant bytes from 
+     material and surface libs. 
+
+The boundary and optical buffers are regarded as dynamic 
+(although they may still be persisted for debugging/record keeping)
+   
 **/
  
 
@@ -47,6 +61,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        static GBndLib* load(Opticks* ok, bool constituents=false);
   public:
        GBndLib(Opticks* ok);
+       GBndLib(Opticks* ok, GMaterialLib* mlib, GSurfaceLib* slib);
   private:
        void init(); 
   public:
@@ -71,6 +86,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        const char* getInnerSurfaceName(unsigned int boundary);
        const char* getInnerMaterialName(unsigned int boundary);
   public:
+       // spec is added, yielding a boundary index 
        const char* getOuterMaterialName(const char* spec);
        const char* getOuterSurfaceName(const char* spec);
        const char* getInnerSurfaceName(const char* spec);
@@ -78,16 +94,21 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        guint4 parse( const char* spec, bool flip=false);
        bool contains( const char* spec, bool flip=false);
+
+
   public:
-       unsigned int addBoundary( const char* spec, bool flip=false) ;
+       // Bnd (guint4) are only added if not already present
+       // char* adders convert names to indices using m_mlib, m_slib 
+       unsigned int addBoundary( const char* spec, bool flip=false ) ;
        unsigned int addBoundary( const char* omat, const char* osur, const char* isur, const char* imat) ;
-       // Bnd are only added if not already present
   private:
        friend class GBndLibTest ; 
        void add(const guint4& bnd);
        guint4 add(const char* spec, bool flip=false);
        guint4 add(const char* omat, const char* osur, const char* isur, const char* imat);
        guint4 add(unsigned int omat, unsigned int osur, unsigned int isur, unsigned int imat);
+
+
   public:
        void loadIndexBuffer();
        void importIndexBuffer();
@@ -123,7 +144,7 @@ class GGEO_API GBndLib : public GPropertyLib {
        NPY<float>* createBufferForTex2d();
        NPY<float>* createBufferOld();
   public:
-       GItemList* createNames();
+       GItemList* createNames(); // spec shortnames
        NMeta*      createMeta();
        NPY<float>* createBuffer();
        void import();
@@ -138,8 +159,9 @@ class GGEO_API GBndLib : public GPropertyLib {
        void setSurfaceLib(GSurfaceLib* slib);
        GMaterialLib* getMaterialLib();
        GSurfaceLib*  getSurfaceLib();
-
+       bool isDbgBnd() const ; 
   private:
+       bool                 m_dbgbnd ; 
        GMaterialLib*        m_mlib ; 
        GSurfaceLib*         m_slib ; 
        std::vector<guint4>  m_bnd ; 

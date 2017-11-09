@@ -373,7 +373,7 @@ std::size_t BufferSaveArrayAsNumpy(
     for(int d=0;d<n_dims;d++) dims[d] = shape[d] ;
 
     std::size_t size = BufferSaveArrayAsNumpy<Scalar>( buffer, fortran_order, n_dims, dims, data );
-    delete dims ; 
+    delete[] dims ; 
     return size ; 
 }
 
@@ -411,7 +411,7 @@ void SaveArrayAsNumpy(
 
     SaveArrayAsNumpy( filename, false, n_dims, dims, data);
 
-    delete dims ; 
+    delete[] dims ; 
 }
 
 

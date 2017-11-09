@@ -61,16 +61,20 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void save();
        static GSurfaceLib* load(Opticks* ok);
    public:
-       GSurfaceLib(Opticks* ok); 
-       GSurfaceLib(GSurfaceLib* other, GDomain<float>* domain=NULL);  // interpolating copy ctor
+       GSurfaceLib(Opticks* ok, GSurfaceLib* basis=NULL); 
+       GSurfaceLib(GSurfaceLib* other, GDomain<float>* domain=NULL, GSurfaceLib* basis=NULL );  // interpolating copy ctor
+   private:
+       void init();
+       void initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain);
+   public:
+       GSurfaceLib* getBasis();
+       void         setBasis(GSurfaceLib* basis);
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
        void dump(const char* msg="GSurfaceLib::dump");
        void dump(GPropertyMap<float>* surf);
        void dump(GPropertyMap<float>* surf, const char* msg);
        void dump(unsigned int index);
-   private:
-       void init();
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
@@ -130,6 +134,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        std::vector<GPropertyMap<float>*>       m_surfaces ; 
        float                                   m_fake_efficiency ; 
        NPY<unsigned int>*                      m_optical_buffer ; 
+       GSurfaceLib*                            m_basis ; 
 
 
 };

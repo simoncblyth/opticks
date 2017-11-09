@@ -42,6 +42,8 @@ unsigned int GPropertyLib::NUM_FLOAT4 = BOUNDARY_NUM_FLOAT4  ;
 const char* GPropertyLib::METANAME = "GPropertyLibMetadata.json" ; 
 
 
+unsigned GPropertyLib::getUNSET(){ return UNSET ; }
+
 void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 {
 

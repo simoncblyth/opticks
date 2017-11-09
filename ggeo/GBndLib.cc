@@ -22,21 +22,13 @@
 
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
+#include "GBnd.hh"
 #include "GBndLib.hh"
 
 #include "PLOG.hh"
 
 void GBndLib::save()
 {
-    // NB bndlib exists for deferred boundary buffer creation,  
-    //
-    // NB only the Index buffer (persisted m_bnd vector of guint4 with omat-osur-isur-imat indices)
-    //    is "-G" saved into the geocache
-    //
-    //    The float and optical buffers are regarded as dynamic 
-    //    (although they are still persisted for debugging/record keeping)
-    // 
-
     saveIndexBuffer();  
 }
 
@@ -212,17 +204,6 @@ void GBndLib::importIndexBuffer()
 }
 
 
-GBndLib::GBndLib(Opticks* ok) 
-   :
-    GPropertyLib(ok, "GBndLib"),
-    m_mlib(NULL),
-    m_slib(NULL),
-    m_index_buffer(NULL),
-    m_optical_buffer(NULL)
-{
-    init();
-}
-
 void GBndLib::setMaterialLib(GMaterialLib* mlib)
 {
     m_mlib = mlib ;  
@@ -272,10 +253,47 @@ void GBndLib::setOpticalBuffer(NPY<unsigned int>* optical_buffer)
 
 
 
+
+
+GBndLib::GBndLib(Opticks* ok, GMaterialLib* mlib, GSurfaceLib* slib)
+   :
+    GPropertyLib(ok, "GBndLib"),
+    m_dbgbnd(ok->isDbgBnd()),
+    m_mlib(mlib),
+    m_slib(slib),
+    m_index_buffer(NULL),
+    m_optical_buffer(NULL)
+{
+    init();
+}
+
+GBndLib::GBndLib(Opticks* ok) 
+   :
+    GPropertyLib(ok, "GBndLib"),
+    m_dbgbnd(ok->isDbgBnd()),
+    m_mlib(NULL),
+    m_slib(NULL),
+    m_index_buffer(NULL),
+    m_optical_buffer(NULL)
+{
+    init();
+}
+
 void GBndLib::init()
 {
+    if(m_dbgbnd)
+    {
+        LOG(fatal) << "[--dbgbnd] " << m_dbgbnd ; 
+    }
     assert(UNSET == GItemList::UNSET);
 }
+
+bool GBndLib::isDbgBnd() const 
+{
+    return m_dbgbnd ; 
+}
+
+
 
 bool GBndLib::contains(const char* spec, bool flip)
 {
@@ -283,53 +301,41 @@ bool GBndLib::contains(const char* spec, bool flip)
     return contains(bnd);
 }
 
+
+
 guint4 GBndLib::parse( const char* spec, bool flip)
 {
-    std::vector<std::string> elem ;
-    boost::split(elem, spec, boost::is_any_of("/"));
-
-    unsigned int nelem = elem.size();
-
-
-    if(nelem != 4)
-    {      
-        LOG(fatal) << "GBndLib::parse"
-                   << " bad boundary spec, expecting 4 elements"
-                   << " spec " << spec
-                   << " nelem " << nelem
-                   ;
-
-    }
-
-    assert(nelem == 4);
-
-    const char* omat_ = elem[0].c_str() ;
-    const char* osur_ = elem[1].c_str() ;
-    const char* isur_ = elem[2].c_str() ;
-    const char* imat_ = elem[3].c_str() ;
-
-    unsigned int omat = m_mlib->getIndex(omat_) ;
-    unsigned int osur = m_slib->getIndex(osur_) ;
-    unsigned int isur = m_slib->getIndex(isur_) ;
-    unsigned int imat = m_mlib->getIndex(imat_) ;
-
-    return flip ? 
-              guint4(imat, isur, osur, omat)
-                :
-              guint4(omat, osur, isur, imat) 
-                ;   
+    GBnd b(spec, flip, m_mlib, m_slib, m_dbgbnd);
+    return guint4( b.omat, b.osur, b.isur, b.imat ) ; 
 }
 
 
 
-unsigned int GBndLib::addBoundary( const char* spec, bool flip)
+
+unsigned GBndLib::addBoundary( const char* spec, bool flip)
 {
-    guint4 bnd = parse(spec, flip);
-    add(bnd);
-    return index(bnd) ; 
-}
+    // used by GMaker::makeFromCSG
+    // hmm: when need to create surf, need the volnames ?
 
-unsigned int GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
+    GBnd b(spec, flip, m_mlib, m_slib, m_dbgbnd);
+
+
+    guint4 bnd = guint4( b.omat, b.osur, b.isur, b.imat );
+    add(bnd);
+    unsigned boundary = index(bnd) ;
+
+    if(m_dbgbnd)
+    {
+       LOG(info) << "[--dbgbnd] "
+                 << " spec " << spec 
+                 << " flip " << flip 
+                 << " bnd " << bnd.description()
+                 << " boundary " << boundary
+                 ;
+    }
+    return boundary ; 
+}
+unsigned GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
 {
     guint4 bnd = add(omat, osur, isur, imat);
     return index(bnd) ; 
@@ -341,7 +347,6 @@ guint4 GBndLib::add( const char* spec, bool flip)
     add(bnd);
     return bnd ; 
 }
-
 guint4 GBndLib::add( const char* omat_ , const char* osur_, const char* isur_, const char* imat_ )
 {
     unsigned int omat = m_mlib->getIndex(omat_) ;
@@ -350,7 +355,6 @@ guint4 GBndLib::add( const char* omat_ , const char* osur_, const char* isur_, c
     unsigned int imat = m_mlib->getIndex(imat_) ;
     return add(omat, osur, isur, imat);
 }
-
 guint4 GBndLib::add( unsigned int omat , unsigned int osur, unsigned int isur, unsigned int imat )
 {
     guint4 bnd = guint4(omat, osur, isur, imat);
@@ -358,10 +362,11 @@ guint4 GBndLib::add( unsigned int omat , unsigned int osur, unsigned int isur, u
     return bnd ; 
 }
 
-void GBndLib::add(const guint4& bnd)
+void GBndLib::add(const guint4& bnd)  // all the adders invoke this
 {
     if(!contains(bnd)) m_bnd.push_back(bnd);
 }
+
 
 bool GBndLib::contains(const guint4& bnd)
 {
@@ -643,7 +648,6 @@ NPY<float>* GBndLib::createBuffer()
 NPY<float>* GBndLib::createBufferForTex2d()
 {
     /*
-
     GBndLib float buffer is a memcpy zip of the MaterialLib and SurfaceLib buffers
     pulling together data based on the indices for the materials and surfaces 
     from the m_bnd guint4 buffer
@@ -652,7 +656,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
                128 : boundaries, 
                  4 : mat-or-sur for each boundary  
-                 2 : payload-categries corresponding to NUM_FLOAT4
+                 2 : payload-categories corresponding to NUM_FLOAT4
                 39 : wavelength samples
                  4 : float4-values
 
@@ -733,11 +737,12 @@ NPY<float>* GBndLib::createBufferForTex2d()
                 }
                 else
                 {
-                    LOG(warning) << "GBndLib::createBufferForTex2d"
+                    LOG(fatal) << "GBndLib::createBufferForTex2d"
                                  << " ERROR IMAT/OMAT with UNSET MATERIAL "
                                  << " i " << i  
                                  << " j " << j 
                                  ; 
+                    assert(0);
                 }
             }
             else if(j == ISUR || j == OSUR) 
@@ -895,5 +900,3 @@ void GBndLib::saveAllOverride(const char* dir)
 }
 
 
-
- 

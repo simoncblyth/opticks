@@ -50,7 +50,6 @@ const char* GGeoTestConfig::OUTERFIRST_ = "outerfirst";
 
 
 
-
 GGeoTestConfig::GGeoTestConfig(const char* config) 
     : 
     m_config(NULL),

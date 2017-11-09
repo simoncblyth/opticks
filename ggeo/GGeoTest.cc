@@ -22,8 +22,12 @@
 #include "GVector.hh"
 #include "GGeoBase.hh"
 #include "GGeoLib.hh"
+
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 #include "GPmtLib.hh"
+
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
 #include "GSolid.hh"
@@ -71,7 +75,7 @@ GNodeLib*         GGeoTest::getNodeLib(){                  return m_nodelib ; }
 
 
 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis) 
-    : 
+    :  
     m_ok(ok),
     m_config(new GGeoTestConfig(ok->getTestConfig())),
     m_resource(ok->getResource()),
@@ -81,9 +85,10 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_analytic(m_config->getAnalytic()),
     m_test(true),
     m_basis(basis),
+    //m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_mlib(basis->getMaterialLib()),
-    m_slib(basis->getSurfaceLib()),
-    m_bndlib(basis->getBndLib()),
+    m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
+    m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
     m_pmtlib(basis->getPmtLib()),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
@@ -92,6 +97,8 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_solist(NULL),
     m_verbosity(0)
 {
+    LOG(fatal) << "GGeoTest::GGeoTest" ; 
+
     init();
 }
 
@@ -125,8 +132,6 @@ void GGeoTest::init()
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
     // tmm->save("$TMP", "GMergedMesh", "GGeoTest_init") ;
-
-
 }
 
 
@@ -465,6 +470,49 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* 
     LOG(info) << "GGeoTest::combineSolids DONE " ; 
 
     return tri ; 
+}
+
+
+
+
+std::string GGeoTest::MakeTestConfig_(const char* funcname)
+{
+    std::stringstream ss ; 
+    ss  
+       << "analytic=1"
+       << "_" 
+       << "mode=PyCsgInBox"
+       << "_" 
+       << "outerfirst=1"
+       << "_" 
+       << "csgpath=$TMP/" << funcname
+       << "_" 
+       << "name=" << funcname
+       ;   
+
+    return ss.str() ;
+}
+
+std::string GGeoTest::MakeArgForce_(const char* funcname, const char* extra)
+{
+    std::stringstream ss ; 
+    ss  
+       << "--test"
+       << " " 
+       << "--testconfig"
+       << " " 
+       << MakeTestConfig_(funcname)
+       ;   
+
+    if(extra) ss << " " << extra ; 
+ 
+    return ss.str() ;
+}
+
+const char* GGeoTest::MakeArgForce(const char* funcname, const char* extra)
+{
+    std::string argforce = MakeArgForce_(funcname, extra);
+    return strdup(argforce.c_str());
 }
 
 

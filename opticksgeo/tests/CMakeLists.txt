@@ -6,6 +6,7 @@ project(${name})
 
 set(TEST_SOURCES
     OpticksGeometryTest.cc
+    OpticksHubTest.cc
     OpenMeshRapTest.cc
 )
 

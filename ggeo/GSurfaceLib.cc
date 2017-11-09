@@ -88,29 +88,43 @@ void GSurfaceLib::saveOpticalBuffer()
     setOpticalBuffer(ibuf);
 }
 
-
-
-
-
-
-
-GSurfaceLib::GSurfaceLib(Opticks* ok) 
-    :
-    GPropertyLib(ok, "GSurfaceLib"),
-    m_fake_efficiency(-1.f),
-    m_optical_buffer(NULL)
+void GSurfaceLib::setBasis(GSurfaceLib* basis)
 {
-    init();
+    m_basis = basis ; 
+}
+GSurfaceLib* GSurfaceLib::getBasis()
+{
+    return m_basis ; 
+}
+
+unsigned int GSurfaceLib::getNumSurfaces()
+{
+    return m_surfaces.size();
 }
 
 
 
-GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain) 
+GSurfaceLib::GSurfaceLib(Opticks* ok, GSurfaceLib* basis) 
     :
-    GPropertyLib(src, domain)
+    GPropertyLib(ok, "GSurfaceLib"),
+    m_fake_efficiency(-1.f),
+    m_optical_buffer(NULL),
+    m_basis(basis)
 {
     init();
+}
 
+GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain, GSurfaceLib* basis) 
+    :
+    GPropertyLib(src, domain),
+    m_basis(basis)
+{
+    init();
+    initInterpolatingCopy(src, domain);
+}
+ 
+void GSurfaceLib::initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain)
+{
     unsigned nsur = src->getNumSurfaces();
 
     for(unsigned i=0 ; i < nsur ; i++)
@@ -129,16 +143,6 @@ GSurfaceLib::GSurfaceLib(GSurfaceLib* src, GDomain<float>* domain)
     }
 }
  
-
-
-
-
- 
-unsigned int GSurfaceLib::getNumSurfaces()
-{
-    return m_surfaces.size();
-}
-
 
 void GSurfaceLib::setFakeEfficiency(float fake_efficiency)
 {
@@ -917,6 +921,9 @@ GPropertyMap<float>* GSurfaceLib::getSurface(const char* name)
     GPropertyMap<float>* surf = getSurface(index);
     return surf ; 
 }
+
+
+
 
 
 

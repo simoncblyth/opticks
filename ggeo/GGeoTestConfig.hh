@@ -66,6 +66,7 @@ class GGEO_API GGeoTestConfig {
        //static const char* E_BoxInBox ; 
        //static const char* E_NCSG ; 
     public:
+
        GGeoTestConfig(const char* config);
        int getVerbosity();
     private:

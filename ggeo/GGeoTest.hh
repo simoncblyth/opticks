@@ -48,6 +48,11 @@ Rejig
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
     public:
+       // testing utilities used from okg-/OpticksHubTest
+       static const char* MakeArgForce(const char* funcname, const char* extra=NULL);
+       static std::string MakeArgForce_(const char* funcname, const char* extra);
+       static std::string MakeTestConfig_(const char* funcname);
+    public:
        GGeoTest(Opticks* ok, GGeoBase* basis=NULL);
     private:
        void init();

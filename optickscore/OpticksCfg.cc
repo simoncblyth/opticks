@@ -331,6 +331,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dbgsurf", "debug surface handling see notes/issues/surface_review.rst "); 
 
+   m_desc.add_options()
+       ("dbgbnd", "debug boundary handling see notes/issues/surface_review.rst "); 
+
 
 
 

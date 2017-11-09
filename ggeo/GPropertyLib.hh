@@ -71,6 +71,7 @@ class GGEO_API GPropertyLib {
         GPropertyLib(Opticks* ok, const char* type);
         virtual ~GPropertyLib();
     public:
+        unsigned    getUNSET();
         const char* getType();
         const char* getComponentType();
         Opticks*    getOpticks(); 

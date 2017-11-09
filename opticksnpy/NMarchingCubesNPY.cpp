@@ -38,7 +38,7 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
     m_upper[1] = bb.max.y*m_scale ; 
     m_upper[2] = bb.max.z*m_scale ; 
 
-    LOG(info) << "NMarchingCubesNPY "
+    LOG(debug) << "NMarchingCubesNPY "
               << " bb " << bb.desc()
               << " scale " << m_scale 
               << " lower (" << m_lower[0] << "," << m_lower[1] << "," << m_lower[2] << ")"
@@ -73,7 +73,7 @@ NTrianglesNPY* NMarchingCubesNPY::operator()(nnode* node)
     nbbox* tris_bb = tris->findBBox(); 
     assert(tris_bb);
 
-    LOG(info) << "NMarchingCubesNPY " 
+    LOG(debug) << "NMarchingCubesNPY " 
               << " ntri " << std::setw(6) << ntri
               << " nvert " << std::setw(6) << nvert
               << " npoly " << std::setw(6) << npoly

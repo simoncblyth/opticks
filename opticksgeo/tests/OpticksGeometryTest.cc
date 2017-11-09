@@ -19,8 +19,7 @@ int main(int argc, char** argv)
     OKGEO_LOG__ ;
 
     Opticks ok(argc, argv);
-
-    OpticksHub hub(&ok);
+    OpticksHub hub(&ok);      // hub calls configure
 
 
     return 0 ; 

@@ -128,29 +128,37 @@ void GMaterialLib::postLoadFromCache()
 }
 
 
-
-/*
-const char* GMaterialLib::FindShortName(const char* name, const char* prefix)
+unsigned int GMaterialLib::getNumMaterials()
 {
-    return GPropertyMap<float>::FindShortName(name, prefix);
+    return m_materials.size();
 }
-*/
 
-
-GMaterialLib::GMaterialLib(Opticks* ok) 
+GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis) 
     :
-    GPropertyLib(ok, "GMaterialLib")
+    GPropertyLib(ok, "GMaterialLib"),
+    m_basis(basis)
 {
     init();
 }
 
-
-GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain) 
+GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialLib* basis) 
     :
-    GPropertyLib(src, domain)
+    GPropertyLib(src, domain),
+    m_basis(basis)
 {
     init();
+    initInterpolatingCopy(src, domain);
+}
+ 
 
+void GMaterialLib::init()
+{
+    setKeyMap(keyspec);
+    defineDefaults(getDefaults());
+}
+
+void GMaterialLib::initInterpolatingCopy(GMaterialLib* src, GDomain<float>* domain)
+{
     unsigned nmat = src->getNumMaterials();
 
     for(unsigned i=0 ; i < nmat ; i++)
@@ -162,21 +170,7 @@ GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain)
         m_materials.push_back(dmat);
     }
 }
- 
 
-
- 
-unsigned int GMaterialLib::getNumMaterials()
-{
-    return m_materials.size();
-}
-
-
-void GMaterialLib::init()
-{
-    setKeyMap(keyspec);
-    defineDefaults(getDefaults());
-}
 
 void GMaterialLib::defineDefaults(GPropertyMap<float>* defaults)
 {

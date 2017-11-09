@@ -162,13 +162,13 @@ void NMeta::read(const char* path0, const char* path1)
 {
     std::string path = BFile::FormPath(path0, path1);
 
-    LOG(info) << "read from " << path ; 
+    LOG(debug) << "read from " << path ; 
 
     std::ifstream in(path.c_str(), std::ios::in);
 
     if(!in.is_open()) 
     {   
-        LOG(fatal) << "NMeta::read failed to open " << path ; 
+        LOG(debug) << "NMeta::read failed to open " << path ; 
         return ;
     }   
     in >> m_js ; 

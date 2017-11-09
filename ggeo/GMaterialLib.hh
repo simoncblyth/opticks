@@ -86,9 +86,9 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void save();
        static GMaterialLib* load(Opticks* cache);
    public:
-       GMaterialLib(Opticks* ok); 
+       GMaterialLib(Opticks* ok, GMaterialLib* basis=NULL); 
    public:
-       GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL);  // interpolating copy ctor
+       GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL, GMaterialLib* basis=NULL);  // interpolating copy ctor
    public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");
@@ -97,6 +97,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void dump(unsigned int index);
    private:
        void init();
+       void initInterpolatingCopy(GMaterialLib* src, GDomain<float>* domain);
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
@@ -138,6 +139,8 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:
        std::vector<GMaterial*>       m_materials ; 
+
+       GMaterialLib*  m_basis ; 
 
 };
 #include "GGEO_TAIL.hh"
