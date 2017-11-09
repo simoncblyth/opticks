@@ -136,7 +136,8 @@ class GGEO_API GPropertyLib {
         //
         void close();
         void setClosed(bool closed=true);
-        bool isClosed();
+        bool isClosed() const ;
+        bool hasDomain() const ;
         void setValid(bool valid=true);
         bool isValid();
 

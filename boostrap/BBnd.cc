@@ -6,32 +6,46 @@
 #include "BStr.hh"
 #include "BBnd.hh"
 
+const char BBnd::DELIM = '/' ; 
+
+
 const char* BBnd::DuplicateOuterMaterial( const char* boundary0 )
 {
-    std::vector<std::string> elem ; 
+    BBnd b(boundary0);
+    return BBnd::Form(b.omat, NULL, NULL, b.omat);
+}
 
-    char delim = '/' ;
 
-    BStr::split(elem, boundary0, delim );
+const char* BBnd::Form(const char* omat_, const char* osur_, const char* isur_, const char* imat_)
+{
+    std::vector<std::string> uelem ;  
+    uelem.push_back( omat_ ? omat_ : "" );
+    uelem.push_back( osur_ ? osur_ : "" );
+    uelem.push_back( isur_ ? isur_ : "" );
+    uelem.push_back( imat_ ? imat_ : "" );
+
+    std::string ubnd = BStr::join(uelem, DELIM ); 
+    return strdup(ubnd.c_str());
+}
+
+
+BBnd::BBnd(const char* spec)
+{
+    BStr::split( elem, spec, DELIM );
     assert( elem.size() == 4 );
 
-    std::string omat = elem[0] ; 
-    //std::string osur = elem[1] ; 
-    //std::string isur = elem[2] ; 
-    std::string imat = elem[3] ; 
+    omat = elem[0].empty() ? NULL : elem[0].c_str() ;
+    osur = elem[1].empty() ? NULL : elem[1].c_str() ;
+    isur = elem[2].empty() ? NULL : elem[2].c_str() ;
+    imat = elem[3].empty() ? NULL : elem[3].c_str() ;
 
-    assert( !omat.empty() );
-    assert( !imat.empty() );
+    assert( omat );
+    assert( imat );  
+}
 
-    std::vector<std::string> uelem ;  
-    uelem.push_back( omat );
-    uelem.push_back( "" );
-    uelem.push_back( "" );
-    uelem.push_back( omat );
-
-    std::string ubnd = BStr::join(uelem, delim ); 
-
-    return strdup(ubnd.c_str());
+std::string BBnd::desc() const 
+{
+    return BBnd::Form(omat, osur, isur, imat); 
 }
 
 

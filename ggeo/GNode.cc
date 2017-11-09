@@ -122,7 +122,7 @@ void GNode::setParent(GNode* parent)
 { 
     m_parent = parent ; 
 }
-GNode* GNode::getParent()
+GNode* GNode::getParent() const 
 {
     return m_parent ; 
 }

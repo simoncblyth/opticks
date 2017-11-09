@@ -13,6 +13,14 @@ in addition to 1(for skin) or 2(for border) volume names
 * huh : where are these names persisted ?
     
 
+ISSUE
+-------
+
+* domain not persisted, so have to just assume that are using 
+  standard one at set on load ?
+
+
+
 **/
 
 class NMeta ; 
@@ -67,7 +75,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void init();
        void initInterpolatingCopy(GSurfaceLib* src, GDomain<float>* domain);
    public:
-       GSurfaceLib* getBasis();
+       GSurfaceLib* getBasis() const ;
        void         setBasis(GSurfaceLib* basis);
    public:
        void Summary(const char* msg="GSurfaceLib::Summary");
@@ -75,6 +83,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void dump(GPropertyMap<float>* surf);
        void dump(GPropertyMap<float>* surf, const char* msg);
        void dump(unsigned int index);
+       std::string desc() const ; 
    public:
        // concretization of GPropertyLib
        void defineDefaults(GPropertyMap<float>* defaults); 
@@ -91,8 +100,13 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void addPerfectSurfaces();
     public:
         // methods to assist with de-conflation of surface props and location
-        void addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2);
-        void addSkinSurface(GPropertyMap<float>* surf, const char* sslv_ );
+        void addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2, bool direct );
+        void addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, bool direct );
+    public:
+        // used from GGeoTest 
+        GPropertyMap<float>* getBasisSurface(const char* name) const ; 
+        void relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2);
+        void relocateBasisSkinSurface(const char* name, const char* sslv);
     public:
         void add(GSkinSurface* ss);
         void add(GBorderSurface* bs);
@@ -104,11 +118,15 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        bool operator()(const GPropertyMap<float>* a_, const GPropertyMap<float>* b_);
    public:
        guint4               getOpticalSurface(unsigned int index);  // zero based index
-       GPropertyMap<float>* getSurface(unsigned int index);         // zero based index
-       GPropertyMap<float>* getSurface(const char* name);        
        GPropertyMap<float>* getSensorSurface(unsigned int offset=0);  // 0: first, 1:second 
-       bool hasSurface(unsigned int index); 
-       bool hasSurface(const char* name); 
+   public:
+       // Check for a surface of specified name of index in m_surfaces vector
+       // NB: changed behaviour, formerly named access only worked after closing
+       // the lib as used the names buffer     
+       GPropertyMap<float>* getSurface(unsigned int index) const ;         // zero based index
+       GPropertyMap<float>* getSurface(const char* name) const ;        
+       bool hasSurface(unsigned int index) const ; 
+       bool hasSurface(const char* name) const ; 
    private:
        guint4               createOpticalSurface(GPropertyMap<float>* src);
        GPropertyMap<float>* createStandardSurface(GPropertyMap<float>* src);
@@ -122,7 +140,7 @@ class GGEO_API GSurfaceLib : public GPropertyLib {
        void setOpticalBuffer(NPY<unsigned int>* ibuf);
        NPY<unsigned int>* getOpticalBuffer();
    public:
-       unsigned int getNumSurfaces();
+       unsigned getNumSurfaces() const ;
        bool isSensorSurface(unsigned int surface); // name suffix based, see AssimpGGeo::convertSensor
    public:
        void import();

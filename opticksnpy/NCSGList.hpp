@@ -32,11 +32,12 @@ class NPY_API NCSGList
     public:
         std::string getTreeDir(unsigned idx) const ;
 
-        NCSG*    getUniverse() ;   // not-const as may create
-        NCSG*    getTree(unsigned index) const ;
-        NCSG*    findEmitter() const ;
-        unsigned getNumTrees() const ;
-        int      polygonize();
+        NCSG*        getUniverse() ;   // not-const as may create
+        NCSG*        getTree(unsigned index) const ;
+        const char*  getBoundary(unsigned index) const ;
+        NCSG*        findEmitter() const ;
+        unsigned     getNumTrees() const ;
+        int          polygonize();
 
         std::vector<NCSG*>& getTrees(); 
 

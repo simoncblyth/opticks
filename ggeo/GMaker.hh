@@ -42,7 +42,7 @@ class GGEO_API GMaker {
    private:
        void init();    
 
-       static GSolid* makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity );
+       static GSolid* makeFromCSG(NCSG* csg, GBndLib* , unsigned verbosity );
        static GSolid* makePrism(glm::vec4& param, const char* spec);
        static GSolid* makeBox(glm::vec4& param);
        static GSolid* makeZSphere(glm::vec4& param);

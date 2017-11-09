@@ -250,10 +250,17 @@ void GPropertyLib::setClosed(bool closed)
 {
     m_closed = closed ; 
 }
-bool GPropertyLib::isClosed()
+bool GPropertyLib::isClosed() const 
 {
     return m_closed ; 
 }
+
+bool GPropertyLib::hasDomain() const 
+{
+    return m_standard_domain != NULL  ; 
+}
+
+
 
 void GPropertyLib::setValid(bool valid)
 {

@@ -2,6 +2,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/algorithm/string.hpp>
 
+#include "BBnd.hh"
 #include "BStr.hh"
 
 // npy-
@@ -47,6 +48,8 @@
 #include "PLOG.hh"
 
 
+const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
+
 
 GSolidList*     GGeoTest::getSolidList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
 
@@ -79,6 +82,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_ok(ok),
     m_config(new GGeoTestConfig(ok->getTestConfig())),
     m_resource(ok->getResource()),
+    m_dbgbnd(m_ok->isDbgBnd()),
     m_dbganalytic(m_ok->isDbgAnalytic()),
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
@@ -223,7 +227,47 @@ void GGeoTest::anaEvent(OpticksEvent* evt)
     ana.dump("GGeoTest::anaEvent");
 }
 
+void GGeoTest::relocateSurfacesBoundarySetup(GSolid* solid, const char* spec)
+{
+    BBnd b(spec);
+    bool unknown_osur = b.osur && !m_slib->hasSurface(b.osur) ;
+    bool unknown_isur = b.isur && !m_slib->hasSurface(b.isur) ;
 
+    if(unknown_osur || unknown_isur)
+    {
+        GSolid* parent = static_cast<GSolid*>(solid->getParent()) ; 
+        const char* self_lv = solid->getLVName() ;
+        const char* self_pv = solid->getPVName() ;   
+        const char* parent_pv = parent ? parent->getPVName() : UNIVERSE_PV ; 
+
+        if(m_dbgbnd)
+        LOG(error) 
+              << "[--dbgbnd]"
+              << " spec " << spec
+              << " unknown_osur " << unknown_osur
+              << " unknown_isur " << unknown_isur
+              << " self_lv " << self_lv
+              << " self_pv " << self_pv
+              << " parent_pv " << parent_pv
+              ;
+
+        if( b.osur == b.isur ) // skin 
+        {
+            m_slib->relocateBasisSkinSurface( b.osur, self_lv );
+        }
+        else if( b.isur ) // border self->parent
+        {
+            m_slib->relocateBasisBorderSurface( b.isur, self_pv, parent_pv  );
+        }
+        else if( b.osur ) // border parent->self
+        {
+            m_slib->relocateBasisBorderSurface( b.osur, parent_pv, self_pv ) ; 
+        }
+    }
+
+    unsigned boundary = m_bndlib->addBoundary(spec, false);  // only adds if not existing
+    solid->setBoundary(boundary);     // unlike ctor these create arrays
+}
 
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
@@ -245,7 +289,13 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
              << " csgpath " << csgpath 
              << " ntree " << ntree 
              << " verbosity " << verbosity
-             ; 
+             ;
+
+    if(m_dbgbnd)
+    { 
+       LOG(error) << "[--dbgbnd] this.slib  " << m_slib->desc()  ; 
+       LOG(error) << "[--dbgbnd] basis.slib " << m_slib->getBasis()->desc()  ; 
+    }
 
     int primIdx(-1) ; 
 
@@ -257,7 +307,9 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
+
         NCSG* tree = m_csglist->getTree(i) ; 
+       
         GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
 
         if(prior)
@@ -265,7 +317,11 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
             solid->setParent(prior);
             prior->addChild(solid);
         }
+
         prior = solid ; 
+
+        const char* spec = tree->getBoundary();  
+        relocateSurfacesBoundarySetup(solid, spec);
 
 
         GParts* pts = solid->getParts();
@@ -280,7 +336,6 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         solids.push_back(solid);  // <-- TODO: eliminate 
         m_nodelib->add(solid);
     }
-
 
     LOG(info) << "GGeoTest::loadCSG DONE " ; 
 

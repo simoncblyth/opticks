@@ -172,6 +172,34 @@ template NPY_API bool        NCSG::getMeta<bool>(const char*, const char*) const
 std::string NCSG::lvname() const { return getMeta<std::string>("lvname","-") ; }
 std::string NCSG::soname() const { return getMeta<std::string>("soname","-") ; }
 
+
+
+std::string NCSG::TestVolumeName(const char* shapename, const char* suffix, int idx) // static
+{
+    std::stringstream ss ; 
+    ss << shapename << "_" << suffix ; 
+    if(idx > -1) ss << idx ; 
+    ss << "_" ; 
+    return ss.str();
+}
+
+std::string NCSG::getTestPVName() const 
+{
+    OpticksCSG_t type = getRootType() ;
+    const char* shapename = CSGName(type); 
+    unsigned idx = getIndex();
+    return TestVolumeName( shapename, "pv", idx);     
+}
+std::string NCSG::getTestLVName() const 
+{
+    OpticksCSG_t type = getRootType() ;
+    const char* shapename = CSGName(type); 
+    unsigned idx = getIndex();
+    return TestVolumeName( shapename, "lv", idx);     
+}
+
+
+
 int NCSG::treeindex() const { return getMeta<int>("treeindex","-1") ; }
 int NCSG::depth() const {     return getMeta<int>("depth","-1") ; }
 int NCSG::nchild() const {    return getMeta<int>("nchild","-1") ; }

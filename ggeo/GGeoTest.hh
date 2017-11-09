@@ -48,6 +48,8 @@ Rejig
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GGeoTest : public GGeoBase {
     public:
+       static const char* UNIVERSE_PV ; 
+    public:
        // testing utilities used from okg-/OpticksHubTest
        static const char* MakeArgForce(const char* funcname, const char* extra=NULL);
        static std::string MakeArgForce_(const char* funcname, const char* extra);
@@ -73,6 +75,10 @@ class GGEO_API GGeoTest : public GGeoBase {
        GMaterialLib*     getMaterialLib();
        GSurfaceLib*      getSurfaceLib();
        GBndLib*          getBndLib() ;    
+
+    public:
+       // basis surfaces are relocated in order to work within test geometries  
+       void relocateSurfacesBoundarySetup(GSolid* solid, const char* spec) ;
     public:
        void dump(const char* msg="GGeoTest::dump");
     public:
@@ -101,6 +107,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        Opticks*         m_ok ; 
        GGeoTestConfig*  m_config ; 
        OpticksResource* m_resource ; 
+       bool             m_dbgbnd ; 
        bool             m_dbganalytic ; 
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 

@@ -92,16 +92,31 @@ void GSurfaceLib::setBasis(GSurfaceLib* basis)
 {
     m_basis = basis ; 
 }
-GSurfaceLib* GSurfaceLib::getBasis()
+GSurfaceLib* GSurfaceLib::getBasis() const 
 {
     return m_basis ; 
 }
 
-unsigned int GSurfaceLib::getNumSurfaces()
+unsigned GSurfaceLib::getNumSurfaces() const
 {
     return m_surfaces.size();
 }
 
+
+std::string GSurfaceLib::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "GSurfaceLib"
+       << " numSurfaces " << getNumSurfaces()
+       << " this " << this 
+       << " basis " << m_basis
+       << " isClosed " << isClosed() 
+       << " hasDomain " << hasDomain()
+       ;
+
+    return ss.str();
+}
 
 
 GSurfaceLib::GSurfaceLib(Opticks* ok, GSurfaceLib* basis) 
@@ -252,35 +267,69 @@ const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static
 void GSurfaceLib::add(GBorderSurface* raw)
 {
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
-    addBorderSurface(surf, raw->getPV1(), raw->getPV2() );
+    bool direct = false  ;  // not standardized 
+    addBorderSurface(surf, raw->getPV1(), raw->getPV2(), direct );
 }
 
 
-void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2)
+void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, const char* pv2, bool direct)
 {
    // method to help with de-conflation of surface props and location
     std::string bpv1 = pv1 ;
     std::string bpv2 = pv2 ;
     surf->setMetaKV(BPV1, bpv1 );
     surf->setMetaKV(BPV2, bpv2 );
-    add(surf);
+
+    if(direct)
+        addDirect(surf);
+    else
+        add(surf);
 }
+
+
+GPropertyMap<float>* GSurfaceLib::getBasisSurface(const char* name) const 
+{
+    return m_basis ? m_basis->getSurface(name) : NULL ; 
+}
+
+
+void GSurfaceLib::relocateBasisBorderSurface(const char* name, const char* bpv1, const char* bpv2)
+{
+    GPropertyMap<float>* surf = getBasisSurface(name);
+    if(!surf) LOG(fatal) << "relocateBasisBorderSurface requires basis library to be present and to contain the surface  " ; 
+    assert( surf );        
+
+    bool direct = true ;  // already standardized 
+    addBorderSurface( surf, bpv1, bpv2, direct ); 
+}
+
 
 void GSurfaceLib::add(GSkinSurface* raw)
 {
     GPropertyMap<float>* surf = dynamic_cast<GPropertyMap<float>* >(raw);
-    addSkinSurface( surf, raw->getSkinSurfaceVol() );
+    bool direct = false  ;  // not standardized 
+    addSkinSurface( surf, raw->getSkinSurfaceVol(), direct );
 }
-
-
-void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_ )
+void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, bool direct )
 {
    // method to help with de-conflation of surface props and location
     std::string sslv = sslv_ ;
     surf->setMetaKV(SSLV, sslv );
-    add(surf);
-}
 
+    if(direct)
+        addDirect(surf);
+    else
+        add(surf);
+}
+void GSurfaceLib::relocateBasisSkinSurface(const char* name, const char* sslv)
+{
+    GPropertyMap<float>* surf = getBasisSurface(name);
+    if(!surf) LOG(fatal) << "relocateBasisSkinSurface requires basis library to be present and to contain the surface  " ; 
+    assert( surf );           
+  
+    bool direct = true ;  // already standardized 
+    addSkinSurface( surf, sslv, direct ); 
+}
 
 
 void GSurfaceLib::add(GPropertyMap<float>* surf)
@@ -357,6 +406,8 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     }
     else
     {
+        assert( getStandardDomain() );
+        assert( src->getStandardDomain() );
         assert(getStandardDomain()->isEqual(src->getStandardDomain()));
         assert(src->isSurface());
         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
@@ -693,6 +744,13 @@ void GSurfaceLib::importForTex2d()
             import(surf, data + i*nj*nk*nl + j*nk*nl , nk, nl, j );
         }
 
+
+        // hmm: bit dirty, should persist the domain
+        // here just assuming the loaded lib used the standard 
+        assert(m_standard_domain->getLength() == nk );
+        surf->setStandardDomain( m_standard_domain );
+        assert( surf->hasStandardDomain() );
+
         m_surfaces.push_back(surf);
     }  
 }
@@ -900,30 +958,52 @@ bool GSurfaceLib::isSensorSurface(unsigned int qsurface)
 }
 
 
-bool GSurfaceLib::hasSurface(const char* name)
+
+
+
+bool GSurfaceLib::hasSurface(const char* name) const 
 {
     return getSurface(name) != NULL ; 
 }
 
-bool GSurfaceLib::hasSurface(unsigned int index)
+bool GSurfaceLib::hasSurface(unsigned int index) const 
 {
     return getSurface(index) != NULL ; 
 }
 
-GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i)
+GPropertyMap<float>* GSurfaceLib::getSurface(unsigned int i) const 
 {
     return i < m_surfaces.size() ? m_surfaces[i] : NULL ;
 }
 
+GPropertyMap<float>* GSurfaceLib::getSurface(const char* name) const 
+{
+    GPropertyMap<float>* surf = NULL ; 
+    for(unsigned i=0 ; i < m_surfaces.size() ; i++)
+    {
+        GPropertyMap<float>* s = m_surfaces[i] ; 
+        const char* sname = s->getName() ; 
+        assert( sname ) ; 
+        if( strcmp( sname, name ) == 0 )
+        {
+             surf = s ; 
+             break ; 
+        } 
+    }
+    return surf ; 
+}
+
+/*
+// this way only works after closing the lib, or for loaded libs 
+// as it uses the names buffer
+// 
 GPropertyMap<float>* GSurfaceLib::getSurface(const char* name)
 {
     unsigned int index = m_names->getIndex(name);
     GPropertyMap<float>* surf = getSurface(index);
     return surf ; 
 }
-
-
-
+*/
 
 
 

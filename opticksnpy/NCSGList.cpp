@@ -187,10 +187,20 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
 
 
 
+
+
 NCSG* NCSGList::getTree(unsigned index) const 
 {
     return m_trees[index] ;
 }
+
+const char* NCSGList::getBoundary(unsigned index) const 
+{
+    NCSG* tree = getTree(index);
+    return tree ? tree->getBoundary() : NULL  ;
+}
+
+
 
 unsigned NCSGList::getNumTrees() const 
 {

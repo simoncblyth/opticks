@@ -78,6 +78,10 @@ class NPY_API NCSG {
         static const unsigned NTRAN ; 
         static const float SURFACE_EPSILON ; 
 
+        static std::string TestVolumeName(const char* shapename, const char* suffix, int idx) ; 
+        std::string getTestLVName() const ;
+        std::string getTestPVName() const ;
+
         static NCSG* FromNode(nnode* root, const NSceneConfig* config);
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );

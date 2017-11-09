@@ -55,12 +55,14 @@ class GGEO_API GSolid : public GNode {
       void setSensor(NSensor* sensor);
       void setSensorSurfaceIndex(unsigned int ssi);
       unsigned int getSensorSurfaceIndex();
+
   public:
       // need to resort to names for debugging IAV top lid issue
       void setPVName(const char* pvname);
       void setLVName(const char* lvname);
       const char* getPVName();
       const char* getLVName();
+
   public:
       OpticksCSG_t getCSGFlag();
       bool         isCSGSkip();

@@ -67,7 +67,7 @@ class GGEO_API GNode {
 
   public:
       unsigned int  getIndex();
-      GNode*        getParent(); 
+      GNode*        getParent() const ; 
       GNode*        getChild(unsigned index);
       GSolid*       getChildSolid(unsigned index);
       unsigned int  getNumChildren();

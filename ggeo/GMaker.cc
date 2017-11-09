@@ -121,35 +121,22 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
 
 std::string GMaker::LVName(const char* shapename, int idx)
 {
-    std::stringstream ss ; 
-    ss << shapename << "_lv" ; 
-    if(idx > -1) ss << idx ; 
-    ss << "_" ; 
-    return ss.str();
+    return NCSG::TestVolumeName(shapename, "lv", idx );
 }
 
 std::string GMaker::PVName(const char* shapename, int idx)
 {
-    std::stringstream ss ; 
-    ss << shapename << "_pv" ; 
-    if(idx > -1) ss << idx ; 
-    ss << "_" ; 
-    return ss.str();
+    return NCSG::TestVolumeName(shapename, "pv", idx );
 }
 
-
-GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
+GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
 {
-    bool dbgbnd = bndlib->isDbgBnd();
-
     unsigned index = csg->getIndex();
 
     const char* spec = csg->getBoundary();  
 
     NTrianglesNPY* tris = csg->polygonize();
 
-
-    //nnode* root = csg->getRoot() ;
 
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
@@ -163,29 +150,22 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
-    bool flip = false ; 
-    unsigned boundary = bndlib->addBoundary(spec, flip);  // only adds if not existing
-
-    if(dbgbnd)
-    {
-        LOG(error) 
-                   << "[--dbgbnd]"
-                   << " spec " << spec
-                   << " boundary " << boundary 
-                   ;
-    }
-
-
-    solid->setBoundary(boundary);     // unlike ctor these create arrays
 
     solid->setSensor( NULL );      
 
+    // FORMERLY set boundary here 
+    // moved later to allow relocation of basis
+    // surfaces prior to arriving at a boundary index 
+
+
 
     OpticksCSG_t type = csg->getRootType() ;
+    //const char* shapename = CSGName(type); 
+    //std::string lvn = GMaker::LVName(shapename, index); 
+    //std::string pvn = GMaker::PVName(shapename, index); 
 
-    const char* shapename = CSGName(type); 
-    std::string lvn = GMaker::LVName(shapename, index); 
-    std::string pvn = GMaker::PVName(shapename, index); 
+    std::string lvn = csg->getTestLVName();
+    std::string pvn = csg->getTestPVName();
     
     solid->setPVName( strdup(pvn.c_str()) );
     solid->setLVName( strdup(lvn.c_str()) );
@@ -193,10 +173,9 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
 
     GParts* pts = GParts::make( csg, spec, verbosity );
 
-
     solid->setParts( pts );
 
-    // TODO: fix vagueness regards GMaker and GGeoTest responsibilities
+
 
 
 
@@ -207,8 +186,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
               << " numTris " << ( tris ? tris->getNumTriangles() : 0 )
               << " trisMsg " << ( tris ? tris->getMessage() : "" )
               ; 
-
-
 
     return solid ; 
 }
