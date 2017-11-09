@@ -164,9 +164,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* bndlib, unsigned verbosity )
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
     bool flip = false ; 
-    bool create_unknown_surf = false ; 
-
-    unsigned boundary = bndlib->addBoundary(spec, flip, create_unknown_surf);  // only adds if not existing
+    unsigned boundary = bndlib->addBoundary(spec, flip);  // only adds if not existing
 
     if(dbgbnd)
     {
