@@ -318,11 +318,6 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
     reuseMaterials(m_csglist);
 
-
-    // NB universe wrapper solid is not needed here at Opticks level, 
-    //    it is required over in CTestDetector::makeDetector_NCSG
-    //    to make the cfg4 Geant4 translation of the test geometry
-
     unsigned num_tree = m_csglist->getNumTrees() ;
    
     LOG(info) << "GGeoTest::loadCSG START " 
@@ -339,14 +334,12 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
     int primIdx(-1) ; 
 
-
     // assuming tree order from outermost to innermost volume 
     GSolid* prior = NULL ; 
 
     for(unsigned i=0 ; i < num_tree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
-
 
         NCSG* tree = m_csglist->getTree(i) ; 
        
@@ -360,8 +353,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         prior = solid ; 
 
         const char* spec = tree->getBoundary();  
-        boundarySetup( solid, spec );
- 
+        boundarySetup( solid, spec ); 
 
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
@@ -371,10 +363,24 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         }
         pts->setBndLib(m_bndlib);
 
-
         solids.push_back(solid);  // <-- TODO: eliminate 
         m_nodelib->add(solid);
     }
+
+
+    // Can boundary hookup be done on a final pass here ?
+    // Hmm, depends where the boundary set in the solid gets used.
+    //
+    // Assume need to split surface relocation that adds the surfaces
+    // to the slib, from boundary spec adding that requires 
+    // all surfaces and materials to have been added and the 
+    // proplibs closed to settle the indices : as it needs 
+    // to getIndex on the libs.
+    //
+    // This should avoid an equivalent for surfaces 
+    // of notes/issues/GGeoTest_isClosed_assert.rst 
+    //
+
 
     LOG(info) << "GGeoTest::loadCSG DONE " ; 
 

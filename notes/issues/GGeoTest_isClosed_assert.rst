@@ -15,6 +15,14 @@ FIXED ISSUE
   so more relevant items can have the lower indices (not just 
   cosmetic, its relevant as use nibble per-step seqmat etc... )
 
+
+TODO 
+------
+
+1. check geometry with multiple different surfaces, suspect
+   there will be an analogous issue
+
+
 Approaches
 -----------
 
