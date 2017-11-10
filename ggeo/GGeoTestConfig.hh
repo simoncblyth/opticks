@@ -106,7 +106,7 @@ class GGEO_API GGeoTestConfig {
 
        const char* getMode();
        const char* getPmtPath();
-       const char* getCsgPath();
+       const char* getCSGPath();
        const char* getName();
        unsigned int getNumElements();
 

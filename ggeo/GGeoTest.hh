@@ -114,6 +114,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        NLODConfig*      m_lodconfig ; 
        int              m_lod ; 
        bool             m_analytic ; 
+       const char*      m_csgpath ; 
        bool             m_test ; 
     private:
        // base geometry and stolen libs 

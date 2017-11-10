@@ -568,11 +568,24 @@ class Abbrev(object):
 class ItemList(object): # formerly ListFlags
     @classmethod 
     def Path(cls, txt, reldir=None):
-        if reldir is None: reldir = "GItemList" 
-        npath=idp_("%(reldir)s/%(txt)s.txt" % locals())
+        """
+        :param txt: eg GMaterialLib
+        :param reldir:  normally relative to IDPATH, for test geometry provide an absolute path
+        """
+        if reldir is not None and reldir.startswith("/"):
+            npath = os.path.join(reldir, txt+".txt" )
+        else:
+            if reldir is None: 
+                reldir = "GItemList"  
+            pass 
+            npath=idp_("%(reldir)s/%(txt)s.txt" % locals())
+        pass
         return npath
 
     def __init__(self, txt="GMaterialLib", offset=1, translate_=None, reldir=None):
+        """
+        :param reldir: when starts with "/" an absolute path is assumed
+        """
         npath=self.Path(txt, reldir)
         names = map(lambda _:_[:-1],file(npath).readlines())
         if translate_ is not None:

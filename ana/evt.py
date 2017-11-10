@@ -225,10 +225,23 @@ class Evt(object):
 
 
     def init_types(self):
+        """
+        With test NCSG geometry get the GItemList/GMaterialLib.txt
+        from the TestCSGPath dir 
+        """
         log.debug("init_types")
         self.hismask = HisMask()
         self.histype = HisType()
-        self.mattype = MatType()
+
+        testcsgpath = self.metadata.TestCSGPath
+        if testcsgpath is not None:
+            mattype = MatType(reldir=os.path.join(testcsgpath,"GItemList"))
+        else:
+            mattype = MatType()
+        pass
+        self.mattype = mattype
+
+
         log.debug("init_types DONE")
 
     def _get_flvtype(self):

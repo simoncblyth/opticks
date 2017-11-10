@@ -7,9 +7,6 @@ tboolean-media-okg4
     simon:cfg4 blyth$ tboolean-;tboolean-media --okg4
 
 
-ISSUE : material name bookkeeping 
------------------------------------
-
 
 
 
@@ -40,6 +37,7 @@ Observations
 
 ::
 
+    simon:cfg4 blyth$ tboolean-;tboolean-media --okg4
     simon:cfg4 blyth$ tboolean-;tboolean-media-p
     args: /Users/blyth/opticks/ana/tboolean.py --det tboolean-media --tag 1
     ok.smry 1 
@@ -78,6 +76,8 @@ Observations
     {u'nx': u'20', u'emitconfig': u'photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1', u'emit': -1, u'poly': u'MC'}
     [2017-11-10 12:37:08,218] p3674 {/Users/blyth/opticks/ana/tboolean.py:25} INFO - early exit as non-interactive
     simon:cfg4 blyth$ 
+
+
 
 
 

@@ -149,6 +149,7 @@ class GGEO_API GPropertyLib {
         std::string getAbbr(const char* key);
     public:
        void saveToCache(NPYBase* buffer, const char* suffix); // for extra buffers
+       void saveNames(const char* dir=NULL) const ; // defaults to IDPATH
        void saveToCache();
        void loadFromCache();
     public:

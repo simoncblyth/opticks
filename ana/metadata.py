@@ -143,6 +143,8 @@ class Metadata(object):
         return "%60s %32s %32s %7d %10.4f %s " % (self.path, self.photonData, self.recordData, self.numPhotons, self.propagate, self.mode )
 
 
+
+
     def _get_csgbnd(self):
         csgtxt = os.path.join(self.TestCSGPath, "csg.txt")
         csgbnd = splitlines_(csgtxt) if os.path.exists(csgtxt) else []

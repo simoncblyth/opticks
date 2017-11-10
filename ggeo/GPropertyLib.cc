@@ -130,9 +130,6 @@ const char* GPropertyLib::getComponentType()
     return m_comptype ; 
 }
 
-
-
-
 GPropertyLib::~GPropertyLib()
 {
 }
@@ -142,20 +139,10 @@ GDomain<float>* GPropertyLib::getStandardDomain()
     return m_standard_domain ;
 }
 
-
 void GPropertyLib::setStandardDomain(GDomain<float>* domain)
 {
     m_standard_domain = domain ;
 }
-
-
-
-
-
-
-
-
-
 
 void  GPropertyLib::dumpDomain(const char* msg)
 {
@@ -187,13 +174,6 @@ void  GPropertyLib::dumpDomain(const char* msg)
 }
 
 
-/*
-inline void GPropertyLib::setOrder(std::map<std::string, unsigned int>& order)
-{
-    m_order = order ; 
-}
-*/
-
 GPropertyMap<float>* GPropertyLib::getDefaults()
 {
     return m_defaults ;
@@ -217,8 +197,6 @@ NMeta* GPropertyLib::getMeta() const
 {
     return m_meta ; 
 }
-
-
 
 
 GItemList* GPropertyLib::getNames() const 
@@ -356,9 +334,6 @@ std::string GPropertyLib::getPreferenceDir()
 }
 
 
-
-
-
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
@@ -467,13 +442,20 @@ void GPropertyLib::saveToCache()
 
     if(m_names)
     {
-        m_names->save(m_resource->getIdPath());
+        saveNames(NULL);
     }
 
 
     LOG(trace) << "GPropertyLib::saveToCache DONE" ; 
 
 }
+
+void GPropertyLib::saveNames(const char* dir) const 
+{
+    assert(m_names); 
+    m_names->save( dir ? dir : m_resource->getIdPath() );
+}
+
 
 void GPropertyLib::loadFromCache()
 {

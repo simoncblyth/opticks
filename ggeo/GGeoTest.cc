@@ -90,6 +90,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_lodconfig(ok->getLODConfig()),
     m_lod(ok->getLOD()),
     m_analytic(m_config->getAnalytic()),
+    m_csgpath(m_config->getCSGPath()),
     m_test(true),
     m_basis(basis),
     m_pmtlib(basis->getPmtLib()),
@@ -119,8 +120,7 @@ void GGeoTest::init()
 {
     assert(m_basis); 
 
-    const char* csgpath = m_config->getCsgPath();
-    if(csgpath) assert(m_analytic == true);
+    if(m_csgpath) assert(m_analytic == true);
 
     GMergedMesh* tmm_ = initCreate();
 
@@ -138,18 +138,27 @@ void GGeoTest::init()
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
     // tmm->save("$TMP", "GMergedMesh", "GGeoTest_init") ;
+
+
+    if(m_csgpath)
+    {
+        // see notes/issues/material-names-wrong-python-side.rst
+        LOG(info) << "Save mlib/slib names to csgpath " << m_csgpath ;  
+        m_mlib->saveNames(m_csgpath);
+        m_slib->saveNames(m_csgpath);
+    }
+
 }
 
 
 GMergedMesh* GGeoTest::initCreate()
 {
-    const char* csgpath = m_config->getCsgPath();
     const char* mode = m_config->getMode();
     unsigned nelem = m_config->getNumElements();
 
     assert( mode );
 
-    if(csgpath == NULL)
+    if(m_csgpath == NULL)
     { 
         if(nelem == 0 )
         {
@@ -170,13 +179,13 @@ GMergedMesh* GGeoTest::initCreate()
 
     if(m_config->isNCSG())
     {
-        assert( csgpath && strlen(csgpath) > 3 && "unreasonable csgpath strlen");  
-        loadCSG(csgpath, solids);
+        assert( m_csgpath && strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");  
+        loadCSG( m_csgpath, solids);
         assert( m_csglist );
 
         tmm = combineSolids(solids, NULL);
 
-        m_resource->setTestCSGPath(csgpath); // take note of path, for inclusion in event metadata
+        m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
     }
     else if(m_config->isBoxInBox()) 
     {

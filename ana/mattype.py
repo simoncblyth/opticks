@@ -94,8 +94,8 @@ class MatType(SeqType):
          'Dw': 'DeadWater',
 
     """
-    def __init__(self):
-        material_names = ItemList("GMaterialLib")
+    def __init__(self, reldir=None):
+        material_names = ItemList("GMaterialLib", reldir=reldir)
         material_abbrev = Abbrev("$OPTICKS_DETECTOR_DIR/GMaterialLib/abbrev.json")
         SeqType.__init__(self, material_names, material_abbrev)
 

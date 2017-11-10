@@ -129,7 +129,7 @@ const char* GGeoTestConfig::getPmtPath()
 {
     return m_pmtpath ; 
 }
-const char* GGeoTestConfig::getCsgPath()
+const char* GGeoTestConfig::getCSGPath()
 {
     return m_csgpath ; 
 }
