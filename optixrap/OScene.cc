@@ -7,14 +7,10 @@
 #include "OpticksEvent.hh"
 #include "OpticksCfg.hh"
 
-//#include "GGeo.hh"
-#include "GGeoBase.hh"
-
-// opticksgeo-
+// okg-
 #include "OpticksHub.hh"
 
-
-// optixrap-
+// oxrap-
 #include "OContext.hh"
 #include "OFunc.hh"
 #include "OColors.hh"
@@ -69,9 +65,6 @@ OScene::OScene(OpticksHub* hub)
       m_hub(hub),
       m_ok(hub->getOpticks()),
       m_cfg(m_ok->getCfg()),
-      m_ggeo(NULL),  // defer to avoid order brittleness
-      m_geolib(NULL),
-
       m_ocontext(NULL),
       m_osolve(NULL),
       m_ocolors(NULL),
@@ -122,23 +115,9 @@ void OScene::init()
         m_osolve->convert();
     }
 
-
-    //m_ggeo = m_hub->getGGeo();
-    m_ggeo = m_hub->getGGeoBase();
-
     LOG(info) << "OScene::init"
-              << " ggeobase identifier : " << m_ggeo->getIdentifier()
+              << " ggeobase identifier : " << m_hub->getIdentifier()
               ;
-
-
-    m_geolib = m_ggeo->getGeoLib();
-
-    if(m_ggeo == NULL)
-    {
-        LOG(warning) << "OScene::init EARLY EXIT AS no geometry " ; 
-        return ; 
-    }
-
 
     LOG(debug) << "OScene::init (OColors)" ;
     m_ocolors = new OColors(context, m_ok->getColors() );
@@ -147,18 +126,18 @@ void OScene::init()
     // formerly did OBndLib here, too soon
 
     LOG(debug) << "OScene::init (OSourceLib)" ;
-    m_osrc = new OSourceLib(context, m_ggeo->getSourceLib());
+    m_osrc = new OSourceLib(context, m_hub->getSourceLib());
     m_osrc->convert();
 
 
     const char* slice = "0:1" ;
     LOG(debug) << "OScene::init (OScintillatorLib) slice " << slice  ;
-    m_oscin = new OScintillatorLib(context, m_ggeo->getScintillatorLib());
+    m_oscin = new OScintillatorLib(context, m_hub->getScintillatorLib());
     m_oscin->convert(slice);
 
 
     LOG(debug) << "OScene::init (OGeo)" ;
-    m_ogeo = new OGeo(m_ocontext, m_ok, m_geolib, builder, traverser);
+    m_ogeo = new OGeo(m_ocontext, m_ok, m_hub->getGeoLib(), builder, traverser);
     LOG(debug) << "OScene::init (OGeo) -> setTop" ;
     m_ogeo->setTop(m_ocontext->getTop());
     LOG(debug) << "OScene::init (OGeo) -> convert" ;
@@ -167,7 +146,7 @@ void OScene::init()
 
 
     LOG(debug) << "OScene::init (OBndLib)" ;
-    m_olib = new OBndLib(context,m_ggeo->getBndLib());
+    m_olib = new OBndLib(context,m_hub->getBndLib());
     m_olib->convert();
     // this creates the BndLib dynamic buffers, which needs to be after OGeo
     // as that may add boundaries when using analytic geometry

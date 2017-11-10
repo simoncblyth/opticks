@@ -165,8 +165,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
               ;
 
     NCSG* universe = m_geotest->getUniverse();
-    //NCSG* universe = NULL ;
-
+    assert(universe);
     G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ; 
     G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ; 
     

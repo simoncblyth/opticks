@@ -18,8 +18,9 @@ namespace fs = boost::filesystem;
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 #include "TorchStepNPY.hpp"
-#include "NSensorList.hpp"
+
 #include "NSensor.hpp"
+
 #include "NLookup.hpp"
 #include "NSlice.hpp"
 #include "NScene.hpp"
@@ -96,12 +97,10 @@ GGeo::GGeo(Opticks* opticks)
    m_bndlib(NULL),
    m_materiallib(NULL),
    m_surfacelib(NULL),
-   //m_surlib(NULL),
    m_scintillatorlib(NULL),
    m_sourcelib(NULL),
    m_pmtlib(NULL),
    m_colorizer(NULL),
-   m_sensor_list(NULL),
    m_low(NULL),
    m_high(NULL),
    m_sensitive_count(0),
@@ -278,10 +277,6 @@ GColorizer* GGeo::getColorizer()
 {
     return m_colorizer ; 
 }
-NSensorList* GGeo::getSensorList()
-{
-    return m_sensor_list ; 
-}
 
 
 gfloat3* GGeo::getLow()
@@ -382,17 +377,10 @@ void GGeo::init()
 
    m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
  
-   m_sensor_list = new NSensorList();
-
-   m_sensor_list->load( idpath, "idmap");
-
-
-   LOG(debug) << "GGeo::init loadSensorList " << m_sensor_list->description() ; 
 
    if(m_loaded) return ; 
 
    //////////////  below only when operating pre-cache //////////////////////////
-
 
    m_bndlib = new GBndLib(m_ok);
    m_materiallib = new GMaterialLib(m_ok);

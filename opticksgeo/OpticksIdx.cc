@@ -12,7 +12,6 @@
 #include "Types.hpp"
 #include "Timer.hpp"
 
-#include "GGeo.hh"
 #include "GItemIndex.hh"
 
 #include "Opticks.hh"
@@ -126,15 +125,7 @@ void OpticksIdx::indexEvtOld()
         pho->setTypes(types);
         pho->setTyp(typ);
         evt->setPhotonsNPY(pho);
-
-        GGeo* ggeo = m_hub->getGGeo();
-
-        if(!ggeo) LOG(fatal) << "OpticksIdx::indexEvtOld" 
-                             << " MUST OpticksHub::loadGeometry before OpticksIdx::indexEvtOld "
-                             ;
-
-        assert(ggeo);
-        HitsNPY* hit = new HitsNPY(ox, ggeo->getSensorList());
+        HitsNPY* hit = new HitsNPY(ox, m_ok->getSensorList());
         evt->setHitsNPY(hit);
     }
 

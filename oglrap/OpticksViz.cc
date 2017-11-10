@@ -346,7 +346,7 @@ void OpticksViz::prepareGUI()
         m_scene->setPhotons(m_photons);
     }
 
-    m_gui = new GUI(m_hub->getGGeo()) ;
+    m_gui = new GUI(m_hub) ;
     m_gui->setScene(m_scene);
     m_gui->setPhotons(m_photons);
     m_gui->setComposition(m_hub->getComposition());

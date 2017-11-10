@@ -1896,22 +1896,46 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-media = "Pyrex"
-#media = "Vacuum"
-boundary = "Rock//perfectAbsorbSurface/%s" % media
+omat = "Rock"
+osur = ""
+#isur = "perfectAbsorbSurface"
+isur = ""
+imat = "Pyrex"
 
-container = CSG("box", param=[0,0,0,400], boundary=boundary, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
-
-CSG.Serialize([container], args.csgpath )
-
-
-"""
-
-* cannot use a surface on the world with G4, as no pv to bordersurf to 
-"""
+box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
+CSG.Serialize( [box], args.csgpath )
 
 EOP
 }
+
+
+tboolean-media-notes(){ cat << EON
+
+${FUNCNAME/-notes}
+=======================
+
+NCSG Box with boundary : Rock//perfectAbsorbSurface/Pyrex
+
+* initially cfg4 translation of this failed, 
+  as outer material Rock required containing Rock volume in G4. 
+  So introduced G4 only universe wrapper NCSGList::createUniverse  
+  to reconcile the boundary based Opticks geometry 
+  with the volume based G4 one.
+
+* it was also found that cannot have a bordersurface at worldvolume edge, 
+  as needs pv1/pv2 pointers : again the universe wrapper helps with 
+  this as what appears to be the outer volume at NCSG level actually 
+  has a wrapper volume added. 
+
+* see notes/issues/surface_review.rst while in this context improved 
+  the handling of surfaces with test geometries
+
+EON
+}
+
+
+
+
 
 
 
@@ -1949,6 +1973,17 @@ sphere = CSG("sphere",    param=[0,0,0,10.0] )
 CSG.Serialize([outer, container, sphere], args.csgpath )
 
 EOP
+}
+tboolean-sphere-notes(){ cat << EON
+
+${FUNCNAME/-notes}
+=======================
+
+
+
+
+
+EON
 }
 
 

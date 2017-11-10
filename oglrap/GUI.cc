@@ -12,7 +12,7 @@
 #include "NState.hpp"
 #include "GLMFormat.hpp"
 
-// opticks-
+// okc-
 #include "Opticks.hh"
 #include "Clipper.hh"
 #include "Camera.hh"
@@ -26,10 +26,14 @@
 #include "OpticksAttrSeq.hh"
 
 // ggeo-
-#include "GGeo.hh"
 #include "GSurfaceLib.hh"
 #include "GMaterialLib.hh"
 #include "GItemIndex.hh"
+
+// okg-
+#include "OpticksHub.hh"
+
+
 
 // oglrap-
 #include "Interactor.hh"
@@ -66,9 +70,9 @@ void GUI::setScene(Scene* scene)
 
 
 
-GUI::GUI(GGeo* ggeo) 
+GUI::GUI(OpticksHub* hub) 
    :
-   m_ggeo(ggeo),
+   m_hub(hub),
    m_show_test_window(false),
    m_bg_alpha(0.65f),
    m_scrub_alpha(0.01f),
@@ -644,14 +648,14 @@ void GUI::show(bool* opened)
 
 
 
-    OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
+    OpticksAttrSeq* qmat = m_hub->getMaterialLib()->getAttrNames();
     if(qmat)
     {
         ImGui::Spacing();
         gui_item_index(qmat);
     } 
 
-    OpticksAttrSeq* qsur = m_ggeo->getSurfaceLib()->getAttrNames();
+    OpticksAttrSeq* qsur = m_hub->getSurfaceLib()->getAttrNames();
     if(qsur)
     {
         ImGui::Spacing();
@@ -659,7 +663,7 @@ void GUI::show(bool* opened)
     } 
 
     //OpticksAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
-    OpticksAttrSeq* qflg = m_ggeo->getFlagNames();
+    OpticksAttrSeq* qflg = m_hub->getFlagNames();
     if(qflg)
     {
         ImGui::Spacing();

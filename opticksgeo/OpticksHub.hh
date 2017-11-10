@@ -15,22 +15,24 @@ class OpticksAttrSeq ;
 class OpticksEvent ; 
 
 class GenstepNPY  ; 
+
 class GGeoBase ; 
 class GScene ; 
 class GGeo ;
+class GGeoTest ;
+
 class GPmt ; 
+class GMergedMesh ;
+class GItemIndex ; 
  
 class GGeoLib ;
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
-
-//class GSurLib ; 
-
+class GSourceLib ; 
 class GScintillatorLib ; 
-class GMergedMesh ;
 class GNodeLib ;
-class GGeoTest ;
+class GPmtLib ;
 
 class Composition ; 
 class Bookmarks ; 
@@ -40,7 +42,6 @@ class OpticksGun ;
 class OpticksRun ; 
 class OpticksAim ; 
 
-class GItemIndex ; 
 
 class NCSG ; 
 class NState ; 
@@ -124,8 +125,6 @@ class OKGEO_API OpticksHub {
        bool         hasOpt(const char* name);
        bool         isCompute();
    public:
-       GMergedMesh* getMergedMesh( unsigned index );
-       GNodeLib*    getNodeLib() ; 
        void         dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpSolids" );  
    public:
        std::string    getG4GunConfig();
@@ -167,22 +166,30 @@ class OKGEO_API OpticksHub {
        GGeoBase*            getGGeoBasePrimary() const ;  // either Ana or Tri 
        GGeoBase*            getGGeoBaseTest() const ;    // downcast of GGeoTest
    private:
-       GGeo*                getGGeo();
+       //GGeo*                getGGeo();
    private:
        friend class CTestDetector ; 
        GGeoTest*            getGGeoTest();  
    public:
        NCSG*                findEmitter() const ; 
-   private:
-       GGeoLib*             getGeoLib();   // direct from GGeo
+
    public:
-       GMaterialLib*        getMaterialLib();
-       GSurfaceLib*         getSurfaceLib();
-       GBndLib*             getBndLib();
+       // hmm hub could be a GGeoBase itself
+       // all the below libs etc are dispensed from one of 3 possible GGeoBase, 
+       // namely GGeo/GScene/GGeoTest 
+       const char*          getIdentifier(); 
+       GMergedMesh*         getMergedMesh( unsigned index );
+
+       GGeoLib*             getGeoLib();       //  meshes :   until very recently direct from GGeo
+       GMaterialLib*        getMaterialLib();  //  materials
+       GSurfaceLib*         getSurfaceLib();   //  surfaces
+       GBndLib*             getBndLib();       //  boundaries
+
+       GPmtLib*             getPmtLib();       //   partlist? analytic PMT   
        GScintillatorLib*    getScintillatorLib();
-       //GSurLib*             getSurLib();   //  getter triggers creation in GGeo::createSurLib from mesh0
-   private:
-       //GSurLib*             createSurLib(GGeoBase* ggb);
+       GSourceLib*          getSourceLib();
+       GNodeLib*            getNodeLib() ; 
+
    public:
        Opticks*             getOpticks();
        OpticksCfg<Opticks>* getCfg();
@@ -204,6 +211,7 @@ class OKGEO_API OpticksHub {
    public:
        void configureState(NConfigurable* scene);
        void cleanup();
+
    private:
        SLog*            m_log ; 
        Opticks*         m_ok ; 
@@ -211,6 +219,7 @@ class OKGEO_API OpticksHub {
        OpticksRun*      m_run ; 
        bool             m_immediate ; 
        OpticksGeometry* m_geometry ; 
+
        GGeo*            m_ggeo ;  
        GScene*          m_gscene ;  
        Composition*     m_composition ; 
@@ -232,7 +241,6 @@ class OKGEO_API OpticksHub {
        OpticksAim*          m_aim ;
  
        GGeoTest*            m_geotest ; 
-       //GSurLib*             m_gsurlib ;  
 
 
 

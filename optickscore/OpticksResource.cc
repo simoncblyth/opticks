@@ -12,6 +12,7 @@ namespace fs = boost::filesystem;
 // sysrap
 #include "SDigest.hh"
 #include "SSys.hh"
+
 // brap-
 #include "BFile.hh"
 #include "BStr.hh"
@@ -20,6 +21,7 @@ namespace fs = boost::filesystem;
 #include "BEnv.hh"
 
 // npy-
+#include "NSensorList.hpp"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 #include "Typ.hpp"
@@ -1073,12 +1075,6 @@ std::map<unsigned int, std::string> OpticksResource::getFlagNamesMap()
 }
 
 
-
-
-
-
-
-
 Typ* OpticksResource::getTyp()
 {
     if(m_typ == NULL)
@@ -1109,4 +1105,14 @@ void OpticksResource::saveTypes(const char* dir)
 }
 
 
-
+NSensorList* OpticksResource::getSensorList()
+{
+    if(!m_sensor_list)
+    {
+        const char* idpath = getIdPath();
+        m_sensor_list = new NSensorList();
+        m_sensor_list->load( idpath, "idmap");
+        LOG(info) << "OpticksResource::getSensorList " << m_sensor_list->description() ; 
+    }
+    return m_sensor_list ; 
+}

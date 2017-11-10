@@ -1,9 +1,5 @@
 #pragma once
 
-// NB GGeo is a dumb substrate from which the geometry model is created,
-//    eg by AssimpGGeo::convert 
-
-
 #include <map>
 #include <vector>
 #include <unordered_set>
@@ -13,7 +9,7 @@
 
 // npy-
 #include "NConfigurable.hpp"
-class NSensorList ; 
+
 class NLookup ; 
 class TorchStepNPY ; 
 
@@ -49,16 +45,13 @@ class GScintillatorLib ;
 class GSourceLib ;
 class GPmtLib ; 
 
-//class GSurLib ; 
 
 class GTreeCheck ;
-//class GTreePresent ;
 class GColorizer ; 
 
 class GItemIndex ; 
 class GItemList ; 
 class GMergedMesh ;
-
 
 // GLTF handling 
 class NScene ; 
@@ -68,6 +61,18 @@ class GScene ;
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
+
+/*
+GGeo
+=====
+
+In the beginning GGeo was intended to be  a dumb substrate 
+from which the geometry model is created eg by AssimpGGeo::convert 
+However it grew to be somewhat monolithic.
+
+When possible break pieces off the monolith.
+
+*/
 
 class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
@@ -226,11 +231,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties");
         void dumpRawSkinSurface(const char* name=NULL);
         void dumpRawBorderSurface(const char* name=NULL);
-
-    public:
-        // load idmap, traverse GNode tree calling GSolid::setSensor nodes with associated sensor identifier
-        NSensorList*  getSensorList();
-
     public:
         void traverse(const char* msg="GGeo::traverse");
     private:
@@ -368,8 +368,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GPmtLib*                      m_pmtlib ; 
 
         GColorizer*                   m_colorizer ; 
-
-        NSensorList*                  m_sensor_list ; 
 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 

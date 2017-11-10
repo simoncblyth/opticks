@@ -15,6 +15,7 @@ template <typename> class OpticksCfg ;
 class BDynamicDefine ; 
 class TorchStepNPY ; 
 class NState ;
+class NSensorList ;
 
 struct NSlice ;
 struct NSceneConfig ; 
@@ -138,6 +139,7 @@ class OKCORE_API Opticks {
        const char* getDAEPath();
        const char* getGDMLPath();
 
+       NSensorList* getSensorList();
        const char* getIdPath();
        const char* getIdFold();
        const char* getDetectorBase();

@@ -16,7 +16,6 @@ OpticksIdx
 Wrapper around indexing functionality
 
 
-
 */
 
 

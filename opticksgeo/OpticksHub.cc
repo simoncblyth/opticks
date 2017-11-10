@@ -66,12 +66,78 @@
 #include "PLOG.hh"
 
 
-//
-// **OpticksHub**
-//    Non-viz, hostside intersection of config, geometry and event
-//    
-//    this means is usable from anywhere, so can mop up config
-//
+//  hmm : the hub could be a GGeoBase ?
+
+const char* OpticksHub::getIdentifier()
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getIdentifier();
+}
+GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getMergedMesh(index);
+}
+
+GPmtLib* OpticksHub::getPmtLib()
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getPmtLib();
+}
+GNodeLib* OpticksHub::getNodeLib()
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getNodeLib();
+}
+GMaterialLib* OpticksHub::getMaterialLib()
+{  
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getMaterialLib() ; 
+}
+GSurfaceLib* OpticksHub::getSurfaceLib() 
+{   
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getSurfaceLib() ; 
+}
+
+GBndLib* OpticksHub::getBndLib() 
+{   
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getBndLib() ; 
+}
+GScintillatorLib* OpticksHub::getScintillatorLib() 
+{ 
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getScintillatorLib() ;
+}
+GSourceLib* OpticksHub::getSourceLib() 
+{ 
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getSourceLib() ;
+}
+GGeoLib* OpticksHub::getGeoLib()
+{
+    GGeoBase* ggb = getGGeoBase();  // 3-way
+    return ggb->getGeoLib() ; 
+}
+
+
+
+/*
+GGeo* OpticksHub::getGGeo()
+{
+    assert(0);
+    return m_ggeo ; 
+}
+*/
+
+
+
+
+
+
+
+
 
 OpticksHub::OpticksHub(Opticks* ok) 
    :
@@ -96,8 +162,6 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gun(NULL),
    m_aim(NULL),
    m_geotest(NULL)
-   //m_gsurlib(NULL)
-
 {
    init();
    (*m_log)("DONE");
@@ -299,17 +363,20 @@ void OpticksHub::loadGeometry()
 
     LOG(info) << "OpticksHub::loadGeometry START" ; 
 
+
     m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
     m_geometry->loadGeometry();   
+
+    m_ggeo = m_geometry->getGGeo();
+
+    m_gscene = m_ggeo->getScene();
 
 
     //   Lookup A and B are now set ...
     //      A : by OpticksHub::configureLookupA (ChromaMaterialMap.json)
     //      B : on GGeo loading in GGeo::setupLookup
 
-    m_ggeo = m_geometry->getGGeo();
-    m_gscene = m_ggeo->getScene();
 
     if(m_ok->isTest())
     {
@@ -603,17 +670,6 @@ OpticksCfg<Opticks>* OpticksHub::getCfg()
 
 
 
-GGeo* OpticksHub::getGGeo()
-{
-    return m_ggeo ; 
-}
-GGeoLib* OpticksHub::getGeoLib()
-{
-    return m_ggeo->getGeoLib() ; 
-}
-
-
-
 
 
 GGeoBase* OpticksHub::getGGeoBaseAna() const 
@@ -650,57 +706,9 @@ GGeoBase* OpticksHub::getGGeoBase() const
 
 
 
-GMergedMesh* OpticksHub::getMergedMesh( unsigned index )
-{
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getMergedMesh(index);
-}
-GNodeLib* OpticksHub::getNodeLib()
-{
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getNodeLib();
-}
-GMaterialLib* OpticksHub::getMaterialLib()
-{  
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getMaterialLib() ; 
-}
-GSurfaceLib* OpticksHub::getSurfaceLib() 
-{   
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getSurfaceLib() ; 
-}
-GBndLib* OpticksHub::getBndLib() 
-{   
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getBndLib() ; 
-}
-GScintillatorLib* OpticksHub::getScintillatorLib() 
-{ 
-    GGeoBase* ggb = getGGeoBase();  // 3-way
-    return ggb->getScintillatorLib() ;
-}
 
 
 
-/*
-GSurLib* OpticksHub::createSurLib(GGeoBase* ggb)  // KILL
-{
-    GSurLib* gsl = new GSurLib(m_ok, ggb ); 
-    return gsl ; 
-}
-
-GSurLib* OpticksHub::getSurLib() // KILL
-{ 
-    if( m_gsurlib == NULL )
-    {
-        // this method motivating making GGeoTest into a GGeoBase : ie standard geo provider
-        GGeoBase* ggb = getGGeoBase();    // three-way choice 
-        m_gsurlib = createSurLib(ggb) ;
-    }
-    return m_gsurlib ; 
-}
-*/
 
 
 

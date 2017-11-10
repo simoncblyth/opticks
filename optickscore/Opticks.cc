@@ -1526,6 +1526,9 @@ std::map<unsigned int, std::string> Opticks::getFlagNamesMap()
 
 Types*          Opticks::getTypes() {     return m_resource->getTypes(); }
 Typ*            Opticks::getTyp() {       return m_resource->getTyp(); }
+
+
+NSensorList*    Opticks::getSensorList(){ return m_resource ? m_resource->getSensorList() : NULL ; }
 const char*     Opticks::getIdPath() {    return m_resource ? m_resource->getIdPath() : NULL ; }
 const char*     Opticks::getIdFold() {    return m_resource ? m_resource->getIdFold() : NULL ; }
 const char*     Opticks::getDetectorBase() {    return m_resource ? m_resource->getDetectorBase() : NULL ; }

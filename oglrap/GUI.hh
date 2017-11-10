@@ -6,7 +6,7 @@
 #include <string>
 #include <vector>
 
-class GGeo ; 
+class OpticksHub ; 
 class GItemIndex ; 
 class OpticksAttrSeq ; 
 
@@ -37,7 +37,7 @@ class OGLRAP_API GUI {
        //
        typedef std::vector<std::pair<int, std::string> > Choices_t ;
 
-       GUI(GGeo* ggeo);
+       GUI(OpticksHub* hub);
        virtual ~GUI();
 
        void setScene(Scene* scene);
@@ -95,7 +95,7 @@ class OGLRAP_API GUI {
        //void choose( std::vector<std::pair<int, std::string> >& choices, std::vector<int>& selection );
 
   private:
-       GGeo*         m_ggeo ; 
+       OpticksHub*   m_hub ; 
        bool          m_show_test_window ;
        float         m_bg_alpha ; 
        float         m_scrub_alpha ; 

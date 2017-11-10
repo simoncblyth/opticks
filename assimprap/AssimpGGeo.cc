@@ -67,6 +67,8 @@
 
 AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection, OpticksQuery* query) 
    : 
+   m_ok(ggeo->getOpticks()),
+   m_sensor_list(m_ok->getSensorList()),  
    m_ggeo(ggeo),
    m_tree(tree),
    m_selection(selection),
@@ -118,7 +120,7 @@ void AssimpGGeo::init()
 
 
 
-int AssimpGGeo::load(GGeo* ggeo)
+int AssimpGGeo::load(GGeo* ggeo) // static
 {
     // THIS IS THE ENTRY POINT SET IN OpticksGeometry::loadGeometryBase
 
@@ -623,14 +625,13 @@ void AssimpGGeo::convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int de
  
     GMaterial* mt = gg->getMaterial(mti);
     
-    NSensorList* sens = gg->getSensorList();  
     /*
     NSensor* sensor0 = sens->getSensor( nodeIndex ); 
     NSensor* sensor1 = sens->findSensorForNode( nodeIndex ); 
     assert(sensor0 == sensor1);
     // these do not match
     */
-    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
+    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
 
     if(sensor && mt == gg->getCathode())
     {
@@ -1000,8 +1001,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
 
-    NSensorList* sens = gg->getSensorList();  
-    NSensor* sensor = sens->findSensorForNode( nodeIndex ); 
+    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
     solid->setSensor( sensor );  
 
     GBndLib* blib = gg->getBndLib();  

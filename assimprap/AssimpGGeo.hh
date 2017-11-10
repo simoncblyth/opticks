@@ -1,5 +1,10 @@
 #pragma once
 
+
+class NSensorList ; 
+class Opticks ; 
+
+
 class AssimpTree ; 
 class AssimpSelection ; 
 class AssimpNode ; 
@@ -106,6 +111,8 @@ private:
     void convertSensorsVisit(GGeo* gg, AssimpNode* node, unsigned int depth);
 
 private:
+    Opticks*         m_ok ; 
+    NSensorList*     m_sensor_list ;  
     GGeo*            m_ggeo ;
     AssimpTree*      m_tree ; 
     AssimpSelection* m_selection ;

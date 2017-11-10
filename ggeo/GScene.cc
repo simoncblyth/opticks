@@ -79,7 +79,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_query(ok->getQuery()),
     m_ggeo(ggeo),
 
-    m_sensor_list(ggeo->getSensorList()),
+    m_sensor_list(ok->getSensorList()),
     m_tri_geolib(ggeo->getGeoLib()),
     m_tri_mm0(m_tri_geolib->getMergedMesh(0)),
 

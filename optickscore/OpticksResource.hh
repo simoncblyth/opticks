@@ -4,6 +4,8 @@
 #include <vector>
 #include <string>
 
+class NSensorList ; 
+
 class Opticks ; 
 class OpticksQuery ; 
 class OpticksColors ; 
@@ -133,6 +135,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
 
        Types*         getTypes();
        Typ*           getTyp();
+       NSensorList*   getSensorList();
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
@@ -194,7 +197,8 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_example_matnames  ;
        const char* m_sensor_surface  ;
    private:
-       const char* m_testcsgpath ;
+       const char*  m_testcsgpath ;
+       NSensorList* m_sensor_list ; 
        
    private:
        std::map<std::string, std::string> m_metadata ;  

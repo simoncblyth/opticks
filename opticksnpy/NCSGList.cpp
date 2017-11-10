@@ -129,23 +129,21 @@ void NCSGList::load()
     std::reverse( m_trees.begin(), m_trees.end() );
 
 
-    //m_universe = createUniverse(1., 1.);
-    //    dont do by default, 
-    //    NCSGLoadTest and NScanTest 
-   //        when reading /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt
-    //       takes exception to the content of "extras/248" not being a bnd
 }
 
        
 NCSG* NCSGList::getUniverse() 
 {
+   /*
+    No longer create universe by default, 
+    as with full geomrtries NCSGLoadTest and NScanTest 
+    when reading /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/csg.txt
+    takes exception to the content of "extras/248" not being a bnd
+    */
+
     if(m_universe == NULL) m_universe = createUniverse(1., 1.); 
     return m_universe ; 
 }
-
-
-
- 
 
 NCSG* NCSGList::createUniverse(float scale, float delta) const 
 {
