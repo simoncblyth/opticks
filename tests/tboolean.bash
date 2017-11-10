@@ -331,6 +331,8 @@ tboolean-ana-(){
     $exe --torch  --tag $(tboolean-tag) --cat $testname  --dbgnode 0  --dbgseqhis $dbgseqhis $* 
 }
 
+# TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
+tboolean-ipy-(){ ipython  -i -- tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
@@ -1473,7 +1475,7 @@ EOP
 
 
 
-tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+tboolean-rip(){ local fnpy="tboolean-${1:-sc}--" ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython -i $py ; }
 # jump into ipython session with the python streamed from a bash function
 
 tboolean-sc-loadtest(){ ${FUNCNAME/-loadtest}- ; NCSGLoadTest $TMP/${FUNCNAME/-loadtest}--/1 ; }
@@ -1881,6 +1883,7 @@ EOP
 
 
 
+tboolean-media-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-media-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-media-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-media-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf ; } 

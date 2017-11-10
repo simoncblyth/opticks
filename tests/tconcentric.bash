@@ -175,8 +175,8 @@ tconcentric-testconfig-()
 
 tconcentric-args(){  echo  --tag $(tconcentric-tag) --det $(tconcentric-det) --src $(tconcentric-src) ; }
 tconcentric-py(){    tconcentric.py  $(tconcentric-args) $* ; } 
-tconcentric-i(){     ipython --profile=g4opticks -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
-tconcentric-d(){     ipython --profile=g4opticks -i $(which tconcentric_distrib.py) --  $(tconcentric-args) $* ; } 
+tconcentric-i(){     ipython -i $(which tconcentric.py) --  $(tconcentric-args) $* ; } 
+tconcentric-d(){     ipython -i $(which tconcentric_distrib.py) --  $(tconcentric-args) $* ; } 
 
 tconcentric-rehist(){ tconcentric-d --noplot --rehist --sel 0:100  ; }
 

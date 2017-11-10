@@ -53,7 +53,7 @@ tg4gun-src(){ echo g4gun ; }
 
 
 tg4gun-args() {        echo  --tag $(tg4gun-tag) --det $(tg4gun-det) --src $(tg4gun-src) ; }
-tg4gun-i(){     ipython --profile=g4opticks -i $(which g4gun.py) --  $(tg4gun-args) $* ; }
+tg4gun-i(){     ipython -i $(which g4gun.py) --  $(tg4gun-args) $* ; }
 tg4gun--()
 {
     type $FUNCNAME

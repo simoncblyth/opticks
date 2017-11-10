@@ -88,7 +88,7 @@ tgltf--()
 }
 
 
-tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython --profile=g4opticks -i $py ; }
+tgltf-rip(){ local fnpy=$1 ; local py=$TMP/$fnpy.py ; $fnpy > $py ;  ipython -i $py ; }
 tgltf-gdml-rip(){ tgltf-rip ${FUNCNAME/-rip}--  ; }  ## jump into ipython running the below script
 tgltf-gdml-q(){  TGLTFPATH=$TMP/tgltf/${FUNCNAME/-q}--.gltf tgltf-- $* ; }
 

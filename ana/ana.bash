@@ -17,7 +17,7 @@ Issue : analysis machinery expects a geocache
     Python 2.7.11 (default, Dec  5 2015, 23:51:51) 
     ...
     IPython profile: g4opticks
-    args: /opt/local/bin/ipython --profile=g4opticks
+    args: /opt/local/bin/ipython 
     Invalid/missing IDPATH envvar /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae 
     An exception has occurred, use %tb to see the full traceback.
 
