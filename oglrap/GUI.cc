@@ -541,7 +541,7 @@ void GUI::show(bool* opened)
 
     ImGuiWindowFlags window_flags = 0;
 
-    if (!ImGui::Begin("GGeoView", opened, ImVec2(550,680), m_bg_alpha, window_flags)) 
+    if (!ImGui::Begin("Opticks", opened, ImVec2(550,680), m_bg_alpha, window_flags)) 
     {
         // Early out if the window is collapsed, as an optimization.
         ImGui::End();
@@ -662,7 +662,6 @@ void GUI::show(bool* opened)
         gui_item_index(qsur);
     } 
 
-    //OpticksAttrSeq* qflg = m_ggeo->getFlags()->getAttrIndex();
     OpticksAttrSeq* qflg = m_hub->getFlagNames();
     if(qflg)
     {

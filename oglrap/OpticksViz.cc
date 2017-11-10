@@ -122,7 +122,6 @@ void OpticksViz::init()
 
         LOG(fatal) << "OpticksViz::init " << renderMode ; 
 
-
         prepareScene(renderMode);      // setup OpenGL shaders and creates OpenGL context (the window)
  
         uploadGeometry();    // Scene::uploadGeometry, hands geometry to the Renderer instances for upload

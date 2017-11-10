@@ -1898,8 +1898,7 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 omat = "Rock"
 osur = ""
-#isur = "perfectAbsorbSurface"
-isur = ""
+isur = "perfectAbsorbSurface"
 imat = "Pyrex"
 
 box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
@@ -1929,6 +1928,60 @@ NCSG Box with boundary : Rock//perfectAbsorbSurface/Pyrex
 
 * see notes/issues/surface_review.rst while in this context improved 
   the handling of surfaces with test geometries
+
+* note that without the perfectAbsorbSurface on the container volume
+  okg4 agreement is lost as it then not possible to reconcile 
+  the volume vs boundary models with Opticks ending with "MI" for
+  photons crossing the cube whereas G4 ends "BT MI"
+
+  * this is a bookeeping technicality which could be hidden, 
+    but is simpler just to like with this : anyhow a real test setup 
+    would use a light tight box.  
+
+
+Lost agreement without the perfectAbsorbSurface::
+
+    tboolean-;tboolean-media --okg4
+    tboolean-;tboolean-media-p 
+    ...
+
+    [2017-11-10 18:19:31,578] p53503 {/Users/blyth/opticks/ana/ab.py:137} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-media)  None 0 
+    A tboolean-media/torch/  1 :  20171110-1812 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/1/fdom.npy 
+    B tboolean-media/torch/ -1 :  20171110-1812 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/-1/fdom.npy 
+    Rock///Pyrex
+    /tmp/blyth/opticks/tboolean-media--
+    .                seqhis_ana  1:tboolean-media   -1:tboolean-media        c2        ab        ba 
+    .                             600000    600000    608996.86/15 = 40599.79  (pval:0.000 prob:1.000)  
+    0000     299543         0        299543.00  TO MI
+    0001          0    298231        298231.00  TO BT MI
+    0002     289569    290483             1.44  TO AB
+    0003          0      5448          5448.00  TO BR BT MI
+    0004       5102      5286             3.26  TO BR AB
+    0005       5233         0          5233.00  TO BR MI
+    0006        152         0           152.00  TO SC MI
+    0007          0       134           134.00  TO SC BT MI
+
+
+Agreement when put back the surface::
+     
+    [2017-11-10 18:26:33,244] p53767 {/Users/blyth/opticks/ana/ab.py:137} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-media)  None 0 
+    A tboolean-media/torch/  1 :  20171110-1825 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/1/fdom.npy 
+    B tboolean-media/torch/ -1 :  20171110-1825 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-media/torch/-1/fdom.npy 
+    Rock//perfectAbsorbSurface/Pyrex
+    /tmp/blyth/opticks/tboolean-media--
+    .                seqhis_ana  1:tboolean-media   -1:tboolean-media        c2        ab        ba 
+    .                             600000    600000         5.62/3 =  1.87  (pval:0.132 prob:0.868)  
+    0000     310059    308930             2.06  TO SA
+    0001     289569    290680             2.13  TO AB
+    0002        290       292             0.01  TO SC SA
+    0003         82        98             1.42  TO SC AB
+    .                             600000    600000         5.62/3 =  1.87  (pval:0.132 prob:0.868)  
+
+
+
+
 
 EON
 }

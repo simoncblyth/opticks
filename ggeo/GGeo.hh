@@ -250,8 +250,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMaterialLib*      getMaterialLib();
         GSurfaceLib*       getSurfaceLib();
 
-        //GSurLib*           getSurLib();
-
         GPmtLib*           getPmtLib(); 
         NLookup*           getLookup(); 
     public:

@@ -12,9 +12,12 @@
 #include "Types.hpp"
 #include "Timer.hpp"
 
+#include "GMaterialLib.hh"
+#include "GBndLib.hh"
 #include "GItemIndex.hh"
 
 #include "Opticks.hh"
+#include "OpticksAttrSeq.hh"
 #include "OpticksIdx.hh"
 #include "OpticksHub.hh"
 #include "OpticksRun.hh"
@@ -65,6 +68,34 @@ GItemIndex* OpticksIdx::makeHistoryItemIndex()
     return seqhis ; 
 }
 
+
+
+
+OpticksAttrSeq* OpticksIdx::getMaterialNames()
+{
+     OpticksAttrSeq* qmat = m_hub->getMaterialLib()->getAttrNames();
+     qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
+     return qmat ; 
+}
+
+OpticksAttrSeq* OpticksIdx::getBoundaryNames()
+{
+     GBndLib* blib = m_hub->getBndLib();
+     OpticksAttrSeq* qbnd = blib->getAttrNames();
+     if(!qbnd->hasSequence())
+     {    
+         blib->close();
+         assert(qbnd->hasSequence());
+     }    
+     qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
+     return qbnd ;
+}
+
+
+
+
+
+
 GItemIndex* OpticksIdx::makeMaterialItemIndex()
 {
     OpticksEvent* evt = getEvent();
@@ -75,7 +106,7 @@ GItemIndex* OpticksIdx::makeMaterialItemIndex()
          return NULL ; 
     }
  
-    OpticksAttrSeq* qmat = m_hub->getMaterialNames();
+    OpticksAttrSeq* qmat = getMaterialNames();
 
     GItemIndex* seqmat = new GItemIndex(seqmat_) ;  
     seqmat->setTitle("Photon Material Sequence Selection");
@@ -95,7 +126,7 @@ GItemIndex* OpticksIdx::makeBoundaryItemIndex()
          return NULL ; 
     }
  
-    OpticksAttrSeq* qbnd = m_hub->getBoundaryNames();
+    OpticksAttrSeq* qbnd = getBoundaryNames();
     //qbnd->dumpTable(bndidx, "OpticksIdx::makeBoundariesItemIndex bndidx"); 
 
     GItemIndex* boundaries = new GItemIndex(bndidx_) ;  
@@ -176,6 +207,22 @@ void OpticksIdx::indexSeqHost()
 }
 
 
+
+
+
+
+
+std::map<unsigned int, std::string> OpticksIdx::getBoundaryNamesMap()
+{
+    OpticksAttrSeq* qbnd = getBoundaryNames() ;
+    return qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
+}
+
+
+
+
+
+
 void OpticksIdx::indexBoundariesHost()
 {
     // Indexing the final signed integer boundary code (p.flags.i.x = prd.boundary) from optixrap-/cu/generate.cu
@@ -190,7 +237,7 @@ void OpticksIdx::indexBoundariesHost()
     {
         // host based indexing of unique material codes, requires downloadEvt to pull back the photon data
         LOG(info) << "OpticksIdx::indexBoundaries host based " ;
-        std::map<unsigned int, std::string> boundary_names = m_hub->getBoundaryNamesMap();
+        std::map<unsigned int, std::string> boundary_names = getBoundaryNamesMap();
         BoundariesNPY* bnd = new BoundariesNPY(dpho);
         bnd->setBoundaryNames(boundary_names);
         bnd->indexBoundaries();

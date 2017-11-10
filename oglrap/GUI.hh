@@ -30,6 +30,24 @@ class Animator ;
 #include "OGLRAP_API_EXPORT.hh"
 #include "OGLRAP_HEAD.hh"
 
+/**
+GUI
+====
+
+Canonical m_gui instance is resident of OpticksViz that 
+is instanciated by OpticksViz::prepareGUI just before the renderloop::
+
+    132 void OpticksViz::visualize()
+    133 {
+    134     prepareGUI();
+    135     renderLoop();
+    136 }
+
+
+
+**/
+
+
 class OGLRAP_API GUI {
   public:
        // TODO: perhaps simplify to (unsigned int nlabel, const char**) 

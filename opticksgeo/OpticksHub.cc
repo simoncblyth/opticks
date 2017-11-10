@@ -642,12 +642,6 @@ NPY<float>* OpticksHub::getInputGensteps() const
     return m_gen->getInputGensteps();
 }
 
-/*
-NPY<float>* OpticksHub::getEmitterGensteps() const 
-{
-    return m_gen->getEmitterGensteps();
-}
-*/
 
 
 bool OpticksHub::hasOpt(const char* name)
@@ -822,18 +816,19 @@ OpticksAttrSeq* OpticksHub::getFlagNames()
 {
     return m_ok->getFlagNames();
 }
-OpticksAttrSeq* OpticksHub::getMaterialNames()
-{
-    return m_geometry->getMaterialNames();
-}
-OpticksAttrSeq* OpticksHub::getBoundaryNames()
-{
-    return m_geometry->getBoundaryNames();
-}
-std::map<unsigned int, std::string> OpticksHub::getBoundaryNamesMap()
-{
-    return m_geometry->getBoundaryNamesMap();
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 void OpticksHub::cleanup()
 {

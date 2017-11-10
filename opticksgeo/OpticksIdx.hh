@@ -7,6 +7,8 @@ class OpticksHub ;
 class OpticksRun ; 
 class OpticksEvent ; 
 
+class OpticksAttrSeq ;
+
 #include "OKGEO_API_EXPORT.hh"
 
 /**
@@ -27,6 +29,13 @@ class OKGEO_API OpticksIdx {
        GItemIndex* makeHistoryItemIndex();
        GItemIndex* makeMaterialItemIndex();
        GItemIndex* makeBoundaryItemIndex();
+
+   public:
+       // used for GUI seqmat and boundaries presentation
+       OpticksAttrSeq*  getMaterialNames();
+       OpticksAttrSeq*  getBoundaryNames();
+       std::map<unsigned int, std::string> getBoundaryNamesMap();
+
    public:
        // hostside indexing 
        void indexEvtOld();

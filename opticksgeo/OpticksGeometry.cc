@@ -92,31 +92,7 @@ void OpticksGeometry::init()
 }
 
 
-OpticksAttrSeq* OpticksGeometry::getMaterialNames()
-{
-     OpticksAttrSeq* qmat = m_ggeo->getMaterialLib()->getAttrNames();
-     qmat->setCtrl(OpticksAttrSeq::SEQUENCE_DEFAULTS);
-     return qmat ; 
-}
 
-OpticksAttrSeq* OpticksGeometry::getBoundaryNames()
-{
-     GBndLib* blib = m_ggeo->getBndLib();
-     OpticksAttrSeq* qbnd = blib->getAttrNames();
-     if(!qbnd->hasSequence())
-     {    
-         blib->close();
-         assert(qbnd->hasSequence());
-     }    
-     qbnd->setCtrl(OpticksAttrSeq::VALUE_DEFAULTS);
-     return qbnd ;
-}
-
-std::map<unsigned int, std::string> OpticksGeometry::getBoundaryNamesMap()
-{
-    OpticksAttrSeq* qbnd = getBoundaryNames() ;
-    return qbnd->getNamesMap(OpticksAttrSeq::ONEBASED) ;
-}
 
 
 

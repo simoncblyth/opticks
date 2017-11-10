@@ -201,9 +201,7 @@ class OKGEO_API OpticksHub {
        Timer*               getTimer(); 
 
        OpticksAttrSeq*      getFlagNames();
-       OpticksAttrSeq*      getMaterialNames();
-       OpticksAttrSeq*      getBoundaryNames();
-       std::map<unsigned int, std::string> getBoundaryNamesMap();
+
        std::string          desc() const ;
    public:
        OpticksRun*          getRun();
