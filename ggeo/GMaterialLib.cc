@@ -745,6 +745,13 @@ GMaterial* GMaterialLib::getMaterial(const char* name)
 }
 */
 
+
+//
+// NB cannot get a live index whilst still adding 
+// as materials are priority order sorted on GPropertyLib::close
+//
+
+
 GMaterial* GMaterialLib::getMaterial(const char* name) const 
 {
     if(!name) return NULL ; 

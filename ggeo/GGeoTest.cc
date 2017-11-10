@@ -227,7 +227,6 @@ void GGeoTest::boundarySetup(GSolid* solid, const char* spec)
     // materials and surfaces must be in place before adding 
     // the boundary spec to get the boundary index 
 
-    reuseMaterials(spec);
     relocateSurfaces(solid, spec);
 
     unsigned boundary = m_bndlib->addBoundary(spec, false);  // only adds if not existing
@@ -276,6 +275,20 @@ void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
 }
 
 
+
+
+void GGeoTest::reuseMaterials(NCSGList* csglist)
+{
+    // reuse all the materials first, to prevent premature GPropLib close
+    unsigned num_tree = csglist->getNumTrees() ;
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        NCSG* tree = csglist->getTree(i) ; 
+        const char* spec = tree->getBoundary();  
+        reuseMaterials(spec);
+    }
+}
+
 void GGeoTest::reuseMaterials(const char* spec)
 {
     BBnd b(spec);
@@ -303,15 +316,18 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     m_csglist = NCSGList::Load(csgpath, verbosity );
     assert( m_csglist );
 
+    reuseMaterials(m_csglist);
+
+
     // NB universe wrapper solid is not needed here at Opticks level, 
     //    it is required over in CTestDetector::makeDetector_NCSG
     //    to make the cfg4 Geant4 translation of the test geometry
 
-    unsigned ntree = m_csglist->getNumTrees() ;
+    unsigned num_tree = m_csglist->getNumTrees() ;
    
     LOG(info) << "GGeoTest::loadCSG START " 
              << " csgpath " << csgpath 
-             << " ntree " << ntree 
+             << " num_tree " << num_tree 
              << " verbosity " << verbosity
              ;
 
@@ -327,7 +343,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     // assuming tree order from outermost to innermost volume 
     GSolid* prior = NULL ; 
 
-    for(unsigned i=0 ; i < ntree ; i++)
+    for(unsigned i=0 ; i < num_tree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 

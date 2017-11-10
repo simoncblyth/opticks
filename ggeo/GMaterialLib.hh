@@ -131,8 +131,12 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        bool hasMaterial(unsigned int index) const ;
        bool hasMaterial(const char* name) const ;
        GMaterial* getMaterial(const char* name) const ; 
+
        // base class provides: unsigned getIndex(const char* shortname)
-       GMaterial* getMaterial(unsigned int i) const ; // zero based index
+       // but that triggers a close 
+
+       GMaterial* getMaterial(unsigned i) const ; // zero based index
+       unsigned  getMaterialIndex(const char* name) const ;    // without triggering a close
    public:
        const char* getNameCheck(unsigned int i);
        unsigned int getNumMaterials() const ;

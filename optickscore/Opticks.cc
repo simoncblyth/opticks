@@ -482,6 +482,11 @@ bool Opticks::isDbgSource() const
 {
     return m_cfg->hasOpt("sourcedbg") ;
 }
+bool Opticks::isDbgClose() const
+{
+    return m_cfg->hasOpt("dbgclose") ;
+}
+
 
 
 

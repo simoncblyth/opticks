@@ -334,6 +334,10 @@ std::string GPropertyLib::getPreferenceDir()
 }
 
 
+
+
+
+
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
     if(!isClosed())
@@ -371,9 +375,16 @@ std::string GPropertyLib::getBufferName(const char* suffix)
 
 void GPropertyLib::close()
 {
+    if(m_ok->isDbgClose())
+    {
+        LOG(fatal) << "[--dbgclose] hari-kari " ; 
+        assert(0);
+    }
+
     LOG(trace) << "GPropertyLib::close" ;
 
     sort();
+
     LOG(trace) << "GPropertyLib::close after sort " ;
 
     // create methods from sub-class specializations

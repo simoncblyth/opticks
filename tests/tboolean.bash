@@ -2008,22 +2008,15 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-#m_object = "GlassSchottF2"
-m_object = "Pyrex"
-#m_object = "MainH2OHale"
-m_media = "Vacuum"
+#material = "GlassSchottF2"
+#material = "MainH2OHale"
+material = "Pyrex"
 
-b_container = "Rock//perfectAbsorbSurface/%s" % m_media
-
-CSG.boundary = "%s///%s" % (m_media, m_object )
 CSG.kwa = dict(poly="IM", resolution="40")
+container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM")  
+sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum///%s" % material , poly="IM" )
 
-
-outer = CSG("box", param=[0,0,0,12.0], boundary="Vacuum///Rock" )
-container = CSG("box",    param=[0,0,0,11.0], boundary=b_container, emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM", resolution="40" )  
-sphere = CSG("sphere",    param=[0,0,0,10.0] )
-
-CSG.Serialize([outer, container, sphere], args.csgpath )
+CSG.Serialize([container, sphere], args.csgpath )
 
 EOP
 }
@@ -2032,7 +2025,7 @@ tboolean-sphere-notes(){ cat << EON
 ${FUNCNAME/-notes}
 =======================
 
-
+TODO: assert wrt consistent imat-omat-imat... chain in GGeoTest or NCSGList 
 
 
 
