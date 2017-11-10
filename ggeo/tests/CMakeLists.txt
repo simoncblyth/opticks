@@ -62,7 +62,6 @@ set(TEST_SOURCES
 
     GPropertyTest.cc
     GSurfaceLibTest.cc
-    GSurLibTest.cc
     GTestBoxTest.cc
 
     NLookupTest.cc

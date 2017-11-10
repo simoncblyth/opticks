@@ -98,7 +98,11 @@ void CSurfaceLib::convert(CDetector* detector)
         } 
         else
         {
-              LOG(trace) << "CSurfaceLib::convert SKIPPED surface index " << i << " : " << surf->brief() ;  
+             LOG(fatal) << " SKIPPED surface "
+                        << " i "  << i
+                        << " brief : "  << surf->brief() 
+                        << " meta : "  << surf->getMetaDesc() 
+                        ;  
         }
     }   
     LOG(info) << brief();

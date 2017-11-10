@@ -92,9 +92,6 @@ set(SOURCES
     GBorderSurface.cc
     GSurfaceLib.cc
 
-    GSur.cc
-    GSurLib.cc
-
     GScintillatorLib.cc
 
     GSource.cc

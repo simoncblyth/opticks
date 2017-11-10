@@ -52,7 +52,7 @@ namespace fs = boost::filesystem;
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
-#include "GSurLib.hh"
+//#include "GSurLib.hh"
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
 

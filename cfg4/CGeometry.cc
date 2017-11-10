@@ -11,8 +11,9 @@ class OpticksQuery ;
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 
-#include "GSurLib.hh"
-#include "GSur.hh"
+//#include "GSurLib.hh"
+//#include "GSur.hh"
+//#include "CSurLib.hh"
 
 #include "CMaterialTable.hh"
 #include "CMaterialBridge.hh"
@@ -24,7 +25,6 @@ class OpticksQuery ;
 #include "CDetector.hh"
 #include "CGeometry.hh"
 #include "CMaterialLib.hh"
-#include "CSurLib.hh"
 
 #include "PLOG.hh"
 

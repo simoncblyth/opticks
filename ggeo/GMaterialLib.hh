@@ -117,18 +117,25 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        // lifecycle
        void add(GMaterial* material);
+       void addDirect(GMaterial* material);  // not-standarized
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
+
+   public:
+       // used by GGeoTest 
+       GMaterial* getBasisMaterial(const char* name) const ;
+       void reuseBasisMaterial(const char* name) ;
    public:
        void addTestMaterials();
    public:
-       bool hasMaterial(unsigned int index);
-       bool hasMaterial(const char* name);
-       GMaterial* getMaterial(const char* name); 
+       bool hasMaterial(unsigned int index) const ;
+       bool hasMaterial(const char* name) const ;
+       GMaterial* getMaterial(const char* name) const ; 
        // base class provides: unsigned getIndex(const char* shortname)
-       GMaterial* getMaterial(unsigned int i); // zero based index
+       GMaterial* getMaterial(unsigned int i) const ; // zero based index
+   public:
        const char* getNameCheck(unsigned int i);
-       unsigned int getNumMaterials();
+       unsigned int getNumMaterials() const ;
        unsigned int getMaterialIndex(const GMaterial* material);
    public:
        GMaterial*  createStandardMaterial(GMaterial* src);

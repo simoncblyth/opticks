@@ -44,11 +44,11 @@ CPropLib::CPropLib(OpticksHub* hub, int verbosity)
   m_hub(hub),
   m_ok(m_hub->getOpticks()),
   m_verbosity(verbosity),
-  m_bndlib(NULL),
-  m_mlib(NULL),
-  m_slib(NULL),
-  m_sclib(NULL),
-  m_domain(NULL),
+  m_bndlib(m_hub->getBndLib()),
+  m_mlib(m_hub->getMaterialLib()),
+  m_slib(m_hub->getSurfaceLib()),
+  m_sclib(m_hub->getScintillatorLib()),
+  m_domain(m_mlib->getDefaultDomain()),
   m_dscale(1)
 {
     init();
@@ -64,14 +64,6 @@ GSurfaceLib* CPropLib::getSurfaceLib()
 void CPropLib::init()
 {
     LOG(info) << "CPropLib::init" ; 
-    
-    m_bndlib = m_hub->getBndLib();
-    m_mlib = m_hub->getMaterialLib();
-    m_slib = m_hub->getSurfaceLib();
-    m_sclib = m_hub->getScintillatorLib();
-
-
-    m_domain = m_mlib->getDefaultDomain();
 
     m_sensor_surface = m_slib->getSensorSurface(0) ;
 
@@ -221,11 +213,18 @@ G4MaterialPropertiesTable* CPropLib::makeMaterialPropertiesTable(const GMaterial
     {
         GPropertyMap<float>* surf = m_sensor_surface ; 
 
-        LOG(fatal) << "CPropLib::makeMaterialPropertiesTable"  
-                   << " material with SENSOR_MATERIAL name " << name 
-                   << " but no sensor_surface "
-                   ; 
-
+        if(!surf)
+        {
+            LOG(fatal) << "CPropLib::makeMaterialPropertiesTable"  
+                       << " material with SENSOR_MATERIAL name " << name 
+                       << " but no sensor_surface "
+                       ; 
+            LOG(fatal) << "m_sensor_surface is obtained from slib at CPropLib::init " 
+                       << " when Bialkai material is in the mlib " 
+                       << " it is required for a sensor surface (with EFFICIENCY/detect) property "
+                       << " to be in the slib " 
+                       ;
+        }
         assert(surf);
         addProperties(mpt, surf, "EFFICIENCY");
 

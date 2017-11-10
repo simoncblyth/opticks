@@ -26,7 +26,9 @@
 #include "GMaterial.hh"
 #include "GGeoTest.hh"
 #include "GGeoTestConfig.hh"
-#include "GSur.hh"
+
+//#include "GSur.hh"
+
 #include "GGeo.hh"
 #include "GMergedMesh.hh"
 
@@ -115,33 +117,20 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
     assert( csg );
     assert( lvn );
     assert( pvn );
-
-   
-
+  
     const char* spec = csg->getBoundary();
-    unsigned boundary = m_blib->addBoundary(spec);
+
+    unsigned boundary = m_blib->addBoundary(spec); // should not be adding boundaries, that all happened in GGeoTest 
+
     GMaterial* imat = m_blib->getInnerMaterial(boundary); 
 
-    //GPropertyMap<float>* isur = m_blib->getInnerSurface(boundary); 
-    //GPropertyMap<float>* osur = m_blib->getOuterSurface(boundary); 
-
-
-
-    //GSur* isur      = m_blib->getInnerSurface(boundary); 
-    //GSur* osur      = m_blib->getOuterSurface(boundary); 
-    // hmm sometimes skin ??
-    //if(isur) isur->setBorder();
-    //if(osur) osur->setBorder();
-
-    //if(isur) isur->dump("isur");
-    //if(osur) osur->dump("osur");
-
     const G4Material* material = m_mlib->convertMaterial(imat);
+
     G4VSolid* solid = m_maker->makeSolid( csg ); 
 
     G4LogicalVolume* lv = new G4LogicalVolume(solid, const_cast<G4Material*>(material), strdup(lvn), 0,0,0);
-    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
 
+    G4VPhysicalVolume* pv = new G4PVPlacement(0,G4ThreeVector(), lv, strdup(pvn) ,mother,false,0);
 
     LOG(fatal) 
           << " csg.spec " << spec 
@@ -157,15 +146,10 @@ G4VPhysicalVolume* CTestDetector::makeChildVolume(const NCSG* csg, const char* l
 
 G4VPhysicalVolume* CTestDetector::makeVolumeUniverse(const NCSG* csg)
 {
-    OpticksCSG_t type = csg->getRootType() ;
-    const char* shapename = CSGName(type);
-
-    // TODO: same name as GGeoTest::UNIVERSE_PV ...
-
-    const char* lvn = BStr::concat<const char*>("UniverseLV_", shapename, NULL); 
-    const char* pvn = BStr::concat<const char*>("UniversePV_", shapename, NULL ); 
-
-    return makeChildVolume(csg, lvn, pvn, NULL  );
+    const char* lvn = GGeoTest::UNIVERSE_LV ; 
+    const char* pvn = GGeoTest::UNIVERSE_PV ; 
+    G4LogicalVolume* mother = NULL ; 
+    return makeChildVolume(csg, lvn, pvn, mother  );
 }
 
 

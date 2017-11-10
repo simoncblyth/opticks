@@ -184,7 +184,6 @@ set(SOURCES
     CDetector.cc
     CGDMLDetector.cc
     COptical.cc
-    CSurLib.cc
     CSurfaceLib.cc
     CMaker.cc
     CTestDetector.cc
@@ -268,7 +267,6 @@ set(HEADERS
     CRecorder.hh
     CDetector.hh
     CGDMLDetector.hh
-    CSurLib.hh
     CMaker.hh
     CTestDetector.hh
     CStepRec.hh

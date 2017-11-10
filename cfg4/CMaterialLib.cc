@@ -1,4 +1,5 @@
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
+#include "BStr.hh"
 
 #include "G4Material.hh"
 #include "G4MaterialPropertiesTable.hh"
@@ -373,7 +374,7 @@ NPY<float>* CMaterialLib::makeArray(const char* name, const char* keys, bool rev
 void CMaterialLib::fillMaterialValueMap(std::map<std::string,float>& vmp,  const char* _matnames, const char* key, float nm)
 {
     std::vector<std::string> matnames ; 
-    boost::split(matnames, _matnames, boost::is_any_of(","));   
+    BStr::split(matnames, _matnames, ',' );
 
     unsigned nmat = matnames.size();
 
@@ -381,17 +382,19 @@ void CMaterialLib::fillMaterialValueMap(std::map<std::string,float>& vmp,  const
     {
          const char* name = matnames[i].c_str() ;
 
-         if(!hasG4Material(name))
+         if(m_mlib->hasMaterial(name))
          {
-             makeG4Material(name);
+             if(!hasG4Material(name))
+             {
+                 makeG4Material(name);
+             }
+
+             const CMPT* cmpt = getG4MPT(name);
+             assert(cmpt);
+             CVec* vec = cmpt->getCVec(key); 
+             assert(vec);
+             vmp[name] = vec->getValue(nm);
          }
-
-
-         const CMPT* cmpt = getG4MPT(name);
-         assert(cmpt);
-         CVec* vec = cmpt->getCVec(key); 
-         assert(vec);
-         vmp[name] = vec->getValue(nm);
     }
 }
 

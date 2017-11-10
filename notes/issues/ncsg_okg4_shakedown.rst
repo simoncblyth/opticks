@@ -27,60 +27,6 @@ okg4 Surface fragility
 Surface translation problems from overcomplicated GSurLib/CSurLib prompted a surface review.
 Sticking point of incomplete persisted surface info, caused creation of NJS  
 
-::
-
-    simon:opticks blyth$ tboolean-;tboolean-media-g --okg4 -D
-    (lldb) target create "CTestDetectorTest"
-    Current executable set to 'CTestDetectorTest' (x86_64).
-    (lldb) settings set -- target.run-args  "--test" "--testconfig" "analytic=1_csgpath=/tmp/blyth/opticks/tboolean-media--_mode=PyCsgInBox_outerfirst=1_name=tboolean-media--" "--export" "--dbgsurf"
-    (lldb) r
-    Process 59742 launched: '/usr/local/opticks/lib/CTestDetectorTest' (x86_64)
-    2017-11-07 11:10:55.488 INFO  [3322945] [main@47] CTestDetectorTest
-    2017-11-07 11:10:55.490 INFO  [3322945] [Opticks::dumpArgs@806] Opticks::configure argc 6
-      0 : CTestDetectorTest
-      1 : --test
-      2 : --testconfig
-      3 : analytic=1_csgpath=/tmp/blyth/opticks/tboolean-media--_mode=PyCsgInBox_outerfirst=1_name=tboolean-media--
-      4 : --export
-      5 : --dbgsurf
-    2017-11-07 11:10:55.490 INFO  [3322945] [OpticksHub::configure@169] OpticksHub::configure m_gltf 0
-    ...
-    2017-11-07 11:10:56.793 INFO  [3322945] [GSurLib::collectSur@119] [--dbgsurf] i  46 type S name perfectSpecularSurface
-    2017-11-07 11:10:56.793 INFO  [3322945] [GSurLib::collectSur@119] [--dbgsurf] i  47 type S name perfectDiffuseSurface
-    2017-11-07 11:10:56.793 INFO  [3322945] [CPropLib::init@66] CPropLib::init
-    2017-11-07 11:10:56.793 INFO  [3322945] [CPropLib::initCheckConstants@118] CPropLib::initCheckConstants mm 1 MeV 1 nanosecond 1 ns 1 nm 1e-06 GC::nanometer 1e-06 h_Planck 4.13567e-12 GC::h_Planck 4.13567e-12 c_light 299.792 GC::c_light 299.792 dscale 0.00123984
-    2017-11-07 11:10:56.793 INFO  [3322945] [*CTestDetector::makeDetector_NCSG@172] CTestDetector::makeDetector_NCSG numSolids 1
-    2017-11-07 11:10:56.794 FATAL [3322945] [*CTestDetector::makeChildVolume@142]  csg.spec Rock///Rock boundary 11 mother - lv UniverseLV_box pv UniversePV_box mat Rock
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSur::dump@220] isur B(  45                perfectAbsorbSurface)  nlv   0 npvp   0 
-    2017-11-07 11:10:56.794 FATAL [3322945] [*CTestDetector::makeChildVolume@142]  csg.spec Rock//perfectAbsorbSurface/Pyrex boundary 123 mother UniverseLV_box lv box_lv0_ pv box_pv0_ mat Pyrex
-    2017-11-07 11:10:56.794 INFO  [3322945] [CDetector::traverse@96] [--dbgsurf] CDetector::traverse START 
-    2017-11-07 11:10:56.794 INFO  [3322945] [CTraverser::Traverse@130] [--dbgsurf] CTraverser::Traverse START 
-    2017-11-07 11:10:56.794 INFO  [3322945] [CTraverser::Traverse@137] [--dbgsurf] CTraverser::Traverse DONE numSelected 2 bbox NBoundingBox low -401.0000,-401.0000,-401.0000 high 401.0000,401.0000,401.0000 ce 0.0000,0.0000,0.0000,401.0000 pvs.size 2 lvs.size 2
-    2017-11-07 11:10:56.794 INFO  [3322945] [CTraverser::Summary@106] CDetector::traverse numMaterials 2 numMaterialsWithoutMPT 0
-    2017-11-07 11:10:56.794 INFO  [3322945] [CDetector::traverse@107] [--dbgsurf] CDetector::traverse DONE 
-    2017-11-07 11:10:56.794 INFO  [3322945] [CDetector::attachSurfaces@272] [--dbgsurf] CDetector::attachSurfaces START closing gsurlib, creating csurlib  
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSurLib::close@134] [--dbgsurf] GSurLib::close START 
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSurLib::examineSolidBndSurfaces@189] [--dbgsurf] GSurLib::examineSolidBndSurfaces numSolids 1 mm 0x10aaf7050
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSurLib::examineSolidBndSurfaces@214] GSurLib::examineSolidBndSurfaces [--dbgsurf]  numSolids 1
-     j      0 i(so-idx)      0 lv box_lv0_
-     j      0 i(so-idx)      0 node(ni.z)      0 node2(id.x)      0 boundary(id.z)    123 parent(ni.w) 4294967295 nodeinfo  (3884,11652,  0,---) bname Rock//perfectAbsorbSurface/Pyrex isur
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSurLib::examineSolidBndSurfaces@287]  node_mismatch 0 node2_mismatch 0
-    2017-11-07 11:10:56.794 INFO  [3322945] [GSurLib::close@141] [--dbgsurf] GSurLib::close DONE 
-    2017-11-07 11:10:56.794 INFO  [3322945] [CSurLib::convert@136] [--dbgsurf] CSurLib::convert  numSur 48
-    2017-11-07 11:10:56.795 INFO  [3322945] [*CSurLib::makeBorderSurface@225] CSurLib::makeBorderSurface name perfectAbsorbSurface ipv1 0 ipv2 4294967295
-    Assertion failed: (ipv2 != GSurLib::UNSET && "CSurLib::makeBorderSurface ipv2 UNSET"), function makeBorderSurface, file /Users/blyth/opticks/cfg4/CSurLib.cc, line 234.
-    Process 59742 stopped
-    * thread #1: tid = 0x32b441, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
-        frame #0: 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10
-    libsystem_kernel.dylib`__pthread_kill + 10:
-    -> 0x7fff8cc60866:  jae    0x7fff8cc60870            ; __pthread_kill + 20
-       0x7fff8cc60868:  movq   %rax, %rdi
-       0x7fff8cc6086b:  jmp    0x7fff8cc5d175            ; cerror_nocancel
-       0x7fff8cc60870:  retq   
-    (lldb) 
-
-
-
 
 
 
@@ -92,6 +38,8 @@ FIXED : Check of G4 geometry via GDML export fails : incomplete bordersurf
 
 SC/AB in Vacuum
 ------------------
+
+* 1e6 mm, 1e3 m, 1km  : not large enough to kill SC/AB entirely when have millions of photons throwing dice
 
 ::
 

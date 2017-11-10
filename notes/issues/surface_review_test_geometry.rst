@@ -45,37 +45,30 @@ tboolean-media
 
 
 
-TODO : mlib should have just materials used, not all basis materials
+
+Basic Mechanics now-working, next the surface hookup details
+---------------------------------------------------------------
+
+::
+
+   tboolean-;tboolean-media-g --okg4
+
+
+
+FIXED : surface type ctor argument, not reflecting metadata 
+-------------------------------------------------------------
+
+* relocation, needs to change type too
+
+FIXED : mlib should have just materials used, not all basis materials
 ----------------------------------------------------------------------
 
 * follow the new surface lib pattern for the mlib, ie
   copy into it only the materials used in the test geometry
   
 
-::
-
-     80 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
-     81     :
-     82     m_ok(ok),
-     83     m_config(new GGeoTestConfig(ok->getTestConfig())),
-     84     m_resource(ok->getResource()),
-     85     m_dbgbnd(m_ok->isDbgBnd()),
-     86     m_dbganalytic(m_ok->isDbgAnalytic()),
-     87     m_lodconfig(ok->getLODConfig()),
-     88     m_lod(ok->getLOD()),
-     89     m_analytic(m_config->getAnalytic()),
-     90     m_test(true),
-     91     m_basis(basis),
-     92     //m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
-     93     m_mlib(basis->getMaterialLib()),
-     94     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
-     95     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
-     96     m_pmtlib(basis->getPmtLib()),
-
-
-
-ISSUE : okg4 material conversion for test geometry
-----------------------------------------------------
+FIXED : okg4 material conversion for test geometry was assuming certain materials are present
+-----------------------------------------------------------------------------------------------
 
 ::
 

@@ -48,6 +48,7 @@
 #include "PLOG.hh"
 
 
+const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ; 
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
 
 
@@ -65,6 +66,8 @@ GSourceLib*       GGeoTest::getSourceLib(){       return m_basis->getSourceLib()
 
 // local copy of m_basis pointer
 GPmtLib*          GGeoTest::getPmtLib(){          return m_pmtlib ; }
+
+// local residents backed by corresponding basis libs 
 GBndLib*          GGeoTest::getBndLib(){          return m_bndlib ;  }
 GSurfaceLib*      GGeoTest::getSurfaceLib(){      return m_slib ;  }
 GMaterialLib*     GGeoTest::getMaterialLib(){     return m_mlib ;  }
@@ -89,11 +92,10 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_analytic(m_config->getAnalytic()),
     m_test(true),
     m_basis(basis),
-    //m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
-    m_mlib(basis->getMaterialLib()),
+    m_pmtlib(basis->getPmtLib()),
+    m_mlib(new GMaterialLib(m_ok, basis->getMaterialLib())),
     m_slib(new GSurfaceLib(m_ok, basis->getSurfaceLib())),
     m_bndlib(new GBndLib(m_ok, m_mlib, m_slib)),
-    m_pmtlib(basis->getPmtLib()),
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
     m_maker(new GMaker(m_ok, m_bndlib)),
@@ -120,7 +122,7 @@ void GGeoTest::init()
     const char* csgpath = m_config->getCsgPath();
     if(csgpath) assert(m_analytic == true);
 
-    GMergedMesh* tmm_ = create();
+    GMergedMesh* tmm_ = initCreate();
 
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
@@ -139,7 +141,7 @@ void GGeoTest::init()
 }
 
 
-GMergedMesh* GGeoTest::create()
+GMergedMesh* GGeoTest::initCreate()
 {
     const char* csgpath = m_config->getCsgPath();
     const char* mode = m_config->getMode();
@@ -152,13 +154,13 @@ GMergedMesh* GGeoTest::create()
         if(nelem == 0 )
         {
             LOG(fatal) << " NULL csgpath and config nelem zero  " ; 
-            m_config->dump("GGeoTest::create ERROR csgpath==NULL && nelem==0 " ); 
+            m_config->dump("GGeoTest::initCreate ERROR csgpath==NULL && nelem==0 " ); 
         }
         assert(nelem > 0);
     }
 
 
-    LOG(info) << "GGeoTest::create START " << " mode " << mode ;
+    LOG(info) << "GGeoTest::initCreate START " << " mode " << mode ;
 
     GMergedMesh* tmm = NULL ; 
     //std::vector<GSolid*> solids ; 
@@ -210,24 +212,22 @@ unsigned GGeoTest::getNumTrees() const
 }
 
 
-void GGeoTest::anaEvent(OpticksEvent* evt)
+
+void GGeoTest::boundarySetup(GSolid* solid, const char* spec)
 {
-    int dbgnode = m_ok->getDbgNode();
-    //NCSG* csg = getTree(dbgnode);
+    // materials and surfaces must be in place before adding 
+    // the boundary spec to get the boundary index 
 
-    LOG(info) << "GGeoTest::anaEvent " 
-              << " dbgnode " << dbgnode
-              << " numTrees " << getNumTrees()
-              << " evt " << evt
-              ;
+    reuseMaterials(spec);
+    relocateSurfaces(solid, spec);
 
-    assert( m_csglist ) ;  
+    unsigned boundary = m_bndlib->addBoundary(spec, false);  // only adds if not existing
 
-    OpticksEventAna ana(m_ok, evt, m_csglist);
-    ana.dump("GGeoTest::anaEvent");
+    solid->setBoundary(boundary);     // unlike ctor these create arrays
 }
 
-void GGeoTest::relocateSurfacesBoundarySetup(GSolid* solid, const char* spec)
+
+void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
 {
     BBnd b(spec);
     bool unknown_osur = b.osur && !m_slib->hasSurface(b.osur) ;
@@ -251,7 +251,7 @@ void GGeoTest::relocateSurfacesBoundarySetup(GSolid* solid, const char* spec)
               << " parent_pv " << parent_pv
               ;
 
-        if( b.osur == b.isur ) // skin 
+        if( b.osur && b.isur && strcmp(b.osur, b.isur) == 0 ) // skin 
         {
             m_slib->relocateBasisSkinSurface( b.osur, self_lv );
         }
@@ -264,10 +264,25 @@ void GGeoTest::relocateSurfacesBoundarySetup(GSolid* solid, const char* spec)
             m_slib->relocateBasisBorderSurface( b.osur, parent_pv, self_pv ) ; 
         }
     }
-
-    unsigned boundary = m_bndlib->addBoundary(spec, false);  // only adds if not existing
-    solid->setBoundary(boundary);     // unlike ctor these create arrays
 }
+
+
+void GGeoTest::reuseMaterials(const char* spec)
+{
+    BBnd b(spec);
+
+    if(strcmp(b.omat, b.imat) == 0)
+    {
+        if(!m_mlib->hasMaterial(b.omat)) m_mlib->reuseBasisMaterial( b.omat );
+    } 
+    else
+    {
+        if(!m_mlib->hasMaterial(b.omat)) m_mlib->reuseBasisMaterial( b.omat );
+        if(!m_mlib->hasMaterial(b.imat)) m_mlib->reuseBasisMaterial( b.imat );
+    }
+}
+
+
 
 
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
@@ -317,12 +332,11 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
             solid->setParent(prior);
             prior->addChild(solid);
         }
-
         prior = solid ; 
 
         const char* spec = tree->getBoundary();  
-        relocateSurfacesBoundarySetup(solid, spec);
-
+        boundarySetup( solid, spec );
+ 
 
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
@@ -569,5 +583,27 @@ const char* GGeoTest::MakeArgForce(const char* funcname, const char* extra)
     std::string argforce = MakeArgForce_(funcname, extra);
     return strdup(argforce.c_str());
 }
+
+
+
+
+
+void GGeoTest::anaEvent(OpticksEvent* evt)
+{
+    int dbgnode = m_ok->getDbgNode();
+    //NCSG* csg = getTree(dbgnode);
+
+    LOG(info) << "GGeoTest::anaEvent " 
+              << " dbgnode " << dbgnode
+              << " numTrees " << getNumTrees()
+              << " evt " << evt
+              ;
+
+    assert( m_csglist ) ;  
+
+    OpticksEventAna ana(m_ok, evt, m_csglist);
+    ana.dump("GGeoTest::anaEvent");
+}
+
 
 

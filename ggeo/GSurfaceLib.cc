@@ -279,6 +279,7 @@ void GSurfaceLib::addBorderSurface(GPropertyMap<float>* surf, const char* pv1, c
     std::string bpv2 = pv2 ;
     surf->setMetaKV(BPV1, bpv1 );
     surf->setMetaKV(BPV2, bpv2 );
+    surf->setBorderSurface();
 
     if(direct)
         addDirect(surf);
@@ -315,6 +316,7 @@ void GSurfaceLib::addSkinSurface(GPropertyMap<float>* surf, const char* sslv_, b
    // method to help with de-conflation of surface props and location
     std::string sslv = sslv_ ;
     surf->setMetaKV(SSLV, sslv );
+    surf->setSkinSurface();
 
     if(direct)
         addDirect(surf);

@@ -39,6 +39,15 @@ NMeta* GPropertyMap<T>::getMeta() const
 }
 
 template <typename T>
+std::string GPropertyMap<T>::getMetaDesc() const 
+{
+    return m_meta ? m_meta->desc() : "no-meta"  ; 
+}
+
+
+
+
+template <typename T>
 template <typename S>
 void GPropertyMap<T>::setMetaKV(const char* key, S val)  
 {
@@ -493,6 +502,24 @@ bool GPropertyMap<T>::isBorderSurface() const
 {
     return m_type.compare(GSurfaceLib::BORDERSURFACE) == 0 ;
 }
+
+template <typename T>
+void GPropertyMap<T>::setBorderSurface()  
+{
+    m_type = GSurfaceLib::BORDERSURFACE ;
+}
+
+template <typename T>
+void GPropertyMap<T>::setSkinSurface()  
+{
+    m_type = GSurfaceLib::SKINSURFACE ;
+}
+
+
+
+
+
+
 
 template <typename T>
 bool GPropertyMap<T>::isTestSurface() const

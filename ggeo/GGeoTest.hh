@@ -49,6 +49,7 @@ Rejig
 class GGEO_API GGeoTest : public GGeoBase {
     public:
        static const char* UNIVERSE_PV ; 
+       static const char* UNIVERSE_LV ; 
     public:
        // testing utilities used from okg-/OpticksHubTest
        static const char* MakeArgForce(const char* funcname, const char* extra=NULL);
@@ -58,6 +59,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        GGeoTest(Opticks* ok, GGeoBase* basis=NULL);
     private:
        void init();
+       GMergedMesh* initCreate();
     public:
        // GGeoBase : constituents locally customized
        const char*       getIdentifier();
@@ -76,9 +78,10 @@ class GGEO_API GGeoTest : public GGeoBase {
        GSurfaceLib*      getSurfaceLib();
        GBndLib*          getBndLib() ;    
 
-    public:
-       // basis surfaces are relocated in order to work within test geometries  
-       void relocateSurfacesBoundarySetup(GSolid* solid, const char* spec) ;
+    private:
+       void boundarySetup(GSolid* solid, const char* spec); 
+       void relocateSurfaces(GSolid* solid, const char* spec) ;
+       void reuseMaterials(const char* spec);
     public:
        void dump(const char* msg="GGeoTest::dump");
     public:
@@ -93,7 +96,6 @@ class GGEO_API GGeoTest : public GGeoBase {
     public:
        void anaEvent(OpticksEvent* evt);
     private:
-       GMergedMesh* create();
        GMergedMesh* combineSolids( std::vector<GSolid*>& solids, GMergedMesh* mm0);
        GSolid*      makeSolidFromConfig( unsigned i );
        void         loadCSG(const char* csgpath, std::vector<GSolid*>& solids );
@@ -114,14 +116,14 @@ class GGEO_API GGeoTest : public GGeoBase {
        bool             m_analytic ; 
        bool             m_test ; 
     private:
-       // base geometry and libs taken from it
+       // base geometry and stolen libs 
        GGeoBase*        m_basis ; 
+       GPmtLib*         m_pmtlib ; 
+   private:
+       // local resident libs
        GMaterialLib*    m_mlib ; 
        GSurfaceLib*     m_slib ; 
-       GBndLib*         m_bndlib ; 
-       GPmtLib*         m_pmtlib ; 
-    private:
-       // locally created libs
+       GBndLib*         m_bndlib ;  
        GGeoLib*         m_geolib ; 
        GNodeLib*        m_nodelib ; 
     private:

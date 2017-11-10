@@ -46,6 +46,8 @@ class GGEO_API GPropertyMap {
       bool hasNameEnding(const char* end);
 
       NMeta* getMeta() const ; 
+      std::string getMetaDesc() const ; 
+
       template <typename S> 
       void setMetaKV(const char* key, S value);
       bool hasMetaItem(const char* key ) const ;
@@ -71,6 +73,11 @@ class GGEO_API GPropertyMap {
       unsigned int getIndex();  // aiScene material index ("surfaces" and "materials" represented as Assimp materials)
       const char* getType();
 
+
+      void setSkinSurface(); 
+      void setBorderSurface(); 
+
+
       bool isSurface() const ;
       bool isTestSurface() const ;
       bool isSkinSurface() const ;
@@ -84,6 +91,7 @@ class GGEO_API GPropertyMap {
       std::string getBPV2() const ; 
       std::string getSSLV() const ; 
   public:
+
       void setSensor(bool sensor=true); // set in AssimpGGeo::convertSensors
       bool isSensor();
 

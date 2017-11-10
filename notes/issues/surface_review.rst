@@ -1,22 +1,23 @@
 surface_review
 ================
 
+
 NEXT
 -----
+
+1. check CSurfaceLib conversion from full geometry
+
+
+DONE
+----
 
 1. get GSurfaceLib/GBndLib going for test geometry
 
 2. CSurfaceLib convert with test geometry
 
-3. check CSurfaceLib conversion from full geometry
-
-4. compare with old CSurLib/GSurLib/GSur approach
-
-5. adopt new approach 
-
 6. consign CSurLib/GSurLib/GSur to attic
 
-
+4. DIDNT BOTHER : compare with old CSurLib/GSurLib/GSur approach 
 
 
 Surface Overhaul Approach
@@ -35,6 +36,114 @@ full chain in flux is too much to handle.
 * eg the border/skin info is available pre-cache, so kludging 
   reconstruction of that post-cache points to infoloss
   in persisting and the GSurLib workaround that got out of control 
+
+
+
+
+
+Vague Recollection of the history of this..
+---------------------------------------------
+
+Originally (whilst focus was entirely on OptiX geometry) 
+materials and surfaces were not persisted to geocache, 
+instead the boundary lib comprising all the interleaved props was persisted alone.
+
+Subsequently the need for dynamic boundaries for testing meant that moved to 
+the boundary buffer tex being dynamically derived from integers representing 
+materials and surfaces, and added PropLib persisting then.
+
+The thing is that OptiX does not need the border/skin surface volume names
+because the info is already present in the form of the boundary indices that
+are affixed to every piece of geometry. These boundary spec being formed pre-cache
+whilst the info is available.
+
+Subsequently cfg4 means need to reconstitute the G4 border/skin objects. Although 
+it is in principal possible to disentangle these from the boundaries, 
+it aint at all simple : resulting in complex workarounds in GSurLib/CSurLib/GSur/...
+
+Solution: improve the GPropLib persisting with some NMeta metadata 
+so that the G4 geometry can be reconstructed without jumping thru hoops. 
+Going back a few steps avoids the complexity of operating at just the last step.
+
+
+Surface Info Flows
+-----------------------
+
+GGeo : Full Triangulated Geometry Flow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* export of G4 border/skin surfaces into COLLADA G4DAE
+
+* AssimpGGeo parsing of G4DAE into GGeo/GSurfaceLib 
+
+* persisting GGeo/GSurfaceLib to geocache
+
+* loading GGeo/GSurfaceLib from geocache
+
+* translation of loaded GGeo/GSurfaceLib into OptiX geometry 
+
+* translation of loaded GGeo/GSurfaceLib into Geant4 geometry 
+
+
+GScene : Full Analytic Geometry Flow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* export G4 border/skin into GDML together with everything else
+
+  * NB GDML looses some material/surf info, so the GDML flow is
+    not standalone (even in current GDML, let alone some old GDML exports 
+    that are still supporting)... So it needs to be used together with G4DAE
+
+* python GDML parsing into GLTF json 
+
+* NGLTF/NScene/GScene parsing of GLTF, yielding GScene/GSurfaceLib
+
+* FROM GSurfaceLib the story is the same as above
+
+
+GGeoTest : Test Geometry Flow
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* parse NCSG python buffers into NCSGList of trees, including txt
+  files with boundary specification for each solid
+
+* construction of GGeoTest geometry from NCSG, the surfaces 
+  referred to by name within the boundary specification
+
+
+Fundamental surface difference between full/test geometries
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Notice the fundamental difference wrt surfaces between full and test geometries, 
+
+* full geometries have original "truth" sslv,bspv1,bspv2 names
+  locating the surfaces which are NOW passed forward from the G4 geometry 
+  into GGeo/GSurfaceLib(GPropLib) using NMeta/json to survive the geocache 
+  this should allow simple reconstruction of a G4 geometry from the GGeo one  
+
+* hmm : what about surface identity, presumably this means there is duplication
+  of same surface properties into different locations ?
+
+* test geometries must create "truth" regarding surface locations as they go along
+   
+  * base geometry surfaces are referenced for their properties, NOT LOCATIONS 
+
+  * locations specified by base geometry sslv/bspv1/bspv2 names are 
+    not applicable to test geometries which have entirely different names for the volumes
+
+
+GSurfaceLib -> CSurfaceLib translation of both full and test geometries ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Suspect easiest to make test geometry to look just like full geometry
+as soon as possible by giving them the requisite metadata names.
+
+Perhaps:
+
+* dynamically apply modifications to base surface locations 
+* when are the names coming from (GMaker ?) 
+
+
 
 
 Tests
@@ -177,33 +286,6 @@ New metadata infrastructure operational via geocache::
     simon:ggeo blyth$ 
 
 
-
-Vague Recollection of the history of this..
----------------------------------------------
-
-Originally (whilst focus was entirely on OptiX geometry) 
-materials and surfaces were not persisted to geocache, 
-instead the boundary lib comprising all the interleaved props was persisted alone.
-
-Subsequently the need for dynamic boundaries for testing meant that moved to 
-the boundary buffer tex being dynamically derived from integers representing 
-materials and surfaces, and added PropLib persisting then.
-
-The thing is that OptiX does not need the border/skin surface volume names
-because the info is already present in the form of the boundary indices that
-are affixed to every piece of geometry. These boundary spec being formed pre-cache
-whilst the info is available.
-
-Subsequently cfg4 means need to reconstitute the G4 border/skin objects. Although 
-it is in principal possible to disentangle these from the boundaries, 
-it aint at all simple : resulting in complex workarounds in GSurLib/CSurLib/GSur/...
-
-Solution: improve the GPropLib persisting with some NMeta metadata 
-so that the G4 geometry can be reconstructed without jumping thru hoops. 
-Going back a few steps avoids the complexity of operating at just the last step.
-
-
-
 Potential Missing Surfaces ?
 --------------------------------------
 
@@ -225,8 +307,8 @@ Perhaps :
 
 * for skin surfaces using logical name lookup should be ok
 
-PV Addressing
----------------
+FIXED : PV Addressing, the ptr were being trimmed 
+---------------------------------------------------
 
 * CTraverser.m_pvnames are without the ptr
 
@@ -309,84 +391,6 @@ CSurLib instanciated by CDetector::attachSurfaces from CGeometry::init
      77 }
 
 
-
-
-Surface Info Flows
------------------------
-
-GGeo : Full Triangulated Geometry Flow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* export of G4 border/skin surfaces into COLLADA G4DAE
-
-* AssimpGGeo parsing of G4DAE into GGeo/GSurfaceLib 
-
-* persisting GGeo/GSurfaceLib to geocache
-
-* loading GGeo/GSurfaceLib from geocache
-
-* translation of loaded GGeo/GSurfaceLib into OptiX geometry 
-
-* translation of loaded GGeo/GSurfaceLib into Geant4 geometry 
-
-
-GScene : Full Analytic Geometry Flow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* export G4 border/skin into GDML together with everything else
-
-  * NB GDML looses some material/surf info, so the GDML flow is
-    not standalone (even in current GDML, let alone some old GDML exports 
-    that are still supporting)... So it needs to be used together with G4DAE
-
-* python GDML parsing into GLTF json 
-
-* NGLTF/NScene/GScene parsing of GLTF, yielding GScene/GSurfaceLib
-
-* FROM GSurfaceLib the story is the same as above
-
-
-GGeoTest : Test Geometry Flow
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* parse NCSG python buffers into NCSGList of trees, including txt
-  files with boundary specification for each solid
-
-* construction of GGeoTest geometry from NCSG, the surfaces 
-  referred to by name within the boundary specification
-
-
-Fundamental surface difference between full/test geometries
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Notice the fundamental difference wrt surfaces between full and test geometries, 
-
-* full geometries have original "truth" sslv,bspv1,bspv2 names
-  locating the surfaces which are NOW passed forward from the G4 geometry 
-  into GGeo/GSurfaceLib(GPropLib) using NMeta/json to survive the geocache 
-  this should allow simple reconstruction of a G4 geometry from the GGeo one  
-
-* hmm : what about surface identity, presumably this means there is duplication
-  of same surface properties into different locations ?
-
-* test geometries must create "truth" regarding surface locations as they go along
-   
-  * base geometry surfaces are referenced for their properties, NOT LOCATIONS 
-
-  * locations specified by base geometry sslv/bspv1/bspv2 names are 
-    not applicable to test geometries which have entirely different names for the volumes
-
-
-GSurfaceLib -> CSurfaceLib translation of both full and test geometries ?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Suspect easiest to make test geometry to look just like full geometry
-as soon as possible by giving them the requisite metadata names.
-
-Perhaps:
-
-* dynamically apply modifications to base surface locations 
-* when are the names coming from (GMaker ?) 
 
 
 GSurfaceLib::save

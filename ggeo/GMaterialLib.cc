@@ -128,7 +128,7 @@ void GMaterialLib::postLoadFromCache()
 }
 
 
-unsigned int GMaterialLib::getNumMaterials()
+unsigned GMaterialLib::getNumMaterials() const 
 {
     return m_materials.size();
 }
@@ -141,7 +141,7 @@ GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis)
     init();
 }
 
-GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialLib* basis) 
+GMaterialLib::GMaterialLib(GMaterialLib* src, GDomain<float>* domain, GMaterialLib* basis)  // hmm think basis never used with this ctor ?
     :
     GPropertyLib(src, domain),
     m_basis(basis)
@@ -167,7 +167,7 @@ void GMaterialLib::initInterpolatingCopy(GMaterialLib* src, GDomain<float>* doma
 
         GMaterial* dmat = new GMaterial(smat, domain );   // interpolating "copy" ctor
 
-        m_materials.push_back(dmat);
+        addDirect(dmat);
     }
 }
 
@@ -224,6 +224,13 @@ void GMaterialLib::add(GMaterial* raw)
     assert(!isClosed());
     m_materials.push_back(createStandardMaterial(raw)); 
 }
+
+void GMaterialLib::addDirect(GMaterial* mat)
+{
+    assert(!isClosed());
+    m_materials.push_back(mat); 
+}
+
 
 GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 {
@@ -716,29 +723,73 @@ const char* GMaterialLib::getNameCheck(unsigned int i)
 
 
 
-bool GMaterialLib::hasMaterial(const char* name)
+bool GMaterialLib::hasMaterial(const char* name) const 
 {
     return getMaterial(name) != NULL ; 
 }
 
-bool GMaterialLib::hasMaterial(unsigned int index)
+bool GMaterialLib::hasMaterial(unsigned int index) const 
 {
     return getMaterial(index) != NULL ; 
 }
+
+
+/*
+// this old way only works after closing geometry, or from loaded 
+// as uses the names buffer
 
 GMaterial* GMaterialLib::getMaterial(const char* name)
 {
     unsigned int index = getIndex(name);
     return getMaterial(index);   
 }
+*/
 
+GMaterial* GMaterialLib::getMaterial(const char* name) const 
+{
+    if(!name) return NULL ; 
 
+    GMaterial* mat = NULL ; 
+    for(unsigned i=0 ; i < m_materials.size() ; i++)
+    {
+        GMaterial* m = m_materials[i] ; 
+        const char* mname = m->getName() ; 
+        assert( mname ) ; 
+        if( strcmp( mname, name ) == 0 )
+        {
+             mat = m ; 
+             break ; 
+        } 
+    }
+    return mat ; 
+}
 
-
-GMaterial* GMaterialLib::getMaterial(unsigned int index)
+GMaterial* GMaterialLib::getMaterial(unsigned int index) const 
 {
     return index < m_materials.size() ? m_materials[index] : NULL  ;
 }
+
+
+
+
+
+
+
+GMaterial* GMaterialLib::getBasisMaterial(const char* name) const 
+{
+    return m_basis ? m_basis->getMaterial(name) : NULL ; 
+}
+
+void GMaterialLib::reuseBasisMaterial(const char* name)
+{
+    GMaterial* mat = getBasisMaterial(name);
+    if(!mat) LOG(fatal) << "reuseBasisMaterial requires basis library to be present and to contain the material  " << name ; 
+    assert( mat );        
+
+    addDirect( mat ); 
+}
+
+
 
 
 GMaterial* GMaterialLib::makeRaw(const char* name)
