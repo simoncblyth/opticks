@@ -29,7 +29,7 @@ private:
     void makeBoundaryTexture(NPY<float>* buf);
     void makeBoundaryOptical(NPY<unsigned int>* obuf);
 private:
-    GBndLib*             m_lib ; 
+    GBndLib*             m_blib ; 
     NPY<float>*          m_debug_buffer ; 
     unsigned int         m_width ; 
     unsigned int         m_height ; 

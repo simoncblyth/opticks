@@ -1,6 +1,14 @@
 OBndLib_convert_issue_for_test_geometry_with_no_surfaces
 ===========================================================
 
+
+
+FIXED : Issue 
+------------------
+
+A geometry with no surfaces asserted in OBndLib.
+
+
 ::
 
     simon:ggeo blyth$ tboolean-;tboolean-media--
@@ -18,7 +26,6 @@ OBndLib_convert_issue_for_test_geometry_with_no_surfaces
 
     box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx="20", emit=-1, emitconfig="photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" )  
     CSG.Serialize( [box], args.csgpath )
-
 
 
 

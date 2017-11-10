@@ -1,17 +1,21 @@
 
 #include "NPY.hpp"
+
 #include "Opticks.hh"
+
 #include "GPropertyLib.hh"
 #include "GBndLib.hh"
+
 #include "OBndLib.hh"
 #include "OConfig.hh"
+
 #include "PLOG.hh"
 
 
-OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
+OBndLib::OBndLib(optix::Context& ctx, GBndLib* blib)
     : 
     OPropertyLib(ctx),
-    m_lib(lib),
+    m_blib(blib),
     m_debug_buffer(NULL),  
     m_width(0),
     m_height(0)
@@ -21,12 +25,12 @@ OBndLib::OBndLib(optix::Context& ctx, GBndLib* lib)
 
 GBndLib* OBndLib::getBndLib()
 {
-    return m_lib ; 
+    return m_blib ; 
 }
 
 unsigned OBndLib::getNumBnd()
 {
-    return m_lib->getNumBnd() ;
+    return m_blib->getNumBnd() ;
 }
 
 
@@ -79,9 +83,9 @@ void OBndLib::convert()
 {
     LOG(debug) << "OBndLib::convert" ;
 
-    m_lib->createDynamicBuffers();
+    m_blib->createDynamicBuffers();
 
-    NPY<float>* orig = m_lib->getBuffer() ;  // (123, 4, 2, 39, 4)
+    NPY<float>* orig = m_blib->getBuffer() ;  // (123, 4, 2, 39, 4)
 
     assert(orig && "OBndLib::convert orig buffer NULL");
 
@@ -99,7 +103,7 @@ void OBndLib::convert()
 
     makeBoundaryTexture( buf );
 
-    NPY<unsigned int>* obuf = m_lib->getOpticalBuffer() ;  // (123, 4, 4)
+    NPY<unsigned int>* obuf = m_blib->getOpticalBuffer() ;  // (123, 4, 4)
 
     makeBoundaryOptical(obuf);
 }
@@ -131,7 +135,7 @@ void OBndLib::makeBoundaryTexture(NPY<float>* buf)
     unsigned int nl = buf->getShape(3);  // (39 or 761)   number of wavelength samples of the property
     unsigned int nm = buf->getShape(4);  // (4)    number of prop within the float4
 
-    assert(ni == m_lib->getNumBnd()) ;
+    assert(ni == m_blib->getNumBnd()) ;
     assert(nj == GPropertyLib::NUM_MATSUR);
 
     assert(nk == GPropertyLib::NUM_FLOAT4); 

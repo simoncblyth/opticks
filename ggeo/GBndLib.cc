@@ -145,15 +145,17 @@ NMeta* GBndLib::createMeta()
 
 void GBndLib::createDynamicBuffers()
 {
+
     NPY<float>* buf = createBuffer();
     setBuffer(buf);
 
     NPY<unsigned int>* optical_buffer = createOpticalBuffer();
     setOpticalBuffer(optical_buffer);
 
+
     LOG(debug) << "GBndLib::createDynamicBuffers" 
-              << " buf " << buf->getShapeString()
-              << " optical_buffer  " << optical_buffer->getShapeString()
+              << " buf " << ( buf ? buf->getShapeString() : "NULL" )
+              << " optical_buffer  " << ( optical_buffer ? optical_buffer->getShapeString() : "NULL" )
                ;
 
     // declare closed here ? 
@@ -672,21 +674,16 @@ NPY<float>* GBndLib::createBufferForTex2d()
     NPY<float>* mat = m_mlib->getBuffer();
     NPY<float>* sur = m_slib->getBuffer();
 
-    LOG(trace) << "GBndLib::createBufferForTex2d" 
+    LOG(error) << "GBndLib::createBufferForTex2d" 
                << " mat " << mat 
                << " sur " << sur
                ; 
 
-    if(mat == NULL || sur == NULL)
-    {
-        LOG(error) << "GBndLib::createBufferForTex2d" 
-                   << " NULL BUFFERS "
-                   << " mat " << mat 
-                   << " sur " << sur
-                   ; 
-        return NULL ; 
-    }
+    if(mat == NULL ) LOG(fatal) << "NULL mat buffer" ;
+    assert(mat);
 
+    if(sur == NULL ) LOG(warning) << "NULL sur buffer" ;
+      
 
     unsigned int ni = getNumBnd();
     unsigned int nj = NUM_MATSUR ;    // om-os-is-im
@@ -698,26 +695,33 @@ NPY<float>* GBndLib::createBufferForTex2d()
 
 
     assert( nl == Opticks::DOMAIN_LENGTH || nl == Opticks::FINE_DOMAIN_LENGTH ) ;
-    assert( mat->getShape(1) == sur->getShape(1) );
-    assert( sur->getShape(1) == nk );
 
-    assert( mat->getShape(2) == sur->getShape(2) );
-    assert( mat->getShape(2) == nl );
-
-
+    if( mat && sur )
+    {
+        assert( mat->getShape(1) == sur->getShape(1) );
+        assert( mat->getShape(2) == sur->getShape(2) );
+    }
+    else if(mat)
+    {
+        assert( mat->getShape(2) == nl );
+    } 
+    else if(sur)
+    { 
+        assert( sur->getShape(1) == nk );
+    }
 
 
     NPY<float>* wav = NPY<float>::make( ni, nj, nk, nl, nm) ;
     wav->fill( GSurfaceLib::SURFACE_UNSET ); 
 
     LOG(debug) << "GBndLib::createBufferForTex2d"
-               << " mat " << mat->getShapeString()
-               << " sur " << sur->getShapeString()
+               << " mat " << ( mat ? mat->getShapeString() : "NULL" )
+               << " sur " << ( sur ? sur->getShapeString() : "NULL" )
                << " wav " << wav->getShapeString()
                ; 
 
-    float* mdat = mat->getValues();
-    float* sdat = sur->getValues();
+    float* mdat = mat ? mat->getValues() : NULL ;
+    float* sdat = sur ? sur->getValues() : NULL ;
     float* wdat = wav->getValues(); // destination
 
     for(unsigned int i=0 ; i < ni ; i++)      // over bnd
@@ -750,6 +754,7 @@ NPY<float>* GBndLib::createBufferForTex2d()
                 unsigned int sidx = bnd[j] ;
                 if(sidx != UNSET)
                 {
+                    assert( sdat && sur );
                     unsigned int sof = nk*nl*nm*sidx ;  
                     memcpy( wdat+wof, sdat+sof, sizeof(float)*nk*nl*nm );  
                 }
