@@ -42,10 +42,10 @@ int main(int argc, char** argv)
               << " geopath : " << ( geopath ? geopath : "-" )
                ; 
 
-    NCSGList csglist(geopath, ok.getVerbosity() );
-    csglist.dump();
+    NCSGList* csglist = NCSGList::Load(geopath, ok.getVerbosity() );
+    csglist->dump();
 
-    OpticksEventAna ana(&ok, evt, &csglist);
+    OpticksEventAna ana(&ok, evt, csglist);
     ana.dump("GGeoTest::anaEvent");
 
     return 0 ; 

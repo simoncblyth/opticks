@@ -18,10 +18,12 @@ class NPY_API NCSGList
         static bool      ExistsDir(const char* dir);
         static const char* MakeUniverseBoundary( const char* boundary0 );
 
-        NCSGList(const char* csgpath, int verbosity);
     private:
+        NCSGList(const char* csgpath, int verbosity);
         void init() ;
         void load() ;
+        void checkMaterialConsistency() const  ;
+
         NCSG* loadTree(unsigned idx, const char* boundary) const ;
         NCSG* createUniverse(float scale, float delta) const ;
     public:

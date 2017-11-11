@@ -36,11 +36,11 @@ int main(int argc, char** argv)
     } 
 
     unsigned verbosity = 0 ; 
-    NCSGList trees(csgpath, verbosity );    
+    NCSGList* trees = NCSGList::Load(csgpath, verbosity );    
 
-    NCSG* csg = trees.findEmitter();
+    NCSG* csg = trees->findEmitter();
 
-    unsigned numTrees = trees.getNumTrees() ;
+    unsigned numTrees = trees->getNumTrees() ;
     LOG(info) << " numTrees " << numTrees 
               << " emitter " << csg
               ; 

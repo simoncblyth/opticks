@@ -31,6 +31,7 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity)
     }
     NCSGList* ls = new NCSGList(csgpath, verbosity );
     ls->load();
+    ls->checkMaterialConsistency();
     return ls ;
 } 
 
@@ -128,7 +129,6 @@ void NCSGList::load()
     // back into original source order with outer first eg [outer, container, sphere]  
     std::reverse( m_trees.begin(), m_trees.end() );
 
-
 }
 
        
@@ -187,6 +187,9 @@ NCSG* NCSGList::loadTree(unsigned idx, const char* boundary) const
 
 
 
+
+
+
 NCSG* NCSGList::getTree(unsigned index) const 
 {
     return m_trees[index] ;
@@ -196,6 +199,65 @@ const char* NCSGList::getBoundary(unsigned index) const
 {
     NCSG* tree = getTree(index);
     return tree ? tree->getBoundary() : NULL  ;
+}
+
+
+void NCSGList::checkMaterialConsistency() const  
+{
+    unsigned numTree = getNumTrees();
+    for( unsigned i=1 ; i < numTree ; i++)
+    {
+        const char* parent = getBoundary(i-1);
+        const char* self = getBoundary(i);
+        assert( parent && self );
+
+        BBnd bparent(parent); 
+        BBnd bself(self); 
+
+        assert( bparent.omat );
+        assert( bparent.imat && bself.omat );
+        assert( bself.imat  );
+
+        bool consistent_imat_omat = strcmp(bparent.imat, bself.omat) == 0 ; 
+
+        if(!consistent_imat_omat)
+        {
+            LOG(fatal) 
+                 << " BOUNDARY IMAT/OMAT INCONSISTENT " 
+                 << " bparent.imat != bself.omat " 
+                 << " i " << i 
+                 << " numTree " << numTree
+                 ;
+
+            std::cout 
+                 << std::setw(20) 
+                 << " bparent " 
+                 << std::setw(50) 
+                 << bparent.desc() 
+                 << std::setw(20)  
+                 << " bparent.imat " 
+                 << std::setw(20)  
+                 << bparent.imat 
+                 << std::endl
+                 ;
+
+            std::cout 
+                 << std::setw(20) 
+                 << " bself " 
+                 << std::setw(50) 
+                 << bself.desc() 
+                 << std::setw(20)  
+                 << " bself.omat " 
+                 << std::setw(20)  
+                 << bself.omat 
+                 << std::endl
+                 ;
+
+
+        }
+
+        assert( consistent_imat_omat );
+    }
 }
 
 

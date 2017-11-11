@@ -262,6 +262,34 @@ op-binary-desc()
 
 
 
+op-u- () 
+{ 
+    local iwd=$PWD 
+    cd $OPTICKS_HOME 
+    local base=${1:-.};
+    local name=${2:-BBnd};
+
+    local h=$(find $base -name "$name.h");
+    local hpp=$(find $base -name "$name.hpp");
+    local cpp=$(find $base -name "$name.cpp");
+
+    local hh=$(find $base -name "$name.hh");
+    local cc=$(find $base -name "$name.cc");
+
+    local cu=$(find $base -name "$name.cu");
+    local py=$(find $base -name "$name.py");
+    local rst=$(find $base -name "$name.rst");
+    local bash=$(find $base -name "$name.bash");
+
+    local vcmd="vi  $h $hpp $cpp $hh $cc $cu $py $rst $bash";
+
+    echo $vcmd;
+    eval $vcmd;
+    cd  $iwd
+}
+
+op-u(){ op-u- . $* ; }
+
 
 
 

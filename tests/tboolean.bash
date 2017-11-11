@@ -14,14 +14,12 @@ pairs between self and parent.
 TODO
 ----
 
-* add assert self.omat == parent.imat 
-
 * migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
 
   * tboolean-bib-funcs : old style geom spec into tboolean-bib.bash ?
 
 
-* test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
+* check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
 
  
 FUNCTIONS
@@ -2036,7 +2034,7 @@ material = "Pyrex"
 
 CSG.kwa = dict(poly="IM", resolution="20" , emitconfig="$(tboolean-emitconfig)" )
 container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=0 )  
-sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Water/perfectSpecularSurface//%s" % material, emit=1 ) 
+sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material, emit=1 ) 
 
 CSG.Serialize([container, sphere], args.csgpath )
 
@@ -2047,9 +2045,7 @@ tboolean-sphere-notes(){ cat << EON
 ${FUNCNAME/-notes}
 =======================
 
-TODO: assert wrt consistent imat-omat-imat... chain in GGeoTest or NCSGList 
-
-* notes/issues/G4_barfs_tboolean_sphere_emitter.rst
+* FIXED notes/issues/G4_barfs_tboolean_sphere_emitter.rst
 
 
 
