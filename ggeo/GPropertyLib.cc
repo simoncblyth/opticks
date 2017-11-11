@@ -485,6 +485,9 @@ void GPropertyLib::loadFromCache()
 
     NMeta* meta = NMeta::Load(dir.c_str(), METANAME ) ; 
 
+    assert( meta && "probably the geocache is an old version : lacking metadata : recreate geocache with -G option " );
+
+
     setBuffer(buf); 
     setMeta(meta) ; 
 

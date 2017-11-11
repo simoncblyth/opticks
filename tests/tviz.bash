@@ -45,6 +45,10 @@ tviz-env(){      olocal- ;  }
 tviz-dir(){ echo $(opticks-home)/tests ; }
 tviz-cd(){  cd $(tviz-dir); }
 
+
+
+
+
 tviz-jpmt-(){
       op.sh \
            --jpmt \
@@ -59,10 +63,32 @@ tviz-jpmt-(){
 
 #  --fullscreen \
 
-
-
 tviz-jpmt-cerenkov(){      tviz-jpmt- --cerenkov $* ; }
 tviz-jpmt-scintillation(){ tviz-jpmt- --scintillation $*  ; }
+
+
+
+
+
+tviz-jun-(){
+      op.sh \
+           --j1707 \
+           --gltf 3 \
+           --animtimemax 200 \
+           --timemax 200 \
+           --optixviz \
+            $* 
+}
+
+#  --fullscreen \
+
+tviz-jun-cerenkov(){      tviz-jun- --cerenkov $* ; }
+tviz-jun-scintillation(){ tviz-jun- --scintillation $*  ; }
+
+
+
+
+
 
 
 tviz-dyb-(){

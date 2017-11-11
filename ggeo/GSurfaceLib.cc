@@ -245,22 +245,13 @@ const char* GSurfaceLib::AssignSurfaceType( NMeta* surfmeta ) // static
      {
          surftype = BORDERSURFACE ; 
      }
-     else 
+     else if( surfmeta->hasItem("name") )
      {
-         std::string name = surfmeta->get<std::string>("name");
-         if( BStr::StartsWith( name.c_str(), "perfect" ) )
-         {
-             surftype = TESTSURFACE ; 
-         }
+         // admit perfect surfaces prior to them being "located" via metadata keys
+         std::string name = surfmeta->get<std::string>("name","no-name"); 
+         if(BStr::StartsWith( name.c_str(), "perfect" )) surftype = TESTSURFACE ;
      }
 
-     
-     if( surftype == NULL )
-     {
-         LOG(fatal) << "GSurfaceLib::assignSurfaceType FAILED " ; 
-         surfmeta->dump();
-     }
-     assert( surftype );
      return surftype ; 
 }
 
@@ -737,7 +728,23 @@ void GSurfaceLib::importForTex2d()
 
         NMeta* surfmeta = m_meta ? m_meta->getObj(key) : NULL  ;  
 
-        const char* surftype = AssignSurfaceType(surfmeta) ;
+        const char* surftype = surfmeta ? AssignSurfaceType(surfmeta) : NULL ;
+
+        if(surftype == NULL)
+        {
+            LOG(fatal) << "GSurfaceLib::assignSurfaceType FAILED " ; 
+            if(surfmeta)
+                surfmeta->dump();
+
+            LOG(fatal) << " GSurfaceLib loaded from geocache lacks required metadata "
+                       << " try recreating geocache, with -G option. "
+                       << " Example commandline :  op --j1707 -G  "
+                       ;
+
+        } 
+
+        assert(surftype); 
+
 
         GPropertyMap<float>* surf = new GPropertyMap<float>(key,i, surftype, os, surfmeta );
 
