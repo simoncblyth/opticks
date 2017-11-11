@@ -385,9 +385,11 @@ tboolean--(){
     local testname
     if [ -n "$TESTNAME" ]; then
         testname=${TESTNAME}
+        $testname--
     else
         testname=$(tboolean-det)
     fi  
+
 
 
 
@@ -2032,9 +2034,9 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 #material = "MainH2OHale"
 material = "Pyrex"
 
-CSG.kwa = dict(poly="IM", resolution="40")
-container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM")  
-sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material , poly="IM" )
+CSG.kwa = dict(poly="IM", resolution="20" , emitconfig="$(tboolean-emitconfig)" )
+container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=0 )  
+sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Water/perfectSpecularSurface//%s" % material, emit=1 ) 
 
 CSG.Serialize([container, sphere], args.csgpath )
 
@@ -2046,6 +2048,8 @@ ${FUNCNAME/-notes}
 =======================
 
 TODO: assert wrt consistent imat-omat-imat... chain in GGeoTest or NCSGList 
+
+* notes/issues/G4_barfs_tboolean_sphere_emitter.rst
 
 
 

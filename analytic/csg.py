@@ -843,13 +843,12 @@ class CSG(CSG_):
         self.balance_disabled = False
         self.planes = []
 
-
-        if len(kwa) == 0 and getattr(self.__class__,'kwa',None) != None:
-            kwa = self.__class__.kwa  
-            log.debug("using defaulted CSG.kwa %r " % kwa  )
+        # class kwa defaults are overidden by instance kwa 
+        meta = {} 
+        meta.update( getattr(self.__class__,'kwa', {}))
+        meta.update(kwa)
         pass
-        self.meta = kwa
-
+        self.meta = meta
 
 
     def _get_name(self):

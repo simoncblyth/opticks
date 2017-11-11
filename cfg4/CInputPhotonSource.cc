@@ -81,7 +81,14 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 
     G4PrimaryVertex* vertex = new G4PrimaryVertex(pp.position, time );
 
-    pp.momentum_direction.set(dirw.x, dirw.y ,dirw.z);
+    //pp.momentum_direction.set(dirw.x, dirw.y ,dirw.z);
+
+    G4ThreeVector momdir(dirw.x, dirw.y ,dirw.z); 
+    momdir = momdir.unit() ;  
+    pp.momentum_direction.set(momdir.x(), momdir.y() ,momdir.z());
+
+    // double precision normalize to avoid notes/issues/G4_barfs_tboolean_sphere_emitter.rst
+
 
     G4ThreeVector pol ; 
     pol.set(polw.x, polw.y, polw.z );
