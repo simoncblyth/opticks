@@ -81,7 +81,7 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_no_surface(0),
-   m_volnames(false),
+   m_volnames(m_ok->hasCtrlKey("volnames")),
    m_reverse(true),        // true: ascending wavelength ordering of properties
    m_cathode(NULL),
    m_verbosity(0)
@@ -115,7 +115,6 @@ void AssimpGGeo::init()
     m_domain_scale = static_cast<float>(hc_over_MeV) ; 
     m_values_scale = 1.0f ; 
 
-    m_volnames = m_ggeo->isVolnames();
 }
 
 

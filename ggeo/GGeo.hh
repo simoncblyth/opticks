@@ -112,7 +112,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMesh* invokeMeshJoin(GMesh* mesh);    // used from AssimpGGeo::convertMeshes immediately after GMesh birth and deduping
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
-        static bool ctrlHasKey(const char* ctrl, const char* key);
 
     public:
         GGeo(Opticks* opticks); 
@@ -190,7 +189,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         glm::mat4 getTransform(int index);  //TRYING TO MOVE TO HUB 
     public:
         bool isLoaded();
-        bool isVolnames();
 
     public:
         // via GNodeLib
@@ -352,15 +350,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         GMeshLib*                     m_meshlib ; 
         GGeoLib*                      m_geolib ; 
-        //GGeoLib*                      m_geolib_analytic ;  // analytic from GScene
 
         GNodeLib*                     m_nodelib ; 
-        //GNodeLib*                     m_nodelib_analytic ; 
 
         GBndLib*                      m_bndlib ; 
         GMaterialLib*                 m_materiallib ; 
         GSurfaceLib*                  m_surfacelib ; 
-        //GSurLib*                      m_surlib ; 
         GScintillatorLib*             m_scintillatorlib ; 
         GSourceLib*                   m_sourcelib ; 
         GPmtLib*                      m_pmtlib ; 
@@ -379,7 +374,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         Index_t                            m_index ; 
         unsigned int                       m_sensitive_count ;  
-        bool                               m_volnames ;    
         GMaterial*                         m_cathode ; 
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  

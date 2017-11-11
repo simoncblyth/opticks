@@ -100,9 +100,11 @@ class OKGEO_API OpticksHub {
        OpticksHub(Opticks* opticks);
 
    public:
+       int getErr() const ;
        unsigned getSourceCode() const ; 
   private:
        void init();
+       void setErr(int err);
        void configure();
        void configureCompositionSize();
 
@@ -239,7 +241,7 @@ class OKGEO_API OpticksHub {
        OpticksAim*          m_aim ;
  
        GGeoTest*            m_geotest ; 
-
+       int                  m_err ; 
 
 
 

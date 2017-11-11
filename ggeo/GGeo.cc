@@ -104,7 +104,6 @@ GGeo::GGeo(Opticks* opticks)
    m_low(NULL),
    m_high(NULL),
    m_sensitive_count(0),
-   m_volnames(false),
    m_cathode(NULL),
    m_join_cfg(NULL),
    m_loader_verbosity(0),
@@ -169,11 +168,6 @@ void GGeo::setMeshJoinCfg(const char* cfg)
 bool GGeo::isLoaded()
 {
     return m_loaded ; 
-}
-
-bool GGeo::isVolnames()
-{
-    return m_volnames ; 
 }
 
 
@@ -350,7 +344,6 @@ void GGeo::init()
 {
    LOG(trace) << "GGeo::init" ; 
 
-   OpticksResource* resource = m_ok->getResource(); 
    const char* idpath = m_ok->getIdPath() ;
 
    LOG(trace) << "GGeo::init" 
@@ -373,9 +366,6 @@ void GGeo::init()
              << " m_loaded " << m_loaded 
              ;
 
-   const char* ctrl = resource->getCtrl() ;
-
-   m_volnames = GGeo::ctrlHasKey(ctrl, "volnames");
  
 
    if(m_loaded) return ; 
@@ -738,11 +728,6 @@ void GGeo::setupColors()
 
 
 
-
-bool GGeo::ctrlHasKey(const char* ctrl, const char* key)
-{
-    return BStr::listHasKey(ctrl, key, ",");
-}
 
 
 void GGeo::setLow(const gfloat3& low)

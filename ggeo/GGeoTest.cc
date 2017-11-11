@@ -80,10 +80,29 @@ GNodeLib*         GGeoTest::getNodeLib(){                  return m_nodelib ; }
 
 
 
+void GGeoTest::dump(const char* msg)
+{
+    LOG(info) << msg  ; 
+}
+void GGeoTest::setErr(int err)  
+{
+   m_err = err ;  
+}
+int GGeoTest::getErr() const 
+{
+   return m_err  ;  
+}
+
+
+
+
+
+
 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis) 
     :  
     m_ok(ok),
     m_config(new GGeoTestConfig(ok->getTestConfig())),
+    m_verbosity(m_config->getVerbosity()),
     m_resource(ok->getResource()),
     m_dbgbnd(m_ok->isDbgBnd()),
     m_dbganalytic(m_ok->isDbgAnalytic()),
@@ -100,35 +119,39 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_geolib(new GGeoLib(m_ok,m_analytic,m_bndlib)),
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
     m_maker(new GMaker(m_ok, m_bndlib)),
-    m_csglist(NULL),
-    m_solist(NULL),
-    m_verbosity(0)
+    m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
+    m_solist(new GSolidList()),
+    m_err(0)
 {
     LOG(fatal) << "GGeoTest::GGeoTest" ; 
+
+    assert(m_basis); 
+
 
     init();
 }
 
 
-void GGeoTest::dump(const char* msg)
-{
-    LOG(info) << msg  ; 
-}
-
 
 void GGeoTest::init()
 {
-    assert(m_basis); 
+    LOG(info) << "GGeoTest::init START " ;
 
-    if(m_csgpath) assert(m_analytic == true);
+    GMergedMesh* tmm_ = m_config->isNCSG() ? initCreateCSG() : initCreateBIB() ;
 
-    GMergedMesh* tmm_ = initCreate();
+    if(!tmm_)
+    {
+        setErr(101) ; 
+        return ;        
+    }
+
 
     GMergedMesh* tmm = m_lod > 0 ? GMergedMesh::MakeLODComposite(tmm_, m_lodconfig->levels ) : tmm_ ;         
 
     char geocode =  m_analytic ? OpticksConst::GEOCODE_ANALYTIC : OpticksConst::GEOCODE_TRIANGULATED ;  // message to OGeo
 
     tmm->setGeoCode( geocode );
+
 
     if(tmm->isTriangulated()) 
     { 
@@ -137,53 +160,48 @@ void GGeoTest::init()
 
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
-
-    if(m_csgpath)
-    {
-        // see notes/issues/material-names-wrong-python-side.rst
-        LOG(info) << "Save mlib/slib names to csgpath " << m_csgpath ;  
-        m_mlib->saveNames(m_csgpath);
-        m_slib->saveNames(m_csgpath);
-    }
+    LOG(info) << "GGeoTest::init DONE " ;
 }
 
 
-GMergedMesh* GGeoTest::initCreate()
+GMergedMesh* GGeoTest::initCreateCSG()
+{
+    assert(m_csgpath && "misconfigured");
+    assert(strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");  
+    m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
+
+    if(!m_csglist) return NULL ; 
+
+    assert(m_csglist && "failed to load NCSGList");
+    assert(m_analytic == true);
+    assert(m_config->isNCSG());
+
+    std::vector<GSolid*>& solids = m_solist->getList();
+
+    importCSG(solids);
+
+    GMergedMesh* tmm = combineSolids(solids, NULL);
+
+
+    return tmm ; 
+}
+
+GMergedMesh* GGeoTest::initCreateBIB()
 {
     const char* mode = m_config->getMode();
     unsigned nelem = m_config->getNumElements();
-
-    assert( mode );
-
-    if(m_csgpath == NULL)
-    { 
-        if(nelem == 0 )
-        {
-            LOG(fatal) << " NULL csgpath and config nelem zero  " ; 
-            m_config->dump("GGeoTest::initCreate ERROR csgpath==NULL && nelem==0 " ); 
-        }
-        assert(nelem > 0);
-    }
-
-
-    LOG(info) << "GGeoTest::initCreate START " << " mode " << mode ;
-
-    GMergedMesh* tmm = NULL ; 
-
-    m_solist = new GSolidList() ; 
-    std::vector<GSolid*>& solids = m_solist->getList();
-
-    if(m_config->isNCSG())
+    if(nelem == 0 )
     {
-        assert( m_csgpath && strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");  
-        loadCSG( m_csgpath, solids);
-        assert( m_csglist );
-
-        tmm = combineSolids(solids, NULL);
-
-        m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
+        LOG(fatal) << " NULL csgpath and config nelem zero  " ; 
+        m_config->dump("GGeoTest::initCreateBIB ERROR nelem==0 " ); 
     }
-    else if(m_config->isBoxInBox()) 
+    assert(nelem > 0);
+
+
+    std::vector<GSolid*>& solids = m_solist->getList();
+    GMergedMesh* tmm = NULL ;
+
+    if(m_config->isBoxInBox()) 
     {
         createBoxInBox(solids); 
         labelPartList(solids) ;
@@ -195,12 +213,10 @@ GMergedMesh* GGeoTest::initCreate()
     }
     else 
     { 
-        LOG(fatal) << "GGeoTest::create mode not recognized [" << mode << "]" ; 
+        LOG(fatal) << "GGeoTest::initCreateBIB mode not recognized [" << mode << "]" ; 
         assert(0);
     }
 
-    assert(tmm);
-    LOG(info) << "GGeoTest::create DONE " << " mode " << mode ;
     return tmm ; 
 }
 
@@ -285,23 +301,19 @@ void GGeoTest::reuseMaterials(const char* spec)
 }
 
 
-void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
+void GGeoTest::importCSG(std::vector<GSolid*>& solids)
 {
-    int verbosity = m_config->getVerbosity();
-
-    assert( m_csglist == NULL );
-
-    m_csglist = NCSGList::Load(csgpath, verbosity );
-    assert( m_csglist );
+    assert(m_csgpath);
+    assert(m_csglist);
 
     reuseMaterials(m_csglist);
 
     unsigned numTree = m_csglist->getNumTrees() ;
    
-    LOG(info) << "GGeoTest::loadCSG START " 
-             << " csgpath " << csgpath 
+    LOG(info) << "GGeoTest::importCSG START " 
+             << " csgpath " << m_csgpath 
              << " numTree " << numTree 
-             << " verbosity " << verbosity
+             << " verbosity " << m_verbosity
              ;
 
     if(m_dbgbnd)
@@ -321,7 +333,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
         NCSG* tree = m_csglist->getTree(i) ; 
        
-        GSolid* solid = m_maker->makeFromCSG(tree, verbosity );
+        GSolid* solid = m_maker->makeFromCSG(tree, m_verbosity );
 
         if(prior)
         {
@@ -379,9 +391,13 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     }
 
 
+    // see notes/issues/material-names-wrong-python-side.rst
+    LOG(info) << "Save mlib/slib names to csgpath " << m_csgpath ;  
+    m_mlib->saveNames(m_csgpath);
+    m_slib->saveNames(m_csgpath);
+    
 
-    LOG(info) << "GGeoTest::loadCSG DONE " ; 
-
+    LOG(info) << "GGeoTest::importCSG DONE " ; 
 }
 
 void GGeoTest::labelPartList( std::vector<GSolid*>& solids )

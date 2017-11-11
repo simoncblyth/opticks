@@ -206,6 +206,13 @@ const char* OpticksResource::getCtrl()
 {
     return m_ctrl ;
 }
+
+bool OpticksResource::hasCtrlKey(const char* key) const 
+{
+    return BStr::listHasKey(m_ctrl, key, ",");
+}
+
+
 const char* OpticksResource::getMeshfix()
 {
     return m_meshfix ;

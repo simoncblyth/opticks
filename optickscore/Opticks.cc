@@ -1499,6 +1499,7 @@ bool Opticks::isDayabay() { return m_resource->isDayabay(); }
 bool Opticks::isPmtInBox(){ return m_resource->isPmtInBox(); }
 bool Opticks::isOther() {   return m_resource->isOther(); }
 bool Opticks::isValid() {   return m_resource->isValid(); }
+bool Opticks::hasCtrlKey(const char* key) const  { return m_resource->hasCtrlKey(key); }
 
 const char* Opticks::getRNGInstallCacheDir() { return m_resource->getRNGInstallCacheDir(); } 
 

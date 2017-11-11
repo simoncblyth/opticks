@@ -1,3 +1,6 @@
+
+#include <limits>
+
 #include "NPY.hpp"
 #include "Opticks.hh"
 
@@ -92,7 +95,7 @@ void GMaterialLib::postLoadFromCache()
     if(noab || xxab || fxab)
     {
         float absorption_length = 0.f ; 
-        if(noab) absorption_length = 1000000000.f ;
+        if(noab) absorption_length = std::numeric_limits<float>::max() ;
         if(xxab) absorption_length = 100.f ;
         if(fxab) absorption_length = m_ok->getFxAb();
 
@@ -103,7 +106,7 @@ void GMaterialLib::postLoadFromCache()
     if(nosc || xxsc || fxsc)
     {
         float scattering_length = 0.f ; 
-        if(nosc) scattering_length = 1000000000.f ;
+        if(nosc) scattering_length = std::numeric_limits<float>::max() ;
         if(xxsc) scattering_length = 100.f ;
         if(fxsc) scattering_length = m_ok->getFxSc();
 

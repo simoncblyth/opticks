@@ -122,14 +122,14 @@ GGeoLib* OpticksHub::getGeoLib()
 }
 
 
-
-/*
-GGeo* OpticksHub::getGGeo()
+void OpticksHub::setErr(int err)
 {
-    assert(0);
-    return m_ggeo ; 
+    m_err = err ; 
 }
-*/
+int OpticksHub::getErr() const 
+{
+    return m_err ; 
+}
 
 
 
@@ -161,11 +161,15 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_gen(NULL),
    m_gun(NULL),
    m_aim(NULL),
-   m_geotest(NULL)
+   m_geotest(NULL),
+   m_err(0)
 {
    init();
    (*m_log)("DONE");
 }
+
+
+
 
 
 void OpticksHub::init()
@@ -180,6 +184,8 @@ void OpticksHub::init()
     m_aim = new OpticksAim(this) ; 
 
     loadGeometry() ;    
+    if(m_err) return ; 
+
     configureGeometry() ;    
 
     m_gen = new OpticksGen(this) ;
@@ -387,6 +393,13 @@ void OpticksHub::loadGeometry()
         GGeoBase* basis = getGGeoBasePrimary(); // ana OR tri depending on --gltf
 
         m_geotest = createTestGeometry(basis);
+
+        int err = m_geotest->getErr() ;
+        if(err) 
+        {
+            setErr(err);
+            return ; 
+        }
     }
     else
     {

@@ -126,6 +126,7 @@ GItemList::GItemList(const char* itemtype, const char* reldir) : NSequence()
 
 void GItemList::add(const char* name)
 {
+    assert(name) ; 
     m_list.push_back(name);
 }
 

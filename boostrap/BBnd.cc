@@ -6,6 +6,8 @@
 #include "BStr.hh"
 #include "BBnd.hh"
 
+#include "PLOG.hh"
+
 const char BBnd::DELIM = '/' ; 
 
 
@@ -32,7 +34,11 @@ const char* BBnd::Form(const char* omat_, const char* osur_, const char* isur_, 
 BBnd::BBnd(const char* spec)
 {
     BStr::split( elem, spec, DELIM );
-    assert( elem.size() == 4 );
+    bool four = elem.size() == 4  ;
+
+    if(!four)
+    LOG(fatal) << "BBnd::BBnd malformed boundary spec " << spec << " elem.size " << elem.size() ;  
+    assert(four);
 
     omat = elem[0].empty() ? NULL : elem[0].c_str() ;
     osur = elem[1].empty() ? NULL : elem[1].c_str() ;

@@ -115,6 +115,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getGLTFPath();
        const char* getQueryString();
        const char* getCtrl();
+       bool hasCtrlKey(const char* key) const ;
     public:
        // used to communicate test geometry config from geometry loading to test event writing 
        void        setTestCSGPath(const char* testcsgpath);

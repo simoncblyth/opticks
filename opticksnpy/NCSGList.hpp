@@ -14,7 +14,7 @@ class NPY_API NCSGList
 {
     public:
         static const char* FILENAME ; 
-        static NCSGList* Load(const char* csgpath, int verbosity) ;
+        static NCSGList* Load(const char* csgpath, int verbosity, bool checkmaterial=true) ;
         static bool      ExistsDir(const char* dir);
         static const char* MakeUniverseBoundary( const char* boundary0 );
 

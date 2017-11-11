@@ -27,6 +27,7 @@ Tests individual trees::
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
 
+#include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "PLOG.hh"
 
@@ -85,6 +86,7 @@ void test_coincidence( const std::vector<NCSG*>& trees )
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+    BRAP_LOG__ ;  
     NPY_LOG__ ;  
 
     BOpticksResource okr ;  // no Opticks at this level 
@@ -112,7 +114,16 @@ int main(int argc, char** argv)
     }
     else
     {
-        NCSGList* ls = NCSGList::Load( basedir, verbosity );
+        bool checkmaterial = false ; 
+        // TODO: avoid this switch off, loading from the extras dir misinterprets a csg.txt as the boundaries 
+        //       should change the names of the file (perhaps to extras.txt)
+        NCSGList* ls = NCSGList::Load( basedir, verbosity, checkmaterial );
+
+        if(!ls)
+        {
+            LOG(fatal) << "this test requires the csg extras dir, which is created by running : op --gdml2gltf " ; 
+            return 0 ;
+        }
         const std::vector<NCSG*>& trees = ls->getTrees() ;    
         test_coincidence(trees);
     }

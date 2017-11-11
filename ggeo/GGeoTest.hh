@@ -57,9 +57,12 @@ class GGEO_API GGeoTest : public GGeoBase {
        static std::string MakeTestConfig_(const char* funcname);
     public:
        GGeoTest(Opticks* ok, GGeoBase* basis=NULL);
+       int getErr() const ; 
     private:
        void init();
-       GMergedMesh* initCreate();
+       GMergedMesh* initCreateCSG();
+       GMergedMesh* initCreateBIB();
+       void setErr(int err); 
     public:
        // GGeoBase : constituents locally customized
        const char*       getIdentifier();
@@ -98,7 +101,7 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        GMergedMesh* combineSolids( std::vector<GSolid*>& solids, GMergedMesh* mm0);
        GSolid*      makeSolidFromConfig( unsigned i );
-       void         loadCSG(const char* csgpath, std::vector<GSolid*>& solids );
+       void         importCSG(std::vector<GSolid*>& solids );
 
        void         createBoxInBox(std::vector<GSolid*>& solids);
        GMergedMesh* createPmtInBox();
@@ -108,6 +111,7 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        Opticks*         m_ok ; 
        GGeoTestConfig*  m_config ; 
+       unsigned         m_verbosity ;
        OpticksResource* m_resource ; 
        bool             m_dbgbnd ; 
        bool             m_dbganalytic ; 
@@ -132,7 +136,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
        GSolidList*      m_solist ; 
-       unsigned int     m_verbosity ;
+       int              m_err ; 
 
 };
 

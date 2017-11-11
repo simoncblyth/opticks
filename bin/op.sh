@@ -438,15 +438,15 @@ op-geometry-setup-juno()
    if [ "$geo" == "JUNO" ]; then 
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JUNO
        export OPTICKS_QUERY="range:1:50000"
-       export OPTICKS_CTRL=""
+       export OPTICKS_CTRL="volnames"
    elif [ "$geo" == "JPMT" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JPMT
        export OPTICKS_QUERY="range:1:289734"  # 289733+1 all test3.dae volumes
-       export OPTICKS_CTRL=""
+       export OPTICKS_CTRL="volnames"
    elif [ "$geo" == "JTST" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JTST
        export OPTICKS_QUERY="range:1:50000" 
-       export OPTICKS_CTRL=""
+       export OPTICKS_CTRL="volnames"
    elif [ "$geo" == "J1707" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1707
        export OPTICKS_QUERY="all" 
@@ -614,7 +614,7 @@ op-binary-setup()
        export OPTICKS_BINARY=$ubin
        # some commands should not be removed from the commandline
        # as they are needed by the binary 
-       echo ubin $ubin cfm $cfm cmdline $cmdline
+       #echo ubin $ubin cfm $cfm cmdline $cmdline
 
        case $cfm in 
          --surf|--scint|--oscint|--pmt|--j1707) export OPTICKS_ARGS=${cmdline/$cfm}   ;;
@@ -666,7 +666,7 @@ op-export()
 
    ## but python scrips need IDPATH 
 
-   echo $msg OPTICKS_BINARY ${OPTICKS_BINARY}
+   #echo $msg OPTICKS_BINARY ${OPTICKS_BINARY}
 
 
    if [ "${OPTICKS_BINARY: -3}" == ".py" ]; then

@@ -57,6 +57,20 @@ Debug Workflow
        ## load the G4 event, for dumping etc..
 
 
+Useful Options for Debugging
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+noab/nosc/nore
+    switch off absorb/scattering/reemission in all materials, see GMaterialLib 
+
+xxab/xxsc/xxre
+    enhance absorb/scattering/reemission in all materials, see GMaterialLib 
+
+fxab/fxsc/fxre
+    set particular values of absorb/scattering/reemission in all materials, see GMaterialLib 
+
+
+
 
 
 Mostly Working (Sep 1, 2017) Other than those marked

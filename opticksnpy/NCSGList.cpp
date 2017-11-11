@@ -22,8 +22,10 @@ bool NCSGList::ExistsDir(const char* dir)
 }
 
 
-NCSGList* NCSGList::Load(const char* csgpath, int verbosity)
+NCSGList* NCSGList::Load(const char* csgpath, int verbosity, bool checkmaterial)
 {
+    if(!csgpath) return NULL ; 
+
     if(!NCSGList::ExistsDir(csgpath))
     {
         LOG(warning) << "NCSGList::Load missing csgpath " << csgpath ; 
@@ -31,7 +33,8 @@ NCSGList* NCSGList::Load(const char* csgpath, int verbosity)
     }
     NCSGList* ls = new NCSGList(csgpath, verbosity );
     ls->load();
-    ls->checkMaterialConsistency();
+    if(checkmaterial)
+        ls->checkMaterialConsistency();
     return ls ;
 } 
 
@@ -76,7 +79,7 @@ void NCSGList::load()
 
     m_bndspec = new NTxt(txtpath.c_str());
     m_bndspec->read();
-    m_bndspec->dump("NCSGList::load");    
+    //m_bndspec->dump("NCSGList::load");    
 
     unsigned nbnd = m_bndspec->getNumLines();
 

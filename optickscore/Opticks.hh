@@ -122,6 +122,7 @@ class OKCORE_API Opticks {
        bool isPmtInBox();
        bool isOther();
        bool isValid();
+       bool hasCtrlKey(const char* key) const ;
        int  getRC();
        void setRC(int rc); 
 
