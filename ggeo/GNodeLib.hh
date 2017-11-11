@@ -22,7 +22,10 @@ GNodeLib
 
 Collection of GSolid/GNode instances with access by index.
 NB only pv/lv names are persisted, not the solids/nodes.
-Initially primarily a pre-cache operator, but access to pv/lv names also 
+The analytic and test ctor arguments determine the name of the 
+persisting directory.
+
+Initially was primarily a pre-cache operator, but access to pv/lv names also 
 relevant post-cache.
 
 There are several canonical m_nodelib instances:

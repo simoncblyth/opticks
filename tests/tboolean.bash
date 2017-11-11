@@ -4,6 +4,25 @@ tboolean-usage(){ cat << \EOU
 
 tboolean- 
 ======================================================
+
+*tboolean* focusses on the testing of very simple GGeoTest "Russian-doll" 
+geometries specified by python lists of CSG instances, with boundaries
+specifying omat/osur/isur/imat that have strictly consistent omat/imat
+pairs between self and parent.
+
+
+TODO
+----
+
+* add assert self.omat == parent.imat 
+
+* migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
+
+  * tboolean-bib-funcs : old style geom spec into tboolean-bib.bash ?
+
+
+* test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
+
  
 FUNCTIONS
 ----------
@@ -1886,7 +1905,7 @@ EOP
 tboolean-media-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-media-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-media-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-media-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf ; } 
+tboolean-media-g(){ TESTNAME=${FUNCNAME/-g} TESTCONFIG=$($TESTNAME- 2>/dev/null) tboolean-g- --export --dbgsurf --dbgbnd ; } 
 tboolean-media(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-media-(){  $FUNCNAME- | python $* ; } 
 tboolean-media--(){ cat << EOP 
@@ -1897,6 +1916,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 omat = "Rock"
+#osur = "perfectSpecularSurface"
 osur = ""
 isur = "perfectAbsorbSurface"
 imat = "Pyrex"
@@ -2014,7 +2034,7 @@ material = "Pyrex"
 
 CSG.kwa = dict(poly="IM", resolution="40")
 container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1, emitconfig="$(tboolean-emitconfig)", poly="IM")  
-sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum///%s" % material , poly="IM" )
+sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material , poly="IM" )
 
 CSG.Serialize([container, sphere], args.csgpath )
 

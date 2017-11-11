@@ -137,8 +137,6 @@ void GGeoTest::init()
 
     m_geolib->setMergedMesh( 0, tmm );  // TODO: create via standard GGeoLib::create ?
 
-    // tmm->save("$TMP", "GMergedMesh", "GGeoTest_init") ;
-
 
     if(m_csgpath)
     {
@@ -147,7 +145,6 @@ void GGeoTest::init()
         m_mlib->saveNames(m_csgpath);
         m_slib->saveNames(m_csgpath);
     }
-
 }
 
 
@@ -172,7 +169,6 @@ GMergedMesh* GGeoTest::initCreate()
     LOG(info) << "GGeoTest::initCreate START " << " mode " << mode ;
 
     GMergedMesh* tmm = NULL ; 
-    //std::vector<GSolid*> solids ; 
 
     m_solist = new GSolidList() ; 
     std::vector<GSolid*>& solids = m_solist->getList();
@@ -222,19 +218,6 @@ unsigned GGeoTest::getNumTrees() const
 
 
 
-void GGeoTest::boundarySetup(GSolid* solid, const char* spec)
-{
-    // materials and surfaces must be in place before adding 
-    // the boundary spec to get the boundary index 
-
-    relocateSurfaces(solid, spec);
-
-    unsigned boundary = m_bndlib->addBoundary(spec, false);  // only adds if not existing
-
-    solid->setBoundary(boundary);     // unlike ctor these create arrays
-}
-
-
 void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
 {
     BBnd b(spec);
@@ -263,19 +246,16 @@ void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
         {
             m_slib->relocateBasisSkinSurface( b.osur, self_lv );
         }
-        else if( b.isur ) // border self->parent
+        else 
         {
-            m_slib->relocateBasisBorderSurface( b.isur, self_pv, parent_pv  );
-        }
-        else if( b.osur ) // border parent->self
-        {
-            m_slib->relocateBasisBorderSurface( b.osur, parent_pv, self_pv ) ; 
+            if(unknown_isur)  // inner border self->parent
+                m_slib->relocateBasisBorderSurface( b.isur, self_pv, parent_pv  );
+       
+            if(unknown_osur)  // outer border parent->self
+                m_slib->relocateBasisBorderSurface( b.osur, parent_pv, self_pv ) ; 
         }
     }
 }
-
-
-
 
 void GGeoTest::reuseMaterials(NCSGList* csglist)
 {
@@ -305,8 +285,6 @@ void GGeoTest::reuseMaterials(const char* spec)
 }
 
 
-
-
 void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 {
     int verbosity = m_config->getVerbosity();
@@ -318,11 +296,11 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
 
     reuseMaterials(m_csglist);
 
-    unsigned num_tree = m_csglist->getNumTrees() ;
+    unsigned numTree = m_csglist->getNumTrees() ;
    
     LOG(info) << "GGeoTest::loadCSG START " 
              << " csgpath " << csgpath 
-             << " num_tree " << num_tree 
+             << " numTree " << numTree 
              << " verbosity " << verbosity
              ;
 
@@ -337,7 +315,7 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     // assuming tree order from outermost to innermost volume 
     GSolid* prior = NULL ; 
 
-    for(unsigned i=0 ; i < num_tree ; i++)
+    for(unsigned i=0 ; i < numTree ; i++)
     {
         primIdx++ ; // each tree is separate OptiX primitive, with own line in the primBuffer 
 
@@ -353,7 +331,13 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
         prior = solid ; 
 
         const char* spec = tree->getBoundary();  
-        boundarySetup( solid, spec ); 
+
+        // materials and surfaces must be in place before adding 
+        // the boundary spec to get the boundary index 
+
+        relocateSurfaces(solid, spec);
+
+
 
         GParts* pts = solid->getParts();
         pts->setIndex(0u, i);
@@ -368,18 +352,32 @@ void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
     }
 
 
-    // Can boundary hookup be done on a final pass here ?
-    // Hmm, depends where the boundary set in the solid gets used.
+
+    // Final pass setting boundaries
+    // as all mat/sur must be added to the mlib/slib
+    // before can form boundaries. As boundaries 
+    // require getIndex calls that will close the slib, mlib 
+    // (settling the indices) and making subsequnent mat/sur additions assert.
     //
-    // Assume need to split surface relocation that adds the surfaces
-    // to the slib, from boundary spec adding that requires 
-    // all surfaces and materials to have been added and the 
-    // proplibs closed to settle the indices : as it needs 
-    // to getIndex on the libs.
+    // Note that late setting of boundary is fine for GParts (analytic geometry), 
+    // as spec are held as strings within GParts until GParts::close
     //
-    // This should avoid an equivalent for surfaces 
-    // of notes/issues/GGeoTest_isClosed_assert.rst 
-    //
+    // See notes/issues/GGeoTest_isClosed_assert.rst 
+    
+ 
+    unsigned numSolid = m_nodelib->getNumSolids();
+    assert( numSolid == numTree );
+
+    for(unsigned i=0 ; i < numTree ; i++)
+    {
+        NCSG* tree = m_csglist->getTree(i) ; 
+        GSolid* solid = m_nodelib->getSolid(i) ;
+        const char* spec = tree->getBoundary();  
+        unsigned boundary = m_bndlib->addBoundary(spec, false); 
+
+        solid->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
+    }
+
 
 
     LOG(info) << "GGeoTest::loadCSG DONE " ; 

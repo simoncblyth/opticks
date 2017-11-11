@@ -75,8 +75,6 @@ void GNodeLib::save() const
     }
 
 
-
-
     GNode* top = getNode(0); 
     m_treepresent->traverse(top);
     m_treepresent->write(idpath, m_reldir);
@@ -156,6 +154,11 @@ void GNodeLib::add(GSolid* solid)
     m_solids.push_back(solid);
 
     unsigned int index = solid->getIndex(); 
+
+    if(m_test)
+    {
+        assert( m_solids.size() - 1 == index && "indices of test geometry solids added to GNodeLib must follow the sequence : 0,1,2,... " );
+    }
 
 
     //assert( m_solidmap.size() == index );   //  only with relative GSolid indexing

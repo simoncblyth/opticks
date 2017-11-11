@@ -39,7 +39,14 @@ OR for test geometries it is created part-by-part using methods of the npy primi
    npy/NSphere.hpp 
 
 
+GParts holds boundary specifications as lists of strings
+that are only converted into actual boundaries with indices pointing 
+at materials and surface by GParts::registerBoundaries which 
+is invoked by GParts::close which happens late 
+(typically within oxrap just before upload to GPU). 
 
+This approach was adopted to allow dynamic addition of geometry and
+boundaries, which is convenient for testing.
 
 
 

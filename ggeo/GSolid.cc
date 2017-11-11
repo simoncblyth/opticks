@@ -115,18 +115,10 @@ void GSolid::setParts(GParts* pts)
     m_parts = pts ; 
 }
 
-
-
-
-
 void GSolid::setCSGFlag(OpticksCSG_t csgflag)
 {
     m_csgflag = csgflag ; 
 }
-
-
-
-
 
 void GSolid::setBoundary(unsigned int boundary)
 {

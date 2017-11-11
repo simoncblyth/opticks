@@ -1,6 +1,17 @@
 Review Progress and Where Next ?
 ===================================
 
+
+Immediate
+-----------
+
+* go thru tboolean checking/investigating any test geometry mismatches
+* flesh out tgltf- with some intermediate geometry trees specified
+  in python
+
+
+
+
 Recent Progress
 -----------------
 
@@ -24,21 +35,14 @@ Opticks now supports:
   for convenient geometry debugging.
 
 
-
-
 TODO : j1707 review size of GPU buffers, any more instancing possible ? 
 --------------------------------------------------------------------------
 
 * potential reorg optix geometry into more objects 
 
 
-
 TODO : j1707 deep trees, expand balancing to handle ?
 ---------------------------------------------------------
-
-
-
-
 
 
 TODO: get verbosity under control in GDML/glTF route especially GParts 

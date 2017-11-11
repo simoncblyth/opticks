@@ -43,11 +43,6 @@ void GMaker::init()
 
 
 
-
-
-
-
-
 GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
@@ -137,7 +132,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
 
     NTrianglesNPY* tris = csg->polygonize();
 
-
     GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
 
     mesh->setCSG(csg);
@@ -147,9 +141,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
     GSolid* solid = new GSolid(index, transform, mesh, UINT_MAX, NULL );     
-
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
-
 
     solid->setSensor( NULL );      
 
@@ -158,11 +150,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
     // surfaces prior to arriving at a boundary index 
 
 
-
     OpticksCSG_t type = csg->getRootType() ;
-    //const char* shapename = CSGName(type); 
-    //std::string lvn = GMaker::LVName(shapename, index); 
-    //std::string pvn = GMaker::PVName(shapename, index); 
 
     std::string lvn = csg->getTestLVName();
     std::string pvn = csg->getTestPVName();
@@ -174,9 +162,6 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
     GParts* pts = GParts::make( csg, spec, verbosity );
 
     solid->setParts( pts );
-
-
-
 
 
     LOG(info) << "GMaker::makeFromCSG" 

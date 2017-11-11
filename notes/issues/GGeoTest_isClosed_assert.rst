@@ -23,6 +23,57 @@ TODO
    there will be an analogous issue
 
 
+FIXED : analogous assert for multi-surface multi-boundary geometry
+----------------------------------------------------------------------
+
+* requires > 1 different surfaces used in > 1 boundaries to trigger the assert
+
+::
+
+    tboolean-;tboolean-sphere --okg4
+
+::
+
+    delta:issues blyth$ tboolean-;tboolean-sphere--
+
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.csg import CSG  
+    args = opticks_main(csgpath="/tmp/blyth/opticks/tboolean-sphere--")
+
+    material = "Pyrex"
+
+    CSG.kwa = dict(poly="IM", resolution="40")
+    container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1, emitconfig="photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1", poly="IM")  
+    sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material , poly="IM" )
+
+    CSG.Serialize([container, sphere], args.csgpath )
+
+
+::
+
+    131 void GSolid::setBoundary(unsigned int boundary)
+    132 {
+    133     m_boundary = boundary ;
+    134     setBoundaryIndices( boundary );
+    135 }
+
+    257 void GNode::setBoundaryIndices(unsigned int index)
+    258 {
+    259     // unsigned int* array of the boundary index repeated nface times
+    260     unsigned int nface = m_mesh->getNumFaces();
+    261     unsigned int* indices = new unsigned int[nface] ;
+    262     while(nface--) indices[nface] = index ;
+    263     setBoundaryIndices(indices);
+    264 }
+
+    113 void GNode::setBoundaryIndices(unsigned int* boundary_indices)
+    114 {
+    115     m_boundary_indices = boundary_indices ;
+    116 }
+
+
+
+
 Approaches
 -----------
 

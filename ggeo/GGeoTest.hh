@@ -79,7 +79,6 @@ class GGEO_API GGeoTest : public GGeoBase {
        GBndLib*          getBndLib() ;    
 
     private:
-       void boundarySetup(GSolid* solid, const char* spec); 
        void relocateSurfaces(GSolid* solid, const char* spec) ;
        void reuseMaterials(NCSGList* csglist);
        void reuseMaterials(const char* spec);
