@@ -146,7 +146,8 @@ int main(int argc, char** argv)
     }
     else
     {
-        NCSGList* ls = NCSGList::Load(basedir, verbosity ); 
+        bool checkmaterial = false ;  // TODO: avoid this switch off, by distinguishing the boundary csg.txt from the uri extras csg.txt
+        NCSGList* ls = NCSGList::Load(basedir, verbosity, checkmaterial ); 
         if(!ls)
         {
             LOG(warning) << " no basedir " << basedir ; 
