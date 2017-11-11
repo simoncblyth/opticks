@@ -6,11 +6,11 @@ tviz- : Visualization Examples
 ==================================================
 
 
-`tviz-jpmt-cerenkov`
+`tviz-jun-cerenkov`
      Visualize JUNO geometry and photon simulation of Cerenkov and subsequent 
      scintillation light from a 100 GeV muon crossing the JUNO detector.
 
-`tviz-jpmt-scintillation`
+`tviz-jun-scintillation`
      Visualize JUNO geometry and a photon simulation of scintillation light
      from a 100 GeV muon crossing the JUNO detector.
 
@@ -29,6 +29,20 @@ tviz- : Visualization Examples
      Visualize Dayaby Far site geometry 
 
 
+
+
+Note on Analytic GPU geometry
+------------------------------
+
+The option *--gltf 1* or *--gltf 3* used by some of 
+these commands switches on the use of analytic GPU geometry.
+
+For this to work a prior step to convert GDML to GLTF is needed, eg with:: 
+
+   op --j1707 --gdml2gltf  
+
+
+
 EXERCISE
 ------------
 
@@ -45,26 +59,6 @@ tviz-env(){      olocal- ;  }
 tviz-dir(){ echo $(opticks-home)/tests ; }
 tviz-cd(){  cd $(tviz-dir); }
 
-
-
-
-
-tviz-jpmt-(){
-      op.sh \
-           --jpmt \
-           --jwire \
-           --target 64670 \
-           --load \
-           --animtimemax 200 \
-           --timemax 200 \
-           --optixviz \
-            $* 
-}
-
-#  --fullscreen \
-
-tviz-jpmt-cerenkov(){      tviz-jpmt- --cerenkov $* ; }
-tviz-jpmt-scintillation(){ tviz-jpmt- --scintillation $*  ; }
 
 
 
