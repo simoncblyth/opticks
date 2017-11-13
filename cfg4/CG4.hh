@@ -10,12 +10,6 @@ class G4UImanager ;
 class G4UIExecutive ; 
 class G4VUserDetectorConstruction ;
 
-//class G4VUserPrimaryGeneratorAction ;
-//class G4UserSteppingAction ;
-//class G4UserTrackingAction ;
-//class G4UserRunAction ;
-//class G4UserEventAction ;
-
 // npy-
 template <typename T> class NPY ; 
 
@@ -44,6 +38,34 @@ class OpticksRun ;
 class OpticksEvent ; 
 class Opticks ; 
 template <typename T> class OpticksCfg ;
+
+/**
+
+CG4
+====
+
+Canonical instance m_g4 is resident of OKG4Mgr and is instanciated 
+with it for non "--load" option running.
+
+Prime method CG4::propagate is invoked from OKG4Mgr::propagate
+
+
+
+Whats the difference between CRecorder/m_recorder and CStepRec/m_steprec ?
+-------------------------------------------------------------------------------
+
+CStepRec 
+   records non-optical particle steps into the m_nopstep buffer of the
+   OpticksEvent set by CStepRec::initEvent
+    
+CRecorder
+   records optical photon steps and photon tracks
+
+
+CStepRec is beautifully simple, CRecorder is horrible complicated in comparison
+
+
+**/
 
 
 #include "CFG4_API_EXPORT.hh"
@@ -98,6 +120,7 @@ class CFG4_API CG4
         CMaterialLib*         m_mlib ; 
         CDetector*            m_detector ; 
         CGenerator*           m_generator ; 
+        bool                  m_dynamic ; 
    private:
         CCollector*           m_collector ; 
         CRecorder*            m_recorder ; 
@@ -107,14 +130,8 @@ class CFG4_API CG4
         G4UImanager*          m_uiManager ; 
         G4UIExecutive*        m_ui ; 
    private:
-        //G4VUserPrimaryGeneratorAction* m_pga ; 
-        //G4UserSteppingAction*          m_sa ; 
-        //G4UserTrackingAction*          m_ta ; 
-        //G4UserRunAction*               m_ra ; 
-        //G4UserEventAction*             m_ea ;
-        // ActionInitialization*          m_ai ;  // TODO: eliminate
- 
-        CPrimaryGeneratorAction*       m_pga ;  // TODO: rename this 
+
+        CPrimaryGeneratorAction*       m_pga ; 
         CSteppingAction*               m_sa ;
         CTrackingAction*               m_ta ;
         CRunAction*                    m_ra ;

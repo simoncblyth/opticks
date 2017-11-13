@@ -123,10 +123,10 @@ CG4::CG4(OpticksHub* hub)
      m_mlib(m_geometry->getMaterialLib()),
      m_detector(m_geometry->getDetector()),
      m_generator(new CGenerator(m_hub, this)),
+     m_dynamic(m_generator->isDynamic()),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
-     m_recorder(new CRecorder(m_ok, m_geometry, m_generator->isDynamic())), 
-     //m_rec(new Rec(m_ok, m_geometry, m_generator->isDynamic())), 
-     m_steprec(new CStepRec(m_ok, m_generator->isDynamic())),  
+     m_recorder(new CRecorder(m_ok, m_geometry, m_dynamic)), 
+     m_steprec(new CStepRec(m_ok, m_dynamic)),  
      m_visManager(NULL),
      m_uiManager(NULL),
      m_ui(NULL),

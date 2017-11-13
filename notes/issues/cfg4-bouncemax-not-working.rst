@@ -1,0 +1,281 @@
+cfg4-lacks-bouncemax-equivalent
+=================================
+
+
+ISSUE
+-------
+
+Whilst trying to make the "TO BR SA"  1st material wrong issue worse (effect a larger fraction of photons for easier debug)
+I made the glass block an internal perfectSpecularSurface and emit inwards on 1 sheet if that box. 
+
+* Opticks bouncemax prevents this going on forever
+
+* BUT: there is no bouncemax equivalent with CFG4 ... so it proceeds to bounce, occuping 
+  all machine memory and dies ! 
+
+  * actually there is : but only in the live branch, not the default Canned approach 
+
+
+
+ 
+
+TESTS
+--------
+
+::
+
+    tboolean-;tboolean-box --okg4 --steppingdbg -D
+
+
+    (lldb) b CRecorder::Record(G4Step const*, int, int, bool, bool, DsG4OpBoundaryProcessStatus, CStage::CStage_t) 
+
+
+    (lldb) b CRecorder::CannedRecordStep()
+
+    (lldb) p m_crec->getNumStps()
+    (unsigned int) $8 = 2790
+
+
+
+
+GEOM
+------
+
+::
+
+    tboolean-box--(){ cat << EOP 
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.polyconfig import PolyConfig
+    from opticks.analytic.csg import CSG  
+
+    args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+    emitconfig = "photons=1000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+
+    CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
+
+    container = CSG("box", emit=0, boundary='Rock//perfectAbsorbSurface/Vacuum', container="1" )  # no param, container="1" switches on auto-sizing
+
+    box = CSG("box3", param=[300,300,200,0], emit=-1,  boundary="Vacuum//perfectSpecularSurface/GlassSchottF2" )
+
+    CSG.Serialize([container, box], args.csgpath )
+    EOP
+    }
+
+
+
+REVIEW
+----------
+
+
+
+
+CFG4::
+
+    210 
+    211 void CSteppingAction::UserSteppingAction(const G4Step* step)
+    212 {
+    213     int step_id = CTrack::StepId(m_track);
+    214     bool done = setStep(step, step_id);
+    215 
+    216     if(done)
+    217     {
+    218         G4Track* track = step->GetTrack();    // m_track is const qualified
+    219         track->SetTrackStatus(fStopAndKill);
+    220         // stops tracking when reach truncation as well as absorption
+    221     }
+    222 }
+    223 
+
+
+    230 bool CSteppingAction::setStep(const G4Step* step, int step_id)
+    231 {
+    232     bool done = false ;
+    233 
+    234     m_step = step ;
+    235     m_step_id = step_id ;
+    236 
+    237     if(m_step_id == 0)
+    238     {
+    239         const G4StepPoint* pre = m_step->GetPreStepPoint() ;
+    240         m_step_origin = pre->GetPosition();
+    241     }
+    242 
+    243 
+    244     m_track_step_count += 1 ;
+    245     m_step_total += 1 ;
+    246 
+    247     G4TrackStatus track_status = m_track->GetTrackStatus();
+    248 
+    249     LOG(trace) << "CSteppingAction::setStep"
+    250               << " step_total " << m_step_total
+    251               << " event_id " << m_event_id
+    252               << " track_id " << m_track_id
+    253               << " track_step_count " << m_track_step_count
+    254               << " step_id " << m_step_id
+    255               << " trackStatus " << CTrack::TrackStatusString(track_status)
+    256               ;
+    257 
+    258     if(m_optical)
+    259     {
+    260         done = collectPhotonStep();
+    261     }
+    262     else
+    263     {
+    264         m_steprec->collectStep(step, step_id);
+    265    
+    266         if(track_status == fStopAndKill)
+    267         {
+    268             done = true ;
+    269             m_steprec->storeStepsCollected(m_event_id, m_track_id, m_pdg_encoding);
+    270             m_steprec_store_count = m_steprec->getStoreCount();
+    271         }
+    272     }
+    273 
+    274    if(m_step_total % 10000 == 0)
+    275        LOG(debug) << "CSA (totals%10k)"
+    276                  << " track_total " <<  m_track_total
+    277                  << " step_total " <<  m_step_total
+    278                  ;
+    279 
+    280     return done ;
+
+
+
+    284 bool CSteppingAction::collectPhotonStep()
+    285 {
+    286     bool done = false ;
+    287 
+    288 
+    289     CStage::CStage_t stage = CStage::UNKNOWN ;
+    290 
+    291     if( !m_reemtrack )     // primary photon, ie not downstream from reemission 
+    292     {
+    293         stage = m_primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
+    294         m_primarystep_count++ ;
+    295     }
+    296     else
+    297     {
+    298         stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;
+    299         m_rejoin_count++ ;
+    300         // rejoin count is zeroed in setPhotonId, so each remission generation trk will result in REJOIN 
+    301     }
+    302 
+    303 
+    304     // TODO: avoid need for these
+    305     m_recorder->setPhotonId(m_photon_id);
+    306     m_recorder->setEventId(m_event_id);
+    307 
+    308     int record_max = m_recorder->getRecordMax() ;
+    309     bool recording = m_record_id < record_max ||  m_dynamic ;
+    310 
+    311     if(recording)
+    312     {
+    313 #ifdef USE_CUSTOM_BOUNDARY
+    314         DsG4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
+    315 #else
+    316         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
+    317 #endif
+    318         done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
+    319 
+    320     }
+    321     // hmm perhaps the recording restriction is why bouncemax doesnt kick in ? for the infini-bouncers
+    322     return done ;
+    323 }
+
+
+
+
+
+
+
+bouncemax::
+
+    simon:cfg4 blyth$ opticks-find bouncemax 
+    ./ok/ok.bash:    ggv --jpmt --modulo 1000 --bouncemax 0
+    ./ok/ok.bash:    ggv --jpmt --modulo 1000 --bouncemax 0
+    ./ok/ok.bash:    ggv --make --jpmt --modulo 100 --override 5182 --debugidx 5181 --bouncemax 0 
+    ./optixrap/oxrap.bash:ISSUE: restricting bouncemax prevents recsel selection operation
+    ./tests/tboolean.bash:  the bouncemax prevents this going on forever, but there is 
+    ./tests/tconcentric.bash:    tconcentric-t --bouncemax 15 --recordmax 16 --groupvel --finebndtex $* 
+    ./optickscore/OpticksCfg.cc:       m_bouncemax(9),     
+    ./optickscore/OpticksCfg.cc:   char bouncemax[128];
+    ./optickscore/OpticksCfg.cc:   snprintf(bouncemax,128, 
+    ./optickscore/OpticksCfg.cc:"Default %d ", m_bouncemax);
+    ./optickscore/OpticksCfg.cc:       ("bouncemax,b",  boost::program_options::value<int>(&m_bouncemax), bouncemax );
+    ./optickscore/OpticksCfg.cc:   // keeping bouncemax one less than recordmax is advantageous 
+    ./optickscore/OpticksCfg.cc:    return m_bouncemax ; 
+    ./optickscore/OpticksCfg.hh:     int         m_bouncemax ; 
+    ./ana/debug/genstep_sequence_material_mismatch.py:    ggv --torchconfig "zenith_azimuth:0,0.31,0,1" --bouncemax 1
+    simon:opticks blyth$ 
+
+    simon:opticks blyth$ opticks-find getBounceMax
+    ./cfg4/CRecorder.cc:    m_bounce_max = m_evt->getBounceMax();
+    ./optickscore/Opticks.cc:    unsigned int bounce_max = getBounceMax() ;
+    ./optickscore/Opticks.cc:unsigned Opticks::getBounceMax() {   return m_cfg->getBounceMax(); }
+    ./optickscore/OpticksCfg.cc:int OpticksCfg<Listener>::getBounceMax()
+    ./optickscore/OpticksEvent.cc:unsigned int OpticksEvent::getBounceMax()
+    ./optixrap/OPropagator.cc:    m_context[ "bounce_max" ]->setUint( m_ok->getBounceMax() );
+    ./optickscore/Opticks.hh:       unsigned getBounceMax();
+    ./optickscore/OpticksCfg.hh:     int          getBounceMax(); 
+    ./optickscore/OpticksEvent.hh:       unsigned int getBounceMax();
+    simon:opticks blyth$ 
+
+
+::
+
+     354 void CRecorder::initEvent(OpticksEvent* evt)
+     355 {
+     356     setEvent(evt);
+     357 
+     358     m_c4.u = 0u ;
+     359 
+     360     m_record_max = m_evt->getNumPhotons();   // from the genstep summation
+     361     m_bounce_max = m_evt->getBounceMax();
+     362 
+
+
+Huh, looks like there is bounce truncate ?::
+
+     836 #ifdef USE_CUSTOM_BOUNDARY
+     837 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label)
+     838 #else
+     839 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
+     840 #endif
+     841 {
+     842     // see notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
+     843     //
+     844     // NB this is used by both the live and non-live "canned" modes of recording 
+     845     //
+     846     // Formerly at truncation, rerunning this overwrote "the top slot" 
+     847     // of seqhis,seqmat bitfields (which are persisted in photon buffer)
+     848     // and the record buffer. 
+     849     // As that is different from Opticks behaviour for the record buffer
+     850     // where truncation is truncation, a HARD_TRUNCATION has been adopted.
+     ...
+     933 
+     934     RecordStepPoint(slot, point, flag, material, label);
+     935 
+     936     double time = point->GetGlobalTime();
+     937 
+     938 
+     939     if(m_debug || m_other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
+     940 
+     941     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
+     942 
+     943     m_bounce_truncate = m_slot > m_bounce_max  ;
+     944     if(m_bounce_truncate) m_step_action |= BOUNCE_TRUNCATE ;
+     945 
+     946 
+     947     bool done = m_bounce_truncate || m_record_truncate || absorb || miss ;
+     948 
+     949     if(done && m_dynamic)
+     950     {
+     951         m_records->add(m_dynamic_records);
+     952     }
+     953 
+     954     return done ;   
+     955 }
+

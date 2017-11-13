@@ -76,7 +76,6 @@ void CTrackingAction::initEvent(OpticksEvent* evt)
               ;
 }
 
-
 void CTrackingAction::setEvent(const G4Event* event, int event_id )
 {
     m_event = event ; 
@@ -90,7 +89,6 @@ void CTrackingAction::setTrack(const G4Track* track)
     m_track = track ; 
     m_track_id = CTrack::Id(track) ;
     m_parent_id = CTrack::ParentId(track) ;
-
 
     if(m_parent_id != -1 && m_parent_id >= m_track_id) 
     {
@@ -196,11 +194,6 @@ void CTrackingAction::dump(const char* msg )
               ;
 }
 
-
-
-
-
-
 void CTrackingAction::postinitialize()
 {
     assert(m_track_id == -1);
@@ -209,7 +202,6 @@ void CTrackingAction::postinitialize()
               << brief()
                ;
 }
-
 
 std::string CTrackingAction::brief()
 {

@@ -2,14 +2,14 @@
 // okc-
 #include "OpticksEvent.hh"
 
-// opticksgeo-
+// okg-
 #include "OpticksHub.hh"
 
 // npy-
 #include "NPY.hpp"
 #include "uif.h"
 
-// cg4-
+// cfg4-
 #include "CStep.hh"
 #include "CStepRec.hh"
 #include "Format.hh"
@@ -41,7 +41,7 @@ unsigned int CStepRec::getStoreCount()
 
 void CStepRec::collectStep(const G4Step* step, unsigned int step_id)
 {
-    m_steps.push_back(new CStep(step, step_id ));
+    m_steps.push_back(new CStep(step, step_id ));  // CStep::CStep copies the step 
 }
 
 void CStepRec::storeStepsCollected(unsigned int event_id, unsigned int track_id, int particle_id)
@@ -126,8 +126,6 @@ void CStepRec::storePoint(unsigned int event_id, unsigned int track_id, int part
     m_vals[15] =  uif[3].f ;
 
     m_nopstep->add(m_vals, m_num_vals);
-
 }
-
 
 

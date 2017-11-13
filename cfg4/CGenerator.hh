@@ -18,6 +18,14 @@ CGenerator
 
 Canonical m_generator instance is CG4 resident instanciated within it.    
 
+=====================  ==========
+source                  dynamic 
+=====================  ==========
+inputPhotonSource         N 
+TorchSource               N
+G4GunSource               Y
+=====================  ==========
+
 
 **/
 

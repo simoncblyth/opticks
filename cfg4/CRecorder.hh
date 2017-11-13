@@ -24,6 +24,7 @@ class OpticksEvent ;
 class CRec ; 
 class CGeometry ; 
 class CMaterialBridge ; 
+class CRecorderWriter ; 
 class CStp ; 
 
 #include "CRecorder.h"
@@ -32,58 +33,69 @@ class CStp ;
 template <typename T> class NPY ;
 
 
-//  CRecorder
-//  =============
-//
-//  The principal objective of *CRecorder* is to collect  
-//  Geant4 photon steps in a format that precisely matches the
-//  Opticks GPU photon records allowing use of the Opticks analysis 
-//  and visualization tools.
-//  To this end *CRecorder* saves non-dynamically into buffer of
-//  fixed number of photons and max steps per photon 
-//  in order to match on-GPU restrictions.  setQuad with
-//  a computed record_id and slot_id is used to mimick
-//  separate CUDA thread writes into tranches of record buffer. 
-//
-//  
-//
-//  CRecorder should really be called "OpticalPhotonCRecorder".
-//  It is instanciated by CG4::configureGenerator 
-//  and is mainly used from CSteppingAction.
-//  It is also used for CRecorder::RecordPrimaryVertex.
-//  from CGunSource and CTorchSource.
-//
-//  *LiveRecordStep* is called for all G4Step
-//  each of which is comprised of *pre* and *post* G4StepPoint, 
-//  as a result the same G4StepPoint are "seen" twice, 
-//  thus *RecordStep* only records the 1st of the pair 
-//  (the 2nd will come around as the first at the next call)
-//  except for the last G4Step pair where both points are recorded
-//
-//  *photons_per_g4event* is used by defineRecordId so the different
-//  technical g4 events all get slotted into the same OpticksEvent record 
-//  buffers
-//
-//
-//
-//  Traditional GPU Opticks simulation workflow:
-//
-//  * gensteps (Cerenkov/Scintillation) harvested from Geant4
-//    and persisted into OpticksEvent
-//
-//  * gensteps seeded onto GPU using Thrust, summation over photons 
-//    to generate per step provide photon and record buffer 
-//    dimensions up frount 
-//
-//  * Cerenkov/Scintillation on GPU generation and propagation      
-//    populate the pre-sized GPU record buffer 
-//
-//  This works because all gensteps are available before doing 
-//  any optical simulation. BUT when operating on CPU doing the 
-//  non-optical and optical simulation together, do not know the 
-//  photon counts ahead of time.
-//
-//
+/**
+
+CRecorder
+=============
+
+TODO
+~~~~~
+
+1. perhaps split into two CLiveRecorder and CCannedRecorder ?
+2. factor off the dumping into separate class 
+
+
+
+The principal objective of *CRecorder* is to collect  
+Geant4 photon steps in a format that precisely matches the
+Opticks GPU photon records allowing use of the Opticks analysis 
+and visualization tools.
+To this end *CRecorder* saves non-dynamically into buffer of
+fixed number of photons and max steps per photon 
+in order to match on-GPU restrictions.  setQuad with
+a computed record_id and slot_id is used to mimick
+separate CUDA thread writes into tranches of record buffer. 
+
+CRecorder should really be called "OpticalPhotonCRecorder".
+It is instanciated by CG4::configureGenerator 
+and is mainly used from CSteppingAction.
+It is also used for CRecorder::RecordPrimaryVertex.
+from CGunSource and CTorchSource.
+
+
+
+
+*LiveRecordStep* is called for all G4Step
+each of which is comprised of *pre* and *post* G4StepPoint, 
+as a result the same G4StepPoint are "seen" twice, 
+thus *RecordStep* only records the 1st of the pair 
+(the 2nd will come around as the first at the next call)
+except for the last G4Step pair where both points are recorded
+
+*photons_per_g4event* is used by defineRecordId so the different
+technical g4 events all get slotted into the same OpticksEvent record 
+buffers
+
+
+Traditional GPU Opticks simulation workflow:
+
+* gensteps (Cerenkov/Scintillation) harvested from Geant4
+  and persisted into OpticksEvent
+
+* gensteps seeded onto GPU using Thrust, summation over photons 
+  to generate per step provide photon and record buffer 
+  dimensions up frount 
+
+* Cerenkov/Scintillation on GPU generation and propagation      
+  populate the pre-sized GPU record buffer 
+
+This works because all gensteps are available before doing 
+any optical simulation. BUT when operating on CPU doing the 
+non-optical and optical simulation together, do not know the 
+photon counts ahead of time.
+
+**/
+
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -137,6 +149,7 @@ class CFG4_API CRecorder {
         static std::string Action(int action);
    public:
         CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic);
+        std::string desc() const ; 
         void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
    public:
@@ -256,6 +269,7 @@ class CFG4_API CRecorder {
         CMaterialBridge*   m_material_bridge ; 
         bool               m_dynamic ;
         bool               m_live ;   
+        CRecorderWriter*   m_writer ; 
 
         // m_live = true  : live recording mode, OpticksEvent records written during stepping
         // m_live = false : canned recording mode, records written Trajectory style from saved CRec CStp vector  

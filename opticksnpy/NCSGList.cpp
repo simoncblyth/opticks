@@ -120,6 +120,10 @@ void NCSGList::load()
             float scale = tree->getContainerScale(); // hmm should be prop of the list not the tree ? 
             float delta = 0.f ; 
             tree->adjustToFit(m_container_bbox, scale, delta );
+
+
+            nbbox bba2 = tree->bbox_analytic();
+            m_container_bbox.include(bba2);   // update for the auto-container, used by NCSGList::createUniverse
         }
       
         tree->export_(); // from CSG nnode tree back into *same* in memory buffer, with bbox added   
@@ -159,10 +163,23 @@ NCSG* NCSGList::createUniverse(float scale, float delta) const
               << " scale " << scale
               << " delta " << delta
               ;
- 
-    NCSG* universe = loadTree(0, ubnd ) ;    // cheat clone 
 
-    assert( !universe->isContainer() );
+
+    // "cheat" clone (via 2nd load) of outer volume 
+    // then increase size a little 
+    // this is only used for the Geant4 geometry
+ 
+    NCSG* universe = loadTree(0, ubnd ) ;    
+
+
+    if( universe->isContainer() )
+    {
+        LOG(info) << "NCSGList::createUniverse"
+                  << " outer volume isContainer (ie auto scaled) "
+                  << " universe will be scaled/delted a bit from there "
+                  ;
+    }
+
 
     universe->adjustToFit( m_container_bbox, scale, delta ); 
 

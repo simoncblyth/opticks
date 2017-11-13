@@ -35,31 +35,13 @@
 #include "Format.hh"
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
+#include "CRecorderWriter.hh"
 #include "CRec.hh"
 #include "CStp.hh"
 #include "State.hh"
 #include "CRecorder.hh"
 
 #include "PLOG.hh"
-
-
-#define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
-#define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
-
-short shortnorm( float v, float center, float extent )
-{
-    // range of short is -32768 to 32767
-    // Expect no positions out of range, as constrained by the geometry are bouncing on,
-    // but getting times beyond the range eg 0.:100 ns is expected
-    //  
-    int inorm = iround(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
-    return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-} 
-
-unsigned char my__float2uint_rn( float f )
-{
-    return iround(f);
-}
 
 
 
@@ -122,6 +104,8 @@ Canonical instance is ctor resident of CG4
 
 **/
 
+
+
 CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic) 
    :
    m_ok(ok),
@@ -134,6 +118,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
    m_material_bridge(NULL),
    m_dynamic(dynamic),
    m_live(m_ok->hasOpt("liverecorder")),
+   m_writer(new CRecorderWriter()),
    m_gen(0),
 
    m_record_max(0),
@@ -194,6 +179,7 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
 {
    
 }
+
 
 
 void CRecorder::postinitialize()
@@ -334,6 +320,21 @@ std::string CRecorder::description()
 }
 
 
+std::string CRecorder::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "CRecorder"
+       << " live " << m_live 
+       << " dynamic " << m_dynamic
+       << " record_max " << m_record_max
+       << " bounce_max " << m_bounce_max
+       ; 
+
+    return ss.str();
+}
+
+
 
 
 void CRecorder::RecordBeginOfRun(const G4Run*)
@@ -349,6 +350,7 @@ void CRecorder::setEvent(OpticksEvent* evt)
 {
     m_evt = evt ; 
     assert(m_evt && m_evt->isG4());
+    m_writer->setEvent(evt);
 }
 
 void CRecorder::initEvent(OpticksEvent* evt)
@@ -364,6 +366,7 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
     LOG(info) << "CRecorder::initEvent"
               << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
+              << " live " << ( m_live ? "LIVE" : "not-live" ) 
               << " record_max " << m_record_max
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
@@ -393,7 +396,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
         assert(m_record_max > 0 );
     }
 
-    //m_evt->zero();
 
     m_history = m_evt->getSequenceData();
     m_photons = m_evt->getPhotonData();
@@ -563,6 +565,8 @@ bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg,
 
 bool CRecorder::LiveRecordStep()
 {
+   // this is **NOT THE DEFAULT** 
+
     assert(m_live);
 
     switch(m_stage)
@@ -713,7 +717,7 @@ void CRecorder::CannedWriteSteps()
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
         postFlag = OpPointFlag(post, boundary_status, postStage);
 
-        bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+        bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
@@ -776,6 +780,8 @@ void CRecorder::CannedWriteSteps()
             }
         }
 
+
+        // huh: changing the inputs ??? confusing ... but are using next step lookahead, 
         stp->setMat(  u_premat, u_postmat );
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_step_action );
@@ -933,6 +939,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     RecordStepPoint(slot, point, flag, material, label);
 
+    //m_writer->RecordStepPoint(slot, point, flag, material, label);
+
+
     double time = point->GetGlobalTime();
 
 
@@ -1046,8 +1055,11 @@ G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
 }
 
 
+
+
 void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
 {
+     // TODO: migrate to using the writer 
     // write compressed record quads into buffer at location for the m_record_id 
 
     const G4ThreeVector& pos = point->GetPosition();
@@ -1061,18 +1073,18 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     const glm::vec4& td = m_evt->getTimeDomain() ; 
     const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
 
-    short posx = shortnorm(pos.x()/mm, sd.x, sd.w ); 
-    short posy = shortnorm(pos.y()/mm, sd.y, sd.w ); 
-    short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
-    short time_ = shortnorm(time/ns,   td.x, td.y );
+    short posx = CRecorderWriter::shortnorm(pos.x()/mm, sd.x, sd.w ); 
+    short posy = CRecorderWriter::shortnorm(pos.y()/mm, sd.y, sd.w ); 
+    short posz = CRecorderWriter::shortnorm(pos.z()/mm, sd.z, sd.w ); 
+    short time_ = CRecorderWriter::shortnorm(time/ns,   td.x, td.y );
 
     float wfrac = ((wavelength/nm) - wd.x)/wd.w ;   
 
     // see oxrap/cu/photon.h
-    unsigned char polx = my__float2uint_rn( (pol.x()+1.f)*127.f );
-    unsigned char poly = my__float2uint_rn( (pol.y()+1.f)*127.f );
-    unsigned char polz = my__float2uint_rn( (pol.z()+1.f)*127.f );
-    unsigned char wavl = my__float2uint_rn( wfrac*255.f );
+    unsigned char polx = CRecorderWriter::my__float2uint_rn( (pol.x()+1.f)*127.f );
+    unsigned char poly = CRecorderWriter::my__float2uint_rn( (pol.y()+1.f)*127.f );
+    unsigned char polz = CRecorderWriter::my__float2uint_rn( (pol.z()+1.f)*127.f );
+    unsigned char wavl = CRecorderWriter::my__float2uint_rn( wfrac*255.f );
 
 /*
     LOG(info) << "CRecorder::RecordStepPoint"
@@ -1187,11 +1199,6 @@ void CRecorder::RecordPhoton(const G4StepPoint* point)
         m_history->add(m_dynamic_history);
     }
 }
-
-
-
-
-
 
 
 

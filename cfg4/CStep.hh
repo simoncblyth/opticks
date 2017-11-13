@@ -1,8 +1,16 @@
 #pragma once
 
-// Holds copy of a step together with id 
 
 class G4Step ; 
+
+/**
+CStep
+======
+
+* *CStep* ctor copies the argument G4Step 
+  and holds the pointer to the copy together with step_id 
+
+**/
 
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CStep {

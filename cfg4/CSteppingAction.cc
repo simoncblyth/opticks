@@ -318,6 +318,7 @@ bool CSteppingAction::collectPhotonStep()
         done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
 
     }
+    // hmm perhaps the recording restriction is why bouncemax doesnt kick in ? for the infini-bouncers
     return done ; 
 }
 

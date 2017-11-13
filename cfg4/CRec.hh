@@ -14,11 +14,26 @@ class CStp ;
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+/**
+CRec
+=====
+
+Canonical m_crec instance is resident of CRecorder and is instanciated with it.
+
+
+
+
+
+**/
+
 class CFG4_API CRec 
 {
     public:
         CRec(Opticks* ok, CGeometry* geometry, bool dynamic);
+
+        // invoked by CRecorder::startPhoton, invokes clearStep
         void startPhoton(unsigned record_id, const G4ThreeVector& origin);
+        // clears the added steps
         void clearStp();
 
 

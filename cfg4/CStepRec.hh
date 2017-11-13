@@ -25,6 +25,10 @@ OpticksHub as each G4 event is created this class needs
 to take no action on changing event. It just keeps
 recording into the nopstep provided by the hub.
 
+CStepRec::initEvent sets m_nopstep the pointer to the 
+buffer in which to store the data
+
+
 **/
 
 
@@ -35,6 +39,7 @@ class CFG4_API CStepRec {
    private:
        void setNopstep(NPY<float>* nopstep);
    public:
+       // collect into vector of CStep*
        void collectStep(const G4Step* step, unsigned int step_id);   
        void storeStepsCollected(unsigned int event_id, unsigned int track_id, int particle_id);
        unsigned int getStoreCount();

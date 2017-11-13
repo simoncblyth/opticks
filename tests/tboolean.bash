@@ -295,6 +295,7 @@ tboolean-seqhis()
      "TO BT BT SA"      ) echo 0x8ccd  ;;
      "TO SC SA"         ) echo 0x86d  ;;
      "TO BR MI"         ) echo 0x3bd  ;;
+     "TO BR SA"         ) echo 0x8bd  ;;
    esac
 }
 
@@ -306,7 +307,8 @@ tboolean-ana-(){
     [ -z "$testname" ] && echo $msg missing TESTNAME && sleep 1000000
 
     #local dbgseqhis=$(tboolean-seqhis "TO MI")
-    local dbgseqhis=$(tboolean-seqhis "TO BR MI")
+    #local dbgseqhis=$(tboolean-seqhis "TO BR MI")
+    local dbgseqhis=$(tboolean-seqhis "TO BR SA")
 
     #local exe=OpticksEventAnaTest 
     local exe=OpticksEventCompareTest 
@@ -316,7 +318,7 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython  -i -- tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
+tboolean-ipy-(){ ipython  -i -- $(which tboolean.py) --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
@@ -484,36 +486,51 @@ tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
 
 
 
+tboolean-box-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-box-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
 tboolean-box-(){  $FUNCNAME- | python $* ; }
 tboolean-box--(){ cat << EOP 
-
+import logging
+log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emit = -1 
-container = CSG("box", emit=emit, emitconfig="$(tboolean-emitconfig)" )
-container.boundary = args.container
-container.meta.update(PolyConfig("CONTAINER").meta)
+emitconfig = "photons=1000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
 
-CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
+container = CSG("box", emit=0, boundary='Rock//perfectAbsorbSurface/Vacuum', container="1" )  # no param, container="1" switches on auto-sizing
 
-box_param = [0,0,0,200]
-box3_param = [300,300,200,0] 
-
-box = CSG("box3", param=box3_param, boundary="$(tboolean-testobject)" )
-box.dump()
-
+box = CSG("box3", param=[300,300,200,0], emit=-1,  boundary="Vacuum//perfectSpecularSurface/GlassSchottF2" )
 
 CSG.Serialize([container, box], args.csgpath )
 EOP
 }
+
+tboolean-box-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+* see tboolean-box-okg4-seqmat-mismatch.rst
+  "TO BR SA" is always giving incorrect 1st material in G4 recording 
+  (presumably a matswap?)
+
+* whilst trying to make issue worse ie effect a larger fraction of photons for easier debug
+  I made the glass block an internal perfectSpecularSurface : with Opticks 
+  the bouncemax prevents this going on forever, but there is 
+  no equivalent with G4 ... so it proceeded to occupy all machine memory and dies ! 
+  cfg4-bouncemax-not-working.rst
+ 
+
+EON
+}
+
 
 
 
