@@ -1026,6 +1026,7 @@ tboxlaser-(){  . $(opticks-home)/tests/tboxlaser.bash && tboxlaser-env $* ; }
 tdefault-(){   . $(opticks-home)/tests/tdefault.bash  && tdefault-env $* ; }
 tconcentric-(){   . $(opticks-home)/tests/tconcentric.bash  && tconcentric-env $* ; }
 tboolean-(){      . $(opticks-home)/tests/tboolean.bash  && tboolean-env $* ; }
+tboolean-bib-(){      . $(opticks-home)/tests/tboolean-bib.bash  && tboolean-bib-env $* ; }
 tjuno-(){      . $(opticks-home)/tests/tjuno.bash  && tjuno-env $* ; }
 tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }
 

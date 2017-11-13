@@ -5,60 +5,87 @@ tboolean-usage(){ cat << \EOU
 tboolean- 
 ======================================================
 
-*tboolean* focusses on the testing of very simple GGeoTest "Russian-doll" 
-geometries specified by python lists of CSG instances, with boundaries
-specifying omat/osur/isur/imat that have strictly consistent omat/imat
-pairs between self and parent.
+*tboolean* runs Opticks executables in "--test" mode which 
+constructs simple GGeoTest "Russian-doll" geometries specified by python 
+lists of solids (CSG instances), with boundaries specifying omat/osur/isur/imat 
+that have strictly consistent omat/imat pairs between self and parent.
+Each solid can be a simple primitive or a CSG node tree.
+
+Most of the functions follow the below pattern:
+
+tboolean-name--
+    emit to stdout python source description of the geometry
+
+tboolean-name-
+    pipe the above source to python, which writes a serialization of the geometry 
+    into directory $TMP/tboolean-name-- and emits to stdout a testconfig string 
+    of the below form. Currently only mode PyCsgInBox is supported within tboolean.
+    ::
+
+       analytic=1_csgpath=/tmp/blyth/opticks/tboolean-name--_mode=PyCsgInBox_outerfirst=1_name=tboolean-name--
+
+tboolean-name
+     runs the above geometry serialization, capturing the testconfig string and passing it
+     to the op.sh script via the tboolean-- function which runs the opticks executables 
+     in --test mode constructing the geometry, performing the simulation and writing 
+     events to file
+
+tboolean-name-g  
+      some *name* have the g variant which tests geometry construction via tboolean-g-
+
+tboolean-name-a
+     invokes tboolean-ana- on the events written by the tboolean-name function 
+
+tboolean-name-p
+     invokes tboolean-py- on the events written by the tboolean-name function 
+
+tboolean-name-ip
+     invokes tboolean-ipy- (ipython) on the events written by the tboolean-name function 
+     which jumps into interactive python with the event loaded
 
 
-TODO
-----
+Configuring Photon Sources 
+-----------------------------
 
-* migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
+TODO: check, is torchconfig still working, seems that emitconfig trumps torchconfig 
 
-  * tboolean-bib-funcs : old style geom spec into tboolean-bib.bash ?
+There are two approaches, the older manual torchconfig which is 
+defined separately from geometry and the newer more automated emitconfig,
+which is attached solids in the geometry.
 
+emitconfig
+   Emission of photons from the surface of any CSG primitive is configured 
+   with the *emit* attribute. emit=1/-1 emits outwards/inwards and emit=0 
+   switches off emission.  The details of the emission can be 
+   controlled with the emitconfig attribute, which defaults to:: 
 
-* check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
-
+        tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" ; }  
  
-FUNCTIONS
-----------
-
-The tboolean- geometry test functions mostly follow the same 
-pattern of sub-functions eg:
-
-tboolean-box-- 
-   emit to stdout python code describing geometry
-tboolean-box- 
-   runs the above python code, serializing the geometry description into directory $TMP/tboolean-box-
-tboolean-box
-   run opticks in "--test" mode loading the above written geometry 
+   The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
+   eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
 
 
+Relevant Opticks Options
+----------------------------
 
-Debug Workflow
-~~~~~~~~~~~~~~~~
+--okg4
+    perform "bi-simulation" : both Opticks and G4 geometries are constructed and simulations
+    performed in both, with separate events in OpticksEvent format being written to file
 
-::
+--load 
+    inhibits performing the simulation, instead a prior one is loaded. If --okg4 
+    was used, both G4 and Opticks events are loaded.
 
-    tboolean-;
+--vizg4/--vizopticks
+    used together with --load these options pick which event to vizualize 
 
-    tboolean-torus --okg4 -D --dbgsurf
-       ## bi-simulation from --okg4
-
-    tboolean-torus --okg4 --load --vizg4
-       ## visualize the G4 evt 
-
-    tboolean-torus-a
-       ## OpticksEventCompareTest OR other such exe
-
-    tboolean-torus-a --vizg4 
-       ## load the G4 event, for dumping etc..
+-D
+    runs Opticks executable within debugger, lldb or gdb 
 
 
-Useful Options for Debugging
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Other Options Useful for Debugging
+-------------------------------------
+
 
 noab/nosc/nore
     switch off absorb/scattering/reemission in all materials, see GMaterialLib 
@@ -70,14 +97,40 @@ fxab/fxsc/fxre
     set particular values of absorb/scattering/reemission in all materials, see GMaterialLib 
 
 
+Workflow Examples
+--------------------
+
+::
+
+    tboolean-;
+
+    tboolean-torus --okg4 -D --dbgsurf
+       ## bi-simulation, writing events 
+
+    tboolean-torus --okg4 --load --vizg4
+       ## visualize the G4 evt 
+
+    tboolean-torus-a
+       ## OpticksEventCompareTest OR other such exe
+
+    tboolean-torus-a --vizg4 
+       ## load the G4 event, for dumping etc..
+
+
+TODO
+----
+
+* migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
+
+* check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
 
 
 
 Mostly Working (Sep 1, 2017) Other than those marked
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+---------------------------------------------------------
 
-* some have poor/missing polygonizations, but all should have an OK raytrace 
-  unless marked otherwise below
+* some have poor/missing polygonizations
+* all should have an OK raytrace, unless marked otherwise below
 
   
 tboolean-box
@@ -172,7 +225,7 @@ tboolean-interlocked
 
 
 Not Working (Sep 1, 2017)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-----------------------------
 
 tboolean-positivize
      AttributeError: 'CSG' object has no attribute 'subdepth'  
@@ -197,22 +250,6 @@ tboolean-sst
      Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_umaxmin, file /Users/blyth/opticks/opticksnpy/NNodeNudger.cpp, line 413.
 
 
-TODO
---------
-
-* CSG geometry config using python that writes
-  a serialization turns out to be really convenient...
-  Howabout attaching emission of torch photons to pieces
-  of geometry ?
-
-* Also there is lots of duplication in torchconfig
-  between all the tests... pull out the preparation of 
-  torchconfig metadata into a python script ? that 
-  all the tests can use ? 
-
-  Hmm but the sources need to correspond to geometry ...
-  this needs an overhaul.
- 
 
 NOTES
 --------
@@ -229,90 +266,6 @@ However in tracetest mode the record buffer filling
 is not implemented so the visualization 
 of photon paths is not operational.
 
-
-DEPECATED old test geometry configuration
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* CSG tree is defined in breadth first or level order
-
-* parameters of boolean operations currently define adhoc box 
-  intended to contain the geometry, TODO: calculate from bounds of the contained tree 
-
-* offsets arg identifies which nodes belong to which primitives by pointing 
-  at the nodes that start each primitive
-
-::
-
-     1  node=union        parameters=0,0,0,400           boundary=Vacuum///$material 
-     2  node=difference   parameters=0,0,100,300         boundary=Vacuum///$material
-     3  node=difference   parameters=0,0,-100,300        boundary=Vacuum///$material
-     4  node=box          parameters=0,0,100,$inscribe   boundary=Vacuum///$material
-     5  node=sphere       parameters=0,0,100,$radius     boundary=Vacuum///$material
-     6  node=box          parameters=0,0,-100,$inscribe  boundary=Vacuum///$material
-     7  node=sphere       parameters=0,0,-100,$radius    boundary=Vacuum///$material
-
-Perfect tree with n=7 nodes is depth 2, dev/csg/node.py (root2)::
- 
-                 U1                
-                  o                
-         D2              D3        
-          o               o        
-     b4      s5      b6      s7    
-      o       o       o       o         
-
-
-* nodes identified with 1-based levelorder index, i
-* left/right child of node i at l=2i, r=2i+1, so long as l,r < n + 1
-
-
-python test geometry configuration 
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-* python config is much more flexible than bash, allowing 
-  more natural tree construction and node reuse
-
-Running functions such as tboolean-box-sphere-py- 
-construct CSG node trees for each "solid" of the geometry.
-Typically the containing volume is a single node tree 
-and the contained volume is a multiple node CSG tree.
-
-These trees are serialized into numpy arrays and written to 
-files within directories named after the bash function eg 
-"/tmp/blyth/opticks/tboolean-box-sphere-py-". 
-
-The bash function emits to stdout only the name of 
-this directory which is captured and used in the 
-commandline testconfig csgpath slot.
-
-
-testconfig modes
-~~~~~~~~~~~~~~~~~~
-
-PmtInBox
-
-     * see tpmt- for this one
-
-BoxInBox
-
-     * CSG combinations not supported, union/intersection/difference nodes
-       appear as placeholder boxes
-
-     * raytrace superficially looks like a union, but on navigating inside 
-       its apparent that its just overlapped individual primitives
-
-
-PyCsgInBox
-
-     * requires csgpath identifying directory containing serialized CSG trees
-       and csg.txt file with corresponding boundary spec strings
-
-
-CsgInBox
-
-     * DECLARED DEAD, USE PyCsgInBox
-     * requires "offsets" identifying node splits into primitives eg offsets=0,1 
-     * nodes are specified in tree levelorder, trees must be perfect 
-       with 1,3,7 or 15 nodes corresponding to trees of height 0,1,2,3
 
 EOU
 }
@@ -402,9 +355,6 @@ tboolean--(){
         testname=$(tboolean-det)
     fi  
 
-
-
-
     op.sh  \
             $cmdline \
             --rendermode +global,+axis \
@@ -439,7 +389,7 @@ tboolean-photons(){ echo 100000 ; }
 tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,0.000,1.000 ; }
 
 
-# sheetmask
+# sheetmask : eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
 #    0x1  : sheet 0 only
 #    0x3f : sheets 0:6 
 
@@ -529,64 +479,6 @@ tboolean-torchconfig()
 tboolean-material(){ echo GlassSchottF2 ; }
 tboolean-container(){ echo Rock//perfectAbsorbSurface/Vacuum ; }
 tboolean-testobject(){ echo Vacuum///GlassSchottF2 ; }
-
-
-tboolean-bib-box-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-bib-box(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
-tboolean-bib-box-()
-{
-    local test_config=(
-                 mode=BoxInBox
-                 name=$FUNCNAME
-                 analytic=1
-
-                 node=box      parameters=0,0,0,1000               boundary=$(tboolean-container)
-                 node=box      parameters=0,0,0,100                boundary=$(tboolean-testobject)
-
-                    )
-     echo "$(join _ ${test_config[@]})" 
-}
-
-tboolean-bib-box-small-offset-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-bib-box-small-offset-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
-tboolean-bib-box-small-offset-sphere-()
-{
-    local test_config=(
-                 mode=BoxInBox
-                 name=$FUNCNAME
-                 analytic=1
-
-                 node=sphere           parameters=0,0,0,1000          boundary=$(tboolean-container)
- 
-                 node=${1:-difference} parameters=0,0,0,300           boundary=$(tboolean-testobject)
-                 node=box              parameters=0,0,0,200           boundary=$(tboolean-testobject)
-                 node=sphere           parameters=0,0,200,100         boundary=$(tboolean-testobject)
-               )
-     echo "$(join _ ${test_config[@]})" 
-}
-
-
-tboolean-bib-box-sphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-bib-box-sphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
-tboolean-bib-box-sphere-()
-{
-    local operation=${1:-difference}
-    local inscribe=$(python -c "import math ; print 1.3*200/math.sqrt(3)")
-    local test_config=(
-                 mode=BoxInBox
-                 name=$FUNCNAME
-                 analytic=1
-
-                 node=box          parameters=0,0,0,1000          boundary=$(tboolean-container)
- 
-                 node=$operation   parameters=0,0,0,300           boundary=$(tboolean-testobject)
-                 node=box          parameters=0,0,0,$inscribe     boundary=$(tboolean-testobject)
-                 node=sphere       parameters=0,0,0,200           boundary=$(tboolean-testobject)
-               )
-
-     echo "$(join _ ${test_config[@]})" 
-}
-
 
 
 
