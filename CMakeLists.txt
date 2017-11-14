@@ -10,7 +10,7 @@ set(name Opticks)
 project(${name})
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
-set(OptiX_INSTALL_DIR "/Developer/OptiX" CACHE PATH   "Path to OptiX installed location.")
+set(OptiX_INSTALL_DIR "/tmp"             CACHE PATH   "Path to OptiX installed location.")
 set(COMPUTE_CAPABILITY "0"               CACHE STRING "GPU Compute Capability eg one of 0,30,50,52 " )
 
 set(SUPERBUILD ON)

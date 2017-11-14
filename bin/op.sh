@@ -172,6 +172,7 @@ op-binary-names(){ type op-binary-name | perl -ne 'm,--(\w*)\), && print "$1\n" 
 op-binary-name()
 {
    case $1 in 
+         --version) echo OpticksCMakeConfigTest ;;
          --idpath) echo OpticksIDPATH ;;
            --keys) echo InteractorKeys ;;
           --tcfg4) echo CG4Test ;;

@@ -215,18 +215,9 @@ opticks-fold(){
 
 
 
-
-
-
-
-
 opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
-
-
-
-
 
 #opticks-bid(){    echo $(optix-vernum) ; }    ## build identity 
 #opticks-prefix(){ echo $(opticks-fold)/$(opticks-bid) ; }
@@ -252,6 +243,7 @@ opticks-optix-install-dir(){
     case $t in 
        D_400) echo /Developer/OptiX_400 ;;
        D) echo /Developer/OptiX_380 ;;
+    RYAN) echo /Developer/OptiX_380 ;;
      GTL) echo ${MYENVTOP}/OptiX ;;
     H5H2) echo ${MYENVTOP}/OptiX ;;
        X) echo /usr/local/optix-3.8.0/NVIDIA-OptiX-SDK-3.8.0-linux64 ;;
@@ -266,6 +258,7 @@ opticks-compute-capability(){
     local t=$NODE_TAG
     case $t in 
        D) echo 30 ;;
+    RYAN) echo 30 ;;
      GTL) echo 30 ;;
     H5H2) echo 50 ;;
        X) echo 52 ;; 
@@ -438,10 +431,12 @@ opticks-cmake-generator()
     fi
 }
 
-opticks-cmake-info(){ cat << EOI
+opticks-cmake-info(){ g4- ; xercesc- ; cat << EOI
 
 $FUNCNAME
 ======================
+
+       NODE_TAG                   :  $NODE_TAG
 
        opticks-sdir               :  $(opticks-sdir)
        opticks-bdir               :  $(opticks-bdir)
@@ -456,6 +451,26 @@ $FUNCNAME
 EOI
 }
 
+
+opticks-cmakecache(){ echo $(opticks-bdir)/CMakeCache.txt ; }
+opticks-cmakecache-grep(){ grep ${1:-COMPUTE_CAPABILITY} $(opticks-cmakecache) ; }
+opticks-cmakecache-vars-(){  cat << EOV
+CMAKE_BUILD_TYPE
+COMPUTE_CAPABILITY
+CMAKE_INSTALL_PREFIX
+OptiX_INSTALL_DIR
+Geant4_DIR
+XERCESC_LIBRARY
+XERCESC_INCLUDE_DIR
+EOV
+}
+
+opticks-cmakecache-vars(){ 
+   local var 
+   $FUNCNAME- | while read var ; do
+       opticks-cmakecache-grep $var 
+   done    
+}
 
 
 opticks-cmake(){
@@ -518,8 +533,26 @@ opticks-cmake-modify-ex2(){
           . 
 }
 
+opticks-cmake-modify-ex3(){
 
+  local msg="=== $FUNCNAME : "
+  local bdir=$(opticks-bdir)
+  local bcache=$bdir/CMakeCache.txt
+  [ ! -f "$bcache" ] && echo $msg requires a preexisting $bcache from prior opticks-cmake run && return 
+  opticks-bcd
 
+  echo $msg opticks-cmakecache-vars BEFORE MODIFY 
+  opticks-cmakecache-vars 
+
+  cmake \
+       -DOptiX_INSTALL_DIR=/Developer/OptiX_380 \
+       -DCOMPUTE_CAPABILITY=30 \
+          . 
+
+  echo $msg opticks-cmakecache-vars AFTER MODIFY 
+  opticks-cmakecache-vars 
+
+}
 
 
 

@@ -15,6 +15,7 @@ Contents:
 
    docs/opticks 
    docs/overview
+   docs/how_opticks_full_works
    docs/geocache
 
    ana/tools
