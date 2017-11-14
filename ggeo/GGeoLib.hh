@@ -35,6 +35,8 @@ class GGEO_API GGeoLib {
         static const char* GPARTS ; 
         enum { MAX_MERGED_MESH = 10 } ;
     public:
+        static bool HasCacheConstituent(const char* idpath, bool analytic, unsigned ridx) ;
+        static const char* RelDir(const char* name, bool analytic);
         static GGeoLib* Load(Opticks* ok, bool analytic, GBndLib* bndlib);
     public:
         GGeoLib(Opticks* ok, bool analytic, GBndLib* bndlib);
@@ -45,12 +47,12 @@ class GGEO_API GGeoLib {
         const char* getMeshVersion() const ;
         unsigned getVerbosity() const ;  
     public:
+        void hasCache() const ;
         void loadFromCache();
         void save();
         GMergedMesh* makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity );
-        //GMergedMesh* makeMergedMeshLOD(unsigned index) ;
     private:
-        const char* getRelDir(const char* name);
+        const char* getRelDir(const char* name) const ;
         void loadConstituents(const char* idpath);
         void removeConstituents(const char* idpath);
         void saveConstituents(const char* idpath);

@@ -26,6 +26,7 @@
 #include "GLMFormat.hpp"
 #include "NState.hpp"
 #include "NPropNames.hpp"
+#include "NScene.hpp"
 #include "NLoad.hpp"
 #include "NSlice.hpp"
 #include "NSceneConfig.hpp"
@@ -671,24 +672,68 @@ const char* Opticks::getSensorSurface()
 {
     return m_resource->getSensorSurface() ;
 }
-const char* Opticks::getGLTFPath()
+
+
+
+
+
+
+
+int  Opticks::getGLTF() const 
+{
+    return m_cfg->getGLTF(); 
+}
+int  Opticks::getGLTFTarget() const 
+{
+    return m_cfg->getGLTFTarget(); 
+}
+bool Opticks::isGLTF() const 
+{
+    return getGLTF() > 0 ; 
+}
+
+
+const char* Opticks::getGLTFPath() const 
 {
     return m_resource->getGLTFPath() ;
 }
-const char* Opticks::getGLTFBase()   // config base and name only used whilst testing with gltf >= 100
+const char* Opticks::getGLTFBase() const  // config base and name only used whilst testing with gltf >= 100
 {
     int gltf = getGLTF();
     const char* path = getGLTFPath() ;
     std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getGLTFBase() ;
     return strdup(base.c_str()) ; 
 }
-const char* Opticks::getGLTFName()
+const char* Opticks::getGLTFName() const 
 {
     int gltf = getGLTF();
     const char* path = getGLTFPath() ;
     std::string name = gltf < 100 ? BFile::Name(path) : m_cfg->getGLTFName()  ;
     return strdup(name.c_str()) ; 
 }
+
+
+bool Opticks::hasGLTF() const 
+{
+    // lookahead to what GScene::GScene will do
+    return NScene::Exists(getGLTFBase(), getGLTFName()) ;
+}
+
+
+void Opticks::configureCheckGeometryFiles() 
+{
+    if(isGLTF() && !hasGLTF())
+    {
+        LOG(fatal) << "gltf option is selected but there is no gltf file " ;
+        LOG(fatal) << " GLTFBase " << getGLTFBase() ;
+        LOG(fatal) << " GLTFName " << getGLTFName() ;
+        LOG(fatal) << "Try to create the GLTF from GDML with eg:  op --j1707 --gdml2gltf  "  ;
+        
+        //setExit(true); 
+        //assert(0);
+    }
+} 
+
 
 
 const char* Opticks::getGLTFConfig()
@@ -756,19 +801,6 @@ NSceneConfig* Opticks::getSceneConfig()
 }
 
 
-int  Opticks::getGLTF()
-{
-    return m_cfg->getGLTF(); 
-}
-int  Opticks::getGLTFTarget()
-{
-    return m_cfg->getGLTFTarget(); 
-}
-bool Opticks::isGLTF()
-{
-    return getGLTF() > 0 ; 
-}
- 
 
 int  Opticks::getTarget()
 {
@@ -902,12 +934,14 @@ void Opticks::configure()
     m_dbg->postconfigure();
 
     m_verbosity = m_cfg->getVerbosity(); 
+
+    configureCheckGeometryFiles();
+
     LOG(debug) << "Opticks::configure DONE " 
               << " verbosity " << m_verbosity 
               ;
 
 }
-
 
 
 

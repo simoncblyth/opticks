@@ -1,6 +1,201 @@
 axel-handling-no-gdml2gltf
 ============================
 
+INTERIM FIX : EARLY EXIT WHEN MISSING GLTF 
+---------------------------------------------------
+
+::
+
+    simon:optickscore blyth$ op --lxe --gltf 1 
+    288 -rwxr-xr-x  1 blyth  staff  145440 Nov 14 11:26 /usr/local/opticks/lib/OKTest
+    proceeding.. : /usr/local/opticks/lib/OKTest --lxe --gltf 1
+    2017-11-14 12:25:47.295 INFO  [4764722] [Opticks::dumpArgs@848] Opticks::configure argc 4
+      0 : /usr/local/opticks/lib/OKTest
+      1 : --lxe
+      2 : --gltf
+      3 : 1
+    2017-11-14 12:25:47.296 FATAL [4764722] [Opticks::configureCheckGeometryFiles@727] gltf option is selected but there is no gltf file 
+    2017-11-14 12:25:47.296 FATAL [4764722] [Opticks::configureCheckGeometryFiles@728]  GLTFBase /usr/local/opticks/opticksdata/export/LXe
+    2017-11-14 12:25:47.296 FATAL [4764722] [Opticks::configureCheckGeometryFiles@729]  GLTFName g4_00.gltf
+    2017-11-14 12:25:47.296 FATAL [4764722] [Opticks::configureCheckGeometryFiles@730] Try to create the GLTF from GDML with eg:  op --j1707 --gdml2gltf  
+    2017-11-14 12:25:47.296 INFO  [4764722] [Opticks::setExit@599] Opticks::setExit EXITING 
+    /Users/blyth/opticks/bin/op.sh RC 0
+    simon:optickscore blyth$ 
+
+
+Observations
+---------------
+
+* actually things aint to simple, because the GLTF is only actually needed in order to create the 
+  analytic geocache ... 
+
+* which means will need  
+
+::
+
+    op --j1707 --gdml2gltf  
+       # convert the gdml into gltf with a python script
+
+    op --j1707 --gltf 3 -G   
+       # construct the analytic + triangulated geocache 
+
+
+* hmm getting users to do one step of creating geocache is OK, 
+  but doing a multi-step will be too difficult to support ... 
+
+  * so need to put the gltf in opticksdata 
+
+* i need to make it easier to test each stage ...
+
+
+TODO : Every Workflow Stage Testing 
+-------------------------------------
+
+* to really close the loop on missing geo files need to 
+  revive G4DAE exporting within Opticks : then can reproduce
+  every level of missing file
+
+
+
+Try to reproduce by renaming the gltf file
+-----------------------------------------------
+
+::
+
+    simon:g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae blyth$ jdp
+    simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ 
+    simon:g4_00.a181a603769c1f98ad927e7367c7aa51.dae blyth$ cd ..
+    simon:juno1707 blyth$ l
+    total 663416
+    -rw-r--r--   1 blyth  staff        192 Sep 11 21:02 ChromaMaterialMap.json
+    drwxr-xr-x  18 blyth  staff        612 Aug 28 19:07 g4_00.a181a603769c1f98ad927e7367c7aa51.dae
+    -rw-r--r--   1 blyth  staff  208187484 Aug  3 16:07 g4_00.pretty.gltf
+    -rw-r--r--   1 blyth  staff   84720916 Aug  3 16:06 g4_00.gltf
+    drwxr-xr-x  15 blyth  staff        510 Aug  3 13:15 g4_00.dc4c5b76e112378f74220a1112129841.dae
+    drwxr-xr-x   4 blyth  staff        136 Aug  3 13:02 g4_00
+    drwxr-xr-x  38 blyth  staff       1292 Aug  3 12:01 extras
+    -rw-r--r--   1 blyth  staff   25514459 Jul 22 10:07 g4_00.dae
+    -rw-r--r--   1 blyth  staff   21229971 Jul 22 10:07 g4_00.gdml
+    simon:juno1707 blyth$ 
+    simon:juno1707 blyth$ mv g4_00.gltf g4_00.gltf.renamed
+
+
+    simon:opticks blyth$ tviz-;tviz-jun-scintillation
+    288 -rwxr-xr-x  1 blyth  staff  145440 Nov 14 11:26 /usr/local/opticks/lib/OKTest
+    proceeding.. : /usr/local/opticks/lib/OKTest --j1707 --gltf 3 --animtimemax 200 --timemax 200 --optixviz --scintillation
+    2017-11-14 12:30:40.634 INFO  [4766484] [Opticks::dumpArgs@848] Opticks::configure argc 10
+      0 : /usr/local/opticks/lib/OKTest
+      1 : --j1707
+      2 : --gltf
+      3 : 3
+      4 : --animtimemax
+      5 : 200
+      6 : --timemax
+      7 : 200
+      8 : --optixviz
+      9 : --scintillation
+    2017-11-14 12:30:40.635 FATAL [4766484] [Opticks::configureCheckGeometryFiles@727] gltf option is selected but there is no gltf file 
+    2017-11-14 12:30:40.635 FATAL [4766484] [Opticks::configureCheckGeometryFiles@728]  GLTFBase /usr/local/opticks/opticksdata/export/juno1707
+    2017-11-14 12:30:40.635 FATAL [4766484] [Opticks::configureCheckGeometryFiles@729]  GLTFName g4_00.gltf
+    2017-11-14 12:30:40.635 FATAL [4766484] [Opticks::configureCheckGeometryFiles@730] Try to create the GLTF from GDML with eg:  op --j1707 --gdml2gltf  
+    2017-11-14 12:30:40.635 INFO  [4766484] [Opticks::setExit@599] Opticks::setExit EXITING 
+    /Users/blyth/opticks/bin/op.sh RC 0
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+
+
+
+Hmm : not so simple ...
+---------------------------
+
+
+The GLTF file is only needed at geocache creation ?
+
+::
+
+     516 void GGeo::loadGeometry()
+     517 {
+     518     bool loaded = isLoaded() ;
+     519 
+     520     int gltf = m_ok->getGLTF();
+     521 
+     522     LOG(info) << "GGeo::loadGeometry START"
+     523               << " loaded " << loaded
+     524               << " gltf " << gltf
+     525               ;
+     526 
+     527     if(!loaded)
+     528     {
+     529         loadFromG4DAE();
+     530         save();
+     531 
+     532         if(gltf > 0 && gltf < 10)
+     533         {
+     534             loadAnalyticFromGLTF();
+     535             saveAnalytic();
+     536         }
+     537     }
+     538     else
+     539     {
+     540         loadFromCache();
+     541         if(gltf > 0 && gltf < 10)
+     542         {
+     543             loadAnalyticFromCache();
+     544         }
+     545     }
+
+
+     583 void GGeo::loadAnalyticFromGLTF()
+     584 {
+     585     LOG(info) << "GGeo::loadAnalyticFromGLTF START" ;
+     586     if(!m_ok->isGLTF()) return ;
+     587 #ifdef WITH_YoctoGL
+     588 
+     590     m_gscene = GScene::Create(m_ok, this); // GGeo needed for m_bndlib 
+     591 
+     592 #else
+     593     LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ;
+     594     assert(0);
+     595 #endif
+     596     LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ;
+     597 }
+
+
+
+     645 void GGeo::loadAnalyticFromCache()
+     646 {
+     647     LOG(info) << "GGeo::loadAnalyticFromCache START" ;
+     648     m_gscene = GScene::Load(m_ok, this); // GGeo needed for m_bndlib 
+     649     LOG(info) << "GGeo::loadAnalyticFromCache DONE" ;
+     650 }
+
+
+
+
+When loaded GGeoLib, GNodeLib and GMeshLib come from cache.
+
+::
+
+     084 GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
+      85     :
+      86     GGeoBase(),
+      87     m_ok(ok),
+      88     m_query(ok->getQuery()),
+      89     m_ggeo(ggeo),
+     ...
+     103     m_loaded(loaded),
+     ...
+     111     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib )   : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
+     112     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo ) : new GNodeLib(m_ok, m_analytic, m_testgeo )),
+     113     m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
+     114 
+     115     m_colorizer(new GColorizer(m_nodelib, m_geolib, m_tri_bndlib, ggeo->getColors(), GColorizer::PSYCHEDELIC_NODE )),   // GColorizer::SURFACE_INDEX
+     116 
+     117     m_verbosity(m_scene ? m_scene->getVerbosity() : 0),
+     118     m_root(NULL),
+     119     m_selected_count(0)
+     120 {
+
 
 Report from Axel : tviz-jun-scintillation
 ---------------------------------------------
@@ -13,8 +208,7 @@ Report from Axel : tviz-jun-scintillation
 
 ::
 
-    op --j1707 --gdml2dgltf 
-
+    op --j1707 --gdml2gltf 
 
 
 ::
@@ -254,10 +448,13 @@ Before::
 
 
 
-succeed to reproduce the error reporting is pretty good
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+succeed to reproduce : the error reporting is pretty good
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-* TODO: somewhere very early (maybe Opticks::configure) check .dae .gdml .gltf file existance relative to options
+But arrangd for early detection and exit with Opticks::configureCheckGeometryFiles 
+
+* checking .gltf file existance relative to options
+
 
 ::
 

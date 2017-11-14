@@ -26,10 +26,19 @@
 const char* GGeoLib::GMERGEDMESH = "GMergedMesh" ; 
 const char* GGeoLib::GPARTS = "GParts" ; 
 
-const char* GGeoLib::getRelDir(const char* name)
+
+const char* GGeoLib::RelDir(const char* name, bool analytic) // static
 {
-    return m_analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
+    return analytic ? BStr::concat(name, "Analytic", NULL) : name ; 
 }
+
+const char* GGeoLib::getRelDir(const char* name) const 
+{
+    return RelDir(name, m_analytic);
+}
+
+
+
 
 GBndLib* GGeoLib::getBndLib() const 
 {
@@ -92,17 +101,38 @@ void GGeoLib::loadFromCache()
     loadConstituents(idpath);
 }
 
+
+
+
 void GGeoLib::save()
 {
     const char* idpath = m_ok->getIdPath() ;
     saveConstituents(idpath);
 }
 
+
+
+bool GGeoLib::HasCacheConstituent(const char* idpath, bool analytic, unsigned ridx) 
+{
+    const char* sidx = BStr::itoa(ridx) ;
+    // reldir depends on m_analytic
+    std::string smmpath = BFile::FormPath(idpath, RelDir(GMERGEDMESH, analytic), sidx );
+    std::string sptpath = BFile::FormPath(idpath, RelDir(GPARTS, analytic),      sidx );
+
+    const char* mmpath = smmpath.c_str();
+    const char* ptpath = sptpath.c_str();
+
+    return BFile::ExistsDir(mmpath) && BFile::ExistsDir(ptpath) ; 
+}
+
+
 void GGeoLib::removeConstituents(const char* idpath )
 {
    for(unsigned int ridx=0 ; ridx < MAX_MERGED_MESH ; ++ridx)
    {   
+
         const char* sidx = BStr::itoa(ridx) ;
+        // reldir depends on m_analytic
         std::string smmpath = BFile::FormPath(idpath, getRelDir(GMERGEDMESH), sidx );
         std::string sptpath = BFile::FormPath(idpath, getRelDir(GPARTS),      sidx );
 
@@ -122,6 +152,9 @@ void GGeoLib::removeConstituents(const char* idpath )
         }
    } 
 }
+
+
+
 
 void GGeoLib::loadConstituents(const char* idpath )
 {
@@ -212,30 +245,6 @@ void GGeoLib::saveConstituents(const char* idpath)
     }
 }
 
-
-/*
-GMergedMesh* GGeoLib::makeMergedMeshLOD(unsigned index)
-{
-    if(m_lodconfig->verbosity > 0)
-       LOG(info) << "GGeoLib::makeMergedMeshLOD" 
-                 << " lod.verbosity " << m_lodconfig->verbosity
-                 << " lod.levels " << m_lodconfig->levels
-                  ;
- 
-       ; 
-
-    if(m_merged_mesh_lod.find(index) == m_merged_mesh_lod.end())
-    {
-        GMergedMesh* mm = getMergedMesh(index);
-        assert(mm);
-
-        GMergedMesh* mmlod = GMergedMesh::MakeLODComposite(mm, m_lodconfig->levels );        
-        m_merged_mesh_lod[index] = mmlod ;
-    }    
-    return m_merged_mesh_lod[index] ;
-}
-
-*/
 
 
 GMergedMesh* GGeoLib::makeMergedMesh(unsigned index, GNode* base, GNode* root, unsigned verbosity )

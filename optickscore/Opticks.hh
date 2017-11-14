@@ -94,6 +94,9 @@ class OKCORE_API Opticks {
        void init();
    public:
        void configure();  // invoked after commandline parsed
+   private:
+       void configureCheckGeometryFiles()  ; // non-const may setExit 
+   public:
        std::string brief();
        void dump(const char* msg="Opticks::dump") ;
        void Summary(const char* msg="Opticks::Summary");
@@ -189,14 +192,19 @@ class OKCORE_API Opticks {
        const char* getSensorSurface(); 
    public:
        // see GScene, NScene, NGLTF
-       const char* getGLTFPath();   // <- standard above geocache position next to the .gdml and .dae
-       const char* getGLTFBase();   // <- testing only 
-       const char* getGLTFName();   // <- testing only 
+       const char* getGLTFPath() const ;   // <- standard above geocache position next to the .gdml and .dae
+       const char* getGLTFBase() const ;   
+       const char* getGLTFName() const ;  
+       bool        hasGLTF() const ; 
+   public:
+       // from cfg
+       int         getGLTF() const ;
+       int         getGLTFTarget() const ;
+       bool        isGLTF() const ;
+
        const char* getGLTFConfig();
        NSceneConfig* getSceneConfig();
-       int         getGLTF();
-       int         getGLTFTarget();
-       bool        isGLTF();
+
    public:
        bool        isTest();
        const char* getTestConfig();

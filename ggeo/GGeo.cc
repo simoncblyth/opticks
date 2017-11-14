@@ -584,15 +584,14 @@ void GGeo::loadAnalyticFromGLTF()
 {
     LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
     if(!m_ok->isGLTF()) return ; 
+
 #ifdef WITH_YoctoGL
-
-    bool loaded = false ; 
-    m_gscene = new GScene(m_ok, this, loaded); // GGeo needed for m_bndlib 
-
+    m_gscene = GScene::Create(m_ok, this); 
 #else
     LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 
     assert(0);
 #endif
+
     LOG(info) << "GGeo::loadAnalyticFromGLTF DONE" ; 
 }
 

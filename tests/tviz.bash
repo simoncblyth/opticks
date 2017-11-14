@@ -37,9 +37,15 @@ Note on Analytic GPU geometry
 The option *--gltf 1* or *--gltf 3* used by some of 
 these commands switches on the use of analytic GPU geometry.
 
-For this to work a prior step to convert GDML to GLTF is needed, eg with:: 
+For this to work a prior step to convert GDML to GLTF is needed, and to 
+recreate the geocache::
 
-   op --j1707 --gdml2gltf  
+    op --j1707 --gdml2gltf  
+       # convert the gdml into gltf with a python script
+
+    op --j1707 --gltf 3 -G   
+       # construct the analytic + triangulated geocache 
+
 
 
 

@@ -110,9 +110,9 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void Dump(const char* msg="OpticksResource::Dump");
        std::string desc() const ; 
     public:
-       const char* getDAEPath();
-       const char* getGDMLPath();
-       const char* getGLTFPath();
+       const char* getDAEPath() const ;
+       const char* getGDMLPath() const ;
+       const char* getGLTFPath() const ;
        const char* getQueryString();
        const char* getCtrl();
        bool hasCtrlKey(const char* key) const ;
@@ -140,7 +140,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
-       const char* getMetaPath();
+       const char* getMetaPath() const ;
     public:
        const char* getMeshfix();
        const char* getMeshfixCfg();

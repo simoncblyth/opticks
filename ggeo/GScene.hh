@@ -88,6 +88,8 @@ class GGEO_API GScene : public GGeoBase
 {
    //    friend class GGeo ;  
     public:
+        static bool HasCache( Opticks* ok ); 
+        static GScene* Create(Opticks* ok, GGeo* ggeo) ;
         static GScene* Load(Opticks* ok, GGeo* ggeo) ;
         GScene(Opticks* ok, GGeo* ggeo, bool loaded);
         //GGeoLib*  getGeoLib();

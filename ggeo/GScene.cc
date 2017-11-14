@@ -64,11 +64,25 @@ void GScene::save() const
 }
 
 
+
+GScene* GScene::Create(Opticks* ok, GGeo* ggeo)
+{
+    bool loaded = false ; 
+    GScene* scene = new GScene(ok, ggeo, loaded); // GGeo needed for m_bndlib 
+    return scene ;  
+}
 GScene* GScene::Load(Opticks* ok, GGeo* ggeo)
 {
     bool loaded = true ; 
     GScene* scene = new GScene(ok, ggeo, loaded); // GGeo needed for m_bndlib 
     return scene ;  
+}
+
+bool GScene::HasCache( Opticks* ok ) // static 
+{
+    const char* idpath = ok->getIdPath();
+    bool analytic = true ; 
+    return GGeoLib::HasCacheConstituent(idpath, analytic, 0 );
 }
 
 

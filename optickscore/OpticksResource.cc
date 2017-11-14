@@ -170,23 +170,25 @@ const char* OpticksResource::getMaterialMap()
 
 
 
-const char* OpticksResource::getEnvPrefix()
+const char* OpticksResource::getEnvPrefix() 
 {
     return m_envprefix ;
 }
-const char* OpticksResource::getDAEPath()
+
+
+const char* OpticksResource::getDAEPath() const 
 {
     return m_daepath ;
 }
-const char* OpticksResource::getGDMLPath()
+const char* OpticksResource::getGDMLPath() const 
 {
     return m_gdmlpath ;
 }
-const char* OpticksResource::getGLTFPath()
+const char* OpticksResource::getGLTFPath() const 
 {
     return m_gltfpath ;
 }
-const char* OpticksResource::getMetaPath()
+const char* OpticksResource::getMetaPath() const 
 {
     return m_metapath ;
 }
