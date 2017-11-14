@@ -13,6 +13,7 @@ class G4Event ;
 
 class Opticks ; 
 
+struct CG4Ctx ; 
 class CG4 ; 
 class CTrackingAction ; 
 
@@ -36,12 +37,13 @@ class CFG4_API CEventAction : public G4UserEventAction
     void setEvent(const G4Event* event);
   private:
     CG4*               m_g4 ; 
+    CG4Ctx&            m_ctx ; 
     Opticks*           m_ok ; 
     CTrackingAction*   m_ta ;  
   private:
     // setEvent
-    const G4Event*        m_event ; 
-    int                   m_event_id ;
+    //const G4Event*        m_event ; 
+    //int                   m_event_id ;
 
 };
 

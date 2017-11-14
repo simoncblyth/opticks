@@ -21,6 +21,9 @@ class Opticks ; // okc-
 class OpticksEvent ; 
 
 // cfg4-
+
+struct CG4Ctx ; 
+
 class CRec ; 
 class CGeometry ; 
 class CMaterialBridge ; 
@@ -37,6 +40,67 @@ template <typename T> class NPY ;
 
 CRecorder
 =============
+
+::
+
+    simon:cfg4 blyth$ grep  m_recorder\-\>  *.*
+    CG4.cc:    m_recorder->postinitialize();  
+    CG4.cc:    m_recorder->initEvent(evt);
+    CGunSource.cc:    //m_recorder->RecordPrimaryVertex(vertex);
+    CSteppingAction.cc:   m_verbosity(m_recorder->getVerbosity()),
+    CSteppingAction.cc:    m_recorder->setPhotonId(m_photon_id);   
+    CSteppingAction.cc:    m_recorder->setEventId(m_event_id);
+    CSteppingAction.cc:    int record_max = m_recorder->getRecordMax() ;
+    CSteppingAction.cc:        done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
+    CSteppingAction.cc:    m_recorder->report(msg);
+    CTrackingAction.cc:        m_recorder->posttrack();
+    simon:cfg4 blyth$ 
+
+    simon:cfg4 blyth$ grep setRecordId *.*
+    CRecorder.cc:void CRecorder::setRecordId(int record_id, bool dbg, bool other)
+    CRecorder.cc:    setRecordId(record_id, dbg, other );
+    CRecorder.hh:        void setRecordId(int record_id, bool dbg, bool other);
+    CSteppingAction.cc:void CSteppingAction::setRecordId(int record_id, bool dbg, bool other)
+    CSteppingAction.hh:    void setRecordId(int photon_id, bool debug, bool other);
+    CSteppingAction.hh:    // set by setRecordId
+    CTrackingAction.cc:    setRecordId(record_id);
+    CTrackingAction.cc:void CTrackingAction::setRecordId(int record_id )
+    CTrackingAction.cc:    m_sa->setRecordId(record_id, _debug, other);
+    CTrackingAction.hh:    void setRecordId(int record_id);
+    CTrackingAction.hh:    // setRecordId
+    simon:cfg4 blyth$ 
+
+
+    144 void CTrackingAction::setPhotonId(int photon_id, bool reemtrack)
+    145 {
+    146     m_photon_id = photon_id ;    // NB photon_id continues reemission photons
+    147     m_reemtrack = reemtrack ;
+    148 
+    149     m_sa->setPhotonId(m_photon_id, m_reemtrack);
+    150 
+    151     int record_id = m_photons_per_g4event*m_event_id + m_photon_id ;
+    152     setRecordId(record_id);
+    153 
+    154     if(m_dump) dump("CTrackingAction::setPhotonId");
+    155 }
+
+    157 void CTrackingAction::setRecordId(int record_id )
+    158 {
+    159     m_record_id = record_id ;
+    160 
+    161     bool _debug = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
+    162     setDebug(_debug);
+    163 
+    164     bool other = m_ok->isOtherPhoton(record_id) ; // from option: --oindex=1,100,1000,10000 
+    165     setOther(other);
+    166 
+    167     m_dump = m_debug || m_other ;
+    168 
+    169     m_sa->setRecordId(record_id, _debug, other);
+    170 }
+
+
+
 
 TODO
 ~~~~~
@@ -150,17 +214,17 @@ class CFG4_API CRecorder {
 
         static std::string Action(int action);
    public:
-        CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic);
+        CRecorder(CG4* g4, CGeometry* geometry, bool dynamic);
         std::string desc() const ; 
         void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
    public:
         // controlled via --dindex and --oindex options
-        bool isDebug(); 
-        bool isOther(); 
+        //bool isDebug(); 
+        //bool isOther(); 
    private:
-        void setDebug(bool debug);
-        void setOther(bool other);
+        //void setDebug(bool debug);
+        //void setOther(bool other);
    private:
         void setEvent(OpticksEvent* evt);
    public:
@@ -180,7 +244,7 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, 
@@ -190,7 +254,7 @@ class CFG4_API CRecorder {
         void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
-        bool Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(const G4Step* step, int step_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, 
@@ -222,19 +286,20 @@ class CFG4_API CRecorder {
         // non-live running 
         void CannedWriteSteps();
    public:
-        void setEventId(int event_id);
-        void setPhotonId(int photon_id);
-        void setParentId(int parent_id);
-        void setRecordId(int record_id, bool dbg, bool other);
-        void setPrimaryId(int primary_id);
+        //void setEventId(int event_id);
+        //void setPhotonId(int photon_id);
+        //void setParentId(int parent_id);
+        //void setRecordId(int record_id, bool dbg, bool other);
+        //void setPrimaryId(int primary_id);
+
         void setStage(CStage::CStage_t stage);
    public:
-        int getEventId();
-        int getPhotonId();
-        int getPhotonIdPrior();
-        int getParentId();
+        //int getEventId();
+        //int getPhotonId();
+        //int getPhotonIdPrior();
+        //int getParentId();
         int getStepId();
-        int getRecordId();
+        //int getRecordId();
 
         unsigned getRecordMax();
 
@@ -260,7 +325,10 @@ class CFG4_API CRecorder {
    private:
         void init();
    private:
+        CG4*               m_g4; 
+        CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
+        bool               m_dbgrec ; 
         unsigned long long m_dbgseqhis ;
         unsigned long long m_dbgseqmat ;
         bool               m_dbgflags ;
@@ -283,20 +351,22 @@ class CFG4_API CRecorder {
         unsigned m_steps_per_photon ; 
 
         unsigned m_verbosity ; 
-        bool     m_debug ; 
-        bool     m_other ; 
+
+        //bool     m_debug ; 
+        //bool     m_other ; 
 
         CStage::CStage_t m_stage ;
         CStage::CStage_t m_prior_stage ;
 
-        int m_event_id ; 
-        int m_photon_id ; 
-        int m_photon_id_prior ; 
-        int m_parent_id ; 
+        //int m_event_id ; 
+        //int m_photon_id ; 
+        //int m_photon_id_prior ; 
+        //int m_parent_id ; 
         int m_step_id ; 
-        int m_record_id ; 
-        int m_record_id_prior ; 
-        int m_primary_id ; 
+
+        //int m_record_id ; 
+        //int m_record_id_prior ; 
+        //int m_primary_id ; 
 
         uifchar4     m_c4 ; 
 

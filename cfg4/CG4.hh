@@ -14,6 +14,8 @@ class G4VUserDetectorConstruction ;
 template <typename T> class NPY ; 
 
 // cfg4-
+
+
 class CPhysics ; 
 class CGeometry ; 
 class CMaterialLib ; 
@@ -68,6 +70,8 @@ CStepRec is beautifully simple, CRecorder is horrible complicated in comparison
 **/
 
 
+#include "CG4Ctx.hh"
+
 #include "CFG4_API_EXPORT.hh"
 
 class CFG4_API CG4 
@@ -102,6 +106,7 @@ class CFG4_API CG4
         CGeometry*     getGeometry();
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
+        CG4Ctx&        getCtx();
 
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();
@@ -138,6 +143,9 @@ class CFG4_API CG4
         CEventAction*                  m_ea ;
 
         bool                           m_initialized ; 
+
+        CG4Ctx                m_ctx ;       
+
         
 };
 

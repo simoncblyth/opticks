@@ -475,6 +475,13 @@ bool Opticks::isDbgBnd() const
     return m_cfg->hasOpt("dbgbnd") ;
 }
 
+bool Opticks::isDbgRec() const
+{
+    return m_cfg->hasOpt("dbgrec") ;
+}
+
+
+
 bool Opticks::isDbgTorch() const
 {
     return m_cfg->hasOpt("torchdbg") ;

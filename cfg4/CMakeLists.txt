@@ -198,6 +198,7 @@ set(SOURCES
     CSteppingAction.cc
     CTrackingAction.cc
     CStage.cc
+    CG4Ctx.cc
     CG4.cc
     CCollector.cc
     CRunAction.cc

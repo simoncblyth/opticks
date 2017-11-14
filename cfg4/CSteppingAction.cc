@@ -32,6 +32,7 @@
 #include "CStp.hh"
 #include "CSteppingAction.hh"
 #include "CTrack.hh"
+#include "CG4Ctx.hh"
 #include "CG4.hh"
 
 #include "CFG4_POP.hh"
@@ -96,7 +97,9 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    : 
    G4UserSteppingAction(),
    m_g4(g4),
+   m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
+   m_dbgrec(m_ok->isDbgRec()),
    m_dynamic(dynamic),
    m_geometry(g4->getGeometry()),
    m_material_bridge(NULL),
@@ -115,18 +118,19 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_startTrack(false),
 
 
-   m_event(NULL),
-   m_event_id(-1),
+   //m_event(NULL),
+   //m_event_id(-1),
 
    m_track_step_count(0),
 
-   m_track(NULL),
-   m_track_id(-1),
-   m_optical(false),
-   m_pdg_encoding(0),
+   //m_track(NULL),
+   //m_track_id(-1),
+   //m_optical(false),
+   //m_pdg_encoding(0),
 
-   m_photon_id(0),
-   m_reemtrack(false),
+   //m_photon_id(0),
+   //m_reemtrack(false),
+
    m_rejoin_count(0),
    m_primarystep_count(0),
 
@@ -153,26 +157,28 @@ CSteppingAction::~CSteppingAction()
 }
 
 
-void CSteppingAction::setEvent(const G4Event* event, int event_id)
+//void CSteppingAction::setEvent(const G4Event* event, int event_id)
+void CSteppingAction::setEvent()
 {
     LOG(debug) << "CSA (setEvent)"
-              << " event_id " << event_id
+              << " event_id " << m_ctx._event_id
               << " event_total " <<  m_event_total
               ; 
 
-    m_event = event ; 
-    m_event_id = event_id ; 
+    //m_event = event ; 
+    //m_event_id = event_id ; 
 
     m_event_total += 1 ; 
     m_event_track_count = 0 ; 
 }
 
-void CSteppingAction::setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding )
+//void CSteppingAction::setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding )
+void CSteppingAction::setTrack()
 {
-    m_track = track ; 
-    m_track_id = track_id ; 
-    m_optical = optical ; 
-    m_pdg_encoding = pdg_encoding ; 
+    //m_track = track ; 
+    //m_track_id = track_id ; 
+    //m_optical = optical ; 
+    //m_pdg_encoding = pdg_encoding ; 
 
     ///////////////////////////////////
     m_track_step_count = 0 ; 
@@ -180,37 +186,39 @@ void CSteppingAction::setTrack(const G4Track* track, int track_id, bool optical,
     m_track_total += 1 ; 
 }
 
-void CSteppingAction::setPhotonId(int photon_id, bool reemtrack)
+//void CSteppingAction::setPhotonId(int photon_id, bool reemtrack)
+void CSteppingAction::setPhotonId()
 {
-    assert( photon_id >= 0 );
-    m_photon_id = photon_id ; 
-    m_reemtrack = reemtrack ; 
+    assert( m_ctx._photon_id >= 0 );
+    //m_photon_id = photon_id ; 
+    //m_reemtrack = reemtrack ; 
     m_rejoin_count = 0 ; 
     m_primarystep_count = 0 ; 
 
     LOG(debug) << "CSteppingAction::setPhotonId"
-              << " event_id " << m_event_id 
-              << " track_id " << m_track_id 
-              << " photon_id " << photon_id 
-              << " reemtrack " << reemtrack
+              << " event_id " << m_ctx._event_id 
+              << " track_id " << m_ctx._track_id 
+              << " photon_id " << m_ctx._photon_id 
+              << " reemtrack " << m_ctx._reemtrack
               ; 
 }
 
 
+/*
 void CSteppingAction::setRecordId(int record_id, bool dbg, bool other)
 {
     m_record_id = record_id ; 
     m_debug = dbg  ; 
     m_other = other  ; 
 }
-
+*/
 
 
 /// above methods are invoked from on high by CTrackingAction prior to getting any steps
 
 void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
-    int step_id = CTrack::StepId(m_track);
+    int step_id = CTrack::StepId(m_ctx._track);
     bool done = setStep(step, step_id);
 
     if(done)
@@ -243,19 +251,18 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
 
     m_track_step_count += 1 ; 
     m_step_total += 1 ; 
-
-    G4TrackStatus track_status = m_track->GetTrackStatus(); 
+    G4TrackStatus track_status = m_ctx._track->GetTrackStatus(); 
 
     LOG(trace) << "CSteppingAction::setStep" 
               << " step_total " << m_step_total
-              << " event_id " << m_event_id
-              << " track_id " << m_track_id
+              << " event_id " << m_ctx._event_id
+              << " track_id " << m_ctx._track_id
               << " track_step_count " << m_track_step_count
               << " step_id " << m_step_id
               << " trackStatus " << CTrack::TrackStatusString(track_status)
               ;
 
-    if(m_optical)
+    if(m_ctx._optical)
     {
         done = collectPhotonStep();
     }
@@ -266,7 +273,7 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
         if(track_status == fStopAndKill)
         {
             done = true ;  
-            m_steprec->storeStepsCollected(m_event_id, m_track_id, m_pdg_encoding);
+            m_steprec->storeStepsCollected(m_ctx._event_id, m_ctx._track_id, m_ctx._pdg_encoding);
             m_steprec_store_count = m_steprec->getStoreCount(); 
         }
     }
@@ -288,7 +295,7 @@ bool CSteppingAction::collectPhotonStep()
 
     CStage::CStage_t stage = CStage::UNKNOWN ; 
 
-    if( !m_reemtrack )     // primary photon, ie not downstream from reemission 
+    if( !m_ctx._reemtrack )     // primary photon, ie not downstream from reemission 
     {
         stage = m_primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
         m_primarystep_count++ ; 
@@ -300,13 +307,21 @@ bool CSteppingAction::collectPhotonStep()
         // rejoin count is zeroed in setPhotonId, so each remission generation trk will result in REJOIN 
     }
 
-
     // TODO: avoid need for these
-    m_recorder->setPhotonId(m_photon_id);   
-    m_recorder->setEventId(m_event_id);
+    //m_recorder->setPhotonId(m_photon_id);    
+    //m_recorder->setEventId(m_ctx._event_id);
+
 
     int record_max = m_recorder->getRecordMax() ;
-    bool recording = m_record_id < record_max ||  m_dynamic ; 
+    bool recording = m_ctx._record_id < record_max ||  m_dynamic ; 
+    //
+    //             ^^^^^^^^^^^^ fit-in-buffer-restriction
+    // hmm perhaps the recording restriction is why bouncemax doesnt kick in ? for the infini-bouncers
+    //    NOPE: YOU MISUNDERSTAND record_max is a photon level fit-in-buffer thing 
+    //
+
+    
+
 
     if(recording)
     {
@@ -315,10 +330,9 @@ bool CSteppingAction::collectPhotonStep()
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
-        done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
+        done = m_recorder->Record(m_step, m_step_id, boundary_status, stage);
 
     }
-    // hmm perhaps the recording restriction is why bouncemax doesnt kick in ? for the infini-bouncers
     return done ; 
 }
 

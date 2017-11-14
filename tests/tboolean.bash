@@ -1956,8 +1956,8 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 material = "Pyrex"
 
 CSG.kwa = dict(poly="IM", resolution="20" , emitconfig="$(tboolean-emitconfig)" )
-container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=0 )  
-sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material, emit=1 ) 
+container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1 )  
+sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material, emit=0 ) 
 
 CSG.Serialize([container, sphere], args.csgpath )
 

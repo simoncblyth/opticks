@@ -109,6 +109,11 @@ CDetector* CG4::getDetector()
 }
 
 
+CG4Ctx& CG4::getCtx()
+{
+    return m_ctx ; 
+}
+
 
 CG4::CG4(OpticksHub* hub) 
    :
@@ -125,7 +130,7 @@ CG4::CG4(OpticksHub* hub)
      m_generator(new CGenerator(m_hub, this)),
      m_dynamic(m_generator->isDynamic()),
      m_collector(NULL),   // deferred instanciation until CG4::postinitialize after G4 materials have overridden lookupA
-     m_recorder(new CRecorder(m_ok, m_geometry, m_dynamic)), 
+     m_recorder(new CRecorder(this, m_geometry, m_dynamic)), 
      m_steprec(new CStepRec(m_ok, m_dynamic)),  
      m_visManager(NULL),
      m_uiManager(NULL),
@@ -144,6 +149,8 @@ CG4::CG4(OpticksHub* hub)
 void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
+
+    m_ctx.init();
 
     initialize();
 
@@ -178,24 +185,19 @@ void CG4::initialize()
 
 CEventAction* CG4::getEventAction()
 {
-    //CEventAction* ea = dynamic_cast<CEventAction*>(m_ea);
     return m_ea ;    
 }
 CTrackingAction* CG4::getTrackingAction()
 {
-    //CTrackingAction* ta = dynamic_cast<CTrackingAction*>(m_ta);
     return m_ta ;    
 }
 CSteppingAction* CG4::getSteppingAction()
 {
-    //CSteppingAction* sa = dynamic_cast<CSteppingAction*>(m_sa);
     return m_sa ;    
 }
 
 int CG4::getStepId()
 {
-    //CSteppingAction* sa = getSteppingAction();
-    //return sa->getStepId();
     return m_sa->getStepId();
 }
 
@@ -221,13 +223,10 @@ void CG4::postinitialize()
     //m_rec->postinitialize();
 
 
-    //CEventAction* ea = getEventAction();
     m_ea->postinitialize();
 
-    //CTrackingAction* ta = getTrackingAction();
     m_ta->postinitialize();
 
-    //CSteppingAction* sa = getSteppingAction();
     m_sa->postinitialize();
 
 

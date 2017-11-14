@@ -8,6 +8,8 @@
 #include "DsG4CompositeTrackInfo.h"
 #include "DsPhotonTrackInfo.h"
 
+#include "PLOG.hh"
+
 
 const char* CTrack::fAlive_                    = "fAlive" ;
 const char* CTrack::fStopButAlive_             = "fStopButAlive" ;
@@ -49,7 +51,19 @@ int CTrack::Id(const G4Track* track)
 }
 int CTrack::ParentId(const G4Track* track)
 {
-    return track->GetParentID() - 1 ;
+    int track_id = track->GetTrackID() - 1 ;
+    int parent_id = track->GetParentID() - 1 ;
+
+    if(parent_id != -1 && parent_id >= track_id) 
+    {
+       LOG(fatal) << "CTrack::ParentId UNEXPECTED parent_id >= track_id  "
+                  << " track_id " << track_id
+                  << " parent_id " << parent_id
+                  ;
+
+       assert(parent_id < track_id) ;  
+    }
+    return parent_id ; 
 }
 int CTrack::StepId(const G4Track* track)
 {

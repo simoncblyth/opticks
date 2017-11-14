@@ -10,13 +10,24 @@ class G4Event ;
 #include "CBoundaryProcess.hh"
 #include "globals.hh"
 
-// CSteppingAction
-// ================
-//
-//
-//
+/**
+
+CSteppingAction
+================
+
+
+
+
+
+
+**/
+
 // cg4-
+
 class Opticks ; 
+
+struct CG4Ctx ; 
+
 class CG4 ; 
 class CMaterialLib ; 
 class CRecorder ; 
@@ -49,16 +60,23 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   public:
     virtual void UserSteppingAction(const G4Step*);
   private:
-    void setEvent(const G4Event* event, int event_id);
-    void setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding );
-    void setPhotonId(int photon_id, bool reemtrack);
-    void setRecordId(int photon_id, bool debug, bool other);
+    void setEvent();
+    void setTrack();
+
+    //void setEvent(const G4Event* event, int event_id);
+    //void setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding );
+    //void setPhotonId(int photon_id, bool reemtrack);
+    //void setRecordId(int photon_id, bool debug, bool other);
+
+    void setPhotonId();
     bool setStep( const G4Step* step, int step_id);
     bool collectPhotonStep();
 
   private:
     CG4*              m_g4 ; 
+    CG4Ctx&           m_ctx ; 
     Opticks*          m_ok ; 
+    bool              m_dbgrec ; 
     bool              m_dynamic ; 
     CGeometry*        m_geometry ; 
     CMaterialBridge*  m_material_bridge ; 
@@ -79,27 +97,28 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     bool                  m_startTrack ; 
 
     // set by setEvent
-    const G4Event*        m_event ; 
-    int                   m_event_id ;
+    //const G4Event*        m_event ; 
+    //int                   m_event_id ;
 
     // set by setTrack
     unsigned int          m_track_step_count ; 
 
-    const G4Track*        m_track ; 
-    int                   m_track_id ;
-    bool                  m_optical ; 
-    int                   m_pdg_encoding ;
+    //const G4Track*        m_track ; 
+    //int                   m_track_id ;
+    //bool                  m_optical ; 
+    //int                   m_pdg_encoding ;
 
     // set by setPhotonId
-    int                   m_photon_id ; 
-    bool                  m_reemtrack ; 
+    //int                   m_photon_id ; 
+    //bool                  m_reemtrack ; 
+
     unsigned int          m_rejoin_count ;
     unsigned int          m_primarystep_count ;
     
     // set by setRecordId
-    int                    m_record_id ;
-    bool                   m_debug ; 
-    bool                   m_other ; 
+    //int                    m_record_id ;
+    //bool                   m_debug ; 
+    //bool                   m_other ; 
 
   
     // set by setStep 

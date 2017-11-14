@@ -29,6 +29,7 @@
 #include "G4PhysicalConstants.hh"
 
 // cfg4-
+#include "CG4.hh"
 #include "OpStatus.hh"
 #include "CRecorder.h"
 #include "CPropLib.hh"
@@ -106,13 +107,16 @@ Canonical instance is ctor resident of CG4
 
 
 
-CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic) 
+CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
    :
-   m_ok(ok),
+   m_g4(g4),
+   m_ctx(g4->getCtx()),
+   m_ok(g4->getOpticks()),
+   m_dbgrec(m_ok->isDbgRec()),
    m_dbgseqhis(m_ok->getDbgSeqhis()),
    m_dbgseqmat(m_ok->getDbgSeqmat()),
    m_dbgflags(m_ok->hasOpt("dbgflags")),
-   m_crec(new CRec(ok, geometry, dynamic)),
+   m_crec(new CRec(m_ok, geometry, dynamic)),
    m_evt(NULL),
    m_geometry(geometry),
    m_material_bridge(NULL),
@@ -127,20 +131,21 @@ CRecorder::CRecorder(Opticks* ok, CGeometry* geometry, bool dynamic)
 
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
-   m_debug(m_verbosity > 0),
-   m_other(false),
+   //m_debug(m_verbosity > 0),
+   //m_other(false),
 
 
    m_stage(CStage::UNKNOWN),
    m_prior_stage(CStage::UNKNOWN),
 
-   m_event_id(INT_MAX),
-   m_photon_id(INT_MAX),
-   m_photon_id_prior(INT_MAX),
+   //m_event_id(INT_MAX),
+   //m_photon_id(INT_MAX),
+   //m_photon_id_prior(INT_MAX),
+
    m_step_id(INT_MAX),
-   m_record_id(INT_MAX),
-   m_record_id_prior(INT_MAX),
-   m_primary_id(INT_MAX),
+   //m_record_id(INT_MAX),
+   //m_record_id_prior(INT_MAX),
+   //m_primary_id(INT_MAX),
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
@@ -189,25 +194,6 @@ void CRecorder::postinitialize()
 
 }
 
-void CRecorder::setDebug(bool debug)
-{
-    m_debug = debug ; 
-}
-bool CRecorder::isDebug()
-{
-    return m_debug ; 
-}
-
-void CRecorder::setOther(bool other)
-{
-    m_other = other ; 
-}
-bool CRecorder::isOther()
-{
-    return m_other ; 
-}
-
-
 
 
 
@@ -246,56 +232,19 @@ unsigned CRecorder::getRecordMax()
 }
 
 
-int CRecorder::getEventId()
-{
-   return m_event_id ; 
-}
-int CRecorder::getPhotonId()
-{
-   return m_photon_id ; 
-}
-int CRecorder::getPhotonIdPrior()
-{
-   return m_photon_id_prior ; 
-}
-
-
 
 int CRecorder::getStepId()
 {
    return m_step_id ; 
 }
-int CRecorder::getRecordId()
-{
-   return m_record_id ; 
-}
-
-void CRecorder::setEventId(int event_id)
-{
-    m_event_id = event_id ; 
-}
-void CRecorder::setPhotonId(int photon_id)
-{
-    m_photon_id_prior = m_photon_id ; 
-    m_photon_id = photon_id ; 
-}
-
-
-void CRecorder::setRecordId(int record_id, bool dbg, bool other)
-{
-    m_record_id_prior = m_record_id ; 
-    m_record_id = record_id ; 
-
-    setDebug(dbg);
-    setOther(other);
-}
 
 
 
-void CRecorder::setPrimaryId(int primary_id)
-{
-    m_primary_id = primary_id ; 
-}
+
+//void CRecorder::setPrimaryId(int primary_id)
+//{
+//    m_primary_id = primary_id ; 
+//}
 
 
 
@@ -305,11 +254,11 @@ std::string CRecorder::description()
 {
     std::stringstream ss ; 
     ss << std::setw(10) << CStage::Label(m_stage)
-       << " evt " << std::setw(7) << m_event_id
-       << " pho " << std::setw(7) << m_photon_id 
-       << " pri " << std::setw(7) << m_primary_id
+       << " evt " << std::setw(7) << m_ctx._event_id
+       << " pho " << std::setw(7) << m_ctx._photon_id 
+       << " pri " << std::setw(7) << m_ctx._primary_id
        << " ste " << std::setw(4) << m_step_id 
-       << " rid " << std::setw(4) << m_record_id 
+       << " rid " << std::setw(4) << m_ctx._record_id 
        << " slt " << std::setw(4) << m_slot
        << " pre " << std::setw(7) << PreGlobalTime(m_step)
        << " pst " << std::setw(7) << PostGlobalTime(m_step)
@@ -441,10 +390,19 @@ void CRecorder::startPhoton()
    // invoked from CRecorder::Record when stage = CStage::START
    // the start stage is set for a new non-rejoing optical track by   CSteppingAction::UserSteppingActionOptical
 
+
+    if(m_dbgrec)
+    {
+        LOG(info) << "[--dbgrec] " 
+                  << " m_slot " << m_slot 
+                  ;
+    }
+
+
     const G4StepPoint* pre = m_step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
 
-    m_crec->startPhoton(m_record_id, pos);   // clears CStp vector
+    m_crec->startPhoton(m_ctx._record_id, pos);   // clears CStp vector
 
 
     m_c4.u = 0u ; 
@@ -474,7 +432,7 @@ void CRecorder::startPhoton()
     m_badflag = 0 ; 
 
 
-    if(m_debug || m_other) Clear();
+    if(m_ctx._debug || m_ctx._other) Clear();
 }
 
 void CRecorder::decrementSlot()
@@ -498,19 +456,21 @@ void CRecorder::decrementSlot()
     m_slot -= 1 ; 
 }
 
+
+// invoked by CSteppingAction::collectPhotonStep
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #else
-bool CRecorder::Record(const G4Step* step, int step_id, int record_id, bool dbg, bool other, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(const G4Step* step, int step_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
 #endif
 {
     setStep(step, step_id);
-    setRecordId(record_id, dbg, other );
+    //setRecordId(record_id, dbg, other );
     setStage(stage);
 
     LOG(trace) << "CRecorder::Record"
               << " step_id " << step_id
-              << " record_id " << record_id
+              << " record_id " << m_ctx._record_id
               << " stage " << CStage::Label(stage)
               ;
 
@@ -682,16 +642,19 @@ void CRecorder::CannedWriteSteps()
 
     assert(!m_live) ;
     unsigned num = m_crec->getNumStps(); 
-    LOG(trace) << "CRecorder::CannedWriteSteps"
-               << " num " << num
-               << " m_slot " << m_slot
-               ;
 
-    /*
-    std::cout << "CRecorder::CannedWriteSteps stages:"  
-    for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
-    std::cout << std::endl ;  
-    */
+    if(m_dbgrec)
+    {
+        LOG(info) << "CRecorder::CannedWriteSteps"
+                  << " [--dbgrec] "
+                  << " num " << num
+                  << " m_slot " << m_slot
+                   ;
+
+        std::cout << "CRecorder::CannedWriteSteps stages:"  ;
+        for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
+        std::cout << std::endl ;  
+    }
 
     for(unsigned i=0 ; i < num ; i++)
     {
@@ -823,11 +786,12 @@ void CRecorder::posttrack()
         CannedWriteSteps();
     }
 
-    if(m_dbgflags && m_badflag > 0) addDebugPhoton(m_record_id);  
+    if(m_dbgflags && m_badflag > 0) addDebugPhoton(m_ctx._record_id);  
 
     bool debug_seqhis = m_dbgseqhis == m_seqhis ; 
     bool debug_seqmat = m_dbgseqmat == m_seqmat ; 
-    bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_other || m_debug || (m_dbgflags && m_badflag > 0 ) ;
+
+    bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_ctx._other || m_ctx._debug || (m_dbgflags && m_badflag > 0 ) ;
 
     if(m_badflag > 0) dump_ = true ; 
 
@@ -867,6 +831,8 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     if(flag == 0)
     {
+
+       //assert(0);
        m_badflag += 1 ; 
        m_step_action |= ZERO_FLAG ; 
 
@@ -886,7 +852,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
     {
         m_topslot_rewrite += 1 ; 
-        if(m_debug || m_other)
+        if(m_ctx._debug || m_ctx._other)
         LOG(info)
                   << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
@@ -945,7 +911,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     double time = point->GetGlobalTime();
 
 
-    if(m_debug || m_other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
+    if(m_ctx._debug || m_ctx._other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
@@ -1017,7 +983,7 @@ void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned in
 void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time)
 #endif
 {
-    assert(m_debug || m_other);
+    assert(m_ctx._debug || m_ctx._other);
     m_points.push_back(new G4StepPoint(*point));
     m_flags.push_back(flag);
     m_materials.push_back(material);
@@ -1031,7 +997,7 @@ void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned in
 
 void CRecorder::Clear()
 {
-    assert(m_debug || m_other);
+    assert(m_ctx._debug || m_ctx._other);
     for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
     m_points.clear();
     m_flags.clear();
@@ -1109,7 +1075,7 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
     polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
 
     NPY<short>* target = m_dynamic ? m_dynamic_records : m_records ; 
-    unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
+    unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
 
     target->setQuad(target_record_id, slot, 0, posx, posy, posz, time_ );
     target->setQuad(target_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
@@ -1147,7 +1113,7 @@ void CRecorder::RecordPhoton(const G4StepPoint* point)
     // for reemission have to rely on downstream overwrites
     // via rerunning with a target_record_id to scrub old values
 
-    if(m_debug || m_other) dump_brief("CRecorder::RecordPhoton");
+    if(m_ctx._debug || m_ctx._other) dump_brief("CRecorder::RecordPhoton");
 
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& dir = point->GetMomentumDirection();
@@ -1159,7 +1125,7 @@ void CRecorder::RecordPhoton(const G4StepPoint* point)
     G4double weight = 1.0 ; 
 
     NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons ; 
-    unsigned int target_record_id = m_dynamic ? 0 : m_record_id ; 
+    unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
 
 
     target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
@@ -1221,9 +1187,9 @@ bool CRecorder::hasIssue()
 void CRecorder::Summary(const char* msg)
 {
     LOG(info) <<  msg
-              << " event_id " << m_event_id 
-              << " photon_id " << m_photon_id 
-              << " record_id " << m_record_id 
+              << " event_id " << m_ctx._event_id 
+              << " photon_id " << m_ctx._photon_id 
+              << " record_id " << m_ctx._record_id 
               << " step_id " << m_step_id 
               << " m_slot " << m_slot 
               ;
@@ -1247,6 +1213,7 @@ void CRecorder::addDebugPhoton(int record_id)
 void CRecorder::dump(const char* msg)
 {
     LOG(info) << msg ; 
+    dump_brief("CRecorder::dump_brief");
 
 /*
     dump_brief("CRecorder::dump_brief");
@@ -1262,13 +1229,13 @@ void CRecorder::dump(const char* msg)
 void CRecorder::dump_brief(const char* msg)
 {
     LOG(info) << msg 
-              << " m_record_id " << std::setw(8) << m_record_id 
+              << " m_ctx._record_id " << std::setw(8) << m_ctx._record_id 
               << " m_badflag " << std::setw(5) << m_badflag 
-              << (m_debug ? " --dindex " : "" )
-              << (m_other ? " --oindex " : "" )
+              << (m_ctx._debug ? " --dindex " : "" )
+              << (m_ctx._other ? " --oindex " : "" )
               << (m_dbgseqhis == m_seqhis ? " --dbgseqhis " : "" )
               << (m_dbgseqmat == m_seqmat ? " --dbgseqmat " : "" )
-              << getStepActionString()
+              << " sas: " << getStepActionString()
               ;
     LOG(info) 
               << " seqhis " << std::setw(16) << std::hex << m_seqhis << std::dec 
@@ -1288,7 +1255,7 @@ void CRecorder::dump_brief(const char* msg)
 
 void CRecorder::dump_sequence(const char* msg)
 {
-    assert(m_debug || m_other) ; // requires premeditation to collect the info
+    assert(m_ctx._debug || m_ctx._other) ; // requires premeditation to collect the info
     LOG(info) << msg ; 
     unsigned npoints = m_points.size() ;
     for(unsigned int i=0 ; i<npoints ; i++) 
@@ -1315,7 +1282,7 @@ void CRecorder::dump_sequence(const char* msg)
 
 void CRecorder::dump_points(const char* msg)
 {
-    assert(m_debug || m_other) ; // requires premeditation to collect the info
+    assert(m_ctx._debug || m_ctx._other) ; // requires premeditation to collect the info
     LOG(info) << msg ; 
     G4ThreeVector origin ;
     unsigned npoints = m_points.size() ;
