@@ -81,7 +81,7 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
    m_inborder_surface(0),
    m_outborder_surface(0),
    m_no_surface(0),
-   m_volnames(m_ok->hasCtrlKey("volnames")),
+   m_volnames(m_ok->hasVolnames()),
    m_reverse(true),        // true: ascending wavelength ordering of properties
    m_cathode(NULL),
    m_verbosity(0)
@@ -90,10 +90,11 @@ AssimpGGeo::AssimpGGeo(GGeo* ggeo, AssimpTree* tree, AssimpSelection* selection,
 }
 
 
-bool AssimpGGeo::getVolNames()
-{
-    return m_volnames ; 
-}
+//bool AssimpGGeo::getVolNames()
+//{
+//    return m_volnames ; 
+//}
+
 void AssimpGGeo::setVerbosity(unsigned int verbosity)
 {
     m_verbosity = verbosity ; 

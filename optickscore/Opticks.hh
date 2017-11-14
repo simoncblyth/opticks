@@ -122,9 +122,11 @@ class OKCORE_API Opticks {
        bool isPmtInBox();
        bool isOther();
        bool isValid();
-       bool hasCtrlKey(const char* key) const ;
+       bool hasVolnames() const ; 
        int  getRC();
        void setRC(int rc); 
+   private:
+       bool hasCtrlKey(const char* key) const ;
 
    public:
        // verbosity typically comes from geometry metadata

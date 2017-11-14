@@ -17,6 +17,7 @@ const char* OpticksQuery::MERGE_ = "merge" ;
 const char* OpticksQuery::DEPTH_ = "depth" ; 
 const char* OpticksQuery::RANGE_ = "range" ; 
 const char* OpticksQuery::ALL_   = "all" ; 
+const char* OpticksQuery::EMPTY_   = "" ; 
 
 
 OpticksQuery::OpticksQuery(const char* query) 
@@ -108,7 +109,11 @@ void OpticksQuery::parseQuery(const char* query)
    // "name:helo,index:yo,range:10"
    // split at "," and then extract values beyond the "token:" 
 
-   if(strcmp(query,ALL_)==0) 
+   if(strcmp(query,EMPTY_)==0) 
+   { 
+       m_no_selection = true ; 
+   } 
+   else if(strcmp(query,ALL_)==0) 
    {
        m_no_selection = true ; 
    }

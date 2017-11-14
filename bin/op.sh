@@ -428,29 +428,32 @@ op-geometry-setup-dyb()
 
     export OPTICKS_GEOKEY=$geokey
     export OPTICKS_QUERY=$(op-geometry-query-dyb $geo) 
-    export OPTICKS_CTRL="volnames"
+    export OPTICKS_CTRL=""
     export OPTICKS_MESHFIX="iav,oav"
     export OPTICKS_MESHFIX_CFG="100,100,10,-0.999"   # face barycenter xyz alignment and dot face normal cuts for faces to be removed 
 }
 op-geometry-setup-juno()
 {
+   ## NB the geometry digest incorporates OPTICKS_QUERY value 
+   ##    so changes to the query will necessitate a rebuild of the geocache
+
    local geo=${1:-JPMT}
    if [ "$geo" == "JUNO" ]; then 
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JUNO
        export OPTICKS_QUERY="range:1:50000"
-       export OPTICKS_CTRL="volnames"
+       export OPTICKS_CTRL=""
    elif [ "$geo" == "JPMT" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JPMT
        export OPTICKS_QUERY="range:1:289734"  # 289733+1 all test3.dae volumes
-       export OPTICKS_CTRL="volnames"
+       export OPTICKS_CTRL=""
    elif [ "$geo" == "JTST" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_JTST
        export OPTICKS_QUERY="range:1:50000" 
-       export OPTICKS_CTRL="volnames"
+       export OPTICKS_CTRL=""
    elif [ "$geo" == "J1707" ]; then
        export OPTICKS_GEOKEY=OPTICKSDATA_DAEPATH_J1707
        export OPTICKS_QUERY="all" 
-       export OPTICKS_CTRL="volnames"
+       export OPTICKS_CTRL=""
    fi
 }
 op-geometry-setup-misc()

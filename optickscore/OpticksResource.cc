@@ -50,7 +50,7 @@ const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ;
 
 const char* OpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
-const char* OpticksResource::DEFAULT_CTRL = "volnames" ; 
+const char* OpticksResource::DEFAULT_CTRL = "" ; 
 const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
 const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
 

@@ -88,7 +88,7 @@ void AssimpSelection::init()
               << " out of m_count " << m_count 
               ;
 
-    assert(m_selection.size() > 0 );
+    assert(m_selection.size() > 0 && "AssimpSelection must select some nodes");
 
     findBounds();
 }

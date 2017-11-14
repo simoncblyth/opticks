@@ -64,6 +64,7 @@ public:
     static const char* DEPTH_ ; 
     static const char* RANGE_ ; 
     static const char* ALL_ ; 
+    static const char* EMPTY_ ; 
 
     const char* getQueryTypeString() const ;
     OpticksQuery_t getQueryType() const ;

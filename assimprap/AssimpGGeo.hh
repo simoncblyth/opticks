@@ -63,7 +63,7 @@ public:
 private:
     void init();
 public:
-    bool getVolNames();
+    //bool getVolNames();
     void setVerbosity(unsigned int verbosity);
 public:
     static int load(GGeo* ggeo);

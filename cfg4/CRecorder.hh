@@ -44,6 +44,8 @@ TODO
 1. perhaps split into two CLiveRecorder and CCannedRecorder ?
 2. factor off the dumping into separate class 
 
+3. is there any way to structure CRecorder similar to oxrap/cu/generate.cu ?
+    which is what it is trying to emulate afterall 
 
 
 The principal objective of *CRecorder* is to collect  
