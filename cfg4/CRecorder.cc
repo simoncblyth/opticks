@@ -295,6 +295,8 @@ void CRecorder::startPhoton()
     m_crec->startPhoton(pos);   // clears CStp vector
 
 
+    // description of photon history 
+
     m_c4.u = 0u ; 
 
     m_boundary_status = Undefined ; 
@@ -328,12 +330,14 @@ void CRecorder::startPhoton()
 void CRecorder::decrementSlot()
 {
     m_decrement_request += 1 ; 
+
     //if(m_slot == 0 || m_bounce_truncate || m_record_truncate )
     // with the TOPSLOT_REWRITE dont want to deny decrement
     if(m_slot == 0 )
     {
         m_decrement_denied += 1 ; 
         m_step_action |= CAction::DECREMENT_DENIED ; 
+
         LOG(warning) << "CRecorder::decrementSlot DENIED "
                      << " slot " << m_slot 
                      << " record_truncate " << m_record_truncate 
@@ -347,7 +351,7 @@ void CRecorder::decrementSlot()
 }
 
 
-// invoked by CSteppingAction::collectPhotonStep
+// invoked by CSteppingAction::setStep
 #ifdef USE_CUSTOM_BOUNDARY
 bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
 #else
@@ -357,9 +361,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     bool recording = unsigned(m_ctx._record_id) < m_record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
     if(!recording) return false ;
 
-
     m_step_action = 0 ; 
-
 
     LOG(trace) << "CRecorder::Record"
               << " step_id " << m_ctx._step_id
@@ -369,7 +371,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
     if(m_ctx._stage == CStage::START)
     { 
-        startPhoton();       // MUST be invoked prior to setBoundaryStatus
+        startPhoton();       // MUST be invoked prior to setBoundaryStatus, resetting photon history state 
         RecordQuadrant();
     }
     else if(m_ctx._stage == CStage::REJOIN )
@@ -389,14 +391,8 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     } 
 
 
-    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
-    const G4StepPoint* post = m_ctx._step->GetPostStepPoint() ; 
-
-    const G4Material* preMat  = pre->GetMaterial() ;
-    const G4Material* postMat = post->GetMaterial() ;
-
-    unsigned preMaterial = preMat ? m_material_bridge->getMaterialIndex(preMat) + 1 : 0 ;
-    unsigned postMaterial = postMat ? m_material_bridge->getMaterialIndex(postMat) + 1 : 0 ;
+    unsigned preMaterial = m_material_bridge->getPreMaterial(m_ctx._step) ;
+    unsigned postMaterial = m_material_bridge->getPostMaterial(m_ctx._step) ;
 
     setBoundaryStatus( boundary_status, preMaterial, postMaterial);
 
@@ -408,7 +404,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     }
     else
     {
-         CannedRecordStep();
+         CannedRecordStep();   // should have done ?
     }
 
     return done ; 
@@ -525,14 +521,6 @@ void CRecorder::CannedWriteSteps()
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
     G4OpBoundaryProcessStatus next_boundary_status = Undefined ;
 #endif
-    CStp* stp = NULL ;
-    CStp* next_stp = NULL ;
-    CStage::CStage_t stage ; 
-    const G4Step* step ; 
-    const G4StepPoint *pre, *post ; 
-    const G4Material *preMaterial, *postMaterial ;
-    unsigned premat, postmat ; 
-    unsigned preFlag, postFlag ; 
     bool     done = false  ;  
 
     assert(!m_live) ;
@@ -555,32 +543,30 @@ void CRecorder::CannedWriteSteps()
     {
         m_step_action = 0 ; 
 
-        stp  = m_crec->getStp(i);
-        next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1 
+        CStp* stp  = m_crec->getStp(i);
+        CStp* next_stp = m_crec->getStp(i+1) ;   // NULL for i = num - 1 
 
-        stage = stp->getStage();
-        step = stp->getStep();
-        pre  = step->GetPreStepPoint() ; 
-        post = step->GetPostStepPoint() ; 
+        CStage::CStage_t stage = stp->getStage();
+        const G4Step* step = stp->getStep();
+        const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+        const G4StepPoint* post = step->GetPostStepPoint() ; 
 
         prior_boundary_status = i == 0 ? Undefined : boundary_status ; 
         boundary_status = stp->getBoundaryStatus() ; 
         next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Undefined ; 
-
-        preMaterial = pre->GetMaterial() ;
-        postMaterial = post->GetMaterial() ;
-        premat = preMaterial ? m_material_bridge->getMaterialIndex(preMaterial) + 1 : 0 ;
-        postmat = postMaterial ? m_material_bridge->getMaterialIndex(postMaterial) + 1 : 0 ;
+      
+        unsigned premat = m_material_bridge->getPreMaterial(step) ; 
+        unsigned postmat = m_material_bridge->getPostMaterial(step) ; 
 
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
-        postFlag = OpPointFlag(post, boundary_status, postStage);
+        unsigned postFlag = OpPointFlag(post, boundary_status, postStage);
 
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
 
-        bool matSwap = next_boundary_status == StepTooSmall ; 
+        bool matSwap = next_boundary_status == StepTooSmall ; // is this swapping on the step before it should ?
 
         // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
@@ -613,7 +599,7 @@ void CRecorder::CannedWriteSteps()
 
        // as clearStp for each track, REJOIN will always be i=0
 
-        preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
+        unsigned preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
 
         if(i == 0)
         {

@@ -28,6 +28,19 @@ double CStep::PostGlobalTime(const G4Step* step) // static
 }
 
 
+const G4Material* CStep::PreMaterial( const G4Step* step) // static
+{
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4Material* preMat  = pre->GetMaterial() ;
+    return preMat ; 
+}
+
+const G4Material* CStep::PostMaterial( const G4Step* step) // static
+{
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+    const G4Material* postMat  = post->GetMaterial() ;
+    return postMat ; 
+}
 
 
 

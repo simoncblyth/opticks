@@ -7,6 +7,7 @@ class GMaterialLib ;
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+class G4Step ; 
 class G4Material ; 
 
 class CFG4_API CMaterialBridge 
@@ -14,7 +15,10 @@ class CFG4_API CMaterialBridge
     public:
         CMaterialBridge( GMaterialLib* mlib );
 
-        unsigned getMaterialIndex(const G4Material* mat); // G4Material instance to 0-based Opticks material index
+        unsigned getPreMaterial(const G4Step* step) const ;
+        unsigned getPostMaterial(const G4Step* step) const ;
+
+        unsigned getMaterialIndex(const G4Material* mat) const ; // G4Material instance to 0-based Opticks material index
         const char* getMaterialName(unsigned int index, bool abbrev=true);  // 0-based Opticks material index to shortname
         const G4Material* getG4Material(unsigned int index); // 0-based Opticks material index to G4Material
 

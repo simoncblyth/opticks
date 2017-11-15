@@ -2,6 +2,7 @@
 
 
 class G4Step ; 
+class G4Material ; 
 
 /**
 CStep
@@ -17,6 +18,8 @@ class CFG4_API CStep {
    public:
        static double PreGlobalTime(const G4Step* step);
        static double PostGlobalTime(const G4Step* step);
+       static const G4Material* PreMaterial( const G4Step* step) ;
+       static const G4Material* PostMaterial( const G4Step* step) ;
 
        CStep(const G4Step* step, unsigned int step_id);
        virtual ~CStep();

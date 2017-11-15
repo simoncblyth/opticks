@@ -5,6 +5,7 @@
 #include "G4MaterialTable.hh"
 
 #include "GMaterialLib.hh"
+#include "CStep.hh"
 #include "CMaterialBridge.hh"
 
 #include "PLOG.hh"
@@ -126,10 +127,31 @@ bool CMaterialBridge::operator()(const G4Material* a, const G4Material* b)
 
 
 
-unsigned int CMaterialBridge::getMaterialIndex(const G4Material* material)
+
+unsigned CMaterialBridge::getPreMaterial(const G4Step* step) const
+{
+    const G4Material* preMat  = CStep::PreMaterial(step);
+    unsigned preMaterial = preMat ? getMaterialIndex(preMat) + 1 : 0 ;
+    return preMaterial ; 
+}
+
+unsigned CMaterialBridge::getPostMaterial(const G4Step* step) const
+{
+    const G4Material* postMat  = CStep::PostMaterial(step);
+    unsigned postMaterial = postMat ? getMaterialIndex(postMat) + 1 : 0 ;
+    return postMaterial ;
+}
+
+
+
+
+
+
+
+unsigned int CMaterialBridge::getMaterialIndex(const G4Material* material) const 
 {
     // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus
-    return m_g4toix[material] ;
+    return m_g4toix.at(material) ;
 }
 const char* CMaterialBridge::getMaterialName(unsigned int index, bool abbrev)
 {
