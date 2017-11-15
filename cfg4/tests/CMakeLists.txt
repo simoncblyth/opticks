@@ -24,6 +24,7 @@ set(TEST_SOURCES
     CGROUPVELTest.cc 
 
     CMakerTest.cc
+    CPhotonTest.cc
 
 )
 

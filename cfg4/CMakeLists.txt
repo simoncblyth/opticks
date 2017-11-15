@@ -181,8 +181,9 @@ set(SOURCES
     CPrimaryGeneratorAction.cc
 
     CRecorder.cc
+    CPhoton.cc
     CAction.cc
-    CRecorderWriter.cc
+    CWriter.cc
 
     CDetector.cc
     CGDMLDetector.cc

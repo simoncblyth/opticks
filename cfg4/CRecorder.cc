@@ -36,7 +36,7 @@
 #include "Format.hh"
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
-#include "CRecorderWriter.hh"
+#include "CWriter.hh"
 #include "CRec.hh"
 #include "CStp.hh"
 #include "State.hh"
@@ -73,13 +73,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_material_bridge(NULL),
    m_dynamic(dynamic),
    m_live(m_ok->hasOpt("liverecorder")),
-   m_writer(new CRecorderWriter()),
-   m_gen(0),
-
-   m_record_max(0),
-   m_bounce_max(0),
-   m_steps_per_photon(0), 
-
+   m_writer(new CWriter(g4, m_dynamic)),
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
 
@@ -92,10 +86,6 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_postmat(0),
    m_prior_postmat(0),
 
-   m_seqhis(0),
-   m_seqmat(0),
-   m_mskhis(0),
-
    m_seqhis_select(0),
    m_seqmat_select(0),
    m_slot(0),
@@ -105,17 +95,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_bounce_truncate(false),
    m_topslot_rewrite(0),
    m_badflag(0),
-   m_step_action(0),
-
-   m_primary(0),
-   m_photons(0),
-   m_records(0),
-   m_history(0),
-
-
-   m_dynamic_records(NULL),
-   m_dynamic_photons(NULL),
-   m_dynamic_history(NULL)
+   m_step_action(0)
 {
    
 }
@@ -134,11 +114,11 @@ unsigned int CRecorder::getVerbosity()
 }
 bool CRecorder::isHistorySelected()
 {
-   return m_seqhis_select == m_seqhis ; 
+   return m_seqhis_select == m_photon._seqhis ; 
 }
 bool CRecorder::isMaterialSelected()
 {
-   return m_seqmat_select == m_seqmat ; 
+   return m_seqmat_select == m_photon._seqmat ; 
 }
 bool CRecorder::isSelected()
 {
@@ -147,11 +127,11 @@ bool CRecorder::isSelected()
 
 unsigned long long CRecorder::getSeqHis()
 {
-    return m_seqhis ; 
+    return m_photon._seqhis ; 
 }
 unsigned long long CRecorder::getSeqMat()
 {
-    return m_seqmat ; 
+    return m_photon._seqmat ; 
 }
 
 
@@ -182,8 +162,8 @@ std::string CRecorder::desc() const
     ss << "CRecorder"
        << " live " << m_live 
        << " dynamic " << m_dynamic
-       << " record_max " << m_record_max
-       << " bounce_max " << m_bounce_max
+       << " record_max " << m_ctx._record_max
+       << " bounce_max " << m_ctx._bounce_max
        ; 
 
     return ss.str();
@@ -197,70 +177,15 @@ void CRecorder::RecordEndOfRun(const G4Run*)
 {
 }
 
-
-void CRecorder::setEvent(OpticksEvent* evt)
+void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 {
-    m_evt = evt ; 
-    assert(m_evt && m_evt->isG4());
-    m_writer->setEvent(evt);
+    m_writer->initEvent(evt);
+
+
 }
 
-void CRecorder::initEvent(OpticksEvent* evt)
-{
-    setEvent(evt);
 
-    m_c4.u = 0u ; 
 
-    m_record_max = m_evt->getNumPhotons();   // from the genstep summation
-    m_bounce_max = m_evt->getBounceMax();
-
-    m_steps_per_photon = m_evt->getMaxRec() ;    
-
-    LOG(info) << "CRecorder::initEvent"
-              << " dynamic " << ( m_dynamic ? "DYNAMIC(CPU style)" : "STATIC(GPU style)" )
-              << " live " << ( m_live ? "LIVE" : "not-live" ) 
-              << " record_max " << m_record_max
-              << " bounce_max  " << m_bounce_max 
-              << " steps_per_photon " << m_steps_per_photon 
-              << " num_g4event " << m_evt->getNumG4Event() 
-              << " isStep " << m_ctx._step  
-              ;
-
-    if(m_dynamic)
-    {
-        assert(m_record_max == 0 );
-
-        // shapes must match OpticksEvent::createBuffers
-        // TODO: avoid this duplicity using the spec
-
-        m_dynamic_records = NPY<short>::make(1, m_steps_per_photon, 2, 4) ;
-        m_dynamic_records->zero();
-
-        m_dynamic_photons = NPY<float>::make(1, 4, 4) ;
-        m_dynamic_photons->zero();
-
-        m_dynamic_history = NPY<unsigned long long>::make(1, 1, 2) ;
-        m_dynamic_history->zero();
-    } 
-    else
-    {
-        assert(m_record_max > 0 );
-    }
-
-    m_history = m_evt->getSequenceData();
-    m_photons = m_evt->getPhotonData();
-    m_records = m_evt->getRecordData();
-
-    assert( m_history && "CRecorder requires history buffer" );
-    assert( m_photons && "CRecorder requires photons buffer" );
-    assert( m_records && "CRecorder requires records buffer" );
-
-    const char* typ = m_evt->getTyp();
-
-    m_gen = OpticksFlags::SourceCode(typ);
-
-    assert( m_gen == TORCH || m_gen == G4GUN  );
-}
 
 
 
@@ -268,10 +193,8 @@ unsigned CRecorder::getSlot()
 {
     return m_slot ; 
 }
-
-void CRecorder::setSlot(unsigned slot)
+void CRecorder::setSlot(unsigned slot) // needed for reemission continuation
 {
-   // needed for reemission continuation
     m_slot = slot ; 
 }
 
@@ -280,7 +203,6 @@ void CRecorder::startPhoton()
    // invoked from CRecorder::Record when stage = CStage::START
    // the start stage is set for a new non-rejoing optical track by   CSteppingAction::UserSteppingActionOptical
 
-
     if(m_ctx._dbgrec)
     {
         LOG(info) << "[--dbgrec] " 
@@ -288,16 +210,13 @@ void CRecorder::startPhoton()
                   ;
     }
 
-
     const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
 
     m_crec->startPhoton(pos);   // clears CStp vector
 
-
     // description of photon history 
 
-    m_c4.u = 0u ; 
 
     m_boundary_status = Undefined ; 
     m_prior_boundary_status = Undefined ; 
@@ -308,9 +227,8 @@ void CRecorder::startPhoton()
     m_postmat = 0 ; 
     m_prior_postmat = 0 ; 
 
-    m_seqmat = 0 ; 
-    m_seqhis = 0 ; 
-    m_mskhis = 0 ; 
+
+    m_photon.clear();
 
     m_seqhis_select = 0x8bd ;
 
@@ -358,11 +276,17 @@ bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
 bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {
-    bool recording = unsigned(m_ctx._record_id) < m_record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
-    if(!recording) return false ;
+    
+    //bool recording = unsigned(m_ctx._record_id) < m_record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
+    //if(!recording) 
+    //{
+    //    assert(0);
+    //    return false ;
+    //}
 
     m_step_action = 0 ; 
 
+    if(m_ctx._dbgrec)
     LOG(trace) << "CRecorder::Record"
               << " step_id " << m_ctx._step_id
               << " record_id " << m_ctx._record_id
@@ -372,7 +296,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     if(m_ctx._stage == CStage::START)
     { 
         startPhoton();       // MUST be invoked prior to setBoundaryStatus, resetting photon history state 
-        RecordQuadrant();
+        RecordQuadrant(m_photon._c4);
     }
     else if(m_ctx._stage == CStage::REJOIN )
     {
@@ -400,108 +324,24 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
     if( m_live )
     {
-         done = LiveRecordStep();
+         assert( 0 && "moved to CRecorderDead.cc" );  
+         //done = LiveRecordStep();
     }
     else
     {
-         CannedRecordStep();   // should have done ?
+         // should have done also ?
+         m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage );
+
+         if(m_ctx._dbgrec)
+             LOG(info) << "[--dbgrec]" 
+                       << " crec.add NumStps " << m_crec->getNumStps() 
+                       ; 
+
+
+
     }
 
     return done ; 
-}
-
-
-
-
-bool CRecorder::LiveRecordStep()
-{
-   // this is **NOT THE DEFAULT** 
-
-    assert(m_live);
-
-    switch(m_ctx._stage)
-    {
-        case  CStage::START:  m_step_action |= CAction::STEP_START    ; break ; 
-        case  CStage::REJOIN: m_step_action |= CAction::STEP_REJOIN   ; break ; 
-        case  CStage::RECOLL: m_step_action |= CAction::STEP_RECOLL   ; break ;
-        case  CStage::COLLECT:                               ; break ; 
-        case  CStage::UNKNOWN: assert(0)                     ; break ; 
-    } 
-
-    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
-    const G4StepPoint* post = m_ctx._step->GetPostStepPoint() ; 
-
-    //if(m_debug) dumpStepVelocity("CRecorder::LiveRecordStep");
-
-
-    // shunt flags by 1 relative to steps, in order to set the generation code on first step
-    // this doesnt miss flags, as record both pre and post at last step    
-
-    unsigned preFlag = m_slot == 0 && m_ctx._stage == CStage::START ? 
-                                      m_gen 
-                                   : 
-                                      OpPointFlag(pre,  m_prior_boundary_status, m_ctx._stage )
-                                   ;
-
-    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_ctx._stage );
-
-
-
-    bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
-
-    bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-
-    bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
-
-    bool matSwap = m_boundary_status == StepTooSmall ; 
-
-    unsigned preMat  = matSwap ? m_postmat : m_premat ;
-
-    unsigned postMat = ( matSwap || m_postmat == 0 )  ? m_premat  : m_postmat ;
-
-    if(surfaceAbsorb) postMat = m_postmat ; 
-
-    bool done = false ; 
-
-    // usually skip the pre, but the post becomes the pre at next step where will be taken 
-    // 1-based material indices, so zero can represent None
-    //
-    //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
-    // 
-
-    if(lastPost)      m_step_action |= CAction::LAST_POST ; 
-    if(surfaceAbsorb) m_step_action |= CAction::SURF_ABS ;  
-    if(preSkip)       m_step_action |= CAction::PRE_SKIP ; 
-    if(matSwap)       m_step_action |= CAction::MAT_SWAP ; 
-
-
-    if(!preSkip)
-    {
-        m_step_action |= CAction::PRE_SAVE ; 
-        done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
-        if(done) m_step_action |= CAction::PRE_DONE ; 
-    }
-
-    if(lastPost && !done )
-    {
-        m_step_action |= CAction::POST_SAVE ; 
-        done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
-        if(done) m_step_action |= CAction::POST_DONE ; 
-    }
-
-    if(done) 
-    {
-        RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
-    }
-
-    m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_ctx._stage, m_step_action );
-
-    return done ;
-}
-
-void CRecorder::CannedRecordStep()
-{
-    m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage );
 }
 
 
@@ -599,7 +439,7 @@ void CRecorder::CannedWriteSteps()
 
        // as clearStp for each track, REJOIN will always be i=0
 
-        unsigned preFlag = first ? m_gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
+        unsigned preFlag = first ? m_ctx._gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
 
         if(i == 0)
         {
@@ -624,6 +464,9 @@ void CRecorder::CannedWriteSteps()
             }
         }
 
+        assert( m_photon._seqhis ) ;  // not tripped
+        assert( m_photon._seqmat ) ; 
+        assert( m_photon._mskhis ) ; 
 
         // huh: changing the inputs ??? confusing ... but are using next step lookahead, 
         stp->setMat(  u_premat, u_postmat );
@@ -634,11 +477,22 @@ void CRecorder::CannedWriteSteps()
 
         if(done && !hard_truncate)
         {
-            RecordPhoton(post);
+            m_writer->writePhoton(post, m_photon);
         }
 
         if(done) break ; 
     }   // stp loop
+
+
+    if(num > 0 )
+    {
+    assert( m_photon._seqhis ) ; 
+    assert( m_photon._seqmat ) ; 
+    assert( m_photon._mskhis ) ; 
+    }
+
+
+
 }
 
 
@@ -667,19 +521,26 @@ void CRecorder::posttrack()
     if(!m_live)
     { 
         CannedWriteSteps();
+        //assert( m_photon._seqhis ); // trips
+        //assert( m_photon._seqmat );
     }
+
+
+    //assert( m_photon._seqhis );
+    //assert( m_photon._seqmat );
+
 
     if(m_dbgflags && m_badflag > 0) addDebugPhoton(m_ctx._record_id);  
 
-    bool debug_seqhis = m_dbgseqhis == m_seqhis ; 
-    bool debug_seqmat = m_dbgseqmat == m_seqmat ; 
+    bool debug_seqhis = m_dbgseqhis == m_photon._seqhis ; 
+    bool debug_seqmat = m_dbgseqmat == m_photon._seqmat ; 
 
     bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_ctx._other || m_ctx._debug || (m_dbgflags && m_badflag > 0 ) ;
 
     if(m_badflag > 0) dump_ = true ; 
 
 
-    if(dump_) dump("CRecorder::posttrack");
+    //if(dump_) dump("CRecorder::posttrack");
 }
 
 
@@ -703,19 +564,20 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     // where truncation is truncation, a HARD_TRUNCATION has been adopted.
 
     bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-
     bool miss = ( flag & MISS ) != 0 ;  
 
+    unsigned slot =  m_slot < m_ctx._steps_per_photon  ? m_slot : m_ctx._steps_per_photon - 1 ; // constrain slot to inclusive range (0,_steps_per_photon-1) 
 
-    unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ; // constrain slot to inclusive range (0,m_steps_per_photon-1) 
+   
 
-    m_record_truncate = slot == m_steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
+
+    m_record_truncate = slot == m_ctx._steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
+
     if(m_record_truncate) m_step_action |= CAction::RECORD_TRUNCATE ; 
 
     if(flag == 0)
     {
-
-       //assert(0);
+       assert(0);
        m_badflag += 1 ; 
        m_step_action |= CAction::ZERO_FLAG ; 
 
@@ -723,47 +585,82 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
     }
 
-    unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
-    unsigned long long msk = 0xFull << shift ; 
-    unsigned long long his = BBit::ffs(flag) & 0xFull ; 
-    unsigned long long mat = material < 0xFull ? material : 0xFull ; 
 
-    unsigned long long prior_mat = ( m_seqmat & msk ) >> shift ;
-    unsigned long long prior_his = ( m_seqhis & msk ) >> shift ;
-    unsigned long long prior_flag = 0x1 << (prior_his - 1) ;
+    m_photon.add(slot, flag, material);
 
-    if(m_record_truncate && prior_his != 0 && prior_mat != 0 )  // try to overwrite top slot 
+    if(m_record_truncate && m_photon.is_rewrite_slot() )  // try to overwrite top slot 
     {
         m_topslot_rewrite += 1 ; 
         if(m_ctx._debug || m_ctx._other)
         LOG(info)
                   << ( m_topslot_rewrite > 1 ? CAction::HARD_TRUNCATE_ : CAction::TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
-                  << " prior_flag -> flag " <<   OpticksFlags::Abbrev(prior_flag)
-                  << " -> " <<   OpticksFlags::Abbrev(flag)
+                  << " prior_flag -> flag " 
+                  <<   OpticksFlags::Abbrev(m_photon._flag_prior)
+                  << " -> " 
+                  <<   OpticksFlags::Abbrev(flag)
                   << " prior_mat -> mat " 
-                  <<   ( prior_mat == 0 ? "-" : m_material_bridge->getMaterialName(prior_mat-1, true)  ) 
+                  <<   ( m_photon._mat_prior == 0 ? "-" : m_material_bridge->getMaterialName(m_photon._mat_prior-1, true)  ) 
                   << " -> "
-                  <<   ( mat == 0       ? "-" : m_material_bridge->getMaterialName(mat-1, true)  ) 
+                  <<   ( m_photon._mat == 0       ? "-" : m_material_bridge->getMaterialName(m_photon._mat-1, true)  ) 
                   ;
 
         // allowing a single AB->RE rewrite is closer to Opticks
-        if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && prior_flag == BULK_ABSORB)
+        if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && m_photon._flag_prior  == BULK_ABSORB)
         {
             m_step_action |= CAction::TOPSLOT_REWRITE ; 
         }
         else
         {
             m_step_action |= CAction::HARD_TRUNCATE ; 
+            assert(0);
             return true ; 
         }
     }
 
+   if(flag == BULK_REEMIT) m_photon._mskhis = m_photon._mskhis & (~BULK_ABSORB)  ;
 
-    m_seqhis =  (m_seqhis & (~msk)) | (his << shift) ; 
-    m_seqmat =  (m_seqmat & (~msk)) | (mat << shift) ; 
-    m_mskhis |= flag ;   
-    if(flag == BULK_REEMIT) m_mskhis = m_mskhis & (~BULK_ABSORB)  ;
+
+    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
+
+
+    m_writer->writeStepPoint(target_record_id, slot, point, flag, material, label);
+
+
+    if(m_ctx._debug || m_ctx._other) Collect(point, boundary_status, m_photon );
+
+    m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
+
+    //LOG(info) << " inc slot " << m_slot ; 
+
+
+    m_bounce_truncate = m_slot > m_ctx._bounce_max  ;   
+
+    if(m_bounce_truncate) m_step_action |= CAction::BOUNCE_TRUNCATE ; 
+
+    bool done = m_bounce_truncate || m_record_truncate || absorb || miss ;   
+
+
+    if(done && m_dynamic)
+    {
+        m_writer->addDynamicRecords();
+    }
+
+
+   
+    /* 
+    LOG(info) << " m_slot " << m_slot 
+              << " m_ctx._steps_per_photon " << m_ctx._steps_per_photon 
+              << " slot " << slot 
+              << " done " << done
+              << " action " << getStepActionString()
+              ;
+    */
+
+    return done ;    
+}
+
+
 
 
     /*
@@ -785,35 +682,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     //  that needs to be a RE instead.
     //
     //  What about SA/SD ... those should never REjoin ?
-
-    RecordStepPoint(slot, point, flag, material, label);
-
-    //m_writer->RecordStepPoint(slot, point, flag, material, label);
-
-
-    double time = point->GetGlobalTime();
-
-
-    if(m_ctx._debug || m_ctx._other) Collect(point, flag, material, boundary_status, m_mskhis, m_seqhis, m_seqmat, time);
-
-    m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
-
-    m_bounce_truncate = m_slot > m_bounce_max  ;   
-    if(m_bounce_truncate) m_step_action |= CAction::BOUNCE_TRUNCATE ; 
-
-
-    bool done = m_bounce_truncate || m_record_truncate || absorb || miss ;   
-
-    if(done && m_dynamic)
-    {
-        m_records->add(m_dynamic_records);
-    }
-
-    return done ;    
-}
-
-
-
 
 
 
@@ -848,19 +716,23 @@ void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, uns
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time)
+void CRecorder::Collect(const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
 #else
-void CRecorder::Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, unsigned mskhis, unsigned long long seqhis, unsigned long long seqmat, double time)
+void CRecorder::Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
 #endif
 {
+
+    double time = point->GetGlobalTime();
+
     assert(m_ctx._debug || m_ctx._other);
+
     m_points.push_back(new G4StepPoint(*point));
-    m_flags.push_back(flag);
-    m_materials.push_back(material);
+    m_flags.push_back(photon._flag);
+    m_materials.push_back(photon._material);
     m_bndstats.push_back(boundary_status);  // will duplicate the status for the last step
-    m_mskhis_dbg.push_back(mskhis);
-    m_seqhis_dbg.push_back(seqhis);
-    m_seqmat_dbg.push_back(seqmat);
+    m_mskhis_dbg.push_back(photon._mskhis);
+    m_seqhis_dbg.push_back(photon._seqhis);
+    m_seqmat_dbg.push_back(photon._seqmat);
     m_times.push_back(time);
 }
 
@@ -893,78 +765,14 @@ G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
 
 
 
-void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
-{
-     // TODO: migrate to using the writer 
-    // write compressed record quads into buffer at location for the m_record_id 
 
-    const G4ThreeVector& pos = point->GetPosition();
-    const G4ThreeVector& pol = point->GetPolarization();
-
-    G4double time = point->GetGlobalTime();
-    G4double energy = point->GetKineticEnergy();
-    G4double wavelength = h_Planck*c_light/energy ;
-
-    const glm::vec4& sd = m_evt->getSpaceDomain() ; 
-    const glm::vec4& td = m_evt->getTimeDomain() ; 
-    const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
-
-    short posx = CRecorderWriter::shortnorm(pos.x()/mm, sd.x, sd.w ); 
-    short posy = CRecorderWriter::shortnorm(pos.y()/mm, sd.y, sd.w ); 
-    short posz = CRecorderWriter::shortnorm(pos.z()/mm, sd.z, sd.w ); 
-    short time_ = CRecorderWriter::shortnorm(time/ns,   td.x, td.y );
-
-    float wfrac = ((wavelength/nm) - wd.x)/wd.w ;   
-
-    // see oxrap/cu/photon.h
-    unsigned char polx = CRecorderWriter::my__float2uint_rn( (pol.x()+1.f)*127.f );
-    unsigned char poly = CRecorderWriter::my__float2uint_rn( (pol.y()+1.f)*127.f );
-    unsigned char polz = CRecorderWriter::my__float2uint_rn( (pol.z()+1.f)*127.f );
-    unsigned char wavl = CRecorderWriter::my__float2uint_rn( wfrac*255.f );
-
-/*
-    LOG(info) << "CRecorder::RecordStepPoint"
-              << " wavelength/nm " << wavelength/nm 
-              << " wd.x " << wd.x
-              << " wd.w " << wd.w
-              << " wfrac " << wfrac 
-              << " wavl " << unsigned(wavl) 
-              ;
-*/
-
-    qquad qaux ; 
-    qaux.uchar_.x = material ; 
-    qaux.uchar_.y = 0 ; // TODO:m2 
-    qaux.char_.z  = 0 ; // TODO:boundary (G4 equivalent ?)
-    qaux.uchar_.w = BBit::ffs(flag) ;   // ? duplicates seqhis  
-
-    hquad polw ; 
-    polw.ushort_.x = polx | poly << 8 ; 
-    polw.ushort_.y = polz | wavl << 8 ; 
-    polw.ushort_.z = qaux.uchar_.x | qaux.uchar_.y << 8  ;
-    polw.ushort_.w = qaux.uchar_.z | qaux.uchar_.w << 8  ;
-
-    NPY<short>* target = m_dynamic ? m_dynamic_records : m_records ; 
-    unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
-
-    target->setQuad(target_record_id, slot, 0, posx, posy, posz, time_ );
-    target->setQuad(target_record_id, slot, 1, polw.short_.x, polw.short_.y, polw.short_.z, polw.short_.w );  
-
-    // dynamic mode : fills in slots into single photon dynamic_records structure 
-    // static mode  : fills directly into a large fixed dimension records structure
-
-    // looks like static mode will succeed to scrub the AB and replace with RE 
-    // just by decrementing m_slot and running again
-    // but dynamic mode will have an extra record
-}
-
-void CRecorder::RecordQuadrant()
+void CRecorder::RecordQuadrant(uifchar4& c4)
 {
     const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
     const G4ThreeVector& pos = pre->GetPosition();
 
     // initial quadrant 
-    m_c4.uchar_.x = 
+    c4.uchar_.x = 
                   (  pos.x() > 0.f ? unsigned(QX) : 0u ) 
                    |   
                   (  pos.y() > 0.f ? unsigned(QY) : 0u ) 
@@ -972,69 +780,11 @@ void CRecorder::RecordQuadrant()
                   (  pos.z() > 0.f ? unsigned(QZ) : 0u )
                   ;   
 
-    m_c4.uchar_.y = 2u ; 
-    m_c4.uchar_.z = 3u ; 
-    m_c4.uchar_.w = 4u ; 
+    c4.uchar_.y = 2u ; 
+    c4.uchar_.z = 3u ; 
+    c4.uchar_.w = 4u ; 
 }
 
-void CRecorder::RecordPhoton(const G4StepPoint* point)
-{
-    // gets called at last step (eg absorption) or when truncated
-    // for reemission have to rely on downstream overwrites
-    // via rerunning with a target_record_id to scrub old values
-
-    if(m_ctx._debug || m_ctx._other) dump_brief("CRecorder::RecordPhoton");
-
-    const G4ThreeVector& pos = point->GetPosition();
-    const G4ThreeVector& dir = point->GetMomentumDirection();
-    const G4ThreeVector& pol = point->GetPolarization();
-
-    G4double time = point->GetGlobalTime();
-    G4double energy = point->GetKineticEnergy();
-    G4double wavelength = h_Planck*c_light/energy ;
-    G4double weight = 1.0 ; 
-
-    NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons ; 
-    unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
-
-
-    target->setQuad(target_record_id, 0, 0, pos.x()/mm, pos.y()/mm, pos.z()/mm, time/ns  );
-    target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
-    target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
-
-    target->setUInt(target_record_id, 3, 0, 0, m_slot );
-    target->setUInt(target_record_id, 3, 0, 1, 0u );
-    target->setUInt(target_record_id, 3, 0, 2, m_c4.u );
-    target->setUInt(target_record_id, 3, 0, 3, m_mskhis );
-
-    // in static case directly populate the pre-sized photon buffer
-    // in dynamic case populate the single photon buffer first and then 
-    // add that to the photons below
-
-    if(m_dynamic)
-    {
-        m_photons->add(m_dynamic_photons);
-    }
-
-    // generate.cu
-    //
-    //  (x)  p.flags.i.x = prd.boundary ;   // last boundary
-    //  (y)  p.flags.u.y = s.identity.w ;   // sensorIndex  >0 only for cathode hits
-    //  (z)  p.flags.u.z = s.index.x ;      // material1 index  : redundant with boundary  
-    //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
-    //
-
-    NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
-
-    unsigned long long* history = h_target->getValues() + 2*target_record_id ;
-    *(history+0) = m_seqhis ; 
-    *(history+1) = m_seqmat ; 
-
-    if(m_dynamic)
-    {
-        m_history->add(m_dynamic_history);
-    }
-}
 
 
 
@@ -1103,23 +853,23 @@ void CRecorder::dump_brief(const char* msg)
               << " m_badflag " << std::setw(5) << m_badflag 
               << (m_ctx._debug ? " --dindex " : "" )
               << (m_ctx._other ? " --oindex " : "" )
-              << (m_dbgseqhis == m_seqhis ? " --dbgseqhis " : "" )
-              << (m_dbgseqmat == m_seqmat ? " --dbgseqmat " : "" )
+              << (m_dbgseqhis == m_photon._seqhis ? " --dbgseqhis " : "" )
+              << (m_dbgseqmat == m_photon._seqmat ? " --dbgseqmat " : "" )
               << " sas: " << getStepActionString()
               ;
     LOG(info) 
-              << " seqhis " << std::setw(16) << std::hex << m_seqhis << std::dec 
-              << "    " << OpticksFlags::FlagSequence(m_seqhis, true) 
+              << " seqhis " << std::setw(16) << std::hex << m_photon._seqhis << std::dec 
+              << "    " << OpticksFlags::FlagSequence(m_photon._seqhis, true) 
               ;
 
     LOG(info) 
-              << " mskhis " << std::setw(16) << std::hex << m_mskhis << std::dec 
-              << "    " << OpticksFlags::FlagMask(m_mskhis, true) 
+              << " mskhis " << std::setw(16) << std::hex << m_photon._mskhis << std::dec 
+              << "    " << OpticksFlags::FlagMask(m_photon._mskhis, true) 
               ;
 
     LOG(info) 
-              << " seqmat " << std::setw(16) << std::hex << m_seqmat << std::dec 
-              << "    " << m_material_bridge->MaterialSequence(m_seqmat) 
+              << " seqmat " << std::setw(16) << std::hex << m_photon._seqmat << std::dec 
+              << "    " << m_material_bridge->MaterialSequence(m_photon._seqmat) 
               ;
 }
 
@@ -1282,6 +1032,7 @@ void CRecorder::report(const char* msg)
      LOG(info) << "TO DEBUG THESE USE:  --dindex=" << BStr::ijoin(m_debug_photon, ',') ;
 
 }
+
 
 
 

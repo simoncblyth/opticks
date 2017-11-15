@@ -6,6 +6,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
 #include "OpticksPhoton.h"
 #include "OpticksCfg.hh"
@@ -283,15 +284,24 @@ void CG4::initEvent(OpticksEvent* evt)
     m_generator->configureEvent(evt);
 
     m_ctx._photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
+    m_ctx._steps_per_photon = evt->getMaxRec() ;    
+    m_ctx._record_max = evt->getNumPhotons();   // from the genstep summation
+    m_ctx._bounce_max = evt->getBounceMax();
+
+
+    const char* typ = evt->getTyp();
+    m_ctx._gen = OpticksFlags::SourceCode(typ);
+    assert( m_ctx._gen == TORCH || m_ctx._gen == G4GUN  );
 
     LOG(info) << "CG4::initEvent"
               << " photons_per_g4event " << m_ctx._photons_per_g4event
+              << " steps_per_photon " << m_ctx._steps_per_photon
+              << " gen " << m_ctx._gen
               ;
 
 
     m_recorder->initEvent(evt);
 
-    //m_rec->initEvent(evt);
 
     NPY<float>* nopstep = evt->getNopstepData();
 

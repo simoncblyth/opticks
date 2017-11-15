@@ -13,6 +13,11 @@ void CG4Ctx::init()
 {
     _dbgrec = false ; 
     _photons_per_g4event = 0 ; 
+    _steps_per_photon = 0 ; 
+    _gen = 0 ; 
+    _record_max = 0 ;
+    _bounce_max = 0 ; 
+
 
     _event = NULL ; 
     _event_id = -1 ; 

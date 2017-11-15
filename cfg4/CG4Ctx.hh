@@ -25,6 +25,13 @@ struct CFG4_API CG4Ctx
     bool _dbgrec ; 
     // CG4::initEvent
     int  _photons_per_g4event ;
+    unsigned  _steps_per_photon  ;
+    unsigned  _gen  ;
+    unsigned  _record_max ; 
+    unsigned  _bounce_max ; 
+
+
+
 
     // CG4Ctx::setEvent
     G4Event* _event ; 

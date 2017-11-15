@@ -1,0 +1,76 @@
+
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include <cassert>
+
+#include "BBit.hh"
+#include "CPhoton.hh"
+
+CPhoton::CPhoton() 
+{
+    clear();
+}
+
+void CPhoton::clear()
+{
+    _slot = 0 ; 
+    _material = 0 ; 
+    _c4.u = 0 ;   // union { u, i, f, char4, uchar4 }
+
+    _seqhis = 0 ; 
+    _seqmat = 0 ; 
+    _mskhis = 0 ; 
+
+    _his = 0 ; 
+    _mat = 0 ; 
+    _flag = 0 ; 
+
+    _his_prior = 0 ; 
+    _mat_prior = 0 ; 
+    _flag_prior = 0 ; 
+}
+
+
+void CPhoton::add(unsigned slot, unsigned flag, unsigned  material)
+{
+
+    unsigned long long shift = slot*4ull ;     // 4-bits of shift for each slot 
+    unsigned long long  msk = 0xFull << shift ; 
+
+    _slot = slot ; 
+    _his = BBit::ffs(flag) & 0xFull ; 
+    _mat = material < 0xFull ? material : 0xFull ; 
+    _material = material ; 
+    _flag = 0x1 << (_his - 1) ; 
+
+    //std::cout << " _flag " << _flag << " _his " << _his << " flag " << flag << std::endl ; 
+
+    assert( _flag == flag ); 
+
+    _mat_prior = ( _seqmat & msk ) >> shift ;
+    _his_prior = ( _seqhis & msk ) >> shift ;
+    _flag_prior = 0x1 << (_his_prior - 1) ;
+
+    _seqhis =  (_seqhis & (~msk)) | (_his << shift) ; 
+    _seqmat =  (_seqmat & (~msk)) | (_mat << shift) ; 
+    _mskhis |= flag ;    
+
+}
+
+bool CPhoton::is_rewrite_slot() const 
+{
+    return _his_prior != 0 && _mat_prior != 0 ;
+}
+
+std::string CPhoton::desc() const 
+{
+    std::stringstream ss ; 
+    ss << "CPhoton"
+       << " seqhis " << std::setw(20) << std::hex << _seqhis << std::dec 
+       << " seqmat " << std::setw(20) << std::hex << _seqmat << std::dec 
+       ;
+
+    return ss.str();
+}
+
