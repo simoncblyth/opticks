@@ -14,7 +14,6 @@
 #include "CG4.hh"
 #include "CRecorder.hh"
 #include "CTrack.hh"
-#include "CSteppingAction.hh"
 #include "CTrackingAction.hh"
 
 #include "PLOG.hh"
@@ -34,9 +33,8 @@ CTrackingAction::CTrackingAction(CG4* g4)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
-   m_recorder(g4->getRecorder()),
-   m_sa(g4->getSteppingAction()),
-   m_dump(false)
+   m_recorder(g4->getRecorder())
+   //m_sa(g4->getSteppingAction())
 { 
 }
 
@@ -50,10 +48,8 @@ void CTrackingAction::setTrack(const G4Track* track)
  
     m_ctx._debug = m_ok->isDbgPhoton(m_ctx._record_id) ; // from option: --dindex=1,100,1000,10000 
     m_ctx._other = m_ok->isOtherPhoton(m_ctx._record_id) ; // from option: --oindex=1,100,1000,10000 
+    m_ctx._dump = m_ctx._debug || m_ctx._other ; 
 
-    m_dump = m_ctx._debug || m_ctx._other ; 
-
-    if(m_ctx._optical) m_sa->setPhotonId() ;   // essential for clearing counts otherwise, photon steps never cleared 
 }
 
 

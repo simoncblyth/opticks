@@ -197,10 +197,11 @@ CSteppingAction* CG4::getSteppingAction()
     return m_sa ;    
 }
 
-int CG4::getStepId()
-{
-    return m_sa->getStepId();
-}
+
+//int CG4::getStepId()
+//{
+//    return m_sa->getStepId();
+//}
 
 
 
@@ -280,7 +281,6 @@ void CG4::interactive()
 void CG4::initEvent(OpticksEvent* evt)
 {
     m_generator->configureEvent(evt);
-
 
     m_ctx._photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
 

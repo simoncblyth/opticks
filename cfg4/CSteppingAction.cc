@@ -108,24 +108,25 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_steprec(g4->getStepRec()),
    m_verbosity(m_recorder->getVerbosity()),
 
-   m_step_total(0),
-   m_steprec_store_count(0),
+   //m_step_total(0),
+   m_steprec_store_count(0)
 
-   m_startEvent(false),
-   m_startTrack(false),
+   //m_startEvent(false),
+   //m_startTrack(false),
 
-   m_rejoin_count(0),
-   m_primarystep_count(0),
+   //m_rejoin_count(0),
+   //m_primarystep_count(0)
 
-   m_step(NULL),
-   m_step_id(-1)
+   //m_step(NULL),
+   //m_step_id(-1)
 { 
 }
 
-int CSteppingAction::getStepId()
-{
-    return m_step_id ; 
-}
+
+//int CSteppingAction::getStepId()
+//{
+//    return m_step_id ; 
+//}
 
 void CSteppingAction::postinitialize()
 {
@@ -153,30 +154,36 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     }
 }
 
-const G4ThreeVector& CSteppingAction::getStepOrigin()
-{
-    return m_step_origin ;
-}
+//const G4ThreeVector& CSteppingAction::getStepOrigin()
+//{
+//    return m_step_origin ;
+//}
 
-void CSteppingAction::setPhotonId()
-{
-    assert( m_ctx._photon_id >= 0 );
-
-    m_rejoin_count = 0 ; 
-    m_primarystep_count = 0 ; 
-
-    LOG(debug) << "CSteppingAction::setPhotonId"
-              << " event_id " << m_ctx._event_id 
-              << " track_id " << m_ctx._track_id 
-              << " photon_id " << m_ctx._photon_id 
-              << " reemtrack " << m_ctx._reemtrack
-              ; 
-}
+//void CSteppingAction::setPhotonId()
+//{
+//    assert( m_ctx._photon_id >= 0 );
+//
+//    m_rejoin_count = 0 ; 
+//    m_primarystep_count = 0 ; 
+//
+//    LOG(debug) << "CSteppingAction::setPhotonId"
+//              << " event_id " << m_ctx._event_id 
+//              << " track_id " << m_ctx._track_id 
+//              << " photon_id " << m_ctx._photon_id 
+//              << " reemtrack " << m_ctx._reemtrack
+//              ; 
+//}
 
 bool CSteppingAction::setStep(const G4Step* step, int step_id)
 {
     bool done = false ; 
 
+    m_ctx.setStep(step);
+
+    assert( m_ctx._step_id == step_id );
+ 
+
+/*
     m_step = step ; 
     m_step_id = step_id ; 
 
@@ -200,6 +207,10 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
               << " step_id " << m_step_id
               << " trackStatus " << CTrack::TrackStatusString(track_status)
               ;
+*/
+
+    // 
+
 
     if(m_ctx._optical)
     {
@@ -209,6 +220,8 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
     {
         m_steprec->collectStep(step, step_id);
     
+        G4TrackStatus track_status = m_ctx._track->GetTrackStatus(); 
+
         if(track_status == fStopAndKill)
         {
             done = true ;  
@@ -217,10 +230,10 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
         }
     }
 
-   if(m_step_total % 10000 == 0) 
+   if(m_ctx._step_total % 10000 == 0) 
        LOG(debug) << "CSA (totals%10k)"
                  << " track_total " <<  m_ctx._track_total
-                 << " step_total " <<  m_step_total
+                 << " step_total " <<  m_ctx._step_total
                  ;
 
     return done ;
@@ -232,26 +245,25 @@ bool CSteppingAction::collectPhotonStep()
     bool done = false ; 
 
 
-    CStage::CStage_t stage = CStage::UNKNOWN ; 
-
-    if( !m_ctx._reemtrack )     // primary photon, ie not downstream from reemission 
-    {
-        stage = m_primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
-        m_primarystep_count++ ; 
-    } 
-    else 
-    {
-        stage = m_rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
-        m_rejoin_count++ ; 
-        // rejoin count is zeroed in setPhotonId, so each remission generation trk will result in REJOIN 
-    }
+//  moved to Ctx::setStepOptical
+//    CStage::CStage_t stage = CStage::UNKNOWN ; 
+//
+//    if( !m_ctx._reemtrack )     // primary photon, ie not downstream from reemission 
+//    {
+//        stage = m_ctx._primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
+//        m_ctx._primarystep_count++ ; 
+//    } 
+//    else 
+//    {
+//        stage = m_ctx._rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
+//        m_ctx._rejoin_count++ ; 
+//        // rejoin count is zeroed in setPhotonId, so each remission generation trk will result in REJOIN 
+//    }
 
 
     int record_max = m_recorder->getRecordMax() ;
     bool recording = m_ctx._record_id < record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
    
-
-
     if(recording)
     {
 #ifdef USE_CUSTOM_BOUNDARY
@@ -259,7 +271,7 @@ bool CSteppingAction::collectPhotonStep()
 #else
         G4OpBoundaryProcessStatus boundary_status = GetOpBoundaryProcessStatus() ;
 #endif
-        done = m_recorder->Record(m_step, m_step_id, boundary_status, stage);
+        done = m_recorder->Record(m_ctx._step, m_ctx._step_id, boundary_status, m_ctx._stage);
 
     }
     return done ; 
@@ -271,7 +283,7 @@ void CSteppingAction::report(const char* msg)
     std::cout 
            << " event_total " <<  m_ctx._event_total << std::endl 
            << " track_total " <<  m_ctx._track_total << std::endl 
-           << " step_total " <<  m_step_total << std::endl 
+           << " step_total " <<  m_ctx._step_total << std::endl 
            ;
     m_recorder->report(msg);
 }

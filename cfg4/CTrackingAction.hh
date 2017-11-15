@@ -36,16 +36,12 @@ class CFG4_API CTrackingAction : public G4UserTrackingAction
     virtual void PostUserTrackingAction(const G4Track* track);
   private:
     void setTrack(const G4Track* track);
-    void setPhotonId(int photon_id, bool reemtrack);
     void dump(const char* msg );
-
   private:
     CG4*                  m_g4 ; 
     CG4Ctx&               m_ctx ; 
     Opticks*              m_ok ; 
     CRecorder*            m_recorder ; 
-    CSteppingAction*      m_sa ;  
-    bool                  m_dump ; 
 
 
 };

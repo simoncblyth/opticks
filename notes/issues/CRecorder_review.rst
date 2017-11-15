@@ -9,6 +9,10 @@ Simplifications
 * introduce shared struct CG4Ctx : to avoid playing pass the parcel
 
 
+* DIVISON OF CONCERNS : SPLIT UP
+
+  * holding state (CG4Ctx) 
+  * recording state 
 
 
 
@@ -128,6 +132,11 @@ Candle While Make Simplifications
                   /tmp/blyth/opticks/evt/tboolean-sphere/torch/1 9fe099d814f9ed5a1a4fa784110047af 7a3ebc21c6f795d198b9ee1494917b32  600000    -1.0000 INTEROP_MODE 
     {u'emitconfig': u'photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1', u'resolution': u'20', u'emit': -1, u'poly': u'IM'}
     [2017-11-14 18:08:10,422] p53147 {/Users/blyth/opticks/ana/tboolean.py:25} INFO - early exit as non-interactive
+    simon:cfg4 blyth$ 
+
+
+
+
     simon:cfg4 blyth$ 
 
 

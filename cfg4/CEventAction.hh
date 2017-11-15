@@ -21,10 +21,10 @@ class CG4 ;
 
 class CFG4_API CEventAction : public G4UserEventAction
 {
-    friend class CG4 ;  
   public:
     virtual ~CEventAction();
   private:
+    friend class CG4 ;    
     CEventAction(CG4* g4);
     void postinitialize();
   public:

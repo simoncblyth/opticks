@@ -9,10 +9,9 @@
 
 #include "PLOG.hh"
 
-
 void CG4Ctx::init()
 {
-    // CTrackingAction::initEvent 
+    _dbgrec = false ; 
     _photons_per_g4event = 0 ; 
 
     _event = NULL ; 
@@ -34,11 +33,20 @@ void CG4Ctx::init()
     _record_id = -1 ; 
     _reemtrack = false ; 
 
+    _rejoin_count = 0 ; 
+    _primarystep_count = 0 ; 
+    _stage = CStage::UNKNOWN ; 
+
     _record_id = -1 ; 
     _debug = false ; 
     _other = false ; 
+    _dump = false ; 
 
-    _dbgrec = false ; 
+
+    _step = NULL ; 
+    _step_id = -1 ;
+    _step_total = 0 ; 
+ 
 }
 
 void CG4Ctx::setEvent(const G4Event* event)
@@ -63,13 +71,42 @@ void CG4Ctx::setTrack(const G4Track* track)
     _event_track_count += 1 ; 
     _track_total += 1 ;
     
-
     _parent_id = CTrack::ParentId(track) ;
     _optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
     _pdg_encoding = particle->GetPDGEncoding();
 
     if(_optical) setTrackOptical();
 }
+
+void CG4Ctx::setStep(const G4Step* step)
+{
+    _step = const_cast<G4Step*>(step) ; 
+    _step_id = CTrack::StepId(_track);
+    _step_total += 1 ; 
+    _track_step_count += 1 ; 
+
+    if(_step_id == 0)
+    {
+        const G4StepPoint* pre = _step->GetPreStepPoint() ;
+        _step_origin = pre->GetPosition();
+    }
+
+    G4TrackStatus track_status = _track->GetTrackStatus(); 
+
+    if(_dbgrec)
+    LOG(info) << "CG4Ctx::setStep" 
+              << " step_total " << _step_total
+              << " event_id " << _event_id
+              << " track_id " << _track_id
+              << " track_step_count " << _track_step_count
+              << " step_id " << _step_id
+              << " trackStatus " << CTrack::TrackStatusString(track_status)
+              ;
+
+    if(_optical) setStepOptical();
+}
+
+
 
 void CG4Ctx::setTrackOptical()
 {
@@ -88,7 +125,36 @@ void CG4Ctx::setTrackOptical()
 
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
 
+
+    // moved from  CSteppingAction::setPhotonId
+    // essential for clearing counts otherwise, photon steps never cleared 
+    _rejoin_count = 0 ; 
+    _primarystep_count = 0 ; 
+
 }
+
+void CG4Ctx::setStepOptical()
+{
+    if( !_reemtrack )     // primary photon, ie not downstream from reemission 
+    {
+        _stage = _primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
+        _primarystep_count++ ; 
+    } 
+    else 
+    {
+        _stage = _rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
+        _rejoin_count++ ; 
+        // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
+    }
+}
+
+
+
+
+
+
+
+
 
 std::string CG4Ctx::desc() const 
 {

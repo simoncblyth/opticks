@@ -3,6 +3,7 @@
 #include <map>
 #include <string>
 class CG4 ; 
+struct CG4Ctx ; 
 class CMaterialLib ; 
 
 //#include "G4ThreeVector.hh"
@@ -20,6 +21,7 @@ class DebugG4Transportation : public G4Transportation
 
    private:
        CG4*          m_g4 ; 
+       CG4Ctx&       m_ctx ; 
        CMaterialLib* m_mlib ; 
        G4ThreeVector m_origin ; 
 

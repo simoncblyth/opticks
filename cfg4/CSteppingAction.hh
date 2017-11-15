@@ -42,7 +42,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   public:
     CSteppingAction(CG4* g4, bool dynamic);
     void postinitialize();
-    int getStepId();
+    //int getStepId();
     void report(const char* msg="CSteppingAction::report");
     virtual ~CSteppingAction();
 
@@ -52,7 +52,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     G4OpBoundaryProcessStatus GetOpBoundaryProcessStatus();
 #endif
   public:
-    const G4ThreeVector& getStepOrigin();
+    //const G4ThreeVector& getStepOrigin();
   public:
     virtual void UserSteppingAction(const G4Step*);
   private:
@@ -84,13 +84,13 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     // init in ctor
     //unsigned int m_event_total ; 
     //unsigned int m_track_total ; 
-    unsigned int m_step_total ; 
+    //unsigned int m_step_total ; 
     //unsigned int m_event_track_count ; 
     unsigned int m_steprec_store_count ;
 
     // set by UserSteppingAction
-    bool                  m_startEvent ; 
-    bool                  m_startTrack ; 
+    //bool                  m_startEvent ; 
+    //bool                  m_startTrack ; 
 
     // set by setEvent
     //const G4Event*        m_event ; 
@@ -108,8 +108,8 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     //int                   m_photon_id ; 
     //bool                  m_reemtrack ; 
 
-    unsigned int          m_rejoin_count ;
-    unsigned int          m_primarystep_count ;
+    //unsigned int          m_rejoin_count ;
+    //unsigned int          m_primarystep_count ;
     
     // set by setRecordId
     //int                    m_record_id ;
@@ -118,9 +118,9 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
 
   
     // set by setStep 
-    const G4Step*         m_step ; 
-    int                   m_step_id ;
-    G4ThreeVector         m_step_origin ; 
+    //const G4Step*         m_step ; 
+    //int                   m_step_id ;
+    //G4ThreeVector         m_step_origin ; 
 
 
 

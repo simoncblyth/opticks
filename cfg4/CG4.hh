@@ -92,7 +92,7 @@ class CFG4_API CG4
         CEventAction*    getEventAction();
         CSteppingAction* getSteppingAction();
         CTrackingAction* getTrackingAction();
-        int getStepId();
+        //int getStepId();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:

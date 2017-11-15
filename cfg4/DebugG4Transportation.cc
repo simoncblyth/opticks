@@ -1,5 +1,6 @@
 #include "DebugG4Transportation.hh"
 #include "CG4.hh"
+#include "CG4Ctx.hh"
 #include "CTrack.hh"
 #include "CMaterialLib.hh"
 #include "Format.hh"
@@ -10,6 +11,7 @@ DebugG4Transportation::DebugG4Transportation( CG4* g4, G4int verbosity )
    :
     G4Transportation(verbosity),
     m_g4(g4),
+    m_ctx(g4->getCtx()),
     m_mlib(g4->getMaterialLib()),
     m_origin(0,0,0)
 {
@@ -33,7 +35,7 @@ G4VParticleChange* DebugG4Transportation::AlongStepDoIt( const G4Track& track,
     G4double expectLocalTime =  track.GetLocalTime() + expectDeltaTime ;
 
     float wavelength = CTrack::Wavelength(&track);
-    m_mlib->dumpGroupvelMaterial("trans.ASDIP.beg", wavelength, preVelocity,expectDeltaTime,  m_g4->getStepId());
+    m_mlib->dumpGroupvelMaterial("trans.ASDIP.beg", wavelength, preVelocity,expectDeltaTime,  m_ctx._step_id );
 
     G4VParticleChange* change = G4Transportation::AlongStepDoIt(track, stepData );
 
