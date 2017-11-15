@@ -143,6 +143,6 @@ void CSteppingAction::report(const char* msg)
            << " track_total " <<  m_ctx._track_total << std::endl 
            << " step_total " <<  m_ctx._step_total << std::endl 
            ;
-    m_recorder->report(msg);
+    //m_recorder->report(msg);
 }
 

@@ -25,6 +25,7 @@ class OpticksEvent ;
 struct CG4Ctx ; 
 #include "CPhoton.hh"
 
+class CDebug ; 
 class CRec ; 
 class CGeometry ; 
 class CMaterialBridge ; 
@@ -136,19 +137,15 @@ class CFG4_API CRecorder {
         bool Record(DsG4OpBoundaryProcessStatus boundary_status);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         DsG4OpBoundaryProcessStatus getBoundaryStatus();
-        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
         bool Record(G4OpBoundaryProcessStatus boundary_status);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
-        void Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon );
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
         G4OpBoundaryProcessStatus getBoundaryStatus();
-        void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #endif
     private:
         void setStep(const G4Step* step, int step_id);
@@ -156,8 +153,7 @@ class CFG4_API CRecorder {
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
         void RecordQuadrant(uifchar4& c4);
 
-        void Clear();
-        bool hasIssue();
+        //void Clear();
    public:
         std::string getStepActionString();
         bool isSelected(); 
@@ -181,26 +177,15 @@ class CFG4_API CRecorder {
         // debugging/dumping 
         void Summary(const char* msg);
         void dump(const char* msg="CRecorder::dump");
-        void dump_brief(const char* msg="CRecorder::dump_brief");
-        void dump_sequence(const char* msg="CRecorder::dump_sequence");
-        void dump_points(const char* msg="CRecorder::dump_points");
-        void dumpStepVelocity(const char* msg="CRecorder::dumpStepVelocity");
-   public:
-        // reporting
-        void report(const char* msg="CRecorder::report");
-        void addSeqhisMismatch(unsigned long long rdr, unsigned long long rec);
-        void addSeqmatMismatch(unsigned long long rdr, unsigned long long rec);
-        void addDebugPhoton(int photon_id);
+
    private:
         void init();
    private:
         CG4*               m_g4; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
-
-        unsigned long long m_dbgseqhis ;
-        unsigned long long m_dbgseqmat ;
-        bool               m_dbgflags ;
+        CPhoton            m_photon ;  
+        CDebug*            m_dbg ; 
 
         CRec*              m_crec ; 
         OpticksEvent*      m_evt ; 
@@ -217,15 +202,12 @@ class CFG4_API CRecorder {
         unsigned m_verbosity ; 
 
 
-
 #ifdef USE_CUSTOM_BOUNDARY
         DsG4OpBoundaryProcessStatus m_boundary_status ; 
         DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
-        std::vector<DsG4OpBoundaryProcessStatus>  m_bndstats ; 
 #else
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
-        std::vector<G4OpBoundaryProcessStatus>  m_bndstats ; 
 #endif
 
         unsigned int m_premat ; 
@@ -235,7 +217,7 @@ class CFG4_API CRecorder {
         unsigned int m_prior_postmat ; 
 
 
-        CPhoton     m_photon ;  
+
         unsigned long long m_seqhis_select ; 
         unsigned long long m_seqmat_select ; 
         unsigned int       m_slot ; 
@@ -245,20 +227,8 @@ class CFG4_API CRecorder {
         bool               m_bounce_truncate ; 
         unsigned int       m_topslot_rewrite ; 
         unsigned           m_badflag ; 
-        //const G4Step*      m_step ; 
         unsigned           m_step_action ; 
 
-        std::vector<const G4StepPoint*>         m_points ; 
-        std::vector<unsigned int>               m_flags ; 
-        std::vector<unsigned int>               m_materials ; 
-        std::vector<unsigned long long>         m_seqhis_dbg  ; 
-        std::vector<unsigned long long>         m_seqmat_dbg  ; 
-        std::vector<unsigned>                   m_mskhis_dbg  ; 
-        std::vector<double>                     m_times  ; 
-
-        std::vector<std::pair<unsigned long long, unsigned long long> > m_seqhis_mismatch ; 
-        std::vector<std::pair<unsigned long long, unsigned long long> > m_seqmat_mismatch ; 
-        std::vector<int> m_debug_photon ; 
 
 
 };

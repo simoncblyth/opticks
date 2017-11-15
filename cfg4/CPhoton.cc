@@ -14,6 +14,7 @@ CPhoton::CPhoton()
 
 void CPhoton::clear()
 {
+    _badflag = 0 ; 
     _slot = 0 ; 
     _material = 0 ; 
     _c4.u = 0 ;   // union { u, i, f, char4, uchar4 }

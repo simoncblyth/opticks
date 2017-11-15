@@ -7,6 +7,7 @@
 
 struct CFG4_API CPhoton
 {
+    unsigned _badflag ; 
     unsigned _slot ; 
     unsigned _material ; 
     uifchar4   _c4 ; 
