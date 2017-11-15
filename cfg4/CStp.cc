@@ -4,6 +4,7 @@
 #include "G4StepPoint.hh"
 #include "CStp.hh"
 #include "CRecorder.hh"
+#include "CAction.hh"
 #include "OpticksFlags.hh"
 #include "OpStatus.hh"
 
@@ -109,7 +110,7 @@ std::string CStp::description()
     ss 
        << " " << OpticksFlags::Abbrev(m_preflag) << "/" << OpticksFlags::Abbrev(m_postflag) 
        << "   " << std::setw(5) << OpBoundaryAbbrevString(m_boundary_status) 
-       << "   " << std::setw(50) << CRecorder::Action(m_action) 
+       << "   " << std::setw(50) << CAction::Action(m_action) 
        << std::endl 
        << "[" 
        << std::setw(4) << m_step_id 

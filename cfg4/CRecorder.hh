@@ -111,60 +111,11 @@ class CFG4_API CRecorder {
    public:
         static const char* PRE ; 
         static const char* POST ; 
-        enum 
-        {
-           PRE_SAVE         = 0x1 << 0,
-           POST_SAVE        = 0x1 << 1,
-           PRE_DONE         = 0x1 << 2,
-           POST_DONE        = 0x1 << 3,
-           LAST_POST        = 0x1 << 4,
-           SURF_ABS         = 0x1 << 5,
-           PRE_SKIP         = 0x1 << 6,
-           MAT_SWAP         = 0x1 << 7,
-           STEP_START       = 0x1 << 8,
-           STEP_REJOIN      = 0x1 << 9,
-           STEP_RECOLL      = 0x1 << 10,
-           RECORD_TRUNCATE  = 0x1 << 11,
-           BOUNCE_TRUNCATE  = 0x1 << 12,
-           ZERO_FLAG        = 0x1 << 13,
-           DECREMENT_DENIED = 0x1 << 14,
-           HARD_TRUNCATE    = 0x1 << 15,
-           TOPSLOT_REWRITE  = 0x1 << 16,
-           POST_SKIP        = 0x1 << 17
-        };
-
-        static const char* PRE_SAVE_ ; 
-        static const char* POST_SAVE_ ; 
-        static const char* PRE_DONE_ ; 
-        static const char* POST_DONE_ ; 
-        static const char* LAST_POST_ ; 
-        static const char* SURF_ABS_ ; 
-        static const char* PRE_SKIP_ ; 
-        static const char* MAT_SWAP_ ; 
-        static const char* STEP_START_ ; 
-        static const char* STEP_REJOIN_ ; 
-        static const char* STEP_RECOLL_ ; 
-        static const char* RECORD_TRUNCATE_ ; 
-        static const char* BOUNCE_TRUNCATE_ ; 
-        static const char* HARD_TRUNCATE_ ; 
-        static const char* ZERO_FLAG_ ; 
-        static const char* DECREMENT_DENIED_ ; 
-        static const char* TOPSLOT_REWRITE_ ; 
-        static const char* POST_SKIP_ ; 
-
-        static std::string Action(int action);
    public:
         CRecorder(CG4* g4, CGeometry* geometry, bool dynamic);
         std::string desc() const ; 
         void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
         void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
-   public:
-        // controlled via --dindex and --oindex options
-        //bool isDebug(); 
-        //bool isOther(); 
-   private:
-        //void setDebug(bool debug);
-        //void setOther(bool other);
    private:
         void setEvent(OpticksEvent* evt);
    public:
@@ -172,8 +123,6 @@ class CFG4_API CRecorder {
    public:
         void RecordBeginOfRun(const G4Run*);
         void RecordEndOfRun(const G4Run*);
-        static double PreGlobalTime(const G4Step* step);
-        static double PostGlobalTime(const G4Step* step);
 
         void RecordPhoton(const G4StepPoint* point); // overwrites target_record_id (ie m_record_id for static) entry for REJOINs
         void startPhoton();
@@ -184,7 +133,7 @@ class CFG4_API CRecorder {
 
 #ifdef USE_CUSTOM_BOUNDARY
     public:
-        bool Record(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(DsG4OpBoundaryProcessStatus boundary_status);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, 
@@ -194,7 +143,7 @@ class CFG4_API CRecorder {
         void dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, DsG4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname );
 #else
     public:
-        bool Record(const G4Step* step, int step_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage);
+        bool Record(G4OpBoundaryProcessStatus boundary_status);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void Collect(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, 
@@ -226,23 +175,6 @@ class CFG4_API CRecorder {
         // non-live running 
         void CannedWriteSteps();
    public:
-        //void setEventId(int event_id);
-        //void setPhotonId(int photon_id);
-        //void setParentId(int parent_id);
-        //void setRecordId(int record_id, bool dbg, bool other);
-        //void setPrimaryId(int primary_id);
-
-        void setStage(CStage::CStage_t stage);
-   public:
-        //int getEventId();
-        //int getPhotonId();
-        //int getPhotonIdPrior();
-        //int getParentId();
-        int getStepId();
-        //int getRecordId();
-
-        unsigned getRecordMax();
-
         unsigned long long getSeqHis();
         unsigned long long getSeqMat();
 
@@ -291,22 +223,6 @@ class CFG4_API CRecorder {
 
         unsigned m_verbosity ; 
 
-        //bool     m_debug ; 
-        //bool     m_other ; 
-
-        CStage::CStage_t m_stage ;
-        CStage::CStage_t m_prior_stage ;
-
-        //int m_event_id ; 
-        //int m_photon_id ; 
-        //int m_photon_id_prior ; 
-        //int m_parent_id ; 
-        int m_step_id ; 
-
-        //int m_record_id ; 
-        //int m_record_id_prior ; 
-        //int m_primary_id ; 
-
         uifchar4     m_c4 ; 
 
 
@@ -340,7 +256,7 @@ class CFG4_API CRecorder {
         bool               m_bounce_truncate ; 
         unsigned int       m_topslot_rewrite ; 
         unsigned           m_badflag ; 
-        const G4Step*      m_step ; 
+        //const G4Step*      m_step ; 
         unsigned           m_step_action ; 
 
         NPY<float>*               m_primary ; 

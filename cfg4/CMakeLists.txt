@@ -181,6 +181,7 @@ set(SOURCES
     CPrimaryGeneratorAction.cc
 
     CRecorder.cc
+    CAction.cc
     CRecorderWriter.cc
 
     CDetector.cc
@@ -196,6 +197,7 @@ set(SOURCES
 
     CEventAction.cc
     CSteppingAction.cc
+    CBoundaryProcess.cc
     CTrackingAction.cc
     CStage.cc
     CG4Ctx.cc

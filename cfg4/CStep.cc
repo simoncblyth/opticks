@@ -1,5 +1,8 @@
 #include "CFG4_BODY.hh"
 #include "CStep.hh"
+
+#include "G4SystemOfUnits.hh"
+#include "G4StepPoint.hh"
 #include "G4Step.hh"
 
 
@@ -11,6 +14,21 @@ unsigned int CStep::getStepId() const
 {
     return m_step_id ; 
 }
+
+
+double CStep::PreGlobalTime(const G4Step* step) // static
+{
+    const G4StepPoint* point  = step->GetPreStepPoint() ; 
+    return point ? point->GetGlobalTime()/ns : -1 ;
+}
+double CStep::PostGlobalTime(const G4Step* step) // static
+{
+    const G4StepPoint* point  = step->GetPostStepPoint() ; 
+    return point ? point->GetGlobalTime()/ns : -1 ;
+}
+
+
+
 
 
 CStep::CStep(const G4Step* step, unsigned int step_id) 

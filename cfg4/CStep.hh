@@ -15,6 +15,9 @@ CStep
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CStep {
    public:
+       static double PreGlobalTime(const G4Step* step);
+       static double PostGlobalTime(const G4Step* step);
+
        CStep(const G4Step* step, unsigned int step_id);
        virtual ~CStep();
        const G4Step* getStep() const ;  

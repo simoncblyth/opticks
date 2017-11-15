@@ -40,6 +40,8 @@
 #include "CRec.hh"
 #include "CStp.hh"
 #include "State.hh"
+#include "CStep.hh"
+#include "CAction.hh"
 #include "CRecorder.hh"
 
 #include "PLOG.hh"
@@ -49,54 +51,6 @@
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
 
-const char* CRecorder::PRE_SAVE_ = "PRE_SAVE" ; 
-const char* CRecorder::POST_SAVE_ = "POST_SAVE" ; 
-const char* CRecorder::PRE_DONE_  = "PRE_DONE" ; 
-const char* CRecorder::POST_DONE_ = "POST_DONE" ; 
-const char* CRecorder::LAST_POST_ = "LAST_POST" ; 
-const char* CRecorder::SURF_ABS_ = "SURF_ABS" ; 
-const char* CRecorder::PRE_SKIP_ = "PRE_SKIP" ; 
-const char* CRecorder::POST_SKIP_ = "POST_SKIP" ; 
-const char* CRecorder::MAT_SWAP_ = "MAT_SWAP" ; 
-const char* CRecorder::STEP_START_ = "STEP_START" ; 
-const char* CRecorder::STEP_REJOIN_ = "STEP_REJOIN" ; 
-const char* CRecorder::STEP_RECOLL_ = "STEP_RECOLL" ; 
-const char* CRecorder::RECORD_TRUNCATE_ = "RECORD_TRUNCATE" ; 
-const char* CRecorder::BOUNCE_TRUNCATE_ = "BOUNCE_TRUNCATE" ; 
-const char* CRecorder::HARD_TRUNCATE_ = "HARD_TRUNCATE" ; 
-const char* CRecorder::ZERO_FLAG_ = "ZERO_FLAG" ; 
-const char* CRecorder::DECREMENT_DENIED_ = "DECREMENT_DENIED" ; 
-const char* CRecorder::TOPSLOT_REWRITE_ = "TOPSLOT_REWRITE" ; 
-
-
-std::string CRecorder::Action(int action)
-{
-    std::stringstream ss ;
-
-    if((action & PRE_SAVE) != 0)  ss << PRE_SAVE_ << " " ; 
-    if((action & POST_SAVE) != 0) ss << POST_SAVE_ << " " ; 
-    if((action & PRE_DONE) != 0)  ss << PRE_DONE_ << " " ; 
-    if((action & POST_DONE) != 0) ss << POST_DONE_ << " " ; 
-    if((action & LAST_POST) != 0) ss << LAST_POST_ << " " ; 
-    if((action & SURF_ABS) != 0)  ss << SURF_ABS_ << " " ; 
-    if((action & PRE_SKIP) != 0)  ss << PRE_SKIP_ << " " ; 
-    if((action & POST_SKIP) != 0)  ss << POST_SKIP_ << " " ; 
-    if((action & MAT_SWAP) != 0)  ss << MAT_SWAP_ << " " ; 
-    if((action & STEP_START) != 0)  ss << STEP_START_ << " " ; 
-    if((action & STEP_REJOIN) != 0)  ss << STEP_REJOIN_ << " " ; 
-    if((action & STEP_RECOLL) != 0)  ss << STEP_RECOLL_ << " " ; 
-    if((action & RECORD_TRUNCATE) != 0)  ss << RECORD_TRUNCATE_ << " " ; 
-    if((action & BOUNCE_TRUNCATE) != 0)  ss << BOUNCE_TRUNCATE_ << " " ; 
-    if((action & HARD_TRUNCATE) != 0)  ss << HARD_TRUNCATE_ << " " ; 
-    if((action & ZERO_FLAG) != 0)  ss << ZERO_FLAG_ << " " ; 
-    if((action & DECREMENT_DENIED) != 0)  ss << DECREMENT_DENIED_ << " " ; 
-    if((action & TOPSLOT_REWRITE) != 0)  ss << TOPSLOT_REWRITE_ << " " ; 
-
-    return ss.str();
-}
- 
-
-
 /**
 CRecorder
 ==========
@@ -104,8 +58,6 @@ CRecorder
 Canonical instance is ctor resident of CG4 
 
 **/
-
-
 
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
    :
@@ -130,21 +82,6 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
 
 
    m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
-   //m_debug(m_verbosity > 0),
-   //m_other(false),
-
-
-   m_stage(CStage::UNKNOWN),
-   m_prior_stage(CStage::UNKNOWN),
-
-   //m_event_id(INT_MAX),
-   //m_photon_id(INT_MAX),
-   //m_photon_id_prior(INT_MAX),
-
-   m_step_id(INT_MAX),
-   //m_record_id(INT_MAX),
-   //m_record_id_prior(INT_MAX),
-   //m_primary_id(INT_MAX),
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
@@ -168,7 +105,6 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_bounce_truncate(false),
    m_topslot_rewrite(0),
    m_badflag(0),
-   m_step(NULL),
    m_step_action(0),
 
    m_primary(0),
@@ -190,11 +126,7 @@ void CRecorder::postinitialize()
 {
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
-
 }
-
-
-
 
 unsigned int CRecorder::getVerbosity()
 {
@@ -224,43 +156,18 @@ unsigned long long CRecorder::getSeqMat()
 
 
 
-
-unsigned CRecorder::getRecordMax()
-{
-    return m_record_max ; 
-}
-
-
-
-int CRecorder::getStepId()
-{
-   return m_step_id ; 
-}
-
-
-
-
-//void CRecorder::setPrimaryId(int primary_id)
-//{
-//    m_primary_id = primary_id ; 
-//}
-
-
-
-
-
 std::string CRecorder::description()
 {
     std::stringstream ss ; 
-    ss << std::setw(10) << CStage::Label(m_stage)
+    ss << std::setw(10) << CStage::Label(m_ctx._stage)
        << " evt " << std::setw(7) << m_ctx._event_id
        << " pho " << std::setw(7) << m_ctx._photon_id 
        << " pri " << std::setw(7) << m_ctx._primary_id
-       << " ste " << std::setw(4) << m_step_id 
+       << " ste " << std::setw(4) << m_ctx._step_id 
        << " rid " << std::setw(4) << m_ctx._record_id 
        << " slt " << std::setw(4) << m_slot
-       << " pre " << std::setw(7) << PreGlobalTime(m_step)
-       << " pst " << std::setw(7) << PostGlobalTime(m_step)
+       << " pre " << std::setw(7) << CStep::PreGlobalTime(m_ctx._step)
+       << " pst " << std::setw(7) << CStep::PostGlobalTime(m_ctx._step)
        << ( m_dynamic ? " DYNAMIC " : " STATIC " )
        ;
 
@@ -281,9 +188,6 @@ std::string CRecorder::desc() const
 
     return ss.str();
 }
-
-
-
 
 void CRecorder::RecordBeginOfRun(const G4Run*)
 {
@@ -319,7 +223,7 @@ void CRecorder::initEvent(OpticksEvent* evt)
               << " bounce_max  " << m_bounce_max 
               << " steps_per_photon " << m_steps_per_photon 
               << " num_g4event " << m_evt->getNumG4Event() 
-              << " isStep " << m_step  
+              << " isStep " << m_ctx._step  
               ;
 
     if(m_dynamic)
@@ -337,13 +241,11 @@ void CRecorder::initEvent(OpticksEvent* evt)
 
         m_dynamic_history = NPY<unsigned long long>::make(1, 1, 2) ;
         m_dynamic_history->zero();
-
     } 
     else
     {
         assert(m_record_max > 0 );
     }
-
 
     m_history = m_evt->getSequenceData();
     m_photons = m_evt->getPhotonData();
@@ -360,17 +262,6 @@ void CRecorder::initEvent(OpticksEvent* evt)
     assert( m_gen == TORCH || m_gen == G4GUN  );
 }
 
-
-double CRecorder::PreGlobalTime(const G4Step* step)
-{
-    const G4StepPoint* point  = step->GetPreStepPoint() ; 
-    return point ? point->GetGlobalTime()/ns : -1 ;
-}
-double CRecorder::PostGlobalTime(const G4Step* step)
-{
-    const G4StepPoint* point  = step->GetPostStepPoint() ; 
-    return point ? point->GetGlobalTime()/ns : -1 ;
-}
 
 
 unsigned CRecorder::getSlot()
@@ -398,7 +289,7 @@ void CRecorder::startPhoton()
     }
 
 
-    const G4StepPoint* pre = m_step->GetPreStepPoint() ;
+    const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
 
     m_crec->startPhoton(pos);   // clears CStp vector
@@ -442,7 +333,7 @@ void CRecorder::decrementSlot()
     if(m_slot == 0 )
     {
         m_decrement_denied += 1 ; 
-        m_step_action |= DECREMENT_DENIED ; 
+        m_step_action |= CAction::DECREMENT_DENIED ; 
         LOG(warning) << "CRecorder::decrementSlot DENIED "
                      << " slot " << m_slot 
                      << " record_truncate " << m_record_truncate 
@@ -458,27 +349,30 @@ void CRecorder::decrementSlot()
 
 // invoked by CSteppingAction::collectPhotonStep
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(const G4Step* step, int step_id, DsG4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
 #else
-bool CRecorder::Record(const G4Step* step, int step_id, G4OpBoundaryProcessStatus boundary_status, CStage::CStage_t stage)
+bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 #endif
 {
-    setStep(step, step_id);
-    //setRecordId(record_id, dbg, other );
-    setStage(stage);
+    bool recording = unsigned(m_ctx._record_id) < m_record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
+    if(!recording) return false ;
+
+
+    m_step_action = 0 ; 
+
 
     LOG(trace) << "CRecorder::Record"
-              << " step_id " << step_id
+              << " step_id " << m_ctx._step_id
               << " record_id " << m_ctx._record_id
-              << " stage " << CStage::Label(stage)
+              << " stage " << CStage::Label(m_ctx._stage)
               ;
 
-    if(stage == CStage::START)
+    if(m_ctx._stage == CStage::START)
     { 
         startPhoton();       // MUST be invoked prior to setBoundaryStatus
         RecordQuadrant();
     }
-    else if(stage == CStage::REJOIN )
+    else if(m_ctx._stage == CStage::REJOIN )
     {
         if(m_live)
         { 
@@ -489,13 +383,14 @@ bool CRecorder::Record(const G4Step* step, int step_id, G4OpBoundaryProcessStatu
             m_crec->clearStp(); // rejoin happens on output side, not in the crec CStp list
         }
     }
-    else if(stage == CStage::RECOLL )
+    else if(m_ctx._stage == CStage::RECOLL )
     {
         m_decrement_request = 0 ;  
     } 
 
-    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
-    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
+
+    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_ctx._step->GetPostStepPoint() ; 
 
     const G4Material* preMat  = pre->GetMaterial() ;
     const G4Material* postMat = post->GetMaterial() ;
@@ -528,17 +423,17 @@ bool CRecorder::LiveRecordStep()
 
     assert(m_live);
 
-    switch(m_stage)
+    switch(m_ctx._stage)
     {
-        case  CStage::START:  m_step_action |= STEP_START    ; break ; 
-        case  CStage::REJOIN: m_step_action |= STEP_REJOIN   ; break ; 
-        case  CStage::RECOLL: m_step_action |= STEP_RECOLL   ; break ;
+        case  CStage::START:  m_step_action |= CAction::STEP_START    ; break ; 
+        case  CStage::REJOIN: m_step_action |= CAction::STEP_REJOIN   ; break ; 
+        case  CStage::RECOLL: m_step_action |= CAction::STEP_RECOLL   ; break ;
         case  CStage::COLLECT:                               ; break ; 
         case  CStage::UNKNOWN: assert(0)                     ; break ; 
     } 
 
-    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
-    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
+    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_ctx._step->GetPostStepPoint() ; 
 
     //if(m_debug) dumpStepVelocity("CRecorder::LiveRecordStep");
 
@@ -546,20 +441,21 @@ bool CRecorder::LiveRecordStep()
     // shunt flags by 1 relative to steps, in order to set the generation code on first step
     // this doesnt miss flags, as record both pre and post at last step    
 
-    unsigned preFlag = m_slot == 0 && m_stage == CStage::START ? 
+    unsigned preFlag = m_slot == 0 && m_ctx._stage == CStage::START ? 
                                       m_gen 
                                    : 
-                                      OpPointFlag(pre,  m_prior_boundary_status, m_stage )
+                                      OpPointFlag(pre,  m_prior_boundary_status, m_ctx._stage )
                                    ;
 
-    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_stage );
+    unsigned postFlag =               OpPointFlag(post, m_boundary_status      , m_ctx._stage );
+
 
 
     bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS)) != 0 ;
 
     bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
-    bool preSkip = m_prior_boundary_status == StepTooSmall && m_stage != CStage::REJOIN  ;  
+    bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
 
     bool matSwap = m_boundary_status == StepTooSmall ; 
 
@@ -577,24 +473,24 @@ bool CRecorder::LiveRecordStep()
     //   RecordStepPoint records into m_slot (if < m_steps_per_photon) and increments m_slot
     // 
 
-    if(lastPost)      m_step_action |= LAST_POST ; 
-    if(surfaceAbsorb) m_step_action |= SURF_ABS ;  
-    if(preSkip)       m_step_action |= PRE_SKIP ; 
-    if(matSwap)       m_step_action |= MAT_SWAP ; 
+    if(lastPost)      m_step_action |= CAction::LAST_POST ; 
+    if(surfaceAbsorb) m_step_action |= CAction::SURF_ABS ;  
+    if(preSkip)       m_step_action |= CAction::PRE_SKIP ; 
+    if(matSwap)       m_step_action |= CAction::MAT_SWAP ; 
 
 
     if(!preSkip)
     {
-        m_step_action |= PRE_SAVE ; 
+        m_step_action |= CAction::PRE_SAVE ; 
         done = RecordStepPoint( pre, preFlag, preMat, m_prior_boundary_status, PRE );    // truncate OR absorb
-        if(done) m_step_action |= PRE_DONE ; 
+        if(done) m_step_action |= CAction::PRE_DONE ; 
     }
 
     if(lastPost && !done )
     {
-        m_step_action |= POST_SAVE ; 
+        m_step_action |= CAction::POST_SAVE ; 
         done = RecordStepPoint( post, postFlag, postMat, m_boundary_status, POST ); 
-        if(done) m_step_action |= POST_DONE ; 
+        if(done) m_step_action |= CAction::POST_DONE ; 
     }
 
     if(done) 
@@ -602,14 +498,14 @@ bool CRecorder::LiveRecordStep()
         RecordPhoton(post);  // m_seqhis/m_seqmat here written, REJOIN overwrites into record_id recs
     }
 
-    m_crec->add(m_step, m_step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_stage, m_step_action );
+    m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_premat, m_postmat, preFlag, postFlag, m_ctx._stage, m_step_action );
 
     return done ;
 }
 
 void CRecorder::CannedRecordStep()
 {
-    m_crec->add(m_step, m_step_id, m_boundary_status, m_stage );
+    m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage );
 }
 
 
@@ -688,16 +584,16 @@ void CRecorder::CannedWriteSteps()
 
         // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
-        if(lastPost)      m_step_action |= LAST_POST ; 
-        if(surfaceAbsorb) m_step_action |= SURF_ABS ;  
-        if(postSkip)      m_step_action |= POST_SKIP ; 
-        if(matSwap)       m_step_action |= MAT_SWAP ; 
+        if(lastPost)      m_step_action |= CAction::LAST_POST ; 
+        if(surfaceAbsorb) m_step_action |= CAction::SURF_ABS ;  
+        if(postSkip)      m_step_action |= CAction::POST_SKIP ; 
+        if(matSwap)       m_step_action |= CAction::MAT_SWAP ; 
 
         switch(stage)
         {
-            case CStage::START:  m_step_action |= STEP_START    ; break ; 
-            case CStage::REJOIN: m_step_action |= STEP_REJOIN   ; break ; 
-            case CStage::RECOLL: m_step_action |= STEP_RECOLL   ; break ;
+            case CStage::START:  m_step_action |= CAction::STEP_START    ; break ; 
+            case CStage::REJOIN: m_step_action |= CAction::STEP_REJOIN   ; break ; 
+            case CStage::RECOLL: m_step_action |= CAction::STEP_RECOLL   ; break ;
             case CStage::COLLECT:                               ; break ; 
             case CStage::UNKNOWN:assert(0)                      ; break ; 
         } 
@@ -721,24 +617,24 @@ void CRecorder::CannedWriteSteps()
 
         if(i == 0)
         {
-            m_step_action |= PRE_SAVE ; 
+            m_step_action |= CAction::PRE_SAVE ; 
             done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );  
-            if(done) m_step_action |= PRE_DONE ; 
+            if(done) m_step_action |= CAction::PRE_DONE ; 
 
             if(!done)
             {
                  done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
-                 m_step_action |= POST_SAVE ; 
-                 if(done) m_step_action |= POST_DONE ; 
+                 m_step_action |= CAction::POST_SAVE ; 
+                 if(done) m_step_action |= CAction::POST_DONE ; 
             }
         }
         else
         {
             if(!postSkip && !done)
             {
-                m_step_action |= POST_SAVE ; 
+                m_step_action |= CAction::POST_SAVE ; 
                 done = RecordStepPoint( post, postFlag, u_postmat, boundary_status, POST );
-                if(done) m_step_action |= POST_DONE ; 
+                if(done) m_step_action |= CAction::POST_DONE ; 
             }
         }
 
@@ -748,7 +644,7 @@ void CRecorder::CannedWriteSteps()
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_step_action );
 
-        bool hard_truncate = (m_step_action & HARD_TRUNCATE) != 0 ; 
+        bool hard_truncate = (m_step_action & CAction::HARD_TRUNCATE) != 0 ; 
 
         if(done && !hard_truncate)
         {
@@ -828,14 +724,14 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     unsigned int slot =  m_slot < m_steps_per_photon  ? m_slot : m_steps_per_photon - 1 ; // constrain slot to inclusive range (0,m_steps_per_photon-1) 
 
     m_record_truncate = slot == m_steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
-    if(m_record_truncate) m_step_action |= RECORD_TRUNCATE ; 
+    if(m_record_truncate) m_step_action |= CAction::RECORD_TRUNCATE ; 
 
     if(flag == 0)
     {
 
        //assert(0);
        m_badflag += 1 ; 
-       m_step_action |= ZERO_FLAG ; 
+       m_step_action |= CAction::ZERO_FLAG ; 
 
        if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
@@ -855,7 +751,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         m_topslot_rewrite += 1 ; 
         if(m_ctx._debug || m_ctx._other)
         LOG(info)
-                  << ( m_topslot_rewrite > 1 ? HARD_TRUNCATE_ : TOPSLOT_REWRITE_ )
+                  << ( m_topslot_rewrite > 1 ? CAction::HARD_TRUNCATE_ : CAction::TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
                   << " prior_flag -> flag " <<   OpticksFlags::Abbrev(prior_flag)
                   << " -> " <<   OpticksFlags::Abbrev(flag)
@@ -868,11 +764,11 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         // allowing a single AB->RE rewrite is closer to Opticks
         if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && prior_flag == BULK_ABSORB)
         {
-            m_step_action |= TOPSLOT_REWRITE ; 
+            m_step_action |= CAction::TOPSLOT_REWRITE ; 
         }
         else
         {
-            m_step_action |= HARD_TRUNCATE ; 
+            m_step_action |= CAction::HARD_TRUNCATE ; 
             return true ; 
         }
     }
@@ -917,7 +813,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
 
     m_bounce_truncate = m_slot > m_bounce_max  ;   
-    if(m_bounce_truncate) m_step_action |= BOUNCE_TRUNCATE ; 
+    if(m_bounce_truncate) m_step_action |= CAction::BOUNCE_TRUNCATE ; 
 
 
     bool done = m_bounce_truncate || m_record_truncate || absorb || miss ;   
@@ -938,22 +834,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
 std::string CRecorder::getStepActionString()
 {
-    return Action(m_step_action) ;
+    return CAction::Action(m_step_action) ;
 }
 
-
-void CRecorder::setStep(const G4Step* step, int step_id)
-{
-    m_step = step ; 
-    m_step_id = step_id ; 
-    m_step_action = 0 ; 
-}
-
-void CRecorder::setStage(CStage::CStage_t stage)
-{
-    m_prior_stage = m_stage ; 
-    m_stage = stage ; 
-}
 
 #ifdef USE_CUSTOM_BOUNDARY
 void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
@@ -1091,7 +974,7 @@ void CRecorder::RecordStepPoint(unsigned int slot, const G4StepPoint* point, uns
 
 void CRecorder::RecordQuadrant()
 {
-    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
+    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
     const G4ThreeVector& pos = pre->GetPosition();
 
     // initial quadrant 
@@ -1191,7 +1074,7 @@ void CRecorder::Summary(const char* msg)
               << " event_id " << m_ctx._event_id 
               << " photon_id " << m_ctx._photon_id 
               << " record_id " << m_ctx._record_id 
-              << " step_id " << m_step_id 
+              << " step_id " << m_ctx._step_id 
               << " m_slot " << m_slot 
               ;
 }
@@ -1316,13 +1199,13 @@ void CRecorder::dumpStepVelocity(const char* msg )
     // try to understand GlobalTime calc from G4Transportation::AlongStepDoIt by duping attempt
     // issue is what velocity it gets to use, and the updating of that 
 
-    G4Track* track = m_step->GetTrack() ;
+    G4Track* track = m_ctx._step->GetTrack() ;
     G4double trackStepLength = track->GetStepLength();
     G4double trackGlobalTime = track->GetGlobalTime() ;
     G4double trackVelocity = track->GetVelocity() ;
 
-    const G4StepPoint* pre  = m_step->GetPreStepPoint() ; 
-    const G4StepPoint* post = m_step->GetPostStepPoint() ; 
+    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
+    const G4StepPoint* post = m_ctx._step->GetPostStepPoint() ; 
 
 
     G4double preDeltaTime = 0.0 ; 
