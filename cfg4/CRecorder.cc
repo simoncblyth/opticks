@@ -112,11 +112,10 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
-   m_dbgrec(m_ok->isDbgRec()),
    m_dbgseqhis(m_ok->getDbgSeqhis()),
    m_dbgseqmat(m_ok->getDbgSeqmat()),
    m_dbgflags(m_ok->hasOpt("dbgflags")),
-   m_crec(new CRec(m_ok, geometry, dynamic)),
+   m_crec(new CRec(m_g4, geometry, dynamic)),
    m_evt(NULL),
    m_geometry(geometry),
    m_material_bridge(NULL),
@@ -391,7 +390,7 @@ void CRecorder::startPhoton()
    // the start stage is set for a new non-rejoing optical track by   CSteppingAction::UserSteppingActionOptical
 
 
-    if(m_dbgrec)
+    if(m_ctx._dbgrec)
     {
         LOG(info) << "[--dbgrec] " 
                   << " m_slot " << m_slot 
@@ -402,7 +401,7 @@ void CRecorder::startPhoton()
     const G4StepPoint* pre = m_step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
 
-    m_crec->startPhoton(m_ctx._record_id, pos);   // clears CStp vector
+    m_crec->startPhoton(pos);   // clears CStp vector
 
 
     m_c4.u = 0u ; 
@@ -643,7 +642,7 @@ void CRecorder::CannedWriteSteps()
     assert(!m_live) ;
     unsigned num = m_crec->getNumStps(); 
 
-    if(m_dbgrec)
+    if(m_ctx._dbgrec)
     {
         LOG(info) << "CRecorder::CannedWriteSteps"
                   << " [--dbgrec] "
@@ -780,6 +779,8 @@ void CRecorder::CannedWriteSteps()
 void CRecorder::posttrack()
 {
     // invoked from CTrackingAction::PostUserTrackingAction
+
+    if(m_ctx._dbgrec) LOG(info) << "CRecorder::posttrack" ; 
 
     if(!m_live)
     { 

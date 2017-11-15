@@ -16,10 +16,6 @@ CSteppingAction
 ================
 
 
-
-
-
-
 **/
 
 // cg4-
@@ -60,9 +56,9 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
   public:
     virtual void UserSteppingAction(const G4Step*);
   private:
-    void setEvent();
-    void setTrack();
 
+    //void setEvent();
+    //void setTrack();
     //void setEvent(const G4Event* event, int event_id);
     //void setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding );
     //void setPhotonId(int photon_id, bool reemtrack);
@@ -86,10 +82,10 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     int               m_verbosity ; 
 
     // init in ctor
-    unsigned int m_event_total ; 
-    unsigned int m_track_total ; 
+    //unsigned int m_event_total ; 
+    //unsigned int m_track_total ; 
     unsigned int m_step_total ; 
-    unsigned int m_event_track_count ; 
+    //unsigned int m_event_track_count ; 
     unsigned int m_steprec_store_count ;
 
     // set by UserSteppingAction
@@ -101,7 +97,7 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     //int                   m_event_id ;
 
     // set by setTrack
-    unsigned int          m_track_step_count ; 
+    //unsigned int          m_track_step_count ; 
 
     //const G4Track*        m_track ; 
     //int                   m_track_id ;

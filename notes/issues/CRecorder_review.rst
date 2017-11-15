@@ -10,8 +10,14 @@ Simplifications
 
 
 
+
+
+
+
 Collateral Damage
 -------------------
+
+* looks like CRec/m_crec not getting cleared
 
 ::
 

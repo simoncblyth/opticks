@@ -41,66 +41,6 @@ template <typename T> class NPY ;
 CRecorder
 =============
 
-::
-
-    simon:cfg4 blyth$ grep  m_recorder\-\>  *.*
-    CG4.cc:    m_recorder->postinitialize();  
-    CG4.cc:    m_recorder->initEvent(evt);
-    CGunSource.cc:    //m_recorder->RecordPrimaryVertex(vertex);
-    CSteppingAction.cc:   m_verbosity(m_recorder->getVerbosity()),
-    CSteppingAction.cc:    m_recorder->setPhotonId(m_photon_id);   
-    CSteppingAction.cc:    m_recorder->setEventId(m_event_id);
-    CSteppingAction.cc:    int record_max = m_recorder->getRecordMax() ;
-    CSteppingAction.cc:        done = m_recorder->Record(m_step, m_step_id, m_record_id, m_debug, m_other, boundary_status, stage);
-    CSteppingAction.cc:    m_recorder->report(msg);
-    CTrackingAction.cc:        m_recorder->posttrack();
-    simon:cfg4 blyth$ 
-
-    simon:cfg4 blyth$ grep setRecordId *.*
-    CRecorder.cc:void CRecorder::setRecordId(int record_id, bool dbg, bool other)
-    CRecorder.cc:    setRecordId(record_id, dbg, other );
-    CRecorder.hh:        void setRecordId(int record_id, bool dbg, bool other);
-    CSteppingAction.cc:void CSteppingAction::setRecordId(int record_id, bool dbg, bool other)
-    CSteppingAction.hh:    void setRecordId(int photon_id, bool debug, bool other);
-    CSteppingAction.hh:    // set by setRecordId
-    CTrackingAction.cc:    setRecordId(record_id);
-    CTrackingAction.cc:void CTrackingAction::setRecordId(int record_id )
-    CTrackingAction.cc:    m_sa->setRecordId(record_id, _debug, other);
-    CTrackingAction.hh:    void setRecordId(int record_id);
-    CTrackingAction.hh:    // setRecordId
-    simon:cfg4 blyth$ 
-
-
-    144 void CTrackingAction::setPhotonId(int photon_id, bool reemtrack)
-    145 {
-    146     m_photon_id = photon_id ;    // NB photon_id continues reemission photons
-    147     m_reemtrack = reemtrack ;
-    148 
-    149     m_sa->setPhotonId(m_photon_id, m_reemtrack);
-    150 
-    151     int record_id = m_photons_per_g4event*m_event_id + m_photon_id ;
-    152     setRecordId(record_id);
-    153 
-    154     if(m_dump) dump("CTrackingAction::setPhotonId");
-    155 }
-
-    157 void CTrackingAction::setRecordId(int record_id )
-    158 {
-    159     m_record_id = record_id ;
-    160 
-    161     bool _debug = m_ok->isDbgPhoton(record_id) ; // from option: --dindex=1,100,1000,10000 
-    162     setDebug(_debug);
-    163 
-    164     bool other = m_ok->isOtherPhoton(record_id) ; // from option: --oindex=1,100,1000,10000 
-    165     setOther(other);
-    166 
-    167     m_dump = m_debug || m_other ;
-    168 
-    169     m_sa->setRecordId(record_id, _debug, other);
-    170 }
-
-
-
 
 TODO
 ~~~~~
@@ -328,7 +268,6 @@ class CFG4_API CRecorder {
         CG4*               m_g4; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
-        bool               m_dbgrec ; 
         unsigned long long m_dbgseqhis ;
         unsigned long long m_dbgseqmat ;
         bool               m_dbgflags ;

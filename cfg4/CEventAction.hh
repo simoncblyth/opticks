@@ -15,7 +15,6 @@ class Opticks ;
 
 struct CG4Ctx ; 
 class CG4 ; 
-class CTrackingAction ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -39,11 +38,6 @@ class CFG4_API CEventAction : public G4UserEventAction
     CG4*               m_g4 ; 
     CG4Ctx&            m_ctx ; 
     Opticks*           m_ok ; 
-    CTrackingAction*   m_ta ;  
-  private:
-    // setEvent
-    //const G4Event*        m_event ; 
-    //int                   m_event_id ;
 
 };
 

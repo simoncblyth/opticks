@@ -22,10 +22,15 @@ struct CFG4_API CG4Ctx
 
     G4Event* _event ; 
     int  _event_id ;
+    int  _event_total ; 
+    int  _event_track_count ; 
 
     // CTrackingAction::setTrack
     G4Track* _track ; 
     int  _track_id ;
+    int  _track_total ; 
+    int  _track_step_count ; 
+
     int  _parent_id ;
     bool _optical ; 
     int  _pdg_encoding ;
@@ -39,6 +44,9 @@ struct CFG4_API CG4Ctx
     int  _record_id ;
     bool _debug ; 
     bool _other ; 
+
+    // CG4::init
+    bool _dbgrec ; 
 
     void init();
     void setEvent(const G4Event* event);

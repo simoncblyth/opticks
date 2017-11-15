@@ -150,7 +150,8 @@ void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
 
-    m_ctx.init();
+    m_ctx.init(); 
+    m_ctx._dbgrec = m_ok->isDbgRec();
 
     initialize();
 
@@ -280,9 +281,16 @@ void CG4::initEvent(OpticksEvent* evt)
 {
     m_generator->configureEvent(evt);
 
-    m_ta->initEvent(evt);
+
+    m_ctx._photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
+
+    LOG(info) << "CG4::initEvent"
+              << " photons_per_g4event " << m_ctx._photons_per_g4event
+              ;
+
 
     m_recorder->initEvent(evt);
+
     //m_rec->initEvent(evt);
 
     NPY<float>* nopstep = evt->getNopstepData();

@@ -1,30 +1,35 @@
 #include <climits>
 
+#include "CG4.hh"
+#include "CG4Ctx.hh"
 #include "CRec.hh"
 #include "CStp.hh"
 #include "Format.hh"
 
 #include "PLOG.hh"
 
-CRec::CRec(Opticks* ok, CGeometry* geometry, bool dynamic)
+CRec::CRec(CG4* g4, CGeometry* geometry, bool dynamic)
    :
-    m_ok(ok), 
+    m_g4(g4),
+    m_ctx(g4->getCtx()),
+    m_ok(g4->getOpticks()), 
     m_geometry(geometry),
     m_material_bridge(NULL),
-    m_dynamic(dynamic),
-    m_record_id(UINT_MAX)
+    m_dynamic(dynamic)
+    //m_record_id(UINT_MAX)
 {
 }
  
 
-void CRec::startPhoton(unsigned record_id, const G4ThreeVector& origin)
+void CRec::startPhoton(const G4ThreeVector& origin)
 {
-    LOG(debug) << "CRec::startPhoton" 
-              << " record_id " << record_id
+    if(m_ctx._dbgrec) 
+    LOG(info) << " [--dbgrec] CRec::startPhoton" 
+              << " record_id " << m_ctx._record_id
               << " " << Format(origin, "origin")
               ;
 
-    m_record_id = record_id ; 
+    //m_record_id = record_id ; 
     m_origin = origin ; 
 
     clearStp();
@@ -33,7 +38,8 @@ void CRec::startPhoton(unsigned record_id, const G4ThreeVector& origin)
 
 void CRec::clearStp()
 {
-    LOG(debug) << "CRec::clearStp"
+    if(m_ctx._dbgrec) 
+    LOG(info) << "[--dbgrec] CRec::clearStp"
               << " clearing " << m_stp.size() << " stps "
               ;
  
@@ -84,7 +90,7 @@ void CRec::dump(const char* msg)
 {
     unsigned nstp = m_stp.size();
     LOG(info) << msg  
-              << " record_id " << m_record_id
+              << " record_id " << m_ctx._record_id
               << " nstp " << nstp 
               << " " << ( nstp > 0 ? m_stp[0]->origin() : "-" ) 
               ; 

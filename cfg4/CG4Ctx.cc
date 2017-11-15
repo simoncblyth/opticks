@@ -12,26 +12,43 @@
 
 void CG4Ctx::init()
 {
+    // CTrackingAction::initEvent 
+    _photons_per_g4event = 0 ; 
+
     _event = NULL ; 
     _event_id = -1 ; 
+    _event_total = 0 ; 
+    _event_track_count = 0 ; 
 
     _track = NULL ; 
     _track_id = -1 ; 
+    _track_total = 0 ;
+    _track_step_count = 0 ;  
+
+    _parent_id = -1 ; 
     _optical = false ; 
     _pdg_encoding = 0 ; 
-    _parent_id = -1 ; 
 
+    _primary_id = -1 ; 
     _photon_id = -1 ; 
+    _record_id = -1 ; 
+    _reemtrack = false ; 
+
     _record_id = -1 ; 
     _debug = false ; 
     _other = false ; 
-    _reemtrack = false ; 
+
+    _dbgrec = false ; 
 }
 
 void CG4Ctx::setEvent(const G4Event* event)
 {
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
+
+     // moved from CSteppingAction::setEvent
+    _event_total += 1 ; 
+    _event_track_count = 0 ; 
 }
 
 void CG4Ctx::setTrack(const G4Track* track)
@@ -40,6 +57,13 @@ void CG4Ctx::setTrack(const G4Track* track)
 
     _track = const_cast<G4Track*>(track) ; 
     _track_id = CTrack::Id(track) ;
+
+     // moved from CSteppingAction::setTrack
+    _track_step_count = 0 ; 
+    _event_track_count += 1 ; 
+    _track_total += 1 ;
+    
+
     _parent_id = CTrack::ParentId(track) ;
     _optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
     _pdg_encoding = particle->GetPDGEncoding();

@@ -108,28 +108,11 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_steprec(g4->getStepRec()),
    m_verbosity(m_recorder->getVerbosity()),
 
-   m_event_total(0),
-   m_track_total(0),
    m_step_total(0),
-   m_event_track_count(0),
    m_steprec_store_count(0),
 
    m_startEvent(false),
    m_startTrack(false),
-
-
-   //m_event(NULL),
-   //m_event_id(-1),
-
-   m_track_step_count(0),
-
-   //m_track(NULL),
-   //m_track_id(-1),
-   //m_optical(false),
-   //m_pdg_encoding(0),
-
-   //m_photon_id(0),
-   //m_reemtrack(false),
 
    m_rejoin_count(0),
    m_primarystep_count(0),
@@ -144,7 +127,6 @@ int CSteppingAction::getStepId()
     return m_step_id ; 
 }
 
-
 void CSteppingAction::postinitialize()
 {
    // called from CG4::postinitialize
@@ -155,64 +137,6 @@ void CSteppingAction::postinitialize()
 CSteppingAction::~CSteppingAction()
 { 
 }
-
-
-//void CSteppingAction::setEvent(const G4Event* event, int event_id)
-void CSteppingAction::setEvent()
-{
-    LOG(debug) << "CSA (setEvent)"
-              << " event_id " << m_ctx._event_id
-              << " event_total " <<  m_event_total
-              ; 
-
-    //m_event = event ; 
-    //m_event_id = event_id ; 
-
-    m_event_total += 1 ; 
-    m_event_track_count = 0 ; 
-}
-
-//void CSteppingAction::setTrack(const G4Track* track, int track_id, bool optical, int pdg_encoding )
-void CSteppingAction::setTrack()
-{
-    //m_track = track ; 
-    //m_track_id = track_id ; 
-    //m_optical = optical ; 
-    //m_pdg_encoding = pdg_encoding ; 
-
-    ///////////////////////////////////
-    m_track_step_count = 0 ; 
-    m_event_track_count += 1 ; 
-    m_track_total += 1 ; 
-}
-
-//void CSteppingAction::setPhotonId(int photon_id, bool reemtrack)
-void CSteppingAction::setPhotonId()
-{
-    assert( m_ctx._photon_id >= 0 );
-    //m_photon_id = photon_id ; 
-    //m_reemtrack = reemtrack ; 
-    m_rejoin_count = 0 ; 
-    m_primarystep_count = 0 ; 
-
-    LOG(debug) << "CSteppingAction::setPhotonId"
-              << " event_id " << m_ctx._event_id 
-              << " track_id " << m_ctx._track_id 
-              << " photon_id " << m_ctx._photon_id 
-              << " reemtrack " << m_ctx._reemtrack
-              ; 
-}
-
-
-/*
-void CSteppingAction::setRecordId(int record_id, bool dbg, bool other)
-{
-    m_record_id = record_id ; 
-    m_debug = dbg  ; 
-    m_other = other  ; 
-}
-*/
-
 
 /// above methods are invoked from on high by CTrackingAction prior to getting any steps
 
@@ -234,6 +158,20 @@ const G4ThreeVector& CSteppingAction::getStepOrigin()
     return m_step_origin ;
 }
 
+void CSteppingAction::setPhotonId()
+{
+    assert( m_ctx._photon_id >= 0 );
+
+    m_rejoin_count = 0 ; 
+    m_primarystep_count = 0 ; 
+
+    LOG(debug) << "CSteppingAction::setPhotonId"
+              << " event_id " << m_ctx._event_id 
+              << " track_id " << m_ctx._track_id 
+              << " photon_id " << m_ctx._photon_id 
+              << " reemtrack " << m_ctx._reemtrack
+              ; 
+}
 
 bool CSteppingAction::setStep(const G4Step* step, int step_id)
 {
@@ -248,16 +186,17 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
         m_step_origin = pre->GetPosition();
     }
 
+    m_ctx._track_step_count += 1 ; 
 
-    m_track_step_count += 1 ; 
     m_step_total += 1 ; 
+
     G4TrackStatus track_status = m_ctx._track->GetTrackStatus(); 
 
     LOG(trace) << "CSteppingAction::setStep" 
               << " step_total " << m_step_total
               << " event_id " << m_ctx._event_id
               << " track_id " << m_ctx._track_id
-              << " track_step_count " << m_track_step_count
+              << " track_step_count " << m_ctx._track_step_count
               << " step_id " << m_step_id
               << " trackStatus " << CTrack::TrackStatusString(track_status)
               ;
@@ -280,7 +219,7 @@ bool CSteppingAction::setStep(const G4Step* step, int step_id)
 
    if(m_step_total % 10000 == 0) 
        LOG(debug) << "CSA (totals%10k)"
-                 << " track_total " <<  m_track_total
+                 << " track_total " <<  m_ctx._track_total
                  << " step_total " <<  m_step_total
                  ;
 
@@ -307,20 +246,10 @@ bool CSteppingAction::collectPhotonStep()
         // rejoin count is zeroed in setPhotonId, so each remission generation trk will result in REJOIN 
     }
 
-    // TODO: avoid need for these
-    //m_recorder->setPhotonId(m_photon_id);    
-    //m_recorder->setEventId(m_ctx._event_id);
-
 
     int record_max = m_recorder->getRecordMax() ;
-    bool recording = m_ctx._record_id < record_max ||  m_dynamic ; 
-    //
-    //             ^^^^^^^^^^^^ fit-in-buffer-restriction
-    // hmm perhaps the recording restriction is why bouncemax doesnt kick in ? for the infini-bouncers
-    //    NOPE: YOU MISUNDERSTAND record_max is a photon level fit-in-buffer thing 
-    //
-
-    
+    bool recording = m_ctx._record_id < record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
+   
 
 
     if(recording)
@@ -340,8 +269,8 @@ void CSteppingAction::report(const char* msg)
 {
     LOG(info) << msg ;
     std::cout 
-           << " event_total " <<  m_event_total << std::endl 
-           << " track_total " <<  m_track_total << std::endl 
+           << " event_total " <<  m_ctx._event_total << std::endl 
+           << " track_total " <<  m_ctx._track_total << std::endl 
            << " step_total " <<  m_step_total << std::endl 
            ;
     m_recorder->report(msg);
