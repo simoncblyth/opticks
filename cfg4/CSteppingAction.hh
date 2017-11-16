@@ -61,7 +61,6 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     CMaterialLib*     m_mlib ; 
     CRecorder*        m_recorder   ; 
     CStepRec*         m_steprec   ; 
-    int               m_verbosity ; 
 
     unsigned int m_steprec_store_count ;
 

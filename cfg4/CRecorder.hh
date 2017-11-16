@@ -32,47 +32,53 @@ class CMaterialBridge ;
 class CWriter ; 
 class CStp ; 
 
-#include "CRecorder.h"
-
-// npy-
-template <typename T> class NPY ;
-
 
 /**
 
 CRecorder
 =============
 
-
-TODO
-~~~~~
-
-1. perhaps split into two CLiveRecorder and CCannedRecorder ?
-2. factor off the dumping into separate class 
-
-3. is there any way to structure CRecorder similar to oxrap/cu/generate.cu ?
-    which is what it is trying to emulate afterall 
+TODO 
+   Despite extensive refactoring (breaking up the old monolith)
+   CRecorder is still confusing... because the old live recording code
+   is still mixed up with the canned recording : and its difficult
+   to disentangle which is which.
 
 
-The principal objective of *CRecorder* is to collect  
-Geant4 photon steps in a format that precisely matches the
-Opticks GPU photon records allowing use of the Opticks analysis 
-and visualization tools.
+
+Canonical m_recorder instance is resident of CG4 and is
+instanciated with it.
+CRecorder should really be called "OpticalPhotonCRecorder".
+It is mainly used from CSteppingAction, via the *Record* method. 
+
+The objective of *CRecorder* is to collect Geant4 photon 
+steps in a format that precisely matches the Opticks GPU 
+photon records allowing use of the Opticks analysis 
+and visualization tools with G4 simulations.
+
 To this end *CRecorder* saves non-dynamically into buffer of
 fixed number of photons and max steps per photon 
 in order to match on-GPU restrictions.  setQuad with
 a computed record_id and slot_id is used to mimick
 separate CUDA thread writes into tranches of record buffer. 
 
-CRecorder should really be called "OpticalPhotonCRecorder".
-It is instanciated by CG4::configureGenerator 
-and is mainly used from CSteppingAction.
-It is also used for CRecorder::RecordPrimaryVertex.
-from CGunSource and CTorchSource.
+Modes of operation:
+
+*canned*
+     canned recording mode, records written Trajectory style from saved CRec CStp vector  
+
+*live*
+
+canned mode
+-------------
 
 
+live recording mode : **currently not used**
+---------------------------------------------
 
+* much of the code for this currently parked in CRecorderDead.cc
 
+OpticksEvent records written during stepping.
 *LiveRecordStep* is called for all G4Step
 each of which is comprised of *pre* and *post* G4StepPoint, 
 as a result the same G4StepPoint are "seen" twice, 
@@ -85,22 +91,24 @@ technical g4 events all get slotted into the same OpticksEvent record
 buffers
 
 
-Traditional GPU Opticks simulation workflow:
 
-* gensteps (Cerenkov/Scintillation) harvested from Geant4
-  and persisted into OpticksEvent
+Example
+---------
 
-* gensteps seeded onto GPU using Thrust, summation over photons 
-  to generate per step provide photon and record buffer 
-  dimensions up frount 
+Consider 
+   TO RE BT BT BT BT SA
 
-* Cerenkov/Scintillation on GPU generation and propagation      
-  populate the pre-sized GPU record buffer 
+Live mode:
+   write pre until last when write pre,post 
 
-This works because all gensteps are available before doing 
-any optical simulation. BUT when operating on CPU doing the 
-non-optical and optical simulation together, do not know the 
-photon counts ahead of time.
+Canned mode:
+    For first write pre,post then write post
+
+Rejoins are not known until another track comes along 
+that lines up with former ending in AB. 
+
+
+
 
 **/
 
@@ -115,21 +123,15 @@ class CFG4_API CRecorder {
         static const char* POST ; 
    public:
         CRecorder(CG4* g4, CGeometry* geometry, bool dynamic);
-        std::string desc() const ; 
-        void postinitialize();  // called after G4 geometry constructed by CG4::postinitialize
-        void initEvent(OpticksEvent* evt);      // MUST to be called prior to recording 
+        void postinitialize();               // called after G4 geometry constructed in CG4::postinitialize
+        void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
+        CRec* getCRec() const ; 
    private:
         void setEvent(OpticksEvent* evt);
    public:
-        void posttrack(); // invoked from CTrackingAction::PostUserTrackingAction
+        void posttrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
    public:
-        void RecordBeginOfRun(const G4Run*);
-        void RecordEndOfRun(const G4Run*);
-
-        void startPhoton();
-
-   public:
-        unsigned int getVerbosity();
+        void zeroPhoton();
    public:
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -138,56 +140,38 @@ class CFG4_API CRecorder {
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
-        DsG4OpBoundaryProcessStatus getBoundaryStatus();
 #else
     public:
         bool Record(G4OpBoundaryProcessStatus boundary_status);
     private:
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
-        G4OpBoundaryProcessStatus getBoundaryStatus();
 #endif
     private:
         void setStep(const G4Step* step, int step_id);
         //bool LiveRecordStep();
         void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
-        void RecordQuadrant(uifchar4& c4);
-
         //void Clear();
    public:
         std::string getStepActionString();
-        bool isSelected(); 
-        bool isHistorySelected(); 
-        bool isMaterialSelected(); 
    public:
         // for reemission continuation
-        void setSlot(unsigned slot);
-        unsigned getSlot();
         void decrementSlot();
    public:
         // non-live running 
-        void CannedWriteSteps();
+        void posttrackWriteSteps();
    public:
-        unsigned long long getSeqHis();
-        unsigned long long getSeqMat();
-
-        std::string description();
-
-   public:
-        // debugging/dumping 
         void Summary(const char* msg);
+        std::string desc() const ; 
         void dump(const char* msg="CRecorder::dump");
-
-   private:
-        void init();
    private:
         CG4*               m_g4; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         CPhoton            m_photon ;  
+        CRec*              m_crec ; 
         CDebug*            m_dbg ; 
 
-        CRec*              m_crec ; 
         OpticksEvent*      m_evt ; 
         CGeometry*         m_geometry ; 
         CMaterialBridge*   m_material_bridge ; 
@@ -195,13 +179,9 @@ class CFG4_API CRecorder {
         bool               m_live ;   
         CWriter*           m_writer ; 
 
-        // m_live = true  : live recording mode, OpticksEvent records written during stepping
-        // m_live = false : canned recording mode, records written Trajectory style from saved CRec CStp vector  
 
-
-        unsigned m_verbosity ; 
-
-
+    private:
+        // below are zeroed in zeroPhoton
 #ifdef USE_CUSTOM_BOUNDARY
         DsG4OpBoundaryProcessStatus m_boundary_status ; 
         DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
@@ -209,25 +189,22 @@ class CFG4_API CRecorder {
         G4OpBoundaryProcessStatus m_boundary_status ; 
         G4OpBoundaryProcessStatus m_prior_boundary_status ; 
 #endif
+        unsigned m_premat ; 
+        unsigned m_prior_premat ; 
 
-        unsigned int m_premat ; 
-        unsigned int m_prior_premat ; 
+        unsigned m_postmat ; 
+        unsigned m_prior_postmat ; 
 
-        unsigned int m_postmat ; 
-        unsigned int m_prior_postmat ; 
+        unsigned m_slot ; 
+        unsigned m_decrement_request ; 
+        unsigned m_decrement_denied ; 
+        bool     m_record_truncate ; 
+        bool     m_bounce_truncate ; 
+        unsigned m_topslot_rewrite ; 
 
-
-
-        unsigned long long m_seqhis_select ; 
-        unsigned long long m_seqmat_select ; 
-        unsigned int       m_slot ; 
-        unsigned int       m_decrement_request ; 
-        unsigned int       m_decrement_denied ; 
-        bool               m_record_truncate ; 
-        bool               m_bounce_truncate ; 
-        unsigned int       m_topslot_rewrite ; 
-        unsigned           m_badflag ; 
-        unsigned           m_step_action ; 
+    private:
+        // zeroed at start of Record 
+        unsigned m_step_action ; 
 
 
 

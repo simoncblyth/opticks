@@ -67,6 +67,26 @@ CRecorder
 CStepRec is beautifully simple, CRecorder is horrible complicated in comparison
 
 
+Workflow overview
+-------------------
+
+Traditional GPU Opticks simulation workflow:
+
+* gensteps (Cerenkov/Scintillation) harvested from Geant4
+  and persisted into OpticksEvent
+
+* gensteps seeded onto GPU using Thrust, summation over photons 
+  to generate per step provide photon and record buffer 
+  dimensions up frount 
+
+* Cerenkov/Scintillation on GPU generation and propagation      
+  populate the pre-sized GPU record buffer 
+
+This works because all gensteps are available before doing 
+any optical simulation. BUT when operating on CPU doing the 
+non-optical and optical simulation together, do not know the 
+photon counts ahead of time.
+
 **/
 
 
@@ -118,6 +138,9 @@ class CFG4_API CG4
         Opticks*              m_ok ; 
         OpticksRun*           m_run ; 
         OpticksCfg<Opticks>*  m_cfg ; 
+
+        CG4Ctx                m_ctx ;       
+
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 
@@ -144,7 +167,6 @@ class CFG4_API CG4
 
         bool                           m_initialized ; 
 
-        CG4Ctx                m_ctx ;       
 
         
 };

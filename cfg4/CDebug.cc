@@ -9,6 +9,7 @@
 #include "CG4Ctx.hh"
 #include "CPhoton.hh"
 #include "CRecorder.hh"
+#include "CRec.hh"
 #include "CMaterialBridge.hh"
 #include "CDebug.hh"
 #include "Format.hh"
@@ -23,11 +24,17 @@ CDebug::CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder)
     m_ok(g4->getOpticks()),
     m_verbosity(m_ok->getVerbosity()),
     m_recorder(recorder),
+    m_crec(recorder->getCRec()),
     m_material_bridge(NULL),
     m_photon(photon),
+    m_seqhis_select(0x8bd),
+    m_seqmat_select(0),
     m_dbgseqhis(m_ok->getDbgSeqhis()),
     m_dbgseqmat(m_ok->getDbgSeqmat()),
-    m_dbgflags(m_ok->hasOpt("dbgflags"))
+    m_dbgflags(m_ok->hasOpt("dbgflags")),
+
+    m_posttrack_dbgseqhis(false),
+    m_posttrack_dbgseqmat(false)
 {
 }
 
@@ -37,19 +44,54 @@ void CDebug::setMaterialBridge(CMaterialBridge* material_bridge)
 }
 
 
+bool CDebug::isHistorySelected()
+{
+   return m_seqhis_select == m_photon._seqhis ; 
+}
+bool CDebug::isMaterialSelected()
+{
+   return m_seqmat_select == m_photon._seqmat ; 
+}
+bool CDebug::isSelected()
+{
+   return isHistorySelected() || isMaterialSelected() ;
+}
+
+
+std::string CDebug::desc() const   // reason for the dump
+{
+    std::stringstream ss ; 
+    ss << "CDebug"
+       << " " << ( m_posttrack_dump ? "posttrack_dump" : " nodump " )
+       << " " << ( m_posttrack_dbgseqhis ? "posttrack_dbgseqhis" : " - " )
+       << " " << ( m_posttrack_dbgseqmat ? "posttrack_dbgseqmat" : " - " )
+       << " " << ( m_photon._badflag > 0 ? " badflag " : " - " )
+       << " " << ( m_ctx._debug > 0 ? " _debug " : " - " )
+       << " " << ( m_ctx._other > 0 ? " _other " : " - " )
+       << " " << ( m_verbosity > 0 ? " verbosity " : " - " )
+       ;
+    return ss.str();
+}
+
+
 void CDebug::posttrack()
 {
     if(m_photon._badflag > 0) addDebugPhoton(m_ctx._record_id);  
 
-    bool debug_seqhis = m_dbgseqhis == m_photon._seqhis ; 
-    bool debug_seqmat = m_dbgseqmat == m_photon._seqmat ; 
+    m_posttrack_dbgseqhis = m_dbgseqhis == m_photon._seqhis ; 
+    m_posttrack_dbgseqmat = m_dbgseqmat == m_photon._seqmat ; 
 
-    bool dump_ = m_verbosity > 0 || debug_seqhis || debug_seqmat || m_ctx._other || m_ctx._debug || (m_dbgflags && m_photon._badflag > 0 ) ;
+    m_posttrack_dump = m_verbosity > 0 || 
+                       m_posttrack_dbgseqhis || 
+                       m_posttrack_dbgseqmat || 
+                       m_ctx._other || 
+                       m_ctx._debug || 
+                       m_photon._badflag > 0  ;
 
-    if(m_photon._badflag > 0) dump_ = true ; 
 
+    //LOG(info) << "CDebug::posttrack " << desc() ;  
 
-    if(dump_) dump("CDebug::posttrack");
+    if(m_posttrack_dump) dump("CDebug::posttrack");
 }
 
 
@@ -66,7 +108,6 @@ void CDebug::Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundar
 
     double time = point->GetGlobalTime();
 
-    assert(m_ctx._debug || m_ctx._other);
 
     m_points.push_back(new G4StepPoint(*point));
     m_flags.push_back(photon._flag);
@@ -81,7 +122,6 @@ void CDebug::Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundar
 
 void CDebug::Clear()
 {
-    assert(m_ctx._debug || m_ctx._other);
     for(unsigned int i=0 ; i < m_points.size() ; i++) delete m_points[i] ;
     m_points.clear();
     m_flags.clear();
@@ -116,16 +156,16 @@ void CDebug::dump(const char* msg)
 {
     LOG(info) << msg ; 
 
+    m_crec->dump("CDebug::dump");
+
     dump_brief("CRecorder::dump_brief");
-    if(m_ctx._debug || m_ctx._other ) 
+
+    //if(m_ctx._debug || m_ctx._other ) 
     {
         dump_sequence("CDebug::dump_sequence");
         dump_points("CDeug::dump_points");
     }
 }
-
-
-
 
 
 
@@ -138,7 +178,7 @@ void CDebug::dump_brief(const char* msg)
               << (m_ctx._other ? " --oindex " : "" )
               << (m_dbgseqhis == m_photon._seqhis ? " --dbgseqhis " : "" )
               << (m_dbgseqmat == m_photon._seqmat ? " --dbgseqmat " : "" )
-              << " sas: " << m_recorder->getStepActionString()
+              << " sas: " << m_recorder->getStepActionString()  // huh : why the live step action ?
               ;
     LOG(info) 
               << " seqhis " << std::setw(16) << std::hex << m_photon._seqhis << std::dec 
@@ -158,7 +198,6 @@ void CDebug::dump_brief(const char* msg)
 
 void CDebug::dump_sequence(const char* msg)
 {
-    assert(m_ctx._debug || m_ctx._other) ; // requires premeditation to collect the info
     LOG(info) << msg ; 
     unsigned npoints = m_points.size() ;
     for(unsigned int i=0 ; i<npoints ; i++) 
@@ -185,7 +224,6 @@ void CDebug::dump_sequence(const char* msg)
 
 void CDebug::dump_points(const char* msg)
 {
-    assert(m_ctx._debug || m_ctx._other) ; // requires premeditation to collect the info
     LOG(info) << msg ; 
     G4ThreeVector origin ;
     unsigned npoints = m_points.size() ;

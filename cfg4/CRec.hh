@@ -7,8 +7,6 @@
 #include "CStage.hh"
 
 class Opticks ; 
-class CGeometry ; 
-class CMaterialBridge ; 
 class CStp ; 
 class CG4 ; 
 
@@ -23,23 +21,17 @@ CRec
 
 Canonical m_crec instance is resident of CRecorder and is instanciated with it.
 
-
-
-
-
 **/
 
 class CFG4_API CRec 
 {
     public:
-        CRec(CG4* g4, CGeometry* geometry, bool dynamic);
+        CRec(CG4* g4);
 
         // invoked by CRecorder::startPhoton, invokes clearStep
-        //void startPhoton(unsigned record_id, const G4ThreeVector& origin);
-        void startPhoton(const G4ThreeVector& origin);
+        void setOrigin(const G4ThreeVector& origin);
         // clears the added steps
         void clearStp();
-
 
         void dump(const char* msg="CRec::dump");
         unsigned getNumStps();
@@ -57,11 +49,7 @@ class CFG4_API CRec
         CG4*                        m_g4 ; 
         CG4Ctx&                     m_ctx ; 
         Opticks*                    m_ok ;  
-        CGeometry*                  m_geometry ; 
-        CMaterialBridge*            m_material_bridge ; 
-        bool                        m_dynamic ; 
     private:
-        //unsigned                    m_record_id ; 
         G4ThreeVector               m_origin ; 
         std::vector<CStp*>          m_stp ; 
 

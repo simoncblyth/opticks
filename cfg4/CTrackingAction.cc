@@ -34,7 +34,6 @@ CTrackingAction::CTrackingAction(CG4* g4)
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
    m_recorder(g4->getRecorder())
-   //m_sa(g4->getSteppingAction())
 { 
 }
 
@@ -42,24 +41,6 @@ CTrackingAction::~CTrackingAction()
 { 
 }
 
-void CTrackingAction::setTrack(const G4Track* track)
-{
-    m_ctx.setTrack(track);
- 
-    m_ctx._debug = m_ok->isDbgPhoton(m_ctx._record_id) ; // from option: --dindex=1,100,1000,10000 
-    m_ctx._other = m_ok->isOtherPhoton(m_ctx._record_id) ; // from option: --oindex=1,100,1000,10000 
-    m_ctx._dump = m_ctx._debug || m_ctx._other ; 
-
-}
-
-
-void CTrackingAction::dump(const char* msg )
-{
-    LOG(info) << "." ;
-    LOG(info) << msg  
-              << " ctx " << m_ctx.desc()
-               ; 
-}
 
 void CTrackingAction::postinitialize()
 {
@@ -70,15 +51,6 @@ void CTrackingAction::postinitialize()
                ;
 }
 
-std::string CTrackingAction::brief()
-{
-    std::stringstream ss ; 
-    ss  
-       << " track_id " << m_ctx._track_id
-       << " parent_id " << m_ctx._parent_id
-       ;
-    return ss.str();
-}
 
 void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
@@ -89,19 +61,43 @@ void CTrackingAction::PreUserTrackingAction(const G4Track* track)
                ;
 }
 
+void CTrackingAction::setTrack(const G4Track* track)
+{
+    m_ctx.setTrack(track);
+    m_ctx._debug = m_ok->isDbgPhoton(m_ctx._record_id) ; // from option: --dindex=1,100,1000,10000 
+    m_ctx._other = m_ok->isOtherPhoton(m_ctx._record_id) ; // from option: --oindex=1,100,1000,10000 
+    m_ctx._dump = m_ctx._debug || m_ctx._other ; 
+}
+
+
 void CTrackingAction::PostUserTrackingAction(const G4Track* track)
 {
     int track_id = CTrack::Id(track) ;
     assert( track_id == m_ctx._track_id );
     assert( track == m_ctx._track );
 
-    LOG(trace) << "CTrackingAction::PostUserTrackingAction" 
-              << brief() 
-              ;
+    LOG(trace) << "CTrackingAction::PostUserTrackingAction"  << brief() ;
 
     if(m_ctx._optical)
     {
         m_recorder->posttrack();
     } 
+}
+
+void CTrackingAction::dump(const char* msg )
+{
+    LOG(info) << msg  
+              << " ctx " << m_ctx.desc()
+               ; 
+}
+
+std::string CTrackingAction::brief()
+{
+    std::stringstream ss ; 
+    ss  
+       << " track_id " << m_ctx._track_id
+       << " parent_id " << m_ctx._parent_id
+       ;
+    return ss.str();
 }
 

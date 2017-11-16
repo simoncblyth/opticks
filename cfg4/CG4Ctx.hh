@@ -5,9 +5,13 @@
 #include "CStage.hh"
 #include <string>
 
+
+
 class G4Event ; 
 class G4Track ; 
 class G4Step ; 
+
+class Opticks ; 
 
 /**
 CG4Ctx
@@ -23,15 +27,14 @@ struct CFG4_API CG4Ctx
 {
     // CG4::init
     bool _dbgrec ; 
+    bool _dbgseq ; 
+
     // CG4::initEvent
     int  _photons_per_g4event ;
     unsigned  _steps_per_photon  ;
     unsigned  _gen  ;
     unsigned  _record_max ; 
     unsigned  _bounce_max ; 
-
-
-
 
     // CG4Ctx::setEvent
     G4Event* _event ; 
@@ -69,6 +72,8 @@ struct CFG4_API CG4Ctx
     int _step_total ;
     G4ThreeVector _step_origin ; 
  
+
+    CG4Ctx(Opticks* ok);
 
     void init();
     void setEvent(const G4Event* event);

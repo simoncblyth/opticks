@@ -28,6 +28,7 @@ struct CFG4_API CPhoton
     void clear();
     void add(unsigned slot, unsigned flag, unsigned  material);
     bool is_rewrite_slot() const  ;
+    void scrub_mskhis( unsigned flag );
 
     std::string desc() const ; 
 

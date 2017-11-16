@@ -15,6 +15,24 @@ Simplifications
   * recording state 
 
 
+Lessons
+---------
+
+
+* dont add methods because you might need them in future, do so only when you actually do need them
+
+  * presence of a method has descriptive power : make sure its telling the truth, 
+    a method that never gets called is a lie 
+
+
+
+
+Bad matswap ?
+--------------
+
+::
+
+    tboolean-;tboolean-sphere --okg4 --dbgseqmat 0x123 
 
 
 
@@ -138,6 +156,9 @@ Candle While Make Simplifications
 
 
     simon:cfg4 blyth$ 
+
+
+
 
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <string>
 #include <vector>
 
 class G4StepPoint ; 
@@ -10,6 +11,7 @@ class Opticks ;
 struct CPhoton ; 
 struct CG4Ctx ; 
 class CRecorder ; 
+class CRec ; 
 class CG4 ; 
 
 #include "CFG4_API_EXPORT.hh"
@@ -28,6 +30,12 @@ class CFG4_API CDebug {
         void setMaterialBridge(CMaterialBridge* material_bridge) ;
         void posttrack();
         bool hasIssue();
+
+        bool isSelected(); 
+        bool isHistorySelected(); 
+        bool isMaterialSelected(); 
+
+
 
     public:
 
@@ -54,6 +62,7 @@ class CFG4_API CDebug {
         void dumpStepVelocity(const char* msg="CDebug::dumpStepVelocity");
 
 
+         std::string desc() const ;
 
     private:
         CG4*     m_g4 ; 
@@ -62,13 +71,23 @@ class CFG4_API CDebug {
         Opticks*         m_ok ; 
         int              m_verbosity ; 
         CRecorder*       m_recorder ; 
+        CRec*            m_crec ; 
         CMaterialBridge* m_material_bridge  ; 
         const CPhoton&   m_photon ; 
 
 
+        unsigned long long m_seqhis_select ; 
+        unsigned long long m_seqmat_select ; 
+
         unsigned long long m_dbgseqhis ;
         unsigned long long m_dbgseqmat ;
         bool               m_dbgflags ;
+
+        bool               m_posttrack_dbgseqhis ;
+        bool               m_posttrack_dbgseqmat ;
+        bool               m_posttrack_dump ;
+
+
 
         std::vector<const G4StepPoint*>         m_points ; 
         std::vector<unsigned>                   m_flags ; 

@@ -318,8 +318,8 @@ tboolean-ana-(){
 }
 
 # TODO: how to pick a profile without being explicit about it ? so this doesnt depend on having it 
-tboolean-ipy-(){ ipython  -i -- $(which tboolean.py) --det ${TESTNAME} --tag $(tboolean-tag) ; }
-tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
+tboolean-ipy-(){ ipython  -i -- $(which tboolean.py) --det ${TESTNAME} --tag $(tboolean-tag) $* ; }
+tboolean-py-(){ tboolean.py --det ${TESTNAME} --tag $(tboolean-tag) --nosmry $* ; }
 tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
@@ -500,13 +500,13 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=1000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
-container = CSG("box", emit=0, boundary='Rock//perfectAbsorbSurface/Vacuum', container="1" )  # no param, container="1" switches on auto-sizing
+container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container="1" )  # no param, container="1" switches on auto-sizing
 
-box = CSG("box3", param=[300,300,200,0], emit=-1,  boundary="Vacuum//perfectSpecularSurface/GlassSchottF2" )
+box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2" )
 
 CSG.Serialize([container, box], args.csgpath )
 EOP
@@ -520,16 +520,101 @@ $FUNCNAME
 * see tboolean-box-okg4-seqmat-mismatch.rst
   "TO BR SA" is always giving incorrect 1st material in G4 recording 
   (presumably a matswap?)
-
-* whilst trying to make issue worse ie effect a larger fraction of photons for easier debug
-  I made the glass block an internal perfectSpecularSurface : with Opticks 
-  the bouncemax prevents this going on forever, but there is 
-  no equivalent with G4 ... so it proceeded to occupy all machine memory and dies ! 
-  cfg4-bouncemax-not-working.rst
  
 
 EON
 }
+
+
+
+
+tboolean-box3-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
+tboolean-box3-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-box3-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-box3(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-box3-(){  $FUNCNAME- | python $* ; }
+tboolean-box3--(){ cat << EOP 
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+
+CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
+
+container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', container="1" )  # no param, container="1" switches on auto-sizing
+
+wbox = CSG("box3", param=[400,400,300,0], emit=0,  boundary="Vacuum///Water" )
+box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Water///GlassSchottF2" )
+
+CSG.Serialize([container, wbox, box], args.csgpath )
+EOP
+}
+tboolean-box3-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+Used this to show that the incorrect matswap was only effecting 
+a BR on the 1st step, ie "TO BR SA" and not all "BR".
+
+* see tboolean-box-okg4-seqmat-mismatch.rst
+ 
+
+EON
+}
+
+
+
+tboolean-truncate-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
+tboolean-truncate-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-truncate-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-truncate(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; } 
+tboolean-truncate-(){  $FUNCNAME- | python $* ; }
+tboolean-truncate--(){ cat << EOP 
+import logging
+log = logging.getLogger(__name__)
+from opticks.ana.base import opticks_main
+from opticks.analytic.polyconfig import PolyConfig
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+
+CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
+
+box = CSG("box", param=[0,0,0,200], emit=-1,  boundary="Rock//perfectSpecularSurface/Vacuum" )
+
+CSG.Serialize([box], args.csgpath )
+EOP
+}
+
+
+tboolean-truncate-notes(){ cat << EON
+
+
+$FUNCNAME
+============================
+
+Checking truncation behaviour of infinite bounce "hall of mirrors" situation 
+
+
+Box with internal perfectSpecularSurface : 
+with Opticks the bouncemax prevents this going on forever, 
+but there is no equivalent with G4 ... so it proceeded to occupy all machine memory and dies ! 
+
+* cfg4-bouncemax-not-working.rst
+
+
+
+EON
+}
+
 
 
 

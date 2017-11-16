@@ -126,6 +126,8 @@ void CWriter::writeStepPoint(unsigned target_record_id, unsigned slot, const G4S
 {
     // write compressed record quads into buffer at location for the m_record_id 
 
+    if(!m_dynamic) assert( target_record_id < m_ctx._record_max );
+
     if(m_ctx._dbgrec)
     {
         LOG(info) << "[--dbgrec]"

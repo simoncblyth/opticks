@@ -1,64 +1,38 @@
 #include <sstream>
 #include "CFG4_BODY.hh"
-#include "CBoundaryProcess.hh"
-
-// brap-
-#include "BStr.hh"
-#include "BBit.hh"
-
-// npy-
-#include "NGLM.hpp"
-#include "NPY.hpp"
 
 // okc-
 #include "Opticks.hh"
-#include "OpticksQuadrant.h"
 #include "OpticksFlags.hh"
-#include "OpticksEvent.hh"
-
-
-// g4-
-#include "G4Track.hh"
-#include "G4Step.hh"
-#include "G4StepPoint.hh"
-#include "G4StepStatus.hh"
-#include "G4ThreeVector.hh"
-#include "G4PrimaryVertex.hh"
-#include "G4PrimaryParticle.hh"
-#include "G4SystemOfUnits.hh"
-#include "G4PhysicalConstants.hh"
 
 // cfg4-
 #include "CG4.hh"
 #include "OpStatus.hh"
-#include "CRecorder.h"
-#include "CDebug.hh"
-#include "CPropLib.hh"
-#include "Format.hh"
+
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
-#include "CWriter.hh"
 #include "CRec.hh"
 #include "CStp.hh"
-#include "State.hh"
 #include "CStep.hh"
 #include "CAction.hh"
+
+#include "CBoundaryProcess.hh"
+#include "CRecorder.h"
+
+#include "CDebug.hh"
+#include "CWriter.hh"
 #include "CRecorder.hh"
 
 #include "PLOG.hh"
 
-
-
 const char* CRecorder::PRE  = "PRE" ; 
 const char* CRecorder::POST = "POST" ; 
 
-/**
-CRecorder
-==========
+CRec* CRecorder::getCRec() const 
+{
+    return m_crec ;  
+}
 
-Canonical instance is ctor resident of CG4 
-
-**/
 
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
    :
@@ -66,9 +40,10 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
    m_photon(),
-   m_dbg(m_ctx._dbgrec ? new CDebug(g4, m_photon, this) : NULL),
 
-   m_crec(new CRec(m_g4, geometry, dynamic)),
+   m_crec(new CRec(m_g4)),
+   m_dbg(m_ctx._dbgrec || m_ctx._dbgseq ? new CDebug(g4, m_photon, this) : NULL),
+
    m_evt(NULL),
    m_geometry(geometry),
    m_material_bridge(NULL),
@@ -76,7 +51,6 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_live(m_ok->hasOpt("liverecorder")),
    m_writer(new CWriter(g4, m_dynamic)),
 
-   m_verbosity(m_ok->hasOpt("steppingdbg") ? 10 : 0),
 
    m_boundary_status(Undefined),
    m_prior_boundary_status(Undefined),
@@ -87,139 +61,111 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_postmat(0),
    m_prior_postmat(0),
 
-   m_seqhis_select(0),
-   m_seqmat_select(0),
    m_slot(0),
+
    m_decrement_request(0),
    m_decrement_denied(0),
    m_record_truncate(false),
    m_bounce_truncate(false),
    m_topslot_rewrite(0),
-   m_step_action(0)
-{
-   
-}
 
+   m_step_action(0)
+{   
+}
 
 void CRecorder::postinitialize()
 {
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
-
     if(m_dbg) m_dbg->setMaterialBridge( m_material_bridge );
-
-}
-
-unsigned int CRecorder::getVerbosity()
-{
-    return m_verbosity ; 
-}
-bool CRecorder::isHistorySelected()
-{
-   return m_seqhis_select == m_photon._seqhis ; 
-}
-bool CRecorder::isMaterialSelected()
-{
-   return m_seqmat_select == m_photon._seqmat ; 
-}
-bool CRecorder::isSelected()
-{
-   return isHistorySelected() || isMaterialSelected() ;
-}
-
-unsigned long long CRecorder::getSeqHis()
-{
-    return m_photon._seqhis ; 
-}
-unsigned long long CRecorder::getSeqMat()
-{
-    return m_photon._seqmat ; 
-}
-
-
-
-std::string CRecorder::description()
-{
-    std::stringstream ss ; 
-    ss << std::setw(10) << CStage::Label(m_ctx._stage)
-       << " evt " << std::setw(7) << m_ctx._event_id
-       << " pho " << std::setw(7) << m_ctx._photon_id 
-       << " pri " << std::setw(7) << m_ctx._primary_id
-       << " ste " << std::setw(4) << m_ctx._step_id 
-       << " rid " << std::setw(4) << m_ctx._record_id 
-       << " slt " << std::setw(4) << m_slot
-       << " pre " << std::setw(7) << CStep::PreGlobalTime(m_ctx._step)
-       << " pst " << std::setw(7) << CStep::PostGlobalTime(m_ctx._step)
-       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
-       ;
-
-   return ss.str();
-}
-
-
-std::string CRecorder::desc() const 
-{
-    std::stringstream ss ; 
-
-    ss << "CRecorder"
-       << " live " << m_live 
-       << " dynamic " << m_dynamic
-       << " record_max " << m_ctx._record_max
-       << " bounce_max " << m_ctx._bounce_max
-       ; 
-
-    return ss.str();
-}
-
-void CRecorder::RecordBeginOfRun(const G4Run*)
-{
-}
-
-void CRecorder::RecordEndOfRun(const G4Run*)
-{
 }
 
 void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 {
     m_writer->initEvent(evt);
-
-
 }
 
 
 
-
-
-
-unsigned CRecorder::getSlot()
-{
-    return m_slot ; 
-}
-void CRecorder::setSlot(unsigned slot) // needed for reemission continuation
-{
-    m_slot = slot ; 
-}
-
-void CRecorder::startPhoton()
-{
-   // invoked from CRecorder::Record when stage = CStage::START
-   // the start stage is set for a new non-rejoing optical track by   CSteppingAction::UserSteppingActionOptical
+// invoked by CSteppingAction::setStep
+#ifdef USE_CUSTOM_BOUNDARY
+bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
+#else
+bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
+#endif
+{    
+    m_step_action = 0 ; 
 
     if(m_ctx._dbgrec)
-    {
-        LOG(info) << "[--dbgrec] " 
-                  << " m_slot " << m_slot 
-                  ;
+    LOG(trace) << "CRecorder::Record"
+              << " step_id " << m_ctx._step_id
+              << " record_id " << m_ctx._record_id
+              << " stage " << CStage::Label(m_ctx._stage)
+              ;
+
+    // stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
+    if(m_ctx._stage == CStage::START)
+    { 
+        const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
+        const G4ThreeVector& pos = pre->GetPosition();
+        m_crec->setOrigin(pos);  
+        m_crec->clearStp();
+
+        zeroPhoton();       // MUST be invoked prior to setBoundaryStatus, resetting photon history state 
+
+        if(m_dbg) m_dbg->Clear();
     }
+    else if(m_ctx._stage == CStage::REJOIN )
+    {
+        if(m_live)
+        { 
+            decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
+        }
+        else
+        {
+            m_crec->clearStp(); // rejoin happens on output side, not in the crec CStp list
 
-    const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
-    const G4ThreeVector& pos = pre->GetPosition();
+            // not-zeroing for REJOINders ?
+            // bit confused by this ... because REJOINing track will
+            // not usually be the one after the original AB one 
+            // so will mixing up the wrong tracks ?
+            //
+            // does this mean the local photon state is just for live mode ?
+        }
+    }
+    else if(m_ctx._stage == CStage::RECOLL )
+    {
+        m_decrement_request = 0 ;  
+    } 
 
-    m_crec->startPhoton(pos);   // clears CStp vector
 
-    // description of photon history 
+    unsigned preMaterial = m_material_bridge->getPreMaterial(m_ctx._step) ;
+    unsigned postMaterial = m_material_bridge->getPostMaterial(m_ctx._step) ;
+    setBoundaryStatus( boundary_status, preMaterial, postMaterial);
+
+    bool done = false ; 
+
+    if( m_live )
+    {
+         assert( 0 && "moved to CRecorderDead.cc" );  
+         //done = LiveRecordStep();
+    }
+    else
+    {
+         // should have done also ?
+         m_crec->add(m_ctx._step, m_ctx._step_id, boundary_status, m_ctx._stage );
+
+         if(m_ctx._dbgrec)
+             LOG(info) << "[--dbgrec]" 
+                       << " crec.add NumStps " << m_crec->getNumStps() 
+                       ; 
+    }
+    return done ; 
+}
 
 
+void CRecorder::zeroPhoton()
+{
     m_boundary_status = Undefined ; 
     m_prior_boundary_status = Undefined ; 
 
@@ -230,9 +176,10 @@ void CRecorder::startPhoton()
     m_prior_postmat = 0 ; 
 
     m_photon.clear();
-    RecordQuadrant(m_photon._c4);
-
-    m_seqhis_select = 0x8bd ;
+    m_photon._c4.uchar_.x = CStep::PreQuadrant(m_ctx._step) ; // initial quadrant 
+    m_photon._c4.uchar_.y = 2u ; 
+    m_photon._c4.uchar_.z = 3u ; 
+    m_photon._c4.uchar_.w = 4u ; 
 
     m_slot = 0 ; 
     m_decrement_request = 0 ; 
@@ -240,18 +187,12 @@ void CRecorder::startPhoton()
     m_record_truncate = false ; 
     m_bounce_truncate = false ; 
     m_topslot_rewrite = 0 ; 
-
-
-
-    if(m_ctx._debug || m_ctx._other) m_dbg->Clear();
 }
 
-void CRecorder::decrementSlot()
+void CRecorder::decrementSlot()  // NB not just live 
 {
     m_decrement_request += 1 ; 
 
-    //if(m_slot == 0 || m_bounce_truncate || m_record_truncate )
-    // with the TOPSLOT_REWRITE dont want to deny decrement
     if(m_slot == 0 )
     {
         m_decrement_denied += 1 ; 
@@ -270,84 +211,27 @@ void CRecorder::decrementSlot()
 }
 
 
-// invoked by CSteppingAction::setStep
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
+void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
 #else
-bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
+void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
 #endif
 {
-    
-    //bool recording = unsigned(m_ctx._record_id) < m_ctx._record_max ||  m_dynamic ;  // record_max is a photon level fit-in-buffer thing
-    //if(!recording) 
-    //{
-    //    assert(0);
-    //    return false ;
-    //}
+    // this is invoked before RecordStep 
+    m_prior_boundary_status = m_boundary_status ; 
+    m_prior_premat = m_premat ; 
+    m_prior_postmat = m_postmat ; 
 
-    m_step_action = 0 ; 
-
-    if(m_ctx._dbgrec)
-    LOG(trace) << "CRecorder::Record"
-              << " step_id " << m_ctx._step_id
-              << " record_id " << m_ctx._record_id
-              << " stage " << CStage::Label(m_ctx._stage)
-              ;
-
-    if(m_ctx._stage == CStage::START)
-    { 
-        startPhoton();       // MUST be invoked prior to setBoundaryStatus, resetting photon history state 
-    }
-    else if(m_ctx._stage == CStage::REJOIN )
-    {
-        if(m_live)
-        { 
-            decrementSlot();    // this allows REJOIN changing of a slot flag from BULK_ABSORB to BULK_REEMIT 
-        }
-        else
-        {
-            m_crec->clearStp(); // rejoin happens on output side, not in the crec CStp list
-        }
-    }
-    else if(m_ctx._stage == CStage::RECOLL )
-    {
-        m_decrement_request = 0 ;  
-    } 
-
-
-    unsigned preMaterial = m_material_bridge->getPreMaterial(m_ctx._step) ;
-    unsigned postMaterial = m_material_bridge->getPostMaterial(m_ctx._step) ;
-
-    setBoundaryStatus( boundary_status, preMaterial, postMaterial);
-
-    bool done = false ; 
-
-    if( m_live )
-    {
-         assert( 0 && "moved to CRecorderDead.cc" );  
-         //done = LiveRecordStep();
-    }
-    else
-    {
-         // should have done also ?
-         m_crec->add(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage );
-
-         if(m_ctx._dbgrec)
-             LOG(info) << "[--dbgrec]" 
-                       << " crec.add NumStps " << m_crec->getNumStps() 
-                       ; 
-
-
-
-    }
-
-    return done ; 
+    m_boundary_status = boundary_status ; 
+    m_premat = premat ; 
+    m_postmat = postmat ;
 }
 
 
-void CRecorder::CannedWriteSteps()
+
+void CRecorder::posttrackWriteSteps()
 {
-   // CRecorder::CannedWriteSteps is invoked from CRecorder::posttrack, 
+   // CRecorder::posttrackWriteSteps is invoked from CRecorder::posttrack, 
    // once for the primary photon track and then for 0 or more reemtracks
    // via the record_id the info is written onto the correct place 
    // in the photon record buffer
@@ -368,13 +252,13 @@ void CRecorder::CannedWriteSteps()
 
     if(m_ctx._dbgrec)
     {
-        LOG(info) << "CRecorder::CannedWriteSteps"
+        LOG(info) << "CRecorder::posttrackWriteSteps"
                   << " [--dbgrec] "
                   << " num " << num
                   << " m_slot " << m_slot
                    ;
 
-        std::cout << "CRecorder::CannedWriteSteps stages:"  ;
+        std::cout << "CRecorder::posttrackWriteSteps stages:"  ;
         for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
         std::cout << std::endl ;  
     }
@@ -424,13 +308,16 @@ void CRecorder::CannedWriteSteps()
             case CStage::UNKNOWN:assert(0)                      ; break ; 
         } 
 
+        bool first = m_slot == 0 && stage == CStage::START ;
 
         unsigned u_premat  = matSwap ? postmat : premat ;
         unsigned u_postmat = ( matSwap || postmat == 0 )  ? premat  : postmat ;
 
-        if(surfaceAbsorb) u_postmat = postmat ; 
+        if(first)            u_premat = premat ;   
+        // dont allow any matswap for 1st material : see notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
 
-        bool first = m_slot == 0 && stage == CStage::START ;
+        if(surfaceAbsorb)    u_postmat = postmat ; 
+
 
         if(stage == CStage::REJOIN) 
         {
@@ -445,6 +332,7 @@ void CRecorder::CannedWriteSteps()
         {
             m_step_action |= CAction::PRE_SAVE ; 
             done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );  
+    
             if(done) m_step_action |= CAction::PRE_DONE ; 
 
             if(!done)
@@ -464,10 +352,6 @@ void CRecorder::CannedWriteSteps()
             }
         }
 
-        assert( m_photon._seqhis ) ;  // not tripped
-        assert( m_photon._seqmat ) ; 
-        assert( m_photon._mskhis ) ; 
-
         // huh: changing the inputs ??? confusing ... but are using next step lookahead, 
         stp->setMat(  u_premat, u_postmat );
         stp->setFlag( preFlag,  postFlag );
@@ -482,33 +366,7 @@ void CRecorder::CannedWriteSteps()
 
         if(done) break ; 
     }   // stp loop
-
-
-    if(num > 0 )
-    {
-    assert( m_photon._seqhis ) ; 
-    assert( m_photon._seqmat ) ; 
-    assert( m_photon._mskhis ) ; 
-    }
-
-
-
 }
-
-
-/**
-   Consider 
-       TO RE BT BT BT BT SA
-
-   Live mode:
-       write pre until last when write pre,post 
-
-   Canned mode:
-        For first write pre,post then write post
-
-   Rejoins are not known until another track comes along 
-   that lines up with former ending in AB. 
-**/
 
 
 
@@ -520,14 +378,8 @@ void CRecorder::posttrack()
 
     if(!m_live)
     { 
-        CannedWriteSteps();
-        //assert( m_photon._seqhis ); // trips
-        //assert( m_photon._seqmat );
+        posttrackWriteSteps();
     }
-
-
-    //assert( m_photon._seqhis );
-    //assert( m_photon._seqmat );
 
     if(m_dbg)
     {
@@ -560,8 +412,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     unsigned slot =  m_slot < m_ctx._steps_per_photon  ? m_slot : m_ctx._steps_per_photon - 1 ; // constrain slot to inclusive range (0,_steps_per_photon-1) 
 
    
-
-
     m_record_truncate = slot == m_ctx._steps_per_photon - 1 ;    // hmm not exactly truncate, just top slot 
 
     if(m_record_truncate) m_step_action |= CAction::RECORD_TRUNCATE ; 
@@ -582,8 +432,10 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     if(m_record_truncate && m_photon.is_rewrite_slot() )  // try to overwrite top slot 
     {
         m_topslot_rewrite += 1 ; 
+
         if(m_ctx._debug || m_ctx._other)
-        LOG(info)
+        {
+            LOG(info)
                   << ( m_topslot_rewrite > 1 ? CAction::HARD_TRUNCATE_ : CAction::TOPSLOT_REWRITE_ )
                   << " topslot_rewrite " << m_topslot_rewrite
                   << " prior_flag -> flag " 
@@ -595,6 +447,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
                   << " -> "
                   <<   ( m_photon._mat == 0       ? "-" : m_material_bridge->getMaterialName(m_photon._mat-1, true)  ) 
                   ;
+        } 
 
         // allowing a single AB->RE rewrite is closer to Opticks
         if(m_topslot_rewrite == 1 && flag == BULK_REEMIT && m_photon._flag_prior  == BULK_ABSORB)
@@ -604,12 +457,13 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         else
         {
             m_step_action |= CAction::HARD_TRUNCATE ; 
-            assert(0);
+            //assert(0);
             return true ; 
         }
     }
 
-   if(flag == BULK_REEMIT) m_photon._mskhis = m_photon._mskhis & (~BULK_ABSORB)  ;
+
+   if(flag == BULK_REEMIT) m_photon.scrub_mskhis(BULK_ABSORB)  ;
 
 
     unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
@@ -618,11 +472,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     m_writer->writeStepPoint(target_record_id, slot, point, flag, material, label);
 
 
-    if(m_ctx._debug || m_ctx._other) m_dbg->Collect(point, boundary_status, m_photon );
+    if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
 
     m_slot += 1 ;    // m_slot is incremented regardless of truncation, only local *slot* is constrained to recording range
-
-    //LOG(info) << " inc slot " << m_slot ; 
 
 
     m_bounce_truncate = m_slot > m_ctx._bounce_max  ;   
@@ -636,8 +488,6 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
     {
         m_writer->addDynamicRecords();
     }
-
-
    
     /* 
     LOG(info) << " m_slot " << m_slot 
@@ -653,111 +503,18 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
 
 
-
-    /*
-    std::cout << "RecordStepPoint.slot "
-              << std::setw(4) << slot << " "
-              << std::setw(16) << std::hex << m_seqhis << std::dec 
-              << " " << OpticksFlags::FlagSequence(m_seqhis, true)
-              << std::endl 
-              ;
-    */
-
-
-    //  Decrementing m_slot and running again will not scrub the AB from the mask
-    //  so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
-    //  occurs. 
-    //
-    //  Thus should always be correct as AB is a terminating flag, 
-    //  so any REJOINed photon will have an AB in the mask
-    //  that needs to be a RE instead.
-    //
-    //  What about SA/SD ... those should never REjoin ?
-
-
-
-
 std::string CRecorder::getStepActionString()
 {
     return CAction::Action(m_step_action) ;
 }
 
 
-#ifdef USE_CUSTOM_BOUNDARY
-void CRecorder::setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#else
-void CRecorder::setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int premat, unsigned int postmat)
-#endif
-{
-    // this is invoked before RecordStep 
-    m_prior_boundary_status = m_boundary_status ; 
-    m_prior_premat = m_premat ; 
-    m_prior_postmat = m_postmat ; 
-
-    m_boundary_status = boundary_status ; 
-    m_premat = premat ; 
-    m_postmat = postmat ;
-}
-
-
-
-
-
-
-
-
-#ifdef USE_CUSTOM_BOUNDARY
-DsG4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
-#else
-G4OpBoundaryProcessStatus CRecorder::getBoundaryStatus()
-#endif
-{
-   return m_boundary_status ; 
-}
-
-
-
-
-
-void CRecorder::RecordQuadrant(uifchar4& c4)
-{
-    const G4StepPoint* pre  = m_ctx._step->GetPreStepPoint() ; 
-    const G4ThreeVector& pos = pre->GetPosition();
-
-    // initial quadrant 
-    c4.uchar_.x = 
-                  (  pos.x() > 0.f ? unsigned(QX) : 0u ) 
-                   |   
-                  (  pos.y() > 0.f ? unsigned(QY) : 0u ) 
-                   |   
-                  (  pos.z() > 0.f ? unsigned(QZ) : 0u )
-                  ;   
-
-    c4.uchar_.y = 2u ; 
-    c4.uchar_.z = 3u ; 
-    c4.uchar_.w = 4u ; 
-}
-
-
-
-
 
 
 void CRecorder::Summary(const char* msg)
 {
-    LOG(info) <<  msg
-              << " event_id " << m_ctx._event_id 
-              << " photon_id " << m_ctx._photon_id 
-              << " record_id " << m_ctx._record_id 
-              << " step_id " << m_ctx._step_id 
-              << " m_slot " << m_slot 
-              ;
+    LOG(info) <<  msg << " " << desc() ;
 }
-
-
-
-
-
 
 void CRecorder::dump(const char* msg)
 {
@@ -766,17 +523,23 @@ void CRecorder::dump(const char* msg)
 
     if(m_dbg)
     m_dbg->dump("CRecorder::dump");
-
-/*
-    dump_brief("CRecorder::dump_brief");
-    if(m_debug || m_other ) 
-    {
-        dump_sequence("CRecorder::dump_sequence");
-        dump_points("CRecorder::dump_points");
-    }
-*/
-
 }
 
+std::string CRecorder::desc() const 
+{
+    std::stringstream ss ; 
+    ss << std::setw(10) << CStage::Label(m_ctx._stage)
+       << " evt " << std::setw(7) << m_ctx._event_id
+       << " pho " << std::setw(7) << m_ctx._photon_id 
+       << " pri " << std::setw(7) << m_ctx._primary_id
+       << " ste " << std::setw(4) << m_ctx._step_id 
+       << " rid " << std::setw(4) << m_ctx._record_id 
+       << " slt " << std::setw(4) << m_slot
+       << " pre " << std::setw(7) << CStep::PreGlobalTime(m_ctx._step)
+       << " pst " << std::setw(7) << CStep::PostGlobalTime(m_ctx._step)
+       << ( m_dynamic ? " DYNAMIC " : " STATIC " )
+       ;
 
+   return ss.str();
+}
 

@@ -67,7 +67,6 @@ CSteppingAction::CSteppingAction(CG4* g4, bool dynamic)
    m_mlib(g4->getMaterialLib()),
    m_recorder(g4->getRecorder()),
    m_steprec(g4->getStepRec()),
-   m_verbosity(m_recorder->getVerbosity()),
    m_steprec_store_count(0)
 { 
 }

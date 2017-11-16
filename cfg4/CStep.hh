@@ -16,6 +16,7 @@ CStep
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CStep {
    public:
+       static unsigned PreQuadrant(const G4Step* step);
        static double PreGlobalTime(const G4Step* step);
        static double PostGlobalTime(const G4Step* step);
        static const G4Material* PreMaterial( const G4Step* step) ;

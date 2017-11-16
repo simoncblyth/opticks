@@ -122,6 +122,7 @@ CG4::CG4(OpticksHub* hub)
      m_ok(m_hub->getOpticks()),
      m_run(m_ok->getRun()),
      m_cfg(m_ok->getCfg()),
+     m_ctx(m_ok),
      m_physics(new CPhysics(this)),
      m_runManager(m_physics->getRunManager()),
      m_geometry(new CGeometry(m_hub)),
@@ -151,9 +152,8 @@ void CG4::init()
 {
     //m_ok->Summary("CG4::init opticks summary");
 
-    m_ctx.init(); 
-    m_ctx._dbgrec = m_ok->isDbgRec();
-
+    LOG(info) << "CG4::init"  << " ctx " << m_ctx.desc() ; 
+     
     initialize();
 
 }

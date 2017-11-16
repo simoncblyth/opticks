@@ -4,14 +4,27 @@
 #include "G4Track.hh"
 #include "G4Event.hh"
 
+#include "Opticks.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 
 #include "PLOG.hh"
 
+
+CG4Ctx::CG4Ctx(Opticks* ok)
+{
+    init();
+
+    _dbgrec = ok->isDbgRec() ;   // machinery debugging 
+    _dbgseq = ok->getDbgSeqhis() || ok->getDbgSeqmat() ;  // content debugging 
+}
+
+
 void CG4Ctx::init()
 {
     _dbgrec = false ; 
+    _dbgseq = false ; 
+
     _photons_per_g4event = 0 ; 
     _steps_per_photon = 0 ; 
     _gen = 0 ; 
@@ -155,16 +168,12 @@ void CG4Ctx::setStepOptical()
 
 
 
-
-
-
-
-
-
 std::string CG4Ctx::desc() const 
 {
     std::stringstream ss ; 
     ss 
+        << ( _dbgrec ? " [--dbgrec] " : "" )
+        << ( _dbgseq ? " [--dbgseqmat 0x.../--dbgseqhis 0x...] " : "" )
         << ( _debug ? " --dindex " : "" )
         << ( _other ? " --oindex " : "" )
         << " record_id " << _record_id

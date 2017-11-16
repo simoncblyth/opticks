@@ -65,7 +65,7 @@ if __name__ == '__main__':
 
      cu = count_unique_sorted(seqhis)
 
-     ht = SeqTable(cu, af)
+     ht = SeqTable(cu, af, smry=True)
      
      test_HistoryTable(ht, seqhis)
 

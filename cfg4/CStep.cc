@@ -1,10 +1,11 @@
 #include "CFG4_BODY.hh"
-#include "CStep.hh"
 
 #include "G4SystemOfUnits.hh"
 #include "G4StepPoint.hh"
 #include "G4Step.hh"
 
+#include "OpticksQuadrant.h"
+#include "CStep.hh"
 
 const G4Step* CStep::getStep() const 
 {
@@ -14,6 +15,22 @@ unsigned int CStep::getStepId() const
 {
     return m_step_id ; 
 }
+
+
+
+unsigned CStep::PreQuadrant(const G4Step* step) // static 
+{
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4ThreeVector& pos = pre->GetPosition();
+    return 
+                  (  pos.x() > 0.f ? unsigned(QX) : 0u ) 
+                   |   
+                  (  pos.y() > 0.f ? unsigned(QY) : 0u ) 
+                   |   
+                  (  pos.z() > 0.f ? unsigned(QZ) : 0u )
+                  ;   
+}
+
 
 
 double CStep::PreGlobalTime(const G4Step* step) // static

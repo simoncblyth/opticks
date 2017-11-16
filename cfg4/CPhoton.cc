@@ -59,6 +59,22 @@ void CPhoton::add(unsigned slot, unsigned flag, unsigned  material)
 
 }
 
+void CPhoton::scrub_mskhis( unsigned flag )
+{
+    _mskhis = _mskhis & (~flag)  ;
+
+    //  Decrementing slot and running again does not scrub the AB from the mask
+    //  so need to scrub the AB (BULK_ABSORB) when a RE (BULK_REEMIT) from rejoining
+    //  occurs.  
+    //
+    //  This should always be correct as AB is a terminating flag, 
+    //  so any REJOINed photon will have an AB in the mask
+    //  that needs to be a RE instead.
+    //
+    //  What about SA/SD ... those should never REjoin ?
+}
+
+
 bool CPhoton::is_rewrite_slot() const 
 {
     return _his_prior != 0 && _mat_prior != 0 ;

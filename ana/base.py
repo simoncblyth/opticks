@@ -406,7 +406,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--size",  default=size, help="Comma delimited figure width,height in inches. Default %(default)s"  )
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
-    parser.add_argument(     "--nosmry", dest="smry", action="store_false", help="smry SeqAna table  ")
+    parser.add_argument(     "--nosmry", dest="smry", action="store_false", help="nosmry option gives more detailed seqmat and seqhis tables, including the hex strings, useful for dbgseqhis")
     parser.add_argument(     "--pybnd",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--gdml2gltf",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
