@@ -7,9 +7,10 @@
 #include <glm/fwd.hpp>
 
 // g4-
-class G4Run ;
+//class G4Run ;
 class G4Step ; 
-class G4PrimaryVertex ; 
+//class G4PrimaryVertex ; 
+
 #include "G4ThreeVector.hh"
 
 #include "CFG4_PUSH.hh"
@@ -24,6 +25,7 @@ class OpticksEvent ;
 
 struct CG4Ctx ; 
 #include "CPhoton.hh"
+#include "CRecState.hh"
 
 class CDebug ; 
 class CRec ; 
@@ -107,11 +109,7 @@ Canned mode:
 Rejoins are not known until another track comes along 
 that lines up with former ending in AB. 
 
-
-
-
 **/
-
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -122,53 +120,38 @@ class CFG4_API CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        CRecorder(CG4* g4, CGeometry* geometry, bool dynamic);
+        std::string getStepActionString();
+        CRec*       getCRec() const ; 
+   public:
+        CRecorder(CG4* g4, CGeometry* geometry, bool dynamic); // CG4::CG4
         void postinitialize();               // called after G4 geometry constructed in CG4::postinitialize
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
-        CRec* getCRec() const ; 
-   private:
-        void setEvent(OpticksEvent* evt);
-   public:
         void posttrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
-   public:
-        void zeroPhoton();
-   public:
-
 #ifdef USE_CUSTOM_BOUNDARY
-    public:
         bool Record(DsG4OpBoundaryProcessStatus boundary_status);
-    private:
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
-        void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
 #else
-    public:
         bool Record(G4OpBoundaryProcessStatus boundary_status);
-    private:
-        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
-        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status, unsigned int preMat, unsigned int postMat);
 #endif
-    private:
-        void setStep(const G4Step* step, int step_id);
-        //bool LiveRecordStep();
-        void RecordStepPoint(unsigned int slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* label);
-        //void Clear();
-   public:
-        std::string getStepActionString();
-   public:
-        // for reemission continuation
-        void decrementSlot();
-   public:
-        // non-live running 
+   private:
+        void zeroPhoton();
+        void decrementSlot(); // for reemission continuation
         void posttrackWriteSteps();
-   public:
+ 
+#ifdef USE_CUSTOM_BOUNDARY
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);
+#else
+        bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
+#endif
+  public:
         void Summary(const char* msg);
-        std::string desc() const ; 
         void dump(const char* msg="CRecorder::dump");
+        std::string desc() const ; 
    private:
         CG4*               m_g4; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         CPhoton            m_photon ;  
+        CRecState          m_state ;  
         CRec*              m_crec ; 
         CDebug*            m_dbg ; 
 
@@ -178,35 +161,6 @@ class CFG4_API CRecorder {
         bool               m_dynamic ;
         bool               m_live ;   
         CWriter*           m_writer ; 
-
-
-    private:
-        // below are zeroed in zeroPhoton
-#ifdef USE_CUSTOM_BOUNDARY
-        DsG4OpBoundaryProcessStatus m_boundary_status ; 
-        DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
-#else
-        G4OpBoundaryProcessStatus m_boundary_status ; 
-        G4OpBoundaryProcessStatus m_prior_boundary_status ; 
-#endif
-        unsigned m_premat ; 
-        unsigned m_prior_premat ; 
-
-        unsigned m_postmat ; 
-        unsigned m_prior_postmat ; 
-
-        unsigned m_slot ; 
-        unsigned m_decrement_request ; 
-        unsigned m_decrement_denied ; 
-        bool     m_record_truncate ; 
-        bool     m_bounce_truncate ; 
-        unsigned m_topslot_rewrite ; 
-
-    private:
-        // zeroed at start of Record 
-        unsigned m_step_action ; 
-
-
 
 };
 #include "CFG4_TAIL.hh"

@@ -181,6 +181,7 @@ set(SOURCES
     CPrimaryGeneratorAction.cc
 
     CRecorder.cc
+    CRecState.cc
     CDebug.cc
     CPhoton.cc
     CAction.cc

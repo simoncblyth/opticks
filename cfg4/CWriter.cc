@@ -138,7 +138,6 @@ void CWriter::writeStepPoint(unsigned target_record_id, unsigned slot, const G4S
                   ;
     }  
 
-
     const G4ThreeVector& pos = point->GetPosition();
     const G4ThreeVector& pol = point->GetPolarization();
 
