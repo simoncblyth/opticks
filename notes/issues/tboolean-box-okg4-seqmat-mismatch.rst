@@ -2,6 +2,16 @@ tboolean-box-okg4-seqmat-mismatch
 ====================================
 
 
+FIXED 
+------
+
+* somewhat unsatisfying fix, was to add yet another special case to CRecorder::posttrackWriteSteps
+
+
+ISSUE : wrong 1st material for a first step BR eg "TO BR SA" 
+----------------------------------------------------------------
+
+
 ::
 
      tboolean-;tboolean-box --okg4
@@ -15,7 +25,6 @@ APPROACH
 
 * made inroads into CRecorder monolith, breaking into CWriter, CDebug, CPhoton, CG4Ctx, ...
 
-* somewhat unsatisfying fix, was to add yet another special case to CRecorder::posttrackWriteSteps
 
 ::
 

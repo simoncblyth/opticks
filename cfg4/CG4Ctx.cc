@@ -17,6 +17,17 @@ CG4Ctx::CG4Ctx(Opticks* ok)
 
     _dbgrec = ok->isDbgRec() ;   // machinery debugging 
     _dbgseq = ok->getDbgSeqhis() || ok->getDbgSeqmat() ;  // content debugging 
+    _dbgzero = ok->isDbgZero() ; 
+}
+
+bool CG4Ctx::is_dbg() const 
+{
+    return _dbgrec || _dbgseq || _dbgzero ;
+}
+
+unsigned CG4Ctx::step_limit() const 
+{
+    return 1 + ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
 
 
@@ -24,6 +35,7 @@ void CG4Ctx::init()
 {
     _dbgrec = false ; 
     _dbgseq = false ; 
+    _dbgzero = false ; 
 
     _photons_per_g4event = 0 ; 
     _steps_per_photon = 0 ; 

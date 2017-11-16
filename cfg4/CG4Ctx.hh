@@ -28,6 +28,7 @@ struct CFG4_API CG4Ctx
     // CG4::init
     bool _dbgrec ; 
     bool _dbgseq ; 
+    bool _dbgzero ; 
 
     // CG4::initEvent
     int  _photons_per_g4event ;
@@ -35,6 +36,7 @@ struct CFG4_API CG4Ctx
     unsigned  _gen  ;
     unsigned  _record_max ; 
     unsigned  _bounce_max ; 
+
 
     // CG4Ctx::setEvent
     G4Event* _event ; 
@@ -81,6 +83,8 @@ struct CFG4_API CG4Ctx
     void setTrackOptical();
     void setStep(const G4Step* step);
     void setStepOptical();
+    unsigned  step_limit() const ; 
+    bool      is_dbg() const ; 
 
     std::string desc() const  ; 
 

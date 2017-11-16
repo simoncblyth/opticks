@@ -12,7 +12,7 @@ CRecState::CRecState(const CG4Ctx& ctx)
     clear();
 }
 
-void CRecState::clear(bool action)
+void CRecState::clear()
 {
     _decrement_request = 0 ;
     _decrement_denied = 0 ;
@@ -23,7 +23,7 @@ void CRecState::clear(bool action)
 
     _slot = 0 ;
 
-    if(action) _step_action = 0 ;
+    _step_action = 0 ;
 }
 
 

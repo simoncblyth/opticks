@@ -19,7 +19,7 @@ struct CFG4_API CRecState
     unsigned _step_action ; 
 
     CRecState(const CG4Ctx& ctx);
-    void clear(bool action=true);
+    void clear();
     std::string desc() const ; 
 
     void     decrementSlot();  // NB not just live 

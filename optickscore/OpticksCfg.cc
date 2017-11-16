@@ -337,6 +337,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dbgrec", "debug CRecorder "); 
 
+   m_desc.add_options()
+       ("dbgzero", "debug CRecorder zero seqmat/seqhis "); 
+
 
 
 

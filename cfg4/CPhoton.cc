@@ -5,9 +5,13 @@
 #include <cassert>
 
 #include "BBit.hh"
+#include "CG4Ctx.hh"
+#include "CStep.hh"
 #include "CPhoton.hh"
 
-CPhoton::CPhoton() 
+CPhoton::CPhoton(const CG4Ctx& ctx)
+    :
+    _ctx(ctx) 
 {
     clear();
 }
@@ -17,7 +21,14 @@ void CPhoton::clear()
     _badflag = 0 ; 
     _slot = 0 ; 
     _material = 0 ; 
+
     _c4.u = 0 ;   // union { u, i, f, char4, uchar4 }
+
+    _c4.uchar_.x = _ctx._step ? CStep::PreQuadrant(_ctx._step) : 0u ; // initial quadrant 
+    _c4.uchar_.y = 2u ; 
+    _c4.uchar_.z = 3u ; 
+    _c4.uchar_.w = 4u ; 
+
 
     _seqhis = 0 ; 
     _seqmat = 0 ; 

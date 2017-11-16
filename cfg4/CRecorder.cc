@@ -43,11 +43,11 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
-   m_photon(),
+   m_photon(m_ctx),
    m_state(m_ctx),
 
    m_crec(new CRec(m_g4)),
-   m_dbg(m_ctx._dbgrec || m_ctx._dbgseq ? new CDebug(g4, m_photon, this) : NULL),
+   m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
 
    m_evt(NULL),
    m_geometry(geometry),
@@ -134,14 +134,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     // stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
     if(m_ctx._stage == CStage::START)
     { 
-        const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
-        const G4ThreeVector& pos = pre->GetPosition();
-        m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
-        m_crec->clearStp();
-
-        zeroPhoton();       // resetting photon history state 
-
-        if(m_dbg) m_dbg->Clear();
+        zeroPhoton();
     }
     else if(m_ctx._stage == CStage::REJOIN )
     {
@@ -152,13 +145,11 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
         m_state._decrement_request = 0 ;  
     } 
 
-    bool done = false ; 
-
-    // should have done also ?
-    m_crec->add(m_ctx._step, m_ctx._step_id, boundary_status, m_ctx._stage );
+    bool done = m_crec->add(boundary_status) ;
 
     if(m_ctx._dbgrec)
         LOG(info) << "[--dbgrec]" 
+                  << " " << ( done ? "DONE" : "-" )
                   << " crec.add NumStps " << m_crec->getNumStps() 
                   ; 
 
@@ -168,16 +159,16 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
 void CRecorder::zeroPhoton()
 {  
+    const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
+    const G4ThreeVector& pos = pre->GetPosition();
+    m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
+    m_crec->clearStp();
+
     m_photon.clear();
-    m_photon._c4.uchar_.x = CStep::PreQuadrant(m_ctx._step) ; // initial quadrant 
-    m_photon._c4.uchar_.y = 2u ; 
-    m_photon._c4.uchar_.z = 3u ; 
-    m_photon._c4.uchar_.w = 4u ; 
+    m_state.clear();
 
-    bool action = false ; 
-    m_state.clear(action);
+    if(m_dbg) m_dbg->Clear();
 }
-
 
 
 void CRecorder::posttrackWriteSteps()
@@ -201,12 +192,15 @@ void CRecorder::posttrackWriteSteps()
 
     unsigned num = m_crec->getNumStps(); 
 
+    bool limited = m_crec->is_step_limited() ; 
+
     if(m_ctx._dbgrec)
     {
         LOG(info) << "CRecorder::posttrackWriteSteps"
                   << " [--dbgrec] "
                   << " num " << num
                   << " m_slot " << m_state._slot
+                  << " is_step_limited " << ( limited ? "Y" : "N" )
                    ;
 
         std::cout << "CRecorder::posttrackWriteSteps stages:"  ;
@@ -308,9 +302,10 @@ void CRecorder::posttrackWriteSteps()
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_state._step_action );
 
-        bool hard_truncate = (m_state._step_action & CAction::HARD_TRUNCATE) != 0 ; 
+        //bool hard_truncate = (m_state._step_action & CAction::HARD_TRUNCATE) != 0 ; 
+        //if(done && !hard_truncate)
 
-        if(done && !hard_truncate)
+        if(done)
         {
             m_writer->writePhoton(post, m_photon);
         }
@@ -342,13 +337,13 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
 
     if(flag == 0)
     {
-       assert(0);
+        assert(0);
 
-       m_photon._badflag += 1 ; 
+        m_photon._badflag += 1 ; 
 
-       m_state._step_action |= CAction::ZERO_FLAG ; 
+        m_state._step_action |= CAction::ZERO_FLAG ; 
 
-       if(!(boundary_status == SameMaterial || boundary_status == Undefined))
+        if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
     }
 
@@ -384,7 +379,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
         else
         {
             m_state._step_action |= CAction::HARD_TRUNCATE ; 
-            //assert(0);
+            assert(0);
             return true ; 
         }
     }

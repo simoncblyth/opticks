@@ -1,12 +1,16 @@
 #pragma once
 
 #include <string>
+
+struct CG4Ctx ; 
 #include "CRecorder.h"
 #include "CFG4_API_EXPORT.hh"
 
 
 struct CFG4_API CPhoton
 {
+    const CG4Ctx& _ctx ; 
+
     unsigned _badflag ; 
     unsigned _slot ; 
     unsigned _material ; 
@@ -24,7 +28,9 @@ struct CFG4_API CPhoton
     unsigned long long _mat_prior ; 
     unsigned long long _flag_prior ; 
 
-    CPhoton();
+
+    CPhoton(const CG4Ctx& ctx);
+
     void clear();
     void add(unsigned slot, unsigned flag, unsigned  material);
     bool is_rewrite_slot() const  ;

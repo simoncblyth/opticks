@@ -6,6 +6,30 @@
 //   m_live(m_ok->hasOpt("liverecorder")),
 
 
+/**
+
+CRecorderLive 
+=================
+
+live recording mode : **currently not used**
+---------------------------------------------
+
+* much of the code for this currently parked in CRecorderDead.cc
+
+OpticksEvent records written during stepping.
+*LiveRecordStep* is called for all G4Step
+each of which is comprised of *pre* and *post* G4StepPoint, 
+as a result the same G4StepPoint are "seen" twice, 
+thus *RecordStep* only records the 1st of the pair 
+(the 2nd will come around as the first at the next call)
+except for the last G4Step pair where both points are recorded
+
+*photons_per_g4event* is used by defineRecordId so the different
+technical g4 events all get slotted into the same OpticksEvent record 
+buffers
+
+**/
+
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"

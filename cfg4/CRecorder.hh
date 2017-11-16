@@ -1,28 +1,18 @@
 #pragma once
 
-#include <climits>
-#include <cstring>
 #include <string>
-#include <vector>
-#include <glm/fwd.hpp>
 
 // g4-
-//class G4Run ;
 class G4Step ; 
-//class G4PrimaryVertex ; 
-
-#include "G4ThreeVector.hh"
 
 #include "CFG4_PUSH.hh"
 #include "CBoundaryProcess.hh"
-#include "CStage.hh"
 #include "CFG4_POP.hh"
 
 class Opticks ; // okc-
 class OpticksEvent ; 
 
 // cfg4-
-
 struct CG4Ctx ; 
 #include "CPhoton.hh"
 #include "CRecState.hh"
@@ -34,19 +24,9 @@ class CMaterialBridge ;
 class CWriter ; 
 class CStp ; 
 
-
 /**
-
 CRecorder
 =============
-
-TODO 
-   Despite extensive refactoring (breaking up the old monolith)
-   CRecorder is still confusing... because the old live recording code
-   is still mixed up with the canned recording : and its difficult
-   to disentangle which is which.
-
-
 
 Canonical m_recorder instance is resident of CG4 and is
 instanciated with it.
@@ -64,34 +44,10 @@ in order to match on-GPU restrictions.  setQuad with
 a computed record_id and slot_id is used to mimick
 separate CUDA thread writes into tranches of record buffer. 
 
-Modes of operation:
-
-*canned*
-     canned recording mode, records written Trajectory style from saved CRec CStp vector  
-
-*live*
-
-canned mode
--------------
-
-
-live recording mode : **currently not used**
----------------------------------------------
-
-* much of the code for this currently parked in CRecorderDead.cc
-
-OpticksEvent records written during stepping.
-*LiveRecordStep* is called for all G4Step
-each of which is comprised of *pre* and *post* G4StepPoint, 
-as a result the same G4StepPoint are "seen" twice, 
-thus *RecordStep* only records the 1st of the pair 
-(the 2nd will come around as the first at the next call)
-except for the last G4Step pair where both points are recorded
-
-*photons_per_g4event* is used by defineRecordId so the different
-technical g4 events all get slotted into the same OpticksEvent record 
-buffers
-
+CRecorder uses canned recording style, where steps are 
+collected with *Record* and then only written out to 
+OpticksEvent at *posttrackWriteSteps*.
+Note that CRecorderLive (currently dead) uses step-by-step writing.
 
 
 Example

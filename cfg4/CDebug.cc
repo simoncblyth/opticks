@@ -33,6 +33,7 @@ CDebug::CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder)
     m_dbgseqmat(m_ok->getDbgSeqmat()),
     m_dbgflags(m_ok->hasOpt("dbgflags")),
 
+    m_posttrack_dbgzero(false),
     m_posttrack_dbgseqhis(false),
     m_posttrack_dbgseqmat(false)
 {
@@ -63,6 +64,7 @@ std::string CDebug::desc() const   // reason for the dump
     std::stringstream ss ; 
     ss << "CDebug"
        << " " << ( m_posttrack_dump ? "posttrack_dump" : " nodump " )
+       << " " << ( m_posttrack_dbgzero ? "posttrack_dbgzero" : " - " )
        << " " << ( m_posttrack_dbgseqhis ? "posttrack_dbgseqhis" : " - " )
        << " " << ( m_posttrack_dbgseqmat ? "posttrack_dbgseqmat" : " - " )
        << " " << ( m_photon._badflag > 0 ? " badflag " : " - " )
@@ -78,10 +80,12 @@ void CDebug::posttrack()
 {
     if(m_photon._badflag > 0) addDebugPhoton(m_ctx._record_id);  
 
+    m_posttrack_dbgzero = m_photon._seqhis == 0 || m_photon._seqmat == 0 ; 
     m_posttrack_dbgseqhis = m_dbgseqhis == m_photon._seqhis ; 
     m_posttrack_dbgseqmat = m_dbgseqmat == m_photon._seqmat ; 
 
     m_posttrack_dump = m_verbosity > 0 || 
+                       m_posttrack_dbgzero || 
                        m_posttrack_dbgseqhis || 
                        m_posttrack_dbgseqmat || 
                        m_ctx._other || 

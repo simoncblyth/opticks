@@ -479,6 +479,10 @@ bool Opticks::isDbgRec() const
 {
     return m_cfg->hasOpt("dbgrec") ;
 }
+bool Opticks::isDbgZero() const
+{
+    return m_cfg->hasOpt("dbgzero") ;
+}
 
 
 

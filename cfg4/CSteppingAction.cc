@@ -108,6 +108,7 @@ bool CSteppingAction::setStep(const G4Step* step)
         G4OpBoundaryProcessStatus boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
 #endif
         done = m_recorder->Record(boundary_status);
+
     }
     else
     {

@@ -83,6 +83,7 @@ class CFG4_API CDebug {
         unsigned long long m_dbgseqmat ;
         bool               m_dbgflags ;
 
+        bool               m_posttrack_dbgzero ;
         bool               m_posttrack_dbgseqhis ;
         bool               m_posttrack_dbgseqmat ;
         bool               m_posttrack_dump ;
