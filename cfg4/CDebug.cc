@@ -246,7 +246,7 @@ void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4Ste
 void CDebug::dump_point(const G4ThreeVector& origin, unsigned index, const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, unsigned flag, const char* matname )
 #endif
 {
-    std::string bs = OpBoundaryAbbrevString(boundary_status) ;
+    std::string bs = OpStatus::OpBoundaryAbbrevString(boundary_status) ;
     const char* flg = OpticksFlags::Abbrev(flag) ;
     std::cout << std::setw(3) << flg << std::setw(7) << index << " " << std::setw(18) << matname << " " << Format(point, origin, bs.c_str()) << std::endl ;
 }

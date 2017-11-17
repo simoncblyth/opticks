@@ -9,6 +9,134 @@ Observations
 * seqmat totally messed up (no matswap)
 
 
+* move to live style, messes up both... so hide behind *--recpoi* option
+
+  * getting flag zeros, from Undefined boundary  
+  * fix using inspiration from the dead code CRecorderLive.cc 
+  * add setNote getNote to OpticksEvent to take note of recpoi or not (recstp) 
+
+
+* comparing recpoi to recstp : get 3 seqhis/seqmat zeros from "TO AB" 
+
+::
+
+   tboolean-;tboolean-truncate --okg4 --recpoi -D
+
+
+    2017-11-17 20:58:53,847] p79170 {/Users/blyth/opticks/ana/seq.py:160} WARNING - SeqType.code check [?0?] bad 1 
+    AB(1,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/  1 :  20171117-2053 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/1/fdom.npy () 
+    B tboolean-truncate/torch/ -1 :  20171117-2053 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy (recpoi) 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    0000       aaaaaaaaad     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       aaa6aaaaad        49        42             0.54        1.167 +- 0.167        0.857 +- 0.132  [10] TO SR SR SR SR SR SC SR SR SR
+    0002       6aaaaaaaad        41        49             0.71        0.837 +- 0.131        1.195 +- 0.171  [10] TO SR SR SR SR SR SR SR SR SC
+    0003       aaaaa6aaad        45        42             0.10        1.071 +- 0.160        0.933 +- 0.144  [10] TO SR SR SR SC SR SR SR SR SR
+    0004       aaaaaaa6ad        35        42             0.64        0.833 +- 0.141        1.200 +- 0.185  [10] TO SR SC SR SR SR SR SR SR SR
+    0005       aaaaaa6aad        40        30             1.43        1.333 +- 0.211        0.750 +- 0.137  [10] TO SR SR SC SR SR SR SR SR SR
+    0006       a6aaaaaaad        39        31             0.91        1.258 +- 0.201        0.795 +- 0.143  [10] TO SR SR SR SR SR SR SR SC SR
+    0007       aaaa6aaaad        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SR SR SR SR SC SR SR SR SR
+    0008       aaaaaaaa6d        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SC SR SR SR SR SR SR SR SR
+    0009       aa6aaaaaad        36        31             0.37        1.161 +- 0.194        0.861 +- 0.155  [10] TO SR SR SR SR SR SR SC SR SR
+    0010         4aaaaaad         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] TO SR SR SR SR SR SR AB
+    0011              4ad         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] TO SR AB
+    0012            4aaad         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] TO SR SR SR AB
+    0013          4aaaaad         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] TO SR SR SR SR SR AB
+    0014       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0015               4d         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO AB
+
+    0016                0         0         3             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ] ?0?
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^ recpoi has 3 seqhis zeros, probably from "TO AB"
+
+    0017        4aaaaaaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] TO SR SR SR SR SR SR SR AB
+    0018             4aad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO SR SR AB
+    0019           4aaaad         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    .                pflags_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    0000             1200     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO|SR
+    0001             1220       361       339             0.69        1.065 +- 0.056        0.939 +- 0.051  [3 ] TO|SR|SC
+    0002             1208        32        25             0.86        1.280 +- 0.226        0.781 +- 0.156  [3 ] TO|SR|AB
+    0003             1008         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO|AB
+    0004                0         0         3             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ]
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    .                seqmat_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000       2222222222     99968     99976             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] Vm Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0001         22222222         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] Vm Vm Vm Vm Vm Vm Vm Vm
+    0002              222         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] Vm Vm Vm
+    0003          2222222         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] Vm Vm Vm Vm Vm Vm Vm
+    0004            22222         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] Vm Vm Vm Vm Vm
+    0005               22         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] Vm Vm
+    0006                0         0         3             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ] ?0?
+    0007        222222222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0008             2222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] Vm Vm Vm Vm
+    0009           222222         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] Vm Vm Vm Vm Vm Vm
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+                /tmp/blyth/opticks/evt/tboolean-truncate/torch/1 7a4bcf2565d2235230cce18584128029 3c1a894417816154c638f8195e827bdc  100000    -1.0000 INTEROP_MODE 
+
+
+
+
+
+    [2017-11-17 21:00:29,334] p79427 {/Users/blyth/opticks/ana/ab.py:146} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/  1 :  20171117-2100 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/1/fdom.npy () 
+    B tboolean-truncate/torch/ -1 :  20171117-2100 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy (recstp) 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    0000       aaaaaaaaad     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       aaa6aaaaad        49        42             0.54        1.167 +- 0.167        0.857 +- 0.132  [10] TO SR SR SR SR SR SC SR SR SR
+    0002       6aaaaaaaad        41        49             0.71        0.837 +- 0.131        1.195 +- 0.171  [10] TO SR SR SR SR SR SR SR SR SC
+    0003       aaaaa6aaad        45        42             0.10        1.071 +- 0.160        0.933 +- 0.144  [10] TO SR SR SR SC SR SR SR SR SR
+    0004       aaaaaaa6ad        35        42             0.64        0.833 +- 0.141        1.200 +- 0.185  [10] TO SR SC SR SR SR SR SR SR SR
+    0005       aaaaaa6aad        40        30             1.43        1.333 +- 0.211        0.750 +- 0.137  [10] TO SR SR SC SR SR SR SR SR SR
+    0006       a6aaaaaaad        39        31             0.91        1.258 +- 0.201        0.795 +- 0.143  [10] TO SR SR SR SR SR SR SR SC SR
+    0007       aaaa6aaaad        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SR SR SR SR SC SR SR SR SR
+    0008       aaaaaaaa6d        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SC SR SR SR SR SR SR SR SR
+    0009       aa6aaaaaad        36        31             0.37        1.161 +- 0.194        0.861 +- 0.155  [10] TO SR SR SR SR SR SR SC SR SR
+    0010         4aaaaaad         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] TO SR SR SR SR SR SR AB
+    0011              4ad         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] TO SR AB
+    0012            4aaad         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] TO SR SR SR AB
+    0013          4aaaaad         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] TO SR SR SR SR SR AB
+    0014       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0015               4d         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] TO AB
+    0016        4aaaaaaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] TO SR SR SR SR SR SR SR AB
+    0017             4aad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO SR SR AB
+    0018           4aaaad         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    .                pflags_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    0000             1200     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO|SR
+    0001             1220       361       339             0.69        1.065 +- 0.056        0.939 +- 0.051  [3 ] TO|SR|SC
+    0002             1208        32        25             0.86        1.280 +- 0.226        0.781 +- 0.156  [3 ] TO|SR|AB
+    0003             1008         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] TO|AB
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    .                seqmat_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000       2222222222     99968     99976             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] Vm Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0001         22222222         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] Vm Vm Vm Vm Vm Vm Vm Vm
+    0002              222         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] Vm Vm Vm
+    0003          2222222         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] Vm Vm Vm Vm Vm Vm Vm
+    0004            22222         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] Vm Vm Vm Vm Vm
+    0005               22         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] Vm Vm
+    0006        222222222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0007             2222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] Vm Vm Vm Vm
+    0008           222222         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] Vm Vm Vm Vm Vm Vm
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+                /tmp/blyth/opticks/evt/tboolean-truncate/torch/1 7a4bcf2565d2235230cce18584128029 3c1a894417816154c638f8195e827bdc  100000    -1.0000 INTEROP_MODE 
+
+
+
+
+
+
+
 ::
 
      77 void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAction
@@ -22,8 +150,6 @@ Observations
      85 
      86     if(m_dbg) m_dbg->posttrack();
      87 }
-
-
 
 
 ::

@@ -10,6 +10,7 @@ class Opticks ;
 class CStp ; 
 class CPoi ; 
 class CG4 ; 
+class CMaterialBridge ; 
 
 struct CG4Ctx ; 
 
@@ -32,16 +33,18 @@ class CFG4_API CRec
         bool is_step_limited() const ; 
         void setOrigin(const G4ThreeVector& origin);
         void clear();
+        void setMaterialBridge(CMaterialBridge* material_bridge) ;
 
         void dump(const char* msg="CRec::dump");
 
-        unsigned getNumStp();
-        CStp* getStp(unsigned index);
+        unsigned getNumStp() const ;
+        CStp* getStp(unsigned index) const ;
 
-        unsigned getNumPoi();
-        CPoi* getPoi(unsigned index);
+        unsigned getNumPoi() const ;
+        CPoi* getPoi(unsigned index) const ;
+        CPoi* getPoiLast() const ;
 
-
+   public:
 
 #ifdef USE_CUSTOM_BOUNDARY
         bool add(DsG4OpBoundaryProcessStatus boundary_status);
@@ -50,10 +53,17 @@ class CFG4_API CRec
 #endif
 
 
+   private:
 #ifdef USE_CUSTOM_BOUNDARY
-        void addPoi(DsG4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point, bool first);
+        void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status);
 #else
-        void addPoi(G4OpBoundaryProcessStatus boundary_status,   const G4StepPoint* point, bool first );
+        void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
+#endif
+
+#ifdef USE_CUSTOM_BOUNDARY
+        unsigned pointFlag(DsG4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point);
+#else
+        unsigned pointFlag( G4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point);
 #endif
 
 
@@ -67,10 +77,23 @@ class CFG4_API CRec
         CG4Ctx&                     m_ctx ; 
         Opticks*                    m_ok ;  
         bool                        m_step_limited ; 
+        CMaterialBridge*            m_material_bridge ; 
     private:
         G4ThreeVector               m_origin ; 
         std::vector<CStp*>          m_stp ; 
         std::vector<CPoi*>          m_poi ; 
+
+   private:
+#ifdef USE_CUSTOM_BOUNDARY
+        DsG4OpBoundaryProcessStatus m_prior_boundary_status ; 
+        DsG4OpBoundaryProcessStatus m_boundary_status ; 
+#else
+        G4OpBoundaryProcessStatus m_prior_boundary_status ; 
+        G4OpBoundaryProcessStatus m_boundary_status ; 
+#endif
+
+
+
 
 };
 

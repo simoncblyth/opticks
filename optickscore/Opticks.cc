@@ -482,6 +482,11 @@ bool Opticks::isDbgZero() const
 {
     return m_cfg->hasOpt("dbgzero") ;
 }
+bool Opticks::isRecPoi() const
+{
+    return m_cfg->hasOpt("recpoi") ;
+}
+
 
 
 

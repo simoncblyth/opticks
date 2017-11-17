@@ -340,6 +340,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("dbgzero", "debug CRecorder zero seqmat/seqhis "); 
 
+   m_desc.add_options()
+       ("recpoi", "experimental point based CRecorder/CRec  "); 
+
 
 
 

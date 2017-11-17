@@ -151,7 +151,10 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
         const char* getGeoPath();
    private:
        std::string getTestCSGPath();
-       void setTestCSGPath(const char* testcsgpath);
+       void        setTestCSGPath(const char* testcsgpath);
+   public:
+       std::string getNote();
+       void        setNote(const char* note);
    private:
        void setRngMax(unsigned int rng_max);
        void init();

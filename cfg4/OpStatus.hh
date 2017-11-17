@@ -12,21 +12,25 @@ class G4StepPoint ;
 
 #include <string>
 
-CFG4_API std::string OpStepString(const G4StepStatus status);
 
-
+class CFG4_API OpStatus 
+{
+    public:
+        static std::string OpStepString(const G4StepStatus status);
 #ifdef USE_CUSTOM_BOUNDARY
-CFG4_API std::string  OpBoundaryString(const DsG4OpBoundaryProcessStatus status);
-CFG4_API std::string OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
+       static std::string  OpBoundaryString(const DsG4OpBoundaryProcessStatus status);
+       static std::string OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status);
+       static unsigned OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status);
+       static unsigned OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
 #else
-CFG4_API std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
-CFG4_API std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
-CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
+       static std::string  OpBoundaryString(const G4OpBoundaryProcessStatus status);
+       static std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status);
+       static unsigned OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
+       static unsigned OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
 #endif
 
-CFG4_API bool IsTerminalFlag(unsigned flag); 
+       static  bool IsTerminalFlag(unsigned flag); 
+};
+
 
 

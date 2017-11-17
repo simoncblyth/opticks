@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "G4StepPoint.hh"
+#include "OpticksPhoton.h"
 #include "Opticks.hh"
 
 #include "OpStatus.hh"
@@ -10,7 +11,7 @@
 #include "PLOG.hh"
 
 
-std::string OpStepString(const G4StepStatus status)
+std::string OpStatus::OpStepString(const G4StepStatus status)
 {
     std::stringstream ss ;
     std::string s ; 
@@ -32,9 +33,9 @@ std::string OpStepString(const G4StepStatus status)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-std::string OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryAbbrevString(const DsG4OpBoundaryProcessStatus status)
 #else
-std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status)
 #endif
 {
     std::stringstream ss ; 
@@ -92,9 +93,9 @@ std::string OpBoundaryAbbrevString(const G4OpBoundaryProcessStatus status)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-std::string OpBoundaryString(const DsG4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryString(const DsG4OpBoundaryProcessStatus status)
 #else
-std::string OpBoundaryString(const G4OpBoundaryProcessStatus status)
+std::string OpStatus::OpBoundaryString(const G4OpBoundaryProcessStatus status)
 #endif
 {
     std::stringstream ss ; 
@@ -151,7 +152,7 @@ std::string OpBoundaryString(const G4OpBoundaryProcessStatus status)
 
 
 
-bool IsTerminalFlag(unsigned flag)
+bool OpStatus::IsTerminalFlag(unsigned flag)
 {
     return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 }
@@ -159,9 +160,9 @@ bool IsTerminalFlag(unsigned flag)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-unsigned int OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status)
+unsigned int OpStatus::OpBoundaryFlag(const DsG4OpBoundaryProcessStatus status)
 #else
-unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
+unsigned int OpStatus::OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
 #endif
 {
     unsigned flag = 0 ; 
@@ -233,9 +234,9 @@ unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status)
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-unsigned int OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
+unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const DsG4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #else
-unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
+unsigned int OpStatus::OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage)
 #endif
 {
     G4StepStatus status = point->GetStepStatus()  ;
@@ -266,7 +267,7 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
     } 
     else if(transportation && status == fGeomBoundary )
     {
-        flag = OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
+        flag = OpStatus::OpBoundaryFlag(bst) ; // BOUNDARY_TRANSMIT/BOUNDARY_REFLECT/NAN_ABORT/SURFACE_ABSORB/SURFACE_DETECT/SURFACE_DREFLECT/SURFACE_SREFLECT
     } 
     else if(transportation && status == fWorldBoundary )
     {
@@ -280,7 +281,7 @@ unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStat
                      << " stage " << CStage::Label(stage)
                      << " status " << OpStepString(status)
                      ;
-        //assert(0);
+        assert(0);
     }
     return flag ; 
 }

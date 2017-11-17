@@ -127,7 +127,7 @@ std::string Format(const G4StepPoint* point, const G4ThreeVector& origin, const 
        << " " << std::setw(25) << Tail(pvName, 25)  
        << " " << std::setw(15) << Tail(matName, 15) 
        << " " << std::setw(15) << Tail(processName, 15) 
-       << std::setw(20) << OpStepString(status)
+       << std::setw(20) << OpStatus::OpStepString(status)
        << Format(offpos, "pos", 10)
        << Format(dir, "dir", 8)
        << Format(pol, "pol", 8)

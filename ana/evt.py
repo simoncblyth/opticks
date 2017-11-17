@@ -1044,7 +1044,7 @@ class Evt(object):
 
     def _brief(self):
         if self.valid:
-             return "%s %s %s %s" % (self.label, self.stamp, pdict_(self.idomd), self.path)
+             return "%s %s %s %s (%s)" % (self.label, self.stamp, pdict_(self.idomd), self.path, self.metadata.Note)
         else:
              return "%s %s" % (self.label, "EVT LOAD FAILED")
 

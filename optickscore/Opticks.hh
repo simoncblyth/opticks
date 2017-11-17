@@ -341,6 +341,7 @@ class OKCORE_API Opticks {
        bool isDbgBnd() const ; 
        bool isDbgRec() const ; 
        bool isDbgZero() const ; 
+       bool isRecPoi() const ; 
        bool isDbgTorch() const ; 
        bool isDbgSource() const ; 
        bool isDbgClose() const ; 

@@ -3,6 +3,7 @@
 
 // okc-
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 #include "OpticksFlags.hh"
 
 // cfg4-
@@ -46,6 +47,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
+   m_recpoi(m_ok->isRecPoi()),
    m_state(m_ctx),
    m_photon(m_ctx, m_state),
 
@@ -66,12 +68,16 @@ void CRecorder::postinitialize()
 {
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
+
+    m_crec->setMaterialBridge( m_material_bridge );
     if(m_dbg) m_dbg->setMaterialBridge( m_material_bridge );
 }
 
 void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 {
+    assert(evt);
     m_writer->initEvent(evt);
+    evt->setNote( m_recpoi ? "recpoi" : "recstp" );
 }
 
 void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAction
@@ -80,8 +86,15 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
 
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::posttrack" ; 
 
-    //posttrackWriteSteps();
-    posttrackWritePoints();  // experimental alt 
+    if(m_recpoi)
+    {
+        posttrackWritePoints();  // experimental alt 
+    }
+    else
+    {
+        posttrackWriteSteps();
+    } 
+
 
     if(m_dbg) m_dbg->posttrack(); 
 }
@@ -185,9 +198,10 @@ void CRecorder::posttrackWritePoints()
     {
         m_state._step_action = 0 ; 
         CPoi* poi  = m_crec->getPoi(i);
+
         const G4StepPoint* point = poi->getPoint();
         unsigned flag = poi->getFlag(); 
-        unsigned material = m_material_bridge->getPointMaterial(point) ; 
+        unsigned material = poi->getMaterial() ; 
         boundary_status = poi->getBoundaryStatus() ; 
         
         RecordStepPoint( point, flag, material, boundary_status, NULL );
@@ -258,7 +272,7 @@ void CRecorder::posttrackWriteSteps()
 
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
 
-        unsigned postFlag = OpPointFlag(post, boundary_status, postStage);
+        unsigned postFlag = OpStatus::OpPointFlag(post, boundary_status, postStage);
 
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
 
@@ -301,7 +315,7 @@ void CRecorder::posttrackWriteSteps()
 
        // as clearStp for each track, REJOIN will always be i=0
 
-        unsigned preFlag = first ? m_ctx._gen : OpPointFlag(pre,  prior_boundary_status, stage) ;
+        unsigned preFlag = first ? m_ctx._gen : OpStatus::OpPointFlag(pre,  prior_boundary_status, stage) ;
 
         if(i == 0)
         {
@@ -379,7 +393,7 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
     if(flag == 0)
     {
         if(!(boundary_status == SameMaterial || boundary_status == Undefined))
-            LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
+            LOG(warning) << " boundary_status not handled : " << OpStatus::OpBoundaryAbbrevString(boundary_status) ; 
     }
 
     return m_writer->writeStepPoint( point, flag, material );

@@ -693,6 +693,19 @@ std::string OpticksEvent::getTestCSGPath()
     return m_parameters->get<std::string>("TestCSGPath", "NONE");
 }
 
+void OpticksEvent::setNote(const char* note)
+{
+    m_parameters->add<std::string>("Note", note ? note : "NULL" );
+}
+std::string OpticksEvent::getNote()
+{
+    return m_parameters->get<std::string>("Note", "NONE");
+}
+
+
+
+
+
 const char* OpticksEvent::getGeoPath()
 {
     if(m_geopath == NULL)

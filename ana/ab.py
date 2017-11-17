@@ -115,7 +115,10 @@ class AB(object):
         bcsgp = self.b.metadata.TestCSGPath
         assert acsgp == bcsgp
 
-        return "\n".join(filter(None,[abn, abr,bbr, amd, acsgp]))
+        #aNote = "A:%s" % self.a.metadata.Note
+        #bNote = "B:%s" % self.b.metadata.Note
+ 
+        return "\n".join(filter(None,[abn, abr,bbr, amd, acsgp ]))
 
     def __str__(self):
         lmx = self.ok.lmx

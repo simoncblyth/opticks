@@ -109,7 +109,7 @@ std::string CStp::description()
     std::stringstream ss ; 
     ss 
        << " " << OpticksFlags::Abbrev(m_preflag) << "/" << OpticksFlags::Abbrev(m_postflag) 
-       << "   " << std::setw(5) << OpBoundaryAbbrevString(m_boundary_status) 
+       << "   " << std::setw(5) << OpStatus::OpBoundaryAbbrevString(m_boundary_status) 
        << "   " << std::setw(50) << CAction::Action(m_action) 
        << std::endl 
        << "[" 

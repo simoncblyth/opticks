@@ -126,6 +126,7 @@ class Metadata(object):
     sequenceData = property(lambda self:self.parameters.get('sequenceData',"no-sequenceData") )
     numPhotons = property(lambda self:int(self.parameters.get('NumPhotons',"-1")) )
     TestCSGPath = property(lambda self:self.parameters.get('TestCSGPath',None) )
+    Note = property(lambda self:self.parameters.get('Note',"") )
 
     def _flags(self):
         flgs = 0 
