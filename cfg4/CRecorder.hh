@@ -113,6 +113,7 @@ class CFG4_API CRecorder {
 #else
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label);
 #endif
+        void checkTopSlotRewrite(unsigned flag);
   public:
         void Summary(const char* msg);
         void dump(const char* msg="CRecorder::dump");
@@ -121,8 +122,8 @@ class CFG4_API CRecorder {
         CG4*               m_g4; 
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
-        CPhoton            m_photon ;  
         CRecState          m_state ;  
+        CPhoton            m_photon ;  
         CRec*              m_crec ; 
         CDebug*            m_dbg ; 
 
@@ -132,6 +133,7 @@ class CFG4_API CRecorder {
         bool               m_dynamic ;
         bool               m_live ;   
         CWriter*           m_writer ; 
+        unsigned           m_not_done_count ; 
 
 };
 #include "CFG4_TAIL.hh"

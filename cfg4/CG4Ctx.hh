@@ -11,6 +11,7 @@ class G4Event ;
 class G4Track ; 
 class G4Step ; 
 
+class OpticksEvent ; 
 class Opticks ; 
 
 /**
@@ -78,6 +79,7 @@ struct CFG4_API CG4Ctx
     CG4Ctx(Opticks* ok);
 
     void init();
+    void initEvent(const OpticksEvent* evt);
     void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);
     void setTrackOptical();

@@ -46,7 +46,7 @@ OpticksEventSpec::OpticksEventSpec(const char* typ, const char* tag, const char*
 }
 
 
-OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset)
+OpticksEventSpec* OpticksEventSpec::clone(unsigned tagoffset) const 
 {
     int itag = getITag();
     assert(itag != 0 && "--tag 0 NOT ALLOWED : AS USING G4 NEGATED CONVENTION " );
@@ -64,20 +64,20 @@ void OpticksEventSpec::init()
     m_fold = strdup(typdir.c_str());
 }
 
-int OpticksEventSpec::getITag()
+int OpticksEventSpec::getITag() const 
 {
     return m_itag ; 
 }
-bool OpticksEventSpec::isG4()
+bool OpticksEventSpec::isG4() const
 {
     return m_itag < 0 ;     
 }
-bool OpticksEventSpec::isOK()
+bool OpticksEventSpec::isOK() const
 {
     return m_itag > 0 ;     
 }
 
-const char* OpticksEventSpec::getEngine()
+const char* OpticksEventSpec::getEngine() const
 {
     const char* engine = NO_ ; 
     if(     isOK())  engine = OK_ ; 
@@ -86,37 +86,37 @@ const char* OpticksEventSpec::getEngine()
 }
 
 
-const char* OpticksEventSpec::getTyp()
+const char* OpticksEventSpec::getTyp() const 
 {
     return m_typ ; 
 }
-const char* OpticksEventSpec::getTag()
+const char* OpticksEventSpec::getTag() const 
 {
     return m_tag ; 
 }
-const char* OpticksEventSpec::getDet()
+const char* OpticksEventSpec::getDet() const 
 {
     return m_det ; 
 }
-const char* OpticksEventSpec::getCat()
+const char* OpticksEventSpec::getCat() const 
 {
     return m_cat ; 
 }
-const char* OpticksEventSpec::getUDet()
+const char* OpticksEventSpec::getUDet() const
 {
     return m_udet ; 
 }
-const char* OpticksEventSpec::getDir()
+const char* OpticksEventSpec::getDir() const
 {
     return m_dir ; 
 }
-const char* OpticksEventSpec::getFold()
+const char* OpticksEventSpec::getFold() const
 {
     return m_fold ; 
 }
 
 
-std::string OpticksEventSpec::brief()
+std::string OpticksEventSpec::brief() const 
 {
     std::stringstream ss ; 
     ss 
@@ -133,7 +133,7 @@ std::string OpticksEventSpec::brief()
 }
 
 
-void OpticksEventSpec::Summary(const char* msg)
+void OpticksEventSpec::Summary(const char* msg) const
 {
     LOG(info) << msg 
               << " typ " << m_typ

@@ -3,6 +3,8 @@
 #include <string>
 
 struct CG4Ctx ; 
+struct CRecState ; 
+
 #include "CRecorder.h"
 #include "CFG4_API_EXPORT.hh"
 
@@ -10,9 +12,10 @@ struct CG4Ctx ;
 struct CFG4_API CPhoton
 {
     const CG4Ctx& _ctx ; 
+    CRecState&    _state ; 
 
     unsigned _badflag ; 
-    unsigned _slot ; 
+    unsigned _slot_constrained ; 
     unsigned _material ; 
     uifchar4   _c4 ; 
 
@@ -29,11 +32,17 @@ struct CFG4_API CPhoton
     unsigned long long _flag_prior ; 
 
 
-    CPhoton(const CG4Ctx& ctx);
+    CPhoton(const CG4Ctx& ctx, CRecState& state);
 
     void clear();
-    void add(unsigned slot, unsigned flag, unsigned  material);
+
+    void add(unsigned flag, unsigned  material);
+    void increment_slot() ; 
+
     bool is_rewrite_slot() const  ;
+    bool is_flag_done() const ;
+    bool is_done() const ;
+    bool is_hard_truncate() ;
     void scrub_mskhis( unsigned flag );
 
     std::string desc() const ; 

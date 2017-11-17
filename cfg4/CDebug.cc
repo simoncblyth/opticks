@@ -109,9 +109,7 @@ void CDebug::Collect(const G4StepPoint* point, DsG4OpBoundaryProcessStatus bound
 void CDebug::Collect(const G4StepPoint* point, G4OpBoundaryProcessStatus boundary_status, const CPhoton& photon )
 #endif
 {
-
     double time = point->GetGlobalTime();
-
 
     m_points.push_back(new G4StepPoint(*point));
     m_flags.push_back(photon._flag);

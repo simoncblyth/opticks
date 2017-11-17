@@ -604,10 +604,17 @@ $FUNCNAME
 
 Checking truncation behaviour of infinite bounce "hall of mirrors" situation 
 
-
 Box with internal perfectSpecularSurface : 
 with Opticks the bouncemax prevents this going on forever, 
 but there is no equivalent with G4 ... so it proceeded to occupy all machine memory and dies ! 
+
+Applying a step limit avoids memory death, but initally gave seqhis/seqmat zeros because
+never reaching DONE.
+
+The reason for this is that G4 handles BR with StepTooSmall turnarounds, which 
+get skipped 
+
+
 
 * cfg4-bouncemax-not-working.rst
 

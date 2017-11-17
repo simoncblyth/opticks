@@ -277,11 +277,11 @@ void OpticksEvent::setNumPhotons(unsigned int num_photons, bool resize_)
         LOG(trace) << "OpticksEvent::setNumPhotons NOT RESIZING " << num_photons ;  
     }
 }
-unsigned int OpticksEvent::getNumPhotons()
+unsigned int OpticksEvent::getNumPhotons() const 
 {
     return m_num_photons ; 
 }
-unsigned int OpticksEvent::getNumSource()
+unsigned int OpticksEvent::getNumSource() const 
 {
     return m_num_source ; 
 }
@@ -290,13 +290,13 @@ unsigned int OpticksEvent::getNumSource()
 
 
 
-unsigned int OpticksEvent::getNumRecords()
+unsigned int OpticksEvent::getNumRecords() const 
 {
     unsigned int maxrec = getMaxRec();
     return m_num_photons * maxrec ; 
 }
 
-unsigned OpticksEvent::getMaxRec()
+unsigned OpticksEvent::getMaxRec() const 
 {
     return m_domain->getMaxRec() ; 
 }
@@ -306,7 +306,7 @@ void OpticksEvent::setMaxRec(unsigned maxrec)
 }
 
 
-unsigned OpticksEvent::getMaxBounce()
+unsigned OpticksEvent::getMaxBounce() const  // caution there is a getBounceMax 
 {
     return m_domain->getMaxBounce() ; 
 }
@@ -316,7 +316,7 @@ void OpticksEvent::setMaxBounce(unsigned maxbounce)
 }
 
 
-unsigned OpticksEvent::getMaxRng()
+unsigned OpticksEvent::getMaxRng() const 
 {
     return m_domain->getMaxRng() ; 
 }
@@ -757,11 +757,11 @@ std::string OpticksEvent::getTimeStamp()
 {
     return m_parameters->get<std::string>("TimeStamp");
 }
-unsigned int OpticksEvent::getBounceMax()
+unsigned int OpticksEvent::getBounceMax() const 
 {
     return m_parameters->get<unsigned int>("BounceMax");
 }
-unsigned int OpticksEvent::getRngMax()
+unsigned int OpticksEvent::getRngMax() const 
 {
     return m_parameters->get<unsigned int>("RngMax", "0");
 }
@@ -1951,7 +1951,7 @@ unsigned int OpticksEvent::getNumG4Event()
 {
    return m_parameters->get<int>("NumG4Event","1");
 }
-unsigned int OpticksEvent::getNumPhotonsPerG4Event()
+unsigned int OpticksEvent::getNumPhotonsPerG4Event() const 
 {
    return m_parameters->get<int>("NumPhotonsPerG4Event","0");  // "0" : fallback if not set (eg for G4GUN running )
 }

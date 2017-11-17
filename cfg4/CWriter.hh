@@ -26,16 +26,17 @@ class CFG4_API CWriter
          static short shortnorm( float v, float center, float extent );
          static unsigned char my__float2uint_rn( float f );
     public:
-        CWriter(CG4* g4, bool dynamic);        
-        void writeStepPoint(unsigned target_record_id, unsigned slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ ) ;
-        void addDynamicRecords();
-        void writePhoton(const G4StepPoint* point, const CPhoton& photon );
+        CWriter(CG4* g4, CPhoton& photon, bool dynamic);        
+        bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material );
+        void writePhoton(const G4StepPoint* point );
         // *writePhoton* overwrites prior entries for REJOIN updating target_record_id 
    private:
+        void writeStepPoint_(const G4StepPoint* point, const CPhoton& photon );
         void initEvent(OpticksEvent* evt);
     private:
 
         CG4*               m_g4 ; 
+        CPhoton&           m_photon ; 
         bool               m_dynamic ; 
         CG4Ctx&            m_ctx ; 
         Opticks*           m_ok ; 
@@ -44,9 +45,9 @@ class CFG4_API CWriter
 
         NPY<float>*               m_primary ; 
 
-        NPY<short>*               m_records ; 
-        NPY<float>*               m_photons ; 
-        NPY<unsigned long long>*  m_history ; 
+        NPY<short>*               m_records_buffer ; 
+        NPY<float>*               m_photons_buffer ; 
+        NPY<unsigned long long>*  m_history_buffer ; 
 
         NPY<short>*               m_dynamic_records ; 
         NPY<float>*               m_dynamic_photons ; 

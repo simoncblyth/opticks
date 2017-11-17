@@ -49,9 +49,10 @@ unsigned char CWriter::my__float2uint_rn( float f ) // static
 }
 
 
-CWriter::CWriter(CG4* g4, bool dynamic)
+CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
    :
    m_g4(g4),
+   m_photon(photon),
    m_dynamic(dynamic),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
@@ -60,9 +61,9 @@ CWriter::CWriter(CG4* g4, bool dynamic)
 
    m_primary(NULL),
 
-   m_records(NULL),
-   m_photons(NULL),
-   m_history(NULL),
+   m_records_buffer(NULL),
+   m_photons_buffer(NULL),
+   m_history_buffer(NULL),
 
    m_dynamic_records(NULL),
    m_dynamic_photons(NULL),
@@ -105,26 +106,67 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
         assert(m_ctx._record_max > 0 );
     }
 
-    m_history = m_evt->getSequenceData();
-    m_photons = m_evt->getPhotonData();
-    m_records = m_evt->getRecordData();
+    m_history_buffer = m_evt->getSequenceData();
+    m_photons_buffer = m_evt->getPhotonData();
+    m_records_buffer = m_evt->getRecordData();
 
-    m_target_records = m_dynamic ? m_dynamic_records : m_records ; 
+    m_target_records = m_dynamic ? m_dynamic_records : m_records_buffer ; 
 
-    assert( m_history && "CRecorder requires history buffer" );
-    assert( m_photons && "CRecorder requires photons buffer" );
-    assert( m_records && "CRecorder requires records buffer" );
+    assert( m_history_buffer && "CRecorder requires history buffer" );
+    assert( m_photons_buffer && "CRecorder requires photons buffer" );
+    assert( m_records_buffer && "CRecorder requires records buffer" );
 }
 
 
-void CWriter::addDynamicRecords()
+        
+
+//if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
+
+bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material )
 {
-    m_records->add(m_dynamic_records);
+    m_photon.add(flag, material);
+
+    bool hard_truncate = m_photon.is_hard_truncate();
+
+    bool done = false ; 
+
+    if(hard_truncate) 
+    {
+        done = true ; 
+    }
+    else
+    {
+        writeStepPoint_(point, m_photon );
+
+        m_photon.increment_slot() ; 
+
+        done = m_photon.is_done() ;  // caution truncation/is_done may change after increment
+
+        if( done )
+        {
+            writePhoton(point);
+            if(m_dynamic) m_records_buffer->add(m_dynamic_records);
+        }
+    }        
+
+    if( flag == BULK_ABSORB )
+    {
+        assert( done == true ); 
+    }
+
+    return done ; 
 }
 
-void CWriter::writeStepPoint(unsigned target_record_id, unsigned slot, const G4StepPoint* point, unsigned int flag, unsigned int material, const char* /*label*/ )
+
+void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
 {
     // write compressed record quads into buffer at location for the m_record_id 
+
+    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
+    unsigned slot = photon._slot_constrained ;
+    unsigned flag = photon._flag ; 
+    unsigned material = photon._mat ; 
+
 
     if(!m_dynamic) assert( target_record_id < m_ctx._record_max );
 
@@ -197,7 +239,7 @@ void CWriter::writeStepPoint(unsigned target_record_id, unsigned slot, const G4S
     // but dynamic mode will have an extra record
 }
 
-void CWriter::writePhoton(const G4StepPoint* point, const CPhoton& photon )
+void CWriter::writePhoton(const G4StepPoint* point )
 {
     // gets called at last step (eg absorption) or when truncated
     // for reemission have to rely on downstream overwrites
@@ -213,7 +255,7 @@ void CWriter::writePhoton(const G4StepPoint* point, const CPhoton& photon )
     G4double wavelength = h_Planck*c_light/energy ;
     G4double weight = 1.0 ; 
 
-    NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons ; 
+    NPY<float>* target = m_dynamic ? m_dynamic_photons : m_photons_buffer ; 
     unsigned int target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
 
 
@@ -221,10 +263,10 @@ void CWriter::writePhoton(const G4StepPoint* point, const CPhoton& photon )
     target->setQuad(target_record_id, 1, 0, dir.x(), dir.y(), dir.z(), weight  );
     target->setQuad(target_record_id, 2, 0, pol.x(), pol.y(), pol.z(), wavelength/nm  );
 
-    target->setUInt(target_record_id, 3, 0, 0, photon._slot );
+    target->setUInt(target_record_id, 3, 0, 0, m_photon._slot_constrained );
     target->setUInt(target_record_id, 3, 0, 1, 0u );
-    target->setUInt(target_record_id, 3, 0, 2, photon._c4.u );
-    target->setUInt(target_record_id, 3, 0, 3, photon._mskhis );
+    target->setUInt(target_record_id, 3, 0, 2, m_photon._c4.u );
+    target->setUInt(target_record_id, 3, 0, 3, m_photon._mskhis );
 
     // in static case directly populate the pre-sized photon buffer
     // in dynamic case populate the single photon buffer first and then 
@@ -232,7 +274,7 @@ void CWriter::writePhoton(const G4StepPoint* point, const CPhoton& photon )
 
     if(m_dynamic)
     {
-        m_photons->add(m_dynamic_photons);
+        m_photons_buffer->add(m_dynamic_photons);
     }
 
     // generate.cu
@@ -243,17 +285,15 @@ void CWriter::writePhoton(const G4StepPoint* point, const CPhoton& photon )
     //  (w)  p.flags.u.w |= s.flag ;        // OR of step flags : redundant ? unless want to try to live without seqhis
     //
 
-    NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history ; 
+    NPY<unsigned long long>* h_target = m_dynamic ? m_dynamic_history : m_history_buffer ; 
 
     unsigned long long* history = h_target->getValues() + 2*target_record_id ;
-    *(history+0) = photon._seqhis ; 
-    *(history+1) = photon._seqmat ; 
+    *(history+0) = m_photon._seqhis ; 
+    *(history+1) = m_photon._seqmat ; 
 
     if(m_dynamic)
     {
-        m_history->add(m_dynamic_history);
+        m_history_buffer->add(m_dynamic_history);
     }
 }
-
-
 

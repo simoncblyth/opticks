@@ -30,6 +30,134 @@ APPROACH
 
 
 
+FIXED REJIG BREAKAGE
+----------------------
+
+
+Although fixed the seqmat/seqhis zeros getting not-done fallout in CRecorder::posttrackWriteSteps.
+
+* All 28 of the non-truncated are falling out of the crec loop, with done=false.
+  (fixed : was trivial "bool done =" vs "done =" bug in CPhoton)
+
+
+::
+
+    [2017-11-17 15:41:59,743] p54112 {/Users/blyth/opticks/ana/ab.py:137} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/  1 :  20171117-1539 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/1/fdom.npy 
+    B tboolean-truncate/torch/ -1 :  20171117-1539 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    0000       aaaaaaaaad     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       aaa6aaaaad        49        42             0.54        1.167 +- 0.167        0.857 +- 0.132  [10] TO SR SR SR SR SR SC SR SR SR
+    0002       6aaaaaaaad        41        49             0.71        0.837 +- 0.131        1.195 +- 0.171  [10] TO SR SR SR SR SR SR SR SR SC
+    0003       aaaaa6aaad        45        42             0.10        1.071 +- 0.160        0.933 +- 0.144  [10] TO SR SR SR SC SR SR SR SR SR
+    0004       aaaaaaa6ad        35        42             0.64        0.833 +- 0.141        1.200 +- 0.185  [10] TO SR SC SR SR SR SR SR SR SR
+    0005       aaaaaa6aad        40        30             1.43        1.333 +- 0.211        0.750 +- 0.137  [10] TO SR SR SC SR SR SR SR SR SR
+    0006       a6aaaaaaad        39        31             0.91        1.258 +- 0.201        0.795 +- 0.143  [10] TO SR SR SR SR SR SR SR SC SR
+    0007       aaaa6aaaad        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SR SR SR SR SC SR SR SR SR
+    0008       aaaaaaaa6d        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SC SR SR SR SR SR SR SR SR
+    0009       aa6aaaaaad        36        31             0.37        1.161 +- 0.194        0.861 +- 0.155  [10] TO SR SR SR SR SR SR SC SR SR
+    0010         4aaaaaad         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] TO SR SR SR SR SR SR AB
+    0011              4ad         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] TO SR AB
+    0012            4aaad         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] TO SR SR SR AB
+    0013          4aaaaad         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] TO SR SR SR SR SR AB
+    0014       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0015               4d         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] TO AB
+    0016        4aaaaaaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] TO SR SR SR SR SR SR SR AB
+    0017             4aad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO SR SR AB
+    0018           4aaaad         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+
+
+
+* thats the horrible logic... to handle bizarre BR/StepToSmall etc..
+
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    2017-11-17 15:29:46.728 INFO  [5445216] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    2017-11-17 15:29:47.208 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 1 photon CPhoton slot_constrained 3 seqhis                 4aad seqmat                 2222 is_flag_done Y is_done Y
+    2017-11-17 15:29:47.258 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 2 photon CPhoton slot_constrained 1 seqhis                   4d seqmat                   22 is_flag_done Y is_done Y
+    2017-11-17 15:29:47.426 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 3 photon CPhoton slot_constrained 2 seqhis                  4ad seqmat                  222 is_flag_done Y is_done Y
+    2017-11-17 15:29:47.603 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 4 photon CPhoton slot_constrained 7 seqhis             4aaaaaad seqmat             22222222 is_flag_done Y is_done Y
+    2017-11-17 15:29:47.671 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 5 photon CPhoton slot_constrained 1 seqhis                   4d seqmat                   22 is_flag_done Y is_done Y
+    2017-11-17 15:29:47.789 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 6 photon CPhoton slot_constrained 2 seqhis                  4ad seqmat                  222 is_flag_done Y is_done Y
+    2017-11-17 15:29:48.896 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 7 photon CPhoton slot_constrained 8 seqhis            4aaaaaaad seqmat            222222222 is_flag_done Y is_done Y
+    2017-11-17 15:29:49.354 FATAL [5445216] [CRecorder::posttrackWriteSteps@328] posttrackWriteSteps  not-done 8 photon CPhoton slot_constrained 6 seqhis              4aaaaad seqmat              2222222 is_flag_done Y is_done Y
+
+
+
+REJIG BREAKAGE
+-----------------
+
+
+::
+
+    [2017-11-17 14:14:02,825] p49262 {/Users/blyth/opticks/ana/seq.py:160} WARNING - SeqType.code check [?0?] bad 1 
+    AB(1,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/  1 :  20171117-1413 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/1/fdom.npy 
+    B tboolean-truncate/torch/ -1 :  20171117-1413 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         4.11/9 =  0.46  (pval:0.904 prob:0.096)  
+    0000       aaaaaaaaad     99603     99637             0.01        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       aaa6aaaaad        49        42             0.54        1.167 +- 0.167        0.857 +- 0.132  [10] TO SR SR SR SR SR SC SR SR SR
+    0002       aaaaa6aaad        45        42             0.10        1.071 +- 0.160        0.933 +- 0.144  [10] TO SR SR SR SC SR SR SR SR SR
+    0003       aaaaaaa6ad        35        42             0.64        0.833 +- 0.141        1.200 +- 0.185  [10] TO SR SC SR SR SR SR SR SR SR
+    0004       6aaaaaaaad        41        41             0.00        1.000 +- 0.156        1.000 +- 0.156  [10] TO SR SR SR SR SR SR SR SR SC
+    0005       aaaaaa6aad        40        30             1.43        1.333 +- 0.211        0.750 +- 0.137  [10] TO SR SR SC SR SR SR SR SR SR
+    0006       a6aaaaaaad        39        31             0.91        1.258 +- 0.201        0.795 +- 0.143  [10] TO SR SR SR SR SR SR SR SC SR
+    0007       aaaa6aaaad        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SR SR SR SR SC SR SR SR SR
+    0008       aaaaaaaa6d        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SC SR SR SR SR SR SR SR SR
+    0009       aa6aaaaaad        36        31             0.37        1.161 +- 0.194        0.861 +- 0.155  [10] TO SR SR SR SR SR SR SC SR SR
+    0010                0         0       *28*             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ] ?0?
+    0011         4aaaaaad         9         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO SR SR SR SR SR SR AB
+    0012            4aaad         5         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] TO SR SR SR AB
+    0013          4aaaaad         5         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SR SR SR SR SR AB
+    0014       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0015              4ad         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO SR AB
+    0016               4d         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO AB
+    0017        4aaaaaaad         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] TO SR SR SR SR SR SR SR AB
+    0018             4aad         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO SR SR AB
+    0019           4aaaad         1         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         4.11/9 =  0.46  (pval:0.904 prob:0.096)  
+
+    /// getting 28  G4 seqhis zeros for the non-truncated
+
+
+    .                pflags_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000        22.27/2 = 11.13  (pval:0.000 prob:1.000)  
+    0000             1200     99603     99588             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO|SR
+    0001             1220       361       380             0.49        0.950 +- 0.050        1.053 +- 0.054  [3 ] TO|SR|SC
+    0002             1208        32         4            21.78        8.000 +- 1.414        0.125 +- 0.062  [3 ] TO|SR|AB
+    0003                0         0        28             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ]
+    0004             1008         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] TO|AB
+    .                             100000    100000        22.27/2 = 11.13  (pval:0.000 prob:1.000)  
+    .                seqmat_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000       2222222222     99968     99972             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] Vm Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0001                0         0        28             0.00        0.000 +- 0.000        0.000 +- 0.000  [1 ] ?0?
+    0002         22222222         9         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] Vm Vm Vm Vm Vm Vm Vm Vm
+    0003          2222222         5         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] Vm Vm Vm Vm Vm Vm Vm
+    0004            22222         5         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [5 ] Vm Vm Vm Vm Vm
+    0005              222         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] Vm Vm Vm
+    0006               22         4         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [2 ] Vm Vm
+    0007        222222222         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [9 ] Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0008             2222         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] Vm Vm Vm Vm
+    0009           222222         1         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [6 ] Vm Vm Vm Vm Vm Vm
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+                /tmp/blyth/opticks/evt/tboolean-truncate/torch/1 7a4bcf2565d2235230cce18584128029 3c1a894417816154c638f8195e827bdc  100000    -1.0000 INTEROP_MODE 
+
+
+
+
 
 FIXED EXPENSIVELY : by ~doubling step_limit to cope with G4 StepTooSmall turnarounds 
 ------------------------------------------------------------------------------------------

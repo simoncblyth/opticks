@@ -13,9 +13,9 @@ class OKCORE_API OpticksDomain {
        void importBuffer();
        void dump(const char* msg="OpticksDomains::dump");
     public:
-       unsigned getMaxRng();
-       unsigned getMaxRec();
-       unsigned getMaxBounce();
+       unsigned getMaxRng() const ;
+       unsigned getMaxRec() const ;
+       unsigned getMaxBounce() const ;
        void setMaxRng(unsigned maxrng);
        void setMaxRec(unsigned maxrec);
        void setMaxBounce(unsigned maxbounce);

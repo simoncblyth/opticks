@@ -4,7 +4,10 @@
 #include "G4Track.hh"
 #include "G4Event.hh"
 
+#include "OpticksFlags.hh"
+#include "OpticksEvent.hh"
 #include "Opticks.hh"
+
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 
@@ -78,6 +81,26 @@ void CG4Ctx::init()
     _step_total = 0 ; 
  
 }
+
+
+void CG4Ctx::initEvent(const OpticksEvent* evt)
+{
+    _photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
+    _steps_per_photon = evt->getMaxRec() ;    
+    _record_max = evt->getNumPhotons();   // from the genstep summation
+    _bounce_max = evt->getBounceMax();
+
+    const char* typ = evt->getTyp();
+    _gen = OpticksFlags::SourceCode(typ);
+    assert( _gen == TORCH || _gen == G4GUN  );
+  
+    LOG(info) << "CG4Ctx::initEvent"
+              << " photons_per_g4event " << _photons_per_g4event
+              << " steps_per_photon " << _steps_per_photon
+              << " gen " << _gen
+              ;
+}
+
 
 void CG4Ctx::setEvent(const G4Event* event)
 {

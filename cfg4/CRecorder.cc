@@ -43,8 +43,8 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_g4(g4),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
-   m_photon(m_ctx),
    m_state(m_ctx),
+   m_photon(m_ctx, m_state),
 
    m_crec(new CRec(m_g4)),
    m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
@@ -54,7 +54,8 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_material_bridge(NULL),
    m_dynamic(dynamic),
    m_live(false),
-   m_writer(new CWriter(g4, m_dynamic))
+   m_writer(new CWriter(g4, m_photon, m_dynamic)),
+   m_not_done_count(0)
 {   
 }
 
@@ -107,9 +108,6 @@ By virtue of the Cerenkov/Scintillation process setting:
      SetTrackSecondariesFirst(true)
   
 If not so, this will "join" unrelated tracks ?
-
-Does this mean the local photon state is just for live mode ?
-
 
 **/
 
@@ -206,7 +204,8 @@ void CRecorder::posttrackWriteSteps()
         std::cout << std::endl ;  
     }
 
-    for(unsigned i=0 ; i < num ; i++)
+    unsigned i = 0 ;  
+    for(i=0 ; i < num ; i++)
     {
         m_state._step_action = 0 ; 
 
@@ -223,12 +222,15 @@ void CRecorder::posttrackWriteSteps()
         next_boundary_status = next_stp ? next_stp->getBoundaryStatus() : Undefined ; 
       
         unsigned premat = m_material_bridge->getPreMaterial(step) ; 
+
         unsigned postmat = m_material_bridge->getPostMaterial(step) ; 
 
         CStage::CStage_t postStage = stage == CStage::REJOIN ? CStage::RECOLL : stage  ; // avoid duping the RE 
+
         unsigned postFlag = OpPointFlag(post, boundary_status, postStage);
 
         bool lastPost = (postFlag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+
         bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
 
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
@@ -258,7 +260,6 @@ void CRecorder::posttrackWriteSteps()
 
         if(first)            u_premat = premat ;   
         // dont allow any matswap for 1st material : see notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
-
         if(surfaceAbsorb)    u_postmat = postmat ; 
 
 
@@ -273,14 +274,19 @@ void CRecorder::posttrackWriteSteps()
 
         if(i == 0)
         {
+
             m_state._step_action |= CAction::PRE_SAVE ; 
+
             done = RecordStepPoint( pre , preFlag,  u_premat,  prior_boundary_status, PRE );   
+
             if(done) m_state._step_action |= CAction::PRE_DONE ; 
 
             if(!done)
             {
                  done = RecordStepPoint( post, postFlag, u_postmat, boundary_status,       POST );  
+
                  m_state._step_action |= CAction::POST_SAVE ; 
+
                  if(done) m_state._step_action |= CAction::POST_DONE ; 
             }
         }
@@ -289,7 +295,9 @@ void CRecorder::posttrackWriteSteps()
             if(!postSkip && !done)
             {
                 m_state._step_action |= CAction::POST_SAVE ; 
+
                 done = RecordStepPoint( post, postFlag, u_postmat, boundary_status, POST );
+
                 if(done) m_state._step_action |= CAction::POST_DONE ; 
             }
         }
@@ -300,13 +308,6 @@ void CRecorder::posttrackWriteSteps()
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_state._step_action );
 
-        //bool hard_truncate = (m_state._step_action & CAction::HARD_TRUNCATE) != 0 ; 
-        //if(done && !hard_truncate)
-
-        if(done)
-        {
-            m_writer->writePhoton(post, m_photon);
-        }
 
         if(m_ctx._dbgrec)
             LOG(info) << "[--dbgrec] posttrackWriteSteps " 
@@ -316,49 +317,45 @@ void CRecorder::posttrackWriteSteps()
 
 
         if(done) break ; 
+
+
     }   // stp loop
+
+
+    if(!done)
+    {
+        m_not_done_count++ ; 
+        LOG(fatal) << "posttrackWriteSteps  not-done " 
+                   << m_not_done_count
+                   << " photon " << m_photon.desc()
+                   << " action " << getStepActionString()
+                   << " i " << i 
+                   << " num " << num 
+                   ; 
+    } 
+
 }
 
 
 
 #ifdef USE_CUSTOM_BOUNDARY
-bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label)
+bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* )
 #else
-bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* label)
+bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* )
 #endif
 {
-    // see notes/issues/geant4_opticks_integration/tconcentric_pflags_mismatch_from_truncation_handling.rst
-    //
-    // Formerly at truncation, rerunning this overwrote "the top slot" 
-    // of seqhis,seqmat bitfields (which are persisted in photon buffer)
-    // and the record buffer. 
-    // As that is different from Opticks behaviour for the record buffer
-    // where truncation is truncation, a HARD_TRUNCATION has been adopted.
-
-    bool absorb = ( flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-    bool miss = ( flag & MISS ) != 0 ;  
-
-    unsigned slot = m_state.constrained_slot(); 
 
     if(flag == 0)
     {
-        assert(0);
-
-        m_photon._badflag += 1 ; 
-
-        m_state._step_action |= CAction::ZERO_FLAG ; 
-
         if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpBoundaryAbbrevString(boundary_status) ; 
     }
 
+    return m_writer->writeStepPoint( point, flag, material );
+}
 
-    m_photon.add(slot, flag, material);
 
-
-    if(m_state._record_truncate && m_photon.is_rewrite_slot() )  // try to overwrite top slot 
-    {
-        m_state._topslot_rewrite += 1 ; 
+/*
 
         if(m_ctx._debug || m_ctx._other)
         {
@@ -376,44 +373,9 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned int flag, uns
                   ;
         } 
 
-        // allowing a single AB->RE rewrite is closer to Opticks
-        if(m_state._topslot_rewrite == 1 && flag == BULK_REEMIT && m_photon._flag_prior  == BULK_ABSORB)
-        {
-            m_state._step_action |= CAction::TOPSLOT_REWRITE ; 
-        }
-        else
-        {
-            m_state._step_action |= CAction::HARD_TRUNCATE ; 
-            assert(0);
-            return true ; 
-        }
-    }
+*/
 
 
-   if(flag == BULK_REEMIT) m_photon.scrub_mskhis(BULK_ABSORB)  ;
-
-
-    unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ; 
-
-
-    m_writer->writeStepPoint(target_record_id, slot, point, flag, material, label);
-
-
-    if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
-
-
-    m_state.increment_slot_regardless() ; 
-     // _slot is incremented regardless of truncation, only local *slot* is constrained to recording range
-
-    bool done = m_state.is_truncate() || absorb || miss ;   
-
-    if(done && m_dynamic)
-    {
-        m_writer->addDynamicRecords();
-    }
-   
-    return done ;    
-}
 
 
 

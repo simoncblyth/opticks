@@ -138,8 +138,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void postPropagateGeant4(); // called following dynamic photon/record/sequence collection
    public:
        // from parameters set in Opticks::makeEvent
-       unsigned int getBounceMax();
-       unsigned int getRngMax();
+       unsigned int getBounceMax() const ;
+       unsigned int getRngMax() const ;
        std::string getTimeStamp();
        std::string getCreator();
        char getEntryCode();
@@ -205,7 +205,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setNumG4Event(unsigned int n);
        void setNumPhotonsPerG4Event(unsigned int n);
        unsigned int getNumG4Event();
-       unsigned int getNumPhotonsPerG4Event();
+       unsigned int getNumPhotonsPerG4Event() const ; 
    public:
        void setBoundaryIndex(Index* bndidx);
        void setHistoryIndex(Index* seqhis);
@@ -329,14 +329,14 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        unsigned int getNumGensteps();
        unsigned int getNumNopsteps();
-       unsigned int getNumPhotons();
-       unsigned int getNumSource();
-       unsigned int getNumRecords();
+       unsigned int getNumPhotons() const ;
+       unsigned int getNumSource() const ;
+       unsigned int getNumRecords() const ;
    public:
        // idom persisted 
-       unsigned int getMaxRec();  // per-photon
-       unsigned int getMaxBounce();  // per-photon
-       unsigned int getMaxRng();  
+       unsigned int getMaxRec() const ;  // per-photon
+       unsigned int getMaxBounce() const ;  // per-photon
+       unsigned int getMaxRng() const ;  
    public:
        void resizeToZero();  // used by OpticksHub::setupZeroEvent
    private:

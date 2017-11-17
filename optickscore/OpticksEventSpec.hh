@@ -16,24 +16,24 @@ class OKCORE_API OpticksEventSpec {
    public:
         OpticksEventSpec(OpticksEventSpec* spec);
         OpticksEventSpec(const char* typ, const char* tag, const char* det, const char* cat=NULL);
-        OpticksEventSpec* clone(unsigned tagoffset=0);   // non-zero tagoffset increments if +ve, and decrements if -ve
-        void Summary(const char* msg="OpticksEventSpec::Summary");
-        std::string brief();
-        bool isG4();
-        bool isOK();
-        const char*  getEngine();
+        OpticksEventSpec* clone(unsigned tagoffset=0) const ;   // non-zero tagoffset increments if +ve, and decrements if -ve
+        void Summary(const char* msg="OpticksEventSpec::Summary") const ;
+        std::string brief() const ;
+        bool isG4() const ;
+        bool isOK() const ;
+        const char*  getEngine() const ;
    private:
         void init();
    public:
-        const char*  getTyp();
-        const char*  getTag();
-        const char*  getDet();
-        const char*  getCat();
-        const char*  getUDet();
-        const char*  getDir();
-        const char*  getFold();   // one level above Dir without the tag 
+        const char*  getTyp() const ;
+        const char*  getTag() const ;
+        const char*  getDet() const ;
+        const char*  getCat() const ;
+        const char*  getUDet() const ;
+        const char*  getDir() const ;
+        const char*  getFold() const ;   // one level above Dir without the tag 
    public:
-        int          getITag();
+        int          getITag() const ;
    protected:
         const char*  m_typ ; 
         const char*  m_tag ; 

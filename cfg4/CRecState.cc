@@ -79,6 +79,8 @@ void CRecState::increment_slot_regardless()
 
     _bounce_truncate = _slot > _ctx._bounce_max  ;   
 
+    // huh ? why not updating _record_truncate ? ... better for those to be dynamic 
+
     if(_bounce_truncate) _step_action |= CAction::BOUNCE_TRUNCATE ; 
 }
 
