@@ -27,4 +27,6 @@ CFG4_API unsigned int OpBoundaryFlag(const G4OpBoundaryProcessStatus status);
 CFG4_API unsigned int OpPointFlag(const G4StepPoint* point, const G4OpBoundaryProcessStatus bst, CStage::CStage_t stage);
 #endif
 
+CFG4_API bool IsTerminalFlag(unsigned flag); 
+
 

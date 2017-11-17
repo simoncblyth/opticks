@@ -12,7 +12,10 @@
 #include "CGeometry.hh"
 #include "CMaterialBridge.hh"
 #include "CRec.hh"
+
+#include "CPoi.hh"
 #include "CStp.hh"
+
 #include "CStep.hh"
 #include "CAction.hh"
 
@@ -77,7 +80,8 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
 
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::posttrack" ; 
 
-    posttrackWriteSteps();
+    //posttrackWriteSteps();
+    posttrackWritePoints();  // experimental alt 
 
     if(m_dbg) m_dbg->posttrack(); 
 }
@@ -130,7 +134,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     }
     else if(m_ctx._stage == CStage::REJOIN )
     {
-        m_crec->clearStp(); // NB Not-zeroing m_slot for REJOINders, see above note
+        m_crec->clear(); // NB Not-zeroing m_slot for REJOINders, see above note
     }
     else if(m_ctx._stage == CStage::RECOLL )
     {
@@ -142,7 +146,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     if(m_ctx._dbgrec)
         LOG(info) << "crec.add "
                   << "[" 
-                  << std::setw(2) << m_crec->getNumStps()
+                  << std::setw(2) << m_crec->getNumStp()
                   << "]"
                   << std::setw(10) << CStage::Label(m_ctx._stage)
                   << " " << m_ctx.desc_step() 
@@ -158,12 +162,38 @@ void CRecorder::zeroPhoton()
     const G4StepPoint* pre = m_ctx._step->GetPreStepPoint() ;
     const G4ThreeVector& pos = pre->GetPosition();
     m_crec->setOrigin(pos);   // hmm maybe in CG4Ctx already ?
-    m_crec->clearStp();
+    m_crec->clear();
 
     m_photon.clear();
     m_state.clear();
 
     if(m_dbg) m_dbg->Clear();
+}
+
+
+
+void CRecorder::posttrackWritePoints()
+{
+#ifdef USE_CUSTOM_BOUNDARY
+    DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
+#else
+    G4OpBoundaryProcessStatus boundary_status = Undefined ;
+#endif
+ 
+    unsigned num = m_crec->getNumPoi(); 
+    for(unsigned i=0 ; i < num ; i++)
+    {
+        m_state._step_action = 0 ; 
+        CPoi* poi  = m_crec->getPoi(i);
+        const G4StepPoint* point = poi->getPoint();
+        unsigned flag = poi->getFlag(); 
+        unsigned material = m_material_bridge->getPointMaterial(point) ; 
+        boundary_status = poi->getBoundaryStatus() ; 
+        
+        RecordStepPoint( point, flag, material, boundary_status, NULL );
+
+        //if(done) assert( i == num - 1 ) ; 
+    } 
 }
 
 
@@ -186,7 +216,7 @@ void CRecorder::posttrackWriteSteps()
 #endif
     bool     done = false  ;  
 
-    unsigned num = m_crec->getNumStps(); 
+    unsigned num = m_crec->getNumStp(); 
 
     bool limited = m_crec->is_step_limited() ; 
 
@@ -203,6 +233,7 @@ void CRecorder::posttrackWriteSteps()
         for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
         std::cout << std::endl ;  
     }
+
 
     unsigned i = 0 ;  
     for(i=0 ; i < num ; i++)

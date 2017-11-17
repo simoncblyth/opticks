@@ -151,6 +151,11 @@ std::string OpBoundaryString(const G4OpBoundaryProcessStatus status)
 
 
 
+bool IsTerminalFlag(unsigned flag)
+{
+    return (flag & (BULK_ABSORB | SURFACE_ABSORB | SURFACE_DETECT | MISS )) != 0 ;
+}
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY

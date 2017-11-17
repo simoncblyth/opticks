@@ -1,6 +1,7 @@
 #include "BStr.hh"
 #include <iomanip>
 
+#include "G4StepPoint.hh"
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
 
@@ -140,6 +141,13 @@ unsigned CMaterialBridge::getPostMaterial(const G4Step* step) const
     const G4Material* postMat  = CStep::PostMaterial(step);
     unsigned postMaterial = postMat ? getMaterialIndex(postMat) + 1 : 0 ;
     return postMaterial ;
+}
+
+unsigned CMaterialBridge::getPointMaterial(const G4StepPoint* point) const
+{
+    const G4Material* pointMat  = point->GetMaterial() ;
+    unsigned pointMaterial = pointMat ? getMaterialIndex(pointMat) + 1 : 0 ;
+    return pointMaterial ;
 }
 
 

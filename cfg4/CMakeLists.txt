@@ -153,6 +153,7 @@ set(SOURCES
 
     CStep.cc
     CStp.cc
+    CPoi.cc
     CRec.cc
     CTrack.cc
     CPropLib.cc

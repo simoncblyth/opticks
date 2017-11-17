@@ -7,6 +7,7 @@ class GMaterialLib ;
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
 
+class G4StepPoint ; 
 class G4Step ; 
 class G4Material ; 
 
@@ -15,6 +16,7 @@ class CFG4_API CMaterialBridge
     public:
         CMaterialBridge( GMaterialLib* mlib );
 
+        unsigned getPointMaterial(const G4StepPoint* point) const ;
         unsigned getPreMaterial(const G4Step* step) const ;
         unsigned getPostMaterial(const G4Step* step) const ;
 

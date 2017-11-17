@@ -106,7 +106,9 @@ class CFG4_API CRecorder {
    private:
         void zeroPhoton();
         void decrementSlot(); // for reemission continuation
-        void posttrackWriteSteps();
+
+        void posttrackWriteSteps();  // using CStp 
+        void posttrackWritePoints();  // experimental alternative using CPoi
  
 #ifdef USE_CUSTOM_BOUNDARY
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);

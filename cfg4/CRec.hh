@@ -8,6 +8,7 @@
 
 class Opticks ; 
 class CStp ; 
+class CPoi ; 
 class CG4 ; 
 
 struct CG4Ctx ; 
@@ -30,11 +31,16 @@ class CFG4_API CRec
 
         bool is_step_limited() const ; 
         void setOrigin(const G4ThreeVector& origin);
-        void clearStp();
+        void clear();
 
         void dump(const char* msg="CRec::dump");
-        unsigned getNumStps();
+
+        unsigned getNumStp();
         CStp* getStp(unsigned index);
+
+        unsigned getNumPoi();
+        CPoi* getPoi(unsigned index);
+
 
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -42,6 +48,14 @@ class CFG4_API CRec
 #else
         bool add(G4OpBoundaryProcessStatus boundary_status);
 #endif
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+        void addPoi(DsG4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point, bool first);
+#else
+        void addPoi(G4OpBoundaryProcessStatus boundary_status,   const G4StepPoint* point, bool first );
+#endif
+
 
 #ifdef USE_CUSTOM_BOUNDARY
         void add(DsG4OpBoundaryProcessStatus boundary_status, unsigned premat, unsigned postmat, unsigned preflag, unsigned postflag, int action);
@@ -56,6 +70,7 @@ class CFG4_API CRec
     private:
         G4ThreeVector               m_origin ; 
         std::vector<CStp*>          m_stp ; 
+        std::vector<CPoi*>          m_poi ; 
 
 };
 
