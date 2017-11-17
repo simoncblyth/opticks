@@ -30,6 +30,108 @@ APPROACH
 
 
 
+
+FIXED EXPENSIVELY : by ~doubling step_limit to cope with G4 StepTooSmall turnarounds 
+------------------------------------------------------------------------------------------
+
+::
+
+    .unsigned CG4Ctx::step_limit() const 
+     {
+    -    return 1 + ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    +    return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+     }
+     
+ 
+
+* G4 burns thru steps for BR, with loada "StepTooSmall" turnarounds at the reflections
+  so in order to reach normal truncation have to save more steps 
+
+* this expensive fix to CRecorder::posttrackWriteSteps suggests that should 
+  be step-by-step collecting G4StepPoint with the skips done upfront rather than collecting G4Step
+  only to "StepTooSmall" skip them later 
+
+
+
+
+::
+
+
+    tboolean-truncate--(){ cat << EOP 
+    import logging
+    log = logging.getLogger(__name__)
+    from opticks.ana.base import opticks_main
+    from opticks.analytic.polyconfig import PolyConfig
+    from opticks.analytic.csg import CSG  
+
+    args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+    emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+
+    CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
+
+    box = CSG("box", param=[0,0,0,200], emit=-1,  boundary="Rock//perfectSpecularSurface/Vacuum" )
+
+    CSG.Serialize([box], args.csgpath )
+    EOP
+    }
+
+
+    [2017-11-17 11:15:54,433] p39265 {/Users/blyth/opticks/ana/ab.py:137} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/  1 :  20171117-1115 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/1/fdom.npy 
+    B tboolean-truncate/torch/ -1 :  20171117-1115 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    0000       aaaaaaaaad     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       aaa6aaaaad        49        42             0.54        1.167 +- 0.167        0.857 +- 0.132  [10] TO SR SR SR SR SR SC SR SR SR
+    0002       6aaaaaaaad        41        49             0.71        0.837 +- 0.131        1.195 +- 0.171  [10] TO SR SR SR SR SR SR SR SR SC
+    0003       aaaaa6aaad        45        42             0.10        1.071 +- 0.160        0.933 +- 0.144  [10] TO SR SR SR SC SR SR SR SR SR
+    0004       aaaaaaa6ad        35        42             0.64        0.833 +- 0.141        1.200 +- 0.185  [10] TO SR SC SR SR SR SR SR SR SR
+    0005       aaaaaa6aad        40        30             1.43        1.333 +- 0.211        0.750 +- 0.137  [10] TO SR SR SC SR SR SR SR SR SR
+    0006       a6aaaaaaad        39        31             0.91        1.258 +- 0.201        0.795 +- 0.143  [10] TO SR SR SR SR SR SR SR SC SR
+    0007       aaaa6aaaad        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SR SR SR SR SC SR SR SR SR
+    0008       aaaaaaaa6d        38        36             0.05        1.056 +- 0.171        0.947 +- 0.158  [10] TO SC SR SR SR SR SR SR SR SR
+    0009       aa6aaaaaad        36        31             0.37        1.161 +- 0.194        0.861 +- 0.155  [10] TO SR SR SR SR SR SR SC SR SR
+    0010         4aaaaaad         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] TO SR SR SR SR SR SR AB
+    0011              4ad         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] TO SR AB
+    0012            4aaad         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] TO SR SR SR AB
+    0013          4aaaaad         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] TO SR SR SR SR SR AB
+    0014       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0015               4d         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] TO AB
+    0016        4aaaaaaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] TO SR SR SR SR SR SR SR AB
+    0017             4aad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO SR SR AB
+    0018           4aaaad         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         4.82/9 =  0.54  (pval:0.850 prob:0.150)  
+    .                pflags_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    0000             1200     99603     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO|SR
+    0001             1220       361       339             0.69        1.065 +- 0.056        0.939 +- 0.051  [3 ] TO|SR|SC
+    0002             1208        32        25             0.86        1.280 +- 0.226        0.781 +- 0.156  [3 ] TO|SR|AB
+    0003             1008         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] TO|AB
+    .                             100000    100000         1.56/2 =  0.78  (pval:0.459 prob:0.541)  
+    .                seqmat_ana  1:tboolean-truncate   -1:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000       2222222222     99968     99976             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] Vm Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0001         22222222         9         4             0.00        2.250 +- 0.750        0.444 +- 0.222  [8 ] Vm Vm Vm Vm Vm Vm Vm Vm
+    0002              222         4         6             0.00        0.667 +- 0.333        1.500 +- 0.612  [3 ] Vm Vm Vm
+    0003          2222222         5         4             0.00        1.250 +- 0.559        0.800 +- 0.400  [7 ] Vm Vm Vm Vm Vm Vm Vm
+    0004            22222         5         2             0.00        2.500 +- 1.118        0.400 +- 0.283  [5 ] Vm Vm Vm Vm Vm
+    0005               22         4         3             0.00        1.333 +- 0.667        0.750 +- 0.433  [2 ] Vm Vm
+    0006        222222222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0007             2222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] Vm Vm Vm Vm
+    0008           222222         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] Vm Vm Vm Vm Vm Vm
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+                /tmp/blyth/opticks/evt/tboolean-truncate/torch/1 7a4bcf2565d2235230cce18584128029 3c1a894417816154c638f8195e827bdc  100000    -1.0000 INTEROP_MODE 
+    {u'containerscale': u'3', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1', u'resolution': u'20', u'emit': -1}
+    [2017-11-17 11:15:54,437] p39265 {/Users/blyth/opticks/ana/tboolean.py:25} INFO - early exit as non-interactive
+    simon:issues blyth$ 
+
+
+
+
 tboolean-truncate-p
 ---------------------------
 

@@ -585,6 +585,7 @@ from opticks.analytic.csg import CSG
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+#emitconfig = "photons=10,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 

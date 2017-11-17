@@ -27,7 +27,7 @@ bool CG4Ctx::is_dbg() const
 
 unsigned CG4Ctx::step_limit() const 
 {
-    return 1 + ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
 
 
@@ -121,19 +121,25 @@ void CG4Ctx::setStep(const G4Step* step)
         _step_origin = pre->GetPosition();
     }
 
+    if(_optical) setStepOptical();
+}
+
+
+std::string CG4Ctx::desc_step() const 
+{
     G4TrackStatus track_status = _track->GetTrackStatus(); 
 
-    if(_dbgrec)
-    LOG(info) << "CG4Ctx::setStep" 
-              << " step_total " << _step_total
-              << " event_id " << _event_id
-              << " track_id " << _track_id
-              << " track_step_count " << _track_step_count
-              << " step_id " << _step_id
-              << " trackStatus " << CTrack::TrackStatusString(track_status)
-              ;
+    std::stringstream ss ; 
+    ss << "CG4Ctx::desc_step" 
+       << " step_total " << _step_total
+       << " event_id " << _event_id
+       << " track_id " << _track_id
+       << " track_step_count " << _track_step_count
+       << " step_id " << _step_id
+       << " trackStatus " << CTrack::TrackStatusString(track_status)
+       ;
 
-    if(_optical) setStepOptical();
+    return ss.str();
 }
 
 

@@ -94,9 +94,9 @@ Not-zeroing m_slot for REJOINders
 Rejoining happens on output side not in the crec CStp list.
 
 The rejoins of AB(actually RE) tracks with reborn secondaries 
-are done by writing two (or more) sequencts of track steps  
+are done by writing two (or more) sequences of track steps  
 into the same record_id in the record buffer at the 
-appropiate non-zeroed slot.
+appropriate non-zeroed slot.
 
 WAS a bit confused by this ...
  
@@ -114,6 +114,7 @@ Does this mean the local photon state is just for live mode ?
 **/
 
 // invoked by CSteppingAction::setStep
+// stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
 #ifdef USE_CUSTOM_BOUNDARY
 bool CRecorder::Record(DsG4OpBoundaryProcessStatus boundary_status)
 #else
@@ -124,14 +125,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
 
     assert(!m_live);
 
-    if(m_ctx._dbgrec)
-    LOG(trace) << "CRecorder::Record"
-              << " step_id " << m_ctx._step_id
-              << " record_id " << m_ctx._record_id
-              << " stage " << CStage::Label(m_ctx._stage)
-              ;
 
-    // stage is set by CG4Ctx::setStepOptical from CSteppingAction::setStep
     if(m_ctx._stage == CStage::START)
     { 
         zeroPhoton();
@@ -148,9 +142,13 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     bool done = m_crec->add(boundary_status) ;
 
     if(m_ctx._dbgrec)
-        LOG(info) << "[--dbgrec]" 
+        LOG(info) << "crec.add "
+                  << "[" 
+                  << std::setw(2) << m_crec->getNumStps()
+                  << "]"
+                  << std::setw(10) << CStage::Label(m_ctx._stage)
+                  << " " << m_ctx.desc_step() 
                   << " " << ( done ? "DONE" : "-" )
-                  << " crec.add NumStps " << m_crec->getNumStps() 
                   ; 
 
     return done ; 
@@ -235,7 +233,7 @@ void CRecorder::posttrackWriteSteps()
 
         bool postSkip = boundary_status == StepTooSmall && !lastPost  ;  
 
-        bool matSwap = next_boundary_status == StepTooSmall ; // is this swapping on the step before it should ?
+        bool matSwap = next_boundary_status == StepTooSmall ; 
 
         // see notes/issues/geant4_opticks_integration/tconcentric_post_recording_has_seqmat_zeros.rst
 
@@ -309,6 +307,13 @@ void CRecorder::posttrackWriteSteps()
         {
             m_writer->writePhoton(post, m_photon);
         }
+
+        if(m_ctx._dbgrec)
+            LOG(info) << "[--dbgrec] posttrackWriteSteps " 
+                      << "[" << std::setw(2) << i << "]"
+                      << " action " << getStepActionString()
+                      ;
+
 
         if(done) break ; 
     }   // stp loop

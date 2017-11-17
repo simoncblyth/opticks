@@ -65,6 +65,21 @@ Canned mode:
 Rejoins are not known until another track comes along 
 that lines up with former ending in AB. 
 
+
+CRecorder::posttrackWriteSteps
+--------------------------------
+
+Although much better now, tis still complicated with loadsa special cases.
+
+Possibly can drastically simplify (and make much closer to generate.cu) 
+by step-by-step collecting G4StepPoint (with skips done) rather than 
+the current collecting of G4Step.
+
+Fixing notes/issues/cfg4-bouncemax-not-working.rst required ~doubling 
+the step limit as G4 "BR" "StepTooSmall" turnarounds really burn 
+thru steps.
+
+
 **/
 
 #include "CFG4_API_EXPORT.hh"
