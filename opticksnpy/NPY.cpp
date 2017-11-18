@@ -1,6 +1,8 @@
 #include <iomanip>
 #include <algorithm>
+#include <iterator>
 #include <limits>  
+
 #include <boost/filesystem.hpp>
 
 namespace fs = boost::filesystem;
@@ -15,6 +17,16 @@ namespace fs = boost::filesystem;
 #include "NPY.hpp"
 
 #include "PLOG.hh"
+
+
+
+template <typename T> 
+void NPY<T>::copyTo(std::vector<T>& dst )
+{
+    std::copy(m_data.begin(), m_data.end(), std::back_inserter(dst));
+}
+
+
 
 
 // ctor takes ownership of a copy of the inputs 
@@ -1364,6 +1376,11 @@ void NPY<T>::dump(const char* msg, unsigned int limit)
         nj = 1;
         nk = getShape(1);
     }
+    else if(m_dim == 1)
+    {
+        nj = 1 ; 
+        nk = 1 ; 
+    }
 
 
     LOG(trace) << "NPY<T>::dump " 
@@ -2025,17 +2042,6 @@ template <typename T>
     }
     setValue(i,j,k,l, t); 
 }
-
-
-
-
-
-
-
-
-
-
-
 
 
 

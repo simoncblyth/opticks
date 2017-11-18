@@ -450,12 +450,27 @@ def opticks_args(**kwa):
          log.fatal("use either --multievent n or --tagoffset o to pick one from multi, USING BOTH --multievent and --tagoffset NOT SUPPORTED  ") 
          sys.exit(1)
 
+    
+
+
+
     if args.multievent > 1:
         args.utags =  map(lambda offset:int(args.tag) + offset, range(args.multievent)) 
         args.utag = args.utags[0]   # backward compat for scripts not supporting multievent yet 
     else:
-        args.utag = int(args.tag) + args.tagoffset 
-        args.utags = [args.utag]   
+        try:
+           tag = int(args.tag)
+        except ValueError:
+           tag = map(int,args.tag.split(","))
+        pass
+
+        if type(tag) is int:
+            args.utag = tag + args.tagoffset 
+            args.utags = [args.utag]   
+        else:
+            args.utag = None
+            args.utags = tag  
+        pass
     pass
 
     args.qwns = args.qwn.replace(",","")       

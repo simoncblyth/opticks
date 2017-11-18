@@ -82,6 +82,7 @@ class CFG4_API CRec
 
         bool                        m_step_limited ; 
         bool                        m_point_limited ; 
+        bool                        m_compat_aligned ; 
 
         CMaterialBridge*            m_material_bridge ; 
     private:

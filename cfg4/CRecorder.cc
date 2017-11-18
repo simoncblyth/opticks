@@ -48,7 +48,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
    m_recpoi(m_ok->isRecPoi()),
-   m_compare_recpoi_recstp(true),
+   m_reccf(m_ok->isRecCf()),
    m_state(m_ctx),
    m_photon(m_ctx, m_state),
 
@@ -91,7 +91,8 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
     {
         posttrackWritePoints();  // experimental alt 
 
-        if(m_compare_recpoi_recstp)
+
+        if(m_reccf)
         {
             CPhoton pp(m_photon); 
 
@@ -122,13 +123,19 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
     {
         posttrackWriteSteps();
 
-
-
-
-
     } 
 
     if(m_dbg) m_dbg->posttrack(); 
+
+
+    if(m_ctx._dump) // --dindex
+    {
+        LOG(info) << "[--dindex] " 
+                  << " ctx " << m_ctx.brief()  
+                  << " pho " << m_photon.brief() 
+                  ; 
+    }
+
 }
 
 

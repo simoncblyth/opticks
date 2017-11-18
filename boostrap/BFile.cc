@@ -224,7 +224,12 @@ std::time_t* BFile::SinceLastWriteTime(const char* path, const char* sub, const 
 
 
 
-
+bool BFile::LooksLikePath(const char* path)
+{
+    if(!path) return false ;
+    if(strlen(path) < 2) return false ; 
+    return path[0] == '/' || path[0] == '$' ; 
+}
 
 
 

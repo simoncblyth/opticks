@@ -437,7 +437,7 @@ class SeqTable(object):
         elif ordering == "self":
             ordering_ = lambda _:self.label2count.get(_,0)
         elif ordering == "other":
-            ordering_ = lambda _:self.label2count.get(_,0)
+            ordering_ = lambda _:other.label2count.get(_,0)
         else:
             assert 0, "ordering_ must be one of max/self/other "
         pass

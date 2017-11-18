@@ -247,6 +247,23 @@ void test_addItemUnique()
 
 
 
+void test_uint32()
+{
+    NPY<unsigned>* u = NPY<unsigned>::load("$TMP/c.npy") ;
+    if(!u) return ; 
+
+    u->dump();
+
+    std::vector<unsigned> vec ; 
+    u->copyTo(vec);
+
+    LOG(info) << "loaded " << vec.size() ; 
+
+    assert( vec.size() == u->getNumItems());
+
+}
+
+
 
 int main(int argc, char** argv )
 {
@@ -257,16 +274,20 @@ int main(int argc, char** argv )
 
     NPYBase::setGlobalVerbose(true);
 
-    //test_grow();
-    //test_make_inverted_transforms();
-    //test_make_inverted_transforms_empty();
-    //test_make_identity_transforms();
+/*
+    test_grow();
+    test_make_inverted_transforms();
+    test_make_inverted_transforms_empty();
+    test_make_identity_transforms();
 
     test_Mat4Pairs();
     test_make_paired_transforms();
 
     test_getItemDigestString();
     test_addItemUnique();
+*/
+
+    test_uint32();
 
     return 0 ; 
 }

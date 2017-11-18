@@ -276,7 +276,7 @@ tboolean-cd(){  cd $(tboolean-dir); }
 
 join(){ local IFS="$1"; shift; echo "$*"; }
 
-tboolean-tag(){  echo 1 ; }
+tboolean-tag(){  echo ${TBOOLEAN_TAG:-1} ; }
 tboolean-det(){  echo boolean ; }
 tboolean-src(){  echo torch ; }
 tboolean-args(){ echo  --det $(tboolean-det) --src $(tboolean-src) ; }

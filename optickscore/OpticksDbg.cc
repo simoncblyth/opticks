@@ -1,7 +1,9 @@
 #include <sstream>
 #include <algorithm>
 
+#include "BFile.hh"
 #include "BStr.hh"
+#include "NPY.hpp"
 
 #include "Opticks.hh"
 #include "OpticksCfg.hh"
@@ -16,6 +18,37 @@ OpticksDbg::OpticksDbg(Opticks* ok)
 {
 }
 
+
+unsigned OpticksDbg::getNumDbgPhoton() const 
+{
+    return m_debug_photon.size() ; 
+}
+
+unsigned OpticksDbg::getNumOtherPhoton() const 
+{
+    return m_other_photon.size() ; 
+}
+
+
+void OpticksDbg::loadNPY1(std::vector<unsigned>& vec, const char* path )
+{
+    NPY<unsigned>* u = NPY<unsigned>::load(path) ;
+    if(!u) 
+    {
+       LOG(warning) << " failed to load " << path ; 
+       return ; 
+    } 
+    assert( u->hasShape(-1) );
+    //u->dump();
+
+    u->copyTo(vec);
+
+    LOG(trace) << "loaded " << vec.size() << " from " << path ; 
+    assert( vec.size() == u->getShape(0) ); 
+}
+
+
+
 void OpticksDbg::postconfigure()
 {
    LOG(trace) << "setting up"  ; 
@@ -28,10 +61,15 @@ void OpticksDbg::postconfigure()
    {
        LOG(trace) << "dindex empty" ;
    } 
+   else if(BFile::LooksLikePath(dindex.c_str()))
+   { 
+       LOG(trace) << "dindex LooksLikePath "  << dindex ;
+       loadNPY1(m_debug_photon, dindex.c_str() );
+   }
    else
    { 
        LOG(trace) << " dindex " << dindex ;  
-       BStr::isplit(m_debug_photon, dindex.c_str(), ',');
+       BStr::usplit(m_debug_photon, dindex.c_str(), ',');
    }
 
 
@@ -39,10 +77,14 @@ void OpticksDbg::postconfigure()
    {
        LOG(trace) << "oindex empty" ;
    } 
+   else if(BFile::LooksLikePath(oindex.c_str()))
+   { 
+       loadNPY1(m_other_photon, oindex.c_str() );
+   }
    else
    { 
        LOG(trace) << " oindex " << oindex ;  
-       BStr::isplit(m_other_photon, oindex.c_str(), ',');
+       BStr::usplit(m_other_photon, oindex.c_str(), ',');
    }
 
 
@@ -51,11 +93,11 @@ void OpticksDbg::postconfigure()
 
 
 
-bool OpticksDbg::isDbgPhoton(int record_id)
+bool OpticksDbg::isDbgPhoton(unsigned record_id)
 {
     return std::find(m_debug_photon.begin(), m_debug_photon.end(), record_id ) != m_debug_photon.end() ; 
 }
-bool OpticksDbg::isOtherPhoton(int record_id)
+bool OpticksDbg::isOtherPhoton(unsigned record_id)
 {
     return std::find(m_other_photon.begin(), m_other_photon.end(), record_id ) != m_other_photon.end() ; 
 }
@@ -69,20 +111,20 @@ std::string OpticksDbg::description()
     ss << " OpticksDbg "
        << " debug_photon "
        << " size: " << m_debug_photon.size()
-       << " elem: (" << BStr::ijoin(m_debug_photon, ',') << ")" 
+       << " elem: (" << BStr::ujoin(m_debug_photon, ',') << ")" 
        << " other_photon "
        << " size: " << m_other_photon.size()
-       << " elem: (" << BStr::ijoin(m_other_photon, ',') << ")" 
+       << " elem: (" << BStr::ujoin(m_other_photon, ',') << ")" 
        ;
     return ss.str(); 
 }
 
 
-const std::vector<int>&  OpticksDbg::getDbgIndex()
+const std::vector<unsigned>&  OpticksDbg::getDbgIndex()
 {
    return m_debug_photon ;
 }
-const std::vector<int>&  OpticksDbg::getOtherIndex()
+const std::vector<unsigned>&  OpticksDbg::getOtherIndex()
 {
    return m_other_photon ;
 }

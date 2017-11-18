@@ -343,6 +343,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("recpoi", "experimental point based CRecorder/CRec  "); 
 
+   m_desc.add_options()
+       ("reccf", "compare recpoi recstp  "); 
+
 
 
 

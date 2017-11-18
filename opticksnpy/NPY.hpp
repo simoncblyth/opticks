@@ -284,6 +284,8 @@ class NPY_API NPY : public NPYBase {
        void         setMat4Triple(const nmat4triple* mpair, unsigned i );
 
 
+       void         copyTo(std::vector<T>& dst );
+
 
    //private:
    public:

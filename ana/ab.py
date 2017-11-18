@@ -80,9 +80,20 @@ class AB(object):
         """
         log.info("AB.load START smry %d " % self.ok.smry )
         args = self.ok
+
+ 
+        if args.utag is None:
+            assert len(args.utags) == 2, ( "expecting 2 utags ", args.utags )
+            atag = "-%s" % args.utags[0]
+            btag = "-%s" % args.utags[1]
+        else:
+            atag = "%s" % args.utag
+            btag = "-%s" % args.utag
+        pass
+
         try:
-            a = Evt(tag="%s" % args.tag, src=args.src, det=args.det, args=args, nom="A", smry=args.smry)
-            b = Evt(tag="-%s" % args.tag, src=args.src, det=args.det, args=args, nom="B", smry=args.smry)
+            a = Evt(tag=atag, src=args.src, det=args.det, args=args, nom="A", smry=args.smry)
+            b = Evt(tag=btag, src=args.src, det=args.det, args=args, nom="B", smry=args.smry)
         except IOError as err:
             log.fatal(err)
             sys.exit(args.mrc)

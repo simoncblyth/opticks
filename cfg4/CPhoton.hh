@@ -47,6 +47,7 @@ struct CFG4_API CPhoton
     void scrub_mskhis( unsigned flag );
 
     std::string desc() const ; 
+    std::string brief() const ; 
 
 
 };

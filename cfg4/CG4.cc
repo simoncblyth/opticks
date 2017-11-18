@@ -343,7 +343,9 @@ NPY<float>* CG4::propagate()
 
 void CG4::postpropagate()
 {
-    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ")"  ;
+    LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ")"
+              << " ctx " << m_ctx.desc_stats() 
+               ;
 
     std::string finmac = m_cfg->getG4FinMac();
     if(!finmac.empty()) execute(finmac.c_str());

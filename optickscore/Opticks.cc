@@ -255,24 +255,33 @@ void Opticks::ana()
 }
 
 
-bool Opticks::isDbgPhoton(int record_id)
+bool Opticks::isDbgPhoton(unsigned record_id)
 {
    return m_dbg->isDbgPhoton(record_id);
 }
-bool Opticks::isOtherPhoton(int photon_id)
+bool Opticks::isOtherPhoton(unsigned photon_id)
 {
    return m_dbg->isOtherPhoton(photon_id);
 }
 bool Opticks::isDbgPhoton(int event_id, int track_id)
 {
-    int record_id = event_id*m_photons_per_g4event + track_id ; 
+    unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
     return m_dbg->isDbgPhoton(record_id);
 }
 bool Opticks::isOtherPhoton(int event_id, int track_id)
 {
-    int record_id = event_id*m_photons_per_g4event + track_id ; 
+    unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
     return m_dbg->isOtherPhoton(record_id);
 }
+unsigned Opticks::getNumDbgPhoton() const 
+{
+    return m_dbg->getNumDbgPhoton();
+}
+unsigned Opticks::getNumOtherPhoton() const 
+{
+    return m_dbg->getNumOtherPhoton();
+}
+
 
 
 
@@ -290,11 +299,11 @@ const char* Opticks::getDbgMesh() const
 
 
 
-const std::vector<int>&  Opticks::getDbgIndex()
+const std::vector<unsigned>&  Opticks::getDbgIndex()
 {
    return m_dbg->getDbgIndex();
 }
-const std::vector<int>&  Opticks::getOtherIndex()
+const std::vector<unsigned>&  Opticks::getOtherIndex()
 {
    return m_dbg->getOtherIndex();
 }
@@ -486,6 +495,11 @@ bool Opticks::isRecPoi() const
 {
     return m_cfg->hasOpt("recpoi") ;
 }
+bool Opticks::isRecCf() const
+{
+    return m_cfg->hasOpt("reccf") ;
+}
+
 
 
 

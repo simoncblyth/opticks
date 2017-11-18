@@ -281,6 +281,17 @@ void test_SinceLastWriteTime()
 
 
 
+void test_LooksLikePath()
+{
+    LOG(info) << "test_LooksLikePath" ; 
+
+    assert( BFile::LooksLikePath("$TMP/a/b") == true );
+    assert( BFile::LooksLikePath("/a/b") == true );
+    assert( BFile::LooksLikePath("1,2") == false );
+    assert( BFile::LooksLikePath(NULL) == false );
+    assert( BFile::LooksLikePath("1") == false );
+}
+
 
 
 int main(int argc, char** argv)
@@ -309,6 +320,8 @@ int main(int argc, char** argv)
 
    //test_LastWriteTime();
    //test_SinceLastWriteTime();
+
+   test_LooksLikePath();
 
    return 0 ; 
 }

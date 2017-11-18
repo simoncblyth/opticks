@@ -71,6 +71,7 @@ struct CFG4_API CG4Ctx
     bool _debug ; 
     bool _other ; 
     bool _dump ; 
+    int  _dump_count ; 
 
     // m_ctx.setStep invoked from CSteppingAction::setStep
     G4Step* _step ; 
@@ -83,19 +84,21 @@ struct CFG4_API CG4Ctx
 
     void init();
     void initEvent(const OpticksEvent* evt);
-    std::string desc_event() const ;
 
     void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);
     void setTrackOptical();
     void setStep(const G4Step* step);
-    std::string desc_step() const ;
     void setStepOptical();
     unsigned  step_limit() const ; 
     unsigned  point_limit() const ; 
     bool      is_dbg() const ; 
 
+    std::string desc_event() const ;
+    std::string desc_step() const ;
     std::string desc() const  ; 
+    std::string brief() const  ; 
+    std::string desc_stats() const ;
 
 }; 
 

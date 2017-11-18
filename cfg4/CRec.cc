@@ -30,6 +30,7 @@ CRec::CRec(CG4* g4, CRecState& state)
     m_recpoi(m_ok->isRecPoi()),
     m_step_limited(false),
     m_point_limited(false),
+    m_compat_aligned(true),
     m_material_bridge(NULL),
     m_prior_boundary_status(Undefined),
     m_boundary_status(Undefined)
@@ -169,10 +170,27 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 #endif
 {
     setBoundaryStatus(boundary_status);
+    
+    bool done = false ; 
+    bool stp_done = m_stp.size() >= m_ctx.step_limit() ;
 
-    bool done = m_recpoi ? addPoi() : addStp() ; 
+    if(m_recpoi)
+    {
+        done = addPoi();
+    }
+    else
+    {
+        done = addStp() ; 
+    } 
+ 
+    //
+    // *m_compat_aligned*
+    //      spins G4 wheels with the more efficient addPoi
+    //      in order to keep random sequence aligned with the less efficient addStp
+    //      see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
 
-    return done  ; 
+
+    return m_compat_aligned ? stp_done : done  ; 
 }
 
 
@@ -194,9 +212,6 @@ bool CRec::addStp()
 
 bool CRec::addPoi()
 {
-
-  
-
     bool done = m_poi.size() >= m_ctx.point_limit();
     if(done)
     {
@@ -252,16 +267,11 @@ bool CRec::addPoi()
         if(preSkip)       m_state._step_action |= CAction::PRE_SKIP ; 
         if(matSwap)       m_state._step_action |= CAction::MAT_SWAP ; 
 
-
         unsigned u_preMat  = matSwap ? postMat : preMat ;
         unsigned u_postMat = ( matSwap || postMat == 0 )  ? preMat  : postMat ;
-
         
         // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
         // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
-
-        //  how to handle truncation consistently ?
-        //     spirit   
 
         if(!preSkip)    
         {
@@ -276,12 +286,17 @@ bool CRec::addPoi()
 
         done = lastPost ; 
 
-         // step collection in CRec::addPoi is for debug only
+
+         // step collection in CRec::addPoi is for debug only  (maybe neede for alignment ?)
         CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
         stp->setMat(  u_preMat, u_postMat );
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_state._step_action );
         m_stp.push_back(stp);
+
+
+
+
     }
 
     return done ;   // returning true kills the track, as needed for truncation of big bouncers

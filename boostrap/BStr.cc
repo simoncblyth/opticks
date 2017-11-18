@@ -319,6 +319,24 @@ std::string BStr::ijoin( std::vector<int>& elem, char delim)
 }
 
 
+std::string BStr::ujoin( std::vector<unsigned>& elem, char delim)
+{
+    char delimiter[2] ;
+    delimiter[0] = delim ;
+    delimiter[1] = '\0' ;
+
+    std::stringstream ss ;    
+    std::copy( elem.begin(), elem.end(), std::ostream_iterator<unsigned>(ss,delimiter));
+    std::string s_ = ss.str();
+    std::string s = s_.substr(0, s_.size()-1) ;  // remove trailing delimiter
+    return s ;
+}
+
+
+
+
+
+
 
 
 void BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim )

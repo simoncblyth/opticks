@@ -180,3 +180,15 @@ std::string CPhoton::desc() const
     return ss.str();
 }
 
+
+std::string CPhoton::brief() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " seqhis " << std::setw(20) << std::hex << _seqhis << std::dec 
+       << " seqmat " << std::setw(20) << std::hex << _seqmat << std::dec 
+       ;
+
+    return ss.str();
+}
+

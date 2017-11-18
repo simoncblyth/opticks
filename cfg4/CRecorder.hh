@@ -125,7 +125,7 @@ class CFG4_API CRecorder {
         CG4Ctx&            m_ctx; 
         Opticks*           m_ok; 
         bool               m_recpoi ; 
-        bool               m_compare_recpoi_recstp ;
+        bool               m_reccf ;
         CRecState          m_state ;  
         CPhoton            m_photon ;  
         CRec*              m_crec ; 

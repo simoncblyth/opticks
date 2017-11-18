@@ -97,6 +97,7 @@ void CG4Ctx::init()
     _debug = false ; 
     _other = false ; 
     _dump = false ; 
+    _dump_count = 0 ; 
 
 
     _step = NULL ; 
@@ -105,6 +106,18 @@ void CG4Ctx::init()
  
 }
 
+
+
+std::string CG4Ctx::desc_stats() const 
+{
+    std::stringstream ss ; 
+    ss << "CG4Ctx::desc_stats"
+       << " dump_count " << _dump_count  
+       << " event_total " << _event_total 
+       << " event_track_count " << _event_track_count
+       ;
+    return ss.str();
+}
 
 void CG4Ctx::initEvent(const OpticksEvent* evt)
 {
@@ -208,6 +221,9 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
     _other = _ok->isOtherPhoton(_record_id) ; // from option: --oindex=1,100,1000,10000 
     _dump = _debug || _other ; 
 
+    if(_dump) _dump_count += 1 ; 
+
+
     // moved from  CSteppingAction::setPhotonId
     // essential for clearing counts otherwise, photon steps never cleared 
     _rejoin_count = 0 ; 
@@ -248,7 +264,16 @@ std::string CG4Ctx::desc_step() const
 }
 
 
-
+std::string CG4Ctx::brief() const 
+{
+    std::stringstream ss ; 
+    ss 
+        << " record_id " << _record_id
+        ;
+ 
+    return ss.str();
+}
+ 
 
 std::string CG4Ctx::desc() const 
 {

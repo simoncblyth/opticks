@@ -20,19 +20,24 @@ class OKCORE_API OpticksDbg
        friend class Opticks ;  
     public:
        OpticksDbg(Opticks* ok);
-       bool isDbgPhoton(int record_id);
-       bool isOtherPhoton(int record_id);
+
+       unsigned getNumDbgPhoton() const ;
+       unsigned getNumOtherPhoton() const ;
+
+       bool isDbgPhoton(unsigned record_id);
+       bool isOtherPhoton(unsigned record_id);
     public:
-       const std::vector<int>&  getDbgIndex();
-       const std::vector<int>&  getOtherIndex();
+       void loadNPY1(std::vector<unsigned>& vec, const char* path );
+       const std::vector<unsigned>&  getDbgIndex();
+       const std::vector<unsigned>&  getOtherIndex();
        std::string description();
    private:
        void postconfigure();
    private:
        Opticks*             m_ok ; 
        OpticksCfg<Opticks>* m_cfg ; 
-       std::vector<int> m_debug_photon ; 
-       std::vector<int> m_other_photon ; 
+       std::vector<unsigned> m_debug_photon ; 
+       std::vector<unsigned> m_other_photon ; 
 
 };
 
