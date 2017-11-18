@@ -25,11 +25,6 @@ class AB(object):
     =============================
 
    
-    * TODO : make comparison table order configurable 
-      so when working on cfg4 the order follows Opticks counts (and vv),
-      which are not changing to simplify comparisons as cfg4 changes
-
-
     Selection examples::
 
          ab.sel = ".6ccd"             

@@ -47,8 +47,12 @@ unsigned CG4Ctx::point_limit() const
     // *point_limit* is used by CRec::addPoi (recpoi) the "live" point collection approach, 
     // which makes sense of the points as they arrive, 
     // this has advantage of only storing the needed points. 
+    //
+    // DO NOT ADD +1 LEEWAY HERE : OTHERWISE TRUNCATION BEHAVIOUR IS CHANGED
+    // see notes/issues/cfg4-point-recording.rst
+    //
     assert( _ok_event_init ); 
-    return 1 + ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+    return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
 
 
@@ -120,6 +124,24 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
               << " gen " << _gen
               ;
 }
+
+std::string CG4Ctx::desc_event() const 
+{
+    std::stringstream ss ; 
+    ss << "CG4Ctx::desc_event" 
+       << " photons_per_g4event " << _photons_per_g4event
+       << " steps_per_photon " << _steps_per_photon
+       << " record_max " << _record_max
+       << " bounce_max " << _bounce_max
+       << " _gen " << _gen
+       ;
+    return ss.str();
+}
+
+
+
+
+
 
 
 void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent

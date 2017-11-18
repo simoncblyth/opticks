@@ -1092,6 +1092,11 @@ class Evt(object):
 
     @classmethod
     def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False):
+        """
+        :param a: evt A
+        :param b: evt B
+        :param ana_: string name eg "seqhis_ana"
+        """
         if not (a.valid and b.valid):
             log.fatal("need two valid events to compare ")
             sys.exit(1)

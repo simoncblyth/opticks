@@ -111,6 +111,18 @@ rtDeclareVariable(rtObject,      top_object, , );
 
 // beyond MAXREC overwrite save into top slot
 // TODO: check shift = slot_offset*4 rather than slot*4  ? 
+//       nope slot_offset*RNUMQUAD is absolute pointing into record_buffer
+//       so maybe
+//             shift = ( slot < MAXREC ? slot : MAXREC - 1 )* 4 
+//
+//       slot_offset constraint  
+//            int slot_min = photon_id*MAXREC ; 
+//            int slot_max = slot_min + MAXREC - 1 ;
+//            slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+//
+//        so in terms of saving location into record buffer, tis constrained correctly
+//        BUT the seqhis shifts look wrong in truncation 
+//
  
 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
 {    \

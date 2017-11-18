@@ -421,14 +421,28 @@ class SeqTable(object):
          self.sli = sli
          return self
 
-    def compare(self, other):
+    def compare(self, other, ordering="self"):
+        """
+        :param other: SeqTable instance
+        :param ordering: string "self", "other", "max"  control descending count row ordering  
+        """
         log.debug("SeqTable.compare START")
         l = set(self.labels)
         o = set(other.labels)
         lo = list(l | o)   
         # union of labels in self or other
 
-        u = sorted( lo, key=lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0)), reverse=True)
+        if ordering == "max":
+            ordering_ = lambda _:max(self.label2count.get(_,0),other.label2count.get(_,0))
+        elif ordering == "self":
+            ordering_ = lambda _:self.label2count.get(_,0)
+        elif ordering == "other":
+            ordering_ = lambda _:self.label2count.get(_,0)
+        else:
+            assert 0, "ordering_ must be one of max/self/other "
+        pass
+
+        u = sorted( lo, key=ordering_, reverse=True)
         # order the labels union by descending maximum count in self or other
 
         cf = np.zeros( (len(u),3), dtype=np.uint64 )

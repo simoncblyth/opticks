@@ -83,6 +83,8 @@ struct CFG4_API CG4Ctx
 
     void init();
     void initEvent(const OpticksEvent* evt);
+    std::string desc_event() const ;
+
     void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);
     void setTrackOptical();

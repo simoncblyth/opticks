@@ -48,6 +48,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
    m_recpoi(m_ok->isRecPoi()),
+   m_compare_recpoi_recstp(true),
    m_state(m_ctx),
    m_photon(m_ctx, m_state),
 
@@ -88,36 +89,43 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
 
     if(m_recpoi)
     {
-
-
         posttrackWritePoints();  // experimental alt 
 
-        CPhoton pp(m_photon); 
-
-
-        m_writer->setEnabled(false);
-
-        m_photon.clear();
-        m_state.clear(); 
-        posttrackWriteSteps();
-
-        m_writer->setEnabled(true);
-
-        CPhoton ps(m_photon); 
-
-
-
-        if(ps._seqhis != pp._seqhis)
+        if(m_compare_recpoi_recstp)
         {
-             LOG(info) << m_ctx.desc() ; 
-             LOG(info) << "ps:" << ps.desc() ; 
-             LOG(info) << "pp:" << pp.desc() ;  
-        }  
+            CPhoton pp(m_photon); 
+
+            m_writer->setEnabled(false);
+
+            m_photon.clear();
+            m_state.clear(); 
+            posttrackWriteSteps();
+
+            m_writer->setEnabled(true);
+
+            CPhoton ps(m_photon); 
+
+            if(ps._seqhis != pp._seqhis)
+            {
+                 LOG(info) << m_ctx.desc() ; 
+                 LOG(info) << "ps:" << ps.desc() ; 
+                 LOG(info) << "pp:" << pp.desc() ;  
+            }  
+
+            assert( ps._seqhis == pp._seqhis );
+            assert( ps._seqmat == pp._seqmat );
+        }
+
 
     }
     else
     {
         posttrackWriteSteps();
+
+
+
+
+
     } 
 
     if(m_dbg) m_dbg->posttrack(); 
@@ -187,8 +195,6 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
     if(m_ctx._dbgrec)
         LOG(info) << "crec.add "
                   << m_crec->desc()
-
-
                   << std::setw(10) << CStage::Label(m_ctx._stage)
                   << " " << m_ctx.desc_step() 
                   << " " << ( done ? "DONE" : "-" )
@@ -403,8 +409,6 @@ void CRecorder::posttrackWriteSteps()
 
     //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() ; 
 
-
-    //if(false)
     if(!done)
     {
         m_not_done_count++ ; 

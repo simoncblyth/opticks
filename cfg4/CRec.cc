@@ -194,6 +194,9 @@ bool CRec::addStp()
 
 bool CRec::addPoi()
 {
+
+  
+
     bool done = m_poi.size() >= m_ctx.point_limit();
     if(done)
     {
@@ -254,8 +257,11 @@ bool CRec::addPoi()
         unsigned u_postMat = ( matSwap || postMat == 0 )  ? preMat  : postMat ;
 
         
-       // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
-       // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
+        // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
+        // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
+
+        //  how to handle truncation consistently ?
+        //     spirit   
 
         if(!preSkip)    
         {

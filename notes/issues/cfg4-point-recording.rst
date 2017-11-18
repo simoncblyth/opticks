@@ -5,6 +5,9 @@ Observations
 ---------------
 
 * tis much simpler
+
+  * actually the complexity is moved to collection, so not such a big win 
+
 * perfect seqhis, see cfg4-bouncemax-not-working.rst
 * seqmat totally messed up (no matswap)
 
@@ -18,10 +21,109 @@ Observations
 
 * comparing recpoi to recstp : get 3 seqhis/seqmat zeros from "TO AB" 
 
+generate.cu : looks to mess up truncation too
+--------------------------------------------------
+
+* shift wrong 
+
+::
+
+    112 // beyond MAXREC overwrite save into top slot
+    113 // TODO: check shift = slot_offset*4 rather than slot*4  ? 
+    114 //       nope slot_offset*RNUMQUAD is absolute pointing into record_buffer
+    115 //       so maybe
+    116 //             shift = ( slot < MAXREC ? slot : MAXREC - 1 )* 4 
+    117 //
+    118 //       slot_offset constraint  
+    119 //            int slot_min = photon_id*MAXREC ; 
+    120 //            int slot_max = slot_min + MAXREC - 1 ;
+    121 //            slot_offset =  slot < MAXREC  ? slot_min + slot : slot_max ;
+    122 //
+    123 //        so in terms of saving location into record buffer, tis constrained correctly
+    124 //        BUT the seqhis shifts look wrong in truncation 
+    125 //
+    126 
+    127 #define RSAVE(seqhis, seqmat, p, s, slot, slot_offset)  \
+    128 {    \
+    129     unsigned int shift = slot*4 ; \
+    130     unsigned long long his = __ffs((s).flag) & 0xF ; \
+    131     unsigned long long mat = (s).index.x < 0xF ? (s).index.x : 0xF ; \
+    132     seqhis |= his << shift ; \
+    133     seqmat |= mat << shift ; \
+    134     rsave((p), (s), record_buffer, slot_offset*RNUMQUAD , center_extent, time_domain );  \
+    135 }   \
+    136 
 
 
-BUT : difference in topslot rewrite behavour between recpoi and recstp
--------------------------------------------------------------------------
+
+
+FIXED : difference in topslot rewrite behaviour between recpoi and recstp
+----------------------------------------------------------------------------
+
+recpoi(CRec::addPoi)
+   in case of truncation never reach lastPost so just::
+
+       pre,pre,pre,pre,pre,...  
+
+   until m_poi.size() >= m_ctx.point_limit() at which point returns 
+   done=true and the track gets killed : topslot overwrite happens 
+   in the CWriter if the points have been stored  
+  
+
+recstp(CRec::addStp)
+    just adds steps until m_stp.size() >= m_ctx.step_limit() 
+    but this limit is made large to prevent it having teeth : the 
+    real truncation happening in CRecorder::posttrackWriteSteps
+
+CWriter/CPhoton used by both these methods uses photon._slot_constrained
+which will overwrite. But the writer cannot control the points that 
+get given... so to align truncation the point_limit needs to 
+match the truncation limit used in recstp/CWriter. 
+
+
+::
+
+     34 unsigned CG4Ctx::step_limit() const
+     35 {
+     36     // *step_limit* is used by CRec::addStp (recstp) the "canned" step collection approach, 
+     37     // which just collects steps and makes sense of them later...
+     38     // This has the disadvantage of needing to collect StepTooSmall steps (eg from BR turnaround)  
+     39     // that are subsequently thrown : this results in the stem limit needing to 
+     40     // be twice the size you might expect to handle hall-of-mirrors tboolean-truncate.
+     41     assert( _ok_event_init );
+     42     return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+     43 }
+     44 
+     45 unsigned CG4Ctx::point_limit() const
+     46 {
+     47     // *point_limit* is used by CRec::addPoi (recpoi) the "live" point collection approach, 
+     48     // which makes sense of the points as they arrive, 
+     49     // this has advantage of only storing the needed points. 
+     50     //
+     51     // DO NOT ADD +1 LEEWAY HERE : OTHERWISE TRUNCATION BEHAVIOUR IS CHANGED
+     52     // see notes/issues/cfg4-point-recording.rst
+     53     //
+     54     assert( _ok_event_init );  
+     55     return ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+     56 }
+
+
+
+
+::
+
+    167 void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
+    168 {
+    169     // write compressed record quads into buffer at location for the m_record_id 
+    170 
+    171     unsigned target_record_id = m_dynamic ? 0 : m_ctx._record_id ;
+    172     unsigned slot = photon._slot_constrained ;
+    173     unsigned flag = photon._flag ;
+    174     unsigned material = photon._mat ;
+     
+     
+
+
 
 * do both recpoi+recstp, with writer disabled for one, and compare CPhoton
 
