@@ -56,6 +56,7 @@ CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
    m_dynamic(dynamic),
    m_ctx(g4->getCtx()),
    m_ok(g4->getOpticks()),
+   m_enabled(true),
 
    m_evt(NULL),
 
@@ -70,6 +71,12 @@ CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
    m_dynamic_history(NULL)
 {
 }
+
+void CWriter::setEnabled(bool enabled)
+{
+    m_enabled = enabled ; 
+}
+
 
 void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
 {
@@ -120,7 +127,6 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 
         
 
-//if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
 
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material )
 {
@@ -136,13 +142,13 @@ bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned m
     }
     else
     {
-        writeStepPoint_(point, m_photon );
+        if(m_enabled) writeStepPoint_(point, m_photon );
 
         m_photon.increment_slot() ; 
 
         done = m_photon.is_done() ;  // caution truncation/is_done may change after increment
 
-        if( done )
+        if( done && m_enabled )
         {
             writePhoton(point);
             if(m_dynamic) m_records_buffer->add(m_dynamic_records);

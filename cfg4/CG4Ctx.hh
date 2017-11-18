@@ -26,6 +26,8 @@ and CRecorder
 
 struct CFG4_API CG4Ctx
 {
+    Opticks* _ok ; 
+
     // CG4::init
     bool _dbgrec ; 
     bool _dbgseq ; 
@@ -40,6 +42,7 @@ struct CFG4_API CG4Ctx
 
 
     // CG4Ctx::setEvent
+    bool  _ok_event_init ; 
     G4Event* _event ; 
     int  _event_id ;
     int  _event_total ; 
@@ -69,7 +72,7 @@ struct CFG4_API CG4Ctx
     bool _other ; 
     bool _dump ; 
 
-    // CG4Ctx::setStep
+    // m_ctx.setStep invoked from CSteppingAction::setStep
     G4Step* _step ; 
     int _step_id ; 
     int _step_total ;
@@ -87,6 +90,7 @@ struct CFG4_API CG4Ctx
     std::string desc_step() const ;
     void setStepOptical();
     unsigned  step_limit() const ; 
+    unsigned  point_limit() const ; 
     bool      is_dbg() const ; 
 
     std::string desc() const  ; 

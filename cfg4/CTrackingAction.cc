@@ -41,34 +41,23 @@ CTrackingAction::~CTrackingAction()
 { 
 }
 
-
 void CTrackingAction::postinitialize()
 {
     assert(m_ctx._track_id == -1);
     assert(m_ctx._parent_id == -1);
-    LOG(trace) << "CTrackingAction::postinitialize" 
-              << brief()
-               ;
+    LOG(trace) << "CTrackingAction::postinitialize" << brief() ; 
 }
-
 
 void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
     setTrack(track);
-
-    LOG(trace) << "CTrackingAction::PreUserTrackingAction"
-              << brief()  
-               ;
+    LOG(trace) << "CTrackingAction::PreUserTrackingAction" << brief()  ;
 }
 
 void CTrackingAction::setTrack(const G4Track* track)
 {
     m_ctx.setTrack(track);
-    m_ctx._debug = m_ok->isDbgPhoton(m_ctx._record_id) ; // from option: --dindex=1,100,1000,10000 
-    m_ctx._other = m_ok->isOtherPhoton(m_ctx._record_id) ; // from option: --oindex=1,100,1000,10000 
-    m_ctx._dump = m_ctx._debug || m_ctx._other ; 
 }
-
 
 void CTrackingAction::PostUserTrackingAction(const G4Track* track)
 {
@@ -86,9 +75,7 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
 
 void CTrackingAction::dump(const char* msg )
 {
-    LOG(info) << msg  
-              << " ctx " << m_ctx.desc()
-               ; 
+    LOG(info) << msg  << " ctx " << m_ctx.desc() ; 
 }
 
 std::string CTrackingAction::brief()

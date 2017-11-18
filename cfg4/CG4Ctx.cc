@@ -15,6 +15,8 @@
 
 
 CG4Ctx::CG4Ctx(Opticks* ok)
+    :
+    _ok(ok)
 {
     init();
 
@@ -28,10 +30,27 @@ bool CG4Ctx::is_dbg() const
     return _dbgrec || _dbgseq || _dbgzero ;
 }
 
+
 unsigned CG4Ctx::step_limit() const 
 {
+    // *step_limit* is used by CRec::addStp (recstp) the "canned" step collection approach, 
+    // which just collects steps and makes sense of them later...
+    // This has the disadvantage of needing to collect StepTooSmall steps (eg from BR turnaround)  
+    // that are subsequently thrown : this results in the stem limit needing to 
+    // be twice the size you might expect to handle hall-of-mirrors tboolean-truncate.
+    assert( _ok_event_init ); 
     return 1 + 2*( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
 }
+
+unsigned CG4Ctx::point_limit() const 
+{
+    // *point_limit* is used by CRec::addPoi (recpoi) the "live" point collection approach, 
+    // which makes sense of the points as they arrive, 
+    // this has advantage of only storing the needed points. 
+    assert( _ok_event_init ); 
+    return 1 + ( _steps_per_photon > _bounce_max ? _steps_per_photon : _bounce_max ) ;
+}
+
 
 
 void CG4Ctx::init()
@@ -46,7 +65,7 @@ void CG4Ctx::init()
     _record_max = 0 ;
     _bounce_max = 0 ; 
 
-
+    _ok_event_init = false ; 
     _event = NULL ; 
     _event_id = -1 ; 
     _event_total = 0 ; 
@@ -85,6 +104,7 @@ void CG4Ctx::init()
 
 void CG4Ctx::initEvent(const OpticksEvent* evt)
 {
+    _ok_event_init = true ;
     _photons_per_g4event = evt->getNumPhotonsPerG4Event() ; 
     _steps_per_photon = evt->getMaxRec() ;    
     _record_max = evt->getNumPhotons();   // from the genstep summation
@@ -102,24 +122,22 @@ void CG4Ctx::initEvent(const OpticksEvent* evt)
 }
 
 
-void CG4Ctx::setEvent(const G4Event* event)
+void CG4Ctx::setEvent(const G4Event* event) // invoked by CEventAction::setEvent
 {
     _event = const_cast<G4Event*>(event) ; 
     _event_id = event->GetEventID() ;
 
-     // moved from CSteppingAction::setEvent
     _event_total += 1 ; 
     _event_track_count = 0 ; 
 }
 
-void CG4Ctx::setTrack(const G4Track* track)
+void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTrack
 {
     G4ParticleDefinition* particle = track->GetDefinition();
 
     _track = const_cast<G4Track*>(track) ; 
     _track_id = CTrack::Id(track) ;
 
-     // moved from CSteppingAction::setTrack
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 
     _track_total += 1 ;
@@ -131,7 +149,7 @@ void CG4Ctx::setTrack(const G4Track* track)
     if(_optical) setTrackOptical();
 }
 
-void CG4Ctx::setStep(const G4Step* step)
+void CG4Ctx::setStep(const G4Step* step) // invoked by CSteppingAction::setStep
 {
     _step = const_cast<G4Step*>(step) ; 
     _step_id = CTrack::StepId(_track);
@@ -145,6 +163,48 @@ void CG4Ctx::setStep(const G4Step* step)
     }
 
     if(_optical) setStepOptical();
+}
+
+void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
+{
+    LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
+
+    _track->UseGivenVelocity(true);
+
+    // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
+    //    are trumpled by G4Track::CalculateVelocity 
+
+    _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
+    _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
+    _reemtrack = _primary_id >= 0 ? true        : false ; 
+
+     // retaining original photon_id from prior to reemission effects the continuation
+    _record_id = _photons_per_g4event*_event_id + _photon_id ; 
+
+    // moved from CTrackingAction::setTrack
+    _debug = _ok->isDbgPhoton(_record_id) ; // from option: --dindex=1,100,1000,10000 
+    _other = _ok->isOtherPhoton(_record_id) ; // from option: --oindex=1,100,1000,10000 
+    _dump = _debug || _other ; 
+
+    // moved from  CSteppingAction::setPhotonId
+    // essential for clearing counts otherwise, photon steps never cleared 
+    _rejoin_count = 0 ; 
+    _primarystep_count = 0 ; 
+}
+
+void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep
+{
+    if( !_reemtrack )     // primary photon, ie not downstream from reemission 
+    {
+        _stage = _primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
+        _primarystep_count++ ; 
+    } 
+    else 
+    {
+        _stage = _rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
+        _rejoin_count++ ; 
+        // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
+    }
 }
 
 
@@ -165,47 +225,6 @@ std::string CG4Ctx::desc_step() const
     return ss.str();
 }
 
-
-
-void CG4Ctx::setTrackOptical()
-{
-     LOG(debug) << "CTrackingAction::setTrack setting UseGivenVelocity for optical " ; 
-
-     _track->UseGivenVelocity(true);
-
-     // NB without this BoundaryProcess proposed velocity to get correct GROUPVEL for material after refraction 
-     //    are trumpled by G4Track::CalculateVelocity 
-
-     _primary_id = CTrack::PrimaryPhotonID(_track) ;    // layed down in trackinfo by custom Scintillation process
-     _photon_id = _primary_id >= 0 ? _primary_id : _track_id ; 
-     _reemtrack = _primary_id >= 0 ? true        : false ; 
-
-     // retaining original photon_id from prior to reemission effects the continuation
-
-    _record_id = _photons_per_g4event*_event_id + _photon_id ; 
-
-
-    // moved from  CSteppingAction::setPhotonId
-    // essential for clearing counts otherwise, photon steps never cleared 
-    _rejoin_count = 0 ; 
-    _primarystep_count = 0 ; 
-
-}
-
-void CG4Ctx::setStepOptical()
-{
-    if( !_reemtrack )     // primary photon, ie not downstream from reemission 
-    {
-        _stage = _primarystep_count == 0  ? CStage::START : CStage::COLLECT ;
-        _primarystep_count++ ; 
-    } 
-    else 
-    {
-        _stage = _rejoin_count == 0  ? CStage::REJOIN : CStage::RECOLL ;   
-        _rejoin_count++ ; 
-        // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
-    }
-}
 
 
 

@@ -27,6 +27,8 @@ class CFG4_API CWriter
          static unsigned char my__float2uint_rn( float f );
     public:
         CWriter(CG4* g4, CPhoton& photon, bool dynamic);        
+
+        void setEnabled(bool enabled);
         bool writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material );
         void writePhoton(const G4StepPoint* point );
         // *writePhoton* overwrites prior entries for REJOIN updating target_record_id 
@@ -40,6 +42,7 @@ class CFG4_API CWriter
         bool               m_dynamic ; 
         CG4Ctx&            m_ctx ; 
         Opticks*           m_ok ; 
+        bool               m_enabled ; 
 
         OpticksEvent*      m_evt ; 
 

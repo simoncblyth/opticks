@@ -51,7 +51,7 @@ CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic)
    m_state(m_ctx),
    m_photon(m_ctx, m_state),
 
-   m_crec(new CRec(m_g4)),
+   m_crec(new CRec(m_g4, m_state)),
    m_dbg(m_ctx.is_dbg() ? new CDebug(g4, m_photon, this) : NULL),
 
    m_evt(NULL),
@@ -88,13 +88,37 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
 
     if(m_recpoi)
     {
+
+
         posttrackWritePoints();  // experimental alt 
+
+        CPhoton pp(m_photon); 
+
+
+        m_writer->setEnabled(false);
+
+        m_photon.clear();
+        m_state.clear(); 
+        posttrackWriteSteps();
+
+        m_writer->setEnabled(true);
+
+        CPhoton ps(m_photon); 
+
+
+
+        if(ps._seqhis != pp._seqhis)
+        {
+             LOG(info) << m_ctx.desc() ; 
+             LOG(info) << "ps:" << ps.desc() ; 
+             LOG(info) << "pp:" << pp.desc() ;  
+        }  
+
     }
     else
     {
         posttrackWriteSteps();
     } 
-
 
     if(m_dbg) m_dbg->posttrack(); 
 }
@@ -154,13 +178,17 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
         m_state._decrement_request = 0 ;  
     } 
 
-    bool done = m_crec->add(boundary_status) ;
+    bool done = m_crec->add(boundary_status) ; // collecting steps (recstp) or points (recpoi)
+
+    // when done=true is returnd the track is killed
+    // effecting truncation of big bouncers
+
 
     if(m_ctx._dbgrec)
         LOG(info) << "crec.add "
-                  << "[" 
-                  << std::setw(2) << m_crec->getNumStp()
-                  << "]"
+                  << m_crec->desc()
+
+
                   << std::setw(10) << CStage::Label(m_ctx._stage)
                   << " " << m_ctx.desc_step() 
                   << " " << ( done ? "DONE" : "-" )
@@ -183,18 +211,16 @@ void CRecorder::zeroPhoton()
     if(m_dbg) m_dbg->Clear();
 }
 
-
-
 void CRecorder::posttrackWritePoints()
-{
+{ 
 #ifdef USE_CUSTOM_BOUNDARY
     DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
 #else
     G4OpBoundaryProcessStatus boundary_status = Undefined ;
 #endif
  
-    unsigned num = m_crec->getNumPoi(); 
-    for(unsigned i=0 ; i < num ; i++)
+    unsigned numPoi = m_crec->getNumPoi(); 
+    for(unsigned i=0 ; i < numPoi ; i++)
     {
         m_state._step_action = 0 ; 
         CPoi* poi  = m_crec->getPoi(i);
@@ -203,11 +229,19 @@ void CRecorder::posttrackWritePoints()
         unsigned flag = poi->getFlag(); 
         unsigned material = poi->getMaterial() ; 
         boundary_status = poi->getBoundaryStatus() ; 
-        
+
         RecordStepPoint( point, flag, material, boundary_status, NULL );
 
-        //if(done) assert( i == num - 1 ) ; 
+        if(m_dbg) m_dbg->Collect(point, boundary_status, m_photon );
+
     } 
+
+    //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() << " numPoi " << numPoi ; 
+
+    //if( numPoi < 2 )
+    //   m_crec->dump("CRecorder::posttrackWritePoints numPoi < 2 ");
+
+
 }
 
 
@@ -367,6 +401,10 @@ void CRecorder::posttrackWriteSteps()
     }   // stp loop
 
 
+    //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() ; 
+
+
+    //if(false)
     if(!done)
     {
         m_not_done_count++ ; 
@@ -378,9 +416,7 @@ void CRecorder::posttrackWriteSteps()
                    << " num " << num 
                    ; 
     } 
-
 }
-
 
 
 #ifdef USE_CUSTOM_BOUNDARY
@@ -389,19 +425,17 @@ bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigne
 bool CRecorder::RecordStepPoint(const G4StepPoint* point, unsigned flag, unsigned int material, G4OpBoundaryProcessStatus boundary_status, const char* )
 #endif
 {
-
     if(flag == 0)
     {
         if(!(boundary_status == SameMaterial || boundary_status == Undefined))
             LOG(warning) << " boundary_status not handled : " << OpStatus::OpBoundaryAbbrevString(boundary_status) ; 
     }
-
+    // the below adds flag and material to the shared m_photon struct
     return m_writer->writeStepPoint( point, flag, material );
 }
 
 
 /*
-
         if(m_ctx._debug || m_ctx._other)
         {
             LOG(info)

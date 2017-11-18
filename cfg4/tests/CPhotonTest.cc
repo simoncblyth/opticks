@@ -25,6 +25,16 @@ void test_CPhoton(CPhoton& p, const std::vector<unsigned>& flags )
     }
 }
 
+void test_CPhoton_copy( CPhoton& p )
+{
+    CPhoton c(p);
+
+    LOG(info) << "p:" << p.desc() ; 
+    LOG(info) << "c:" << c.desc() ; 
+
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -54,7 +64,11 @@ int main(int argc, char** argv)
         s.clear();
 
         test_CPhoton(p, flags );
+        test_CPhoton_copy(p);
+
     }
+
+
 
     {
         std::vector<unsigned> flags ; 
@@ -77,6 +91,7 @@ int main(int argc, char** argv)
         s.clear();
 
         test_CPhoton(p, flags );
+        test_CPhoton_copy(p);
     }
 
 

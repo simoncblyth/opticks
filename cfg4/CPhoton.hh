@@ -32,6 +32,7 @@ struct CFG4_API CPhoton
     unsigned long long _flag_prior ; 
 
 
+    //CPhoton(const CPhoton& other);
     CPhoton(const CG4Ctx& ctx, CRecState& state);
 
     void clear();

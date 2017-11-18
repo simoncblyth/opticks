@@ -12,6 +12,7 @@ class CPoi ;
 class CG4 ; 
 class CMaterialBridge ; 
 
+struct CRecState ; 
 struct CG4Ctx ; 
 
 #include "CFG4_API_EXPORT.hh"
@@ -28,9 +29,13 @@ Canonical m_crec instance is resident of CRecorder and is instanciated with it.
 class CFG4_API CRec 
 {
     public:
-        CRec(CG4* g4);
+        CRec(CG4* g4, CRecState& state);
 
+        bool is_limited() const ; 
         bool is_step_limited() const ; 
+        bool is_point_limited() const ; 
+        std::string desc() const ;
+
         void setOrigin(const G4ThreeVector& origin);
         void clear();
         void setMaterialBridge(CMaterialBridge* material_bridge) ;
@@ -52,18 +57,14 @@ class CFG4_API CRec
         bool add(G4OpBoundaryProcessStatus boundary_status);
 #endif
 
-
    private:
+        bool addPoi();
+        bool addStp();
+
 #ifdef USE_CUSTOM_BOUNDARY
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status);
 #else
         void setBoundaryStatus(G4OpBoundaryProcessStatus boundary_status);
-#endif
-
-#ifdef USE_CUSTOM_BOUNDARY
-        unsigned pointFlag(DsG4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point);
-#else
-        unsigned pointFlag( G4OpBoundaryProcessStatus boundary_status, const G4StepPoint* point);
 #endif
 
 
@@ -74,9 +75,14 @@ class CFG4_API CRec
 #endif
     private:
         CG4*                        m_g4 ; 
+        CRecState&                  m_state ; 
         CG4Ctx&                     m_ctx ; 
-        Opticks*                    m_ok ;  
+        Opticks*                    m_ok ; 
+        bool                        m_recpoi ; 
+
         bool                        m_step_limited ; 
+        bool                        m_point_limited ; 
+
         CMaterialBridge*            m_material_bridge ; 
     private:
         G4ThreeVector               m_origin ; 

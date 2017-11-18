@@ -58,4 +58,16 @@ CStage::CStage_t CPoi::getStage() const
 
 
 
+std::string CPoi::description() const 
+{
+    std::stringstream ss ; 
+    ss 
+       << " CPoi " << OpticksFlags::Abbrev(m_flag)
+       << "   " << std::setw(5) << OpStatus::OpBoundaryAbbrevString(m_boundary_status) 
+       << std::endl 
+       << ::Format(m_point, m_origin, "Poi", true ) 
+       ;
+    return ss.str(); 
+}
+
 

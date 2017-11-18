@@ -23,6 +23,7 @@ CPhoton::CPhoton(const CG4Ctx& ctx, CRecState& state)
     clear();
 }
 
+
 void CPhoton::clear()
 {
     _badflag = 0 ; 

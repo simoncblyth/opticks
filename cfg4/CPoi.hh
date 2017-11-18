@@ -25,6 +25,7 @@ class CFG4_API CPoi
         unsigned           getFlag() const ; 
         unsigned           getMaterial() const ; 
         CStage::CStage_t   getStage() const ;
+        std::string        description() const ; 
 
     private: 
         const G4StepPoint*  m_point ; 
