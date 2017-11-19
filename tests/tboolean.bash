@@ -25,33 +25,32 @@ tboolean-name-
        analytic=1_csgpath=/tmp/blyth/opticks/tboolean-name--_mode=PyCsgInBox_outerfirst=1_name=tboolean-name--
 
 tboolean-name
-     runs the above geometry serialization, capturing the testconfig string and passing it
-     to the op.sh script via the tboolean-- function which runs the opticks executables 
-     in --test mode constructing the geometry, performing the simulation and writing 
-     events to file
+    runs the above geometry serialization, capturing the testconfig string and passing it
+    to the op.sh script via the tboolean-- function which runs the opticks executables 
+    in --test mode constructing the geometry, performing the simulation and writing 
+    events to file
 
 tboolean-name-g  
-      some *name* have the g variant which tests geometry construction via tboolean-g-
+    some *name* have the g variant which tests geometry construction via tboolean-g-
 
 tboolean-name-a
-     invokes tboolean-ana- on the events written by the tboolean-name function 
+    invokes tboolean-ana- on the events written by the tboolean-name function 
 
 tboolean-name-p
-     invokes tboolean-py- on the events written by the tboolean-name function 
+    invokes tboolean-py- on the events written by the tboolean-name function 
 
 tboolean-name-ip
-     invokes tboolean-ipy- (ipython) on the events written by the tboolean-name function 
-     which jumps into interactive python with the event loaded
+    invokes tboolean-ipy- (ipython) on the events written by the tboolean-name function 
+    which jumps into interactive python with the event loaded
 
 
 Configuring Photon Sources 
 -----------------------------
 
-TODO: check, is torchconfig still working, seems that emitconfig trumps torchconfig 
 
 There are two approaches, the older manual torchconfig which is 
 defined separately from geometry and the newer more automated emitconfig,
-which is attached solids in the geometry.
+which is attaches emission to solids in the geometry.
 
 emitconfig
    Emission of photons from the surface of any CSG primitive is configured 
@@ -120,9 +119,15 @@ Workflow Examples
 TODO
 ----
 
+* revisit all the tboolean-funcs updating geostyle and doing cfg4 match checks 
+
+* automate the running of tboolean-funcs and match validations
+
 * migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
 
 * check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
+
+* check, is torchconfig still working, what happens with both emitconfig and torchconfig active ?
 
 
 
@@ -134,6 +139,8 @@ Mostly Working (Sep 1, 2017) Other than those marked
 
   
 tboolean-box
+tboolean-box3
+tboolean-truncate
 tboolean-cone
 tboolean-prism
 tboolean-trapezoid
@@ -517,9 +524,12 @@ tboolean-box-notes(){ cat << EON
 $FUNCNAME
 ============================
 
-* see tboolean-box-okg4-seqmat-mismatch.rst
-  "TO BR SA" is always giving incorrect 1st material in G4 recording 
+* FIXED notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
+  "TO BR SA" was always giving incorrect 1st material in G4 recording 
   (presumably a matswap?)
+
+* this issue prompted a major refactoring of the cfg4/CRecorder
+  breaking apart the monolithic into many pieces: CWriter/CDebug/...
  
 
 EON
@@ -562,7 +572,7 @@ $FUNCNAME
 Used this to show that the incorrect matswap was only effecting 
 a BR on the 1st step, ie "TO BR SA" and not all "BR".
 
-* see tboolean-box-okg4-seqmat-mismatch.rst
+* see notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
  
 
 EON
@@ -602,22 +612,26 @@ tboolean-truncate-notes(){ cat << EON
 $FUNCNAME
 ============================
 
-Checking truncation behaviour of infinite bounce "hall of mirrors" situation 
+Aligning truncation behaviour of infinite bounce "hall of mirrors" situation 
 
 Box with internal perfectSpecularSurface : 
 with Opticks the bouncemax prevents this going on forever, 
-but there is no equivalent with G4 ... so it proceeded to occupy all machine memory and dies ! 
+but there was no equivalent with G4 ... so it proceeded to occupy all machine memory 
+and subsequent death ! 
 
 Applying a step limit avoids memory death, but initally gave seqhis/seqmat zeros because
 never reaching DONE.
 
 The reason for this is that G4 handles BR with StepTooSmall turnarounds, which 
-get skipped 
+get skipped. 
 
+* Now fixed 
 
+* see notes/issuse/cfg4-bouncemax-not-working.rst
 
-* cfg4-bouncemax-not-working.rst
-
+* this truncation issue motivated development of the more efficient cfg4/CRecorder/CRec recpoi approach, 
+  which makes sense of steps, picking the points for posttrack writing, 
+  rather than recstp blindly storing steps "canned approach" for later examination     
 
 
 EON
@@ -628,6 +642,8 @@ EON
 
 
 tboolean-cone-scan(){ SCAN="0,0,100,1,0,0,0,300,10" NCSGScanTest $TMP/tboolean-cone--/1 ; }
+tboolean-cone-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
+tboolean-cone-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-cone-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-cone(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-cone-(){  $FUNCNAME- | python $* ; }
@@ -639,26 +655,45 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-CSG.boundary = args.testobject
-CSG.kwa = dict(verbosity="1", poly="HY", resolution="4" )
+emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+
+CSG.kwa = dict(poly="HY",resolution="4", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
+
+container = CSG("box", param=[0,0,0,1000], emit=-1, boundary="Rock//perfectAbsorbSurface/Vacuum" )  
 
 r2,r1 = 100,300
 #r2,r1 = 300,300    ## with equal radii (a cylinder) polygonization and raytrace both yield nothing 
 #r2,r1 = 300,100    ## radii swapped (upside-down cone) works
 
-z2 = 200
-z1 = 0
+z2 = 100
+z1 = -100
 
-a = CSG("cone", param=[r1,z1,r2,z2] )
-a.dump()
+cone = CSG("cone", param=[r1,z1,r2,z2], boundary="Vacuum///GlassSchottF2", emit=0 )
+cone.dump()
 
-obj = a 
-container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="HY", resolution="4", verbosity="0" )
-
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, cone], args.csgpath )
 
 EOP
 }
+
+tboolean-cone-notes(){ cat << EON
+
+$FUNCNAME
+=======================
+
+* CMaker::ConvertPrimitive requires z symmetry for the cone section
+  assert( z2 > z1 && z2 == -z1 );
+
+* emit from container box gives okg4 seqhis/seqmat  match
+
+* trying to emit from cone asserts for missing NCone specialization nnode::par_posnrm_model
+
+
+EON
+}
+
+
+
 
 tboolean-prism-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
 tboolean-prism(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
@@ -701,6 +736,24 @@ CSG.Serialize([container, obj], args.csgpath )
 
 EOP
 }
+
+tboolean-prism-notes(){ cat << EON
+
+$FUNCNAME
+==========================
+
+
+
+
+
+
+
+EON
+}
+
+
+
+
 
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
