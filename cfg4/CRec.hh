@@ -7,6 +7,7 @@
 #include "CStage.hh"
 
 class Opticks ; 
+class OpticksEvent ; 
 class CStp ; 
 class CPoi ; 
 class CG4 ; 
@@ -30,6 +31,7 @@ class CFG4_API CRec
 {
     public:
         CRec(CG4* g4, CRecState& state);
+        void initEvent(OpticksEvent* evt);
 
         bool is_limited() const ; 
         bool is_step_limited() const ; 
@@ -58,8 +60,7 @@ class CFG4_API CRec
 #endif
 
    private:
-        bool addPoi();
-        bool addStp();
+        bool addPoi(CStp* stp);
 
 #ifdef USE_CUSTOM_BOUNDARY
         void setBoundaryStatus(DsG4OpBoundaryProcessStatus boundary_status);
@@ -77,12 +78,14 @@ class CFG4_API CRec
         CG4*                        m_g4 ; 
         CRecState&                  m_state ; 
         CG4Ctx&                     m_ctx ; 
+
         Opticks*                    m_ok ; 
         bool                        m_recpoi ; 
+        bool                        m_recpoialign ; 
 
         bool                        m_step_limited ; 
         bool                        m_point_limited ; 
-        bool                        m_compat_aligned ; 
+        bool                        m_point_terminated ; 
 
         CMaterialBridge*            m_material_bridge ; 
     private:

@@ -3,6 +3,7 @@
 #include <iomanip>
 
 #include "Opticks.hh"
+#include "OpticksEvent.hh"
 #include "OpticksPhoton.h"
 #include "OpStatus.hh"
 
@@ -28,9 +29,10 @@ CRec::CRec(CG4* g4, CRecState& state)
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
     m_recpoi(m_ok->isRecPoi()),
+    m_recpoialign(m_ok->isRecPoiAlign()),
     m_step_limited(false),
     m_point_limited(false),
-    m_compat_aligned(true),
+    m_point_terminated(false),
     m_material_bridge(NULL),
     m_prior_boundary_status(Undefined),
     m_boundary_status(Undefined)
@@ -60,6 +62,28 @@ std::string CRec::desc() const
 
     return ss.str();
 }
+
+
+void CRec::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG4::initEvent
+{
+    assert(evt);
+    if(m_recpoi)
+    {
+        evt->appendNote( "recpoi");
+        evt->appendNote( m_recpoialign ? "recpoialign" : "not-aligned" );
+    }
+    else
+    {
+        evt->appendNote( "recstp");
+    }
+
+    std::string note = evt->getNote();
+
+    LOG(info) << "CRec::initEvent note " << note ; 
+
+}
+
+
 
 
 void CRec::setMaterialBridge(CMaterialBridge* material_bridge) 
@@ -159,10 +183,13 @@ void CRec::clear()
     m_poi.clear();
     m_step_limited = false ; 
     m_point_limited = false ; 
+    m_point_terminated = false ; 
 }
 
 
 // this is step-by-step invoked from CRecorder::Record
+// returning true kills the track, as needed for truncation of big bouncers
+
 #ifdef USE_CUSTOM_BOUNDARY
 bool CRec::add(DsG4OpBoundaryProcessStatus boundary_status )
 #else
@@ -170,136 +197,107 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
 #endif
 {
     setBoundaryStatus(boundary_status);
+
+    m_step_limited = m_stp.size() >= m_ctx.step_limit() ;
+    m_point_limited = m_poi.size() >= m_ctx.point_limit() ;
+
+    CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
+    m_stp.push_back(stp);
+
+    // collect points from each step until reach termination or point limit 
+    if(m_recpoi && !m_point_terminated && !m_point_limited)  
+    {
+        m_point_terminated = addPoi(stp) ;
+    }
+
+    return m_recpoialign || !m_recpoi ? m_step_limited : ( m_point_terminated || m_point_limited ) ;  
+}
+
+
+// *m_recpoialign*
+//      aligns recpoi truncation according to step limit so both recpoi and recstp
+//      kill the track at same juncture  
+//
+//      This spins G4 wheels with the more efficient recpoi 
+//      in order to keep random sequence aligned with the less efficient !recpoi(aka recstp)
+//      see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
+
+
+
+bool CRec::addPoi(CStp* stp )
+{
+    m_state._step_action = 0 ; 
+
+    switch(m_ctx._stage)
+    {
+        case CStage::START:  m_state._step_action |= CAction::STEP_START    ; break ; 
+        case CStage::REJOIN: m_state._step_action |= CAction::STEP_REJOIN   ; break ; 
+        case CStage::RECOLL: m_state._step_action |= CAction::STEP_RECOLL   ; break ;
+        case CStage::COLLECT:                                               ; break ; 
+        case CStage::UNKNOWN:assert(0)                                      ; break ; 
+    } 
+
+    const G4Step* step = m_ctx._step ;
+    const G4StepPoint* pre  = step->GetPreStepPoint() ; 
+    const G4StepPoint* post = step->GetPostStepPoint() ; 
+
+
+    CStage::CStage_t stage = m_ctx._stage == CStage::REJOIN ? CStage::RECOLL : m_ctx._stage  ; // avoid duping the RE 
+
+    unsigned preFlag = stage == CStage::START ? 
+                                                 m_ctx._gen
+                                              : 
+                                                 OpStatus::OpPointFlag(pre, m_prior_boundary_status, stage )
+                                              ;
+
+    unsigned postFlag = OpStatus::OpPointFlag(post, m_boundary_status, stage ) ;  // only stage REJOIN yields BULK_REEMIT
+
+    assert( preFlag ); 
+    assert( postFlag );
+
+    unsigned preMat = m_material_bridge->getPreMaterial(step) ; 
+    unsigned postMat = m_material_bridge->getPostMaterial(step) ; 
+
+    bool lastPre = OpStatus::IsTerminalFlag(preFlag);  assert(!lastPre);
+    bool lastPost = OpStatus::IsTerminalFlag(postFlag);
+
+    bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
+
+    bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  && m_ctx._stage != CStage::START  ;  
+    // cannot preSkip CStage::START as that yields seqhis zero for "TO AB" 
+    // bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
+
+    bool matSwap = postFlag == NAN_ABORT ; // StepTooSmall coming up next, which will be preSkip 
+
+    if(lastPost)      m_state._step_action |= CAction::LAST_POST ; 
+    if(surfaceAbsorb) m_state._step_action |= CAction::SURF_ABS ;  
+    if(preSkip)       m_state._step_action |= CAction::PRE_SKIP ; 
+    if(matSwap)       m_state._step_action |= CAction::MAT_SWAP ; 
+
+    unsigned u_preMat  = matSwap ? postMat : preMat ;
+    unsigned u_postMat = ( matSwap || postMat == 0 )  ? preMat  : postMat ;
     
-    bool done = false ; 
-    bool stp_done = m_stp.size() >= m_ctx.step_limit() ;
+    // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
+    // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
 
-    if(m_recpoi)
+    if(!preSkip)    
     {
-        done = addPoi();
+        m_poi.push_back(new CPoi(pre, preFlag, u_preMat, m_prior_boundary_status, m_ctx._stage, m_origin));
     }
-    else
+
+    if(lastPost)
     {
-        done = addStp() ; 
-    } 
- 
-    //
-    // *m_compat_aligned*
-    //      spins G4 wheels with the more efficient addPoi
-    //      in order to keep random sequence aligned with the less efficient addStp
-    //      see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
-
-
-    return m_compat_aligned ? stp_done : done  ; 
-}
-
-
-bool CRec::addStp()
-{
-    bool limited = m_stp.size() >= m_ctx.step_limit() ;
-    if(limited) 
-    {
-        m_step_limited = true ; 
-    } 
-    else
-    {
-        CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
-        m_stp.push_back(stp);
+        m_poi.push_back(new CPoi(post, postFlag, u_postMat, m_boundary_status, m_ctx._stage, m_origin));
     }
-    return limited   ; 
-}
 
-
-bool CRec::addPoi()
-{
-    bool done = m_poi.size() >= m_ctx.point_limit();
-    if(done)
+    if(stp) // debug notes for dumping
     {
-        m_point_limited = true ; 
-    }
-    else
-    {
-        m_state._step_action = 0 ; 
-
-        switch(m_ctx._stage)
-        {
-            case CStage::START:  m_state._step_action |= CAction::STEP_START    ; break ; 
-            case CStage::REJOIN: m_state._step_action |= CAction::STEP_REJOIN   ; break ; 
-            case CStage::RECOLL: m_state._step_action |= CAction::STEP_RECOLL   ; break ;
-            case CStage::COLLECT:                                               ; break ; 
-            case CStage::UNKNOWN:assert(0)                                      ; break ; 
-        } 
-
-        const G4Step* step = m_ctx._step ;
-        const G4StepPoint* pre  = step->GetPreStepPoint() ; 
-        const G4StepPoint* post = step->GetPostStepPoint() ; 
-
-
-        CStage::CStage_t stage = m_ctx._stage == CStage::REJOIN ? CStage::RECOLL : m_ctx._stage  ; // avoid duping the RE 
-
-        unsigned preFlag = stage == CStage::START ? 
-                                                     m_ctx._gen
-                                                  : 
-                                                     OpStatus::OpPointFlag(pre, m_prior_boundary_status, stage )
-                                                  ;
-
-        unsigned postFlag = OpStatus::OpPointFlag(post, m_boundary_status, stage ) ;  // only stage REJOIN yields BULK_REEMIT
-
-        assert( preFlag ); 
-        assert( postFlag );
-
-        unsigned preMat = m_material_bridge->getPreMaterial(step) ; 
-        unsigned postMat = m_material_bridge->getPostMaterial(step) ; 
-
-        bool lastPre = OpStatus::IsTerminalFlag(preFlag);  assert(!lastPre);
-        bool lastPost = OpStatus::IsTerminalFlag(postFlag);
-
-        bool surfaceAbsorb = (postFlag & (SURFACE_ABSORB | SURFACE_DETECT)) != 0 ;
-
-        bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  && m_ctx._stage != CStage::START  ;  
-        // cannot preSkip CStage::START as that yields seqhis zero for "TO AB" 
-        // bool preSkip = m_prior_boundary_status == StepTooSmall && m_ctx._stage != CStage::REJOIN  ;  
-
-        bool matSwap = postFlag == NAN_ABORT ; // StepTooSmall coming up next, which will be preSkip 
-
-        if(lastPost)      m_state._step_action |= CAction::LAST_POST ; 
-        if(surfaceAbsorb) m_state._step_action |= CAction::SURF_ABS ;  
-        if(preSkip)       m_state._step_action |= CAction::PRE_SKIP ; 
-        if(matSwap)       m_state._step_action |= CAction::MAT_SWAP ; 
-
-        unsigned u_preMat  = matSwap ? postMat : preMat ;
-        unsigned u_postMat = ( matSwap || postMat == 0 )  ? preMat  : postMat ;
-        
-        // canned style  :  pre+post,post,post,...   (with canned style can look into future when need arises)
-        // live   style  :  pre,pre,pre,pre+post     (with live style cannot look into future, so need to operate with pre to allow peeking at post)
-
-        if(!preSkip)    
-        {
-            m_poi.push_back(new CPoi(pre, preFlag, u_preMat, m_prior_boundary_status, m_ctx._stage, m_origin));
-        }
-
-        if(lastPost)
-        {
-            m_poi.push_back(new CPoi(post, postFlag, u_postMat, m_boundary_status, m_ctx._stage, m_origin));
-        }
-
-
-        done = lastPost ; 
-
-
-         // step collection in CRec::addPoi is for debug only  (maybe neede for alignment ?)
-        CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
         stp->setMat(  u_preMat, u_postMat );
         stp->setFlag( preFlag,  postFlag );
         stp->setAction( m_state._step_action );
-        m_stp.push_back(stp);
-
-
-
-
     }
 
-    return done ;   // returning true kills the track, as needed for truncation of big bouncers
+    return lastPost ;   
 }
 
 

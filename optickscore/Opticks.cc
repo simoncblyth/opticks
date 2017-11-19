@@ -495,6 +495,12 @@ bool Opticks::isRecPoi() const
 {
     return m_cfg->hasOpt("recpoi") ;
 }
+bool Opticks::isRecPoiAlign() const
+{
+    return m_cfg->hasOpt("recpoialign") ;
+}
+
+
 bool Opticks::isRecCf() const
 {
     return m_cfg->hasOpt("reccf") ;

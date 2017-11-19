@@ -19,6 +19,114 @@ Revealed by single discrepant dumping::
 
 
 
+FIXED : Aligning truncation step limit between recpoi/recstp gives perfect match
+------------------------------------------------------------------------------------
+
+
+::
+
+    185 // this is step-by-step invoked from CRecorder::Record
+    186 // returning true kills the track, as needed for truncation of big bouncers
+    187 
+    188 #ifdef USE_CUSTOM_BOUNDARY
+    189 bool CRec::add(DsG4OpBoundaryProcessStatus boundary_status )
+    190 #else
+    191 bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
+    192 #endif
+    193 {  
+    194     setBoundaryStatus(boundary_status);
+    195 
+    196     m_step_limited = m_stp.size() >= m_ctx.step_limit() ;
+    197     m_point_limited = m_poi.size() >= m_ctx.point_limit() ;
+    198 
+    199     CStp* stp = new CStp(m_ctx._step, m_ctx._step_id, m_boundary_status, m_ctx._stage, m_origin) ;
+    200     m_stp.push_back(stp);
+    201     
+    202     // collect points from each step until reach termination or point limit 
+    203     if(m_recpoi && !m_point_terminated && !m_point_limited)
+    204     {
+    205         m_point_terminated = addPoi(stp) ;
+    206     }
+    207 
+    208     return m_recpoialign || !m_recpoi ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
+    209 }   
+    210     
+    211     
+    212 // *m_recpoialign*
+    213 //      aligns recpoi truncation according to step limit so both recpoi and recstp
+    214 //      kill the track at same juncture  
+    215 //
+    216 //      This spins G4 wheels with the more efficient recpoi 
+    217 //      in order to keep random sequence aligned with the less efficient !recpoi(aka recstp)
+    218 //      see notes/issues/cfg4-recpoi-recstp-insidious-difference.rst
+    219     
+
+
+
+
+::
+
+    delta:cfg4 blyth$ tboolean-;TBOOLEAN_TAG=1 tboolean-truncate --okg4 
+    delta:cfg4 blyth$ tboolean-;TBOOLEAN_TAG=2 tboolean-truncate --okg4 --recpoi --recpoialign
+    delta:cfg4 blyth$ tboolean-;TBOOLEAN_TAG=1,2 tboolean-truncate-p
+
+::
+
+    [2017-11-19 12:56:59,381] p46688 {/Users/blyth/opticks/ana/tboolean.py:17} INFO - tag None src torch det tboolean-truncate c2max 2.0 ipython False 
+    [2017-11-19 12:56:59,381] p46688 {/Users/blyth/opticks/ana/ab.py:81} INFO - AB.load START smry 0 
+    [2017-11-19 12:56:59,527] p46688 {/Users/blyth/opticks/ana/ab.py:108} INFO - AB.load DONE 
+    [2017-11-19 12:56:59,529] p46688 {/Users/blyth/opticks/ana/ab.py:150} INFO - AB.init_point START
+    [2017-11-19 12:56:59,531] p46688 {/Users/blyth/opticks/ana/ab.py:152} INFO - AB.init_point DONE
+    AB(1,2,torch,tboolean-truncate)  None 0 
+    A tboolean-truncate/torch/ -1 :  20171119-1256 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-1/fdom.npy (recstp) 
+    B tboolean-truncate/torch/ -2 :  20171119-1256 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-truncate/torch/-2/fdom.npy (recpoi recpoialign) 
+    Rock//perfectSpecularSurface/Vacuum
+    /tmp/blyth/opticks/tboolean-truncate--
+    .                seqhis_ana  -1:tboolean-truncate   -2:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/9 =  0.00  (pval:1.000 prob:0.000)  
+    0000       aaaaaaaaad     99633     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] TO SR SR SR SR SR SR SR SR SR
+    0001       6aaaaaaaad        49        49             0.00        1.000 +- 0.143        1.000 +- 0.143  [10] TO SR SR SR SR SR SR SR SR SC
+    0002       aaa6aaaaad        42        42             0.00        1.000 +- 0.154        1.000 +- 0.154  [10] TO SR SR SR SR SR SC SR SR SR
+    0003       aaaaaaa6ad        42        42             0.00        1.000 +- 0.154        1.000 +- 0.154  [10] TO SR SC SR SR SR SR SR SR SR
+    0004       aaaaa6aaad        42        42             0.00        1.000 +- 0.154        1.000 +- 0.154  [10] TO SR SR SR SC SR SR SR SR SR
+    0005       aaaa6aaaad        36        36             0.00        1.000 +- 0.167        1.000 +- 0.167  [10] TO SR SR SR SR SC SR SR SR SR
+    0006       aaaaaaaa6d        36        36             0.00        1.000 +- 0.167        1.000 +- 0.167  [10] TO SC SR SR SR SR SR SR SR SR
+    0007       aa6aaaaaad        31        31             0.00        1.000 +- 0.180        1.000 +- 0.180  [10] TO SR SR SR SR SR SR SC SR SR
+    0008       a6aaaaaaad        31        31             0.00        1.000 +- 0.180        1.000 +- 0.180  [10] TO SR SR SR SR SR SR SR SC SR
+    0009       aaaaaa6aad        30        30             0.00        1.000 +- 0.183        1.000 +- 0.183  [10] TO SR SR SC SR SR SR SR SR SR
+    0010              4ad         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [3 ] TO SR AB
+    0011       4aaaaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [10] TO SR SR SR SR SR SR SR SR AB
+    0012         4aaaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [8 ] TO SR SR SR SR SR SR AB
+    0013          4aaaaad         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [7 ] TO SR SR SR SR SR AB
+    0014               4d         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [2 ] TO AB
+    0015            4aaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [5 ] TO SR SR SR AB
+    0016        4aaaaaaad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] TO SR SR SR SR SR SR SR AB
+    0017             4aad         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO SR SR AB
+    0018           4aaaad         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] TO SR SR SR SR AB
+    .                             100000    100000         0.00/9 =  0.00  (pval:1.000 prob:0.000)  
+    .                pflags_ana  -1:tboolean-truncate   -2:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/2 =  0.00  (pval:1.000 prob:0.000)  
+    0000             1200     99633     99633             0.00        1.000 +- 0.003        1.000 +- 0.003  [2 ] TO|SR
+    0001             1220       339       339             0.00        1.000 +- 0.054        1.000 +- 0.054  [3 ] TO|SR|SC
+    0002             1208        25        25             0.00        1.000 +- 0.200        1.000 +- 0.200  [3 ] TO|SR|AB
+    0003             1008         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [2 ] TO|AB
+    .                             100000    100000         0.00/2 =  0.00  (pval:1.000 prob:0.000)  
+    .                seqmat_ana  -1:tboolean-truncate   -2:tboolean-truncate        c2        ab        ba 
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000       2222222222     99976     99976             0.00        1.000 +- 0.003        1.000 +- 0.003  [10] Vm Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0001              222         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [3 ] Vm Vm Vm
+    0002          2222222         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [7 ] Vm Vm Vm Vm Vm Vm Vm
+    0003         22222222         4         4             0.00        1.000 +- 0.500        1.000 +- 0.500  [8 ] Vm Vm Vm Vm Vm Vm Vm Vm
+    0004               22         3         3             0.00        1.000 +- 0.577        1.000 +- 0.577  [2 ] Vm Vm
+    0005        222222222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [9 ] Vm Vm Vm Vm Vm Vm Vm Vm Vm
+    0006             2222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] Vm Vm Vm Vm
+    0007            22222         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [5 ] Vm Vm Vm Vm Vm
+    0008           222222         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [6 ] Vm Vm Vm Vm Vm Vm
+    .                             100000    100000         0.00/0 =  0.00  (pval:nan prob:nan)  
+
+
+
+
 Separate run recpoi/recstp difference that doesnt appear with simultaneous recpoi+recstp ?
 -----------------------------------------------------------------------------------------------
 

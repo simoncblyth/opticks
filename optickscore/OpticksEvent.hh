@@ -155,6 +155,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        std::string getNote();
        void        setNote(const char* note);
+       void        appendNote(const char* note);
    private:
        void setRngMax(unsigned int rng_max);
        void init();

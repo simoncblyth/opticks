@@ -693,13 +693,20 @@ std::string OpticksEvent::getTestCSGPath()
     return m_parameters->get<std::string>("TestCSGPath", "NONE");
 }
 
+
 void OpticksEvent::setNote(const char* note)
 {
     m_parameters->add<std::string>("Note", note ? note : "NULL" );
 }
+void OpticksEvent::appendNote(const char* note)
+{
+    m_parameters->append<std::string>("Note", note ? note : "" );
+}
+
+
 std::string OpticksEvent::getNote()
 {
-    return m_parameters->get<std::string>("Note", "NONE");
+    return m_parameters->get<std::string>("Note", "");
 }
 
 

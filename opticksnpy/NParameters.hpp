@@ -23,6 +23,7 @@ class NPY_API NParameters {
    public:
        void append(NParameters* other);
    public:
+
        template <typename T> 
        void add(const char* name, T value);
 
@@ -30,10 +31,14 @@ class NPY_API NParameters {
        void set(const char* name, T value);
 
        template <typename T> 
+       void append(const char* name, T value, const char* delim=" ");
+
+       template <typename T> 
        T get(const char* name) const ;
 
        template <typename T> 
        T get(const char* name, const char* fallback) const ;
+
    public:
        unsigned getNumItems();
        void dump();

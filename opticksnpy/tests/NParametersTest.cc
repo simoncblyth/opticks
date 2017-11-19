@@ -1,4 +1,5 @@
 #include <cassert>
+#include "PLOG.hh"
 #include "NParameters.hpp"
 
 
@@ -80,18 +81,41 @@ void test_default_copy_ctor()
 }
 
 
-
-int main()
+void test_append()
 {
-   /*
+    NParameters a ;
+    a.add<std::string>("red", "g");
+    a.add<std::string>("green", "g");
+    a.add<std::string>("blue", "b");
+    a.dump("bef");
+
+
+    a.append("red", "extra" );
+    a.append("red", "extra2" );
+    a.append("cyan", "append-on-non-existing" );
+ 
+    a.dump("aft");
+
+    std::string v = a.get<std::string>("red") ;
+
+    LOG(info) << " a.get(red) " << v ; 
+}
+
+
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+    /*
     test_basic();
     test_save_load();
     test_set();
     test_bool_nonexisting();
     test_bool();
-   */
-
     test_default_copy_ctor();
+    */
+
+    test_append();
 
     return 0 ; 
 }

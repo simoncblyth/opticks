@@ -344,6 +344,17 @@ void OpticksCfg<Listener>::init()
        ("recpoi", "experimental point based CRecorder/CRec  "); 
 
    m_desc.add_options()
+       ("recpoialign", 
+        "use --recpoialign together with --recpoi to "
+        "align step truncation between of the recpoi recorder cfg4/CRec, "
+        "by using the same step limit as with non-recpoi running" 
+        "This spins G4 wheels for recpoi, it is more efficient not to do this but then "
+        "the recpoi random sequences will diverge from non-recpoi due to the different step truncation. "
+       ); 
+
+
+
+   m_desc.add_options()
        ("reccf", "compare recpoi recstp  "); 
 
 

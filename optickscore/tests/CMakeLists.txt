@@ -34,12 +34,12 @@ set(TEST_SOURCES
     OpticksEventCompareTest.cc
     OpticksEventDumpTest.cc
 
+    OpticksEventTest.cc
 )
 
 
 set(TEST_SOURCES_NOK 
 
-    OpticksEventTest.cc
     OpticksAppTest.cc
 
     NGunConfigTest.cc

@@ -3,6 +3,8 @@
 #include <boost/lexical_cast.hpp>
 #include <iostream>
 #include <iomanip>
+#include <algorithm>
+#include <iterator>
 
 #include "BList.hh"
 #include "PLOG.hh"
@@ -30,10 +32,6 @@ std::string NParameters::getStringValue(const char* name) const
     for(VSS::const_iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
     {
         std::string npar  = it->first ; 
-
-        //if( strncmp(npar.c_str(), name, strlen(name))==0) value = it->second ; 
-        //  ^^^^^^^^^^ oops : this string comparison is a "startswith" one confusing "poly" and "polycfg"
-
         if(npar.compare(name)==0) value = it->second ; 
     }
     return value ;  
@@ -134,7 +132,7 @@ void NParameters::set(const char* name, T value)
     for(VSS::iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
     {
         std::string npar  = it->first ; 
-        if( strncmp(npar.c_str(), name, strlen(name))==0)
+        if( strncmp(npar.c_str(), name, strlen(name))==0)  // why startswith ?
         {
             std::string prior = it->second ; 
             LOG(debug) << "NParameters::set changing "
@@ -160,6 +158,26 @@ void NParameters::add(const char* name, T value)
 }
 
 
+template <typename T>
+void NParameters::append(const char* name, T value, const char* delim)
+{
+    std::string svalue = boost::lexical_cast<std::string>(value) ;
+    bool found = false ; 
+    for(VSS::iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
+    {
+        std::string n  = it->first ; 
+        if(n.compare(name)==0) 
+        {
+            found = true ; 
+            std::stringstream ss ; 
+            ss << it->second  << delim  << svalue ; 
+            it->second = ss.str();
+            break ; 
+        }
+    } 
+    if(!found) add<T>(name, value) ;
+}
+
 
 void NParameters::append(NParameters* other)
 {
@@ -174,7 +192,7 @@ void NParameters::append(NParameters* other)
     }
 }
 
-
+ 
 
 
 template <typename T>
@@ -187,8 +205,8 @@ T NParameters::get(const char* name) const
     }
     return boost::lexical_cast<T>(value);
 }
-
-
+ 
+ 
 template <typename T>
 T NParameters::get(const char* name, const char* fallback) const 
 {
@@ -207,12 +225,22 @@ T NParameters::get(const char* name, const char* fallback) const
 
 
 
+template NPY_API void NParameters::append(const char* name, bool value, const char* delim);
+template NPY_API void NParameters::append(const char* name, int value, const char* delim);
+template NPY_API void NParameters::append(const char* name, unsigned int value, const char* delim);
+template NPY_API void NParameters::append(const char* name, std::string value, const char* delim);
+template NPY_API void NParameters::append(const char* name, float value, const char* delim);
+template NPY_API void NParameters::append(const char* name, char value, const char* delim);
+template NPY_API void NParameters::append(const char* name, const char* value, const char* delim);
+
+
 template NPY_API void NParameters::add(const char* name, bool value);
 template NPY_API void NParameters::add(const char* name, int value);
 template NPY_API void NParameters::add(const char* name, unsigned int value);
 template NPY_API void NParameters::add(const char* name, std::string value);
 template NPY_API void NParameters::add(const char* name, float value);
 template NPY_API void NParameters::add(const char* name, char value);
+template NPY_API void NParameters::add(const char* name, const char* value);
 
 
 template NPY_API void NParameters::set(const char* name, bool value);
@@ -221,6 +249,7 @@ template NPY_API void NParameters::set(const char* name, unsigned int value);
 template NPY_API void NParameters::set(const char* name, std::string value);
 template NPY_API void NParameters::set(const char* name, float value);
 template NPY_API void NParameters::set(const char* name, char value);
+template NPY_API void NParameters::set(const char* name, const char* value);
 
 
 template NPY_API bool         NParameters::get(const char* name) const ;
@@ -229,6 +258,7 @@ template NPY_API unsigned int NParameters::get(const char* name) const ;
 template NPY_API std::string  NParameters::get(const char* name) const ;
 template NPY_API float        NParameters::get(const char* name) const ;
 template NPY_API char         NParameters::get(const char* name) const ;
+//template NPY_API const char*  NParameters::get(const char* name) const ;
 
 
 template NPY_API bool         NParameters::get(const char* name, const char* fallback) const ;
@@ -237,6 +267,7 @@ template NPY_API unsigned int NParameters::get(const char* name, const char* fal
 template NPY_API std::string  NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API float        NParameters::get(const char* name, const char* fallback) const ;
 template NPY_API char         NParameters::get(const char* name, const char* fallback) const ;
+//template NPY_API const char*  NParameters::get(const char* name, const char* fallback) const ;
 
 
 

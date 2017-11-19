@@ -78,7 +78,7 @@ void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 {
     assert(evt);
     m_writer->initEvent(evt);
-    evt->setNote( m_recpoi ? "recpoi" : "recstp" );
+    m_crec->initEvent(evt);
 }
 
 void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAction
