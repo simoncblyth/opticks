@@ -38,6 +38,11 @@
 #include "PLOG.hh"
 
 const char* NCSG::FILENAME = "csg.txt" ; 
+
+const char* NCSG::PLANES = "planes.npy" ; 
+const char* NCSG::SRC_FACES = "srcfaces.npy" ; 
+const char* NCSG::SRC_VERTS = "srcverts.npy" ; 
+
 const unsigned NCSG::NTRAN = 3 ; 
 const float NCSG::SURFACE_EPSILON = 1e-5f ; 
 
@@ -59,9 +64,13 @@ NCSG::NCSG(const char* treedir)
    m_transforms(NULL),
    m_gtransforms(NULL),
    m_planes(NULL),
+   m_srcverts(NULL),
+   m_srcfaces(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
+   m_num_srcverts(0),
+   m_num_srcfaces(0),
    m_height(UINT_MAX),
    m_boundary(NULL),
    m_config(NULL),
@@ -89,9 +98,13 @@ NCSG::NCSG(nnode* root )
    m_transforms(NULL),
    m_gtransforms(NULL),
    m_planes(NULL),
+   m_srcverts(NULL),
+   m_srcfaces(NULL),
    m_num_nodes(0),
    m_num_transforms(0),
    m_num_planes(0),
+   m_num_srcverts(0),
+   m_num_srcfaces(0), 
    m_height(root->maxdepth()),
    m_boundary(NULL),
    m_config(NULL),
@@ -319,6 +332,16 @@ NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
 void NCSG::loadMetadata()
 {
     m_meta = LoadMetadata( m_treedir );
+
+    if(!m_meta)
+    { 
+        LOG(fatal) << "NCSG::loadMetadata"
+                    << " treedir " << m_treedir 
+                    ;
+    } 
+    assert(m_meta);
+    
+
     m_container       = getMeta<int>("container", "-1");
     m_containerscale  = getMeta<float>("containerscale", "2.");
 
@@ -467,26 +490,73 @@ void NCSG::loadTransforms()
 
 }
 
-void NCSG::loadPlanes()
-{
-    std::string planepath = BFile::FormPath(m_treedir, "planes.npy") ;
-    if(!BFile::ExistsFile(planepath.c_str())) return ; 
 
-    NPY<float>* planes = NPY<float>::load(planepath.c_str());
-    assert(planes); 
-    bool valid_planes = planes->hasShape(-1,4) ;
-    if(!valid_planes) 
-        LOG(fatal) << "NCSG::loadPlanes"
-                   << " invalid planes  "
-                   << " planepath " << planepath
-                   << " planes_sh " << planes->getShapeString()
+
+
+void NCSG::loadSrcVerts()
+{
+    std::string path = BFile::FormPath(m_treedir,  SRC_VERTS ) ;
+    if(!BFile::ExistsFile(path.c_str())) return ; 
+
+    NPY<float>* a = NPY<float>::load(path.c_str());
+    assert(a); 
+    bool valid = a->hasShape(-1,3) ;
+    if(!valid) 
+        LOG(fatal) << "NCSG::loadVerts"
+                   << " invalid verts  "
+                   << " path " << path
+                   << " shape " << a->getShapeString()
                    ;
 
-    assert(valid_planes);
-    unsigned ni = planes->getShape(0) ;
+    assert(valid);
+    m_srcverts = a ; 
+    m_num_srcverts = a->getShape(0) ; 
 
-    m_planes = planes ; 
-    m_num_planes = ni ; 
+    LOG(info) << " loaded " << m_num_srcverts ;
+}
+
+void NCSG::loadSrcFaces()
+{
+    std::string path = BFile::FormPath(m_treedir,  SRC_FACES ) ;
+    if(!BFile::ExistsFile(path.c_str())) return ; 
+
+    NPY<int>* a = NPY<int>::load(path.c_str());
+    assert(a); 
+    bool valid = a->hasShape(-1,4) ;
+    if(!valid) 
+        LOG(fatal) << "NCSG::loadFaces"
+                   << " invalid faces  "
+                   << " path " << path
+                   << " shape " << a->getShapeString()
+                   ;
+    assert(valid);
+    m_srcfaces = a ; 
+    m_num_srcfaces = a->getShape(0) ; 
+
+    LOG(info) << " loaded " << m_num_srcfaces ;
+
+}
+
+
+void NCSG::loadPlanes()
+{
+    std::string path = BFile::FormPath(m_treedir,  PLANES ) ;
+    if(!BFile::ExistsFile(path.c_str())) return ; 
+
+    NPY<float>* a = NPY<float>::load(path.c_str());
+    assert(a); 
+    bool valid = a->hasShape(-1,4) ;
+    if(!valid) 
+        LOG(fatal) << "NCSG::loadPlanes"
+                   << " invalid planes  "
+                   << " path " << path
+                   << " shape " << a->getShapeString()
+                   ;
+
+    assert(valid);
+
+    m_planes = a ; 
+    m_num_planes = a->getShape(0) ; 
 }
 
 void NCSG::load()
@@ -503,6 +573,12 @@ void NCSG::load()
     LOG(debug) << "NCSG::load MIDDLE " ; 
     loadTransforms();
     loadPlanes();
+
+    loadSrcVerts();
+    loadSrcFaces();
+
+
+
     LOG(debug) << "NCSG::load DONE " ; 
 }
 

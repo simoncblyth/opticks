@@ -74,7 +74,12 @@ class NPY_API NCSG {
         typedef std::map<std::string, nnode*> MSN ; 
     public:
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
+
         static const char* FILENAME ; 
+        static const char* PLANES ; 
+        static const char* SRC_FACES ; 
+        static const char* SRC_VERTS ;
+ 
         static const unsigned NTRAN ; 
         static const float SURFACE_EPSILON ; 
 
@@ -203,6 +208,8 @@ class NPY_API NCSG {
         void loadNodeMetadata();
         void loadTransforms();
         void loadPlanes();
+        void loadSrcVerts();
+        void loadSrcFaces();
     private:
         void import();
         void postimport();
@@ -238,12 +245,17 @@ class NPY_API NCSG {
         NPY<float>* m_transforms ; 
         NPY<float>* m_gtransforms ; 
         NPY<float>* m_planes ;
+        NPY<float>* m_srcverts ;
+        NPY<int>*   m_srcfaces ;
 
         std::map<unsigned, NParameters*> m_nodemeta ; 
 
         unsigned    m_num_nodes ; 
         unsigned    m_num_transforms ; 
         unsigned    m_num_planes ;
+
+        unsigned    m_num_srcverts ;
+        unsigned    m_num_srcfaces ;
  
         unsigned    m_height ; 
         const char*         m_boundary ; 

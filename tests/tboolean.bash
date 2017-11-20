@@ -707,32 +707,20 @@ from opticks.analytic.prism import make_prism
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box")
-container.boundary = args.container
-container.meta.update(PolyConfig("CONTAINER").meta)
 
-im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+
+container = CSG("box", param=[0,0,0,600], boundary="Rock//perfectAbsorbSurface/Vacuum" )
 
 angle, height, depth = 45, 200, 300
-planes, verts, bbox, srcmeta = make_prism(angle, height, depth)
+planes, verts, bbox, src = make_prism(angle, height, depth)
 
-obj = CSG("convexpolyhedron")
-obj.boundary = args.testobject
-obj.planes = planes
-obj.param2[:3] = bbox[0]
-obj.param3[:3] = bbox[1]
+prism = CSG.MakeConvexPolyhedron(planes, verts, bbox, src )
+prism.boundary="Vacuum///GlassSchottF2" 
 
-# unlike other solids, need to manually set bbox for solids stored as a 
-# set of planes in NConvexPolyhedron as cannot easily derive the bbox 
-# from the set of planes
+prism.dump()
 
-obj.meta.update(srcmeta)
-obj.meta.update(im)
-
-obj.dump()
-#print obj.as_python()
-
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, prism], args.csgpath )
 
 EOP
 }
@@ -743,7 +731,11 @@ $FUNCNAME
 ==========================
 
 
+* unlike other solids, need to manually set bbox for solids stored as a 
+  set of planes in NConvexPolyhedron as cannot easily derive the bbox 
+  from the set of planes
 
+* see notes/issues/tboolean-prism-convexpolyhedron-meta-assert.rst
 
 
 
@@ -783,9 +775,9 @@ if cube:
     planes = CSG.CubePlanes(200.)
     bbox = [[-201,-201,-201,0],[ 201, 201, 201,0]] 
 else:
-    #planes, verts, bbox, srcmeta = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    planes, verts, bbox, srcmeta = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
-    #planes, verts, bbox, srcmeta = make_icosahedron()
+    #planes, verts, bbox, src = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+    planes, verts, bbox, src = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+    #planes, verts, bbox, src = make_icosahedron()
 pass
 
 obj.planes = planes
@@ -799,7 +791,7 @@ obj.param3[:3] = bbox[1]
 # from the set of planes
 #
 
-obj.meta.update(srcmeta)
+obj.meta.update(src.srcmeta)
 obj.meta.update(im)
 
 obj.dump()

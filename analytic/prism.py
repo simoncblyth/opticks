@@ -41,8 +41,6 @@ def make_normal( a, b, c, dtype=np.float32):
 
     return n  
     
-
-
 def make_plane( normal, point, dtype=np.float32 ):
     """
     Form plane from its normal and any point that lies on the plane   
@@ -67,6 +65,83 @@ def make_plane3( a, b, c, dtype=np.float32):
     n = make_normal( a, b, c, dtype=dtype )  
     p = make_plane( n, a ) 
     return p 
+
+
+
+class ConvexPolyhedronSrc(object):
+    """
+    Starting from ctor argument with the vertices
+    collects faces and planes via calls with vertex indices.
+    """
+    def __init__(self, **kwa):
+        self.srcmeta = kwa
+        
+    def _get_verts(self):
+        return self._verts 
+ 
+    def _set_verts(self, v ):
+        """
+        :param v: vertex array of shape (nv, 3)
+        """
+        self.dtype = v.dtype
+
+        assert len(v.shape) == 2
+        assert v.shape[0] > 0 
+        assert v.shape[1] == 3 
+        assert len(v) == v.shape[0]
+
+        self.nv = len(v)
+        self._verts = v 
+        self.planes_ = []
+        self.faces_ = []
+
+    verts = property(_get_verts, _set_verts) 
+
+      
+    def __call__(self, i0, i1, i2 ):
+        nv = self.nv
+        assert i0 < nv and i1 < nv and i2 < nv
+
+        v = self._verts         
+        a = v[i0]
+        b = v[i1]
+        c = v[i2]
+        p = make_plane3( a, b, c, dtype=self.dtype )
+
+        self.planes_.append( p )
+        self.faces_.append( [i0,i1,i2,-1] )
+
+    def _get_planes(self):
+        p = np.zeros( (len(self.planes_),4), dtype=self.dtype )
+        for i in range(len(p)):
+            p[i] = self.planes_[i]
+        pass
+        return p
+    planes = property(_get_planes)
+
+    def _get_faces(self):
+        f = np.zeros( (len(self.faces_),4), dtype=np.int32 )
+        for i in range(len(f)):
+            f[i] = self.faces_[i]
+        pass
+        return f
+    faces = property(_get_faces)
+
+    def _get_bbox(self):
+        v = self._verts
+        b = np.zeros( (2,3), dtype=self.dtype )  
+        for i in range(3):
+            b[0,i] = np.min(v[:,i])
+            b[1,i] = np.max(v[:,i])
+        pass
+        return b
+    bbox = property(_get_bbox)
+    
+     
+
+
+
+
 
 
 
@@ -105,11 +180,12 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
         return a 
 
 
-    srcmeta = dict(
+    src = ConvexPolyhedronSrc(
                 src_type="prism",
                 src_angle=angle, 
                 src_height=height, 
                  src_depth=depth)
+
 
     hwidth = height*np.tan((np.pi/180.)*angle/2.) 
     v = np.zeros( (6,3), dtype=dtype)
@@ -160,12 +236,22 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
         v[4] = [   xmin, ymin,  zmin ]   # back left
         v[5] = [   xmax, ymin,  zmin ]   # back right
 
+
         p[0] = make_plane3( v[5], v[3], v[0] )  
         p[1] = make_plane3( v[1], v[0], v[3] )
         p[2] = make_plane3( v[5], v[2], v[1] )
         p[3] = make_plane3( v[1], v[2], v[0] )
         p[4] = make_plane3( v[4], v[3], v[5] )
 
+        src.verts = v 
+
+        src(5,3,0)
+        src(1,0,3)
+        src(5,2,1)
+        src(1,2,0)
+        src(4,3,5)
+
+       
         if crosscheck:
 
             n2[0] = a_([ height, hwidth, 0])
@@ -239,6 +325,15 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
         p[3] = make_plane3( v[1], v[2], v[0] )
         p[4] = make_plane3( v[4], v[3], v[5] )
 
+        src.verts = v 
+
+        src(5,3,0)
+        src(1,0,3)
+        src(5,2,1)
+        src(1,2,0)
+        src(4,3,5)
+
+
         if crosscheck:
 
             n2[0] = a_([ height, 0, hwidth])  # +X+Z
@@ -269,14 +364,25 @@ def make_prism( angle, height, depth, dtype=np.float32, layout=0, crosscheck=Tru
 
 
 
-    bbox = np.zeros( (2,3), dtype=dtype )
+    bb = np.zeros( (2,3), dtype=dtype )
     for i in range(3):
-        bbox[0,i] = np.min(v[:,i])
-        bbox[1,i] = np.max(v[:,i])
+        bb[0,i] = np.min(v[:,i])
+        bb[1,i] = np.max(v[:,i])
     pass
 
 
-    return p, v, bbox, srcmeta
+    planes = src.planes
+    verts = src.verts
+    faces = src.faces
+    bbox = src.bbox
+
+    assert np.all( planes == p )
+    assert np.all( verts == v )
+    assert np.all( bbox == bb )
+
+
+
+    return p, v, bb, src
 
 
 
@@ -319,12 +425,14 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
  
     """
 
-    srcmeta = dict( 
+    src = ConvexPolyhedronSrc( 
                     src_type="segment",
                     src_phi0=phi0, 
                     src_phi1=phi1, 
                     src_sz=sz, 
                     src_sr=sr) 
+
+     
 
     xy_ = lambda phi:np.array([np.cos(phi*np.pi/180.), np.sin(phi*np.pi/180.)], dtype=dtype)
 
@@ -342,6 +450,8 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
     v[4] = [    x1,     y1 ,  sz/2. ]  
     v[5] = [    x2,     y2 ,  sz/2. ]  
 
+
+
     p = np.zeros( (5,4), dtype=dtype)   # planes
     p[0] = make_plane3( v[0], v[2], v[1] ) # -Z 
     p[1] = make_plane3( v[3], v[4], v[5] ) # +Z
@@ -349,12 +459,30 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
     p[3] = make_plane3( v[0], v[3], v[5] ) # 
     p[4] = make_plane3( v[2], v[5], v[4] ) # 
 
+    src.verts = v 
+
+    src(0,2,1)
+    src(3,4,5)
+    src(0,1,3)
+    src(0,3,5)
+    src(2,5,4)
+
     b = np.zeros( (2,3), dtype=dtype )  # bbox
     for i in range(3):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
     pass
-    return p, v, b, srcmeta
+
+
+    planes = src.planes
+    verts = src.verts
+    bbox = src.bbox
+
+    assert np.all( planes == p ) 
+    assert np.all( verts == v ) 
+    assert np.all( bbox == b ) 
+
+    return p, v, b, src
 
 
 
@@ -387,7 +515,7 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     z:  z length
 
     """ 
-    srcmeta = dict(
+    src = ConvexPolyhedronSrc(
               src_type="trapezoid",
               src_z=z,
              src_x1=x1,
@@ -422,7 +550,28 @@ def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
         b[1,i] = np.max(v[:,i])
     pass
 
-    return p, v, b, srcmeta
+
+    src.verts = v 
+
+    src(3,7,5)
+    src(0,4,6)
+    src(2,6,7)
+    src(1,5,4)
+    src(5,7,6)
+    src(3,1,0)
+
+    planes = src.planes
+    faces = src.faces
+    verts = src.verts
+    bbox = src.bbox
+
+    assert np.all( planes == p ) 
+    assert np.all( verts == v ) 
+    assert np.all( bbox == b ) 
+    assert len(faces) == len(planes)
+
+    return p, v, b, src
+
 
 
 
@@ -440,11 +589,12 @@ def make_icosahedron(scale=500., dtype=np.float32):
     CZ = 2./np.sqrt(5)
     SZ = 1./np.sqrt(5)
 
-    srcmeta = dict(
+    src = ConvexPolyhedronSrc(
                     src_type="icosahedron",
                    src_scale=scale, 
                     src_cz=CZ, 
                     src_sz=SZ)
+
 
     C1 = np.cos( np.pi*18./180. )
     S1 = np.sin( np.pi*18./180. )
@@ -467,21 +617,31 @@ def make_icosahedron(scale=500., dtype=np.float32):
 
     vec3_ = lambda x,y,z:np.array([x,y,z], dtype=dtype) 
 
-    Ip0 = vec3_(0,0,SC) 
-    Ip1 = vec3_(-X2,-Y2,SZ) 
-    Ip2 = vec3_( X2,-Y2,SZ) 
-    Ip3 = vec3_( X1, Y1,SZ) 
-    Ip4 = vec3_(  0, CZ,SZ) 
-    Ip5 = vec3_(-X1, Y1,SZ) 
+    v = np.zeros( (12,3), dtype=dtype)   # verts
+    Ip0 = v[0] = vec3_(0,0,SC) 
+    Ip1 = v[1] = vec3_(-X2,-Y2,SZ) 
+    Ip2 = v[2] = vec3_( X2,-Y2,SZ) 
+    Ip3 = v[3] = vec3_( X1, Y1,SZ) 
+    Ip4 = v[4] = vec3_(  0, CZ,SZ) 
+    Ip5 = v[5] = vec3_(-X1, Y1,SZ) 
 
-    Im0 = vec3_(-X1, -Y1,-SZ) 
-    Im1 = vec3_(  0, -CZ,-SZ) 
-    Im2 = vec3_( X1, -Y1,-SZ) 
-    Im3 = vec3_( X2,  Y2,-SZ) 
-    Im4 = vec3_(-X2,  Y2,-SZ) 
-    Im5 = vec3_(0,0,-SC) 
+    p0,p1,p2,p3,p4,p5 = range(0,6)
 
-    v = np.hstack( [Ip0,Ip1,Ip2,Ip3,Ip4,Ip5, Im0,Im1,Im2,Im3,Im4,Im5] ).reshape(-1,3)
+    Im0 = v[6] = vec3_(-X1, -Y1,-SZ) 
+    Im1 = v[7] = vec3_(  0, -CZ,-SZ) 
+    Im2 = v[8] = vec3_( X1, -Y1,-SZ) 
+    Im3 = v[9] = vec3_( X2,  Y2,-SZ) 
+    Im4 = v[10] = vec3_(-X2,  Y2,-SZ) 
+    Im5 = v[11] = vec3_(0,0,-SC) 
+
+    m0,m1,m2,m3,m4,m5 = range(6,12)
+
+
+    vv = np.hstack( [Ip0,Ip1,Ip2,Ip3,Ip4,Ip5, Im0,Im1,Im2,Im3,Im4,Im5] ).reshape(-1,3)
+
+    assert np.all( v == vv ) 
+
+
     p = np.zeros( (20,4), dtype=dtype)   # planes
 
     # front pole 
@@ -510,21 +670,79 @@ def make_icosahedron(scale=500., dtype=np.float32):
     p[18] = make_plane3(Im1, Im0, Im5)
     p[19] = make_plane3(Im2, Im1, Im5)
 
+
+    src.verts = v 
+
+    # front pole 
+    src(p0,p1,p2)
+    src(p0,p5,p1)
+    src(p0,p4,p5)
+    src(p0,p3,p4)
+    src(p0,p2,p3)
+    
+    # mid 
+    src(p1, m0, m1)
+    src(m0, p1, p5)
+    src(p5, m4, m0)
+    src(m4, p5, p4)
+    src(p4, m3, m4)
+    src(m3, p4, p3)
+    src(p3, m2, m3)
+    src(m2, p3, p2)
+    src(p2, m1, m2)
+    src(m1, p2, p1)
+
+    # back pole
+    src(m3, m2, m5)
+    src(m4, m3, m5)
+    src(m0, m4, m5)
+    src(m1, m0, m5)
+    src(m2, m1, m5)
+
+
     b = np.zeros( (2,3), dtype=dtype )  # bbox
     for i in range(3):
         b[0,i] = np.min(v[:,i])
         b[1,i] = np.max(v[:,i])
     pass
-    return p, v, b, srcmeta
+
+    planes = src.planes
+    faces = src.faces
+    bbox = src.bbox
+
+    assert np.all( planes == p )
+    assert np.all( bbox == b )
+    assert len(faces) == len(planes)
 
 
+    return p, v, b, src
+
+
+
+
+def test_prism():
+    p, v, b, src = make_prism( 45, 400,  400 )
+
+def test_trapezoid():
+    p, v, b, src = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
+
+def test_icosahedron():
+    p, v, b, src = make_icosahedron()
+
+def test_segment():
+    p, v, b, src = make_segment(0,45,100,200)
 
 
 if __name__ == '__main__':
-    #p, v, b, srcmeta = make_prism( 45, 400,  400 )
-    #p, v, b, srcmeta = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    #p, v, b, srcmeta = make_icosahedron()
-    p, v, b, srcmeta = make_segment(0,45,100,200)
     pass
+
+    test_prism()
+    test_trapezoid()
+    test_icosahedron()
+    test_segment()
+
+
+
+
 
 

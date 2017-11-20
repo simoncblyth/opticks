@@ -491,30 +491,45 @@ class CSG(CSG_):
 
 
     @classmethod
-    def MakeConvexPolyhedron(cls, planes, verts, bbox, srcmeta, type_="convexpolyhedron"):
+    def MakeConvexPolyhedron(cls, pl, vv, bb, src, type_="convexpolyhedron"):
         """see tboolean-segment- """
+ 
+        bbox = src.bbox
+        planes = src.planes
+        verts = src.verts
+        faces = src.faces
+
+        assert np.all( planes == pl )
+        assert np.all( bbox == bb )
+        assert np.all( verts == vv )
+        assert len(planes) == len(faces)
+
         obj = CSG(type_)
         obj.planes = planes
+        obj.verts = verts
+        obj.faces = faces
+ 
         obj.param2[:3] = bbox[0]
         obj.param3[:3] = bbox[1]
-        obj.meta.update(srcmeta)
+        obj.meta.update(src.srcmeta)
+
         return obj
 
     @classmethod
     def MakeSegment(cls, phi0, phi1, sz, sr ):
         """see tboolean-segment- """
-        planes, verts, bbox, srcmeta = make_segment(phi0,phi1,sz,sr)
-        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "segment")
+        planes, verts, bbox, src = make_segment(phi0,phi1,sz,sr)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "segment")
 
     @classmethod
     def MakeTrapezoid(cls, z=200, x1=160, y1=20, x2=691.02, y2=20):
-        planes, verts, bbox, srcmeta = make_trapezoid(z,x1,y1,x2,y2)
-        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "trapezoid")
+        planes, verts, bbox, src = make_trapezoid(z,x1,y1,x2,y2)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "trapezoid")
 
     @classmethod
     def MakeIcosahedron(cls, scale=100.):
-        planes, verts, bbox, srcmeta = make_icosahedron(scale=scale)
-        return cls.MakeConvexPolyhedron(planes, verts, bbox, srcmeta, "trapezoid")
+        planes, verts, bbox, src = make_icosahedron(scale=scale)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "trapezoid")
 
 
     @classmethod
@@ -615,6 +630,7 @@ class CSG(CSG_):
 
 
 
+
     def serialize(self, suppress_identity=False):
         """
         Array is sized for a complete tree, empty slots stay all zero
@@ -687,6 +703,7 @@ class CSG(CSG_):
             if not os.path.exists(dir_):
                 os.makedirs(dir_)
             pass 
+            log.debug("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
             json.dump(nodemeta,file(nodemetapath,"w"))
 
             if node.left is not None and node.right is not None:
@@ -695,6 +712,20 @@ class CSG(CSG_):
             pass
         pass
         save_nodemeta_r(self,0)
+
+    def save_src(self, treedir):
+        """
+        Persist src verts and faces from ConvexPolyhedronSrc for use by cfg4 CMaker::ConvertPrimitive 
+        """
+        if len(self.faces) == 0: return
+        assert len(self.faces) == len(self.planes)
+        assert len(self.verts) > 0
+
+        facepath = self.facepath(treedir)
+        vertpath = self.vertpath(treedir)
+
+        np.save(facepath, self.faces)
+        np.save(vertpath, self.verts)
 
 
     def save(self, treedir):
@@ -705,9 +736,12 @@ class CSG(CSG_):
         nodebuf, tranbuf, planebuf = self.serialize() 
 
         metapath = self.metapath(treedir)
+
+        log.debug("write treemeta to %s %r  " % (metapath,self.meta)  )
         json.dump(self.meta,file(metapath,"w"))
 
         self.save_nodemeta(treedir)
+        self.save_src(treedir)
 
         lvidx = os.path.basename(treedir)
         tboolpath = self.tboolpath(treedir, lvidx)
@@ -737,6 +771,13 @@ class CSG(CSG_):
     @classmethod
     def planepath(cls, treedir):
         return os.path.join(treedir,"planes.npy") 
+    @classmethod
+    def vertpath(cls, treedir):
+        return os.path.join(treedir,"srcverts.npy") 
+    @classmethod
+    def facepath(cls, treedir):
+        return os.path.join(treedir,"srcfaces.npy") 
+
     @classmethod
     def metapath(cls, treedir, idx=-1):
         return os.path.join(treedir,"meta.json") if idx == -1 else os.path.join(treedir,str(idx),"nodemeta.json")
@@ -841,7 +882,12 @@ class CSG(CSG_):
         self._transform = None
         self.complement = complement
         self.balance_disabled = False
+
         self.planes = []
+
+        # verts and faces for persisting ConvexPolyhedronSrc metadata required for the cfg4 CMaker::ConvertPrimitive
+        self.verts = []
+        self.faces = []
 
         # class kwa defaults are overidden by instance kwa 
         meta = {} 
