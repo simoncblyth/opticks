@@ -88,6 +88,8 @@ struct NPY_API nmat4triple
     void apply_transform_t(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
     void apply_transform_v(std::vector<glm::vec3>& dst, const std::vector<glm::vec3>& src, float w=1.0f) const ;
 
+    bool is_identity(float epsilon=1e-5) const ; 
+
 
     glm::mat4 t ; 
     glm::mat4 v ; 

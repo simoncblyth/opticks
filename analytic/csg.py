@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, make_scale
 #from opticks.analytic.bezier import Bezier
-from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron, make_prism
+from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron, make_prism, make_cubeplanes
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
 from opticks.analytic.nnode_test_cpp import NNodeTestCPP
@@ -478,6 +478,7 @@ class CSG(CSG_):
         pass
         return trees
 
+
     @classmethod
     def CubePlanes(cls, hsize=0.5):
         planes = np.zeros([6,4], dtype=np.float32)  # unit cube for testing
@@ -488,6 +489,30 @@ class CSG(CSG_):
             planes[2*i+1] = pln
         pass
         return planes
+
+
+
+    @classmethod
+    def MakeConvexPolyhedron_(cls, src, type_="convexpolyhedron"):
+        """see tboolean-segment- """
+ 
+        bbox = src.bbox
+        planes = src.planes
+        verts = src.verts
+        faces = src.faces
+        srcmeta = src.srcmeta
+
+        obj = CSG(type_)
+        obj.planes = planes
+        obj.verts = verts
+        obj.faces = faces
+ 
+        obj.param2[:3] = bbox[0]
+        obj.param3[:3] = bbox[1]
+        obj.meta.update(srcmeta)
+
+        return obj
+
 
 
     @classmethod
@@ -504,16 +529,7 @@ class CSG(CSG_):
         assert np.all( verts == vv )
         assert len(planes) == len(faces)
 
-        obj = CSG(type_)
-        obj.planes = planes
-        obj.verts = verts
-        obj.faces = faces
- 
-        obj.param2[:3] = bbox[0]
-        obj.param3[:3] = bbox[1]
-        obj.meta.update(src.srcmeta)
-
-        return obj
+        return cls.MakeConvexPolyhedron_(src)
 
     @classmethod
     def MakeSegment(cls, phi0, phi1, sz, sr ):
@@ -536,6 +552,11 @@ class CSG(CSG_):
         planes, verts, bbox, src = make_prism(angle, height, depth)
         return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "convexpolyhedron")
 
+
+    @classmethod
+    def MakeCubePlanes(cls, hx=0.5, hy=0.5, hz=0.5):
+        src = make_cubeplanes(hx, hy, hz)
+        return cls.MakeConvexPolyhedron_(src)
 
 
 

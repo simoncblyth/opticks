@@ -271,6 +271,19 @@ void test_nmat4triple_id_digest()
     std::cout << " id " << *id << " dig " << id->digest() << std::endl ; 
 }
 
+void test_nmat4triple_is_identity()
+{
+    LOG(info) << "test_nmat4triple_is_identity" ; 
+    const nmat4triple* id = nmat4triple::make_identity() ;
+    std::cout << " id " << *id << " dig " << id->digest() << std::endl ; 
+
+    assert( id->is_identity() );
+
+
+}
+
+
+
 
 void test_apply_transform()
 {
@@ -398,9 +411,10 @@ int main(int argc, char** argv)
     //test_apply_transform();
     //test_apply_transform_vec();
 
-    test_pick_up() ;
-    test_define_uv_basis();
+    //test_pick_up() ;
+    //test_define_uv_basis();
 
+    test_nmat4triple_is_identity();
 
     return 0 ; 
 }

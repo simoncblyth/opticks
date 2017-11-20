@@ -8,6 +8,7 @@
 #include "NNode.hpp"
 #include "NParameters.hpp"
 #include "NPrimitives.hpp"
+#include "GLMFormat.hpp"
 
 // ggeo-
 #include "GCSG.hh"
@@ -322,7 +323,14 @@ G4VSolid* CMaker::makeSolid_r(const nnode* node)
         G4VSolid* left = makeSolid_r(node->left);
         G4VSolid* right = makeSolid_r(node->right);
 
-        assert(node->left->gtransform == NULL );
+        bool left_transform = node->left->gtransform ? !node->left->gtransform->is_identity() : false ;  
+        if(left_transform)
+        {
+            LOG(info) << " unexpected non-identity left transform "
+                      << gformat(node->left->gtransform->t )
+                      ;
+        }
+        assert(left_transform == false);
 
         G4Transform3D* rtransform = ConvertTransform(node->right->gtransform->t);
 
@@ -384,8 +392,14 @@ G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
     NParameters* meta = node->meta ;  
     assert(meta);
     std::string src_type = meta->getStringValue("src_type");
-    
-    bool supported = src_type.compare("prism")==0 ;
+   
+    // see src_type args of the ConvexPolyhedronSrc in opticks/analytic/prism.py 
+    bool prism = src_type.compare("prism")==0 ;
+    bool segment = src_type.compare("segment")==0 ;
+    bool icosahedron =  src_type.compare("icosahedron") == 0 ; 
+    bool cubeplanes =  src_type.compare("cubeplanes") == 0 ; 
+ 
+    bool supported = prism || segment || icosahedron || cubeplanes ;
     if(!supported) 
          LOG(fatal) << " src_type not supprted " <<  src_type ;
 

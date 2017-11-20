@@ -370,6 +370,7 @@ def opticks_args(**kwa):
     gidx = kwa.get("gidx", 0 ) 
     gmaxnode = kwa.get("gmaxnode", 0 ) 
     gmaxdepth = kwa.get("gmaxdepth", 0 ) 
+    cfordering = kwa.get("cfordering", "self" ) 
 
 
     parser = argparse.ArgumentParser(doc)
@@ -427,6 +428,7 @@ def opticks_args(**kwa):
     #parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
+    parser.add_argument(     "--cfordering",  default=cfordering, help="Sort ordering of cf tables, one of max/self/other. %(default)s ")
 
     parser.add_argument(     "--gsel",  default=gsel, help="GDML node selection, either tree node index integer or LV name prefix, see tboolean-gdml . %(default)s ")
     parser.add_argument(     "--gmaxdepth",  default=gmaxdepth, type=int, help="GDML node depth limit, 0 for no limit, see tboolean-gdml. %(default)s ")
@@ -450,8 +452,7 @@ def opticks_args(**kwa):
          log.fatal("use either --multievent n or --tagoffset o to pick one from multi, USING BOTH --multievent and --tagoffset NOT SUPPORTED  ") 
          sys.exit(1)
 
-    
-
+    assert args.cfordering in "max self other".split() 
 
 
     if args.multievent > 1:

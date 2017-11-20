@@ -525,7 +525,14 @@ void nmat4triple::apply_transform_v(std::vector<glm::vec3>& dst, const std::vect
 }
 
 
-
+bool nmat4triple::is_identity(float eps) const 
+{
+    glm::mat4 id(1.0) ; 
+    float dt = nglmext::compDiff(t, id);
+    float dv = nglmext::compDiff(v, id);
+    float dq = nglmext::compDiff(q, id);
+    return dt < eps && dv < eps && dq < eps ; 
+}
 
 
 

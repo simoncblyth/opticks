@@ -489,6 +489,65 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
 
 
 
+  
+def make_cubeplanes(hx=0.5, hy=0.5, hz=0.5, dtype=np.float32):
+    """
+    z-order verts
+
+
+                  6----------7
+                 /|         /|
+                / |        / |
+               4----------5  |
+               |  |       |  |                       
+               |  |       |  |         Z    
+               |  2-------|--3         |  Y
+               | /        | /          | /
+               |/         |/           |/
+               0----------1            +------ X
+                         
+    """
+
+    src = ConvexPolyhedronSrc(
+              src_type="cubeplanes",
+              src_hx=hx,
+              src_hy=hy,
+              src_hz=hz
+           )         
+
+    v = np.zeros( (8,3), dtype=dtype)   # verts
+
+                                # ZYX
+    v[0] = [ -hx , -hy , -hz ]  # 000
+    v[1] = [  hx , -hy , -hz ]  # 001
+    v[2] = [ -hx ,  hy , -hz ]  # 010
+    v[3] = [  hx ,  hy , -hz ]  # 011
+
+    v[4] = [ -hx , -hy ,  hz ]  # 100
+    v[5] = [  hx , -hy ,  hz ]  # 101
+    v[6] = [ -hx ,  hy ,  hz ]  # 110
+    v[7] = [  hx ,  hy ,  hz ]  # 111
+
+
+    src.verts = v 
+
+    src(3,7,5)
+    src(0,4,6)
+    src(2,6,7)
+    src(1,5,4)
+    src(5,7,6)
+    src(3,1,0)
+
+    planes = src.planes
+    faces = src.faces
+    verts = src.verts
+    bbox = src.bbox
+
+    return src
+
+
+
+
 def make_trapezoid( z, x1, y1, x2, y2, dtype=np.float32 ):
     """
     z-order verts

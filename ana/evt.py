@@ -1091,7 +1091,7 @@ class Evt(object):
 
 
     @classmethod
-    def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False):
+    def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False, ordering="max"):
         """
         :param a: evt A
         :param b: evt B
@@ -1117,7 +1117,7 @@ class Evt(object):
         c_tab = None
 
         if cf:
-            c_tab = a_tab.compare(b_tab)
+            c_tab = a_tab.compare(b_tab, ordering=ordering)
             c_tab.title = ana_
 
             if len(c_tab.lines) > lmx:

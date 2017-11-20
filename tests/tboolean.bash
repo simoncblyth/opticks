@@ -143,11 +143,14 @@ tboolean-box3
 tboolean-truncate
 tboolean-cone
 tboolean-prism
+tboolean-icosahedron
+tboolean-cubeplanes
 tboolean-trapezoid
 tboolean-uniontree
 tboolean-parade
 tboolean-complement
-tboolean-zsphere
+tboolean-zsphere1
+tboolean-zsphere2
 tboolean-union-zsphere
 tboolean-difference-zsphere
 tboolean-hybrid
@@ -741,54 +744,100 @@ EON
 
 
 
+tboolean-icosahedron-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-icosahedron-ip(){ TESTNAME=tboolean-icosahedron tboolean-ipy- $* ; } 
+tboolean-icosahedron-p(){ TESTNAME=tboolean-icosahedron tboolean-py- $* ; } 
+tboolean-icosahedron(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
+tboolean-icosahedron-(){  $FUNCNAME- | python $* ; }
+tboolean-icosahedron--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+container = CSG("box", param=[0,0,0,600], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+
+icos = CSG.MakeIcosahedron(300)
+icos.boundary="Vacuum///GlassSchottF2" 
+icos.dump()
+
+CSG.Serialize([container, icos], args.csgpath )
+
+EOP
+}
+
+tboolean-icosahedron-notes(){ cat << EON
+
+$FUNCNAME
+==========================
+
+* tboolean-;tboolean-icosahedron-p seq match 
+
+
+
+EON
+}
+
+
+
+tboolean-cubeplanes-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-cubeplanes-ip(){ TESTNAME=tboolean-cubeplanes tboolean-ipy- $* ; } 
+tboolean-cubeplanes-p(){ TESTNAME=tboolean-cubeplanes tboolean-py- $* ; } 
+tboolean-cubeplanes(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
+tboolean-cubeplanes-(){  $FUNCNAME- | python $* ; }
+tboolean-cubeplanes--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+container = CSG("box", param=[0,0,0,500], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+
+obj = CSG.MakeCubePlanes(200,200,200)
+obj.boundary="Vacuum///GlassSchottF2" 
+obj.dump()
+
+CSG.Serialize([container, obj], args.csgpath )
+
+EOP
+}
+
+tboolean-cubeplanes-notes(){ cat << EON
+
+$FUNCNAME
+==========================
+
+* notes/issues/tboolean-cubeplanes-many-stuck-tracks-drastic-difference.rst
+
+EON
+}
+
 
 
 tboolean-trapezoid-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
 tboolean-trapezoid-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-trapezoid-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-trapezoid(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-trapezoid-(){  $FUNCNAME- | python $* ; }
 tboolean-trapezoid--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.analytic.polyconfig import PolyConfig
-from opticks.analytic.prism import make_trapezoid, make_icosahedron
 from opticks.analytic.csg import CSG  
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box")
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+
+container = CSG("box", param=[0,0,0,500], boundary="Rock//perfectAbsorbSurface/Vacuum" )
 container.boundary = args.container
-container.meta.update(PolyConfig("CONTAINER").meta)
 
-im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
-
-obj = CSG("trapezoid")
-obj.boundary = args.testobject
-
-cube = False
-
-if cube:
-    planes = CSG.CubePlanes(200.)
-    bbox = [[-201,-201,-201,0],[ 201, 201, 201,0]] 
-else:
-    #planes, verts, bbox, src = make_trapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27 )
-    planes, verts, bbox, src = make_trapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
-    #planes, verts, bbox, src = make_icosahedron()
-pass
-
-obj.planes = planes
-obj.param2[:3] = bbox[0]
-obj.param3[:3] = bbox[1]
-
-
-#
-# unlike other solids, need to manually set bbox for solids stored as a 
-# set of planes in NConvexPolyhedron as cannot easily derive the bbox 
-# from the set of planes
-#
-
-obj.meta.update(src.srcmeta)
-obj.meta.update(im)
+obj = CSG.MakeTrapezoid(z=50.02, x1=100, y1=27, x2=237.2, y2=27)
+#obj = CSG.MakeTrapezoid(z=2228.5, x1=160, y1=20, x2=691.02, y2=20 )
+obj.boundary="Vacuum///GlassSchottF2" 
 
 obj.dump()
 
@@ -797,14 +846,21 @@ EOP
 }
 
 
+tboolean-trapezoid-notes(){ cat << EON
 
+$FUNCNAME
+==========================
 
+* notes/issues/tboolean-trapezoid-no-stuck-tracks-but-still-drastic-difference.rst
 
+EON
+}
 
 
 
 tboolean-uniontree-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-uniontree(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- || echo $FUNCNAME : ERROR : investigate with : $FUNCNAME-  ; } 
+tboolean-uniontree-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-uniontree(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) tboolean-- $* ; }
 tboolean-uniontree-(){  $FUNCNAME- | python $* ; }
 tboolean-uniontree--(){ cat << EOP 
 
@@ -816,9 +872,7 @@ from opticks.analytic.treebuilder import TreeBuilder
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box")
-container.boundary = args.container
-container.meta.update(PolyConfig("CONTAINER").meta)
+container = CSG("box", param=[0,0,0,1000], boundary="Rock//perfectAbsorbSurface/Vacuum" )
 
 im = dict(poly="IM", resolution="40", verbosity="1", ctrl="0" )
 
@@ -829,7 +883,11 @@ sp2 = CSG("sphere", param=[0,0,0,200] )   # zrange -200:200
 zs = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0])  # zrange 100:200
 zs.param2.view(np.uint32)[0] = 3 
 
-co = CSG("cone", param=[300,0,100,200])   # zrange 0:200
+
+r1, r2 = 300,100
+z1, z2 = -100, 100
+
+co = CSG("cone", param=[r1,z1,r2,z2])   # zrange 0:200
 
 
 #prim = [sp,zs,co]    
@@ -842,14 +900,36 @@ prim = [sp,co,zs]
 
 
 ut = TreeBuilder.uniontree(prim, name="$FUNCNAME")
-ut.boundary = args.container
+ut.boundary = "Vacuum///GlassSchottF2" 
 ut.meta.update(im)
 ut.dump()
 
 CSG.Serialize([container, ut], args.csgpath)
 
 
-"""
+EOP
+}
+
+
+tboolean-uniontree-notes(){ cat << EON
+
+
+* CMaker objects to node->left->gtransform, curious as seems to be no transforms applied ? 
+
+::
+
+    320     else if(node->is_operator())
+    321     {
+    322         G4VSolid* left = makeSolid_r(node->left);
+    323         G4VSolid* right = makeSolid_r(node->right);
+    324 
+    325         assert(node->left->gtransform == NULL );
+    326 
+    327         G4Transform3D* rtransform = ConvertTransform(node->right->gtransform->t);
+    328 
+
+
+
 prim = [sp,zs,co]    
 
             un    
@@ -913,9 +993,8 @@ TODO:
   smaller radius part into the larger radius part)  
   ... analogous to joins in carpentry
 
-"""
 
-EOP
+EON
 }
 
 
@@ -984,6 +1063,25 @@ EOP
 }
 
 
+tboolean-parade-notes(){ cat << EON
+
+$FUNCNAME
+========================
+
+* hmm breaking the russian-doll rule, resulting in assert in NCSGList::checkMaterialConsistency
+* suggests this should move to tgltf and use some simple gltf tree
+
+EON
+}
+
+
+
+
+
+
+
+
+
 
 
 tboolean-complement-deserialize(){ NCSGDeserializeTest $TMP/${FUNCNAME/-deserialize}-- ; }
@@ -1038,31 +1136,35 @@ Getting expected:
 EOP
 }
 
-tboolean-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
-tboolean-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$(tboolean-zsphere- 2>/dev/null)    tboolean-- $* ; } 
-tboolean-zsphere-(){ $FUNCNAME- | python $* ; } 
-tboolean-zsphere--(){ cat << EOP 
 
-import numpy as np
+tboolean-complement-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+* again breaking Russian doll
+
+
+
+EON
+}
+
+
+
+tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere1-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-zsphere1(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-zsphere1-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere1--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
-
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-
-im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0" )
-#tr = dict(scale="1,1,2")
-tr = dict(translate="0,0,100", rotate="1,1,1,45", scale="1,1,2")
-
-kwa = {}
-kwa.update(im)
-#kwa.update(tr)
-
-#zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
-zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)", **kwa )
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
 
 CSG.Serialize([container, zsphere], args.csgpath )
 
@@ -1070,9 +1172,55 @@ EOP
 }
 
 
+tboolean-zsphere1-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+* discrepant tboolean-zsphere1-p
+
+EON
+}
+
+
+
+
+tboolean-zsphere2-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere2-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-zsphere2(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-zsphere2-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere2--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
+
+container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+
+zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
+
+CSG.Serialize([container, zsphere], args.csgpath )
+
+EOP
+}
+
+tboolean-zsphere2-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+* matched tboolean-zsphere2-p   when z1:z2 100:200 
+* not matched with z1:z2 0:200 or 1:200 !!
+ 
+
+EON
+}
+
 
 
 tboolean-union-zsphere-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-union-zsphere-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-union-zsphere(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-union-zsphere-(){ $FUNCNAME- | python $* ; } 
 tboolean-union-zsphere--(){ cat << EOP 
@@ -1084,22 +1232,39 @@ args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
 
-im = dict(poly="IM", resolution="50", verbosity="3", ctrl="0" )
-
-kwa = {}
-kwa.update(im)
-
+CSG.kwa = dict(poly="IM", resolution="50", verbosity="3", ctrl="0" )
 
 lzs = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
 rzs = CSG("zsphere", param=[0,0,0,500], param1=[300,400,0,0] ,param2=[0,0,0,0] )
 
-uzs = CSG("union", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
+uzs = CSG("union", left=lzs, right=rzs )
 
-CSG.Serialize([container, uzs],  args.csgpath )
+obj = lzs
+obj.boundary = "$(tboolean-testobject)"
+
+CSG.Serialize([container, obj],  args.csgpath )
 
 
 EOP
 }
+
+tboolean-union-zsphere-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+
+* FIXED : Assertion failed: (node->left->gtransform == NULL), function makeSolid_r, file /Users/blyth/opticks/cfg4/CMaker.cc, line 325.
+
+
+
+EON
+}
+
+
+
+
+
 
 
 

@@ -255,7 +255,9 @@ class AB(object):
         """
         all_ tables have no selection applied so they are not dirtied by changing selection
         """
-        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True)
+        ordering = self.ok.cfordering 
+        assert ordering in ["max","self","other"] 
+        c_tab = Evt.compare_ana( self.a, self.b, ana, lmx=self.ok.lmx, cmx=self.ok.cmx, c2max=None, cf=True, ordering=ordering)
         if not ana[0:3] == "all":
             self.tabs.append(c_tab)
         pass 
