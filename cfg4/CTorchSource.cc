@@ -290,7 +290,7 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
 		pp.energy = m_eneGen->GenerateOne(m_definition);
 
-        if(m_torchdbg && i < 10) 
+        if(m_torchdbg && i < 10 && m_verbosityLevel > 5) 
         LOG(info) << "CTorchSource::GeneratePrimaryVertex"
                   << " i " << std::setw(6) << i 
                   << " posx " << pp.position.x()
@@ -373,8 +373,10 @@ void CTorchSource::GeneratePrimaryVertex(G4Event *evt)
 
 
 		if (m_verbosityLevel > 2) {
-			G4cout << "Particle name: "
-					<< m_definition->GetParticleName() << G4endl;
+			LOG(info) << "Particle name: "
+					  << m_definition->GetParticleName() 
+                      << " verbosityLevel " << m_verbosityLevel
+                      ;
 			G4cout << "       Energy: " << pp.energy << G4endl;
 			G4cout << "     Position: " << pp.position << G4endl;
 			G4cout << "    Direction: " << pp.momentum_direction

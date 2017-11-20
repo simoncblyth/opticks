@@ -18,6 +18,10 @@
 #include "G4SystemOfUnits.hh"
 #include "G4PhysicalConstants.hh"
 
+#include "G4TransportationManager.hh"
+#include "G4Navigator.hh"
+
+
 #include "DsG4CompositeTrackInfo.h"
 #include "DsPhotonTrackInfo.h"
 
@@ -76,6 +80,11 @@ void CSteppingAction::postinitialize()
    // called from CG4::postinitialize
     m_material_bridge = m_geometry->getMaterialBridge();
     assert(m_material_bridge);
+
+
+    m_trman = G4TransportationManager::GetTransportationManager(); 
+    m_nav = m_trman->GetNavigatorForTracking() ;
+
 }
 
 CSteppingAction::~CSteppingAction()
@@ -96,6 +105,16 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 
 bool CSteppingAction::setStep(const G4Step* step)
 {
+    int noZeroSteps = -1 ;
+    int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
+    if(noZeroSteps > 1)
+    LOG(info) 
+              << " noZeroSteps " << noZeroSteps
+              << " severity " << severity
+              << " ctx " << m_ctx.desc()
+              ;
+
+
     bool done = false ; 
 
     m_ctx.setStep(step);

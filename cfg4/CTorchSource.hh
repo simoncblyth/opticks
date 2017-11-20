@@ -17,7 +17,8 @@ class G4SPSRandomGenerator ;
 CTorchSource
 =============
 
-Canonical instance lives in CGenerator
+Canonical m_source instance lives in CGenerator
+and is instanciated by CGenerator::initSource
 
 **/
 

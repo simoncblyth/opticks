@@ -1007,6 +1007,9 @@ void Opticks::Summary(const char* msg)
     m_resource->Summary(msg);
 
     std::cout
+        << std::setw(40) << " Verbosity "
+        << std::setw(40) << getVerbosity()
+        << std::endl
         << std::setw(40) << " AnalyticPMTMedium "
         << std::setw(40) << getAnalyticPMTMedium()
         << std::endl

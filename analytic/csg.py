@@ -21,7 +21,7 @@ log = logging.getLogger(__name__)
 from opticks.sysrap.OpticksCSG import CSG_
 from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, make_scale
 #from opticks.analytic.bezier import Bezier
-from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron
+from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron, make_prism
 from opticks.analytic.textgrid import TextGrid
 from opticks.analytic.tboolean import TBooleanBashFunction
 from opticks.analytic.nnode_test_cpp import NNodeTestCPP
@@ -529,7 +529,14 @@ class CSG(CSG_):
     @classmethod
     def MakeIcosahedron(cls, scale=100.):
         planes, verts, bbox, src = make_icosahedron(scale=scale)
-        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "trapezoid")
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "convexpolyhedron")
+
+    @classmethod
+    def MakePrism(cls, angle, height, depth):
+        planes, verts, bbox, src = make_prism(angle, height, depth)
+        return cls.MakeConvexPolyhedron(planes, verts, bbox, src, "convexpolyhedron")
+
+
 
 
     @classmethod

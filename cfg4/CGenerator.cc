@@ -65,15 +65,6 @@ CSource* CGenerator::initSource(unsigned code)
     return source ; 
 }
 
-
-
-
-
-
-
-
-
-
 void CGenerator::setSource(CSource* source)
 {
     m_source = source ; 
@@ -161,7 +152,7 @@ CSource* CGenerator::initTorchSource()
     setNumG4Event( torch->getNumG4Event()); 
     setNumPhotonsPerG4Event( torch->getNumPhotonsPerG4Event()); 
 
-    int verbosity = m_ok->isDbgTorch() ? 10 : 0 ; 
+    int verbosity = m_ok->isDbgTorch() ? m_ok->getVerbosity() : 0 ; 
     CSource* source  = static_cast<CSource*>(new CTorchSource( m_ok, torch, verbosity)); 
     return source ; 
 }

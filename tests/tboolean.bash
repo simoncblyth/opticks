@@ -703,27 +703,15 @@ tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
 
 from opticks.ana.base import opticks_main
-from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
-from opticks.analytic.prism import make_prism  
-import logging
-log = logging.getLogger(__name__)
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-
 CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
-
 container = CSG("box", param=[0,0,0,600], boundary="Rock//perfectAbsorbSurface/Vacuum" )
 
-angle, height, depth = 45, 200, 300
-planes, verts, bbox, src = make_prism(angle, height, depth)
-
-prism = CSG.MakeConvexPolyhedron(planes, verts, bbox, src )
+prism = CSG.MakePrism(angle=45, height=200, depth=300 )
 prism.boundary="Vacuum///GlassSchottF2" 
-
-log.info( " prism.meta %s " % prism.meta )
-
 prism.dump()
 
 CSG.Serialize([container, prism], args.csgpath )
@@ -743,6 +731,9 @@ $FUNCNAME
 
 * see notes/issues/tboolean-prism-convexpolyhedron-meta-assert.rst
   adding missing G4 conversion in CMaker::ConvertConvexPolyhedron 
+
+* see notes/issues/tboolean-prism-G4TessellatedSolid-stuck-track.rst
+  4/100000 needed a boot to get un-stuck 
 
 
 EON
@@ -804,6 +795,10 @@ obj.dump()
 CSG.Serialize([container, obj], args.csgpath)
 EOP
 }
+
+
+
+
 
 
 

@@ -31,6 +31,10 @@ class CGeometry ;
 class CMaterialBridge ; 
 class CStepRec ; 
 
+class G4Navigator ; 
+class G4TransportationManager ; 
+
+
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -61,6 +65,9 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     CMaterialLib*     m_mlib ; 
     CRecorder*        m_recorder   ; 
     CStepRec*         m_steprec   ; 
+
+    G4TransportationManager* m_trman ; 
+    G4Navigator*             m_nav ; 
 
     unsigned int m_steprec_store_count ;
 
