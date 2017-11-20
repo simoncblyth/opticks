@@ -275,6 +275,15 @@ void nconvexpolyhedron::set_planes( const std::vector<glm::vec4>& planes_ )
     define_uv_basis();
 }
 
+
+void nconvexpolyhedron::set_srcvertsfaces( const std::vector<glm::vec3>& srcverts_ , const std::vector<glm::ivec4>& srcfaces_ ) 
+{
+    std::copy( srcverts_.begin() , srcverts_.end(), std::back_inserter(srcverts) ) ;
+    std::copy( srcfaces_.begin() , srcfaces_.end(), std::back_inserter(srcfaces) ) ;
+}
+
+
+
 void nconvexpolyhedron::define_uv_basis()
 {
     nglmext::_define_uv_basis( planes, udirs, vdirs );

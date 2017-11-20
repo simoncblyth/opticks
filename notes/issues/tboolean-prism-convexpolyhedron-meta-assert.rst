@@ -1,6 +1,15 @@
 tboolean-prism-convexpolyhedron-meta-assert
 =============================================
 
+
+FIXED by adding CMaker::ConvertConvexPolyhedron using G4TessellatedSolid
+--------------------------------------------------------------------------
+
+* passed srcverts srcfaces from python thru to NCSG/nnode/nconvexpolyhedron
+* used these to populate G4TessellatedSolid
+
+
+
 issue CMaker::ConvertPrimitive missing G4 conversion imp for convexpolyhedron other than trapezoid
 ---------------------------------------------------------------------------------------------------------
 
@@ -43,6 +52,46 @@ issue CMaker::ConvertPrimitive missing G4 conversion imp for convexpolyhedron ot
     501         LOG(fatal) << "CMaker::ConvertPrimitive MISSING IMP FOR  " << name ;
     502         assert(0);
     503     }
+
+
+FIXED Missing Node Metadata : there was json naming convention mismatch
+-------------------------------------------------------------------------
+
+::
+
+
+    2017-11-20 14:37:19.337 INFO  [5917208] [*NCSGList::createUniverse@160] NCSGList::createUniverse bnd0 Rock//perfectAbsorbSurface/Vacuum ubnd Rock///Rock scale 1 delta 1
+    2017-11-20 14:37:19.338 ERROR [5917208] [*NCSG::LoadMetadata@332] NCSG::LoadMetadata missing metadata  treedir /tmp/blyth/opticks/tboolean-prism--/0 idx 0 metapath /tmp/blyth/opticks/tboolean-prism--/0/0/meta.json
+
+::
+
+    2017-11-20 14:43:26,310] p61036 {/Users/blyth/opticks/analytic/csg.py:443} INFO - CSG.Serialize : writing 2 trees to directory /tmp/blyth/opticks/tboolean-prism-- 
+    [2017-11-20 14:43:26,311] p61036 {/Users/blyth/opticks/analytic/csg.py:706} INFO - write nodemeta to /tmp/blyth/opticks/tboolean-prism--/0/0/nodemeta.json {'verbosity': '0', 'resolution': '40', 'idx': 0, 'poly': 'IM', 'ctrl': '0'} 
+    [2017-11-20 14:43:26,317] p61036 {/Users/blyth/opticks/analytic/csg.py:706} INFO - write nodemeta to /tmp/blyth/opticks/tboolean-prism--/1/0/nodemeta.json {'src_depth': 300, 'src_height': 200, 'ctrl': '0', 'verbosity': '0', 'poly': 'IM', 'idx': 0, 'src_angle': 45, 'src_type': 'prism', 'resolution': '40'} 
+    analytic=1_csgpath=/tmp/blyth/opticks/tboolean-prism--_mode=PyCsgInBox_outerfirst=1_name=tboolean-prism--
+
+
+::
+
+    (lldb) p meta
+    (NParameters *) $0 = 0x000000010c6c5420
+    (lldb) p *meta
+    (NParameters) $1 = {
+      m_parameters = size=9 {
+        [0] = (first = "src_depth", second = "300")
+        [1] = (first = "src_height", second = "200")
+        [2] = (first = "ctrl", second = "0")
+        [3] = (first = "verbosity", second = "0")
+        [4] = (first = "poly", second = "IM")
+        [5] = (first = "idx", second = "0")
+        [6] = (first = "src_angle", second = "45")
+        [7] = (first = "src_type", second = "prism")
+        [8] = (first = "resolution", second = "40")
+      }
+      m_lines = size=0 {}
+    }
+
+
 
 
 

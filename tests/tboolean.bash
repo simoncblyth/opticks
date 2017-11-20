@@ -696,6 +696,8 @@ EON
 
 
 tboolean-prism-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-prism-ip(){ TESTNAME=tboolean-prism tboolean-ipy- $* ; } 
+tboolean-prism-p(){ TESTNAME=tboolean-prism tboolean-py- $* ; } 
 tboolean-prism(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null) &&  tboolean-- $* ; } 
 tboolean-prism-(){  $FUNCNAME- | python $* ; }
 tboolean-prism--(){ cat << EOP 
@@ -704,6 +706,8 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 from opticks.analytic.prism import make_prism  
+import logging
+log = logging.getLogger(__name__)
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
@@ -717,6 +721,8 @@ planes, verts, bbox, src = make_prism(angle, height, depth)
 
 prism = CSG.MakeConvexPolyhedron(planes, verts, bbox, src )
 prism.boundary="Vacuum///GlassSchottF2" 
+
+log.info( " prism.meta %s " % prism.meta )
 
 prism.dump()
 
@@ -736,8 +742,7 @@ $FUNCNAME
   from the set of planes
 
 * see notes/issues/tboolean-prism-convexpolyhedron-meta-assert.rst
-
-
+  adding missing G4 conversion in CMaker::ConvertConvexPolyhedron 
 
 
 EON

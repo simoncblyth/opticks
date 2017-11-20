@@ -59,6 +59,7 @@ class CFG4_API CMaker
         G4VSolid* makeSolid_r(const nnode* node);
         static G4Transform3D* ConvertTransform(const glm::mat4& t);
         static G4VSolid*      ConvertPrimitive(const nnode* node);
+        static G4VSolid*      ConvertConvexPolyhedron(const nnode* node);
     private:
         Opticks* m_ok ; 
         int      m_verbosity ; 

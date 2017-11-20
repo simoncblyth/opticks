@@ -76,6 +76,9 @@ class NPY_API NCSG {
         enum { NJ = 4, NK = 4, MAX_HEIGHT = 10 };
 
         static const char* FILENAME ; 
+        static const char* TREE_META ; 
+        static const char* NODE_META ; 
+
         static const char* PLANES ; 
         static const char* SRC_FACES ; 
         static const char* SRC_VERTS ;
@@ -220,6 +223,7 @@ class NPY_API NCSG {
         nnode* import_primitive( unsigned idx, OpticksCSG_t typecode );
         nnode* import_operator( unsigned idx, OpticksCSG_t typecode );
         void import_planes(nnode* node);
+        void import_srcvertsfaces(nnode* node);
     private:
         nmat4pair*   import_transform_pair(unsigned itra);
         nmat4triple* import_transform_triple(unsigned itra);

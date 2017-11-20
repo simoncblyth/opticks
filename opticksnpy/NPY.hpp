@@ -284,6 +284,10 @@ class NPY_API NPY : public NPYBase {
        void         setMat4Triple(const nmat4triple* mpair, unsigned i );
 
 
+       void         copyTo(std::vector<glm::ivec4>& dst );
+       void         copyTo(std::vector<glm::vec3>& dst );
+       void         copyTo(std::vector<glm::vec4>& dst );
+
        void         copyTo(std::vector<T>& dst );
 
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cassert>
+
 #include "NGLM.hpp"
 #include "NNode.hpp"
 
@@ -30,6 +31,8 @@ struct NPY_API nconvexpolyhedron : nnode
     unsigned  par_nvertices(unsigned nu, unsigned nv) const ; 
 
     void set_planes(const std::vector<glm::vec4>& planes_) ;
+    void set_srcvertsfaces( const std::vector<glm::vec3>& srcverts_ , const std::vector<glm::ivec4>& srcfaces_ ) ;
+
     void set_bbox(const nbbox& bb) ;
 
     static nconvexpolyhedron* make_trapezoid(float z, float x1, float y1, float x2, float y2 );   
@@ -44,6 +47,11 @@ struct NPY_API nconvexpolyhedron : nnode
 
     std::vector<glm::vec3> udirs ; 
     std::vector<glm::vec3> vdirs ; 
+
+    std::vector<glm::vec3>  srcverts ; 
+    std::vector<glm::ivec4> srcfaces ; 
+
+
 
 };
 

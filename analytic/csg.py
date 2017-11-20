@@ -703,7 +703,7 @@ class CSG(CSG_):
             if not os.path.exists(dir_):
                 os.makedirs(dir_)
             pass 
-            log.debug("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
+            log.info("write nodemeta to %s %r " % (nodemetapath, nodemeta)  )
             json.dump(nodemeta,file(nodemetapath,"w"))
 
             if node.left is not None and node.right is not None:
@@ -778,9 +778,14 @@ class CSG(CSG_):
     def facepath(cls, treedir):
         return os.path.join(treedir,"srcfaces.npy") 
 
+
+    # must match NCSG::TREE_META NCSG::NODE_META
+    TREE_META = "meta.json"
+    NODE_META = "nodemeta.json"
+
     @classmethod
     def metapath(cls, treedir, idx=-1):
-        return os.path.join(treedir,"meta.json") if idx == -1 else os.path.join(treedir,str(idx),"nodemeta.json")
+        return os.path.join(treedir,cls.TREE_META) if idx == -1 else os.path.join(treedir,str(idx),cls.NODE_META)
     @classmethod
     def nodepath(cls, treedir):
         return os.path.join(treedir,"nodes.npy") 

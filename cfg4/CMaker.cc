@@ -20,6 +20,10 @@
 #include "G4Trd.hh"
 #include "G4Torus.hh"
 
+#include "G4TriangularFacet.hh"
+#include "G4QuadrangularFacet.hh"
+#include "G4TessellatedSolid.hh"
+
 #include "G4RotationMatrix.hh"
 #include "G4Transform3D.hh"
 
@@ -364,17 +368,91 @@ G4Transform3D* CMaker::ConvertTransform(const glm::mat4& t) // static
     return ctr  ; 
 }
 
+
+
+
+/**
+
+g4-;g4-cls G4TessellatedSolid
+g4-;g4-cls G4TriangularFacet
+g4-;g4-cls G4VFacet
+
+**/
+ 
+G4VSolid* CMaker::ConvertConvexPolyhedron(const nnode* node) // static
+{
+    NParameters* meta = node->meta ;  
+    assert(meta);
+    std::string src_type = meta->getStringValue("src_type");
+    
+    bool supported = src_type.compare("prism")==0 ;
+    if(!supported) 
+         LOG(fatal) << " src_type not supprted " <<  src_type ;
+
+    assert( supported  );
+  
+
+    G4VSolid* result = NULL ; 
+    const char* name = node->csgname();
+    assert(name);
+
+    nconvexpolyhedron* n = (nconvexpolyhedron*)node ; 
+
+    const std::vector<glm::ivec4>& faces = n->srcfaces ;  
+    const std::vector<glm::vec3>&  verts = n->srcverts ;  
+
+    unsigned nv = verts.size();
+    unsigned nf = faces.size();
+
+    LOG(info) 
+         << " faces " << nf
+         << " verts " << nv
+         ;
+
+    std::vector<G4ThreeVector> v ; 
+    for(unsigned i=0 ; i < nv ; i++) v.push_back( G4ThreeVector(verts[i].x, verts[i].y, verts[i].z ) );
+
+    G4TessellatedSolid* te = new G4TessellatedSolid(name);
+    for(unsigned i=0 ; i < nf ; i++)
+    {
+        glm::ivec4 face = faces[i] ; 
+        if( face.w == -1 )
+        {
+            assert( unsigned(face.x) < nv );
+            assert( unsigned(face.y) < nv );
+            assert( unsigned(face.z) < nv );
+
+            G4TriangularFacet* tf = new G4TriangularFacet( v[face.x], v[face.y], v[face.z], ABSOLUTE ) ; 
+            te->AddFacet(tf);
+        }
+        else
+        {
+            assert( unsigned(face.x) < nv );
+            assert( unsigned(face.y) < nv );
+            assert( unsigned(face.z) < nv );
+            assert( unsigned(face.w) < nv );
+
+            G4QuadrangularFacet* qf = new G4QuadrangularFacet( v[face.x], v[face.y], v[face.z], v[face.w],  ABSOLUTE ) ; 
+            te->AddFacet(qf);
+        }
+    }
+    te->SetSolidClosed(true) ;
+    result = te ;   
+    return result ; 
+}
+
+
 G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
 {
     /*
     G4 has inner imps that would allow some Opticks operators to be
     expressed as G4 primitives. 
-
     */
 
     G4VSolid* result = NULL ; 
     const char* name = node->csgname();
     assert(name);
+
 
     // cf NCSG::import_primitive
     if(node->type == CSG_SPHERE )
@@ -478,8 +556,8 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
     {
         NParameters* meta = node->meta ;  
         assert(meta);
-
         std::string src_type = meta->getStringValue("src_type");
+
         if(src_type.compare("trapezoid")==0)
         {
             float src_z = meta->get<float>("src_z");
@@ -493,7 +571,7 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
         }
         else
         {
-            assert(0);
+            result = ConvertConvexPolyhedron( node );
         }   
     }
     else

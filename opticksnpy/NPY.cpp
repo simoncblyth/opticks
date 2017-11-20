@@ -20,13 +20,6 @@ namespace fs = boost::filesystem;
 
 
 
-template <typename T> 
-void NPY<T>::copyTo(std::vector<T>& dst )
-{
-    std::copy(m_data.begin(), m_data.end(), std::back_inserter(dst));
-}
-
-
 
 
 // ctor takes ownership of a copy of the inputs 
@@ -2049,6 +2042,50 @@ template <typename T>
 
 
 
+
+
+
+template <typename T> 
+void NPY<T>::copyTo(std::vector<T>& dst )
+{
+    std::copy(m_data.begin(), m_data.end(), std::back_inserter(dst));
+}
+
+template <typename T> 
+void NPY<T>::copyTo(std::vector<glm::vec3>& dst )
+{
+    assert( hasShape(-1,3) );
+    for(unsigned i=0 ; i < getShape(0) ; i++)
+    {
+        glm::vec3 vec  ; 
+        vec.x = getValue(i,0,0);
+        vec.y = getValue(i,1,0);
+        vec.z = getValue(i,2,0);
+        dst.push_back(vec); 
+    }
+}
+
+template <typename T> 
+void NPY<T>::copyTo(std::vector<glm::vec4>& dst )
+{
+    assert( hasShape(-1,4) );
+    for(unsigned i=0 ; i < getShape(0) ; i++)
+    {
+        glm::vec4 vec = getQuad(i) ; 
+        dst.push_back(vec); 
+    }
+}
+
+template <typename T> 
+void NPY<T>::copyTo(std::vector<glm::ivec4>& dst )
+{
+    assert( hasShape(-1,4) );
+    for(unsigned i=0 ; i < getShape(0) ; i++)
+    {
+        glm::ivec4 vec = getQuadI(i);
+        dst.push_back(vec); 
+    }
+}
 
 
 

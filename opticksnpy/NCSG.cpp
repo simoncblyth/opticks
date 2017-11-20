@@ -39,6 +39,10 @@
 
 const char* NCSG::FILENAME = "csg.txt" ; 
 
+// must match opticks/analytic/csg.py TREE_META NODE_META
+const char* NCSG::TREE_META = "meta.json" ;
+const char* NCSG::NODE_META = "nodemeta.json" ;
+
 const char* NCSG::PLANES = "planes.npy" ; 
 const char* NCSG::SRC_FACES = "srcfaces.npy" ; 
 const char* NCSG::SRC_VERTS = "srcverts.npy" ; 
@@ -271,9 +275,10 @@ std::string NCSG::smry()
 
 
 
+
 std::string NCSG::MetaPath(const char* treedir, int idx)
 {
-    std::string metapath = idx == -1 ? BFile::FormPath(treedir, "meta.json") : BFile::FormPath(treedir, BStr::itoa(idx), "meta.json") ;
+    std::string metapath = idx == -1 ? BFile::FormPath(treedir, TREE_META) : BFile::FormPath(treedir, BStr::itoa(idx), NODE_META) ;
     return metapath ; 
 }
 
@@ -320,12 +325,22 @@ NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
     //    Need for access to Trd srcmeta
 
     NParameters* meta = NULL  ; 
-    if(ExistsMeta(treedir, idx))
+    std::string metapath = MetaPath(treedir, idx) ;
+
+    if(BFile::ExistsFile(metapath.c_str()))
     {
-         std::string metapath = MetaPath(treedir, idx) ;
          meta = new NParameters ; 
          meta->load_( metapath.c_str() );
     } 
+    else
+    {
+        LOG(error) << "NCSG::LoadMetadata"
+                     << " missing metadata "
+                     << " treedir " << treedir  
+                     << " idx " << idx
+                     << " metapath " << metapath
+                     ;
+    }
     return meta ; 
 }
 
@@ -576,7 +591,6 @@ void NCSG::load()
 
     loadSrcVerts();
     loadSrcFaces();
-
 
 
     LOG(debug) << "NCSG::load DONE " ; 
@@ -1036,7 +1050,11 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 
     assert(node); 
 
-    if(CSGHasPlanes(typecode)) import_planes( node );
+    if(CSGHasPlanes(typecode)) 
+    {
+        import_planes( node );
+        import_srcvertsfaces( node );
+    }
 
     if(m_verbosity > 3)
     LOG(info) << "NCSG::import_primitive  " 
@@ -1052,6 +1070,23 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 }
 
 
+void NCSG::import_srcvertsfaces(nnode* node)
+{
+    assert( node->has_planes() );
+    assert(m_srcverts);
+    assert(m_srcfaces);
+
+    nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
+    assert(cpol);
+
+    std::vector<glm::vec3> _verts ;  
+    std::vector<glm::ivec4> _faces ;  
+
+    m_srcverts->copyTo(_verts);
+    m_srcfaces->copyTo(_faces);
+
+    cpol->set_srcvertsfaces(_verts, _faces);     
+}
 
 
 void NCSG::import_planes(nnode* node)

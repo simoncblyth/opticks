@@ -265,6 +265,40 @@ void test_uint32()
 
 
 
+void test_copyTo_ivec4()
+{
+    NPY<int>* faces_ = NPY<int>::load("$TMP/tboolean-prism--/1/srcfaces.npy" ) ;
+    if(!faces_) return ; 
+
+    faces_->dump();
+
+    std::vector<glm::ivec4> faces ;  
+    faces_->copyTo(faces); 
+    assert( faces.size() == faces_->getShape(0) ); 
+
+    for(unsigned i=0 ; i < faces.size() ; i++) std::cout << gpresent(faces[i]) << std::endl ; 
+
+}
+
+void test_copyTo_vec3()
+{
+    NPY<float>* verts_ = NPY<float>::load("$TMP/tboolean-prism--/1/srcverts.npy" ) ;
+    if(!verts_) return ; 
+    verts_->dump();
+
+    std::vector<glm::vec3> verts ;  
+    verts_->copyTo(verts); 
+    assert( verts.size() == verts_->getShape(0) ); 
+
+    for(unsigned i=0 ; i < verts.size() ; i++) std::cout << gpresent(verts[i]) << std::endl ; 
+
+}
+ 
+
+
+
+
+
 int main(int argc, char** argv )
 {
     PLOG_(argc, argv);
@@ -285,9 +319,11 @@ int main(int argc, char** argv )
 
     test_getItemDigestString();
     test_addItemUnique();
+    test_uint32();
+    test_copyTo_ivec4();
 */
 
-    test_uint32();
+    test_copyTo_vec3();
 
     return 0 ; 
 }
