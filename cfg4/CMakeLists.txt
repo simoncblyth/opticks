@@ -206,6 +206,8 @@ set(SOURCES
     CStage.cc
     CG4Ctx.cc
     CG4.cc
+    CRayTracer.cc
+    CVis.cc
     CCollector.cc
     CRunAction.cc
     CEventAction.cc

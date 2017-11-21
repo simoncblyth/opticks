@@ -105,26 +105,31 @@ void test_parametric()
 }
 
 
+void test_deltaTheta(float radius, float z1, float z2)
+{
+    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
+     
+    LOG(info) << "test_deltaTheta" 
+             << " radius " << radius
+             << " z1 " << z1
+             << " z2 " << z2
+             << " startTheta " << zs.startTheta()  
+             << " endTheta " << zs.endTheta()  
+             << " deltaTheta " << zs.deltaTheta()  
+             ;
+
+
+}
+
 void test_deltaTheta()
 {
-    LOG(info) << "test_deltaTheta" ;
-
     float radius = 10.f ; 
     float z1 = -radius/2.f ; 
     float z2 = radius/2.f ; 
 
-    nzsphere zs = make_zsphere(0.f,0.f,0.f,radius,z1,z2 );
-
-    
-    std::cout 
-         << " startTheta " << zs.startTheta()  
-         << " endTheta " << zs.endTheta()  
-         << " deltaTheta " << zs.deltaTheta()  
-         << std::endl
-         ;
-
+    test_deltaTheta(radius, z1, z2) ; 
+    test_deltaTheta(500, -200, 200) ; 
 }
-
 
 
 

@@ -54,6 +54,7 @@
 #include "CEventAction.hh"
 
 
+#include "CRayTracer.hh"
 #include "CMaterialTable.hh"
 #include "CG4.hh"
 
@@ -142,6 +143,7 @@ CG4::CG4(OpticksHub* hub)
      m_ta(new CTrackingAction(this)),
      m_ra(new CRunAction(m_hub)),
      m_ea(new CEventAction(this)),
+     m_rt(new CRayTracer(this)),
      m_initialized(false)
 {
      OK_PROFILE("CG4::CG4");
@@ -238,6 +240,11 @@ void CG4::postinitialize()
 
     m_collector = new CCollector(m_hub) ; // currently hub just used for material code lookup, not evt access
 
+
+    if(m_ok->isG4Snap()) snap() ;
+
+
+
     LOG(info) << "CG4::postinitialize DONE" ;
 }
 
@@ -260,6 +267,18 @@ void CG4::execute(const char* path)
     LOG(info) << "CG4::execute [" << cmd << "]" ; 
     m_uiManager->ApplyCommand(cmd);
 }
+
+
+
+void CG4::snap()
+{
+    m_visManager = new G4VisExecutive;
+    m_visManager->Initialize();
+    m_rt->snap();
+}
+
+
+
 
 
 

@@ -788,10 +788,20 @@ bool Opticks::isTest()
 
 
 
+bool Opticks::isG4Snap() const 
+{
+    return m_cfg->hasOpt("g4snap");
+}
+const char* Opticks::getG4SnapConfigString()  const 
+{
+    return m_cfg->getG4SnapConfig().c_str() ; 
+}
+
 const char* Opticks::getSnapConfigString()
 {
     return m_cfg->getSnapConfig().c_str() ; 
 }
+
 const char* Opticks::getLODConfigString()
 {
     return m_cfg->getLODConfig().c_str() ; 

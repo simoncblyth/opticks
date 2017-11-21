@@ -16,6 +16,7 @@ template <typename T> class NPY ;
 // cfg4-
 
 
+class CRayTracer ; 
 class CPhysics ; 
 class CGeometry ; 
 class CMaterialLib ; 
@@ -120,6 +121,7 @@ class CFG4_API CG4
         void setUserInitialization(G4VUserDetectorConstruction* detector);
         void execute(const char* path);
         void initEvent(OpticksEvent* evt);
+        void snap();
    public:
         Opticks*       getOpticks();
         OpticksHub*    getHub();
@@ -164,6 +166,7 @@ class CFG4_API CG4
         CTrackingAction*               m_ta ;
         CRunAction*                    m_ra ;
         CEventAction*                  m_ea ;
+        CRayTracer*                    m_rt ; 
 
         bool                           m_initialized ; 
 

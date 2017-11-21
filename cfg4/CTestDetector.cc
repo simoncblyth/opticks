@@ -62,6 +62,7 @@
 #include "CBndLib.hh"
 #include "CMaterialLib.hh"
 #include "CTestDetector.hh"
+#include "CVis.hh"
 
 #include "PLOG.hh"
 
@@ -168,6 +169,11 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     assert(universe);
     G4VPhysicalVolume* top = universe ? makeVolumeUniverse(universe) : NULL ; 
     G4LogicalVolume* mother = top ? top->GetLogicalVolume() : NULL ; 
+
+    if(mother)
+    {
+        mother->SetVisAttributes (CVis::MakeInvisible());
+    }
     
     G4VPhysicalVolume* ppv = NULL ; 
     for(unsigned i=0 ; i < numSolids ; i++) 
@@ -182,6 +188,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 
         G4LogicalVolume* lv = pv->GetLogicalVolume() ;
 
+        lv->SetVisAttributes( CVis::MakeAtt(1,0,0, false) ) ; 
+
+  
         if(top == NULL) top = pv ; 
         if(ppv == NULL) ppv = pv ; 
 

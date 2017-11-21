@@ -36,6 +36,8 @@ class OpticksEvent ;
 Composition
 =============
 
+Canonical m_composition instance is ctor resident of the top level OpticksHub m_hub. 
+
 Encapsulates
 
 * world frame center/extent *ce* of object of interest in geometry 

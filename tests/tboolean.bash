@@ -1152,6 +1152,7 @@ EON
 
 
 tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere1-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere1-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere1(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-zsphere1-(){ $FUNCNAME- | python $* ; } 
@@ -1160,13 +1161,21 @@ tboolean-zsphere1--(){ cat << EOP
 from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
-CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
 
-zsphere = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0", emitconfig=emitconfig )
 
-CSG.Serialize([container, zsphere], args.csgpath )
+container = CSG("box", param=[0,0,0,1000], emit=-1 )
+testobj = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
+#testobj = CSG("box", param=[0,0,0,500] )
+#testobj = CSG("sphere", param=[0,0,0,500] )
+
+container.boundary = "Rock//perfectAbsorbSurface/Vacuum"
+#testobj.boundary = "Vacuum///GlassSchottF2" 
+testobj.boundary = "Vacuum/perfectSpecularSurface//GlassSchottF2" 
+
+CSG.Serialize([container, testobj], args.csgpath )
 
 EOP
 }
@@ -1178,6 +1187,21 @@ $FUNCNAME
 ============================
 
 * discrepant tboolean-zsphere1-p
+* replacing zsphere with box or sphere get agreement, so presumably not material or torch issue
+* notes/issues/tboolean-zsphere1-zsphere2-discrep.rst
+
+
+eyeball the simulations::
+
+   # orthographic (d-key), point photons (p-key several times), mat1 coloring (m-key several times) gives a precise view of whats happening 
+
+   tboolean-;tboolean-zsphere1 --load 
+       # endcaps as intersected : appear in expected place 
+  
+   tboolean-;tboolean-zsphere1 --load --vizg4
+       # endcaps as intersected : appear as back to back cones, touching at apex 
+
+
 
 EON
 }
@@ -1186,6 +1210,7 @@ EON
 
 
 tboolean-zsphere2-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere2-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere2-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere2(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
 tboolean-zsphere2-(){ $FUNCNAME- | python $* ; } 

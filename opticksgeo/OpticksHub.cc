@@ -16,7 +16,6 @@
 
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
-//#include "NParameters.hpp"
 
 // npy-
 #include "Timer.hpp"
@@ -41,8 +40,6 @@
 #include "GGeo.hh"
 #include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
-
-//#include "GSurLib.hh"
 
 // okc-
 #include "Bookmarks.hh"

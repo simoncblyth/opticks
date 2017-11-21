@@ -17,6 +17,7 @@ set(TEST_SOURCES
     CG4Test.cc
     G4MaterialTest.cc
     G4StringTest.cc
+    G4SphereTest.cc
     G4BoxTest.cc
     CCollectorTest.cc
     CInterpolationTest.cc

@@ -108,6 +108,17 @@ zoom defined as apparent size of an object relative to the size for a 90 degree 
 #include "NConfigurable.hpp"
 #include "OKCORE_API_EXPORT.hh"
 
+/**
+Camera
+=========
+
+Canonical m_camera instance is ctor resident of Composition m_composition
+which in turn is a ctor resident of the top level OpticksHub m_hub. 
+
+
+**/
+
+
 class OKCORE_API Camera : public NConfigurable  {
    public:
        static const char* PREFIX ;

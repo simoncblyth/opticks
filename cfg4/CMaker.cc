@@ -199,7 +199,7 @@ G4VSolid* CMaker::makeSolid_OLD(GCSG* csg, unsigned int index)
        float startPhi = 0.f ; 
        float deltaPhi = 2.f*float(pi) ; 
 
-       LOG(info) << "CMaker::makeSolid csg Sphere"
+       LOG(error) << "CMaker::makeSolid csg Sphere"
                  << " inner " << inner 
                  << " outer " << outer
                  << " startTheta " << startTheta
@@ -485,6 +485,19 @@ G4VSolid* CMaker::ConvertPrimitive(const nnode* node) // static
         double deltaPhi = twopi ; 
         double startTheta = n->startTheta() ; 
         double deltaTheta = n->deltaTheta() ; 
+        double endTheta = startTheta + deltaTheta ; 
+
+        LOG(error) << "CSG_ZSPHERE"
+                   << " pi " << pi
+                   << " innerRadius " << innerRadius
+                   << " outerRadius " << outerRadius
+                   << " startTheta " << startTheta
+                   << " deltaTheta " << deltaTheta
+                   << " endTheta " << endTheta
+                   ;
+        assert( startTheta <= pi && startTheta >= 0.);
+        assert( deltaTheta <= pi && deltaTheta >= 0.);
+        assert( endTheta <= pi && endTheta >= 0.);
 
         G4Sphere* sp = new G4Sphere( name, innerRadius, outerRadius, startPhi, deltaPhi, startTheta, deltaTheta);  
         result = sp ; 

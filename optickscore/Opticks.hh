@@ -208,6 +208,10 @@ class OKCORE_API Opticks {
    public:
        bool        isTest();
        const char* getTestConfig();
+
+   public:
+       bool        isG4Snap() const ; 
+       const char* getG4SnapConfigString() const ;
    public:
        const char* getSnapConfigString();
        NSnapConfig* getSnapConfig();

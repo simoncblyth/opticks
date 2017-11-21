@@ -460,11 +460,23 @@ void OpticksCfg<Listener>::init()
 
 
 
+
    m_desc.add_options()
        ("snap",  "Enable non-OpenGL rendering to ppm files, use --snapconfig to configure, see npy-/NSnapConfig  ") ;
 
    m_desc.add_options()
        ("snapconfig",   boost::program_options::value<std::string>(&m_snapconfig), "snap (non-OpenGL rendering to ppm) configuration" );
+
+
+   m_desc.add_options()
+       ("g4snap",  "Enable G4TheRayTracer snapping to jpeg files, use --g4snapconfig to configure, see cfg4-/CRayTracer  ") ;
+
+   m_desc.add_options()
+       ("g4snapconfig",   boost::program_options::value<std::string>(&m_g4snapconfig), "g4snap ray trace configuration" );
+
+
+
+
 
 
    m_desc.add_options()
@@ -942,6 +954,12 @@ const std::string& OpticksCfg<Listener>::getSnapConfig()
 {
     return m_snapconfig ;
 }
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getG4SnapConfig()
+{
+    return m_g4snapconfig ;
+}
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getZExplodeConfig()
