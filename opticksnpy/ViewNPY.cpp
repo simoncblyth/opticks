@@ -279,7 +279,7 @@ void ViewNPY::findBounds()
 
     if(m_npy->isIntegerType())
     {
-        LOG(warning) << "ViewNPY::findBounds skipping attribute of IntegerType buffer " << m_name  ;
+        LOG(debug) << "ViewNPY::findBounds skipping attribute of IntegerType buffer " << m_name  ;
         return ;  
     }
 

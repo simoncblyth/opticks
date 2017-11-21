@@ -129,6 +129,134 @@ SMOKING GUN : G4Sphere with THETA RANGE IS CONICAL SECTOR NOT SEGMENT
 anaEvent SDF checking intersectcs
 ----------------------------------
 
+::
+
+    simon:opticks blyth$ opticks-find ::anaEvent\(
+    ./ggeo/GGeo.cc:void GGeo::anaEvent(OpticksEvent* evt)
+    ./ggeo/GGeoTest.cc:void GGeoTest::anaEvent(OpticksEvent* evt)
+    ./ggeo/GScene.cc:void GScene::anaEvent(OpticksEvent* evt)
+    ./optickscore/OpticksRun.cc:void OpticksRun::anaEvent()
+    ./opticksgeo/OpticksHub.cc:void OpticksHub::anaEvent()
+    simon:opticks blyth$ 
+
+
+OpticksHub::anaEvent is called after propagation if **save** is active::
+
+    simon:opticks blyth$ opticks-find \>anaEvent
+    ./ok/OKMgr.cc:                if(!production) m_hub->anaEvent();
+    ./okg4/OKG4Mgr.cc:                m_hub->anaEvent();
+    ./okop/OpMgr.cc:                if(!production) m_hub->anaEvent();
+    ./okop/OpMgr.cc:                if(!production) m_hub->anaEvent();
+    ./opticksgeo/OpticksHub.cc:        m_geotest->anaEvent( evt );  
+    ./opticksgeo/OpticksHub.cc:        m_gscene->anaEvent( evt ); 
+    ./opticksgeo/OpticksHub.cc:        m_ggeo->anaEvent( evt ); 
+    ./opticksgeo/OpticksHub.cc:    m_run->anaEvent();
+    simon:opticks blyth$ 
+
+
+::
+
+    636 void GGeoTest::anaEvent(OpticksEvent* evt)
+    637 {
+    638     int dbgnode = m_ok->getDbgNode();
+    639     //NCSG* csg = getTree(dbgnode);
+    640 
+    641     LOG(info) << "GGeoTest::anaEvent "
+    642               << " dbgnode " << dbgnode
+    643               << " numTrees " << getNumTrees()
+    644               << " evt " << evt
+    645               ;
+    646 
+    647     assert( m_csglist ) ;
+    648 
+    649     OpticksEventAna ana(m_ok, evt, m_csglist);
+    650     ana.dump("GGeoTest::anaEvent");
+    651 }
+
+
+::
+
+        
+    tboolean-;tboolean-zsphere1 --okg4 
+
+    2017-11-21 16:34:05.950 INFO  [6188285] [*OpticksEventStat::CreateRecordsNPY@32] OpticksEventStat::CreateRecordsNPY  shape 100000,10,2,4
+    2017-11-21 16:34:05.954 INFO  [6188285] [OpticksEventAna::countExcursions@81] OpticksEventAna::countExcursions pho_num 100000 epsilon 0.1 dbgseqhis 0 dbgseqhis                                                 
+    2017-11-21 16:34:06.002 INFO  [6188285] [OpticksEventAna::countExcursions@136] OpticksEventAna::countExcursions pho_num 100000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-11-21 16:34:06.040 INFO  [6188285] [OpticksEventAna::countExcursions@136] OpticksEventAna::countExcursions pho_num 100000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-11-21 16:34:06.040 INFO  [6188285] [OpticksEventAna::dump@57] GGeoTest::anaEvent OpticksEventAna pho 100000,4,4 seq 100000,1,2
+    2017-11-21 16:34:06.040 INFO  [6188285] [OpticksEventStat::dump@89] per-seqhis per-tree counts on NCSG tree surface evt Evt /tmp/blyth/opticks/evt/tboolean-zsphere1/torch/1 20171121_163402 /usr/local/opticks/lib/OKG4Test totmin 2
+     seqhis               8d                 TO SA                                            tot  80131 cat (   80131      0 )  frac (   1.000  0.000 ) 
+     seqhis              8ad                 TO SR SA                                         tot  19664 cat (   19664      0 )  frac (   1.000  0.000 ) 
+     seqhis              86d                 TO SC SA                                         tot    165 cat (     165      0 )  frac (   1.000  0.000 ) 
+     seqhis               4d                 TO AB                                            tot     19 cat (       0      0 )  frac (   0.000  0.000 ) 
+     seqhis             86ad                 TO SR SC SA                                      tot     13 cat (      13      0 )  frac (   1.000  0.000 ) 
+     seqhis             8a6d                 TO SC SR SA                                      tot      5 cat (       5      0 )  frac (   1.000  0.000 ) 
+     seqhis            8a6ad                 TO SR SC SR SA                                   tot      2 cat (       2      0 )  frac (   1.000  0.000 ) 
+    2017-11-21 16:34:06.042 INFO  [6188285] [OpticksEventAna::dumpStepByStepCSGExcursions@168] OpticksEventAna::dumpStepByStepCSGExcursions m_dbgseqhis                0 count 0 dumpmax 10
+
+
+    tboolean-;tboolean-zsphere1 --okg4 --nore --noab --nosc 
+
+    2017-11-21 16:37:11.190 INFO  [6189200] [OpticksEventAna::countExcursions@81] OpticksEventAna::countExcursions pho_num 100000 epsilon 0.1 dbgseqhis 0 dbgseqhis                                                 
+    2017-11-21 16:37:11.238 INFO  [6189200] [OpticksEventAna::countExcursions@136] OpticksEventAna::countExcursions pho_num 100000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-11-21 16:37:11.280 INFO  [6189200] [OpticksEventAna::countExcursions@136] OpticksEventAna::countExcursions pho_num 100000 dbgseqhis 0 dbgseqhis                                                  count 0
+    2017-11-21 16:37:11.280 INFO  [6189200] [OpticksEventAna::dump@57] GGeoTest::anaEvent OpticksEventAna pho 100000,4,4 seq 100000,1,2
+    2017-11-21 16:37:11.280 INFO  [6189200] [OpticksEventStat::dump@89] per-seqhis per-tree counts on NCSG tree surface evt Evt /tmp/blyth/opticks/evt/tboolean-zsphere1/torch/1 20171121_163707 /usr/local/opticks/lib/OKG4Test totmin 2
+     seqhis               8d                 TO SA                                            tot  80300 cat (   80300      0 )  frac (   1.000  0.000 ) 
+     seqhis              8ad                 TO SR SA                                         tot  19700 cat (   19700      0 )  frac (   1.000  0.000 ) 
+    2017-11-21 16:37:11.282 INFO  [6189200] [OpticksEventAna::dumpStepByStepCSGExcursions@168] OpticksEventAna::dumpStepByStepCSGExcursions m_dbgseqhis                0 count 0 dumpmax 10
+    2017-11-21 16:37:11.282 INFO  [6189200] [OpticksAna::run@50] OpticksAna::run
+    2017-11-21 16:37:11.282 INFO  [6189200] [OpticksAna::run@53] OpticksAna::run anakey 
+    --tag 1 --tagoffset 0 --det tboolean-zsphere1 --src torch
+    2017-11-21 16:37:11.284 INFO  [6189200] [SSys::run@46] echo --tag 1 --tagoffset 0 --det tboolean-zsphere1 --src torch   rc_raw : 0 rc : 0
+    2017-11-21 16:37:11.284 INFO  [6189200] [OpticksAna::run@59] OpticksAna::run anakey  cmdline echo --tag 1 --tagoffset 0 --det tboolean-zsphere1 --src torch   rc 0
+
+
+
+
+
+CSG Excursions for each tree at each photon step for each photon
+--------------------------------------------------------------------
+
+how to collectivize ? 
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* assume single seqhis input, so have fixed number of points (recs)
+* delta min/max/avg for each position of each tree...  so for 3 points and 2 trees just have 6 triplets 
+* make an NCSGIntersect class to hold the sdf an collect point excursions 
+
+::
+
+    2017-11-21 20:37:59.509 INFO  [6280871] [OpticksEventAna::dumpPointExcursions@84] ok dbgseqhis 8ad dbgseqhis TO SR SA                                        
+    min/max/avg signed-distance(mm) and time(ns) of each photon step point from each NCSG tree
+    [p: 0](  19700)(     -0.100    -0.100    -0.100       0.000) mm[p: 0](  19700)(    799.900   799.900   799.980       0.000) mm
+    [p: 1](  19700)(   -799.995  -501.165  -686.365       0.000) mm[p: 1](  19700)(     -0.022     0.023     0.004       0.000) mm
+    [p: 2](  19700)(     -0.008    -0.008    -0.008       0.000) mm[p: 2](  19700)(    545.533  1220.413   802.941       0.000) mm
+    [p: 0](  19700)(      0.200     0.200     0.200       0.000) ns[p: 0](  19700)(      0.200     0.200     0.200       0.000) ns
+    [p: 1](  19700)(      2.868     3.522     2.903       0.000) ns[p: 1](  19700)(      2.868     3.522     2.903       0.000) ns
+    [p: 2](  19700)(      5.337     7.950     5.722       0.000) ns[p: 2](  19700)(      5.337     7.950     5.722       0.000) ns
+    2017-11-21 20:37:59.509 INFO  [6280871] [OpticksEventAna::dumpPointExcursions@84] g4 dbgseqhis 8ad dbgseqhis TO SR SA                                        
+    min/max/avg signed-distance(mm) and time(ns) of each photon step point from each NCSG tree
+    [p: 0](  19699)(     -0.100    -0.100    -0.100       0.000) mm[p: 0](  19699)(    799.900   799.900   799.980       0.000) mm
+    [p: 1](  19699)(   -996.915  -501.165  -699.756       0.000) mm[p: 1](  19699)(   -198.534     0.023   -56.019       0.000) mm
+    [p: 2](  19699)(     -0.008    -0.008    -0.008       0.000) mm[p: 2](  19699)(    545.533  1220.413   809.020       0.000) mm
+    [p: 0](  19699)(      0.200     0.200     0.200       0.000) ns[p: 0](  19699)(      0.200     0.200     0.200       0.000) ns
+    [p: 1](  19699)(      2.868     3.530     3.090       0.000) ns[p: 1](  19699)(      2.868     3.530     3.090       0.000) ns
+    [p: 2](  19699)(      5.337     8.428     7.239       0.000) ns[p: 2](  19699)(      5.337     8.428     7.239       0.000) ns
+    simon:opticksnpy blyth$ 
+
+
+how to assert ? 
+~~~~~~~~~~~~~~~~~
+
+* dbgseqhis eg 0x8ad "TO SR SA" is an input 
+* perhaps dbgseqtree eg 0x121 1-based tree index expected for each point : this will work for very simple test geometry 
+* more generally dbgxseqtree="0,1,0" string list of expected trees for each point, that assumes there is an expected
+  tree for every point
+
+* xseqtree="TO:0 SC:- SR:1 SA:0" provides both the dbgseqhis and expected trees for each point 
+
+ 
 
 
 Eyeballing
@@ -146,10 +274,6 @@ Eyeball the simulations:
 
    tboolean-;tboolean-zsphere1 --load --vizg4
        # endcaps as intersected appear as back to back cones, touching at apex 
-
-
-
-
 
 
 

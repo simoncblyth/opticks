@@ -1311,7 +1311,9 @@ OpticksEvent* Opticks::loadEvent(bool ok, unsigned tagoffset)
     OpticksEvent* evt = OpticksEvent::make(ok ? m_spec : m_nspec, tagoffset);
 
     evt->setOpticks(this);
-    evt->loadBuffers();
+
+    bool verbose = false ; 
+    evt->loadBuffers(verbose);
 
 
     LOG(info) << "Opticks::loadEvent"

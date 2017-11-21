@@ -20,6 +20,7 @@ it came from, for intersect tests.
 
 #include "PLOG.hh"
 
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -30,13 +31,11 @@ int main(int argc, char** argv)
     ok.configure();
 
     OpticksEvent* evt = ok.loadEvent();
-
     if(!evt || evt->isNoLoad())
     {
-        LOG(fatal) << "failed to load evt " ; 
+        LOG(fatal) << "failed to load ok evt " ; 
         return 0 ; 
     }
-
     const char* geopath = evt->getGeoPath();
     LOG(info) 
               << " geopath : " << ( geopath ? geopath : "-" )
@@ -45,8 +44,37 @@ int main(int argc, char** argv)
     NCSGList* csglist = NCSGList::Load(geopath, ok.getVerbosity() );
     csglist->dump();
 
-    OpticksEventAna ana(&ok, evt, csglist);
-    ana.dump("GGeoTest::anaEvent");
+    OpticksEventAna*  okana = new OpticksEventAna(&ok, evt, csglist);
+    okana->dump("GGeoTest::anaEvent.ok");
+
+
+
+
+
+
+    OpticksEvent* g4evt = ok.loadEvent(false);
+    if(!g4evt || g4evt->isNoLoad())
+    {
+        LOG(fatal) << "failed to load g4 evt " ; 
+        return 0 ; 
+    }
+ 
+    const char* geopath2 = g4evt->getGeoPath();
+    assert( strcmp( geopath, geopath2) == 0 );
+
+
+    OpticksEventAna* g4ana = new OpticksEventAna(&ok, g4evt, csglist);
+
+
+    g4ana->dump("GGeoTest::anaEvent.g4");
+
+
+
+
+    if(okana) okana->dumpPointExcursions("ok");
+    if(g4ana) g4ana->dumpPointExcursions("g4");
+    
+   
 
     return 0 ; 
 }

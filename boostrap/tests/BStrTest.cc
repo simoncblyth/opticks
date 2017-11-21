@@ -7,6 +7,7 @@
 #include <cstdio>
 #include <boost/algorithm/string/replace.hpp>
 
+#include "BRAP_LOG.hh"
 #include "PLOG.hh"
 
 
@@ -226,14 +227,38 @@ void test_ReplaceAll()
  
 }
 
+void test_ekv_split()
+{
+   std::vector<std::pair<std::string, std::string> > ekv ; 
+
+   //const char* line_ = "TO:0 SC: SR:1 SA:0" ; 
+   const char* line_ = "TO:0 SC SR:1 SA:0" ; 
+
+   char edelim = ' ' ; 
+   const char* kvdelim=":" ; 
+
+   BStr::ekv_split( ekv, line_, edelim, kvdelim );
+
+   LOG(info) << line_ ; 
+
+   for(unsigned i=0 ; i < ekv.size() ; i++ ) 
+         std::cout << "[" 
+                   << ekv[i].first 
+                   << "] -> [" 
+                   <<  ekv[i].second << "]" 
+                   << ( ekv[i].second.empty() ? "EMPTY" : "" )
+                   << std::endl ; 
 
 
+}
 
 
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
+
+    BRAP_LOG__ ; 
 
 /*
     test_patternPickField();
@@ -246,9 +271,10 @@ int main(int argc, char** argv)
 
     test_index_first();
     test_index_all();
+    test_DAEIdToG4();  
 */
 
-    test_DAEIdToG4();
+    test_ekv_split();
 
     return 0 ; 
 }

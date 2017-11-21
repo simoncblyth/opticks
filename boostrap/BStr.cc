@@ -339,8 +339,9 @@ std::string BStr::ujoin( std::vector<unsigned>& elem, char delim)
 
 
 
-void BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim )
+void BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim)
 {
+    bool warn = true ; 
     const char* line = strdup(line_);
     typedef std::pair<std::string,std::string> KV ;  
     std::istringstream f(line);
@@ -355,7 +356,8 @@ void BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, c
         }
         else
         {
-            printf("stringutil.ekv_split ignoring malformed kv %s \n", s.c_str() );
+            if(warn)
+            LOG(warning) << "ignoring malformed kv [" << s.c_str() << "]" ; 
         }
     }
 }

@@ -304,11 +304,17 @@ tboolean-seqhis()
      "TO SC BT BT SA"   ) echo 0x8cc6d  ;;
      "TO BT BT SA"      ) echo 0x8ccd  ;;
      "TO SC SA"         ) echo 0x86d  ;;
+     "TO SR SA"         ) echo 0x8ad  ;;
      "TO BR MI"         ) echo 0x3bd  ;;
      "TO BR SA"         ) echo 0x8bd  ;;
    esac
 }
 
+
+
+tboolean-a-(){
+    OpticksEventAnaTest  --torch  --tag $(tboolean-tag) --cat $(tboolean-testname)  --dbgnode 0  --dbgseqhis $(tboolean-dbgseqhis) $* 
+}
 
 tboolean-ana-(){
     local msg="$FUNCNAME :"
@@ -334,6 +340,77 @@ tboolean-m-(){  metadata.py --det ${TESTNAME} --tag $(tboolean-tag) ; }
 tboolean-g-(){  lldb -- CTestDetectorTest --test --testconfig "$TESTCONFIG" $* ; }
 
 
+tboolean-testname-default(){ echo tboolean-boxsphere ; }
+
+tboolean-testname()
+{
+    local testname
+    if [ -n "$TESTNAME" ]; then
+        testname=${TESTNAME}
+    else
+        testname=$(tboolean-testname-default)
+    fi 
+    echo $testname
+}
+
+tboolean-testconfig()
+{
+    local testconfig
+    local testname
+    if [ -n "$TESTCONFIG" ]; then
+        testconfig=${TESTCONFIG}
+    else
+        testname=$(tboolean-testname-default)
+        testconfig=$($testname- 2>/dev/null)
+    fi 
+    echo $testconfig
+}
+
+tboolean-torchconfig()
+{
+    local torchconfig
+    if [ -n "$TORCHCONFIG" ]; then
+        torchconfig=${TORCHCONFIG}
+    else
+        torchconfig=$(tboolean-torchconfig- 2>/dev/null)
+    fi 
+    echo $torchconfig
+}
+
+tboolean-dbgseqhis()
+{
+    local dbgseqhis
+    if [ -n "$DBGSEQHIS" ]; then
+        dbgseqhis=${DBGSEQHIS}
+    else
+        dbgseqhis=$(tboolean-seqhis "TO SR SA")
+    fi 
+    echo $dbgseqhis
+}
+
+
+
+
+
+tboolean-info(){ cat << EOI
+
+$FUNCNAME
+==================
+
+TESTNAME             : $TESTNAME
+TESTCONFIG           : $TESTCONFIG
+TORCHCONFIG          : $TORCHCONFIG
+
+tboolean-testname    : $(tboolean-testname)
+tboolean-testconfig  : $(tboolean-testconfig)
+tboolean-torchconfig : $(tboolean-torchconfig)
+
+
+
+EOI
+}
+
+
 tboolean--(){
 
     tboolean-
@@ -341,31 +418,13 @@ tboolean--(){
     local msg="=== $FUNCNAME :"
     local cmdline=$*
 
-    #local stack=4096
     local stack=2180  # default
 
-    local testconfig
-    if [ -n "$TESTCONFIG" ]; then
-        testconfig=${TESTCONFIG}
-    else
-        testconfig=$(tboolean-testconfig 2>/dev/null)
-    fi 
+    local testname=$(tboolean-testname)
+    local testconfig=$(tboolean-testconfig)
+    local torchconfig=$(tboolean-torchconfig)
 
-    local torchconfig
-    if [ -n "$TORCHCONFIG" ]; then
-        torchconfig=${TORCHCONFIG}
-    else
-        torchconfig=$(tboolean-torchconfig 2>/dev/null)
-    fi 
-
-
-    local testname
-    if [ -n "$TESTNAME" ]; then
-        testname=${TESTNAME}
-        $testname--
-    else
-        testname=$(tboolean-det)
-    fi  
+    $testname--
 
     op.sh  \
             $cmdline \
@@ -479,7 +538,7 @@ tboolean-torchconfig-sphere()
 
 
 
-tboolean-torchconfig()
+tboolean-torchconfig-()
 {
     tboolean-torchconfig-disc
     #tboolean-torchconfig-discaxial
@@ -1151,7 +1210,7 @@ EON
 
 
 
-tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
+tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-a- $* ; } 
 tboolean-zsphere1-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere1-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
 tboolean-zsphere1(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
@@ -3255,11 +3314,5 @@ EOP
 }
 
 
-
-tboolean-testconfig()
-{
-    # this is the default TESTCONFIG
-    tboolean-boxsphere-
-}
 
 

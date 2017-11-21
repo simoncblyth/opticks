@@ -5,6 +5,7 @@
 #include <functional>
 
 class NCSGList ; 
+struct NCSGIntersect ;
 struct nnode ; 
 template <typename T> class NPY ; 
 
@@ -40,15 +41,17 @@ class OKCORE_API OpticksEventAna
 {
        typedef std::function<float(float,float,float)> SDF ; 
 
-
    public:
        OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist );
        std::string desc();
        void dump(const char* msg="OpticksEventAna::dump");
+       void dumpPointExcursions(const char* msg="OpticksEventAna::dumpPointExcursions");
 
    private:
        void init();
-       void countExcursions();
+       void countFinalExcursions();
+       void countPointExcursions();
+
        void dumpExcursions();
        void dumpStepByStepCSGExcursions();
        void dumpStepByStepCSGExcursions(unsigned photon_id );
@@ -66,7 +69,10 @@ class OKCORE_API OpticksEventAna
        NCSGList*                m_csglist ;
        unsigned                 m_tree_num ; 
 
+       NCSGIntersect*           m_csgi ;  
        SDF*                     m_sdflist ; 
+
+
 
 
        OpticksEventStat*        m_stat ; 
