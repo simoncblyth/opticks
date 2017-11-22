@@ -364,8 +364,17 @@ def opticks_args(**kwa):
 
     csgpath = kwa.get("csgpath", "$TMP/tboolean-csg-pmt-py")
     #gltfpath = kwa.get("gltfpath", "$TMP/tgltf/tgltf-gdml--.gltf")
+
     container = kwa.get("container","Rock//perfectAbsorbSurface/Vacuum") 
     testobject = kwa.get("testobject","Vacuum///GlassSchottF2" ) 
+
+    autocontainer = kwa.get("autocontainer","Rock//perfectAbsorbSurface/Vacuum") 
+    autoobject = kwa.get("autoobject","Vacuum/perfectSpecularSurface//GlassSchottF2" ) 
+    autoemitconfig = kwa.get("autoemitconfig","photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x3f" ) 
+    autoseqmap = kwa.get("autoseqmap","TO:0,SR:1,SA:0" )
+
+
+
     gsel = kwa.get("gsel", "/dd/Geometry/PMT/lvPmtHemi0x" ) 
     gidx = kwa.get("gidx", 0 ) 
     gmaxnode = kwa.get("gmaxnode", 0 ) 
@@ -428,6 +437,12 @@ def opticks_args(**kwa):
     #parser.add_argument(     "--gltfpath",   default=gltfpath, help="Path to glTF json file. %(default)s ")
     parser.add_argument(     "--container",   default=container, help="Boundary specification for container. %(default)s ")
     parser.add_argument(     "--testobject",  default=testobject, help="Boundary specification for testobject. %(default)s ")
+
+    parser.add_argument(     "--autocontainer",   default=autocontainer, help="Boundary specification for test container used with --testauto. %(default)s ")
+    parser.add_argument(     "--autoobject",      default=autoobject, help="Boundary specification for test object used with --testauto. %(default)s ")
+    parser.add_argument(     "--autoemitconfig",  default=autoemitconfig, help="Emit config from test container used with --testauto. %(default)s ")
+    parser.add_argument(     "--autoseqmap",      default=autoseqmap, help="Seqmap for NCSGIntersect testing with --testauto geometry. %(default)s ")
+
     parser.add_argument(     "--cfordering",  default=cfordering, help="Sort ordering of cf tables, one of max/self/other. %(default)s ")
 
     parser.add_argument(     "--gsel",  default=gsel, help="GDML node selection, either tree node index integer or LV name prefix, see tboolean-gdml . %(default)s ")

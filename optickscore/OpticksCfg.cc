@@ -48,7 +48,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_oindex(""),
        m_builder(""),
        m_traverser(""),
-       m_dbgseqhismap(""),
+       m_seqmap(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
        m_dbgmesh(""),
@@ -430,11 +430,20 @@ void OpticksCfg<Listener>::init()
        ("meshfixdbg",  "dump details of meshfixing, only active when rebuilding geocache with -G option") ;
 
 
+
+
+
+
    m_desc.add_options()
        ("test",  "fabricate dynamic test geometry, materials and surfaces configured via testconfig settings") ;
 
    m_desc.add_options()
        ("testconfig",   boost::program_options::value<std::string>(&m_testconfig), "dynamic test geometry configuration" );
+
+   m_desc.add_options()
+       ("testauto",  "Switch on experimental automation of test geometry boundary and emitconfig setup"
+                     " to facilitate NCSGIntersect checking with OpticksEventAna. ") ;
+
 
 
 
@@ -608,7 +617,7 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
-       ("dbgseqhismap",      boost::program_options::value<std::string>(&m_dbgseqhismap), "Debug photon history hex string value map, used eg for NCSGIntersect checks via OpticksAnaEvent." );
+       ("seqmap",      boost::program_options::value<std::string>(&m_seqmap), "Debug photon history hex string value map, used eg for NCSGIntersect checks via OpticksAnaEvent." );
 
 
 
@@ -950,6 +959,7 @@ const std::string& OpticksCfg<Listener>::getTestConfig()
 {
     return m_testconfig ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getExportConfig()
 {
@@ -1045,9 +1055,9 @@ const std::string& OpticksCfg<Listener>::getTraverser()
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getDbgSeqhisMap()
+const std::string& OpticksCfg<Listener>::getSeqMap()
 {
-    return m_dbgseqhismap  ;
+    return m_seqmap  ;
 }
 
 

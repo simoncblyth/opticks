@@ -10,12 +10,18 @@
 
 struct BRAP_API BConfig
 {
+    static const char* DEFAULT_KVDELIM ; 
+
     typedef std::pair<std::string,std::string> KV ;
 
     typedef std::pair<std::string,std::string*> KS ;
     typedef std::pair<std::string,int*>        KI ;
     typedef std::pair<std::string,float*>      KF ;
+
+
     const char*     cfg ; 
+    char            edelim ; 
+    const char*     kvdelim ; 
 
     std::vector<KV> ekv ; 
     std::vector<KI> eki ; 
@@ -27,7 +33,7 @@ struct BRAP_API BConfig
     void addString(const char* k, std::string* ptr);
 
 
-    BConfig(const char* cfg);
+    BConfig(const char* cfg, char delim=',', const char* kvdelim=NULL);
     void parse();
 
     void dump(const char* msg="BConfig::dump") const ;

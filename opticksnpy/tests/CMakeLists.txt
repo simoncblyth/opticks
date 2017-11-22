@@ -93,6 +93,7 @@ NCSGTest.cc
 NCSGLoadTest.cc
 NCSGScanTest.cc
 NCSGListTest.cc
+NEmitConfigTest.cc
 NCSGIntersectTest.cc
 NScanTest.cc
 

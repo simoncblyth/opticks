@@ -1182,3 +1182,19 @@ opticks-lib-ls()
 }
 
 
+opticks-find-types()
+{
+    opticks-find Types.hpp
+}
+
+opticks-find-typ()
+{
+    opticks-find Typ.hpp
+}
+
+opticks-find-flags()
+{
+    opticks-find OpticksFlags.hh  
+}
+
+

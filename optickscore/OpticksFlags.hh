@@ -1,9 +1,9 @@
 #pragma once
 
+#include "OpticksPhoton.h"
 #include <string>
 #include <map>
 
-#include "OpticksPhoton.h"
 class Index ; 
 
 /**
@@ -18,6 +18,18 @@ Actually the index is little used, the static methods using
 case statement conversions being more convenient.
 
 
+
+TODO : Repositioning 
+-----------------------
+
+* this needs to sink from okc- 
+  together with OpticksPhoton.h
+   ... so can use from NPY 
+  (for getting rid of Types.hpp usage from RecordsNPY for example)
+
+* Index prevents below NPY, BBit BRegex beneath brap- but 
+  most of the utility could work from lowest level sysrap- 
+  SFlags.hh ? 
 
 
 

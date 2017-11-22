@@ -5,11 +5,12 @@
 #include "NEmitConfig.hpp"
 
 
-const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0,posdelta=0.0,sheetmask=0" ; 
+//const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0,posdelta=0.0,sheetmask=0" ; 
+const char* NEmitConfig::DEFAULT = "photons:100000,wavelength:480,time:0.1,weight:1.0,posdelta:0.0,sheetmask:0x3f" ; 
 
 NEmitConfig::NEmitConfig(const char* cfg)  
     :
-    bconfig(new BConfig(cfg ? cfg : DEFAULT)),
+    bconfig(new BConfig(cfg ? cfg : DEFAULT,',',":")),
     verbosity(0),
     photons(100),
     wavelength(400),
@@ -44,6 +45,7 @@ std::string NEmitConfig::desc() const
 
 void NEmitConfig::dump(const char* msg) const
 {
+    LOG(info) << bconfig->cfg ; 
     bconfig->dump(msg);
 }
 

@@ -28,7 +28,7 @@ struct NPY_API NRec
 
 class NPY_API RecordsNPY {
     public:  
-        RecordsNPY(NPY<short>* records, unsigned int maxrec); 
+        RecordsNPY(NPY<short>* records, unsigned maxrec, unsigned verbosity=0 ); 
     public:  
         NPY<short>*           getRecords();
         void                  setTypes(Types* types);
@@ -91,7 +91,9 @@ class NPY_API RecordsNPY {
 
    private:
        NPY<short>*      m_records ; 
-       unsigned int     m_maxrec ; 
+       unsigned         m_maxrec ; 
+       unsigned         m_verbosity ; 
+
        bool             m_flat ;
        Types*           m_types ; 
        Typ*             m_typ ; 

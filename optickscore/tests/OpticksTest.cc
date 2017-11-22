@@ -72,15 +72,15 @@ void test_getDbgSeqhisMap(Opticks* ok)
      unsigned long long seqhis(0) ;
      unsigned long long seqval(0) ;
 
-     const std::string& dbgseqhismap = ok->getDbgSeqhisMapString();
-     bool has_dbgseqhismap = ok->getDbgSeqhisMap(seqhis, seqval);
+     const std::string& seqmap = ok->getSeqMapString();
+     bool has_seqmap = ok->getSeqMap(seqhis, seqval);
 
      LOG(info) 
-           << " dbgseqhismap " << dbgseqhismap
-           << " has: " << ( has_dbgseqhismap ? "Y" : "N" )
+           << " seqmap " << seqmap
+           << " has: " << ( has_seqmap ? "Y" : "N" )
            ;
 
-     if(has_dbgseqhismap)
+     if(has_seqmap)
      {
          LOG(info)
                << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec 
@@ -89,11 +89,11 @@ void test_getDbgSeqhisMap(Opticks* ok)
      }
 }
 /*
-    OpticksTest --dbgseqhismap "TO:0 SR:1 SA:0" 
-    OpticksTest --dbgseqhismap "TO:0,SR:1,SA:0" 
-    OpticksTest --dbgseqhismap "TO:0,SR:1,SA:0" 
-    OpticksTest --dbgseqhismap "TO:0 SR:1 SA:0" 
-    OpticksTest --dbgseqhismap "TO:0 SC: SR:1 SA:0" 
+    OpticksTest --seqmap "TO:0 SR:1 SA:0" 
+    OpticksTest --seqmap "TO:0,SR:1,SA:0" 
+    OpticksTest --seqmap "TO:0,SR:1,SA:0" 
+    OpticksTest --seqmap "TO:0 SR:1 SA:0" 
+    OpticksTest --seqmap "TO:0 SC: SR:1 SA:0" 
 */
 
 

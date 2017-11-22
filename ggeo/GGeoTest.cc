@@ -273,6 +273,57 @@ void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
     }
 }
 
+
+
+void GGeoTest::autoSetup(NCSGList* csglist)
+{
+    // use this via --testauto option together 
+    // with the usual --test and --testconfig options
+
+    const char* autocontainer = m_config->getAutoContainer();
+    const char* autoobject = m_config->getAutoObject();
+    const char* autoemitconfig = m_config->getAutoEmitConfig();
+    const char* autoseqmap = m_config->getAutoSeqMap();
+
+    LOG(info) << " GGeoTest::autoSetup" ;
+
+    std::cout  
+        << " autocontainer " << autocontainer
+        << std::endl 
+        << " autoobject " << autoobject
+        << std::endl 
+        << " autoemitconfig " << autoemitconfig
+        << std::endl 
+        << " autoseqmap " << autoseqmap
+        << std::endl 
+        ;
+
+    unsigned num_tree = csglist->getNumTrees() ;
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        NCSG* tree = csglist->getTree(i) ; 
+        const char* origspec = tree->getBoundary();  
+
+        tree->setEmitconfig( autoemitconfig );
+        tree->setEmit( i == 0 ? -1 : 0 );
+        tree->setBoundary( i == 0 ? autocontainer : autoobject ) ;  
+
+        const char* autospec = tree->getBoundary();  
+        
+        std::cout 
+             << " i " << std::setw(3) << i 
+             << " origspec " << std::setw(25) << origspec
+             << " autospec " << std::setw(25) << autospec
+             << std::endl 
+             ;
+ 
+    }
+
+    //assert(0 && "hari-kari");
+}
+
+
+
 void GGeoTest::reuseMaterials(NCSGList* csglist)
 {
     // reuse all the materials first, to prevent premature GPropLib close
@@ -305,6 +356,11 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
 {
     assert(m_csgpath);
     assert(m_csglist);
+
+    if(m_ok->isTestAuto())
+    {
+        autoSetup(m_csglist);
+    }
 
     reuseMaterials(m_csglist);
 

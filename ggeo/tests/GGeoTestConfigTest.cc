@@ -14,6 +14,8 @@ const char* CONFIG =
     "node=box_"
     "boundary=Pyrex/MineralOil//_"
     "parameters=-1,1,0,100_"
+    "autocontainer=Rock//perfectAbsorbSurface/Vacuum_"
+    "autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_"
     ;
 
 int main(int argc, char** argv)

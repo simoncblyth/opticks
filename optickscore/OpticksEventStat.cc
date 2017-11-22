@@ -9,39 +9,6 @@
 #include "PLOG.hh"
 
 
-RecordsNPY* OpticksEventStat::CreateRecordsNPY(OpticksEvent* evt) // static
-{
-    LOG(error) << "OpticksEventStat::CreateRecordsNPY start" ; 
-
-    if(!evt || evt->isNoLoad()) return NULL ; 
-
-    Opticks* ok = evt->getOpticks();
-
-    NPY<short>* rx = evt->getRecordData();
-    assert(rx && rx->hasData());
-    unsigned maxrec = evt->getMaxRec() ;
-
-    Types* types = ok->getTypes();
-    Typ* typ = ok->getTyp();
-
-
-    RecordsNPY* rec = new RecordsNPY(rx, maxrec);
-
-    rec->setTypes(types);
-    rec->setTyp(typ);
-    rec->setDomains(evt->getFDomain()) ;
-
-    LOG(info) << "OpticksEventStat::CreateRecordsNPY " 
-              << " shape " << rx->getShapeString() 
-              ;
-
-    evt->setRecordsNPY(rec);
-    LOG(error) << "OpticksEventStat::CreateRecordsNPY done" ; 
-    return rec ; 
-} 
-
-
-
 
 OpticksEventStat::OpticksEventStat(OpticksEvent* evt, unsigned num_cat)
     :
@@ -49,7 +16,7 @@ OpticksEventStat::OpticksEventStat(OpticksEvent* evt, unsigned num_cat)
     m_evt(evt),
     m_num_cat(num_cat),
     m_noload(evt->isNoLoad()),
-    m_records(CreateRecordsNPY(evt)),
+    m_records(evt->getRecordsNPY()),
     m_pho(evt->getPhotonData()),
     m_seq(evt->getSequenceData()),
     m_pho_num(m_pho ? m_pho->getShape(0) : 0),

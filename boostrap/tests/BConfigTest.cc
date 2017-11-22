@@ -6,7 +6,7 @@
 
 struct DemoConfig : BConfig
 {
-    DemoConfig(const char* cfg);
+    DemoConfig(const char* cfg, const char* kvdelim);
 
     int red ; 
     int green ; 
@@ -17,9 +17,9 @@ struct DemoConfig : BConfig
 
 };
 
-DemoConfig::DemoConfig(const char* cfg_)
+DemoConfig::DemoConfig(const char* cfg_, const char* kvdelim)
    : 
-   BConfig(cfg_),
+   BConfig(cfg_, ',', kvdelim),
 
    red(0),
    green(0),
@@ -43,12 +43,20 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     BRAP_LOG__ ; 
 
-    DemoConfig cfg("red=1,green=2,blue=3,cyan=1.5,magenta=purple");
+    DemoConfig cfg("red=1,green=2,blue=3,cyan=1.5,magenta=purple", "=");
     cfg.dump();
 
 
     std::cout << " cyan " << cfg.cyan << std::endl ; 
     std::cout << " magenta " << cfg.magenta << std::endl ; 
+
+
+    DemoConfig cfg2("red:1,green:2,blue:3,cyan:1.5,magenta:purple",":");
+    cfg2.dump();
+
+
+
+
 
     return 0 ; 
 }

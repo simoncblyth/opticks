@@ -311,6 +311,27 @@ int NCSGList::polygonize()
 }
 
 
+
+/**
+
+NCSGList::findEmitter
+~~~~~~~~~~~~~~~~~~~~~~~
+
+Invoked by: 
+
+GGeoTest::findEmitter 
+    
+OpticksHub::findEmitter 
+    via GGeoTest::findEmitter
+
+OpticksGen::OpticksGen
+    via OpticksHub::findEmitter from OpticksHub::init after geometry loaded
+    yielding m_csg_emit which is used by m_emitter::
+
+        m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE) : NULL ),
+
+**/
+
 NCSG* NCSGList::findEmitter() const 
 {
     unsigned numTrees = getNumTrees() ;

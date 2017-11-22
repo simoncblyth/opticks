@@ -146,6 +146,10 @@ class NPY_API NCSG {
         std::string meta() const ;
         std::string smry();
     public:
+        // used by --testauto 
+        void setEmit(int emit);  
+        void setEmitconfig(const char* emitconfig);  
+    public:
         bool isEmit() const ;
         int emit() const ;
         const char* emitconfig() const ;
@@ -195,9 +199,12 @@ class NPY_API NCSG {
         NCSG(const char* treedir);
          // Serialize 
         NCSG(nnode* root);
+
+    public:
+        // for --testauto
+        void setBoundary(const char* boundary);
     private:
         // Deserialize branch 
-        void setBoundary(const char* boundary);
         void setConfig(const NSceneConfig* config);
         unsigned getTypeCode(unsigned idx);
         unsigned getTransformIndex(unsigned idx);

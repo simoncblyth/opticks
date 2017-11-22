@@ -42,6 +42,10 @@ class GGEO_API GGeoTestConfig {
                       OFFSETS,
                       NAME,
                       OUTERFIRST,
+                      AUTOCONTAINER,
+                      AUTOOBJECT,
+                      AUTOEMITCONFIG,
+                      AUTOSEQMAP,
                       UNRECOGNIZED } Arg_t ;
 
        typedef std::pair<std::string,std::string> KV ; 
@@ -61,10 +65,10 @@ class GGEO_API GGeoTestConfig {
        static const char* OFFSETS_ ; 
        static const char* NAME_ ; 
        static const char* OUTERFIRST_ ; 
-    public:
-       //static const char* E_PmtInBox ; 
-       //static const char* E_BoxInBox ; 
-       //static const char* E_NCSG ; 
+       static const char* AUTOCONTAINER_ ; 
+       static const char* AUTOOBJECT_ ; 
+       static const char* AUTOEMITCONFIG_ ; 
+       static const char* AUTOSEQMAP_ ; 
     public:
 
        GGeoTestConfig(const char* config);
@@ -86,6 +90,11 @@ class GGEO_API GGeoTestConfig {
        void setOffsets(const char* s);
        void setName(const char* s);
     private:
+       void setAutoContainer(const char* s);
+       void setAutoObject(const char* s);
+       void setAutoEmitConfig(const char* s);
+       void setAutoSeqMap(const char* s);
+    private:
        void addNode(const char* s);
        void addBoundary(const char* s);
        void addParameters(const char* s);
@@ -103,6 +112,11 @@ class GGEO_API GGeoTestConfig {
        bool      isPmtInBox();
        bool      isBoxInBox();
        bool      isNCSG();
+
+       const char* getAutoContainer() const ;
+       const char* getAutoObject() const ;
+       const char* getAutoEmitConfig() const ;
+       const char* getAutoSeqMap() const ;
 
        const char* getMode();
        const char* getPmtPath();
@@ -128,6 +142,12 @@ class GGEO_API GGeoTestConfig {
        const char*  m_pmtpath ; 
        const char*  m_csgpath ; 
        const char*  m_name ; 
+
+       const char*  m_autocontainer ; 
+       const char*  m_autoobject  ; 
+       const char*  m_autoemitconfig  ; 
+       const char*  m_autoseqmap  ; 
+
 
        glm::ivec4   m_frame ;
        glm::ivec4   m_analytic ;

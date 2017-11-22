@@ -50,7 +50,7 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getOtherIndex();
      const std::string& getBuilder();
      const std::string& getTraverser();
-     const std::string& getDbgSeqhisMap();
+     const std::string& getSeqMap();
      const std::string& getDbgSeqhis();
      const std::string& getDbgSeqmat();
 
@@ -139,7 +139,7 @@ private:
      std::string m_oindex ;
      std::string m_builder ;
      std::string m_traverser  ;
-     std::string m_dbgseqhismap ;
+     std::string m_seqmap ;
      std::string m_dbgseqhis ;
      std::string m_dbgseqmat ;
      std::string m_dbgmesh ;

@@ -648,14 +648,14 @@ unsigned long long Opticks::getDbgSeqhis()
     return BHex<unsigned long long>::hex_lexical_cast( seqhis.c_str() );
 }
 
-const std::string& Opticks::getDbgSeqhisMapString() const 
+const std::string& Opticks::getSeqMapString() const 
 {
-    return m_cfg->getDbgSeqhisMap() ;
+    return m_cfg->getSeqMap() ;
 }
 
-bool Opticks::getDbgSeqhisMap(unsigned long long& seqhis, unsigned long long& seqval)
+bool Opticks::getSeqMap(unsigned long long& seqhis, unsigned long long& seqval)
 {
-    const std::string& seqmap = m_cfg->getDbgSeqhisMap();
+    const std::string& seqmap = m_cfg->getSeqMap();
     if(seqmap.empty()) return false ; 
     char edelim = BStr::HasChar(seqmap, ',') ? ',' : ' ' ; 
     OpticksFlags::AbbrevToFlagValSequence(seqhis, seqval, seqmap.c_str(), edelim );
@@ -792,16 +792,24 @@ const char* Opticks::getGLTFConfig()
 {
     return m_cfg->getGLTFConfig().c_str() ; 
 }
-const char* Opticks::getTestConfig()
+
+
+
+bool Opticks::isTest() const 
+{
+    return m_cfg->hasOpt("test");
+}
+bool Opticks::isTestAuto() const 
+{
+    return m_cfg->hasOpt("testauto");
+}
+
+const char* Opticks::getTestConfig() const 
 {
     const std::string& tc = m_cfg->getTestConfig() ;
     return tc.empty() ? NULL : tc.c_str() ; 
 }
 
-bool Opticks::isTest()
-{
-    return m_cfg->hasOpt("test");
-}
 
 
 

@@ -20,8 +20,8 @@ class OKCORE_API OpticksDomain {
        void setMaxRec(unsigned maxrec);
        void setMaxBounce(unsigned maxbounce);
     public:
-       NPY<float>* getFDomain();
-       NPY<int>*   getIDomain();
+       NPY<float>* getFDomain() const ;
+       NPY<int>*   getIDomain() const ;
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:

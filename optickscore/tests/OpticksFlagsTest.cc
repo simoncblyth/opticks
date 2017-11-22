@@ -2,6 +2,7 @@
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "Index.hpp"
+#include "Types.hpp"
 
 #include "OKCORE_LOG.hh"
 #include "PLOG.hh"
@@ -131,6 +132,30 @@ void test_PointVal1()
 }
 
 
+void test_cfTypes(Opticks* ok)
+{
+    Types* types = ok->getTypes();
+
+    for(unsigned i=0 ; i < 32 ; i++)
+    {
+        unsigned bitpos = i ;
+        unsigned flag = 0x1 << bitpos ; 
+        std::string hs = types ? types->getHistoryString( flag ) : "notyps" ;
+
+        const char* hs2 = OpticksFlags::Flag(flag) ; 
+
+        std::cout 
+            << " i " << std::setw(3) << i 
+            << " flag " << std::setw(10) << flag 
+            << " hs " << std::setw(20) << hs
+            << " hs2 " << std::setw(20) << hs2
+            << std::endl 
+            ;
+
+    }
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -147,9 +172,10 @@ int main(int argc, char** argv)
     test_AbbrevToFlagSequence();
     test_AbbrevToFlagValSequence();
     test_PointAbbrev();
+    test_PointVal1();
     */
 
-    test_PointVal1();
+    test_cfTypes(&ok);
 
     return 0 ; 
 }

@@ -54,6 +54,7 @@
 #include "OpticksConst.hh"
 #include "OpticksDomain.hh"
 #include "OpticksFlags.hh"
+#include "OpticksEventInstrument.hh"
 #include "OpticksEvent.hh"
 #include "OpticksMode.hh"
 #include "OpticksBufferSpec.hh"
@@ -120,7 +121,7 @@ OpticksEvent* OpticksEvent::make(OpticksEventSpec* spec, unsigned tagoffset)
      return new OpticksEvent(offspec) ; 
 }
 
-Opticks* OpticksEvent::getOpticks(){ return m_ok ; }
+Opticks* OpticksEvent::getOpticks() const { return m_ok ; }
 
 OpticksEvent::OpticksEvent(OpticksEventSpec* spec) 
           :
@@ -229,19 +230,19 @@ OpticksEvent* OpticksEvent::getSibling()
 
 
 
-bool OpticksEvent::isNoLoad()
+bool OpticksEvent::isNoLoad() const 
 {
     return m_noload ; 
 }
-bool OpticksEvent::isLoaded()
+bool OpticksEvent::isLoaded() const 
 {
     return m_loaded ; 
 }
-bool OpticksEvent::isStep()
-{
+bool OpticksEvent::isStep() const 
+{ 
     return true  ; 
 }
-bool OpticksEvent::isFlat()
+bool OpticksEvent::isFlat() const 
 {
     return false  ; 
 }
@@ -346,43 +347,43 @@ bool OpticksEvent::hasSourceData()
 
 
 
-NPY<float>* OpticksEvent::getGenstepData()
+NPY<float>* OpticksEvent::getGenstepData() const 
 { 
      return m_genstep_data ;
 }
-NPY<float>* OpticksEvent::getNopstepData() 
+NPY<float>* OpticksEvent::getNopstepData() const  
 { 
      return m_nopstep_data ; 
 }
-NPY<float>* OpticksEvent::getPhotonData()
+NPY<float>* OpticksEvent::getPhotonData() const 
 {
      return m_photon_data ; 
 } 
-NPY<float>* OpticksEvent::getSourceData()
+NPY<float>* OpticksEvent::getSourceData() const 
 {
      return m_source_data ; 
 } 
-NPY<short>* OpticksEvent::getRecordData()
+NPY<short>* OpticksEvent::getRecordData() const  
 { 
     return m_record_data ; 
 }
-NPY<unsigned char>* OpticksEvent::getPhoselData()
+NPY<unsigned char>* OpticksEvent::getPhoselData() const 
 { 
     return m_phosel_data ;
 }
-NPY<unsigned char>* OpticksEvent::getRecselData()
+NPY<unsigned char>* OpticksEvent::getRecselData() const 
 { 
     return m_recsel_data ; 
 }
-NPY<unsigned long long>* OpticksEvent::getSequenceData()
+NPY<unsigned long long>* OpticksEvent::getSequenceData() const 
 { 
     return m_sequence_data ;
 }
-NPY<unsigned>* OpticksEvent::getSeedData()
+NPY<unsigned>* OpticksEvent::getSeedData() const 
 { 
     return m_seed_data ;
 }
-NPY<float>* OpticksEvent::getHitData()
+NPY<float>* OpticksEvent::getHitData() const 
 { 
     return m_hit_data ;
 }
@@ -410,6 +411,11 @@ void OpticksEvent::setRecordsNPY(RecordsNPY* records)
 }
 RecordsNPY* OpticksEvent::getRecordsNPY()
 {
+    if(m_records == NULL)
+    {
+        m_records = OpticksEventInstrument::CreateRecordsNPY(this) ;
+        assert( m_records ); 
+    }
     return m_records ;
 }
 
@@ -459,11 +465,11 @@ void OpticksEvent::setIDomain(NPY<int>* idom)
     m_domain->setIDomain(idom) ; 
 }
 
-NPY<float>* OpticksEvent::getFDomain()
+NPY<float>* OpticksEvent::getFDomain() const 
 {
     return m_domain->getFDomain() ; 
 }
-NPY<int>* OpticksEvent::getIDomain()
+NPY<int>* OpticksEvent::getIDomain() const 
 {
     return m_domain->getIDomain() ; 
 }
@@ -1932,7 +1938,7 @@ void OpticksEvent::loadBuffers(bool verbose)
 
 }
 
-bool OpticksEvent::isIndexed()
+bool OpticksEvent::isIndexed() const 
 {
     return m_phosel_data != NULL && m_recsel_data != NULL && m_seqhis != NULL && m_seqmat != NULL ;
 }

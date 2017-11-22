@@ -226,6 +226,8 @@ bool NCSG::is_uncoincide() const { return getMeta<int>("uncoincide","1") == 1 ; 
 
 
 
+
+
 bool NCSG::isEmit() const {  return emit() == 1 || emit() == -1 ;  }
 int NCSG::emit()   const {    return getMeta<int>("emit","0") ; }
 
@@ -234,6 +236,19 @@ const char* NCSG::emitconfig() const
     std::string ec = getMeta<std::string>("emitconfig","") ;
     return ec.empty() ? NULL : strdup(ec.c_str()) ; 
 }
+
+
+
+// used by --testauto
+void NCSG::setEmit(int emit)
+{
+    setMeta<int>("emit", emit);
+}
+void NCSG::setEmitconfig(const char* emitconfig)
+{
+    setMeta<std::string>("emitconfig", emitconfig );
+}
+
 
 
 
@@ -649,6 +664,10 @@ NParameters* NCSG::getMetaParameters()
 {
     return m_meta ; 
 }
+
+
+
+
 
 const char* NCSG::getBoundary() const 
 {

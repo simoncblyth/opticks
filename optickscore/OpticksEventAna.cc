@@ -3,7 +3,6 @@
 #include "NPY.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
-//#include "NNode.hpp"
 #include "RecordsNPY.hpp"
 #include "NCSGList.hpp"
 #include "NCSGIntersect.hpp"
@@ -12,7 +11,6 @@
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
 #include "OpticksEvent.hh"
-#include "OpticksEventStat.hh"
 #include "OpticksEventAna.hh"
 #include "PLOG.hh"
 
@@ -25,7 +23,7 @@ OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csgl
 
     m_seqmap_his(0ull),
     m_seqmap_val(0ull),
-    m_seqmap_has(m_ok->getDbgSeqhisMap(m_seqmap_his, m_seqmap_val)),
+    m_seqmap_has(m_ok->getSeqMap(m_seqmap_his, m_seqmap_val)),
 
     m_seqhis_select( m_seqmap_has ? m_seqmap_his : m_dbgseqhis ),  // seqmap trumps dbgseqhis
 
@@ -34,9 +32,7 @@ OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csgl
     m_tree_num(csglist->getNumTrees()),
     m_csgi(new NCSGIntersect[m_tree_num]),
 
-    m_stat(new OpticksEventStat(evt, m_tree_num)),   
-
-    m_records(m_evt->getRecordsNPY()),   // setupRecordsNPY done by OpticksEventStat
+    m_records(m_evt->getRecordsNPY()),  
     m_pho(evt->getPhotonData()),
     m_seq(evt->getSequenceData()),
     m_pho_num(m_pho->getShape(0)),
@@ -59,7 +55,6 @@ void OpticksEventAna::init()
     checkPointExcursions();
 
 }
-
 
 
 void OpticksEventAna::countPointExcursions()
@@ -89,10 +84,10 @@ void OpticksEventAna::checkPointExcursions()
 {
     if(!m_seqmap_has) return ; 
 
-     const std::string& dbgseqhismap = m_ok->getDbgSeqhisMapString();
+     const std::string& seqmap = m_ok->getSeqMapString();
 
      LOG(info) 
-           << " dbgseqhismap " << dbgseqhismap
+           << " seqmap " << seqmap
            ;
 
      LOG(info)
@@ -137,7 +132,7 @@ void OpticksEventAna::checkPointExcursions()
              << " count " << count
              << " dist " << gpresent( dist )
              << " xdist " << gpresent( xdist )
-             << " df " << df 
+             << " df " << std::setw(10) << std::fixed << df 
              << " " << ( excursion ? "EXCURSION" : "expected" )
              << std::endl ; 
              ;

@@ -48,6 +48,10 @@ const char* GGeoTestConfig::OFFSETS_ = "offsets";
 const char* GGeoTestConfig::NAME_ = "name"; 
 const char* GGeoTestConfig::OUTERFIRST_ = "outerfirst"; 
 
+const char* GGeoTestConfig::AUTOCONTAINER_ = "autocontainer";   
+const char* GGeoTestConfig::AUTOOBJECT_ = "autoobject";   
+const char* GGeoTestConfig::AUTOEMITCONFIG_ = "autoemitconfig";   
+const char* GGeoTestConfig::AUTOSEQMAP_ = "autoseqmap";   
 
 
 GGeoTestConfig::GGeoTestConfig(const char* config) 
@@ -57,6 +61,10 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     m_pmtpath(NULL),
     m_csgpath(NULL),
     m_name(NULL),
+    m_autocontainer(NULL),
+    m_autoobject(NULL),
+    m_autoemitconfig(NULL),
+    m_autoseqmap(NULL),
     m_frame(0,0,0,0),
     m_analytic(0,0,0,0),
     m_outerfirst(1,0,0,0),
@@ -196,6 +204,10 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,OFFSETS_)==0)    arg = OFFSETS ; 
     else if(strcmp(k,NAME_)==0)       arg = NAME ; 
     else if(strcmp(k,OUTERFIRST_)==0)  arg = OUTERFIRST ; 
+    else if(strcmp(k,AUTOCONTAINER_)==0)  arg = AUTOCONTAINER ; 
+    else if(strcmp(k,AUTOOBJECT_)==0)  arg = AUTOOBJECT ; 
+    else if(strcmp(k,AUTOEMITCONFIG_)==0)  arg = AUTOEMITCONFIG ; 
+    else if(strcmp(k,AUTOSEQMAP_)==0)  arg = AUTOSEQMAP ; 
 
     if(arg == UNRECOGNIZED)
         LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
@@ -221,6 +233,10 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case OFFSETS        : setOffsets(s)        ;break;
         case NAME           : setName(s)           ;break;
         case OUTERFIRST     : setOuterFirst(s)     ;break;
+        case AUTOCONTAINER  : setAutoContainer(s)  ;break;
+        case AUTOOBJECT     : setAutoObject(s)     ;break;
+        case AUTOEMITCONFIG : setAutoEmitConfig(s)     ;break;
+        case AUTOSEQMAP     : setAutoSeqMap(s)     ;break;
         case UNRECOGNIZED   :
              LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
@@ -336,6 +352,46 @@ void GGeoTestConfig::setOuterFirst(const char* s)
     std::string ss(s);
     m_outerfirst = givec4(ss);
 }
+
+
+
+void GGeoTestConfig::setAutoContainer(const char* s)
+{
+    m_autocontainer = strdup(s) ; 
+}
+void GGeoTestConfig::setAutoObject(const char* s)
+{
+    m_autoobject = strdup(s) ; 
+}
+void GGeoTestConfig::setAutoEmitConfig(const char* s)
+{
+    m_autoemitconfig = strdup(s) ; 
+}
+void GGeoTestConfig::setAutoSeqMap(const char* s)
+{
+    m_autoseqmap = strdup(s) ; 
+}
+
+
+const char* GGeoTestConfig::getAutoContainer() const 
+{
+    return m_autocontainer ;
+}
+const char* GGeoTestConfig::getAutoObject() const 
+{
+    return m_autoobject ;
+}
+const char* GGeoTestConfig::getAutoEmitConfig() const 
+{
+    return m_autoemitconfig ;
+}
+const char* GGeoTestConfig::getAutoSeqMap() const 
+{
+    return m_autoseqmap ;
+}
+
+
+
 
 
 

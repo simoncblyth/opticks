@@ -30,11 +30,11 @@ void OpticksDomain::setIDomain(NPY<int>* idom)
     m_idom = idom ; 
 }
 
-NPY<float>* OpticksDomain::getFDomain()
+NPY<float>* OpticksDomain::getFDomain() const 
 {
     return m_fdom ; 
 }
-NPY<int>* OpticksDomain::getIDomain()
+NPY<int>* OpticksDomain::getIDomain() const 
 {
     return m_idom ; 
 }

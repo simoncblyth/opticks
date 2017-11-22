@@ -5,7 +5,7 @@
 #include <iomanip>
 #include <algorithm>
 
-#include <glm/glm.hpp>
+#include "NGLM.hpp"
 
 //brap-
 #include "BBit.hh"
@@ -20,10 +20,11 @@
 #include "PLOG.hh"
 
 
-RecordsNPY::RecordsNPY(NPY<short>* records, unsigned int maxrec)
+RecordsNPY::RecordsNPY(NPY<short>* records, unsigned maxrec, unsigned verbosity)
     :
     m_records(records),
     m_maxrec(maxrec),
+    m_verbosity(verbosity),
     m_flat(false),
     m_types(NULL),
     m_typ(NULL)
@@ -58,6 +59,9 @@ void RecordsNPY::setWavelengthDomain(glm::vec4& wd)
 {
     m_wavelength_domain = wd ; 
 }
+
+
+
 void RecordsNPY::setTypes(Types* types)
 {  
     m_types = types ; 
@@ -65,13 +69,10 @@ void RecordsNPY::setTypes(Types* types)
 void RecordsNPY::setTyp(Typ* typ)
 {  
     m_typ = typ ; 
-    dumpTyp("RecordsNPY::setTyp");
+   if(m_verbosity > 2) dumpTyp("RecordsNPY::setTyp");
 }
-
-
-void RecordsNPY::dumpTyp(const char* msg) const 
+void RecordsNPY::dumpTyp(const char* ) const 
 {
-   LOG(info) << msg ; 
    assert( m_typ );
    m_typ->dump("RecordsNPY::dumpTyp"); 
 }
@@ -80,15 +81,19 @@ void RecordsNPY::dumpTyp(const char* msg) const
 
 void RecordsNPY::setDomains(NPY<float>* domains)
 {
-    domains->dump("RecordsNPY::setDomains");
 
     glm::vec4 ce = domains->getQuad(0,0);
     glm::vec4 td = domains->getQuad(1,0);
     glm::vec4 wd = domains->getQuad(2,0);
 
-    print(ce, "RecordsNPY::setDomains ce");
-    print(td, "RecordsNPY::setDomains td");
-    print(wd, "RecordsNPY::setDomains wd");
+    if(m_verbosity > 2 )
+    {
+        LOG(info) << " verbosity " << m_verbosity ; 
+        domains->dump("RecordsNPY::setDomains");
+        print(ce, "RecordsNPY::setDomains ce");
+        print(td, "RecordsNPY::setDomains td");
+        print(wd, "RecordsNPY::setDomains wd");
+    }
 
     setCenterExtent(ce);    
     setTimeDomain(td);    
@@ -411,9 +416,12 @@ std::string RecordsNPY::m2String( const glm::uvec4& flag )
 }
 std::string RecordsNPY::historyString( const glm::uvec4& flag )
 {
+    // Argh cannot use OpticksFlags as that is from okc- 
     // flag.w is the result of ffs on a single set bit field, returning a 1-based bit position
-    return m_types ? m_types->getHistoryString( 1 << (flag.w-1) ) : "notyps" ; 
+
+    return m_types ?  m_types->getHistoryString( 1 << (flag.w-1)) : "notyp" ; 
 }
+  
 
 void RecordsNPY::dumpRecord(unsigned int i, unsigned int j, const char* msg)
 {

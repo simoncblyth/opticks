@@ -70,6 +70,7 @@ set(SOURCES
     OpticksAna.cc
     OpticksDbg.cc
     OpticksDomain.cc
+    OpticksEventInstrument.cc
     OpticksEventSpec.cc
     OpticksEventAna.cc
     OpticksEventStat.cc

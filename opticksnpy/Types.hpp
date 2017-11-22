@@ -9,41 +9,36 @@
 class Index ; 
 
 
+
+/*
+
 //
 // this is on the way out 
 // moving to GPropertyLib GAttrSeq approach divvying 
 // out labelling into handlers from GFlags, GMaterialLib, GSurfaceLib, ...
 //
 
-/*
 Places to migrate to Typ::
 
-    delta:env blyth$ find . -name '*.cc' -exec grep -H Types.hpp {} \;
-    ./numerics/npy/tests/_BoundariesNPYTest.cc:#include "Types.hpp"
-    ./numerics/npy/tests/_RecordsNPYTest.cc:#include "Types.hpp"
-    ./numerics/npy/tests/PhotonsNPYTest.cc:#include "Types.hpp"
-    ./numerics/npy/tests/SequenceNPYTest.cc:#include "Types.hpp"
-    ./numerics/npy/tests/TypesTest.cc:#include "Types.hpp"
-    ./optix/ggeo/tests/GItemIndexTest.cc:#include "Types.hpp"
-    ./optix/ggeo/tests/RecordsNPYTest.cc:#include "Types.hpp"
+    simon:opticks blyth$ opticks-find-typ
+    ./ggeo/GGeo.cc:#include "Typ.hpp"
+    ./ggeo/tests/RecordsNPYTest.cc:#include "Typ.hpp"
+    ./optickscore/OpticksResource.cc:#include "Typ.hpp"
 
-
-    ./graphics/ggeoview/attic/GLoaderTest.cc:#include "Types.hpp"
-    ./optix/ggeo/attic/GLoader.cc:#include "Types.hpp"
-    ./optix/ggeo/attic/GLoaderTest.cc:#include "Types.hpp"
-
-
-    ./graphics/ggeoview/App.cc:#include "Types.hpp"
-    ./optix/ggeo/GCache.cc:#include "Types.hpp"
-    ./optix/ggeo/GItemIndex.cc:#include "Types.hpp"
-
-    delta:env blyth$ 
-    delta:env blyth$ find . -name '*.hh' -exec grep -H Types.hpp {} \;
-    delta:env blyth$ find . -name '*.cpp' -exec grep -H Types.hpp {} \;
-    ./numerics/npy/Types.cpp:#include "Types.hpp"
-    delta:env blyth$ 
-
-
+    simon:opticks blyth$ opticks-find-types
+    ./ggeo/GItemIndex.cc:#include "Types.hpp"
+    ./ggeo/tests/GItemIndexTest.cc:#include "Types.hpp"
+    ./ggeo/tests/RecordsNPYTest.cc:#include "Types.hpp"
+    ./oglrap/OpticksViz.cc:#include "Types.hpp"
+    ./oglrap/Photons.cc:#include "Types.hpp"
+    ./optickscore/OpticksResource.cc:#include "Types.hpp"
+    ./opticksgeo/OpticksIdx.cc:#include "Types.hpp"
+    ./opticksnpy/tests/_BoundariesNPYTest.cc:#include "Types.hpp"
+    ./opticksnpy/tests/_RecordsNPYTest.cc:#include "Types.hpp"
+    ./opticksnpy/tests/PhotonsNPYTest.cc:#include "Types.hpp"
+    ./opticksnpy/tests/SequenceNPYTest.cc:#include "Types.hpp"
+    ./opticksnpy/tests/TypesTest.cc:#include "Types.hpp"
+    simon:opticks blyth$ 
 
 */
 

@@ -431,12 +431,15 @@ class CSG(CSG_):
 
 
     @classmethod
-    def Serialize(cls, trees, base, outerfirst=1):
+    def Serialize(cls, trees, args, outerfirst=1):
         """
         :param trees: list of CSG instances of solid root nodes
-        :param base: directory to save the tree serializations, under an indexed directory 
+        :param args: namespace instance provided by opticks_main directory to save the tree serializations, under an indexed directory 
         :param outerfirst: when 1 signifies that the first listed tree contains is the outermost volume 
         """
+
+        base = args.csgpath 
+
         assert type(trees) is list 
         assert type(base) is str and len(base) > 5, ("invalid base directory %s " % base)
         base = os.path.expandvars(base) 
@@ -453,7 +456,17 @@ class CSG(CSG_):
         cls.CheckNonBlank(boundaries)
         open(cls.txtpath(base),"w").write("\n".join(boundaries))
 
-        csgmeta = dict(mode="PyCsgInBox", name=os.path.basename(base), analytic=1, csgpath=base, outerfirst=outerfirst )
+        csgmeta = {}
+        csgmeta["mode"] = "PyCsgInBox" 
+        csgmeta["analytic"] = 1 
+        csgmeta["name"] = os.path.basename(base)
+        csgmeta["csgpath"] = base
+        csgmeta["outerfirst"] = outerfirst 
+        csgmeta["autocontainer"] = args.autocontainer
+        csgmeta["autoobject"] = args.autoobject
+        csgmeta["autoemitconfig"] = args.autoemitconfig
+        csgmeta["autoseqmap"] = args.autoseqmap
+
         meta_fmt_ = lambda meta:"_".join(["%s=%s" % kv for kv in meta.items()])
         print meta_fmt_(csgmeta)  # communicates to tboolean--
         cls.SaveMeta(base, csgmeta)     # read by NCSG::Deserialize

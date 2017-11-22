@@ -58,7 +58,9 @@ emitconfig
    switches off emission.  The details of the emission can be 
    controlled with the emitconfig attribute, which defaults to:: 
 
-        tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" ; }  
+        tboolean-emitconfig(){ echo "photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" ; }  
+
+   NB the kv delimter is ":" to allow incorporation ito GGeoTest config without interference 
  
    The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
    eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
@@ -464,7 +466,7 @@ tboolean-identity(){ echo 1.000,0.000,0.000,0.000,0.000,1.000,0.000,0.000,0.000,
 #    0x1  : sheet 0 only
 #    0x3f : sheets 0:6 
 
-tboolean-emitconfig(){ echo "photons=600000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" ; }  
+tboolean-emitconfig(){ echo "photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" ; }  
 
 
 tboolean-torchconfig-disc()
@@ -569,7 +571,7 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
@@ -577,7 +579,7 @@ container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', co
 
 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchottF2" )
 
-CSG.Serialize([container, box], args.csgpath )
+CSG.Serialize([container, box], args )
 EOP
 }
 
@@ -614,7 +616,7 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
@@ -623,7 +625,7 @@ container = CSG("box", emit=-1, boundary='Rock//perfectAbsorbSurface/Vacuum', co
 wbox = CSG("box3", param=[400,400,300,0], emit=0,  boundary="Vacuum///Water" )
 box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Water///GlassSchottF2" )
 
-CSG.Serialize([container, wbox, box], args.csgpath )
+CSG.Serialize([container, wbox, box], args )
 EOP
 }
 tboolean-box3-notes(){ cat << EON
@@ -656,14 +658,13 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
-#emitconfig = "photons=10,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
 box = CSG("box", param=[0,0,0,200], emit=-1,  boundary="Rock//perfectSpecularSurface/Vacuum" )
 
-CSG.Serialize([box], args.csgpath )
+CSG.Serialize([box], args )
 EOP
 }
 
@@ -717,7 +718,7 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="HY",resolution="4", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
@@ -733,7 +734,7 @@ z1 = -100
 cone = CSG("cone", param=[r1,z1,r2,z2], boundary="Vacuum///GlassSchottF2", emit=0 )
 cone.dump()
 
-CSG.Serialize([container, cone], args.csgpath )
+CSG.Serialize([container, cone], args )
 
 EOP
 }
@@ -776,7 +777,7 @@ prism = CSG.MakePrism(angle=45, height=200, depth=300 )
 prism.boundary="Vacuum///GlassSchottF2" 
 prism.dump()
 
-CSG.Serialize([container, prism], args.csgpath )
+CSG.Serialize([container, prism], args )
 
 EOP
 }
@@ -822,7 +823,7 @@ icos = CSG.MakeIcosahedron(300)
 icos.boundary="Vacuum///GlassSchottF2" 
 icos.dump()
 
-CSG.Serialize([container, icos], args.csgpath )
+CSG.Serialize([container, icos], args )
 
 EOP
 }
@@ -860,7 +861,7 @@ obj = CSG.MakeCubePlanes(200,200,200)
 obj.boundary="Vacuum///GlassSchottF2" 
 obj.dump()
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 EOP
 }
@@ -900,7 +901,7 @@ obj.boundary="Vacuum///GlassSchottF2"
 
 obj.dump()
 
-CSG.Serialize([container, obj], args.csgpath)
+CSG.Serialize([container, obj], args)
 EOP
 }
 
@@ -963,7 +964,7 @@ ut.boundary = "Vacuum///GlassSchottF2"
 ut.meta.update(im)
 ut.dump()
 
-CSG.Serialize([container, ut], args.csgpath)
+CSG.Serialize([container, ut], args)
 
 
 EOP
@@ -1116,7 +1117,7 @@ for iprim, prim in enumerate(prims):
     prim.translate = "%s,%s,0" % (xx[iprim],yy[iprim])
 pass
 
-CSG.Serialize([container] + prims, args.csgpath )
+CSG.Serialize([container] + prims, args )
 
 EOP
 }
@@ -1182,7 +1183,7 @@ d = CSG("intersection", left=dl, right=dr, translate="0,-400,0" )
 #b.dump_tbool("name")
 #b.dump_NNodeTest("name")
 
-CSG.Serialize([container, a, b, c, d ], args.csgpath )
+CSG.Serialize([container, a, b, c, d ], args )
 
 """
 Getting expected:
@@ -1210,6 +1211,53 @@ EON
 
 
 
+
+tboolean-zsphere0-a(){ TESTNAME=${FUNCNAME/-a} tboolean-a- $* ; } 
+tboolean-zsphere0-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
+tboolean-zsphere0-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
+tboolean-zsphere0(){ TESTNAME=$FUNCNAME TESTCONFIG=$($FUNCNAME- 2>/dev/null)    tboolean-- $* ; } 
+tboolean-zsphere0-(){ $FUNCNAME- | python $* ; } 
+tboolean-zsphere0--(){ cat << EOP 
+
+from opticks.ana.base import opticks_main
+from opticks.analytic.csg import CSG  
+args = opticks_main(csgpath="$TMP/$FUNCNAME")
+
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
+
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0", emitconfig=emitconfig )
+
+container = CSG("box", param=[0,0,0,1000], emit=-1 )
+testobj = CSG("zsphere", param=[0,0,0,500], param1=[-200,200,0,0],param2=[0,0,0,0] )
+
+container.boundary = "Rock//perfectAbsorbSurface/Vacuum"
+testobj.boundary = "Vacuum///GlassSchottF2" 
+
+#testobj.boundary = "Vacuum/perfectSpecularSurface//GlassSchottF2" 
+
+CSG.Serialize([container, testobj], args )
+
+EOP
+}
+
+tboolean-zsphere0-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+Bog standard geometry for checking 
+if --testauto can succeed to modify it for automated 
+seqmap NCSGIntersect checking::
+
+   tboolean-;tboolean-zsphere0 --okg4 --testauto 
+
+EON
+}
+
+
+
+
+
 tboolean-zsphere1-a(){ TESTNAME=${FUNCNAME/-a} tboolean-a- $* ; } 
 tboolean-zsphere1-ip(){ TESTNAME=${FUNCNAME/-ip} tboolean-ipy- $* ; } 
 tboolean-zsphere1-p(){ TESTNAME=${FUNCNAME/-p} tboolean-py- $* ; } 
@@ -1221,7 +1269,7 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.csg import CSG  
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons=100000,wavelength=380,time=0.2,posdelta=0.1,sheetmask=0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
 
 CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0", emitconfig=emitconfig )
 
@@ -1234,7 +1282,7 @@ container.boundary = "Rock//perfectAbsorbSurface/Vacuum"
 #testobj.boundary = "Vacuum///GlassSchottF2" 
 testobj.boundary = "Vacuum/perfectSpecularSurface//GlassSchottF2" 
 
-CSG.Serialize([container, testobj], args.csgpath )
+CSG.Serialize([container, testobj], args )
 
 EOP
 }
@@ -1252,6 +1300,7 @@ $FUNCNAME
 
 automated NCSGIntersect check::
 
+   tboolean-;tboolean-zsphere1 --okg4 --testauto 
    tboolean-;tboolean-zsphere1-a --dbgseqhismap "TO:0,SR:1,SA:0"
 
 
@@ -1289,7 +1338,7 @@ container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", pol
 
 zsphere = CSG("zsphere", param=[0,0,0,500], param1=[100,200,0,0],param2=[0,0,0,0],  boundary="$(tboolean-testobject)" )
 
-CSG.Serialize([container, zsphere], args.csgpath )
+CSG.Serialize([container, zsphere], args )
 
 EOP
 }
@@ -1331,7 +1380,7 @@ uzs = CSG("union", left=lzs, right=rzs )
 obj = lzs
 obj.boundary = "$(tboolean-testobject)"
 
-CSG.Serialize([container, obj],  args.csgpath )
+CSG.Serialize([container, obj],  args )
 
 
 EOP
@@ -1384,7 +1433,7 @@ rzs = CSG("zsphere", param=[0,0,0,400], param1=[-101,101,0,0] ,param2=[0,0,0,0] 
 
 dzs = CSG("difference", left=lzs, right=rzs, boundary="$(tboolean-testobject)", **kwa )
 
-CSG.Serialize([container, dzs], args.csgpath )
+CSG.Serialize([container, dzs], args )
 
 """
 
@@ -1431,7 +1480,7 @@ obj = CSG("union", left=box, right=sph, boundary="$(tboolean-testobject)", poly=
 
 # only root node poly and polycfg are obeyed, and distributed to the entire tree
 
-CSG.Serialize([container, obj ],  args.csgpath )
+CSG.Serialize([container, obj ],  args )
 
 
 """
@@ -1488,7 +1537,7 @@ box = CSG("box", param=[0,0,0,500], boundary="$(tboolean-testobject)", poly="HY"
 
 
 
-CSG.Serialize([container, box  ], args.csgpath )
+CSG.Serialize([container, box  ], args )
 
 EOP
 }
@@ -1514,7 +1563,7 @@ sph = CSG("sphere", param=[0,0,0,100], boundary="$(tboolean-testobject)", transl
 
 object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 EOP
 }
 
@@ -1552,7 +1601,7 @@ obj.translate = "0,0,100"
 obj.scale = "1,1,1.5"
 obj.rotate = "1,0,0,45"
 
-CSG.Serialize([container, obj],  args.csgpath )
+CSG.Serialize([container, obj],  args )
 
 
 log.info(r"""
@@ -1680,7 +1729,7 @@ b = CSG("disc", param = [1000.000,0.000,0.000,223.000],param1 = [z1d,z2d,0.000,0
 obj = a - b 
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)" , poly="HY", level="5" )
-CSG.Serialize([con, obj], args.csgpath )
+CSG.Serialize([con, obj], args )
 
 EOP
 }
@@ -1757,7 +1806,7 @@ pass
 
 
 con = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary=con_ , poly="HY", level="5" )
-CSG.Serialize([con, obj], args.csgpath )
+CSG.Serialize([con, obj], args )
 
 
 """
@@ -1874,7 +1923,7 @@ obj.dump(msg="BALANCED", detailed=True)
 #obj.dump_tboolean(name="esr")
 
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 """
 
@@ -1945,7 +1994,7 @@ c.analyse()
 log.info("C\n"+str(c.txt))
 
 
-CSG.Serialize([container, a, b, c  ], args.csgpath )
+CSG.Serialize([container, a, b, c  ], args )
 
 log.info(r"""
 
@@ -2006,7 +2055,7 @@ sph = CSG("sphere", param=[0,0,0,radius], **rtran)
 
 object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testobject)", poly="IM", resolution="50" )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 EOP
 }
 
@@ -2044,7 +2093,7 @@ pass
 
 obj.dump()
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 EOP
 }
 
@@ -2085,7 +2134,7 @@ obj = cy*seg
 
 obj.dump()
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 EOP
 }
 
@@ -2133,7 +2182,7 @@ pass
 
 obj = cyseg
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 """
          
@@ -2186,7 +2235,7 @@ container = CSG("box", param=[0,0,0,4], boundary=args.container, poly="MC", nx="
   
 a = CSG.MakeUndefined(name="$FUNCNAME", src_type="hello")
 
-CSG.Serialize([container, a], args.csgpath )
+CSG.Serialize([container, a], args )
 
 
 EOP
@@ -2210,7 +2259,7 @@ CSG.boundary = args.testobject
 CSG.kwa = dict(poly="IM", resolution="50")
 
 container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
-CSG.Serialize([container], args.csgpath )
+CSG.Serialize([container], args )
 
 EOP
 }
@@ -2237,7 +2286,7 @@ isur = "perfectAbsorbSurface"
 imat = "Pyrex"
 
 box = CSG("box", param=[0,0,0,400], boundary="/".join([omat,osur,isur,imat]), poly="MC", nx="20", emit=-1, emitconfig="$(tboolean-emitconfig)" )  
-CSG.Serialize( [box], args.csgpath )
+CSG.Serialize( [box], args )
 
 EOP
 }
@@ -2351,7 +2400,7 @@ CSG.kwa = dict(poly="IM", resolution="20" , emitconfig="$(tboolean-emitconfig)" 
 container = CSG("box",    param=[0,0,0,400.0], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1 )  
 sphere    = CSG("sphere", param=[0,0,0,200.0], boundary="Vacuum/perfectSpecularSurface//%s" % material, emit=0 ) 
 
-CSG.Serialize([container, sphere], args.csgpath )
+CSG.Serialize([container, sphere], args )
 
 EOP
 }
@@ -2404,8 +2453,8 @@ container = CSG("box3", param=[2*150+1,2*150+1,2*50+1,0], boundary=args.containe
   
 a = CSG.MakeTorus(R=100, r=50)
 
-CSG.Serialize([container, a], args.csgpath )
-#CSG.Serialize([a], args.csgpath )
+CSG.Serialize([container, a], args )
+#CSG.Serialize([a], args )
 
 
 EOP
@@ -2434,7 +2483,7 @@ container = CSG("box", param=[0,0,0,400], boundary=args.container, poly="MC", nx
 #a = CSG.MakeHyperboloid(r0=100, zf=100, z1=-100, z2=100)
 a = CSG.MakeHyperboloid(r0=100, zf=100, z1=0, z2=100)
 
-CSG.Serialize([container, a], args.csgpath )
+CSG.Serialize([container, a], args )
 
 EOP
 }
@@ -2465,7 +2514,7 @@ a = CSG.MakeCubic(A=0.0001, B=2, C=10, D=2, z1=-10, z2=10)
 #a = CSG.MakeCubicBezier(zrrs)
 
 
-CSG.Serialize([container, a], args.csgpath )
+CSG.Serialize([container, a], args )
 
 EOP
 }
@@ -2651,7 +2700,7 @@ uobjs = [obj, obj2]
 
 
 con = CSG("box",  param=[0,0,0,10], container="1", containerscale="2", boundary=args.container , poly="IM", resolution="20" )
-CSG.Serialize([con]+uobjs, args.csgpath )
+CSG.Serialize([con]+uobjs, args )
 
 
 
@@ -2696,7 +2745,7 @@ a.translate = [300,300,0]
 #print a
 #print "scale:", a.scale
 
-CSG.Serialize([container, a], args.csgpath )
+CSG.Serialize([container, a], args )
 
 """
 
@@ -2740,7 +2789,7 @@ dist = 500 + 1
 
 s = Primitive.deltaphi_slab_segment( d, phi0, phi1, dist)
 
-CSG.Serialize([container, s], args.csgpath )
+CSG.Serialize([container, s], args )
 
 EOP
 }
@@ -2769,7 +2818,7 @@ sphere = CSG("sphere", param=[0,0,0,500] )
 
 object = CSG("intersection", left=sphere, right=slab )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 
 """
 
@@ -2823,7 +2872,7 @@ sphere = CSG("sphere", param=[0,0,0,500] )
 
 object = CSG("intersection", left=sphere, right=plane )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 
 """
 
@@ -2852,7 +2901,7 @@ plane  = CSG("plane",  param=[0,0,1,100] )
 box    = CSG("box", param=[0,0,0,200]  )
 object = CSG("intersection", left=plane, right=box, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 
 """
 #. Analogous issue to tboolean-sphere-plane
@@ -2876,7 +2925,7 @@ bigbox = CSG("box", param=[0,0,0,999] )
 plane  = CSG("plane",  param=[0,0,1,100] )
 object = CSG("intersection", left=plane, right=bigbox, boundary="$(tboolean-testobject)", poly="IM", resolution="50", verbosity="1" )
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 
 """
 
@@ -2924,7 +2973,7 @@ a = CSG("cylinder", param=[0,0,0,ra], param1=[z1,z2,0,0] )
 
 obj = a 
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 EOP
 }
@@ -2961,7 +3010,7 @@ b = CSG("sphere", param=[0,0,z2,ra/2]  )
 
 obj = a - b 
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 """  
                 Z
@@ -3022,7 +3071,7 @@ obj = a - b - c - d
 #obj.rotate = "1,1,1,45"
 
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 """
 Failed to reproduce the ESR speckles, from tboolean-sc
@@ -3055,7 +3104,7 @@ obj.boundary = "$(tboolean-testobject)"
 
 container = CSG("box", param=[0,0,0,200], boundary="$(tboolean-container)", poly="IM", resolution="20" )
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 EOP
 }
@@ -3091,7 +3140,7 @@ object.dump()
 
 container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="IM", resolution="20")
 
-CSG.Serialize([container, object], args.csgpath )
+CSG.Serialize([container, object], args )
 
 EOP
 }
@@ -3201,7 +3250,7 @@ abc.transform = [[0.543,-0.840,0.000,0.000],[0.840,0.543,0.000,0.000],[0.000,0.0
 obj = abc
 
 container = CSG("sphere",  param=[0,0,0,10], container="1", containerscale="2", boundary="$(tboolean-container)" , poly="HY", level="5" )
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 EOP
 }
@@ -3313,7 +3362,7 @@ obj.meta.update(gpuoffset="0,600,0")
 #mc = dict(poly="MC", nx="20")
 container = CSG("box", param=[0,0,0,1000], boundary=args.container, poly="IM", resolution="20" )
 
-CSG.Serialize([container, obj], args.csgpath )
+CSG.Serialize([container, obj], args )
 
 EOP
 }

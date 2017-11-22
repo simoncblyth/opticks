@@ -111,7 +111,7 @@ const char* OpticksFlags::Flag(const unsigned int flag)
         case MACHINERY:        s=MACHINERY_;break; 
         case EMITSOURCE:       s=EMITSOURCE_;break; 
         default:               s=BAD_FLAG_  ;
-                               LOG(warning) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
+                               LOG(debug) << "OpticksFlags::Flag BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
     return s;
 }

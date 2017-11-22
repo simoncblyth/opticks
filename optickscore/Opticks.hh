@@ -180,8 +180,8 @@ class OKCORE_API Opticks {
 
    public:
         // from cfg
-       const std::string& getDbgSeqhisMapString() const ;
-       bool getDbgSeqhisMap(unsigned long long& seqhis, unsigned long long& seqval);
+       const std::string& getSeqMapString() const ;
+       bool getSeqMap(unsigned long long& seqhis, unsigned long long& seqval);
 
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
@@ -209,8 +209,9 @@ class OKCORE_API Opticks {
        NSceneConfig* getSceneConfig();
 
    public:
-       bool        isTest();
-       const char* getTestConfig();
+       bool        isTest() const ;
+       bool        isTestAuto() const ;
+       const char* getTestConfig() const ;
 
    public:
        bool        isG4Snap() const ; 

@@ -3,9 +3,14 @@
 #include "BConfig.hh"
 #include "PLOG.hh"
 
-BConfig::BConfig(const char* cfg_) 
+const char* BConfig::DEFAULT_KVDELIM = "=" ; 
+
+
+BConfig::BConfig(const char* cfg_, char edelim_, const char* kvdelim_) 
     :   
-    cfg(cfg_ ? strdup(cfg_) : NULL)
+    cfg(cfg_ ? strdup(cfg_) : NULL),
+    edelim( edelim_ ? edelim_ : ',' ),
+    kvdelim( kvdelim_ ? strdup(kvdelim_) : DEFAULT_KVDELIM )
 {
 }
 
@@ -29,7 +34,9 @@ void BConfig::addString(const char* k, std::string* ptr)
 void BConfig::parse()
 {
     if(!cfg) return ; 
-    BStr::ekv_split(ekv, cfg, ',', "=" );
+
+    BStr::ekv_split(ekv, cfg, edelim,  kvdelim );
+
     for(unsigned i=0 ; i < ekv.size() ; i++)
     {   
         KV kv = ekv[i] ; 

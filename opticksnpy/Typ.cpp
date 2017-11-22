@@ -41,7 +41,10 @@ void Typ::dumpMap(const char* msg, const std::map<unsigned, std::string>& m ) co
 
 void Typ::dump(const char* msg) const 
 {
-    LOG(info) << msg ; 
+    LOG(info) << msg 
+              << " num_material_names " << m_material_names.size()
+              << " num_flag_names " << m_flag_names.size()
+              ;
 
     dumpMap( "material_names", m_material_names );
     dumpMap( "flag_names", m_flag_names );

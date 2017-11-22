@@ -118,17 +118,16 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        // set by Opticks::makeEvent OpticksRun::createEvent
        void           setSibling(OpticksEvent* sibling);
        void           setOpticks(Opticks* ok);
-       Opticks*       getOpticks();
+       Opticks*       getOpticks() const ;
        void           setId(int id);
    public:
        OpticksEvent*  getSibling();
        int  getId();
    public:
-       bool isNoLoad();
-       bool isLoaded();
-       bool isIndexed();
-       bool isStep();
-       bool isFlat();
+       bool isNoLoad() const ;
+       bool isLoaded() const ;
+       bool isStep() const ;
+       bool isFlat() const ;
        bool isTorchType();
        bool isMachineryType();
 
@@ -175,6 +174,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        static const char* seed_  ;
        static const char* hit_  ;
    public:
+       bool isIndexed() const ;
        NPY<float>* loadGenstepDerivativeFromFile(const char* stem="track");
        void setGenstepData(NPY<float>* genstep_data, bool progenitor=true);
        void setNopstepData(NPY<float>* nopstep_data);
@@ -282,16 +282,16 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        bool                 hasGenstepData();
        const glm::vec4&     getGenstepCenterExtent();
    public:
-       NPY<float>*          getGenstepData();
-       NPY<float>*          getNopstepData();
-       NPY<float>*          getPhotonData();
-       NPY<float>*          getSourceData();
-       NPY<short>*          getRecordData();
-       NPY<unsigned char>*  getPhoselData();
-       NPY<unsigned char>*  getRecselData();
-       NPY<unsigned long long>*  getSequenceData();
-       NPY<unsigned>*          getSeedData();
-       NPY<float>*             getHitData();
+       NPY<float>*          getGenstepData() const ;
+       NPY<float>*          getNopstepData() const ;
+       NPY<float>*          getPhotonData() const ;
+       NPY<float>*          getSourceData() const ;
+       NPY<short>*          getRecordData() const ;
+       NPY<unsigned char>*  getPhoselData() const ;
+       NPY<unsigned char>*  getRecselData() const ;
+       NPY<unsigned long long>*  getSequenceData() const ;
+       NPY<unsigned>*          getSeedData() const ;
+       NPY<float>*             getHitData() const ;
    public:
        OpticksBufferControl* getPhotonCtrl();
        OpticksBufferControl* getSourceCtrl();
@@ -307,13 +307,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setHitsNPY(HitsNPY* hit);
        void setBoundariesNPY(BoundariesNPY* bnd);
 
-       RecordsNPY*          getRecordsNPY();
+       RecordsNPY*          getRecordsNPY();  // use OpticksEventInstrument::SetupRecordsNPY 
        PhotonsNPY*          getPhotonsNPY();
        HitsNPY*             getHitsNPY();
        BoundariesNPY*       getBoundariesNPY();
    public:
-       NPY<float>*          getFDomain();
-       NPY<int>*            getIDomain();
+       NPY<float>*          getFDomain() const ;
+       NPY<int>*            getIDomain() const ;
    public:
        void setFakeNopstepPath(const char* path);
    public:
