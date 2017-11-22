@@ -2,11 +2,10 @@
 
 #include <vector>
 #include <map>
-#include <functional>
 
 class NCSGList ; 
 struct NCSGIntersect ;
-struct nnode ; 
+//struct nnode ; 
 template <typename T> class NPY ; 
 
 class RecordsNPY ; 
@@ -39,22 +38,16 @@ from each photon position (excluding bulk positions, SC, AB )
 
 class OKCORE_API OpticksEventAna
 {
-       typedef std::function<float(float,float,float)> SDF ; 
-
    public:
        OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist );
+
        std::string desc();
        void dump(const char* msg="OpticksEventAna::dump");
        void dumpPointExcursions(const char* msg="OpticksEventAna::dumpPointExcursions");
-
    private:
        void init();
-       void countFinalExcursions();
        void countPointExcursions();
-
-       void dumpExcursions();
-       void dumpStepByStepCSGExcursions();
-       void dumpStepByStepCSGExcursions(unsigned photon_id );
+       void checkPointExcursions(); // using the seqmap expectations
 
    private:
        Opticks*           m_ok ; 
@@ -63,16 +56,19 @@ class OKCORE_API OpticksEventAna
        unsigned long long m_dbgseqhis ;
        unsigned long long m_dbgseqmat ;
 
+
+       unsigned long long m_seqmap_his ;
+       unsigned long long m_seqmap_val ;
+       bool               m_seqmap_has ; 
+
+       unsigned long long m_seqhis_select ;
+
+
        OpticksEvent*            m_evt ; 
       
-
        NCSGList*                m_csglist ;
        unsigned                 m_tree_num ; 
-
        NCSGIntersect*           m_csgi ;  
-       SDF*                     m_sdflist ; 
-
-
 
 
        OpticksEventStat*        m_stat ; 

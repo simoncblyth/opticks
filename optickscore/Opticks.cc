@@ -635,16 +635,33 @@ void Opticks::setExit(bool exit_)
         exit(EXIT_SUCCESS) ;
     }
 }
+
+
 unsigned long long Opticks::getDbgSeqmat()
 {
-    std::string seqmat = m_cfg->getDbgSeqmat();
+    const std::string& seqmat = m_cfg->getDbgSeqmat();
     return BHex<unsigned long long>::hex_lexical_cast( seqmat.c_str() );
 }
 unsigned long long Opticks::getDbgSeqhis()
 {
-    std::string seqhis = m_cfg->getDbgSeqhis();
+    const std::string& seqhis = m_cfg->getDbgSeqhis();
     return BHex<unsigned long long>::hex_lexical_cast( seqhis.c_str() );
 }
+
+const std::string& Opticks::getDbgSeqhisMapString() const 
+{
+    return m_cfg->getDbgSeqhisMap() ;
+}
+
+bool Opticks::getDbgSeqhisMap(unsigned long long& seqhis, unsigned long long& seqval)
+{
+    const std::string& seqmap = m_cfg->getDbgSeqhisMap();
+    if(seqmap.empty()) return false ; 
+    char edelim = BStr::HasChar(seqmap, ',') ? ',' : ' ' ; 
+    OpticksFlags::AbbrevToFlagValSequence(seqhis, seqval, seqmap.c_str(), edelim );
+    return true ; 
+}
+
 
 
 float Opticks::getFxRe()

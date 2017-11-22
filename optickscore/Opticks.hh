@@ -180,6 +180,9 @@ class OKCORE_API Opticks {
 
    public:
         // from cfg
+       const std::string& getDbgSeqhisMapString() const ;
+       bool getDbgSeqhisMap(unsigned long long& seqhis, unsigned long long& seqval);
+
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
        int   getDbgNode();

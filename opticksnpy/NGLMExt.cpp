@@ -213,6 +213,12 @@ glm::mat4 nglmext::invert_trs( const glm::mat4& trs )
 }
 
 
+float nglmext::compDiff(const glm::vec4& a , const glm::vec4& b )
+{
+    glm::vec4 amb = a - b ; 
+    glm::vec4 aamb = glm::abs(amb) ; 
+    return glm::compMax(aamb) ; 
+}
 
 float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
 {
@@ -224,7 +230,7 @@ float nglmext::compDiff(const glm::mat4& a , const glm::mat4& b )
     for(unsigned i=0 ; i < 4 ; i++) aamb[i] = glm::abs(amb[i]) ; 
 
     glm::vec4 colmax ; 
-    for(unsigned i=0 ; i < 4 ; i++) colmax[i] = glm::compMax(aamb[i]) ;
+    for(unsigned i=0 ; i < 4 ; i++) colmax[i] = glm::compMax(aamb[i]) ; // compMax returns float, here using index addressing of vec4
 
     return glm::compMax(colmax) ; 
 }

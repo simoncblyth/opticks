@@ -6,8 +6,22 @@
 #include "OpticksPhoton.h"
 class Index ; 
 
+/**
+OpticksFlags
+=============
+
+OpticksPhoton.h enum header is parsed at instanciation, loading 
+names and enum values into an Index m_index instance
+see: OpticksFlagsTest --OKCORE debug 
+
+Actually the index is little used, the static methods using 
+case statement conversions being more convenient.
 
 
+
+
+
+**/
 
 #include "OKCORE_API_EXPORT.hh"
 
@@ -75,8 +89,20 @@ class OKCORE_API OpticksFlags {
        static const char* SourceTypeLowercase(int code);
        static unsigned int SourceCode(const char* type);
     public:
-       static const char* Flag(const unsigned int flag);
-       static const char* Abbrev(const unsigned int flag);
+       static const char* Flag(const unsigned flag);
+       static const char* Abbrev(const unsigned flag);
+    public:
+       static unsigned EnumFlag(unsigned bitpos);
+       static unsigned BitPos(unsigned flag);
+       static unsigned AbbrevToFlag( const char* abbrev );
+       static unsigned long long AbbrevToFlagSequence( const char* abbseq, char delim=' ');
+       static void AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim=' ') ;
+
+       static unsigned PointVal1( const unsigned long long& seqval , unsigned bitpos );
+       static unsigned PointFlag( const unsigned long long& seqhis , unsigned bitpos );
+       static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
+
+    public:
        static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true);
        static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
     public:

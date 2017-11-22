@@ -148,6 +148,7 @@ struct NPY_API nglmext
     static float compDiff2(const glm::mat4& a , const glm::mat4& b, bool fractional=false, float epsilon=1e-5, float epsilon_translation=1e-3);
     static float compDiff2(const float a_     , const float b_    , bool fractional=false, float epsilon=1e-5);
     static float compDiff(const glm::mat4& a , const glm::mat4& b );
+    static float compDiff(const glm::vec4& a , const glm::vec4& b );
 
     static glm::mat4 average_to_inverse_transpose( const glm::mat4& m );
     static ndeco polar_decomposition( const glm::mat4& trs, bool verbose=false );

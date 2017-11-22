@@ -14,6 +14,10 @@
 
 class BRAP_API BStr {
   public:
+
+     static void rtrim(std::string& s );
+     static bool HasChar(const std::string& s, char c);
+
      static int  atoi( const char* str, int fallback=0 );
      static float atof( const char* str, float fallback=0 );
      static const char* itoa( int i );

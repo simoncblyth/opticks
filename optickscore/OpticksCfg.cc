@@ -48,6 +48,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_oindex(""),
        m_builder(""),
        m_traverser(""),
+       m_dbgseqhismap(""),
        m_dbgseqhis("0"),
        m_dbgseqmat("0"),
        m_dbgmesh(""),
@@ -606,6 +607,12 @@ void OpticksCfg<Listener>::init()
        ("dbgseqmat",      boost::program_options::value<std::string>(&m_dbgseqmat), "Debug photon material hex string" );
 
 
+   m_desc.add_options()
+       ("dbgseqhismap",      boost::program_options::value<std::string>(&m_dbgseqhismap), "Debug photon history hex string value map, used eg for NCSGIntersect checks via OpticksAnaEvent." );
+
+
+
+
 
 
    char rngmax[128];
@@ -1036,11 +1043,20 @@ const std::string& OpticksCfg<Listener>::getTraverser()
     return m_traverser ;
 }
 
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getDbgSeqhisMap()
+{
+    return m_dbgseqhismap  ;
+}
+
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getDbgSeqhis()
 {
     return m_dbgseqhis  ;
 }
+
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getDbgSeqmat()
 {

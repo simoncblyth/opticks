@@ -1,8 +1,9 @@
 #include <sstream>
 
 #include "NPY.hpp"
+#include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
-#include "NNode.hpp"
+//#include "NNode.hpp"
 #include "RecordsNPY.hpp"
 #include "NCSGList.hpp"
 #include "NCSGIntersect.hpp"
@@ -22,11 +23,16 @@ OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csgl
     m_dbgseqhis(m_ok->getDbgSeqhis()),
     m_dbgseqmat(m_ok->getDbgSeqmat()),
 
+    m_seqmap_his(0ull),
+    m_seqmap_val(0ull),
+    m_seqmap_has(m_ok->getDbgSeqhisMap(m_seqmap_his, m_seqmap_val)),
+
+    m_seqhis_select( m_seqmap_has ? m_seqmap_his : m_dbgseqhis ),  // seqmap trumps dbgseqhis
+
     m_evt(evt),
     m_csglist(csglist),
     m_tree_num(csglist->getNumTrees()),
     m_csgi(new NCSGIntersect[m_tree_num]),
-    m_sdflist(new SDF[m_tree_num]), 
 
     m_stat(new OpticksEventStat(evt, m_tree_num)),   
 
@@ -46,14 +52,11 @@ void OpticksEventAna::init()
     for(unsigned i=0 ; i < m_tree_num ; i++)
     {
         NCSG* csg = m_csglist->getTree(i);
-
-        nnode* root = csg->getRoot();
-        m_sdflist[i] = root->sdf() ; 
-
         m_csgi[i].init(csg) ;
     }
-    countFinalExcursions();
+
     countPointExcursions();
+    checkPointExcursions();
 
 }
 
@@ -65,7 +68,7 @@ void OpticksEventAna::countPointExcursions()
     { 
         unsigned photon_id=i ; 
         unsigned long long seqhis_ = m_seq->getValue(photon_id,0,0);   
-        if(seqhis_ != m_dbgseqhis) continue ; 
+        if(seqhis_ != m_seqhis_select) continue ; 
 
         std::vector<NRec> recs ; 
         glm::vec4 ldd = m_records->getLengthDistanceDurationRecs(recs, photon_id ); 
@@ -79,11 +82,109 @@ void OpticksEventAna::countPointExcursions()
     }
 }
 
+
+
+
+void OpticksEventAna::checkPointExcursions()
+{
+    if(!m_seqmap_has) return ; 
+
+     const std::string& dbgseqhismap = m_ok->getDbgSeqhisMapString();
+
+     LOG(info) 
+           << " dbgseqhismap " << dbgseqhismap
+           ;
+
+     LOG(info)
+          << " seqmap_his " << std::setw(16) << std::hex << m_seqmap_his << std::dec 
+          << " seqmap_val " << std::setw(16) << std::hex << m_seqmap_val << std::dec 
+          ;
+
+
+
+    unsigned num_excursions = 0 ; 
+
+
+    glm::vec4 xdist0(-0.1);  // kludge hard duplication of emitconfig.deltashift 0.1mm with emit=-1 inwards photons
+    glm::vec4 xdist1(0.);    
+
+    for(unsigned p=0 ; p < 16 ; p++)
+    {
+        const char* abbrev = OpticksFlags::PointAbbrev(m_seqmap_his, p );
+        unsigned val1 = OpticksFlags::PointVal1(m_seqmap_val, p );
+
+        if(val1 == 0 ) continue ; 
+
+        unsigned tree = val1 - 1 ;
+        const NCSGIntersect& csgi = m_csgi[tree] ; 
+        unsigned count = csgi._count[p] ;
+
+        const glm::vec4& dist = csgi._dist[p] ; 
+        const glm::vec4& xdist = p == 0 ? xdist0 : xdist1 ;
+
+        float df = nglmext::compDiff(dist, xdist ); 
+        // max absolute difference of min/max/avg values 
+
+        bool excursion = df > m_epsilon ;
+        if(excursion) num_excursions++ ; 
+
+ 
+        std::cout 
+             << " p " << std::setw(2) << p  
+             << " abbrev " << std::setw(2) << abbrev 
+             << " val1 " << std::setw(2) << val1 
+             << " tree " << tree
+             << " count " << count
+             << " dist " << gpresent( dist )
+             << " xdist " << gpresent( xdist )
+             << " df " << df 
+             << " " << ( excursion ? "EXCURSION" : "expected" )
+             << std::endl ; 
+             ;
+
+        assert( count > 0 ); 
+
+    }   
+
+    bool has_excursions = num_excursions > 0 ; 
+    LOG( has_excursions ? fatal : info ) << " num_excursions " << num_excursions ; 
+    assert( !has_excursions );
+
+
+}
+
+
+/*
+
+Emitconfig here using a delta shift of 0.1, hmm does that config  travel with the evt ?
+Kludge it with xdist(0.2)
+
+2017-11-22 15:07:32.385 INFO  [6385639] [OpticksEventAna::checkPointExcursions@91]  dbgseqhismap TO:0,SR:1,SA:0
+2017-11-22 15:07:32.385 INFO  [6385639] [OpticksEventAna::checkPointExcursions@95]  seqmap_his              8ad seqmap_val              121
+ p  0 abbrev TO val1  1 tree 0 count 19700 csgi.desc_dist [p: 0](  19700)(     -0.100    -0.100    -0.100       0.000) mm
+ p  1 abbrev SR val1  2 tree 1 count 19700 csgi.desc_dist [p: 1](  19700)(     -0.022     0.023     0.004       0.000) mm
+ p  2 abbrev SA val1  1 tree 0 count 19700 csgi.desc_dist [p: 2](  19700)(     -0.008    -0.008    -0.008       0.000) mm
+
+
+2017-11-22 15:07:33.038 INFO  [6385639] [OpticksEventAna::checkPointExcursions@95]  seqmap_his              8ad seqmap_val              121
+ p  0 abbrev TO val1  1 tree 0 count 19699 csgi.desc_dist [p: 0](  19699)(     -0.100    -0.100    -0.100       0.000) mm
+ p  1 abbrev SR val1  2 tree 1 count 19699 csgi.desc_dist [p: 1](  19699)(   -198.534     0.023   -56.019       0.000) mm
+ p  2 abbrev SA val1  1 tree 0 count 19699 csgi.desc_dist [p: 2](  19699)(     -0.008    -0.008    -0.008       0.000) mm
+
+
+
+*/
+
+
+
+
+
 void OpticksEventAna::dumpPointExcursions(const char* msg)
 {
     LOG(info) << msg 
-              << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
-              << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
+              << " seqhis_select "
+              << " " << std::hex << m_seqhis_select << std::dec 
+              << " " << OpticksFlags::FlagSequence( m_seqhis_select, true )
               ;
 
     std::cout << "min/max/avg signed-distance(mm) and time(ns) of each photon step point from each NCSG tree" << std::endl ; 
@@ -99,7 +200,7 @@ void OpticksEventAna::dumpPointExcursions(const char* msg)
     }   
 
 
- 
+    /* 
     for(unsigned p=0 ; p < 16 ; p++)
     {
         if(m_csgi[0]._count[p] == 0) continue ;  
@@ -108,7 +209,8 @@ void OpticksEventAna::dumpPointExcursions(const char* msg)
             std::cout << m_csgi[t].desc_time(p) ; 
         }
         std::cout << std::endl ; 
-    }   
+    } 
+    */  
 
 }
 
@@ -117,15 +219,6 @@ void OpticksEventAna::dumpPointExcursions(const char* msg)
 void OpticksEventAna::dump(const char* msg)
 {
     LOG(info) << msg << " " << desc() ; 
-
-    //m_pho->dump();
-    //m_seq->dump();
-
-    //m_stat->dump("per-seqhis per-tree counts on NCSG tree surface"  );
-
-    //dumpStepByStepCSGExcursions();
-    //dumpPointExcursions();
-
 }
 
 std::string OpticksEventAna::desc()
@@ -137,140 +230,6 @@ std::string OpticksEventAna::desc()
         ;
     return ss.str();
 }
-
-
-
-
-void OpticksEventAna::countFinalExcursions()
-{
-    LOG(info) << "OpticksEventAna::countFinalExcursions"
-              << " pho_num " << m_pho_num
-              << " epsilon " << m_epsilon 
-              << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
-              << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
-              ;
-              
-    // as photon positions are final ones, this
-    // aint so useful for intersect checking : as the photons
-    // mostly end up being absorbed on container walls 
-
-    bool dump = false ; 
- 
-    for(unsigned tree = 0 ; tree < m_tree_num ; tree++ )
-    {
-        unsigned count = 0 ; 
-        for(unsigned i=0 ; i < m_pho_num ; i++)
-        { 
-            //unsigned long long seqhis_ = m_seq->getValue(i,0,0);
-            //unsigned long long seqmat_ = m_seq->getValue(i,0,1);
-
-            unsigned long long seqhis_ = m_evt->getSeqHis(i);
-
-
-            glm::vec4 post = m_pho->getQuad(i,0,0);
-            glm::vec4 pos(post);
-            pos.w = 1.0f ; 
-
-            //glm::vec4 lpos = igtr * pos ; 
-            glm::vec4 lpos = pos ; 
-
-            float sd = m_sdflist[tree](lpos.x, lpos.y, lpos.z);
-            float asd = std::abs(sd) ;
-            bool surf = asd < m_epsilon ;
-
-
-            if(seqhis_ == m_dbgseqhis )
-            {
-
-                if( count < 100 && dump )
-                {
-                    std::cout 
-                              << " sd " << std::setw(10) << sd 
-                              << " " << ( surf ? "YES" : "NO " )
-                              << " " << gpresent("post", post)  
-                              ;
-                }
-                count++ ; 
-            }
-
-            //if(surf) m_surf[tree][seqhis_]++ ;  
-            if(surf) 
-                 m_stat->increment(tree, seqhis_) ;  
-       }
-
-        LOG(info) << "OpticksEventAna::countFinalExcursions"
-                  << " pho_num " << m_pho_num
-                  << " dbgseqhis " << std::hex << m_dbgseqhis << std::dec 
-                  << " dbgseqhis " << OpticksFlags::FlagSequence( m_dbgseqhis, true )
-                  << " count " << count 
-                  ;
-     
-   }
-
-}
-
-
-void OpticksEventAna::dumpStepByStepCSGExcursions()
-{
-    unsigned count = 0 ;
-    unsigned dumpmax = 10 ;
-    for(unsigned i=0 ; i < m_pho_num ; i++)
-    { 
-         unsigned photon_id=i ; 
-         unsigned long long seqhis_ = m_seq->getValue(photon_id,0,0);
-       
-         if(seqhis_ == m_dbgseqhis)
-         {
-             count++ ; 
-             if(count < dumpmax)
-             dumpStepByStepCSGExcursions(photon_id) ;
-         }
-    }
-
-    LOG(info) << "OpticksEventAna::dumpStepByStepCSGExcursions"
-              << " m_dbgseqhis " 
-              << std::setw(16) << std::hex << m_dbgseqhis << std::dec
-              << " count " << count 
-              << " dumpmax " << dumpmax 
-              ;
-}
-
-void OpticksEventAna::dumpStepByStepCSGExcursions(unsigned photon_id )
-{ 
-    unsigned long long seqhis_ = m_seq->getValue(photon_id,0,0);
-    //unsigned long long seqmat_ = m_seq->getValue(i,0,1);
-
-    std::vector<NRec> recs ; 
-    glm::vec4 ldd = m_records->getLengthDistanceDurationRecs(recs, photon_id ); 
-
-    LOG(info) << "OpticksEventAna::dumpStepByStepCSGExcursions"
-              << " photon_id " << photon_id 
-              << " num_recs " << recs.size()
-              << " num_tree " << m_tree_num
-              << " seqhis " << std::setw(16) << std::hex << seqhis_ << std::dec
-              << " " << std::setw(64) << OpticksFlags::FlagSequence( seqhis_, true )
-              ;
-    
-    for(unsigned p=0 ; p < recs.size() ; p++)
-    {         
-        const glm::vec4& post = recs[p].post  ;
-        std::cout << gpresent_( "post", post ) ; 
-
-        glm::vec4 lpos(post) ;
-        lpos.w = 1.f ;  
-        if(post.w > 0.f ) 
-        {
-            for(unsigned tree=0 ; tree < m_tree_num ; tree++)
-            {       
-                float sd = m_sdflist[tree](lpos.x, lpos.y, lpos.z);
-                std::cout << " " << std::setw(10) << sd ;
-            }
-        }
-        std::cout << std::endl ; 
-    }
-}
-
-
 
 
 

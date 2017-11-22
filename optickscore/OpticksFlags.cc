@@ -3,6 +3,7 @@
 #include <vector>
 #include <string>
 
+#include "BStr.hh"
 #include "BBit.hh"
 #include "BRegex.hh"
 #include "PLOG.hh"
@@ -143,17 +144,129 @@ const char* OpticksFlags::Abbrev(const unsigned int flag)
         case MACHINERY:        s=_MACHINERY;break; 
         case EMITSOURCE:       s=_EMITSOURCE;break; 
         default:               s=_BAD_FLAG  ;
-                               LOG(warning) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
+                               LOG(trace) << "OpticksFlags::Abbrev BAD_FLAG [" << flag << "]" << std::hex << flag << std::dec ;             
     }
     return s;
 }
 
 
 
+unsigned OpticksFlags::EnumFlag(unsigned bitpos)
+{
+    return bitpos == 0 ? 0 : 0x1 << (bitpos - 1) ;
+}
+
+unsigned OpticksFlags::BitPos(unsigned flag)
+{
+    return BBit::ffs(flag)  ;  
+}
+
+unsigned OpticksFlags::AbbrevToFlag( const char* abbrev )
+{
+    unsigned flag = 0 ; 
+    if(!abbrev) return flag ;
+ 
+    for(unsigned f=0 ; f < 32 ; f++) 
+    {
+        flag = EnumFlag(32-1-f) ; // <-- reverse order so unfound -> 0 
+        if(strcmp(Abbrev(flag), abbrev) == 0) break ; 
+    }
+    return flag ;        
+}
+
+unsigned long long OpticksFlags::AbbrevToFlagSequence( const char* abbseq, char delim)
+{
+   // convert seqhis string eg "TO SR SA" into bigint 0x8ad
+
+   std::vector<std::string> elem ; 
+   BStr::split(elem, abbseq,  delim ); 
+
+   unsigned long long seqhis = 0 ; 
+   for(unsigned i=0 ; i < elem.size() ; i++)
+   {
+       unsigned flag = AbbrevToFlag( elem[i].c_str() );
+       unsigned bitpos = BitPos(flag) ; 
+       unsigned long long shift = i*4 ;  
+       seqhis |= ( bitpos << shift )  ; 
+   }   
+   return seqhis ; 
+}
+
+
+
+/**
+
+OpticksFlags::AbbrevToFlagValSequence
+--------------------------------------
+
+Convert seqmap string into two bigints, 
+map values are 1-based, zero signifies None.
+
+=====================  =============  ===========
+input seqmap             seqhis         seqval 
+=====================  =============  ===========
+"TO:0 SR:1 SA:0"          0x8ad          0x121
+"TO:0 SC: SR:1 SA:0"      0x8a6d        0x1201
+=====================  =============  ===========
+ 
+**/
+
+void OpticksFlags::AbbrevToFlagValSequence( unsigned long long& seqhis, unsigned long long& seqval, const char* seqmap, char edelim)
+{
+   seqhis = 0ull ; 
+   seqval = 0ull ; 
+
+   std::vector<std::pair<std::string, std::string> > ekv ; 
+   const char* kvdelim=":" ; 
+   BStr::ekv_split( ekv, seqmap, edelim, kvdelim );
+
+   for(unsigned i=0 ; i < ekv.size() ; i++ ) 
+   { 
+       unsigned long long ishift = i*4 ; 
+       std::string skey = ekv[i].first ; 
+       std::string sval = ekv[i].second ; 
+
+       unsigned flag = AbbrevToFlag( skey.c_str() );
+       unsigned bitpos = BitPos(flag) ; 
+
+       unsigned val1 = sval.empty() ? 0 : 1u + BStr::atoi( sval.c_str() ) ;
+ 
+       seqhis |= ( bitpos << ishift )  ; 
+       seqval |= ( val1 << ishift )  ; 
+
+       LOG(debug)
+                   << "[" 
+                   <<  skey
+                   << "] -> [" 
+                   <<  sval << "]" 
+                   << ( sval.empty() ? "EMPTY" : "" )
+                   << " val1 " << val1 
+                    ; 
+    }
+
+}
 
 
 
 
+unsigned OpticksFlags::PointVal1( const unsigned long long& seqval , unsigned bitpos )
+{
+    return (seqval >> bitpos*4) & 0xF ; 
+}
+
+
+unsigned OpticksFlags::PointFlag( const unsigned long long& seqhis , unsigned bitpos )
+{
+    unsigned long long f = (seqhis >> bitpos*4) & 0xF ; 
+    unsigned flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
+    return flg ; 
+}
+
+const char* OpticksFlags::PointAbbrev( const unsigned long long& seqhis , unsigned bitpos )
+{
+    unsigned flg = PointFlag(seqhis, bitpos );
+    return Abbrev(flg);     
+}
 
 
 
@@ -247,6 +360,11 @@ unsigned int OpticksFlags::SourceCode(const char* type)
 
 
 
+
+
+
+
+
 OpticksFlags::OpticksFlags(const char* path) 
     :
     m_index(NULL)
@@ -284,21 +402,30 @@ void OpticksFlags::save(const char* idpath)
 
 Index* OpticksFlags::parseFlags(const char* path)
 {
-    typedef std::pair<unsigned int, std::string>  upair_t ;
-    typedef std::vector<upair_t>                  upairs_t ;
+    typedef std::pair<unsigned, std::string>  upair_t ;
+    typedef std::vector<upair_t>              upairs_t ;
     upairs_t ups ;
     BRegex::enum_regexsearch( ups, path ); 
 
     const char* reldir = NULL ; 
     Index* index = new Index("GFlags", reldir);
-    for(unsigned int i=0 ; i < ups.size() ; i++)
+    for(unsigned i=0 ; i < ups.size() ; i++)
     {
         upair_t p = ups[i];
-        unsigned int mask = p.first ;
-        unsigned int bitpos = BBit::ffs(mask);  // first set bit, 1-based bit position
-        unsigned int xmask = 1 << (bitpos-1) ; 
+        unsigned mask = p.first ;
+        unsigned bitpos = BBit::ffs(mask);  // first set bit, 1-based bit position
+        unsigned xmask = 1 << (bitpos-1) ; 
         assert( mask == xmask);
-        index->add( p.second.c_str(), bitpos );
+
+        const char* key = p.second.c_str() ;
+
+        LOG(debug) << " key " << std::setw(20) << key 
+                   << " bitpos " << bitpos 
+                   ;
+
+        index->add( key, bitpos );
+   
+        //  OpticksFlagsTest --OKCORE debug 
     }
     return index ; 
 }

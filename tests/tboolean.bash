@@ -1250,6 +1250,11 @@ $FUNCNAME
 * notes/issues/tboolean-zsphere1-zsphere2-discrep.rst
 
 
+automated NCSGIntersect check::
+
+   tboolean-;tboolean-zsphere1-a --dbgseqhismap "TO:0,SR:1,SA:0"
+
+
 eyeball the simulations::
 
    # orthographic (d-key), point photons (p-key several times), mat1 coloring (m-key several times) gives a precise view of whats happening 

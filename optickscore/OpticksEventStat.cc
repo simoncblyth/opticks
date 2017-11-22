@@ -11,6 +11,8 @@
 
 RecordsNPY* OpticksEventStat::CreateRecordsNPY(OpticksEvent* evt) // static
 {
+    LOG(error) << "OpticksEventStat::CreateRecordsNPY start" ; 
+
     if(!evt || evt->isNoLoad()) return NULL ; 
 
     Opticks* ok = evt->getOpticks();
@@ -34,6 +36,7 @@ RecordsNPY* OpticksEventStat::CreateRecordsNPY(OpticksEvent* evt) // static
               ;
 
     evt->setRecordsNPY(rec);
+    LOG(error) << "OpticksEventStat::CreateRecordsNPY done" ; 
     return rec ; 
 } 
 

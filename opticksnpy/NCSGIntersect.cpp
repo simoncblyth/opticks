@@ -73,9 +73,6 @@ std::string NCSGIntersect::desc_time(unsigned idx, const char* label) const
 } 
 
 
-
-
-
 void NCSGIntersect::add(unsigned idx, const glm::vec4& post )
 {
     assert( idx < 16 ) ; 
@@ -92,24 +89,24 @@ void NCSGIntersect::add(unsigned idx, const glm::vec4& post )
         dist.x = sd ;    // min
         dist.y = sd ;    // max
         dist.z = sd ;    // avg
-        dist.w  = 0 ;    // spare
+        dist.w = sd ;    // spare
 
         time.x = td ;    // min
         time.y = td ;    // max
         time.z = td ;    // cma  
-        time.w  = 0 ;    // spare
+        time.w = td ;    // spare
     }
     else
     {
         dist.x = sd < dist.x ? sd : dist.x ; 
         dist.y = sd > dist.y ? sd : dist.y ; 
         dist.z = CMA( dist.z , sd ,  n  ) ;  
-        dist.w = 0. ; 
+        dist.w = dist.z ;  // repeat to avoid diff checking complications
 
         time.x = td < time.x ? td : time.x ; 
         time.y = td > time.y ? td : time.y ; 
         time.z = CMA( time.z , td ,  n  ) ;  
-        time.w = 0. ; 
+        time.w = time.z ; 
     }
     n++ ; 
 

@@ -19,6 +19,20 @@
 #include "PLOG.hh"
 
 
+
+void BStr::rtrim(std::string& s )
+{
+    boost::trim_right(s);
+}
+
+
+bool BStr::HasChar(const std::string& s, char c)
+{
+    return s.find(c) != std::string::npos ; 
+}
+
+
+
 bool BStr::StartsWith(const char* s, const char* q)
 {
     return boost::starts_with(s, q);
@@ -113,6 +127,9 @@ char* BStr::afterLastOrAll(const char* orig, char delim)
     const char* name = p && !lastchar ? p + 1 : orig ; 
     return strdup(name) ;
 }
+
+
+
 
 
 const char* BStr::ctoa( char c )

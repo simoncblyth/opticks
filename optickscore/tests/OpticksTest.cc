@@ -67,6 +67,36 @@ void test_getMaterialMap(Opticks* ok)
 }
 
 
+void test_getDbgSeqhisMap(Opticks* ok)
+{
+     unsigned long long seqhis(0) ;
+     unsigned long long seqval(0) ;
+
+     const std::string& dbgseqhismap = ok->getDbgSeqhisMapString();
+     bool has_dbgseqhismap = ok->getDbgSeqhisMap(seqhis, seqval);
+
+     LOG(info) 
+           << " dbgseqhismap " << dbgseqhismap
+           << " has: " << ( has_dbgseqhismap ? "Y" : "N" )
+           ;
+
+     if(has_dbgseqhismap)
+     {
+         LOG(info)
+               << " seqhis " << std::setw(16) << std::hex << seqhis << std::dec 
+               << " seqval " << std::setw(16) << std::hex << seqval << std::dec 
+               ;
+     }
+}
+/*
+    OpticksTest --dbgseqhismap "TO:0 SR:1 SA:0" 
+    OpticksTest --dbgseqhismap "TO:0,SR:1,SA:0" 
+    OpticksTest --dbgseqhismap "TO:0,SR:1,SA:0" 
+    OpticksTest --dbgseqhismap "TO:0 SR:1 SA:0" 
+    OpticksTest --dbgseqhismap "TO:0 SC: SR:1 SA:0" 
+*/
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc,argv);
@@ -83,11 +113,16 @@ int main(int argc, char** argv)
     ok.Summary();
 
     LOG(info) << "OpticksTest::main aft configure" ;
- 
+
+    /*
     test_MaterialSequence();  
     test_getDAEPath(&ok);  
     test_getGDMLPath(&ok);  
     test_getMaterialMap(&ok);  
+    */
+
+    test_getDbgSeqhisMap(&ok);
+
 
     return 0 ;
 }
