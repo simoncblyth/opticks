@@ -9,19 +9,19 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH}
 
 include(EnvBuildOptions)
 
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
+find_package(OpticksGLEW REQUIRED)
+find_package(OpticksGLFW REQUIRED)
 
-message("ImGui.GLEW_INCLUDE_DIRS : ${GLEW_INCLUDE_DIRS}")
-message("ImGui.GLFW_INCLUDE_DIRS : ${GLFW_INCLUDE_DIRS}")
+message("ImGui.OpticksGLEW_INCLUDE_DIRS : ${OpticksGLEW_INCLUDE_DIRS}")
+message("ImGui.OpticksGLFW_INCLUDE_DIRS : ${OpticksGLFW_INCLUDE_DIRS}")
 
 
 set(IMGUI_DEFINITIONS
 )
 
 set(LIBRARIES
-   ${GLEW_LIBRARIES} 
-   ${GLFW_LIBRARIES}
+   ${OpticksGLEW_LIBRARIES} 
+   ${OpticksGLFW_LIBRARIES}
 )
 
 if(APPLE)
@@ -47,7 +47,7 @@ if(UNIX AND NOT APPLE)
 
     set( LIBRARIES 
                ${LIBRARIES} 
-               ${GLFW_LIBRARIES} 
+               ${OpticksGLFW_LIBRARIES} 
                ${OpenGL_LIBRARY}
                )
 endif(UNIX AND NOT APPLE)
@@ -90,13 +90,13 @@ set(INCLUDE_DIRS
    ${CMAKE_CURRENT_BINARY_DIR}
 
    ${ImGui_SOURCE_DIR}/examples/opengl3_example
-   ${GLEW_INCLUDE_DIRS} 
-   ${GLFW_INCLUDE_DIRS} 
+   ${OpticksGLEW_INCLUDE_DIRS} 
+   ${OpticksGLFW_INCLUDE_DIRS} 
 )
 
 set(DEFINITIONS
-   ${GLEW_DEFINITIONS}
-   ${GLFW_DEFINITIONS}
+   ${OpticksGLEW_DEFINITIONS}
+   ${OpticksGLFW_DEFINITIONS}
    ${IMGUI_DEFINITIONS}
 )
 
@@ -138,7 +138,7 @@ install(FILES ${HEADERS} DESTINATION externals/include/${name})
 
 ## slightly funny to have the externals prefix here... but 
 ## this is because are using the input prefix to 
-## find the GLEW and GLFW headers 
+## find the OpticksGLEW and OpticksGLFW headers 
 
 
 ## getting the example to build entails converting from gl3w to glew 

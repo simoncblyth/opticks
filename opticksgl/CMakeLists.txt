@@ -30,8 +30,8 @@ string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 find_package(PLog REQUIRED)
 find_package(OpticksBoost REQUIRED)
 find_package(GLM  REQUIRED)
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
+find_package(OpticksGLEW REQUIRED)
+find_package(OpticksGLFW REQUIRED)
 
 
 find_package(SysRap REQUIRED)
@@ -61,8 +61,8 @@ include_directories(
     ${SysRap_INCLUDE_DIRS} 
     ${BoostRap_INCLUDE_DIRS} 
 
-    ${GLEW_INCLUDE_DIRS} 
-    ${GLFW_INCLUDE_DIRS} 
+    ${OpticksGLEW_INCLUDE_DIRS} 
+    ${OpticksGLFW_INCLUDE_DIRS} 
     ${OGLRap_INCLUDE_DIRS}
 
     ${GLM_INCLUDE_DIRS} 
@@ -91,8 +91,8 @@ set(LIBRARIES
       ${SysRap_LIBRARIES} 
       ${BoostRap_LIBRARIES} 
 
-      ${GLEW_LIBRARIES}
-      ${GLFW_LIBRARIES}
+      ${OpticksGLEW_LIBRARIES}
+      ${OpticksGLFW_LIBRARIES}
       ${OGLRap_LIBRARIES}
 
       ${GLM_LIBRARIES}
@@ -118,8 +118,8 @@ add_definitions(
     ${SysRap_DEFINITIONS} 
     ${BoostRap_DEFINITIONS} 
 
-    ${GLEW_DEFINITIONS}
-    ${GLFW_DEFINITIONS}
+    ${OpticksGLEW_DEFINITIONS}
+    ${OpticksGLFW_DEFINITIONS}
     ${OGLRap_DEFINITIONS}
 
     ${GLM_DEFINITIONS}

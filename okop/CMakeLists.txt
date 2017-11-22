@@ -26,7 +26,7 @@ find_package(OptiXRap REQUIRED)
 find_package(CUDARap REQUIRED)
 find_package(ThrustRap REQUIRED)
 
-# NB **NO OpenGL/GLEW/GLFW** 
+# NB **NO OpenGL/OpticksGLEW/OpticksGLFW** 
 #    use opticksgl- not opticksop- for viz things 
 
 include_directories(

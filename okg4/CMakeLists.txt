@@ -156,26 +156,26 @@ set(GEOMETRY_DEFINITIONS
 
 ########### OPENGL #####
 
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
+find_package(OpticksGLEW REQUIRED)
+find_package(OpticksGLFW REQUIRED)
 find_package(ImGui REQUIRED)
 find_package(OGLRap REQUIRED)
 
 set(OPENGL_INCLUDES 
-   ${GLEW_INCLUDE_DIRS} 
-   ${GLFW_INCLUDE_DIRS} 
+   ${OpticksGLEW_INCLUDE_DIRS} 
+   ${OpticksGLFW_INCLUDE_DIRS} 
    ${ImGui_INCLUDE_DIRS}
    ${OGLRap_INCLUDE_DIRS} 
 )
 set(OPENGL_LIBRARIES 
-   ${GLEW_LIBRARIES}
-   ${GLFW_LIBRARIES}
+   ${OpticksGLEW_LIBRARIES}
+   ${OpticksGLFW_LIBRARIES}
    ${ImGui_LIBRARIES}
    ${OGLRap_LIBRARIES}
 )
 set(OPENGL_DEFINITIONS
-   ${GLEW_DEFINITIONS}
-   ${GLFW_DEFINITIONS}
+   ${OpticksGLEW_DEFINITIONS}
+   ${OpticksGLFW_DEFINITIONS}
    ${ImGui_DEFINITIONS}
    ${OGLRap_DEFINITIONS}
 )

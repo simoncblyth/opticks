@@ -5,8 +5,8 @@ project(${name})
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(GLEW REQUIRED)
-find_package(GLFW REQUIRED)
+find_package(OpticksGLEW REQUIRED)
+find_package(OpticksGLFW REQUIRED)
 find_package(GLM  REQUIRED)
 find_package(PLog REQUIRED) 
 find_package(OpticksBoost REQUIRED) 
@@ -25,8 +25,8 @@ set(INCLUDE_DIRS
    ${CMAKE_CURRENT_SOURCE_DIR}
    ${CMAKE_CURRENT_BINARY_DIR}/inc
 
-   ${GLEW_INCLUDE_DIRS} 
-   ${GLFW_INCLUDE_DIRS} 
+   ${OpticksGLEW_INCLUDE_DIRS} 
+   ${OpticksGLFW_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${GGeo_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
@@ -48,8 +48,8 @@ configure_file( Config.hh.in inc/Config.hh )
 
 
 set(DEFINITIONS
-   ${GLEW_DEFINITIONS}
-   ${GLFW_DEFINITIONS}
+   ${OpticksGLEW_DEFINITIONS}
+   ${OpticksGLFW_DEFINITIONS}
    ${GGeo_DEFINITIONS}
    ${OpticksCore_DEFINITIONS}
    ${OpticksGeometry_DEFINITIONS}
@@ -62,8 +62,8 @@ set(DEFINITIONS
 )
 
 set(LIBRARIES
-   ${GLEW_LIBRARIES}
-   ${GLFW_LIBRARIES}
+   ${OpticksGLEW_LIBRARIES}
+   ${OpticksGLFW_LIBRARIES}
    ${OpticksCore_LIBRARIES}
    ${GGeo_LIBRARIES}
    ${PLog_LIBRARIES}

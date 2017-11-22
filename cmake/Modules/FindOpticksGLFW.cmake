@@ -1,13 +1,13 @@
 
 
-set(GLFW_PREFIX "${OPTICKS_PREFIX}/externals")
+set(OpticksGLFW_PREFIX "${OPTICKS_PREFIX}/externals")
 
 # remove glfw3 as causes to find system static lib
-find_library( GLFW_LIBRARY 
+find_library( OpticksGLFW_LIBRARY 
               NAMES glfw glfw3dll
-              PATHS ${GLFW_PREFIX}/lib )
+              PATHS ${OpticksGLFW_PREFIX}/lib )
 
-set( GLFW_LIBRARIES ${GLFW_LIBRARY} )
+set( OpticksGLFW_LIBRARIES ${OpticksGLFW_LIBRARY} )
 
 if(APPLE)
     find_library( Cocoa_LIBRARY NAMES Cocoa )
@@ -16,8 +16,8 @@ if(APPLE)
     find_library( CoreFoundation_LIBRARY NAMES CoreFoundation )
     find_library( CoreVideo_LIBRARY NAMES CoreVideo )
 
-    set( GLFW_LIBRARIES 
-               ${GLFW_LIBRARIES} 
+    set( OpticksGLFW_LIBRARIES 
+               ${OpticksGLFW_LIBRARIES} 
                ${Cocoa_LIBRARY}
                ${OpenGL_LIBRARY}
                ${IOKit_LIBRARY}
@@ -25,10 +25,10 @@ if(APPLE)
                ${CoreVideo_LIBRARY} )
 endif(APPLE)
 
-set(GLFW_INCLUDE_DIRS "${GLFW_PREFIX}/include")
-set(GLFW_DEFINITIONS "")
+set(OpticksGLFW_INCLUDE_DIRS "${OpticksGLFW_PREFIX}/include")
+set(OpticksGLFW_DEFINITIONS "")
 
-#message("${name}.GLFW_PREFIX    : ${GLFW_PREFIX} ")
-#message("${name}.GLFW_LIBRARIES : ${GLFW_LIBRARIES} ")
+#message("${name}.OpticksGLFW_PREFIX    : ${OpticksGLFW_PREFIX} ")
+#message("${name}.OpticksGLFW_LIBRARIES : ${OpticksGLFW_LIBRARIES} ")
 
 
