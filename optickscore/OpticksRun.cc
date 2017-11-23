@@ -32,6 +32,10 @@ std::string OpticksRun::brief() const
 }
 
 
+
+// OpticksRun::createEvent is invoked during propagate of the high level mgrs 
+// (OKG4Mgr::propagate, OKMgr::propagate) long after geometry has been loaded 
+
 void OpticksRun::createEvent(unsigned tagoffset)
 {
     m_ok->setTagOffset(tagoffset);
@@ -71,9 +75,12 @@ void OpticksRun::createEvent(unsigned tagoffset)
 
 void OpticksRun::annotateEvent()
 {
+
+    // these are set into resource by GGeoTest::initCreateCSG during geometry loading
     OpticksResource* resource = m_ok->getResource();
     const char* testcsgpath = resource->getTestCSGPath();
     const char* geotestconfig = resource->getTestConfig();
+
     LOG(info) << "OpticksRun::annotateEvent"
               << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
               << " geotestconfig " << ( geotestconfig ? geotestconfig : "-" )

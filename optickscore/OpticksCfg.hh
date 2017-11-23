@@ -26,11 +26,13 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getExportConfig();
      const std::string& getTorchConfig();
 
-     const std::string& getG4GunConfig();
      const std::string& getG4IniMac();
      const std::string& getG4RunMac();
      const std::string& getG4FinMac();
-     const std::string& getAnaKey();
+
+     const std::string& getG4GunConfig() const ;
+     const std::string& getAnaKey() const ;
+     const std::string& getAnaKeyArgs() const ;
 
      const std::string& getTestConfig();
      const std::string& getStateTag();
@@ -124,6 +126,7 @@ private:
      std::string m_g4runmac ;
      std::string m_g4finmac ;
      std::string m_anakey ;
+     std::string m_anakeyargs ;
 
      std::string m_testconfig ;
      std::string m_state_tag ;

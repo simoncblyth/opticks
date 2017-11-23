@@ -16,6 +16,7 @@ class BRAP_API BStr {
   public:
 
      static void rtrim(std::string& s );
+     static void replace_all(std::string& s, const std::string& fr, const std::string& to ) ;
      static bool HasChar(const std::string& s, char c);
 
      static int  atoi( const char* str, int fallback=0 );

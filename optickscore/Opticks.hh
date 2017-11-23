@@ -237,9 +237,12 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* getCfg();
        const char*          getRenderMode();
        const char*          getDbgCSGPath();
-
-       std::string          getG4GunConfig();
-       std::string          getAnaKey();
+   public:
+       // from cfg
+       const char*          getG4GunConfig() const ;
+       const char*          getAnaKey() const ;
+       const char*          getAnaKeyArgs() const ;
+   public:
        OpticksResource*     getResource(); 
        OpticksRun*          getRun(); 
    public:

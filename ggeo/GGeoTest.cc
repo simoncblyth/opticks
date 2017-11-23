@@ -95,9 +95,6 @@ int GGeoTest::getErr() const
 
 
 
-
-
-
 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis) 
     :  
     m_ok(ok),
@@ -127,7 +124,6 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     LOG(fatal) << "GGeoTest::GGeoTest" ; 
 
     assert(m_basis); 
-
 
     init();
 }
@@ -172,8 +168,6 @@ GMergedMesh* GGeoTest::initCreateCSG()
 
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
     m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
-
-
 
     if(!m_csglist) return NULL ; 
 

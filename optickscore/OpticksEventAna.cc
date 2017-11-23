@@ -77,7 +77,6 @@ void OpticksEventAna::initSeqMap()
 }
 
 
-
 void OpticksEventAna::countPointExcursions()
 {
     for(unsigned i=0 ; i < m_pho_num ; i++)
@@ -99,27 +98,19 @@ void OpticksEventAna::countPointExcursions()
 }
 
 
-
-
 void OpticksEventAna::checkPointExcursions()
 {
     if(!m_seqmap_has) return ; 
 
-     const std::string& seqmap = m_ok->getSeqMapString();
+    const std::string& seqmap = m_ok->getSeqMapString();
 
-     LOG(info) 
-           << " seqmap " << seqmap
-           ;
-
-     LOG(info)
-          << " seqmap_his " << std::setw(16) << std::hex << m_seqmap_his << std::dec 
-          << " seqmap_val " << std::setw(16) << std::hex << m_seqmap_val << std::dec 
-          ;
-
-
+    LOG(info)
+        << " seqmap " << seqmap
+        << " seqmap_his " << std::setw(16) << std::hex << m_seqmap_his << std::dec 
+        << " seqmap_val " << std::setw(16) << std::hex << m_seqmap_val << std::dec 
+        ;
 
     unsigned num_excursions = 0 ; 
-
 
     glm::vec4 xdist0(-0.1);  // kludge hard duplication of emitconfig.deltashift 0.1mm with emit=-1 inwards photons
     glm::vec4 xdist1(0.);    
@@ -129,9 +120,9 @@ void OpticksEventAna::checkPointExcursions()
         const char* abbrev = OpticksFlags::PointAbbrev(m_seqmap_his, p );
         unsigned val1 = OpticksFlags::PointVal1(m_seqmap_val, p );
 
-        if(val1 == 0 ) continue ; 
-
+        if(val1 == 0 ) continue ;  // val1 is 1-based index, 0 meaning None
         unsigned tree = val1 - 1 ;
+
         const NCSGIntersect& csgi = m_csgi[tree] ; 
         unsigned count = csgi._count[p] ;
 
@@ -143,7 +134,6 @@ void OpticksEventAna::checkPointExcursions()
 
         bool excursion = df > m_epsilon ;
         if(excursion) num_excursions++ ; 
-
  
         std::cout 
              << " p " << std::setw(2) << p  
@@ -158,7 +148,7 @@ void OpticksEventAna::checkPointExcursions()
              << std::endl ; 
              ;
 
-        assert( count > 0 ); 
+        //assert( count > 0 ); 
 
     }   
 

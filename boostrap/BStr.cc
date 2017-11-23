@@ -25,7 +25,11 @@ void BStr::rtrim(std::string& s )
     boost::trim_right(s);
 }
 
-
+void BStr::replace_all(std::string& s, const std::string& fr, const std::string& to )
+{
+    boost::replace_all(s, fr, to);
+} 
+ 
 bool BStr::HasChar(const std::string& s, char c)
 {
     return s.find(c) != std::string::npos ; 

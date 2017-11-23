@@ -275,6 +275,20 @@ class AB(object):
     dirty = property(_get_dirty, _set_dirty)
 
 
+    c2p = property(lambda self:dict(map(lambda _:[_.title,_.c2p], self.tabs )))
+    c2p_max = property(lambda self:max(self.c2p.values()))
+
+    def _get_RC(self):
+        c2p = self.c2p
+        c2p_max = max(c2p.values())
+        rc = 0 if c2p_max < self.ok.c2max else 77      # NB RC are truncated beyond 0xff see: SSysTest
+
+        print "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) 
+
+        return rc 
+    RC = property(_get_RC)
+
+
     def _get_cf(self, ana):
         """
         Changing *sel* property invokes _set_sel 

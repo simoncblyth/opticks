@@ -254,6 +254,18 @@ void test_ekv_split()
 
 
 
+void test_replace_all()
+{
+    std::string s = "--c2max_0.5" ; 
+    BStr::replace_all(s, "_", " ");
+
+    LOG(info) << s  ;
+
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -272,9 +284,10 @@ int main(int argc, char** argv)
     test_index_first();
     test_index_all();
     test_DAEIdToG4();  
+    test_ekv_split();
 */
 
-    test_ekv_split();
+    test_replace_all();
 
     return 0 ; 
 }

@@ -33,6 +33,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_g4runmac(""),
        m_g4finmac(""),
        m_anakey(""),
+       m_anakeyargs(""),
        m_testconfig(""),
        m_state_tag(""),
        m_materialprefix("/dd/Materials/"),
@@ -398,6 +399,15 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("anakey",   boost::program_options::value<std::string>(&m_anakey), "string identifying an analysis configuration, often the invoking bash FUNCNAME stem, see OpticksAna " );
+   m_desc.add_options()
+       ("anakeyargs",   boost::program_options::value<std::string>(&m_anakeyargs), 
+            "Extra arguments for the anakey script, see OpticksAna." 
+            "As passing spaces thru bash scripts/commandline is problematic encode "
+            "spaces in the argument list with underscores, for example  "
+            "    --anakeyargs \"--c2max_0.5\"   "
+            "which is replaced with a space. " 
+      );
+
 
 
 
@@ -925,11 +935,7 @@ const std::string& OpticksCfg<Listener>::getTorchConfig()
     return m_torchconfig ;
 }
 
-template <class Listener>
-const std::string& OpticksCfg<Listener>::getG4GunConfig()
-{
-    return m_g4gunconfig ;
-}
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getG4IniMac()
@@ -947,11 +953,26 @@ const std::string& OpticksCfg<Listener>::getG4FinMac()
     return m_g4finmac ;
 }
 
+
+
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getAnaKey()
+const std::string& OpticksCfg<Listener>::getG4GunConfig() const 
+{
+    return m_g4gunconfig ;
+}
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnaKey() const 
 {
     return m_anakey ;
 }
+
+template <class Listener>
+const std::string& OpticksCfg<Listener>::getAnaKeyArgs() const 
+{
+    return m_anakeyargs ;
+}
+
 
 
 template <class Listener>

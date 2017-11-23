@@ -281,7 +281,9 @@ void Opticks::postpropagate()
 
 void Opticks::ana()
 {
+   LOG(error) << "Opticks::ana START" ; 
    m_ana->run();
+   LOG(error) << "Opticks::ana DONE" ; 
 }
 
 
@@ -1624,15 +1626,22 @@ bool Opticks::operator()(const char* name) const
 } 
 
 
-std::string Opticks::getAnaKey()
+const char* Opticks::getAnaKey() const 
 {
-    std::string s = m_cfg->getAnaKey();
-    return s ; 
+    const std::string& s = m_cfg->getAnaKey();
+    return s.empty() ? NULL : s.c_str() ; 
 }
-std::string Opticks::getG4GunConfig()
+const char* Opticks::getAnaKeyArgs() const 
 {
-    std::string s = m_cfg->getG4GunConfig();
-    return s ; 
+    std::string s = m_cfg->getAnaKeyArgs();
+    if(s.empty()) return NULL ; 
+    BStr::replace_all(s, "_", " ");
+    return strdup(s.c_str()) ; 
+}
+const char* Opticks::getG4GunConfig() const 
+{
+    const std::string& s = m_cfg->getG4GunConfig();
+    return s.empty() ? NULL : s.c_str() ; 
 }
 
 

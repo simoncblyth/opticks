@@ -3,6 +3,16 @@
 tboolean.py 
 =============================================
 
+
+
+
+::
+
+    ab.sel = "[TO] BT BT BT BT SA" 
+    hh = ab.hh
+
+
+
 """
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
@@ -17,17 +27,20 @@ if __name__ == '__main__':
     log.info(ok.brief)
 
     ab = AB(ok)
+
     print ab
-    print ab.a.metadata
-    print ab.a.metadata.csgmeta0
+    print "ab.a.metadata", ab.a.metadata
+    print "ab.a.metadata.csgmeta0", ab.a.metadata.csgmeta0
+
+
+    rc = ab.RC 
 
     if not ok.ipython:
         log.info("early exit as non-interactive")
-        sys.exit(0)
-
-    #ab.sel = "[TO] BT BT BT BT SA" 
-    #
-    #hh = ab.hh
+        sys.exit(rc)
+    else:
+        pass
+    pass
 
     
 

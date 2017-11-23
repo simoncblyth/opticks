@@ -44,13 +44,34 @@ tboolean-name-ip
     which jumps into interactive python with the event loaded
 
 
+
+WIP : Automation of these tests
+----------------------------------
+
+* TODO: test compute mode operation, verify same as interop, 
+  use compute mode for test harness running of lists of tests 
+
+* TODO: rationalize where to get NGeoTestConfig from, 
+  when using loaded test evt, must get from event, 
+  when creating the event need to get from Opticks ?
+
+  Perhaps can make the accessors from Opticks private and always
+  set it onto the event in Opticks::makeEvent ?
+
+  Need this for removing the emitconfig.deltashift kludge in OpticksEventAna
+
+* IDEA : perhaps a op.py that parses arguments and writes a config directory of 
+  json for an Opticks invokation... with the path to the directory being 
+  taken as a standard Opticks argument.
+
+
 Configuring Photon Sources 
 -----------------------------
 
 
 There are two approaches, the older manual torchconfig which is 
 defined separately from geometry and the newer more automated emitconfig,
-which is attaches emission to solids in the geometry.
+which attaches emission properties to solids in the geometry.
 
 emitconfig
    Emission of photons from the surface of any CSG primitive is configured 
@@ -64,6 +85,7 @@ emitconfig
  
    The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
    eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
+   (This is not yet implemented for all primitives, eg cone trips and assert) 
 
 
 Relevant Opticks Options
@@ -86,6 +108,17 @@ Relevant Opticks Options
 --testauto
     modifies test geometry emitconfig and boundaries to simplify photon histories
     allowing seqmap asserts to check NCSGIntersect positions, see below section for details
+
+--anakey
+    key identifies a python script to analyse the created events, this is typically 
+    used with --okg4 to make chisq comparisons of bi-simulated Opticks and G4 events, 
+    the script is run by OpticksAna and communicates with Opticks C++ just via
+    the return code (0x0 - 0xFF)
+
+--anakeyargs
+    provides extra args to the anakey tboolean.py script which is run internally by OpticksAna
+    for example to modify the chisq cut  "--c2max_0.5"  
+    (note the encoding of spaces with underscores)
 
 
 
@@ -421,9 +454,6 @@ tboolean-dbgseqhis()
 }
 
 
-
-
-
 tboolean-info(){ cat << EOI
 
 $FUNCNAME
@@ -436,8 +466,6 @@ TORCHCONFIG          : $TORCHCONFIG
 tboolean-testname    : $(tboolean-testname)
 tboolean-testconfig  : $(tboolean-testconfig)
 tboolean-torchconfig : $(tboolean-torchconfig)
-
-
 
 EOI
 }
@@ -471,6 +499,7 @@ tboolean--(){
             --torch --torchconfig "$torchconfig" \
             --torchdbg \
             --tag $(tboolean-tag) --cat $testname \
+            --anakey tboolean \
             --save 
 }
 
@@ -617,6 +646,8 @@ tboolean-box-notes(){ cat << EON
 
 $FUNCNAME
 ============================
+
+* PASSED tboolean-;tboolean-box --okg4 --testauto
 
 * FIXED notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
   "TO BR SA" was always giving incorrect 1st material in G4 recording 
@@ -774,6 +805,8 @@ tboolean-cone-notes(){ cat << EON
 $FUNCNAME
 =======================
 
+* PASSED : tboolean-;tboolean-cone --okg4 --testauto
+
 * CMaker::ConvertPrimitive requires z symmetry for the cone section
   assert( z2 > z1 && z2 == -z1 );
 
@@ -817,6 +850,9 @@ tboolean-prism-notes(){ cat << EON
 $FUNCNAME
 ==========================
 
+* PASSED : tboolean-;tboolean-prism --okg4 --testauto
+
+  * but stats not great, as the prism is too small compared to container
 
 * unlike other solids, need to manually set bbox for solids stored as a 
   set of planes in NConvexPolyhedron as cannot easily derive the bbox 
@@ -862,6 +898,8 @@ tboolean-icosahedron-notes(){ cat << EON
 
 $FUNCNAME
 ==========================
+
+* PASSED : tboolean-;tboolean-icosahedron --okg4 --testauto
 
 * tboolean-;tboolean-icosahedron-p seq match 
 
@@ -1281,6 +1319,19 @@ seqmap NCSGIntersect checking::
 
    tboolean-;tboolean-zsphere0 --okg4 --testauto 
    tboolean-;tboolean-zsphere0-a
+
+
+* observe col:pol1 rec:vector "circular" shape 
+  premonition prior to first bounce 
+  
+  * premonitions are expected/seen with col:pol2/mat2/flag2 
+    but not expected for col:pol1  
+
+  * it looks like the length of the vector is depending on
+    something in the future, giving shorter vec for the circle
+    of photons that is about to BR 
+ 
+
 
 
 EON
