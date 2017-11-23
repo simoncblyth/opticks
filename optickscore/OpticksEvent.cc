@@ -1564,7 +1564,18 @@ void OpticksEvent::saveDomains()
 
 void OpticksEvent::save()
 {
+    if(!CanAnalyse(this))
+    {
+        LOG(error) << "skip as CanAnalyse returns false " ; 
+        // This avoids writing the G4 evt domains, when running without --okg4 
+        // that leads to unhealthy mixed timestamp event loads in evt.py. 
+        // Different timestamps for ab.py between A and B 
+        // is tolerated, although if too much time divergence is to be expected.
+        return ; 
+    }
+
     (*m_timer)("_save");
+
 
     LOG(info) << description("OpticksEvent::save") << getShapeString() << " dir " << m_event_spec->getDir() ;    
 

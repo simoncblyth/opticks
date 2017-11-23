@@ -121,13 +121,25 @@ Relevant Opticks Options
     (note the encoding of spaces with underscores)
 
 
-
 testauto details
 -------------------
 
+Note that testauto operates by changing boundaries to simplify 
+the photon histories in order to allow intersect SDF  
+(signed distance function) geometry checks.  
+Because of this simplification the chisq comparisons are 
+somewhat of a "cheat". Thus to validate it is necessary 
+to do both with and without "--testauto" runs.
+The without being in order to check photon histories. 
+
+TODO: the intersects positions of any seqmap matches are still being
+checked in non testauto, but the stats are probably going to be zero. 
+Perhaps switch off ? 
+
+
+
 Example::
 
-    tboolean-;tboolean-zsphere0 --testauto -D
     tboolean-;tboolean-zsphere0 --okg4 --testauto -D
 
     tboolean-;tboolean-zsphere0-a
@@ -2125,10 +2137,10 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-container = CSG("box", param=[0,0,0,1000], boundary="$(tboolean-container)", poly="MC", nx="20" )
+container = CSG("box", param=[0,0,0,400], boundary="$(tboolean-container)", poly="MC", nx="20" )
   
 radius = 200 
-inscribe = 1.3*radius/math.sqrt(3)
+inscribe = 1.3*radius/math.sqrt(3)    #  150.1110699
 
 box = CSG("box", param=[0,0,0,inscribe])
 
@@ -2140,6 +2152,32 @@ object = CSG("${1:-difference}", left=box, right=sph, boundary="$(tboolean-testo
 
 CSG.Serialize([container, object], args )
 EOP
+}
+
+
+tboolean-boxsphere-notes(){ cat << EON
+
+$FUNCNAME
+============================
+
+
+tboolean-;tboolean-bsu --okg4 --testauto 
+    PASS
+
+tboolean-;tboolean-bsd --okg4 
+    PASS-but-bizarre photon viz, as torchsource is outside container : TODO:FIX
+
+
+tboolean-;tboolean-bsd --okg4 --testauto 
+    PASS
+
+tboolean-;tboolean-bsi --okg4 --testauto 
+    PASS  
+
+* bsi was initially only just, but reducing container size pumped up stats of lower freq histories and brought into line
+
+
+EON
 }
 
 
