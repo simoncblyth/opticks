@@ -83,6 +83,11 @@ Relevant Opticks Options
 -D
     runs Opticks executable within debugger, lldb or gdb 
 
+--testauto
+    modifies test geometry emitconfig and boundaries to simplify photon histories
+    allowing seqmap asserts to check NCSGIntersect positions
+
+
 
 Other Options Useful for Debugging
 -------------------------------------

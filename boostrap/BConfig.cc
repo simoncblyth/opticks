@@ -35,7 +35,18 @@ void BConfig::parse()
 {
     if(!cfg) return ; 
 
-    BStr::ekv_split(ekv, cfg, edelim,  kvdelim );
+    int err = BStr::ekv_split(ekv, cfg, edelim,  kvdelim );
+    bool valid = err == 0 ; 
+
+    if(!valid)
+    {
+        LOG(fatal) << "BConfig::parse err from BStr::ekv_split "
+                   << " cfg [" << cfg  << "]" 
+                   ;
+    }
+    assert( valid );
+
+
 
     for(unsigned i=0 ; i < ekv.size() ; i++)
     {   

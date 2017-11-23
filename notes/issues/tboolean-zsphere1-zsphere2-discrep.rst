@@ -40,6 +40,49 @@ for single primitive in container the recipe is:
      
 
 
+testauto shakedown
+--------------------
+
+::
+
+    (lldb) p csg->m_meta
+    (NParameters *) $2 = 0x000000010c624850
+    (lldb) p *(csg->m_meta)
+    (NParameters) $3 = {
+      m_parameters = size=6 {
+        [0] = (first = "ctrl", second = "0")
+        [1] = (first = "emitconfig", second = "-1")
+        [2] = (first = "verbosity", second = "0")
+        [3] = (first = "resolution", second = "40")
+        [4] = (first = "emit", second = "-1")
+        [5] = (first = "poly", second = "IM")
+      }
+      m_lines = size=0 {}
+    }
+    (lldb) bt
+    * thread #1: tid = 0x6452a0, 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff8cc60866 libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff842fd35c libsystem_pthread.dylib`pthread_kill + 92
+        frame #2: 0x00007fff8b04db1a libsystem_c.dylib`abort + 125
+        frame #3: 0x00007fff8b0179bf libsystem_c.dylib`__assert_rtn + 321
+        frame #4: 0x0000000100375211 libBoostRap.dylib`BConfig::parse(this=0x000000010c63b850) + 497 at BConfig.cc:47
+        frame #5: 0x00000001009c6268 libNPY.dylib`NEmitConfig::NEmitConfig(this=0x000000010c63b810, cfg=0x000000010c63b540) + 1032 at NEmitConfig.cpp:34
+        frame #6: 0x00000001009c62ad libNPY.dylib`NEmitConfig::NEmitConfig(this=0x000000010c63b810, cfg=0x000000010c63b540) + 29 at NEmitConfig.cpp:35
+      * frame #7: 0x00000001009c6a57 libNPY.dylib`NEmitPhotonsNPY::NEmitPhotonsNPY(this=0x000000010c63b7d0, csg=0x000000010c623850, gencode=262144, emitdbg=false) + 135 at NEmitPhotonsNPY.cpp:23
+        frame #8: 0x00000001009c76d2 libNPY.dylib`NEmitPhotonsNPY::NEmitPhotonsNPY(this=0x000000010c63b7d0, csg=0x000000010c623850, gencode=262144, emitdbg=false) + 50 at NEmitPhotonsNPY.cpp:31
+        frame #9: 0x00000001023380df libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x000000010c63b760, hub=0x000000010a00f8e0) + 255 at OpticksGen.cc:37
+        frame #10: 0x000000010233820d libOpticksGeometry.dylib`OpticksGen::OpticksGen(this=0x000000010c63b760, hub=0x000000010a00f8e0) + 29 at OpticksGen.cc:43
+        frame #11: 0x00000001023322f2 libOpticksGeometry.dylib`OpticksHub::init(this=0x000000010a00f8e0) + 242 at OpticksHub.cc:188
+        frame #12: 0x0000000102332150 libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x000000010a00f8e0, ok=0x00000001097315a0) + 464 at OpticksHub.cc:164
+        frame #13: 0x00000001023323ad libOpticksGeometry.dylib`OpticksHub::OpticksHub(this=0x000000010a00f8e0, ok=0x00000001097315a0) + 29 at OpticksHub.cc:166
+        frame #14: 0x0000000104514bbb libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe1c0, argc=28, argv=0x00007fff5fbfe2a0) + 283 at OKG4Mgr.cc:30
+        frame #15: 0x0000000104514f53 libokg4.dylib`OKG4Mgr::OKG4Mgr(this=0x00007fff5fbfe1c0, argc=28, argv=0x00007fff5fbfe2a0) + 35 at OKG4Mgr.cc:41
+        frame #16: 0x00000001000132ee OKG4Test`main(argc=28, argv=0x00007fff5fbfe2a0) + 1486 at OKG4Test.cc:56
+        frame #17: 0x00007fff880d35fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+
 SMOKING GUN : G4Sphere with THETA RANGE IS CONICAL SECTOR NOT SEGMENT 
 ------------------------------------------------------------------------
 

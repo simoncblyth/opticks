@@ -101,7 +101,8 @@ int GGeoTest::getErr() const
 GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis) 
     :  
     m_ok(ok),
-    m_config(new GGeoTestConfig(ok->getTestConfig())),
+    m_config_(ok->getTestConfig()),
+    m_config(new GGeoTestConfig(m_config_)),
     m_verbosity(m_config->getVerbosity()),
     m_resource(ok->getResource()),
     m_dbgbnd(m_ok->isDbgBnd()),
@@ -168,7 +169,11 @@ GMergedMesh* GGeoTest::initCreateCSG()
 {
     assert(m_csgpath && "misconfigured");
     assert(strlen(m_csgpath) > 3 && "unreasonable csgpath strlen");  
+
     m_resource->setTestCSGPath(m_csgpath); // take note of path, for inclusion in event metadata
+    m_resource->setTestConfig(m_config_); // take note of config, for inclusion in event metadata
+
+
 
     if(!m_csglist) return NULL ; 
 
@@ -280,6 +285,11 @@ void GGeoTest::autoSetup(NCSGList* csglist)
     // use this via --testauto option together 
     // with the usual --test and --testconfig options
 
+    //  TODO: would be better for the config objs to come from 
+    //        lower place in dependency tree can then pass them down
+    //        to lower levels, 
+    //        for example this autoSetup could then be done within NCSGList 
+
     const char* autocontainer = m_config->getAutoContainer();
     const char* autoobject = m_config->getAutoObject();
     const char* autoemitconfig = m_config->getAutoEmitConfig();
@@ -304,22 +314,21 @@ void GGeoTest::autoSetup(NCSGList* csglist)
         NCSG* tree = csglist->getTree(i) ; 
         const char* origspec = tree->getBoundary();  
 
-        tree->setEmitconfig( autoemitconfig );
+        tree->setEmitConfig( autoemitconfig );
         tree->setEmit( i == 0 ? -1 : 0 );
         tree->setBoundary( i == 0 ? autocontainer : autoobject ) ;  
 
         const char* autospec = tree->getBoundary();  
-        
+        const char* autoemitconfig2 = tree->getEmitConfig() ; 
+       
         std::cout 
              << " i " << std::setw(3) << i 
              << " origspec " << std::setw(25) << origspec
              << " autospec " << std::setw(25) << autospec
+             << " autoemitconfig2 " << autoemitconfig2
              << std::endl 
              ;
- 
     }
-
-    //assert(0 && "hari-kari");
 }
 
 

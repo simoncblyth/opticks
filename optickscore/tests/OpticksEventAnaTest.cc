@@ -5,7 +5,6 @@ OpticksEventAnaTest
 Pulling together an evt and the NCSGList geometry 
 it came from, for intersect tests.
 
-
 **/
 
 #include "OKCORE_LOG.hh"

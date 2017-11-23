@@ -28,8 +28,8 @@ class NPY_API NEmitPhotonsNPY
       NCSG*         m_csg ; 
       bool          m_emitdbg ; 
       int           m_emit ; 
-      const char*   m_cfg_ ;
-      NEmitConfig*  m_cfg  ;       
+      const char*   m_emitcfg_ ;
+      NEmitConfig*  m_emitcfg  ;       
       nnode*        m_root ; 
 
    private:

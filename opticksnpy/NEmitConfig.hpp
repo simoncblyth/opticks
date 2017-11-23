@@ -6,6 +6,15 @@ struct BConfig ;
 
 #include "NPY_API_EXPORT.hh"
 
+/**
+NEmitConfig
+=============
+
+Canonical m_emitcfg is ctor resident of NEmitPhotonsNPY.
+
+
+**/
+
 struct NPY_API NEmitConfig 
 {
     static const char* DEFAULT ; 

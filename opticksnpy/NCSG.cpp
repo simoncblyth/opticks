@@ -228,27 +228,30 @@ bool NCSG::is_uncoincide() const { return getMeta<int>("uncoincide","1") == 1 ; 
 
 
 
-bool NCSG::isEmit() const {  return emit() == 1 || emit() == -1 ;  }
-int NCSG::emit()   const {    return getMeta<int>("emit","0") ; }
+bool NCSG::isEmit() const 
+{  
+    int emit = getEmit() ;
+    return emit == 1 || emit == -1 ;
+}
 
-const char* NCSG::emitconfig() const 
+void NCSG::setEmit(int emit) // used by --testauto
+{
+    setMeta<int>("emit", emit);
+}
+int NCSG::getEmit() const 
+{   
+    return getMeta<int>("emit","0") ; 
+}
+
+void NCSG::setEmitConfig(const char* emitconfig)
+{
+    setMeta<std::string>("emitconfig", emitconfig );
+}
+const char* NCSG::getEmitConfig() const 
 { 
     std::string ec = getMeta<std::string>("emitconfig","") ;
     return ec.empty() ? NULL : strdup(ec.c_str()) ; 
 }
-
-
-
-// used by --testauto
-void NCSG::setEmit(int emit)
-{
-    setMeta<int>("emit", emit);
-}
-void NCSG::setEmitconfig(const char* emitconfig)
-{
-    setMeta<std::string>("emitconfig", emitconfig );
-}
-
 
 
 
@@ -263,7 +266,7 @@ std::string NCSG::meta() const
        << " soname " << soname() 
        << " isSkip " << isSkip()
        << " is_uncoincide " << is_uncoincide()
-       << " emit " << emit()
+       << " emit " << getEmit()
        ;
 
     return ss.str();

@@ -111,6 +111,7 @@ class GGEO_API GGeoTest : public GGeoBase {
 
     private:
        Opticks*         m_ok ; 
+       const char*      m_config_ ; 
        GGeoTestConfig*  m_config ; 
        unsigned         m_verbosity ;
        OpticksResource* m_resource ; 

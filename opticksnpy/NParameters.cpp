@@ -128,11 +128,19 @@ void NParameters::set(const char* name, T value)
 {
     std::string svalue = boost::lexical_cast<std::string>(value) ;
     bool found(false);
+    bool startswith(false);
 
     for(VSS::iterator it=m_parameters.begin() ; it != m_parameters.end() ; it++)
     {
         std::string npar  = it->first ; 
-        if( strncmp(npar.c_str(), name, strlen(name))==0)  // why startswith ?
+
+        bool match = startswith ?  
+                                   strncmp(npar.c_str(), name, strlen(name))==0 
+                                :
+                                   npar.compare(name)==0
+                                ;
+
+        if(match) 
         {
             std::string prior = it->second ; 
             LOG(debug) << "NParameters::set changing "

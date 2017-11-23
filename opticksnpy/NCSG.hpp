@@ -148,11 +148,11 @@ class NPY_API NCSG {
     public:
         // used by --testauto 
         void setEmit(int emit);  
-        void setEmitconfig(const char* emitconfig);  
+        void setEmitConfig(const char* emitconfig);  
     public:
-        bool isEmit() const ;
-        int emit() const ;
-        const char* emitconfig() const ;
+        bool        isEmit() const ;
+        int         getEmit() const ;
+        const char* getEmitConfig() const ;
     public:
         void dump(const char* msg="NCSG::dump");
         void dump_surface_points(const char* msg="NCSG::dump_surface_points", unsigned dmax=20) const ;

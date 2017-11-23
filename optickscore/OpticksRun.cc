@@ -73,15 +73,20 @@ void OpticksRun::annotateEvent()
 {
     OpticksResource* resource = m_ok->getResource();
     const char* testcsgpath = resource->getTestCSGPath();
+    const char* testconfig = resource->getTestConfig();
     LOG(info) << "OpticksRun::annotateEvent"
               << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
+              << " testconfig " << ( testconfig ? testconfig : "-" )
               ;
 
     if(testcsgpath)
-    {
-  
+    {  
          m_evt->setTestCSGPath(testcsgpath);
          m_g4evt->setTestCSGPath(testcsgpath);
+
+         assert( testconfig ); 
+         m_evt->setTestConfig(testconfig);
+         m_g4evt->setTestConfig(testconfig);
     }
 }
 void OpticksRun::resetEvent()

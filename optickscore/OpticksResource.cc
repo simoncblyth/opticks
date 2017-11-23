@@ -116,7 +116,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_default_medium(NULL),
        m_example_matnames(NULL),
        m_sensor_surface(NULL),
-       m_testcsgpath(NULL)
+       m_testcsgpath(NULL),
+       m_testconfig(NULL)
 
 {
     init();
@@ -448,15 +449,28 @@ void OpticksResource::assignDetectorName()
 
 
 
+
+// note taking from GGeoTest::initCreateCSG for inclusion in evt metadata
+
 void OpticksResource::setTestCSGPath(const char* testcsgpath)
 {
     m_testcsgpath = testcsgpath ? strdup(testcsgpath) : NULL ; 
 }
-
-const char* OpticksResource::getTestCSGPath()
+const char* OpticksResource::getTestCSGPath() const 
 {
     return m_testcsgpath  ;
 }
+void OpticksResource::setTestConfig(const char* testconfig)
+{
+    m_testconfig = testconfig ? strdup(testconfig) : NULL ; 
+}
+const char* OpticksResource::getTestConfig() const 
+{
+    return m_testconfig  ;
+}
+
+
+
 
 
 

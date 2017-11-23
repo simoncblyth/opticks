@@ -151,6 +151,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    private:
        std::string getTestCSGPath();
        void        setTestCSGPath(const char* testcsgpath);
+       std::string getTestConfig();
+       void        setTestConfig(const char* testconfig);
    public:
        std::string getNote();
        void        setNote(const char* note);

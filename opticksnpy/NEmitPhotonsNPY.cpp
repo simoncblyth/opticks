@@ -19,12 +19,12 @@ NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, bool emitdbg)
     :
     m_csg(csg),
     m_emitdbg(emitdbg),
-    m_emit(csg->emit()),
-    m_cfg_( csg->emitconfig() ),
-    m_cfg( new NEmitConfig( m_cfg_ )),
+    m_emit( csg->getEmit() ),
+    m_emitcfg_( csg->getEmitConfig() ),
+    m_emitcfg( new NEmitConfig( m_emitcfg_ )),
     m_root( csg->getRoot()),
-    m_photons(NPY<float>::make(m_cfg->photons, 4, 4)),
-    m_fabstep(new FabStepNPY(gencode, 1, m_cfg->photons)),
+    m_photons(NPY<float>::make(m_emitcfg->photons, 4, 4)),
+    m_fabstep(new FabStepNPY(gencode, 1, m_emitcfg->photons)),
     m_fabstep_npy(m_fabstep->getNPY())
 {
     init();
@@ -48,7 +48,7 @@ NPY<float>* NEmitPhotonsNPY::getFabStepData() const
 std::string NEmitPhotonsNPY::desc() const 
 {
     std::stringstream ss ;
-    ss << m_cfg->desc() ; 
+    ss << m_emitcfg->desc() ; 
     return ss.str();
 }
 
@@ -59,7 +59,7 @@ void NEmitPhotonsNPY::init()
 
     m_photons->zero();   
 
-    if(m_emitdbg) m_cfg->dump();
+    if(m_emitdbg) m_emitcfg->dump();
 
     unsigned numPhoton = m_photons->getNumItems();
 
@@ -70,7 +70,7 @@ void NEmitPhotonsNPY::init()
     std::vector<glm::vec3> points ; 
     std::vector<glm::vec3> normals ; 
 
-    std::string sheetmask_ = m_cfg->sheetmask ; 
+    std::string sheetmask_ = m_emitcfg->sheetmask ; 
     unsigned sheetmask = BHex<unsigned>::hex_lexical_cast( sheetmask_.c_str() ) ;
 
 
@@ -80,10 +80,10 @@ void NEmitPhotonsNPY::init()
     assert( normals.size() == numPhoton );
 
     float fdir = float(m_emit);  // +1 out -1 in 
-    float ftime = m_cfg->time ;  // ns
-    float fweight = m_cfg->weight ;
-    float fwavelength = m_cfg->wavelength ; // nm
-    float fposdelta = m_cfg->posdelta ; 
+    float ftime = m_emitcfg->time ;  // ns
+    float fweight = m_emitcfg->weight ;
+    float fwavelength = m_emitcfg->wavelength ; // nm
+    float fposdelta = m_emitcfg->posdelta ; 
 
     for(unsigned i=0 ; i < numPhoton ; i++)
     {   

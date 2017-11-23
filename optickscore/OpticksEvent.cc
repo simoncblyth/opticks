@@ -699,6 +699,18 @@ std::string OpticksEvent::getTestCSGPath()
     return m_parameters->get<std::string>("TestCSGPath", "NONE");
 }
 
+void OpticksEvent::setTestConfig(const char* testconfig)
+{
+    m_parameters->add<std::string>("TestConfig", testconfig ? testconfig : "NULL" );
+}
+std::string OpticksEvent::getTestConfig()
+{
+    return m_parameters->get<std::string>("TestConfig", "NONE");
+}
+
+
+
+
 
 void OpticksEvent::setNote(const char* note)
 {
