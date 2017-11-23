@@ -1054,11 +1054,22 @@ const std::string& OpticksCfg<Listener>::getTraverser()
 }
 
 
+
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getSeqMap()
+const std::string& OpticksCfg<Listener>::getSeqMap() const 
 {
     return m_seqmap  ;
 }
+
+template <class Listener>
+void OpticksCfg<Listener>::setSeqMap(const char* seqmap)
+{
+    m_seqmap = seqmap  ;
+}
+
+
+
+
 
 
 template <class Listener>

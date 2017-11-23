@@ -85,7 +85,21 @@ Relevant Opticks Options
 
 --testauto
     modifies test geometry emitconfig and boundaries to simplify photon histories
-    allowing seqmap asserts to check NCSGIntersect positions
+    allowing seqmap asserts to check NCSGIntersect positions, see below section for details
+
+
+
+testauto running
+-------------------
+
+Example::
+
+    tboolean-;tboolean-zsphere0 --testauto -D
+    tboolean-;tboolean-zsphere0 --okg4 --testauto -D
+
+    tboolean-;tboolean-zsphere0-a
+         # subsequent OpticksEventAna run uses the metadata that travels with the evt 
+
 
 
 
@@ -320,7 +334,9 @@ tboolean-seqhis()
 
 
 tboolean-a-(){
-    OpticksEventAnaTest  --torch  --tag $(tboolean-tag) --cat $(tboolean-testname)  --dbgnode 0  --dbgseqhis $(tboolean-dbgseqhis) $* 
+
+    #lldb OpticksEventAnaTest --   --torch  --tag $(tboolean-tag) --cat $(tboolean-testname)  --dbgnode 0  --dbgseqhis $(tboolean-dbgseqhis) $* 
+          OpticksEventAnaTest      --torch  --tag $(tboolean-tag) --cat $(tboolean-testname)  --dbgnode 0  --dbgseqhis $(tboolean-dbgseqhis) $* 
 }
 
 tboolean-ana-(){
@@ -1255,6 +1271,8 @@ if --testauto can succeed to modify it for automated
 seqmap NCSGIntersect checking::
 
    tboolean-;tboolean-zsphere0 --okg4 --testauto 
+   tboolean-;tboolean-zsphere0-a
+
 
 EON
 }

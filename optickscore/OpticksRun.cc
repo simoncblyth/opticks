@@ -73,10 +73,10 @@ void OpticksRun::annotateEvent()
 {
     OpticksResource* resource = m_ok->getResource();
     const char* testcsgpath = resource->getTestCSGPath();
-    const char* testconfig = resource->getTestConfig();
+    const char* geotestconfig = resource->getTestConfig();
     LOG(info) << "OpticksRun::annotateEvent"
               << " testcsgpath " << ( testcsgpath ? testcsgpath : "-" )
-              << " testconfig " << ( testconfig ? testconfig : "-" )
+              << " geotestconfig " << ( geotestconfig ? geotestconfig : "-" )
               ;
 
     if(testcsgpath)
@@ -84,9 +84,9 @@ void OpticksRun::annotateEvent()
          m_evt->setTestCSGPath(testcsgpath);
          m_g4evt->setTestCSGPath(testcsgpath);
 
-         assert( testconfig ); 
-         m_evt->setTestConfig(testconfig);
-         m_g4evt->setTestConfig(testconfig);
+         assert( geotestconfig ); 
+         m_evt->setTestConfigString(geotestconfig);
+         m_g4evt->setTestConfigString(geotestconfig);
     }
 }
 void OpticksRun::resetEvent()
@@ -98,11 +98,11 @@ void OpticksRun::resetEvent()
 }
 
 
-OpticksEvent* OpticksRun::getG4Event()
+OpticksEvent* OpticksRun::getG4Event() const 
 {
     return m_g4evt ; 
 }
-OpticksEvent* OpticksRun::getEvent()
+OpticksEvent* OpticksRun::getEvent() const 
 {
     return m_evt ; 
 }

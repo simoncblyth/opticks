@@ -653,6 +653,12 @@ const std::string& Opticks::getSeqMapString() const
     return m_cfg->getSeqMap() ;
 }
 
+void Opticks::setSeqMapString(const char* seqmap)
+{
+    m_cfg->setSeqMap(seqmap);
+}
+
+
 bool Opticks::getSeqMap(unsigned long long& seqhis, unsigned long long& seqval)
 {
     const std::string& seqmap = m_cfg->getSeqMap();

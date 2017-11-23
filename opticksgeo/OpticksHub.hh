@@ -138,6 +138,7 @@ class OKGEO_API OpticksHub {
        void anaEvent();
    private:
        void configureEvent(OpticksEvent* evt);
+       void anaEvent(OpticksEvent* evt);
   public:
        // via OpticksAim
        void            setupCompositionTargetting();

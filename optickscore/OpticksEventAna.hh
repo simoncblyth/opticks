@@ -7,8 +7,8 @@ class NCSGList ;
 struct NCSGIntersect ;
 //struct nnode ; 
 template <typename T> class NPY ; 
-
 class RecordsNPY ; 
+class NGeoTestConfig ; 
 
 class Opticks ; 
 class OpticksEvent ; 
@@ -39,48 +39,48 @@ from each photon position (excluding bulk positions, SC, AB )
 class OKCORE_API OpticksEventAna
 {
    public:
-       OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist );
+        OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csglist );
 
-       std::string desc();
-       void dump(const char* msg="OpticksEventAna::dump");
-       void dumpPointExcursions(const char* msg="OpticksEventAna::dumpPointExcursions");
+        std::string desc();
+        void dump(const char* msg="OpticksEventAna::dump");
+        void dumpPointExcursions(const char* msg="OpticksEventAna::dumpPointExcursions");
    private:
-       void init();
-       void countPointExcursions();
-       void checkPointExcursions(); // using the seqmap expectations
+        void init();
+        void initOverride(NGeoTestConfig* gtc);
+        void initSeqMap();
+
+        void countPointExcursions();
+        void checkPointExcursions(); // using the seqmap expectations
 
    private:
-       Opticks*           m_ok ; 
+        Opticks*           m_ok ; 
 
-       float              m_epsilon ;                      
-       unsigned long long m_dbgseqhis ;
-       unsigned long long m_dbgseqmat ;
-
-
-       unsigned long long m_seqmap_his ;
-       unsigned long long m_seqmap_val ;
-       bool               m_seqmap_has ; 
-
-       unsigned long long m_seqhis_select ;
+        float              m_epsilon ;                      
+        unsigned long long m_dbgseqhis ;
+        unsigned long long m_dbgseqmat ;
 
 
-       OpticksEvent*            m_evt ; 
+        unsigned long long m_seqmap_his ;
+        unsigned long long m_seqmap_val ;
+        bool               m_seqmap_has ; 
+
+        unsigned long long m_seqhis_select ;
+
+        OpticksEvent*            m_evt ; 
+        NGeoTestConfig*          m_evtgtc ; 
       
-       NCSGList*                m_csglist ;
-       unsigned                 m_tree_num ; 
-       NCSGIntersect*           m_csgi ;  
+        NCSGList*                m_csglist ;
+        unsigned                 m_tree_num ; 
+        NCSGIntersect*           m_csgi ;  
 
 
-       OpticksEventStat*        m_stat ; 
-       RecordsNPY*              m_records ; 
+        OpticksEventStat*        m_stat ; 
+        RecordsNPY*              m_records ; 
 
-       NPY<float>*              m_pho  ; 
-       NPY<unsigned long long>* m_seq ;
-       unsigned                 m_pho_num ; 
-       unsigned                 m_seq_num ; 
-
-
-
+        NPY<float>*              m_pho  ; 
+        NPY<unsigned long long>* m_seq ;
+        unsigned                 m_pho_num ; 
+        unsigned                 m_seq_num ; 
 
 };
 

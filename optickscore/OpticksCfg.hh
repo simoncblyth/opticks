@@ -50,7 +50,10 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getOtherIndex();
      const std::string& getBuilder();
      const std::string& getTraverser();
-     const std::string& getSeqMap();
+
+     const std::string& getSeqMap() const ;
+     void setSeqMap(const char* seqmap);    // used from OpticksEventAna
+
      const std::string& getDbgSeqhis();
      const std::string& getDbgSeqmat();
 

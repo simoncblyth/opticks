@@ -6,6 +6,7 @@
 #include "NPY_API_EXPORT.hh"
 
 class NCSG ; 
+class NGeoTestConfig ; 
 class NTxt ; 
 
 #include "NBBox.hpp"
@@ -18,6 +19,9 @@ class NPY_API NCSGList
         static bool      ExistsDir(const char* dir);
         static const char* MakeUniverseBoundary( const char* boundary0 );
 
+    public:
+        // from GGeoTest
+        void autoTestSetup(NGeoTestConfig* config);
     private:
         NCSGList(const char* csgpath, int verbosity);
         void init() ;

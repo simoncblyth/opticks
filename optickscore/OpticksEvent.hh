@@ -23,6 +23,7 @@ class BoundariesNPY ;
 //class G4StepNPY ; 
 class HitsNPY ; 
 class NPYSpec ; 
+class NGeoTestConfig ; 
 
 class Opticks ; 
 class OpticksMode ; 
@@ -98,6 +99,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
       //    det: dayabay/...    identifes the geocache  
       //    cat: optional override of det for test categorization, eg PmtInBox
       //
+      static bool CanAnalyse(OpticksEvent* evt); 
       static OpticksEvent* load(const char* typ, const char* tag, const char* det, const char* cat=NULL, bool verbose=false);
       static Index* loadHistoryIndex(  const char* typ, const char* tag, const char* udet);
       static Index* loadMaterialIndex( const char* typ, const char* tag, const char* udet);
@@ -147,12 +149,13 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setCreator(const char* executable);
        void setEntryCode(char entryCode);
    public:
-        const char* getGeoPath();
+        const char*    getGeoPath();
+       NGeoTestConfig* getTestConfig();
    private:
        std::string getTestCSGPath();
        void        setTestCSGPath(const char* testcsgpath);
-       std::string getTestConfig();
-       void        setTestConfig(const char* testconfig);
+       std::string getTestConfigString();
+       void        setTestConfigString(const char* testconfig);
    public:
        std::string getNote();
        void        setNote(const char* note);
@@ -279,9 +282,11 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        void setFDomain(NPY<float>* fdom);
        void setIDomain(NPY<int>* idom);
    public:
-       bool                 hasPhotonData();
-       bool                 hasSourceData();
-       bool                 hasGenstepData();
+       bool                 hasGenstepData() const ;
+       bool                 hasSourceData() const ;
+       bool                 hasPhotonData() const ;
+       bool                 hasRecordData() const ;
+   public:
        const glm::vec4&     getGenstepCenterExtent();
    public:
        NPY<float>*          getGenstepData() const ;
@@ -436,8 +441,9 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        STimes*  m_prelaunch_times ; 
        STimes*  m_launch_times ; 
 
-       OpticksEvent*  m_sibling ; 
-       const char*    m_geopath ; 
+       OpticksEvent*   m_sibling ; 
+       const char*     m_geopath ; 
+       NGeoTestConfig* m_geotestconfig ; 
 
 };
 

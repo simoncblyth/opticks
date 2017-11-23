@@ -8,6 +8,7 @@
 #include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NCSGList.hpp"
+#include "NGeoTestConfig.hpp"
 
 #include "PLOG.hh"
 
@@ -312,6 +313,64 @@ int NCSGList::polygonize()
     }     
     return rc ; 
 }
+
+
+
+
+
+
+
+// invoked from GGeoTest::initCreateCSG when using --testauto option
+void NCSGList::autoTestSetup(NGeoTestConfig* config)
+{
+    const char* autocontainer  = config->getAutoContainer();
+    const char* autoobject     = config->getAutoObject();
+    const char* autoemitconfig = config->getAutoEmitConfig();
+    const char* autoseqmap     = config->getAutoSeqMap();
+
+  
+    LOG(info) << " NCSGList::autoTestSetup"
+              << " override emitconfig/boundaries and seqmap "
+              ;
+
+    std::cout  
+        << " autocontainer " << autocontainer
+        << std::endl 
+        << " autoobject " << autoobject
+        << std::endl 
+        << " autoemitconfig " << autoemitconfig
+        << std::endl 
+        << " autoseqmap " << autoseqmap
+        << std::endl 
+        ;
+
+    unsigned num_tree = getNumTrees() ;
+    for(unsigned i=0 ; i < num_tree ; i++)
+    {
+        NCSG* tree = getTree(i) ; 
+        const char* origspec = tree->getBoundary();  
+
+        tree->setEmitConfig( autoemitconfig );
+        tree->setEmit( i == 0 ? -1 : 0 );
+        tree->setBoundary( i == 0 ? autocontainer : autoobject ) ;  
+
+        const char* autospec = tree->getBoundary();  
+        const char* autoemitconfig2 = tree->getEmitConfig() ; 
+       
+        std::cout 
+             << " i " << std::setw(3) << i 
+             << " origspec " << std::setw(25) << origspec
+             << " autospec " << std::setw(25) << autospec
+             << " autoemitconfig2 " << autoemitconfig2
+             << std::endl 
+             ;
+    }
+}
+
+
+
+
+
 
 
 

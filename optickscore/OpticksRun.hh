@@ -29,8 +29,8 @@ class OKCORE_API OpticksRun
     private:
         void passBaton();
     public:
-        OpticksEvent* getEvent();
-        OpticksEvent* getG4Event();
+        OpticksEvent* getEvent() const ;
+        OpticksEvent* getG4Event() const ;
         OpticksEvent* getCurrentEvent(); // returns OK evt unless G4 option specified : --vizg4 or --evtg4 
         G4StepNPY*    getG4Step(); 
         std::string brief() const ;

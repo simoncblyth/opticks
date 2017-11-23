@@ -591,13 +591,10 @@ void OpticksHub::configureGeometryTest()
 
 
 
-void OpticksHub::anaEvent()
+
+void OpticksHub::anaEvent(OpticksEvent* evt)
 {
-    LOG(info) << "OpticksHub::anaEvent" ;
-
-    OpticksEvent* evt = m_run->getEvent();
-
-    // hmm add anaEvent to GGeoBase ?
+    if(!OpticksEvent::CanAnalyse(evt)) return ; 
 
     if(m_geotest)
     {
@@ -611,7 +608,17 @@ void OpticksHub::anaEvent()
     {
         m_ggeo->anaEvent( evt ); 
     } 
+}
 
+void OpticksHub::anaEvent()
+{
+    LOG(info) << "OpticksHub::anaEvent" ;
+
+    OpticksEvent* evt = m_run->getEvent();
+    anaEvent(evt); 
+
+    OpticksEvent* g4evt = m_run->getG4Event();
+    anaEvent(g4evt); 
 
     m_run->anaEvent();
 }

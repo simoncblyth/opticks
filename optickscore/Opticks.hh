@@ -181,6 +181,7 @@ class OKCORE_API Opticks {
    public:
         // from cfg
        const std::string& getSeqMapString() const ;
+       void setSeqMapString( const char* seqmap );  // used from OpticksEventAna for --testauto
        bool getSeqMap(unsigned long long& seqhis, unsigned long long& seqval);
 
        unsigned long long getDbgSeqhis();

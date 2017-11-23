@@ -7,6 +7,7 @@
 #include "NCSGList.hpp"
 #include "NCSGIntersect.hpp"
 #include "NCSG.hpp"
+#include "NGeoTestConfig.hpp"
 
 #include "Opticks.hh"
 #include "OpticksFlags.hh"
@@ -23,11 +24,12 @@ OpticksEventAna::OpticksEventAna( Opticks* ok, OpticksEvent* evt, NCSGList* csgl
 
     m_seqmap_his(0ull),
     m_seqmap_val(0ull),
-    m_seqmap_has(m_ok->getSeqMap(m_seqmap_his, m_seqmap_val)),
-
-    m_seqhis_select( m_seqmap_has ? m_seqmap_his : m_dbgseqhis ),  // seqmap trumps dbgseqhis
+    m_seqmap_has(false),
+    m_seqhis_select(false),  // seqmap trumps dbgseqhis
 
     m_evt(evt),
+    m_evtgtc(evt->getTestConfig()),  // NGeoTestConfig reconstructed from evt metadata
+
     m_csglist(csglist),
     m_tree_num(csglist->getNumTrees()),
     m_csgi(new NCSGIntersect[m_tree_num]),
@@ -45,6 +47,9 @@ void OpticksEventAna::init()
 {
     assert(m_pho_num == m_seq_num);
 
+    if(m_evtgtc) initOverride(m_evtgtc);
+    initSeqMap(); 
+    
     for(unsigned i=0 ; i < m_tree_num ; i++)
     {
         NCSG* csg = m_csglist->getTree(i);
@@ -53,8 +58,24 @@ void OpticksEventAna::init()
 
     countPointExcursions();
     checkPointExcursions();
-
 }
+
+
+void OpticksEventAna::initOverride(NGeoTestConfig* gtc)
+{
+    const char* autoseqmap = gtc->getAutoSeqMap(); 
+    LOG(info) << " autoseqmap " << autoseqmap ; 
+    m_ok->setSeqMapString(autoseqmap);
+}
+
+void OpticksEventAna::initSeqMap()
+{
+    m_seqmap_his = 0ull ; 
+    m_seqmap_val = 0ull ;
+    m_seqmap_has = m_ok->getSeqMap(m_seqmap_his, m_seqmap_val) ;
+    m_seqhis_select = m_seqmap_has ? m_seqmap_his : m_dbgseqhis ;   // seqmap trumps dbgseqhis
+}
+
 
 
 void OpticksEventAna::countPointExcursions()

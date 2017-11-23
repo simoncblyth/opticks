@@ -33,6 +33,7 @@
 #include "NLoad.hpp"
 #include "NPYSpec.hpp"
 #include "NLookup.hpp"
+#include "NGeoTestConfig.hpp"
 
 //#include "G4StepNPY.hpp"
 #include "ViewNPY.hpp"
@@ -100,6 +101,13 @@ std::string OpticksEvent::timestamp()
     std::string timestamp = BTime::now(TIMEFORMAT, 0);
     return timestamp ; 
 }
+
+
+bool OpticksEvent::CanAnalyse(OpticksEvent* evt)
+{
+    return evt && evt->hasRecordData() ; 
+}
+
 
 const char* OpticksEvent::fdom_    = "fdom" ; 
 const char* OpticksEvent::idom_    = "idom" ; 
@@ -195,7 +203,8 @@ OpticksEvent::OpticksEvent(OpticksEventSpec* spec)
           m_prelaunch_times(new STimes),
           m_launch_times(new STimes),
           m_sibling(NULL),
-          m_geopath(NULL)
+          m_geopath(NULL),
+          m_geotestconfig(NULL)
 
 {
     init();
@@ -330,19 +339,22 @@ void OpticksEvent::setMaxRng(unsigned maxrng)
 
 
 
-bool OpticksEvent::hasGenstepData()
+bool OpticksEvent::hasGenstepData() const
 {
     return m_genstep_data && m_genstep_data->hasData() ; 
 }
-bool OpticksEvent::hasPhotonData()
-{
-    return m_photon_data && m_photon_data->hasData() ; 
-}
-bool OpticksEvent::hasSourceData()
+bool OpticksEvent::hasSourceData() const 
 {
     return m_source_data && m_source_data->hasData() ; 
 }
-
+bool OpticksEvent::hasPhotonData() const 
+{
+    return m_photon_data && m_photon_data->hasData() ; 
+}
+bool OpticksEvent::hasRecordData() const
+{
+    return m_record_data && m_record_data->hasData() ; 
+}
 
 
 
@@ -696,21 +708,34 @@ std::string OpticksEvent::getCreator()
 
 void OpticksEvent::setTestCSGPath(const char* testcsgpath)
 {
-    m_parameters->add<std::string>("TestCSGPath", testcsgpath ? testcsgpath : "NULL" );
+    m_parameters->add<std::string>("TestCSGPath", testcsgpath ? testcsgpath : "" );
 }
 std::string OpticksEvent::getTestCSGPath()
 {
-    return m_parameters->get<std::string>("TestCSGPath", "NONE");
+    return m_parameters->get<std::string>("TestCSGPath", "");
 }
 
-void OpticksEvent::setTestConfig(const char* testconfig)
+void OpticksEvent::setTestConfigString(const char* testconfig)
 {
-    m_parameters->add<std::string>("TestConfig", testconfig ? testconfig : "NULL" );
+    m_parameters->add<std::string>("TestConfig", testconfig ? testconfig : "" );
 }
-std::string OpticksEvent::getTestConfig()
+std::string OpticksEvent::getTestConfigString()
 {
-    return m_parameters->get<std::string>("TestConfig", "NONE");
+    return m_parameters->get<std::string>("TestConfig", "");
 }
+
+NGeoTestConfig* OpticksEvent::getTestConfig()
+{
+
+    if(m_geotestconfig == NULL)
+    {
+         std::string gtc = getTestConfigString() ; 
+         LOG(info) << " gtc " << gtc ; 
+         m_geotestconfig = gtc.empty() ? NULL : new NGeoTestConfig( gtc.c_str() );
+    }
+    return m_geotestconfig ; 
+}
+
 
 
 
