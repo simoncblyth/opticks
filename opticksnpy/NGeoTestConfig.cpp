@@ -9,8 +9,7 @@
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
 
-//#include "GMaker.hh"
-#include "GGeoTestConfig.hh"
+#include "NGeoTestConfig.hpp"
 
 #include "PLOG.hh"
 
@@ -22,7 +21,7 @@
 //       is now used by GPmtLib ... so no need for pmtpath below ?
 //
 
-const char* GGeoTestConfig::DEFAULT_CONFIG = 
+const char* NGeoTestConfig::DEFAULT_CONFIG = 
     "mode=PmtInBox_"
     "pmtpath=$OPTICKSINSTALLPREFIX/opticksdata/export/dpib/GMergedMesh/0_"
     "control=1,0,0,0_"
@@ -33,28 +32,28 @@ const char* GGeoTestConfig::DEFAULT_CONFIG =
     "parameters=0,0,0,300_"
     ;
 
-const char* GGeoTestConfig::MODE_ = "mode"; 
-const char* GGeoTestConfig::FRAME_ = "frame"; 
-const char* GGeoTestConfig::BOUNDARY_ = "boundary"; 
-const char* GGeoTestConfig::PARAMETERS_ = "parameters"; 
-const char* GGeoTestConfig::NODE_ = "node"; 
-const char* GGeoTestConfig::ANALYTIC_ = "analytic"; 
-const char* GGeoTestConfig::DEBUG_ = "debug"; 
-const char* GGeoTestConfig::CONTROL_ = "control"; 
-const char* GGeoTestConfig::PMTPATH_ = "pmtpath"; 
-const char* GGeoTestConfig::TRANSFORM_ = "transform"; 
-const char* GGeoTestConfig::CSGPATH_ = "csgpath"; 
-const char* GGeoTestConfig::OFFSETS_ = "offsets"; 
-const char* GGeoTestConfig::NAME_ = "name"; 
-const char* GGeoTestConfig::OUTERFIRST_ = "outerfirst"; 
+const char* NGeoTestConfig::MODE_ = "mode"; 
+const char* NGeoTestConfig::FRAME_ = "frame"; 
+const char* NGeoTestConfig::BOUNDARY_ = "boundary"; 
+const char* NGeoTestConfig::PARAMETERS_ = "parameters"; 
+const char* NGeoTestConfig::NODE_ = "node"; 
+const char* NGeoTestConfig::ANALYTIC_ = "analytic"; 
+const char* NGeoTestConfig::DEBUG_ = "debug"; 
+const char* NGeoTestConfig::CONTROL_ = "control"; 
+const char* NGeoTestConfig::PMTPATH_ = "pmtpath"; 
+const char* NGeoTestConfig::TRANSFORM_ = "transform"; 
+const char* NGeoTestConfig::CSGPATH_ = "csgpath"; 
+const char* NGeoTestConfig::OFFSETS_ = "offsets"; 
+const char* NGeoTestConfig::NAME_ = "name"; 
+const char* NGeoTestConfig::OUTERFIRST_ = "outerfirst"; 
 
-const char* GGeoTestConfig::AUTOCONTAINER_ = "autocontainer";   
-const char* GGeoTestConfig::AUTOOBJECT_ = "autoobject";   
-const char* GGeoTestConfig::AUTOEMITCONFIG_ = "autoemitconfig";   
-const char* GGeoTestConfig::AUTOSEQMAP_ = "autoseqmap";   
+const char* NGeoTestConfig::AUTOCONTAINER_ = "autocontainer";   
+const char* NGeoTestConfig::AUTOOBJECT_ = "autoobject";   
+const char* NGeoTestConfig::AUTOEMITCONFIG_ = "autoemitconfig";   
+const char* NGeoTestConfig::AUTOSEQMAP_ = "autoseqmap";   
 
 
-GGeoTestConfig::GGeoTestConfig(const char* config) 
+NGeoTestConfig::NGeoTestConfig(const char* config) 
     : 
     m_config(NULL),
     m_mode(NULL),
@@ -74,25 +73,25 @@ GGeoTestConfig::GGeoTestConfig(const char* config)
     init(config);
 }
 
-std::vector<std::pair<std::string, std::string> >& GGeoTestConfig::getCfg()
+std::vector<std::pair<std::string, std::string> >& NGeoTestConfig::getCfg()
 {
     return m_cfg ; 
 }
 
 
-unsigned GGeoTestConfig::getNumBoundaries()
+unsigned NGeoTestConfig::getNumBoundaries()
 {
     return m_boundaries.size();
 }
-unsigned GGeoTestConfig::getNumParameters()
+unsigned NGeoTestConfig::getNumParameters()
 {
     return m_parameters.size() ; 
 }
-unsigned GGeoTestConfig::getNumNodes()
+unsigned NGeoTestConfig::getNumNodes()
 {
     return m_nodes.size() ; 
 }
-unsigned GGeoTestConfig::getNumTransforms()
+unsigned NGeoTestConfig::getNumTransforms()
 {
     return m_transforms.size() ; 
 }
@@ -100,28 +99,28 @@ unsigned GGeoTestConfig::getNumTransforms()
 
 
 
-bool GGeoTestConfig::getAnalytic()
+bool NGeoTestConfig::getAnalytic()
 {
     bool analytic = m_analytic.x > 0 ;
     return analytic ; 
 }
 
-bool GGeoTestConfig::getOuterFirst()
+bool NGeoTestConfig::getOuterFirst()
 {
     return m_outerfirst.x > 0 ;
 }
 
 
 
-bool GGeoTestConfig::isNCSG()
+bool NGeoTestConfig::isNCSG()
 {
     return m_csgpath != NULL  ; 
 }
-bool GGeoTestConfig::isPmtInBox()
+bool NGeoTestConfig::isPmtInBox()
 {
     return strcmp(m_mode, "PmtInBox") == 0 ; 
 }
-bool GGeoTestConfig::isBoxInBox()
+bool NGeoTestConfig::isBoxInBox()
 {
     return strcmp(m_mode, "BoxInBox") == 0 ; 
 }
@@ -129,24 +128,24 @@ bool GGeoTestConfig::isBoxInBox()
 
 
 
-const char* GGeoTestConfig::getMode()
+const char* NGeoTestConfig::getMode()
 {
     return m_mode ; 
 }
-const char* GGeoTestConfig::getPmtPath()
+const char* NGeoTestConfig::getPmtPath()
 {
     return m_pmtpath ; 
 }
-const char* GGeoTestConfig::getCSGPath()
+const char* NGeoTestConfig::getCSGPath()
 {
     return m_csgpath ; 
 }
-const char* GGeoTestConfig::getName()
+const char* NGeoTestConfig::getName()
 {
     return m_name ; 
 }
 
-int GGeoTestConfig::getVerbosity()
+int NGeoTestConfig::getVerbosity()
 {
     return m_control.x  ; 
 }
@@ -157,14 +156,14 @@ int GGeoTestConfig::getVerbosity()
 
 
 
-void GGeoTestConfig::init(const char* config)
+void NGeoTestConfig::init(const char* config)
 {
     configure(config);
 }
 
-void GGeoTestConfig::configure(const char* config)
+void NGeoTestConfig::configure(const char* config)
 {
-    LOG(debug) << "GGeoTestConfig::configure" ; 
+    LOG(debug) << "NGeoTestConfig::configure" ; 
     m_config = config ? strdup(config) : DEFAULT_CONFIG ; 
 
     m_cfg = BStr::ekv_split(m_config,'_',"="); // element-delim, keyval-delim
@@ -187,7 +186,7 @@ void GGeoTestConfig::configure(const char* config)
     }
 }
 
-GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
+NGeoTestConfig::Arg_t NGeoTestConfig::getArg(const char* k)
 {
     Arg_t arg = UNRECOGNIZED ; 
     if(     strcmp(k,MODE_)==0)       arg = MODE ; 
@@ -210,12 +209,12 @@ GGeoTestConfig::Arg_t GGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,AUTOSEQMAP_)==0)  arg = AUTOSEQMAP ; 
 
     if(arg == UNRECOGNIZED)
-        LOG(warning) << "GGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
+        LOG(warning) << "NGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
 
     return arg ;   
 }
 
-void GGeoTestConfig::set(Arg_t arg, const char* s)
+void NGeoTestConfig::set(Arg_t arg, const char* s)
 {
     switch(arg)
     {
@@ -238,13 +237,13 @@ void GGeoTestConfig::set(Arg_t arg, const char* s)
         case AUTOEMITCONFIG : setAutoEmitConfig(s)     ;break;
         case AUTOSEQMAP     : setAutoSeqMap(s)     ;break;
         case UNRECOGNIZED   :
-             LOG(warning) << "GGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
+             LOG(warning) << "NGeoTestConfig::set WARNING ignoring unrecognized parameter " << s  ;
     }
 }
 
 
 
-unsigned GGeoTestConfig::getNumElements()
+unsigned NGeoTestConfig::getNumElements()
 {
     unsigned nbnd = getNumBoundaries();
     unsigned nnod = getNumNodes();
@@ -254,7 +253,7 @@ unsigned GGeoTestConfig::getNumElements()
     bool equal = nbnd == npar && nbnd == nnod && ntra == npar ;
 
     if(!equal) 
-    LOG(fatal) << "GGeoTestConfig::getNumElements"
+    LOG(fatal) << "NGeoTestConfig::getNumElements"
                << " ELEMENT MISMATCH IN TEST GEOMETRY CONFIGURATION " 
                << " nbnd (boundaries) " << nbnd  
                << " nnod (nodes) " << nnod  
@@ -268,7 +267,7 @@ unsigned GGeoTestConfig::getNumElements()
 }
 
 
-void GGeoTestConfig::dump(const char* msg)
+void NGeoTestConfig::dump(const char* msg)
 {
     unsigned int n = getNumElements();
     LOG(info) << msg  
@@ -295,40 +294,40 @@ void GGeoTestConfig::dump(const char* msg)
     }
 }
 
-void GGeoTestConfig::setMode(const char* s)
+void NGeoTestConfig::setMode(const char* s)
 {
     m_mode = strdup(s);
 }
-void GGeoTestConfig::setPmtPath(const char* s)
+void NGeoTestConfig::setPmtPath(const char* s)
 {
     m_pmtpath = strdup(s);
 }
-void GGeoTestConfig::setCsgPath(const char* s)
+void NGeoTestConfig::setCsgPath(const char* s)
 {
     m_csgpath = strdup(s);
 }
-void GGeoTestConfig::setName(const char* s)
+void NGeoTestConfig::setName(const char* s)
 {
     m_name = strdup(s);
 }
 
 
 
-void GGeoTestConfig::setOffsets(const char* s)
+void NGeoTestConfig::setOffsets(const char* s)
 {
     BStr::usplit(m_offsets, s, ',' );
 }
-unsigned GGeoTestConfig::getNumOffsets()
+unsigned NGeoTestConfig::getNumOffsets()
 {
     return m_offsets.size();
 }
-unsigned GGeoTestConfig::getOffset(unsigned idx)
+unsigned NGeoTestConfig::getOffset(unsigned idx)
 {
     assert(idx < m_offsets.size());
     return m_offsets[idx] ; 
 }
 
-bool GGeoTestConfig::isStartOfOptiXPrimitive(unsigned nodeIdx )
+bool NGeoTestConfig::isStartOfOptiXPrimitive(unsigned nodeIdx )
 {
     return std::find(m_offsets.begin(), m_offsets.end(), nodeIdx) != m_offsets.end() ; 
 }
@@ -336,18 +335,18 @@ bool GGeoTestConfig::isStartOfOptiXPrimitive(unsigned nodeIdx )
 
 
 
-void GGeoTestConfig::setFrame(const char* s)
+void NGeoTestConfig::setFrame(const char* s)
 {
     std::string ss(s);
     m_frame = givec4(ss);
 }
-void GGeoTestConfig::setAnalytic(const char* s)
+void NGeoTestConfig::setAnalytic(const char* s)
 {
     std::string ss(s);
     m_analytic = givec4(ss);
 }
 
-void GGeoTestConfig::setOuterFirst(const char* s)
+void NGeoTestConfig::setOuterFirst(const char* s)
 {
     std::string ss(s);
     m_outerfirst = givec4(ss);
@@ -355,37 +354,37 @@ void GGeoTestConfig::setOuterFirst(const char* s)
 
 
 
-void GGeoTestConfig::setAutoContainer(const char* s)
+void NGeoTestConfig::setAutoContainer(const char* s)
 {
     m_autocontainer = strdup(s) ; 
 }
-void GGeoTestConfig::setAutoObject(const char* s)
+void NGeoTestConfig::setAutoObject(const char* s)
 {
     m_autoobject = strdup(s) ; 
 }
-void GGeoTestConfig::setAutoEmitConfig(const char* s)
+void NGeoTestConfig::setAutoEmitConfig(const char* s)
 {
     m_autoemitconfig = strdup(s) ; 
 }
-void GGeoTestConfig::setAutoSeqMap(const char* s)
+void NGeoTestConfig::setAutoSeqMap(const char* s)
 {
     m_autoseqmap = strdup(s) ; 
 }
 
 
-const char* GGeoTestConfig::getAutoContainer() const 
+const char* NGeoTestConfig::getAutoContainer() const 
 {
     return m_autocontainer ;
 }
-const char* GGeoTestConfig::getAutoObject() const 
+const char* NGeoTestConfig::getAutoObject() const 
 {
     return m_autoobject ;
 }
-const char* GGeoTestConfig::getAutoEmitConfig() const 
+const char* NGeoTestConfig::getAutoEmitConfig() const 
 {
     return m_autoemitconfig ;
 }
-const char* GGeoTestConfig::getAutoSeqMap() const 
+const char* NGeoTestConfig::getAutoSeqMap() const 
 {
     return m_autoseqmap ;
 }
@@ -396,13 +395,13 @@ const char* GGeoTestConfig::getAutoSeqMap() const
 
 
 
-void GGeoTestConfig::setDebug(const char* s)
+void NGeoTestConfig::setDebug(const char* s)
 {
     std::string ss(s);
     m_debug = gvec4(ss);
 }
 
-void GGeoTestConfig::setControl(const char* s)
+void NGeoTestConfig::setControl(const char* s)
 {
     std::string ss(s);
     m_control = givec4(ss);
@@ -411,13 +410,13 @@ void GGeoTestConfig::setControl(const char* s)
 
 
 
-void GGeoTestConfig::addParameters(const char* s)
+void NGeoTestConfig::addParameters(const char* s)
 {
     std::string ss(s);
     m_parameters.push_back(gvec4(ss));
 }
 
-void GGeoTestConfig::addTransform(const char* s)
+void NGeoTestConfig::addTransform(const char* s)
 {
     std::string ss(s == NULL ? "" : s);
 
@@ -430,18 +429,18 @@ void GGeoTestConfig::addTransform(const char* s)
     m_transforms.push_back(gmat4(ss));
 }
 
-void GGeoTestConfig::addBoundary(const char* s)
+void NGeoTestConfig::addBoundary(const char* s)
 {
     m_boundaries.push_back(s);
 }
 
-void GGeoTestConfig::addNode(const char* s)
+void NGeoTestConfig::addNode(const char* s)
 {
     m_nodes.push_back(s);
 }
 
 
-glm::vec4 GGeoTestConfig::getParameters(unsigned int i)
+glm::vec4 NGeoTestConfig::getParameters(unsigned int i)
 {
     unsigned int npars = m_parameters.size();
     assert( i < npars ) ; 
@@ -450,7 +449,7 @@ glm::vec4 GGeoTestConfig::getParameters(unsigned int i)
 }
 
 
-glm::mat4 GGeoTestConfig::getTransform(unsigned int i)
+glm::mat4 NGeoTestConfig::getTransform(unsigned int i)
 {
     unsigned int ntra = m_transforms.size();
     assert( i < ntra ) ; 
@@ -461,7 +460,7 @@ glm::mat4 GGeoTestConfig::getTransform(unsigned int i)
 
 
 /*
-char GGeoTestConfig::getNode(unsigned int i)
+char NGeoTestConfig::getNode(unsigned int i)
 {
     assert( i < m_nodes.size() );
     char nodecode = CSGChar(m_nodes[i].c_str());
@@ -470,7 +469,7 @@ char GGeoTestConfig::getNode(unsigned int i)
 */
 
 
-OpticksCSG_t GGeoTestConfig::getTypeCode(unsigned int i)
+OpticksCSG_t NGeoTestConfig::getTypeCode(unsigned int i)
 {
     assert( i < m_nodes.size() );
     return CSGTypeCode(m_nodes[i].c_str());
@@ -479,7 +478,7 @@ OpticksCSG_t GGeoTestConfig::getTypeCode(unsigned int i)
 
 
 
-std::string GGeoTestConfig::getNodeString(unsigned int i)
+std::string NGeoTestConfig::getNodeString(unsigned int i)
 {
     assert( i < m_nodes.size() );
     return m_nodes[i] ;
@@ -487,7 +486,7 @@ std::string GGeoTestConfig::getNodeString(unsigned int i)
 
 
 
-const char* GGeoTestConfig::getBoundary(unsigned int i)
+const char* NGeoTestConfig::getBoundary(unsigned int i)
 {
     assert( i < m_boundaries.size() );
     const char* spec = m_boundaries[i].c_str() ;

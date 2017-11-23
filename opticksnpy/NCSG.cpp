@@ -1095,8 +1095,15 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
 void NCSG::import_srcvertsfaces(nnode* node)
 {
     assert( node->has_planes() );
-    assert(m_srcverts);
-    assert(m_srcfaces);
+
+    if(!m_srcverts || !m_srcfaces) 
+    {
+        LOG(debug) << "NCSG::import_srcvertsfaces no m_srcverts  m_srcfaces " ; 
+        return ; 
+    }
+
+    //assert(m_srcverts);
+    //assert(m_srcfaces);
 
     nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
     assert(cpol);

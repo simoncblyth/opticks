@@ -1,5 +1,5 @@
 
-.. include:: GGeoTestConfig.hh
+.. include:: NGeoTestConfig.hpp
    :start-after: /**
    :end-before: **/
 

@@ -113,7 +113,6 @@ set(SOURCES
     GGeoLib.cc
     GGeoCfg.cc
     GGeoTest.cc
-    GGeoTestConfig.cc
     GMaker.cc
     GBBoxMesh.cc
     GColorizer.cc
@@ -192,7 +191,6 @@ SET(ALL_HEADERS
     GMaker.hh
     GCIE.hh
     GGeoTest.hh
-    GGeoTestConfig.hh
 
 )
 

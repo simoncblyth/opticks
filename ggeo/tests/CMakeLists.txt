@@ -50,7 +50,6 @@ set(TEST_SOURCES
     GGeoLibTest.cc
 
     GGeoTest.cc
-    GGeoTestConfigTest.cc
     GMakerTest.cc
 
     GMergedMeshTest.cc

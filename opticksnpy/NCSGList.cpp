@@ -75,13 +75,16 @@ void NCSGList::load()
                            << " file does not exist " 
                            << txtpath 
                            ;
-    assert(exists); 
+    //assert(exists); 
 
-    m_bndspec = new NTxt(txtpath.c_str());
-    m_bndspec->read();
-    //m_bndspec->dump("NCSGList::load");    
+    if( exists )
+    {
+        m_bndspec = new NTxt(txtpath.c_str());
+        m_bndspec->read();
+        //m_bndspec->dump("NCSGList::load");    
+    }
 
-    unsigned nbnd = m_bndspec->getNumLines();
+    unsigned nbnd = m_bndspec ? m_bndspec->getNumLines() : 0 ;
 
     LOG(info) << "NCSGList::load"
               << " VERBOSITY " << m_verbosity 

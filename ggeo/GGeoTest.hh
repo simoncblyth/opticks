@@ -6,7 +6,7 @@ class Opticks ;
 class OpticksResource ; 
 class OpticksEvent ; 
 
-class GGeoTestConfig ; 
+class NGeoTestConfig ; 
 class GGeoBase ; 
 
 class GGeoLib ; 
@@ -89,7 +89,7 @@ class GGEO_API GGeoTest : public GGeoBase {
     public:
        void dump(const char* msg="GGeoTest::dump");
     public:
-       GGeoTestConfig* getConfig();
+       NGeoTestConfig* getConfig();
        NCSGList*       getCSGList() const ;
        NCSG*           getUniverse() const ;
        NCSG*           findEmitter() const ;
@@ -112,7 +112,7 @@ class GGEO_API GGeoTest : public GGeoBase {
     private:
        Opticks*         m_ok ; 
        const char*      m_config_ ; 
-       GGeoTestConfig*  m_config ; 
+       NGeoTestConfig*  m_config ; 
        unsigned         m_verbosity ;
        OpticksResource* m_resource ; 
        bool             m_dbgbnd ; 

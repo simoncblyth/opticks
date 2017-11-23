@@ -414,7 +414,11 @@ RecordsNPY* OpticksEvent::getRecordsNPY()
     if(m_records == NULL)
     {
         m_records = OpticksEventInstrument::CreateRecordsNPY(this) ;
-        assert( m_records ); 
+
+        if(!m_records)
+            LOG(error) << "failed to CreateRecordsNPY " 
+            ; 
+        //assert( m_records ); 
     }
     return m_records ;
 }

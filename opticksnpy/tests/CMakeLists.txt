@@ -19,6 +19,7 @@ EnvTest.cc
 NPYBaseTest.cc
 NSliceTest.cc
 NPYSpecTest.cc
+NGeoTestConfigTest.cc
 
 GLMPrintTest.cc
 GLMFormatTest.cc

@@ -42,7 +42,7 @@
 #include "GTransforms.hh"
 #include "GIds.hh"
 
-#include "GGeoTestConfig.hh"
+#include "NGeoTestConfig.hpp"
 #include "GGeoTest.hh"
 
 #include "PLOG.hh"
@@ -55,7 +55,7 @@ const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ;
 GSolidList*     GGeoTest::getSolidList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
 
 NCSGList*       GGeoTest::getCSGList() const  {  return m_csglist ;  }
-GGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
+NGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
 NCSG*           GGeoTest::findEmitter() const  { return m_csglist ? m_csglist->findEmitter() : NULL ; }
 NCSG*           GGeoTest::getUniverse() const  { return m_csglist ? m_csglist->getUniverse() : NULL ; }
 
@@ -102,7 +102,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     :  
     m_ok(ok),
     m_config_(ok->getTestConfig()),
-    m_config(new GGeoTestConfig(m_config_)),
+    m_config(new NGeoTestConfig(m_config_)),
     m_verbosity(m_config->getVerbosity()),
     m_resource(ok->getResource()),
     m_dbgbnd(m_ok->isDbgBnd()),
@@ -180,6 +180,14 @@ GMergedMesh* GGeoTest::initCreateCSG()
     assert(m_csglist && "failed to load NCSGList");
     assert(m_analytic == true);
     assert(m_config->isNCSG());
+
+    unsigned numTree = m_csglist->getNumTrees() ;
+    if(numTree == 0 )
+    {
+        LOG(error) << "failed to load trees" ; 
+        return NULL ; 
+    }
+
 
     std::vector<GSolid*>& solids = m_solist->getList();
 
@@ -366,6 +374,21 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
     assert(m_csgpath);
     assert(m_csglist);
 
+    unsigned numTree = m_csglist->getNumTrees() ;
+
+    LOG(info) << "GGeoTest::importCSG START " 
+             << " csgpath " << m_csgpath 
+             << " numTree " << numTree 
+             << " verbosity " << m_verbosity
+             ;
+
+
+    assert( numTree > 0 );
+
+
+
+
+
     if(m_ok->isTestAuto())
     {
         autoSetup(m_csglist);
@@ -373,13 +396,7 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
 
     reuseMaterials(m_csglist);
 
-    unsigned numTree = m_csglist->getNumTrees() ;
    
-    LOG(info) << "GGeoTest::importCSG START " 
-             << " csgpath " << m_csgpath 
-             << " numTree " << numTree 
-             << " verbosity " << m_verbosity
-             ;
 
     if(m_dbgbnd)
     { 
@@ -457,9 +474,16 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
 
 
     // see notes/issues/material-names-wrong-python-side.rst
-    LOG(info) << "Save mlib/slib names to csgpath " << m_csgpath ;  
-    m_mlib->saveNames(m_csgpath);
-    m_slib->saveNames(m_csgpath);
+    LOG(info) << "Save mlib/slib names " 
+              << " numTree : " << numTree
+              << " csgpath : " << m_csgpath
+              ;
+
+    if( numTree > 0 )
+    { 
+        m_mlib->saveNames(m_csgpath);
+        m_slib->saveNames(m_csgpath);
+    } 
     
 
     LOG(info) << "GGeoTest::importCSG DONE " ; 

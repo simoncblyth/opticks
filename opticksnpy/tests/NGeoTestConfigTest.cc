@@ -1,10 +1,9 @@
 
 #include "NGLM.hpp"
-#include "GGeoTestConfig.hh"
+#include "NGeoTestConfig.hpp"
 
 #include "PLOG.hh"
-#include "GGEO_LOG.hh"
-#include "GGEO_BODY.hh"
+#include "NPY_LOG.hh"
 
 const char* CONFIG = 
     "mode=BoxInBox_"
@@ -21,10 +20,10 @@ const char* CONFIG =
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
-    GGEO_LOG_ ;
+    NPY_LOG__ ;
 
-    GGeoTestConfig* gtc = new GGeoTestConfig(CONFIG);
-    gtc->dump();
+    NGeoTestConfig gtc(CONFIG);
+    gtc.dump();
 
 
     return 0 ;

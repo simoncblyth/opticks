@@ -17,6 +17,7 @@
 #include "NCSG.hpp"
 #include "NCSGList.hpp"
 #include "GLMFormat.hpp"
+#include "NGeoTestConfig.hpp"
 
 // ggeo-
 #include "GMaker.hh"
@@ -25,9 +26,7 @@
 #include "GCSG.hh"
 #include "GMaterial.hh"
 #include "GGeoTest.hh"
-#include "GGeoTestConfig.hh"
 
-//#include "GSur.hh"
 
 #include "GGeo.hh"
 #include "GMergedMesh.hh"

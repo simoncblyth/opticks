@@ -9,7 +9,7 @@
 #include "OpticksMode.hh"
 #include "OpticksCfg.hh"
 
-#include "GGeoTestConfig.hh"
+//#include "NGeoTestConfig.hpp"
 
 #include "CG4.hh"
 #include "CMaterialLib.hh"

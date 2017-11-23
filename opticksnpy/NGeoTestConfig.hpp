@@ -8,13 +8,12 @@
 
 #include "OpticksCSG.h"
 
-#include "GGEO_API_EXPORT.hh"
-#include "GGEO_HEAD.hh"
+#include "NPY_API_EXPORT.hh"
 
 
 /**
 
-GGeoTestConfig
+NGeoTestConfig
 ===============
 
 Parses a configure string into the specifications of 
@@ -24,7 +23,7 @@ The Geant4 usage is done via :doc:`../cfg4/CTestDetector`.
 
 **/
 
-class GGEO_API GGeoTestConfig {
+class NPY_API NGeoTestConfig {
     public:
       // NODE is a generalization of the former SHAPE argument
        typedef enum { 
@@ -71,7 +70,7 @@ class GGEO_API GGeoTestConfig {
        static const char* AUTOSEQMAP_ ; 
     public:
 
-       GGeoTestConfig(const char* config);
+       NGeoTestConfig(const char* config);
        int getVerbosity();
     private:
        void init(const char* config);
@@ -125,7 +124,7 @@ class GGEO_API GGeoTestConfig {
        unsigned int getNumElements();
 
        std::vector<std::pair<std::string, std::string> >& getCfg();
-       void dump(const char* msg="GGeoTestConfig::dump");
+       void dump(const char* msg="NGeoTestConfig::dump");
    private:
        unsigned getNumBoundaries();
        unsigned getNumParameters();
@@ -162,6 +161,5 @@ class GGEO_API GGeoTestConfig {
        std::vector<KV> m_cfg ; 
 };
 
-#include "GGEO_TAIL.hh"
 
 

@@ -9,10 +9,10 @@ class OpticksQuery ;
 
 // npy-
 class NCSG ; 
+class NGeoTestConfig ; 
 
 // ggeo-
 class GGeoTest ; 
-class GGeoTestConfig ; 
 class GMaterial ;
 class GCSG ; 
 
@@ -95,7 +95,7 @@ class CFG4_API CTestDetector : public CDetector
 
   private:
     GGeoTest*          m_geotest ; 
-    GGeoTestConfig*    m_config ; 
+    NGeoTestConfig*    m_config ; 
     CMaker*            m_maker ; 
 
 };

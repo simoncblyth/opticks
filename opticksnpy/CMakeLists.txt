@@ -138,6 +138,7 @@ set(SOURCES
     NSensor.cpp
     NSensorList.cpp
 
+    NGeoTestConfig.cpp
     NGunConfig.cpp
     NScan.cpp
     NScanLine.cpp

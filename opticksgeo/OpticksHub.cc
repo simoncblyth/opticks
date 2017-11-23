@@ -38,7 +38,6 @@
 #include "GNodeLib.hh"
 #include "GScene.hh"
 #include "GGeo.hh"
-#include "GGeoTestConfig.hh"
 #include "GGeoTest.hh"
 
 // okc-
