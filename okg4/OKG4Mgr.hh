@@ -20,6 +20,7 @@ class OKG4_API OKG4Mgr {
   public:
        void propagate();
        void visualize();
+       int rc() const ;
    private:
        void cleanup();
    private:

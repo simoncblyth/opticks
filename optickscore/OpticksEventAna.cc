@@ -164,7 +164,11 @@ void OpticksEventAna::checkPointExcursions()
 
     bool has_excursions = num_excursions > 0 ; 
     LOG( has_excursions ? fatal : info ) << " num_excursions " << num_excursions ; 
-    assert( !has_excursions );
+    //assert( !has_excursions );
+    if(has_excursions) 
+    {
+        m_ok->setRC(202, "OpticksEventAna::checkPointExcursions found some" ) ;
+    }
 
 
 }

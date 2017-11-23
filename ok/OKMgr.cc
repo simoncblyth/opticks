@@ -31,6 +31,12 @@ class NConfigurable ;
     }
 
 
+int OKMgr::rc() const 
+{
+    return m_ok->rc();
+}
+
+
 OKMgr::OKMgr(int argc, char** argv, const char* argforced ) 
     :
     m_log(new SLog("OKMgr::OKMgr")),

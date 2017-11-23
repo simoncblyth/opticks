@@ -126,8 +126,12 @@ class OKCORE_API Opticks {
        bool isOther();
        bool isValid();
        bool hasVolnames() const ; 
-       int  getRC();
-       void setRC(int rc); 
+   public:
+       int  rc() const ;
+       void dumpRC() const ;
+       int  getRC() const ;
+       void setRC(int rc, const char* msg ); 
+       const char* getRCMessage() const ; 
    private:
        bool hasCtrlKey(const char* key) const ;
 
@@ -417,6 +421,7 @@ class OKCORE_API Opticks {
        OpticksAna*          m_ana ; 
        OpticksDbg*          m_dbg ; 
        int                  m_rc ; 
+       const char*          m_rcmsg ; 
        unsigned             m_tagoffset ; 
    private:
        glm::uvec4           m_size ; 

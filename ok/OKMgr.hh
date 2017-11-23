@@ -29,6 +29,7 @@ class OK_API OKMgr {
    public:
        void propagate();
        void visualize();
+       int rc() const ; 
    private:
        void init();
        void cleanup();

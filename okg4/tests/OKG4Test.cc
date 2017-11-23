@@ -57,5 +57,5 @@ int main(int argc, char** argv)
     okg4.propagate();
     okg4.visualize();   
 
-    return 0 ;
+    return okg4.rc() ;
 }

@@ -55,13 +55,16 @@ void OpticksAna::run()
    std::string cmdline = getCommandline(anakey.c_str());
 
    int rc = cmdline.empty() ? 0 : SSys::run(cmdline.c_str()) ; 
+   
+   const char* rcmsg = rc == 0 ? NULL : "OpticksAna::run non-zero RC from ana script"  ;
 
    LOG(info) << "OpticksAna::run"
              << " anakey " << anakey 
              << " cmdline " << cmdline
              << " rc " << rc
+             << " rcmsg " << ( rcmsg ? rcmsg : "-" )
              ;
 
-   m_ok->setRC(rc);
+   if( rc != 0)  m_ok->setRC(rc, rcmsg);
 }
 

@@ -89,7 +89,7 @@ Relevant Opticks Options
 
 
 
-testauto running
+testauto details
 -------------------
 
 Example::
@@ -101,7 +101,16 @@ Example::
          # subsequent OpticksEventAna run uses the metadata that travels with the evt 
 
 
-
+1. default auto configuration resides in opticks/ana/base.py 
+2. opticks/analytic/csg.py CSG.Serialize writes the testconfig string 
+   which is picked up by bash and given to Opticks (OKTest or OKG4Test)
+   as the --testconfig option
+3. testconfig string is parsed by NGeoTestConfig
+4. OpticksRun::annotateEvent OpticksEvent::setTestConfigString persist the 
+   testconfig with events 
+5. OpticksEvent::getTestConfig eg from loaded events can reparses the string
+   into NGeoTestConfig
+  
 
 Other Options Useful for Debugging
 -------------------------------------

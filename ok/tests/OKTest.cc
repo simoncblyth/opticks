@@ -59,6 +59,6 @@ int main(int argc, char** argv)
     ok.propagate();
     ok.visualize();
 
-    exit(EXIT_SUCCESS);
+    return ok.rc();
 }
 

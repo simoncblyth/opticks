@@ -158,14 +158,43 @@ glm::vec4 Opticks::getDomainReciprocalSpec(bool /*fine*/)
 
 
 
-int Opticks::getRC()
+int Opticks::getRC() const
 {
     return m_rc ; 
 }
-void Opticks::setRC(int rc)
+void Opticks::setRC(int rc, const char* rcmsg)
 {
     m_rc = rc ; 
+    m_rcmsg = rcmsg ? strdup(rcmsg) : NULL ; 
+    dumpRC();
 }
+
+const char* Opticks::getRCMessage() const 
+{
+    return m_rcmsg ; 
+}
+
+int Opticks::rc() const 
+{
+    dumpRC();
+    return m_rc ; 
+}
+
+
+void Opticks::dumpRC() const 
+{
+    LOG( m_rc == 0 ? info : fatal) 
+           << " rc " << m_rc 
+           << " rcmsg : " << ( m_rcmsg ? m_rcmsg : "-" ) 
+           ;
+}
+
+
+
+
+
+
+
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
@@ -207,6 +236,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_ana(new OpticksAna(this)),
        m_dbg(new OpticksDbg(this)),
        m_rc(0),
+       m_rcmsg(NULL),
        m_tagoffset(0),
        m_verbosity(0)
 {

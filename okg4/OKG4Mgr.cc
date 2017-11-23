@@ -23,6 +23,12 @@ class NConfigurable ;
 #include "PLOG.hh"
 #include "OKG4_BODY.hh"
 
+int OKG4Mgr::rc() const 
+{
+    return m_ok->rc();
+}
+
+
 OKG4Mgr::OKG4Mgr(int argc, char** argv) 
     :
     m_log(new SLog("OKG4Mgr::OKG4Mgr")),
