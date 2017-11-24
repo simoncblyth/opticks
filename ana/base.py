@@ -370,7 +370,7 @@ def opticks_args(**kwa):
 
     autocontainer = kwa.get("autocontainer","Rock//perfectAbsorbSurface/Vacuum") 
     autoobject = kwa.get("autoobject","Vacuum/perfectSpecularSurface//GlassSchottF2" ) 
-    autoemitconfig = kwa.get("autoemitconfig","photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x3f" ) 
+    autoemitconfig = kwa.get("autoemitconfig","photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x3f,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" ) 
     autoseqmap = kwa.get("autoseqmap","TO:0,SR:1,SA:0" )
 
 

@@ -973,8 +973,8 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0" )
-container = CSG("box", param=[0,0,0,500], boundary="Rock//perfectAbsorbSurface/Vacuum" )
+CSG.kwa = dict(poly="IM", resolution="40", verbosity="0", ctrl="0", emitconfig=args.autoemitconfig )
+container = CSG("box", param=[0,0,0,500], boundary="Rock//perfectAbsorbSurface/Vacuum", emit=-1 )
 
 obj = CSG.MakeCubePlanes(200,200,200)
 obj.boundary="Vacuum///GlassSchottF2" 
@@ -991,31 +991,26 @@ $FUNCNAME
 ==========================
 
 tboolean-;tboolean-cubeplanes --okg4 
-    FAIL notes/issues/tboolean-cubeplanes-many-stuck-tracks-drastic-difference.rst
+    PASS
 
 tboolean-;tboolean-cubeplanes --okg4 --testauto
-    FAIL from drastic history difference, intersect positions are OK
+    PASS
 
+
+* notes/issues/tboolean-cubeplanes-many-stuck-tracks-drastic-difference.rst
+  
+Initially both these had drastic fail from bad G4TesselatedSolid tris 
 
 CubePlanes is a cube that in Opticks is handled as a convexpolyhedon set of planes
 and in G4 as a G4TessellatedSolid : it exists mainly as a way of testing these
 solids with a shape with easy to check results.  
 
+* http://hypernews.slac.stanford.edu/HyperNews/geant4/get/geometry/1257.html
+* http://hypernews.slac.stanford.edu/HyperNews/geant4/get/geometry/1257/1/1/1/1/1/1/1.html
 
-/tmp/blyth/opticks/tboolean-cubeplanes--
-.                seqhis_ana  1:tboolean-cubeplanes   -1:tboolean-cubeplanes        c2        ab        ba 
-.                             100000    100000      3019.09/2 = 1509.54  (pval:0.000 prob:1.000)  
-0000               8d     83883     91862           362.25        0.913 +- 0.003        1.095 +- 0.004  [2 ] TO SA
-0001              8ad     16015      8025          2655.58        1.996 +- 0.016        0.501 +- 0.006  [3 ] TO SR SA
-
-   
-* TODO: somehow label photons that get G4 stuck, exclude them from both
-  to see if issue is entirely from stuck tracks
-
-* TODO: provide some metadata switch to use standard G4 box, then can check the 
-  Opticks convexpolyhedron against that rather than against the 
-  apparently stuck track prone G4TessellatedSolid 
-
+Problem may be the familiar one from OpenMesh of 
+specifying the verts in the wrong order.  Turned out to be tris
+missing entirely.
 
 
 EON

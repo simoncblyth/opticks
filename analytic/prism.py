@@ -97,19 +97,48 @@ class ConvexPolyhedronSrc(object):
 
     verts = property(_get_verts, _set_verts) 
 
+    def add_quad_ccw(self, i0, i1, i2, i3):
+        """
+        *ccw-order, NOT z-order* 
+
+        ::
+
+            105 template <typename T>
+            106 void NOpenMeshBuild<T>::add_face_(typename T::VertexHandle v0,typename T::VertexHandle v1, typename T::VertexHandle v2, typename T::VertexHandle v3 )
+            107 {
+            108    /*
+            109               3-------2
+            110               |     . | 
+            111               |   .   |
+            112               | .     |
+            113               0-------1  
+            114    */
+            115 
+            116     add_face_(v0,v1,v2, -1);
+            117     add_face_(v2,v3,v0, -1);
+            118 }
+
+        """
+        self(i0,i1,i2)
+        self(i2,i3,i0)   
+ 
       
-    def __call__(self, i0, i1, i2 ):
+    def __call__(self, i0, i1, i2):
         nv = self.nv
-        assert i0 < nv and i1 < nv and i2 < nv
+        assert i0 < nv 
+        assert i1 < nv 
+        assert i2 < nv
 
         v = self._verts         
         a = v[i0]
         b = v[i1]
         c = v[i2]
-        p = make_plane3( a, b, c, dtype=self.dtype )
 
+        p = make_plane3( a, b, c, dtype=self.dtype )
         self.planes_.append( p )
         self.faces_.append( [i0,i1,i2,-1] )
+
+
 
     def _get_planes(self):
         p = np.zeros( (len(self.planes_),4), dtype=self.dtype )
@@ -531,12 +560,22 @@ def make_cubeplanes(hx=0.5, hy=0.5, hz=0.5, dtype=np.float32):
 
     src.verts = v 
 
-    src(3,7,5)
-    src(0,4,6)
-    src(2,6,7)
-    src(1,5,4)
-    src(5,7,6)
-    src(3,1,0)
+    #src(3,7,5)
+    #src(0,4,6)
+    #src(2,6,7)
+    #src(1,5,4)
+    #src(5,7,6)
+    #src(3,1,0)  
+
+    # visualize the cube from different faces, and read off the ccw cycles
+
+    src.add_quad_ccw(0,1,5,4)   # from -Y
+    src.add_quad_ccw(0,4,6,2)   # from -X
+    src.add_quad_ccw(0,2,3,1)   # from -Z
+    src.add_quad_ccw(5,7,6,4)   # from +Z
+    src.add_quad_ccw(3,7,5,1)   # from +X
+    src.add_quad_ccw(6,7,3,2)   # from +Y
+      
 
     planes = src.planes
     faces = src.faces
