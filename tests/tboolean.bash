@@ -44,10 +44,47 @@ tboolean-name-ip
     which jumps into interactive python with the event loaded
 
 
+
+ISSUE : emitconfig cfg4 chisq too good as not indep
+------------------------------------------------------
+
+With *emitconfig* OK/G4 samples are not independant, 
+as the input photons are identical. BUT the chisq comparison 
+machinery was setup for comparing indep samples. 
+
+Need different comparison approach, 
+
+* photons with histories not involving rng (SC|AB|RE)
+  should be identical  
+
+::
+
+    .                pflags_ana  1:tboolean-cubeplanes   -1:tboolean-cubeplanes        c2        ab        ba 
+    .                             600000    600000         2.28/9 =  0.25  (pval:0.986 prob:0.014)  
+    0000             1880    337842    337692             0.03        1.000 +- 0.002        1.000 +- 0.002  [3 ] TO|BT|SA
+    0001             1080    215778    215777             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] TO|SA
+    0002             1480     23427     23472             0.04        0.998 +- 0.007        1.002 +- 0.007  [3 ] TO|BR|SA
+    0003             1c80     22170     22282             0.28        0.995 +- 0.007        1.005 +- 0.007  [4 ] TO|BT|BR|SA
+    0004             10a0       255       241             0.40        1.058 +- 0.066        0.945 +- 0.061  [3 ] TO|SA|SC
+    0005             18a0       160       174             0.59        0.920 +- 0.073        1.087 +- 0.082  [4 ] TO|BT|SA|SC
+    0006             1808       152       150             0.01        1.013 +- 0.082        0.987 +- 0.081  [3 ] TO|BT|AB
+    0007             1ca0       101        89             0.76        1.135 +- 0.113        0.881 +- 0.093  [5 ] TO|BT|BR|SA|SC
+    0008             1c20        67        65             0.03        1.031 +- 0.126        0.970 +- 0.120  [4 ] TO|BT|BR|SC
+    0009             1008        31        34             0.14        0.912 +- 0.164        1.097 +- 0.188  [2 ] TO|AB
+    0010             14a0        10        11             0.00        0.909 +- 0.287        1.100 +- 0.332  [4 ] TO|BR|SA|SC
+    0011             1c08         6        13             0.00        0.462 +- 0.188        2.167 +- 0.601  [4 ] TO|BT|BR|AB
+    0012             1408         1         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [3 ] TO|BR|AB
+
+
+* perhaps photons not influenced by different random sequences
+  from the two simulations should be excluded
+  
+
 TODO 
 ------
 
 Prime objective is Automation of these tests
+
 
 * test compute mode operation, verify same as interop, 
   use compute mode for test harness running of lists of tests 
@@ -73,6 +110,7 @@ Prime objective is Automation of these tests
 * check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
 
 * check, is torchconfig still working, what happens with both emitconfig and torchconfig active ?
+
 
 
 
@@ -108,6 +146,9 @@ NB the kv delimiter is ":" to allow incorporation into GGeoTest config without i
 The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
 eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
 (This is not yet implemented for all primitives, eg cone trips and assert) 
+
+NB *emitconfig* attributes can be applied to all solids without having any effect, it is necessary 
+   to in addition have an *emit=1/-1* to (*emit=0* is the default) 
 
 
 opticksnpy/NEmitPhotonsNPY
@@ -692,7 +733,15 @@ tboolean-box-notes(){ cat << EON
 $FUNCNAME
 ============================
 
-* PASSED tboolean-;tboolean-box --okg4 --testauto
+tboolean-;tboolean-box --okg4 --testauto
+    PASS
+tboolean-;tboolean-box --okg4 
+    PASS
+
+
+
+
+
 
 * FIXED notes/issues/tboolean-box-okg4-seqmat-mismatch.rst
   "TO BR SA" was always giving incorrect 1st material in G4 recording 
