@@ -35,6 +35,11 @@ struct NPY_API NEmitConfig
 
     std::string sheetmask ; 
 
+    float umin ; 
+    float umax ; 
+    float vmin ; 
+    float vmax ; 
+
 
 };
 

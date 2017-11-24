@@ -420,6 +420,8 @@ generate_torch_photon(Photon& p, TorchStep& ts, curandState &rng)
       }
       else if( ts.type == T_DISCAXIAL )
       {
+          // disc beams from many directions 
+
           unsigned long long photon_id = launch_index.x ;  
 
           float3 dir = get_direction_26( photon_id % 26 );

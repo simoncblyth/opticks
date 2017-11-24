@@ -194,8 +194,6 @@ void Opticks::dumpRC() const
 
 
 
-
-
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
        m_ok(this),
@@ -415,6 +413,10 @@ const char* Opticks::getDbgCSGPath()
     return dbgcsgpath.empty() ? NULL : dbgcsgpath.c_str();
 }
 
+unsigned Opticks::getSeed() const 
+{
+    return m_cfg->getSeed();
+}
 
 
 

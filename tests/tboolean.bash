@@ -44,14 +44,15 @@ tboolean-name-ip
     which jumps into interactive python with the event loaded
 
 
+TODO 
+------
 
-WIP : Automation of these tests
-----------------------------------
+Prime objective is Automation of these tests
 
-* TODO: test compute mode operation, verify same as interop, 
+* test compute mode operation, verify same as interop, 
   use compute mode for test harness running of lists of tests 
 
-* TODO: rationalize where to get NGeoTestConfig from, 
+* rationalize where to get NGeoTestConfig from, 
   when using loaded test evt, must get from event, 
   when creating the event need to get from Opticks ?
 
@@ -60,32 +61,87 @@ WIP : Automation of these tests
 
   Need this for removing the emitconfig.deltashift kludge in OpticksEventAna
 
+* detect russian-doll or sibling-solids based on boundaries, 
+  and do the CTestDetector conversion to G4 accordingly  
+
 * IDEA : perhaps a op.py that parses arguments and writes a config directory of 
   json for an Opticks invokation... with the path to the directory being 
   taken as a standard Opticks argument.
+
+* migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
+
+* check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
+
+* check, is torchconfig still working, what happens with both emitconfig and torchconfig active ?
+
+
 
 
 Configuring Photon Sources 
 -----------------------------
 
-
-There are two approaches, the older manual torchconfig which is 
-defined separately from geometry and the newer more automated emitconfig,
+There are two approaches, the older manual *torchconfig* which is 
+defined separately from geometry and the newer more automated *emitconfig*,
 which attaches emission properties to solids in the geometry.
 
+A major difference is that *emitconfig* does the photon generation 
+once only on the CPU with these photons being copied to GPU, thus precisely 
+the same input photons are used for both Opticks and G4 simulations, 
+whereas with *torchconfig* parameters in the form of gensteps 
+are passed to the GPU where the generation is done, as well as
+a CPU side G4 generation.   
+*torchconfig* thus entails keeping two generation implementations in step, 
+and does not yield exactly the same photons.
+
 emitconfig
-   Emission of photons from the surface of any CSG primitive is configured 
-   with the *emit* attribute. emit=1/-1 emits outwards/inwards and emit=0 
-   switches off emission.  The details of the emission can be 
-   controlled with the emitconfig attribute, which defaults to:: 
+~~~~~~~~~~~~
 
-        tboolean-emitconfig(){ echo "photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" ; }  
+Emission of photons from the surface of any CSG primitive is configured 
+with the *emit* attribute. emit=1/-1 emits outwards/inwards and emit=0 
+switches off emission.  The details of the emission can be 
+controlled with the emitconfig attribute, which defaults to:: 
 
-   NB the kv delimter is ":" to allow incorporation ito GGeoTest config without interference 
- 
-   The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
-   eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
-   (This is not yet implemented for all primitives, eg cone trips and assert) 
+    tboolean-emitconfig(){ echo "photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" ; }  
+
+NB the kv delimiter is ":" to allow incorporation into GGeoTest config without interference 
+
+The sheetmask configures which sheets of a solid emit (0x1  : sheet 0 only, 0x3f : sheets 0:6 )
+eg a cube has 6 sheets, a truncated cone has 3 sheets (2 endcaps + body)
+(This is not yet implemented for all primitives, eg cone trips and assert) 
+
+
+opticksnpy/NEmitPhotonsNPY
+    NEmitPhotonsNPY::init creates input photon buffer for an NCSG instance,  
+    using points and normals from NNode::generateParPoints which 
+    uses shape specializations of NNode::par_posnrm_model( pos, nrm, sheet, fu, fv );
+
+
+torchconfig
+~~~~~~~~~~~
+
+opticksnpy/TorchStepNPY 
+    parses config string and encodes params into genstep buffer for copying to GPU 
+
+optixrap/cu/torchstep.h
+    GPU side OptiX generation of photons from the genstep buffer, this 
+    works by throwing two random numbers (ranges from zeaz:zenithazimuth)
+    that are used in different ways based upon genstep params  
+
+cfg4/CTorchSource
+    CPU side G4 generation of photons from the genstep buffer, actually the TorchStepNPY instance
+
+
+Deficiencies of torchconfig:
+
+1. get bizarre results when the torch positions are outside the container that 
+   defines the Opticks domain, forcing manually tweaking of the 
+   torch positions for different containers : the problem with this
+   is that it is then not possible to reproduce a prior torch setup via a 
+   torchname for example. 
+
+   *emitconfig* solves this issue by decoupling from position, but 
+   is currently limited to all sheet/face generation.
+
 
 
 Relevant Opticks Options
@@ -120,6 +176,26 @@ Relevant Opticks Options
     for example to modify the chisq cut  "--c2max_0.5"  
     (note the encoding of spaces with underscores)
 
+--noab/--nosc/--nore
+    switch off absorb/scattering/reemission in all materials, see GMaterialLib 
+    these options enable great simplification of photon histories
+
+--xxab/--xxsc/--xxre
+    enhance absorb/scattering/reemission in all materials, see GMaterialLib 
+
+--fxab/--fxsc/--fxre
+    set particular values of absorb/scattering/reemission in all materials, see GMaterialLib 
+
+--tracetest 
+    CAUTION: this has not been exercised recently, so probably not working
+
+    with tracetest option only a single intersect is
+    done using oxrap/cu/generate.cu:tracetest and a special 
+    format of the photon buffer is used, for analysis by ana/tboolean.py 
+    Note that in tracetest mode the record buffer filling 
+    is not implemented so the visualization 
+    of photon paths is not operational.
+
 
 testauto details
 -------------------
@@ -136,6 +212,7 @@ TODO: the intersects positions of any seqmap matches are still being
 checked in non testauto, but the stats are probably going to be zero. 
 Perhaps switch off ? 
 
+IDEA: seqmap wildcards "*,SA:0" to check all SA arrive at tree 0 
 
 
 Example::
@@ -157,20 +234,6 @@ Example::
    into NGeoTestConfig
   
 
-Other Options Useful for Debugging
--------------------------------------
-
-
-noab/nosc/nore
-    switch off absorb/scattering/reemission in all materials, see GMaterialLib 
-
-xxab/xxsc/xxre
-    enhance absorb/scattering/reemission in all materials, see GMaterialLib 
-
-fxab/fxsc/fxre
-    set particular values of absorb/scattering/reemission in all materials, see GMaterialLib 
-
-
 Workflow Examples
 --------------------
 
@@ -189,20 +252,6 @@ Workflow Examples
 
     tboolean-torus-a --vizg4 
        ## load the G4 event, for dumping etc..
-
-
-TODO
-----
-
-* revisit all the tboolean-funcs updating geostyle and doing cfg4 match checks 
-
-* automate the running of tboolean-funcs and match validations
-
-* migrate non-GGeoTest/non-NCSG tboolean-funcs into tgltf or elsewhere
-
-* check the test surfaces:  perfectAbsorbSurface, perfectDetectSurface, perfectSpecularSurface, perfectDiffuseSurface
-
-* check, is torchconfig still working, what happens with both emitconfig and torchconfig active ?
 
 
 
@@ -334,22 +383,6 @@ tboolean-0
 tboolean-sst
      Assertion failed: (join2 != JOIN_COINCIDENT), function znudge_umaxmin, file /Users/blyth/opticks/opticksnpy/NNodeNudger.cpp, line 413.
 
-
-
-NOTES
---------
-
-tracetest option
-~~~~~~~~~~~~~~~~~~~
-
-When using tracetest option only a single intersect is
-done using oxrap/cu/generate.cu:tracetest and a special 
-format of the photon buffer is used, for analysis by 
-ana/tboolean.py 
-
-However in tracetest mode the record buffer filling 
-is not implemented so the visualization 
-of photon paths is not operational.
 
 
 EOU
@@ -642,7 +675,7 @@ from opticks.analytic.csg import CSG
 
 args = opticks_main(csgpath="$TMP/$FUNCNAME")
 
-emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1" 
+emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 
 CSG.kwa = dict(poly="IM",resolution="20", verbosity="0",ctrl="0", containerscale="3", emitconfig=emitconfig  )
 
@@ -817,7 +850,9 @@ tboolean-cone-notes(){ cat << EON
 $FUNCNAME
 =======================
 
-* PASSED : tboolean-;tboolean-cone --okg4 --testauto
+tboolean-;tboolean-cone --okg4 --testauto
+    PASS
+
 
 * CMaker::ConvertPrimitive requires z symmetry for the cone section
   assert( z2 > z1 && z2 == -z1 );
@@ -862,9 +897,14 @@ tboolean-prism-notes(){ cat << EON
 $FUNCNAME
 ==========================
 
-* PASSED : tboolean-;tboolean-prism --okg4 --testauto
+tboolean-;tboolean-prism --okg4 
+    PASS
 
-  * but stats not great, as the prism is too small compared to container
+tboolean-;tboolean-prism --okg4 --testauto
+    PASS 
+
+Stats not great, as the prism is too small compared to container
+
 
 * unlike other solids, need to manually set bbox for solids stored as a 
   set of planes in NConvexPolyhedron as cannot easily derive the bbox 
@@ -911,15 +951,14 @@ tboolean-icosahedron-notes(){ cat << EON
 $FUNCNAME
 ==========================
 
-* PASSED : tboolean-;tboolean-icosahedron --okg4 --testauto
-
-* tboolean-;tboolean-icosahedron-p seq match 
-
+tboolean-;tboolean-icosahedron --okg4 
+    PASS
+tboolean-;tboolean-icosahedron --okg4 --testauto
+    PASS
 
 
 EON
 }
-
 
 
 tboolean-cubeplanes-a(){ TESTNAME=${FUNCNAME/-a} tboolean-ana- $* ; } 
@@ -951,7 +990,33 @@ tboolean-cubeplanes-notes(){ cat << EON
 $FUNCNAME
 ==========================
 
-* notes/issues/tboolean-cubeplanes-many-stuck-tracks-drastic-difference.rst
+tboolean-;tboolean-cubeplanes --okg4 
+    FAIL notes/issues/tboolean-cubeplanes-many-stuck-tracks-drastic-difference.rst
+
+tboolean-;tboolean-cubeplanes --okg4 --testauto
+    FAIL from drastic history difference, intersect positions are OK
+
+
+CubePlanes is a cube that in Opticks is handled as a convexpolyhedon set of planes
+and in G4 as a G4TessellatedSolid : it exists mainly as a way of testing these
+solids with a shape with easy to check results.  
+
+
+/tmp/blyth/opticks/tboolean-cubeplanes--
+.                seqhis_ana  1:tboolean-cubeplanes   -1:tboolean-cubeplanes        c2        ab        ba 
+.                             100000    100000      3019.09/2 = 1509.54  (pval:0.000 prob:1.000)  
+0000               8d     83883     91862           362.25        0.913 +- 0.003        1.095 +- 0.004  [2 ] TO SA
+0001              8ad     16015      8025          2655.58        1.996 +- 0.016        0.501 +- 0.006  [3 ] TO SR SA
+
+   
+* TODO: somehow label photons that get G4 stuck, exclude them from both
+  to see if issue is entirely from stuck tracks
+
+* TODO: provide some metadata switch to use standard G4 box, then can check the 
+  Opticks convexpolyhedron against that rather than against the 
+  apparently stuck track prone G4TessellatedSolid 
+
+
 
 EON
 }

@@ -35,7 +35,7 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_fabstep(NULL),
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
-   m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE) : NULL ),
+   m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), false) : NULL ),
    m_input_photons(NULL),
    m_source_code( m_emitter ? EMITSOURCE : m_ok->getSourceCode() )
 {

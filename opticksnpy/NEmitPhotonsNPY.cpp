@@ -15,10 +15,11 @@
 #include "PLOG.hh"
 
 
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, bool emitdbg)
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg)
     :
     m_csg(csg),
     m_emitdbg(emitdbg),
+    m_seed(seed),
     m_emit( csg->getEmit() ),
     m_emitcfg_( csg->getEmitConfig() ),
     m_emitcfg( new NEmitConfig( m_emitcfg_ )),
@@ -72,9 +73,9 @@ void NEmitPhotonsNPY::init()
 
     std::string sheetmask_ = m_emitcfg->sheetmask ; 
     unsigned sheetmask = BHex<unsigned>::hex_lexical_cast( sheetmask_.c_str() ) ;
+    glm::vec4 uvdom( m_emitcfg->umin, m_emitcfg->umax, m_emitcfg->vmin, m_emitcfg->vmax );
 
-
-    m_root->generateParPoints( points, normals, numPhoton, sheetmask );
+    m_root->generateParPoints( m_seed, uvdom, points, normals, numPhoton, sheetmask );
 
     assert( points.size() == numPhoton );
     assert( normals.size() == numPhoton );

@@ -30,6 +30,9 @@ set(TEST_SOURCES
    BConfigConstituentTest.cc
    BRngTest.cc
 
+   boost_random_demo_Test.cc
+   boost_random_minimal_Test.cc
+
 )
 
 
@@ -37,6 +40,7 @@ set(TEST_SOURCES
 set(TEST_SOURCES_NOT
 
    BTimeTest.cc
+   boost_random_Test.cc
 
 )
 

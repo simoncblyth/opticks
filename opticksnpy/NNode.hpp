@@ -111,8 +111,8 @@ struct NPY_API nnode
 
 
     void selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) const ;
-    void generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const   ;
-    void generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const ;
+    void generateParPoints(unsigned seed, const glm::vec4& uvdom, std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const   ;
+    void generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& ugen, BRng& vgen, unsigned sheet, unsigned num ) const ;
 
 
 

@@ -6,7 +6,7 @@
 
 
 //const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0,posdelta=0.0,sheetmask=0" ; 
-const char* NEmitConfig::DEFAULT = "photons:100000,wavelength:480,time:0.1,weight:1.0,posdelta:0.0,sheetmask:0x3f" ; 
+const char* NEmitConfig::DEFAULT = "photons:100000,wavelength:480,time:0.1,weight:1.0,posdelta:0.0,sheetmask:0x3f,umin:0,umax:1,vmin:0,vmax:1" ; 
 
 NEmitConfig::NEmitConfig(const char* cfg)  
     :
@@ -17,7 +17,11 @@ NEmitConfig::NEmitConfig(const char* cfg)
     time(0.01f),
     weight(1.0f),
     posdelta(0.f),
-    sheetmask("0xffff")
+    sheetmask("0xffff"),
+    umin(0.f),
+    umax(1.f),
+    vmin(0.f),
+    vmax(1.f)
 {
     LOG(debug) << "NEmitConfig::NEmitConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
@@ -30,8 +34,22 @@ NEmitConfig::NEmitConfig(const char* cfg)
     bconfig->addFloat("weight", &weight );
     bconfig->addFloat("posdelta", &posdelta );
     bconfig->addString("sheetmask", &sheetmask );
+    bconfig->addFloat("umin", &umin );
+    bconfig->addFloat("umax", &umax );
+    bconfig->addFloat("vmin", &vmin );
+    bconfig->addFloat("vmax", &vmax );
 
     bconfig->parse();
+
+
+    assert( umin >= 0 && umin <= 1.) ;
+    assert( umax >= 0 && umax <= 1.) ;
+    assert( vmin >= 0 && umin <= 1.) ;
+    assert( vmax >= 0 && vmax <= 1.) ;
+
+    assert( umax >= umin );
+    assert( vmax >= vmin );
+
 }
 
 

@@ -66,6 +66,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getAnalyticPMTMedium();
 
      float        getEpsilon(); 
+
+     unsigned     getSeed() const ; 
      int          getRngMax(); 
      int          getBounceMax(); 
      int          getRecordMax(); 
@@ -157,6 +159,7 @@ private:
 
 
      float       m_epsilon ; 
+     unsigned    m_seed ; 
      int         m_rngmax ; 
      int         m_bouncemax ; 
      int         m_recordmax ; 

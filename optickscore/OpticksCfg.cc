@@ -58,6 +58,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_fxscconfig("0"),
        m_apmtslice(""),
        m_epsilon(0.1f),     
+       m_seed(42),     
        m_rngmax(3000000),     
        m_bouncemax(9),     
        m_recordmax(10),
@@ -632,6 +633,12 @@ void OpticksCfg<Listener>::init()
 
 
 
+   char seed[128];
+   snprintf(seed,128, 
+"Unsigned int seed used with NEmitPhotons/BRng"
+"Default %d ", m_seed);
+   m_desc.add_options()
+       ("seed",  boost::program_options::value<unsigned>(&m_seed), seed );
 
 
    char rngmax[128];
@@ -845,7 +852,6 @@ void OpticksCfg<Listener>::init()
 
 
 }   
-
 
 
 
@@ -1142,6 +1148,13 @@ float OpticksCfg<Listener>::getEpsilon()
 {
     return m_epsilon ; 
 }
+
+template <class Listener>
+unsigned OpticksCfg<Listener>::getSeed() const 
+{
+    return m_seed ; 
+}
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getRngMax()

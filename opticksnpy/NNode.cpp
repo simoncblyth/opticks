@@ -1229,23 +1229,24 @@ void nnode::selectSheets( std::vector<unsigned>& sheets, unsigned sheetmask ) co
 }
 
 
-void nnode::generateParPoints(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const  
+void nnode::generateParPoints(unsigned seed, const glm::vec4& uvdom, std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, unsigned num_total, unsigned sheetmask ) const  
 {
     std::vector<unsigned> sheets ; 
     selectSheets(sheets, sheetmask);
     unsigned ns = sheets.size() ; 
 
     unsigned cumsum = 0 ; 
-    BRng rng ;  // hmm this repeats every time : need to handle globally, seeding?
+    BRng ugen(uvdom.x,uvdom.y, seed,   "U") ;  
+    BRng vgen(uvdom.z,uvdom.w, seed+1, "V") ;  
 
     for(unsigned sheet = 0 ; sheet < ns  ; sheet++) 
     {
         unsigned num = sheet == ns - 1 ? num_total - cumsum : num_total/ns  ; 
-        generateParPointsSheet(points, normals, rng, sheet, num ) ;
+        generateParPointsSheet(points, normals, ugen, vgen,  sheet, num ) ;
         cumsum += num ; 
     }
 }
-void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& rng, unsigned sheet, unsigned num ) const 
+void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<glm::vec3>& normals, BRng& ugen, BRng& vgen,  unsigned sheet, unsigned num ) const 
 {
 
     glm::vec3 pos ; 
@@ -1260,8 +1261,8 @@ void nnode::generateParPointsSheet(std::vector<glm::vec3>& points, std::vector<g
 
     for(unsigned i=0 ; i < num ; i++)
     {
-        float fu = rng() ;
-        float fv = rng() ;
+        float fu = ugen.one() ;
+        float fv = vgen.one() ;
 
         if(dump)
         std::cout 

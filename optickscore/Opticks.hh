@@ -237,6 +237,7 @@ class OKCORE_API Opticks {
        OpticksCfg<Opticks>* getCfg();
        const char*          getRenderMode();
        const char*          getDbgCSGPath();
+       unsigned             getSeed() const ; 
    public:
        // from cfg
        const char*          getG4GunConfig() const ;

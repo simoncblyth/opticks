@@ -17,8 +17,11 @@ void test_generateParPoints(const nnode* n, unsigned num_gen, unsigned sheetmask
     std::vector<glm::vec3> points ; 
     std::vector<glm::vec3> normals ; 
 
+    unsigned seed = 42 ; 
 
-    n->generateParPoints( points, normals, num_gen, sheetmask ); 
+    glm::vec4 uvdom(0.45,0.55,0,1);
+
+    n->generateParPoints( seed, uvdom, points, normals, num_gen, sheetmask ); 
 
     LOG(info) << "test_generateParPoints"
               << " num_gen " << num_gen 

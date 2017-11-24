@@ -53,8 +53,11 @@ int main(int argc, char** argv)
 
     unsigned EMITSOURCE = 0x1 << 18 ; 
     unsigned gencode = EMITSOURCE ; 
+    unsigned seed = 42 ; 
+    bool emitdbg = false ; 
 
-    NEmitPhotonsNPY ep(csg, gencode) ;
+
+    NEmitPhotonsNPY ep(csg, gencode, seed, emitdbg) ;
 
     NPY<float>* ox = ep.getPhotons();
     ox->dump();
