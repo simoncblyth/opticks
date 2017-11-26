@@ -24,7 +24,7 @@ OpticksAna::OpticksAna(Opticks* ok)
 
 bool OpticksAna::isKeyEnabled(const char* anakey) const 
 {
-     return m_scripts.count(anakey) == 1 ;
+     return anakey && m_scripts.count(anakey) == 1 ;
 }
 
 const char* OpticksAna::getScript(const char* anakey) 
