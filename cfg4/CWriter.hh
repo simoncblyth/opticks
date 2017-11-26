@@ -23,8 +23,10 @@ class CFG4_API CWriter
         friend class CRecorder ; 
     public: 
         // TODO: move into sysrap- 
+
          static short shortnorm( float v, float center, float extent );
          static unsigned char my__float2uint_rn( float f );
+
     public:
         CWriter(CG4* g4, CPhoton& photon, bool dynamic);        
 

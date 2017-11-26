@@ -83,6 +83,7 @@ set(SOURCES
   BConfig.cc
   BBnd.cc
   BRng.cc
+  BConverter.cc
 
 ) 
 

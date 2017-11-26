@@ -11,6 +11,7 @@ struct ShortCompressor
     T _max    ; 
     T _step   ; 
     T _eps    ;
+    T _half    ;
 
     ShortCompressor( T center, T extent )
         :
@@ -19,17 +20,23 @@ struct ShortCompressor
         _extent(extent),
         _max(_imax),
         _step(_extent/_max),
-        _eps(0.001)
+        _eps(0.001),
+        _half(0.5)
     {   
     }   
 
     __host__ __device__ 
     T value(int iv) 
     {   
-        return _center + _step*T(iv) ;   
+        return _center + _step*(T(iv)+_half) ;   
     }   
 
-
+    __host__ __device__ 
+    T fvalue(T v) 
+    {   
+        return  _max*(v - _center)/_extent ;
+    }   
+  
     __device__ 
     int ivalue(double v)
     {   
@@ -48,8 +55,8 @@ struct ShortCompressor
     __device__
     void operator()(float4 v)
     {
-        printf("%15.7f %d   %15.7f %d   %15.7f %d    %15.7f  %d \n",
-              v.x, ivalue(v.x), 
+        printf("%15.7f %15.7f %d   %15.7f %d   %15.7f %d    %15.7f  %d \n",
+              v.x, fvalue(v.x), ivalue(v.x), 
               v.y, ivalue(v.y),
               v.z, ivalue(v.z),
               v.w, ivalue(v.w)
@@ -65,7 +72,7 @@ struct ShortCompressor
         for(int i=0 ; i < 10 ; i++)
         {
             T val = value(d0+i) ;
-            fvec[i] = make_float4( val-_eps, val, val+_eps, T(d0+i) );
+            fvec[i] = make_float4( val, val, val, T(d0+i) );
         }
         thrust::for_each(fvec.begin(), fvec.end(),  *this );
     }

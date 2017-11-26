@@ -9,6 +9,7 @@
 
 
 
+#include "BConverter.hh"
 #include "BBit.hh"
 
 #include "CRecorder.h"
@@ -27,26 +28,7 @@
 #include "PLOG.hh"
 
 
-// TODO: move the statics into sysrap-
 
-
-#define fitsInShort(x) !(((((x) & 0xffff8000) >> 15) + 1) & 0x1fffe)
-#define iround(x) ((x)>=0?(int)((x)+0.5):(int)((x)-0.5))
-
-short CWriter::shortnorm( float v, float center, float extent )  // static 
-{
-    // range of short is -32768 to 32767
-    // Expect no positions out of range, as constrained by the geometry are bouncing on,
-    // but getting times beyond the range eg 0.:100 ns is expected
-    //  
-    int inorm = iround(32767.0f * (v - center)/extent ) ;    // linear scaling into -1.f:1.f * float(SHRT_MAX)
-    return fitsInShort(inorm) ? short(inorm) : SHRT_MIN  ;
-} 
-
-unsigned char CWriter::my__float2uint_rn( float f ) // static
-{
-    return iround(f);
-}
 
 
 CWriter::CWriter(CG4* g4, CPhoton& photon, bool dynamic)
@@ -197,18 +179,18 @@ void CWriter::writeStepPoint_(const G4StepPoint* point, const CPhoton& photon )
     const glm::vec4& td = m_evt->getTimeDomain() ; 
     const glm::vec4& wd = m_evt->getWavelengthDomain() ; 
 
-    short posx = shortnorm(pos.x()/mm, sd.x, sd.w ); 
-    short posy = shortnorm(pos.y()/mm, sd.y, sd.w ); 
-    short posz = shortnorm(pos.z()/mm, sd.z, sd.w ); 
-    short time_ = shortnorm(time/ns,   td.x, td.y );
+    short posx = BConverter::shortnorm(pos.x()/mm, sd.x, sd.w ); 
+    short posy = BConverter::shortnorm(pos.y()/mm, sd.y, sd.w ); 
+    short posz = BConverter::shortnorm(pos.z()/mm, sd.z, sd.w ); 
+    short time_ = BConverter::shortnorm(time/ns,   td.x, td.y );
 
     float wfrac = ((wavelength/nm) - wd.x)/wd.w ;   
 
     // see oxrap/cu/photon.h
-    unsigned char polx = my__float2uint_rn( (pol.x()+1.f)*127.f );
-    unsigned char poly = my__float2uint_rn( (pol.y()+1.f)*127.f );
-    unsigned char polz = my__float2uint_rn( (pol.z()+1.f)*127.f );
-    unsigned char wavl = my__float2uint_rn( wfrac*255.f );
+    unsigned char polx = BConverter::my__float2uint_rn( (pol.x()+1.f)*127.f );
+    unsigned char poly = BConverter::my__float2uint_rn( (pol.y()+1.f)*127.f );
+    unsigned char polz = BConverter::my__float2uint_rn( (pol.z()+1.f)*127.f );
+    unsigned char wavl = BConverter::my__float2uint_rn( wfrac*255.f );
 
 /*
     LOG(info) << "CWriter::RecordStepPoint"

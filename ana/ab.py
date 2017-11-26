@@ -19,6 +19,7 @@ from opticks.ana.make_rst_table import recarray_as_rst
 log = logging.getLogger(__name__)
 
 
+
 class AB(object):
     """
     AB : Event Pair comparison
@@ -100,6 +101,7 @@ class AB(object):
         pass
         self.a = a
         self.b = b 
+        self.align = None
         self._dirty = False
         ## property setters
         self.sel = None
@@ -372,6 +374,32 @@ class AB(object):
     selmat = property(_get_sel, _set_selmat)
     selhis = property(_get_sel, _set_selhis)
     selflg = property(_get_sel, _set_selflg)
+
+
+    def _get_align(self):
+        return self._align 
+    def _set_align(self, align):
+        """
+        CAUTION: currently need to set sel after align for it to have an effect
+        """
+        if align is None:
+            _align = None
+        elif type(align) is str:
+            if align == "seqhis":
+                 _align = self.a.seqhis == self.b.seqhis 
+            else:
+                 assert False, (align, "not implemented" ) 
+        else:
+            _align = align
+        pass
+
+        self._align = _align
+        self.a.align = _align
+        self.b.align = _align
+        self.dirty = True  
+
+    align = property(_get_align, _set_align)    
+
 
 
     def _set_flv(self, flv):
@@ -873,6 +901,24 @@ class AB(object):
         pass
         return hh
  
+
+    def aligned_rpost_diff(self, sel="TO BT BT SA"):
+        """
+        """
+        self.align = "seqhis"
+        self.sel = sel 
+        npoi = len(sel.split())
+        av = self.a.rpost_(slice(0,npoi))
+        bv = self.b.rpost_(slice(0,npoi))
+        dv = np.abs( av - bv )
+        return dv
+
+    def aligned_check(self):
+        dv = self.aligned_rpost_diff()
+        wph = np.unique(np.where(dv>0)[0])
+        return dv
+
+
     def rqwn(self, qwn, irec): 
         """
         :param qwn: X,Y,Z,W,T,A,B,C or R  
@@ -936,8 +982,7 @@ if __name__ == '__main__':
     ok = opticks_main()
     ab = AB(ok)
     print ab
-
     print ab.a.metadata
 
-
+    dv = ab.aligned_check()
     

@@ -165,6 +165,8 @@ class Evt(object):
         self._psel = None
         self._labels = []
 
+        self.align = None
+
 
         self.tag = tag
         self.src = src
@@ -620,7 +622,18 @@ class Evt(object):
         else:
             psel = self.make_psel_or(labels)
         pass
+        if self._align is not None:
+            psel = np.logical_and( psel, self._align ) 
+        pass
         return psel
+
+
+    def _set_align(self, align):
+        self._align = align 
+    def _get_align(self):  
+        return self._align
+    align = property(_get_align , _set_align)
+
 
     def _get_label0(self):
         nlab = len(self._labels) 
@@ -733,6 +746,7 @@ class Evt(object):
             self.c4_ = self.c4
             self.wl_ = self.wl
             self.rx_ = self.rx
+            self.so_ = self.so
         pass
         if psel is None: 
             if hasattr(self, 'ox_'):
@@ -741,6 +755,7 @@ class Evt(object):
                 self.c4 = self.c4_
                 self.wl = self.wl_
                 self.rx = self.rx_
+                self.so = self.so_
                 self.seqhis_ana = self.make_seqhis_ana( self.seqhis )   
                 self.seqmat_ana = self.make_seqmat_ana( self.seqmat )   
                 self.pflags_ana = self.make_pflags_ana( self.pflags ) 
@@ -765,6 +780,7 @@ class Evt(object):
         self.c4 = self.c4_[psel]
         self.wl = self.wl_[psel]
         self.rx = self.rx_[psel]
+        self.so = self.so_[psel]
 
         self.seqhis_ana = self.make_seqhis_ana( self.seqhis[psel] )   # sequence history with selection applied
         self.seqmat_ana = self.make_seqmat_ana( self.seqmat[psel] )   
