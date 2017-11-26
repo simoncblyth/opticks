@@ -57,6 +57,12 @@ APPROACHES
       
 
 
+BEFORE ANY CHEATING : NUMPY MACHINERY FOR ALIGNED COMPARISON
+---------------------------------------------------------------
+
+* :doc:`emitconfig-aligned-comparison`
+
+
 THOUGHTS ON CHEATING REFLECTION RANDOMNESS BR/SR : u_cheat=photon_index/num_photons
 -------------------------------------------------------------------------------------
 

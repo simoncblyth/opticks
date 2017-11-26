@@ -210,6 +210,7 @@ class Evt(object):
         if rec:
             self.init_records(tag, src, det, dbg)
             self.init_sequence(tag, src, det, dbg)
+            self.init_source(tag, src, det, dbg)
 
             if len(seqs) == 0:
                 psel = None
@@ -448,6 +449,20 @@ class Evt(object):
         if rx.missing:return 
        
         log.debug("rx shape %s " % str(rx.shape))
+
+    def init_source(self, tag, src, det, dbg):
+        """
+        """
+        log.debug("init_source")
+        so = A.load_("so",src,tag,det,dbg, optional=True)
+        self.so = so
+        self.desc['so'] = "(source) input CPU side emitconfig photons"
+
+        if so.missing:return 
+       
+        log.debug("so shape %s " % str(so.shape))
+
+
 
 
     def make_seqhis_ana(self, seqhis):
@@ -710,7 +725,7 @@ class Evt(object):
 
     def _init_selection(self, psel):
         """
-        :param psel: photon length boolean selection array, make it with make_selection or directy with numpy 
+        :param psel: photon length boolean selection array, make it with make_selection or directly with numpy 
         """
         # for first _init_selection hold on to the originals
         if self._psel is None:

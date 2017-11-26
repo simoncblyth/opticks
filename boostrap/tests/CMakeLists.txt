@@ -32,6 +32,7 @@ set(TEST_SOURCES
 
    boost_random_demo_Test.cc
    boost_random_minimal_Test.cc
+   boost_numeric_converter_Test.cc 
 
 )
 

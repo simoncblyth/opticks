@@ -31,6 +31,9 @@ printfTest.cu
 repeated_rangeTest.cu
 strided_rangeTest.cu
 strided_repeated_rangeTest.cu
+
+float2intTest.cu 
+
 )
 
 set(_TEST_CU_SRCS
