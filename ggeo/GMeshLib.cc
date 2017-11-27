@@ -55,6 +55,11 @@ void GMeshLib::loadFromCache()
 {
     const char* idpath = m_ok->getIdPath() ;
     m_meshindex = GItemIndex::load(idpath, GITEMINDEX, GetRelDirIndex(m_analytic)) ;
+    assert(m_meshindex);
+
+    bool has_index = m_meshindex->hasIndex() ;
+    if(!has_index)  LOG(fatal) << " meshindex load failure " ; 
+    assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
 
     loadMeshes(idpath);
 }

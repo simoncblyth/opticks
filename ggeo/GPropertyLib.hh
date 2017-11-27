@@ -138,8 +138,13 @@ class GGEO_API GPropertyLib {
         void setClosed(bool closed=true);
         bool isClosed() const ;
         bool hasDomain() const ;
+
         void setValid(bool valid=true);
-        bool isValid();
+        bool isValid() const ;
+
+        void setNoLoad(bool noload=true);
+        bool isNoLoad() const ;
+
 
         std::string  getBufferName(const char* suffix=NULL);
         NPY<float>*  getBuffer();
@@ -173,6 +178,7 @@ class GGEO_API GPropertyLib {
         std::map<std::string, std::string>   m_keymap ;   
         bool                                 m_closed ;  
         bool                                 m_valid ;  
+        bool                                 m_noload ;  
     private:
         std::vector<GPropertyMap<float>*>    m_raw ; 
 };

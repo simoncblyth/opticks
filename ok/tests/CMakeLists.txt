@@ -6,6 +6,7 @@ project(${name})
 
 
 set(_TESTS
+    VizTest.cc
 )
 
 set(TESTS
@@ -14,7 +15,6 @@ set(TESTS
     OKTest.cc
     OTracerTest.cc
     LogTest.cc
-    VizTest.cc
     TrivialTest.cc
 )
 

@@ -52,6 +52,7 @@ class GGEO_API GItemIndex {
         GItemIndex(Index* index);
         GItemIndex(const char* itemtype, const char* reldir);
         void setTitle(const char* title);
+        bool hasIndex() const ; 
    public:
         ///////// AIMING TO KILL ///////////////////////////////////////////////////////////
         typedef std::string (*GItemIndexLabellerPtr)(GItemIndex*, const char*, unsigned int& );

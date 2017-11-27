@@ -47,3 +47,63 @@ ggeo-slnw(){ vs- ; echo $(vs-wp $(ggeo-sln)) ; }
 ggeo-vs(){  opticks-vs $(ggeo-sln) ; }
 
 
+ggeo-nocache-test()
+{
+    local dir=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.36fd07b60ec7753c091b38b3f12b4389.dae/
+    [ -d "$dir" ] && rm -rf $dir 
+
+    OPTICKS_QUERY="range:0:1" lldb GMaterialLibTest 
+}
+
+
+
+
+ggeo-t-nocache-(){ cat << EON  
+GMaterialLibTest
+GScintillatorLibTest
+GBndLibTest
+GBndLibInitTest
+GPartsTest
+GPmtTest
+BoundariesNPYTest
+GAttrSeqTest
+GGeoLibTest
+GGeoTest
+GMakerTest
+NLookupTest
+RecordsNPYTest 
+GSceneTest
+GMeshLibTest
+EON
+}       # these tests all fail when there is no geocache
+
+
+ggeo-t-nocache-rmcache()
+{
+    ## NB this dir corresponds to OPTICKS_QUERY="range:0:1"
+    local dir=/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.36fd07b60ec7753c091b38b3f12b4389.dae/
+    [ -d "$dir" ] && rm -rf $dir 
+}
+
+ggeo-t-nocache()
+{
+    local msg="=== $FUNCNAME :"
+    ggeo-t-nocache-rmcache
+    local testname
+    $FUNCNAME- | while read testname ; do  
+        echo 
+        echo
+        echo $msg $testname
+        OPTICKS_QUERY="range:0:1" $testname
+    done    
+}
+
+ggeo-t-nocache-lldb()
+{   
+    local testname=${1:-GMeshLibTest}
+    ggeo-t-nocache-rmcache
+    OPTICKS_QUERY="range:0:1" lldb $testname
+}
+
+
+

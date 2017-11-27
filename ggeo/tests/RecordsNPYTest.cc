@@ -17,6 +17,7 @@
 
 #include "GGEO_BODY.hh"
 
+#include "GGEO_LOG.hh"
 #include "NPY_LOG.hh"
 #include "OKCORE_LOG.hh"
 #include "PLOG.hh"
@@ -26,6 +27,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     NPY_LOG__ ; 
+    GGEO_LOG__ ; 
     OKCORE_LOG__ ; 
 
     LOG(info) << argv[0] ; 

@@ -30,7 +30,7 @@ Some further .bash_profile setup simplifies use of Opticks binaries and analysis
     op(){ op.sh $* ; } 
 
     export PYTHONPATH=$HOME
-    export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$PATH
+    export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
 
 
 Opticks Installation Overview

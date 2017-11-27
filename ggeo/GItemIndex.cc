@@ -152,7 +152,10 @@ const char* GItemIndex::getSelectedLabel()
 }
 
 
-
+bool GItemIndex::hasIndex() const
+{
+    return m_index != NULL ;  
+}
 
 
 
@@ -234,8 +237,7 @@ void GItemIndex::save(const char* idpath)
 
 unsigned int GItemIndex::getNumItems()
 {
-    assert(m_index);
-    return m_index->getNumItems();
+    return m_index ? m_index->getNumItems() : 0 ;
 }
 
 void GItemIndex::test(const char* msg, bool verbose)

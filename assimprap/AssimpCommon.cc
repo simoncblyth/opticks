@@ -1,3 +1,6 @@
+
+
+#include <cassert>
 #include <cstdio>
 
 #include <assimp/scene.h>

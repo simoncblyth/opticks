@@ -6,6 +6,7 @@
 #include "Opticks.hh"
 #include "GBndLib.hh"
 
+#include "GGEO_LOG.hh"
 #include "NPY_LOG.hh"
 
 #include "GGEO_BODY.hh"
@@ -65,6 +66,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
 
     NPY_LOG__ ; 
+    GGEO_LOG__ ; 
 
     Opticks* m_opticks = new Opticks(argc, argv);
 

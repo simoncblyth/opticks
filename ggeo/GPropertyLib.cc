@@ -244,10 +244,23 @@ void GPropertyLib::setValid(bool valid)
 {
     m_valid = valid ; 
 }
-bool GPropertyLib::isValid()
+bool GPropertyLib::isValid() const 
 {
     return m_valid ; 
 }
+
+void GPropertyLib::setNoLoad(bool noload)
+{
+    m_noload = noload ; 
+}
+bool GPropertyLib::isNoLoad() const 
+{
+    return m_noload ; 
+}
+
+
+
+
 
 unsigned int GPropertyLib::getNumRaw()
 {
@@ -482,9 +495,16 @@ void GPropertyLib::loadFromCache()
 
   
     NPY<float>* buf = NPY<float>::load(dir.c_str(), name.c_str()); 
+    if(!buf)
+    {
+        LOG(fatal) << "GPropertyLib::loadFromCache FAILED " 
+                   << " dir " << dir
+                   << " name " << name 
+                   ;
+    }
+    assert(buf && "YOU PROBABLY NEED TO CREATE/RE-CREATE THE GEOCACHE BY RUNNING  : op.sh -G ");
 
     NMeta* meta = NMeta::Load(dir.c_str(), METANAME ) ; 
-
     assert( meta && "probably the geocache is an old version : lacking metadata : recreate geocache with -G option " );
 
 
