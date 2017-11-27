@@ -24,6 +24,9 @@ class Typ ;
 
 class OKCORE_API OpticksResource : public BOpticksResource {
     private:
+       static const char* G4ENV_RELPATH ; 
+       static const char* OKDATA_RELPATH ;
+    private:
        static const char* JUNO ; 
        static const char* DAYABAY ; 
        static const char* DPIB ; 
@@ -62,7 +65,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        bool isValid();
     private:
        void init();
-       BEnv* readIniEnvironment(const char* relpath);
+       BEnv* readIniEnvironment(const std::string& relpath);
        void readG4Environment();
        void readOpticksEnvironment();
        void readEnvironment();
@@ -85,6 +88,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
    public:
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
+       std::string getInstallPath(const char* relpath) const ;
        std::string getRelativePath(const char* path); 
        std::string getRelativePath(const char* name, unsigned int ridx);
        std::string getObjectPath(const char* name, unsigned int ridx);
@@ -106,6 +110,13 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        const char* getEnvPrefix();
        bool idNameContains(const char* s); 
+    public:
+       // resource existance dumping 
+       void dumpPaths(const char* msg) const ;
+       void dumpDirs(const char* msg) const ;
+       void getPaths(std::vector<std::pair<std::string, std::string> >& paths ) const ;
+       void getDirs(std::vector<std::pair<std::string, std::string> >& paths ) const ;
+    public:
        void Summary(const char* msg="OpticksResource::Summary");
        void Dump(const char* msg="OpticksResource::Dump");
        std::string desc() const ; 

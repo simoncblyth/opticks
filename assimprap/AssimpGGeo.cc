@@ -4,6 +4,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include "BStr.hh"
+#include "BFile.hh"
 
 // npy-
 #include "NSensorList.hpp"
@@ -138,6 +139,14 @@ int AssimpGGeo::load(GGeo* ggeo) // static
              << " ctrl " << ( ctrl ? ctrl : "NULL" )
              << " verbosity " << verbosity 
              ; 
+
+
+    bool exists = path ? BFile::ExistsFile(path ) : false ;
+    if(!exists)
+    {
+        LOG(fatal) << " missing G4DAE path " << path ;  
+        return 101 ; 
+    }
 
     assert(path);
     assert(query);

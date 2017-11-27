@@ -17,6 +17,8 @@ Comparing with pycollada
 #include <cstdlib>
 #include <cassert>
 
+#include "BFile.hh"
+
 #include "NGLM.hpp"
 #include "NPY.hpp"
 #include "Opticks.hh"
@@ -77,6 +79,8 @@ int main(int argc, char** argv)
         LOG(error) << "NULL daepath" ;
         return 0 ; 
     } 
+
+
 
 
     GGeo* m_ggeo = new GGeo(&ok);

@@ -568,7 +568,12 @@ void GGeo::loadFromG4DAE()
 
     int rc = (*m_loader_imp)(this);   //  imp set in OpticksGeometry::loadGeometryBase, m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
-    assert(rc == 0);
+    if(rc != 0)
+        LOG(fatal) << "GGeo::loadFromG4DAE"
+                   << " FAILED : probably you need to download opticksdata "
+                   ;
+
+    assert(rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- ") ;
 
     prepareScintillatorLib();
 

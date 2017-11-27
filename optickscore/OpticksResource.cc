@@ -37,6 +37,13 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
+
+
+const char* OpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
+const char* OpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ;
+
+
+
 const char* OpticksResource::JUNO    = "juno1707" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
 const char* OpticksResource::DPIB    = "PmtInBox" ; 
@@ -274,6 +281,9 @@ bool OpticksResource::idNameContains(const char* s)
     return ret ; 
 }
 
+
+
+
 std::string OpticksResource::getRelativePath(const char* path)
 {
     const char* idpath = getIdPath();
@@ -473,17 +483,14 @@ const char* OpticksResource::getTestConfig() const
 
 
 
-
-
-
 void OpticksResource::readG4Environment()
 {
     // NB this relpath needs to match that in g4-;g4-export-ini
     //    it is relative to the install_prefix which 
     //    is canonically /usr/local/opticks
     //
-    const char* relpath = "externals/config/geant4.ini" ;
-    m_g4env = readIniEnvironment(relpath);
+    std::string inipath = getInstallPath(G4ENV_RELPATH ) ;
+    m_g4env = readIniEnvironment(inipath);
     if(m_g4env)
     {
         m_g4env->setEnvironment();
@@ -491,11 +498,12 @@ void OpticksResource::readG4Environment()
     else
     {
         LOG(warning) << "OpticksResource::readG4Environment"
-                     << " MISSING FILE " << relpath
+                     << " MISSING inipath " << inipath
                      << " (create it with bash functions: g4-;g4-export-ini ) " 
                      ;
     }
 }
+
 
 void OpticksResource::readOpticksEnvironment()
 {
@@ -503,8 +511,8 @@ void OpticksResource::readOpticksEnvironment()
     //    it is relative to the install_prefix which 
     //    is canonically /usr/local/opticks
     //
-    const char* relpath = "opticksdata/config/opticksdata.ini" ;
-    m_okenv = readIniEnvironment(relpath);
+    std::string inipath = getInstallPath(OKDATA_RELPATH ) ;
+    m_okenv = readIniEnvironment(inipath);
     if(m_okenv)
     {
         m_okenv->setEnvironment();
@@ -512,7 +520,7 @@ void OpticksResource::readOpticksEnvironment()
     else
     {
         LOG(warning) << "OpticksResource::readOpticksDataEnvironment"
-                     << " MISSING FILE " << relpath
+                     << " MISSING inipath " << inipath 
                      << " (create it with bash functions: opticksdata-;opticksdata-export-ini ) " 
                      ;
     }
@@ -520,9 +528,14 @@ void OpticksResource::readOpticksEnvironment()
 
 
 
-BEnv* OpticksResource::readIniEnvironment(const char* relpath)
+std::string OpticksResource::getInstallPath(const char* relpath) const 
 {
-    std::string inipath = BFile::FormPath(m_install_prefix, relpath) ;
+    std::string path = BFile::FormPath(m_install_prefix, relpath) ;
+    return path ;
+}
+
+BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
+{
     BEnv* env = NULL ; 
     if(BFile::ExistsFile(inipath.c_str()))
     {
@@ -687,6 +700,99 @@ void OpticksResource::Dump(const char* msg)
     std::cerr << "pmtp(0) :" << pmtp << std::endl ;  
 }
 
+
+
+
+
+void OpticksResource::dumpPaths(const char* msg) const 
+{
+    std::vector<std::pair<std::string, std::string> > paths ; 
+    getPaths(paths);
+
+    LOG(info) << msg ; 
+
+    typedef std::pair<std::string, std::string> SS ; 
+    typedef std::vector<SS> VSS ; 
+
+    for(VSS::const_iterator it=paths.begin() ; it != paths.end() ; it++)
+    {
+        const char* name = it->first.c_str() ; 
+        const char* path = it->second.empty() ? NULL : it->second.c_str() ; 
+
+        bool exists = path ? BFile::ExistsFile(path ) : false ; 
+
+        std::cerr
+             << std::setw(20) << name
+             << " : " 
+             << std::setw(2) << ( exists ? "Y" : "N" ) 
+             << " : " 
+             << std::setw(50) << ( path ? path : "-" )
+             << std::endl 
+             ;
+    } 
+}
+
+
+void OpticksResource::dumpDirs(const char* msg) const 
+{
+    std::vector<std::pair<std::string, std::string> > dirs ; 
+    getDirs(dirs);
+
+    LOG(info) << msg ; 
+
+    typedef std::pair<std::string, std::string> SS ; 
+    typedef std::vector<SS> VSS ; 
+
+    for(VSS::const_iterator it=dirs.begin() ; it != dirs.end() ; it++)
+    {
+        const char* name = it->first.c_str() ; 
+        const char* dir = it->second.empty() ? NULL : it->second.c_str() ; 
+        bool exists = dir ? BFile::ExistsDir(dir ) : false ; 
+
+        std::cerr
+             << std::setw(20) << name
+             << " : " 
+             << std::setw(2) << ( exists ? "Y" : "N" ) 
+             << " : "  
+             << std::setw(50) << ( dir ? dir : "-") 
+             << std::endl 
+             ;
+    } 
+}
+
+
+
+void OpticksResource::getPaths(std::vector<std::pair<std::string, std::string> >& paths ) const 
+{
+    typedef std::pair<std::string, std::string> SS ; 
+    paths.push_back( SS("daepath", m_daepath?m_daepath:"" ));
+    paths.push_back( SS("gdmlpath", m_gdmlpath?m_gdmlpath:"" ));
+    paths.push_back( SS("gltfpath", m_gltfpath?m_gltfpath:"" ));
+    paths.push_back( SS("metapath", m_metapath?m_metapath:"" ));
+
+    std::string g4env_ini = getInstallPath(G4ENV_RELPATH ) ;
+    paths.push_back( SS("g4env_ini", g4env_ini ));
+
+    std::string okdata_ini = getInstallPath(OKDATA_RELPATH ) ;
+    paths.push_back( SS("okdata_ini", okdata_ini ));
+}
+
+void OpticksResource::getDirs(std::vector<std::pair<std::string, std::string> >& dirs ) const 
+{
+    typedef std::pair<std::string, std::string> SS ; 
+    dirs.push_back( SS("install_prefix", m_install_prefix?m_install_prefix:"" ));
+    dirs.push_back( SS("opticksdata_dir", m_opticksdata_dir?m_opticksdata_dir:"" ));
+    dirs.push_back( SS("resource_dir", m_resource_dir?m_resource_dir:"" ));
+    dirs.push_back( SS("idpath", m_idpath?m_idpath:"" ));
+    dirs.push_back( SS("idpath_tmp", m_idpath_tmp?m_idpath_tmp:"" ));
+    dirs.push_back( SS("idfold", m_idfold?m_idfold:"" ));
+    dirs.push_back( SS("idbase", m_idbase?m_idbase:"" ));
+    dirs.push_back( SS("detector_base", m_detector_base?m_detector_base:"" ));
+}
+
+
+
+
 void OpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
@@ -725,6 +831,10 @@ void OpticksResource::Summary(const char* msg)
     typedef std::map<std::string, std::string> SS ;
     for(SS::const_iterator it=m_metadata.begin() ; it != m_metadata.end() ; it++)
         std::cerr <<  std::setw(10) << it->first.c_str() << ":" <<  it->second.c_str() << std::endl  ;
+
+
+    dumpPaths("dumpPaths");
+    dumpDirs("dumpDirs");
 
 }
 

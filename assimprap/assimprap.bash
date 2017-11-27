@@ -299,3 +299,21 @@ assimprap-txt(){ vi $(assimprap-sdir)/CMakeLists.txt $(assimprap-tdir)/CMakeList
 
 
 
+assimprap-nodae-t()
+{
+   opticksdata-
+   local path=$(opticksdata-path dyb)
+   local dir=$(dirname $path)
+   local name=$(basename $path)
+ 
+   echo path : $path dir  : $dir name : $name
+
+   cd $dir
+   mv $name $name.aside
+
+   lldb AssimpRapTest 
+
+   mv $name.aside $name
+}
+
+

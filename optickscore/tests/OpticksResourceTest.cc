@@ -5,6 +5,7 @@
 #include "OpticksResource.hh"
 
 
+#include "OKCORE_LOG.hh"
 #include "PLOG.hh"
 
 void dumpenv_0(char** envp)
@@ -29,6 +30,7 @@ void dumpenv_1(char** envp)
 int main(int argc, char** argv, char** /*envp*/)
 {
     PLOG_(argc, argv);
+    OKCORE_LOG__ ; 
 
     Opticks ok(argc, argv) ;
 

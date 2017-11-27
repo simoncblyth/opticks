@@ -1700,6 +1700,9 @@ const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDM
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
 
+
+
+
 void Opticks::prepareInstallCache(const char* dir)
 {
     // Moved save directory from IdPath to ResourceDir as
