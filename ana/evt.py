@@ -166,7 +166,7 @@ class Evt(object):
         self._labels = []
 
         self.align = None
-
+        self.warn_empty = True
 
         self.tag = tag
         self.src = src
@@ -769,7 +769,9 @@ class Evt(object):
         self._psel = psel 
         nsel = len(psel[psel == True])
         if nsel == 0:
-            log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
+            if self.warn_empty:
+                log.warning("_init_selection EMPTY nsel %s len(psel) %s " % (nsel, len(psel)))
+            pass
         else:
             log.debug("_init_selection nsel %s len(psel) %s  " % (nsel, len(psel)))
         pass 
@@ -1121,6 +1123,9 @@ class Evt(object):
         self.present_table( 'seqmat_ana'.split(), sli)
 
 
+
+
+
     @classmethod
     def compare_ana(cls, a, b, ana_ , lmx=20, c2max=None, cf=True, zero=False, cmx=0, pr=False, ordering="max"):
         """
@@ -1398,6 +1403,16 @@ class Evt(object):
             log.warning("this only works on evt with single line seqs")
             return None
         return self.rpost_(recs)
+
+
+    @classmethod
+    def compare_alignment(cls, a, b ):
+        """
+         
+        """
+        return None
+ 
+
 
     def rdir(self, fr=0, to=1, nrm=True):
         """

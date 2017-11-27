@@ -14,10 +14,10 @@ from opticks.ana.histype import HisType
 from opticks.ana.mattype import MatType
 from opticks.ana.evt import Evt
 from opticks.ana.abstat import ABStat
+from opticks.ana.dv import Dv, DvTab
 from opticks.ana.make_rst_table import recarray_as_rst
 
 log = logging.getLogger(__name__)
-
 
 
 class AB(object):
@@ -25,12 +25,14 @@ class AB(object):
     AB : Event Pair comparison
     =============================
 
-   
     Selection examples::
 
          ab.sel = ".6ccd"             
          ab.sel = "TO BT BT SC .."     # wildcard selection same as above
          ab.sel = None                 # back to default no selection
+
+         ab.aselhis = "TO BT BT SA"    # with align-ment enabled 
+                                       # (used for non-indep photon samples, such as from emitconfig)
 
     Subsequently check tables with::
 
@@ -81,7 +83,6 @@ class AB(object):
         """
         log.info("AB.load START smry %d " % self.ok.smry )
         args = self.ok
-
  
         if args.utag is None:
             assert len(args.utags) == 2, ( "expecting 2 utags ", args.utags )
@@ -146,7 +147,6 @@ class AB(object):
         if self.ok.prohis:self.prohis()
         if self.ok.promat:self.promat()
         log.debug("AB.compare DONE")
-
 
     def init_point(self):
         log.info("AB.init_point START")
@@ -251,7 +251,12 @@ class AB(object):
         pass
 
     def tabname(self, ana):
-        return ana.replace("_ana", "_tab")
+        if ana.endswith("_dv"):
+            tn = ana + "tab"
+        else:
+            tn = ana.replace("_ana", "_tab")
+        pass
+        return tn
 
     def _make_cf(self, ana="seqhis_ana"):
         """
@@ -266,6 +271,37 @@ class AB(object):
         tabname = self.tabname(ana)
         setattr(self, tabname, c_tab)
         return c_tab 
+
+
+    def _make_dv(self, ana):
+        we = self.warn_empty 
+        self.warn_empty = False
+        seqtab = self.ahis
+        dv_tab = DvTab(ana, seqtab, self) 
+        self.warn_empty = we
+        return dv_tab 
+
+    def _get_dv(self, ana):
+        tabname = self.tabname(ana)
+        dv_tab = getattr(self, tabname, None)
+        if dv_tab is None:
+            dv_tab = self._make_dv(ana) 
+        elif dv_tab.dirty:
+            dv_tab = self._make_dv(ana) 
+        else:
+            pass 
+        pass
+        setattr(self, tabname, dv_tab) 
+        return dv_tab
+
+    def _get_rpost_dv(self):
+        return self._get_dv("rpost_dv")
+    rpost_dv = property(_get_rpost_dv)
+
+    def _get_rpol_dv(self):
+        return self._get_dv("rpol_dv")
+    rpol_dv = property(_get_rpol_dv)
+
 
     def _set_dirty(self, dirty):
         for tab in self.tabs:
@@ -344,15 +380,23 @@ class AB(object):
         pass
 
         if nom == "sel":
+            self.align = None
             self.a.sel = sel
             self.b.sel = sel
         elif nom == "selhis":
+            self.align = None
+            self.a.selhis = sel
+            self.b.selhis = sel
+        elif nom == "aselhis":
+            self.align = "seqhis"
             self.a.selhis = sel
             self.b.selhis = sel
         elif nom == "selmat":
+            self.align = None
             self.a.selmat = sel
             self.b.selmat = sel
         elif nom == "selflg":
+            self.align = None
             self.a.selflg = sel
             self.b.selflg = sel
         else:
@@ -368,12 +412,17 @@ class AB(object):
         self._set_sel( sel, nom="selmat")
     def _set_selhis(self, sel):
         self._set_sel( sel, nom="selhis")
+    def _set_aselhis(self, sel):
+        self._set_sel( sel, nom="aselhis")
     def _set_selflg(self, sel):
         self._set_sel( sel, nom="selflg")
 
     selmat = property(_get_sel, _set_selmat)
     selhis = property(_get_sel, _set_selhis)
     selflg = property(_get_sel, _set_selflg)
+    aselhis = property(_get_sel, _set_aselhis)
+
+
 
 
     def _get_align(self):
@@ -381,6 +430,7 @@ class AB(object):
     def _set_align(self, align):
         """
         CAUTION: currently need to set sel after align for it to have an effect
+                 unless use aselhis
         """
         if align is None:
             _align = None
@@ -753,9 +803,20 @@ class AB(object):
         done in Evt.init_selection.
         """
         self.checkrec()
-        aval = self.a.rpost()
-        bval = self.b.rpost()
-        return aval, bval
+        av = self.a.rpost()
+        bv = self.b.rpost()
+        return av, bv
+
+
+    def _set_warn_empty(self, we):
+        self.a.warn_empty = we
+        self.b.warn_empty = we
+    def _get_warn_empty(self):
+        a_we = self.a.warn_empty
+        b_we = self.b.warn_empty
+        assert a_we == b_we
+        return a_we
+    warn_empty = property(_get_warn_empty, _set_warn_empty) 
 
 
     def checkrec(self,fr=0,to=0):
@@ -902,21 +963,19 @@ class AB(object):
         return hh
  
 
-    def aligned_rpost_diff(self, sel="TO BT BT SA"):
-        """
-        """
-        self.align = "seqhis"
-        self.sel = sel 
-        npoi = len(sel.split())
-        av = self.a.rpost_(slice(0,npoi))
-        bv = self.b.rpost_(slice(0,npoi))
-        dv = np.abs( av - bv )
-        return dv
 
-    def aligned_check(self):
-        dv = self.aligned_rpost_diff()
-        wph = np.unique(np.where(dv>0)[0])
-        return dv
+
+
+    def _make_seqali(self):
+        """
+        all_ tables have no selection applied so they are not dirtied by changing selection
+        """
+        c_ali = Evt.compare_alignment( self.a, self.b)
+        attname = "seqali"
+        setattr(self, attname, c_ali)
+        return c_ali
+    ali = property(_make_seqali) 
+
 
 
     def rqwn(self, qwn, irec): 
@@ -984,5 +1043,4 @@ if __name__ == '__main__':
     print ab
     print ab.a.metadata
 
-    dv = ab.aligned_check()
     

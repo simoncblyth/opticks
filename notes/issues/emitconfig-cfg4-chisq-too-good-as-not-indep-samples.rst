@@ -78,6 +78,9 @@ THOUGHTS ON CHEATING REFLECTION RANDOMNESS BR/SR : u_cheat=photon_index/num_phot
 * would keep both simulations doing exactly the same thing for all non AB/RE/SC categories, 
   and those can all be switched off (--noab/--nore/--nosc) to make purely non-random samples
 
+* what about photons, with more that one BR/SR ? What to use to keep the same seqhis fractions ?
+
+
 G4 
 ~~~~
 

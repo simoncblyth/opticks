@@ -1,7 +1,6 @@
 Emitconfig aligned comparison
 ===============================
 
-
 Overview
 -----------
 
@@ -11,9 +10,33 @@ With emitconfig input photons the two sims are not indep,
 
 Hence need to step-by-step compare photons in a history aligned way.
 So need way to seqhis select a category with additional requirement that 
-the photons in each sim that are aligned.
+the photons in each sim are aligned.
 
 
+ana/dv.py Dv DvTab
+----------------------
+
+* added aligned deviation checking and presentation
+* currently no BR random-cheating so alignment of histories with "BR" are kinda accidental
+
+::
+
+    rpost_dv
+     0000            :                          TO SA :   55321    55303  :     55249/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0001            :                    TO BT BT SA :   39222    39231  :     34492/      8: 0.000  mx/mn/av 0.0138/0.0000/3.192e-06    
+     0002            :                       TO BR SA :    2768     2814  :       188/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0003            :                 TO BT BR BT SA :    2425     2369  :       125/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0004            :              TO BT BR BR BT SA :     151      142  :         1/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+    rpol_dv
+     0000            :                          TO SA :   55321    55303  :     55249/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0001            :                    TO BT BT SA :   39222    39231  :     34492/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0002            :                       TO BR SA :    2768     2814  :       188/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0003            :                 TO BT BR BT SA :    2425     2369  :       125/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0004            :              TO BT BR BR BT SA :     151      142  :         1/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+
+
+Start Prep of python aligned machinery
+-----------------------------------------
 
 ::
 
