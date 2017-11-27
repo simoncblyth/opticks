@@ -966,18 +966,6 @@ class AB(object):
 
 
 
-    def _make_seqali(self):
-        """
-        all_ tables have no selection applied so they are not dirtied by changing selection
-        """
-        c_ali = Evt.compare_alignment( self.a, self.b)
-        attname = "seqali"
-        setattr(self, attname, c_ali)
-        return c_ali
-    ali = property(_make_seqali) 
-
-
-
     def rqwn(self, qwn, irec): 
         """
         :param qwn: X,Y,Z,W,T,A,B,C or R  

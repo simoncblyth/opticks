@@ -215,6 +215,7 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
 
      // retaining original photon_id from prior to reemission effects the continuation
     _record_id = _photons_per_g4event*_event_id + _photon_id ; 
+    _record_fraction = float(_record_id)/float(_record_max) ;  
 
     // moved from CTrackingAction::setTrack
     _debug = _ok->isDbgPhoton(_record_id) ; // from option: --dindex=1,100,1000,10000 

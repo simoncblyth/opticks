@@ -350,7 +350,9 @@ class OKCORE_API Opticks {
        bool isInterop();
        bool isCfG4();   // needs manual override to set to CFG4_MODE
        bool isProduction();
-       bool isSave();
+
+       bool isReflectCheat() const ;
+       bool isSave() const ;
        bool isLoad() const;
        bool isTracer() const;
        bool isRayLOD() const ; // raytrace LOD via OptiX selector based on ray origin wrt instance position 

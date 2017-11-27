@@ -295,7 +295,8 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
     //  resulting in TIR yielding BT where BR is expected
 
-    bool reflect = curand_uniform(&rng) > TransCoeff  ;
+    const float u = s.ureflectcheat >= 0.f ? s.ureflectcheat : curand_uniform(&rng) ;
+    bool reflect = u > TransCoeff  ;
 
     p.direction = reflect 
                     ? 

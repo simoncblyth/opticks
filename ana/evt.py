@@ -1405,15 +1405,6 @@ class Evt(object):
         return self.rpost_(recs)
 
 
-    @classmethod
-    def compare_alignment(cls, a, b ):
-        """
-         
-        """
-        return None
- 
-
-
     def rdir(self, fr=0, to=1, nrm=True):
         """
         :param fr:

@@ -62,6 +62,7 @@ struct CFG4_API CG4Ctx
     int  _photon_id ;
     bool _reemtrack ; 
     int  _record_id ;
+    float _record_fraction ; // used with --reflectcheat
     // zeroed in CG4Ctx::setTrackOptical incremented in CG4Ctx::setStep
     int  _rejoin_count ; 
     int  _primarystep_count ; 

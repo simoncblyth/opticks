@@ -199,6 +199,7 @@ private:
     CG4*          m_g4 ; 
     CMaterialLib* m_mlib ; 
     Opticks*      m_ok ; 
+    bool          m_reflectcheat ; 
 
 #ifdef SCB_BND_DEBUG
     bool     m_dbg ; 

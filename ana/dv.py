@@ -1,14 +1,51 @@
 #!usr/bin/env python
 """
+Examining the deviation::
+
+    In [15]: ab.rpost_dv
+    Out[15]: 
+    rpost_dv
+     0000            :                          TO SA :   55321    55303  :     55249/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0001            :                    TO BT BT SA :   39222    39231  :     34492/      8: 0.000  mx/mn/av 0.0138/0.0000/3.192e-06    
+     0002            :                       TO BR SA :    2768     2814  :       188/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0003            :                 TO BT BR BT SA :    2425     2369  :       125/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0004            :              TO BT BR BR BT SA :     151      142  :         1/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+
+    In [12]: dv = ab.rpost_dv.dvs[1].dv
+    In [16]: av = ab.rpost_dv.dvs[1].av
+    In [17]: bv = ab.rpost_dv.dvs[1].bv
+
+    In [14]: np.where( dv > 0 )
+    Out[14]: 
+    (
+        A([ 8019,  8019,  8019,  8019, 13879, 13879, 13879, 13879]),
+        A([0, 1, 2, 3, 0, 1, 2, 3]),
+        A([1, 1, 1, 1, 0, 0, 0, 0])
+    )
+
+    In [18]: wdv = np.where( dv > 0 )
+
+    In [19]: av[wdv]
+    Out[19]: 
+    A([  30.4181,   30.4181,   30.4181,   30.4181,  116.2219,  116.2219,  116.2219,  116.2219])
+
+    In [20]: bv[wdv]
+    Out[20]: 
+    A([  30.4319,   30.4319,   30.4319,   30.4319,  116.2357,  116.2357,  116.2357,  116.2357])
+
+    In [21]: av[wdv] - bv[wdv]
+    Out[21]: 
+    A([-0.0138, -0.0138, -0.0138, -0.0138, -0.0138, -0.0138, -0.0138, -0.0138])
+
 
 """
 import os, sys, logging, numpy as np
 
 class Dv(object):
    def __init__(self, idx, sel, av, bv, lcu, msg=""):
+
        dv = np.abs( av - bv )
        
-
        self.idx = idx 
        self.sel = sel 
        self.av = av

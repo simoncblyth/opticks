@@ -334,6 +334,8 @@ RT_PROGRAM void tracetest()
 RT_PROGRAM void generate()
 {
     unsigned long long photon_id = launch_index.x ;  
+    unsigned long long num_photon = launch_dim.x ;
+  
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 
 #ifdef WITH_SEED_BUFFER
@@ -362,6 +364,8 @@ RT_PROGRAM void generate()
     curandState rng = rng_states[photon_id];
     State s ;   
     Photon p ;  
+
+    s.ureflectcheat = 0.f ; 
 
     if(gencode == CERENKOV)   // 1st 4 bytes, is enumeration distinguishing cerenkov/scintillation/torch/...
     {
@@ -399,6 +403,7 @@ RT_PROGRAM void generate()
         // photon_offset is same for both these buffers
         pload(p, source_buffer, photon_offset ); 
         s.flag = TORCH ;  
+        s.ureflectcheat = debug_control.w > 0u ? float(photon_id)/float(num_photon) : -1.f ;
     }
 
 

@@ -104,7 +104,13 @@ void OPropagator::initParameters()
     m_context[ "GNUMQUAD" ]->setUint( 6 );   // quads per genstep
     m_context["SPEED_OF_LIGHT"]->setFloat(299.792458f) ;   // mm/ns
 
-    optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0,0);
+
+    unsigned reflectcheat = m_ok->isReflectCheat() ? 1 : 0 ; 
+    if(reflectcheat > 0 )
+        LOG(error) <<  "OPropagator::initParameters --reflectcheat ENABLED "  ;
+         
+
+    optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0, reflectcheat);
     LOG(debug) << "OPropagator::init debugControl " 
               << " x " << debugControl.x 
               << " y " << debugControl.y

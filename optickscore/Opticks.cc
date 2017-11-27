@@ -420,6 +420,7 @@ unsigned Opticks::getSeed() const
 
 
 
+
 OpticksRun* Opticks::getRun()
 {
     return m_run ;  
@@ -479,9 +480,18 @@ bool Opticks::isCfG4()
 {
     return m_mode->isCfG4(); 
 }
-bool Opticks::isSave()
+
+
+
+
+
+bool Opticks::isReflectCheat() const  // reflectcheat
 {
-    return m_cfg->hasOpt("save"); 
+   return m_cfg->hasOpt("reflectcheat");
+}
+bool Opticks::isSave() const 
+{
+    return m_cfg->hasOpt("save");  
 }
 bool Opticks::isLoad() const
 {

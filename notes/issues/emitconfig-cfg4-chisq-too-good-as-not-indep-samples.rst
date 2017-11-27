@@ -46,8 +46,8 @@ APPROACHES
 
 * direct photons need step-by-step value-to-value comparison, 
 
-  * check avg deviations
-  * investigate outliers
+  * check avg deviations, see **ana/dv.py** used by ab.rpost_dv and ab.rpol_dv 
+  * investigate outliers, not automated 
   * perhaps expand direct to include SR/BR with u_cheat ?
 
 * Q: non-direct photons, is chisq history comparison valid for them, despite identical birth ?
@@ -61,6 +61,31 @@ BEFORE ANY CHEATING : NUMPY MACHINERY FOR ALIGNED COMPARISON
 ---------------------------------------------------------------
 
 * :doc:`emitconfig-aligned-comparison`
+
+
+implementing reflectcheat
+--------------------------
+
+::
+
+    simon:opticks blyth$ opticks-find reflectcheat
+    ./optixrap/cu/generate.cu:    s.ureflectcheat = 0.f ; 
+    ./optixrap/cu/generate.cu:        s.ureflectcheat = debug_control.w > 0u ? float(photon_id)/float(num_photon) : -1.f ;
+    ./cfg4/DsG4OpBoundaryProcess.cc:             m_reflectcheat(m_ok->isReflectCheat()),
+    ./cfg4/DsG4OpBoundaryProcess.cc:          // --reflectcheat 
+    ./optickscore/Opticks.cc:bool Opticks::isReflectCheat() const  // reflectcheat
+    ./optickscore/Opticks.cc:   return m_cfg->hasOpt("reflectcheat");
+    ./optickscore/OpticksCfg.cc:       ("reflectcheat",  
+    ./optixrap/OPropagator.cc:    unsigned reflectcheat = m_ok->isReflectCheat() ? 1 : 0 ; 
+    ./optixrap/OPropagator.cc:    if(reflectcheat > 0 )
+    ./optixrap/OPropagator.cc:        LOG(error) <<  "OPropagator::initParameters --reflectcheat ENABLED "  ;
+    ./optixrap/OPropagator.cc:    optix::uint4 debugControl = optix::make_uint4(m_ocontext->getDebugPhoton(),0,0, reflectcheat);
+    ./cfg4/CG4Ctx.hh:    float _record_fraction ; // used with --reflectcheat
+    ./cfg4/DsG4OpBoundaryProcess.h:    bool          m_reflectcheat ; 
+    ./optixrap/cu/propagate.h:    const float u = s.ureflectcheat >= 0.f ? s.ureflectcheat : curand_uniform(&rng) ;
+    ./optixrap/cu/state.h:   float ureflectcheat ;  
+    simon:opticks blyth$ 
+
 
 
 THOUGHTS ON CHEATING REFLECTION RANDOMNESS BR/SR : u_cheat=photon_index/num_photons

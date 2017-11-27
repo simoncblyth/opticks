@@ -111,6 +111,7 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_g4(g4),
              m_mlib(g4->getMaterialLib()),
              m_ok(g4->getOpticks()),
+             m_reflectcheat(m_ok->isReflectCheat()),
 #ifdef SCB_BND_DEBUG
              m_dbg(false),
              m_other(false),
@@ -1010,6 +1011,8 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 	      G4double E2_abs, C_parl, C_perp;
 
+ 
+          // --reflectcheat 
 	      if ( !G4BooleanRand(TransCoeff) ) {
 
 	         // Simulate reflection

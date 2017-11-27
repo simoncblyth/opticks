@@ -292,6 +292,16 @@ void OpticksCfg<Listener>::init()
 
 
    m_desc.add_options()
+       ("reflectcheat",  
+           "artifically replace the random number generation to decide whether to reflect or transmit"
+           "with the ucheat float photon_index/num_photons; "
+           "this debug trickery enables G4 and OK simulations of the same "
+           "input emitconfig photons to stay point-by-point aligned thru refections. "
+       ) ;
+
+
+
+   m_desc.add_options()
        ("save",  "download generated/propagated event data from GPU and save to file") ;
 
    m_desc.add_options()
