@@ -10,8 +10,12 @@ Expected way to make the analytic cache
     op --j1707 --gdml2gltf
        # convert the gdml into gltf with a python script
 
+    op --j1707 -G
+       # construct the triangulated geocache
+
     op --j1707 --gltf 3 -G
-       # construct the analytic + triangulated geocache
+       # add analytic parts to the geocache
+
 
 
 Observations
@@ -252,6 +256,159 @@ idpath can simplify::
                   idfold :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
                   idbase :  Y :              /usr/local/opticks/opticksdata/export
            detector_base :  Y :      /usr/local/opticks/opticksdata/export/DayaBay
+
+
+
+::
+
+
+    simon:opticks blyth$ OPTICKS_RESOURCE_LAYOUT=1 BOpticksResourceTest
+    2017-11-28 17:54:05.733 INFO  [158492] [BOpticksResource::Summary@367] BOpticksResource::Summary layout 1
+    prefix   : /usr/local/opticks
+    envprefix: OPTICKS_
+    getPTXPath(generate.cu.ptx) = /usr/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+    PTXPath(generate.cu.ptx) = /usr/local/opticks/installcache/PTX/OptiXRap_generated_generate.cu.ptx
+    debugging_idpath  /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+    debugging_idfold  /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
+    usertmpdir ($TMP) /tmp/blyth/opticks
+    ($TMPTEST)        /tmp/blyth/opticks/test
+    2017-11-28 17:54:05.734 INFO  [158492] [BOpticksResource::dumpPaths@502] dumpPaths
+                         g4env_ini :  Y :     /usr/local/opticks/externals/config/geant4.ini
+                        okdata_ini :  Y : /usr/local/opticks/opticksdata/config/opticksdata.ini
+                           srcpath :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+                           daepath :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+                          gdmlpath :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml
+                          gltfpath :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+                          metapath :  N : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.ini
+    2017-11-28 17:54:05.735 INFO  [158492] [BOpticksResource::dumpDirs@532] dumpDirs
+                    install_prefix :  Y :                                 /usr/local/opticks
+                   opticksdata_dir :  Y :                     /usr/local/opticks/opticksdata
+                      geocache_dir :  N :                        /usr/local/opticks/geocache
+                      resource_dir :  Y :            /usr/local/opticks/opticksdata/resource
+                      gensteps_dir :  Y :            /usr/local/opticks/opticksdata/gensteps
+                  installcache_dir :  Y :                    /usr/local/opticks/installcache
+              rng_installcache_dir :  Y :                /usr/local/opticks/installcache/RNG
+              okc_installcache_dir :  Y :                /usr/local/opticks/installcache/OKC
+              ptx_installcache_dir :  Y :                /usr/local/opticks/installcache/PTX
+                            idfold :  N : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300
+                            idpath :  N : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1
+                        idpath_tmp :  N :                                                  -
+    2017-11-28 17:54:05.736 INFO  [158492] [BOpticksResource::dumpNames@480] dumpNames
+                            idname :  - :                         DayaBay_VGDX_20140414-1300
+                            idfile :  - :                                          g4_00.dae
+           OPTICKS_RESOURCE_LAYOUT :  - :                                                  1
+     treedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras
+    simon:opticks blyth$ 
+
+
+
+
+Running with new layout before generating geocache
+----------------------------------------------------
+
+::
+
+    87% tests passed, 36 tests failed out of 283
+
+    Total Test time (real) = 119.24 sec
+
+    The following tests FAILED:
+        177 - GGeoTest.GMaterialLibTest (OTHER_FAULT)
+        180 - GGeoTest.GScintillatorLibTest (OTHER_FAULT)
+        183 - GGeoTest.GBndLibTest (OTHER_FAULT)
+        184 - GGeoTest.GBndLibInitTest (OTHER_FAULT)
+        195 - GGeoTest.GPartsTest (OTHER_FAULT)
+        197 - GGeoTest.GPmtTest (OTHER_FAULT)
+        198 - GGeoTest.BoundariesNPYTest (OTHER_FAULT)
+        199 - GGeoTest.GAttrSeqTest (OTHER_FAULT)
+        203 - GGeoTest.GGeoLibTest (OTHER_FAULT)
+        204 - GGeoTest.GGeoTest (OTHER_FAULT)
+        205 - GGeoTest.GMakerTest (OTHER_FAULT)
+        212 - GGeoTest.GSurfaceLibTest (OTHER_FAULT)
+        214 - GGeoTest.NLookupTest (OTHER_FAULT)
+        215 - GGeoTest.RecordsNPYTest (OTHER_FAULT)
+        216 - GGeoTest.GSceneTest (OTHER_FAULT)
+        217 - GGeoTest.GMeshLibTest (OTHER_FAULT)
+        ## got the expected errors for all the above
+
+        222 - OpticksGeometryTest.OpticksGeometryTest (OTHER_FAULT)
+        223 - OpticksGeometryTest.OpticksHubTest (OTHER_FAULT)
+        ## got sensorlist errors, twas expecting 3-dot idpath structure
+
+        241 - OptiXRapTest.OScintillatorLibTest (OTHER_FAULT)
+        242 - OptiXRapTest.OOTextureTest (OTHER_FAULT)
+        247 - OptiXRapTest.OOboundaryTest (OTHER_FAULT)
+        248 - OptiXRapTest.OOboundaryLookupTest (OTHER_FAULT)
+        252 - OptiXRapTest.OEventTest (OTHER_FAULT)
+        253 - OptiXRapTest.OInterpolationTest (OTHER_FAULT)
+        254 - OptiXRapTest.ORayleighTest (OTHER_FAULT)
+        258 - OKOPTest.OpSeederTest (OTHER_FAULT)
+        267 - cfg4Test.CMaterialLibTest (OTHER_FAULT)
+        268 - cfg4Test.CMaterialTest (OTHER_FAULT)
+        269 - cfg4Test.CTestDetectorTest (OTHER_FAULT)
+        270 - cfg4Test.CGDMLDetectorTest (OTHER_FAULT)
+        271 - cfg4Test.CGeometryTest (OTHER_FAULT)
+        272 - cfg4Test.CG4Test (OTHER_FAULT)
+        277 - cfg4Test.CCollectorTest (OTHER_FAULT)
+        278 - cfg4Test.CInterpolationTest (OTHER_FAULT)
+        280 - cfg4Test.CGROUPVELTest (OTHER_FAULT)
+        283 - okg4Test.OKG4Test (OTHER_FAULT)
+    Errors while running CTest
+    Tue Nov 28 18:12:01 CST 2017
+    opticks-t- : use -V to show output, ctest output written to /usr/local/opticks/build/ctest.log
+    simon:opticks blyth$ 
+
+
+Unexpected errors from 
+
+::
+
+    simon:opticks blyth$ OpticksGeometryTest
+    2017-11-28 18:15:22.104 INFO  [180505] [Opticks::dumpArgs@968] Opticks::configure argc 1
+      0 : OpticksGeometryTest
+    2017-11-28 18:15:22.105 INFO  [180505] [OpticksHub::configure@236] OpticksHub::configure m_gltf 0
+    2017-11-28 18:15:22.106 INFO  [180505] [OpticksHub::loadGeometry@366] OpticksHub::loadGeometry START
+    2017-11-28 18:15:22.111 INFO  [180505] [NSceneConfig::NSceneConfig@50] NSceneConfig::NSceneConfig cfg [check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0]
+    2017-11-28 18:15:22.114 INFO  [180505] [OpticksGeometry::loadGeometry@102] OpticksGeometry::loadGeometry START 
+    2017-11-28 18:15:22.114 INFO  [180505] [OpticksGeometry::loadGeometryBase@134] OpticksGeometry::loadGeometryBase START 
+    2017-11-28 18:15:22.812 ERROR [180505] [NSensorList::load@88] NSensorList::load idpath is expected to be in 3-parts separted by dot eg  g4_00.gdasdyig3736781.dae  idpath 
+    2017-11-28 18:15:22.812 INFO  [180505] [*OpticksResource::getSensorList@1055] OpticksResource::getSensorList NSensorList:  NSensor count 0 distinct identier count 0
+
+
+
+
+
+
+
+::
+
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/GammaYIELDRATIO.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/NeutronFASTTIMECONSTANT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/NeutronSLOWTIMECONSTANT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/NeutronYIELDRATIO.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/RAYLEIGH.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/REEMISSIONPROB.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/RESOLUTIONSCALE.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/RINDEX.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/ReemissionFASTTIMECONSTANT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/ReemissionSLOWTIMECONSTANT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/ReemissionYIELDRATIO.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/SCINTILLATIONYIELD.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/SLOWCOMPONENT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/SLOWTIMECONSTANT.npy
+    ? xport/DayaBay/GScintillatorLib/LiquidScintillator/YIELDRATIO.npy
+    ? xport/DayaBay/GSourceLib/GSourceLib.npy
+    ? xport/DayaBay/GSurfaceLib/GPropertyLibMetadata.json
+    ? xport/DayaBay/GSurfaceLib/GSurfaceLib.npy
+    ? xport/DayaBay/GSurfaceLib/GSurfaceLibOptical.npy
+    ? xport/DayaBay/MeshIndex/GItemIndexLocal.json
+    ? xport/DayaBay/MeshIndex/GItemIndexSource.json
+    simon:opticksgeo blyth$ 
+    simon:opticksgeo blyth$ 
+    simon:opticksgeo blyth$ 
+    simon:opticksgeo blyth$ 
+    simon:opticksgeo blyth$ OpticksGeometryTest 
+
 
 
 

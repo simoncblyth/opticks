@@ -14,7 +14,8 @@ class NSensor ;
 class NPY_API NSensorList {
     public:
         NSensorList();
-        void load(const char* idpath, const char* ext="idmap");
+        void load(const char* idmpath );
+        void load_deprecated(const char* idpath, const char* ext="idmap");
         unsigned int getNumSensors();
         void dump(const char* msg="NSensorList::dump");
         std::string description();

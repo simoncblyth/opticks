@@ -430,6 +430,13 @@ void GPropertyLib::saveToCache(NPYBase* buffer, const char* suffix)
     std::string dir = getCacheDir(); 
     std::string name = getBufferName(suffix);
 
+
+    LOG(error) << "GPropertyLib::saveToCache"
+               << " dir " << dir
+               << " name " << name 
+               << " type " << m_type 
+               ;
+
     if(buffer)
     {
         buffer->save(dir.c_str(), name.c_str());   

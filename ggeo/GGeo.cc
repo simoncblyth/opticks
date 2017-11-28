@@ -564,7 +564,7 @@ void GGeo::loadGeometry()
 
 void GGeo::loadFromG4DAE()
 {
-    LOG(trace) << "GGeo::loadFromG4DAE START" ; 
+    LOG(error) << "GGeo::loadFromG4DAE START" ; 
 
     int rc = (*m_loader_imp)(this);   //  imp set in OpticksGeometry::loadGeometryBase, m_ggeo->setLoaderImp(&AssimpGGeo::load); 
 
@@ -581,7 +581,7 @@ void GGeo::loadFromG4DAE()
 
     prepareVertexColors();
 
-    LOG(trace) << "GGeo::loadFromG4DAE DONE" ; 
+    LOG(error) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 

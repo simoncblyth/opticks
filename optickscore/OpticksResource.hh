@@ -101,7 +101,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
 
        std::string getBasePath(const char* rel); // wildcard path relative to IdBase export dir 
        std::string getPmtPath(unsigned int index, bool relative=false);
-       std::string getPropertyLibDir(const char* name);
     public:
        std::string getPreferenceDir(const char* type, const char* udet=NULL, const char* subtype=NULL);
        bool loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name);

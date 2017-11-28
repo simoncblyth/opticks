@@ -4,16 +4,30 @@
 #include <cstdio>
 #include <cassert>
 
+#include "PLOG.hh"
+#include "NPY_LOG.hh"
+
+#include "BOpticksResource.hh"
+
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
 int main(int argc, char** argv)
 {
-    char* idpath = getenv("IDPATH");
-    if(!idpath) printf("%s : requires IDPATH envvar \n", argv[0]);
+    PLOG_(argc, argv);
+    NPY_LOG__ ; 
+
+
+    const char* idmpath = BOpticksResource::IdMapPathDebug(); 
+    if(!idmpath) 
+    {
+        printf("%s : requires OPTICKS_SRCPATH_DEBUG  envvar \n", argv[0]);
+        return 0 ;
+    }   
 
     NSensorList sens;
-    sens.load(idpath, "idmap");
+    sens.load(idmpath);
+
 
     if(getenv("VERBOSE")) sens.dump();
 

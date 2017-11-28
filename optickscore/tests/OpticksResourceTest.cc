@@ -38,5 +38,6 @@ int main(int argc, char** argv, char** /*envp*/)
 
     OpticksResource res(&ok) ;  // TODO: remove duplication of envprefix beween both these
     res.Dump();
+
     return 0 ; 
 }

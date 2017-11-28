@@ -131,7 +131,7 @@ void OpticksGeometry::loadGeometry()
 
 void OpticksGeometry::loadGeometryBase()
 {
-    LOG(info) << "OpticksGeometry::loadGeometryBase START " ; 
+    LOG(error) << "OpticksGeometry::loadGeometryBase START " ; 
     OpticksResource* resource = m_ok->getResource();
 
     if(m_ok->hasOpt("qe1"))
@@ -165,7 +165,7 @@ void OpticksGeometry::loadGeometryBase()
         }
     }
 
-    LOG(info) << "OpticksGeometry::loadGeometryBase DONE " ; 
+    LOG(error) << "OpticksGeometry::loadGeometryBase DONE " ; 
     TIMER("loadGeometryBase");
 }
 

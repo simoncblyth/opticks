@@ -298,7 +298,7 @@ std::string BFile::FindFile(const char* dirlist, const char* sub, const char* na
 
 
 
-std::string BFile::FormPath(const char* path, const char* sub, const char* name)
+std::string BFile::FormPath(const char* path, const char* sub, const char* name, const char* extra1, const char* extra2)
 {
 
    bool prepare = false ; 
@@ -377,6 +377,8 @@ std::string BFile::FormPath(const char* path, const char* sub, const char* name)
 
    if(sub)   p /= sub ;    
    if(name)  p /= name ;    
+   if(extra1)  p /= extra1 ;    
+   if(extra2)  p /= extra2 ;    
 
 
    p.make_preferred();

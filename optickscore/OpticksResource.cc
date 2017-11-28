@@ -389,9 +389,9 @@ void OpticksResource::assignDetectorName()
 
    assert(m_detector_name);
 
-   if(m_idbase )
+   if(m_srcbase )
    {
-        std::string detbase = BFile::FormPath(m_idbase, m_detector_name);
+        std::string detbase = BFile::FormPath(m_srcbase, m_detector_name);
         m_detector_base = strdup(detbase.c_str());
         addDir("detector_base",   m_detector_base  );
    }
@@ -572,7 +572,6 @@ void OpticksResource::readEnvironment()
     setSrcPathDigest(daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
 
     assert(m_idpath) ; 
-    assert(m_idbase) ; 
     assert(m_idname) ; 
     assert(m_idfold) ; 
 }
@@ -596,6 +595,11 @@ void OpticksResource::Dump(const char* msg)
 
     std::cerr << "mmsp(0) :" << mmsp << std::endl ;  
     std::cerr << "pmtp(0) :" << pmtp << std::endl ;  
+
+    std::string bndlib = getPropertyLibDir("GBndLib");
+    std::cout << " getPropertyLibDir " << bndlib << std::endl ; 
+    
+
 }
 
 
@@ -622,14 +626,14 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
     std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
     std::cerr << "idname   : " <<  (m_idname?m_idname:"NULL") << std::endl; 
-    std::cerr << "idbase   : " <<  (m_idbase?m_idbase:"NULL") << std::endl; 
+
     std::cerr << "detector : " <<  (m_detector?m_detector:"NULL") << std::endl; 
     std::cerr << "detector_name : " <<  (m_detector_name?m_detector_name:"NULL") << std::endl; 
     std::cerr << "detector_base : " <<  (m_detector_base?m_detector_base:"NULL") << std::endl; 
     std::cerr << "material_map  : " <<  (m_material_map?m_material_map:"NULL") << std::endl; 
     std::cerr << "getPmtPath(0) : " <<  (m_detector_base?getPmtPath(0):"-") << std::endl; 
     std::cerr << "getMMPath(0)  : " <<  (m_detector_base?getMergedMeshPath(0):"-") << std::endl; 
-    std::cerr << "getBasePath(?): " <<  (m_idbase?getBasePath("?"):"-") << std::endl; 
+    std::cerr << "getBasePath(?): " <<  (m_srcbase?getBasePath("?"):"-") << std::endl; 
     std::cerr << "meshfix  : " <<  (m_meshfix ? m_meshfix : "NULL" ) << std::endl; 
     std::cerr << "example_matnames  : " <<  (m_example_matnames ? m_example_matnames : "NULL" ) << std::endl; 
     std::cerr << "sensor_surface    : " <<  (m_sensor_surface ? m_sensor_surface : "NULL" ) << std::endl; 
@@ -694,8 +698,8 @@ std::string OpticksResource::getMergedMeshPath(unsigned int index)
 
 std::string OpticksResource::getBasePath(const char* rel)
 {
-    assert(m_idbase);
-    fs::path dir(m_idbase);
+    assert(m_srcbase);
+    fs::path dir(m_srcbase);
     if(rel) dir /= rel ;
     return dir.string() ;
 }
@@ -747,16 +751,6 @@ std::string OpticksResource::getDetectorPath(const char* name, unsigned int inde
 
 
 
-
-
-std::string OpticksResource::getPropertyLibDir(const char* name)
-{
-    const char* idpath = getIdPath();
-    assert(idpath && "OpticksResource::getPropertyLibDir idpath not set");
-    fs::path cachedir(idpath);
-    fs::path pld(cachedir/name );
-    return pld.string() ;
-}
 
 
 
@@ -1050,9 +1044,8 @@ NSensorList* OpticksResource::getSensorList()
 {
     if(!m_sensor_list)
     {
-        const char* idpath = getIdPath();
         m_sensor_list = new NSensorList();
-        m_sensor_list->load( idpath, "idmap");
+        m_sensor_list->load( m_idmappath );
         LOG(info) << "OpticksResource::getSensorList " << m_sensor_list->description() ; 
     }
     return m_sensor_list ; 

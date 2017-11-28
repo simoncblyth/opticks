@@ -39,6 +39,7 @@ const char* GMaterialLib::keyspec =
 
 void GMaterialLib::save()
 {
+    //assert(0);
     saveToCache();
 }
 

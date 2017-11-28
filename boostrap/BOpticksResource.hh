@@ -17,6 +17,9 @@ class BRAP_API  BOpticksResource {
        static const char* InstallPathG4ENV() ;
        static const char* InstallPath(const char* relpath) ;
    public:
+       static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
+       static const char* IdMapPathDebug(); // requires OPTICKS_SRCPATH_DEBUG  envvar
+   public:
         BOpticksResource(const char* envprefix="OPTICKS_");
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
@@ -24,9 +27,6 @@ class BRAP_API  BOpticksResource {
         static std::string BuildDir(const char* proj);
         static std::string BuildProduct(const char* proj, const char* name);
         static std::string PTXPath(const char* name, const char* target="OptiXRap");
-
-        static const char* GeoDirName(const char* srcpath);   // ParentName of dae/gdml srcpath eg DayaBay_VGDX_20140414-1300
-        static const char* GeoFileName(const char* srcpath);   // FileName   of dae/gdml srcpath eg g4_00.dae
 
         static const char* OpticksDataDir();
         static const char* GeoCacheDir();
@@ -60,10 +60,11 @@ class BRAP_API  BOpticksResource {
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
    public:       
+       std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
+       std::string getPropertyLibDir(const char* name) const ;
        std::string getInstallPath(const char* relpath) const ;
        const char* getIdPath();
        const char* getIdFold();  // parent directory of idpath containing g4_00.dae
-       const char* getIdBase();  // parent directory of idfold, typically the "export" folder
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
 
     public:
@@ -74,10 +75,12 @@ class BRAP_API  BOpticksResource {
    public:       
         void addDir( const char* label, const char* dir);
         void addPath( const char* label, const char* path);
+        void addName( const char* label, const char* name);
 
        // resource existance dumping 
        void dumpPaths(const char* msg) const ;
        void dumpDirs(const char* msg) const ;
+       void dumpNames(const char* msg) const ;
 
        const char* getPath(const char* label) const  ;
    private:
@@ -88,7 +91,6 @@ class BRAP_API  BOpticksResource {
    protected:
         friend struct BOpticksResourceTest ; 
         void setSrcPathDigest(const char* srcpath, const char* srcdigest);
-        const char* makeSrcPath(const char* ext) const ;
    protected:
         const char* m_envprefix ; 
         int         m_layout ; 
@@ -103,10 +105,12 @@ class BRAP_API  BOpticksResource {
         const char* m_ptx_installcache_dir ; 
    protected:
         const char* m_srcpath ; 
+        const char* m_srcfold ; 
+        const char* m_srcbase ; 
         const char* m_srcdigest ; 
         const char* m_idfold ; 
+        const char* m_idfile ; 
         const char* m_idname ; 
-        const char* m_idbase ; 
         const char* m_idpath ; 
         const char* m_idpath_tmp ; 
    protected:
@@ -117,9 +121,11 @@ class BRAP_API  BOpticksResource {
        const char* m_gdmlpath ;
        const char* m_gltfpath ;
        const char* m_metapath ;
+       const char* m_idmappath ;
    protected:
         std::vector<std::pair<std::string, std::string> >  m_paths  ; 
         std::vector<std::pair<std::string, std::string> >  m_dirs  ; 
+        std::vector<std::pair<std::string, std::string> >  m_names  ; 
 
 };
 

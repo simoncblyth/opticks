@@ -37,17 +37,20 @@ BOpticksResource::BOpticksResource(const char* envprefix)
     m_okc_installcache_dir(NULL),
     m_ptx_installcache_dir(NULL),
     m_srcpath(NULL),
+    m_srcfold(NULL),
+    m_srcbase(NULL),
     m_srcdigest(NULL),
     m_idfold(NULL),
+    m_idfile(NULL),
     m_idname(NULL),
-    m_idbase(NULL),
     m_idpath(NULL),
     m_debugging_idpath(NULL),
     m_debugging_idfold(NULL),
     m_daepath(NULL),
     m_gdmlpath(NULL),
     m_gltfpath(NULL),
-    m_metapath(NULL)
+    m_metapath(NULL),
+    m_idmappath(NULL)
 {
     init();
 }
@@ -87,6 +90,7 @@ const char* BOpticksResource::InstallPathOKDATA()
 {
     return InstallPath(OKDATA_RELPATH);
 }
+
 
 
 
@@ -134,6 +138,17 @@ void BOpticksResource::adoptInstallPrefix()
 
 }
 
+
+
+std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
+{
+    std::string path = BFile::FormPath(m_geocache_dir, rela, relb, relc, reld ) ;
+    return path ;
+}
+
+
+
+
 void BOpticksResource::setTopDownDirs()
 { 
     m_opticksdata_dir      = OpticksDataDir() ;      // eg /usr/local/opticks/opticksdata
@@ -172,21 +187,6 @@ void BOpticksResource::setDebuggingIDPATH()
     m_debugging_idfold = strdup(idfold.c_str());
 
 }
-
-const char* BOpticksResource::GeoDirName(const char* srcpath) // static
-{
-    // srcpath is typically full path to a .dae or .gdml file
-    std::string gdn = BFile::ParentName( srcpath ) ;
-    return gdn.empty() ? NULL : strdup(gdn.c_str()) ; 
-}
-
-const char* BOpticksResource::GeoFileName(const char* srcpath) // static
-{
-    // srcpath is typically full path to a .dae or .gdml file
-    std::string gfn = BFile::Name( srcpath ) ;
-    return gfn.empty() ? NULL : strdup(gfn.c_str()) ; 
-}
-
 
 
 
@@ -254,10 +254,18 @@ const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfol
 
 
 
-const char* BOpticksResource::makeSrcPath(const char* ext) const 
+const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext) 
 {
-    std::string path = BFile::ChangeExt(m_srcpath, ext ); 
+    std::string path = BFile::ChangeExt(srcpath, ext ); 
     return strdup(path.c_str());
+}
+
+
+const char* BOpticksResource::IdMapPathDebug()
+{
+    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH_DEBUG"); 
+    return srcpath ? MakeSrcPath( srcpath, ".idmap" ) : NULL ; 
+
 }
 
 void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdigest)
@@ -267,53 +275,82 @@ void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdige
 
     m_srcpath = strdup( srcpath );
     m_srcdigest = strdup( srcdigest );
+    
+    std::string srcfold = BFile::ParentDir(m_srcpath);
+    m_srcfold = strdup(srcfold.c_str());
 
-    m_daepath = makeSrcPath(".dae"); 
-    m_gdmlpath = makeSrcPath(".gdml"); 
-    m_gltfpath = makeSrcPath(".gltf"); 
-    m_metapath = makeSrcPath(".ini"); 
+    std::string srcbase = BFile::ParentDir(srcfold.c_str());
+    m_srcbase = strdup(srcbase.c_str());
+    addDir("srcfold", m_srcfold ); 
+    addDir("srcbase", m_srcbase ); 
+
+
+    m_daepath = MakeSrcPath(m_srcpath,".dae"); 
+    m_gdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
+    m_gltfpath = MakeSrcPath(m_srcpath,".gltf"); 
+    m_metapath = MakeSrcPath(m_srcpath,".ini"); 
+    m_idmappath = MakeSrcPath(m_srcpath,".idmap"); 
 
     addPath("srcpath", m_srcpath );
     addPath("daepath", m_daepath );
     addPath("gdmlpath", m_gdmlpath );
     addPath("gltfpath", m_gltfpath );
     addPath("metapath", m_metapath );
+    addPath("idmappath", m_idmappath );
+
+
+    std::string idname = BFile::ParentName(m_srcpath);
+    m_idname = strdup(idname.c_str());   // idname is name of dir containing the srcpath eg DayaBay_VGDX_20140414-1300
+
+    std::string idfile = BFile::Name(m_srcpath);
+    m_idfile = strdup(idfile.c_str());    // idfile is name of srcpath geometry file, eg g4_00.dae
+
+    addName("idname", m_idname ); 
+    addName("idfile", m_idfile ); 
+
+    const char* layout = BStr::itoa(m_layout) ;
+    addName("OPTICKS_RESOURCE_LAYOUT", layout );
 
 
     if(m_layout == 0)  // geocache co-located with the srcpath typically from opticksdata
     {
-        std::string fold = BFile::ParentDir(m_srcpath);
-        m_idfold = strdup(fold.c_str());
-
-        std::string base = BFile::ParentDir(m_idfold);
-        m_idbase = strdup(base.c_str());
-
-        std::string name = BFile::Name(m_idfold); 
-        m_idname = strdup(name.c_str());       // idname is name of the idfold eg DayaBay_VGDX_20140414-1300
-
+        m_idfold = strdup(m_srcfold);
+     
         std::string kfn = BStr::insertField( m_srcpath, '.', -1 , m_srcdigest );
         m_idpath = strdup(kfn.c_str());
 
         // internal setting of envvar 
         assert(SSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
 
-        // Where is IDPATH used ? 
+        // Where is IDPATH internal envvar used ? 
         //    Mainly by NPY tests as a resource access workaround as NPY 
         //    is lower level than optickscore- so lacks its resource access machinery.
         //
-        // To avoid this kludge, need to 
-        // to move much of this method down into BOpticksResource 
-        //
-    }     
+        //  TODO: eliminate use of IDPATH internal envvar now that BOpticksResource has the info
+    } 
+    else if(m_layout == 1)  // geocache decoupled from opticksdata
+    {
+        std::string fold = getGeoCachePath(  m_idname ) ; 
+        m_idfold = strdup(fold.c_str()) ; 
 
-
+        std::string idpath = getGeoCachePath( m_idname, m_idfile, m_srcdigest, layout );
+        m_idpath = strdup(idpath.c_str()) ; 
+    }
 
     addDir("idfold", m_idfold );
-    addDir("idbase", m_idbase );
     addDir("idpath", m_idpath );
 
     addDir("idpath_tmp", m_idpath_tmp );
 }
+
+
+
+
+std::string BOpticksResource::getPropertyLibDir(const char* name) const 
+{
+    return BFile::FormPath( m_idpath, name ) ;
+}
+
 
 
 
@@ -353,11 +390,6 @@ const char* BOpticksResource::getIdFold()
 {
     return m_idfold ;
 }
-const char* BOpticksResource::getIdBase()
-{
-    return m_idbase ;
-}
-
 
 
 void BOpticksResource::Summary(const char* msg)
@@ -388,6 +420,7 @@ void BOpticksResource::Summary(const char* msg)
 
     dumpPaths("dumpPaths");
     dumpDirs("dumpDirs");
+    dumpNames("dumpNames");
 }
 
 const char* BOpticksResource::makeInstallPath( const char* prefix, const char* main, const char* sub )
@@ -453,12 +486,18 @@ const char* BOpticksResource::getPath(const char* label) const
 }
 
 
+
+
+void BOpticksResource::addName( const char* label, const char* name)
+{
+    typedef std::pair<std::string, std::string> SS ; 
+    m_names.push_back( SS(label, name ? name : "") );
+}
 void BOpticksResource::addPath( const char* label, const char* path)
 {
     typedef std::pair<std::string, std::string> SS ; 
     m_paths.push_back( SS(label, path ? path : "") );
 }
-
 void BOpticksResource::addDir( const char* label, const char* dir)
 {
     typedef std::pair<std::string, std::string> SS ; 
@@ -466,6 +505,27 @@ void BOpticksResource::addDir( const char* label, const char* dir)
 }
 
 
+void BOpticksResource::dumpNames(const char* msg) const 
+{
+    LOG(info) << msg ; 
+
+    typedef std::pair<std::string, std::string> SS ; 
+    typedef std::vector<SS> VSS ; 
+
+    for(VSS::const_iterator it=m_names.begin() ; it != m_names.end() ; it++)
+    {
+        const char* label = it->first.c_str() ; 
+        const char* name = it->second.empty() ? NULL : it->second.c_str() ; 
+        std::cerr
+             << std::setw(30) << label
+             << " : " 
+             << std::setw(2) << "-" 
+             << " : " 
+             << std::setw(50) << ( name ? name : "-" )
+             << std::endl 
+             ;
+    }
+}
 
 void BOpticksResource::dumpPaths(const char* msg) const 
 {
@@ -486,7 +546,7 @@ void BOpticksResource::dumpPaths(const char* msg) const
         assert( path2 == path );
 
         std::cerr
-             << std::setw(20) << name
+             << std::setw(30) << name
              << " : " 
              << std::setw(2) << ( exists ? "Y" : "N" ) 
              << " : " 
@@ -511,7 +571,7 @@ void BOpticksResource::dumpDirs(const char* msg) const
         bool exists = dir ? BFile::ExistsDir(dir ) : false ; 
 
         std::cerr
-             << std::setw(20) << name
+             << std::setw(30) << name
              << " : " 
              << std::setw(2) << ( exists ? "Y" : "N" ) 
              << " : "  

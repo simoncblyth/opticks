@@ -2,23 +2,35 @@
 #include <cstdio>
 #include <cassert>
 
+#include "BOpticksResource.hh"
+
 #include "NPY.hpp"
 #include "HitsNPY.hpp"
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
 
+#include "PLOG.hh"
+#include "NPY_LOG.hh"
 
-int main(int , char** argv)
+
+int main(int argc, char** argv)
 {
-    char* idpath = getenv("IDPATH");
-    if(!idpath) 
+    PLOG_(argc, argv);
+    NPY_LOG__ ; 
+
+
+    const char* idmpath = BOpticksResource::IdMapPathDebug(); 
+    if(!idmpath) 
     {
-        printf("%s : requires IDPATH envvar \n", argv[0]);
+        printf("%s : requires OPTICKS_SRCPATH_DEBUG  envvar \n", argv[0]);
         return 0 ;
     }
 
+
+   
+
     NSensorList sens;
-    sens.load(idpath, "idmap");
+    sens.load(idmpath);
 
     const char* tag = "1" ; 
     NPY<float>* photons = NPY<float>::load("oxtorch", tag,"dayabay");

@@ -72,8 +72,17 @@ unsigned int NSensorList::getNumSensors()
 
 
 
-void NSensorList::load(const char* idpath_, const char* ext)
+void NSensorList::load(const char* idmpath )
 {
+    LOG(error) << "NSensorList::load "
+              << "\n idmpath:   " << idmpath
+              ;   
+    read(idmpath);
+}
+
+void NSensorList::load_deprecated(const char* idpath_, const char* ext)
+{
+
     if(!idpath_) return ;
 
     fs::path idpath(idpath_);
@@ -108,15 +117,15 @@ void NSensorList::load(const char* idpath_, const char* ext)
     fs::path idmpath(pdir);
     idmpath /= idmname ; 
 
-    LOG(debug) << "NSensorList::load "
+    LOG(error) << "NSensorList::load "
               << "\n idpath:   " << idpath.string() 
               << "\n pdir:     " << pdir.string() 
               << "\n filename: " << name 
               << "\n daepath:  " << daepath.string() 
               << "\n idmpath:  " << idmpath.string() 
               ;   
-
     read(idmpath.string().c_str());
+
 }
 
 
