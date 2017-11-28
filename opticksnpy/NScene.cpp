@@ -119,9 +119,9 @@ long NScene::SecondsSinceLastWrite(const char* base, const char* name)
 }
 
 
-NScene* NScene::Load( const char* gltfbase, const char* gltfname, NSceneConfig* gltfconfig, int dbgnode) 
+NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode) 
 {
-    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, gltfconfig, dbgnode) : NULL ;
+    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, idfold, gltfconfig, dbgnode) : NULL ;
 
     if(!scene)
         LOG(fatal) << "NScene:Load MISSING PATH" 
@@ -148,10 +148,11 @@ const char* NScene::bbox_type_string() const
 
 
 
-NScene::NScene(const char* base, const char* name, NSceneConfig* config, int dbgnode, int scene_idx)  
+NScene::NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx)  
    :
     NGLTF(base, name, config, scene_idx),
     m_num_gltf_nodes(getNumNodes()),
+    m_idfold(idfold ? strdup(idfold) : NULL),
     m_config(config),
     m_dbgnode(dbgnode),
     m_containment_err(0),
@@ -257,7 +258,8 @@ void NScene::init()
 
 void NScene::init_lvlists(const char* base, const char* name)
 {
-    std::string stem = BFile::Stem(name);
+  
+    std::string stem = BFile::Stem(name);  // eg "g4_00" 
     std::string csgskip_path = BFile::FormPath(base, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
     std::string placeholder_path = BFile::FormPath(base, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
 

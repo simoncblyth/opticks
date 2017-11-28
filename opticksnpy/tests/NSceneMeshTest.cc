@@ -43,8 +43,10 @@ int main(int argc, char** argv)
         return 0 ; 
     } 
 
+    const char* idfold = NULL ;
+
     NSceneConfig* config = new NSceneConfig(gltfconfig);
-    NScene* scene = NScene::Load( gltfbase, gltfname, config, dbgnode );
+    NScene* scene = NScene::Load( gltfbase, gltfname, idfold, config, dbgnode );
     assert(scene);
 
     scene->dumpCSG(dbgmesh); 

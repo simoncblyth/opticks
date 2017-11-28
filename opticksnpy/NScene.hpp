@@ -42,10 +42,10 @@ are polygonized on load in NScene::load_mesh_extras.
 class NPY_API NScene : public NGLTF 
 {
     public:
-        static NScene* Load( const char* gltfbase, const char* gltfname, NSceneConfig* gltfconfig, int dbgnode ) ;
+        static NScene* Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode ) ;
         static long SecondsSinceLastWrite(const char* base, const char* name);
         static bool Exists(const char* base, const char* name);
-        NScene(const char* base, const char* name, NSceneConfig* config, int dbgnode, int scene_idx=0  );
+        NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx=0  );
 
         void setAge(long age);
 
@@ -154,6 +154,7 @@ class NPY_API NScene : public NGLTF
 
 
         unsigned                          m_num_gltf_nodes ; 
+        const char*                       m_idfold ; 
         NSceneConfig*                     m_config ; 
         int                               m_dbgnode ; 
         unsigned                          m_containment_err ; 

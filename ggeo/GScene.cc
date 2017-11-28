@@ -109,7 +109,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_honour_selection(true),
     m_gltf(m_ok->getGLTF()),
     m_scene_config( m_ok->getSceneConfig() ),
-    m_scene(loaded ? NULL : (m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_scene_config, m_ok->getDbgNode()) : NULL)),
+    m_scene(loaded ? NULL : (m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getIdFold(), m_scene_config, m_ok->getDbgNode()) : NULL)),
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 

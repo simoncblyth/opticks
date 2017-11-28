@@ -18,6 +18,133 @@ Expected way to make the analytic cache
 
 
 
+TODO
+-----
+
+* rearrange where NScene writes into geocache
+* commit gltf and extras into opticksdata 
+* test with opticksdata readonly 
+
+
+TODO : in new layout write NScene lvlists into new idfold (not the old one: srcfold)
+-------------------------------------------------------------------------------------
+
+::
+
+       srcfold :  Y : /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300
+       srcbase :  Y :              /usr/local/opticks/opticksdata/export
+        idfold :  Y : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300
+        idpath :  Y : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1
+
+
+
+
+analytic/sc.py : writing extras+gltf need to be done together
+-----------------------------------------------------------------
+
+::
+
+    412     def save(self, path, load_check=True, pretty_also=True):
+    413         log.info("saving to %s " % path )
+    414         gdir = os.path.dirname(path)
+    415         self.save_extras(gdir)    # sets uri for extra external files, so must come before the json gltf save
+    416 
+    417         gltf = self.gltf
+    418         json_save_(path, gltf)
+
+
+
+srcfold from opticksdata
+---------------------------
+
+::
+
+    simon:DayaBay_VGDX_20140414-1300 blyth$ l
+    total 60720
+    drwxr-xr-x   19 blyth  staff       646 Aug 29 10:46 g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul 13 16:48 g4_00.7cecd380789815049b2380e5959f811d.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul 13 14:04 g4_00.2afdb82667f76de20f0e565546dbe5e1.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul 13 13:48 g4_00.4baa7a574c7dd45bfe1aa5c9f622ebb7.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul 13 12:44 g4_00.0e689bcb706504f90f700561849028ed.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul 13 12:26 g4_00.d00a9521a9a628ced58541d480142b69.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  8 14:08 g4_00.495038eb12ffd551d21f50e05d9b904e.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  7 13:21 g4_00.47461040d4dc1a53a1c220fdff8b0e81.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  7 12:51 g4_00.658867c521b8ae0058a00c516cde4105.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  7 12:06 g4_00.60420969851752cc7f01c61eb6d4ec56.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  7 10:52 g4_00.9f4370cb66a18882488962cd3bcd5b00.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  7 09:42 g4_00.13b28d14fb98f106080ffaa81b291ecf.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  6 20:57 g4_00.7ecded8ae576354131804060af5dd0a1.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  6 19:27 g4_00.a430a192de1f617b85d3bc0c47426faf.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  6 19:25 g4_00.780a488e98526cf78fb14c46ff52bcd3.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  6 19:21 g4_00.05928ea493b6e1e0b6f26beda9eb369b.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  4 13:56 g4_00.450c3b9471accf34fa1e808c6c8a679a.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  4 11:42 g4_00.54dce5b6a7a226fb440eab1c42e16616.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  4 10:55 g4_00.7ed7a5aadccb0f4759f6291842731e70.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  4 09:56 g4_00.31551e658ac453a1f16fa4169b99116f.dae
+    drwxr-xr-x   12 blyth  staff       408 Jul  3 21:29 g4_00.0bf1c4270d9131ed90ad6e218af1da34.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  3 15:21 g4_00.48ce6eae7a859d5555e1e21c4bee206e.dae
+    drwxr-xr-x   16 blyth  staff       544 Jul  3 13:18 g4_00.4d0ba6665a8a501401e989b108a23ae1.dae
+    drwxr-xr-x   15 blyth  staff       510 Jul  3 12:58 g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae.keep
+    drwxr-xr-x   12 blyth  staff       408 Jul  1 22:36 g4_00.f3f705f3d7d6bf7f11563167ead1265d.dae      
+
+    ## above all to geocache in new layout 
+
+
+    drwxr-xr-x    4 blyth  staff       136 Jul  3 18:43 g4_00    
+
+    ## contains a few lvlists (csgskip, placeholder poly) written by NScene 
+    ## these need to move to geocache ?
+
+
+    -rw-r--r--    1 blyth  staff  11172379 Aug  2 20:46 g4_00.pretty.gltf
+    -rw-r--r--    1 blyth  staff   6005119 Aug  2 20:46 g4_00.gltf
+    drwxr-xr-x  252 blyth  staff      8568 Jul  3 18:26 extras   
+
+    ## written by gdml2dgltf, so probably need to commit em to opticksdata (<10 MB)
+
+    -rw-r--r--    1 blyth  staff   7126305 Jun 14 13:13 g4_00.dae
+    -rw-r--r--    1 blyth  staff   4111332 Jun 14 13:13 g4_00.gdml
+    -rw-r--r--    1 blyth  staff   2663880 Jun 14 13:13 g4_00.idmap
+
+     ## sources already committed to opticksdata
+
+
+
+
+
+
+::
+
+     151 NScene::NScene(const char* base, const char* name, NSceneConfig* config, int dbgnode, int scene_idx)
+     152    :
+     153     NGLTF(base, name, config, scene_idx),
+     154     m_num_gltf_nodes(getNumNodes()),
+     155     m_config(config),
+     156     m_dbgnode(dbgnode),
+     157     m_containment_err(0),
+     158     m_verbosity(m_config->verbosity),
+     159     m_num_global(0),
+     160     m_num_csgskip(0),
+     161     m_num_placeholder(0),
+     162     m_num_selected(0),
+     163     m_csgskip_lvlist(NULL),
+     164     m_placeholder_lvlist(NULL),
+     165     m_node_count(0),
+     166     m_label_count(0),
+     167     m_digest_count(new Counts<unsigned>("progenyDigest")),
+     168     m_age(NScene::SecondsSinceLastWrite(base, name)),
+     169     m_triple_debug(true),
+     170     m_triple(NULL),
+     171     m_num_triple(0)
+     172 {
+     173     init_lvlists(base, name);
+     174     init();
+     175 }
+
+
+
+
+
 Observations
 --------------
 
