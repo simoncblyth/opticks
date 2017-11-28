@@ -58,6 +58,7 @@ class NPY_API NGLTF {
         ygltf::node_t*  getNode(unsigned node_idx ) const ;
         std::string     descFlatNode( unsigned node_idx );
         std::string     descNode( unsigned node_idx );
+        std::string     desc() const ;
 
     protected:
         const char*     m_base ; 

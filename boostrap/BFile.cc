@@ -178,6 +178,14 @@ std::string BFile::ParentDir(const char* path)
 }
 
 
+std::string BFile::ParentName(const char* path)
+{
+    if(!path) return "" ; 
+    fs::path fsp(path);
+    std::string fold = fsp.parent_path().string() ;
+    std::string name = BFile::Name(fold.c_str()); 
+    return name ; 
+}
 
 
 bool BFile::ExistsDir(const char* path, const char* sub, const char* name)

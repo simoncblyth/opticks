@@ -17,19 +17,27 @@ namespace fs = boost::filesystem;
 #include "PLOG.hh"
 
 
-BOpticksResource::BOpticksResource(const char* envprefix)
-   :
-     m_envprefix(strdup(envprefix)),
-     m_install_prefix(NULL),
-     m_opticksdata_dir(NULL),
-     m_resource_dir(NULL),
-     m_gensteps_dir(NULL),
-     m_installcache_dir(NULL),
-     m_rng_installcache_dir(NULL),
-     m_okc_installcache_dir(NULL),
-     m_ptx_installcache_dir(NULL),
-     m_debugging_idpath(NULL),
-     m_debugging_idfold(NULL)
+BOpticksResource::BOpticksResource(const char* envprefix, unsigned version)
+    :
+    m_envprefix(strdup(envprefix)),
+    m_version(version),
+    m_install_prefix(NULL),
+    m_opticksdata_dir(NULL),
+    m_geocache_dir(NULL),
+    m_resource_dir(NULL),
+    m_gensteps_dir(NULL),
+    m_installcache_dir(NULL),
+    m_rng_installcache_dir(NULL),
+    m_okc_installcache_dir(NULL),
+    m_ptx_installcache_dir(NULL),
+    m_srcpath(NULL),
+    m_srcdigest(NULL),
+    m_idfold(NULL),
+    m_idname(NULL),
+    m_idbase(NULL),
+    m_idpath(NULL),
+    m_debugging_idpath(NULL),
+    m_debugging_idfold(NULL)
 {
     init();
 }
@@ -81,6 +89,7 @@ void BOpticksResource::adoptInstallPrefix()
 void BOpticksResource::setTopDownDirs()
 { 
     m_opticksdata_dir      = OpticksDataDir() ;      // eg /usr/local/opticks/opticksdata
+    m_geocache_dir         = GeoCacheDir() ;   // eg /usr/local/opticks/geocache
     m_resource_dir         = ResourceDir() ;  // eg /usr/local/opticks/opticksdata/resource
     m_gensteps_dir         = GenstepsDir() ;  // eg /usr/local/opticks/opticksdata/gensteps
     m_installcache_dir     = InstallCacheDir() ;      // eg  /usr/local/opticks/installcache
@@ -105,6 +114,23 @@ void BOpticksResource::setDebuggingIDPATH()
     m_debugging_idfold = strdup(idfold.c_str());
 
 }
+
+const char* BOpticksResource::GeoDirName(const char* srcpath) // static
+{
+    // srcpath is typically full path to a .dae or .gdml file
+    std::string gdn = BFile::ParentName( srcpath ) ;
+    return gdn.empty() ? NULL : strdup(gdn.c_str()) ; 
+}
+
+const char* BOpticksResource::GeoFileName(const char* srcpath) // static
+{
+    // srcpath is typically full path to a .dae or .gdml file
+    std::string gfn = BFile::Name( srcpath ) ;
+    return gfn.empty() ? NULL : strdup(gfn.c_str()) ; 
+}
+
+
+
 
 
 const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
@@ -136,14 +162,13 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 
 const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
 const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
+const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
 const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
 const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
 
 const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
 const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
 const char* BOpticksResource::OKCInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "OKC"); }
-
-
 
 
 
@@ -154,11 +179,9 @@ std::string BOpticksResource::PTXPath(const char* name, const char* target)
 }
 
 
-
-
-
 const char* BOpticksResource::getInstallDir() {         return m_install_prefix ; }   
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
+const char* BOpticksResource::getGeoCacheDir() {        return m_geocache_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 
 
 const char* BOpticksResource::getInstallCacheDir() {    return m_installcache_dir ; } 
@@ -171,6 +194,74 @@ const char* BOpticksResource::getDebuggingIDPATH() {    return m_debugging_idpat
 const char* BOpticksResource::getDebuggingIDFOLD() {    return m_debugging_idfold ; } 
 
 
+
+
+void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdigest)
+{   
+    assert( srcpath );
+    assert( srcdigest );
+
+    m_srcpath = strdup( srcpath );
+    m_srcdigest = strdup( srcdigest );
+
+
+    if(m_version == 0)  // geocache co-located with the srcpath typically from opticksdata
+    {
+        std::string fold = BFile::ParentDir(m_srcpath);
+        m_idfold = strdup(fold.c_str());
+
+        std::string base = BFile::ParentDir(m_idfold);
+        m_idbase = strdup(base.c_str());
+
+        std::string name = BFile::Name(m_idfold); 
+        m_idname = strdup(name.c_str());       // idname is name of the idfold eg DayaBay_VGDX_20140414-1300
+
+        std::string kfn = BStr::insertField( m_srcpath, '.', -1 , m_srcdigest );
+        m_idpath = strdup(kfn.c_str());
+
+        // internal setting of envvar 
+        assert(SSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
+
+        // Where is IDPATH used ? 
+        //    Mainly by NPY tests as a resource access workaround as NPY 
+        //    is lower level than optickscore- so lacks its resource access machinery.
+        //
+        // To avoid this kludge, need to 
+        // to move much of this method down into BOpticksResource 
+        //
+    }     
+}
+
+
+
+
+
+
+
+void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for test saves into non-standard locations
+{
+   m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : NULL ;  
+} 
+
+const char* BOpticksResource::getIdPath()
+{
+    return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
+}
+const char* BOpticksResource::getIdFold()
+{
+    return m_idfold ;
+}
+const char* BOpticksResource::getIdBase()
+{
+    return m_idbase ;
+}
+
+
+
+
+
+
+
 void BOpticksResource::Summary(const char* msg)
 {
     std::cerr << msg << std::endl ; 
@@ -180,6 +271,7 @@ void BOpticksResource::Summary(const char* msg)
     std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
 
     std::cerr << "opticksdata_dir      " << m_opticksdata_dir     << std::endl ; 
+    std::cerr << "geocache_dir         " << m_geocache_dir     << std::endl ; 
     std::cerr << "resource_dir         " << m_resource_dir     << std::endl ; 
     std::cerr << "gensteps_dir         " << m_gensteps_dir     << std::endl ; 
     std::cerr << "installcache_dir     " << m_installcache_dir << std::endl ; 

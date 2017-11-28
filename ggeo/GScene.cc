@@ -113,7 +113,7 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_num_nd(m_scene ? m_scene->getNumNd() : -1),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
-    m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib )   : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
+    m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib ) : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo ) : new GNodeLib(m_ok, m_analytic, m_testgeo )),
     m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
 
@@ -125,10 +125,13 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
 {
 
 
-    if(!m_loaded)
+    if(m_loaded == false)
     {
-        initFromGLTF();
+        assert( m_scene );
+        LOG(info) << "GScene::GScene (NScene)m_scene " << m_scene->desc() ; 
+        initFromGLTF();  // imports the analytic node tree from the GLTF file, and the extras (meshes/CSG)
     }
+
 }
 
 

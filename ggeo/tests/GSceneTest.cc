@@ -30,8 +30,11 @@ struct GSceneTest
         ok(ok_),
         gg(new GGeo(ok))
     {
+        LOG(error) << "loadFromCache" ;  
         gg->loadFromCache();
+        LOG(error) << "loadAnalyticFromCache" ;  
         gg->loadAnalyticFromCache();
+        LOG(error) << "dumpStats" ;  
         gg->dumpStats();
     }
 };
@@ -40,7 +43,7 @@ struct GSceneTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
+    PLOG_COLOR(argc, argv);
 
     OKCORE_LOG__ ;
     NPY_LOG__ ;

@@ -61,7 +61,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL);
+       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL, unsigned version=0);
        bool isValid();
     private:
        void init();
@@ -76,17 +76,13 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void setValid(bool valid);
     public:
        const char* getInstallPrefix();
-       const char* getIdPath();
-       const char* getIdFold();  // parent directory of idpath containing g4_00.dae
-       const char* getIdBase();  // parent directory of idfold, typically the "export" folder
+
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
        const char* getDefaultMaterial();  // material shortname based on the assigned detector, used for machinery tests only 
        const char* getDefaultMedium();    // PMT medium material name 
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
-   public:
-       void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
     public:
        std::string getInstallPath(const char* relpath) const ;
        std::string getRelativePath(const char* path); 
@@ -180,12 +176,15 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* m_metapath ;
        const char* m_meshfix ;
        const char* m_meshfixcfg ;
-       const char* m_idpath ;
-       const char* m_idpath_tmp ;
-       const char* m_idfold ;
-       const char* m_idname ;
-       const char* m_idbase ;
-       const char* m_digest ;
+   private:
+       // all moved down to BOpticksResource
+       //const char* m_idpath ;
+       //const char* m_idpath_tmp ;
+       //const char* m_idfold ;
+       //const char* m_idname ;
+       //const char* m_idbase ;
+       //const char* m_digest ;
+   private:
        bool        m_valid ; 
    private:
        OpticksQuery*  m_query ;

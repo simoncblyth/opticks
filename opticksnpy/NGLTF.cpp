@@ -1,3 +1,6 @@
+
+#include <sstream>
+
 #include "PLOG.hh"
 #include "BFile.hh"
 
@@ -284,6 +287,21 @@ std::string NGLTF::descNode( unsigned node_idx )
            ;
     return ss.str() ;
 }
+
+std::string NGLTF::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "NGLTF "
+       << " base " << ( m_base ? m_base : "-" )
+       << " name " << ( m_name ? m_name : "-" )
+       ;
+
+    return ss.str();
+}
+
+
+
 
 std::string NGLTF::descFlatNode( unsigned node_idx )
 {

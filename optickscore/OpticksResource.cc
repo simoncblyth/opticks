@@ -40,7 +40,7 @@ namespace fs = boost::filesystem;
 
 
 const char* OpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
-const char* OpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ;
+const char* OpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
 
 
 
@@ -80,9 +80,9 @@ const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 
 
 
-OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
+OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg, unsigned version) 
     :
-       BOpticksResource(envprefix),
+       BOpticksResource(envprefix, version),
        m_opticks(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
 
@@ -95,12 +95,12 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_metapath(NULL),
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
-       m_idpath(NULL),
-       m_idpath_tmp(NULL),
-       m_idfold(NULL),
-       m_idname(NULL),
-       m_idbase(NULL),
-       m_digest(NULL),
+       //m_idpath(NULL),
+       //m_idpath_tmp(NULL),
+       //m_idfold(NULL),
+       //m_idname(NULL),
+       //m_idbase(NULL),
+       //m_digest(NULL),
        m_valid(true),
        m_query(NULL),
        m_colors(NULL),
@@ -132,7 +132,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
 
  
 
-const char* OpticksResource::getInstallPrefix()
+const char* OpticksResource::getInstallPrefix() // canonically /usr/local/opticks
 {
     return m_install_prefix ; 
 }
@@ -148,23 +148,9 @@ bool OpticksResource::isValid()
    return m_valid ; 
 }
 
-void OpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for test saves into non-standard locations
-{
-   m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : NULL ;  
-} 
 
-const char* OpticksResource::getIdPath()
-{
-    return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
-}
-const char* OpticksResource::getIdFold()
-{
-    return m_idfold ;
-}
-const char* OpticksResource::getIdBase()
-{
-    return m_idbase ;
-}
+
+
 const char* OpticksResource::getDetectorBase()
 {
     return m_detector_base ;
@@ -550,6 +536,14 @@ BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
 
 
 
+/*
+const char* OpticksResource::getGeoName(const char* daepath)
+{
+
+
+
+}
+*/
 
 
 
@@ -558,7 +552,7 @@ void OpticksResource::readEnvironment()
 {
 /*
 
-:param envprefix: of the required envvars, eg with "GGEOVIEW_" need:
+:param envprefix: of the required envvars, eg with "OPTICKS_" need:
 
 *path* 
      identifies the source geometry G4DAE exported file
@@ -614,7 +608,7 @@ void OpticksResource::readEnvironment()
          m_metapath = strdup(metapath.c_str());
          std::string gdmlpath = makeSidecarPath(m_daepath, ".dae", ".gdml");
          m_gdmlpath = strdup(gdmlpath.c_str());
-         std::string gltfpath = makeSidecarPath(m_daepath, ".dae", ".gltf");
+         std::string gltfpath = makeSidecarPath(m_daepath, ".dae", ".gltf"); // hmm derived ? move to geocache ?
          m_gltfpath = strdup(gltfpath.c_str());
     }
 
@@ -627,56 +621,19 @@ void OpticksResource::readEnvironment()
     m_query = new OpticksQuery(m_query_string);
     std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));
 
-    m_digest = strdup(query_digest.c_str());
+    //m_digest = strdup(query_digest.c_str());
  
     // idpath incorporates digest of geometry selection envvar 
     // allowing to benefit from caching as vary geometry selection 
     // while still only having a single source geometry file.
 
-    if(m_daepath)
-    {
-        std::string kfn = BStr::insertField( m_daepath, '.', -1 , m_digest );
+    assert(m_daepath);
+    setSrcPathDigest(m_daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
 
-        m_idpath = strdup(kfn.c_str());
-
-        assert(SSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
-
-        // Where is IDPATH used ? 
-        //    Mainly by NPY tests as a resource access workaround as NPY 
-        //    is lower level than optickscore- so lacks its resource access machinery.
-        //
-        // To avoid this kludge, need to 
-        // to move much of this method down into BOpticksResource 
-        //
-
-    }
-    else
-    {
-         // IDPATH envvar is last resort, but handy for testing
-         m_idpath = getenv("IDPATH");
-    }
-
-    if(m_idpath)
-    {
-        std::string fold = BFile::ParentDir(m_idpath);
-        m_idfold = strdup(fold.c_str());
-
-        // Parent of the IDPATH is the IDFOLD, typically contains
-        //
-        //       g4_00.dae 
-        //       g4_00.gdml 
-        //       ChromaMaterialMap.json  
-
-
-        std::string base = BFile::ParentDir(m_idfold);
-        m_idbase = strdup(base.c_str());
-
-        std::string name = BFile::Name(m_idfold); 
-        m_idname = strdup(name.c_str()); 
-
-        // idname is name of the idfold eg DayaBay_VGDX_20140414-1300
-    } 
-
+    assert(m_idpath) ; 
+    assert(m_idbase) ; 
+    assert(m_idname) ; 
+    assert(m_idfold) ; 
 }
 
 
@@ -799,6 +756,7 @@ void OpticksResource::Summary(const char* msg)
 
     std::cerr << "install_prefix    : " <<  (m_install_prefix ? m_install_prefix : "NULL" ) << std::endl ; 
     std::cerr << "opticksdata_dir   : " <<  (m_opticksdata_dir ? m_opticksdata_dir : "NULL" ) << std::endl ; 
+    std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "NULL" ) << std::endl ; 
     std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
     std::cerr << "valid    : " <<  (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
     std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
@@ -809,7 +767,7 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
     std::cerr << "query    : " <<  (m_query_string?m_query_string:"NULL") << std::endl; 
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
-    std::cerr << "digest   : " <<  (m_digest?m_digest:"NULL") << std::endl; 
+    std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
     std::cerr << "idpath_tmp " <<  (m_idpath_tmp?m_idpath_tmp:"NULL") << std::endl; 
     std::cerr << "idfold   : " <<  (m_idfold?m_idfold:"NULL") << std::endl; 
@@ -851,7 +809,7 @@ std::string OpticksResource::desc() const
     float days = float(seconds)/float(60*60*24) ; 
 
     ss << "OpticksResource::desc"
-       << " digest " << ( m_digest ? m_digest : "NULL" )
+       << " digest " << ( m_srcdigest ? m_srcdigest : "NULL" )
        << " age.tot_seconds " << std::setw(6) << seconds
        << std::fixed << std::setprecision(3)  
        << " age.tot_minutes " << std::setw(6) << minutes

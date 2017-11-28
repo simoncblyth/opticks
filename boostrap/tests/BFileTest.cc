@@ -293,6 +293,37 @@ void test_LooksLikePath()
 }
 
 
+void test_ParentName(const char* path, const char* expect)
+{
+    std::string pn = BFile::ParentName(path);
+
+    LOG(info) << "test_ParentName"
+              << " path [" << path << "]" 
+              << " pn [" << pn << "]" 
+              << " expect [" << expect << "]" 
+              ; 
+
+    if( expect == NULL )
+    {
+        assert( pn.empty() );
+    }
+    else
+    {
+        assert( pn.compare(expect) == 0 );
+    }
+}
+
+
+void test_ParentName()
+{
+    test_ParentName( "/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae", "DayaBay_VGDX_20140414-1300" );
+    test_ParentName( "DayaBay_VGDX_20140414-1300/g4_00.dae", "DayaBay_VGDX_20140414-1300" );
+    test_ParentName( "g4_00.dae", NULL );
+    test_ParentName( NULL, NULL );
+}
+
+
+
 
 int main(int argc, char** argv)
 {
@@ -313,15 +344,16 @@ int main(int argc, char** argv)
 
    //test_FormPath_reldir();
    //test_SomeDir();
-   test_SomePath();
+   //test_SomePath();
    //test_RemoveDir();
    //test_RemoveDir_2();
 
 
    //test_LastWriteTime();
    //test_SinceLastWriteTime();
+   //test_LooksLikePath();
 
-   test_LooksLikePath();
+   test_ParentName();
 
    return 0 ; 
 }

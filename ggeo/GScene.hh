@@ -50,13 +50,26 @@ is instanciated by GGeo::loadFromGLTF.
 GMergedMesh are currently created via GGeo and
 managed in its GGeoLib.
 
+
+Two very distict modes : Loaded/Created
+------------------------------------------
+
+::
+
+      
+     116     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib ) : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
+     117     m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic, m_testgeo ) : new GNodeLib(m_ok, m_analytic, m_testgeo )),
+     118     m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
+      
+
+
+
+
 GScene.hh only used from GGeo, the actions of GScene
 creating the analytic GMergedMesh are felt via 
 the normal GGeoLib route. oxrap/OScene/OGeo 
 (especially OGeo::makeAnalyticGeometry)
 which converts the GGeo accessed GMergedMesh into OptiX form. 
-
-
 
 Fully analytic glTF based replacement for the 
 mainly triangulated GTreeCheck.
@@ -81,7 +94,6 @@ instanciation in GGeo::loadFromGLTF.
   lots of things require
 
 */
-
 
 
 class GGEO_API GScene : public GGeoBase
