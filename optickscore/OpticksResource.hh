@@ -22,10 +22,20 @@ class Typ ;
 
 #include "BOpticksResource.hh"
 
+/**
+OpticksResource
+=================
+
+Canonical m_resource instance is resident of Opticks
+instanciated by BOpticks::init prior to configuration.
+
+
+
+
+**/
+
+
 class OKCORE_API OpticksResource : public BOpticksResource {
-    private:
-       static const char* G4ENV_RELPATH ; 
-       static const char* OKDATA_RELPATH ;
     private:
        static const char* JUNO ; 
        static const char* DAYABAY ; 
@@ -61,7 +71,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL, unsigned version=0);
+       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL);
        bool isValid();
     private:
        void init();
@@ -75,7 +85,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void assignDefaultMaterial();
        void setValid(bool valid);
     public:
-       const char* getInstallPrefix();
 
        const char* getDetectorBase();  // eg /usr/local/opticks/opticksdata/export/DayaBay 
        const char* getMaterialMap();   // eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json 
@@ -84,7 +93,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getExampleMaterialNames();  // comma delimited list of short material names
        const char* getSensorSurface(); 
     public:
-       std::string getInstallPath(const char* relpath) const ;
        std::string getRelativePath(const char* path); 
        std::string getRelativePath(const char* name, unsigned int ridx);
        std::string getObjectPath(const char* name, unsigned int ridx);
@@ -107,19 +115,11 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        const char* getEnvPrefix();
        bool idNameContains(const char* s); 
     public:
-       // resource existance dumping 
-       void dumpPaths(const char* msg) const ;
-       void dumpDirs(const char* msg) const ;
-       void getPaths(std::vector<std::pair<std::string, std::string> >& paths ) const ;
-       void getDirs(std::vector<std::pair<std::string, std::string> >& paths ) const ;
     public:
        void Summary(const char* msg="OpticksResource::Summary");
        void Dump(const char* msg="OpticksResource::Dump");
        std::string desc() const ; 
     public:
-       const char* getDAEPath() const ;
-       const char* getGDMLPath() const ;
-       const char* getGLTFPath() const ;
        const char* getQueryString();
        const char* getCtrl();
        bool hasCtrlKey(const char* key) const ;
@@ -150,8 +150,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     private:
        std::string makeSidecarPath(const char* path, const char* styp=".dae", const char* dtyp=".ini");
     public:
-       const char* getMetaPath() const ;
-    public:
        const char* getMeshfix();
        const char* getMeshfixCfg();
        glm::vec4   getMeshfixFacePairingCriteria();
@@ -168,22 +166,10 @@ class OKCORE_API OpticksResource : public BOpticksResource {
    private:
        // results of readEnvironment
        const char* m_geokey ;
-       const char* m_daepath ;
-       const char* m_gdmlpath ;
-       const char* m_gltfpath ;
        const char* m_query_string ;
        const char* m_ctrl ;
-       const char* m_metapath ;
        const char* m_meshfix ;
        const char* m_meshfixcfg ;
-   private:
-       // all moved down to BOpticksResource
-       //const char* m_idpath ;
-       //const char* m_idpath_tmp ;
-       //const char* m_idfold ;
-       //const char* m_idname ;
-       //const char* m_idbase ;
-       //const char* m_digest ;
    private:
        bool        m_valid ; 
    private:

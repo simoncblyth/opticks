@@ -38,12 +38,6 @@ namespace fs = boost::filesystem;
 
 
 
-
-const char* OpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
-const char* OpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
-
-
-
 const char* OpticksResource::JUNO    = "juno1707" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
 const char* OpticksResource::DPIB    = "PmtInBox" ; 
@@ -80,27 +74,18 @@ const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 
 
 
-OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg, unsigned version) 
+OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
-       BOpticksResource(envprefix, version),
+       BOpticksResource(envprefix),
        m_opticks(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
 
        m_geokey(NULL),
-       m_daepath(NULL),
-       m_gdmlpath(NULL),
-       m_gltfpath(NULL),
+
        m_query_string(NULL),
        m_ctrl(NULL),
-       m_metapath(NULL),
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
-       //m_idpath(NULL),
-       //m_idpath_tmp(NULL),
-       //m_idfold(NULL),
-       //m_idname(NULL),
-       //m_idbase(NULL),
-       //m_digest(NULL),
        m_valid(true),
        m_query(NULL),
        m_colors(NULL),
@@ -131,13 +116,6 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
 }
 
  
-
-const char* OpticksResource::getInstallPrefix() // canonically /usr/local/opticks
-{
-    return m_install_prefix ; 
-}
-
-
 
 void OpticksResource::setValid(bool valid)
 {
@@ -170,22 +148,6 @@ const char* OpticksResource::getEnvPrefix()
 }
 
 
-const char* OpticksResource::getDAEPath() const 
-{
-    return m_daepath ;
-}
-const char* OpticksResource::getGDMLPath() const 
-{
-    return m_gdmlpath ;
-}
-const char* OpticksResource::getGLTFPath() const 
-{
-    return m_gltfpath ;
-}
-const char* OpticksResource::getMetaPath() const 
-{
-    return m_metapath ;
-}
 
 
 const char* OpticksResource::getQueryString()
@@ -298,10 +260,8 @@ void OpticksResource::init()
 
    readG4Environment();
    readOpticksEnvironment();
-
-   //BEnv::dumpEnvironment();
-
    readEnvironment();
+
    readMetadata();
    identifyGeometry();
    assignDetectorName(); 
@@ -309,6 +269,7 @@ void OpticksResource::init()
 
    LOG(trace) << "OpticksResource::init DONE" ; 
 }
+
 
 
 bool OpticksResource::isDetectorType(const char* type_)
@@ -432,6 +393,7 @@ void OpticksResource::assignDetectorName()
    {
         std::string detbase = BFile::FormPath(m_idbase, m_detector_name);
         m_detector_base = strdup(detbase.c_str());
+        addDir("detector_base",   m_detector_base  );
    }
 
    if(m_detector_base == NULL)
@@ -475,7 +437,8 @@ void OpticksResource::readG4Environment()
     //    it is relative to the install_prefix which 
     //    is canonically /usr/local/opticks
     //
-    std::string inipath = getInstallPath(G4ENV_RELPATH ) ;
+    const char* inipath = InstallPathG4ENV();
+
     m_g4env = readIniEnvironment(inipath);
     if(m_g4env)
     {
@@ -497,7 +460,7 @@ void OpticksResource::readOpticksEnvironment()
     //    it is relative to the install_prefix which 
     //    is canonically /usr/local/opticks
     //
-    std::string inipath = getInstallPath(OKDATA_RELPATH ) ;
+    const char* inipath = InstallPathOKDATA();
     m_okenv = readIniEnvironment(inipath);
     if(m_okenv)
     {
@@ -510,14 +473,6 @@ void OpticksResource::readOpticksEnvironment()
                      << " (create it with bash functions: opticksdata-;opticksdata-export-ini ) " 
                      ;
     }
-}
-
-
-
-std::string OpticksResource::getInstallPath(const char* relpath) const 
-{
-    std::string path = BFile::FormPath(m_install_prefix, relpath) ;
-    return path ;
 }
 
 BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
@@ -534,16 +489,6 @@ BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
     return env ;  
 }
 
-
-
-/*
-const char* OpticksResource::getGeoName(const char* daepath)
-{
-
-
-
-}
-*/
 
 
 
@@ -574,43 +519,39 @@ void OpticksResource::readEnvironment()
 */
 
     m_geokey = SSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
-    m_daepath = SSys::getenvvar(m_geokey);
+    const char* daepath = SSys::getenvvar(m_geokey);
 
-    if(m_daepath == NULL)
+    if(daepath == NULL)
     {
         if(m_lastarg && existsFile(m_lastarg))
         {
-            m_daepath = m_lastarg ; 
+            daepath = m_lastarg ; 
             LOG(warning) << "OpticksResource::readEnvironment"
                          << " MISSING ENVVAR "
                          << " geokey " << m_geokey 
                          << " lastarg " << m_lastarg
-                         << " daepath " << m_daepath
+                         << " daepath " << daepath
                          ;
         }
     }
 
-    if(m_daepath == NULL)
+
+
+    if(daepath == NULL)
     {
         LOG(warning) << "OpticksResource::readEnvironment"
                      << " NO DAEPATH "
                      << " geokey " << m_geokey 
                      << " lastarg " << ( m_lastarg ? m_lastarg : "NULL" )
-                     << " daepath " << ( m_daepath ? m_daepath : "NULL" )
+                     << " daepath " << ( daepath ? daepath : "NULL" )
                      ;
  
         //assert(0);
         setValid(false);
     } 
-    else
-    {
-         std::string metapath = makeSidecarPath(m_daepath, ".dae", ".ini");
-         m_metapath = strdup(metapath.c_str());
-         std::string gdmlpath = makeSidecarPath(m_daepath, ".dae", ".gdml");
-         m_gdmlpath = strdup(gdmlpath.c_str());
-         std::string gltfpath = makeSidecarPath(m_daepath, ".dae", ".gltf"); // hmm derived ? move to geocache ?
-         m_gltfpath = strdup(gltfpath.c_str());
-    }
+
+
+
 
 
     m_query_string = SSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
@@ -621,14 +562,14 @@ void OpticksResource::readEnvironment()
     m_query = new OpticksQuery(m_query_string);
     std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));
 
-    //m_digest = strdup(query_digest.c_str());
  
     // idpath incorporates digest of geometry selection envvar 
     // allowing to benefit from caching as vary geometry selection 
     // while still only having a single source geometry file.
 
-    assert(m_daepath);
-    setSrcPathDigest(m_daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
+    assert(daepath);
+
+    setSrcPathDigest(daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
 
     assert(m_idpath) ; 
     assert(m_idbase) ; 
@@ -656,97 +597,6 @@ void OpticksResource::Dump(const char* msg)
     std::cerr << "mmsp(0) :" << mmsp << std::endl ;  
     std::cerr << "pmtp(0) :" << pmtp << std::endl ;  
 }
-
-
-
-
-
-void OpticksResource::dumpPaths(const char* msg) const 
-{
-    std::vector<std::pair<std::string, std::string> > paths ; 
-    getPaths(paths);
-
-    LOG(info) << msg ; 
-
-    typedef std::pair<std::string, std::string> SS ; 
-    typedef std::vector<SS> VSS ; 
-
-    for(VSS::const_iterator it=paths.begin() ; it != paths.end() ; it++)
-    {
-        const char* name = it->first.c_str() ; 
-        const char* path = it->second.empty() ? NULL : it->second.c_str() ; 
-
-        bool exists = path ? BFile::ExistsFile(path ) : false ; 
-
-        std::cerr
-             << std::setw(20) << name
-             << " : " 
-             << std::setw(2) << ( exists ? "Y" : "N" ) 
-             << " : " 
-             << std::setw(50) << ( path ? path : "-" )
-             << std::endl 
-             ;
-    } 
-}
-
-
-void OpticksResource::dumpDirs(const char* msg) const 
-{
-    std::vector<std::pair<std::string, std::string> > dirs ; 
-    getDirs(dirs);
-
-    LOG(info) << msg ; 
-
-    typedef std::pair<std::string, std::string> SS ; 
-    typedef std::vector<SS> VSS ; 
-
-    for(VSS::const_iterator it=dirs.begin() ; it != dirs.end() ; it++)
-    {
-        const char* name = it->first.c_str() ; 
-        const char* dir = it->second.empty() ? NULL : it->second.c_str() ; 
-        bool exists = dir ? BFile::ExistsDir(dir ) : false ; 
-
-        std::cerr
-             << std::setw(20) << name
-             << " : " 
-             << std::setw(2) << ( exists ? "Y" : "N" ) 
-             << " : "  
-             << std::setw(50) << ( dir ? dir : "-") 
-             << std::endl 
-             ;
-    } 
-}
-
-
-
-void OpticksResource::getPaths(std::vector<std::pair<std::string, std::string> >& paths ) const 
-{
-    typedef std::pair<std::string, std::string> SS ; 
-    paths.push_back( SS("daepath", m_daepath?m_daepath:"" ));
-    paths.push_back( SS("gdmlpath", m_gdmlpath?m_gdmlpath:"" ));
-    paths.push_back( SS("gltfpath", m_gltfpath?m_gltfpath:"" ));
-    paths.push_back( SS("metapath", m_metapath?m_metapath:"" ));
-
-    std::string g4env_ini = getInstallPath(G4ENV_RELPATH ) ;
-    paths.push_back( SS("g4env_ini", g4env_ini ));
-
-    std::string okdata_ini = getInstallPath(OKDATA_RELPATH ) ;
-    paths.push_back( SS("okdata_ini", okdata_ini ));
-}
-
-void OpticksResource::getDirs(std::vector<std::pair<std::string, std::string> >& dirs ) const 
-{
-    typedef std::pair<std::string, std::string> SS ; 
-    dirs.push_back( SS("install_prefix", m_install_prefix?m_install_prefix:"" ));
-    dirs.push_back( SS("opticksdata_dir", m_opticksdata_dir?m_opticksdata_dir:"" ));
-    dirs.push_back( SS("resource_dir", m_resource_dir?m_resource_dir:"" ));
-    dirs.push_back( SS("idpath", m_idpath?m_idpath:"" ));
-    dirs.push_back( SS("idpath_tmp", m_idpath_tmp?m_idpath_tmp:"" ));
-    dirs.push_back( SS("idfold", m_idfold?m_idfold:"" ));
-    dirs.push_back( SS("idbase", m_idbase?m_idbase:"" ));
-    dirs.push_back( SS("detector_base", m_detector_base?m_detector_base:"" ));
-}
-
 
 
 

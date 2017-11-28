@@ -1,13 +1,23 @@
 #pragma once
 
+#include <vector>
+#include <map>
 #include <string>
 
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
 class BRAP_API  BOpticksResource {
+       
+    private:
+       static const char* G4ENV_RELPATH ; 
+       static const char* OKDATA_RELPATH ;
+    protected:
+       static const char* InstallPathOKDATA() ;
+       static const char* InstallPathG4ENV() ;
+       static const char* InstallPath(const char* relpath) ;
    public:
-        BOpticksResource(const char* envprefix="OPTICKS_", unsigned version=0);
+        BOpticksResource(const char* envprefix="OPTICKS_");
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
 
@@ -31,6 +41,7 @@ class BRAP_API  BOpticksResource {
         static std::string PTXName(const char* name, const char* target);
         static const char* makeInstallPath( const char* prefix, const char* main, const char* sub );
    public:       
+        const char* getInstallPrefix();
         const char* getInstallDir();
 
         const char* getOpticksDataDir();
@@ -49,20 +60,38 @@ class BRAP_API  BOpticksResource {
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
    public:       
+       std::string getInstallPath(const char* relpath) const ;
        const char* getIdPath();
        const char* getIdFold();  // parent directory of idpath containing g4_00.dae
        const char* getIdBase();  // parent directory of idfold, typically the "export" folder
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
+
+    public:
+       const char* getDAEPath() const ;
+       const char* getGDMLPath() const ;
+       const char* getGLTFPath() const ;
+       const char* getMetaPath() const ;
+   public:       
+        void addDir( const char* label, const char* dir);
+        void addPath( const char* label, const char* path);
+
+       // resource existance dumping 
+       void dumpPaths(const char* msg) const ;
+       void dumpDirs(const char* msg) const ;
+
+       const char* getPath(const char* label) const  ;
    private:
         void init();
         void adoptInstallPrefix();
         void setTopDownDirs();
         void setDebuggingIDPATH(); 
    protected:
+        friend struct BOpticksResourceTest ; 
         void setSrcPathDigest(const char* srcpath, const char* srcdigest);
+        const char* makeSrcPath(const char* ext) const ;
    protected:
         const char* m_envprefix ; 
-        unsigned    m_version ; 
+        int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
         const char* m_opticksdata_dir ; 
         const char* m_geocache_dir ; 
@@ -83,6 +112,15 @@ class BRAP_API  BOpticksResource {
    protected:
         const char* m_debugging_idpath ; 
         const char* m_debugging_idfold ; 
+   protected:
+       const char* m_daepath ;
+       const char* m_gdmlpath ;
+       const char* m_gltfpath ;
+       const char* m_metapath ;
+   protected:
+        std::vector<std::pair<std::string, std::string> >  m_paths  ; 
+        std::vector<std::pair<std::string, std::string> >  m_dirs  ; 
+
 };
 
 #include "BRAP_TAIL.hh"
