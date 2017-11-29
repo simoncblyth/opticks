@@ -23,7 +23,7 @@ from opticks.analytic.glm import make_trs, to_pyline, to_codeline, to_cpplist, m
 #from opticks.analytic.bezier import Bezier
 from opticks.analytic.prism import make_segment, make_trapezoid, make_icosahedron, make_prism, make_cubeplanes
 from opticks.analytic.textgrid import TextGrid
-from opticks.analytic.tboolean import TBooleanBashFunction
+from opticks.analytic.tbool import TBoolBashFunction
 from opticks.analytic.nnode_test_cpp import NNodeTestCPP
 
 
@@ -1320,7 +1320,7 @@ class CSG(CSG_):
 
 
     def as_tbool(self, name="esr"):
-        tbf = TBooleanBashFunction(name=name, root=self.alabel, body=self.as_code(lang="py")  )
+        tbf = TBoolBashFunction(name=name, root=self.alabel, body=self.as_code(lang="py")  )
         return str(tbf)
 
     def as_NNodeTest(self, name="esr"):

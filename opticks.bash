@@ -61,18 +61,35 @@ olocal-()
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
 opticks-idfold(){ echo $(dirname $IDPATH) ; }
+opticks-srcfold(){ echo $(dirname $OPTICKS_SRCPATH) ; }
+
+#opticks-srcextras(){ echo $(opticks-idfold)/extras ; }   # layout 0
+opticks-srcextras(){ echo $(opticks-srcfold)/extras ; }  # layout 1
+
+opticks-tbool-info(){ cat << EOI
+
+$FUNCNAME
+======================
+
+  opticks-srcfold       : $(opticks-srcfold)
+  opticks-srcextras     : $(opticks-srcextras)
+  opticks-tbool-path 0  : $(opticks-tbool-path 0)
+  opticks-nnt-path 0    : $(opticks-nnt-path 0)
+ 
+
+EOI
+}
+
 opticks-tbool-path(){ 
    local lvid=${1:-0} 
-   #local fold=$TMP/tgltf
-   local fold=$(opticks-idfold)
-   local path=$fold/extras/${lvid}/tbool${lvid}.bash
+   local extras=$(opticks-srcextras)
+   local path=$extras/${lvid}/tbool${lvid}.bash
    echo $path 
 }
 opticks-nnt-path(){ 
    local lvid=${1:-0} 
-   #local fold=$TMP/tgltf
-   local fold=$(opticks-idfold)
-   local path=$fold/extras/${lvid}/NNodeTest_${lvid}.cc
+   local extras=$(opticks-srcextras)
+   local path=$extras/${lvid}/NNodeTest_${lvid}.cc
    echo $path 
 }
 opticks-nnt-paths(){

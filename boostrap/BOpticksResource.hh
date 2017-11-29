@@ -18,7 +18,7 @@ class BRAP_API  BOpticksResource {
        static const char* InstallPath(const char* relpath) ;
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
-       static const char* IdMapPathDebug(); // requires OPTICKS_SRCPATH_DEBUG  envvar
+       static const char* IdMapSrcPath(); // requires OPTICKS_SRCPATH  envvar
    public:
         BOpticksResource(const char* envprefix="OPTICKS_");
         virtual ~BOpticksResource();

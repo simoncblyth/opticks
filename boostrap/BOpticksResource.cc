@@ -261,9 +261,9 @@ const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext)
 }
 
 
-const char* BOpticksResource::IdMapPathDebug()
+const char* BOpticksResource::IdMapSrcPath()
 {
-    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH_DEBUG"); 
+    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH"); 
     return srcpath ? MakeSrcPath( srcpath, ".idmap" ) : NULL ; 
 
 }

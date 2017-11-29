@@ -18,10 +18,10 @@ int main(int argc, char** argv)
     NPY_LOG__ ; 
 
 
-    const char* idmpath = BOpticksResource::IdMapPathDebug(); 
+    const char* idmpath = BOpticksResource::IdMapSrcPath(); 
     if(!idmpath) 
     {
-        printf("%s : requires OPTICKS_SRCPATH_DEBUG  envvar \n", argv[0]);
+        printf("%s : requires OPTICKS_SRCPATH  envvar \n", argv[0]);
         return 0 ;
     }   
 
