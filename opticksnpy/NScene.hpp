@@ -75,7 +75,7 @@ class NPY_API NScene : public NGLTF
         void collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned mesh) const ;
     private:
         void init();
-        void init_lvlists(const char* base, const char* name);
+        void init_lvlists();
         void write_lvlists();
     private:
         template<typename T> T getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const ;

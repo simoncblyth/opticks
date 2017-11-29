@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     NPY_LOG__ ;
     GGEO_LOG__ ;
 
-    Opticks ok(argc, argv, "--gltf 101");
+    Opticks ok(argc, argv, "--gltf 3");
     ok.configure();
 
     const char* base = ok.getGLTFBase() ;
@@ -57,7 +57,7 @@ int main(int argc, char** argv)
     const char* config = ok.getGLTFConfig() ;
     int gltf = ok.getGLTF();
 
-    assert(gltf == 101);
+    assert(gltf == 3);
 
     LOG(info) << argv[0]
               << " base " << base

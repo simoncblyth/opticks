@@ -26,6 +26,69 @@ TODO
 * test with opticksdata readonly 
 
 
+Testing With OPTICKS_RESOURCE_LAYOUT 1
+----------------------------------------
+
+::
+
+    simon:ggeo blyth$ op.sh -G --gltf 3
+
+
+Loada missing metadata errors::
+
+    2017-11-29 13:01:51.890 INFO  [351641] [NScene::dumpRepeatCount@1477] NScene::dumpRepeatCount totCount 7744
+    2017-11-29 13:01:51.959 ERROR [351641] [NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/0 idx 5 metapath /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/extras/0/5/nodemeta.json
+
+
+Probably just need to gdml2gltf again as they are present for juno1707
+
+::
+
+    simon:juno1707 blyth$ hg st .
+    ? extras/0/0/nodemeta.json
+    ? extras/0/NNodeTest_0.cc
+    ? extras/0/meta.json
+    ? extras/0/nodes.npy
+    ? extras/0/tbool0.bash
+    ? extras/0/transforms.npy
+    ? extras/1/0/nodemeta.json
+    ? extras/1/1/nodemeta.json
+    ? extras/1/2/nodemeta.json
+    ? extras/1/NNodeTest_1.cc
+    ? extras/1/meta.json
+    ? extras/1/nodes.npy
+
+
+Make sure no writing into opticksdata
+---------------------------------------
+
+::
+
+    simon:export blyth$ l
+    total 0
+    drwxr-xr-x  10 blyth  staff  340 Nov 29 13:09 DayaBay_VGDX_20140414-1300
+    drwxr-xr-x  11 blyth  staff  374 Nov 14 13:25 juno1707
+    drwxr-xr-x   4 blyth  staff  136 Nov 14 11:28 LXe
+    drwxr-xr-x   4 blyth  staff  136 Nov 11 17:03 juno
+    drwxr-xr-x   6 blyth  staff  204 Sep 11 16:17 DayaBay
+    drwxr-xr-x   3 blyth  staff  102 Jun 14 13:13 DayaBay_MX_20140916-2050
+    drwxr-xr-x   3 blyth  staff  102 Jun 14 13:13 DayaBay_MX_20141013-1711
+    drwxr-xr-x   3 blyth  staff  102 Jun 14 13:13 Far_VGDX_20140414-1256
+    drwxr-xr-x   3 blyth  staff  102 Jun 14 13:13 Lingao_VGDX_20140414-1247
+    drwxr-xr-x   4 blyth  staff  136 Jun 14 13:13 dpib
+    simon:export blyth$ 
+    simon:export blyth$ 
+    simon:export blyth$ pwd
+    /usr/local/opticks/opticksdata/export
+    simon:export blyth$ chmod -R u-w DayaBay_VGDX_20140414-1300 
+    simon:export blyth$ 
+
+    simon:ggeo blyth$ op.sh -G --gltf 3 -D
+
+* this gives permission denied with layout 0, succeeds with layout 1
+
+
+
 TODO : in new layout write NScene lvlists into new idfold (not the old one: srcfold)
 -------------------------------------------------------------------------------------
 
@@ -35,8 +98,6 @@ TODO : in new layout write NScene lvlists into new idfold (not the old one: srcf
        srcbase :  Y :              /usr/local/opticks/opticksdata/export
         idfold :  Y : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300
         idpath :  Y : /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1
-
-
 
 
 analytic/sc.py : writing extras+gltf need to be done together

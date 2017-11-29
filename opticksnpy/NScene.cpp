@@ -171,7 +171,7 @@ NScene::NScene(const char* base, const char* name, const char* idfold, NSceneCon
     m_triple(NULL),
     m_num_triple(0)
 {
-    init_lvlists(base, name);
+    init_lvlists();
     init();
 }
 
@@ -256,12 +256,23 @@ void NScene::init()
 
 
 
-void NScene::init_lvlists(const char* base, const char* name)
+void NScene::init_lvlists()
 {
+    if(!m_idfold)
+    {
+         LOG(info) << "NScene::init_lvlists"
+                   << " lvlist writing requires idfold " ;
+         return ; 
+    }
+
   
-    std::string stem = BFile::Stem(name);  // eg "g4_00" 
-    std::string csgskip_path = BFile::FormPath(base, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
-    std::string placeholder_path = BFile::FormPath(base, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
+    std::string stem = BFile::Stem(m_name);  // eg "g4_00" 
+    std::string csgskip_path = BFile::FormPath(m_idfold, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
+    std::string placeholder_path = BFile::FormPath(m_idfold, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
+
+    LOG(info) << " csgskip_path " << csgskip_path ; 
+    LOG(info) << " placeholder_path " << placeholder_path ; 
+
 
     BFile::preparePath( csgskip_path.c_str(), true);
     BFile::preparePath( placeholder_path.c_str(), true);
@@ -281,6 +292,13 @@ void NScene::init_lvlists(const char* base, const char* name)
 
 void NScene::write_lvlists()
 {
+    if(!m_idfold)
+    {
+         LOG(info) << "NScene::write_lvlists"
+                   << " lvlist writing requires idfold " ;
+         return ; 
+    }
+
     if(m_verbosity > 2)
     {
         LOG(info) << "NScene::write_lvlists";
@@ -450,7 +468,9 @@ void NScene::load_mesh_extras()
         bool csgskip = csg->isSkip() ;
         if(csgskip) 
         {
-            m_csgskip_lvlist->addLine(mesh->name);
+            if(m_csgskip_lvlist)
+                m_csgskip_lvlist->addLine(mesh->name);
+
             m_num_csgskip++ ; 
             LOG(warning) << "NScene::load_mesh_extras"
                          << " csgskip CSG loaded " << csg->meta()
@@ -462,7 +482,8 @@ void NScene::load_mesh_extras()
         bool placeholder = tris->isPlaceholder();
         if(placeholder) 
         {
-            m_placeholder_lvlist->addLine(mesh->name);
+            if(m_placeholder_lvlist)
+                m_placeholder_lvlist->addLine(mesh->name);
             m_num_placeholder++ ; 
         }
 
