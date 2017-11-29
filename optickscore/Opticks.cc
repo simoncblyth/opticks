@@ -418,6 +418,16 @@ unsigned Opticks::getSeed() const
     return m_cfg->getSeed();
 }
 
+int Opticks::getLoadVerbosity() const 
+{
+    return m_cfg->getLoadVerbosity();
+}
+int Opticks::getImportVerbosity() const 
+{
+    return m_cfg->getImportVerbosity();
+}
+
+
 
 
 

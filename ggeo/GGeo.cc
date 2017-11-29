@@ -106,7 +106,6 @@ GGeo::GGeo(Opticks* opticks)
    m_sensitive_count(0),
    m_cathode(NULL),
    m_join_cfg(NULL),
-   m_loader_verbosity(0),
    m_mesh_verbosity(0),
    m_gscene(NULL)
 {
@@ -123,14 +122,8 @@ void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
 {
     m_loader_imp = imp ; 
 }
-void GGeo::setLoaderVerbosity(unsigned int verbosity)
-{
-    m_loader_verbosity = verbosity  ; 
-}
-unsigned int GGeo::getLoaderVerbosity()
-{
-    return m_loader_verbosity ;
-}
+
+
 
 void GGeo::setComposition(Composition* composition)
 {

@@ -125,19 +125,21 @@ int AssimpGGeo::load(GGeo* ggeo) // static
 {
     // THIS IS THE ENTRY POINT SET IN OpticksGeometry::loadGeometryBase
 
-    Opticks* opticks = ggeo->getOpticks();
-    OpticksResource* resource = opticks->getResource();
-    OpticksQuery* query = opticks->getQuery() ;
+    Opticks* ok = ggeo->getOpticks();
+    OpticksResource* resource = ok->getResource();
+    OpticksQuery* query = ok->getQuery() ;
 
-    const char* path = opticks->getDAEPath() ;
+    const char* path = ok->getDAEPath() ;
     const char* ctrl = resource->getCtrl() ;
-    unsigned int verbosity = ggeo->getLoaderVerbosity();
+    unsigned loadVerbosity = ok->getLoadVerbosity();
+    unsigned importVerbosity = ok->getImportVerbosity();
 
     LOG(info)<< "AssimpGGeo::load "  
              << " path " << ( path ? path : "NULL" ) 
              << " query " << ( query ? query->getQueryString() : "NULL" )
              << " ctrl " << ( ctrl ? ctrl : "NULL" )
-             << " verbosity " << verbosity 
+             << " importVerbosity " << importVerbosity 
+             << " loaderVerbosity " << loadVerbosity 
              ; 
 
 
@@ -152,7 +154,7 @@ int AssimpGGeo::load(GGeo* ggeo) // static
     assert(query);
     assert(ctrl);
 
-    AssimpImporter assimp(path);
+    AssimpImporter assimp(path, importVerbosity);
 
     assimp.import();
 
@@ -168,7 +170,7 @@ int AssimpGGeo::load(GGeo* ggeo) // static
 
     AssimpGGeo agg(ggeo, tree, selection, query); 
 
-    agg.setVerbosity(verbosity);
+    agg.setVerbosity(loadVerbosity);
 
     int rc = agg.convert(ctrl);
 

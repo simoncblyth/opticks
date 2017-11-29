@@ -78,7 +78,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_dbgnode(-1),
        m_stack(2180),
        m_num_photons_per_g4event(10000),
-       m_loaderverbosity(0),
+       m_loadverbosity(0),
+       m_importverbosity(0),
        m_meshverbosity(0),
        m_verbosity(0),
        m_apmtidx(0),
@@ -733,10 +734,18 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("analyticmesh",  boost::program_options::value<int>(&m_analyticmesh), analyticmesh );
 
-   char loaderverbosity[128];
-   snprintf(loaderverbosity,128, "Geometry Loader Verbosity eg AssimpGGeo.  Default %d ", m_loaderverbosity);
+
+   char loadverbosity[128];
+   snprintf(loadverbosity,128, "Geometry Loader Verbosity eg AssimpGGeo.  Default %d ", m_loadverbosity);
    m_desc.add_options()
-       ("loaderverbosity",  boost::program_options::value<int>(&m_loaderverbosity), loaderverbosity );
+       ("loadverbosity",  boost::program_options::value<int>(&m_loadverbosity), loadverbosity );
+
+   char importverbosity[128];
+   snprintf(importverbosity,128, "Geometry Importer Verbosity eg AssimpImporter.  Default %d ", m_importverbosity);
+   m_desc.add_options()
+       ("importverbosity",  boost::program_options::value<int>(&m_importverbosity), importverbosity );
+
+
 
    char meshverbosity[128];
    snprintf(meshverbosity,128, "Mesh Operation Verbosity eg GMergedMesh::Create.  Default %d ", m_meshverbosity);
@@ -1286,9 +1295,14 @@ int OpticksCfg<Listener>::getNumPhotonsPerG4Event()
 }
 
 template <class Listener>
-int OpticksCfg<Listener>::getLoaderVerbosity()
+int OpticksCfg<Listener>::getLoadVerbosity()
 {
-    return m_loaderverbosity ; 
+    return m_loadverbosity ; 
+}
+template <class Listener>
+int OpticksCfg<Listener>::getImportVerbosity()
+{
+    return m_importverbosity ; 
 }
 
 

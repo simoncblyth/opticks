@@ -87,7 +87,8 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getDbgNode(); 
      int          getStack(); 
      int          getNumPhotonsPerG4Event(); 
-     int          getLoaderVerbosity(); 
+     int          getLoadVerbosity(); 
+     int          getImportVerbosity(); 
      int          getMeshVerbosity(); 
      int          getVerbosity(); 
      int          getAnalyticPMTIndex(); 
@@ -179,7 +180,8 @@ private:
      int         m_dbgnode ; 
      int         m_stack ; 
      int         m_num_photons_per_g4event;
-     int         m_loaderverbosity ; 
+     int         m_loadverbosity ; 
+     int         m_importverbosity ; 
      int         m_meshverbosity ; 
      int         m_verbosity ; 
      int         m_apmtidx ; 

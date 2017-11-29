@@ -56,12 +56,13 @@ public:
 
 
 
-AssimpImporter::AssimpImporter(const char* path)
+AssimpImporter::AssimpImporter(const char* path, int verbosity)
           : 
+          m_path(NULL),
+          m_verbosity(verbosity),
           m_aiscene(NULL),
           m_index(0),
           m_process_flags(0),
-          m_path(NULL),
           m_importer(NULL),
           m_tree(NULL)
 {
@@ -83,11 +84,31 @@ void AssimpImporter::init(const char* path)
     DefaultLogger::create("",Logger::VERBOSE);
 
     //const unsigned int severity = Logger::Info | Logger::Err | Logger::Warn | Logger::Debugging;
-    const unsigned int severity = Logger::Err | Logger::Warn ;
-    
+    unsigned int severity = Logger::Err | Logger::Warn ;
+ 
+    switch(m_verbosity)
+    {
+        case 0: severity = Logger::Err | Logger::Warn                                    ; break ; 
+        case 1: severity = Logger::Err | Logger::Warn                                    ; break ; 
+        case 2: severity = Logger::Err | Logger::Warn | Logger::Info                     ; break ; 
+        case 3: severity = Logger::Err | Logger::Warn | Logger::Info | Logger::Debugging ; break ; 
+    }
+
+    std::cerr << "AssimpImporter::init"
+              << " verbosity " << m_verbosity
+              << " severity.Err "  << ( severity & Logger::Err ? "Err" : "no-Err" )
+              << " severity.Warn " << ( severity & Logger::Warn ? "Warn" : "no-Warn" )
+              << " severity.Info " << ( severity & Logger::Info ? "Info" : "no-Info" )
+              << " severity.Debugging " << ( severity & Logger::Debugging ? "Debugging" : "no-Debugging" )
+              << std::endl 
+              ;
+
     Assimp::DefaultLogger::get()->attachStream( new myStream(), severity );
 
-    DefaultLogger::get()->info("this is my info-call");
+    DefaultLogger::get()->debug("debug");
+    DefaultLogger::get()->info("info");
+    DefaultLogger::get()->warn("warn");
+    DefaultLogger::get()->error("error");
 }
 
 

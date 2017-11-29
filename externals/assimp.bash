@@ -330,6 +330,8 @@ assimp-release-url(){  echo http://downloads.sourceforge.net/project/assimp/assi
 assimp-dev-url(){      echo git@github.com:simoncblyth/assimp.git ; } 
 assimp-url(){          echo http://github.com/simoncblyth/assimp.git ; } 
 
+assimp-open(){         open $(assimp-url) ; }
+
 assimp-doc(){ open   ; }
 
 

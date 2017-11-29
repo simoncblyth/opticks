@@ -328,7 +328,7 @@ void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdige
         //
         //  TODO: eliminate use of IDPATH internal envvar now that BOpticksResource has the info
     } 
-    else if(m_layout == 1)  // geocache decoupled from opticksdata
+    else if(m_layout > 0)  // geocache decoupled from opticksdata
     {
         std::string fold = getGeoCachePath(  m_idname ) ; 
         m_idfold = strdup(fold.c_str()) ; 

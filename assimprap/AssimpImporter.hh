@@ -24,7 +24,7 @@ namespace Assimp
 class ASIRAP_API AssimpImporter 
 {
 public:
-    AssimpImporter(const char* path);
+    AssimpImporter(const char* path, int verbosity);
     virtual ~AssimpImporter();
 private:
     void init(const char* path);
@@ -50,11 +50,12 @@ public:
     aiMesh* createMergedMesh(AssimpSelection* selection);
 
 protected:
+    char*           m_path ; 
+    int            m_verbosity ; 
     const aiScene* m_aiscene;
     unsigned int   m_index ; 
     unsigned int   m_process_flags ; 
 private:
-    char*             m_path ; 
     Assimp::Importer* m_importer;
     AssimpTree*       m_tree ; 
 };

@@ -100,9 +100,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         typedef int (*GLoaderImpFunctionPtr)(GGeo*);
         void setLoaderImp(GLoaderImpFunctionPtr imp);
-        void setLoaderVerbosity(unsigned int verbosity);
         void setMeshVerbosity(unsigned int verbosity);
-        unsigned int getLoaderVerbosity();
         unsigned int getMeshVerbosity();
     public:
         typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, Opticks*);
@@ -378,7 +376,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const char*                        m_join_cfg ; 
         GJoinImpFunctionPtr                m_join_imp ;  
         GLoaderImpFunctionPtr              m_loader_imp ;  
-        unsigned int                       m_loader_verbosity ; 
         unsigned int                       m_mesh_verbosity ; 
 
     private:

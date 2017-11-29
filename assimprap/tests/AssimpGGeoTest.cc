@@ -99,7 +99,9 @@ int main(int argc, char** argv)
 
     LOG(info) << " import " << path ; 
 
-    AssimpImporter assimp(path);
+    int importVerbosity = ok.getImportVerbosity();
+
+    AssimpImporter assimp(path, importVerbosity);
 
     assimp.import();
 
