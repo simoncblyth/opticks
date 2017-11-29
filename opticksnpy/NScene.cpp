@@ -160,7 +160,6 @@ NScene::NScene(const char* base, const char* name, const char* idfold, NSceneCon
     m_num_global(0),
     m_num_csgskip(0),
     m_num_placeholder(0),
-    m_num_selected(0),
     m_csgskip_lvlist(NULL),
     m_placeholder_lvlist(NULL),
     m_node_count(0),
@@ -593,9 +592,19 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
     ygltf::node_t* ynode = getNode(idx);
     auto extras = ynode->extras ; 
+
     std::string boundary = extras["boundary"] ; 
-    std::string pvname = extras["pvname"] ; 
-    unsigned selected = extras["selected"] ; 
+    std::string pvname = ynode->name; 
+
+
+/*
+    std::string pvname = extras["pvname"] ;  // got rid of this duplication
+    assert( name.compare(pvname.c_str()) == 0 );
+    LOG(info) << "NScene::import_r"
+              << " name " << name 
+              << " pvname " << pvname 
+               ;
+*/
  
     nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
@@ -606,13 +615,11 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
     n->depth = depth ;
     n->boundary = boundary ;
     n->pvname = pvname ; 
-    n->selected = selected ;  // TODO: get rid of this, are now doing selection in GScene 
     n->containment = 0 ; 
 
     n->transform = make_triple(ynode->matrix.data()) ; 
     n->gtransform = nd::make_global_transform(n) ;   
 
-    if(selected) m_num_selected++ ; 
  
 
     for(int child : ynode->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
@@ -638,7 +645,6 @@ void NScene::postimportnd()
 
     LOG(info) << "NScene::postimportnd" 
               << " numNd " << getNumNd()
-              << " num_selected " << m_num_selected
               << " dbgnode " << m_dbgnode
               << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity

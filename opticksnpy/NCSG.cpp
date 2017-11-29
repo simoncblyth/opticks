@@ -352,19 +352,22 @@ NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
     } 
     else
     {
-        LOG(error) << "NCSG::LoadMetadata"
+        // lots missing as are looping over complete tree node count
+        // see notes/issues/axel_GSceneTest_fail.rst
+        LOG(trace) << "NCSG::LoadMetadata"
                      << " missing metadata "
                      << " treedir " << treedir  
                      << " idx " << idx
                      << " metapath " << metapath
                      ;
+        //std::cerr << metapath << std::endl ; 
     }
     return meta ; 
 }
 
 void NCSG::loadMetadata()
 {
-    m_meta = LoadMetadata( m_treedir );
+    m_meta = LoadMetadata( m_treedir, -1 );  // -1:treemeta
 
     if(!m_meta)
     { 
@@ -389,13 +392,41 @@ void NCSG::loadNodeMetadata()
 {
     // FIX: this idx is not same as real complete binary tree node_idx ?
 
+
+    // just looping over the number of nodes in the complete tree
+    // so it is not surprising that many of them are missing metadata
+
+    std::vector<unsigned> missmeta ;
     assert(m_num_nodes > 0);
     for(unsigned idx=0 ; idx < m_num_nodes ; idx++)
     {
         NParameters* nodemeta = LoadMetadata(m_treedir, idx);
-        if(!nodemeta) continue ; 
-        m_nodemeta[idx] = nodemeta ; 
+        if(nodemeta)
+        { 
+            m_nodemeta[idx] = nodemeta ; 
+        }
+        else
+        {
+            missmeta.push_back(idx+1);  // make 1-based 
+        }
     } 
+
+    LOG(debug) << "NCSG::loadNodeMetadata" 
+              << " m_treedir " << m_treedir
+              << " m_height " << m_height
+              << " m_num_nodes " << m_num_nodes
+              << " missmeta " << missmeta.size()
+               ; 
+
+/*
+    if(missmeta.size() > 0)
+    {
+        std::cerr << " missmeta 1-based (" << missmeta.size() << ") : " ; 
+        for(unsigned i=0 ; i < missmeta.size() ; i++) std::cerr << " " << missmeta[i]  ; 
+        std::cerr << std::endl  ; 
+    }
+*/
+
 }
 
 NParameters* NCSG::getNodeMetadata(unsigned idx) const 

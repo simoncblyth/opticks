@@ -82,7 +82,8 @@ EOU
 }
 opticksdata-env(){      olocal- ; opticks- ;  }
 opticksdata-dir(){ echo $(opticks-prefix)/opticksdata ; }
-opticksdata-cd(){  cd $(opticksdata-dir); }
+opticksdata-c(){   cd $(opticksdata-dir)/$1 ; }
+opticksdata-cd(){  cd $(opticksdata-dir)/$1 ; }
 
 opticksdata-url(){       echo http://bitbucket.org/simoncblyth/opticksdata ; }
 opticksdata-url-ssh(){ echo ssh://hg@bitbucket.org/simoncblyth/opticksdata ; }
@@ -234,6 +235,15 @@ opticksdata-export-ps(){
 
 
 EOP
+}
+
+
+opticksdata-export-du()
+{
+   opticksdata-cd export/$1
+
+   du -sh * 
+
 }
 
 

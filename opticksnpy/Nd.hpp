@@ -33,7 +33,6 @@ struct NPY_API nd
    unsigned         depth ; 
    std::string      boundary ; 
    std::string      pvname ; 
-   unsigned         selected ; 
    unsigned         containment ; 
 
    std::string      _local_digest ; 

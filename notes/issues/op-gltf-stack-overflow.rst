@@ -7,6 +7,11 @@ Full DYB gltf geom running is giving stack overflow for some photons...
 
 * seems to be only from the propagation, not the ray trace 
 
+* seqhis labels/counts look normal for larger categories, but 
+  in tail : look like some crazies
+
+
+
 
 ::
 
@@ -31,4 +36,21 @@ Full DYB gltf geom running is giving stack overflow for some photons...
     Caught RT_EXCEPTION_STACK_OVERFLOW
       launch index : 1802, 0, 0
     Caught RT_EXCEPTION_STACK_OVERFLOW
+
+
+    op 
+        ## triangulated DYB running, shows no crazies 
+
+
+
+Get many more of this for j1707 and seqhis labels/counts looks totally crazy.
+
+::
+
+   op --j1707 --gltf 3 
+
+
+
+
+
 

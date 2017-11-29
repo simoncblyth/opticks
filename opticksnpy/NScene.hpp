@@ -163,7 +163,6 @@ class NPY_API NScene : public NGLTF
         unsigned                          m_num_global ; 
         unsigned                          m_num_csgskip ; 
         unsigned                          m_num_placeholder ; 
-        unsigned                          m_num_selected ; 
         NTxt*                             m_csgskip_lvlist ; 
         NTxt*                             m_placeholder_lvlist ; 
         unsigned                          m_node_count ; 

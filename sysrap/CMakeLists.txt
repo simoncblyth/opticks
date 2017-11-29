@@ -7,6 +7,32 @@ include(EnvCompilationFlags)
 find_package(PLog REQUIRED)
 
 
+# https://stackoverflow.com/questions/35300833/cmake-get-output-of-some-command-every-build-and-reconfigure-files-that-depends
+
+#set(VERSIONING_FILES src/versioning.cmake SVersion.cc.in)
+#
+#find_program(HG hg DOC "Mercurial executable file")
+#
+#add_custom_target(versioning ALL COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/SVersion.cpp.in
+#    SOURCES ${VERSIONING_FILES})
+#
+#add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/version.cpp
+#    COMMAND ${CMAKE_COMMAND} -DVERSION_INPUT=${CMAKE_SOURCE_DIR}/src/version.cpp.in -DVERSION_OUTPUT=${CMAKE_SOURCE_DIR}/src/version.cpp -DHG=${HG} -P ${CMAKE_SOURCE_DIR}/src/versioning.cmake
+#    DEPENDS ${CMAKE_SOURCE_DIR}/src/version.cpp.in)
+#..
+#
+#if (HG)
+#    execute_process(COMMAND ${HG} id OUTPUT_VARIABLE REVISION OUTPUT_STRIP_TRAILING_WHITESPACE)
+#else ()
+#    set(REVISION "<undefined>")
+#endif ()
+#configure_file(${VERSION_INPUT} ${VERSION_OUTPUT})
+#execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${VERSION_OUTPUT})    # invalidate output to force rebuild this source file even if it was not changed.
+#
+
+
+
+
 set(LIBRARIES
    ${PLog_LIBRARIES}
 )

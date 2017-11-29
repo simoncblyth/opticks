@@ -72,6 +72,9 @@ class BRAP_API  BOpticksResource {
        const char* getGDMLPath() const ;
        const char* getGLTFPath() const ;
        const char* getMetaPath() const ;
+    public:
+       const char* getGLTFBase() const ;
+       const char* getGLTFName() const ;
    public:       
         void addDir( const char* label, const char* dir);
         void addPath( const char* label, const char* path);
@@ -89,6 +92,7 @@ class BRAP_API  BOpticksResource {
         void setTopDownDirs();
         void setDebuggingIDPATH(); 
    protected:
+        friend struct NSceneTest ; 
         friend struct BOpticksResourceTest ; 
         void setSrcPathDigest(const char* srcpath, const char* srcdigest);
    protected:

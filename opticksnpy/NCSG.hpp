@@ -280,6 +280,9 @@ class NPY_API NCSG {
         NTrianglesNPY*         m_tris ; 
         std::vector<glm::vec3> m_surface_points ; 
 
+      
+
+
 };
 
 

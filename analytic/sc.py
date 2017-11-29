@@ -37,6 +37,8 @@ class Mh(object):
 
 
 class Nd(object):
+    identity = np.eye(4, dtype=np.float32) 
+    suppress_identity = True
     def __init__(self, ndIdx, soIdx, transform, boundary, pvname, depth, scene, selected):
         """
         :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
@@ -45,7 +47,11 @@ class Nd(object):
         self.ndIdx = ndIdx
         self.soIdx = soIdx
         self.transform = transform
-        self.extras = dict(boundary=boundary, pvname=pvname, selected=selected)
+
+        #self.extras = dict(boundary=boundary, pvname=pvname, selected=selected)
+        #self.extras = dict(boundary=boundary, pvname=pvname)   
+        # got rid of duplicated and unused, to slim the gltf
+        self.extras = dict(boundary=boundary)
 
         self.name = pvname
         self.depth = depth
@@ -54,7 +60,18 @@ class Nd(object):
         self.children = []
         self.parent = -1
 
-    matrix = property(lambda self:list(map(float,self.transform.ravel())))
+    def _get_matrix(self):
+        m = list(map(float,self.transform.ravel()))
+        if self.suppress_identity:
+            is_identity = np.all( self.transform == self.identity )
+            if is_identity:
+                m = None 
+            pass
+        pass
+        return m 
+    matrix = property(_get_matrix)
+
+
     brief = property(lambda self:"Nd ndIdx:%3d soIdx:%d nch:%d par:%d matrix:%s " % (self.ndIdx, self.soIdx,  len(self.children), self.parent, self.matrix))
 
 
@@ -125,7 +142,10 @@ class Nd(object):
         if len(self.children) > 0:
             d["children"] = self.children
         pass
-        d["matrix"] = self.matrix
+        m = self.matrix
+        if m is not None:
+            d["matrix"] = m
+        pass
         return d
     gltf = property(_get_gltf)
 
@@ -409,11 +429,12 @@ class Sc(object):
             print "lv %5d so %5d " % (lvIdx, soIdx)    
         pass
 
-    def save(self, path, load_check=True, pretty_also=True):
-        log.info("saving to %s " % path )
+    def save(self, path, load_check=True, pretty_also=False):
         gdir = os.path.dirname(path)
+        log.info("saving extras in %s " % gdir )
         self.save_extras(gdir)    # sets uri for extra external files, so must come before the json gltf save
 
+        log.info("saving gltf into %s " % path )
         gltf = self.gltf
         json_save_(path, gltf)    
 

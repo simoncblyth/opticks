@@ -374,6 +374,18 @@ const char* BOpticksResource::getMetaPath() const
 }
 
 
+const char* BOpticksResource::getGLTFBase() const
+{
+    std::string base = BFile::ParentDir(m_gltfpath) ;
+    return strdup(base.c_str()); 
+}
+const char* BOpticksResource::getGLTFName() const
+{
+    std::string name = BFile::Name(m_gltfpath) ;
+    return strdup(name.c_str()); 
+}
+
+
 
 
 

@@ -816,6 +816,8 @@ const char* Opticks::getGLTFBase() const  // config base and name only used whil
     std::string base = gltf < 100 ? BFile::ParentDir(path) : m_cfg->getGLTFBase() ;
     return strdup(base.c_str()) ; 
 }
+
+
 const char* Opticks::getGLTFName() const 
 {
     int gltf = getGLTF();

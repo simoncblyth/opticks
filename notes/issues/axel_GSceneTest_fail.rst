@@ -21,14 +21,181 @@ Expected way to make the analytic cache
 TODO
 -----
 
+* make OPTICKS_RESOURCE_LAYOUT 1 the default
+* get all users onboard 
+
+
+
+Slimmimg the gltf 
+-------------------
+
+::
+
+    opticksdata-export-du juno1707
+
+    simon:juno1707 blyth$ mv g4_00.gltf g4_00.gltf.keep
+
+    op --j1707 --gdml2gltf 
+        ## confirmed was able to reproduce the old  g4_00.gltf.keep
+
+    op --j1707 --gdml2gltf 
+        ## now with suppressed matrix and selected
+
+
+    op --j1707 --gltf 3 -G -D
+        ## fails from lack of selected, fixed npy- for this
+         
+    NSceneTest
+         ## can more quickly just check the gltf with 
+         ## this after setting OPTICKS_SRCPATH envvar
+
+
+    opticksdata-export-du juno1707
+    opticks-pretty g4_00.gltf      ## still with the duplicate pvname
+
+
+    op --j1707 --gdml2gltf 
+        ## now with suppressed matrix, removed selected, removed duplicated extras[pvname] 
+
+
+
+
+
+
+* try suppressing identity matrix
+* extras has a selected att that i think is not used, try dropping that 
+
+Identity suppression + select removal saves ~25M::
+
+     81M    g4_00.gltf.keep   
+     56M    g4_00.gltf
+
+
+
+Also there is duplication of a name::
+
+        {
+            "extras": {
+                "boundary": "Pyrex///Vacuum",
+                "pvname": "PMT_20inch_inner2_phys0x1821730"
+            },
+            "mesh": 21,
+            "name": "PMT_20inch_inner2_phys0x1821730"
+        },
+
+
+
+
+* PERHAPS: also express as translation when no rotation
+
+
+/usr/local/opticks/externals/yoctogl/yocto-gl/yocto/yocto_gltf.cpp::
+
+
+    2861 YGLTF_API std::array<float, 16> node_transform(const node_t* node) {
+    2862     auto xf = _identity_float4x4;
+    2863 
+    2864     // matrix
+    2865     if (node->matrix != _identity_float4x4) {
+    2866         xf = _float4x4_mul(node->matrix, xf);
+    2867     }
+    2868 
+
+
+
+
+TODO : commit gltf and extras into opticksdata ?
+-----------------------------------------------------
+
+* pretty gltf too big to commit, especially as it can be generated from the normal one
+* gltf also pretty big, perhaps compress ? 
+* Can YoctoGL read compressed gltf ?
+
+
+Suppress identity matrix is an easy way to tighten it up::
+
+   imon:juno1707 blyth$ opticks-pretty g4_00.gltf
+
+
+
+::
+
+    simon:export blyth$ opticksdata-;opticksdata-export-du
+    116K    DayaBay
+    1.3M    DayaBay_MX_20140916-2050
+    2.5M    DayaBay_MX_20141013-1711
+     38M    DayaBay_VGDX_20140414-1300
+    8.5M    Far_VGDX_20140414-1256
+     80K    LXe
+    6.8M    Lingao_VGDX_20140414-1247
+    440K    dpib
+     25M    juno
+    325M    juno1707
+
+    simon:export blyth$ opticksdata-;opticksdata-export-du juno1707
+    4.0K    ChromaMaterialMap.json
+    1.2M    extras
+     24M    g4_00.dae
+     20M    g4_00.gdml
+     81M    g4_00.gltf
+    199M    g4_00.pretty.gltf
+
+    simon:juno1707 blyth$ opticksdata-;opticksdata-export-du DayaBay_VGDX_20140414-1300
+    8.3M    extras
+    6.8M    g4_00.dae
+    3.9M    g4_00.gdml
+    5.7M    g4_00.gltf
+    2.5M    g4_00.idmap
+     11M    g4_00.pretty.gltf
+
+
+
+::
+
+    simon:opticksdata blyth$ hg st . | grep -v json | grep -v npy | grep -v cc | grep -v bash 
+    ? config/opticksdata.ini
+    ? export/DayaBay/GPmt/10/GPmt_boundaries.txt
+    ? export/DayaBay/GPmt/10/GPmt_lvnames.txt
+    ? export/DayaBay/GPmt/10/GPmt_materials.txt
+    ? export/DayaBay/GPmt/10/GPmt_pvnames.txt
+    ? export/DayaBay/GPmt/2/GPmt_boundaries.txt
+    ? export/DayaBay/GPmt/2/GPmt_lvnames.txt
+    ? export/DayaBay/GPmt/2/GPmt_materials.txt
+    ? export/DayaBay/GPmt/2/GPmt_pvnames.txt
+    ? export/DayaBay_VGDX_20140414-1300/extras/csg.txt
+    ? export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+    ? export/juno1707/extras/csg.txt
+    ? export/juno1707/g4_00.gltf
+
+    ? export/DayaBay_VGDX_20140414-1300/g4_00.pretty.gltf
+    ? export/juno1707/g4_00.pretty.gltf
+
+    simon:opticksdata blyth$ du -h export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+    5.7M    export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+
+    simon:opticksdata blyth$ du -h export/juno1707/g4_00.gltf
+     81M    export/juno1707/g4_00.gltf
+
+
+
+    simon:opticksdata blyth$ du -h export/DayaBay_VGDX_20140414-1300/g4_00.pretty.gltf
+     11M    export/DayaBay_VGDX_20140414-1300/g4_00.pretty.gltf
+
+    simon:opticksdata blyth$ du -h export/juno1707/g4_00.pretty.gltf
+    199M    export/juno1707/g4_00.pretty.gltf
+
+
+
+DONE
+-----
+
 * rearrange where NScene writes into geocache
-* commit gltf and extras into opticksdata 
 * test with opticksdata readonly 
 
 
 
-Missing nodemeta errors
-------------------------
+CONFIRMED : Missing nodemeta errors just from empty nodes of complete tree iteration
+---------------------------------------------------------------------------------------
 
 Not all nodes, but many : suspect from empty nodes of complete tree
 
@@ -40,42 +207,57 @@ Not all nodes, but many : suspect from empty nodes of complete tree
          134
 
 
-
 ::
 
-    // :set nowrap
+    2017-11-29 17:25:20.142 INFO  [437369] [NScene::dumpRepeatCount@1477] NScene::dumpRepeatCount totCount 290254
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/5/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/6/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/7/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/8/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/11/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/12/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/13/nodemeta.json
+    /usr/local/opticks/opticksdata/export/juno1707/extras/14/14/nodemeta.json   ## these indices are 0-based
 
-    2017-11-29 13:46:51.437 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 30 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/30/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 33 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/33/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 34 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/34/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 35 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/35/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 36 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/36/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 37 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/37/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 38 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/38/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 39 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/39/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 40 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/40/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 41 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/41/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 42 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/42/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 43 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/43/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 44 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/44/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 45 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/45/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 46 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/46/nodemeta.json
-    2017-11-29 13:46:51.438 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 47 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/47/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 48 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/48/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 49 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/49/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 50 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/50/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 51 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/51/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 52 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/52/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 53 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/53/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 54 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/54/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 55 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/55/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 56 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/56/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 57 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/57/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 58 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/58/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 59 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/59/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 60 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/60/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 61 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/61/nodemeta.json
-    2017-11-29 13:46:51.439 ERROR [367201] [*NCSG::LoadMetadata@355] NCSG::LoadMetadata missing metadata  treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 idx 62 metapath /usr/local/opticks/opticksdata/export/juno1707/extras/24/62/nodemeta.json
+
+     missmeta 1-based (8) :  6 7 8 9 12 13 14 15
+
+
+
+
+    simon:opticksnpy blyth$ opticks-tbool- 14
+    opticks-tbool- : sourcing /usr/local/opticks/opticksdata/export/juno1707/extras/14/tbool14.bash
+    args: 
+    [2017-11-29 17:33:10,607] p50393 {/Users/blyth/opticks/ana/base.py:154} INFO - _opticks_idfilename layout 1 : idpath /usr/local/opticks/geocache/juno1707/g4_00.dae/a181a603769c1f98ad927e7367c7aa51/1 
+    [2017-11-29 17:33:10,607] p50393 {/Users/blyth/opticks/ana/base.py:165} INFO - _opticks_idfilename layout 1 : idpath /usr/local/opticks/geocache/juno1707/g4_00.dae/a181a603769c1f98ad927e7367c7aa51/1 -> idfilename g4_00.dae 
+    [2017-11-29 17:33:10,607] p50393 {/Users/blyth/opticks/ana/base.py:248} INFO - install_prefix : /usr/local/opticks 
+    [2017-11-29 17:33:10,608] p50393 {/Users/blyth/opticks/analytic/csg.py:1092} INFO - raw name:union
+    un(un(zs,di(cy,to)),cy) height:3 totnodes:15 
+
+                              1
+                             un
+              2                   3    
+             un                  cy
+
+          4           5        (6)      (7)
+         zs          di            
+                 cy      to        
+      (8)  (9)  10       11    (12) (13) (14) (15)
+
+
+    [2017-11-29 17:33:10,608] p50393 {/Users/blyth/opticks/analytic/csg.py:1092} INFO - optimized name:union
+    un(un(zs,di(cy,to)),cy) height:3 totnodes:15 
+
+                         un    
+         un                  cy
+     zs          di            
+             cy      to        
+
+
+               1
+          2          3
+      4     5     6     7
+    8  9 10  11 12 13  14  15
 
     simon:opticks blyth$ cd /usr/local/opticks/opticksdata/export/juno1707/extras/24
     simon:24 blyth$ l
@@ -97,6 +279,39 @@ Not all nodes, but many : suspect from empty nodes of complete tree
     drwxr-xr-x  3 blyth  staff   102 Aug  3 12:01 7
     drwxr-xr-x  3 blyth  staff   102 Aug  3 12:01 8
     simon:24 blyth$ 
+
+
+
+    2017-11-29 17:54:27.777 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/8 m_height 1 m_num_nodes 3 missmeta 0
+    2017-11-29 17:54:27.784 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/9 m_height 2 m_num_nodes 7 missmeta 0
+    2017-11-29 17:54:27.788 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/15 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:27.804 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/10 m_height 2 m_num_nodes 7 missmeta 0
+    2017-11-29 17:54:27.808 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/14 m_height 3 m_num_nodes 15 missmeta 8
+     missmeta 1-based (8) :  6 7 8 9 12 13 14 15
+    2017-11-29 17:54:27.840 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/13 m_height 3 m_num_nodes 15 missmeta 8
+     missmeta 1-based (8) :  6 7 8 9 12 13 14 15
+    2017-11-29 17:54:27.876 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/11 m_height 4 m_num_nodes 31 missmeta 22
+     missmeta 1-based (22) :  6 7 10 11 12 13 14 15 16 17 20 21 22 23 24 25 26 27 28 29 30 31
+    2017-11-29 17:54:27.923 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/12 m_height 4 m_num_nodes 31 missmeta 22
+     missmeta 1-based (22) :  6 7 10 11 12 13 14 15 16 17 20 21 22 23 24 25 26 27 28 29 30 31
+    2017-11-29 17:54:27.958 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/20 m_height 1 m_num_nodes 3 missmeta 0
+    2017-11-29 17:54:27.980 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/18 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:27.994 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/16 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:27.997 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/17 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:28.010 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/19 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:28.012 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/26 m_height 1 m_num_nodes 3 missmeta 0
+    2017-11-29 17:54:28.033 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/21 m_height 3 m_num_nodes 15 missmeta 4
+     missmeta 1-based (4) :  10 11 14 15
+    2017-11-29 17:54:28.037 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/22 m_height 1 m_num_nodes 3 missmeta 0
+    2017-11-29 17:54:28.042 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/23 m_height 4 m_num_nodes 31 missmeta 18
+     missmeta 1-based (18) :  10 11 14 15 18 19 20 21 22 23 24 25 26 27 28 29 30 31
+    2017-11-29 17:54:28.047 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/25 m_height 1 m_num_nodes 3 missmeta 0
+    2017-11-29 17:54:28.062 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/24 m_height 5 m_num_nodes 63 missmeta 52
+     missmeta 1-based (52) :  6 7 10 11 12 13 14 15 18 19 20 21 22 23 24 25 26 27 28 29 30 31 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63
+    2017-11-29 17:54:28.066 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/28 m_height 0 m_num_nodes 1 missmeta 0
+    2017-11-29 17:54:28.072 INFO  [451173] [NCSG::loadNodeMetadata@413] NCSG::loadNodeMetadata m_treedir /usr/local/opticks/opticksdata/export/juno1707/extras/27 m_height 0 m_num_nodes 1 missmeta 0
+
+
 
 Its a deep tree union of box3 and cylinder::
 
@@ -189,6 +404,43 @@ Ahha python expecting old layout
 
 
 
+lvid 14 is PMT ::
+
+    simon:opticks blyth$ opticks-tbool- 14 
+    opticks-tbool- : sourcing /usr/local/opticks/opticksdata/export/juno1707/extras/14/tbool14.bash
+    args: 
+    [2017-11-29 17:17:37,553] p48700 {/Users/blyth/opticks/ana/base.py:154} INFO - _opticks_idfilename layout 1 : idpath /usr/local/opticks/geocache/juno1707/g4_00.dae/a181a603769c1f98ad927e7367c7aa51/1 
+    [2017-11-29 17:17:37,553] p48700 {/Users/blyth/opticks/ana/base.py:165} INFO - _opticks_idfilename layout 1 : idpath /usr/local/opticks/geocache/juno1707/g4_00.dae/a181a603769c1f98ad927e7367c7aa51/1 -> idfilename g4_00.dae 
+    [2017-11-29 17:17:37,553] p48700 {/Users/blyth/opticks/ana/base.py:248} INFO - install_prefix : /usr/local/opticks 
+    [2017-11-29 17:17:37,554] p48700 {/Users/blyth/opticks/analytic/csg.py:1092} INFO - raw name:union
+    un(un(zs,di(cy,to)),cy) height:3 totnodes:15 
+
+                         un    
+         un                  cy
+     zs          di            
+             cy      to        
+    [2017-11-29 17:17:37,554] p48700 {/Users/blyth/opticks/analytic/csg.py:1092} INFO - optimized name:union
+    un(un(zs,di(cy,to)),cy) height:3 totnodes:15 
+
+                         un    
+         un                  cy
+     zs          di            
+             cy      to        
+    [2017-11-29 17:17:37,554] p48700 {/Users/blyth/opticks/analytic/csg.py:446} INFO - CSG.Serialize : writing 2 trees to directory /tmp/blyth/opticks/tbool/14 
+    [2017-11-29 17:17:37,555] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/0/0/nodemeta.json {'containerscale': '2', 'container': '1', 'idx': 0, 'verbosity': '0', 'resolution': '20', 'poly': 'IM'} 
+    [2017-11-29 17:17:37,557] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/0/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 0, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,557] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/1/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 1, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,558] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/3/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 3, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,558] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/4/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 4, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,558] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/9/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 9, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,558] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/10/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 10, 'poly': 'IM'} 
+    [2017-11-29 17:17:37,559] p48700 {/Users/blyth/opticks/analytic/csg.py:747} INFO - write nodemeta to /tmp/blyth/opticks/tbool/14/1/2/nodemeta.json {'verbosity': '0', 'resolution': '20', 'idx': 2, 'poly': 'IM'} 
+    autoseqmap=TO:0,SR:1,SA:0_name=14_outerfirst=1_analytic=1_csgpath=/tmp/blyth/opticks/tbool/14_mode=PyCsgInBox_autoobject=Vacuum/perfectSpecularSurface//GlassSchottF2_autoemitconfig=photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x3f,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75_autocontainer=Rock//perfectAbsorbSurface/Vacuum
+    simon:opticks blyth$ 
+
+
+
+
 
 
 Testing With OPTICKS_RESOURCE_LAYOUT 1
@@ -261,7 +513,7 @@ Make sure no writing into opticksdata
 
 
 
-TODO : in new layout write NScene lvlists into new idfold (not the old one: srcfold)
+DONE : in new layout write NScene lvlists into new idfold (not the old one: srcfold)
 -------------------------------------------------------------------------------------
 
 ::

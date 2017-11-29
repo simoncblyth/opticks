@@ -1,3 +1,7 @@
+
+#include "SSys.hh"
+#include "BOpticksResource.hh"
+
 #include "NScene.hpp"
 #include "NSceneConfig.hpp"
 #include "NPY.hpp"
@@ -23,39 +27,70 @@ void test_makeInstanceTransformsBuffer(NScene* scene)
 
 
 
+struct NSceneTest 
+{
+    NSceneTest(const char* srcpath, const char* srcdigest)
+        :
+        _scene(NULL)
+    {
+        _bres.setSrcPathDigest(srcpath, srcdigest); 
+    }
+
+    void load()
+    {
+        const char* base = _bres.getGLTFBase();
+        const char* name = _bres.getGLTFName();
+        load(base, name);
+    }
+
+    void load(const char* base, const char* name)
+    { 
+
+        if(!NScene::Exists(base, name))
+        {
+            LOG(warning) << "no such scene at"
+                         << " base " << base
+                         << " name " << name
+                         ;
+            return ; 
+        } 
+
+        const char* config = NULL ; 
+
+        int dbgnode = -1 ; 
+        int scene_idx = 0 ; 
+        const char* idfold = NULL ;  
+
+        NSceneConfig* config_ = new NSceneConfig(config);
+
+        _scene = new NScene( base, name, idfold, config_, dbgnode, scene_idx  ); 
+        assert(_scene);
+
+        _scene->dump("NSceneTest");
+        //_scene->dumpNdTree();
+
+        //scene->dumpAll();
+        //test_makeInstanceTransformsBuffer(_scene);
+    }
+
+    BOpticksResource _bres ; 
+    NScene*          _scene ;  
+
+};
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    const char* base = argc > 1 ? argv[1] : "$TMP/nd" ;
-    const char* name = "scene.gltf" ;
-    const char* config = NULL ; 
+    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH");
+    const char* srcdigest = "dummy" ; 
+    if(!srcpath) return 0 ; 
 
-    if(!NScene::Exists(base, name))
-    {
-        LOG(warning) << "no such scene at"
-                     << " base " << base
-                     << " name " << name
-                     ;
-        return 0 ; 
-    } 
-
-
-    int dbgnode = -1 ; 
-    int scene_idx = 0 ; 
-
-    const char* idfold = NULL ;  
-
-    NSceneConfig* config_ = new NSceneConfig(config);
-    NScene* scene = new NScene( base, name, idfold, config_, dbgnode, scene_idx  ); 
-    assert(scene);
-    scene->dump(argv[0]);
-    scene->dumpNdTree();
-
-    //scene->dumpAll();
-
-    test_makeInstanceTransformsBuffer(scene);
+    NSceneTest nst(srcpath, srcdigest);
+    nst.load();
 
     return 0 ; 
 }

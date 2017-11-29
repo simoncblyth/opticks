@@ -16,6 +16,11 @@ find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
 # so parse the optix.h header to get the #define OPTIX_VERSION into CMake variable
 # This means can know the version at configure time
 # the value is written to inc/OpticksCMakeConfig.hh by top level CMakeLists.txt
+#
+# suspect dependency issue with this, ie not run every time see:
+#  https://stackoverflow.com/questions/35300833/cmake-get-output-of-some-command-every-build-and-reconfigure-files-that-depends  
+#
+
 
 set(OXRAP_OPTIX_VERSION 0 PARENT_SCOPE)
 if(OptiX_FOUND)

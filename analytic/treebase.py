@@ -165,7 +165,7 @@ class Node(object):
             node.posXYZ = None
         pass
 
-        log.info("################ node.posXYZ:%r  node:%r " % (node.posXYZ, node) )
+        log.info("################ node.posXYZ:%r  node:%r ##" % (node.posXYZ, node) )
 
         ## HMM ? is this missing node.lv transforms ? See ddbase.py Elem._get_children
 
@@ -329,7 +329,12 @@ class Node(object):
     brief = property(lambda self:"%5d : %40s %s " % (self.index, self.lv.name, self.pv.name))
 
     def __repr__(self):
+        return "%s" % (self.name) 
+
+    def __str__(self):
         return "%s \npv:%s\nlv:%s : %s " % (self.name, repr(self.pv),repr(self.lv), repr(self.posXYZ) ) 
+
+
 
     def _get_meta(self):
         m = {}

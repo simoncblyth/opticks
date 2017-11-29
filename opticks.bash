@@ -66,10 +66,16 @@ opticks-srcfold(){ echo $(dirname $OPTICKS_SRCPATH) ; }
 #opticks-srcextras(){ echo $(opticks-idfold)/extras ; }   # layout 0
 opticks-srcextras(){ echo $(opticks-srcfold)/extras ; }  # layout 1
 
+opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
+
 opticks-tbool-info(){ cat << EOI
 
 $FUNCNAME
 ======================
+
+  OPTICKS_RESOURCE_LAYOUT  : $OPTICKS_RESOURCE_LAYOUT  
+  IDPATH                   : $IDPATH 
+  OPTICKS_SRCPATH          : $OPTICKS_SRCPATH 
 
   opticks-srcfold       : $(opticks-srcfold)
   opticks-srcextras     : $(opticks-srcextras)
