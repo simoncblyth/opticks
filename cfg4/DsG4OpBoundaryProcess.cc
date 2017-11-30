@@ -1012,8 +1012,10 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	      G4double E2_abs, C_parl, C_perp;
 
  
-          // --reflectcheat 
-	      if ( !G4BooleanRand(TransCoeff) ) {
+          G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+          bool _reflect = _u > TransCoeff ; 
+
+	      if ( _reflect ) {
 
 	         // Simulate reflection
 

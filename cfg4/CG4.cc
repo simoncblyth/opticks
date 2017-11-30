@@ -116,7 +116,7 @@ CG4Ctx& CG4::getCtx()
     return m_ctx ; 
 }
 
-float CG4::getCtxRecordFraction() const 
+double CG4::getCtxRecordFraction() const 
 {
     return m_ctx._record_fraction ; 
 }

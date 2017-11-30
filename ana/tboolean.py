@@ -32,6 +32,10 @@ if __name__ == '__main__':
     print "ab.a.metadata", ab.a.metadata
     print "ab.a.metadata.csgmeta0", ab.a.metadata.csgmeta0
 
+    print ab.rpost_dv
+    print ab.rpol_dv
+
+
     rc = ab.RC 
 
     if not ok.ipython:
@@ -45,9 +49,7 @@ if __name__ == '__main__':
     b = ab.b
     #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
   
-    print ab.rpost_dv
-    print ab.rpol_dv
-    
+   
 
     
 

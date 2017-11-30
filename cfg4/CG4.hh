@@ -129,7 +129,7 @@ class CFG4_API CG4
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
         CG4Ctx&          getCtx();
-        float            getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical
+        double           getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical
 
         CRecorder*     getRecorder();
         CStepRec*      getStepRec();

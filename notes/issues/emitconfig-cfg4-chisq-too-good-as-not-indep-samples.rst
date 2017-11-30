@@ -1,6 +1,11 @@
 emitconfig-cfg4-chisq-too-good-as-not-indep-samples
 ===================================================
 
+
+
+
+
+
 ISSUE  : Need different comparison approach for emitconfig input photons
 ---------------------------------------------------------------------------
 
@@ -36,6 +41,99 @@ machinery was setup for comparing indep samples.
     0005         54        74             3.12  TO SC SA
     0006         13        16             0.00  TO BT BT SC SA
     0007         12         8             0.00  TO BT BR BR BR BT SA
+
+
+
+Test --reflectcheat
+----------------------
+
+* succeeds to point-by-point align "TO BR SA"
+
+::
+
+    tboolean-;tboolean-box --okg4 --reflectcheat 
+
+
+::
+
+    [2017-11-30 18:06:48,337] p36797 {/Users/blyth/opticks/ana/ab.py:154} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-box)  None 0 
+    A tboolean-box/torch/  1 :  20171130-1806 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/1/fdom.npy () 
+    B tboolean-box/torch/ -1 :  20171130-1806 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    /tmp/blyth/opticks/tboolean-box--
+    .                seqhis_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             100000    100000         1.02/3 =  0.34  (pval:0.797 prob:0.203)  
+    0000               8d     55321     55312             0.00        1.000 +- 0.004        1.000 +- 0.004  [2 ] TO SA
+    0001             8ccd     41828     41816             0.00        1.000 +- 0.005        1.000 +- 0.005  [4 ] TO BT BT SA
+    0002              8bd      2754      2754             0.00        1.000 +- 0.019        1.000 +- 0.019  [3 ] TO BR SA
+    0003              86d        54        65             1.02        0.831 +- 0.113        1.204 +- 0.149  [3 ] TO SC SA
+    0004            86ccd        12        11             0.00        1.091 +- 0.315        0.917 +- 0.276  [5 ] TO BT BT SC SA
+    0005              4cd         6         8             0.00        0.750 +- 0.306        1.333 +- 0.471  [3 ] TO BT AB
+    0006               4d         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [2 ] TO AB
+    0007           8cbc6d         5         5             0.00        1.000 +- 0.447        1.000 +- 0.447  [6 ] TO SC BT BR BT SA
+    0008            8c6cd         4         5             0.00        0.800 +- 0.400        1.250 +- 0.559  [5 ] TO BT SC BT SA
+    0009             86bd         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [4 ] TO BR SC SA
+    0010          8cbbc6d         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO SC BT BR BR BT SA
+    0011       bbbbbbb6cd         2         5             0.00        0.400 +- 0.283        2.500 +- 1.118  [10] TO BT SC BR BR BR BR BR BR BR
+    0012           8cb6cd         1         2             0.00        0.500 +- 0.500        2.000 +- 1.414  [6 ] TO BT SC BR BT SA
+    0013             8b6d         1         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [4 ] TO SC BR SA
+    0014            8cc6d         1         3             0.00        0.333 +- 0.333        3.000 +- 1.732  [5 ] TO SC BT BT SA
+    0015             4ccd         1         3             0.00        0.333 +- 0.333        3.000 +- 1.732  [4 ] TO BT BT AB
+    0016          8cc6ccd         0         2             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] TO BT BT SC BT BT SA
+    0017         8cbc6ccd         0         1             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] TO BT BT SC BT BR BT SA
+    .                             100000    100000         1.02/3 =  0.34  (pval:0.797 prob:0.203)  
+    .                pflags_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             100000    100000         1.44/4 =  0.36  (pval:0.837 prob:0.163)  
+    0000             1080     55321     55312             0.00        1.000 +- 0.004        1.000 +- 0.004  [2 ] TO|SA
+    0001             1880     41828     41816             0.00        1.000 +- 0.005        1.000 +- 0.005  [3 ] TO|BT|SA
+    0002             1480      2754      2754             0.00        1.000 +- 0.019        1.000 +- 0.019  [3 ] TO|BR|SA
+    0003             10a0        54        65             1.02        0.831 +- 0.113        1.204 +- 0.149  [3 ] TO|SA|SC
+    0004             18a0        17        21             0.42        0.810 +- 0.196        1.235 +- 0.270  [4 ] TO|BT|SA|SC
+    0005             1ca0         8         8             0.00        1.000 +- 0.354        1.000 +- 0.354  [5 ] TO|BT|BR|SA|SC
+    0006             1808         7        11             0.00        0.636 +- 0.241        1.571 +- 0.474  [3 ] TO|BT|AB
+    0007             1008         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [2 ] TO|AB
+    0008             14a0         3         2             0.00        1.500 +- 0.866        0.667 +- 0.471  [4 ] TO|BR|SA|SC
+    0009             1c20         2         5             0.00        0.400 +- 0.283        2.500 +- 1.118  [4 ] TO|BT|BR|SC
+    .                             100000    100000         1.44/4 =  0.36  (pval:0.837 prob:0.163)  
+    .                seqmat_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             100000    100000         0.02/2 =  0.01  (pval:0.988 prob:0.012)  
+    0000               12     55321     55312             0.00        1.000 +- 0.004        1.000 +- 0.004  [2 ] Vm Rk
+    0001             1232     41828     41816             0.00        1.000 +- 0.005        1.000 +- 0.005  [4 ] Vm F2 Vm Rk
+    0002              122      2808      2819             0.02        0.996 +- 0.019        1.004 +- 0.019  [3 ] Vm Vm Rk
+    0003            12232        12        11             0.00        1.091 +- 0.315        0.917 +- 0.276  [5 ] Vm F2 Vm Vm Rk
+    0004               22         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [2 ] Vm Vm
+    0005              332         6         8             0.00        0.750 +- 0.306        1.333 +- 0.471  [3 ] Vm F2 F2
+    0006           123322         5         5             0.00        1.000 +- 0.447        1.000 +- 0.447  [6 ] Vm Vm F2 F2 Vm Rk
+    0007            12332         4         5             0.00        0.800 +- 0.400        1.250 +- 0.559  [5 ] Vm F2 F2 Vm Rk
+    0008             1222         3         2             0.00        1.500 +- 0.866        0.667 +- 0.471  [4 ] Vm Vm Vm Rk
+    0009          1233322         2         0             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] Vm Vm F2 F2 F2 Vm Rk
+    0010       3333333332         2         5             0.00        0.400 +- 0.283        2.500 +- 1.118  [10] Vm F2 F2 F2 F2 F2 F2 F2 F2 F2
+    0011             2232         1         3             0.00        0.333 +- 0.333        3.000 +- 1.732  [4 ] Vm F2 Vm Vm
+    0012           123332         1         2             0.00        0.500 +- 0.500        2.000 +- 1.414  [6 ] Vm F2 F2 F2 Vm Rk
+    0013            12322         1         3             0.00        0.333 +- 0.333        3.000 +- 1.732  [5 ] Vm Vm F2 Vm Rk
+    0014         12332232         0         1             0.00        0.000 +- 0.000        0.000 +- 0.000  [8 ] Vm F2 Vm Vm F2 F2 Vm Rk
+    0015          1232232         0         2             0.00        0.000 +- 0.000        0.000 +- 0.000  [7 ] Vm F2 Vm Vm F2 Vm Rk
+    .                             100000    100000         0.02/2 =  0.01  (pval:0.988 prob:0.012)  
+    ab.a.metadata                  /tmp/blyth/opticks/evt/tboolean-box/torch/1 7c3396a4bcfc21cba051ba98f6f0b667 781d1ab8f0adbf585c197cf43a538446  100000    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0 {u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75', u'resolution': u'20', u'emit': -1}
+    c2p : {'seqmat_ana': 0.011978598910194116, 'pflags_ana': 0.36007827166347472, 'seqhis_ana': 0.33975348502498387} c2pmax: 0.360078271663  CUT ok.c2max 2.0  RC:0 
+    [2017-11-30 18:06:48,345] p36797 {/Users/blyth/opticks/ana/tboolean.py:38} INFO - early exit as non-interactive
+    2017-11-30 18:06:48.381 INFO  [707800] [SSys::run@46] tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch --nosmry   rc_raw : 0 rc : 0
+
+
+    rpost_dv
+     0000            :                          TO SA :   55321    55312  :     55258/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0001            :                    TO BT BT SA :   41828    41816  :     41776/      8: 0.000  mx/mn/av 0.0138/0.0000/2.636e-06    
+     0002            :                       TO BR SA :    2754     2754  :      2751/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+    rpol_dv
+     0000            :                          TO SA :   55321    55312  :     55258/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0001            :                    TO BT BT SA :   41828    41816  :     41776/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+     0002            :                       TO BR SA :    2754     2754  :      2751/      0: 0.000  mx/mn/av 0.0000/0.0000/     0    
+    c2p : {'seqmat_ana': 0.011978598910194116, 'pflags_ana': 0.36007827166347472, 'seqhis_ana': 0.33975348502498387} c2pmax: 0.360078271663  CUT ok.c2max 2.0  RC:0 
+    [2017-11-30 18:10:53,190] p37096 {/Users/blyth/opticks/ana/tboolean.py:42} INFO - early exit as non-interactive
+
+
 
 
 APPROACHES
