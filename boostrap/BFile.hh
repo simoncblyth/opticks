@@ -1,6 +1,7 @@
 #pragma once
 
 #include <ctime>
+#include <vector>
 #include <string>
 
 #include "BRAP_API_EXPORT.hh"
@@ -8,7 +9,10 @@
 
 class BRAP_API BFile {
     public:
+       static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
        static bool LooksLikePath(const char* path) ; 
+
+       static std::string FormPath(const std::vector<std::string>& elem, unsigned i0, unsigned i1 ); 
        static std::string FormPath(const char* path, const char* sub=NULL, const char* name=NULL, const char* extra1=NULL, const char* extra2=NULL );
        static std::string FindFile(const char* dirlist, const char* sub, const char* name=NULL, const char* dirlist_delim=";");
        static std::string Stem(const char* path);

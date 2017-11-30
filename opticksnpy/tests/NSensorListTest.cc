@@ -1,4 +1,16 @@
+/**
 
+   VERBOSE=1 NSensorListTest
+
+simon:opticks blyth$ NSensorListTest 6871 
+2017-11-30 15:47:38.683 ERROR [640228] [NSensorList::load@77] NSensorList::load 
+ idmpath:   /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.idmap
+nodeIndex 6871 sensor NSensor  index   2390 idhex 1051306 iddec 17109766 node_index   6871 name /dd/Geometry/Pool/lvNearPoolIWS#pvVetoPmtNearInn#pvNearInnWall3#pvNearInnWall3:6#pvVetoPmtUnit#pvPmtMount#pvMountRib1s#pvMountRib1s:1#pvMountRib1unit NOT-CATHODE 
+ simon:opticks blyth$ 
+
+
+
+**/
 
 #include <cstdlib>
 #include <cstdio>
@@ -7,34 +19,46 @@
 #include "PLOG.hh"
 #include "NPY_LOG.hh"
 
+#include "SSys.hh"
 #include "BOpticksResource.hh"
 
 #include "NSensorList.hpp"
 #include "NSensor.hpp"
+
+
+struct NSensorListTest
+{
+    NSensorListTest( const char* idpath )
+    {
+        _res.setupViaID(idpath); 
+        const char* idmpath = _res.getIdMapPath(); 
+        assert( idmpath ); 
+        _sens.load(idmpath);
+    }
+   
+    BOpticksResource _res ; 
+    NSensorList      _sens ; 
+};
+
+
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
+    const char* idpath = SSys::getenvvar("IDPATH");
+    if(!idpath) return 0 ; 
 
-    const char* idmpath = BOpticksResource::IdMapSrcPath(); 
-    if(!idmpath) 
-    {
-        printf("%s : requires OPTICKS_SRCPATH  envvar \n", argv[0]);
-        return 0 ;
-    }   
+    NSensorListTest slt(idpath);
 
-    NSensorList sens;
-    sens.load(idmpath);
-
-
-    if(getenv("VERBOSE")) sens.dump();
+    if(getenv("VERBOSE")) slt._sens.dump();
 
     for(int i=1 ; i < argc ; i++)
     {
        unsigned int nodeIndex = atoi(argv[i]) ;
-       NSensor* sensor = sens.findSensorForNode(nodeIndex);
+       NSensor* sensor = slt._sens.findSensorForNode(nodeIndex);
        printf("nodeIndex %u sensor %s \n ", nodeIndex, ( sensor ? sensor->description().c_str() : "NULL" ) );
     }
 

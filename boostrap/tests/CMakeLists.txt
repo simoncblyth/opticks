@@ -18,6 +18,7 @@ set(TEST_SOURCES
    BBitTest.cc
    BLogTest.cc
    BFileTest.cc
+   BPathTest.cc
    BBufSpecTest.cc
    BEnvTest.cc
    BOpticksResourceTest.cc

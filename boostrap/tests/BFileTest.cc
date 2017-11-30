@@ -323,6 +323,38 @@ void test_ParentName()
 }
 
 
+void test_SplitPath(const char* path)
+{
+    std::vector<std::string> elem ; 
+    BFile::SplitPath(elem, path);
+
+    LOG(info) << " path " << path 
+              << " nelem " << elem.size()
+              ;
+
+    for(unsigned i=0 ; i < elem.size() ; i++)
+    {
+        std::cout 
+             << std::setw(4) << i 
+             << " " << elem[i]
+             << std::endl 
+             ; 
+    }
+}
+
+
+void test_SplitPath()
+{
+    const char* idpath_0="/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae" ; 
+    test_SplitPath(idpath_0);
+
+    //const char* idpath_1="/usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1" ;  
+    //test_SplitPath(idpath_1);
+}
+
+
+
+
 
 
 int main(int argc, char** argv)
@@ -331,8 +363,8 @@ int main(int argc, char** argv)
    SYSRAP_LOG_ ;
    BRAP_LOG_ ;
 
-   BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
-   rsc.Summary();
+   //BOpticksResource rsc ;  // sets envvar OPTICKS_INSTALL_PREFIX internally 
+   //rsc.Summary();
 
    //test_FindFile();
    //test_ExistsDir();
@@ -352,8 +384,9 @@ int main(int argc, char** argv)
    //test_LastWriteTime();
    //test_SinceLastWriteTime();
    //test_LooksLikePath();
+   //test_ParentName();
 
-   test_ParentName();
+   test_SplitPath();
 
    return 0 ; 
 }

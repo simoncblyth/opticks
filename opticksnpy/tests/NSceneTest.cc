@@ -29,11 +29,19 @@ void test_makeInstanceTransformsBuffer(NScene* scene)
 
 struct NSceneTest 
 {
+
+    NSceneTest(const char* idpath)
+        :
+        _scene(NULL)
+    {
+        _bres.setupViaID(idpath); 
+    }
+
     NSceneTest(const char* srcpath, const char* srcdigest)
         :
         _scene(NULL)
     {
-        _bres.setSrcPathDigest(srcpath, srcdigest); 
+        _bres.setupViaSrc(srcpath, srcdigest); 
     }
 
     void load()
@@ -79,17 +87,26 @@ struct NSceneTest
 };
 
 
+void test_ViaSrc()
+{
+    const char* srcpath = SSys::getenvvar("DEBUG_OPTICKS_SRCPATH");
+    const char* srcdigest = SSys::getenvvar("DEBUG_OPTICKS_SRCDIGEST", "0123456789abcdef0123456789abcdef") ; 
+    if(!srcpath) return ; 
+    NSceneTest nst(srcpath, srcdigest);
+    nst.load();
+}
+
+
 
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
     NPY_LOG__ ; 
 
-    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH");
-    const char* srcdigest = "dummy" ; 
-    if(!srcpath) return 0 ; 
+    const char* idpath = SSys::getenvvar("IDPATH");
+    if(!idpath) return 0 ; 
 
-    NSceneTest nst(srcpath, srcdigest);
+    NSceneTest nst(idpath);
     nst.load();
 
     return 0 ; 

@@ -5,6 +5,8 @@ axel-GSceneTest-fail
 Expected way to make the analytic cache
 ------------------------------------------
 
+
+
 ::
 
     op --j1707 --gdml2gltf
@@ -18,9 +20,17 @@ Expected way to make the analytic cache
 
 
 
+* working to move gdml2gltf into source level, so users
+  only need to do that when adding their own geometry, not
+  when using other peoples geometry
+
+* actually the two -G are not needed, think just the gltf one will do both
+
+
 TODO
 -----
 
+* slim all the gltf, then commit 
 * make OPTICKS_RESOURCE_LAYOUT 1 the default
 * get all users onboard 
 
@@ -41,13 +51,34 @@ Slimmimg the gltf
     op --j1707 --gdml2gltf 
         ## now with suppressed matrix and selected
 
-
     op --j1707 --gltf 3 -G -D
         ## fails from lack of selected, fixed npy- for this
          
     NSceneTest
          ## can more quickly just check the gltf with 
          ## this after setting OPTICKS_SRCPATH envvar
+
+    op --j1707 
+         ## this fails from not enough GPU memory 
+
+    op --j1707 --gltf 3 
+         ## note stack overflow issue from the propagation
+         ## and mostly messed up seqhis, 
+         ##
+         ## verified that this issues no related to changing 
+         ## resource layout 
+     
+    op --gltf 3 
+         ## stack overflow issues and messed up seqhis labels
+         ## also present, but much less that with j1707 : just out in the tail
+
+
+
+    simon:juno1707 blyth$ opticksdata-export-du juno1707
+     81M    g4_00.gltf.keep   
+     56M    g4_00.gltf
+
+     ##  Identity suppression + select removal saves ~25M::
 
 
     opticksdata-export-du juno1707
@@ -57,22 +88,29 @@ Slimmimg the gltf
     op --j1707 --gdml2gltf 
         ## now with suppressed matrix, removed selected, removed duplicated extras[pvname] 
 
+    simon:juno1707 blyth$ opticksdata-export-du juno1707
+    4.0K    BOpticksResourceTest.log
+    4.0K    ChromaMaterialMap.json
+    1.2M    extras
+     24M    g4_00.dae
+     20M    g4_00.gdml
+     44M    g4_00.gltf          ##  another 12M from removing duplicated name 
+     81M    g4_00.gltf.keep
 
 
+     NSceneTest ## reads it OK
+
+     op --j1707 --gltf 3 -G -D
+          ## onwards to make the geocache, runs ok
+
+     op --j1707 --gltf 3
+          ## viz ok, still the stackoverflow issue, crazy seqhis
+
+     opticks-pretty g4_00.gltf      
+          ## not much low-hanging fruit left, could abbreviate boundary to b ?
 
 
-
-* try suppressing identity matrix
-* extras has a selected att that i think is not used, try dropping that 
-
-Identity suppression + select removal saves ~25M::
-
-     81M    g4_00.gltf.keep   
-     56M    g4_00.gltf
-
-
-
-Also there is duplication of a name::
+Removed this duplication of a name::
 
         {
             "extras": {

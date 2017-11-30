@@ -297,6 +297,21 @@ std::string BFile::FindFile(const char* dirlist, const char* sub, const char* na
 }
 
 
+std::string BFile::FormPath(const std::vector<std::string>& elem, unsigned i0, unsigned i1)
+{
+   assert( i0 < elem.size() );
+   assert( i1 <= elem.size() );
+
+   fs::path p ; 
+   for(unsigned i=i0 ; i < i1 ; i++) 
+   {
+       if(!elem[i].empty()) p /= elem[i]  ; 
+   }
+   p.make_preferred();
+   std::string preferred = p.string();  // platform native
+   return preferred ;
+}
+
 
 std::string BFile::FormPath(const char* path, const char* sub, const char* name, const char* extra1, const char* extra2)
 {
@@ -533,6 +548,17 @@ bool BFile::pathEndsWithInt(const char* path)
     std::string name = BFile::Name(path) ; 
     int check = BStr::atoi(name.c_str(), fallback);
     return check != fallback ; 
+}
+
+
+void BFile::SplitPath(std::vector<std::string>& elem, const char* path )
+{
+    fs::path fpath(path);   
+    for (fs::path::iterator it=fpath.begin() ; it != fpath.end(); ++it) 
+    {
+        std::string s = it->filename().string() ; 
+        elem.push_back(s);
+    }
 }
 
 

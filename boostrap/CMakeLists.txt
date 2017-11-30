@@ -74,6 +74,7 @@ set(SOURCES
   BHex.cc
   BBit.cc
   BFile.cc
+  BPath.cc
   BRegex.cc
   BTree.cc
   BEnv.cc

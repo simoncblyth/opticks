@@ -9,6 +9,7 @@ namespace fs = boost::filesystem;
 
 #include "BFile.hh"
 #include "BStr.hh"
+#include "BPath.hh"
 #include "BOpticksResource.hh"
 
 // CMake generated defines from binary_dir/inc
@@ -25,6 +26,8 @@ const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.i
 
 BOpticksResource::BOpticksResource(const char* envprefix)
     :
+    m_setup(false),
+    m_id(NULL),
     m_envprefix(strdup(envprefix)),
     m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),
     m_install_prefix(NULL),
@@ -261,21 +264,12 @@ const char* BOpticksResource::MakeSrcPath(const char* srcpath, const char* ext)
 }
 
 
-const char* BOpticksResource::IdMapSrcPath()
+
+void BOpticksResource::setSrcPath(const char* srcpath)
 {
-    const char* srcpath = SSys::getenvvar("OPTICKS_SRCPATH"); 
-    return srcpath ? MakeSrcPath( srcpath, ".idmap" ) : NULL ; 
-
-}
-
-void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdigest)
-{   
     assert( srcpath );
-    assert( srcdigest );
-
     m_srcpath = strdup( srcpath );
-    m_srcdigest = strdup( srcdigest );
-    
+
     std::string srcfold = BFile::ParentDir(m_srcpath);
     m_srcfold = strdup(srcfold.c_str());
 
@@ -283,7 +277,6 @@ void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdige
     m_srcbase = strdup(srcbase.c_str());
     addDir("srcfold", m_srcfold ); 
     addDir("srcbase", m_srcbase ); 
-
 
     m_daepath = MakeSrcPath(m_srcpath,".dae"); 
     m_gdmlpath = MakeSrcPath(m_srcpath,".gdml"); 
@@ -298,7 +291,6 @@ void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdige
     addPath("metapath", m_metapath );
     addPath("idmappath", m_idmappath );
 
-
     std::string idname = BFile::ParentName(m_srcpath);
     m_idname = strdup(idname.c_str());   // idname is name of dir containing the srcpath eg DayaBay_VGDX_20140414-1300
 
@@ -307,7 +299,38 @@ void BOpticksResource::setSrcPathDigest(const char* srcpath, const char* srcdige
 
     addName("idname", m_idname ); 
     addName("idfile", m_idfile ); 
+}
 
+void BOpticksResource::setSrcDigest(const char* srcdigest)
+{
+    assert( srcdigest );
+    m_srcdigest = strdup( srcdigest );
+}
+ 
+
+
+
+void BOpticksResource::setupViaID(const char* idpath)
+{
+    assert( !m_setup );
+    m_setup = true ; 
+
+    m_id = new BPath( idpath );
+    const char* srcpath = m_id->getSrcPath(); 
+    const char* srcdigest = m_id->getSrcDigest(); 
+
+    setSrcPath( srcpath );
+    setSrcDigest( srcdigest );
+}
+
+void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
+{   
+    assert( !m_setup );
+    m_setup = true ; 
+
+    setSrcPath(srcpath);
+    setSrcDigest(srcdigest);
+    
     const char* layout = BStr::itoa(m_layout) ;
     addName("OPTICKS_RESOURCE_LAYOUT", layout );
 
@@ -354,6 +377,15 @@ std::string BOpticksResource::getPropertyLibDir(const char* name) const
 
 
 
+const char* BOpticksResource::getSrcPath() const 
+{
+    return m_srcpath ;
+}
+const char* BOpticksResource::getSrcDigest() const 
+{
+    return m_srcdigest ;
+}
+
 
 
 const char* BOpticksResource::getDAEPath() const 
@@ -372,6 +404,11 @@ const char* BOpticksResource::getMetaPath() const
 {
     return m_metapath ;
 }
+const char* BOpticksResource::getIdMapPath() const 
+{
+    return m_idmappath ;
+}
+
 
 
 const char* BOpticksResource::getGLTFBase() const

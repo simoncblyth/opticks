@@ -536,7 +536,6 @@ void OpticksResource::readEnvironment()
     }
 
 
-
     if(daepath == NULL)
     {
         LOG(warning) << "OpticksResource::readEnvironment"
@@ -551,9 +550,6 @@ void OpticksResource::readEnvironment()
     } 
 
 
-
-
-
     m_query_string = SSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
     m_ctrl         = SSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
     m_meshfix      = SSys::getenvvar(m_envprefix, "MESHFIX", DEFAULT_MESHFIX);
@@ -561,7 +557,6 @@ void OpticksResource::readEnvironment()
 
     m_query = new OpticksQuery(m_query_string);
     std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));
-
  
     // idpath incorporates digest of geometry selection envvar 
     // allowing to benefit from caching as vary geometry selection 
@@ -569,7 +564,7 @@ void OpticksResource::readEnvironment()
 
     assert(daepath);
 
-    setSrcPathDigest(daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
+    setupViaSrc(daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
 
     assert(m_idpath) ; 
     assert(m_idname) ; 

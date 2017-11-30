@@ -7,6 +7,9 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+class BPath ; 
+
+
 class BRAP_API  BOpticksResource {
        
     private:
@@ -18,7 +21,6 @@ class BRAP_API  BOpticksResource {
        static const char* InstallPath(const char* relpath) ;
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
-       static const char* IdMapSrcPath(); // requires OPTICKS_SRCPATH  envvar
    public:
         BOpticksResource(const char* envprefix="OPTICKS_");
         virtual ~BOpticksResource();
@@ -68,10 +70,13 @@ class BRAP_API  BOpticksResource {
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
 
     public:
+       const char* getSrcPath() const ;
+       const char* getSrcDigest() const ;
        const char* getDAEPath() const ;
        const char* getGDMLPath() const ;
        const char* getGLTFPath() const ;
        const char* getMetaPath() const ;
+       const char* getIdMapPath() const ;
     public:
        const char* getGLTFBase() const ;
        const char* getGLTFName() const ;
@@ -92,10 +97,23 @@ class BRAP_API  BOpticksResource {
         void setTopDownDirs();
         void setDebuggingIDPATH(); 
    protected:
+        friend struct NSensorListTest ; 
         friend struct NSceneTest ; 
+        friend struct HitsNPYTest ; 
         friend struct BOpticksResourceTest ; 
-        void setSrcPathDigest(const char* srcpath, const char* srcdigest);
+        // only use one setup route
+        void setupViaSrc(const char* srcpath, const char* srcdigest);
+        void setupViaID(const char* idpath );
+
+        // unfortunately having 2 routes difficult to avoid, as IDPATH is 
+        // more convenient in that a single path yields everything, whereas
+        // the OpticksResource geokey stuff needs to go via Src
+   private:
+        void setSrcPath(const char* srcpath);
+        void setSrcDigest(const char* srcdigest);
    protected:
+        bool        m_setup ; 
+        BPath*      m_id ; 
         const char* m_envprefix ; 
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header

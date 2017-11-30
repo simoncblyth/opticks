@@ -7,13 +7,19 @@
 
 struct BOpticksResourceTest
 {
+    BOpticksResourceTest(const char* idpath)
+        :
+        _res()
+    {
+        _res.setupViaID(idpath);
+        _res.Summary();
+    }
+    
     BOpticksResourceTest(const char* srcpath, const char* srcdigest)
         :
         _res()
     {
- 
-
-        _res.setSrcPathDigest(srcpath, srcdigest);
+        _res.setupViaSrc(srcpath, srcdigest);
         _res.Summary();
     }
 
@@ -23,31 +29,7 @@ struct BOpticksResourceTest
 
 
 
-int main(int argc, char** argv)
-{
-    PLOG_(argc, argv);
-
-    BRAP_LOG__ ; 
-
-    //const char* srcpath = "/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae" ; 
-    //const char* srcdigest = "96ff965744a2f6b78c24e33c80d3a4cd" ; 
-
-    const char* srcpath   = SSys::getenvvar("OPTICKS_SRCPATH");
-    const char* srcdigest  = SSys::getenvvar("OPTICKS_SRCDIGEST");
-
-    if(!srcpath) 
-    {
-        LOG(warning) << " no OPTICKS_SRCPATH envvar " ; 
-        return 0 ; 
-    }
-    if(!srcdigest) 
-    {
-        LOG(warning) << " no OPTICKS_SRCDIGEST envvar " ; 
-        return 0 ; 
-    }
-
-
-    BOpticksResourceTest brt(srcpath, srcdigest) ; 
+/*
 
     const char* treedir_ = brt._res.getDebuggingTreedir(argc, argv);  //  requires the debugging only IDPATH envvar
     std::string treedir = treedir_ ? treedir_ : "/tmp/error-no-IDPATH-envvar" ; 
@@ -57,8 +39,35 @@ int main(int argc, char** argv)
               << std::endl 
               ;
 
+*/
 
 
+
+void test_ViaSrc()
+{
+    const char* srcpath   = SSys::getenvvar("DEBUG_OPTICKS_SRCPATH");
+    const char* srcdigest  = SSys::getenvvar("DEBUG_OPTICKS_SRCDIGEST", "0123456789abcdef0123456789abcdef");
+
+    assert( srcpath && srcdigest );
+ 
+    BOpticksResourceTest brt(srcpath, srcdigest) ; 
+    BOpticksResourceTest brt2(brt._res.getIdPath()) ; 
+}
+
+
+
+int main(int argc, char** argv)
+{
+    PLOG_(argc, argv);
+
+    BRAP_LOG__ ; 
+
+    const char* idpath  = SSys::getenvvar("IDPATH");
+    if(!idpath) return 0 ;     
+
+    LOG(info) << " starting from IDPATH " << idpath ; 
+    BOpticksResourceTest brt(idpath) ; 
+    BOpticksResourceTest brt2(brt._res.getSrcPath(), brt._res.getSrcDigest()) ; 
 
     return 0 ; 
 }

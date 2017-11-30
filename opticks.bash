@@ -60,28 +60,124 @@ olocal-()
 }
 
 opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
-opticks-idfold(){ echo $(dirname $IDPATH) ; }
-opticks-srcfold(){ echo $(dirname $OPTICKS_SRCPATH) ; }
 
+
+opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
+
+opticks-idfold(){ echo $(dirname $IDPATH) ; }
+opticks-srcpath(){ echo $(opticks-idpath2srcpath $IDPATH) ; }
+opticks-srcfold(){ echo $(dirname $(opticks-srcpath)) ; }
 #opticks-srcextras(){ echo $(opticks-idfold)/extras ; }   # layout 0
 opticks-srcextras(){ echo $(opticks-srcfold)/extras ; }  # layout 1
 
-opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
+opticks-join(){ local ifs=$IFS ; IFS="$1"; shift; echo "$*" ; IFS=$ifs ;  }
+
+opticks-paths(){ cat << EON
+
+$FUNCNAME
+===============================
+
+The srcpath if obtained from the IDPATH envvar using 
+opticks-idpath2srcpath  which is the bash equivalant 
+of the C++ brap-/BPath and python base/bpath.py 
+
+    IDPATH          : $IDPATH
+
+    opticks-srcpath : $(opticks-srcpath)
+    opticks-srcfold : $(opticks-srcfold)
+
+
+    opticks-srcextras     : $(opticks-srcextras)
+    opticks-tbool-path 0  : $(opticks-tbool-path 0)
+    opticks-nnt-path 0    : $(opticks-nnt-path 0)
+
+EON
+}
+
+opticks-idpath2srcpath()
+{
+   local idpath=$1
+   local ifs=$IFS
+   local elem
+   IFS="/"
+   declare -a elem=($idpath)
+   IFS=$ifs 
+
+   local nelem=${#elem[@]}
+   local last=${elem[$nelem-1]}   ## -ve indices requires bash 4.3+
+   #echo nelem $nelem last $last 
+
+   IFS="." 
+   declare -a bits=($last)
+   IFS=$ifs 
+   local nbits=${#bits[@]}
+ 
+   local idfile
+   local srcdigest 
+   local idname
+   local prefix
+
+   if [ "$nbits" == "3" ] ; then
+
+      idfile=$(opticks-join . ${bits[0]} ${bits[2]}) 
+      srcdigest=${bits[1]}
+      idname=${elem[$nelem-2]}
+      prefix=$(opticks-join / ${elem[@]:0:$nelem-4})
+
+      #echo triple idfile $idfile srcdigest $srcdigest idname $idname prefix $prefix 
+   else
+      srcdigest=${elem[$nelem-2]}
+      idfile=${elem[$nelem-3]}
+      idname=${elem[$nelem-4]}
+      prefix=$(opticks-join / ${elem[@]:0:$nelem-5}) 
+
+      #echo not triple idfile $idfile srcdigest $srcdigest idname $idname prefix $prefix   
+   fi  
+   local srcpath=$(opticks-join / "" $prefix "opticksdata" "export" $idname $idfile)
+   IFS=$ifs 
+
+   echo $srcpath
+}
+
+opticks-idpath2srcpath-test-one()
+{
+   local v=$IDPATH
+   local s=$(opticks-idpath2srcpath $v)
+   printf "%40s %40s \n" $v $s 
+   local s2=$(opticks-idpath2srcpath $v)
+   printf "%40s %40s \n" $v $s2 
+}
+
+opticks-idpath2srcpath-test()
+{
+    local ifs=$IFS
+    local line
+    local kv
+    env | grep IDPATH | while read line  
+    do    
+       IFS="="
+       declare -a kv=($line) 
+       IFS=$ifs
+
+       if [ ${#kv[@]} == "2" ]; then 
+
+           local k=${kv[0]}
+           local v=${kv[1]}
+
+           local s=$(opticks-idpath2srcpath $v)
+           printf "%10s %40s %40s \n" $k $v $s 
+       fi 
+    done
+
+}
+
 
 opticks-tbool-info(){ cat << EOI
 
 $FUNCNAME
 ======================
 
-  OPTICKS_RESOURCE_LAYOUT  : $OPTICKS_RESOURCE_LAYOUT  
-  IDPATH                   : $IDPATH 
-  OPTICKS_SRCPATH          : $OPTICKS_SRCPATH 
 
-  opticks-srcfold       : $(opticks-srcfold)
-  opticks-srcextras     : $(opticks-srcextras)
-  opticks-tbool-path 0  : $(opticks-tbool-path 0)
-  opticks-nnt-path 0    : $(opticks-nnt-path 0)
- 
 
 EOI
 }

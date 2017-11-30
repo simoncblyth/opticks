@@ -74,60 +74,11 @@ unsigned int NSensorList::getNumSensors()
 
 void NSensorList::load(const char* idmpath )
 {
-    LOG(error) << "NSensorList::load "
+    LOG(debug) << "NSensorList::load "
               << "\n idmpath:   " << idmpath
               ;   
     read(idmpath);
 }
-
-void NSensorList::load_deprecated(const char* idpath_, const char* ext)
-{
-
-    if(!idpath_) return ;
-
-    fs::path idpath(idpath_);
-    std::string name = idpath.filename().string() ;
-    fs::path pdir = idpath.parent_path();
-
-    std::vector<std::string> elem ;
-    boost::split(elem, name, boost::is_any_of("."));
-
-    if(elem.size() != 3 )
-    {
-        LOG(error) << "NSensorList::load"
-                   << " idpath is expected to be in 3-parts separted by dot eg  g4_00.gdasdyig3736781.dae "
-                   << " idpath " << idpath_
-                    ; 
-
-        return ; 
-    }
-    
-
-    assert(elem.size() == 3 );
-    elem.erase(elem.begin() + 1); // remove hex digest
-
-    std::string daename = boost::algorithm::join(elem, ".");
-
-    fs::path daepath(pdir);
-    daepath /= daename ;
-
-    elem[1] = ext ; 
-    std::string idmname = boost::algorithm::join(elem, ".");
-
-    fs::path idmpath(pdir);
-    idmpath /= idmname ; 
-
-    LOG(error) << "NSensorList::load "
-              << "\n idpath:   " << idpath.string() 
-              << "\n pdir:     " << pdir.string() 
-              << "\n filename: " << name 
-              << "\n daepath:  " << daepath.string() 
-              << "\n idmpath:  " << idmpath.string() 
-              ;   
-    read(idmpath.string().c_str());
-
-}
-
 
 
 

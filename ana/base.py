@@ -7,6 +7,7 @@ import numpy as np
 import os, logging, json, ctypes, subprocess, argparse, sys, datetime, re
 from OpticksQuery import OpticksQuery 
 from opticks.ana.enum import Enum 
+from opticks.ana.bpath import BPath 
 
 log = logging.getLogger(__name__) 
 
@@ -18,7 +19,6 @@ except OSError:
     pass
 
 IDPATH = os.path.expandvars("$IDPATH")
-OPTICKS_SRCPATH = os.path.expandvars("$OPTICKS_SRCPATH")
 
 idp_ = lambda _:"%s/%s" % (IDPATH,_) 
 uidp_ = lambda _:_.replace(IDPATH,"$IDPATH")
@@ -137,6 +137,11 @@ def _opticks_env(st="OPTICKS_ IDPATH"):
 
 
 
+
+
+
+
+
 class OpticksEnv(object):
 
 
@@ -194,11 +199,11 @@ class OpticksEnv(object):
         detector = self._detector()
         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
 
+
+
     def __init__(self):
         self.ext = {}
         self.env = {}
-
-        self.layout = int(os.environ.get("OPTICKS_RESOURCE_LAYOUT", 0))
 
         if IDPATH == "$IDPATH":
             print "ana/base.py:OpticksEnv missing IDPATH envvar [%s] " % IDPATH
@@ -209,19 +214,11 @@ class OpticksEnv(object):
         pass  
         self.idpath = IDPATH
 
-        if self.layout > 0:
-            if OPTICKS_SRCPATH == "$OPTICKS_SRCPATH":
-                print "ana/base.py:OpticksEnv missing OPTICKS_SRCPATH envvar [%s] (full path to .dae geometry file) " % OPTICKS_SRCPATH
-                sys.exit(1)  
+        self.idp = BPath(IDPATH)
+        self.srcpath = self.idp.srcpath
+        #self.layout = int(os.environ.get("OPTICKS_RESOURCE_LAYOUT", 0))
+        self.layout  = self.idp.layout
 
-            if not os.path.isfile(OPTICKS_SRCPATH): 
-                print "ana/base.py:OpticksEnv warning OPTICKS_SRCPATH file does not exist [%s] " % OPTICKS_SRCPATH
-            pass  
-            self.srcpath = OPTICKS_SRCPATH 
-        else:
-            self.srcpath = None 
-        pass
- 
         idfold = _dirname(IDPATH,1)
         idfilename = self._idfilename()
 
