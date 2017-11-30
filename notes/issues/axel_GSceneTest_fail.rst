@@ -5,8 +5,6 @@ axel-GSceneTest-fail
 Expected way to make the analytic cache
 ------------------------------------------
 
-
-
 ::
 
     op --j1707 --gdml2gltf
@@ -17,7 +15,6 @@ Expected way to make the analytic cache
 
     op --j1707 --gltf 3 -G
        # add analytic parts to the geocache
-
 
 
 * working to move gdml2gltf into source level, so users
@@ -31,8 +28,38 @@ TODO
 -----
 
 * slim all the gltf, then commit 
-* make OPTICKS_RESOURCE_LAYOUT 1 the default
-* get all users onboard 
+
+* are delaying the migration due to Ryans debugging 
+* make OPTICKS_RESOURCE_LAYOUT 1 the default, and get rid of the envvar see :doc:`resource_review`
+* get all users onboard
+
+  * delete opticksdata and pull it again
+  * one command to remake geocache
+
+
+
+
+GPmt 
+-----
+
+* which to commit ?
+
+::
+
+    simon:export blyth$ hg st .
+    ? DayaBay/GPmt/10/GPmt.npy
+    ? DayaBay/GPmt/10/GPmt_boundaries.txt
+    ? DayaBay/GPmt/10/GPmt_csg.npy
+    ? DayaBay/GPmt/10/GPmt_lvnames.txt
+    ? DayaBay/GPmt/10/GPmt_materials.txt
+    ? DayaBay/GPmt/10/GPmt_pvnames.txt
+    ? DayaBay/GPmt/2/GPmt.npy
+    ? DayaBay/GPmt/2/GPmt_boundaries.txt
+    ? DayaBay/GPmt/2/GPmt_csg.npy
+    ? DayaBay/GPmt/2/GPmt_gcsg.npy
+    ? DayaBay/GPmt/2/GPmt_lvnames.txt
+    ? DayaBay/GPmt/2/GPmt_materials.txt
+    ? DayaBay/GPmt/2/GPmt_pvnames.txt
 
 
 

@@ -36,11 +36,16 @@ Initially::
     simon:opticks blyth$ 
 
 
+Src side is same in layout 0,1 so cannot extract from SRCPATH. 
+Hmm have to just fix it to 1. 
+
+This means can only get rid of the envvar once ready to fix to layout 1.
+
+* python always needs the IDPATH, so it can detect the layout 
+
 
 DONE : eliminate OPTICKS_SRCPATH 
 ------------------------------------------------------------------
-
-
 
 
 Finally::

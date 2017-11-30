@@ -69,5 +69,7 @@ int main(int argc, char** argv)
     BOpticksResourceTest brt(idpath) ; 
     BOpticksResourceTest brt2(brt._res.getSrcPath(), brt._res.getSrcDigest()) ; 
 
+    // the two setup approaches, should yield exactly the same paths 
+
     return 0 ; 
 }

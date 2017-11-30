@@ -216,7 +216,6 @@ class OpticksEnv(object):
 
         self.idp = BPath(IDPATH)
         self.srcpath = self.idp.srcpath
-        #self.layout = int(os.environ.get("OPTICKS_RESOURCE_LAYOUT", 0))
         self.layout  = self.idp.layout
 
         idfold = _dirname(IDPATH,1)
