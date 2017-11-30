@@ -349,10 +349,11 @@ def opticks_args(**kwa):
     dbgseqmat = kwa.get("dbgseqmat", "0")
     dbgmskhis = kwa.get("dbgmskhis", "0")
     dbgmskmat = kwa.get("dbgmskmat", "0")
-    smry = kwa.get("smry", True)
+    smry = kwa.get("smry", False)
     dbgzero = kwa.get("dbgzero", False)
     lmx = kwa.get("lmx", 20)
     cmx = kwa.get("cmx", 0)
+    dveps = kwa.get("dveps", 0.0002)
     prohis = kwa.get("prohis", False)
     promat = kwa.get("promat", False)
     rehist = kwa.get("rehist", False)
@@ -381,7 +382,6 @@ def opticks_args(**kwa):
     autoobject = kwa.get("autoobject","Vacuum/perfectSpecularSurface//GlassSchottF2" ) 
     autoemitconfig = kwa.get("autoemitconfig","photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x3f,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" ) 
     autoseqmap = kwa.get("autoseqmap","TO:0,SR:1,SA:0" )
-
 
 
     gsel = kwa.get("gsel", "/dd/Geometry/PMT/lvPmtHemi0x" ) 
@@ -425,7 +425,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--size",  default=size, help="Comma delimited figure width,height in inches. Default %(default)s"  )
     parser.add_argument(     "--dbgzero",  default=dbgzero, action="store_true", help="Dump sequence lines with zero counts. Default %(default)s"  )
     parser.add_argument(     "--terse", action="store_true", help="less verbose, useful together with --multievent ")
-    parser.add_argument(     "--nosmry", dest="smry", action="store_false", help="nosmry option gives more detailed seqmat and seqhis tables, including the hex strings, useful for dbgseqhis")
+    parser.add_argument(     "--smry", default=smry, action="store_true", help="smry option gives less detailed seqmat and seqhis tables, including the hex strings, useful for dbgseqhis")
     parser.add_argument(     "--pybnd",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--gdml2gltf",  action="store_true", help="Avoid error from op binary selection flag. ")
     parser.add_argument(     "--prohis", default=prohis, action="store_true", help="Present progressively masked seqhis frequency tables for step by step checking. Default %(default)s ")
@@ -463,6 +463,7 @@ def opticks_args(**kwa):
     parser.add_argument(     "--j1707", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--extras", action="store_true", help="Bash level option passthru. %(default)s ")
     parser.add_argument(     "--disco", action="store_true", help="Disable container, investigate suspected  inefficient raytrace of objects inside spacious containers. %(default)s ")
+    parser.add_argument(     "--dveps", default=dveps, type=float, help="Dv epsilon see dv.py:DvTab. %(default)s ")
 
     parser.add_argument('nargs', nargs='*', help='nargs : non-option args')
 
@@ -518,6 +519,7 @@ def opticks_args(**kwa):
 
 
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
+    log.info("args.smry : %s " % args.smry )
 
     if args.show:
          sys.stderr.write("args: " + " ".join(sys.argv) + "\n")

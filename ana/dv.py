@@ -42,7 +42,7 @@ Examining the deviation::
 import os, sys, logging, numpy as np
 
 class Dv(object):
-   def __init__(self, idx, sel, av, bv, lcu, msg=""):
+   def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
 
        dv = np.abs( av - bv )
        
@@ -52,6 +52,7 @@ class Dv(object):
        self.bv = bv
        self.dv = dv
        self.lcu  = lcu
+       self.eps = eps
        self.msg = msg
 
    def __repr__(self):
@@ -59,12 +60,12 @@ class Dv(object):
        nto = len(dv)
        label = " %0.4d %10s : %30s : %7d  %7d " % ( self.idx, self.msg, self.sel, self.lcu[1], self.lcu[2] )
        if nto>0:
-           ndv = len(dv[dv>0]) 
+           ndv = len(dv[dv>self.eps]) 
            mx = dv.max()
            mn = dv.min()
            fdv = float(ndv)/float(nto) 
            av = dv.sum()/float(nto)
-           desc =  "  %7d/%7d:%6.3f  mx/mn/av %6.4f/%6.4f/%6.4g  " % ( nto, ndv, fdv, mx,mn,av )
+           desc =  "  %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  " % ( nto, ndv, fdv, mx,mn,av, self.eps )
        else:
            fdv = 0.
            av = 0 
@@ -74,11 +75,12 @@ class Dv(object):
 
 
 class DvTab(object):
-    def __init__(self, name, seqtab, ab):
+    def __init__(self, name, seqtab, ab ):
         self.name = name
         self.seqtab = seqtab
         self.ab = ab 
         self.dirty = False
+        self.eps = ab.dveps
 
         labels = self.seqtab.labels
         cu = self.seqtab.cu
@@ -110,12 +112,15 @@ class DvTab(object):
         elif self.name == "rpol_dv": 
             av = ab.a.rpol()
             bv = ab.b.rpol()
+        elif self.name == "ox_dv": 
+            av = ab.a.ox
+            bv = ab.b.ox
         else:
             assert self.name
         pass 
         assert ab.a.sel == ab.b.sel 
         sel = ab.a.sel 
-        dv = Dv(i, sel, av, bv, lcu)
+        dv = Dv(i, sel, av, bv, lcu, eps=self.eps)
         return dv if len(dv.dv) > 0 else None
 
     def __repr__(self):

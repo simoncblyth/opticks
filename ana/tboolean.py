@@ -21,7 +21,7 @@ from opticks.ana.base import opticks_main
 from opticks.ana.ab   import AB
 
 if __name__ == '__main__':
-    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="tboolean-torus", smry=True)  
+    ok = opticks_main(doc=__doc__, tag="1", src="torch", det="tboolean-torus", smry=False)  
 
     print "ok.smry %d " % ok.smry 
     log.info(ok.brief)
@@ -34,6 +34,7 @@ if __name__ == '__main__':
 
     print ab.rpost_dv
     print ab.rpol_dv
+    print ab.ox_dv
 
 
     rc = ab.RC 

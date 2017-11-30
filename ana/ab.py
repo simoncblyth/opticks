@@ -72,6 +72,7 @@ class AB(object):
 
     def __init__(self, ok):
         self.ok = ok
+        self.dveps = ok.dveps
         self.tabs = []
         self.load()
         self.compare()
@@ -293,6 +294,11 @@ class AB(object):
         pass
         setattr(self, tabname, dv_tab) 
         return dv_tab
+
+
+    def _get_ox_dv(self):
+        return self._get_dv("ox_dv")
+    ox_dv = property(_get_ox_dv)
 
     def _get_rpost_dv(self):
         return self._get_dv("rpost_dv")
