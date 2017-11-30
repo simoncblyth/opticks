@@ -39,6 +39,73 @@ machinery was setup for comparing indep samples.
     0007         12         8             0.00  TO BT BR BR BR BT SA
 
 
+
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --testauto 
+
+
+    A tboolean-box/torch/  1 :  20171130-2041 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/1/fdom.npy () 
+    B tboolean-box/torch/ -1 :  20171130-2041 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    /tmp/blyth/opticks/tboolean-box--
+    .                seqhis_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         1.12/5 =  0.22  (pval:0.953 prob:0.047)  
+    0000               8d    391943    391952             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] TO SA
+    0001              8ad    207533    207524             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] TO SR SA
+    0002              86d       368       368             0.00        1.000 +- 0.052        1.000 +- 0.052  [3 ] TO SC SA
+    0003             8a6d        58        64             0.30        0.906 +- 0.119        1.103 +- 0.138  [4 ] TO SC SR SA
+    0004             86ad        50        42             0.70        1.190 +- 0.168        0.840 +- 0.130  [4 ] TO SR SC SA
+    0005               4d        37        34             0.13        1.088 +- 0.179        0.919 +- 0.158  [2 ] TO AB
+    0006            8a6ad         6        10             0.00        0.600 +- 0.245        1.667 +- 0.527  [5 ] TO SR SC SR SA
+    0007              4ad         5         6             0.00        0.833 +- 0.373        1.200 +- 0.490  [3 ] TO SR AB
+    .                             600000    600000         1.12/5 =  0.22  (pval:0.953 prob:0.047)  
+    .                pflags_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.14/4 =  0.04  (pval:0.998 prob:0.002)  
+    0000             1080    391943    391952             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] TO|SA
+    0001             1280    207533    207524             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] TO|SR|SA
+    0002             10a0       368       368             0.00        1.000 +- 0.052        1.000 +- 0.052  [3 ] TO|SA|SC
+    0003             12a0       114       116             0.02        0.983 +- 0.092        1.018 +- 0.094  [4 ] TO|SR|SA|SC
+    0004             1008        37        34             0.13        1.088 +- 0.179        0.919 +- 0.158  [2 ] TO|AB
+    0005             1208         5         6             0.00        0.833 +- 0.373        1.200 +- 0.490  [3 ] TO|SR|AB
+    .                             600000    600000         0.14/4 =  0.04  (pval:0.998 prob:0.002)  
+    .                seqmat_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.15/3 =  0.05  (pval:0.986 prob:0.014)  
+    0000               12    391943    391952             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] Vm Rk
+    0001              122    207901    207892             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] Vm Vm Rk
+    0002             1222       108       106             0.02        1.019 +- 0.098        0.981 +- 0.095  [4 ] Vm Vm Vm Rk
+    0003               22        37        34             0.13        1.088 +- 0.179        0.919 +- 0.158  [2 ] Vm Vm
+    0004            12222         6        10             0.00        0.600 +- 0.245        1.667 +- 0.527  [5 ] Vm Vm Vm Vm Rk
+    0005              222         5         6             0.00        0.833 +- 0.373        1.200 +- 0.490  [3 ] Vm Vm Vm
+    .                             600000    600000         0.15/3 =  0.05  (pval:0.986 prob:0.014)  
+    ab.a.metadata                  /tmp/blyth/opticks/evt/tboolean-box/torch/1 d703568ba21bd41407e8bd8b4640ec2e 97dc3fb9c883d8aed3e645dca6988f5e  600000    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0 {u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0137638477737 maxdv:[0.013763847773681448, 0.013763847773681448] 
+     0000            :                          TO SA :  391943   391952  :    391558 3132464/     26: 0.000  mx/mn/av 0.01376/     0/1.142e-07  eps:0.0002    
+     0001            :                       TO SR SA :  207533   207524  :    207394 2488728/     42: 0.000  mx/mn/av 0.01376/     0/2.323e-07  eps:0.0002    
+    rpol_dv maxdvmax:2.0 maxdv:[0.0, 2.0] 
+     0000            :                          TO SA :  391943   391952  :    391558 2349348/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :                       TO SR SA :  207533   207524  :    207394 1866546/1037044: 0.556  mx/mn/av      2/     0/0.6667  eps:0.0002    
+    /Users/blyth/opticks/ana/dv.py:58: RuntimeWarning: invalid value encountered in greater
+      discrep = dv[dv>eps]
+    ox_dv maxdvmax:3.0517578125e-05 maxdv:[3.0517578125e-05, nan] 
+     0000            :                          TO SA :  391943   391952  :    391558 6264928/      0: 0.000  mx/mn/av 3.052e-05/     0/1.907e-06  eps:0.0002    
+     0001            :                       TO SR SA :  207533   207524  :    207394 3318304/      0: 0.000  mx/mn/av    nan/   nan/   nan  eps:0.0002    
+    c2p : {'seqmat_ana': 0.048583430268376533, 'pflags_ana': 0.03611258795302956, 'seqhis_ana': 0.22355863771809009} c2pmax: 0.223558637718  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 2.0, 'rpost_dv': 0.013763847773681448} rmxs_max_: 2.0  CUT ok.rdvmax 0.1  RC:88 
+    pmxs_ : {'ox_dv': 3.0517578125e-05} pmxs_max_: 3.0517578125e-05  CUT ok.pdvmax 0.001  RC:88 
+    [2017-11-30 20:41:16,962] p42301 {/Users/blyth/opticks/ana/tboolean.py:43} INFO - early exit as non-interactive
+    2017-11-30 20:41:17.041 INFO  [753979] [SSys::run@46] tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc_raw : 22528 rc : 88
+    2017-11-30 20:41:17.041 WARN  [753979] [SSys::run@53] SSys::run FAILED with  cmd tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch  
+
+
+
+* :doc:`photon-polarization-testauto-SR`
+
+
+
 DONE : add deviation max cuts, passing result to RC
 -----------------------------------------------------
 
