@@ -74,6 +74,7 @@ class AB(object):
         self.ok = ok
         self.dveps = ok.dveps
         self.tabs = []
+        self.dvtabs = []
         self.load()
         self.compare()
         self.init_point()
@@ -278,7 +279,10 @@ class AB(object):
         we = self.warn_empty 
         self.warn_empty = False
         seqtab = self.ahis
+
         dv_tab = DvTab(ana, seqtab, self) 
+        self.dvtabs.append(dv_tab)
+
         self.warn_empty = we
         return dv_tab 
 
@@ -319,16 +323,54 @@ class AB(object):
     dirty = property(_get_dirty, _set_dirty)
 
 
+
+
+    mxs = property(lambda self:dict(map(lambda _:[_.name,_.maxdvmax], self.dvtabs )))
+    mxs_max = property(lambda self:max(self.mxs.values()))
+
+    rmxs = property(lambda self:dict(map(lambda _:[_.name,_.maxdvmax], filter(lambda _:_.name[0] == 'r',self.dvtabs ))))
+    rmxs_max = property(lambda self:max(self.rmxs.values()))
+
+    pmxs = property(lambda self:dict(map(lambda _:[_.name,_.maxdvmax], filter(lambda _:_.name[0] != 'r',self.dvtabs ))))
+    pmxs_max = property(lambda self:max(self.pmxs.values()))
+
+
+
+    fds = property(lambda self:dict(map(lambda _:[_.name,_.fdiscmax], self.dvtabs )))
+    fds_max = property(lambda self:max(self.fds.values()))
+
+
     c2p = property(lambda self:dict(map(lambda _:[_.title,_.c2p], self.tabs )))
     c2p_max = property(lambda self:max(self.c2p.values()))
 
     def _get_RC(self):
+        """
+        # NB RC passed from python to C++ via system calls 
+        #    are truncated beyond 0xff see: SSysTest
+        """
+        rc = 0 
+
         c2p = self.c2p
         c2p_max = max(c2p.values())
-        rc = 0 if c2p_max < self.ok.c2max else 77      # NB RC are truncated beyond 0xff see: SSysTest
-
+        if c2p_max > self.ok.c2max:
+            rc = 77   
+        pass
         print "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) 
 
+        rmxs_ = self.rmxs
+        rmxs_max_ = max(rmxs_.values())
+        if rmxs_max_ > self.ok.rdvmax:
+            rc = 88   
+        pass
+        print "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc ) 
+
+        pmxs_ = self.pmxs
+        pmxs_max_ = max(pmxs_.values())
+        if pmxs_max_ > self.ok.pdvmax:
+            rc = 99   
+        pass
+        print "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ) 
+        pass
         return rc 
     RC = property(_get_RC)
 

@@ -39,6 +39,31 @@ machinery was setup for comparing indep samples.
     0007         12         8             0.00  TO BT BR BR BR BT SA
 
 
+DONE : add deviation max cuts, passing result to RC
+-----------------------------------------------------
+
+::
+
+    .                             100000    100000         0.02/2 =  0.01  (pval:0.988 prob:0.012)  
+    ab.a.metadata                  /tmp/blyth/opticks/evt/tboolean-box/torch/1 7c3396a4bcfc21cba051ba98f6f0b667 781d1ab8f0adbf585c197cf43a538446  100000    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0 {u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0137638477737 maxdv:[0.0, 0.013763847773674343, 0.0] 
+     0000            :                          TO SA :   55321    55312  :     55258  442064/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :                    TO BT BT SA :   41828    41816  :     41776  668416/      8: 0.000  mx/mn/av 0.01376/     0/1.647e-07  eps:0.0002    
+     0002            :                       TO BR SA :    2754     2754  :      2751   33012/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    rpol_dv maxdvmax:0.0 maxdv:[0.0, 0.0, 0.0] 
+     0000            :                          TO SA :   55321    55312  :     55258  331548/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :                    TO BT BT SA :   41828    41816  :     41776  501312/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :                       TO BR SA :    2754     2754  :      2751   24759/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    ox_dv maxdvmax:3.0517578125e-05 maxdv:[3.0517578125e-05, 5.960464477539063e-08, 1.401298464324817e-45] 
+     0000            :                          TO SA :   55321    55312  :     55258  884128/      0: 0.000  mx/mn/av 3.052e-05/     0/1.907e-06  eps:0.0002    
+     0001            :                    TO BT BT SA :   41828    41816  :     41776  668416/      0: 0.000  mx/mn/av 5.96e-08/     0/3.725e-09  eps:0.0002    
+     0002            :                       TO BR SA :    2754     2754  :      2751   44016/      0: 0.000  mx/mn/av 1.401e-45/     0/8.758e-47  eps:0.0002    
+    c2p : {'seqmat_ana': 0.011978598910194116, 'pflags_ana': 0.36007827166347472, 'seqhis_ana': 0.33975348502498387} c2pmax: 0.360078271663  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 0.0, 'rpost_dv': 0.013763847773674343} rmxs_max_: 0.0137638477737  CUT ok.rdvmax 0.1  RC:0 
+    pmxs_ : {'ox_dv': 3.0517578125e-05} pmxs_max_: 3.0517578125e-05  CUT ok.pdvmax 0.001  RC:0 
+
+
 
 DONE : final photon deviation comparison
 -------------------------------------------

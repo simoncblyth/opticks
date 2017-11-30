@@ -44,10 +44,37 @@ import os, sys, logging, numpy as np
 class Dv(object):
    def __init__(self, idx, sel, av, bv, lcu, eps, msg=""):
 
+       label = " %0.4d %10s : %30s : %7d  %7d " % ( idx, msg, sel, lcu[1], lcu[2] )
        dv = np.abs( av - bv )
+       nitem = len(dv)
+       nelem = dv.size   
+
+       if nelem>0:
+
+           mx = dv.max()
+           mn = dv.min()
+           avg = dv.sum()/float(nelem)
+
+           discrep = dv[dv>eps]
+           ndiscrep = len(discrep)  # elements, not items
+           fdiscrep = float(ndiscrep)/float(nelem) 
+       else:
+           mx = None
+           mn = None
+           avg = None
+           ndiscrep = None
+           fdiscrep = None
+       pass
+
+       self.label = label
+       self.nitem = nitem
+       self.nelem = nelem
+       self.ndiscrep = ndiscrep
+       self.fdiscrep = fdiscrep
+       self.mx = mx 
+       self.mn = mn 
+       self.avg = avg 
        
-       self.idx = idx 
-       self.sel = sel 
        self.av = av
        self.bv = bv
        self.dv = dv
@@ -56,22 +83,12 @@ class Dv(object):
        self.msg = msg
 
    def __repr__(self):
-       dv = self.dv
-       nto = len(dv)
-       label = " %0.4d %10s : %30s : %7d  %7d " % ( self.idx, self.msg, self.sel, self.lcu[1], self.lcu[2] )
-       if nto>0:
-           ndv = len(dv[dv>self.eps]) 
-           mx = dv.max()
-           mn = dv.min()
-           fdv = float(ndv)/float(nto) 
-           av = dv.sum()/float(nto)
-           desc =  "  %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  " % ( nto, ndv, fdv, mx,mn,av, self.eps )
+       if self.nelem>0:
+           desc =  "  %7d %7d/%7d:%6.3f  mx/mn/av %6.4g/%6.4g/%6.4g  eps:%g  " % ( self.nitem, self.nelem, self.ndiscrep, self.fdiscrep, self.mx, self.mn, self.avg, self.eps )
        else:
-           fdv = 0.
-           av = 0 
            desc = ""
        pass
-       return "%s : %s  " % (label, desc )
+       return "%s : %s  " % (self.label, desc )
 
 
 class DvTab(object):
@@ -123,8 +140,27 @@ class DvTab(object):
         dv = Dv(i, sel, av, bv, lcu, eps=self.eps)
         return dv if len(dv.dv) > 0 else None
 
+
+    def _get_float(self, att):
+        return map(lambda dv:float(getattr(dv, att)), filter(None,self.dvs))
+
+    maxdv = property(lambda self:self._get_float("mx"))  
+    maxdvmax   = property(lambda self:max(self.maxdv))  
+
+    fdiscreps = property(lambda self:self._get_float("fdiscrep"))  
+    fdiscmax   = property(lambda self:max(self.fdiscreps))  
+
+
+    def _get_smry(self):
+        return "%s fdiscmax:%s fdiscreps:%r maxdvmax:%s maxdv:%r " % ( self.name, self.fdiscmax, self.fdiscreps, self.maxdvmax, self.maxdv )
+    smry = property(_get_smry)
+
+    def _get_brief(self):
+        return "%s maxdvmax:%s maxdv:%r " % ( self.name, self.maxdvmax, self.maxdv )
+    brief = property(_get_brief)
+
     def __repr__(self):
-        return "\n".join( [self.name] + map(repr, filter(None,self.dvs) ))
+        return "\n".join( [self.brief] + map(repr, filter(None,self.dvs) ))
 
 
 

@@ -343,6 +343,10 @@ def opticks_args(**kwa):
     sel = kwa.get("sel", "0:5:1")
     qwn = kwa.get("qwn", "XYZT,ABCW")
     c2max = kwa.get("c2max", 2.0)
+
+    rdvmax = kwa.get("rdvmax", 0.1) 
+    pdvmax = kwa.get("pdvmax", 0.001) 
+
     pfxseqhis = kwa.get("pfxseqhis", "")
     pfxseqmat = kwa.get("pfxseqmat", "")
     dbgseqhis = kwa.get("dbgseqhis", "0")
@@ -415,6 +419,8 @@ def opticks_args(**kwa):
     parser.add_argument(     "--sel",  default=sel, help="selection slice specification delimited by colon. Default %(default)s"  )
     parser.add_argument(     "--qwn",  default=qwn, help="Quantity by single char, pages delimited by comma eg XYZT,ABCR. Default %(default)s"  )
     parser.add_argument(     "--c2max",  default=c2max, type=float, help="Admissable total chi2 deviation in comparisons. Default %(default)s"  )
+    parser.add_argument(     "--rdvmax",  default=rdvmax, type=float, help="For compressed record data : admissable total absolute deviation in DvTab comparisons. Default %(default)s"  )
+    parser.add_argument(     "--pdvmax",  default=pdvmax, type=float, help="For uncompressed final photon data : admissable total absolute deviation in DvTab comparisons. Default %(default)s"  )
     parser.add_argument(     "--pfxseqhis",  default=pfxseqhis, help="Seqhis hexstring prefix for spawned selection. Default %(default)s"  )
     parser.add_argument(     "--pfxseqmat",  default=pfxseqmat, help="Seqmat hexstring prefix for spawned selection. Default %(default)s"  )
     parser.add_argument(     "--dbgseqhis",  default=dbgseqhis, help="Seqhis hexstring prefix for dumping. Default %(default)s"  )
