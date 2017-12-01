@@ -714,7 +714,9 @@ from opticks.ana.base import opticks_main
 from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
-args = opticks_main(csgpath="$TMP/$FUNCNAME")
+# 0x3f is all 6 
+autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55"
+args = opticks_main(csgpath="$TMP/$FUNCNAME", autoemitconfig=autoemitconfig)
 
 emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 
 
@@ -727,6 +729,14 @@ box = CSG("box3", param=[300,300,200,0], emit=0,  boundary="Vacuum///GlassSchott
 CSG.Serialize([container, box], args )
 EOP
 }
+
+
+tboolean-box-testauto-all-sr()
+{
+    tboolean-
+    tboolean-box --okg4 --testauto --noab --nosc 
+}
+
 
 tboolean-box-notes(){ cat << EON
 

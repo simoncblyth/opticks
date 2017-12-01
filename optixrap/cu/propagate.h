@@ -410,13 +410,27 @@ CONTINUE
 
 */
 
+//#define DEBUG_POLZ 1
+
 __device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState &rng)
 {
-    const float c1 = -dot(p.direction, s.surface_normal );     // c1 arranged to be +ve   
-
-    // TODO: make change to c1 for normal incidence detection
+    const float c1 = -dot(p.direction, s.surface_normal );     
+    //   c1 +ve for directions opposite to normal, (ie from outside) 
+    //   c1 -ve for directions same as normal (ie from inside)
  
-    float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+    //float3 incident_plane_normal = fabs(s.cos_theta) < 1e-6f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+    // see notes/issues/photon-polarization-testauto-SR.rst
+
+    float3 incident_plane_normal = fabs(c1) > 0.999999f ? p.polarization : normalize(cross(p.direction, s.surface_normal)) ;
+
+#ifdef DEBUG_POLZ
+    rtPrintf("// propagate_at_specular_reflector.0 dir (%10.4f %10.4f %10.4f) \n", p.direction.x, p.direction.y, p.direction.z ); 
+    rtPrintf("// propagate_at_specular_reflector.0 snorm (%10.4f %10.4f %10.4f) \n", s.surface_normal.x, s.surface_normal.y, s.surface_normal.z ); 
+    rtPrintf("// propagate_at_specular_reflector.0 polz (%10.4f %10.4f %10.4f) \n", p.polarization.x, p.polarization.y, p.polarization.z ); 
+    rtPrintf("// propagate_at_specular_reflector.0 s.ct c1 (%10.4f %10.4f ) \n", s.cos_theta, c1 ); 
+    rtPrintf("// propagate_at_specular_reflector.0 ipn (%10.4f %10.4f %10.4f) \n", incident_plane_normal.x, incident_plane_normal.y, incident_plane_normal.z ); 
+#endif
+
 
     float normal_coefficient = dot(p.polarization, incident_plane_normal);  // fraction of E vector perpendicular to plane of incidence, ie S polarization
 
@@ -432,6 +446,17 @@ __device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState
                        ;
 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+
+
+
+#ifdef DEBUG_POLZ
+    //rtPrintf("// propagate_at_specular_reflector dir (%10.4f %10.4f %10.4f) \n", p.direction.x, p.direction.y, p.direction.z ); 
+    //rtPrintf("// propagate_at_specular_reflector snorm (%10.4f %10.4f %10.4f) \n", s.surface_normal.x, s.surface_normal.y, s.surface_normal.z ); 
+    rtPrintf("// propagate_at_specular_reflector.1 polz (%10.4f %10.4f %10.4f) \n", p.polarization.x, p.polarization.y, p.polarization.z ); 
+#endif
+
+
+
 } 
 
 __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
