@@ -2,18 +2,311 @@ photon-polarization-testauto-SR
 ==================================
 
 
-ISSUE : testauto giving NaN polarizaton for SR
+TODO : extend --reflectcheat to SR ?
+-----------------------------------------
+
+
+TODO : arrange non-normal incidence test via smearing emitconfig directions ?
+-------------------------------------------------------------------------------
+
+
+
+
+FIXED : polz sign flip at specular reflection normal incidence
+----------------------------------------------------------------
+
+Move to::
+
+
+    458 __device__ void propagate_at_specular_reflector_geant4_style(Photon &p, State &s, curandState &rng)
+    459 {
+    460     // NB no-s-pol throwing 
+    461 
+    462     const float c1 = -dot(p.direction, s.surface_normal );      // G4double PdotN = OldMomentum * theFacetNormal;
+    463 
+    464     float normal_coefficient = dot(p.polarization, s.surface_normal);    // G4double EdotN = OldPolarization * theFacetNormal;
+    465     // EdotN : fraction of E vector perpendicular to plane of incidence, ie S polarization
+    466 
+    467     p.direction += 2.0f*c1*s.surface_normal  ;
+    468 
+    469     p.polarization = -p.polarization + 2.f*normal_coefficient*s.surface_normal  ;  // NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+    470 
+    471     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+    472 }
+    473 
+
+Gets polz to match, at normal incidence anyhow::
+
+
+    [2017-12-01 15:01:53,546] p61223 {/Users/blyth/opticks/ana/ab.py:156} INFO - AB.init_point DONE
+    AB(1,torch,tboolean-box)  None 0 
+    A tboolean-box/torch/  1 :  20171201-1501 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/1/fdom.npy () 
+    B tboolean-box/torch/ -1 :  20171201-1501 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    /tmp/blyth/opticks/tboolean-box--
+    .                seqhis_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000              8ad    600000    600000             0.00        1.000 +- 0.001        1.000 +- 0.001  [3 ] TO SR SA
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    .                pflags_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000             1280    600000    600000             0.00        1.000 +- 0.001        1.000 +- 0.001  [3 ] TO|SR|SA
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    .                seqmat_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    0000              122    600000    600000             0.00        1.000 +- 0.001        1.000 +- 0.001  [3 ] Vm Vm Rk
+    .                             600000    600000         0.00/0 =  0.00  (pval:nan prob:nan)  
+    ab.a.metadata                  /tmp/blyth/opticks/evt/tboolean-box/torch/1 2722694edd3a8a19f6dd2915b66ce147 600b943ab3855243ca6e162794591dd7  600000    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0 {u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0137638477737 maxdv:[0.013763847773677895] 
+     0000            :                       TO SR SA :  600000   600000  :    600000 7200000/     21: 0.000  mx/mn/av 0.01376/     0/4.014e-08  eps:0.0002    
+    rpol_dv maxdvmax:0.0 maxdv:[0.0] 
+     0000            :                       TO SR SA :  600000   600000  :    600000 5400000/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    ox_dv maxdvmax:1.40129846432e-45 maxdv:[1.401298464324817e-45] 
+     0000            :                       TO SR SA :  600000   600000  :    600000 9600000/      0: 0.000  mx/mn/av 1.401e-45/     0/8.758e-47  eps:0.0002    
+    c2p : {'seqmat_ana': 0.0, 'pflags_ana': 0.0, 'seqhis_ana': 0.0} c2pmax: 0.0  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 0.0, 'rpost_dv': 0.013763847773677895} rmxs_max_: 0.0137638477737  CUT ok.rdvmax 0.1  RC:0 
+    pmxs_ : {'ox_dv': 1.401298464324817e-45} pmxs_max_: 1.40129846432e-45  CUT ok.pdvmax 0.001  RC:0 
+    [2017-12-01 15:01:55,250] p61223 {/Users/blyth/opticks/ana/tboolean.py:43} INFO - early exit as non-interactive
+    2017-12-01 15:01:55.360 INFO  [866285] [SSys::run@46] tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc_raw : 0 rc : 0
+    2017-12-01 15:01:55.361 INFO  [866285] [OpticksAna::run@79] OpticksAna::run anakey tboolean cmdline tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc 0 rcmsg -
+    2017-12-01 15:01:55.361 INFO  [866285] [SSys::WaitForInput@145] SSys::WaitForInput OpticksAna::run paused : hit RETURN to continue...
+
+
+
+
+
+
+::
+
+   tboolean-;tboolean-box --okg4 --testauto --noab --nosc -D
+
+
+    (lldb) b DsG4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&) 
+    Breakpoint 1: where = libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(G4Track const&, G4Step const&) + 39 at DsG4OpBoundaryProcess.cc:174, address = 0x00000001043545e7
+    (lldb) 
+
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x0000000104354760 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 416 at DsG4OpBoundaryProcess.cc:248, queue = 'com.apple.main-thread', stop reason = breakpoint 2.1
+        frame #0: 0x0000000104354760 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 416 at DsG4OpBoundaryProcess.cc:248
+       245      Material1 = pPreStepPoint  -> GetMaterial();
+       246      Material2 = pPostStepPoint -> GetMaterial();
+       247  
+    -> 248      const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+       249  
+       250      thePhotonMomentum = aParticle->GetTotalMomentum();
+       251      OldMomentum       = aParticle->GetMomentumDirection();
+    (lldb) p Material1
+    (G4Material *) $0 = 0x000000010cf40ad0
+    (lldb) p *Material1
+    (G4Material) $1 = {
+      fName = (std::__1::string = "Vacuum")
+      fChemicalFormula = (std::__1::string = "")
+      fDensity = 0.00000062415096471204161
+      fState = kStateGas
+      fTemp = 293.14999999999998
+      fPressure = 632420964.9944762
+      maxNbComponents = 1
+      fArrayLength = 1
+      fNumberOfComponents = 1
+      fNumberOfElements = 1
+      theElementVector = 0x000000010cf41020 size=1
+      fMassFractionVector = 0x000000010cf40470
+      fAtomsVector = 0x0000000000000000
+      fMaterialPropertiesTable = 0x000000010cf43670
+      fIndexInTable = 1
+      VecNbOfAtomsPerVolume = 0x000000010cf40d50
+      TotNbOfAtomsPerVolume = 0.000059625166237623757
+      TotNbOfElectPerVolume = 0.000059625166237623757
+      fRadlen = 6.3172309490184856E+27
+      fNuclInterLen = 3.500000003326212E+27
+      fIonisation = 0x000000010cf43320
+      fSandiaTable = 0x000000010cf40d80
+      fBaseMaterial = 0x0000000000000000
+      fMassOfMolecule = 0.010467911522873029
+      fMatComponents = size=0 {}
+    }
+    (lldb) p *Material2
+    (G4Material) $2 = {}
+    (lldb) 
+
+
+    (lldb) p Surface
+    (G4LogicalSurface *) $6 = 0x000000010cf48720
+    (lldb) p *Surface
+    (G4LogicalSurface) $7 = {
+      theName = (std::__1::string = "perfectSpecularSurface")
+      theSurfaceProperty = 0x000000010cf48c70
+      theTransRadSurface = 0x0000000000000000
+    }
+    (lldb) 
+
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x00000001043551af libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 3055 at DsG4OpBoundaryProcess.cc:367, queue = 'com.apple.main-thread', stop reason = breakpoint 5.1
+        frame #0: 0x00000001043551af libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 3055 at DsG4OpBoundaryProcess.cc:367
+       364  
+       365      if (Surface) OpticalSurface = dynamic_cast <G4OpticalSurface*> (Surface->GetSurfaceProperty());
+       366  
+    -> 367      if (OpticalSurface) 
+       368      {
+       369  #ifdef SCB_BND_DEBUG
+       370            if(m_dbg || m_other)
+    (lldb) p OpticalSurface
+    (G4OpticalSurface *) $8 = 0x000000010cf48c70
+    (lldb) p *OpticalSurface
+    (G4OpticalSurface) $9 = {
+      G4SurfaceProperty = {
+        theName = (std::__1::string = "perfectSpecularSurface")
+        theType = dielectric_dielectric
+      }
+      theModel = unified
+      theFinish = polishedfrontpainted
+      sigma_alpha = 0
+      polish = 1
+      theMaterialPropertiesTable = 0x000000010cf48120
+      AngularDistribution = 0x0000000000000000
+      DichroicVector = 0x0000000000000000
+    }
+    (lldb) 
+
+
+SR reflectivity fork happens here::
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x0000000104356210 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 7248 at DsG4OpBoundaryProcess.cc:650, queue = 'com.apple.main-thread', stop reason = breakpoint 12.1
+        frame #0: 0x0000000104356210 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 7248 at DsG4OpBoundaryProcess.cc:650
+       647          {
+       648              if ( theFinish == polishedfrontpainted || theFinish == groundfrontpainted ) 
+       649              {
+    -> 650                  if( !G4BooleanRand(theReflectivity) ) 
+       651                  {
+       652                      DoAbsorption();
+       653                  }
+    (lldb) 
+
+
+     646         else if (type == dielectric_dielectric)
+     647         {
+     648             if ( theFinish == polishedfrontpainted || theFinish == groundfrontpainted )
+     649             {
+     650                 if( !G4BooleanRand(theReflectivity) )
+     651                 {
+     652                     DoAbsorption();
+     653                 }
+     654                 else
+     655                 {
+     656                     if ( theFinish == groundfrontpainted ) theStatus = LambertianReflection;
+     657                     DoReflection();
+     658                 }
+     659             }
+     660             else
+     661             {
+     662                 DielectricDielectric();
+     663             }
+     664         }
+
+
+::
+
+    (lldb) b DsG4OpBoundaryProcess::DoReflection()
+    Breakpoint 13: where = libcfg4.dylib`DsG4OpBoundaryProcess::DoReflection() + 19 at DsG4OpBoundaryProcess.h:314, address = 0x000000010435bba3
+    (lldb) 
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x000000010435beab libcfg4.dylib`DsG4OpBoundaryProcess::DoReflection(this=0x000000010cf8e170) + 795 at DsG4OpBoundaryProcess.h:330, queue = 'com.apple.main-thread', stop reason = breakpoint 14.1
+        frame #0: 0x000000010435beab libcfg4.dylib`DsG4OpBoundaryProcess::DoReflection(this=0x000000010cf8e170) + 795 at DsG4OpBoundaryProcess.h:330
+       327          }
+       328          else {
+       329  
+    -> 330            theStatus = SpikeReflection;
+       331            theFacetNormal = theGlobalNormal;
+       332            G4double PdotN = OldMomentum * theFacetNormal;
+       333            NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    (lldb) p theGlobalNormal
+    (G4ThreeVector) $21 = (dx = 0, dy = 0, dz = -1)
+    (lldb) p OldMomentum
+    (G4ThreeVector) $22 = (dx = -0, dy = -0, dz = 1)
+    (lldb) 
+
+
+    311 inline
+    312 void DsG4OpBoundaryProcess::DoReflection()
+    313 {
+    314         if ( theStatus == LambertianReflection ) {
+    315 
+    316           NewMomentum = G4LambertianRand(theGlobalNormal);
+    317           theFacetNormal = (NewMomentum - OldMomentum).unit();
+    318 
+    319         }
+    320         else if ( theFinish == ground ) {
+    321 
+    322       theStatus = LobeReflection;
+    323           theFacetNormal = GetFacetNormal(OldMomentum,theGlobalNormal);
+    324           G4double PdotN = OldMomentum * theFacetNormal;
+    325           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    326 
+    327         }
+    328         else {
+    329 
+    330           theStatus = SpikeReflection;
+    331           theFacetNormal = theGlobalNormal;
+    332           G4double PdotN = OldMomentum * theFacetNormal;
+    333           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    334 
+    335         }
+    336         G4double EdotN = OldPolarization * theFacetNormal;
+    337         NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+    338 }
+
+
+
+::
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x000000010435c0c7 libcfg4.dylib`DsG4OpBoundaryProcess::DoReflection(this=0x000000010cf8e170) + 1335 at DsG4OpBoundaryProcess.h:338, queue = 'com.apple.main-thread', stop reason = breakpoint 16.4
+        frame #0: 0x000000010435c0c7 libcfg4.dylib`DsG4OpBoundaryProcess::DoReflection(this=0x000000010cf8e170) + 1335 at DsG4OpBoundaryProcess.h:338
+       335          }
+       336          G4double EdotN = OldPolarization * theFacetNormal;
+       337          NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+    -> 338  }
+       339  
+       340  #endif /* DsG4OpBoundaryProcess_h */
+    (lldb) p NewPolarization
+    (G4ThreeVector) $27 = (dx = 0, dy = 1, dz = -0)
+    (lldb) p OldPolarization
+    (G4ThreeVector) $28 = (dx = 0, dy = -1, dz = 0)
+    (lldb) p EdotN
+    (G4double) $29 = 0
+    (lldb) p theFacetNormal
+    (G4ThreeVector) $30 = (dx = 0, dy = 0, dz = -1)
+    (lldb) 
+
+
+
+
+
+FIXED : testauto giving NaN polarizaton for SR
 -------------------------------------------------
 
-Getting NaN in photon polarization::
+Getting NaN in photon polarization for specular reflection at normal incidence.
 
-
-
-
+* was due to incorrect normal incidence detection in propagate_at_specular_surface
 
 
 APPROACH
-----------
+~~~~~~~~~~~
 
 Narrow autoemitconfig uv domain such that all photons will SR
 and SC AB are switched off

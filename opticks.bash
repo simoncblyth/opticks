@@ -1317,3 +1317,27 @@ opticks-find-flags()
 }
 
 
+
+
+opticks-cls () 
+{ 
+    opticks-cls- "." $*
+}
+opticks-cls() 
+{ 
+    local iwd=$PWD;
+    opticks-scd;
+    local base=${1:-.};
+    local name=${2:-DsG4OpBoundaryProcess};
+    local h=$(find $base -name "$name.h");
+    local hh=$(find $base -name "$name.hh");
+    local cc=$(find $base -name "$name.cc");
+    local icc=$(find $base -name "$name.icc");
+    local vcmd="vi -R $h $hh $icc $cc";
+    echo $vcmd;
+    eval $vcmd;
+    cd $iwd
+}
+
+
+

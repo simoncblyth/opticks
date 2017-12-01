@@ -447,17 +447,52 @@ __device__ void propagate_at_specular_reflector(Photon &p, State &s, curandState
 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 
-
-
 #ifdef DEBUG_POLZ
     //rtPrintf("// propagate_at_specular_reflector dir (%10.4f %10.4f %10.4f) \n", p.direction.x, p.direction.y, p.direction.z ); 
     //rtPrintf("// propagate_at_specular_reflector snorm (%10.4f %10.4f %10.4f) \n", s.surface_normal.x, s.surface_normal.y, s.surface_normal.z ); 
     rtPrintf("// propagate_at_specular_reflector.1 polz (%10.4f %10.4f %10.4f) \n", p.polarization.x, p.polarization.y, p.polarization.z ); 
 #endif
-
-
-
 } 
+
+
+__device__ void propagate_at_specular_reflector_geant4_style(Photon &p, State &s, curandState &rng)
+{
+    // NB no-s-pol throwing 
+
+    const float c1 = -dot(p.direction, s.surface_normal );      // G4double PdotN = OldMomentum * theFacetNormal;
+
+    float normal_coefficient = dot(p.polarization, s.surface_normal);    // G4double EdotN = OldPolarization * theFacetNormal;
+    // EdotN : fraction of E vector perpendicular to plane of incidence, ie S polarization
+
+    p.direction += 2.0f*c1*s.surface_normal  ;  
+
+    p.polarization = -p.polarization + 2.f*normal_coefficient*s.surface_normal  ;  // NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+
+    p.flags.i.x = 0 ;  // no-boundary-yet for new direction
+}
+
+
+/*
+
+    311 inline
+    312 void DsG4OpBoundaryProcess::DoReflection()
+    313 {
+    ...
+    328         else {
+    329 
+    330           theStatus = SpikeReflection;
+    331           theFacetNormal = theGlobalNormal;
+    332           G4double PdotN = OldMomentum * theFacetNormal;
+    333           NewMomentum = OldMomentum - (2.*PdotN)*theFacetNormal;
+    334 
+    335         }
+    336         G4double EdotN = OldPolarization * theFacetNormal;
+    337         NewPolarization = -OldPolarization + (2.*EdotN)*theFacetNormal;
+    338 }
+
+
+*/
+
 
 __device__ void propagate_at_diffuse_reflector(Photon &p, State &s, curandState &rng)
 {
@@ -503,6 +538,9 @@ __device__ void propagate_at_diffuse_reflector_geant4_style(Photon &p, State &s,
 
     p.flags.i.x = 0 ;  // no-boundary-yet for new direction
 } 
+
+
+
 
 
 
@@ -567,7 +605,8 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     else
     {
         s.flag = SURFACE_SREFLECT ;
-        propagate_at_specular_reflector(p, s, rng );
+        //propagate_at_specular_reflector(p, s, rng );
+        propagate_at_specular_reflector_geant4_style(p, s, rng );
         return CONTINUE;
     }
 }
