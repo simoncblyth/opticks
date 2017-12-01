@@ -1,6 +1,40 @@
 Ryan_AssimpImport_fail
 ========================
 
+
+Current Status
+-----------------
+
+::
+
+    Hi Ryan, 
+
+    My notes on this issue are at 
+        https://bitbucket.org/simoncblyth/opticks/src/tip/notes/issues/Ryan_AssimpImport_fail.rst
+
+    Comparing your output from AssimpRapTest with mine as shown on the above page
+    makes it look like your CMake build is linking against some other assimp external library, 
+    which lacks the G4DAE extras.
+     
+    In order to avoid this I have rejigged the way the Opticks build finds assimp
+    by renaming FindAssimp.cmake into FindOpticksAssimp.cmake in the below commit
+    to ensure it finds my fork of assimp.
+
+    https://bitbucket.org/simoncblyth/opticks/commits/63c92134193a220656921d7727dc14335cf05e94
+
+
+    You will need to update and build again with 
+
+          opticks—    # 3-dash
+
+    And then try again:
+
+          AssimpRapTest --importverbosity 3 —-loadverbosity 3
+
+
+    Simon
+
+
 Failed geocache creation
 ----------------------------
 
