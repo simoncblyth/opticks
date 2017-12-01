@@ -37,6 +37,9 @@ class BRAP_API BRng
         void setSeed(unsigned _seed);
         std::string desc() const ;
         void dump(); 
+
+        float getLo() const ; 
+        float getHi() const ; 
     private:
         float m_lo ; 
         float m_hi ; 

@@ -5,6 +5,7 @@ template <typename T> class NPY ;
 #include "NPY_API_EXPORT.hh"
 
 class NCSG ; 
+class NRngDiffuse ; 
 
 class FabStepNPY ; 
 
@@ -54,6 +55,7 @@ class NPY_API NEmitPhotonsNPY
       NPY<float>*   m_photons ; 
       FabStepNPY*   m_fabstep ; 
       NPY<float>*   m_fabstep_npy ; 
+      NRngDiffuse*  m_diffuse ; 
 
 };
 

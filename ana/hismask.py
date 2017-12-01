@@ -20,7 +20,7 @@ class HisMask(MaskType):
     def __init__(self):
         log.debug("HisMask.__init__")
         flags = EnumFlags()
-        abbrev = Abbrev()
+        abbrev = Abbrev("$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json")
         MaskType.__init__(self, flags, abbrev)
         log.debug("HisMask.__init__ DONE")
 

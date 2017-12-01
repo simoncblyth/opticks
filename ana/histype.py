@@ -43,7 +43,7 @@ def test_roundtrip(af):
 class HisType(SeqType):
     def __init__(self):
         flags = IniFlags()
-        abbrev = Abbrev()
+        abbrev = Abbrev("$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json")
         SeqType.__init__(self, flags, abbrev)
 
 

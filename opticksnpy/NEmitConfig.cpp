@@ -6,7 +6,7 @@
 
 
 //const char* NEmitConfig::DEFAULT = "photons=100000,wavelength=480,time=0.1,weight=1.0,posdelta=0.0,sheetmask=0" ; 
-const char* NEmitConfig::DEFAULT = "photons:100000,wavelength:480,time:0.1,weight:1.0,posdelta:0.0,sheetmask:0x3f,umin:0,umax:1,vmin:0,vmax:1" ; 
+const char* NEmitConfig::DEFAULT = "photons:100000,wavelength:480,time:0.1,weight:1.0,posdelta:0.0,sheetmask:0x3f,umin:0,umax:1,vmin:0,vmax:1,diffuse:0,ctmindiffuse:0.0,ctmaxdiffuse:1.0" ; 
 
 NEmitConfig::NEmitConfig(const char* cfg)  
     :
@@ -21,7 +21,10 @@ NEmitConfig::NEmitConfig(const char* cfg)
     umin(0.f),
     umax(1.f),
     vmin(0.f),
-    vmax(1.f)
+    vmax(1.f),
+    diffuse(0),
+    ctmindiffuse(0.),
+    ctmaxdiffuse(1.)
 {
     LOG(debug) << "NEmitConfig::NEmitConfig"
               << " cfg [" << ( cfg ? cfg : "NULL" ) << "]"
@@ -38,6 +41,9 @@ NEmitConfig::NEmitConfig(const char* cfg)
     bconfig->addFloat("umax", &umax );
     bconfig->addFloat("vmin", &vmin );
     bconfig->addFloat("vmax", &vmax );
+    bconfig->addInt("diffuse", &diffuse );
+    bconfig->addFloat("ctmindiffuse", &ctmindiffuse );
+    bconfig->addFloat("ctmaxdiffuse", &ctmaxdiffuse );
 
     bconfig->parse();
 

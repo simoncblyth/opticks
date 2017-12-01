@@ -6,6 +6,7 @@
 #include "NPY.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NRngDiffuse.hpp"
 
 
 #include "FabStepNPY.hpp"
@@ -26,7 +27,8 @@ NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, boo
     m_root( csg->getRoot()),
     m_photons(NPY<float>::make(m_emitcfg->photons, 4, 4)),
     m_fabstep(new FabStepNPY(gencode, 1, m_emitcfg->photons)),
-    m_fabstep_npy(m_fabstep->getNPY())
+    m_fabstep_npy(m_fabstep->getNPY()),
+    m_diffuse( m_emitcfg->diffuse ? new NRngDiffuse(m_seed+100,m_emitcfg->ctmindiffuse, m_emitcfg->ctmaxdiffuse) : NULL )  
 {
     init();
 }
@@ -94,6 +96,17 @@ void NEmitPhotonsNPY::init()
 
         glm::vec3 dir(nrm) ; 
         dir *= fdir ; 
+
+        if(m_diffuse)
+        {  
+            glm::vec4 u ; 
+            int trials(0) ; 
+            float udotd = m_diffuse->diffuse(u, trials, dir); 
+            dir.x = u.x ; 
+            dir.y = u.y ; 
+            dir.z = u.z ; 
+            if( i < 10 ) std::cout << " diffuse udotd " << udotd << std::endl ; 
+        } 
 
         if(fposdelta != 0.)  // nudge photon start position along its direction 
         {

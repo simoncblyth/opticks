@@ -715,7 +715,7 @@ from opticks.analytic.polyconfig import PolyConfig
 from opticks.analytic.csg import CSG  
 
 # 0x3f is all 6 
-autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55"
+autoemitconfig="photons:600000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55,diffuse:1,ctmindiffuse:0.5,ctmaxdiffuse:1.0"
 args = opticks_main(csgpath="$TMP/$FUNCNAME", autoemitconfig=autoemitconfig)
 
 emitconfig = "photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75" 

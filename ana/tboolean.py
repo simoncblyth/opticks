@@ -23,7 +23,7 @@ from opticks.ana.ab   import AB
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__, tag="1", src="torch", det="tboolean-torus", smry=False)  
 
-    print "ok.smry %d " % ok.smry 
+    #print "ok.smry %d " % ok.smry 
     log.info(ok.brief)
 
     ab = AB(ok)

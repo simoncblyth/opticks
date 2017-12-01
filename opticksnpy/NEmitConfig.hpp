@@ -40,6 +40,12 @@ struct NPY_API NEmitConfig
     float vmin ; 
     float vmax ; 
 
+    int diffuse ; 
+    float ctmindiffuse ;  
+    float ctmaxdiffuse ;  
+
+
+
 
 };
 

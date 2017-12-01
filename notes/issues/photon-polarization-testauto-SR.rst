@@ -6,9 +6,54 @@ TODO : extend --reflectcheat to SR ?
 -----------------------------------------
 
 
-TODO : arrange non-normal incidence test via smearing emitconfig directions ?
+DONE : non-normal incidence testing of SR via emitconfig.diffuse 
 -------------------------------------------------------------------------------
 
+* implemented using NRngDiffuse
+
+
+::
+
+    simon:opticksdata blyth$ tboolean-;tboolean-box-p
+    args: /Users/blyth/opticks/ana/tboolean.py --det tboolean-box --tag 1
+    [2017-12-01 18:21:16,510] p90506 {/Users/blyth/opticks/ana/tboolean.py:27} INFO - tag 1 src torch det tboolean-box c2max 2.0 ipython False 
+    AB(1,torch,tboolean-box)  None 0 
+    A tboolean-box/torch/  1 :  20171201-1753 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/1/fdom.npy () 
+    B tboolean-box/torch/ -1 :  20171201-1753 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    /tmp/blyth/opticks/tboolean-box--
+    .                seqhis_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    0000               8d    390951    390951             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] TO SA
+    0001              8ad    209049    209049             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] TO SR SA
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    .                pflags_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    0000             1080    390951    390951             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] TO|SA
+    0001             1280    209049    209049             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] TO|SR|SA
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    .                seqmat_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    0000               12    390951    390951             0.00        1.000 +- 0.002        1.000 +- 0.002  [2 ] Vm Rk
+    0001              122    209049    209049             0.00        1.000 +- 0.002        1.000 +- 0.002  [3 ] Vm Vm Rk
+    .                             600000    600000         0.00/1 =  0.00  (pval:1.000 prob:0.000)  
+    ab.a.metadata                  /tmp/blyth/opticks/evt/tboolean-box/torch/1 e0e532a9912d085f0cc73ddb9c6177df 08caf4a1cccdbf2f340247097a1fa206  600000    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0 {u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.25,umax:0.75,vmin:0.25,vmax:0.75', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0137638477737 maxdv:[0.013763847773702764, 0.013763847773702764] 
+     0000            :                          TO SA :  390951   390951  :    390951 3127608/   1460: 0.000  mx/mn/av 0.01376/     0/6.164e-06  eps:0.0002    
+     0001            :                       TO SR SA :  209049   209049  :    209049 2508588/    392: 0.000  mx/mn/av 0.01376/     0/1.841e-06  eps:0.0002    
+    rpol_dv maxdvmax:0.00787401199341 maxdv:[0.007874011993408203, 0.0] 
+     0000            :                          TO SA :  390951   390951  :    390951 2345706/      2: 0.000  mx/mn/av 0.007874/     0/6.714e-09  eps:0.0002    
+     0001            :                       TO SR SA :  209049   209049  :    209049 1881441/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    ox_dv maxdvmax:0.000152587890625 maxdv:[0.000152587890625, 9.1552734375e-05] 
+     0000            :                          TO SA :  390951   390951  :    390951 6255216/      0: 0.000  mx/mn/av 0.0001526/     0/2.651e-06  eps:0.0002    
+     0001            :                       TO SR SA :  209049   209049  :    209049 3344784/      0: 0.000  mx/mn/av 9.155e-05/     0/1.408e-06  eps:0.0002    
+    c2p : {'seqmat_ana': 0.0, 'pflags_ana': 0.0, 'seqhis_ana': 0.0} c2pmax: 0.0  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 0.007874011993408203, 'rpost_dv': 0.013763847773702764} rmxs_max_: 0.0137638477737  CUT ok.rdvmax 0.1  RC:0 
+    pmxs_ : {'ox_dv': 0.000152587890625} pmxs_max_: 0.000152587890625  CUT ok.pdvmax 0.001  RC:0 
+    [2017-12-01 18:21:18,797] p90506 {/Users/blyth/opticks/ana/tboolean.py:43} INFO - early exit as non-interactive
+    simon:opticksdata blyth$ 
+    simon:opticksdata blyth$ 
 
 
 

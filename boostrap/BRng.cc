@@ -2,6 +2,16 @@
 #include "BRng.hh"
 
 
+float BRng::getLo() const 
+{
+    return m_lo ;
+}
+float BRng::getHi() const 
+{
+    return m_hi ;
+}
+
+
 BRng::BRng(float lo, float hi, unsigned _seed, const char* label) 
    :   
    m_lo(lo),

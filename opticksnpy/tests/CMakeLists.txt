@@ -143,6 +143,7 @@ NPolygonizerTest.cc
 NCSGBSPTest.cc
 NuvTest.cc
 NSnapConfigTest.cc
+NRngDiffuseTest.cc
 
 )
 

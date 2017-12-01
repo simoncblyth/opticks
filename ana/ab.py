@@ -83,7 +83,7 @@ class AB(object):
         """
         It takes aound 6s to load 1M full AB evt pair. So avoid needing to duplicate that.
         """
-        log.info("AB.load START smry %d " % self.ok.smry )
+        log.debug("AB.load START smry %d " % self.ok.smry )
         args = self.ok
  
         if args.utag is None:
@@ -110,7 +110,7 @@ class AB(object):
         self.sel = None
         self.irec = 0
         self.qwn = "X"
-        log.info("AB.load DONE ")
+        log.debug("AB.load DONE ")
 
     def __repr__(self):
         abn = "AB(%s,%s,%s)  %s %s " % (self.ok.tag, self.ok.src, self.ok.det, self.sel, self.irec )
@@ -151,9 +151,9 @@ class AB(object):
         log.debug("AB.compare DONE")
 
     def init_point(self):
-        log.info("AB.init_point START")
+        log.debug("AB.init_point START")
         self.point = self.make_point()
-        log.info("AB.init_point DONE")
+        log.debug("AB.init_point DONE")
 
     def point_dtype(self):
         dtype=[

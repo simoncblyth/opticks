@@ -242,6 +242,7 @@ set(SOURCES
     NSnapConfig.cpp
     NEmitConfig.cpp
     NEmitPhotonsNPY.cpp
+    NRngDiffuse.cpp
 
 )
 

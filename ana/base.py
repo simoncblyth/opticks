@@ -138,13 +138,18 @@ def _opticks_env(st="OPTICKS_ IDPATH"):
 
 
 
-
-
-
-
 class OpticksEnv(object):
+    """
+    TODO: dependency on IDPATH when loading evt is dodgy as its making 
+          the assumption that the geocache that IDPATH points at matches
+          the geocache of the loaded evt...  
 
+          this is true for test geometries too, as they still have a basis geocache
 
+    FIX: by recording the geocache dir with the evt (is probably already is ?) 
+         and be match asserted upon on load, dont just rely upon it 
+
+    """
     def _idfilename(self):
         """
         layout 0
@@ -156,7 +161,7 @@ class OpticksEnv(object):
             -> g4_00.dae
      
         """
-        log.info("_opticks_idfilename layout %d : idpath %s " % (self.layout, self.idpath ))
+        log.debug("_opticks_idfilename layout %d : idpath %s " % (self.layout, self.idpath ))
         if self.layout == 0:
             name = os.path.basename(self.idpath)
             elem = name.split(".")
@@ -167,7 +172,7 @@ class OpticksEnv(object):
         else:
             assert False, (self.layout, "unexpected layout") 
         pass
-        log.info("_opticks_idfilename layout %d : idpath %s -> idfilename %s " % (self.layout, self.idpath, idfilename))
+        log.debug("_opticks_idfilename layout %d : idpath %s -> idfilename %s " % (self.layout, self.idpath, idfilename))
         return idfilename
 
     def _idname(self):
@@ -196,6 +201,10 @@ class OpticksEnv(object):
         return detector 
 
     def _detector_dir(self):
+        """
+        in layout 1, this yields /usr/local/opticks/opticksdata/export/juno1707/
+        but should be looking in IDPATH ?
+        """
         detector = self._detector()
         return os.path.join(self.env["OPTICKS_EXPORT_DIR"], detector)
 
@@ -221,6 +230,7 @@ class OpticksEnv(object):
         idfold = _dirname(IDPATH,1)
         idfilename = self._idfilename()
 
+        self.setdefault("OPTICKS_IDPATH",          IDPATH )
         self.setdefault("OPTICKS_IDFOLD",          idfold )
         self.setdefault("OPTICKS_IDFILENAME",      idfilename )
 
@@ -241,7 +251,7 @@ class OpticksEnv(object):
         pass
         self.setdefault("OPTICKS_INSTALL_PREFIX",  self.install_prefix)
         self.setdefault("OPTICKS_INSTALL_CACHE",   os.path.join(self.install_prefix, "installcache"))
-        log.info("install_prefix : %s " % self.install_prefix ) 
+        log.debug("install_prefix : %s " % self.install_prefix ) 
 
         self.setdefault("OPTICKS_DETECTOR",        self._detector())
         self.setdefault("OPTICKS_DETECTOR_DIR",    self._detector_dir())
@@ -525,7 +535,7 @@ def opticks_args(**kwa):
 
 
     log.debug("args.dbgseqhis [%x] " % args.dbgseqhis) 
-    log.info("args.smry : %s " % args.smry )
+    log.debug("args.smry : %s " % args.smry )
 
     if args.show:
          sys.stderr.write("args: " + " ".join(sys.argv) + "\n")
@@ -601,7 +611,15 @@ def enum_(path):
 
 
 class Abbrev(object):
-    def __init__(self, path="$OPTICKS_DATA_DIR/resource/GFlags/abbrev.json"):
+    """
+    simon:opticksdata blyth$ find . -name abbrev.json
+    ./export/DayaBay/GMaterialLib/abbrev.json
+    ./resource/GFlags/abbrev.json
+    simon:opticksdata blyth$ 
+
+    $OPTICKS_DATA_DIR/resource/GFlags/abbrev.json
+    """
+    def __init__(self, path):
         js = json_(path)
 
         names = map(str,js.keys())

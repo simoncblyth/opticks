@@ -93,6 +93,12 @@ class MatType(SeqType):
          'Bk': 'Bialkali',
          'Dw': 'DeadWater',
 
+
+    simon:opticksdata blyth$ find . -name abbrev.json
+    ./export/DayaBay/GMaterialLib/abbrev.json
+    ./resource/GFlags/abbrev.json
+    simon:opticksdata blyth$ 
+
     """
     def __init__(self, reldir=None):
         material_names = ItemList("GMaterialLib", reldir=reldir)
