@@ -10,7 +10,7 @@ find_package(OpticksBoost REQUIRED)
 
 find_package(SysRap REQUIRED)
 find_package(BoostRap REQUIRED)
-find_package(Assimp REQUIRED)
+find_package(OpticksAssimp REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(GLM REQUIRED)
 find_package(NPY REQUIRED)
@@ -22,7 +22,7 @@ include_directories(
     ${OpticksBoost_INCLUDE_DIRS}  
     ${SysRap_INCLUDE_DIRS}  
     ${BoostRap_INCLUDE_DIRS}  
-    ${Assimp_INCLUDE_DIRS}  
+    ${OpticksAssimp_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS}  
     ${GLM_INCLUDE_DIRS}  
     ${NPY_INCLUDE_DIRS}  
@@ -34,7 +34,7 @@ add_definitions(
     ${OpticksBoost_DEFINITIONS}  
     ${SysRap_DEFINITIONS}  
     ${BoostRap_DEFINITIONS}  
-    ${Assimp_DEFINITIONS} 
+    ${OpticksAssimp_DEFINITIONS} 
     ${GGeo_DEFINITIONS} 
     ${GLM_DEFINITIONS} 
     ${NPY_DEFINITIONS} 
@@ -46,7 +46,7 @@ set(LIBRARIES
     ${OpticksBoost_LIBRARIES} 
     ${SysRap_LIBRARIES} 
     ${BoostRap_LIBRARIES} 
-    ${Assimp_LIBRARIES} 
+    ${OpticksAssimp_LIBRARIES} 
     ${GGeo_LIBRARIES} 
     ${NPY_LIBRARIES} 
     ${OpticksCore_LIBRARIES} 

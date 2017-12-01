@@ -23,6 +23,7 @@ set(TEST_SOURCES
    SYSRAP_LOG_FileAppenderTest.cc
 
    OpticksCSGTest.cc
+   hash_define_without_value.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

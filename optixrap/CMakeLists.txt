@@ -69,7 +69,7 @@ find_package(GLM  REQUIRED)
 find_package(NPY  REQUIRED)
 find_package(OpticksCore REQUIRED)
 
-find_package(Assimp REQUIRED)
+find_package(OpticksAssimp REQUIRED)
 find_package(AssimpRap REQUIRED)
 find_package(GGeo REQUIRED)
 find_package(OpticksGeometry REQUIRED)
@@ -95,7 +95,7 @@ include_directories(
     ${OptiX_INCLUDE_DIRS}  
 
     ${CUDA_INCLUDE_DIRS}
-    ${Assimp_INCLUDE_DIRS}  
+    ${OpticksAssimp_INCLUDE_DIRS}  
     ${AssimpRap_INCLUDE_DIRS}  
     ${GGeo_INCLUDE_DIRS} 
     ${OpticksGeometry_INCLUDE_DIRS}  
@@ -110,7 +110,7 @@ set(LIBRARIES
       ${SysRap_LIBRARIES} 
       ${BoostRap_LIBRARIES} 
 
-      ${Assimp_LIBRARIES}
+      ${OpticksAssimp_LIBRARIES}
       ${AssimpRap_LIBRARIES}
       ${GGeo_LIBRARIES}
       ${OpticksGeometry_LIBRARIES}  
@@ -131,7 +131,7 @@ add_definitions(
     ${SysRap_DEFINITIONS} 
     ${BoostRap_DEFINITIONS} 
     ${OpticksCore_DEFINITIONS} 
-    ${Assimp_DEFINITIONS} 
+    ${OpticksAssimp_DEFINITIONS} 
     ${AssimpRap_DEFINITIONS} 
     ${OptiX_DEFINITIONS} 
     ${CUDARap_DEFINITIONS} 

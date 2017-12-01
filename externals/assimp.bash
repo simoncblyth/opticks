@@ -346,8 +346,8 @@ assimp-edit(){ vi $(opticks-home)/cmake/Modules/FindAssimp.cmake ; }
 assimp-idir(){ echo $(assimp-prefix)/include/assimp ; }
 assimp-bdir(){ echo $(assimp-dir).build ; }
 
-assimp-c(){   cd $(assimp-dir); }
-assimp-cd(){  cd $(assimp-dir); }
+assimp-c(){   cd $(assimp-dir)/$1 ; }
+assimp-cd(){  cd $(assimp-dir)/$1 ; }
 assimp-bcd(){ cd $(assimp-bdir); }
 assimp-icd(){ cd $(assimp-idir); }
 

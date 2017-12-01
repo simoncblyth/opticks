@@ -122,7 +122,7 @@ set(BASE_DEFINITIONS
 
 ########### GEOMETRY #####
 
-find_package(Assimp REQUIRED)
+find_package(OpticksAssimp REQUIRED)
 find_package(AssimpRap REQUIRED)
 find_package(OpenMesh REQUIRED)
 find_package(OpenMeshRap REQUIRED)
@@ -130,7 +130,7 @@ find_package(GGeo REQUIRED)
 find_package(OpticksGeometry REQUIRED)
 
 set(GEOMETRY_INCLUDES
-   ${Assimp_INCLUDE_DIRS}  
+   ${OpticksAssimp_INCLUDE_DIRS}  
    ${AssimpRap_INCLUDE_DIRS}  
    ${OpenMesh_INCLUDE_DIRS}  
    ${OpenMeshRap_INCLUDE_DIRS}  
@@ -138,7 +138,7 @@ set(GEOMETRY_INCLUDES
    ${OpticksGeometry_INCLUDE_DIRS}  
 )
 set(GEOMETRY_LIBRARIES
-   ${Assimp_LIBRARIES} 
+   ${OpticksAssimp_LIBRARIES} 
    ${AssimpRap_LIBRARIES} 
    ${OpenMesh_LIBRARIES} 
    ${OpenMeshRap_LIBRARIES} 
@@ -146,7 +146,7 @@ set(GEOMETRY_LIBRARIES
    ${OpticksGeometry_LIBRARIES}  
 )
 set(GEOMETRY_DEFINITIONS
-   ${Assimp_DEFINITIONS}  
+   ${OpticksAssimp_DEFINITIONS}  
    ${AssimpRap_DEFINITIONS}  
    ${OpenMesh_DEFINITIONS}  
    ${OpenMeshRap_DEFINITIONS}  
