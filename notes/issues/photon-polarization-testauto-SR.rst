@@ -2,6 +2,12 @@ photon-polarization-testauto-SR
 ==================================
 
 
+See Also
+----------
+
+* :doc:`sc_ab_re_alignment`
+
+
 DONE : extend --reflectcheat to SR ?
 -----------------------------------------
 
@@ -23,9 +29,6 @@ SR reflectivity fork happens here::
        652                      DoAbsorption();
        653                  }
     (lldb) 
-
-
-
 
 
 DONE : non-normal incidence testing of SR via emitconfig.diffuse 

@@ -109,6 +109,23 @@ class DvTab(object):
         for i in range(nsel):
 
             sel = labels[i]
+
+            sqs = sel.split() 
+
+            # SC AB RE 
+            #   see notes/issues/sc_ab_re_alignment.rst
+            #
+            #   currently have not devised a way to align (cheat randomness)
+            #   so avoid accidental history alignment causing deviation fails
+            #   by skipping any selection that includes SC AB or RE
+           
+            with_sc = 'SC' in sqs
+            with_ab = 'AB' in sqs
+            with_re = 'RE' in sqs
+            if with_sc or with_ab or with_re:
+                continue 
+            pass
+
             lcu = cu[i]
             assert len(lcu) == 3
             _, na, nb = lcu 
