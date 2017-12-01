@@ -111,7 +111,9 @@ DsG4OpBoundaryProcess::DsG4OpBoundaryProcess(CG4* g4, const G4String& processNam
              m_g4(g4),
              m_mlib(g4->getMaterialLib()),
              m_ok(g4->getOpticks()),
+#ifdef SCB_REFLECT_CHEAT
              m_reflectcheat(m_ok->isReflectCheat()),
+#endif
 #ifdef SCB_BND_DEBUG
              m_dbg(false),
              m_other(false),
@@ -647,7 +649,15 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
         {
             if ( theFinish == polishedfrontpainted || theFinish == groundfrontpainted ) 
             {
+
+
+#ifdef SCB_REFLECT_CHEAT
+                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+                bool _reflect = _u < theReflectivity ;
+                if( !_reflect ) 
+#else
                 if( !G4BooleanRand(theReflectivity) ) 
+#endif
                 {
                     DoAbsorption();
                 }
@@ -1011,11 +1021,13 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 	      G4double E2_abs, C_parl, C_perp;
 
- 
+#ifdef SCB_REFLECT_CHEAT 
           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
-          bool _reflect = _u > TransCoeff ; 
-
-	      if ( _reflect ) {
+          bool _transmit = _u < TransCoeff ; 
+	      if ( !_transmit ) {
+#else
+          if ( !G4BooleanRand(TransCoeff) ) {
+#endif
 
 	         // Simulate reflection
 

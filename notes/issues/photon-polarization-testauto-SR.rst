@@ -2,8 +2,30 @@ photon-polarization-testauto-SR
 ==================================
 
 
-TODO : extend --reflectcheat to SR ?
+DONE : extend --reflectcheat to SR ?
 -----------------------------------------
+
+* also placed under SCB_REFLECT_CHEAT macro for clarity 
+
+
+SR reflectivity fork happens here::
+
+    (lldb) c
+    Process 59698 resuming
+    Process 59698 stopped
+    * thread #1: tid = 0xcfb3d, 0x0000000104356210 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 7248 at DsG4OpBoundaryProcess.cc:650, queue = 'com.apple.main-thread', stop reason = breakpoint 12.1
+        frame #0: 0x0000000104356210 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000010cf8e170, aTrack=0x000000011caf0e20, aStep=0x000000010cf0be10) + 7248 at DsG4OpBoundaryProcess.cc:650
+       647          {
+       648              if ( theFinish == polishedfrontpainted || theFinish == groundfrontpainted ) 
+       649              {
+    -> 650                  if( !G4BooleanRand(theReflectivity) ) 
+       651                  {
+       652                      DoAbsorption();
+       653                  }
+    (lldb) 
+
+
+
 
 
 DONE : non-normal incidence testing of SR via emitconfig.diffuse 
