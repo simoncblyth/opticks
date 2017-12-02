@@ -8,6 +8,8 @@ include(EnvCompilationFlags)
 find_package(PLog REQUIRED)
 find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
 
+message("${name}.CUDA_curand_LIBRARY:${CUDA_curand_LIBRARY}")
+
 find_package(SysRap REQUIRED)
 
 
@@ -27,8 +29,11 @@ add_definitions(${DEFINITIONS})
 
 set(LIBRARIES
    ${PLog_LIBRARIES}
+   ${CUDA_LIBRARIES} 
+   ${CUDA_curand_LIBRARY}
    ${SysRap_LIBRARIES}
 )
+message("${name}.CUDA_LIBRARIES : ${CUDA_LIBRARIES} ")
 #message("${name}.SysRap_LIBRARIES : ${SysRap_LIBRARIES} ")
 
 if(UNIX)

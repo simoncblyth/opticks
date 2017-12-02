@@ -3,11 +3,13 @@ set(name CUDARapTest)
 project(${name})
 
 #message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
-#message("${name}.LIBRARIES    : ${LIBRARIES}")
+message("${name}.LIBRARIES    : ${LIBRARIES}")
 
 set(TEST_SOURCES
    LaunchSequenceTest.cc
    cuRANDWrapperTest.cc
+   curand_aligned_host.cc
+   
 )
 
 foreach(SRC ${TEST_SOURCES})
@@ -15,7 +17,7 @@ foreach(SRC ${TEST_SOURCES})
     add_executable(${TGT} ${SRC})
     add_test(${name}.${TGT} ${TGT})
     add_dependencies(check ${TGT})
-    target_link_libraries(${TGT} ${LIBRARIES} )
+    target_link_libraries(${TGT} ${LIBRARIES}  )
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

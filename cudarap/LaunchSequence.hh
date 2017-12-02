@@ -163,7 +163,13 @@ public:
             getTotalTime() 
         ); 
 
-        //for(unsigned int i=0 ; i<nlaunch ; i++ ) getLaunch(i).Summary(msg);
+    }
+
+    void dump(const char* msg)  
+    {
+        Summary(msg);
+        unsigned int nlaunch = getNumLaunches();
+        for(unsigned int i=0 ; i<nlaunch ; i++ ) getLaunch(i).Summary(msg);
     }
 
 

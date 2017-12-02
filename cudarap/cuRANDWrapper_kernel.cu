@@ -90,6 +90,36 @@ CUdeviceptr copytodevice_rng_wrapper( LaunchSequence* launchseq, void* host_rng_
 
 
 
+void before_kernel( cudaEvent_t& start, cudaEvent_t& stop )
+{
+    CUDA_SAFE_CALL( cudaEventCreate( &start ) );
+    CUDA_SAFE_CALL( cudaEventCreate( &stop ) );
+    CUDA_SAFE_CALL( cudaEventRecord( start,0 ) );
+}
+
+void after_kernel( cudaEvent_t& start, cudaEvent_t& stop, float& kernel_time )
+{
+    CUDA_SAFE_CALL( cudaEventRecord( stop,0 ) );
+    CUDA_SAFE_CALL( cudaEventSynchronize(stop) );
+
+    CUDA_SAFE_CALL( cudaEventElapsedTime(&kernel_time, start, stop) );
+    CUDA_SAFE_CALL( cudaEventDestroy( start ) );
+    CUDA_SAFE_CALL( cudaEventDestroy( stop ) );
+
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+}
+
+
+
+void devicesync_wrapper()
+{
+    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
+}
+
+
+
+
+
 __global__ void init_rng(int threads_per_launch, int thread_offset, curandState* rng_states, unsigned long long seed, unsigned long long offset)
 {
    // chroma approach is to recycle rng_states for each kernel launch 
@@ -119,34 +149,6 @@ __global__ void init_rng(int threads_per_launch, int thread_offset, curandState*
    //
    // :google:`curand_init slow with large sequence numbers`
    //
-}
-
-
-
-void before_kernel( cudaEvent_t& start, cudaEvent_t& stop )
-{
-    CUDA_SAFE_CALL( cudaEventCreate( &start ) );
-    CUDA_SAFE_CALL( cudaEventCreate( &stop ) );
-    CUDA_SAFE_CALL( cudaEventRecord( start,0 ) );
-}
-
-void after_kernel( cudaEvent_t& start, cudaEvent_t& stop, float& kernel_time )
-{
-    CUDA_SAFE_CALL( cudaEventRecord( stop,0 ) );
-    CUDA_SAFE_CALL( cudaEventSynchronize(stop) );
-
-    CUDA_SAFE_CALL( cudaEventElapsedTime(&kernel_time, start, stop) );
-    CUDA_SAFE_CALL( cudaEventDestroy( start ) );
-    CUDA_SAFE_CALL( cudaEventDestroy( stop ) );
-
-    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
-}
-
-
-
-void devicesync_wrapper()
-{
-    CUDA_SAFE_CALL( cudaDeviceSynchronize() );
 }
 
 

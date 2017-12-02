@@ -259,6 +259,26 @@ RT_PROGRAM void trivial()
     //
 }
 
+
+
+RT_PROGRAM void zrngtest()
+{
+    unsigned long long photon_id = launch_index.x ;  
+    unsigned int photon_offset = photon_id*PNUMQUAD ; 
+
+    curandState rng = rng_states[photon_id];
+
+    photon_buffer[photon_offset+0] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
+    photon_buffer[photon_offset+1] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
+    photon_buffer[photon_offset+2] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
+    photon_buffer[photon_offset+3] = make_float4(  curand_uniform(&rng) , curand_uniform(&rng) , curand_uniform(&rng), curand_uniform(&rng) );
+
+    rng_states[photon_id] = rng ;  // suspect this does nothing in my usage
+}
+
+
+
+
 RT_PROGRAM void tracetest()
 {
     unsigned long long photon_id = launch_index.x ;  

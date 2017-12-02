@@ -1,6 +1,16 @@
 sc_ab_re_alignment
 ======================
 
+
+See Also
+----------
+
+For thoughts on more ambitious approach of
+taking control of the random sequence : so GPU and CPU can get 
+fed the same:
+
+* :doc:`random_alignment` 
+
 Not so easy to --scattercheat --absorbcheat ?
 --------------------------------------------------------
 

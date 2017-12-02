@@ -24,6 +24,7 @@ set(TEST_CU_SRCS
 
 CBufSpecTest.cu
 TBufTest.cu
+TRngBufTest.cu
 expandTest.cu
 iexpandTest.cu
 issue628Test.cu
@@ -33,6 +34,8 @@ strided_rangeTest.cu
 strided_repeated_rangeTest.cu
 
 float2intTest.cu 
+thrust_curand_estimate_pi.cu
+thrust_curand_printf.cu
 
 )
 

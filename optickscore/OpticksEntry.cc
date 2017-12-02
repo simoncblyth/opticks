@@ -8,6 +8,7 @@ const char* OpticksEntry::TRIVIAL_  = "TRIVIAL" ;
 const char* OpticksEntry::NOTHING_ = "NOTHING" ; 
 const char* OpticksEntry::SEEDTEST_ = "SEEDTEST" ; 
 const char* OpticksEntry::TRACETEST_ = "TRACETEST" ; 
+const char* OpticksEntry::ZRNGTEST_ = "ZRNGTEST" ; 
 const char* OpticksEntry::UNKNOWN_  = "UNKNOWN?" ; 
 
 const char*  OpticksEntry::Name(char code)
@@ -20,6 +21,7 @@ const char*  OpticksEntry::Name(char code)
        case 'N':name = NOTHING_  ; break ; 
        case 'S':name = SEEDTEST_ ; break ; 
        case 'R':name = TRACETEST_ ; break ; 
+       case 'Z':name = ZRNGTEST_ ; break ; 
        default: name = UNKNOWN_  ; break ; 
     }
     return name ; 
@@ -34,6 +36,7 @@ char OpticksEntry::CodeFromConfig(OpticksCfg<Opticks>* cfg)
     else if(cfg->hasOpt("dumpseed"))  code = 'D' ; 
     else if(cfg->hasOpt("seedtest"))  code = 'S' ; 
     else if(cfg->hasOpt("tracetest")) code = 'R' ; 
+    else if(cfg->hasOpt("zrngtest"))  code = 'Z' ; 
     else                              code = 'G' ; 
     return code ;
 } 

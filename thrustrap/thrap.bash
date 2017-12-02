@@ -371,5 +371,10 @@ thrap-run(){
 
 
 
+thrap-print()
+{
+    thrust_curand_printf $1
+    curand_aligned_host $1
+}
 
 

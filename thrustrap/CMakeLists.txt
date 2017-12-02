@@ -58,6 +58,7 @@ set(SOURCES
 
     TBuf_.cu
     TBufPair_.cu
+    TRngBuf_.cu
     TSparse_.cu
     TUtil_.cu
 )
@@ -73,6 +74,7 @@ SET(HEADERS
     THRAP_POP.hh
 
     TBuf.hh
+    TRngBuf.hh
     TBufPair.hh
     TSparse.hh
     TUtil.hh

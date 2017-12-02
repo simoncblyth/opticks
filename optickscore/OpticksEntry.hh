@@ -16,6 +16,7 @@ class OKCORE_API OpticksEntry
         static const char* NOTHING_ ; 
         static const char* SEEDTEST_ ; 
         static const char* TRACETEST_ ; 
+        static const char* ZRNGTEST_ ; 
         static const char* UNKNOWN_ ; 
    public:
         static const char*  Name(char code);

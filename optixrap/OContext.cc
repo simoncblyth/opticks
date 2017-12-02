@@ -50,6 +50,7 @@ OpticksEntry* OContext::addEntry(char code)
     { 
         case 'G': index = addEntry("generate.cu.ptx", "generate", "exception", defer) ; break ;
         case 'T': index = addEntry("generate.cu.ptx", "trivial",  "exception", defer) ; break ;
+        case 'Z': index = addEntry("generate.cu.ptx", "zrngtest",  "exception", defer) ; break ;
         case 'N': index = addEntry("generate.cu.ptx", "nothing",  "exception", defer) ; break ;
         case 'R': index = addEntry("generate.cu.ptx", "tracetest",  "exception", defer) ; break ;
         case 'D': index = addEntry("generate.cu.ptx", "dumpseed", "exception", defer) ; break ;

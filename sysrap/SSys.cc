@@ -61,11 +61,13 @@ int SSys::run(const char* cmd)
     return rc ;  
 }
 
-int SSys::npdump(const char* path, const char* nptype, const char* postview )
+int SSys::npdump(const char* path, const char* nptype, const char* postview, const char* printoptions)
 {
+    if(!printoptions) printoptions = "suppress=True,precision=3" ;
+
     std::stringstream ss ; 
     ss << "python -c 'import sys, os, numpy as np ;"
-       << " np.set_printoptions(suppress=True, precision=3) ;"
+       << " np.set_printoptions(" << printoptions << ") ;"
        << " a=np.load(os.path.expandvars(\"" << path << "\")) ;"
        << " print a.shape ;"
        << " print a.view(" << nptype << ")" << ( postview ? postview : "" ) << " ;"

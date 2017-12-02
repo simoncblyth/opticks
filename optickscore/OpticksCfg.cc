@@ -244,6 +244,9 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("tracetest",  "swap OptiX generate program with tracetest standin for debugging") ;
 
+   m_desc.add_options()
+       ("zrngtest",  "swap OptiX generate program with zrngtest standin for debugging, saving 16 uniform rand into photon buffer") ;
+
 
 
 
