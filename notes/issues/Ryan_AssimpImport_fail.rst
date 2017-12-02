@@ -2,6 +2,276 @@ Ryan_AssimpImport_fail
 ========================
 
 
+Reconfigure assimp- to build the assimp executable as well as the lib
+-----------------------------------------------------------------------
+
+I have changed the assimp-cmake options to 
+build the assimp executable in addition to the lib.
+To get this change you will need to::
+
+   hg pull
+   hg update 
+
+Then the below will wipe the previous build dir, reconfigure 
+to pick up the new options and rebuild.
+
+::
+
+    assimp-           # update the functions
+    assimp-configure  # wipe bdir and run cmake 
+    assimp--          # build again
+
+
+The above should build: /usr/local/opticks/externals/bin/assimp
+Note that need to use full path to executable, as not in PATH.
+Compare your output from the assimp executable with mine, 
+and tell me any differences.
+
+
+::
+
+    simon:issues blyth$ /usr/local/opticks/externals/bin/assimp version
+    ------------------------------------------------------ 
+    Open Asset Import Library ("Assimp", http://assimp.sourceforge.net) 
+     -- Commandline toolchain --
+    ------------------------------------------------------ 
+
+    Version 3.1 -debug -noboost -shared -st (GIT commit caa0475)
+
+
+    simon:issues blyth$ /usr/local/opticks/externals/bin/assimp help
+    assimp <verb> <parameters>
+
+     verbs:
+        info       - Quick file stats
+        listext    - List all known file extensions available for import
+        knowext    - Check whether a file extension is recognized by Assimp
+        export     - Export a file to one of the supported output formats
+        listexport - List all supported export formats
+        exportinfo - Show basic information on a specific export format
+        extract    - Extract embedded texture images
+        dump       - Convert models to a binary or textual dump (ASSBIN/ASSXML)
+        cmpdump    - Compare dumps created using 'assimp dump <file> -s ...'
+        version    - Display Assimp version
+
+     Use 'assimp <verb> --help' for detailed help on a command.
+
+
+
+Use assimp executable to test file loading
+----------------------------------------------
+
+
+Use this executable to test reading the geometry dae file::
+    
+    simon:issues blyth$ opticks-srcpath   ## this srcpath is derived from the IDPATH envvar 
+    /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+
+    simon:issues blyth$ ls -l $(opticks-srcpath)
+    -rw-r--r--  1 blyth  staff  7126305 Jun 14 13:13 /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+
+
+    simon:issues blyth$ /usr/local/opticks/externals/bin/assimp info $(opticks-srcpath) | head -100 
+    Launching asset import ...           OK
+    Validating postprocessing flags ...  OK
+    Importing file ...                   OK 
+       import took approx. 0.59813 seconds
+
+    Memory consumption: 31033784 B
+    Nodes:              24461
+    Maximum depth       45
+    Meshes:             238
+    Animations:         0
+    Textures (embed.):  0
+    Materials:          14
+    Cameras:            0
+    Lights:             0
+    Vertices:           58779
+    Faces:              37722
+    Bones:              0
+    Animation Channels: 0
+    Primitive Types:    linestriangles
+    Average faces/mesh  158
+    Average verts/mesh  246
+    Minimum point      (-2400000.000000 -2400000.000000 -2400000.000000)
+    Maximum point      (2400000.000000 2400000.000000 2400000.000000)
+    Center point       (0.000000 0.000000 0.000000)
+
+    Named Materials:
+        'JoinedMaterial_#75'
+        'JoinedMaterial_#73'
+        '__dd__Materials__Air0xc032550'
+        'JoinedMaterial_#71'
+        '__dd__Materials__Bialkali0xc2f2428'
+        'JoinedMaterial_#77'
+        '__dd__Materials__ESR0xbf9f438'
+        '__dd__Materials__GdDopedLS0xc2a8ed0'
+        '__dd__Materials__LiquidScintillator0xc2308d0'
+        '__dd__Materials__MineralOil0xbf5c830'
+        '__dd__Materials__NitrogenGas0xc17d300'
+        '__dd__Materials__Pyrex0xc1005e0'
+        '__dd__Materials__Tyvek0xc246ca0'
+        '__dd__Materials__Vacuum0xbf9fcc0'
+
+    Node hierarchy:
+    'unnamed', meshes: 0
+    -- 'top', meshes: 0
+    -- -- 'World0xc15cfc0', meshes: 1
+    -- -- -- '__dd__Structure__Sites__db-rock0xc15d358', meshes: 0
+    -- -- -- -- '__dd__Geometry__Sites__lvNearSiteRock0xc030350', meshes: 1
+    -- -- -- -- -- '__dd__Geometry__Sites__lvNearSiteRock--pvNearHallTop0xbf89820', meshes: 0
+    -- -- -- -- -- -- '__dd__Geometry__Sites__lvNearHallTop0xc136890', meshes: 1
+    -- -- -- -- -- -- -- '__dd__Geometry__Sites__lvNearHallTop--pvNearTopCover0xc23f9b8', meshes: 0
+    -- -- -- -- -- -- -- -- '__dd__Geometry__PoolDetails__lvNearTopCover0xc137060', meshes: 1
+                         <--
+    -- -- -- -- -- -- -- '__dd__Geometry__Sites__lvNearHallTop--pvNearTeleRpc--pvNearTeleRpc..10xc245d38', meshes: 0
+    -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCMod0xbf54e60', meshes: 1
+    -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCMod--pvRPCFoam0xbf1a820', meshes: 0
+    -- -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCFoam0xc032c88', meshes: 1
+    -- -- -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCFoam--pvBarCham14Array--pvBarCham14ArrayOne..1--pvBarCham14Unit0xc1264d0', meshes: 0
+    -- -- -- -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0', meshes: 1
+    -- -- -- -- -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCBarCham14--pvRPCGasgap140xc1257a0', meshes: 0
+    -- -- -- -- -- -- -- -- -- -- -- -- -- -- '__dd__Geometry__RPC__lvRPCGasgap140xbf98ae0', meshes: 1
+
+
+
+The function assimp-test also does this
+
+::
+
+    simon:~ blyth$ type assimp-test 
+    assimp-test is a function
+    assimp-test () 
+    { 
+        local pfx=$(assimp-prefix);
+        opticks-;
+        local srcpath=$(opticks-srcpath);
+        [ ! -f $srcpath ] && echo no srcpath $srcpath && return;
+        $pfx/bin/assimp info $srcpath
+    }
+
+
+
+
+Example of tracing the assimp lib in use
+------------------------------------------
+
+::
+
+    simon:opticks blyth$ which AssimpRapTest 
+    /usr/local/opticks/lib/AssimpRapTest
+
+    simon:opticks blyth$ otool -L /usr/local/opticks/lib/AssimpRapTest
+    /usr/local/opticks/lib/AssimpRapTest:
+        /opt/local/lib/libboost_system-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_program_options-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_filesystem-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_regex-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libSysRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libBoostRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/local/opticks/externals//libassimp.3.dylib (compatibility version 3.0.0, current version 3.1.1)
+        @rpath/libGGeo.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libNPY.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libOpticksCore.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libssl.0.9.8.dylib (compatibility version 0.9.8, current version 50.0.0)
+        /usr/lib/libcrypto.0.9.8.dylib (compatibility version 0.9.8, current version 50.0.0)
+        @rpath/libAssimpRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+    simon:opticks blyth$ otool -L /usr/local/opticks/lib/libAssimpRap.dylib
+    /usr/local/opticks/lib/libAssimpRap.dylib:
+        @rpath/libAssimpRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_system-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_program_options-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_filesystem-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /opt/local/lib/libboost_regex-mt.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libSysRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libBoostRap.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/local/opticks/externals//libassimp.3.dylib (compatibility version 3.0.0, current version 3.1.1)
+        @rpath/libGGeo.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libNPY.dylib (compatibility version 0.0.0, current version 0.0.0)
+        @rpath/libOpticksCore.dylib (compatibility version 0.0.0, current version 0.0.0)
+        /usr/lib/libssl.0.9.8.dylib (compatibility version 0.9.8, current version 50.0.0)
+        /usr/lib/libcrypto.0.9.8.dylib (compatibility version 0.9.8, current version 50.0.0)
+        /usr/lib/libc++.1.dylib (compatibility version 1.0.0, current version 120.0.0)
+        /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+    simon:opticks blyth$ 
+    simon:opticks blyth$ ls -l /usr/local/opticks/externals//libassimp.3.dylib 
+    lrwxr-xr-x  1 blyth  staff  21 Jun 14 13:11 /usr/local/opticks/externals//libassimp.3.dylib -> lib/libassimp.3.dylib
+    simon:opticks blyth$ 
+    simon:lib blyth$ l | grep assimp
+    -rwxr-xr-x  1 blyth  staff  15611400 Dec  1 11:37 libassimp.3.1.1.dylib
+    lrwxr-xr-x  1 blyth  staff        21 Jun 14 13:11 libassimp.3.dylib -> libassimp.3.1.1.dylib
+    lrwxr-xr-x  1 blyth  staff        17 Jun 14 13:11 libassimp.dylib -> libassimp.3.dylib
+    simon:lib blyth$ 
+
+
+
+
+
+After FindOpticksAssimp.cmake rejig
+-------------------------------------------
+
+::
+
+    Hi Simon
+
+    Still no luck.
+    I do hg pull and hg update then rebuild the code with optics—
+
+    However I still getting the same error : 
+
+
+::
+
+    Jui-Jens-MacBook-Pro:opticks wangbtc$ AssimpRapTest --importverbosity 3 —-loadverbosity 3
+    2017-12-01 10:33:42.153 INFO  [173915] [main@71] ok
+    2017-12-01 10:33:42.153 INFO  [173915] [Opticks::dumpArgs@980] Opticks::configure argc 5
+      0 : AssimpRapTest
+      1 : --importverbosity
+      2 : 3
+      3 : —-loadverbosity
+      4 : 3
+    2017-12-01 10:33:42.157 INFO  [173915] [NSceneConfig::NSceneConfig@50] NSceneConfig::NSceneConfig cfg [check_surf_containment=0,check_aabb_containment=0,instance_repeat_min=400,instance_vertex_min=0]
+    after gg
+    2017-12-01 10:33:42.159 ERROR [173915] [GGeo::loadFromG4DAE@560] GGeo::loadFromG4DAE START
+    2017-12-01 10:33:42.159 INFO  [173915] [AssimpGGeo::load@137] AssimpGGeo::load  path /Users/wangbtc/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae query range:3153:12221 ctrl  importVerbosity 3 loaderVerbosity 0
+    AssimpImporter::init verbosity 3 severity.Err Err severity.Warn Warn severity.Info Info severity.Debugging Debugging
+    myStream Debug, T0: debug
+    myStream Info,  T0: info
+    myStream Warn,  T0: warn
+    myStream Error, T0: error
+    2017-12-01 10:33:42.159 INFO  [173915] [AssimpImporter::import@216] AssimpImporter::import path /Users/wangbtc/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae flags 32779
+    myStream Info,  T0: Load /Users/wangbtc/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.dae
+    myStream Debug, T0: Assimp 4.0.0 amd64 gcc shared singlethreaded
+    myStream Info,  T0: Found a matching importer for this file format: Collada Importer.
+    myStream Info,  T0: Import root directory is '/Users/wangbtc/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/'
+    myStream Debug, T0: Collada schema version is 1.4.n
+    myStream Debug, T0: Ignoring global element <opticalsurface>.
+    myStream Skipping one or more lines with the same contents
+    myStream Debug, T0: Ignoring global element <skinsurface>.
+    myStream Skipping one or more lines with the same contents
+    myStream Debug, T0: Ignoring global element <bordersurface>.
+    myStream Skipping one or more lines with the same contents
+    myStream Debug, T0: Ignoring global element <meta>.
+    myStream Debug, T0: Ignoring global element <library_visual_scenes>.
+    myStream Debug, T0: Ignoring global element <scene>.
+    myStream Error, T0: Collada: File came out empty. Something is wrong here.
+    AssimpImporter::import ERROR : "Collada: File came out empty. Something is wrong here." 
+    2017-12-01 10:33:42.323 INFO  [173915] [AssimpGGeo::load@161] AssimpGGeo::load select START 
+    AssimpImporter::select no tree 
+    2017-12-01 10:33:42.323 INFO  [173915] [AssimpGGeo::load@165] AssimpGGeo::load select DONE  
+    2017-12-01 10:33:42.526 INFO  [173915] [*OpticksResource::getSensorList@1044] OpticksResource::getSensorList NSensorList:  NSensor count 6888 distinct identier count 684
+    2017-12-01 10:33:42.526 INFO  [173915] [AssimpGGeo::convert@183] AssimpGGeo::convert ctrl 
+    Segmentation fault: 11
+    Jui-Jens-MacBook-Pro:opticks wangbtc$ 
+
+
+
+
+
 Current Status
 -----------------
 
@@ -33,6 +303,8 @@ Current Status
 
 
     Simon
+
+
 
 
 Failed geocache creation

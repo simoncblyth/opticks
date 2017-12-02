@@ -1,4 +1,6 @@
 
+
+#include <cassert>
 #include "PLOG.hh"
 
 #define G4DAE_EXTRAS_NO_VALUE
@@ -9,14 +11,18 @@ int main(int argc, char** argv)
 {
    PLOG_(argc, argv);
 
+   int count(0); 
+
 #ifdef G4DAE_EXTRAS_NO_VALUE
    LOG(info) << "G4DAE_EXTRAS_NO_VALUE" ; 
+   count++ ; 
 #else
    LOG(info) << "not G4DAE_EXTRAS_NO_VALUE" ; 
 #endif   
 
 #ifdef G4DAE_EXTRAS_WITH_ONE
    LOG(info) << "G4DAE_EXTRAS_WITH_ONE" ; 
+   count++ ; 
 #else
    LOG(info) << "not G4DAE_EXTRAS_WITH_ONE" ; 
 #endif   
@@ -24,10 +30,14 @@ int main(int argc, char** argv)
 
 #ifdef G4DAE_EXTRAS_WITH_ZERO
    LOG(info) << "G4DAE_EXTRAS_WITH_ZERO" ; 
+   count++ ; 
 #else
    LOG(info) << "not G4DAE_EXTRAS_WITH_ZERO" ; 
 #endif   
 
+
+   LOG(info) << " count : " << count ; 
+   assert(count == 3 );
 
    return 0 ; 
 }

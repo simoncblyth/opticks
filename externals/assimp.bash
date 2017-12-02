@@ -21,6 +21,60 @@ Written in C++, it is available under a liberal BSD license. There is a C API
 as well as bindings to various other languages, including C#/.net, Python and D. 
 
 
+
+
+FAILED attempt to build the tests
+------------------------------------
+
+
+::
+
+    [ 81%] Building CXX object tools/assimp_cmd/CMakeFiles/assimp_cmd.dir/Export.cpp.o
+    [ 81%] Linking CXX executable assimp
+    ld: warning: directory not found for option '-L/usr/local/opticks/externals/assimp/assimp-fork.build/lib'
+    [ 81%] Built target assimp_cmd
+    Scanning dependencies of target gtest
+    [ 82%] Creating directories for 'gtest'
+    [ 82%] Performing download step (git clone) for 'gtest'
+    -- gtest download command succeeded.  See also /usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest-stamp/gtest-download-*.log
+    [ 82%] No patch step for 'gtest'
+    [ 83%] Performing update step for 'gtest'
+    Current branch master is up to date.
+    [ 84%] Performing configure step for 'gtest'
+    CMake Error at /usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest-stamp/gtest-configure-.cmake:16 (message):
+      Command failed: 1
+
+       '/opt/local/bin/cmake' '-DCMAKE_BUILD_TYPE=' '-Dgtest_force_shared_crt=ON' '-Dgtest_disable_pthreads:BOOL=OFF' '-GUnix Makefiles' '/usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest'
+
+      See also
+
+        /usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest-stamp/gtest-configure-*.log
+
+
+    make[2]: *** [test/gtest/src/gtest-stamp/gtest-configure] Error 1
+    make[1]: *** [test/CMakeFiles/gtest.dir/all] Error 2
+    make: *** [all] Error 2
+    [ 78%] Built target assimp
+    [ 81%] Built target assimp_cmd
+    [ 82%] Performing update step for 'gtest'
+    Current branch master is up to date.
+    [ 83%] Performing configure step for 'gtest'
+    CMake Error at /usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest-stamp/gtest-configure-.cmake:16 (message):
+      Command failed: 1
+
+       '/opt/local/bin/cmake' '-DCMAKE_BUILD_TYPE=' '-Dgtest_force_shared_crt=ON' '-Dgtest_disable_pthreads:BOOL=OFF' '-GUnix Makefiles' '/usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest'
+
+      See also
+
+        /usr/local/opticks/externals/assimp/assimp-fork.build/test/gtest/src/gtest-stamp/gtest-configure-*.log
+
+
+    make[2]: *** [test/gtest/src/gtest-stamp/gtest-configure] Error 1
+    make[1]: *** [test/CMakeFiles/gtest.dir/all] Error 2
+    make: *** [all] Error 2
+
+
+
 TODO : tone down loading verbosity
 ------------------------------------
 
@@ -415,6 +469,22 @@ code/ColladaParser.h
 EON
 }
 
+
+assimp-info(){ cat << EOI
+
+$FUNCNAME
+==============
+
+
+   assimp-bdir  : $(assimp-bdir)
+ 
+
+
+
+EOI
+}
+
+
 assimp-wipe(){
    local bdir=$(assimp-bdir)
    rm -rf $bdir
@@ -437,11 +507,15 @@ assimp-cmake(){
    local opts=""
    [ "$(uname)" == "Darwin" ] && opts="-DCMAKE_MACOSX_RPATH:BOOL=ON" 
 
+
+   # NB for changes to the below to be honoured by assimp-- need to do a one time assimp-configure
+   #    which wipes the bdir
+ 
    cmake \
         -G "$(opticks-cmake-generator)" \
         -DCMAKE_INSTALL_PREFIX=$(assimp-prefix)  \
         -DASSIMP_BUILD_TESTS=OFF  \
-        -DASSIMP_BUILD_ASSIMP_TOOLS=OFF  \
+        -DASSIMP_BUILD_ASSIMP_TOOLS=ON  \
          $opts \
          $(assimp-dir) 
 
@@ -509,11 +583,14 @@ assimp-rpath-kludge()
 
 
 assimp-test(){
-   export-
-   export-export
 
    local pfx=$(assimp-prefix)
-   $pfx/bin/assimp info $DAE_NAME_DYB.noextra.dae 
+
+   opticks-
+   local srcpath=$(opticks-srcpath)
+   [ ! -f $srcpath ] && echo no srcpath $srcpath && return 
+
+   $pfx/bin/assimp info $srcpath
 
 }
 
