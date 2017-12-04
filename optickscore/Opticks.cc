@@ -494,8 +494,11 @@ bool Opticks::isCfG4()
 
 
 
-
-bool Opticks::isReflectCheat() const  // reflectcheat
+bool Opticks::isAlign() const  // --align
+{
+   return m_cfg->hasOpt("align");
+}
+bool Opticks::isReflectCheat() const  // --reflectcheat
 {
    return m_cfg->hasOpt("reflectcheat");
 }

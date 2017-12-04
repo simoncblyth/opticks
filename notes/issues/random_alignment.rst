@@ -1,6 +1,49 @@
 random_alignment
 =====================
 
+
+
+CRandomEngine standin to investigate number and position of G4UniformRand flat calls
+---------------------------------------------------------------------------------------
+
+::
+
+    tboolean-;tboolean-box --okg4 --align -D
+
+::
+
+    2017-12-04 21:02:54.323 INFO  [208401] [CGenerator::configureEvent@124] CGenerator:configureEvent fabricated TORCH genstep (STATIC RUNNING) 
+    2017-12-04 21:02:54.323 INFO  [208401] [CG4Ctx::initEvent@134] CG4Ctx::initEvent photons_per_g4event 10000 steps_per_photon 10 gen 4096
+    2017-12-04 21:02:54.323 INFO  [208401] [CWriter::initEvent@69] CWriter::initEvent dynamic STATIC(GPU style) record_max 1 bounce_max  9 steps_per_photon 10 num_g4event 1
+    2017-12-04 21:02:54.323 INFO  [208401] [CRec::initEvent@82] CRec::initEvent note recstp
+    HepRandomEngine::put called -- no effect!
+    2017-12-04 21:02:54.629 INFO  [208401] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 0
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 1
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 2
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 3
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 4
+    2017-12-04 21:02:54.631 INFO  [208401] [CRandomEngine::flat@56]  record_id 0 count 5
+    2017-12-04 21:02:54.631 INFO  [208401] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+    2017-12-04 21:02:54.632 INFO  [208401] [CG4::postpropagate@373] CG4::postpropagate(0) ctx CG4Ctx::desc_stats dump_count 0 event_total 1 event_track_count 1
+    2017-12-04 21:02:54.632 INFO  [208401] [OpticksEvent::postPropagateGeant4@2040] OpticksEvent::postPropagateGeant4 shape  genstep 1,6,4 nopstep 0,4,4 photon 1,4,4 source 1,4,4 record 1,10,2,4 phosel 1,1,4 recsel 1,10,1,4 sequence 1,1,2 seed 1,1,1 hit 0,4,4 num_photons 1
+    2017-12-04 21:02:54.632 INFO  [208401] [OpticksEvent::indexPhotonsCPU@2086] OpticksEvent::indexPhotonsCPU sequence 1,1,2 phosel 1,1,4 phosel.hasData 0 recsel0 1,10,1,4 recsel0.hasData 0
+    2017-12-04 21:02:54.632 INFO  [208401] [OpticksEvent::indexPhotonsCPU@2103] indexSequence START 
+
+
+
+::
+
+    simon:opticks blyth$ g4-cc HepRandomEngine::put
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/externals/clhep/src/RandomEngine.cc:std::ostream & HepRandomEngine::put (std::ostream & os) const {
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/externals/clhep/src/RandomEngine.cc:  std::cerr << "HepRandomEngine::put called -- no effect!\n";
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/externals/clhep/src/RandomEngine.cc:std::vector<unsigned long> HepRandomEngine::put () const {
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/source/externals/clhep/src/RandomEngine.cc:  std::cerr << "v=HepRandomEngine::put() called -- no data!\n";
+    simon:opticks blyth$ vi /usr/local/opticks/externals/g4/geant4_10_02_p01/source/externals/clhep/src/RandomEngine.cc
+    simon:opticks blyth$ 
+
+
+
 difficult step : aligning consumption
 ----------------------------------------
 
@@ -123,6 +166,7 @@ review G4 random
    g4-;g4-cls Randomize
    g4-;g4-cls Random
    g4-;g4-cls RandomEngine
+   g4-;g4-cls NonRandomEngine
    g4-;g4-cls JamesRandom
 
 

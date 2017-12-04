@@ -7,9 +7,65 @@ negative n eg -12 for December of last year.
 Dont use colons in section text for easy title grepping.
 
 
+2017 December
+--------------
+
+**Aim : "--align" mode, taming randomness for perfectly aligned bi-simulation**
+
+* investigate approaches allowing use of the same RNG sequence with Opticks and Geant4
+
+  * if this turns out to be possible, can expect perfect (float precision level) matching 
+  * would be an extremely powerful debugging tool, problems will then be directly apparent 
+
+* add diffuse emitters for testing all angle incidence
+* rework specular reflection to match Geant4, fixing polarization discrepancy
+
+
+2017 November
+--------------
+
+**Focus : Improving automation/depth of integration testing**
+
+* work with LZ user, on AssimpImporter issue
+* introduce "--reflectcheat" so photons can stay aligned thru BR/SR 
+* direct point-by-point deviation comparisons, for use with common input photons, 
+  photons stay aligned until meet RNG (eg from BR/SR/SC/AB)  
+* introduce "--testauto" mode that dynamically changes surfaces (simplifying photon histories)
+  allowing checks of intersect positions against SDFs without duplicating all the ~50 integration test 
+  geometries 
+* introduce G4 only universe wrapper volume, to reconcile the boundary-vs-volume 
+  model difference between G4 and Opticks
+* get bounce truncation to match between Opticks and CFG4, eg for hall-of-mirrors situation
+* reimplement the cfg4/CRecorder monolith into many pieces including CG4Ctx for better clarity 
+* translation of optical surfaces to Geant4 motivates a reworking of surface geometry
+  representation, enhanced persisting simplifies processing and conversion to Geant4  
+
+2017 October
+--------------
+
+**Focus : push analytic NCSG throughout the Opticks processing/validation chain**
+
+* enable any CSG solid to emit test photons, generated CPU side such that 
+  Opticks and Geant4 simulations are given exactly the same input photons
+* pushed Opticks analytic geometry support thru to okg4, allowing Opticks test geometries to 
+  be auto-converted to Geant4 ones : for okg4 comparisons
+* Opticks integration testing : automate comparison of intersect positions with geometry SDF values 
+* debugged Opticks installs on two new Linux distros, Axel desktop, Shandong headless GPU server 
+* presenting Opticks to the plenary session of the Geant4 Collaboration Meeting in Australia
+
 
 2017 September
 ----------------
+
+**Focus : embedded application of Opticks**
+
+* work on some techniques to use Opticks on headless GPU server machines, 
+  such as combining pure compute raytrace geometry snapshots into mp4 movies
+* work with Tao on Opticks/JUNO embedding 
+* implement embedded mode of Opticks operation using okop/OpMgr to run  
+  inside another process, such as JUNO offline
+* introduce okop/OpMgr (pure compute Opticks manager) 
+  and usage on headless GPU servers
 
 Big Geometry
 ~~~~~~~~~~~~~~~
@@ -20,6 +76,8 @@ Big Geometry
 
 2017 August : ellipsoid, torus solve-quartic troubles, hyperboloid, SOR
 ---------------------------------------------------------------------------
+
+**Focus : tricky primitives**
 
 Overview
 ~~~~~~~~~~~

@@ -211,6 +211,8 @@ set(SOURCES
     CCollector.cc
     CRunAction.cc
     CEventAction.cc
+
+    CRandomEngine.cc
 )
 
 set(HEADERS
@@ -292,6 +294,8 @@ set(HEADERS
     CCollector.hh
     CRunAction.hh
     CEventAction.hh
+
+    
 )
 
 add_library(${name} SHARED ${SOURCES})

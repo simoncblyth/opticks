@@ -247,6 +247,8 @@ void OpticksCfg<Listener>::init()
    m_desc.add_options()
        ("zrngtest",  "swap OptiX generate program with zrngtest standin for debugging, saving 16 uniform rand into photon buffer") ;
 
+   m_desc.add_options()
+       ("align",  "attempt to use cuRAND GPU generated random number sequence within Geant4") ;
 
 
 

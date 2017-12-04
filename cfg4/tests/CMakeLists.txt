@@ -27,6 +27,7 @@ set(TEST_SOURCES
 
     CMakerTest.cc
     CPhotonTest.cc
+    CRandomEngineTest.cc
 
 )
 

@@ -28,6 +28,7 @@ class CGenerator ;
 class CCollector ; 
 class CRecorder ; 
 class CStepRec ; 
+class CRandomEngine ; 
 
 //class ActionInitialization ;
 class CRunAction ; 
@@ -144,6 +145,7 @@ class CFG4_API CG4
 
         CG4Ctx                m_ctx ;       
 
+        CRandomEngine*        m_rng ; 
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 

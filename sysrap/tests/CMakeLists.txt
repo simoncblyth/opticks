@@ -24,7 +24,25 @@ set(TEST_SOURCES
 
    OpticksCSGTest.cc
    hash_define_without_value.cc
+
 )
+
+set(_TEST_SOURCES
+   UnwindTest.cc
+)
+
+
+set(OBJC_TEST_SOURCES
+)
+
+set(_OBJC_TEST_SOURCES
+
+   NSLogTest_m.m
+   NSLogTest_mm.mm
+)
+
+
+
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
@@ -36,5 +54,25 @@ foreach(SRC ${TEST_SOURCES})
     target_link_libraries(${TGT} ${LIBRARIES} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
+
+
+foreach(SRC ${OBJC_TEST_SOURCES})
+    get_filename_component(TGT ${SRC} NAME_WE)
+    add_executable(${TGT} ${SRC})
+
+    add_test(${name}.${TGT} ${TGT})
+    add_dependencies(check ${TGT})
+
+    target_link_libraries(${TGT} ${LIBRARIES} "-framework Foundation")
+    install(TARGETS ${TGT} DESTINATION lib)
+endforeach()
+
+
+
+
+
+
+
+
 
 

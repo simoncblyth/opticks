@@ -37,6 +37,7 @@
 
 //cg4-
 
+#include "CRandomEngine.hh"
 #include "CPhysics.hh"
 #include "CGeometry.hh"
 #include "CMaterialLib.hh"
@@ -130,6 +131,7 @@ CG4::CG4(OpticksHub* hub)
      m_run(m_ok->getRun()),
      m_cfg(m_ok->getCfg()),
      m_ctx(m_ok),
+     m_rng(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
      m_physics(new CPhysics(this)),
      m_runManager(m_physics->getRunManager()),
      m_geometry(new CGeometry(m_hub)),
@@ -382,6 +384,9 @@ void CG4::postpropagate()
 
     dynamic_cast<CSteppingAction*>(m_sa)->report("CG4::postpropagate");
 
+
+
+    if(m_rng) m_rng->postpropagate();  
 
     LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
 }
