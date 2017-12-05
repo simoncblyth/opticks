@@ -87,6 +87,11 @@ CSurfaceBridge* CG4::getSurfaceBridge()
 {
     return m_geometry->getSurfaceBridge() ; 
 }
+CRandomEngine* CG4::getRandomEngine() const 
+{
+    return m_engine ; 
+}
+
 
 
 CRecorder* CG4::getRecorder()
@@ -122,7 +127,17 @@ double CG4::getCtxRecordFraction() const
     return m_ctx._record_fraction ; 
 }
 
+unsigned long long CG4::getSeqHis() const 
+{
+    return m_recorder->getSeqHis() ;
+}
+unsigned long long CG4::getSeqMat() const 
+{
+    return m_recorder->getSeqMat() ; 
+}
 
+
+const CG4* CG4::INSTANCE = NULL ; 
 
 CG4::CG4(OpticksHub* hub) 
    :
@@ -131,7 +146,7 @@ CG4::CG4(OpticksHub* hub)
      m_run(m_ok->getRun()),
      m_cfg(m_ok->getCfg()),
      m_ctx(m_ok),
-     m_rng(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
+     m_engine(m_ok->isAlign() ? new CRandomEngine(this) : NULL ),
      m_physics(new CPhysics(this)),
      m_runManager(m_physics->getRunManager()),
      m_geometry(new CGeometry(m_hub)),
@@ -156,6 +171,7 @@ CG4::CG4(OpticksHub* hub)
 {
      OK_PROFILE("CG4::CG4");
      init();
+     INSTANCE = this ; 
 }
 
 void CG4::init()
@@ -286,6 +302,17 @@ void CG4::snap()
 }
 
 
+void CG4::posttrack()
+{
+    if(m_ctx._optical)
+    {
+        m_recorder->posttrack();
+    } 
+    if(m_engine)
+    {
+        m_engine->posttrack();
+    }
+}
 
 
 
@@ -386,7 +413,7 @@ void CG4::postpropagate()
 
 
 
-    if(m_rng) m_rng->postpropagate();  
+    if(m_engine) m_engine->postpropagate();  
 
     LOG(info) << "CG4::postpropagate(" << m_ok->getTagOffset() << ") DONE"  ;
 }

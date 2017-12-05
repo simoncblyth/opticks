@@ -35,12 +35,31 @@ void test_update()
              ;
 }
 
+
+void test_digest_vec()
+{
+   std::vector<std::string> v ; 
+   v.push_back("red");
+   v.push_back("green");
+   v.push_back("blue");
+
+   std::string dig = SDigest::digest(v); 
+
+   LOG(info) << dig 
+             ;
+}
+
+
+
+
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    test_static();
-    test_update();
+    //test_static();
+    //test_update();
+
+    test_digest_vec();
 
     return 0 ; 
 }

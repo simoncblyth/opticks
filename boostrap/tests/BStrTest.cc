@@ -113,6 +113,27 @@ void test_isplit()
 }
 
 
+
+void test_usplit()
+{
+    const char* s = "0:5,7,10:15,101,200:210" ; 
+
+    std::vector<unsigned> elem ; 
+    BStr::usplit(elem, s, ',') ; 
+
+    LOG(info) 
+        << " s " << s
+        << " elem.size() " << elem.size()  
+        ;
+
+    for(unsigned i=0 ; i < elem.size() ; i++ ) std::cout << elem[i] << std::endl ;  
+}
+
+
+
+
+
+
 void test_afterLastOrAll_(const char* s, const char* x )
 {
     char* a = BStr::afterLastOrAll(s) ; 
@@ -264,8 +285,6 @@ void test_replace_all()
 }
 
 
-
-
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
@@ -285,9 +304,10 @@ int main(int argc, char** argv)
     test_index_all();
     test_DAEIdToG4();  
     test_ekv_split();
+    test_replace_all();
 */
 
-    test_replace_all();
+    test_usplit();
 
     return 0 ; 
 }

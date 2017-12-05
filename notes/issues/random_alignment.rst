@@ -2,6 +2,145 @@ random_alignment
 =====================
 
 
+
+
+Observations from CRandomEngine
+---------------------------------
+
+* at low stat level, same sequence of code locations for each seqhis
+
+
+* Q: why does Scintillation and OpBoundary consume a flat at start of every step, 
+     but OpRayleigh OpAbsorption consumes only at the first ?
+
+
+
+
+* 31/100k do not have unique relationship between code location vector digest and seqhis
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --align 
+
+    ...
+
+    2017-12-05 20:42:22.841 ERROR [417523] [CRandomEngine::posttrack@176]  record_id 91063 m_location_vec.size() 31 digest 4a2d1dc415376ad316e8bceecdb288e8 seqhis 8cc6ccd seqmat 1232232 digest/seqhis non-uniqueness  prior 49921aa3a4c93a94e8a867762137d3cf count_mismatch 31
+    Scintillation;
+    OpBoundary;
+    OpRayleigh;
+    OpAbsorption;
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+    Scintillation;
+    OpBoundary;
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+    Scintillation;
+    OpBoundary;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    OpRayleigh;
+    Scintillation;
+    OpBoundary;
+    OpRayleigh;
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+    Scintillation;
+    OpBoundary;
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+    Scintillation;
+    OpBoundary;
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+
+
+
+
+::
+
+
+    tboolean-;tboolean-box --okg4 --align --dindex 0:10 --recpoi -D
+
+
+    2017-12-05 19:43:10.548 INFO  [396009] [CRec::initEvent@82] CRec::initEvent note recpoi not-aligned
+    HepRandomEngine::put called -- no effect!
+    2017-12-05 19:43:10.844 INFO  [396009] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+     flat   0.286072 record_id     9 count     0 step_id    -1 loc Scintillation;
+     flat   0.366332 record_id     9 count     1 step_id    -1 loc OpBoundary;
+     flat   0.942989 record_id     9 count     2 step_id    -1 loc OpRayleigh;
+     flat   0.278981 record_id     9 count     3 step_id    -1 loc OpAbsorption;
+     flat    0.18341 record_id     9 count     4 step_id    -1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.186724 record_id     9 count     5 step_id     0 loc Scintillation;
+     flat   0.265324 record_id     9 count     6 step_id     0 loc OpBoundary;
+     flat   0.452413 record_id     9 count     7 step_id     0 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.552432 record_id     9 count     8 step_id     1 loc Scintillation;
+     flat   0.223035 record_id     9 count     9 step_id     1 loc OpBoundary;
+     flat   0.594206 record_id     9 count    10 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+     flat   0.724901 record_id     9 count    11 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+    2017-12-05 19:43:10.845 INFO  [396009] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 9 pho  seqhis                 8ccd seqmat                 1232
+     flat   0.107845 record_id     8 count    12 step_id     2 loc Scintillation;
+     flat   0.521342 record_id     8 count    13 step_id     2 loc OpBoundary;
+     flat   0.776012 record_id     8 count    14 step_id     2 loc OpRayleigh;
+     flat   0.704118 record_id     8 count    15 step_id     2 loc OpAbsorption;
+     flat   0.396072 record_id     8 count    16 step_id     2 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.766329 record_id     8 count    17 step_id     0 loc Scintillation;
+     flat   0.492083 record_id     8 count    18 step_id     0 loc OpBoundary;
+     flat   0.611373 record_id     8 count    19 step_id     0 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat    0.46715 record_id     8 count    20 step_id     1 loc Scintillation;
+     flat   0.493843 record_id     8 count    21 step_id     1 loc OpBoundary;
+     flat   0.506285 record_id     8 count    22 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+     flat   0.230762 record_id     8 count    23 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+    2017-12-05 19:43:10.846 INFO  [396009] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 8 pho  seqhis                 8ccd seqmat                 1232
+     flat   0.786109 record_id     7 count    24 step_id     2 loc Scintillation;
+     flat  0.0865933 record_id     7 count    25 step_id     2 loc OpBoundary;
+     flat   0.542805 record_id     7 count    26 step_id     2 loc OpRayleigh;
+     flat   0.769007 record_id     7 count    27 step_id     2 loc OpAbsorption;
+     flat   0.981335 record_id     7 count    28 step_id     2 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.212876 record_id     7 count    29 step_id     0 loc Scintillation;
+     flat    0.45667 record_id     7 count    30 step_id     0 loc OpBoundary;
+     flat   0.732215 record_id     7 count    31 step_id     1 loc Scintillation;
+     flat  0.0547816 record_id     7 count    32 step_id     1 loc OpBoundary;
+     flat   0.294668 record_id     7 count    33 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+     flat   0.590065 record_id     7 count    34 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+    2017-12-05 19:43:10.847 INFO  [396009] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 7 pho  seqhis                  8bd seqmat                  122
+     flat   0.479438 record_id     6 count    35 step_id     2 loc Scintillation;
+     flat   0.734402 record_id     6 count    36 step_id     2 loc OpBoundary;
+     flat    0.59692 record_id     6 count    37 step_id     2 loc OpRayleigh;
+     flat   0.649783 record_id     6 count    38 step_id     2 loc OpAbsorption;
+     flat  0.0815703 record_id     6 count    39 step_id     2 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.588186 record_id     6 count    40 step_id     0 loc Scintillation;
+     flat   0.688171 record_id     6 count    41 step_id     0 loc OpBoundary;
+     flat   0.968151 record_id     6 count    42 step_id     0 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.510501 record_id     6 count    43 step_id     1 loc Scintillation;
+     flat   0.947696 record_id     6 count    44 step_id     1 loc OpBoundary;
+     flat   0.492074 record_id     6 count    45 step_id     2 loc Scintillation;
+     flat   0.261073 record_id     6 count    46 step_id     2 loc OpBoundary;
+     flat   0.813304 record_id     6 count    47 step_id     2 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.338329 record_id     6 count    48 step_id     3 loc Scintillation;
+     flat   0.693033 record_id     6 count    49 step_id     3 loc OpBoundary;
+     flat   0.660677 record_id     6 count    50 step_id     3 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+     flat 0.00901783 record_id     6 count    51 step_id     3 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+    2017-12-05 19:43:10.848 INFO  [396009] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 6 pho  seqhis                8cbcd seqmat                12332
+     flat   0.156998 record_id     5 count    52 step_id     4 loc Scintillation;
+     flat    0.34659 record_id     5 count    53 step_id     4 loc OpBoundary;
+     flat   0.371647 record_id     5 count    54 step_id     4 loc OpRayleigh;
+     flat     0.5632 record_id     5 count    55 step_id     4 loc OpAbsorption;
+     flat   0.624632 record_id     5 count    56 step_id     4 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.560517 record_id     5 count    57 step_id     0 loc Scintillation;
+     flat   0.999255 record_id     5 count    58 step_id     0 loc OpBoundary;
+     flat   0.317415 record_id     5 count    59 step_id     0 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+     flat   0.959877 record_id     5 count    60 step_id     1 loc Scintillation;
+     flat   0.356694 record_id     5 count    61 step_id     1 loc OpBoundary;
+     flat   0.883787 record_id     5 count    62 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+     flat    0.21871 record_id     5 count    63 step_id     1 loc OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+
+
+
 Harikari/breakpoint locating flat calls
 --------------------------------------------
 

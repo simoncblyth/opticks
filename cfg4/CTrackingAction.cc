@@ -12,7 +12,7 @@
 // cg4-
 #include "CG4Ctx.hh"
 #include "CG4.hh"
-#include "CRecorder.hh"
+//#include "CRecorder.hh"
 #include "CTrack.hh"
 #include "CTrackingAction.hh"
 
@@ -32,8 +32,8 @@ CTrackingAction::CTrackingAction(CG4* g4)
    G4UserTrackingAction(),
    m_g4(g4),
    m_ctx(g4->getCtx()),
-   m_ok(g4->getOpticks()),
-   m_recorder(g4->getRecorder())
+   m_ok(g4->getOpticks())
+   //m_recorder(g4->getRecorder())
 { 
 }
 
@@ -69,7 +69,7 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
 
     if(m_ctx._optical)
     {
-        m_recorder->posttrack();
+        m_g4->posttrack();
     } 
 }
 

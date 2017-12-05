@@ -652,7 +652,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef SCB_REFLECT_CHEAT
-                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
                 bool _reflect = _u < theReflectivity ;
                 if( !_reflect ) 
 #else
@@ -760,9 +760,9 @@ DsG4OpBoundaryProcess::GetFacetNormal(const G4ThreeVector& Momentum,
 	   do {
 	      do {
 	         alpha = G4RandGauss::shoot(0.0,sigma_alpha);
-	      } while (G4UniformRand()*f_max > std::sin(alpha) || alpha >= halfpi );
+	      } while (CG4UniformRand(__FILE__,__LINE__)*f_max > std::sin(alpha) || alpha >= halfpi );
 
-	      G4double phi = G4UniformRand()*twopi;
+	      G4double phi = CG4UniformRand(__FILE__,__LINE__)*twopi;
 
 	      G4double SinAlpha = std::sin(alpha);
 	      G4double CosAlpha = std::cos(alpha);
@@ -791,9 +791,9 @@ DsG4OpBoundaryProcess::GetFacetNormal(const G4ThreeVector& Momentum,
               do {
                  G4ThreeVector smear;
                  do {
-                    smear.setX(2.*G4UniformRand()-1.0);
-                    smear.setY(2.*G4UniformRand()-1.0);
-                    smear.setZ(2.*G4UniformRand()-1.0);
+                    smear.setX(2.*CG4UniformRand(__FILE__,__LINE__)-1.0);
+                    smear.setY(2.*CG4UniformRand(__FILE__,__LINE__)-1.0);
+                    smear.setZ(2.*CG4UniformRand(__FILE__,__LINE__)-1.0);
                  } while (smear.mag()>1.0);
                  smear = (1.-polish) * smear;
                  FacetNormal = Normal + smear;
@@ -1022,7 +1022,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	      G4double E2_abs, C_parl, C_perp;
 
 #ifdef SCB_REFLECT_CHEAT 
-          G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+          G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
           bool _transmit = _u < TransCoeff ; 
 	      if ( !_transmit ) {
 #else
@@ -1221,8 +1221,8 @@ G4double DsG4OpBoundaryProcess::GetReflectivity(G4double E1_perp,
   Reflectivity    = Reflectivity_TE + Reflectivity_TM;
 
   do {
-     if(G4UniformRand()*real(Reflectivity) > real(Reflectivity_TE))iTE = -1;
-     if(G4UniformRand()*real(Reflectivity) > real(Reflectivity_TM))iTM = -1;
+     if(CG4UniformRand(__FILE__,__LINE__)*real(Reflectivity) > real(Reflectivity_TE))iTE = -1;
+     if(CG4UniformRand(__FILE__,__LINE__)*real(Reflectivity) > real(Reflectivity_TM))iTM = -1;
   } while(iTE<0&&iTM<0);
 
   return real(Reflectivity);

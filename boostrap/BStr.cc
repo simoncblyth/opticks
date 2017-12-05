@@ -124,6 +124,8 @@ std::string BStr::firstChars( const char* s, unsigned n)
 }
 
 
+
+
 char* BStr::afterLastOrAll(const char* orig, char delim)
 {
     const char* p = strrchr(orig, delim) ;      // point at last delim, or NULL if no delim 
@@ -266,6 +268,17 @@ void BStr::isplit( std::vector<int>& elem, const char* line, char delim )
 }
 
 
+
+void BStr::uslice_append( std::vector<unsigned>& elem, const char* sli, char delim )
+{
+    std::vector<unsigned> slice ; 
+    BStr::usplit( slice, sli, delim );
+    assert( slice.size() == 2 ); 
+    unsigned u0 = slice[0] ; 
+    unsigned u1 = slice[1] ; 
+    for(unsigned u=u0 ; u < u1 ; u++)  elem.push_back(u); 
+}
+
 void BStr::usplit( std::vector<unsigned>& elem, const char* line, char delim )
 {
     if(line == NULL) return ; 
@@ -273,9 +286,16 @@ void BStr::usplit( std::vector<unsigned>& elem, const char* line, char delim )
     std::string s;
     while (getline(f, s, delim))
     {
-        int i = BStr::atoi(s.c_str(), -1);
-        unsigned u = i ; 
-        elem.push_back(u);
+        if(HasChar(s.c_str(), ':')) 
+        {
+             BStr::uslice_append(elem, s.c_str(), ':');
+        }
+        else 
+        { 
+            int i = BStr::atoi(s.c_str(), -1);
+            unsigned u = i ; 
+            elem.push_back(u);
+        }
     }
 }
 

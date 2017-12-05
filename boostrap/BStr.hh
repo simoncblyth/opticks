@@ -40,6 +40,7 @@ class BRAP_API BStr {
      static int index_all(   std::vector<unsigned>& indices, const std::vector<std::string>& elem, const char* item );
 
      static void isplit( std::vector<int>& elem, const char* line, char delim );
+     static void uslice_append( std::vector<unsigned>& elem, const char* sli, char delim );
      static void usplit( std::vector<unsigned>& elem, const char* line, char delim );
      static void fsplit( std::vector<float>& elem, const char* line, char delim );
      static void fsplitEnv( std::vector<float>& elem, const char* envvar, const char* fallback, char delim=' ' );

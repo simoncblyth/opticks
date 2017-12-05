@@ -91,8 +91,11 @@ class CFG4_API CRecorder {
         static const char* PRE ; 
         static const char* POST ; 
    public:
-        std::string getStepActionString();
-        CRec*       getCRec() const ; 
+        std::string        getStepActionString();
+        CRec*              getCRec() const ; 
+        unsigned long long getSeqHis() const ;
+        unsigned long long getSeqMat() const ;
+
    public:
         CRecorder(CG4* g4, CGeometry* geometry, bool dynamic); // CG4::CG4
         void postinitialize();               // called after G4 geometry constructed in CG4::postinitialize

@@ -6,6 +6,7 @@
 */
 
 #include <string>
+#include <vector>
 
 
 #if defined __APPLE__
@@ -31,6 +32,7 @@ class SYSRAP_API SDigest
    public:
        static std::string md5digest( const char* buffer, int len );
        static std::string digest( void* buffer, int len );
+       static std::string digest( std::vector<std::string>& ss );
    public:
        SDigest();
        virtual ~SDigest();

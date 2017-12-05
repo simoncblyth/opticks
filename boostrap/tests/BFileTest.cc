@@ -357,6 +357,37 @@ void test_SplitPath()
 
 
 
+void test_prefixShorten_1()
+{
+    std::string path_ = BFile::FormPath("/some/other/dir/cfg4/DsG4OpBoundaryProcess.cc" ); 
+    const char* path = path_.c_str();
+    std::string abbr = BFile::prefixShorten(path, "$OPTICKS_HOME/" ); 
+    LOG(info) 
+             << " path [" << path << "]"
+             << " abbr [" << abbr << "]"
+             ; 
+
+}
+
+
+void test_prefixShorten_0()
+{
+    std::string path_ = BFile::FormPath("$OPTICKS_HOME/cfg4/DsG4OpBoundaryProcess.cc" ); 
+    const char* path = path_.c_str();
+    std::string abbr = BFile::prefixShorten(path, "$OPTICKS_HOME/" ); 
+    LOG(info) 
+             << " path [" << path << "]"
+             << " abbr [" << abbr << "]"
+             ; 
+
+}
+
+
+
+
+
+
+
 int main(int argc, char** argv)
 {
    PLOG_(argc, argv);
@@ -385,8 +416,10 @@ int main(int argc, char** argv)
    //test_SinceLastWriteTime();
    //test_LooksLikePath();
    //test_ParentName();
+   //test_SplitPath();
 
-   test_SplitPath();
+   test_prefixShorten_0();
+   test_prefixShorten_1();
 
    return 0 ; 
 }

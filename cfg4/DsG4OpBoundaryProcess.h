@@ -75,6 +75,8 @@
 #include "geomdefs.hh"
 #include "Randomize.hh"
 
+
+
 #include "G4RandomTools.hh"
 #include "G4RandomDirection.hh"
 
@@ -88,7 +90,10 @@
 #include "G4OpticalPhoton.hh"
 #include "G4TransportationManager.hh"
 
-class CG4 ; 
+
+#include "CRandomEngine.hh"
+#include "CG4.hh"
+
 class CMaterialLib ; 
 class Opticks ; 
 
@@ -261,7 +266,7 @@ G4bool DsG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
 {
   /* Returns a random boolean variable with the specified probability */
 
-  return (G4UniformRand() < prob);
+  return (CG4UniformRand(__FILE__,__LINE__) < prob);
 }
 
 inline
@@ -292,7 +297,7 @@ void DsG4OpBoundaryProcess::SetModel(G4OpticalSurfaceModel model)
 inline
 void DsG4OpBoundaryProcess::ChooseReflection()
 {
-                 G4double rand = G4UniformRand();
+                 G4double rand = CG4UniformRand(__FILE__,__LINE__);
                  if ( rand >= 0.0 && rand < prob_ss ) {
                     theStatus = SpikeReflection;
                     theFacetNormal = theGlobalNormal;

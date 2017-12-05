@@ -118,5 +118,14 @@ std::string SDigest::digest( void* buffer, int len )
     return dig.finalize();
 }
 
+std::string SDigest::digest( std::vector<std::string>& ss )
+{
+    SDigest dig ; 
+    for(unsigned i=0 ; i < ss.size() ; i++) dig.update( ss[i] ) ;
+    return dig.finalize();
+}
+
+
+
 
 

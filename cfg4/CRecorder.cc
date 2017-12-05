@@ -42,6 +42,17 @@ CRec* CRecorder::getCRec() const
     return m_crec ;  
 }
 
+unsigned long long CRecorder::getSeqHis() const 
+{
+    return m_photon._seqhis ; 
+}
+unsigned long long CRecorder::getSeqMat() const 
+{
+    return m_photon._seqmat ; 
+}
+
+
+
 CRecorder::CRecorder(CG4* g4, CGeometry* geometry, bool dynamic) 
    :
    m_g4(g4),
@@ -84,6 +95,7 @@ void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
 void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAction
 {
     assert(!m_live);
+
 
     if(m_ctx._dbgrec) LOG(info) << "CRecorder::posttrack" ; 
 
@@ -164,6 +176,9 @@ By virtue of the Cerenkov/Scintillation process setting:
      SetTrackSecondariesFirst(true)
   
 If not so, this will "join" unrelated tracks ?
+
+TODO: assert on this 
+
 
 **/
 

@@ -43,6 +43,12 @@ class OpticksEvent ;
 class Opticks ; 
 template <typename T> class OpticksCfg ;
 
+
+
+#define CG4UniformRand(file, line) CG4::INSTANCE->getRandomEngine()->flat_instrumented((file), (line))
+
+
+
 /**
 
 CG4
@@ -100,6 +106,8 @@ class CFG4_API CG4
 {
         friend class CGeometry ; 
    public:
+        static const CG4* INSTANCE ; 
+   public:
         CG4(OpticksHub* hub);
         void interactive();
         void cleanup();
@@ -115,6 +123,8 @@ class CFG4_API CG4
         CSteppingAction* getSteppingAction();
         CTrackingAction* getTrackingAction();
         //int getStepId();
+
+        void posttrack();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:
@@ -124,11 +134,17 @@ class CFG4_API CG4
         void initEvent(OpticksEvent* evt);
         void snap();
    public:
+       // from CRecorder
+        unsigned long long getSeqHis() const ;
+        unsigned long long getSeqMat() const ;
+   public:
         Opticks*       getOpticks();
         OpticksHub*    getHub();
         CGeometry*     getGeometry();
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
+        CRandomEngine*   getRandomEngine() const ; 
+
         CG4Ctx&          getCtx();
         double           getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical
 
@@ -145,7 +161,7 @@ class CFG4_API CG4
 
         CG4Ctx                m_ctx ;       
 
-        CRandomEngine*        m_rng ; 
+        CRandomEngine*        m_engine ; 
         CPhysics*             m_physics ; 
         G4RunManager*         m_runManager ; 
         CGeometry*            m_geometry ; 
