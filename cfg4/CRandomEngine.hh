@@ -54,6 +54,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         CLHEP::HepRandomEngine*  m_engine ; 
 
         unsigned                      m_count ; 
+        int                           m_harikari ; 
         std::map<unsigned, unsigned>  m_record_count ; 
 
         

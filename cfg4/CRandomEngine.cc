@@ -1,12 +1,21 @@
 
 #include "PLOG.hh"
+
+#include "SSys.hh"
 #include "Opticks.hh"
 #include "CG4.hh"
 
 #include "Randomize.hh"
 #include "CLHEP/Random/NonRandomEngine.h"
 
+#include "G4String.hh"
+#include "G4VProcess.hh"
+
+#include "CProcess.hh"
 #include "CRandomEngine.hh"
+
+
+
 
 
 
@@ -24,7 +33,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_james(new CLHEP::HepJamesRandom()),
     m_nonran(new CLHEP::NonRandomEngine()),
     m_engine(m_james),
-    m_count(0)
+    m_count(0),
+    m_harikari(SSys::getenvint("OPTICKS_CRANDOMENGINE_HARIKARI", -1 ))
 {
     init();
 }
@@ -55,14 +65,24 @@ double CRandomEngine::flat()
 { 
     double _flat =  m_engine->flat() ;  
 
+    G4VProcess* proc = CProcess::CurrentProcess() ; 
+    const G4String& name = proc->GetProcessName()  ; 
+
     LOG(info) << " record_id " << m_ctx._record_id 
               << " count " << m_count
               << " flat " << _flat 
+              << " processName " << name
               ; 
 
     m_record_count[m_ctx._record_id]++ ; 
-    m_count++ ; 
 
+    if( int(m_count) == m_harikari ) 
+    {
+        LOG(error) << "OPTICKS_CRANDOMENGINE_HARIKARI" ; 
+        assert(0) ;  
+    }
+
+    m_count++ ; 
 
     return _flat ; 
 }

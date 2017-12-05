@@ -2,6 +2,340 @@ random_alignment
 =====================
 
 
+Harikari/breakpoint locating flat calls
+--------------------------------------------
+
+::
+
+
+    export OPTICKS_CRANDOMENGINE_HARIKARI=0
+    tboolean-;tboolean-box --okg4 --align -D
+
+
+    (lldb) b CRandomEngine::flat 
+    Breakpoint 1: no locations (pending).
+    WARNING:  Unable to resolve breakpoint to any actual locations.
+    (lldb) r
+
+
+    (lldb) bt
+    * thread #1: tid = 0x4c4f7, 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59
+      * frame #1: 0x0000000105ac4b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001108cffd0) + 23 at G4VProcess.cc:97
+        frame #2: 0x0000000105ac6992 libG4processes.dylib`G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength(this=<unavailable>, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 82 at G4VRestDiscreteProcess.cc:78
+        frame #3: 0x0000000105223d67 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength() [inlined] G4VProcess::PostStepGPIL(this=0x00000001108cffd0, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 14 at G4VProcess.hh:503
+        frame #4: 0x0000000105223d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000110850420) + 249 at G4SteppingManager2.cc:172
+        frame #5: 0x000000010522273e libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110850420) + 366 at G4SteppingManager.cc:180
+        frame #6: 0x000000010522c771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001108503e0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #7: 0x0000000105184727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110850350, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #8: 0x0000000105106611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c744ee0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #9: 0x00000001051064db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c744ee0, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #10: 0x0000000105105913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c744ee0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #11: 0x0000000104473fc6 libcfg4.dylib`CG4::propagate(this=0x000000010c744840) + 1670 at CG4.cc:354
+        frame #12: 0x000000010457b25a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #13: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #14: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) f 1
+    frame #1: 0x0000000105ac4b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001108cffd0) + 23 at G4VProcess.cc:97
+       94   
+       95   void G4VProcess::ResetNumberOfInteractionLengthLeft()
+       96   {
+    -> 97     theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+       98     theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
+       99   }
+       100 
+      
+
+    ##  1st 4 consumptions all from same piece of code for each active process
+    ##
+    ##   (i think the first 2 of these are never used, they have no Opticks equivalent )
+    ##    will need to artificially burn these two to stay aligned 
+
+    (lldb) p this->theProcessName
+    (G4String) $0 = (std::__1::string = "Scintillation")
+
+    (lldb) p this->theProcessName
+    (G4String) $1 = (std::__1::string = "OpBoundary")
+
+
+    ## the below two have direct equivalent
+
+    (lldb) p this->theProcessName
+    (G4String) $2 = (std::__1::string = "OpRayleigh")
+    (lldb) 
+    (lldb) p this->theProcessName
+    (G4String) $3 = (std::__1::string = "OpAbsorption")
+    (lldb) 
+
+
+Direct equivalents::
+
+     59 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
+     60 {
+     61     //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)
+     62     float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
+     63 
+     64     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
+     65     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
+     66 
+
+
+    (lldb) bt
+    * thread #1: tid = 0x4c4f7, 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59
+        frame #1: 0x000000010439875d libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x00000001108d1ea0, aTrack=0x000000011eaef750, aStep=0x00000001108505b0) + 7357 at DsG4OpBoundaryProcess.cc:655
+        frame #2: 0x0000000105224e2b libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x0000000110850420, np=<unavailable>) + 59 at G4SteppingManager2.cc:530
+        frame #3: 0x0000000105224d2b libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x0000000110850420) + 139 at G4SteppingManager2.cc:502
+        frame #4: 0x0000000105222909 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110850420) + 825 at G4SteppingManager.cc:209
+        frame #5: 0x000000010522c771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001108503e0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #6: 0x0000000105184727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110850350, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #7: 0x0000000105106611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c744ee0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #8: 0x00000001051064db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c744ee0, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #9: 0x0000000105105913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c744ee0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #10: 0x0000000104473fc6 libcfg4.dylib`CG4::propagate(this=0x000000010c744840) + 1670 at CG4.cc:354
+        frame #11: 0x000000010457b25a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #12: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #13: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) 
+    (lldb) f 1
+    frame #1: 0x000000010439875d libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x00000001108d1ea0, aTrack=0x000000011eaef750, aStep=0x00000001108505b0) + 7357 at DsG4OpBoundaryProcess.cc:655
+       652  
+       653  
+       654  #ifdef SCB_REFLECT_CHEAT
+    -> 655                  G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+       656                  bool _reflect = _u < theReflectivity ;
+       657                  if( !_reflect ) 
+       658  #else
+    (lldb) p m_reflectcheat
+    (bool) $4 = false
+    (lldb) 
+
+
+::
+
+    (lldb) bt
+    * thread #1: tid = 0x4c4f7, 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010c744a30) + 19 at CRandomEngine.cc:59
+        frame #1: 0x000000010439e6d7 libcfg4.dylib`DsG4OpBoundaryProcess::G4BooleanRand(this=0x00000001108d1ea0, prob=0) const + 39 at DsG4OpBoundaryProcess.h:264
+        frame #2: 0x000000010439baeb libcfg4.dylib`DsG4OpBoundaryProcess::DoAbsorption(this=0x00000001108d1ea0) + 43 at DsG4OpBoundaryProcess.cc:1240
+        frame #3: 0x00000001043987cf libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x00000001108d1ea0, aTrack=0x000000011eaef750, aStep=0x00000001108505b0) + 7471 at DsG4OpBoundaryProcess.cc:662
+        frame #4: 0x0000000105224e2b libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x0000000110850420, np=<unavailable>) + 59 at G4SteppingManager2.cc:530
+        frame #5: 0x0000000105224d2b libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x0000000110850420) + 139 at G4SteppingManager2.cc:502
+        frame #6: 0x0000000105222909 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110850420) + 825 at G4SteppingManager.cc:209
+        frame #7: 0x000000010522c771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001108503e0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #8: 0x0000000105184727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110850350, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #9: 0x0000000105106611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c744ee0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #10: 0x00000001051064db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c744ee0, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #11: 0x0000000105105913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c744ee0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #12: 0x0000000104473fc6 libcfg4.dylib`CG4::propagate(this=0x000000010c744840) + 1670 at CG4.cc:354
+        frame #13: 0x000000010457b25a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #14: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #15: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 2
+    frame #2: 0x000000010439baeb libcfg4.dylib`DsG4OpBoundaryProcess::DoAbsorption(this=0x00000001108d1ea0) + 43 at DsG4OpBoundaryProcess.cc:1240
+       1237 
+       1238     theStatus = Absorption;
+       1239 
+    -> 1240     if ( G4BooleanRand(theEfficiency) ) 
+       1241     {
+       1242         // EnergyDeposited =/= 0 means: photon has been detected
+       1243         theStatus = Detection;
+    (lldb) p this->theProcessName
+    (G4String) $6 = (std::__1::string = "OpBoundary")
+
+
+
+
+
+TO_SA[4]::
+
+     648         else if (type == dielectric_dielectric)
+     649         {
+     650             if ( theFinish == polishedfrontpainted || theFinish == groundfrontpainted )
+     651             {
+     652 
+     653 
+     654 #ifdef SCB_REFLECT_CHEAT
+     655                 G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+     656                 bool _reflect = _u < theReflectivity ;
+     657                 if( !_reflect )
+     658 #else
+     659                 if( !G4BooleanRand(theReflectivity) )
+     660 #endif
+     661                 {
+     662                     DoAbsorption();
+     663                 }
+     664                 else
+     665                 {
+     666                     if ( theFinish == groundfrontpainted ) theStatus = LambertianReflection;
+     667                     DoReflection();
+     668                 }
+     669             }
+     670             else
+
+
+TO_SA[5]::
+
+    1232 void DsG4OpBoundaryProcess::DoAbsorption()
+    1233 {
+    1234     //LOG(info) << "DsG4OpBoundaryProcess::DoAbsorption"
+    1235     //          << " theEfficiency " << theEfficiency
+    1236     //          ; 
+    1237 
+    1238     theStatus = Absorption;
+    1239 
+    1240     if ( G4BooleanRand(theEfficiency) )
+    1241     {
+    1242         // EnergyDeposited =/= 0 means: photon has been detected
+    1243         theStatus = Detection;
+    1244         aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+    1245     }
+    1246     else
+    1247     {
+    1248         aParticleChange.ProposeLocalEnergyDeposit(0.0);
+    1249     }
+    1250 
+    1251     NewMomentum = OldMomentum;
+    1252     NewPolarization = OldPolarization;
+    1253 
+    1254 //  aParticleChange.ProposeEnergy(0.0);
+    1255     aParticleChange.ProposeTrackStatus(fStopAndKill);
+    1256 }
+
+
+
+
+
+* TO SA 
+
+
+====  =================   =====================================================   =====================================================================
+gen    proc                 loc
+====  =================   =====================================================   =====================================================================
+ 0     Scintillation        G4VProcess::ResetNumberOfInteractionLengthLeft          theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+ 1     OpBoundary           G4VProcess::ResetNumberOfInteractionLengthLeft          ditto 
+ 2     OpRayleigh           G4VProcess::ResetNumberOfInteractionLengthLeft          ditto
+ 3     OpAbsorption         G4VProcess::ResetNumberOfInteractionLengthLeft          ditto
+----  -----------------   -----------------------------------------------------   ---------------------------------------------------------------------
+ 4     OpBoundary           DsG4OpBoundaryProcess::PostStepDoIt                     theReflectivity decision (+655)
+ 5     OpBoundary           DsG4OpBoundaryProcess::DoAbsorption                     theEfficiency decision (+1240)   
+====  =================   =====================================================   =====================================================================
+
+
+
+
+
+::
+
+    (lldb) bt
+    * thread #1: tid = 0x4e7a4, 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010f4029a0) + 19 at CRandomEngine.cc:59, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x0000000104478133 libcfg4.dylib`CRandomEngine::flat(this=0x000000010f4029a0) + 19 at CRandomEngine.cc:59
+        frame #1: 0x000000010439c822 libcfg4.dylib`DsG4OpBoundaryProcess::DielectricDielectric(this=0x000000011008fe90) + 3202 at DsG4OpBoundaryProcess.cc:1025
+        frame #2: 0x0000000104398828 libcfg4.dylib`DsG4OpBoundaryProcess::PostStepDoIt(this=0x000000011008fe90, aTrack=0x000000011e804640, aStep=0x000000011000e560) + 7560 at DsG4OpBoundaryProcess.cc:672
+        frame #3: 0x0000000105224e2b libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x000000011000e3d0, np=<unavailable>) + 59 at G4SteppingManager2.cc:530
+        frame #4: 0x0000000105224d2b libG4tracking.dylib`G4SteppingManager::InvokePostStepDoItProcs(this=0x000000011000e3d0) + 139 at G4SteppingManager2.cc:502
+        frame #5: 0x0000000105222909 libG4tracking.dylib`G4SteppingManager::Stepping(this=0x000000011000e3d0) + 825 at G4SteppingManager.cc:209
+        frame #6: 0x000000010522c771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000011000e390, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #7: 0x0000000105184727 libG4event.dylib`G4EventManager::DoProcessing(this=0x000000011000e300, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #8: 0x0000000105106611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010f402e50, i_event=0) + 49 at G4RunManager.cc:399
+        frame #9: 0x00000001051064db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010f402e50, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #10: 0x0000000105105913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010f402e50, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #11: 0x0000000104473fc6 libcfg4.dylib`CG4::propagate(this=0x000000010f4027b0) + 1670 at CG4.cc:354
+        frame #12: 0x000000010457b25a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #13: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #14: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) f 1
+    frame #1: 0x000000010439c822 libcfg4.dylib`DsG4OpBoundaryProcess::DielectricDielectric(this=0x000000011008fe90) + 3202 at DsG4OpBoundaryProcess.cc:1025
+       1022           G4double E2_abs, C_parl, C_perp;
+       1023 
+       1024 #ifdef SCB_REFLECT_CHEAT 
+    -> 1025           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+       1026           bool _transmit = _u < TransCoeff ; 
+       1027           if ( !_transmit ) {
+       1028 #else
+    (lldb) 
+
+
+
+
+Repeating with "TO 
+
+
+DsG4OpBoundaryProcess::DielectricDielectric  DsG4OpBoundaryProcess.cc +1025
+
+::
+
+    1022           G4double E2_abs, C_parl, C_perp;
+    1023 
+    1024 #ifdef SCB_REFLECT_CHEAT 
+    1025           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : G4UniformRand() ;   // --reflectcheat 
+    1026           bool _transmit = _u < TransCoeff ;
+    1027           if ( !_transmit ) {
+    1028 #else
+    1029           if ( !G4BooleanRand(TransCoeff) ) {
+    1030 #endif
+    1031 
+    1032              // Simulate reflection
+    1033 
+
+
+::
+
+    (lldb) p theProcessName
+    (G4String) $4 = (std::__1::string = "Scintillation")
+
+
+
+Hmm need to access current process, so can dump a summary 
+-------------------------------------------------------------
+
+::
+
+    (lldb) p theProcessName
+    (G4String) $6 = (std::__1::string = "OpBoundary")
+    (lldb) f 3
+    frame #3: 0x0000000105224e2b libG4tracking.dylib`G4SteppingManager::InvokePSDIP(this=0x000000011000e3d0, np=<unavailable>) + 59 at G4SteppingManager2.cc:530
+       527  {
+       528           fCurrentProcess = (*fPostStepDoItVector)[np];
+       529           fParticleChange 
+    -> 530              = fCurrentProcess->PostStepDoIt( *fTrack, *fStep);
+       531  
+       532           // Update PostStepPoint of Step according to ParticleChange
+       533       fParticleChange->UpdateStepForPostStep(fStep);
+    (lldb) 
+
+
+
+
+TO BT BT SA::
+
+    2017-12-05 16:31:24.775 INFO  [339989] [CRec::initEvent@82] CRec::initEvent note recstp
+    HepRandomEngine::put called -- no effect!
+    2017-12-05 16:31:25.073 INFO  [339989] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 0 flat 0.286072 processName Scintillation
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 1 flat 0.366332 processName OpBoundary
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 2 flat 0.942989 processName OpRayleigh
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 3 flat 0.278981 processName OpAbsorption
+
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 4 flat 0.18341 processName OpBoundary
+
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 5 flat 0.186724 processName Scintillation
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 6 flat 0.265324 processName OpBoundary
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 7 flat 0.452413 processName OpBoundary
+
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 8 flat 0.552432 processName Scintillation
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 9 flat 0.223035 processName OpBoundary
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 10 flat 0.594206 processName OpBoundary
+    2017-12-05 16:31:25.074 INFO  [339989] [CRandomEngine::flat@71]  record_id 0 count 11 flat 0.724901 processName OpBoundary
+    2017-12-05 16:31:25.074 INFO  [339989] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+
+
+
 
 CRandomEngine standin to investigate number and position of G4UniformRand flat calls
 ---------------------------------------------------------------------------------------

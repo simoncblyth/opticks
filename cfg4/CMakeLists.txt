@@ -213,6 +213,7 @@ set(SOURCES
     CEventAction.cc
 
     CRandomEngine.cc
+    CProcess.cc
 )
 
 set(HEADERS
