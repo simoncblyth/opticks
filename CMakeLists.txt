@@ -9,7 +9,7 @@ set(CMAKE_USER_MAKE_RULES_OVERRIDE_CXX ${CMAKE_SOURCE_DIR}/cmake/Modules/Geant4M
 set(name Opticks)
 project(${name})
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/Modules") 
+set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/Modules") 
 set(OptiX_INSTALL_DIR "/tmp"             CACHE PATH   "Path to OptiX installed location.")
 set(COMPUTE_CAPABILITY "0"               CACHE STRING "GPU Compute Capability eg one of 0,30,50,52 " )
 
@@ -104,7 +104,7 @@ set(REST ON CACHE BOOL "Build OK and CFG4 packages")
 if(REST)
    add_subdirectory(ok)
 
-   find_package(Geant4 QUIET)
+   find_package(Geant4)
    if(Geant4_FOUND)
       add_subdirectory(cfg4)
       add_subdirectory(okg4)

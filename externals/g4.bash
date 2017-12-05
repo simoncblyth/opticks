@@ -175,13 +175,17 @@ g4-edir(){ echo $(opticks-home)/g4 ; }
 #g4-prefix(){  echo $(opticks-prefix)/externals ; }
 
 g4-prefix(){ 
-    case $NODE_TAG in 
-       MGB) echo $HOME/local/opticks/externals ;;
-         D) echo /usr/local/opticks/externals ;;
-         X) echo /opt/geant4 ;;
-         *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
-    esac
- }
+    if [ -n "$OPTICKS_GEANT4_HOME" ];then
+        echo "$OPTICKS_GEANT4_HOME"
+    else
+        case $NODE_TAG in 
+           MGB) echo $HOME/local/opticks/externals ;;
+             D) echo /usr/local/opticks/externals ;;
+             X) echo /opt/geant4 ;;
+             *) echo ${LOCAL_BASE:-/usr/local}/opticks/externals ;;
+        esac
+    fi
+}
 
 g4-libsuffix(){ 
     case $NODE_TAG in 

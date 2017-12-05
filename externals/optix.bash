@@ -3378,7 +3378,9 @@ optix-export(){
    export OPTIX_SAMPLES_INSTALL_DIR=$(optix-samples-install-dir)
 }
 
-optix-fold(){ 
+
+optix-fold(){ echo ${OPTICKS_OPTIX_HOME:-$($FUNCNAME-)} ; }
+optix-fold-(){ 
    case $NODE_TAG in 
       D)  echo /Developer ;;
       G1) echo $(local-base) ;;
@@ -3387,6 +3389,8 @@ optix-fold(){
       *) echo $(local-base) ;;
    esac
 }
+
+
 optix-prefix(){      echo $(optix-fold)/OptiX ; }
 optix-dir(){         echo $(optix-fold)/OptiX/SDK ; }
 optix-sdk-dir-old(){ echo $(optix-fold)/OptiX_301/SDK ; }

@@ -4,6 +4,7 @@
 #include <thrust/device_vector.h>
 #include <thrust/reduce.h>
 #include <thrust/sequence.h>
+#include <thrust/iterator/discard_iterator.h>
 #include <iostream>
 
 int main(int argc, char ** argv)

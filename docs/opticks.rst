@@ -33,6 +33,20 @@ Some further .bash_profile setup simplifies use of Opticks binaries and analysis
     export PATH=$LOCAL_BASE/opticks/lib:$OPTICKS_HOME/bin:$OPTICKS_HOME/ana:$PATH
 
 
+
+Location Overrides by envvar
+-------------------------------
+
+===========================  ========================================
+envvar                        precursor-;funcname 
+===========================  ========================================
+OPTICKS_GEANT4_HOME           g4-;g4-prefix
+OPTICKS_OPTIX_HOME            optix-;optix-fold
+OPTICKS_COMPUTE_CAPABILITY    opticks-;opticks-compute-capability
+OPTICKS_OPTIX_INSTALL_DIR     opticks-;opticks-optix-install-dir
+===========================  ========================================
+
+
 Opticks Installation Overview
 --------------------------------
 

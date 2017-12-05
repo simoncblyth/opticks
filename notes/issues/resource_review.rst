@@ -24,6 +24,45 @@ Used the known layouts to convert IDPATH into SRCPATH in
 * opticks.bash:opticks-idpath2srcpath
 
 
+
+
+TODO : avoid OInterpolationTest casualty
+------------------------------------------
+
+
+::
+
+    2017-12-05 12:21:49.718 ERROR [257952] [*GBndLib::createBufferForTex2d@677] GBndLib::createBufferForTex2d mat 0x7fc5e355b8e0 sur 0x7fc5e355e280
+    2017-12-05 12:21:49.720 INFO  [257952] [SLog::operator@15] OScene::OScene DONE
+    2017-12-05 12:21:49.720 INFO  [257952] [main@131]  ok 
+    2017-12-05 12:21:49.720 INFO  [257952] [GBndLib::saveAllOverride@896] GBndLib::saveAllOverride
+    2017-12-05 12:21:49.720 ERROR [257952] [GPropertyLib::saveToCache@434] GPropertyLib::saveToCache dir /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1/GBndLib name GBndLibIndex.npy type GBndLib
+    2017-12-05 12:21:49.720 ERROR [257952] [*GBndLib::createBufferForTex2d@677] GBndLib::createBufferForTex2d mat 0x7fc5e355b8e0 sur 0x7fc5e355e280
+    2017-12-05 12:21:49.722 INFO  [257952] [GPropertyLib::close@409] GPropertyLib::close type GBndLib buf 123,4,2,39,4
+    2017-12-05 12:21:49.724 ERROR [257952] [GPropertyLib::saveToCache@434] GPropertyLib::saveToCache dir /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1/GBndLib name GBndLibOptical.npy type GBndLib
+    2017-12-05 12:21:49.724 INFO  [257952] [OInterpolationTest::launch@87] OInterpolationTest::launch nb   123 nx   761 ny   984 progname             OInterpolationTest name OInterpolationTest_interpol.npy base $TMP/InterpolationTest
+    2017-12-05 12:21:49.724 INFO  [257952] [OLaunchTest::init@50] OLaunchTest entry   0 width       1 height       1 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-12-05 12:21:49.724 INFO  [257952] [OLaunchTest::launch@61] OLaunchTest entry   0 width     761 height     123 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-12-05 12:21:49.724 INFO  [257952] [OContext::close@236] OContext::close numEntryPoint 1
+    2017-12-05 12:21:49.724 INFO  [257952] [OContext::close@240] OContext::close setEntryPointCount done.
+    2017-12-05 12:21:49.737 INFO  [257952] [OContext::close@246] OContext::close m_cfg->apply() done.
+    2017-12-05 12:21:53.126 INFO  [257952] [OContext::launch@323] OContext::launch LAUNCH time: 3.38909
+    args: /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py", line 17, in <module>
+        blib = PropLib.load_GBndLib(base)
+      File "/Users/blyth/opticks/ana/proplib.py", line 96, in load_GBndLib
+        t = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLib.npy")))
+      File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/lib/npyio.py", line 369, in load
+        fid = open(file, "rb")
+    IOError: [Errno 2] No such file or directory: '/tmp/blyth/opticks/InterpolationTest/GBndLib/GBndLib.npy'
+    2017-12-05 12:21:53.281 INFO  [257952] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
+    2017-12-05 12:21:53.281 WARN  [257952] [SSys::run@53] SSys::run FAILED with  cmd python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py
+    simon:opticks blyth$ 
+
+
+
+
 TODO : eliminate envvar OPTICKS_RESOURCE_LAYOUT
 ------------------------------------------------
 
