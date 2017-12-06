@@ -67,6 +67,7 @@ set(SOURCES
     SAr.cc
     SPPM.cc
     SVec.cc
+    SMap.cc
     SDigest.cc
     SArrayDigest.cc
     SLauncher.cc
@@ -75,6 +76,7 @@ set(SOURCES
     SLog.cc
     SBase36.cc
     SSortKV.cc
+    SPairVec.cc
     md5.cc
 ) 
 
@@ -96,6 +98,7 @@ set(HEADERS
     SLog.hh
     SBase36.hh
     SSortKV.hh
+    SPairVec.hh
     OpticksCSG.h
 )
 

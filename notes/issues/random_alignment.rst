@@ -4,6 +4,408 @@ random_alignment
 
 
 
+
+skipdupe : Skipping Duplicate Locations
+-----------------------------------------
+
+* suppressing duplicate locations, to avoid sampling do/whiles, still leaves
+  a handful of unexplained non-unique digest/seqhis relations 
+
+
+::
+
+    2017-12-06 14:33:31.142 INFO  [512236] [CRandomEngine::dumpDigests@212] CRandomEngine::postpropagate
+     total     100000 skipdupe Y
+     count      88016 k:digest a95a5c961b4832149e6c00e0b5030091 v:seqhis                             8ccd num_digest_with_seqhis          1
+     count       6120 k:digest 1b1df819a447f393d0b43527f3f5f687 v:seqhis                              8bd num_digest_with_seqhis          1
+     count       5405 k:digest 58c5ea57f9622b3fb0c8aa8083abe629 v:seqhis                            8cbcd num_digest_with_seqhis          1
+     count        319 k:digest 499d2d31d49cc8564d470d967463367b v:seqhis                           8cbbcd num_digest_with_seqhis          1
+     count         25 k:digest a7337d2cea87866d40415eb39bffc9b2 v:seqhis                          8cbbbcd num_digest_with_seqhis          1
+     count         23 k:digest 8ac3a348be685c9f97d40610090a2569 v:seqhis                            86ccd num_digest_with_seqhis          1
+     count         21 k:digest e04ff8d4ab3e7aebf93d4571245e7496 v:seqhis                              86d num_digest_with_seqhis          1
+     count         18 k:digest fb9477d53c9da7877c5137576c192bfb v:seqhis                              4cd num_digest_with_seqhis          1
+     count          9 k:digest 5db9eaec68e0b85671eb6382f1b9b3dc v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          2
+     count          7 k:digest af98026c6adb2c0c86dbaa8d046bf9c5 v:seqhis                            8cc6d num_digest_with_seqhis          1
+     count          7 k:digest a36370f0ba4be0496741d55546573dfb v:seqhis                            8c6cd num_digest_with_seqhis          1
+     count          6 k:digest a4594d9c1e784f890ff11eb36c7467e1 v:seqhis                               4d num_digest_with_seqhis          1
+     count          4 k:digest 3e2458fc062bfa968d894c2233027b55 v:seqhis                             4ccd num_digest_with_seqhis          1
+     count          4 k:digest 6ae1c42f08f226e87d52d4ccfdfea9c1 v:seqhis                          8cc6ccd num_digest_with_seqhis          1
+     count          2 k:digest 89302d15e1f813009de20699b686dd1c v:seqhis                           86cbcd num_digest_with_seqhis          1
+     count          2 k:digest 8807f7cbe9208e84cba42118e4b0d085 v:seqhis                         8cbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest 822511c4f603745132253ae9853a1621 v:seqhis                           8cb6cd num_digest_with_seqhis          2
+     count          1 k:digest 774eb4a6b992a81ce5066581bfb2b8cf v:seqhis                             86bd num_digest_with_seqhis          1
+     count          1 k:digest 679933081af4b8cda6fb216a0b1b058a v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          2
+     count          1 k:digest 6301d5f032aab2948b9cfa79e40498d2 v:seqhis                           8cbc6d num_digest_with_seqhis          1
+     count          1 k:digest 5069d2b7a3d45c4c2b371499aa96850f v:seqhis                           8cb6cd num_digest_with_seqhis          2
+     count          1 k:digest b698f9c0c43c4b335083b684472190cc v:seqhis                         8cbbb6cd num_digest_with_seqhis          1
+     count          1 k:digest becc05341fb68e31a2cb58d890d5df0c v:seqhis                        8cbbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest bfc7191b635669bf13926430ab5db6ae v:seqhis                          8cbb6cd num_digest_with_seqhis          1
+     count          1 k:digest 4e8993d03a0007471f926548290046b5 v:seqhis                           8b6ccd num_digest_with_seqhis          1
+     count          1 k:digest e294c3ebb01bba22925cfd880175d115 v:seqhis                            4cbcd num_digest_with_seqhis          1
+     count          1 k:digest ef80910914049c0df57b4fa6c54ce927 v:seqhis                         8cbbbc6d num_digest_with_seqhis          1
+     count          1 k:digest 055fa8e30937f3a10e808193ab925fa5 v:seqhis                             4bcd num_digest_with_seqhis          1
+    2017-12-06 14:33:31.142 INFO  [512236] [CRandomEngine::dumpDigests@212] CRandomEngine::postpropagate
+     total     100000 skipdupe Y
+     count      88016 k:digest a95a5c961b4832149e6c00e0b5030091 v:seqhis                             8ccd num_digest_with_seqhis          1
+     count       6120 k:digest 1b1df819a447f393d0b43527f3f5f687 v:seqhis                              8bd num_digest_with_seqhis          1
+     count       5405 k:digest 58c5ea57f9622b3fb0c8aa8083abe629 v:seqhis                            8cbcd num_digest_with_seqhis          1
+     count        319 k:digest 499d2d31d49cc8564d470d967463367b v:seqhis                           8cbbcd num_digest_with_seqhis          1
+     count         25 k:digest a7337d2cea87866d40415eb39bffc9b2 v:seqhis                          8cbbbcd num_digest_with_seqhis          1
+     count         23 k:digest 8ac3a348be685c9f97d40610090a2569 v:seqhis                            86ccd num_digest_with_seqhis          1
+     count         21 k:digest e04ff8d4ab3e7aebf93d4571245e7496 v:seqhis                              86d num_digest_with_seqhis          1
+     count         18 k:digest fb9477d53c9da7877c5137576c192bfb v:seqhis                              4cd num_digest_with_seqhis          1
+     count          9 k:digest 5db9eaec68e0b85671eb6382f1b9b3dc v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          2
+    2017-12-06 14:33:31.143 INFO  [512236] [CRandomEngine::dumpLocations@291] dumpLocations ndig 2 nmax 51
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                                     -      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+     count          7 k:digest af98026c6adb2c0c86dbaa8d046bf9c5 v:seqhis                            8cc6d num_digest_with_seqhis          1
+     count          7 k:digest a36370f0ba4be0496741d55546573dfb v:seqhis                            8c6cd num_digest_with_seqhis          1
+     count          6 k:digest a4594d9c1e784f890ff11eb36c7467e1 v:seqhis                               4d num_digest_with_seqhis          1
+     count          4 k:digest 3e2458fc062bfa968d894c2233027b55 v:seqhis                             4ccd num_digest_with_seqhis          1
+     count          4 k:digest 6ae1c42f08f226e87d52d4ccfdfea9c1 v:seqhis                          8cc6ccd num_digest_with_seqhis          1
+     count          2 k:digest 89302d15e1f813009de20699b686dd1c v:seqhis                           86cbcd num_digest_with_seqhis          1
+     count          2 k:digest 8807f7cbe9208e84cba42118e4b0d085 v:seqhis                         8cbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest 822511c4f603745132253ae9853a1621 v:seqhis                           8cb6cd num_digest_with_seqhis          2
+    2017-12-06 14:33:31.146 INFO  [512236] [CRandomEngine::dumpLocations@291] dumpLocations ndig 2 nmax 21
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+          OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                       OpBoundary;
+           OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+     count          1 k:digest 774eb4a6b992a81ce5066581bfb2b8cf v:seqhis                             86bd num_digest_with_seqhis          1
+     count          1 k:digest 679933081af4b8cda6fb216a0b1b058a v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          2
+    2017-12-06 14:33:31.148 INFO  [512236] [CRandomEngine::dumpLocations@291] dumpLocations ndig 2 nmax 51
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                                     -      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+     count          1 k:digest 6301d5f032aab2948b9cfa79e40498d2 v:seqhis                           8cbc6d num_digest_with_seqhis          1
+     count          1 k:digest 5069d2b7a3d45c4c2b371499aa96850f v:seqhis                           8cb6cd num_digest_with_seqhis          2
+    2017-12-06 14:33:31.151 INFO  [512236] [CRandomEngine::dumpLocations@291] dumpLocations ndig 2 nmax 21
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+                                        Scintillation;                                       OpBoundary;
+                                           OpBoundary;                                    Scintillation;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025                                       OpBoundary;
+                                        Scintillation;     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                           OpBoundary;                                    Scintillation;
+          OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                       OpBoundary;
+           OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+     count          1 k:digest b698f9c0c43c4b335083b684472190cc v:seqhis                         8cbbb6cd num_digest_with_seqhis          1
+     count          1 k:digest becc05341fb68e31a2cb58d890d5df0c v:seqhis                        8cbbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest bfc7191b635669bf13926430ab5db6ae v:seqhis                          8cbb6cd num_digest_with_seqhis          1
+     count          1 k:digest 4e8993d03a0007471f926548290046b5 v:seqhis                           8b6ccd num_digest_with_seqhis          1
+     count          1 k:digest e294c3ebb01bba22925cfd880175d115 v:seqhis                            4cbcd num_digest_with_seqhis          1
+     count          1 k:digest ef80910914049c0df57b4fa6c54ce927 v:seqhis                         8cbbbc6d num_digest_with_seqhis          1
+     count          1 k:digest 055fa8e30937f3a10e808193ab925fa5 v:seqhis                             4bcd num_digest_with_seqhis          1
+    2017-12-06 14:33:31.152 INFO  [512236] [CG4::postpropagate@418] CG4::postpropagate(0) DONE
+
+
+
+
+
+
+Scattering do/while 
+---------------------
+
+::
+
+   g4-;g4-cls G4OpRayleigh
+
+
+
+    124 G4OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+    125 {
+    126         aParticleChange.Initialize(aTrack);
+    127 
+    128         const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+    129 
+    130         if (verboseLevel>0) {
+    131                 G4cout << "Scattering Photon!" << G4endl;
+    132                 G4cout << "Old Momentum Direction: "
+    133                        << aParticle->GetMomentumDirection() << G4endl;
+    134                 G4cout << "Old Polarization: "
+    135                        << aParticle->GetPolarization() << G4endl;
+    136         }
+    137 
+    138         G4double cosTheta;
+    139         G4ThreeVector OldMomentumDirection, NewMomentumDirection;
+    140         G4ThreeVector OldPolarization, NewPolarization;
+    141 
+    142         G4double rand, constant;
+    143         G4double CosTheta, SinTheta, SinPhi, CosPhi, unit_x, unit_y, unit_z;
+    144 
+    145         do {
+    146            // Try to simulate the scattered photon momentum direction
+    147            // w.r.t. the initial photon momentum direction
+    148 
+    149            CosTheta = G4UniformRand();
+    150            SinTheta = std::sqrt(1.-CosTheta*CosTheta);
+    151            // consider for the angle 90-180 degrees
+    152            if (G4UniformRand() < 0.5) CosTheta = -CosTheta;
+    153 
+    154            // simulate the phi angle
+    155            rand = twopi*G4UniformRand();
+    156            SinPhi = std::sin(rand);
+    157            CosPhi = std::cos(rand);
+    158 
+
+
+
+
+Relationship between digests (random throw code location sequences) and seqhis
+---------------------------------------------------------------------------------
+
+Mostly 1-to-1 but out in the tail some seqhis have multiple digests. 
+Dumping these below suggests two causes:
+
+* differing number of random throws in OpRayleigh which doesnt change seqhis
+  from the scattering do/while distrib sampling
+
+* truncation handling difference  
+  
+
+::
+
+    tboolean-;tboolean-box --okg4 --align 
+
+    2017-12-06 14:01:40.055 INFO  [501997] [CRandomEngine::dumpDigests@205] CRandomEngine::postpropagate
+     total     100000
+     count      88016 k:digest a95a5c961b4832149e6c00e0b5030091 v:seqhis                             8ccd num_digest_with_seqhis          1
+     count       6120 k:digest 1b1df819a447f393d0b43527f3f5f687 v:seqhis                              8bd num_digest_with_seqhis          1
+     count       5405 k:digest 58c5ea57f9622b3fb0c8aa8083abe629 v:seqhis                            8cbcd num_digest_with_seqhis          1
+     count        319 k:digest 499d2d31d49cc8564d470d967463367b v:seqhis                           8cbbcd num_digest_with_seqhis          1
+     count         25 k:digest a7337d2cea87866d40415eb39bffc9b2 v:seqhis                          8cbbbcd num_digest_with_seqhis          1
+     count         18 k:digest fb9477d53c9da7877c5137576c192bfb v:seqhis                              4cd num_digest_with_seqhis          1
+     count         16 k:digest 274ceb8e0097317bfd3e25c4cc70b714 v:seqhis                            86ccd num_digest_with_seqhis          3
+     count         13 k:digest d2c5ac2c3204d033c363ea67c9f71934 v:seqhis                              86d num_digest_with_seqhis          3
+     count          7 k:digest 75d211dcf75e64fc68119721fd972e89 v:seqhis                            8cc6d num_digest_with_seqhis          1
+     count          6 k:digest a4594d9c1e784f890ff11eb36c7467e1 v:seqhis                               4d num_digest_with_seqhis          1
+     count          6 k:digest 36fda1bebbb3148f03eb37d7751a05a2 v:seqhis                              86d num_digest_with_seqhis          3
+     count          6 k:digest 2df05b1b610da4a8f4f9ccb326e5e97a v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          4
+     count          6 k:digest b59c923c28021d896047521ed92e351c v:seqhis                            86ccd num_digest_with_seqhis          3
+     count          4 k:digest 61b45fa4653e261f088663e1eab10121 v:seqhis                            8c6cd num_digest_with_seqhis          3
+     count          4 k:digest 3e2458fc062bfa968d894c2233027b55 v:seqhis                             4ccd num_digest_with_seqhis          1
+     count          2 k:digest 33483cfc62c24f86ecd7d4479b036026 v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          4
+     count          2 k:digest aeebf05b5e147d9f3ecec14b62d57a46 v:seqhis                          8cc6ccd num_digest_with_seqhis          3
+     count          2 k:digest 546c458bed524e857ef32599ea3b02d2 v:seqhis                            8c6cd num_digest_with_seqhis          3
+     count          2 k:digest 828f79047909333c53b55ffeb97947f6 v:seqhis                              86d num_digest_with_seqhis          3
+     count          2 k:digest 6a889a0df5d70e24be3d78f6affd9263 v:seqhis                         8cbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest 49921aa3a4c93a94e8a867762137d3cf v:seqhis                          8cc6ccd num_digest_with_seqhis          3
+     count          1 k:digest 6e38dc5c540dcd8850e6e4fa678040e8 v:seqhis                           8cb6cd num_digest_with_seqhis          2
+     count          1 k:digest 7183b0dcaeb6c60e9a7ec6fa4cc874fb v:seqhis                            86ccd num_digest_with_seqhis          3
+     count          1 k:digest 356d7d073f0840e473fcad092bc0d07a v:seqhis                           8cbc6d num_digest_with_seqhis          1
+     count          1 k:digest 5c99f339ca26e7957975fcfb08f7c924 v:seqhis                         8cbbb6cd num_digest_with_seqhis          1
+     count          1 k:digest 9d4789ce99aba9066bb1d88ec205a97d v:seqhis                           8cb6cd num_digest_with_seqhis          2
+     count          1 k:digest 4255041be217d6d098a07eda2a009c2b v:seqhis                        8cbbc6ccd num_digest_with_seqhis          1
+     count          1 k:digest 22f82e13b2507b87b0675dace5af55ce v:seqhis                            8c6cd num_digest_with_seqhis          3
+     count          1 k:digest 1a19fd38b6311dc7d8db96a8dcf77d23 v:seqhis                          8cbb6cd num_digest_with_seqhis          1
+     count          1 k:digest 4a2d1dc415376ad316e8bceecdb288e8 v:seqhis                          8cc6ccd num_digest_with_seqhis          3
+     count          1 k:digest 1253705decbaa5ae99781640ba9eab7f v:seqhis                           86cbcd num_digest_with_seqhis          2
+     count          1 k:digest ce1da64b26786fcb3d7b4d30c44c4e5c v:seqhis                         8cbbbc6d num_digest_with_seqhis          1
+     count          1 k:digest 07e617fd8dcc31dd7b881a82b49af0b9 v:seqhis                             86bd num_digest_with_seqhis          1
+     count          1 k:digest e294c3ebb01bba22925cfd880175d115 v:seqhis                            4cbcd num_digest_with_seqhis          1
+     count          1 k:digest e2d7bc66afe195c1635c5615105ab831 v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          4
+     count          1 k:digest eafd32d3d2a33d5c776b4f128ce58215 v:seqhis                           86cbcd num_digest_with_seqhis          2
+     count          1 k:digest eb255d4436a2ac7343e5fa1be471e24a v:seqhis                       bbbbbbb6cd num_digest_with_seqhis          4
+     count          1 k:digest ee4213b454f1becfe03d6df2c579fab7 v:seqhis                           8b6ccd num_digest_with_seqhis          1
+     count          1 k:digest 055fa8e30937f3a10e808193ab925fa5 v:seqhis                             4bcd num_digest_with_seqhis          1
+    2017-12-06 14:01:40.056 INFO  [501997] [CRandomEngine::dumpDigests@205] CRandomEngine::postpropagate
+     total     100000
+     count      88016 k:digest a95a5c961b4832149e6c00e0b5030091 v:seqhis                             8ccd num_digest_with_seqhis          1
+     count       6120 k:digest 1b1df819a447f393d0b43527f3f5f687 v:seqhis                              8bd num_digest_with_seqhis          1
+     count       5405 k:digest 58c5ea57f9622b3fb0c8aa8083abe629 v:seqhis                            8cbcd num_digest_with_seqhis          1
+     count        319 k:digest 499d2d31d49cc8564d470d967463367b v:seqhis                           8cbbcd num_digest_with_seqhis          1
+     count         25 k:digest a7337d2cea87866d40415eb39bffc9b2 v:seqhis                          8cbbbcd num_digest_with_seqhis          1
+     count         18 k:digest fb9477d53c9da7877c5137576c192bfb v:seqhis                              4cd num_digest_with_seqhis          1
+     count         16 k:digest 274ceb8e0097317bfd3e25c4cc70b714 v:seqhis                            86ccd num_digest_with_seqhis          3
+    2017-12-06 14:01:40.057 INFO  [501997] [CRandomEngine::dumpLocations@283] dumpLocations ndig 3 nmax 30
+                                        Scintillation;                                    Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;                                     OpAbsorption;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;                                       OpBoundary;
+         OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                        Scintillation;                                    Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                        Scintillation;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpBoundary;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+          OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                       OpRayleigh;                                       OpRayleigh;
+           OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                       OpRayleigh;                                       OpRayleigh;
+                                                     -                                       OpRayleigh;                                    Scintillation;
+                                                     -                                       OpRayleigh;                                       OpBoundary;
+                                                     -                                       OpRayleigh;                                       OpRayleigh;
+                                                     -                                       OpRayleigh;      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                     -                                       OpRayleigh;       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+                                                     -                                    Scintillation;                                                 -
+                                                     -                                       OpBoundary;                                                 -
+                                                     -                                       OpRayleigh;                                                 -
+                                                     -      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                                 -
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                                 -
+     count         13 k:digest d2c5ac2c3204d033c363ea67c9f71934 v:seqhis                              86d num_digest_with_seqhis          3
+    2017-12-06 14:01:40.060 INFO  [501997] [CRandomEngine::dumpLocations@283] dumpLocations ndig 3 nmax 24
+                                        Scintillation;                                    Scintillation;                                    Scintillation;
+                                           OpBoundary;                                       OpBoundary;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                         OpAbsorption;                                     OpAbsorption;                                     OpAbsorption;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;                                    Scintillation;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpBoundary;
+                                           OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                           OpRayleigh;                                       OpRayleigh;      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                           OpRayleigh;                                       OpRayleigh;       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+                                        Scintillation;                                       OpRayleigh;                                                 -
+                                           OpBoundary;                                       OpRayleigh;                                                 -
+                                           OpRayleigh;                                       OpRayleigh;                                                 -
+          OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                       OpRayleigh;                                                 -
+           OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                       OpRayleigh;                                                 -
+                                                     -                                    Scintillation;                                                 -
+                                                     -                                       OpBoundary;                                                 -
+                                                     -                                       OpRayleigh;                                                 -
+                                                     -      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                                 -
+                                                     -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                                 -
+     count          7 k:digest 75d211dcf75e64fc68119721fd972e89 v:seqhis                            8cc6d num_digest_with_seqhis          1
+     count          6 k:digest a4594d9c1e784f890ff11eb36c7467e1 v:seqhis                               4d num_digest_with_seqhis          1
+
+
+
+
 Observations from CRandomEngine
 ---------------------------------
 

@@ -1,19 +1,25 @@
 
-#include "PLOG.hh"
+#include <array>
 
-#include "SDigest.hh"
-#include "SSys.hh"
-#include "BStr.hh"
-#include "BFile.hh"
-#include "Opticks.hh"
-#include "CG4.hh"
+#include "PLOG.hh"
 
 #include "Randomize.hh"
 #include "CLHEP/Random/NonRandomEngine.h"
-
 #include "G4String.hh"
 #include "G4VProcess.hh"
 
+
+#include "SPairVec.hh"
+#include "SMap.hh"
+#include "SDigest.hh"
+#include "SSys.hh"
+
+#include "BStr.hh"
+#include "BFile.hh"
+
+#include "Opticks.hh"
+
+#include "CG4.hh"
 #include "CProcess.hh"
 #include "CRandomEngine.hh"
 
@@ -32,6 +38,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_ok(g4->getOpticks()),
     m_seed(9876),
     m_internal(false),
+    m_skipdupe(true),
     m_james(new CLHEP::HepJamesRandom()),
     m_nonran(new CLHEP::NonRandomEngine()),
     m_engine(m_james),
@@ -119,7 +126,12 @@ double CRandomEngine::flat()
 { 
     if(!m_internal) m_location = FormLocation();
 
-    m_location_vec.push_back(m_location); 
+    bool is_skip = m_skipdupe && m_location_vec.size() > 0 && m_location_vec.back().compare(m_location.c_str()) == 0 ; 
+    if(!is_skip)
+    {
+        m_location_vec.push_back(m_location); 
+    } 
+
 
     double _flat =  m_engine->flat() ;  
 
@@ -146,12 +158,16 @@ double CRandomEngine::flat()
 }
 
 
+
 void CRandomEngine::posttrack()
 {
+    //m_digest = m_skipdupe ? SDigest::digest_skipdupe(m_location_vec) : SDigest::digest(m_location_vec); 
     m_digest = SDigest::digest(m_location_vec); 
+    m_digest_count[m_digest]++ ; 
     m_digest_locations[m_digest] = BStr::join(m_location_vec, ',') ;
+    m_location_vec.clear();
 
-    unsigned long long seqmat = m_g4->getSeqMat()  ;
+    //unsigned long long seqmat = m_g4->getSeqMat()  ;
     unsigned long long seqhis = m_g4->getSeqHis()  ;
 
 /*
@@ -163,79 +179,198 @@ void CRandomEngine::posttrack()
               << " seqmat " << std::hex << seqmat << std::dec
               ;
 */
-    // TODO : flip map k<->v the location digest is 
-    //        more unique that the seqhis
-    //        getting non-uniqueness at 31/100k level
 
-    if(m_seqhis_digest.count(seqhis) == 0)
+    //  initially keyed on seqhis, but found   
+    //  that some seqhis yielding multiple digests
+    //  at 31/100k level
+    //
+    //  instead keying on the digest, have so far found that 
+    //  every digest (sequence of code locations) always has the same unique seqhis
+
+    unsigned digest_seqhis_count = m_digest_seqhis.count(m_digest) ;
+
+    if(digest_seqhis_count == 0) // fresh digest (sequence of code locations)
     {
-        m_seqhis_digest[seqhis] = m_digest ; 
+        m_digest_seqhis[m_digest] = seqhis ; 
     }
-    else if(m_seqhis_digest.count(seqhis) == 1)
+    else if(digest_seqhis_count == 1)  // repeated digest 
     {
-        std::string prior = m_seqhis_digest[seqhis] ;  
-        bool match = m_digest.compare(prior.c_str()) == 0 ;
-        if(!match) 
-        {
-           LOG(error) 
-              << " record_id " << m_ctx._record_id
-              << " m_location_vec.size() " << m_location_vec.size()
-              << " digest " << m_digest  
-              << " seqhis " << std::hex << seqhis << std::dec
-              << " seqmat " << std::hex << seqmat << std::dec
-              << " digest/seqhis non-uniqueness " 
-              << " prior " << prior
-              << " count_mismatch " << m_count_mismatch
-              ;
-
-            m_count_mismatch++ ; 
-            for(unsigned i=0 ; i < m_location_vec.size() ; i++ ) std::cerr << m_location_vec[i] << std::endl ;  
-
-        }
-        //assert( match );
+        unsigned long long prior_seqhis = m_digest_seqhis[m_digest] ; 
+        bool match = prior_seqhis == seqhis ; 
+        assert(match) ; 
     }
     else
     {
-        assert(0);  
+        assert(0 && "NEVER : would indicate std::map key failure");  
     }
-
-    m_location_vec.clear();
 }
 
 
-void CRandomEngine::dump(const char* msg) const 
-{
+
+void CRandomEngine::dumpDigests(const char* msg, bool locations) const 
+{ 
     LOG(info) << msg ; 
+    typedef std::string K ; 
+    typedef unsigned long long V ; 
+    typedef std::map<K, V> MKV ; 
+
+    typedef std::pair<K, unsigned> PKU ;  
+    typedef std::vector<PKU> LPKU ; 
+
+    LPKU digest_counts ;
+
+    unsigned total(0) ; 
+    for(MKV::const_iterator it=m_digest_seqhis.begin() ; it != m_digest_seqhis.end() ; it++ ) 
+    { 
+        K digest = it->first ;
+        unsigned count = m_digest_count.at(digest) ; 
+        digest_counts.push_back(PKU(digest, count)) ; 
+        total += count ; 
+    }
+
+    bool ascending = false ; 
+    SPairVec<K, unsigned> spv(digest_counts, ascending);
+    spv.sort();
+
+
+    std::cout 
+        << " total "    << std::setw(10) << total
+        << " skipdupe " << ( m_skipdupe ? "Y" : "N" ) 
+        << std::endl 
+        ;
+
+
+    for(LPKU::const_iterator it=digest_counts.begin() ; it != digest_counts.end() ; it++ )
+    {
+        PKU digest_count = *it ;
+        K digest = digest_count.first ; 
+        unsigned count = digest_count.second ;  
+
+        V seqhis = m_digest_seqhis.at(digest) ;
+
+        unsigned num_digest_with_seqhis = SMap<K,V>::ValueCount(m_digest_seqhis, seqhis );         
+
+        std::vector<K> k_digests ; 
+        SMap<K,V>::FindKeys(m_digest_seqhis, k_digests, seqhis, false );
+        assert( k_digests.size() == num_digest_with_seqhis );
+  
+        std::cout 
+            << " count "    << std::setw(10) << count
+            << " k:digest " << std::setw(32) << digest
+            << " v:seqhis " << std::setw(32) << std::hex << seqhis << std::dec
+            << " num_digest_with_seqhis " << std::setw(10) << num_digest_with_seqhis
+            << std::endl 
+            ;
+
+        assert( num_digest_with_seqhis > 0 );
+        if( num_digest_with_seqhis > 1 && locations ) dumpLocations( k_digests );  
+    }
+}
 
 
 
+void CRandomEngine::dumpLocations( const std::vector<std::string>& digests ) const 
+{
+    typedef std::vector<std::string> VS ; 
+
+    VS* tab = new VS[digests.size()] ;   
+
+    unsigned ndig = digests.size() ;
+    unsigned nmax = 0 ; 
+
+    for(unsigned i=0 ; i < ndig ; i++)
+    {
+         std::string dig = digests[i] ; 
+         std::string locs = m_digest_locations.at(dig) ; 
+
+         VS& locv = tab[i] ; 
+         BStr::split(locv, locs.c_str(), ',' ); 
+         if( locv.size() > nmax ) nmax = locv.size() ; 
+    }
+
+    LOG(info) << "dumpLocations"
+              << " ndig " << ndig 
+              << " nmax " << nmax
+              ; 
+
+    for( unsigned j=0 ; j < nmax ; j++ ) 
+    {
+        for( unsigned i=0 ; i < ndig ; i++ ) 
+        { 
+            VS& loci = tab[i] ; 
+            std::cerr << std::setw(50) << ( j < loci.size() ? loci[j] : "-" ) ;
+        }
+        std::cerr  << std::endl ;
+    }
+
+    delete [] tab ; 
+
+/*
+ k:digest 274ceb8e0097317bfd3e25c4cc70b714 v:seqhis                            86ccd num_digest_with_seqhis          3
+2017-12-06 12:58:24.530 INFO  [482288] [CRandomEngine::dumpLocations@249] dumpLocations ndig 3 nmax 30
+                                    Scintillation;                                    Scintillation;                                    Scintillation;
+                                       OpBoundary;                                       OpBoundary;                                       OpBoundary;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                     OpAbsorption;                                     OpAbsorption;                                     OpAbsorption;
+     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                    Scintillation;                                    Scintillation;                                    Scintillation;
+                                       OpBoundary;                                       OpBoundary;                                       OpBoundary;
+     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025     OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025
+                                    Scintillation;                                    Scintillation;                                    Scintillation;
+                                       OpBoundary;                                       OpBoundary;                                       OpBoundary;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+                                    Scintillation;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpBoundary;                                       OpRayleigh;                                       OpRayleigh;
+                                       OpRayleigh;                                       OpRayleigh;                                       OpRayleigh;
+      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                       OpRayleigh;                                       OpRayleigh;
+       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                       OpRayleigh;                                       OpRayleigh;
+                                                 -                                       OpRayleigh;                                    Scintillation;
+                                                 -                                       OpRayleigh;                                       OpBoundary;
+                                                 -                                       OpRayleigh;                                       OpRayleigh;
+                                                 -                                       OpRayleigh;      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655
+                                                 -                                       OpRayleigh;       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269
+                                                 -                                    Scintillation;                                                 -
+                                                 -                                       OpBoundary;                                                 -
+                                                 -                                       OpRayleigh;                                                 -
+                                                 -      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655                                                 -
+                                                 -       OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269                                                 -
+*/
+
+
+
+    // TODO: ekv recording to retain step splits 
+}
+
+
+
+void CRandomEngine::dumpCounts(const char* msg) const 
+{ 
+    LOG(info) << msg ; 
     typedef std::map<unsigned, unsigned> UMM ; 
     for(UMM::const_iterator it=m_record_count.begin() ; it != m_record_count.end() ; it++ )
     {
         unsigned count = it->second ; 
-        if(count > 17)
+        if(count > 50)
         std::cout 
             << std::setw(10) << it->first 
             << std::setw(10) << count
             << std::endl 
             ;
     }
+}
 
+ 
 
-    typedef std::map<unsigned long long, std::string> ULLSM ; 
-    for(ULLSM::const_iterator it=m_seqhis_digest.begin() ; it != m_seqhis_digest.end() ; it++ )
-    {
-        std::cout 
-            << " seqhis " << std::setw(16) << std::hex << it->first << std::dec
-            << " digest " << std::setw(32) << it->second
-            << std::endl 
-            ;
-    }
-
-
-
-
-
+void CRandomEngine::dump(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    dumpCounts(msg); 
+    dumpDigests(msg, false); 
+    dumpDigests(msg, true); 
 }
 
 void CRandomEngine::postpropagate()

@@ -46,6 +46,9 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         bool isNonRan() const ; 
         bool isDefault() const ; 
         void dump(const char* msg) const ; 
+        void dumpCounts(const char* msg) const ; 
+        void dumpDigests(const char* msg, bool locations) const ; 
+        void dumpLocations(const std::vector<std::string>& digests) const ;
     public:
         std::string desc() const ; 
     public:
@@ -59,6 +62,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         Opticks*                 m_ok ; 
         long                     m_seed ; 
         bool                     m_internal ; 
+        bool                     m_skipdupe ; 
 
         CLHEP::HepJamesRandom*   m_james ; 
         CLHEP::NonRandomEngine*  m_nonran ; 
@@ -73,11 +77,10 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         std::vector<std::string>      m_location_vec ; 
         std::string                   m_digest ;
  
+        std::map<std::string, unsigned>                m_digest_count ; 
         std::map<std::string, unsigned long long>      m_digest_seqhis ; 
-        std::map<unsigned long long, std::string>      m_seqhis_digest ; 
-        std::map<std::string,std::string>              m_digest_locations ; 
+        std::map<std::string, std::string>             m_digest_locations ; 
         
-
     private:
 
         void setSeed(long , int) ; 

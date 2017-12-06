@@ -11,10 +11,12 @@ set(TEST_SOURCES
    SSysTest.cc
    STrancheTest.cc
    SVecTest.cc
+   SMapTest.cc
    SSeqTest.cc
    SProcTest.cc
    SBase36Test.cc
    SSortKVTest.cc
+   SPairVecTest.cc
    SDigestTest.cc
    OpticksCMakeConfigTest.cc
    PLogTest.cc 

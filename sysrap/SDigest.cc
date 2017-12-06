@@ -118,13 +118,24 @@ std::string SDigest::digest( void* buffer, int len )
     return dig.finalize();
 }
 
-std::string SDigest::digest( std::vector<std::string>& ss )
+std::string SDigest::digest( std::vector<std::string>& ss)
 {
     SDigest dig ; 
     for(unsigned i=0 ; i < ss.size() ; i++) dig.update( ss[i] ) ;
     return dig.finalize();
 }
 
+
+std::string SDigest::digest_skipdupe( std::vector<std::string>& ss)
+{
+    SDigest dig ; 
+    for(unsigned i=0 ; i < ss.size() ; i++) 
+    {
+        if( i > 0 && ss[i].compare(ss[i-1].c_str()) == 0 ) continue ;    
+        dig.update( ss[i] ) ;
+    }
+    return dig.finalize();
+}
 
 
 

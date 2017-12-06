@@ -43,10 +43,29 @@ void test_digest_vec()
    v.push_back("green");
    v.push_back("blue");
 
-   std::string dig = SDigest::digest(v); 
+   std::string dig0 = SDigest::digest(v); 
 
-   LOG(info) << dig 
-             ;
+
+   v.push_back("blue");
+   v.push_back("blue");
+   v.push_back("blue");
+   v.push_back("blue");
+   v.push_back("blue");
+
+   std::string dig1 = SDigest::digest(v); 
+   std::string dig2 = SDigest::digest_skipdupe(v); 
+
+   LOG(info) 
+        << " dig0 " << dig0
+        << " dig1 " << dig1
+        << " dig2 " << dig2
+        ;
+
+
+   assert( dig0.compare(dig1.c_str()) != 0 );
+   assert( dig0.compare(dig2.c_str()) == 0 );
+
+
 }
 
 
