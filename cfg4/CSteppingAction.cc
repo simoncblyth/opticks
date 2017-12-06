@@ -95,6 +95,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     bool done = setStep(step);
 
+    m_g4->poststep();
+
     if(done)
     { 
         G4Track* track = step->GetTrack();    // m_track is const qualified

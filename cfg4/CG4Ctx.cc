@@ -181,8 +181,15 @@ void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTr
     _optical = particle == G4OpticalPhoton::OpticalPhotonDefinition() ;
     _pdg_encoding = particle->GetPDGEncoding();
 
+
+    _step = NULL ; 
+    _step_id = -1 ; 
+
     if(_optical) setTrackOptical();
 }
+
+
+
 
 void CG4Ctx::setStep(const G4Step* step) // invoked by CSteppingAction::setStep
 {
@@ -229,6 +236,8 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
     // essential for clearing counts otherwise, photon steps never cleared 
     _rejoin_count = 0 ; 
     _primarystep_count = 0 ; 
+
+
 }
 
 void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep

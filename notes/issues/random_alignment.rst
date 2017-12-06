@@ -5,14 +5,28 @@ random_alignment
 
 
 
+step level location seqs ?
+-----------------------------
+
+So far have been looking at photon level, looking 
+at step level may allow to pin down the disreps.
+Not so easy to get seqhis flag until posttrack ... so 
+need to collect location lists split per step_id ?
+
+
+
 skipdupe : Skipping Duplicate Locations
 -----------------------------------------
 
 * suppressing duplicate locations, to avoid sampling do/whiles, still leaves
-  a handful of unexplained non-unique digest/seqhis relations 
+  a handful of unexplained non-unique digest/seqhis relations : some are 
+  probably from truncation differences 
 
 
 ::
+
+
+    tboolean-;tboolean-box --okg4 --align 
 
     2017-12-06 14:33:31.142 INFO  [512236] [CRandomEngine::dumpDigests@212] CRandomEngine::postpropagate
      total     100000 skipdupe Y

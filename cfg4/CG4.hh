@@ -124,6 +124,7 @@ class CFG4_API CG4
         CTrackingAction* getTrackingAction();
         //int getStepId();
 
+        void poststep();
         void posttrack();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        

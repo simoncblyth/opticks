@@ -29,6 +29,9 @@ namespace CLHEP
 }
 
 
+template <typename T> class BLocSeq ; 
+
+
 class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine 
 {
     public:
@@ -41,14 +44,13 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         friend class CG4 ; 
         void postpropagate();
         void posttrack();
+        void poststep();
     private:
         void init(); 
         bool isNonRan() const ; 
         bool isDefault() const ; 
         void dump(const char* msg) const ; 
-        void dumpCounts(const char* msg) const ; 
-        void dumpDigests(const char* msg, bool locations) const ; 
-        void dumpLocations(const std::vector<std::string>& digests) const ;
+
     public:
         std::string desc() const ; 
     public:
@@ -63,35 +65,20 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         long                     m_seed ; 
         bool                     m_internal ; 
         bool                     m_skipdupe ; 
+        BLocSeq<unsigned long long>*  m_locseq ; 
 
         CLHEP::HepJamesRandom*   m_james ; 
         CLHEP::NonRandomEngine*  m_nonran ; 
         CLHEP::HepRandomEngine*  m_engine ; 
 
-        unsigned                      m_count ; 
-        unsigned                      m_count_mismatch; 
-        int                           m_harikari ; 
-        std::map<unsigned, unsigned>  m_record_count ; 
+        std::string              m_location ; 
 
-        std::string                   m_location ; 
-        std::vector<std::string>      m_location_vec ; 
-        std::string                   m_digest ;
- 
-        std::map<std::string, unsigned>                m_digest_count ; 
-        std::map<std::string, unsigned long long>      m_digest_seqhis ; 
-        std::map<std::string, std::string>             m_digest_locations ; 
-        
     private:
-
         void setSeed(long , int) ; 
         void setSeeds(const long * , int) ; 
         void saveStatus( const char * ) const ; 
         void restoreStatus( const char * ); 
         void showStatus() const ; 
-
-
-
-
 };
 
 #include "CFG4_TAIL.hh"

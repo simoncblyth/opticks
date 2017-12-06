@@ -314,6 +314,13 @@ void CG4::posttrack()
     }
 }
 
+void CG4::poststep()
+{
+    if(m_engine)
+    {
+        m_engine->poststep();
+    }
+}
 
 
 

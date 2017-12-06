@@ -85,6 +85,7 @@ set(SOURCES
   BBnd.cc
   BRng.cc
   BConverter.cc
+  BLocSeq.cc
 
 ) 
 
@@ -116,6 +117,7 @@ set(HEADERS
   BDynamicDefine.hh
   BOpticksEvent.hh
   BConfig.hh
+  BLocSeq.hh
 
 )
 

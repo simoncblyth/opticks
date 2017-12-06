@@ -109,7 +109,7 @@ void CWriter::initEvent(OpticksEvent* evt)  // called by CRecorder::initEvent/CG
 
         
 
-
+// invoked by CRecorder::RecordStepPoint
 bool CWriter::writeStepPoint(const G4StepPoint* point, unsigned flag, unsigned material )
 {
     m_photon.add(flag, material);
