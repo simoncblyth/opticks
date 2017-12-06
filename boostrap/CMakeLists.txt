@@ -86,6 +86,7 @@ set(SOURCES
   BRng.cc
   BConverter.cc
   BLocSeq.cc
+  BLocSeqDigest.cc
 
 ) 
 
@@ -118,6 +119,7 @@ set(HEADERS
   BOpticksEvent.hh
   BConfig.hh
   BLocSeq.hh
+  BLocSeqDigest.hh
 
 )
 

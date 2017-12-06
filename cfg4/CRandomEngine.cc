@@ -19,6 +19,8 @@
 
 #include "CG4.hh"
 #include "CProcess.hh"
+#include "CStepStatus.hh"
+#include "CStepping.hh"
 #include "CRandomEngine.hh"
 
 
@@ -70,7 +72,7 @@ std::string CRandomEngine::desc() const
     ss 
        << " record_id " << std::setw(5) << m_ctx._record_id 
        << " step_id " << std::setw(5) << m_ctx._step_id
-       << " loc " << m_location 
+       << " loc " << std::setw(50) << m_location 
        ;
 
     return ss.str();
@@ -121,6 +123,20 @@ double CRandomEngine::flat()
     m_locseq->add(m_location.c_str(), m_ctx._record_id, m_ctx._step_id); 
 
     double _flat =  m_engine->flat() ;  
+
+
+    G4VProcess* proc = CProcess::CurrentProcess() ; 
+
+    CSteppingState ss = CStepping::CurrentState(); 
+
+    std::cerr 
+        << desc()
+        << " " 
+        << std::setw(20) << CStepStatus::Desc(ss.fStepStatus)
+        << " " << CProcess::Desc(proc)       
+        <<  std::endl 
+        ; 
+
 
 /*
     std::cerr 

@@ -214,6 +214,9 @@ set(SOURCES
 
     CRandomEngine.cc
     CProcess.cc
+    CStepping.cc
+    CSteppingState.cc
+    CStepStatus.cc
 )
 
 set(HEADERS

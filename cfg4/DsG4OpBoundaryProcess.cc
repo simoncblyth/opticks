@@ -1237,7 +1237,14 @@ void DsG4OpBoundaryProcess::DoAbsorption()
 
     theStatus = Absorption;
 
+
+#ifdef SCB_REFLECT_CHEAT
+    G4double _u = CG4UniformRand(__FILE__,__LINE__) ;  
+    bool _detect = _u < theEfficiency ;
+    if( _detect ) 
+#else
     if ( G4BooleanRand(theEfficiency) ) 
+#endif
     {
         // EnergyDeposited =/= 0 means: photon has been detected
         theStatus = Detection;

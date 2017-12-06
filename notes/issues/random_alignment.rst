@@ -1,6 +1,92 @@
 random_alignment
 =====================
 
+next steps
+------------
+
+G4 process handling is too involved to get a general picture by dumping, 
+so adopt a need-to-know strategy.
+i.e. focus on a common seqhis, and just work on 
+feeding non-randoms for that ?
+
+  
+
+questions
+-----------
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --recpoi --dindex 0:10
+
+
+    2017-12-06 20:44:34.605 INFO  [658031] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+     record_id     9 step_id    -1 loc                                     Scintillation;            Undefined CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id    -1 loc                                        OpBoundary;            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc                                        OpRayleigh;            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc                                      OpAbsorption;     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025         GeomBoundary CPro      OpBoundary LenLeft    1.00421 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     record_id     9 step_id     0 loc                                     Scintillation;         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id     0 loc                                        OpBoundary;         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     0 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025         GeomBoundary CPro      OpBoundary LenLeft    1.32681 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     1 loc                                     Scintillation;         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id     1 loc                                        OpBoundary;         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     1 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     1 loc        OpBoundary;cfg4/DsG4OpBoundaryProcess.h+269         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+    2017-12-06 20:44:34.607 INFO  [658031] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 9 pho  seqhis                 8ccd seqmat                 1232
+
+
+::
+
+    2017-12-06 21:01:12.986 INFO  [663071] [CRec::initEvent@82] CRec::initEvent note recpoi not-aligned
+    HepRandomEngine::put called -- no effect!
+    2017-12-06 21:01:13.284 INFO  [663071] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+     
+     record_id     9 step_id    -1 loc                                     Scintillation;            Undefined CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id    -1 loc                                        OpBoundary;            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc                                        OpRayleigh;            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc                                      OpAbsorption;     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id    -1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025         GeomBoundary CPro      OpBoundary LenLeft    1.00421 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     
+     record_id     9 step_id     0 loc                                     Scintillation;         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id     0 loc                                        OpBoundary;         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     0 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025         GeomBoundary CPro      OpBoundary LenLeft    1.32681 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     
+     record_id     9 step_id     1 loc                                     Scintillation;         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     record_id     9 step_id     1 loc                                        OpBoundary;         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     1 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     record_id     9 step_id     1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+    2017-12-06 21:01:13.286 INFO  [663071] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 9 pho  seqhis                 8ccd seqmat                 1232
+
+
+::
+
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025    DsG4OpBoundaryProcess::DielectricDielectric (TransCoeff)    reflect-or-transmit-at-non-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655     DsG4OpBoundaryProcess::PostStepDoIt (theReflectivity)       reflect-or-transmit-at-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242    DsG4OpBoundaryProcess::DoAbsorption (theEfficiency)         detect-or-absorb
+
+    
+
+
+
+
+TODO: trace what forced does
+
+::
+
+    1162 G4double DsG4OpBoundaryProcess::GetMeanFreePath(const G4Track& ,
+    1163                                               G4double ,
+    1164                                               G4ForceCondition* condition)
+    1165 {
+    1166     *condition = Forced;
+    1167 
+    1168     return DBL_MAX;
+    1169 }
+
+
+
+
 
 
 
@@ -13,6 +99,84 @@ at step level may allow to pin down the disreps.
 Not so easy to get seqhis flag until posttrack ... so 
 need to collect location lists split per step_id ?
 
+
+* did this, but results confusing, suspect are oversplitting
+
+  * must record locs split, just in order to retain the info about 
+    which locs go with which step, but then form digest together, 
+    perhaps using a splitter marker
+
+
+
+why scint ?
+-------------
+
+::
+
+    (lldb) p MAXofPostStepLoops
+    (size_t) $0 = 5
+
+    (lldb) p fPostStepGetPhysIntVector
+    (G4ProcessVector *) $5 = 0x0000000111167260
+    (lldb) p *fPostStepGetPhysIntVector
+    (G4ProcessVector) $6 = {
+      pProcVector = 0x0000000111167270 size=5
+    }
+    (lldb) 
+
+    (lldb) p *(fPostStepGetPhysIntVector->pProcVector)
+    (G4ProcessVector::G4ProcVector) $8 = size=5 {
+      [0] = 0x000000011119bab0
+      [1] = 0x000000011119d980
+      [2] = 0x000000011119d7f0
+      [3] = 0x000000011119d1f0
+      [4] = 0x00000001111747f0
+    }
+
+    (lldb) p (*fPostStepGetPhysIntVector)[0]->theProcessName
+    (G4String) $14 = (std::__1::string = "Scintillation")
+    (lldb) p (*fPostStepGetPhysIntVector)[1]->theProcessName
+    (G4String) $15 = (std::__1::string = "OpBoundary")
+    (lldb) p (*fPostStepGetPhysIntVector)[2]->theProcessName
+    (G4String) $16 = (std::__1::string = "OpRayleigh")
+    (lldb) p (*fPostStepGetPhysIntVector)[3]->theProcessName
+    (G4String) $17 = (std::__1::string = "OpAbsorption")
+    (lldb) p (*fPostStepGetPhysIntVector)[4]->theProcessName
+    (G4String) $18 = (std::__1::string = "Transportation")
+    (lldb) p (*fPostStepGetPhysIntVector)[5]->theProcessName
+    error: Couldn't apply expression side effects : Couldn't dematerialize a result variable: couldn't read its memory
+    (lldb) 
+
+
+
+
+
+    (lldb) p MAXofAlongStepLoops   # its Transportation 
+    (size_t) $1 = 1
+    (lldb) bt
+    * thread #1: tid = 0x958e2, 0x000000010449ad99 libcfg4.dylib`CRandomEngine::flat(this=0x0000000110010540) + 25 at CRandomEngine.cc:119, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x000000010449ad99 libcfg4.dylib`CRandomEngine::flat(this=0x0000000110010540) + 25 at CRandomEngine.cc:119
+        frame #1: 0x0000000105ae6b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x000000011119bab0) + 23 at G4VProcess.cc:97
+        frame #2: 0x0000000105ae8992 libG4processes.dylib`G4VRestDiscreteProcess::PostStepGetPhysicalInteractionLength(this=<unavailable>, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 82 at G4VRestDiscreteProcess.cc:78
+        frame #3: 0x0000000105245d67 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength() [inlined] G4VProcess::PostStepGPIL(this=0x000000011119bab0, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 14 at G4VProcess.hh:503
+      * frame #4: 0x0000000105245d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x000000011111c040) + 249 at G4SteppingManager2.cc:172
+        frame #5: 0x000000010524473e libG4tracking.dylib`G4SteppingManager::Stepping(this=0x000000011111c040) + 366 at G4SteppingManager.cc:180
+        frame #6: 0x000000010524e771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000011111c000, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #7: 0x00000001051a6727 libG4event.dylib`G4EventManager::DoProcessing(this=0x000000011111bf70, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #8: 0x0000000105128611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x0000000110010ac0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #9: 0x00000001051284db libG4run.dylib`G4RunManager::DoEventLoop(this=0x0000000110010ac0, n_event=10, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #10: 0x0000000105127913 libG4run.dylib`G4RunManager::BeamOn(this=0x0000000110010ac0, n_event=10, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #11: 0x00000001044952e6 libcfg4.dylib`CG4::propagate(this=0x0000000110010350) + 1670 at CG4.cc:388
+        frame #12: 0x000000010459d25a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdea0) + 538 at OKG4Mgr.cc:88
+        frame #13: 0x00000001000132da OKG4Test`main(argc=31, argv=0x00007fff5fbfdf88) + 1498 at OKG4Test.cc:57
+        frame #14: 0x00007fff8b7125fd libdyld.dylib`start + 1
+        frame #15: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+    (lldb) p fCurrentProcess->theProcessName
+    (G4String) $4 = (std::__1::string = "Transportation")
+    (lldb) 
 
 
 skipdupe : Skipping Duplicate Locations

@@ -8,9 +8,13 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+#include "BLocSeqDigest.hh"
+
+
 template <typename T> 
 class BRAP_API BLocSeq
 {
+        static const unsigned MAX_STEP_SEQ ; 
     public:
         BLocSeq(bool skipdupe);
 
@@ -21,9 +25,8 @@ class BRAP_API BLocSeq
     public:
         void dump(const char* msg) const ; 
     private:
-        void dumpDigests(const char* msg, bool locations) const ; 
-        void dumpLocations(const std::vector<std::string>& digests) const ;
-        void dumpCounts(const char* msg) const ; 
+        void dumpRecordCounts(const char* msg) const ; 
+        void dumpStepCounts(const char* msg) const ; 
 
     private:
         bool                          m_skipdupe ; 
@@ -31,11 +34,14 @@ class BRAP_API BLocSeq
         unsigned                      m_step_flat_count ; 
         unsigned                      m_count_mismatch; 
 
-        std::map<unsigned, unsigned>                   m_record_count ; 
-        std::vector<std::string>                       m_location_vec ; 
-        std::map<std::string, unsigned>                m_digest_count ; 
-        std::map<std::string, T>                       m_digest_marker ; 
-        std::map<std::string, std::string>             m_digest_locations ; 
+        std::map<unsigned, unsigned>  m_record_count ; 
+        std::map<unsigned, unsigned>  m_step_count ; 
+
+        BLocSeqDigest<T>              m_seq ; 
+
+        bool                          m_perstep ; 
+        BLocSeqDigest<T>*             m_step_seq ; 
+        int                           m_last_step1 ; 
 
 
 };
