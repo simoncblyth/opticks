@@ -11,6 +11,7 @@ class Opticks ;
 
 class CG4 ; 
 struct CG4Ctx ; 
+template <typename T> class NPY ; 
 
 /**
 CRandomEngine
@@ -39,6 +40,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         static std::string FormLocation(const char* file, int line);
     public:
         CRandomEngine(CG4* g4);
+        void dumpFloat(const char* msg, float* v ) const  ; 
 
     protected:
         friend class CG4 ; 
@@ -70,6 +72,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         CLHEP::HepJamesRandom*   m_james ; 
         CLHEP::NonRandomEngine*  m_nonran ; 
         CLHEP::HepRandomEngine*  m_engine ; 
+        NPY<float>*              m_precooked ; 
 
         std::string              m_location ; 
 

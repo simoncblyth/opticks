@@ -20,24 +20,26 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ;
 
-    //static const unsigned N = 1000000 ; 
-    static const unsigned N = 100000 ; 
-    //static const unsigned N = 1001 ; 
+    static const unsigned NI = 100000 ; 
+    static const unsigned NJ = 16 ; 
+    static const unsigned NK = 16 ; 
 
-    NPY<float>* ox = NPY<float>::make(N, 4, 4);
+    NPY<float>* ox = NPY<float>::make(NI, NJ, NK);
     ox->zero();
 
-    thrust::device_vector<float> dox(N*4*4);
+    thrust::device_vector<float> dox(NI*NJ*NK);
 
     CBufSpec spec = make_bufspec<float>(dox); 
 
-    TRngBuf trb(N, 16, spec );
+    TRngBuf trb(NI, NJ*NK, spec );
 
     trb.generate(); 
 
     trb.download<float>(ox, true) ; 
   
     const char* path = "$TMP/TRngBufTest.npy" ; 
+    //
+    //  import os, numpy as np ; a = np.load(os.path.expandvars("$TMP/TRngBufTest.npy"))
 
     ox->save(path)  ;
 

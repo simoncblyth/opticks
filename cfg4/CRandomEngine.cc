@@ -17,13 +17,14 @@
 
 #include "Opticks.hh"
 
+#include "NPY.hpp"
+
 #include "CG4.hh"
 #include "CProcess.hh"
 #include "CProcessManager.hh"
 #include "CStepStatus.hh"
 #include "CStepping.hh"
 #include "CRandomEngine.hh"
-
 
 
 
@@ -43,13 +44,35 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_locseq(new BLocSeq<unsigned long long>(m_skipdupe)),
     m_james(new CLHEP::HepJamesRandom()),
     m_nonran(new CLHEP::NonRandomEngine()),
-    m_engine(m_james)
+    m_engine(m_james),
+    m_precooked(NPY<float>::load("$TMP/TRngBufTest.npy"))
 {
     init();
 }
 
+void CRandomEngine::dumpFloat(const char* msg, float* v ) const 
+{
+    LOG(info) << msg ; 
+    for(int i=0 ; i < 16 ; i++)  
+    {
+        std::cout << v[i] << " " ; 
+        if( i % 4 == 3 ) std::cout << std::endl ; 
+    }
+}
+
+
 void CRandomEngine::init()
 {
+    LOG(info) << " precooked " << ( m_precooked ? m_precooked->getShapeString() : "-" ) ; 
+
+    if(m_precooked)
+    {
+        dumpFloat( "v0" , m_precooked->getValues(0) ) ; 
+        dumpFloat( "v1" , m_precooked->getValues(1) ) ; 
+        dumpFloat( "v99999" , m_precooked->getValues(99999) ) ; 
+    }
+
+
     //m_nonran->setRandomSequence( seq.data(), seq.size() ) ; 
 
     CLHEP::HepRandom::setTheEngine( this );  
