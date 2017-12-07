@@ -9,7 +9,747 @@ so adopt a need-to-know strategy.
 i.e. focus on a common seqhis, and just work on 
 feeding non-randoms for that ?
 
+
+
+Location Key
+--------------
+
+::
+
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025    DsG4OpBoundaryProcess::DielectricDielectric (TransCoeff)    reflect-or-transmit-at-non-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655     DsG4OpBoundaryProcess::PostStepDoIt (theReflectivity)       reflect-or-transmit-at-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242    DsG4OpBoundaryProcess::DoAbsorption (theEfficiency)         detect-or-absorb
+
+
+::
+
+    g4-;g4-cls G4SteppingManager
+    g4-;g4-cls G4SteppingManager2
+
+    tboolean-;tboolean-box --okg4 --align -D
+
+    (lldb) b G4SteppingManager::DefinePhysicalStepLength   ## called 3 times for "TO BT BT SA"
+      
+    (lldb) bt
+    * thread #1: tid = 0xad4e5, 0x000000010524ac7e libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001111370e0) + 30 at G4SteppingManager2.cc:133, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x000000010524ac7e libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x00000001111370e0) + 30 at G4SteppingManager2.cc:133
+        frame #1: 0x000000010524973e libG4tracking.dylib`G4SteppingManager::Stepping(this=0x00000001111370e0) + 366 at G4SteppingManager.cc:180
+        frame #2: 0x0000000105253771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001111370a0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #3: 0x00000001051ab727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000111137010, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #4: 0x000000010512d611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000011002bae0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #5: 0x000000010512d4db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000011002bae0, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #6: 0x000000010512c913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000011002bae0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #7: 0x0000000104495fe6 libcfg4.dylib`CG4::propagate(this=0x000000011002b3f0) + 1670 at CG4.cc:388
+        frame #8: 0x00000001045a225a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #9: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #10: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+    g4-;g4-cls G4TrackingManager
+
+    (lldb) b G4SteppingManager::GetProcessNumber    ## only called once for "TO BT BT SA"
+
+    (lldb) bt
+    * thread #1: tid = 0xad996, 0x000000010524a820 libG4tracking.dylib`G4SteppingManager::GetProcessNumber(this=0x000000010ffed0d0) + 16 at G4SteppingManager2.cc:64, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x000000010524a820 libG4tracking.dylib`G4SteppingManager::GetProcessNumber(this=0x000000010ffed0d0) + 16 at G4SteppingManager2.cc:64
+        frame #1: 0x0000000105253711 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x000000010ffed090, apValueG4Track=<unavailable>) + 817 at G4TrackingManager.cc:111
+        frame #2: 0x00000001051ab727 libG4event.dylib`G4EventManager::DoProcessing(this=0x000000010ffed000, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #3: 0x000000010512d611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010f6e1ac0, i_event=0) + 49 at G4RunManager.cc:399
+        frame #4: 0x000000010512d4db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010f6e1ac0, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #5: 0x000000010512c913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010f6e1ac0, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #6: 0x0000000104495fe6 libcfg4.dylib`CG4::propagate(this=0x000000010f6e13d0) + 1670 at CG4.cc:388
+        frame #7: 0x00000001045a225a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfdec0) + 538 at OKG4Mgr.cc:88
+        frame #8: 0x00000001000132da OKG4Test`main(argc=30, argv=0x00007fff5fbfdfa0) + 1498 at OKG4Test.cc:57
+        frame #9: 0x00007fff8b7125fd libdyld.dylib`start + 1
+    (lldb) 
+
+
+
+
+G4ProcessManager 
+------------------
+
+::
+
+   g4-;g4-cls G4ProcessManager 
+
+
+
+G4VProcess::PostStepGPIL
+---------------------------
+
+::
+
+    498 inline G4double G4VProcess::PostStepGPIL( const G4Track& track,
+    499                                    G4double   previousStepSize,
+    500                                    G4ForceCondition* condition )
+    501 {
+    502   G4double value
+    503    =PostStepGetPhysicalInteractionLength(track, previousStepSize, condition);
+    504   return thePILfactor*value;
+    505 }
+
+
+
+Process Setup
+----------------
+
+::
+
+    077 void DsPhysConsOptical::ConstructProcess()
+    ...
+    143     theParticleIterator->reset();
+    144     while( (*theParticleIterator)() ) {
+    145 
+    146         G4ParticleDefinition* particle = theParticleIterator->value();
+    147         G4ProcessManager* pmanager = particle->GetProcessManager();
+    148    
+    149         // Caution: as of G4.9, Cerenkov becomes a Discrete Process.
+    150         // This code assumes a version of G4Cerenkov from before this version.
+    151         //
+    152         /// SCB: Contrary to above FUD-comment, contemporary G4 code such as 
+    153         ///      OpNovicePhysicsList sets up Cerenkov just like this
+    154 
+    155         if(cerenkov && cerenkov->IsApplicable(*particle))
+    156         {
+    157             pmanager->AddProcess(cerenkov);
+    158             pmanager->SetProcessOrdering(cerenkov, idxPostStep);
+    159             LOG(debug) << "Process: adding Cherenkov to "
+    160                        << particle->GetParticleName() ;
+    161         }
+    162 
+    163         if(scint && scint->IsApplicable(*particle))
+    164         {
+    165             pmanager->AddProcess(scint);
+    166             pmanager->SetProcessOrderingToLast(scint, idxAtRest);
+    167             pmanager->SetProcessOrderingToLast(scint, idxPostStep);
+    168             LOG(debug) << "Process: adding Scintillation to "
+    169                        << particle->GetParticleName() ;
+    170         }
+    171 
+    172         if(particle == G4OpticalPhoton::Definition())
+    173         {
+    174             if(absorb) pmanager->AddDiscreteProcess(absorb);
+    175             if(rayleigh) pmanager->AddDiscreteProcess(rayleigh);
+    176             pmanager->AddDiscreteProcess(boundproc);
+    177             //pmanager->AddDiscreteProcess(fast_sim_man);
+    178         }
+    179     }
+    180 }
+
+
+
+G4VDiscreteProcess
+--------------------
+
+
+::
+
+    g4-;g4-cls G4VDiscreteProcess
+
+
+    054 G4VDiscreteProcess::G4VDiscreteProcess(const G4String& aName , G4ProcessType aType)
+     55                   : G4VProcess(aName, aType)
+     56 {
+     57   enableAtRestDoIt = false;
+     58   enableAlongStepDoIt = false;
+     59 
+     60 }
+
+::
+    (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
+
+    (lldb) frame variable theProcessName theNumberOfInteractionLengthLeft
+    (G4String) theProcessName = (std::__1::string = "OpBoundary")
+    (G4double) theNumberOfInteractionLengthLeft = -1
+
+    (lldb) frame variable theProcessName theNumberOfInteractionLengthLeft
+    (G4String) theProcessName = (std::__1::string = "OpRayleigh")
+    (G4double) theNumberOfInteractionLengthLeft = -1
+
+    (lldb) frame variable theProcessName theNumberOfInteractionLengthLeft
+    (G4String) theProcessName = (std::__1::string = "OpAbsorption")
+    (G4double) theNumberOfInteractionLengthLeft = -1
+    (lldb) 
+
+
+::
+
+    >> root = lldb.frame.FindVariable("this")
+    >>> print root
+    (G4VDiscreteProcess *) this = 0x000000011088f7d0
+    >>> print root.GetChildMemberWithName("theProcessName")
+    (G4String) theProcessName = (std::__1::string = "OpAbsorption")
+    >>> 
+
+    http://www.fabianguerra.com/ios/introduction-to-lldb-python-scripting/
+
+
+    (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
+    (lldb) breakpoint command add -s python 1 -o "import opticks.cfg4.g4lldb"
+
+
+
+
+
+    071 G4double G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(
+     72                              const G4Track& track,
+     73                  G4double   previousStepSize,
+     74                  G4ForceCondition* condition
+     75                 )
+     76 {
+     77   if ( (previousStepSize < 0.0) || (theNumberOfInteractionLengthLeft<=0.0)) {
+     78     // beggining of tracking (or just after DoIt of this process)
+     79     ResetNumberOfInteractionLengthLeft();
+     80   } else if ( previousStepSize > 0.0) {
+     81     // subtract NumberOfInteractionLengthLeft 
+     82     SubtractNumberOfInteractionLengthLeft(previousStepSize);
+     ..
+     86   }
+     87 
+     89   *condition = NotForced;
+     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ default for discrete 
+     90 
+     92   currentInteractionLength = GetMeanFreePath(track, previousStepSize, condition);
+     93 
+     94   G4double value;
+     95   if (currentInteractionLength <DBL_MAX) {
+     96     value = theNumberOfInteractionLengthLeft * currentInteractionLength;
+     97   } else {
+     98     value = DBL_MAX;
+     99   }
+    ...
+    109   return value;
+    110 }
+    111 
+    112 G4VParticleChange* G4VDiscreteProcess::PostStepDoIt(
+    113                             const G4Track& ,
+    114                             const G4Step&
+    115                             )
+    116 {
+    118     ClearNumberOfInteractionLengthLeft();
+    120     return pParticleChange;
+    121 }
+
+
+    095 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+     96 {
+     97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+     98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
+     99 }
+
+    (lldb) b G4VProcess::ResetNumberOfInteractionLengthLeft
+
+    // every step for Scintillation and OpBoundary 
+    // only 1st for OpRayleigh, OpAbsorption
+
+
+
+    447 inline void G4VProcess::ClearNumberOfInteractionLengthLeft()
+    448 {
+    449   theInitialNumberOfInteractionLength = -1.0;
+    450   theNumberOfInteractionLengthLeft =  -1.0;
+    451 }
+
+
+    543 inline
+    544 void G4VProcess::SubtractNumberOfInteractionLengthLeft(
+    545                                   G4double previousStepSize )
+    546 {
+    547   if (currentInteractionLength>0.0) {
+    548     theNumberOfInteractionLengthLeft -= previousStepSize/currentInteractionLength;
+    549     if(theNumberOfInteractionLengthLeft<0.) {
+    550        theNumberOfInteractionLengthLeft=CLHEP::perMillion;
+    551     }
+    ....  } else  error
+    552 
+    569 }
+
+
+
+
+
+G4ForceCondition
+--------------------
+
+::
+
+    1191 G4double DsG4Scintillation::GetMeanFreePath(const G4Track&,
+    1192                                             G4double ,
+    1193                                             G4ForceCondition* condition)
+    1194 {
+    1195     *condition = StronglyForced;
+    1197     return DBL_MAX;
+    1199 }
+    1205 G4double DsG4Scintillation::GetMeanLifeTime(const G4Track&,
+    1206                                             G4ForceCondition* condition)
+    1207 {
+    1208     *condition = Forced;
+    1210     return DBL_MAX;
+    1211 
+    1212 }
+
+
+    1162 G4double DsG4OpBoundaryProcess::GetMeanFreePath(const G4Track& ,
+    1163                                               G4double ,
+    1164                                               G4ForceCondition* condition)
+    1165 {
+    1166     *condition = Forced;
+    1168     return DBL_MAX;
+    1169 }
+
+
+
+OpRayleigh and G4OpAbsorption do not change discrete process default of NotForced
+
+::
+
+
+    272 G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
+    273                                        G4double ,
+    274                                        G4ForceCondition* )   
+
+    122 G4double G4OpAbsorption::GetMeanFreePath(const G4Track& aTrack,
+    123                          G4double ,
+    124                          G4ForceCondition* )
+
+
+
+
+
+
+G4SteppingManager::DefinePhysicalStepLength  are proceeses being nullified
+-----------------------------------------------------------------------------
+::
+
+    (lldb) fr v *fPostStepGetPhysIntVector->pProcVector
+    (G4ProcessVector::G4ProcVector) *fPostStepGetPhysIntVector->pProcVector = size=5 {
+      [0] = 0x000000010f7a7030
+      [1] = 0x000000010f7a8f00
+      [2] = 0x000000010f7a8d70
+      [3] = 0x000000010f7a8770
+      [4] = 0x000000010f77fd70
+
+
+
+G4SteppingManager::DefinePhysicalStepLength
+---------------------------------------------
+
+Walk thru of below code makes sense, my problem
+is why it doesnt happen the same way after the GeomBoundary  
+
+* it has to happen, tis different material ...
+
+
+
+::
+
+    g4-;g4-cls G4SteppingManager
+    g4-;g4-cls G4SteppingManager2
+
+    G4SteppingManager::DefinePhysicalStepLength
+
+    127 /////////////////////////////////////////////////////////
+    128  void G4SteppingManager::DefinePhysicalStepLength()
+    129 /////////////////////////////////////////////////////////
+    130 {
+    131 
+    132 // ReSet the counter etc.
+    133    PhysicalStep  = DBL_MAX;          // Initialize by a huge number    
+    134    physIntLength = DBL_MAX;          // Initialize by a huge number    
+    ...
+    162 // GPIL for PostStep
+    163    fPostStepDoItProcTriggered = MAXofPostStepLoops;
+    164 
+    165    for(size_t np=0; np < MAXofPostStepLoops; np++){
+    166      fCurrentProcess = (*fPostStepGetPhysIntVector)(np);
+    167      if (fCurrentProcess== 0) {
+    168        (*fSelectedPostStepDoItVector)[np] = InActivated;
+    169        continue;
+    170      }   // NULL means the process is inactivated by a user on fly.
+    171 
+    172      physIntLength = fCurrentProcess->
+    173                      PostStepGPIL( *fTrack,
+    174                                                  fPreviousStepSize,
+    175                                                       &fCondition );
+    ...
+     
+
+    (lldb) b G4SteppingManager::DefinePhysicalStepLength
+    (lldb) r
+    (lldb) b 181
+    (lldb) b 270  # for summary
+    (lldb) c
+
+    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
+
+    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "Scintillation")
+    (G4double) physIntLength = 1.7976931348623157E+308
+    (G4ForceCondition) fCondition = StronglyForced
+    (G4double) PhysicalStep = 1.7976931348623157E+308
+
+    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
+
+    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpBoundary")
+    (G4double) physIntLength = 1.7976931348623157E+308
+    (G4ForceCondition) fCondition = Forced
+    (G4double) PhysicalStep = 1.7976931348623157E+308
+
+    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
+
+    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpRayleigh")
+    (G4double) physIntLength = 58700.67007814737
+    (G4ForceCondition) fCondition = NotForced
+    (G4double) PhysicalStep = 1.7976931348623157E+308
+
+    (lldb) p (double)log(0.942989)*-1e6
+    (double) $1 = 58700.661315972749
+
+
+    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep fStepStatus fPostStepDoItProcTriggered
+
+    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpAbsorption")
+    (G4double) physIntLength = 12766112.786981029
+    (G4ForceCondition) fCondition = NotForced
+    (G4double) PhysicalStep = 58700.67007814737
+    (G4StepStatus) fStepStatus = fPostStepDoItProc
+    (size_t) fPostStepDoItProcTriggered = 2
+
+    ## OpRayleigh in lead 
+
+    (lldb) p (double)log(0.278981)*-1e6
+    (double) $2 = 1276611.599838129
+
+    (lldb) p (double)log(0.278981)*-1e7
+    (double) $3 = 12766115.998381291
+
+
+    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep fStepStatus fPostStepDoItProcTriggered
+    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "Transportation")
+    (G4double) physIntLength = 1.7976931348623157E+308
+    (G4ForceCondition) fCondition = Forced
+    (G4double) PhysicalStep = 58700.67007814737
+    (G4StepStatus) fStepStatus = fPostStepDoItProc
+    (size_t) fPostStepDoItProcTriggered = 2
+    (lldb) 
+
+
+
+    181      switch (fCondition) {
+        182      case ExclusivelyForced:
+        183          (*fSelectedPostStepDoItVector)[np] = ExclusivelyForced;
+        184          fStepStatus = fExclusivelyForcedProc;
+        185          fStep->GetPostStepPoint()
+        186          ->SetProcessDefinedStep(fCurrentProcess);
+        187          break;
+        ...
+        193      case Forced:
+        194          (*fSelectedPostStepDoItVector)[np] = Forced;
+        195          break;
+        196      case StronglyForced:
+        197          (*fSelectedPostStepDoItVector)[np] = StronglyForced;
+        198          break;
+        199      default:
+        200          (*fSelectedPostStepDoItVector)[np] = InActivated;
+        ////    ^^^^^^^^^  hmm NotForced gets InActivated, have to set some condition to stay selected 
+        201          break;
+    202      }
+
+
+    (lldb) b G4SteppingManager::DefinePhysicalStepLength
+    (lldb) b 206
+
+
+
+    206      if (fCondition==ExclusivelyForced) {
+    207          for(size_t nrest=np+1; nrest < MAXofPostStepLoops; nrest++){
+    208              (*fSelectedPostStepDoItVector)[nrest] = InActivated;
+    209          }
+    210          return;  // Take note the 'return' at here !!! 
+    211      }
+    212      else{
+    213          if(physIntLength < PhysicalStep ){
+    214              PhysicalStep = physIntLength;
+    215              fStepStatus = fPostStepDoItProc;
+    216              fPostStepDoItProcTriggered = G4int(np);
+    217              fStep->GetPostStepPoint()
+    218                  ->SetProcessDefinedStep(fCurrentProcess);
+    219          }
+    220      }
+    223    }
+
+
+
+    225    if (fPostStepDoItProcTriggered<MAXofPostStepLoops) {
+    226        if ((*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] ==
+    227        InActivated) {
+    228        (*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] =
+    229            NotForced;
+    230        }
+    231    }
+
+::
+
+    (lldb) p *fAlongStepGetPhysIntVector
+    (G4ProcessVector) $6 = {
+      pProcVector = 0x0000000111144560 size=1
+    }
+
+
+
+::
+
+    (lldb) b 251
+
+
+    233 // GPIL for AlongStep
+    234    proposedSafety = DBL_MAX;
+    235    G4double safetyProposedToAndByProcess = proposedSafety;
+    236 
+    237    for(size_t kp=0; kp < MAXofAlongStepLoops; kp++){
+    238      fCurrentProcess = (*fAlongStepGetPhysIntVector)[kp];
+    239      if (fCurrentProcess== 0) continue;
+    240          // NULL means the process is inactivated by a user on fly.
+    241 
+    242      physIntLength = fCurrentProcess->
+    243                      AlongStepGPIL( *fTrack, fPreviousStepSize,
+    244                                      PhysicalStep,
+    245                      safetyProposedToAndByProcess,
+    246                                     &fGPILSelection );
+    247 #ifdef G4VERBOSE
+    248                          // !!!!! Verbose
+    249      if(verboseLevel>0) fVerbose->DPSLAlongStep();
+    250 #endif
+
+    ///  PhysicalStep here comes from above np loop
+
+    251      if(physIntLength < PhysicalStep){
+    252        PhysicalStep = physIntLength;
+    253 
+    254        // Check if the process wants to be the GPIL winner. For example,
+    255        // multi-scattering proposes Step limit, but won't be the winner.
+    256        if(fGPILSelection==CandidateForSelection){
+    257           fStepStatus = fAlongStepDoItProc;
+    258           fStep->GetPostStepPoint()
+    259                ->SetProcessDefinedStep(fCurrentProcess);
+    260        }
+    261 
+    262           // Transportation is assumed to be the last process in the vector
+    263        if(kp == MAXofAlongStepLoops-1)
+    264       fStepStatus = fGeomBoundary;
+    265      }
+    266 
+    267      // Make sure to check the safety, even if Step is not limited 
+    268      //  by this process.                      J. Apostolakis, June 20, 1998
+    269      // 
+
+
+
+    (lldb) b 270
+    lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
+    (G4StepStatus) fStepStatus = fGeomBoundary
+    (size_t) MAXofAlongStepLoops = 1
+    (G4GPILSelection) fGPILSelection = CandidateForSelection
+    (G4double) physIntLength = 349.89999389648438
+    (G4double) PhysicalStep = 349.89999389648438
+    (G4double) safetyProposedToAndByProcess = 0.100006103515625
+    (lldb) 
+
+
+
+    270      if (safetyProposedToAndByProcess < proposedSafety)
+    271         // proposedSafety keeps the smallest value:
+    272         proposedSafety               = safetyProposedToAndByProcess;
+    273      else
+    274         // safetyProposedToAndByProcess always proposes a valid safety:
+    275         safetyProposedToAndByProcess = proposedSafety;
+    276      
+    277    }
+    278 } // void G4SteppingManager::DefinePhysicalStepLength() //
+
+
+::
+
+    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
+    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = -449.89999389648438)
+    (G4double) fStep->fpPreStepPoint->fGlobalTime = 0.20000000298023224
+    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
+    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "Vacuum")
+    (lldb) 
+
+
+
+    (lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
+    (G4StepStatus) fStepStatus = fGeomBoundary
+    (size_t) MAXofAlongStepLoops = 1
+    (G4GPILSelection) fGPILSelection = CandidateForSelection
+    (G4double) physIntLength = 200
+    (G4double) PhysicalStep = 200
+    (G4double) safetyProposedToAndByProcess = 0
+    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
+    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = -100)
+    (G4double) fStep->fpPreStepPoint->fGlobalTime = 1.3671407830548261
+    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
+    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "GlassSchottF2")
+    (lldb) 
+
+
+    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
+    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = 100)
+    (G4double) fStep->fpPreStepPoint->fGlobalTime = 2.5790558894519888
+    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
+    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "Vacuum")
+    (lldb) 
+
+    (lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
+    (G4StepStatus) fStepStatus = fGeomBoundary
+    (size_t) MAXofAlongStepLoops = 1
+    (G4GPILSelection) fGPILSelection = CandidateForSelection
+    (G4double) physIntLength = 350
+    (G4double) PhysicalStep = 350
+    (G4double) safetyProposedToAndByProcess = 0
+    (lldb) 
+
+
+
+
+G4TrackingManager
+---------------------
+
+::
+
+    g4-;g4-cls G4TrackingManager
+
+    110   // Give SteppingManger the maxmimum number of processes 
+    111   fpSteppingManager->GetProcessNumber();
+    112 
+    113   // Give track the pointer to the Step
+    114   fpTrack->SetStep(fpSteppingManager->GetStep());
+    115 
+    116   // Inform beginning of tracking to physics processes 
+    117   fpTrack->GetDefinition()->GetProcessManager()->StartTracking(fpTrack);
+    118 
+    119   // Track the particle Step-by-Step while it is alive
+    120   //  G4StepStatus stepStatus;
+    121 
+    122   while( (fpTrack->GetTrackStatus() == fAlive) ||
+    123          (fpTrack->GetTrackStatus() == fStopButAlive) ){
+    124 
+    125     fpTrack->IncrementCurrentStepNumber();
+    126     fpSteppingManager->Stepping();
+    127 #ifdef G4_STORE_TRAJECTORY
+    128     if(StoreTrajectory) fpTrajectory->
+    129                         AppendStep(fpSteppingManager->GetStep());
+    130 #endif
+    131     if(EventIsAborted) {
+    132       fpTrack->SetTrackStatus( fKillTrackAndSecondaries );
+    133     }
+    134   }
+    135   // Inform end of tracking to physics processes 
+    136   fpTrack->GetDefinition()->GetProcessManager()->EndTracking();
+    137 
+    138   // Post tracking user intervention process.
+    139   if( fpUserTrackingAction != 0 ) {
+    140      fpUserTrackingAction->PostUserTrackingAction(fpTrack);
+    141   }
+
+
+     
+
+WITH_ALIGN_DEV
+---------------
+
+* single photon "TO BT BT SA"
+
+
+::
+
+    2017-12-07 11:24:34.438 INFO  [701769] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+
+
+     //  5 + 3 + 4
+
+     rec.stp1   0.0 loc                                     Scintillation;   0.286072            Undefined CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     rec.stp1   0.0 loc                                        OpBoundary;   0.366332            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                        OpRayleigh;   0.942989            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                      OpAbsorption;   0.278981     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025    0.18341         GeomBoundary CPro      OpBoundary LenLeft    1.00421 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.1 loc                                     Scintillation;   0.186724         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     rec.stp1   0.1 loc                                        OpBoundary;   0.265324         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.452413         GeomBoundary CPro      OpBoundary LenLeft    1.32681 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.2 loc                                     Scintillation;   0.552432         GeomBoundary CPro   Scintillation LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep YNY
+     rec.stp1   0.2 loc                                        OpBoundary;   0.223035         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655   0.594206         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.724901         GeomBoundary CPro      OpBoundary LenLeft    1.50043 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+
+    // Opticks gets u_absorption/u_scattering at every to_boundary, G4 manages not to ?
+
+    // 3 + 3 + 3 
+
+    WITH_ALIGN_DEV bounce:0 
+    propagate_to_boundary  u_absorption:    0.7402 
+    propagate_to_boundary  u_scattering:    0.4385 
+    propagate_at_boundary  u_reflect:       0.51701  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:1 
+    propagate_to_boundary  u_absorption:    0.1570 
+    propagate_to_boundary  u_scattering:    0.0714 
+    propagate_at_boundary  u_reflect:       0.46251  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:2 
+    propagate_to_boundary  u_absorption:    0.2276 
+    propagate_to_boundary  u_scattering:    0.3294 
+    propagate_at_surface   u_surface:       0.1441 
+
+    2017-12-07 11:24:38.214 INFO  [701769] [OPropagator::launch@186] 1 : (0;1,1) launch_times vali,comp,prel,lnch  0.0000 0.0000 0.0000 0.0142
+    2017-12-07 11:24:38.215 INFO  [701769] [OpIndexer::indexSequenceInterop@258] OpIndexer::indexSequenceInterop slicing (OBufBase*)m_seq 
+    2017-12-07 11:24:38.217 INFO  [701769] [OpticksViz::indexPresentationPrep@325] OpticksViz::indexPresentationPrep
+
+
+
+
+::
+
+    simon:tests blyth$ TRngBufTest 
+    2017-12-02 20:04:12.284 INFO  [21910] [main@21] TRngBufTest
+    TRngBuf::generate ni 100000 id_max 1000
+    TRngBuf::generate seq 0 id_offset          0 id_per_gen       1000 remaining     100000
+    TRngBuf::generate seq 1 id_offset       1000 id_per_gen       1000 remaining      99000
+    TRngBuf::generate seq 2 id_offset       2000 id_per_gen       1000 remaining      98000
+    ...
+    TRngBuf::generate seq 96 id_offset      96000 id_per_gen       1000 remaining       4000
+    TRngBuf::generate seq 97 id_offset      97000 id_per_gen       1000 remaining       3000
+    TRngBuf::generate seq 98 id_offset      98000 id_per_gen       1000 remaining       2000
+    TRngBuf::generate seq 99 id_offset      99000 id_per_gen       1000 remaining       1000
+    (100000, 4, 4)
+    [[[ 0.74021935  0.43845114  0.51701266  0.15698862]
+      [ 0.07136751  0.46250838  0.22764327  0.32935849]
+      [ 0.14406531  0.18779911  0.91538346  0.54012483]
+      [ 0.97466087  0.54746926  0.65316027  0.23023781]]
+
+
+
+
+
+
+cuRand skipahead
+------------------
   
+
+* http://docs.nvidia.com/cuda/curand/device-api-overview.html
+
+::
+
+    There are several functions to skip ahead from a generator state.
+
+    __device__ void 
+    skipahead (unsigned long long n, curandState_t *state)
+
+
+
 
 questions
 -----------
@@ -59,14 +799,6 @@ questions
 
     2017-12-06 21:01:13.286 INFO  [663071] [CRecorder::posttrack@145] [--dindex]  ctx  record_id 9 pho  seqhis                 8ccd seqmat                 1232
 
-
-::
-
-    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025    DsG4OpBoundaryProcess::DielectricDielectric (TransCoeff)    reflect-or-transmit-at-non-opticalsurface
-    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655     DsG4OpBoundaryProcess::PostStepDoIt (theReflectivity)       reflect-or-transmit-at-opticalsurface
-    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242    DsG4OpBoundaryProcess::DoAbsorption (theEfficiency)         detect-or-absorb
-
-    
 
 
 

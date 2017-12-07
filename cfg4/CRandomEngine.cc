@@ -68,10 +68,14 @@ bool CRandomEngine::isDefault() const
 
 std::string CRandomEngine::desc() const 
 {
+
+    std::stringstream rs1_ ; 
+    rs1_ <<  m_ctx._record_id  << "." << ( m_ctx._step_id + 1 ) ; 
+    std::string rs1 = rs1_.str() ; 
+
     std::stringstream ss ; 
     ss 
-       << " record_id " << std::setw(5) << m_ctx._record_id 
-       << " step_id " << std::setw(5) << m_ctx._step_id
+       << " rec.stp1 " << std::setw(5) << rs1
        << " loc " << std::setw(50) << m_location 
        ;
 
@@ -129,22 +133,17 @@ double CRandomEngine::flat()
 
     CSteppingState ss = CStepping::CurrentState(); 
 
+
     std::cerr 
         << desc()
+        << " "
+        << std::setw(10) << _flat 
         << " " 
         << std::setw(20) << CStepStatus::Desc(ss.fStepStatus)
         << " " << CProcess::Desc(proc)       
         <<  std::endl 
         ; 
 
-
-/*
-    std::cerr 
-          << " flat " << std::setw(10) << _flat 
-          << desc()
-          << std::endl 
-          ; 
-*/
 
     return _flat ; 
 }

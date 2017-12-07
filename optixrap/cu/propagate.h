@@ -61,8 +61,17 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)
     float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
 
+#ifdef WITH_ALIGN_DEV
+    float u_absorption = curand_uniform(&rng) ;
+    float absorption_distance = -s.material1.y*logf(u_absorption) ;
+    float u_scattering = curand_uniform(&rng) ;
+    float scattering_distance = -s.material1.z*logf(u_scattering) ; 
+    rtPrintf("propagate_to_boundary  u_absorption:%10.4f \n", u_absorption );
+    rtPrintf("propagate_to_boundary  u_scattering:%10.4f \n", u_scattering );
+#else
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
+#endif
 
     if (absorption_distance <= scattering_distance) 
     {
@@ -295,8 +304,12 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     //  above 0.0f was until 2016/3/4 incorrectly a 1.0f 
     //  resulting in TIR yielding BT where BR is expected
 
-    const float u = s.ureflectcheat >= 0.f ? s.ureflectcheat : curand_uniform(&rng) ;
-    bool reflect = u > TransCoeff  ;
+    const float u_reflect = s.ureflectcheat >= 0.f ? s.ureflectcheat : curand_uniform(&rng) ;
+    bool reflect = u_reflect > TransCoeff  ;
+
+#ifdef WITH_ALIGN_DEV
+    rtPrintf("propagate_at_boundary  u_reflect:    %10.5f  reflect:%d   TransCoeff:%10.5f \n", u_reflect, reflect, TransCoeff );
+#endif
 
     p.direction = reflect 
                     ? 
@@ -581,22 +594,24 @@ TODO
 __device__ int
 propagate_at_surface(Photon &p, State &s, curandState &rng)
 {
+    float u_surface = curand_uniform(&rng);
+#ifdef WITH_ALIGN_DEV
+    rtPrintf("propagate_at_surface   u_surface:   %10.4f \n", u_surface);
+#endif
 
-    float u = curand_uniform(&rng);
-
-    if( u < s.surface.y )   // absorb   
+    if( u_surface < s.surface.y )   // absorb   
     {
         s.flag = SURFACE_ABSORB ;
         s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
         return BREAK ;
     }
-    else if ( u < s.surface.y + s.surface.x )  // absorb + detect
+    else if ( u_surface < s.surface.y + s.surface.x )  // absorb + detect
     {
         s.flag = SURFACE_DETECT ;
         s.index.x = s.index.y ;   // kludge to get m2 into seqmat for BREAKERs
         return BREAK ;
     } 
-    else if (u  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
+    else if (u_surface  < s.surface.y + s.surface.x + s.surface.w )  // absorb + detect + reflect_diffuse 
     {
         s.flag = SURFACE_DREFLECT ;
         propagate_at_diffuse_reflector_geant4_style(p, s, rng);

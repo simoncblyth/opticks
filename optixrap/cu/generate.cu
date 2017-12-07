@@ -382,6 +382,7 @@ RT_PROGRAM void generate()
 
 
     curandState rng = rng_states[photon_id];
+
     State s ;   
     Photon p ;  
 
@@ -483,6 +484,10 @@ RT_PROGRAM void generate()
 
     while( bounce < bounce_max )
     {
+#ifdef WITH_ALIGN_DEV
+        rtPrintf("WITH_ALIGN_DEV bounce:%d \n", bounce );
+#endif
+
         bounce++;   // increment at head, not tail, as CONTINUE skips the tail
 
         // trace sets these, see material1_propagate.cu:closest_hit_propagate

@@ -65,6 +65,9 @@
 #include "G4PhysicsTable.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
 
+// okc-
+#include "OpticksSwitches.h"
+
 // Class Description:
 // Discrete Process -- Rayleigh scattering of optical photons.
 // Class inherits publicly from G4VDiscreteProcess.
