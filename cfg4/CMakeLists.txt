@@ -214,6 +214,7 @@ set(SOURCES
 
     CRandomEngine.cc
     CProcess.cc
+    CProcessManager.cc
     CStepping.cc
     CSteppingState.cc
     CStepStatus.cc

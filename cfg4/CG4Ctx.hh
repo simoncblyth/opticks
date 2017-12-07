@@ -5,10 +5,9 @@
 #include "CStage.hh"
 #include <string>
 
-
-
 class G4Event ; 
 class G4Track ; 
+class G4ProcessManager ; 
 class G4Step ; 
 
 class OpticksEvent ; 
@@ -50,6 +49,8 @@ struct CFG4_API CG4Ctx
 
     // CG4Ctx::setTrack
     G4Track* _track ; 
+    G4ProcessManager* _process_manager ; 
+
     int  _track_id ;
     int  _track_total ; 
     int  _track_step_count ; 

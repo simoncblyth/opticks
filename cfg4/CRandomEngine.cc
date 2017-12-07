@@ -19,6 +19,7 @@
 
 #include "CG4.hh"
 #include "CProcess.hh"
+#include "CProcessManager.hh"
 #include "CStepStatus.hh"
 #include "CStepping.hh"
 #include "CRandomEngine.hh"
@@ -152,12 +153,17 @@ double CRandomEngine::flat()
 void CRandomEngine::poststep()
 {
     m_locseq->poststep();
+
+    LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
 }
 
 void CRandomEngine::posttrack()
 {
     unsigned long long seqhis = m_g4->getSeqHis()  ;
     m_locseq->mark(seqhis);
+
+    LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
+
 }
 
 void CRandomEngine::dump(const char* msg) const 

@@ -76,6 +76,9 @@ void DsPhysConsOptical::dump(const char* msg)
 
 void DsPhysConsOptical::ConstructProcess()
 {
+
+    assert(0); 
+
 #ifdef USE_CUSTOM_CERENKOV
     
     LOG(info)  << "Using customized DsG4Cerenkov." ;
@@ -160,6 +163,7 @@ void DsPhysConsOptical::ConstructProcess()
                        << particle->GetParticleName() ;
         }
 
+/*
         if(scint && scint->IsApplicable(*particle))
         {
             pmanager->AddProcess(scint);
@@ -168,6 +172,7 @@ void DsPhysConsOptical::ConstructProcess()
             LOG(debug) << "Process: adding Scintillation to "
                        << particle->GetParticleName() ;
         }
+*/
 
         if(particle == G4OpticalPhoton::Definition()) 
         {

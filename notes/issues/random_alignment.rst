@@ -11,6 +11,217 @@ feeding non-randoms for that ?
 
 
 
+
+Fiddling the poststep to ProcessManager::ClearNumberOfInteractionLengthLeft
+-------------------------------------------------------------------------------
+
+Suceeds to get OpRayleigh and OpAbsorption consuming an rng at every 
+step, but also causes OpBoundary to consume loads ?
+
+* that was pilot error, was not calling the G4VDiscreteProcess::PostStepDoIt
+
+
+* CProcessManager::ClearNumberOfInteractionLengthLeft succeeds to 
+
+::
+
+    096 void CSteppingAction::UserSteppingAction(const G4Step* step)
+     97 {
+     98     bool done = setStep(step);
+     99 
+    100     G4StepStatus preStatus = step->GetPostStepPoint()->GetStepStatus() ;
+    101     G4StepStatus postStatus = step->GetPostStepPoint()->GetStepStatus() ;
+    102 
+    103     LOG(info)
+    104         << " preStatus " << CStepStatus::Desc(preStatus)
+    105         << " postStatus " << CStepStatus::Desc(postStatus)
+    106          ;
+    107 
+    108     
+    109     if(postStatus == fGeomBoundary)
+    110     {   
+    111         // guess work for alignment
+    112         // CProcessManager::ResetNumberOfInteractionLengthLeft( m_ctx._process_manager );
+    113         CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+    114     }
+    115 
+
+
+
+For "TO BR BR SA" the consumption can now be aligned with a few burns for Opticks
+------------------------------------------------------------------------------------
+
+* BUT: why did i need to fiddle the CProcessManager::ClearNumberOfInteractionLengthLeft for OpRayleigh and OpAbsorption ?
+
+
+::
+
+    1162 G4double DsG4OpBoundaryProcess::GetMeanFreePath(const G4Track& ,
+    1163                                               G4double ,
+    1164                                               G4ForceCondition* condition)
+    1165 {
+    1166     *condition = Forced;
+    1167 
+    1168     return DBL_MAX;
+    1169 }
+
+
+
+::
+
+    G4:  4 + 4 + 5   
+    OK:  3 + 3 + 3 
+         4 + 4 + 4    ( burn +1 rng per step, as standin for the unused OpBoundary interactionLength rng)
+        
+
+::
+
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025    DsG4OpBoundaryProcess::DielectricDielectric (TransCoeff)    reflect-or-transmit-at-non-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655     DsG4OpBoundaryProcess::PostStepDoIt (theReflectivity)       reflect-or-transmit-at-opticalsurface
+    OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242    DsG4OpBoundaryProcess::DoAbsorption (theEfficiency)         detect-or-absorb
+
+::
+
+    2017-12-07 19:53:47.780 INFO  [887276] [CRec::initEvent@82] CRec::initEvent note recstp
+    HepRandomEngine::put called -- no effect!
+    2017-12-07 19:53:48.079 INFO  [887276] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+
+     rec.stp1   0.0 loc                                        OpBoundary;   0.286072            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                        OpRayleigh;   0.366332            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                      OpAbsorption;   0.942989     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.278981         GeomBoundary CPro      OpBoundary LenLeft    1.25151 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.1 loc                                        OpBoundary;    0.18341         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc                                        OpRayleigh;   0.186724         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc                                      OpAbsorption;   0.265324     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.452413         GeomBoundary CPro      OpBoundary LenLeft    1.69603 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.2 loc                                        OpBoundary;   0.552432         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc                                        OpRayleigh;   0.223035         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc                                      OpAbsorption;   0.594206     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655   0.724901         GeomBoundary CPro      OpBoundary LenLeft   0.593425 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.107845         GeomBoundary CPro      OpBoundary LenLeft   0.593425 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+
+    2017-12-07 20:13:46.168 INFO  [893558] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+     rec.stp1   0.0 loc                                        OpBoundary;   0.286072            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                        OpRayleigh;   0.366332            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc                                      OpAbsorption;   0.942989     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.0 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.278981         GeomBoundary CPro      OpBoundary LenLeft    1.25151 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.1 loc                                        OpBoundary;    0.18341         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc                                        OpRayleigh;   0.186724         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc                                      OpAbsorption;   0.265324     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.1 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.452413         GeomBoundary CPro      OpBoundary LenLeft    1.69603 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+     rec.stp1   0.2 loc                                        OpBoundary;   0.552432         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc                                        OpRayleigh;   0.223035         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc                                      OpAbsorption;   0.594206     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655   0.724901         GeomBoundary CPro      OpBoundary LenLeft   0.593425 LenTrav          0 AtRest/AlongStep/PostStep NNY
+     rec.stp1   0.2 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.107845         GeomBoundary CPro      OpBoundary LenLeft   0.593425 LenTrav          0 AtRest/AlongStep/PostStep NNY
+
+    2017-12-07 20:13:46.171 INFO  [893558] [CSteppingAction::UserSteppingAction@103]  preStatus GeomBoundary postStatus GeomBoundary
+
+
+
+
+
+    2017-12-07 20:13:49.893 INFO  [893558] [OPropagator::prelaunch@166] 1 : (0;1,1) prelaunch_times vali,comp,prel,lnch  0.0001 3.4207 0.1162 0.0000
+    WITH_ALIGN_DEV bounce:0 
+    propagate_to_boundary  u_boundary_burn:    0.7402 
+    propagate_to_boundary  u_scattering:    0.4385 
+    propagate_to_boundary  u_absorption:    0.5170 
+    propagate_at_boundary  u_reflect:       0.15699  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:1 
+    propagate_to_boundary  u_boundary_burn:    0.0714 
+    propagate_to_boundary  u_scattering:    0.4625 
+    propagate_to_boundary  u_absorption:    0.2276 
+    propagate_at_boundary  u_reflect:       0.32936  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:2 
+    propagate_to_boundary  u_boundary_burn:    0.1441 
+    propagate_to_boundary  u_scattering:    0.1878 
+    propagate_to_boundary  u_absorption:    0.9154 
+    propagate_at_surface   u_surface:       0.5401 
+    propagate_at_surface   u_surface_burn:       0.9747 
+
+
+
+
+    2017-12-07 19:53:49.049 INFO  [887276] [OPropagator::prelaunch@166] 1 : (0;1,1) prelaunch_times vali,comp,prel,lnch  0.0001 0.5962 0.1165 0.0000
+    WITH_ALIGN_DEV bounce:0 
+    propagate_to_boundary  u_absorption:    0.7402 
+    propagate_to_boundary  u_scattering:    0.4385 
+    propagate_at_boundary  u_reflect:       0.51701  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:1 
+    propagate_to_boundary  u_absorption:    0.1570 
+    propagate_to_boundary  u_scattering:    0.0714 
+    propagate_at_boundary  u_reflect:       0.46251  reflect:0   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV bounce:2 
+    propagate_to_boundary  u_absorption:    0.2276 
+    propagate_to_boundary  u_scattering:    0.3294 
+    propagate_at_surface   u_surface:       0.1441 
+
+
+
+
+Is This Comment the key to the problem ?
+---------------------------------------------
+
+::
+
+    321      void      ClearNumberOfInteractionLengthLeft();
+    322      // clear NumberOfInteractionLengthLeft 
+    323      // !!! This method should be at the end of PostStepDoIt()
+    324      // !!! and AtRestDoIt
+    325 
+
+    simon:cfg4 blyth$ grep ClearNumberOfInteractionLengthLeft *.*
+    simon:cfg4 blyth$ 
+
+
+    112 G4VParticleChange* G4VDiscreteProcess::PostStepDoIt(
+    113                             const G4Track& ,
+    114                             const G4Step&
+    115                             )
+    116 {
+    117 //  clear NumberOfInteractionLengthLeft
+    118     ClearNumberOfInteractionLengthLeft();
+    119 
+    120     return pParticleChange;
+    121 }
+
+
+    100 G4VParticleChange*
+    101 G4OpAbsorption::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+    102 {
+    103         aParticleChange.Initialize(aTrack);
+    104 
+    105         const G4DynamicParticle* aParticle = aTrack.GetDynamicParticle();
+    106         G4double thePhotonMomentum = aParticle->GetTotalMomentum();
+    107 
+    108         aParticleChange.ProposeLocalEnergyDeposit(thePhotonMomentum);
+    109 
+    110         aParticleChange.ProposeTrackStatus(fStopAndKill);
+    111 
+    112         if (verboseLevel>0) {
+    113        G4cout << "\n** Photon absorbed! **" << G4endl;
+    114         }
+    115         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+    116 }
+
+
+    114 G4VParticleChange*
+    115 OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+    116 {
+    ...
+    204 
+    205         return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+    206 }
+
+
+
+
+
 Location Key
 --------------
 
@@ -158,6 +369,17 @@ G4VDiscreteProcess
      59 
      60 }
 
+
+
+
+::
+
+    (lldb) b "G4VProcess::SubtractNumberOfInteractionLengthLeft"
+
+
+
+
+
 ::
     (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
 
@@ -191,7 +413,7 @@ G4VDiscreteProcess
     (lldb) breakpoint command add -s python 1 -o "import opticks.cfg4.g4lldb"
 
 
-
+    open ~/opticks_refs/G4_BookForAppliDev.pdf 
 
 
     071 G4double G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(
@@ -232,6 +454,9 @@ G4VDiscreteProcess
     118     ClearNumberOfInteractionLengthLeft();
     120     return pParticleChange;
     121 }
+
+    (lldb) b G4VDiscreteProcess::PostStepDoIt    ## only called for OpBoundary 
+    
 
 
     095 void G4VProcess::ResetNumberOfInteractionLengthLeft()
@@ -334,6 +559,61 @@ G4SteppingManager::DefinePhysicalStepLength  are proceeses being nullified
 
 
 
+
+
+G4SteppingManager::InvokePostStepDoItProcs
+-------------------------------------------
+
+G4VDiscreteProcess::PostStepDoIt which clears interactions
+G4VProcess::ClearNumberOfInteractionLengthLeft is only called for OpBoundary 
+
+* why ?
+
+::
+
+    483 void G4SteppingManager::InvokePostStepDoItProcs()
+    484 ////////////////////////////////////////////////////////
+    485 {
+    486 
+    487 // Invoke the specified discrete processes
+    488    for(size_t np=0; np < MAXofPostStepLoops; np++){
+    489    //
+    490    // Note: DoItVector has inverse order against GetPhysIntVector
+    491    //       and SelectedPostStepDoItVector.
+    492    //
+    493      G4int Cond = (*fSelectedPostStepDoItVector)[MAXofPostStepLoops-np-1];
+    494      if(Cond != InActivated){
+    495        if( ((Cond == NotForced) && (fStepStatus == fPostStepDoItProc)) ||
+    496            ((Cond == Forced) && (fStepStatus != fExclusivelyForcedProc)) ||
+    498            ((Cond == ExclusivelyForced) && (fStepStatus == fExclusivelyForcedProc)) ||
+    499            ((Cond == StronglyForced) )
+    500       ) {
+    501 
+    502          InvokePSDIP(np);
+    503          if ((np==0) && (fTrack->GetNextVolume() == 0)){
+    504            fStepStatus = fWorldBoundary;
+    505            fStep->GetPostStepPoint()->SetStepStatus( fStepStatus );
+    506          }
+    507        }
+    508      } //if(*fSelectedPostStepDoItVector(np)........
+    509 
+    510      // Exit from PostStepLoop if the track has been killed,
+    511      // but extra treatment for processes with Strongly Forced flag
+    512      if(fTrack->GetTrackStatus() == fStopAndKill) {
+    513        for(size_t np1=np+1; np1 < MAXofPostStepLoops; np1++){
+    514            G4int Cond2 = (*fSelectedPostStepDoItVector)[MAXofPostStepLoops-np1-1];
+    515            if (Cond2 == StronglyForced) {
+    516                InvokePSDIP(np1);
+    517            }
+    518        }
+    519        break;
+    520      }
+    521    } //for(size_t np=0; np < MAXofPostStepLoops; np++){
+    522 }
+
+
+
+
 G4SteppingManager::DefinePhysicalStepLength
 ---------------------------------------------
 
@@ -341,6 +621,17 @@ Walk thru of below code makes sense, my problem
 is why it doesnt happen the same way after the GeomBoundary  
 
 * it has to happen, tis different material ...
+
+
+As expected the below are both called 3 times for "TO BT BT SA"
+
+::
+
+   (lldb) b OpRayleigh::GetMeanFreePath   
+   (lldb) b G4OpAbsorption::GetMeanFreePath
+
+
+    (lldb) b G4VProcess::ResetNumberOfInteractionLengthLeft
 
 
 

@@ -34,6 +34,8 @@
 #include "CStepRec.hh"
 #include "CStp.hh"
 #include "CSteppingAction.hh"
+#include "CProcessManager.hh"
+#include "CStepStatus.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 #include "CG4.hh"
@@ -95,6 +97,16 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     bool done = setStep(step);
 
+    G4StepStatus preStatus = step->GetPostStepPoint()->GetStepStatus() ;
+    G4StepStatus postStatus = step->GetPostStepPoint()->GetStepStatus() ;
+
+    LOG(info) 
+        << " preStatus " << CStepStatus::Desc(preStatus)     
+        << " postStatus " << CStepStatus::Desc(postStatus)     
+         ;
+
+
+
     m_g4->poststep();
 
     if(done)
@@ -103,6 +115,13 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
         track->SetTrackStatus(fStopAndKill);
         // stops tracking when reach truncation as well as absorption
     }
+    else
+    {
+        // guess work for alignment
+        //if(postStatus == fGeomBoundary)
+        // CProcessManager::ResetNumberOfInteractionLengthLeft( m_ctx._process_manager );
+        CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+    } 
 }
 
 bool CSteppingAction::setStep(const G4Step* step)

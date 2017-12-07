@@ -314,6 +314,8 @@ void CG4::posttrack()
     }
 }
 
+
+// invoked from CSteppingAction::UserSteppingAction
 void CG4::poststep()
 {
     if(m_engine)

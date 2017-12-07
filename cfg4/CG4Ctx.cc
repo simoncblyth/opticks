@@ -8,6 +8,7 @@
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
+#include "CProcessManager.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
 
@@ -76,6 +77,7 @@ void CG4Ctx::init()
     _event_track_count = 0 ; 
 
     _track = NULL ; 
+    _process_manager = NULL ; 
     _track_id = -1 ; 
     _track_total = 0 ;
     _track_step_count = 0 ;  
@@ -172,6 +174,8 @@ void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTr
 
     _track = const_cast<G4Track*>(track) ; 
     _track_id = CTrack::Id(track) ;
+
+    _process_manager = CProcessManager::Current(_track);
 
     _track_step_count = 0 ; 
     _event_track_count += 1 ; 

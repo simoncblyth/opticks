@@ -350,6 +350,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
                        << particle->GetParticleName() ;
         }
 
+/*
         if(scint && scint->IsApplicable(*particle))
         {
             pmanager->AddProcess(scint);
@@ -358,6 +359,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
             LOG(debug) << "Process: adding Scintillation to "
                        << particle->GetParticleName() ;
         }
+*/
 
         if(particle == G4OpticalPhoton::Definition()) 
         {
