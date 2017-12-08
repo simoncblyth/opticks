@@ -13,11 +13,18 @@ template <typename T> class OpticksCfg ;
 class OpticksHub ; 
 
 #include "OXPPNS.hh"
-//class cuRANDWrapper ; 
 
 class OContext ; 
 class ORng ; 
 class OEvent ; 
+
+/**
+OPropagator
+=============
+
+
+
+**/
 
 
 #include "OXRAP_API_EXPORT.hh"

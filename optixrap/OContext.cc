@@ -141,15 +141,10 @@ unsigned int OContext::getNumRayType()
     return e_rayTypeCount ;
 }
 
-
-
-
-
 OContext::Mode_t OContext::getMode()
 {
     return m_mode ; 
 }
-
 
 bool OContext::isCompute()
 {
@@ -160,21 +155,14 @@ bool OContext::isInterop()
     return m_mode == INTEROP ; 
 }
 
-
-
-
 void OContext::cleanUp()
 {
     m_context->destroy();
     m_context = 0;
 }
 
-
-
-
 optix::Program OContext::createProgram(const char* filename, const char* progname )
 {  
-
     LOG(debug) << "OContext::createProgram START "
               << " filename " << filename
               << " progname " << progname
@@ -182,14 +170,11 @@ optix::Program OContext::createProgram(const char* filename, const char* prognam
 
     optix::Program prog = m_cfg->createProgram(filename, progname);
 
-
     LOG(debug) << "OContext::createProgram DONE "
               << " filename " << filename
               << " progname " << progname
               ;
-
     return prog ; 
-
 }
 
 unsigned int OContext::addEntry(const char* filename, const char* raygen, const char* exception, bool defer)
@@ -257,9 +242,7 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
               << " height " << height 
               ;
 
-
     if(times) times->count     += 1 ; 
-
 
     if(lmode & VALIDATE)
     {
@@ -310,7 +293,6 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
         LOG(debug) << "OContext::launch LAUNCH time: " << (t1-t0) ;
         if(times) times->launch  += t1 - t0 ;
     }
-
 }
 
 

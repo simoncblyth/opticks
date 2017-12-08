@@ -285,6 +285,13 @@ void Opticks::ana()
 }
 
 
+bool Opticks::isMaskEnabled() const 
+{
+    return m_cfg->hasOpt("mask") ;  
+}
+
+
+
 bool Opticks::isDbgPhoton(unsigned record_id)
 {
    return m_dbg->isDbgPhoton(record_id);
@@ -293,6 +300,12 @@ bool Opticks::isOtherPhoton(unsigned photon_id)
 {
    return m_dbg->isOtherPhoton(photon_id);
 }
+bool Opticks::isMaskPhoton(unsigned photon_id)
+{
+   return m_dbg->isMaskPhoton(photon_id);
+}
+
+
 bool Opticks::isDbgPhoton(int event_id, int track_id)
 {
     unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
@@ -303,6 +316,16 @@ bool Opticks::isOtherPhoton(int event_id, int track_id)
     unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
     return m_dbg->isOtherPhoton(record_id);
 }
+bool Opticks::isMaskPhoton(int event_id, int track_id)
+{
+    unsigned record_id = event_id*m_photons_per_g4event + track_id ; 
+    return m_dbg->isMaskPhoton(record_id);
+}
+
+
+
+
+
 unsigned Opticks::getNumDbgPhoton() const 
 {
     return m_dbg->getNumDbgPhoton();
@@ -311,7 +334,23 @@ unsigned Opticks::getNumOtherPhoton() const
 {
     return m_dbg->getNumOtherPhoton();
 }
+unsigned Opticks::getNumMaskPhoton() const 
+{
+    return m_dbg->getNumMaskPhoton();
+}
 
+const std::vector<unsigned>&  Opticks::getDbgIndex()
+{
+    return m_dbg->getDbgIndex();
+}
+const std::vector<unsigned>&  Opticks::getOtherIndex()
+{
+    return m_dbg->getOtherIndex();
+}
+const std::vector<unsigned>&  Opticks::getMaskIndex()
+{
+    return m_dbg->getMaskIndex();
+}
 
 
 int Opticks::getDebugIdx() const 
@@ -334,19 +373,6 @@ const char* Opticks::getDbgMesh() const
    const std::string& dbgmesh = m_cfg->getDbgMesh();
    return dbgmesh.empty() ? NULL : dbgmesh.c_str() ;
 }
-
-
-
-
-const std::vector<unsigned>&  Opticks::getDbgIndex()
-{
-   return m_dbg->getDbgIndex();
-}
-const std::vector<unsigned>&  Opticks::getOtherIndex()
-{
-   return m_dbg->getOtherIndex();
-}
-
 
 
 

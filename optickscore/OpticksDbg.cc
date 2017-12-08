@@ -23,11 +23,15 @@ unsigned OpticksDbg::getNumDbgPhoton() const
 {
     return m_debug_photon.size() ; 
 }
-
 unsigned OpticksDbg::getNumOtherPhoton() const 
 {
     return m_other_photon.size() ; 
 }
+unsigned OpticksDbg::getNumMaskPhoton() const 
+{
+    return m_mask_photon.size() ; 
+}
+
 
 
 void OpticksDbg::loadNPY1(std::vector<unsigned>& vec, const char* path )
@@ -56,40 +60,33 @@ void OpticksDbg::postconfigure()
 
    const std::string& dindex = m_cfg->getDbgIndex() ;
    const std::string& oindex = m_cfg->getOtherIndex() ;
+   const std::string& mask = m_cfg->getMaskIndex() ;
 
-   if(dindex.empty())
-   {
-       LOG(trace) << "dindex empty" ;
-   } 
-   else if(BFile::LooksLikePath(dindex.c_str()))
-   { 
-       LOG(trace) << "dindex LooksLikePath "  << dindex ;
-       loadNPY1(m_debug_photon, dindex.c_str() );
-   }
-   else
-   { 
-       LOG(trace) << " dindex " << dindex ;  
-       BStr::usplit(m_debug_photon, dindex.c_str(), ',');
-   }
-
-
-   if(oindex.empty())
-   {
-       LOG(trace) << "oindex empty" ;
-   } 
-   else if(BFile::LooksLikePath(oindex.c_str()))
-   { 
-       loadNPY1(m_other_photon, oindex.c_str() );
-   }
-   else
-   { 
-       LOG(trace) << " oindex " << oindex ;  
-       BStr::usplit(m_other_photon, oindex.c_str(), ',');
-   }
-
+   postconfigure( dindex, m_debug_photon );
+   postconfigure( oindex, m_other_photon );
+   postconfigure( mask, m_mask_photon );
 
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
+
+void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& ls)
+{
+   if(spec.empty())
+   {
+       LOG(trace) << "spec empty" ;
+   } 
+   else if(BFile::LooksLikePath(spec.c_str()))
+   { 
+       loadNPY1(ls, spec.c_str() );
+   }
+   else
+   { 
+       LOG(trace) << " spec " << spec ;  
+       BStr::usplit(ls, spec.c_str(), ',');
+   }
+}
+
+
 
 
 
@@ -100,6 +97,10 @@ bool OpticksDbg::isDbgPhoton(unsigned record_id)
 bool OpticksDbg::isOtherPhoton(unsigned record_id)
 {
     return std::find(m_other_photon.begin(), m_other_photon.end(), record_id ) != m_other_photon.end() ; 
+}
+bool OpticksDbg::isMaskPhoton(unsigned record_id)
+{
+    return std::find(m_mask_photon.begin(), m_mask_photon.end(), record_id ) != m_mask_photon.end() ; 
 }
 
 
@@ -127,5 +128,9 @@ const std::vector<unsigned>&  OpticksDbg::getDbgIndex()
 const std::vector<unsigned>&  OpticksDbg::getOtherIndex()
 {
    return m_other_photon ;
+}
+const std::vector<unsigned>&  OpticksDbg::getMaskIndex()
+{
+   return m_mask_photon ;
 }
 

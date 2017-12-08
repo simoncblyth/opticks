@@ -11,6 +11,8 @@ RNG aligned comparisons
 
 
 
+
+
 maligned
 ----------
 
@@ -19,7 +21,18 @@ maligned
     tboolean-;tboolean-box --okg4 --align --pindex 1230
 
 
+where mask 
+------------
 
+Would be handy for debugging to be able to specify an input "where-mask" of indices
+to be applied to the input photons and aligned rng. 
+
+* :doc:`where_mask_running`
+
+
+
+why did Opticks scatter but G4 did not ?
+-------------------------------------------
 
 ::
 

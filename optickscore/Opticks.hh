@@ -266,14 +266,23 @@ class OKCORE_API Opticks {
    public:
        // from OpticksDbg --dindex and --oindex options  
        // NB these are for cfg4 debugging  (Opticks uses different approach with --pindex option)
+       bool isMaskEnabled() const ;
+
        bool isDbgPhoton(unsigned record_id);
        bool isOtherPhoton(unsigned record_id);
+       bool isMaskPhoton(unsigned record_id);
+
        bool isDbgPhoton(int event_id, int track_id);
        bool isOtherPhoton(int event_id, int track_id);
+       bool isMaskPhoton(int event_id, int track_id);
+
        const std::vector<unsigned>&  getDbgIndex();
        const std::vector<unsigned>&  getOtherIndex();
+       const std::vector<unsigned>&  getMaskIndex();
+
        unsigned getNumDbgPhoton() const ;
        unsigned getNumOtherPhoton() const ; 
+       unsigned getNumMaskPhoton() const ; 
    public:
        Types*               getTypes();
        Typ*                 getTyp();
