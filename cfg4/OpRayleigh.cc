@@ -297,10 +297,11 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
 #endif
 
 #ifdef WITH_ALIGN_DEV
+/*
    LOG(info) << "WITH_ALIGN_DEV"
              << " rsLength " << rsLength
              ;
-
+*/
 #endif
 
 

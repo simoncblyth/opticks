@@ -13,6 +13,37 @@ tboolean.py
 
 
 
+    In [21]: from opticks.ana.histype import HisType
+
+    In [22]: histype = HisType()
+
+    In [25]: histype.code("TO BT AB")
+    Out[25]: 1229
+
+    In [26]: ab.a.seqhis
+    Out[26]: 
+    A()sliced
+    A([36045, 36045,  2237, ..., 36045, 36045, 36045], dtype=uint64)
+
+    In [27]: ab.a.seqhis.shape
+    Out[27]: (100000,)
+
+    In [29]: np.where(ab.a.seqhis == histype.code("TO BT AB"))[0]
+    Out[29]: array([ 2084,  4074, 15299, 20870, 25748, 26317, 43525, 51563, 57355, 61602, 65894, 71978, 77062, 78744, 79117, 86814])
+
+    In [30]: np.where(ab.a.seqhis == histype.code("TO BT AB"))[0].shape
+    Out[30]: (16,)
+
+
+    In [36]: ab.a.dindex("TO BT AB")
+    Out[36]: '--dindex=2084,4074,15299,20870,25748,26317,43525,51563,57355,61602'
+
+    In [37]: ab.b.dindex("TO BT AB")
+    Out[37]: '--dindex=2084,4074,15299,20870,25748,26317,43525,51563,57355,61602'
+
+
+
+
 """
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)

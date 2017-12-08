@@ -527,6 +527,7 @@ class SeqAna(object):
         :return psel: selection boolean array of photon length
 
         Selection of photons with any of the sequence arguments
+
         """
         af = self.table.af 
         bseq = map(lambda _:self.aseq == af.code(_), sseq)

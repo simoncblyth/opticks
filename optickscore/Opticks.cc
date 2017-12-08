@@ -937,9 +937,13 @@ NSceneConfig* Opticks::getSceneConfig()
 
 
 
-int  Opticks::getTarget()
+int  Opticks::getTarget() const
 {
     return m_cfg->getTarget(); 
+}
+int  Opticks::getAlignLevel() const 
+{
+    return m_cfg->getAlignLevel(); 
 }
 
 

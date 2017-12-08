@@ -70,9 +70,9 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     float absorption_distance = -s.material1.y*logf(u_absorption) ;
     float scattering_distance = -s.material1.z*logf(u_scattering) ; 
 
-    rtPrintf("propagate_to_boundary  u_boundary_burn:%10.4f \n", u_boundary_burn );
-    rtPrintf("propagate_to_boundary  u_scattering:%10.4f \n", u_scattering );
-    rtPrintf("propagate_to_boundary  u_absorption:%10.4f \n", u_absorption );
+    //rtPrintf("propagate_to_boundary  u_boundary_burn:%10.4f \n", u_boundary_burn );
+    //rtPrintf("propagate_to_boundary  u_scattering:%10.4f \n", u_scattering );
+    //rtPrintf("propagate_to_boundary  u_absorption:%10.4f \n", u_absorption );
 #else
     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
@@ -313,7 +313,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef WITH_ALIGN_DEV
-    rtPrintf("propagate_at_boundary  u_reflect:    %10.5f  reflect:%d   TransCoeff:%10.5f \n", u_reflect, reflect, TransCoeff );
+    //rtPrintf("propagate_at_boundary  u_reflect:    %10.5f  reflect:%d   TransCoeff:%10.5f \n", u_reflect, reflect, TransCoeff );
 #endif
 
     p.direction = reflect 
@@ -602,8 +602,8 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     float u_surface = curand_uniform(&rng);
 #ifdef WITH_ALIGN_DEV
     float u_surface_burn = curand_uniform(&rng);  
-    rtPrintf("propagate_at_surface   u_surface:   %10.4f \n", u_surface);
-    rtPrintf("propagate_at_surface   u_surface_burn:   %10.4f \n", u_surface_burn);
+    //rtPrintf("propagate_at_surface   u_surface:   %10.4f \n", u_surface);
+    //rtPrintf("propagate_at_surface   u_surface_burn:   %10.4f \n", u_surface_burn);
 #endif
 
     if( u_surface < s.surface.y )   // absorb   

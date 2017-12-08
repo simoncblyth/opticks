@@ -349,6 +349,7 @@ void TBuf::repeat_to( TBuf* other, unsigned int stride, unsigned int begin, unsi
 
 template void TBuf::dump<float4x4>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<float4>(const char*, unsigned int, unsigned int, unsigned int) const ;
+template void TBuf::dump<double>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<float>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<int>(const char*, unsigned int, unsigned int, unsigned int) const ;
 template void TBuf::dump<unsigned int>(const char*, unsigned int, unsigned int, unsigned int) const ;
@@ -359,9 +360,11 @@ template void TBuf::dumpint<unsigned char>(const char*, unsigned int, unsigned i
 template void TBuf::repeat_to<unsigned char>(TBuf*, unsigned int, unsigned int, unsigned int, unsigned int) const ;
 template unsigned int TBuf::reduce<unsigned int>(unsigned int, unsigned int, unsigned int) const ;
 
+template void TBuf::download<double>(NPY<double>*, bool) const ;
 template void TBuf::download<float>(NPY<float>*, bool) const ;
 template void TBuf::download<unsigned char>(NPY<unsigned char>*, bool) const ;
 
+template void TBuf::upload<double>(NPY<double>*) const ;
 template void TBuf::upload<float>(NPY<float>*) const ;
 template void TBuf::upload<unsigned>(NPY<unsigned>*) const ;
 template void TBuf::upload<unsigned char>(NPY<unsigned char>*) const ;

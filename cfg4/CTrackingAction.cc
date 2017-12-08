@@ -48,10 +48,31 @@ void CTrackingAction::postinitialize()
     LOG(trace) << "CTrackingAction::postinitialize" << brief() ; 
 }
 
+
+
+/**
+
+PreUserTrackingAction is invoked by G4TrackingManager::ProcessOneTrack 
+immediately after 
+   G4SteppingManager::SetInitialStep(G4Track* valueTrack)
+   G4Step::InitializeStep( G4Track* aValue )
+   
+      g4-;g4-cls G4TrackingManager
+      g4-;g4-cls G4SteppingManager
+      g4-;g4-cls G4Step
+
+**/
+
 void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 {
     setTrack(track);
+
     LOG(trace) << "CTrackingAction::PreUserTrackingAction" << brief()  ;
+
+    if(m_ctx._optical)
+    {
+        m_g4->pretrack();
+    } 
 }
 
 void CTrackingAction::setTrack(const G4Track* track)

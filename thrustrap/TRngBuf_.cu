@@ -10,7 +10,10 @@
 #include "NPY.hpp"
 #include "PLOG.hh"
 
-TRngBuf::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long seed, unsigned long long offset )
+
+
+template <typename T>
+TRngBuf<T>::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long seed, unsigned long long offset )
     :
     TBuf("trngbuf", spec, "\n" ),
     m_ni(ni),
@@ -20,12 +23,13 @@ TRngBuf::TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long see
     m_id_max(1000),
     m_seed(seed),
     m_offset(offset),
-    m_dev((float*)getDevicePtr())
+    m_dev((T*)getDevicePtr())
 {
 }
 
 
-void TRngBuf::generate(unsigned id_offset, unsigned id_0, unsigned id_1)
+template <typename T>
+void TRngBuf<T>::generate(unsigned id_offset, unsigned id_0, unsigned id_1)
 {
     m_id_offset = id_offset ;  
     thrust::for_each( 
@@ -34,7 +38,8 @@ void TRngBuf::generate(unsigned id_offset, unsigned id_0, unsigned id_1)
            *this);
 }
 
-void TRngBuf::generate()
+template <typename T>
+void TRngBuf<T>::generate()
 {
 
     std::cout << "TRngBuf::generate"
@@ -68,8 +73,9 @@ void TRngBuf::generate()
 }
 
  
+template <typename T>
 __device__ 
-void TRngBuf::operator()(unsigned id) 
+void TRngBuf<T>::operator()(unsigned id) 
 { 
     unsigned uid = id + m_id_offset ; 
 
@@ -86,4 +92,11 @@ void TRngBuf::operator()(unsigned id)
     }
 } 
  
+
+
+template class TRngBuf<float>;
+template class TRngBuf<double>;
+
+
+
 

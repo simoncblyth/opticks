@@ -1,15 +1,10 @@
 random_alignment
 =====================
 
-next steps
-------------
+Iterating on random alignment
+--------------------------------
 
-G4 process handling is too involved to get a general picture by dumping, 
-so adopt a need-to-know strategy.
-i.e. focus on a common seqhis, and just work on 
-feeding non-randoms for that ?
-
-
+* :doc:`random_alignment_iterating`
 
 
 Fiddling the poststep to ProcessManager::ClearNumberOfInteractionLengthLeft
@@ -46,6 +41,11 @@ step, but also causes OpBoundary to consume loads ?
     114     }
     115 
 
+
+Stepping Review Debugging using python lldb
+---------------------------------------------
+
+* :doc:`stepping_process_review`
 
 
 For "TO BR BR SA" the consumption can now be aligned with a few burns for Opticks
@@ -144,6 +144,25 @@ For "TO BR BR SA" the consumption can now be aligned with a few burns for Optick
      0.211193  0.946913  0.552997  0.977551 
      0.308102  0.180404  0.387204  0.936597 
      0.690741  0.855214  0.488678  0.188546 
+
+
+
+    2017-12-08 12:38:32.501 INFO  [964067] [CRandomEngine::dumpDouble@56] v0
+    0.7402193546 0.4384511411 0.5170126557 0.1569886208 
+    0.0713675097 0.4625083804 0.2276432663 0.3293584883 
+    0.1440653056 0.1877991110 0.9153834581 0.5401248336 
+    0.9746608734 0.5474692583 0.6531602740 0.2302378118 
+    2017-12-08 12:38:32.502 INFO  [964067] [CRandomEngine::dumpDouble@56] v1
+    0.9209938049 0.4603644311 0.3334640563 0.3725204170 
+    0.4896024764 0.5672709346 0.0799058080 0.2333681583 
+    0.5093778372 0.0889785364 0.0067097610 0.9542270899 
+    0.5467113256 0.8245469332 0.5270628929 0.9301316142 
+    2017-12-08 12:38:32.502 INFO  [964067] [CRandomEngine::dumpDouble@56] v99999
+    0.9140115380 0.4403249323 0.9478355646 0.0900180787 
+    0.9587481022 0.9879503846 0.2274523973 0.0438494608 
+    0.7774492502 0.5030837059 0.3050957322 0.1865014136 
+    0.3225504756 0.7395612597 0.6332361102 0.6526388526 
+
 
 
     2017-12-07 21:09:04.996 INFO  [912804] [CRandomEngine::dumpFloat@55] v0
@@ -613,412 +632,6 @@ OpRayleigh and G4OpAbsorption do not change discrete process default of NotForce
     122 G4double G4OpAbsorption::GetMeanFreePath(const G4Track& aTrack,
     123                          G4double ,
     124                          G4ForceCondition* )
-
-
-
-
-
-
-G4SteppingManager::DefinePhysicalStepLength  are proceeses being nullified
------------------------------------------------------------------------------
-::
-
-    (lldb) fr v *fPostStepGetPhysIntVector->pProcVector
-    (G4ProcessVector::G4ProcVector) *fPostStepGetPhysIntVector->pProcVector = size=5 {
-      [0] = 0x000000010f7a7030
-      [1] = 0x000000010f7a8f00
-      [2] = 0x000000010f7a8d70
-      [3] = 0x000000010f7a8770
-      [4] = 0x000000010f77fd70
-
-
-
-
-
-G4SteppingManager::InvokePostStepDoItProcs
--------------------------------------------
-
-G4VDiscreteProcess::PostStepDoIt which clears interactions
-G4VProcess::ClearNumberOfInteractionLengthLeft is only called for OpBoundary 
-
-* why ?
-
-::
-
-    483 void G4SteppingManager::InvokePostStepDoItProcs()
-    484 ////////////////////////////////////////////////////////
-    485 {
-    486 
-    487 // Invoke the specified discrete processes
-    488    for(size_t np=0; np < MAXofPostStepLoops; np++){
-    489    //
-    490    // Note: DoItVector has inverse order against GetPhysIntVector
-    491    //       and SelectedPostStepDoItVector.
-    492    //
-    493      G4int Cond = (*fSelectedPostStepDoItVector)[MAXofPostStepLoops-np-1];
-    494      if(Cond != InActivated){
-    495        if( ((Cond == NotForced) && (fStepStatus == fPostStepDoItProc)) ||
-    496            ((Cond == Forced) && (fStepStatus != fExclusivelyForcedProc)) ||
-    498            ((Cond == ExclusivelyForced) && (fStepStatus == fExclusivelyForcedProc)) ||
-    499            ((Cond == StronglyForced) )
-    500       ) {
-    501 
-    502          InvokePSDIP(np);
-    503          if ((np==0) && (fTrack->GetNextVolume() == 0)){
-    504            fStepStatus = fWorldBoundary;
-    505            fStep->GetPostStepPoint()->SetStepStatus( fStepStatus );
-    506          }
-    507        }
-    508      } //if(*fSelectedPostStepDoItVector(np)........
-    509 
-    510      // Exit from PostStepLoop if the track has been killed,
-    511      // but extra treatment for processes with Strongly Forced flag
-    512      if(fTrack->GetTrackStatus() == fStopAndKill) {
-    513        for(size_t np1=np+1; np1 < MAXofPostStepLoops; np1++){
-    514            G4int Cond2 = (*fSelectedPostStepDoItVector)[MAXofPostStepLoops-np1-1];
-    515            if (Cond2 == StronglyForced) {
-    516                InvokePSDIP(np1);
-    517            }
-    518        }
-    519        break;
-    520      }
-    521    } //for(size_t np=0; np < MAXofPostStepLoops; np++){
-    522 }
-
-
-
-
-G4SteppingManager::DefinePhysicalStepLength
----------------------------------------------
-
-Walk thru of below code makes sense, my problem
-is why it doesnt happen the same way after the GeomBoundary  
-
-* it has to happen, tis different material ...
-
-
-As expected the below are both called 3 times for "TO BT BT SA"
-
-::
-
-   (lldb) b OpRayleigh::GetMeanFreePath   
-   (lldb) b G4OpAbsorption::GetMeanFreePath
-
-
-    (lldb) b G4VProcess::ResetNumberOfInteractionLengthLeft
-
-
-
-::
-
-    g4-;g4-cls G4SteppingManager
-    g4-;g4-cls G4SteppingManager2
-
-    G4SteppingManager::DefinePhysicalStepLength
-
-    127 /////////////////////////////////////////////////////////
-    128  void G4SteppingManager::DefinePhysicalStepLength()
-    129 /////////////////////////////////////////////////////////
-    130 {
-    131 
-    132 // ReSet the counter etc.
-    133    PhysicalStep  = DBL_MAX;          // Initialize by a huge number    
-    134    physIntLength = DBL_MAX;          // Initialize by a huge number    
-    ...
-    162 // GPIL for PostStep
-    163    fPostStepDoItProcTriggered = MAXofPostStepLoops;
-    164 
-    165    for(size_t np=0; np < MAXofPostStepLoops; np++){
-    166      fCurrentProcess = (*fPostStepGetPhysIntVector)(np);
-    167      if (fCurrentProcess== 0) {
-    168        (*fSelectedPostStepDoItVector)[np] = InActivated;
-    169        continue;
-    170      }   // NULL means the process is inactivated by a user on fly.
-    171 
-    172      physIntLength = fCurrentProcess->
-    173                      PostStepGPIL( *fTrack,
-    174                                                  fPreviousStepSize,
-    175                                                       &fCondition );
-    ...
-     
-
-    (lldb) b G4SteppingManager::DefinePhysicalStepLength
-    (lldb) r
-    (lldb) b 181
-    (lldb) b 270  # for summary
-    (lldb) c
-
-    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
-
-    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "Scintillation")
-    (G4double) physIntLength = 1.7976931348623157E+308
-    (G4ForceCondition) fCondition = StronglyForced
-    (G4double) PhysicalStep = 1.7976931348623157E+308
-
-    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
-
-    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpBoundary")
-    (G4double) physIntLength = 1.7976931348623157E+308
-    (G4ForceCondition) fCondition = Forced
-    (G4double) PhysicalStep = 1.7976931348623157E+308
-
-    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep
-
-    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpRayleigh")
-    (G4double) physIntLength = 58700.67007814737
-    (G4ForceCondition) fCondition = NotForced
-    (G4double) PhysicalStep = 1.7976931348623157E+308
-
-    (lldb) p (double)log(0.942989)*-1e6
-    (double) $1 = 58700.661315972749
-
-
-    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep fStepStatus fPostStepDoItProcTriggered
-
-    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "OpAbsorption")
-    (G4double) physIntLength = 12766112.786981029
-    (G4ForceCondition) fCondition = NotForced
-    (G4double) PhysicalStep = 58700.67007814737
-    (G4StepStatus) fStepStatus = fPostStepDoItProc
-    (size_t) fPostStepDoItProcTriggered = 2
-
-    ## OpRayleigh in lead 
-
-    (lldb) p (double)log(0.278981)*-1e6
-    (double) $2 = 1276611.599838129
-
-    (lldb) p (double)log(0.278981)*-1e7
-    (double) $3 = 12766115.998381291
-
-
-    (lldb) frame variable fCurrentProcess->theProcessName physIntLength fCondition PhysicalStep fStepStatus fPostStepDoItProcTriggered
-    (G4String) fCurrentProcess->theProcessName = (std::__1::string = "Transportation")
-    (G4double) physIntLength = 1.7976931348623157E+308
-    (G4ForceCondition) fCondition = Forced
-    (G4double) PhysicalStep = 58700.67007814737
-    (G4StepStatus) fStepStatus = fPostStepDoItProc
-    (size_t) fPostStepDoItProcTriggered = 2
-    (lldb) 
-
-
-
-    181      switch (fCondition) {
-        182      case ExclusivelyForced:
-        183          (*fSelectedPostStepDoItVector)[np] = ExclusivelyForced;
-        184          fStepStatus = fExclusivelyForcedProc;
-        185          fStep->GetPostStepPoint()
-        186          ->SetProcessDefinedStep(fCurrentProcess);
-        187          break;
-        ...
-        193      case Forced:
-        194          (*fSelectedPostStepDoItVector)[np] = Forced;
-        195          break;
-        196      case StronglyForced:
-        197          (*fSelectedPostStepDoItVector)[np] = StronglyForced;
-        198          break;
-        199      default:
-        200          (*fSelectedPostStepDoItVector)[np] = InActivated;
-        ////    ^^^^^^^^^  hmm NotForced gets InActivated, have to set some condition to stay selected 
-        201          break;
-    202      }
-
-
-    (lldb) b G4SteppingManager::DefinePhysicalStepLength
-    (lldb) b 206
-
-
-
-    206      if (fCondition==ExclusivelyForced) {
-    207          for(size_t nrest=np+1; nrest < MAXofPostStepLoops; nrest++){
-    208              (*fSelectedPostStepDoItVector)[nrest] = InActivated;
-    209          }
-    210          return;  // Take note the 'return' at here !!! 
-    211      }
-    212      else{
-    213          if(physIntLength < PhysicalStep ){
-    214              PhysicalStep = physIntLength;
-    215              fStepStatus = fPostStepDoItProc;
-    216              fPostStepDoItProcTriggered = G4int(np);
-    217              fStep->GetPostStepPoint()
-    218                  ->SetProcessDefinedStep(fCurrentProcess);
-    219          }
-    220      }
-    223    }
-
-
-
-    225    if (fPostStepDoItProcTriggered<MAXofPostStepLoops) {
-    226        if ((*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] ==
-    227        InActivated) {
-    228        (*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] =
-    229            NotForced;
-    230        }
-    231    }
-
-::
-
-    (lldb) p *fAlongStepGetPhysIntVector
-    (G4ProcessVector) $6 = {
-      pProcVector = 0x0000000111144560 size=1
-    }
-
-
-
-::
-
-    (lldb) b 251
-
-
-    233 // GPIL for AlongStep
-    234    proposedSafety = DBL_MAX;
-    235    G4double safetyProposedToAndByProcess = proposedSafety;
-    236 
-    237    for(size_t kp=0; kp < MAXofAlongStepLoops; kp++){
-    238      fCurrentProcess = (*fAlongStepGetPhysIntVector)[kp];
-    239      if (fCurrentProcess== 0) continue;
-    240          // NULL means the process is inactivated by a user on fly.
-    241 
-    242      physIntLength = fCurrentProcess->
-    243                      AlongStepGPIL( *fTrack, fPreviousStepSize,
-    244                                      PhysicalStep,
-    245                      safetyProposedToAndByProcess,
-    246                                     &fGPILSelection );
-    247 #ifdef G4VERBOSE
-    248                          // !!!!! Verbose
-    249      if(verboseLevel>0) fVerbose->DPSLAlongStep();
-    250 #endif
-
-    ///  PhysicalStep here comes from above np loop
-
-    251      if(physIntLength < PhysicalStep){
-    252        PhysicalStep = physIntLength;
-    253 
-    254        // Check if the process wants to be the GPIL winner. For example,
-    255        // multi-scattering proposes Step limit, but won't be the winner.
-    256        if(fGPILSelection==CandidateForSelection){
-    257           fStepStatus = fAlongStepDoItProc;
-    258           fStep->GetPostStepPoint()
-    259                ->SetProcessDefinedStep(fCurrentProcess);
-    260        }
-    261 
-    262           // Transportation is assumed to be the last process in the vector
-    263        if(kp == MAXofAlongStepLoops-1)
-    264       fStepStatus = fGeomBoundary;
-    265      }
-    266 
-    267      // Make sure to check the safety, even if Step is not limited 
-    268      //  by this process.                      J. Apostolakis, June 20, 1998
-    269      // 
-
-
-
-    (lldb) b 270
-    lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
-    (G4StepStatus) fStepStatus = fGeomBoundary
-    (size_t) MAXofAlongStepLoops = 1
-    (G4GPILSelection) fGPILSelection = CandidateForSelection
-    (G4double) physIntLength = 349.89999389648438
-    (G4double) PhysicalStep = 349.89999389648438
-    (G4double) safetyProposedToAndByProcess = 0.100006103515625
-    (lldb) 
-
-
-
-    270      if (safetyProposedToAndByProcess < proposedSafety)
-    271         // proposedSafety keeps the smallest value:
-    272         proposedSafety               = safetyProposedToAndByProcess;
-    273      else
-    274         // safetyProposedToAndByProcess always proposes a valid safety:
-    275         safetyProposedToAndByProcess = proposedSafety;
-    276      
-    277    }
-    278 } // void G4SteppingManager::DefinePhysicalStepLength() //
-
-
-::
-
-    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
-    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = -449.89999389648438)
-    (G4double) fStep->fpPreStepPoint->fGlobalTime = 0.20000000298023224
-    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
-    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "Vacuum")
-    (lldb) 
-
-
-
-    (lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
-    (G4StepStatus) fStepStatus = fGeomBoundary
-    (size_t) MAXofAlongStepLoops = 1
-    (G4GPILSelection) fGPILSelection = CandidateForSelection
-    (G4double) physIntLength = 200
-    (G4double) PhysicalStep = 200
-    (G4double) safetyProposedToAndByProcess = 0
-    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
-    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = -100)
-    (G4double) fStep->fpPreStepPoint->fGlobalTime = 1.3671407830548261
-    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
-    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "GlassSchottF2")
-    (lldb) 
-
-
-    (lldb) frame var  fStep->fpPreStepPoint->fPosition fStep->fpPreStepPoint->fGlobalTime fStep->fpPreStepPoint->fMomentumDirection  fStep->fpPreStepPoint->fpMaterial->fName
-    (G4ThreeVector) fStep->fpPreStepPoint->fPosition = (dx = 11.291412353515625, dy = -34.645111083984375, dz = 100)
-    (G4double) fStep->fpPreStepPoint->fGlobalTime = 2.5790558894519888
-    (G4ThreeVector) fStep->fpPreStepPoint->fMomentumDirection = (dx = -0, dy = -0, dz = 1)
-    (G4String) fStep->fpPreStepPoint->fpMaterial->fName = (std::__1::string = "Vacuum")
-    (lldb) 
-
-    (lldb) frame variable fStepStatus MAXofAlongStepLoops fGPILSelection physIntLength PhysicalStep safetyProposedToAndByProcess
-    (G4StepStatus) fStepStatus = fGeomBoundary
-    (size_t) MAXofAlongStepLoops = 1
-    (G4GPILSelection) fGPILSelection = CandidateForSelection
-    (G4double) physIntLength = 350
-    (G4double) PhysicalStep = 350
-    (G4double) safetyProposedToAndByProcess = 0
-    (lldb) 
-
-
-
-
-G4TrackingManager
----------------------
-
-::
-
-    g4-;g4-cls G4TrackingManager
-
-    110   // Give SteppingManger the maxmimum number of processes 
-    111   fpSteppingManager->GetProcessNumber();
-    112 
-    113   // Give track the pointer to the Step
-    114   fpTrack->SetStep(fpSteppingManager->GetStep());
-    115 
-    116   // Inform beginning of tracking to physics processes 
-    117   fpTrack->GetDefinition()->GetProcessManager()->StartTracking(fpTrack);
-    118 
-    119   // Track the particle Step-by-Step while it is alive
-    120   //  G4StepStatus stepStatus;
-    121 
-    122   while( (fpTrack->GetTrackStatus() == fAlive) ||
-    123          (fpTrack->GetTrackStatus() == fStopButAlive) ){
-    124 
-    125     fpTrack->IncrementCurrentStepNumber();
-    126     fpSteppingManager->Stepping();
-    127 #ifdef G4_STORE_TRAJECTORY
-    128     if(StoreTrajectory) fpTrajectory->
-    129                         AppendStep(fpSteppingManager->GetStep());
-    130 #endif
-    131     if(EventIsAborted) {
-    132       fpTrack->SetTrackStatus( fKillTrackAndSecondaries );
-    133     }
-    134   }
-    135   // Inform end of tracking to physics processes 
-    136   fpTrack->GetDefinition()->GetProcessManager()->EndTracking();
-    137 
-    138   // Post tracking user intervention process.
-    139   if( fpUserTrackingAction != 0 ) {
-    140      fpUserTrackingAction->PostUserTrackingAction(fpTrack);
-    141   }
 
 
      

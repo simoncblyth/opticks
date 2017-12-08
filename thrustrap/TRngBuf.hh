@@ -8,6 +8,7 @@ template <typename T> class NPY ;
 
 #include "THRAP_API_EXPORT.hh" 
 
+template<typename T>
 class THRAP_API TRngBuf : public TBuf {
    public:
       TRngBuf(unsigned ni, unsigned nj, CBufSpec spec, unsigned long long seed=0ull, unsigned long long offset=0ull );
@@ -27,7 +28,7 @@ class THRAP_API TRngBuf : public TBuf {
  
        unsigned long long m_seed ; 
        unsigned long long m_offset ; 
-       float*             m_dev ; 
+       T*                 m_dev ; 
 
 };
 

@@ -101,8 +101,9 @@ class OKCORE_API OpticksCfg : public BCfg {
      int                getGLTFTarget();
 
      const std::string& getLODConfig();
-     int                getLOD();
-     int                getTarget();
+     int                getLOD() const ;
+     int                getTarget() const ;
+     int                getAlignLevel() const ;
 
 
 
@@ -198,6 +199,7 @@ private:
      int         m_lod ;  
 
      int         m_target ;  
+     int         m_alignlevel ;  
 
 
 

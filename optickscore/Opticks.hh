@@ -227,7 +227,8 @@ class OKCORE_API Opticks {
        const char* getLODConfigString();
        NLODConfig* getLODConfig();
        int         getLOD();
-       int         getTarget();
+       int         getTarget() const ;
+       int         getAlignLevel() const;
    public:
        NSlice*  getAnalyticPMTSlice();
        bool     isAnalyticPMTLoad();

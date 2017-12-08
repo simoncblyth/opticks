@@ -485,7 +485,7 @@ RT_PROGRAM void generate()
     while( bounce < bounce_max )
     {
 #ifdef WITH_ALIGN_DEV
-        rtPrintf("WITH_ALIGN_DEV bounce:%d \n", bounce );
+        //rtPrintf("WITH_ALIGN_DEV bounce:%d \n", bounce );
 #endif
 
         bounce++;   // increment at head, not tail, as CONTINUE skips the tail

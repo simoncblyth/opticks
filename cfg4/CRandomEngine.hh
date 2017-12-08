@@ -40,18 +40,23 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         static std::string FormLocation(const char* file, int line);
     public:
         CRandomEngine(CG4* g4);
-        void dumpFloat(const char* msg, float* v ) const  ; 
+        void dumpDouble(const char* msg, double* v, unsigned width ) const  ; 
 
     protected:
         friend class CG4 ; 
         void postpropagate();
+        void pretrack();
         void posttrack();
         void poststep();
     private:
         void init(); 
+        void initCurand(); 
+        void setupCurandSequence(int record_id);
+
         bool isNonRan() const ; 
         bool isDefault() const ; 
         void dump(const char* msg) const ; 
+        void dumpFlat(); 
 
     public:
         std::string desc() const ; 
@@ -64,6 +69,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         CG4*                     m_g4 ; 
         CG4Ctx&                  m_ctx ; 
         Opticks*                 m_ok ; 
+        int                      m_alignlevel ; 
         long                     m_seed ; 
         bool                     m_internal ; 
         bool                     m_skipdupe ; 
@@ -72,7 +78,11 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         CLHEP::HepJamesRandom*   m_james ; 
         CLHEP::NonRandomEngine*  m_nonran ; 
         CLHEP::HepRandomEngine*  m_engine ; 
-        NPY<float>*              m_precooked ; 
+        NPY<double>*             m_curand ; 
+        int                      m_curand_ni ; 
+        int                      m_curand_nv ; 
+        int                      m_current_record_flat_count ; 
+        double                   m_flat ; 
 
         std::string              m_location ; 
 

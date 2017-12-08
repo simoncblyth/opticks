@@ -888,9 +888,6 @@ class Evt(object):
         self.sel = arg 
     selflg = property(_get_sel, _set_selflg)
 
-
-
- 
  
     def psel_dindex_(self, limit=None, reverse=False):
         """

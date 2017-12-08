@@ -97,15 +97,15 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     bool done = setStep(step);
 
+
+/*
     G4StepStatus preStatus = step->GetPostStepPoint()->GetStepStatus() ;
     G4StepStatus postStatus = step->GetPostStepPoint()->GetStepStatus() ;
-
     LOG(info) 
         << " preStatus " << CStepStatus::Desc(preStatus)     
         << " postStatus " << CStepStatus::Desc(postStatus)     
          ;
-
-
+*/
 
     m_g4->poststep();
 

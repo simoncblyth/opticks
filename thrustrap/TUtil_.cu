@@ -24,6 +24,7 @@ template THRAP_API CBufSpec make_bufspec<unsigned char>(const thrust::device_vec
 template THRAP_API CBufSpec make_bufspec<int>(const thrust::device_vector<int>& );
 template THRAP_API CBufSpec make_bufspec<float4>(const thrust::device_vector<float4>& );
 template THRAP_API CBufSpec make_bufspec<float>(const thrust::device_vector<float>& );
+template THRAP_API CBufSpec make_bufspec<double>(const thrust::device_vector<double>& );
 template THRAP_API CBufSpec make_bufspec<float4x4>(const thrust::device_vector<float4x4>& );
 
 

@@ -92,12 +92,32 @@ class Dv(object):
 
 
 class DvTab(object):
-    def __init__(self, name, seqtab, ab ):
+    def is_skip(self, sel):
+        """
+        SC AB RE 
+          see notes/issues/sc_ab_re_alignment.rst
+        
+        currently have not devised a way to align (cheat randomness)
+        so avoid accidental history alignment causing deviation fails
+        by skipping any selection that includes SC AB or RE
+        """
+        sqs = sel.split() 
+        skip = False
+        for skp in self.skips:
+             with_sk = skp in sqs
+             if with_sk:
+                 skip = True 
+             pass
+        pass
+        return skip 
+
+    def __init__(self, name, seqtab, ab, skips="SC AB RE" ):
         self.name = name
         self.seqtab = seqtab
         self.ab = ab 
         self.dirty = False
         self.eps = ab.dveps
+        self.skips = skips.split()
 
         labels = self.seqtab.labels
         cu = self.seqtab.cu
@@ -107,23 +127,9 @@ class DvTab(object):
 
         dvs = []
         for i in range(nsel):
-
             sel = labels[i]
-
-            sqs = sel.split() 
-
-            # SC AB RE 
-            #   see notes/issues/sc_ab_re_alignment.rst
-            #
-            #   currently have not devised a way to align (cheat randomness)
-            #   so avoid accidental history alignment causing deviation fails
-            #   by skipping any selection that includes SC AB or RE
-           
-            with_sc = 'SC' in sqs
-            with_ab = 'AB' in sqs
-            with_re = 'RE' in sqs
-            if with_sc or with_ab or with_re:
-                continue 
+            if self.is_skip(sel):
+                continue
             pass
 
             lcu = cu[i]

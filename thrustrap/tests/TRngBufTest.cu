@@ -24,18 +24,18 @@ int main(int argc, char** argv)
     static const unsigned NJ = 16 ; 
     static const unsigned NK = 16 ; 
 
-    NPY<float>* ox = NPY<float>::make(NI, NJ, NK);
+    NPY<double>* ox = NPY<double>::make(NI, NJ, NK);
     ox->zero();
 
-    thrust::device_vector<float> dox(NI*NJ*NK);
+    thrust::device_vector<double> dox(NI*NJ*NK);
 
-    CBufSpec spec = make_bufspec<float>(dox); 
+    CBufSpec spec = make_bufspec<double>(dox); 
 
-    TRngBuf trb(NI, NJ*NK, spec );
+    TRngBuf<double> trb(NI, NJ*NK, spec );
 
     trb.generate(); 
 
-    trb.download<float>(ox, true) ; 
+    trb.download<double>(ox, true) ; 
   
     const char* path = "$TMP/TRngBufTest.npy" ; 
     //
@@ -43,7 +43,7 @@ int main(int argc, char** argv)
 
     ox->save(path)  ;
 
-    SSys::npdump(path, "np.float32", NULL, "suppress=True,precision=8" );
+    SSys::npdump(path, "np.float64", NULL, "suppress=True,precision=8" );
 
     cudaDeviceSynchronize();  
 }

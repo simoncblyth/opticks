@@ -70,8 +70,27 @@ class AB(object):
     """
     C2CUT = 30
 
+
+    def _get_maligned(self):
+        return np.where(self.a.seqhis != self.b.seqhis)[0]
+    maligned = property(_get_maligned)
+
+    def recline(self, iq):
+        i, q = iq
+        return " %6d %6d : %50s %50s " % ( i, q, self.histype.label(self.a.seqhis[q]), self.histype.label(self.b.seqhis[q]) )
+
+    def dumpline(self, wh):
+        if type(wh) is slice:
+            start = wh.start if wh.start is not None else 0
+            stop = wh.stop if wh.stop is not None else 1
+            step = wh.step if wh.step is not None else 1
+            wh = range(start,stop, step) 
+        pass
+        print "\n".join( map(lambda iq:self.recline(iq), enumerate(wh)))
+
     def __init__(self, ok):
         self.ok = ok
+        self.histype = HisType()
         self.dveps = ok.dveps
         self.tabs = []
         self.dvtabs = []
@@ -280,7 +299,10 @@ class AB(object):
         self.warn_empty = False
         seqtab = self.ahis
 
-        dv_tab = DvTab(ana, seqtab, self) 
+        #skips = "SC AB RE" 
+        skips = "RE" 
+
+        dv_tab = DvTab(ana, seqtab, self, skips) 
         self.dvtabs.append(dv_tab)
 
         self.warn_empty = we

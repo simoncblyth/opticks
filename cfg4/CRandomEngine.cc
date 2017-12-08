@@ -1,5 +1,5 @@
 
-#include <array>
+#include <iomanip>
 
 #include "PLOG.hh"
 
@@ -38,48 +38,79 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_alignlevel(m_ok->getAlignLevel()),
     m_seed(9876),
     m_internal(false),
     m_skipdupe(true),
-    m_locseq(new BLocSeq<unsigned long long>(m_skipdupe)),
+    m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
     m_james(new CLHEP::HepJamesRandom()),
     m_nonran(new CLHEP::NonRandomEngine()),
-    m_engine(m_james),
-    m_precooked(NPY<float>::load("$TMP/TRngBufTest.npy"))
+    m_engine(m_nonran),
+    m_curand(NPY<double>::load("$TMP/TRngBufTest.npy")),
+    m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
+    m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
+    m_current_record_flat_count(0),
+    m_flat(-1.0)
 {
     init();
 }
 
-void CRandomEngine::dumpFloat(const char* msg, float* v ) const 
+
+void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) const 
 {
     LOG(info) << msg ; 
+    assert( m_curand_nv > 15 );
     for(int i=0 ; i < 16 ; i++)  
     {
-        std::cout << v[i] << " " ; 
-        if( i % 4 == 3 ) std::cout << std::endl ; 
+        std::cout << std::fixed << std::setw(10) << std::setprecision(10) << v[i] << " " ; 
+        if( i % width == (width - 1) ) std::cout << std::endl ; 
     }
 }
 
 
 void CRandomEngine::init()
 {
-    LOG(info) << " precooked " << ( m_precooked ? m_precooked->getShapeString() : "-" ) ; 
-
-    if(m_precooked)
-    {
-        dumpFloat( "v0" , m_precooked->getValues(0) ) ; 
-        dumpFloat( "v1" , m_precooked->getValues(1) ) ; 
-        dumpFloat( "v99999" , m_precooked->getValues(99999) ) ; 
-    }
-
-
-    //m_nonran->setRandomSequence( seq.data(), seq.size() ) ; 
-
+    initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
     CLHEP::HepRandom::setTheSeed(  m_seed );    // does nothing for NonRandom
-
-    // want flat calls to go via this instance, so can check on em 
 }
+
+void CRandomEngine::initCurand()
+{
+    LOG(info) << ( m_curand ? m_curand->getShapeString() : "-" ) 
+              << " curand_ni " << m_curand_ni
+              << " curand_nv " << m_curand_nv
+              ; 
+
+    if(!m_curand) return ; 
+        
+    unsigned w = 4 ; 
+    if( m_curand_ni > 0 )
+         dumpDouble( "v0" , m_curand->getValues(0), w ) ; 
+
+    if( m_curand_ni > 1 )
+         dumpDouble( "v1" , m_curand->getValues(1), w ) ; 
+
+    if( m_curand_ni > 99999 )
+        dumpDouble( "v99999" , m_curand->getValues(99999), w ) ; 
+    
+}
+
+void CRandomEngine::setupCurandSequence(int record_id)
+{
+    assert( isNonRan() ) ; 
+
+    assert( record_id > -1 && record_id < m_curand_ni ); 
+
+    assert( m_curand_nv > 0 ) ;
+
+    double* seq = m_curand->getValues(record_id) ; 
+
+    m_nonran->setRandomSequence( seq, m_curand_nv ) ; 
+
+    m_current_record_flat_count = 0 ; 
+}
+
 
 bool CRandomEngine::isNonRan() const 
 {
@@ -99,7 +130,9 @@ std::string CRandomEngine::desc() const
 
     std::stringstream ss ; 
     ss 
+       << "CRandomEngine"
        << " rec.stp1 " << std::setw(5) << rs1
+       << " crfc " << std::setw(5) << m_current_record_flat_count 
        << " loc " << std::setw(50) << m_location 
        ;
 
@@ -134,7 +167,7 @@ std::string CRandomEngine::FormLocation(const char* file, int line)
 // NB not all invokations are instrumented, 
 //    ie there are some internal calls to flat
 //    and some external, so distinguish with m_internal
-//
+
 double CRandomEngine::flat_instrumented(const char* file, int line)
 {
     m_location = FormLocation(file, line);
@@ -148,49 +181,69 @@ double CRandomEngine::flat()
 { 
     if(!m_internal) m_location = FormLocation();
 
+    assert( m_current_record_flat_count < m_curand_nv ); 
+
+    m_flat =  m_engine->flat() ;  
+
+    if(m_alignlevel > 1) dumpFlat() ; 
+
+    m_current_record_flat_count++ ; 
+ 
+    return m_flat ; 
+}
+
+
+void CRandomEngine::dumpFlat()
+{
+    // locseq was just for development, not needed in ordinary usage
+    if(m_locseq)
     m_locseq->add(m_location.c_str(), m_ctx._record_id, m_ctx._step_id); 
 
-    double _flat =  m_engine->flat() ;  
-
-
     G4VProcess* proc = CProcess::CurrentProcess() ; 
-
     CSteppingState ss = CStepping::CurrentState(); 
-
-
     std::cerr 
         << desc()
         << " "
-        << std::setw(10) << _flat 
+        << std::setw(10) << m_flat 
         << " " 
         << std::setw(20) << CStepStatus::Desc(ss.fStepStatus)
         << " " << CProcess::Desc(proc)       
+        << " alignlevel " << m_alignlevel
         <<  std::endl 
         ; 
-
-
-    return _flat ; 
 }
 
 
 void CRandomEngine::poststep()
 {
-    m_locseq->poststep();
-
-    LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
+    if( m_locseq )
+    {
+        m_locseq->poststep();
+        LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
+    }
 }
+
+
+// invoked from CG4::pretrack following CG4Ctx::setTrack
+void CRandomEngine::pretrack()
+{
+    setupCurandSequence(m_ctx._record_id) ;
+}
+
 
 void CRandomEngine::posttrack()
 {
-    unsigned long long seqhis = m_g4->getSeqHis()  ;
-    m_locseq->mark(seqhis);
-
-    LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
-
+    if(m_locseq)
+    {
+        unsigned long long seqhis = m_g4->getSeqHis()  ;
+        m_locseq->mark(seqhis);
+        LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
+    }
 }
 
 void CRandomEngine::dump(const char* msg) const 
 {
+    if(!m_locseq) return ; 
     m_locseq->dump(msg);
 }
 
@@ -198,7 +251,6 @@ void CRandomEngine::postpropagate()
 {
     dump("CRandomEngine::postpropagate");
 }
-
 
 
 void CRandomEngine::flatArray(const int size, double* vect) 

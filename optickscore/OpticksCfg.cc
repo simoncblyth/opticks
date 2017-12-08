@@ -91,7 +91,8 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_gltftarget(0),
        m_lodconfig("levels=3,verbosity=3"),
        m_lod(0),
-       m_target(0)
+       m_target(0),
+       m_alignlevel(0)
 {   
    init();  
    m_listener->setCfg(this); 
@@ -854,6 +855,10 @@ void OpticksCfg<Listener>::init()
 
 
 
+   char alignlevel[128];
+   snprintf(alignlevel,128, "Integer controlling align verbosity, see CRandomEngine. Default %d ", m_alignlevel );
+   m_desc.add_options()
+       ("alignlevel",  boost::program_options::value<int>(&m_alignlevel), alignlevel );
 
 
 
@@ -1377,16 +1382,23 @@ const std::string& OpticksCfg<Listener>::getLODConfig()
 }
 
 template <class Listener>
-int OpticksCfg<Listener>::getLOD()
+int OpticksCfg<Listener>::getLOD() const 
 {
     return m_lod ; 
 }
 
 
 template <class Listener>
-int OpticksCfg<Listener>::getTarget()
+int OpticksCfg<Listener>::getTarget() const 
 {
     return m_target ; 
+}
+
+
+template <class Listener>
+int OpticksCfg<Listener>::getAlignLevel() const 
+{
+    return m_alignlevel ; 
 }
 
 
