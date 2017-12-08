@@ -8,6 +8,11 @@
 
 __device__ void rayleigh_scatter(Photon &p, curandState &rng)
 {
+
+#ifdef WITH_ALIGN_DEV_DEBUG
+    rtPrintf("rayleigh_scatter\n");
+#endif
+
     float3 newDirection ; 
     float3 newPolarization ; 
     float cosTheta ;

@@ -182,7 +182,7 @@ public: // With description
 
 private:
 
-	G4bool G4BooleanRand(const G4double prob) const;
+	G4bool G4BooleanRand(const G4double prob) ;
 
 	G4ThreeVector GetFacetNormal(const G4ThreeVector& Momentum,
 				     const G4ThreeVector&  Normal) const;
@@ -262,7 +262,7 @@ private:
 ////////////////////
 
 inline
-G4bool DsG4OpBoundaryProcess::G4BooleanRand(const G4double prob) const
+G4bool DsG4OpBoundaryProcess::G4BooleanRand(const G4double prob) 
 {
   /* Returns a random boolean variable with the specified probability */
 

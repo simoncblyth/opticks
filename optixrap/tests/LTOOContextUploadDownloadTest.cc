@@ -24,8 +24,8 @@ int main( int argc, char** argv )
     PLOG_(argc, argv);
     OXRAP_LOG__ ; 
 
-    Opticks* m_opticks = new Opticks(argc, argv);
-    m_opticks->configure();
+    Opticks* ok = new Opticks(argc, argv, "--compute" );
+    ok->configure();
 
 
     NPY<float>* npy = NLoad::Gensteps("juno", "cerenkov", "1") ; 
@@ -37,9 +37,9 @@ int main( int argc, char** argv )
 
     optix::Context context = optix::Context::create();
 
-    OContext::Mode_t mode = OContext::COMPUTE ;
+    //OContext::Mode_t mode = OContext::COMPUTE ;
 
-    OContext* m_ocontext = new OContext(context, mode, false );
+    OContext* m_ocontext = new OContext(context, ok, false );
 
     unsigned entry = m_ocontext->addEntry("LTminimalTest.cu.ptx", "minimal", "exception");
 

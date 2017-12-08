@@ -1072,16 +1072,19 @@ const std::string& OpticksCfg<Listener>::getPSlice()
 
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getPrintIndex()
+const std::string& OpticksCfg<Listener>::getPrintIndex() const 
 {
     return m_pindex ;
 }
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getDbgIndex()
+const std::string& OpticksCfg<Listener>::getDbgIndex() const
 {
     return m_dindex ;
 }
+
+
+
 
 template <class Listener>
 const std::string& OpticksCfg<Listener>::getDbgMesh() const 
@@ -1276,27 +1279,30 @@ int OpticksCfg<Listener>::getOverride()
 {
     return m_override ; 
 }
+
+
+
+
 template <class Listener>
-int OpticksCfg<Listener>::getDebugIdx()
+int OpticksCfg<Listener>::getDebugIdx() const 
 {
     return m_debugidx ; 
 }
 
 template <class Listener>
-int OpticksCfg<Listener>::getDbgNode()
+int OpticksCfg<Listener>::getDbgNode() const 
 {
     return m_dbgnode ; 
 }
 
-
-
-
-
 template <class Listener>
-int OpticksCfg<Listener>::getStack()
+int OpticksCfg<Listener>::getStack() const 
 {
     return m_stack ; 
 }
+
+
+
 
 template <class Listener>
 int OpticksCfg<Listener>::getNumPhotonsPerG4Event()

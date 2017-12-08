@@ -35,7 +35,7 @@ int main(int argc, char** argv)
     OKCORE_LOG__ ; 
     OXRAP_LOG__ ; 
 
-    Opticks ok(argc, argv, "--machinery");
+    Opticks ok(argc, argv, "--machinery --compute");
     //Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
@@ -48,7 +48,7 @@ int main(int argc, char** argv)
     bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
     optix::Context context = optix::Context::create();
-    OContext ctx(context, OContext::COMPUTE, with_top);
+    OContext ctx(context, &ok, with_top);
     int entry = ctx.addEntry("OEventTest.cu.ptx", "OEventTest", "exception");
 
     OEvent* oevt = new OEvent(&hub, &ctx);   

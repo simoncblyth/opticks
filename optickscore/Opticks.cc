@@ -314,11 +314,20 @@ unsigned Opticks::getNumOtherPhoton() const
 
 
 
-
-int Opticks::getDbgNode()
+int Opticks::getDebugIdx() const 
+{
+   return m_cfg->getDebugIdx();
+}
+int Opticks::getDbgNode() const 
 {
    return m_cfg->getDbgNode();
 }
+int Opticks::getStack() const 
+{
+   return m_cfg->getStack();
+}
+
+
 
 const char* Opticks::getDbgMesh() const 
 {
@@ -406,6 +415,48 @@ const char* Opticks::getRenderMode()
     const std::string& renderMode = m_cfg->getRenderMode();
     return renderMode.c_str();
 }
+
+
+
+int Opticks::getPrintIndex(unsigned dim) const 
+{
+    glm::ivec3 idx ; 
+    int pindex = -1 ; 
+    if(getPrintIndex(idx)) 
+    {
+        switch(dim)
+        {
+            case 0: pindex = idx.x ; break ; 
+            case 1: pindex = idx.y ; break ; 
+            case 2: pindex = idx.z ; break ; 
+        }
+    }
+    return pindex ; 
+}
+
+bool Opticks::getPrintIndex(glm::ivec3& idx) const 
+{
+    const char* pindex = getPrintIndexString();
+    if(!pindex) return false ; 
+    idx = givec3(pindex);
+    return true ; 
+}
+
+const char* Opticks::getPrintIndexString() const 
+{
+    const std::string& printIndex = m_cfg->getPrintIndex();
+    return printIndex.empty() ? NULL : printIndex.c_str();
+}
+const char* Opticks::getDbgIndex() const 
+{
+    const std::string& dbgIndex = m_cfg->getDbgIndex();
+    return dbgIndex.empty() ? NULL : dbgIndex.c_str();
+}
+
+
+
+
+
 
 const char* Opticks::getDbgCSGPath()
 {

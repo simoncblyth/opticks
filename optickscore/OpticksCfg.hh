@@ -46,8 +46,10 @@ class OKCORE_API OpticksCfg : public BCfg {
      const std::string& getISlice();
      const std::string& getFSlice();
      const std::string& getPSlice();
-     const std::string& getPrintIndex();
-     const std::string& getDbgIndex();
+
+     const std::string& getPrintIndex() const ;
+     const std::string& getDbgIndex() const ;
+
      const std::string& getDbgMesh() const ;
      const std::string& getOtherIndex();
      const std::string& getBuilder();
@@ -83,9 +85,11 @@ class OKCORE_API OpticksCfg : public BCfg {
      int          getAnalyticMesh(); 
      int          getModulo(); 
      int          getOverride(); 
-     int          getDebugIdx(); 
-     int          getDbgNode(); 
-     int          getStack(); 
+
+     int          getDebugIdx() const ; 
+     int          getDbgNode() const ;  
+     int          getStack() const ; 
+
      int          getNumPhotonsPerG4Event(); 
      int          getLoadVerbosity(); 
      int          getImportVerbosity(); 

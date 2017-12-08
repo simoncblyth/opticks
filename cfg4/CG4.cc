@@ -92,6 +92,10 @@ CRandomEngine* CG4::getRandomEngine() const
     return m_engine ; 
 }
 
+double CG4::flat_instrumented(const char* file, int line)
+{
+    return m_engine ? m_engine->flat_instrumented(file, line) : G4UniformRand() ; 
+}
 
 
 CRecorder* CG4::getRecorder()
@@ -137,7 +141,7 @@ unsigned long long CG4::getSeqMat() const
 }
 
 
-const CG4* CG4::INSTANCE = NULL ; 
+CG4* CG4::INSTANCE = NULL ; 
 
 CG4::CG4(OpticksHub* hub) 
    :
@@ -179,10 +183,11 @@ void CG4::init()
     //m_ok->Summary("CG4::init opticks summary");
 
     LOG(info) << "CG4::init"  << " ctx " << m_ctx.desc() ; 
-     
-    initialize();
 
+    initialize();
 }
+
+
 
 
 void CG4::setUserInitialization(G4VUserDetectorConstruction* detector)

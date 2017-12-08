@@ -190,7 +190,9 @@ class OKCORE_API Opticks {
 
        unsigned long long getDbgSeqhis();
        unsigned long long getDbgSeqmat();
-       int   getDbgNode();
+       int   getDebugIdx() const ;
+       int   getDbgNode() const ;
+       int   getStack() const ;
        const char* getDbgMesh() const ;
        float getFxRe();
        float getFxAb();
@@ -237,6 +239,12 @@ class OKCORE_API Opticks {
    public:
        OpticksCfg<Opticks>* getCfg();
        const char*          getRenderMode();
+   public:
+       const char*          getPrintIndexString() const ;
+       bool                 getPrintIndex(glm::ivec3& idx) const ;
+       int                  getPrintIndex(unsigned dim=0) const ; 
+   public:
+       const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
        unsigned             getSeed() const ; 
        int                  getLoadVerbosity() const ; 

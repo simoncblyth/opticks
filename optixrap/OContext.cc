@@ -12,6 +12,7 @@
 #include "GLMFormat.hpp"
 
 // okc-
+#include "Opticks.hh"
 #include "OpticksEntry.hh"
 #include "OpticksBufferControl.hh"
 
@@ -27,7 +28,6 @@ using namespace optix ;
 const char* OContext::COMPUTE_ = "COMPUTE" ; 
 const char* OContext::INTEROP_ = "INTEROP" ; 
 
-
 const char* OContext::getModeName()
 {
     switch(m_mode)
@@ -37,8 +37,6 @@ const char* OContext::getModeName()
     }
     assert(0);
 }
-
-
 
 OpticksEntry* OContext::addEntry(char code)
 {
@@ -61,30 +59,78 @@ OpticksEntry* OContext::addEntry(char code)
 }
 
 
+unsigned OContext::getDebugPhoton() const 
+{
+    return m_debug_photon ; 
+}
 
-OContext::OContext(optix::Context context, Mode_t mode, bool with_top, bool verbose) 
+
+OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verbose) 
     : 
     m_context(context),
-    m_mode(mode),
-    m_debug_photon(-1),
+    m_ok(ok),
+    m_mode(m_ok->isCompute() ? COMPUTE : INTEROP),
+    m_debug_photon(m_ok->getDebugIdx()),
     m_entry(0),
     m_closed(false),
     m_with_top(with_top),
     m_verbose(verbose)
 {
     init();
+    initPrint();
 }
+
+void OContext::init()
+{
+    m_cfg = new OConfig(m_context);
+
+    unsigned int num_ray_type = getNumRayType() ;
+    m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
+
+    if(m_with_top)
+    {
+        m_top = m_context->createGroup();
+        m_context[ "top_object" ]->set( m_top );
+    }
+
+    unsigned stacksize_bytes = m_ok->getStack() ;
+
+    LOG(debug) << "OContext::init " 
+              << " mode " << getModeName()
+              << " num_ray_type " << num_ray_type 
+              << " stacksize_bytes " << stacksize_bytes
+              ; 
+
+    m_context->setStackSize(stacksize_bytes);
+}
+
+void OContext::initPrint()
+{
+    m_context->setPrintEnabled(false);  // enable for 1st photon with --pindex 0 
+    m_context->setPrintBufferSize(2*2*2*8192);
+    //m_context->setPrintLaunchIndex(0,0,0);
+
+    glm::ivec3 idx ; 
+    if(!m_ok->getPrintIndex(idx)) return ; 
+
+    LOG(error) << "OContext::initPrint " 
+               << " idx " << gformat(idx) 
+               ;  
+
+    m_context->setPrintEnabled(true);
+    m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
+}
+
+
 
 optix::Context OContext::getContext()
 {
      return m_context ; 
 }
-
 optix::Context& OContext::getContextRef()
 {
      return m_context ; 
 }
-
 
 optix::Group OContext::getTop()
 {
@@ -96,14 +142,7 @@ unsigned int OContext::getNumRayType()
 }
 
 
-void OContext::setDebugPhoton(unsigned int debug_photon)
-{
-    m_debug_photon = debug_photon ; 
-}
-unsigned int OContext::getDebugPhoton()
-{
-    return m_debug_photon ; 
-}
+
 
 
 OContext::Mode_t OContext::getMode()
@@ -122,58 +161,6 @@ bool OContext::isInterop()
 }
 
 
-void OContext::setStackSize(unsigned int stacksize)
-{
-    LOG(debug) << "OContext::setStackSize " << stacksize ;  
-    m_context->setStackSize(stacksize);
-}
-
-void OContext::setPrintIndex(const std::string& pindex)
-{
-    LOG(debug) << "OContext::setPrintIndex " << pindex ;  
-    if(!pindex.empty())
-    {
-        glm::ivec3 idx = givec3(pindex);
-        LOG(debug) << "OContext::setPrintIndex " 
-                  << pindex
-                  << " idx " << gformat(idx) 
-                   ;  
-        m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
-
-/*
-  rtContextSetPrintLaunchIndex 
-  toggles printing for individual computation grid cells. 
-  Print statements have no adverse effect on performance while printing is globally disabled, which is the default behavior.
-*/
-
-    }
-}
-
-
-void OContext::init()
-{
-    m_cfg = new OConfig(m_context);
-
-    m_context->setPrintEnabled(true);
-    m_context->setPrintBufferSize(2*2*2*8192);
-    //m_context->setPrintLaunchIndex(0,0,0);
-
-    unsigned int num_ray_type = getNumRayType() ;
-
-    m_context->setRayTypeCount( num_ray_type );   // more static than entry type count
-
-
-    if(m_with_top)
-    {
-        m_top = m_context->createGroup();
-        m_context[ "top_object" ]->set( m_top );
-    }
-
-    LOG(debug) << "OContext::init " 
-              << " mode " << getModeName()
-              << " num_ray_type " << num_ray_type 
-              ; 
-}
 
 
 void OContext::cleanUp()

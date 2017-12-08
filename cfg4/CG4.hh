@@ -45,7 +45,6 @@ template <typename T> class OpticksCfg ;
 
 
 
-#define CG4UniformRand(file, line) CG4::INSTANCE->getRandomEngine()->flat_instrumented((file), (line))
 
 
 
@@ -97,6 +96,7 @@ photon counts ahead of time.
 
 **/
 
+#define CG4UniformRand(file, line) CG4::INSTANCE->flat_instrumented((file), (line))
 
 #include "CG4Ctx.hh"
 
@@ -106,7 +106,7 @@ class CFG4_API CG4
 {
         friend class CGeometry ; 
    public:
-        static const CG4* INSTANCE ; 
+        static CG4* INSTANCE ; 
    public:
         CG4(OpticksHub* hub);
         void interactive();
@@ -119,6 +119,7 @@ class CFG4_API CG4
         void postinitialize();
         void postpropagate();
    public:
+        int              getPrintIndex() const ;
         CEventAction*    getEventAction();
         CSteppingAction* getSteppingAction();
         CTrackingAction* getTrackingAction();
@@ -146,6 +147,7 @@ class CFG4_API CG4
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
         CRandomEngine*   getRandomEngine() const ; 
+        double           flat_instrumented(const char* file, int line); 
 
         CG4Ctx&          getCtx();
         double           getCtxRecordFraction() const ;  // ctx is updated at setTrackOptical

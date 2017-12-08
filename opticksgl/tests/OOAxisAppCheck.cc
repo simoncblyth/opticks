@@ -8,6 +8,7 @@
 #include "AxisApp.hh"
 
 // optixrap-
+#include "Opticks.hh"
 #include "OContext.hh"
 
 // opticksgl-
@@ -26,6 +27,9 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
     OKGL_LOG__ ; 
 
+    Opticks ok(argc, argv, "--interop");
+    ok.configure();
+
     LOG(info) << argv[0] ; 
 
     AxisApp axa(argc, argv); 
@@ -39,10 +43,10 @@ int main(int argc, char** argv)
     assert(npy == npyb);
     */
    
-    OContext::Mode_t mode = OContext::INTEROP ;
+    //OContext::Mode_t mode = OContext::INTEROP ;
     optix::Context context = optix::Context::create();
 
-    OContext* m_ocontext = new OContext(context, mode, false );
+    OContext* m_ocontext = new OContext(context, &ok, false );
 
     OAxisTest* oat = new OAxisTest(m_ocontext, npy);
     oat->prelaunch();

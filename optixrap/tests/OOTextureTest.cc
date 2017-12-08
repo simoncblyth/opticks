@@ -21,12 +21,12 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
 
 
-    Opticks* m_opticks(NULL);
-    m_opticks = new Opticks(argc, argv);
-    m_opticks->configure();
+    Opticks* ok(NULL);
+    ok = new Opticks(argc, argv, "--compute");
+    ok->configure();
 
 
-    GScintillatorLib* slib = GScintillatorLib::load(m_opticks);
+    GScintillatorLib* slib = GScintillatorLib::load(ok);
     slib->dump();
 
 
@@ -39,10 +39,10 @@ int main(int argc, char** argv)
     const char* slice = "0:1" ; 
     oscin->convert(slice);
 
-    OContext::Mode_t mode = m_opticks->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
+    //OContext::Mode_t mode = ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
     OContext* m_ocontext(NULL);
-    m_ocontext = new OContext(context, mode);
+    m_ocontext = new OContext(context, ok);
 
     optix::Group top = m_ocontext->getTop();
 
@@ -53,7 +53,7 @@ int main(int argc, char** argv)
     top->setAcceleration(acceleration);
 
     OLaunchTest* m_ott(NULL);
-    m_ott = new OLaunchTest(m_ocontext, m_opticks, "textureTest.cu.ptx", "textureTest", "exception");
+    m_ott = new OLaunchTest(m_ocontext, ok, "textureTest.cu.ptx", "textureTest", "exception");
     m_ott->launch();
 
     LOG(info) << "DONE" ; 

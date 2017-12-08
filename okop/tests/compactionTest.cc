@@ -4,6 +4,7 @@
 #include "NPY.hpp"
 #include "DummyPhotonsNPY.hpp"
 
+#include "Opticks.hh"
 #include "OContext.hh"
 #include "OBuf.hh"
 #include "TBuf.hh"
@@ -43,13 +44,17 @@ int main(int argc, char** argv)
     OXRAP_LOG__ ; 
     NPY_LOG__ ; 
 
+    Opticks ok(argc, argv, "--compute");
+    ok.configure() ;
+ 
+
     unsigned num_photons = 100 ; 
     unsigned PNUMQUAD = 4 ;
 
     NPY<float>* pho = DummyPhotonsNPY::make(num_photons);
 
     optix::Context context = optix::Context::create();
-    OContext ctx(context, OContext::COMPUTE, false );  // with_top:false
+    OContext ctx(context, &ok, false );  // with_top:false
 
     int entry = ctx.addEntry("compactionTest.cu.ptx", "compactionTest", "exception");
 

@@ -7,6 +7,7 @@
 template <typename T> class NPY ; 
 class OConfig ; 
 class OpticksEntry ; 
+class Opticks ; 
 struct STimes ; 
 
 #include "OXRAP_API_EXPORT.hh"
@@ -36,7 +37,7 @@ class OXRAP_API OContext {
         static const char* INTEROP_ ; 
 
      public:
-            OContext(optix::Context context, Mode_t mode, bool with_top=true, bool verbose=false);
+            OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false);
             void cleanUp();
      public:
             const char* getModeName();
@@ -45,11 +46,9 @@ class OXRAP_API OContext {
             bool isInterop();
             void snap(const char* path="/tmp/snap.ppm");
             void save(const char* path="/tmp/snap.npy");
-     public:
-            void setStackSize(unsigned int stacksize);
-            void setPrintIndex(const std::string& pindex);
-            void setDebugPhoton(unsigned int debug_photon);
-            unsigned int getDebugPhoton();
+     private:
+            void init();
+            void initPrint();
      public:
             void launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height=1, STimes* times=NULL);
      public:
@@ -65,8 +64,9 @@ class OXRAP_API OContext {
             unsigned int addRayGenerationProgram( const char* filename, const char* progname, bool defer=true);
             unsigned int addExceptionProgram( const char* filename, const char* progname, bool defer=true);
      public:
-            unsigned int      getNumEntryPoint();
-            unsigned int      getNumRayType();
+            unsigned          getNumEntryPoint();
+            unsigned          getNumRayType();
+            unsigned          getDebugPhoton() const ;
             optix::Context&   getContextRef();
             optix::Context    getContext();
             optix::Group      getTop();
@@ -93,11 +93,10 @@ class OXRAP_API OContext {
       public:
             template<typename T>
             static void resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name);  
-      private:
-            void init();
      private:
             optix::Context    m_context ; 
             optix::Group      m_top ; 
+            Opticks*          m_ok ; 
             OConfig*          m_cfg ; 
             Mode_t            m_mode ; 
             int               m_debug_photon ; 

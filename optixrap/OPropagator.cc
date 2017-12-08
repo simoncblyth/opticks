@@ -180,7 +180,9 @@ void OPropagator::launch()
     STimes* launch_times = evt->getLaunchTimes() ;
 
     OK_PROFILE("_OPropagator::launch");
+    LOG(error) << "LAUNCH NOW" ; 
     m_ocontext->launch( OContext::LAUNCH,  m_entry_index,  m_width, m_height, launch_times);
+    LOG(error) << "LAUNCH DONE" ; 
     OK_PROFILE("OPropagator::launch");
 
     LOG(info) << brief() << launch_times->brief("launch_times");

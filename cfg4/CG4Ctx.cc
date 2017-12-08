@@ -17,7 +17,9 @@
 
 CG4Ctx::CG4Ctx(Opticks* ok)
     :
-    _ok(ok)
+    _ok(ok),
+    _pindex(ok->getPrintIndex(0)),
+    _print(false)
 {
     init();
 
@@ -232,6 +234,9 @@ void CG4Ctx::setTrackOptical() // invoked by CG4Ctx::setTrack
     _debug = _ok->isDbgPhoton(_record_id) ; // from option: --dindex=1,100,1000,10000 
     _other = _ok->isOtherPhoton(_record_id) ; // from option: --oindex=1,100,1000,10000 
     _dump = _debug || _other ; 
+
+    _print = _pindex > -1 && _record_id == _pindex ; 
+
 
     if(_dump) _dump_count += 1 ; 
 

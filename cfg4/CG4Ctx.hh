@@ -26,6 +26,8 @@ and CRecorder
 struct CFG4_API CG4Ctx
 {
     Opticks* _ok ; 
+    int   _pindex ; 
+    bool  _print ; 
 
     // CG4::init
     bool _dbgrec ; 

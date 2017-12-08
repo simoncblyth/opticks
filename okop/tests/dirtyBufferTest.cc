@@ -1,6 +1,7 @@
 #include "NPY.hpp"
 #include "OpticksBufferControl.hh"
 
+#include "Opticks.hh"
 #include "OContext.hh"
 #include "OBuf.hh"
 #include "TBuf.hh"
@@ -231,13 +232,15 @@ int main(int argc, char** argv)
     unsigned ntest = 10 ; 
     unsigned size = 100 ; 
 
-
+    Opticks ok(argc, argv, "--compute");
+    ok.configure() ;
+ 
     optix::Context context = optix::Context::create();
 
     OEvt oevt(context, size );
 
     bool with_top = false ; 
-    OContext ctx(context, OContext::COMPUTE, with_top);
+    OContext ctx(context, &ok, with_top);
     int entry = ctx.addEntry("dirtyBufferTest.cu.ptx", "dirtyBufferTest", "exception");
 
     ctx.launch( OContext::VALIDATE|OContext::COMPILE|OContext::PRELAUNCH,  entry,  0, 0, NULL);

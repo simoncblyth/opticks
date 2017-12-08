@@ -8,6 +8,7 @@
 #define WITH_SOURCE 1 
 
 #define WITH_ALIGN_DEV 1
+#define WITH_ALIGN_DEV_DEBUG 1
 
 
 

@@ -7,6 +7,84 @@ RNG aligned comparisons
 ::
 
     tboolean-;tboolean-box --okg4 --align --alignlevel 0 -D
+         ## --alignlevel 0 is default
+
+
+
+maligned
+----------
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --pindex 1230
+
+
+
+
+::
+
+         10   1230 :                                        TO BR SC SA                                           TO BR SA 
+
+::
+
+
+    2017-12-08 19:43:10.798 INFO  [1137148] [CRec::initEvent@82] CRec::initEvent note recstp
+    HepRandomEngine::put called -- no effect!
+    2017-12-08 19:43:11.090 INFO  [1137148] [CRunAction::BeginOfRunAction@19] CRunAction::BeginOfRunAction count 1
+    CRandomEngine rec.stp1 1230.0 crfc     0 loc                                        OpBoundary; 0.00111702            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.0 crfc     1 loc                                        OpRayleigh;   0.502647            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.0 crfc     2 loc                                      OpAbsorption;   0.601504     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.0 crfc     3 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.938713         GeomBoundary CPro      OpBoundary LenLeft    6.79709 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.1 crfc     4 loc                                        OpBoundary;   0.753801         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.1 crfc     5 loc                                        OpRayleigh;   0.999847         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.1 crfc     6 loc                                      OpAbsorption;    0.43802     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.2 crfc     7 loc                                        OpBoundary;   0.714032         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.2 crfc     8 loc                                        OpRayleigh;   0.330404         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.2 crfc     9 loc                                      OpAbsorption;   0.570742     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.2 crfc    10 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655   0.375909         GeomBoundary CPro      OpBoundary LenLeft   0.336828 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1 1230.2 crfc    11 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.784978         GeomBoundary CPro      OpBoundary LenLeft   0.336828 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+
+
+    2017-12-08 19:53:34.003 ERROR [1140415] [OPropagator::launch@183] LAUNCH NOW
+    generate photon_id 1230 
+    WITH_ALIGN_DEV_DEBUG photon_id:1230 bounce:0 
+    propagate_to_boundary  u_boundary_burn:    0.0011 
+    propagate_to_boundary  u_scattering:    0.5026   scattering_distance:687866.4375 
+    propagate_to_boundary  u_absorption:    0.6015   absorption_distance:5083218.0000 
+    propagate_at_boundary  u_reflect:       0.93871  reflect:1   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV_DEBUG photon_id:1230 bounce:1 
+    propagate_to_boundary  u_boundary_burn:    0.7538 
+    propagate_to_boundary  u_scattering:    0.9998   scattering_distance:  153.2073 
+    propagate_to_boundary  u_absorption:    0.4380   absorption_distance:8254916.0000 
+    rayleigh_scatter
+    WITH_ALIGN_DEV_DEBUG photon_id:1230 bounce:2 
+    propagate_to_boundary  u_boundary_burn:    0.2825 
+    propagate_to_boundary  u_scattering:    0.4325   scattering_distance:838178.1875 
+    propagate_to_boundary  u_absorption:    0.9078   absorption_distance:966772.9375 
+    propagate_at_surface   u_surface:       0.9121 
+    propagate_at_surface   u_surface_burn:       0.2018 
+    2017-12-08 19:53:34.193 ERROR [1140415] [OPropagator::launch@185] LAUNCH DONE
+
+
+::
+
+    simon:cfg4 blyth$ thrust_curand_printf 1230 
+    thrust_curand_printf
+     i0 1230 i1 1231 q0 0 q1 16
+     id:1230 thread_offset:0 seq0:0 seq1:16 
+     0.001117  0.502647  0.601504  0.938713 
+     0.753801  0.999847  0.438020  0.714032 
+     0.330404  0.570742  0.375909  0.784978 
+     0.892654  0.441063  0.773742  0.556839 
+    simon:cfg4 blyth$ 
+
+
+
+
+
+
+
+
 
 
 Initial deviation Observations

@@ -102,7 +102,7 @@ int main(int argc, char** argv)
     OKCORE_LOG__ ; 
     OXRAP_LOG__ ; 
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--compute");
     ok.configure();
 
 
@@ -111,7 +111,7 @@ int main(int argc, char** argv)
     bool with_top = OConfig::DefaultWithTop() ;  // must set false with 3080, seemingly doesnt matter with 40000
 
     optix::Context context = optix::Context::create();
-    OContext ctx(context, OContext::COMPUTE, with_top);
+    OContext ctx(context, &ok, with_top);
     int entry = ctx.addEntry("bufferTest.cu.ptx", "bufferTest", "exception");
 
     // using zero sized buffers allows to prelaunch in initialization

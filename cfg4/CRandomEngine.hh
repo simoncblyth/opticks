@@ -41,9 +41,11 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
     public:
         CRandomEngine(CG4* g4);
         void dumpDouble(const char* msg, double* v, unsigned width ) const  ; 
-
+        bool hasSequence() const ; 
+        const char* getPath() const ; 
     protected:
         friend class CG4 ; 
+        friend struct CRandomEngineTest ; 
         void postpropagate();
         void pretrack();
         void posttrack();
@@ -69,6 +71,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         CG4*                     m_g4 ; 
         CG4Ctx&                  m_ctx ; 
         Opticks*                 m_ok ; 
+        const char*              m_path ; 
         int                      m_alignlevel ; 
         long                     m_seed ; 
         bool                     m_internal ; 

@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     GGEO_LOG__ ; 
     OXRAP_LOG__ ; 
 
-    Opticks ok(argc, argv);
+    Opticks ok(argc, argv, "--compute");
     ok.configure();
 
     LOG(info) << " ok " ; 
@@ -84,10 +84,10 @@ int main(int argc, char** argv)
     optix::Buffer outBuffer = context->createBuffer(RT_BUFFER_OUTPUT, RT_FORMAT_FLOAT4, nx, ny);
     context["out_buffer"]->setBuffer(outBuffer);   
 
-    OContext::Mode_t mode = ok.isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
+    //OContext::Mode_t mode = ok.isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
 
     OContext* m_ocontext(NULL);
-    m_ocontext = new OContext(context, mode);
+    m_ocontext = new OContext(context, &ok);
 
     optix::Group top = m_ocontext->getTop();
 

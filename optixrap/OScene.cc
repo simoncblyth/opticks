@@ -92,20 +92,12 @@ void OScene::init()
     const char* builder   = builder_.empty() ? NULL : builder_.c_str() ;
     const char* traverser = traverser_.empty() ? NULL : traverser_.c_str() ;
 
-
-    OContext::Mode_t mode = m_ok->isCompute() ? OContext::COMPUTE : OContext::INTEROP ;
-
-    LOG(info) << "OScene::init optix::Context::create() START " ; 
+    LOG(trace) << "OScene::init optix::Context::create() START " ; 
     optix::Context context = optix::Context::create();
-    LOG(info) << "OScene::init optix::Context::create() DONE " ; 
+    LOG(trace) << "OScene::init optix::Context::create() DONE " ; 
 
-    unsigned stack_size_bytes = m_cfg->getStack() ;
+    m_ocontext = new OContext(context, m_ok);
 
-    LOG(info) << "OScene::init (OContext) stack_size_bytes: " << stack_size_bytes ;
-    m_ocontext = new OContext(context, mode);
-    m_ocontext->setStackSize(stack_size_bytes);
-    m_ocontext->setPrintIndex(m_cfg->getPrintIndex().c_str());
-    m_ocontext->setDebugPhoton(m_cfg->getDebugIdx());
 
     // solvers despite being used for geometry intersects have no dependencies
     // as just pure functions : so place them accordingly 

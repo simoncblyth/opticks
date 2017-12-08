@@ -38,6 +38,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_path("$TMP/TRngBufTest.npy"),
     m_alignlevel(m_ok->getAlignLevel()),
     m_seed(9876),
     m_internal(false),
@@ -46,7 +47,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_james(new CLHEP::HepJamesRandom()),
     m_nonran(new CLHEP::NonRandomEngine()),
     m_engine(m_nonran),
-    m_curand(NPY<double>::load("$TMP/TRngBufTest.npy")),
+    m_curand(NPY<double>::load(m_path)),
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
     m_current_record_flat_count(0),
@@ -55,6 +56,16 @@ CRandomEngine::CRandomEngine(CG4* g4)
     init();
 }
 
+
+bool CRandomEngine::hasSequence() const 
+{
+    return m_curand && m_curand_ni > 0 && m_curand_nv > 0 ; 
+}
+
+const char* CRandomEngine::getPath() const 
+{
+    return m_path ; 
+}
 
 void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) const 
 {
@@ -74,6 +85,8 @@ void CRandomEngine::init()
     CLHEP::HepRandom::setTheEngine( this );  
     CLHEP::HepRandom::setTheSeed(  m_seed );    // does nothing for NonRandom
 }
+
+
 
 void CRandomEngine::initCurand()
 {
@@ -143,9 +156,12 @@ std::string CRandomEngine::desc() const
 std::string CRandomEngine::FormLocation()
 {
     G4VProcess* proc = CProcess::CurrentProcess() ; 
-    const G4String& procName = proc->GetProcessName()  ; 
+
     std::stringstream ss ; 
-    ss << procName << ";" ;  
+    ss <<  ( proc ? proc->GetProcessName().c_str() : "NoProc" )
+       << ";" 
+       ;  
+
     return ss.str();
 }
 
@@ -185,7 +201,7 @@ double CRandomEngine::flat()
 
     m_flat =  m_engine->flat() ;  
 
-    if(m_alignlevel > 1) dumpFlat() ; 
+    if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
 
     m_current_record_flat_count++ ; 
  

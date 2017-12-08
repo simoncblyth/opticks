@@ -380,6 +380,7 @@ RT_PROGRAM void generate()
     } 
 #endif 
 
+    rtPrintf("generate photon_id %d \n", photon_id );
 
     curandState rng = rng_states[photon_id];
 
@@ -484,8 +485,8 @@ RT_PROGRAM void generate()
 
     while( bounce < bounce_max )
     {
-#ifdef WITH_ALIGN_DEV
-        //rtPrintf("WITH_ALIGN_DEV bounce:%d \n", bounce );
+#ifdef WITH_ALIGN_DEV_DEBUG
+        rtPrintf("WITH_ALIGN_DEV_DEBUG photon_id:%d bounce:%d \n", photon_id, bounce );
 #endif
 
         bounce++;   // increment at head, not tail, as CONTINUE skips the tail
