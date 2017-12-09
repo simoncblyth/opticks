@@ -2,6 +2,7 @@
 #include <cassert>
 
 // sysrap-
+#include "PLOG.hh"
 #include "SDigest.hh"
 
 #include "cuRANDWrapper.hh"
@@ -10,6 +11,56 @@
 #include "LaunchSequence.hh"
 
 #include "curand_kernel.h"
+
+
+// this is invoked from ORng::init
+cuRANDWrapper* cuRANDWrapper::instanciate(
+         unsigned int num_items, 
+         const char* cachedir,
+         unsigned long long seed,
+         unsigned long long offset,
+         unsigned int max_blocks,
+         unsigned int threads_per_block,
+         bool verbose
+     )
+{
+
+    LOG(error) << "cuRANDWrapper::instanciate"
+               << " num_items " << num_items 
+               ;
+
+    LaunchSequence* seq = new LaunchSequence( num_items, threads_per_block, max_blocks ) ;
+    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset, verbose);
+    if(cachedir)
+    {
+        if(verbose)
+        printf("cuRANDWrapper::instanciate with cache enabled : cachedir %s\n", cachedir);
+        crw->setCacheDir(cachedir);
+        crw->setCacheEnabled(true);
+    }
+    else
+    {
+        if(verbose)
+        printf("cuRANDWrapper::instanciate with cache disabled\n");
+        crw->setCacheEnabled(false);
+    }
+    return crw ; 
+}
+
+
+const char* cuRANDWrapper::getCachePath() 
+{
+    char buf[256];
+    snprintf(buf, 256, "%s/cuRANDWrapper_%u_%llu_%llu.bin", 
+                 m_cache_dir,
+                 getItems(),
+                 m_seed,
+                 m_offset); 
+
+    return strdup(buf) ; 
+}
+
+
 
 
 cuRANDWrapper::cuRANDWrapper( LaunchSequence* launchseq, unsigned long long seed, unsigned long long offset, bool verbose )
@@ -170,17 +221,6 @@ void cuRANDWrapper::Summary(const char* msg)
 }
 
 
-char* cuRANDWrapper::getCachePath()
-{
-    char buf[256];
-    snprintf(buf, 256, "%s/cuRANDWrapper_%u_%llu_%llu.bin", 
-                 m_cache_dir,
-                 getItems(),
-                 m_seed,
-                 m_offset); 
-    return strdup(buf);
-}
-
 
 void cuRANDWrapper::Dump(const char* msg, unsigned int imod)
 {
@@ -244,9 +284,8 @@ int cuRANDWrapper::InitFromCacheIfPossible()
 
 int cuRANDWrapper::hasCache()
 {
-    char* path = getCachePath() ;
+    const char* path = getCachePath() ;
     int rc = hasCache(path);
-    free(path);
     return rc ; 
 }
 
@@ -287,7 +326,7 @@ int cuRANDWrapper::Init()
 int cuRANDWrapper::Save()
 {
     printf("cuRANDWrapper::Save\n");
-    char* path = getCachePath() ;
+    const char* path = getCachePath() ;
 
     m_host_rng_states = copytohost_rng_wrapper(m_launchseq, m_dev_rng_states);
 
@@ -297,66 +336,21 @@ int cuRANDWrapper::Save()
 
     printf("cuRANDWrapper::Save %u items to %s save_digest %s \n", getItems(), path, save_digest);
 
-    int rc = Save(path);
+    int rc = SaveToFile(path);
 
     free(save_digest);
-    free(path);
     return rc ; 
 }
 
-
-int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements)
-{
-    if(m_verbose)
-    printf("cuRANDWrapper::LoadIntoHostBuffer\n");
-
-    assert( elements == getItems()); 
-
-    if(!hasCacheEnabled())
-    {
-        printf("cuRANDWrapper::LoadIntoHostBuffer cache is disabled\n");
-        assert(0);
-    }
-    else
-    {
-        char* path = getCachePath() ;
-        if(hasCache())
-        {
-            if(m_verbose)
-            printf("cuRANDWrapper::LoadIntoHostBuffer : loading from cache %s \n", path);
-
-            int rc = Load(path);
-            assert(rc == 0);
-            char* load_digest = digest() ;
-            if(m_verbose)
-            printf("cuRANDWrapper::LoadIntoHostBuffer %u items from %s load_digest %s \n", getItems(), path, load_digest);
-            memcpy((void*)host_rng_states, (void*)m_host_rng_states, sizeof(curandState)*getItems());
-
-        }
-        else
-        {
-            printf("cuRANDWrapper::LoadIntoHostBuffer MISSING RNG CACHE AT : %s \n", path);
-            printf("cuRANDWrapper::LoadIntoHostBuffer : CREATE CACHE WITH bash functions : cudarap-;cudarap-prepare-installcache \n");
-            printf("cuRANDWrapper::LoadIntoHostBuffer : NB cudarap-prepare-installcache SHOULD HAVE BEEN INVOKED BY opticks-prepare-installcache  \n");
-
-            assert(0);
-        }
-    }
- 
-
-
-
-    return 0 ; 
-}
 
 
 
 int cuRANDWrapper::Load()
 {
     printf("cuRANDWrapper::Load\n");
-    char* path = getCachePath() ;
+    const char* path = getCachePath() ;
 
-    int rc = Load(path);
+    int rc = LoadFromFile(path);
 
     char* load_digest = digest() ;
     printf("cuRANDWrapper::Load %u items from %s load_digest %s \n", getItems(), path, load_digest);
@@ -377,7 +371,6 @@ int cuRANDWrapper::Load()
     }
 
     free(load_digest);
-    free(path);   // getStatesPath returns need freeing
 
     return rc ;
 }
@@ -394,17 +387,17 @@ int cuRANDWrapper::hasCache(const char* path)
     return 0;
 }
 
-int cuRANDWrapper::Save(const char* path)
+int cuRANDWrapper::SaveToFile(const char* path)
 {
     if(m_cache_dir && !hasCache(path))
     {
-        printf("cuRANDWrapper::Save mkdirp for path %s m_cache_dir %s \n", path, m_cache_dir );
+        printf("cuRANDWrapper::SaveToFile mkdirp for path %s m_cache_dir %s \n", path, m_cache_dir );
         mkdirp(m_cache_dir, 0777);
     }
 
     FILE *fp = fopen(path,"wb");
     if(fp == NULL) {
-        printf("cuRANDWrapper::Save error opening file %s \n", path);
+        printf("cuRANDWrapper::SaveToFile error opening file %s \n", path);
         return 1 ;
     }
     for(unsigned int i = 0 ; i < getItems() ; ++i )
@@ -422,11 +415,11 @@ int cuRANDWrapper::Save(const char* path)
 }
 
 
-int cuRANDWrapper::Load(const char* path)
+int cuRANDWrapper::LoadFromFile(const char* path)
 {
     FILE *fp = fopen(path,"rb");
     if(fp == NULL) {
-        printf("cuRANDWrapper::Load ERROR opening file %s \n", path);
+        printf("cuRANDWrapper::LoadFromFile ERROR opening file %s \n", path);
         return 1 ;
     }
 
@@ -448,37 +441,79 @@ int cuRANDWrapper::Load(const char* path)
 }
 
 
-
-
-
-
-cuRANDWrapper* cuRANDWrapper::instanciate(
-         unsigned int elements, 
-         const char* cachedir,
-         unsigned long long seed,
-         unsigned long long offset,
-         unsigned int max_blocks,
-         unsigned int threads_per_block,
-         bool verbose
-     )
+// this is invoked by ORng::init from OPropagator::OPropagator when there is no --mask active
+int cuRANDWrapper::LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements)
 {
-    LaunchSequence* seq = new LaunchSequence( elements, threads_per_block, max_blocks ) ;
-    cuRANDWrapper* crw = new cuRANDWrapper(seq, seed, offset, verbose);
-    if(cachedir)
+    if(m_verbose)
+    printf("cuRANDWrapper::LoadIntoHostBuffer\n");
+
+    assert( elements == getItems()); 
+
+    assert(hasCacheEnabled());
+
+    const char* path = getCachePath() ;
+
+    if(hasCache())
     {
-        if(verbose)
-        printf("cuRANDWrapper::instanciate with cache enabled : cachedir %s\n", cachedir);
-        crw->setCacheDir(cachedir);
-        crw->setCacheEnabled(true);
+        if(m_verbose)
+            printf("cuRANDWrapper::LoadIntoHostBuffer : loading from cache %s \n", path);
+
+        int rc = LoadFromFile(path);
+
+        assert(rc == 0);
+
+        char* load_digest = digest() ;
+
+        if(m_verbose)
+           printf("cuRANDWrapper::LoadIntoHostBuffer %u items from %s load_digest %s \n", getItems(), path, load_digest);
+
+        memcpy((void*)host_rng_states, (void*)m_host_rng_states, sizeof(curandState)*getItems());
+
     }
     else
     {
-        if(verbose)
-        printf("cuRANDWrapper::instanciate with cache disabled\n");
-        crw->setCacheEnabled(false);
+        printf("cuRANDWrapper::LoadIntoHostBuffer MISSING RNG CACHE AT : %s \n", path);
+        printf("cuRANDWrapper::LoadIntoHostBuffer : CREATE CACHE WITH bash functions : cudarap-;cudarap-prepare-installcache \n");
+        printf("cuRANDWrapper::LoadIntoHostBuffer : NB cudarap-prepare-installcache SHOULD HAVE BEEN INVOKED BY opticks-prepare-installcache  \n");
+
+        assert(0);
     }
-    return crw ; 
+    return 0 ; 
 }
+
+
+// this is invoked by ORng::init from OPropagator::OPropagator when a --mask is active
+int cuRANDWrapper::LoadIntoHostBufferMasked(curandState* host_rng_states, const std::vector<unsigned>& mask)
+{
+    assert( hasCacheEnabled() && hasCache() );
+    const char* path = getCachePath() ;
+    int rc = LoadFromFile(path);
+    assert(rc == 0);
+
+    unsigned num_items = getItems() ;     
+    unsigned num_mask = mask.size(); 
+
+    LOG(error) << "cuRANDWrapper::LoadIntoHostBufferMasked"
+               << " num_items " << num_items 
+               << " num_mask " << num_mask
+               ; 
+
+    char* sbytes = (char*)m_host_rng_states ;
+    char* dbytes = (char*)host_rng_states ; 
+    unsigned size = sizeof(curandState) ;
+
+    unsigned s(0);
+    for(unsigned i=0 ; i < num_mask ; i++)
+    {
+        unsigned item_id = mask[i] ; 
+        assert( item_id < num_items ); 
+        memcpy( (void*)(dbytes+size*s), (void*)(sbytes+size*item_id), size );
+        s += 1 ;  
+    }
+    return 0 ; 
+}
+
+
 
 
 
@@ -504,18 +539,6 @@ void cuRANDWrapper::resize(unsigned int elements)
     m_first_resize = false ; 
 }
 
-
-
-int cuRANDWrapper::fillHostBuffer(curandState* host_rng_states, unsigned int elements)
-{
-    if(m_verbose)
-    printf("cuRANDWrapper::fillHostBuffer\n");
-
-    int rc = LoadIntoHostBuffer(host_rng_states, elements );
-
-    return rc ;
-
-}
 
 
 

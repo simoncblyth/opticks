@@ -168,10 +168,16 @@ class DvTab(object):
         return map(lambda dv:float(getattr(dv, att)), filter(None,self.dvs))
 
     maxdv = property(lambda self:self._get_float("mx"))  
-    maxdvmax   = property(lambda self:max(self.maxdv))  
+    def _get_maxdvmax(self):  
+        maxdv_ = self.maxdv
+        return max(maxdv_) if len(maxdv_) > 0 else -1 
+    maxdvmax   = property(_get_maxdvmax)  
 
     fdiscreps = property(lambda self:self._get_float("fdiscrep"))  
-    fdiscmax   = property(lambda self:max(self.fdiscreps))  
+    def _get_fdiscmax(self):
+        fdiscreps_ = self.fdiscreps
+        return max(fdiscreps_) if len(fdiscreps_) > 0 else -1 
+    fdiscmax   = property(_get_fdiscmax)  
 
 
     def _get_smry(self):

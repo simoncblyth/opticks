@@ -14,7 +14,8 @@
 OpticksDbg::OpticksDbg(Opticks* ok) 
    :
    m_ok(ok),
-   m_cfg(NULL)
+   m_cfg(NULL),
+   m_mask_buffer(NULL)
 {
 }
 
@@ -30,6 +31,16 @@ unsigned OpticksDbg::getNumOtherPhoton() const
 unsigned OpticksDbg::getNumMaskPhoton() const 
 {
     return m_mask_photon.size() ; 
+}
+
+NPY<unsigned>* OpticksDbg::getMaskBuffer() const
+{
+    return m_mask_buffer ; 
+}
+
+const std::vector<unsigned>&  OpticksDbg::getMask()
+{
+   return m_mask_photon ;
 }
 
 
@@ -60,14 +71,23 @@ void OpticksDbg::postconfigure()
 
    const std::string& dindex = m_cfg->getDbgIndex() ;
    const std::string& oindex = m_cfg->getOtherIndex() ;
-   const std::string& mask = m_cfg->getMaskIndex() ;
+
+   const std::string& mask = m_cfg->getMask() ;
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
    postconfigure( mask, m_mask_photon );
 
+   if(m_mask_photon.size() > 0)
+   {
+       m_mask_buffer = NPY<unsigned>::make_from_vec(m_mask_photon); 
+   } 
+
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
 }
+
+
+
 
 void OpticksDbg::postconfigure(const std::string& spec, std::vector<unsigned>& ls)
 {
@@ -129,8 +149,5 @@ const std::vector<unsigned>&  OpticksDbg::getOtherIndex()
 {
    return m_other_photon ;
 }
-const std::vector<unsigned>&  OpticksDbg::getMaskIndex()
-{
-   return m_mask_photon ;
-}
+
 

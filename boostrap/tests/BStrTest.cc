@@ -273,8 +273,6 @@ void test_ekv_split()
 
 }
 
-
-
 void test_replace_all()
 {
     std::string s = "--c2max_0.5" ; 
@@ -283,6 +281,47 @@ void test_replace_all()
     LOG(info) << s  ;
 
 }
+
+void test_LexicalCast()
+{
+    bool badcast(false);
+
+    unsigned u = BStr::LexicalCast<unsigned>( "101", -1 , badcast );
+    assert( u == 101 && !badcast );
+
+    int i  = BStr::LexicalCast<int>( "-101", -1 , badcast );
+    assert( i == -101 && !badcast );
+
+    float f  = BStr::LexicalCast<float>( "-101.1", -1 , badcast );
+    assert( f == -101.1f && !badcast );
+}
+
+
+template <typename T>
+void test_Split(const char* s, unsigned xn)
+{
+    std::vector<T> v ; 
+    unsigned n = BStr::Split<T>(v, s, ',' );
+
+    LOG(info) 
+        << " n:" << n 
+        << " xn:" << xn 
+        << " v:" << v.size()
+        ;
+
+    assert( n == xn && n == v.size() ) ; 
+    for(unsigned i=0 ; i < n ; i++ ) std::cout << " " << v[i] ; 
+    std::cout << std::endl ; 
+
+}
+
+void test_Split()
+{
+    test_Split<unsigned>( "0,1,2,3,4,5,6,7,8,9", 10 );
+    test_Split<int>( "0,1,2,-3,4,5,6,-7,8,9", 10 );
+    test_Split<float>("0.5,1.5,2,3,4,5,6,7,8,9", 10 );
+}
+
 
 
 int main(int argc, char** argv)
@@ -305,9 +344,11 @@ int main(int argc, char** argv)
     test_DAEIdToG4();  
     test_ekv_split();
     test_replace_all();
+    test_usplit();
+    test_LexicalCast();
 */
 
-    test_usplit();
+    test_Split();
 
     return 0 ; 
 }

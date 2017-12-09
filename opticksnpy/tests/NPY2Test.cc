@@ -294,6 +294,41 @@ void test_copyTo_vec3()
 
 }
  
+void test_make_from_str()
+{
+    NPY<unsigned>* u = NPY<unsigned>::make_from_str("1,3,5,7,9") ; 
+    u->dump();
+    assert( u->getShape(0) == 5 );
+}
+
+void test_make_masked()
+{
+    unsigned N = 10 ; 
+    NPY<float>* src = NPY<float>::make(N,4) ; 
+    src->zero();
+
+    glm::vec4 v ; 
+    for(unsigned i=0 ; i < N ; i++) 
+    {
+        v.x = float(i*100+0) ; 
+        v.y = float(i*100+1) ; 
+        v.z = float(i*100+2) ; 
+        v.w = float(i*100+3) ; 
+        src->setQuad(v, i ); 
+    }
+    src->dump("src");
+
+
+    NPY<unsigned>* msk = NPY<unsigned>::make_from_str("1,3,5,7,9") ; 
+    unsigned ni_msk = msk->getShape(0); 
+    msk->dump("msk");
+
+    NPY<float>* dst = NPY<float>::make_masked( src, msk );
+    unsigned ni_dst = dst->getShape(0); 
+    dst->dump("dst");
+
+    assert( ni_msk == ni_dst );
+}
 
 
 
@@ -321,9 +356,11 @@ int main(int argc, char** argv )
     test_addItemUnique();
     test_uint32();
     test_copyTo_ivec4();
+    test_copyTo_vec3();
+    test_make_from_str();
 */
 
-    test_copyTo_vec3();
+    test_make_masked();
 
     return 0 ; 
 }

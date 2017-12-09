@@ -13,7 +13,9 @@
 NPho::NPho(NPY<float>* photons) 
     :  
     m_photons(photons),
-    m_num_photons(photons ? photons->getNumItems() : 0 )
+    m_msk(photons->getMsk()),
+    m_num_photons(photons ? photons->getNumItems() : 0 ),
+    m_num_msk(m_msk ? m_msk->getNumItems() : 0 )
 {
     init();
 }
@@ -21,6 +23,11 @@ NPho::NPho(NPY<float>* photons)
 void NPho::init()
 {
     assert( m_photons->hasShape(-1,4,4) );
+
+    if(m_msk)
+    {
+        assert( m_num_msk == m_num_photons ); // the mask is assumed to have been already applied to the photons
+    }
 }
 
 unsigned NPho::getNumPhotons() const 
@@ -66,6 +73,8 @@ std::string NPho::desc() const
     return ss.str();
 }
 
+
+
 std::string NPho::desc(unsigned i) const 
 {
     glm::vec4 post = getPositionTime(i);
@@ -76,6 +85,7 @@ std::string NPho::desc(unsigned i) const
     std::stringstream ss ;
     ss 
         << " i " << std::setw(7) << i 
+        << " mski " << std::setw(7) << m_photons->getMskIndex(i) 
         << " post " << std::setw(20) << gpresent(post) 
         << " dirw " << std::setw(20) << gpresent(dirw) 
         << " polw " << std::setw(20) << gpresent(polw) 
@@ -84,6 +94,22 @@ std::string NPho::desc(unsigned i) const
 
     return ss.str();
 }
+
+
+void NPho::Dump(NPY<float>* ox, unsigned modulo, unsigned margin, const char* msg) 
+{
+    LOG(info) << msg 
+              << " modulo " << modulo
+              << " margin " << margin
+              << " ox " << ( ox ? "Y" : "NULL" ) 
+              ;
+ 
+    if(!ox) return ; 
+    NPho ph(ox) ;
+    ph.dump(modulo, margin); 
+}
+
+
 
 void NPho::dump(unsigned modulo, unsigned margin, const char* msg) const
 {

@@ -115,6 +115,8 @@ class NPY_API NPYBase {
 
        void         setAux(void* aux);
        void*        getAux() const ;
+
+
        void         setDynamic(bool dynamic=true);
        bool         isDynamic() const ;    // used by oglrap-/Rdr::upload
 

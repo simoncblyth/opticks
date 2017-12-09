@@ -38,6 +38,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_mask(m_ok->getMask()),
+    m_masked(m_mask.size() > 0),
     m_path("$TMP/TRngBufTest.npy"),
     m_alignlevel(m_ok->getAlignLevel()),
     m_seed(9876),
@@ -243,7 +245,21 @@ void CRandomEngine::poststep()
 // invoked from CG4::pretrack following CG4Ctx::setTrack
 void CRandomEngine::pretrack()
 {
-    setupCurandSequence(m_ctx._record_id) ;
+    // where is a better place to do this ? maybe CG4Ctx::setTrack
+    unsigned index = m_ctx._record_id   ;
+    if(m_mask.size() > 0)
+    {
+        assert( index < m_mask.size() );
+        index = m_mask[index] ; 
+    }
+
+    LOG(error) << "CRandomEngine::pretrack record_id: " 
+               << " ctx.record_id " << m_ctx._record_id 
+               << " index " << index 
+               << " mask.size " << m_mask.size()
+               ;
+    
+    setupCurandSequence(index) ;
 }
 
 

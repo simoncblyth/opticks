@@ -47,7 +47,7 @@ OpticksCfg<Listener>::OpticksCfg(const char* name, Listener* listener, bool live
        m_pindex(""),
        m_dindex(""),
        m_oindex(""),
-       m_maskindex(""),
+       m_mask(""),
        m_builder(""),
        m_traverser(""),
        m_seqmap(""),
@@ -628,12 +628,11 @@ void OpticksCfg<Listener>::init()
        ("dindex",        boost::program_options::value<std::string>(&m_dindex), "debug photon_id indices in comma delimited list of ints, no size limit" );
    m_desc.add_options()
        ("oindex",        boost::program_options::value<std::string>(&m_oindex), "other debug photon_id indices in comma delimited list of ints, no size limit" );
-   m_desc.add_options()
-       ("maskindex",     boost::program_options::value<std::string>(&m_maskindex), "where mask photon_id indices in comma delimited lists of ints, or path to NPY1" );
 
    m_desc.add_options()
-       ("mask",  "apply mask selection to processed photons, see OpticksDbg, CInputPhotonSource, CRandomEngine") ;
-
+       ("mask",     boost::program_options::value<std::string>(&m_mask), 
+                    "comma delimited list of photon indices specifying apply mask selection"
+                    " see OpticksDbg, CInputPhotonSource, CRandomEngine") ;
 
 
 
@@ -1105,9 +1104,9 @@ const std::string& OpticksCfg<Listener>::getOtherIndex()
 }
 
 template <class Listener>
-const std::string& OpticksCfg<Listener>::getMaskIndex() const 
+const std::string& OpticksCfg<Listener>::getMask() const 
 {
-    return m_maskindex ;
+    return m_mask ;
 }
 
 

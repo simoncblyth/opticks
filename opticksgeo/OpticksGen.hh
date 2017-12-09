@@ -72,6 +72,7 @@ class OKGEO_API OpticksGen
         FabStepNPY*           m_fabstep ;  
         NPY<float>*           m_input_gensteps ; 
         NCSG*                 m_csg_emit ; 
+        bool                  m_emitter_dbg ; 
         NEmitPhotonsNPY*      m_emitter ; 
         NPY<float>*           m_input_photons ; 
         unsigned              m_source_code ; 

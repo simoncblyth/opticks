@@ -57,10 +57,10 @@ CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, G
     m_numPhotons(m_pho->getNumPhotons()),
     m_tranche(new STranche(m_numPhotons,m_numPhotonsPerG4Event)),
     m_primary(NPY<float>::make(0,4,4)),
-    m_gpv_count(0),
-    m_mask(m_ok->isMaskEnabled()),  // --mask 
-    m_mask_skip(0),
-    m_mask_take(0) 
+    m_gpv_count(0)
+   // m_mask(m_ok->isMaskEnabled()),  // --mask 
+   // m_mask_skip(0),
+   // m_mask_take(0) 
 {
     setParticle("opticalphoton");
 }
@@ -156,14 +156,32 @@ G4PrimaryVertex* CInputPhotonSource::convertPhoton(unsigned pho_index)
 
 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt) 
 {
+    // repeated calls to this hook up the configured max of photons per event
+    // for all but the last tranche 
+
     unsigned n = m_tranche->tranche_size(m_gpv_count) ; 
     SetNumberOfParticles(n);
     assert( m_num == int(n) );
+
+    LOG(info) << "CInputPhotonSource::GeneratePrimaryVertex"
+              << " n " << n 
+               ;
 
 
 	for (G4int i = 0; i < m_num; i++) 
     {
         unsigned pho_index = m_tranche->global_index( m_gpv_count,  i) ;
+
+        G4PrimaryVertex* vertex = convertPhoton(pho_index); 
+        // just straight convert of the photon pulled out the buffer
+
+
+        evt->AddPrimaryVertex(vertex);
+        collectPrimary(vertex);
+
+
+/*
+     // masking is now done earlier
         bool skip = m_mask && !m_ok->isMaskPhoton(pho_index) ; 
         if(skip)
         {
@@ -172,11 +190,11 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         else
         {
             m_mask_take++ ;   
-
-            G4PrimaryVertex* vertex = convertPhoton(pho_index);
-            evt->AddPrimaryVertex(vertex);
-            collectPrimary(vertex);
         }
+*/
+
+
+
 	}
     m_gpv_count++ ; 
 }
@@ -186,9 +204,9 @@ std::string CInputPhotonSource::desc() const
 {
     std::stringstream ss ; 
     ss << "CInputPhotonSource"
-       << " mask " << m_mask 
-       << " mask_take " << m_mask_take
-       << " mask_skip " << m_mask_skip
+       //<< " mask " << m_mask 
+       //<< " mask_take " << m_mask_take
+       //<< " mask_skip " << m_mask_skip
        ;
     return ss.str();
 }

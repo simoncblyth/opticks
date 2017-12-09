@@ -39,6 +39,13 @@ class BRAP_API BStr {
      static int index_first(                                 const std::vector<std::string>& elem, const char* item );
      static int index_all(   std::vector<unsigned>& indices, const std::vector<std::string>& elem, const char* item );
 
+
+     template<typename T>
+     static T LexicalCast(const char* str, T fallback, bool& badcast ) ;
+
+     template<typename T> 
+     static unsigned Split(std::vector<T>& elem, const char* line, char delim );
+
      static void isplit( std::vector<int>& elem, const char* line, char delim );
      static void uslice_append( std::vector<unsigned>& elem, const char* sli, char delim );
      static void usplit( std::vector<unsigned>& elem, const char* line, char delim );

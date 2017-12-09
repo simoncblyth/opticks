@@ -3,6 +3,7 @@
 
 #include <cassert>
 
+#include "NPY.hpp"
 #include "Opticks.hh"
 
 #include "PLOG.hh"
@@ -28,22 +29,26 @@ void test_isDbgPhoton_string(int argc, char** argv)
     assert(dindex[3] == 200);
 }
 
-
-
 void test_isDbgPhoton_path(int argc, char** argv)
 {
     Opticks ok(argc, argv, "--dindex $TMP/c.npy");
     ok.configure();
     if(ok.getNumDbgPhoton() == 0 ) return ; 
 
-
-
     assert(ok.isDbgPhoton(268) == true );
     assert(ok.isDbgPhoton(267) == false );
 }
 
+void test_getMaskBuffer(int argc, char** argv)
+{
+    Opticks ok(argc, argv, "--maskindex 1,3,5,7,9");
+    ok.configure();
 
+    NPY<unsigned>* msk = ok.getMaskBuffer() ;
 
+    assert( msk && msk->getShape(0) == 5 );
+    msk->dump("msk");
+}
 
 
 int main(int argc, char** argv)
@@ -53,10 +58,8 @@ int main(int argc, char** argv)
     OKCORE_LOG__ ; 
 
     //test_isDbgPhoton_string(argc, argv);
-
-    test_isDbgPhoton_path(argc, argv);
-
-
+    //test_isDbgPhoton_path(argc, argv);
+    test_getMaskBuffer(argc, argv);
 
     return 0 ; 
 }

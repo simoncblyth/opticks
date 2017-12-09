@@ -3,10 +3,27 @@
 class Opticks ; 
 class OContext ; 
 
+#include <vector>
 #include "OXPPNS.hh"
 class cuRANDWrapper ; 
 
 #include "OXRAP_API_EXPORT.hh"
+
+/**
+ORng
+====
+
+Uploads persisted curand rng_states to GPU.
+Canonical instance m_orng is ctor resident of OPropagator.
+
+Work is mainly done by cudarap-/cuRANDWrapper
+
+TODO: investigate Thrust based alternatives for curand initialization 
+      potential for eliminating cudawrap- 
+
+**/
+
+
 class OXRAP_API ORng 
 {
    public:
@@ -15,6 +32,7 @@ class OXRAP_API ORng
       void init(); 
    private:
       Opticks*        m_ok ; 
+      const std::vector<unsigned>& m_mask ; 
       OContext*       m_ocontext ; 
       optix::Context  m_context ;
     protected:

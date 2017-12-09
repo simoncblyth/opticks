@@ -285,11 +285,19 @@ void Opticks::ana()
 }
 
 
-bool Opticks::isMaskEnabled() const 
-{
-    return m_cfg->hasOpt("mask") ;  
-}
 
+NPY<unsigned>* Opticks::getMaskBuffer() const 
+{
+    return m_dbg->getMaskBuffer() ;  
+}
+const std::vector<unsigned>&  Opticks::getMask() const 
+{
+    return m_dbg->getMask();
+}
+bool Opticks::hasMask() const 
+{
+    return m_dbg->getMask().size() > 0 ; 
+}
 
 
 bool Opticks::isDbgPhoton(unsigned record_id)
@@ -346,10 +354,6 @@ const std::vector<unsigned>&  Opticks::getDbgIndex()
 const std::vector<unsigned>&  Opticks::getOtherIndex()
 {
     return m_dbg->getOtherIndex();
-}
-const std::vector<unsigned>&  Opticks::getMaskIndex()
-{
-    return m_dbg->getMaskIndex();
 }
 
 

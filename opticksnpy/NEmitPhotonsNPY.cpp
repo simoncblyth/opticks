@@ -16,35 +16,67 @@
 #include "PLOG.hh"
 
 
-NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg)
+NEmitPhotonsNPY::NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask)
     :
     m_csg(csg),
-    m_emitdbg(emitdbg),
+    m_gencode(gencode),
     m_seed(seed),
+    m_emitdbg(emitdbg),
+    m_mask(mask),
     m_emit( csg->getEmit() ),
     m_emitcfg_( csg->getEmitConfig() ),
     m_emitcfg( new NEmitConfig( m_emitcfg_ )),
     m_root( csg->getRoot()),
     m_photons(NPY<float>::make(m_emitcfg->photons, 4, 4)),
-    m_fabstep(new FabStepNPY(gencode, 1, m_emitcfg->photons)),
-    m_fabstep_npy(m_fabstep->getNPY()),
+    m_photons_masked(NULL),
+    m_fabstep(new FabStepNPY(gencode, 1, m_emitcfg->photons)),  // code, num_step, num_photons_per_step
+    m_fabstep_masked(NULL),
     m_diffuse( m_emitcfg->diffuse ? new NRngDiffuse(m_seed+100,m_emitcfg->ctmindiffuse, m_emitcfg->ctmaxdiffuse) : NULL )  
 {
     init();
+    
+    if(m_mask)
+    {
+        m_photons_masked = NPY<float>::make_masked( m_photons, m_mask ) ; 
+        m_fabstep_masked = new FabStepNPY(m_gencode, 1, m_mask->getShape(0)) ;
+    } 
 }
+
 
 NPY<float>* NEmitPhotonsNPY::getPhotons() const 
 {
+    return m_mask ? m_photons_masked : m_photons ; 
+}  
+NPY<float>* NEmitPhotonsNPY::getPhotonsRaw() const 
+{
     return m_photons ; 
 }
+
+
 FabStepNPY* NEmitPhotonsNPY::getFabStep() const 
 {
-    return m_fabstep ; 
+    return m_mask ? m_fabstep_masked : m_fabstep  ; 
 }
+FabStepNPY* NEmitPhotonsNPY::getFabStepRaw() const 
+{
+    return m_fabstep  ; 
+}
+
+
 NPY<float>* NEmitPhotonsNPY::getFabStepData() const 
 {
-    return m_fabstep_npy ; 
+    FabStepNPY* fs = getFabStep() ;
+    return fs->getNPY() ; 
 }
+
+NPY<float>* NEmitPhotonsNPY::getFabStepRawData() const 
+{
+    FabStepNPY* fs = getFabStepRaw() ;
+    return fs->getNPY() ; 
+}
+
+
+
 
 
 

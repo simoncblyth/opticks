@@ -10,6 +10,8 @@ class OpticksHub ;
 class OContext ; 
 class OBuf ; 
 
+template <typename T> class NPY ; 
+
 /**
 OEvent
 =======
@@ -105,6 +107,7 @@ class OXRAP_API OEvent
         SLog*           m_log ; 
         OpticksHub*     m_hub ; 
         Opticks*        m_ok ; 
+        NPY<unsigned>*  m_mask ; 
         OContext*       m_ocontext ; 
         optix::Context  m_context ; 
         OpticksEvent*   m_evt ; 

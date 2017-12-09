@@ -35,7 +35,8 @@ OpticksGen::OpticksGen(OpticksHub* hub)
    m_fabstep(NULL),
    m_input_gensteps(NULL),
    m_csg_emit(hub->findEmitter()),
-   m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), false) : NULL ),
+   m_emitter_dbg(false),
+   m_emitter(m_csg_emit ? new NEmitPhotonsNPY(m_csg_emit, EMITSOURCE, m_ok->getSeed(), m_emitter_dbg, m_ok->getMaskBuffer()) : NULL ),
    m_input_photons(NULL),
    m_source_code( m_emitter ? EMITSOURCE : m_ok->getSourceCode() )
 {
@@ -67,8 +68,9 @@ void OpticksGen::initFromEmitter()
     // emitter bits and pieces get dressed up 
     // perhaps make a class to do this ?   
 
-    NPY<float>* iox = m_emitter->getPhotons();
+    NPY<float>* iox = m_emitter->getPhotons();  // these photons maybe masked 
     setInputPhotons(iox);
+
 
     m_fabstep = m_emitter->getFabStep();
 
@@ -206,6 +208,11 @@ void OpticksGen::setInputPhotons(NPY<float>* iox)
     m_input_photons = iox ;  
     if(iox) 
     {
+        LOG(error) << "OpticksGen::setInputPhotons"
+                   << " iox " << iox->getShapeString()
+                   << " ios.hasMsk " << ( iox->hasMsk() ? "Y" : "N" )
+                   ;
+
         iox->setBufferSpec(OpticksEvent::SourceSpec(m_ok->isCompute()));
     }
 }

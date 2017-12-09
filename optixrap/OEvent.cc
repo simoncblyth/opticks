@@ -40,6 +40,7 @@ OEvent::OEvent(OpticksHub* hub, OContext* ocontext)
    m_log(new SLog("OEvent::OEvent")),
    m_hub(hub),
    m_ok(hub->getOpticks()),
+   m_mask(m_ok->getMaskBuffer()),
    m_ocontext(ocontext),
    m_context(ocontext->getContext()),
    m_evt(NULL),

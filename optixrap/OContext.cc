@@ -458,11 +458,12 @@ unsigned OContext::determineBufferSize(NPY<T>* npy, const char* name)
     unsigned int nj = std::max(1u,npy->getShape(1));  
     unsigned int nk = std::max(1u,npy->getShape(2));  
 
-    bool seed = strcmp(name, "seed")==0 ;
-    RTformat format = getFormat(npy->getType(), seed);
+    bool is_seed = strcmp(name, "seed")==0 ;
+
+    RTformat format = getFormat(npy->getType(), is_seed);
     unsigned int size ; 
 
-    if(format == RT_FORMAT_USER || seed)
+    if(format == RT_FORMAT_USER || is_seed)
     {
         size = ni*nj*nk ; 
     }
@@ -479,11 +480,10 @@ template <typename T>
 void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name)
 {
 
-    bool seed = strcmp(name, "seed")==0 ;
+    bool is_seed = strcmp(name, "seed")==0 ;
 
-    RTformat format = getFormat(npy->getType(), seed);
+    RTformat format = getFormat(npy->getType(), is_seed);
     buffer->setFormat(format);  // must set format, before can set ElementSize
-
 
 
     unsigned size = determineBufferSize(npy, name);
@@ -491,7 +491,7 @@ void OContext::configureBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* n
 
     const char* label ; 
     if(     format == RT_FORMAT_USER) label = "USER";
-    else if(seed)                     label = "SEED";
+    else if(is_seed)                  label = "SEED";
     else                              label = "QUAD";
 
 
@@ -552,7 +552,7 @@ void OContext::resizeBuffer(optix::Buffer& buffer, NPY<T>* npy, const char* name
 
 
 
-RTformat OContext::getFormat(NPYBase::Type_t type, bool seed)
+RTformat OContext::getFormat(NPYBase::Type_t type, bool is_seed)
 {
     RTformat format ; 
     switch(type)
@@ -567,7 +567,7 @@ RTformat OContext::getFormat(NPYBase::Type_t type, bool seed)
         case NPYBase::DOUBLE:    format = RT_FORMAT_USER           ; break ; 
     }
 
-    if(seed)
+    if(is_seed)
     {
          assert(type == NPYBase::UINT);
          format = RT_FORMAT_UNSIGNED_INT ;

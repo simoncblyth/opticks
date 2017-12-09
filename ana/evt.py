@@ -1660,7 +1660,7 @@ def deviation_plt(evt):
 
 
 if __name__ == '__main__':
-    ok = opticks_main()
+    ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
 
 
     a = Evt(tag="%s"%ok.utag, src=ok.src, det=ok.det, args=ok)

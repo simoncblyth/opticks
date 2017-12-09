@@ -8,6 +8,7 @@
 namespace fs = boost::filesystem;
 
 #include "BFile.hh"
+#include "BStr.hh"
 #include "BBufSpec.hh"
 
 #include "NSlice.hpp"
@@ -30,7 +31,8 @@ NPY<T>::NPY(const std::vector<int>& shape, std::vector<T>& data_, std::string& m
          NPYBase(shape, sizeof(T), type, metadata, data_.size() > 0),
          m_data(data_),      // copies the vector
          m_unset_item(NULL),
-         m_bufspec(NULL)
+         m_bufspec(NULL),
+         m_msk(NULL)
 {
 } 
 
@@ -40,7 +42,8 @@ NPY<T>::NPY(const std::vector<int>& shape, T* data_, std::string& metadata)
          NPYBase(shape, sizeof(T), type, metadata, data_ != NULL),
          m_data(),      
          m_unset_item(NULL),
-         m_bufspec(NULL)
+         m_bufspec(NULL),
+         m_msk(NULL)
 {
     if(data_) 
     {
@@ -757,8 +760,6 @@ NPY<T>* NPY<T>::make(unsigned int ni, unsigned int nj, unsigned int nk, unsigned
 
 
 
-
-
 template <typename T>
 NPY<T>* NPY<T>::make(const std::vector<int>& shape)
 {
@@ -814,6 +815,152 @@ NPY<T>* NPY<T>::make(const std::vector<glm::vec4>& vals)
 
 
 
+
+template <typename T>
+NPY<T>* NPY<T>::make_from_str(const char* s, char delim)
+{
+    std::vector<T> v ; 
+    unsigned n = BStr::Split<T>(v, s, delim);
+    assert( v.size() == n );
+
+    return make_from_vec(v) ; 
+}
+
+template <typename T>
+NPY<T>* NPY<T>::make_from_vec(const std::vector<T>& vals)
+{
+    unsigned ni = vals.size() ;
+
+    NPY<T>* buf = NPY<T>::make(ni);
+    buf->zero();
+
+    unsigned j(0); 
+    unsigned k(0); 
+    unsigned l(0); 
+ 
+    for(unsigned i=0 ; i < ni ; i++)  buf->setValue(i,j,k,l, vals[i]); 
+
+    return buf ; 
+}
+
+
+
+
+
+
+
+template <typename T>
+void NPY<T>::setMsk(NPY<unsigned>* msk)
+{
+    m_msk = msk ; 
+}
+
+template <typename T>
+NPY<unsigned>* NPY<T>::getMsk() const 
+{
+    return m_msk ; 
+}
+
+template <typename T>
+int NPY<T>::getMskIndex(unsigned i) const 
+{
+    return m_msk ? m_msk->getValue(i, 0, 0) : -1 ; 
+}
+
+template <typename T>
+bool NPY<T>::hasMsk() const 
+{
+    return m_msk != NULL ; 
+}
+
+
+
+template <typename T>
+NPY<T>* NPY<T>::make_masked(NPY<T>* src, NPY<unsigned>* msk )
+{
+    unsigned ni = src->getShape(0);
+    assert( ni > 0);
+
+    unsigned nsel = msk->getShape(0); 
+    assert( nsel > 0);
+
+    unsigned msk_mi(0) ; 
+    unsigned msk_mx(0) ; 
+    msk->minmax(msk_mi, msk_mx);
+
+    LOG(info) << "make_masked"
+              << " src.ni " << ni
+              << " msk.nsel " << nsel 
+              << " msk.mi " << msk_mi
+              << " msk.mx " << msk_mx
+              ;
+ 
+    assert( msk_mi < ni ); 
+    assert( msk_mx < ni ); 
+
+    std::vector<int> dshape(src->getShapeVector());
+    dshape[0] = nsel ;          // adjust first dimension to selection count
+
+    NPY<T>* dst = NPY<T>::make(dshape) ;
+    dst->zero();
+
+    unsigned nsel2 = _copy_masked( dst, src, msk) ; 
+    assert(nsel == nsel2);
+
+    dst->setMsk(msk); 
+
+    return dst ; 
+}
+ 
+template <typename T>
+unsigned NPY<T>::_copy_masked(NPY<T>* dst, NPY<T>* src, NPY<unsigned>* msk )
+{
+    // copy items from src to dst that are pointed to by msk 
+
+    unsigned ni = src->getShape(0);
+    unsigned nsel = msk->getShape(0);
+    assert( ni > 0 && nsel > 0);  
+
+    unsigned size = src->getNumBytes(1);  // item size in bytes (from dimension 1)  
+    unsigned size2 = dst->getNumBytes(1) ;
+    assert( size == size2 ); 
+
+    char* sbytes = (char*)src->getBytes();
+    char* dbytes = (char*)dst->getBytes();
+
+    bool dump = true ; 
+    if(dump) std::cout << "_copy_masked"
+                       << " ni " << ni 
+                       << " nsel " << nsel 
+                       << " size " << size 
+                       << " " 
+                       << std::endl 
+                        ; 
+
+    unsigned s(0);
+    for(unsigned i=0 ; i < nsel ; i++)
+    {
+        unsigned item_id = msk->getValue(i,0,0) ;
+        assert( item_id < ni ); 
+        memcpy( (void*)(dbytes + size*s),(void*)(sbytes + size*item_id), size ) ; 
+        s += 1 ; 
+    } 
+    return s ; 
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 template <typename T>
 unsigned NPY<T>::count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
 {
@@ -830,6 +977,10 @@ unsigned NPY<T>::count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned
 template <typename T>
 NPY<T>* NPY<T>::make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask )
 {
+    // CPU equivalent of thrust stream compaction
+    // this is selecting items from src based the (jj,kk) element of
+    // the item ANDing with the mask 
+
     unsigned ni = src->getShape(0);
     assert( ni > 0);
 
@@ -900,6 +1051,10 @@ unsigned NPY<T>::_copy_selection(NPY<T>* dst, NPY<T>* src, unsigned jj, unsigned
     //if(dump) std::cout << std::endl  ; 
     return s ; 
 }
+
+
+
+
 
 
 

@@ -45,9 +45,9 @@ class CFG4_API CInputPhotonSource: public CSource
         NPY<float>*           m_primary ; 
         unsigned              m_gpv_count ;   // count calls to GeneratePrimaryVertex
 
-        bool                  m_mask ;  // --mask 
-        unsigned              m_mask_skip ;
-        unsigned              m_mask_take ;
+        //bool                  m_mask ;  // --mask 
+        //unsigned              m_mask_skip ;
+        //unsigned              m_mask_take ;
 };
 
 

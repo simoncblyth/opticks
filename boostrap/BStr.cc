@@ -155,6 +155,28 @@ const char* BStr::itoa( int i )
 }
 
 
+
+
+template<typename T>
+T BStr::LexicalCast(const char* str, T fallback, bool& badcast ) 
+{
+    T value(fallback) ; 
+    try{ 
+        value = boost::lexical_cast<T>(str) ;
+    }   
+    catch (const boost::bad_lexical_cast& e ) { 
+        badcast = true ; 
+        LOG(warning)  << "Caught bad lexical cast with error " << e.what() ;
+    }   
+    catch( ... ){
+        LOG(warning) << "Unknown exception caught!" ;
+    }   
+    return value ; 
+}
+
+
+
+
 int BStr::atoi( const char* str, int fallback )
 {
     int i(fallback) ;   
@@ -240,6 +262,28 @@ void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
     while (getline(f, s, delim)) elem.push_back(s);
 }
 */
+
+
+
+template<typename T> 
+unsigned BStr::Split(std::vector<T>& elem, const char* line, char delim )
+{
+    if(line == NULL) return 0 ; 
+    std::istringstream f(line);
+    std::string s;
+    bool badcast(false); 
+
+    unsigned count(0); 
+    while (getline(f, s, delim))
+    {
+        T value = BStr::LexicalCast<T>(s.c_str(), -1, badcast );
+        assert( !badcast );
+        elem.push_back(value);
+        count++ ; 
+    }
+    return count ; 
+}
+
 
 
 void BStr::split( std::vector<std::string>& elem, const char* line, char delim )
@@ -589,6 +633,23 @@ void BStr::ReplaceAll(std::string& subject, const char* search, const char* repl
 
 
 
+
+template BRAP_API unsigned long long BStr::LexicalCast(const char*, unsigned long long, bool& );
+template BRAP_API unsigned char BStr::LexicalCast(const char*, unsigned char, bool& );
+template BRAP_API short    BStr::LexicalCast(const char*, short, bool& );
+template BRAP_API unsigned BStr::LexicalCast(const char*, unsigned, bool& );
+template BRAP_API int      BStr::LexicalCast(const char*, int     , bool& );
+template BRAP_API float    BStr::LexicalCast(const char*, float   , bool& );
+template BRAP_API double   BStr::LexicalCast(const char*, double  , bool& );
+
+
+template BRAP_API unsigned BStr::Split(std::vector<unsigned long long>& , const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<unsigned char>& ,      const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<short>& ,              const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<unsigned>& ,           const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<int>& ,                const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<float>& ,              const char*, char );
+template BRAP_API unsigned BStr::Split(std::vector<double>& ,             const char*, char );
 
 
 template BRAP_API const char* BStr::concat(const char*, int        , const char* );

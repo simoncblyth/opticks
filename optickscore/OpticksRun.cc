@@ -120,6 +120,14 @@ OpticksEvent* OpticksRun::getCurrentEvent()
 }
 
 
+/**
+OpticksRun::setGensteps
+------------------------
+
+gensteps and maybe source photon data (via aux association) are lodged into m_g4evt
+before passing baton (sharing pointers) with m_evt
+
+**/
 void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY HIGH LEVEL IN OKMgr to OKG4Mgr 
 {
     bool no_gensteps = gensteps == NULL ; 
@@ -149,10 +157,7 @@ void OpticksRun::setGensteps(NPY<float>* gensteps) // THIS IS CALLED FROM VERY H
         LOG(fatal) << "OpticksRun::setGensteps.GS_EMITSOURCE"
                    << " emitsource " << emitsource->getShapeString()
                    ;
-
     }
-
-
     passBaton();  
 }
 
@@ -175,12 +180,12 @@ void OpticksRun::passBaton()
    // by the m_g4evt not the Opticks m_evt 
    // where the m_evt pointers are just weak reference guests 
    //
-
     m_evt->setNopstepData(nopstep);  
     m_evt->setGenstepData(genstep);
     m_evt->setSourceData(source);
-
 }
+
+
 
 bool OpticksRun::hasGensteps()
 {

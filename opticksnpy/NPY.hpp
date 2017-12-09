@@ -111,11 +111,17 @@ class NPY_API NPY : public NPYBase {
        static NPY<T>* make_identity_transforms(unsigned n=1);
        static NPY<T>* make(const std::vector<glm::vec4>& vals);
 
+       static NPY<T>* make_from_vec(const std::vector<T>& vals);
+       static NPY<T>* make_from_str(const char* s, char delim=',');
+
        static NPY<T>* make_like(NPY<T>* src);      // same shape as source, zeroed
        static NPY<T>* make_dbg_like(NPY<T>* src, int label_=0);  // same shape as source, values based on indices controlled with label_
 
    public:
        static bool hasSameItemSize(NPY<T>* a, NPY<T>* b) ;
+   public:
+        static NPY<T>* make_masked(NPY<T>* src, NPY<unsigned>* msk );
+        static unsigned _copy_masked(NPY<T>* dst, NPY<T>* src, NPY<unsigned>* msk );
    public:
        static NPY<T>* make_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
        static unsigned count_selection(NPY<T>* src, unsigned jj, unsigned kk, unsigned mask );
@@ -290,12 +296,23 @@ class NPY_API NPY : public NPYBase {
 
        void         copyTo(std::vector<T>& dst );
 
+   public:
+       // Msk is used to keep note of the mask applied to an 
+       // array created with *make_masked*. This enables the   
+       // original indices to remain available within the masked array.
+
+       void            setMsk(NPY<unsigned>* msk);
+       NPY<unsigned>*  getMsk() const ;
+       int             getMskIndex(unsigned i) const ;
+       bool            hasMsk() const ; 
+
 
    //private:
    public:
        std::vector<T>     m_data ; 
        T*                 m_unset_item ; 
        BBufSpec*          m_bufspec ; 
+       NPY<unsigned>*     m_msk ; 
 
        std::vector<std::string> m_digests ;  // usually empty, only used by addItemUnique 
 

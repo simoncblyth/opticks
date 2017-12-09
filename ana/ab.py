@@ -89,6 +89,7 @@ class AB(object):
         print "\n".join( map(lambda iq:self.recline(iq), enumerate(wh)))
 
     def __init__(self, ok):
+        log.info("ab START")
         self.ok = ok
         self.histype = HisType()
         self.dveps = ok.dveps
@@ -380,18 +381,27 @@ class AB(object):
         print "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) 
 
         rmxs_ = self.rmxs
-        rmxs_max_ = max(rmxs_.values())
-        if rmxs_max_ > self.ok.rdvmax:
-            rc = 88   
+        if len(rmxs_) > 0:
+            rmxs_max_ = max(rmxs_.values())
+            if rmxs_max_ > self.ok.rdvmax:
+                rc = 88   
+            pass
+            print "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc ) 
+        else:
+            log.warning("missing ab.rmxs ")
         pass
-        print "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc ) 
 
         pmxs_ = self.pmxs
-        pmxs_max_ = max(pmxs_.values())
-        if pmxs_max_ > self.ok.pdvmax:
-            rc = 99   
+        if len(pmxs_) > 0:
+            pmxs_max_ = max(pmxs_.values())
+            if pmxs_max_ > self.ok.pdvmax:
+                rc = 99   
+            pass
+            print "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ) 
+        else:
+            log.warning("missing ab.pmxs ")
         pass
-        print "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ) 
+
         pass
         return rc 
     RC = property(_get_RC)
@@ -1096,7 +1106,7 @@ class AB(object):
 
 
 if __name__ == '__main__':
-    ok = opticks_main()
+    ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
     ab = AB(ok)
     print ab
     print ab.a.metadata

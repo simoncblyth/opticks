@@ -164,10 +164,6 @@ OpticksHub::OpticksHub(Opticks* ok)
    (*m_log)("DONE");
 }
 
-
-
-
-
 void OpticksHub::init()
 {
     add(m_fcfg);
@@ -186,9 +182,7 @@ void OpticksHub::init()
 
     m_gen = new OpticksGen(this) ;
     m_gun = new OpticksGun(this) ;
-
 }
-
 
 
 

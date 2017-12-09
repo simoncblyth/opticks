@@ -83,21 +83,26 @@ rtDeclareVariable(uint2, launch_dim,   rtLaunchDim, );
 #include "rayleigh.h"
 #include "propagate.h"
 
-rtBuffer<float4>               genstep_buffer;
-rtBuffer<float4>               photon_buffer;
-rtBuffer<float4>               source_buffer;
 
+// input buffers 
+
+rtBuffer<float4>               genstep_buffer;
+rtBuffer<float4>               source_buffer;
+#ifdef WITH_SEED_BUFFER
+rtBuffer<unsigned>             seed_buffer ; 
+#endif
+rtBuffer<curandState, 1>       rng_states ;
+
+// output buffers 
+
+rtBuffer<float4>               photon_buffer;
 #ifdef WITH_RECORD
 rtBuffer<short4>               record_buffer;     // 2 short4 take same space as 1 float4 quad
 rtBuffer<unsigned long long>   sequence_buffer;   // unsigned long long, 8 bytes, 64 bits 
 #endif
 
-#ifdef WITH_SEED_BUFFER
-rtBuffer<unsigned>              seed_buffer ; 
-#endif
 
 
-rtBuffer<curandState, 1>       rng_states ;
 
 rtDeclareVariable(float4,        center_extent, , );
 rtDeclareVariable(float4,        time_domain  , , );
@@ -359,6 +364,7 @@ RT_PROGRAM void generate()
     unsigned int photon_offset = photon_id*PNUMQUAD ; 
 
 #ifdef WITH_SEED_BUFFER
+    // this is default 
     unsigned int genstep_id = seed_buffer[photon_id] ;      
 #else
     union quad phead ;

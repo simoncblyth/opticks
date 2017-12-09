@@ -39,6 +39,11 @@ class LaunchSequence ;
         delta:cudawrap blyth$ md5 /tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin
         MD5 (/tmp/env/cuRANDWrapperTest/cachedir/cuRANDWrapper_786432_0_0.bin) = eb42d4f18f8636a9a7f70577092ff22d
 
+
+TODO:
+    bring this ancient code upto scratch, needs a drastic rewrite to become comprehensible
+
+
 */
 
 #include "CUDARAP_API_EXPORT.hh"
@@ -59,7 +64,7 @@ class CUDARAP_API cuRANDWrapper {
      );
 
   public: 
-     char* getCachePath();
+     const char* getCachePath() ;
      unsigned int getSeed();
      unsigned int getOffset();
      bool isVerbose();
@@ -81,8 +86,8 @@ class CUDARAP_API cuRANDWrapper {
 
   public: 
      void resize(unsigned int elements);
-     int fillHostBuffer(curandState* host_rng_states, unsigned int elements);
      int LoadIntoHostBuffer(curandState* host_rng_states, unsigned int elements);
+     int LoadIntoHostBufferMasked(curandState* host_rng_states, const std::vector<unsigned>& mask);
 
      void Summary(const char* msg);
      void Dump(const char* msg="cuRANDWrapper::Dump", unsigned int imod=1000);
@@ -100,8 +105,8 @@ class CUDARAP_API cuRANDWrapper {
 
   private:
      int hasCache(const char* path);
-     int Save(const char* path);
-     int Load(const char* path);
+     int SaveToFile(const char* path);
+     int LoadFromFile(const char* path);
 
   private: 
      void devicesync();

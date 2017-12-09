@@ -67,7 +67,6 @@ if __name__ == '__main__':
     print ab.rpol_dv
     print ab.ox_dv
 
-
     rc = ab.RC 
 
     if not ok.ipython:
@@ -80,6 +79,7 @@ if __name__ == '__main__':
     a = ab.a
     b = ab.b
     #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
+    ab.aselhis = None    # dev aligned comparisons
   
    
 

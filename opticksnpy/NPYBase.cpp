@@ -342,7 +342,6 @@ NPYSpec* NPYBase::getBufferSpec() const
 
 
 
-
  void NPYBase::setVerbose(bool verbose)
 {
     m_verbose = verbose ; 

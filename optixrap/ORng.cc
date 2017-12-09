@@ -16,6 +16,7 @@ using namespace optix ;
 ORng::ORng(Opticks* ok, OContext* ocontext) 
    :
    m_ok(ok),
+   m_mask(ok->getMask()),
    m_ocontext(ocontext),
    m_context(m_ocontext->getContext()),
    m_rng_wrapper(NULL)
@@ -35,36 +36,47 @@ void ORng::init()
         return ;
     }
     const char* rngCacheDir = m_ok->getRNGInstallCacheDir();
+    unsigned num_mask = m_mask.size() ; 
 
-    LOG(debug) << "ORng::init"
+    LOG(error) << "ORng::init"
                << " rng_max " << rng_max
                << " rngCacheDir " << rngCacheDir
+               << " num_mask " << num_mask
                ;
 
     m_rng_wrapper = cuRANDWrapper::instanciate( rng_max, rngCacheDir );
 
     // OptiX owned RNG states buffer (not CUDA owned)
     m_rng_states = m_context->createBuffer( RT_BUFFER_INPUT_OUTPUT, RT_FORMAT_USER);
+
     m_rng_states->setElementSize(sizeof(curandState));
-    m_rng_states->setSize(rng_max);
-    m_context["rng_states"]->setBuffer(m_rng_states);
 
-
+    if(num_mask == 0)
     {
+        m_rng_states->setSize(rng_max);
+
         curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
 
-        m_rng_wrapper->setItems(rng_max);
-        m_rng_wrapper->fillHostBuffer(host_rng_states, rng_max);
+        m_rng_wrapper->setItems(rng_max); // why ? to identify which cache file to load i suppose
+
+        m_rng_wrapper->LoadIntoHostBuffer(host_rng_states, rng_max );
+
+        m_rng_states->unmap();
+    }
+    else
+    {
+        m_rng_states->setSize(num_mask);
+
+        curandState* host_rng_states = static_cast<curandState*>( m_rng_states->map() );
+
+        m_rng_wrapper->setItems(rng_max); // still need to load the full cache
+
+        m_rng_wrapper->LoadIntoHostBufferMasked(host_rng_states, m_mask ) ; // but make partial copy 
 
         m_rng_states->unmap();
     }
 
-    //
-    // TODO: investigate Thrust based alternatives for curand initialization 
-    //       potential for eliminating cudawrap- 
-    //
+    m_context["rng_states"]->setBuffer(m_rng_states);
 }
-
-
 
 

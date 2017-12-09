@@ -32,29 +32,40 @@ TODO:
 class NPY_API NEmitPhotonsNPY 
 {
    public:
-      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg);
+      NEmitPhotonsNPY(NCSG* csg, unsigned gencode, unsigned seed, bool emitdbg, NPY<unsigned>* mask);
 
       NPY<float>* getPhotons() const ;
-      FabStepNPY* getFabStep() const ;
-      NPY<float>* getFabStepData() const ;
-      std::string desc() const  ;
+      NPY<float>* getPhotonsRaw() const  ;
 
+      FabStepNPY* getFabStep() const ;
+      FabStepNPY* getFabStepRaw() const ;
+
+      NPY<float>* getFabStepData() const ;
+      NPY<float>* getFabStepRawData() const ;
+
+   public:
+      std::string desc() const  ;
    private:
       void init(); 
    private:
-      NCSG*         m_csg ; 
-      bool          m_emitdbg ; 
-      unsigned      m_seed ; 
-      int           m_emit ; 
-      const char*   m_emitcfg_ ;
-      NEmitConfig*  m_emitcfg  ;       
-      nnode*        m_root ; 
-
+      NCSG*          m_csg ; 
+      unsigned       m_gencode ; 
+      unsigned       m_seed ; 
+      bool           m_emitdbg ; 
+      NPY<unsigned>* m_mask ; 
+   private:
+      int            m_emit ; 
+      const char*    m_emitcfg_ ;
+      NEmitConfig*   m_emitcfg  ;       
+      nnode*         m_root ; 
    private:
       // products 
       NPY<float>*   m_photons ; 
+      NPY<float>*   m_photons_masked ; 
+
       FabStepNPY*   m_fabstep ; 
-      NPY<float>*   m_fabstep_npy ; 
+      FabStepNPY*   m_fabstep_masked ;
+ 
       NRngDiffuse*  m_diffuse ; 
 
 };

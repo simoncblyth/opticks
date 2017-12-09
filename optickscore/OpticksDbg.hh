@@ -4,6 +4,7 @@
 #include <string>
 
 class Opticks ; 
+template <typename T> class NPY ;
 template <typename T> class OpticksCfg ;
 
 #include "OKCORE_API_EXPORT.hh"
@@ -24,6 +25,8 @@ class OKCORE_API OpticksDbg
        unsigned getNumDbgPhoton() const ;
        unsigned getNumOtherPhoton() const ;
        unsigned getNumMaskPhoton() const ;
+       NPY<unsigned>* getMaskBuffer() const ;
+       const std::vector<unsigned>&  getMask();
 
        bool isDbgPhoton(unsigned record_id);
        bool isOtherPhoton(unsigned record_id);
@@ -32,14 +35,14 @@ class OKCORE_API OpticksDbg
        void loadNPY1(std::vector<unsigned>& vec, const char* path );
        const std::vector<unsigned>&  getDbgIndex();
        const std::vector<unsigned>&  getOtherIndex();
-       const std::vector<unsigned>&  getMaskIndex();
        std::string description();
    private:
        void postconfigure();
        void postconfigure(const std::string& spec, std::vector<unsigned>& ls);
    private:
-       Opticks*             m_ok ; 
-       OpticksCfg<Opticks>* m_cfg ; 
+       Opticks*              m_ok ; 
+       OpticksCfg<Opticks>*  m_cfg ; 
+       NPY<unsigned>*        m_mask_buffer ; 
        std::vector<unsigned> m_debug_photon ; 
        std::vector<unsigned> m_other_photon ; 
        std::vector<unsigned> m_mask_photon ; 

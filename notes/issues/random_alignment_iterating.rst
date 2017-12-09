@@ -10,9 +10,6 @@ RNG aligned comparisons
          ## --alignlevel 0 is default
 
 
-
-
-
 maligned
 ----------
 
@@ -58,6 +55,27 @@ why did Opticks scatter but G4 did not ?
     CRandomEngine rec.stp1 1230.2 crfc    11 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.784978         GeomBoundary CPro      OpBoundary LenLeft   0.336828 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
 
 
+
+    //  tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 -D
+
+    2017-12-09 18:30:28.138 INFO  [1382999] [CInputPhotonSource::GeneratePrimaryVertex@166] CInputPhotonSource::GeneratePrimaryVertex n 1
+    2017-12-09 18:30:28.138 ERROR [1382999] [CRandomEngine::pretrack@256] CRandomEngine::pretrack record_id:  ctx.record_id 0 index 1230 mask.size 1
+    CRandomEngine rec.stp1   0.0 crfc     0 loc                                        OpBoundary; 0.00111702            Undefined CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.0 crfc     1 loc                                        OpRayleigh;   0.502647            Undefined CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.0 crfc     2 loc                                      OpAbsorption;   0.601504     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.0 crfc     3 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1025   0.938713         GeomBoundary CPro      OpBoundary LenLeft    6.79709 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.1 crfc     4 loc                                        OpBoundary;   0.753801         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.1 crfc     5 loc                                        OpRayleigh;   0.999847         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.1 crfc     6 loc                                      OpAbsorption;    0.43802     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.2 crfc     7 loc                                        OpBoundary;   0.714032         GeomBoundary CPro      OpBoundary LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.2 crfc     8 loc                                        OpRayleigh;   0.330404         GeomBoundary CPro      OpRayleigh LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.2 crfc     9 loc                                      OpAbsorption;   0.570742     PostStepDoItProc CPro    OpAbsorption LenLeft         -1 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.2 crfc    10 loc       OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+655   0.375909         GeomBoundary CPro      OpBoundary LenLeft   0.336828 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    CRandomEngine rec.stp1   0.2 crfc    11 loc      OpBoundary;cfg4/DsG4OpBoundaryProcess.cc+1242   0.784978         GeomBoundary CPro      OpBoundary LenLeft   0.336828 LenTrav          0 AtRest/AlongStep/PostStep NNY alignlevel 0
+    2017-12-09 18:30:28.141 INFO  [1382999] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+
     2017-12-08 19:53:34.003 ERROR [1140415] [OPropagator::launch@183] LAUNCH NOW
     generate photon_id 1230 
     WITH_ALIGN_DEV_DEBUG photon_id:1230 bounce:0 
@@ -77,6 +95,33 @@ why did Opticks scatter but G4 did not ?
     propagate_at_surface   u_surface:       0.9121 
     propagate_at_surface   u_surface_burn:       0.2018 
     2017-12-08 19:53:34.193 ERROR [1140415] [OPropagator::launch@185] LAUNCH DONE
+
+
+    // testing masked rng running
+    //     tboolean-;tboolean-box --okg4 --align --mask 1230 -D --pindex 0
+
+
+    2017-12-09 17:57:18.129 ERROR [1357161] [OPropagator::launch@183] LAUNCH NOW
+    generate photon_id 0 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_boundary_burn:    0.0011 
+    propagate_to_boundary  u_scattering:    0.5026   scattering_distance:687866.4375 
+    propagate_to_boundary  u_absorption:    0.6015   absorption_distance:5083218.0000 
+    propagate_at_boundary  u_reflect:       0.93871  reflect:1   TransCoeff:   0.93847 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:1 
+    propagate_to_boundary  u_boundary_burn:    0.7538 
+    propagate_to_boundary  u_scattering:    0.9998   scattering_distance:  153.2073 
+    propagate_to_boundary  u_absorption:    0.4380   absorption_distance:8254916.0000 
+    rayleigh_scatter
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:2 
+    propagate_to_boundary  u_boundary_burn:    0.2825 
+    propagate_to_boundary  u_scattering:    0.4325   scattering_distance:838178.1875 
+    propagate_to_boundary  u_absorption:    0.9078   absorption_distance:966772.9375 
+    propagate_at_surface   u_surface:       0.9121 
+    propagate_at_surface   u_surface_burn:       0.2018 
+    2017-12-09 17:57:18.143 ERROR [1357161] [OPropagator::launch@185] LAUNCH DONE
+
+
 
 
 ::

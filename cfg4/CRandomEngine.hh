@@ -68,9 +68,12 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         double flat_instrumented(const char* file, int line) ;  
         void flatArray (const int size, double* vect);
     private:
-        CG4*                     m_g4 ; 
-        CG4Ctx&                  m_ctx ; 
-        Opticks*                 m_ok ; 
+        CG4*                          m_g4 ; 
+        CG4Ctx&                       m_ctx ; 
+        Opticks*                      m_ok ; 
+        const std::vector<unsigned>&  m_mask ;  
+        bool                          m_masked ;  
+
         const char*              m_path ; 
         int                      m_alignlevel ; 
         long                     m_seed ; 
