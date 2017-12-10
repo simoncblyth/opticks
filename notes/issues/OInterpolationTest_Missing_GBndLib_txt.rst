@@ -51,6 +51,86 @@ Hmm SG Fail
     [simon@localhost opticks]$ 
 
 
+
+Dec 2017 : OInterpolationTest FAIL back again, IMPROVED ERROR HANDLING : NOT FIXED
+------------------------------------------------------------------------------------
+
+TODO: fix this propertly when back in this context 
+
+
+Improved handling of missing paths::
+
+    2017-12-10 10:58:46.927 INFO  [1419364] [OLaunchTest::launch@61] OLaunchTest entry   0 width     761 height     123 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-12-10 10:58:46.927 INFO  [1419364] [OContext::close@208] OContext::close numEntryPoint 1
+    2017-12-10 10:58:46.927 INFO  [1419364] [OContext::close@212] OContext::close setEntryPointCount done.
+    2017-12-10 10:58:46.940 INFO  [1419364] [OContext::close@218] OContext::close m_cfg->apply() done.
+    args: /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py
+    [2017-12-10 10:58:50,452] p33898 {/Users/blyth/opticks/ana/nload.py:44} WARNING - np_load path_:$TMP/InterpolationTest/GBndLib/GBndLib.npy path:/tmp/blyth/opticks/InterpolationTest/GBndLib/GBndLib.npy DOES NOT EXIST 
+    [2017-12-10 10:58:50,452] p33898 {/Users/blyth/opticks/ana/nload.py:44} WARNING - np_load path_:$TMP/InterpolationTest/GBndLib/GBndLibOptical.npy path:/tmp/blyth/opticks/InterpolationTest/GBndLib/GBndLibOptical.npy DOES NOT EXIST 
+    [2017-12-10 10:58:50,452] p33898 {/Users/blyth/opticks/ana/proplib.py:100} WARNING - missing GBndLib data : cannot create blib Proplib
+    [2017-12-10 10:58:50,452] p33898 {/Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py:21} WARNING - failed to load blib GPropLib from base:$TMP/InterpolationTest 
+    2017-12-10 10:58:50.459 INFO  [1419364] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 0 rc : 0
+
+
+Looking for GBndLib.npy in $TMP/InterpolationTest::
+
+
+    2017-12-10 10:29:32.286 INFO  [1410434] [OInterpolationTest::launch@87] OInterpolationTest::launch nb   123 nx   761 ny   984 progname             OInterpolationTest name OInterpolationTest_interpol.npy base $TMP/InterpolationTest
+    2017-12-10 10:29:32.287 INFO  [1410434] [OLaunchTest::init@50] OLaunchTest entry   0 width       1 height       1 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-12-10 10:29:32.287 INFO  [1410434] [OLaunchTest::launch@61] OLaunchTest entry   0 width     761 height     123 ptx                          OInterpolationTest.cu.ptx prog                                 OInterpolationTest
+    2017-12-10 10:29:32.287 INFO  [1410434] [OContext::close@208] OContext::close numEntryPoint 1
+    2017-12-10 10:29:32.287 INFO  [1410434] [OContext::close@212] OContext::close setEntryPointCount done.
+    2017-12-10 10:29:32.301 INFO  [1410434] [OContext::close@218] OContext::close m_cfg->apply() done.
+    args: /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py", line 17, in <module>
+        blib = PropLib.load_GBndLib(base)
+      File "/Users/blyth/opticks/ana/proplib.py", line 96, in load_GBndLib
+        t = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLib.npy")))
+      File "/opt/local/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/site-packages/numpy/lib/npyio.py", line 369, in load
+        fid = open(file, "rb")
+    IOError: [Errno 2] No such file or directory: '/tmp/blyth/opticks/InterpolationTest/GBndLib/GBndLib.npy'
+    2017-12-10 10:29:35.919 INFO  [1410434] [SSys::run@46] python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py rc_raw : 256 rc : 1
+    2017-12-10 10:29:35.919 WARN  [1410434] [SSys::run@53] SSys::run FAILED with  cmd python /Users/blyth/opticks/optixrap/tests/OInterpolationTest_interpol.py
+    simon:opticks blyth$ 
+    simon:opticks blyth$ 
+
+
+
+ana/proplib.py::
+
+     68 class PropLib(object):
+     ..
+     94     @classmethod
+     95     def load_GBndLib(cls, base):
+     96         t = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLib.npy")))
+     97         o = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLibOptical.npy")))
+     98         blib = cls("GBndLib", data=t, names=os.path.join(base,"GItemList/GBndLib.txt"), optical=o )
+     99         return blib
+
+
+optixrap/tests/OInterpolationTest_interpol.py::
+
+
+
+
+
+::
+
+    delta:ana blyth$ l $TMP/InterpolationTest/
+    total 46816
+    -rw-r--r--  1 blyth  wheel  11981264 Dec 10 10:29 OInterpolationTest_interpol.npy
+    -rw-r--r--  1 blyth  wheel  11981280 Dec  9 19:22 CInterpolationTest_interpol.npy
+    drwxr-xr-x  3 blyth  wheel       102 Dec  5 12:17 GItemList
+    delta:ana blyth$ l /tmp/blyth/opticks/InterpolationTest/GItemList/
+    total 8
+    -rw-r--r--  1 blyth  wheel  3771 Dec 10 10:29 GBndLib.txt
+    delta:ana blyth$ 
+
+
+
+
+
 Oct 2017 : FIXED old chestnut 
 ---------------------------------------
 

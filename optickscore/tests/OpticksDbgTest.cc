@@ -41,7 +41,7 @@ void test_isDbgPhoton_path(int argc, char** argv)
 
 void test_getMaskBuffer(int argc, char** argv)
 {
-    Opticks ok(argc, argv, "--maskindex 1,3,5,7,9");
+    Opticks ok(argc, argv, "--mask 1,3,5,7,9");
     ok.configure();
 
     NPY<unsigned>* msk = ok.getMaskBuffer() ;

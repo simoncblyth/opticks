@@ -38,6 +38,7 @@ import os, logging, numpy as np
 log = logging.getLogger(__name__)
 from opticks.ana.base import opticks_environment, stamp_
 from opticks.ana.dat import Dat
+from opticks.ana.nload import np_load
 
 idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
 
@@ -93,9 +94,14 @@ class PropLib(object):
 
     @classmethod
     def load_GBndLib(cls, base):
-        t = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLib.npy")))
-        o = np.load(os.path.expandvars(os.path.join(base,"GBndLib/GBndLibOptical.npy")))
-        blib = cls("GBndLib", data=t, names=os.path.join(base,"GItemList/GBndLib.txt"), optical=o )
+        t = np_load(base,"GBndLib/GBndLib.npy")
+        o = np_load(base,"GBndLib/GBndLibOptical.npy")
+        if t is None or o is None:
+            log.warning("missing GBndLib data : cannot create blib Proplib")
+            blib = None
+        else:
+            blib = cls("GBndLib", data=t, names=os.path.join(base,"GItemList/GBndLib.txt"), optical=o )
+        pass
         return blib 
 
     def __init__(self, kls="GMaterialLib", data=None, names=None, optical=None):

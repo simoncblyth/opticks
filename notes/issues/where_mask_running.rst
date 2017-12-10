@@ -245,32 +245,4 @@ Apply mask to emitconfig photons, and to the rng inputs.
      15     m_source->GeneratePrimaryVertex(event);
      16 }
 
-    157 void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
-    158 {
-    159     unsigned n = m_tranche->tranche_size(m_gpv_count) ;
-    160     SetNumberOfParticles(n);
-    161     assert( m_num == int(n) );
-    162 
-    163 
-    164     for (G4int i = 0; i < m_num; i++)
-    165     {
-    166         unsigned pho_index = m_tranche->global_index( m_gpv_count,  i) ;
-    167         bool skip = m_mask && !m_ok->isMaskPhoton(pho_index) ;
-    168         if(skip)
-    169         {
-    170              m_mask_skip++ ;
-    171         }
-    172         else
-    173         {
-    174             m_mask_take++ ;
-    175 
-    176             G4PrimaryVertex* vertex = convertPhoton(pho_index);
-    177             evt->AddPrimaryVertex(vertex);
-    178             collectPrimary(vertex);
-    179         }
-    180     }
-    181     m_gpv_count++ ;
-    182 }
-
-
-
+    

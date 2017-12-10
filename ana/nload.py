@@ -30,6 +30,23 @@ def x_(_):
     return p  
 
 
+
+def np_load(base,sub=None,rel=None):
+    """
+    Loads np array, returning None if non-existing 
+    """
+    path_ = os.path.join(*filter(None,[base,sub,rel]))    
+    path = os.path.expandvars(path_)
+
+    if os.path.exists(path):
+        a = np.load(path)
+    else: 
+        log.warning("np_load path_:%s path:%s DOES NOT EXIST " % ( path_, path ))
+        a = None 
+    pass
+    return a
+
+
 txt_ = lambda _:np.loadtxt(StringIO(_))
 
 

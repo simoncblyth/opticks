@@ -3,6 +3,7 @@
 import os,sys, numpy as np, logging
 from opticks.ana.base import opticks_main
 from opticks.ana.proplib import PropLib
+from opticks.ana.nload import np_load
 
 log = logging.getLogger(__name__)
 
@@ -15,6 +16,12 @@ if __name__ == '__main__':
 
     base = "$TMP/InterpolationTest"
     blib = PropLib.load_GBndLib(base)
+
+    if blib is None:
+        log.warning("failed to load blib GPropLib from base:%s " % base )
+        sys.exit(0) 
+    pass
+
     names = blib.names
 
     t = blib.data # boundary texture data

@@ -58,9 +58,6 @@ CInputPhotonSource::CInputPhotonSource(Opticks* ok, NPY<float>* input_photons, G
     m_tranche(new STranche(m_numPhotons,m_numPhotonsPerG4Event)),
     m_primary(NPY<float>::make(0,4,4)),
     m_gpv_count(0)
-   // m_mask(m_ok->isMaskEnabled()),  // --mask 
-   // m_mask_skip(0),
-   // m_mask_take(0) 
 {
     setParticle("opticalphoton");
 }
@@ -167,7 +164,6 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
               << " n " << n 
                ;
 
-
 	for (G4int i = 0; i < m_num; i++) 
     {
         unsigned pho_index = m_tranche->global_index( m_gpv_count,  i) ;
@@ -175,26 +171,8 @@ void CInputPhotonSource::GeneratePrimaryVertex(G4Event *evt)
         G4PrimaryVertex* vertex = convertPhoton(pho_index); 
         // just straight convert of the photon pulled out the buffer
 
-
         evt->AddPrimaryVertex(vertex);
         collectPrimary(vertex);
-
-
-/*
-     // masking is now done earlier
-        bool skip = m_mask && !m_ok->isMaskPhoton(pho_index) ; 
-        if(skip)
-        {
-             m_mask_skip++ ;   
-        }
-        else
-        {
-            m_mask_take++ ;   
-        }
-*/
-
-
-
 	}
     m_gpv_count++ ; 
 }
@@ -204,9 +182,6 @@ std::string CInputPhotonSource::desc() const
 {
     std::stringstream ss ; 
     ss << "CInputPhotonSource"
-       //<< " mask " << m_mask 
-       //<< " mask_take " << m_mask_take
-       //<< " mask_skip " << m_mask_skip
        ;
     return ss.str();
 }

@@ -631,9 +631,10 @@ void OpticksCfg<Listener>::init()
 
    m_desc.add_options()
        ("mask",     boost::program_options::value<std::string>(&m_mask), 
-                    "comma delimited list of photon indices specifying apply mask selection"
-                    " see OpticksDbg, CInputPhotonSource, CRandomEngine") ;
-
+                    "comma delimited list of photon indices specifying mask selection to apply to both simulations"
+                    "see OpticksDbg, CInputPhotonSource, CRandomEngine"
+                    "notes/issues/where_mask_running.rst "
+                 );
 
 
    m_desc.add_options()
