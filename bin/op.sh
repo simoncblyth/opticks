@@ -701,6 +701,41 @@ TODO: work out way of passing commandline args into Visual Studio
 EOM
 }
 
+
+op-lldb-update()
+{
+   local msg="=== $FUNCNAME :" 
+   if [ -n "${OPTICKS_DBG}" -a -n "${OPTICKS_LLDB_SOURCE}" ] ; then  
+      echo $msg Updating OPTICKS_LLDB_SOURCE : ${OPTICKS_LLDB_SOURCE}
+      echo "run" > ${OPTICKS_LLDB_SOURCE}.autorun
+      cfg4lldb.py > ${OPTICKS_LLDB_SOURCE}
+   fi 
+}
+
+op-lldb-dump()
+{
+   local msg="=== $FUNCNAME :" 
+   if [ -n "${OPTICKS_DBG}" -a -n "${OPTICKS_LLDB_SOURCE}" -a -f "${OPTICKS_LLDB_SOURCE}" ]; then 
+        echo $msg Active OPTICKS_LLDB_SOURCE : ${OPTICKS_LLDB_SOURCE}
+        ls -l "${OPTICKS_LLDB_SOURCE}"
+        cat "${OPTICKS_LLDB_SOURCE}"
+   fi   
+}
+
+op-lldb-runline()
+{ 
+   if [ -n "${OPTICKS_LLDB_SOURCE}" -a -f ${OPTICKS_LLDB_SOURCE} ] ; then 
+      #echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -s ${OPTICKS_LLDB_SOURCE}.autorun -- ${OPTICKS_ARGS} 
+      # autorun manages to launch the process but output does not arrive in lldb console, 
+      # and seemingly input doesnt get to the the app
+      echo lldb -f ${OPTICKS_BINARY} -s ${OPTICKS_LLDB_SOURCE} -- ${OPTICKS_ARGS} 
+   else
+      echo lldb -f ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} 
+   fi 
+}
+
+
+
 op-runline()
 {
    local runline
@@ -708,7 +743,7 @@ op-runline()
       runline="python ${OPTICKS_BINARY} ${OPTICKS_ARGS} "
    elif [ "${OPTICKS_DBG}" == "1" ]; then 
       case $(uname) in
-          Darwin) runline="lldb ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;;
+          Darwin) runline=$(op-lldb-runline) ;;
            MING*) runline="     ${OPTICKS_BINARY} -- ${OPTICKS_ARGS} " ;; 
                *) runline="gdb  --args ${OPTICKS_BINARY} ${OPTICKS_ARGS} " ;;
       esac
@@ -751,6 +786,8 @@ op-ls()
 #opticks-
 op-cmdline-parse
 
+op-lldb-update
+
 runline=$(op-runline)
 
 
@@ -779,6 +816,8 @@ else
 
    op-ls
    #op-malloc 
+
+   op-lldb-dump
 
    if [ -n "$OPTICKS_QUIET" ]; then 
        >&2 echo proceeding.. : $runline

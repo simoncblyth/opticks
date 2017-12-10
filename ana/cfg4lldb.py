@@ -1,6 +1,54 @@
 #!/usr/bin/env python
 """
-See
+cfg4lldb.py
+=============
+
+Caution with the PREFIXd comment strings in this
+file, they are parsed by this file to extract the 
+lldb startup command to define breakpoints.
+
+Using lldb breakpoint python scripting
+---------------------------------------
+
+::
+
+    unset OPTICKS_LLDB_SOURCE
+    export OPTICKS_LLDB_SOURCE=/tmp/g4lldb.txt  
+
+        # eg put these lines into ~/.bash_profile
+        # toggle commenting the export to switch on/off
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 -D
+
+        # normal debug launching, this will: 
+        #
+        # 1. update the breakpoint setup, via parsing this file
+        # 2. source the commands on starting lldb 
+
+
+
+Automated breakpoint scripting
+---------------------------------
+
+The below is done on every op.sh launch with -D option
+and when envvar OPTICKS_LLDB_SOURCE is defined.
+
+::
+
+    delta:~ blyth$ cfg4lldb.py 
+    # generated from-and-by /Users/blyth/opticks/ana/cfg4lldb.py 
+    command script import opticks.ana.cfg4lldb
+    br set -f CRandomEngine.cc -l 210
+    br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_210
+    br set -f G4TrackingManager.cc -l 131
+    br com add 2 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131
+
+
+
+
+Background on lldb python scripting
+-----------------------------------
+
     (lldb) help br com add
 
     (lldb) script
@@ -9,28 +57,23 @@ See
     >>> help(lldb.SBValue)
 
 
+NOW AUTOMATED : Connecting the handlers
+--------------------------------------------
+
+
 Add the handler::
 
-    (lldb) command script import opticks.cfg4.g4lldb
-             ## put into ~/.lldbinit to avoid having to repeat this
+    (*lldb*) command script import opticks.ana.cfg4lldb
+        ## formerly put into ~/.lldbinit 
 
     (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
-             ## create pending breakpoint
+        ## create pending breakpoint
 
-    (lldb) br com  add 1 -F opticks.cfg4.g4lldb.brk    
-             ## add command to pending breakpoint 
-
-
-Run this script to update breakpoint setup commands, parsed 
-from *lldb* lines in the comments of this script::
-
-    ~/opticks/cfg4/g4lldb.py > /tmp/g4lldb.txt && cat /tmp/g4lldb.txt
-
-    (lldb) command source /tmp/g4lldb.txt
-
-
+    (lldb) br com  add 1 -F opticks.ana.cfg4lldb
+        ## add command to pending breakpoint 
 
 """
+PREFIX = "    (*lldb*)"
 
 import os, sys, logging
 from collections import defaultdict, OrderedDict
@@ -42,6 +85,7 @@ FMT = "// %80s : %s "
 COUNT = defaultdict(lambda:0)
 
 REGISTER = {}
+INSTANCE = defaultdict(lambda:[])
  
 class QDict(OrderedDict):
 
@@ -55,13 +99,26 @@ class QDict(OrderedDict):
         COUNT[name] += 1 
         return tag
 
+    @classmethod
+    def Dump(cls):
+        for func, ls in INSTANCE.items():
+            print FMT % ( func, len(ls) )
+        pass
+
     def __init__(self,  this, pfx, func=None, label=""):
         OrderedDict.__init__(self)
 
+        tag = self.Tag(func) 
+
         self.this = this
         self.pfx = pfx
-        self.tag = self.Tag(func)
+        self.tag = tag
         self.label = label
+
+        global INSTANCE
+        if func is not None:
+            INSTANCE[func].append(self)         
+        pass
 
         if self.MEMBERS is None:
             return
@@ -113,13 +170,18 @@ class G4double(QDict):
     def __repr__(self):
         return " %8.3f " % float(self.this.GetValue())
     
-      
+
+class G4String(QDict):
+    BRIEF = True
+    MEMBERS = None
+    def __repr__(self):
+        return " %s " % self.this.GetValue()
+       
 class Enum(QDict):
     BRIEF = True
     MEMBERS = None
     def __repr__(self):
         return " %s " % self.this.GetValue()
-
 
 class G4StepPoint(QDict):
     MEMBERS = "fPosition fGlobalTime fMomentumDirection fPolarization fVelocity"
@@ -134,7 +196,11 @@ class G4TrackingManager(QDict):
     MEMBERS = "fpSteppingManager"
 
 class G4VProcess(QDict):
+    #BRIEF = True
     MEMBERS = "theProcessName" 
+    #def __repr__(self):
+    #    return FMT % (self.tag, self["theProcessName"].GetValue() )
+
 
 class CRandomEngine(QDict):
     MEMBERS = "m_flat m_current_record_flat_count" 
@@ -156,6 +222,7 @@ REGISTER["fGlobalTime"] = G4double
 REGISTER["fVelocity"] = G4double
 REGISTER["PhysicalStep"] = G4double
 REGISTER["fStepStatus"] = Enum
+#REGISTER["theProcessName"] = G4String
 
 
 
@@ -163,7 +230,7 @@ REGISTER["fStepStatus"] = Enum
 def CRandomEngine_cc_210(frame, bp_loc, sess):
     """   
     (*lldb*) br set -f CRandomEngine.cc -l 210
-    (*lldb*) br com add 1 -F opticks.cfg4.g4lldb.CRandomEngine_cc_210
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_210
     """
     engine = CRandomEngine(frame.FindVariable("this") , "this", func=sys._getframe().f_code.co_name, label="-") 
     print engine
@@ -174,7 +241,7 @@ def CRandomEngine_cc_210(frame, bp_loc, sess):
 def G4TrackingManager_cc_131(frame, bp_loc, sess):
     """
     (*lldb*) br set -f G4TrackingManager.cc -l 131
-    (*lldb*) br com add 1 -F opticks.cfg4.g4lldb.G4TrackingManager_cc_131
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131
 
     ::
 
@@ -209,12 +276,15 @@ def G4TrackingManager_cc_131(frame, bp_loc, sess):
     """
     trackMgr = G4TrackingManager(frame.FindVariable("this") , "this", func=sys._getframe().f_code.co_name, label="after-Stepping") 
     print trackMgr
+
+    QDict.Dump() 
+
     return False
 
 def G4SteppingManager_cc_191(frame, bp_loc, sess):
     """
     (lldb) b -f G4SteppingManager.cc -l 191
-    (lldb) br com add 1 -F opticks.cfg4.g4lldb.G4SteppingManager_cc_191
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager_cc_191
 
     g4-;g4-cls G4SteppingManager 
     """
@@ -240,7 +310,7 @@ def G4SteppingManager2_cc_181_DefinePhysicalStepLength(frame, bp_loc, sess):
 
             ## inside process loop after PostStepGPIL call giving physIntLength and fCondition
 
-        (lldb) br com  add 1 -F opticks.cfg4.g4lldb.G4SteppingManager2_cc_181_DefinePhysicalStepLength
+        (lldb) br com  add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_181_DefinePhysicalStepLength
 
 
     Seems can access member vars, but so far not general stack items, other than "this" ?
@@ -274,7 +344,7 @@ def py_G4VDiscreteProcess_PostStepGetPhysicalInteractionLength(frame, bp_loc, se
     ::
 
         b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
-        br com  add 1 -F opticks.cfg4.g4lldb.py_G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
+        br com  add 1 -F opticks.ana.cfg4lldb.py_G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
 
     """
     name = "py_G4VDiscreteProcess_PostStepGetPhysicalInteractionLength"
@@ -289,7 +359,7 @@ def py_G4VProcess_ResetNumberOfInteractionLengthLeft(frame, bp_loc, sess):
     """
 
         b G4VProcess::ResetNumberOfInteractionLengthLeft
-        br com  add 1 -F opticks.cfg4.g4lldb.py_G4VProcess_ResetNumberOfInteractionLengthLeft    
+        br com  add 1 -F opticks.ana.cfg4lldb.py_G4VProcess_ResetNumberOfInteractionLengthLeft    
  
     """
     name = "py_G4VProcess_ResetNumberOfInteractionLengthLeft"
@@ -313,14 +383,13 @@ def test_G4StepPoint():
 
 
 class Parse(dict):
-    PREFIX = "    (*lldb*)"
     BR_SET = "br set"
     BR_COM_ADD_1_ = "br com add 1 "
     def __init__(self):
         dict.__init__(self)
         self["N"] = 0 
-        lines = filter(lambda l:l.startswith(self.PREFIX), file(__file__).readlines())
-        lines = map(lambda l:l[len(self.PREFIX):].rstrip().lstrip(), lines)
+        lines = filter(lambda l:l.startswith(PREFIX), file(__file__).readlines())
+        lines = map(lambda l:l[len(PREFIX):].rstrip().lstrip(), lines)
         self.lines = []
         for line in lines:
             is_br_set = line.startswith(self.BR_SET)
@@ -332,11 +401,18 @@ class Parse(dict):
             self.lines.append( line % self )
         pass
     def __repr__(self):
-        hdr1 = "# generated from-and-by %s " % ( os.path.abspath(__file__) )  
-        hdr2 = "# command source /tmp/g4lldb.txt "
-        return "\n".join([hdr1,hdr2]+self.lines)
+        hdr = "# generated from-and-by %s " % ( os.path.abspath(__file__) )  
+        return "\n".join([hdr]+self.lines)
        
 
+
+def Tail(frame, bp_loc, sess):
+    """   
+    (lldb) r
+    ##  doesnt work and leaves a zombie when try to interrupt
+    """
+    pass
+ 
  
 if __name__ == '__main__':
     print Parse()
