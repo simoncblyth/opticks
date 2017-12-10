@@ -321,7 +321,7 @@ void OpNovicePhysicsList::ConstructOpDYB()
 #ifdef USE_POWER_THIRD_RAYLEIGH
     DsG4OpRayleigh* rayleigh = m_useRayleigh  ? new DsG4OpRayleigh() : NULL ; 
 #else
-    OpRayleigh* rayleigh = m_useRayleigh  ? new OpRayleigh() : NULL ; 
+    OpRayleigh* rayleigh = m_useRayleigh  ? new OpRayleigh(m_g4) : NULL ; 
 #endif
 
     //G4OpBoundaryProcess* boundproc = new G4OpBoundaryProcess();

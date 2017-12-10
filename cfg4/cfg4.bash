@@ -380,6 +380,15 @@ cfg4-gentest(){ cfg4-tcd ; opticks-gentest ${1:-CExample} $(cfg4-tag) ; }
 cfg4-txt(){     vi $(cfg4-sdir)/CMakeLists.txt $(cfg4-tdir)/CMakeLists.txt ; } 
 
 
+cfg4-g4lldb-(){ echo /tmp/g4lldb.txt ; }
+
+cfg4-g4lldb()
+{
+    local path=$($FUNCNAME-)
+    $OPTICKS_HOME/cfg4/g4lldb.py > $path  
+    cat $path
+
+}
 
 
 ############### old funcs predating SUPERBUILD approach  #################
@@ -397,5 +406,8 @@ cfg4-dpib()
 
    ggv-;ggv-pmt-test --cdetector --export --exportconfig $path
 }
+
+
+
 
 

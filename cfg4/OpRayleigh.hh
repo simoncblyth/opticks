@@ -77,6 +77,8 @@
 // Class Definition
 /////////////////////
 
+class CG4 ; 
+struct CG4Ctx ; 
 
 #include "CFG4_API_EXPORT.hh"
 #include "CFG4_HEAD.hh"
@@ -89,7 +91,7 @@ public:
         // Constructors and Destructor
         ////////////////////////////////
  
-        OpRayleigh(const G4String& processName = "OpRayleigh",
+        OpRayleigh(CG4* g4, const G4String& processName = "OpRayleigh",
                               G4ProcessType type = fOptical);
 	~OpRayleigh();
 
@@ -164,6 +166,9 @@ protected:
         //  purposes).
 
 private:
+         CG4*          m_g4 ;
+         const CG4Ctx& m_ctx ;
+          
 };
 
 #include "CFG4_TAIL.hh"

@@ -1,13 +1,15 @@
 random_alignment_iterating
 ============================
 
-RNG aligned comparisons
--------------------------
 
-::
+suspicion
+-----------
 
-    tboolean-;tboolean-box --okg4 --align --alignlevel 0 -D
-         ## --alignlevel 0 is default
+At BR Geant4 comes up with a StepTooSmall turnaround, I suspect this is 
+killing the RNG alignment. 
+
+
+
 
 
 maligned
@@ -16,6 +18,56 @@ maligned
 ::
 
     tboolean-;tboolean-box --okg4 --align --pindex 1230
+
+        RNG aligned bi-simulation with dumping of slot 1230 
+        from the full sample of 100,000 emitconfig photons
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0
+
+        RNG aligned bi-simulation of a single photon slot 1230
+
+        Masking is applied to:
+
+        * emitconfig input photons used by both simulations 
+        * curand rng_states used by Opticks oxrap/cu/generate.cu
+        * precooked RNG sequences used by Geant4 NonRandomEngine cfg4/CRandomEngine
+
+        This masking makes the singly simulated photons in Opticks and Geant4 
+        exactly correspond to what is obtained from the full run.
+     
+
+
+g4lldb.py dumping
+-------------------
+
+See :doc:`stepping_process_review`
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 -D
+
+        (lldb) b -f G4SteppingManager2.cc -l 181   # inside process loop after PostStepGPIL call giving physIntLength and fCondition
+        (lldb) br com  add 1 -F opticks.cfg4.g4lldb.py_G4SteppingManager_DefinePhysicalStepLength 
+
+        g4-;g4-cls G4SteppingManager2
+
+        (lldb) b -f G4SteppingManager2.cc -l 225   # decision point 
+
+
+::
+
+    224 
+    225    if (fPostStepDoItProcTriggered<MAXofPostStepLoops) {
+    226        if ((*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] ==
+    227        InActivated) {
+    228        (*fSelectedPostStepDoItVector)[fPostStepDoItProcTriggered] =
+    229            NotForced;
+    230        }
+    231    }
+    232 
+
+
+
 
 
 where mask 
@@ -30,6 +82,30 @@ to be applied to the input photons and aligned rng.
 
 why did Opticks scatter but G4 did not ?
 -------------------------------------------
+
+
+::
+
+    tboolean-;tboolean-box-ip
+
+    In [1]: ab.b.rpost_(slice(0,3))
+    Out[1]: 
+    A()sliced
+    A([[[     -37.8781,   11.8231, -449.8989,    0.2002],
+            [ -37.8781,   11.8231,  -99.9944,    1.3672],
+            [ -37.8781,   11.8231, -449.9952,    2.5349]]])
+
+    In [2]: ab.a.rpost_(slice(0,4))
+    Out[2]: 
+    A()sliced
+    A([[[     -37.8781,   11.8231, -449.8989,    0.2002],
+            [ -37.8781,   11.8231,  -99.9944,    1.3672],
+            [ -37.8781,   11.8231, -253.2135,    1.8781],     ## scatter point some-way back from the reflect 
+            [ 241.5831,  -92.4518, -449.9952,    3.0702]]])
+
+
+
+
 
 ::
 

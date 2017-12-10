@@ -81,7 +81,10 @@
 #include "G4SystemOfUnits.hh"
 #include "G4OpProcessSubType.hh"
 
+
 #include "CFG4_POP.hh"
+#include "CG4.hh"
+#include "CG4Ctx.hh"
 
 #include "PLOG.hh"
 
@@ -89,8 +92,11 @@
 //#define SCB_SC_DEBUG 1
 
 
-OpRayleigh::OpRayleigh(const G4String& processName, G4ProcessType type)
-           : G4VDiscreteProcess(processName, type)
+OpRayleigh::OpRayleigh(CG4* g4, const G4String& processName, G4ProcessType type)
+    : 
+    G4VDiscreteProcess(processName, type),
+    m_g4(g4),
+    m_ctx(g4->getCtx())
 {
         SetProcessSubType(fOpRayleigh);
 
@@ -300,8 +306,11 @@ G4double OpRayleigh::GetMeanFreePath(const G4Track& aTrack,
 /*
    LOG(info) << "WITH_ALIGN_DEV"
              << " rsLength " << rsLength
+             << " ctx._print " << m_ctx._print 
              ;
 */
+   
+
 #endif
 
 

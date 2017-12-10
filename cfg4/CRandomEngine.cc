@@ -203,7 +203,7 @@ double CRandomEngine::flat()
 
     m_flat =  m_engine->flat() ;  
 
-    if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+    //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
 
     m_current_record_flat_count++ ; 
  
