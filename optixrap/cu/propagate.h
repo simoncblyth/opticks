@@ -56,6 +56,19 @@ Returns:
 
 */
 
+__device__ int propagate_to_boundary_burn(curandState &rng)
+{
+    float u_boundary_burn = curand_uniform(&rng) ;
+    float u_scattering_burn = curand_uniform(&rng) ;
+    float u_absorption_burn = curand_uniform(&rng) ;
+#ifdef WITH_ALIGN_DEV_DEBUG
+    rtPrintf("propagate_to_boundary_burn  u_boundary_burn:%10.4f \n", u_boundary_burn );
+    rtPrintf("propagate_to_boundary_burn  u_scattering_burn:%10.4f \n", u_scattering_burn );
+    rtPrintf("propagate_to_boundary_burn  u_absorption_burn:%10.4f \n", u_absorption_burn);
+#endif
+}
+
+
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 {
     //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)

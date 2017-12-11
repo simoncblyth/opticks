@@ -7,6 +7,13 @@ Caution with the PREFIXd comment strings in this
 file, they are parsed by this file to extract the 
 lldb startup command to define breakpoints.
 
+
+TODO
+--------
+
+* simplify handling of atomic values, perhaps with V wrapper
+
+
 Using lldb breakpoint python scripting
 ---------------------------------------
 
@@ -128,7 +135,7 @@ Add the handler::
 
 """
 
-import os, sys, logging, re
+import os, sys, logging, re, fnmatch
 from collections import defaultdict, OrderedDict
 
 log = logging.getLogger(__name__)
@@ -159,6 +166,45 @@ class Parse(dict):
     PREFIX = "    (*lldb*)"
     BR_SET = "br set"
     BR_COM_ADD_1_ = "br com add 1 "
+    PTN = re.compile("-f (\S*) -l \%\((\S*)\)")
+
+    @classmethod
+    def resolve_path(cls, patn):
+        base = os.environ["OPTICKS_HOME"]
+        paths = []
+        for path, dirs, files in os.walk(os.path.abspath(base)):
+            for filename in fnmatch.filter(files, patn):
+                paths.append(os.path.join(path, filename))
+            pass
+        pass
+        assert len(paths) == 1
+        return paths[0]
+
+    @classmethod
+    def resolve_bpline( cls, fnptn, mkr ):
+        """
+        Finds the source and looks for the marker, to give the lineno
+        of the breakpoint.  Remember to recompile after changing source!
+        """
+        path = cls.resolve_path(fnptn)
+        marker = "// (*lldb*) %s" % mkr
+        #print "marker:[%s]" % marker
+        nls = filter( lambda nl:nl[1].find(marker) > -1, enumerate(file(path).readlines()) )
+        l1 = int(nls[0][0]) + 1 if len(nls) == 1 else None
+        return l1 
+
+    @classmethod
+    def resolve_mkr(cls, line):
+        """
+        br set -f CRandomEngine.cc -l %(flatExit)s
+        """
+        match = cls.PTN.search(line)
+        assert match, "line fails to match : [%s] " % line 
+        fnm = match.group(1)
+        mkr = match.group(2)
+        lno = cls.resolve_bpline(fnm, mkr)
+        return fnm,mkr,lno    
+                    
 
     def __init__(self):
         dict.__init__(self)
@@ -170,14 +216,25 @@ class Parse(dict):
             is_br_set = line.startswith(self.BR_SET)
             is_br_com_add = line.startswith(self.BR_COM_ADD_1_)
             #print "# is_br_set:%d is_br_com_add:%d  : %s " % ( is_br_set, is_br_com_add, line )
-            if is_br_set:self["N"] += 1 
-            if is_br_com_add:line = line.replace(" 1 ", " %(N)s ")
+            if is_br_set:
+                self["N"] += 1 
+                if line.find("%(") > -1:
+                    fnm,mkr,lno = self.resolve_mkr(line)
+                    self[mkr] = lno
+                pass
+            if is_br_com_add:
+                line = line.replace(" 1 ", " %(N)s ")
             pass
             self.lines.append( line % self )
         pass
     def __repr__(self):
         hdr = "# generated from-and-by %s " % ( os.path.abspath(__file__) )  
         return "\n".join([hdr]+self.lines)
+
+
+
+
+
      
 
  
@@ -310,6 +367,14 @@ class size_t(QDict):
     MEMBERS = None
     def __repr__(self):
         return " %d " % int(self.this.GetValue())
+
+
+class G4int(QDict):
+    BRIEF = True
+    MEMBERS = None
+    def __repr__(self):
+        return " %d " % int(self.this.GetValue())
+ 
  
 class G4bool(QDict):
     BRIEF = True
@@ -337,15 +402,29 @@ class Enum(QDict):
     def __repr__(self):
         return " %s " % self.this.GetValue()
 
+
 class G4StepPoint(QDict):
-    MEMBERS = "fPosition:G4ThreeVector fGlobalTime:G4double fMomentumDirection:G4ThreeVector fPolarization:G4ThreeVector fVelocity:G4double"
+    MEMBERS = r"""
+    fPosition:G4ThreeVector 
+    fGlobalTime:G4double 
+    fMomentumDirection:G4ThreeVector 
+    fPolarization:G4ThreeVector 
+    fVelocity:G4double
+    """
 
 class G4Step(QDict):
-    MEMBERS = "fpPreStepPoint:G4StepPoint fpPostStepPoint:G4StepPoint"
+    MEMBERS = r"""
+    fpPreStepPoint:G4StepPoint 
+    fpPostStepPoint:G4StepPoint
+    """
 
 class G4SteppingManager(QDict):
-    MEMBERS = "fStep:G4Step fStepStatus:Enum PhysicalStep:G4double fCurrentProcess:G4VProcess"
-
+    MEMBERS = r"""
+    fStep:G4Step 
+    fStepStatus:Enum 
+    PhysicalStep:G4double 
+    fCurrentProcess:G4VProcess
+    """
 
 class G4TrackingManager(QDict):
     MEMBERS = r"""
@@ -366,23 +445,31 @@ class G4TrackingManager(QDict):
     fpSteppingManager:G4SteppingManager
     """
 
-
-
 class G4VProcess(QDict):
-    MEMBERS = "theProcessName:G4String" 
-
+    MEMBERS = r"""
+    theProcessName:G4String
+    """
 
 class CRandomEngine(QDict):
-    MEMBERS = "m_flat m_current_record_flat_count" 
+    MEMBERS = r"""
+    m_flat 
+    m_current_record_flat_count
+    m_current_step_flat_count
+    """ 
 
     def __repr__(self):
-        brief = "%15s %s " % ( self["m_flat"].GetValue(), self["m_current_record_flat_count"].GetValue())
+        brief = " %3d %3d  : %s " % ( 
+                                  int(self["m_current_record_flat_count"].GetValue()),
+                                  int(self["m_current_step_flat_count"].GetValue()),
+                                  self["m_flat"].GetValue()
+                                )
         return FMT % (self.tag, brief)
 
 
 REGISTER["G4ThreeVector"] = G4ThreeVector
 REGISTER["G4double"] = G4double
 REGISTER["G4bool"] = G4bool
+REGISTER["G4int"] = G4int
 REGISTER["size_t"] = size_t
 REGISTER["G4String"] = G4String
 REGISTER["Enum"] = Enum
@@ -394,10 +481,11 @@ REGISTER["G4VProcess"] = G4VProcess
 REGISTER["CRandomEngine"] = CRandomEngine
 
 
-def CRandomEngine_cc_210(frame, bp_loc, sess):
+
+def CRandomEngine_cc_flatExit_(frame, bp_loc, sess):
     """   
-    (*lldb*) br set -f CRandomEngine.cc -l 210
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_210
+    (*lldb*) br set -f CRandomEngine.cc -l %(flatExit)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_flatExit_
     """
     engine = CRandomEngine(frame.FindVariable("this") , "this", sys._getframe() ) 
     print engine
@@ -507,12 +595,56 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
 
     (*lldb*) br set -f G4SteppingManager2.cc -l 270
     (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_270_
+
+    g4-;g4-cls G4SteppingManager
     """
     inst = G4SteppingManager2_cc_270(frame.FindVariable("this"), "this", sys._getframe() )
     print inst
     return False
 
 
+
+class DsG4OpBoundaryProcess_cc_736(QDict):
+    MEMBERS = r"""
+    .OldMomentum:G4ThreeVector
+    .NewMomentum:G4ThreeVector
+    """
+
+def DsG4OpBoundaryProcess_cc_736_(frame, bp_loc, sess):
+    """
+    OpBoundary.PostStepDoIt return 
+
+    (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l 736
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_736_
+
+    opticks-;opticks-cls DsG4OpBoundaryProcess
+     
+    """
+    inst = DsG4OpBoundaryProcess_cc_736(frame.FindVariable("this"), "this", sys._getframe() )
+    print inst
+    return False
+
+
+
+class G4Navigator_ComputeStep_1181(QDict):
+    MEMBERS = r"""
+    .fNumberZeroSteps:G4int
+    .fLastStepWasZero:G4bool
+    """  
+
+def G4Navigator_ComputeStep_1181_(frame, bp_loc, sess):
+    """
+    ComputeStep return : NOT WORKING : MISSING THIS 
+
+    (lldb) br set -f G4Navigator.cc -l 1181
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4Navigator_ComputeStep_1181_
+
+    """ 
+    inst = G4Navigator_ComputeStep_1181(frame.FindVariable("this"), "this", sys._getframe() )
+    print inst
+    return True
+
+    
 
 class G4Transportation_cc_517(QDict):
     MEMBERS = r"""
@@ -523,11 +655,14 @@ class G4Transportation_cc_517(QDict):
     .fFirstStepInVolume:G4bool
     .fLastStepInVolume:G4bool
     .fMomentumChanged:G4bool
+    .fShortStepOptimisation:G4bool
     .fTransportEndPosition:G4ThreeVector
     .fTransportEndMomentumDir:G4ThreeVector
     .fEndPointDistance:G4double
     .fParticleChange.thePositionChange:G4ThreeVector
     .fParticleChange.theMomentumDirectionChange:G4ThreeVector
+    .fLinearNavigator.fNumberZeroSteps:G4int
+    .fLinearNavigator.fLastStepWasZero:G4bool
     """
 
 def G4Transportation_cc_517_(frame, bp_loc, sess):
@@ -536,6 +671,8 @@ def G4Transportation_cc_517_(frame, bp_loc, sess):
 
     (*lldb*) br set -f G4Transportation.cc -l 517
     (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4Transportation_cc_517_
+
+    g4-;g4-cls G4Transportation
  
 
     Find available variables, members with::
@@ -550,7 +687,7 @@ def G4Transportation_cc_517_(frame, bp_loc, sess):
     """
     inst = G4Transportation_cc_517(frame.FindVariable("this"), "this", sys._getframe() )
     print inst
-    return True
+    return False
 
 
 
@@ -628,15 +765,13 @@ def test_Introspect(pframe):
     print "func:[%s]" % func
     print "label:[%s]" % label
 
-  
-
+ 
 def test_Quote():
     """
 
     The exmaple docstring first line
     The exmaple docstring
     """
-
     test_Introspect(sys._getframe())
 
     s = "(G4String) theProcessName = (std::__1::string = \"OpBoundary\")"
@@ -645,9 +780,13 @@ def test_Quote():
     assert q == "OpBoundary"
 
 
+def test_resolve_bp():
+    print resolve_bp("CRandomEngine.cc", "flatExit")
+
 if __name__ == '__main__':
     print Parse()
     #test_Quote()
+    #test_resolve_bp()
 
 
 

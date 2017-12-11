@@ -551,6 +551,7 @@ RT_PROGRAM void generate()
         if(command == CONTINUE) continue ;        // BULK_REEMIT/BULK_SCATTER
         // PASS : survivors will go on to pick up one of the below flags, 
 
+
         if(s.optical.x > 0 )       // x/y/z/w:index/type/finish/value
         {
             command = propagate_at_surface(p, s, rng);

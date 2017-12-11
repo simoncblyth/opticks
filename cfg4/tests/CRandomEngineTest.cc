@@ -40,9 +40,15 @@ struct CRandomEngineTest
         LOG(info) << "record_id " << record_id ; 
  
         for(int i=0 ; i < 10 ; i++)
-        {
-            std::cout << G4UniformRand() << std::endl  ;  
-        }    
+            std::cout << std::setw(5) << i << " : " << G4UniformRand() << std::endl  ;  
+
+        _engine.jump(-5) ;
+
+        for(int i=0 ; i < 10 ; i++)
+            std::cout << std::setw(5) << i << " : " << G4UniformRand() << std::endl  ;  
+
+
+ 
     }
 
     CG4Ctx&       _ctx  ; 

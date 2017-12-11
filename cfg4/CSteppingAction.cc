@@ -128,7 +128,7 @@ bool CSteppingAction::setStep(const G4Step* step)
 {
     int noZeroSteps = -1 ;
     int severity = m_nav->SeverityOfZeroStepping( &noZeroSteps );
-    if(noZeroSteps > 1)
+    if(noZeroSteps > 0)
     LOG(info) 
               << " noZeroSteps " << noZeroSteps
               << " severity " << severity
@@ -138,7 +138,7 @@ bool CSteppingAction::setStep(const G4Step* step)
 
     bool done = false ; 
 
-    m_ctx.setStep(step);
+    m_ctx.setStep(step, noZeroSteps);
  
     if(m_ctx._optical)
     {

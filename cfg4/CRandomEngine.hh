@@ -24,10 +24,10 @@ when the --align option is used.
 
 #include "CLHEP/Random/RandomEngine.h"
 
-namespace CLHEP
-{
-    class NonRandomEngine ; 
-}
+//namespace CLHEP
+//{
+//    class NonRandomEngine ; 
+//}
 
 
 template <typename T> class BLocSeq ; 
@@ -55,8 +55,9 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         void initCurand(); 
         void setupCurandSequence(int record_id);
 
-        bool isNonRan() const ; 
-        bool isDefault() const ; 
+        //bool isNonRan() const ; 
+        //bool isDefault() const ; 
+
         void dump(const char* msg) const ; 
         void dumpFlat(); 
 
@@ -67,6 +68,12 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         double flat() ;  
         double flat_instrumented(const char* file, int line) ;  
         void flatArray (const int size, double* vect);
+
+    public:
+        void setRandomSequence(double* s, int n);
+        void jump(int offset); 
+        double _flat(); 
+
     private:
         CG4*                          m_g4 ; 
         CG4Ctx&                       m_ctx ; 
@@ -81,16 +88,23 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         bool                     m_skipdupe ; 
         BLocSeq<unsigned long long>*  m_locseq ; 
 
-        CLHEP::HepJamesRandom*   m_james ; 
-        CLHEP::NonRandomEngine*  m_nonran ; 
-        CLHEP::HepRandomEngine*  m_engine ; 
+        //CLHEP::HepJamesRandom*   m_james ; 
+        //CLHEP::NonRandomEngine*  m_nonran ; 
+        //CLHEP::HepRandomEngine*  m_engine ; 
+
         NPY<double>*             m_curand ; 
         int                      m_curand_ni ; 
         int                      m_curand_nv ; 
         int                      m_current_record_flat_count ; 
+        int                      m_current_step_flat_count ; 
         double                   m_flat ; 
 
         std::string              m_location ; 
+
+    private:
+       
+        std::vector<double> m_sequence ; 
+        unsigned            m_cursor; 
 
     private:
         void setSeed(long , int) ; 

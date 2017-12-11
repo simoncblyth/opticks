@@ -4,7 +4,7 @@
 #include "PLOG.hh"
 
 #include "Randomize.hh"
-#include "CLHEP/Random/NonRandomEngine.h"
+//#include "CLHEP/Random/NonRandomEngine.h"
 #include "G4String.hh"
 #include "G4VProcess.hh"
 
@@ -46,14 +46,16 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_internal(false),
     m_skipdupe(true),
     m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
-    m_james(new CLHEP::HepJamesRandom()),
-    m_nonran(new CLHEP::NonRandomEngine()),
-    m_engine(m_nonran),
+    //m_james(new CLHEP::HepJamesRandom()),
+    //m_nonran(new CLHEP::NonRandomEngine()),
+    //m_engine(m_nonran),
     m_curand(NPY<double>::load(m_path)),
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
     m_current_record_flat_count(0),
-    m_flat(-1.0)
+    m_current_step_flat_count(0),
+    m_flat(-1.0),
+    m_cursor(0)
 {
     init();
 }
@@ -80,14 +82,12 @@ void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) cons
     }
 }
 
-
 void CRandomEngine::init()
 {
     initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
-    CLHEP::HepRandom::setTheSeed(  m_seed );    // does nothing for NonRandom
+    //CLHEP::HepRandom::setTheSeed(  m_seed );    // does nothing for NonRandom
 }
-
 
 
 void CRandomEngine::initCurand()
@@ -113,32 +113,21 @@ void CRandomEngine::initCurand()
 
 void CRandomEngine::setupCurandSequence(int record_id)
 {
-    assert( isNonRan() ) ; 
-
     assert( record_id > -1 && record_id < m_curand_ni ); 
 
     assert( m_curand_nv > 0 ) ;
 
     double* seq = m_curand->getValues(record_id) ; 
 
-    m_nonran->setRandomSequence( seq, m_curand_nv ) ; 
+    setRandomSequence( seq, m_curand_nv ) ; 
 
     m_current_record_flat_count = 0 ; 
 }
 
 
-bool CRandomEngine::isNonRan() const 
-{
-    return m_engine == m_nonran ; 
-}
-bool CRandomEngine::isDefault() const 
-{
-    return m_engine == m_james ; 
-}
 
 std::string CRandomEngine::desc() const 
 {
-
     std::stringstream rs1_ ; 
     rs1_ <<  m_ctx._record_id  << "." << ( m_ctx._step_id + 1 ) ; 
     std::string rs1 = rs1_.str() ; 
@@ -148,6 +137,7 @@ std::string CRandomEngine::desc() const
        << "CRandomEngine"
        << " rec.stp1 " << std::setw(5) << rs1
        << " crfc " << std::setw(5) << m_current_record_flat_count 
+       << " csfc " << std::setw(5) << m_current_step_flat_count 
        << " loc " << std::setw(50) << m_location 
        ;
 
@@ -198,16 +188,12 @@ double CRandomEngine::flat_instrumented(const char* file, int line)
 double CRandomEngine::flat() 
 { 
     if(!m_internal) m_location = FormLocation();
-
     assert( m_current_record_flat_count < m_curand_nv ); 
-
-    m_flat =  m_engine->flat() ;  
-
+    m_flat =  _flat() ;  
     //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
-
     m_current_record_flat_count++ ; 
- 
-    return m_flat ; 
+    m_current_step_flat_count++ ; 
+    return m_flat ;   // (*lldb*) flatExit
 }
 
 
@@ -234,6 +220,18 @@ void CRandomEngine::dumpFlat()
 
 void CRandomEngine::poststep()
 {
+    if(m_ctx._noZeroSteps > 0)
+    {
+        int backseq = -m_current_step_flat_count ; 
+        LOG(error) << "CRandomEngine::poststep"
+                   << " _noZeroSteps " << m_ctx._noZeroSteps
+                   << " backseq " << backseq
+                   ;
+        jump(backseq);
+    }
+
+    m_current_step_flat_count = 0 ; 
+
     if( m_locseq )
     {
         m_locseq->poststep();
@@ -285,67 +283,59 @@ void CRandomEngine::postpropagate()
 }
 
 
-void CRandomEngine::flatArray(const int size, double* vect) 
+
+
+void CRandomEngine::setRandomSequence(double* s, int n) 
 {
-    for (int i = 0; i < size; ++i) 
-    {
-        vect[i] = flat();
-    }
+    m_sequence.clear();
+    for (int i=0; i<n; i++) m_sequence.push_back(*s++);
+    assert (m_sequence.size() == (unsigned)n);
+    m_cursor = 0;
+}
+
+void CRandomEngine::jump(int offset) 
+{
+    int cursor = m_cursor + offset ; 
+    assert( cursor > -1 && cursor < int(m_sequence.size()) ) ; 
+    m_cursor = cursor ; 
+}
+
+double CRandomEngine::_flat() 
+{
+    assert( m_cursor < m_sequence.size() );
+    double v = m_sequence[m_cursor];
+    m_cursor += 1 ; 
+    return v ; 
 }
 
 
-void CRandomEngine::setSeed(long seed, int dum) 
-{
-    if(isNonRan()) 
-    {
-        LOG(info) << "CRandomEngine::setSeed ignoring " ; 
-        return ;
-    }
 
-    m_engine->setSeed(seed, dum);
+
+
+void CRandomEngine::flatArray(const int, double* ) 
+{
+    assert(0);
+}
+void CRandomEngine::setSeed(long, int ) 
+{
+    assert(0);
 } 
-
-
-void CRandomEngine::setSeeds(const long * seeds, int dum) 
+void CRandomEngine::setSeeds(const long *, int) 
 {
-    if(isNonRan()) 
-    {
-        LOG(info) << "CRandomEngine::setSeeds ignoring " ; 
-        return ;
-    }
-
-    m_engine->setSeeds(seeds, dum);
+    assert(0);
 }
-
-void CRandomEngine::saveStatus( const char * filename ) const 
+void CRandomEngine::saveStatus( const char * ) const 
 {
-    if(isNonRan()) 
-    {
-        LOG(info) << "CRandomEngine::saveStatus ignoring " ; 
-        return ;
-    }
-    m_engine->saveStatus(filename) ; 
-
-}
-        
-void CRandomEngine::restoreStatus( const char * filename)
+    assert(0);
+}       
+void CRandomEngine::restoreStatus( const char * )
 {
-    if(isNonRan()) 
-    {
-        LOG(info) << "CRandomEngine::restoreStatus ignoring " ; 
-        return ;
-    }
-    m_engine->restoreStatus(filename) ; 
+    assert(0);
 }
-
-
 void CRandomEngine::showStatus() const 
 {
-    if(isNonRan()) 
-    {
-        LOG(info) << "CRandomEngine::showStatus ignoring " ; 
-        return ;
-    }
-    m_engine->showStatus() ; 
+    assert(0);
 }
+
+
 

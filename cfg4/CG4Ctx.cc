@@ -105,6 +105,7 @@ void CG4Ctx::init()
 
 
     _step = NULL ; 
+    _noZeroSteps = -1 ; 
     _step_id = -1 ;
     _step_total = 0 ; 
  
@@ -197,9 +198,10 @@ void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTr
 
 
 
-void CG4Ctx::setStep(const G4Step* step) // invoked by CSteppingAction::setStep
+void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) // invoked by CSteppingAction::setStep
 {
     _step = const_cast<G4Step*>(step) ; 
+    _noZeroSteps = noZeroSteps ;  
     _step_id = CTrack::StepId(_track);
     _step_total += 1 ; 
     _track_step_count += 1 ; 

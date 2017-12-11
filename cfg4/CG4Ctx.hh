@@ -79,6 +79,7 @@ struct CFG4_API CG4Ctx
 
     // m_ctx.setStep invoked from CSteppingAction::setStep
     G4Step* _step ; 
+    int _noZeroSteps ; 
     int _step_id ; 
     int _step_total ;
     G4ThreeVector _step_origin ; 
@@ -92,7 +93,7 @@ struct CFG4_API CG4Ctx
     void setEvent(const G4Event* event);
     void setTrack(const G4Track* track);
     void setTrackOptical();
-    void setStep(const G4Step* step);
+    void setStep(const G4Step* step, int noZeroSteps);
     void setStepOptical();
     unsigned  step_limit() const ; 
     unsigned  point_limit() const ; 

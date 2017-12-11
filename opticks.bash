@@ -1327,7 +1327,7 @@ opticks-cls ()
 { 
     opticks-cls- "." $*
 }
-opticks-cls() 
+opticks-cls-() 
 { 
     local iwd=$PWD;
     opticks-scd;
