@@ -2,18 +2,17 @@ random_alignment_iterating
 ============================
 
 
-suspicion
------------
+Smouldering evidence : PhysicalStep-zero/StepTooSmall results in RNG mis-alignment 
+-----------------------------------------------------------------------------------------
 
 At BR Geant4 comes up with a StepTooSmall turnaround, I suspect this is 
 killing the RNG alignment. 
 
+* :doc:`BR_PhysicalStep_zero_misalignment`
 
 
-
-
-maligned
-----------
+full-run and masked-run on single maligned photon track
+----------------------------------------------------------
 
 ::
 
@@ -67,9 +66,6 @@ See :doc:`stepping_process_review`
     232 
 
 
-
-
-
 where mask 
 ------------
 
@@ -77,7 +73,6 @@ Would be handy for debugging to be able to specify an input "where-mask" of indi
 to be applied to the input photons and aligned rng. 
 
 * :doc:`where_mask_running`
-
 
 
 why did Opticks scatter but G4 did not ?

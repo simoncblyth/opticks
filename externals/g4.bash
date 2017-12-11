@@ -421,12 +421,18 @@ g4-cls-(){
    local base=${1:-source}
    local name=${2:-G4Scintillation}
 
+  
    local h=$(find $base -name "$name.h")
    local hh=$(find $base -name "$name.hh")
    local cc=$(find $base -name "$name.cc")
    local icc=$(find $base -name "$name.icc")
 
-   local vcmd="vi -R $h $hh $icc $cc"
+   local cc2=""
+   if [ "$name" == "G4SteppingManager" ] ; then
+       cc2=$(find $base -name "${name}2.cc")
+   fi  
+
+   local vcmd="vi -R $h $hh $icc $cc $cc2"
    echo $vcmd
    eval $vcmd
 
