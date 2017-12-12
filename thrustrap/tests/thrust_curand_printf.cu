@@ -53,8 +53,11 @@ struct curand_printf
                 float lf = -logf(f)*1e7f ; 
                 printf(" %lf ", lf );  
 
-                double d(f) ;   
-                double ld = -log(d)*1e7 ; 
+                //double d(f) ;   
+                //double ld = -log(d)*1e7 ; 
+
+                //double ld = -log(double(f))*1e7 ; 
+                float ld = -log(double(f))*1e7 ; 
                 printf(" %15.10g ", ld );  
 
             }

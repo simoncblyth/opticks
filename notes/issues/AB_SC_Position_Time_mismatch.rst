@@ -17,6 +17,100 @@ Find some indices for masked running::
 
    tboolean-;tboolean-box --okg4 --align --mask 37922 --pindex 0 -DD 
 
+   tboolean-;tboolean-box --okg4 --align 
+
+
+
+
+
+
+
+AFTER LOG DOUBLE FIX AB POSITIONS MATCHING
+---------------------------------------------
+
+::
+
+    In [3]: ab.aselhis = "TO AB"
+
+    In [4]: ab.a.rpost()
+    Out[4]: 
+    A()sliced
+    A([[[  32.3038,  -30.831 , -449.8989,    0.2002],
+            [  32.3038,  -30.831 , -380.7631,    0.4309]],
+
+           [[ -14.9751,   25.2704, -449.8989,    0.2002],
+            [ -14.9751,   25.2704, -282.4066,    0.7587]],
+
+           [[ -32.0422,    6.9507, -449.8989,    0.2002],
+            [ -32.0422,    6.9507, -223.9929,    0.9534]]])
+
+    In [5]: ab.b.rpost()
+    Out[5]: 
+    A()sliced
+    A([[[  32.3038,  -30.831 , -449.8989,    0.2002],
+            [  32.3038,  -30.831 , -380.7631,    0.4309]],
+
+           [[ -14.9751,   25.2704, -449.8989,    0.2002],
+            [ -14.9751,   25.2704, -282.4066,    0.7587]],
+
+           [[ -32.0422,    6.9507, -449.8989,    0.2002],
+            [ -32.0422,    6.9507, -223.9929,    0.9534]]])
+
+    In [6]: ab.a.rpost() - ab.b.rpost()
+    Out[6]: 
+    A()sliced
+    A([[[ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.]],
+
+           [[ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.]]])
+
+
+
+
+
+
+::
+
+    2017-12-12 13:08:52.888 ERROR [39772] [OPropagator::launch@183] LAUNCH NOW
+    generate photon_id 0 
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:0 
+    propagate_to_boundary  u_boundary_burn:   0.8371831775 speed:      299.79245 
+    propagate_to_boundary  u_scattering:   0.4740084112   scattering_length(s.material1.z):        1000000 scattering_distance:    746530.1875 
+    propagate_to_boundary  u_absorption:   0.9999930859   absorption_length(s.material1.y):       10000000 absorption_distance:    69.14162445 
+    2017-12-12 13:08:52.902 ERROR [39772] [OPropagator::launch@185] LAUNCH DONE
+
+::
+
+     60 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
+     61 {
+     62     //float speed = SPEED_OF_LIGHT/s.material1.x ;    // .x:refractive_index    (phase velocity of light in medium)
+     63     float speed = s.m1group2.x ;  // .x:group_velocity  (group velocity of light in the material) see: opticks-find GROUPVEL
+     64 
+     65 #ifdef WITH_ALIGN_DEV
+     66     float u_boundary_burn = curand_uniform(&rng) ;
+     67     float u_scattering = curand_uniform(&rng) ;
+     68     float u_absorption = curand_uniform(&rng) ;
+     69 
+     70     float scattering_distance = -s.material1.z*log(double(u_scattering)) ;   // .z:scattering_length
+     71     float absorption_distance = -s.material1.y*log(double(u_absorption)) ;   // .y:absorption_length 
+     72     //  see notes/issues/AB_SC_Position_Time_mismatch.rst
+     73 #else
+     74     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
+     75     float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
+     76 #endif
+     77 
+     78 #ifdef WITH_ALIGN_DEV_DEBUG
+     79     rtPrintf("propagate_to_boundary  u_boundary_burn:%15.10g speed:%15.10g \n", u_boundary_burn, speed );
+     80     rtPrintf("propagate_to_boundary  u_scattering:%15.10g   scattering_length(s.material1.z):%15.10g scattering_distance:%15.10g \n", u_scattering, s.material1.z, scattering_distance );
+     81     rtPrintf("propagate_to_boundary  u_absorption:%15.10g   absorption_length(s.material1.y):%15.10g absorption_distance:%15.10g \n", u_absorption, s.material1.y, absorption_distance );
+     82 #endif
+
+
+
 
 
 EXPLAINED : difference between float/double logf/log  
@@ -104,14 +198,14 @@ thrap/tests/thrust_curand_printf.cu::
      53                 float lf = -logf(f)*1e7f ;
      54                 printf(" %lf ", lf );
      55 
-     56                 double d(f) ;
-     57                 double ld = -log(d)*1e7 ;
-     58                 printf(" %15.10g ", ld );
-     59 
-     60             }
-     61 
-     62             if( i % 4 == 3 ) printf("\n") ;
-     63         }
+     56                 //double d(f) ;   
+     57                 //double ld = -log(d)*1e7 ; 
+     58 
+     59                 //double ld = -log(double(f))*1e7 ; 
+     60                 float ld = -log(double(f))*1e7 ;
+     61                 printf(" %15.10g ", ld );
+     62 
+     63             }
 
 
 
