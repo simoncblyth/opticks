@@ -9,21 +9,25 @@ Understand what G4 condition yields the zero-step, detect it
 on Opticks side and burn the requisite number(4) of RNG 
 to stay in alignment. 
 
+This strategy turned out to be impossible, instead did an 
+rng rewind on G4 side for the zero steps.
+
+
+AB/SC Position/Time Differs
+------------------------------
+
+* :doc:`AB_SC_Position_Time_mismatch`
+
 
 With backtracking of rng sequence by CRandomEngine to keep zero-steps aligned
 --------------------------------------------------------------------------------
 
 * down to 33/100000 misaligned, all going awry after a scatter 
 
+
 ::
 
     tboolean-;tboolean-box-ip
-
-::
-
-    In [2]: len(ab.maligned)
-    Out[2]: 33
-     
 
     In [2]: len(ab.maligned)
     Out[2]: 33

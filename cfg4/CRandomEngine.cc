@@ -46,9 +46,6 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_internal(false),
     m_skipdupe(true),
     m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
-    //m_james(new CLHEP::HepJamesRandom()),
-    //m_nonran(new CLHEP::NonRandomEngine()),
-    //m_engine(m_nonran),
     m_curand(NPY<double>::load(m_path)),
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
@@ -59,7 +56,6 @@ CRandomEngine::CRandomEngine(CG4* g4)
 {
     init();
 }
-
 
 bool CRandomEngine::hasSequence() const 
 {
@@ -86,9 +82,7 @@ void CRandomEngine::init()
 {
     initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
-    //CLHEP::HepRandom::setTheSeed(  m_seed );    // does nothing for NonRandom
 }
-
 
 void CRandomEngine::initCurand()
 {
@@ -108,11 +102,22 @@ void CRandomEngine::initCurand()
 
     if( m_curand_ni > 99999 )
         dumpDouble( "v99999" , m_curand->getValues(99999), w ) ; 
-    
 }
 
 void CRandomEngine::setupCurandSequence(int record_id)
 {
+    if( m_curand_ni == 0 )
+    {
+        LOG(fatal) << "CRandomEngine::setupCurandSequence"
+                   << " m_curand_ni ZERO "
+                   << " no precooked RNG have been loaded from " 
+                   << " m_path " << m_path
+                   << " : try running : TRngBufTest "
+                   ;
+
+    }
+    assert( m_curand_ni > 0 );
+
     assert( record_id > -1 && record_id < m_curand_ni ); 
 
     assert( m_curand_nv > 0 ) ;
@@ -123,7 +128,6 @@ void CRandomEngine::setupCurandSequence(int record_id)
 
     m_current_record_flat_count = 0 ; 
 }
-
 
 
 std::string CRandomEngine::desc() const 

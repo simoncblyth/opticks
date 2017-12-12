@@ -538,6 +538,7 @@ op-cmdline-specials()
    unset OPTICKS_DBG 
    unset OPTICKS_LOAD
    unset OPTIX_API_CAPTURE
+   unset OPTICKS_LLDB_SOURCE
 
    if [ "${cmdline/--malloc}" != "${cmdline}" ]; then
        export OPTICKS_MALLOC=1
@@ -545,9 +546,14 @@ op-cmdline-specials()
    if [ "${cmdline/--debugger}" != "${cmdline}" ]; then
        export OPTICKS_DBG=1
    fi
-   if [ "${cmdline/-D}" != "${cmdline}" ]; then
+
+   if [ "${cmdline/-DD}" != "${cmdline}" ]; then
+       export OPTICKS_DBG=1
+       export OPTICKS_LLDB_SOURCE=/tmp/g4lldb.txt
+   elif [ "${cmdline/-D}" != "${cmdline}" ]; then 
        export OPTICKS_DBG=1
    fi
+
    if [ "${cmdline/--load}" != "${cmdline}" ]; then
        export OPTICKS_LOAD=1
    fi

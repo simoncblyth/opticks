@@ -56,18 +56,6 @@ Returns:
 
 */
 
-__device__ int propagate_to_boundary_burn(curandState &rng)
-{
-    float u_boundary_burn = curand_uniform(&rng) ;
-    float u_scattering_burn = curand_uniform(&rng) ;
-    float u_absorption_burn = curand_uniform(&rng) ;
-#ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_to_boundary_burn  u_boundary_burn:%10.4f \n", u_boundary_burn );
-    rtPrintf("propagate_to_boundary_burn  u_scattering_burn:%10.4f \n", u_scattering_burn );
-    rtPrintf("propagate_to_boundary_burn  u_absorption_burn:%10.4f \n", u_absorption_burn);
-#endif
-}
-
 
 __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 {
@@ -78,17 +66,17 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
     float u_boundary_burn = curand_uniform(&rng) ;
     float u_scattering = curand_uniform(&rng) ;
     float u_absorption = curand_uniform(&rng) ;
-    float absorption_distance = -s.material1.y*logf(u_absorption) ;
-    float scattering_distance = -s.material1.z*logf(u_scattering) ; 
+    float scattering_distance = -s.material1.z*logf(u_scattering) ;     // .z:scattering_length
+    float absorption_distance = -s.material1.y*logf(u_absorption) ;     // .y:absorption_length 
 #else
-    float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
     float scattering_distance = -s.material1.z*logf(curand_uniform(&rng));   // .z:scattering_length
+    float absorption_distance = -s.material1.y*logf(curand_uniform(&rng));   // .y:absorption_length
 #endif
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_to_boundary  u_boundary_burn:%10.4f \n", u_boundary_burn );
-    rtPrintf("propagate_to_boundary  u_scattering:%10.4f   scattering_distance:%10.4f \n", u_scattering, scattering_distance );
-    rtPrintf("propagate_to_boundary  u_absorption:%10.4f   absorption_distance:%10.4f \n", u_absorption, absorption_distance );
+    rtPrintf("propagate_to_boundary  u_boundary_burn:%15.10g speed:%15.10g \n", u_boundary_burn, speed );
+    rtPrintf("propagate_to_boundary  u_scattering:%15.10g   scattering_length(s.material1.z):%15.10g scattering_distance:%15.10g \n", u_scattering, s.material1.z, scattering_distance );
+    rtPrintf("propagate_to_boundary  u_absorption:%15.10g   absorption_length(s.material1.y):%15.10g absorption_distance:%15.10g \n", u_absorption, s.material1.y, absorption_distance );
 #endif
 
 
