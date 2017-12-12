@@ -126,7 +126,7 @@ OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
     
         //LOG(info) << "OpRayleigh::PostStepDoIt" ; 
 
-        if (verboseLevel>0) {
+        if (verboseLevel>0) {   // (*lldb*) EnterPostStepDoIt
                 G4cout << "Scattering Photon!" << G4endl;
                 G4cout << "Old Momentum Direction: "
                        << aParticle->GetMomentumDirection() << G4endl;
@@ -190,9 +190,12 @@ OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
            }
 	  
 	   // simulate according to the distribution cos^2(theta)
-           cosTheta = NewPolarization.dot(OldPolarization);
+           cosTheta = NewPolarization.dot(OldPolarization);   
+
+           //LOG(info) << " cosTheta : " << cosTheta  ; 
+
           // Loop checking, 13-Aug-2015, Peter Gumplinger
-        } while (std::pow(cosTheta,2) < G4UniformRand());
+        } while (std::pow(cosTheta,2) < G4UniformRand());   // (*lldb*) EndWhile
 
         aParticleChange.ProposePolarization(NewPolarization);
         aParticleChange.ProposeMomentumDirection(NewMomentumDirection);
@@ -208,7 +211,7 @@ OpRayleigh::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
                      << *(aParticleChange.GetMomentumDirection()) << G4endl; 
         }
 
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep); // (*lldb*) ExitPostStepDoIt
 }
 
 // BuildPhysicsTable for the Rayleigh Scattering process

@@ -117,7 +117,8 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
             p.time += scattering_distance/speed ; 
             p.position += scattering_distance*p.direction;
 
-            rayleigh_scatter(p, rng);
+            //rayleigh_scatter(p, rng);
+            rayleigh_scatter_align(p, rng);
 
             s.flag = BULK_SCATTER;
             p.flags.i.x = 0 ;  // no-boundary-yet for new direction

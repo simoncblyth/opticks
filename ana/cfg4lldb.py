@@ -515,12 +515,73 @@ def G4TrackingManager_cc_131_(frame, bp_loc, sess):
     g4-;g4-cls G4TrackingManager 
     """
 
-
     trackMgr = G4TrackingManager(frame.FindVariable("this") , "this", sys._getframe() ) 
     print trackMgr
     QDict.Dump() 
 
     return False
+
+
+
+
+class OpRayleigh_cc_ExitPostStepDoIt(QDict):
+    MEMBERS = r"""
+    .theProcessName:G4String 
+    .thePILfactor:G4double
+    .aParticleChange.thePositionChange:G4ThreeVector
+    .aParticleChange.thePolarizationChange:G4ThreeVector
+    .aParticleChange.theMomentumDirectionChange:G4ThreeVector
+   
+    /rand:G4double
+    /constant:G4double
+    /cosTheta:G4double
+    /CosTheta:G4double
+    /SinTheta:G4double
+    /CosPhi:G4double
+    /SinPhi:G4double
+    /OldMomentumDirection:G4ThreeVector
+    /NewMomentumDirection:G4ThreeVector
+    /OldPolarization:G4ThreeVector
+    /NewPolarization:G4ThreeVector
+
+    """
+
+class OpRayleigh_cc_EndWhile(OpRayleigh_cc_ExitPostStepDoIt):
+    pass
+
+
+def OpRayleigh_cc_EndWhile_(frame, bp_loc, sess):
+    """
+    EndWhile
+
+    (*lldb*) br set -f OpRayleigh.cc -l %(EndWhile)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_EndWhile_
+
+    """
+    inst = OpRayleigh_cc_EndWhile(frame.FindVariable("this") , "this", sys._getframe() )
+    print inst
+    return False
+
+
+def OpRayleigh_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
+    """
+    ExitPostStepDoIt
+
+    (*lldb*) br set -f OpRayleigh.cc -l %(ExitPostStepDoIt)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_ExitPostStepDoIt_
+
+    opticks-;opticks-cls OpRayleigh
+    g4-;g4-cls G4VDiscreteProcess
+    g4-;g4-cls G4VProcess
+    """
+    inst = OpRayleigh_cc_ExitPostStepDoIt(frame.FindVariable("this") , "this", sys._getframe() )
+    print inst
+    return False
+
+
+
+
+
 
 
 class G4SteppingManager2_cc_181(QDict):
@@ -601,7 +662,6 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
     inst = G4SteppingManager2_cc_270(frame.FindVariable("this"), "this", sys._getframe() )
     print inst
     return False
-
 
 
 class DsG4OpBoundaryProcess_cc_736(QDict):
