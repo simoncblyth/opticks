@@ -51,6 +51,11 @@ and when envvar OPTICKS_LLDB_SOURCE is defined.
     br com add 2 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131
 
 
+lldb logging
+--------------
+
+* https://stackoverflow.com/questions/37296802/how-to-log-to-the-console-in-an-lldb-data-formatter
+
 
 Experience with lldb python scripting
 ----------------------------------------
@@ -362,40 +367,47 @@ class G4ThreeVector(QDict):
         return  " (%8.3f %8.3f %8.3f) " % ( float(self["dx"].GetValue()), float(self["dy"].GetValue()), float(self["dz"].GetValue()) )
         
 
-class size_t(QDict):
-    BRIEF = True
-    MEMBERS = None
-    def __repr__(self):
-        return " %d " % int(self.this.GetValue())
 
-
-class G4int(QDict):
-    BRIEF = True
-    MEMBERS = None
-    def __repr__(self):
-        return " %d " % int(self.this.GetValue())
- 
- 
-class G4bool(QDict):
+class bool_(QDict):
     BRIEF = True
     MEMBERS = None
     def __repr__(self):
         s = self.this.GetValue()
         return str(s == "true")
 
+class G4bool(bool_):
+    pass
 
-class G4double(QDict):
+class int_(QDict):
+    BRIEF = True
+    MEMBERS = None
+    def __repr__(self):
+        return " %d " % int(self.this.GetValue())
+ 
+class size_t(int_):
+    pass
+
+class G4int(int_):
+    pass
+ 
+class double_(QDict):
     BRIEF = True
     MEMBERS = None
     def __repr__(self):
         return " %g " % float(self.this.GetValue())  # GetValue yields str
-    
-class G4String(QDict):
+
+class G4double(double_):
+    pass
+
+class string_(QDict):
     BRIEF = True
     MEMBERS = None
     def __repr__(self):
         return " %s " % Quote.Extract(self.this)
-       
+    
+class G4String(string_):
+    pass
+      
 class Enum(QDict):
     BRIEF = True
     MEMBERS = None
@@ -428,21 +440,22 @@ class G4SteppingManager(QDict):
 
 class G4TrackingManager(QDict):
     MEMBERS = r"""
-    .fpSteppingManager.fStepStatus:Enum
-    .fpSteppingManager.PhysicalStep:G4double
     .fpSteppingManager.fCurrentProcess.theProcessName:G4String 
 
     .fpSteppingManager.fStep.fpPreStepPoint.fPosition:G4ThreeVector
     .fpSteppingManager.fStep.fpPreStepPoint.fGlobalTime:G4double
-    .fpSteppingManager.fStep.fpPreStepPoint.fMomentumDirection:G4ThreeVector
 
     .fpSteppingManager.fStep.fpPostStepPoint.fPosition:G4ThreeVector
     .fpSteppingManager.fStep.fpPostStepPoint.fGlobalTime:G4double
-    .fpSteppingManager.fStep.fpPostStepPoint.fMomentumDirection:G4ThreeVector
     """
 
     _MEMBERS = r"""
     fpSteppingManager:G4SteppingManager
+
+    .fpSteppingManager.fStepStatus:Enum
+    .fpSteppingManager.PhysicalStep:G4double
+    .fpSteppingManager.fStep.fpPreStepPoint.fMomentumDirection:G4ThreeVector
+    .fpSteppingManager.fStep.fpPostStepPoint.fMomentumDirection:G4ThreeVector
     """
 
 class G4VProcess(QDict):
@@ -452,23 +465,37 @@ class G4VProcess(QDict):
 
 class CRandomEngine(QDict):
     MEMBERS = r"""
-    m_flat 
-    m_current_record_flat_count
-    m_current_step_flat_count
+    .m_flat:double
+    .m_curand_index:int
+    .m_current_record_flat_count:int
+    .m_current_step_flat_count:int
+    .m_location:string
     """ 
 
+    @classmethod
+    def PostTrack(cls, func):
+        finst = INSTANCE[func]
+        for i, inst in enumerate(finst):
+            print "%30s : %10s : %s " % ( i, inst[".m_curand_index"], inst )
+        pass
+        
     def __repr__(self):
-        brief = " %3d %3d  : %s " % ( 
-                                  int(self["m_current_record_flat_count"].GetValue()),
-                                  int(self["m_current_step_flat_count"].GetValue()),
-                                  self["m_flat"].GetValue()
+        brief = " %3d %3d  : %s : %s " % ( 
+                                  int(self[".m_current_record_flat_count"]),
+                                  int(self[".m_current_step_flat_count"]),
+                                  self[".m_flat"],
+                                  self[".m_location"]
                                 )
         return FMT % (self.tag, brief)
 
 
 REGISTER["G4ThreeVector"] = G4ThreeVector
+REGISTER["double"] = double_
+REGISTER["string"] = string_
+REGISTER["int"] = int_
 REGISTER["G4double"] = G4double
 REGISTER["G4bool"] = G4bool
+REGISTER["bool_"] = bool_
 REGISTER["G4int"] = G4int
 REGISTER["size_t"] = size_t
 REGISTER["G4String"] = G4String
@@ -491,6 +518,15 @@ def CRandomEngine_cc_flatExit_(frame, bp_loc, sess):
     print engine
     return False
 
+
+def CRandomEngine_cc_PostTrack_(frame, bp_loc, sess):
+    """   
+    (*lldb*) br set -f CRandomEngine.cc -l %(PostTrack)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_PostTrack_
+    """
+    CRandomEngine.PostTrack("CRandomEngine_cc_flatExit_")
+    return False
+
 def G4SteppingManager_cc_191_(frame, bp_loc, sess):
     """
     After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs()
@@ -509,8 +545,8 @@ def G4TrackingManager_cc_131_(frame, bp_loc, sess):
     """
     Step Conclusion : TrackingManager step loop just after Stepping() 
 
-    (*lldb*) br set -f G4TrackingManager.cc -l 131
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131_
+    (lldb) br set -f G4TrackingManager.cc -l 131
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131_
 
     g4-;g4-cls G4TrackingManager 
     """
@@ -554,8 +590,8 @@ def OpRayleigh_cc_EndWhile_(frame, bp_loc, sess):
     """
     EndWhile
 
-    (*lldb*) br set -f OpRayleigh.cc -l %(EndWhile)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_EndWhile_
+    (lldb) br set -f OpRayleigh.cc -l %(EndWhile)s
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_EndWhile_
 
     """
     inst = OpRayleigh_cc_EndWhile(frame.FindVariable("this") , "this", sys._getframe() )
@@ -567,8 +603,8 @@ def OpRayleigh_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     """
     ExitPostStepDoIt
 
-    (*lldb*) br set -f OpRayleigh.cc -l %(ExitPostStepDoIt)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_ExitPostStepDoIt_
+    (lldb) br set -f OpRayleigh.cc -l %(ExitPostStepDoIt)s
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls OpRayleigh
     g4-;g4-cls G4VDiscreteProcess
@@ -635,8 +671,8 @@ def G4SteppingManager2_cc_225_(frame, bp_loc, sess):
     """
     Dumping lengths collected by _181 after PostStep process loop 
 
-    (*lldb*) br set -f G4SteppingManager2.cc -l 225
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_225_
+    (lldb) br set -f G4SteppingManager2.cc -l 225
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_225_
     """
     G4SteppingManager2_cc_181.Dump(sys._getframe())
     return False
@@ -654,8 +690,8 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
     """
     Near end of DefinePhysicalStepLength : Inside MAXofAlongStepLoops after AlongStepGPIL
 
-    (*lldb*) br set -f G4SteppingManager2.cc -l 270
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_270_
+    (lldb) br set -f G4SteppingManager2.cc -l 270
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_270_
 
     g4-;g4-cls G4SteppingManager
     """
@@ -664,25 +700,53 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
     return False
 
 
-class DsG4OpBoundaryProcess_cc_736(QDict):
+class DsG4OpBoundaryProcess_cc_ExitPostStepDoIt(QDict):
     MEMBERS = r"""
     .OldMomentum:G4ThreeVector
     .NewMomentum:G4ThreeVector
+    .theStatus
     """
 
-def DsG4OpBoundaryProcess_cc_736_(frame, bp_loc, sess):
+def DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     """
-    OpBoundary.PostStepDoIt return 
+    ExitPostStepDoIt
 
-    (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l 736
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_736_
+    (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(ExitPostStepDoIt)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls DsG4OpBoundaryProcess
      
     """
-    inst = DsG4OpBoundaryProcess_cc_736(frame.FindVariable("this"), "this", sys._getframe() )
+    inst = DsG4OpBoundaryProcess_cc_ExitPostStepDoIt(frame.FindVariable("this"), "this", sys._getframe() )
     print inst
     return False
+
+
+class DsG4OpBoundaryProcess_cc_DiDiTransCoeff(QDict):
+    MEMBERS = r"""
+    .OldMomentum:G4ThreeVector
+    .NewMomentum:G4ThreeVector
+    /TransCoeff:G4double
+    /_u:G4double
+    /_transmit:bool_
+    """
+
+def DsG4OpBoundaryProcess_cc_DiDiTransCoeff_(frame, bp_loc, sess):
+    """
+    DiDiTransCoeff
+
+    (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(DiDiTransCoeff)s
+    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_
+
+    opticks-;opticks-cls DsG4OpBoundaryProcess
+     
+    """
+    inst = DsG4OpBoundaryProcess_cc_DiDiTransCoeff(frame.FindVariable("this"), "this", sys._getframe() )
+    print inst
+    return False
+
+
+
 
 
 
@@ -708,6 +772,10 @@ def G4Navigator_ComputeStep_1181_(frame, bp_loc, sess):
 
 class G4Transportation_cc_517(QDict):
     MEMBERS = r"""
+    .fParticleChange.thePositionChange:G4ThreeVector
+    """
+
+    _MEMBERS = r"""
     /startPosition:G4ThreeVector
     /startMomentumDir:G4ThreeVector
     /newSafety:G4double
@@ -725,12 +793,13 @@ class G4Transportation_cc_517(QDict):
     .fLinearNavigator.fLastStepWasZero:G4bool
     """
 
+
 def G4Transportation_cc_517_(frame, bp_loc, sess):
     """
     AlongStepGetPhysicalInteractionLength Exit 
 
-    (*lldb*) br set -f G4Transportation.cc -l 517
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4Transportation_cc_517_
+    (lldb) br set -f G4Transportation.cc -l 517
+    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4Transportation_cc_517_
 
     g4-;g4-cls G4Transportation
  

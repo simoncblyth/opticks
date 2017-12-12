@@ -318,7 +318,8 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_boundary  u_reflect:    %10.5f  reflect:%d   TransCoeff:%10.5f \n", u_reflect, reflect, TransCoeff );
+    rtPrintf("propagate_at_boundary  u_reflect:    %10.5f  reflect:%d   TransCoeff:%10.5f  c2c2:%10.4f tir:%d  pos (%10.4f %10.4f %10.4f)   \n",
+         u_reflect, reflect, TransCoeff, c2c2, tir, p.position.x, p.position.y, p.position.z  );
 #endif
 
     p.direction = reflect 

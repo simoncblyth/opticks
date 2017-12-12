@@ -47,6 +47,7 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_skipdupe(true),
     m_locseq(m_alignlevel > 1 ? new BLocSeq<unsigned long long>(m_skipdupe) : NULL ),
     m_curand(NPY<double>::load(m_path)),
+    m_curand_index(-1),
     m_curand_ni(m_curand ? m_curand->getShape(0) : 0 ),
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
     m_current_record_flat_count(0),
@@ -121,6 +122,8 @@ void CRandomEngine::setupCurandSequence(int record_id)
     assert( record_id > -1 && record_id < m_curand_ni ); 
 
     assert( m_curand_nv > 0 ) ;
+
+    m_curand_index = record_id ; 
 
     double* seq = m_curand->getValues(record_id) ; 
 
@@ -267,7 +270,7 @@ void CRandomEngine::pretrack()
 
 void CRandomEngine::posttrack()
 {
-    if(m_locseq)
+    if(m_locseq)   // (*lldb*) PostTrack
     {
         unsigned long long seqhis = m_g4->getSeqHis()  ;
         m_locseq->mark(seqhis);

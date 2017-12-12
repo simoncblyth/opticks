@@ -1,6 +1,14 @@
 SC_Direction_mismatch
 =======================
 
+Supect RNG getting off-by-one for the 6 
+---------------------------------------------
+
+* :doc:`RNG_seq_off_by_one`
+
+
+
+
 
 After move to cu/rayleigh.h:rayleigh_scatter_align and fixing polz bug
 ------------------------------------------------------------------------

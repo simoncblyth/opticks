@@ -654,7 +654,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #ifdef SCB_REFLECT_CHEAT
                 G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
                 bool _reflect = _u < theReflectivity ;
-                if( !_reflect ) 
+                if( !_reflect )    // (*lldb*) DiDiReflectOrTransmit
 #else
                 if( !G4BooleanRand(theReflectivity) ) 
 #endif
@@ -721,7 +721,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 #ifdef GEANT4_BT_GROUPVEL_FIX
        // from /usr/local/opticks/externals/g4/geant4_10_02_p01/source/processes/optical/src/G4OpBoundaryProcess.cc
-       //if ( theStatus == FresnelRefraction || theStatus == Transmission ) {
+       //if ( theStatus == FresnelRefraction || theStatus == Transmission ) 
        if ( theStatus == FresnelRefraction ) 
        {
            G4MaterialPropertyVector* groupvel = Material2->GetMaterialPropertiesTable()->GetProperty("GROUPVEL");
@@ -733,7 +733,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 #endif
         }    
 #endif
-        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+        return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);   // (*lldb*) ExitPostStepDoIt
 }
 
 G4ThreeVector
@@ -1023,8 +1023,8 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 
 #ifdef SCB_REFLECT_CHEAT 
           G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
-          bool _transmit = _u < TransCoeff ; 
-	      if ( !_transmit ) {
+          bool _transmit = _u < TransCoeff ;  
+	      if ( !_transmit ) {    // (*lldb*) DiDiTransCoeff
 #else
           if ( !G4BooleanRand(TransCoeff) ) {
 #endif

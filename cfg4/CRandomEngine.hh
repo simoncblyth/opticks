@@ -93,6 +93,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         //CLHEP::HepRandomEngine*  m_engine ; 
 
         NPY<double>*             m_curand ; 
+        int                      m_curand_index ; 
         int                      m_curand_ni ; 
         int                      m_curand_nv ; 
         int                      m_current_record_flat_count ; 
