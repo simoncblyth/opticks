@@ -118,9 +118,7 @@ __device__ void rayleigh_scatter(Photon &p, curandState &rng)
         // The new polarization needs to be in the same plane as the new
         // momentum direction and the old polarization direction
 
-        float constant = -1.f/dot(newDirection,p.polarization);
-
-        //newPolarization = newDirection + constant*p.polarization ;  // <-- bug revealed 2017/12/12 by alignment efforts
+        float constant = -dot(newDirection,p.polarization);
         newPolarization = p.polarization + constant*newDirection ;
 
         // There is a corner case, where the Newmomentum direction
