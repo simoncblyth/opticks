@@ -97,7 +97,6 @@ set(HEADERS
   BRAP_TAIL.hh
   BRAP_BODY.hh
 
-  BDirect.hh 
 
   BBufSpec.hh 
   BDemo.hh 

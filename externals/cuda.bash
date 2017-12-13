@@ -26,6 +26,10 @@ Avoid acos
 * https://seblagarde.wordpress.com/2014/12/01/inverse-trigonometric-functions-gpu-optimization-for-amd-gcn-architecture/
 
 
+Capture stdout logging
+-----------------------
+
+* https://stackoverflow.com/questions/21238303/redirecting-cuda-printf-to-a-c-stream
 
 
 OSX CUDA Driver

@@ -622,6 +622,11 @@ void OpticksCfg<Listener>::init()
 
 
 
+
+   m_desc.add_options()
+       ("pindexlog",  "Use redirect to write stdout rtPrintf from OptiX launch to a logfile, see oxrap-/OContext") ; 
+
+
    m_desc.add_options()
        ("pindex",        boost::program_options::value<std::string>(&m_pindex), "debug OptiX launch print index specified by up to three comma delimited ints " );
    m_desc.add_options()

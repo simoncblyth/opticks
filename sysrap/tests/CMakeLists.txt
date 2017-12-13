@@ -26,6 +26,8 @@ set(TEST_SOURCES
 
    OpticksCSGTest.cc
    hash_define_without_value.cc
+   SDirectTest.cc 
+   S_freopen_redirect_test.cc
 
 )
 

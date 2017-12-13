@@ -37,6 +37,9 @@ class OXRAP_API OContext {
         static const char* INTEROP_ ; 
 
      public:
+            static const char* LaunchLogPath(unsigned index); 
+            const char* getPrintIndexLogPath() const  ; 
+     public:
             OContext(optix::Context context, Opticks* ok, bool with_top=true, bool verbose=false);
             void cleanUp();
      public:
@@ -50,7 +53,12 @@ class OXRAP_API OContext {
             void init();
             void initPrint();
      public:
-            void launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height=1, STimes* times=NULL);
+            void launch(unsigned lmode, unsigned entry, unsigned width, unsigned height=1, STimes* times=NULL);
+     private:
+            double validate_();
+            double compile_();
+            double launch_(unsigned entry, unsigned width, unsigned height=1 );
+            double launch_redirected_(unsigned entry, unsigned width, unsigned height=1 );
      public:
             // pass thru to OConfig
             optix::Program createProgram(const char* filename, const char* progname );
@@ -104,6 +112,7 @@ class OXRAP_API OContext {
             bool              m_closed ; 
             bool              m_with_top ; 
             bool              m_verbose ; 
+            const char*       m_llogpath ; 
 };
 
 

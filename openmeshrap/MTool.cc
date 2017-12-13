@@ -1,6 +1,10 @@
+
+
+// sysrap-
+#include "SDirect.hh"
+
 // npy-
 #include "BStr.hh"
-#include "BDirect.hh"
 
 // okc-
 #include "Opticks.hh"

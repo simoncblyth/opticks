@@ -1,10 +1,42 @@
 RNG_seq_off_by_one
 ===================
 
+
+Launch
+--------
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog -DD   
+
+
 Debugging Idea
 ----------------
 
 * common logging format for both simulations, so can just diff it 
+
+
+Auto-interleave ?
+-------------------
+
+Redirect OptiX/CUDA logging to file ?
+---------------------------------------
+
+* https://stackoverflow.com/questions/21238303/redirecting-cuda-printf-to-a-c-stream
+
+::
+
+    simon:opticks blyth$ opticks-find rdbuf
+    ./openmeshrap/MTool.cc:         cout_redirect out_(coutbuf.rdbuf());
+    ./openmeshrap/MTool.cc:         cerr_redirect err_(cerrbuf.rdbuf()); 
+    ./boostrap/BDirect.hh:        : old( std::cout.rdbuf( new_buffer ) ) 
+    ./boostrap/BDirect.hh:        std::cout.rdbuf( old );
+    ./boostrap/BDirect.hh:        : old( std::cerr.rdbuf( new_buffer ) ) 
+    ./boostrap/BDirect.hh:        std::cerr.rdbuf( old );
+    simon:opticks blyth$ 
+
+
+
 
 
 First look at the 6 maligned

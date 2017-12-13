@@ -36,6 +36,8 @@ strided_repeated_rangeTest.cu
 float2intTest.cu 
 thrust_curand_estimate_pi.cu
 thrust_curand_printf.cu
+thrust_curand_printf_redirect.cu
+thrust_curand_printf_redirect2.cu
 
 )
 

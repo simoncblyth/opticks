@@ -294,6 +294,14 @@ const std::vector<unsigned>&  Opticks::getMask() const
 {
     return m_dbg->getMask();
 }
+unsigned Opticks::getMaskIndex(unsigned idx) const
+{
+    bool mask = hasMask();  
+    if(!mask)
+        LOG(warning) << "Opticks::getMaskIndex BUT there is no mask " ; 
+
+    return mask ? m_dbg->getMaskIndex(idx) : idx ;
+}
 bool Opticks::hasMask() const 
 {
     return m_dbg->getMask().size() > 0 ; 
@@ -447,6 +455,13 @@ const char* Opticks::getRenderMode()
 }
 
 
+
+
+
+bool Opticks::isPrintIndexLog() const 
+{
+    return m_cfg->hasOpt("pindexlog") ;
+}
 
 int Opticks::getPrintIndex(unsigned dim) const 
 {
@@ -829,6 +844,9 @@ bool Opticks::isAnalyticPMTLoad()
 {
     return m_cfg->hasOpt("apmtload");
 }
+
+
+
 
 unsigned Opticks::getAnalyticPMTIndex()
 {

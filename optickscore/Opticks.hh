@@ -243,6 +243,7 @@ class OKCORE_API Opticks {
        const char*          getPrintIndexString() const ;
        bool                 getPrintIndex(glm::ivec3& idx) const ;
        int                  getPrintIndex(unsigned dim=0) const ; 
+       bool                 isPrintIndexLog() const ; 
    public:
        const char*          getDbgIndex() const ;
        const char*          getDbgCSGPath();
@@ -268,6 +269,7 @@ class OKCORE_API Opticks {
        // NB these are for cfg4 debugging  (Opticks uses different approach with --pindex option)
        NPY<unsigned>* getMaskBuffer() const ; 
        const std::vector<unsigned>&  getMask() const ;
+       unsigned getMaskIndex(unsigned idx) const ;  // original pre-masked index OR idx if no mask 
        bool hasMask() const ; 
 
        bool isDbgPhoton(unsigned record_id);

@@ -9,6 +9,7 @@ set(TEST_SOURCES
    LaunchSequenceTest.cc
    cuRANDWrapperTest.cc
    curand_aligned_host.cc
+ 
    
 )
 
@@ -26,6 +27,8 @@ endforeach()
 
 set(TEST_SOURCES_CU
    cudaGetDevicePropertiesTest.cu
+   cudarap_printf_redirect.cu
+   gpu_printf_redirect.cu 
 )
 
 foreach(CU ${TEST_SOURCES_CU})

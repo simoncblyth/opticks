@@ -252,19 +252,16 @@ void CRandomEngine::pretrack()
 {
     // where is a better place to do this ? maybe CG4Ctx::setTrack
     unsigned index = m_ctx._record_id   ;
-    if(m_mask.size() > 0)
-    {
-        assert( index < m_mask.size() );
-        index = m_mask[index] ; 
-    }
+    unsigned orig_index = m_ok->getMaskIndex( index ); 
 
     LOG(error) << "CRandomEngine::pretrack record_id: " 
                << " ctx.record_id " << m_ctx._record_id 
                << " index " << index 
+               << " orig_index " << orig_index 
                << " mask.size " << m_mask.size()
                ;
     
-    setupCurandSequence(index) ;
+    setupCurandSequence(orig_index) ;
 }
 
 

@@ -27,6 +27,7 @@ class OKCORE_API OpticksDbg
        unsigned getNumMaskPhoton() const ;
        NPY<unsigned>* getMaskBuffer() const ;
        const std::vector<unsigned>&  getMask();
+       unsigned getMaskIndex(unsigned idx) const ;
 
        bool isDbgPhoton(unsigned record_id);
        bool isOtherPhoton(unsigned record_id);
@@ -45,7 +46,7 @@ class OKCORE_API OpticksDbg
        NPY<unsigned>*        m_mask_buffer ; 
        std::vector<unsigned> m_debug_photon ; 
        std::vector<unsigned> m_other_photon ; 
-       std::vector<unsigned> m_mask_photon ; 
+       std::vector<unsigned> m_mask ; 
 
 };
 

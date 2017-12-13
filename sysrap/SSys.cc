@@ -1,8 +1,12 @@
 #include <sstream>
 #include <iostream>
+#include <iomanip>
 #include <cstdlib>
 #include <cstring>
 
+#include <cassert>
+#include <cstdio>
+#include <fstream> 
 
 #include <sys/wait.h>
 
@@ -230,6 +234,26 @@ int SSys::setenvvar( const char* envprefix, const char* key, const char* value, 
     std::string ekey = ss.str();
     return SSys::setenvvar(ekey.c_str(), value, overwrite );    
 } 
+
+
+
+
+unsigned SSys::COUNT = 0 ; 
+
+void SSys::Dump_(const char* msg)
+{
+    std::cout << std::setw(3) << COUNT << "[" << std::setw(20) << "std::cout" << "] " << msg << std::endl;  
+    std::cerr << std::setw(3) << COUNT << "[" << std::setw(20) << "std::cerr" << "] " << msg << std::endl;  
+    printf("%3d[%20s] %s \n", COUNT, "printf", msg );  
+    std::printf("%3d[%20s] %s \n", COUNT, "std::printf", msg );  
+}
+void SSys::Dump(const char* msg)
+{
+    Dump_(msg);
+    std::cerr << std::endl  ;   
+    COUNT++ ; 
+}
+
 
 
 

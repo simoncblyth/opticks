@@ -1,3 +1,4 @@
+#include <cassert>
 #include <sstream>
 #include <algorithm>
 
@@ -30,7 +31,7 @@ unsigned OpticksDbg::getNumOtherPhoton() const
 }
 unsigned OpticksDbg::getNumMaskPhoton() const 
 {
-    return m_mask_photon.size() ; 
+    return m_mask.size() ; 
 }
 
 NPY<unsigned>* OpticksDbg::getMaskBuffer() const
@@ -38,9 +39,16 @@ NPY<unsigned>* OpticksDbg::getMaskBuffer() const
     return m_mask_buffer ; 
 }
 
+unsigned OpticksDbg::getMaskIndex(unsigned idx) const 
+{
+    assert( idx < m_mask.size() );
+    return m_mask[idx] ; 
+}
+
+
 const std::vector<unsigned>&  OpticksDbg::getMask()
 {
-   return m_mask_photon ;
+   return m_mask ;
 }
 
 
@@ -76,11 +84,11 @@ void OpticksDbg::postconfigure()
 
    postconfigure( dindex, m_debug_photon );
    postconfigure( oindex, m_other_photon );
-   postconfigure( mask, m_mask_photon );
+   postconfigure( mask, m_mask );
 
-   if(m_mask_photon.size() > 0)
+   if(m_mask.size() > 0)
    {
-       m_mask_buffer = NPY<unsigned>::make_from_vec(m_mask_photon); 
+       m_mask_buffer = NPY<unsigned>::make_from_vec(m_mask); 
    } 
 
    LOG(debug) << "OpticksDbg::postconfigure" << description() ; 
@@ -120,7 +128,7 @@ bool OpticksDbg::isOtherPhoton(unsigned record_id)
 }
 bool OpticksDbg::isMaskPhoton(unsigned record_id)
 {
-    return std::find(m_mask_photon.begin(), m_mask_photon.end(), record_id ) != m_mask_photon.end() ; 
+    return std::find(m_mask.begin(), m_mask.end(), record_id ) != m_mask.end() ; 
 }
 
 

@@ -25,6 +25,9 @@ int main( int argc, char** argv )
 
     context->validate();
     context->compile();
+
+
+
     context->launch(0, width, height);
 
 

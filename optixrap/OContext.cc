@@ -1,9 +1,17 @@
+
 #include <iomanip>
 #include <sstream>
+#include <cstring>
 
 #include <cuda.h>
 #include <cuda_runtime_api.h>
+
+// sysrap-
+#include "S_freopen_redirect.hh"
+
 // brap-
+#include "BStr.hh"
+#include "BFile.hh"
 #include "BTimer.hh"
 
 // npy-
@@ -74,7 +82,8 @@ OContext::OContext(optix::Context context, Opticks* ok, bool with_top, bool verb
     m_entry(0),
     m_closed(false),
     m_with_top(with_top),
-    m_verbose(verbose)
+    m_verbose(verbose),
+    m_llogpath(NULL)
 {
     init();
     initPrint();
@@ -113,13 +122,32 @@ void OContext::initPrint()
     glm::ivec3 idx ; 
     if(!m_ok->getPrintIndex(idx)) return ; 
 
-    LOG(error) << "OContext::initPrint " 
-               << " idx " << gformat(idx) 
-               ;  
-
     m_context->setPrintEnabled(true);
     m_context->setPrintLaunchIndex(idx.x, idx.y, idx.z);
+
+
+    unsigned uindex = m_ok->hasMask() ? m_ok->getMaskIndex(idx.x) : idx.x ; 
+    m_llogpath = m_ok->isPrintIndexLog() ?  LaunchLogPath(uindex) : NULL ; 
+
+    LOG(error) << "OContext::initPrint " 
+               << " idx " << gformat(idx) 
+               << " llogpath " << ( m_llogpath ? m_llogpath : "-" )
+               ;  
 }
+
+const char* OContext::getPrintIndexLogPath() const 
+{
+    return m_llogpath ;  
+}
+
+
+const char* OContext::LaunchLogPath(unsigned index)
+{
+    const char* name = BStr::concat<unsigned>("ox_", index, ".log" ); 
+    std::string path = BFile::FormPath("$TMP", name ); 
+    return strdup(path.c_str()); 
+}
+
 
 
 
@@ -230,8 +258,6 @@ unsigned int OContext::getNumEntryPoint()
 }
 
 
-
-
 void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width, unsigned int height, STimes* times )
 {
     if(!m_closed) close();
@@ -246,54 +272,101 @@ void OContext::launch(unsigned int lmode, unsigned int entry, unsigned int width
 
     if(lmode & VALIDATE)
     {
-        double t0, t1 ; 
-        t0 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch VALIDATE START" ;
-        m_context->validate();
-        LOG(debug) << "OContext::launch VALIDATE DONE" ;
-        t1 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch VALIDATE time: " << (t1-t0) ;
-        if(times) times->validate  += t1 - t0 ;
+        double dt = validate_();
+        LOG(debug) << "OContext::launch VALIDATE time: " << dt ;
+        if(times) times->validate  += dt  ;
     }
 
     if(lmode & COMPILE)
     {
-        double t0, t1 ; 
-        t0 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch COMPILE START" ;
-        m_context->compile();
-        LOG(debug) << "OContext::launch COMPILE DONE" ;
-        t1 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch COMPILE time: " << (t1-t0) ;
-        if(times) times->compile  += t1 - t0 ;
+        double dt = compile_();
+        LOG(debug) << "OContext::launch COMPILE time: " << dt ;
+        if(times) times->compile  += dt ;
     }
-
 
     if(lmode & PRELAUNCH)
     {
-        double t0, t1 ; 
-        t0 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch PRELAUNCH START" ;
-        m_context->launch( entry, 0, 0); 
-        LOG(debug) << "OContext::launch PRELAUNCH DONE" ;
-        t1 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch PRELAUNCH time: " << (t1-t0) ;
-        if(times) times->prelaunch  += t1 - t0 ;
+        double dt = launch_(entry, width, height );
+        LOG(debug) << "OContext::launch PRELAUNCH time: " << dt ;
+        if(times) times->prelaunch  += dt ;
     }
-
 
     if(lmode & LAUNCH)
     {
-        double t0, t1 ; 
-        t0 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch LAUNCH START" ;
-        m_context->launch( entry, width, height ); 
-        LOG(debug) << "OContext::launch LAUNCH DONE" ;
-        t1 = BTimer::RealTime();
-        LOG(debug) << "OContext::launch LAUNCH time: " << (t1-t0) ;
-        if(times) times->launch  += t1 - t0 ;
+        double dt = m_llogpath ? launch_redirected_(entry, width, height ) : launch_(entry, width, height );
+        LOG(debug) << "OContext::launch LAUNCH time: " << dt  ;
+        if(times) times->launch  += dt  ;
     }
 }
+
+
+double OContext::validate_()
+{
+    double t0, t1 ; 
+    t0 = BTimer::RealTime();
+
+    m_context->validate(); 
+
+    t1 = BTimer::RealTime();
+    return t1 - t0 ; 
+}
+
+double OContext::compile_()
+{
+    double t0, t1 ; 
+    t0 = BTimer::RealTime();
+
+    m_context->compile(); 
+
+    t1 = BTimer::RealTime();
+    return t1 - t0 ; 
+}
+
+double OContext::launch_(unsigned entry, unsigned width, unsigned height)
+{
+    double t0, t1 ; 
+    t0 = BTimer::RealTime();
+
+    m_context->launch( entry, width, height ); 
+
+    t1 = BTimer::RealTime();
+    return t1 - t0 ; 
+}
+
+
+double OContext::launch_redirected_(unsigned entry, unsigned width, unsigned height)
+{
+    assert( m_llogpath ) ;
+
+    S_freopen_redirect sfr(stdout, m_llogpath );
+
+    double dt = launch_( entry, width, height ) ;
+
+    return dt ;  
+}
+
+/*
+
+OContext::launch_redirected_ succeeds to write kernel rtPrintf 
+logging to file BUT a subsequent same process "system" invokation 
+of python has problems
+indicating that the cleanup is not complete::
+
+    Traceback (most recent call last):
+      File "/Users/blyth/opticks/ana/tboolean.py", line 62, in <module>
+        print ab
+    IOError: [Errno 9] Bad file descriptor
+    2017-12-13 15:33:13.436 INFO  [321569] [SSys::run@50] tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc_raw : 256 rc : 1
+    2017-12-13 15:33:13.436 WARN  [321569] [SSys::run@57] SSys::run FAILED with  cmd tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch  
+    2017-12-13 15:33:13.436 INFO  [321569] [OpticksAna::run@79] OpticksAna::run anakey tboolean cmdline tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc 1 rcmsg OpticksAna::run non-zero RC from ana script
+    2017-12-13 15:33:13.436 FATAL [321569] [Opticks::dumpRC@186]  rc 1 rcmsg : OpticksAna::run non-zero RC from ana script
+    2017-12-13 15:33:13.436 INFO  [321569] [SSys::WaitForInput@151] SSys::WaitForInput OpticksAna::run paused : hit RETURN to continue...
+
+
+
+*/
+
+
 
 
 

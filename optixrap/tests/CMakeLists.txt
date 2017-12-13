@@ -7,6 +7,7 @@ set(TEST_SOURCES
     OScintillatorLibTest.cc
     OOTextureTest.cc
     OOMinimalTest.cc
+    OOMinimalRedirectTest.cc
     OOContextTest.cc
     OOContextUploadDownloadTest.cc
     LTOOContextUploadDownloadTest.cc
