@@ -71,7 +71,7 @@ void CTrackingAction::PreUserTrackingAction(const G4Track* track)
 
     if(m_ctx._optical)
     {
-        m_g4->pretrack();
+        m_g4->preTrack();
     } 
 }
 
@@ -90,7 +90,7 @@ void CTrackingAction::PostUserTrackingAction(const G4Track* track)
 
     if(m_ctx._optical)
     {
-        m_g4->posttrack();
+        m_g4->postTrack();
     } 
 }
 

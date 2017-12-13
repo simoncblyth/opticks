@@ -308,23 +308,23 @@ void CG4::snap()
 
 
 // invoked from CTrackingAction::PreUserTrackingAction immediately after CG4Ctx::setTrack
-void CG4::pretrack()
+void CG4::preTrack()
 {
     if(m_engine)
     {
-        m_engine->pretrack();
+        m_engine->preTrack();
     }
 }
 
-void CG4::posttrack()
+void CG4::postTrack()
 {
     if(m_ctx._optical)
     {
-        m_recorder->posttrack();
+        m_recorder->postTrack();
     } 
     if(m_engine)
     {
-        m_engine->posttrack();
+        m_engine->postTrack();
     }
 }
 

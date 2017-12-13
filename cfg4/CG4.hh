@@ -126,8 +126,8 @@ class CFG4_API CG4
         //int getStepId();
 
         void poststep();
-        void pretrack();
-        void posttrack();
+        void preTrack();
+        void postTrack();
    public:
         std::map<std::string, unsigned>& getMaterialMap();        
    private:

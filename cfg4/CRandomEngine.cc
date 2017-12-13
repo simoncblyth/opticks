@@ -247,8 +247,8 @@ void CRandomEngine::poststep()
 }
 
 
-// invoked from CG4::pretrack following CG4Ctx::setTrack
-void CRandomEngine::pretrack()
+// invoked from CG4::preTrack following CG4Ctx::setTrack
+void CRandomEngine::preTrack()
 {
     // where is a better place to do this ? maybe CG4Ctx::setTrack
     unsigned index = m_ctx._record_id   ;
@@ -261,13 +261,13 @@ void CRandomEngine::pretrack()
                << " mask.size " << m_mask.size()
                ;
     
-    setupCurandSequence(orig_index) ;
+    setupCurandSequence(orig_index) ;   // (*lldb*) preTrack
 }
 
 
-void CRandomEngine::posttrack()
+void CRandomEngine::postTrack()
 {
-    if(m_locseq)   // (*lldb*) PostTrack
+    if(m_locseq)   // (*lldb*) postTrack
     {
         unsigned long long seqhis = m_g4->getSeqHis()  ;
         m_locseq->mark(seqhis);

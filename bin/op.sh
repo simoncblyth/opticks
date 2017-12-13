@@ -714,7 +714,7 @@ op-lldb-update()
    if [ -n "${OPTICKS_DBG}" -a -n "${OPTICKS_LLDB_SOURCE}" ] ; then  
       echo $msg Updating OPTICKS_LLDB_SOURCE : ${OPTICKS_LLDB_SOURCE}
       echo "run" > ${OPTICKS_LLDB_SOURCE}.autorun
-      cfg4lldb.py > ${OPTICKS_LLDB_SOURCE}
+      lldb.py > ${OPTICKS_LLDB_SOURCE}
    fi 
 }
 

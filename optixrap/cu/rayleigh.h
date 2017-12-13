@@ -10,8 +10,8 @@
 __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
 {
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("rayleigh_scatter_align p.direction (%g %g %g) \n", p.direction.x, p.direction.y, p.direction.z );
-    rtPrintf("rayleigh_scatter_align p.polarization (%g %g %g) \n", p.polarization.x, p.polarization.y, p.polarization.z );
+    rtPrintf("rayleigh_scatter_align p.direction (%.9g %.9g %.9g) \n", p.direction.x, p.direction.y, p.direction.z );
+    rtPrintf("rayleigh_scatter_align p.polarization (%.9g %.9g %.9g) \n", p.polarization.x, p.polarization.y, p.polarization.z );
 #endif
 
     float3 newDirection = make_float3(0.f,0.f,0.f) ; 
@@ -28,11 +28,11 @@ __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
         float u4 = curand_uniform(&rng) ;  
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-        rtPrintf("rayleigh_scatter_align.do u_rsa0:%g \n", u0);
-        rtPrintf("rayleigh_scatter_align.do u_rsa1:%g \n", u1);
-        rtPrintf("rayleigh_scatter_align.do u_rsa2:%g \n", u2);
-        rtPrintf("rayleigh_scatter_align.do u_rsa3:%g \n", u3);
-        rtPrintf("rayleigh_scatter_align.do u_rsa4:%g \n", u4);
+        rtPrintf("rayleigh_scatter_align.do u_rsa0:%.9g \n", u0);
+        rtPrintf("rayleigh_scatter_align.do u_rsa1:%.9g \n", u1);
+        rtPrintf("rayleigh_scatter_align.do u_rsa2:%.9g \n", u2);
+        rtPrintf("rayleigh_scatter_align.do u_rsa3:%.9g \n", u3);
+        rtPrintf("rayleigh_scatter_align.do u_rsa4:%.9g \n", u4);
 #endif
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);
@@ -87,10 +87,10 @@ __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
         looping = doCosTheta2 < u4 ; 
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-        rtPrintf("rayleigh_scatter_align.do constant        (%g) \n", constant );
-        rtPrintf("rayleigh_scatter_align.do newDirection    (%g %g %g) \n", newDirection.x, newDirection.y, newDirection.z );
-        rtPrintf("rayleigh_scatter_align.do newPolarization (%g %g %g) \n", newPolarization.x, newPolarization.y, newPolarization.z );
-        rtPrintf("rayleigh_scatter_align.do doCosTheta %g doCosTheta2 %g   looping %d   \n", doCosTheta, doCosTheta2, looping );
+        rtPrintf("rayleigh_scatter_align.do constant        (%.9g) \n", constant );
+        rtPrintf("rayleigh_scatter_align.do newDirection    (%.9g %.9g %.9g) \n", newDirection.x, newDirection.y, newDirection.z );
+        rtPrintf("rayleigh_scatter_align.do newPolarization (%.9g %.9g %.9g) \n", newPolarization.x, newPolarization.y, newPolarization.z );
+        rtPrintf("rayleigh_scatter_align.do doCosTheta %.9g doCosTheta2 %.9g   looping %d   \n", doCosTheta, doCosTheta2, looping );
 #endif
 
     } while ( looping ) ;

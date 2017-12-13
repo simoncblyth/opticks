@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-cfg4lldb.py
+lldb.py
 =============
 
 Caution with the PREFIXd comment strings in this
@@ -34,6 +34,49 @@ Using lldb breakpoint python scripting
 
 
 
+Docs
+-----
+
+* https://llvm.org/svn/llvm-project/lldb/trunk/include/lldb/API/SBValue.h
+
+* https://stackoverflow.com/questions/41089145/how-do-i-access-c-array-float-values-from-lldb-python-api
+
+* https://www.codesd.com/item/how-do-i-access-the-floating-point-values-in-table-c-of-the-lldb-python-api.html
+
+* http://idrisr.com/2015/10/12/debugging-a-debugger.html
+
+* https://github.com/llvm-mirror/lldb/tree/master/packages/Python/lldbsuite/test/functionalities
+
+* https://lldb.llvm.org/python_reference/index.html
+
+* https://lldb.llvm.org/varformats.html
+
+::
+
+    (lldb) type summary add -P Rectangle
+    Enter your Python command(s). Type 'DONE' to end.
+    def function (valobj,internal_dict):
+        height_val = valobj.GetChildMemberWithName('height')
+        width_val = valobj.GetChildMemberWithName('width')
+        height = height_val.GetValueAsUnsigned(0)
+        width = width_val.GetValueAsUnsigned(0)
+        area = height*width
+        perimeter = 2*(height + width)
+        return 'Area: ' + str(area) + ', Perimeter: ' + str(perimeter)
+        DONE
+    (lldb) frame variable
+    (Rectangle) r1 = Area: 20, Perimeter: 18
+    (Rectangle) r2 = Area: 72, Perimeter: 36
+    (Rectangle) r3 = Area: 16, Perimeter: 16
+
+
+::
+
+    >>> print lldb.target
+    OKG4Test
+    >>> print dir(lldb.target)
+
+
 Automated breakpoint scripting
 ---------------------------------
 
@@ -42,13 +85,13 @@ and when envvar OPTICKS_LLDB_SOURCE is defined.
 
 ::
 
-    delta:~ blyth$ cfg4lldb.py 
-    # generated from-and-by /Users/blyth/opticks/ana/cfg4lldb.py 
-    command script import opticks.ana.cfg4lldb
+    delta:~ blyth$ lldb.py 
+    # generated from-and-by /Users/blyth/opticks/ana/lldb.py 
+    command script import opticks.ana.lldb
     br set -f CRandomEngine.cc -l 210
-    br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_210
+    br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_210
     br set -f G4TrackingManager.cc -l 131
-    br com add 2 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131
+    br com add 2 -F opticks.ana.lldb.G4TrackingManager_cc_131
 
 
 lldb logging
@@ -129,19 +172,23 @@ NOW AUTOMATED : Connecting the handlers
 
 Add the handler::
 
-    (*lldb*) command script import opticks.ana.cfg4lldb
+    (*lldb*) command script import opticks.ana.lldb
         ## formerly put into ~/.lldbinit 
 
     (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
         ## create pending breakpoint
 
-    (lldb) br com  add 1 -F opticks.ana.cfg4lldb
+    (lldb) br com  add 1 -F opticks.ana.lldb
         ## add command to pending breakpoint 
 
 """
 
 import os, sys, logging, re, fnmatch
 from collections import defaultdict, OrderedDict
+
+from opticks.ana.ucf import UCF
+from opticks.ana.loc import Loc
+
 
 log = logging.getLogger(__name__)
 
@@ -238,27 +285,73 @@ class Parse(dict):
 
 
 
+class Frm(object):
+    """
+    Focus on extraction, not storage
 
 
-     
+    ::
+
+        (lldb) script
+        >>> from opticks.ana.lldb import Frm
+        >>> f = Frm(lldb.frame)
+        >>> f("/TransCoeff")
+        <lldb.SBValue; proxy of <Swig Object of type 'lldb::SBValue *' at 0x1093e5720> >
+        >>> str(f("/TransCoeff"))
+        '(G4double) TransCoeff = 0.9384709323990712'
+        >>> 
+              
+        >>> v = f("/TransCoeff")
+        >>> v
+        <lldb.SBValue; proxy of <Swig Object of type 'lldb::SBValue *' at 0x1093e5840> >
+        >>> type(v)
+        <class 'lldb.SBValue'>
+        >>> v.GetType()
+        <lldb.SBType; proxy of <Swig Object of type 'lldb::SBType *' at 0x1093e5810> >
+        >>> print v.GetType()
+        typedef G4double
+
+
+ 
+
+    """
+    @classmethod 
+    def Split(cls, memkln):
+        if memkln.find(":") > -1:
+             mem, kln = memkln.split(":")
+        else:
+             mem, kln = memkln, None
+        pass 
+        return mem, kln
+
+    def __init__(self, frame, pfx="", pframe=None):
+
+
+        loc = Loc(pframe)
+
+        self.frame = frame
+        self.pfx = pfx
+        self.pframe = pframe
+        self.loc = loc
+        self.this = frame.FindVariable("this")
+
+    def __call__(self, keykln ):
+        key, kln = self.Split(keykln)
+        kls = REGISTER.get(kln, None) 
+        if key[0] == ".":
+            child = self.this.GetValueForExpressionPath(key)
+        elif key[0] == "/":
+            child = self.frame.FindVariable(key[1:])
+        else:
+            child = self.this.GetChildMemberWithName(key)
+        pass
+        mpfx = self.pfx+"->"+key
+        obj = kls(child, mpfx, pframe=self.pframe) if kls is not None else child
+        return obj
+
 
  
 class QDict(OrderedDict):
-
-    @classmethod
-    def Tag(cls, func):
-        if func is None:return None
-        pass
-        name = "%s.%s" % ( __name__, func  )
-        global COUNT 
-        tag = "%s.[%d]" % ( name, COUNT[name] )
-        COUNT[name] += 1 
-        return tag
-
-
-    @classmethod
-    def Hdr(cls, tag, label=""):
-        return FMT % (tag, label)
 
     @classmethod
     def Dump(cls):
@@ -266,6 +359,9 @@ class QDict(OrderedDict):
             print FMT % ( func, len(ls) )
         pass
 
+    
+    tag = property(lambda self:self.frm.loc.tag)
+    idx = property(lambda self:self.frm.loc.idx)
 
     def __init__(self,  this, pfx, pframe=None):
         """
@@ -275,65 +371,39 @@ class QDict(OrderedDict):
         """
         OrderedDict.__init__(self)
 
-
-
-        if pframe is not None:
-            func = pframe.f_code.co_name
-            doc = pframe.f_code.co_consts[0]
-            doclines = filter(None, doc.split("\n"))
-            label = doclines[0].lstrip() if len(doclines) > 0 else "-"  # 1st line of docstring
-        else:
-            func = None
-            label = "-"
-        pass
-
-        tag = self.Tag(func) 
+        #print "QDict kls:%s pfx:%s " % (self.__class__.__name__, pfx )
 
         frame = this.GetFrame()
+        loc = Loc(pframe)
 
+        frm = Frm(frame, pfx, pframe)
+
+        self.frm = frm 
         self.this = this
-        self.pfx = pfx
-        self.tag = tag
-        self.label = label
+
 
         global INSTANCE
-        if func is not None:
-            INSTANCE[func].append(self)         
+        if loc.func is not None:
+            INSTANCE[loc.func].append(self)         
         pass
 
         if self.MEMBERS is None:
             return
         pass
         m = self.MEMBERS
-        ## allow multi-line raw members lists
-        if "\n" in m:    
+        if "\n" in m:    ## multi-line raw members lists
             m = " ".join(m.replace("\n", " ").split())
         pass
 
-        for memkln in m.split():
+        for keykln in m.split():
+            key, kln = Frm.Split(keykln)
 
-            if memkln.find(":") > -1:
-                 mem, kln = memkln.split(":")
-            else:
-                 mem, kln = memkln, None
-            pass 
+            #print "tag:%s key:%s kln:%s " % ( tag, key, kln ) 
 
-            kls = REGISTER.get(kln, None) 
-
-            mpfx = pfx+"->"+mem
-
-            capture = False
-            if mem[0] == ".":
-                child = this.GetValueForExpressionPath(mem)
-                capture = True
-            elif mem[0] == "/":
-                child = frame.FindVariable(mem[1:])
-            else:
-                child = this.GetChildMemberWithName(mem)
-            pass
-            self[mem] = kls(child, mpfx) if kls is not None else child
-            if capture:  ## dont rely on underlying obj existance, capture immediately 
-                self[mem] = str(self[mem]) 
+            try:
+                self[key] = str(frm(keykln))
+            except TypeError:
+                self[key] = "type-error" 
             pass
         pass
 
@@ -341,7 +411,7 @@ class QDict(OrderedDict):
         lines = []
         if self.tag is not None:
             lines.append("")
-            lines.append(self.Hdr(self.tag, self.label))
+            lines.append(self.loc.hdr)
         pass
         lines.append(FMT % (self.pfx, self.__class__.__name__))
         for k,v in self.items():
@@ -357,15 +427,6 @@ class QDict(OrderedDict):
             pass
         pass
         return "\n".join(lines)
-
-
-class G4ThreeVector(QDict):
-    BRIEF = True
-    #MEMBERS = "dx:G4double dy:G4double dz:G4double" 
-    MEMBERS = "dx dy dz" 
-    def __repr__(self):
-        return  " (%8.3f %8.3f %8.3f) " % ( float(self["dx"].GetValue()), float(self["dy"].GetValue()), float(self["dz"].GetValue()) )
-        
 
 
 class bool_(QDict):
@@ -398,6 +459,25 @@ class double_(QDict):
 
 class G4double(double_):
     pass
+
+
+
+class G4ThreeVector(QDict):
+    BRIEF = True
+    MEMBERS = r"""
+    dx:G4double
+    dy:G4double
+    dz:G4double
+    """ 
+    def __repr__(self):
+        return  " (%s %s %s) " % ( self["dx"], self["dy"], self["dz"] )
+        #return  " (%8.3f %8.3f %8.3f) " % ( float(self["dx"]), float(self["dy"]), float(self["dz"]) )
+        
+
+
+
+
+
 
 class string_(QDict):
     BRIEF = True
@@ -463,7 +543,28 @@ class G4VProcess(QDict):
     theProcessName:G4String
     """
 
-class CRandomEngine(QDict):
+
+
+
+ENGINE = None
+class CRandomEngine(object):
+    def __init__(self):
+        pass
+        pindex = 1230 
+        ucf = UCF( pindex )
+        print repr(ucf)
+        self.ucf = ucf 
+
+    def postTrack(self, func):
+        finst = INSTANCE[func]
+        for i, inst in enumerate(finst):
+            print "%30s : %s " % ( i, inst )
+            #print "%30s : %10s : %s " % ( i, inst[".m_curand_index"], inst )
+        pass
+ 
+
+
+class CRandomEngine_cc_flatExit(QDict):
     MEMBERS = r"""
     .m_flat:double
     .m_curand_index:int
@@ -471,14 +572,6 @@ class CRandomEngine(QDict):
     .m_current_step_flat_count:int
     .m_location:string
     """ 
-
-    @classmethod
-    def PostTrack(cls, func):
-        finst = INSTANCE[func]
-        for i, inst in enumerate(finst):
-            print "%30s : %10s : %s " % ( i, inst[".m_curand_index"], inst )
-        pass
-        
     def __repr__(self):
         brief = " %3d %3d  : %s : %s " % ( 
                                   int(self[".m_current_record_flat_count"]),
@@ -489,50 +582,56 @@ class CRandomEngine(QDict):
         return FMT % (self.tag, brief)
 
 
-REGISTER["G4ThreeVector"] = G4ThreeVector
-REGISTER["double"] = double_
-REGISTER["string"] = string_
-REGISTER["int"] = int_
-REGISTER["G4double"] = G4double
-REGISTER["G4bool"] = G4bool
-REGISTER["bool_"] = bool_
-REGISTER["G4int"] = G4int
-REGISTER["size_t"] = size_t
-REGISTER["G4String"] = G4String
-REGISTER["Enum"] = Enum
-REGISTER["G4StepPoint"] = G4StepPoint
-REGISTER["G4Step"] = G4Step
-REGISTER["G4SteppingManager"] = G4SteppingManager
-REGISTER["G4TrackingManager"] = G4TrackingManager
-REGISTER["G4VProcess"] = G4VProcess
-REGISTER["CRandomEngine"] = CRandomEngine
-
-
-
 def CRandomEngine_cc_flatExit_(frame, bp_loc, sess):
-    """   
+    """  
+    flatExit
+ 
     (*lldb*) br set -f CRandomEngine.cc -l %(flatExit)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_flatExit_
+    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_flatExit_
     """
-    engine = CRandomEngine(frame.FindVariable("this") , "this", sys._getframe() ) 
-    print engine
+
+    f = Frm(frame, "", sys._getframe() )
+   
+    flat = f(".m_flat:double")
+    idx  = f(".m_flat:double")
+
+
+    print "flatExit.v:%s %s " % (v, type(v))
+
+
+    #flatExit = CRandomEngine_cc_flatExit(frame.FindVariable("this") , "this", sys._getframe() ) 
+    #print flatExit
+    #print "flatExit.idx:%d " % flatExit.idx
+
     return False
 
-
-def CRandomEngine_cc_PostTrack_(frame, bp_loc, sess):
+def CRandomEngine_cc_preTrack_(frame, bp_loc, sess):
     """   
-    (*lldb*) br set -f CRandomEngine.cc -l %(PostTrack)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.CRandomEngine_cc_PostTrack_
+    (*lldb*) br set -f CRandomEngine.cc -l %(preTrack)s
+    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_preTrack_
     """
-    CRandomEngine.PostTrack("CRandomEngine_cc_flatExit_")
+    global ENGINE
+    ENGINE = CRandomEngine()
     return False
+
+def CRandomEngine_cc_postTrack_(frame, bp_loc, sess):
+    """   
+    (*lldb*) br set -f CRandomEngine.cc -l %(postTrack)s
+    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_postTrack_
+    """
+    ENGINE.postTrack("CRandomEngine_cc_flatExit_")
+    return False
+
+
+
+
 
 def G4SteppingManager_cc_191_(frame, bp_loc, sess):
     """
     After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs()
 
     (lldb) br set -f G4SteppingManager.cc -l 191
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager_cc_191_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager_cc_191_
 
     g4-;g4-cls G4SteppingManager 
     """
@@ -546,7 +645,7 @@ def G4TrackingManager_cc_131_(frame, bp_loc, sess):
     Step Conclusion : TrackingManager step loop just after Stepping() 
 
     (lldb) br set -f G4TrackingManager.cc -l 131
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4TrackingManager_cc_131_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4TrackingManager_cc_131_
 
     g4-;g4-cls G4TrackingManager 
     """
@@ -591,7 +690,7 @@ def OpRayleigh_cc_EndWhile_(frame, bp_loc, sess):
     EndWhile
 
     (lldb) br set -f OpRayleigh.cc -l %(EndWhile)s
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_EndWhile_
+    (lldb) br com add 1 -F opticks.ana.lldb.OpRayleigh_cc_EndWhile_
 
     """
     inst = OpRayleigh_cc_EndWhile(frame.FindVariable("this") , "this", sys._getframe() )
@@ -604,7 +703,7 @@ def OpRayleigh_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     ExitPostStepDoIt
 
     (lldb) br set -f OpRayleigh.cc -l %(ExitPostStepDoIt)s
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.OpRayleigh_cc_ExitPostStepDoIt_
+    (lldb) br com add 1 -F opticks.ana.lldb.OpRayleigh_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls OpRayleigh
     g4-;g4-cls G4VDiscreteProcess
@@ -656,7 +755,7 @@ def G4SteppingManager2_cc_181_(frame, bp_loc, sess):
     Collecting physIntLength within process loop after PostStepGPIL
 
     (*lldb*) br set -f G4SteppingManager2.cc -l 181
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_181_
+    (*lldb*) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_181_
 
     g4-;g4-cls G4SteppingManager 
 
@@ -672,7 +771,7 @@ def G4SteppingManager2_cc_225_(frame, bp_loc, sess):
     Dumping lengths collected by _181 after PostStep process loop 
 
     (lldb) br set -f G4SteppingManager2.cc -l 225
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_225_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_225_
     """
     G4SteppingManager2_cc_181.Dump(sys._getframe())
     return False
@@ -691,7 +790,7 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
     Near end of DefinePhysicalStepLength : Inside MAXofAlongStepLoops after AlongStepGPIL
 
     (lldb) br set -f G4SteppingManager2.cc -l 270
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4SteppingManager2_cc_270_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_270_
 
     g4-;g4-cls G4SteppingManager
     """
@@ -712,7 +811,7 @@ def DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     ExitPostStepDoIt
 
     (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(ExitPostStepDoIt)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_
+    (*lldb*) br com add 1 -F opticks.ana.lldb.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls DsG4OpBoundaryProcess
      
@@ -736,7 +835,7 @@ def DsG4OpBoundaryProcess_cc_DiDiTransCoeff_(frame, bp_loc, sess):
     DiDiTransCoeff
 
     (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(DiDiTransCoeff)s
-    (*lldb*) br com add 1 -F opticks.ana.cfg4lldb.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_
+    (*lldb*) br com add 1 -F opticks.ana.lldb.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_
 
     opticks-;opticks-cls DsG4OpBoundaryProcess
      
@@ -761,7 +860,7 @@ def G4Navigator_ComputeStep_1181_(frame, bp_loc, sess):
     ComputeStep return : NOT WORKING : MISSING THIS 
 
     (lldb) br set -f G4Navigator.cc -l 1181
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4Navigator_ComputeStep_1181_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4Navigator_ComputeStep_1181_
 
     """ 
     inst = G4Navigator_ComputeStep_1181(frame.FindVariable("this"), "this", sys._getframe() )
@@ -799,7 +898,7 @@ def G4Transportation_cc_517_(frame, bp_loc, sess):
     AlongStepGetPhysicalInteractionLength Exit 
 
     (lldb) br set -f G4Transportation.cc -l 517
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4Transportation_cc_517_
+    (lldb) br com add 1 -F opticks.ana.lldb.G4Transportation_cc_517_
 
     g4-;g4-cls G4Transportation
  
@@ -822,7 +921,7 @@ def G4Transportation_cc_517_(frame, bp_loc, sess):
 
 
 def dev_G4SteppingManager2_cc_181(frame, bp_loc, sess):
-    tag = QDict.Tag( sys._getframe().f_code.co_name  )
+    tag, idx = QDict.Tag( sys._getframe().f_code.co_name  )
     print QDict.Hdr(tag)
 
     this = frame.FindVariable("this")
@@ -840,7 +939,7 @@ def dev_G4SteppingManager2_cc_181(frame, bp_loc, sess):
 def G4VDiscreteProcess_PostStepGetPhysicalInteractionLength(frame, bp_loc, sess):
     """
     (lldb) br set G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
+    (lldb) br com add 1 -F opticks.ana.lldb.G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
     """
     name = "%s.%s " % ( __name__, sys._getframe().f_code.co_name  )
     proc = frame.FindVariable("this")
@@ -852,7 +951,7 @@ def G4VDiscreteProcess_PostStepGetPhysicalInteractionLength(frame, bp_loc, sess)
 def G4VProcess_ResetNumberOfInteractionLengthLeft(frame, bp_loc, sess):
     """
     (lldb) br set G4VProcess::ResetNumberOfInteractionLengthLeft
-    (lldb) br com add 1 -F opticks.ana.cfg4lldb.G4VProcess_ResetNumberOfInteractionLengthLeft    
+    (lldb) br com add 1 -F opticks.ana.lldb.G4VProcess_ResetNumberOfInteractionLengthLeft    
     """
     name = "%s.%s " % ( __name__, sys._getframe().f_code.co_name  )
     this = frame.FindVariable("this")
@@ -883,25 +982,36 @@ def Tail(frame, bp_loc, sess):
 
 
 
-def test_Introspect(pframe):
-    func = pframe.f_code.co_name
-    doc = pframe.f_code.co_consts[0]
 
-    doclines = filter(None, doc.split("\n"))
-    label = doclines[0].lstrip() if len(doclines) > 0 else "-"
+REGISTER["G4ThreeVector"] = G4ThreeVector
+REGISTER["double"] = double_
+REGISTER["string"] = string_
+REGISTER["int"] = int_
+REGISTER["G4double"] = G4double
+REGISTER["G4bool"] = G4bool
+REGISTER["bool_"] = bool_
+REGISTER["G4int"] = G4int
+REGISTER["size_t"] = size_t
+REGISTER["G4String"] = G4String
+REGISTER["Enum"] = Enum
+REGISTER["G4StepPoint"] = G4StepPoint
+REGISTER["G4Step"] = G4Step
+REGISTER["G4SteppingManager"] = G4SteppingManager
+REGISTER["G4TrackingManager"] = G4TrackingManager
+REGISTER["G4VProcess"] = G4VProcess
+REGISTER["CRandomEngine"] = CRandomEngine
 
-    print "doc:[%s]" % doc
-    print "func:[%s]" % func
-    print "label:[%s]" % label
 
- 
+
+
+
+
 def test_Quote():
     """
 
     The exmaple docstring first line
     The exmaple docstring
     """
-    test_Introspect(sys._getframe())
 
     s = "(G4String) theProcessName = (std::__1::string = \"OpBoundary\")"
     q = Quote.Extract(s)

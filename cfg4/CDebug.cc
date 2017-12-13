@@ -76,7 +76,7 @@ std::string CDebug::desc() const   // reason for the dump
 }
 
 
-void CDebug::posttrack()
+void CDebug::postTrack()
 {
     if(m_photon._badflag > 0) addDebugPhoton(m_ctx._record_id);  
 
@@ -95,7 +95,7 @@ void CDebug::posttrack()
 
     //LOG(info) << "CDebug::posttrack " << desc() ;  
 
-    if(m_posttrack_dump) dump("CDebug::posttrack");
+    if(m_posttrack_dump) dump("CDebug::postTrack");
 }
 
 

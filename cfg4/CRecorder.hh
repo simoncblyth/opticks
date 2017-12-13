@@ -100,7 +100,7 @@ class CFG4_API CRecorder {
         CRecorder(CG4* g4, CGeometry* geometry, bool dynamic); // CG4::CG4
         void postinitialize();               // called after G4 geometry constructed in CG4::postinitialize
         void initEvent(OpticksEvent* evt);   // called prior to recording, sets up writer (output buffers)
-        void posttrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
+        void postTrack();                    // invoked from CTrackingAction::PostUserTrackingAction for optical photons
 #ifdef USE_CUSTOM_BOUNDARY
         bool Record(DsG4OpBoundaryProcessStatus boundary_status);
 #else
@@ -110,8 +110,8 @@ class CFG4_API CRecorder {
         void zeroPhoton();
         void decrementSlot(); // for reemission continuation
 
-        void posttrackWriteSteps();  // using CStp 
-        void posttrackWritePoints();  // experimental alternative using CPoi
+        void postTrackWriteSteps();  // using CStp 
+        void postTrackWritePoints();  // experimental alternative using CPoi
  
 #ifdef USE_CUSTOM_BOUNDARY
         bool RecordStepPoint(const G4StepPoint* point, unsigned int flag, unsigned int material, DsG4OpBoundaryProcessStatus boundary_status, const char* label);

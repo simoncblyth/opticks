@@ -18,12 +18,24 @@ int main(void)
     SSys::Dump(path); 
 
 
-    int rc = SSys::run("tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch ");
+    //int rc = SSys::run("tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch ");
+    //int rc = SSys::run("python -c 'print \"hello\"' " );
+    int rc = SSys::run("python -c 'import sys ; sys.stderr.write(\"hello stderr\\n\")' " );
+    //int rc = SSys::run("python -c 'import sys ; sys.stdout.write(\"hello stdout\\n\")' " );
     assert( rc == 0 );
 
 
     return 0;
 }
+
+/*
+
+close failed in file object destructor:
+sys.excepthook is missing
+lost sys.stderr
+
+*/
+
 
 
 /*
@@ -60,6 +72,11 @@ of python has problems indicating that cleanup is not complete
 
 
 This issue is reproduced by this test
+
+
+Perhaps dup2 can put humpty back together again
+  
+* https://msdn.microsoft.com/en-us/library/8syseb29.aspx
 
 
 */

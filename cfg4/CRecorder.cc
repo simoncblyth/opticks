@@ -92,16 +92,16 @@ void CRecorder::initEvent(OpticksEvent* evt)  // called by CG4::initEvent
     m_crec->initEvent(evt);
 }
 
-void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAction
+void CRecorder::postTrack() // invoked from CTrackingAction::PostUserTrackingAction
 {
     assert(!m_live);
 
 
-    if(m_ctx._dbgrec) LOG(info) << "CRecorder::posttrack" ; 
+    if(m_ctx._dbgrec) LOG(info) << "CRecorder::postTrack" ; 
 
     if(m_recpoi)
     {
-        posttrackWritePoints();  // experimental alt 
+        postTrackWritePoints();  // experimental alt 
 
 
         if(m_reccf)
@@ -112,7 +112,7 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
 
             m_photon.clear();
             m_state.clear(); 
-            posttrackWriteSteps();
+            postTrackWriteSteps();
 
             m_writer->setEnabled(true);
 
@@ -133,11 +133,11 @@ void CRecorder::posttrack() // invoked from CTrackingAction::PostUserTrackingAct
     }
     else
     {
-        posttrackWriteSteps();
+        postTrackWriteSteps();
 
     } 
 
-    if(m_dbg) m_dbg->posttrack(); 
+    if(m_dbg) m_dbg->postTrack(); 
 
 
     if(m_ctx._dump) // --dindex
@@ -239,7 +239,7 @@ void CRecorder::zeroPhoton()
     if(m_dbg) m_dbg->Clear();
 }
 
-void CRecorder::posttrackWritePoints()
+void CRecorder::postTrackWritePoints()
 { 
 #ifdef USE_CUSTOM_BOUNDARY
     DsG4OpBoundaryProcessStatus boundary_status = Undefined ;
@@ -267,15 +267,15 @@ void CRecorder::posttrackWritePoints()
     //if(m_photon._slot_constrained < 9 ) LOG(info) << m_photon.desc() << " numPoi " << numPoi ; 
 
     //if( numPoi < 2 )
-    //   m_crec->dump("CRecorder::posttrackWritePoints numPoi < 2 ");
+    //   m_crec->dump("CRecorder::postTrackWritePoints numPoi < 2 ");
 
 
 }
 
 
-void CRecorder::posttrackWriteSteps()
+void CRecorder::postTrackWriteSteps()
 {
-   // CRecorder::posttrackWriteSteps is invoked from CRecorder::posttrack, 
+   // CRecorder::postTrackWriteSteps is invoked from CRecorder::postTrack, 
    // once for the primary photon track and then for 0 or more reemtracks
    // via the record_id the info is written onto the correct place 
    // in the photon record buffer
@@ -298,14 +298,14 @@ void CRecorder::posttrackWriteSteps()
 
     if(m_ctx._dbgrec)
     {
-        LOG(info) << "CRecorder::posttrackWriteSteps"
+        LOG(info) << "CRecorder::postTrackWriteSteps"
                   << " [--dbgrec] "
                   << " num " << num
                   << " m_slot " << m_state._slot
                   << " is_step_limited " << ( limited ? "Y" : "N" )
                    ;
 
-        std::cout << "CRecorder::posttrackWriteSteps stages:"  ;
+        std::cout << "CRecorder::postTrackWriteSteps stages:"  ;
         for(unsigned i=0 ; i < num ; i++) std::cout << CStage::Label(m_crec->getStp(i)->getStage()) << " " ; 
         std::cout << std::endl ;  
     }
@@ -417,7 +417,7 @@ void CRecorder::posttrackWriteSteps()
 
 
         if(m_ctx._dbgrec)
-            LOG(info) << "[--dbgrec] posttrackWriteSteps " 
+            LOG(info) << "[--dbgrec] postTrackWriteSteps " 
                       << "[" << std::setw(2) << i << "]"
                       << " action " << getStepActionString()
                       ;
@@ -434,7 +434,7 @@ void CRecorder::posttrackWriteSteps()
     if(!done)
     {
         m_not_done_count++ ; 
-        LOG(fatal) << "posttrackWriteSteps  not-done " 
+        LOG(fatal) << "postTrackWriteSteps  not-done " 
                    << m_not_done_count
                    << " photon " << m_photon.desc()
                    << " action " << getStepActionString()

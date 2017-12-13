@@ -47,8 +47,8 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         friend class CG4 ; 
         friend struct CRandomEngineTest ; 
         void postpropagate();
-        void pretrack();
-        void posttrack();
+        void preTrack();
+        void postTrack();
         void poststep();
     private:
         void init(); 

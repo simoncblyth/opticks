@@ -35,7 +35,7 @@ struct CRandomEngineTest
         }
 
         _ctx._record_id = 0 ;   
-        _engine.pretrack();     // <-- required to setup the curandSequence
+        _engine.preTrack();     // <-- required to setup the curandSequence
 
         LOG(info) << "record_id " << record_id ; 
  

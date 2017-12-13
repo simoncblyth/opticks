@@ -28,7 +28,7 @@ class CFG4_API CDebug {
         CDebug(CG4* g4, const CPhoton& photon, CRecorder* recorder);
 
         void setMaterialBridge(CMaterialBridge* material_bridge) ;
-        void posttrack();
+        void postTrack();
         bool hasIssue();
 
         bool isSelected(); 
