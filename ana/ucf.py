@@ -21,19 +21,23 @@ import os, sys, re
 
 
 class U(object):
-    def __init__(self, idx, lab, val, xu, lines):
+    def __init__(self, idx, lab, val, xval, lines):
         self.idx = idx
         self.lab = lab
         self.val = val
-        self.xu  = xu 
+        self.xval  = xval 
         self.lines = lines[:]   ## must copy 
         self.tail = []
 
+    def _get_fval(self):
+        return float(self.val)
+    fval = property(_get_fval)
+
     def _get_hdr(self):
-        fval = "%.9f" % float(self.val)
-        fxu  = "%.9f" % float(self.xu) 
-        mrk = "  " if fval == fxu else "**"
-        return " [%3d] %50s : %15s : %2s : %s : %s : %d " % ( self.idx, self.lab, self.val, mrk, fval, fxu , len(self.lines) ) 
+        fval = "%.9f" % self.fval
+        xval = "%.9f" % self.xval 
+        mrk = "  " if fval == xval else "**"
+        return " [%3d] %50s : %15s : %2s : %s : %s : %d " % ( self.idx, self.lab, self.val, mrk, fval, xval , len(self.lines) ) 
     hdr = property(_get_hdr)
 
     def __str__(self):
@@ -63,8 +67,10 @@ class UCF(list):
         """
         workaround lldb python failing to import numpy 
         """
-        trng = cls.rngpathtxt(pindex) 
-        return map(float, file(os.path.expandvars(trng)).readlines())
+        trng_ = cls.rngpathtxt(pindex) 
+        trng = os.path.expandvars(trng_)
+        assert os.path.exists(trng), (trng, trng_, "non-existing-trng") 
+        return map(float, file(trng).readlines())
 
 
     def __init__(self, pindex ):
@@ -94,9 +100,9 @@ class UCF(list):
 
             idx = len(self)
             assert idx < len(self.xrng)
-            xu = self.xrng[idx]
+            xval = self.xrng[idx]
 
-            u = U(idx, m.group(1), m.group(2), xu, curr )
+            u = U(idx, m.group(1), m.group(2), xval, curr )
             self.append(u)
 
             curr[:] = []

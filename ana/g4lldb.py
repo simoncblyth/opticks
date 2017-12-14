@@ -1,6 +1,8 @@
-#!/usr/bin/env python
+#!/usr/bin/python
 """
-lldb.py
+## NB system python
+
+g4lldb.py
 =============
 
 Caution with the PREFIXd comment strings in this
@@ -28,20 +30,27 @@ and when envvar OPTICKS_LLDB_SOURCE is defined.
 
 ::
 
-    delta:~ blyth$ lldb.py 
-    # generated from-and-by /Users/blyth/opticks/ana/lldb.py 
-    command script import opticks.ana.lldb
+    delta:~ blyth$ g4lldb.py 
+    # generated from-and-by /Users/blyth/opticks/ana/g4lldb.py 
+    command script import opticks.ana.g4lldb
     br set -f CRandomEngine.cc -l 210
-    br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_210
+    br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_210
     br set -f G4TrackingManager.cc -l 131
-    br com add 2 -F opticks.ana.lldb.G4TrackingManager_cc_131
+    br com add 2 -F opticks.ana.g4lldb.G4TrackingManager_cc_131
 
 
-Background on lldb python scripting
+Background on g4lldb python scripting
 -----------------------------------
 
 * moved to env-/lldb-vi as got too long 
 * see also env-/tools/lldb_/standalone.py for development of evaluation functions
+
+
+    >>> from opticks.tools.evaluate import Evaluate
+    >>> ev = Evaluate()
+    >>> ev.evaluate_frame(lldb.frame)
+    >>> this = lldb.frame.FindVariable("this")
+    >>> ec = ev.evaluate_comp(this)
 
 
 """
@@ -51,7 +60,8 @@ from collections import defaultdict, OrderedDict
 
 from opticks.ana.ucf import UCF
 from opticks.ana.loc import Loc
-
+from opticks.tools.lldb_ import lldb
+from opticks.tools.evaluate import Evaluate, Value
 
 log = logging.getLogger(__name__)
 
@@ -78,6 +88,12 @@ INSTANCE = defaultdict(lambda:[])
 
 
 class Parse(dict):
+
+    HEAD = r"""
+    # Parse.HEAD
+    command script import opticks.ana.g4lldb
+    """
+
     PREFIX = "    (*lldb*)"
     BR_SET = "br set"
     BR_COM_ADD_1_ = "br com add 1 "
@@ -143,8 +159,9 @@ class Parse(dict):
             self.lines.append( line % self )
         pass
     def __repr__(self):
-        hdr = "# generated from-and-by %s " % ( os.path.abspath(__file__) )  
-        return "\n".join([hdr]+self.lines)
+        label = "# generated from-and-by %s " % ( os.path.abspath(__file__) )  
+        head = map(lambda line:line.lstrip().rstrip(), filter(None,self.HEAD.split("\n")))
+        return "\n".join([label]+head+self.lines)
 
 
 
@@ -223,6 +240,7 @@ class QDict(OrderedDict):
         pass
 
     
+    loc = property(lambda self:self.frm.loc)
     tag = property(lambda self:self.frm.loc.tag)
     idx = property(lambda self:self.frm.loc.idx)
 
@@ -243,6 +261,7 @@ class QDict(OrderedDict):
 
         self.frm = frm 
         self.this = this
+        self.pfx = pfx
 
 
         global INSTANCE
@@ -409,24 +428,6 @@ class G4VProcess(QDict):
 
 
 
-ENGINE = None
-class CRandomEngine(object):
-    def __init__(self):
-        pass
-        pindex = 1230 
-        ucf = UCF( pindex )
-        print repr(ucf)
-        self.ucf = ucf 
-
-    def postTrack(self, func):
-        finst = INSTANCE[func]
-        for i, inst in enumerate(finst):
-            print "%30s : %s " % ( i, inst )
-            #print "%30s : %10s : %s " % ( i, inst[".m_curand_index"], inst )
-        pass
- 
-
-
 class CRandomEngine_cc_flatExit(QDict):
     MEMBERS = r"""
     .m_flat:double
@@ -445,42 +446,86 @@ class CRandomEngine_cc_flatExit(QDict):
         return FMT % (self.tag, brief)
 
 
+
+
+ENGINE = None
+class CRandomEngine(object):
+    def __init__(self, pindex):
+        pass
+        ucf = UCF( pindex )
+        print repr(ucf)
+        self.ucf = ucf 
+        self.pindex = pindex
+
+    def postTrack(self, func):
+        finst = INSTANCE[func]
+        for i, inst in enumerate(finst):
+            print "%30s : %s " % ( i, inst )
+            #print "%30s : %10s : %s " % ( i, inst[".m_curand_index"], inst )
+        pass
+ 
+
 def CRandomEngine_cc_flatExit_(frame, bp_loc, sess):
     """  
     flatExit
  
     (*lldb*) br set -f CRandomEngine.cc -l %(flatExit)s
-    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_flatExit_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_flatExit_
     """
 
-    f = Frm(frame, "", sys._getframe() )
-   
-    flat = f(".m_flat:double")
-    idx  = f(".m_flat:double")
+    e = Evaluate()
+    v = Value(frame.FindVariable("this"))
+
+    flat = e(v("m_flat")) 
+    loca = e(v("m_location")) 
+    crfc = e(v("m_current_record_flat_count")) 
+    curi = e(v("m_curand_index")) 
+
+    assert type(flat) is float 
+    assert type(loca) is str 
+    assert type(crfc) is int 
+    assert type(curi) is int
+
+    assert ENGINE is not None 
+
+    lufc = len(ENGINE.ucf) 
+    u = ENGINE.ucf[crfc-1] if crfc-1 < lufc else None 
+    ufval = u.fval if u is not None else -1
+
+    df = abs(flat - ufval) 
+    maligned = df > 1e-6 
+
+    mrk = "**" if maligned else "  "
+
+    print "flatExit: mrk:%2s crfc:%5d df:%.9g flat:%.9g  ufval:%.9g : %20s : lufc : %d    " % ( mrk, crfc, df, flat, ufval, loca, lufc )
+    print u 
+
+    stop = maligned
+    return stop
 
 
-    print "flatExit.v:%s %s " % (v, type(v))
-
-
-    #flatExit = CRandomEngine_cc_flatExit(frame.FindVariable("this") , "this", sys._getframe() ) 
-    #print flatExit
-    #print "flatExit.idx:%d " % flatExit.idx
-
-    return False
 
 def CRandomEngine_cc_preTrack_(frame, bp_loc, sess):
     """   
     (*lldb*) br set -f CRandomEngine.cc -l %(preTrack)s
-    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_preTrack_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_preTrack_
     """
     global ENGINE
-    ENGINE = CRandomEngine()
+
+    e = Evaluate()
+    v = Value(frame.FindVariable("this"))
+    curi = e(v("m_curand_index")) 
+    assert type(curi) is int 
+    print "curi:%d " % curi 
+
+    ENGINE = CRandomEngine(pindex=curi)
     return False
+    
 
 def CRandomEngine_cc_postTrack_(frame, bp_loc, sess):
     """   
     (*lldb*) br set -f CRandomEngine.cc -l %(postTrack)s
-    (*lldb*) br com add 1 -F opticks.ana.lldb.CRandomEngine_cc_postTrack_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_postTrack_
     """
     ENGINE.postTrack("CRandomEngine_cc_flatExit_")
     return False
@@ -494,7 +539,7 @@ def G4SteppingManager_cc_191_(frame, bp_loc, sess):
     After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs()
 
     (lldb) br set -f G4SteppingManager.cc -l 191
-    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager_cc_191_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4SteppingManager_cc_191_
 
     g4-;g4-cls G4SteppingManager 
     """
@@ -508,7 +553,7 @@ def G4TrackingManager_cc_131_(frame, bp_loc, sess):
     Step Conclusion : TrackingManager step loop just after Stepping() 
 
     (lldb) br set -f G4TrackingManager.cc -l 131
-    (lldb) br com add 1 -F opticks.ana.lldb.G4TrackingManager_cc_131_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4TrackingManager_cc_131_
 
     g4-;g4-cls G4TrackingManager 
     """
@@ -553,7 +598,7 @@ def OpRayleigh_cc_EndWhile_(frame, bp_loc, sess):
     EndWhile
 
     (lldb) br set -f OpRayleigh.cc -l %(EndWhile)s
-    (lldb) br com add 1 -F opticks.ana.lldb.OpRayleigh_cc_EndWhile_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.OpRayleigh_cc_EndWhile_
 
     """
     inst = OpRayleigh_cc_EndWhile(frame.FindVariable("this") , "this", sys._getframe() )
@@ -566,7 +611,7 @@ def OpRayleigh_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     ExitPostStepDoIt
 
     (lldb) br set -f OpRayleigh.cc -l %(ExitPostStepDoIt)s
-    (lldb) br com add 1 -F opticks.ana.lldb.OpRayleigh_cc_ExitPostStepDoIt_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.OpRayleigh_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls OpRayleigh
     g4-;g4-cls G4VDiscreteProcess
@@ -618,7 +663,7 @@ def G4SteppingManager2_cc_181_(frame, bp_loc, sess):
     Collecting physIntLength within process loop after PostStepGPIL
 
     (*lldb*) br set -f G4SteppingManager2.cc -l 181
-    (*lldb*) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_181_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.G4SteppingManager2_cc_181_
 
     g4-;g4-cls G4SteppingManager 
 
@@ -634,7 +679,7 @@ def G4SteppingManager2_cc_225_(frame, bp_loc, sess):
     Dumping lengths collected by _181 after PostStep process loop 
 
     (lldb) br set -f G4SteppingManager2.cc -l 225
-    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_225_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4SteppingManager2_cc_225_
     """
     G4SteppingManager2_cc_181.Dump(sys._getframe())
     return False
@@ -653,7 +698,7 @@ def G4SteppingManager2_cc_270_(frame, bp_loc, sess):
     Near end of DefinePhysicalStepLength : Inside MAXofAlongStepLoops after AlongStepGPIL
 
     (lldb) br set -f G4SteppingManager2.cc -l 270
-    (lldb) br com add 1 -F opticks.ana.lldb.G4SteppingManager2_cc_270_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4SteppingManager2_cc_270_
 
     g4-;g4-cls G4SteppingManager
     """
@@ -674,7 +719,7 @@ def DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_(frame, bp_loc, sess):
     ExitPostStepDoIt
 
     (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(ExitPostStepDoIt)s
-    (*lldb*) br com add 1 -F opticks.ana.lldb.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_
 
     opticks-;opticks-cls DsG4OpBoundaryProcess
      
@@ -698,7 +743,7 @@ def DsG4OpBoundaryProcess_cc_DiDiTransCoeff_(frame, bp_loc, sess):
     DiDiTransCoeff
 
     (*lldb*) br set -f DsG4OpBoundaryProcess.cc -l %(DiDiTransCoeff)s
-    (*lldb*) br com add 1 -F opticks.ana.lldb.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_
+    (*lldb*) br com add 1 -F opticks.ana.g4lldb.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_
 
     opticks-;opticks-cls DsG4OpBoundaryProcess
      
@@ -723,7 +768,7 @@ def G4Navigator_ComputeStep_1181_(frame, bp_loc, sess):
     ComputeStep return : NOT WORKING : MISSING THIS 
 
     (lldb) br set -f G4Navigator.cc -l 1181
-    (lldb) br com add 1 -F opticks.ana.lldb.G4Navigator_ComputeStep_1181_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4Navigator_ComputeStep_1181_
 
     """ 
     inst = G4Navigator_ComputeStep_1181(frame.FindVariable("this"), "this", sys._getframe() )
@@ -761,7 +806,7 @@ def G4Transportation_cc_517_(frame, bp_loc, sess):
     AlongStepGetPhysicalInteractionLength Exit 
 
     (lldb) br set -f G4Transportation.cc -l 517
-    (lldb) br com add 1 -F opticks.ana.lldb.G4Transportation_cc_517_
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4Transportation_cc_517_
 
     g4-;g4-cls G4Transportation
  
@@ -802,7 +847,7 @@ def dev_G4SteppingManager2_cc_181(frame, bp_loc, sess):
 def G4VDiscreteProcess_PostStepGetPhysicalInteractionLength(frame, bp_loc, sess):
     """
     (lldb) br set G4VDiscreteProcess::PostStepGetPhysicalInteractionLength
-    (lldb) br com add 1 -F opticks.ana.lldb.G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4VDiscreteProcess_PostStepGetPhysicalInteractionLength
     """
     name = "%s.%s " % ( __name__, sys._getframe().f_code.co_name  )
     proc = frame.FindVariable("this")
@@ -814,7 +859,7 @@ def G4VDiscreteProcess_PostStepGetPhysicalInteractionLength(frame, bp_loc, sess)
 def G4VProcess_ResetNumberOfInteractionLengthLeft(frame, bp_loc, sess):
     """
     (lldb) br set G4VProcess::ResetNumberOfInteractionLengthLeft
-    (lldb) br com add 1 -F opticks.ana.lldb.G4VProcess_ResetNumberOfInteractionLengthLeft    
+    (lldb) br com add 1 -F opticks.ana.g4lldb.G4VProcess_ResetNumberOfInteractionLengthLeft    
     """
     name = "%s.%s " % ( __name__, sys._getframe().f_code.co_name  )
     this = frame.FindVariable("this")

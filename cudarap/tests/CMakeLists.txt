@@ -27,8 +27,6 @@ endforeach()
 
 set(TEST_SOURCES_CU
    cudaGetDevicePropertiesTest.cu
-   cudarap_printf_redirect.cu
-   gpu_printf_redirect.cu 
 )
 
 foreach(CU ${TEST_SOURCES_CU})

@@ -81,6 +81,9 @@ void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) cons
 
 void CRandomEngine::init()
 {
+
+    
+
     initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
 }
@@ -254,14 +257,21 @@ void CRandomEngine::preTrack()
     unsigned index = m_ctx._record_id   ;
     unsigned orig_index = m_ok->getMaskIndex( index ); 
 
-    LOG(error) << "CRandomEngine::pretrack record_id: " 
+    // hmm need to fix the redirect file descriptor issue for this
+   // const char* cmd = BStr::concat<unsigned>("ucf.py ", orig_index, NULL );  
+   // int rc = SSys::run(cmd) ; 
+   // assert( rc == 0 );
+
+
+    setupCurandSequence(orig_index) ;   
+
+    LOG(error) << "CRandomEngine::pretrack record_id: "    // (*lldb*) preTrack
                << " ctx.record_id " << m_ctx._record_id 
                << " index " << index 
                << " orig_index " << orig_index 
                << " mask.size " << m_mask.size()
                ;
-    
-    setupCurandSequence(orig_index) ;   // (*lldb*) preTrack
+ 
 }
 
 

@@ -14,16 +14,12 @@ NB thats the system python, not the macports one
 """
 
 import os, sys
-
-DIR = "/Library/Developer/CommandLineTools/Library/PrivateFrameworks/LLDB.framework/Resources/Python"
-if os.path.isdir(DIR):
-    sys.path.append(DIR)
-pass
-
 from collections import OrderedDict
-import lldb
 
-from opticks.tools.evaluate import evaluate_frame, evaluate_var, evaluate_obj
+from opticks.tools.lldb_ import lldb
+from opticks.tools.evaluate import Evaluate
+
+
 
 class Code(dict):
     @classmethod
@@ -157,11 +153,18 @@ if __name__ == '__main__':
 
     st = Standalone(co)  
     error = lldb.SBError()
-    ef = evaluate_frame(st.frame, vdump=True, error=error)
 
-    print ef 
-    print ef["o"]["_s"]
+    ev = Evaluate(error, opt="f")
+    ef = ev.evaluate_frame(st.frame)
+
+    #print ef 
+    #print ef["o"]["_s"]
 
     ##  /usr/bin/python -i standalone.py   OR lldb-i 
    
+    #v = st.frame.FindVariable("cc")
+    
+
+
+
 

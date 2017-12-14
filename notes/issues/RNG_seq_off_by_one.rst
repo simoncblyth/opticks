@@ -10,6 +10,96 @@ Launch
     tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog -DD   
 
 
+    ucf.py 9041
+
+    tboolean-;tboolean-box --okg4 --align --mask 9041 --pindex 0 --pindexlog -DD 
+
+
+Where consumption is mis-aligned
+---------------------------------
+
+::
+
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = FresnelReflection 
+    flatExit: mrk:   crfc:    5 df:3.44848594e-11 flat:0.753801465  ufval:0.753801465 :          OpBoundary; : lufc : 29    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:1
+    propagate_to_boundary  u_boundary_burn:0.753801465 speed:299.79245
+     [  4]                                      boundary_burn :     0.753801465 :    : 0.753801465 : 0.753801465 : 2 
+
+    flatExit: mrk:   crfc:    6 df:4.58282523e-10 flat:0.999846756  ufval:0.999846756 :          OpRayleigh; : lufc : 29    
+    propagate_to_boundary  u_scattering:0.999846756   scattering_length(s.material1.z):1000000 scattering_distance:153.25528
+     [  5]                                         scattering :     0.999846756 :    : 0.999846756 : 0.999846756 : 1 
+
+    flatExit: mrk:   crfc:    7 df:3.11492943e-10 flat:0.438019574  ufval:0.438019574 :        OpAbsorption; : lufc : 29    
+    propagate_to_boundary  u_absorption:0.438019574   absorption_length(s.material1.y):10000000 absorption_distance:8254917
+     [  6]                                         absorption :     0.438019574 :    : 0.438019574 : 0.438019574 : 1 
+
+    2017-12-14 20:10:31.576 INFO  [601836] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-14 20:10:31.576 ERROR [601836] [CRandomEngine::poststep@233] CRandomEngine::poststep _noZeroSteps 1 backseq -3
+    flatExit: mrk:** crfc:    8 df:0.039769888 flat:0.753801465  ufval:0.714031577 :          OpBoundary; : lufc : 29    
+    rayleigh_scatter_align p.direction (0 0 -1)
+    rayleigh_scatter_align p.polarization (-0 1 -0)
+    rayleigh_scatter_align.do u_rsa0:0.714031577
+     [  7]                                               rsa0 :     0.714031577 :    : 0.714031577 : 0.714031577 : 3 
+
+    Process 16107 stopped
+    * thread #1: tid = 0x92eec, 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203
+       200      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+       201      m_current_record_flat_count++ ; 
+       202      m_current_step_flat_count++ ; 
+    -> 203      return m_flat ;   // (*lldb*) flatExit
+       204  }
+       205  
+       206  
+    (lldb) bt
+    * thread #1: tid = 0x92eec, 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+      * frame #0: 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203
+        frame #1: 0x0000000105b32b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001109c53d0) + 23 at G4VProcess.cc:97
+        frame #2: 0x0000000105b32472 libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=<unavailable>, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 82 at G4VDiscreteProcess.cc:79
+        frame #3: 0x0000000105291d67 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength() [inlined] G4VProcess::PostStepGPIL(this=0x00000001109c53d0, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 14 at G4VProcess.hh:503
+        frame #4: 0x0000000105291d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000110943920) + 249 at G4SteppingManager2.cc:172
+        frame #5: 0x000000010529073e libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110943920) + 366 at G4SteppingManager.cc:180
+        frame #6: 0x000000010529a771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001109438e0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
+        frame #7: 0x00000001051f2727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110943850, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
+        frame #8: 0x0000000105174611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c738420, i_event=0) + 49 at G4RunManager.cc:399
+        frame #9: 0x00000001051744db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c738420, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
+        frame #10: 0x0000000105173913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c738420, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
+        frame #11: 0x00000001044d8dd6 libcfg4.dylib`CG4::propagate(this=0x000000010c737e90) + 1670 at CG4.cc:404
+        frame #12: 0x00000001045e925a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfddb0) + 538 at OKG4Mgr.cc:88
+        frame #13: 0x00000001000132da OKG4Test`main(argc=35, argv=0x00007fff5fbfde90) + 1498 at OKG4Test.cc:57
+        frame #14: 0x00007fff8c89b5fd libdyld.dylib`start + 1
+    (lldb) 
+
+    (lldb) f 4
+    frame #4: 0x0000000105291d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000110943920) + 249 at G4SteppingManager2.cc:172
+       169         continue;
+       170       }   // NULL means the process is inactivated by a user on fly.
+       171  
+    -> 172       physIntLength = fCurrentProcess->
+       173                       PostStepGPIL( *fTrack,
+       174                                                   fPreviousStepSize,
+       175                                                        &fCondition );
+    (lldb) p fCurrentProcess
+    (G4VProcess *) $0 = 0x00000001109c53d0
+    (lldb) p fCurrentProcess->theProcessName
+    (G4String) $1 = (std::__1::string = "OpBoundary")
+    (lldb) 
+
+    (lldb) f 1
+    frame #1: 0x0000000105b32b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001109c53d0) + 23 at G4VProcess.cc:97
+       94   
+       95   void G4VProcess::ResetNumberOfInteractionLengthLeft()
+       96   {
+    -> 97     theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+       98     theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
+       99   }
+       100  
+
+
+
+
 Debugging Idea
 ----------------
 

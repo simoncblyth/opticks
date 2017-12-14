@@ -79,25 +79,7 @@ void OKG4Mgr::propagate()
         {   
             m_run->createEvent(i);
 
-            if(m_ok->isFabricatedGensteps())  // eg torch running 
-            {
-                 NPY<float>* gs = m_gen->getInputGensteps() ;
-
-                 m_run->setGensteps(gs); 
-
-                 m_g4->propagate();
-            }
-            else
-            {
-                 NPY<float>* gs = m_g4->propagate() ;
-
-                 if(!gs) LOG(fatal) << "CG4::propagate failed to return gensteps" ; 
-                 assert(gs);
-
-                 m_run->setGensteps(gs); 
-            }
-
-            m_propagator->propagate();
+            propagate_();
 
             if(ok("save"))
             {
@@ -111,6 +93,47 @@ void OKG4Mgr::propagate()
         m_ok->postpropagate();
     }   
 }
+
+
+
+void OKG4Mgr::propagate_()
+{
+    // Normally the G4 propagation is done first, because 
+    // gensteps eg from G4Gun can then be passed to Opticks.
+    // However with RNG-aligned testing using "--align" option
+    // which uses emitconfig CPU generated photons there is 
+    // no need to do G4 first. Actually it is more convenient
+    // for Opticks to go first in order to allow access to the ucf.py 
+    // parsed  kernel pindex log during lldb python scripted G4 debugging.
+  
+    bool align = m_ok->isAlign();
+
+    if(m_ok->isFabricatedGensteps())  // eg torch running 
+    {
+         NPY<float>* gs = m_gen->getInputGensteps() ;
+
+         m_run->setGensteps(gs); 
+
+         if(align)
+             m_propagator->propagate();
+          
+
+         m_g4->propagate();
+    }
+    else
+    {
+         NPY<float>* gs = m_g4->propagate() ;
+
+         if(!gs) LOG(fatal) << "CG4::propagate failed to return gensteps" ; 
+         assert(gs);
+
+         m_run->setGensteps(gs); 
+    }
+            
+    if(!align)
+        m_propagator->propagate();
+}
+
 
 
 

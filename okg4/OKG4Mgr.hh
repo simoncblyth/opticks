@@ -22,6 +22,7 @@ class OKG4_API OKG4Mgr {
        void visualize();
        int rc() const ;
    private:
+       void propagate_();
        void cleanup();
    private:
        SLog*          m_log ; 
