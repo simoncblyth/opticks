@@ -7,74 +7,17 @@ Caution with the PREFIXd comment strings in this
 file, they are parsed by this file to extract the 
 lldb startup command to define breakpoints.
 
-
-TODO
---------
-
-* simplify handling of atomic values, perhaps with V wrapper
-
-
 Using lldb breakpoint python scripting
 ---------------------------------------
 
 ::
 
-    unset OPTICKS_LLDB_SOURCE
-    export OPTICKS_LLDB_SOURCE=/tmp/g4lldb.txt  
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 -DD
 
-        # eg put these lines into ~/.bash_profile
-        # toggle commenting the export to switch on/off
-
-    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 -D
-
-        # normal debug launching, this will: 
+        # special -DD debug launching: 
         #
         # 1. update the breakpoint setup, via parsing this file
         # 2. source the commands on starting lldb 
-
-
-
-Docs
------
-
-* https://llvm.org/svn/llvm-project/lldb/trunk/include/lldb/API/SBValue.h
-
-* https://stackoverflow.com/questions/41089145/how-do-i-access-c-array-float-values-from-lldb-python-api
-
-* https://www.codesd.com/item/how-do-i-access-the-floating-point-values-in-table-c-of-the-lldb-python-api.html
-
-* http://idrisr.com/2015/10/12/debugging-a-debugger.html
-
-* https://github.com/llvm-mirror/lldb/tree/master/packages/Python/lldbsuite/test/functionalities
-
-* https://lldb.llvm.org/python_reference/index.html
-
-* https://lldb.llvm.org/varformats.html
-
-::
-
-    (lldb) type summary add -P Rectangle
-    Enter your Python command(s). Type 'DONE' to end.
-    def function (valobj,internal_dict):
-        height_val = valobj.GetChildMemberWithName('height')
-        width_val = valobj.GetChildMemberWithName('width')
-        height = height_val.GetValueAsUnsigned(0)
-        width = width_val.GetValueAsUnsigned(0)
-        area = height*width
-        perimeter = 2*(height + width)
-        return 'Area: ' + str(area) + ', Perimeter: ' + str(perimeter)
-        DONE
-    (lldb) frame variable
-    (Rectangle) r1 = Area: 20, Perimeter: 18
-    (Rectangle) r2 = Area: 72, Perimeter: 36
-    (Rectangle) r3 = Area: 16, Perimeter: 16
-
-
-::
-
-    >>> print lldb.target
-    OKG4Test
-    >>> print dir(lldb.target)
 
 
 Automated breakpoint scripting
@@ -94,92 +37,12 @@ and when envvar OPTICKS_LLDB_SOURCE is defined.
     br com add 2 -F opticks.ana.lldb.G4TrackingManager_cc_131
 
 
-lldb logging
---------------
-
-* https://stackoverflow.com/questions/37296802/how-to-log-to-the-console-in-an-lldb-data-formatter
-
-
-Experience with lldb python scripting
-----------------------------------------
-
-Not all variables available, use "frame variables" to find some, 
-forturnately "this" has so far always been available.
-
-::
-
-
-    (lldb) frame variable
-
-    (G4int) moduloFactor = <no location, value may have been optimized out>
-
-    (G4Transportation *) this = 0x0000000110226ae0
-
-    (const G4Track &) track = <variable not available>
-
-    (G4double)  = <invalid load address>
-
-    (G4double) currentMinimumStep = <variable not available>
-
-
-
-
 Background on lldb python scripting
 -----------------------------------
 
-    (lldb) help br com add
+* moved to env-/lldb-vi as got too long 
+* see also env-/tools/lldb_/standalone.py for development of evaluation functions
 
-    (lldb) script
-
-    >>> help(lldb.frame)
-    >>> help(lldb.SBValue)  # eg this
-
-    (lldb) script
-    Python Interactive Interpreter. To exit, type 'quit()', 'exit()' or Ctrl-D.
-    >>> print lldb.frame
-    frame #0: 0x000000010528fd8b libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000111a550b0) + 299 at G4SteppingManager2.cc:181
-
-    >>> this = lldb.frame.FindVariable("this")
-
-    >>> print "\n".join([str(this.GetChildAtIndex(_)) for _ in range(this.GetNumChildren())])
-
-    (G4bool) KillVerbose = true
-    (G4UserSteppingAction *) fUserSteppingAction = 0x000000010d369370
-    (G4VSteppingVerbose *) fVerbose = 0x0000000111a55440
-    (G4double) PhysicalStep = 1.7976931348623157E+308
-    ...
-
-    >>> memb_ = lambda this:"\n".join([str(this.GetChildAtIndex(_)) for _ in range(len(this))])
-
-    >>> print memb_(this)
-
-    (G4bool) KillVerbose = true
-    (G4UserSteppingAction *) fUserSteppingAction = 0x000000010d369370
-    (G4VSteppingVerbose *) fVerbose = 0x0000000111a55440
-    ...
-
-    >>> p = this.GetChildMemberWithName("fCurrentProcess")
-    >>> print p
-    (G4VProcess *) fCurrentProcess = 0x000000010d3ad880
-
-    >>> re.compile("\"(\S*)\"").search(str(this.GetValueForExpressionPath(".fCurrentProcess.theProcessName"))).group(1)
-    'OpBoundary'
-
-
-NOW AUTOMATED : Connecting the handlers
---------------------------------------------
-
-
-Add the handler::
-
-    (*lldb*) command script import opticks.ana.lldb
-        ## formerly put into ~/.lldbinit 
-
-    (lldb) b G4VDiscreteProcess::PostStepGetPhysicalInteractionLength 
-        ## create pending breakpoint
-
-    (lldb) br com  add 1 -F opticks.ana.lldb
-        ## add command to pending breakpoint 
 
 """
 

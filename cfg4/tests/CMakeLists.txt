@@ -20,6 +20,7 @@ set(TEST_SOURCES
     G4SphereTest.cc
     G4UniformRandTest.cc
     G4BoxTest.cc
+    G4ThreeVectorTest.cc
     CCollectorTest.cc
     CInterpolationTest.cc
     OpRayleighTest.cc 
