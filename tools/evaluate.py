@@ -4,7 +4,7 @@
     (lldb) script
     Python Interactive Interpreter. To exit, type 'quit()', 'exit()' or Ctrl-D.
 
-    >>> from opticks.tools.evaluate import Value, Evaluate ; e = Evaluate() ; v = Value(lldb.frame.FindVariable("this"))
+    >>> from opticks.tools.evaluate import Value, Evaluate, EV ; ev = EV(lldb.frame.FindVariable("this"))
 
 """
 
@@ -13,6 +13,36 @@ from opticks.tools.lldb_ import lldb
 
 def rsplit(r):
     return map(lambda _:_.lstrip().rstrip(),r.split("\n"))
+
+
+
+class EV(object):
+    def __init__(self, v=None):
+        self.e = Evaluate()
+        self.v = v
+
+    def _set_v(self, v):
+        if type(v) is Value or type(v) is None:
+            self._v = v
+        else:
+            self._v = Value(v)
+        pass 
+    def _get_v(self):
+        return self._v
+
+    v = property(_get_v, _set_v)
+
+    def v_(self, k):
+        if self.v is None: 
+            return None
+        return self.v(k)
+
+    def ev(self, k):
+        if self.v is None: 
+            return None
+        return self.e(self.v(k))
+
+
 
 
 
@@ -61,6 +91,9 @@ class Value(object):
 
 
 class Evaluate(object):
+    """
+    NB : holds no "domain" state
+    """
     SKIPS = rsplit(r"""
     char **
     """)
@@ -69,8 +102,6 @@ class Evaluate(object):
     std::__1::string
     """)
     # canonical type for std::string is giant basic_string monstrosity, so dont use it for classify
-
-
 
     E_ATOM = "ATOM"
     E_SKIP = "SKIP"

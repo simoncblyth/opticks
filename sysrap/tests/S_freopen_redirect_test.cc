@@ -1,6 +1,8 @@
 
 // https://stackoverflow.com/questions/1908687/how-to-redirect-the-output-back-to-the-screen-after-freopenout-txt-a-stdo
 
+//  https://stackoverflow.com/questions/5846691/how-to-restore-stdout-after-using-freopen
+
 #include <cassert>
 #include "S_freopen_redirect.hh"
 #include "SSys.hh"

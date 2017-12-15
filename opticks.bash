@@ -1056,6 +1056,7 @@ opticks-export-mingw()
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
 opticks-rdocs(){   opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
+opticks-rnotes(){  opticks-open  http://simoncblyth.bitbucket.io/opticks_notes/index.html ; } 
 opticks-docs(){    opticks-open  $(opticks-docs-htmldir)/index.html ; } 
 opticks-docs-htmldir(){ 
    local htmldirbb=$HOME/simoncblyth.bitbucket.org/opticks 

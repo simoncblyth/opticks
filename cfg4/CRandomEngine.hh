@@ -89,6 +89,8 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         int                      m_curand_nv ; 
         int                      m_current_record_flat_count ; 
         int                      m_current_step_flat_count ; 
+        int                      m_offset ;
+        int                      m_offset_count ;  
         double                   m_flat ; 
 
         std::string              m_location ; 
@@ -97,6 +99,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
        
         std::vector<double> m_sequence ; 
         unsigned            m_cursor; 
+        unsigned            m_cursor_old ; 
 
     private:
         void setSeed(long , int) ; 

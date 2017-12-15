@@ -37,6 +37,157 @@ Launch
     ucf.py 9041
 
 
+Location misaligns
+-------------------
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD  --dbgnojump
+
+
+    [  6]                                       OpAbsorption :     0.438019574 :    : 0.438019574 : 0.438019574 : 1 
+
+    2017-12-15 14:35:12.704 INFO  [730136] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 14:35:12.704 ERROR [730136] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3 --dbgnojump YES
+    2017-12-15 14:35:12.704 FATAL [730136] [CRandomEngine::poststep@244] CRandomEngine::poststep rewind inhibited by option: --dbgnojump 
+    flatExit: mrk:-# crfc:    8 df:1.10290554e-10 u_g4:0.714031577 u_ok:0.714031577 loc_g4:          OpBoundary loc_ok:          OpRayleigh  : lucf : 29    
+    rayleigh_scatter_align p.direction (0 0 -1)
+    rayleigh_scatter_align p.polarization (-0 1 -0)
+    rayleigh_scatter_align.do u_OpRayleigh:0.714031577
+     [  7]                                         OpRayleigh :     0.714031577 :    : 0.714031577 : 0.714031577 : 3 
+
+    Process 51835 stopped
+
+
+
+
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD 
+
+
+    flatExit: mrk:-- crfc:    4 df:3.70178332e-11 u_g4:0.938713491 u_ok:0.938713491 loc_g4:OpBoundary_DiDiTransCoeff loc_ok:OpBoundary_DiDiTransCoeff  : lucf : 29    
+    propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:0.938713491  reflect:1   TransCoeff:   0.93847  c2c2:    1.0000 tir:0  pos (  -37.8785    11.8230  -100.0000)
+     [  3]                          OpBoundary_DiDiTransCoeff :     0.938713491 :    : 0.938713491 : 0.938713491 : 1 
+
+
+    //                     opticks.ana.loc.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_.[1] : DiDiTransCoeff 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_DiDiTransCoeff 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                      /TransCoeff :  0.938471  
+    //                                                                              /_u :  0.938713  
+    //                                                                       /_transmit : False 
+
+    //                   opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[1] : ExitPostStepDoIt 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = FresnelReflection 
+    flatExit: mrk:-- crfc:    5 df:3.44848594e-11 u_g4:0.753801465 u_ok:0.753801465 loc_g4:          OpBoundary loc_ok:          OpBoundary  : lucf : 29    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:1
+    propagate_to_boundary  u_OpBoundary:0.753801465 speed:299.79245
+     [  4]                                         OpBoundary :     0.753801465 :    : 0.753801465 : 0.753801465 : 2 
+
+    flatExit: mrk:-- crfc:    6 df:4.58282523e-10 u_g4:0.999846756 u_ok:0.999846756 loc_g4:          OpRayleigh loc_ok:          OpRayleigh  : lucf : 29    
+    propagate_to_boundary  u_OpRayleigh:0.999846756   scattering_length(s.material1.z):1000000 scattering_distance:153.25528
+     [  5]                                         OpRayleigh :     0.999846756 :    : 0.999846756 : 0.999846756 : 1 
+
+    flatExit: mrk:-- crfc:    7 df:3.11492943e-10 u_g4:0.438019574 u_ok:0.438019574 loc_g4:        OpAbsorption loc_ok:        OpAbsorption  : lucf : 29    
+    propagate_to_boundary  u_OpAbsorption:0.438019574   absorption_length(s.material1.y):10000000 absorption_distance:8254917
+     [  6]                                       OpAbsorption :     0.438019574 :    : 0.438019574 : 0.438019574 : 1 
+
+    2017-12-15 14:29:48.568 INFO  [727965] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 14:29:48.568 ERROR [727965] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3 --dbgnojump NO
+    flatExit: mrk:*# crfc:    8 df:0.039769888 u_g4:0.753801465 u_ok:0.714031577 loc_g4:          OpBoundary loc_ok:          OpRayleigh  : lucf : 29    
+    rayleigh_scatter_align p.direction (0 0 -1)
+    rayleigh_scatter_align p.polarization (-0 1 -0)
+    rayleigh_scatter_align.do u_OpRayleigh:0.714031577
+     [  7]                                         OpRayleigh :     0.714031577 :    : 0.714031577 : 0.714031577 : 3 
+
+
+    * OpBoundary is 1st consumption of the step
+
+
+
+       1230 : /tmp/blyth/opticks/ox_1230.log  
+     [  0]                                         OpBoundary :   0.00111702492 :    : 0.001117025 : 0.001117025 : 3 
+     [  1]                                         OpRayleigh :      0.50264734 :    : 0.502647340 : 0.502647340 : 1 
+     [  2]                                       OpAbsorption :     0.601504147 :    : 0.601504147 : 0.601504147 : 1 
+     [  3]                          OpBoundary_DiDiTransCoeff :     0.938713491 :    : 0.938713491 : 0.938713491 : 1 
+
+     [  4]                                         OpBoundary :    *0.753801465* :    : 0.753801465 : 0.753801465 : 2 
+     [  5]                                         OpRayleigh :     0.999846756 :    : 0.999846756 : 0.999846756 : 1 
+     [  6]                                       OpAbsorption :     0.438019574 :    : 0.438019574 : 0.438019574 : 1 
+
+     [  7]                                         OpRayleigh :    *0.714031577* :    : 0.714031577 : 0.714031577 : 3 
+     [  8]                                         OpRayleigh :     0.330403954 :    : 0.330403954 : 0.330403954 : 1 
+     [  9]                                         OpRayleigh :     0.570741653 :    : 0.570741653 : 0.570741653 : 1 
+     [ 10]                                         OpRayleigh :     0.375908673 :    : 0.375908673 : 0.375908673 : 1 
+     [ 11]                                         OpRayleigh :      0.78497833 :    : 0.784978330 : 0.784978330 : 1 
+
+     [ 12]                                         OpBoundary :     0.892654359 :    : 0.892654359 : 0.892654359 : 6 
+     [ 13]                                         OpRayleigh :     0.441063195 :    : 0.441063195 : 0.441063195 : 1 
+     [ 14]                                       OpAbsorption :     0.773742437 :    : 0.773742437 : 0.773742437 : 1 
+     [ 15]                          OpBoundary_DiDiTransCoeff :     0.556839108 :    : 0.556839108 : 0.556839108 : 1 
+
+
+
+
+What could go wrong with the rewind ?
+----------------------------------------
+
+* hmm why not seeing the burnt flatExit calls
+
+
+::
+
+    196 double CRandomEngine::flat()
+    197 {
+    198     if(!m_internal) m_location = CurrentProcessName();
+    199     assert( m_current_record_flat_count < m_curand_nv );
+    200     m_flat =  _flat() ;
+    201     m_current_record_flat_count++ ; 
+    202     m_current_step_flat_count++ ; 
+    203     return m_flat ;   // (*lldb*) flatExit
+    204 }   
+
+
+    228 void CRandomEngine::poststep()
+    229 {
+    230     if(m_ctx._noZeroSteps > 0)
+    231     {
+    232         int backseq = -m_current_step_flat_count ;
+    233         bool dbgnojump = m_ok->isDbgNoJump() ;
+    234 
+    235         LOG(error) << "CRandomEngine::poststep"
+    236                    << " _noZeroSteps " << m_ctx._noZeroSteps
+    237                    << " backseq " << backseq
+    238                    << " --dbgnojump " << ( dbgnojump ? "YES" : "NO" )
+    239                    ;
+    240 
+    241         if( dbgnojump )
+    242         {
+    243             LOG(fatal) << "CRandomEngine::poststep rewind inhibited by option: --dbgnojump " ;
+    244         }
+    245         else
+    246         {
+    247             jump(backseq);
+    248         }
+    249     }
+    250 
+    251     m_current_step_flat_count = 0 ;
+    252 
+    253     if( m_locseq )
+    254     {
+    255         m_locseq->poststep();
+    256         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ;
+    257     }
+    258 }
+
+
+
+
 Full unmasked run into tag 2
 -------------------------------
 

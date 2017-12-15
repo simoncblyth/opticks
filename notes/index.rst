@@ -3,6 +3,7 @@ Opticks Development Notes
 
 .. toctree::
 
+   abstracts
    progress
    ideas
    issues/index

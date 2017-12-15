@@ -48,6 +48,9 @@ class U(object):
         return self.hdr 
 
 
+
+
+
 class UCF(list):
     MKR = "u_"
     PTN = re.compile("u_(\S*):\s*(\S*)\s*")
@@ -134,18 +137,18 @@ if __name__ == '__main__':
 
     rng = np.load(UCF.rngpath())
     xrng = rng[pindex].ravel()
-    print(str(xrng), file=stream) 
+    #print(str(xrng), file=stream) 
 
     trng = UCF.rngpathtxt(pindex)
     np.savetxt(trng, xrng, delimiter=",")
 
     xrng2 = UCF.loadrngtxt(pindex)
-    print(str(xrng2), file=stream)
+    #print(str(xrng2), file=stream)
 
 
     ucf = UCF( pindex )
 
-    print(str(ucf), file=stream)
+    #print(str(ucf), file=stream)
     print(repr(ucf), file=stream)
 
    

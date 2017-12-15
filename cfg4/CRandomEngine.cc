@@ -51,8 +51,11 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
     m_current_record_flat_count(0),
     m_current_step_flat_count(0),
+    m_offset(0),
+    m_offset_count(0),
     m_flat(-1.0),
-    m_cursor(0)
+    m_cursor(0),
+    m_cursor_old(0)
 {
     init();
 }
@@ -129,6 +132,7 @@ void CRandomEngine::setupCurandSequence(int record_id)
     setRandomSequence( seq, m_curand_nv ) ; 
 
     m_current_record_flat_count = 0 ; 
+    m_current_step_flat_count = 0 ; 
 }
 
 
@@ -142,8 +146,8 @@ std::string CRandomEngine::desc() const
     ss 
        << "CRandomEngine"
        << " rec.stp1 " << std::setw(5) << rs1
-       << " crfc " << std::setw(5) << m_current_record_flat_count 
-       << " csfc " << std::setw(5) << m_current_step_flat_count 
+       << " crf " << std::setw(5) << m_current_record_flat_count 
+       << " csf " << std::setw(5) << m_current_step_flat_count 
        << " loc " << std::setw(50) << m_location 
        ;
 
@@ -197,12 +201,46 @@ double CRandomEngine::flat()
 { 
     if(!m_internal) m_location = CurrentProcessName();
     assert( m_current_record_flat_count < m_curand_nv ); 
-    m_flat =  _flat() ;  
-    //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+    
+    double v =  _flat() ;  
+
     m_current_record_flat_count++ ; 
     m_current_step_flat_count++ ; 
-    return m_flat ;   // (*lldb*) flatExit
+
+    return v ;  
 }
+
+double CRandomEngine::_flat() 
+{
+    assert( m_cursor < m_sequence.size() );
+    m_flat = m_sequence[m_cursor];
+    m_cursor += 1 ; 
+    return m_flat ;     // (*lldb*) flat
+}
+
+void CRandomEngine::jump(int offset) 
+{
+    m_cursor_old = m_cursor ; 
+    m_offset = offset ; 
+    m_offset_count += 1 ; 
+
+    int cursor = m_cursor + offset ; 
+    m_cursor = cursor ;   
+
+    assert( cursor > -1 && cursor < int(m_sequence.size()) ) ;   // (*lldb*) jump
+}
+
+
+void CRandomEngine::setRandomSequence(double* s, int n) 
+{
+    m_sequence.clear();
+    for (int i=0; i<n; i++) m_sequence.push_back(*s++);
+    assert (m_sequence.size() == (unsigned)n);
+    m_cursor = 0;
+}
+
+
+
 
 
 void CRandomEngine::dumpFlat()
@@ -311,31 +349,6 @@ void CRandomEngine::postpropagate()
     dump("CRandomEngine::postpropagate");
 }
 
-
-
-
-void CRandomEngine::setRandomSequence(double* s, int n) 
-{
-    m_sequence.clear();
-    for (int i=0; i<n; i++) m_sequence.push_back(*s++);
-    assert (m_sequence.size() == (unsigned)n);
-    m_cursor = 0;
-}
-
-void CRandomEngine::jump(int offset) 
-{
-    int cursor = m_cursor + offset ; 
-    assert( cursor > -1 && cursor < int(m_sequence.size()) ) ; 
-    m_cursor = cursor ; 
-}
-
-double CRandomEngine::_flat() 
-{
-    assert( m_cursor < m_sequence.size() );
-    double v = m_sequence[m_cursor];
-    m_cursor += 1 ; 
-    return v ; 
-}
 
 
 

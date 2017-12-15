@@ -11,32 +11,30 @@ class Loc(object):
     """
     Identifies a calling python function from its pframe
     """
+
     @classmethod
-    def Hdr(cls, tag, label=""):
-        return FMT % (tag, label)
- 
-    @classmethod
-    def Tag(cls, func):
+    def Tag(cls, func, name):
         if func is None:return None
         pass
-        name = "%s.%s" % ( __name__, func  )
+        identity = "%s.%s" % (name, func  )
         global COUNT 
-        idx = COUNT[name] 
-        tag = "%s.[%d]" % ( name, idx )
-        COUNT[name] += 1 
+        idx = COUNT[identity] 
+        tag = "%s.[%.2d]" % ( func, idx)
+        COUNT[identity] += 1 
         return tag, idx
 
-    def __init__(self, pframe):
+    def __init__(self, pframe, name):
         """
         :param pframe: python frame  
         """
+        self.name = name 
         if pframe is not None:
             doc = pframe.f_code.co_consts[0]
             doclines = filter(None, doc.split("\n"))
             label = doclines[0].lstrip() if len(doclines) > 0 else "-"  # 1st line of docstring
             func = pframe.f_code.co_name
-            tag, idx = self.Tag(func)
-            hdr = self.Hdr(tag, label) 
+            tag, idx = self.Tag(func, name)
+            hdr = FMT % (tag, label) 
         else:
             func = None
             label = "-"
@@ -52,7 +50,7 @@ class Loc(object):
 
     def __repr__(self):
         disp_ = lambda k:" %10s : %s " % ( k, getattr(self, k, None)) 
-        return "\n".join(map(disp_, "func label tag idx hdr".split()))
+        return "\n".join(map(disp_, "name func label tag idx hdr".split()))
 
 
 
@@ -61,7 +59,7 @@ def test_Loc():
     First Line of docstring becomes label
     """
 
-    loc = Loc(sys._getframe())
+    loc = Loc(sys._getframe(), __name__)
     print loc
 
 
