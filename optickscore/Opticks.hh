@@ -375,6 +375,7 @@ class OKCORE_API Opticks {
        bool isProduction();
 
        bool isAlign() const ;
+       bool isDbgNoJump() const ;
        bool isReflectCheat() const ;
        bool isSave() const ;
        bool isLoad() const;

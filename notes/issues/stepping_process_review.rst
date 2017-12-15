@@ -1,10 +1,8 @@
 stepping_process_review
 =========================
 
-
 Possible Geant4 no-scatter-no-scatter bug ? 
 -------------------------------------------- 
-
 
 The below method is central to G4 operation::
 
@@ -26,7 +24,7 @@ The reason is that the PostStepDoItProc which invokes the base
 G4VDiscreteProcess::PostStepDoItProc only happens for the winning process.  
 
 This means that the same scattering and absorption length probabilities are reused 
-until those processes actually happen. For absoption thats the end of the line, so no-problem 
+until those processes actually happen. For absorption thats the end of the line, so no-problem 
 but for scattering it means that the probability of not scattering is artificially 
 the same from step to step until a scatter actually happens. 
 
@@ -36,7 +34,6 @@ If this is a bug, I guess its a very minor one.
 My workaround for this to align random consumption, invokes G4VDiscreteProcess::PostStepDoItProc 
 at the end of the step for OpAbsorption and OpRayleigh in order to force interaction length 
 resets for every step.
-
 
 
 ::
@@ -65,6 +62,60 @@ resets for every step.
      80 
      81     if (absorption_distance <= scattering_distance)
      82     {
+
+
+
+
+::
+
+    096 void CSteppingAction::UserSteppingAction(const G4Step* step)
+     97 {
+     98     bool done = setStep(step);
+     99 
+    ...
+    110     m_g4->poststep();
+    111 
+    112     if(done)
+    113     {
+    114         G4Track* track = step->GetTrack();    // m_track is const qualified
+    115         track->SetTrackStatus(fStopAndKill);
+    116         // stops tracking when reach truncation as well as absorption
+    117     }
+    118     else
+    119     {
+    120         // guess work for alignment
+    121         //if(postStatus == fGeomBoundary)
+    122         // CProcessManager::ResetNumberOfInteractionLengthLeft( m_ctx._process_manager );
+    123         CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+    124     }
+    125 }
+    126 
+
+
+
+::
+
+     70 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
+     71 {
+     72     G4ProcessVector* pl = proMgr->GetProcessList() ;
+     73     G4int n = pl->entries() ;
+     74 
+     75     for(int i=0 ; i < n ; i++)
+     76     {
+     77         G4VProcess* p = (*pl)[i] ;
+     78         const G4String& name = p->GetProcessName() ;
+     79         bool is_ab = name.compare("OpAbsorption") == 0 ;
+     80         bool is_sc = name.compare("OpRayleigh") == 0 ;
+     81         //bool is_bd = name.compare("OpBoundary") == 0 ;
+     82         if( is_ab || is_sc )
+     83         {
+     84             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
+     85             assert(dp);   // Transportation not discrete
+     86             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+     87             // devious way to invoke the protected ClearNumberOfInteractionLengthLeft via G4VDiscreteProcess::PostStepDoIt
+     88         }
+     89     }
+     90 }
 
 
 

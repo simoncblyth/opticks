@@ -185,14 +185,9 @@ class Evaluate(object):
     std::__1::string
     const char *
     """)
- 
-    def evaluate_atom(self, v):
-        """
-        :param v: SBValue 
-        :return: python equivalent or "?" if unhandled
-        """
-        nc = v.GetNumChildren()
-        k = v.GetName()
+
+
+    def atom_typename(self, v):
         t = v.GetType()
         vtn = v.GetTypeName()   
 
@@ -203,6 +198,18 @@ class Evaluate(object):
             ctn = ct.GetName() 
             tn = ctn 
         pass
+        return tn
+
+ 
+    def evaluate_atom(self, v):
+        """
+        :param v: SBValue 
+        :return: python equivalent or "?" if unhandled
+        """
+        nc = v.GetNumChildren()
+        k = v.GetName()
+
+        tn = self.atom_typename(v)
 
         sz = v.GetByteSize()
         d = v.GetData()
@@ -243,10 +250,17 @@ class Evaluate(object):
             offset = 0 
             e = d.GetSignedInt8(error, offset)
         elif tn == "std::__1::string":
-            offset = 1 
-            e = d.GetString(error, offset)  
-            # offset 1 avoids "\x16hello"
-            # hmm kinda dodgy, the string is actually composite with one child 
+            s = v.GetSummary()
+            e = s[1:-1]    # unquote
+
+            #offset = 1 
+            #e = d.GetString(error, offset)  
+            #    offset 1 avoids "\x16hello"
+            #    hmm kinda dodgy, the string is actually composite with one child 
+            #    sometimes gives blanks
+            #
+            #e = v.GetFrame().EvaluateExpression("%s.c_str()" % k)
+
         elif tn == "const char *":
 
             tt = v.GetType().GetPointeeType()

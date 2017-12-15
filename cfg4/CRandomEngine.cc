@@ -4,7 +4,6 @@
 #include "PLOG.hh"
 
 #include "Randomize.hh"
-//#include "CLHEP/Random/NonRandomEngine.h"
 #include "G4String.hh"
 #include "G4VProcess.hh"
 
@@ -81,9 +80,6 @@ void CRandomEngine::dumpDouble(const char* msg, double* v, unsigned width ) cons
 
 void CRandomEngine::init()
 {
-
-    
-
     initCurand();
     CLHEP::HepRandom::setTheEngine( this );  
 }
@@ -155,29 +151,29 @@ std::string CRandomEngine::desc() const
 }
 
 
-std::string CRandomEngine::FormLocation()
+std::string CRandomEngine::CurrentProcessName()
 {
     G4VProcess* proc = CProcess::CurrentProcess() ; 
-
     std::stringstream ss ; 
-    ss <<  ( proc ? proc->GetProcessName().c_str() : "NoProc" )
-       << ";" 
-       ;  
-
+    ss <<  ( proc ? proc->GetProcessName().c_str() : "NoProc" )  ;  
     return ss.str();
 }
 
 std::string CRandomEngine::FormLocation(const char* file, int line)
 {
-    assert( file ) ;
+    assert( file ) ;  // actually the label when line is -1
     std::stringstream ss ; 
-    std::string relpath = BFile::prefixShorten(file, "$OPTICKS_HOME/" );
-    ss 
-        << FormLocation()
-        << relpath 
-        << "+" 
-        << line
-        ; 
+    ss << CurrentProcessName() << "_"  ;
+
+    if(line > -1)
+    {
+        std::string relpath = BFile::prefixShorten(file, "$OPTICKS_HOME/" );
+        ss << relpath << "+" << line ;
+    }
+    else
+    {
+         ss << file ;  
+    }
     return ss.str();
 }
 
@@ -188,16 +184,18 @@ std::string CRandomEngine::FormLocation(const char* file, int line)
 
 double CRandomEngine::flat_instrumented(const char* file, int line)
 {
-    m_location = FormLocation(file, line);
+    // when line is negative the file is regarded as a label
+    m_location = FormLocation(file, line) ;
     m_internal = true ; 
     double _flat = flat();
     m_internal = false ;
     return _flat ; 
 }
 
+
 double CRandomEngine::flat() 
 { 
-    if(!m_internal) m_location = FormLocation();
+    if(!m_internal) m_location = CurrentProcessName();
     assert( m_current_record_flat_count < m_curand_nv ); 
     m_flat =  _flat() ;  
     //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
@@ -233,11 +231,22 @@ void CRandomEngine::poststep()
     if(m_ctx._noZeroSteps > 0)
     {
         int backseq = -m_current_step_flat_count ; 
+        bool dbgnojump = m_ok->isDbgNoJump() ; 
+
         LOG(error) << "CRandomEngine::poststep"
                    << " _noZeroSteps " << m_ctx._noZeroSteps
                    << " backseq " << backseq
+                   << " --dbgnojump " << ( dbgnojump ? "YES" : "NO" )
                    ;
-        jump(backseq);
+
+        if( dbgnojump )
+        {
+            LOG(fatal) << "CRandomEngine::poststep rewind inhibited by option: --dbgnojump " ;   
+        }
+        else
+        {
+            jump(backseq);
+        }
     }
 
     m_current_step_flat_count = 0 ; 
@@ -253,23 +262,29 @@ void CRandomEngine::poststep()
 // invoked from CG4::preTrack following CG4Ctx::setTrack
 void CRandomEngine::preTrack()
 {
-    // where is a better place to do this ? maybe CG4Ctx::setTrack
-    unsigned index = m_ctx._record_id   ;
-    unsigned orig_index = m_ok->getMaskIndex( index ); 
+    unsigned use_index ; 
+    bool with_mask = m_ok->hasMask();
 
-    // hmm need to fix the redirect file descriptor issue for this
-   // const char* cmd = BStr::concat<unsigned>("ucf.py ", orig_index, NULL );  
-   // int rc = SSys::run(cmd) ; 
-   // assert( rc == 0 );
+    if(with_mask)
+    {
+        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id ); 
+        use_index = mask_index ; 
 
+        const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  
+        int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
+        assert( rc == 0 );
+    }
+    else
+    {
+        use_index = m_ctx._record_id ;
+    }
 
-    setupCurandSequence(orig_index) ;   
+    setupCurandSequence(use_index) ;   
 
     LOG(error) << "CRandomEngine::pretrack record_id: "    // (*lldb*) preTrack
                << " ctx.record_id " << m_ctx._record_id 
-               << " index " << index 
-               << " orig_index " << orig_index 
-               << " mask.size " << m_mask.size()
+               << " use_index " << use_index 
+               << " with_mask " << ( with_mask ? "YES" : "NO" )
                ;
  
 }

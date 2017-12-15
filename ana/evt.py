@@ -888,6 +888,13 @@ class Evt(object):
         self.sel = arg 
     selflg = property(_get_sel, _set_selflg)
 
+
+    def _get_where(self):
+        """
+        returns psel record positions of current selection
+        """ 
+        return np.where(self.psel)[0] 
+    where = property(_get_where)
  
     def psel_dindex_(self, limit=None, reverse=False):
         """

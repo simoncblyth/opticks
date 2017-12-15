@@ -167,33 +167,6 @@ class Parse(dict):
 
 class Frm(object):
     """
-    Focus on extraction, not storage
-
-
-    ::
-
-        (lldb) script
-        >>> from opticks.ana.lldb import Frm
-        >>> f = Frm(lldb.frame)
-        >>> f("/TransCoeff")
-        <lldb.SBValue; proxy of <Swig Object of type 'lldb::SBValue *' at 0x1093e5720> >
-        >>> str(f("/TransCoeff"))
-        '(G4double) TransCoeff = 0.9384709323990712'
-        >>> 
-              
-        >>> v = f("/TransCoeff")
-        >>> v
-        <lldb.SBValue; proxy of <Swig Object of type 'lldb::SBValue *' at 0x1093e5840> >
-        >>> type(v)
-        <class 'lldb.SBValue'>
-        >>> v.GetType()
-        <lldb.SBType; proxy of <Swig Object of type 'lldb::SBType *' at 0x1093e5810> >
-        >>> print v.GetType()
-        typedef G4double
-
-
- 
-
     """
     @classmethod 
     def Split(cls, memkln):
@@ -476,31 +449,32 @@ def CRandomEngine_cc_flatExit_(frame, bp_loc, sess):
     e = Evaluate()
     v = Value(frame.FindVariable("this"))
 
-    flat = e(v("m_flat")) 
-    loca = e(v("m_location")) 
+    u_g4 = e(v("m_flat")) 
+    loc_g4 = e(v("m_location")) 
+    assert type(u_g4) is float 
+    assert type(loc_g4) is str 
+
     crfc = e(v("m_current_record_flat_count")) 
     curi = e(v("m_curand_index")) 
-
-    assert type(flat) is float 
-    assert type(loca) is str 
     assert type(crfc) is int 
     assert type(curi) is int
 
     assert ENGINE is not None 
+    lucf = len(ENGINE.ucf) 
+    u = ENGINE.ucf[crfc-1] if crfc-1 < lucf else None 
 
-    lufc = len(ENGINE.ucf) 
-    u = ENGINE.ucf[crfc-1] if crfc-1 < lufc else None 
-    ufval = u.fval if u is not None else -1
+    u_ok = u.fval if u is not None else -1
+    loc_ok = u.lab  if u is not None else "ucf-overflow" 
 
-    df = abs(flat - ufval) 
-    maligned = df > 1e-6 
+    df = abs(u_g4 - u_ok) 
+    misrng = df > 1e-6 
+    misloc = loc_ok != loc_g4
+    mrk = "%s%s" % ( "*" if misrng else "-", "#" if misloc else "-")
 
-    mrk = "**" if maligned else "  "
-
-    print "flatExit: mrk:%2s crfc:%5d df:%.9g flat:%.9g  ufval:%.9g : %20s : lufc : %d    " % ( mrk, crfc, df, flat, ufval, loca, lufc )
+    print "flatExit: mrk:%2s crfc:%5d df:%.9g u_g4:%.9g u_ok:%.9g loc_g4:%20s loc_ok:%20s  : lucf : %d    " % ( mrk, crfc, df, u_g4, u_ok, loc_g4,loc_ok, lucf )
     print u 
 
-    stop = maligned
+    stop = mrk != "--"
     return stop
 
 

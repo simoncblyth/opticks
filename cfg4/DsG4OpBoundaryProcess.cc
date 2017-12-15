@@ -652,7 +652,7 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 
 #ifdef SCB_REFLECT_CHEAT
-                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
+                G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiReflectOrTransmit", -1) ;   // --reflectcheat 
                 bool _reflect = _u < theReflectivity ;
                 if( !_reflect )    // (*lldb*) DiDiReflectOrTransmit
 #else
@@ -1022,7 +1022,7 @@ void DsG4OpBoundaryProcess::DielectricDielectric()
 	      G4double E2_abs, C_parl, C_perp;
 
 #ifdef SCB_REFLECT_CHEAT 
-          G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand(__FILE__,__LINE__) ;   // --reflectcheat 
+          G4double _u = m_reflectcheat ? m_g4->getCtxRecordFraction()  : CG4UniformRand("DiDiTransCoeff",-1) ;   // --reflectcheat 
           bool _transmit = _u < TransCoeff ;  
 	      if ( !_transmit ) {    // (*lldb*) DiDiTransCoeff
 #else
@@ -1239,7 +1239,8 @@ void DsG4OpBoundaryProcess::DoAbsorption()
 
 
 #ifdef SCB_REFLECT_CHEAT
-    G4double _u = CG4UniformRand(__FILE__,__LINE__) ;  
+    //G4double _u = CG4UniformRand(__FILE__,__LINE__) ;  
+    G4double _u = CG4UniformRand("DoAbsorption", -1) ;  
     bool _detect = _u < theEfficiency ;
     if( _detect ) 
 #else

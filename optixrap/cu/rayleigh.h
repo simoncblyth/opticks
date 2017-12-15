@@ -28,11 +28,11 @@ __device__ void rayleigh_scatter_align(Photon &p, curandState &rng)
         float u4 = curand_uniform(&rng) ;  
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-        rtPrintf("rayleigh_scatter_align.do u_rsa0:%.9g \n", u0);
-        rtPrintf("rayleigh_scatter_align.do u_rsa1:%.9g \n", u1);
-        rtPrintf("rayleigh_scatter_align.do u_rsa2:%.9g \n", u2);
-        rtPrintf("rayleigh_scatter_align.do u_rsa3:%.9g \n", u3);
-        rtPrintf("rayleigh_scatter_align.do u_rsa4:%.9g \n", u4);
+        rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u0);
+        rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u1);
+        rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u2);
+        rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u3);
+        rtPrintf("rayleigh_scatter_align.do u_OpRayleigh:%.9g \n", u4);
 #endif
         float cosTheta = u0 ;
         float sinTheta = sqrtf(1.0f-u0*u0);

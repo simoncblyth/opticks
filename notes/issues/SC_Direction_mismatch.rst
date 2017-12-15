@@ -8,8 +8,6 @@ Supect RNG getting off-by-one for the 6
 
 
 
-
-
 After move to cu/rayleigh.h:rayleigh_scatter_align and fixing polz bug
 ------------------------------------------------------------------------
 

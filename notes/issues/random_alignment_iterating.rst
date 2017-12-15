@@ -229,7 +229,11 @@ Initial deviation Observations
 
 * value matching totally off for "SC"
 
+  * FIXED: with line-by-line slavish reimplementation of cu/rayleigh.h:rayleigh_scatter_align, see :doc:`SC_Direction_mismatch`
+
 * "TO AB" "TO BT AB" value matching looks to be trying 
+
+  * FIXED: by using a double precision log(double(u_f)) GPU side, see :doc:`AB_SC_Position_Time_mismatch`
 
 
 
@@ -550,8 +554,8 @@ Dump
 
 
 
-"TO AB" "TO BT AB" looks to be trying to do the same thing : velocity bug again perhaps ?
---------------------------------------------------------------------------------------------
+"TO AB" "TO BT AB" looks to be trying to do the same thing : velocity bug again perhaps ? NOPE log(double(u))
+----------------------------------------------------------------------------------------------------------------
 
 
 ::

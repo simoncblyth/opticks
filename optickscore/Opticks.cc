@@ -594,6 +594,13 @@ bool Opticks::isAlign() const  // --align
 {
    return m_cfg->hasOpt("align");
 }
+bool Opticks::isDbgNoJump() const  // --dbgnojump
+{
+   return m_cfg->hasOpt("dbgnojump");
+}
+
+
+
 bool Opticks::isReflectCheat() const  // --reflectcheat
 {
    return m_cfg->hasOpt("reflectcheat");

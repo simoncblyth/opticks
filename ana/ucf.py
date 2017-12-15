@@ -16,6 +16,7 @@ Parse the kernel print log in a u_rng centric fashion::
 
 
 """
+from __future__ import print_function
 import os, sys, re
 
 
@@ -128,23 +129,23 @@ if __name__ == '__main__':
 
     import numpy as np
 
+
+    stream = sys.stderr
+
     rng = np.load(UCF.rngpath())
     xrng = rng[pindex].ravel()
-    print xrng 
+    print(str(xrng), file=stream) 
 
     trng = UCF.rngpathtxt(pindex)
     np.savetxt(trng, xrng, delimiter=",")
 
     xrng2 = UCF.loadrngtxt(pindex)
-    print xrng2
-
+    print(str(xrng2), file=stream)
 
 
     ucf = UCF( pindex )
 
-
-
-    print ucf
-    print repr(ucf)
+    print(str(ucf), file=stream)
+    print(repr(ucf), file=stream)
 
    

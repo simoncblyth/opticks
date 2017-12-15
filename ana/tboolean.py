@@ -45,6 +45,7 @@ tboolean.py
 
 
 """
+from __future__ import print_function
 import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
@@ -54,18 +55,10 @@ from opticks.ana.ab   import AB
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__, tag="1", src="torch", det="tboolean-torus", smry=False)  
 
-    #print "ok.smry %d " % ok.smry 
     log.info(ok.brief)
 
     ab = AB(ok)
-
-    print ab
-    print "ab.a.metadata", ab.a.metadata
-    print "ab.a.metadata.csgmeta0", ab.a.metadata.csgmeta0
-
-    print ab.rpost_dv
-    print ab.rpol_dv
-    print ab.ox_dv
+    ab.dump()
 
     rc = ab.RC 
 

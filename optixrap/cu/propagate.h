@@ -76,9 +76,9 @@ __device__ int propagate_to_boundary( Photon& p, State& s, curandState &rng)
 #endif
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_to_boundary  u_boundary_burn:%.9g speed:%.9g \n", u_boundary_burn, speed );
-    rtPrintf("propagate_to_boundary  u_scattering:%.9g   scattering_length(s.material1.z):%.9g scattering_distance:%.9g \n", u_scattering, s.material1.z, scattering_distance );
-    rtPrintf("propagate_to_boundary  u_absorption:%.9g   absorption_length(s.material1.y):%.9g absorption_distance:%.9g \n", u_absorption, s.material1.y, absorption_distance );
+    rtPrintf("propagate_to_boundary  u_OpBoundary:%.9g speed:%.9g \n", u_boundary_burn, speed );
+    rtPrintf("propagate_to_boundary  u_OpRayleigh:%.9g   scattering_length(s.material1.z):%.9g scattering_distance:%.9g \n", u_scattering, s.material1.z, scattering_distance );
+    rtPrintf("propagate_to_boundary  u_OpAbsorption:%.9g   absorption_length(s.material1.y):%.9g absorption_distance:%.9g \n", u_absorption, s.material1.y, absorption_distance );
 #endif
 
 
@@ -318,7 +318,7 @@ __device__ void propagate_at_boundary_geant4_style( Photon& p, State& s, curandS
     bool reflect = u_reflect > TransCoeff  ;
 
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_boundary  u_reflect:    %.9g  reflect:%d   TransCoeff:%10.5f  c2c2:%10.4f tir:%d  pos (%10.4f %10.4f %10.4f)   \n",
+    rtPrintf("propagate_at_boundary  u_OpBoundary_DiDiTransCoeff:%.9g  reflect:%d   TransCoeff:%10.5f  c2c2:%10.4f tir:%d  pos (%10.4f %10.4f %10.4f)   \n",
          u_reflect, reflect, TransCoeff, c2c2, tir, p.position.x, p.position.y, p.position.z  );
 #endif
 
@@ -610,8 +610,8 @@ propagate_at_surface(Photon &p, State &s, curandState &rng)
     float u_surface_burn = curand_uniform(&rng);  
 #endif
 #ifdef WITH_ALIGN_DEV_DEBUG
-    rtPrintf("propagate_at_surface   u_surface:        %.9g \n", u_surface);
-    rtPrintf("propagate_at_surface   u_surface_burn:   %.9g \n", u_surface_burn);
+    rtPrintf("propagate_at_surface   u_OpBoundary_DiDiReflectOrTransmit:        %.9g \n", u_surface);
+    rtPrintf("propagate_at_surface   u_OpBoundary_DoAbsorption:   %.9g \n", u_surface_burn);
 #endif
 
     if( u_surface < s.surface.y )   // absorb   

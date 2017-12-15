@@ -24,11 +24,6 @@ when the --align option is used.
 
 #include "CLHEP/Random/RandomEngine.h"
 
-//namespace CLHEP
-//{
-//    class NonRandomEngine ; 
-//}
-
 
 template <typename T> class BLocSeq ; 
 
@@ -36,7 +31,7 @@ template <typename T> class BLocSeq ;
 class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine 
 {
     public:
-        static std::string FormLocation();
+        static std::string CurrentProcessName();
         static std::string FormLocation(const char* file, int line);
     public:
         CRandomEngine(CG4* g4);
@@ -87,10 +82,6 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         bool                     m_internal ; 
         bool                     m_skipdupe ; 
         BLocSeq<unsigned long long>*  m_locseq ; 
-
-        //CLHEP::HepJamesRandom*   m_james ; 
-        //CLHEP::NonRandomEngine*  m_nonran ; 
-        //CLHEP::HepRandomEngine*  m_engine ; 
 
         NPY<double>*             m_curand ; 
         int                      m_curand_index ; 

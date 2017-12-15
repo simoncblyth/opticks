@@ -1,7 +1,8 @@
-#!usr/bin/env python
+#!/usr/bin/env python
 """
 
 """
+from __future__ import print_function
 import os, sys, logging, numpy as np
 from collections import OrderedDict as odict
 
@@ -69,6 +70,11 @@ class AB(object):
 
     """
     C2CUT = 30
+    STREAM = sys.stderr
+
+    @classmethod  
+    def print_(cls, obj):
+        print(str(obj), file=cls.STREAM)
 
 
     def _get_maligned(self):
@@ -86,7 +92,16 @@ class AB(object):
             step = wh.step if wh.step is not None else 1
             wh = range(start,stop, step) 
         pass
-        print "\n".join( map(lambda iq:self.recline(iq), enumerate(wh)))
+        self.print_( "\n".join( map(lambda iq:self.recline(iq), enumerate(wh))))
+
+    def dump(self):
+        self.print_("ab.a.metadata:%s" % self.a.metadata)
+        self.print_(self)
+        self.print_("ab.a.metadata:%s" % self.a.metadata)
+        self.print_("ab.a.metadata.csgmeta0:%s" % self.a.metadata.csgmeta0 )
+        self.print_(self.rpost_dv)
+        self.print_(self.rpol_dv)
+        self.print_(self.ox_dv)
 
     def __init__(self, ok):
         log.info("ab START")
@@ -98,6 +113,7 @@ class AB(object):
         self.load()
         self.compare()
         self.init_point()
+        self.stream = sys.stderr
 
     def load(self):
         """
@@ -378,7 +394,7 @@ class AB(object):
         if c2p_max > self.ok.c2max:
             rc = 77   
         pass
-        print "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) 
+        self.print_( "c2p : %r c2pmax: %s  CUT ok.c2max %s  RC:%s " % ( c2p, c2p_max, self.ok.c2max, rc ) )
 
         rmxs_ = self.rmxs
         if len(rmxs_) > 0:
@@ -386,7 +402,7 @@ class AB(object):
             if rmxs_max_ > self.ok.rdvmax:
                 rc = 88   
             pass
-            print "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc ) 
+            self.print_( "rmxs_ : %r rmxs_max_: %s  CUT ok.rdvmax %s  RC:%s " % ( rmxs_, rmxs_max_, self.ok.rdvmax, rc )) 
         else:
             log.warning("missing ab.rmxs ")
         pass
@@ -397,7 +413,7 @@ class AB(object):
             if pmxs_max_ > self.ok.pdvmax:
                 rc = 99   
             pass
-            print "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ) 
+            self.print_( "pmxs_ : %r pmxs_max_: %s  CUT ok.pdvmax %s  RC:%s " % ( pmxs_, pmxs_max_, self.ok.pdvmax, rc ))
         else:
             log.warning("missing ab.pmxs ")
         pass
@@ -1108,7 +1124,8 @@ class AB(object):
 if __name__ == '__main__':
     ok = opticks_main(tag="1", src="torch", det="tboolean-box", smry=False)
     ab = AB(ok)
-    print ab
-    print ab.a.metadata
+
+    ab.dump()
+
 
     

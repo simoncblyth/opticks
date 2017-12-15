@@ -2,100 +2,525 @@ RNG_seq_off_by_one
 ===================
 
 
+Dirty Half Dozen
+-----------------
+
+
+::
+
+    In [1]: ab.maligned
+    Out[1]: array([ 1230,  9041, 14510, 49786, 69653, 77962])
+
+    In [2]: ab.dumpline(ab.maligned)
+          0   1230 :                               TO BR SC BT BR BT SA                            TO BR SC BT BR BR BT SA 
+          1   9041 :                         TO BT SC BR BR BR BR BT SA                               TO BT SC BR BR BT SA 
+          2  14510 :                               TO SC BT BR BR BT SA                                  TO SC BT BR BT SA 
+          3  49786 :                         TO BT BT SC BT BR BR BT SA                            TO BT BT SC BT BR BT SA 
+          4  69653 :                               TO BT SC BR BR BT SA                                  TO BT SC BR BT SA 
+          5  77962 :                               TO BT BR SC BR BT SA                            TO BT BR SC BR BR BT SA 
+
+
+
 Launch
 --------
 
 ::
 
-    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 9041  --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 14510 --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 49786 --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 69653 --pindex 0 --pindexlog -DD   
+    tboolean-;tboolean-box --okg4 --align --mask 77962 --pindex 0 --pindexlog -DD   
 
 
     ucf.py 9041
 
-    tboolean-;tboolean-box --okg4 --align --mask 9041 --pindex 0 --pindexlog -DD 
 
+Full unmasked run into tag 2
+-------------------------------
 
-Where consumption is mis-aligned
----------------------------------
+For access to some non-maligned photons that scatter, do a full run into tag 2
 
 ::
 
+    tboolean-;TBOOLEAN_TAG=2 tboolean-box --okg4 --align 
+    tboolean-;TBOOLEAN_TAG=2 tboolean-box-ip
+
+
+    In [1]: ab.maligned
+    Out[1]: array([ 1230,  9041, 14510, 49786, 69653, 77962])
+
+    In [2]: ab.dum
+    ab.dump      ab.dumpline  
+
+    In [2]: ab.dumpline(ab.maligned)
+          0   1230 :                               TO BR SC BT BR BT SA                            TO BR SC BT BR BR BT SA 
+          1   9041 :                         TO BT SC BR BR BR BR BT SA                               TO BT SC BR BR BT SA 
+          2  14510 :                               TO SC BT BR BR BT SA                                  TO SC BT BR BT SA 
+          3  49786 :                         TO BT BT SC BT BR BR BT SA                            TO BT BT SC BT BR BT SA 
+          4  69653 :                               TO BT SC BR BR BT SA                                  TO BT SC BR BT SA 
+          5  77962 :                               TO BT BR SC BR BT SA                            TO BT BR SC BR BR BT SA 
+
+
+::
+
+    In [1]: ab.aselhis = "TO BT SC BT SA"
+
+    In [2]: ab.a.where
+    Out[2]: array([ 4608, 17968, 61921, 86722, 91760, 93259, 94773])
+
+    In [3]: ab.b.where
+    Out[3]: array([ 4608, 17968, 61921, 86722, 91760, 93259, 94773])
+
+    In [4]: ab.dumpline(ab.a.where)
+          0   4608 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          1  17968 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          2  61921 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          3  86722 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          4  91760 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          5  93259 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          6  94773 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 4608 --pindex 0 --pindexlog -DD 
+
+
+
+
+
+
+Try blanket inhibiting the jump --dbgnojump
+-----------------------------------------------
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD --dbgnojump   
+    tboolean-;tboolean-box --okg4 --align --mask 9041  --pindex 0 --pindexlog -DD --dbgnojump   
+    tboolean-;tboolean-box --okg4 --align --mask 14510 --pindex 0 --pindexlog -DD --dbgnojump   
+    tboolean-;tboolean-box --okg4 --align --mask 49786 --pindex 0 --pindexlog -DD --dbgnojump   
+    tboolean-;tboolean-box --okg4 --align --mask 69653 --pindex 0 --pindexlog -DD --dbgnojump   
+    tboolean-;tboolean-box --okg4 --align --mask 77962 --pindex 0 --pindexlog -DD --dbgnojump   
+
+
+Switching off the rewind with --dbgnojump keeps the RNG seq aligned, but get different 
+seqhis-tories.  Need procName alignment checking too.
+
+
+
+
+Review Rewinding
+------------------
+
+Rewinding noted in :doc:`BR_PhysicalStep_zero_misalignment`
+
+::
+
+    Smouldering evidence : PhysicalStep-zero/StepTooSmall results in RNG mis-alignment 
+    ------------------------------------------------------------------------------------
+
+    Some G4 technicality yields zero step at BR, that means the lucky scatter 
+    throw that Opticks saw was not seen by G4 : as the sequence gets out of alignment.
+
+
+Zero steps result in G4 burning an entire steps RNGs compared to Opticks.  
+The solution was to jump back in the sequence on the G4 side.
+However for the misaligned six (the 3~4 studied) all appear to have an improper
+jump back.
+
+
+::
+
+    231 void CRandomEngine::poststep()
+    232 {
+    233     if(m_ctx._noZeroSteps > 0)
+    234     {
+    235         int backseq = -m_current_step_flat_count ;
+    236         LOG(error) << "CRandomEngine::poststep"
+    237                    << " _noZeroSteps " << m_ctx._noZeroSteps
+    238                    << " backseq " << backseq
+    239                    ;
+    240         jump(backseq);
+    241     }
+    242 
+    243     m_current_step_flat_count = 0 ;
+    244 
+    245     if( m_locseq )
+    246     {
+    247         m_locseq->poststep();
+    248         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ;
+    249     }
+    250 }
+
+
+Review POstStep ClearNumberOfInteractionLengthLeft
+------------------------------------------------------
+
+At the end of everystep the RNG for AB and SC are cleared, in order to 
+force G4VProcess::ResetNumberOfInteractionLengthLeft for every step, as
+that is how Opticks works with AB and SC RNG consumption at every "propagate_to_boundary".
+
+See :doc:`stepping_process_review`
+
+::
+
+     59 /*
+     60 
+     61      95 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+     62      96 {
+     63      97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+     64      98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
+     65      99 }
+     66 
+     67 */
+     68 
+     69 
+     70 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
+     71 {
+     72     G4ProcessVector* pl = proMgr->GetProcessList() ;
+     73     G4int n = pl->entries() ;
+     74 
+     75     for(int i=0 ; i < n ; i++)
+     76     {
+     77         G4VProcess* p = (*pl)[i] ;
+     78         const G4String& name = p->GetProcessName() ;
+     79         bool is_ab = name.compare("OpAbsorption") == 0 ;
+     80         bool is_sc = name.compare("OpRayleigh") == 0 ;
+     81         //bool is_bd = name.compare("OpBoundary") == 0 ;
+     82         if( is_ab || is_sc )
+     83         {
+     84             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
+     85             assert(dp);   // Transportation not discrete
+     86             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+     87             // devious way to invoke the protected ClearNumberOfInteractionLengthLeft via G4VDiscreteProcess::PostStepDoIt
+     88         }
+     89     }
+     90 }
+
+
+
+
+
+
+
+
+Who gets ahead on consumption ?
+----------------------------------
+
+::
+
+   LOOKS LIKE AN UN-NEEDED -3 REWIND CAUSES THE MIS-ALIGN, 
+
+   HMM SOME ZERO STEPS DONT NEED REWIND ?
+
+   PERHAPS A ZERO STEP FOLLOWING A STEP IN WHICH THE BOUNDARY PROCESS WINS SHOULD NOT REWIND ?
+ 
+
+
+
+69653 
+~~~~~~~
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 69653 --pindex 0 --pindexlog -DD 
+
+
+
+    curi:69653 
+       69653 : /tmp/blyth/opticks/ox_69653.log  
+     [  0]                                      boundary_burn :    0.0819766819 :    : 0.081976682 : 0.081976682 : 3 
+     [  1]                                         scattering :     0.490069658 :    : 0.490069658 : 0.490069658 : 1 
+     [  2]                                         absorption :     0.800361693 :    : 0.800361693 : 0.800361693 : 1 
+     [  3]                                            reflect :      0.50900209 :    : 0.509002090 : 0.509002090 : 1 
+     [  4]                                      boundary_burn :     0.793467045 :    : 0.793467045 : 0.793467045 : 2 
+     [  5]                                         scattering :     0.999958992 :    : 0.999958992 : 0.999958992 : 1 
+     [  6]                                         absorption :     0.475769788 :    : 0.475769788 : 0.475769788 : 1 
+     [  7]                                               rsa0 :     0.416864127 :    : 0.416864127 : 0.416864127 : 3 
+     [  8]                                               rsa1 :     0.186498553 :    : 0.186498553 : 0.186498553 : 1 
+     [  9]                                               rsa2 :     0.985090375 :    : 0.985090375 : 0.985090375 : 1 
+     [ 10]                                               rsa3 :    0.0522525758 :    : 0.052252576 : 0.052252576 : 1 
+     [ 11]                                               rsa4 :     0.308176816 :    : 0.308176816 : 0.308176816 : 1 
+     [ 12]                                      boundary_burn :     0.471794218 :    : 0.471794218 : 0.471794218 : 6 
+     [ 13]                                         scattering :     0.792557418 :    : 0.792557418 : 0.792557418 : 1 
+     [ 14]                                         absorption :      0.47266078 :    : 0.472660780 : 0.472660780 : 1 
+     [ 15]                                            reflect :    *0.160018712* :    : 0.160018712 : 0.160018712 : 1 
+     [ 16]                                      boundary_burn :     0.539000034 :    : 0.539000034 : 0.539000034 : 2 
+     [ 17]                                         scattering :     0.493351549 :    : 0.493351549 : 0.493351549 : 1 
+     [ 18]                                         absorption :    *0.831078768* :    : 0.831078768 : 0.831078768 : 1 
+     [ 19]                                            reflect :     0.995906353 :    : 0.995906353 : 0.995906353 : 1 
+     [ 20]                                      boundary_burn :     0.828557372 :    : 0.828557372 : 0.828557372 : 2 
+     [ 21]                                         scattering :     0.159997851 :    : 0.159997851 : 0.159997851 : 1 
+
+
+
+
+
+     [ 13]                                         scattering :     0.792557418 :    : 0.792557418 : 0.792557418 : 1 
+
+    flatExit: mrk:   crfc:   15 df:4.69970729e-11 flat:0.47266078  ufval:0.47266078 :        OpAbsorption; : lufc : 29    
+    propagate_to_boundary  u_absorption:0.47266078   absorption_length(s.material1.y):1000000 absorption_distance:749377.312
+     [ 14]                                         absorption :      0.47266078 :    : 0.472660780 : 0.472660780 : 1 
+
+
+    //                  opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[19] : ExitPostStepDoIt 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = TotalInternalReflection 
+    flatExit: mrk:   crfc:   16 df:2.82180779e-10 flat:*0.160018712*  ufval:0.160018712 :          OpBoundary; : lufc : 29    
+    propagate_at_boundary  u_reflect:    0.160018712  reflect:1   TransCoeff:   0.00000  c2c2:   -1.2761 tir:1  pos (  133.7670    10.0854  -100.0000)
+     [ 15]                                            reflect :     0.160018712 :    : 0.160018712 : 0.160018712 : 1 
+
+    flatExit: mrk:   crfc:   17 df:3.32275429e-10 flat:0.539000034  ufval:0.539000034 :          OpRayleigh; : lufc : 29    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:3
+    propagate_to_boundary  u_boundary_burn:0.539000034 speed:165.028061
+     [ 16]                                      boundary_burn :     0.539000034 :    : 0.539000034 : 0.539000034 : 2 
+
+    flatExit: mrk:   crfc:   18 df:8.98590091e-11 flat:0.493351549  ufval:0.493351549 :        OpAbsorption; : lufc : 29    
+    propagate_to_boundary  u_scattering:0.493351549   scattering_length(s.material1.z):1000000 scattering_distance:706533.25
+     [ 17]                                         scattering :     0.493351549 :    : 0.493351549 : 0.493351549 : 1 
+
+    2017-12-15 11:21:33.840 INFO  [650846] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 11:21:33.840 ERROR [650846] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3
+
+
+    flatExit: mrk:** crfc:   19 df:0.671060056 flat:0.160018712  ufval:0.831078768 :          OpBoundary; : lufc : 29    
+    propagate_to_boundary  u_absorption:0.831078768   absorption_length(s.material1.y):1000000 absorption_distance:185030.703
+     [ 18]                                         absorption :     0.831078768 :    : 0.831078768 : 0.831078768 : 1 
+
+    Process 27386 stopped
+    * thread #1: tid = 0x9ee5e, 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x00000001100ca580) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x00000001100ca580) + 1082 at CRandomEngine.cc:206
+       203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+       204      m_current_record_flat_count++ ; 
+       205      m_current_step_flat_count++ ; 
+    -> 206      return m_flat ;   // (*lldb*) flatExit
+       207  }
+       208  
+       209  
+
+
+
+
+77962
+~~~~~~~~
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 77962 --pindex 0 --pindexlog -DD   
+
+
+       77962 : /tmp/blyth/opticks/ox_77962.log  
+     [  0]                                      boundary_burn :     0.587307692 :    : 0.587307692 : 0.587307692 : 3 
+     [  1]                                         scattering :     0.367523879 :    : 0.367523879 : 0.367523879 : 1 
+     [  2]                                         absorption :     0.368657529 :    : 0.368657529 : 0.368657529 : 1 
+     [  3]                                            reflect :     0.883359611 :    : 0.883359611 : 0.883359611 : 1 
+     [  4]                                      boundary_burn :     0.716171503 :    : 0.716171503 : 0.716171503 : 2 
+     [  5]                                         scattering :    0.0115878591 :    : 0.011587859 : 0.011587859 : 1 
+     [  6]                                         absorption :     0.265672505 :    : 0.265672505 : 0.265672505 : 1 
+     [  7]                                            reflect :     0.959501982 :    : 0.959501982 : 0.959501982 : 1 
+     [  8]                                      boundary_burn :    *0.974827707* :    : 0.974827707 : 0.974827707 : 2 
+     [  9]                                         scattering :     0.999853075 :    : 0.999853075 : 0.999853075 : 1 
+     [ 10]                                         absorption :     0.882926166 :    : 0.882926166 : 0.882926166 : 1 
+     [ 11]                                               rsa0 :    *0.0676458701* :    : 0.067645870 : 0.067645870 : 3 
+     [ 12]                                               rsa1 :     0.712023914 :    : 0.712023914 : 0.712023914 : 1 
+     [ 13]                                               rsa2 :     0.388658017 :    : 0.388658017 : 0.388658017 : 1 
+     [ 14]                                               rsa3 :     0.792805254 :    : 0.792805254 : 0.792805254 : 1 
+
+
+
+    flatExit: mrk:   crfc:    8 df:2.64770539e-10 flat:0.959501982  ufval:0.959501982 :                      : lufc : 34    
+    propagate_at_boundary  u_reflect:    0.959501982  reflect:1   TransCoeff:   0.93847  c2c2:    1.0000 tir:0  pos (  -29.0273    37.6855   100.0000)
+     [  7]                                            reflect :     0.959501982 :    : 0.959501982 : 0.959501982 : 1 
+
+
+    //                    opticks.ana.loc.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_.[25] : DiDiTransCoeff 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_DiDiTransCoeff 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                      /TransCoeff :  0.938471  
+    //                                                                              /_u :  0.959502  
+    //                                                                       /_transmit : False 
+
+    //                  opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[19] : ExitPostStepDoIt 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
     //                                                                     .NewMomentum :  (type-error type-error type-error)  
     //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = FresnelReflection 
-    flatExit: mrk:   crfc:    5 df:3.44848594e-11 flat:0.753801465  ufval:0.753801465 :          OpBoundary; : lufc : 29    
-    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:1
-    propagate_to_boundary  u_boundary_burn:0.753801465 speed:299.79245
-     [  4]                                      boundary_burn :     0.753801465 :    : 0.753801465 : 0.753801465 : 2 
+    flatExit: mrk:   crfc:    9 df:1.86187732e-10 flat:*0.974827707*  ufval:0.974827707 :          OpBoundary; : lufc : 34    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:2
+    propagate_to_boundary  u_boundary_burn:0.974827707 speed:165.028061
+     [  8]                                      boundary_burn :     0.974827707 :    : 0.974827707 : 0.974827707 : 2 
 
-    flatExit: mrk:   crfc:    6 df:4.58282523e-10 flat:0.999846756  ufval:0.999846756 :          OpRayleigh; : lufc : 29    
-    propagate_to_boundary  u_scattering:0.999846756   scattering_length(s.material1.z):1000000 scattering_distance:153.25528
-     [  5]                                         scattering :     0.999846756 :    : 0.999846756 : 0.999846756 : 1 
+    flatExit: mrk:   crfc:   10 df:4.49371318e-10 flat:0.999853075  ufval:0.999853075 :          OpRayleigh; : lufc : 34    
+    propagate_to_boundary  u_scattering:0.999853075   scattering_length(s.material1.z):1000000 scattering_distance:146.936249
+     [  9]                                         scattering :     0.999853075 :    : 0.999853075 : 0.999853075 : 1 
 
-    flatExit: mrk:   crfc:    7 df:3.11492943e-10 flat:0.438019574  ufval:0.438019574 :        OpAbsorption; : lufc : 29    
-    propagate_to_boundary  u_absorption:0.438019574   absorption_length(s.material1.y):10000000 absorption_distance:8254917
-     [  6]                                         absorption :     0.438019574 :    : 0.438019574 : 0.438019574 : 1 
+    flatExit: mrk:   crfc:   11 df:5.75867132e-11 flat:0.882926166  ufval:0.882926166 :        OpAbsorption; : lufc : 34    
+    propagate_to_boundary  u_absorption:0.882926166   absorption_length(s.material1.y):1000000 absorption_distance:124513.695
+     [ 10]                                         absorption :     0.882926166 :    : 0.882926166 : 0.882926166 : 1 
 
-    2017-12-14 20:10:31.576 INFO  [601836] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
-    2017-12-14 20:10:31.576 ERROR [601836] [CRandomEngine::poststep@233] CRandomEngine::poststep _noZeroSteps 1 backseq -3
-    flatExit: mrk:** crfc:    8 df:0.039769888 flat:0.753801465  ufval:0.714031577 :          OpBoundary; : lufc : 29    
-    rayleigh_scatter_align p.direction (0 0 -1)
-    rayleigh_scatter_align p.polarization (-0 1 -0)
-    rayleigh_scatter_align.do u_rsa0:0.714031577
-     [  7]                                               rsa0 :     0.714031577 :    : 0.714031577 : 0.714031577 : 3 
+    2017-12-15 11:16:26.480 INFO  [649101] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 11:16:26.480 ERROR [649101] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3
 
-    Process 16107 stopped
-    * thread #1: tid = 0x92eec, 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
-        frame #0: 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203
-       200      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
-       201      m_current_record_flat_count++ ; 
-       202      m_current_step_flat_count++ ; 
-    -> 203      return m_flat ;   // (*lldb*) flatExit
-       204  }
-       205  
-       206  
-    (lldb) bt
-    * thread #1: tid = 0x92eec, 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
-      * frame #0: 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x000000010c738070) + 1082 at CRandomEngine.cc:203
-        frame #1: 0x0000000105b32b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001109c53d0) + 23 at G4VProcess.cc:97
-        frame #2: 0x0000000105b32472 libG4processes.dylib`G4VDiscreteProcess::PostStepGetPhysicalInteractionLength(this=<unavailable>, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 82 at G4VDiscreteProcess.cc:79
-        frame #3: 0x0000000105291d67 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength() [inlined] G4VProcess::PostStepGPIL(this=0x00000001109c53d0, track=<unavailable>, previousStepSize=<unavailable>, condition=<unavailable>) + 14 at G4VProcess.hh:503
-        frame #4: 0x0000000105291d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000110943920) + 249 at G4SteppingManager2.cc:172
-        frame #5: 0x000000010529073e libG4tracking.dylib`G4SteppingManager::Stepping(this=0x0000000110943920) + 366 at G4SteppingManager.cc:180
-        frame #6: 0x000000010529a771 libG4tracking.dylib`G4TrackingManager::ProcessOneTrack(this=0x00000001109438e0, apValueG4Track=<unavailable>) + 913 at G4TrackingManager.cc:126
-        frame #7: 0x00000001051f2727 libG4event.dylib`G4EventManager::DoProcessing(this=0x0000000110943850, anEvent=<unavailable>) + 1879 at G4EventManager.cc:185
-        frame #8: 0x0000000105174611 libG4run.dylib`G4RunManager::ProcessOneEvent(this=0x000000010c738420, i_event=0) + 49 at G4RunManager.cc:399
-        frame #9: 0x00000001051744db libG4run.dylib`G4RunManager::DoEventLoop(this=0x000000010c738420, n_event=1, macroFile=<unavailable>, n_select=<unavailable>) + 43 at G4RunManager.cc:367
-        frame #10: 0x0000000105173913 libG4run.dylib`G4RunManager::BeamOn(this=0x000000010c738420, n_event=1, macroFile=0x0000000000000000, n_select=-1) + 99 at G4RunManager.cc:273
-        frame #11: 0x00000001044d8dd6 libcfg4.dylib`CG4::propagate(this=0x000000010c737e90) + 1670 at CG4.cc:404
-        frame #12: 0x00000001045e925a libokg4.dylib`OKG4Mgr::propagate(this=0x00007fff5fbfddb0) + 538 at OKG4Mgr.cc:88
-        frame #13: 0x00000001000132da OKG4Test`main(argc=35, argv=0x00007fff5fbfde90) + 1498 at OKG4Test.cc:57
-        frame #14: 0x00007fff8c89b5fd libdyld.dylib`start + 1
-    (lldb) 
 
-    (lldb) f 4
-    frame #4: 0x0000000105291d59 libG4tracking.dylib`G4SteppingManager::DefinePhysicalStepLength(this=0x0000000110943920) + 249 at G4SteppingManager2.cc:172
-       169         continue;
-       170       }   // NULL means the process is inactivated by a user on fly.
-       171  
-    -> 172       physIntLength = fCurrentProcess->
-       173                       PostStepGPIL( *fTrack,
-       174                                                   fPreviousStepSize,
-       175                                                        &fCondition );
-    (lldb) p fCurrentProcess
-    (G4VProcess *) $0 = 0x00000001109c53d0
-    (lldb) p fCurrentProcess->theProcessName
-    (G4String) $1 = (std::__1::string = "OpBoundary")
-    (lldb) 
+    flatExit: mrk:** crfc:   12 df:0.907181837 flat:0.974827707  ufval:*0.0676458701* :          OpBoundary; : lufc : 34    
+    rayleigh_scatter_align p.direction (-0 -0 -1)
+    rayleigh_scatter_align p.polarization (0 -1 0)
+    rayleigh_scatter_align.do u_rsa0:0.0676458701
+     [ 11]                                               rsa0 :    0.0676458701 :    : 0.067645870 : 0.067645870 : 3 
 
-    (lldb) f 1
-    frame #1: 0x0000000105b32b17 libG4processes.dylib`G4VProcess::ResetNumberOfInteractionLengthLeft(this=0x00000001109c53d0) + 23 at G4VProcess.cc:97
-       94   
-       95   void G4VProcess::ResetNumberOfInteractionLengthLeft()
-       96   {
-    -> 97     theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
-       98     theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft; 
-       99   }
-       100  
+    Process 27097 stopped
+    * thread #1: tid = 0x9e78d, 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010f602e80) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010f602e80) + 1082 at CRandomEngine.cc:206
+       203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+       204      m_current_record_flat_count++ ; 
+       205      m_current_step_flat_count++ ; 
+    -> 206      return m_flat ;   // (*lldb*) flatExit
+       207  }
+       208  
+       209  
+
+
+
+
+
+???
+~~~~~~
+
+
+::
+
+
+    .[ 10]                                               rsa2 :     0.775209486 :    : 0.775209486 : 0.775209486 : 1 
+     [ 11]                                               rsa3 :     0.222410366 :    : 0.222410366 : 0.222410366 : 1 
+     [ 12]                                               rsa4 :     0.434931546 :    : 0.434931546 : 0.434931546 : 1 
+     [ 13]                                      boundary_burn :     0.971410215 :    : 0.971410215 : 0.971410215 : 6 
+     [ 14]                                         scattering :     0.980197608 :    : 0.980197608 : 0.980197608 : 1 
+     [ 15]                                         absorption :     0.124794453 :    : 0.124794453 : 0.124794453 : 1 
+     [ 16]                                            reflect :      0.83465904 :    : 0.834659040 : 0.834659040 : 1 
+     [ 17]                                      boundary_burn :     0.153918192 :    : 0.153918192 : 0.153918192 : 2 
+     [ 18]                                         scattering :     0.400545776 :    : 0.400545776 : 0.400545776 : 1 
+     [ 19]                                         absorption :     0.705055475 :    : 0.705055475 : 0.705055475 : 1 
+     [ 20]                                            reflect :    *0.443446934*:    : 0.443446934 : 0.443446934 : 1   TIR
+     [ 21]                                      boundary_burn :     0.806965649 :    : 0.806965649 : 0.806965649 : 2 
+     [ 22]                                         scattering :     0.994345605 :    : 0.994345605 : 0.994345605 : 1 
+     [ 23]                                         absorption :    *0.889802396*:    : 0.889802396 : 0.889802396 : 1 
+     [ 24]                                            reflect :     0.970076799 :    : 0.970076799 : 0.970076799 : 1 
+     [ 25]                                      boundary_burn :    0.0610740669 :    : 0.061074067 : 0.061074067 : 2 
+     [ 26]                                         scattering :     0.410069585 :    : 0.410069585 : 0.410069585 : 1 
+
+
+
+    //                  opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[19] : ExitPostStepDoIt 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = TotalInternalReflection 
+    flatExit: mrk:   crfc:   21 df:2.23175034e-10 flat:*0.443446934*  ufval:0.443446934 :          OpBoundary; : lufc : 34    
+    propagate_at_boundary  u_reflect:    0.443446934  reflect:1   TransCoeff:   0.00000  c2c2:   -1.3720 tir:1  pos (   26.3642  -150.0000    98.5117)
+     [ 20]                                            reflect :     0.443446934 :    : 0.443446934 : 0.443446934 : 1 
+
+    flatExit: mrk:   crfc:   22 df:1.27960198e-10 flat:0.806965649  ufval:0.806965649 :          OpRayleigh; : lufc : 34    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:3
+    propagate_to_boundary  u_boundary_burn:0.806965649 speed:165.028061
+     [ 21]                                      boundary_burn :     0.806965649 :    : 0.806965649 : 0.806965649 : 2 
+
+    flatExit: mrk:   crfc:   23 df:3.73382547e-10 flat:0.994345605  ufval:0.994345605 :        OpAbsorption; : lufc : 34    
+    propagate_to_boundary  u_scattering:0.994345605   scattering_length(s.material1.z):1000000 scattering_distance:5670.44141
+     [ 22]                                         scattering :     0.994345605 :    : 0.994345605 : 0.994345605 : 1 
+
+    2017-12-15 11:01:17.063 INFO  [644860] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 11:01:17.063 ERROR [644860] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3
+
+    flatExit: mrk:** crfc:   24 df:0.446355462 flat:*0.443446934*  ufval:0.889802396 :          OpBoundary; : lufc : 34    
+    propagate_to_boundary  u_absorption:0.889802396   absorption_length(s.material1.y):1000000 absorption_distance:116755.867
+     [ 23]                                         absorption :     0.889802396 :    : 0.889802396 : 0.889802396 : 1 
+
+    Process 26523 stopped
+    * thread #1: tid = 0x9d6fc, 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010fc04b20) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010fc04b20) + 1082 at CRandomEngine.cc:206
+       203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+       204      m_current_record_flat_count++ ; 
+       205      m_current_step_flat_count++ ; 
+    -> 206      return m_flat ;   // (*lldb*) flatExit
+       207  }
+       208  
+       209  
+
+
+
+
+::
+
+
+    tboolean-;tboolean-box --okg4 --align --mask 9041 --pindex 0 --pindexlog -DD 
+
+
+    .[ 21]                                      boundary_burn :    *0.885444343*:    : 0.885444343 : 0.885444343 : 2 
+     [ 22]                                         scattering :     0.554676592 :    : 0.554676592 : 0.554676592 : 1 
+     [ 23]                                         absorption :     0.302562296 :    : 0.302562296 : 0.302562296 : 1  still together
+     [ 24]                                            reflect :    *0.530730784* :    : 0.530730784 : 0.530730784 : 1 
+     [ 25]                                      boundary_burn :      0.68599081 :    : 0.685990810 : 0.685990810 : 2 
+     [ 26]                                         scattering :     0.601776481 :    : 0.601776481 : 0.601776481 : 1 
+     [ 27]                                         absorption :     0.215921149 :    : 0.215921149 : 0.215921149 : 1 
+
+
+     [ 20]                                            reflect :     0.921632886 :    : 0.921632886 : 0.921632886 : 1 
+
+
+    //                    opticks.ana.loc.DsG4OpBoundaryProcess_cc_DiDiTransCoeff_.[25] : DiDiTransCoeff 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_DiDiTransCoeff 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                      /TransCoeff :  0.901669  
+    //                                                                              /_u :  0.921633  
+    //                                                                       /_transmit : False 
+
+    //                  opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[19] : ExitPostStepDoIt 
+    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
+    //                                                                     .OldMomentum :  (type-error type-error type-error)  
+    //                                                                     .NewMomentum :  (type-error type-error type-error)  
+    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = FresnelReflection 
+    flatExit: mrk:   crfc:   22 df:9.0057406e-11 flat:*0.885444343*  ufval:0.885444343 :          OpBoundary; : lufc : 42    
+    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:3
+    propagate_to_boundary  u_boundary_burn:0.885444343 speed:165.028061
+     [ 21]                                      boundary_burn :     0.885444343 :    : 0.885444343 : 0.885444343 : 2 
+
+    flatExit: mrk:   crfc:   23 df:3.50006135e-10 flat:0.554676592  ufval:0.554676592 :          OpRayleigh; : lufc : 42    
+    propagate_to_boundary  u_scattering:0.554676592   scattering_length(s.material1.z):1000000 scattering_distance:589370.062
+     [ 22]                                         scattering :     0.554676592 :    : 0.554676592 : 0.554676592 : 1 
+
+    flatExit: mrk:   crfc:   24 df:3.90533439e-10 flat:0.302562296  ufval:0.302562296 :        OpAbsorption; : lufc : 42    
+    propagate_to_boundary  u_absorption:0.302562296   absorption_length(s.material1.y):1000000 absorption_distance:1195468.12
+     [ 23]                                         absorption :     0.302562296 :    : 0.302562296 : 0.302562296 : 1 
+
+    2017-12-15 10:46:01.548 INFO  [639881] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-15 10:46:01.548 ERROR [639881] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3
+
+               LOOKS LIKE AN UN-NEEDED -3 REWIND CAUSES THE MIS-ALIGN, 
+
+               HMM SOME ZERO STEPS DONT NEED REWIND ?
+
+               PERHAPS A ZERO STEP FOLLOWING A STEP IN WHICH THE BOUNDARY PROCESS WINS SHOULD NOT REWIND ?
+               
+
+    flatExit: mrk:** crfc:   25 df:0.354713559 flat:*0.885444343*  ufval:0.530730784 :          OpBoundary; : lufc : 42    
+    propagate_at_boundary  u_reflect:    0.530730784  reflect:1   TransCoeff:   0.00000  c2c2:   -1.4179 tir:1  pos (   54.0247    85.2057  -100.0000)
+     [ 24]                                            reflect :     0.530730784 :    : 0.530730784 : 0.530730784 : 1 
+
+    Process 25885 stopped
+    * thread #1: tid = 0x9c389, 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x0000000110856110) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
+        frame #0: 0x00000001044e06da libcfg4.dylib`CRandomEngine::flat(this=0x0000000110856110) + 1082 at CRandomEngine.cc:206
+       203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
+       204      m_current_record_flat_count++ ; 
+       205      m_current_step_flat_count++ ; 
+    -> 206      return m_flat ;   // (*lldb*) flatExit
+       207  }
+
 
 
 
