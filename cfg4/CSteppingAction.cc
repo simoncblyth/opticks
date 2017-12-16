@@ -97,17 +97,8 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
 {
     bool done = setStep(step);
 
+    m_g4->postStep();
 
-/*
-    G4StepStatus preStatus = step->GetPostStepPoint()->GetStepStatus() ;
-    G4StepStatus postStatus = step->GetPostStepPoint()->GetStepStatus() ;
-    LOG(info) 
-        << " preStatus " << CStepStatus::Desc(preStatus)     
-        << " postStatus " << CStepStatus::Desc(postStatus)     
-         ;
-*/
-
-    m_g4->poststep();
 
     if(done)
     { 
@@ -118,11 +109,47 @@ void CSteppingAction::UserSteppingAction(const G4Step* step)
     else
     {
         // guess work for alignment
-        //if(postStatus == fGeomBoundary)
-        // CProcessManager::ResetNumberOfInteractionLengthLeft( m_ctx._process_manager );
-        CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+
+        // should this be done after a jump ?
+
+        bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
+        bool skipClear = zeroStep && m_ok->isDbgSkipClearZero()  ;
+
+        if(skipClear)
+        {
+            LOG(error) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ; 
+        }  
+        else
+        {
+            CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+        }
+
+        if(m_ok->hasMask())
+        {
+            LOG(debug) << "[--mask] CSteppingAction::UserSteppingAction CProcessManager::ClearNumberOfInteractionLengthLeft " 
+                      << " preStatus " << CStepStatus::Desc(step->GetPreStepPoint()->GetStepStatus())
+                      << " postStatus " << CStepStatus::Desc(step->GetPostStepPoint()->GetStepStatus())
+                      ; 
+        }
     } 
 }
+
+
+
+/*
+At the end of everystep the RNG for AB and SC are cleared, in order to 
+force G4VProcess::ResetNumberOfInteractionLengthLeft for every step, as
+that is how Opticks works with AB and SC RNG consumption at every "propagate_to_boundary".
+
+* hmm is OpBoundary skipped because its usually the winner process ? 
+  so the standard G4VDiscreteProcess::PostStepDoIt will do the RNG consumption without assistance ?
+
+See :doc:`stepping_process_review`
+*/
+
+
+
+
 
 bool CSteppingAction::setStep(const G4Step* step)
 {
@@ -142,13 +169,7 @@ bool CSteppingAction::setStep(const G4Step* step)
  
     if(m_ctx._optical)
     {
-#ifdef USE_CUSTOM_BOUNDARY
-        DsG4OpBoundaryProcessStatus boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
-#else
-        G4OpBoundaryProcessStatus boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
-#endif
-        done = m_recorder->Record(boundary_status);
-
+        done = m_recorder->Record(m_ctx._boundary_status);  
     }
     else
     {
@@ -170,7 +191,7 @@ bool CSteppingAction::setStep(const G4Step* step)
                  << " step_total " <<  m_ctx._step_total
                  ;
 
-    return done ;
+    return done ;  // (*lldb*) setStep
 }
 
 

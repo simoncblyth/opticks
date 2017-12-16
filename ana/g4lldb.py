@@ -13,6 +13,12 @@ TODO : adopt point-by-point interleaved logging
   as its too difficult to grok at per-rng level
 
 
+THOUGHTS ON CODE FOR DEBUGGING
+------------------------------
+
+* resist adding code just for debugging access, instead find where 
+  the state you want to get at is already 
+
 
 Using lldb breakpoint python scripting
 ---------------------------------------
@@ -51,27 +57,25 @@ Background on g4lldb python scripting
 * see also env-/tools/lldb_/standalone.py for development of evaluation functions
 
 
-    >>> from opticks.tools.evaluate import Evaluate
-    >>> ev = Evaluate()
-    >>> ev.evaluate_frame(lldb.frame)
-    >>> this = lldb.frame.FindVariable("this")
-    >>> ec = ev.evaluate_comp(this)
+    >>> from opticks.tools.evaluate import EV ; ev = EV(lldb.frame.FindVariable("this"))
 
 
 """
 
-import os, sys, logging, re
+import os, sys, logging, re, inspect
 
-from opticks.ana.autobreakpoint import AutoBreakPoint
 from opticks.ana.ucf import UCF
+from opticks.ana.bouncelog import BounceLog
+
 from opticks.tools.lldb_ import lldb
+from opticks.tools.autobreakpoint import AutoBreakPoint
 from opticks.tools.evaluate import Evaluate, Value, EV
 from opticks.tools.loc import Loc
 
 log = logging.getLogger(__name__)
 
 ENGINE = None
-def CRandomEngine_cc_preTrack_(frame, bp_loc, sess):
+def CRandomEngine_cc_preTrack(frame, bp_loc, sess):
     """
     preTrack label
     """
@@ -80,7 +84,7 @@ def CRandomEngine_cc_preTrack_(frame, bp_loc, sess):
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.preTrack(ploc, frame, bp_loc, sess)
 
-def CRandomEngine_cc_flat_(frame, bp_loc, sess):
+def CRandomEngine_cc_flat(frame, bp_loc, sess):
     """
     flat label
     """
@@ -88,21 +92,76 @@ def CRandomEngine_cc_flat_(frame, bp_loc, sess):
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.flat(ploc,frame, bp_loc, sess)
     
-def CRandomEngine_cc_jump_(frame, bp_loc, sess):
+def CRandomEngine_cc_jump(frame, bp_loc, sess):
     """
     jump label
     """
     global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.jump(ploc,frame, bp_loc, sess)
+
+def CRandomEngine_cc_postStep(frame, bp_loc, sess):
+    """
+    postStep label
+    """
+    global ENGINE
+    ploc = Loc(sys._getframe(), __name__)
+    return ENGINE.postStep(ploc,frame, bp_loc, sess)
  
-def CRandomEngine_cc_postTrack_(frame, bp_loc, sess):
+def CRandomEngine_cc_postTrack(frame, bp_loc, sess):
     """
     postTrack label
     """
     global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.postTrack(ploc,frame, bp_loc, sess)
+
+
+def G4SteppingManager_cc_191(frame, bp_loc, sess):
+    """
+    After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs()
+
+    g4-;g4-cls G4SteppingManager 
+    """
+    ploc = Loc(sys._getframe(), __name__)
+
+    self = EV(frame.FindVariable("this"))
+    fStepStatus = self.ev("fStepStatus")
+
+    print "%s : %20s : %s " % (ploc.tag, fStepStatus, ploc.label)
+    return False
+
+def _DsG4OpBoundaryProcess_cc_StepTooSmall(frame, bp_loc, sess):
+    ploc = Loc(sys._getframe(), __name__)
+    self = EV(frame.FindVariable("this"))
+    theStatus = self.ev("theStatus")
+
+    print "%s : %20s : %s " % (ploc.tag, theStatus, ploc.label)
+    return True
+
+
+def _CSteppingAction_cc_setStep(frame, bp_loc, sess):
+    """ 
+    """
+    ploc = Loc(sys._getframe(), __name__)
+    print "%s :  %s " % (ploc.tag, ploc.label)
+    self = EV(frame.FindVariable("this"))
+    return False
+
+
+def CRec_cc_add(frame, bp_loc, sess):
+    """ 
+    
+    """
+    ploc = Loc(sys._getframe(), __name__)
+
+    self = EV(frame.FindVariable("this"))
+    bst = self.ev("m_boundary_status")
+    pri = self.ev("m_prior_boundary_status")
+    print "%s : bst:%20s pri:%20s : %s " % (ploc.tag, bst, pri, ploc.label)
+    return False
+
+
 
 
 class CRandomEngine(EV):
@@ -113,10 +172,12 @@ class CRandomEngine(EV):
         self.v = frame.FindVariable("this")
         pindex = self.ev("m_curand_index") 
         assert type(pindex) is int 
-        print "pindex:%d " % pindex
+
         ucf = UCF( pindex )
         lucf = len(ucf) 
-        print repr(ucf)
+        
+        self.bounce_log = BounceLog( pindex )
+         
         self.ucf = ucf 
         self.lucf = lucf
         self.pindex = pindex
@@ -135,11 +196,23 @@ class CRandomEngine(EV):
         self.v = frame.FindVariable("this")
 
         cursor_old = self.ev("m_cursor_old") 
-        offset = self.ev("m_offset") 
-        offset_count = self.ev("m_offset_count") 
+        jump_ = self.ev("m_jump") 
+        jump_count = self.ev("m_jump_count") 
         cursor = self.ev("m_cursor") 
 
-        print "%s cursor_old:%d offset:%d offset_count:%d cursor:%d " % (ploc.tag, cursor_old, offset, offset_count, cursor ) 
+        print "%s cursor_old:%d jump_:%d jump_count:%d cursor:%d " % (ploc.tag, cursor_old, jump_, jump_count, cursor ) 
+        return False
+
+    def postStep(self, ploc, frame, bp_loc, sess):
+        self.v = frame.FindVariable("this")
+        step_id = self.ev(".m_ctx._step_id")
+        okevt_pt = self.ev("m_okevt_pt")
+        print "%s step_id:%d okevt_pt:%s " % (ploc.tag, step_id, okevt_pt ) 
+        bounce = self.bounce_log.get(step_id, None) 
+        dump = False
+        if bounce is not None and dump:
+            print bounce
+        pass
         return False
 
     def flat(self, ploc, frame, bp_loc, sess):
@@ -175,7 +248,8 @@ class CRandomEngine(EV):
         #print u 
 
         stop = mrk != "--"
-        return stop
+        #return stop
+        return False
 
 
 

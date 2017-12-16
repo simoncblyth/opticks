@@ -274,6 +274,8 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
    public:
        unsigned long long getSeqHis(unsigned photon_id) const ; 
        unsigned long long getSeqMat(unsigned photon_id) const ; 
+       std::string        getSeqHisString(unsigned photon_id) const  ; 
+
    private:
        void saveParameters();
        void loadParameters();
@@ -299,6 +301,7 @@ class OKCORE_API OpticksEvent : public OpticksEventSpec
        NPY<unsigned long long>*  getSequenceData() const ;
        NPY<unsigned>*          getSeedData() const ;
        NPY<float>*             getHitData() const ;
+
    public:
        OpticksBufferControl* getPhotonCtrl();
        OpticksBufferControl* getSourceCtrl();

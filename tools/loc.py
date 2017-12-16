@@ -25,14 +25,15 @@ class Loc(object):
 
     def __init__(self, pframe, name):
         """
-        :param pframe: python frame  
+        :param pframe: python frame of caller 
+        :param name: module __name__ of caller
         """
         self.name = name 
         if pframe is not None:
-            doc = pframe.f_code.co_consts[0]
-            doclines = filter(None, doc.split("\n"))
-            label = doclines[0].lstrip() if len(doclines) > 0 else "-"  # 1st line of docstring
             func = pframe.f_code.co_name
+            doc = pframe.f_code.co_consts[0]
+            doclines = filter(None, doc.split("\n")) if doc is not None else []
+            label = doclines[0].lstrip() if len(doclines) > 0 else "no-docstring-label"  # 1st line of docstring
             tag, idx = self.Tag(func, name)
             hdr = FMT % (tag, label) 
         else:

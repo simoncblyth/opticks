@@ -68,7 +68,7 @@ void BLocSeq<T>::add(const char* loc, int record_id, int step_id )
 
 
 template <typename T>
-void BLocSeq<T>::poststep()
+void BLocSeq<T>::postStep()
 {
 /*
     LOG(info) 

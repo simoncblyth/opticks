@@ -8,6 +8,7 @@
 #include "OpticksEvent.hh"
 #include "Opticks.hh"
 
+#include "CBoundaryProcess.hh"
 #include "CProcessManager.hh"
 #include "CTrack.hh"
 #include "CG4Ctx.hh"
@@ -108,6 +109,9 @@ void CG4Ctx::init()
     _noZeroSteps = -1 ; 
     _step_id = -1 ;
     _step_total = 0 ; 
+
+    _boundary_status = Undefined ; 
+    _prior_boundary_status = Undefined ; 
  
 }
 
@@ -206,9 +210,14 @@ void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) // invoked by CSteppin
     _step_total += 1 ; 
     _track_step_count += 1 ; 
 
+    const G4StepPoint* pre = _step->GetPreStepPoint() ;
+    const G4StepPoint* post = _step->GetPostStepPoint() ;
+
+    _step_pre_status = pre->GetStepStatus();
+    _step_post_status = post->GetStepStatus();
+
     if(_step_id == 0)
     {
-        const G4StepPoint* pre = _step->GetPreStepPoint() ;
         _step_origin = pre->GetPosition();
     }
 
@@ -264,6 +273,17 @@ void CG4Ctx::setStepOptical() // invoked by CG4Ctx::setStep
         _rejoin_count++ ; 
         // rejoin count is zeroed in setTrackOptical, so each remission generation trk will result in REJOIN 
     }
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+    _prior_boundary_status = _boundary_status ; 
+    _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
+#else
+    _prior_boundary_status = _boundary_status ; 
+    _boundary_status = CBoundaryProcess::GetOpBoundaryProcessStatus() ;
+#endif
+  
+
 }
 
 

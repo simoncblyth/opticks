@@ -125,7 +125,7 @@ class CFG4_API CG4
         CTrackingAction* getTrackingAction();
         //int getStepId();
 
-        void poststep();
+        void postStep();
         void preTrack();
         void postTrack();
    public:
@@ -141,9 +141,10 @@ class CFG4_API CG4
         unsigned long long getSeqHis() const ;
         unsigned long long getSeqMat() const ;
    public:
-        Opticks*       getOpticks();
-        OpticksHub*    getHub();
-        CGeometry*     getGeometry();
+        Opticks*         getOpticks() const ;
+        OpticksHub*      getHub() const ;
+        OpticksRun*      getRun() const;
+        CGeometry*       getGeometry();
         CMaterialBridge* getMaterialBridge();
         CSurfaceBridge*  getSurfaceBridge();
         CRandomEngine*   getRandomEngine() const ; 

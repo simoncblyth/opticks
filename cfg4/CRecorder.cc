@@ -222,7 +222,7 @@ bool CRecorder::Record(G4OpBoundaryProcessStatus boundary_status)
                   << " " << ( done ? "DONE" : "-" )
                   ; 
 
-    return done ; 
+    return done ;  // (*lldb*) record
 }
 
 

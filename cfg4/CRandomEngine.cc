@@ -15,6 +15,9 @@
 #include "BLocSeq.hh"
 
 #include "Opticks.hh"
+#include "OpticksRun.hh"
+#include "OpticksEvent.hh"
+#include "OpticksFlags.hh"
 
 #include "NPY.hpp"
 
@@ -37,6 +40,12 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_g4(g4),
     m_ctx(g4->getCtx()),
     m_ok(g4->getOpticks()),
+    m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()), 
+    m_run(g4->getRun()),
+    m_okevt(NULL),
+    m_okevt_seqhis(0),
+    m_okevt_pt(NULL),
+    m_g4evt(NULL),
     m_mask(m_ok->getMask()),
     m_masked(m_mask.size() > 0),
     m_path("$TMP/TRngBufTest.npy"),
@@ -51,8 +60,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_curand_nv(m_curand ? m_curand->getNumValues(1) : 0 ),
     m_current_record_flat_count(0),
     m_current_step_flat_count(0),
-    m_offset(0),
-    m_offset_count(0),
+    m_jump(0),
+    m_jump_count(0),
     m_flat(-1.0),
     m_cursor(0),
     m_cursor_old(0)
@@ -201,28 +210,52 @@ double CRandomEngine::flat()
 { 
     if(!m_internal) m_location = CurrentProcessName();
     assert( m_current_record_flat_count < m_curand_nv ); 
-    
-    double v =  _flat() ;  
+ 
+    bool kludge = m_dbgkludgeflatzero 
+               && m_current_step_flat_count == 0
+               && m_ctx._boundary_status == StepTooSmall
+               && m_ctx._prior_boundary_status == FresnelReflection 
+               ;
 
-    m_current_record_flat_count++ ; 
+    double v = kludge ? _peek(-3) : _flat() ; 
+  
+    if( kludge )
+    {
+        LOG(info) << " --dbgkludgeflatzero  "
+                  << " first flat call following FresnelReflection then StepTooSmall yields  _peek(-3) value "
+                  << " v " << v 
+                 ;
+    }
+
+    m_flat = v ; 
+
+    m_current_record_flat_count++ ;  // (*lldb*) flat 
     m_current_step_flat_count++ ; 
 
-    return v ;  
+    return m_flat ; 
+}
+
+
+double CRandomEngine::_peek(int offset) const 
+{
+     unsigned idx = m_cursor + offset ; 
+     assert( idx < m_sequence.size() );
+     return m_sequence[idx] ; 
 }
 
 double CRandomEngine::_flat() 
 {
     assert( m_cursor < m_sequence.size() );
-    m_flat = m_sequence[m_cursor];
+    double v = m_sequence[m_cursor];
     m_cursor += 1 ; 
-    return m_flat ;     // (*lldb*) flat
+    return v  ;    
 }
 
 void CRandomEngine::jump(int offset) 
 {
     m_cursor_old = m_cursor ; 
-    m_offset = offset ; 
-    m_offset_count += 1 ; 
+    m_jump = offset ; 
+    m_jump_count += 1 ; 
 
     int cursor = m_cursor + offset ; 
     m_cursor = cursor ;   
@@ -238,10 +271,6 @@ void CRandomEngine::setRandomSequence(double* s, int n)
     assert (m_sequence.size() == (unsigned)n);
     m_cursor = 0;
 }
-
-
-
-
 
 void CRandomEngine::dumpFlat()
 {
@@ -264,22 +293,24 @@ void CRandomEngine::dumpFlat()
 }
 
 
-void CRandomEngine::poststep()
+// invoked by CG4::postStep
+void CRandomEngine::postStep()
 {
     if(m_ctx._noZeroSteps > 0)
     {
+        //int backseq = -2*m_current_step_flat_count ; 
         int backseq = -m_current_step_flat_count ; 
-        bool dbgnojump = m_ok->isDbgNoJump() ; 
+        bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ; 
 
-        LOG(error) << "CRandomEngine::poststep"
+        LOG(error) << "CRandomEngine::postStep"
                    << " _noZeroSteps " << m_ctx._noZeroSteps
                    << " backseq " << backseq
-                   << " --dbgnojump " << ( dbgnojump ? "YES" : "NO" )
+                   << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
                    ;
 
-        if( dbgnojump )
+        if( dbgnojumpzero )
         {
-            LOG(fatal) << "CRandomEngine::poststep rewind inhibited by option: --dbgnojump " ;   
+            LOG(fatal) << "CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero " ;   
         }
         else
         {
@@ -287,11 +318,22 @@ void CRandomEngine::poststep()
         }
     }
 
-    m_current_step_flat_count = 0 ; 
+
+    if(m_masked)
+    {
+        m_okevt_pt = OpticksFlags::PointAbbrev(m_okevt_seqhis, m_ctx._step_id + 1  ) ;
+        LOG(debug) 
+           << " m_ctx._record_id:  " << m_ctx._record_id 
+           << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
+           << " okevt_pt " << m_okevt_pt  << " ) "
+           ;
+    }
+
+    m_current_step_flat_count = 0 ;   // (*lldb*) postStep 
 
     if( m_locseq )
     {
-        m_locseq->poststep();
+        m_locseq->postStep();
         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ; 
     }
 }
@@ -300,6 +342,10 @@ void CRandomEngine::poststep()
 // invoked from CG4::preTrack following CG4Ctx::setTrack
 void CRandomEngine::preTrack()
 {
+    m_jump = 0 ; 
+    m_jump_count = 0 ; 
+
+
     unsigned use_index ; 
     bool with_mask = m_ok->hasMask();
 
@@ -308,9 +354,21 @@ void CRandomEngine::preTrack()
         unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id ); 
         use_index = mask_index ; 
 
+        if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
+        m_okevt_seqhis  = m_okevt ? m_okevt->getSeqHis(m_ctx._record_id ) : 0ull ;
+
+        LOG(info) 
+           << " m_ctx._record_id:  " << m_ctx._record_id 
+           << " mask_index: " << mask_index 
+           << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
+           << " " << OpticksFlags::FlagSequence(m_okevt_seqhis) << " ) "
+           ;
+
         const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );  
+        LOG(info) << "CRandomEngine::preTrack : START cmd \"" << cmd << "\"";   
         int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
         assert( rc == 0 );
+        LOG(info) << "CRandomEngine::preTrack : DONE cmd \"" << cmd << "\"";   
     }
     else
     {
@@ -330,6 +388,12 @@ void CRandomEngine::preTrack()
 
 void CRandomEngine::postTrack()
 {
+    if(m_jump_count > 0)
+    {
+        m_jump_photons.push_back(m_ctx._record_id);
+    }
+
+
     if(m_locseq)   // (*lldb*) postTrack
     {
         unsigned long long seqhis = m_g4->getSeqHis()  ;
@@ -340,12 +404,25 @@ void CRandomEngine::postTrack()
 
 void CRandomEngine::dump(const char* msg) const 
 {
+
+    
+
+
     if(!m_locseq) return ; 
     m_locseq->dump(msg);
 }
 
 void CRandomEngine::postpropagate()
 {
+
+    LOG(info) << "CRandomEngine::postpropagate"
+              << " jump_photons " << m_jump_photons.size()
+              ;
+
+    NPY<unsigned>* jump = NPY<unsigned>::make_from_vec(m_jump_photons) ;
+    jump->save("$TMP/CRandomEngine_jump_photons.npy");
+
+
     dump("CRandomEngine::postpropagate");
 }
 
@@ -378,6 +455,5 @@ void CRandomEngine::showStatus() const
 {
     assert(0);
 }
-
 
 

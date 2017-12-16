@@ -75,9 +75,9 @@ def seq2msk(isq):
     """
     ifl = np.zeros_like(isq)
     for n in range(16):
-        msk = 0xf << (4*n)                   ## nibble msk
-        nib = ( isq & msk ) >> (4*n)         ## shift to pole position
-        flg = 1 << ( nib[nib>0] - 1 )      ## convert flag bit index into flag mask 
+        msk = 0xf << (4*n)               ## nibble mask
+        nib = ( isq & msk ) >> (4*n)     ## pick the nibble and shift to pole position
+        flg = 1 << ( nib[nib>0] - 1 )    ## convert flag bit index into flag mask 
         ifl[nib>0] |= flg
     pass
     return ifl 

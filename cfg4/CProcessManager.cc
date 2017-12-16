@@ -67,6 +67,7 @@ void CProcessManager::ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMg
 */
 
 
+
 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
 {
     G4ProcessVector* pl = proMgr->GetProcessList() ;
@@ -90,6 +91,31 @@ void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMg
 }
 
 
+G4VDiscreteProcess* CProcessManager::GetDiscreteProcess( G4ProcessManager* proMgr, const char* name)
+{
+    G4ProcessVector* pl = proMgr->GetProcessList() ;
+    G4int n = pl->entries() ;
+    G4VProcess* p = NULL ; 
+    for(int i=0 ; i < n ; i++)
+    {
+        p = (*pl)[i] ; 
+        const G4String& pname = p->GetProcessName() ;
+        if(pname.compare(name) == 0) break ; 
+    }
+      
+    G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
+    return dp ; 
+}
+
+
+
+void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep, const char* name)
+{
+    G4VDiscreteProcess* dp = GetDiscreteProcess(proMgr, name); 
+    assert(dp);
+    dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+    //   devious way to invoke the protected ClearNumberOfInteractionLengthLeft 
+}
 
 
 

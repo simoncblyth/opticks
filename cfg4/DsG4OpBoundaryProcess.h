@@ -91,6 +91,8 @@
 #include "G4TransportationManager.hh"
 
 
+#include "DsG4OpBoundaryProcessStatus.h" 
+
 #include "CRandomEngine.hh"
 #include "CG4.hh"
 
@@ -105,15 +107,6 @@ class Opticks ;
 /////////////////////
 // Class Definition
 /////////////////////
-
-enum DsG4OpBoundaryProcessStatus {  Undefined,
-                                  FresnelRefraction, FresnelReflection,
-                                  TotalInternalReflection,
-                                  LambertianReflection, LobeReflection,
-                                  SpikeReflection, BackScattering,
-                                  Absorption, Detection, NotAtBoundary,
-                                  SameMaterial, StepTooSmall, NoRINDEX };
-
 class DsG4OpBoundaryProcess : public G4VDiscreteProcess
 {
 

@@ -210,7 +210,9 @@ bool CRec::add(G4OpBoundaryProcessStatus boundary_status )
         m_point_terminated = addPoi(stp) ;
     }
 
-    return m_recpoialign || !m_recpoi ? m_step_limited : ( m_point_terminated || m_point_limited ) ;  
+    bool done = m_recpoialign || !m_recpoi ? m_step_limited : ( m_point_terminated || m_point_limited ) ;
+
+    return done ;  // (*lldb*) add
 }
 
 

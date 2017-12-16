@@ -2,9 +2,8 @@ RNG_seq_off_by_one
 ===================
 
 
-Dirty Half Dozen
------------------
-
+Issue : Dirty Half Dozen out of alignment
+----------------------------------------------
 
 ::
 
@@ -20,11 +19,9 @@ Dirty Half Dozen
           5  77962 :                               TO BT BR SC BR BT SA                            TO BT BR SC BR BR BT SA 
 
 
-
-Launch
---------
-
 ::
+
+    tboolean-;tboolean-box --okg4 --align --mask 0  --pindex 0 --pindexlog -DD   
 
     tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD   
     tboolean-;tboolean-box --okg4 --align --mask 9041  --pindex 0 --pindexlog -DD   
@@ -34,7 +31,720 @@ Launch
     tboolean-;tboolean-box --okg4 --align --mask 77962 --pindex 0 --pindexlog -DD   
 
 
+    tboolean-;tboolean-box --okg4 --align --mask 1230,9041,14510,49786,69653,77962 -DD
+
+
     ucf.py 9041
+    bouncelog.py 9041
+
+
+
+Following the devious kludge
+------------------------------
+
+Devious triple whammy kludge --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero manages to persuade G4 to match Opticks histories of the maligned six.
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230,9041,14510,49786,69653,77962 --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+
+    In [1]: ab.maligned    ## this is just on the 6, not a full check 
+    Out[1]: array([], dtype=int64)
+
+    In [2]: ab.dumpline(range(0,6))
+          0      0 :   :                               TO BR SC BT BR BT SA                               TO BR SC BT BR BT SA 
+          1      1 :   :                         TO BT SC BR BR BR BR BT SA                         TO BT SC BR BR BR BR BT SA 
+          2      2 :   :                               TO SC BT BR BR BT SA                               TO SC BT BR BR BT SA 
+          3      3 :   :                         TO BT BT SC BT BR BR BT SA                         TO BT BT SC BT BR BR BT SA 
+          4      4 :   :                               TO BT SC BR BR BT SA                               TO BT SC BR BR BT SA 
+          5      5 :   :                               TO BT BR SC BR BT SA                               TO BT BR SC BR BT SA 
+
+
+
+::
+
+    2017-12-16 18:37:15.749 INFO  [1093268] [OpticksAna::run@66] OpticksAna::run anakey tboolean enabled Y
+    args: /Users/blyth/opticks/ana/tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch
+    [2017-12-16 18:37:16,085] p15240 {/Users/blyth/opticks/ana/tboolean.py:62} INFO - tag 1 src torch det tboolean-box c2max 2.0 ipython False 
+    [2017-12-16 18:37:16,085] p15240 {/Users/blyth/opticks/ana/ab.py:110} INFO - ab START
+    ab.a.metadata:                 /tmp/blyth/opticks/evt/tboolean-box/torch/1 5bfbabf976e0dd1acd15cb74901a868e 538275366882781e5c03160c15cd9f08       6    -1.0000 INTEROP_MODE 
+    AB(1,torch,tboolean-box)  None 0 
+    A tboolean-box/torch/  1 :  20171216-1837 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/1/fdom.npy () 
+    B tboolean-box/torch/ -1 :  20171216-1837 maxbounce:9 maxrec:10 maxrng:3000000 /tmp/blyth/opticks/evt/tboolean-box/torch/-1/fdom.npy (recstp) 
+    Rock//perfectAbsorbSurface/Vacuum,Vacuum///GlassSchottF2
+    /tmp/blyth/opticks/tboolean-box--
+    .                seqhis_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    0000          8cb6bcd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] TO BT BR SC BR BT SA
+    0001          8cbc6bd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] TO BR SC BT BR BT SA
+    0002        8cbbc6ccd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] TO BT BT SC BT BR BR BT SA
+    0003          8cbbc6d         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] TO SC BT BR BR BT SA
+    0004        8cbbbb6cd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] TO BT SC BR BR BR BR BT SA
+    0005          8cbb6cd         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] TO BT SC BR BR BT SA
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    .                pflags_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    0000             1ca0         6         6             0.00        1.000 +- 0.408        1.000 +- 0.408  [5 ] TO|BT|BR|SA|SC
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    .                seqmat_ana  1:tboolean-box   -1:tboolean-box        c2        ab        ba 
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    0000          1233332         2         2             0.00        1.000 +- 0.707        1.000 +- 0.707  [7 ] Vm F2 F2 F2 F2 Vm Rk
+    0001          1233222         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] Vm Vm Vm F2 F2 Vm Rk
+    0002        123332232         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] Vm F2 Vm Vm F2 F2 F2 Vm Rk
+    0003          1233322         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [7 ] Vm Vm F2 F2 F2 Vm Rk
+    0004        123333332         1         1             0.00        1.000 +- 1.000        1.000 +- 1.000  [9 ] Vm F2 F2 F2 F2 F2 F2 Vm Rk
+    .                                  6         6         0.00/-1 =  0.00  (pval:nan prob:nan)  
+    ab.a.metadata:                 /tmp/blyth/opticks/evt/tboolean-box/torch/1 5bfbabf976e0dd1acd15cb74901a868e 538275366882781e5c03160c15cd9f08       6    -1.0000 INTEROP_MODE 
+    ab.a.metadata.csgmeta0:{u'containerscale': u'3', u'container': u'1', u'ctrl': u'0', u'verbosity': u'0', u'poly': u'IM', u'emitconfig': u'photons:100000,wavelength:380,time:0.2,posdelta:0.1,sheetmask:0x1,umin:0.45,umax:0.55,vmin:0.45,vmax:0.55', u'resolution': u'20', u'emit': -1}
+    rpost_dv maxdvmax:0.0 maxdv:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] 
+     0000            :           TO BT BR SC BR BT SA :       1        1  :         1      28/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :           TO BR SC BT BR BT SA :       1        1  :         1      28/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :     TO BT BT SC BT BR BR BT SA :       1        1  :         1      36/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0003            :           TO SC BT BR BR BT SA :       1        1  :         1      28/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0004            :     TO BT SC BR BR BR BR BT SA :       1        1  :         1      36/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0005            :           TO BT SC BR BR BT SA :       1        1  :         1      28/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    rpol_dv maxdvmax:0.0 maxdv:[0.0, 0.0, 0.0, 0.0, 0.0, 0.0] 
+     0000            :           TO BT BR SC BR BT SA :       1        1  :         1      21/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0001            :           TO BR SC BT BR BT SA :       1        1  :         1      21/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0002            :     TO BT BT SC BT BR BR BT SA :       1        1  :         1      27/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0003            :           TO SC BT BR BR BT SA :       1        1  :         1      21/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0004            :     TO BT SC BR BR BR BR BT SA :       1        1  :         1      27/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+     0005            :           TO BT SC BR BR BT SA :       1        1  :         1      21/      0: 0.000  mx/mn/av      0/     0/     0  eps:0.0002    
+    ox_dv maxdvmax:0.000190734863281 maxdv:[0.00016832351684570312, 0.0001373291015625, 6.103515625e-05, 0.00019073486328125, 0.0001220703125, 0.00018310546875] 
+     0000            :           TO BT BR SC BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 0.0001683/     0/1.737e-05  eps:0.0002    
+     0001            :           TO BR SC BT BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 0.0001373/     0/8.614e-06  eps:0.0002    
+     0002            :     TO BT BT SC BT BR BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 6.104e-05/     0/7.655e-06  eps:0.0002    
+     0003            :           TO SC BT BR BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 0.0001907/     0/1.969e-05  eps:0.0002    
+     0004            :     TO BT SC BR BR BR BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 0.0001221/     0/1.114e-05  eps:0.0002    
+     0005            :           TO BT SC BR BR BT SA :       1        1  :         1      16/      0: 0.000  mx/mn/av 0.0001831/     0/1.821e-05  eps:0.0002    
+    c2p : {'seqmat_ana': 0.0, 'pflags_ana': 0.0, 'seqhis_ana': 0.0} c2pmax: 0.0  CUT ok.c2max 2.0  RC:0 
+    rmxs_ : {'rpol_dv': 0.0, 'rpost_dv': 0.0} rmxs_max_: 0.0  CUT ok.rdvmax 0.1  RC:0 
+    pmxs_ : {'ox_dv': 0.00019073486328125} pmxs_max_: 0.000190734863281  CUT ok.pdvmax 0.001  RC:0 
+    [2017-12-16 18:37:16,210] p15240 {/Users/blyth/opticks/ana/tboolean.py:70} INFO - early exit as non-interactive
+    2017-12-16 18:37:16.241 INFO  [1093268] [SSys::run@50] tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc_raw : 0 rc : 0
+    2017-12-16 18:37:16.242 INFO  [1093268] [OpticksAna::run@79] OpticksAna::run anakey tboolean cmdline tboolean.py --tag 1 --tagoffset 0 --det tboolean-box --src torch   rc 0 rcmsg -
+
+
+
+TODO
+------
+
+* try to simplify the kludge, eg by removing inhibitions and adjusting peek offset 
+* fix the python debug comparison to be aware of the kludge
+* un-conflate zero-steps and StepTooSmall
+
+
+
+Full unmasked run into tag 2 : To find some jump record_id
+--------------------------------------------------------------------------------------------
+
+* Obtain indices of all photons with jump backs and study them.
+
+::
+
+    tboolean-;TBOOLEAN_TAG=2 tboolean-box --okg4 --align 
+    tboolean-;TBOOLEAN_TAG=2 tboolean-box-ip
+
+
+devious kludge working to some extent  --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+------------------------------------------------------------------------------------------------
+
+
+running the kludge
+~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+          YEP
+    tboolean-;tboolean-box --okg4 --align --mask 9041 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+          YEP
+    tboolean-;tboolean-box --okg4 --align --mask 14510 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+          YEP
+    tboolean-;tboolean-box --okg4 --align --mask 49786 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+          YEP
+    tboolean-;tboolean-box --okg4 --align --mask 69653 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+          YEP
+    tboolean-;tboolean-box --okg4 --align --mask 77962 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+          YEP
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230,9041,14510,49786,69653,77962 --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
+
+
+
+
+
+kludge breaks the python debug comparison : seqs appear offset by 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    CRandomEngine_cc_flat.[26] mrk:*# crf:26 csf: 1 loc_g4/ok: (                     OpRayleigh                   OpAbsorption ) df:      0.1823485936 u_g4/ok:( 0.237027600 0.419376194 ) 
+    CRandomEngine_cc_flat.[27] mrk:*# crf:27 csf: 2 loc_g4/ok: (                   OpAbsorption OpBoundary_DiDiReflectOrTransmit ) df:    0.005040466477 u_g4/ok:( 0.419376194 0.414335728 ) 
+    G4SteppingManager_cc_191.[07] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[28] mrk:*# crf:28 csf: 3 loc_g4/ok: ( OpBoundary_DiDiReflectOrTransmit        OpBoundary_DoAbsorption ) df:     0.09838336669 u_g4/ok:( 0.414335728 0.315952361 ) 
+    CRandomEngine_cc_flat.[29] mrk:*# crf:29 csf: 4 loc_g4/ok: (        OpBoundary_DoAbsorption                   ucf-overflow ) df:       1.315952361 u_g4/ok:( 0.315952361 -1.000000000 ) 
+    CRec_cc_add.[07] : bst:          Absorption pri:   FresnelRefraction :  
+    CRandomEngine_cc_postStep.[07] step_id:7 okevt_pt:   
+
+
+dbgskipclearzero 
+~~~~~~~~~~~~~~~~~~~~~
+
+Prevents the end of step OpRayleigh + OpAbsorption interaction length clear, so the 
+next step RNG consumption for those processes is not done, leaving just OpBoundary consumption.
+
+
+::
+
+    115         bool zeroStep = m_ctx._noZeroSteps > 0 ;   // usually means there was a jump back 
+    116         bool skipClear = zeroStep && m_ok->isDbgSkipClearZero()  ;
+    117 
+    118         if(skipClear)
+    119         {
+    120             LOG(error) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ;
+    121         }
+    122         else
+    123         {
+    124             CProcessManager::ClearNumberOfInteractionLengthLeft( m_ctx._process_manager, *m_ctx._track, *m_ctx._step );
+    125         }
+    126 
+
+    delta:cfg4 blyth$ grep dbgskipclearzero *.*
+    CSteppingAction.cc:            LOG(error) << " --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft " ; 
+
+
+dbgnojumpzero
+~~~~~~~~~~~~~~~~
+    
+Zero steps burn 3 RNG in the decision making, normally alignment is retained by 
+rewinding the sequence. Which means that when G4 gets over the zero step it
+will come up with the same decision again, as Opticks did already. 
+
+Inhibiting this is probably something that only works for the 
+6 maligned ? 
+
+::
+
+    296 // invoked by CG4::postStep
+    297 void CRandomEngine::postStep()
+    298 {
+    299     if(m_ctx._noZeroSteps > 0)
+    300     {
+    302         int backseq = -m_current_step_flat_count ;
+    303         bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ;
+    304 
+    305         LOG(error) << "CRandomEngine::postStep"
+    306                    << " _noZeroSteps " << m_ctx._noZeroSteps
+    307                    << " backseq " << backseq
+    308                    << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
+    309                    ;
+    310 
+    311         if( dbgnojumpzero )
+    312         {
+    313             LOG(fatal) << "CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero " ;
+    314         }
+    315         else
+    316         {
+    317             jump(backseq);
+    318         }
+    319     }
+
+
+    delta:cfg4 blyth$ grep dbgnojumpzero *.*
+    CRandomEngine.cc:        bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ; 
+    CRandomEngine.cc:                   << " --dbgnojumpzero " << ( dbgnojumpzero ? "YES" : "NO" )
+    CRandomEngine.cc:        if( dbgnojumpzero )
+    CRandomEngine.cc:            LOG(fatal) << "CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero " ;   
+
+
+
+dbgkludgeflatzero
+~~~~~~~~~~~~~~~~~~~
+
+::
+
+    209 double CRandomEngine::flat()
+    210 {       
+    211     if(!m_internal) m_location = CurrentProcessName();
+    212     assert( m_current_record_flat_count < m_curand_nv ); 
+    213     
+    214     bool kludge = m_dbgkludgeflatzero 
+    215                && m_current_step_flat_count == 0
+    216                && m_ctx._boundary_status == StepTooSmall
+    217                && m_ctx._prior_boundary_status == FresnelReflection   
+    218                ;
+    219                 
+    220     double v = kludge ? _peek(-3) : _flat() ; 
+    221     
+    222     if( kludge )
+    223     {
+    224         LOG(info) << " --dbgkludgeflatzero  "
+    225                   << " first flat call following FresnelReflection then StepTooSmall yields  _peek(-3) value "
+    226                   << " v " << v 
+    227                  ;
+    228     }            
+    229     
+    230     m_flat = v ; 
+    231     
+    232     m_current_record_flat_count++ ;  // (*lldb*) flat 
+    233     m_current_step_flat_count++ ;
+    234     
+    235     return m_flat ;
+    236 }   
+
+
+    delta:cfg4 blyth$ grep dbgkludgeflatzero *.*
+    CRandomEngine.cc:    m_dbgkludgeflatzero(m_ok->isDbgKludgeFlatZero()), 
+    CRandomEngine.cc:    bool kludge = m_dbgkludgeflatzero 
+    CRandomEngine.cc:        LOG(info) << " --dbgkludgeflatzero  "
+    CRandomEngine.hh:        bool                          m_dbgkludgeflatzero ; 
+
+
+With the triple whammy kludge the six get perfectly aligned
+-------------------------------------------------------------
+
+::
+
+    In [3]: ab.a.rpost_(slice(0,10))
+    Out[3]: 
+    A()sliced
+    A([[[ -37.8781,   11.8231, -449.8989,    0.2002],
+        [ -37.8781,   11.8231,  -99.9944,    1.3672],
+        [ -37.8781,   11.8231, -253.2548,    1.8781],
+        [  97.7921,  -52.7844,  -99.9944,    2.5941],
+        [ 149.9984,  -77.6556,   24.307 ,    3.4248],
+        [ 118.2039,  -92.7959,   99.9944,    3.9308],
+        [-191.6203, -240.3581,  449.9952,    5.566 ],
+        [   0.    ,    0.    ,    0.    ,    0.    ],
+        [   0.    ,    0.    ,    0.    ,    0.    ],
+        [   0.    ,    0.    ,    0.    ,    0.    ]],
+
+       [[  34.0518,  -32.3038, -449.8989,    0.2002],
+        [  34.0518,  -32.3038,  -99.9944,    1.3672],
+        [  34.0518,  -32.3038,   51.3529,    2.284 ],
+        [-149.9984,   23.4261,  -20.4256,    3.5279],
+
+
+    In [4]: ab.a.rpost_(slice(0,10)).shape
+    Out[4]: (6, 10, 4)
+
+    In [5]: ab.b.rpost_(slice(0,10)).shape
+    Out[5]: (6, 10, 4)
+
+    In [6]: dv = ab.a.rpost_(slice(0,10)) - ab.b.rpost_(slice(0,10))
+    Out[6]: 
+    A()sliced
+    A([[[ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+            [ 0.,  0.,  0.,  0.],
+
+    In [7]: dv = ab.a.rpost_(slice(0,10)) - ab.b.rpost_(slice(0,10))
+
+    In [8]: dv.max()
+    Out[8]: 
+    A()sliced
+    A(0.0)
+
+    In [9]: dv = ab.a.rpolw_(slice(0,10)) - ab.b.rpolw_(slice(0,10))
+
+    In [10]: dv.max()
+    Out[10]: 
+    A()sliced
+    A(0.0, dtype=float32)
+
+
+
+
+
+
+Review Rewinding
+------------------
+
+Rewinding noted in :doc:`BR_PhysicalStep_zero_misalignment`
+
+::
+
+    Smouldering evidence : PhysicalStep-zero/StepTooSmall results in RNG mis-alignment 
+    ------------------------------------------------------------------------------------
+
+    Some G4 technicality yields zero step at BR, that means the lucky scatter 
+    throw that Opticks saw was not seen by G4 : as the sequence gets out of alignment.
+
+
+Zero steps result in G4 burning an entire steps RNGs compared to Opticks.  
+The solution was to jump back in the sequence on the G4 side.
+However for the misaligned six (the 3~4 studied) all appear to have an improper
+jump back.
+
+
+::
+
+    231 void CRandomEngine::poststep()
+    232 {
+    233     if(m_ctx._noZeroSteps > 0)
+    234     {
+    235         int backseq = -m_current_step_flat_count ;
+    236         LOG(error) << "CRandomEngine::poststep"
+    237                    << " _noZeroSteps " << m_ctx._noZeroSteps
+    238                    << " backseq " << backseq
+    239                    ;
+    240         jump(backseq);
+    241     }
+    242 
+    243     m_current_step_flat_count = 0 ;
+    244 
+    245     if( m_locseq )
+    246     {
+    247         m_locseq->poststep();
+    248         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ;
+    249     }
+    250 }
+
+
+Review POstStep ClearNumberOfInteractionLengthLeft
+------------------------------------------------------
+
+At the end of everystep the RNG for AB and SC are cleared, in order to 
+force G4VProcess::ResetNumberOfInteractionLengthLeft for every step, as
+that is how Opticks works with AB and SC RNG consumption at every "propagate_to_boundary".
+
+* hmm is OpBoundary skipped because its the winner process ? 
+  so the standard G4VDiscreteProcess::PostStepDoIt will do the RNG consumption without assistance ?
+
+See :doc:`stepping_process_review`
+
+::
+
+     59 /*
+     60 
+     61      95 void G4VProcess::ResetNumberOfInteractionLengthLeft()
+     62      96 {
+     63      97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
+     64      98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
+     65      99 }
+     66 
+     67 */
+     68 
+     69 
+     70 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
+     71 {
+     72     G4ProcessVector* pl = proMgr->GetProcessList() ;
+     73     G4int n = pl->entries() ;
+     74 
+     75     for(int i=0 ; i < n ; i++)
+     76     {
+     77         G4VProcess* p = (*pl)[i] ;
+     78         const G4String& name = p->GetProcessName() ;
+     79         bool is_ab = name.compare("OpAbsorption") == 0 ;
+     80         bool is_sc = name.compare("OpRayleigh") == 0 ;
+     81         //bool is_bd = name.compare("OpBoundary") == 0 ;
+     82         if( is_ab || is_sc )
+     83         {
+     84             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
+     85             assert(dp);   // Transportation not discrete
+     86             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
+     87             // devious way to invoke the protected ClearNumberOfInteractionLengthLeft via G4VDiscreteProcess::PostStepDoIt
+     88         }
+     89     }
+     90 }
+
+
+
+
+
+
+
+Arriving at the kludge
+--------------------------
+
+
+1230 : g4 wants to start again, but opticks was to scatter (bst:        StepTooSmall pri:   FresnelReflection :)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* interaction length decision consumes 3 (OpBoundary, OpRayleigh, OpAbsorption)
+* one turn of scatter do loop consumes 5 (OpRayleigh)
+
+* the post "StepToSmall" aka zero-step trick of G4 rewind -3, looks like it 
+  does not work when StepTooSmall follows on from FresnelReflection
+
+  * the -3 rewind feeds G4 the same RNG next, so it can makes the same decision   
+
+  * actually it looks like rewinding -6 might work  : it didnt 
+
+
+
+::
+
+    CRandomEngine_cc_postStep.[00] step_id:0 okevt_pt:BR 
+    CRandomEngine_cc_flat.[04] mrk:-- crf: 4 csf: 0 loc_g4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 u_g4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] mrk:-- crf: 5 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 u_g4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] mrk:-- crf: 6 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 u_g4/ok:( 0.438019574 0.438019574 ) 
+    G4SteppingManager_cc_191.[01] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    2017-12-16 14:42:20.051 INFO  [1012816] [CSteppingAction::setStep@148]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    CRec_cc_add.[01] : bst:        StepTooSmall pri:   FresnelReflection :  
+    2017-12-16 14:42:20.054 ERROR [1012816] [CRandomEngine::postStep@279] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojump NO
+    CRandomEngine_cc_jump.[00] cursor_old:7 jump_:-3 jump_count:1 cursor:4 
+    CRandomEngine_cc_postStep.[01] step_id:1 okevt_pt:SC 
+
+    CRandomEngine_cc_flat.[07] mrk:*# crf: 7 csf: 0 loc_g4/ok: (                     OpBoundary                     OpRayleigh ) df:     0.03976988803 u_g4/ok:( 0.753801465 0.714031577 ) 
+    CRandomEngine_cc_flat.[08] mrk:*- crf: 8 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:      0.6694428025 u_g4/ok:( 0.999846756 0.330403954 ) 
+    CRandomEngine_cc_flat.[09] mrk:*# crf: 9 csf: 2 loc_g4/ok: (                   OpAbsorption                     OpRayleigh ) df:      0.1327220793 u_g4/ok:( 0.438019574 0.570741653 ) 
+    G4SteppingManager_cc_191.[02] :    fPostStepDoItProc : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+
+    CRandomEngine_cc_flat.[10] mrk:*- crf:10 csf: 3 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:      0.3381229041 u_g4/ok:( 0.714031577 0.375908673 ) 
+    CRandomEngine_cc_flat.[11] mrk:*- crf:11 csf: 4 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:      0.4545743762 u_g4/ok:( 0.330403954 0.784978330 ) 
+    CRandomEngine_cc_flat.[12] mrk:*# crf:12 csf: 5 loc_g4/ok: (                     OpRayleigh                     OpBoundary ) df:      0.3219127056 u_g4/ok:( 0.570741653 0.892654359 ) 
+    CRandomEngine_cc_flat.[13] mrk:*- crf:13 csf: 6 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:     0.06515452219 u_g4/ok:( 0.375908673 0.441063195 ) 
+    CRandomEngine_cc_flat.[14] mrk:*# crf:14 csf: 7 loc_g4/ok: (                     OpRayleigh                   OpAbsorption ) df:     0.01123589314 u_g4/ok:( 0.784978330 0.773742437 ) 
+
+    CRec_cc_add.[02] : bst:       NotAtBoundary pri:        StepTooSmall :  
+    CRandomEngine_cc_postStep.[02] step_id:2 okevt_pt:BT 
+    CRandomEngine_cc_flat.[15] mrk:*# crf:15 csf: 0 loc_g4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:      0.3358152513 u_g4/ok:( 0.892654359 0.556839108 ) 
+    CRandomEngine_cc_flat.[16] mrk:*# crf:16 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpBoundary ) df:      0.3342861235 u_g4/ok:( 0.441063195 0.775349319 ) 
+    CRandomEngine_cc_flat.[17] mrk:*# crf:17 csf: 2 loc_g4/ok: (                   OpAbsorption                     OpRayleigh ) df:     0.02160120036 u_g4/ok:( 0.773742437 0.752141237 ) 
+
+
+
+
+
+
+1230 : --dbgnojumpzero --dbgskipclearzero
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* not rewinding and clearing after zero-step gets close, just have to pursuade OpBoundary not to throw again
+  despite it being the process
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero
+ 
+
+    RandomEngine_cc_flat.[06] mrk:-- crf: 6 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 u_g4/ok:( 0.438019574 0.438019574 ) 
+    G4SteppingManager_cc_191.[01] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    2017-12-16 16:11:03.804 INFO  [1038396] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    CRec_cc_add.[01] : bst:        StepTooSmall pri:   FresnelReflection :  
+    2017-12-16 16:11:03.807 ERROR [1038396] [CRandomEngine::postStep@280] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojump YES
+    2017-12-16 16:11:03.807 FATAL [1038396] [CRandomEngine::postStep@288] CRandomEngine::postStep rewind inhibited by option: --dbgnojump 
+    CRandomEngine_cc_postStep.[01] step_id:1 okevt_pt:SC 
+    2017-12-16 16:11:03.810 ERROR [1038396] [CSteppingAction::UserSteppingAction@120]  --dbgskipclearafterzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    CRandomEngine_cc_flat.[07] mrk:-# crf: 7 csf: 0 loc_g4/ok: (                     OpBoundary                     OpRayleigh ) df:   1.102905545e-10 u_g4/ok:( 0.714031577 0.714031577 ) 
+    G4SteppingManager_cc_191.[02] :    fPostStepDoItProc : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[08] mrk:-- crf: 8 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.093353269e-10 u_g4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[09] mrk:-- crf: 9 csf: 2 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.423827971e-10 u_g4/ok:( 0.570741653 0.570741653 ) 
+    CRandomEngine_cc_flat.[10] mrk:-- crf:10 csf: 3 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.903991964e-10 u_g4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_flat.[11] mrk:-- crf:11 csf: 4 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.353455126e-10 u_g4/ok:( 0.784978330 0.784978330 ) 
+    CRandomEngine_cc_flat.[12] mrk:-# crf:12 csf: 5 loc_g4/ok: (                     OpRayleigh                     OpBoundary ) df:   3.406677163e-10 u_g4/ok:( 0.892654359 0.892654359 ) 
+
+
+
+
+1230 : trying a jump back of -6
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+::
+
+    2017-12-16 15:20:47.342 INFO  [1023297] [SSys::run@50] ucf.py 1230 rc_raw : 0 rc : 0
+    2017-12-16 15:20:47.343 INFO  [1023297] [CRandomEngine::preTrack@345] CRandomEngine::preTrack : DONE cmd "ucf.py 1230"
+    CRandomEngine_cc_preTrack.[00] lucf:29 pindex:1230
+    2017-12-16 15:20:47.356 ERROR [1023297] [CRandomEngine::preTrack@354] CRandomEngine::pretrack record_id:  ctx.record_id 0 use_index 1230 with_mask YES
+    CRandomEngine_cc_flat.[00] mrk:-- crf: 0 csf: 0 loc_g4/ok: (                     OpBoundary                     OpBoundary ) df:   5.052794121e-14 u_g4/ok:( 0.001117025 0.001117025 ) 
+    CRandomEngine_cc_flat.[01] mrk:-- crf: 1 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.976989766e-10 u_g4/ok:( 0.502647340 0.502647340 ) 
+    CRandomEngine_cc_flat.[02] mrk:-- crf: 2 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   5.276490356e-11 u_g4/ok:( 0.601504147 0.601504147 ) 
+    G4SteppingManager_cc_191.[00] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[03] mrk:-- crf: 3 csf: 3 loc_g4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 u_g4/ok:( 0.938713491 0.938713491 ) 
+    CRec_cc_add.[00] : bst:   FresnelReflection pri:           Undefined :  
+    CRandomEngine_cc_postStep.[00] step_id:0 okevt_pt:BR 
+    CRandomEngine_cc_flat.[04] mrk:-- crf: 4 csf: 0 loc_g4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 u_g4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] mrk:-- crf: 5 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 u_g4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] mrk:-- crf: 6 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 u_g4/ok:( 0.438019574 0.438019574 ) 
+    G4SteppingManager_cc_191.[01] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    2017-12-16 15:20:47.825 INFO  [1023297] [CSteppingAction::setStep@155]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    CRec_cc_add.[01] : bst:        StepTooSmall pri:   FresnelReflection :  
+    2017-12-16 15:20:47.828 ERROR [1023297] [CRandomEngine::postStep@279] CRandomEngine::postStep _noZeroSteps 1 backseq -6 --dbgnojump NO
+    CRandomEngine_cc_jump.[00] cursor_old:7 jump_:-6 jump_count:1 cursor:1 
+    CRandomEngine_cc_postStep.[01] step_id:1 okevt_pt:SC 
+    CRandomEngine_cc_flat.[07] mrk:*# crf: 7 csf: 0 loc_g4/ok: (                     OpBoundary                     OpRayleigh ) df:      0.2113842367 u_g4/ok:( 0.502647340 0.714031577 ) 
+    CRandomEngine_cc_flat.[08] mrk:*- crf: 8 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:      0.2711001931 u_g4/ok:( 0.601504147 0.330403954 ) 
+    CRandomEngine_cc_flat.[09] mrk:*# crf: 9 csf: 2 loc_g4/ok: (                   OpAbsorption                     OpRayleigh ) df:       0.367971838 u_g4/ok:( 0.938713491 0.570741653 ) 
+    G4SteppingManager_cc_191.[02] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[10] mrk:*# crf:10 csf: 3 loc_g4/ok: ( OpBoundary_DiDiReflectOrTransmit                     OpRayleigh ) df:       0.377892792 u_g4/ok:( 0.753801465 0.375908673 ) 
+    CRandomEngine_cc_flat.[11] mrk:*# crf:11 csf: 4 loc_g4/ok: (        OpBoundary_DoAbsorption                     OpRayleigh ) df:      0.2148684265 u_g4/ok:( 0.999846756 0.784978330 ) 
+    CRec_cc_add.[02] : bst:          Absorption pri:        StepTooSmall :  
+    CRandomEngine_cc_postStep.[02] step_id:2 okevt_pt:BT 
+    //                                                  CRandomEngine_cc_postTrack.[00] : postTrack label 
+    CRandomEngine_cc_postTrack.[00] pindex:1230
+
+
+
+
+1230 with rewind inhibited gets G4 to make different decision
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    CRandomEngine_cc_flat.[03] mrk:-- crf: 3 csf: 3 loc_g4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 u_g4/ok:( 0.938713491 0.938713491 ) 
+    CRec_cc_add.[00] : bst:   FresnelReflection pri:           Undefined :  
+    CRandomEngine_cc_postStep.[00] step_id:0 okevt_pt:BR 
+    CRandomEngine_cc_flat.[04] mrk:-- crf: 4 csf: 0 loc_g4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 u_g4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] mrk:-- crf: 5 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 u_g4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] mrk:-- crf: 6 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 u_g4/ok:( 0.438019574 0.438019574 ) 
+    G4SteppingManager_cc_191.[01] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    2017-12-16 14:38:31.473 INFO  [1011620] [CSteppingAction::setStep@148]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    CRec_cc_add.[01] : bst:        StepTooSmall pri:   FresnelReflection :  
+    2017-12-16 14:38:31.477 ERROR [1011620] [CRandomEngine::postStep@279] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojump YES
+    2017-12-16 14:38:31.477 FATAL [1011620] [CRandomEngine::postStep@287] CRandomEngine::postStep rewind inhibited by option: --dbgnojump 
+    CRandomEngine_cc_postStep.[01] step_id:1 okevt_pt:SC 
+    CRandomEngine_cc_flat.[07] mrk:-# crf: 7 csf: 0 loc_g4/ok: (                     OpBoundary                     OpRayleigh ) df:   1.102905545e-10 u_g4/ok:( 0.714031577 0.714031577 ) 
+    CRandomEngine_cc_flat.[08] mrk:-- crf: 8 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.093353269e-10 u_g4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[09] mrk:-# crf: 9 csf: 2 loc_g4/ok: (                   OpAbsorption                     OpRayleigh ) df:   4.423827971e-10 u_g4/ok:( 0.570741653 0.570741653 ) 
+    G4SteppingManager_cc_191.[02] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[10] mrk:-# crf:10 csf: 3 loc_g4/ok: ( OpBoundary_DiDiReflectOrTransmit                     OpRayleigh ) df:   1.903991964e-10 u_g4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_flat.[11] mrk:-# crf:11 csf: 4 loc_g4/ok: (        OpBoundary_DoAbsorption                     OpRayleigh ) df:   1.353455126e-10 u_g4/ok:( 0.784978330 0.784978330 ) 
+    CRec_cc_add.[02] : bst:          Absorption pri:        StepTooSmall :  
+    CRandomEngine_cc_postStep.[02] step_id:2 okevt_pt:BT 
+    //                                                  CRandomEngine_cc_postTrack.[00] : postTrack label 
+    CRandomEngine_cc_postTrack.[00] pindex:1230
+    2017-12-16 14:38:31.510 INFO  [1011620] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+    2017-12-16 14:38:31.510 INFO  [1011620] [CG4::postpropagate@434] CG4::postpropagate(0) ctx CG4Ctx::desc_stats dump_count 0 event_total 1 event_track_count 1
+    2017-12-16 14:38:31.510 INFO  [1011620] [OpticksEvent::postPropagateGeant4@2039] OpticksEvent::postPropagateGeant4 
+
+
+9041
+~~~~~~
+
+::
+
+    CRandomEngine_cc_postStep.[02] step_id:2 okevt_pt:BR 
+    CRandomEngine_cc_flat.[21] mrk:-- crf:21 csf: 0 loc_g4/ok: (                     OpBoundary                     OpBoundary ) df:   9.005740598e-11 u_g4/ok:( 0.885444343 0.885444343 ) 
+    CRandomEngine_cc_flat.[22] mrk:-- crf:22 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpRayleigh ) df:   3.500061352e-10 u_g4/ok:( 0.554676592 0.554676592 ) 
+    CRandomEngine_cc_flat.[23] mrk:-- crf:23 csf: 2 loc_g4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.905334389e-10 u_g4/ok:( 0.302562296 0.302562296 ) 
+    G4SteppingManager_cc_191.[03] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    2017-12-16 14:34:19.324 INFO  [1009771] [CSteppingAction::setStep@148]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    CRec_cc_add.[03] : bst:        StepTooSmall pri:   FresnelReflection :  
+    2017-12-16 14:34:19.326 ERROR [1009771] [CRandomEngine::postStep@279] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojump NO
+    CRandomEngine_cc_jump.[00] cursor_old:24 jump_:-3 jump_count:1 cursor:21 
+    CRandomEngine_cc_postStep.[03] step_id:3 okevt_pt:BR 
+    CRandomEngine_cc_flat.[24] mrk:*# crf:24 csf: 0 loc_g4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:      0.3547135591 u_g4/ok:( 0.885444343 0.530730784 ) 
+    CRandomEngine_cc_flat.[25] mrk:*# crf:25 csf: 1 loc_g4/ok: (                     OpRayleigh                     OpBoundary ) df:      0.1313142176 u_g4/ok:( 0.554676592 0.685990810 ) 
+    CRandomEngine_cc_flat.[26] mrk:*# crf:26 csf: 2 loc_g4/ok: (                   OpAbsorption                     OpRayleigh ) df:      0.2992141846 u_g4/ok:( 0.302562296 0.601776481 ) 
+    G4SteppingManager_cc_191.[04] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRec_cc_add.[04] : bst:TotalInternalReflection pri:        StepTooSmall :  
+    CRandomEngine_cc_postStep.[04] step_id:4 okevt_pt:BR 
+
+
+
+Are all photons with scatter SC and a jump maligned ? NO : 6/28 photons with jumps and scatters are misaligned 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    In [1]: from opticks.ana.nload import np_load
+
+    In [2]: jp = np_load("$TMP/CRandomEngine_jump_photons.npy")
+
+    In [4]: jp.shape
+    Out[4]: (12137,)
+
+    In [3]: ab.dumpline(jp[:100])   ## all have a BR
+          0   9979 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          1   9978 :                                           TO BR SA                                           TO BR SA 
+          2   9968 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          3   9963 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          4   9961 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          5   9939 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          6   9932 :                                           TO BR SA                                           TO BR SA 
+          7   9927 :                                           TO BR SA                                           TO BR SA 
+          8   9923 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+          9   9915 :                                           TO BR SA                                           TO BR SA 
+         10   9914 :                                     TO BT BR BT SA                                     TO BT BR BT SA 
+         11   9911 :                                           TO BR SA                                           TO BR SA 
+
+    In [11]: ab.maligned
+    Out[11]: array([ 1230,  9041, 14510, 49786, 69653, 77962])
+
+    In [12]: map(lambda _:_ in jp, ab.maligned)
+    Out[12]: [True, True, True, True, True, True]
+
+    In [6]: ab.a.pflags_where("SC").shape
+    Out[6]: (92,)
+
+    In [4]: ab.dumpline(ab.a.pflags_where("SC"))
+          0    420 :                                           TO SC SA                                           TO SC SA 
+          1    595 :                                  TO SC BT BR BT SA                                  TO SC BT BR BT SA 
+          2   1198 :                                           TO SC SA                                           TO SC SA 
+          3   1230 :                               TO BR SC BT BR BT SA                            TO BR SC BT BR BR BT SA 
+          4   2413 :                         TO BT BT SC BT BR BR BT SA                         TO BT BT SC BT BR BR BT SA 
+          5   2658 :                                           TO SC SA                                           TO SC SA 
+          6   4608 :                                     TO BT SC BT SA                                     TO BT SC BT SA 
+          7   4777 :                                     TO BT BT SC SA                                     TO BT BT SC SA 
+          8   5113 :                                           TO SC SA                                           TO SC SA 
+          9   5729 :                                     TO BT BT SC SA                                     TO BT BT SC SA 
+         10   6058 :                                           TO SC SA                                           TO SC SA 
+         11   7258 :                               TO BT BT SC BT BT SA                               TO BT BT SC BT BT SA 
+         12   9041 :                         TO BT SC BR BR BR BR BT SA                               TO BT SC BR BR BT SA 
+
+    In [11]: from opticks.ana.seq import seq2msk
+
+    In [16]: ab.a.hismask.code("SC")
+    Out[16]: 32
+
+    In [15]: jp[np.where( seq2msk(ab.a.seqhis[jp]) & 32 )]   ## finding jumps with a scatter 
+    Out[15]: 
+    array([ 9041,  2413,  1230,   595, 19361, 18921, 14747, 14510, 26635, 36621, 33262, 30272, 49786, 58609, 58189, 53964, 69653, 65850, 60803, 77962, 76467, 73241, 87674, 97887, 95722, 94891, 92353,
+           90322], dtype=uint32)
+
+    In [17]: jpsc = jp[np.where( seq2msk(ab.a.seqhis[jp]) & 32 )]
+
+    In [1]: a_jpsc
+    Out[1]: 
+    array([ 9041,  2413,  1230,   595, 19361, 18921, 14747, 14510, 26635, 36621, 33262, 30272, 49786, 58609, 58189, 53964, 69653, 65850, 60803, 77962, 76467, 73241, 87674, 97887, 95722, 94891, 92353,
+           90322], dtype=uint32)
+
+    In [3]: np.all( a_jpsc == b_jpsc )
+    Out[3]: True
+
+    In [4]: ab.dumpline(a_jpsc)   ## 6 out of 28 photons with jumps and scatters are misaligned 
+
+          0   9041 : * :                         TO BT SC BR BR BR BR BT SA                               TO BT SC BR BR BT SA 
+          1   2413 :   :                         TO BT BT SC BT BR BR BT SA                         TO BT BT SC BT BR BR BT SA 
+          2   1230 : * :                               TO BR SC BT BR BT SA                            TO BR SC BT BR BR BT SA 
+          3    595 :   :                                  TO SC BT BR BT SA                                  TO SC BT BR BT SA 
+          4  19361 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+          5  18921 :   :                                  TO BR SC BT BT SA                                  TO BR SC BT BT SA 
+          6  14747 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+          7  14510 : * :                               TO SC BT BR BR BT SA                                  TO SC BT BR BT SA 
+          8  26635 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+          9  36621 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         10  33262 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         11  30272 :   :                      TO BT BR SC BR BR BR BR BR BR                      TO BT BR SC BR BR BR BR BR BR 
+         12  49786 : * :                         TO BT BT SC BT BR BR BT SA                            TO BT BT SC BT BR BT SA 
+         13  58609 :   :                            TO BT BT SC BT BR BT SA                            TO BT BT SC BT BR BT SA 
+         14  58189 :   :                                  TO SC BT BR BT SA                                  TO SC BT BR BT SA 
+         15  53964 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         16  69653 : * :                               TO BT SC BR BR BT SA                                  TO BT SC BR BT SA 
+         17  65850 :   :                            TO BT BT SC BT BR BT SA                            TO BT BT SC BT BR BT SA 
+         18  60803 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         19  77962 : * :                               TO BT BR SC BR BT SA                            TO BT BR SC BR BR BT SA 
+         20  76467 :   :                                  TO BT BR SC BT SA                                  TO BT BR SC BT SA 
+         21  73241 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         22  87674 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA 
+         23  97887 :   :                                  TO SC BT BR BT SA                                  TO SC BT BR BT SA 
+         24  95722 :   :                                  TO BT BR BT SC SA                                  TO BT BR BT SC SA 
+         25  94891 :   :                      TO BT SC BR BR BR BR BR BR BR                      TO BT SC BR BR BR BR BR BR BR 
+         26  92353 :   :                            TO BT BT SC BT BR BT SA                            TO BT BT SC BT BR BT SA 
+         27  90322 :   :                                  TO BT BT SC BR SA                                  TO BT BT SC BR SA 
+
+    In [5]: 
+
+
+
 
 
 Location misaligns
@@ -188,8 +898,8 @@ What could go wrong with the rewind ?
 
 
 
-Full unmasked run into tag 2
--------------------------------
+Full unmasked run into tag 2 : To find some record_id of non-maligned photons that scatter
+--------------------------------------------------------------------------------------------
 
 For access to some non-maligned photons that scatter, do a full run into tag 2
 
@@ -258,99 +968,6 @@ Try blanket inhibiting the jump --dbgnojump
 
 Switching off the rewind with --dbgnojump keeps the RNG seq aligned, but get different 
 seqhis-tories.  Need procName alignment checking too.
-
-
-
-
-Review Rewinding
-------------------
-
-Rewinding noted in :doc:`BR_PhysicalStep_zero_misalignment`
-
-::
-
-    Smouldering evidence : PhysicalStep-zero/StepTooSmall results in RNG mis-alignment 
-    ------------------------------------------------------------------------------------
-
-    Some G4 technicality yields zero step at BR, that means the lucky scatter 
-    throw that Opticks saw was not seen by G4 : as the sequence gets out of alignment.
-
-
-Zero steps result in G4 burning an entire steps RNGs compared to Opticks.  
-The solution was to jump back in the sequence on the G4 side.
-However for the misaligned six (the 3~4 studied) all appear to have an improper
-jump back.
-
-
-::
-
-    231 void CRandomEngine::poststep()
-    232 {
-    233     if(m_ctx._noZeroSteps > 0)
-    234     {
-    235         int backseq = -m_current_step_flat_count ;
-    236         LOG(error) << "CRandomEngine::poststep"
-    237                    << " _noZeroSteps " << m_ctx._noZeroSteps
-    238                    << " backseq " << backseq
-    239                    ;
-    240         jump(backseq);
-    241     }
-    242 
-    243     m_current_step_flat_count = 0 ;
-    244 
-    245     if( m_locseq )
-    246     {
-    247         m_locseq->poststep();
-    248         LOG(info) << CProcessManager::Desc(m_ctx._process_manager) ;
-    249     }
-    250 }
-
-
-Review POstStep ClearNumberOfInteractionLengthLeft
-------------------------------------------------------
-
-At the end of everystep the RNG for AB and SC are cleared, in order to 
-force G4VProcess::ResetNumberOfInteractionLengthLeft for every step, as
-that is how Opticks works with AB and SC RNG consumption at every "propagate_to_boundary".
-
-See :doc:`stepping_process_review`
-
-::
-
-     59 /*
-     60 
-     61      95 void G4VProcess::ResetNumberOfInteractionLengthLeft()
-     62      96 {
-     63      97   theNumberOfInteractionLengthLeft =  -std::log( G4UniformRand() );
-     64      98   theInitialNumberOfInteractionLength = theNumberOfInteractionLengthLeft;
-     65      99 }
-     66 
-     67 */
-     68 
-     69 
-     70 void CProcessManager::ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep)
-     71 {
-     72     G4ProcessVector* pl = proMgr->GetProcessList() ;
-     73     G4int n = pl->entries() ;
-     74 
-     75     for(int i=0 ; i < n ; i++)
-     76     {
-     77         G4VProcess* p = (*pl)[i] ;
-     78         const G4String& name = p->GetProcessName() ;
-     79         bool is_ab = name.compare("OpAbsorption") == 0 ;
-     80         bool is_sc = name.compare("OpRayleigh") == 0 ;
-     81         //bool is_bd = name.compare("OpBoundary") == 0 ;
-     82         if( is_ab || is_sc )
-     83         {
-     84             G4VDiscreteProcess* dp = dynamic_cast<G4VDiscreteProcess*>(p) ;
-     85             assert(dp);   // Transportation not discrete
-     86             dp->G4VDiscreteProcess::PostStepDoIt( aTrack, aStep );
-     87             // devious way to invoke the protected ClearNumberOfInteractionLengthLeft via G4VDiscreteProcess::PostStepDoIt
-     88         }
-     89     }
-     90 }
-
-
 
 
 
@@ -527,73 +1144,6 @@ Who gets ahead on consumption ?
     Process 27097 stopped
     * thread #1: tid = 0x9e78d, 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010f602e80) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
         frame #0: 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010f602e80) + 1082 at CRandomEngine.cc:206
-       203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
-       204      m_current_record_flat_count++ ; 
-       205      m_current_step_flat_count++ ; 
-    -> 206      return m_flat ;   // (*lldb*) flatExit
-       207  }
-       208  
-       209  
-
-
-
-
-
-???
-~~~~~~
-
-
-::
-
-
-    .[ 10]                                               rsa2 :     0.775209486 :    : 0.775209486 : 0.775209486 : 1 
-     [ 11]                                               rsa3 :     0.222410366 :    : 0.222410366 : 0.222410366 : 1 
-     [ 12]                                               rsa4 :     0.434931546 :    : 0.434931546 : 0.434931546 : 1 
-     [ 13]                                      boundary_burn :     0.971410215 :    : 0.971410215 : 0.971410215 : 6 
-     [ 14]                                         scattering :     0.980197608 :    : 0.980197608 : 0.980197608 : 1 
-     [ 15]                                         absorption :     0.124794453 :    : 0.124794453 : 0.124794453 : 1 
-     [ 16]                                            reflect :      0.83465904 :    : 0.834659040 : 0.834659040 : 1 
-     [ 17]                                      boundary_burn :     0.153918192 :    : 0.153918192 : 0.153918192 : 2 
-     [ 18]                                         scattering :     0.400545776 :    : 0.400545776 : 0.400545776 : 1 
-     [ 19]                                         absorption :     0.705055475 :    : 0.705055475 : 0.705055475 : 1 
-     [ 20]                                            reflect :    *0.443446934*:    : 0.443446934 : 0.443446934 : 1   TIR
-     [ 21]                                      boundary_burn :     0.806965649 :    : 0.806965649 : 0.806965649 : 2 
-     [ 22]                                         scattering :     0.994345605 :    : 0.994345605 : 0.994345605 : 1 
-     [ 23]                                         absorption :    *0.889802396*:    : 0.889802396 : 0.889802396 : 1 
-     [ 24]                                            reflect :     0.970076799 :    : 0.970076799 : 0.970076799 : 1 
-     [ 25]                                      boundary_burn :    0.0610740669 :    : 0.061074067 : 0.061074067 : 2 
-     [ 26]                                         scattering :     0.410069585 :    : 0.410069585 : 0.410069585 : 1 
-
-
-
-    //                  opticks.ana.loc.DsG4OpBoundaryProcess_cc_ExitPostStepDoIt_.[19] : ExitPostStepDoIt 
-    //                                                                             this : DsG4OpBoundaryProcess_cc_ExitPostStepDoIt 
-    //                                                                     .OldMomentum :  (type-error type-error type-error)  
-    //                                                                     .NewMomentum :  (type-error type-error type-error)  
-    //                                                                       .theStatus : (DsG4OpBoundaryProcessStatus) theStatus = TotalInternalReflection 
-    flatExit: mrk:   crfc:   21 df:2.23175034e-10 flat:*0.443446934*  ufval:0.443446934 :          OpBoundary; : lufc : 34    
-    propagate_at_boundary  u_reflect:    0.443446934  reflect:1   TransCoeff:   0.00000  c2c2:   -1.3720 tir:1  pos (   26.3642  -150.0000    98.5117)
-     [ 20]                                            reflect :     0.443446934 :    : 0.443446934 : 0.443446934 : 1 
-
-    flatExit: mrk:   crfc:   22 df:1.27960198e-10 flat:0.806965649  ufval:0.806965649 :          OpRayleigh; : lufc : 34    
-    WITH_ALIGN_DEV_DEBUG photon_id:0 bounce:3
-    propagate_to_boundary  u_boundary_burn:0.806965649 speed:165.028061
-     [ 21]                                      boundary_burn :     0.806965649 :    : 0.806965649 : 0.806965649 : 2 
-
-    flatExit: mrk:   crfc:   23 df:3.73382547e-10 flat:0.994345605  ufval:0.994345605 :        OpAbsorption; : lufc : 34    
-    propagate_to_boundary  u_scattering:0.994345605   scattering_length(s.material1.z):1000000 scattering_distance:5670.44141
-     [ 22]                                         scattering :     0.994345605 :    : 0.994345605 : 0.994345605 : 1 
-
-    2017-12-15 11:01:17.063 INFO  [644860] [CSteppingAction::setStep@132]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
-    2017-12-15 11:01:17.063 ERROR [644860] [CRandomEngine::poststep@236] CRandomEngine::poststep _noZeroSteps 1 backseq -3
-
-    flatExit: mrk:** crfc:   24 df:0.446355462 flat:*0.443446934*  ufval:0.889802396 :          OpBoundary; : lufc : 34    
-    propagate_to_boundary  u_absorption:0.889802396   absorption_length(s.material1.y):1000000 absorption_distance:116755.867
-     [ 23]                                         absorption :     0.889802396 :    : 0.889802396 : 0.889802396 : 1 
-
-    Process 26523 stopped
-    * thread #1: tid = 0x9d6fc, 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010fc04b20) + 1082 at CRandomEngine.cc:206, queue = 'com.apple.main-thread', stop reason = breakpoint 1.1
-        frame #0: 0x00000001044e063a libcfg4.dylib`CRandomEngine::flat(this=0x000000010fc04b20) + 1082 at CRandomEngine.cc:206
        203      //if(m_alignlevel > 1 || m_ctx._print) dumpFlat() ; 
        204      m_current_record_flat_count++ ; 
        205      m_current_step_flat_count++ ; 

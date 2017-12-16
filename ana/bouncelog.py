@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 """
-oxlog.py
-=========
+bouncelog.py
+==============
 
 Parse the kernel print log::
 
@@ -9,7 +9,7 @@ Parse the kernel print log::
 
           ## write kernel pindexlog for photon 1230
 
-    oxlog.py 1230
+    boucelog.py 1230
 
           ## parse the log 
 
@@ -24,7 +24,7 @@ class Bounce(list):
     def __init__(self):
         list.__init__(self)
     def __str__(self):
-       return "\n".join(self)
+       return "\n".join([""]+self+[""])
 
 
 class BounceLog(OrderedDict):

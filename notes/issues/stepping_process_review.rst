@@ -121,6 +121,7 @@ resets for every step.
 
 
 
+
 lldb python scripted breakpoints
 -----------------------------------
 
@@ -166,6 +167,8 @@ cfg4/g4lldb.py::
      76         print FMT % ( k, v )
      77     pass
      78     return False
+
+
 
 
 Geant4 decision making : absorb/scatter/sail : absorb beats scatter but sail wins 

@@ -50,7 +50,11 @@ import os, sys, logging, numpy as np
 log = logging.getLogger(__name__)
 
 from opticks.ana.base import opticks_main
+from opticks.ana.nload import np_load
 from opticks.ana.ab   import AB
+from opticks.ana.seq import seq2msk
+
+
 
 if __name__ == '__main__':
     ok = opticks_main(doc=__doc__, tag="1", src="torch", det="tboolean-torus", smry=False)  
@@ -74,7 +78,11 @@ if __name__ == '__main__':
     #ab.aselhis = "TO BT BT SA"     # dev aligned comparisons
     ab.aselhis = None    # dev aligned comparisons
   
-   
+    jp = np_load("$TMP/CRandomEngine_jump_photons.npy")
+    a_jpsc = ab.a.pflags_subsample_where(jp, "SC")
+    b_jpsc = ab.b.pflags_subsample_where(jp, "SC")
+    
+       
 
     
 

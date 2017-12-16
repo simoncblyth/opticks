@@ -72,6 +72,9 @@ class CFG4_API CSteppingAction : public G4UserSteppingAction
     unsigned int m_steprec_store_count ;
 
 
+
+
+
 };
 
 #include "CFG4_TAIL.hh"

@@ -17,6 +17,7 @@ CProcessManager
 **/
 
 class G4ProcessManager ;
+class G4VDiscreteProcess ;
 class G4Track ;
 class G4Step ;
 
@@ -27,6 +28,11 @@ struct CFG4_API CProcessManager
     static G4ProcessManager* Current(G4Track* trk) ;  
     static void ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep);
     static void ResetNumberOfInteractionLengthLeft(G4ProcessManager* proMgr);
+
+    static G4VDiscreteProcess* GetDiscreteProcess( G4ProcessManager* proMgr, const char* name);
+    static void ClearNumberOfInteractionLengthLeft(G4ProcessManager* proMgr, const G4Track& aTrack, const G4Step& aStep, const char* name);
+
+
 
 };
 

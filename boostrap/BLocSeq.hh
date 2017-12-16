@@ -19,7 +19,7 @@ class BRAP_API BLocSeq
         BLocSeq(bool skipdupe);
 
         void add(const char* loc, int record_id, int step_id); 
-        void poststep();
+        void postStep();
         void mark(T marker); 
 
     public:

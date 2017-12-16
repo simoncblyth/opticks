@@ -1,10 +1,56 @@
 #!/usr/bin/python
 """
 
+
+NB lldb.frame and frame are not the same 
+
+INTERACTIVE::
+
+    >>> from opticks.tools.evaluate import EV ; self = EV(lldb.frame.FindVariable("this"))
+    
+WITHIN BREAKPOINT FUNC::
+
+    self = EV(frame.FindVariable("this"))
+
+
+::
+
+    (lldb) fr v
+    (CRandomEngine *) this = 0x0000000110025c70
+
     (lldb) script
     Python Interactive Interpreter. To exit, type 'quit()', 'exit()' or Ctrl-D.
 
-    >>> from opticks.tools.evaluate import Value, Evaluate, EV ; ev = EV(lldb.frame.FindVariable("this"))
+    >>> from opticks.tools.evaluate import EV ; self = EV(lldb.frame.FindVariable("this"))
+
+    >>> self.v.keys
+    ['CLHEP::HepRandomEngine', 'm_g4', 'm_ctx', 'm_ok', 'm_mask', 'm_masked', 'm_path', 'm_alignlevel', 'm_seed', 'm_internal', 'm_skipdupe', 'm_locseq', 'm_curand', 'm_curand_index', 'm_curand_ni', 'm_curand_nv', 'm_current_record_flat_count', 'm_current_step_flat_count', 'm_offset', 'm_offset_count', 'm_flat', 'm_location', 'm_sequence', 'm_cursor', 'm_cursor_old']
+
+    >>> self.v(".m_ctx._step_id")
+    (int) _step_id = 0
+
+    >>> self.ev(".m_ctx._step_id")
+    0
+
+    >>> self.ev(".m_ctx")
+    OrderedDict([('_ok', 'ptr'), ('_pindex', 0), ('_print', True), ('_dbgrec', False), ('_dbgseq', False), ('_dbgzero', False), ('_photons_per_g4event', 10000), ('_steps_per_photon', 10), ('_gen', 4096), ('_record_max', 1), ('_bounce_max', 9), ('_ok_event_init', True), ('_event', 'ptr'), ('_event_id', 0), ('_event_total', 1), ('_event_track_count', 1), ('_track', 'ptr'), ('_process_manager', 'ptr'), ('_track_id', 0), ('_track_total', 1), ('_track_step_count', 1), ('_parent_id', -1), ('_optical', True), ('_pdg_encoding', 0), ('_primary_id', -2), ('_photon_id', 0), ('_reemtrack', False), ('_record_id', 0), ('_record_fraction', 0.0), ('_rejoin_count', 0), ('_primarystep_count', 1), ('_stage', OrderedDict()), ('_debug', False), ('_other', False), ('_dump', False), ('_dump_count', 0), ('_step', 'ptr'), ('_noZeroSteps', 0), ('_step_id', 0), ('_step_total', 1), ('_step_origin', OrderedDict([('dx', 11.291412353515625), ('dy', -34.645111083984375), ('dz', -449.8999938964844)]))])
+
+    >>> self.v(".m_ctx")
+    (CG4Ctx &) m_ctx = 0x0000000110025af0: {
+      _ok = 0x000000010c735c40
+      _pindex = 0
+      _print = true
+      _dbgrec = false
+      _dbgseq = false
+      _dbgzero = false
+      _photons_per_g4event = 10000
+      _steps_per_photon = 10
+      _gen = 4096
+      _record_max = 1
+
+
+
+
 
 """
 
@@ -107,6 +153,7 @@ class Evaluate(object):
     E_SKIP = "SKIP"
     E_PTR = "PTR"
     E_COMP = "COMP"
+    E_ENUM = "ENUM"
 
     @classmethod
     def classify(cls, v):
@@ -115,10 +162,14 @@ class Evaluate(object):
         t = v.GetType()
         pt = t.IsPointerType()
 
+        lem = len(t.enum_members)
+
         if tn in cls.ATOMS:
             et = cls.E_ATOM
         elif tn in cls.SKIPS:
             et = cls.E_SKIP
+        elif lem > 0:
+            et = cls.E_ENUM
         elif pt:
             et = cls.E_PTR 
         else:
@@ -170,6 +221,8 @@ class Evaluate(object):
                
         if et == self.E_ATOM:
             e = self.evaluate_atom(v)
+        elif et == self.E_ENUM:
+            e = v.GetValue()
         elif et == self.E_SKIP:
             e = "skp"
         elif et == self.E_PTR:

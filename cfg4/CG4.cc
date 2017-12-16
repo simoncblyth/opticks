@@ -67,14 +67,21 @@
 
 
 
-Opticks* CG4::getOpticks()
+Opticks* CG4::getOpticks() const
 {
     return m_ok ; 
 }
-OpticksHub* CG4::getHub()
+OpticksHub* CG4::getHub() const
 {
     return m_hub ; 
 }
+OpticksRun* CG4::getRun() const 
+{
+    return m_run ; 
+}
+
+
+
 CGeometry* CG4::getGeometry()
 {
     return m_geometry ; 
@@ -333,11 +340,11 @@ void CG4::postTrack()
 
 
 // invoked from CSteppingAction::UserSteppingAction
-void CG4::poststep()
+void CG4::postStep()
 {
     if(m_engine)
     {
-        m_engine->poststep();
+        m_engine->postStep();
     }
 }
 
@@ -372,6 +379,7 @@ void CG4::initEvent(OpticksEvent* evt)
     assert(nopstep); 
     m_steprec->initEvent(nopstep);
 }
+
 
 
 

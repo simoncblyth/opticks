@@ -400,7 +400,6 @@ NPY<float>* OpticksEvent::getHitData() const
     return m_hit_data ;
 }
 
-
 MultiViewNPY* OpticksEvent::getGenstepAttr(){ return m_genstep_attr ; }
 MultiViewNPY* OpticksEvent::getNopstepAttr(){ return m_nopstep_attr ; }
 MultiViewNPY* OpticksEvent::getPhotonAttr(){ return m_photon_attr ; }
@@ -2243,10 +2242,19 @@ int OpticksEvent::seedDebugCheck(const char* msg)
 
 
 
-unsigned long long  OpticksEvent::getSeqHis(unsigned photon_id ) const 
+
+std::string OpticksEvent::getSeqHisString(unsigned photon_id) const 
 {
-    unsigned long long sh = m_sequence_data ? m_sequence_data->getValue(photon_id,0,0) : 0 ;
-    return sh ;
+    unsigned long long seqhis_ = getSeqHis(photon_id); 
+    return OpticksFlags::FlagSequence(seqhis_);
+}
+
+
+unsigned long long OpticksEvent::getSeqHis(unsigned photon_id) const 
+{
+    unsigned num_seq = m_sequence_data ? m_sequence_data->getShape(0) : 0 ; 
+    unsigned long long seqhis_ = photon_id < num_seq ?  m_sequence_data->getValue(photon_id,0,0) : 0 ;   
+    return seqhis_ ; 
 }
 
 unsigned long long  OpticksEvent::getSeqMat(unsigned photon_id ) const 

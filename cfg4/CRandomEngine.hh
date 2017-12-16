@@ -8,6 +8,8 @@
 #include "CFG4_HEAD.hh"
 
 class Opticks ; 
+class OpticksRun ; 
+class OpticksEvent ; 
 
 class CG4 ; 
 struct CG4Ctx ; 
@@ -44,14 +46,11 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         void postpropagate();
         void preTrack();
         void postTrack();
-        void poststep();
+        void postStep();
     private:
         void init(); 
         void initCurand(); 
         void setupCurandSequence(int record_id);
-
-        //bool isNonRan() const ; 
-        //bool isDefault() const ; 
 
         void dump(const char* msg) const ; 
         void dumpFlat(); 
@@ -68,11 +67,20 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         void setRandomSequence(double* s, int n);
         void jump(int offset); 
         double _flat(); 
-
+        double _peek(int offset) const  ; // does not increment anything, just looks around
     private:
         CG4*                          m_g4 ; 
         CG4Ctx&                       m_ctx ; 
         Opticks*                      m_ok ; 
+        bool                          m_dbgkludgeflatzero ; 
+        OpticksRun*                   m_run ; 
+
+        OpticksEvent*                 m_okevt ; 
+        unsigned long long            m_okevt_seqhis ; 
+        const char*                   m_okevt_pt ; 
+
+        OpticksEvent*                 m_g4evt ; 
+
         const std::vector<unsigned>&  m_mask ;  
         bool                          m_masked ;  
 
@@ -89,8 +97,8 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
         int                      m_curand_nv ; 
         int                      m_current_record_flat_count ; 
         int                      m_current_step_flat_count ; 
-        int                      m_offset ;
-        int                      m_offset_count ;  
+        int                      m_jump ;
+        int                      m_jump_count ;  
         double                   m_flat ; 
 
         std::string              m_location ; 
@@ -99,7 +107,9 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
        
         std::vector<double> m_sequence ; 
         unsigned            m_cursor; 
-        unsigned            m_cursor_old ; 
+        unsigned            m_cursor_old ;
+ 
+        std::vector<unsigned> m_jump_photons ; 
 
     private:
         void setSeed(long , int) ; 

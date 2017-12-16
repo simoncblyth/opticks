@@ -1,5 +1,75 @@
 #!/usr/bin/env python
 """
+AutoBreakPoint
+================
+
+Running this script writes to stdout lldb commands 
+to set breakpoints and add python function commands to them.
+This works by parsing the source of this file.
+Only functions with names and arguments following the required
+pattern yield breakpoints. Thus change function names 
+to disable breakpoints, eg prefix with "_".
+
+::
+
+    def CRandomEngine_cc_postTrack(frame, bp_loc, sess):
+        pass
+    def G4SteppingManager_cc_191(frame, bp_loc, sess):
+        pass
+
+The name encodes breakpoint source name and line number or marker such as "postTrack". 
+When markers are used the source is searched for a string of the below form 
+in order to resolve the line number. Markers have the advantage of remaining valid as
+the source is changed.
+
+NB return True from the function to actually stop at the breakpoint
+
+Start developing breakpoint function with something like::
+
+    def CSteppingAction_cc_setStep(frame, bp_loc, sess):
+        ploc = Loc(sys._getframe(), __name__)
+        print "%s :  %s " % (ploc.tag, ploc.label)
+
+        self = EV(frame.FindVariable("this"))
+        print self
+
+        return True
+
+::
+
+    // (*lldb*) postTrack
+
+
+Generation example::
+
+    delta:ana blyth$ g4lldb.py 
+    # AutoBreakPoint generated
+    #
+    # path       /Users/blyth/opticks/ana/g4lldb.py
+    # module     opticks.ana.g4lldb
+    # thisfile   /Users/blyth/opticks/tools/autobreakpoint.py
+    #
+    command script import opticks.ana.g4lldb
+
+    # CRandomEngine_cc_preTrack
+    br set -f CRandomEngine.cc -l 352
+    br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_preTrack
+    ...
+
+
+This generation is done automatically by bin/op.sh prior 
+to Opticks launch when using the "-DD" option (see op-vi).
+
+Example::
+
+   tboolean-;tboolean-box --okg4 --align --mask 1230  --pindex 0 --pindexlog -DD  
+
+      ## python scripted breakpoints are typically used 
+      ## with masked running on single photons
+
+
+
+
 """
 from collections import OrderedDict
 import os, re, fnmatch, logging
@@ -51,9 +121,12 @@ class BreakPoint(dict):
  
 
     def __init__(self, func, module):
+        """
+        Example breakpoint func names: CRec_cc_add G4SteppingManager_cc_215
+        """
         dict.__init__(self)
         elem = func.split("_")
-        assert len(elem) == 4
+        assert len(elem) == 3
         self.__class__.INDEX += 1
 
         self["func"] = func
@@ -93,7 +166,7 @@ class AutoBreakPoint(dict):
     command script import %(module)s
     """
 
-    DEF_PTN = re.compile("^def (\S*)\(frame") 
+    DEF_PTN = re.compile("^def (\S*)\(frame, bp_loc, sess\):$")
 
     def parse(self, path, module):
         for line in file(path).readlines():
@@ -101,7 +174,7 @@ class AutoBreakPoint(dict):
             if not m:continue
             func = m.group(1)
             elem = func.split("_")
-            if len(elem) == 4:
+            if len(elem) == 3:
                 bp = BreakPoint(func, module)
                 if bp["line"] is None:
                     pass
@@ -120,14 +193,11 @@ class AutoBreakPoint(dict):
     def __repr__(self):
         self["thisfile"] = os.path.abspath(__file__) 
         HEAD = self.HEAD % self
-        pass
         return "\n".join(prep(HEAD)+map(str, self.bps))
 
 
 if __name__ == '__main__':
     abp = AutoBreakPoint(path=__file__)
     print abp
-
-
 
 

@@ -465,6 +465,22 @@ class Evt(object):
         log.debug("so shape %s " % str(so.shape))
 
 
+    def pflags_where(self, abbrev="SC"):
+        """
+        pflags can be obtained from seqhis, by OR-ing 16 nibbles
+        """
+        co = self.hismask.code(abbrev)
+        return np.where(self.pflags & co)[0]
+
+    def pflags_subsample_where(self, jp, abbrev="SC"):
+        """
+        :param jp: subsample array of photon indices
+        :param abbrev: step history abbeviation eg SC, AB, BR
+        :return: indices from jp subsample which have seqhis-tories including the abbrev param
+        """
+        co = self.hismask.code(abbrev) 
+        jpsc = jp[np.where( seq2msk(self.seqhis[jp]) & co )]
+        return jpsc
 
 
     def make_seqhis_ana(self, seqhis):
@@ -514,7 +530,7 @@ class Evt(object):
         all_seqmat_ana = self.make_seqmat_ana(seqmat)
 
         self.seqhis = seqhis
-        self.pflags2 = seq2msk(seqhis) 
+        self.pflags2 = seq2msk(seqhis) # 16 seq nibbles OR-ed into mask 
 
         self.msk_mismatch = self.pflags != self.pflags2
         self.num_msk_mismatch = np.count_nonzero(self.msk_mismatch)

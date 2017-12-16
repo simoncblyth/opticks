@@ -241,7 +241,12 @@ DsG4OpBoundaryProcess::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	if (aTrack.GetStepLength()<=kCarTolerance/2)
     {
 	    theStatus = StepTooSmall;
-	    return G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+
+        G4VParticleChange* change = G4VDiscreteProcess::PostStepDoIt(aTrack, aStep);
+
+        LOG(info) << " StepTooSmall" ;   // (*lldb*) StepTooSmall
+
+	    return change ; 
 	}
 
 	Material1 = pPreStepPoint  -> GetMaterial();

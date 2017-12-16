@@ -594,10 +594,22 @@ bool Opticks::isAlign() const  // --align
 {
    return m_cfg->hasOpt("align");
 }
-bool Opticks::isDbgNoJump() const  // --dbgnojump
+bool Opticks::isDbgNoJumpZero() const  // --dbgnojumpzero
 {
-   return m_cfg->hasOpt("dbgnojump");
+   return m_cfg->hasOpt("dbgnojumpzero");
 }
+bool Opticks::isDbgSkipClearZero() const  // --dbgskipclearzero
+{
+   return m_cfg->hasOpt("dbgskipclearzero");
+}
+bool Opticks::isDbgKludgeFlatZero() const  // --dbgkludgeflatzero
+{
+   return m_cfg->hasOpt("dbgkludgeflatzero");
+}
+
+
+
+
 
 
 

@@ -374,8 +374,11 @@ class OKCORE_API Opticks {
        bool isCfG4();   // needs manual override to set to CFG4_MODE
        bool isProduction();
 
-       bool isAlign() const ;
-       bool isDbgNoJump() const ;
+       bool isAlign() const ; // --align
+       bool isDbgNoJumpZero() const ; // --dbgnojumpzero
+       bool isDbgSkipClearZero() const ; // --dbgskipclearzero
+       bool isDbgKludgeFlatZero() const ; // --dbgkludgeflatzero
+
        bool isReflectCheat() const ;
        bool isSave() const ;
        bool isLoad() const;

@@ -2,7 +2,20 @@
 
 #include "CFG4_API_EXPORT.hh"
 #include "G4ThreeVector.hh"
+#include "G4StepStatus.hh"
 #include "CStage.hh"
+
+#include "CProcessSwitches.hh"
+
+#ifdef USE_CUSTOM_BOUNDARY
+//#include "DsG4OpBoundaryProcess.h"
+#include "DsG4OpBoundaryProcessStatus.h"
+
+#else
+#include "G4OpBoundaryProcess.hh"
+#endif
+
+
 #include <string>
 
 class G4Event ; 
@@ -83,7 +96,21 @@ struct CFG4_API CG4Ctx
     int _step_id ; 
     int _step_total ;
     G4ThreeVector _step_origin ; 
+    G4StepStatus _step_pre_status ; 
+    G4StepStatus _step_post_status ; 
  
+
+
+#ifdef USE_CUSTOM_BOUNDARY
+    DsG4OpBoundaryProcessStatus _boundary_status ;
+    DsG4OpBoundaryProcessStatus _prior_boundary_status ;
+#else
+    G4OpBoundaryProcessStatus   _boundary_status ;
+    G4OpBoundaryProcessStatus   _prior_boundary_status ;
+#endif
+  
+
+
 
     CG4Ctx(Opticks* ok);
 

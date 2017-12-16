@@ -83,7 +83,10 @@ class AB(object):
 
     def recline(self, iq):
         i, q = iq
-        return " %6d %6d : %50s %50s " % ( i, q, self.histype.label(self.a.seqhis[q]), self.histype.label(self.b.seqhis[q]) )
+        al = self.histype.label(self.a.seqhis[q])
+        bl = self.histype.label(self.b.seqhis[q])
+        mk = " " if al == bl else "*"
+        return " %6d %6d : %s : %50s %50s " % ( i, q, mk, al, bl )
 
     def dumpline(self, wh):
         if type(wh) is slice:
