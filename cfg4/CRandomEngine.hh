@@ -65,6 +65,7 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
 
     public:
         void setRandomSequence(double* s, int n);
+        int  findIndexOfValue(double s, double tolerance=1e-6) ; 
         void jump(int offset); 
         double _flat(); 
         double _peek(int offset) const  ; // does not increment anything, just looks around
@@ -106,8 +107,8 @@ class CFG4_API CRandomEngine : public CLHEP::HepRandomEngine
     private:
        
         std::vector<double> m_sequence ; 
-        unsigned            m_cursor; 
-        unsigned            m_cursor_old ;
+        int                 m_cursor; 
+        int                 m_cursor_old ;
  
         std::vector<unsigned> m_jump_photons ; 
 

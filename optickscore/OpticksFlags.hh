@@ -115,7 +115,7 @@ class OKCORE_API OpticksFlags {
        static const char* PointAbbrev( const unsigned long long& seqhis , unsigned bitpos );
 
     public:
-       static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true);
+       static std::string FlagSequence(const unsigned long long seqhis, bool abbrev=true, int highlight=-1);
        static std::string FlagMask(const unsigned mskhis, bool abbrev=true);
     public:
         OpticksFlags(const char* path=ENUM_HEADER_PATH);

@@ -269,11 +269,7 @@ const char* OpticksFlags::PointAbbrev( const unsigned long long& seqhis , unsign
 }
 
 
-
-
-
-
-std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abbrev)
+std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abbrev, int highlight)
 {
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);
@@ -281,7 +277,10 @@ std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abb
     {
         unsigned long long f = (seqhis >> i*4) & 0xF ; 
         unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
-        ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) << " " ;
+        if(i == highlight) ss << "[" ;  
+        ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) ;
+        if(i == highlight) ss << "]" ;  
+        ss << " " ; 
     }
     return ss.str();
 }

@@ -34,19 +34,27 @@ struct CRandomEngineTest
              return ; 
         }
 
-        _ctx._record_id = 0 ;   
+        _ctx._record_id = record_id ;   
         _engine.preTrack();     // <-- required to setup the curandSequence
 
         LOG(info) << "record_id " << record_id ; 
  
-        for(int i=0 ; i < 10 ; i++)
-            std::cout << std::setw(5) << i << " : " << G4UniformRand() << std::endl  ;  
+        for(int i=0 ; i < 29 ; i++)
+        {
+            double u = G4UniformRand() ;
+            int idxf = _engine.findIndexOfValue(u); 
 
-        _engine.jump(-5) ;
+            std::cout 
+                << " i "    << std::setw(5) << i 
+                << " idxf " << std::setw(5) << idxf 
+                << " u "    << std::setw(10) << u 
+                << std::endl 
+                ;  
 
-        for(int i=0 ; i < 10 ; i++)
-            std::cout << std::setw(5) << i << " : " << G4UniformRand() << std::endl  ;  
 
+        }
+
+        //_engine.jump(-5) ;
 
  
     }
@@ -63,6 +71,9 @@ int main(int argc, char** argv)
 
     LOG(info) << argv[0] ; 
 
+    int pindex = argc > 1 ? atoi(argv[1]) : 0 ; 
+
+    LOG(info) << " pindex " << pindex ; 
 
     Opticks ok(argc, argv );
     ok.setModeOverride( OpticksMode::CFG4_MODE );   // with GPU running this is COMPUTE/INTEROP
@@ -72,7 +83,7 @@ int main(int argc, char** argv)
     CG4* g4 = new CG4(&hub) ; 
 
     CRandomEngineTest ret(g4) ; 
-    ret.print(0); 
+    ret.print(pindex); 
 
     return 0 ; 
 }

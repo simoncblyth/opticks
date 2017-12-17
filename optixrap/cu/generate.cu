@@ -584,6 +584,13 @@ RT_PROGRAM void generate()
     // breakers and maxers saved here
     psave(p, photon_buffer, photon_offset ); 
 
+#ifdef WITH_ALIGN_DEV_DEBUG
+    rtPrintf(" WITH_ALIGN_DEV_DEBUG psave (%.9g %.9g %.9g %.9g) ( %d, %d, %d, %d ) \n",
+                 p.position.x,    p.position.y,    p.position.z,     p.time, 
+                 p.flags.i.x ,    p.flags.i.y,     p.flags.i.z,    p.flags.i.w
+         ); 
+#endif
+
     // RSAVE lays down s.flag and s.index.x into the seqhis and seqmat
     // but there is inconsistency for BREAKers as s.index.x (m1) is only updated by fill_state 
     // but s.flag is updated after that by the propagate methods : so the last m1 

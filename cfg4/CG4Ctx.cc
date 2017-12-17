@@ -195,6 +195,7 @@ void CG4Ctx::setTrack(const G4Track* track) // invoked by CTrackingAction::setTr
 
     _step = NULL ; 
     _step_id = -1 ; 
+    _step_id_valid = -1 ; 
 
     if(_optical) setTrackOptical();
 }
@@ -207,6 +208,8 @@ void CG4Ctx::setStep(const G4Step* step, int noZeroSteps) // invoked by CSteppin
     _step = const_cast<G4Step*>(step) ; 
     _noZeroSteps = noZeroSteps ;  
     _step_id = CTrack::StepId(_track);
+    if(_noZeroSteps == 0) _step_id_valid += 1;
+
     _step_total += 1 ; 
     _track_step_count += 1 ; 
 

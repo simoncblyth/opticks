@@ -29,6 +29,24 @@ T SVec<T>::MaxDiff(const std::vector<T>& a, const std::vector<T>& b, bool dump)
 }
 
 
+template <typename T>
+int SVec<T>::FindIndexOfValue(const std::vector<T>& a, T value, T tolerance)
+{
+    int idx = -1 ; 
+    for(unsigned i=0 ; i < a.size() ; i++)
+    {   
+        T df = std::abs(a[i] - value) ; 
+        if(df < tolerance)
+        {   
+            idx = i ; 
+            break ; 
+        }   
+    }           
+    return idx ; 
+}
+ 
+
+
 
 template struct SVec<float>;
 template struct SVec<double>;

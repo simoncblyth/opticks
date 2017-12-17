@@ -17,8 +17,8 @@ The below method is central to G4 operation::
 Whilst attemping to align the random number consumption of 
 Opticks and Geant4 optical only simulation I found that the
 Geant4 equivalent ResetNumberOfInteractionLengthLeft to 
-the below u_absorption and u_scattering throws was only being called 
-for the first step of "TO BT BT SA".
+the below propagate_to_boundary u_absorption and u_scattering 
+throws was only being called for the first step of "TO BT BT SA".
 
 The reason is that the PostStepDoItProc which invokes the base 
 G4VDiscreteProcess::PostStepDoItProc only happens for the winning process.  
@@ -29,7 +29,6 @@ but for scattering it means that the probability of not scattering is artificial
 the same from step to step until a scatter actually happens. 
 
 If this is a bug, I guess its a very minor one.
-
 
 My workaround for this to align random consumption, invokes G4VDiscreteProcess::PostStepDoItProc 
 at the end of the step for OpAbsorption and OpRayleigh in order to force interaction length 

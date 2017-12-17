@@ -6,13 +6,6 @@ g4lldb.py
 =============
 
 
-TODO : adopt point-by-point interleaved logging
----------------------------------------------------
-
-* split by step in ucf.py and interleave at that level, 
-  as its too difficult to grok at per-rng level
-
-
 THOUGHTS ON CODE FOR DEBUGGING
 ------------------------------
 
@@ -117,7 +110,7 @@ def CRandomEngine_cc_postTrack(frame, bp_loc, sess):
     return ENGINE.postTrack(ploc,frame, bp_loc, sess)
 
 
-def G4SteppingManager_cc_191(frame, bp_loc, sess):
+def _G4SteppingManager_cc_191(frame, bp_loc, sess):
     """
     After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs()
 
@@ -149,7 +142,7 @@ def _CSteppingAction_cc_setStep(frame, bp_loc, sess):
     return False
 
 
-def CRec_cc_add(frame, bp_loc, sess):
+def _CRec_cc_add(frame, bp_loc, sess):
     """ 
     
     """
@@ -205,46 +198,53 @@ class CRandomEngine(EV):
 
     def postStep(self, ploc, frame, bp_loc, sess):
         self.v = frame.FindVariable("this")
-        step_id = self.ev(".m_ctx._step_id")
-        okevt_pt = self.ev("m_okevt_pt")
-        print "%s step_id:%d okevt_pt:%s " % (ploc.tag, step_id, okevt_pt ) 
-        bounce = self.bounce_log.get(step_id, None) 
+
+        sid = self.ev(".m_ctx._step_id")
+        pri = self.ev(".m_ctx._prior_boundary_status")
+        bst = self.ev(".m_ctx._boundary_status")
+        opt = self.ev("m_okevt_pt")
+
+        print "%s step_id:%d bst:%15s pri:%15s okevt_pt:%s " % (ploc.tag, sid, bst, pri, opt ) 
+        bounce = self.bounce_log.get(sid, None) 
         dump = False
         if bounce is not None and dump:
             print bounce
         pass
+        print "--"  # postStep spacer 
         return False
 
     def flat(self, ploc, frame, bp_loc, sess):
         self.v = frame.FindVariable("this")
 
-        u_g4 = self.ev("m_flat") 
-        loc_g4 = self.ev("m_location") 
-        assert type(u_g4) is float 
-        assert type(loc_g4) is str 
-
+        ug4 = self.ev("m_flat") 
+        lg4 = self.ev("m_location") 
+        cur = self.ev("m_cursor") 
         crf = self.ev("m_current_record_flat_count") 
         csf = self.ev("m_current_step_flat_count") 
-        cur = self.ev("m_curand_index") 
+        cix = self.ev("m_curand_index") 
+
+        idx = cur  
+        # correspondence between sequences 
+        #    crf: gets offset by the kludge
+        #    cur: is always the real flat cursor index
 
         assert type(crf) is int 
         assert type(csf) is int 
-        assert type(cur) is int and cur == self.pindex
+        assert type(cix) is int and cix == self.pindex
 
-        u = self.ucf[crf] if crf < self.lucf else None 
+        u = self.ucf[idx] if idx < self.lucf else None 
+        uok = u.fval if u is not None else -1
+        lok = u.lab  if u is not None else "ucf-overflow" 
 
-        u_ok = u.fval if u is not None else -1
-        loc_ok = u.lab  if u is not None else "ucf-overflow" 
-
-        df = abs(u_g4 - u_ok) 
+        df = abs(ug4 - uok) 
         misrng = df > 1e-6 
-        misloc = loc_ok != loc_g4
+        misloc = lok != lg4
         mrk = "%s%s" % ( "*" if misrng else "-", "#" if misloc else "-")
 
         f_ = lambda f:'{0:.9f}'.format(f)
         g_ = lambda g:'{0:.10g}'.format(g)
 
-        print "%s mrk:%2s crf:%2d csf:%2d loc_g4/ok: ( %30s %30s ) df:%18s u_g4/ok:( %s %s ) " % ( ploc.tag, mrk, crf, csf, loc_g4, loc_ok, g_(df), f_(u_g4), f_(u_ok)   )
+        print "%s cix:%5d mrk:%2s cur:%2d crf:%2d csf:%2d lg4/ok: ( %30s %30s ) df:%18s ug4/ok:( %s %s ) " % ( ploc.tag, cix, mrk, cur, crf, csf, lg4, lok, g_(df), f_(ug4), f_(uok)   )
         #print u 
 
         stop = mrk != "--"

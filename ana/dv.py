@@ -97,9 +97,10 @@ class DvTab(object):
         SC AB RE 
           see notes/issues/sc_ab_re_alignment.rst
         
-        currently have not devised a way to align (cheat randomness)
-        so avoid accidental history alignment causing deviation fails
-        by skipping any selection that includes SC AB or RE
+        When comparing non-aligned events it is necessary to
+        avoid accidental history alignment causing deviation fails
+        by skipping any selection that includes SC AB or RE, assuming 
+        reflect cheat is used.
         """
         sqs = sel.split() 
         skip = False
@@ -128,9 +129,10 @@ class DvTab(object):
         dvs = []
         for i in range(nsel):
             sel = labels[i]
-            if self.is_skip(sel):
-                continue
-            pass
+
+            #if self.is_skip(sel):
+            #    continue
+            #pass
 
             lcu = cu[i]
             assert len(lcu) == 3
@@ -153,8 +155,8 @@ class DvTab(object):
             av = ab.a.rpol()
             bv = ab.b.rpol()
         elif self.name == "ox_dv": 
-            av = ab.a.ox
-            bv = ab.b.ox
+            av = ab.a.ox[:,:3,:]
+            bv = ab.b.ox[:,:3,:]
         else:
             assert self.name
         pass 

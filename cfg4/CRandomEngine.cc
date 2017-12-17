@@ -8,6 +8,7 @@
 #include "G4VProcess.hh"
 
 
+#include "SVec.hh"
 #include "SSys.hh"
 
 #include "BStr.hh"
@@ -63,8 +64,8 @@ CRandomEngine::CRandomEngine(CG4* g4)
     m_jump(0),
     m_jump_count(0),
     m_flat(-1.0),
-    m_cursor(0),
-    m_cursor_old(0)
+    m_cursor(-1),
+    m_cursor_old(-1)
 {
     init();
 }
@@ -197,7 +198,7 @@ std::string CRandomEngine::FormLocation(const char* file, int line)
 
 double CRandomEngine::flat_instrumented(const char* file, int line)
 {
-    // when line is negative the file is regarded as a label
+    // when line is negative file is regarded as a label
     m_location = FormLocation(file, line) ;
     m_internal = true ; 
     double _flat = flat();
@@ -217,37 +218,48 @@ double CRandomEngine::flat()
                && m_ctx._prior_boundary_status == FresnelReflection 
                ;
 
-    double v = kludge ? _peek(-3) : _flat() ; 
+    double v = kludge ? _peek(-2) : _flat() ; 
   
     if( kludge )
     {
         LOG(info) << " --dbgkludgeflatzero  "
-                  << " first flat call following FresnelReflection then StepTooSmall yields  _peek(-3) value "
+                  << " first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value "
                   << " v " << v 
                  ;
+        // actually the value does not matter, its just OpBoundary which is not used 
     }
 
     m_flat = v ; 
-
     m_current_record_flat_count++ ;  // (*lldb*) flat 
     m_current_step_flat_count++ ; 
 
     return m_flat ; 
 }
 
+/*
+__device__ float 
+curand_uniform (curandState_t *state)
+This function returns a sequence of pseudorandom floats uniformly distributed
+between 0.0 and 1.0. It may return from 0.0 to 1.0, where 1.0 is included and
+0.0 is excluded.
+
+Read more at: http://docs.nvidia.com/cuda/curand/index.html
+*/
+
+
 
 double CRandomEngine::_peek(int offset) const 
 {
-     unsigned idx = m_cursor + offset ; 
-     assert( idx < m_sequence.size() );
-     return m_sequence[idx] ; 
+    int idx = m_cursor + offset ; 
+    assert( idx >= 0 && idx < int(m_sequence.size()) );
+    return m_sequence[idx] ; 
 }
 
 double CRandomEngine::_flat() 
 {
-    assert( m_cursor < m_sequence.size() );
-    double v = m_sequence[m_cursor];
     m_cursor += 1 ; 
+    assert( m_cursor >= 0 && m_cursor < int(m_sequence.size()) );
+    double v = m_sequence[m_cursor];
     return v  ;    
 }
 
@@ -269,8 +281,15 @@ void CRandomEngine::setRandomSequence(double* s, int n)
     m_sequence.clear();
     for (int i=0; i<n; i++) m_sequence.push_back(*s++);
     assert (m_sequence.size() == (unsigned)n);
-    m_cursor = 0;
+    m_cursor = -1 ;
 }
+
+int CRandomEngine::findIndexOfValue(double s, double tolerance) 
+{
+    return SVec<double>::FindIndexOfValue(m_sequence, s, tolerance) ; 
+}
+
+
 
 void CRandomEngine::dumpFlat()
 {
@@ -298,7 +317,6 @@ void CRandomEngine::postStep()
 {
     if(m_ctx._noZeroSteps > 0)
     {
-        //int backseq = -2*m_current_step_flat_count ; 
         int backseq = -m_current_step_flat_count ; 
         bool dbgnojumpzero = m_ok->isDbgNoJumpZero() ; 
 
@@ -321,7 +339,8 @@ void CRandomEngine::postStep()
 
     if(m_masked)
     {
-        m_okevt_pt = OpticksFlags::PointAbbrev(m_okevt_seqhis, m_ctx._step_id + 1  ) ;
+        std::string seq = OpticksFlags::FlagSequence(m_okevt_seqhis, true, m_ctx._step_id_valid + 1  );
+        m_okevt_pt = strdup(seq.c_str()) ;
         LOG(debug) 
            << " m_ctx._record_id:  " << m_ctx._record_id 
            << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
@@ -347,17 +366,23 @@ void CRandomEngine::preTrack()
 
 
     unsigned use_index ; 
-    bool with_mask = m_ok->hasMask();
+    bool align_mask = m_ok->isAlign() && m_ok->hasMask() ;
 
-    if(with_mask)
+    // --pindexlog too ?
+
+    if(align_mask)
     {
-        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id ); 
-        use_index = mask_index ; 
+        // Access to the Opticks event, relies on Opticks propagation
+        // going first, which is only the case in align mode.
 
         if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
         m_okevt_seqhis  = m_okevt ? m_okevt->getSeqHis(m_ctx._record_id ) : 0ull ;
 
+        unsigned mask_index = m_ok->getMaskIndex( m_ctx._record_id );  
+        use_index = mask_index ; 
+
         LOG(info) 
+           << " [ --align --mask ] " 
            << " m_ctx._record_id:  " << m_ctx._record_id 
            << " mask_index: " << mask_index 
            << " ( m_okevt_seqhis: " << std::hex << m_okevt_seqhis << std::dec
@@ -377,10 +402,11 @@ void CRandomEngine::preTrack()
 
     setupCurandSequence(use_index) ;   
 
+
     LOG(error) << "CRandomEngine::pretrack record_id: "    // (*lldb*) preTrack
                << " ctx.record_id " << m_ctx._record_id 
                << " use_index " << use_index 
-               << " with_mask " << ( with_mask ? "YES" : "NO" )
+               << " align_mask " << ( align_mask ? "YES" : "NO" )
                ;
  
 }
@@ -404,10 +430,6 @@ void CRandomEngine::postTrack()
 
 void CRandomEngine::dump(const char* msg) const 
 {
-
-    
-
-
     if(!m_locseq) return ; 
     m_locseq->dump(msg);
 }

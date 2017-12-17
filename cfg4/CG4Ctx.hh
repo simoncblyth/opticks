@@ -94,6 +94,7 @@ struct CFG4_API CG4Ctx
     G4Step* _step ; 
     int _noZeroSteps ; 
     int _step_id ; 
+    int _step_id_valid ;   // not incremented for zero-steps
     int _step_total ;
     G4ThreeVector _step_origin ; 
     G4StepStatus _step_pre_status ; 

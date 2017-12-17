@@ -1,9 +1,39 @@
-RNG_seq_off_by_one
-===================
+FIXED RNG_seq_off_by_one : maligned six
+==========================================
 
 
-Issue : Dirty Half Dozen out of alignment
-----------------------------------------------
+TODO
+------
+
+* try to simplify the kludge, eg by removing inhibitions and adjusting peek offset 
+
+  * have tried, seems need the triple-whammy approach 
+  * can definitely improve code clarity and switch the options ON  default
+
+* un-conflate zero-steps and StepTooSmall
+
+* current dbgkludgeflatzero uses hard coded peek(-3), 
+  need a better way : as other kludges will effect the appropriate peek back
+
+
+ASIS 
+-----
+
+
+DONE
+------
+
+* fix the python debug comparison to be aware of the kludge
+
+
+Full running 
+----------------
+
+* full report :doc:`tboolean_box_perfect_alignment`
+
+
+FIXED Issue : Dirty Half Dozen out of alignment
+--------------------------------------------------
 
 ::
 
@@ -33,14 +63,12 @@ Issue : Dirty Half Dozen out of alignment
 
     tboolean-;tboolean-box --okg4 --align --mask 1230,9041,14510,49786,69653,77962 -DD
 
-
     ucf.py 9041
     bouncelog.py 9041
 
 
-
-Following the devious kludge
-------------------------------
+Following the devious triple kludge
+--------------------------------------
 
 Devious triple whammy kludge --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero manages to persuade G4 to match Opticks histories of the maligned six.
 
@@ -58,7 +86,6 @@ Devious triple whammy kludge --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatz
           3      3 :   :                         TO BT BT SC BT BR BR BT SA                         TO BT BT SC BT BR BR BT SA 
           4      4 :   :                               TO BT SC BR BR BT SA                               TO BT SC BR BR BT SA 
           5      5 :   :                               TO BT BR SC BR BT SA                               TO BT BR SC BR BT SA 
-
 
 
 ::
@@ -126,15 +153,6 @@ Devious triple whammy kludge --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatz
 
 
 
-TODO
-------
-
-* try to simplify the kludge, eg by removing inhibitions and adjusting peek offset 
-* fix the python debug comparison to be aware of the kludge
-* un-conflate zero-steps and StepTooSmall
-
-
-
 Full unmasked run into tag 2 : To find some jump record_id
 --------------------------------------------------------------------------------------------
 
@@ -144,6 +162,336 @@ Full unmasked run into tag 2 : To find some jump record_id
 
     tboolean-;TBOOLEAN_TAG=2 tboolean-box --okg4 --align 
     tboolean-;TBOOLEAN_TAG=2 tboolean-box-ip
+
+
+
+OpBoundary value actually arbitrary
+--------------------------------------
+
+Notice that the value returned for OpBoundary does not matter, 
+as no interaction length is actually used by either Opticks or Geant4, 
+it is just required to keep the sequences aligned.
+
+Thus returning zero, which is never given by curand_uniform is a good choice.
+
+::
+
+    __device__ float 
+    curand_uniform (curandState_t *state)
+    This function returns a sequence of pseudorandom floats uniformly distributed
+    between 0.0 and 1.0. It may return from 0.0 to 1.0, where 1.0 is included and
+    0.0 is excluded.
+
+    Read more at: http://docs.nvidia.com/cuda/curand/index.html
+
+
+
+fixing the python debug comparison
+------------------------------------
+
+Change correspondence between seqs to use m_cursor
+rather than m_current_record_flat_count as 
+m_cursor is untainted by kludges.
+
+The location is still discrepant where the kludge is applied.
+
+
+g4lldb.py::
+
+    216     def flat(self, ploc, frame, bp_loc, sess):
+    217         self.v = frame.FindVariable("this")
+    218                
+    219         ug4 = self.ev("m_flat")
+    220         lg4 = self.ev("m_location")
+    221         cur = self.ev("m_cursor")
+    222         crf = self.ev("m_current_record_flat_count")
+    223         csf = self.ev("m_current_step_flat_count")
+    224         cix = self.ev("m_curand_index")
+    225     
+    226         idx = cur
+    227         # correspondence between sequences 
+    228         #    crf: gets offset by the kludge
+    229         #    cur: is always the real flat cursor index
+    230 
+    231         assert type(crf) is int
+    232         assert type(csf) is int
+    233         assert type(cix) is int and cix == self.pindex
+    234     
+    235         u = self.ucf[idx] if idx < self.lucf else None
+    236         uok = u.fval if u is not None else -1
+    237         lok = u.lab  if u is not None else "ucf-overflow"
+
+
+
+1230 bare : ie with clears on every step and zero-step rewinds : goes off rails at TIR
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --noviz
+
+
+    2017-12-17 14:29:34.308 INFO  [1201428] [CRandomEngine::preTrack@396] CRandomEngine::preTrack : DONE cmd "ucf.py 1230"
+    CRandomEngine_cc_preTrack.[00] lucf:29 pindex:1230
+    2017-12-17 14:29:34.321 ERROR [1201428] [CRandomEngine::preTrack@406] CRandomEngine::pretrack record_id:  ctx.record_id 0 use_index 1230 align_mask YES
+    CRandomEngine_cc_flat.[00] cix: 1230 mrk:-- cur: 0 crf: 0 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   5.052794121e-14 ug4/ok:( 0.001117025 0.001117025 ) 
+    CRandomEngine_cc_flat.[01] cix: 1230 mrk:-- cur: 1 crf: 1 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.976989766e-10 ug4/ok:( 0.502647340 0.502647340 ) 
+    CRandomEngine_cc_flat.[02] cix: 1230 mrk:-- cur: 2 crf: 2 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   5.276490356e-11 ug4/ok:( 0.601504147 0.601504147 ) 
+    CRandomEngine_cc_flat.[03] cix: 1230 mrk:-- cur: 3 crf: 3 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 ug4/ok:( 0.938713491 0.938713491 ) 
+    CRandomEngine_cc_postStep.[00] step_id:0 bst:FresnelReflection pri:      Undefined okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[04] cix: 1230 mrk:-- cur: 4 crf: 4 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 ug4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] cix: 1230 mrk:-- cur: 5 crf: 5 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 ug4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] cix: 1230 mrk:-- cur: 6 crf: 6 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 ug4/ok:( 0.438019574 0.438019574 ) 
+    2017-12-17 14:29:34.359 INFO  [1201428] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:29:34.359 INFO  [1201428] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:29:34.359 ERROR [1201428] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero NO
+    CRandomEngine_cc_jump.[00] cursor_old:6 jump_:-3 jump_count:1 cursor:3 
+    CRandomEngine_cc_postStep.[01] step_id:1 bst:   StepTooSmall pri:FresnelReflection okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[07] cix: 1230 mrk:-- cur: 4 crf: 7 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 ug4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[08] cix: 1230 mrk:-- cur: 5 crf: 8 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 ug4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[09] cix: 1230 mrk:-- cur: 6 crf: 9 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 ug4/ok:( 0.438019574 0.438019574 ) 
+    CRandomEngine_cc_flat.[10] cix: 1230 mrk:-- cur: 7 crf:10 csf: 3 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.102905545e-10 ug4/ok:( 0.714031577 0.714031577 ) 
+    CRandomEngine_cc_flat.[11] cix: 1230 mrk:-- cur: 8 crf:11 csf: 4 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.093353269e-10 ug4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[12] cix: 1230 mrk:-- cur: 9 crf:12 csf: 5 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.423827971e-10 ug4/ok:( 0.570741653 0.570741653 ) 
+    CRandomEngine_cc_flat.[13] cix: 1230 mrk:-- cur:10 crf:13 csf: 6 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.903991964e-10 ug4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_flat.[14] cix: 1230 mrk:-- cur:11 crf:14 csf: 7 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.353455126e-10 ug4/ok:( 0.784978330 0.784978330 ) 
+    CRandomEngine_cc_postStep.[02] step_id:2 bst:  NotAtBoundary pri:   StepTooSmall okevt_pt:TO BR [SC] BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[15] cix: 1230 mrk:-- cur:12 crf:15 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.406677163e-10 ug4/ok:( 0.892654359 0.892654359 ) 
+    CRandomEngine_cc_flat.[16] cix: 1230 mrk:-- cur:13 crf:16 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.669952203e-10 ug4/ok:( 0.441063195 0.441063195 ) 
+    CRandomEngine_cc_flat.[17] cix: 1230 mrk:-- cur:14 crf:17 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.626708933e-10 ug4/ok:( 0.773742437 0.773742437 ) 
+    CRandomEngine_cc_flat.[18] cix: 1230 mrk:-- cur:15 crf:18 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   4.671020237e-10 ug4/ok:( 0.556839108 0.556839108 ) 
+    CRandomEngine_cc_postStep.[03] step_id:3 bst:FresnelRefraction pri:  NotAtBoundary okevt_pt:TO BR SC [BT] BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[19] cix: 1230 mrk:-- cur:16 crf:19 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:    1.88293825e-11 ug4/ok:( 0.775349319 0.775349319 ) 
+    CRandomEngine_cc_flat.[20] cix: 1230 mrk:-- cur:17 crf:20 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.589111148e-10 ug4/ok:( 0.752141237 0.752141237 ) 
+    CRandomEngine_cc_flat.[21] cix: 1230 mrk:-- cur:18 crf:21 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.373718527e-10 ug4/ok:( 0.412002385 0.412002385 ) 
+    CRandomEngine_cc_postStep.[04] step_id:4 bst:TotalInternalReflection pri:FresnelRefraction okevt_pt:TO BR SC BT [BR] BT SA                             
+    --
+    off rails here ... 
+
+    CRandomEngine_cc_flat.[22] cix: 1230 mrk:-# cur:19 crf:22 csf: 0 lg4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:   4.672088827e-10 ug4/ok:( 0.282463104 0.282463104 ) 
+    CRandomEngine_cc_flat.[23] cix: 1230 mrk:-# cur:20 crf:23 csf: 1 lg4/ok: (                     OpRayleigh                     OpBoundary ) df:   1.872253463e-10 ug4/ok:( 0.432497680 0.432497680 ) 
+    CRandomEngine_cc_flat.[24] cix: 1230 mrk:-# cur:21 crf:24 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   4.039001356e-10 ug4/ok:( 0.907848895 0.907848895 ) 
+    2017-12-17 14:29:34.443 INFO  [1201428] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:29:34.443 INFO  [1201428] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:29:34.443 ERROR [1201428] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero NO
+    CRandomEngine_cc_jump.[01] cursor_old:21 jump_:-3 jump_count:2 cursor:18 
+    CRandomEngine_cc_postStep.[05] step_id:5 bst:   StepTooSmall pri:TotalInternalReflection okevt_pt:TO BR SC BT [BR] BT SA                             
+    --
+    CRandomEngine_cc_flat.[25] cix: 1230 mrk:-# cur:19 crf:25 csf: 0 lg4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:   4.672088827e-10 ug4/ok:( 0.282463104 0.282463104 ) 
+    CRandomEngine_cc_flat.[26] cix: 1230 mrk:-# cur:20 crf:26 csf: 1 lg4/ok: (                     OpRayleigh                     OpBoundary ) df:   1.872253463e-10 ug4/ok:( 0.432497680 0.432497680 ) 
+    CRandomEngine_cc_flat.[27] cix: 1230 mrk:-# cur:21 crf:27 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   4.039001356e-10 ug4/ok:( 0.907848895 0.907848895 ) 
+    CRandomEngine_cc_flat.[28] cix: 1230 mrk:-# cur:22 crf:28 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff                   OpAbsorption ) df:   7.296752091e-11 ug4/ok:( 0.912139237 0.912139237 ) 
+    CRandomEngine_cc_postStep.[06] step_id:6 bst:FresnelReflection pri:   StepTooSmall okevt_pt:TO BR SC BT BR [BT] SA                             
+    --
+    CRandomEngine_cc_flat.[29] cix: 1230 mrk:-# cur:23 crf:29 csf: 0 lg4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:   8.567047072e-11 ug4/ok:( 0.201808557 0.201808557 ) 
+    CRandomEngine_cc_flat.[30] cix: 1230 mrk:-# cur:24 crf:30 csf: 1 lg4/ok: (                     OpRayleigh                     OpBoundary ) df:   4.876709037e-10 ug4/ok:( 0.795349360 0.795349360 ) 
+    CRandomEngine_cc_flat.[31] cix: 1230 mrk:-# cur:25 crf:31 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   2.741393779e-10 ug4/ok:( 0.484203994 0.484203994 ) 
+    2017-12-17 14:29:34.479 INFO  [1201428] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:29:34.479 INFO  [1201428] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:29:34.479 ERROR [1201428] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero NO
+    CRandomEngine_cc_jump.[02] cursor_old:25 jump_:-3 jump_count:3 cursor:22 
+    CRandomEngine_cc_postStep.[07] step_id:7 bst:   StepTooSmall pri:FresnelReflection okevt_pt:TO BR SC BT BR [BT] SA                             
+    --
+    CRandomEngine_cc_flat.[32] cix: 1230 mrk:-# cur:23 crf:32 csf: 0 lg4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:   8.567047072e-11 ug4/ok:( 0.201808557 0.201808557 ) 
+    CRandomEngine_cc_flat.[33] cix: 1230 mrk:-# cur:24 crf:33 csf: 1 lg4/ok: (                     OpRayleigh                     OpBoundary ) df:   4.876709037e-10 ug4/ok:( 0.795349360 0.795349360 ) 
+    CRandomEngine_cc_flat.[34] cix: 1230 mrk:-# cur:25 crf:34 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   2.741393779e-10 ug4/ok:( 0.484203994 0.484203994 ) 
+    CRandomEngine_cc_flat.[35] cix: 1230 mrk:-# cur:26 crf:35 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff                   OpAbsorption ) df:   4.411544741e-11 ug4/ok:( 0.093548603 0.093548603 ) 
+    CRandomEngine_cc_postStep.[08] step_id:8 bst:FresnelRefraction pri:   StepTooSmall okevt_pt:TO BR SC BT BR BT [SA]                             
+    --
+    CRandomEngine_cc_flat.[36] cix: 1230 mrk:-# cur:27 crf:36 csf: 0 lg4/ok: (                     OpBoundary OpBoundary_DiDiReflectOrTransmit ) df:    4.29260294e-10 ug4/ok:( 0.750533462 0.750533462 ) 
+    CRandomEngine_cc_flat.[37] cix: 1230 mrk:-# cur:28 crf:37 csf: 1 lg4/ok: (                     OpRayleigh        OpBoundary_DoAbsorption ) df:   3.650513225e-10 ug4/ok:( 0.946246266 0.946246266 ) 
+    CRandomEngine_cc_flat.[38] cix: 1230 mrk:*# cur:29 crf:38 csf: 2 lg4/ok: (                   OpAbsorption                   ucf-overflow ) df:       1.357590944 ug4/ok:( 0.357590944 -1.000000000 ) 
+    CRandomEngine_cc_flat.[39] cix: 1230 mrk:*# cur:30 crf:39 csf: 3 lg4/ok: ( OpBoundary_DiDiReflectOrTransmit                   ucf-overflow ) df:       1.166174248 ug4/ok:( 0.166174248 -1.000000000 ) 
+    CRandomEngine_cc_flat.[40] cix: 1230 mrk:*# cur:31 crf:40 csf: 4 lg4/ok: (        OpBoundary_DoAbsorption                   ucf-overflow ) df:       1.628916502 ug4/ok:( 0.628916502 -1.000000000 ) 
+    CRandomEngine_cc_postStep.[09] step_id:9 bst:     Absorption pri:FresnelRefraction okevt_pt:TO BR SC BT BR BT SA [  ]                          
+    --
+    //                                                  CRandomEngine_cc_postTrack.[00] : postTrack label 
+    CRandomEngine_cc_postTrack.[00] pindex:1230
+
+
+
+1230 without --dbgskipclearzero
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Without the clear G4 messes up seq via (OpBoundary, OpRayleigh, OpAbsorption) yielding 
+a different decision, so operating without the clear would require a jump back.
+
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --dbgnojumpzero --dbgkludgeflatzero
+
+    2017-12-17 14:16:19.380 INFO  [1197696] [CRandomEngine::preTrack@396] CRandomEngine::preTrack : DONE cmd "ucf.py 1230"
+    CRandomEngine_cc_preTrack.[00] lucf:29 pindex:1230
+    2017-12-17 14:16:19.394 ERROR [1197696] [CRandomEngine::preTrack@406] CRandomEngine::pretrack record_id:  ctx.record_id 0 use_index 1230 align_mask YES
+    CRandomEngine_cc_flat.[00] cix: 1230 mrk:-- cur: 0 crf: 0 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   5.052794121e-14 ug4/ok:( 0.001117025 0.001117025 ) 
+    CRandomEngine_cc_flat.[01] cix: 1230 mrk:-- cur: 1 crf: 1 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.976989766e-10 ug4/ok:( 0.502647340 0.502647340 ) 
+    CRandomEngine_cc_flat.[02] cix: 1230 mrk:-- cur: 2 crf: 2 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   5.276490356e-11 ug4/ok:( 0.601504147 0.601504147 ) 
+    CRandomEngine_cc_flat.[03] cix: 1230 mrk:-- cur: 3 crf: 3 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 ug4/ok:( 0.938713491 0.938713491 ) 
+    CRandomEngine_cc_postStep.[00] step_id:0 bst:FresnelReflection pri:      Undefined okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[04] cix: 1230 mrk:-- cur: 4 crf: 4 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 ug4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] cix: 1230 mrk:-- cur: 5 crf: 5 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 ug4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] cix: 1230 mrk:-- cur: 6 crf: 6 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 ug4/ok:( 0.438019574 0.438019574 ) 
+    2017-12-17 14:16:19.432 INFO  [1197696] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:16:19.432 INFO  [1197696] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:16:19.433 ERROR [1197696] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2017-12-17 14:16:19.433 FATAL [1197696] [CRandomEngine::postStep@331] CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero 
+    CRandomEngine_cc_postStep.[01] step_id:1 bst:   StepTooSmall pri:FresnelReflection okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    2017-12-17 14:16:19.436 INFO  [1197696] [CRandomEngine::flat@225]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value  v 0.753801
+    CRandomEngine_cc_flat.[07] cix: 1230 mrk:*# cur: 6 crf: 7 csf: 0 lg4/ok: (                     OpBoundary                   OpAbsorption ) df:       0.315781891 ug4/ok:( 0.753801465 0.438019574 ) 
+    CRandomEngine_cc_flat.[08] cix: 1230 mrk:-- cur: 7 crf: 8 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.102905545e-10 ug4/ok:( 0.714031577 0.714031577 ) 
+    CRandomEngine_cc_flat.[09] cix: 1230 mrk:-# cur: 8 crf: 9 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   2.093353269e-10 ug4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[10] cix: 1230 mrk:-# cur: 9 crf:10 csf: 3 lg4/ok: ( OpBoundary_DiDiReflectOrTransmit                     OpRayleigh ) df:   4.423827971e-10 ug4/ok:( 0.570741653 0.570741653 ) 
+    CRandomEngine_cc_flat.[11] cix: 1230 mrk:-# cur:10 crf:11 csf: 4 lg4/ok: (        OpBoundary_DoAbsorption                     OpRayleigh ) df:   1.903991964e-10 ug4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_postStep.[02] step_id:2 bst:     Absorption pri:   StepTooSmall okevt_pt:TO BR [SC] BT BR BT SA                             
+    --
+
+
+fixed  1230 : notice that this photon has two zeroSteps only the first gets dbgkludgeflatzero
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog  -DD --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+
+    2017-12-17 14:09:42.271 INFO  [1195832] [CRandomEngine::preTrack@396] CRandomEngine::preTrack : DONE cmd "ucf.py 1230"
+    CRandomEngine_cc_preTrack.[00] lucf:29 pindex:1230
+    2017-12-17 14:09:42.285 ERROR [1195832] [CRandomEngine::preTrack@406] CRandomEngine::pretrack record_id:  ctx.record_id 0 use_index 1230 align_mask YES
+    CRandomEngine_cc_flat.[00] cix: 1230 mrk:-- cur: 0 crf: 0 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   5.052794121e-14 ug4/ok:( 0.001117025 0.001117025 ) 
+    CRandomEngine_cc_flat.[01] cix: 1230 mrk:-- cur: 1 crf: 1 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.976989766e-10 ug4/ok:( 0.502647340 0.502647340 ) 
+    CRandomEngine_cc_flat.[02] cix: 1230 mrk:-- cur: 2 crf: 2 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   5.276490356e-11 ug4/ok:( 0.601504147 0.601504147 ) 
+    CRandomEngine_cc_flat.[03] cix: 1230 mrk:-- cur: 3 crf: 3 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 ug4/ok:( 0.938713491 0.938713491 ) 
+    CRandomEngine_cc_postStep.[00] step_id:0 bst:FresnelReflection pri:      Undefined okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[04] cix: 1230 mrk:-- cur: 4 crf: 4 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 ug4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] cix: 1230 mrk:-- cur: 5 crf: 5 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 ug4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] cix: 1230 mrk:-- cur: 6 crf: 6 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 ug4/ok:( 0.438019574 0.438019574 ) 
+    2017-12-17 14:09:42.325 INFO  [1195832] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:09:42.325 INFO  [1195832] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:09:42.326 ERROR [1195832] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2017-12-17 14:09:42.326 FATAL [1195832] [CRandomEngine::postStep@331] CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero 
+    CRandomEngine_cc_postStep.[01] step_id:1 bst:   StepTooSmall pri:FresnelReflection okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    2017-12-17 14:09:42.329 ERROR [1195832] [CSteppingAction::UserSteppingAction@120]  --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2017-12-17 14:09:42.329 INFO  [1195832] [CRandomEngine::flat@225]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-2) value  v 0.753801
+    CRandomEngine_cc_flat.[07] cix: 1230 mrk:*# cur: 6 crf: 7 csf: 0 lg4/ok: (                     OpBoundary                   OpAbsorption ) df:       0.315781891 ug4/ok:( 0.753801465 0.438019574 ) 
+    CRandomEngine_cc_flat.[08] cix: 1230 mrk:-- cur: 7 crf: 8 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.102905545e-10 ug4/ok:( 0.714031577 0.714031577 ) 
+    CRandomEngine_cc_flat.[09] cix: 1230 mrk:-- cur: 8 crf: 9 csf: 2 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.093353269e-10 ug4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[10] cix: 1230 mrk:-- cur: 9 crf:10 csf: 3 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.423827971e-10 ug4/ok:( 0.570741653 0.570741653 ) 
+    CRandomEngine_cc_flat.[11] cix: 1230 mrk:-- cur:10 crf:11 csf: 4 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.903991964e-10 ug4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_flat.[12] cix: 1230 mrk:-- cur:11 crf:12 csf: 5 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.353455126e-10 ug4/ok:( 0.784978330 0.784978330 ) 
+    CRandomEngine_cc_postStep.[02] step_id:2 bst:  NotAtBoundary pri:   StepTooSmall okevt_pt:TO BR [SC] BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[13] cix: 1230 mrk:-- cur:12 crf:13 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.406677163e-10 ug4/ok:( 0.892654359 0.892654359 ) 
+    CRandomEngine_cc_flat.[14] cix: 1230 mrk:-- cur:13 crf:14 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.669952203e-10 ug4/ok:( 0.441063195 0.441063195 ) 
+    CRandomEngine_cc_flat.[15] cix: 1230 mrk:-- cur:14 crf:15 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.626708933e-10 ug4/ok:( 0.773742437 0.773742437 ) 
+    CRandomEngine_cc_flat.[16] cix: 1230 mrk:-- cur:15 crf:16 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   4.671020237e-10 ug4/ok:( 0.556839108 0.556839108 ) 
+    CRandomEngine_cc_postStep.[03] step_id:3 bst:FresnelRefraction pri:  NotAtBoundary okevt_pt:TO BR SC [BT] BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[17] cix: 1230 mrk:-- cur:16 crf:17 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:    1.88293825e-11 ug4/ok:( 0.775349319 0.775349319 ) 
+    CRandomEngine_cc_flat.[18] cix: 1230 mrk:-- cur:17 crf:18 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.589111148e-10 ug4/ok:( 0.752141237 0.752141237 ) 
+    CRandomEngine_cc_flat.[19] cix: 1230 mrk:-- cur:18 crf:19 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.373718527e-10 ug4/ok:( 0.412002385 0.412002385 ) 
+    CRandomEngine_cc_postStep.[04] step_id:4 bst:TotalInternalReflection pri:FresnelRefraction okevt_pt:TO BR SC BT [BR] BT SA                             
+    --
+    CRandomEngine_cc_flat.[20] cix: 1230 mrk:-# cur:19 crf:20 csf: 0 lg4/ok: (                     OpBoundary      OpBoundary_DiDiTransCoeff ) df:   4.672088827e-10 ug4/ok:( 0.282463104 0.282463104 ) 
+    CRandomEngine_cc_flat.[21] cix: 1230 mrk:-# cur:20 crf:21 csf: 1 lg4/ok: (                     OpRayleigh                     OpBoundary ) df:   1.872253463e-10 ug4/ok:( 0.432497680 0.432497680 ) 
+    CRandomEngine_cc_flat.[22] cix: 1230 mrk:-# cur:21 crf:22 csf: 2 lg4/ok: (                   OpAbsorption                     OpRayleigh ) df:   4.039001356e-10 ug4/ok:( 0.907848895 0.907848895 ) 
+    2017-12-17 14:09:42.403 INFO  [1195832] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 14:09:42.403 INFO  [1195832] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 14:09:42.403 ERROR [1195832] [CRandomEngine::postStep@323] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2017-12-17 14:09:42.403 FATAL [1195832] [CRandomEngine::postStep@331] CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero 
+    CRandomEngine_cc_postStep.[05] step_id:5 bst:   StepTooSmall pri:TotalInternalReflection okevt_pt:TO BR SC BT [BR] BT SA                             
+    --
+    2017-12-17 14:09:42.407 ERROR [1195832] [CSteppingAction::UserSteppingAction@120]  --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    CRandomEngine_cc_flat.[23] cix: 1230 mrk:-# cur:22 crf:23 csf: 0 lg4/ok: (                     OpBoundary                   OpAbsorption ) df:   7.296752091e-11 ug4/ok:( 0.912139237 0.912139237 ) 
+    CRandomEngine_cc_flat.[24] cix: 1230 mrk:-- cur:23 crf:24 csf: 1 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   8.567047072e-11 ug4/ok:( 0.201808557 0.201808557 ) 
+    CRandomEngine_cc_postStep.[06] step_id:6 bst:FresnelRefraction pri:   StepTooSmall okevt_pt:TO BR SC BT BR [BT] SA                             
+    --
+    CRandomEngine_cc_flat.[25] cix: 1230 mrk:-- cur:24 crf:25 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   4.876709037e-10 ug4/ok:( 0.795349360 0.795349360 ) 
+    CRandomEngine_cc_flat.[26] cix: 1230 mrk:-- cur:25 crf:26 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.741393779e-10 ug4/ok:( 0.484203994 0.484203994 ) 
+    CRandomEngine_cc_flat.[27] cix: 1230 mrk:-- cur:26 crf:27 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   4.411544741e-11 ug4/ok:( 0.093548603 0.093548603 ) 
+    CRandomEngine_cc_flat.[28] cix: 1230 mrk:-- cur:27 crf:28 csf: 3 lg4/ok: ( OpBoundary_DiDiReflectOrTransmit OpBoundary_DiDiReflectOrTransmit ) df:    4.29260294e-10 ug4/ok:( 0.750533462 0.750533462 ) 
+    CRandomEngine_cc_flat.[29] cix: 1230 mrk:-- cur:28 crf:29 csf: 4 lg4/ok: (        OpBoundary_DoAbsorption        OpBoundary_DoAbsorption ) df:   3.650513225e-10 ug4/ok:( 0.946246266 0.946246266 ) 
+    CRandomEngine_cc_postStep.[07] step_id:7 bst:     Absorption pri:FresnelRefraction okevt_pt:TO BR SC BT BR BT [SA]                             
+    --
+    //                                                  CRandomEngine_cc_postTrack.[00] : postTrack label 
+    CRandomEngine_cc_postTrack.[00] pindex:1230
+    2017-12-17 14:09:42.444 INFO  [1195832] [CRunAction::EndOfRunAction@23] CRunAction::EndOfRunAction count 1
+
+
+
+broken correspondence
+~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    2017-12-17 13:48:32.453 INFO  [1189891] [CRandomEngine::preTrack@384] CRandomEngine::preTrack : DONE cmd "ucf.py 1230"
+    CRandomEngine_cc_preTrack.[00] lucf:29 pindex:1230
+    2017-12-17 13:48:32.466 ERROR [1189891] [CRandomEngine::preTrack@394] CRandomEngine::pretrack record_id:  ctx.record_id 0 use_index 1230 align_mask YES
+    CRandomEngine_cc_flat.[00] cix: 1230 mrk:-- cur: 0 crf: 0 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   5.052794121e-14 ug4/ok:( 0.001117025 0.001117025 ) 
+    CRandomEngine_cc_flat.[01] cix: 1230 mrk:-- cur: 1 crf: 1 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.976989766e-10 ug4/ok:( 0.502647340 0.502647340 ) 
+    CRandomEngine_cc_flat.[02] cix: 1230 mrk:-- cur: 2 crf: 2 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   5.276490356e-11 ug4/ok:( 0.601504147 0.601504147 ) 
+    CRandomEngine_cc_flat.[03] cix: 1230 mrk:-- cur: 3 crf: 3 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   3.701783324e-11 ug4/ok:( 0.938713491 0.938713491 ) 
+    CRandomEngine_cc_postStep.[00] step_id:0 bst:FresnelReflection pri:      Undefined okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[04] cix: 1230 mrk:-- cur: 4 crf: 4 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.448485941e-11 ug4/ok:( 0.753801465 0.753801465 ) 
+    CRandomEngine_cc_flat.[05] cix: 1230 mrk:-- cur: 5 crf: 5 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:    4.58282523e-10 ug4/ok:( 0.999846756 0.999846756 ) 
+    CRandomEngine_cc_flat.[06] cix: 1230 mrk:-- cur: 6 crf: 6 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.114929426e-10 ug4/ok:( 0.438019574 0.438019574 ) 
+    2017-12-17 13:48:32.506 INFO  [1189891] [*DsG4OpBoundaryProcess::PostStepDoIt@247]  StepTooSmall
+    2017-12-17 13:48:32.506 INFO  [1189891] [CSteppingAction::setStep@159]  noZeroSteps 1 severity 0 ctx  record_id 0 event_id 0 track_id 0 photon_id 0 parent_id -1 primary_id -2 reemtrack 0
+    2017-12-17 13:48:32.506 ERROR [1189891] [CRandomEngine::postStep@311] CRandomEngine::postStep _noZeroSteps 1 backseq -3 --dbgnojumpzero YES
+    2017-12-17 13:48:32.506 FATAL [1189891] [CRandomEngine::postStep@319] CRandomEngine::postStep rewind inhibited by option: --dbgnojumpzero 
+    CRandomEngine_cc_postStep.[01] step_id:1 bst:   StepTooSmall pri:FresnelReflection okevt_pt:TO [BR] SC BT BR BT SA                             
+    --
+    2017-12-17 13:48:32.510 ERROR [1189891] [CSteppingAction::UserSteppingAction@120]  --dbgskipclearzero  skipping CProcessManager::ClearNumberOfInteractionLengthLeft 
+    2017-12-17 13:48:32.510 INFO  [1189891] [CRandomEngine::flat@225]  --dbgkludgeflatzero   first flat call following boundary status StepTooSmall after FresnelReflection yields  _peek(-3) value  v 0.938713
+    CRandomEngine_cc_flat.[07] cix: 1230 mrk:*# cur: 6 crf: 7 csf: 0 lg4/ok: (                     OpBoundary                   OpAbsorption ) df:       0.500693917 ug4/ok:( 0.938713491 0.438019574 ) 
+    CRandomEngine_cc_flat.[08] cix: 1230 mrk:-- cur: 7 crf: 8 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.102905545e-10 ug4/ok:( 0.714031577 0.714031577 ) 
+    CRandomEngine_cc_flat.[09] cix: 1230 mrk:-- cur: 8 crf: 9 csf: 2 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   2.093353269e-10 ug4/ok:( 0.330403954 0.330403954 ) 
+    CRandomEngine_cc_flat.[10] cix: 1230 mrk:-- cur: 9 crf:10 csf: 3 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.423827971e-10 ug4/ok:( 0.570741653 0.570741653 ) 
+    CRandomEngine_cc_flat.[11] cix: 1230 mrk:-- cur:10 crf:11 csf: 4 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.903991964e-10 ug4/ok:( 0.375908673 0.375908673 ) 
+    CRandomEngine_cc_flat.[12] cix: 1230 mrk:-- cur:11 crf:12 csf: 5 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   1.353455126e-10 ug4/ok:( 0.784978330 0.784978330 ) 
+    CRandomEngine_cc_postStep.[02] step_id:2 bst:  NotAtBoundary pri:   StepTooSmall okevt_pt:TO BR [SC] BT BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[13] cix: 1230 mrk:-- cur:12 crf:13 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:   3.406677163e-10 ug4/ok:( 0.892654359 0.892654359 ) 
+    CRandomEngine_cc_flat.[14] cix: 1230 mrk:-- cur:13 crf:14 csf: 1 lg4/ok: (                     OpRayleigh                     OpRayleigh ) df:   4.669952203e-10 ug4/ok:( 0.441063195 0.441063195 ) 
+    CRandomEngine_cc_flat.[15] cix: 1230 mrk:-- cur:14 crf:15 csf: 2 lg4/ok: (                   OpAbsorption                   OpAbsorption ) df:   3.626708933e-10 ug4/ok:( 0.773742437 0.773742437 ) 
+    CRandomEngine_cc_flat.[16] cix: 1230 mrk:-- cur:15 crf:16 csf: 3 lg4/ok: (      OpBoundary_DiDiTransCoeff      OpBoundary_DiDiTransCoeff ) df:   4.671020237e-10 ug4/ok:( 0.556839108 0.556839108 ) 
+    CRandomEngine_cc_postStep.[03] step_id:3 bst:FresnelRefraction pri:  NotAtBoundary okevt_pt:TO BR SC [BT] BR BT SA                             
+    --
+    CRandomEngine_cc_flat.[17] cix: 1230 mrk:-- cur:16 crf:17 csf: 0 lg4/ok: (                     OpBoundary                     OpBoundary ) df:    1.88293825e-11 ug4/ok:( 0.775349319 0.77534931
+
+
+
+
+kludge breaks the python debug comparison : seqs appear offset by 1
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    CRandomEngine_cc_flat.[26] mrk:*# crf:26 csf: 1 loc_g4/ok: (                     OpRayleigh                   OpAbsorption ) df:      0.1823485936 u_g4/ok:( 0.237027600 0.419376194 ) 
+    CRandomEngine_cc_flat.[27] mrk:*# crf:27 csf: 2 loc_g4/ok: (                   OpAbsorption OpBoundary_DiDiReflectOrTransmit ) df:    0.005040466477 u_g4/ok:( 0.419376194 0.414335728 ) 
+    G4SteppingManager_cc_191.[07] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
+    CRandomEngine_cc_flat.[28] mrk:*# crf:28 csf: 3 loc_g4/ok: ( OpBoundary_DiDiReflectOrTransmit        OpBoundary_DoAbsorption ) df:     0.09838336669 u_g4/ok:( 0.414335728 0.315952361 ) 
+    CRandomEngine_cc_flat.[29] mrk:*# crf:29 csf: 4 loc_g4/ok: (        OpBoundary_DoAbsorption                   ucf-overflow ) df:       1.315952361 u_g4/ok:( 0.315952361 -1.000000000 ) 
+    CRec_cc_add.[07] : bst:          Absorption pri:   FresnelRefraction :  
+    CRandomEngine_cc_postStep.[07] step_id:7 okevt_pt:   
+
+
+
+what happens with full run with triple kludge
+--------------------------------------------------
+
+::
+
+    tboolean-;TBOOLEAN_TAG=3 tboolean-box --okg4 --align --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
+
 
 
 devious kludge working to some extent  --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero
@@ -170,22 +518,6 @@ running the kludge
 
     tboolean-;tboolean-box --okg4 --align --mask 1230,9041,14510,49786,69653,77962 --dbgskipclearzero --dbgnojumpzero --dbgkludgeflatzero 
 
-
-
-
-
-kludge breaks the python debug comparison : seqs appear offset by 1
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-::
-
-    CRandomEngine_cc_flat.[26] mrk:*# crf:26 csf: 1 loc_g4/ok: (                     OpRayleigh                   OpAbsorption ) df:      0.1823485936 u_g4/ok:( 0.237027600 0.419376194 ) 
-    CRandomEngine_cc_flat.[27] mrk:*# crf:27 csf: 2 loc_g4/ok: (                   OpAbsorption OpBoundary_DiDiReflectOrTransmit ) df:    0.005040466477 u_g4/ok:( 0.419376194 0.414335728 ) 
-    G4SteppingManager_cc_191.[07] :        fGeomBoundary : After DefinePhysicalStepLength() sets PhysicalStep and fStepStatus, before InvokeAlongStepDoItProcs() 
-    CRandomEngine_cc_flat.[28] mrk:*# crf:28 csf: 3 loc_g4/ok: ( OpBoundary_DiDiReflectOrTransmit        OpBoundary_DoAbsorption ) df:     0.09838336669 u_g4/ok:( 0.414335728 0.315952361 ) 
-    CRandomEngine_cc_flat.[29] mrk:*# crf:29 csf: 4 loc_g4/ok: (        OpBoundary_DoAbsorption                   ucf-overflow ) df:       1.315952361 u_g4/ok:( 0.315952361 -1.000000000 ) 
-    CRec_cc_add.[07] : bst:          Absorption pri:   FresnelRefraction :  
-    CRandomEngine_cc_postStep.[07] step_id:7 okevt_pt:   
 
 
 dbgskipclearzero 

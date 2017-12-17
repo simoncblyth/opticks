@@ -18,11 +18,9 @@ to disable breakpoints, eg prefix with "_".
         pass
 
 The name encodes breakpoint source name and line number or marker such as "postTrack". 
-When markers are used the source is searched for a string of the below form 
+When markers are used the source is searched for a string of form "// (*lldb*) postTrack"
 in order to resolve the line number. Markers have the advantage of remaining valid as
 the source is changed.
-
-NB return True from the function to actually stop at the breakpoint
 
 Start developing breakpoint function with something like::
 
@@ -32,13 +30,8 @@ Start developing breakpoint function with something like::
 
         self = EV(frame.FindVariable("this"))
         print self
-
-        return True
-
-::
-
-    // (*lldb*) postTrack
-
+        stop = True 
+        return stop   
 
 Generation example::
 

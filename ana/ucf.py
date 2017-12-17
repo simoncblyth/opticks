@@ -3,6 +3,13 @@
 ucf.py
 =======
 
+::
+
+    ucf.py 1230
+    UCF_PINDEX_DEV=-1 ucf.py 1230
+    UCF_PINDEX_DEV=1230 ucf.py 1230
+
+
 Parse the kernel print log in a u_rng centric fashion::
 
      tboolean-;tboolean-box --okg4 --align --mask 1230 --pindex 0 --pindexlog -DD   
@@ -14,31 +21,70 @@ Parse the kernel print log in a u_rng centric fashion::
           ## parse the log and compare with expected rng sequence
 
 
+NB this is invoked from CRandomEngine::preTrack when using --mask option, 
+as printindexlog stdout redirection borks stdout for subprocesses 
+this script must not write to stdout. 
+
+cfg4/CRandomEngine.cc::
+
+    367         const char* cmd = BStr::concat<unsigned>("ucf.py ", mask_index, NULL );
+    368         LOG(info) << "CRandomEngine::preTrack : START cmd \"" << cmd << "\"";
+    369         int rc = SSys::run(cmd) ;  // NB must not write to stdout, stderr is ok though 
+    370         assert( rc == 0 );
+    371         LOG(info) << "CRandomEngine::preTrack : DONE cmd \"" << cmd << "\"";
+
 
 """
 from __future__ import print_function
 import os, sys, re
 
 
+def print_(s):
+    stream = sys.stderr
+    print(s, file=stream)
+
 
 class U(object):
-    def __init__(self, idx, lab, val, xval, lines):
+
+    XRNG = []
+
+    @classmethod
+    def find(cls, u, tolerance=1e-6):
+        idxf = None
+        for i in range(len(cls.XRNG)):
+            if abs(u-cls.XRNG[i]) < tolerance:
+                idxf = i
+                break 
+            pass
+        pass
+        return idxf
+
+    def __init__(self, idx, lab, val, lines):
+
+        cls = self.__class__ 
         self.idx = idx
         self.lab = lab
         self.val = val
-        self.xval  = xval 
-        self.lines = lines[:]   ## must copy 
-        self.tail = []
+        self.fval = float(val)
 
-    def _get_fval(self):
-        return float(self.val)
-    fval = property(_get_fval)
+        assert idx < len(cls.XRNG)
+        xval = cls.XRNG[idx]
+
+        idxf = cls.find(self.fval) 
+        idxd = idxf - idx 
+
+        self.idxf = idxf
+        self.idxd = idxd
+
+        self.xval = xval 
+        self.lines = lines[:]      ## must copy, not reference
+        self.tail = []
 
     def _get_hdr(self):
         fval = "%.9f" % self.fval
         xval = "%.9f" % self.xval 
-        mrk = "  " if fval == xval else "**"
-        return " [%3d] %50s : %15s : %2s : %s : %s : %d " % ( self.idx, self.lab, self.val, mrk, fval, xval , len(self.lines) ) 
+        mrk = "    " if fval == xval else "%+3d*" % self.idxd 
+        return " [%3d|%3d] %50s : %2s : %s : %s : %d " % ( self.idx, self.idxf, self.lab, mrk, fval, xval , len(self.lines) ) 
     hdr = property(_get_hdr)
 
     def __str__(self):
@@ -48,14 +94,7 @@ class U(object):
         return self.hdr 
 
 
-
-
-
 class UCF(list):
-    MKR = "u_"
-    PTN = re.compile("u_(\S*):\s*(\S*)\s*")
-
-
     @classmethod
     def rngpath(cls):
         return os.path.expandvars("$TMP/TRngBufTest.npy" )
@@ -76,40 +115,44 @@ class UCF(list):
         assert os.path.exists(trng), (trng, trng_, "non-existing-trng") 
         return map(float, file(trng).readlines())
 
-
-    def __init__(self, pindex ):
+    def __init__(self, pindex):
         list.__init__(self)
 
-        path = self.printlogpath(pindex)
+        evar = "UCF_PINDEX_DEV"
+        upindex = int(os.environ.get(evar, pindex))
+        if upindex != pindex:
+            print_("WARNING evar active %s " % evar )
+        pass
+        path = self.printlogpath(upindex)
+
         xrng = self.loadrngtxt(pindex)
+
+        U.XRNG = xrng 
 
         self.pindex = pindex
         self.path = path 
-        self.xrng = xrng
         self.parse(path) 
-        
+
+
+    PTN = re.compile("u_(\S*):\s*(\S*)\s*")
+
     def parse(self, path):
-
         self.lines = map(lambda line:line.rstrip(),file(path).readlines())
-
         curr = []
         for i, line in enumerate(self.lines):
             m = self.PTN.search(line)
-
             #print "%2d : %s" % ( i, line)
-
             curr.append(line)
+            if m is None or line[0] == "#": continue
 
-            if m is None: continue
+            sname = m.group(1)
+            srng = m.group(2)
 
             idx = len(self)
-            assert idx < len(self.xrng)
-            xval = self.xrng[idx]
+            u = U(idx, sname, srng, curr )
+            curr[:] = []  ## clear collected lines
 
-            u = U(idx, m.group(1), m.group(2), xval, curr )
             self.append(u)
-
-            curr[:] = []
         pass
         self[-1].tail = curr[:]
 
@@ -132,23 +175,21 @@ if __name__ == '__main__':
 
     import numpy as np
 
-
-    stream = sys.stderr
-
     rng = np.load(UCF.rngpath())
     xrng = rng[pindex].ravel()
-    #print(str(xrng), file=stream) 
+    #print_(str(xrng)) 
 
+    ## workaround lack of numpy in system python used by lldb
+    ## by writing rng for the pindex to txt file 
     trng = UCF.rngpathtxt(pindex)
-    np.savetxt(trng, xrng, delimiter=",")
-
-    xrng2 = UCF.loadrngtxt(pindex)
-    #print(str(xrng2), file=stream)
-
+    np.savetxt(trng, xrng, delimiter=",")   
+    xrng2 = np.array(UCF.loadrngtxt(pindex), dtype=np.float64)
+    #print_(xrng2)
+    assert np.all(xrng2 == xrng)
 
     ucf = UCF( pindex )
 
-    #print(str(ucf), file=stream)
-    print(repr(ucf), file=stream)
+    #print_(str(ucf))
+    print_(repr(ucf))
 
    

@@ -76,18 +76,20 @@ void OpticksAna::run()
    
    const char* rcmsg = rc == 0 ? NULL : "OpticksAna::run non-zero RC from ana script"  ;
 
+   int interactivity = m_ok->getInteractivityLevel() ; 
+
    LOG(info) << "OpticksAna::run"
              << " anakey " << anakey 
              << " cmdline " << cmdline
+             << " interactivity " << interactivity
              << " rc " << rc
              << " rcmsg " << ( rcmsg ? rcmsg : "-" )
              ;
 
    if( rc != 0)  m_ok->setRC(rc, rcmsg);
 
-   int interactivity = SSys::GetInteractivityLevel() ; 
 
-   if( interactivity > 1 && !m_ok->isCompute() )
+   if( interactivity > 1 )
    SSys::WaitForInput("OpticksAna::run paused : hit RETURN to continue..." );    
 
 }
