@@ -26,29 +26,14 @@ Using lldb breakpoint python scripting
         # 2. source the commands on starting lldb 
 
 
-Automated breakpoint scripting
----------------------------------
-
-The below is done on every op.sh launch with -D option
-and when envvar OPTICKS_LLDB_SOURCE is defined.
-
-::
-
-    delta:~ blyth$ g4lldb.py 
-    # generated from-and-by /Users/blyth/opticks/ana/g4lldb.py 
-    command script import opticks.ana.g4lldb
-    br set -f CRandomEngine.cc -l 210
-    br com add 1 -F opticks.ana.g4lldb.CRandomEngine_cc_210
-    br set -f G4TrackingManager.cc -l 131
-    br com add 2 -F opticks.ana.g4lldb.G4TrackingManager_cc_131
-
-
 Background on g4lldb python scripting
 -----------------------------------
 
 * moved to env-/lldb-vi as got too long 
 * see also env-/tools/lldb_/standalone.py for development of evaluation functions
 
+
+::
 
     >>> from opticks.tools.evaluate import EV ; ev = EV(lldb.frame.FindVariable("this"))
 
@@ -81,7 +66,6 @@ def CRandomEngine_cc_flat(frame, bp_loc, sess):
     """
     flat label
     """
-    global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.flat(ploc,frame, bp_loc, sess)
     
@@ -89,7 +73,6 @@ def CRandomEngine_cc_jump(frame, bp_loc, sess):
     """
     jump label
     """
-    global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.jump(ploc,frame, bp_loc, sess)
 
@@ -97,7 +80,6 @@ def CRandomEngine_cc_postStep(frame, bp_loc, sess):
     """
     postStep label
     """
-    global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.postStep(ploc,frame, bp_loc, sess)
  
@@ -105,9 +87,11 @@ def CRandomEngine_cc_postTrack(frame, bp_loc, sess):
     """
     postTrack label
     """
-    global ENGINE
     ploc = Loc(sys._getframe(), __name__)
     return ENGINE.postTrack(ploc,frame, bp_loc, sess)
+
+
+
 
 
 def _G4SteppingManager_cc_191(frame, bp_loc, sess):

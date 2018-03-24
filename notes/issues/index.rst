@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+    dot_opticks_misuse
     csg_intersect_comparisons
     GScene_compareMeshes
     lvidx66_again

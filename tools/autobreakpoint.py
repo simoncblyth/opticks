@@ -3,9 +3,15 @@
 AutoBreakPoint
 ================
 
-Running this script writes to stdout lldb commands 
-to set breakpoints and add python function commands to them.
-This works by parsing the source of this file.
+Usage example from ana/g4lldb.py::
+
+    256 if __name__ == '__main__':
+    257     print AutoBreakPoint(path=__file__, module="opticks.ana.g4lldb")
+    258 
+
+Instanciating and printing to stdout the AutoBreakPoint repr provides the 
+lldb commands to set breakpoints and add python function commands to them.
+This works by parsing the source of the invoking file.
 Only functions with names and arguments following the required
 pattern yield breakpoints. Thus change function names 
 to disable breakpoints, eg prefix with "_".
@@ -18,9 +24,9 @@ to disable breakpoints, eg prefix with "_".
         pass
 
 The name encodes breakpoint source name and line number or marker such as "postTrack". 
-When markers are used the source is searched for a string of form "// (*lldb*) postTrack"
-in order to resolve the line number. Markers have the advantage of remaining valid as
-the source is changed.
+When markers are used the source is searched for a string such as "// (*lldb*) postTrack"
+where marker is "postTrack" in order to resolve the line number. 
+Markers have the advantage of remaining valid as the source is changed.
 
 Start developing breakpoint function with something like::
 
@@ -61,6 +67,29 @@ Example::
       ## with masked running on single photons
 
 
+Future Directions
+--------------------
+
+These breakpoint functions could easily be generated from 
+the handling class, with source class being imported into the
+generated python.
+
+Hmm this is true, but for simple things you dont need a handling class.
+
+
+::
+
+    ENGINE = None
+    def CRandomEngine_cc_preTrack(frame, bp_loc, sess):
+        global ENGINE
+        ENGINE = CRandomEngine()
+        ploc = Loc(sys._getframe(), __name__)
+        return ENGINE.preTrack(ploc, frame, bp_loc, sess)
+
+    def CRandomEngine_cc_flat(frame, bp_loc, sess):
+        ploc = Loc(sys._getframe(), __name__)
+        return ENGINE.flat(ploc,frame, bp_loc, sess)
+     
 
 
 """
