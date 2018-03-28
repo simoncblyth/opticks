@@ -77,6 +77,45 @@ Bindless programs
     bound programs do not inherit the semantic type or scope lookup of the calling program
 
 
+
+OptiX 5.0.1 (March 2018)
+---------------------------
+
+System Requirements (for running binaries referencing OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* Hardware : All NVIDIA GPUs of Compute Capability 3.0 (Kepler) or higher are supported. 
+* Driver:
+
+  * Windows: driver version 386.01 or later is required. 
+  * Linux: driver version 384.98 or later is required. 
+
+* Operating System: Windows 7/8.1/10 64-bit; Linux RHEL 4.8+ or Ubuntu 10.10+ 64-bit; Mac OS 10.9 or higher
+
+* CUDA Toolkit: It is *not* required to have any CUDA toolkit installed to be able run OptiX-based applications.
+
+
+Development Environment Requirements (for compiling with OptiX)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* CUDA Toolkit 7.0, or 7.5, 8.0, 9.0
+* OptiX 5.0 has been built with CUDA 9, 
+  but any specified toolkit should work when compiling PTX for OptiX. 
+
+* If an application links against both the OptiX library 
+  and the CUDA runtime on Linux, it is recommended to use CUDA 9.0.
+
+
+Known Issues
+~~~~~~~~~~~~~~~
+
+* On Mac OS X, Volta GPUs are not yet supported. This issue will be addressed in the near future.
+* Not all instructions of CUDA 9 PTX input are supported. If trying to use your PTX code with OptiX 5.0 produces
+  errors please change to an older version of CUDA
+
+
+
+
 OptiX 4.1.1
 -------------
 

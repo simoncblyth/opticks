@@ -44,7 +44,6 @@ CUDA Driver Version 7.0.29
 GPU Driver Version 8.26.26 310.40.45f01
 
 
-
 SDU
 -----
 
