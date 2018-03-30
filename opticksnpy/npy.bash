@@ -17,6 +17,38 @@ Maybe this package should be split into two portions:
 * application specifics 
 * generic functionality 
 
+High Sierra Warnings
+---------------------
+
+::
+
+    Scanning dependencies of target NOpenMeshFindTest
+    [ 72%] Building CXX object opticksnpy/tests/CMakeFiles/NOpenMeshFindTest.dir/NOpenMeshFindTest.cc.o
+    /Users/blyth/opticks/opticksnpy/tests/NOpenMeshFindTest.cc:112:60: warning: instantiation of variable
+          'NOpenMeshBuild<OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits> >::TRIPATCH' required here, but no definition is available [-Wundefined-var-template]
+            if(ctrl[i] == 3)   std::cout << NOpenMeshBuild<T>::TRIPATCH << std::endl ; 
+                                                               ^
+    /Users/blyth/opticks/opticksnpy/NOpenMeshBuild.hpp:26:24: note: forward declaration of template entity is here
+        static const char* TRIPATCH ; 
+                           ^
+    /Users/blyth/opticks/opticksnpy/tests/NOpenMeshFindTest.cc:112:60: note: add an explicit instantiation declaration to suppress this warning if
+          'NOpenMeshBuild<OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits> >::TRIPATCH' is explicitly instantiated in another translation unit
+            if(ctrl[i] == 3)   std::cout << NOpenMeshBuild<T>::TRIPATCH << std::endl ; 
+                                                               ^
+    /Users/blyth/opticks/opticksnpy/tests/NOpenMeshFindTest.cc:113:60: warning: instantiation of variable
+          'NOpenMeshBuild<OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits> >::HEXPATCH' required here, but no definition is available [-Wundefined-var-template]
+            if(ctrl[i] == 666) std::cout << NOpenMeshBuild<T>::HEXPATCH << std::endl ; 
+                                                               ^
+    /Users/blyth/opticks/opticksnpy/NOpenMeshBuild.hpp:27:24: note: forward declaration of template entity is here
+        static const char* HEXPATCH ; 
+                           ^
+    /Users/blyth/opticks/opticksnpy/tests/NOpenMeshFindTest.cc:113:60: note: add an explicit instantiation declaration to suppress this warning if
+          'NOpenMeshBuild<OpenMesh::TriMesh_ArrayKernelT<NOpenMeshTraits> >::HEXPATCH' is explicitly instantiated in another translation unit
+            if(ctrl[i] == 666) std::cout << NOpenMeshBuild<T>::HEXPATCH << std::endl ; 
+                                                               ^
+    2 warnings generated.
+    [ 72%] Linking CXX executable NOpenMeshFindTest
+
 
 Dependencies
 ------------

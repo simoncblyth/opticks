@@ -143,7 +143,7 @@ GProperty<T>* GProperty<T>::load(const char* path)
     }
     }
 
-    delete data ;
+    delete[] data ;
     return new GProperty<T>(vals, doms) ; 
 }
 

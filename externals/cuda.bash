@@ -126,7 +126,10 @@ CUDA Release History
 
 ::
 
+    9.1.199 : RN-06722-001 _v9.1 | March 2018 
 
+    CUDA Toolkit 9.1 (Dec 2017)
+    CUDA Toolkit 9.0 (Sept 2017)
     CUDA Toolkit 8.0 (Feb 2017)
     CUDA Toolkit 7.5 (Sept 2015)
     CUDA Toolkit 7.0 (March2015)

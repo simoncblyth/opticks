@@ -438,8 +438,13 @@ openmeshrap---(){     touch $(openmeshrap-apihh) ; openmeshrap--  ; }
 
 
 
+
+
 openmeshrap--(){        opticks--     $(openmeshrap-bdir) ; }
-openmeshrap-ctest(){    opticks-ctest $(openmeshrap-bdir) $* ; }
+openmeshrap-t(){        opticks-t $(openmeshrap-bdir) $* ; }
+openmeshrap-clean(){    opticks-make- $(openmeshrap-bdir) clean ; }
+
+
 openmeshrap-genproj(){  openmeshrap-scd ; opticks-genproj $(openmeshrap-name) $(openmeshrap-tag) ; }
 openmeshrap-gentest(){  openmeshrap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(openmeshrap-tag) ; }
 

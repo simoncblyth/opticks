@@ -34,6 +34,7 @@ okg---(){     touch $(okg-apihh) ; okg--  ; }
 
 okg--(){        opticks--     $(okg-bdir) ; }
 okg-t(){        opticks-t  $(okg-bdir) $* ; }
+okg-clean(){    opticks-make- $(okg-bdir) clean ; }
 okg-tl(){       opticks-tl $(okg-bdir) $* ; }
 
 okg-genproj(){  okg-scd ; opticks-genproj $(okg-name) $(okg-tag) ; }

@@ -314,7 +314,7 @@ std::size_t BufferSize(int n_items, const char* itemshapestr, bool fortran_order
     int* dims = new int[n_dims];
     for(int d=0;d<n_dims;d++) dims[d] = shape[d] ;
     std::size_t size = BufferSize<Scalar>( n_dims, dims, fortran_order );
-    delete dims ; 
+    delete[] dims ; 
     return size ; 
 }
 

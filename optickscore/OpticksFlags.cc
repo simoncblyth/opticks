@@ -273,13 +273,16 @@ std::string OpticksFlags::FlagSequence(const unsigned long long seqhis, bool abb
 {
     std::stringstream ss ;
     assert(sizeof(unsigned long long)*8 == 16*4);
+
+    unsigned hi = highlight < 0 ? 16 : highlight ; 
+
     for(unsigned int i=0 ; i < 16 ; i++)
     {
         unsigned long long f = (seqhis >> i*4) & 0xF ; 
         unsigned int flg = f == 0 ? 0 : 0x1 << (f - 1) ; 
-        if(i == highlight) ss << "[" ;  
+        if(i == hi) ss << "[" ;  
         ss << ( abbrev ? Abbrev(flg) : Flag(flg) ) ;
-        if(i == highlight) ss << "]" ;  
+        if(i == hi) ss << "]" ;  
         ss << " " ; 
     }
     return ss.str();

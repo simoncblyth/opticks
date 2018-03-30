@@ -1015,6 +1015,17 @@ opticks-cleanbuild()
 }
 
 
+opticks-make-()
+{
+    local iwd=$PWD
+    local bdir=$1
+    shift
+    cd $bdir
+    make $*
+    cd $iwd
+}
+
+
 ########## runtime setup ########################
 
 opticks-path(){ echo $PATH | tr ":" "\n" ; }

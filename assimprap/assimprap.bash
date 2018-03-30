@@ -17,6 +17,29 @@ which adds handling of G4DAE extra material/surface properties.
 * see ggeo-vi
 * used by raytrace-
 
+High Sierra Warnings
+---------------------
+
+::
+
+    delta:ggeo blyth$ assimprap-
+    delta:ggeo blyth$ assimprap-clean
+    delta:ggeo blyth$ assimprap--
+    [  0%] Building CXX object assimprap/CMakeFiles/AssimpRap.dir/ASIRAP_LOG.cc.o
+    [  0%] Building CXX object assimprap/CMakeFiles/AssimpRap.dir/AssimpCommon.cc.o
+    In file included from /Users/blyth/opticks/assimprap/AssimpCommon.cc:6:
+    In file included from /usr/local/opticks/externals/include/assimp/scene.h:48:
+    /usr/local/opticks/externals/include/assimp/types.h:209:13: warning: taking address of packed member 'r' of class or structure 'aiColor3D' may result in an
+          unaligned pointer value [-Waddress-of-packed-member]
+                    return *(&r + i);
+                              ^
+    /usr/local/opticks/externals/include/assimp/types.h:214:13: warning: taking address of packed member 'r' of class or structure 'aiColor3D' may result in an
+          unaligned pointer value [-Waddress-of-packed-member]
+                    return *(&r + i);
+                              ^
+    2 warnings generated.
+
+
 
 
 Windows MSVC
@@ -293,6 +316,8 @@ assimprap---(){     touch $(assimprap-apihh) ; assimprap--  ; }
 
 assimprap--(){        opticks--     $(assimprap-bdir) ; }
 assimprap-t(){        opticks-t     $(assimprap-bdir) $* ; }
+assimprap-clean(){    opticks-make- $(assimprap-bdir) clean ; }
+
 assimprap-genproj(){  assimprap-scd ; opticks-genproj $(assimprap-name) $(assimprap-tag) ; }
 assimprap-gentest(){  assimprap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(assimprap-tag) ; }
 assimprap-txt(){ vi $(assimprap-sdir)/CMakeLists.txt $(assimprap-tdir)/CMakeLists.txt ; } 

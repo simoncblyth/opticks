@@ -173,7 +173,16 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
     int nv = 1 << level ; 
 
     int ns = node->par_nsurf() ;
+
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-lambda-capture"
+#endif
     auto vid = [ns,nu,nv](int s, int u, int v) { return  s*(nu+1)*(nv+1) + v*(nu+1) + u ; };
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
+
 
     int num_vert = (nu+1)*(nv+1)*ns ; 
 

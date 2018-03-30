@@ -8,6 +8,37 @@ cudarap-usage(){ cat << EOU
 CUDAWrap
 ==========
 
+
+
+High Sierra Error 
+--------------------
+
+* http://docs.nvidia.com/cuda/pdf/CUDA_Toolkit_Release_Notes.pdf
+
+NVIDIA CUDA TOOLKIT 9.1.199
+RN-06722-001 _v9.1 | March 2018
+Release Notes for Windows, Linux, and Mac OS
+
+* Xcode 9.2 is now supported as a host compiler on Mac OS.
+
+
+::
+
+    delta:opticksnpy blyth$ cudarap--
+    [  0%] Building NVCC (Device) object cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+    nvcc fatal   : The version ('90100') of the host compiler ('Apple clang') is not supported
+    CMake Error at CUDARap_generated_CResource_.cu.o.cmake:203 (message):
+      Error generating
+      /usr/local/opticks/build/cudarap/CMakeFiles/CUDARap.dir//./CUDARap_generated_CResource_.cu.o
+
+
+    make[2]: *** [cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o] Error 1
+    make[1]: *** [cudarap/CMakeFiles/CUDARap.dir/all] Error 2
+    make: *** [all] Error 2
+    delta:opticksnpy blyth$ 
+
+
+
 Warnings
 ---------
 
@@ -412,7 +443,8 @@ cudarap---(){     touch $(cudarap-apihh) ; cudarap--  ; }
 
 
 cudarap--(){                   opticks-- $(cudarap-bdir) ; } 
-cudarap-ctest(){               opticks-ctest $(cudarap-bdir) $* ; } 
+cudarap-t(){                  opticks-t $(cudarap-bdir) $* ; } 
+cudarap-clean(){              opticks-make- $(cudarap-bdir) clean ; } 
 cudarap-genproj() { cudarap-scd ; opticks-genproj $(cudarap-name) $(cudarap-tag) ; } 
 cudarap-gentest() { cudarap-tcd ; opticks-gentest ${1:-CExample} $(cudarap-tag) ; } 
 cudarap-txt(){ vi $(cudarap-sdir)/CMakeLists.txt $(cudarap-tdir)/CMakeLists.txt ; } 

@@ -9,7 +9,8 @@
 #include <iostream>
 
 
-#include <boost/regex.hpp>
+//#include <boost/regex.hpp>
+#include "BRegex.hpp"
 #include <boost/algorithm/string/regex.hpp>
 #include <boost/algorithm/string/replace.hpp>
 #include <boost/algorithm/string/predicate.hpp>

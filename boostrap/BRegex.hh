@@ -5,7 +5,9 @@
 #include <string>
 #include <map>
 #include <vector>
-#include <boost/regex.hpp>
+
+//#include <boost/regex.hpp>
+#include "BRegex.hpp"
 
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"

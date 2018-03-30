@@ -368,6 +368,7 @@ oglrap---(){     touch $(oglrap-apihh) ; oglrap--  ; }
 
 oglrap--(){        opticks--     $(oglrap-bdir) ; }
 oglrap-t(){       opticks-t $(oglrap-bdir) $* ; }
+oglrap-clean(){   opticks-make- $(oglrap-bdir) clean ; }
 oglrap-genproj(){  oglrap-scd ; opticks-genproj $(oglrap-name) $(oglrap-tag) ; }
 oglrap-gentest(){  oglrap-tcd ; opticks-gentest ${1:-Scene} $(oglrap-tag) ; }
 oglrap-txt(){     vi $(oglrap-sdir)/CMakeLists.txt $(oglrap-tdir)/CMakeLists.txt ; }

@@ -540,7 +540,7 @@ GAry<T>* GAry<T>::create_from_floats(unsigned int length, float* values)
     T* tvalues = new T[length];
     for(unsigned int i=0 ; i < length ; i++) tvalues[i] = values[i];
     GAry<T>* ary = new GAry<T>(length, tvalues);
-    delete tvalues ;       
+    delete[] tvalues ;       
     return ary ;
 }
 
