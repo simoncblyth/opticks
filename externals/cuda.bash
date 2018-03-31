@@ -14,6 +14,198 @@ See Also
 * cudatoolkit-
 
 
+After 9.1 install on epsilon
+------------------------------
+
+In *Sys Prefs > CUDA*::
+
+    [Install CUDA Update] greyed out
+    No newer CUDA Driver available
+    CUDA Driver Version: 387.128   [Update Required] 
+    GPU Driver Version: 355.11.10.10.30.120
+
+::
+
+    epsilon:~ blyth$ cuda-osx-kextstat
+      152    0 0xffffff7f80d08000 0x2000     0x2000     com.nvidia.CUDA (1.1.0) 4329B052-6C8A-3900-8E83-744487AEDEF1 <4 1>
+
+Dont find any new kext?::
+
+    epsilon:samples blyth$ ll -t /System/Library/Extensions/
+
+
+
+Samples Build OK with switch back to xcode-92 : NB dont have the corresponding headers in /usr/include
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    xcode-;xcode-92;xcode-check
+
+    cuda-samples-make    # after dir setup and mving samples from HOME to there
+
+
+
+About CUDA driver 387.128
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Searching for the CUDA driver : http://www.nvidia.com/object/macosx-cuda-387.128-driver.html
+
+::
+
+    Version: 387.128
+    Release Date: 2018.01.25
+    Operating System: Mac OS
+    Language: English (U.S.)
+    File Size: 39.7 MB
+
+    New Release 387.128
+
+    CUDA driver update to support CUDA Toolkit 9.1, macOS 10.13.3 
+    and NVIDIA display driver 378.10.10.10.25.156
+    macOS CUDA driver version format change
+    The macOS CUDA driver version now uses the format xxx.xx compare to x.x.x
+    to be consistent with our Linux and Windows driver version naming convention.
+
+    Recommended CUDA version(s):
+          CUDA 9.1
+    Supported macOS
+         10.13.x
+    An alternative method to download the latest CUDA driver is within macOS
+    environment.  Access the latest driver through System Preferences > Other >
+    CUDA.  Click 'Install CUDA Update'
+
+
+
+QUADRO & GEFORCE MACOS DRIVER RELEASE 387.10.10.10.25.156
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* http://www.nvidia.com/download/driverResults.aspx/130460/en-us
+
+::
+
+    Version:	387.10.10.10.25.156
+    Release Date:	2018.1.24
+    Operating System:	macOS High Sierra 10.13.3
+    CUDA Toolkit:	9.1
+    Language:	English (US)
+    File Size:	60.95 MB
+
+
+*CUDA Application Support:*
+
+In order to run macOS Applications that leverage the CUDA architecture of
+certain NVIDIA graphics cards, users will need to download and install the
+driver for Mac located here.
+
+*Installation Note:*
+
+Because of improvements in macOS security, the Security & Privacy Preferences
+may open during the installation process. If it does, click “Allow” in order
+for the NVIDIA Graphics Driver to load, then return to the Installer and click
+“Restart”.
+
+*New in Release 387.10.10.10.25.156:*
+
+* Graphics driver updated for macOS High Sierra 10.13.3 (17D47)
+* Contains performance improvements and bug fixes for a wide range of applications.
+* Includes NVIDIA Driver Manager preference pane.
+* Includes BETA support for iMac and MacBook Pro systems with NVIDIA graphics
+
+*Release Notes Archive:*
+
+This driver update is for::
+
+    Mac Pro 5,1 (2010), 
+    Mac Pro 4,1 (2009) and 
+    Mac Pro 3,1 (2008) users.
+
+BETA support is for::
+
+    iMac 14,2 / 14,3 (2013), 
+    iMac 13,1 / 13,2 (2012) and
+    MacBook Pro 11,3 (2013),       <<<<< 
+    MacBook Pro 10,1 (2012), and 
+    MacBook Pro  9,1 (2012) users.
+
+
+
+
+
+
+
+OptiX 5.0.1 Release Notes Recommends CUDA 9.0
+--------------------------------------------------
+
+* https://developer.nvidia.com/cuda-90-download-archive
+
+CUDA 9.0 Mac
+~~~~~~~~~~~~~~
+
+* http://developer.download.nvidia.com/compute/cuda/9.0/Prod/docs/sidebar/CUDA_Installation_Guide_Mac.pdf
+
+ 
+To use CUDA on your system, you need to have:
+
+* a CUDA-capable GPU
+* Mac OS X 10.12
+* the Clang compiler and toolchain installed using Xcode
+
+::
+
+   Xcode 8.3.3 
+   Apple LLVM 8.1.0   
+   macOS 10.12      (Sierra)
+
+
+CUDA 9.1 Mac
+~~~~~~~~~~~~~~
+
+* http://docs.nvidia.com/cuda/cuda-toolkit-release-notes/index.html
+
+Driver support for Mac OS 10.13.3 is added in this release.
+Xcode 9.2 is now supported as a host compiler on Mac OS.
+
+* https://developer.nvidia.com/cuda-downloads?target_os=MacOSX&target_arch=x86_64&target_version=1013&target_type=dmgnetwork
+* https://developer.download.nvidia.com/compute/cuda/9.1/Prod/docs/sidebar/CUDA_Installation_Guide_Mac.pdf
+
+1.1. System Requirements
+
+To use CUDA on your system, you need to have:
+
+* a CUDA-capable GPU
+* Mac OS X 10.13
+* the Clang compiler and toolchain installed using Xcode
+* the NVIDIA CUDA Toolkit (available from the CUDA Download page)
+
+::
+
+    Xcode 9.2
+    Apple LLVM  9.0.0
+    macOS 10.13.2   (High Sierra)
+
+A supported version of Xcode must be installed on your system. The list of supported
+Xcode versions can be found in the System Requirements section. The latest version of
+Xcode can be installed from the Mac App Store.
+Older versions of Xcode can be downloaded from the Apple Developer Download Page.
+Once downloaded, the Xcode.app folder should be copied to a version-specific folder
+within /Applications. For example, Xcode 6.2 could be copied to /Applications/
+Xcode_6.2.app.
+Once an older version of Xcode is installed, it can be selected for use by running the
+following command, replacing <Xcode_install_dir> with the path that you copied
+that version of Xcode to::
+
+    sudo xcode-select -s /Applications/<Xcode_install_dir>/Contents/Developer
+
+
+Installer::
+
+  CUDA Driver  (kext)
+  CUDA Toolkit
+  CUDA Samples
+
+
+
 CUDA CMake
 ------------
 
@@ -699,7 +891,8 @@ cuda-nvcc-flags(){
 
 
 #cuda-version(){      echo ${CUDA_VERSION:-5.5} ; }
-cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
+#cuda-version(){      echo ${CUDA_VERSION:-7.0} ; }
+cuda-version(){      echo ${CUDA_VERSION:-9.1} ; }
 cuda-download-dir(){ echo $(local-base)/env/cuda ; }
 
 
@@ -716,7 +909,12 @@ cuda-prefix(){       echo $(cuda-dir) ; }
 cuda-edir(){         echo $(opticks-home)/cuda ; }
 cuda-idir(){         echo $(cuda-dir)/include ; }
 
-cuda-writable-dir(){ echo $(local-base)/env/cuda ; } 
+cuda-writable-dir(){ 
+  case $(uname) in
+    Linux) echo $(local-base)/env/cuda ;;
+    Darwin) echo /usr/local/epsilon/cuda ;;
+  esac
+} 
 cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }
 cuda-samples-find(){ 
    find $(cuda-samples-dir) -type f -exec grep -${2:-l} ${1:-cuda_gl_interop.h} {} \;  

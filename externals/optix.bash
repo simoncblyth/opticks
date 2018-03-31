@@ -7,8 +7,13 @@ optix-usage(){ cat << EOU
 NVIDIA OptiX Ray Trace Toolkit
 ================================== 
 
+
+
 Resources
 ----------
+
+* http://raytracing-docs.nvidia.com/optix/index.html
+
 
 * https://devtalk.nvidia.com/default/board/90/optix/
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
