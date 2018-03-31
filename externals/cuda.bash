@@ -80,6 +80,7 @@ Searching for the CUDA driver : http://www.nvidia.com/object/macosx-cuda-387.128
 QUADRO & GEFORCE MACOS DRIVER RELEASE 387.10.10.10.25.156
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* https://www.nvidia.com/object/mac-driver-archive.html
 * http://www.nvidia.com/download/driverResults.aspx/130460/en-us
 
 ::
@@ -128,9 +129,40 @@ BETA support is for::
     MacBook Pro 10,1 (2012), and 
     MacBook Pro  9,1 (2012) users.
 
+Installing the Driver
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:~ blyth$ l ~/Downloads/WebDriver-387.10.10.10.25.158.pkg
+    -rw-r--r--@ 1 blyth  staff  63913283 Mar 31 18:51 /Users/blyth/Downloads/WebDriver-387.10.10.10.25.158.pkg
+
+    ## thus one said 10.13.4 not compatible 
+       
+    epsilon:~ blyth$ l ~/Downloads/WebDriver-387.10.10.10.30.103.pkg 
+    -rw-r--r--@ 1 blyth  staff  63913281 Mar 31 18:55 /Users/blyth/Downloads/WebDriver-387.10.10.10.30.103.pkg
 
 
+Thank you for purchasing an NVIDIA® graphics card for Mac. 
 
+This software package contains:
+
+* A driver designed for your NVIDIA graphics card.
+* A preference pane in System Preferences that includes options to:
+  
+  * Switch between the NVIDIA Web Graphics Driver or Default macOS Graphics Driver.
+  * Enable Error Correcting Codes (ECC) on supported graphics cards.
+  * Automatically check for NVIDIA software updates for your graphics card.
+  * An optional menu bar item that provides easy access to the most common preferences.
+
+If, for any reason, you are unable to boot your system to the desktop and wish
+to restore your original drivers, you can do so by clearing your Mac’s NVRAM.
+To clear NVRAM, power on your Mac and hold down Command (⌘), Option, P, and R
+simultaneously before the gray screen appears. Keep the keys held down until
+you hear the startup chime for the second time. The system will now boot with
+the original drivers restored.
+
+This will take : 196.7 MB 
 
 
 
