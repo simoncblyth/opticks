@@ -14,6 +14,58 @@ See Also
 * cudatoolkit-
 
 
+cuda uninstallers
+-------------------
+
+* http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html#uninstall
+
+
+cuda mac 10.13
+----------------
+
+* https://devtalk.nvidia.com/default/topic/1025945/cuda-setup-and-installation/mac-cuda-9-0-driver-fully-compatible-with-macos-high-sierra-10-13-error-quot-update-required-quot-solved-/
+
+
+* http://www.nvidia.com/download/driverResults.aspx/126157/en-us
+
+::
+
+   378.10.10.10.15.121 
+   2017.10.27
+   macOS High Sierra 10.13
+   9.0
+
+
+* http://www.nvidia.com/object/mac-driver-archive.html
+
+* https://www.tonymacx86.com/threads/nvidia-releases-alternate-graphics-drivers-for-macos-high-sierra-10-13-3-387-10-10-10-25.243857/
+
+::
+
+    CUDA Mac Driver
+    Latest Version: CUDA 387.128 driver for MAC
+    Release Date: 01/25/2018
+
+    Previous Releases: 
+    CUDA 387.99 driver for MAC
+    Release Date: 12/08/2017
+
+    CUDA 9.0.222 driver for MAC
+    Release Date: 11/02/2017
+
+    CUDA 9.0.214 driver for MAC
+    Release Date: 10/18/2017
+
+    CUDA 9.0.197 driver for MAC
+    Release Date: 09/27/2017
+
+    CUDA 8.0.90 driver for MAC
+    Release Date: 07/21/2017
+
+
+
+
+
 After 9.1 install on epsilon
 ------------------------------
 
@@ -29,10 +81,11 @@ In *Sys Prefs > CUDA*::
     epsilon:~ blyth$ cuda-osx-kextstat
       152    0 0xffffff7f80d08000 0x2000     0x2000     com.nvidia.CUDA (1.1.0) 4329B052-6C8A-3900-8E83-744487AEDEF1 <4 1>
 
-Dont find any new kext?::
+    ## following a restart
+    epsilon:~ blyth$ kextstat | grep -i cuda
+      153    0 0xffffff7f81698000 0x2000     0x2000     com.nvidia.CUDA (1.1.0) 4329B052-6C8A-3900-8E83-744487AEDEF1 <4 1>
 
-    epsilon:samples blyth$ ll -t /System/Library/Extensions/
-
+The kext are in /Library/Extensions not /System/Library/Extensions
 
 
 Samples Build OK with switch back to xcode-92 : NB dont have the corresponding headers in /usr/include
@@ -77,11 +130,65 @@ Searching for the CUDA driver : http://www.nvidia.com/object/macosx-cuda-387.128
 
 
 
-QUADRO & GEFORCE MACOS DRIVER RELEASE 387.10.10.10.25.156
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+QUADRO & GEFORCE MACOS DRIVER RELEASE 387.10.10.10.25.156 for macOS v10.13.3 (17D47)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+MINIMUM SYSTEM REQUIREMENTS for Driver Release 387.10.10.10.25.156
+
+Model identifier should be Mac Pro 5,1 (2010), Mac Pro 4,1 (2009) or Mac Pro 3,1 (2008)
+macOS v10.13.3 (17D47)
+
+STEP 1: 
+Make sure your macOS software version is v10.13.3 (17D47). It is important that
+you check this first before you install the 387.10.10.10.25.156 Driver. Click
+on the Apple icon (upper left corner of the screen) and select About This Mac.
+Click the Version number ("Version 10.13.3") to see the exact build version
+number (17D47).
+
+* OOPS MISMATCH : 10.13.4 (17E199)
 
 * https://www.nvidia.com/object/mac-driver-archive.html
 * http://www.nvidia.com/download/driverResults.aspx/130460/en-us
+
+
+To uninstall the NVIDIA Web Driver and the NVIDIA Driver Manager, follow the steps below: 
+
+STEP 1: Open the NVIDIA Driver Manager from the System Preferences or through the menu bar item.
+
+STEP 2: Click on the padlock icon and enter an Administrator password.
+
+STEP 3: Click the Open Uninstaller button.
+
+STEP 4: Click Uninstall and then Continue Uninstallation on the Warning screen:
+The Warning screen lets you know that you will need to restart your system once
+the installation process is complete.
+
+STEP 5: Re-enter an Administrator password and click OK. Once the NVIDIA Web
+Driver and NVIDIA Driver Manager have been removed from the system, click
+Restart.
+
+
+
+NOTE: If for any reason you are unable to boot your system to the Desktop and
+wish to restore your original macOS v10.13.3 (17D47) driver, you can do so by
+clearing your Mac’s NVRAM: 
+
+STEP 1: Restart your Macintosh computer and simultaneously hold down the
+“Command” (apple) key, the “Option” key, the “P” key and the “R” key before the
+gray screen appears. 
+
+STEP 2: Keep the keys held down until you hear the startup chime for the second
+time. Release the keys and allow the system to boot to the desktop.
+
+STEP 3: The original macOS v10.13.3 (17D47) driver will be restored upon
+booting, although the NVIDIA Web Driver and NVIDIA Driver Manager will not be
+uninstalled from the system.
+
+
+
+
+CUDA Driver
+~~~~~~~~~~~~~
 
 ::
 
@@ -163,6 +270,21 @@ you hear the startup chime for the second time. The system will now boot with
 the original drivers restored.
 
 This will take : 196.7 MB 
+
+Installed OK, but still::
+
+    epsilon:~ blyth$ cuda-deviceQuery 
+    running /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/bin/x86_64/darwin/release/deviceQuery
+    /usr/local/epsilon/cuda/NVIDIA_CUDA-9.1_Samples/bin/x86_64/darwin/release/deviceQuery Starting...
+
+     CUDA Device Query (Runtime API) version (CUDART static linking)
+
+    cudaGetDeviceCount returned 35
+    -> CUDA driver version is insufficient for CUDA runtime version
+    Result = FAIL
+    epsilon:~ blyth$ 
+    epsilon:~ blyth$ 
+
 
 
 
@@ -936,6 +1058,156 @@ cuda-dir()
     MINGW64*) echo /tmp ;;
    esac
 }
+
+cuda-uninstall-notes(){ cat << EON
+
+Uninstall CUDA
+================
+
+* http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html#uninstall
+
+Below lists summarize the manifests.
+
+uninstall driver
+------------------
+
+/usr/local/bin/.cuda_driver_uninstall_manifest_do_not_delete.txt
+
+    /Library/Extensions/CUDA.kext
+    /Library/Frameworks/CUDA.framework
+    /Library/LaunchAgents/com.nvidia.CUDASoftwareUpdate.plist
+    /Library/LaunchDaemons/com.nvidia.cuda.launcher.plist
+    /Library/LaunchDaemons/com.nvidia.cudad.plist
+    /Library/PreferencePanes/CUDA Preferences.prefPane 
+    /usr/local/cuda/lib/libcuda.dylib 
+
+Before uninstall::
+
+    epsilon:~ blyth$ ll /Library/Extensions/
+    total 0
+    drwxr-xr-x   3 root  wheel    96 Aug 21  2013 ArcMSR.kext
+    drwxr-xr-x   3 root  wheel    96 Sep  1  2013 CalDigitHDProDrv.kext
+    drwxr-xr-x   3 root  wheel    96 Jun 13  2014 ACS6x.kext
+    drwxr-xr-x   3 root  wheel    96 Aug 15  2014 HighPointIOP.kext
+    drwxr-xr-x   3 root  wheel    96 Aug 15  2014 HighPointRR.kext
+    drwxr-xr-x   3 root  wheel    96 Jun 28  2016 ATTOCelerityFC8.kext
+    drwxr-xr-x   3 root  wheel    96 Jun 28  2016 ATTOExpressSASHBA2.kext
+    drwxr-xr-x   3 root  wheel    96 Jun 28  2016 ATTOExpressSASRAID2.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 31  2017 PromiseSTEX.kext
+    drwxr-xr-x   3 root  wheel    96 Aug 22  2017 SoftRAID.kext
+    drwxr-xr-x   3 root  wheel    96 Dec 20 13:05 CUDA.kext
+    drwxr-xr-x+ 66 root  wheel  2112 Mar 30 22:56 ..
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:40 NVDAResmanTeslaWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:40 NVDANV50HalTeslaWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:40 GeForceTeslaWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAStartupWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAResmanWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAGP100HalWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAGM100HalWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAGK100HalWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 NVDAGF100HalWeb.kext
+    drwxr-xr-x   3 root  wheel    96 Mar 30 23:57 GeForceWeb.kext
+    drwxr-xr-x  23 root  wheel   736 Mar 31 19:19 .
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$ ll /Library/Frameworks/
+    total 0
+    drwxr-xr-x   7 blyth  wheel   224 Mar 31  2015 SDL2.framework
+    drwxr-xr-x   8 root   wheel   256 Apr 24  2015 Mono.framework
+    lrwxr-xr-x   1 root   wheel    71 Mar 28 17:37 AEProfiling.framework -> ../../Applications/Motion.app/Contents/Frameworks/AEProfiling.framework
+    lrwxr-xr-x   1 root   wheel    74 Mar 28 17:37 AERegistration.framework -> ../../Applications/Motion.app/Contents/Frameworks/AERegistration.framework
+    lrwxr-xr-x   1 root   wheel    74 Mar 28 17:37 AudioMixEngine.framework -> ../../Applications/Motion.app/Contents/Frameworks/AudioMixEngine.framework
+    lrwxr-xr-x   1 root   wheel    60 Mar 28 17:37 NyxAudioAnalysis.framework -> /System/Library/PrivateFrameworks/NyxAudioAnalysis.framework
+    drwxr-xr-x   5 root   wheel   160 Mar 28 17:42 PluginManager.framework
+    drwxr-xr-x@  8 root   wheel   256 Mar 28 20:37 iTunesLibrary.framework
+    drwxr-xr-x+ 66 root   wheel  2112 Mar 30 22:56 ..
+    drwxr-xr-x   7 root   wheel   224 Mar 31 19:19 CUDA.framework
+    drwxr-xr-x  11 root   wheel   352 Mar 31 19:19 .
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$ ll /Library/LaunchAgents/
+    total 24
+    lrwxr-xr-x   1 root  wheel   104 Jul 23  2015 com.oracle.java.Java-Updater.plist -> /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Resources/com.oracle.java.Java-Updater.plist
+    lrwxr-xr-x   1 root  wheel    66 Oct 17  2016 org.freedesktop.dbus-session.plist -> /opt/local/Library/LaunchAgents/org.freedesktop.dbus-session.plist
+    -rw-r--r--   1 root  wheel   715 Oct 26  2016 org.macosforge.xquartz.startx.plist
+    -rw-r--r--   1 root  wheel   734 Aug 11  2017 com.nvidia.CUDASoftwareUpdate.plist
+    drwxr-xr-x+ 66 root  wheel  2112 Mar 30 22:56 ..
+    -rw-r--r--   1 root  wheel   665 Mar 31 19:04 com.nvidia.nvagent.plist
+    drwxr-xr-x   7 root  wheel   224 Mar 31 19:19 .
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$ ll /Library/PreferencePanes/
+    total 0
+    lrwxr-xr-x   1 root  wheel   101 Jul 23  2015 JavaControlPanel.prefPane -> /Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/lib/deploy/JavaControlPanel.prefPane
+    drwxr-xr-x   3 root  wheel    96 Dec 20 13:05 CUDA Preferences.prefPane
+    drwxr-xr-x   3 root  wheel    96 Mar 14 03:24 NVIDIA Driver Manager.prefPane
+    drwxr-xr-x+ 66 root  wheel  2112 Mar 30 22:56 ..
+    drwxr-xr-x   5 root  wheel   160 Mar 31 19:19 .
+    epsilon:~ blyth$ 
+
+    epsilon:~ blyth$ ll /usr/local/cuda/lib/
+    total 32
+    -rwxr-xr-x   1 root  wheel  13568 Dec 20 13:05 libcuda.dylib
+    lrwxr-xr-x   1 root  wheel     36 Dec 20 19:54 stubs -> /Developer/NVIDIA/CUDA-9.1/lib/stubs
+    lrwxr-xr-x   1 root  wheel     45 Dec 20 19:54 libnvrtc.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvrtc.dylib
+    lrwxr-xr-x   1 root  wheel     49 Dec 20 19:54 libnvrtc.9.1.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvrtc.9.1.dylib
+    lrwxr-xr-x   1 root  wheel     54 Dec 20 19:54 libnvrtc-builtins.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvrtc-builtins.dylib
+    lrwxr-xr-x   1 root  wheel     58 Dec 20 19:54 libnvrtc-builtins.9.1.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvrtc-builtins.9.1.dylib
+    lrwxr-xr-x   1 root  wheel     50 Dec 20 19:54 libnvgraph_static.a -> /Developer/NVIDIA/CUDA-9.1/lib/libnvgraph_static.a
+    lrwxr-xr-x   1 root  wheel     47 Dec 20 19:54 libnvgraph.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvgraph.dylib
+    lrwxr-xr-x   1 root  wheel     51 Dec 20 19:54 libnvgraph.9.1.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvgraph.9.1.dylib
+    lrwxr-xr-x   1 root  wheel     46 Dec 20 19:54 libnvblas.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvblas.dylib
+    ...
+
+
+
+
+uninstall toolkit
+-------------------
+
+/Developer/NVIDIA/CUDA-9.1/bin/.cuda_toolkit_uninstall_manifest_do_not_delete.txt
+    /Developer/NVIDIA/CUDA-9.1 
+    /usr/local/cuda
+    /usr/local/cuda/lib/
+
+uninstall samples
+-------------------
+
+/Developer/NVIDIA/CUDA-9.1/bin/.cuda_samples_uninstall_manifest_do_not_delete.txt
+    /Developer/NVIDIA/CUDA-9.1/samples
+
+
+
+EON
+}
+
+cuda-uninstall()
+{
+   cuda-uninstall-driver
+   cuda-uninstall- cuda_toolkit
+   cuda-uninstall- cuda_samples
+}
+
+cuda-uninstall-driver()
+{
+    cd /usr/local/bin
+    sudo perl uninstall_cuda_drv.pl 
+}
+
+
+cuda-uninstall-()
+{
+    local comp=${1:-cuda_toolkit}
+
+    [ $(uname) != "Darwin" ] && echo $msg not tested/checked on Linux yet && return
+
+    local dir=$(cuda-dir)/bin
+    [ ! -d "$dir" ] && echo $msg no dir $dir && return 
+
+    cd $dir 
+    sudo perl uninstall_cuda_$(cuda-version).pl  --manifest=.${comp}_uninstall_manifest_do_not_delete.txt
+}
+
 
 cuda-prefix(){       echo $(cuda-dir) ; }
 cuda-edir(){         echo $(opticks-home)/cuda ; }
