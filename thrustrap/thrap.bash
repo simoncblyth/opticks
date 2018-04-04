@@ -7,6 +7,24 @@ thrap-usage(){ cat << EOU
 ThrustRap
 ============
 
+
+
+High Sierra 10.13.4 Xcode 9.2 (xcode-92) : latest plog warnings 
+------------------------------------------------------------------
+
+::
+
+    [ 66%] Building NVCC (Device) object thrustrap/tests/CMakeFiles/TBufTest.dir/TBufTest_generated_TBufTest.cu.o
+    /Users/blyth/opticks/thrustrap/tests/TBufTest.cu:145:226: warning: address of 'consoleAppender' will always evaluate to 'true' [-Wpointer-bool-conversion]
+    { PLOG _plog(argc, argv); static plog::RollingFileAppender< plog::TxtFormatter>  fileAppender(_plog.logpath, _plog.logmax); static plog::ConsoleAppender< plog::TxtFormatter>  consoleAppender; { plog::IAppender *appender1 = (&consoleAppender) ? static_cast< plog::IAppender *>(&consoleAppender) : (__null); plog::IAppender *appender2 = (&fileAppender) ? static_cast< plog::IAppender *>(&fileAppender) : (__null); plog::Severity severity = static_cast< plog::Severity>(_plog.level); plog::init(severity, appender1); if (appender2) { plog::get()->addAppender(appender2); }  } ; } ; 
+                                                                                                                                                                                                                                     ^~~~~~~~~~~~~~~  ~
+    /Users/blyth/opticks/thrustrap/tests/TBufTest.cu:145:338: warning: address of 'fileAppender' will always evaluate to 'true' [-Wpointer-bool-conversion]
+    { PLOG _plog(argc, argv); static plog::RollingFileAppender< plog::TxtFormatter>  fileAppender(_plog.logpath, _plog.logmax); static plog::ConsoleAppender< plog::TxtFormatter>  consoleAppender; { plog::IAppender *appender1 = (&consoleAppender) ? static_cast< plog::IAppender *>(&consoleAppender) : (__null); plog::IAppender *appender2 = (&fileAppender) ? static_cast< plog::IAppender *>(&fileAppender) : (__null); plog::Severity severity = static_cast< plog::Severity>(_plog.level); plog::init(severity, appender1); if (appender2) { plog::get()->addAppender(appender2); }  } ; } ; 
+                                                                                                                                                                                                                                                                                                                                                     ^~~~~~~~~~~~  ~
+    2 warnings generated.
+
+
+
 First Use of CUDA App::seedPhotonsFromGensteps is slow ? A repeating without recompilation is faster
 ------------------------------------------------------------------------------------------------------
 

@@ -17,8 +17,12 @@ Maybe this package should be split into two portions:
 * application specifics 
 * generic functionality 
 
-High Sierra Warnings
----------------------
+High Sierra Warnings, Xcode 92 
+------------------------------------------
+
+
+Lots of these warnings for G4 code in cfg4-
+
 
 ::
 
@@ -54,7 +58,7 @@ Dependencies
 ------------
 
 * Boost 
-* GLM headers, matrix/math  
+undefined-var-template* GLM headers, matrix/math  
 
 
 NB no OpenGL dependency, instead classes designed to be 

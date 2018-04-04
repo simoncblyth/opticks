@@ -21,6 +21,20 @@ Python prototype:
 * /usr/local/env/chroma_env/src/chroma/chroma/gpu/photon_hit.py
 
 
+
+OptiX 501 CUDA 9.1 macOS 10.13.4 Xcode 9.2
+----------------------------------------------
+
+::
+
+    [ 75%] Linking CXX shared library libOptiXRap.dylib
+    ld: warning: object file (CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBuf_.cu.o) was built for newer OSX version (10.13) than being linked (10.8)
+    ld: warning: object file (CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufBase_.cu.o) was built for newer OSX version (10.13) than being linked (10.8)
+    ld: warning: object file (CMakeFiles/OptiXRap.dir/OptiXRap_generated_OBufPair_.cu.o) was built for newer OSX version (10.13) than being linked (10.8)
+    [ 75%] Built target OptiXRap
+
+
+
 OptiX 400
 -----------
 

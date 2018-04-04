@@ -35,5 +35,11 @@ int main(int, char** argv)
     LOG(debug) << argv[0]  ;
     LOG(trace) << argv[0]  ;
 
+
+    if(1) LOG(info) << argv[0] << " if-LOG can can cause dangling else problem with some versions of plog " ;
+
+
+
+
     return 0 ; 
 }

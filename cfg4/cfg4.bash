@@ -27,6 +27,30 @@ TODO
 * light source config, blackbody
 
 
+Xcode 9.2
+------------
+
+::
+
+    In file included from /usr/local/opticks/externals/include/Geant4/G4Region.hh:278:
+    /usr/local/opticks/externals/include/Geant4/G4Region.icc:247:3: warning: instantiation of variable 'G4GeomSplitter<G4RegionData>::offset' required here, but no definition is available
+          [-Wundefined-var-template]
+      G4MT_fsmanager = fsm;
+      ^
+    /usr/local/opticks/externals/include/Geant4/G4Region.hh:102:45: note: expanded from macro 'G4MT_fsmanager'
+    #define G4MT_fsmanager ((subInstanceManager.offset[instanceID]).fFastSimulationManager)
+                                                ^
+    /usr/local/opticks/externals/include/Geant4/G4GeomSplitter.hh:193:40: note: forward declaration of template entity is here
+        G4GEOM_DLL static G4ThreadLocal T* offset;
+                                           ^
+    /usr/local/opticks/externals/include/Geant4/G4Region.icc:247:3: note: add an explicit instantiation declaration to suppress this warning if 'G4GeomSplitter<G4RegionData>::offset' is explicitly
+          instantiated in another translation unit
+      G4MT_fsmanager = fsm;
+      ^
+    /usr/local/opticks/externals/include/Geant4/G4Region.hh:102:45: note: expanded from macro 'G4MT_fsmanager'
+    #define G4MT_fsmanager ((subInstanceManager.offset[instanceID]).fFastSimulationManager)
+                                                ^
+
 
 Clean Build Link Issue
 -----------------------

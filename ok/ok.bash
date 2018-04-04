@@ -18,6 +18,17 @@ See also
 * ggv- examples of ggeoview invokations
 
 
+CMake RPATH setting messed up 
+--------------------------------
+
+::
+
+    epsilon:plog blyth$ OKTest 
+    dyld: Library not loaded: @rpath/libOGLRap.dylib
+      Referenced from: /usr/local/opticks/lib/OKTest
+      Reason: image not found
+    Abort trap: 6
+    epsilon:plog blyth$ 
 
 
 OTracerTest and ggeoview running FAILING with malloc errors

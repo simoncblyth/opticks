@@ -33,6 +33,9 @@ Resolve by moving the BLog.hh include after NPY.hpp::
 
 
 
+fixed this by bringing my plog fork uptodate
+-----------------------------------------------
+
 :: 
 
     epsilon:externals blyth$ opticks--
@@ -54,6 +57,16 @@ Resolve by moving the BLog.hh include after NPY.hpp::
 
 
 
+but lastest plog has dangling else problem, have made pull request upstream
+------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
 EOU
 }
 plog-env(){      opticks- ;  }
@@ -65,15 +78,10 @@ plog-cd(){   cd $(plog-dir); }
 plog-icd(){  cd $(plog-idir); }
 
 
-plog-url-latest(){  echo https://github.com/SergiusTheBest/plog ; }
+plog-url-upstream(){  echo https://github.com/SergiusTheBest/plog ; }
 plog-url-pinned(){  echo https://github.com/simoncblyth/plog ; }
+plog-url(){  plog-url-pinned ; }
 
-plog-url(){
-   case $USER in 
-     blyth) plog-url-latest ;;
-         *) plog-url-pinned ;;
-   esac
-}       
 
 plog-wipe(){
    local iwd=$PWD
@@ -260,10 +268,8 @@ int main()
     LOG(plog::debug) << "Hello log!"; // function-style macro
 
     int verbose = 5 ; 
-
-    if(verbose > 3) LOGD << "logging in short if risks dangling else " ; 
+    if(verbose > 3) LOGD << "logging in short causes dangling else " ; 
        
-
 
     return 0;
 }

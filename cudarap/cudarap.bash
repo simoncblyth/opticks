@@ -26,7 +26,9 @@ Release Notes for Windows, Linux, and Mac OS
 
     delta:opticksnpy blyth$ cudarap--
     [  0%] Building NVCC (Device) object cudarap/CMakeFiles/CUDARap.dir/CUDARap_generated_CResource_.cu.o
+
     nvcc fatal   : The version ('90100') of the host compiler ('Apple clang') is not supported
+
     CMake Error at CUDARap_generated_CResource_.cu.o.cmake:203 (message):
       Error generating
       /usr/local/opticks/build/cudarap/CMakeFiles/CUDARap.dir//./CUDARap_generated_CResource_.cu.o
@@ -36,6 +38,29 @@ Release Notes for Windows, Linux, and Mac OS
     make[1]: *** [cudarap/CMakeFiles/CUDARap.dir/all] Error 2
     make: *** [all] Error 2
     delta:opticksnpy blyth$ 
+
+
+Reproduced the belo with nvcc-hello::
+
+    nvcc-;nvcc-hello
+
+    nvcc fatal   : The version ('90100') of the host compiler ('Apple clang') is not supported
+
+Solved with::
+
+    xcode-;xcode-92
+    nvcc-;nvcc-hello
+
+For that to apply to opticks needed to::
+
+    opticks-configure
+    cudarap--          
+       ## this means that now have a mixed xcode-93 and xcode-92 compiler version build, 
+       ## better to start from scratch ? 
+
+
+
+* https://stackoverflow.com/questions/36250949/revert-apple-clang-version-for-nvcc
 
 
 
