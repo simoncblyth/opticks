@@ -209,7 +209,9 @@ NGeoTestConfig::Arg_t NGeoTestConfig::getArg(const char* k)
     else if(strcmp(k,AUTOSEQMAP_)==0)  arg = AUTOSEQMAP ; 
 
     if(arg == UNRECOGNIZED)
-        LOG(warning) << "NGeoTestConfig::getArg UNRECOGNIZED arg " << k ; 
+    {
+        LOG(warning) << "NGeoTestConfig::getArg UNRECOGNIZED arg " << k ;  
+    }
 
     return arg ;   
 }
@@ -253,6 +255,7 @@ unsigned NGeoTestConfig::getNumElements()
     bool equal = nbnd == npar && nbnd == nnod && ntra == npar ;
 
     if(!equal) 
+    {
     LOG(fatal) << "NGeoTestConfig::getNumElements"
                << " ELEMENT MISMATCH IN TEST GEOMETRY CONFIGURATION " 
                << " nbnd (boundaries) " << nbnd  
@@ -260,6 +263,7 @@ unsigned NGeoTestConfig::getNumElements()
                << " npar (parameters) " << npar  
                << " ntra (transforms) " << ntra
                ; 
+    }
 
     //assert( equal && "need equal number of boundaries, parameters, transforms and nodes");
     //assert(nbnd > 0);

@@ -60,10 +60,12 @@ void NImplicitMesher::init()
     float negate = false ; 
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::init"
                << " ImplicitMesherF ctor "
                << " verbosity " << m_verbosity 
                ;
+    }
               
 
     m_mesher = new ImplicitMesherF(m_sdf, m_verbosity, tval, negate ); 
@@ -86,10 +88,12 @@ int NImplicitMesher::addSeeds()
     }
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::addSeeds"
               << " numManual " << numManual
               << " numCenter " << numCenter
               ;
+    }
 
     return numCenter + numManual ; 
 }
@@ -124,12 +128,14 @@ int NImplicitMesher::addManualSeeds()
                 
 
                if(m_verbosity > 0)
+               {
                LOG(info) << "NImplicitMesher::addManualSeeds nseed " << nseed 
                          << " sxyz(" << sx << " " << sy << " " << sz << ") " 
                          << " spos(" << spos.x << " " << spos.y << " " << spos.z << ") " 
                          << " dxyz(" << dx << " " << dy << " " << dz << ") " 
                          << " sdir(" << sdir.x << " " << sdir.y << " " << sdir.z << ") " 
                          ; 
+               }
 
                m_mesher->addSeed(spos.x, spos.y, spos.z, sdir.x, sdir.y, sdir.z); 
                numManual++ ;    
@@ -142,9 +148,11 @@ int NImplicitMesher::addManualSeeds()
     } 
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::addManualSeeds" 
               << " numManual " << numManual 
               ; 
+    }
 
     return numManual ; 
 }
@@ -162,10 +170,12 @@ int NImplicitMesher::addCenterSeeds()
     unsigned numCenter = 0 ; 
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::addCenterSeeds"
               << " ncenters " << ncenters
               << " ndirs " << ndirs
               ;
+    }
  
     assert( ncenters == ndirs );
 
@@ -180,9 +190,11 @@ int NImplicitMesher::addCenterSeeds()
         numCenter++ ; 
     }
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::addCenterSeeds" 
               << " numCenter " << numCenter 
               ;
+    }
 
     return numCenter ; 
 }
@@ -191,10 +203,12 @@ int NImplicitMesher::addCenterSeeds()
 NTrianglesNPY* NImplicitMesher::operator()()
 {
     if(m_verbosity > 0)
+    {
     LOG(info) << "NImplicitMesher::operator() polygonizing START"
               << " verbosity " << m_verbosity 
               << " bb " << m_bbox->desc() 
               ; 
+    }
 
     m_mesher->polygonize();
 

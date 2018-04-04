@@ -167,9 +167,11 @@ void G4StepNPY::checkCounts(std::vector<int>& counts, const char* msg)
     }
 
     if(mismatch > 0)
+    {
           LOG(fatal) << "G4StepNPY::checkCounts MISMATCH between steps and propagation photon counts  "
                      << " mismatch " << mismatch
                      ; 
+    }
 
     assert(mismatch==0);
 }
@@ -254,12 +256,14 @@ void G4StepNPY::checklabel(int xlabel, int ylabel)
     }
 
     if(mismatch > 0) 
+    {
          LOG(fatal)<<"G4StepNPY::checklabel FAIL" 
                    << " xlabel " << xlabel 
                    << " ylabel " << ylabel 
                    << " numStep " << numStep
                    << " mismatch " << mismatch ; 
                    ;
+    }
   
     assert(mismatch == 0 );
 }

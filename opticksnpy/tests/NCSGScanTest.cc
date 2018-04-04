@@ -65,10 +65,13 @@ void ManualScan(NCSG* csg)
     BStr::fsplitEnv(f, "SCAN", fallback, ',' );
 
     bool has9 = f.size() == 9 ;
-    if(!has9) LOG(fatal) << "NCSGScan"
+    if(!has9) 
+    {
+              LOG(fatal) << "NCSGScan"
                          << " SCAN envvar required 9 comma delimited elements" 
                          << " got " << f.size()
                         ;
+    }
     assert(has9);
     nnode* root = csg->getRoot();
     glm::vec3 origin(    f[0],f[1],f[2] );

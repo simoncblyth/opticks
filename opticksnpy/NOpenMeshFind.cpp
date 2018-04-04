@@ -140,6 +140,7 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
     }
 
     if(verbosity > 0)
+    {
     LOG(info) << "NOpenMeshFind<T>::find_faces  "
               << " FindType " << NOpenMeshEnum::FindType(sel)
                   << " param " << param
@@ -147,6 +148,7 @@ void NOpenMeshFind<T>::find_faces(std::vector<FH>& faces, NOpenMeshFindType sel,
                   << " totface " << totface
                   << " cfg.reversed " << cfg->reversed
                   ; 
+    }
 
 }
 
@@ -287,9 +289,11 @@ void NOpenMeshFind<T>::sort_faces_contiguous(std::vector<FH>& faces) const
     if(faces.size()==0) return ; 
 
     if(verbosity > 0)
+    {
     LOG(info) << "NOpenMeshFind<T>::sort_faces_contiguous"
               << " faces " << faces.size()
               ;
+    } 
 
 
     

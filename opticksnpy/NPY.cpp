@@ -221,12 +221,14 @@ bool NPY<T>::hasSameItemSize(NPY<T>* a, NPY<T>* b)
 
     bool same = aItemValues == bItemValues ;  
     if(!same)
+    {
     LOG(fatal) << "NPY<T>::hasSameItemSize MISMATCH "
               << " aShape " << a->getShapeString()
               << " bShape " << b->getShapeString()
               << " aItemValues " << aItemValues 
               << " bItemValues " << bItemValues 
               ;
+    } 
  
     return same ; 
 }
@@ -543,7 +545,9 @@ NPY<T>* NPY<T>::load(const char* path_, bool quietly)
     catch(const std::runtime_error& /*error*/)
     {
         if(!quietly)
+        {
         LOG(warning) << "NPY<T>::load failed for path [" << path << "] use debugload to see why"  ; 
+        }
     }
 
     return npy ;
@@ -649,7 +653,9 @@ void NPY<T>::save(const char* raw)
     else
     {
         if(m_verbose || GLOBAL_VERBOSE) 
+        {
             LOG(info) << "NPY::save dir exists \"" << _path.string() << "\" " ; 
+        }
     }
 
 

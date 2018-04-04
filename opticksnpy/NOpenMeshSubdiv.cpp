@@ -132,7 +132,9 @@ template <typename T>
 void NOpenMeshSubdiv<T>::init()
 {
     if(verbosity > 3)
+    {
     LOG(info) << "NOpenMeshSubdiv<T>::init()" ;
+    }
     //std::cout << cfg.brief() << std::endl ;
 
     //init_subdivider();
@@ -217,7 +219,10 @@ void NOpenMeshSubdiv<T>::sqrt3_split_r( FH fh, int depth )
         P centroid = mesh.calc_face_centroid( fh );
         bool added(false) ;
         VH cvh = build.add_vertex_unique( centroid, added );
-        if(!added) LOG(warning) << " fh " << fh << " base_id " << base_id << " NON_UNIQUE CENTROID ? " << desc(centroid)   ;
+        if(!added) 
+        { 
+           LOG(warning) << " fh " << fh << " base_id " << base_id << " NON_UNIQUE CENTROID ? " << desc(centroid)   ;
+        }
 
         mesh.split( fh, cvh ); 
 
@@ -319,10 +324,12 @@ void NOpenMeshSubdiv<T>::sqrt3_refine_contiguous( std::vector<FH>& target )
     find.sort_faces_contiguous( target );
 
     if(verbosity > 0)
+    {
     LOG(info) << "NOpenMeshSubdiv<T>::sqrt3_refine_contiguous START"
               << " verbosity " << verbosity 
               << " target " << target.size()
               ;
+    }
 
     for(unsigned i=0 ; i < target.size() ; i++) 
     {
@@ -331,10 +338,12 @@ void NOpenMeshSubdiv<T>::sqrt3_refine_contiguous( std::vector<FH>& target )
     }
 
     if(verbosity > 0)
+    {
     LOG(info) << "NOpenMeshSubdiv<T>::sqrt3_refine_contiguous DONE"
               << " verbosity " << verbosity 
               << " target " << target.size()
               ;
+    }
 
 }
 
@@ -377,7 +386,10 @@ void NOpenMeshSubdiv<T>::sqrt3_centroid_split_face(FH fh, std::vector<VH>& centr
 
     VH cvh = build.add_vertex_unique( centroid, added );
 
-    if(!added) LOG(fatal) << desc_face(fh, "DUPE-CENTROID?") << desc(centroid) ;
+    if(!added)
+    {
+       LOG(fatal) << desc_face(fh, "DUPE-CENTROID?") << desc(centroid) ;
+    }
     assert(added); 
 
     mesh.split( fh, cvh ); 
@@ -593,7 +605,9 @@ subdiv to be done, the below used mesh.split(eh, midpoint)
 
 
     if(verbosity > 1)
+    {
     LOG(info) << "subdivide_face" << " fh " << fh ; 
+    }
                            
 
     unsigned n(0) ; 

@@ -51,11 +51,13 @@ struct NOpenMeshTraverse
         }
 
         if(steps >= maxstep)
+        {
             LOG(fatal) << "NOpenMeshTraverse::collect"
                        << " verbosity " << verbosity 
                        << " steps " << steps 
                        << " maxstep " << maxstep
                        ; 
+        }
  
         assert( steps < maxstep );
     }

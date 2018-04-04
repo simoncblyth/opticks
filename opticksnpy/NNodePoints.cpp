@@ -62,7 +62,9 @@ nbbox NNodePoints::bbox_surface_points() const
 {
     unsigned num_cp = getNumCompositePoints() ; 
     if(num_cp==0)  
+    {
         LOG(debug) << "NNodePoints::bbox_surface_points NONE FOUND : probably need larger parsurf_level   " << desc() ;  
+    }
 
     return nbbox::from_points(getCompositePoints(), m_verbosity);    
 }
@@ -85,9 +87,12 @@ float NNodePoints::getEpsilon() const
 glm::uvec4 NNodePoints::collect_surface_points() 
 {
     if(m_verbosity > 2 )
+    {
     LOG(info) << "NNodePoints::collect_surface_points"
               << " verbosity " << m_verbosity 
               ;
+    }
+
     if(m_config && m_verbosity > 2) m_config->dump("NNodePoints::collect_surface_points");
 
    /*
@@ -162,11 +167,13 @@ glm::uvec4 NNodePoints::collectCompositePoints( unsigned level, int margin , uns
 
         
         if(m_verbosity > 4) 
+        {
         LOG(info) << "NNodePoints::collectCompositePoints"
                   << " prim_idx " << prim_idx 
                   << " level " << level
                   << " margin " << margin
                   ;
+        }
 
 
         prim->collectParPoints(prim_idx, level, margin, FRAME_GLOBAL , m_verbosity );
@@ -211,11 +218,13 @@ glm::uvec4 NNodePoints::selectBySDF(const nnode* prim, unsigned prim_idx, unsign
 
 
     if(m_verbosity > 5) 
+    {
          LOG(info) << "NNodePoints::selectBySDF"
                    << " verbosity " << m_verbosity
                    << " prim_points " << num_prim_points
                    << " prim_coords " << num_prim_coords
                    ;
+    }
 
     assert( num_prim_points == num_prim_coords );
 

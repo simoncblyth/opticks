@@ -64,10 +64,13 @@ NConstructor<T>::NConstructor(FG3* fieldgrid, FGLite* fglite,  const nvec4& ce, 
 
    bool level_match = m_nominal->level == nominal ;
 
-   if(!level_match) LOG(fatal) << "level_match FAIL "
+   if(!level_match) 
+   {
+       LOG(fatal) << "level_match FAIL "
                                << " nominal level " << nominal 
                                << " nominal " << m_nominal->desc()
                                ;
+   }
 
    assert( level_match ); 
 
@@ -319,7 +322,10 @@ T* NConstructor<T>::create_coarse_nominal()
 
     typename UMAP::const_iterator it0 = cache[0].find(0);
     T* root = it0 == cache[0].end() ? NULL : it0->second ; 
-    if(!root) LOG(fatal) << "FAILED TO FIND ROOT" ; 
+    if(!root) 
+    {
+       LOG(fatal) << "FAILED TO FIND ROOT" ; 
+    }
     assert(root);
 
     return root ; 
@@ -674,9 +680,21 @@ T* NManager<T>::getSimplified()
 template <typename T>
 void NManager<T>::buildOctree()
 {
-    if( m_ctrl & BUILD_BOTTOM_UP ) LOG(info) << "BUILD_BOTTOM_UP" ; 
-    if( m_ctrl & BUILD_TOP_DOWN )  LOG(info) << "BUILD_TOP_DOWN" ;
-    if( m_ctrl & BUILD_BOTH )      LOG(info) << "BUILD_BOTH" ; 
+    if( m_ctrl & BUILD_BOTTOM_UP )
+    { 
+       LOG(info) << "BUILD_BOTTOM_UP" ; 
+    }
+    if( m_ctrl & BUILD_TOP_DOWN )
+    {  
+        LOG(info) << "BUILD_TOP_DOWN" ;
+    }
+    if( m_ctrl & BUILD_BOTH )
+    {  
+        LOG(info) << "BUILD_BOTH" ; 
+    }
+
+
+
     int verbosity = 0 ; 
 
     if( m_ctrl & BUILD_BOTTOM_UP )

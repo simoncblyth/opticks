@@ -124,12 +124,14 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
             if(u != i )
             {
                 if(fail < 10)
+                {
                 LOG(warning) << "FAIL checkItemValue IS_UINDEX "
                              << " istep:" << istep 
                              << " label:" << label 
                              << " i:" << i 
                              << " u:" << u 
                              ;
+                }
                 fail += 1 ;   
             }
         }
@@ -138,6 +140,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
             if(u != i*scale )
             {
                 if(fail < 10)
+                {
                 LOG(warning) << "FAIL checkItemValue IS_UINDEX_SCALED " 
                              << " istep:" << istep 
                              << " label:" << label 
@@ -145,6 +148,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
                              << " u:" << u 
                              << " i*s:" << i*scale
                              ;
+                }
 
                 fail += 1 ;   
             }
@@ -154,6 +158,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
             if(u != uconstant )
             {
                 if(fail < 10)
+                {
                 LOG(warning) << "FAIL checkItemValue IS_UCONSTANT " 
                              << " istep:" << istep 
                              << " label:" << label 
@@ -161,6 +166,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
                              << " u:" << u 
                              << " uconstant:" << uconstant
                              ; 
+                }
                 fail += 1 ;   
             }
         }
@@ -169,6 +175,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
             if(u != uconstant*scale )
             {
                 if(fail < 10)
+                {
                 LOG(warning) << "FAIL checkItemValue IS_UCONSTANT_SCALED " 
                              << " istep:" << istep 
                              << " label:" << label 
@@ -176,6 +183,7 @@ int TrivialCheckNPY::checkItemValue(unsigned istep, NPY<float>* npy, unsigned i0
                              << " u:" << u 
                              << " uconstant*s:" << uconstant*scale
                              ;
+                } 
 
                 fail += 1 ;   
             }

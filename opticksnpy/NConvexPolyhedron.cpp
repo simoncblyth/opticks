@@ -218,11 +218,13 @@ glm::vec3 nconvexpolyhedron::par_pos_model(const nuv& uv) const
     bool normalized = delta < epsilon  ; 
 
     if(!normalized)
+    {
          LOG(fatal) << "nconvexpolyhedron::par_pos_model"
                     << " norm not normalized " << gpresent(norm) 
                     << " delta " << std::scientific << delta
                     << " epsilon " << std::scientific << epsilon
                     ;
+    }
 
 
     assert(normalized); 

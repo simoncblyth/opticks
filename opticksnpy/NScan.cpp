@@ -71,7 +71,9 @@ void NScan::init()
 
 
     if(m_verbosity > 1)
-    LOG(info) << desc() ; 
+    {
+        LOG(info) << desc() ; 
+    }
 
     if(m_verbosity > 3)
     m_node.dump();
@@ -146,10 +148,12 @@ void NScan::init_cage(const nbbox& bb, glm::vec3& bmin, glm::vec3& bmax, glm::ve
 unsigned NScan::autoscan(float mmstep)
 {
     if(m_verbosity > 0)
+    {
     LOG(info) << "NScan::autoscan" 
               << " verbosity " << m_verbosity 
               << " mmstep " << mmstep
                ;
+    }
    
     // center x,y, -z->z
 

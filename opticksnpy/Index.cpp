@@ -266,27 +266,33 @@ void Index::test(const char* msg, bool verbose)
 
        //assert(strcmp(getNameSource(source),iname.c_str())==0); 
        if(strcmp(getNameSource(source),iname.c_str())!=0) 
+       {
            LOG(warning) << "Index::test inconsistency " 
                         << " source " << source 
                         << " iname " << iname 
                         ;
+       }
 
        assert(getIndexLocal(iname.c_str())==local); 
        assert(getIndexSource(iname.c_str())==source); 
 
        //assert(convertSourceToLocal(source)==local); 
        if(convertSourceToLocal(source)!=local)
+       {
            LOG(warning) << "Index::test convertSourceToLocal inconsistency " 
                         << " source " << source 
                         << " local " << local 
                         ;
+       }
 
        //assert(convertLocalToSource(local)==source); 
        if(convertLocalToSource(local)!=source) 
+       {
            LOG(warning) << "Index::test convertLocalToSource inconsistency " 
                         << " source " << source 
                         << " local " << local 
                         ;
+       } 
 
 
        if(verbose) std::cout 

@@ -688,11 +688,13 @@ nbbox nbbox::from_points(const std::vector<glm::vec3>& points, unsigned verbosit
     assert( bb.invert == false );
 
     if(verbosity > 5)
+    {
        LOG(info) << "nbbox::from_points"
                  << " verbosity " << verbosity 
                  << " num_points " << points.size()
                  << " bb0 " << bb.desc()
                  ;
+    }
 
 
     for(unsigned i=0 ; i < points.size() ; i++) 

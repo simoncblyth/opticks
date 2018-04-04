@@ -362,6 +362,7 @@ opticks-optix-install-dir(){ echo ${OPTICKS_OPTIX_INSTALL_DIR:-$($FUNCNAME-)} ; 
 opticks-optix-install-dir-(){
    local t=$NODE_TAG
    case $t in 
+      E) echo /Developer/OptiX_501 ;;
       D_400) echo /Developer/OptiX_400 ;;
       D) echo /Developer/OptiX_380 ;;
    RYAN) echo /Developer/OptiX_380 ;;
@@ -375,11 +376,12 @@ opticks-optix-install-dir-(){
 } 
 
 
-opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:$($FUNCNAME-)} ; }
+opticks-compute-capability(){ echo ${OPTICKS_COMPUTE_CAPABILITY:-$($FUNCNAME-)} ; }
 opticks-compute-capability-()
 {
     local t=$NODE_TAG
     case $t in 
+       E) echo 30 ;;
        D) echo 30 ;;
     RYAN) echo 30 ;;
      GTL) echo 30 ;;

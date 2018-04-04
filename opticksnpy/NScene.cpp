@@ -124,13 +124,13 @@ NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* id
     NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, idfold, gltfconfig, dbgnode) : NULL ;
 
     if(!scene)
+    {
         LOG(fatal) << "NScene:Load MISSING PATH" 
                    << " gltfbase " << gltfbase
                    << " gltfname " << gltfname
                    << " gltfconfig " << gltfconfig
                    ; 
-
-
+    }
     return scene ; 
 }
 
@@ -179,11 +179,13 @@ void NScene::init()
     load_asset_extras();  // includes verbosity from glTF 
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NScene::init START"
               << " age(s) " << m_age 
               << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
               << " num_gltf_nodes " << m_num_gltf_nodes
               ;  
+    }
 
     if(m_triple_debug)
     { 
@@ -248,7 +250,9 @@ void NScene::init()
     write_lvlists();
 
     if(m_verbosity > 0)
+    {
     LOG(info) << "NScene::init DONE" ;  
+    }
     //assert(0 && "hari kari");
 }
 
@@ -330,10 +334,12 @@ void NScene::load_asset_extras()
     m_targetnode = extras["targetnode"]; 
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NScene::load_asset_extras"
               << " m_verbosity " << m_verbosity 
               << " m_targetnode " << m_targetnode 
                ;
+    }
 }
 
 unsigned NScene::getVerbosity()
@@ -352,10 +358,12 @@ void NScene::load_csg_metadata()
    // for debugging need the CSG metadata prior to loading the trees
     unsigned num_meshes = getNumMeshes();
     if(m_verbosity > 0)
+    {
     LOG(info) << "NScene::load_csg_metadata"
               << " verbosity " << m_verbosity 
               << " num_meshes " << num_meshes
               ;
+    }
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
@@ -378,12 +386,14 @@ void NScene::load_csg_metadata()
         assert( meta_soname.compare(soName) == 0) ; 
 
         if(m_verbosity > 3)
+        {
         LOG(info) << "NScene::load_csg_metadata"
                   << " verbosity " << m_verbosity 
                   << " mesh_id " << std::setw(3) << mesh_id
                   << " lvIdx " << std::setw(6) << lvIdx
                   << " soName " << soName
                   ;
+        } 
 
 
         //std::cout << meshmeta(mesh_id) << std::endl ;
@@ -438,10 +448,12 @@ void NScene::load_mesh_extras()
     assert( num_meshes == m_gltf->meshes.size() ); 
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NScene::load_mesh_extras START" 
               << " m_verbosity " << m_verbosity
               << " num_meshes " << num_meshes 
               ; 
+    }
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
@@ -503,6 +515,7 @@ void NScene::load_mesh_extras()
 
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NScene::load_mesh_extras DONE"
               << " m_verbosity " << m_verbosity
               << " num_meshes " << num_meshes
@@ -510,6 +523,7 @@ void NScene::load_mesh_extras()
               << " m_num_csgskip " << m_num_csgskip
               << " m_num_placeholder " << m_num_placeholder
               ;
+    }
 
 }
 
@@ -1206,10 +1220,12 @@ void NScene::dump_repeat_candidates() const
     unsigned num_repeat_candidates = m_repeat_candidates.size() ;
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NScene::dump_repeat_candidates"
               << " verbosity " << m_verbosity 
               << " num_repeat_candidates " << num_repeat_candidates 
               ;
+    }
     for(unsigned i=0 ; i < num_repeat_candidates ; i++)
         dump_repeat_candidate(i);
 } 

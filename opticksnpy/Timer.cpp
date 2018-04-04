@@ -34,7 +34,10 @@ const char* Timer::getName()
 void Timer::stamp(const char* mark)
 {
     m_marks.push_back(SD(mark, BTimer::RealTime() ));
-    if(m_verbose) LOG(debug) << m_name << " " << mark ; 
+    if(m_verbose) 
+    {
+       LOG(debug) << m_name << " " << mark ; 
+    }
 }
 
 

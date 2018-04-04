@@ -140,11 +140,13 @@ void test_afterLastOrAll_(const char* s, const char* x )
     bool match = strcmp(a,x) == 0 ; 
 
     if(!match)
-    LOG(fatal) << " MISMATCH " 
-               << " s " << std::setw(30) << s 
-               << " x " << std::setw(30) << x 
-               << " a " << std::setw(30) << a
-                ;
+    {
+        LOG(fatal) << " MISMATCH " 
+                   << " s " << std::setw(30) << s 
+                   << " x " << std::setw(30) << x 
+                   << " a " << std::setw(30) << a
+                   ;
+    }
 
     assert(match); 
 }
@@ -163,12 +165,14 @@ void test_DAEIdToG4_(const char* daeid, const char* x_g4name, bool trimPtr)
     bool match = strcmp( g4name, x_g4name  ) == 0 ;
 
     if(!match) 
+    { 
     LOG(debug) 
                   << " " << ( match ? "match" : "MISMATCH" )
                   << " daeid " << daeid 
                   << " g4name " << g4name 
                   << " x_g4name " << x_g4name 
                   ;
+    }
 
     assert(match);
 }

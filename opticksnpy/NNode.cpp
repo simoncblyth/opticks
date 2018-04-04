@@ -454,11 +454,13 @@ void nnode::check_primitive_bb( const nbbox& bb) const
     bool invert_is_complement = bb.invert == complement ;
 
     if(!invert_is_complement)
+    {
         LOG(fatal) << "nnode::check_primitive_bb"
                       << " invert_is_complement FAIL "
                       << " bb  " << bb.desc()
                       << " node  " << desc()
                       ;
+    }
                      
     assert( invert_is_complement );
 }
@@ -591,7 +593,9 @@ nbbox nnode::bbox() const
     */
 
     if(verbosity > 0)
-    LOG(info) << "nnode::bbox " << desc() ; 
+    {
+        LOG(info) << "nnode::bbox " << desc() ; 
+    }
 
     nbbox bb = make_bbox() ; 
 
@@ -1021,21 +1025,25 @@ void nnode::collect_prim_centers(std::vector<glm::vec3>& centers, std::vector<gl
     unsigned nprim = prim.size();
 
     if(verbosity_ > 0)
-    LOG(info) << "nnode::collect_prim_centers"
-              << " verbosity " << verbosity_
-              << " nprim " << nprim 
-              ;
+    {
+        LOG(info) << "nnode::collect_prim_centers"
+                  << " verbosity " << verbosity_
+                  << " nprim " << nprim 
+                  ;
+    } 
 
     for(unsigned i=0 ; i < nprim ; i++)
     {
         const nnode* p = prim[i] ; 
 
         if(verbosity_ > 1 )
-        LOG(info) << "nnode::collect_prim_centers"
-                  << " i " << i 
-                  << " type " << p->type 
-                  << " name " << CSGName(p->type) 
-                  ;
+        {
+           LOG(info) << "nnode::collect_prim_centers"
+                     << " i " << i 
+                     << " type " << p->type 
+                     << " name " << CSGName(p->type) 
+                     ;
+        }
 
 
         collect_prim_centers( centers, dirs, p );
@@ -1094,7 +1102,10 @@ void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) /
 
 void nnode::dump(const char* msg) const 
 {
-    if(msg) LOG(info) << msg ; 
+    if(msg)
+    { 
+       LOG(info) << msg ; 
+    } 
     _dump->dump();
 }
 

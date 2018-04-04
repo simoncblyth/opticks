@@ -31,12 +31,14 @@ int main(int argc, char** argv)
             float v1 = fn(p.x, p.y, p.z) ;
 
             if(i % 100 == 0)
+            {
               LOG(info) 
                  << " i " << std::setw(6) << i 
                  << " p " << p.desc()
                  << " obj: " << v0 
                  << " fc: "  << v1
               ;
+            } 
         }
     }
 

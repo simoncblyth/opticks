@@ -529,10 +529,13 @@ void NPYBase::reshape(int ni_, unsigned int nj, unsigned int nk, unsigned int nl
 
     unsigned int nvals2 = std::max(1u,ni)*std::max(1u,nj)*std::max(1u,nk)*std::max(1u,nl)*std::max(1u,nm) ; 
 
-    if(nvals != nvals2) LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
+    if(nvals != nvals2) 
+    {
+         LOG(fatal) << "NPYBase::reshape INVALID AS CHANGES COUNTS " 
                               << " nvals " << nvals
                               << " nvals2 " << nvals2
                               ;
+    }
 
     assert(nvals == nvals2 && "NPYBase::reshape cannot change number of values, just their addressing");
 
@@ -598,10 +601,12 @@ bool NPYBase::isEqualTo(void* bytes, unsigned int nbytes)
     bool same = self.compare(other) == 0 ; 
 
     if(!same)
+    {
          LOG(warning) << "NPYBase::isEqualTo NO "
                       << " self " << self 
                       << " other " << other
                       ;
+    }
  
 
     return same ; 

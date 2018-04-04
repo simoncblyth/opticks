@@ -652,7 +652,10 @@ unsigned long long Types::convertSequenceString(std::string& seq, Item_t etype, 
         std::string sub = seq.substr(i*elen, elen) ;
         unsigned int bitpos = getAbbrevInvertAsCode(sub, etype, hex);
         //assert(bitpos < 16);
-        if(bitpos > 15) LOG(warning) << "Types::convertSequenceString bitpos too big " << bitpos ;  
+        if(bitpos > 15) 
+        {
+           LOG(warning) << "Types::convertSequenceString bitpos too big " << bitpos ;  
+        }
 
         unsigned long long ull = bitpos ; 
         unsigned long long msk = ull << (i*4) ; 

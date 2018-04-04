@@ -140,7 +140,10 @@ difference(A,B) = intersection(A,-B)      (asymmetric/not-commutative)
     copy faces of B entirely inside A 
 
 */
-    if(verbosity > 4) LOG(info) << summary("NOpenMesh::build_csg") ;
+    if(verbosity > 4) 
+    {
+       LOG(info) << summary("NOpenMesh::build_csg") ;
+    }
     bool combination = node->left && node->right ; 
 
     if(!combination)
@@ -610,7 +613,9 @@ void NOpenMesh<T>::check()
 {
     assert(OpenMesh::Utils::MeshCheckerT<T>(mesh).check()) ;
     if(verbosity > 3)
+    {
     LOG(info) << "NOpenMesh<T>::check OK" ; 
+    } 
 }
 
 template <typename T>
@@ -618,6 +623,7 @@ void NOpenMesh<T>::subdiv_test()
 {
     unsigned nloop0 = find.find_boundary_loops() ;
     if(verbosity > 0)
+    {
     LOG(info) << "subdiv_test START " 
               << " ctrl " << cfg->ctrl 
               << " cfg " << cfg->desc()
@@ -625,6 +631,7 @@ void NOpenMesh<T>::subdiv_test()
               << " nloop0 " << nloop0
               << desc.desc_euler()
               ;
+    }
     if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 
 
@@ -635,12 +642,14 @@ void NOpenMesh<T>::subdiv_test()
 
     unsigned nloop1 = find.find_boundary_loops() ;
     if(verbosity > 0)
+    {
     LOG(info) << "subdiv_test DONE " 
               << " ctrl " << cfg->ctrl 
               << " verbosity " << verbosity
               << " nloop1 " << nloop1
               << desc.desc_euler()
               ;
+    }
 
     if(verbosity > 4) std::cout << desc.faces() << std::endl ;  
 }

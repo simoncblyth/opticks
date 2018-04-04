@@ -115,11 +115,13 @@ void GenstepNPY::addStep(bool verbose)
     bool dummy_frame = isDummyFrame();
     bool target_acquired = dummy_frame ? true : m_frame_targetted ;
     if(!target_acquired) 
+    {
          LOG(fatal) << "GenstepNPY::addStep target MUST be set for non-dummy frame " 
                     << " dummy_frame " << dummy_frame
                     << " m_frame_targetted " << m_frame_targetted
                     << brief()
                     ;
+    }
 
     assert(target_acquired);
 

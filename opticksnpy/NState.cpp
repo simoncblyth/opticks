@@ -146,7 +146,7 @@ unsigned int NState::splitKey(std::vector<std::string>& prefix_tag, const char* 
 
 void NState::collect()
 {
-    if(m_verbose) LOG(info) << "NState::collect" ; 
+    if(m_verbose) { LOG(info) << "NState::collect" ; }
 
     unsigned int changes(0);
     typedef std::map<std::string, NConfigurable*>::const_iterator SCI ; 
@@ -168,9 +168,11 @@ unsigned int NState::collect(NConfigurable* configurable)
     const char* prefix = configurable->getPrefix();
     
     if(m_verbose)
+    {
     LOG(info) << "NState::collect" 
               << " prefix " << prefix 
               ; 
+    }
 
     unsigned int changes(0);
 
@@ -183,11 +185,13 @@ unsigned int NState::collect(NConfigurable* configurable)
         std::string prior = get(key.c_str());
        
         if(m_verbose)  
+        {
         LOG(info) << "NState::collect"
                   << " key " <<  key.c_str()
                   << " val " << val.c_str()
                   << " prior " << prior.c_str()
                   ;
+        }
 
         if(prior.empty())
         {
@@ -217,7 +221,9 @@ unsigned int NState::collect(NConfigurable* configurable)
 void NState::apply()
 {
     if(m_verbose)
+    {
     LOG(info) << "NState::apply " ;  
+    }
 
     typedef std::map<std::string, std::string>::const_iterator SSI ; 
     for(SSI it=m_kv.begin() ; it != m_kv.end() ; it++)
@@ -229,7 +235,9 @@ void NState::apply()
          unsigned int n = splitKey(prefix_tag, key.c_str());
 
          if(m_verbose)
+         {
          LOG(info) << "NState::apply " << key << "," << val << " n=" << n ;  
+         }
 
          if(n == 2)
          {
@@ -244,6 +252,7 @@ void NState::apply()
                 if(strcmp(before.c_str(), val.c_str())!=0)
                 {
                     if(m_verbose)
+                    {
                     LOG(info) << "NState::apply " 
                               << " [" << getName() << "] "
                               << key 
@@ -252,6 +261,7 @@ void NState::apply()
                               << " --> " 
                               << val 
                               ;
+                    }
 
                     configurable->configure(tag.c_str(), val.c_str());
                 } 
@@ -259,7 +269,9 @@ void NState::apply()
              else
              {
                 if(m_verbose)
+                {
                 LOG(warning) << "NState::apply no configurable for prefix " << prefix ;  
+                }
              }
          }
          else

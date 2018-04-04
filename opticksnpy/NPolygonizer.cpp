@@ -106,6 +106,7 @@ NPolygonizer::NPolygonizer(NCSG* csg)
 NTrianglesNPY* NPolygonizer::polygonize()
 {
     if(m_verbosity > 0)
+    {
     LOG(info) << "NPolygonizer::polygonize"
               << " treedir " << m_csg->getTreeDir()
               << " poly " << m_poly 
@@ -115,6 +116,7 @@ NTrianglesNPY* NPolygonizer::polygonize()
               << " polycfg " << m_polycfg 
               << " index " << m_index
               ;
+    }
 
     NTrianglesNPY* tris = NULL ; 
 
@@ -133,7 +135,9 @@ NTrianglesNPY* NPolygonizer::polygonize()
     if(!valid)
     {   
         if(m_verbosity > 0)
-        LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
+        {
+            LOG(warning) << "INVALID NPolygonizer tris with " << m_poly ; 
+        }
         delete tris ; 
 
         tris = NTrianglesNPY::box(*m_bbox);
@@ -145,10 +149,12 @@ NTrianglesNPY* NPolygonizer::polygonize()
         unsigned numTris = tris ? tris->getNumTriangles() : 0 ;
       
         if(m_verbosity > 1 )
+        {
         LOG(info) << "NPolygonizer::polygonize OK " 
                   << " verbosity " << m_verbosity 
                   << " numTris " << numTris 
                   ; 
+        }
     }
 
     return tris ;
@@ -225,7 +231,9 @@ NTrianglesNPY* NPolygonizer::implicitMesher()
 NTrianglesNPY* NPolygonizer::hybridMesher()
 {
     if(m_verbosity > 0 )
+    {
     LOG(info) << "NPolygonizer::hybridMesher" ; 
+    }
 
     NTrianglesNPY* tris = NULL ; 
 

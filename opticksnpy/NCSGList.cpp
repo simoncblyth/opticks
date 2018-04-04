@@ -72,10 +72,14 @@ void NCSGList::load()
     std::string txtpath = BFile::FormPath(m_csgpath, FILENAME) ;
     bool exists = BFile::ExistsFile(txtpath.c_str() ); 
 
-    if(!exists) LOG(fatal) << "NCSGList::load"
+    if(!exists) 
+    {
+                LOG(fatal) << "NCSGList::load"
                            << " file does not exist " 
                            << txtpath 
                            ;
+    }
+
     //assert(exists); 
 
     if( exists )

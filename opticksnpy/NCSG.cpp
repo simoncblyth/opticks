@@ -470,10 +470,12 @@ void NCSG::loadNodes()
     m_nodes = NPY<float>::load(nodepath.c_str());
 
     if(!m_nodes)
+    {
          LOG(fatal) << "NCSG::loadNodes"
                     << " failed to load " 
                     << " nodepath [" << nodepath << "]"
                     ;
+    }
 
     assert(m_nodes);
 
@@ -527,11 +529,13 @@ void NCSG::loadTransforms()
     assert(src); 
     bool valid_src = src->hasShape(-1,4,4) ;
     if(!valid_src) 
+    {
         LOG(fatal) << "NCSG::loadTransforms"
                    << " invalid src transforms "
                    << " tranpath " << tranpath
                    << " src_sh " << src->getShapeString()
                    ;
+    }
 
     assert(valid_src);
     unsigned ni = src->getShape(0) ;
@@ -566,11 +570,13 @@ void NCSG::loadSrcVerts()
     assert(a); 
     bool valid = a->hasShape(-1,3) ;
     if(!valid) 
+    {
         LOG(fatal) << "NCSG::loadVerts"
                    << " invalid verts  "
                    << " path " << path
                    << " shape " << a->getShapeString()
                    ;
+    }
 
     assert(valid);
     m_srcverts = a ; 
@@ -588,11 +594,13 @@ void NCSG::loadSrcFaces()
     assert(a); 
     bool valid = a->hasShape(-1,4) ;
     if(!valid) 
+    {
         LOG(fatal) << "NCSG::loadFaces"
                    << " invalid faces  "
                    << " path " << path
                    << " shape " << a->getShapeString()
                    ;
+    }
     assert(valid);
     m_srcfaces = a ; 
     m_num_srcfaces = a->getShape(0) ; 
@@ -611,12 +619,13 @@ void NCSG::loadPlanes()
     assert(a); 
     bool valid = a->hasShape(-1,4) ;
     if(!valid) 
+    {
         LOG(fatal) << "NCSG::loadPlanes"
                    << " invalid planes  "
                    << " path " << path
                    << " shape " << a->getShapeString()
                    ;
-
+    }
     assert(valid);
 
     m_planes = a ; 
@@ -626,10 +635,12 @@ void NCSG::loadPlanes()
 void NCSG::load()
 {
     if(m_index % 100 == 0 && m_verbosity > 0)
+    {
     LOG(info) << "NCSG::load " 
               << " index " << m_index
               << " treedir " << m_treedir 
                ; 
+    }
 
     loadMetadata();
     loadNodes();
@@ -808,19 +819,23 @@ nquad NCSG::getQuad(unsigned idx, unsigned j)
 void NCSG::import()
 {
     if(m_verbosity > 1)
+    {
     LOG(info) << "NCSG::import START" 
               << " verbosity " << m_verbosity
               << " treedir " << m_treedir
               << " smry " << smry()
               ; 
+    }
 
     assert(m_nodes);
     if(m_verbosity > 0)
+    {
     LOG(info) << "NCSG::import"
               << " importing buffer into CSG node tree "
               << " num_nodes " << m_num_nodes
               << " height " << m_height 
               ;
+    }
 
     m_root = import_r(0, NULL) ; 
     m_root->set_treedir(m_treedir) ; 
@@ -832,7 +847,9 @@ void NCSG::import()
     check();  // recursive transform dumping 
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NCSG::import DONE " ; 
+    } 
 }
 
 
@@ -1037,11 +1054,13 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 {
     if(m_verbosity > 2)
+    {
     LOG(info) << "NCSG::import_operator " 
               << " idx " << idx 
               << " typecode " << typecode 
               << " csgname " << CSGName(typecode) 
               ;
+    }
 
     nnode* node = NULL ;   
     switch(typecode)
@@ -1063,11 +1082,13 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     nquad p3 = getQuad(idx, 3);
 
     if(m_verbosity > 2)
+    {
     LOG(info) << "NCSG::import_primitive  " 
               << " idx " << idx 
               << " typecode " << typecode 
               << " csgname " << CSGName(typecode) 
               ;
+    }
 
     nnode* node = NULL ;   
     switch(typecode)
@@ -1094,12 +1115,15 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     }       
 
 
-    if(node == NULL) LOG(fatal) << "NCSG::import_primitive"
-                                << " TYPECODE NOT IMPLEMENTED " 
-                                << " idx " << idx 
-                                << " typecode " << typecode
-                                << " csgname " << CSGName(typecode)
-                                ;
+    if(node == NULL) 
+    {
+            LOG(fatal) << "NCSG::import_primitive"
+                       << " TYPECODE NOT IMPLEMENTED " 
+                       << " idx " << idx 
+                       << " typecode " << typecode
+                       << " csgname " << CSGName(typecode)
+                       ;
+    } 
 
     assert(node); 
 
@@ -1110,12 +1134,14 @@ nnode* NCSG::import_primitive( unsigned idx, OpticksCSG_t typecode )
     }
 
     if(m_verbosity > 3)
+    {
     LOG(info) << "NCSG::import_primitive  " 
               << " idx " << idx 
               << " typecode " << typecode 
               << " csgname " << CSGName(typecode) 
               << " DONE " 
               ;
+    } 
 
     
 
@@ -1162,10 +1188,12 @@ void NCSG::import_planes(nnode* node)
     unsigned idx = iplane - 1 ; 
 
     if(m_verbosity > 3)
+    {
     LOG(info) << "NCSG::import_planes"
               << " iplane " << iplane
               << " num_plane " << num_plane
               ;
+    }
 
     assert( idx < m_num_planes );
     assert( idx + num_plane - 1 < m_num_planes );
@@ -1228,9 +1256,11 @@ void NCSG::check()
     unsigned ni =  m_gtransforms ? m_gtransforms->getNumItems() : 0  ;
 
     if(m_verbosity > 1)
+    {
     LOG(info) << "NCSG::check"
               << " unique gtransforms " << ni
               ;
+    }
 
     for(unsigned i=0 ; i < ni ; i++)
     {
@@ -1448,19 +1478,23 @@ NTrianglesNPY* NCSG::polygonize()
     if(m_tris == NULL)
     {
         if(m_verbosity > 1)
+        {
         LOG(info) << "NCSG::polygonize START"
                   << " verbosity " << m_verbosity 
                   << " treedir " << m_treedir
                   ; 
+        }
 
         NPolygonizer pg(this);
         m_tris = pg.polygonize();
 
         if(m_verbosity > 1)
+        {
         LOG(info) << "NCSG::polygonize DONE" 
                   << " verbosity " << m_verbosity 
                   << " treedir " << m_treedir
                   ; 
+        }
 
     }
     return m_tris ; 

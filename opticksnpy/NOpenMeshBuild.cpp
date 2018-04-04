@@ -187,6 +187,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
     int num_vert = (nu+1)*(nv+1)*ns ; 
 
     if(verbosity > 0)
+    {
     LOG(info) << "NOpenMeshBuild<T>::add_parametric_primitive"
               << " verbosity " << verbosity
               << " ns " << ns
@@ -196,6 +197,7 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
               << " cfg.epsilon " << cfg->epsilon
               << " ctrl " << ctrl 
               ;
+    } 
 
 
     VH* vh = new VH[num_vert] ;
@@ -411,7 +413,9 @@ void NOpenMeshBuild<T>::mark_faces(const nnode* other)
         mark_face( fh, other );
     }
     if(verbosity > 0)
+    {
     LOG(info) << "mark_faces " <<  desc_facemask() ;  
+    }
 }
  
 
@@ -580,7 +584,10 @@ void NOpenMeshBuild<T>::copy_faces(const NOpenMesh<T>* other, int facemask )
 template <typename T>
 void NOpenMeshBuild<T>::add_tripatch()
 {
-    if(verbosity > 1) LOG(info) << "add_tripatch" ; 
+    if(verbosity > 1) 
+    {
+       LOG(info) << "add_tripatch" ; 
+    }
 
     double pi = boost::math::constants::pi<double>() ;
     double sa[2],ca[2] ;
@@ -640,7 +647,10 @@ const char* NOpenMeshBuild<T>::TRIPATCH = R"LITERAL("
 template <typename T>
 void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 {
-    if(verbosity > 1) LOG(info) << "add_hexpatch" ; 
+    if(verbosity > 1)
+    {
+       LOG(info) << "add_hexpatch" ; 
+    }
  
     float s = 200.f ; 
     float z = 0.f ; 
@@ -762,7 +772,10 @@ const char* NOpenMeshBuild<T>::HEXPATCH = R"LITERAL("
 template <typename T>
 void NOpenMeshBuild<T>::add_tetrahedron()
 {
-    if(verbosity > 1) LOG(info) << "add_tetrahedron" ; 
+    if(verbosity > 1) 
+    {
+       LOG(info) << "add_tetrahedron" ; 
+    }
 
 
     /*
@@ -813,7 +826,10 @@ void NOpenMeshBuild<T>::add_tetrahedron()
 template <typename T>
 void NOpenMeshBuild<T>::add_cube()
 {
-    if(verbosity > 1) LOG(info) << "add_cube" ; 
+    if(verbosity > 1) 
+    {
+       LOG(info) << "add_cube" ; 
+    }
     /*
 
                  3-----------2
