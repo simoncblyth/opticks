@@ -64,12 +64,28 @@ Extrapolation:
 * highly likely that a new CUDA driver appropriate for 10.13.4(17E199) or a subsequent 
   build will arrive within a few days (early April) : so just hold out for that
 
+  * YEP: CUDA Driver 387.178, 04/02/2018
+
 Strategy:
 
-* following macOS point releases dont allow Mac App Store to update, hold back
+* following macOS point releases do not allow Mac App Store to update, hold back
   until the CUDA Driver comes out : which will inform you of which triptych 
-  to run with for the next month or so
+  to run with for the next month or so 
 
+* so this goes on every month or so, **dont update when Mac App Store suggests it**
+  wait until CUDA driver comes out 
+
+* when being cautious (eg when have working system) could update the EpsilonClone
+  on external SSD and do the Triptych update first on that, steps:
+
+  * update EpsilonClone with clone- or Superduper/CCC
+  * boot into the EpsilonClone and allow Mac App Store to update to the 
+    point release and build that has been annointed by NVIDIA
+  * update GPU driver
+  * update CUDA driver
+  * test CUDA/OptiX/Opticks on the external 
+
+   
 ::
 
 
@@ -90,7 +106,78 @@ Strategy:
 
     10.13.4 [2018 Mar 29, 10.13.4]
 
-       (17E199) 387.10.10.10.30.103
+       (17E199) 387.10.10.10.30.103   (## CUDA Driver 387.178, 04/02/2018  ##)
+
+
+NVIDIA GPU driver
+-------------------
+
+387.10.10.10.30.103 2018.4.2 10.13.4(17E199)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* https://images.nvidia.com/mac/pkg/387/WebDriver-387.10.10.10.30.103.pkg
+
+* http://us.download.nvidia.com/Mac/Quadro_Certified/387.10.10.10.30.103/WebDriver-387.10.10.10.30.103.pkg
+
+
+There is no working index on NVIDIAs site and third parties tend to 
+just give pkg links, so to find information pages 
+on mac nvidia display drivers:
+
+* :google:`387.10.10.10.30.103 site:www.nvidia.com`
+   
+* http://www.nvidia.com/download/driverResults.aspx/133514/en-us
+
+::
+
+    Version:	387.10.10.10.30.103
+    Release Date:	2018.4.2
+    Operating System:	macOS High Sierra 10.13.4
+    CUDA Toolkit:	9.1
+    Language:	English (US)
+    File Size:	60.95 MB
+
+
+    New in Release 387.10.10.10.30.103:
+    Graphics driver updated for macOS High Sierra 10.13.4 (17E199)
+    Contains performance improvements and bug fixes for a wide range of applications.
+    Includes NVIDIA Driver Manager preference pane.
+    Includes BETA support for iMac and MacBook Pro systems with NVIDIA graphics
+
+    BETA support is for 
+    iMac 14,2 / 14,3 (2013), 
+    iMac 13,1 / 13,2 (2012) and 
+    MacBook Pro 11,3 (2013), 
+    MacBook Pro 10,1 (2012), and 
+    MacBook Pro 9,1 (2012) users.
+
+
+
+
+List of CUDA Mac drivers
+---------------------------
+
+Mal-named link 
+
+* https://www.nvidia.com/object/mac-driver-archive.html
+
+::
+
+    http://www.nvidia.com/object/macosx-cuda-387.178-driver.html
+    CUDA Mac Driver 387.178 
+    CUDA driver update to support CUDA Toolkit 9.1, macOS 10.13.4 and NVIDIA display driver 378.10.10.10.30.103
+
+
+    01/25/2018 387.128
+    CUDA driver update to support CUDA Toolkit 9.1, macOS 10.13.3 and NVIDIA display driver 378.10.10.10.25.156
+    Supports all NVIDIA products available on Mac HW.
+    Note: Quadro FX for Mac or GeForce for Mac must be installed prior to CUDA 387.128 installation
+
+    12/08/2017 387.99
+    CUDA driver update to support CUDA Toolkit 9.0, macOS 10.13.2 and NVIDIA display driver 378.10.10.10.25.102 
+
+
+
 
 
 NVIDIA pages QUADRO & GEFORCE MACOS DRIVER RELEASE 
@@ -122,25 +209,6 @@ cuda mac 10.13
 * https://devtalk.nvidia.com/default/topic/1025945/cuda-setup-and-installation/mac-cuda-9-0-driver-fully-compatible-with-macos-high-sierra-10-13-error-quot-update-required-quot-solved-/
 
 * https://www.tonymacx86.com/threads/nvidia-releases-alternate-graphics-drivers-for-macos-high-sierra-10-13-3-387-10-10-10-25.243857/
-
-
-List of CUDA Mac drivers
----------------------------
-
-Mal-named link 
-
-* https://www.nvidia.com/object/mac-driver-archive.html
-
-::
-
-
-    01/25/2018 387.128
-    CUDA driver update to support CUDA Toolkit 9.1, macOS 10.13.3 and NVIDIA display driver 378.10.10.10.25.156
-    Supports all NVIDIA products available on Mac HW.
-    Note: Quadro FX for Mac or GeForce for Mac must be installed prior to CUDA 387.128 installation
-
-    12/08/2017 387.99
-    CUDA driver update to support CUDA Toolkit 9.0, macOS 10.13.2 and NVIDIA display driver 378.10.10.10.25.102 
 
 
 

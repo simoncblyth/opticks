@@ -880,7 +880,27 @@ cuda-writable-dir(){
     Darwin) echo /usr/local/epsilon/cuda ;;
   esac
 } 
-cuda-samples-dir(){  echo $(cuda-writable-dir)/NVIDIA_CUDA-$(cuda-version)_Samples ; }
+
+cuda-samples-name(){  echo NVIDIA_CUDA-$(cuda-version)_Samples ; }
+cuda-samples-place(){
+   local msg="=== $FUNCNAME :"
+   local name=$(cuda-samples-name)
+   local dir=$HOME/$name
+   [ ! -d "$dir" ] && echo $msg no dir $dir && return
+
+   local wrt=$(cuda-writable-dir)
+   mkdir -p $wrt 
+
+   local cmd="mv $dir $wrt/"
+   echo $msg cmd \"$cmd\"
+   local ans
+   read -p "$msg enter Y to proceed : "
+
+   [ "$ans" != "Y" ] && echo $msg skip && return
+   eval $cmd
+   
+}
+cuda-samples-dir(){  echo $(cuda-writable-dir)/$(cuda-samples-name) ; }
 cuda-samples-find(){ 
    find $(cuda-samples-dir) -type f -exec grep -${2:-l} ${1:-cuda_gl_interop.h} {} \;  
 }
