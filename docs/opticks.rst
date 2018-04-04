@@ -451,6 +451,12 @@ to is provided below:
     export PATH
 
 
+Opticks NumPy based Analysis
+--------------------------------
+
+Opticks uses the NumPy (NPY) buffer serialization format 
+for geometry and event data, thus analysis and debugging requires
+python and the ipython and numpy extensions.
 
 
 

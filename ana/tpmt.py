@@ -113,8 +113,20 @@ Material abbreviations:
 
 
 """
-import os, sys, logging, argparse, numpy as np
+from __future__ import print_function
+import os, sys, logging, argparse
 log = logging.getLogger(__name__)
+try:
+    import numpy as np
+except ImportError:
+    np = None
+pass
+
+if np == None:
+    print("no numpy early abort : so this does not cause SSysTest to fail ")
+    sys.exit(0)
+pass
+
 
 from opticks.ana.base import opticks_main
 from opticks.ana.nbase import vnorm
@@ -123,6 +135,10 @@ from opticks.ana.evt  import Evt
 
 
 if __name__ == '__main__':
+
+
+
+
     np.set_printoptions(precision=4, linewidth=200)
 
     args = opticks_main(doc=__doc__, tag="10", src="torch", det="PmtInBox", c2max=2.0, tagoffset=0)
@@ -153,14 +169,14 @@ if 0:
         #a0r = np.linalg.norm(a0[:,:2],2,1)
         a0r = vnorm(a0[:,:2])
         if len(a0r)>0:
-            print " ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max())))
+            print(" ".join(map(lambda _:"%6.3f" % _, (a0r.min(),a0r.max()))))
 
     if b.valid:
         b0 = b.rpost_(0)
         #b0r = np.linalg.norm(b0[:,:2],2,1)
         b0r = vnorm(b0[:,:2])
         if len(b0r)>0:
-            print " ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max())))
+            print(" ".join(map(lambda _:"%6.3f" % _, (b0r.min(),b0r.max()))))
 
 if 1:
 
