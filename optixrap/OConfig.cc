@@ -43,8 +43,17 @@ bool OConfig::DefaultWithTop()
        case 3090:  with_top = false ;break; 
        case 40000: with_top = true ;break;      
        case 40101: with_top = false ;break;      
+       case 50001: with_top = false ;break;      
        default: assert(0 && "unexpected OPTIX_VERSION") ;break;
     }
+/*
+   TODO: 
+      most OptiX version branching is done in okc-/OpticksBufferSpec.cc
+      via strings that are interpreted later : see if something similar
+      can be used for with_top ? In order to focus the OptiX version
+      branching into one place.
+*/
+
 
     if(version != 3080)
         LOG(warning) << "OConfig::DefaultWithTop"

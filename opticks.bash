@@ -349,6 +349,9 @@ opticks-bindir(){ echo $(opticks-prefix)/lib ; }   ## use lib for executables fo
 
 opticks-xdir(){   echo $(opticks-fold)/externals ; }  ## try putting externals above the build identity 
 
+opticks-installcachedir(){ echo $(opticks-fold)/installcache ; }
+
+
 opticks-c(){    cd $(opticks-dir) ; }
 opticks-cd(){   cd $(opticks-dir) ; }
 opticks-icd(){  cd $(opticks-idir); }
@@ -526,7 +529,8 @@ $FUNCNAME
       opticks-xdir     :   $(opticks-xdir)
       ## cd to these with opticks-scd/icd/bcd/xcd
 
-      opticks-bindir    :   $(opticks-bindir)
+      opticks-installcachedir   :  $(opticks-installcachedir)
+      opticks-bindir            :  $(opticks-bindir)
       opticks-optix-install-dir :  $(opticks-optix-install-dir)
 
 EOL
@@ -780,6 +784,25 @@ opticks-prepare-installcache()
     OpticksPrepareInstallCache  
 }
 
+opticks-check-installcache()
+{
+    local msg="=== $FUNCNAME :"
+    local rc=0
+    local iwd=$PWD
+    local dir=$(opticks-installcachedir)
+    if [ ! -d "$dir" ]; then
+        echo $msg missing dir $dir 
+        rc=100
+    else
+        cd $dir
+        [ ! -d "$dir/PTX" ] && echo $msg $PWD : missing PTX && rc=101
+        [ ! -d "$dir/RNG" ] && echo $msg $PWD : missing RNG && rc=102
+        [ ! -d "$dir/OKC" ] && echo $msg $PWD : missing OKC && rc=103
+    fi
+    cd $iwd
+    return $rc
+}
+
 
 opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
 opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
@@ -798,9 +821,14 @@ opticks-t-()
    # TODO:find a cross platform way of doing envvar setup 
    #
    #
-
-   local msg="$FUNCNAME : "
+   local msg="=== $FUNCNAME : "
    local iwd=$PWD
+
+   local rc=0
+   opticks-check-installcache 
+   rc=$?
+   [ "$rc" != "0" ] && echo $msg ABORT : missing installcache components : create with opticks-prepare-installcache && return $rc
+
 
    ## if 1st arg is a directory, cd there to run ctest     
    ## otherwise run from the top level bdir
