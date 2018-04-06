@@ -193,8 +193,17 @@ both the OptiX library and the CUDA runtime.
 If you cannot use the latest CUDA (because of kernel incompatibility) you will need to
 use an older OptiX version contemporary with the CUDA version that your kernel supports.
 
-The reason for the extremes of caution regarding version combinations is that 
-the interface to the GPU is via kernel extensions where if anything goes 
+Version combinations that have been used:
+
+current
+   CUDA 9.1, OptiX 5.0.1
+
+earlier
+   CUDA 7.0, OptiX 3.80
+
+
+The reason for the extremes of caution regarding version combinations of drivers 
+is that the interface to the GPU is via kernel extensions where if anything goes 
 wrong there is no safety net. A bad kernel extension will cause kernel panics, 
 your machine crashes and continue to crash until the bad driver is removed 
 (on macOS the removal can be done by resetting NVRAM).

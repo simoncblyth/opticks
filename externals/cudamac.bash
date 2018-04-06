@@ -19,8 +19,9 @@ CUDA Driver 387.178
 In System Prefs observe the prefpane says there us a newer 
 CUDA Driver 387.178 and that are currently on 387.128
 
-* huh : I though thats the one I installed (maybe because not yet rebooted?)
-
+* huh : I thought thats the one I installed (maybe because not yet rebooted?)
+* even after reboot stays the same
+  
 
 Current macOS builds installed
 --------------------------------
@@ -180,6 +181,7 @@ Mal-named link
 
     01/25/2018 387.128
     CUDA driver update to support CUDA Toolkit 9.1, macOS 10.13.3 and NVIDIA display driver 378.10.10.10.25.156
+ 
     Supports all NVIDIA products available on Mac HW.
     Note: Quadro FX for Mac or GeForce for Mac must be installed prior to CUDA 387.128 installation
 
