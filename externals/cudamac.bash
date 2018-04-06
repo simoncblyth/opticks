@@ -12,6 +12,16 @@ Guide
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html
 
 
+
+CUDA Driver 387.178
+----------------------
+
+In System Prefs observe the prefpane says there us a newer 
+CUDA Driver 387.178 and that are currently on 387.128
+
+* huh : I though thats the one I installed (maybe because not yet rebooted?)
+
+
 Current macOS builds installed
 --------------------------------
 

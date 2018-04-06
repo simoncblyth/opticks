@@ -56,16 +56,10 @@ Opticks installation requires:
 * recent cmake 2.8.9+
 * Boost C++ libraries 1.59+ 
 
-* installations of pre-requisites packages
+* installations of pre-requisites packages, see below for notes on versions
 
-  * NVIDIA OptiX 3.80
-  * NVIDIA CUDA 7.0 
-
-I advise those precise versions of OptiX and CUDA, if you use other versions 
-you become a developer rather than a user, please report your findings.
-The pre-requisite packages from NVIDIA need to be installed 
-following the instructions from NVIDIA. You will also need to 
-register as an NVIDIA developer.
+  * NVIDIA OptiX 
+  * NVIDIA CUDA 
 
 After meeting these requirements you can install Opticks and its
 external packages using a single command: *opticks-full* 
@@ -141,13 +135,21 @@ starting *boost-* that can get and install Boost locally.
     opticks-configure -DBOOST_ROOT=$(boost-prefix)
 
 
+Platform Support
+--------------------
+
+A recent Scientific Linux is the target platform for production running of Opticks, 
+but I am happy to try to help with installations on any Linux supported by CUDA.
+
+Most development has been done on macOS (late 2013 MacBook pro : the last Mac laptop with an NVIDIA GPU) 
+with occasional ports to keep thinks working on Scientific Linux.
+
+
 
 Opticks Pre-requisites : NVIDIA OptiX and NVIDIA CUDA 
 -----------------------------------------------------------
 
-
 OptiX requires your system to have a fairly recent NVIDIA GPU of CUDA compute capability 3.0 at least.
-However without such a GPU the OpenGL visualization should still work, using saved propagations. 
 
 To download OptiX you need to join the NVIDIA Developer Program.  
 Use the links in the table to register, it is free but may take a few days to be approved.
@@ -161,7 +163,78 @@ cuda                   cuda-            CUDA            https://developer.nvidia
 optix                  optix-           OptiX           https://developer.nvidia.com/optix
 =====================  ===============  =============   ==============================================================================
 
+CUDA installation guides:
 
+* http://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
+* http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html
+
+
+Opticks without an CUDA capable GPU ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+In the past an experimental port of Opticks onto a Windows machine without a CUDA capable GPU 
+was made. Using saved propagations it was possible to visualize optical photon propagations through a
+detector geometry using OpenGL.  
+
+Although this mode of operation is a low priority, it might be revived in future, for example
+allowing outreach demonstrations in schools without CUDA capable GPUs.
+
+
+Versions of CUDA and OptiX 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+I recommend you start your installation attempt with the lastest versions of OptiX
+together with the version of CUDA that it was built against, as stated in 
+the OptiX release notes. For example I am currently testing and seeing some success 
+with the latest OptiX 5.0.1, CUDA 9.1 on the almost latest build of macOS 10.13.4.
+This version pinning between CUDA and OptiX is because Opticks links against 
+both the OptiX library and the CUDA runtime.
+
+If you cannot use the latest CUDA (because of kernel incompatibility) you will need to
+use an older OptiX version contemporary with the CUDA version that your kernel supports.
+
+The reason for the extremes of caution regarding version combinations is that 
+the interface to the GPU is via kernel extensions where if anything goes 
+wrong there is no safety net. A bad kernel extension will cause kernel panics, 
+your machine crashes and continue to crash until the bad driver is removed 
+(on macOS the removal can be done by resetting NVRAM).
+ 
+Testing CUDA and OptiX Installs and nvcc toolchain
+-------------------------------------------------------
+
+Before trying to install Opticks check your CUDA and OptiX installs:
+
+1. run the precompiled CUDA and OptiX sample binaries
+2. compile the CUDA and OptiX samples
+3. run your compiled samples
+
+Testing Thrust
+----------------
+
+Thrust provides a higher level C++ template approach to using CUDA that is used extensively 
+by Opticks. The Thrust headers are installed by the CUDA toolkit installater, eg at `/usr/local/cuda/include/thrust`.
+You are recommended to try some of the Thrust examples to check your nvcc toolchain.
+
+* http://docs.nvidia.com/cuda/thrust/index.html
+* https://github.com/thrust/thrust/tree/master/examples
+
+
+Geant4
+---------
+
+As installing Geant4 takes a long time and considerable storage space it is not installed by *opticks-full*. 
+You can however intall Geant4 and XercesC with::
+
+   opticks-optionals-install    # which uses the xercesc- and g4- precursors 
+
+
+Geant4 Version
+~~~~~~~~~~~~~~~~~
+
+The *g4-* precursor selects a version of Geant4.  Currently a bit dated, this is intended to be brought uptodate soon.
+The coupling between Opticks and Geant4 is intended to be weak : so a range of 
+recent versions of Geant4 are intended to be supported.
+ 
 
 Building Opticks 
 ---------------------
@@ -463,8 +536,19 @@ python and the ipython and numpy extensions.
 Systems where Opticks has been Installed
 ------------------------------------------
 
-macOS : Xcode/clang toolchain
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+macOS 10.13.4 (17E199) High Sierra, Xcode 9.2  
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* macOS 10.13.4 (17E199) High Sierra 
+* Xcode 9.2 (actually on 9.3 but xcode-select back to 9.2) as required by nvcc (the CUDA compiler)
+* NVIDIA GPU Driver Version: 387.10.10.10.30.103  (aka Web Driver)
+* NVIDIA CUDA Driver : 387.178
+* NVIDIA CUDA 9.1
+* NVIDUA OptiX 5.0.1
+
+
+macOS 10.9.4 Mavericks : Xcode/clang toolchain
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * Primary development platfom : Mavericks 10.9.4 
 * NVIDIA Geforce GT 750M (mobile GPU) 

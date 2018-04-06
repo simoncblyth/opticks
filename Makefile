@@ -1,3 +1,4 @@
+# this Makefile is just for the Sphinx based documentation
 
 .PHONY: docs default
 
