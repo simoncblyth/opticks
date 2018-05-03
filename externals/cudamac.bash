@@ -12,6 +12,11 @@ Guide
 * http://docs.nvidia.com/cuda/cuda-installation-guide-mac-os-x/index.html
 
 
+eGPU 
+-----
+
+* https://github.com/marnovo/macOS-eGPU-CUDA-guide
+
 
 CUDA Driver 387.178
 ----------------------
