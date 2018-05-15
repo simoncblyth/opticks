@@ -4,6 +4,7 @@ issues
 
 .. toctree::
 
+    scintillation_integration_example
     dot_opticks_misuse
     csg_intersect_comparisons
     GScene_compareMeshes
