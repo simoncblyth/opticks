@@ -48,15 +48,26 @@ g4dev-libsuffix(){
 
 g4dev-tag(){   echo g4 ; }
 
-# nom identifier needs to match the name of the folder created by exploding the zip or tarball
-# unfortunamely this is not simply connected with the basename of the url
+
+g4dev-nom-notes(){ cat << EON
+
+The nom identifier needs to match the name of the folder created by exploding the zip or tarball, 
+unfortunamely this is not simply connected with the basename of the url and also Geant4 continues to 
+reposition URLs so these are liable to going stale.
+
+EON
+}
+
 #g4dev-nom(){ echo Geant4-10.2.1 ; }
-g4dev-nom(){ echo geant4-9.5.0 ; }
+#g4dev-nom(){ echo geant4-9.5.0 ; }
+g4dev-nom(){ echo geant4_10_04_p01 ; }
+
 
 g4dev-url(){   
    case $(g4dev-nom) in
        Geant4-10.2.1) echo http://geant4.cern.ch/support/source/geant4_10_02_p01.zip ;;
         geant4-9.5.0) echo https://github.com/Geant4/geant4/archive/v9.5.0.zip ;;
+        geant4_10_04_p01) echo http://geant4-data.web.cern.ch/geant4-data/releases/geant4_10_04_p01.zip  ;; 
    esac
 }
 
