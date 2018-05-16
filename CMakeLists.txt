@@ -12,6 +12,7 @@ project(${name})
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/Modules") 
 set(OptiX_INSTALL_DIR "/tmp"             CACHE PATH   "Path to OptiX installed location.")
 set(COMPUTE_CAPABILITY "0"               CACHE STRING "GPU Compute Capability eg one of 0,30,50,52 " )
+set(OPTICKS_VERSION "0.1.0" )
 
 set(SUPERBUILD ON)
 
@@ -20,10 +21,6 @@ include(CPack)
 add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(EnvBuildOptions)
-
-
-
-
 
 
 set(DUMP ON)
@@ -123,9 +120,11 @@ configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
 
 
 
-# generate opticks-config into lib dir
+# generate opticks-config sh script into lib dir
 include(OpticksConfigureConfigScript)
 
+# generate OpticksConfig.cmake info lib dir, supporing find_package(Opticks) with cmake -DOpticks_DIR=libdir argument
+include(OpticksConfigureCMakeHelpers)
 
 
 

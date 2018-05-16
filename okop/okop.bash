@@ -133,6 +133,11 @@ Familiar Issue
 Classes
 ---------
 
+
+
+OpMgr
+    .
+
 OpEngine
     Very high level control:: 
 
@@ -153,6 +158,21 @@ OpSeeder
     Seeding distributes genstep indices into the photon buffer
     according to the known number of photons generated for each genstep.
     This is accomplished entirely on the GPU using Thrust. 
+
+OpTracer
+    .
+
+OpPropagator
+    .
+
+OpEvt
+    Light weight wrapper for gensteps, principal method::
+
+        void addGenstep( float* data, unsigned num_float );
+        //
+        // an assertion pins num_float to be 4*6 = 24
+        // the layout of the gensteps must be coordinated between 
+        // CPU collection code in Geant4 context and GPU generation code   
 
 OpZeroer
     Scrubbing GPU buffers.

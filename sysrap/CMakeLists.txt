@@ -104,9 +104,23 @@ set(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES})
 target_link_libraries( ${name}  ${LIBRARIES} )
+#
+#install(TARGETS ${name} DESTINATION lib)
+#install(FILES ${HEADERS} DESTINATION include/${name})
 
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+
+install(TARGETS ${name}  EXPORT ${name}Targets 
+        LIBRARY DESTINATION lib 
+        INCLUDES DESTINATION include/${name}
+)
+install(FILES ${HEADERS}      DESTINATION include/${name})
+install(EXPORT ${name}Targets DESTINATION config NAMESPACE Opticks::)
+
+export(EXPORT ${name}Targets
+  FILE "config/${name}Targets.cmake"
+  NAMESPACE Opticks::
+)
+
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)

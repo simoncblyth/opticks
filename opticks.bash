@@ -1,6 +1,6 @@
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
 opticks-src(){      echo opticks.bash ; }
-opticks-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(opticks-src)} ; }
+opticks-source(){   echo $BASH_SOURCE ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-help(){ opticks-usage ; }
 opticks-usage(){   cat << \EOU
@@ -59,7 +59,9 @@ olocal-()
    echo -n # transitional standin for olocal-
 }
 
-opticks-home(){   echo ${OPTICKS_HOME:-$HOME/opticks} ; }  ## input from profile 
+opticks-home-default(){ echo $(dirname $(opticks-source)) ; }
+opticks-home(){   echo ${OPTICKS_HOME:-$(opticks-home-default)} ; }  ## input from profile 
+opticks-name(){   basename $(opticks-home) ; }
 
 
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
@@ -327,7 +329,7 @@ opticks-fold(){
        if [ -z "$LOCAL_BASE" ]; then 
           echo $(dirname $(dirname $(which OpticksTest$(opticks-suffix))))
        else
-          echo ${LOCAL_BASE}/opticks ;
+          echo ${LOCAL_BASE}/$(opticks-name) ;
        fi
    fi
 }
@@ -338,8 +340,6 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
 
-#opticks-bid(){    echo $(optix-vernum) ; }    ## build identity 
-#opticks-prefix(){ echo $(opticks-fold)/$(opticks-bid) ; }
 opticks-prefix(){ echo $(opticks-fold)  ; }
 
 opticks-dir(){    echo $(opticks-prefix) ; }
@@ -521,6 +521,8 @@ $FUNCNAME
 
       opticks-source   :   $(opticks-source)
       opticks-home     :   $(opticks-home)
+      opticks-name     :   $(opticks-name)
+
       opticks-fold     :   $(opticks-fold)
 
       opticks-sdir     :   $(opticks-sdir)
@@ -1387,4 +1389,14 @@ opticks-cls-()
 }
 
 
+opticks-cmake-vi-(){ cat << EOF
+CMakeLists.txt
+cmake/Modules/OpticksConfigureConfigScript.cmake
+cmake/Templates/opticks-config.in
+cmake/Modules/OpticksConfigureCMakeHelpers.cmake
+cmake/Templates/OpticksConfig.cmake.in
+EOF
+}
+
+opticks-cmake-vi(){ opticks-scd ; vi $(opticks-cmake-vi-) ; }
 

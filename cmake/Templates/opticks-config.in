@@ -67,13 +67,13 @@ cflags="@CMAKE_CXX_FLAGS@ @GEANT4_CXXSTD_FLAGS@"
 
 
 # - Includes and Libs
-for g4incdir in ${includedirs} ; do
-  cflags="${cflags} -I${g4incdir}"
+for incdir in ${includedirs} ; do
+  cflags="${cflags} -I${incdir}"
 done
 
 
 
-libs_nonviz_(){ cat << EOL
+libs_compute_(){ cat << EOL
 
 -lSysRap
 -lBoostRap
@@ -109,9 +109,12 @@ EOL
 }
 
 
+libs_noviz(){ echo "-L${libdir}" $(libs_compute_)  ; }
+libs(){       echo "-L${libdir}" $(libs_compute_)  $(libs_viz_)  ; }
+
+
+
 notes(){ 
-
-
 
 cat << EON
 
@@ -129,15 +132,6 @@ EON
 
 
 
-# - If we have any X11 based feature, then we need the INTY_XT define and
-# *may* need the X11 includes
-if test "x${geant4_uses_x11}" = "xyes" ; then
-  vis_cflags="-DG4INTY_USE_XT @G4_X11_CFLAGS@ ${vis_cflags}"
-fi
-
-
-
-
 help()
 {
   cat<<EOF
@@ -145,6 +139,9 @@ Usage: opticks-config [OPTION...]
   --prefix                output installation prefix of Opticks
   --version               output version for Opticks
   --libs                  output all linker flags
+  --libdir                output path to dir containing libs and executables
+  --incdir                output path to dir containing sub-folders of includes
+
   --cflags                output all preprocessor
                           and compiler flags
 
@@ -161,15 +158,36 @@ EOF
   exit 1
 }
 
-usage()
-{
-  cat<<EOF
-Usage: opticks-config [--prefix] [--version] [--libs] [--cflags] 
+usage(){ cat<<EOF
+Usage: opticks-config [--prefix] [--version] [--libs] [--cflags] [--libs-without-gui] [--cflags-without-gui] [--libdir] [--incdir]
 EOF
   exit 1
 }
 
+info(){ cat << EOI
 
+--prefix    : ${prefix}
+--version   : ${version}
+--libdir    : ${libdir}
+--incdir    : ${includedirs}
+
+--libs     
+    $(libs)
+
+--libs-without-gui 
+    $(libsnoviz)
+
+
+--cflags
+    ${cflags}
+
+--cflags-without-gui 
+    ${cflags-without-gui}
+
+
+
+EOI
+}
 
 
 if test $# -eq 0 ; then
@@ -196,15 +214,23 @@ while test $# -gt 0 ; do
       ;;
 
     --libs)
-      echo "-L${libdir}" $(libs_nonviz_)  $(libs_viz_) 
+      libs
+      ;;
+
+    --libs-without-gui)
+      libsnoviz
+      ;;
+
+    --libdir)
+      echo "${libdir}" 
+      ;;
+
+    --incdir)
+      echo "${includedirs}" 
       ;;
 
     --cflags)
       echo ${cflags}
-      ;;
-
-    --libs-without-gui)
-      echo "-L${libdir}" $(libs_nonviz_)
       ;;
 
     --cflags-without-gui)
@@ -225,6 +251,10 @@ while test $# -gt 0 ; do
 
     --notes)
       notes
+      ;;
+
+    --info)
+      info
       ;;
 
 

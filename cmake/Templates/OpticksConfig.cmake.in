@@ -1,0 +1,15 @@
+
+# https://cmake.org/cmake/help/v3.0/module/CMakePackageConfigHelpers.html
+
+
+set(Opticks_VERSION      "@OPTICKS_CONFIG_VERSION@")
+set(Opticks_LIBRARIES    "@OPTICKS_CONFIG_LIBRARIES@")
+set(Opticks_DEFINITIONS  "@OPTICKS_CONFIG_DEFINITIONS@")
+set(Opticks_PREFIX       "@OPTICKS_CONFIG_INSTALL_PREFIX@")
+set(Opticks_INCLUDE_DIRS "@OPTICKS_CONFIG_INCLUDE_DIRS@")
+set(Opticks_LIBDIR       "@OPTICKS_CONFIG_LIBDIR@")
+set(Opticks_INCDIR       "@OPTICKS_CONFIG_INCDIR@")
+
+
+
+

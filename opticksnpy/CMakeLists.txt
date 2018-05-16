@@ -27,11 +27,13 @@ find_package(YoctoGL)
 find_package(CSGBSP) 
 
 
-message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
+#message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
 #message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
+message("NPY.OpticksBoost_INCLUDE_DIRS:${OpticksBoost_INCLUDE_DIRS} ")
 
 
-set(INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}
+set(INCLUDE_DIRS  
+   ${CMAKE_CURRENT_SOURCE_DIR}
    ${OpticksBoost_INCLUDE_DIRS} 
    ${GLM_INCLUDE_DIRS} 
    ${PLog_INCLUDE_DIRS} 
@@ -39,6 +41,7 @@ set(INCLUDE_DIRS  ${CMAKE_CURRENT_SOURCE_DIR}
    ${BoostRap_INCLUDE_DIRS} 
    ${OpenMesh_INCLUDE_DIRS} 
 )
+
 
 set(DEFINITIONS 
    ${OpticksBoost_DEFINITIONS} 
@@ -49,43 +52,51 @@ set(DEFINITIONS
    ${OpenMesh_DEFINITIONS}
 )
 
-set(LIBRARIES
+set(PUBLIC_LIBRARIES
    ${OpticksBoost_LIBRARIES}
-   ${GLM_LIBRARIES}
    ${PLog_LIBRARIES} 
+   ${GLM_LIBRARIES}
    ${SysRap_LIBRARIES}
    ${BoostRap_LIBRARIES}
    ${OpenMesh_LIBRARIES}
 )
 
+set(PRIVATE_LIBRARIES
+)
+
+set(INTERFACE_LIBRARIES
+   ${GLM_LIBRARIES}
+)
+
+
 
 if(UNIX)
-   list(APPEND LIBRARIES ssl crypto)
+   list(APPEND PRIVATE_LIBRARIES ssl crypto)
 endif(UNIX)
 
 
 if(ImplicitMesher_FOUND)
    list(APPEND INCLUDE_DIRS ${ImplicitMesher_INCLUDE_DIRS})
    list(APPEND DEFINITIONS -DWITH_ImplicitMesher ${ImplicitMesher_DEFINITIONS} )
-   list(APPEND LIBRARIES ${ImplicitMesher_LIBRARIES})
+   list(APPEND PRIVATE_LIBRARIES ${ImplicitMesher_LIBRARIES})
 endif()
 
 if(DualContouringSample_FOUND)
    list(APPEND INCLUDE_DIRS ${DualContouringSample_INCLUDE_DIRS})
    list(APPEND DEFINITIONS -DWITH_DualContouringSample ${DualContouringSample_DEFINITIONS} )
-   list(APPEND LIBRARIES ${DualContouringSample_LIBRARIES})
+   list(APPEND PRIVATE_LIBRARIES ${DualContouringSample_LIBRARIES})
 endif()
 
 if(YoctoGL_FOUND)
    list(APPEND INCLUDE_DIRS ${YoctoGL_INCLUDE_DIRS})
    list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
-   list(APPEND LIBRARIES ${YoctoGL_LIBRARIES})
+   list(APPEND PRIVATE_LIBRARIES ${YoctoGL_LIBRARIES})
 endif()
 
 if(CSGBSP_FOUND)
    list(APPEND INCLUDE_DIRS ${CSGBSP_INCLUDE_DIRS})
    list(APPEND DEFINITIONS -DWITH_CSGBSP ${CSGBSP_DEFINITIONS})
-   list(APPEND LIBRARIES ${CSGBSP_LIBRARIES})
+   list(APPEND PRIVATE_LIBRARIES ${CSGBSP_LIBRARIES})
 endif()
 
 
@@ -259,6 +270,8 @@ NPY_HEAD.hh
 NPY_TAIL.hh
 NPY_API_EXPORT.hh
 NPY_LOG.hh
+NPY_FLAGS.hh
+NPart.h
 
 uif.h
 ucharfour.h
@@ -379,13 +392,64 @@ if(YoctoGL_FOUND)
 endif()
 
 
-include_directories( ${INCLUDE_DIRS} )
+#include_directories( ${INCLUDE_DIRS} )
 add_definitions( ${DEFINITIONS} )
 add_library( ${name}  SHARED ${SOURCES} )
-target_link_libraries( ${name} ${LIBRARIES} )
 
-install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+
+
+
+target_include_directories( ${name}
+              PUBLIC 
+                "$<BUILD_INTERFACE:${GLM_INCLUDE_DIRS}>"
+                "$<INSTALL_INTERFACE:${GLM_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${PLog_INCLUDE_DIRS}>"
+                "$<INSTALL_INTERFACE:${PLog_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${SysRap_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${OpticksBoost_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${BoostRap_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${OpenMesh_INCLUDE_DIRS}>"
+
+              PUBLIC
+                "$<BUILD_INTERFACE:${CSGBSP_INCLUDE_DIRS}>"
+
+
+              PRIVATE
+                 ${CMAKE_CURRENT_SOURCE_DIR} 
+                   
+)
+
+
+
+
+target_link_libraries( ${name} 
+              PUBLIC ${PUBLIC_LIBRARIES} 
+              PRIVATE ${PRIVATE_LIBRARIES} 
+              INTERFACE ${INTERFACE_LIBRARIES} 
+)
+
+install(TARGETS ${name}  EXPORT ${name}Targets 
+        LIBRARY DESTINATION lib 
+        INCLUDES DESTINATION include/${name}
+)
+install(FILES ${HEADERS}      DESTINATION include/${name})
+install(EXPORT ${name}Targets DESTINATION config NAMESPACE Opticks::)
+
+export(EXPORT ${name}Targets
+  FILE "config/${name}Targets.cmake"
+  NAMESPACE Opticks::
+)
+
 
 # with command :  c_enums_to_python.py NPart.h  > NPart_h.py 
 #add_custom_command(
@@ -397,5 +461,5 @@ install(FILES ${HEADERS} DESTINATION include/${name})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 

@@ -23,6 +23,7 @@ odcs-(){             . $(opticks-home)/externals/odcs.bash              && odcs-
 oyoctogl-(){         . $(opticks-home)/externals/oyoctogl.bash          && oyoctogl-env $* ; }
 ocsgbsp-(){          . $(opticks-home)/externals/ocsgbsp.bash           && ocsgbsp-env $* ; }
 oof-(){              . $(opticks-home)/externals/oof.bash               && oof-env $* ; }
+bcm-(){              . $(opticks-home)/externals/bcm.bash               && bcm-env $* ; }
 
 g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
 
