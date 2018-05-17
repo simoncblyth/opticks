@@ -35,6 +35,9 @@ endif()
 
 
 if(GLM_FOUND AND NOT TARGET Opticks::GLM)
+
+    # https://pabloariasal.github.io/2018/02/19/its-time-to-do-cmake-right/  
+    # see env- cmak-
     add_library(Opticks::GLM INTERFACE IMPORTED)
     set_target_properties(Opticks::GLM PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
