@@ -46,7 +46,9 @@ set(HEADERS
     PLOG_INIT.hh  
     SProc.hh
     SSys.hh
+    SSeq.hh
     SVec.hh
+    SMap.hh
     SDigest.hh
     SArrayDigest.hh
     SLauncher.hh
@@ -57,6 +59,8 @@ set(HEADERS
     SSortKV.hh
     SPairVec.hh
     OpticksCSG.h
+    PlainFormatter.hh
+    SAr.hh
 )
 
 

@@ -1,60 +1,19 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name BoostRap)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-if(UNIX AND NOT APPLE) 
-   set(Boost_USE_STATIC_LIBS 1)
-endif(UNIX AND NOT APPLE)
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
-find_package(OpticksBoost REQUIRED)
+find_package(BCM)
+include(BCMDeploy)
+
+find_package(Boost REQUIRED COMPONENTS system program_options filesystem regex )
 find_package(PLog REQUIRED)
 find_package(SysRap REQUIRED)
-
-set(LIBRARIES
-   ${OpticksBoost_LIBRARIES}
-   ${SysRap_LIBRARIES}
-   ${PLog_LIBRARIES}
-)
-
-
-if(UNIX) 
-   set(LIBRARIES ${LIBRARIES} ssl crypto)
-endif(UNIX)
-
-#message("${name}:LIBRARIES : ${LIBRARIES} ")
-#message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
-
-include_directories(
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}/inc
-
-   ${OpticksBoost_INCLUDE_DIRS} 
-   ${SysRap_INCLUDE_DIRS} 
-   ${PLog_INCLUDE_DIRS} 
-)
-
-
-add_definitions(
-   ${OpticksBoost_DEFINITIONS} 
-   ${SysRap_DEFINITIONS} 
-   ${PLog_DEFINITIONS} 
-)
-
-if(UNIX AND NOT APPLE) 
-add_definitions(
-   -DBOOST_LOG_DYN_LINK=1
-)
-endif(UNIX AND NOT APPLE)
-
-
-# generate define header for hardcoding in the library 
-set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
-configure_file( BOpticksResourceCMakeConfig.hh.in inc/BOpticksResourceCMakeConfig.hh )
-
 
 
 set(SOURCES
@@ -87,7 +46,6 @@ set(SOURCES
   BConverter.cc
   BLocSeq.cc
   BLocSeqDigest.cc
-
 ) 
 
 set(HEADERS
@@ -96,7 +54,6 @@ set(HEADERS
   BRAP_HEAD.hh
   BRAP_TAIL.hh
   BRAP_BODY.hh
-
 
   BBufSpec.hh 
   BDemo.hh 
@@ -119,9 +76,7 @@ set(HEADERS
   BConfig.hh
   BLocSeq.hh
   BLocSeqDigest.hh
-
 )
-
 
 set(TOXIC_SOURCES
   BLog.cc
@@ -132,8 +87,6 @@ set(TOXIC_HEADERS
   BLog.hh
 )
 
-
-
 # appends to flags for specific files : trying to quell warnings from underlying boost code
 if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BLog.cc      PROPERTIES COMPILE_FLAGS -Wno-sign-compare)
@@ -142,16 +95,40 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
 
+# generate define header for hardcoding in the library 
+set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
+configure_file( BOpticksResourceCMakeConfig.hh.in inc/BOpticksResourceCMakeConfig.hh )
+
+message(STATUS "CMAKE_CURRENT_SOURCE_DIR:${CMAKE_CURRENT_SOURCE_DIR}")
+message(STATUS "CMAKE_CURRENT_BINARY_DIR:${CMAKE_CURRENT_BINARY_DIR}")
+
 add_library( ${name}  SHARED ${SOURCES})
 
-target_link_libraries( ${name}  ${LIBRARIES} )
+target_include_directories( ${name} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
+)
 
+target_link_libraries( ${name} PUBLIC 
+   Opticks::PLog
+   Opticks::SysRap 
+   Boost::program_options
+   Boost::filesystem
+   Boost::regex
+)
+if(UNIX)
+target_link_libraries( ${name} PUBLIC ssl crypto )
+endif()
 
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+set(INCLUDE_DIRS
+   ${CMAKE_CURRENT_SOURCE_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}
+   ${CMAKE_CURRENT_BINARY_DIR}/inc
+) 
 
+bcm_deploy(TARGETS ${name} INCLUDE ${INCLUDE_DIRS} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
-
+#add_subdirectory(tests)
 
