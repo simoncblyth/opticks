@@ -1,17 +1,14 @@
 #!/bin/bash -l
 
+opticks-
 
 sdir=$(pwd)
-name=$(basename $sdir) 
-bdir=/tmp/$USER/$name/build 
+bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 
-rm   -rf $bdir
-mkdir -p $bdir 
-cd $bdir 
-pwd 
+rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-cmake -DOPTICKS_CONFIG_DIR=/usr/local/opticks/config $sdir 
+cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
 
 make
-make install   # installs executable to  /usr/local/lib/
+make install   
 

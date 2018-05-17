@@ -5,6 +5,10 @@ The examples have go.sh scripts which perform the normal
 config, make, install using a fresh build dir every time.
 This is a convenient when the focus is on the CMake machinery. 
 
+UsePLog
+    simple executable using PLog via imported interface target 
+    from cmake/Modules/FindPLog.cmake
+
  
 UseGLM
    (plain vanilla modern CMake with target import/export)
@@ -14,6 +18,7 @@ UseGLM
      (GLM is just headers) 
 
    * vending targets as of CMake 3.5 takes lots of boilerplate
+
 
 
 UseUseGLM
@@ -51,12 +56,15 @@ UseUseGLMViaBCM
 
 
 UseSysRap
-UseNPY
-    first attempts using raw inclusion of exported targets with 
+   now using import of targets exported by sysrap/CMakeLists.txt  
+
+
+UseNPY(needs-revisit)
+    old first attempt using raw inclusion of exported targets with 
     the non-standard approach of cmake -DOPTICKS_CONFIG_DIR=/usr/local/opticks/config
     rather than using the standard find_package mechanism 
 
-    * exporting was done in sysrap/CMakeLists.txt and opticksnpy/CMakeLists.txt
+    * exporting was done in opticksnpy/CMakeLists.txt
       BUT: this approach is jumping into the thicket of the dependency tree.  Better to 
       get experience out in the leaves, before tackling the interior of the bush.  
 

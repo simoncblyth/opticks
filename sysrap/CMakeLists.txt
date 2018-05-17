@@ -1,61 +1,18 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRap)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
+
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
+
+find_package(BCM)
+include(BCMDeploy)
+
 find_package(PLog REQUIRED)
 
-
-# https://stackoverflow.com/questions/35300833/cmake-get-output-of-some-command-every-build-and-reconfigure-files-that-depends
-
-#set(VERSIONING_FILES src/versioning.cmake SVersion.cc.in)
-#
-#find_program(HG hg DOC "Mercurial executable file")
-#
-#add_custom_target(versioning ALL COMMAND ${CMAKE_COMMAND} -E touch ${CMAKE_SOURCE_DIR}/SVersion.cpp.in
-#    SOURCES ${VERSIONING_FILES})
-#
-#add_custom_command(OUTPUT ${CMAKE_SOURCE_DIR}/src/version.cpp
-#    COMMAND ${CMAKE_COMMAND} -DVERSION_INPUT=${CMAKE_SOURCE_DIR}/src/version.cpp.in -DVERSION_OUTPUT=${CMAKE_SOURCE_DIR}/src/version.cpp -DHG=${HG} -P ${CMAKE_SOURCE_DIR}/src/versioning.cmake
-#    DEPENDS ${CMAKE_SOURCE_DIR}/src/version.cpp.in)
-#..
-#
-#if (HG)
-#    execute_process(COMMAND ${HG} id OUTPUT_VARIABLE REVISION OUTPUT_STRIP_TRAILING_WHITESPACE)
-#else ()
-#    set(REVISION "<undefined>")
-#endif ()
-#configure_file(${VERSION_INPUT} ${VERSION_OUTPUT})
-#execute_process(COMMAND ${CMAKE_COMMAND} -E touch ${VERSION_OUTPUT})    # invalidate output to force rebuild this source file even if it was not changed.
-#
-
-
-
-
-set(LIBRARIES
-   ${PLog_LIBRARIES}
-)
-
-if(UNIX) 
-   set(LIBRARIES ${LIBRARIES} ssl crypto)
-endif(UNIX)
-
-message("${name}:CMAKE_BINARY_DIR : ${CMAKE_BINARY_DIR} ")
-#message("${name}:CMAKE_CXX_FLAGS : ${CMAKE_CXX_FLAGS} ")
-#message("${name}:LIBRARIES : ${LIBRARIES} ")
-#message("${name}:PLog_INCLUDE_DIRS : ${PLog_INCLUDE_DIRS} ")
-
-include_directories(
-   ${CMAKE_BINARY_DIR}/inc         # top level inc for OpticksCMakeConfig.hh 
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}
-   ${PLog_INCLUDE_DIRS} 
-)
-
-add_definitions(
-    ${PLog_DEFINITIONS} 
-)
 
 set(SOURCES
     SYSRAP_LOG.cc 
@@ -102,27 +59,21 @@ set(HEADERS
     OpticksCSG.h
 )
 
+
 add_library( ${name}  SHARED ${SOURCES})
-target_link_libraries( ${name}  ${LIBRARIES} )
-#
-#install(TARGETS ${name} DESTINATION lib)
-#install(FILES ${HEADERS} DESTINATION include/${name})
+
+target_link_libraries( ${name} PUBLIC Opticks::PLog )
+if(UNIX)
+target_link_libraries( ${name} PUBLIC ssl crypto )
+endif()
 
 
-install(TARGETS ${name}  EXPORT ${name}Targets 
-        LIBRARY DESTINATION lib 
-        INCLUDES DESTINATION include/${name}
-)
-install(FILES ${HEADERS}      DESTINATION include/${name})
-install(EXPORT ${name}Targets DESTINATION config NAMESPACE Opticks::)
+bcm_deploy(TARGETS ${name} INCLUDE include NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
-export(EXPORT ${name}Targets
-  FILE "config/${name}Targets.cmake"
-  NAMESPACE Opticks::
-)
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 
 
