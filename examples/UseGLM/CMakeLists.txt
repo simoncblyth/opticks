@@ -7,17 +7,9 @@ set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 find_package(GLM REQUIRED)
 
+set(HEADERS  ${name}.hh )
 
-set(SOURCES 
-${name}.cc
-)
-
-set(HEADERS
-${name}.hh
-)
-
-
-add_library(${name} SHARED ${SOURCES})
+add_library(${name} SHARED ${name}.cc)
 
 target_include_directories( ${name}  
     PUBLIC 
@@ -26,11 +18,9 @@ target_include_directories( ${name}
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-
 target_link_libraries( ${name}   
     PUBLIC
-        GLM::GLM
+        Opticks::GLM
 )
 
 install(TARGETS ${name}      
@@ -42,7 +32,7 @@ install(TARGETS ${name}
 
 install(EXPORT ${name}ConfigTargets
           FILE ${name}ConfigTargets.cmake
-   NAMESPACE UseGLM::
+   NAMESPACE Opticks::
    DESTINATION lib/cmake/${name}
 )
 
@@ -79,9 +69,7 @@ install(FILES
 )
 
 
-
 add_executable(Test${name}  Test${name}.cc)
 target_link_libraries( Test${name} PUBLIC ${name})
 install(TARGETS Test${name}  DESTINATION lib)
-
 

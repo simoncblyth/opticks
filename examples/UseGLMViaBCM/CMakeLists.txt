@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.5)
 set(name UseGLMViaBCM)
 project(${name})
 
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
+
 find_package(BCM)
 include(BCMDeploy)
 include(BCMSetupVersion)
@@ -10,14 +13,15 @@ bcm_setup_version(VERSION 0.1.0 GENERATE_HEADER ${name}Version.hh)
 
 find_package(GLM REQUIRED)
 
-set(SOURCES
-   ${name}.cc
-)
-add_library(${name} SHARED ${SOURCES})
+add_library(${name} SHARED ${name}.cc)
 
-target_link_libraries( ${name} PUBLIC
-    GLM::GLM
-)
+set(HEADERS ${name}.hh)
 
-bcm_deploy(TARGETS ${name} INCLUDE include)
+target_link_libraries(${name} PUBLIC Opticks::GLM )
+
+bcm_deploy(TARGETS ${name} INCLUDE include NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
+
 

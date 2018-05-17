@@ -34,9 +34,9 @@ set(GLM_FOUND "NO")
 endif()
 
 
-if(GLM_FOUND AND NOT TARGET GLM::GLM)
-    add_library(GLM::GLM INTERFACE IMPORTED)
-    set_target_properties(GLM::GLM PROPERTIES
+if(GLM_FOUND AND NOT TARGET Opticks::GLM)
+    add_library(Opticks::GLM INTERFACE IMPORTED)
+    set_target_properties(Opticks::GLM PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
     )
 endif()
