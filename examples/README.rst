@@ -95,6 +95,9 @@ UseUseBoost
 UseBoostRap
    testing dependency isolation of BoostRap 
 
+UseOpenMesh
+   check consumption of BCM exported targets done by cmake/Modules/FindOpenMesh.cmake
+
 
 UseNPY(needs-revisit)
     old first attempt using raw inclusion of exported targets with 

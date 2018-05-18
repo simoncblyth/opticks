@@ -15,7 +15,6 @@ find_package(OpenMesh REQUIRED)
 
 message("NPY.OpenMesh_LIBRARIES :${OpenMesh_LIBRARIES} ")
 
-
 #find_package(NonExisting) 
 #message("NPY.NonExisting_FOUND       :${NonExisting_FOUND} ")
 #message("NPY.NonExisting_INCLUDE_DIRS:${NonExisting_INCLUDE_DIRS} ")
