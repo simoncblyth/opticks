@@ -28,7 +28,7 @@ find_package(CSGBSP)
 
 #message("NPY.CSGBSP_INCLUDE_DIRS:${CSGBSP_INCLUDE_DIRS} ")
 #message("NPY.YoctoGL_INCLUDE_DIRS:${YoctoGL_INCLUDE_DIRS} ")
-message("NPY.OpticksBoost_INCLUDE_DIRS:${OpticksBoost_INCLUDE_DIRS} ")
+#message("NPY.OpticksBoost_INCLUDE_DIRS:${OpticksBoost_INCLUDE_DIRS} ")
 
 
 set(INCLUDE_DIRS  
