@@ -12,7 +12,7 @@ message(STATUS "BoostRap_DIR : ${BoostRap_DIR} ")
 
 add_executable(${name} ${name}.cc)
 
-target_link_libraries(${name} Opticks::BoostRap)
+target_link_libraries(${name} PUBLIC Opticks::BoostRap)
 
 install(TARGETS ${name}  DESTINATION lib)
 

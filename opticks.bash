@@ -63,6 +63,16 @@ opticks-home-default(){ echo $(dirname $(opticks-source)) ; }
 opticks-home(){   echo ${OPTICKS_HOME:-$(opticks-home-default)} ; }  ## input from profile 
 opticks-name(){   basename $(opticks-home) ; }
 
+opticks-id(){ cat << EOI
+
+  opticks-home   : $(opticks-home)
+  opticks-prefix : $(opticks-prefix)
+  opticks-name   : $(opticks-name)
+
+EOI
+}
+
+
 
 opticks-pretty(){  cat ${1:-some.json} | python -m json.tool ; }
 

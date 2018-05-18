@@ -54,9 +54,40 @@ UseUseGLMViaBCM
     
    * similar observations to UseUseGLM
 
-
 UseSysRap
-   now using import of targets exported by sysrap/CMakeLists.txt  
+   vends a library that uses the SysRap target exported by sysrap/CMakeLists.txt  
+
+UseUseSysRap
+   uses the UseSysRap exported library, succeeds to auto-find the dependencies (SysRap)
+   of its direct dependent UseSysRap 
+
+UseBoost 
+   Attempt to vend a library target that uses Boost::filesystem::
+ 
+       16 find_package(Boost REQUIRED COMPONENTS filesystem)
+       17 
+       18 ## kludge that tees up arguments to find_dependency in generated export useboost-config.cmake 
+       19 ## so downstream will automatically do the above find_package 
+       20 set_target_properties(Boost::filesystem PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS filesystem")
+
+
+UseUseBoost
+   attempt to use the lib target exported from UseBoost, initially failed to auto hookup  
+   the non-direct Boost::filesystem dependent, because useboost-config.cmake had::
+
+       include(CMakeFindDependencyMacro)
+       # Library: Boost::filesystem
+       find_dependency(Boost) 
+       include("${CMAKE_CURRENT_LIST_DIR}/useboost-targets.cmake")
+       include("${CMAKE_CURRENT_LIST_DIR}/properties-useboost-targets.cmake")
+
+   Suspect problem is that the non-BCM exported targets lack some needed metadata ? YEP, BCM 
+   relies on setting target properties in bcm_deploy that get read on generating the exported target
+   serialization.  Kludge fix is to misuse that property as shown above, so that the imported target
+   automatically does the necessary::
+
+        find_dependency(Boost REQUIRED COMPONENTS filesystem)  
+        # this works with cmake_minimum_version set to 3.5 with cmake 3.11 
 
 
 UseNPY(needs-revisit)

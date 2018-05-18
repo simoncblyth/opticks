@@ -1,9 +1,11 @@
 #include <iostream>
 #include "SSys.hh"
 
-int main(int argc, char** argv)
+
+void UseSysRap(const char* msg)
 {
     SSys::Dump("UseSysRap");
-
-    return 0 ; 
 }
+
+
+

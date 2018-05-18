@@ -46,6 +46,9 @@ endfunction()
 
 
 
+
+
+
 function(echo_target_std tgt)
 
     set(props
@@ -70,5 +73,19 @@ endfunction()
 
 
 
+
+
+function(echo_pfx_var pfx var)
+   set(key ${pfx}_${var})
+   set(val ${${key}})
+   message( " key='${key}' val='${val}' " )
+endfunction()
+
+function(echo_pfx_vars pfx vars)
+  foreach(v ${vars})
+    echo_pfx_var("${pfx}" "${v}")
+  endforeach()
+  message("")
+endfunction()
 
 
