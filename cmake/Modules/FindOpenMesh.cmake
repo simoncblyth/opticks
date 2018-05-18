@@ -49,7 +49,6 @@ message(STATUS "FindOpenMesh.cmake OpenMeshTools_LIBRARY:${OpenMeshTools_LIBRARY
 message(STATUS "FindOpenMesh.cmake OpenMesh_FOUND:${OpenMesh_FOUND}  ")
 
 
-
 if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
 
     add_library(Opticks::OpenMeshCore UNKNOWN IMPORTED) 

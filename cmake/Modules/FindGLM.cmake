@@ -22,22 +22,23 @@ find_path(
 )
 
 
-message(STATUS "CMAKE_INSTALL_PREFIX : ${CMAKE_INSTALL_PREFIX} ")
-message(STATUS "GLM_INCLUDE_DIR      : ${GLM_INCLUDE_DIR} ")
+
 
 if(GLM_INCLUDE_DIR)
-message(STATUS "FOUND")
 set(GLM_FOUND "YES")
 else()
-message(STATUS "not-FOUND")
 set(GLM_FOUND "NO")
 endif()
 
 
-if(GLM_FOUND AND NOT TARGET Opticks::GLM)
 
-    # https://pabloariasal.github.io/2018/02/19/its-time-to-do-cmake-right/  
-    # see env- cmak-
+if(GLM_DEBUG)
+message(STATUS "CMAKE_INSTALL_PREFIX : ${CMAKE_INSTALL_PREFIX} ")
+message(STATUS "GLM_INCLUDE_DIR      : ${GLM_INCLUDE_DIR} ")
+message(STATUS "GLM_FOUND            : ${GLM_FOUND}")
+endif()
+
+if(GLM_FOUND AND NOT TARGET Opticks::GLM)
     add_library(Opticks::GLM INTERFACE IMPORTED)
     set_target_properties(Opticks::GLM PROPERTIES
         INTERFACE_INCLUDE_DIRECTORIES "${GLM_INCLUDE_DIR}"
