@@ -93,7 +93,7 @@ EOU
 
 oimplicitmesher-edit(){ vi $(opticks-home)/cmake/Modules/FindImplicitMesher.cmake ; }
 
-oimplicitmesher-url-http(){ echo https://bitbucket.com/simoncblyth/implicitmesher ; }
+oimplicitmesher-url-http(){ echo https://bitbucket.com/simoncblyth/ImplicitMesher ; }
 oimplicitmesher-url-ssh(){  echo ssh://hg@bitbucket.org/simoncblyth/ImplicitMesher ; }
 oimplicitmesher-url(){
    case $USER in 
@@ -104,8 +104,8 @@ oimplicitmesher-url(){
 
 
 
-oimplicitmesher-dir(){  echo $(opticks-prefix)/externals/implicitmesher/implicitmesher ; }
-oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/implicitmesher/implicitmesher.build ; }
+oimplicitmesher-dir(){  echo $(opticks-prefix)/externals/ImplicitMesher/ImplicitMesher ; }
+oimplicitmesher-bdir(){ echo $(opticks-prefix)/externals/ImplicitMesher/ImplicitMesher.build ; }
 
 
 
