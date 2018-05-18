@@ -20,7 +20,6 @@ UseGLM
    * vending targets as of CMake 3.5 takes lots of boilerplate
 
 
-
 UseUseGLM
    (plain vanilla modern CMake)
 
@@ -61,6 +60,9 @@ UseUseSysRap
    uses the UseSysRap exported library, succeeds to auto-find the dependencies (SysRap)
    of its direct dependent UseSysRap 
 
+UseOpticksBoost
+   no longer operational exercise for the old variable-centric approach to Boost hookup 
+
 UseBoost 
    Attempt to vend a library target that uses Boost::filesystem::
  
@@ -88,6 +90,10 @@ UseUseBoost
 
         find_dependency(Boost REQUIRED COMPONENTS filesystem)  
         # this works with cmake_minimum_version set to 3.5 with cmake 3.11 
+
+
+UseBoostRap
+   testing dependency isolation of BoostRap 
 
 
 UseNPY(needs-revisit)

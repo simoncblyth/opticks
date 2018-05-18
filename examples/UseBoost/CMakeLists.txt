@@ -1,11 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-
 set(name UseBoost)
-
 project(${name} VERSION 0.1.0)
-
-set(Boost_DEBUG ON)
-#set(Boost_NO_BOOST_CMAKE ON)
 
 include(GNUInstallDirs)
 set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
@@ -14,6 +9,8 @@ find_package(BCM)
 include(BCMDeploy)
 include(EchoTarget)
 
+set(Boost_DEBUG ON)
+set(Boost_NO_BOOST_CMAKE ON)
 find_package(Boost REQUIRED COMPONENTS filesystem)   
 
 ## kludge that tees up arguments to find_dependency in generated export useboost-config.cmake 

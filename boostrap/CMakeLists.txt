@@ -11,7 +11,18 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-find_package(Boost REQUIRED COMPONENTS system program_options filesystem regex )
+#set(Boost_DEBUG ON)
+#set(Boost_NO_BOOST_CMAKE ON)
+set(COMPONENTS system program_options filesystem regex )
+find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
+set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
+
+## Above target_properties kludge tees up arguments to find_dependency in BCM generated export 
+## useboost-config.cmake so downstream targets will automatically do the required find_dependency, 
+## see examples/UseBoost examples/UseUseBoost for development of this kludge
+##
+## NB INTERFACE_FIND_PACKAGE_NAME is a BCM defined property, not a standard one, see bcm-
+
 find_package(PLog REQUIRED)
 find_package(SysRap REQUIRED)
 
@@ -111,6 +122,7 @@ target_include_directories( ${name} PUBLIC
 target_link_libraries( ${name} PUBLIC 
    Opticks::PLog
    Opticks::SysRap 
+   Boost::system
    Boost::program_options
    Boost::filesystem
    Boost::regex

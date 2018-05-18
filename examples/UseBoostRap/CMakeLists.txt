@@ -1,7 +1,5 @@
-cmake_minimum_required(VERSION 3.1 FATAL_ERROR)
-
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseBoostRap)
-
 project(${name})
 
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
