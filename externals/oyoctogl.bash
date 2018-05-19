@@ -254,6 +254,13 @@ oyoctogl--()
 {
    oyoctogl-get
    oyoctogl-cmake
+   oyoctogl-make all
+
+   if [ "$(uname)" == "Darwin" ]; then
+       echo sleeping for 2s : see and env/tools/cmak.bash and https://gitlab.kitware.com/cmake/cmake/issues/16155
+       sleep 2   
+   fi 
+
    oyoctogl-make install
 }
 
