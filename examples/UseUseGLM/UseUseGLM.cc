@@ -1,6 +1,6 @@
 
 #include <iostream>
-#include "UseGLMViaBCM.hh"
+#include "UseGLM.hh"
 
 #include <glm/gtx/string_cast.hpp>
 

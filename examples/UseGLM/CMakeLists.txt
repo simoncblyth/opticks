@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-set(name UseGLMViaBCM)
+set(name UseGLM)
 project(${name})
 
 include(GNUInstallDirs)

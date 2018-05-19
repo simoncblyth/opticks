@@ -1,9 +1,0 @@
--- Up-to-date: /usr/local/opticks-cmake-overhaul/include
--- Installing: /usr/local/opticks-cmake-overhaul/include/UseGLMViaBCM.hh
--- Installing: /usr/local/opticks-cmake-overhaul/lib/libUseGLMViaBCM.dylib
--- Installing: /usr/local/opticks-cmake-overhaul/lib/pkgconfig/useglmviabcm.pc
--- Installing: /usr/local/opticks-cmake-overhaul/lib/cmake/useglmviabcm/properties-useglmviabcm-targets.cmake
--- Installing: /usr/local/opticks-cmake-overhaul/lib/cmake/useglmviabcm/useglmviabcm-targets.cmake
--- Installing: /usr/local/opticks-cmake-overhaul/lib/cmake/useglmviabcm/useglmviabcm-targets-debug.cmake
--- Installing: /usr/local/opticks-cmake-overhaul/lib/cmake/useglmviabcm/useglmviabcm-config.cmake
--- Installing: /usr/local/opticks-cmake-overhaul/lib/cmake/useglmviabcm/useglmviabcm-config-version.cmake
