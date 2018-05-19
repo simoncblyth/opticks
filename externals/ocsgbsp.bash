@@ -159,25 +159,14 @@ Private
     580     return csgjs_operation(a, b, csg_union);
     581 }
 
-
-
-
-
-
-
-
-
-
 EOU
 }
 
-ocsgbsp-edit(){ vi $(opticks-home)/cmake/Modules/FindCSGBSP.cmake ; }
+#ocsgbsp-edit(){ vi $(opticks-home)/cmake/Modules/FindCSGBSP.cmake ; }
 
 ocsgbsp-url(){  echo https://github.com/simoncblyth/csgjs-cpp ; }
 ocsgbsp-dir(){  echo $(opticks-prefix)/externals/csgbsp/csgjs-cpp ; }
 ocsgbsp-bdir(){ echo $(opticks-prefix)/externals/csgbsp/csgjs-cpp.build ; }
-
-#ocsgbsp-prefix(){ echo $(opticks-prefix)/externals ; }
 
 ocsgbsp-cd(){  cd $(ocsgbsp-dir); }
 ocsgbsp-bcd(){ cd $(ocsgbsp-bdir) ; }
@@ -189,8 +178,47 @@ ocsgbsp-get(){
    cd $iwd
 }
 
+ocsgbsp-cmake()
+{
+    local iwd=$PWD
+    local bdir=$(ocsgbsp-bdir)
+    local sdir=$(ocsgbsp-dir)
+
+    mkdir -p $bdir
+    rm -f "$bdir/CMakeCache.txt"
+
+    ocsgbsp-bcd   
+    opticks-
+
+    cmake \
+       -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
+       -DCMAKE_BUILD_TYPE=Debug \
+       -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+       $* \
+       $sdir
+
+    cd $iwd
+}
+
+ocsgbsp-make()
+{
+    local iwd=$PWD
+    ocsgbsp-bcd
+    cmake --build . --config Debug --target ${1:-install}
+    cd $iwd
+}
+
 ocsgbsp--()
 {
    ocsgbsp-get
+   ocsgbsp-cmake
+   ocsgbsp-make all
+
+   #if [ "$(uname)" == "Darwin" ]; then
+   #    echo sleeping for 2s : see and env/tools/cmak.bash and https://gitlab.kitware.com/cmake/cmake/issues/16155
+   #    sleep 2   
+   #fi  
+   
+   ocsgbsp-make install
 }
 

@@ -6,7 +6,7 @@
 #include "NCSGBSP.hpp"
 
 // ocsgbsp- external 
-#include "csgjs.cpp"    
+#include "csgjs.hh"    
 
 csgjs_csgnode* NCSGBSP::ConvertToBSP( const NTriSource* tris)
 {
