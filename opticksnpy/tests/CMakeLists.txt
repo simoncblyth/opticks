@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name NPYTest)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 
 set(_TESTS_FAILING_TO_INVESTIGATE_WHEN_IN_CONTEXT
@@ -228,8 +228,8 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
        set_property(TEST ${testname} PROPERTY ENVIRONMENT ${PATH_STRING})
     endif(WIN32)
 
-    add_dependencies(check ${TGT})
-    target_link_libraries(${TGT} ${LIBRARIES} NPY) 
+    #add_dependencies(check ${TGT})
+    target_link_libraries(${TGT} NPY) 
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

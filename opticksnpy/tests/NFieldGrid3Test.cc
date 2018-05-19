@@ -7,7 +7,8 @@
 #include "NGrid3.hpp"
 #include "NFieldGrid3.hpp"
 
-#include "DualContouringSample/FGLite.h"
+//#include "DualContouringSample/FGLite.h"
+#include "FGLite.h"
 
 
 #include "NPY_LOG.hh"

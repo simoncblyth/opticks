@@ -3,12 +3,19 @@
 opticks-
 
 sdir=$(pwd)
-bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+name=$(basename $sdir)
+#bdir=/tmp/$USER/opticks/$name/build 
+bdir=$(opticks-prefix)/build/$name
 
-rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
+#rm -rf $bdir 
+mkdir -p $bdir && cd $bdir && pwd 
 
-cmake $sdir -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
+cmake $sdir \
+    -DCMAKE_BUILD_TYPE=Debug \
+    -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+    -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
 
 make
 make install   
+
 

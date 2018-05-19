@@ -80,11 +80,14 @@ set(HEADERS
   BBit.hh
   BFile.hh
   BRegex.hh
+  BRegex.hpp
   BEnv.hh
   BOpticksResource.hh
   BDynamicDefine.hh
   BOpticksEvent.hh
   BConfig.hh
+  BBnd.hh
+  BRng.hh
   BLocSeq.hh
   BLocSeqDigest.hh
 )
