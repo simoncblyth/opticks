@@ -119,12 +119,12 @@ message("top.OXRAP_OPTIX_VERSION ${OXRAP_OPTIX_VERSION} ")
 configure_file(OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh)
 
 
-
 # generate opticks-config sh script into lib dir
 include(OpticksConfigureConfigScript)
 
-# generate OpticksConfig.cmake info lib dir, supporing find_package(Opticks) with cmake -DOpticks_DIR=libdir argument
-include(OpticksConfigureCMakeHelpers)
 
+# generate OpticksConfig.cmake info lib dir, supporing find_package(Opticks) with cmake -DOpticks_DIR=libdir argument
+# primordial approach that never matured, prior to seeing the light of target-based CMake and finding BCM 
+#include(OpticksConfigureCMakeHelpers)
 
 

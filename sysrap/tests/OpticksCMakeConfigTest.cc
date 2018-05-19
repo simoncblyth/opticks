@@ -1,3 +1,7 @@
+// OpticksCMakeConfig.hh header is generated at configure time
+// based on parsing of OptiX and Geant4 headers if they are 
+// found.  See oxrap/CMakeLists.txt cfg4/CMakeLists.txt CMakeLists.txt
+//
 #include "OpticksCMakeConfig.hh"
 #include "PLOG.hh"
 

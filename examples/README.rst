@@ -10,7 +10,7 @@ UsePLog
     from cmake/Modules/FindPLog.cmake
 
  
-UseGLM
+UseGLMRaw
    (plain vanilla modern CMake with target import/export)
 
    * find_package(GLM) succeeds due to cmake/Modules/FindGLM.cmake which 

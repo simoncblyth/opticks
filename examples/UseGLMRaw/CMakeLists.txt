@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0)
-set(name UseGLM)
+set(name UseGLMRaw)
 project(${name} VERSION 0.1.0)
 
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)

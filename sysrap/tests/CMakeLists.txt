@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name SysRapTest)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
 
@@ -18,7 +18,6 @@ set(TEST_SOURCES
    SSortKVTest.cc
    SPairVecTest.cc
    SDigestTest.cc
-   OpticksCMakeConfigTest.cc
    PLogTest.cc 
    PLOG_Test.cc 
    SYSRAP_LOG_Test.cc 
@@ -33,6 +32,7 @@ set(TEST_SOURCES
 
 set(_TEST_SOURCES
    UnwindTest.cc
+   OpticksCMakeConfigTest.cc
 )
 
 
@@ -53,30 +53,23 @@ foreach(SRC ${TEST_SOURCES})
     add_executable(${TGT} ${SRC})
 
     add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
+    #add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} SysRap)
+    target_link_libraries(${TGT} SysRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
 
-foreach(SRC ${OBJC_TEST_SOURCES})
-    get_filename_component(TGT ${SRC} NAME_WE)
-    add_executable(${TGT} ${SRC})
-
-    add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
-
-    target_link_libraries(${TGT} ${LIBRARIES} "-framework Foundation")
-    install(TARGETS ${TGT} DESTINATION lib)
-endforeach()
-
-
-
-
-
-
-
+#foreach(SRC ${OBJC_TEST_SOURCES})
+#    get_filename_component(TGT ${SRC} NAME_WE)
+#    add_executable(${TGT} ${SRC})
+#
+#    add_test(${name}.${TGT} ${TGT})
+#    #add_dependencies(check ${TGT})
+#
+#    target_link_libraries(${TGT} ${LIBRARIES} "-framework Foundation")
+#    install(TARGETS ${TGT} DESTINATION lib)
+#endforeach()
 
 
 

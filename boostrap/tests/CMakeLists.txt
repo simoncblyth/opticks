@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name BoostRapTest)
-project(${name})
-
-#file(GLOB TEST_CC_SRCS "B*Test.cc")
+project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
 
@@ -35,28 +33,22 @@ set(TEST_SOURCES
    boost_random_minimal_Test.cc
 
    BConverterTest.cc 
-
 )
-
 
 # BTimeTest.cc requires boost components : thread timer 
-set(TEST_SOURCES_NOT
-
+set(_TEST_SOURCES
    BTimeTest.cc
    boost_random_Test.cc
-
 )
-
 
 foreach(SRC ${TEST_SOURCES})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
 
     add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
+    #add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} BoostRap)
+    target_link_libraries(${TGT} BoostRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
-
 
