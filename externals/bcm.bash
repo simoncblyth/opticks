@@ -19,11 +19,6 @@ But it seems development has moved to
 
 * https://github.com/BoostCMake/bcm
 
-
-
-
-
-
 Docs:
 
 * https://readthedocs.org/projects/bcm/
@@ -43,7 +38,6 @@ Discussion by the author : Paul Fultz II
 * https://github.com/pfultz2/cget
 * http://pfultz2.com/blog/
 * http://cget.readthedocs.io/en/latest/src/intro.html
-
 
 
 How close is BCM to being endorsed by Boost ? Unclear 
@@ -72,6 +66,12 @@ bcm_auto_export
 ----------------
 
 * https://github.com/boost-cmake/bcm/blob/master/share/bcm/cmake/BCMExport.cmake
+
+
+Analysing project dependencies
+-------------------------------
+
+
 
 FUNCTIONS
 -----------

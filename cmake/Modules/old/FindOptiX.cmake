@@ -1,22 +1,22 @@
-# // cp /Developer/OptiX_501/SDK/CMake/FindOptiX.cmake .
+# from /Developer/OptiX_380/SDK/CMake/FindOptiX.cmake
 #
-# Copyright (c) 2017 NVIDIA CORPORATION.  All rights reserved.
+#  Copyright (c) 2010 NVIDIA Corporation.  All rights reserved.
 #
-# NVIDIA Corporation and its licensors retain all intellectual property and proprietary
-# rights in and to this software, related documentation and any modifications thereto.
-# Any use, reproduction, disclosure or distribution of this software and related
-# documentation without an express license agreement from NVIDIA Corporation is strictly
-# prohibited.
+#  NVIDIA Corporation and its licensors retain all intellectual property and proprietary
+#  rights in and to this software, related documentation and any modifications thereto.
+#  Any use, reproduction, disclosure or distribution of this software and related
+#  documentation without an express license agreement from NVIDIA Corporation is strictly
+#  prohibited.
 #
-# TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THIS SOFTWARE IS PROVIDED *AS IS*
-# AND NVIDIA AND ITS SUPPLIERS DISCLAIM ALL WARRANTIES, EITHER EXPRESS OR IMPLIED,
-# INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
-# PARTICULAR PURPOSE.  IN NO EVENT SHALL NVIDIA OR ITS SUPPLIERS BE LIABLE FOR ANY
-# SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT
-# LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF
-# BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR
-# INABILITY TO USE THIS SOFTWARE, EVEN IF NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF
-# SUCH DAMAGES.
+#  TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, THIS SOFTWARE IS PROVIDED *AS IS*
+#  AND NVIDIA AND ITS SUPPLIERS DISCLAIM ALL WARRANTIES, EITHER EXPRESS OR IMPLIED,
+#  INCLUDING, BUT NOT LIMITED TO, IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+#  PARTICULAR PURPOSE.  IN NO EVENT SHALL NVIDIA OR ITS SUPPLIERS BE LIABLE FOR ANY
+#  SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING, WITHOUT
+#  LIMITATION, DAMAGES FOR LOSS OF BUSINESS PROFITS, BUSINESS INTERRUPTION, LOSS OF
+#  BUSINESS INFORMATION, OR ANY OTHER PECUNIARY LOSS) ARISING OUT OF THE USE OF OR
+#  INABILITY TO USE THIS SOFTWARE, EVEN IF NVIDIA HAS BEEN ADVISED OF THE POSSIBILITY OF
+#  SUCH DAMAGES
 #
 
 # Locate the OptiX distribution.  Search relative to the SDK first, then look in the system.
@@ -31,18 +31,36 @@ set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX instal
 if(CMAKE_SIZEOF_VOID_P EQUAL 8 AND NOT APPLE)
   set(bit_dest "64")
 else()
-  set(bit_dest "")
+  set(bit_dest "64")  # SCB: contrary to above comment on OSX for OptiX_301 OptiX_370b2 OptiX_380 the library dir name is lib64
 endif()
 
 macro(OPTIX_find_api_library name version)
-  find_library(${name}_LIBRARY
-    NAMES ${name}.${version} ${name}
-    PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
-    NO_DEFAULT_PATH
-    )
-  find_library(${name}_LIBRARY
-    NAMES ${name}.${version} ${name}
-    )
+
+  #message("find ${name} ")
+
+  if(UNIX AND NOT APPLE)
+      #message("UNIX AND NOT APPLE")
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version} ${name}
+        PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
+        NO_DEFAULT_PATH
+        )
+
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version} ${name}
+        )
+  endif()
+
+  # SCB: why do i need to add this only now ? is there a cmake version change about looking for .dylib ?
+  if(APPLE)
+      #message("FindOptiX.cmake OptiX_INSTALL_DIR:${OptiX_INSTALL_DIR} find_library name:${name} version:${version} PATHS:${OptiX_INSTALL_DIR}/lib${bit_dest}")
+      find_library(${name}_LIBRARY
+        NAMES ${name}.${version}.dylib ${name}
+        PATHS "${OptiX_INSTALL_DIR}/lib${bit_dest}"
+        NO_DEFAULT_PATH
+        )
+  endif()
+
   if(WIN32)
     find_file(${name}_DLL
       NAMES ${name}.${version}.dll
@@ -59,6 +77,14 @@ OPTIX_find_api_library(optix 1)
 OPTIX_find_api_library(optixu 1)
 OPTIX_find_api_library(optix_prime 1)
 
+set(OptiX_DEBUG ON)
+if(OptiX_DEBUG)
+message(STATUS "OptiX_INSTALL_DIR:${OptiX_INSTALL_DIR}")
+message(STATUS "optix_LIBRARY:${optix_LIBRARY}")
+message(STATUS "optixu_LIBRARY:${optixu_LIBRARY}")
+message(STATUS "optix_prime_LIBRARY:${optix_prime_LIBRARY}")
+endif()
+
 # Include
 find_path(OptiX_INCLUDE
   NAMES optix.h
@@ -68,6 +94,10 @@ find_path(OptiX_INCLUDE
 find_path(OptiX_INCLUDE
   NAMES optix.h
   )
+
+
+#message("OptiX_INCLUDE:${OptiX_INCLUDE}")
+
 
 # Check to make sure we found what we were looking for
 function(OptiX_report_error error_message required)
@@ -89,6 +119,19 @@ endif()
 if(NOT optix_prime_LIBRARY)
   OptiX_report_error("optix Prime library not found.  Please locate before proceeding." FALSE)
 endif()
+
+
+if(optix_LIBRARY AND optixu_LIBRARY AND OptiX_INCLUDE)
+   set(OptiX_FOUND YES)
+   set(OptiX_INCLUDE_DIRS "${OptiX_INCLUDE}")
+   set(OptiX_LIBRARIES 
+              ${optix_LIBRARY} 
+              ${optixu_LIBRARY} 
+      )
+   set(OptiX_DEFINITIONS "")
+   #message("Found OptiX")
+endif()
+
 
 # Macro for setting up dummy targets
 function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
@@ -127,9 +170,9 @@ function(OptiX_add_imported_library name lib_location dll_lib dependent_libs)
 endfunction()
 
 # Sets up a dummy target
-OptiX_add_imported_library(optix "${optix_LIBRARY}" "${optix_DLL}" "${OPENGL_LIBRARIES}")
-OptiX_add_imported_library(optixu   "${optixu_LIBRARY}"   "${optixu_DLL}"   "")
-OptiX_add_imported_library(optix_prime "${optix_prime_LIBRARY}"  "${optix_prime_DLL}"  "")
+#OptiX_add_imported_library(optix "${optix_LIBRARY}" "${optix_DLL}" "${OPENGL_LIBRARIES}")
+#OptiX_add_imported_library(optixu   "${optixu_LIBRARY}"   "${optixu_DLL}"   "")
+#OptiX_add_imported_library(optix_prime "${optix_prime_LIBRARY}"  "${optix_prime_DLL}"  "")
 
 macro(OptiX_check_same_path libA libB)
   if(_optix_path_to_${libA})
@@ -159,53 +202,6 @@ if(APPLE)
   OptiX_check_same_path(optix_prime optixu)
 
   set( optix_rpath ${_optix_rpath} ${_optixu_rpath} ${_optix_prime_rpath} )
-  if(optix_rpath)
-      list(REMOVE_DUPLICATES optix_rpath)
-  endif() 
+  list(REMOVE_DUPLICATES optix_rpath)
 endif()
-
-
-
-
-## Opticks additions
-
-if(optix_LIBRARY AND optixu_LIBRARY AND OptiX_INCLUDE)
-   set(OptiX_FOUND "YES")
-else()
-   set(OptiX_FOUND "NO")
-endif()
-
-set(OptiX_VERSION_INTEGER 0)
-if(OptiX_FOUND)
-   file(READ "${OptiX_INCLUDE}/optix.h" _contents)
-   #message(STATUS "FindOptiX.cmake:_contents : ${_contents} ")
-   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
-   foreach(_line ${_contents})
-        if (_line MATCHES "#define OPTIX_VERSION ([0-9]+) ")
-            set(OptiX_VERSION_INTEGER ${CMAKE_MATCH_1} )
-            message(STATUS "FindOptiX.cmake._line ${_line} ===> ${CMAKE_MATCH_1} ") 
-        endif()
-   endforeach()
-endif()
-
-set(OptiX_VERBOSE NO)
-if(OptiX_VERBOSE)
-   message(STATUS "FindOptiX.cmake.optix_LIBRARY         : ${optix_LIBRARY}")
-   message(STATUS "FindOptiX.cmake.optixu_LIBRARY        : ${optixu_LIBRARY}")
-   message(STATUS "FindOptiX.cmake.optix_prime_LIBRARY   : ${optix_prime_LIBRARY}")
-   message(STATUS "FindOptiX.cmake.OptiX_INCLUDE         : ${OptiX_INCLUDE}")
-   message(STATUS "FindOptiX.cmake.OptiX_FOUND           : ${OptiX_FOUND}")
-   message(STATUS "FindOptiX.cmake.OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
-endif()
-
-if(OptiX_FOUND)
-   add_library(Opticks::OptiX INTERFACE IMPORTED) 
-   set_target_properties(Opticks::OptiX PROPERTIES
-        INTERFACE_INCLUDE_DIRECTORIES "${OptiX_INCLUDE}"
-        INTERFACE_LINK_LIBRARIES "optix;optixu;optix_prime"
-   )
-
-endif()
-
-
 

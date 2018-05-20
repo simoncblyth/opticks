@@ -819,8 +819,6 @@ opticks-check-installcache()
 opticks-ti(){ opticks-t- $* --interactive-debug-mode 1 ; }
 opticks-t(){  opticks-t- $* --interactive-debug-mode 0 ; }
 
-
-
 opticks-t-()
 {
    # 
@@ -1409,4 +1407,22 @@ EOF
 }
 
 opticks-cmake-vi(){ opticks-scd ; vi $(opticks-cmake-vi-) ; }
+
+
+
+
+opticks-h()
+{
+   local msg="=== $FUNCNAME $(pwd) :"
+ 
+   echo $msg header includes 
+   grep -h ^#include *.hh *.hpp 2>/dev/null | sort | uniq 
+   
+   #echo $msg implementation includes 
+   #grep -h ^#include *.cc *.cpp 2>/dev/null | sort | uniq 
+}
+
+
+opticks-rpath(){ grep RPATH $(opticks-home)/examples/*/CMakeLists.txt ; }
+
 

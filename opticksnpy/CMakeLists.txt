@@ -111,7 +111,7 @@ set(SOURCES
     NCubic.cpp
 
     NBBox.cpp
-    NBBoxEnum.cpp
+    BBoxEnum.cpp
     NPart.cpp
     NTriangle.cpp
     NBoundingBox.cpp
@@ -245,11 +245,16 @@ TimesTable.hpp
 NCache.hpp
 NSensor.hpp
 NSensorList.hpp
+NGeoTestConfig.hpp
+
+
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp
 NPlane.hpp
 NBBox.hpp
+NBBoxEnum.hpp
+
 NNode.hpp
 NBox.hpp
 NQuad.hpp
@@ -267,10 +272,13 @@ NSpectral.hpp
 NState.hpp
 NConfigurable.hpp
 NParameters.hpp
+Report.hpp
 
 PyMCubes/marchingcubes.hpp
 NMarchingCubesNPY.hpp
 NCSG.hpp
+NCSGIntersect.hpp
+NCSGList.hpp
 NOctNode.hpp
 
 NFieldCache.hpp
@@ -365,5 +373,5 @@ install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 

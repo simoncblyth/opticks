@@ -14,7 +14,7 @@
 #include <iomanip>
 
 
-#include "OpticksCMakeConfig.hh"
+//#include "OpticksCMakeConfig.hh"
 
 // sysrap-
 #include "STimes.hh"
