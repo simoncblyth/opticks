@@ -15,12 +15,15 @@ include(BCMDeploy)
 
 find_package(SysRap CONFIG REQUIRED) 
 find_package(OptiX MODULE QUIET) 
-
-
+find_package(G4    MODULE QUIET) 
 
 # generate define header for hardcoding in the library 
 set(OKCONF_OPTIX_VERSION_INTEGER  "${OptiX_VERSION_INTEGER}")
-set(OKCONF_GEANT4_VERSION_INTEGER  "${OptiX_VERSION_INTEGER}")
+set(OKCONF_GEANT4_VERSION_INTEGER "${G4_VERSION_INTEGER}")
+
+# TODO:get rid of the below : adopt the above names
+set(OXRAP_OPTIX_VERSION   "${OptiX_VERSION_INTEGER}")
+set(CFG4_G4VERSION_NUMBER "${G4_VERSION_INTEGER}")
 
 configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
@@ -47,6 +50,7 @@ target_include_directories( ${name} PUBLIC
  
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/OpticksCMakeConfig.hh  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_subdirectory(tests)
 

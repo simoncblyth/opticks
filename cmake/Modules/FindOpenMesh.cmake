@@ -45,6 +45,9 @@ if(OpenMesh_FOUND AND NOT TARGET Opticks::OpenMesh)
         INTERFACE_LINK_LIBRARIES "Opticks::OpenMeshCore;Opticks::OpenMeshTools"
     )
 
+    # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_COMPILE_DEFINITIONS.html
+
+
 endif()
 
 

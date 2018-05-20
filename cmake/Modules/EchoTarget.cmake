@@ -35,7 +35,6 @@ function(echo_target tgt props)
     return()
    endif()
 
-
   foreach(p ${props})
     echo_target_property("${tgt}" "${p}")
   endforeach()
@@ -43,10 +42,6 @@ function(echo_target tgt props)
   message("")
 
 endfunction()
-
-
-
-
 
 
 function(echo_target_std tgt)
@@ -76,6 +71,15 @@ function(echo_target_std tgt)
     echo_target(${tgt} "${props}")
 endfunction()
 
+
+function(echo_target_twolevel tgt l_prop b_props)
+
+  get_property(tls TARGET ${tgt} PROPERTY ${l_prop})
+  foreach(t ${tls})
+    message(STATUS "echo_target_twolevel tgt:${tgt} t:${t}")
+    echo_target("${t}" "${b_props}")
+  endforeach()
+endfunction()
 
 
 

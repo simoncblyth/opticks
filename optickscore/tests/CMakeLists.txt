@@ -1,8 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpticksCoreTest)
-project(${name})
-
-#file(GLOB TEST_SOURCES "*Test.cc")
+project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
 
@@ -11,6 +9,7 @@ set(TEST_SOURCES
     CameraTest.cc
     AnimatorTest.cc
     TrackballTest.cc
+    OpticksEventSpecTest.cc
     OpticksFlagsTest.cc
     OpticksPhotonTest.cc
     OpticksCfgTest.cc
@@ -22,7 +21,6 @@ set(TEST_SOURCES
 
     OpticksIDPATH.cc
     OpticksPrepareInstallCache.cc
-    OpticksEventSpecTest.cc
     OpticksAnaTest.cc
     OpticksDbgTest.cc
 
@@ -34,11 +32,12 @@ set(TEST_SOURCES
     OpticksEventCompareTest.cc
     OpticksEventDumpTest.cc
 
-    OpticksEventTest.cc
 )
 
 
 set(TEST_SOURCES_NOK 
+
+    OpticksEventTest.cc
 
     OpticksAppTest.cc
 
@@ -55,12 +54,12 @@ foreach(TEST_SOURCE ${TEST_SOURCES})
     if (${TGT} MATCHES ".*Test$")  
        set(testname ${name}.${TGT})
        add_test(${testname} ${TGT})
-       add_dependencies(check ${TGT})
+       #add_dependencies(check ${TGT})
     else()
        #message(" skip non-test ${TGT} ")
     endif()
 
-    target_link_libraries(${TGT} ${LIBRARIES} OpticksCore)
+    target_link_libraries(${TGT} OpticksCore)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

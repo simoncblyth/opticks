@@ -111,7 +111,7 @@ set(SOURCES
     NCubic.cpp
 
     NBBox.cpp
-    BBoxEnum.cpp
+    NBBoxEnum.cpp
     NPart.cpp
     NTriangle.cpp
     NBoundingBox.cpp
@@ -291,6 +291,7 @@ NTreeTools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp
 
+NSnapConfig.hpp
 NLODConfig.hpp
 )
 

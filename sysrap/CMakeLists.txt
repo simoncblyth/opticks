@@ -22,6 +22,7 @@ set(SOURCES
     SSeq.cc
     STranche.cc
     SAr.cc
+    SArgs.cc
     SPPM.cc
     SVec.cc
     SMap.cc
@@ -62,6 +63,7 @@ set(HEADERS
     OpticksCSGMask.h
     PlainFormatter.hh
     SAr.hh
+    SArgs.hh
 )
 
 

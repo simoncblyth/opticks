@@ -10,12 +10,16 @@
 // This means that package versions become globally available for all 
 // Opticks projects at all levels, without having to include package headers.
 //
-// #cmakedefine OXRAP_OPTIX_VERSION @OXRAP_OPTIX_VERSION@
-// #cmakedefine CFG4_G4VERSION_NUMBER @CFG4_G4VERSION_NUMBER@
 //
 
 #cmakedefine OKCONF_OPTIX_VERSION_INTEGER @OKCONF_OPTIX_VERSION_INTEGER@
 #cmakedefine OKCONF_GEANT4_VERSION_INTEGER @OKCONF_GEANT4_VERSION_INTEGER@
+
+
+// backward compat  TODO: adopt the new OKCONF names and remove these
+#cmakedefine OXRAP_OPTIX_VERSION @OXRAP_OPTIX_VERSION@
+#cmakedefine CFG4_G4VERSION_NUMBER @CFG4_G4VERSION_NUMBER@
+
 
 
 

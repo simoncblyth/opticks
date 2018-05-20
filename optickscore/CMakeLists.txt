@@ -11,51 +11,12 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
+find_package(GLM      REQUIRED MODULE)
 
-#find_package(OpticksBoost REQUIRED)
-#find_package(PLog REQUIRED)
-#find_package(SysRap REQUIRED)
-
-find_package(GLM REQUIRED MODULE)
 find_package(BoostRap REQUIRED CONFIG)
-find_package(NPY REQUIRED CONFIG)
+find_package(OKConf   REQUIRED CONFIG)
+find_package(NPY      REQUIRED CONFIG)
 
-
-#include_directories(
-#   ${CMAKE_CURRENT_SOURCE_DIR}
-#   ${CMAKE_BINARY_DIR}/inc
-#
-#   ${PLog_INCLUDE_DIRS} 
-#   ${OpticksBoost_INCLUDE_DIRS} 
-#   ${GLM_INCLUDE_DIRS}  
-#
-#   ${SysRap_INCLUDE_DIRS}  
-#   ${BoostRap_INCLUDE_DIRS}  
-#   ${NPY_INCLUDE_DIRS}  
-#)
-
-#add_definitions( 
-#   ${OpticksBoost_DEFINITIONS} 
-#   ${PLog_DEFINITIONS} 
-#   ${GLM_DEFINITIONS} 
-#   ${NPY_DEFINITIONS} 
-#   ${SysRap_DEFINITIONS} 
-#   ${BoostRap_DEFINITIONS} 
-#    -DVERBOSE 
-#)
-#
-#set(LIBRARIES
-#   ${OpticksBoost_LIBRARIES}
-#   ${PLog_LIBRARIES} 
-#   ${GLM_LIBRARIES}
-#
-#   ${NPY_LIBRARIES}
-#   ${SysRap_LIBRARIES}
-#   ${BoostRap_LIBRARIES}
-#)
-# generate define header for hardcoding in the library 
-#set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
-#configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
 
 set(SOURCES
     OKCORE_LOG.cc
@@ -174,25 +135,24 @@ set(HEADERS
 )
 
 
-
-
 add_library( ${name}  SHARED ${SOURCES})
+
+target_include_directories( ${name} PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+)
+
 
 target_link_libraries( ${name} 
   PUBLIC 
      Opticks::GLM
      Opticks::NPY
+     Opticks::OKConf
      Opticks::BoostRap 
 )
 
-#target_link_libraries( ${name} ${LIBRARIES} )
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#install(TARGETS ${name}  DESTINATION lib)
-#install(FILES ${HEADERS} DESTINATION include/${name})
-
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
-#add_subdirectory(tests)
+add_subdirectory(tests)
 
