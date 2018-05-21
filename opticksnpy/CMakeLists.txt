@@ -116,6 +116,8 @@ set(SOURCES
     NTriangle.cpp
     NBoundingBox.cpp
     NTesselate.cpp
+
+    NTriSource.cpp
     NTrianglesNPY.cpp
 
     NPlanck.cpp
@@ -264,6 +266,8 @@ NPrism.hpp
 NBoundingBox.hpp
 NTesselate.hpp
 NTriangle.hpp
+    
+NTriSource.hpp
 NTrianglesNPY.hpp
 NPlanck.hpp
 NCIE.hpp
@@ -297,6 +301,8 @@ NLODConfig.hpp
 
 Nuv.hpp
 Nd.hpp
+    
+NTris.hpp
 
 
 )

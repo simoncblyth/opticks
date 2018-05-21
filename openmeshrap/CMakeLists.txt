@@ -1,59 +1,18 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpenMeshRap)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(PLog REQUIRED)
-find_package(OpticksBoost REQUIRED)
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
-find_package(SysRap REQUIRED)
-find_package(BoostRap REQUIRED)
-find_package(GLM    REQUIRED)
-find_package(NPY REQUIRED)
-find_package(GGeo REQUIRED)
-find_package(OpticksCore REQUIRED)
-find_package(OpenMesh REQUIRED)
+find_package(BCM)
+include(BCMDeploy)
 
-include_directories(
-   ${CMAKE_CURRENT_SOURCE_DIR}
-
-   ${PLog_INCLUDE_DIRS} 
-   ${OpticksBoost_INCLUDE_DIRS} 
-   ${SysRap_INCLUDE_DIRS} 
-   ${BoostRap_INCLUDE_DIRS} 
-   ${GLM_INCLUDE_DIRS} 
-   ${NPY_INCLUDE_DIRS} 
-   ${OpticksCore_INCLUDE_DIRS} 
-   ${GGeo_INCLUDE_DIRS} 
-   ${OpenMesh_INCLUDE_DIRS} 
-)
-
-add_definitions(
-   ${PLog_DEFINITIONS}
-   ${OpticksBoost_DEFINITIONS}
-   ${SysRap_DEFINITIONS} 
-   ${BoostRap_DEFINITIONS} 
-   ${GLM_DEFINITIONS}
-   ${NPY_DEFINITIONS}
-   ${OpticksCore_DEFINITIONS}
-   ${GGeo_DEFINITIONS}
-   ${OpenMesh_DEFINITIONS}
-)
-
-set(LIBRARIES
-   ${PLog_LIBRARIES}
-   ${OpticksBoost_LIBRARIES}
-   ${SysRap_LIBRARIES}
-   ${BoostRap_LIBRARIES}
-   ${GLM_LIBRARIES}
-   ${NPY_LIBRARIES}
-   ${OpticksCore_LIBRARIES}
-   ${GGeo_LIBRARIES}
-   ${OpenMesh_LIBRARIES}
-)
-
+find_package(GGeo   REQUIRED CONFIG)
+find_package(OpticksCore REQUIRED CONFIG)
 
 set(SOURCES
      MESHRAP_LOG.cc
@@ -75,11 +34,12 @@ set(HEADERS
 )
 
 add_library( ${name}  SHARED ${SOURCES})
-target_link_libraries( ${name}  ${LIBRARIES})
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
+target_link_libraries( ${name} PUBLIC  Opticks::OpticksCore Opticks::GGeo )
 
-# exclude failing tests..
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
-add_subdirectory(tests)
+#add_subdirectory(tests)
 

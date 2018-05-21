@@ -27,6 +27,7 @@ set(SOURCES
     SVec.cc
     SMap.cc
     SDigest.cc
+    SDirect.cc
     SArrayDigest.cc
     SLauncher.cc
     SRenderer.cc
@@ -51,6 +52,7 @@ set(HEADERS
     SVec.hh
     SMap.hh
     SDigest.hh
+    SDirect.hh
     SArrayDigest.hh
     SLauncher.hh
     SRenderer.hh
