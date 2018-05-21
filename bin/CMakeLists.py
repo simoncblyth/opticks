@@ -50,23 +50,25 @@ class CMakeLists(object):
 class Opticks(object):
 
     order = {
-             'SysRap':10, 
-             'BoostRap':20, 
-             'NPY':30, 
-             'OKConf':40, 
+             'OKConf':10, 
+             'SysRap':20, 
+             'BoostRap':30, 
+             'NPY':40, 
              'OpticksCore':50, 
              'GGeo':60, 
              'AssimpRap':70,
              'OpenMeshRap':80, 
              'OpticksGeometry':90,
-             'OGLRap':100,
-             'CUDARap':110,
-             'ThrustRap':120,
+             'CUDARap':100,
+             'ThrustRap':110,
+             'OptiXRap':120,
              'OKOP':130,
-             'OpticksGL':140,
-             'OK':150,
-             'CFG4':160,
-             'OKG4':170
+             'OGLRap':140,
+             'OpticksGL':150,
+             'OK':160,
+             'cfg4':170,
+             'okg4':180,
+             'NumpyServer':-1
             }
 
     @classmethod
@@ -85,8 +87,8 @@ class Opticks(object):
             pass
         pass
        
-        for k in sorted(pkgs.keys(), key=lambda k:cls.order.get(k,1000)):
-            print repr(pkgs[k])
+        for k in sorted(filter(lambda k:cls.order.get(k) > -1,pkgs.keys()), key=lambda k:cls.order.get(k,1000)):
+            print "%3s %s " % ( cls.order.get(k,1000), repr(pkgs[k]) )
         pass
 
 

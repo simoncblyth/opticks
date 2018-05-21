@@ -1428,3 +1428,7 @@ opticks-rpath(){ grep RPATH $(opticks-home)/examples/*/CMakeLists.txt ; }
 opticks-bcm-deploy-(){  find . -name CMakeLists.txt -exec grep -l bcm_deploy {} \; ; }
 opticks-bcm-deploy(){ vi $(opticks-bcm-deploy-) ; }
 
+opticks-deps(){ CMakeLists.py ; }
+opticks-deps-vi(){ vi $(opticks-home)/bin/CMakeLists.py ; }
+
+

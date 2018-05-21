@@ -1,13 +1,10 @@
+#include <iostream>
 #include "OKConf.hh"
-#include "PLOG.hh"
 
-int main(int argc, char** argv)
+int main()
 {
-    PLOG_(argc, argv);
-   
-    LOG(info) << "OKConf::OptiXVersionInteger() " << OKConf::OptiXVersionInteger() ; 
-    LOG(info) << "OKConf::Geant4VersionInteger() " << OKConf::Geant4VersionInteger() ; 
-
+    std::cout << "OKConf::OptiXVersionInteger() " << OKConf::OptiXVersionInteger() << std::endl ; 
+    std::cout << "OKConf::Geant4VersionInteger() " << OKConf::Geant4VersionInteger() << std::endl ; 
 }
 
 

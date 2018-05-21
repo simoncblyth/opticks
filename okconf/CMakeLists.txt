@@ -8,7 +8,8 @@ include(EnvCompilationFlags)
 include(GNUInstallDirs)
 set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
+set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})  
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
 
 find_package(BCM)
 include(BCMDeploy)
@@ -16,7 +17,6 @@ include(BCMDeploy)
 ## OKConf is unusual : it parses OptiX and G4 package headers 
 ## to find version integers and otherwise does not link to those packages.
 
-find_package(SysRap CONFIG REQUIRED) 
 find_package(OptiX MODULE QUIET) 
 find_package(G4    MODULE QUIET) 
 
@@ -40,11 +40,6 @@ set(HEADERS
 )
 
 add_library( ${name}  SHARED ${SOURCES})
-
-target_link_libraries( ${name} 
-   PUBLIC
-       Opticks::SysRap      
-)
 
 target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
