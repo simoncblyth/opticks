@@ -91,6 +91,7 @@ set(SOURCES
 
     GTraverse.cc
     GMergedMesh.cc
+    GGeoBase.cc
     GGeo.cc
     GNodeLib.cc
     GMeshLib.cc
@@ -108,6 +109,7 @@ set(HEADERS
     GGEO_TAIL.hh
 
     GConstant.hh
+    GGeoBase.hh
     GGeo.hh
     GGeoCfg.hh
     GMaterial.hh

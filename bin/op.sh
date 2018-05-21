@@ -224,6 +224,7 @@ op-binary-name()
        --openmesh) echo OpenMeshRapTest ;;
       --torchstep) echo TorchStepNPYTest ;;  
            --hits) echo HitsNPYTest ;;  
+   --UseAssimpRap) echo UseAssimpRap ;;  
    esac 
    # no default as its important this return blank for unidentified commands
    #      *) echo $(op-binary-name-default) ;;
