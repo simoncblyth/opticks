@@ -80,9 +80,7 @@ target_include_directories( ${name} PUBLIC
 
 
 bcm_deploy(TARGETS ${name} INCLUDE include NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
-
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)

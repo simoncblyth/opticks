@@ -1,56 +1,25 @@
-cmake_minimum_required(VERSION 2.6.4 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name GGeo)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-find_package(PLog REQUIRED)
-find_package(OpticksBoost REQUIRED)
-find_package(GLM REQUIRED)
-find_package(SysRap REQUIRED)
-find_package(BoostRap REQUIRED)
-find_package(NPY REQUIRED)
-find_package(OpticksCore REQUIRED)
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
+
+find_package(BCM)
+include(BCMDeploy)
 
 
+#find_package(GLM REQUIRED MODULE)
+#find_package(PLog REQUIRED MODULE)
+#find_package(SysRap REQUIRED CONFIG)
+#find_package(BoostRap REQUIRED CONFIG)
+#find_package(YoctoGL REQUIRED CONFIG)    ## all those come with NPY
+#find_package(NPY REQUIRED CONFIG)        ## and NPY comes with OpticksCore
 
-
-
-
-message("GGEO.NPY_INCLUDE_DIRS : ${NPY_INCLUDE_DIRS}")
-
-set(INCLUDE_DIRS
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${PLog_INCLUDE_DIRS}
-   ${OpticksBoost_INCLUDE_DIRS}
-   ${GLM_INCLUDE_DIRS} 
-
-   ${SysRap_INCLUDE_DIRS} 
-   ${BoostRap_INCLUDE_DIRS} 
-   ${NPY_INCLUDE_DIRS}
-   ${OpticksCore_INCLUDE_DIRS}
-)
-
-set(LIBRARIES
-   ${PLog_LIBRARIES}
-   ${OpticksBoost_LIBRARIES}
-   ${SysRap_LIBRARIES}
-   ${BoostRap_LIBRARIES}
-   ${NPY_LIBRARIES}
-   ${OpticksCore_LIBRARIES}
-)
-
-set(DEFINITIONS
-   ${PLog_DEFINITIONS}
-   ${OpticksBoost_DEFINITIONS} 
-   ${SysRap_DEFINITIONS} 
-   ${BoostRap_DEFINITIONS} 
-   ${OpticksCore_DEFINITIONS} 
-)
-
-
-
+find_package(OpticksCore REQUIRED CONFIG)
 
 
 set(SOURCES
@@ -127,6 +96,9 @@ set(SOURCES
     GMeshLib.cc
 
 
+    GScene.cc 
+    GPropertyMap.cc
+
 )
 set(HEADERS
 
@@ -135,10 +107,6 @@ set(HEADERS
     GGEO_HEAD.hh
     GGEO_TAIL.hh
 
-    GConstant.hh
-)
-
-SET(ALL_HEADERS
     GConstant.hh
     GGeo.hh
     GGeoCfg.hh
@@ -162,13 +130,10 @@ SET(ALL_HEADERS
     GPropertyLib.hh
     GBndLib.hh
     GMaterialLib.hh
-
     GSurfaceLib.hh
-    GSur.hh
-    GSurLib.hh
-
 
     GVector.hh
+    GBBox.hh
     GMatrix.hh
     GIds.hh
     GTransforms.hh
@@ -192,45 +157,21 @@ SET(ALL_HEADERS
     GCIE.hh
     GGeoTest.hh
 
+    GScene.hh
+    GPropertyMap.hh
 )
 
 
 
+add_library( ${name}  SHARED ${SOURCES})
+target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) 
+target_link_libraries( ${name} PUBLIC Opticks::OpticksCore )
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
-# hmm : dont need direct access to YoctoGL headers or libs, they are hidden behind NScene.hpp
-# but do need the switch to say its available ... perhaps externals used in NPY should 
-# feed into NPY_DEFINITIONS ???
-
-find_package(YoctoGL )
-
-
-if(YoctoGL_FOUND)
-   message("GGEO.YoctoGL_FOUND")
-   list(APPEND INCLUDE_DIRS ${YoctoGL_INCLUDE_DIRS})
-   list(APPEND DEFINITIONS -DWITH_YoctoGL ${YoctoGL_DEFINITIONS} )
-   list(APPEND LIBRARIES ${YoctoGL_LIBRARIES})
-
-   list(APPEND SOURCES 
-               GScene.cc 
-               GPropertyMap.cc
-       )
-else()
-    message("GGEO.YoctoGL_NOT_FOUND")
-endif()
-
-
-
-
-
-include_directories(${INCLUDE_DIRS})   
-add_definitions(${DEFINITIONS})
-add_library(${name} SHARED ${SOURCES})
-target_link_libraries(${name} ${LIBRARIES})
-
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
 
 #add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
+
 
 

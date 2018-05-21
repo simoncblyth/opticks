@@ -23,7 +23,7 @@ set(HEADERS ${name}.hh)
 
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} PUBLIC Opticks::G4)
-install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR})
+#install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR})   # bcm_deploy does this : no need to repeat
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

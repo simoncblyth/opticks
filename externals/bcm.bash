@@ -175,47 +175,67 @@ bcm--(){
 
 bcm-deploy-review(){ cat << EOR
 
-share/bcm/cmake/BCMDeploy.cmake::
+BCMPkgConfig
+    defines target properties INTERFACE_DESCRIPTION, INTERFACE_URL, INTERFACE_PKG_CONFIG_REQUIRES, bcm_auto_pkgconfig 
+    quite informative as serializes targets in familiar pc format   
+
+BCMInstallTargets
+    defines bcm_install_targets
+
+bcm_deploy
+    
+    * TARGET_NAME = EXPORT_NAME ?  EXPORT_NAME : NAME 
+
+    * creates alias lib eg Opticks::NPY for target NPY  
+
+
+share/bcm/cmake/BCMDeploy.cmake (my fork)::
 
      01 
-      2 include(BCMPkgConfig)       ## defines target properties INTERFACE_DESCRIPTION, INTERFACE_URL, INTERFACE_PKG_CONFIG_REQUIRES, bcm_auto_pkgconfig 
-                                    ## quite informative as serializes targets in familiar pc format       
-      3 include(BCMInstallTargets)  ## defines bcm_install_targets
+      2 include(BCMPkgConfig)
+      3 include(BCMInstallTargets)
       4 include(BCMExport)
       5 
       6 function(bcm_deploy)
-      7     set(options)
+      7     set(options SKIP_HEADER_INSTALL)
       8     set(oneValueArgs NAMESPACE COMPATIBILITY)
       9     set(multiValueArgs TARGETS INCLUDE)
      10 
      11     cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}"  ${ARGN})
      12 
-     13     bcm_install_targets(TARGETS ${PARSE_TARGETS} INCLUDE ${PARSE_INCLUDE})
+     13     if(PARSE_SKIP_HEADER_INSTALL)
+     14         bcm_install_targets(TARGETS ${PARSE_TARGETS} INCLUDE ${PARSE_INCLUDE} SKIP_HEADER_INSTALL)
+     15     else()
+     16         bcm_install_targets(TARGETS ${PARSE_TARGETS} INCLUDE ${PARSE_INCLUDE} )
+     17     endif()
+     18 
+     19     bcm_auto_pkgconfig(TARGET ${PARSE_TARGETS})
+     20     bcm_auto_export(TARGETS ${PARSE_TARGETS} NAMESPACE ${PARSE_NAMESPACE} COMPATIBILITY ${PARSE_COMPATIBILITY})
+     21     
+     22     foreach(TARGET ${PARSE_TARGETS})
+     23         get_target_property(TARGET_NAME ${TARGET} EXPORT_NAME)
+     24         if(NOT TARGET_NAME)
+     25             get_target_property(TARGET_NAME ${TARGET} NAME)
+     26         endif()
+     27         set(EXPORT_LIB_TARGET ${PARSE_NAMESPACE}${TARGET_NAME})
+     28         if(NOT TARGET ${EXPORT_LIB_TARGET})
+     29             add_library(${EXPORT_LIB_TARGET} ALIAS ${TARGET})
+     30         endif()
+     31         set_target_properties(${TARGET} PROPERTIES INTERFACE_FIND_PACKAGE_NAME ${PROJECT_NAME})
+     32         if(COMMAND bcm_add_rpath)
+     33             get_target_property(TARGET_TYPE ${TARGET} TYPE)
+     34             if(NOT "${TARGET_TYPE}" STREQUAL "INTERFACE_LIBRARY")
+     35                 bcm_add_rpath("$<TARGET_FILE_DIR:${TARGET}>")
+     36             endif()
+     37         endif()
+     38         bcm_shadow_notify(${EXPORT_LIB_TARGET})
+     39         bcm_shadow_notify(${TARGET})
+     40     endforeach()
+     41 
+     42 endfunction()
 
-     14     bcm_auto_pkgconfig(TARGET ${PARSE_TARGETS})
-     15     bcm_auto_export(TARGETS ${PARSE_TARGETS} NAMESPACE ${PARSE_NAMESPACE} COMPATIBILITY ${PARSE_COMPATIBILITY})
-     16 
-     17     foreach(TARGET ${PARSE_TARGETS})
-     18         get_target_property(TARGET_NAME ${TARGET} EXPORT_NAME)
-     19         if(NOT TARGET_NAME)
-     20             get_target_property(TARGET_NAME ${TARGET} NAME)
-     21         endif()
-     22         set(EXPORT_LIB_TARGET ${PARSE_NAMESPACE}${TARGET_NAME})
-     23         if(NOT TARGET ${EXPORT_LIB_TARGET})
-     24             add_library(${EXPORT_LIB_TARGET} ALIAS ${TARGET})
-     25         endif()
-     26         set_target_properties(${TARGET} PROPERTIES INTERFACE_FIND_PACKAGE_NAME ${PROJECT_NAME})
-     27         if(COMMAND bcm_add_rpath)
-     28             get_target_property(TARGET_TYPE ${TARGET} TYPE)
-     29             if(NOT "${TARGET_TYPE}" STREQUAL "INTERFACE_LIBRARY")
-     30                 bcm_add_rpath("$<TARGET_FILE_DIR:${TARGET}>")
-     31             endif()
-     32         endif()
-     33         bcm_shadow_notify(${EXPORT_LIB_TARGET})
-     34         bcm_shadow_notify(${TARGET})
-     35     endforeach()
-     36 
-     37 endfunction()
+
+
 
 EOR
 }
@@ -236,12 +256,21 @@ EXPORT
     name-of-export-file (no way to change that from bcm_deploy)
 
 
-::
+Original BCM had hardcoded assumptions of header layout with src headers
+all in an include dir and installed headers all co-mingled.
+My fork fixes these problems.
 
-     01 include(GNUInstallDirs)
+NB when using bcm_deploy no need for the below as thats done by bcm_install_targets::
+
+    install(TARGETS ${name} DESTINATION ${CMAKE_INSTALL_LIBDIR})
+
+
+share/bcm/cmake/BCMInstallTargets.cmake::
+
+      01 include(GNUInstallDirs)
       2 
       3 function(bcm_install_targets)
-      4     set(options)
+      4     set(options SKIP_HEADER_INSTALL)
       5     set(oneValueArgs EXPORT)
       6     set(multiValueArgs TARGETS INCLUDE)
       7 
@@ -262,30 +291,28 @@ EXPORT
      22             get_filename_component(INCLUDE_PATH ${INCLUDE} ABSOLUTE)
      23             target_include_directories(${TARGET} INTERFACE $<BUILD_INTERFACE:${INCLUDE_PATH}>)
      24         endforeach()
-
-     //         multiple INCLUDE directories of BUILD_INTERFACE passed as arguments
-
-     25         target_include_directories(${TARGET} INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/include>)
-
-     //         "hardcoded" one INSTALL_INTERFACE fixed to INSTALL_PREFIX/include
-     //         although it would not matter to add another with PREFIX/include/<name> externally
-     //         the below installation of the includes aint going to fly ...
-
+     25         target_include_directories(${TARGET} INTERFACE $<INSTALL_INTERFACE:$<INSTALL_PREFIX>/${INCLUDE_INSTALL_DIR}>)
      26     endforeach()
-
      27         
-     28     foreach(INCLUDE ${PARSE_INCLUDE})
-     29         install(DIRECTORY ${INCLUDE}/ DESTINATION ${INCLUDE_INSTALL_DIR})
-     30     endforeach()
-     31             
-     32     install(TARGETS ${PARSE_TARGETS} 
-     33         EXPORT ${EXPORT_FILE}
-     34         RUNTIME DESTINATION ${BIN_INSTALL_DIR}
-     35         LIBRARY DESTINATION ${LIB_INSTALL_DIR}
-     36         ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
-     37         
-     38 endfunction()
-     39         
+     28         
+     29     if(NOT PARSE_SKIP_HEADER_INSTALL)
+     30         message(STATUS "bcm_install_targets.proceed-with-install ${INCLUDE_INSTALL_DIR}  ")
+     31         foreach(INCLUDE ${PARSE_INCLUDE})
+     32             install(DIRECTORY ${INCLUDE}/ DESTINATION ${INCLUDE_INSTALL_DIR})
+     33         endforeach()
+     34     endif() 
+     35                 
+     36     install(TARGETS ${PARSE_TARGETS}
+     37             EXPORT ${EXPORT_FILE}
+     38             RUNTIME DESTINATION ${BIN_INSTALL_DIR}
+     39             LIBRARY DESTINATION ${LIB_INSTALL_DIR}
+     40             ARCHIVE DESTINATION ${LIB_INSTALL_DIR})
+     41 
+     42 endfunction()
+     43 
+
+
+
 
 
 EOR

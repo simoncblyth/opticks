@@ -256,6 +256,7 @@ NBBox.hpp
 NBBoxEnum.hpp
 
 NNode.hpp
+NNodeEnum.hpp
 NBox.hpp
 NQuad.hpp
 NPart.hpp
@@ -293,6 +294,11 @@ NPolygonizer.hpp
 
 NSnapConfig.hpp
 NLODConfig.hpp
+
+Nuv.hpp
+Nd.hpp
+
+
 )
 
 
@@ -300,7 +306,7 @@ NLODConfig.hpp
 if(YoctoGL_FOUND)  # this is no-longer optional
    message(STATUS "NPY.YoctoGL_FOUND")
    list(APPEND SOURCES  NGLTF.cpp  NScene.cpp  NSceneConfig.cpp NSDF.cpp N.cpp NJS.cpp NMeta.cpp)
-   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSceneConfig.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp)
+   list(APPEND HEADERS  NGLTF.hpp  NScene.hpp  NSceneConfig.hpp NSDF.hpp N.hpp NJS.hpp NMeta.hpp NYJSON.hpp)
 endif()
 
 if(ImplicitMesher_FOUND)
@@ -369,7 +375,6 @@ endif()
 
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
-
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 

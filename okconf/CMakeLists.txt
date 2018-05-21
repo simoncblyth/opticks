@@ -13,6 +13,9 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 find_package(BCM)
 include(BCMDeploy)
 
+## OKConf is unusual : it parses OptiX and G4 package headers 
+## to find version integers and otherwise does not link to those packages.
+
 find_package(SysRap CONFIG REQUIRED) 
 find_package(OptiX MODULE QUIET) 
 find_package(G4    MODULE QUIET) 

@@ -31,15 +31,12 @@ set(HEADERS
 
 add_library(${name} SHARED ${SOURCES})
 target_link_libraries(${name} PUBLIC Boost::filesystem)
-install(TARGETS ${name}  DESTINATION lib)
-
 
 #add_executable(Test${name} Test${name}.cc)
 #target_link_libraries(Test${name} PUBLIC ${name} )
 #install(TARGETS Test${name}  DESTINATION lib)
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL) 
-
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 echo_target_std(${name})

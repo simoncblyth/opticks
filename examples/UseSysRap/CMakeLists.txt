@@ -33,9 +33,6 @@ add_library(${name} SHARED ${name}.cc)
 
 target_link_libraries(${name} PUBLIC Opticks::SysRap)
 
-install(TARGETS ${name}  DESTINATION lib)
-
-
 #add_executable(Test${name} Test${name}.cc)
 #target_link_libraries(Test${name} ${name} )
 #install(TARGETS Test${name}  DESTINATION lib)
