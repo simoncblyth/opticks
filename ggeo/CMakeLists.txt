@@ -158,6 +158,7 @@ set(HEADERS
     GMaker.hh
     GCIE.hh
     GGeoTest.hh
+    GNodeLib.hh
 
     GScene.hh
     GPropertyMap.hh

@@ -110,6 +110,7 @@ set(HEADERS
     OpticksRun.hh
     OpticksEntry.hh
     OpticksBufferControl.hh
+    OpticksActionControl.hh
     OpticksBufferSpec.hh
     Indexer.hh
 

@@ -304,6 +304,7 @@ Nd.hpp
     
 NTris.hpp
 
+NEmitPhotonsNPY.hpp
 
 )
 

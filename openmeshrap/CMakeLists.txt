@@ -17,6 +17,7 @@ find_package(OpticksCore REQUIRED CONFIG)
 set(SOURCES
      MESHRAP_LOG.cc
 
+     MMesh.cc
      MWrap.cc
      MTool.cc
      MFixer.cc
@@ -28,6 +29,7 @@ set(HEADERS
      MESHRAP_HEAD.hh
      MESHRAP_TAIL.hh
 
+     MMesh.hh
      MWrap.hh
      MTool.hh
      MFixer.hh
