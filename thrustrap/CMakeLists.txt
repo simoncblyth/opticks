@@ -1,56 +1,20 @@
-cmake_minimum_required(VERSION 2.8.8 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRap)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)
 
-# see cuda-/FindCuda.cmake
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
-message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS}")
+find_package(BCM)
+include(BCMDeploy)
 
-find_package(PLog REQUIRED)
-find_package(OpticksBoost REQUIRED)
 
-find_package(SysRap REQUIRED)
-find_package(BoostRap REQUIRED)
-find_package(GLM  REQUIRED)
-find_package(NPY  REQUIRED)
-find_package(OpticksCore REQUIRED)
-find_package(CUDARap  REQUIRED)
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}
-    ${PLog_INCLUDE_DIRS} 
-    ${OpticksBoost_INCLUDE_DIRS} 
-    ${SysRap_INCLUDE_DIRS} 
-    ${BoostRap_INCLUDE_DIRS} 
-    ${GLM_INCLUDE_DIRS} 
-    ${NPY_INCLUDE_DIRS} 
-    ${CUDA_INCLUDE_DIRS}
-    ${CUDARap_INCLUDE_DIRS}
-    ${OpticksCore_INCLUDE_DIRS}
-)
-
-add_definitions(
-    ${PLog_DEFINITIONS}
-    ${OpticksBoost_DEFINITIONS}
-    ${SysRap_DEFINITIONS}
-    ${BoostRap_DEFINITIONS}
-    ${CUDARap_DEFINITIONS}
-    ${OpticksCore_DEFINITIONS}
-)
-
-set(LIBRARIES
-    ${PLog_LIBRARIES}
-    ${OpticksBoost_LIBRARIES}
-    ${SysRap_LIBRARIES}
-    ${BoostRap_LIBRARIES}
-    ${NPY_LIBRARIES}
-    ${CUDARap_LIBRARIES}
-    ${OpticksCore_LIBRARIES}
-)
+find_package(OpticksCore REQUIRED CONFIG)
+find_package(CUDARap  REQUIRED CONFIG)
+ 
 
 set(SOURCES
 
@@ -83,14 +47,21 @@ SET(HEADERS
     iexpand.h 
 )
 
+
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS )
+set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
+target_link_libraries( ${name} Opticks::OpticksCore Opticks::CUDARap)
+target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-target_link_libraries( ${name} ${LIBRARIES})
+include(EchoTarget)
+echo_target_std(${name})
 
-install(TARGETS ${name} DESTINATION lib)
-install(FILES ${HEADERS} DESTINATION include/${name})
+install(TARGETS ${name} LIBRARY DESTINATION lib)
+install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
 add_subdirectory(tests)
+
 
 

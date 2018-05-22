@@ -66,6 +66,7 @@ set(HEADERS
     PlainFormatter.hh
     SAr.hh
     SArgs.hh
+    S_freopen_redirect.hh
 )
 
 

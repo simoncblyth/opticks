@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRapTest)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 file(GLOB TEST_CC_SRCS "*Test.cc")
 
@@ -11,12 +11,11 @@ foreach(TEST_CC_SRC ${TEST_CC_SRCS})
     add_executable(${TGT} ${TEST_CC_SRC})
 
     add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
+    #add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} ThrustRap) 
+    target_link_libraries(${TGT} ThrustRap) 
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
-
 
 
 #file(GLOB TEST_CU_SRCS "*Test.cu")
@@ -51,8 +50,8 @@ foreach(TEST_CU_SRC ${TEST_CU_SRCS})
     cuda_add_executable(${TGT} ${TEST_CU_SRC} OPTIONS )
 
     add_test(${name}.${TGT} ${TGT})
-    add_dependencies(check ${TGT})
-    target_link_libraries(${TGT} ${LIBRARIES} ThrustRap)
+    #add_dependencies(check ${TGT})
+    target_link_libraries(${TGT} ThrustRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
