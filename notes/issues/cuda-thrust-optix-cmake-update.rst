@@ -4,6 +4,9 @@ CUDA Thrust OptiX CMake Update ?
 Modern CMake 3.9+ has new possibilities...
 ----------------------------------------
 
+
+* env-;cct-
+
 * https://devblogs.nvidia.com/building-cuda-applications-cmake/
 
 * http://on-demand.gputechconf.com/gtc/2017/presentation/S7438-robert-maynard-build-systems-combining-cuda-and-machine-learning.pdf
@@ -156,6 +159,65 @@ Old way of using CUDA relies on " CUDA_ADD_LIBRARY/CUDA_ADD_EXECUTABLE
     135 # defined then both OBJ and PTX output is lumped 
     136 # together in that directory, prefer to not defining
     137 # it in order for different directories to be used
+
+
+
+::
+
+     243 #   CUDA_WRAP_SRCS ( cuda_target format generated_files file0 file1 ...
+     244 #                    [STATIC | SHARED | MODULE] [OPTIONS ...] )
+     245 #   -- This is where all the magic happens.  CUDA_ADD_EXECUTABLE,
+     246 #      CUDA_ADD_LIBRARY, CUDA_COMPILE, and CUDA_COMPILE_PTX all call this
+     247 #      function under the hood.
+     248 #
+     249 #      Given the list of files (file0 file1 ... fileN) this macro generates
+     250 #      custom commands that generate either PTX or linkable objects (use "PTX" or
+     251 #      "OBJ" for the format argument to switch).  Files that don't end with .cu
+     252 #      or have the HEADER_FILE_ONLY property are ignored.
+     253 #
+     254 #      The arguments passed in after OPTIONS are extra command line options to
+     255 #      give to nvcc.  You can also specify per configuration options by
+     256 #      specifying the name of the configuration followed by the options.  General
+     257 #      options must precede configuration specific options.  Not all
+     258 #      configurations need to be specified, only the ones provided will be used.
+     259 #
+     260 #         OPTIONS -DFLAG=2 "-DFLAG_OTHER=space in flag"
+     261 #         DEBUG -g
+     262 #         RELEASE --use_fast_math
+     263 #         RELWITHDEBINFO --use_fast_math;-g
+     264 #         MINSIZEREL --use_fast_math
+     265 #
+     266 #      For certain configurations (namely VS generating object files with
+     267 #      CUDA_ATTACH_VS_BUILD_RULE_TO_CUDA_FILE set to ON), no generated file will
+     268 #      be produced for the given cuda file.  This is because when you add the
+     269 #      cuda file to Visual Studio it knows that this file produces an object file
+     270 #      and will link in the resulting object file automatically.
+     271 #
+     272 #      This script will also generate a separate cmake script that is used at
+     273 #      build time to invoke nvcc.  This is for several reasons.
+     274 #
+     275 #        1. nvcc can return negative numbers as return values which confuses
+     276 #        Visual Studio into thinking that the command succeeded.  The script now
+     277 #        checks the error codes and produces errors when there was a problem.
+     278 #
+     279 #        2. nvcc has been known to not delete incomplete results when it
+     280 #        encounters problems.  This confuses build systems into thinking the
+     281 #        target was generated when in fact an unusable file exists.  The script
+     282 #        now deletes the output files if there was an error.
+     283 #
+     284 #        3. By putting all the options that affect the build into a file and then
+     285 #        make the build rule dependent on the file, the output files will be
+     286 #        regenerated when the options change.
+     287 #
+     288 #      This script also looks at optional arguments STATIC, SHARED, or MODULE to
+     289 #      determine when to target the object compilation for a shared library.
+     290 #      BUILD_SHARED_LIBS is ignored in CUDA_WRAP_SRCS, but it is respected in
+     291 #      CUDA_ADD_LIBRARY.  On some systems special flags are added for building
+     292 #      objects intended for shared libraries.  A preprocessor macro,
+     293 #      <target_name>_EXPORTS is defined when a shared library compilation is
+     294 #      detected.
+
+
 
 
 

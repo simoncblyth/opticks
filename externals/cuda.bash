@@ -657,8 +657,6 @@ See::
 CUDA OSX libc++
 -----------------
 
-
-
 CUDA Release Notes
 -------------------
 
@@ -681,6 +679,16 @@ supported by host compilers Clang and GCC versions 4.7 and newer. In addition,
 any C++11 features that are enabled by default by a supported host compiler are
 also allowed to be used in device code. Please see the CUDA Programming Guide
 for further details.
+
+
+CUDA 9.1 SAMPLES
+------------------
+
+::
+
+    epsilon:local blyth$ sudo cp -r /Developer/NVIDIA/CUDA-9.1/samples cuda_9_1_samples
+    epsilon:local blyth$ sudo chown -R blyth:staff cuda_9_1_samples
+
 
 
 
@@ -820,9 +828,6 @@ Before uninstall::
     lrwxr-xr-x   1 root  wheel     46 Dec 20 19:54 libnvblas.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libnvblas.dylib
     ...
 
-
-
-
 uninstall toolkit
 -------------------
 
@@ -836,6 +841,11 @@ uninstall samples
 
 /Developer/NVIDIA/CUDA-9.1/bin/.cuda_samples_uninstall_manifest_do_not_delete.txt
     /Developer/NVIDIA/CUDA-9.1/samples
+
+
+
+
+
 
 
 
