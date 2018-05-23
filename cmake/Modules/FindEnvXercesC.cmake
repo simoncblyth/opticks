@@ -39,16 +39,18 @@ FIND_LIBRARY(XERCESC_LIBRARY
      /opt/local/lib
    DOC "The name of the xerces-c library"
 )
-IF (XERCESC_ROOT_DIR)
-  IF (XERCESC_INCLUDE_DIR AND XERCESC_LIBRARY)
-    SET (XERCESC_FOUND TRUE)
-    SET (XERCESC_LIBRARIES "${XERCESC_LIBRARY}")
-    # FIXME: There should be a better way of handling this?
-    # FIXME: How can we test to see if the lib dir isn't 
-    # FIXME: one of the default dirs?
-    LINK_DIRECTORIES(${XERCESC_ROOT_DIR}/lib)
-  ENDIF (XERCESC_INCLUDE_DIR AND XERCESC_LIBRARY)
-ENDIF (XERCESC_ROOT_DIR)
+
+
+#IF (XERCESC_ROOT_DIR)
+#  IF (XERCESC_INCLUDE_DIR AND XERCESC_LIBRARY)
+#    SET (XERCESC_FOUND TRUE)
+#    SET (XERCESC_LIBRARIES "${XERCESC_LIBRARY}")
+#    # FIXME: There should be a better way of handling this?
+#    # FIXME: How can we test to see if the lib dir isn't 
+#    # FIXME: one of the default dirs?
+#    #LINK_DIRECTORIES(${XERCESC_ROOT_DIR}/lib)
+#  ENDIF (XERCESC_INCLUDE_DIR AND XERCESC_LIBRARY)
+#ENDIF (XERCESC_ROOT_DIR)
 
 IF (XERCESC_FOUND)
   IF (NOT XERCESC_FIND_QUIETLY)
@@ -64,3 +66,34 @@ MARK_AS_ADVANCED(
   XERCESC_INCLUDE_DIR
   XERCESC_LIBRARY
 )
+
+
+
+
+if(XERCESC_FOUND AND NOT TARGET Opticks::XercesC)
+
+    add_library(Opticks::XercesC UNKNOWN IMPORTED) 
+    set_target_properties(Opticks::OpenMeshCore PROPERTIES
+        IMPORTED_LOCATION "${OpenMeshCore_LIBRARY}"
+    )
+
+    add_library(Opticks::OpenMeshTools  UNKNOWN IMPORTED) 
+    set_target_properties(Opticks::OpenMeshTools PROPERTIES
+        IMPORTED_LOCATION "${OpenMeshTools_LIBRARY}"
+    )
+
+    add_library(Opticks::OpenMesh INTERFACE IMPORTED)
+    set_target_properties(Opticks::OpenMesh PROPERTIES
+        INTERFACE_INCLUDE_DIRECTORIES "${OpenMesh_INCLUDE_DIR}"
+        INTERFACE_LINK_LIBRARIES "Opticks::OpenMeshCore;Opticks::OpenMeshTools"
+    )
+
+    # https://cmake.org/cmake/help/v3.3/prop_tgt/INTERFACE_COMPILE_DEFINITIONS.html
+
+
+endif()
+
+
+
+
+

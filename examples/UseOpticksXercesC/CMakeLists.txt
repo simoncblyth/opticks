@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(name UseOpticksXercesC)
+project(${name} VERSION 0.1.0)
+
+set(OpticksXercesC_VERBOSE ON)
+find_package(OpticksXercesC REQUIRED MODULE)   
+
+message(STATUS "OpticksXercesC_MODULE  : ${OpticksXercesC_MODULE} ")
+
+include(EchoTarget)
+#echo_pfx_vars(OpticksXercesC "FOUND;VERSION;CONFIG;INCLUDE;LIBRARY;DLL;INSTALL_DIR")
+echo_target_std(Opticks::OpticksXercesC)
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_executable(${name} ${name}.cc)
+target_link_libraries(${name} PUBLIC Opticks::OpticksXercesC )
+install(TARGETS ${name}  DESTINATION lib)
+

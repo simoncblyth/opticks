@@ -478,7 +478,7 @@ void CTraverser::collectTransform(NPY<float>* buffer, const G4Transform3D& T)
 
     buffer->add(vals, nval) ;
 
-    delete vals ; 
+    delete[] vals ; 
 }
 
 
@@ -510,7 +510,7 @@ void CTraverser::collectTransformT(NPY<float>* buffer, const G4Transform3D& T)
 
     buffer->add(vals, nval) ;
 
-    delete vals ; 
+    delete[] vals ; 
 }
 
 

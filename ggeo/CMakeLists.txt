@@ -11,16 +11,7 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-
-#find_package(GLM REQUIRED MODULE)
-#find_package(PLog REQUIRED MODULE)
-#find_package(SysRap REQUIRED CONFIG)
-#find_package(BoostRap REQUIRED CONFIG)
-#find_package(YoctoGL REQUIRED CONFIG)    ## all those come with NPY
-#find_package(NPY REQUIRED CONFIG)        ## and NPY comes with OpticksCore
-
 find_package(OpticksCore REQUIRED CONFIG)
-
 
 set(SOURCES
 
@@ -133,6 +124,7 @@ set(HEADERS
     GBndLib.hh
     GMaterialLib.hh
     GSurfaceLib.hh
+    GPmtLib.hh
 
     GVector.hh
     GBBox.hh

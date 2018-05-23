@@ -47,9 +47,11 @@ set(HEADERS
     SYSRAP_TAIL.hh
     PLOG.hh
     PLOG_INIT.hh  
+
     SProc.hh
     SSys.hh
     SSeq.hh
+    STranche.hh
     SVec.hh
     SMap.hh
     SDigest.hh

@@ -88,6 +88,7 @@ set(HEADERS
   BConfig.hh
   BBnd.hh
   BRng.hh
+  BConverter.hh
   BLocSeq.hh
   BLocSeqDigest.hh
 )

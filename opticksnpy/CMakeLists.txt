@@ -11,16 +11,13 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-
 ## Targets conjured up from cmake/Modules/Find<Name>.cmake  
 ## (external projects where I do not control CMakeLists.txt)
 find_package(GLM    REQUIRED MODULE)
-find_package(PLog   REQUIRED MODULE)
 find_package(OpenMesh REQUIRED MODULE)
 
 ## Targets serialized via BCM export to PREFIX/lib/cmake/ 
 ## (controlled from their CMakeLists.txt)
-find_package(SysRap REQUIRED CONFIG)
 find_package(BoostRap REQUIRED CONFIG)
 find_package(YoctoGL REQUIRED CONFIG) 
 
@@ -103,12 +100,12 @@ set(SOURCES
     NConvexPolyhedron.cpp
 
     NPrism.cpp
-
     NQuad.cpp
     NSphere.cpp
     NTorus.cpp
     NHyperboloid.cpp
     NCubic.cpp
+
 
     NBBox.cpp
     NBBoxEnum.cpp
@@ -224,6 +221,7 @@ FabStepNPY.hpp
 GenstepNPY.hpp
 NGunConfig.hpp
 PhotonsNPY.hpp
+NPho.hpp
 HitsNPY.hpp
 RecordsNPY.hpp
 BoundariesNPY.hpp
@@ -255,11 +253,8 @@ NSlab.h
 NZSphere.h
 NPart.h
 
-
 NSlice.hpp
 NSequence.hpp
-NSphere.hpp
-NPlane.hpp
 NBBox.hpp
 NBBoxEnum.hpp
 
@@ -268,10 +263,26 @@ NNodeEnum.hpp
 NBox.hpp
 NQuad.hpp
 NPart.hpp
-NPrism.hpp
 NBoundingBox.hpp
 NTesselate.hpp
 NTriangle.hpp
+
+NSlab.hpp
+NCylinder.hpp
+NDisc.hpp
+NCone.hpp
+NZSphere.hpp
+NSphere.hpp
+
+NTorus.hpp
+NHyperboloid.hpp
+NCubic.hpp
+
+NPlane.hpp
+NConvexPolyhedron.hpp
+NPrism.hpp
+
+NPrimitives.hpp
     
 NTriSource.hpp
 NTrianglesNPY.hpp
