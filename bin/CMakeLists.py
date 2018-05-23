@@ -66,7 +66,7 @@ class Opticks(object):
              'OGLRap':140,
              'OpticksGL':150,
              'OK':160,
-             'cfg4':170,
+             'CFG4':170,
              'okg4':180,
              'NumpyServer':-1
             }
