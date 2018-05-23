@@ -1,9 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKTest)
-project(${name})
-
-#file(GLOB TEST_CC_SRCS "*Test.cc")
-
+project(${name} VERSION 0.1.0)
 
 set(_TESTS
     VizTest.cc
@@ -18,7 +15,6 @@ set(TESTS
     TrivialTest.cc
 )
 
-
 foreach(SRC ${TESTS})
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
@@ -29,9 +25,9 @@ foreach(SRC ${TESTS})
     # cmake version 3.4.1 doesnt set the appropriate exe path but cmake version 3.5.2 does  
     # (avoid the complication by moving the smarts into the executable)
 
-    add_dependencies(check ${TGT})
+    #add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} ${LIBRARIES} OK)
+    target_link_libraries(${TGT} OK)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
