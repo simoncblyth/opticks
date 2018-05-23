@@ -20,7 +20,7 @@ set(OpticksAssimp_FOUND "NO")
 endif()
 
 
-set(OpticksAssimp_DEBUG ON)
+set(OpticksAssimp_DEBUG OFF)
 if(OpticksAssimp_DEBUG)
    message(STATUS "FindOpticksAssimp.cmake OpticksAssimp_PREFIX:${OpticksAssimp_PREFIX}  ")
    message(STATUS "FindOpticksAssimp.cmake OpticksAssimp_INCLUDE_DIR:${OpticksAssimp_INCLUDE_DIR}  ")

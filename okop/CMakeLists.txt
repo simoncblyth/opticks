@@ -1,94 +1,18 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKOP) 
-project(${name})
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${OptiX_INSTALL_DIR}/SDK/CMake") 
+project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
 include(EnvCompilationFlags)   
 
-string (REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+include(GNUInstallDirs)
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
-find_package(OptiX ${OPTICKS_OPTIX_VERSION} REQUIRED)
-find_package(CUDA ${OPTICKS_CUDA_VERSION} REQUIRED QUIET)
+find_package(BCM)
+include(BCMDeploy)
 
-find_package(PLog REQUIRED)
-find_package(OpticksBoost REQUIRED)
-find_package(GLM REQUIRED)
-
-find_package(SysRap REQUIRED)
-find_package(BoostRap REQUIRED)
-find_package(OpticksCore REQUIRED)
-find_package(GGeo  REQUIRED)
-find_package(OpticksGeometry REQUIRED)
-find_package(NPY REQUIRED)
-find_package(OptiXRap REQUIRED)
-find_package(CUDARap REQUIRED)
-find_package(ThrustRap REQUIRED)
-
-# NB **NO OpenGL/OpticksGLEW/OpticksGLFW** 
-#    use opticksgl- not opticksop- for viz things 
-
-include_directories(
-   ${CMAKE_CURRENT_SOURCE_DIR}
-
-   ${PLog_INCLUDE_DIRS} 
-   ${OpticksBoost_INCLUDE_DIRS} 
-   ${SysRap_INCLUDE_DIRS} 
-   ${BoostRap_INCLUDE_DIRS} 
-   ${GLM_INCLUDE_DIRS}  
-   ${NPY_INCLUDE_DIRS}  
-   ${OpticksCore_INCLUDE_DIRS} 
-   ${GGeo_INCLUDE_DIRS} 
-   ${OpticksGeometry_INCLUDE_DIRS} 
-   ${CUDA_INCLUDE_DIRS}
-   ${OptiX_INCLUDE_DIRS} 
-   ${OptiXRap_INCLUDE_DIRS}  
-   ${CUDARap_INCLUDE_DIRS} 
-   ${ThrustRap_INCLUDE_DIRS}
-)
-
-add_definitions( 
-   ${PLog_DEFINITIONS} 
-   ${OpticksBoost_DEFINITIONS} 
-   ${SysRap_DEFINITIONS} 
-   ${BoostRap_DEFINITIONS} 
-   ${GLM_DEFINITIONS} 
-   ${NPY_DEFINITIONS} 
-   ${OpticksCore_DEFINITIONS}
-   ${GGeo_DEFINITIONS} 
-   ${OpticksGeometry_DEFINITIONS} 
-   ${CUDA_DEFINITIONS} 
-   ${OptiX_DEFINITIONS} 
-   ${OptiXRap_DEFINITIONS} 
-   ${CUDARap_DEFINITIONS}
-   ${ThrustRap_DEFINITIONS}
-
-    -DVERBOSE 
-)
-
-
-set(LIBRARIES
-   ${PLog_LIBRARIES}
-   ${OpticksBoost_LIBRARIES}
-   ${SysRap_LIBRARIES}
-   ${BoostRap_LIBRARIES}
-   ${GLM_LIBRARIES}
-   ${NPY_LIBRARIES}
-   ${OpticksCore_LIBRARIES}
-   ${GGeo_LIBRARIES}
-   ${OpticksGeometry_LIBRARIES} 
-   ${CUDA_LIBRARIES}
-   ${OptiX_LIBRARIES}
-   ${OptiXRap_LIBRARIES}
-   ${CUDARap_LIBRARIES}
-   ${ThrustRap_LIBRARIES}
-)
-
-if(UNIX)
-   set(LIBRARIES ${LIBRARIES} ssl crypto)
-endif(UNIX)
-
+# NB COMPUTE ONLY : **NO OpenGL/OpticksGLEW/OpticksGLFW** use opticksgl- not opticksop- for viz things 
+find_package(OptiXRap REQUIRED CONFIG)
 
 set(SOURCES
      
@@ -123,12 +47,21 @@ set(HEADERS
     OpMgr.hh
 )
 
-CUDA_ADD_LIBRARY( ${name} SHARED ${SOURCES} OPTIONS)
-target_link_libraries( ${name} ${LIBRARIES} )
+# setup nvcc compilation of CUDA sources into OBJ
+CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )  
+add_library( ${name} SHARED ${_generated_OBJ_files} ${SOURCES} )
 
-install(TARGETS ${name}  DESTINATION lib)
-install(FILES ${HEADERS}   DESTINATION include/${name})
+target_link_libraries( ${name} PUBLIC Opticks::OptiXRap)
+target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
+if(OKOP_VERBOSE)
+  include(EchoTarget)
+  echo_target_std(${name})
+  message(STATUS "${name}._generated_OBJ_files : ${_generated_OBJ_files} ")
+endif()
+
+install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+
 add_subdirectory(tests)
 
