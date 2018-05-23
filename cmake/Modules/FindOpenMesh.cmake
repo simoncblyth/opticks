@@ -1,4 +1,5 @@
 
+set(OpenMesh_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(OpenMesh_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
 
 find_path( OpenMesh_INCLUDE_DIR
@@ -15,12 +16,13 @@ find_library( OpenMeshTools_LIBRARY
               PATHS ${OpenMesh_PREFIX}/lib )
 
 if(OpenMesh_INCLUDE_DIR AND OpenMeshCore_LIBRARY AND OpenMeshTools_LIBRARY)
-set(OpenMesh_FOUND "YES")
+  set(OpenMesh_FOUND "YES")
 else()
-set(OpenMesh_FOUND "NO")
+  set(OpenMesh_FOUND "NO")
 endif()
 
-if(OpenMesh_DEBUG)
+if(OpenMesh_VERBOSE)
+   message(STATUS "FindOpenMesh.cmake OpenMesh_MODULE     :${OpenMesh_MODULE}  ")
    message(STATUS "FindOpenMesh.cmake OpenMesh_INCLUDE_DIR:${OpenMesh_INCLUDE_DIR}  ")
    message(STATUS "FindOpenMesh.cmake OpenMeshCore_LIBRARY:${OpenMeshCore_LIBRARY}  ")
    message(STATUS "FindOpenMesh.cmake OpenMeshTools_LIBRARY:${OpenMeshTools_LIBRARY}  ")

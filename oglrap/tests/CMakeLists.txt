@@ -1,14 +1,10 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OGLRapTest)
-project(${name})
-
-#file(GLOB TEST_CC_SRCS "*Test.cc")
+project(${name} VERSION 0.1.0)
 
 set(FRAGILE_TEST_SOURCES
     FrameTest.cc
-
 ) 
-
 
 set(TEST_SOURCES
 
@@ -28,10 +24,10 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
     if (${TGT} MATCHES ".*Test$")  
        set(testname ${name}.${TGT})
        add_test(${testname} ${TGT})
-       add_dependencies(check ${TGT})
+       #add_dependencies(check ${TGT})
     endif()
 
-    target_link_libraries(${TGT} ${LIBRARIES} OGLRap)
+    target_link_libraries(${TGT} OGLRap)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

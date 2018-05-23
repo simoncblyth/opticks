@@ -1,16 +1,35 @@
 
-set(OpticksGLEW_PREFIX "${OPTICKS_PREFIX}/externals")
+set(OpticksGLEW_MODULE "${CMAKE_CURRENT_LIST_FILE}")
+set(OpticksGLEW_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
 
-message("OpticksGLEW_PREFIX:${OpticksGLEW_PREFIX}")
-
-LINK_DIRECTORIES(${OpticksGLEW_PREFIX}/lib)
-
+find_path( OpticksGLEW_INCLUDE_DIR
+           NAMES "GL/glew.h"
+           PATHS "${OpticksGLEW_PREFIX}/include"
+)
 find_library( OpticksGLEW_LIBRARY 
               NAMES glew GLEW libglew32 glew32
               PATHS ${OpticksGLEW_PREFIX}/lib )
 
-set( OpticksGLEW_LIBRARIES ${OpticksGLEW_LIBRARY} )
+if(OpticksGLEW_VERBOSE)
+  message(STATUS "OpticksGLEW_MODULE      : ${OpticksGLEW_MODULE}")
+  message(STATUS "OpticksGLEW_FOUND       : ${OpticksGLEW_FOUND}")
+  message(STATUS "OpticksGLEW_PREFIX      : ${OpticksGLEW_PREFIX}")
+  message(STATUS "OpticksGLEW_INCLUDE_DIR : ${OpticksGLEW_INCLUDE_DIR}")
+  message(STATUS "OpticksGLEW_LIBRARY     : ${OpticksGLEW_LIBRARY}")
+endif()
 
-set(OpticksGLEW_INCLUDE_DIRS "${OpticksGLEW_PREFIX}/include")
-set(OpticksGLEW_DEFINITIONS "")
+if(OpticksGLEW_INCLUDE_DIR AND OpticksGLEW_LIBRARY)
+  set(OpticksGLEW_FOUND "YES")
+else()
+  set(OpticksGLEW_FOUND "NO")
+endif()
+
+
+if(OpticksGLEW_FOUND AND NOT TARGET Opticks::OpticksGLEW)
+    add_library(Opticks::OpticksGLEW UNKNOWN IMPORTED) 
+    set_target_properties(Opticks::OpticksGLEW PROPERTIES
+        IMPORTED_LOCATION "${OpticksGLEW_LIBRARY}"
+        INTERFACE_INCLUDE_DIRECTORIES "${OpticksGLEW_INCLUDE_DIR}"
+    )
+endif()
 

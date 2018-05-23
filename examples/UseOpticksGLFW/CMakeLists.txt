@@ -1,0 +1,18 @@
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(name UseOpticksGLFW)
+project(${name} VERSION 0.1.0)
+
+set(OpticksGLFW_VERBOSE ON)
+find_package(OpticksGLFW REQUIRED MODULE)   
+
+message(STATUS "OpticksGLFW_MODULE  : ${OpticksGLFW_MODULE} ")
+
+include(EchoTarget)
+#echo_pfx_vars(OpticksGLFW "FOUND;VERSION;CONFIG;INCLUDE;LIBRARY;DLL;INSTALL_DIR")
+echo_target_std(Opticks::OpticksGLFW)
+
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+add_executable(${name} ${name}.cc)
+target_link_libraries(${name} PUBLIC Opticks::OpticksGLFW )
+install(TARGETS ${name}  DESTINATION lib)
+

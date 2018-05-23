@@ -1,56 +1,46 @@
-set(ImGui_PREFIX "${OPTICKS_PREFIX}/externals")
+
+set(ImGui_MODULE "${CMAKE_CURRENT_LIST_FILE}")
+set(ImGui_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
+
+find_path( ImGui_INCLUDE_DIR
+           NAMES "ImGui/imgui.h"
+           PATHS "${ImGui_PREFIX}/include"
+)
 
 find_library( ImGui_LIBRARY 
               NAMES ImGui 
               PATHS ${ImGui_PREFIX}/lib )
 
-set( ImGui_LIBRARIES ${ImGui_LIBRARY} )
 
-if(APPLE)
-    find_library( Cocoa_LIBRARY NAMES Cocoa )
-    find_library( OpenGL_LIBRARY NAMES OpenGL )
-    find_library( IOKit_LIBRARY NAMES IOKit )
-    find_library( CoreFoundation_LIBRARY NAMES CoreFoundation )
-    find_library( CoreVideo_LIBRARY NAMES CoreVideo )
-
-    set( ImGui_LIBRARIES 
-               ${ImGui_LIBRARIES} 
-               ${GLFW_LIBRARIES} 
-               ${Cocoa_LIBRARY}
-               ${OpenGL_LIBRARY}
-               ${IOKit_LIBRARY}
-               ${CoreFoundation_LIBRARY} 
-               ${CoreVideo_LIBRARY} )
-   #message("FindImGUI:APPLE")
-endif(APPLE)
-
-if(UNIX AND NOT APPLE)
-    find_library( OpenGL_LIBRARY NAMES GL )
-
-    set( ImGui_LIBRARIES 
-               ${ImGui_LIBRARIES} 
-               ${GLFW_LIBRARIES} 
-               ${OpenGL_LIBRARY}
-               )
-
-   #message("FindImGUI:UNIX AND NOT APPLE")
-endif(UNIX AND NOT APPLE)
+if(ImGui_INCLUDE_DIR AND ImGui_LIBRARY)
+   set(ImGui_FOUND "YES")
+else()
+   set(ImGui_FOUND "NO")
+endif()
 
 
-if(MINGW)
-    find_library( OpenGL_LIBRARY NAMES opengl32 )
+set(tgt Opticks::ImGui)
+if(ImGui_FOUND AND NOT TARGET ${tgt})
 
-    message("FindImGui MINGW OpenGL_LIBRARY : ${OpenGL_LIBRARY} " )
+    add_library(${tgt} UNKNOWN IMPORTED) 
+    set_target_properties(${tgt} PROPERTIES IMPORTED_LOCATION "${ImGui_LIBRARY}")
 
-    set( ImGui_LIBRARIES 
-               ${ImGui_LIBRARIES} 
-               ${GLFW_LIBRARIES} 
-               ${OpenGL_LIBRARY}
-               )
+    set_target_properties(${tgt} PROPERTIES 
+        INTERFACE_INCLUDE_DIRECTORIES "${ImGui_INCLUDE_DIR}" 
+        INTERFACE_FIND_PACKAGE_NAME "ImGui MODULE REQUIRED"
+    )
+    ## Above target_properties INTERFACE_FIND_PACKAGE_NAME kludge tees up the arguments 
+    ## to find_dependency in BCM generated exports 
+    ## so downstream targets will automatically do the required find_dependency
+    ## and call this script again to revive the targets.
+    ## NB INTERFACE_FIND_PACKAGE_NAME is a BCM defined property, not a standard one, see bcm-
 
+endif()
 
-endif(MINGW)
+if(ImGui_VERBOSE)
+  message(STATUS "FindImGui.cmake : ImGui_MODULE      : ${ImGui_MODULE} " )
+  message(STATUS "FindImGui.cmake : ImGui_LIBRARY     : ${ImGui_LIBRARY} " )
+  message(STATUS "FindImGui.cmake : ImGui_INCLUDE_DIR : ${ImGui_INCLUDE_DIR} " )
+endif()
 
-set(ImGui_INCLUDE_DIRS "${ImGui_PREFIX}/include")
-set(ImGui_DEFINITIONS "")
 
