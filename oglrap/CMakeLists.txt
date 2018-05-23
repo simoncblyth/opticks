@@ -11,11 +11,11 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-find_package(ImGui REQUIRED MODULE)
+find_package(ImGui       REQUIRED MODULE)
 find_package(OpticksGLEW REQUIRED MODULE)
 find_package(OpticksGLFW REQUIRED MODULE)
 
-find_package(OpticksGeometry REQUIRED CONFIG)
+find_package(OpticksGeo  REQUIRED CONFIG)
 
 
 # generate define header for hardcoding in the library 
@@ -104,7 +104,7 @@ target_link_libraries( ${name} PUBLIC
     Opticks::OpticksGLEW
     Opticks::OpticksGLFW
     Opticks::ImGui
-    Opticks::OpticksGeometry
+    Opticks::OpticksGeo
 )
 
 if(WIN32)

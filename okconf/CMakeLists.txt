@@ -8,6 +8,8 @@ include(EnvCompilationFlags)
 include(GNUInstallDirs)
 set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
+
+
 set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})  
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
 
@@ -29,6 +31,11 @@ set(OXRAP_OPTIX_VERSION   "${OptiX_VERSION_INTEGER}")
 set(CFG4_G4VERSION_NUMBER "${G4_VERSION_INTEGER}")
 
 configure_file( OpticksCMakeConfig.hh.in inc/OpticksCMakeConfig.hh )
+
+# generate opticks-config sh script into lib dir
+#include(OpticksConfigureConfigScript)
+
+
 
 set(SOURCES
     OKConf.cc

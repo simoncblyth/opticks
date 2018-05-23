@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-set(name OpticksGeometryTest)
+set(name OpticksGeoTest)
 project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
-    OpticksGeometryTest.cc
+    OpticksGeoTest.cc
     OpticksHubTest.cc
     OpenMeshRapTest.cc
 )
@@ -15,7 +15,7 @@ foreach(TEST_CC_SRC ${TEST_SOURCES})
     add_test(${name}.${TGT} ${TGT})
     #add_dependencies(check ${TGT})
 
-    target_link_libraries(${TGT} OpticksGeometry)
+    target_link_libraries(${TGT} OpticksGeo)
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

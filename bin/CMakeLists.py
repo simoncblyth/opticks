@@ -20,8 +20,9 @@ class CMakeLists(object):
    name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
 
-   def __init__(self, lines):
+   def __init__(self, lines, reldir=None):
        self.lines = lines 
+       self.reldir = reldir
        self.name = None
        self.deps = []
        self.parse()
@@ -41,7 +42,7 @@ class CMakeLists(object):
            pass
 
    def __repr__(self):
-       return "%20s : %s " % (  self.name, " ".join(map(lambda _:_.name, self.deps)) )
+       return "%20s : %20s : %s " % (  self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
 
    def __str__(self):
        return "\n".join(self.lines)  
@@ -78,9 +79,10 @@ class Opticks(object):
         pkgs = {} 
         for dirpath, dirs, names in os.walk(root):
             if CMakeLists.NAME in names and not "examples" in dirpath and not "tests" in dirpath and not "externals" in dirpath:
+                reldir = dirpath[len(root)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 lines = map(str.strip, file(path,"r").readlines() ) 
-                ls = CMakeLists(lines)
+                ls = CMakeLists(lines, reldir=reldir)
                 pkgs[ls.name] = ls
                 #print path
                 #print repr(ls)

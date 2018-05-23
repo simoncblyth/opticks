@@ -13,7 +13,7 @@ include(BCMDeploy)
 
 ## Targets conjured up from cmake/Modules/Find<Name>.cmake  
 ## (external projects where I do not control CMakeLists.txt)
-find_package(GLM    REQUIRED MODULE)
+find_package(GLM     REQUIRED MODULE)
 find_package(OpenMesh REQUIRED MODULE)
 
 ## Targets serialized via BCM export to PREFIX/lib/cmake/ 

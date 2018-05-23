@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-set(name OpticksGeometry)
+set(name OpticksGeo)
 project(${name} VERSION 0.1.0)
 
 include(EnvBuildOptions)
@@ -10,19 +10,6 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
 find_package(BCM)
 include(BCMDeploy)
-
-#[==[
-              SysRap : BCM PLog 
-              OKConf : BCM SysRap OptiX G4 
-            BoostRap : BCM Boost PLog SysRap 
-                 NPY : BCM GLM PLog OpenMesh SysRap BoostRap YoctoGL ImplicitMesher DualContouringSample 
-         OpticksCore : BCM OKConf NPY 
-                GGeo : BCM OpticksCore 
-           AssimpRap : BCM OpticksAssimp GGeo 
-         OpenMeshRap : BCM GGeo OpticksCore 
-     OpticksGeometry : OpticksCore AssimpRap OpenMeshRap  
-
-#]==]
 
 find_package(OpticksCore REQUIRED CONFIG)
 find_package(AssimpRap   REQUIRED CONFIG)

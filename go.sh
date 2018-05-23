@@ -3,10 +3,8 @@
 opticks-
 
 sdir=$(pwd)
-name=$(basename $sdir)
-
-#bdir=/tmp/$USER/opticks/$name/build 
-bdir=$(opticks-prefix)/build/$name
+bdir=/tmp/build
+#bdir=$(opticks-prefix)/build
 
 rm -rf $bdir 
 mkdir -p $bdir && cd $bdir && pwd 

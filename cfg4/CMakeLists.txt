@@ -13,7 +13,7 @@ include(BCMDeploy)
 
 find_package(G4              REQUIRED MODULE)
 find_package(OpticksXercesC  REQUIRED MODULE)
-find_package(OpticksGeometry REQUIRED CONFIG)
+find_package(OpticksGeo      REQUIRED CONFIG)
 
 
 set(SOURCES
@@ -203,7 +203,7 @@ add_library(${name} SHARED  ${SOURCES})
 target_link_libraries( ${name} PUBLIC 
    Opticks::G4
    Opticks::OpticksXercesC
-   Opticks::OpticksGeometry
+   Opticks::OpticksGeo
 )
 
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )

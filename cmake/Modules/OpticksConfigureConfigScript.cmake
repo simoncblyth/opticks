@@ -86,7 +86,7 @@ if(UNIX)
 
 
   configure_file(
-      ${CMAKE_SOURCE_DIR}/cmake/Templates/opticks-config.in
+      ${CMAKE_SOURCE_DIR}/opticks-config.in
       ${PROJECT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/opticks-config
       @ONLY
       )

@@ -11,9 +11,9 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-find_package(OptiX REQUIRED MODULE)   
-find_package(OpticksGeometry REQUIRED CONFIG)
-find_package(ThrustRap REQUIRED CONFIG )
+find_package(OptiX      REQUIRED MODULE)   
+find_package(OpticksGeo REQUIRED CONFIG)
+find_package(ThrustRap  REQUIRED CONFIG )
 
 set(SOURCES
      
@@ -140,7 +140,7 @@ add_library( ${name} SHARED ${_generated_OBJ_files} ${_generated_PTX_files} ${SO
 
 target_link_libraries( ${name} PUBLIC  
   Opticks::OptiX
-  Opticks::OpticksGeometry
+  Opticks::OpticksGeo
   Opticks::ThrustRap
 )
 

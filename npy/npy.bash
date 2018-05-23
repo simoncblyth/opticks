@@ -1,7 +1,4 @@
-npy-src(){      echo opticksnpy/npy.bash ; }
-npy-rel(){      echo opticksnpy ; }
-npy-src(){      echo opticksnpy ; }
-npy-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(npy-src)} ; }
+npy-source(){   echo $BASH_SOURCE ; }
 npy-vi(){       vi $(npy-source) ; }
 npy-env(){      olocal- ; opticks- ; }
 npy-usage(){ cat << EOU
@@ -285,8 +282,8 @@ EON
 }
 
 
-npy-sdir(){ echo $(opticks-home)/opticksnpy ; }
-npy-tdir(){ echo $(opticks-home)/opticksnpy/tests ; }
+npy-sdir(){ echo $(opticks-home)/npy ; }
+npy-tdir(){ echo $(opticks-home)/npy/tests ; }
 npy-idir(){ echo $(opticks-idir) ; }
 npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
 
