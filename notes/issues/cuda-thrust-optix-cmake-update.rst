@@ -1,8 +1,37 @@
 CUDA Thrust OptiX CMake Update ?
 ===================================
 
-Modern CMake 3.9+ has new possibilities...
-----------------------------------------
+Approaches to CUDA Config
+----------------------------
+
+1. Makefile (only applicable to CUDA samples that already have Makefiles)
+2. old style (variable-centric) CMake using FindCUDA.cmake
+
+   * Opticks has been using this approach up until the opticks-cmake-overhaul
+
+3. CMake 3.5+ new style (target-centric) CMake but still using the old FindCUDA.cmake (with some kludge fixups required)
+
+   * FindOpticksCUDA.cmake gives the old FindCUDA.cmake a target style INTERFACE, allowing
+     it to get along with the rest of Opticks (modulo some kludge fixes to the interface 
+     the cuda_add_library provides)
+
+4. CMake 3.9+ new style CMake using native CUDA lang support, no-longer using FindCUDA.cmake
+
+   * brief attempt meets too much wierdness to pursue
+
+
+Brief attemp at approach 4 with cudasamples- unsuccessful, so sticking with approach 3 for now
+-------------------------------------------------------------------------------------------------
+
+
+* brief attempt at getting the new CUDA Lang support in 3.9 CMake to 
+  operate using cudasamples- met too much bizarreness to pursue
+
+  * runtime issue that depends on configuration approach
+    (Makefile and old style CMake was fine, but CMake-CUDA-lang gave 
+     cudaErrorInsufficientDriver error ( see cudadamples- for details)
+   
+  some bizarre runtime issues : that differered 
 
 
 * env-;cct-
@@ -35,6 +64,7 @@ CMake 3.9: PTX
 caffe2 has a go at making targets
 
 * https://github.com/caffe2/caffe2/blob/master/cmake/public/cuda.cmake
+
 
 
 Old way of using CUDA relies on " CUDA_ADD_LIBRARY/CUDA_ADD_EXECUTABLE

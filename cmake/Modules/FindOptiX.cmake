@@ -169,6 +169,9 @@ endif()
 
 ## Opticks additions
 
+set(OptiX_MODULE  "${CMAKE_CURRENT_LIST_FILE}")  
+## TODO: Discover general way that finders of CMake modules can introspect the path of the one that was found ?
+
 if(optix_LIBRARY AND optixu_LIBRARY AND OptiX_INCLUDE)
    set(OptiX_FOUND "YES")
 else()
@@ -188,14 +191,15 @@ if(OptiX_FOUND)
    endforeach()
 endif()
 
-set(OptiX_VERBOSE NO)
+#set(OptiX_VERBOSE NO)
 if(OptiX_VERBOSE)
+   message(STATUS "FindOptiX.cmake.OptiX_MODULE          : ${OptiX_MODULE}")
+   message(STATUS "FindOptiX.cmake.OptiX_FOUND           : ${OptiX_FOUND}")
+   message(STATUS "FindOptiX.cmake.OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
+   message(STATUS "FindOptiX.cmake.OptiX_INCLUDE         : ${OptiX_INCLUDE}")
    message(STATUS "FindOptiX.cmake.optix_LIBRARY         : ${optix_LIBRARY}")
    message(STATUS "FindOptiX.cmake.optixu_LIBRARY        : ${optixu_LIBRARY}")
    message(STATUS "FindOptiX.cmake.optix_prime_LIBRARY   : ${optix_prime_LIBRARY}")
-   message(STATUS "FindOptiX.cmake.OptiX_INCLUDE         : ${OptiX_INCLUDE}")
-   message(STATUS "FindOptiX.cmake.OptiX_FOUND           : ${OptiX_FOUND}")
-   message(STATUS "FindOptiX.cmake.OptiX_VERSION_INTEGER : ${OptiX_VERSION_INTEGER}")
 endif()
 
 if(OptiX_FOUND)
@@ -206,6 +210,5 @@ if(OptiX_FOUND)
    )
 
 endif()
-
 
 

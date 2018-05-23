@@ -728,6 +728,9 @@ cuda-dir()
    esac
 }
 
+
+cuda-edit(){ vi /opt/local/share/cmake-3.11/Modules/FindCUDA.cmake ; }
+
 cuda-uninstall-notes(){ cat << EON
 
 Uninstall CUDA

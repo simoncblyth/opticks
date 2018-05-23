@@ -4,18 +4,23 @@ project(${name})
     
 include(EchoTarget)
 
+set(OptiX_VERBOSE ON)
+
 find_package(OptiX MODULE QUIET)   
 
 if(OptiX_FOUND)
+    message(STATUS "OptiX_MODULE  : ${OptiX_MODULE} ")  
     message(STATUS "OptiX_FOUND   : ${OptiX_FOUND} ")
     message(STATUS "OptiX_VERSION : ${OptiX_VERSION} ")
+    message(STATUS "OptiX_CONFIG  : ${OptiX_CONFIG} ")
+
+    echo_pfx_vars(OptiX "FOUND;VERSION;CONFIG;INCLUDE;LIBRARY;DLL;INSTALL_DIR")
 
     #echo_target_std(Opticks::OptiX)
     #echo_target_std(optix)
     #echo_target_std(optixu)
     #echo_target_std(optix_prime)
     #echo_pfx_vars(optix "rpath;LIBRARY")
-    #echo_pfx_vars(OptiX "INCLUDE;LIBRARY;DLL;INSTALL_DIR")
 
 else()
     message(STATUS "OptiX not found")

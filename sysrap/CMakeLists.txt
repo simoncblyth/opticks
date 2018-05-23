@@ -37,6 +37,7 @@ set(SOURCES
     SSortKV.cc
     SPairVec.cc
     md5.cc
+    SPPM.cc
 ) 
 
 set(HEADERS
@@ -67,6 +68,7 @@ set(HEADERS
     SAr.hh
     SArgs.hh
     S_freopen_redirect.hh
+    SPPM.hh
 )
 
 

@@ -250,6 +250,12 @@ NSensorList.hpp
 NGeoTestConfig.hpp
 
 
+NCylinder.h
+NSlab.h
+NZSphere.h
+NPart.h
+
+
 NSlice.hpp
 NSequence.hpp
 NSphere.hpp

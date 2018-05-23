@@ -3436,6 +3436,13 @@ optix-export(){
 
 optix-fold(){ echo ${OPTICKS_OPTIX_HOME:-$($FUNCNAME-)} ; }
 optix-fold-(){ 
+   case $(uname) in
+     Darwin) echo /Developer ;;
+          *) echo /usr/local ;; 
+   esac
+}
+
+optix-fold-old-(){
    case $NODE_TAG in 
       D)  echo /Developer ;;
       G1) echo $(local-base) ;;
@@ -3524,6 +3531,7 @@ optix-linux-name(){
 
 optix-version(){
    case $(optix-name) in 
+     OptiX_501)   echo 5.0.1 ;;
      OptiX_411)   echo 4.1.1 ;;
      OptiX_400)   echo 4.0.0 ;;
      OptiX_380)   echo 3.8.0 ;;

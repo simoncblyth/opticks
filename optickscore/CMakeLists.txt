@@ -11,9 +11,6 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-#find_package(GLM      REQUIRED MODULE)  ## comes with NPY, can skip ?
-#find_package(BoostRap REQUIRED CONFIG)  ## comes with NPY, can skip ?
-
 find_package(OKConf   REQUIRED CONFIG)
 find_package(NPY      REQUIRED CONFIG)
 
@@ -114,6 +111,7 @@ set(HEADERS
     OpticksBufferSpec.hh
     Indexer.hh
 
+    OpticksSwitches.h
     OpticksFlags.hh
     OpticksAttrSeq.hh
     Opticks.hh

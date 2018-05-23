@@ -1,8 +1,95 @@
 opticks-cmake-overhaul
 =========================
 
-move dev to local clone
---------------------------
+motivation
+-----------
+
+Ease of use : make applying Opticks to a Geant4 example (eg LXe) straightforward to 
+
+* configure
+* code 
+
+  * TODO : general purpose high level steering 
+
+
+stages
+--------
+
+* bcm wave thru the projects
+* move almost everything from top level CMakeLists.txt into sub-projects : aiming 
+  for top level to just be a list of sub-projects 
+
+  * OptiX, G4 detection/parsing moved into OKConf
+  * TODO: move opticks-config generation into OKConf too 
+
+
+oxrap
+-------
+
+::
+
+    /Users/blyth/opticks-cmake-overhaul
+     10               OKConf : BCM OptiX G4  
+     20               SysRap : BCM PLog  
+     30             BoostRap : BCM Boost PLog SysRap  
+     40                  NPY : BCM GLM PLog OpenMesh SysRap BoostRap YoctoGL ImplicitMesher DualContouringSample  
+     50          OpticksCore : BCM OKConf NPY  
+     60                 GGeo : BCM OpticksCore  
+     70            AssimpRap : BCM OpticksAssimp GGeo  
+     80          OpenMeshRap : BCM GGeo OpticksCore  
+
+     90      OpticksGeometry : BCM OpticksCore AssimpRap OpenMeshRap  
+    100              CUDARap : BCM SysRap OpticksCUDA  
+    110            ThrustRap : BCM OpticksCore CUDARap  
+    120             OptiXRap : 
+    
+     OptiX OpticksGeometry ThrustRap 
+
+
+::
+
+    099 function(optixthrust_add_library target_name)
+    100 
+    101     # split arguments into four lists 
+    102     #  hmm have two different flavors of .cu
+    103     #  optix programs to be made into .ptx  
+    104     #  and thrust or CUDA non optix sources need to be compiled into .o for linkage
+    105 
+    106     OPTIXTHRUST_GET_SOURCES_AND_OPTIONS(optix_source_files non_optix_source_files cmake_options options ${ARGN})
+    107 
+    108     #message( "OPTIXTHRUST:optix_source_files= " "${optix_source_files}" )  
+    109     #message( "OPTIXTHRUST:non_optix_source_files= "  "${non_optix_source_files}" )  
+    110 
+    111     # Create the rules to build the OBJ from the CUDA files.
+    112     #message( "OPTIXTHRUST:OBJ options = " "${options}" )  
+    113     CUDA_WRAP_SRCS( ${target_name} OBJ non_optix_generated_files ${non_optix_source_files} ${cmake_options} OPTIONS ${options} )
+    114 
+    115     # Create the rules to build the PTX from the CUDA files.
+    116     #message( "OPTIXTHRUST:PTX options = " "${options}" )  
+    117     CUDA_WRAP_SRCS( ${target_name} PTX optix_generated_files ${optix_source_files} ${cmake_options} OPTIONS ${options} )
+    118 
+    119     add_library(${target_name}
+    120         ${optix_source_files}
+    121         ${non_optix_source_files}
+    122         ${optix_generated_files}
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ surely these are just ignored ?
+
+    123         ${non_optix_generated_files}
+    124         ${cmake_options}
+    125     )
+    126 
+    127     target_link_libraries( ${target_name}
+    128         ${LIBRARIES}
+    129       )
+    130 
+    131 endfunction()
+    132 
+
+
+
+
+setup the fork : move dev to local clone
+-----------------------------------------
 
 Overhauling CMake infrastructure is bound to cause 
 build breakage potentially for an extended period, 
