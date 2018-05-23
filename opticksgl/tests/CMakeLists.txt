@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpticksGLTest)
-project(${name})
+project(${name} VERSION 0.1.0)
 
 set(TEST_SOURCES
     OOAxisAppCheck.cc
@@ -12,10 +12,10 @@ foreach(SRC ${TEST_SOURCES})
 
     if (${TGT} MATCHES ".*Test$")  
        add_test(${name}.${TGT} ${TGT})
-       add_dependencies(check ${TGT})
+       #add_dependencies(check ${TGT})
     endif()
 
-    target_link_libraries(${TGT} ${LIBRARIES} OpticksGL )
+    target_link_libraries(${TGT} OpticksGL )
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 

@@ -95,6 +95,7 @@ SET(HEADERS
     Colors.hh
 
     gleq.h
+    GLEQ.hh
     loadPPM.h
 )
 
