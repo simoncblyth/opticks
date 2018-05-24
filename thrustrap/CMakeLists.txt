@@ -49,7 +49,29 @@ SET(HEADERS
 
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS )
-set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
+
+get_target_property(_cal_ill ${name} INTERFACE_LINK_LIBRARIES)
+message(STATUS "${name} CUDA_ADD_LIBRARY.INTERFACE_LINK_LIBRARIES : ${_cal_ill} ") 
+
+#[=[
+Scrubbing this causes all thrap tests to fail with the below exception in integrated build, but not for the 
+proj by proj build, see thrap- for laborious debug that discovered this::
+
+  libc++abi.dylib: terminating with uncaught exception of type thrust::system::system_error: device free failed: CUDA driver version is insufficient for CUDA runtime version
+
+Some how the integrated build uses::
+
+   /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib
+
+When it should be using::
+
+   /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/usr/local/cuda/lib 
+
+-- ThrustRap CUDA_ADD_LIBRARY.INTERFACE_LINK_LIBRARIES : /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/usr/local/cuda/lib 
+
+#]=]
+
+set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear CAUSES GRIEF FOR INTEGRATED BUILD
 target_link_libraries( ${name} Opticks::OpticksCore Opticks::CUDARap)
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 

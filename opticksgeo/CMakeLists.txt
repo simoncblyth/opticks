@@ -47,7 +47,6 @@ target_link_libraries( ${name} PUBLIC  Opticks::OpticksCore Opticks::AssimpRap O
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
 
 

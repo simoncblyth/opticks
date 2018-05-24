@@ -120,6 +120,7 @@ message(STATUS "CMAKE_CURRENT_BINARY_DIR:${CMAKE_CURRENT_BINARY_DIR}")
 add_library( ${name}  SHARED ${SOURCES})
 
 target_include_directories( ${name} PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
 )
 
@@ -135,15 +136,14 @@ if(UNIX)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 
-set(INCLUDE_DIRS
-   ${CMAKE_CURRENT_SOURCE_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}
-   ${CMAKE_CURRENT_BINARY_DIR}/inc
-) 
+#set(INCLUDE_DIRS
+#   ${CMAKE_CURRENT_SOURCE_DIR}
+#   ${CMAKE_CURRENT_BINARY_DIR}
+#   ${CMAKE_CURRENT_BINARY_DIR}/inc
+#) 
 
-bcm_deploy(TARGETS ${name} INCLUDE ${INCLUDE_DIRS} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
 

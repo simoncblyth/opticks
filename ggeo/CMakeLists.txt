@@ -164,7 +164,6 @@ install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 
-#add_subdirectory(tests EXCLUDE_FROM_ALL)
 add_subdirectory(tests)
 
 

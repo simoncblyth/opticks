@@ -46,8 +46,47 @@ else(WIN32)
 endif(WIN32)
 
 
-#message(" CMAKE_CXX_STANDARD : ${CMAKE_CXX_STANDARD} " )
-#message(" CMAKE_CXX_STANDARD_REQUIRED : ${CMAKE_CXX_STANDARD_REQUIRED} " )
-#message(" CMAKE_CXX_FLAGS : ${CMAKE_CXX_FLAGS} " )
+
+set(COMPUTE_CAPABILITY 30)
+if(NOT (COMPUTE_CAPABILITY LESS 30))
+
+   #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${COMPUTE_CAPABILITY}")
+   list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
+   list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
+
+   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+   list(APPEND CUDA_NVCC_FLAGS "-O2")
+   #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
+   list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
+   # see env-/nvcc- for background on flags  
+
+   #list(APPEND CUDA_NVCC_FLAGS "-m64")
+   #list(APPEND CUDA_NVCC_FLAGS "--disable-warnings")
+
+   # CUDA headers yield many:
+   # /usr/local/cuda/include/device_functions.hpp:283:3:   warning: extension used [-Wlanguage-extension-token]
+   # TODO: find way to selectively disable warnings
+
+   # https://cmake.org/cmake/help/v3.0/module/FindCUDA.html
+   set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+   set(CUDA_VERBOSE_BUILD OFF)
+
+   message(STATUS "EnvCompilationFlags.cmake : COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
+   message(STATUS "EnvCompilationFlags.cmake : CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
+endif()
+ 
+
+set(FLAGS_VERBOSE ON)
+if(FLAGS_VERBOSE)
+   # https://cmake.org/Wiki/CMake_Useful_Variables
+   message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+   message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+   message("CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
+   message("CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
+   message("CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+   message("CMAKE_CXX_STANDARD : ${CMAKE_CXX_STANDARD} " )
+   message("CMAKE_CXX_STANDARD_REQUIRED : ${CMAKE_CXX_STANDARD_REQUIRED} " )
+endif()
+
 
 

@@ -31,6 +31,7 @@ set(SUBDIRS
   opticksgl
   ok
   cfg4
+  okg4
 )
 
 #[=[

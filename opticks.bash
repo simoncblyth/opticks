@@ -1432,7 +1432,11 @@ opticks-rpath(){ grep RPATH $(opticks-home)/examples/*/CMakeLists.txt ; }
 opticks-bcm-deploy-(){  find . -name CMakeLists.txt -exec grep -l bcm_deploy {} \; ; }
 opticks-bcm-deploy(){ vi $(opticks-bcm-deploy-) ; }
 
-opticks-deps(){ CMakeLists.py ; }
+opticks-deps(){ CMakeLists.py $* ; }
 opticks-deps-vi(){ vi $(opticks-home)/bin/CMakeLists.py ; }
+
+opticks-executables(){  find . -type f -perm +111 -print | grep -v dylib | grep -v a.out | grep -v .bin | grep -v .cmake | grep -v opticks-config ; }
+
+
 
 

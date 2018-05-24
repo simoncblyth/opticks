@@ -14,6 +14,383 @@ All fail for same error
 
 
 
+zoom in on a simple test expandTest 
+----------------------------------------------
+
+The one that works::
+
+    epsilon:tests blyth$ pwd
+    /usr/local/opticks-cmake-overhaul/build/thrustrap/tests
+    epsilon:tests blyth$ touch ~/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu 
+    epsilon:tests blyth$ make expandTest
+
+
+
+
+
+integrated build with flags brought over in EnvCompilationFlags.cmake
+-----------------------------------------------------------------------
+
+::
+
+    epsilon:opticks-cmake-overhaul blyth$ ./go.sh 
+
+
+    opticks-home   : /Users/blyth/opticks-cmake-overhaul
+    opticks-prefix : /usr/local/opticks-cmake-overhaul
+    opticks-prefix-tmp : /usr/local/opticks-cmake-overhaul-tmp
+    opticks-name   : opticks-cmake-overhaul
+
+
+    === ./go.sh : integrated build : for now into opticks-prefix-tmp : /usr/local/opticks-cmake-overhaul-tmp
+
+    found externals dir or link inside the prefix
+    found opticksdata dir inside the prefix
+    /usr/local/opticks-cmake-overhaul-tmp
+    total 0
+    drwxr-xr-x   29 blyth  staff    928 May 24 19:34 build
+    lrwxr-xr-x    1 blyth  staff     20 May 24 16:05 externals -> ../opticks/externals
+    drwxr-xr-x    3 blyth  staff     96 May 24 17:37 geocache
+    drwxr-xr-x   20 blyth  staff    640 May 24 17:38 gl
+    drwxr-xr-x   20 blyth  staff    640 May 24 17:43 include
+    drwxr-xr-x    3 blyth  staff     96 May 24 16:21 installcache
+    drwxr-xr-x  328 blyth  staff  10496 May 24 19:33 lib
+    lrwxr-xr-x    1 blyth  staff     22 May 24 16:05 opticksdata -> ../opticks/opticksdata
+    /usr/local/opticks-cmake-overhaul-tmp/build
+    === ./go.sh : sdir : /Users/blyth/opticks-cmake-overhaul
+    === ./go.sh : bdir : /usr/local/opticks-cmake-overhaul-tmp/build
+    === ./go.sh : pwd : /usr/local/opticks-cmake-overhaul-tmp/build
+    ...
+
+    -- Installing: /usr/local/opticks-cmake-overhaul-tmp/lib/cmake/okg4/okg4-targets-debug.cmake
+    -- Up-to-date: /usr/local/opticks-cmake-overhaul-tmp/lib/cmake/okg4/okg4-config.cmake
+    -- Up-to-date: /usr/local/opticks-cmake-overhaul-tmp/lib/cmake/okg4/okg4-config-version.cmake
+    -- Installing: /usr/local/opticks-cmake-overhaul-tmp/lib/OKG4Test
+    === ./go.sh : make installing 32 seconds ie 0 minutes
+    === ./go.sh :              cmake configuring 5 seconds ie 0 minutes 
+    === ./go.sh :                  make building 851 seconds ie 14 minutes 
+    === ./go.sh :                make installing 32 seconds ie 0 minutes 
+    epsilon:opticks-cmake-overhaul blyth$ 
+
+    epsilon:opticks-cmake-overhaul blyth$ opticks-t /usr/local/opticks-cmake-overhaul-tmp/build
+
+    ...
+
+    92% tests passed, 25 tests failed out of 299
+
+    Total Test time (real) =  92.99 sec
+
+    The following tests FAILED:
+        190 - GGeoTest.GBndLibInitTest (SEGFAULT)
+        222 - GGeoTest.GSceneTest (Child aborted)
+        235 - ThrustRapTest.CBufSpecTest (Child aborted)
+        236 - ThrustRapTest.TBufTest (Child aborted)
+        237 - ThrustRapTest.TRngBufTest (Child aborted)
+        238 - ThrustRapTest.expandTest (Child aborted)
+        239 - ThrustRapTest.iexpandTest (Child aborted)
+        240 - ThrustRapTest.issue628Test (Child aborted)
+        241 - ThrustRapTest.printfTest (Child aborted)
+        242 - ThrustRapTest.repeated_rangeTest (Child aborted)
+        243 - ThrustRapTest.strided_rangeTest (Child aborted)
+        244 - ThrustRapTest.strided_repeated_rangeTest (Child aborted)
+        245 - ThrustRapTest.float2intTest (Child aborted)
+        246 - ThrustRapTest.thrust_curand_estimate_pi (Child aborted)
+        247 - ThrustRapTest.thrust_curand_printf (Child aborted)
+        248 - ThrustRapTest.thrust_curand_printf_redirect (Child aborted)
+        249 - ThrustRapTest.thrust_curand_printf_redirect2 (Child aborted)
+        265 - OptiXRapTest.ORayleighTest (Child aborted)
+        269 - OKOPTest.OpSeederTest (Child aborted)
+        276 - OKTest.OKTest (Child aborted)
+        282 - CFG4Test.CTestDetectorTest (Child aborted)
+        285 - CFG4Test.CG4Test (Child aborted)
+        293 - CFG4Test.CInterpolationTest (Child aborted)
+        298 - CFG4Test.CRandomEngineTest (Child aborted)
+        299 - OKG4Test.OKG4Test (Child aborted)
+    Errors while running CTest
+    Thu May 24 20:27:26 HKT 2018
+    === opticks-t- : use -V to show output, ctest output written to /usr/local/opticks-cmake-overhaul-tmp/build/ctest.log
+    epsilon:opticks-cmake-overhaul blyth$ 
+
+
+
+
+integrated vs subproj thrustrap flag check
+---------------------------------------------
+
+* 
+
+
+integrated::
+
+    epsilon:opticks-cmake-overhaul blyth$ touch thrustrap/THRAP_API_EXPORT.hh
+    epsilon:opticks-cmake-overhaul blyth$ export VERBOSE=1
+    epsilon:opticks-cmake-overhaul blyth$ ./go.sh 
+
+::
+
+    -- Generating /usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TUtil_.cu.o
+       /Developer/NVIDIA/CUDA-9.1/bin/nvcc 
+      /Users/blyth/opticks-cmake-overhaul/thrustrap/TUtil_.cu 
+      -c 
+      -o /usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TUtil_.cu.o 
+        -ccbin /Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang 
+        -m64 
+       -DThrustRap_EXPORTS 
+       -DWITH_YoctoGL 
+       -DWITH_ImplicitMesher 
+       -DWITH_DualContouringSample 
+       -Xcompiler 
+           ,\"-fvisibility=hidden\"
+           ,\"-Wall\"
+           ,\"-Wno-unused-function\"
+           ,\"-Wno-unused-private-field\"
+           ,\"-Wno-shadow\"
+           ,\"-fPIC\" 
+      -DNVCC 
+         -I/Users/blyth/opticks-cmake-overhaul/thrustrap 
+         -I/Users/blyth/opticks-cmake-overhaul/optickscore 
+         -I/Users/blyth/opticks-cmake-overhaul/npy 
+         -I/usr/local/opticks-cmake-overhaul-tmp/externals/glm/glm 
+         -I/Users/blyth/opticks-cmake-overhaul/sysrap 
+         -I/Users/blyth/opticks-cmake-overhaul/sysrap/include  ## this was a stray INCLUDE inside bcm_deploy 
+         -I/usr/local/opticks-cmake-overhaul-tmp/externals/plog/include 
+         -I/usr/local/opticks-cmake-overhaul-tmp/build/boostrap/inc    ## some more stray INCLUDE inside bcm_deploy 
+         -I/Users/blyth/opticks-cmake-overhaul/boostrap 
+         -I/usr/local/opticks-cmake-overhaul-tmp/build/boostrap 
+
+         -I/opt/local/include 
+         -I/usr/local/opticks-cmake-overhaul/externals/include 
+         -I/usr/local/opticks-cmake-overhaul/externals/include/YoctoGL 
+         -I/usr/local/opticks-cmake-overhaul/externals/include/DualContouringSample 
+               ## external includes are same 
+
+         -I/usr/local/opticks-cmake-overhaul-tmp/build/okconf/inc 
+         -I/Users/blyth/opticks-cmake-overhaul/okconf  
+         -I/Users/blyth/opticks-cmake-overhaul/cudarap 
+         -I/Developer/NVIDIA/CUDA-9.1/include
+
+               ## hmm cuda comes last for integrated ??? but first for proj-by-proj
+
+       ^Cmake[2]: *** [thrustrap/CMakeFiles/ThrustRap.dir/ThrustRap_generated_TUtil_.cu.o] Interrupt: 2
+
+
+proj-by-proj (so targets are imported)::
+
+   -- Generating /usr/local/opticks-cmake-overhaul/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TUtil_.cu.o
+    /Developer/NVIDIA/CUDA-9.1/bin/nvcc 
+      /Users/blyth/opticks-cmake-overhaul/thrustrap/TUtil_.cu 
+     -c 
+    -o /usr/local/opticks-cmake-overhaul/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TUtil_.cu.o 
+     -ccbin /Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang 
+      -m64 
+     -DThrustRap_EXPORTS 
+     -DWITH_YoctoGL -DWITH_ImplicitMesher -DWITH_DualContouringSample
+       -Xcompiler 
+         ,\"-fvisibility=hidden\",\"-Wall\",\"-Wno-unused-function\",\"-Wno-unused-private-field\",\"-Wno-shadow\",\"-fPIC\"
+         ,\"-g\"
+        -DNVCC
+           -I/Developer/NVIDIA/CUDA-9.1/include 
+           -I/Users/blyth/opticks-cmake-overhaul/thrustrap 
+           -I/usr/local/opticks-cmake-overhaul/include/OpticksCore 
+           -I/usr/local/opticks-cmake-overhaul/include/NPY 
+           -I/usr/local/opticks-cmake-overhaul/externals/glm/glm 
+           -I/usr/local/opticks-cmake-overhaul/include/SysRap 
+           -I/usr/local/opticks-cmake-overhaul/externals/plog/include 
+           -I/usr/local/opticks-cmake-overhaul/include/BoostRap 
+           -I/opt/local/include 
+
+           -I/usr/local/opticks-cmake-overhaul/externals/include 
+           -I/usr/local/opticks-cmake-overhaul/externals/include/YoctoGL 
+           -I/usr/local/opticks-cmake-overhaul/externals/include/DualContouringSample 
+
+           -I/usr/local/opticks-cmake-overhaul/include/OKConf 
+           -I/usr/local/opticks-cmake-overhaul/include/CUDARap
+
+     Generated /usr/local/opticks-cmake-overhaul/build/thrustrap/CMakeFiles/ThrustRap.dir//./ThrustRap_generated_TUtil_.cu.o successfully.
+
+
+
+::
+
+    epsilon:thrustrap blyth$ vex
+    vex: export VERBOSE=1
+    epsilon:thrustrap blyth$ touch TUtil_.cu
+    epsilon:thrustrap blyth$ ./go.sh 
+
+
+
+
+proj-by-proj wrong number of tests
+--------------------------------------
+
+
+* when building proj-by-proj you should really be running 
+  ctest proj-by-proj ... it only managed to do something at top level
+  due to a prior old integrated build presumably from May 15 
+
+
+
+::
+
+    epsilon:build blyth$ pwd
+    /usr/local/opticks-cmake-overhaul/build
+
+    epsilon:build blyth$ l
+    total 592
+    drwxr-xr-x  15 blyth  staff  -    480 May 24 18:50 npy
+    -rw-r--r--   1 blyth  staff  -  26923 May 24 18:46 ctest.log
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 okg4
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 cfg4
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 ok
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 opticksgl
+    drwxr-xr-x  15 blyth  staff  -    480 May 24 18:41 oglrap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 okop
+    drwxr-xr-x  42 blyth  staff  -   1344 May 24 18:41 optixrap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 thrustrap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 cudarap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 opticksgeo
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 openmeshrap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:41 assimprap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:40 ggeo
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:40 optickscore
+    drwxr-xr-x  15 blyth  staff  -    480 May 24 18:40 boostrap
+    drwxr-xr-x  14 blyth  staff  -    448 May 24 18:40 sysrap
+    drwxr-xr-x  15 blyth  staff  -    480 May 24 18:40 okconf
+    -rw-r--r--   1 blyth  staff  -  73382 May 23 22:44 CMakeCache.txt
+    drwxr-xr-x  46 blyth  staff  -   1472 May 23 22:43 CMakeFiles
+    drwxr-xr-x   3 blyth  staff  -     96 May 17 22:03 inc
+    drwxr-xr-x   3 blyth  staff  -     96 May 17 22:03 include
+    -rw-r--r--   1 blyth  staff  - 116789 May 17 20:49 Makefile
+    -rw-r--r--   1 blyth  staff  -  40989 May 15 19:13 install_manifest.txt
+    -rw-r--r--   1 blyth  staff  -    613 May 15 16:37 CTestTestfile.cmake
+    -rw-r--r--   1 blyth  staff  -   4480 May 15 16:37 cmake_install.cmake
+    -rwxr-xr-x   1 blyth  staff  -    547 May 15 16:37 OpticksConfig.cmake
+    -rwxr-xr-x   1 blyth  staff  -   4961 May 15 16:37 opticks-config
+    drwxr-xr-x   4 blyth  staff  -    128 May 15 16:37 test
+    -rw-r--r--   1 blyth  staff  -   4017 May 15 16:37 CPackSourceConfig.cmake
+    -rw-r--r--   1 blyth  staff  -   3560 May 15 16:37 CPackConfig.cmake
+    -rw-r--r--   1 blyth  staff  -   2850 May 15 16:37 DartConfiguration.tcl
+    drwxr-xr-x   3 blyth  staff  -     96 May 15 16:37 Testing
+    epsilon:build blyth$ vi CTestTestfile.cmake 
+
+
+
+
+proj-by-proj again : 6/196 (101 npy are skipped?)
+-----------------------------------------------------
+
+::
+
+    epsilon:build blyth$ pwd
+    /usr/local/opticks-cmake-overhaul/build
+    epsilon:build blyth$ opticks-
+    epsilon:build blyth$ opticks-t $PWD
+
+::
+
+    97% tests passed, 6 tests failed out of 196
+
+    Total Test time (real) = 123.09 sec
+
+    The following tests FAILED:
+        119 - GGeoTest.GSceneTest (Child aborted)
+        179 - CFG4Test.CTestDetectorTest (Child aborted)
+        182 - CFG4Test.CG4Test (Child aborted)
+        190 - CFG4Test.CInterpolationTest (Child aborted)
+        195 - CFG4Test.CRandomEngineTest (Child aborted)
+        196 - OKG4Test.OKG4Test (Child aborted)
+    Errors while running CTest
+    Thu May 24 18:46:23 HKT 2018
+    === opticks-t- : use -V to show output, ctest output written to /usr/local/opticks-cmake-overhaul/build/ctest.log
+    epsilon:build blyth$ 
+
+
+
+
+gosub.sh proj-by-proj building
+---------------------------------
+
+
+::
+
+     o  # cd to opticks-home ~/opticks-cmake-overhaul
+
+     ./gosub.sh  # proj by proj building 
+
+     cd /usr/local/opticks-cmake-overhaul/build
+
+     opticks-executables | wc -l   ## counting executables yields expected 300 (now 304)
+
+     ctest   ## ctest running only runs 192 ??? ahha trivial comment out of NPY tests
+
+
+
+::
+
+    97% tests passed, 6 tests failed out of 192
+
+    Total Test time (real) = 278.99 sec
+
+    The following tests FAILED:
+        119 - GGeoTest.GSceneTest (Child aborted)
+        175 - CFG4Test.CTestDetectorTest (Child aborted)
+        178 - CFG4Test.CG4Test (Child aborted)
+        186 - CFG4Test.CInterpolationTest (Child aborted)
+        191 - CFG4Test.CRandomEngineTest (Child aborted)
+        192 - OKG4Test.OKG4Test (Child aborted)
+    Errors while running CTest
+
+
+
+integrated build testing : 24/299 failed
+--------------------------------------------
+
+::
+
+    ./go.sh ## with prefix=$(opticks-prefix-tmp)   /usr/local/opticks-cmake-overhaul-tmp
+
+
+    92% tests passed, 24 tests failed out of 299
+
+    Total Test time (real) =  93.45 sec
+
+    The following tests FAILED:
+        222 - GGeoTest.GSceneTest (Child aborted)
+        235 - ThrustRapTest.CBufSpecTest (Child aborted)
+        236 - ThrustRapTest.TBufTest (Child aborted)
+        237 - ThrustRapTest.TRngBufTest (Child aborted)
+        238 - ThrustRapTest.expandTest (Child aborted)
+        239 - ThrustRapTest.iexpandTest (Child aborted)
+        240 - ThrustRapTest.issue628Test (Child aborted)
+        241 - ThrustRapTest.printfTest (Child aborted)
+        242 - ThrustRapTest.repeated_rangeTest (Child aborted)
+        243 - ThrustRapTest.strided_rangeTest (Child aborted)
+        244 - ThrustRapTest.strided_repeated_rangeTest (Child aborted)
+        245 - ThrustRapTest.float2intTest (Child aborted)
+        246 - ThrustRapTest.thrust_curand_estimate_pi (Child aborted)
+        247 - ThrustRapTest.thrust_curand_printf (Child aborted)
+        248 - ThrustRapTest.thrust_curand_printf_redirect (Child aborted)
+        249 - ThrustRapTest.thrust_curand_printf_redirect2 (Child aborted)
+        265 - OptiXRapTest.ORayleighTest (Child aborted)
+        269 - OKOPTest.OpSeederTest (Child aborted)
+        276 - OKTest.OKTest (Child aborted)
+        282 - CFG4Test.CTestDetectorTest (Child aborted)
+        285 - CFG4Test.CG4Test (Child aborted)
+        293 - CFG4Test.CInterpolationTest (Child aborted)
+        298 - CFG4Test.CRandomEngineTest (Child aborted)
+        299 - OKG4Test.OKG4Test (Child aborted)
+    Errors while running CTest
+    Thu May 24 17:45:58 HKT 2018
+    === opticks-t- : use -V to show output, ctest output written to /usr/local/opticks-cmake-overhaul-tmp/build/ctest.log
+    epsilon:build blyth$ 
+    epsilon:build blyth$ 
+    epsilon:build blyth$ pwd
+    /usr/local/opticks-cmake-overhaul-tmp/build
+    epsilon:build blyth$ opticks-t $PWD
+
+
+
+
 Difference between the built and installed thrap binaries ?
 --------------------------------------------------------------
 

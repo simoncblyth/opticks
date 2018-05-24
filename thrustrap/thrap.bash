@@ -396,3 +396,416 @@ thrap-print()
 }
 
 
+thrap-expandTest-touch(){ touch $(opticks-home)/thrustrap/tests/expandTest.cu  ; }
+
+thrap-expandTest-p()
+{
+    cd $(opticks-prefix)/build/thrustrap/tests
+    thrap-expandTest-touch
+    make expandTest
+    ./expandTest
+}
+
+thrap-expandTest-i()
+{
+    cd $(opticks-prefix-tmp)/build/thrustrap/tests
+    thrap-expandTest-touch
+    make expandTest
+    ./expandTest
+}
+
+thrap-expandTest-notes(){ cat << EON
+
+epsilon:tests blyth$ thrap-expandTest-p > /tmp/thrap-expandTest-p
+Generated /usr/local/opticks-cmake-overhaul/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o successfully.
+epsilon:tests blyth$ thrap-expandTest-i > /tmp/thrap-expandTest-i
+Generated /usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o successfully.
+libc++abi.dylib: terminating with uncaught exception of type thrust::system::system_error: device free failed: CUDA driver version is insufficient for CUDA runtime version
+Abort trap: 6
+
+perl -pi -e 's,/usr/local/opticks-cmake-overhaul-tmp,,g' /tmp/thrap-expandTest-i
+
+EON
+}
+
+
+
+
+
+thrap-expandTest-pp(){
+
+# copy pasting from: cat /tmp/thrap-expandTest-p | CMakeOutput.py
+
+
+/Developer/NVIDIA/CUDA-9.1/bin/nvcc \
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu \
+-c \
+-o \
+/usr/local/opticks-cmake-overhaul/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o \
+-ccbin \
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
+-m64 \
+-DWITH_YoctoGL \
+-DWITH_ImplicitMesher \
+-DWITH_DualContouringSample \
+-Xcompiler \
+-fPIC \
+-gencode=arch=compute_30,code=sm_30 \
+-std=c++11 \
+-O2 \
+--use_fast_math \
+-DNVCC \
+-I/Developer/NVIDIA/CUDA-9.1/include \
+-I/Users/blyth/opticks-cmake-overhaul/thrustrap \
+-I/usr/local/opticks-cmake-overhaul/include/OpticksCore \
+-I/usr/local/opticks-cmake-overhaul/include/NPY \
+-I/usr/local/opticks-cmake-overhaul/externals/glm/glm \
+-I/usr/local/opticks-cmake-overhaul/include/SysRap \
+-I/usr/local/opticks-cmake-overhaul/externals/plog/include \
+-I/usr/local/opticks-cmake-overhaul/include/BoostRap \
+-I/opt/local/include \
+-I/usr/local/opticks-cmake-overhaul/externals/include \
+-I/usr/local/opticks-cmake-overhaul/externals/include/YoctoGL \
+-I/usr/local/opticks-cmake-overhaul/externals/include/DualContouringSample \
+-I/usr/local/opticks-cmake-overhaul/include/OKConf \
+-I/usr/local/opticks-cmake-overhaul/include/CUDARap 
+
+
+
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ \
+ \
+ \
+-fvisibility=hidden \
+-Wall \
+-Wno-unused-function \
+-Wno-unused-private-field \
+-Wno-shadow \
+-g \
+-Wl,-search_paths_first \
+-Wl,-headerpad_max_install_names \
+ \
+/usr/local/opticks-cmake-overhaul/build/thrustrap/tests/CMakeFiles/expandTest.dir/expandTest_generated_expandTest.cu.o \
+ \
+-o \
+expandTest \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/lib \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/externals/lib \
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/usr/local/cuda/lib \
+/usr/local/opticks-cmake-overhaul/build/thrustrap/libThrustRap.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libOpticksCore.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libNPY.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libBoostRap.dylib \
+/opt/local/lib/libboost_program_options-mt.dylib \
+/opt/local/lib/libboost_filesystem-mt.dylib \
+/opt/local/lib/libboost_system-mt.dylib \
+/opt/local/lib/libboost_regex-mt.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libOpenMeshCore.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libOpenMeshTools.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libYoctoGL.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libDualContouringSample.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libOKConf.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libCUDARap.dylib \
+/usr/local/opticks-cmake-overhaul/lib/libSysRap.dylib \
+-lcrypto \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+/Developer/NVIDIA/CUDA-9.1/lib/libcurand.dylib \
+-lssl 
+
+
+./expandTest    ## this succeeds to run 
+
+
+}
+
+
+
+thrap-expandTest-ii(){
+
+# copy pasting from: cat /tmp/thrap-expandTest-i | CMakeOutput.py
+# fails like in integrated build
+
+/Developer/NVIDIA/CUDA-9.1/bin/nvcc \
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu \
+-c \
+-o \
+/usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o \
+-ccbin \
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
+-m64 \
+-DWITH_YoctoGL \
+-DWITH_ImplicitMesher \
+-DWITH_DualContouringSample \
+-Xcompiler \
+-fPIC \
+-gencode=arch=compute_30,code=sm_30 \
+-std=c++11 \
+-O2 \
+--use_fast_math \
+-DNVCC \
+-I/Users/blyth/opticks-cmake-overhaul/thrustrap \
+-I/Users/blyth/opticks-cmake-overhaul/optickscore \
+-I/Users/blyth/opticks-cmake-overhaul/npy \
+-I/usr/local/opticks-cmake-overhaul-tmp/externals/glm/glm \
+-I/Users/blyth/opticks-cmake-overhaul/sysrap \
+-I/usr/local/opticks-cmake-overhaul-tmp/externals/plog/include \
+-I/Users/blyth/opticks-cmake-overhaul/boostrap \
+-I/usr/local/opticks-cmake-overhaul-tmp/build/boostrap/inc \
+-I/opt/local/include \
+-I/usr/local/opticks-cmake-overhaul/externals/include \
+-I/usr/local/opticks-cmake-overhaul/externals/include/YoctoGL \
+-I/usr/local/opticks-cmake-overhaul/externals/include/DualContouringSample \
+-I/usr/local/opticks-cmake-overhaul-tmp/build/okconf/inc \
+-I/Users/blyth/opticks-cmake-overhaul/okconf \
+-I/Users/blyth/opticks-cmake-overhaul/cudarap \
+-I/Developer/NVIDIA/CUDA-9.1/include 
+
+
+
+cd /usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/tests
+
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ \
+ \
+ \
+-fvisibility=hidden \
+-Wall \
+-Wno-unused-function \
+-Wno-unused-private-field \
+-Wno-shadow \
+-g \
+-Wl,-search_paths_first \
+-Wl,-headerpad_max_install_names \
+ \
+CMakeFiles/expandTest.dir/expandTest_generated_expandTest.cu.o \
+ \
+-o \
+expandTest \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul-tmp/lib \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/externals/lib \
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+../libThrustRap.dylib \
+../../optickscore/libOpticksCore.dylib \
+../../npy/libNPY.dylib \
+../../boostrap/libBoostRap.dylib \
+/opt/local/lib/libboost_program_options-mt.dylib \
+/opt/local/lib/libboost_filesystem-mt.dylib \
+/opt/local/lib/libboost_system-mt.dylib \
+/opt/local/lib/libboost_regex-mt.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libOpenMeshCore.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libOpenMeshTools.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libYoctoGL.dylib \
+/usr/local/opticks-cmake-overhaul/externals/lib/libDualContouringSample.dylib \
+../../okconf/libOKConf.dylib \
+../../cudarap/libCUDARap.dylib \
+../../sysrap/libSysRap.dylib \
+-lcrypto \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+/Developer/NVIDIA/CUDA-9.1/lib/libcurand.dylib \
+-lssl 
+
+
+./expandTest
+
+
+}
+
+
+
+thrap-expandTest-pp-short(){
+
+/Developer/NVIDIA/CUDA-9.1/bin/nvcc \
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu \
+-c \
+-o \
+/usr/local/opticks-cmake-overhaul/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o \
+-ccbin \
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
+-m64 \
+-Xcompiler \
+-fPIC \
+-gencode=arch=compute_30,code=sm_30 \
+-std=c++11 \
+-O2 \
+--use_fast_math \
+-DNVCC \
+-I/Developer/NVIDIA/CUDA-9.1/include \
+-I/Users/blyth/opticks-cmake-overhaul/thrustrap 
+
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ \
+ \
+ \
+-fvisibility=hidden \
+-Wall \
+-Wno-unused-function \
+-Wno-unused-private-field \
+-Wno-shadow \
+-g \
+-Wl,-search_paths_first \
+-Wl,-headerpad_max_install_names \
+ \
+/usr/local/opticks-cmake-overhaul/build/thrustrap/tests/CMakeFiles/expandTest.dir/expandTest_generated_expandTest.cu.o \
+ \
+-o \
+expandTest \
+-Wl,-rpath,/usr/local/cuda/lib \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a 
+
+./expandTest   
+
+
+cat << EON
+
+The ii problem can be made to occur for these pp commands  
+by changing the library and rpath setup in the below 
+original 10 pp lines (that works)::
+
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/lib \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/externals/lib \
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/usr/local/cuda/lib \
+ \
+-lcrypto \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+/Developer/NVIDIA/CUDA-9.1/lib/libcurand.dylib \
+-lssl 
+
+failing::
+
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib 
+
+works::
+
+-Wl,-rpath,/usr/local/cuda/lib \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a 
+
+works::
+
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/usr/local/cuda/lib 
+
+also works::
+
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+-Wl,-rpath,/usr/local/cuda/lib 
+
+shortened that still works::
+
+-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+-Wl,-rpath,/usr/local/cuda/lib 
+
+
+observations
+     crypto and ssl and curand not needed
+
+
+seems that require the below otherwise nogo
+
+   -Wl,-rpath,/usr/local/cuda/lib  
+
+
+epsilon:tests blyth$ otool-rpath expandTest 
+          cmd LC_RPATH
+      cmdsize 32
+         path /usr/local/cuda/lib (offset 12)
+epsilon:tests blyth$ 
+
+
+epsilon:tests blyth$ realpath /Developer/NVIDIA/CUDA-9.1/lib
+/Developer/NVIDIA/CUDA-9.1/lib
+epsilon:tests blyth$ realpath /usr/local/cuda/lib
+/usr/local/cuda/lib
+epsilon:tests blyth$ l /usr/local/cuda/lib/
+total 32
+lrwxr-xr-x  1 root  wheel  -    50 Dec 20 19:54 libcublas.9.1.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libcublas.9.1.dylib
+lrwxr-xr-x  1 root  wheel  -    46 Dec 20 19:54 libcublas.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libcublas.dylib
+lrwxr-xr-x  1 root  wheel  -    49 Dec 20 19:54 libcublas_device.a -> /Developer/NVIDIA/CUDA-9.1/lib/libcublas_device.a
+lrwxr-xr-x  1 root  wheel  -    49 Dec 20 19:54 libcublas_static.a -> /Developer/NVIDIA/CUDA-9.1/lib/libcublas_static.a
+lrwxr-xr-x  1 root  wheel  -    45 Dec 20 19:54 libcudadevrt.a -> /Developer/NVIDIA/CUDA-9.1/lib/libcudadevrt.a
+lrwxr-xr-x  1 root  wheel  -    50 Dec 20 19:54 libcudart.9.1.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libcudart.9.1.dylib
+lrwxr-xr-x  1 root  wheel  -    46 Dec 20 19:54 libcudart.dylib -> /Developer/NVIDIA/CUDA-9.1/lib/libcudart.dylib
+lrwxr-xr-x  1 root  wheel  -    49 Dec 20 19:54 libcudart_static.a -> /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a
+
+
+given than /usr/local/cuda/lib/ is comprised of a bunch of links to libs in 
+/Developer/NVIDIA/CUDA-9.1/lib  the fail is kinda surprising ... 
+
+
+EON
+
+
+}
+
+thrap-expandTest-ii-short(){    ## this one doesnt work
+
+/Developer/NVIDIA/CUDA-9.1/bin/nvcc \
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu \
+-c \
+-o \
+/usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/tests/CMakeFiles/expandTest.dir//./expandTest_generated_expandTest.cu.o \
+-ccbin \
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang \
+-m64 \
+-Xcompiler \
+-fPIC \
+-gencode=arch=compute_30,code=sm_30 \
+-std=c++11 \
+-O2 \
+--use_fast_math \
+-DNVCC \
+-I/Users/blyth/opticks-cmake-overhaul/thrustrap \
+-I/Developer/NVIDIA/CUDA-9.1/include 
+
+## CUDA last from integrated is the one that doesnt work, but putting it first does not fix
+
+## only difference is header order, CUDA last 
+
+
+cd /usr/local/opticks-cmake-overhaul-tmp/build/thrustrap/tests
+
+/Applications/Xcode/Xcode_9_2.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/c++ \
+ \
+ \
+-fvisibility=hidden \
+-Wall \
+-Wno-unused-function \
+-Wno-unused-private-field \
+-Wno-shadow \
+-g \
+-Wl,-search_paths_first \
+-Wl,-headerpad_max_install_names \
+ \
+CMakeFiles/expandTest.dir/expandTest_generated_expandTest.cu.o \
+ \
+-o \
+expandTest \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul-tmp/lib \
+-Wl,-rpath,/usr/local/opticks-cmake-overhaul/externals/lib \
+-Wl,-rpath,/usr/local/cuda/lib \
+-lcrypto \
+/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a \
+/Developer/NVIDIA/CUDA-9.1/lib/libcurand.dylib \
+-lssl 
+
+./expandTest
+
+
+cat << EON
+
+
+ try swapping 
+    -Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib \
+ for 
+    -Wl,-rpath,/usr/local/cuda/lib \
+
+
+  YEP : doing this swap succeed to get ii to run ....
+
+EON
+
+}
+
