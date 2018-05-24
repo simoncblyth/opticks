@@ -5,7 +5,7 @@ project(${name} VERSION 0.1.0)
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
-find_package(GLM REQUIRED)
+find_package(GLM REQUIRED MODULE)
 
 set(HEADERS  ${name}.hh )
 

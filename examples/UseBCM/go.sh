@@ -17,8 +17,8 @@ cmake $sdir \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules
 
-make
-make install   
+#make
+#make install   
 
 
 

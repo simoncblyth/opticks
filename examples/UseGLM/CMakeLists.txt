@@ -11,7 +11,7 @@ include(BCMSetupVersion)
 
 bcm_setup_version(VERSION 0.1.0 GENERATE_HEADER ${name}Version.hh)
 
-find_package(GLM REQUIRED)
+find_package(GLM REQUIRED MODULE)
 
 add_library(${name} SHARED ${name}.cc)
 

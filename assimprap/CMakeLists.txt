@@ -11,17 +11,8 @@ set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 find_package(BCM)
 include(BCMDeploy)
 
-#find_package(PLog REQUIRED)
-#find_package(OpticksBoost REQUIRED)
-
-#find_package(SysRap REQUIRED)
-#find_package(BoostRap REQUIRED)
-#find_package(GLM REQUIRED)
-#find_package(NPY REQUIRED)
-#find_package(OpticksCore REQUIRED CONFIG)  ## comes with GGeo, like all the above
-
 find_package(OpticksAssimp REQUIRED MODULE)  ## external imported with cmake/Modules/FindOpticksAssimp.cmake
-find_package(GGeo REQUIRED CONFIG)
+find_package(GGeo          REQUIRED CONFIG)
 
 
 set(SOURCES

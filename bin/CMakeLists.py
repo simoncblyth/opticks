@@ -59,7 +59,7 @@ class Opticks(object):
              'GGeo':60, 
              'AssimpRap':70,
              'OpenMeshRap':80, 
-             'OpticksGeometry':90,
+             'OpticksGeo':90,
              'CUDARap':100,
              'ThrustRap':110,
              'OptiXRap':120,
@@ -68,7 +68,7 @@ class Opticks(object):
              'OpticksGL':150,
              'OK':160,
              'CFG4':170,
-             'okg4':180,
+             'OKG4':180,
              'NumpyServer':-1
             }
 

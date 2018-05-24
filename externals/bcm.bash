@@ -114,7 +114,7 @@ bcm-url(){
 }   
 
 bcm-base(){   echo $(opticks-prefix)/externals/bcm ; }
-bcm-prefix(){ echo $(opticks-prefix) ; }
+bcm-prefix(){ echo $(opticks-prefix)/externals ; }
 bcm-idir(){   echo $(bcm-prefix) ; }
 
 bcm-dir(){  echo $(bcm-base)/bcm ; }

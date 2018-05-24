@@ -1,10 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 
 set(name UsePLog)
 
 project(${name})
 
-find_package(PLog REQUIRED)
+find_package(PLog REQUIRED MODULE)
 
 add_executable(${name} ${name}.cc)
 

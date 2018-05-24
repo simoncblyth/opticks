@@ -140,10 +140,8 @@ target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOU
 
 target_link_libraries( ${name} 
   PUBLIC 
-     Opticks::GLM
      Opticks::NPY
      Opticks::OKConf
-     Opticks::BoostRap 
 )
 
 

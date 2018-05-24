@@ -6,7 +6,7 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 bdir=$(opticks-prefix)/build/$name
-rm -rf $bdir 
+#rm -rf $bdir 
 mkdir -p $bdir && cd $bdir && pwd 
 
 cmake $sdir \

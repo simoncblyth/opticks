@@ -15,12 +15,55 @@ Ease of use : make applying Opticks to a Geant4 example (eg LXe) straightforward
 stages
 --------
 
-* bcm wave thru the projects
+* DONE : bcm wave thru the projects
 * move almost everything from top level CMakeLists.txt into sub-projects : aiming 
   for top level to just be a list of sub-projects 
 
   * OptiX, G4 detection/parsing moved into OKConf
   * TODO: move opticks-config generation into OKConf too 
+
+
+
+ctesting 
+-----------
+
+Issues 
+
+* are down from 300 tests to 192
+* 20/192 fails, including all thrap-
+
+
+::
+
+    90% tests passed, 20 tests failed out of 192
+
+    Total Test time (real) = 147.19 sec
+
+    The following tests FAILED:
+        120 - GGeoTest.GSceneTest (Child aborted)
+        129 - ThrustRapTest.CBufSpecTest (Child aborted)
+        130 - ThrustRapTest.TBufTest (Child aborted)
+        131 - ThrustRapTest.TRngBufTest (Child aborted)
+        132 - ThrustRapTest.expandTest (Child aborted)
+        133 - ThrustRapTest.iexpandTest (Child aborted)
+        134 - ThrustRapTest.issue628Test (Child aborted)
+        135 - ThrustRapTest.printfTest (Child aborted)
+        136 - ThrustRapTest.repeated_rangeTest (Child aborted)
+        137 - ThrustRapTest.strided_rangeTest (Child aborted)
+        138 - ThrustRapTest.strided_repeated_rangeTest (Child aborted)
+        139 - ThrustRapTest.float2intTest (Child aborted)
+        140 - ThrustRapTest.thrust_curand_estimate_pi (Child aborted)
+        141 - ThrustRapTest.thrust_curand_printf (Child aborted)
+        142 - ThrustRapTest.thrust_curand_printf_redirect (Child aborted)
+        143 - ThrustRapTest.thrust_curand_printf_redirect2 (Child aborted)
+        176 - CFG4Test.CTestDetectorTest (Child aborted)
+        179 - CFG4Test.CG4Test (Child aborted)
+        187 - CFG4Test.CInterpolationTest (Child aborted)
+        192 - CFG4Test.CRandomEngineTest (Child aborted)
+    Errors while running CTest
+    epsilon:build blyth$ 
+
+
 
 
 oxrap

@@ -23,8 +23,8 @@ set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boo
 ##
 ## NB INTERFACE_FIND_PACKAGE_NAME is a BCM defined property, not a standard one, see bcm-
 
-find_package(PLog REQUIRED)
-find_package(SysRap REQUIRED)
+find_package(PLog REQUIRED MODULE)     # for integrated-building ?
+find_package(SysRap REQUIRED CONFIG)
 
 
 set(SOURCES

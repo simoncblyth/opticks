@@ -67,6 +67,7 @@ opticks-id(){ cat << EOI
 
   opticks-home   : $(opticks-home)
   opticks-prefix : $(opticks-prefix)
+  opticks-prefix-tmp : $(opticks-prefix-tmp)
   opticks-name   : $(opticks-name)
 
 EOI
@@ -343,7 +344,8 @@ opticks-fold(){
        fi
    fi
 }
-
+#opticks-fold-tmp(){  echo /tmp/local/$(opticks-name) ; } 
+opticks-fold-tmp(){  echo ${LOCAL_BASE}/$(opticks-name)-tmp ; } 
 
 
 opticks-sdir(){   echo $(opticks-home) ; }
@@ -351,6 +353,7 @@ opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
 
 opticks-prefix(){ echo $(opticks-fold)  ; }
+opticks-prefix-tmp(){ echo $(opticks-fold-tmp)  ; }
 
 opticks-dir(){    echo $(opticks-prefix) ; }
 opticks-idir(){   echo $(opticks-prefix) ; }
@@ -406,6 +409,7 @@ opticks-compute-capability-()
 }
 
 opticks-externals(){ cat << EOL
+bcm
 glm
 glfw
 glew
@@ -793,7 +797,7 @@ opticks-prepare-installcache()
     cudarap-
     cudarap-prepare-installcache
 
-    OpticksPrepareInstallCache  
+    OpticksPrepareInstallCache_OKC
 }
 
 opticks-check-installcache()
@@ -807,9 +811,9 @@ opticks-check-installcache()
         rc=100
     else
         cd $dir
-        [ ! -d "$dir/PTX" ] && echo $msg $PWD : missing PTX && rc=101
-        [ ! -d "$dir/RNG" ] && echo $msg $PWD : missing RNG && rc=102
-        [ ! -d "$dir/OKC" ] && echo $msg $PWD : missing OKC && rc=103
+        [ ! -d "$dir/PTX" ] && echo $msg $PWD : missing PTX : compiled OptiX programs created when building oxrap-  && rc=101
+        [ ! -d "$dir/RNG" ] && echo $msg $PWD : missing RNG : curand seeds created by opticks-prepare-installcache cudarap-prepare-installcache  && rc=102
+        [ ! -d "$dir/OKC" ] && echo $msg $PWD : missing OKC : GFlags ini files classifying photon source and history states : created by opticks-prepare-installcache OpticksPrepareInstallCache_OKC  && rc=103
     fi
     cd $iwd
     return $rc
