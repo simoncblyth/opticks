@@ -54,7 +54,7 @@ endif(UNIX)
 message("${name}.LIBRARIES : ${LIBRARIES} ")
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
-set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
+#set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
 target_link_libraries( ${name} ${LIBRARIES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 

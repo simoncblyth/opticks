@@ -230,6 +230,18 @@ g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
 
 
+g4-info(){ cat << EOI
+
+   g4-url          : $(g4-url)
+   g4-cmake-dir    : $(g4-cmake-dir)
+   g4-examples-dir : $(g4-examples-dir)
+   g4-bdir         : $(g4-bdir)
+
+EOI
+}
+
+
+
 g4-ecd(){  cd $(g4-edir); }
 g4-c(){    cd $(g4-dir); }
 g4-cd(){   cd $(g4-dir); }

@@ -13,6 +13,53 @@ All fail for same error
 * https://github.com/kozyilmaz/nheqminer-macos/issues/16
 
 
+integrated vs proj-by-proj building
+--------------------------------------
+
+proj-by-proj 
+    runs find_package for direct dependencies which loads the persisted config, each of 
+    which in turn runs find_dependency for its direct dependencies and so on 
+
+    find_package for most externals are hooked up via cmake/Modules/FindNAME.cmake
+
+integrated
+    find_package is redefined to a no-op (via a macro) for packages that 
+    are hooked up via add_subdirectory, externals 
+
+
+::
+
+    opticks-deps --tree
+
+
+    NPY
+        BCM
+        PLog        << needed ? comes with SysRap (integrated?)
+        GLM
+        OpenMesh
+        BoostRap
+        YoctoGL
+        ImplicitMesher
+        DualContouringSample
+    OpticksCore
+        BCM
+        OKConf
+        NPY
+    ...
+    CUDARap
+        BCM
+        SysRap
+        OpticksCUDA      ## this does the find_package(CUDA) and hence defines cuda_add_library cuda_add_executable 
+    ThrustRap
+        BCM
+        OpticksCore      ## find_package(OpticksCore CONFIG REQUIRED )
+        CUDARap          ## find_package(CUDARap CONFIG REQUIRED )       
+                         ##     both these are skipped for integrated build (by selective noop of find_package macro), 
+                         ##     thus config for these relies on having just built the targets via add_subdirectory 
+
+
+* the integrated build of ThrustRap skips the find
+
 
 zoom in on a simple test expandTest 
 ----------------------------------------------
@@ -23,9 +70,6 @@ The one that works::
     /usr/local/opticks-cmake-overhaul/build/thrustrap/tests
     epsilon:tests blyth$ touch ~/opticks-cmake-overhaul/thrustrap/tests/expandTest.cu 
     epsilon:tests blyth$ make expandTest
-
-
-
 
 
 integrated build with flags brought over in EnvCompilationFlags.cmake

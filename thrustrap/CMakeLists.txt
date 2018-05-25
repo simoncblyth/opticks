@@ -59,7 +59,7 @@ proj by proj build, see thrap- for laborious debug that discovered this::
 
   libc++abi.dylib: terminating with uncaught exception of type thrust::system::system_error: device free failed: CUDA driver version is insufficient for CUDA runtime version
 
-Some how the integrated build uses::
+Somehow the integrated build uses::
 
    /Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/Developer/NVIDIA/CUDA-9.1/lib
 

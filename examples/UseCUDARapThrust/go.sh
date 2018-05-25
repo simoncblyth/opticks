@@ -3,15 +3,11 @@
 opticks-
 
 sdir=$(pwd)
-bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
+name=$(basename $sdir)
+bdir=/tmp/$USER/opticks/$name/build 
 
 rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
-
-
-thoughts(){ cat << EOT
-EOT
-}
-  
+ 
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
@@ -19,4 +15,7 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 
 make
 make install   
+
+
+$(opticks-prefix)/lib/$name
 

@@ -45,6 +45,10 @@ class CMakeLists(object):
    def __repr__(self):
        return "%20s : %20s : %s " % (  self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
 
+   def _get_tree(self):
+       return "\n".join([self.name] + map(lambda _:"    %s" % _.name, self.deps))
+   tree = property(_get_tree)
+
    def __str__(self):
        return "\n".join(self.lines)  
 
@@ -110,6 +114,8 @@ class Opticks(object):
                 print ls.reldir
             elif args.subproj:
                 print ls.name
+            elif args.tree:
+                print ls.tree
             elif args.testfile:
                 print "subdirs(\"%s\")" % ls.reldir
             else:
@@ -130,6 +136,7 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.INFO)
 
     parser = argparse.ArgumentParser(__doc__)
+    parser.add_argument(     "--tree",  action="store_true", help="Dump tree" )
     parser.add_argument(     "--subdirs",  action="store_true", help="Dump just the subdirs" )
     parser.add_argument(     "--subproj",  action="store_true", help="Dump just the subproj" )
     parser.add_argument(     "--testfile", action="store_true", help="Generate to stdout a CTestTestfile.cmake with all subdirs" ) 

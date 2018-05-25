@@ -19,7 +19,15 @@ set(SOURCES ${name}.cu)
 set(HEADERS ${name}.h)
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
+
+get_target_property(CALILL ${name} INTERFACE_LINK_LIBRARIES )
+message(STATUS "${name} CAL.INTERFACE_LINK_LIBRARIES.bef : ${CALILL} ") 
+
 set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "Opticks::CUDA" )
+
+get_target_property(CALILL ${name} INTERFACE_LINK_LIBRARIES )
+message(STATUS "${name} CAL.INTERFACE_LINK_LIBRARIES.aft : ${CALILL} ") 
+
 
 # CUDA_ADD_LIBRARY sets raw library path and linker args into target prop INTERFACE_LINK_LIBRARIES
 # yielding '/Developer/NVIDIA/CUDA-9.1/lib/libcudart_static.a;-Wl,-rpath,/usr/local/cuda/lib;Opticks::CUDA'
