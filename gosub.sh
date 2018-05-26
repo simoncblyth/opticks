@@ -10,17 +10,23 @@ go-build-()
 {
    local sdir=$1 
    local bdir=$2
+   local name=$(basename $sdir)
    local rc
-
    [ ! -d "$sdir" ] && echo $msg missing sdir $sdir && exit 1
    [ ! -d "$bdir" ] && echo $msg missing bdir $bdir && exit 1
+
+   local extra
+   case $name in
+      optixrap) extra="-DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)" ;;
+             *) extra="" ;;
+   esac
 
    cmake $sdir \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-       -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)
+       $extra
 
    rc=$?
    [ "$rc" != "0" ] && echo $msg $(pwd) non-zero rc $rc && exit 1
@@ -49,6 +55,7 @@ go-build()
 
        #rm -rf $bdir 
        mkdir -p $bdir 
+       cd $bdir
 
        go-build- $sdir $bdir
    done
@@ -81,7 +88,7 @@ go-test()
 }
 
 
-#go-build
-go-test
+go-build
+#go-test
 
 

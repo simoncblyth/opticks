@@ -6,7 +6,6 @@ include(OpticksBuildOptions)
 find_package(OKConf   REQUIRED CONFIG)
 find_package(NPY      REQUIRED CONFIG)
 
-
 set(SOURCES
     OKCORE_LOG.cc
 

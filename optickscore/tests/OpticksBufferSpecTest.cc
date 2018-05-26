@@ -10,20 +10,19 @@ int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
+    LOG(info) << "OXRAP_OPTIX_VERSION : " << OXRAP_OPTIX_VERSION ;
+    LOG(info) << "CFG4_G4VERSION_NUMBER : " << CFG4_G4VERSION_NUMBER ;
+
+    LOG(info) << "OKCONF_OPTIX_VERSION_INTEGER  : " << OKCONF_OPTIX_VERSION_INTEGER ; 
+    LOG(info) << "OKCONF_GEANT4_VERSION_INTEGER : " << OKCONF_GEANT4_VERSION_INTEGER ; 
+
+
 #ifdef WITH_SEED_BUFFER
     LOG(info) << "WITH_SEED_BUFFER" ;
 #else
     LOG(info) << "NOT(WITH_SEED_BUFFER)" ;
 #endif
 
-    LOG(info) << "OXRAP_OPTIX_VERSION : " << OXRAP_OPTIX_VERSION ;
-
-
-#ifdef WITH_Geant4
-    LOG(info) << "CFG4_G4VERSION_NUMBER : " << CFG4_G4VERSION_NUMBER ;
-#else
-    LOG(info) << " NOT WITH_Geant4 " ;  
-#endif
 
     std::vector<std::string> names ; 
     OpticksEvent::pushNames(names);

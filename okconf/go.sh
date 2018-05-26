@@ -8,7 +8,7 @@ name=$(basename $sdir)
 #bdir=/tmp/$USER/opticks/$name/build 
 bdir=$(opticks-prefix)/build/$name
 
-rm -rf $bdir 
+#rm -rf $bdir 
 mkdir -p $bdir && cd $bdir && pwd 
 
 cmake $sdir \
@@ -17,6 +17,9 @@ cmake $sdir \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
     -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)
+
+
+## OKConf finds OptiX to get the version integer, so OptiX_INSTALL_DIR is required
 
 make
 
