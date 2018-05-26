@@ -506,3 +506,7 @@ g4-look(){
 }
 
 
+g4-find-(){ find $(g4-dir) $* ; }
+g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
+
+

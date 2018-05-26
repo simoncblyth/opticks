@@ -1107,6 +1107,11 @@ opticks-export-mingw()
 
 
 
+########### bitbucket commits
+
+opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commits/all ; } 
+opticks-co2(){     opticks-open  https://bitbucket.org/simoncblyth/opticks-cmake-overhaul/commits/all ; } 
+
 ########## building opticks docs 
 
 opticks-bb(){      opticks-open  http://simoncblyth.bitbucket.io/opticks/index.html ; } 
