@@ -1,4 +1,5 @@
 
+set(G4_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(G4_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
 
 find_package(Geant4 CONFIG QUIET)   

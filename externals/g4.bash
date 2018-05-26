@@ -1,6 +1,4 @@
-# === func-gen- : g4/g4 fgp externals/g4.bash fgn g4 fgh g4
-g4-src(){      echo externals/g4.bash ; }
-g4-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(g4-src)} ; }
+g4-source(){   echo $BASH_SOURCE ; }
 g4-vi(){       vi $(g4-source) ; }
 g4-usage(){ cat << \EOU
 
@@ -218,6 +216,11 @@ g4-name(){  local filename=$(g4-filename) ; echo ${filename%.*} ; }
 # hmm .tar.gz would still have a .tar on the name
 
 
+
+
+
+
+
 g4-txt(){ vi $(g4-dir)/CMakeLists.txt ; }
 
 
@@ -228,17 +231,6 @@ g4-bdir(){ echo $(g4-dir).$(g4-config).build ; }
 
 g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
-
-
-g4-info(){ cat << EOI
-
-   g4-url          : $(g4-url)
-   g4-cmake-dir    : $(g4-cmake-dir)
-   g4-examples-dir : $(g4-examples-dir)
-   g4-bdir         : $(g4-bdir)
-
-EOI
-}
 
 
 
@@ -320,6 +312,29 @@ $FUNCNAME
 
 EOI
 }
+
+
+g4-info(){ cat << EOI
+
+   g4-tag          : $(g4-tag)
+   g4-url          : $(g4-url)
+   g4-dist         : $(g4-dist)
+   g4-filename     : $(g4-filename)
+   g4-name         : $(g4-name)
+   g4-name2        : $(g4-name2)
+
+   g4-prefix       : $(g4-prefix) 
+   g4-cmake-dir    : $(g4-cmake-dir)
+   g4-examples-dir : $(g4-examples-dir)
+   g4-bdir         : $(g4-bdir)
+   g4-dir          : $(g4-dir)
+
+EOI
+}
+
+
+
+
 
 g4-cmake(){
    local iwd=$PWD
@@ -424,16 +439,18 @@ g4-cls-copy(){
 }
 
 
-g4-cls(){  g4-cls- source    $* ; }
+g4-cls(){  
+   local iwd=$PWD
+   g4-cd 
+   g4-cls- source    $* ; 
+   cd $iwd
+}
 
 
 g4-cls-(){
-   local iwd=$PWD
-   g4-cd
    local base=${1:-source}
    local name=${2:-G4Scintillation}
 
-  
    local h=$(find $base -name "$name.h")
    local hh=$(find $base -name "$name.hh")
    local cc=$(find $base -name "$name.cc")
@@ -447,8 +464,6 @@ g4-cls-(){
    local vcmd="vi -R $h $hh $icc $cc $cc2"
    echo $vcmd
    eval $vcmd
-
-   cd $iwd
 }
 
 

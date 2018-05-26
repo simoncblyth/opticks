@@ -1214,6 +1214,8 @@ notes-(){           . $(opticks-home)/notes/notes.bash && notes-env $*  ; }
 pmt-(){             . $(opticks-home)/ana/pmt/pmt.bash && pmt-env $* ; }
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 
+### opticks g4 examples ########
+g4x-(){             . $(opticks-home)/examples/g4x.bash && g4x-env $* ; }
 
 ### opticks launchers ########
 

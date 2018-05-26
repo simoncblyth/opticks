@@ -1,4 +1,5 @@
 
+set(OpticksAssimp_MODULE "${CMAKE_CURRENT_LIST_FILE}")
 set(OpticksAssimp_PREFIX "${CMAKE_INSTALL_PREFIX}/externals")
 
 find_path(
@@ -7,21 +8,22 @@ find_path(
     PATHS "${OpticksAssimp_PREFIX}/include"
 )
 
-find_library( OpticksAssimp_LIBRARY
-              NAMES assimp  assimp-vc100-mtd
-              PATHS ${OpticksAssimp_PREFIX}/lib )
-
+find_library( 
+    OpticksAssimp_LIBRARY
+    NAMES assimp  assimp-vc100-mtd
+    PATHS ${OpticksAssimp_PREFIX}/lib 
+)
 
 
 if(OpticksAssimp_INCLUDE_DIR AND OpticksAssimp_LIBRARY)
-set(OpticksAssimp_FOUND "YES")
+  set(OpticksAssimp_FOUND "YES")
 else()
-set(OpticksAssimp_FOUND "NO")
+  set(OpticksAssimp_FOUND "NO")
 endif()
 
 
-set(OpticksAssimp_DEBUG OFF)
-if(OpticksAssimp_DEBUG)
+#set(OpticksAssimp_VERBOSE OFF)
+if(OpticksAssimp_VERBOSE)
    message(STATUS "FindOpticksAssimp.cmake OpticksAssimp_PREFIX:${OpticksAssimp_PREFIX}  ")
    message(STATUS "FindOpticksAssimp.cmake OpticksAssimp_INCLUDE_DIR:${OpticksAssimp_INCLUDE_DIR}  ")
    message(STATUS "FindOpticksAssimp.cmake OpticksAssimp_LIBRARY:${OpticksAssimp_LIBRARY}  ")
