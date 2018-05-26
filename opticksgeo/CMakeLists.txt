@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpticksGeo)
 project(${name} VERSION 0.1.0)
-
-include(EnvBuildOptions)
-include(EnvCompilationFlags)   
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
+include(OpticksBuildOptions)   
 
 find_package(OpticksCore REQUIRED CONFIG)
 find_package(AssimpRap   REQUIRED CONFIG)

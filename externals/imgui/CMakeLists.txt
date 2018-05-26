@@ -1,13 +1,8 @@
-cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 # this file is copied from imgui-edir to imgui-sdir by imgui-get
 set(name ImGui)
 project(${name})
-
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} 
-                      "$ENV{OPTICKS_HOME}/cmake/Modules"
-          ) 
-
-include(EnvBuildOptions)
+include(OpticksBuildOptions)
 
 find_package(OpticksGLEW REQUIRED)
 find_package(OpticksGLFW REQUIRED)

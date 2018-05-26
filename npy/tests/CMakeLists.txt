@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name NPYTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 
 set(_TESTS_FAILING_TO_INVESTIGATE_WHEN_IN_CONTEXT

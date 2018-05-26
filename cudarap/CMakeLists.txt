@@ -1,17 +1,9 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CUDARap)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)   
 
-include(EnvBuildOptions)
-include(EnvCompilationFlags)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
-
-## NB NO BOOST 
+## NB **NO BOOST** as nvcc barfs on it
 find_package(SysRap REQUIRED CONFIG)
 find_package(OpticksCUDA REQUIRED MODULE)
 
@@ -58,7 +50,6 @@ CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 target_link_libraries( ${name} ${LIBRARIES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-include(EchoTarget)
 echo_target_std(${name})
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)

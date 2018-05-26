@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRapMinimal)
 project(${name} VERSION 0.1.0)
-
-include(EnvBuildOptions)
-include(EnvCompilationFlags)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
+include(OpticksBuildOptions)
 
 find_package(CUDARap  REQUIRED CONFIG)
  
@@ -25,7 +17,6 @@ set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge
 target_link_libraries( ${name} Opticks::CUDARap)
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-include(EchoTarget)
 echo_target_std(${name})
 
 install(TARGETS ${name} DESTINATION lib)

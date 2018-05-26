@@ -1,15 +1,21 @@
+#[=[
+OptiXRap
+===========
+
+OptiXRap package needs help to find the OptiX libraries in the form of 
+cmake invocation argument::
+
+    -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)
+
+This seems appropriate, however currently all downstream packages
+need to repeat this argument ... which seems silly in a BCM world 
+if imported targets.
+
+#]=]
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OptiXRap)
 project(${name} VERSION 0.1.0)
-
-include(EnvBuildOptions)
-include(EnvCompilationFlags)   
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
+include(OpticksBuildOptions)
 
 find_package(OptiX      REQUIRED MODULE)   
 find_package(OpticksGeo REQUIRED CONFIG)
@@ -153,7 +159,11 @@ install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)
 install(FILES ${CU_HEADERS}           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cu)
 install(FILES ${HEADERS}              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL 
+   TOPMATTER "
+set(OptiX_INSTALL_DIR ${OptiX_INSTALL_DIR})
+message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : \${OptiX_INSTALL_DIR} \")
+" )
 
 add_subdirectory(tests)
 

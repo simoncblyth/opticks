@@ -89,8 +89,9 @@ EOU
 }
 
 bcm-env(){  olocal- ; opticks- ; }
-bcm-view-(){ ls -1 $(opticks-prefix)/share/bcm/cmake/* ; }
-bcm-view(){ vim -R $($FUNCNAME-) ; }
+bcm-ls(){ ls -1 $(opticks-prefix)/externals/share/bcm/cmake/* ; }
+bcm-view(){ vim -R $(bcm-ls) ; }
+#bcm-edit(){ vim    $(bcm-ls) ; }   ## dont do that, these are installed files not under management
 bcm-info(){ cat << EOI
 
     url  : $(bcm-url)

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRapTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 file(GLOB TEST_CC_SRCS "*Test.cc")
 

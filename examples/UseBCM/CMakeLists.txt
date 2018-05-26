@@ -1,11 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
-
 set(name UseBCM)
+project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
-project(${name})
-
-find_package(BCM)
-
+#find_package(BCM)
 
 message( STATUS "BCM_FOUND  : ${BCM_FOUND} ")
 message( STATUS "BCM_CONFIG : ${BCM_CONFIG} ")

@@ -20,16 +20,22 @@ class CMakeLists(object):
    NAME = "CMakeLists.txt"
    name_ptn = re.compile("^set\(name (?P<name>\S*)\).*")
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
+   obo_txt = "include(OpticksBuildOptions)"
 
-   def __init__(self, lines, reldir=None):
+   def __init__(self, lines, reldir=None, path=None):
        self.lines = lines 
        self.reldir = reldir
+       self.path = path
        self.name = None
        self.deps = []
        self.parse()
   
    def parse(self):
+       obo_found = False
        for line in self.lines:
+           if line.startswith(self.obo_txt):
+               obo_found = True 
+           pass 
            name_match = self.name_ptn.match(line)
            find_match = self.find_ptn.match(line)
            if name_match:
@@ -41,6 +47,12 @@ class CMakeLists(object):
            else:
                pass
            pass
+       pass
+
+       if not obo_found:
+           print self.path
+       pass
+       assert obo_found, "missing obo for %s " % self.reldir  
 
    def __repr__(self):
        return "%20s : %20s : %s " % (  self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
@@ -84,11 +96,12 @@ class Opticks(object):
         log.info("root %s " % root)    
         pkgs = {} 
         for dirpath, dirs, names in os.walk(root):
-            if CMakeLists.NAME in names and not "examples" in dirpath and not "tests" in dirpath and not "externals" in dirpath:
+            #if CMakeLists.NAME in names and not "examples" in dirpath and not "tests" in dirpath and not "externals" in dirpath:
+            if CMakeLists.NAME in names:
                 reldir = dirpath[len(root)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
                 lines = map(str.strip, file(path,"r").readlines() ) 
-                ls = CMakeLists(lines, reldir=reldir)
+                ls = CMakeLists(lines, reldir=reldir, path=path)
                 pkgs[ls.name] = ls
                 #print path
                 #print repr(ls)

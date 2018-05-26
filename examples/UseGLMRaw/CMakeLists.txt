@@ -1,9 +1,10 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.5)
 set(name UseGLMRaw)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
-set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
+#set(CMAKE_INSTALL_RPATH "${CMAKE_INSTALL_PREFIX}/lib")
 
 find_package(GLM REQUIRED MODULE)
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKG4Test)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 set(TESTS
     OKG4Test.cc

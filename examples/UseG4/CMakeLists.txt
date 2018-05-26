@@ -1,15 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseG4)
 project(${name} VERSION 0.1.0)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
-    
-include(EchoTarget)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+include(OpticksBuildOptions)
 
 find_package(G4 MODULE REQUIRED)   
 

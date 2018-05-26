@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseCFG4)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 set(CFG4_VERBOSE ON)
 find_package(CFG4 REQUIRED CONFIG)   

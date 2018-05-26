@@ -1,6 +1,4 @@
 
-
-
 if(WIN32)
 
   # need to detect compiler not os?
@@ -71,21 +69,21 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
    set(CUDA_VERBOSE_BUILD OFF)
 
-   message(STATUS "EnvCompilationFlags.cmake : COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
-   message(STATUS "EnvCompilationFlags.cmake : CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
+   message(STATUS "OpticksCompilationFlags.cmake : COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
+   message(STATUS "OpticksCompilationFlags.cmake : CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
 endif()
  
 
 set(FLAGS_VERBOSE ON)
 if(FLAGS_VERBOSE)
    # https://cmake.org/Wiki/CMake_Useful_Variables
-   message("CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
-   message("CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
-   message("CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
-   message("CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
-   message("CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
-   message("CMAKE_CXX_STANDARD : ${CMAKE_CXX_STANDARD} " )
-   message("CMAKE_CXX_STANDARD_REQUIRED : ${CMAKE_CXX_STANDARD_REQUIRED} " )
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS_RELEASE = ${CMAKE_CXX_FLAGS_RELEASE}")
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS_RELWITHDEBINFO= ${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_STANDARD : ${CMAKE_CXX_STANDARD} " )
+   message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_STANDARD_REQUIRED : ${CMAKE_CXX_STANDARD_REQUIRED} " )
 endif()
 
 

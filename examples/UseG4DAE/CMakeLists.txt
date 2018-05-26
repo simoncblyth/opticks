@@ -1,20 +1,33 @@
+#[=[
+UseG4DAE
+==========
+
+* access to the INTERFACE of the direct dependancy "G4DAE" is configured here, 
+  via the find_package(G4DAE...)
+
+* access to indirect dependancies such as G4,OpticksXercesC 
+  are not configured here. Those are automatically hooked up 
+  via CONFIG targets imported from::
+
+       $(opticks-prefix)/lib/cmake/*/*-config.cmake   
+       $(opticks-prefix)/externals/lib/cmake/*/*-config.cmake
+
+  In this case::
+
+       $(opticks-prefix)/externals/lib/cmake/g4dae/g4dae-config.cmake
+
+  In turn consumers of UseG4DAE (eg UseUseG4DAE) import the targets 
+  persisted by the bcm_deploy below to::
+
+       $(opticks-prefix)/lib/cmake/useg4dae/useg4dae-config.cmake 
+
+#]=]
+
+
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseG4DAE)
 project(${name} VERSION 0.1.0)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-find_package(BCM)
-include(BCMDeploy)
-
-#[=[
-
-Note that the dependancies of G4DAE, 
-(G4,  
-do not need to be configured here 
-
-
-#]=]
+include(OpticksBuildOptions)
 
 set(G4DAE_VERBOSE ON)
 find_package(G4DAE REQUIRED CONFIG)   

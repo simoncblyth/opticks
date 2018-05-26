@@ -1,17 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseCUDA)
 project(${name} VERSION 0.1.0)
-
-set(BUILD_SHARED_LIBS ON)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
-    
-include(EchoTarget)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+include(OpticksBuildOptions)
 
 find_package(OpticksCUDA REQUIRED MODULE) # /opt/local/share/cmake-3.11/Modules/FindCUDA.cmake 
 

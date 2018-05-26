@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OGLRapTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 set(FRAGILE_TEST_SOURCES
     FrameTest.cc

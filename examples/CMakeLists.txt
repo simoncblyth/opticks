@@ -1,13 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
-
-if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
-   message(STATUS " CMAKE_SOURCE_DIR : ${CMAKE_SOURCE_DIR} ")
-   message(STATUS " CMAKE_BINARY_DIR : ${CMAKE_BINARY_DIR} ")
-   message(FATAL_ERROR "in-source build detected : DONT DO THAT")
-endif()
-
 set(name OpticksExamples)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 #[=[
 OpticksExamples built in integrated fashion
@@ -53,10 +47,7 @@ Observe:
 
 * proj-by-proj building is sensitive only to what got persisted in prior builds 
 
-
-
 #]=]
-
 
 set(SUBDIRS
   cudarap

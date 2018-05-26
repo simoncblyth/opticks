@@ -21,8 +21,9 @@
 
 # Locate the OptiX distribution.  Search relative to the SDK first, then look in the system.
 
+message(STATUS "${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : ${OptiX_INSTALL_DIR} ")
 # Our initial guess will be within the SDK.
-set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX installed location.")
+#set(OptiX_INSTALL_DIR "${CMAKE_SOURCE_DIR}/../" CACHE PATH "Path to OptiX installed location.")
 
 # The distribution contains both 32 and 64 bit libraries.  Adjust the library
 # search path based on the bit-ness of the build.  (i.e. 64: bin64, lib64; 32:

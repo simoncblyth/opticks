@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 2.6 FATAL_ERROR)
 set(name NumpyServerTest)
 project(${name})
+include(OpticksBuildOptions)   
 
 file(GLOB TEST_CC_SRCS "*Test.cc")
 

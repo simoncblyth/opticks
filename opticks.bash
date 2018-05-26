@@ -1408,16 +1408,8 @@ opticks-cls-()
 }
 
 
-opticks-cmake-vi-(){ cat << EOF
-CMakeLists.txt
-cmake/Modules/OpticksConfigureConfigScript.cmake
-cmake/Templates/opticks-config.in
-cmake/Modules/OpticksConfigureCMakeHelpers.cmake
-cmake/Templates/OpticksConfig.cmake.in
-EOF
-}
-
-opticks-cmake-vi(){ opticks-scd ; vi $(opticks-cmake-vi-) ; }
+opticks-cmake-vi-(){ find $(opticks-home) -name CMakeLists.txt ; }
+opticks-cmake-vi(){  vi $(opticks-cmake-vi-) ; }
 
 
 
@@ -1447,3 +1439,11 @@ opticks-executables(){  find . -type f -perm +111 -print | grep -v dylib | grep 
 
 
 
+opticks-cmake-check(){
+   opticks-scd 
+   find . -name CMakeLists.txt -exec grep -l OpticksBuildOptions {} \; | wc -l 
+   find . -name CMakeLists.txt | wc -l 
+
+   ## see bin/CMakeLists.py for easier way of making such consistency checks 
+
+}

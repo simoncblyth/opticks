@@ -1,20 +1,10 @@
-cmake_minimum_required(VERSION 3.9 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKConf)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
-#include(EnvBuildOptions)
-include(EnvCompilationFlags)
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-
-
-set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})  
+#set(CMAKE_INSTALL_RPATH ${CMAKE_INSTALL_FULL_LIBDIR})  
 #set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)  
-
-find_package(BCM)
-include(BCMDeploy)
 
 ## OKConf is unusual : it parses OptiX and G4 package headers 
 ## to find version integers and otherwise does not link to those packages.

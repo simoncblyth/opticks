@@ -16,6 +16,8 @@ cmake $sdir \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
     -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
 
+# -DOptiX_INSTALL_DIR=/Developer/OptiX
+
 make
 make install   
 

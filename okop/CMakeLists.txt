@@ -1,17 +1,8 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKOP) 
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)   
 
-include(EnvBuildOptions)
-include(EnvCompilationFlags)   
-
-include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
-
-find_package(BCM)
-include(BCMDeploy)
-
-# NB COMPUTE ONLY : **NO OpenGL/OpticksGLEW/OpticksGLFW** use opticksgl- not opticksop- for viz things 
 find_package(OptiXRap REQUIRED CONFIG)
 
 set(SOURCES
@@ -55,7 +46,6 @@ target_link_libraries( ${name} PUBLIC Opticks::OptiXRap)
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 if(OKOP_VERBOSE)
-  include(EchoTarget)
   echo_target_std(${name})
   message(STATUS "${name}._generated_OBJ_files : ${_generated_OBJ_files} ")
 endif()

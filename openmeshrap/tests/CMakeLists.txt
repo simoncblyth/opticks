@@ -1,10 +1,9 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpenMeshRapTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
-#file(GLOB TEST_SOURCES "*Test.cc")
 set(TEST_SOURCES
-
     DeleteFaceTest.cc
 )
 

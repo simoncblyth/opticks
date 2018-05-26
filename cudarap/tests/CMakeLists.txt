@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CUDARapTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)   
 
 #message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
 message("${name}.LIBRARIES    : ${LIBRARIES}")
@@ -20,8 +21,6 @@ foreach(SRC ${TEST_SOURCES})
     install(TARGETS ${TGT} DESTINATION lib)
 endforeach()
 
-
-#file(GLOB TEST_CU_SRCS "*Test.cu")
 
 set(TEST_SOURCES_CU
    cudaGetDevicePropertiesTest.cu

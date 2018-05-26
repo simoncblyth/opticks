@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OKConfTest)
 project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
 
 
 set(TEST_SOURCES
-OKConfTest.cc
+    OKConfTest.cc
 )
 
 foreach(TEST_SOURCE ${TEST_SOURCES})
