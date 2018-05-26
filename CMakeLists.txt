@@ -12,7 +12,9 @@ Opticks CMake Conventions
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name Opticks)
 project(${name} VERSION 0.1.0)
+set(FLAGS_VERBOSE ON)
 include(OpticksBuildOptions)   
+set(FLAGS_VERBOSE OFF)
 
 set(SUBDIRS
   okconf
@@ -41,7 +43,7 @@ macro(find_package)
 
    string(TOLOWER ${pkg} lpkg) 
    if(NOT "${lpkg}" IN_LIST SUBDIRS)
-       message(STATUS "find_package ( ${ARGV} ) START ")
+       #message(STATUS "find_package ( ${ARGV} ) START ")
        _find_package(${ARGV})   
        set(_pkg_found ${${pkg}_FOUND})
 
@@ -51,13 +53,12 @@ macro(find_package)
            message(FATAL_ERROR "ABORT : failed to find non-QUIET pkg ${pkg} ")
        endif()
    else()
-       message(STATUS "find_package ( ${ARGV} ) SKIP integrated pkg ")
+       #message(STATUS "find_package ( ${ARGV} ) SKIP integrated pkg ")
    endif()
 endmacro()
 
 
 foreach(_dir ${SUBDIRS})
-   message(STATUS "${_dir}")
    add_subdirectory(${_dir})
 endforeach()
 

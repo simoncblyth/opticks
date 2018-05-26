@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CUDARapTest)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)   
+#include(OpticksBuildOptions)   
 
 #message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
 message("${name}.LIBRARIES    : ${LIBRARIES}")

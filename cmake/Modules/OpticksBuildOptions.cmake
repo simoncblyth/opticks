@@ -1,4 +1,6 @@
-message(STATUS "Configuring ${CMAKE_PROJECT_NAME}")
+# for an integrated build the project is the top level one, 
+#  so use name not CMAKE_PROJECT_NAME
+message(STATUS "Configuring ${name}")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
    message(STATUS " CMAKE_SOURCE_DIR : ${CMAKE_SOURCE_DIR} ")
@@ -10,7 +12,8 @@ include(CTest)
 #add_custom_target(check COMMAND ${CMAKE_CTEST_COMMAND})
 
 include(GNUInstallDirs)
-set(CMAKE_INSTALL_INCLUDEDIR "include/${CMAKE_PROJECT_NAME}")
+#set(CMAKE_INSTALL_INCLUDEDIR "include/${CMAKE_PROJECT_NAME}")
+set(CMAKE_INSTALL_INCLUDEDIR "include/${name}")
 
 find_package(BCM)
 include(BCMDeploy)

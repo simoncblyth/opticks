@@ -1,3 +1,18 @@
+/*
+Bizarre for this test compilation fails::
+
+    nvcc fatal   : redefinition of argument 'std'
+
+when have the below include::
+
+    cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+    set(name CUDARapTest)
+    project(${name} VERSION 0.1.0)
+    #include(OpticksBuildOptions)   
+
+*/
+
+
 #include <cstdio>
 #include <cstring>
  

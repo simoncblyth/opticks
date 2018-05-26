@@ -1,4 +1,8 @@
 
+# start from nothing, so repeated inclusion of this into CMake context doesnt repeat the flags 
+set(CMAKE_CXX_FLAGS)
+set(CUDA_NVCC_FLAGS)
+
 if(WIN32)
 
   # need to detect compiler not os?
@@ -48,11 +52,15 @@ endif(WIN32)
 set(COMPUTE_CAPABILITY 30)
 if(NOT (COMPUTE_CAPABILITY LESS 30))
 
+
    #list(APPEND CUDA_NVCC_FLAGS "-arch=sm_${COMPUTE_CAPABILITY}")
    list(APPEND CUDA_NVCC_FLAGS "-Xcompiler -fPIC")
    list(APPEND CUDA_NVCC_FLAGS "-gencode=arch=compute_${COMPUTE_CAPABILITY},code=sm_${COMPUTE_CAPABILITY}")
 
-   list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+   #list(APPEND CUDA_NVCC_FLAGS "-std=c++11")
+   # https://github.com/facebookresearch/Detectron/issues/185
+
+
    list(APPEND CUDA_NVCC_FLAGS "-O2")
    #list(APPEND CUDA_NVCC_FLAGS "-DVERBOSE")
    list(APPEND CUDA_NVCC_FLAGS "--use_fast_math")
@@ -69,14 +77,13 @@ if(NOT (COMPUTE_CAPABILITY LESS 30))
    set(CUDA_PROPAGATE_HOST_FLAGS OFF)
    set(CUDA_VERBOSE_BUILD OFF)
 
-   message(STATUS "OpticksCompilationFlags.cmake : COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
-   message(STATUS "OpticksCompilationFlags.cmake : CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
 endif()
  
 
-set(FLAGS_VERBOSE ON)
 if(FLAGS_VERBOSE)
    # https://cmake.org/Wiki/CMake_Useful_Variables
+   message(STATUS "OpticksCompilationFlags.cmake : COMPUTE_CAPABILITY : ${COMPUTE_CAPABILITY}")
+   message(STATUS "OpticksCompilationFlags.cmake : CUDA_NVCC_FLAGS    : ${CUDA_NVCC_FLAGS} ")
    message(STATUS "OpticksCompilationFlags.cmake : CMAKE_BUILD_TYPE = ${CMAKE_BUILD_TYPE}")
    message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS = ${CMAKE_CXX_FLAGS}")
    message(STATUS "OpticksCompilationFlags.cmake : CMAKE_CXX_FLAGS_DEBUG = ${CMAKE_CXX_FLAGS_DEBUG}")
