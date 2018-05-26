@@ -1,6 +1,7 @@
 #include <iostream>
 #include "G4GDMLParser.hh"
 #include "G4DAEParser.hh"
+
 #include "UseG4DAE.hh"
 
 void UseG4DAE_gdml2dae( const char* gdml_path, const char* dae_path )
@@ -34,6 +35,7 @@ void UseG4DAE_gdml2dae( const char* gdml_path, const char* dae_path )
 }
 
 
+#ifdef WITH_MAIN
 int main(int argc, char** argv)
 {
     if(argc != 3)
@@ -49,5 +51,5 @@ int main(int argc, char** argv)
 
     return 0 ; 
 }
-
+#endif
 
