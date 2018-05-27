@@ -27,6 +27,7 @@ class SYSRAP_API SSys {
      static bool IsHARIKARI();
      static bool IsENVVAR(const char* envvar);
      static int GetInteractivityLevel();
+     static int OKConfCheck();
 
 
      static unsigned COUNT ; 

@@ -2,7 +2,7 @@
 #include <iomanip>
 
 #include "OKConf.hh"
-#include "OKCONF_OpticksCMakeConfig.hh"
+#include "OKConf_Config.hh"
 
 
 int OKConf::Check()

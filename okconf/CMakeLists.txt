@@ -51,7 +51,11 @@ set(OXRAP_OPTIX_VERSION   "${OptiX_VERSION_INTEGER}")
 set(CFG4_G4VERSION_NUMBER "${G4_VERSION_INTEGER}")
 
 
-configure_file( OKCONF_OpticksCMakeConfig.hh.in inc/OKCONF_OpticksCMakeConfig.hh )
+
+set(OKConf_GENERATED_HEADER  "OKConf_Config.hh")
+
+#configure_file( OKCONF_OpticksCMakeConfig.hh.in inc/${OKCONF_GENERATED_HEADER} )
+configure_file( ${OKConf_GENERATED_HEADER}.in inc/${OKConf_GENERATED_HEADER} )
 
 # generate opticks-config sh script into lib dir
 #include(OpticksConfigureConfigScript)
@@ -68,11 +72,22 @@ set(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES})
 
-target_include_directories( ${name} PUBLIC
-   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
+# hmm reluctant to make PUBLIC as just want to communicate to the tests 
+# but for integrated it seems need to, unless just use ".." from the tests
+
+target_include_directories( ${name} PRIVATE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
 )
+
+
+add_subdirectory(tests)
+
+
+
+
  
+
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL TOPMATTER "
 ## OKConf generated TOPMATTER
 
@@ -88,7 +103,6 @@ endif()
 
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/OKCONF_OpticksCMakeConfig.hh  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/inc/${OKConf_GENERATED_HEADER}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-add_subdirectory(tests)
 

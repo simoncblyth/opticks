@@ -39,7 +39,7 @@
 
 
 // oglrap-
-#include "Config.hh"      // cmake generated header
+#include "OGLRap_Config.hh"      // cmake generated header
 
 #include "Composition.hh"
 #include "Renderer.hh"

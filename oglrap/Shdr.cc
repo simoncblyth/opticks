@@ -3,7 +3,8 @@
 #include <iomanip>
 #include <fstream>
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
+#include "BStr.hh"
 #include "BFile.hh"
 
 #include "Shdr.hh"
@@ -95,9 +96,10 @@ void Shdr::_print_shader_info_log()
 
 
 
-void Shdr::setInclPath(const char* incl_path, const char* delim)
+void Shdr::setInclPath(const char* incl_path, char delim)
 {
-    boost::split(m_incl_dirs,incl_path,boost::is_any_of(delim));
+    //boost::split(m_incl_dirs,incl_path,boost::is_any_of(delim));
+    BStr::split(m_incl_dirs,incl_path,delim);
 
     LOG(trace) << "Shdr::setInclPath "
               << " incl_path " << incl_path

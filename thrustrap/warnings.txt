@@ -1,0 +1,17 @@
+[ 86%] Building NVCC (Device) object tests/CMakeFiles/TRngBufTest.dir/TRngBufTest_generated_TRngBufTest.cu.o
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu(19): warning: controlling expression is constant
+
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu(19): warning: controlling expression is constant
+
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu(19): warning: controlling expression is constant
+
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu(19): warning: controlling expression is constant
+
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu:19:226: warning: address of 'consoleAppender' will always evaluate to 'true' [-Wpointer-bool-conversion]
+{ PLOG _plog(argc, argv); static plog::RollingFileAppender< plog::TxtFormatter>  fileAppender(_plog.logpath, _plog.logmax); static plog::ConsoleAppender< plog::TxtFormatter>  consoleAppender; { plog::IAppender *appender1 = (&consoleAppender) ? static_cast< plog::IAppender *>(&consoleAppender) : (__null); plog::IAppender *appender2 = (&fileAppender) ? static_cast< plog::IAppender *>(&fileAppender) : (__null); plog::Severity severity = static_cast< plog::Severity>(_plog.level); plog::init(severity, appender1); if (appender2) { plog::get()->addAppender(appender2); }  } ; } ; 
+                                                                                                                                                                                                                                 ^~~~~~~~~~~~~~~  ~
+/Users/blyth/opticks-cmake-overhaul/thrustrap/tests/TRngBufTest.cu:19:338: warning: address of 'fileAppender' will always evaluate to 'true' [-Wpointer-bool-conversion]
+{ PLOG _plog(argc, argv); static plog::RollingFileAppender< plog::TxtFormatter>  fileAppender(_plog.logpath, _plog.logmax); static plog::ConsoleAppender< plog::TxtFormatter>  consoleAppender; { plog::IAppender *appender1 = (&consoleAppender) ? static_cast< plog::IAppender *>(&consoleAppender) : (__null); plog::IAppender *appender2 = (&fileAppender) ? static_cast< plog::IAppender *>(&fileAppender) : (__null); plog::Severity severity = static_cast< plog::Severity>(_plog.level); plog::init(severity, appender1); if (appender2) { plog::get()->addAppender(appender2); }  } ; } ; 
+                  
+
+

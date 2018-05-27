@@ -6,7 +6,11 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 bdir=$(opticks-prefix)/build/$name
-#rm -rf $bdir 
+
+if [ "$1" == "clean" ]; then
+   echo $0 $1 : remove bdir $bdir 
+   rm -rf $bdir 
+fi
 mkdir -p $bdir && cd $bdir && pwd 
 
 cmake $sdir \
@@ -15,9 +19,11 @@ cmake $sdir \
     -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
-# not needed when not downstream from OptiX
-#    -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)
-
 make
+[ "$(uname)" == "Darwin" ] && echo kludge 2s sleep && sleep 2 
 make install   
+
+opticks-t $bdir
+
+
 

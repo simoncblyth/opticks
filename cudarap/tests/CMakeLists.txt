@@ -8,6 +8,7 @@ set(TEST_SOURCES
    LaunchSequenceTest.cc
    cuRANDWrapperTest.cc
    curand_aligned_host.cc
+   CUDARapVersionTest.cc
 )
 
 foreach(SRC ${TEST_SOURCES})

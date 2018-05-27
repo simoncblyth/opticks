@@ -1,0 +1,22 @@
+ld: warning: direct access in function 'thrust::cuda_cub::throw_on_error(cudaError, char const*)' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'typeinfo for thrust::system::system_error' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'guard variable for thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'guard variable for thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+ld: warning: direct access in function 'thrust::system::cuda_category()' from file 'CMakeFiles/OKOP.dir/OpIndexer.cc.o' to global weak symbol 'guard variable for thrust::system::cuda_category()::result' from file 'CMakeFiles/OKOP.dir/OKOP_generated_OpIndexer_.cu.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+
+
+OpIndexer is the only one to use thrust directly 
+
+
+epsilon:okop blyth$ grep thrust *.cc
+OpIndexer.cc:// thrustrap-
+OpIndexer.cc:// thrust 
+OpIndexer.cc:#include <thrust/device_vector.h>
+OpIndexer.cc:    thrust::device_vector<unsigned long long> dph(ph->begin(),ph->end());
+OpSeeder.cc:// thrustrap-
+OpZeroer.cc:// thrustrap-
+epsilon:okop blyth$ 
+
+

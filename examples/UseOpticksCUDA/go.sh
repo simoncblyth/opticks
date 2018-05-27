@@ -3,15 +3,10 @@
 opticks-
 
 sdir=$(pwd)
-name=$(basename $sdir)
-bdir=$(opticks-prefix)/build/$name
+bdir=/tmp/$USER/opticks/$(basename $sdir)/build 
 
-if [ "$1" == "clean" ]; then
-   echo $0 $1 : remove bdir $bdir
-   rm -rf $bdir 
-fi
+rm -rf $bdir && mkdir -p $bdir && cd $bdir && pwd 
 
-mkdir -p $bdir && cd $bdir && pwd 
   
 cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
             -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
@@ -20,7 +15,4 @@ cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
 
 make
 make install   
-
-opticks-t $bdir
-
 

@@ -85,6 +85,12 @@ if(UNIX)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 
+set(SysRap_VERBOSE ON)
+if(SysRap_VERBOSE)
+  echo_target_std(Opticks::OKConf) 
+  #echo_target_std(${name}) 
+endif()
+
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 )

@@ -3,7 +3,7 @@ set(name CUDARap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-set(CUDARap_VERBOSE ON)
+set(CUDARap_VERBOSE OFF)
 if(CUDARap_VERBOSE)
    message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS} ")
 endif()
@@ -44,6 +44,8 @@ SET(HEADERS
 set(LIBRARIES
    Opticks::SysRap
    Opticks::CUDA
+   Opticks::CUDASamples
+   Opticks::OKConf
 )
 if(UNIX)
   set(LIBRARIES ${LIBRARIES} ssl )  
@@ -67,3 +69,16 @@ bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
 add_subdirectory(tests)
 
+
+#[=[
+Formerly copied in helper_cuda.h from the samples distrib, now trying to avoid 
+that using the Opticks::CUDASamples INTERFACE IMPORTED target.
+
+::
+
+  /Developer/NVIDIA/CUDA-9.1/samples/common/inc/helper_cuda.h
+  /Volumes/Delta/Developer/NVIDIA/CUDA-7.0/samples/common/inc/helper_cuda.h 
+  /Volumes/Delta/Developer/NVIDIA/CUDA-5.5/samples/common/inc/helper_cuda.h 
+
+
+#]=]

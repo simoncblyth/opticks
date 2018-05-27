@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRap)
 project(${name} VERSION 0.1.0)
-find_package(OKConf REQUIRED CONFIG)    ## for COMPUTE_CAPABILITY -> CUDA_NVCC_FLAGS
 include(OpticksBuildOptions)
 
 find_package(OpticksCore REQUIRED CONFIG)
@@ -43,7 +42,7 @@ SET(HEADERS
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} OPTIONS )
 
 get_target_property(_cal_ill ${name} INTERFACE_LINK_LIBRARIES)
-message(STATUS "${name} CUDA_ADD_LIBRARY.INTERFACE_LINK_LIBRARIES : ${_cal_ill} ") 
+#set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear CAUSES GRIEF FOR INTEGRATED BUILD
 
 #[=[
 Scrubbing this causes all thrap tests to fail with the below exception in integrated build, but not for the 
@@ -63,11 +62,15 @@ When it should be using::
 
 #]=]
 
-set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear CAUSES GRIEF FOR INTEGRATED BUILD
 target_link_libraries( ${name} Opticks::OpticksCore Opticks::CUDARap)
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-echo_target_std(${name})
+set(ThrustRap_VERBOSE OFF)
+if(ThrustRap_VERBOSE)
+   message(STATUS "${name} CUDA_ADD_LIBRARY.INTERFACE_LINK_LIBRARIES : ${_cal_ill} ") 
+   echo_target_std(${name})
+endif()
+
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

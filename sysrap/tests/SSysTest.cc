@@ -32,6 +32,14 @@ void test_RC()
     } 
 }
 
+int test_OKConfCheck()
+{
+    int rc = SSys::OKConfCheck();
+    assert( rc == 0 );
+    return rc ; 
+}
+
+
 
 int main(int argc , char** argv )
 {
@@ -41,7 +49,9 @@ int main(int argc , char** argv )
 
     int rc(0) ;
 
-    rc = test_tpmt();
+    rc = test_OKConfCheck();
+
+    //rc = test_tpmt();
 
     //rc = test_RC(77);
 

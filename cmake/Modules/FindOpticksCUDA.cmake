@@ -14,7 +14,8 @@ if(OpticksCUDA_FOUND)
    file(READ "${CUDA_INCLUDE_DIRS}/cuda.h" _contents)
    string(REGEX REPLACE "\n" ";" _contents "${_contents}")
    foreach(_line ${_contents})
-       if (_line MATCHES "^    #define __CUDA_API_VERSION ([0-9]+)") ## require 4 spaces to distinguish from another ancient API version 
+       #if (_line MATCHES "^    #define __CUDA_API_VERSION ([0-9]+)") ## require 4 spaces to distinguish from another ancient API version 
+       if (_line MATCHES "#define CUDA_VERSION ([0-9]+)") ## require 4 spaces to distinguish from another ancient API version 
             set(OpticksCUDA_API_VERSION ${CMAKE_MATCH_1} )
             #message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_API_VERSION:${OpticksCUDA_API_VERSION}") 
        endif()
@@ -22,6 +23,11 @@ if(OpticksCUDA_FOUND)
 endif()
 
 if(OpticksCUDA_VERBOSE)
+
+  message(STATUS "  CUDA_TOOLKIT_ROOT_DIR : ${CUDA_TOOLKIT_ROOT_DIR} ")
+  message(STATUS "  CUDA_SDK_ROOT_DIR     : ${CUDA_SDK_ROOT_DIR} ")
+  message(STATUS "  CUDA_VERSION          : ${CUDA_VERSION} ")
+
   message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_VERBOSE  : ${OpticksCUDA_VERBOSE} ")
   message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_FOUND    : ${OpticksCUDA_FOUND} ")
   message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_API_VERSION    : ${OpticksCUDA_API_VERSION} ")
@@ -45,5 +51,10 @@ if(OpticksCUDA_FOUND AND NOT TARGET Opticks::CUDA)
 
     target_link_libraries(Opticks::CUDA INTERFACE Opticks::cudart_static Opticks::curand )
     target_include_directories(Opticks::CUDA INTERFACE "${CUDA_INCLUDE_DIRS}" )
+
+    add_library(Opticks::CUDASamples INTERFACE IMPORTED)
+    target_include_directories(Opticks::CUDASamples INTERFACE "${CUDA_TOOLKIT_ROOT_DIR}/samples/common/inc")  
+    ## for CUDA error strings from helper_cuda.h and helper_string.h 
+
 endif()
 

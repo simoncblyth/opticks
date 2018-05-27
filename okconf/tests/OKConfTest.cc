@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cassert>
 #include "OKConf.hh"
+#include "OKConf_Config.hh"
 
 int main()
 {

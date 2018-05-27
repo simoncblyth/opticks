@@ -5,6 +5,7 @@ set(name UseCUDA)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
+set(OpticksCUDA_VERBOSE ON)
 find_package(OpticksCUDA REQUIRED MODULE) 
 
 set(SOURCES ${name}.cu)

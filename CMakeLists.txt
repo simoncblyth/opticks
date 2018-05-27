@@ -38,6 +38,7 @@ include(OpticksBuildOptions)
 set(INTEGRATED_SUBDIRS
   okconf
   sysrap
+#[=[
   boostrap
   npy
   optickscore
@@ -54,7 +55,9 @@ set(INTEGRATED_SUBDIRS
   ok
   cfg4
   okg4
+#]=]
 )
+
 
 macro(find_package)    
    set(_args "${ARGV}")
@@ -63,10 +66,21 @@ macro(find_package)
    if(NOT "${_subdir}" IN_LIST INTEGRATED_SUBDIRS)
        _find_package(${ARGV})   
        set(_pkg_found ${${_pkg}_FOUND})
-       message(STATUS "find_package ( ${ARGV} ) --> ${_pkg_found} ")
+       if(NOT ${_pkg} STREQUAL "BCM")  
+           message(STATUS "find_package ( ${ARGV} ) --> ${_pkg_found} ")
+       endif()
        if(NOT "QUIET" IN_LIST _args AND NOT ${_pkg_found})
            message(FATAL_ERROR "ABORT : failed to find non-QUIET pkg ${_pkg} ")
        endif()
+   else()
+       #set(_tgt "Opticks::${_pkg}")
+       #
+       ## BEFORE so changes to headers in build directory take precedence 
+       ## over any old installed headers 
+       ##target_include_directories( ${_tgt} BEFORE INTERFACE  
+       #    $<BUILD_INTERFACE:${${_pkg}_SOURCE_DIR}>
+       #    $<BUILD_INTERFACE:${${_pkg}_BINARY_DIR}/inc>
+       #) 
    endif()
 endmacro()
 

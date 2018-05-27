@@ -10,6 +10,8 @@
 
 #include <sys/wait.h>
 
+#include "OKConf.hh"
+
 #include "SSys.hh"
 #include "PLOG.hh"
 
@@ -83,7 +85,13 @@ int SSys::npdump(const char* path, const char* nptype, const char* postview, con
 }
 
 
-
+int SSys::OKConfCheck()
+{
+    int rc = OKConf::Check(); 
+    OKConf::Dump();
+    assert( rc == 0 );
+    return rc ; 
+}
 
 
 

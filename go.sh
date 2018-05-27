@@ -34,7 +34,6 @@ else
 fi
 
 pwd  ; ls -l 
-#exit 1
 
 
 cd $(opticks-home)
@@ -42,7 +41,10 @@ cd $(opticks-home)
 sdir=$(pwd)
 bdir=$prefix/build
 
-#rm -rf $bdir 
+if [ "$1" == "clean" ]; then
+   echo $0 $1 : remove bdir $bdir
+   rm -rf $bdir 
+fi 
 mkdir -p $bdir && cd $bdir && pwd 
 
 echo $msg sdir : $sdir 
@@ -56,7 +58,9 @@ cmake $sdir \
     -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
     -DCMAKE_INSTALL_PREFIX=$prefix \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-    -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir)
+     \
+    -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+    -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
 
 rc=$?
 if [ "$rc" != "0" ]; then

@@ -1,0 +1,20 @@
+/Users/blyth/opticks-cmake-overhaul/cfg4/OpNovicePhysicsList.cc:205:3: warning: instantiation of variable 'G4VUPLSplitter<G4VUPLData>::offset' required here, but no definition is available
+      [-Wundefined-var-template]
+  theParticleIterator->reset();
+  ^
+/usr/local/opticks-cmake-overhaul/externals/include/Geant4/G4VUserPhysicsList.hh:153:56: note: expanded from macro 'theParticleIterator'
+#define theParticleIterator ((this->subInstanceManager.offset[this->g4vuplInstanceID])._theParticleIterator)
+                                                       ^
+/usr/local/opticks-cmake-overhaul/externals/include/Geant4/G4VUPLSplitter.hh:195:38: note: forward declaration of template entity is here
+    G4RUN_DLL G4ThreadLocalStatic T* offset; //Pointer to first instance of an array
+                                     ^
+/Users/blyth/opticks-cmake-overhaul/cfg4/OpNovicePhysicsList.cc:205:3: note: add an explicit instantiation declaration to suppress this warning if 'G4VUPLSplitter<G4VUPLData>::offset' is
+      explicitly instantiated in another translation unit
+  theParticleIterator->reset();
+  ^
+/usr/local/opticks-cmake-overhaul/externals/include/Geant4/G4VUserPhysicsList.hh:153:56: note: expanded from macro 'theParticleIterator'
+#define theParticleIterator ((this->subInstanceManager.offset[this->g4vuplInstanceID])._theParticleIterator)
+                                                       ^
+1 warning generated.
+
+

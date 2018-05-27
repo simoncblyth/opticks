@@ -20,7 +20,26 @@ cmake $sdir \
     -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
     -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
 
-## OKConf finds OptiX to get the version integer, so OptiX_INSTALL_DIR is required
+
+
+notes(){ cat << EOT
+
+Finding Externals
+===================
+
+OptiX
+    OptiX_INSTALL_DIR is required
+
+
+Geant4
+    via -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals 
+    no need (so long as only one G4 version in externals) to use::
+    
+       -DGeant4_DIR=$(g4-cmake-dir)
+
+EOT
+}
+
 
 make
 

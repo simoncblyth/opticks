@@ -16,7 +16,8 @@ RPATH setup https://gitlab.kitware.com/cmake/community/wikis/doc/cmake/RPATH-han
 #]=]
 
 
-message(STATUS "OpticksBuildOptions.cmake Configuring ${name}")
+#message(STATUS "OpticksBuildOptions.cmake Configuring ${name}")
+message(STATUS "Configuring ${name}")
 
 if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
    message(STATUS " CMAKE_SOURCE_DIR : ${CMAKE_SOURCE_DIR} ")

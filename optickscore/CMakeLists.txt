@@ -1,9 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpticksCore)
 project(${name} VERSION 0.1.0)
-set(FLAGS_VERBOSE ON)
 include(OpticksBuildOptions)
-set(FLAGS_VERBOSE OFF)
 
 find_package(NPY      REQUIRED CONFIG)
 

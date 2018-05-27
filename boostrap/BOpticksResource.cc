@@ -5,8 +5,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
-//#include "OKConf.hh"
-#include "OKCONF_OpticksCMakeConfig.hh"
+#include "OKConf_Config.hh"
 
 #include "SSys.hh"
 

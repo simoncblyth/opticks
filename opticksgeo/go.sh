@@ -18,3 +18,8 @@ cmake $sdir \
 make
 make install   
 
+opticks-t $bdir
+
+
+
+

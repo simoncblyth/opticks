@@ -6,7 +6,11 @@ sdir=$(pwd)
 name=$(basename $sdir)
 
 bdir=$(opticks-prefix)/build/$name
-#rm -rf $bdir 
+
+if [ "$1" == "clean" ]; then
+   echo $0 $1 : remove bdir $bdir
+   rm -rf $bdir 
+fi 
 mkdir -p $bdir && cd $bdir && pwd 
 
 cmake $sdir \
@@ -16,9 +20,11 @@ cmake $sdir \
     -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
 
 
+# the below is not needed here anyore, moved to OKConf
 #    -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) 
-# -DOptiX_INSTALL_DIR=/Developer/OptiX
 
 make
 make install   
+
+opticks-t $bdir
 

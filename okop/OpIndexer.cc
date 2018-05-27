@@ -34,8 +34,10 @@
 #include "CResource.hh"
 #include "CBufSpec.hh"
 
+//#ifdef WITH_OpIndexer_LOADED
 // thrust 
 #include <thrust/device_vector.h>
+//#endif
 
 
 // opticksop-
@@ -274,6 +276,7 @@ void OpIndexer::indexSequenceInterop()
 void OpIndexer::indexSequenceLoaded()
 {
     // starts from host based index
+//#ifdef WITH_OpIndexer_LOADED
 
     LOG(info) << "OpIndexer::indexSequenceLoaded" ; 
     if(m_evt->isIndexed() && !m_opticks->hasOpt("forceindex")) 
@@ -310,6 +313,9 @@ void OpIndexer::indexSequenceLoaded()
     indexSequenceViaThrust(seqhis, seqmat, m_verbose );
 
     TIMER("indexSequenceLoaded"); 
+
+//#endif
+
 }
 
 
