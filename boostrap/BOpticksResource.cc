@@ -5,6 +5,9 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+//#include "OKConf.hh"
+#include "OKCONF_OpticksCMakeConfig.hh"
+
 #include "SSys.hh"
 
 #include "BFile.hh"
@@ -13,7 +16,9 @@ namespace fs = boost::filesystem;
 #include "BOpticksResource.hh"
 
 // CMake generated defines from binary_dir/inc
-#include "BOpticksResourceCMakeConfig.hh"  
+//#include "BOpticksResourceCMakeConfig.hh"  
+
+
 
 #include "PLOG.hh"
 
@@ -81,7 +86,7 @@ const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/optic
 
 const char* BOpticksResource::InstallPath(const char* relpath) 
 {
-    std::string path = BFile::FormPath(OPTICKS_INSTALL_PREFIX, relpath) ;
+    std::string path = BFile::FormPath(OKCONF_OPTICKS_INSTALL_PREFIX, relpath) ;
     return strdup(path.c_str()) ;
 }
 
@@ -107,7 +112,7 @@ std::string BOpticksResource::getInstallPath(const char* relpath) const
 
 void BOpticksResource::adoptInstallPrefix()
 {
-    m_install_prefix = strdup(OPTICKS_INSTALL_PREFIX) ; 
+    m_install_prefix = strdup(OKCONF_OPTICKS_INSTALL_PREFIX) ; 
     addDir("install_prefix", m_install_prefix );
 
     const char* key = "INSTALL_PREFIX" ; 
@@ -221,15 +226,15 @@ const char* BOpticksResource::getDebuggingTreedir(int argc, char** argv)
 
 
 
-const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
-const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
-const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
-const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
-const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
+const char* BOpticksResource::InstallCacheDir(){return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache",  NULL); }
+const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata",  NULL); }
+const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
+const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
+const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
 
-const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
-const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
-const char* BOpticksResource::OKCInstallPath(){ return makeInstallPath(OPTICKS_INSTALL_PREFIX, "installcache", "OKC"); }
+const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
+const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
+const char* BOpticksResource::OKCInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "OKC"); }
 
 
 
@@ -484,7 +489,7 @@ const char* BOpticksResource::makeInstallPath( const char* prefix, const char* m
 
 std::string BOpticksResource::BuildDir(const char* proj)
 {
-    return BFile::FormPath(OPTICKS_INSTALL_PREFIX, "build", proj );
+    return BFile::FormPath(OKCONF_OPTICKS_INSTALL_PREFIX, "build", proj );
 }
 std::string BOpticksResource::BuildProduct(const char* proj, const char* name)
 {

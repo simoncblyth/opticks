@@ -1,7 +1,7 @@
 #pragma once
 
 //
-// Opticks top level CMakeLists.txt writes ${CMAKE_BINARY_DIR}/inc/OpticksCMakeConfig.hh 
+// First subproj OKConf CMakeLists.txt writes ${CMAKE_BINARY_DIR}/inc/OpticksCMakeConfig.hh 
 // at configure time, based on version defines parsed from package headers 
 // in for example optixrap/CMakeLists.txt
 //
@@ -10,16 +10,21 @@
 // This means that package versions become globally available for all 
 // Opticks projects at all levels, without having to include package headers.
 //
-//
 
+#cmakedefine OKCONF_CUDA_API_VERSION_INTEGER @OKCONF_CUDA_API_VERSION_INTEGER@
 #cmakedefine OKCONF_OPTIX_VERSION_INTEGER @OKCONF_OPTIX_VERSION_INTEGER@
 #cmakedefine OKCONF_GEANT4_VERSION_INTEGER @OKCONF_GEANT4_VERSION_INTEGER@
+#cmakedefine OKCONF_COMPUTE_CAPABILITY_INTEGER @OKCONF_COMPUTE_CAPABILITY_INTEGER@
+
+#cmakedefine OKCONF_OPTICKS_INSTALL_PREFIX "@OKCONF_OPTICKS_INSTALL_PREFIX@"
+#cmakedefine OKCONF_OPTIX_INSTALL_DIR "@OKCONF_OPTIX_INSTALL_DIR@"
+#cmakedefine OKCONF_CUDA_NVCC_FLAGS   "@OKCONF_CUDA_NVCC_FLAGS@"
+#cmakedefine OKCONF_CMAKE_CXX_FLAGS   "@OKCONF_CMAKE_CXX_FLAGS@"
 
 
 // backward compat  TODO: adopt the new OKCONF names and remove these
 #cmakedefine OXRAP_OPTIX_VERSION @OXRAP_OPTIX_VERSION@
 #cmakedefine CFG4_G4VERSION_NUMBER @CFG4_G4VERSION_NUMBER@
-
 
 
 

@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRap)
 project(${name} VERSION 0.1.0)
+find_package(OKConf REQUIRED CONFIG)    ## for COMPUTE_CAPABILITY -> CUDA_NVCC_FLAGS
 include(OpticksBuildOptions)
 
 find_package(OpticksCore REQUIRED CONFIG)
@@ -66,7 +67,6 @@ set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge
 target_link_libraries( ${name} Opticks::OpticksCore Opticks::CUDARap)
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-include(EchoTarget)
 echo_target_std(${name})
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)

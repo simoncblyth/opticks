@@ -3,7 +3,20 @@ set(name SysRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(PLog REQUIRED)
+#[=[
+SysRap
+========
+
+The default RPATH setup from OpticksBuildOptions of 
+"set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)"
+appears to only work if your executables link to a library 
+which is in the same directory as the library you are creating.  
+Fortunately thats easy to do by linking with Opticks::OKConf.
+
+#]=]
+
+find_package(OKConf REQUIRED CONFIG)
+find_package(PLog   REQUIRED MODULE)
 
 set(SOURCES
     SYSRAP_LOG.cc 
@@ -67,7 +80,7 @@ set(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES})
 
-target_link_libraries( ${name} PUBLIC Opticks::PLog )
+target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
 if(UNIX)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()

@@ -1,9 +1,10 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OpticksCore)
 project(${name} VERSION 0.1.0)
+set(FLAGS_VERBOSE ON)
 include(OpticksBuildOptions)
+set(FLAGS_VERBOSE OFF)
 
-find_package(OKConf   REQUIRED CONFIG)
 find_package(NPY      REQUIRED CONFIG)
 
 set(SOURCES
@@ -140,4 +141,39 @@ bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_subdirectory(tests)
+
+
+#[=[
+
+
+Linker Visibility Warnings (FIXED?)
+--------------------------------------
+
+::
+
+    [ 50%] Linking CXX shared library libOpticksCore.dylib
+    ld: warning: direct access in function
+                        'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call>>::rethrow() const' 
+    from file 
+           'CMakeFiles/OpticksCore.dir/Clipper.cc.o' 
+    to global weak symbol 
+           'typeinfo for boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call>>' 
+    from file 
+           'CMakeFiles/OpticksCore.dir/OpticksCfg.cc.o' 
+    means the weak symbol cannot be overridden at runtime. 
+    This was likely caused by different translation units being compiled with different visibility settings.  [ 50%]
+
+
+Were still getting some of the above warning following addition of -fvisibility-inlines-hidden to OpticksCompilationFlags.cmake.
+Observed that only symbols three classes implicated::
+
+   Clipper
+   Trackball 
+   OpticksAttrSeq 
+
+
+All three were using boost::split, moving to BStr::split avoids the warnings.
+
+
+#]=]
 

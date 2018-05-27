@@ -1,7 +1,7 @@
 
 set(PLog_MODULE ${CMAKE_CURRENT_LIST_FILE})
 set(PLog_PREFIX ${CMAKE_INSTALL_PREFIX}/externals)
-set(PLog_VERBOSE ON)
+set(PLog_VERBOSE OFF)
 
 #[=[
 Hmm tis kinda awkward for the externals to be inside the prefix when 

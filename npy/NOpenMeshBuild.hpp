@@ -15,6 +15,13 @@ template <typename T> struct NOpenMeshProp ;
 template <typename T> struct NOpenMeshDesc ;
 template <typename T> struct NOpenMeshFind ;
 
+
+struct NPY_API NOpenMeshConst
+{
+    static const char* TRIPATCH ; 
+    static const char* HEXPATCH ; 
+};
+
 template <typename T>
 struct NPY_API  NOpenMeshBuild
 {
@@ -22,9 +29,6 @@ struct NPY_API  NOpenMeshBuild
     typedef typename T::FaceHandle   FH ; 
     typedef typename T::HalfedgeHandle  HEH ; 
     typedef typename T::Point         P ; 
-
-    static const char* TRIPATCH ; 
-    static const char* HEXPATCH ; 
 
     NOpenMeshBuild( T& mesh, 
                     const NOpenMeshCfg*     cfg, 

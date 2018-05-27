@@ -3,6 +3,12 @@ set(name CUDARap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
+set(CUDARap_VERBOSE ON)
+if(CUDARap_VERBOSE)
+   message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS} ")
+endif()
+
+
 ## NB **NO BOOST** as nvcc barfs on it
 find_package(SysRap REQUIRED CONFIG)
 find_package(OpticksCUDA REQUIRED MODULE)
@@ -43,14 +49,16 @@ if(UNIX)
   set(LIBRARIES ${LIBRARIES} ssl )  
 endif(UNIX)
 
-message("${name}.LIBRARIES : ${LIBRARIES} ")
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 #set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
 target_link_libraries( ${name} ${LIBRARIES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-echo_target_std(${name})
+if(CUDARap_VERBOSE)
+  message(STATUS "${name}.LIBRARIES : ${LIBRARIES} ")
+  echo_target_std(${name})
+endif()
 
 install(TARGETS ${name} LIBRARY DESTINATION lib)
 install(FILES ${HEADERS} DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})

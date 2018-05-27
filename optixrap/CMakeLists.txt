@@ -11,11 +11,15 @@ This seems appropriate, however currently all downstream packages
 need to repeat this argument ... which seems silly in a BCM world 
 if imported targets.
 
+Finding OKConf before including OpticksBuildOptions
+allows the CUDA_NVCC_FLAGS to incorporate the COMPUTE_CAPABILITY 
+from the OKConf BCM generated TOPMATTER. 
+
 #]=]
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name OptiXRap)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)
+include(OpticksBuildOptions)   
 
 find_package(OptiX      REQUIRED MODULE)   
 find_package(OpticksGeo REQUIRED CONFIG)
@@ -152,18 +156,21 @@ target_link_libraries( ${name} PUBLIC
 
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
-include(EchoTarget)
 echo_target_std(${name})
 
 install(FILES ${_generated_PTX_files} DESTINATION installcache/PTX)
 install(FILES ${CU_HEADERS}           DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/cu)
 install(FILES ${HEADERS}              DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
-bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL 
-   TOPMATTER "
-set(OptiX_INSTALL_DIR ${OptiX_INSTALL_DIR})
-message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : \${OptiX_INSTALL_DIR} \")
-" )
+
+bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL )
+
+# attempting to move TOPMATTER to OKConf
+#   TOPMATTER "
+#set(OptiX_INSTALL_DIR ${OptiX_INSTALL_DIR})
+#message(STATUS \"\${CMAKE_CURRENT_LIST_FILE} : OptiX_INSTALL_DIR : \${OptiX_INSTALL_DIR} \")
+#" )
+
 
 add_subdirectory(tests)
 

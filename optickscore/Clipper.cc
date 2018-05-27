@@ -1,7 +1,8 @@
 
-#include <boost/algorithm/string.hpp>
-#include <boost/lexical_cast.hpp>
-
+//#include <boost/algorithm/string.hpp>
+//#include <boost/lexical_cast.hpp>
+// brap-
+#include "BStr.hh"
 
 // npy-
 #include "NGLM.hpp"
@@ -161,7 +162,8 @@ std::string Clipper::get(const char* name)
 void Clipper::set(const char* name, std::string& arg_)
 {
     std::vector<std::string> arg;
-    boost::split(arg, arg_, boost::is_any_of(","));
+    //boost::split(arg, arg_, boost::is_any_of(","));
+    BStr::split(arg, arg_.c_str(), ',');
 
     if(arg.size() == 3 )
     {

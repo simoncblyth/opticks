@@ -5,6 +5,7 @@ include(OpticksBuildOptions)
 
 set(TEST_SOURCES
 
+   SOKConfTest.cc
    SArTest.cc
    SArgsTest.cc
    STimesTest.cc

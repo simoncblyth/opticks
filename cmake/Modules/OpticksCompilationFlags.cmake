@@ -33,6 +33,7 @@ else(WIN32)
   endif ()
 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility=hidden")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden") ## avoid boostrap visibility warning at link 
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-function")
 
@@ -49,7 +50,6 @@ endif(WIN32)
 
 
 
-set(COMPUTE_CAPABILITY 30)
 if(NOT (COMPUTE_CAPABILITY LESS 30))
 
 

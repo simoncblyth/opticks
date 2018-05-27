@@ -1,7 +1,0 @@
-#pragma once
-
-#cmakedefine OPTICKS_INSTALL_PREFIX "@OPTICKS_INSTALL_PREFIX@"
-
-
-
-

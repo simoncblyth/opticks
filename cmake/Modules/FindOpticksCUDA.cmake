@@ -9,9 +9,22 @@ else()
 endif()
 
 
+set(CUDA_API_VERSION_INTEGER 0)
+if(OpticksCUDA_FOUND)
+   file(READ "${CUDA_INCLUDE_DIRS}/cuda.h" _contents)
+   string(REGEX REPLACE "\n" ";" _contents "${_contents}")
+   foreach(_line ${_contents})
+       if (_line MATCHES "^    #define __CUDA_API_VERSION ([0-9]+)") ## require 4 spaces to distinguish from another ancient API version 
+            set(OpticksCUDA_API_VERSION ${CMAKE_MATCH_1} )
+            #message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_API_VERSION:${OpticksCUDA_API_VERSION}") 
+       endif()
+   endforeach()
+endif()
+
 if(OpticksCUDA_VERBOSE)
   message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_VERBOSE  : ${OpticksCUDA_VERBOSE} ")
   message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_FOUND    : ${OpticksCUDA_FOUND} ")
+  message(STATUS "FindOpticksCUDA.cmake:OpticksCUDA_API_VERSION    : ${OpticksCUDA_API_VERSION} ")
   message(STATUS "FindOpticksCUDA.cmake:CUDA_LIBRARIES       : ${CUDA_LIBRARIES} ")
   message(STATUS "FindOpticksCUDA.cmake:CUDA_INCLUDE_DIRS    : ${CUDA_INCLUDE_DIRS} ")
   message(STATUS "FindOpticksCUDA.cmake:CUDA_curand_LIBRARY  : ${CUDA_curand_LIBRARY}")

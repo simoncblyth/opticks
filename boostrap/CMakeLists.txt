@@ -101,14 +101,6 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BList.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
-
-# generate define header for hardcoding in the library 
-set(OPTICKS_INSTALL_PREFIX     "${CMAKE_INSTALL_PREFIX}")
-configure_file( BOpticksResourceCMakeConfig.hh.in inc/BOpticksResourceCMakeConfig.hh )
-
-message(STATUS "CMAKE_CURRENT_SOURCE_DIR:${CMAKE_CURRENT_SOURCE_DIR}")
-message(STATUS "CMAKE_CURRENT_BINARY_DIR:${CMAKE_CURRENT_BINARY_DIR}")
-
 add_library( ${name}  SHARED ${SOURCES})
 
 target_include_directories( ${name} PUBLIC
@@ -128,14 +120,23 @@ if(UNIX)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 
-#set(INCLUDE_DIRS
-#   ${CMAKE_CURRENT_SOURCE_DIR}
-#   ${CMAKE_CURRENT_BINARY_DIR}
-#   ${CMAKE_CURRENT_BINARY_DIR}/inc
-#) 
-
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 add_subdirectory(tests)
+
+
+#[=[
+Have been getting this warning for years::
+
+    ld: warning: direct access in function 'boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >::rethrow() const' from file 'CMakeFiles/BoostRap.dir/BStr.cc.o' to global weak symbol 'typeinfo for boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<boost::bad_function_call> >' from file 'CMakeFiles/BoostRap.dir/BCfg.cc.o' means the weak symbol cannot be overridden at runtime. This was likely caused by different translation units being compiled with different visibility settings.
+    [ 34%] Built target BoostRap
+
+Avoided this warning by adding to OpticksCompilationFlags.cmake::
+
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden") ## avoid boostrap visibility warning at link
+
+::
+#]=]
+
 

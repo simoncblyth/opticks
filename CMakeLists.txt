@@ -6,17 +6,36 @@ Opticks CMake Conventions
 2. project names are CamelCased, project directory names are lowercase
 3. lowercased project names match the names of their directories
 4. every CMake project command should be followed by "include(OpticksBuildOptions)"
+5. the name of every project should be set via a "name" variable : this is used within
+   the OpticksBuildOptions to set the install location of headers as include/${name}
+
+For example a project called DemoProj would be setup in demoproj subdirectory with
+a CMakeLists.txt file starting::
+
+    cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+    set(name DemoProj)
+    project(${name} VERSION 0.1.0)
+    include(OpticksBuildOptions)
+
+
+This Integrated Build
+-----------------------
+
+For this integrated build, find_package is redefined by the below
+macro to skip packages corresponding to the below SUBDIRS as they have directly 
+been built already within the single CMake context and hence do not need to be found.
+
+This structure allows the proj-by-proj building and integrated building to otherwise
+be identical.
 
 #]=]
 
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name Opticks)
 project(${name} VERSION 0.1.0)
-set(FLAGS_VERBOSE ON)
 include(OpticksBuildOptions)   
-set(FLAGS_VERBOSE OFF)
 
-set(SUBDIRS
+set(INTEGRATED_SUBDIRS
   okconf
   sysrap
   boostrap
@@ -38,28 +57,20 @@ set(SUBDIRS
 )
 
 macro(find_package)    
-   set(pkg ${ARGV0}) 
-   set(_arglist "${ARGV}")
-
-   string(TOLOWER ${pkg} lpkg) 
-   if(NOT "${lpkg}" IN_LIST SUBDIRS)
-       #message(STATUS "find_package ( ${ARGV} ) START ")
+   set(_args "${ARGV}")
+   set(_pkg ${ARGV0}) 
+   string(TOLOWER ${_pkg} _subdir) 
+   if(NOT "${_subdir}" IN_LIST INTEGRATED_SUBDIRS)
        _find_package(${ARGV})   
-       set(_pkg_found ${${pkg}_FOUND})
-
+       set(_pkg_found ${${_pkg}_FOUND})
        message(STATUS "find_package ( ${ARGV} ) --> ${_pkg_found} ")
-       
-       if(NOT "QUIET" IN_LIST _arglist AND NOT ${_pkg_found})
-           message(FATAL_ERROR "ABORT : failed to find non-QUIET pkg ${pkg} ")
+       if(NOT "QUIET" IN_LIST _args AND NOT ${_pkg_found})
+           message(FATAL_ERROR "ABORT : failed to find non-QUIET pkg ${_pkg} ")
        endif()
-   else()
-       #message(STATUS "find_package ( ${ARGV} ) SKIP integrated pkg ")
    endif()
 endmacro()
 
-
-foreach(_dir ${SUBDIRS})
+foreach(_dir ${INTEGRATED_SUBDIRS})
    add_subdirectory(${_dir})
 endforeach()
-
 

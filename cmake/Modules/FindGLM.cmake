@@ -1,5 +1,6 @@
 
 set(GLM_MODULE "${CMAKE_CURRENT_LIST_FILE}")
+set(GLM_VERBOSE OFF)
 
 find_path(
     GLM_INCLUDE_DIR
@@ -13,11 +14,16 @@ else()
   set(GLM_FOUND "NO")
 endif()
 
-set(GLM_VERBOSE ON)
-if(GLM_VERBOSE)
+if(GLM_VERBOSE OR NOT GLM_FOUND)
+  message(STATUS "GLM_MODULE           : ${GLM_MODULE}")
   message(STATUS "CMAKE_INSTALL_PREFIX : ${CMAKE_INSTALL_PREFIX} ")
   message(STATUS "GLM_INCLUDE_DIR      : ${GLM_INCLUDE_DIR} ")
   message(STATUS "GLM_FOUND            : ${GLM_FOUND}")
+endif()
+
+
+if(NOT GLM_FOUND)
+  message(FATAL_ERROR "GLM NOT FOUND") 
 endif()
 
 

@@ -1408,8 +1408,21 @@ opticks-cls-()
 }
 
 
-opticks-cmake-vi-(){ find $(opticks-home) -name CMakeLists.txt ; }
-opticks-cmake-vi(){  vi $(opticks-cmake-vi-) ; }
+opticks-cmake-projs-vi-(){    ls -1  $(opticks-home)/CMakeLists.txt $(opticks-home)/*/CMakeLists.txt ; }
+opticks-cmake-examples-vi-(){ ls -1 $(opticks-home)/examples/*/CMakeLists.txt ; }
+opticks-cmake-tests-vi-(){    ls -1 $(opticks-home)/*/tests/CMakeLists.txt ; }
+
+opticks-cmake-vi-()
+{  
+    opticks-cmake-projs-vi-
+    opticks-cmake-examples-vi- 
+    opticks-cmake-tests-vi-
+}
+
+opticks-cmake-projs-vi(){     vi $($FUNCNAME-) ; }
+opticks-cmake-examples-vi(){  vi $($FUNCNAME-) ; }
+opticks-cmake-tests-vi(){     vi $($FUNCNAME-) ; }
+opticks-cmake-vi(){           vi $($FUNCNAME-) ; }
 
 
 

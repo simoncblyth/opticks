@@ -1,9 +1,11 @@
+
+set(OKConf_VERBOSE ON)
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name UseCUDA)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(OpticksCUDA REQUIRED MODULE) # /opt/local/share/cmake-3.11/Modules/FindCUDA.cmake 
+find_package(OpticksCUDA REQUIRED MODULE) 
 
 set(SOURCES ${name}.cu)
 set(HEADERS ${name}.h)

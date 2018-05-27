@@ -3,8 +3,6 @@ set(name CUDARapTest)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-#message("${name}.INCLUDE_DIRS : ${INCLUDE_DIRS}")
-message("${name}.LIBRARIES    : ${LIBRARIES}")
 
 set(TEST_SOURCES
    LaunchSequenceTest.cc

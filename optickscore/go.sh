@@ -8,7 +8,11 @@ name=$(basename $sdir)
 #bdir=/tmp/$USER/opticks/$name/build 
 bdir=$(opticks-prefix)/build/$name
 
-#rm -rf $bdir 
+if [ "$1" == "clean" ]; then
+   echo $0 : argument $1 : removing bdir $bdir
+   rm -rf $bdir 
+fi
+
 mkdir -p $bdir && cd $bdir && pwd 
 
 cmake $sdir \
@@ -19,4 +23,6 @@ cmake $sdir \
 
 make
 make install   
+
+opticks-t $bdir
 

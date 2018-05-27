@@ -109,8 +109,8 @@ int main(int argc, char** argv)
     for(unsigned i=1 ; i < N ; i++)
     {
         LOG(info) << " ctrl " << ctrl[i] << " " << name[i]  ; 
-        if(ctrl[i] == 3)   std::cout << NOpenMeshBuild<T>::TRIPATCH << std::endl ; 
-        if(ctrl[i] == 666) std::cout << NOpenMeshBuild<T>::HEXPATCH << std::endl ; 
+        if(ctrl[i] == 3)   std::cout << NOpenMeshConst::TRIPATCH << std::endl ; 
+        if(ctrl[i] == 666) std::cout << NOpenMeshConst::HEXPATCH << std::endl ; 
 
         //test_are_contiguous(ctrl[i]); 
         test_sort_contiguous(ctrl[i]); 

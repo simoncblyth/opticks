@@ -11,6 +11,10 @@
 #include "NNode.hpp"
 
 
+
+
+
+
 template <typename T>
 NOpenMeshBuild<T>::NOpenMeshBuild(
     T& mesh, 
@@ -175,12 +179,12 @@ void NOpenMeshBuild<T>::add_parametric_primitive(const nnode* node, int level, i
     int ns = node->par_nsurf() ;
 
 #ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wunused-lambda-capture"
+//#pragma clang diagnostic push
+//#pragma clang diagnostic ignored "-Wunused-lambda-capture"
 #endif
     auto vid = [ns,nu,nv](int s, int u, int v) { return  s*(nu+1)*(nv+1) + v*(nu+1) + u ; };
 #ifdef __clang__
-#pragma clang diagnostic pop
+//#pragma clang diagnostic pop
 #endif
 
 
@@ -626,8 +630,7 @@ void NOpenMeshBuild<T>::add_tripatch()
     // see NOpenMeshSubdiv.cpp for notes about face ordering sensitivity of sqrt3 subdiv
 }
 
-template <typename T>
-const char* NOpenMeshBuild<T>::TRIPATCH = R"LITERAL("
+const char* NOpenMeshConst::TRIPATCH = R"LITERAL("
     /*
     6  verts :                                 4 faces
                                                3 corner faces with 2 boundary edges 
@@ -718,8 +721,7 @@ void NOpenMeshBuild<T>::add_hexpatch(bool inner_only)
 }
 
 
-template <typename T>
-const char* NOpenMeshBuild<T>::HEXPATCH = R"LITERAL("
+const char* NOpenMeshConst::HEXPATCH = R"LITERAL("
 /*
     19 verts :                                 24 faces
     12 around boundary, 7 in interior          12 with edge on boundary

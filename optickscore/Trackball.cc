@@ -2,9 +2,10 @@
 #include <cstdio>
 #include <cmath>  
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/math/constants/constants.hpp>
+#include "BStr.hh"
 
 #include "NGLM.hpp"
 
@@ -403,7 +404,9 @@ void Trackball::setTranslateFactor(std::string s)
 void Trackball::setOrientation(std::string _tp)
 {
     std::vector<std::string> tp;
-    boost::split(tp, _tp, boost::is_any_of(","));
+    //boost::split(tp, _tp, boost::is_any_of(","));
+    BStr::split(tp, _tp.c_str(), ',');  
+
 
     if(tp.size() == 2 )
     {
