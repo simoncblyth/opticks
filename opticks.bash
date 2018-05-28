@@ -352,6 +352,7 @@ opticks-sdir(){   echo $(opticks-home) ; }
 opticks-scd(){  cd $(opticks-sdir)/$1 ; }
 opticks-ncd(){  opticks-scd notes/issues ;  }
 
+opticks-buildtype(){ echo Debug  ; }
 opticks-prefix(){ echo $(opticks-fold)  ; }
 opticks-prefix-tmp(){ echo $(opticks-fold-tmp)  ; }
 
@@ -744,32 +745,9 @@ opticks-configure-local-boost()
 }
 
 
-  
-
-
-opticks_config_cflags()
-{
-    echo -I
-}
-opticks_config_libs()
-{
-    echo -L
-}
-
-opticks_config()
-{
-   local arg
-   for arg in $* ; do 
-       case $arg in
-          --cflags)  opticks_config_cflags ;; 
-          --libs)    opticks_config_libs   ;; 
-       esac
-   done
-}
-
-
 #opticks-config-type(){ echo Debug ; }
 opticks-config-type(){ echo RelWithDebInfo ; }
+
 opticks--(){     
 
    local msg="$FUNCNAME : "
@@ -780,6 +758,7 @@ opticks--(){
    [ -z "$bdir" -o "$bdir" == "." ] && bdir=$(opticks-bdir) 
    [ ! -d "$bdir" ] && echo $msg bdir $bdir does not exist && return 
 
+    
    cd $bdir
 
    cmake --build . --config $(opticks-config-type) --target ${1:-install}
@@ -1189,7 +1168,15 @@ opticks-open()
   esac  
 }
 
-### opticks projs ###  **moved** all projs into top level folders
+
+
+
+## [WIP] modern CMake proj-by-proj style building 
+
+om-(){              . $(opticks-home)/om.bash      && om-env $* ; }
+
+
+### opticks CMake projects all residing in top level folders ##
 
 sysrap-(){          . $(opticks-home)/sysrap/sysrap.bash && sysrap-env $* ; }
 brap-(){            . $(opticks-home)/boostrap/brap.bash && brap-env $* ; }
@@ -1211,6 +1198,9 @@ opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env 
 ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
+
+## opticks misc including python analysis/debugging ##
+
 ana-(){             . $(opticks-home)/ana/ana.bash && ana-env $*  ; }
 cfh-(){             . $(opticks-home)/ana/cfh.bash && cfh-env $*  ; }
 tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
