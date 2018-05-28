@@ -1,17 +1,21 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name CUDARap)
 project(${name} VERSION 0.1.0)
-include(OpticksBuildOptions)   
+include(OpticksBuildOptions)      
 
-set(CUDARap_VERBOSE OFF)
+find_package(OKConf REQUIRED CONFIG)   
+include(OpticksCompilationFlags)     ## repeating this here as nvcc flags require COMPUTE_CAPABILIY from OKConf     
+
+find_package(SysRap REQUIRED CONFIG)
+find_package(OpticksCUDA REQUIRED MODULE)
+
+## NB **NO BOOST** as nvcc barfs on it
+
+set(CUDARap_VERBOSE ON)
 if(CUDARap_VERBOSE)
    message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS} ")
 endif()
 
-
-## NB **NO BOOST** as nvcc barfs on it
-find_package(SysRap REQUIRED CONFIG)
-find_package(OpticksCUDA REQUIRED MODULE)
 
 
 set(SOURCES

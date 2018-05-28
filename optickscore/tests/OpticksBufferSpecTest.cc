@@ -1,6 +1,7 @@
 #include "OpticksBufferSpec.hh"
 #include "OpticksEvent.hh"
-#include "OpticksCMakeConfig.hh"
+//#include "OpticksCMakeConfig.hh"
+#include "OKConf_Config.hh"
 #include "OpticksSwitches.h"
 
 #include "PLOG.hh"

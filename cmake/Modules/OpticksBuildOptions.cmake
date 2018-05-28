@@ -40,11 +40,10 @@ include(EchoTarget)
 set(BUILD_SHARED_LIBS ON)
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
-
-
-if(NOT ${name} STREQUAL "OKConf" AND NOT ${name} STREQUAL "OKConfTest")
-  find_package(OKConf     REQUIRED CONFIG)   
-endif()
+#
+#if(NOT ${name} STREQUAL "OKConf" AND NOT ${name} STREQUAL "OKConfTest")
+#  find_package(OKConf     REQUIRED CONFIG)   
+#endif()
 
 include(OpticksCompilationFlags)   
 

@@ -1504,7 +1504,7 @@ oks-docvi(){ vi $(oks-docsrc) ; }
 
 
 
-
+oks-genproj-g4ok(){ oks-genproj G4OK G4OK ; }
 
 oks-genproj()
 {
@@ -1516,9 +1516,8 @@ oks-genproj()
 
     [ -z "$proj" -o -z "$tag" ] && echo $msg need both proj $proj and tag $tag  && return 
 
-
-    importlib-  
-    importlib-exports ${proj} ${tag}_API
+    winimportlib-  
+    winimportlib-exports ${proj} ${tag}_API
 
     plog-
     plog-genlog

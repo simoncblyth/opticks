@@ -1,7 +1,14 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferSpec.hh"
-#include "OpticksCMakeConfig.hh"
+
 #include "OpticksSwitches.h"
+
+
+//#include "OpticksCMakeConfig.hh"
+#include "OKConf_Config.hh"
+
+
+
 /**
 OpticksBufferSpec
 ==================

@@ -3,9 +3,12 @@ set(name G4OK)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(G4   REQUIRED MODULE)
-find_package(G4DAE REQUIRED MODULE)
-find_package(OKOP REQUIRED CONFIG)
+find_package(G4     REQUIRED MODULE)
+
+find_package(OKConf REQUIRED CONFIG)   
+find_package(OKOP   REQUIRED CONFIG)
+find_package(G4DAE  REQUIRED CONFIG)
+
 
 set(SOURCES
     G4OKMgr.cc
