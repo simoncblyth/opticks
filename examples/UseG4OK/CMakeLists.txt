@@ -1,0 +1,21 @@
+cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
+set(name UseG4OK)
+project(${name} VERSION 0.1.0)
+include(OpticksBuildOptions)
+
+find_package(G4OK CONFIG REQUIRED)   
+
+
+#echo_pfx_vars(G4OK "FOUND;DIR;VERSION;VERSION_INTEGER;INCLUDE_DIR;INCLUDE_DIRS;LIBRARIES;DEFINITIONS")
+echo_target(Opticks::G4OK "INTERFACE_LINK_LIBRARIES;INTERFACE_INCLUDE_DIRECTORIES;INTERFACE_COMPILE_DEFINITIONS" )
+#echo_target_twolevel(Opticks::G4OK "INTERFACE_LINK_LIBRARIES" "IMPORTED_LOCATION")
+
+
+add_executable(${name} ${name}.cc)
+target_link_libraries(${name} PUBLIC Opticks::G4OK)
+
+install(TARGETS ${name}  DESTINATION ${CMAKE_INSTALL_LIBDIR}) 
+
+
+
+

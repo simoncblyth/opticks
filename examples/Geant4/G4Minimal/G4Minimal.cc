@@ -12,6 +12,8 @@ int main(int argc,char** argv)
 
     runManager->SetUserInitialization(new DetectorConstruction());
 
+    //G4TransportationManager::GetTransportationManager()->GetNavigatorForTracking()->GetWorldVolume() 
+
     runManager->SetUserAction(new RunAction());
 
     return 0 ; 

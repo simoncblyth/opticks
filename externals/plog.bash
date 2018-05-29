@@ -60,6 +60,24 @@ fixed this by bringing my plog fork uptodate
 but lastest plog has dangling else problem, have made pull request upstream
 ------------------------------------------------------------------------------
 
+But Sergio didnt agree, tant pis : I continue to use my fork
+
+
+
+Logging with embedded Opticks
+-------------------------------
+
+Current approach takes too much real estate in main with include + macro invoke
+for every package you want to see logging from, see eg g4ok/test/G4OKTest.cc
+
+How to shrink that ? Whats the biz with planting symbols in the separate proj libs ?
+
+Can I make it invisible, controlled via envvar ?
+
+
+
+
+
 
 
 

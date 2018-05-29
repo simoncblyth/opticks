@@ -2,7 +2,7 @@
 
 #include "G4OK_API_EXPORT.hh"
 
-class G4OK_API G4OKScintillationStep {
+class G4OK_API G4OpticksScintillationStep {
     public:
 
     enum {

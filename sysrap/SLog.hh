@@ -8,6 +8,8 @@
 class SYSRAP_API SLog 
 {
     public:
+        static void Nonce(); 
+    public:
         SLog(const char* label);
         void operator()(const char* msg="");
     private:

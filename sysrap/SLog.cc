@@ -15,3 +15,16 @@ void SLog::operator()(const char* msg)
     LOG(info) << m_label << " " << msg ;  
 }
 
+
+void SLog::Nonce()
+{
+    LOG(trace) << "trace" ; 
+    LOG(debug) << "debug" ; 
+    LOG(info) << "info" ; 
+    LOG(warning) << "warning" ; 
+    LOG(error) << "error" ; 
+    LOG(fatal) << "fatal" ; 
+}
+
+
+

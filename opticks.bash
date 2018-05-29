@@ -1200,6 +1200,8 @@ opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env 
 ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }
+   
+g4ok-(){            . $(opticks-home)/g4ok/g4ok.bash && g4ok-env $* ; }
 
 ## opticks misc including python analysis/debugging ##
 

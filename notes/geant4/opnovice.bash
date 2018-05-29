@@ -84,6 +84,33 @@ Bring in the Opticks current version
         ## now no substantive difference
 
 
+Thoughts on the approach to take
+------------------------------------
+
+* aim to minimize code changes within the example
+
+* instead place everything that can live in G4OK there, as this avoids 
+  repetition for every usage of Opticks 
+
+
+Hmm how to handle Opticks logging in embedded mode ? 
+--------------------------------------------------------
+
+* PLOG wants access to argc, argv : but Opticks is embedded so it aint really appropriate ?
+  the example or the users code is in control of such things ... 
+
+  * perhaps move to envvar OPTICKS_ARGV for arguments directed to the embedded Opticks 
+
+* where to do the logging setup that Opticks executables usually do first thing in main ?
+  G4OpticksManager ctor ? Will that work being done in a lib ? Hmm could require an 
+  initialization in main ? Actually probably better to make it clear that Opticks is in use. 
+
+  Need a way to shorten the excessively long list of logging includes and macro invokations.
+
+* see sysrap/PLOG_review.rst for reminders on the setup which uses macros a lot because
+  some things must be executed in main, but they need to be defined for every package 
+
+
 
 EOU
 }
@@ -100,7 +127,9 @@ opnovice-cd(){   cd $(opnovice-sdir) ; }
 opnovice-bdir(){ echo /tmp/$USER/opticks/examples/Geant4/OpNovice ; }
 opnovice-bcd(){   cd $(opnovice-bdir) ; } 
 
-opnovice-conf(){
+opnovice-conf()
+{
+   local iwd=$(pwd)
    local sdir=$(opnovice-sdir)
    local bdir=$(opnovice-bdir)
 
@@ -115,6 +144,7 @@ opnovice-conf(){
             -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
             -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules    
 
+   cd $iwd
 }
 
 opnovice-make()

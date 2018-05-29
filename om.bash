@@ -41,9 +41,9 @@ om-echo
 OTHER FUNCTIONS
 -----------------
 
-om-pd
+om-cd
    cd from a source tree directory to the corresponding 
-   directory in the build tree and vice versa
+   directory in the build tree or vice versa
 
 
 FUNCTIONS INSENSITIVE TO INVOKING DIRECTORY
@@ -81,6 +81,7 @@ opticksgl
 ok
 cfg4
 okg4
+g4ok
 EOS
 }
 
@@ -186,10 +187,8 @@ om-conf()
         cd $bdir
         printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
 
-        #echo sdir $sdir
-        #echo bdir $bdir
-        #echo pwd $(pwd)
-    
+        # TODO: hmm cleaner just to use same invokation for all pkgs 
+ 
         if [ "$name" == "okconf" ]; then     
             cmake $sdir \
                -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
@@ -213,6 +212,7 @@ om-conf()
     if [ "$rc" != "0" ]; then
        echo $msg non-zero rc $rc 
     fi 
+    cd $iwd
     return $rc 
 }
 
@@ -235,10 +235,11 @@ om-make()
         cd $bdir
         cmake --build .  --target all
         rc=$?
-        [ "$rc" != "0" ] && return $rc
+        [ "$rc" != "0" ] && cd $iwd && return $rc
         [ "$(uname)" == "Darwin" ] && echo $msg kludge sleep 2s && sleep 2  
         cmake --build .  --target install
         rc=$?
+        [ "$rc" != "0" ] && cd $iwd && return $rc
     fi 
     cd $iwd
     return $rc
@@ -285,7 +286,7 @@ om-pdir()
     return 0 
 }
 
-om-pd()
+om-cd()
 {
     local msg="=== $FUNCNAME :"
     local iwd=$(pwd -P)

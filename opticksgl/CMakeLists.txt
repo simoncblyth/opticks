@@ -36,7 +36,7 @@ target_link_libraries( ${name} PUBLIC
     Opticks::OGLRap
     Opticks::OKOP
 )
-
+target_compile_definitions( ${name} PUBLIC WITH_OKGL )
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )

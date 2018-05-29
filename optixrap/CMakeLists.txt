@@ -137,7 +137,7 @@ target_link_libraries( ${name} PUBLIC
   Opticks::OpticksGeo
   Opticks::ThrustRap
 )
-
+target_compile_definitions( ${name} PUBLIC WITH_OXRAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 if(OptiXRap_VERBOSE)

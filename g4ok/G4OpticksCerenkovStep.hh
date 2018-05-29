@@ -2,7 +2,7 @@
 
 #include "G4OK_API_EXPORT.hh"
 
-class G4OK_API G4OKCerenkovStep {
+class G4OK_API G4OpticksCerenkovStep {
     public:
 
     enum {

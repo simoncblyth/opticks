@@ -197,7 +197,7 @@ target_link_libraries( ${name} PUBLIC
    Opticks::OpticksXercesC
    Opticks::OpticksGeo
 )
-
+target_compile_definitions( ${name} PUBLIC WITH_CFG4 )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
