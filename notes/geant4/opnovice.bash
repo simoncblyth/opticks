@@ -73,8 +73,15 @@ Bring in the Opticks current version
     /usr/local/opticks/externals/g4/geant4_10_02_p01/examples/extended/optical/OpNovice
     epsilon:Geant4 blyth$ 
 
+::
 
+    cp ~/CMakeLists.txt .
+    opnovice-;opnovice-conf clean
+    opnovice-make
+        ## notice the reason for theParticleIterator change : a warning 
 
+    opnovice-run 
+        ## now no substantive difference
 
 
 
@@ -98,6 +105,7 @@ opnovice-conf(){
    local bdir=$(opnovice-bdir)
 
    if [ "$1" == "clean" ]; then 
+       echo $msg remove bdir $bdir
        rm -rf $bdir 
    fi
    mkdir -p $bdir && cd $bdir && pwd 
@@ -124,11 +132,47 @@ opnovice-run()
    g4-
    g4-export
 
-   $(opticks-prefix)/lib/OpNovice -m OpNovice.in 
+   opnovice-cd
+
+   $(opticks-prefix)/lib/OpNovice -m OpNovice.in > OpNovice.out.now
+
+   diff OpNovice.out OpNovice.out.now 
 
 }
 
+opnovice-run-note(){ cat << EON
 
+epsilon:OpNovice blyth$ diff OpNovice.out OpNovice.out.now 
+2,5d1
+<         ############################################
+<         !!! WARNING - FPE detection is activated !!!
+<         ############################################
+< 
+300,306d295
+< OpenGLImmediateQt (OGLIQt, OGLI)
+< OpenGLStoredQt (OGLSQt, OGL, OGLS)
+< OpenGLImmediateXm (OGLIXm, OGLIQt_FALLBACK)
+< OpenGLStoredXm (OGLSXm, OGLSQt_FALLBACK)
+< OpenGLImmediateX (OGLIX, OGLIQt_FALLBACK, OGLIXm_FALLBACK)
+< OpenGLStoredX (OGLSX, OGLSQt_FALLBACK, OGLSXm_FALLBACK)
+< RayTracerX (RayTracerX)
+504c493
+<       Sampling table 17x1001 from 1 GeV to 10 TeV 
+---
+>       Sampling table 17x1001; from 1 GeV to 10 TeV 
+531c520
+<       Sampling table 17x1001 from 1 GeV to 10 TeV 
+---
+>       Sampling table 17x1001; from 1 GeV to 10 TeV 
+583c572
+< number of event = 1 User=0.01s Real=0.01s Sys=0s
+---
+> number of event = 1 User=0s Real=0s Sys=0s
+epsilon:OpNovice blyth$ 
+
+
+EON
+}
 
 
 
