@@ -63,6 +63,21 @@ Keep copy::
     cp CMakeLists.txt ~/
 
 
+Bring in the Opticks current version
+--------------------------------------
+
+::
+
+    epsilon:Geant4 blyth$ cp -r $(g4x-curdir) .
+    epsilon:Geant4 blyth$ g4x-curdir
+    /usr/local/opticks/externals/g4/geant4_10_02_p01/examples/extended/optical/OpNovice
+    epsilon:Geant4 blyth$ 
+
+
+
+
+
+
 EOU
 }
 
