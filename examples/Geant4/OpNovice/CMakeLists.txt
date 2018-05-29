@@ -24,7 +24,7 @@ option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" OFF)
 #include(${Geant4_USE_FILE})
 
 find_package( G4OK CONFIG REQUIRED )
-echo_target_std(Opticks::G4OK)
+#echo_target_std(Opticks::G4OK)
 
 #----------------------------------------------------------------------------
 # Locate sources and headers for this project
@@ -43,6 +43,7 @@ add_executable(OpNovice OpNovice.cc ${sources} ${headers})
 
 target_link_libraries(OpNovice Opticks::G4OK )
 target_include_directories(OpNovice PRIVATE ${PROJECT_SOURCE_DIR}/include )
+target_compile_definitions( OpNovice PRIVATE WITH_OPTICKS )
 
 
 #----------------------------------------------------------------------------

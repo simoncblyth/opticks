@@ -31,6 +31,9 @@
 #include "OpNoviceActionInitialization.hh"
 #include "OpNovicePrimaryGeneratorAction.hh"
 #include "OpNoviceRunAction.hh"
+#ifdef WITH_OPTICKS
+#include "OpNoviceEventAction.hh"
+#endif
 #include "OpNoviceSteppingAction.hh"
 #include "OpNoviceStackingAction.hh"
 #include "OpNoviceSteppingVerbose.hh"
@@ -59,6 +62,9 @@ void OpNoviceActionInitialization::Build() const
 {
   SetUserAction(new OpNovicePrimaryGeneratorAction());
   SetUserAction(new OpNoviceRunAction());
+#ifdef WITH_OPTICKS
+  SetUserAction(new OpNoviceEventAction());
+#endif
   SetUserAction(new OpNoviceSteppingAction());
   SetUserAction(new OpNoviceStackingAction());
 }

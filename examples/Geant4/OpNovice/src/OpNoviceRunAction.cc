@@ -35,6 +35,11 @@
 
 #include "G4Run.hh"
 
+#ifdef WITH_OPTICKS
+#include "G4OpticksManager.hh"
+#endif
+
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 OpNoviceRunAction::OpNoviceRunAction()
@@ -57,6 +62,11 @@ void OpNoviceRunAction::BeginOfRunAction(const G4Run* aRun)
 {
   G4cout << "### Run " << aRun->GetRunID() << " start." << G4endl;
   fTimer->Start();
+
+#ifdef WITH_OPTICKS
+  G4OpticksManager::GetOpticksManager()->BeginOfRunAction(aRun);
+#endif
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -66,6 +76,11 @@ void OpNoviceRunAction::EndOfRunAction(const G4Run* aRun)
   fTimer->Stop();
   G4cout << "number of event = " << aRun->GetNumberOfEvent()
          << " " << *fTimer << G4endl;
+
+#ifdef WITH_OPTICKS
+  G4OpticksManager::GetOpticksManager()->EndOfRunAction(aRun);
+#endif
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
