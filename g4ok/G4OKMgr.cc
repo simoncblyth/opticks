@@ -1,3 +1,4 @@
+#include <iostream>
 #include "G4OKMgr.hh"
 
 #include "OpMgr.hh"
@@ -10,7 +11,7 @@ G4OKMgr::G4OKMgr()
    :
    m_opmgr(0)
 {
-
+    std::cout << "G4OKMgr::G4OKMgr" << std::endl ; 
 }
 
 G4OKMgr::~G4OKMgr()
