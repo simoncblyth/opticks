@@ -10,8 +10,13 @@ g4x-env(){
    echo -n
 }
 
-g4x-name(){ echo extended/optical/LXe ; }
+g4x-name(){ echo ${G4X_NAME:-extended/optical/OpNovice} ; }
+#g4x-name(){ echo ${G4X_NAME:-extended/optical/LXe} ; }
+
 g4x-bin(){  echo $(g4x-idir)/bin/LXe ; }
+
+g4x-curdir(){ echo $(g4-dir)/examples/$(g4x-name) ; }
+g4x-devdir(){ echo $(g4dev-dir)/examples/$(g4x-name) ; }
 
 g4x-dir(){  echo /tmp/$USER/opticks/examples/$(g4x-name) ; }
 g4x-sdir(){ echo $(g4x-dir) ; }
@@ -91,4 +96,29 @@ g4x-run(){
 }
 
 
+g4x-diff()
+{
+   cd $(opticks-prefix)/externals/g4
+   g4-
+   g4dev-
+   
+   cat << EOC
+g4x-diff comparing::
+  
+   pwd        : $(pwd)
+   g4-name    : $(g4-name)
+   g4dev-name : $(g4dev-name)
+   g4x-name   : $(g4x-name)
 
+   diff -r --brief $(g4-name)/examples/$(g4x-name) $(g4dev-name)/examples/$(g4x-name)
+
+
+   diff -r         $(g4-name)/examples/$(g4x-name) $(g4dev-name)/examples/$(g4x-name)
+EOC
+
+   diff -r --brief $(g4-name)/examples/$(g4x-name) $(g4dev-name)/examples/$(g4x-name)
+
+   echo "\n\n\n"
+
+   diff -r $(g4-name)/examples/$(g4x-name) $(g4dev-name)/examples/$(g4x-name)
+}

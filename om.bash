@@ -1,7 +1,6 @@
 om-source(){ echo $BASH_SOURCE ; }
 om-vi(){ vi $(om-source) ; }
 om-env(){  olocal- ; opticks- ; }
-
 om-usage(){ cat << EOU
 
 OM : Opticks Mimimal Approach to Configuring and Building
@@ -295,5 +294,50 @@ om-pd()
     [ -n "$pdir" ] && cd $pdir
     #printf "%s %-60s to %-60s \n"  "$msg" $name $iwd $pdir
     pwd
+}
+
+
+
+om-gen()
+{
+   cd $(opticks-home)
+
+   local rel=$1
+   rel=${rel/.bash}
+   local nam=$(basename $rel)
+   local dir=$(dirname $rel)
+   mkdir -p $dir 
+
+   om-gen- $nam $rel > $rel.bash
+
+   . $rel.bash
+
+   $nam-vi
+}
+
+
+om-gen-(){ cat << EOT
+
+$1-source(){ echo \$BASH_SOURCE ; }
+$1-vi(){ vi \$($1-source) om.bash opticks.bash externals/externals.bash ; }
+$1-env(){  olocal- ; opticks- ; }
+$1-usage(){ cat << EOU
+
+$1 Usage 
+===================
+
+Generate a file for bash precursor functions or notes using om-gen like this::
+
+   om-gen notes/geant4/opnovice 
+
+Hook up a line like the below to opticks.bash or externals/externals.bash::
+  
+   $1-(){ . \$(opticks-home)/$2.bash      && $1-env \$* ; }
+
+
+EOU
+}
+
+EOT
 }
 

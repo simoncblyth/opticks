@@ -27,5 +27,4 @@ bcm-(){              . $(opticks-home)/externals/bcm.bash               && bcm-e
 
 g4dev-(){            . $(opticks-home)/externals/g4dev.bash             && g4dev-env $* ; }
 g4dae-(){            . $(opticks-home)/externals/g4dae.bash             && g4dae-env $* ; }
-g4x-(){              . $(opticks-home)/externals/g4x.bash               && g4x-env $* ; }
 

@@ -42,8 +42,9 @@ class CFG4_API OpNovicePhysicsList : public G4VUserPhysicsList
     void addTransportation();
   public:
 
-    virtual void ConstructParticle();
-    virtual void ConstructProcess();
+    
+    virtual void ConstructParticle();  // method invoked by the RunManger, see g4-;g4-cls G4RunManagerKernel
+    virtual void ConstructProcess();  
 
     virtual void SetCuts();
 

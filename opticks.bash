@@ -1173,7 +1173,9 @@ opticks-open()
 
 ## [WIP] modern CMake proj-by-proj style building 
 
-om-(){              . $(opticks-home)/om.bash      && om-env $* ; }
+om-(){       . $(opticks-home)/om.bash      && om-env $* ; }
+opnovice-(){ . $(opticks-home)/notes/geant4/opnovice.bash      && opnovice-env $* ; }
+
 
 
 ### opticks CMake projects all residing in top level folders ##
