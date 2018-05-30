@@ -54,6 +54,8 @@
 
 NPropNames* Opticks::G_MATERIAL_NAMES = NULL ; 
 
+
+
 const float Opticks::F_SPEED_OF_LIGHT = 299.792458f ;  // mm/ns
 
 const char* Opticks::COMPUTE_ARG_ = "--compute" ; 
@@ -66,6 +68,7 @@ unsigned int Opticks::DOMAIN_LENGTH = 39  ;
 
 float        Opticks::FINE_DOMAIN_STEP = 1.f ; 
 unsigned int Opticks::FINE_DOMAIN_LENGTH = 761  ;
+
 
 
 
@@ -191,7 +194,18 @@ void Opticks::dumpRC() const
 
 
 
+Opticks*    Opticks::fOpticks = NULL ; 
 
+Opticks* Opticks::GetOpticks()
+{
+     if(fOpticks == NULL )
+     {
+         const char* argforced = SSys::getenvvar("OPTICKS_ARGS") ; 
+         new Opticks(0,0, argforced);  
+     }
+     assert( fOpticks != NULL ) ; // Opticks ctor should have defined THE instance
+     return fOpticks ; 
+}
 
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
@@ -239,6 +253,9 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_verbosity(0)
 {
        OK_PROFILE("Opticks::Opticks");
+
+       assert( fOpticks == NULL ); // should only ever be one instance 
+       fOpticks = this ; 
        init();
 }
 

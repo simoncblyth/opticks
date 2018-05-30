@@ -38,15 +38,15 @@ CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, 
    :
    m_ok(ok),
    m_top(top),
-   m_bbox(bbox),
+   m_bbox(bbox ? bbox : new NBoundingBox),
    m_query(query),
-   m_ancestor_index(0),
    m_verbosity(1),
-   m_gcount(0),
+   m_ancestor_index(0),
    m_lcount(0),
-   m_gtransforms(NULL),
    m_ltransforms(NULL),
-   m_center_extent(NULL)
+   m_center_extent(NULL),
+   m_gcount(0),
+   m_gtransforms(NULL)
 {
    init();
 }
@@ -243,7 +243,6 @@ void CTraverser::AncestorVisit(std::vector<const G4VPhysicalVolume*> ancestors, 
 
 
 
-
 void CTraverser::dumpLV(const char* msg)
 {
     LOG(info) << msg ; 
@@ -296,6 +295,11 @@ void CTraverser::updateBoundingBox(const G4VSolid* solid, const G4Transform3D& t
 unsigned CTraverser::getNumPV()
 {
     return m_pvs.size();
+}
+
+const G4VPhysicalVolume* CTraverser::getTop()
+{
+    return m_top ; 
 }
 const G4VPhysicalVolume* CTraverser::getPV(unsigned index)
 {

@@ -12,6 +12,8 @@ CVec::CVec(G4PhysicsOrderedFreeVector* vec )
 {
 }
 
+
+
 float CVec::getValue(float fnm)
 {
    G4double wavelength = G4double(fnm)*CLHEP::nm ; 

@@ -23,6 +23,7 @@ option(WITH_GEANT4_UIVIS "Build example with Geant4 UI and Vis drivers" OFF)
 #
 #include(${Geant4_USE_FILE})
 
+set(OKConf_VERBOSE ON)
 find_package( G4OK CONFIG REQUIRED )
 #echo_target_std(Opticks::G4OK)
 

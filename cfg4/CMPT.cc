@@ -4,7 +4,9 @@
 #include <sstream>
 #include <iomanip>
 
-#include <boost/algorithm/string.hpp>
+//#include <boost/algorithm/string.hpp>
+#include "BStr.hh"
+#include "SDigest.hh"
 
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
@@ -74,6 +76,22 @@ std::vector<std::string> CMPT::getPropertyKeys()
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  keys.push_back(it->first) ;
     return keys ; 
 }
+
+
+
+/*
+std::string CMPT::digest()
+{
+    SDigest dig ;
+
+    //dig.update( (char*)getPointer(), sizeof(T)*16 );  
+
+    return dig.finalize();
+}
+*/
+
+
+
 
 std::vector<std::string> CMPT::getPropertyDesc() const
 {
@@ -171,7 +189,9 @@ void CMPT::dumpProperty(const char* _keys)
     LOG(info) << _keys ;  
 
     std::vector<std::string> keys ; 
-    boost::split(keys, _keys, boost::is_any_of(","));   
+    //boost::split(keys, _keys, boost::is_any_of(","));   
+    BStr::split(keys, _keys, ',');
+
     unsigned nkey = keys.size();
 
     std::vector<G4PhysicsOrderedFreeVector*> vecs ; 
@@ -229,7 +249,8 @@ unsigned CMPT::getVecLength(const char* _keys)
 
 unsigned CMPT::splitKeys(std::vector<std::string>& keys, const char* _keys)
 {
-    boost::split(keys, _keys, boost::is_any_of(","));   
+    //boost::split(keys, _keys, boost::is_any_of(","));   
+    BStr::split(keys, _keys, ',');
     return keys.size();
 }
 
@@ -266,6 +287,7 @@ NPY<float>* CMPT::makeArray(const char* _keys, bool reverse)
     }
     return vals ; 
 }
+
 
 
 void CMPT::dumpRaw(const char* _keys)
@@ -342,7 +364,9 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
    // CAUTION: used by cfg4/tests/CInterpolationTest.cc 
 
     std::vector<std::string> keys ; 
-    boost::split(keys, _keys, boost::is_any_of(","));   
+    //boost::split(keys, _keys, boost::is_any_of(","));   
+    BStr::split(keys, _keys, ',') ; 
+
     unsigned nkey = keys.size();
     
     unsigned ndim = a->getDimensions() ;

@@ -111,6 +111,37 @@ Hmm how to handle Opticks logging in embedded mode ?
   some things must be executed in main, but they need to be defined for every package 
 
 
+world-pv to Geometry/Material/Surface digests to see if already have a cached geometry
+---------------------------------------------------------------------------------------
+
+Presumably a G4 equivalent of GGeo::getProgenyDigest in g4ok would be the starting point, but thats
+based in a GGeo GNode tree. Perhaps can use cfg4 CTraverser ?  That needs an Opticks instance...
+So how to instanciate Opticks in embedded mode ?
+
+Current OpMgr assumes the geocache is present and correct and immediately loads it::
+
+     78 OpMgr::OpMgr(int argc, char** argv, const char* argforced )
+     79     :
+     80     m_log(new SLog("OpMgr::OpMgr")),
+     81     m_ok(new Opticks(argc, argv, argforced)),
+     82     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
+     83     m_idx(new OpticksIdx(m_hub)),
+     84     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks
+     85     m_gen(m_hub->getGen()),
+     86     m_run(m_hub->getRun()),
+     87     m_propagator(new OpPropagator(m_hub, m_idx)),
+     88     m_count(0),
+     89     m_opevt(NULL)
+     90 {
+
+
+Even though may end up doing the geocache check inside OpticksHub tis 
+convenient to have the Opticks instance outside OpMgr 
+
+
+
+
+ 
 
 EOU
 }
@@ -123,9 +154,11 @@ opnovice-diff()
 
 opnovice-sdir(){ echo $(opticks-home)/examples/Geant4/OpNovice ; }
 opnovice-cd(){   cd $(opnovice-sdir) ; } 
+opnovice-c(){    cd $(opnovice-sdir) ; } 
 
 opnovice-bdir(){ echo /tmp/$USER/opticks/examples/Geant4/OpNovice ; }
 opnovice-bcd(){   cd $(opnovice-bdir) ; } 
+opnovice-b(){     cd $(opnovice-bdir) ; } 
 
 opnovice-conf()
 {
@@ -139,10 +172,11 @@ opnovice-conf()
    fi
    mkdir -p $bdir && cd $bdir && pwd 
 
-   cmake $sdir -DCMAKE_BUILD_TYPE=Debug \
-            -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-            -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-            -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules    
+   cmake $sdir \
+         -DCMAKE_BUILD_TYPE=Debug \
+         -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
+         -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
+         -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules    
 
    cd $iwd
 }
@@ -156,6 +190,8 @@ opnovice-make()
    cd $iwd
 }
 
+opnovice--(){ opnovice-make ; }
+
 
 opnovice-run()
 {
@@ -164,9 +200,12 @@ opnovice-run()
 
    opnovice-cd
 
-   $(opticks-prefix)/lib/OpNovice -m OpNovice.in > OpNovice.out.now
+   #export OPTICKS_ARGS="--ggeo trace" 
+   unset OPTICKS_ARGS
+   
+   lldb $(opticks-prefix)/lib/OpNovice --  -m OpNovice.in #> OpNovice.out.now
 
-   diff OpNovice.out OpNovice.out.now 
+   #diff OpNovice.out OpNovice.out.now 
 
 }
 

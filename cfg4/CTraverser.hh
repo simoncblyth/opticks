@@ -3,6 +3,7 @@
 #include <glm/fwd.hpp>
 #include <vector>
 #include <string>
+#include <map>
 
 // g4-
 class G4VPhysicalVolume ;
@@ -40,6 +41,12 @@ argument allows the bounding box for a
 selection of the geometry to be determined.
 
 *CTraverser* is an internal constituent of :doc:`CDetector`
+
+ 
+AncestorTraverse
+   collects m_pvs m_lvs m_lvm m_pvnames
+    
+
 
 
 TODO: get rid of the VolumeTreeTraverse
@@ -93,6 +100,7 @@ class CFG4_API CTraverser {
     public:
         unsigned getNumPV();
         unsigned getNumLV();
+        const G4VPhysicalVolume* getTop(); 
         const G4VPhysicalVolume* getPV(const char* name); // find index from m_pvnames, then use below
         const G4VPhysicalVolume* getPV(unsigned index); // index lookup of m_pvs vector
         const G4LogicalVolume*   getLV(unsigned index); // index lookup of m_lvs vector
@@ -130,24 +138,26 @@ class CFG4_API CTraverser {
         G4VPhysicalVolume*             m_top ; 
         NBoundingBox*                  m_bbox ; 
         OpticksQuery*                  m_query ; 
-        unsigned int                   m_ancestor_index ; 
+        unsigned int                   m_verbosity ; 
 
+    private:
+        // collected by VolumeTreeTraverse
         std::vector<const G4Material*> m_materials ;
         std::vector<G4Material*>       m_materials_without_mpt ;
+        unsigned int                   m_lcount ; 
+        NPY<float>*                    m_ltransforms ;   // collected by VolumeTreeTraverse/VisitPV 
 
-        unsigned int   m_verbosity ; 
-        unsigned int   m_gcount ; 
-        unsigned int   m_lcount ; 
-
-        NPY<float>*    m_gtransforms ; 
-        NPY<float>*    m_ltransforms ; 
-        NPY<float>*    m_center_extent ;
- 
-        std::vector<std::string> m_pvnames ; 
-        std::vector<const G4VPhysicalVolume*> m_pvs ; 
-        std::vector<const G4LogicalVolume*>   m_lvs ; 
+    private:
+        // collected by AncestorTraverse    
+        NPY<float>*                                    m_center_extent ;  // updateBoundingBox
+        unsigned int                                   m_gcount ; 
+        NPY<float>*                                    m_gtransforms ; 
+        unsigned int                                   m_ancestor_index ;  
+        std::vector<std::string>                       m_pvnames ; 
+        std::vector<const G4VPhysicalVolume*>          m_pvs ; 
+        std::vector<const G4LogicalVolume*>            m_lvs ; 
         std::map<std::string, const G4LogicalVolume*>  m_lvm ; 
-        std::vector<unsigned int> m_selection ; 
+        std::vector<unsigned int>                      m_selection ; 
 };
 
 #include "CFG4_TAIL.hh"

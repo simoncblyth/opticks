@@ -88,6 +88,10 @@ class OKCORE_API Opticks {
 
        static glm::vec4    getDomainSpec(bool fine=false);
        static glm::vec4    getDomainReciprocalSpec(bool fine=false);
+   private:
+       static Opticks*     fOpticks ;  
+   public:
+       static Opticks* GetOpticks();
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:

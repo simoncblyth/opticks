@@ -8,9 +8,12 @@ int main(int argc, char** argv)
 
     OPTICKS_LOG::Check();
 
-    G4OpticksManager* ok = G4OpticksManager::GetOpticksManager() ; 
+    G4OpticksManager* om = G4OpticksManager::GetOpticksManager() ; 
 
-    assert( ok ) ; 
+    assert( om ) ;
+
+    LOG(info) << om->desc() ; 
+ 
 
     return 0 ;
 }

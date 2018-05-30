@@ -3,24 +3,7 @@
 class NConfigurable ; 
 
 
-
-
 #include "PLOG.hh"
-
-// #include "SYSRAP_LOG.hh"
-// #include "BRAP_LOG.hh"
-// #include "NPY_LOG.hh"
-// #include "OKCORE_LOG.hh"
-// #include "GGEO_LOG.hh"
-// #include "OKGEO_LOG.hh"
-// 
-// 
-// #include "CUDARAP_LOG.hh"
-// #include "THRAP_LOG.hh"
-// #include "OXRAP_LOG.hh"
-// #include "OKOP_LOG.hh"
-
-
 
 
 #include "SLog.hh"
@@ -50,35 +33,14 @@ class NConfigurable ;
 
 
 
+// even though may end up doing the geocache check inside OpticksHub tis 
+// convenient to have the Opticks instance outside OpMgr 
 
-#ifdef ELOG_WORKAROUND
-static struct OpMgrPLOGInit {
-    OpMgrPLOGInit() {
-
-        PLOG_(0, 0);
-
-//        SYSRAP_LOG__ ;
-//        BRAP_LOG__ ;
-//        NPY_LOG__ ;
-//        OKCORE_LOG__ ;
-//        GGEO_LOG__ ;
-//        OKGEO_LOG__ ;
-//
-//        CUDARAP_LOG__ ;
-//        THRAP_LOG__ ;
-//        OXRAP_LOG__ ;
-//        OKOP_LOG__ ;
-//
-
-    }
-} s_opmgrploginit;
-#endif
-
-
-OpMgr::OpMgr(int argc, char** argv, const char* argforced ) 
+OpMgr::OpMgr(Opticks* ok ) 
     :
     m_log(new SLog("OpMgr::OpMgr")),
-    m_ok(new Opticks(argc, argv, argforced)),         
+    //m_ok(new Opticks(argc, argv, argforced)),         
+    m_ok(ok ? ok : Opticks::GetOpticks()),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks

@@ -133,10 +133,23 @@ they need to be installed
 
 
 target_link_libraries( ${name} PUBLIC  
+  Opticks::OKConf
   Opticks::OptiX
   Opticks::OpticksGeo
   Opticks::ThrustRap
 )
+
+#[=[
+Target order in target_link_libraries follows thru to the 
+generated config which is used by consumers of the exported target.:
+
+  $(opticks-prefix)/lib/cmake/optixrap/optixrap-config.cmake
+
+Thus as finding OKConf has the side effect of defining the 
+OptiX_INSTALL_DIR that is needed to find OptiX the OKConf must 
+come before the OptiX.
+#]=]
+
 target_compile_definitions( ${name} PUBLIC OPTICKS_OXRAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 

@@ -3,8 +3,7 @@ set(name G4OK)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
-find_package(G4     REQUIRED MODULE)
-
+find_package(CFG4   REQUIRED CONFIG)   # brings G4 with it 
 find_package(OKConf REQUIRED CONFIG)   
 find_package(OKOP   REQUIRED CONFIG)
 find_package(G4DAE  REQUIRED CONFIG)
@@ -30,7 +29,7 @@ add_library(${name} SHARED  ${SOURCES})
 
 target_link_libraries( ${name} 
   PUBLIC 
-     Opticks::G4
+     Opticks::CFG4
      Opticks::G4DAE
      Opticks::OKOP
 )

@@ -26,7 +26,8 @@ Used from primary applications such as *OpTest* (okop/tests/OpTest.cc)
 
 class OKOP_API OpMgr {
    public:
-       OpMgr(int argc, char** argv, const char* argforced=0 );
+       //OpMgr(int argc, char** argv, const char* argforced=0 );
+       OpMgr(Opticks* ok );
        virtual ~OpMgr();
    public:
        void propagate();
