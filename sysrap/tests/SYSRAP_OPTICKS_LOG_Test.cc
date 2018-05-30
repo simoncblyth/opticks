@@ -7,6 +7,8 @@ int main(int argc , char** argv )
     OPTICKS_LOG__(argc, argv) ; 
     //OPTICKS_LOG_COLOR__(argc, argv) ; 
 
+    OPTICKS_LOG::Check();
+
     SLog::Nonce();
 
     LOG(info) << argv[0] ; 

@@ -25,7 +25,7 @@ set(TEST_SOURCES
    SYSRAP_LOG_Test.cc 
    SYSRAP_LOG_FileAppenderTest.cc
 
-   S_OPTICKS_LOG_Test.cc
+   SYSRAP_OPTICKS_LOG_Test.cc
 
    OpticksCSGTest.cc
    hash_define_without_value.cc

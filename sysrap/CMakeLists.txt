@@ -19,7 +19,6 @@ find_package(OKConf REQUIRED CONFIG)
 find_package(PLog   REQUIRED MODULE)
 
 set(SOURCES
-    OPTICKS_LOG.cc
     SYSRAP_LOG.cc 
     PLOG.cc 
     SProc.cc

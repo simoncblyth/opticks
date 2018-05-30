@@ -22,10 +22,11 @@ class CMakeLists(object):
    find_ptn = re.compile("^find_package\((?P<findargs>.*)\).*")
    obo_txt = "include(OpticksBuildOptions)"
 
-   def __init__(self, lines, reldir=None, path=None):
+   def __init__(self, lines, reldir=None, path=None, tag=None):
        self.lines = lines 
        self.reldir = reldir
        self.path = path
+       self.tag = tag
        self.name = None
        self.deps = []
        self.parse()
@@ -55,7 +56,7 @@ class CMakeLists(object):
        assert obo_found, "missing obo for %s " % self.reldir  
 
    def __repr__(self):
-       return "%20s : %20s : %s " % (  self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
+       return "%15s : %20s : %20s : %s " % (  self.tag, self.reldir, self.name, " ".join(map(lambda _:_.name, self.deps)) )
 
    def _get_tree(self):
        return "\n".join([self.name] + map(lambda _:"    %s" % _.name, self.deps))
@@ -86,8 +87,17 @@ class Opticks(object):
              'OK':160,
              'CFG4':170,
              'OKG4':180,
+             'G4OK':190,
              'NumpyServer':-1
             }
+
+
+    @classmethod
+    def find_export_tag(cls, names):
+        tail = "_API_EXPORT.hh"
+        names = filter(lambda _:_.endswith(tail), names)
+        tag = names[0].replace(tail,"") if len(names) == 1 else None
+        return tag 
 
     @classmethod
     def examine_dependencies(cls, args):
@@ -100,8 +110,9 @@ class Opticks(object):
             if CMakeLists.NAME in names:
                 reldir = dirpath[len(root)+1:]
                 path = os.path.join(dirpath, CMakeLists.NAME)
+                tag = cls.find_export_tag(names)
                 lines = map(str.strip, file(path,"r").readlines() ) 
-                ls = CMakeLists(lines, reldir=reldir, path=path)
+                ls = CMakeLists(lines, reldir=reldir, path=path, tag=tag)
                 pkgs[ls.name] = ls
                 #print path
                 #print repr(ls)
@@ -125,6 +136,8 @@ class Opticks(object):
             ls = pkgs[k]
             if args.subdirs:
                 print ls.reldir
+            elif args.tags:
+                print ls.tag
             elif args.subproj:
                 print ls.name
             elif args.tree:
@@ -151,6 +164,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(__doc__)
     parser.add_argument(     "--tree",  action="store_true", help="Dump tree" )
     parser.add_argument(     "--subdirs",  action="store_true", help="Dump just the subdirs" )
+    parser.add_argument(     "--tags",  action="store_true", help="Dump just the tags" )
     parser.add_argument(     "--subproj",  action="store_true", help="Dump just the subproj" )
     parser.add_argument(     "--testfile", action="store_true", help="Generate to stdout a CTestTestfile.cmake with all subdirs" ) 
     args = parser.parse_args()

@@ -34,6 +34,7 @@ set(TEST_SOURCES
    boost_random_minimal_Test.cc
 
    BConverterTest.cc 
+   BRAP_OPTICKS_LOG_Test.cc
 )
 
 # BTimeTest.cc requires boost components : thread timer 
