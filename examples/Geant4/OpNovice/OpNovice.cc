@@ -74,8 +74,14 @@ namespace {
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
+
+#ifdef WITH_OPTICKS
+#include "OPTICKS_LOG.hh"
+#endif
+
 int main(int argc,char** argv)
 {
+  OPTICKS_LOG__(0,0);
   // Evaluate arguments
   //
   if ( argc > 9 ) {

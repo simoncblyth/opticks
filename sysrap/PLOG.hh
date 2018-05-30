@@ -106,22 +106,12 @@ and Windows.
 struct PLOG ; 
 
 
-#define STOMP_DEBUG 1 
 
-#ifdef STOMP_DEBUG 
 #include "SAr.hh"
-#endif
 
 struct SYSRAP_API PLOG 
 {
-
-#ifdef STOMP_DEBUG 
-    SAr    args ; 
-#else 
-    int    argc ; 
-    char** argv ;
-#endif
-
+    SAr         args ; 
     int         level ; 
     const char* logpath ; 
     int         logmax ; 
@@ -131,6 +121,8 @@ struct SYSRAP_API PLOG
     const char* name(); 
     int parse( const char* fallback);
     int parse( plog::Severity _fallback);
+
+    int prefixlevel_parse( int fallback, const char* prefix);
     int prefixlevel_parse( const char* fallback, const char* prefix);
     int prefixlevel_parse( plog::Severity _fallback, const char* prefix);
 

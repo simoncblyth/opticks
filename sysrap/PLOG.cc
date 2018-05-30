@@ -121,12 +121,7 @@ int PLOG::parse(plog::Severity _fallback)
 }
 int PLOG::parse(const char* fallback)
 {
-
-#ifdef STOMP_DEBUG
     int ll = _parse(args._argc, args._argv, fallback);
-#else
-    int ll = _parse(argc, argv, fallback);
-#endif
 
 #ifdef PLOG_DBG
     std::cerr << "PLOG::parse"
@@ -140,6 +135,12 @@ int PLOG::parse(const char* fallback)
 }
 
 
+int PLOG::prefixlevel_parse(int _fallback, const char* prefix)
+{
+    plog::Severity fallback = static_cast<plog::Severity>(_fallback); 
+    return prefixlevel_parse(fallback, prefix) ; 
+}
+
 int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 {
     const char* fallback = _name(_fallback);
@@ -147,11 +148,7 @@ int PLOG::prefixlevel_parse(plog::Severity _fallback, const char* prefix)
 }
 int PLOG::prefixlevel_parse(const char* fallback, const char* prefix)
 {
-#ifdef STOMP_DEBUG
     int ll =  _prefixlevel_parse(args._argc, args._argv, fallback, prefix);
-#else
-    int ll =  _prefixlevel_parse(argc, argv, fallback, prefix);
-#endif
 
 #ifdef PLOG_DBG
     std::cerr << "PLOG::prefixlevel_parse"
@@ -186,12 +183,7 @@ const char* PLOG::name()
 
 PLOG::PLOG(int argc_, char** argv_, const char* fallback, const char* prefix)
     :
-#ifdef STOMP_DEBUG
-      args(argc_, argv_),
-#else
-      argc(argc_),
-      argv(argv_),
-#endif
+      args(argc_, argv_, "OPTICKS_ARGS" , ' '),   // when argc_ is 0 the named envvar is checked for arguments instead 
       level(info),
       logpath(_logpath_parse(argc_, argv_)),
       logmax(3)

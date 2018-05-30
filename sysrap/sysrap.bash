@@ -124,7 +124,7 @@ EOH
 }
 sysrap-genlog-initialize-(){ cat << EOI
 #ifdef OPTICKS_$1
-    $1_LOG::Initialize(instance->prefixlevel_parse( info, "$1"), app1, NULL );
+    $1_LOG::Initialize(instance->prefixlevel_parse( max_level, "$1"), app1, NULL );
 #endif
 EOI
 }
@@ -156,6 +156,9 @@ class SYSRAP_API OPTICKS_LOG {
        // initialize all linked loggers and hookup the main logger
        static void Initialize(PLOG* instance, void* app1, void* app2 )
        {
+           int max_level = instance->parse("info") ;  
+           // note : can decrease verbosity from the max_level in the subproj, but not increase
+
 $(sysrap-tags-foreach sysrap-genlog-initialize-)
        }
        // checking the loggers in each subproj by emitting message at all loglevels
