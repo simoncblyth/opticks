@@ -12,7 +12,7 @@
 #include "OKGEO_LOG.hh"
 #include "OGLRAP_LOG.hh"
 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
 #include "CUDARAP_LOG.hh"
 #include "THRAP_LOG.hh"
 #include "OXRAP_LOG.hh"
@@ -51,7 +51,7 @@ int main(int argc, char** argv)
     OKGEO_LOG__ ;
     OGLRAP_LOG__ ;
 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     CUDARAP_LOG__ ;
     THRAP_LOG__ ;
     OXRAP_LOG__ ;

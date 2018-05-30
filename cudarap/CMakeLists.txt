@@ -59,7 +59,7 @@ endif(UNIX)
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )
 #set_target_properties(${name}  PROPERTIES INTERFACE_LINK_LIBRARIES "" ) # kludge clear
 target_link_libraries( ${name} ${LIBRARIES})
-target_compile_definitions( ${name} PUBLIC WITH_CUDARAP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_CUDARAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 if(CUDARap_VERBOSE)

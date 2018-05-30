@@ -14,7 +14,7 @@
 #include "NNode.hpp"
 #include "NParameters.hpp"
 
-#ifdef WITH_CSGBSP
+#ifdef OPTICKS_CSGBSP
 #include "NCSGBSP.hpp"
 #endif
 
@@ -325,7 +325,7 @@ const NOpenMeshBoundary<T>& NOpenMesh<T>::get_boundary_loop(unsigned i) const
 template <typename T>
 void NOpenMesh<T>::combine_csgbsp()
 {
-#ifdef WITH_CSGBSP
+#ifdef OPTICKS_CSGBSP
     NCSGBSP csgbsp( leftmesh, rightmesh, node->type );
     build.copy_faces( &csgbsp );
 #else

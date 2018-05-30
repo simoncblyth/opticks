@@ -46,7 +46,7 @@ CUDA_WRAP_SRCS( ${name} OBJ _generated_OBJ_files ${SOURCES} )
 add_library( ${name} SHARED ${_generated_OBJ_files} ${SOURCES} )
 
 target_link_libraries( ${name} PUBLIC Opticks::OptiXRap)
-target_compile_definitions( ${name} PUBLIC WITH_OKOP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_OKOP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 if(OKOP_VERBOSE)

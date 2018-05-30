@@ -144,7 +144,7 @@ void OKG4Mgr::visualize()
 
 void OKG4Mgr::cleanup()
 {
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     m_propagator->cleanup();
 #endif
     m_hub->cleanup();

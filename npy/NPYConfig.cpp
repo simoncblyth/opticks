@@ -4,16 +4,16 @@
 std::string NPYConfig::OptionalExternals()
 {
    std::stringstream ss ; 
-#ifdef WITH_YoctoGL
+#ifdef OPTICKS_YoctoGL
     ss << "YoctoGL " ;
 #endif
-#ifdef WITH_DualContouringSample
+#ifdef OPTICKS_DualContouringSample
     ss << "DualContouringSample " ;
 #endif
-#ifdef WITH_ImplicitMesher
+#ifdef OPTICKS_ImplicitMesher
     ss << "ImplicitMesher " ;
 #endif
-#ifdef WITH_CSGBSP
+#ifdef OPTICKS_CSGBSP
     ss << "CSGBSP " ;
 #endif
     return ss.str();

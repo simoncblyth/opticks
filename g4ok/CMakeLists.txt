@@ -37,7 +37,7 @@ target_link_libraries( ${name}
 ## hmm these need to be public for the tests to see the includes of 
 ## the dependencies and their deps and so on 
 
-target_compile_definitions( ${name} PUBLIC WITH_G4OK )
+target_compile_definitions( ${name} PUBLIC OPTICKS_G4OK )
 
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 

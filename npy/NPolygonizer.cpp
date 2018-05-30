@@ -12,11 +12,11 @@
 #include "NMarchingCubesNPY.hpp"
 
 
-#ifdef WITH_DualContouringSample
+#ifdef OPTICKS_DualContouringSample
 #include "NDualContouringSample.hpp"
 #endif
 
-#ifdef WITH_ImplicitMesher
+#ifdef OPTICKS_ImplicitMesher
 #include "NImplicitMesher.hpp"
 #endif
 
@@ -199,7 +199,7 @@ NTrianglesNPY* NPolygonizer::marchingCubesNPY()
 NTrianglesNPY* NPolygonizer::dualContouringSample()
 {
     NTrianglesNPY* tris = NULL ; 
-#ifdef WITH_DualContouringSample
+#ifdef OPTICKS_DualContouringSample
     float threshold = m_meta->get<float>("threshold", "0.1" );
     int   nominal = m_meta->get<int>("nominal", "7" );  // 1 << 5 = 32, 1 << 6 = 64, 1 << 7 = 128  
     int   coarse  = m_meta->get<int>("coarse", "6" );  
@@ -214,7 +214,7 @@ NTrianglesNPY* NPolygonizer::dualContouringSample()
 NTrianglesNPY* NPolygonizer::implicitMesher()
 {
     NTrianglesNPY* tris = NULL ; 
-#ifdef WITH_ImplicitMesher
+#ifdef OPTICKS_ImplicitMesher
     int   resolution = m_meta->get<int>("resolution", "100" );
     int   ctrl = m_meta->get<int>("ctrl", "0" );
     float expand_bb = 1e-4 ; 

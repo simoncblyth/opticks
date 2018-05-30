@@ -459,7 +459,7 @@ void OpticksViz::renderLoop()
     {
         m_frame->listen(); 
 
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
         if(m_server) m_server->poll_one();  
 #endif
         count = m_composition->tick();

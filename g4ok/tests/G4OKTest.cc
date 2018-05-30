@@ -3,7 +3,7 @@
 
 
 /*
-// hmm every linked Opticks package should define a WITH_SYSRAP WITH_BRAP ... macro
+// hmm every linked Opticks package should define a OPTICKS_SYSRAP OPTICKS_BRAP ... macro
 // so the below includes can be automated according to what is linked 
 
 #include "SYSRAP_LOG.hh"

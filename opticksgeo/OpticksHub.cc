@@ -25,7 +25,7 @@
 
 
 // numpyserver-
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
 #include "numpydelegate.hpp"
 #include "numpydelegateCfg.hpp"
 #include "numpyserver.hpp"
@@ -145,7 +145,7 @@ OpticksHub::OpticksHub(Opticks* ok)
    m_ggeo(NULL),
    m_gscene(NULL),
    m_composition(new Composition),
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
    m_delegate(NULL),
    m_server(NULL)
 #endif
@@ -257,7 +257,7 @@ void OpticksHub::configure()
 
 void OpticksHub::configureServer()
 {
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
 
     m_delegate    = new numpydelegate ; 
     add(new numpydelegateCfg<numpydelegate>("numpydelegate", m_delegate, false));
@@ -789,7 +789,7 @@ void OpticksHub::configureEvent(OpticksEvent* evt)
 {
     if(!evt) return 
 
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
     if(m_delegate)
     {
         m_delegate->setEvent(evt); // allows delegate to update evt when NPY messages arrive, hmm locking needed ?
@@ -842,7 +842,7 @@ OpticksAttrSeq* OpticksHub::getFlagNames()
 
 void OpticksHub::cleanup()
 {
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
     if(m_server) m_server->stop();
 #endif
 }

@@ -10,7 +10,7 @@ class OpticksViz ;
 class Opticks ; 
 
 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
 class OpEngine ; 
 class OKGLTracer ; 
 #endif
@@ -56,7 +56,7 @@ class OK_API OKPropagator {
        OpticksIdx*    m_idx ; 
        OpticksViz*    m_viz ; 
        Opticks*       m_ok ; 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
        OpEngine*      m_engine ; 
        OKGLTracer*    m_tracer ; 
 #endif

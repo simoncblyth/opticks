@@ -40,7 +40,7 @@ set(HEADERS
 
 add_library(${name} SHARED ${SOURCES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
-target_compile_definitions( ${name} PUBLIC WITH_ASIRAP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_ASIRAP )
 target_link_libraries(${name} PUBLIC Opticks::OpticksAssimp Opticks::GGeo )
 
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)

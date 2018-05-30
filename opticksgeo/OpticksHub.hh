@@ -52,7 +52,7 @@ class TorchStepNPY ;
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
 
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
 class numpydelegate ; 
 template <typename> class numpyserver ;
 #endif
@@ -226,7 +226,7 @@ class OKGEO_API OpticksHub {
        Composition*     m_composition ; 
 
    private:
-#ifdef WITH_NPYSERVER
+#ifdef OPTICKS_NPYSERVER
        numpydelegate*              m_delegate ; 
        numpyserver<numpydelegate>* m_server ;
 #endif

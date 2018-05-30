@@ -356,7 +356,7 @@ target_include_directories( ${name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
 ) 
 
-target_compile_definitions( ${name} PUBLIC WITH_NPY )
+target_compile_definitions( ${name} PUBLIC OPTICKS_NPY )
 
 target_link_libraries( ${name} 
   PUBLIC 
@@ -370,22 +370,22 @@ target_link_libraries( ${name}
 
 if(YoctoGL_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::YoctoGL )  # headers included into PUBLIC headers need to be PUBLIC
-   target_compile_definitions(${name} PUBLIC WITH_YoctoGL )
+   target_compile_definitions(${name} PUBLIC OPTICKS_YoctoGL )
 endif()
 
 if(ImplicitMesher_FOUND)
    target_link_libraries( ${name} PRIVATE Opticks::ImplicitMesher )
-   target_compile_definitions(${name} PUBLIC WITH_ImplicitMesher )
+   target_compile_definitions(${name} PUBLIC OPTICKS_ImplicitMesher )
 endif()
 
 if(DualContouringSample_FOUND)
    target_link_libraries( ${name} PUBLIC Opticks::DualContouringSample )
-   target_compile_definitions(${name} PUBLIC WITH_DualContouringSample )
+   target_compile_definitions(${name} PUBLIC OPTICKS_DualContouringSample )
 endif()
 
 if(CSGBSP_FOUND)
    target_link_libraries( ${name} PRIVATE Opticks::CSGBSP )
-   target_compile_definitions(${name} PUBLIC WITH_CSGBSP  )
+   target_compile_definitions(${name} PUBLIC OPTICKS_CSGBSP  )
 endif()
 
 if(UNIX)

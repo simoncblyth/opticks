@@ -27,7 +27,7 @@ target_link_libraries( ${name} PUBLIC
    Opticks::OK
    Opticks::CFG4
 )
-target_compile_definitions( ${name} PUBLIC WITH_OKG4 )
+target_compile_definitions( ${name} PUBLIC OPTICKS_OKG4 )
 target_include_directories( ${name} PUBLIC 
    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> 
 )

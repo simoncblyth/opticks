@@ -127,7 +127,7 @@ set(HEADERS
 
 add_library( ${name}  SHARED ${SOURCES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
-target_compile_definitions( ${name} PUBLIC WITH_OKCORE )
+target_compile_definitions( ${name} PUBLIC OPTICKS_OKCORE )
 target_link_libraries( ${name} 
   PUBLIC 
      Opticks::NPY

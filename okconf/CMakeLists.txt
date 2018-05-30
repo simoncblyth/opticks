@@ -80,7 +80,7 @@ target_include_directories( ${name} PRIVATE
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
 )
 
-target_compile_definitions( ${name} PUBLIC WITH_OKCONF )
+target_compile_definitions( ${name} PUBLIC OPTICKS_OKCONF )
 add_subdirectory(tests)
 
  

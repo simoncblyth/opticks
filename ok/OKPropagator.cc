@@ -13,7 +13,7 @@
 
 #include "OKPropagator.hh"
 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
 #include "OKGLTracer.hh"     // optixgl-
 #include "OpEngine.hh"  // opticksop-
 #endif
@@ -42,7 +42,7 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     m_idx(idx),
     m_viz(viz),    
     m_ok(m_hub->getOpticks()),
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     m_engine(new OpEngine(m_hub)),
     m_tracer(m_viz ? new OKGLTracer(m_engine,m_viz, true) : NULL ),
 #endif
@@ -88,7 +88,7 @@ int OKPropagator::uploadEvent()
     if(m_viz) m_viz->uploadEvent();
 
     int npho = -1 ; 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     npho = m_engine->uploadEvent();
 #endif
     return npho ; 
@@ -99,7 +99,7 @@ int OKPropagator::downloadEvent()
     if(m_viz) m_viz->downloadEvent();
 
     int nhit = -1 ; 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     nhit = m_engine->downloadEvent();
 #endif
     return nhit ; 
@@ -118,7 +118,7 @@ void OKPropagator::indexEvent()
 
 void OKPropagator::cleanup()
 {
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
     m_engine->cleanup();
 #endif
 }

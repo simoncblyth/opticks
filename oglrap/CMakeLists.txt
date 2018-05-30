@@ -116,7 +116,7 @@ target_include_directories( ${name} PUBLIC
    $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc> 
 )
 
-target_compile_definitions( ${name} PUBLIC GUI_ WITH_OGLRAP ) 
+target_compile_definitions( ${name} PUBLIC GUI_ OPTICKS_OGLRAP ) 
 
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 install(DIRECTORY gl/ DESTINATION gl)

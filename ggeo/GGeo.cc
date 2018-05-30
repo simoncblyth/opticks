@@ -583,7 +583,7 @@ void GGeo::loadAnalyticFromGLTF()
     LOG(info) << "GGeo::loadAnalyticFromGLTF START" ; 
     if(!m_ok->isGLTF()) return ; 
 
-#ifdef WITH_YoctoGL
+#ifdef OPTICKS_YoctoGL
     m_gscene = GScene::Create(m_ok, this); 
 #else
     LOG(fatal) << "GGeo::loadAnalyticFromGLTF requires YoctoGL external " ; 

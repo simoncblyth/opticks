@@ -107,7 +107,7 @@ target_include_directories( ${name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/inc>
 )
-target_compile_definitions( ${name} PUBLIC WITH_BRAP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_BRAP )
 
 
 target_link_libraries( ${name} PUBLIC 

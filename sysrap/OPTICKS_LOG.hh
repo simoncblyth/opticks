@@ -5,58 +5,58 @@
 
 #include "PLOG.hh"
 
-#ifdef WITH_SYSRAP
+#ifdef OPTICKS_SYSRAP
 #include "SYSRAP_LOG.hh"
 #endif
-#ifdef WITH_BRAP
+#ifdef OPTICKS_BRAP
 #include "BRAP_LOG.hh"
 #endif
-#ifdef WITH_NPY
+#ifdef OPTICKS_NPY
 #include "NPY_LOG.hh"
 #endif
-#ifdef WITH_OKCORE
+#ifdef OPTICKS_OKCORE
 #include "OKCORE_LOG.hh"
 #endif
-#ifdef WITH_GGEO
+#ifdef OPTICKS_GGEO
 #include "GGEO_LOG.hh"
 #endif
-#ifdef WITH_ASIRAP
+#ifdef OPTICKS_ASIRAP
 #include "ASIRAP_LOG.hh"
 #endif
-#ifdef WITH_MESHRAP
+#ifdef OPTICKS_MESHRAP
 #include "MESHRAP_LOG.hh"
 #endif
-#ifdef WITH_OKGEO
+#ifdef OPTICKS_OKGEO
 #include "OKGEO_LOG.hh"
 #endif
-#ifdef WITH_OGLRAP
+#ifdef OPTICKS_OGLRAP
 #include "OGLRAP_LOG.hh"
 #endif
-#ifdef WITH_OKGL
+#ifdef OPTICKS_OKGL
 #include "OKGL_LOG.hh"
 #endif
-#ifdef WITH_OK
+#ifdef OPTICKS_OK
 #include "OK_LOG.hh"
 #endif
-#ifdef WITH_OKG4
+#ifdef OPTICKS_OKG4
 #include "OKG4_LOG.hh"
 #endif
-#ifdef WITH_CUDARAP
+#ifdef OPTICKS_CUDARAP
 #include "CUDARAP_LOG.hh"
 #endif
-#ifdef WITH_THRAP
+#ifdef OPTICKS_THRAP
 #include "THRAP_LOG.hh"
 #endif
-#ifdef WITH_OXRAP
+#ifdef OPTICKS_OXRAP
 #include "OXRAP_LOG.hh"
 #endif
-#ifdef WITH_OKOP
+#ifdef OPTICKS_OKOP
 #include "OKOP_LOG.hh"
 #endif
-#ifdef WITH_CFG4
+#ifdef OPTICKS_CFG4
 #include "CFG4_LOG.hh"
 #endif
-#ifdef WITH_G4OK
+#ifdef OPTICKS_G4OK
 #include "G4OK_LOG.hh"
 #endif
 

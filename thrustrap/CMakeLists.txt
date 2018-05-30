@@ -71,7 +71,7 @@ When it should be using::
 #]=]
 
 target_link_libraries( ${name} Opticks::OpticksCore Opticks::CUDARap)
-target_compile_definitions( ${name} PUBLIC WITH_THRAP )
+target_compile_definitions( ${name} PUBLIC OPTICKS_THRAP )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 
 if(ThrustRap_VERBOSE)

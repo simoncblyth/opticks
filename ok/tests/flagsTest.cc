@@ -3,7 +3,7 @@
 #include "BBit.hh"
 
 
-#ifdef WITH_OPTIX
+#ifdef OPTICKS_OPTIX
 
 #define DUMP(name) \
 { \

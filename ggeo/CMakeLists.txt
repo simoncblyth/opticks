@@ -152,7 +152,7 @@ set(HEADERS
 add_library( ${name}  SHARED ${SOURCES})
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>) 
 target_link_libraries( ${name} PUBLIC Opticks::OpticksCore )
-target_compile_definitions( ${name} PUBLIC WITH_GGEO )
+target_compile_definitions( ${name} PUBLIC OPTICKS_GGEO )
 install(FILES ${HEADERS}  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 bcm_deploy(TARGETS ${name} NAMESPACE Opticks:: SKIP_HEADER_INSTALL)
 
