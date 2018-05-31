@@ -170,7 +170,7 @@ om-conf()
         om-conf-all $arg 
 
     else
-        local name=$(basename $iwd)
+        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
         local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
 
@@ -228,15 +228,19 @@ om-make()
 
     else
         local msg="=== $FUNCNAME :"
-        local name=$(basename $iwd)
+        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
         local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
         printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
         cd $bdir
+        local t0=$(date +"%s")
         cmake --build .  --target all
         rc=$?
+        local t1=$(date +"%s")
+        local d1=$(( t1 - t0 ))
+
         [ "$rc" != "0" ] && cd $iwd && return $rc
-        [ "$(uname)" == "Darwin" ] && echo $msg kludge sleep 2s && sleep 2  
+        [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
         cmake --build .  --target install
         rc=$?
         [ "$rc" != "0" ] && cd $iwd && return $rc
@@ -256,7 +260,7 @@ om-test()
 
     else
         local msg="=== $FUNCNAME :"
-        local name=$(basename $iwd)
+        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
         local sdir=$(om-sdir $name)
         local bdir=$(om-bdir $name)
         printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
@@ -341,4 +345,27 @@ EOU
 
 EOT
 }
+
+
+om-find()
+{ 
+    local str=${1:-ENV_HOME}
+    local opt=${2:--H}
+    local iwd=$PWD
+    cd $(opticks-home) 
+    find . -name '*.sh' -exec grep $opt $str {} \;
+    find . -name '*.bash' -exec grep $opt $str {} \;
+    find . -name '*.cu' -exec grep $opt $str {} \;
+    find . -name '*.cc' -exec grep $opt $str {} \;
+    find . -name '*.hh' -exec grep $opt $str {} \;
+    find . -name '*.cpp' -exec grep $opt $str {} \;
+    find . -name '*.hpp' -exec grep $opt $str {} \;
+    find . -name '*.h' -exec grep $opt $str {} \;
+    find . -name '*.txt' -exec grep $opt $str {} \;
+    find . -name '*.py' -exec grep $opt $str {} \;
+}
+
+
+
+
 

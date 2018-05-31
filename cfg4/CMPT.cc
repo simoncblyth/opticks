@@ -79,17 +79,27 @@ std::vector<std::string> CMPT::getPropertyKeys()
 
 
 
-/*
-std::string CMPT::digest()
+std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)  
 {
+    if(!mpt) return "" ; 
+
+    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     SDigest dig ;
 
-    //dig.update( (char*)getPointer(), sizeof(T)*16 );  
-
+    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
+    {
+        G4String pname = it->first ;
+        G4MaterialPropertyVector* pvec = it->second ; 
+        std::string s = CVec::Digest(pvec) ; 
+        dig.update( const_cast<char*>(s.data()), s.size() );  
+    }
     return dig.finalize();
 }
-*/
 
+std::string CMPT::digest() const 
+{
+    return Digest(m_mpt) ; 
+}
 
 
 

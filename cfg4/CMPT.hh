@@ -13,7 +13,10 @@ template <typename T> class NPY ;
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CMPT {
    public:
+       static std::string Digest(G4MaterialPropertiesTable* mpt); 
+   public:
        CMPT(G4MaterialPropertiesTable* mpt, const char* name=NULL);
+       std::string digest() const ;
        void addProperty(const char* lkey,  GProperty<float>* prop, bool spline);
    public:
        void dumpRaw(const char* lkey);

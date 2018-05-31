@@ -104,8 +104,8 @@ g4d-
 
    NEXT:
 
-   * export CMake targets from G4DAE so can easily configure against it 
-   * bring g4dae back as an Opticks external
+   * DONE : export CMake targets from G4DAE so can easily configure against it 
+   * DONE : bring g4dae back as an Opticks external
 
    * make Opticks example of exporting a geometry using capabilities of the
      G4DAE and G4 externals 

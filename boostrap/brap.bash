@@ -150,8 +150,14 @@ brap-apihh(){  echo $(brap-sdir)/$(brap-tag)_API_EXPORT.hh ; }
 brap---(){     touch $(brap-apihh) ; brap--  ; }
 
 
-brap--(){       opticks-- $(brap-bdir) ; }
-brap-t(){       opticks-t $(brap-bdir) $* ; }
+#brap--(){       opticks-- $(brap-bdir) ; }
+#brap-t(){       opticks-t $(brap-bdir) $* ; }
+
+brap--(){   brap-scd ; om- ; om-make ; }
+brap-t(){   brap-scd ; om- ; om-test ; }
+
+
+
 brap-genproj(){ brap-scd ; opticks-genproj $(brap-name) $(brap-tag) ; }
 brap-gentest(){ brap-tcd ; opticks-gentest ${1:-BBufSpec} $(brap-tag) ; }
 brap-txt(){     vi $(brap-sdir)/CMakeLists.txt $(brap-tdir)/CMakeLists.txt ; }

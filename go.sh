@@ -69,6 +69,7 @@ if [ "$rc" != "0" ]; then
 fi
 t1=$(date +"%s")
 d1=$(( t1 - t0 ))
+
 echo $msg cmake configuring $d1 seconds ie $(( d1/60 )) minutes 
 
 #exit 1

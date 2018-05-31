@@ -18,7 +18,11 @@ set(TEST_SOURCES
     G4MaterialTest.cc
     G4StringTest.cc
     G4SphereTest.cc
+
     G4PhysicsOrderedFreeVectorTest.cc
+    CVecTest.cc
+
+    G4MaterialPropertiesTableTest.cc
 
     G4UniformRandTest.cc
     G4BoxTest.cc

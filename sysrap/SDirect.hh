@@ -33,4 +33,26 @@ private:
 
 
 
+struct stream_redirect
+{
+    // http://wordaligned.org/articles/cpp-streambufs
+    stream_redirect(std::ostream & dst, std::ostream & src)
+        :   
+        src(src), 
+        sbuf(src.rdbuf(dst.rdbuf())) 
+    {   
+    }   
+
+    ~stream_redirect() 
+    { 
+       src.rdbuf(sbuf); 
+    }
+
+private:
+    std::ostream & src;
+    std::streambuf * const sbuf;
+};
+
+
+
 

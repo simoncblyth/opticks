@@ -1163,8 +1163,13 @@ ok-wipe(){
 }
 
 
-ok--(){        opticks--     $(ok-bdir) ; }
-ok-t(){        opticks-t   $(ok-bdir) $* ; }
+#ok--(){        opticks--     $(ok-bdir) ; }
+#ok-t(){        opticks-t   $(ok-bdir) $* ; }
+
+ok--(){   ok-scd  ; om- ; om-make ; }
+ok-t(){   ok-scd  ; om- ; om-test ; }
+
+
 ok-ti(){       opticks-ti  $(ok-bdir) $* ; }
 ok-genproj(){  ok-scd ; opticks-genproj $(ok-name) $(ok-tag) ; }
 ok-gentest(){  ok-tcd ; opticks-gentest ${1:-Scene} $(ok-tag) ; }

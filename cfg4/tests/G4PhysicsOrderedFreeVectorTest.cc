@@ -2,37 +2,25 @@
 #include <fstream>
 #include <sstream>
 
+#include "CVec.hh"
 #include "G4PhysicsOrderedFreeVector.hh"
 #include "PLOG.hh"
 
-class redirecter
-// http://wordaligned.org/articles/cpp-streambufs
-{
-public:
-    redirecter(std::ostream & dst, std::ostream & src)
-        : 
-        src(src), 
-        sbuf(src.rdbuf(dst.rdbuf())) 
-    {
-    }
+#include "SDirect.hh"
 
-    ~redirecter() { src.rdbuf(sbuf); }
-private:
-    std::ostream & src;
-    std::streambuf * const sbuf;
-};
 
 void test_redirected( G4PhysicsOrderedFreeVector& vec, bool ascii )
 {
     std::ofstream fp("/dev/null", std::ios::out); 
-
     std::stringstream ss ;     
-    redirecter rdir(ss,fp);    // redirect writes to the file to instead go to the stringstream 
+    stream_redirect rdir(ss,fp); // stream_redirect such that writes to the file instead go to the stringstream 
     
     vec.Store(fp, ascii );
 
     std::cout <<  ss.str() << std::endl ; 
 }
+
+
 
 void test_caveman( G4PhysicsOrderedFreeVector& vec, bool ascii )
 {
@@ -53,30 +41,21 @@ void test_caveman( G4PhysicsOrderedFreeVector& vec, bool ascii )
 }
 
 
-
-
-
 int main(int argc, char** argv)
 {
     PLOG_(argc, argv);
 
-    size_t n = 5 ; 
-    double e[n] ; 
-    double v[n] ; 
-    for(unsigned i=0 ; i < n ; i++ )
-    {
-        e[i] = double(i)*100 + 0.1 ;  
-        v[i] = double(i)*1000 + 0.2 ;  
-    } 
-    
-    G4PhysicsOrderedFreeVector vec(e, v, n ); 
+    CVec* v = CVec::MakeDummy(5); 
+
+    G4PhysicsOrderedFreeVector& vec  = *v->getVec() ; 
+
     std::cout << vec << std::endl ; 
+
 
     // Making an ofstream writing method write into a buffer 
 
     bool ascii = false ; 
-
-    //test_caveman(   vec, ascii ); 
+    //test_caveman(   v, ascii ); 
     test_redirected( vec, ascii ); 
 
 
