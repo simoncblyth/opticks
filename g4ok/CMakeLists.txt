@@ -11,11 +11,13 @@ find_package(G4DAE  REQUIRED CONFIG)
 
 set(SOURCES
     G4OpticksManager.cc
+    G4OpticksGeometry.cc
 
     G4OK_LOG.cc
 )
 set(HEADERS
     G4OpticksManager.hh
+    G4OpticksGeometry.hh
     G4OpticksScintillationStep.hh
     G4OpticksCerenkovStep.hh
 

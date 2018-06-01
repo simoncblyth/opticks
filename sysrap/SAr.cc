@@ -14,6 +14,7 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
 {
     if(argc_ == 0 || argc_ == 1 )  // 0 means in-code not giving args, 1 means just no arguments  
     {
+        std::cout << "args_from_envvar argc_ " << argc_  << std::endl ; 
         args_from_envvar( envvar, delim) ; 
     }
     else
@@ -28,7 +29,14 @@ SAr::SAr( int argc_ , char** argv_ , const char* envvar, char delim )
 void SAr::args_from_envvar( const char* envvar, char delim )
 {
     const char* argline = envvar ? getenv(envvar) :  NULL ;
-    if(argline == NULL) return ; 
+
+    if(argline == NULL) 
+    {
+        std::cout << "args_from_envvar but no argline provided " << std::endl ; 
+        return ; 
+    }
+
+    std::cout << "args_from_envvar argline: " << argline << std::endl ; 
 
     std::stringstream ss; 
     ss.str(argline)  ;
@@ -49,8 +57,9 @@ void SAr::args_from_envvar( const char* envvar, char delim )
 
 void SAr::dump()
 {
+    std::cout << "SAr::dump " ; 
     std::cout << "SAr _argc " << _argc << " ( " ; 
-    for(int i=0 ; i < _argc ; i++ ) std::cout << " " << _argv[i] ; 
+    for(int i=0 ; i < _argc ; i++ ) std::cout << " " << ( _argv[i] ? _argv[i] : "NULL" ) ; 
     std::cout << " ) " << std::endl ;  
 } 
 

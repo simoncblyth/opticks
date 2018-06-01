@@ -51,7 +51,7 @@ set(LIBRARIES
    Opticks::CUDASamples
    Opticks::OKConf
 )
-if(UNIX)
+if(UNIX AND NOT APPLE)
   set(LIBRARIES ${LIBRARIES} ssl )  
 endif(UNIX)
 

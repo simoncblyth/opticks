@@ -57,9 +57,11 @@ set(SOURCES
     COpticalSurface.cc
     CBndLib.cc
 
+
     OpStatus.cc
     Format.cc
     CTraverser.cc
+    CImporter.cc
     CCheck.cc
     State.cc
 
@@ -166,6 +168,7 @@ set(HEADERS
     OpStatus.hh
     Format.hh
     CTraverser.hh
+    CImporter.hh
     State.hh
 
     CSource.hh

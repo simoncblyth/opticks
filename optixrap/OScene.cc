@@ -79,6 +79,26 @@ OScene::OScene(OpticksHub* hub)
       (*m_log)("DONE");
 }
 
+
+/*
+
+OScene::Init
+---------------
+
+1. creates OptiX context
+2. instanciates the O*Libs which populate the OptiX context 
+   from the corresponding libs provided by OpticksHub accessors
+   (NB not directly from GGeo or GScene, the Hub mediates)
+::
+
+    OColors 
+    OSourceLib
+    OScintillatorLib
+    OGeo
+    OBndLib 
+
+*/
+
 void OScene::init()
 {
     //if(m_verbosity > 0)

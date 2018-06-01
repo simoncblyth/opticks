@@ -388,7 +388,7 @@ if(CSGBSP_FOUND)
    target_compile_definitions(${name} PUBLIC OPTICKS_CSGBSP  )
 endif()
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
     target_link_libraries( ${name} PRIVATE ssl crypto )   # what needs these exactly ?
 endif()
 

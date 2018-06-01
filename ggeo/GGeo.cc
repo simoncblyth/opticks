@@ -335,18 +335,14 @@ Opticks* GGeo::getOpticks()
 
 void GGeo::init()
 {
-   LOG(trace) << "GGeo::init" ; 
-
    const char* idpath = m_ok->getIdPath() ;
-
    LOG(trace) << "GGeo::init" 
-             << " idpath " << ( idpath ? idpath : "NULL" )
-             ; 
+              << " idpath " << ( idpath ? idpath : "NULL" )
+              ; 
 
    assert(idpath && "GGeo::init idpath is required" );
 
    fs::path geocache(idpath); 
-
    bool cache_exists = fs::exists(geocache) && fs::is_directory(geocache) ;
    bool cache_requested = m_ok->isGeocache() ; 
 
@@ -358,8 +354,6 @@ void GGeo::init()
              << " cache_requested " << cache_requested
              << " m_loaded " << m_loaded 
              ;
-
- 
 
    if(m_loaded) return ; 
 

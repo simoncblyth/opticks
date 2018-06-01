@@ -107,7 +107,7 @@ if (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
    set_source_files_properties(BList.cc  PROPERTIES COMPILE_FLAGS -Wno-all)
 endif (${CMAKE_CXX_COMPILER_ID} STREQUAL "GNU")
 
-add_library( ${name}  SHARED ${SOURCES})
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_include_directories( ${name} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -124,7 +124,7 @@ target_link_libraries( ${name} PUBLIC
    Boost::filesystem
    Boost::regex
 )
-if(UNIX)
+if(UNIX AND NOT APPLE)
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 

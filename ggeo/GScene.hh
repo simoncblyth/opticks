@@ -62,9 +62,6 @@ Two very distict modes : Loaded/Created
      118     m_meshlib(loaded ? GMeshLib::Load(m_ok, m_analytic)  : new GMeshLib(m_ok, m_analytic)),
       
 
-
-
-
 GScene.hh only used from GGeo, the actions of GScene
 creating the analytic GMergedMesh are felt via 
 the normal GGeoLib route. oxrap/OScene/OGeo 

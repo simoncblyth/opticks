@@ -79,10 +79,11 @@ set(HEADERS
 )
 
 
-add_library( ${name}  SHARED ${SOURCES})
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 target_link_libraries( ${name} PUBLIC Opticks::PLog Opticks::OKConf )
-if(UNIX)
+if(UNIX AND NOT APPLE)
+message(STATUS "adding ssl crypto for UNIX AND NOT APPLE")
 target_link_libraries( ${name} PUBLIC ssl crypto )
 endif()
 

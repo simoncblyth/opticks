@@ -564,8 +564,8 @@ opticks-info(){
 }
 
 
-
-opticks-cmake-generator()
+opticks-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
+opticks-cmake-generator-old()
 {
     if [ "$NODE_TAG" == "M" ]; then
        echo MSYS Makefiles 
@@ -1090,6 +1090,8 @@ opticks-export-mingw()
 
 opticks-co(){      opticks-open  https://bitbucket.org/simoncblyth/opticks/commits/all ; } 
 opticks-co2(){     opticks-open  https://bitbucket.org/simoncblyth/opticks-cmake-overhaul/commits/all ; } 
+
+
 
 ########## building opticks docs 
 

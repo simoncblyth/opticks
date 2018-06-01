@@ -106,7 +106,13 @@ om-subs(){
 
 
 om-sdir(){  echo $(opticks-home)/$1 ; }
-om-bdir(){  echo $(opticks-prefix)/build/$1 ; }
+om-bdir(){  
+   local gen=$(opticks-cmake-generator)
+   case $gen in 
+      "Unix Makefiles") echo $(opticks-prefix)/build/$1 ;;
+               "Xcode") echo $(opticks-prefix)/build_xcode/$1 ;;
+   esac
+}
 
 om-visit-all(){     om-all ${FUNCNAME/-all} $* ; }
 om-conf-all(){      om-all ${FUNCNAME/-all} $* ; }
@@ -158,6 +164,10 @@ om-visit()
     fi
 }
 
+
+
+om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
+
 om-conf()
 {
     local rc 
@@ -191,6 +201,7 @@ om-conf()
  
         if [ "$name" == "okconf" ]; then     
             cmake $sdir \
+               -G "$(opticks-cmake-generator)" \
                -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
                -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
                -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
@@ -200,6 +211,7 @@ om-conf()
             rc=$?
         else
             cmake $sdir \
+               -G "$(opticks-cmake-generator)" \
                -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
                -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
                -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
@@ -289,6 +301,27 @@ om-pdir()
     esac
     return 0 
 }
+
+om-rdir()
+{
+    local here=$(pwd -P);
+    local stop=$(om-sdir);
+    local btop=$(om-bdir);
+    stop=${stop%/}  # remove trailing slash 
+    btop=${btop%/}   
+    case $here in 
+        $stop)  echo "" ;;
+        $btop)  echo "" ;;
+        $stop*) echo ${here/$stop\/} ;;
+        $btop*) echo ${here/$btop\/} ;;
+             *) echo "" ;;
+    esac
+    return 0 
+}
+
+
+om-url(){ echo http://bitbucket.org/simoncblyth/$(opticks-name)/src/$(om-rdir) ; }
+om-open(){ open $(om-url) ; }
 
 om-cd()
 {
