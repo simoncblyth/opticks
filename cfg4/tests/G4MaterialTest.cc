@@ -8,11 +8,13 @@
 
 #include "CFG4_BODY.hh"
 
+#include "CMaterial.hh"
 #include "G4Material.hh"
 //#include "globals.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "OPTICKS_LOG.hh"
 
 //#include "PLOG.hh"
 //#include "CFG4_LOG.hh"
@@ -37,43 +39,31 @@ void test_G4Material()
 
     G4Material* mt = new G4Material(sname, z, a, density);
 
+    LOG(info) << " digest " << CMaterial::Digest(mt) ; 
+
     std::cerr << " test_G4Material " << mt->GetName() << std::endl ; 
 
-    // delete mt ;  dtor segments, same when on stack and exits scope
+    //delete mt ; // dtor segments, same when on stack and exits scope
     // alls well if you just leak 
 
     std::cerr << " test_G4Material DONE " << std::endl ; 
-
 }
-
-
 
 void test_Al()
 {
-   G4double z, a, density ;  
-   new G4Material("Aluminium"  , z=13., a= 26.98*g/mole, density= 2.700*g/cm3);
+    G4double z, a, density ;  
+    G4Material* mt = new G4Material("Aluminium"  , z=13., a= 26.98*g/mole, density= 2.700*g/cm3);
+    LOG(info) << " digest " << CMaterial::Digest(mt) ; 
 }
 
-
-
-
-
-
-
-int main(int , char** argv)
+int main(int argc, char** argv)
 {
-  //  PLOG_(argc, argv);
-  //  CFG4_LOG_ ;
-
+    OPTICKS_LOG__(argc, argv); 
 
     test_G4Material();
     test_Al();
 
-
-    std::cerr << " main DONE " << argv[0] << std::endl ; 
-
-
-
+    LOG(info) << " main DONE " << argv[0] ; 
     return 0 ;
 }
 

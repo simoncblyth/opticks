@@ -9,6 +9,10 @@ set(COMPONENTS system program_options filesystem regex )
 find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
 
+##  via FindBoost.cmake from the cmake distribution
+##        /opt/local/share/cmake-3.11/Modules/FindBoost.cmake
+##
+##
 ## Above target_properties kludge tees up arguments to find_dependency in BCM generated export 
 ## useboost-config.cmake so downstream targets will automatically do the required find_dependency, 
 ## see examples/UseBoost examples/UseUseBoost for development of this kludge

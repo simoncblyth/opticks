@@ -13,7 +13,12 @@ template <typename T> class NPY ;
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CMPT {
    public:
+       static CMPT* MakeDummy(); 
        static std::string Digest(G4MaterialPropertiesTable* mpt); 
+       static void AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval) ;
+   public:
+       void addDummyProperty(const char* lkey, unsigned nval) ; 
+       //void dump(const char* msg); 
    public:
        CMPT(G4MaterialPropertiesTable* mpt, const char* name=NULL);
        std::string digest() const ;
@@ -21,6 +26,7 @@ class CFG4_API CMPT {
    public:
        void dumpRaw(const char* lkey);
    public:
+       static void Dump(G4MaterialPropertiesTable* mpt, const char* msg="CMPT::Dump"); 
        void dump(const char* msg="CMPT::dump") const; 
        void dumpProperty(const char* lkey);
        void sample(NPY<float>* a, unsigned offset, const char* _keys, float low, float step, unsigned nstep );

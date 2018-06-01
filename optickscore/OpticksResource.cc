@@ -18,6 +18,7 @@ namespace fs = boost::filesystem;
 #include "BStr.hh"
 #include "PLOG.hh"
 #include "Map.hh"
+#include "BResource.hh"
 #include "BEnv.hh"
 
 // npy-
@@ -393,7 +394,7 @@ void OpticksResource::assignDetectorName()
    {
         std::string detbase = BFile::FormPath(m_srcbase, m_detector_name);
         m_detector_base = strdup(detbase.c_str());
-        addDir("detector_base",   m_detector_base  );
+        m_res->addDir("detector_base",   m_detector_base  );
    }
 
    if(m_detector_base == NULL)
@@ -640,8 +641,8 @@ void OpticksResource::Summary(const char* msg)
         std::cerr <<  std::setw(10) << it->first.c_str() << ":" <<  it->second.c_str() << std::endl  ;
 
 
-    dumpPaths("dumpPaths");
-    dumpDirs("dumpDirs");
+    m_res->dumpPaths("dumpPaths");
+    m_res->dumpDirs("dumpDirs");
 
 }
 

@@ -45,6 +45,7 @@ set(SOURCES
     CMath.cc
     CSolid.cc
     CMPT.cc
+    CMaterial.cc
     CVec.cc
     CMaterialTable.cc
     CMaterialBridge.cc
@@ -150,6 +151,7 @@ set(HEADERS
     CMath.hh
     CSolid.hh
     CMPT.hh
+    CMaterial.hh
     CVec.hh
     CMaterialTable.hh
     CMaterialBridge.hh

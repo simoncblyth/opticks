@@ -43,6 +43,25 @@ void CMPT::dump(const char* msg) const
 
 }
 
+void CMPT::Dump(G4MaterialPropertiesTable* mpt, const char* msg)
+{
+    LOG(info) << msg ; 
+    LOG(info) << "digest : " << CMPT::Digest(mpt) ; 
+
+    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
+    MKP* pm = mpt->GetPropertiesMap() ;
+
+    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
+    {   
+        G4String pname = it->first ;
+        G4MaterialPropertyVector* pvec = it->second ;
+        G4MaterialPropertyVector* pvec2 = mpt->GetProperty(pname.c_str()) ;
+        assert( pvec == pvec2 ) ;   
+ 
+        LOG(info) << pname << "\n" << *pvec ; 
+    }   
+}
+
 
 std::string CMPT::description(const char* msg)
 {
@@ -77,21 +96,55 @@ std::vector<std::string> CMPT::getPropertyKeys()
     return keys ; 
 }
 
+void CMPT::addDummyProperty(const char* lkey, unsigned nval)
+{
+    AddDummyProperty(m_mpt, lkey, nval );
+}
 
+void CMPT::AddDummyProperty(G4MaterialPropertiesTable* mpt, const char* lkey, unsigned nval)
+{
+    G4double* ddom = new G4double[nval] ;   
+    G4double* dval = new G4double[nval] ;   
+    for(unsigned int j=0 ; j < nval ; j++)
+    {   
+        ddom[nval-1-j] = j*100. ; 
+        dval[nval-1-j] = j*1000. ; 
+    }   
+    G4MaterialPropertyVector* mpv = mpt->AddProperty(lkey, ddom, dval, nval); 
+    mpv->SetSpline(false); 
+
+    delete [] ddom ;
+    delete [] dval ; 
+}
+
+
+CMPT* CMPT::MakeDummy()
+{
+    G4MaterialPropertiesTable* _mpt = new G4MaterialPropertiesTable(); 
+    CMPT* mpt = new CMPT(_mpt) ; 
+
+    mpt->addDummyProperty("A", 5 ); 
+    mpt->addDummyProperty("B", 10 ); 
+
+    return mpt ; 
+}
 
 std::string CMPT::Digest(G4MaterialPropertiesTable* mpt)  
 {
     if(!mpt) return "" ; 
 
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    SDigest dig ;
+    MKP* pm = mpt->GetPropertiesMap() ;
 
+    SDigest dig ;
     for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
     {
-        G4String pname = it->first ;
-        G4MaterialPropertyVector* pvec = it->second ; 
-        std::string s = CVec::Digest(pvec) ; 
-        dig.update( const_cast<char*>(s.data()), s.size() );  
+        const std::string&  n = it->first ;
+        G4MaterialPropertyVector* v = it->second ; 
+
+        std::string vs = CVec::Digest(v) ; 
+        dig.update( const_cast<char*>(n.data()),  n.size() );  
+        dig.update( const_cast<char*>(vs.data()), vs.size() );  
     }
     return dig.finalize();
 }
@@ -100,7 +153,6 @@ std::string CMPT::digest() const
 {
     return Digest(m_mpt) ; 
 }
-
 
 
 std::vector<std::string> CMPT::getPropertyDesc() const
@@ -506,4 +558,6 @@ void CMPT::sampleSurf(NPY<float>* a, unsigned offset, float low, float step, uns
         }
     }
 }
+
+
 
