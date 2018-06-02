@@ -75,6 +75,20 @@ with::
 
 **/
 
+
+struct NPY_API NPYBufferSpec 
+{  
+    std::size_t bufferByteLength ; 
+    std::size_t headerByteLength ; 
+
+    std::size_t dataSize()
+    {
+        return bufferByteLength - headerByteLength ; 
+    }
+ 
+};
+
+
 template <class T>
 class NPY_API NPY : public NPYBase {
 
@@ -134,6 +148,11 @@ class NPY_API NPY : public NPYBase {
        NPY(const std::vector<int>& shape, T*  data            , std::string& metadata) ;
        NPY(const std::vector<int>& shape, std::vector<T>& data, std::string& metadata) ;
 
+   public:
+       // to allow binary level access to NPY data from for example gltf tools
+       NPYBufferSpec getBufferSpec();
+   private:
+       std::size_t getBufferSize(bool header_only, bool fortran_order);
    public:
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path, bool quietly=false);
@@ -295,6 +314,7 @@ class NPY_API NPY : public NPYBase {
        void         copyTo(std::vector<glm::vec4>& dst );
 
        void         copyTo(std::vector<T>& dst );
+       NPYBufferSpec saveToBuffer(std::vector<unsigned char>& vdst); // including the NPY header
 
    public:
        // Msk is used to keep note of the mask applied to an 

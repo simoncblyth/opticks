@@ -748,7 +748,19 @@ opticks-configure-local-boost()
 #opticks-config-type(){ echo Debug ; }
 opticks-config-type(){ echo RelWithDebInfo ; }
 
+
 opticks--(){     
+   local bdir=$1
+   shift 
+   local iwd=$(pwd)
+   cd $bdir
+   om- 
+   om-make $1
+
+   cd $iwd 
+}
+
+opticks--old(){     
 
    local msg="$FUNCNAME : "
    local iwd=$PWD

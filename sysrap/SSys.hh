@@ -15,6 +15,8 @@ class SYSRAP_API SSys {
      static int run(const char* cmd);
      static int exec(const char* exe, const char* path);
      static int npdump(const char* path="$TMP/torchstep.npy", const char* nptype="np.int32", const char* postview=NULL, const char* printoptions=NULL);
+     static void xxdump(char* buf, int num_bytes, int width=16, char non_printable='.' ); 
+
      static void WaitForInput(const char* msg="Enter any key to continue...\n");
      static int getenvint( const char* envkey, int fallback=-1 );
      static int atoi_( const char* a );

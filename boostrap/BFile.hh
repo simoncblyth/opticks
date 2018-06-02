@@ -9,6 +9,7 @@
 
 class BRAP_API BFile {
     public:
+       static std::size_t FileSize( const char* path ) ; 
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
        static bool LooksLikePath(const char* path) ; 
 

@@ -382,7 +382,23 @@ void test_prefixShorten_0()
 
 }
 
+void test_FileSize()
+{
+    const char* path0 = "$TMP/test_getBufferSize.npy" ; 
+    const char* path1 = "$TMP/test_getBufferSize_NonExisting.npy" ; 
+    LOG(info) 
+              << " path0 " << path0
+              << " FileSize0 " << BFile::FileSize( path0 ) 
+              ;
 
+    LOG(info) 
+              << " path1 " << path1
+              << " FileSize1 " << BFile::FileSize( path1 ) 
+              ;
+
+
+
+}
 
 
 
@@ -418,8 +434,10 @@ int main(int argc, char** argv)
    //test_ParentName();
    //test_SplitPath();
 
-   test_prefixShorten_0();
-   test_prefixShorten_1();
+   //test_prefixShorten_0();
+   //test_prefixShorten_1();
+
+   test_FileSize();
 
    return 0 ; 
 }

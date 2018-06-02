@@ -17,16 +17,7 @@ See also
 Direct from live G4 to geocache/gltf : how difficult ? 
 -------------------------------------------------------- 
 
-* perhaps replace the AssimpImporter with a G4LiveImporter ? 
-  ie that populates GGeo from a live G4 tree rather than 
-  the Assimp tree loaded from G4DAE file 
-
-  * BUT what about GScene, analytic geometry hailing 
-    from the python GDML parse
-
-  * structure of the consumers expects both triangulated and
-    analytic in GGeo and GScene (dispensed by OpticksHub)
-
+* :doc:`direct_to_gltf_feasibility`
 
 
 Control Layers for geometry loading
@@ -119,6 +110,26 @@ NScene(NGLTF)
 
     This is essentially a GLTF exporter for G4 (if you decide to 
     write the gltf to file), but with my extras for Opticks.
+
+
+
+
+Analytic GScene uses the GGeo proplibs for material/surface props...
+------------------------------------------------------------------------
+
+* unified analytic-triangulated gltf geometry would need to include all these
+
+::
+
+      46       
+      47 // for some libs there is no analytic variant 
+      48 GMaterialLib*     GScene::getMaterialLib() {     return m_ggeo->getMaterialLib(); }
+      49 GSurfaceLib*      GScene::getSurfaceLib() {      return m_ggeo->getSurfaceLib(); }
+      50 GBndLib*          GScene::getBndLib() {          return m_ggeo->getBndLib(); }
+      51 GPmtLib*          GScene::getPmtLib() {          return m_ggeo->getPmtLib(); }
+      52 GScintillatorLib* GScene::getScintillatorLib() { return m_ggeo->getScintillatorLib(); }
+      53 GSourceLib*       GScene::getSourceLib() {       return m_ggeo->getSourceLib(); }
+      54 
 
 
 

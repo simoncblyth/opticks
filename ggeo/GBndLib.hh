@@ -141,12 +141,13 @@ class GGEO_API GBndLib : public GPropertyLib {
   public:
        void createDynamicBuffers();
    public:
-       NPY<float>* createBufferForTex2d();
+       // memcpy zip of materials and surfaces for each boundary from the mlib and slib buffers
+       NPY<float>* createBufferForTex2d();  
        NPY<float>* createBufferOld();
   public:
        GItemList* createNames(); // spec shortnames
        NMeta*      createMeta();
-       NPY<float>* createBuffer();
+       NPY<float>* createBuffer();  // invokes createBufferForTex2d
        void import();
        void sort();
        void defineDefaults(GPropertyMap<float>* defaults);

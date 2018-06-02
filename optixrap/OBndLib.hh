@@ -9,6 +9,18 @@ template <typename T> class NPY ;
 #include "OPropertyLib.hh"
 #include "OXRAP_API_EXPORT.hh"
 
+/**
+OBndLib
+=========
+
+Translates and uploads into OptiX GPU context:
+
+1. GBndLib NPY buffer into OptiX boundary_texture 
+2. GBndLib NPY optical buffer into OptiX optical_buffer 
+
+**/
+
+
 class OXRAP_API OBndLib  : public OPropertyLib 
 {
 public:

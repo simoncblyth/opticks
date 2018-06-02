@@ -1504,6 +1504,7 @@ oks-docvi(){ vi $(oks-docsrc) ; }
 
 
 
+oks-genproj-yog(){  oks-genproj YoctoGLRap YOG ; }
 oks-genproj-g4ok(){ oks-genproj G4OK G4OK ; }
 
 oks-genproj()

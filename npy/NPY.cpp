@@ -683,6 +683,53 @@ void NPY<T>::save(const char* raw)
 
 
 template <typename T>
+NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) // including the header 
+{
+    NPYBufferSpec spec = getBufferSpec() ;  
+
+    bool fortran_order = false ; 
+
+    unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
+
+    std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
+
+    vdst.clear();
+
+    vdst.resize(spec.bufferByteLength);
+
+    char* buffer = reinterpret_cast<char*>(vdst.data() ) ; 
+
+    std::size_t num_bytes = aoba::BufferSaveArrayAsNumpy<T>( buffer, fortran_order, itemcount, itemshape.c_str(), (T*)m_data.data() );  
+
+    assert( num_bytes == spec.bufferByteLength ); 
+
+    assert( spec.headerByteLength == 16*5 || spec.headerByteLength == 16*6 ) ; 
+  
+    return spec ; 
+}
+
+
+template <typename T>
+std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order)
+{
+    unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
+    std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
+    return aoba::BufferSize<T>(itemcount, itemshape.c_str(), header_only, fortran_order );
+}
+
+template <typename T>
+NPYBufferSpec NPY<T>::getBufferSpec()
+{
+    bool fortran_order = false ; 
+    NPYBufferSpec spec ;  
+    spec.bufferByteLength = getBufferSize(false, fortran_order );
+    spec.headerByteLength = getBufferSize(true, fortran_order );   // header_only
+    return spec ; 
+}
+
+
+
+template <typename T>
 NPY<T>* NPY<T>::make(NPYSpec* argspec)
 {
     std::vector<int> shape ; 
@@ -2200,6 +2247,30 @@ template <typename T>
 
 
 
+/*
+   size_t dim = shape.size() ;
+    std::stringstream ss ;
+
+    int itemcount = shape[0] ;
+    for(size_t i=1 ; i < dim ; ++i)
+    {   
+        ss << shape[i] ;
+        if( i < dim - 1 ) ss << ", " ;  // need the space for buffer memcmp matching
+    }   
+    std::string itemshape = ss.str();
+
+    bool fortran_order = false ;
+
+    // pre-calculate total buffer size including the padded header
+    size_t nbytes = aoba::BufferSize<float>(shape[0], itemshape.c_str(), fortran_order  );  
+
+    // allocate frame to hold 
+    boost::asio::zmq::frame npy_frame(nbytes);
+
+    size_t wbytes = aoba::BufferSaveArrayAsNumpy<float>( (char*)npy_frame.data(), fortran_order, itemcount, itemshape.c_str(), data.data() );
+    assert( wbytes == nbytes );
+
+*/
 
 
 

@@ -562,3 +562,13 @@ void BFile::SplitPath(std::vector<std::string>& elem, const char* path )
 }
 
 
+std::size_t BFile::FileSize( const char* path_ )
+{
+    std::string path = BFile::FormPath(path_ ); 
+    const char* xpath = path.c_str() ;     
+    fs::path fsp(xpath);
+    bool exists = fs::exists(fsp) && fs::is_regular_file(fsp) ;
+    return exists ? fs::file_size(fsp) : 0 ; 
+}
+
+

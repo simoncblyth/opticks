@@ -1,10 +1,4 @@
-// this code was the starting point for new package YoctoGLRap "YOG"
-
-#include <string>
-#include <iostream>
-#include <fstream>
-
-#include "YGLTF.h"
+#include "YOGMaker.hh"
 
 using ygltf::glTF_t ; 
 using ygltf::node_t ; 
@@ -12,31 +6,43 @@ using ygltf::scene_t ;
 using ygltf::mesh_t ; 
 using ygltf::mesh_primitive_t ; 
 using ygltf::buffer_t ; 
+using ygltf::buffer_data_t ; 
 using ygltf::bufferView_t ; 
 using ygltf::accessor_t ; 
 
 
-ygltf::scene_t make_scene(std::vector<int>& nodes)
+ygltf::scene_t YOGMaker::make_scene(std::vector<int>& nodes)
 {
     scene_t sc ;   
     sc.nodes = nodes ;
     return sc ; 
 }
-ygltf::node_t make_node(int mesh, std::vector<int>& children)
+ygltf::node_t YOGMaker::make_node(int mesh, std::vector<int>& children)
 {
     node_t no ; 
     no.mesh = mesh ; 
     no.children = children ; 
     return no ; 
 }
-ygltf::buffer_t make_buffer(const char* uri,  int byteLength)
+
+ygltf::buffer_t YOGMaker::make_buffer(const char* uri,  ygltf::buffer_data_t& data )
+{
+    int byteLength = data.size();   // vector<unsigned char>
+    buffer_t bu ; 
+    bu.uri = uri ; 
+    bu.byteLength = byteLength ; 
+    bu.data = data ; 
+    return bu ; 
+}
+
+ygltf::buffer_t YOGMaker::make_buffer(const char* uri,  int byteLength)
 {
     buffer_t bu ; 
     bu.uri = uri ; 
     bu.byteLength = byteLength ; 
     return bu ; 
 }
-ygltf::bufferView_t make_bufferView(
+ygltf::bufferView_t YOGMaker::make_bufferView(
     int buffer, 
     int byteOffset, 
     int byteLength,  
@@ -50,7 +56,7 @@ ygltf::bufferView_t make_bufferView(
     bv.target = target ; 
     return bv ; 
 }
-ygltf::accessor_t make_accessor(
+ygltf::accessor_t YOGMaker::make_accessor(
        int bufferView, 
        int byteOffset, 
        ygltf::accessor_t::componentType_t componentType, 
@@ -71,7 +77,7 @@ ygltf::accessor_t make_accessor(
      return ac ; 
 } 
 
-ygltf::mesh_primitive_t make_mesh_primitive(
+ygltf::mesh_primitive_t YOGMaker::make_mesh_primitive(
     std::map<std::string, int>& attributes,
     int indices, 
     int material, 
@@ -85,14 +91,14 @@ ygltf::mesh_primitive_t make_mesh_primitive(
     mp.mode = mode ; 
     return mp ; 
 }
-ygltf::mesh_t make_mesh( std::vector<ygltf::mesh_primitive_t> primitives )
+ygltf::mesh_t YOGMaker::make_mesh( std::vector<ygltf::mesh_primitive_t> primitives )
 {
     mesh_t mh ; 
     mh.primitives = primitives ; 
     return mh ; 
 }
 
-std::unique_ptr<glTF_t> make_gltf_example()
+std::unique_ptr<glTF_t> YOGMaker::make_gltf_example()
 {
     auto gltf = std::unique_ptr<glTF_t>(new glTF_t());
 
@@ -208,7 +214,7 @@ std::unique_ptr<glTF_t> make_gltf_example()
 }
 
 
-std::unique_ptr<glTF_t> make_gltf()
+std::unique_ptr<glTF_t> YOGMaker::make_gltf()
 {
     // NB : there is no checking can easily construct non-sensical gltf 
     //      as shown below 
@@ -233,22 +239,32 @@ std::unique_ptr<glTF_t> make_gltf()
 }
 
 
-int main(int argc, char** argv)
-{
-    //auto gltf = make_gltf() ; 
-    auto gltf = make_gltf_example() ; 
 
-    std::string path = "/tmp/UseYoctoGL_Write.gltf" ; 
-    bool save_bin = false ; 
-    bool save_shaders = false ; 
-    bool save_images = false ; 
+/*
 
-    save_gltf(path, gltf.get(), save_bin, save_shaders, save_images);
+ygltf buffers use
+    std::vector<unsigned char> 
 
-    std::cout << "writing " << path << std::endl ; 
+hmm how to put NPY data arrays into ygltf buffers 
 
-    std::ifstream fp(path);
-    std::string line;
-    while(std::getline(fp, line)) std::cout << line << std::endl ; 
-    return 0 ; 
-}
+* https://docs.scipy.org/doc/numpy/neps/npy-format.html
+
+Need a way to predict the byteLength that the NPY will 
+occupy in a file and the byteOffset to the start of the data 
+
+
+epsilon:GBndLib blyth$ xxd GBndLibIndex.npy
+00000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
+00000010: 7227 3a20 273c 7534 272c 2027 666f 7274  r': '<u4', 'fort
+00000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
+00000030: 652c 2027 7368 6170 6527 3a20 2831 3233  e, 'shape': (123
+00000040: 2c20 3429 2c20 7d20 2020 2020 2020 200a  , 4), }        .
+00000050: 0c00 0000 ffff ffff ffff ffff 0c00 0000  ................
+00000060: 0c00 0000 ffff ffff ffff ffff 0b00 0000  ................
+00000070: 0b00 0000 ffff ffff ffff ffff 0e00 0000  ................:w
+
+
+*/
+
+
+

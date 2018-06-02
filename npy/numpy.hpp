@@ -282,7 +282,7 @@ void ShapeVector(std::vector<int>& shape,  int nitems, const char* itemshapestr 
 
 
 template<typename Scalar>
-std::size_t BufferSize(int n_dims, const int shape[], bool fortran_order) 
+std::size_t BufferSize(int n_dims, const int shape[], bool header_only, bool fortran_order) 
 {
     if(n_dims <= 0)
         throw std::invalid_argument("received an invalid argument");
@@ -300,12 +300,13 @@ std::size_t BufferSize(int n_dims, const int shape[], bool fortran_order)
     int size = 1;
     for(int i=0; i<n_dims; ++i) { size *= shape[i]; }
     std::size_t nbyte = sizeof(Scalar)*size ;
-    return metadata_length + nbyte ; 
+
+    return header_only ? metadata_length : metadata_length + nbyte ; 
 }
 
 
 template<typename Scalar>
-std::size_t BufferSize(int n_items, const char* itemshapestr, bool fortran_order) 
+std::size_t BufferSize(int n_items, const char* itemshapestr, bool header_only, bool fortran_order) 
 {
     std::vector<int> shape ; 
     ShapeVector<Scalar>(shape, n_items, itemshapestr);
@@ -313,7 +314,7 @@ std::size_t BufferSize(int n_items, const char* itemshapestr, bool fortran_order
     int n_dims = shape.size() ; 
     int* dims = new int[n_dims];
     for(int d=0;d<n_dims;d++) dims[d] = shape[d] ;
-    std::size_t size = BufferSize<Scalar>( n_dims, dims, fortran_order );
+    std::size_t size = BufferSize<Scalar>( n_dims, dims, header_only, fortran_order );
     delete[] dims ; 
     return size ; 
 }

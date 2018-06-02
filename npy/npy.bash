@@ -285,7 +285,7 @@ EON
 npy-sdir(){ echo $(opticks-home)/npy ; }
 npy-tdir(){ echo $(opticks-home)/npy/tests ; }
 npy-idir(){ echo $(opticks-idir) ; }
-npy-bdir(){ echo $(opticks-bdir)/$(npy-rel) ; }
+npy-bdir(){ echo $(opticks-bdir)/npy ; }
 
 npy-c(){   cd $(npy-sdir)/$1 ; }
 npy-cd(){   cd $(npy-sdir)/$1 ; }
