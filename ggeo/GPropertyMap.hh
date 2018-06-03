@@ -12,11 +12,20 @@ template <typename T> class GDomain ;
 class NMeta ; 
 class GOpticalSurface ; 
 
-// TODO: const correctness would be good, although painful to implement
-
-
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
+
+/**
+
+GPropertyMap<T>
+==================
+
+1. manages m_prop : a string keyed map of GProperty<T>
+
+
+TODO: const correctness would be good, although painful to implement
+
+**/
 
 template <class T>
 class GGEO_API GPropertyMap {

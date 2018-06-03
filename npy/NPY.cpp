@@ -514,6 +514,44 @@ NPY<T>* NPY<T>::debugload(const char* path)
 
 
 
+       
+template <typename T>
+NPY<T>* NPY<T>::loadFromBuffer(const std::vector<unsigned char>& vsrc) // buffer must include NPY header 
+{
+    std::vector<T> data ; 
+    std::vector<int> shape ;
+    std::string metadata = "{}";
+    bool quietly = false ; 
+
+    const char* bytes = reinterpret_cast<const char*>(vsrc.data()); 
+    unsigned size = vsrc.size(); 
+
+    LOG(debug) << "NPY<T>::loadFromBuffer " ; 
+
+    NPY* npy = NULL ;
+    try 
+    {
+        LOG(trace) <<  "NPY<T>::loadFromBuffer before aoba " ; 
+         
+        aoba::BufferLoadArrayFromNumpy<T>( bytes, size, shape, data );
+
+        LOG(trace) <<  "NPY<T>::loadFromBuffer after aoba " ; 
+
+        npy = new NPY<T>(shape,data,metadata) ;  
+        // data is copied but ctor, could do more efficiently via an adopt buffer approach ? 
+    }
+    catch(const std::runtime_error& /*error*/)
+    {
+        if(!quietly)
+        {
+        LOG(warning) << "NPY<T>::loadFromBuffer failed : check same scalar type in use "  ; 
+        }
+    }
+    return npy ;
+}
+
+
+
 template <typename T>
 NPY<T>* NPY<T>::load(const char* path_, bool quietly)
 {
@@ -682,8 +720,11 @@ void NPY<T>::save(const char* raw)
 }
 
 
+
+
+
 template <typename T>
-NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) // including the header 
+NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) const // including the header 
 {
     NPYBufferSpec spec = getBufferSpec() ;  
 
@@ -710,7 +751,7 @@ NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) // includin
 
 
 template <typename T>
-std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order)
+std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order) const 
 {
     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
@@ -718,7 +759,7 @@ std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order)
 }
 
 template <typename T>
-NPYBufferSpec NPY<T>::getBufferSpec()
+NPYBufferSpec NPY<T>::getBufferSpec() const 
 {
     bool fortran_order = false ; 
     NPYBufferSpec spec ;  

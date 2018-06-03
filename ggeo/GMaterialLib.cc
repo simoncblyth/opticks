@@ -222,7 +222,7 @@ void GMaterialLib::Summary(const char* msg)
 }
 
 
-// invoked pre-cache from by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
+// invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
 void GMaterialLib::add(GMaterial* raw)
 {
     assert(!isClosed());

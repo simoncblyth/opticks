@@ -1,7 +1,18 @@
 #pragma once
 
-
 /*
+GBuffer
+=========
+
+* ARE TRANSITIONING FROM GBuffer TO NPY<T> WHERE POSSIBLE : 
+  **DO NOT USE GBuffer IN NEW DEVELOPMENTS**
+
+* GBuffer saves using the lower level numpy.hpp rather than NPY, 
+  so in principal it can be replaced by NPY : but thats delicate work
+  as GBuffer is used in many places ... probably safer to 
+  move to NPY adoption in GBuffer rather than replace it
+
+
 eg 10 float3 vertices, where the item is regarded at the float3 
 
    NumBytes          10*3*4 = 120 bytes
@@ -14,10 +25,6 @@ eg 10 float3 vertices, where the item is regarded at the float3
 
 struct BBufSpec ; 
 struct NSlice ; 
-
-// ARE TRANSITIONING FROM GBuffer TO NPY<T> WHERE POSSIBLE : 
-//    **DO NOT USE GBuffer IN NEW DEVELOPMENTS**
-
 
 #include "GGEO_API_EXPORT.hh"
 

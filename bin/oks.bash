@@ -46,6 +46,16 @@ Steps to create a new project
 * hook up the CMakeLists.txt to the top level one
 
 
+example making the ExtG4 proj
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:opticks-cmake-overhaul blyth$ mkdir extg4
+    epsilon:opticks-cmake-overhaul blyth$ cd extg4
+    epsilon:extg4 blyth$ oks-;oks-genproj ExtG4 X4 
+
+
 
 Debugging Tip
 ---------------
@@ -1511,11 +1521,20 @@ oks-genproj()
 {
     # this is typically called from projs like ggeo- 
 
+    local iwd=$(pwd)
+    local name=$(basename $iwd)
+
     local msg=" === $FUNCNAME :"
     local proj=${1}
     local tag=${2}
 
     [ -z "$proj" -o -z "$tag" ] && echo $msg need both proj $proj and tag $tag  && return 
+
+
+    local lproj=$(python -c "import sys ; print sys.argv[1].lower()" $proj) 
+
+    [ "$lproj" != "$name" ] && echo $msg lower cased lproj $lproj MUST match directory name $name && return  
+
 
     winimportlib-  
     winimportlib-exports ${proj} ${tag}_API

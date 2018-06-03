@@ -20,9 +20,26 @@ template <typename T> class GMatrix ;
 class GBuffer ; 
 
 /*
-
 GMesh
 ======
+
+
+G4DAE Workflow
+-----------------
+
+GMesh hold Vertices, Normals, Faces, ...  it is base class 
+of the pivotal GMergedMesh (so have to be cautions with refactorings)
+
+1. GMesh instances created from aiMesh in AssimpGGeo::convertMesh
+2. setting component with eg setVertices has side effect of creating the corresponding buffer 
+3. setting the buffer with eg setVerticesBuffer has side effect of creating the vertices array 
+   and num_vertices from the buffer pointer 
+4. loading persisted GMesh invokes GMesh::loadBuffer for each constituent which does the
+   eg setVerticesBuffer 
+
+
+
+
 
 GMesh are distinct geometrical shapes, **NOT** placed nodes/solids
 --------------------------------------------------------------------

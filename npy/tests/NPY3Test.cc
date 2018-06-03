@@ -53,12 +53,44 @@ void test_saveToBuffer()
 }
 
 
+void test_loadFromBuffer()
+{
+   NPY<float>* buf = NPY<float>::make(1,1,4) ;
+   buf->fill(1.f);
+
+   std::vector<unsigned char> vdst ;   // buffer gets resized to fit before the save
+   NPYBufferSpec spec = buf->saveToBuffer(vdst) ;   // include the NPY header
+   assert( spec.bufferByteLength == vdst.size() );
+
+   SSys::xxdump( (char*)vdst.data(), vdst.size(), 16 );  
+
+
+   NPY<float>* buf2 = NPY<float>::loadFromBuffer( vdst ) ; 
+   NPYBufferSpec spec2 = buf2->getBufferSpec() ; 
+
+   buf2->dump(); 
+
+   assert( spec.headerByteLength == spec2.headerByteLength );
+   assert( spec.bufferByteLength == spec2.bufferByteLength );
+
+   const char* path = "/tmp/test_loadFromBuffer.npy" ; 
+   LOG(info) << " write to " << path ; 
+
+   buf2->save(path); 
+
+}
+
+
+
+
+
 int main(int argc, char** argv )
 {
     OPTICKS_LOG_COLOR__(argc, argv); 
 
     //test_getBufferSize(); 
-    test_saveToBuffer(); 
+    //test_saveToBuffer(); 
+    test_loadFromBuffer(); 
 
     return 0 ; 
 }

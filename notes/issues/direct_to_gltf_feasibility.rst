@@ -1,6 +1,53 @@
 Direct to GLTF feasibility
 ===========================
 
+Basic Tech
+------------
+
+GLTF Learning
+~~~~~~~~~~~~~~
+
+* https://github.com/KhronosGroup/glTF
+
+* DONE : review gltf standard regarding binary data description, check how
+  oyoctogl handles this, see if can integrate NPY buffers in a compliant way 
+
+  * created YoctoGLRap to learn how to use ygltf with NPY buffers, the small 
+    demo gltf files created can be loaded by GLTF viewers  
+
+GLTF Questions 
+~~~~~~~~~~~~~~~~
+
+* binary data in extras/extensions, how to do that with ygltf ?
+* extras vs extensions whats the difference ?
+
+* what package (ie which dependencies to base on) further investigations
+
+X4 : ExtG4 package
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+ExtG4 
+   new package bringing together G4 and lower level Opticks 
+   (SysRap, NPY, GGeo?) : using lots of static enhancers to 
+   single Geant4 classes  
+
+extg4/X4VSolid
+
+   1. DONE: polygonize G4VSolid instances into vtx and tri NPY buffers 
+   2. TODO: get YOG to work with X4VSolid instances, so can save them as GLTF
+   3. TODO: add analytic type info regarding the solid into ... hmm actually the
+      test solid is a sphere, the analytic GDML style info needs to be collected 
+      prior to descending to generic solid G4VSolid and somehow communicated thru to 
+      the X4VSolid 
+      ... perhaps static Create methods accepting the various types like G4Sphere etc.., 
+      which collect some ygltf json describing the type and its parameters 
+      look at (NCSG, nnode, GParts, sc.py, GDML) as thats where this data is headed
+      or is replacing.   
+      This json can be planted inside a mesh.extra property. 
+        
+   For example to convert a G4VSolid into X4VSolid comprising 
+   GMesh and GParts constituents
+
 
 Approaches 
 ------------
@@ -16,42 +63,49 @@ Following current AssimpImprter ? NO
     the aim is to simplify : ending up with significantly less code, 
     not to add more code
 
-
-GLTF Rep 
-~~~~~~~~
-
-* learn some more GLTF (especially binary handling) and then 
-  decide how best to represent the geometry in that language :
-  dont be to too concerned with fitting with classes like GScene/GGeo 
-
-  * aim to replace GGeo/GScene .. ie to unify the analytic 
-    and triangulated into a new GLTF based approach 
-
-  * aim to replace G4DAE+GDML writing, GDML python parsing with sc.py  
- 
-  * aim to keep NPY and the GPropLibs : so geometry consumers 
-    (OptiXRap, OGLRap) can be mostly unchanged  
-
-  * BUT what about GScene, analytic geometry hailing 
-    from the python GDML parse
-
-  * structure of the consumers expects both triangulated and
-    analytic in GGeo and GScene (dispensed by OpticksHub)
+Unified geometry handling
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
+* ORIGINALLY THOUGHT : aim to replace GGeo/GScene .. ie to unify the analytic 
+  and triangulated into a new GLTF based approach 
 
-GLTF refs
-~~~~~~~~~~~
+* but actually GGeo is OK, what I dont like is the historical split into 
+  two lines of geometry that come from G4DAE (GGeo) and GDML (GScene)
+  and the resulting duplication in the handling of two geometry trees :
+  the analytic information that GDML adds (GParts) should live together with 
+  the triangulated information (GMesh) in the unified GLTF based geometry 
+  using NPY buffers
 
-* https://github.com/KhronosGroup/glTF
+  * dont like split of analytic args to GGeo constituents : analytic/GDML 
+    info lives beside the rest on equal footing
 
+* aim to replace G4DAE+GDML writing, GDML python parsing with sc.py  
+
+* aim to keep NPY and the GPropLibs : so geometry consumers 
+  (OptiXRap, OGLRap) can be mostly unchanged  
+
+* BUT what about GScene, analytic geometry hailing 
+  from the python GDML parse
+
+* structure of the consumers expects both triangulated and
+  analytic in GGeo and GScene (dispensed by OpticksHub)
+
+
+question : how much processing prior to forming the YGLTF structure ?
+------------------------------------------------------------------------
+
+* should GGeo constituent instances eg GMaterial be formed at that juncture or later ? 
+
+GMaterialLib
+~~~~~~~~~~~~~~~
+
+* GMaterialLib focusses on the optical properties, should unigeo "G4GLTF" be more general ? 
+* eg domain regularization of material/surface properties 
 
 
 how to do direct shortcutting of material props ?
 ---------------------------------------------------------
-
-0. review gltf standard regarding binary data description, check how
-   oyoctogl handles this, see if can integrate NPY buffers in a compliant way 
 
 1. devise gltf approach and file layout to hold the props that 
    is close to the geocache layout of GMaterialLib 
@@ -61,6 +115,12 @@ how to do direct shortcutting of material props ?
 
 2. translate the COLLADA export in G4DAE to populate in memory gltf tree, from live G4 
    hmm how is binary handled in gltf world ?
+
+
+
+reminders GMesh, GMergedMesh when is merge done ?
+---------------------------------------------------
+
 
 
 

@@ -47,8 +47,6 @@ std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
     sc.nodes = {no0_, no1_} ;   
     scenes = {sc} ;  
 
-
-
     material_pbrMetallicRoughness_t mr ; 
     mr.baseColorFactor =  {{ 1.000, 0.766, 0.336, 1.0 }} ;
     mr.metallicFactor = 0.5 ;
@@ -82,17 +80,16 @@ std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
     std::vector<float> idx_min = { 0 } ; 
     std::vector<float> idx_max = { 2 } ; 
 
-
     bufferView_t vtx_bv ;  
     vtx_bv.buffer = vtx_bu_  ;
-    vtx_bv.byteOffset = geom.vtx_spec->headerByteLength ;
+    vtx_bv.byteOffset = geom.vtx_spec->headerByteLength ; // offset to skip the NPY header 
     vtx_bv.byteLength = geom.vtx_spec->dataSize() ;
     vtx_bv.target = bufferView_t::target_t::array_buffer_t ;
     vtx_bv.byteStride = 0 ; 
  
     bufferView_t idx_bv ;  
     idx_bv.buffer = idx_bu_  ;
-    idx_bv.byteOffset = geom.idx_spec->headerByteLength ;
+    idx_bv.byteOffset = geom.idx_spec->headerByteLength ; // offset to skip the NPY header
     idx_bv.byteLength = sizeof(unsigned)*count ;  // geom.idx_spec->dataSize() ;
     idx_bv.target = bufferView_t::target_t::element_array_buffer_t ;
     idx_bv.byteStride = 0 ; 
@@ -122,7 +119,6 @@ std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
     accessors = {vtx_ac, idx_ac} ;
     int vtx_ac_ = 0 ; 
     int idx_ac_ = 1 ; 
-
  
     mesh_primitive_t mp ; 
     mp.attributes = {{"POSITION", vtx_ac_ }} ; 
@@ -133,7 +129,6 @@ std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
     mesh_t mh ; 
     mh.primitives = { mp } ; 
     meshes = {mh} ; 
-
 
     return gltf ; 
 }

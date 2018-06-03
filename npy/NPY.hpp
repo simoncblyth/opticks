@@ -150,9 +150,9 @@ class NPY_API NPY : public NPYBase {
 
    public:
        // to allow binary level access to NPY data from for example gltf tools
-       NPYBufferSpec getBufferSpec();
+       NPYBufferSpec getBufferSpec() const ;
    private:
-       std::size_t getBufferSize(bool header_only, bool fortran_order);
+       std::size_t getBufferSize(bool header_only, bool fortran_order) const ;
    public:
        static NPY<T>* debugload(const char* path);
        static NPY<T>* load(const char* path, bool quietly=false);
@@ -164,6 +164,9 @@ class NPY_API NPY : public NPYBase {
        void save(const char* dir, const char* name);
        void save(const char* dir, const char* reldir, const char* name);
        void save(const char* tfmt, const char* targ, const char* tag, const char* det);
+
+       NPYBufferSpec saveToBuffer(std::vector<unsigned char>& vdst) const ;          // including the NPY header
+       static NPY<T>* loadFromBuffer(const std::vector<unsigned char>& vsrc); // buffer must include NPY header 
 
 
        bool exists(const char* path);
@@ -314,7 +317,6 @@ class NPY_API NPY : public NPYBase {
        void         copyTo(std::vector<glm::vec4>& dst );
 
        void         copyTo(std::vector<T>& dst );
-       NPYBufferSpec saveToBuffer(std::vector<unsigned char>& vdst); // including the NPY header
 
    public:
        // Msk is used to keep note of the mask applied to an 

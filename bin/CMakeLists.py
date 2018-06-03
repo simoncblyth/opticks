@@ -88,6 +88,8 @@ class Opticks(object):
              'CFG4':170,
              'OKG4':180,
              'G4OK':190,
+             'YoctoGLRap':200,
+             'ExtG4':210,
              'NumpyServer':-1
             }
 

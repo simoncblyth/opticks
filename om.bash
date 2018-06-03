@@ -67,6 +67,8 @@ okconf
 sysrap
 boostrap
 npy
+yoctoglrap
+extg4
 optickscore
 ggeo 
 assimprap
@@ -84,6 +86,11 @@ okg4
 g4ok
 EOS
 }
+
+
+
+
+
 
 om-subs(){
   local arg=$1

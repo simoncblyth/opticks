@@ -397,7 +397,7 @@ void GGeo::init()
 void GGeo::add(GMaterial* material)
 {
     m_materiallib->add(material);
-    m_materials.push_back(material);
+    m_materials.push_back(material);   // why the duplication ? is this raw material ?
     addToIndex((GPropertyMap<float>*)material);
 }
 void GGeo::add(GBorderSurface* surface)
