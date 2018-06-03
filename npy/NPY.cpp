@@ -2239,6 +2239,8 @@ template <typename T>
         case FLOAT:t = uif.f ; break ; 
         case DOUBLE:t = uif.f ; break ; 
         case SHORT:t = uif.i ; break ; 
+        case UINT:t = uif.u ; break ; 
+        case INT:t = uif.i ; break ; 
         default: assert(0);  break ;
     }
     setValue(i,j,k,l, t); 

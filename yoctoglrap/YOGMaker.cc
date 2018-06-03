@@ -1,9 +1,13 @@
+#include "NPY.hpp"
 #include "YOGMaker.hh"
+#include "YOGGeometry.hh"
 
 using ygltf::glTF_t ; 
 using ygltf::node_t ; 
 using ygltf::scene_t ; 
 using ygltf::mesh_t ; 
+using ygltf::material_t ; 
+using ygltf::material_pbrMetallicRoughness_t ; 
 using ygltf::mesh_primitive_t ; 
 using ygltf::buffer_t ; 
 using ygltf::buffer_data_t ; 
@@ -11,95 +15,13 @@ using ygltf::bufferView_t ;
 using ygltf::accessor_t ; 
 
 
-ygltf::scene_t YOGMaker::make_scene(std::vector<int>& nodes)
+std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
 {
-    scene_t sc ;   
-    sc.nodes = nodes ;
-    return sc ; 
-}
-ygltf::node_t YOGMaker::make_node(int mesh, std::vector<int>& children)
-{
-    node_t no ; 
-    no.mesh = mesh ; 
-    no.children = children ; 
-    return no ; 
-}
+    assert( geom.vtx ) ; 
+    assert( geom.vtx_spec ) ; 
+    assert( geom.idx ) ; 
+    assert( geom.idx_spec ) ; 
 
-ygltf::buffer_t YOGMaker::make_buffer(const char* uri,  ygltf::buffer_data_t& data )
-{
-    int byteLength = data.size();   // vector<unsigned char>
-    buffer_t bu ; 
-    bu.uri = uri ; 
-    bu.byteLength = byteLength ; 
-    bu.data = data ; 
-    return bu ; 
-}
-
-ygltf::buffer_t YOGMaker::make_buffer(const char* uri,  int byteLength)
-{
-    buffer_t bu ; 
-    bu.uri = uri ; 
-    bu.byteLength = byteLength ; 
-    return bu ; 
-}
-ygltf::bufferView_t YOGMaker::make_bufferView(
-    int buffer, 
-    int byteOffset, 
-    int byteLength,  
-    ygltf::bufferView_t::target_t target
-)
-{
-    bufferView_t bv ; 
-    bv.buffer = buffer ; 
-    bv.byteOffset = byteOffset ; 
-    bv.byteLength = byteLength ; 
-    bv.target = target ; 
-    return bv ; 
-}
-ygltf::accessor_t YOGMaker::make_accessor(
-       int bufferView, 
-       int byteOffset, 
-       ygltf::accessor_t::componentType_t componentType, 
-       int count,
-       ygltf::accessor_t::type_t  type,
-       std::vector<float>& min, 
-       std::vector<float>& max 
-)
-{
-     accessor_t ac ; 
-     ac.bufferView = bufferView ; 
-     ac.byteOffset = byteOffset ;
-     ac.componentType = componentType ; 
-     ac.count = count ; 
-     ac.type = type ; 
-     ac.min = min ; 
-     ac.max = max ; 
-     return ac ; 
-} 
-
-ygltf::mesh_primitive_t YOGMaker::make_mesh_primitive(
-    std::map<std::string, int>& attributes,
-    int indices, 
-    int material, 
-    ygltf::mesh_primitive_t::mode_t mode
-)
-{
-    mesh_primitive_t mp ; 
-    mp.attributes = attributes ; 
-    mp.indices = indices ; 
-    mp.material = material ; 
-    mp.mode = mode ; 
-    return mp ; 
-}
-ygltf::mesh_t YOGMaker::make_mesh( std::vector<ygltf::mesh_primitive_t> primitives )
-{
-    mesh_t mh ; 
-    mh.primitives = primitives ; 
-    return mh ; 
-}
-
-std::unique_ptr<glTF_t> YOGMaker::make_gltf_example()
-{
     auto gltf = std::unique_ptr<glTF_t>(new glTF_t());
 
     std::vector<scene_t>& scenes = gltf->scenes ; 
@@ -108,163 +30,112 @@ std::unique_ptr<glTF_t> YOGMaker::make_gltf_example()
     std::vector<bufferView_t>& bufferViews = gltf->bufferViews ; 
     std::vector<accessor_t>& accessors = gltf->accessors ; 
     std::vector<mesh_t>& meshes = gltf->meshes ; 
+    std::vector<material_t>& materials = gltf->materials ; 
 
-    int node = 0 ;   // index of root note 
-    std::vector<int> scene_nodes = {node} ;  
-    scene_t sc = make_scene(scene_nodes) ;
- 
+    node_t no0 ; 
+    no0.mesh = 0 ; 
 
-    std::vector<int> children = {} ;
+    node_t no1 ; 
+    no1.mesh = 0 ; 
+    no1.translation = {{1,0,0}} ; 
 
-    int mesh = 0 ;  // index of first mesh 
-    node_t no = make_node(mesh, children) ; 
+    nodes = {no0, no1} ; 
+    int no0_ = 0 ; 
+    int no1_ = 1 ; 
 
-
-    int buffer = 0 ;  // index of first buffer
-    buffer_t bu = make_buffer(
-         "data:application/octet-stream;base64,AAABAAIAAAAAAAAAAAAAAAAAAAAAAIA/AAAAAAAAAAAAAAAAAACAPwAAAAA=", 
-         44
-    ); 
-
-    enum {
-      indices = 0, 
-      vertices = 1,
-      num = 2
-    };
-
-    bufferView_t bv[num] ; 
-    accessor_t   ac[num] ; 
-
-    int indices_byteOffset = 0 ; 
-    int indices_byteLength = 6 ; 
-    int vertices_byteOffset = 8 ; 
-    int vertices_byteLength = 36 ; 
-
-    bv[indices]  = make_bufferView(
-          buffer, 
-          indices_byteOffset, 
-          indices_byteLength,  
-          bufferView_t::target_t::element_array_buffer_t 
-    ) ; 
-
-    bv[vertices]  = make_bufferView(
-          buffer, 
-          vertices_byteOffset, 
-          vertices_byteLength, 
-          bufferView_t::target_t::array_buffer_t 
-    ) ; 
-
-
-    int count = 3 ; 
-
-    std::vector<float> indices_min = { 0 } ; 
-    std::vector<float> indices_max = { 2 } ; 
-
-    ac[indices] = make_accessor( 
-                          indices, 
-                          0,           // byteOffset
-                          accessor_t::componentType_t::unsigned_short_t, 
-                          count, 
-                          accessor_t::type_t::scalar_t,
-                          indices_min,
-                          indices_max 
-                       ) ;   
-
-
-    std::vector<float> vertices_min = { 0, 0, 0 } ; 
-    std::vector<float> vertices_max = { 1, 1, 1 } ; 
-
-    ac[vertices] = make_accessor( 
-                          vertices, 
-                          0,          // byteOffset
-                          accessor_t::componentType_t::float_t, 
-                          count, 
-                          accessor_t::type_t::vec3_t,
-                          vertices_min,
-                          vertices_max 
-                       ) ;   
-
-
-    int indices_accessor = indices ; 
-    int vertices_accessor = vertices ; 
-    int material = -1 ; 
-    std::map<std::string, int> attributes = {{"POSITION", vertices_accessor }} ; 
-
-    mesh_primitive_t mp = make_mesh_primitive( 
-                             attributes,
-                             indices_accessor, 
-                             material,
-                             mesh_primitive_t::mode_t::triangles_t 
-                         ) ; 
-
-    std::vector<mesh_primitive_t> primitives ; 
-    primitives = { mp } ;
-   
-    mesh_t mh = make_mesh( primitives ) ; 
-
-    nodes = {no} ; 
+    scene_t sc ;   
+    sc.nodes = {no0_, no1_} ;   
     scenes = {sc} ;  
-    buffers = {bu} ; 
-    bufferViews = {bv[indices], bv[vertices]} ;  
-    accessors = {ac[indices], ac[vertices]} ;
+
+
+
+    material_pbrMetallicRoughness_t mr ; 
+    mr.baseColorFactor =  {{ 1.000, 0.766, 0.336, 1.0 }} ;
+    mr.metallicFactor = 0.5 ;
+    mr.roughnessFactor = 0.1 ;
+
+    material_t mt ; 
+    mt.pbrMetallicRoughness = mr ; 
+
+    materials = { mt } ; 
+    int mt_ = 0 ; 
+
+    buffer_t vtx_bu ; 
+    vtx_bu.uri = "vtx.npy" ; 
+    vtx_bu.byteLength = geom.vtx_spec->bufferByteLength ; 
+    geom.vtx->saveToBuffer( vtx_bu.data ) ; 
+
+    buffer_t idx_bu ; 
+    idx_bu.uri = "idx.npy" ; 
+    idx_bu.byteLength = geom.idx_spec->bufferByteLength ; 
+    geom.idx->saveToBuffer( idx_bu.data ) ; 
+
+    buffers = {vtx_bu, idx_bu} ; 
+    int vtx_bu_ = 0 ; 
+    int idx_bu_ = 1 ; 
+
+
+    // TODO: derive these from npy array content 
+    int count = 3 ; 
+    std::vector<float> vtx_min = { 0, 0, 0, 1 } ; 
+    std::vector<float> vtx_max = { 1, 1, 1, 1 } ; 
+    std::vector<float> idx_min = { 0 } ; 
+    std::vector<float> idx_max = { 2 } ; 
+
+
+    bufferView_t vtx_bv ;  
+    vtx_bv.buffer = vtx_bu_  ;
+    vtx_bv.byteOffset = geom.vtx_spec->headerByteLength ;
+    vtx_bv.byteLength = geom.vtx_spec->dataSize() ;
+    vtx_bv.target = bufferView_t::target_t::array_buffer_t ;
+    vtx_bv.byteStride = 0 ; 
+ 
+    bufferView_t idx_bv ;  
+    idx_bv.buffer = idx_bu_  ;
+    idx_bv.byteOffset = geom.idx_spec->headerByteLength ;
+    idx_bv.byteLength = sizeof(unsigned)*count ;  // geom.idx_spec->dataSize() ;
+    idx_bv.target = bufferView_t::target_t::element_array_buffer_t ;
+    idx_bv.byteStride = 0 ; 
+ 
+    bufferViews = {vtx_bv, idx_bv} ;  
+    int vtx_bv_ = 0 ; 
+    int idx_bv_ = 1 ; 
+
+    accessor_t vtx_ac ; 
+    vtx_ac.bufferView = vtx_bv_ ; 
+    vtx_ac.byteOffset = 0 ;
+    vtx_ac.componentType = accessor_t::componentType_t::float_t ; 
+    vtx_ac.count = count ; 
+    vtx_ac.type = accessor_t::type_t::vec4_t ; 
+    vtx_ac.min = vtx_min ; 
+    vtx_ac.max = vtx_max ; 
+
+    accessor_t idx_ac ; 
+    idx_ac.bufferView = idx_bv_ ; 
+    idx_ac.byteOffset = 0 ;
+    idx_ac.componentType = accessor_t::componentType_t::unsigned_int_t ; 
+    idx_ac.count = count ; 
+    idx_ac.type = accessor_t::type_t::scalar_t ; 
+    idx_ac.min = idx_min ; 
+    idx_ac.max = idx_max ; 
+
+    accessors = {vtx_ac, idx_ac} ;
+    int vtx_ac_ = 0 ; 
+    int idx_ac_ = 1 ; 
+
+ 
+    mesh_primitive_t mp ; 
+    mp.attributes = {{"POSITION", vtx_ac_ }} ; 
+    mp.indices = idx_ac_ ; 
+    mp.material = mt_ ; 
+    mp.mode = mesh_primitive_t::mode_t::triangles_t ; 
+ 
+    mesh_t mh ; 
+    mh.primitives = { mp } ; 
     meshes = {mh} ; 
 
 
     return gltf ; 
 }
-
-
-std::unique_ptr<glTF_t> YOGMaker::make_gltf()
-{
-    // NB : there is no checking can easily construct non-sensical gltf 
-    //      as shown below 
-
-    auto gltf = std::unique_ptr<glTF_t>(new glTF_t());
-    std::vector<node_t>& nodes = gltf->nodes ; 
-    std::vector<scene_t>& scenes = gltf->scenes ; 
-
-    node_t a, b, c  ; 
-    a.children = {2} ;   
-    b.children = {3} ;   
-    c.children = {} ;   
-
-    nodes = { a, b, c } ;
-
-    scene_t sc ;    // scene references nodes by index
-    sc.nodes = {1,2,3} ;
-
-    scenes = {sc} ;  
-
-    return gltf ; 
-}
-
-
-
-/*
-
-ygltf buffers use
-    std::vector<unsigned char> 
-
-hmm how to put NPY data arrays into ygltf buffers 
-
-* https://docs.scipy.org/doc/numpy/neps/npy-format.html
-
-Need a way to predict the byteLength that the NPY will 
-occupy in a file and the byteOffset to the start of the data 
-
-
-epsilon:GBndLib blyth$ xxd GBndLibIndex.npy
-00000000: 934e 554d 5059 0100 4600 7b27 6465 7363  .NUMPY..F.{'desc
-00000010: 7227 3a20 273c 7534 272c 2027 666f 7274  r': '<u4', 'fort
-00000020: 7261 6e5f 6f72 6465 7227 3a20 4661 6c73  ran_order': Fals
-00000030: 652c 2027 7368 6170 6527 3a20 2831 3233  e, 'shape': (123
-00000040: 2c20 3429 2c20 7d20 2020 2020 2020 200a  , 4), }        .
-00000050: 0c00 0000 ffff ffff ffff ffff 0c00 0000  ................
-00000060: 0c00 0000 ffff ffff ffff ffff 0b00 0000  ................
-00000070: 0b00 0000 ffff ffff ffff ffff 0e00 0000  ................:w
-
-
-*/
-
 
 

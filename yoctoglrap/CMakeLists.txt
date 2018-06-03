@@ -4,6 +4,7 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
 
 find_package(SysRap  REQUIRED CONFIG) 
+find_package(NPY     REQUIRED CONFIG) 
 find_package(YoctoGL REQUIRED CONFIG)  # from /usr/local/opticks/externals/lib/cmake/yoctogl/  
 
 set(YoctoGL_VERBOSE OFF)
@@ -17,10 +18,12 @@ set(SOURCES
     YOG_LOG.cc
 
     YOGMaker.cc
+    YOGGeometry.cc
 )
 
 SET(HEADERS
     YOGMaker.hh
+    YOGGeometry.hh
 
     YOG_LOG.hh
     YOG_API_EXPORT.hh
@@ -31,6 +34,7 @@ SET(HEADERS
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
     Opticks::SysRap
+    Opticks::NPY
     Opticks::YoctoGL
 )
 

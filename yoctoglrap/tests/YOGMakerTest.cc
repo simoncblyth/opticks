@@ -4,14 +4,17 @@
 #include <fstream>
 
 #include "YOGMaker.hh"
+#include "YOGGeometry.hh"
 
 int main(int argc, char** argv)
 {
-    //auto gltf = YOGMaker::make_gltf() ; 
-    auto gltf = YOGMaker::make_gltf_example() ; 
+    YOGGeometry geom ; 
+    geom.make_triangle();
 
-    std::string path = "/tmp/UseYoctoGL_Write.gltf" ; 
-    bool save_bin = false ; 
+    auto gltf = YOGMaker::make_gltf( geom ) ; 
+
+    std::string path = "/tmp/YOGMakerTest/YOGMakerTest.gltf" ; 
+    bool save_bin = true ; 
     bool save_shaders = false ; 
     bool save_images = false ; 
 
