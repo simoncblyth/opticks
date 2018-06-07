@@ -291,6 +291,8 @@ void CMPT::dumpProperty(const char* _keys)
 
 unsigned CMPT::getVecLength(const char* _keys)
 {
+    // asserts that all the keys vectors are of the same length 
+
     std::vector<std::string> keys ; 
     unsigned nkey = splitKeys(keys, _keys);
     unsigned vlen(0) ; 
@@ -301,9 +303,13 @@ unsigned CMPT::getVecLength(const char* _keys)
         G4PhysicsOrderedFreeVector* v = getVec(key);
 
         if(vlen == 0)
+        {
              vlen = v->GetVectorLength() ;
+        }
         else
+        {
              assert(vlen == v->GetVectorLength());
+        } 
     } 
     return vlen ; 
 }
@@ -311,7 +317,6 @@ unsigned CMPT::getVecLength(const char* _keys)
 
 unsigned CMPT::splitKeys(std::vector<std::string>& keys, const char* _keys)
 {
-    //boost::split(keys, _keys, boost::is_any_of(","));   
     BStr::split(keys, _keys, ',');
     return keys.size();
 }
@@ -426,7 +431,6 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
    // CAUTION: used by cfg4/tests/CInterpolationTest.cc 
 
     std::vector<std::string> keys ; 
-    //boost::split(keys, _keys, boost::is_any_of(","));   
     BStr::split(keys, _keys, ',') ; 
 
     unsigned nkey = keys.size();

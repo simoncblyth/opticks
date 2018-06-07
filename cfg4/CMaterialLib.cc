@@ -1,4 +1,3 @@
-//#include <boost/algorithm/string.hpp>
 #include "BStr.hh"
 
 #include "G4Material.hh"

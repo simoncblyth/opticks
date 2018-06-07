@@ -10,6 +10,15 @@ class G4MaterialPropertiesTable ;
 template <typename T> class GProperty ; 
 template <typename T> class NPY ; 
 
+/**
+CMPT
+=====
+
+
+
+
+**/
+
 #include "CFG4_API_EXPORT.hh"
 class CFG4_API CMPT {
    public:
@@ -22,6 +31,10 @@ class CFG4_API CMPT {
    public:
        CMPT(G4MaterialPropertiesTable* mpt, const char* name=NULL);
        std::string digest() const ;
+   public:
+       // adds domain and value of prop, assumes prop domain is in ascending nm 
+       // (as typically used for optical properties) and thus the order is  
+       // reversed to yield energy ascending order and domain is converted to eV 
        void addProperty(const char* lkey,  GProperty<float>* prop, bool spline);
    public:
        void dumpRaw(const char* lkey);

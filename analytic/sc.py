@@ -43,6 +43,9 @@ class Nd(object):
         """
         :param ndIdx: local within subtree nd index, used for child/parent Nd referencing
         :param soIdx: local within substree so index, used for referencing to distinct solids/meshes
+
+        :param boundary: string with shortnames omat/osur/isur/imat eg "OwsWater///UnstStainlessSteel"
+
         """
         self.ndIdx = ndIdx
         self.soIdx = soIdx
@@ -235,7 +238,11 @@ class Sc(object):
         return nd.gtr_mdot_r 
 
     def add_node_gdml(self, node, depth, debug=False):
-
+        """
+        :param node: treeified ie (PV,LV) collapsed GDML node
+        :param depth: integer
+        :return nd: GLTF translation of the input node
+        """
         lvIdx = node.lv.idx
         lvName = node.lv.name
         pvName = node.pv.name
@@ -368,6 +375,20 @@ class Sc(object):
 
 
     def add_tree_gdml(self, target, maxdepth=0):
+        """
+        :param target: treebase.Node instance 
+ 
+        invoked from gdml2gltf_main, notice the two different types of node:
+
+        node
+            input treebase.Node instances, derived from the GDML parse and treeification
+            to de-stripe from PV-LV-PV-LV-.. to (PV,LV)-(PV,LV)-.. 
+            node.children is used to traverse the tree
+
+        nd
+            output sc.Nd instances, which correspond to the GLTF output 
+
+        """
         self.add_node_count = 0 
         def build_r(node, depth=0):
             self.add_node_count += 1 

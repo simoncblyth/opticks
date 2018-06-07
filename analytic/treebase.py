@@ -84,16 +84,11 @@ class Node(object):
     lv.solid
        geometry eg opticks.ana.pmt.gdml.Tube, opticks.ana.pmt.gdml.Union
 
-
-
     parent
        opticks.ana.pmt.treebase.Node
 
     children
        list of opticks.ana.pmt.treebase.Node 
-
-
-    TODO: migrate into opticks.gdml  or opticks.analytic ?
 
     """
 
@@ -102,7 +97,9 @@ class Node(object):
     @classmethod
     def md5digest(cls, volpath ):
         """  
-        Use of id means that will change from run to run. 
+        Uses the top-down ordered list of memory locations of the instances
+        of the volpath for a node to provide a unique identifier for that node within
+        the tree. Use of id memory locations means that the digest will change from run to run. 
         """
         dig = ",".join(map(lambda _:str(id(_)),volpath))
         dig = hashlib.md5(dig).hexdigest() 
@@ -120,7 +117,15 @@ class Node(object):
     @classmethod
     def create(cls, volpath, lvtype="Logvol", pvtype="Physvol", postype="posXYZ" ):
         """
-        :param volpath: ancestor volume instances
+        :param volpath: ancestor volume instances, 
+                        and the volume itself ordered top down 
+
+        Invoked from Tree.create_r, as the recursive traverse starts from the
+        root node, parents should always be found (other than for the top node).
+
+        This is how the tree auto-assembles : thanks to the node.pdigest identifying
+        the parent.  
+
         """
         assert len(volpath) >= 2 
         
@@ -154,6 +159,7 @@ class Node(object):
             if pv is None:
                 log.fatal("all nodes other than root must have a pv %r " % node)
             assert pv 
+            ## huh, surely root will also have DummyTopPV ?
         pass
 
         node.pv = pv
@@ -168,8 +174,6 @@ class Node(object):
         log.info("################ node.posXYZ:%r  node:%r ##" % (node.posXYZ, node) )
 
         ## HMM ? is this missing node.lv transforms ? See ddbase.py Elem._get_children
-
-
         #node.dump("visitWrap_")
         return node
 
@@ -552,12 +556,16 @@ class Tree(object):
         self.base = base
 
         top = DummyTopPV()
-        ancestors = [top] # dummy to regularize striping TOP-LV-PV-LV 
+        ancestors = [top] # dummy to regularize striping TOP-LV-PV-LV-PV
         self.root = self.create_r(self.base, ancestors)
 
 
     def create_r(self, vol, ancestors):
         """
+        :param vol: lv logical volume 
+        :param ancestors: list of ancestors of the vol but not including it, starting from top
+                          eg TOP-LV-PV 
+
         Source tree traversal creating nodes as desired in destination tree
 
         #. vital to make a copy with [:] as need separate volpath for every node

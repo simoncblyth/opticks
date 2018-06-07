@@ -3,15 +3,27 @@
 #include "X4_API_EXPORT.hh"
 
 class G4VSolid ; 
+class G4Sphere ; 
 class G4Polyhedron ; 
 
 template <typename T> class NPY ;
 
+/**
+X4Solid
+==========
 
-class X4_API X4VSolid
+hmm: would be better for this to give birth to instances
+     without any G4 dependency (eg GGeo classes)
+
+
+**/
+
+class X4_API X4Solid
 {
     public:
-        X4VSolid(const G4VSolid* solid); 
+        static X4Solid* Create(const G4Sphere* sphere); 
+    public:
+        X4Solid(const G4VSolid* solid); 
         std::string desc() const  ; 
     private:
         void init();

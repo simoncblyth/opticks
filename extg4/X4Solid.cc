@@ -3,14 +3,29 @@
 #include <iomanip>
 #include <string>
 
-#include "X4VSolid.hh"
+#include "X4Solid.hh"
+#include "G4Sphere.hh"
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
 #include "SDirect.hh"
 #include "NPY.hpp"
 #include "PLOG.hh"
 
-X4VSolid::X4VSolid( const G4VSolid* solid ) 
+
+X4Solid* X4Solid::Create( const G4Sphere* sphere )
+{
+    // source/persistency/gdml/src/G4GDMLWriteSolids.cc
+
+    sphere->GetName() ; 
+
+    
+
+
+
+    return NULL ; 
+} 
+
+X4Solid::X4Solid( const G4VSolid* solid ) 
    :
    m_solid(solid),
    m_polyhedron(NULL),
@@ -21,16 +36,16 @@ X4VSolid::X4VSolid( const G4VSolid* solid )
    init() ;
 }
 
-void X4VSolid::init()
+void X4Solid::init()
 {
     polygonize();
     collect();
 }
 
-std::string X4VSolid::desc() const 
+std::string X4Solid::desc() const 
 {
     std::stringstream ss ; 
-    ss << "X4VSolid"
+    ss << "X4Solid"
        << " vtx " << ( m_vtx ? m_vtx->getShapeString() : "-" )
        << " raw " << ( m_raw ? m_raw->getShapeString() : "-" )
        << " tri " << ( m_tri ? m_tri->getShapeString() : "-" )
@@ -38,7 +53,7 @@ std::string X4VSolid::desc() const
     return ss.str();
 }
 
-void X4VSolid::polygonize()
+void X4Solid::polygonize()
 {
     G4bool create = true ; 
     G4int noofsides = 24 ;
@@ -71,7 +86,7 @@ void X4VSolid::polygonize()
 }
 
 
-void X4VSolid::collect()
+void X4Solid::collect()
 {
     G4int nv = m_polyhedron->GetNoVertices();
     G4int nf = m_polyhedron->GetNoFacets();
@@ -87,19 +102,19 @@ void X4VSolid::collect()
 
     collect_tri(); 
 
-    m_vtx->save("/tmp/X4VSolid/vtx.npy"); 
-    m_raw->save("/tmp/X4VSolid/raw.npy"); 
-    m_tri->save("/tmp/X4VSolid/tri.npy"); 
+    m_vtx->save("/tmp/X4Solid/vtx.npy"); 
+    m_raw->save("/tmp/X4Solid/raw.npy"); 
+    m_tri->save("/tmp/X4Solid/tri.npy"); 
 }
 
 
-void X4VSolid::collect_vtx(int ivert)
+void X4Solid::collect_vtx(int ivert)
 {
     G4Point3D vtx = m_polyhedron->GetVertex(ivert); // ivert is 1-based index from 1 to nv
     m_vtx->setQuad( ivert-1, 0, 0,   vtx.x(), vtx.y(), vtx.z(), 1.f );    
 }
 
-void X4VSolid::collect_raw(int iface)
+void X4Solid::collect_raw(int iface)
 {
     G4int nedge;
     G4int ivertex[4];
@@ -135,7 +150,7 @@ void X4VSolid::collect_raw(int iface)
 }
 
 
-void X4VSolid::collect_tri()
+void X4Solid::collect_tri()
 {
     unsigned nf = m_raw->getShape(0);  
 

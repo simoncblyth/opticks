@@ -1,9 +1,9 @@
 
 #include "G4Sphere.hh"
-#include "X4VSolid.hh"
+#include "X4Solid.hh"
 #include "OPTICKS_LOG.hh"
 
-G4VSolid* make_sphere()
+G4Sphere* make_sphere()
 {
     G4String name("sphere");
     G4double pRmin = 0. ; 
@@ -24,11 +24,11 @@ int main(int argc, char** argv)
     OPTICKS_LOG_COLOR__(argc, argv);
 
     
-    G4VSolid* so = make_sphere(); 
+    G4Sphere* sp = make_sphere(); 
 
-    X4VSolid xso(so); 
-    
-    LOG(info) << xso.desc() ; 
+    X4Solid* so = X4Solid::Create(sp) ; 
+
+    LOG(info) << so->desc() ; 
 
  
     return 0 ; 

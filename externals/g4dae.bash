@@ -27,6 +27,7 @@ g4dae-dir(){     echo $(g4dae-base)/$(g4dae-name) ; }
 g4dae-sdir(){    echo $(g4dae-base)/$(g4dae-name) ; }
 g4dae-bdir(){    echo $(g4dae-base)/$(g4dae-name).build ; }
 
+g4dae-c(){    cd $(g4dae-dir); }
 g4dae-cd(){   cd $(g4dae-dir); }
 g4dae-scd(){  cd $(g4dae-sdir); }
 g4dae-bcd(){  cd $(g4dae-bdir); }

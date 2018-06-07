@@ -992,7 +992,9 @@ class GDML(G):
     world = property(lambda self:self.volumes[self.worldvol])
 
     def init(self):
-
+        """
+        Heart of the GDML parsing.
+        """
         self.materials = odict()
         self.solids = odict()
         self.volumes = odict()
@@ -1000,7 +1002,7 @@ class GDML(G):
         for i, e in enumerate(self.findall_("materials/material")):
             e.idx = i
             self.materials[e.name] = e 
-
+        pass
         for i, e in enumerate(self.findall_("solids/*")):
             e.idx = i
             self.solids[e.name] = e 

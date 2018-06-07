@@ -92,6 +92,98 @@ Unified geometry handling
   analytic in GGeo and GScene (dispensed by OpticksHub)
 
 
+analytic/gdml.py 
+~~~~~~~~~~~~~~~~~~
+
+* converts some parsed raw GDML solid primitives (depending on their parameters, eg rmin) 
+  into CSG boolean composities
+
+  * line between solid and composite is not fixed  
+
+  * treating such shapes as composite CSG avoids code duplication (so reduces bug potential)
+    as would otherwise require reimplementing the same logic for multiple shapes
+
+  * where is appropriate to do this kind of specialization ? how general to make the GLTF ?
+    whichever the choice need to record all the parameters of the solids 
+
+
+analytic/sc.py 
+~~~~~~~~~~~~~~~~~~
+
+* /Volumes/Delta/usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf
+
+Observations on the GLTF:
+
+* not in geocache, its regarded are source : living in opticksdata
+
+
+gltf for materials ?
+~~~~~~~~~~~~~~~~~~~~~~
+
+* currently no materials in the gltf : that comes the trianulated route 
+* need to come up with a structure to live in json extras.
+
+Whats needed::
+
+* material shortname
+* list of uri of the properties (directory structure?) 
+ 
+Can refer to the properties NPY using a list of GLTF buffers (
+just needs list of uri with bytelengths, offsets).  
+
+Is this needed, as are in extras. Depends on how can get ygltf to 
+handle extras and writing binaries ? 
+
+* "save_ygltf" expects memory data buffers std::vector<unsigned char> 
+   which it can save, can do that, but maybe no point as will need to 
+   implement separate saving and loading of extras 
+ 
+
+Hmm can use standard buffers for the properties::
+
+    2652 YGLTF_API void save_buffers(const glTF_t* gltf, const std::string& dirname) {
+    2653     for (auto& buffer_ : gltf->buffers) {
+    2654         auto buffer = &buffer_;
+    2655         if (_startsiwith(buffer->uri, "data:"))
+    2656             throw gltf_exception("saving of embedded data not supported");
+    2657         _save_binfile(dirname + buffer->uri, buffer->data);
+    2658     }
+    2659 }
+
+Will need to add handling of non existing and intermediate directories. OR just 
+using existing persisting capabilities of GMaterial/GPropertyMap. 
+
+Also no need for accessor descriptor machinery : as this data is 
+intended for Opticks code (not OpenGL renderers).
+
+
+/usr/local/opticks-cmake-overhaul/externals/g4dae/g4dae-opticks/src/G4DAEWriteMaterials.cc::
+
+    088 void G4DAEWriteMaterials::MaterialWrite(const G4Material* const materialPtr)
+     89 {
+     90    const G4String matname = GenerateName(materialPtr->GetName(), materialPtr);
+     91    const G4String fxname = GenerateName(materialPtr->GetName() + "_fx_", materialPtr);
+     92 
+     93    xercesc::DOMElement* materialElement = NewElementOneNCNameAtt("material","id",matname);
+     94    xercesc::DOMElement* instanceEffectElement = NewElementOneNCNameAtt("instance_effect","url",fxname, true);
+     95    materialElement->appendChild(instanceEffectElement);
+     96 
+     97    G4MaterialPropertiesTable* ptable = materialPtr->GetMaterialPropertiesTable();
+     98    if(ptable)
+     99    {
+    100        xercesc::DOMElement* extraElement = NewElement("extra");
+    101        PropertyWrite(extraElement, ptable);
+    102        materialElement->appendChild(extraElement);
+    103    }
+    104 
+    105    materialsElement->appendChild(materialElement);
+    106 
+    107      // Append the material AFTER all the possible components are appended!
+    108 }
+
+/usr/local/opticks-cmake-overhaul/externals/g4dae/g4dae-opticks/src/G4DAEWrite.cc
+
+
 question : how much processing prior to forming the YGLTF structure ?
 ------------------------------------------------------------------------
 

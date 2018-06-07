@@ -25,5 +25,6 @@ make
 make install   
 
 
-$(opticks-prefix)/lib/UseYoctoGL_Write
+#$(opticks-prefix)/lib/UseYoctoGL_Write
+$(opticks-prefix)/lib/UseYoctoGL_json
 

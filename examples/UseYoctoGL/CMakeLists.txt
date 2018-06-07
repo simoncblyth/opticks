@@ -15,6 +15,7 @@ endif()
 set(TEST_SOURCES
    ${name}.cc
    ${name}_Write.cc
+   ${name}_json.cc
 )
 
 foreach(TEST_SOURCE ${TEST_SOURCES})

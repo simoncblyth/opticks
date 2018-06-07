@@ -259,6 +259,8 @@ om-make()
         local d1=$(( t1 - t0 ))
 
         [ "$rc" != "0" ] && cd $iwd && return $rc
+
+        #echo d1 $d1
         [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
         cmake --build .  --target install
         rc=$?

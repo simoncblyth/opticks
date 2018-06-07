@@ -11,6 +11,15 @@ template <typename T> class GProperty ;
 
 #include "GGEO_API_EXPORT.hh"
 
+/**
+GProperty
+==========
+
+* values on a domain
+
+
+**/
+
 template <class T>
 class GGEO_API GProperty {
 public: 

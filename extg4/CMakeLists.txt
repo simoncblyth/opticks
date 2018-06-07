@@ -25,7 +25,8 @@ GGeo
 
 YoctoGLRap
    hmm : maybe not : retain some distance 
-   from GLTF stuff ? 
+   from GLTF stuff ?  but then need to hold onto 
+   json type data some other way 
 
 
 Class requirements for this package
@@ -46,17 +47,25 @@ find_package(G4         REQUIRED MODULE)
 
 find_package(SysRap     REQUIRED CONFIG) 
 find_package(NPY        REQUIRED CONFIG) 
-#find_package(GGeo       REQUIRED CONFIG)  start without for a while
+find_package(GGeo       REQUIRED CONFIG)   
 find_package(YoctoGLRap REQUIRED CONFIG)
 
 set(SOURCES
      
-    X4VSolid.cc
+    X4Solid.cc
+    X4Material.cc
+    X4MaterialPropertiesTable.cc
+    X4PhysicsVector.cc
 
     X4_LOG.cc
 
 )
 set(HEADERS
+
+    X4Solid.hh
+    X4Material.hh
+    X4MaterialPropertiesTable.hh
+    X4PhysicsVector.hh
 
     X4_LOG.hh
     X4_API_EXPORT.hh
@@ -70,6 +79,7 @@ target_link_libraries( ${name} PUBLIC
     Opticks::G4
     Opticks::SysRap
     Opticks::NPY
+    Opticks::GGeo
     Opticks::YoctoGLRap
 )
 
