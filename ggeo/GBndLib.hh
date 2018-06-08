@@ -21,8 +21,6 @@ creation of its float buffer is deferred post cache
 to allow dynamic addition of boundaries for eg analytic
 geometry inside-outs and for test boxes 
 
-
-
 Buffers
 ---------
 
@@ -40,7 +38,16 @@ boundary_buffer
 
 The boundary and optical buffers are regarded as dynamic 
 (although they may still be persisted for debugging/record keeping)
-   
+
+
+Domain
+---------
+
+When using --finebndtex option GBndLib::load with constituents true
+does domain interpolation.  This and probably many other things that 
+only happen on load need to be repositioned for direct GLTF to GPU approach,
+in order to make the functionality available without doing a load.
+
 **/
  
 

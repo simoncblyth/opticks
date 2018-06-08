@@ -200,6 +200,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
 
+    private:
+       // void _add(GMaterial* material);
     public:
         void add(GMaterial* material);
         void add(GSkinSurface*  surface);

@@ -1,27 +1,15 @@
+#include "X4OpNoviceMaterials.hh" 
 
-#include "G4Material.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
-#include "GPropertyMap.hh"
-
-#include "X4MaterialPropertiesTable.hh"
-#include "OPTICKS_LOG.hh"
+#include "G4Material.hh"
+#include "PLOG.hh"
 
 
-
-struct X4MaterialPropertiesTableTest 
+X4OpNoviceMaterials::X4OpNoviceMaterials()
 {
-    G4Material* air ; 
-    G4Material* water ;
-
-    X4MaterialPropertiesTableTest();
-}; 
-    
-
-
-X4MaterialPropertiesTableTest::X4MaterialPropertiesTableTest()
-{
+  unsigned verbosity = 0 ;  
 // material adapted from OpNovice
 // /usr/local/opticks/externals/g4/geant4_10_02_p01/examples/extended/optical/OpNovice/src/OpNoviceDetectorConstruction.cc
 
@@ -176,8 +164,11 @@ X4MaterialPropertiesTableTest::X4MaterialPropertiesTableTest()
   myMPT1->AddConstProperty("MIEHG_BACKWARD",mie_water_const[1]);
   myMPT1->AddConstProperty("MIEHG_FORWARD_RATIO",mie_water_const[2]);
 
-  G4cout << "Water G4MaterialPropertiesTable" << G4endl;
-  myMPT1->DumpTable();
+  if(verbosity > 1)
+  { 
+      LOG(info) << "Water G4MaterialPropertiesTable" ;
+      myMPT1->DumpTable();
+  } 
 
   water->SetMaterialPropertiesTable(myMPT1);
 
@@ -198,8 +189,11 @@ X4MaterialPropertiesTableTest::X4MaterialPropertiesTableTest()
   G4MaterialPropertiesTable* myMPT2 = new G4MaterialPropertiesTable();
   myMPT2->AddProperty("RINDEX", photonEnergy, refractiveIndex2, nEntries);
 
-  G4cout << "Air G4MaterialPropertiesTable" << G4endl;
-  myMPT2->DumpTable();
+  if(verbosity > 1)
+  { 
+      LOG(info) << "Air G4MaterialPropertiesTable" ;
+      myMPT2->DumpTable();
+  } 
 
   air->SetMaterialPropertiesTable(myMPT2);
 
@@ -207,21 +201,3 @@ X4MaterialPropertiesTableTest::X4MaterialPropertiesTableTest()
 
 
 
-
-
-
-int main(int argc, char** argv)
-{
-    OPTICKS_LOG_COLOR__(argc, argv);
-
-    X4MaterialPropertiesTableTest mptt ; 
-
-    G4MaterialPropertiesTable* mpt = mptt.water->GetMaterialPropertiesTable() ;   
-
-    GPropertyMap<float>* pmap = X4MaterialPropertiesTable::Convert(mpt) ; 
-
-    pmap->Summary();
-
-
-    return 0 ; 
-}

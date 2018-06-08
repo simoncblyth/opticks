@@ -7,7 +7,9 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
     X4SolidTest.cc
     X4PhysicsVectorTest.cc
-    X4MaterialPropertiesTableTest.cc
+    X4MaterialTest.cc
+    X4MaterialTableTest.cc
+    X4PhysicalVolumeTest.cc
 )
 
 

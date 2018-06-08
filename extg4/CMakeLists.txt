@@ -38,15 +38,13 @@ Class requirements for this package
    where possible
 
 Some CFG4 classes that fit the simplicity criteria
-can be migrated here. 
+could be migrated here, but probably better to re-implement 
+very focussed converter classes.
 
 #]=]
 
 
 find_package(G4         REQUIRED MODULE)
-
-find_package(SysRap     REQUIRED CONFIG) 
-find_package(NPY        REQUIRED CONFIG) 
 find_package(GGeo       REQUIRED CONFIG)   
 find_package(YoctoGLRap REQUIRED CONFIG)
 
@@ -54,8 +52,12 @@ set(SOURCES
      
     X4Solid.cc
     X4Material.cc
-    X4MaterialPropertiesTable.cc
+    X4MaterialTable.cc
     X4PhysicsVector.cc
+    X4PhysicalVolume.cc
+
+    X4OpNoviceMaterials.cc
+    OpNoviceDetectorConstruction.cc
 
     X4_LOG.cc
 
@@ -64,8 +66,12 @@ set(HEADERS
 
     X4Solid.hh
     X4Material.hh
-    X4MaterialPropertiesTable.hh
+    X4MaterialTable.hh
     X4PhysicsVector.hh
+    X4PhysicalVolume.hh
+
+    X4OpNoviceMaterials.hh
+    OpNoviceDetectorConstruction.hh
 
     X4_LOG.hh
     X4_API_EXPORT.hh
@@ -77,8 +83,6 @@ set(HEADERS
 add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_link_libraries( ${name} PUBLIC 
     Opticks::G4
-    Opticks::SysRap
-    Opticks::NPY
     Opticks::GGeo
     Opticks::YoctoGLRap
 )

@@ -65,6 +65,7 @@ void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 
 GDomain<float>* GPropertyLib::getDefaultDomain()
 {
+   // this is normal domain, only with --finebndtex does the finedomain interpolation get load within GBndLib::load
    return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
 }
 
@@ -74,7 +75,7 @@ const char* GPropertyLib::source   = "source" ;
 const char* GPropertyLib::bnd_     = "bnd" ; 
 
 
-
+// this ctor is used from GBndLib::load for interpolating to finedom
 GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
     :
      m_ok(other->getOpticks()),
@@ -96,7 +97,8 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
 }
 
 
-
+// this is the normal ctor, used by GBndLib, GMaterialLib
+// the domain will get set in ::init to the default
 GPropertyLib::GPropertyLib(Opticks* ok, const char* type) 
      :
      m_ok(ok),

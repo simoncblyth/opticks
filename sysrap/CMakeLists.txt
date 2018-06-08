@@ -46,6 +46,7 @@ set(SOURCES
 
 set(HEADERS
     OPTICKS_LOG.hh
+
     SYSRAP_LOG.hh
     SYSRAP_API_EXPORT.hh
     SYSRAP_HEAD.hh

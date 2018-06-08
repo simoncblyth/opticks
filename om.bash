@@ -235,6 +235,9 @@ om-conf()
     return $rc 
 }
 
+
+om--(){ om-make $* ; }
+
 om-make()
 {   
     local rc=0
@@ -269,6 +272,8 @@ om-make()
     cd $iwd
     return $rc
 }
+
+
 
 om-test()
 {

@@ -90,10 +90,11 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        GMaterialLib(GMaterialLib* other, GDomain<float>* domain=NULL, GMaterialLib* basis=NULL);  // interpolating copy ctor
    public:
+       static void dump(GMaterial* mat, const char* msg);
+       static void dump(GMaterial* mat);
+   public:
        void Summary(const char* msg="GMaterialLib::Summary");
        void dump(const char* msg="GMaterialLib::dump");
-       void dump(GMaterial* mat, const char* msg);
-       void dump(GMaterial* mat);
        void dump(unsigned int index);
    private:
        void init();

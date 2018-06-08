@@ -10,17 +10,26 @@
 #include "GBndLib.hh"
 #include "GItemList.hh"
 
+
+#include "OPTICKS_LOG.hh"
+
+/*
 #include "PLOG.hh"
 #include "BRAP_LOG.hh"
 #include "NPY_LOG.hh"
 #include "GGEO_LOG.hh"
 
+*/
+
 int main(int argc, char** argv)
 {
+    OPTICKS_LOG__(argc, argv);
+/*
     PLOG_(argc, argv);
     BRAP_LOG__ ;
     NPY_LOG__ ;
     GGEO_LOG__ ;
+*/
 
     Opticks ok ;
     ok.configure();

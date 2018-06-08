@@ -229,6 +229,7 @@ void GMaterialLib::add(GMaterial* raw)
     m_materials.push_back(createStandardMaterial(raw)); 
 }
 
+
 void GMaterialLib::addDirect(GMaterial* mat)
 {
     assert(!isClosed());
@@ -245,9 +246,13 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
     GMaterial* dst  = new GMaterial(src);
 
     if(dst->hasStandardDomain())
+    {
         assert(dst->getStandardDomain()->isEqual(src->getStandardDomain()));
+    }
     else
+    {
         dst->setStandardDomain(src->getStandardDomain());
+    }
 
     dst->addProperty(refractive_index, getPropertyOrDefault( src, refractive_index ));
     dst->addProperty(absorption_length,getPropertyOrDefault( src, absorption_length ));
@@ -664,7 +669,9 @@ void GMaterialLib::dump(const char* msg)
         dump(mat);
     }
     else
+    {
         for(unsigned int i=0 ; i < ni ; i++) dump(i);
+    }
 }
 
 
@@ -674,11 +681,14 @@ void GMaterialLib::dump(unsigned int index)
     dump(mat);
 }
 
+
+// static 
 void GMaterialLib::dump(GMaterial* mat)
 {
     dump(mat, mat->description().c_str());
 }
 
+// static 
 void GMaterialLib::dump( GMaterial* mat, const char* msg)
 {
     GProperty<float>* _refractive_index = mat->getProperty(refractive_index);
@@ -698,11 +708,11 @@ void GMaterialLib::dump( GMaterial* mat, const char* msg)
 
     std::string table = GProperty<float>::make_table( 
                             fw,  dscale, dreciprocal,  
-                            _refractive_index, "refractive_index", 
-                            _absorption_length, "absorption_length",  
-                            _scattering_length, "scattering_length",  
-                            _reemission_prob, "reemission_prob", 
-                            _group_velocity, "group_velocity"
+                            _refractive_index, refractive_index, 
+                            _absorption_length, absorption_length,  
+                            _scattering_length, scattering_length,  
+                            _reemission_prob, reemission_prob, 
+                            _group_velocity, group_velocity
                             );
 
     std::cout << table << std::endl ; 

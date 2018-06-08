@@ -393,7 +393,16 @@ void GGeo::init()
 }
 
 
-
+/*
+void GGeo::add(GMaterial* material)
+{
+   const char* name = material->getName()
+   if(!m_materiallib->hasMaterial(name))
+   {
+       _add(material);  
+   } 
+}
+*/
 void GGeo::add(GMaterial* material)
 {
     m_materiallib->add(material);
@@ -959,13 +968,34 @@ GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
 
 void GGeo::addToIndex(GPropertyMap<float>* psrc)
 {
-    unsigned int pindex = psrc->getIndex();
+    unsigned pindex = psrc->getIndex();
+    const char* pname = psrc->getShortName() ;
+    LOG(info) 
+        << " pindex " << pindex 
+        << " pname " << pname
+        ; 
+
     if(pindex < UINT_MAX)
     {
          if(m_index.count(pindex) == 0) 
-               m_index[pindex] = psrc->getShortName(); 
+         {
+               m_index[pindex] = pname ; 
+         }
          else
-               assert(strcmp(m_index[pindex].c_str(), psrc->getShortName()) == 0);
+         {
+               const char* prior = m_index[pindex].c_str() ;
+               const char* current = pname ;
+               bool same = strcmp(prior, current) == 0 ; 
+               if( !same )
+               {
+                   LOG(fatal) << " addToIndex MISMATCH "
+                              << " pindex " << pindex
+                              << " current " << current
+                              << " prior " << prior
+                              ;
+               }
+               assert(same);
+         }
     }
 }
 

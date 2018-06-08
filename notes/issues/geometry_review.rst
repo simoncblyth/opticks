@@ -182,6 +182,68 @@ Questions
 
 
 
+High Level G4DAE COLLADA Writing
+-----------------------------------
+
+/usr/local/opticks-cmake-overhaul/externals/g4dae/g4dae-opticks/src/G4DAEWrite.cc::
+
+    179 G4Transform3D G4DAEWrite::Write(const G4String& fname,
+    180                                  const G4LogicalVolume* const logvol,
+    181                                  const G4String& setSchemaLocation,
+    182                                  const G4int depth,
+    183                                        G4bool refs,
+    184                                        G4bool _recreatePoly,
+    185                                        G4int nodeIndex )
+    186 {
+    ...
+    212    doc = impl->createDocument(0,tempStr,0);
+    213    xercesc::DOMElement* dae = doc->getDocumentElement();
+    214 
+    ...
+    233    dae->setAttributeNode(NewAttribute("xmlns",
+    234                           "http://www.collada.org/2005/11/COLLADASchema"));
+    235    dae->setAttributeNode(NewAttribute("version","1.4.1"));
+    ...
+    243    AssetWrite(dae);
+    244    EffectsWrite(dae);
+    245    SolidsWrite(dae);   // geometry before materials to match pycollada
+    ///
+    ///    SolidsWrite just opens the library_geometry element ... actual writing 
+    ///    of solids done in recursive tail of TraverseVolumeTree  by G4DAEWriteSolids::AddSolid
+
+    246    MaterialsWrite(dae);
+    ///    ditto ... G4DAEWriteMaterials::AddMaterial
+    ///
+    247 
+    248    StructureWrite(dae);   // writing order does not follow inheritance order
+    249 
+    250    SetupWrite(dae, logvol);
+    251 
+    252    G4Transform3D R = TraverseVolumeTree(logvol,depth);
+    253 
+    254    SurfacesWrite();
+    255 
+    256    xercesc::XMLFormatTarget *myFormTarget =
+    257      new xercesc::LocalFileFormatTarget(fname.c_str());
+    258 
+    259    try
+    260    {
+    261 #if XERCES_VERSION_MAJOR >= 3
+    262                                             // DOM L3 as per Xerces 3.0 API
+    263       xercesc::DOMLSOutput *theOutput =
+    264         ((xercesc::DOMImplementationLS*)impl)->createLSOutput();
+    265       theOutput->setByteStream(myFormTarget);
+    266       writer->write(doc, theOutput);
+    267 #else
+    268       writer->writeNode(myFormTarget, *doc);
+    269 #endif
+
+
+* note that BorderSurface are collected within TraverseVolumeTree
+
+
+
+
 NScene(NGLTF)
 ----------------
 

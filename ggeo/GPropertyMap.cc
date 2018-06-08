@@ -480,10 +480,19 @@ std::string GPropertyMap<T>::description()
   
 
 template <typename T>
-unsigned int GPropertyMap<T>::getIndex()
+unsigned GPropertyMap<T>::getIndex() const 
 {
     return m_index ; 
 }
+
+template <typename T>
+void GPropertyMap<T>::setIndex(unsigned index)  
+{
+    m_index = index ; 
+}
+
+
+
 template <typename T>
 const char* GPropertyMap<T>::getType()
 {
