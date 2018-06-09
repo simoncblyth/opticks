@@ -1,11 +1,34 @@
-#include "GProperty.hh"
 
 #include "G4PhysicsVector.hh"
 #include "G4PhysicalConstants.hh"
 #include "G4SystemOfUnits.hh"
 
 #include "X4PhysicsVector.hh"
+
+#include "GProperty.hh"
+#include "SDigest.hh"
+#include "SDirect.hh"
 #include "PLOG.hh"
+
+
+template <typename T>
+std::string X4PhysicsVector<T>::Digest(const G4PhysicsVector* vec)  // see cfg4.G4PhysicsOrderedFreeVectorTest
+{   
+    if(!vec) return "" ;
+
+    std::ofstream fp("/dev/null", std::ios::out);
+    std::stringstream ss ;
+    stream_redirect rdir(ss,fp); // stream_redirect such that writes to the file instead go to the stringstream 
+
+    const_cast<G4PhysicsVector*>(vec)->Store(fp, false );
+
+    std::string s = ss.str();  // std::string can hold \0  (ie that is not interpreted as null terminator) so they can hold any binary data 
+
+    SDigest dig ;
+    dig.update( const_cast<char*>(s.data()), s.size() );
+
+    return dig.finalize();
+}
 
 
 template <typename T>

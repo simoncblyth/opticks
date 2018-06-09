@@ -14,6 +14,7 @@ namespace fs = boost::filesystem;
 #include "BPath.hh"
 #include "BResource.hh"
 #include "BOpticksResource.hh"
+#include "BOpticksKey.hh"
 
 #include "PLOG.hh"
 
@@ -24,6 +25,7 @@ const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.i
 BOpticksResource::BOpticksResource(const char* envprefix)
     :
     m_setup(false),
+    m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
     m_id(NULL),
     m_res(new BResource),
     m_envprefix(strdup(envprefix)),
@@ -301,9 +303,6 @@ void BOpticksResource::setSrcDigest(const char* srcdigest)
     assert( srcdigest );
     m_srcdigest = strdup( srcdigest );
 }
- 
-
-
 
 void BOpticksResource::setupViaID(const char* idpath)
 {
@@ -317,6 +316,24 @@ void BOpticksResource::setupViaID(const char* idpath)
     setSrcPath( srcpath );
     setSrcDigest( srcdigest );
 }
+
+
+void BOpticksResource::setupViaKey()
+{
+    assert( !m_setup ) ;  
+    m_setup = true ; 
+
+    assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
+
+    LOG(info) << m_key->desc()  ;  
+
+
+}
+
+
+
+
+
 
 void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 {  
@@ -362,6 +379,7 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
 
     m_res->addDir("idpath_tmp", m_idpath_tmp );
 }
+
 
 
 

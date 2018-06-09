@@ -7,6 +7,7 @@
 class NSensorList ; 
 
 class Opticks ; 
+class OpticksKey ; 
 class OpticksQuery ; 
 class OpticksColors ; 
 class OpticksFlags ; 
@@ -78,6 +79,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        BEnv* readIniEnvironment(const std::string& relpath);
        void readG4Environment();
        void readOpticksEnvironment();
+       void readKey();
        void readEnvironment();
        void readMetadata();
        void identifyGeometry();
@@ -163,8 +165,10 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        Opticks*    m_opticks ; 
        const char* m_lastarg ; 
    private:
-       // results of readEnvironment
+       OpticksKey* m_idkey ; 
        const char* m_geokey ;
+   private:
+       // results of readEnvironment
        const char* m_query_string ;
        const char* m_ctrl ;
        const char* m_meshfix ;

@@ -28,5 +28,10 @@ int main(int argc, char** argv)
     assert( b._argc == 7 ); 
 
 
+    std::cout << " exepath() " << a.exepath() << std::endl ; 
+    std::cout << " exename() " << a.exename() << std::endl ; 
+
+
+
     return 0 ; 
 }

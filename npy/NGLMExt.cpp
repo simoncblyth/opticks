@@ -353,10 +353,15 @@ glm::mat4 nglmext::make_transform(const std::string& order, const glm::vec3& tla
     //
     // Despite this intution from reading the code  there is the row-major business too..
     //
-    // See tests/NGLMExt.cc:test_make_transform it shows that 
-    // order argument "trs" somewhat confusingly : does scaling before translation, 
-    // order argument "srt" somewhat confusingly : does translation before scaling
-
+    // See tests/NGLMExtTests.cc:test_make_transform it shows that 
+    // order argument "trs" : does scaling before translation, 
+    // order argument "srt" : does translation before scaling
+    //
+    // usually "trs" is the most convenient order to use
+    //
+    // * what is confusing is that to get the translation done last, 
+    //   needs to do glm::translate first 
+    //
     return mat  ; 
 }
 

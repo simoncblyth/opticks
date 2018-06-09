@@ -75,6 +75,20 @@ char* md5digest_str2md5(char* buffer, int length)
 }
 
 
+const char* SDigest::hexchar = "0123456789abcdef" ;  
+
+bool SDigest::IsDigest(const char* s)
+{
+    if( s == NULL ) return false ; 
+    if( strlen(s) != 32 ) return false ;  
+    for(int i=0 ; i < 32 ; i++ )
+    {
+        char c = *(s + i) ; 
+        if(strchr(hexchar,c) == NULL) return false  ;
+    }
+    return true  ; 
+}
+
 
 SDigest::SDigest()
 {

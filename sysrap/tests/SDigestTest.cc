@@ -68,6 +68,14 @@ void test_digest_vec()
 
 }
 
+void test_IsDigest()
+{
+    assert( SDigest::IsDigest(NULL) == false );
+    assert( SDigest::IsDigest("0123") == false );
+    assert( SDigest::IsDigest("0123456789abcdef") == false );
+    assert( SDigest::IsDigest("0123456789abcdef0123456789abcdef") == true );
+}
+
 
 
 
@@ -78,7 +86,9 @@ int main(int argc, char** argv)
     //test_static();
     //test_update();
 
-    test_digest_vec();
+    //test_digest_vec();
+
+    test_IsDigest();
 
     return 0 ; 
 }

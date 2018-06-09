@@ -35,6 +35,7 @@ class BRAP_API BPath {
     private:
         void        init();
         void        parseLayout() ; 
+        bool        isDigest(const char* last ) const ;
         bool        isTriple(const char* triple ) const ;
         bool        parseTriple(const char* triple ) ;
         const char* getElem(int idx) const  ; 

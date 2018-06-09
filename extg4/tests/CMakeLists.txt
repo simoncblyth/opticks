@@ -10,6 +10,7 @@ set(TEST_SOURCES
     X4MaterialTest.cc
     X4MaterialTableTest.cc
     X4PhysicalVolumeTest.cc
+    X4Transform3DTest.cc
 )
 
 

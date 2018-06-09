@@ -125,7 +125,7 @@ set(HEADERS
 )
 
 
-add_library( ${name}  SHARED ${SOURCES})
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 target_include_directories( ${name} PUBLIC $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}> )
 target_compile_definitions( ${name} PUBLIC OPTICKS_OKCORE )
 target_link_libraries( ${name} 

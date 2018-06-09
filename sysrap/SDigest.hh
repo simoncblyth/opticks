@@ -30,6 +30,8 @@
 class SYSRAP_API SDigest 
 {
    public:
+       static const char* hexchar ; 
+       static bool IsDigest(const char* s);
        static std::string md5digest( const char* buffer, int len );
        static std::string digest( void* buffer, int len );
        static std::string digest( std::vector<std::string>& ss);

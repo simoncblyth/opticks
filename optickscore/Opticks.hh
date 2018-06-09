@@ -30,6 +30,7 @@ class Typ ;
 class Index ; 
 
 class Opticks ; 
+class BOpticksKey ; 
 class OpticksEventSpec ;
 class OpticksEvent ;
 class OpticksRun ;
@@ -60,6 +61,19 @@ class OpticksDbg ;
 #include "OKCORE_API_EXPORT.hh"
 #include "OKCORE_HEAD.hh"
 
+/**
+Opticks
+========
+
+Handles commandline or envvar user arguments.
+
+
+
+
+**/
+
+
+
 class OKCORE_API Opticks {
        friend class OpticksCfg<Opticks> ; 
        friend class OpticksRun ; 
@@ -88,6 +102,9 @@ class OKCORE_API Opticks {
 
        static glm::vec4    getDomainSpec(bool fine=false);
        static glm::vec4    getDomainReciprocalSpec(bool fine=false);
+   public:
+       static BOpticksKey* GetKey();
+       static bool         SetKey(const char* keyspec);
    private:
        static Opticks*     fOpticks ;  
    public:

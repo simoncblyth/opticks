@@ -7,6 +7,7 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+class BOpticksKey ; 
 class BPath ; 
 class BResource ; 
 
@@ -94,6 +95,7 @@ class BRAP_API  BOpticksResource {
         // only use one setup route
         void setupViaSrc(const char* srcpath, const char* srcdigest);
         void setupViaID(const char* idpath );
+        void setupViaKey();
 
         // unfortunately having 2 routes difficult to avoid, as IDPATH is 
         // more convenient in that a single path yields everything, whereas
@@ -102,9 +104,11 @@ class BRAP_API  BOpticksResource {
         void setSrcPath(const char* srcpath);
         void setSrcDigest(const char* srcdigest);
    protected:
-        bool        m_setup ; 
-        BPath*      m_id ; 
-        BResource*  m_res ; 
+        bool         m_setup ; 
+        BOpticksKey* m_key ; 
+        BPath*       m_id ; 
+        BResource*   m_res ;
+ 
         const char* m_envprefix ; 
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header

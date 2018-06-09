@@ -149,10 +149,10 @@ class CFG4_API CTraverser {
 
     private:
         // collected by AncestorTraverse    
-        NPY<float>*                                    m_center_extent ;  // updateBoundingBox
         unsigned int                                   m_gcount ; 
-        NPY<float>*                                    m_gtransforms ; 
         unsigned int                                   m_ancestor_index ;  
+        NPY<float>*                                    m_center_extent ;  // updateBoundingBox
+        NPY<float>*                                    m_gtransforms ; 
         std::vector<std::string>                       m_pvnames ; 
         std::vector<const G4VPhysicalVolume*>          m_pvs ; 
         std::vector<const G4LogicalVolume*>            m_lvs ; 

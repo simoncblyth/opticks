@@ -54,6 +54,8 @@ set(SOURCES
     X4Material.cc
     X4MaterialTable.cc
     X4PhysicsVector.cc
+    X4RotationMatrix.cc
+    X4Transform3D.cc
     X4PhysicalVolume.cc
 
     X4OpNoviceMaterials.cc
@@ -68,6 +70,8 @@ set(HEADERS
     X4Material.hh
     X4MaterialTable.hh
     X4PhysicsVector.hh
+    X4Transform3D.hh
+    X4RotationMatrix.hh
     X4PhysicalVolume.hh
 
     X4OpNoviceMaterials.hh

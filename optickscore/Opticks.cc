@@ -36,6 +36,7 @@
 #include "OpticksPhoton.h"
 #include "OpticksFlags.hh"
 #include "Opticks.hh"
+#include "BOpticksKey.hh"
 #include "OpticksResource.hh"
 #include "OpticksColors.hh"
 #include "OpticksEvent.hh"
@@ -1863,6 +1864,10 @@ const char*     Opticks::getMaterialMap() {  return m_resource ? m_resource->get
 const char*     Opticks::getGDMLPath() {  return m_resource ? m_resource->getGDMLPath() : NULL ; }
 const char*     Opticks::getDAEPath() {   return m_resource ? m_resource->getDAEPath() : NULL ; }
 const char*     Opticks::getInstallPrefix() { return m_resource ? m_resource->getInstallPrefix() : NULL ; }
+
+
+bool             Opticks::SetKey(const char* spec) { return BOpticksKey::SetKey(spec) ; }
+BOpticksKey*     Opticks::GetKey() {                 return BOpticksKey::GetKey() ; }
 
 
 

@@ -4,6 +4,7 @@
 #include "BStr.hh"
 #include "BFile.hh"
 #include "BPath.hh"
+#include "SDigest.hh"
 
 #include "PLOG.hh"
 
@@ -69,6 +70,11 @@ bool BPath::isTriple(const char* triple ) const
     std::vector<std::string> bits ; 
     BStr::split(bits, triple, '.' );  
     return bits.size() == 3 ; 
+}
+
+bool BPath::isDigest(const char* last ) const 
+{
+    return SDigest::IsDigest(last) ;  
 }
 
 
@@ -175,25 +181,27 @@ std::string BPath::desc() const
 {
     std::stringstream ss ;
 
+    unsigned w = 25 ; 
+
     ss << "BPath" 
        << std::endl 
-       << " idpath " << ( m_idpath ? m_idpath : "-" ) 
+       << std::setw(w) << " idpath " << ( m_idpath ? m_idpath : "-" ) 
        << std::endl 
-       << " elem " << m_elem.size() 
+       << std::setw(w) << " elem " << m_elem.size() 
        << std::endl 
-       << " layout " << m_layout 
+       << std::setw(w) << " layout " << m_layout 
        << std::endl 
-       << " idfile " << ( m_idfile ? m_idfile  : "-" )
+       << std::setw(w) << " idfile " << ( m_idfile ? m_idfile  : "-" )
        << std::endl 
-       << " srcdigest " << ( m_srcdigest ? m_srcdigest : "-" )
+       << std::setw(w) << " srcdigest " << ( m_srcdigest ? m_srcdigest : "-" )
        << std::endl 
-       << " idname " << ( m_idname ? m_idname : "-" )
+       << std::setw(w) << " idname " << ( m_idname ? m_idname : "-" )
        << std::endl 
-       << " geobase " << ( m_geobase ? m_geobase : "-" )
+       << std::setw(w) << " geobase " << ( m_geobase ? m_geobase : "-" )
        << std::endl 
-       << " prefix " << ( m_prefix ? m_prefix : "-" )
+       << std::setw(w) << " prefix " << ( m_prefix ? m_prefix : "-" )
        << std::endl 
-       << " srcpath " << ( m_srcpath ? m_srcpath : "-" )
+       << std::setw(w) << " srcpath " << ( m_srcpath ? m_srcpath : "-" )
        << std::endl 
        ;
 

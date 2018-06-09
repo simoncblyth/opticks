@@ -41,11 +41,11 @@ CTraverser::CTraverser(Opticks* ok, G4VPhysicalVolume* top, NBoundingBox* bbox, 
    m_bbox(bbox ? bbox : new NBoundingBox),
    m_query(query),
    m_verbosity(1),
-   m_ancestor_index(0),
    m_lcount(0),
    m_ltransforms(NULL),
-   m_center_extent(NULL),
    m_gcount(0),
+   m_ancestor_index(0),
+   m_center_extent(NULL),
    m_gtransforms(NULL)
 {
    init();

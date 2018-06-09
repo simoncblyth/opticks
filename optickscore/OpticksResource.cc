@@ -19,6 +19,7 @@ namespace fs = boost::filesystem;
 #include "PLOG.hh"
 #include "Map.hh"
 #include "BResource.hh"
+#include "BOpticksKey.hh"
 #include "BEnv.hh"
 
 // npy-
@@ -261,7 +262,16 @@ void OpticksResource::init()
 
    readG4Environment();
    readOpticksEnvironment();
-   readEnvironment();
+
+   if( m_idkey )
+   {
+       readKey(); 
+       readEnvironment();  // temporary expedient as work on readKey
+   } 
+   else
+   {
+       readEnvironment();
+   }
 
    readMetadata();
    identifyGeometry();
@@ -491,8 +501,10 @@ BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
 }
 
 
-
-
+void OpticksResource::readKey()
+{
+    setupViaKey();  
+}
 
 void OpticksResource::readEnvironment()
 {
@@ -516,6 +528,11 @@ void OpticksResource::readEnvironment()
 
 *ctrl*
      not currently used?
+
+
+
+OPTICKS_GEOKEY 
+    envvar naming another envvar (eg OPTICKSDATA_DAEPATH_DYB) that points to geometry file
 
 */
 

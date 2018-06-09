@@ -28,13 +28,19 @@ X4 : ExtG4 package
 
 ExtG4 
    new package bringing together G4 and lower level Opticks 
-   (SysRap, NPY, GGeo?) : using lots of static enhancers to 
+   (SysRap, NPY, GGeo) : using lots of static enhancers to 
    single Geant4 classes  
+ 
+   Subsequently find that use of GGeo is very natural here, as 
+   that has persisting already implemented  
 
-extg4/X4VSolid
+extg4/X4PhysicalVolume
+   converts a G4 volume tree directly into a sofar sparsely populated GGeo instance
+
+extg4/X4Solid
 
    1. DONE: polygonize G4VSolid instances into vtx and tri NPY buffers 
-   2. TODO: get YOG to work with X4VSolid instances, so can save them as GLTF
+   2. TODO: get YOG to work with X4Solid instances, so can save them as GLTF
    3. TODO: add analytic type info regarding the solid into ... hmm actually the
       test solid is a sphere, the analytic GDML style info needs to be collected 
       prior to descending to generic solid G4VSolid and somehow communicated thru to 
@@ -47,6 +53,119 @@ extg4/X4VSolid
         
    For example to convert a G4VSolid into X4VSolid comprising 
    GMesh and GParts constituents
+
+
+Opticks early geocache assumption workaround
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Can workaround okc.Opticks assuming a geocache too early, with 
+mimimal code changes if can come up with a geometry identity early, 
+and set the IdPath ? Avoiding the untruths.
+
+* done this via BOpticksKey::SetKey from X4PhysicalVolume::X4PhysicalVolume
+
+* as previously considered, a full digest is prohibitive in terms 
+  of the code needed : but even a very partial one is liable to 
+  avoid 99% of user errors 
+
+
+How to hookup direct GGeo into higher level Opticks ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GGeo normally born into OpticksHub::init/OpticksGeometry::init, so 
+how to work with a GGeo converted direct from G4VPhysicalVolume tree ?
+
+Approaches:
+
+1. void* pointing to GGeo in okc.Opticks (void* needed as OKCORE is beneath GGEO)
+   which is consulted prior to instanciating a new GGeo in OpticksGeometry::init
+
+2. GGeo::GetGGeo singletonwise which is consulted prior to instanciating 
+   a new GGeo in OpticksGeometry::init. PREFER THIS ONE
+
+
+How to hookup OpticksHub with direct GGeo into g4ok.G4OpticksManager ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* At G4OpticksManager::BeginOfRunAction/G4OpticksManager::checkGeometry 
+  the G4 geometry is closed, use X4PhysicalVolume::Convert
+  to directly translate to a GGeo instance 
+
+  * hmm need to define a geometry digest name at this point, to 
+    check for preexisting conversion that could load ?
+
+    * see X4PhysicalVolume::Digest 
+
+  * actually the cache is only relevant for large geometries, so could 
+    skip cache-check/load/save unless the user opts for it via OPTICKS_ARGS envvar  
+    (the embedded commandline)
+
+  * problem is lots of okc.Opticks assumes a cache : so either move the code that does that 
+    or just define a digest name for one, even when not using the cache ? 
+  
+
+* okop.OpMgr is resident of G4OpticksManager
+
+  * OpMgr/OpticksHub/OpticksGeometry/GGeo instanciation typically happen together,
+    just modifying OpticksGeometry to check for a preexisting GGeo singleton
+    instance before making a new one maybe all thats needed 
+    
+
+GLTF persisting of GGeo ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+
+* GGeo currently saved in Opticks geocache format (which is .npy and .txt files in 
+  a directory structure)
+
+* modifying this to be GLTF compliant is a fairly non-disruptive change : just adding a
+  top level .json in gltf dialect and referencing the NPY with the 
+  meshes that can be visualized (hmm merged meshes)
+  
+  * hmm this means forming the node tree in ygltf form, referencing GMesh/GSolid/GParts?
+    so it aint simple : but its fairly self contained
+     
+  * actually the hookup of the non-visualized content into extra tags in the GLTF 
+    is not really needed 
+
+::
+
+     600 void GGeo::save()
+     601 {
+     602     LOG(info) << "GGeo::save" ;
+     603     m_geolib->dump("GGeo::save.geolib");
+     604 
+     605     m_geolib->save();   // map of GMergedMesh
+     606     m_meshlib->save();  // vector of GMesh 
+     607     m_nodelib->save();   // collection of GSolid/GNode instances
+     608     m_materiallib->save();
+     609     m_surfacelib->save();
+     610     m_scintillatorlib->save();
+     611     m_sourcelib->save();
+     612     m_bndlib->save();
+     613 }
+
+::
+
+    epsilon:ggeo blyth$ ll /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1/
+    total 0
+    drwxr-xr-x    3 blyth  staff    96 Apr  4 21:59 ..
+    drwxr-xr-x    8 blyth  staff   256 Apr  4 21:59 GMergedMesh
+    drwxr-xr-x    4 blyth  staff   128 Apr  4 21:59 MeshIndex
+    drwxr-xr-x  251 blyth  staff  8032 Apr  4 21:59 GMeshLib
+    drwxr-xr-x    5 blyth  staff   160 Apr  4 21:59 GNodeLib
+    drwxr-xr-x    3 blyth  staff    96 Apr  4 21:59 GMaterialLib
+    drwxr-xr-x    5 blyth  staff   160 Apr  4 21:59 GSurfaceLib
+    drwxr-xr-x    5 blyth  staff   160 Apr  4 21:59 GScintillatorLib
+    drwxr-xr-x    3 blyth  staff    96 Apr  4 21:59 GSourceLib
+    drwxr-xr-x    6 blyth  staff   192 Apr  4 21:59 GItemList
+    drwxr-xr-x    5 blyth  staff   160 Apr  4 22:00 GBndLib
+    drwxr-xr-x    2 blyth  staff    64 Apr  5 10:02 MeshIndexAnalytic
+    drwxr-xr-x   13 blyth  staff   416 Jun  2 09:54 .
+    epsilon:ggeo blyth$ 
+
+
+
 
 
 Approaches 

@@ -15,7 +15,12 @@ struct SYSRAP_API SAr
     SAr( int argc_ , char** argv_ , const char* envvar=0, char delim=' ' ) ;
 
     void args_from_envvar( const char* envvar, char delim );
-    void dump();
+
+    const char* exepath() const ;
+    const char* exename() const ;
+    static const char* Basename(const char* path);
+
+    void dump() const ;
 
     int    _argc ;
     char** _argv ; 

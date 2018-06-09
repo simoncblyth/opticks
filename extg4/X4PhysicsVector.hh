@@ -1,6 +1,7 @@
 #pragma once
 
 #include "X4_API_EXPORT.hh"
+#include <string>
 
 class G4PhysicsVector ; 
 template <typename T> class GProperty ; 
@@ -23,6 +24,7 @@ template <typename T>
 class X4_API X4PhysicsVector
 {
     public:
+        static std::string    Digest(const G4PhysicsVector* vec ) ; 
         static GProperty<T>* Convert(const G4PhysicsVector* vec ) ; 
     public:
         X4PhysicsVector( const G4PhysicsVector* vec );
