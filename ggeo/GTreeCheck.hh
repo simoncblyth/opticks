@@ -1,10 +1,9 @@
 #pragma once
 
-//#include <map>
 #include <string>
 #include <vector>
 
-
+class SLog ; 
 struct NSceneConfig ; 
 
 //class GGeo ; 
@@ -88,6 +87,7 @@ class GGEO_API GTreeCheck {
         //NPY<unsigned>* makeInstanceIdentityBuffer(unsigned ridx);
         //NPY<unsigned>* makeAnalyticInstanceIdentityBuffer(unsigned ridx);
    private:
+       SLog*                     m_log ; 
        GGeoLib*                  m_geolib ; 
        unsigned                  m_verbosity ; 
        GNodeLib*                 m_nodelib ; 

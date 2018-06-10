@@ -8,6 +8,7 @@
 
 #include <boost/algorithm/string.hpp>
 
+#include "SLog.hh"
 // brap-
 #include "BDir.hh"
 #include "Map.hh"
@@ -78,6 +79,7 @@ const char* GPropertyLib::bnd_     = "bnd" ;
 // this ctor is used from GBndLib::load for interpolating to finedom
 GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
     :
+     m_log(new SLog("GPropertyLib::GPropertyLib.interpolating-ctor")),
      m_ok(other->getOpticks()),
      m_resource(NULL),
      m_buffer(NULL),
@@ -92,6 +94,7 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
      m_valid(true)
 {
     init();
+    (*m_log)("DONE");
 
     setNames(other->getNames());  // need setter for m_attrnames hookup
 }
@@ -101,6 +104,7 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
 // the domain will get set in ::init to the default
 GPropertyLib::GPropertyLib(Opticks* ok, const char* type) 
      :
+     m_log(new SLog("GPropertyLib::GPropertyLib.normal-ctor", type)),
      m_ok(ok),
      m_resource(NULL),
      m_buffer(NULL),
@@ -115,6 +119,7 @@ GPropertyLib::GPropertyLib(Opticks* ok, const char* type)
      m_valid(true)
 {
      init();
+     (*m_log)("DONE");
 }
 
 Opticks* GPropertyLib::getOpticks()
@@ -307,9 +312,10 @@ void GPropertyLib::init()
     m_defaults = new GPropertyMap<float>("defaults", UINT_MAX, "defaults");
     m_defaults->setStandardDomain(m_standard_domain);
 
+
     m_attrnames = new OpticksAttrSeq(m_ok, m_type);
     m_attrnames->loadPrefs(); // color.json, abbrev.json and order.json 
-
+    LOG(debug) << "GPropertyLib::init loadPrefs-DONE " ; 
 
     // hmm GPropertyMap expects bordersurface or skinsurface
 

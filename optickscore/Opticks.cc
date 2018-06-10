@@ -7,6 +7,7 @@
 #endif
 
 
+#include "SLog.hh"
 #include "SArgs.hh"
 #include "SSys.hh"
 // brap-
@@ -202,7 +203,8 @@ Opticks* Opticks::GetOpticks()
      if(fOpticks == NULL )
      {
          const char* argforced = SSys::getenvvar("OPTICKS_ARGS") ; 
-         new Opticks(0,0, argforced);  
+         Opticks* ok = new Opticks(0,0, argforced);  
+         ok->setInternal(true);   // internal means was instanciated within Opticks::GetOpticks
      }
      assert( fOpticks != NULL ) ; // Opticks ctor should have defined THE instance
      return fOpticks ; 
@@ -211,6 +213,7 @@ Opticks* Opticks::GetOpticks()
 
 Opticks::Opticks(int argc, char** argv, const char* argforced )
      :
+       m_log(new SLog("Opticks::Opticks")),
        m_ok(this),
        m_sargs(new SArgs(argc, argv, argforced)), 
        m_argc(m_sargs->argc),
@@ -251,13 +254,24 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_rc(0),
        m_rcmsg(NULL),
        m_tagoffset(0),
-       m_verbosity(0)
+       m_verbosity(0),
+       m_internal(false)
 {
        OK_PROFILE("Opticks::Opticks");
 
        assert( fOpticks == NULL ); // should only ever be one instance 
        fOpticks = this ; 
        init();
+       (*m_log)("DONE");
+}
+
+bool Opticks::isInternal() const 
+{
+    return m_internal ; 
+}
+void Opticks::setInternal(bool internal)  
+{
+    m_internal = internal ; 
 }
 
 
@@ -1247,6 +1261,9 @@ void Opticks::Summary(const char* msg)
     m_resource->Summary(msg);
 
     std::cout
+        << std::setw(40) << " isInternal "
+        << std::setw(40) << isInternal()
+        << std::endl
         << std::setw(40) << " Verbosity "
         << std::setw(40) << getVerbosity()
         << std::endl

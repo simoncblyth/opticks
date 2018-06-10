@@ -10,6 +10,7 @@ namespace fs = boost::filesystem;
 
 
 // sysrap
+#include "SLog.hh"
 #include "SDigest.hh"
 #include "SSys.hh"
 
@@ -39,7 +40,9 @@ namespace fs = boost::filesystem;
 #include "OpticksAttrSeq.hh"
 
 
+const char* OpticksResource::EMPTY  = "" ; 
 
+const char* OpticksResource::G4LIVE  = "g4live" ; 
 const char* OpticksResource::JUNO    = "juno1707" ; 
 const char* OpticksResource::DAYABAY = "dayabay" ; 
 const char* OpticksResource::DPIB    = "PmtInBox" ; 
@@ -79,6 +82,7 @@ const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
     :
        BOpticksResource(envprefix),
+       m_log(new SLog("OpticksResource::OpticksResource")),
        m_opticks(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
 
@@ -115,6 +119,7 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
 
 {
     init();
+    (*m_log)("DONE"); 
 }
 
  
@@ -194,7 +199,10 @@ const char* OpticksResource::getDetectorName()
 
 
 
-
+bool OpticksResource::isG4Live()
+{
+   return m_g4live ; 
+}
 bool OpticksResource::isJuno()
 {
    return m_juno ; 
@@ -249,13 +257,9 @@ std::string OpticksResource::getRelativePath(const char* path)
 }
 
 
-
-
-
-
 void OpticksResource::init()
 {
-   LOG(trace) << "OpticksResource::init" ; 
+   LOG(debug) << "OpticksResource::init" ; 
 
    BStr::split(m_detector_types, "GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib", ',' ); 
    BStr::split(m_resource_types, "GFlags,OpticksColors", ',' ); 
@@ -263,10 +267,9 @@ void OpticksResource::init()
    readG4Environment();
    readOpticksEnvironment();
 
-   if( m_idkey )
+   if( m_key )  // from BOpticksResource base
    {
-       readKey(); 
-       readEnvironment();  // temporary expedient as work on readKey
+       setupViaKey();  
    } 
    else
    {
@@ -278,7 +281,7 @@ void OpticksResource::init()
    assignDetectorName(); 
    assignDefaultMaterial(); 
 
-   LOG(trace) << "OpticksResource::init DONE" ; 
+   LOG(debug) << "OpticksResource::init DONE" ; 
 }
 
 
@@ -299,16 +302,18 @@ void OpticksResource::identifyGeometry()
 {
    // TODO: somehow extract detector name from the exported file metadata or sidecar
 
+   m_g4live   = idNameContains(G4LIVE) ;
    m_juno     = idNameContains("juno") ;
    m_dayabay  = idNameContains("DayaBay") ;
    m_dpib     = idNameContains("dpib") ;
 
-   if(m_juno == false && m_dayabay == false && m_dpib == false )
+   if(m_g4live == false && m_juno == false && m_dayabay == false && m_dpib == false )
    {
        const char* detector = getMetaValue("detector") ;
        if(detector)
        {
-           if(     strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
+           if(     strcmp(detector, G4LIVE)  == 0) m_g4live = true ; 
+           else if(strcmp(detector, DAYABAY) == 0) m_dayabay = true ; 
            else if(strcmp(detector, JUNO)    == 0) m_juno = true ; 
            else if(strcmp(detector, DPIB)    == 0) m_dpib = true ; 
            else 
@@ -319,12 +324,15 @@ void OpticksResource::identifyGeometry()
                       ; 
        }
        else
+       {
            m_other = true ;
+       }
    }
 
 
-   assert( m_juno ^ m_dayabay ^ m_dpib ^ m_other ); // exclusive-or
+   assert( m_g4live ^ m_juno ^ m_dayabay ^ m_dpib ^ m_other ); // exclusive-or
    
+   if(m_g4live)  m_detector = G4LIVE ; 
    if(m_juno)    m_detector = JUNO ; 
    if(m_dayabay) m_detector = DAYABAY ; 
    if(m_dpib)    m_detector = DPIB ; 
@@ -384,8 +392,20 @@ const char* OpticksResource::getSensorSurface()
 
 void OpticksResource::assignDetectorName()
 {
-   std::map<std::string, std::string> detname ; 
+   /**
+       m_detector 
+    -> m_detector_name    
+          from lookup of a short list, for name standardization
 
+       m_srcbase, m_detector_name  (eg /usr/local/opticks/opticksdata/export ,  DayaBay ) 
+    -> m_detector_base             (eg /usr/local/opticks/opticksdata/export/DayaBay )
+
+       m_detector_base 
+    -> m_material_map              (eg /usr/local/opticks/opticksdata/export/DayaBay/ChromaMaterialMap.json )
+
+   **/ 
+
+   std::map<std::string, std::string> detname ; 
    detname[JUNO]    = "juno1707" ;
    detname[DAYABAY] = "DayaBay" ;
    detname[DPIB]    = "dpib" ;
@@ -393,27 +413,47 @@ void OpticksResource::assignDetectorName()
 
    assert(m_detector);
 
-   if(detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
-
-   if(m_detector_name == NULL)
-       LOG(fatal) << "FAILED TO ASSIGN m_detector_name " ; 
-
-   assert(m_detector_name);
-
-   if(m_srcbase )
+   bool g4live = strcmp(m_detector, G4LIVE) == 0 ; 
+   if(g4live)
    {
-        std::string detbase = BFile::FormPath(m_srcbase, m_detector_name);
-        m_detector_base = strdup(detbase.c_str());
-        m_res->addDir("detector_base",   m_detector_base  );
+       const char* exename = m_key->getExename() ;
+       assert(exename); 
+       m_detector_name = strdup(exename) ; 
+   }
+   else
+   {
+       if(detname.count(m_detector) == 1) m_detector_name =  strdup(detname[m_detector].c_str()) ; 
    }
 
-   if(m_detector_base == NULL)
-       LOG(fatal) << "FAILED TO ASSIGN m_detector_base " ; 
+   if(m_detector_name == NULL)
+   {
+       Summary("FAILED TO ASSIGN m_detector_name");
+       LOG(fatal) << "FAILED TO ASSIGN m_detector_name " ; 
+   }
+   assert(m_detector_name);
 
-   assert(m_detector_base);
 
-   std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
-   m_material_map = strdup(cmm.c_str());
+
+   if(!g4live)
+   {
+       if(m_srcbase )
+       {
+            std::string detbase = BFile::FormPath(m_srcbase, m_detector_name);
+            m_detector_base = strdup(detbase.c_str());
+            m_res->addDir("detector_base",   m_detector_base  );
+       }
+       if(m_detector_base == NULL)
+       {
+           Summary("FAILED TO ASSIGN m_detector_base"); 
+           LOG(fatal) << "FAILED TO ASSIGN m_detector_base " ; 
+       }
+       assert(m_detector_base);
+
+
+       std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
+       m_material_map = strdup(cmm.c_str());
+   }
+
 }
 
 
@@ -501,10 +541,6 @@ BEnv* OpticksResource::readIniEnvironment(const std::string& inipath)
 }
 
 
-void OpticksResource::readKey()
-{
-    setupViaKey();  
-}
 
 void OpticksResource::readEnvironment()
 {
@@ -763,22 +799,16 @@ std::string OpticksResource::getDetectorPath(const char* name, unsigned int inde
 
 
 
-
-
-
-
-
 std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {
-    bool detector_type = isDetectorType(type) ; 
-    bool resource_type = isResourceType(type) ; 
+    if(isG4Live()) return EMPTY ; 
+
+    bool detector_type = isDetectorType(type) ; // GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib
+    bool resource_type = isResourceType(type) ; // GFlags,OpticksColors 
 
     const char* prefbase = PREFERENCE_BASE ;
     if(detector_type) prefbase = m_detector_base ; 
-    if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource
-
-    
-
+    if(resource_type) prefbase = m_resource_dir ;   // one of the top down dirs, set in base BOpticksResource, eg /usr/local/opticks/opticksdata/resource/ containing GFlags, OpticksColors
 
     if(detector_type)
     {
@@ -844,32 +874,42 @@ by env-;export-;export-copy-detector-prefs-
 bool OpticksResource::loadPreference(std::map<std::string, std::string>& mss, const char* type, const char* name)
 {
     std::string prefdir = getPreferenceDir(type);
+    bool empty = prefdir.empty() ; 
 
     LOG(trace) << "OpticksResource::loadPreference(MSS)" 
               << " prefdir " << prefdir
               << " name " << name
+              << " empty " << ( empty ? "YES" : "NO" )
               ; 
 
+
     typedef Map<std::string, std::string> MSS ;  
-    MSS* pref = MSS::load(prefdir.c_str(), name ) ; 
+    MSS* pref = empty ? NULL :  MSS::load(prefdir.c_str(), name ) ; 
     if(pref)
+    {
         mss = pref->getMap(); 
+    }
+
     return pref != NULL ; 
 }
 
 bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, const char* type, const char* name)
 {
     std::string prefdir = getPreferenceDir(type);
+    bool empty = prefdir.empty() ; 
 
     LOG(trace) << "OpticksResource::loadPreference(MSU)" 
               << " prefdir " << prefdir
               << " name " << name
+              << " empty " << ( empty ? "YES" : "NO" )
               ; 
 
     typedef Map<std::string, unsigned int> MSU ;  
-    MSU* pref = MSU::load(prefdir.c_str(), name ) ; 
+    MSU* pref = empty ? NULL : MSU::load(prefdir.c_str(), name ) ; 
     if(pref)
+    {
         msu = pref->getMap(); 
+    }
     return pref != NULL ; 
 }
 
@@ -973,8 +1013,15 @@ OpticksColors* OpticksResource::getColors()
         //
         //std::string prefdir = getPreferenceDir("GCache"); 
         std::string prefdir = getPreferenceDir("OpticksColors"); 
+        bool empty = prefdir.empty(); 
+        m_colors = empty ? NULL :  OpticksColors::load(prefdir.c_str(),"OpticksColors.json");   // colorname => hexcode
 
-        m_colors = OpticksColors::load(prefdir.c_str(),"OpticksColors.json");   // colorname => hexcode
+        if(empty)
+        {
+            LOG(debug) << "OpticksResource::getColors"
+                       << " empty PreferenceDir for OpticksColors " 
+                       ;
+        }
     }
     return m_colors ;
 }

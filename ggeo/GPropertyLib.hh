@@ -15,6 +15,7 @@
 #include <glm/fwd.hpp>
 
 
+class SLog ; 
 template <typename T> class NPY ;
 class NPYBase ; 
 
@@ -162,6 +163,7 @@ class GGEO_API GPropertyLib {
         void setMeta(NMeta* meta);
         void setNames(GItemList* names);
     protected:
+        SLog*                                m_log ; 
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
     protected:

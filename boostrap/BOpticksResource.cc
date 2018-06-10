@@ -7,6 +7,7 @@ namespace fs = boost::filesystem;
 
 #include "OKConf_Config.hh"
 
+#include "SLog.hh"
 #include "SSys.hh"
 
 #include "BFile.hh"
@@ -24,6 +25,7 @@ const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.i
 
 BOpticksResource::BOpticksResource(const char* envprefix)
     :
+    m_log(new SLog("BOpticksResource::BOpticksResource")),
     m_setup(false),
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
     m_id(NULL),
@@ -56,6 +58,7 @@ BOpticksResource::BOpticksResource(const char* envprefix)
     m_idmappath(NULL)
 {
     init();
+    (*m_log)("DONE"); 
 }
 
 
@@ -65,9 +68,9 @@ BOpticksResource::~BOpticksResource()
 
 void BOpticksResource::init()
 {
-    adoptInstallPrefix() ;
-    setTopDownDirs();
-    setDebuggingIDPATH();
+    initInstallPrefix() ;
+    initTopDownDirs();
+    initDebuggingIDPATH();
 }
 
 const char* BOpticksResource::getInstallPrefix() // canonically /usr/local/opticks
@@ -98,7 +101,7 @@ std::string BOpticksResource::getInstallPath(const char* relpath) const
 }
 
 
-void BOpticksResource::adoptInstallPrefix()
+void BOpticksResource::initInstallPrefix()
 {
     m_install_prefix = strdup(OKCONF_OPTICKS_INSTALL_PREFIX) ; 
     m_res->addDir("install_prefix", m_install_prefix );
@@ -142,10 +145,19 @@ std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb
     return path ;
 }
 
+std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
+{
+    const char* idpath = getIdPath(); 
+    std::string path = BFile::FormPath(idpath, rela, relb, relc, reld ) ;
+    return path ;
+}
 
 
 
-void BOpticksResource::setTopDownDirs()
+
+
+
+void BOpticksResource::initTopDownDirs()
 { 
     m_opticksdata_dir      = OpticksDataDir() ;   // eg /usr/local/opticks/opticksdata
     m_geocache_dir         = GeoCacheDir() ;      // eg /usr/local/opticks/geocache
@@ -168,7 +180,7 @@ void BOpticksResource::setTopDownDirs()
     m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
 }
 
-void BOpticksResource::setDebuggingIDPATH()
+void BOpticksResource::initDebuggingIDPATH()
 {
     // directories based on IDPATH envvar ... this is for debugging 
     // and as workaround for npy level tests to access geometry paths 
@@ -304,12 +316,15 @@ void BOpticksResource::setSrcDigest(const char* srcdigest)
     m_srcdigest = strdup( srcdigest );
 }
 
+
+
+
 void BOpticksResource::setupViaID(const char* idpath)
 {
     assert( !m_setup );
     m_setup = true ; 
 
-    m_id = new BPath( idpath );
+    m_id = new BPath( idpath ); // juicing the IDPATH
     const char* srcpath = m_id->getSrcPath(); 
     const char* srcdigest = m_id->getSrcDigest(); 
 
@@ -320,19 +335,45 @@ void BOpticksResource::setupViaID(const char* idpath)
 
 void BOpticksResource::setupViaKey()
 {
+    // * this in invoked only for G4LIVE running 
+    // * there is no opticksdata srcpath or associated 
+    //   opticksdata paths for live running 
+
     assert( !m_setup ) ;  
     m_setup = true ; 
-
     assert( m_key ) ; // BOpticksResource::setupViaKey called with a NULL key 
 
     LOG(info) << m_key->desc()  ;  
 
+    m_layout = m_key->getLayout(); 
+    const char* layout = BStr::itoa(m_layout) ;
+    m_res->addName("OPTICKS_RESOURCE_LAYOUT", layout );
 
+    const char* srcdigest = m_key->getDigest(); 
+    setSrcDigest( srcdigest );
+     
+    const char* idname = m_key->getIdname() ;  // eg OpNovice_World_g4live
+    assert(idname) ; 
+    m_idname = strdup(idname);         
+    m_res->addName("idname", m_idname ); 
+
+    const char* idfile = m_key->getIdfile() ; //  eg  g4ok.gltf
+    assert(idfile) ; 
+    m_idfile = strdup(idfile); 
+    m_res->addName("idfile", m_idfile ); 
+
+    std::string fold = getGeoCachePath(  m_idname ) ; 
+    m_idfold = strdup(fold.c_str()) ; 
+    m_res->addDir("idfold", m_idfold ); 
+
+    std::string idpath = getGeoCachePath( m_idname, m_idfile, m_srcdigest, layout );
+    m_idpath = strdup(idpath.c_str()) ; 
+    m_res->addDir("idpath", m_idpath ); 
+
+    std::string gltfpath = getIdPathPath( m_idfile );  // not a srcpath for G4LIVE, but potential cache file 
+    m_gltfpath = strdup(gltfpath.c_str()) ;
+    m_res->addPath("gltfpath", m_gltfpath ); 
 }
-
-
-
-
 
 
 void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
@@ -444,11 +485,11 @@ void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for te
 {
    m_idpath_tmp = idpath_tmp ? strdup(idpath_tmp) : NULL ;  
 } 
-const char* BOpticksResource::getIdPath()
+const char* BOpticksResource::getIdPath() const 
 {
     return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
 }
-const char* BOpticksResource::getIdFold()
+const char* BOpticksResource::getIdFold() const 
 {
     return m_idfold ;
 }

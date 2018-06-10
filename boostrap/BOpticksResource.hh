@@ -7,6 +7,8 @@
 #include "BRAP_API_EXPORT.hh"
 #include "BRAP_HEAD.hh"
 
+class SLog ; 
+
 class BOpticksKey ; 
 class BPath ; 
 class BResource ; 
@@ -64,11 +66,12 @@ class BRAP_API  BOpticksResource {
         const char* getDebuggingIDPATH();
         const char* getDebuggingIDFOLD();
    public:       
+       std::string getIdPathPath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL ) const ; 
        std::string getGeoCachePath(const char* rela, const char* relb=NULL, const char* relc=NULL, const char* reld=NULL) const ;
        std::string getPropertyLibDir(const char* name) const ;
        std::string getInstallPath(const char* relpath) const ;
-       const char* getIdPath();
-       const char* getIdFold();  // parent directory of idpath containing g4_00.dae
+       const char* getIdPath() const ;
+       const char* getIdFold() const ;  // parent directory of idpath containing g4_00.dae
        void setIdPathOverride(const char* idpath_tmp=NULL);  // used for test saves into non-standard locations
 
     public:
@@ -84,9 +87,9 @@ class BRAP_API  BOpticksResource {
        const char* getGLTFName() const ;
   private:
         void init();
-        void adoptInstallPrefix();
-        void setTopDownDirs();
-        void setDebuggingIDPATH(); 
+        void initInstallPrefix();
+        void initTopDownDirs();
+        void initDebuggingIDPATH(); 
    protected:
         friend struct NSensorListTest ; 
         friend struct NSceneTest ; 
@@ -104,6 +107,7 @@ class BRAP_API  BOpticksResource {
         void setSrcPath(const char* srcpath);
         void setSrcDigest(const char* srcdigest);
    protected:
+        SLog*        m_log ; 
         bool         m_setup ; 
         BOpticksKey* m_key ; 
         BPath*       m_id ; 

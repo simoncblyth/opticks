@@ -1,4 +1,6 @@
 
+#include "SLog.hh"
+
 // npy-
 #include "NSceneConfig.hpp"
 #include "NGLM.hpp"
@@ -31,6 +33,7 @@
 
 GTreeCheck::GTreeCheck(GGeoLib* geolib, GNodeLib* nodelib, NSceneConfig* config) 
        :
+       m_log(new SLog("GTreeCheck::GTreeCheck")),
        m_geolib(geolib),
        m_verbosity(geolib->getVerbosity()),
        m_nodelib(nodelib),

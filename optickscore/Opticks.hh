@@ -8,6 +8,7 @@
 #include "NGLM.hpp"
 
 
+class SLog ; 
 struct SArgs ; 
 template <typename> class NPY ;
 template <typename> class OpticksCfg ;
@@ -417,7 +418,10 @@ class OKCORE_API Opticks {
        bool isDbgTorch() const ; 
        bool isDbgSource() const ; 
        bool isDbgClose() const ; 
-
+   public:
+       bool isInternal() const ; 
+   private:
+       void setInternal(bool internal=true); 
    public:
        // methods required by BCfg listener classes
        void configureF(const char* name, std::vector<float> values);
@@ -426,6 +430,7 @@ class OKCORE_API Opticks {
    private:
        void setCfg(OpticksCfg<Opticks>* cfg);
    private:
+       SLog*                m_log ;
        Opticks*             m_ok ;   // for OK_PROFILE 
        SArgs*               m_sargs ; 
        int                  m_argc ; 
@@ -482,6 +487,7 @@ class OKCORE_API Opticks {
        glm::uvec4           m_size ; 
        glm::uvec4           m_position ; 
        unsigned             m_verbosity ; 
+       bool                 m_internal ; 
 
 };
 

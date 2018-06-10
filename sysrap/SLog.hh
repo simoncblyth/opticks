@@ -10,10 +10,11 @@ class SYSRAP_API SLog
     public:
         static void Nonce(); 
     public:
-        SLog(const char* label);
+        SLog(const char* label, const char* extra="" );
         void operator()(const char* msg="");
     private:
         const char* m_label ; 
+        const char* m_extra ; 
 };
 
 

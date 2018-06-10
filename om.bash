@@ -62,7 +62,7 @@ om-testlog
 EOU
 } 
 
-om-subs-(){ cat << EOS
+om-subs--all(){ cat << EOS
 okconf
 sysrap
 boostrap
@@ -88,9 +88,22 @@ EOS
 }
 
 
+om-subs--partial(){  cat << EOS
+#boostrap
+#optickscore
+ggeo
+extg4
+EOS
+}
+
+om-subs--()
+{
+   #om-subs--all
+   om-subs--partial
+}
 
 
-
+om-subs-(){ om-subs-- | grep -v ^\# ; }
 
 om-subs(){
   local arg=$1

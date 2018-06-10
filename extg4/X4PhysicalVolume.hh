@@ -34,7 +34,7 @@ class X4_API X4PhysicalVolume
         static const G4VPhysicalVolume* const Top();
         static GGeo* Convert(const G4VPhysicalVolume* const top);
     public:
-        static const char* Id(const G4VPhysicalVolume* const top);
+        static const char* Key(const G4VPhysicalVolume* const top);
         static std::string Digest( const G4VPhysicalVolume* const top);
         static std::string Digest( const G4LogicalVolume* const lv, const G4int depth );
     public:
@@ -49,8 +49,8 @@ class X4_API X4PhysicalVolume
         void VisitPV(const G4VPhysicalVolume* const pv, const G4Transform3D& T );
     private:
         const G4VPhysicalVolume*     m_top ;  
-        const char*                  m_id ;  
-        bool                         m_setid ; 
+        const char*                  m_key ;  
+        bool                         m_keyset ; 
         Opticks*                     m_ok ; 
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 

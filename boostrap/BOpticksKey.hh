@@ -20,6 +20,9 @@ where the geometry
 class BRAP_API BOpticksKey 
 {
     public:
+        static const char* G4LIVE ; 
+        static const char* IDFILE ; 
+        static int         LAYOUT ; 
         static BOpticksKey* GetKey();
         static bool         SetKey(const char* spec) ;  
     public:
@@ -28,9 +31,12 @@ class BRAP_API BOpticksKey
         const char* getClass() const ; 
         const char* getVolname() const ; 
         const char* getDigest() const ; 
-
+    public:
+        const char* getIdname() const ; 
+        const char* getIdfile() const ; 
+        int         getLayout() const ; 
+    public:
         std::string desc() const ; 
-
     private:
         BOpticksKey(const char* spec); 
     private:
@@ -39,6 +45,10 @@ class BRAP_API BOpticksKey
         const char* m_class   ; 
         const char* m_volname   ; 
         const char* m_digest ;
+
+        const char* m_idname ; // eg OpNovice_World_g4live
+        const char* m_idfile ; // eg g4ok.gltf
+        int         m_layout ; 
  
         static BOpticksKey* fKey ; 
 

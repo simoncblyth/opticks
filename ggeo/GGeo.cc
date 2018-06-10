@@ -8,6 +8,7 @@
 #include <boost/filesystem.hpp>
 namespace fs = boost::filesystem;
 
+#include "SLog.hh"
 #include "BStr.hh"
 #include "BMap.hh"
 
@@ -82,9 +83,10 @@ const char* GGeo::PICKFACE = "pickface" ;
 
 
 
-GGeo::GGeo(Opticks* opticks)
+GGeo::GGeo(Opticks* ok)
   :
-   m_ok(opticks), 
+   m_log(new SLog("GGeo::GGeo")),
+   m_ok(ok), 
    m_analytic(false),
    m_gltf(m_ok->getGLTF()),   
    m_composition(NULL), 
@@ -110,6 +112,7 @@ GGeo::GGeo(Opticks* opticks)
    m_gscene(NULL)
 {
    init(); 
+   (*m_log)("DONE"); 
 }
 
 
@@ -123,8 +126,6 @@ void GGeo::setLoaderImp(GLoaderImpFunctionPtr imp)
     m_loader_imp = imp ; 
 }
 
-
-
 void GGeo::setComposition(Composition* composition)
 {
     m_composition = composition ; 
@@ -134,8 +135,6 @@ Composition* GGeo::getComposition()
     return m_composition ; 
 }
 
-
-
 void GGeo::setMeshVerbosity(unsigned int verbosity)
 {
     m_mesh_verbosity = verbosity  ; 
@@ -144,9 +143,6 @@ unsigned int GGeo::getMeshVerbosity()
 {
     return m_mesh_verbosity ;
 }
-
-
-
 
 
 void GGeo::setMeshJoinImp(GJoinImpFunctionPtr imp)
@@ -348,7 +344,7 @@ void GGeo::init()
 
    m_loaded = cache_exists && cache_requested ;
 
-   LOG(trace) << "GGeo::init"
+   LOG(debug) << "GGeo::init"
              << " idpath " << idpath
              << " cache_exists " << cache_exists 
              << " cache_requested " << cache_requested

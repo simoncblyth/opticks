@@ -37,9 +37,9 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     :
     m_top(top),
-    m_id(Id(m_top)),
-    m_setid(BOpticksKey::SetKey(m_id)),
-    m_ok(Opticks::GetOpticks()),  // hmm need to set the idpath appropriately based on identity of the volume ?
+    m_key(Key(m_top)),
+    m_keyset(BOpticksKey::SetKey(m_key)),
+    m_ok(Opticks::GetOpticks()),  // Opticks instanciation must be after BOpticksKey::SetKey
     m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
     m_verbosity(m_ok->getVerbosity()),
@@ -120,7 +120,7 @@ std::string X4PhysicalVolume::Digest( const G4VPhysicalVolume* const top)
 }
 
 
-const char* X4PhysicalVolume::Id(const G4VPhysicalVolume* const top )
+const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 {
     std::string digest = Digest(top);
 
@@ -137,8 +137,8 @@ const char* X4PhysicalVolume::Id(const G4VPhysicalVolume* const top )
        << digest 
        ;
        
-    std::string id = ss.str();
-    return strdup(id.c_str());
+    std::string key = ss.str();
+    return strdup(key.c_str());
 }   
 
 

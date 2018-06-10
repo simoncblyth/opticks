@@ -27,6 +27,8 @@ History
 #include <string>
 #include <vector>
 
+class SLog ; 
+
 class Opticks ;
 class OpticksResource ;
 class NSequence ; 
@@ -80,6 +82,7 @@ class OKCORE_API OpticksAttrSeq {
     private:
         void init();
     private:
+        SLog*                                m_log ; 
         Opticks*                             m_ok ; 
         OpticksResource*                     m_resource ; 
         const char*                          m_type ; 

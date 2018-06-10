@@ -12,6 +12,7 @@
 
 class NLookup ; 
 class TorchStepNPY ; 
+class SLog ; 
 
 // okc-
 class Opticks ; 
@@ -322,6 +323,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
+        SLog*                         m_log ; 
         Opticks*                      m_ok ;  
         bool                          m_analytic ; 
         int                           m_gltf ; 

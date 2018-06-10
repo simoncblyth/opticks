@@ -13,6 +13,7 @@ class OpticksColors ;
 class OpticksFlags ; 
 class OpticksAttrSeq ;
 
+class SLog ; 
 class BEnv ; 
 
 class Types ;
@@ -38,6 +39,8 @@ instanciated by BOpticks::init prior to configuration.
 
 class OKCORE_API OpticksResource : public BOpticksResource {
     private:
+       static const char* EMPTY ; 
+       static const char* G4LIVE ; 
        static const char* JUNO ; 
        static const char* DAYABAY ; 
        static const char* DPIB ; 
@@ -79,7 +82,6 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        BEnv* readIniEnvironment(const std::string& relpath);
        void readG4Environment();
        void readOpticksEnvironment();
-       void readKey();
        void readEnvironment();
        void readMetadata();
        void identifyGeometry();
@@ -157,15 +159,16 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        const char* getDetector();
        const char* getDetectorName();
+       bool        isG4Live();
        bool        isJuno();
        bool        isDayabay();
        bool        isPmtInBox();
        bool        isOther();
    private:
+       SLog*       m_log ; 
        Opticks*    m_opticks ; 
        const char* m_lastarg ; 
    private:
-       OpticksKey* m_idkey ; 
        const char* m_geokey ;
    private:
        // results of readEnvironment
@@ -186,6 +189,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        BEnv*          m_okenv ; 
    private:
        // results of identifyGeometry
+       bool        m_g4live ;
        bool        m_dayabay ; 
        bool        m_juno ; 
        bool        m_dpib ; 

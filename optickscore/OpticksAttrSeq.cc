@@ -7,6 +7,7 @@
 
 #include <boost/lexical_cast.hpp>
 //#include <boost/algorithm/string.hpp>
+#include "SLog.hh"
 
 // brap-
 #include "BStr.hh"
@@ -31,6 +32,7 @@ unsigned int OpticksAttrSeq::ERROR_COLOR = 0xAAAAAA ;
 
 OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    :
+   m_log(new SLog("OpticksAttrSeq::OpticksAttrSeq")),
    m_ok(ok),
    m_resource(m_ok->getResource()),
    m_type(strdup(type)),
@@ -38,6 +40,7 @@ OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    m_sequence(NULL)
 {
    init();
+   (*m_log)("DONE");
 }
 
 const char* OpticksAttrSeq::getType()
@@ -70,13 +73,19 @@ void OpticksAttrSeq::loadPrefs()
     // json -> maps : m_color, m_abbrev, m_order
 
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
+    {
         LOG(debug) << "OpticksAttrSeq::loadPrefs color " << m_type ;
+    }
 
     if(m_resource->loadPreference(m_abbrev, m_type, "abbrev.json"))
+    {
         LOG(debug) << "OpticksAttrSeq::loadPrefs abbrev " << m_type ;
+    }
 
     if(m_resource->loadPreference(m_order, m_type, "order.json"))
+    {
         LOG(debug) << "OpticksAttrSeq::loadPrefs order " << m_type ;
+    }
 }
 
 void OpticksAttrSeq::setSequence(NSequence* seq)
