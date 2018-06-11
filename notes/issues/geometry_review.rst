@@ -87,6 +87,11 @@ NCSG
     analytic/sc.py 
     analytic/csg.py 
 
+    NCSG::LoadTree loads from nodes.npy transforms.npy etc.. creating a tree of nnode 
+    instances 
+
+
+
 NGLTF
     holds the underlying ygltf tree (YoctoGL)
     ... currently assumes that always loads from file 
@@ -110,6 +115,234 @@ NScene(NGLTF)
 
     This is essentially a GLTF exporter for G4 (if you decide to 
     write the gltf to file), but with my extras for Opticks.
+
+
+GParts
+
+    * constructed from NCSG instances 
+    * is merged along with meshes to create combo GParts held by GMergedMesh  
+    * provides analytic buffer interface consumed by OXRAP which copies to GPU 
+   
+
+
+GParts
+---------
+
+Single Tree GParts created from from NCSG by GScene
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+GParts are created from the NCSG in GScene::createVolume where they get attached to a GSolid::
+
+    629 GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
+    630 {
+    ...
+    644     NCSG*   csg =  getCSG(rel_mesh_idx);
+
+    661     std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
+    662 
+    663     GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
+    664 
+    665     pts->setBndLib(m_tri_bndlib);
+    666 
+    667     solid->setParts( pts );
+
+
+
+GScene
+--------
+
+::
+
+     585 GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
+     586 {       
+     587     if(m_verbosity > 0)
+     588     LOG(info) << "GScene::createVolumeTree START"
+     589               << "  verbosity " << m_verbosity
+     590               << " query " << m_query->description()
+     591               ;
+     592     assert(scene);
+     593 
+     594     //scene->dumpNdTree("GScene::createVolumeTree");
+     595         
+     596     nd* root_nd = scene->getRoot() ;
+     597     assert(root_nd->idx == 0 );
+     598         
+     599     GSolid* parent = NULL ;
+     600     unsigned depth = 0 ; 
+     601     bool recursive_select = false ; 
+     602     GSolid* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
+     603     assert(root);
+     604 
+     605     assert( m_nodes.size() == scene->getNumNd()) ;
+     606         
+     607     if(m_verbosity > 0)
+     608     LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ;
+     609     return root ; 
+     610 }              
+
+
+NCSG : serialization ctor boost from nnode tree
+-------------------------------------------------
+
+::
+
+     088 // ctor : booting from in memory node tree
+      89 NCSG::NCSG(nnode* root )
+      90    :
+      91    m_meta(NULL),
+      92    m_treedir(NULL),
+      93    m_index(0),
+      94    m_surface_epsilon(SURFACE_EPSILON),
+      95    m_verbosity(root->verbosity),
+      96    m_usedglobally(false),
+      97    m_root(root),
+      98    m_points(NULL),
+      99    m_uncoincide(make_uncoincide()),
+     100    m_nudger(make_nudger()),
+     101    m_nodes(NULL),
+     102    m_transforms(NULL),
+     103    m_gtransforms(NULL),
+     104    m_planes(NULL),
+     105    m_srcverts(NULL),
+     106    m_srcfaces(NULL),
+     107    m_num_nodes(0),
+     108    m_num_transforms(0),
+     109    m_num_planes(0),
+     110    m_num_srcverts(0),
+     111    m_num_srcfaces(0),
+     112    m_height(root->maxdepth()),
+     113    m_boundary(NULL),
+     114    m_config(NULL),
+     115    m_gpuoffset(0,0,0),
+     116    m_container(0),
+     117    m_containerscale(2.f),
+     118    m_tris(NULL)
+     119 {
+     120 
+     121    setBoundary( root->boundary );
+     122 
+     123    m_num_nodes = NumNodes(m_height);
+     124 
+     125    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
+     126    m_nodes->zero();
+     127 
+     128    m_transforms = NPY<float>::make(0,NTRAN,4,4) ;
+     129    m_transforms->zero();
+     130 
+     131    m_gtransforms = NPY<float>::make(0,NTRAN,4,4) ;
+     132    m_gtransforms->zero();
+     133 
+     134    m_planes = NPY<float>::make(0,4);
+     135    m_planes->zero();
+     136 
+     137    m_meta = new NParameters ;
+     138 }
+
+
+
+
+
+
+G4GDML Writing Solids
+-----------------------
+
+G4GDMLWriteStructure::TraverseVolumeTree
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Primary AddSolid invokation happens at the end of the recursive tail of 
+the structure traverse::
+
+    381 
+    382 G4Transform3D G4GDMLWriteStructure::
+    383 TraverseVolumeTree(const G4LogicalVolume* const volumePtr, const G4int depth)
+    384 {
+    ...
+    539    structureElement->appendChild(volumeElement);
+    540    // Append the volume AFTER traversing the children so that
+    541    // the order of volumes will be correct!
+    542 
+    543    VolumeMap()[tmplv] = R;
+    544 
+    545    AddExtension(volumeElement, volumePtr);
+    546    // Add any possible user defined extension attached to a volume
+    547 
+    548    AddMaterial(volumePtr->GetMaterial());
+    549    // Add the involved materials and solids!
+    550 
+    551    AddSolid(solidPtr);
+    552 
+    553    SkinSurfaceCache(GetSkinSurface(volumePtr));
+    554 
+    555    return R;
+    556 }
+
+
+G4GDMLWriteSolids::SolidsWrite G4GDMLWriteStructure::StructureWrite
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Setup the "child-of-root" level solids element and clear the list of instances::
+
+    1022 void G4GDMLWriteSolids::SolidsWrite(xercesc::DOMElement* gdmlElement)
+    1023 {
+    1024    G4cout << "G4GDML: Writing solids..." << G4endl;
+    1025 
+    1026    solidsElement = NewElement("solids");
+    1027    gdmlElement->appendChild(solidsElement);
+    1028 
+    1029    solidList.clear();
+    1030 }
+    1031 
+
+The "structure" element is also "child-of-root":: 
+
+
+    374 void G4GDMLWriteStructure::StructureWrite(xercesc::DOMElement* gdmlElement)
+    375 {
+    376    G4cout << "G4GDML: Writing structure..." << G4endl;
+    377 
+    378    structureElement = NewElement("structure");
+    379    gdmlElement->appendChild(structureElement);
+    380 }
+
+
+
+
+
+
+
+G4GDMLWriteSolids::AddSolid(G4VSolid* ) subclass fanout
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* skip G4VSolid instances that have been added already
+
+* dynamic_cast to identify subclass, then call Write method
+  specific to the subclass
+
+  * many of the Write methods (for composites/booleans) 
+    will first invoke AddSolid for their constituents before
+    writing the elements for themselves using name references 
+    to constituents
+
+
+::
+
+
+    1032 void G4GDMLWriteSolids::AddSolid(const G4VSolid* const solidPtr)
+    1033 {
+    1034    for (size_t i=0; i<solidList.size(); i++)   // Check if solid is
+    1035    {                                           // already in the list!
+    1036       if (solidList[i] == solidPtr)  { return; }
+    1037    }
+    1038 
+    1039    solidList.push_back(solidPtr);
+    1040 
+    1041    if (const G4BooleanSolid* const booleanPtr
+    1042      = dynamic_cast<const G4BooleanSolid*>(solidPtr))
+    1043      { BooleanWrite(solidsElement,booleanPtr); } else
+    1044    if (solidPtr->GetEntityType()=="G4MultiUnion")
+    1045      { const G4MultiUnion* const munionPtr
+    1046      = static_cast<const G4MultiUnion*>(solidPtr);
+
 
 
 

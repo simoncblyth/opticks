@@ -166,6 +166,46 @@ GLTF persisting of GGeo ?
 
 
 
+Solids/Nodes/Meshes/CSG Trees
+---------------------------------
+
+Many G4 solids (depending on parameter values) are represented in Opticks as CSG trees, so 
+need to first decide which node class to use for the CSG tree structure.    
+
+
+Review node classes
+------------------------
+
+
+npy.nnode subclasses
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+    epsilon:npy blyth$ grep :\ nnode *.hpp
+    NBox.hpp:struct NPY_API nbox : nnode 
+    NCone.hpp:struct NPY_API ncone : nnode 
+    NConvexPolyhedron.hpp:struct NPY_API nconvexpolyhedron : nnode 
+    NCubic.hpp:struct NPY_API ncubic : nnode 
+    NCylinder.hpp:struct NPY_API ncylinder : nnode 
+    NDisc.hpp:struct NPY_API ndisc : nnode 
+    NHyperboloid.hpp:struct NPY_API nhyperboloid : nnode 
+    NNode.hpp:struct NPY_API nunion : nnode {
+    NNode.hpp:struct NPY_API nintersection : nnode {
+    NNode.hpp:struct NPY_API ndifference : nnode {
+    NPlane.hpp:struct NPY_API nplane : nnode 
+    NSlab.hpp:struct NPY_API nslab : nnode 
+    NSphere.hpp:struct NPY_API nsphere : nnode {
+    NTorus.hpp:struct NPY_API ntorus : nnode 
+    NZSphere.hpp:struct NPY_API nzsphere : nnode {
+    epsilon:npy blyth$ 
+
+
+
+
+
+
+
 
 
 Approaches 

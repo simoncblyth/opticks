@@ -50,7 +50,11 @@ find_package(YoctoGLRap REQUIRED CONFIG)
 
 set(SOURCES
      
+    X4Entity.cc
+    X4SolidBase.cc
     X4Solid.cc
+    X4Mesh.cc
+    X4SolidList.cc
     X4Material.cc
     X4MaterialTable.cc
     X4PhysicsVector.cc
@@ -66,7 +70,11 @@ set(SOURCES
 )
 set(HEADERS
 
+    X4Entity.hh
+    X4SolidBase.hh
     X4Solid.hh
+    X4Mesh.hh
+    X4SolidList.hh
     X4Material.hh
     X4MaterialTable.hh
     X4PhysicsVector.hh

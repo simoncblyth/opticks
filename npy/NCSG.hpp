@@ -16,10 +16,22 @@ NCSG
 
 cf dev/csg/csg.py 
 
-* this can currently only Deserialize from a python written directory 
+* NB two constructors:
+
+  1. deserialize from a python written treedir
+  2. serialize an nnode tree
 
 * hmm the raw loaded buffer lacks bounding boxes when derived from user input, 
   to get those need to vivify the CSG tree and the export it back to the buffer
+
+
+TODO SOMETIME : break up the monolith
+--------------------------------------
+
+* Does too much for one class. 
+* A pivotal class, so rejigging it will be time consuming. 
+
+* perhaps transport buffers could live in a separate class fairly easily  
 
 
 Where NCSG is used
@@ -48,7 +60,9 @@ GParts* GParts::make( NCSG* tree)
     Little to do, just bndlib hookup :
     huh but thats done in GMaker::makeFromCSG too...
 
-    * TODO: review if GParts is serving any purpose for NCSG
+    * Is GParts is serving any purpose for NCSG ?
+      YES : it provides merging of analytic solids
+      in parallel with the merging of triangulated meshes
 
 
 **/
@@ -279,9 +293,6 @@ class NPY_API NCSG {
         
         NTrianglesNPY*         m_tris ; 
         std::vector<glm::vec3> m_surface_points ; 
-
-      
-
 
 };
 

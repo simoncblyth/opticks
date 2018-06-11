@@ -196,12 +196,13 @@ struct NPY_API nnode
     unsigned planeIdx();
     unsigned planeNum();
 
-    unsigned idx ; 
+    unsigned     idx ; 
     OpticksCSG_t type ;  
-    nnode* left ; 
-    nnode* right ; 
-    nnode* parent ; 
-    nnode* other ; 
+    nnode*       left ; 
+    nnode*       right ; 
+    nnode*       parent ; 
+    nnode*       other ; 
+
     const char* label ; 
     const char* treedir ; 
     int         treeidx ;   
@@ -209,9 +210,9 @@ struct NPY_API nnode
 
     const nmat4triple* transform ; 
     const nmat4triple* gtransform ; 
-    unsigned   gtransform_idx ; 
-    bool  complement ; 
-    int verbosity ; 
+    unsigned           gtransform_idx ; 
+    bool               complement ; 
+    int                verbosity ; 
 
     nquad param ; 
     nquad param1 ; 
@@ -223,8 +224,8 @@ struct NPY_API nnode
     std::vector<nuv>       par_coords ; 
 
     NParameters*  meta ;
-    NNodeDump* _dump ;
-    nbbox*   _bbox_model ; 
+    NNodeDump*    _dump ;
+    nbbox*        _bbox_model ; 
 
 
 };

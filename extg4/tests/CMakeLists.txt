@@ -5,7 +5,11 @@ include(OpticksBuildOptions)
 
 
 set(TEST_SOURCES
+
+    X4EntityTest.cc
     X4SolidTest.cc
+    X4MeshTest.cc
+    X4SolidListTest.cc
     X4PhysicsVectorTest.cc
     X4MaterialTest.cc
     X4MaterialTableTest.cc

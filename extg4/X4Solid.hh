@@ -2,43 +2,46 @@
 
 #include "X4_API_EXPORT.hh"
 
+#include "G4ThreeVector.hh"
+#include "G4RotationMatrix.hh"
+#include "X4SolidBase.hh"
 class G4VSolid ; 
-class G4Sphere ; 
-class G4Polyhedron ; 
+struct nnode ; 
 
-template <typename T> class NPY ;
 
 /**
 X4Solid
 ==========
 
-hmm: would be better for this to give birth to instances
-     without any G4 dependency (eg GGeo classes)
+
+/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
+
+
+Converting to nnode OR NCSG ?
+------------------------------
+
+* NCSG is higher level focusing on tree transport/import/export 
+* nnode focuses on shape param, bbox, sdf : and is the base class for 
+  eg nbox, ncone, nsphere, nconvexpolyhedron, nunion, ...
+
+Thus nnode is the appropriate target, and NCSG has an nnode ctor : so can be 
+obtained later.
 
 
 **/
 
-class X4_API X4Solid
+class X4_API X4Solid : public X4SolidBase 
 {
     public:
-        static X4Solid* Create(const G4Sphere* sphere); 
-    public:
         X4Solid(const G4VSolid* solid); 
-        std::string desc() const  ; 
     private:
         void init();
-        void polygonize();
-        void collect();
     private:
-        void collect_vtx(int ivert);
-        void collect_raw(int iface);
-        void collect_tri();
+        void convertBooleanSolid();
+        void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
+        G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
     private:
-        const G4VSolid* m_solid ;  
-        G4Polyhedron*   m_polyhedron ;
-        NPY<float>*     m_vtx ; 
-        NPY<unsigned>*  m_raw ; // tris or quads
-        NPY<unsigned>*  m_tri ; // by splitting quads  
+        void convertSphere();
 
 };
 

@@ -55,14 +55,14 @@ GGeo* X4PhysicalVolume::getGGeo()
 
 void X4PhysicalVolume::init()
 {
-    VolumeTreeTraverse();
+    TraverseVolumeTree();
 }
 
-void X4PhysicalVolume::VolumeTreeTraverse()
+void X4PhysicalVolume::TraverseVolumeTree()
 {
      assert(m_top) ;
      G4LogicalVolume* lv = m_top->GetLogicalVolume() ;
-     VolumeTreeTraverse(lv, 0 );
+     TraverseVolumeTree(lv, 0 );
 }
 
 std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth )
@@ -143,7 +143,20 @@ const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 
 
 
-G4Transform3D X4PhysicalVolume::VolumeTreeTraverse(const G4LogicalVolume* const lv, const G4int depth)
+/**
+cf 
+/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteStructure.cc
+/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
+
+Many G4 solids (depending on parameter values) are represented in Opticks as CSG trees, so 
+need to first decide which node class to use for the CSG tree structure.    
+
+
+
+
+**/
+
+G4Transform3D X4PhysicalVolume::TraverseVolumeTree(const G4LogicalVolume* const lv, const G4int depth)
 {
      G4Transform3D R, invR ;  // huh invR stays identity, see g4dae/src/G4DAEWriteStructure.cc
      Visit(lv);
@@ -162,7 +175,7 @@ G4Transform3D X4PhysicalVolume::VolumeTreeTraverse(const G4LogicalVolume* const 
             invrot = rot.inverse();
          }
 
-         daughterR = VolumeTreeTraverse(physvol->GetLogicalVolume(),depth+1);
+         daughterR = TraverseVolumeTree(physvol->GetLogicalVolume(),depth+1);
 
          // G4Transform3D P(rot,physvol->GetObjectTranslation());  GDML does this : not inverting the rotation portion 
          G4Transform3D P(invrot,physvol->GetObjectTranslation());
@@ -179,6 +192,11 @@ G4Transform3D X4PhysicalVolume::VolumeTreeTraverse(const G4LogicalVolume* const 
         //  So the G4DAE holds just the one level transforms, relying on the post processing
         //  tree traverse to multiply them to give global transforms 
      }
+
+
+
+     //G4VSolid* solid = lv->GetSolid();
+     //   -> GParts, GMesh 
 
 
      G4Material* material = lv->GetMaterial();

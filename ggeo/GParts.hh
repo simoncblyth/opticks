@@ -27,7 +27,6 @@ class GItemList ;
 class GBndLib ; 
 
 /**
-
 GParts
 ======= 
 
@@ -48,18 +47,13 @@ is invoked by GParts::close which happens late
 This approach was adopted to allow dynamic addition of geometry and
 boundaries, which is convenient for testing.
 
-
-
 Lifecycle
 -----------
-
 
 Single Tree GParts created from from NCSG by GScene
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GParts are created from the NCSG in GScene::createVolume where they get attached to a GSolid.
-
-::
+GParts are created from the NCSG in GScene::createVolume where they get attached to a GSolid::
 
     629 GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
     630 {
@@ -133,11 +127,7 @@ Primary GParts usage by OGeo::makeAnalyticGeometry feeding cu/intersect_analytic
     501      // PmtInBox yielding -1,1,4 ?
     502 
 
-
-
-
 **/
-
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"

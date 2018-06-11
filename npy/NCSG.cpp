@@ -1449,7 +1449,9 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
     if(config->verbosity > 1) tree->dump("NCSG::LoadTree");
 
     if(config->polygonize)
-    tree->polygonize();
+    {
+       tree->polygonize();
+    }
 
     tree->collect_surface_points();
 

@@ -43,8 +43,8 @@ class X4_API X4PhysicalVolume
     private:
         void init();
     private:
-        void VolumeTreeTraverse(); 
-        G4Transform3D VolumeTreeTraverse(const G4LogicalVolume* const volumePtr, const G4int depth);
+        void TraverseVolumeTree(); 
+        G4Transform3D TraverseVolumeTree(const G4LogicalVolume* const volumePtr, const G4int depth);
         void Visit(const G4LogicalVolume* const lv);
         void VisitPV(const G4VPhysicalVolume* const pv, const G4Transform3D& T );
     private:
