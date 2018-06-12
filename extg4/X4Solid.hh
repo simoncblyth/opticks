@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include "X4_API_EXPORT.hh"
 
 #include "G4ThreeVector.hh"
@@ -38,8 +39,18 @@ the name as a "pointer" reference.
 
 **/
 
+
+
+
 class X4_API X4Solid : public X4SolidBase 
 {
+    struct zplane 
+    {
+        double rmin ;  
+        double rmax ;  
+        double z ; 
+    };
+
     public:
         X4Solid(const G4VSolid* solid); 
     private:
@@ -52,12 +63,16 @@ class X4_API X4Solid : public X4SolidBase
         void convertTubs();
         void convertTrd();
         void convertCons();
+        void convertTorus();
+        void convertEllipsoid();
+        void convertPolycone();
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
         nnode* convertSphere_(bool only_inner);
         nnode* convertCons_(bool only_inner);
+        void   convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims );
 
 };
 

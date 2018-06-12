@@ -257,5 +257,9 @@ inline NPY_API ndifference make_difference(nnode* left, nnode* right)
     ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
+inline NPY_API nnode make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+{
+    nnode n ;    nnode::Init(n, operator_ , left, right ); return n ;
+}
 
 

@@ -1,4 +1,10 @@
 
+#include <iterator>
+#include <algorithm>
+
+#include "G4Polycone.hh"
+#include "G4Ellipsoid.hh"
+#include "G4Torus.hh"
 #include "G4Cons.hh"
 #include "G4Trd.hh"
 #include "G4Tubs.hh"
@@ -12,9 +18,12 @@
 #include "G4SystemOfUnits.hh"
 
 #include "X4Solid.hh"
-
 #include "BStr.hh"
 
+#include "GLMFormat.hpp"
+#include "NGLMExt.hpp"
+#include "NGLM.hpp"
+#include "NTorus.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
 #include "NCylinder.hpp"
@@ -468,4 +477,172 @@ void X4Solid::convertCons()
     setRoot(n); 
 }
 
+void X4Solid::convertTorus()
+{  
+    const G4Torus* const solid = static_cast<const G4Torus*>(m_solid);
+    assert(solid); 
+
+    // G4GDMLWriteSolids::TorusWrite
+
+    float rmin = solid->GetRmin()/mm ; 
+    float rmax = solid->GetRmax()/mm ;
+    float rtor = solid->GetRtor()/mm ;
+    float startPhi = solid->GetSPhi()/degree ; 
+    float deltaPhi = solid->GetDPhi()/degree ; 
+
+    assert( rmin == 0.f ); // torus with rmin not yet handled 
+    assert( startPhi == 0.f && deltaPhi == 360.f ); 
+
+    float r = rmax ; 
+    float R = rtor ; 
+    assert( R > r ); 
+
+    nnode* n = new ntorus(make_torus(R, r)) ;
+    n->label = BStr::concat( m_name , "_torus" , NULL ); 
+    setRoot(n); 
+}
+
+void X4Solid::convertEllipsoid()
+{  
+    const G4Ellipsoid* const solid = static_cast<const G4Ellipsoid*>(m_solid);
+    assert(solid); 
+
+    // G4GDMLWriteSolids::EllipsoidWrite
+
+    float ax = solid->GetSemiAxisMax(0)/mm ; 
+    float by = solid->GetSemiAxisMax(1)/mm ; 
+    float cz = solid->GetSemiAxisMax(2)/mm ; 
+
+    glm::vec3 scale( ax/cz, by/cz, 1.f) ;   
+    // unity scaling in z, so z-coords are unaffected  
+ 
+    float zcut1 = solid->GetZBottomCut()/mm ; 
+    float zcut2 = solid->GetZTopCut()/mm ;
+
+    float z1 = zcut1 != 0.f && zcut1 > -cz ? zcut1 : -cz ; 
+    float z2 = zcut2 != 0.f && zcut2 <  cz ? zcut2 :  cz ; 
+    assert( z2 > z1 ) ;  
+
+    bool zslice = z1 > -cz || z2 < cz ;  
+
+    nnode* cn = zslice ? 
+                          (nnode*)new nzsphere(make_zsphere( 0.f, 0.f, 0.f, cz, z1, z2 )) 
+                       :
+                          (nnode*)new nsphere(make_sphere( 0.f, 0.f, 0.f, cz )) 
+                       ;
+
+    cn->label = BStr::concat(m_name, "_ellipsoid", NULL) ; 
+    cn->transform = nmat4triple::make_scale( scale );
+    
+    LOG(info) 
+         << std::endl  
+         << gpresent("tr.t", cn->transform->t ) 
+         << std::endl  
+         << gpresent("tr.v", cn->transform->v )  
+         << std::endl  
+         << gpresent("tr.q", cn->transform->q ) 
+         << std::endl  
+         ;
+
+    setRoot(cn); 
+}
+
+
+void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims )
+{
+    for( unsigned i=1 ; i < zp.size() ; i++ )
+    {
+        const zplane& zp1 = zp[i-1] ; 
+        const zplane& zp2 = zp[i] ; 
+        double r1 = zp1.rmax ; 
+        double r2 = zp2.rmax ; 
+        double z1 = zp1.z ; 
+        double z2 = zp2.z ; 
+
+        if( z1 == z2 )
+        {
+            LOG(warning) << " skipping z2 == z1 zp " ; 
+            continue ; 
+        }
+        
+        bool z_ascending = z2 > z1 ; 
+        if(!z_ascending) LOG(fatal) << " !z_ascending " 
+                                    << " z1 " << z1  
+                                    << " z2 " << z2
+                                    ;  
+        assert(z_ascending); 
+
+        nnode* n = NULL ; 
+        if( r2 == r1 )
+        { 
+            n = new ncylinder(make_cylinder(r2, z1, z2));
+            n->label = BStr::concat( m_name, i-1, "_zp_cylinder" ); 
+        }
+        else
+        {
+            n = new ncone(make_cone(r1,z1,r2,z2)) ;
+            n->label = BStr::concat<unsigned>(m_name, i-1 , "_zp_cone" ) ; 
+        }
+        prims.push_back(n); 
+    }   // over pairs of planes
+}
+
+
+void X4Solid::convertPolycone()
+{  
+    // G4GDMLWriteSolids::PolyconeWrite
+    // G4GDMLWriteSolids::ZplaneWrite
+
+    const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
+    assert(solid); 
+    const G4PolyconeHistorical* ph = solid->GetOriginalParameters() ;
+
+    float startphi = ph->Start_angle/degree ;  
+    float deltaphi = ph->Opening_angle/degree ;
+    assert( startphi == 0.f && deltaphi == 360.f ); 
+
+    std::vector<zplane> zp(ph->Num_z_planes) ; 
+
+    std::set<double> Rmin ; 
+    unsigned nz = ph->Num_z_planes ; 
+
+    for (int i=0; i < nz ; i++) 
+    {
+        zp[i] = { ph->Rmin[i], ph->Rmax[i], ph->Z_values[i] } ;  
+        Rmin.insert( ph->Rmin[i] );
+    }
+
+    if( zp.size() == 2 && zp[0].z > zp[0].z )
+    {
+        LOG(warning) << "Polycone swap misordered pair of zplanes for " << m_name ; 
+        std::reverse( std::begin(zp), std::end(zp) ) ; 
+    }
+
+    std::vector<nnode*> prims ; 
+    convertPolyconePrimitives( zp, prims ); 
+    // nnode* cn = NTreeBuilder::Uniontree(prims) ;
+
+
+    bool multi_Rmin = Rmin.size() > 1 ; 
+    if( multi_Rmin ) 
+    {
+        LOG(fatal) << " multiple Rmin is unhandled " << m_name ;  
+    }
+    assert( !multi_Rmin ) ; 
+
+    double rmin = *Rmin.begin() ; 
+    bool has_inner = rmin > 0. ; 
+
+    nnode* inner = NULL ; 
+    if(has_inner)
+    {
+        double zmin = zp[0].z ; 
+        double zmax = zp[nz-1].z ; 
+        inner = new ncylinder(make_cylinder(rmin, zmin, zmax));
+        inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
+    }
+
+
+
+}
 

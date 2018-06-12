@@ -113,6 +113,7 @@ mortonlibTest.cc
 NGrid3Test.cc
 NField3Test.cc
 NTreeToolsTest.cc
+NTreeBuilderTest.cc
 
 NGLMExtTest.cc
 

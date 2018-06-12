@@ -1,4 +1,6 @@
 
+#include "G4Ellipsoid.hh"
+#include "G4Torus.hh"
 #include "G4Cons.hh"
 #include "G4Trd.hh"
 #include "G4Tubs.hh"
@@ -62,6 +64,20 @@ void test_G4Cons()
 }
 
 
+void test_G4Torus()
+{
+    G4Torus* a = X4Solid::MakeTorus("torus", 100.f , 10.f ) ;   test_solid(a) ; 
+}
+
+void test_G4Ellipsoid()
+{
+    G4Ellipsoid* a = X4Solid::MakeEllipsoid("ellipsoid", 100.f , 150.f , 50.f ) ;   test_solid(a) ; 
+}
+
+
+
+
+ 
 
 int main(int argc, char** argv)
 {
@@ -72,7 +88,9 @@ int main(int argc, char** argv)
     //test_G4Box();
     //test_G4Tubs();
     //test_G4Trd();
-    test_G4Cons();
+    //test_G4Cons();
+    //test_G4Torus();
+    test_G4Ellipsoid();
  
     return 0 ; 
 }

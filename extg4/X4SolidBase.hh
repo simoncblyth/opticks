@@ -5,6 +5,8 @@
 #include "X4SolidBase.hh"
 
 
+class G4Ellipsoid ; 
+class G4Torus ; 
 class G4Cons ; 
 class G4Trd ; 
 class G4Tubs ; 
@@ -33,6 +35,8 @@ you handle each solid.
 class X4_API X4SolidBase 
 {
     public:
+        static G4Ellipsoid* MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1=0.f, float zcut2=0.f );
+        static G4Torus*  MakeTorus(const char* name, float R, float r ); 
         static G4Cons*   MakeCone(const char* name, float z, float rmax1, float rmax2, float rmin1=0.f, float rmin2=0.f, float startphi=0.f, float deltaphi=360.f );
         static G4Trd*    MakeTrapezoidCube(const char* name, float sz);
         static G4Trd*    MakeTrapezoid(const char* name, float z,  float x1, float y1, float x2, float y2 );

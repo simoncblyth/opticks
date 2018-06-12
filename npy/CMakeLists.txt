@@ -146,6 +146,7 @@ set(SOURCES
     NField3.cpp
     NFieldGrid3.cpp
 
+    NTreeBuilder.cpp
     NTreeTools.cpp
     NGLMExt.cpp
     NGLMCF.cpp
@@ -302,6 +303,7 @@ NGrid3.hpp
 NField3.hpp
 NFieldGrid3.hpp
 
+NTreeBuilder.hpp
 NTreeTools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp
@@ -349,7 +351,7 @@ endif()
 
 
 
-add_library( ${name}  SHARED ${SOURCES})
+add_library( ${name}  SHARED ${SOURCES} ${HEADERS} )
 
 # needed for PyMCubes/marchingcubes.cpp
 target_include_directories( ${name} PUBLIC 

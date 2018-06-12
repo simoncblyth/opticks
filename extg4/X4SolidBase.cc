@@ -52,6 +52,28 @@ std::string X4SolidBase::desc() const
 }
 
 
+G4Ellipsoid* X4SolidBase::MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1, float zcut2  )
+{
+    G4double  pxSemiAxis = ax ; 
+    G4double  pySemiAxis = by ; 
+    G4double  pzSemiAxis = cz ; 
+    G4double  pzBottomCut = zcut1 ; 
+    G4double  pzTopCut = zcut2 ; 
+    return new G4Ellipsoid( name, pxSemiAxis, pySemiAxis, pzSemiAxis, pzBottomCut, pzTopCut ); 
+}
+
+
+G4Torus* X4SolidBase::MakeTorus(const char* name, float R, float r )
+{
+    G4double Rmin = 0. ; 
+    G4double Rmax = r ; 
+    G4double Rtor = R ; 
+    G4double SPhi = 0. ; 
+    G4double DPhi = 2.0*CLHEP::pi ; 
+    return new G4Torus( name, Rmin, Rmax, Rtor, SPhi, DPhi ); 
+}
+
+
 G4Cons* X4SolidBase::MakeCone(const char* name, float z, float rmax1, float rmax2, float rmin1, float rmin2, float startphi, float deltaphi  )
 {
     G4double pRmin1 = rmin1 ; 
