@@ -58,14 +58,19 @@ void X4Mesh::polygonize()
        }   
     }   
 
-    LOG(info) << " cout " << coutbuf.str() ;
-    LOG(info) << " cerr " << cerrbuf.str() ;
-    
+    std::string cout_ = coutbuf.str() ; 
+    std::string cerr_ = cerrbuf.str() ; 
+
+    if(cout_.size() > 0) LOG(info) << cout_ ; 
+    if(cerr_.size() > 0) LOG(warning) << cerr_ ; 
+
     std::string polysmry ; 
     { 
        std::stringstream ss ;
        ss << "v " << m_polyhedron->GetNoVertices() << " " ;
        ss << "f " << m_polyhedron->GetNoFacets() << " " ;
+       ss << "cout " << cout_.size() << " " ; 
+       ss << "cerr " << cerr_.size() << " " ; 
        polysmry = ss.str();
     }
    

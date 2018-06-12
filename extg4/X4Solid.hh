@@ -28,6 +28,14 @@ Thus nnode is the appropriate target, and NCSG has an nnode ctor : so can be
 obtained later.
 
 
+Should names has pointer suffixes like GDML ? 
+-----------------------------------------------
+
+Probably NO as its a live conversion 
+(not via file) from one pointer to another : are not using 
+the name as a "pointer" reference. 
+
+
 **/
 
 class X4_API X4Solid : public X4SolidBase 
@@ -38,10 +46,18 @@ class X4_API X4Solid : public X4SolidBase
         void init();
     private:
         void convertBooleanSolid();
+        void convertSphere();
+        void convertOrb();
+        void convertBox();
+        void convertTubs();
+        void convertTrd();
+        void convertCons();
+    private:
+        nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
-    private:
-        void convertSphere();
+        nnode* convertSphere_(bool only_inner);
+        nnode* convertCons_(bool only_inner);
 
 };
 

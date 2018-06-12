@@ -36,6 +36,8 @@ struct NPY_API nconvexpolyhedron : nnode
     void set_bbox(const nbbox& bb) ;
 
     static nconvexpolyhedron* make_trapezoid(float z, float x1, float y1, float x2, float y2 );   
+    static nconvexpolyhedron* make_segment(float phi0, float phi1, float sz, float sr ) ;
+
 
     nconvexpolyhedron* make_transformed( const glm::mat4& t ) const ;
 
@@ -50,7 +52,6 @@ struct NPY_API nconvexpolyhedron : nnode
 
     std::vector<glm::vec3>  srcverts ; 
     std::vector<glm::ivec4> srcfaces ; 
-
 
 
 };

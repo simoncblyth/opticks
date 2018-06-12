@@ -4,8 +4,15 @@
 #include "X4Entity.hh"
 #include "X4SolidBase.hh"
 
-class G4VSolid ; 
+
+class G4Cons ; 
+class G4Trd ; 
+class G4Tubs ; 
 class G4Sphere ; 
+class G4Orb ; 
+
+
+class G4VSolid ; 
 template <typename T> class NPY ;
 class X4Mesh ; 
 
@@ -26,7 +33,13 @@ you handle each solid.
 class X4_API X4SolidBase 
 {
     public:
-        static G4Sphere* MakeSphere(const char* name);
+        static G4Cons*   MakeCone(const char* name, float z, float rmax1, float rmax2, float rmin1=0.f, float rmin2=0.f, float startphi=0.f, float deltaphi=360.f );
+        static G4Trd*    MakeTrapezoidCube(const char* name, float sz);
+        static G4Trd*    MakeTrapezoid(const char* name, float z,  float x1, float y1, float x2, float y2 );
+        static G4Tubs*   MakeTubs(const char* name, float rmin, float rmax, float hz, float startphi=0.f, float deltaphi=360.f );
+        static G4Orb*    MakeOrb(const char* name, float radius);
+        static G4Sphere* MakeSphere(const char* name, float rmax, float rmin=0.f );
+        static G4Sphere* MakeZSphere(const char* name, float rmax, float rmin=0.f, float startTheta=0.f, float deltaTheta=180.f );
     public:
         X4SolidBase(const G4VSolid* solid); 
         nnode* root() const ;
@@ -69,6 +82,7 @@ class X4_API X4SolidBase
 
     protected:
         const G4VSolid* m_solid ;  
+        const char*     m_name ; 
         X4Mesh*         m_mesh ;
         X4Entity_t      m_entityType ; 
         const char*     m_entityName ; 

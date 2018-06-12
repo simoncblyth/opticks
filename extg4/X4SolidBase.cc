@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <cstring>
 
 #include "X4Mesh.hh"
 #include "X4Solid.hh"
@@ -42,6 +43,7 @@ std::string X4SolidBase::desc() const
 {
     std::stringstream ss ; 
     ss << "X4SolidBase" 
+       << " name " << m_name
        << " entityType " << m_entityType 
        << " entityName " << m_entityName
        << " root " << m_root
@@ -49,24 +51,66 @@ std::string X4SolidBase::desc() const
     return ss.str();
 }
 
-G4Sphere* X4SolidBase::MakeSphere(const char* name)
+
+G4Cons* X4SolidBase::MakeCone(const char* name, float z, float rmax1, float rmax2, float rmin1, float rmin2, float startphi, float deltaphi  )
+{
+    G4double pRmin1 = rmin1 ; 
+    G4double pRmax1 = rmax1 ; 
+    G4double pRmin2 = rmin2 ; 
+    G4double pRmax2 = rmax2 ; 
+    G4double pDz    = z/2.0 ; 
+    G4double pSPhi  = startphi*CLHEP::pi/180. ; 
+    G4double pDPhi  = deltaphi*CLHEP::pi/180. ;
+    return new G4Cons( name, pRmin1, pRmax1, pRmin2, pRmax2, pDz, pSPhi, pDPhi  );
+}
+
+G4Trd* X4SolidBase::MakeTrapezoidCube(const char* name, float sz)
+{
+    return MakeTrapezoid( name, sz, sz, sz, sz, sz ); 
+}
+
+G4Trd* X4SolidBase::MakeTrapezoid(const char* name, float z,  float x1, float y1, float x2, float y2 )
+{
+    return new G4Trd(name, z, x1, y1, x2, y2 ); 
+} 
+G4Tubs* X4SolidBase::MakeTubs(const char* name, float rmin, float rmax, float hz, float startphi, float deltaphi )
+{
+    G4double pSPhi = startphi*CLHEP::pi/180. ; 
+    G4double pDPhi = deltaphi*CLHEP::pi/180. ;
+
+    return new G4Tubs(name, rmin, rmax, hz, pSPhi, pDPhi ); 
+}
+
+G4Orb* X4SolidBase::MakeOrb(const char* name, float radius )
+{
+    return new G4Orb(name, radius); 
+}
+
+G4Sphere* X4SolidBase::MakeZSphere(const char* name, float rmax, float rmin, float startTheta, float deltaTheta )
 {
     G4String name_(name);
-    G4double pRmin = 0. ; 
-    G4double pRmax = 100. ; 
+    G4double pRmin = rmin ; 
+    G4double pRmax = rmax ; 
     G4double pSPhi = 0. ; 
     G4double pDPhi = 2.*CLHEP::pi ;
 
-    G4double pSTheta = 0.f ; 
-    G4double pDTheta = CLHEP::pi ;
+    G4double pSTheta = startTheta*CLHEP::pi/180. ; 
+    G4double pDTheta = deltaTheta*CLHEP::pi/180. ;
 
     G4Sphere* sp = new G4Sphere(name_, pRmin, pRmax, pSPhi, pDPhi, pSTheta, pDTheta );
     return sp ; 
 }
 
+G4Sphere* X4SolidBase::MakeSphere(const char* name, float rmax, float rmin)
+{
+   return MakeZSphere(name, rmax, rmin, 0.f, 180.f ); 
+
+}
+
 X4SolidBase::X4SolidBase( const G4VSolid* solid ) 
    :
    m_solid(solid),
+   m_name(strdup(solid->GetName().c_str())),
    m_mesh(new X4Mesh(solid)),
    m_entityType(X4Entity::Type(solid->GetEntityType())),
    m_entityName(X4Entity::Name(m_entityType)),

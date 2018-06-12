@@ -124,6 +124,14 @@ class ConvexPolyhedronSrc(object):
  
       
     def __call__(self, i0, i1, i2):
+        """
+        :param i0,i1,i2: index of tri vertices
+
+        1. vertices are looked up 
+        2. plane through them is constructed and collected into planes_ list
+        3. indices are collected into faces_ list 
+
+        """
         nv = self.nv
         assert i0 < nv 
         assert i1 < nv 
@@ -139,8 +147,10 @@ class ConvexPolyhedronSrc(object):
         self.faces_.append( [i0,i1,i2,-1] )
 
 
-
     def _get_planes(self):
+        """
+        Converts the list of planes into (n,4) array
+        """
         p = np.zeros( (len(self.planes_),4), dtype=self.dtype )
         for i in range(len(p)):
             p[i] = self.planes_[i]
@@ -149,6 +159,9 @@ class ConvexPolyhedronSrc(object):
     planes = property(_get_planes)
 
     def _get_faces(self):
+        """
+        Converts the list of faces into an np.int32 (n,4) array
+        """
         f = np.zeros( (len(self.faces_),4), dtype=np.int32 )
         for i in range(len(f)):
             f[i] = self.faces_[i]
@@ -157,6 +170,9 @@ class ConvexPolyhedronSrc(object):
     faces = property(_get_faces)
 
     def _get_bbox(self):
+        """
+        Calulate the minimum and maximum vertex coordinates to provide bounding box
+        """
         v = self._verts
         b = np.zeros( (2,3), dtype=self.dtype )  
         for i in range(3):
@@ -490,7 +506,7 @@ def make_segment( phi0, phi1, sz, sr, dtype=np.float32 ):
 
     src.verts = v 
 
-    src(0,2,1)
+    src(0,2,1)   # add planes by referencing vertex indices
     src(3,4,5)
     src(0,1,3)
     src(0,3,5)

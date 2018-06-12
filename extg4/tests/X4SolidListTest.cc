@@ -10,8 +10,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG_COLOR__(argc, argv);
     
-    G4Sphere* s1 = X4Solid::MakeSphere("s1"); 
-    G4Sphere* s2 = X4Solid::MakeSphere("s2"); 
+    G4Sphere* s1 = X4Solid::MakeSphere("s1", 100.f, 0.f); 
+    G4Sphere* s2 = X4Solid::MakeSphere("s2", 100.f, 0.f); 
 
     LOG(info) << "s1:\n" << *s1 ; 
     LOG(info) << "s2:\n" << *s2 ; 

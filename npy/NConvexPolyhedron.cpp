@@ -396,10 +396,90 @@ nconvexpolyhedron* nconvexpolyhedron::make_trapezoid(float z, float x1, float y1
     cpol->set_bbox( bb) ; 
 
     return cpol ; 
+
 }
 
 
+nconvexpolyhedron* nconvexpolyhedron::make_segment(float phi0, float phi1, float sz, float sr ) // static
+{
+/**
 
+nconvexpolyhedron::make_segment
+==================================
+
+Prism intended for deltaphi intersecting with
+vertices 0 and 3 on the z-axis at -sz/2 and sz/2
+
+
+From ../analytic/prism.py:make_segment
+
+:: 
+
+           5 
+          / \
+         /   \
+     sr /     \
+       /       \
+      /         \
+     3-----------4       top plane at z = sz/2
+          sr
+
+           2 
+          / \
+         /   \
+     sr /     \
+       /       \
+      /         \
+     0-----------1        base plane at z = -sz/2
+          sr   (x1,y1)
+
+                                                 
+                                   Z    
+                                   |  Y
+                                   | /
+                                   |/
+                                   +------ X
+
+**/
+    const float pi = glm::pi<float>() ;
+   
+    float x0 = 0.f ;
+    float y0 = 0.f ;
+ 
+    float x1 = sr*std::cos(phi0*pi/180.) ;
+    float y1 = sr*std::sin(phi0*pi/180.) ;
+
+    float x2 = sr*std::cos(phi1*pi/180.) ;
+    float y2 = sr*std::sin(phi1*pi/180.) ;
+ 
+ 
+    std::vector<glm::vec3> v(6) ; 
+
+    v[0] = {    x0,     y0 , -sz/2. } ;  //
+    v[1] = {    x1,     y1 , -sz/2. } ;  //
+    v[2] = {    x2,     y2 , -sz/2. } ;  //
+
+    v[3] = {    x0,     y0 ,  sz/2. } ;  //
+    v[4] = {    x1,     y1 ,  sz/2. } ;  // 
+    v[5] = {    x2,     y2 ,  sz/2. } ;  //
+
+    std::vector<glm::vec4> p(5) ; 
+
+    p[0] = make_plane( v[0], v[2], v[1] ) ; // -Z 
+    p[1] = make_plane( v[3], v[4], v[5] ) ; // +Z
+    p[2] = make_plane( v[0], v[1], v[3] ) ; 
+    p[3] = make_plane( v[0], v[3], v[5] ) ; 
+    p[4] = make_plane( v[2], v[5], v[4] ) ; 
+ 
+    unsigned verbosity = 0 ; 
+    nbbox bb = nbbox::from_points( v, verbosity );
+
+    nconvexpolyhedron* cpol = make_convexpolyhedron_ptr();
+    cpol->set_planes( p) ; 
+    cpol->set_bbox( bb) ; 
+
+    return cpol ; 
+}
 
 
 
@@ -420,8 +500,5 @@ nconvexpolyhedron* nconvexpolyhedron::make_transformed( const glm::mat4& t  ) co
 
     return cpol ; 
 }
-
-
-
 
 

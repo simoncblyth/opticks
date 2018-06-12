@@ -13,6 +13,7 @@ EOU
 
 x4-dir(){ echo $(dirname $(x4-source)) ; }
 x4-cd(){  cd $(x4-dir) ; }
+x4-c(){   cd $(x4-dir) ; }
 x4--(){   opticks-- $(x4-dir) ; }
 
 x4-names()
@@ -61,7 +62,7 @@ x4-case-(){
 
 x4-convert-cc(){  x4-foreach $FUNCNAME- ; }
 x4-convert-cc-(){ cat << EOC
-void X4Solid::convert$1()
+void X4SolidBase::convert$1()
 {  
     const G4${1}* const solid = static_cast<const G4${1}*>(m_solid);
     assert(solid); 

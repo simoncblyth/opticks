@@ -7,7 +7,7 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG_COLOR__(argc, argv);
 
-    G4Sphere* sp = X4Solid::MakeSphere("demo_sphere"); 
+    G4Sphere* sp = X4Solid::MakeSphere("demo_sphere", 100.f, 0.f); 
     std::cout << *sp << std::endl ; 
 
     X4Mesh* mh = new X4Mesh(sp) ; 

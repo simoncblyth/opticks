@@ -1,14 +1,26 @@
-#include "X4Solid.hh"
 
+#include "G4Cons.hh"
+#include "G4Trd.hh"
+#include "G4Tubs.hh"
+#include "G4Box.hh"
+#include "G4Orb.hh"
 #include "G4Sphere.hh"
 #include "G4BooleanSolid.hh"
 #include "G4IntersectionSolid.hh"
 #include "G4SubtractionSolid.hh"
 #include "G4UnionSolid.hh"
-
 #include "G4SystemOfUnits.hh"
 
+#include "X4Solid.hh"
 
+#include "BStr.hh"
+
+#include "NCone.hpp"
+#include "NConvexPolyhedron.hpp"
+#include "NCylinder.hpp"
+#include "NZSphere.hpp"
+#include "NSphere.hpp"
+#include "NBox.hpp"
 #include "NNode.hpp"
 
 #include "PLOG.hh"
@@ -149,39 +161,310 @@ void X4Solid::convertBooleanSolid()
 
 
 
+
+nnode* X4Solid::convertSphere_(bool only_inner)
+{
+    const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
+
+    float rmin = solid->GetInnerRadius()/mm ; 
+    float rmax = solid->GetOuterRadius()/mm ; 
+
+    bool has_inner = !only_inner && rmin > 0.f ; 
+    nnode* inner = has_inner ? convertSphere_(true) : NULL ;  
+    float radius = only_inner ? rmin : rmax ;   
+
+    LOG(info) 
+              << " radius : " << radius 
+              << " only_inner : " << only_inner
+              << " has_inner : " << has_inner 
+              ;
+
+    float startThetaAngle = solid->GetStartThetaAngle()/degree ; 
+    float deltaThetaAngle = solid->GetDeltaThetaAngle()/degree ; 
+
+    // z to the right, theta   0 -> z=r, theta 180 -> z=-r
+    float rTheta = startThetaAngle ;
+    float lTheta = startThetaAngle + deltaThetaAngle ;
+    assert( rTheta >= 0.f && rTheta <= 180.f) ; 
+    assert( lTheta >= 0.f && lTheta <= 180.f) ; 
+
+    bool zslice = startThetaAngle > 0.f || deltaThetaAngle < 180.f ; 
+    LOG(info) 
+              << " rTheta : " << rTheta
+              << " lTheta : " << lTheta
+              << " zslice : " << zslice
+              ;
+
+    float x = 0.f ; 
+    float y = 0.f ; 
+    float z = 0.f ; 
+
+    nnode* cn = NULL ; 
+    if(zslice)
+    {
+        float zmin = radius*std::cos(lTheta*CLHEP::pi/180.f) ;
+        float zmax = radius*std::cos(rTheta*CLHEP::pi/180.f) ;
+        assert( zmax > zmin ) ; 
+        cn = new nzsphere(make_zsphere( x, y, z, radius, zmin, zmax )) ;
+        cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 
+    }
+    else
+    {
+        cn = new nsphere(make_sphere( x, y, z, radius ));
+        cn->label = BStr::concat(m_name, "_nsphere", NULL ) ; 
+    }
+    
+    nnode* ret = has_inner ? new ndifference(make_difference(cn, inner)) : cn  ; 
+    if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
+  
+
+    float startPhi = solid->GetStartPhiAngle()/degree ; 
+    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
+    bool has_deltaPhi = deltaPhi < 360.f ; 
+    assert( startPhi >= 0.f && !has_deltaPhi ); 
+
+    // deltaphi_slab_segment_enabled is switched off in the python
+    // so need some checking python side before porting
+
+    return ret ; 
+}
+
+
+
+/**
+X4Solid::convertSphere
+========================
+
+Following ../analytic/gdml.py results in different nnode primitive subclasses 
+or small nnode CSG trees depending on parameter values.
+    
+::
+    
+    nsphere 
+    nzsphere 
+       zsliced
+    ndifference  
+       handling rmin > 0 
+    nintersection  
+       when applying a phi segment
+
+**/
 void X4Solid::convertSphere()
 {  
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
     assert(solid); 
     LOG(info) << "\n" << *solid ; 
 
-    //const G4String& name = GenerateName(sphere->GetName(),sphere);
-    const G4String& name = solid->GetName();   
-    // hmm pointer name or not ?  probably NO as its a live conversion 
-    // (not via file) from one pointer to another : are not using 
-    // the name as a "pointer" reference 
+    bool only_inner = false ; 
+    nnode* n = convertSphere_(only_inner); 
+    setRoot(n); 
+}
+
+void X4Solid::convertOrb()
+{  
+    const G4Orb* const solid = static_cast<const G4Orb*>(m_solid);
+    assert(solid); 
+    LOG(info) << "\n" << *solid ; 
+
+    float radius = solid->GetRadius()/mm ; 
+
+    float x = 0.f ; 
+    float y = 0.f ; 
+    float z = 0.f ; 
+
+    nnode* n =  new nsphere(make_sphere( x, y, z, radius ));
+    n->label = BStr::concat(m_name, "_sphere", NULL ) ; 
+    setRoot(n); 
+}
+
+
+void X4Solid::convertBox()
+{  
+    // cf ../analytic/gdml.py:Box
+
+    const G4Box* const solid = static_cast<const G4Box*>(m_solid);
+    assert(solid); 
+    LOG(info) << "\n" << *solid ; 
+
+
+    // match G4GDMLWriteSolids::BoxWrite
+    float x = 2.0*solid->GetXHalfLength()/mm ; 
+    float y = 2.0*solid->GetYHalfLength()/mm ; 
+    float z = 2.0*solid->GetZHalfLength()/mm ; 
+
+    nnode* n =  new nbox(make_box3( x, y, z));
+    n->label = BStr::concat(m_name, "_box3", NULL ) ; 
+    setRoot(n); 
+}
+
+void X4Solid::convertTubs()
+{  
+    // cf ../analytic/gdml.py:Tube
+
+    const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
+    assert(solid); 
+    LOG(info) << "\n" << *solid ; 
+
+    // match G4GDMLWriteSolids::TubeWrite
 
     float rmin = solid->GetInnerRadius()/mm ; 
     float rmax = solid->GetOuterRadius()/mm ; 
-    float startphi = solid->GetStartPhiAngle()/degree ; 
-    float deltaphi = solid->GetDeltaPhiAngle()/degree ; 
-    float starttheta = solid->GetStartThetaAngle()/degree ; 
-    float deltatheta = solid->GetDeltaThetaAngle()/degree ; 
-   
-    // see analytic/gdml.py yields different 
-    // nnode subclasses (sometimes a little tree, sometimes a primitive) 
-    // depending on parameter values 
-    //
-    //    nsphere 
-    //    nzsphere 
-    //        zsliced
-    //    ndifference  
-    //        handling rmin > 0 
-    //    nintersection  
-    //        when applying a segment
-    //
+    float hz = solid->GetZHalfLength()/mm ;  
+    float z = hz*2.0 ;   // <-- this full-length is what GDML stores
+    float startPhi = solid->GetStartPhiAngle()/degree ; 
+    float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
 
-    nnode* n = NULL ; 
+    bool has_inner = rmin > 0.f ; 
+   
+    nnode* inner = NULL ; 
+    if(has_inner)
+    {
+        // Expand inner-z by 1%, note that this does not change geometry : 
+        // as are expanding the inner tube in z which are about to subtract away.
+        // This is a simple way of avoiding CSG coincident constituent surface glitches.
+
+        float nudge_inner = 0.01f ; 
+        float dz = hz*nudge_inner ;  
+        inner = new ncylinder(make_cylinder(rmin, -(hz+dz), (hz+dz) )); 
+        inner->label = BStr::concat( m_name, "_inner", NULL ); 
+    }
+    
+    nnode* outer = new ncylinder(make_cylinder(rmax, -hz, hz));
+    outer->label = BStr::concat( m_name, "_outer", NULL ); 
+
+    nnode* tube = has_inner ? new ndifference(make_difference(outer, inner)) : outer ; 
+    tube->label = BStr::concat( m_name, "_difference", NULL );
+
+    bool deltaPhi_segment_enabled = true ; 
+    bool has_deltaPhi = deltaPhi < 360.f ; 
+
+    float segZ = z*1.01 ; 
+    float segR = rmax*1.5 ;   
+
+    // TODO: calculate what the segment prism segR size  should be rather 
+    //       than this adhoc choice.
+    //       As are intersecting it doesnt matter if the segR is too big, 
+    //       but being too small could result in partial segmenting of the base shape
+    //
+    //       Is 50% bigger than rmax always a safe choice ?
+
+    nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
+                  ?
+                     intersectWithPhiSegment(tube, startPhi, deltaPhi, segZ, segR ) 
+                  :
+                     tube 
+                  ;
+
+    setRoot(result); 
+}
+
+
+nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR )  
+{
+    bool has_deltaphi = deltaPhi < 360.f ; 
+    assert( has_deltaphi ) ; 
+
+    float phi0 = startPhi ; 
+    float phi1 = startPhi + deltaPhi ; 
+
+    nnode* segment = nconvexpolyhedron::make_segment(phi0, phi1, segZ, segR );  
+    segment->label = BStr::concat(m_name, "_segment", NULL); 
+
+    nnode* result = new nintersection(make_intersection(whole, segment)); 
+    result->label = BStr::concat(m_name, "_intersection", NULL); 
+
+    return result ;   
+}
+
+void X4Solid::convertTrd()
+{  
+/**
+Following 
+
+* G4GDMLWriteSolids::TrdWrite
+* ../analytic/gdml.py 
+* ../analytic/prism.py 
+
+**/
+    const G4Trd* const solid = static_cast<const G4Trd*>(m_solid);
+    assert(solid); 
+
+    float x1 = 2.0*solid->GetXHalfLength1()/mm ;
+    float x2 = 2.0*solid->GetXHalfLength2()/mm ; 
+    float y1 = 2.0*solid->GetYHalfLength1()/mm ; 
+    float y2 = 2.0*solid->GetYHalfLength2()/mm ; 
+    float z = 2.0*solid->GetZHalfLength()/mm ; 
+
+    nnode* trd = nconvexpolyhedron::make_trapezoid(z, x1, y1, x2, y2 ); 
+    trd->label = BStr::concat(m_name, "_solid", NULL ); 
+
+    setRoot(trd); 
+}
+
+
+nnode* X4Solid::convertCons_(bool only_inner)
+{
+    const G4Cons* const cone = static_cast<const G4Cons*>(m_solid);
+    assert(cone); 
+
+    // G4GDMLWriteSolids::ConeWrite
+
+    float rmax1    = cone->GetOuterRadiusMinusZ()/mm ;
+    float rmax2    = cone->GetOuterRadiusPlusZ()/mm  ;
+
+    float rmin1    = cone->GetInnerRadiusMinusZ()/mm ;
+    float rmin2    = cone->GetInnerRadiusPlusZ()/mm  ;
+
+    float z        = 2.0*cone->GetZHalfLength()/mm   ;
+    float startPhi = cone->GetStartPhiAngle()/degree ;
+    float deltaPhi = cone->GetDeltaPhiAngle()/degree ;
+
+    bool has_inner = !only_inner && (rmin1 > 0.f || rmin2 > 0.f) ; 
+    nnode* inner = has_inner ? convertCons_(true) : NULL ; 
+
+    float r1 = only_inner ? rmin1 : rmax1 ; 
+    float r2 = only_inner ? rmin2 : rmax2 ; 
+    float z1 = -z/2.0 ; 
+    float z2 = z/2.0 ; 
+
+    nnode* cn = new ncone(make_cone(r1,z1,r2,z2)) ;
+    cn->label = BStr::concat(m_name, "_cn", NULL ) ; 
+
+    nnode* ret = has_inner ? new ndifference(make_difference(cn, inner)) : cn  ; 
+    if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
+
+
+    bool deltaPhi_segment_enabled = true ; 
+    bool has_deltaPhi = deltaPhi < 360.f ; 
+
+    float segZ = z*1.01 ; 
+    float segR = std::max(rmax1, rmax2)*1.5 ;   
+
+    // TODO: calculate what the segment prism segR size  should be rather 
+    //       than this adhoc choice.
+    //       As are intersecting it doesnt matter if the segR is too big, 
+    //       but being too small could result in partial segmenting of the base shape
+    //
+    //       Is 50% bigger than rmax always a safe choice ?
+
+    nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
+                  ?
+                     intersectWithPhiSegment(ret, startPhi, deltaPhi, segZ, segR ) 
+                  :
+                     ret 
+                  ;
+
+    return result ; 
+}
+
+void X4Solid::convertCons()
+{  
+    const G4Cons* const cone = static_cast<const G4Cons*>(m_solid);
+    assert(cone); 
+    LOG(info) << "\n" << *cone ; 
+
+    bool only_inner = false ; 
+    nnode* n = convertCons_(only_inner); 
     setRoot(n); 
 }
 

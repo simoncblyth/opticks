@@ -207,7 +207,6 @@ class Subtraction(Boolean):
 class Union(Boolean):
     operation = "union"
 
-
 class Primitive(Geometry):
     lunit = property(lambda self:self.att('lunit', 'mm', typ=str))
     aunit = property(lambda self:self.att('aunit', 'deg', typ=str))
@@ -245,14 +244,12 @@ class Primitive(Geometry):
 
         return obj_slab0_slab1
 
-
-
-
     def __repr__(self):
         return "%s %s %s %s rmin %s rmax %s  x %s y %s z %s  " % (self.gidx, self.typ, self.name, self.lunit, self.rmin, self.rmax, self.x, self.y, self.z)
 
 class Tube(Primitive):
     """
+    G4Tubs is GDML serialized as tube 
     """
     deltaphi_segment_enabled = True
 
