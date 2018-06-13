@@ -1,32 +1,68 @@
+#include <cstdlib>
 #include <cassert>
 #include <vector>
 
 #include "OPTICKS_LOG.hh"
 
 #include "NBox.hpp"
+#include "NNode.hpp"
 #include "NTreeBuilder.hpp"
 
 int main(int argc, char** argv)
 {
     OPTICKS_LOG_COLOR__(argc, argv); 
 
-    std::vector<nnode*> prims(4) ; 
+    unsigned nprim = argc > 1 ? atoi(argv[1]) : 6  ; 
 
-    nbox* a = new nbox(make_box3(400,400,400));
-    nbox* b = new nbox(make_box3(500,100,100));
-    nbox* c = new nbox(make_box3(100,500,100));
-    nbox* d = new nbox(make_box3(100,100,500));
+    std::vector<nnode*> prims ; 
+    for(unsigned i=0 ; i < nprim ; i++)
+    {
+        nnode* a = new nbox(make_box3(400,400,400));
+        prims.push_back(a);  
+    }
 
-    prims[0] = a ; 
-    prims[1] = b ; 
-    prims[2] = c ; 
-    prims[3] = d ; 
-
-    nnode* root = NTreeBuilder::UnionTree(prims) ; 
+    nnode* root = NTreeBuilder<nnode>::UnionTree(prims) ; 
     assert( root ) ; 
-    root->dump();
+    //root->dump();
 
     return 0 ; 
 }
 
+/*
 
+2018-06-13 19:37:56.887 INFO  [19092658] [NTreeBuilder<nnode>::analyse@93]  NNodeAnalyse 
+NNodeAnalyse height 3 count 15
+                              un                            
+
+              un                              un            
+
+      un              un              un              un    
+
+  ze      ze      ze      ze      ze      ze      ze      ze
+
+
+2018-06-13 19:37:56.888 INFO  [19092658] [NTreeBuilder<nnode>::analyse@93]  NNodeAnalyse 
+NNodeAnalyse height 3 count 15
+                              un                            
+
+              un                              un            
+
+      un              un              un              un    
+
+  bo      bo      bo      bo      bo      ze      ze      ze
+
+
+2018-06-13 19:37:56.888 INFO  [19092658] [NTreeBuilder<nnode>::analyse@93]  NNodeAnalyse 
+NNodeAnalyse height 3 count 9
+                              un    
+
+              un                  bo
+
+      un              un            
+
+  bo      bo      bo      bo        
+
+
+2018-06-13 19:37:56.888 INFO  [19092658] [*NTreeBuilder<nnode>::CommonTree@19]  num_prims 5 height 3 operator union
+
+*/

@@ -428,4 +428,17 @@ om-find()
 
 
 
+om-tst-(){ cat << EOT
 
+#include "OPTICKS_LOG.hh"
+
+int main(int argc, char** argv)
+{
+    OPTICKS_LOG_COLOR__(argc, argv);
+
+
+    return 0 ; 
+}
+
+EOT
+}

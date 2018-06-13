@@ -76,7 +76,12 @@ set(SOURCES
     NScan.cpp
     NScanLine.cpp
 
+    no.cpp
     NNode.cpp
+    NNodeCollector.cpp
+    NNodeAnalyse.cpp
+    NGrid.cpp
+
     NNodeEnum.cpp
     NNodeDump.cpp
     NNodePoints.cpp
@@ -252,7 +257,13 @@ NSequence.hpp
 NBBox.hpp
 NBBoxEnum.hpp
 
+no.hpp
 NNode.hpp
+NNodeCollector.hpp
+NNodeAnalyse.hpp
+
+NGrid.hpp
+
 NNodeEnum.hpp
 NBox.hpp
 NQuad.hpp

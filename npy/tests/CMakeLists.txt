@@ -59,6 +59,10 @@ NZSphereTest.cc
 NBoxTest.cc
 NBox2Test.cc
 NNode2Test.cc
+
+NGridTest.cc
+NNodeCollectorTest.cc
+
 NSlabTest.cc
 NPlaneTest.cc
 NCylinderTest.cc
@@ -207,6 +211,15 @@ set(_TEST_SOURCES
 SequenceNPYTest.cc
 NConstructorTest.cc
 
+)
+
+
+# override for faster cycle
+set(TEST_SOURCES
+NTreeBuilderTest.cc
+NNodeCollectorTest.cc
+NNodeAnalyseTest.cc
+NGridTest.cc
 )
 
 

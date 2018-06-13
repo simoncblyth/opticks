@@ -187,6 +187,11 @@ struct NPY_API nnode
     void set_boundary(const char* boundary) ; 
 
     bool is_znudge_capable() const ;
+    bool is_zero() const ;
+    bool is_lrzero() const ;  //  l-zero AND  r-zero
+    bool is_rzero() const ;   // !l-zero AND  r-zero
+    bool is_lzero() const ;   //  l-zero AND !r-zero
+
     bool is_operator() const ;
     bool is_primitive() const ;
     bool is_unbounded() const ;
@@ -206,6 +211,7 @@ struct NPY_API nnode
     const char* label ; 
     const char* treedir ; 
     int         treeidx ;   
+    unsigned    depth ; 
     const char* boundary ; 
 
     const nmat4triple* transform ; 
@@ -227,6 +233,7 @@ struct NPY_API nnode
     NNodeDump*    _dump ;
     nbbox*        _bbox_model ; 
 
+    static nnode make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
 
 };
 
@@ -257,7 +264,7 @@ inline NPY_API ndifference make_difference(nnode* left, nnode* right)
     ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
 }
 
-inline NPY_API nnode make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
+inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
 {
     nnode n ;    nnode::Init(n, operator_ , left, right ); return n ;
 }

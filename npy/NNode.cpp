@@ -93,6 +93,22 @@ void nnode::nudge(unsigned /*uv_surf*/, float /*delta*/ )
 }
 
 
+bool nnode::is_zero() const 
+{
+    return type == CSG_ZERO ; 
+}
+bool nnode::is_lrzero() const 
+{
+    return is_operator() && left->is_zero() && right->is_zero() ; 
+}
+bool nnode::is_rzero() const 
+{
+    return is_operator() && !left->is_zero() && right->is_zero() ; 
+}
+bool nnode::is_lzero() const 
+{
+    return is_operator() && left->is_zero() && !right->is_zero() ; 
+}
 
 
 bool nnode::is_operator() const 
@@ -151,9 +167,14 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.right = right ; 
     n.parent = NULL ; 
     n.other  = NULL ;   // used by NOpenMesh 
-    n.label = NULL ; 
+
+    //n.label = NULL ;
+    std::string tag = CSGTag(type) ; // 2-char 
+    n.label = strdup(tag.c_str()); 
+ 
     n.treedir = NULL ; 
     n.treeidx = -1 ; 
+    n.depth = 0 ; 
     n.boundary = NULL ; 
     n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 
@@ -1096,6 +1117,18 @@ void nnode::collect_prim_r(std::vector<const nnode*>& prim, const nnode* node) /
         collect_prim_r(prim, node->right);
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

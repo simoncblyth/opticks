@@ -47,6 +47,12 @@ class TreeBuilder(object):
 
     @classmethod
     def commontree(cls, operator, primitives, name):
+        """
+        :param operator: CSG enum int 
+        :param primitives: list of CSG instances 
+        :param name:
+        :return root: CSG instance for root node
+        """
         tb = TreeBuilder(primitives, operator=operator)
         root = tb.root 
         root.name = name
@@ -137,7 +143,12 @@ class TreeBuilder(object):
 
     def populate(self, root, subs):
         """
-        Replace the CSG.ZERO placeholders with the subs
+        :param root: CSG operator instance for root node
+        :param subs: reversed list of the CSG instance primitive baubles to be hung on the tree
+
+        During an inorder traverse of the complete binary tree, 
+        the placeholder CSG.ZERO leaves are replaced with primitives
+        popped off the subs list.
         """
         inorder = root.inorder_() 
         log.debug("populate filling tree of %d nodes with %d subs " % (len(inorder),len(subs)))
