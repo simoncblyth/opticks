@@ -5,6 +5,7 @@
 #include "X4SolidBase.hh"
 
 
+class G4Hype ; 
 class G4Ellipsoid ; 
 class G4Torus ; 
 class G4Cons ; 
@@ -35,6 +36,7 @@ you handle each solid.
 class X4_API X4SolidBase 
 {
     public:
+        static G4Hype*      MakeHyperboloid(const char* name, float rmin , float rmax, float inst, float outst, float hz ) ; 
         static G4Ellipsoid* MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1=0.f, float zcut2=0.f );
         static G4Torus*  MakeTorus(const char* name, float R, float r ); 
         static G4Cons*   MakeCone(const char* name, float z, float rmax1, float rmax2, float rmin1=0.f, float rmin2=0.f, float startphi=0.f, float deltaphi=360.f );

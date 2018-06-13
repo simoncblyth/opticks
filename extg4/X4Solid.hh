@@ -66,12 +66,14 @@ class X4_API X4Solid : public X4SolidBase
         void convertTorus();
         void convertEllipsoid();
         void convertPolycone();
+        void convertHype();
     private:
         nnode* intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR );
         void booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot );
         G4ThreeVector GetAngles(const G4RotationMatrix& mtx);
         nnode* convertSphere_(bool only_inner);
         nnode* convertCons_(bool only_inner);
+        nnode* convertHype_(bool only_inner);
         void   convertPolyconePrimitives( const std::vector<zplane>& zp,  std::vector<nnode*>& prims );
 
 };

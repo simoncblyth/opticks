@@ -241,6 +241,90 @@ NCSG : serialization ctor boost from nnode tree
 
 
 
+G4Hype vs Opticks CSG_HYPERBOLOID : can I relate them ?
+----------------------------------------------------------
+
+
+::
+
+    071   G4Hype(const G4String& pName,
+     72                G4double  newInnerRadius,
+     73                G4double  newOuterRadius,
+     74                G4double  newInnerStereo,
+     75                G4double  newOuterStereo,
+     76                G4double  newHalfLenZ);
+       
+
+::
+
+    127 inline
+    128 G4double G4Hype::HypeInnerRadius2(G4double zVal) const
+    129   {
+    130     return (tanInnerStereo2*zVal*zVal+innerRadius2);
+    131   } 
+    ///
+    ///         x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+    ///                     =  r0^2 +  (r0/zf)^2 * z^2
+    ///
+    ///           tanStereo = r0/zf
+    ///
+    ///       -->  zf = r0/tanStereo
+    ///
+    ///        newHalfLenZ -> 
+    ///
+    ///
+    132 
+    133 inline
+    134 G4double G4Hype::HypeOuterRadius2(G4double zVal) const
+    135   {
+    136     return (tanOuterStereo2*zVal*zVal+outerRadius2);
+    137   }
+
+
+
+
+::
+
+     560 static __device__
+     561 bool csg_intersect_hyperboloid(const quad& q0, const float& t_min, float4& isect, const float3& ray_origin, const float3& ray_direction )
+     562 {
+     563    /*
+     564      http://mathworld.wolfram.com/One-SheetedHyperboloid.html
+     565 
+     566       x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+     567       x^2 + y^2 - (r0^2/zf^2) * z^2 - r0^2  =  0 
+     568       x^2 + y^2 + A * z^2 + B   =  0 
+     569    
+     570       grad( x^2 + y^2 + A * z^2 + B ) =  [2 x, 2 y, A*2z ] 
+     571 
+     572  
+     573      (ox+t sx)^2 + (oy + t sy)^2 + A (oz+ t sz)^2 + B = 0 
+     574 
+     575       t^2 ( sxsx + sysy + A szsz ) + 2*t ( oxsx + oysy + A * ozsz ) +  (oxox + oyoy + A * ozoz + B ) = 0 
+     576 
+     577    */
+     578 
+     579     const float zero(0.f);
+     580     const float one(1.f);
+     581 
+     582     const float r0 = q0.f.x ;  // waist (z=0) radius 
+     583     const float zf = q0.f.y ;  // at z=zf radius grows to  sqrt(2)*r0 
+     584     const float z1 = q0.f.z ;  // z1 < z2 by assertion  
+     585     const float z2 = q0.f.w ;
+     586 
+     587     const float rr0 = r0*r0 ;
+     588     const float z1s = z1/zf ;
+     589     const float z2s = z2/zf ;
+     590     const float rr1 = rr0 * ( z1s*z1s + one ) ; // radii squared at z=z1, z=z2
+     591     const float rr2 = rr0 * ( z2s*z2s + one ) ;
+     592 
+     593     const float A = -rr0/(zf*zf) ;
+     594     const float B = -rr0 ;
+     595 
+
+
+
+
 
 
 G4GDML Writing Solids

@@ -1,4 +1,5 @@
 
+#include "G4Hype.hh"
 #include "G4Ellipsoid.hh"
 #include "G4Torus.hh"
 #include "G4Cons.hh"
@@ -74,8 +75,11 @@ void test_G4Ellipsoid()
     G4Ellipsoid* a = X4Solid::MakeEllipsoid("ellipsoid", 100.f , 150.f , 50.f ) ;   test_solid(a) ; 
 }
 
-
-
+void test_G4Hype()
+{
+       //  float rmin , float rmax, float inst, float outst, float hz 
+    G4Hype* a = X4Solid::MakeHyperboloid("hyperboloid", 100.f , 200.f , 45.f, 45.f,  100.f ) ;   test_solid(a) ; 
+}
 
  
 
@@ -90,7 +94,8 @@ int main(int argc, char** argv)
     //test_G4Trd();
     //test_G4Cons();
     //test_G4Torus();
-    test_G4Ellipsoid();
+    //test_G4Ellipsoid();
+    test_G4Hype();
  
     return 0 ; 
 }

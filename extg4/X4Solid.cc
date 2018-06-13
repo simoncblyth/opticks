@@ -2,6 +2,7 @@
 #include <iterator>
 #include <algorithm>
 
+#include "G4Hype.hh"
 #include "G4Polycone.hh"
 #include "G4Ellipsoid.hh"
 #include "G4Torus.hh"
@@ -23,6 +24,7 @@
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include "NGLM.hpp"
+#include "NHyperboloid.hpp"
 #include "NTorus.hpp"
 #include "NCone.hpp"
 #include "NConvexPolyhedron.hpp"
@@ -31,6 +33,7 @@
 #include "NSphere.hpp"
 #include "NBox.hpp"
 #include "NNode.hpp"
+#include "NTreeBuilder.hpp"
 
 #include "PLOG.hh"
 
@@ -592,6 +595,7 @@ void X4Solid::convertPolycone()
 {  
     // G4GDMLWriteSolids::PolyconeWrite
     // G4GDMLWriteSolids::ZplaneWrite
+    // ../analytic/gdml.py 
 
     const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
     assert(solid); 
@@ -620,7 +624,7 @@ void X4Solid::convertPolycone()
 
     std::vector<nnode*> prims ; 
     convertPolyconePrimitives( zp, prims ); 
-    // nnode* cn = NTreeBuilder::Uniontree(prims) ;
+    nnode* cn = NTreeBuilder<nnode>::UnionTree(prims) ;
 
 
     bool multi_Rmin = Rmin.size() > 1 ; 
@@ -642,7 +646,64 @@ void X4Solid::convertPolycone()
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
 
-
-
+    nnode* result = inner ? new ndifference(make_difference( cn, inner ))  : cn ; 
+    setRoot(result); 
 }
+
+
+
+void X4Solid::convertHype()
+{  
+    const G4Hype* const solid = static_cast<const G4Hype*>(m_solid);
+    assert(solid); 
+    LOG(info) << "\n" << *solid ; 
+
+    bool only_inner = false ; 
+    nnode* n = convertHype_(only_inner); 
+    setRoot(n); 
+}
+
+nnode* X4Solid::convertHype_(bool only_inner)
+{
+    const G4Hype* const solid = static_cast<const G4Hype*>(m_solid);
+
+    // G4GDMLWriteSolids::HypeWrite
+    float rmin = solid->GetInnerRadius()/mm ; 
+    float rmax = solid->GetOuterRadius()/mm ;
+    float inst = solid->GetInnerStereo()/degree ; 
+    float outst = solid->GetOuterStereo()/degree ;
+    float z = 2.0*solid->GetZHalfLength()/mm ; 
+
+    bool has_inner = !only_inner && rmin > 0.f ; 
+
+    nnode* inner = has_inner ? convertHype_(true) : NULL ;  
+
+    float radius = only_inner ? rmin : rmax ;   
+    float stereo = only_inner ? inst : outst ; 
+
+    /*
+     Opticks CSG_HYPERBOLOID uses
+                x^2 +  y^2  =  r0^2 * (  (z/zf)^2  +  1 )
+
+     G4Hype uses
+                x^2 + y^2 = (z*tanphi)^2 + r^2
+                x^2 + y^2 =  r0^2 * ( (z*tanphi/r0)^2 + 1 )
+
+     So     
+               tanphi/r0 = 1/zf
+
+               zf = r0/tanphi
+    */
+
+    float zf = radius/std::tan(stereo*CLHEP::pi/180.) ;
+    float z2 =  z/2.0 ; 
+    float z1 = -z/2.0 ;
+ 
+    nnode* cn = new nhyperboloid(make_hyperboloid( radius, zf, z1, z2 ));
+    cn->label = BStr::concat(m_name, "_hyperboloid", NULL ) ; 
+    
+    nnode* result = inner ? new ndifference(make_difference( cn, inner ))  : cn ; 
+    return result ; 
+}
+
 

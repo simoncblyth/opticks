@@ -51,6 +51,15 @@ std::string X4SolidBase::desc() const
     return ss.str();
 }
 
+G4Hype* X4SolidBase::MakeHyperboloid(const char* name, float rmin , float rmax, float inst, float outst, float hz )
+{
+    G4double  newInnerRadius = rmin ; 
+    G4double  newOuterRadius = rmax ; 
+    G4double  newInnerStereo = inst*CLHEP::pi/180. ; 
+    G4double  newOuterStereo = outst*CLHEP::pi/180. ; 
+    G4double  newHalfLenZ    = hz ; 
+    return new G4Hype( name, newInnerRadius, newOuterRadius, newInnerStereo, newOuterStereo, newHalfLenZ ); 
+}
 
 G4Ellipsoid* X4SolidBase::MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1, float zcut2  )
 {
