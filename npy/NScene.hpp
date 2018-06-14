@@ -9,6 +9,8 @@
 class NCSG ; 
 class NTxt ; 
 class NParameters ; 
+class NGeometry ;
+ 
 struct nd ; 
 struct nbbox ; 
 struct nnode ; 
@@ -24,20 +26,27 @@ class NGLTF ;
 
 /*
 
-NScene(NGLTF)
+NScene
 ===============
 
-Does far too much for one class.
+* NGLTF was formerly the base class, now moved to constituent m_ngltf
+  in order to distance NScene from GLTF mechanics and make
+  it work with nd/NCSG coming from other sources like an X4 provider
 
-* pulls in NCSG extras from sc.py 
-* finds repeat geometry instances 
+  * in order to do this are constraining the interface with NGeometry protocol  
+
+* NScene does far too much for one class.
+
+  * pulls in NCSG extras from sc.py 
+  * finds repeat geometry instances 
 
 
+* NScene is consumed directly only by GScene, 
 
-Used by GGeo::loadFromGLTF and GScene, GGeo.cc::
 
-     658     m_nscene = new NScene(gltfbase, gltfname, gltfconfig);
-     659     m_gscene = new GScene(this, m_nscene );
+* NScene::Load from GScene::GScene 
+
+
 
 Scene files in glTF format are created by opticks/analytic/sc.py 
 which parses the input GDML geometry file and writes the mesh (ie solid 
@@ -51,17 +60,13 @@ are polygonized on load in NScene::load_mesh_extras.
 
 
 
-//class NPY_API NScene : public NGLTF 
-
 class NPY_API NScene 
 {
     public:
-        static NScene* Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode ) ;
-        static long SecondsSinceLastWrite(const char* base, const char* name);
-        static bool Exists(const char* base, const char* name);
-        NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx=0  );
+        static NScene* Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode, int scene_idx=0  ) ;
 
-        void setAge(long age);
+        NScene(NGeometry* source, const char* idfold, int dbgnode );
+        //NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx=0  );
 
         nd*      getRoot() const ;
         unsigned getNumMeshes() const ;
@@ -75,7 +80,7 @@ class NPY_API NScene
 
         unsigned getVerbosity();
         unsigned getTargetNode();
-        NSceneConfig* getConfig();
+        const NSceneConfig* getConfig();
     public: 
          // from gltfconfig
          NSceneConfigBBoxType bbox_type() const ; 
@@ -135,6 +140,7 @@ class NPY_API NScene
         void     dumpRepeatCount();
         unsigned getRepeatCount(unsigned ridx);
         unsigned getNumRepeats();
+        NPY<float>*  makeInstanceTransformsBuffer(unsigned mesh_idx);
 
     private:
         bool is_dbgnode( const nd* n) const ;
@@ -156,9 +162,11 @@ class NPY_API NScene
         float    sdf_procedural( const nd* n, const glm::vec3& q_) const  ; 
 
     private:
-        NGLTF*                            m_ngltf ; 
+        NGeometry*                        m_source ; 
+    private:
+
         nd*                               m_root ; 
-        std::map<unsigned, nd*>           m_nd ; 
+
         std::map<unsigned, NParameters*>  m_csg_metadata ;
         std::map<unsigned, NCSG*>         m_csg ; 
         std::map<unsigned, int>           m_csg_lvIdx ; 
@@ -167,9 +175,9 @@ class NPY_API NScene
         std::map<unsigned, unsigned>      m_repeat_count ;
 
 
-        unsigned                          m_num_gltf_nodes ; 
+        unsigned                          m_num_nodes ; 
         const char*                       m_idfold ; 
-        NSceneConfig*                     m_config ; 
+        const NSceneConfig*               m_config ; 
         int                               m_dbgnode ; 
         unsigned                          m_containment_err ; 
         unsigned                          m_verbosity ; 
@@ -182,7 +190,7 @@ class NPY_API NScene
         unsigned                          m_node_count ; 
         unsigned                          m_label_count ; 
         Counts<unsigned>*                 m_digest_count ;
-        long                              m_age ; 
+
         std::vector<std::string>          m_repeat_candidates ;
         std::vector<unsigned>             m_dbgnode_list ;
         glm::uvec4                        m_surferr ;  

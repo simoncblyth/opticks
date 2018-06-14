@@ -26,6 +26,7 @@
 #include "GLMFormat.hpp"
 #include "NState.hpp"
 #include "NPropNames.hpp"
+#include "NGLTF.hpp"
 #include "NScene.hpp"
 #include "NLoad.hpp"
 #include "NSlice.hpp"
@@ -983,7 +984,7 @@ const char* Opticks::getGLTFName() const
 bool Opticks::hasGLTF() const 
 {
     // lookahead to what GScene::GScene will do
-    return NScene::Exists(getGLTFBase(), getGLTFName()) ;
+    return NGLTF::Exists(getGLTFBase(), getGLTFName()) ;
 }
 
 

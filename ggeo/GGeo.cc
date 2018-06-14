@@ -24,7 +24,6 @@ namespace fs = boost::filesystem;
 
 #include "NLookup.hpp"
 #include "NSlice.hpp"
-#include "NScene.hpp"
 #include "Typ.hpp"
 
 

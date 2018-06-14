@@ -60,9 +60,6 @@ NBoxTest.cc
 NBox2Test.cc
 NNode2Test.cc
 
-NGridTest.cc
-NNodeCollectorTest.cc
-
 NSlabTest.cc
 NPlaneTest.cc
 NCylinderTest.cc
@@ -117,7 +114,6 @@ mortonlibTest.cc
 NGrid3Test.cc
 NField3Test.cc
 NTreeToolsTest.cc
-NTreeBuilderTest.cc
 
 NGLMExtTest.cc
 
@@ -152,7 +148,19 @@ NuvTest.cc
 NSnapConfigTest.cc
 NRngDiffuseTest.cc
 
+
+NTreeBuilderTest.cc
+NNodeCollectorTest.cc
+NNodeAnalyseTest.cc
+NGridTest.cc
+
+
+
 )
+
+
+
+
 
 list(APPEND TEST_SOURCES ${_TEST_SOURCES})
 
@@ -188,6 +196,9 @@ if(YoctoGL_FOUND)
        NYJSONTest.cc
        NJSTest.cc
        NMetaTest.cc
+
+
+
 )
 endif()
 
@@ -215,12 +226,8 @@ NConstructorTest.cc
 
 
 # override for faster cycle
-set(TEST_SOURCES
-NTreeBuilderTest.cc
-NNodeCollectorTest.cc
-NNodeAnalyseTest.cc
-NGridTest.cc
-)
+#set(TEST_SOURCES
+#)
 
 
 

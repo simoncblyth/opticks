@@ -156,6 +156,13 @@ How to proceed ? IDEA 1 : pull NdTree out of NScene, and populate it from there 
 * NScene inherits from NGLTF could make that a constituent not inherited, 
 
   * that would be good : BUT too much work for the benefit : so NO
+
+  * ACTUALLY DID THIS : IT WAS NOT TOO DIFFICULT, AND MAKES
+    THINGS MUCH CLEARER 
+
+    * CAN NOW VIEW THE m_ngltf instance as a nd/NCSG structure source 
+      THAT CAN BE SWAPPED FOR AN ALTERNATIVE ONE FROM X4 
+ 
   
 * create a stripped down NSceneBase to hold just the essential
   model (nd node tree) without the GLTF mechanics
@@ -206,7 +213,41 @@ Start by tidying up NScene:
   ie that hides specifics of gltf transport 
 
 
+FURTHER CLEANUP
+~~~~~~~~~~~~~~~~~~
 
+* review all use of m_ngltf within NScene, aiming to make 
+  a higher level interface by moving specifics into NGLTF
+  and the to be created X4Scene? 
+
+  For example with a gltf source the NCSG are loaded from gltf extras  
+  but with X4 the NCSG will be constructed directly from translated nnode, 
+  thus NScene needs to be above these details, moving that and other 
+  handling into the sources such that they can present a common interface 
+  to NScene.
+
+
+* instanciate NGLTF by loading from the file outside NScene, and pass
+  to NScene as ctor argument to be stored in m_source (replacing m_ngltf)
+
+
+
+
+
+Exercise the old route to check have not broken humpty
+----------------------------------------------------------
+
+
+::
+
+    op --gdml2gltf 
+ 
+    cp /usr/local/opticks-cmake-overhaul/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gltf /tmp/
+
+    cp -r /usr/local/opticks-cmake-overhaul/opticksdata/export/DayaBay_VGDX_20140414-1300/extras /tmp/
+    ## the gltf refers to lots of extras, which have to travel with it 
+
+    opticks-pretty /tmp/g4_00.gltf
 
 
 

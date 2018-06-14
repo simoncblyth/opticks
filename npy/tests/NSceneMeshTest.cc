@@ -3,6 +3,7 @@
 #include "BOpticksResource.hh"
 
 
+#include "NGLTF.hpp"
 #include "NScene.hpp"
 #include "NSceneConfig.hpp"
 #include "NPY.hpp"
@@ -34,7 +35,7 @@ int main(int argc, char** argv)
               ;
 
 
-    if(!NScene::Exists(gltfbase, gltfname))
+    if(!NGLTF::Exists(gltfbase, gltfname))
     {
         LOG(warning) << "no such scene at"
                      << " base " << gltfbase

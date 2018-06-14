@@ -185,6 +185,8 @@ set(SOURCES
     NEmitPhotonsNPY.cpp
     NRngDiffuse.cpp
 
+    NGeometry.cpp
+
 )
 
 set(_SOURCES
@@ -328,6 +330,9 @@ Nd.hpp
 NTris.hpp
 
 NEmitPhotonsNPY.hpp
+
+NGeometry.hpp
+
 
 )
 

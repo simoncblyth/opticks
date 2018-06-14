@@ -55,7 +55,6 @@ class GItemList ;
 class GMergedMesh ;
 
 // GLTF handling 
-class NScene ; 
 class GScene ; 
 
 #include "GGeoBase.hh"

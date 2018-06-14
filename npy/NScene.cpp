@@ -9,10 +9,10 @@
 
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
-//#include "NYGLTF.hpp"
 
 #include "Counts.hpp"
 #include "NTrianglesNPY.hpp"
+#include "NGeometry.hpp"
 #include "NParameters.hpp"
 #include "NPY.hpp"
 #include "NNode.hpp"
@@ -36,8 +36,7 @@
 #include "PLOG.hh"
 
 
-
-NSceneConfig* NScene::getConfig()
+const NSceneConfig* NScene::getConfig() 
 {
    return m_config ;  
 }
@@ -45,7 +44,7 @@ NSceneConfig* NScene::getConfig()
 std::string NScene::desc() const 
 {
     std::stringstream ss ; 
-    ss << m_ngltf->desc() ; 
+    ss << m_source->desc() ; 
     return ss.str();
 }
 
@@ -103,31 +102,27 @@ std::string NScene::present_mesh_nodes(std::vector<unsigned>& nodes, unsigned dm
     
 unsigned NScene::getNumMeshes() const 
 {
-    return m_ngltf->getNumMeshes(); 
+    return m_source->getNumMeshes(); 
 }
 
-bool NScene::Exists(const char* base, const char* name)
-{
-    return BFile::ExistsFile(base, name);
-}
 
-long NScene::SecondsSinceLastWrite(const char* base, const char* name)
-{
-    std::time_t* slwt = BFile::SinceLastWriteTime(base, name);
-    long age = slwt ? *slwt : -1 ; 
-    return age ;  
-}
 
-NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode) 
-{
-    NScene* scene =  NScene::Exists(gltfbase, gltfname) ? new NScene(gltfbase, gltfname, idfold, gltfconfig, dbgnode) : NULL ;
 
+NScene* NScene::Load( const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx) 
+{
+     NScene* scene = NULL ; 
+
+     if(NGLTF::Exists(base, name))
+     { 
+         NGeometry* source = new NGLTF(base, name, config, scene_idx);
+         scene =  new NScene(source, idfold, dbgnode) ;
+     }
     if(!scene)
     {
         LOG(fatal) << "NScene:Load MISSING PATH" 
-                   << " gltfbase " << gltfbase
-                   << " gltfname " << gltfname
-                   << " gltfconfig " << gltfconfig
+                   << " gltfbase " << base
+                   << " gltfname " << name
+                   << " gltfconfig " << config
                    ; 
     }
     return scene ; 
@@ -145,15 +140,16 @@ const char* NScene::bbox_type_string() const
 }
 
 
+//NScene::NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx)  
 
 
-NScene::NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx)  
+NScene::NScene(NGeometry* source, const char* idfold, int dbgnode)  
    :
-    m_ngltf(new NGLTF(base, name, config, scene_idx)),
+    m_source(source),
     m_root(NULL),
-    m_num_gltf_nodes(m_ngltf->getNumNodes()),     
+    m_num_nodes(m_source->getNumNodes()),     
     m_idfold(idfold ? strdup(idfold) : NULL),
-    m_config(config),
+    m_config(m_source->getConfig()),
     m_dbgnode(dbgnode),
     m_containment_err(0),
     m_verbosity(m_config->verbosity),
@@ -165,12 +161,12 @@ NScene::NScene(const char* base, const char* name, const char* idfold, NSceneCon
     m_node_count(0),
     m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest")),
-    m_age(NScene::SecondsSinceLastWrite(base, name)),
     m_triple_debug(true)
 {
     init_lvlists();
     init();
 }
+
 
 void NScene::init()
 {
@@ -179,16 +175,14 @@ void NScene::init()
     if(m_verbosity > 0)
     {
         LOG(info) << "NScene::init START"
-                  << " age(s) " << m_age 
-                  << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
-                  << " num_gltf_nodes " << m_num_gltf_nodes
+                 << " num_nodes " << m_num_nodes
                   ;  
     }
 
 
     load_csg_metadata();  // populate mesh_id keyed map of NParameters coming from json for each NCSG 
 
-    import();  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd node_id keyed into m_nd 
+    import();  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd into nd::_register with node_idx keys
 
     postimportnd();
 
@@ -196,7 +190,7 @@ void NScene::init()
         dumpNdTree("NScene::init");
 
 
-    m_ngltf->compare_trees_r(0);
+    m_source->compare_trees_r(0);
 
     count_progeny_digests();
 
@@ -239,7 +233,7 @@ void NScene::import()
 {
     if(m_triple_debug)
     { 
-        nd::_triple = NPY<float>::make( m_num_gltf_nodes, 3, 4, 4 ); // debug TVQ collection
+        nd::_triple = NPY<float>::make( m_num_nodes, 3, 4, 4 ); // debug TVQ collection
         nd::_triple->zero();
     }
 
@@ -252,7 +246,7 @@ void NScene::import()
     if(m_triple_debug)
     {
         LOG(info) << "triple_debug "
-                  << " num_gltf_nodes " << m_num_gltf_nodes
+                  << " num_nodes " << m_num_nodes
                   << " triple_mismatch " << nd::_num_triple_mismatch
                   ;
         nd::_triple->save("$TMP/NScene_triple.npy");
@@ -271,7 +265,7 @@ void NScene::init_lvlists()
     }
 
   
-    std::string stem = BFile::Stem(m_ngltf->getName());  // eg "g4_00" 
+    std::string stem = BFile::Stem(m_source->getName());  // eg "g4_00" 
     std::string csgskip_path = BFile::FormPath(m_idfold, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
     std::string placeholder_path = BFile::FormPath(m_idfold, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
 
@@ -319,21 +313,20 @@ void NScene::write_lvlists()
 
 void NScene::load_asset_extras()
 {
-    unsigned extras_verbosity = m_ngltf->getAssetExtras<unsigned>("verbosity"); 
+    unsigned source_verbosity = m_source->getSourceVerbosity() ; 
 
-    if(extras_verbosity > m_verbosity)
+    if(source_verbosity > m_verbosity)
     {
         LOG(warning) << "NScene::load_asset_extras"
                      << " verbosity increase from scene gltf "
-                     << " extras_verbosity " << extras_verbosity
+                     << " source_verbosity " << source_verbosity
                      << " m_verbosity " << m_verbosity
                      ;
 
-        m_verbosity = extras_verbosity ; 
-       
+        m_verbosity = source_verbosity ; 
     }
 
-    m_targetnode = m_ngltf->getAssetExtras<unsigned>("targetnode"); 
+    m_targetnode = m_source->getTargetNode(); 
 
     if(m_verbosity > 1)
     {
@@ -358,7 +351,7 @@ unsigned NScene::getTargetNode()
 void NScene::load_csg_metadata()
 {
    // for debugging need the CSG metadata prior to loading the trees
-    unsigned num_meshes = m_ngltf->getNumMeshes();
+    unsigned num_meshes = m_source->getNumMeshes();
     if(m_verbosity > 0)
     {
     LOG(info) << "NScene::load_csg_metadata"
@@ -369,16 +362,24 @@ void NScene::load_csg_metadata()
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        std::string soName = m_ngltf->getMeshExtras<std::string>(mesh_id, "soName"); 
-        int lvIdx = m_ngltf->getMeshExtras<int>(mesh_id, "lvIdx" );  
+        //std::string soName = m_source->getMeshExtras<std::string>(mesh_id, "soName"); 
+        //int lvIdx          = m_source->getMeshExtras<int>(mesh_id, "lvIdx" );  
+        //std::string csgpath = m_source->getCSGPath(mesh_id); 
+        //NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+
+
+        std::string  soName = m_source->getSolidName(mesh_id);
+
+        int lvIdx = m_source->getLogicalVolumeIndex(mesh_id); 
 
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
-        std::string csgpath = m_ngltf->getCSGPath(mesh_id); 
-        NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+        NParameters* meta = m_source->getCSGMetadata(mesh_id);
 
         m_csg_metadata[mesh_id] = meta ; 
+
         std::string meta_soname = soname(mesh_id);
+
         assert( meta_soname.compare(soName) == 0) ; 
 
         if(m_verbosity > 3)
@@ -440,7 +441,7 @@ std::string NScene::meshmeta(unsigned mesh_id) const
 
 void NScene::load_mesh_extras()
 {
-    unsigned num_meshes = m_ngltf->getNumMeshes();
+    unsigned num_meshes = m_source->getNumMeshes();
 
     if(m_verbosity > 1)
     {
@@ -452,19 +453,20 @@ void NScene::load_mesh_extras()
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        std::string name = m_ngltf->getMeshName(mesh_id);
-        unsigned num_prim =  m_ngltf->getMeshNumPrimitives(mesh_id); 
+        std::string name = m_source->getMeshName(mesh_id);
+        unsigned num_prim =  m_source->getMeshNumPrimitives(mesh_id); 
 
-
-        bool iug = m_ngltf->isUsedGlobally(mesh_id); 
+        bool iug = m_source->isUsedGlobally(mesh_id); 
         if(iug) m_num_global++ ; 
 
-        std::string csgpath = m_ngltf->getCSGPath(mesh_id); 
 
         int lvidx_ = lvidx(mesh_id);
 
-        NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
-        csg->setIndex(mesh_id);
+        //std::string csgpath = m_source->getCSGPath(mesh_id); 
+        //NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
+        //csg->setIndex(mesh_id);
+
+        NCSG* csg = m_source->getCSG(mesh_id);  
 
         bool csgskip = csg->isSkip() ;
         if(csgskip) 
@@ -561,35 +563,24 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
 }
 
 
+
+
+
+
+
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
-    // recursive translation of ygltf node tree into nd tree
-    // parent is as needed for global transform calculation
+    // recursive translation of source node tree (eg ygltf) 
+    // into nd tree, parent is as needed for global transform calculation
 
-    nd* n = m_ngltf->createNdConverted(idx, depth, parent);
+    nd* n = m_source->createNdConverted(idx, depth, parent);
 
-    const std::vector<int>& ychildren = m_ngltf->getNodeChildren(idx); 
-
-/*
-
-    ygltf::node_t* ynode = m_ngltf->getNode(idx);
-
-    nd* n = nd::create(idx,     // NB these are structural nodes, not CSG tree nodes
-                       ynode->mesh, 
-                       depth,
-                       ynode->extras["boundary"],
-                       ynode->name,
-                       parent,
-                       ynode->matrix.data()
-                     );
-*/
+    const std::vector<int>& ychildren = m_source->getNodeChildren(idx); 
 
     for(int child : ychildren)
     {
         n->children.push_back( import_r(child, n, depth+1) );  // recursive call  
     }
-
-    m_nd[idx] = n ;
 
     return n ; 
 }
@@ -1279,7 +1270,7 @@ void NScene::dumpNdTree_r(nd* n)
 unsigned NScene::deviseRepeatIndex_0(nd* n)
 {
     unsigned mesh_idx = n->mesh ; 
-    unsigned num_mesh_instances = m_ngltf->getNumInstances(mesh_idx) ;
+    unsigned num_mesh_instances = m_source->getNumInstances(mesh_idx) ;
 
     unsigned ridx = 0 ;   // <-- global default ridx
 
@@ -1364,7 +1355,7 @@ void NScene::markGloballyUsedMeshes_r(nd* n)
     assert( n->repeatIdx > -1 );
 
     //if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
-    m_ngltf->setIsUsedGlobally(n->mesh, true );
+    m_source->setIsUsedGlobally(n->mesh, true );
 
     // see opticks/notes/issues/subtree_instances_missing_transform.rst
 
@@ -1407,5 +1398,35 @@ unsigned NScene::getNumRepeats()
    // this assumes ridx is a contiguous index
     return m_repeat_count.size() ;
 }
+
+
+
+NPY<float>* NScene::makeInstanceTransformsBuffer(unsigned mesh_idx)
+{
+    const std::vector<unsigned>& instances = m_source->getInstances(mesh_idx);
+
+    NPY<float>* buf = NPY<float>::make(instances.size(), 4, 4);
+    buf->zero();
+
+    for(unsigned i=0 ; i < instances.size() ; i++)
+    {
+        int node_idx = instances[i] ; 
+        glm::mat4 xf = m_source->getTransformMatrix(node_idx) ;
+        buf->setMat4(xf, i);
+    }
+
+    // Why only one instance of the first mesh ? 
+    // Will almost always be so : only one world, but as can scale 
+    // the solid of the world box could in principal be reused.
+    // Hmm : perhaps related to mm0 always being global (non-instanced) ?
+    //
+    if(mesh_idx == 0)   
+    {
+       assert(buf->getNumItems() == 1);
+    }
+    return buf ;
+}
+
+
 
 

@@ -7,10 +7,12 @@
 #include <glm/fwd.hpp>
 
 #include "NPY_API_EXPORT.hh"
+#include "NGeometry.hpp"
 
 template<class T> class NPY ;
 
 struct nd ; 
+class NParameters ; 
 
 namespace ygltf 
 {
@@ -35,13 +37,14 @@ NGLTF is the base class of NScene.
 
 **/
 
-class NPY_API NGLTF {
+class NPY_API NGLTF : public NGeometry {
+    public:
+        static bool Exists(const char* base, const char* name);
+        static long SecondsSinceLastWrite(const char* base, const char* name);
     public:
         NGLTF(const char* base, const char* name, const NSceneConfig* config, unsigned scene_idx);
     public:
         const char*         getBase() const ; 
-        const char*         getName() const ; 
-        const NSceneConfig* getConfig() const ;
     private:
         // init
         void load();     // loads m_gltf from file and flattens giving m_fgltf  
@@ -53,46 +56,57 @@ class NPY_API NGLTF {
         void dump_mesh_totals(const char* msg="NGLTF::dump_mesh_totals", unsigned maxdump=10u );
         void dump_node_transforms(const char* msg="NGLTF::dump_node_transforms");
     public:
-        NPY<float>*                  makeInstanceTransformsBuffer(unsigned mesh_idx);
-        unsigned                     getNumMeshes() const ;
-        unsigned                     getNumInstances(unsigned mesh_idx);
-        const std::vector<unsigned>& getInstances(unsigned mesh_idx); // nodes that use the mesh
-    public:
-        // meshes that are used globally need to have gtransform slots for all primitives
-        bool                         isUsedGlobally(unsigned mesh_idx);
-        void                         setIsUsedGlobally(unsigned mesh_idx, bool iug);
     public:
         ygltf::mesh_t*               getMesh(unsigned mesh_id); 
-        std::string                  getMeshName(unsigned mesh_id);
-        unsigned                     getMeshNumPrimitives(unsigned mesh_id);
         template<typename T> T       getMeshExtras(int mesh_id, const char* key)  ;
-        std::string                  getCSGPath(int mesh_id); 
-
 
         ygltf::fl_mesh*              getFlatNode(unsigned node_idx );
         const std::array<float, 16>& getFlatTransform(unsigned node_idx );
         const std::array<float, 16>& getNodeTransform(unsigned node_idx );
-        glm::mat4                    getTransformMatrix(unsigned node_idx );
     public:
         void dumpAll();
         void dumpAllInstances( unsigned mesh_idx, unsigned maxdump=10u );
+
     public:
-        unsigned                     getNumNodes() const  ;
         ygltf::node_t*               getNode(unsigned node_idx ) const ;
+
+    public:
+        ///////// NGeometry interface  ///////////////////////////////////////////////
+
+        std::string                  desc() const ;
+        unsigned                     getNumNodes() const  ;
+        unsigned                     getNumMeshes() const ;
         const std::vector<int>&      getNodeChildren(unsigned node_idx) const  ; 
         nd*                          createNdConverted(unsigned node_idx, unsigned depth, nd* parent) const  ;
+        void                         compare_trees_r(unsigned node_idx); // recursive compare the ynode and nd trees
+        unsigned                     getSourceVerbosity();
+        unsigned                     getTargetNode();
+        const char*                  getName() const ; 
+        std::string                  getSolidName(int mesh_id);
+        int                          getLogicalVolumeIndex(int mesh_id);
+        NParameters*                 getCSGMetadata( int mesh_id );
+        NCSG*                        getCSG(int mesh_id) ; 
+        std::string                  getMeshName(unsigned mesh_id);
+        unsigned                     getMeshNumPrimitives(unsigned mesh_id);
+        unsigned                     getNumInstances(unsigned mesh_idx);
+        // meshes that are used globally need to have gtransform slots for all primitives
+        bool                         isUsedGlobally(unsigned mesh_idx);
+        void                         setIsUsedGlobally(unsigned mesh_idx, bool iug);
+        const NSceneConfig*          getConfig() const ;
+        const std::vector<unsigned>& getInstances(unsigned mesh_idx); // nodes that use the mesh
+        glm::mat4                    getTransformMatrix(unsigned node_idx );
+
+        /////////////////////////////////////////////////////////////////////////////////////
     public:
-        void                         compare_trees_r(int idx); // recursive compare the ynode and nd trees
-    public:
+        std::string                  getCSGPath(int mesh_id); 
         std::string                  descFlatNode( unsigned node_idx );
         std::string                  descNode( unsigned node_idx );
-        std::string                  desc() const ;
-
         template<typename T> T       getAssetExtras(const char* key)  ;
 
     protected:
         const char*           m_base ; 
         const char*           m_name ; 
+        long                  m_age ; 
         const NSceneConfig*   m_config ; 
         int                   m_scene_idx ; 
         ygltf::glTF_t*        m_gltf ;  

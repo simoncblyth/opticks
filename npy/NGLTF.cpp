@@ -7,6 +7,7 @@
 #include "NYGLTF.hpp"
 #include "NGLTF.hpp"
 #include "NPY.hpp"
+#include "NCSG.hpp"
 #include "NGLMExt.hpp"
 #include "Nd.hpp"
 
@@ -15,6 +16,7 @@ NGLTF::NGLTF(const char* base, const char* name, const NSceneConfig* config, uns
    :
     m_base(base ? strdup(base) : NULL),
     m_name(name ? strdup(name) : NULL),
+    m_age(NGLTF::SecondsSinceLastWrite(base, name)),
     m_config(config),
     m_scene_idx(scene_idx),
     m_gltf(NULL),
@@ -28,14 +30,19 @@ const char* NGLTF::getBase() const
 {
     return m_base ; 
 }
-const char* NGLTF::getName() const 
+
+bool NGLTF::Exists(const char* base, const char* name)
 {
-    return m_name ; 
+    return BFile::ExistsFile(base, name);
 }
-const NSceneConfig* NGLTF::getConfig() const 
+
+long NGLTF::SecondsSinceLastWrite(const char* base, const char* name)
 {
-    return m_config ; 
+    std::time_t* slwt = BFile::SinceLastWriteTime(base, name);
+    long age = slwt ? *slwt : -1 ; 
+    return age ;  
 }
+
 
 void NGLTF::load()
 {
@@ -124,57 +131,12 @@ void NGLTF::collect()
     //   to yield global transforms for each node in m_xf 
 }
 
-// meshes that are used globally need to have gtransform slots for all primitives
-bool NGLTF::isUsedGlobally(unsigned mesh_idx)
-{
-    assert( m_mesh_used_globally.count(mesh_idx) == 1 );
-    return m_mesh_used_globally[mesh_idx] ; 
-}
-
-void NGLTF::setIsUsedGlobally(unsigned mesh_idx, bool iug)
-{
-    m_mesh_used_globally[mesh_idx] = iug ; 
-} 
 
 ygltf::mesh_t* NGLTF::getMesh(unsigned mesh_id)
 {
     return &m_gltf->meshes.at(mesh_id);
 }
 
-
-
-std::string NGLTF::getMeshName(unsigned mesh_id)
-{
-    ygltf::mesh_t* mesh = getMesh(mesh_id);
-    return mesh->name ; 
-}
-
-unsigned NGLTF::getMeshNumPrimitives(unsigned mesh_id)
-{
-    ygltf::mesh_t* mesh = getMesh(mesh_id);
-    return mesh->primitives.size() ; 
-}
-
-unsigned NGLTF::getNumMeshes() const 
-{
-    unsigned num_meshes = m_mesh_instances.size() ;
-    assert( num_meshes == m_gltf->meshes.size() ); 
-    return num_meshes ;
-}
-
-unsigned NGLTF::getNumInstances(unsigned mesh_idx)
-{
-    assert( mesh_idx < m_mesh_instances.size() );
-    return m_mesh_instances[mesh_idx].size() ; 
-}
-
-const std::vector<unsigned>& NGLTF::getInstances(unsigned mesh_idx)
-{
-    // list of node indices that use the mesh 
-    assert( mesh_idx < m_mesh_instances.size() );
-    const std::vector<unsigned>& instances = m_mesh_instances[mesh_idx] ;
-    return instances ; 
-}
    
 void NGLTF::dumpAllInstances( unsigned mesh_idx, unsigned maxdump )
 {
@@ -190,29 +152,6 @@ void NGLTF::dumpAll()
     for(unsigned i=0 ; i < num_meshes ; i++) dumpAllInstances(i) ; 
 }
 
-NPY<float>* NGLTF::makeInstanceTransformsBuffer(unsigned mesh_idx)
-{
-    const std::vector<unsigned>& instances = getInstances(mesh_idx);
-
-    NPY<float>* buf = NPY<float>::make(instances.size(), 4, 4);
-    buf->zero();
-
-    for(unsigned i=0 ; i < instances.size() ; i++)
-    {
-        int node_idx = instances[i] ; 
-        glm::mat4 xf = getTransformMatrix(node_idx) ;
-        buf->setMat4(xf, i);
-    }
-
-    // Why only one instance of the first mesh ? 
-    // Will almost always be so : only one world, but as can scale 
-    // the solid of the world box could in principal be reused.
-    if(mesh_idx == 0)   
-    {
-       assert(buf->getNumItems() == 1);
-    }
-    return buf ;
-}
 
 void NGLTF::dump_mesh_totals(const char* msg, unsigned maxdump)
 {
@@ -277,18 +216,7 @@ const std::array<float,16>& NGLTF::getNodeTransform(unsigned node_idx)
     return m_xf[node_idx] ; 
 }
 
-glm::mat4 NGLTF::getTransformMatrix( unsigned node_idx )
-{
-    const std::array<float, 16>& nxf = getNodeTransform(node_idx);
-    const std::array<float, 16>& fxf = getFlatTransform(node_idx);
-    assert( nxf == fxf );
-    return glm::make_mat4( nxf.data() );
-}
 
-unsigned  NGLTF::getNumNodes() const 
-{
-   return m_gltf->nodes.size()  ;
-}
 
 ygltf::node_t* NGLTF::getNode(unsigned node_idx) const 
 {
@@ -296,13 +224,38 @@ ygltf::node_t* NGLTF::getNode(unsigned node_idx) const
     return &m_gltf->nodes.at(node_idx);
 }  
 
+
+//////////////   NGeometry interface  /////////////////////////////////
+
+std::string NGLTF::desc() const 
+{
+    std::stringstream ss ; 
+
+    ss << "NGLTF "
+       << " base " << ( m_base ? m_base : "-" )
+       << " name " << ( m_name ? m_name : "-" )
+       << " age(s) " << m_age 
+       << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
+       ;
+
+    return ss.str();
+}
+
+unsigned  NGLTF::getNumNodes() const 
+{
+   return m_gltf->nodes.size()  ;
+}
+unsigned NGLTF::getNumMeshes() const 
+{
+    unsigned num_meshes = m_mesh_instances.size() ;
+    assert( num_meshes == m_gltf->meshes.size() ); 
+    return num_meshes ;
+}
 const std::vector<int>& NGLTF::getNodeChildren(unsigned node_idx) const 
 {
     ygltf::node_t* ynode = getNode(node_idx);
     return ynode->children ;
 }
-
-
 
 nd* NGLTF::createNdConverted(unsigned node_idx, unsigned depth, nd* parent) const 
 {
@@ -320,12 +273,157 @@ nd* NGLTF::createNdConverted(unsigned node_idx, unsigned depth, nd* parent) cons
 }
  
 
+void NGLTF::compare_trees_r(unsigned idx)
+{
+    ygltf::node_t* ynode = getNode(idx);
+    nd* n = nd::get(idx);    
+
+    assert( ynode->mesh == int(n->mesh) );
+    assert( ynode->children.size() == n->children.size() );
+    assert( n->transform) ; 
+    assert( n->gtransform) ; 
+
+    {
+        std::array<float,16> tt ;   
+        nglmext::copyTransform(tt, n->transform->t );
+
+        bool local_match = tt == ynode->matrix ; 
+        if(!local_match)
+        {
+            std::cout << "idx " << idx << ( local_match ? " LOCAL-MATCH " : " LOCAL-MISMATCH " ) << std::endl ; 
+            std::cout << "ntt " << nglmext::xform_string( tt ) << std::endl ;    
+            std::cout << "nmx " << nglmext::xform_string( ynode->matrix ) << std::endl ;    
+        }
+        assert(local_match);
+    }
+
+
+    {
+        std::array<float,16> gg ;   
+        nglmext::copyTransform(gg, n->gtransform->t );
+        const std::array<float,16>& fxf = getFlatTransform(idx) ; 
+        const std::array<float,16>& nxf = getNodeTransform(idx) ; 
+
+        bool global_match = gg == fxf && fxf == nxf  ; 
+        if(!global_match)
+        {
+            std::cout << "idx " << idx << ( global_match ? " GLOBAL-MATCH " : " GLOBAL-MISMATCH " ) << std::endl ; 
+            std::cout << "gg  " << nglmext::xform_string( gg ) << std::endl ;    
+            std::cout << "fxf " << nglmext::xform_string( fxf ) << std::endl ;    
+            std::cout << "nxf " << nglmext::xform_string( nxf ) << std::endl ;    
+        }
+        assert(global_match);
+    }
+
+
+    for(int child : ynode->children) compare_trees_r( child );
+}
+
+
+unsigned NGLTF::getSourceVerbosity()
+{
+    return getAssetExtras<unsigned>("verbosity"); 
+}
+unsigned NGLTF::getTargetNode()
+{
+    return getAssetExtras<unsigned>("targetnode"); 
+}
+
+const char* NGLTF::getName() const 
+{
+    return m_name ; 
+}
+
+std::string NGLTF::getSolidName(int mesh_id)
+{
+    std::string soName = getMeshExtras<std::string>(mesh_id, "soName"); 
+    return soName ; 
+}
+int NGLTF::getLogicalVolumeIndex(int mesh_id)
+{
+    int lvIdx = getMeshExtras<int>(mesh_id, "lvIdx" );  
+    return lvIdx ;  
+}
+
+
+NParameters* NGLTF::getCSGMetadata( int mesh_id )
+{
+    std::string csgpath = getCSGPath(mesh_id); 
+    NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
+    return meta ; 
+}
+
+
+NCSG* NGLTF::getCSG(int mesh_id)
+{
+    std::string csgpath = getCSGPath(mesh_id); 
+    NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
+    csg->setIndex(mesh_id);
+    return csg ; 
+}
+
+std::string NGLTF::getMeshName(unsigned mesh_id)
+{
+    ygltf::mesh_t* mesh = getMesh(mesh_id);
+    return mesh->name ; 
+}
+
+unsigned NGLTF::getMeshNumPrimitives(unsigned mesh_id)
+{
+    ygltf::mesh_t* mesh = getMesh(mesh_id);
+    return mesh->primitives.size() ; 
+}
+
+unsigned NGLTF::getNumInstances(unsigned mesh_idx)
+{
+    assert( mesh_idx < m_mesh_instances.size() );
+    return m_mesh_instances[mesh_idx].size() ; 
+}
+
+// meshes that are used globally need to have gtransform slots for all primitives
+bool NGLTF::isUsedGlobally(unsigned mesh_idx)
+{
+    assert( m_mesh_used_globally.count(mesh_idx) == 1 );
+    return m_mesh_used_globally[mesh_idx] ; 
+}
+
+void NGLTF::setIsUsedGlobally(unsigned mesh_idx, bool iug)
+{
+    m_mesh_used_globally[mesh_idx] = iug ; 
+} 
+
+const NSceneConfig* NGLTF::getConfig() const 
+{
+    return m_config ; 
+}
+
+const std::vector<unsigned>& NGLTF::getInstances(unsigned mesh_idx)
+{
+    // list of node indices that use the mesh 
+    assert( mesh_idx < m_mesh_instances.size() );
+    const std::vector<unsigned>& instances = m_mesh_instances[mesh_idx] ;
+    return instances ; 
+}
+
+glm::mat4 NGLTF::getTransformMatrix( unsigned node_idx )
+{
+    const std::array<float, 16>& nxf = getNodeTransform(node_idx);
+    const std::array<float, 16>& fxf = getFlatTransform(node_idx);
+    assert( nxf == fxf );
+    return glm::make_mat4( nxf.data() );
+}
+
+
+////////////////////  end of NGeometry interface ///////////////////////
 
 
 
-
-
-
+std::string NGLTF::getCSGPath(int mesh_id)
+{
+    std::string uri = getMeshExtras<std::string>(mesh_id, "uri") ; 
+    std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
+    return csgpath ; 
+}
 
 std::string NGLTF::descNode( unsigned node_idx )
 {
@@ -340,18 +438,6 @@ std::string NGLTF::descNode( unsigned node_idx )
         //   << " node.name " << node->name 
            ;
     return ss.str() ;
-}
-
-std::string NGLTF::desc() const 
-{
-    std::stringstream ss ; 
-
-    ss << "NGLTF "
-       << " base " << ( m_base ? m_base : "-" )
-       << " name " << ( m_name ? m_name : "-" )
-       ;
-
-    return ss.str();
 }
 
 std::string NGLTF::descFlatNode( unsigned node_idx )
@@ -399,9 +485,7 @@ void NGLTF::dump(const char* msg)
              << " fl_scene " << std::setw(3) << m_fgltf->scenes.size()
              << std::endl ; 
 
-
     dump_mesh_totals();
-
 }
 
 void NGLTF::dump_scenes(const char* msg)
@@ -459,7 +543,6 @@ T NGLTF::getAssetExtras(const char* key)
     return value ;
 }
 
-
 template<typename T>
 T NGLTF::getMeshExtras(int mesh_id, const char* key) 
 {
@@ -468,73 +551,6 @@ T NGLTF::getMeshExtras(int mesh_id, const char* key)
     T value = extras[key]; 
     return value ;
 }
-
-
-std::string NGLTF::getCSGPath(int mesh_id)
-{
-    std::string uri = getMeshExtras<std::string>(mesh_id, "uri") ; 
-    std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
-    return csgpath ; 
-}
-
-
-
-
-
-void NGLTF::compare_trees_r(int idx)
-{
-    ygltf::node_t* ynode = getNode(idx);
-    nd* n = nd::get(idx);    
-
-    assert( ynode->mesh == int(n->mesh) );
-    assert( ynode->children.size() == n->children.size() );
-    assert( n->transform) ; 
-    assert( n->gtransform) ; 
-
-    {
-        std::array<float,16> tt ;   
-        nglmext::copyTransform(tt, n->transform->t );
-
-        bool local_match = tt == ynode->matrix ; 
-        if(!local_match)
-        {
-            std::cout << "idx " << idx << ( local_match ? " LOCAL-MATCH " : " LOCAL-MISMATCH " ) << std::endl ; 
-            std::cout << "ntt " << nglmext::xform_string( tt ) << std::endl ;    
-            std::cout << "nmx " << nglmext::xform_string( ynode->matrix ) << std::endl ;    
-        }
-        assert(local_match);
-    }
-
-
-    {
-        std::array<float,16> gg ;   
-        nglmext::copyTransform(gg, n->gtransform->t );
-        const std::array<float,16>& fxf = getFlatTransform(idx) ; 
-        const std::array<float,16>& nxf = getNodeTransform(idx) ; 
-
-        bool global_match = gg == fxf && fxf == nxf  ; 
-        if(!global_match)
-        {
-            std::cout << "idx " << idx << ( global_match ? " GLOBAL-MATCH " : " GLOBAL-MISMATCH " ) << std::endl ; 
-            std::cout << "gg  " << nglmext::xform_string( gg ) << std::endl ;    
-            std::cout << "fxf " << nglmext::xform_string( fxf ) << std::endl ;    
-            std::cout << "nxf " << nglmext::xform_string( nxf ) << std::endl ;    
-        }
-        assert(global_match);
-    }
-
-
-    for(int child : ynode->children) compare_trees_r( child );
-}
-
-
-
-
-
-
-
-
-
 
 template int      NGLTF::getAssetExtras<int>(const char*) ;
 template unsigned NGLTF::getAssetExtras<unsigned>(const char*) ;

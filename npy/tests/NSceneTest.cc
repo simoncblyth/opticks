@@ -2,6 +2,7 @@
 #include "SSys.hh"
 #include "BOpticksResource.hh"
 
+#include "NGLTF.hpp"
 #include "NScene.hpp"
 #include "NSceneConfig.hpp"
 #include "NPY.hpp"
@@ -21,7 +22,7 @@ void test_makeInstanceTransformsBuffer(NScene* scene)
            << " instance transforms " << std::setw(3) << buf->getNumItems()
            << std::endl ;  
         buf->dump();
-        scene->dumpAllInstances(mesh_idx); 
+       // scene->dumpAllInstances(mesh_idx);  // TODO: revive 
     }
 }
 
@@ -54,7 +55,7 @@ struct NSceneTest
     void load(const char* base, const char* name)
     { 
 
-        if(!NScene::Exists(base, name))
+        if(!NGLTF::Exists(base, name))
         {
             LOG(warning) << "no such scene at"
                          << " base " << base
@@ -71,10 +72,13 @@ struct NSceneTest
 
         NSceneConfig* config_ = new NSceneConfig(config);
 
-        _scene = new NScene( base, name, idfold, config_, dbgnode, scene_idx  ); 
+        NGeometry* source = new NGLTF(base, name, config_, scene_idx);
+        _scene =  new NScene(source, idfold, dbgnode) ;
+        //_scene = new NScene( base, name, idfold, config_, dbgnode, scene_idx  ); 
+
         assert(_scene);
 
-        _scene->dump("NSceneTest");
+        // _scene->dump("NSceneTest");  // TODO: revive
         //_scene->dumpNdTree();
 
         //scene->dumpAll();
