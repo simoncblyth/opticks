@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 set(name ThrustRap)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)
-set(ThrustRap_VERBOSE ON)
+set(ThrustRap_VERBOSE OFF)
 
 find_package(OKConf      REQUIRED CONFIG)
 include(OpticksCompilationFlags)

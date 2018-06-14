@@ -1,10 +1,4 @@
 #pragma once
-
-// *GMergedMesh* 
-//     is just relevant for GMesh creation from multiple GMesh general usage should target GMesh  
-//
-//     THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
-
 #include <map>
 #include <vector>
 #include <string>
@@ -24,6 +18,16 @@ class GMergedMesh ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/**
+GMergedMesh
+=============
+
+* creation of composite meshes from multiple GMesh 
+* general usage should target GMesh  
+* THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
+
+
+**/
 
 class GGEO_API GMergedMesh : public GMesh {
     friend class GGeoLib ;         // for setParts hookup on loading 
@@ -63,9 +67,8 @@ public:
          );
 public:
     std::string brief() const ;
-    void addInstancedBuffers(const std::vector<GNode*>& placements);
+    void addInstancedBuffers(const std::vector<GNode*>& placements);  // uses GTree statics to create the buffers
    // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  
-private:
 private:
     // NB cannot treat GMergedMesh as a GMesh wrt calling getNumSolids 
     // explicit naming to avoid subclass confusion

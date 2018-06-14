@@ -98,8 +98,8 @@ EOS
 
 om-subs--()
 {
-   #om-subs--all
-   om-subs--partial
+   om-subs--all
+   #om-subs--partial
 }
 
 

@@ -14,6 +14,11 @@ GTree
 Pulling out intended-to-be-common parts of GScene and GTreeCheck into GTree
 to avoid duplicity issues. 
 
+Used by: GMergedMesh and GTreeCheck 
+
+Creates NPY buffers and populates with info from 
+the instance placements lists.
+
 
 **/
 

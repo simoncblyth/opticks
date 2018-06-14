@@ -3,6 +3,9 @@
 #include "NPY_API_EXPORT.hh"
 #include <vector>
 #include <string>
+#include <map>
+
+template <typename T> class NPY ; 
 
 #include <glm/fwd.hpp>
 
@@ -24,37 +27,57 @@ nd : structural nodes from glTF
 */
 
 
+typedef std::map<unsigned, nd*> nd_register_t ;
+
 struct NPY_API nd
 {
-   unsigned         idx ;
-   int              repeatIdx ;
+    static nd* create(int idx, 
+                      int mesh, 
+                      int depth,
+                      const std::string& boundary,
+                      const std::string& pvname,
+                      nd* parent,
+                      const float* transform);
 
-   unsigned         mesh ; 
-   unsigned         depth ; 
-   std::string      boundary ; 
-   std::string      pvname ; 
-   unsigned         containment ; 
+    static nd_register_t* _register ; 
+    static unsigned num_nodes() ;
+    static nd* get(unsigned idx) ;
 
-   std::string      _local_digest ; 
-   std::string      _mesh_digest ; 
-   std::string      _progeny_digest ; 
+    static unsigned     _num_triple_mismatch ; 
+    static unsigned     _num_triple  ; 
+    static NPY<float>*  _triple ; 
 
-   nd*              parent ; 
-   const nmat4triple*     transform ; 
-   const nmat4triple*     gtransform ; 
-   std::vector<nd*> children ; 
-   std::vector<nd*> _progeny ; 
-   std::vector<nd*> _ancestors ; 
 
+    unsigned         idx ;
+    int              repeatIdx ;
+
+    unsigned         mesh ; 
+    unsigned         depth ; 
+    std::string      boundary ; 
+    std::string      pvname ; 
+    unsigned         containment ; 
+
+    std::string      _local_digest ; 
+    std::string      _mesh_digest ; 
+    std::string      _progeny_digest ; 
+
+    nd*              parent ; 
+
+    const nmat4triple*     transform ; 
+    const nmat4triple*     gtransform ; 
+
+    std::vector<nd*> children ; 
+    std::vector<nd*> _progeny ; 
+    std::vector<nd*> _ancestors ; 
 
     // this class needs major rework to constify due to the lazy approach 
-
-   nbbox                  aabb ;  
-
+    nbbox                  aabb ;  
 
    std::string desc();
    std::string detail();
    static const nmat4triple* make_global_transform(const nd* n) ; 
+   static const nmat4triple* make_triple( const float* data) ;
+
    void dump_transforms(const char* msg="nd::dump_transforms") ;
 
 

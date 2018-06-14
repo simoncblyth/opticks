@@ -9,9 +9,9 @@ include(OpticksCompilationFlags)     ## repeating this here as nvcc flags requir
 find_package(SysRap REQUIRED CONFIG)
 find_package(OpticksCUDA REQUIRED MODULE)
 
-## NB **NO BOOST** as nvcc barfs on it
+## NB **NO BOOST** or pkgs with Boost in its ancestry : as nvcc barfs on it
 
-set(CUDARap_VERBOSE ON)
+set(CUDARap_VERBOSE OFF)
 if(CUDARap_VERBOSE)
    message(STATUS "${name}.CUDA_NVCC_FLAGS : ${CUDA_NVCC_FLAGS} ")
 endif()
@@ -53,7 +53,7 @@ set(LIBRARIES
 )
 if(UNIX AND NOT APPLE)
   set(LIBRARIES ${LIBRARIES} ssl )  
-endif(UNIX)
+endif()
 
 
 CUDA_ADD_LIBRARY( ${name} ${SOURCES} )

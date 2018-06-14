@@ -1,7 +1,5 @@
 #include "OpticksConst.hh"
 
-
-
 #include "SSortKV.hh"
 
 #include "NGLM.hpp"
@@ -63,8 +61,6 @@ void GScene::save() const
     m_meshlib->save();
 }
 
-
-
 GScene* GScene::Create(Opticks* ok, GGeo* ggeo)
 {
     bool loaded = false ; 
@@ -110,7 +106,8 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
     m_gltf(m_ok->getGLTF()),
     m_scene_config( m_ok->getSceneConfig() ),
     m_scene(loaded ? NULL : (m_gltf > 0 ? NScene::Load(m_ok->getGLTFBase(), m_ok->getGLTFName(), m_ok->getIdFold(), m_scene_config, m_ok->getDbgNode()) : NULL)),
-    m_num_nd(m_scene ? m_scene->getNumNd() : -1),
+    //m_num_nd(m_scene ? m_scene->getNumNd() : -1),
+    m_num_nd(nd::num_nodes()),
     m_targetnode(m_scene ? m_scene->getTargetNode() : 0),
 
     m_geolib(loaded ? GGeoLib::Load(m_ok, m_analytic, m_tri_bndlib ) : new GGeoLib(m_ok, m_analytic, m_tri_bndlib)),
@@ -135,27 +132,17 @@ GScene::GScene( Opticks* ok, GGeo* ggeo, bool loaded )
 }
 
 
-
-
-
 void GScene::dumpNode( unsigned nidx)
 {
-    if(!m_scene) return ; 
-
-    nd* n = m_scene->getNd(nidx);
+    nd* n = nd::get(nidx);
     LOG(info) << "GScene::dump_node" 
               << " nidx " << std::setw(6) << nidx
               << ( n ? " FOUND " : " NO-SUCH-NODE " )
               ;
 
-
-
     if(n)
         std::cout << std::endl << n->detail() << std::endl ;  
 }
-
-
-
 
 GNodeLib* GScene::getNodeLib()
 {
@@ -195,8 +182,6 @@ void GScene::initFromGLTF()
     //if(m_verbosity > 0)
     LOG(info) << "GScene::init START" ;
 
-
-
     //modifyGeometry();  // try skipping the clear
 
     importMeshes(m_scene);
@@ -208,7 +193,7 @@ void GScene::initFromGLTF()
 
     if(m_gltf == 4 || m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==4 or gltf==44" );
 
-    m_root = createVolumeTree(m_scene) ;
+    m_root = createVolumeTree(m_scene) ;  // recursive conversion of nd/NCSG/nnode into GSolid/GNode/GMesh/GParts
     assert(m_root);
 
     if(m_verbosity > 0)
@@ -308,8 +293,20 @@ unsigned GScene::findTriMeshIndex(const char* soname) const
 }
 
 
+/**
+void GScene::importMeshes(NScene* scene)
+=========================================
 
-void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh instances into m_meshes vector
+* uses NCSG from NScene to access the analytic NTrianglesNPY and 
+  creates corresponding analytic GMesh
+
+* associates an alt GMesh with the analytic one using the 
+  G4 polygonization from m_tri_meshlib   
+
+* add the analytic GMesh to m_meshlib 
+
+**/
+void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh instances into m_meshlib GMeshLib
 {
     unsigned num_meshes = scene->getNumMeshes();
     LOG(info) << "GScene::importMeshes START num_meshes " << num_meshes  ; 
@@ -320,6 +317,9 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         NTrianglesNPY* tris = csg->getTris();
         assert(tris);
         assert( csg->getIndex() == mesh_idx) ;
+
+        // establish index mapping between ana and tri meshes 
+        // based on the common solidname  
 
         std::string soname = csg->soname();
         unsigned tri_mesh_idx = findTriMeshIndex(soname.c_str());
@@ -354,9 +354,6 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
 
         alt->setAlt(mesh);
 
-
-
-        //m_meshes[mesh_idx] = mesh ;
         m_meshlib->add(mesh);
     }
     LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
@@ -595,6 +592,9 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 
     nd* root_nd = scene->getRoot() ;
     assert(root_nd->idx == 0 );
+    nd* root_nd2 = nd::get(0); 
+    assert( root_nd == root_nd2 );
+
 
     GSolid* parent = NULL ;
     unsigned depth = 0 ; 
@@ -602,7 +602,7 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
     GSolid* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
     assert(root);
 
-    assert( m_nodes.size() == scene->getNumNd()) ;
+    assert( m_nodes.size() == nd::num_nodes()) ;
 
     if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree DONE num_nodes: " << m_nodes.size()  ; 
@@ -617,8 +617,9 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool r
 
     unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GSolid index
     unsigned pidx = parent ? parent->getIndex() : 0 ; // partial parent index
- 
 
+    // hmm targetnode is for geometry sub-selection perhaps ?
+ 
     if(m_verbosity > 4)
     std::cout
            << "GScene::createVolumeTree_r"
@@ -942,6 +943,10 @@ void GScene::deltacheck_r( GNode* node, unsigned int depth)
 
 
 
+// to avoid duplication between GScene and GGeo the commented methods 
+// of GScene.old.cc were apparently moved into GTree 
+// and invoked from GMergedMesh::addInstancedBuffers
+
 
 void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMergedMesh
 {
@@ -1022,131 +1027,12 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
 void GScene::checkMergedMeshes()
 {
-    int nmm = m_geolib->getNumMergedMesh();
-    int mia = 0 ;
-
-    for(int i=0 ; i < nmm ; i++)
-    {
-        GMergedMesh* mm = m_geolib->getMergedMesh(i);
-        if(m_verbosity > 2) 
-        std::cout << "GScene::checkMergedMeshes i:" << std::setw(4) << i << " mm? " << (mm ? int(mm->getIndex()) : -1 ) << std::endl ; 
-        if(mm == NULL) mia++ ; 
-    } 
-
-    if(m_verbosity > 2 || mia != 0)
-    LOG(info) << "GScene::checkMergedMeshes" 
-              << " nmm " << nmm
-              << " mia " << mia
-              ;
-
+    int mia = m_geolib->checkMergedMeshes() ;
     if(!m_honour_selection)
     {
         assert(mia == 0 );
     }
 }
-
-
-
-
-/*
-
-void GScene::makeInstancedBuffers(GMergedMesh* mm, unsigned ridx, bool honour_selection)
-{
-    bool inside = ridx == 0 ; 
-    const std::vector<GNode*>& instances = m_root->findAllInstances(ridx, inside, honour_selection );
-    unsigned num_instances = instances.size(); 
-
-    if(m_verbosity > 1) 
-    LOG(info) << "GScene::makeInstancedBuffers" 
-              << " ridx " << std::setw(3) << ridx
-              << " num_instances " << std::setw(5) << num_instances
-              ;
-
-    NPY<float>* itr = makeInstanceTransformsBuffer(instances, ridx); 
-    mm->setITransformsBuffer(itr);
-
-    NPY<unsigned>* iid = makeInstanceIdentityBuffer(instances, ridx);
-    mm->setInstancedIdentityBuffer(iid);
-
-    NPY<unsigned>* aii = makeAnalyticInstanceIdentityBuffer(instances, ridx);
-    mm->setAnalyticInstancedIdentityBuffer(aii);
-}
-
-
-NPY<float>* GScene::makeInstanceTransformsBuffer(const std::vector<GNode*>& instances, unsigned ridx)
-{
-    NPY<float>* buf = NULL ; 
-    if(ridx == 0)
-    {
-        buf = NPY<float>::make_identity_transforms(1) ; 
-    }
-    else
-    {
-        unsigned num_instances = instances.size(); 
-        buf = NPY<float>::make(num_instances, 4, 4);
-        buf->zero(); 
-        for(unsigned i=0 ; i < num_instances ; i++)
-        {
-            GNode* instance = instances[i] ;
-            GMatrix<float>* gtransform = instance->getTransform();
-            const float* data = static_cast<float*>(gtransform->getPointer());
-            glm::mat4 xf_global = glm::make_mat4( data ) ;  
-            buf->setMat4(xf_global, i);  
-        } 
-    }
-    return buf ; 
-}
-
-NPY<unsigned>* GScene::makeInstanceIdentityBuffer(const std::vector<GNode*>& instances, unsigned ridx)   
-{
-    unsigned num_instances = instances.size(); 
-    NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 4);
-    buf->zero(); 
-
-    // huh : this is not doing the solid duplication of GTreeCheck::makeInstanceIdentityBuffer  ???
-
-
-    for(unsigned i=0 ; i < num_instances ; i++)
-    {
-        GSolid* instance = dynamic_cast<GSolid*>(instances[i]) ; 
-        guint4 id = instance->getIdentity();
-        glm::uvec4 uid(id.x, id.y, id.z, id.w);
-        buf->setQuadU( uid, i );
-    }
-    return buf ;  
-}
-
-NPY<unsigned>* GScene::makeAnalyticInstanceIdentityBuffer( const std::vector<GNode*>& instances, unsigned ridx) 
-{
-    unsigned num_instances = instances.size(); 
-    NPY<unsigned>* buf = NPY<unsigned>::make(num_instances, 1, 4);  //  TODO: unify shape aii and ii shape
-    buf->zero(); 
-
-    for(unsigned int i=0 ; i < num_instances ; i++) // over instances of the same geometry
-    {
-        GSolid* instance = dynamic_cast<GSolid*>(instances[i]) ; 
-        NSensor* ss = instance->getSensor();
-        unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
-
-        if(sid > 0)
-            LOG(debug) << "GScene::makeAnalyticInstanceIdentityBuffer " 
-                      << " sid " << std::setw(10) << std::hex << sid << std::dec 
-                      << " ss " << (ss ? ss->description() : "NULL" )
-                      ;
-
-        glm::uvec4 aii ; 
-        aii.x = instance->getIndex()  ;        
-        aii.y = i ;                      // instance index (for triangulated this contains the mesh index)
-        aii.z = 0 ;                      // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
-        aii.w = NSensor::RefIndex(ss) ;  // the only critical one 
-
-        buf->setQuadU(aii, i, 0); 
-        
-    }
-    return buf ; 
-}
-
-*/
 
 
 
@@ -1286,9 +1172,5 @@ void GScene::anaEvent(OpticksEvent* evt)
              << " exc/tot " << std::setw(6) << frac
              << std::endl ;  
     }
-
-
 }
-
-
 

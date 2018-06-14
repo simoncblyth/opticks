@@ -2,6 +2,9 @@
 #include "NPY_API_EXPORT.hh"
 
 #include "NGLM.hpp"
+#include <map>
+#include <vector>
+#include <string>
 
 class NCSG ; 
 class NTxt ; 
@@ -16,12 +19,20 @@ template<class T> class NPY ;
 template<class T> class Counts ;
 
 #include "NSceneConfig.hpp"  // for enums 
-#include "NGLTF.hpp"
+class NGLTF ; 
+
 
 /*
 
 NScene(NGLTF)
 ===============
+
+Does far too much for one class.
+
+* pulls in NCSG extras from sc.py 
+* finds repeat geometry instances 
+
+
 
 Used by GGeo::loadFromGLTF and GScene, GGeo.cc::
 
@@ -39,7 +50,10 @@ are polygonized on load in NScene::load_mesh_extras.
 */
 
 
-class NPY_API NScene : public NGLTF 
+
+//class NPY_API NScene : public NGLTF 
+
+class NPY_API NScene 
 {
     public:
         static NScene* Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode ) ;
@@ -50,8 +64,8 @@ class NPY_API NScene : public NGLTF
         void setAge(long age);
 
         nd*      getRoot() const ;
-        unsigned getNumNd() const ; 
-        nd*      getNd(unsigned node_idx) const ;
+        unsigned getNumMeshes() const ;
+
         NCSG*    getCSG(unsigned mesh_idx) const ;
         NCSG*    findCSG(const char* soname, bool startswith) const ;
 
@@ -71,10 +85,12 @@ class NPY_API NScene : public NGLTF
         int  lvidx(unsigned mesh_id) const ;
         void collect_mesh_nodes(std::vector<unsigned>& nodes, unsigned mesh) const ;
         std::string present_mesh_nodes(std::vector<unsigned>& nodes, unsigned dmax=10) const ;
+        std::string desc() const ;
     private:
         void collect_mesh_nodes_r(nd* n, std::vector<unsigned>& nodes, unsigned mesh) const ;
     private:
         void init();
+        void import();
         void init_lvlists();
         void write_lvlists();
     private:
@@ -97,15 +113,12 @@ class NPY_API NScene : public NGLTF
         void dump_repeat_candidate(unsigned i) const ;
         void dump_repeat_candidates() const;
     private:
-        nd*  import_r(int idx, nd* parent, int depth);
-        nmat4triple* make_triple( const float* data) ;
+        nd*  import_r(int idx, nd* parent, int depth); // recursive translation of ygltf node tree into nd tree
         void postimportnd();
 
         void dumpNdTree_r(nd* n);
         void count_progeny_digests();
         void count_progeny_digests_r(nd* n);
-        void compare_trees();
-        void compare_trees_r(int idx);
         void markGloballyUsedMeshes_r(nd* n);
     private:
         unsigned deviseRepeatIndex(const std::string& pdig);
@@ -143,6 +156,7 @@ class NPY_API NScene : public NGLTF
         float    sdf_procedural( const nd* n, const glm::vec3& q_) const  ; 
 
     private:
+        NGLTF*                            m_ngltf ; 
         nd*                               m_root ; 
         std::map<unsigned, nd*>           m_nd ; 
         std::map<unsigned, NParameters*>  m_csg_metadata ;
@@ -174,13 +188,5 @@ class NPY_API NScene : public NGLTF
         glm::uvec4                        m_surferr ;  
 
         bool                              m_triple_debug ; 
-        NPY<float>*                       m_triple ; 
-        unsigned                          m_num_triple ; 
-        unsigned                          m_num_triple_mismatch ; 
-
-        
-     
-
-
 };
 

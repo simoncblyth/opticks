@@ -45,6 +45,9 @@ template<class T> class NPY ;
 GScene
 ========
 
+* GGeoBase : protocal base class ensuring common access from GGeo and GScene 
+
+
 Canonical m_gscene instance, resident in m_ggeo,
 is instanciated by GGeo::loadFromGLTF.
 GMergedMesh are currently created via GGeo and
@@ -90,6 +93,29 @@ instanciation in GGeo::loadFromGLTF.
   placeholder bbox so satisfy the global mesh 0 that 
   lots of things require
 
+
+
+void GScene::initFromGLTF()
+------------------------------
+
+
+
+GSolid* GScene::createVolumeTree(NScene* scene) 
+-------------------------------------------------
+
+* recursively convert nd tree into GSolid(GNode) tree
+* recall "GSolid" is not a good name (think GNode its base class) 
+
+
+GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  )
+------------------------------------------------------------------------------
+
+* nexus : GMesh, GSolid, GParts, NCSG, boundary spec  
+
+
+
+
+
 */
 
 
@@ -101,8 +127,6 @@ class GGEO_API GScene : public GGeoBase
         static GScene* Create(Opticks* ok, GGeo* ggeo) ;
         static GScene* Load(Opticks* ok, GGeo* ggeo) ;
         GScene(Opticks* ok, GGeo* ggeo, bool loaded);
-        //GGeoLib*  getGeoLib();
-        GNodeLib* getNodeLib();
 
         GMergedMesh* getMergedMesh(unsigned ridx);
         GSolid* getSolid(unsigned nidx);
@@ -114,6 +138,7 @@ class GGEO_API GScene : public GGeoBase
         // GGeoBase interface
         const char*       getIdentifier();
         GGeoLib*          getGeoLib() ; 
+        GNodeLib*         getNodeLib();
         GSurfaceLib*      getSurfaceLib() ; 
         GMaterialLib*     getMaterialLib() ; 
         GBndLib*          getBndLib() ; 

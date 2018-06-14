@@ -11,6 +11,7 @@
 #include "Nd.hpp"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
+#include "NGLMCF.hpp"
 
 #include "PLOG.hh"
 
@@ -21,6 +22,52 @@ std::string nd::pvtag(unsigned nch) const
     std::string pvns = BStr::firstChars(pvn.c_str(), nch);  
     return pvns ; 
 }
+
+nd* nd::create(int idx, 
+               int mesh, 
+               int depth,
+               const std::string& boundary,
+               const std::string& pvname,
+               nd* parent,
+               const float* transform)
+{
+    nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
+
+    n->repeatIdx = 0 ; 
+    n->containment = 0 ; 
+
+    n->idx = idx ; 
+    n->mesh = mesh ; 
+    n->depth = depth ;
+    n->boundary = boundary ;
+    n->pvname = pvname ; 
+
+    n->parent = parent ;
+    n->transform = make_triple(transform) ; 
+
+    n->gtransform = make_global_transform(n) ;    // requires transform and parent to be set first 
+
+    if(!_register) _register = new nd_register_t ;
+    (*_register)[idx] = n ; 
+
+    return n ;
+}
+
+//std::map<unsigned, nd*>* nd::_register = NULL ; 
+nd_register_t* nd::_register = NULL ; 
+
+nd* nd::get(unsigned idx)  // static
+{
+    if(_register == NULL) return NULL ; 
+    nd_register_t::const_iterator it = _register->find(idx) ; 
+    return it == _register->end() ? NULL : it->second  ; 
+}
+unsigned nd::num_nodes()  // static
+{
+    return _register ? _register->size() : 0 ; 
+}
+
+
 
 
 std::string nd::desc()
@@ -71,6 +118,44 @@ const nmat4triple* nd::make_global_transform(const nd* n) // static
     bool reverse = true ; // as tvq in leaf-to-root order
     return tvq.size() == 0 ? NULL : nmat4triple::product(tvq, reverse) ; 
 }
+
+
+// statics
+unsigned nd::_num_triple_mismatch = 0 ; 
+unsigned nd::_num_triple          = 0 ; 
+NPY<float>* nd::_triple  = NULL ; 
+
+
+const nmat4triple* nd::make_triple( const float* data)
+{
+    // spell out nglmext::invert_trs for debugging discrepancies
+
+    glm::mat4 T = glm::make_mat4(data) ;
+    ndeco d = nglmext::polar_decomposition( T ) ;
+
+    glm::mat4 isirit = d.isirit ; 
+    glm::mat4 i_trs = glm::inverse( T ) ; 
+
+    NGLMCF cf(isirit, i_trs );
+
+    if(!cf.match) 
+    {
+        _num_triple_mismatch++ ; 
+        //LOG(warning) << cf.desc("nd::make_triple polar_decomposition inverse and straight inverse are mismatched " );
+    }
+
+    glm::mat4 V = isirit ;
+    glm::mat4 Q = glm::transpose(V) ;
+
+    nmat4triple* tvq = new nmat4triple(T, V, Q); 
+
+    if(_triple)  // collecting triples for mismatch debugging 
+    {
+        _triple->setMat4Triple( tvq , _num_triple++ );
+    }
+    return tvq ; 
+}
+
 
 
 void nd::dump_transforms(const char* msg) 

@@ -33,7 +33,6 @@ okc.Opticks
 okg.OpticksHub   
       very high level steering
 
-
 okg.OpticksGeometry   
       middle management
 
@@ -65,7 +64,6 @@ GGeoBase
     protocol pure virtual base guaranteeing that subclasses 
     provide accessors to the libs
 
-
 GScene(GGeoBase)
     somewhat expediently GScene is held by GGeo 
     (cannot fly analytic only yet)
@@ -74,8 +72,14 @@ GGeo(GGeoBase)
     central structure holding libs of geomety objects, mesh-centric 
 
 Nd
-    mimimalistic structural nodes from glTF,
+    mimimalistic structural nodes from the glTF,
     most use via NScene, populated from the glTF by NScene::import_r
+
+    The "gltf" here is that written by sc.py:gdml2gltf : no effort was 
+    made to make it work with "standard" gltf renderers, the gltf json 
+    was just used as a convienent way to pass structure from the python 
+    gdml parser into Opticks C++ (NScene).
+
 
 NCSG
     coordinator for NPY arrays of small numbers of nodes, transforms, planes for 
@@ -84,38 +88,35 @@ NCSG
     Created in python from the source GDML, csg.py does tree manipulations 
     to avoid deep trees.
 
-    analytic/sc.py 
-    analytic/csg.py 
+    analytic/sc.py (structure)
+    analytic/csg.py (solids)
 
     NCSG::LoadTree loads from nodes.npy transforms.npy etc.. creating a tree of nnode 
     instances 
 
 
-
 NGLTF
-    holds the underlying ygltf tree (YoctoGL)
-    ... currently assumes that always loads from file 
+    loads the gltf file written by bin/gdml2gltf.py 
+    and provides easy interface to its content : transforms etc.. 
+    as well as the underlying ygltf tree (YoctoGL)
+    
+    Currently revolves around loading from file. 
 
     See examples/UseYoctoGL/UseYoctoGL_Write.cc for a brief look
     at C++ construction of gltf structure.
 
-    Of course constructing a gltf in memory structure does 
-    not necessitate writing it to file, although thats very handy for 
-    debugging.
 
 NScene(NGLTF)
-    NScene based on NGLTF 
 
-    Comprises index keyed maps of Nd and NCSG 
+    * Does far too much for one class
+    * NGLTF base class
+    * loads NCSG extras
+    * finds repeat geometry for instancing 
+    * constructs Nd node tree from the gltf 
+    * stores index keyed maps of Nd and NCSG 
 
-    loads the gltf written by bin/gdml2gltf.py, so the route is
-    ::
- 
-        LiveG4 -> GDMLfile -> bin/gdml2gltf.py -> NScene 
-
-    This is essentially a GLTF exporter for G4 (if you decide to 
-    write the gltf to file), but with my extras for Opticks.
-
+GScene
+    constituent m_scene NScene loads gltf with NScene::Load
 
 GParts
 
@@ -123,6 +124,90 @@ GParts
     * is merged along with meshes to create combo GParts held by GMergedMesh  
     * provides analytic buffer interface consumed by OXRAP which copies to GPU 
    
+
+Direct G4 to Opticks geo structure 
+--------------------------------------
+
+Legacy via file approach::
+
+    LiveG4 -> GDMLfile -> bin/gdml2gltf.py -> GLTFfile -> NGLTF -> NScene nd tree -> GScene 
+
+Where to jump to in the direct from G4 approach ? 
+
+* complexity of NScene makes it not an apealing target for direct from G4,
+  how is it used from GScene (ie what are the essentials that are needed)   
+
+* NGLTF is tied to gltf structure, NScene is too to a lesser degree
+
+* is there any benefit in going from G4 into Opticks via the GLTF memory structure ? NO
+
+* GLTF is a transmission format, it aint a structure thats particularly easy to 
+  use (my Nd tree is much easier) 
+
+* GLTF is useful as a way to make the Opticks geocache format 
+  renderable by GLTF standard supporting (OpenGL) renderers, 
+  so this means are inverting the flow of GLTF (it needs to 
+  becomes the output format of NScene rather than its input) 
+
+
+How to proceed ? IDEA 1 : pull NdTree out of NScene, and populate it from there or X4Scene 
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* NScene inherits from NGLTF could make that a constituent not inherited, 
+
+  * that would be good : BUT too much work for the benefit : so NO
+  
+* create a stripped down NSceneBase to hold just the essential
+  model (nd node tree) without the GLTF mechanics
+  that gets populated from NScene 
+
+  * hmm better, but thats using inheritance : so NO
+
+* instead pull the structure out of NScene : ie all that is common 
+  between GLTF and G4Live routes : namely the nd tree as its associations
+  to nnode/NCSG and material  
+
+  * called one of : NStructure/NKernel/NVolumeTree/*NdTree* 
+
+  * *NdTree* must be transport agnostic, ie no dependency on 
+    gltf or G4 : just a substrate to hold the structure and coordinate
+    that can be populated in different ways:
+
+    1. from gltf with NScene
+    2. from G4Live with new class X4Scene holding X4PhysicalVolume
+
+
+* alternative would be to move the gltf mechanics out from NScene : but 
+  thats much harder that creating new ... can rename classes if necessary 
+  once the rejig is done (as the NScene name was originally intended be the "NdTree" 
+  but it got swapped with gltf mechanics) 
+  
+
+How to proceed ? IDEA 2 : direct to GScene/GNode/GSolid ?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ 
+
+* to see if this is plausible need to see how does GScene use NScene ? 
+
+* Could GScene be moved over to consuming NdTree ?
+
+* would like to get rid of GScene eventually : it steals many constituents 
+  of GGeo anyhow  : but that is not-adiabatic enough 
+
+
+IDEA 3 
+~~~~~~~~~
+
+Start by tidying up NScene:
+
+* distancing NScene from NGLTF, so NScene can work with an alternative source of nodes/meshes too 
+* make NGLTF a constituent
+* move gltf mechanics from NScene into NGLTF
+* provide NGLTF with a higher level interface,
+  ie that hides specifics of gltf transport 
+
+
+
+
 
 
 GParts

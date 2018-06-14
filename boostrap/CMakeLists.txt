@@ -9,15 +9,30 @@ set(COMPONENTS system program_options filesystem regex )
 find_package(Boost REQUIRED COMPONENTS ${COMPONENTS} )
 set_target_properties(Boost::system  PROPERTIES INTERFACE_FIND_PACKAGE_NAME "Boost REQUIRED COMPONENTS ${COMPONENTS}")
 
-##  via FindBoost.cmake from the cmake distribution
-##        /opt/local/share/cmake-3.11/Modules/FindBoost.cmake
-##
-##
-## Above target_properties kludge tees up arguments to find_dependency in BCM generated export 
-## useboost-config.cmake so downstream targets will automatically do the required find_dependency, 
-## see examples/UseBoost examples/UseUseBoost for development of this kludge
-##
-## NB INTERFACE_FIND_PACKAGE_NAME is a BCM defined property, not a standard one, see bcm-
+#[=[
+BoostRap
+==========
+
+Kludging the INTERFACE_FIND_PACKAGE_NAME gets all deps in the tree to repeat 
+the Boost find. This find uses the monstrous FindBoost.cmake from the cmake distribution, 
+(which is unfortunately a bit verbose)
+
+* /opt/local/share/cmake-3.11/Modules/FindBoost.cmake
+
+Above target_properties kludge tees up arguments to find_dependency in BCM generated export 
+useboost-config.cmake so downstream targets will automatically do the required find_dependency, 
+see examples/UseBoost examples/UseUseBoost for development of this kludge
+
+NB INTERFACE_FIND_PACKAGE_NAME is a BCM defined property, not a standard one, see bcm-
+
+TODO
+------
+
+* see if the repeated finding can be avoided, 
+  perhaps by using an FindOpticksBoost.cmake that mediates 
+
+
+#]=]
 
 find_package(PLog REQUIRED MODULE)     # for integrated-building ?
 find_package(SysRap REQUIRED CONFIG)

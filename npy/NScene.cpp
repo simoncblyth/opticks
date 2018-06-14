@@ -9,7 +9,7 @@
 
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
-#include "NYGLTF.hpp"
+//#include "NYGLTF.hpp"
 
 #include "Counts.hpp"
 #include "NTrianglesNPY.hpp"
@@ -24,7 +24,10 @@
 #include "NTxt.hpp"
 #include "NCSG.hpp"
 #include "NGLMExt.hpp"
+
+#include "NGLTF.hpp"
 #include "NGLMCF.hpp"
+
 #include "Nd.hpp"
 
 #include "N.hpp"
@@ -39,17 +42,13 @@ NSceneConfig* NScene::getConfig()
    return m_config ;  
 }
 
-unsigned NScene::getNumNd() const 
+std::string NScene::desc() const 
 {
-   return m_nd.size();
+    std::stringstream ss ; 
+    ss << m_ngltf->desc() ; 
+    return ss.str();
 }
 
-nd* NScene::getNd(unsigned idx) const 
-{
-    std::map<unsigned, nd*>::const_iterator it = m_nd.find(idx) ; 
-    return it == m_nd.end() ? NULL : it->second  ; 
-    // operator[] cannot be const 
-}
 nd* NScene::getRoot() const 
 {
     return m_root ; 
@@ -59,8 +58,6 @@ NCSG* NScene::getCSG(unsigned mesh_idx) const
     std::map<unsigned,NCSG*>::const_iterator it = m_csg.find(mesh_idx) ; 
     return it == m_csg.end() ? NULL : it->second  ;
 }
-
-
 
 NCSG* NScene::findCSG(const char* q_soname, bool startswith) const 
 {
@@ -104,7 +101,10 @@ std::string NScene::present_mesh_nodes(std::vector<unsigned>& nodes, unsigned dm
      return ss.str();
 }
     
-
+unsigned NScene::getNumMeshes() const 
+{
+    return m_ngltf->getNumMeshes(); 
+}
 
 bool NScene::Exists(const char* base, const char* name)
 {
@@ -117,7 +117,6 @@ long NScene::SecondsSinceLastWrite(const char* base, const char* name)
     long age = slwt ? *slwt : -1 ; 
     return age ;  
 }
-
 
 NScene* NScene::Load( const char* gltfbase, const char* gltfname, const char* idfold, NSceneConfig* gltfconfig, int dbgnode) 
 {
@@ -150,8 +149,9 @@ const char* NScene::bbox_type_string() const
 
 NScene::NScene(const char* base, const char* name, const char* idfold, NSceneConfig* config, int dbgnode, int scene_idx)  
    :
-    NGLTF(base, name, config, scene_idx),
-    m_num_gltf_nodes(getNumNodes()),
+    m_ngltf(new NGLTF(base, name, config, scene_idx)),
+    m_root(NULL),
+    m_num_gltf_nodes(m_ngltf->getNumNodes()),     
     m_idfold(idfold ? strdup(idfold) : NULL),
     m_config(config),
     m_dbgnode(dbgnode),
@@ -166,9 +166,7 @@ NScene::NScene(const char* base, const char* name, const char* idfold, NSceneCon
     m_label_count(0),
     m_digest_count(new Counts<unsigned>("progenyDigest")),
     m_age(NScene::SecondsSinceLastWrite(base, name)),
-    m_triple_debug(true),
-    m_triple(NULL),
-    m_num_triple(0)
+    m_triple_debug(true)
 {
     init_lvlists();
     init();
@@ -176,49 +174,29 @@ NScene::NScene(const char* base, const char* name, const char* idfold, NSceneCon
 
 void NScene::init()
 {
-    load_asset_extras();  // includes verbosity from glTF 
+    load_asset_extras();  // verbosity, targetnode from glTF 
 
     if(m_verbosity > 0)
     {
-    LOG(info) << "NScene::init START"
-              << " age(s) " << m_age 
-              << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
-              << " num_gltf_nodes " << m_num_gltf_nodes
-              ;  
-    }
-
-    if(m_triple_debug)
-    { 
-        m_triple = NPY<float>::make( m_num_gltf_nodes, 3, 4, 4 ); // debug TVQ collection
-        m_triple->zero();
-    }
-
-    load_csg_metadata();
-
-    LOG(info) << "NScene::init import_r START " ; 
-
-    m_root = import_r(0, NULL, 0); 
-
-    LOG(info) << "NScene::init import_r DONE " ; 
-
-    if(m_triple_debug)
-    {
-        LOG(info) << "NScene::init triple_debug "
+        LOG(info) << "NScene::init START"
+                  << " age(s) " << m_age 
+                  << " days " << std::fixed << std::setw(7) << std::setprecision(3) << float(m_age)/float(60*60*24) 
                   << " num_gltf_nodes " << m_num_gltf_nodes
-                  << " triple_mismatch " << m_num_triple_mismatch
-                  ;
-        m_triple->save("$TMP/NScene_triple.npy");
+                  ;  
     }
- 
 
+
+    load_csg_metadata();  // populate mesh_id keyed map of NParameters coming from json for each NCSG 
+
+    import();  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd node_id keyed into m_nd 
 
     postimportnd();
 
     if(m_verbosity > 1)
-    dumpNdTree("NScene::NScene");
+        dumpNdTree("NScene::init");
 
-    compare_trees();
 
+    m_ngltf->compare_trees_r(0);
 
     count_progeny_digests();
 
@@ -236,8 +214,8 @@ void NScene::init()
     } 
     
 
-    //if(m_verbosity > 1)
-    dumpRepeatCount(); 
+    if(m_verbosity > 0)
+        dumpRepeatCount(); 
 
     markGloballyUsedMeshes_r(m_root);
 
@@ -250,12 +228,36 @@ void NScene::init()
     write_lvlists();
 
     if(m_verbosity > 0)
-    {
-    LOG(info) << "NScene::init DONE" ;  
-    }
+        LOG(info) << "NScene::init DONE" ;  
+
     //assert(0 && "hari kari");
 }
 
+
+
+void NScene::import()
+{
+    if(m_triple_debug)
+    { 
+        nd::_triple = NPY<float>::make( m_num_gltf_nodes, 3, 4, 4 ); // debug TVQ collection
+        nd::_triple->zero();
+    }
+
+    LOG(info) << "import_r START " ; 
+
+    m_root = import_r(0, NULL, 0);  // recursive traverse of ygltf nodes creating Nd tree, and saving Nd node_id keyed into m_nd 
+
+    LOG(info) << "import_r DONE " ; 
+
+    if(m_triple_debug)
+    {
+        LOG(info) << "triple_debug "
+                  << " num_gltf_nodes " << m_num_gltf_nodes
+                  << " triple_mismatch " << nd::_num_triple_mismatch
+                  ;
+        nd::_triple->save("$TMP/NScene_triple.npy");
+    }
+}
 
 
 
@@ -269,7 +271,7 @@ void NScene::init_lvlists()
     }
 
   
-    std::string stem = BFile::Stem(m_name);  // eg "g4_00" 
+    std::string stem = BFile::Stem(m_ngltf->getName());  // eg "g4_00" 
     std::string csgskip_path = BFile::FormPath(m_idfold, stem.c_str(), "CSGSKIP_DEEP_TREES.txt");
     std::string placeholder_path = BFile::FormPath(m_idfold, stem.c_str(), "PLACEHOLDER_FAILED_POLY.txt");
 
@@ -314,10 +316,10 @@ void NScene::write_lvlists()
 }
 
 
+
 void NScene::load_asset_extras()
 {
-    auto extras = m_gltf->asset.extras ; 
-    unsigned extras_verbosity = extras["verbosity"]; 
+    unsigned extras_verbosity = m_ngltf->getAssetExtras<unsigned>("verbosity"); 
 
     if(extras_verbosity > m_verbosity)
     {
@@ -331,7 +333,7 @@ void NScene::load_asset_extras()
        
     }
 
-    m_targetnode = extras["targetnode"]; 
+    m_targetnode = m_ngltf->getAssetExtras<unsigned>("targetnode"); 
 
     if(m_verbosity > 1)
     {
@@ -356,7 +358,7 @@ unsigned NScene::getTargetNode()
 void NScene::load_csg_metadata()
 {
    // for debugging need the CSG metadata prior to loading the trees
-    unsigned num_meshes = getNumMeshes();
+    unsigned num_meshes = m_ngltf->getNumMeshes();
     if(m_verbosity > 0)
     {
     LOG(info) << "NScene::load_csg_metadata"
@@ -367,21 +369,15 @@ void NScene::load_csg_metadata()
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        ygltf::mesh_t* mesh = getMesh(mesh_id);
-        auto extras = mesh->extras ; 
+        std::string soName = m_ngltf->getMeshExtras<std::string>(mesh_id, "soName"); 
+        int lvIdx = m_ngltf->getMeshExtras<int>(mesh_id, "lvIdx" );  
 
-        std::string uri = extras["uri"] ; 
-
-        std::string soName = extras["soName"] ; 
-
-        int lvIdx = extras["lvIdx"] ; 
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
-        std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
-
+        std::string csgpath = m_ngltf->getCSGPath(mesh_id); 
         NParameters* meta = NCSG::LoadMetadata(csgpath.c_str());
-        m_csg_metadata[mesh_id] = meta ; 
 
+        m_csg_metadata[mesh_id] = meta ; 
         std::string meta_soname = soname(mesh_id);
         assert( meta_soname.compare(soName) == 0) ; 
 
@@ -444,8 +440,7 @@ std::string NScene::meshmeta(unsigned mesh_id) const
 
 void NScene::load_mesh_extras()
 {
-    unsigned num_meshes = getNumMeshes();
-    assert( num_meshes == m_gltf->meshes.size() ); 
+    unsigned num_meshes = m_ngltf->getNumMeshes();
 
     if(m_verbosity > 1)
     {
@@ -457,30 +452,25 @@ void NScene::load_mesh_extras()
 
     for(std::size_t mesh_id = 0; mesh_id < num_meshes; ++mesh_id)
     {
-        //auto mesh = &m_gltf->meshes.at(mesh_id);
-        //ygltf::mesh_t* mesh = &m_gltf->meshes.at(mesh_id);
-        ygltf::mesh_t* mesh = getMesh(mesh_id);
+        std::string name = m_ngltf->getMeshName(mesh_id);
+        unsigned num_prim =  m_ngltf->getMeshNumPrimitives(mesh_id); 
 
-        auto primitives = mesh->primitives ; 
-        auto extras = mesh->extras ; 
 
-        bool iug = isUsedGlobally(mesh_id); 
+        bool iug = m_ngltf->isUsedGlobally(mesh_id); 
         if(iug) m_num_global++ ; 
 
-        std::string uri = extras["uri"] ; 
-        std::string csgpath = BFile::FormPath(m_base, uri.c_str() );
+        std::string csgpath = m_ngltf->getCSGPath(mesh_id); 
 
         int lvidx_ = lvidx(mesh_id);
 
         NCSG* csg = NCSG::LoadTree(csgpath.c_str(), m_config ); 
         csg->setIndex(mesh_id);
 
-
         bool csgskip = csg->isSkip() ;
         if(csgskip) 
         {
             if(m_csgskip_lvlist)
-                m_csgskip_lvlist->addLine(mesh->name);
+                m_csgskip_lvlist->addLine(name);
 
             m_num_csgskip++ ; 
             LOG(warning) << "NScene::load_mesh_extras"
@@ -494,7 +484,7 @@ void NScene::load_mesh_extras()
         if(placeholder) 
         {
             if(m_placeholder_lvlist)
-                m_placeholder_lvlist->addLine(mesh->name);
+                m_placeholder_lvlist->addLine(name);
             m_num_placeholder++ ; 
         }
 
@@ -505,8 +495,8 @@ void NScene::load_mesh_extras()
         if(m_verbosity > 1)
         std::cout << " mId " << std::setw(4) << mesh_id 
                   << " lvidx " << std::setw(4) << lvidx_
-                  << " npr " << std::setw(4) << primitives.size() 
-                  << " nam " << std::setw(65) << mesh->name 
+                  << " npr " << std::setw(4) << num_prim
+                  << " nam " << std::setw(65) << name 
                   << " iug " << std::setw(1) << iug 
                   << " poly " << std::setw(3) << tris->getPoly()
                   << " smry " << csg->smry() 
@@ -571,72 +561,33 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
 }
 
 
-
-nmat4triple* NScene::make_triple( const float* data)
-{
-    // spell out nglmext::invert_trs for debugging discrepancies
-
-    glm::mat4 T = glm::make_mat4(data) ;
-    ndeco d = nglmext::polar_decomposition( T ) ;
-
-    glm::mat4 isirit = d.isirit ; 
-    glm::mat4 i_trs = glm::inverse( T ) ; 
-
-    NGLMCF cf(isirit, i_trs );
-
-    if(!cf.match) 
-    {
-        m_num_triple_mismatch++ ; 
-        //LOG(warning) << cf.desc("NScene::make_triple polar_decomposition inverse and straight inverse are mismatched " );
-    }
-
-    glm::mat4 V = isirit ;
-    glm::mat4 Q = glm::transpose(V) ;
-
-    nmat4triple* tvq = new nmat4triple(T, V, Q); 
-
-    if(m_triple)  // collecting triples for mismatch debugging 
-    {
-        m_triple->setMat4Triple( tvq , m_num_triple++ );
-    }
-    return tvq ; 
-}
-
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
-    ygltf::node_t* ynode = getNode(idx);
-    auto extras = ynode->extras ; 
+    // recursive translation of ygltf node tree into nd tree
+    // parent is as needed for global transform calculation
 
-    std::string boundary = extras["boundary"] ; 
-    std::string pvname = ynode->name; 
+    nd* n = m_ngltf->createNdConverted(idx, depth, parent);
 
+    const std::vector<int>& ychildren = m_ngltf->getNodeChildren(idx); 
 
 /*
-    std::string pvname = extras["pvname"] ;  // got rid of this duplication
-    assert( name.compare(pvname.c_str()) == 0 );
-    LOG(info) << "NScene::import_r"
-              << " name " << name 
-              << " pvname " << pvname 
-               ;
+
+    ygltf::node_t* ynode = m_ngltf->getNode(idx);
+
+    nd* n = nd::create(idx,     // NB these are structural nodes, not CSG tree nodes
+                       ynode->mesh, 
+                       depth,
+                       ynode->extras["boundary"],
+                       ynode->name,
+                       parent,
+                       ynode->matrix.data()
+                     );
 */
- 
-    nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
-    n->idx = idx ; 
-    n->repeatIdx = 0 ; 
-    n->mesh = ynode->mesh ; 
-    n->parent = parent ;
-    n->depth = depth ;
-    n->boundary = boundary ;
-    n->pvname = pvname ; 
-    n->containment = 0 ; 
-
-    n->transform = make_triple(ynode->matrix.data()) ; 
-    n->gtransform = nd::make_global_transform(n) ;   
-
- 
-
-    for(int child : ynode->children) n->children.push_back(import_r(child, n, depth+1));  // recursive call
+    for(int child : ychildren)
+    {
+        n->children.push_back( import_r(child, n, depth+1) );  // recursive call  
+    }
 
     m_nd[idx] = n ;
 
@@ -647,10 +598,7 @@ nd* NScene::import_r(int idx,  nd* parent, int depth)
 
 void NScene::postimportnd()
 {
-
-
-
-    const nd* dn = m_dbgnode > -1 ? getNd(m_dbgnode) : NULL ;
+    const nd* dn = m_dbgnode > -1 ? nd::get(m_dbgnode) : NULL ;
     if( dn )
     {
         m_dbgnode_list.push_back(dn->idx);
@@ -658,7 +606,7 @@ void NScene::postimportnd()
     }
 
     LOG(info) << "NScene::postimportnd" 
-              << " numNd " << getNumNd()
+              << " numNd " << nd::num_nodes()
               << " dbgnode " << m_dbgnode
               << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity
@@ -675,7 +623,7 @@ bool NScene::is_dbgnode( const nd* n) const
 void NScene::postimportmesh()
 {
     LOG(info) << "NScene::postimportmesh" 
-              << " numNd " << getNumNd()
+              << " numNd " << nd::num_nodes()
               << " dbgnode " << m_dbgnode
               << " dbgnode_list " << m_dbgnode_list.size()
               << " verbosity " << m_verbosity
@@ -761,7 +709,7 @@ void NScene::check_surf_containment()
 
     check_surf_containment_r(m_root);
 
-    unsigned tot = getNumNd() ;
+    unsigned tot = nd::num_nodes() ;
 
     LOG(info) << "NScene::check_surf_containment (csc)"
               << " verbosity " << m_verbosity 
@@ -953,7 +901,7 @@ void NScene::check_aabb_containment()
     update_aabb();
     check_aabb_containment_r(m_root);
 
-    unsigned tot = getNumNd() ;
+    unsigned tot = nd::num_nodes() ;
 
     LOG(info) << "NScene::check_aabb_containment (cac)"
               << " verbosity " << m_verbosity 
@@ -1282,7 +1230,7 @@ void NScene::dump_repeat_candidate(unsigned idx) const
 void NScene::dumpNd(unsigned nidx, const char* msg)
 {
 
-    nd* n = getNd(nidx);
+    nd* n = nd::get(nidx);
     LOG(info) << msg 
               << " nidx " << nidx
               << ( n ? " node exists " : " NO SUCH NODE " )
@@ -1326,63 +1274,12 @@ void NScene::dumpNdTree_r(nd* n)
 
 
 
-void NScene::compare_trees()
-{
-    compare_trees_r(0);
-}
-
-void NScene::compare_trees_r(int idx)
-{
-    ygltf::node_t* ynode = getNode(idx);
-    nd* n = getNd(idx);    
-
-    assert( ynode->mesh == int(n->mesh) );
-    assert( ynode->children.size() == n->children.size() );
-    assert( n->transform) ; 
-    assert( n->gtransform) ; 
-
-    {
-        std::array<float,16> tt ;   
-        nglmext::copyTransform(tt, n->transform->t );
-
-        bool local_match = tt == ynode->matrix ; 
-        if(!local_match)
-        {
-            std::cout << "idx " << idx << ( local_match ? " LOCAL-MATCH " : " LOCAL-MISMATCH " ) << std::endl ; 
-            std::cout << "ntt " << nglmext::xform_string( tt ) << std::endl ;    
-            std::cout << "nmx " << nglmext::xform_string( ynode->matrix ) << std::endl ;    
-        }
-        assert(local_match);
-    }
-
-
-    {
-        std::array<float,16> gg ;   
-        nglmext::copyTransform(gg, n->gtransform->t );
-        const std::array<float,16>& fxf = getFlatTransform(idx) ; 
-        const std::array<float,16>& nxf = getNodeTransform(idx) ; 
-
-        bool global_match = gg == fxf && fxf == nxf  ; 
-        if(!global_match)
-        {
-            std::cout << "idx " << idx << ( global_match ? " GLOBAL-MATCH " : " GLOBAL-MISMATCH " ) << std::endl ; 
-            std::cout << "gg  " << nglmext::xform_string( gg ) << std::endl ;    
-            std::cout << "fxf " << nglmext::xform_string( fxf ) << std::endl ;    
-            std::cout << "nxf " << nglmext::xform_string( nxf ) << std::endl ;    
-        }
-        assert(global_match);
-    }
-
-
-    for(int child : ynode->children) compare_trees_r( child );
-}
-
 
 
 unsigned NScene::deviseRepeatIndex_0(nd* n)
 {
     unsigned mesh_idx = n->mesh ; 
-    unsigned num_mesh_instances = getNumInstances(mesh_idx) ;
+    unsigned num_mesh_instances = m_ngltf->getNumInstances(mesh_idx) ;
 
     unsigned ridx = 0 ;   // <-- global default ridx
 
@@ -1467,7 +1364,7 @@ void NScene::markGloballyUsedMeshes_r(nd* n)
     assert( n->repeatIdx > -1 );
 
     //if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
-    setIsUsedGlobally(n->mesh, true );
+    m_ngltf->setIsUsedGlobally(n->mesh, true );
 
     // see opticks/notes/issues/subtree_instances_missing_transform.rst
 
@@ -1510,6 +1407,5 @@ unsigned NScene::getNumRepeats()
    // this assumes ridx is a contiguous index
     return m_repeat_count.size() ;
 }
-
 
 

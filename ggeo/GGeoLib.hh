@@ -46,6 +46,7 @@ class GGEO_API GGeoLib {
         void setMeshVersion(const char* mesh_version);
         const char* getMeshVersion() const ;
         unsigned getVerbosity() const ;  
+        int checkMergedMeshes() const ; 
     public:
         void hasCache() const ;
         void loadFromCache();
@@ -59,7 +60,7 @@ class GGEO_API GGeoLib {
     public:
         void dump(const char* msg="GGeoLib::dump");
         unsigned getNumMergedMesh() const ;
-        GMergedMesh* getMergedMesh(unsigned index);
+        GMergedMesh* getMergedMesh(unsigned index) const ;
         //GMergedMesh* getMergedMeshDev(unsigned index);
         void setMergedMesh(unsigned int index, GMergedMesh* mm);
         void eraseMergedMesh(unsigned int index);

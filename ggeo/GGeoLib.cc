@@ -85,11 +85,12 @@ const char* GGeoLib::getMeshVersion() const
 
 
 
-GMergedMesh* GGeoLib::getMergedMesh(unsigned index)
+GMergedMesh* GGeoLib::getMergedMesh(unsigned index) const   
 {
     if(m_merged_mesh.find(index) == m_merged_mesh.end()) return NULL ;
 
-    GMergedMesh* mm = m_merged_mesh[index] ;
+    //GMergedMesh* mm = m_merged_mesh[index] ;
+    GMergedMesh* mm = m_merged_mesh.at(index) ;
 
     return mm ; 
 }
@@ -345,8 +346,29 @@ void GGeoLib::dump(const char* msg)
                 << " num_global_volumes " << num_total_volumes - num_instanced_volumes
                 << std::endl
                 ;
-      
+     
+}
 
+int GGeoLib::checkMergedMeshes() const 
+{
+    int nmm = getNumMergedMesh();
+    int mia = 0 ;
+
+    for(int i=0 ; i < nmm ; i++)
+    {
+        GMergedMesh* mm = getMergedMesh(i);
+        if(m_verbosity > 2) 
+        std::cout << "GGeoLib::checkMergedMeshes i:" << std::setw(4) << i << " mm? " << (mm ? int(mm->getIndex()) : -1 ) << std::endl ; 
+        if(mm == NULL) mia++ ; 
+    } 
+
+    if(m_verbosity > 2 || mia != 0)
+    LOG(info) << "GGeoLib::checkMergedMeshes" 
+              << " nmm " << nmm
+              << " mia " << mia
+              ;
+
+    return mia ; 
 }
 
 
