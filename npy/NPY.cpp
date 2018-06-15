@@ -726,6 +726,9 @@ void NPY<T>::save(const char* raw)
 template <typename T>
 NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) const // including the header 
 {
+   // This enables saving NPY arrays into standards compliant gltf buffers
+   // allowing rendering by GLTF supporting renderers.
+
     NPYBufferSpec spec = getBufferSpec() ;  
 
     bool fortran_order = false ; 

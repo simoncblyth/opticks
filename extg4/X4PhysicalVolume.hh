@@ -1,14 +1,21 @@
 #pragma once
 
+#include <map>
 #include "X4_API_EXPORT.hh"
 
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
+#include "NGLM.hpp"
 #include "G4Transform3D.hh"
 
 class GGeo ; 
 class GMaterialLib ; 
 class Opticks ; 
+
+namespace YOG 
+{
+struct Sc ; 
+}
 
 /**
 X4PhysicalVolume
@@ -44,9 +51,9 @@ class X4_API X4PhysicalVolume
         void init();
     private:
         void TraverseVolumeTree(); 
-        G4Transform3D TraverseVolumeTree(const G4LogicalVolume* const volumePtr, const G4int depth);
+        void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
+        int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth);
         void Visit(const G4LogicalVolume* const lv);
-        void VisitPV(const G4VPhysicalVolume* const pv, const G4Transform3D& T );
     private:
         const G4VPhysicalVolume*     m_top ;  
         const char*                  m_key ;  
@@ -54,7 +61,13 @@ class X4_API X4PhysicalVolume
         Opticks*                     m_ok ; 
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 
+        YOG::Sc*                     m_sc ; 
         int                          m_verbosity ; 
         int                          m_pvcount ; 
+        glm::mat4                    m_identity ; 
+
+        std::map<const G4LogicalVolume* const, int> m_lvidx ; 
+
+
 };
 

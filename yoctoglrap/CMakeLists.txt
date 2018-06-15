@@ -17,11 +17,13 @@ endif()
 set(SOURCES
     YOG_LOG.cc
 
+    YOG.cc
     YOGMaker.cc
     YOGGeometry.cc
 )
 
 SET(HEADERS
+    YOG.hh
     YOGMaker.hh
     YOGGeometry.hh
 

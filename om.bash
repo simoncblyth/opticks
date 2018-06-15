@@ -369,7 +369,10 @@ om-gen()
 
    local rel=$1
    rel=${rel/.bash}
-   local nam=$(basename $rel)
+
+   local nam=$2
+   [ -z "$nam" ] && nam=$(basename $rel)
+
    local dir=$(dirname $rel)
    mkdir -p $dir 
 
@@ -393,6 +396,7 @@ $1 Usage
 
 Generate a file for bash precursor functions or notes using om-gen like this::
 
+   om-gen yoctoglrap/yog         # makes precursor yog-
    om-gen notes/geant4/opnovice 
 
 Hook up a line like the below to opticks.bash or externals/externals.bash::
@@ -402,6 +406,11 @@ Hook up a line like the below to opticks.bash or externals/externals.bash::
 
 EOU
 }
+
+$1-dir(){ echo \$(dirname \$($1-source)) ; }
+$1-cd(){  cd \$($1-dir) ; } 
+$1-c(){   cd \$($1-dir) ; } 
+$1--(){   opticks-- \$($1-dir) ; } 
 
 EOT
 }

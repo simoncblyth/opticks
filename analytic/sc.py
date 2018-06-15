@@ -376,7 +376,7 @@ class Sc(object):
 
     def add_tree_gdml(self, target, maxdepth=0):
         """
-        :param target: treebase.Node instance 
+        :param target: treebase.Node instance, typically the root node
  
         invoked from gdml2gltf_main, notice the two different types of node:
 

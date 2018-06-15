@@ -11,6 +11,7 @@
 G4VPhysicalVolume* construct()
 {
     G4VPhysicalVolume* top = NULL ; 
+
     OpNoviceDetectorConstruction ondc ; 
 
     // redirect cout and cerr from the Construct
@@ -19,6 +20,7 @@ G4VPhysicalVolume* construct()
     {   
        cout_redirect out(coutbuf.rdbuf());
        cerr_redirect err(cerrbuf.rdbuf());
+
        top = ondc.Construct() ;     
     }   
     std::string _cout = coutbuf.str() ; 

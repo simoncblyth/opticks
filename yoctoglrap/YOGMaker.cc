@@ -14,6 +14,20 @@ using ygltf::buffer_data_t ;
 using ygltf::bufferView_t ; 
 using ygltf::accessor_t ; 
 
+// hmm not pursuing this way, trying a direct translation of sc.py over in YOG.hh
+
+YOGMaker::YOGMaker()  
+   :
+   m_gltf(new glTF_t()),
+   m_scenes(m_gltf->scenes),
+   m_nodes(m_gltf->nodes),
+   m_buffers(m_gltf->buffers),
+   m_bufferViews(m_gltf->bufferViews),
+   m_accessors(m_gltf->accessors),
+   m_meshes(m_gltf->meshes),
+   m_materials(m_gltf->materials)
+{
+}
 
 std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
 {

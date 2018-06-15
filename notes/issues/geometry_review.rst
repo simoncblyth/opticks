@@ -232,6 +232,93 @@ FURTHER CLEANUP
 
 
 
+YOG.cc translation of analytic/sc.py 
+---------------------------------------
+
+Q: Where does lvIdx come from...
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The idx are from the GDML elements write order, analytic/gdml.py::
+
+    0991     def init(self):
+     992         """
+     993         Heart of the GDML parsing.
+     994         """
+     995         self.materials = odict()
+     996         self.solids = odict()
+     997         self.volumes = odict()
+     998 
+     999         for i, e in enumerate(self.findall_("materials/material")):
+    1000             e.idx = i
+    1001             self.materials[e.name] = e
+    1002         pass
+    1003         for i, e in enumerate(self.findall_("solids/*")):
+    1004             e.idx = i
+    1005             self.solids[e.name] = e
+    1006         pass
+    1007         for i, e in enumerate(self.findall_("structure/*")):
+    1008             e.idx = i
+    1009             self.volumes[e.name] = e
+    1010         pass
+    1011         self.setup_world = self.elem.find("setup/world")
+    1012         self.worldvol = self.setup_world.attrib["ref"] if self.setup_world is not None else None
+    1013 
+    1014         vv = self.volumes.values()
+
+
+Find some GDML::
+
+    find /Volumes/Delta/usr/local/opticks/ -name '*.gdml'
+    cp /Volumes/Delta/usr/local/opticks//opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.gdml /tmp/
+
+The element "structure" contains "volume" (lv) elements at top level, which often contain "physvol", the
+World volume comes in last::
+
+    02172   <structure>
+     2173     <volume name="/dd/Geometry/PoolDetails/lvNearTopCover0xc137060">
+     2174       <materialref ref="/dd/Materials/PPE0xc12f008"/>
+     2175       <solidref ref="near_top_cover_box0xc23f970"/>
+     2176     </volume>
+     2177     <volume name="/dd/Geometry/RPC/lvRPCStrip0xc2213c0">
+     2178       <materialref ref="/dd/Materials/MixGas0xc21d930"/>
+     2179       <solidref ref="RPCStrip0xc04bcb0"/>
+     2180     </volume>
+     2181     <volume name="/dd/Geometry/RPC/lvRPCGasgap140xbf98ae0">
+     2182       <materialref ref="/dd/Materials/Air0xc032550"/>
+     2183       <solidref ref="RPCGasgap140xbf4c660"/>
+     2184       <physvol name="/dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:1#pvStrip14Unit0xc311da0">
+     2185         <volumeref ref="/dd/Geometry/RPC/lvRPCStrip0xc2213c0"/>
+     2186         <position name="/dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:1#pvStrip14Unit0xc311da0_pos" unit="mm" x="-910" y="0" z="0"/>
+     2187         <rotation name="/dd/Geometry/RPC/lvRPCGasgap14#pvStrip14Array#pvStrip14ArrayOne:1#pvStrip14Unit0xc311da0_rot" unit="deg" x="0" y="0" z="-90"/>
+     2188       </physvol>
+     ....
+     2224     </volume>
+     2225     <volume name="/dd/Geometry/RPC/lvRPCBarCham140xbf4c6a0">
+     2226       <materialref ref="/dd/Materials/Bakelite0xc2bc240"/>
+     2227       <solidref ref="RPCBarCham140xc2ba760"/>
+     2228       <physvol name="/dd/Geometry/RPC/lvRPCBarCham14#pvRPCGasgap140xc1257a0">
+     2229         <volumeref ref="/dd/Geometry/RPC/lvRPCGasgap140xbf98ae0"/>
+     2230       </physvol>
+     2231     </volume>
+    .....
+    30931     <volume name="World0xc15cfc0">
+    30932       <materialref ref="/dd/Materials/Vacuum0xbf9fcc0"/>
+    30933       <solidref ref="WorldBox0xc15cf40"/>
+    30934       <physvol name="/dd/Structure/Sites/db-rock0xc15d358">
+    30935         <volumeref ref="/dd/Geometry/Sites/lvNearSiteRock0xc030350"/>
+    30936         <position name="/dd/Structure/Sites/db-rock0xc15d358_pos" unit="mm" x="-16519.9999999999" y="-802110" z="-2110"/>
+    30937         <rotation name="/dd/Structure/Sites/db-rock0xc15d358_rot" unit="deg" x="0" y="0" z="-122.9"/>
+    30938       </physvol>
+    30939     </volume>
+    30940   </structure>
+            
+
+Checking /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteStructure.cc
+the volume elements are written after the recursive calls (postorder position), right at the tail
+if TraverseVolumeTree.
+
+
+
 
 
 Exercise the old route to check have not broken humpty
