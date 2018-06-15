@@ -6,24 +6,32 @@ class G4VSolid ;
 class G4Polyhedron ; 
 
 template <typename T> class NPY ;
+class GMesh ; 
 
 /**
 X4Mesh
 ========
 
-TODO: give birth to GMesh instances
+Uses polygonization from G4Polyhedron to convert 
+a G4VSolid into a GMesh.
 
 **/
 
 class X4_API X4Mesh
 {
     public:
+        static GMesh* Convert(const G4VSolid* solid );
+    public:
         X4Mesh(const G4VSolid* solid); 
         std::string desc() const  ; 
+        void save(const char* dir="/tmp/X4Mesh") const  ; 
+        GMesh* getMesh() const ;
     private:
         void init();
+    private:
         void polygonize();
         void collect();
+        void makemesh();
     private:
         void collect_vtx(int ivert);
         void collect_raw(int iface);
@@ -33,7 +41,8 @@ class X4_API X4Mesh
         G4Polyhedron*   m_polyhedron ;
         NPY<float>*     m_vtx ; 
         NPY<unsigned>*  m_raw ; // tris or quads
-        NPY<unsigned>*  m_tri ; // by splitting quads  
+        NPY<unsigned>*  m_tri ; // tris by splitting quads  
+        GMesh*          m_mesh ; 
         int             m_verbosity ; 
 
 };

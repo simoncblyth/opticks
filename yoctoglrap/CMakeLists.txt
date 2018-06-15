@@ -18,12 +18,17 @@ set(SOURCES
     YOG_LOG.cc
 
     YOG.cc
+    YOGTF.cc
+
     YOGMaker.cc
     YOGGeometry.cc
 )
 
 SET(HEADERS
+
     YOG.hh
+    YOGTF.hh
+
     YOGMaker.hh
     YOGGeometry.hh
 

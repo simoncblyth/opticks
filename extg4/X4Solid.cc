@@ -37,6 +37,13 @@
 
 #include "PLOG.hh"
 
+
+nnode* X4Solid::Convert(const G4VSolid* solid)
+{
+    X4Solid xs(solid);
+    return xs.root(); 
+}
+
 X4Solid::X4Solid(const G4VSolid* solid )
    :
    X4SolidBase(solid)

@@ -198,7 +198,8 @@ class NPY_API NPY : public NPYBase {
        void* getPointer();   // aping GBuffer for easier migration
        BBufSpec* getBufSpec();
 
-       void read(void* ptr);
+       void read(void* src);
+       void write(void* dst);
     private:
        T* grow(unsigned int nitems); // increase size to contain an extra nitems, return pointer to start of them
     public:

@@ -29,6 +29,7 @@
 #include "GBndLib.hh"
 #include "GMatrix.hh"
 #include "GMesh.hh"
+#include "GMeshMaker.hh"
 #include "GSolid.hh"
 #include "GScene.hh"
 #include "GColorizer.hh"
@@ -341,7 +342,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
              << " soname " << soname 
              ;
 
-        GMesh* mesh = GMesh::make_mesh(tris->getTris(), mesh_idx );
+        GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), mesh_idx );
         assert(mesh);
 
         mesh->setCSG(csg);

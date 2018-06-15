@@ -30,7 +30,7 @@ gltf creation.
 class YOG_API YOGMaker 
 {
    public:
-       static std::unique_ptr<ygltf::glTF_t> make_gltf(const YOGGeometry& geom );
+       static std::unique_ptr<ygltf::glTF_t> demo_make_gltf(const YOGGeometry& geom );
    public:
        YOGMaker();
    private:

@@ -2,6 +2,8 @@
 #include <sstream>
 #include <iomanip>
 
+#include "PLOG.hh"
+#include "BStr.hh"
 #include "NGLM.hpp"
 #include "YOG.hh"
 
@@ -34,6 +36,14 @@ std::string Nd::desc() const
         ; 
     return ss.str();
 }
+
+
+Sc::Sc(int root_)
+   :
+   root(root_)
+{
+}
+  
 
 std::string Sc::desc() const 
 {
@@ -83,7 +93,7 @@ int Sc::add_mesh(int lvIdx,
     if(!has_mesh(lvIdx))
     {
         soIdx = meshes.size(); 
-        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx }) ;
+        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx, NULL, NULL }) ;
     }
     int soIdx2 = lv2so(lvIdx);
     if(soIdx > -1 ) assert( soIdx2 == soIdx ) ; // when a new mesh is added, can check local indices match
@@ -106,9 +116,36 @@ int Sc::add_node(int lvIdx,
 
      int ndIdx = nodes.size() ;
      int parent = -1 ; 
+     Nd* nd = new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent }  ;
 
-     nodes.push_back(new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent } ) ;
+     LOG(info) << nd->desc(); 
+
+     nodes.push_back(nd) ;
      return ndIdx ; 
+}
+
+
+
+int Sc::add_test_node(int lvIdx)
+{
+    std::string lvName = BStr::concat<int>("lv", lvIdx, NULL) ;   
+    std::string pvName = BStr::concat<int>("pv", lvIdx, NULL) ;   
+    std::string soName = BStr::concat<int>("so", lvIdx, NULL) ;   
+    const glm::mat4* transform = new glm::mat4 ; 
+    std::string boundary = BStr::concat<int>("bd", lvIdx, NULL) ;   
+    int depth = 0 ; 
+    bool selected = true ;  
+
+    int ndIdx = add_node(lvIdx, 
+                         lvName, 
+                         pvName, 
+                         soName, 
+                         transform, 
+                         boundary,
+                         depth, 
+                         selected);  
+
+    return ndIdx ; 
 }
 
 

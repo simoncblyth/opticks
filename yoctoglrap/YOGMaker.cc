@@ -29,7 +29,10 @@ YOGMaker::YOGMaker()
 {
 }
 
-std::unique_ptr<glTF_t> YOGMaker::make_gltf(const YOGGeometry& geom )
+
+
+
+std::unique_ptr<glTF_t> YOGMaker::demo_make_gltf(const YOGGeometry& geom )
 {
     assert( geom.vtx ) ; 
     assert( geom.vtx_spec ) ; 

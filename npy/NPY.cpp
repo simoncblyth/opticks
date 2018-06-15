@@ -105,7 +105,7 @@ void NPY<T>::reset()
 }
 
 template <typename T>
-void NPY<T>::read(void* ptr)
+void NPY<T>::read(void* src)
 {
     if(m_data.size() == 0)
     {
@@ -113,8 +113,15 @@ void NPY<T>::read(void* ptr)
         LOG(debug) << "NPY<T>::read allocating space now (deferred from earlier) for NumValues(0) " << nv0 ; 
         allocate();
     }
-    memcpy(m_data.data(), ptr, getNumBytes(0) );
+    memcpy(m_data.data(), src, getNumBytes(0) );
 }
+
+template <typename T> 
+void NPY<T>::write(void* dst )
+{
+    memcpy( dst, m_data.data(), getNumBytes(0) ); 
+}
+
 
 
 
@@ -2317,6 +2324,7 @@ template <typename T>
     assert( wbytes == nbytes );
 
 */
+
 
 
 

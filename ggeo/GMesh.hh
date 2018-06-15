@@ -8,7 +8,6 @@ class NPYBase ;
 class GParts ; 
 class NCSG ; 
 
-
 //struct nbbox ; 
 
 template <typename T> class GMatrix ; 
@@ -23,7 +22,6 @@ class GBuffer ;
 GMesh
 ======
 
-
 G4DAE Workflow
 -----------------
 
@@ -36,9 +34,6 @@ of the pivotal GMergedMesh (so have to be cautions with refactorings)
    and num_vertices from the buffer pointer 
 4. loading persisted GMesh invokes GMesh::loadBuffer for each constituent which does the
    eg setVerticesBuffer 
-
-
-
 
 
 GMesh are distinct geometrical shapes, **NOT** placed nodes/solids
@@ -180,6 +175,7 @@ class GGEO_API GMesh : public GDrawable {
       friend class GMaker ;
       friend class GMergedMesh  ;
       friend class GMeshFixer  ;
+      friend class GMeshMaker  ;
       friend class GBBoxMesh ;
       friend class Texture ;
       friend class Demo;
@@ -217,9 +213,9 @@ class GGEO_API GMesh : public GDrawable {
       // composited GMergedMesh eg for LOD levels 
       static const char* components_ ;    
 
-
-      static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
-      static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
+      //static makers moved to GMeshMaker
+      //static GMesh* make_spherelocal_mesh(NPY<float>* triangles, unsigned int meshindex=0);  
+      //static GMesh* make_mesh(NPY<float>* triangles, unsigned int meshindex=0);
 
       GMesh(unsigned int index=0, 
             gfloat3* vertices=NULL, unsigned int num_vertices=0, 

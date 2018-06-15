@@ -19,6 +19,7 @@
 #include "GParts.hh"
 #include "GBBoxMesh.hh"
 #include "GMesh.hh"
+#include "GMeshMaker.hh"
 #include "GSolid.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
@@ -132,7 +133,7 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
 
     NTrianglesNPY* tris = csg->polygonize();
 
-    GMesh* mesh = GMesh::make_mesh(tris->getTris(), index);
+    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), index);
 
     mesh->setCSG(csg);
 
@@ -243,7 +244,7 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
     unsigned int meshindex = 0 ; 
     unsigned int nodeindex = 0 ; 
 
-    GMesh* mesh = GMesh::make_mesh(tris->getTris(), meshindex);
+    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris(), meshindex);
     //mesh->dumpNormals("GMaker::makePrism normals", 24);
 
     glm::mat4 txf = tris->getTransform(); 
@@ -449,7 +450,7 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
     glm::mat4 txf = tris->getTransform(); 
 
-    GMesh* mesh = GMesh::make_spherelocal_mesh(triangles, meshindex);
+    GMesh* mesh = GMeshMaker::make_spherelocal_mesh(triangles, meshindex);
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 

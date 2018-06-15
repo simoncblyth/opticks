@@ -173,9 +173,33 @@ Many G4 solids (depending on parameter values) are represented in Opticks as CSG
 need to first decide which node class to use for the CSG tree structure.    
 
 
+YOG/YOGTF
+------------
+
+* translation of analytic/sc.py Sc Nd Mh -> YOG::Sc YOG::Nd YOG::Mh 
+  which provides intermediary node tree thats easy to convert to gltf with YOG::TF 
+
+* added m_sc node collection to X4PhysicalVolume 
+
+
+NEXT
+--------
+
+* create GMesh with X4Mesh
+
+* describe GMesh buffers (just numpy underneath) 
+  with GLTF buffers/bufferViews/accessors so standard GLTF renderers can render them
+
+* need to hookup X4Solid conversion of G4VSolid into nnode into NCSG, 
+  are missing boundary index... need materials first 
+
+* review the mesh conversion, extras writing done in sc.py 
+  and translate across into X4PhysicalVolume with YOG Sc etc..
+
+
+
 Review node classes
 ------------------------
-
 
 npy.nnode subclasses
 ~~~~~~~~~~~~~~~~~~~~~~~~

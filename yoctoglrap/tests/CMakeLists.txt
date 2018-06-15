@@ -8,6 +8,7 @@ set(TEST_SOURCES
 
     YOGMakerTest.cc
     YOGTest.cc
+    YOGTFTest.cc
 
 )
 

@@ -11,7 +11,7 @@ int main(int argc, char** argv)
     YOGGeometry geom ; 
     geom.make_triangle();
 
-    auto gltf = YOGMaker::make_gltf( geom ) ; 
+    auto gltf = YOGMaker::demo_make_gltf( geom ) ; 
 
     std::string path = "/tmp/YOGMakerTest/YOGMakerTest.gltf" ; 
     bool save_bin = true ; 

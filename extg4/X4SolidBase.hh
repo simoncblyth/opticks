@@ -14,13 +14,11 @@ class G4Tubs ;
 class G4Sphere ; 
 class G4Orb ; 
 
-
 class G4VSolid ; 
+
 template <typename T> class NPY ;
-class X4Mesh ; 
-
+class GMesh ; 
 struct nnode ; 
-
 
 /**
 X4SolidBase
@@ -35,7 +33,7 @@ you handle each solid.
 
 class X4_API X4SolidBase 
 {
-    public:
+   public:
         static G4Hype*      MakeHyperboloid(const char* name, float rmin , float rmax, float inst, float outst, float hz ) ; 
         static G4Ellipsoid* MakeEllipsoid(const char* name, float ax, float by, float cz, float zcut1=0.f, float zcut2=0.f );
         static G4Torus*  MakeTorus(const char* name, float R, float r ); 
@@ -89,7 +87,7 @@ class X4_API X4SolidBase
     protected:
         const G4VSolid* m_solid ;  
         const char*     m_name ; 
-        X4Mesh*         m_mesh ;
+        GMesh*          m_mesh ;
         X4Entity_t      m_entityType ; 
         const char*     m_entityName ; 
         nnode*          m_root ; 

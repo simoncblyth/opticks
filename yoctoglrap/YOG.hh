@@ -15,6 +15,10 @@ YOG
 
 **/
 
+struct nnode ; 
+class GMesh ; 
+
+
 namespace YOG {
 
 struct YOG_API Mh
@@ -23,6 +27,8 @@ struct YOG_API Mh
     std::string lvName ; 
     std::string soName ;
     int         soIdx ; 
+    nnode*      csg ; 
+    GMesh*      mesh ; 
 
     std::string desc() const ;
 };
@@ -32,7 +38,7 @@ struct Sc ;
 struct YOG_API Nd
 {
     int              ndIdx ; 
-    int              soIdx ; 
+    int              soIdx ;   // mesh 
     const glm::mat4* transform ; 
     std::string      boundary ; 
     std::string      name ;   // pvname 
@@ -47,28 +53,31 @@ struct YOG_API Nd
 
 struct YOG_API Sc 
 {
+    Sc(int root_=0);
+
+    int  root ; 
     std::vector<Nd*>  nodes ; 
     std::vector<Mh*>  meshes ; 
 
     std::string desc() const ;
 
     bool has_mesh(int lvIdx) const ; 
+    int lv2so(int lvIdx) const ;
 
-    int add_mesh(int lvIdx,
+    int add_mesh(int   lvIdx,
                  const std::string& lvName, 
                  const std::string& soName);
 
-
-    int lv2so(int lvIdx) const ;
-
-    int add_node(int lvIdx, 
+    int add_node(int   lvIdx, 
                  const std::string& lvName, 
                  const std::string& pvName, 
                  const std::string& soName, 
                  const glm::mat4* transform, 
                  const std::string& boundary,
-                 int depth, 
-                 bool selected);  
+                 int   depth, 
+                 bool  selected);  
+
+    int add_test_node(int lvIdx);
 
 };
 

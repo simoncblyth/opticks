@@ -3,12 +3,25 @@
 #include <sstream>
 #include <string>
 
-#include "X4Mesh.hh"
+
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
+
+#include "X4Mesh.hh"
+
+#include "GMesh.hh"
+#include "GMeshMaker.hh"
 #include "SDirect.hh"
 #include "NPY.hpp"
 #include "PLOG.hh"
+
+
+
+GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
+{
+    X4Mesh xm(solid); 
+    return xm.getMesh();
+}
 
 
 X4Mesh::X4Mesh( const G4VSolid* solid ) 
@@ -18,15 +31,22 @@ X4Mesh::X4Mesh( const G4VSolid* solid )
    m_vtx(NULL),
    m_raw(NULL),
    m_tri(NULL),
+   m_mesh(NULL),
    m_verbosity(0)
 {
    init() ;
+}
+
+GMesh* X4Mesh::getMesh() const 
+{
+   return m_mesh ; 
 }
 
 void X4Mesh::init()
 {
     polygonize();
     collect();
+    makemesh();
 }
 
 std::string X4Mesh::desc() const 
@@ -83,7 +103,10 @@ void X4Mesh::collect()
     G4int nv = m_polyhedron->GetNoVertices();
     G4int nf = m_polyhedron->GetNoFacets();
 
-    m_vtx = NPY<float>::make(nv, 4) ; 
+    // suspect that nv is 1 bigger than it should be,
+    // and the top is vertex is never filled 
+
+    m_vtx = NPY<float>::make(nv, 3) ; 
     m_vtx->zero();
 
     m_raw = NPY<unsigned>::make(nf, 4) ; 
@@ -94,16 +117,15 @@ void X4Mesh::collect()
 
     collect_tri(); 
 
-    m_vtx->save("/tmp/X4Mesh/vtx.npy"); 
-    m_raw->save("/tmp/X4Mesh/raw.npy"); 
-    m_tri->save("/tmp/X4Mesh/tri.npy"); 
 }
-
 
 void X4Mesh::collect_vtx(int ivert)
 {
     G4Point3D vtx = m_polyhedron->GetVertex(ivert); // ivert is 1-based index from 1 to nv
-    m_vtx->setQuad( ivert-1, 0, 0,   vtx.x(), vtx.y(), vtx.z(), 1.f );    
+
+    m_vtx->setValue( ivert-1, 0, 0, 0, vtx.x() );    
+    m_vtx->setValue( ivert-1, 0, 0, 1, vtx.y() );    
+    m_vtx->setValue( ivert-1, 0, 0, 2, vtx.z() );    
 }
 
 void X4Mesh::collect_raw(int iface)
@@ -158,8 +180,7 @@ void X4Mesh::collect_tri()
          ntri += ( raw.w == 0 ? 1 : 2 ) ; 
     }
 
-    // 4 if for standards/alignment purpose, not to hold anything in 4th slot 
-    m_tri = NPY<unsigned>::make( ntri, 4 ) ;  
+    m_tri = NPY<unsigned>::make( ntri, 3 ) ;  
     m_tri->zero();
 
     unsigned jtri = 0 ; 
@@ -177,15 +198,21 @@ void X4Mesh::collect_tri()
 */
          if(raw.w == 0)
          {
-             m_tri->setQuad( jtri, 0, 0,   raw.x-1, raw.y-1, raw.z-1, 0 ) ;
+             m_tri->setValue( jtri, 0, 0,  0, raw.x-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  1, raw.y-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  2, raw.z-1 ) ;
              jtri += 1 ;  
          } 
          else if ( raw.w != 0 )
          {
-             m_tri->setQuad( jtri, 0, 0,   raw.x-1, raw.y-1, raw.z-1, 0 ) ;
+             m_tri->setValue( jtri, 0, 0,  0, raw.x-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  1, raw.y-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  2, raw.z-1 ) ;
              jtri += 1 ;  
 
-             m_tri->setQuad( jtri, 0, 0,   raw.x-1, raw.z-1, raw.w-1, 0 ) ;
+             m_tri->setValue( jtri, 0, 0,  0, raw.x-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  1, raw.z-1 ) ;
+             m_tri->setValue( jtri, 0, 0,  2, raw.w-1 ) ;
              jtri += 1 ;  
          }
     }
@@ -216,6 +243,20 @@ void X4Mesh::collect_tri()
 }
 
 
+void X4Mesh::save(const char* dir) const 
+{
+    m_vtx->save(dir,"vtx.npy"); 
+    m_raw->save(dir,"raw.npy"); 
+    m_tri->save(dir,"tri.npy"); 
+
+    m_mesh->save(dir); 
+
+}
+
+void X4Mesh::makemesh()
+{
+    m_mesh = GMeshMaker::make_mesh(m_vtx, m_tri, 0 );
+}
 
 
 

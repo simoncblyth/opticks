@@ -14,7 +14,8 @@ class Opticks ;
 
 namespace YOG 
 {
-struct Sc ; 
+   struct Sc ; 
+   struct TF ; 
 }
 
 /**
@@ -62,6 +63,7 @@ class X4_API X4PhysicalVolume
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 
         YOG::Sc*                     m_sc ; 
+        YOG::TF*                     m_tf ; 
         int                          m_verbosity ; 
         int                          m_pvcount ; 
         glm::mat4                    m_identity ; 

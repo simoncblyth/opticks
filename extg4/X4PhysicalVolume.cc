@@ -10,14 +10,18 @@
 
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
+#include "X4Solid.hh"
+#include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
 
 #include "YOG.hh"
+#include "YOGTF.hh"
 
 using YOG::Sc ; 
+using YOG::TF ; 
 using YOG::Nd ; 
-
+using YOG::Mh ; 
 
 
 #include "GGeo.hh"
@@ -50,7 +54,8 @@ X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     m_ok(Opticks::GetOpticks()),  // Opticks instanciation must be after BOpticksKey::SetKey
     m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
-    m_sc(new YOG::Sc),
+    m_sc(new YOG::Sc(0)),
+    m_tf(new YOG::TF(m_sc)),
     m_verbosity(m_ok->getVerbosity()),
     m_pvcount(0),
     m_identity()
@@ -80,7 +85,7 @@ void X4PhysicalVolume::TraverseVolumeTree()
 
      LOG(info) << " sc END  " << m_sc->desc() ; 
 
-
+     m_tf->save("/tmp/X4PhysicalVolume.gltf");
 }
 
 std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth )
@@ -160,18 +165,6 @@ const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 }   
 
 
-
-/**
-cf 
-/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteStructure.cc
-/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
-
-Many G4 solids (depending on parameter values) are represented in Opticks as CSG trees, so 
-need to first decide which node class to use for the CSG tree structure.    
-
-**/
-
-
 void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int depth)
 {
     const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
@@ -184,14 +177,11 @@ void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int dept
     m_lvidx[lv] = m_lvidx.size(); 
 }
 
-
-
 int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth)
 {
      const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
      Visit(lv);
 
-     G4VSolid* solid = lv->GetSolid();
          
      // rotation/translation of the Object relative to the mother
      G4RotationMatrix pv_rotation = pv->GetObjectRotationValue() ; 
@@ -200,9 +190,12 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
 
      glm::mat4* transform = new glm::mat4(X4Transform3D::Convert( pv_transform ));
 
-     // hmm moving this lot to postorder slot, would avoid the separate IndexTraverse
+     // hmm moving this lot to postorder position in the tail, 
+     // would avoid the separate IndexTraverse to give m_lvidx
      // BUT preorder node indices (root being zero) are nicer, and would have to 
      // collect vectors of child indices 
+
+     G4VSolid* solid = lv->GetSolid();
 
      int lvIdx = m_lvidx[lv] ;  // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
      const std::string& lvName = lv->GetName() ;
@@ -225,16 +218,23 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
      Nd* nd = m_sc->nodes.back() ; 
      assert( nd->ndIdx == ndIdx ) ; 
 
+     Mh* mh = m_sc->meshes[nd->soIdx];  
+     assert( mh );
+     assert( mh->soIdx == nd->soIdx );
+
+     if(mh->csg == NULL)
+     {
+         mh->csg = X4Solid::Convert(solid) ; 
+         mh->mesh = X4Mesh::Convert(solid) ; 
+     }
+
 
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
-
          int daughter_ndIdx = TraverseVolumeTree(daughter_pv,depth+1);
-
          nd->children.push_back(daughter_ndIdx); 
      }
-
 
      G4Material* material = lv->GetMaterial();
      G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();

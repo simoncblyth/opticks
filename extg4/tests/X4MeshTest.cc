@@ -14,6 +14,8 @@ int main(int argc, char** argv)
 
     LOG(info) << mh->desc() ; 
 
+    mh->save("/tmp/X4MeshTest");
+
  
     return 0 ; 
 }
