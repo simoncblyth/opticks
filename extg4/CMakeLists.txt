@@ -64,6 +64,8 @@ set(SOURCES
 
     X4OpNoviceMaterials.cc
     OpNoviceDetectorConstruction.cc
+    LXe_Materials.cc 
+   
 
     X4_LOG.cc
 
@@ -84,6 +86,7 @@ set(HEADERS
 
     X4OpNoviceMaterials.hh
     OpNoviceDetectorConstruction.hh
+    LXe_Materials.hh
 
     X4_LOG.hh
     X4_API_EXPORT.hh

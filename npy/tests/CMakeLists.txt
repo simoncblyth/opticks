@@ -88,6 +88,7 @@ NPYTest.cc
 NPY2Test.cc
 NPY3Test.cc
 NPYminmaxTest.cc
+NPYreshapeTest.cc
 
 NLoadTest.cc
 

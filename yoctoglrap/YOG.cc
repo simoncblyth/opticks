@@ -90,7 +90,7 @@ int Sc::add_mesh(int lvIdx,
     if(!has_mesh(lvIdx))
     {
         soIdx = meshes.size(); 
-        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx, NULL, NULL }) ;
+        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx, NULL, NULL, NULL, NULL }) ;
     }
     int soIdx2 = lv2so(lvIdx);
     if(soIdx > -1 ) assert( soIdx2 == soIdx ) ; // when a new mesh is added, can check local indices match

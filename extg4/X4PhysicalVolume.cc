@@ -16,14 +16,15 @@
 
 
 #include "YOG.hh"
-#include "YOGTF.hh"
+#include "YOGMaker.hh"
 
 using YOG::Sc ; 
-using YOG::TF ; 
 using YOG::Nd ; 
 using YOG::Mh ; 
+using YOG::Maker ; 
 
 
+#include "GMesh.hh"
 #include "GGeo.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
@@ -42,6 +43,7 @@ const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 {
     X4PhysicalVolume pv(top) ;  
+    pv.saveAsGLTF("/tmp/X4PhysicalVolume/X4PhysicalVolume.gltf"); // TODO: should be using identity digest in the path  
     GGeo* gg = pv.getGGeo();
     return gg ; 
 }
@@ -55,7 +57,7 @@ X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
     m_sc(new YOG::Sc(0)),
-    m_tf(new YOG::TF(m_sc)),
+    m_maker(new YOG::Maker(m_sc)),
     m_verbosity(m_ok->getVerbosity()),
     m_pvcount(0),
     m_identity()
@@ -84,8 +86,12 @@ void X4PhysicalVolume::TraverseVolumeTree()
      TraverseVolumeTree(pv, 0 );
 
      LOG(info) << " sc END  " << m_sc->desc() ; 
+}
 
-     m_tf->save("/tmp/X4PhysicalVolume.gltf");
+void X4PhysicalVolume::saveAsGLTF(const char* path)
+{
+     m_maker->convert();
+     m_maker->save(path);
 }
 
 std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth )
@@ -224,8 +230,7 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
 
      if(mh->csg == NULL)
      {
-         mh->csg = X4Solid::Convert(solid) ; 
-         mh->mesh = X4Mesh::Convert(solid) ; 
+         convertSolid(mh, solid);
      }
 
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
@@ -251,6 +256,18 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
      return ndIdx  ; 
 }
 
+void X4PhysicalVolume::convertSolid( Mh* mh,  G4VSolid* solid)
+{
+     mh->csg = X4Solid::Convert(solid) ;     // analytic CSG nnode tree
+     GMesh* mesh = X4Mesh::Convert(solid) ;  // triangulated vertices, indices
+
+     mh->mesh = mesh ; 
+     // avoiding GGeo dependency in YOG , and workaround GMesh/GBuffer deficiencies 
+     mh->vtx = mesh->m_x4src_vtx ; 
+     mh->idx = mesh->m_x4src_idx ;
+
+ 
+} 
 
 
 void X4PhysicalVolume::Visit(const G4LogicalVolume* const lv)

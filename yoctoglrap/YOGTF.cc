@@ -29,6 +29,14 @@ TF::TF( Sc* sc_ )
 {   
 }
 
+/**
+TF
+===
+
+* creation of gltf is deferred until convert 
+**/
+
+
 void TF::convert()
 {
     gltf = new glTF_t() ;

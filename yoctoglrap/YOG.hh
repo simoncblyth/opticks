@@ -4,6 +4,8 @@
 #include <vector>
 
 #include "YOG_API_EXPORT.hh"
+template <typename T> class NPY ; 
+
 #include <glm/fwd.hpp>
 
 /**
@@ -11,7 +13,12 @@ YOG : intermediate geometry tree
 ===================================
 
 The YOG geometry model (Sc, Nd, Mh) is used as an intermediary model 
-at a slightly higher level than ygltf, just above the gltf details.
+at a slightly higher level than ygltf, above the gltf details.
+
+* YOG model holds the nodes and meshes and their association 
+* typically there are many more nodes than meshes 
+* YOG has no ygltf dependency 
+
 The Geant4 volume tree is converted into YOG by calling YOG::Nd::add_node
 from within the recursive X4PhysicalVolume::TraverseVolumeTree.
 Subsequently Sc can be converted to ygltf and saved to file 
@@ -25,7 +32,6 @@ GLTF for consumption by NGLTF/NScene.
 
 struct nnode ; 
 class GMesh ; 
-
 
 namespace YOG {
 
@@ -79,17 +85,18 @@ struct YOG_API Nd
 
 struct YOG_API Mh
 {
-    int         lvIdx ; 
+    int          lvIdx ; 
     std::string lvName ; 
     std::string soName ;
-    int         soIdx ; 
-    nnode*      csg ; 
-    GMesh*      mesh ; 
+    int          soIdx ; 
+
+    nnode*         csg ; 
+    GMesh*        mesh ; 
+    NPY<float>*    vtx ; 
+    NPY<unsigned>* idx ; 
 
     std::string desc() const ;
 };
 
-
 }  // namespace
-
 

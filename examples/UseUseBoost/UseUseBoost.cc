@@ -4,18 +4,22 @@
 #include "UseBoost.hh"
 
 
-int main(int argc, char* argv[])
+int main(int argc, char** argv)
 {
-  if (argc < 2)
-  {
-     std::cout << "Usage: tut1 path\n";
-     dump_file_size(argv[0]);
-     return 1;
-  }
+    if (argc < 2)
+    {
+        std::cout << "Usage: UseUseBoost path elememts to be joined into a path to file.txt\n";
+        UseBoost::dump_file_size(argv[0]);
+        return 1;
+    }
 
-   dump_file_size(argv[1]);
+    const char* path = UseBoost::concat_path( argc, argv ); 
+    std::cout << " path " << path << std::endl ; 
 
-  return 0;
 
+    UseBoost::dump_file_size(path);
+
+    return 0;
 }
+
 

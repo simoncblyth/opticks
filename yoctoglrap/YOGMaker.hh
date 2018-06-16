@@ -1,5 +1,6 @@
 #pragma once
 
+#include <string>
 #include <vector>
 
 #include "YGLTF.h"
@@ -26,6 +27,8 @@ by providing the metadata to describe the buffers.
 
 namespace YOG {
 
+struct Sc ; 
+struct Mh ; 
 struct Geometry ;
 
 typedef enum { SCALAR, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4 } Type_t ; 
@@ -37,11 +40,11 @@ struct YOG_API Maker
 {
     void demo_create(const Geometry& geom );
 
-    Maker(bool saveNPYToGLTF_=false);
+    Maker(Sc* sc_=NULL, bool saveNPYToGLTF_=false );  
+    void convert();
 
     template <typename T> 
     int add_buffer( NPY<T>* buffer, const char* uri ); 
-
     int add_bufferView( int bufferIdx, TargetType_t targetType ); 
     int add_accessor( int bufferViewIdx, int count, Type_t type, ComponentType_t componentType ) ;
     void set_accessor_min_max(int accessorIdx, const std::vector<float>& minf , const std::vector<float>& maxf );
@@ -58,8 +61,15 @@ struct YOG_API Maker
     void add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, int indicesIdx, int materialIdx );
     int add_scene() ;
     void append_node_to_scene(int nodeIdx, int sceneIdx=0) ;  // roots 
+    void append_child_to_node(int childIdx, int nodeIdx ) ; 
 
     int add_mesh() ;
+    void set_mesh_data( int meshIdx, Mh* mh, int materialIdx );
+    int  set_mesh_data_indices( Mh* mh );
+    int  set_mesh_data_vertices( Mh* mh );
+    std::string get_mesh_uri( Mh* mh, const char* bufname ) const ;
+
+
     int add_node() ;
     void set_node_mesh(int nodeIdx, int meshIdx);
     void set_node_translation(int nodeIdx, float x, float y, float z);
@@ -72,8 +82,11 @@ struct YOG_API Maker
     void save( const char* path) const ; 
     void saveBuffers(const char* path) const ;
 
-    ygltf::glTF_t*  gltf ; 
-    bool saveNPYToGLTF ; 
+
+    Sc*                      sc ;  
+    ygltf::glTF_t*           gltf ; 
+    bool                     saveNPYToGLTF ; 
+    bool                     converted ; 
     std::vector<NBufferSpec> specs ; 
 
 };

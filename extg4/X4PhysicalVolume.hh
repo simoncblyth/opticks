@@ -1,12 +1,14 @@
 #pragma once
 
 #include <map>
-#include "X4_API_EXPORT.hh"
 
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
-#include "NGLM.hpp"
+class G4VSolid ; 
 #include "G4Transform3D.hh"
+
+#include "NGLM.hpp"
+#include "X4_API_EXPORT.hh"
 
 class GGeo ; 
 class GMaterialLib ; 
@@ -15,14 +17,13 @@ class Opticks ;
 namespace YOG 
 {
    struct Sc ; 
-   struct TF ; 
+   struct Mh ; 
+   struct Maker ; 
 }
 
 /**
 X4PhysicalVolume
 ===================
-
-
 
 CAUTION regarding geometry digests
 ------------------------------------
@@ -48,12 +49,14 @@ class X4_API X4PhysicalVolume
     public:
         X4PhysicalVolume(const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
+        void  saveAsGLTF(const char* path);
     private:
         void init();
     private:
         void TraverseVolumeTree(); 
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
         int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth);
+        void convertSolid( YOG::Mh* mh,  G4VSolid* solid);
         void Visit(const G4LogicalVolume* const lv);
     private:
         const G4VPhysicalVolume*     m_top ;  
@@ -63,7 +66,7 @@ class X4_API X4PhysicalVolume
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 
         YOG::Sc*                     m_sc ; 
-        YOG::TF*                     m_tf ; 
+        YOG::Maker*                  m_maker ; 
         int                          m_verbosity ; 
         int                          m_pvcount ; 
         glm::mat4                    m_identity ; 

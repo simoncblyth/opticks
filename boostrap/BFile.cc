@@ -313,6 +313,21 @@ std::string BFile::FormPath(const std::vector<std::string>& elem, unsigned i0, u
 }
 
 
+std::string BFile::FormRelativePath(const char* a, const char* b, const char* c, const char* d, const char* e, const char* f)
+{
+    fs::path pp ; 
+
+    if(a) pp /= a ; 
+    if(b) pp /= b ; 
+    if(c) pp /= c ; 
+    if(d) pp /= d ; 
+    if(e) pp /= e ; 
+    if(f) pp /= f ; 
+
+    return pp.string();  // platform native
+}
+
+
 std::string BFile::FormPath(const char* path, const char* sub, const char* name, const char* extra1, const char* extra2)
 {
 

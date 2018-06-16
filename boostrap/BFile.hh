@@ -12,7 +12,9 @@ class BRAP_API BFile {
        static std::size_t FileSize( const char* path ) ; 
        static void SplitPath(std::vector<std::string>& elem, const char* path ) ; 
        static bool LooksLikePath(const char* path) ; 
+   
 
+       static std::string FormRelativePath(const char* a, const char* b=NULL, const char* c=NULL, const char* d=NULL, const char* e=NULL, const char* f=NULL);
        static std::string FormPath(const std::vector<std::string>& elem, unsigned i0, unsigned i1 ); 
        static std::string FormPath(const char* path, const char* sub=NULL, const char* name=NULL, const char* extra1=NULL, const char* extra2=NULL );
        static std::string FindFile(const char* dirlist, const char* sub, const char* name=NULL, const char* dirlist_delim=";");

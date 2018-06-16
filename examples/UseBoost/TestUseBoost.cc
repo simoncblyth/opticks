@@ -6,15 +6,20 @@
 
 int main(int argc, char* argv[])
 {
-  if (argc < 2)
-  {
-    std::cout << "Usage: tut1 path\n";
-    return 1;
-  }
+  
+   if (argc < 2)
+   {
+      std::cout << "Usage: TestUseBoost separated path elememts to be joined into a path to file.txt\n";
+      return 1;
+   }
 
-   dump_file_size(argv[1]);
+   const char* path = concat_path( argc, argv ); 
 
-  return 0;
+   dump_file_size(path);
+
+
+
+   return 0;
 
 }
 

@@ -573,6 +573,11 @@ class GGEO_API GMesh : public GDrawable {
   protected:
       GParts*        m_parts ;
 
+  public:
+      // expedient x4src buffers 
+      NPY<float>*    m_x4src_vtx ; 
+      NPY<unsigned>* m_x4src_idx ; 
+
 };
 
 

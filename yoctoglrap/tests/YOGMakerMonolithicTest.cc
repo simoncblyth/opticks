@@ -31,6 +31,7 @@ namespace YOG {
 
 void demo_create_monolithic( Maker& mk, const Geometry& geom )
 {
+
     // Maker methods avoid having to do things in this monlithic manner, see demo_create  
     assert( geom.vtx ) ; 
     assert( geom.idx ) ; 

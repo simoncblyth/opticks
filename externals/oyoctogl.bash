@@ -1,7 +1,8 @@
 oyoctogl-src(){      echo externals/oyoctogl.bash ; }
 oyoctogl-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(oyoctogl-src)} ; }
-oyoctogl-vi(){       vi $(oyoctogl-source) ; }
+oyoctogl-vi(){       vi $(oyoctogl-source) $(oyoctogl-dir)/yocto/yocto_gltf.h  ; }
 oyoctogl-env(){      olocal- ; opticks- ; }
+
 oyoctogl-usage(){ cat << 'EOU'
 
 Yocto-GL as Opticks External
@@ -185,6 +186,7 @@ EOU
 
 oyoctogl-edit(){ vi $(opticks-home)/cmake/Modules/FindYoctoGL.cmake ; }
 oyoctogl-url(){ echo https://github.com/simoncblyth/yocto-gl ; }
+oyoctogl-open(){ open $(oyoctogl-url) ; }
 
 
 oyoctogl-dir(){  echo $(opticks-prefix)/externals/yoctogl/yocto-gl ; }

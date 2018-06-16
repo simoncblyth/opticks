@@ -69,6 +69,12 @@ GMesh* GMeshMaker::make_mesh(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned int
     mesh->setColors(  new gfloat3[nvert]);
     mesh->setColor(0.5,0.5,0.5);  
 
+
+    // expedient workaround, as YOG needs NPY buffers
+    // but the GMesh manages to loose them thanks to using GBuffer
+    mesh->m_x4src_vtx = vtx3 ;  
+    mesh->m_x4src_idx = tri3 ;  
+
     return mesh ; 
 }
 
