@@ -37,13 +37,11 @@ std::string Nd::desc() const
     return ss.str();
 }
 
-
 Sc::Sc(int root_)
    :
    root(root_)
 {
 }
-  
 
 std::string Sc::desc() const 
 {
@@ -55,7 +53,6 @@ std::string Sc::desc() const
         ; 
     return ss.str();
 }
-
 
 int Sc::lv2so(int lvIdx) const   // find local mesh index from the external lvIdx 
 {
@@ -124,8 +121,6 @@ int Sc::add_node(int lvIdx,
      return ndIdx ; 
 }
 
-
-
 int Sc::add_test_node(int lvIdx)
 {
     std::string lvName = BStr::concat<int>("lv", lvIdx, NULL) ;   
@@ -147,7 +142,5 @@ int Sc::add_test_node(int lvIdx)
 
     return ndIdx ; 
 }
-
-
 
 } // namespace

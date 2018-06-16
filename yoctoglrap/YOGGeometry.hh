@@ -1,20 +1,31 @@
 #pragma once
 
 #include "YOG_API_EXPORT.hh"
+#include <vector>
 
 template <typename T> class NPY ;
-struct NPYBufferSpec ; 
 
-struct YOG_API YOGGeometry
+namespace YOG  {
+struct YOG_API Geometry
 {
-    NPY<float>*     vtx ; 
-    NPYBufferSpec*  vtx_spec ; 
+    Geometry( int count_ );
 
+    int             count ; 
+    NPY<float>*     vtx ; 
     NPY<unsigned>*  idx ; 
-    NPYBufferSpec*  idx_spec ; 
+
+    std::vector<float> vtx_minf ; 
+    std::vector<float> vtx_maxf ; 
+
+    std::vector<unsigned> idx_min ; 
+    std::vector<unsigned> idx_max ; 
+
+    std::vector<float> idx_minf ; 
+    std::vector<float> idx_maxf ; 
+
 
     void make_triangle(); 
 };
 
-
+}  // namespace
 

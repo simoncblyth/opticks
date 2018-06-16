@@ -29,6 +29,7 @@ struct NPY_API ntvec4 {
    T y ;
    T z ;
    T w ;
+  const char* desc() const ;
 };
 
 template<typename T>

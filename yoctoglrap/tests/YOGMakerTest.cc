@@ -1,30 +1,25 @@
 
-#include <string>
-#include <iostream>
-#include <fstream>
-
+#include "OPTICKS_LOG.hh"
 #include "YOGMaker.hh"
 #include "YOGGeometry.hh"
 
+using YOG::Geometry ; 
+using YOG::Maker ; 
+
 int main(int argc, char** argv)
 {
-    YOGGeometry geom ; 
+    OPTICKS_LOG_COLOR__(argc, argv); 
+
+    Geometry geom(3) ; 
     geom.make_triangle();
 
-    auto gltf = YOGMaker::demo_make_gltf( geom ) ; 
+    Maker ym ; 
+    ym.demo_create(geom); 
 
-    std::string path = "/tmp/YOGMakerTest/YOGMakerTest.gltf" ; 
-    bool save_bin = true ; 
-    bool save_shaders = false ; 
-    bool save_images = false ; 
+    const char* path = "/tmp/YOGMakerTest/YOGMakerTest.gltf" ; 
+    ym.save(path);
 
-    save_gltf(path, gltf.get(), save_bin, save_shaders, save_images);
 
-    std::cout << "writing " << path << std::endl ; 
-
-    std::ifstream fp(path);
-    std::string line;
-    while(std::getline(fp, line)) std::cout << line << std::endl ; 
     return 0 ; 
 }
 

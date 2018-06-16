@@ -1,4 +1,5 @@
 #include "OPTICKS_LOG.hh"
+#include "SBufferSpec.hh"
 #include "SSys.hh"
 #include "BFile.hh"
 #include "NPY.hpp"
@@ -12,7 +13,7 @@ void test_getBufferSize()
    assert( num_values == 4 ); 
    std::size_t data_size_expected = num_values*sizeof(float) ;  
 
-   NPYBufferSpec spec = buf->getBufferSpec();  
+   NBufferSpec spec = buf->getBufferSpec();  
    std::size_t data_size = spec.dataSize() ; // bufferSize - headerSize
 
    const char* path = "$TMP/test_getBufferSize.npy" ; 
@@ -40,7 +41,7 @@ void test_saveToBuffer()
    buf->fill(1.f);
 
    std::vector<unsigned char> vdst ;   // buffer gets resized to fit before the save
-   NPYBufferSpec spec = buf->saveToBuffer(vdst) ;   // include the NPY header
+   NBufferSpec spec = buf->saveToBuffer(vdst) ;   // include the NPY header
    assert( spec.bufferByteLength == vdst.size() );
 
    SSys::xxdump( (char*)vdst.data(), vdst.size(), 16 );  
@@ -59,14 +60,14 @@ void test_loadFromBuffer()
    buf->fill(1.f);
 
    std::vector<unsigned char> vdst ;   // buffer gets resized to fit before the save
-   NPYBufferSpec spec = buf->saveToBuffer(vdst) ;   // include the NPY header
+   NBufferSpec spec = buf->saveToBuffer(vdst) ;   // include the NPY header
    assert( spec.bufferByteLength == vdst.size() );
 
    SSys::xxdump( (char*)vdst.data(), vdst.size(), 16 );  
 
 
    NPY<float>* buf2 = NPY<float>::loadFromBuffer( vdst ) ; 
-   NPYBufferSpec spec2 = buf2->getBufferSpec() ; 
+   NBufferSpec spec2 = buf2->getBufferSpec() ; 
 
    buf2->dump(); 
 
@@ -81,7 +82,27 @@ void test_loadFromBuffer()
 }
 
 
+void test_cast()
+{
+   NPY<float>* buf = NPY<float>::make(1,1,4) ;
+   buf->fill(1.f);
 
+   NBufferSpec spec = buf->getBufferSpec() ;
+   NPYBase* ptr = const_cast<NPYBase*>(spec.ptr) ;  
+
+   LOG(info) << ptr ; 
+
+   NPY<float>*    f = dynamic_cast<NPY<float>*>(ptr) ;
+   NPY<double>*   d = dynamic_cast<NPY<double>*>(ptr) ;
+   NPY<int>*      i = dynamic_cast<NPY<int>*>(ptr) ;
+   NPY<unsigned>* u = dynamic_cast<NPY<unsigned>*>(ptr) ;
+ 
+   assert( f == buf ) ; 
+   assert( d == NULL ); 
+   assert( i == NULL ); 
+   assert( u == NULL ); 
+
+}
 
 
 int main(int argc, char** argv )
@@ -90,7 +111,10 @@ int main(int argc, char** argv )
 
     //test_getBufferSize(); 
     //test_saveToBuffer(); 
-    test_loadFromBuffer(); 
+    //test_loadFromBuffer(); 
+
+    test_cast();
 
     return 0 ; 
 }
+

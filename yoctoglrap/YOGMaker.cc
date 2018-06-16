@@ -1,3 +1,8 @@
+#include <iostream>
+#include <iomanip>
+
+#include "PLOG.hh"
+#include "BFile.hh"
 #include "NPY.hpp"
 #include "YOGMaker.hh"
 #include "YOGGeometry.hh"
@@ -14,140 +19,304 @@ using ygltf::buffer_data_t ;
 using ygltf::bufferView_t ; 
 using ygltf::accessor_t ; 
 
-// hmm not pursuing this way, trying a direct translation of sc.py over in YOG.hh
+namespace YOG {
 
-YOGMaker::YOGMaker()  
-   :
-   m_gltf(new glTF_t()),
-   m_scenes(m_gltf->scenes),
-   m_nodes(m_gltf->nodes),
-   m_buffers(m_gltf->buffers),
-   m_bufferViews(m_gltf->bufferViews),
-   m_accessors(m_gltf->accessors),
-   m_meshes(m_gltf->meshes),
-   m_materials(m_gltf->materials)
+void Maker::demo_create(const Geometry& geom)
 {
+    int vtx_b = add_buffer<float>(geom.vtx, "subfold/subsubfold/vtx.npy");
+    int vtx_v = add_bufferView(vtx_b, ARRAY_BUFFER );
+    int vtx_a = add_accessor( vtx_v, geom.count,  VEC4,  FLOAT );  
+    set_accessor_min_max( vtx_a, geom.vtx_minf, geom.vtx_maxf );
+
+    int idx_b = add_buffer<unsigned>(geom.idx, "subfold/subsubfold/idx.npy");
+    int idx_v = add_bufferView(idx_b, ELEMENT_ARRAY_BUFFER );
+    int idx_a = add_accessor( idx_v, geom.count,  SCALAR, UNSIGNED_INT );
+    set_accessor_min_max( idx_a, geom.idx_minf, geom.idx_maxf );
+
+    //int mat = add_material(); 
+    int mat = add_material(0,1,0); 
+
+    int m = add_mesh();
+    add_primitives_to_mesh( m, TRIANGLES, vtx_a, idx_a, mat );  
+
+    int a = add_node();
+    int b = add_node();
+
+    set_node_mesh(a, m);
+    set_node_mesh(b, m);
+  
+    set_node_translation(b,  1.f, 0.f, 0.f); 
+
+    add_scene();
+    append_node_to_scene( a );
+    append_node_to_scene( b );
+}
+
+
+Maker::Maker(bool saveNPYToGLTF_ )  
+   :
+   gltf(new glTF_t()),
+   saveNPYToGLTF(saveNPYToGLTF_)
+{
+}
+
+template <typename T> 
+int Maker::add_buffer( NPY<T>* npy, const char* uri )
+{
+    specs.push_back(npy->getBufferSpec()) ; 
+    NBufferSpec& spec = specs.back() ;
+    spec.uri = uri ; 
+    assert( spec.ptr == (void*)npy );
+
+    buffer_t bu ; 
+    bu.uri = uri ; 
+    bu.byteLength = spec.bufferByteLength ; 
+
+    if( saveNPYToGLTF )
+    {
+        npy->saveToBuffer( bu.data ) ; 
+    }
+
+    int buIdx = gltf->buffers.size() ; 
+    gltf->buffers.push_back( bu );
+
+
+    return buIdx ; 
+}
+
+int Maker::add_bufferView( int bufferIdx, TargetType_t targetType )
+{
+    const NBufferSpec& spec = specs[bufferIdx] ;  
+
+    bufferView_t bv ;  
+    bv.buffer = bufferIdx  ;
+    bv.byteOffset = spec.headerByteLength ; // offset to skip the NPY header 
+    bv.byteLength = spec.dataSize() ;
+
+    switch(targetType)
+    {
+        case ARRAY_BUFFER          : bv.target = bufferView_t::target_t::array_buffer_t         ; break ;
+        case ELEMENT_ARRAY_BUFFER  : bv.target = bufferView_t::target_t::element_array_buffer_t ; break ;
+    }
+    bv.byteStride = 0 ; 
+
+    int bufferViewIdx = gltf->bufferViews.size() ; 
+    gltf->bufferViews.push_back( bv );
+    return bufferViewIdx ;
+}
+
+int Maker::add_accessor( int bufferViewIdx, int count, Type_t type, ComponentType_t componentType ) 
+{
+    accessor_t ac ; 
+    ac.bufferView = bufferViewIdx ; 
+    ac.byteOffset = 0 ;
+    ac.count = count ; 
+
+    switch(type)
+    {
+        case SCALAR   : ac.type = accessor_t::type_t::scalar_t ; break ; 
+        case VEC2     : ac.type = accessor_t::type_t::vec2_t   ; break ; 
+        case VEC3     : ac.type = accessor_t::type_t::vec3_t   ; break ; 
+        case VEC4     : ac.type = accessor_t::type_t::vec4_t   ; break ; 
+        case MAT2     : ac.type = accessor_t::type_t::mat2_t   ; break ; 
+        case MAT3     : ac.type = accessor_t::type_t::mat3_t   ; break ; 
+        case MAT4     : ac.type = accessor_t::type_t::mat4_t   ; break ; 
+    }
+
+    switch(componentType)
+    {
+        case BYTE           : ac.componentType = accessor_t::componentType_t::byte_t           ; break ; 
+        case UNSIGNED_BYTE  : ac.componentType = accessor_t::componentType_t::unsigned_byte_t  ; break ; 
+        case SHORT          : ac.componentType = accessor_t::componentType_t::short_t          ; break ; 
+        case UNSIGNED_SHORT : ac.componentType = accessor_t::componentType_t::unsigned_short_t ; break ; 
+        case UNSIGNED_INT   : ac.componentType = accessor_t::componentType_t::unsigned_int_t   ; break ; 
+        case FLOAT          : ac.componentType = accessor_t::componentType_t::float_t          ; break ; 
+    }
+
+    // ac.min and ac.max are skipped
+
+    int accessorIdx = gltf->accessors.size() ; 
+    gltf->accessors.push_back( ac );
+
+    return accessorIdx ;
+}
+
+void Maker::set_accessor_min_max(int accessorIdx, const std::vector<float>& minf , const std::vector<float>& maxf )
+{
+    accessor_t& ac = get_accessor(accessorIdx);
+    ac.min = minf ; 
+    ac.max = maxf ; 
+}
+
+int Maker::add_mesh()
+{
+    int meshIdx = gltf->meshes.size() ; 
+    mesh_t mh ; 
+    gltf->meshes.push_back( mh );
+    return meshIdx ;
+}
+
+
+int Maker::add_scene()
+{
+    int sceneIdx = gltf->scenes.size() ; 
+    scene_t sc ; 
+    gltf->scenes.push_back( sc );
+    return sceneIdx ;
+}
+
+int Maker::add_node()
+{
+    int nodeIdx = gltf->nodes.size() ; 
+    node_t nd ; 
+    gltf->nodes.push_back( nd );
+    return nodeIdx ;
+}
+
+void Maker::append_node_to_scene(int nodeIdx, int sceneIdx)
+{
+    scene_t& sc = get_scene(sceneIdx);
+    sc.nodes.push_back(nodeIdx); 
+}
+
+scene_t& Maker::get_scene(int idx)
+{
+    assert( idx < gltf->scenes.size() );
+    return gltf->scenes[idx] ; 
+}
+mesh_t& Maker::get_mesh(int idx)
+{
+    assert( idx < gltf->meshes.size() );
+    return gltf->meshes[idx] ; 
+}
+node_t& Maker::get_node(int idx)
+{
+    assert( idx < gltf->nodes.size() );
+    return gltf->nodes[idx] ; 
+}
+accessor_t& Maker::get_accessor(int idx)
+{
+    assert( idx < gltf->accessors.size() );
+    return gltf->accessors[idx] ; 
 }
 
 
 
-
-std::unique_ptr<glTF_t> YOGMaker::demo_make_gltf(const YOGGeometry& geom )
+void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, int indicesIdx, int materialIdx )
 {
-    assert( geom.vtx ) ; 
-    assert( geom.vtx_spec ) ; 
-    assert( geom.idx ) ; 
-    assert( geom.idx_spec ) ; 
+    assert( meshIdx < gltf->meshes.size() );
+    mesh_t& mh = gltf->meshes[meshIdx] ; 
 
-    auto gltf = std::unique_ptr<glTF_t>(new glTF_t());
+    mesh_primitive_t mp ; 
 
-    std::vector<scene_t>& scenes = gltf->scenes ; 
-    std::vector<node_t>& nodes = gltf->nodes ; 
-    std::vector<buffer_t>& buffers = gltf->buffers ; 
-    std::vector<bufferView_t>& bufferViews = gltf->bufferViews ; 
-    std::vector<accessor_t>& accessors = gltf->accessors ; 
-    std::vector<mesh_t>& meshes = gltf->meshes ; 
-    std::vector<material_t>& materials = gltf->materials ; 
+    mp.attributes = {{"POSITION", positionIdx }} ; 
+    mp.indices = indicesIdx  ; 
+    mp.material = materialIdx ; 
 
-    node_t no0 ; 
-    no0.mesh = 0 ; 
+    switch(mode)
+    {
+        case POINTS         :  mp.mode = mesh_primitive_t::mode_t::points_t         ; break ; 
+        case LINES          :  mp.mode = mesh_primitive_t::mode_t::lines_t          ; break ; 
+        case LINE_LOOP      :  mp.mode = mesh_primitive_t::mode_t::line_loop_t      ; break ; 
+        case LINE_STRIP     :  mp.mode = mesh_primitive_t::mode_t::line_strip_t     ; break ; 
+        case TRIANGLES      :  mp.mode = mesh_primitive_t::mode_t::triangles_t      ; break ; 
+        case TRIANGLE_STRIP :  mp.mode = mesh_primitive_t::mode_t::triangle_strip_t ; break ; 
+        case TRIANGLE_FAN   :  mp.mode = mesh_primitive_t::mode_t::triangle_fan_t   ; break ; 
+    }
+ 
+    mh.primitives.push_back(mp) ;
+}
 
-    node_t no1 ; 
-    no1.mesh = 0 ; 
-    no1.translation = {{1,0,0}} ; 
+void Maker::set_node_mesh(int nodeIdx, int meshIdx)
+{
+    node_t& node = get_node(nodeIdx) ;  
+    node.mesh = meshIdx ;  
+}
 
-    nodes = {no0, no1} ; 
-    int no0_ = 0 ; 
-    int no1_ = 1 ; 
+void Maker::set_node_translation(int nodeIdx, float x, float y, float z)
+{
+    node_t& node = get_node(nodeIdx) ;  
+    node.translation = {{ x, y, z }} ;  
+}
 
-    scene_t sc ;   
-    sc.nodes = {no0_, no1_} ;   
-    scenes = {sc} ;  
-
+int Maker::add_material(
+     float baseColorFactor_r, 
+     float baseColorFactor_g, 
+     float baseColorFactor_b, 
+     float baseColorFactor_a, 
+     float metallicFactor, 
+     float roughnessFactor 
+    )
+{
     material_pbrMetallicRoughness_t mr ; 
-    mr.baseColorFactor =  {{ 1.000, 0.766, 0.336, 1.0 }} ;
-    mr.metallicFactor = 0.5 ;
-    mr.roughnessFactor = 0.1 ;
+    mr.baseColorFactor =  {{ baseColorFactor_r, baseColorFactor_g, baseColorFactor_b, baseColorFactor_a }} ;
+    mr.metallicFactor = metallicFactor ;
+    mr.roughnessFactor = roughnessFactor ;
 
     material_t mt ; 
     mt.pbrMetallicRoughness = mr ; 
 
-    materials = { mt } ; 
-    int mt_ = 0 ; 
-
-    buffer_t vtx_bu ; 
-    vtx_bu.uri = "vtx.npy" ; 
-    vtx_bu.byteLength = geom.vtx_spec->bufferByteLength ; 
-    geom.vtx->saveToBuffer( vtx_bu.data ) ; 
-
-    buffer_t idx_bu ; 
-    idx_bu.uri = "idx.npy" ; 
-    idx_bu.byteLength = geom.idx_spec->bufferByteLength ; 
-    geom.idx->saveToBuffer( idx_bu.data ) ; 
-
-    buffers = {vtx_bu, idx_bu} ; 
-    int vtx_bu_ = 0 ; 
-    int idx_bu_ = 1 ; 
-
-
-    // TODO: derive these from npy array content 
-    int count = 3 ; 
-    std::vector<float> vtx_min = { 0, 0, 0, 1 } ; 
-    std::vector<float> vtx_max = { 1, 1, 1, 1 } ; 
-    std::vector<float> idx_min = { 0 } ; 
-    std::vector<float> idx_max = { 2 } ; 
-
-    bufferView_t vtx_bv ;  
-    vtx_bv.buffer = vtx_bu_  ;
-    vtx_bv.byteOffset = geom.vtx_spec->headerByteLength ; // offset to skip the NPY header 
-    vtx_bv.byteLength = geom.vtx_spec->dataSize() ;
-    vtx_bv.target = bufferView_t::target_t::array_buffer_t ;
-    vtx_bv.byteStride = 0 ; 
- 
-    bufferView_t idx_bv ;  
-    idx_bv.buffer = idx_bu_  ;
-    idx_bv.byteOffset = geom.idx_spec->headerByteLength ; // offset to skip the NPY header
-    idx_bv.byteLength = sizeof(unsigned)*count ;  // geom.idx_spec->dataSize() ;
-    idx_bv.target = bufferView_t::target_t::element_array_buffer_t ;
-    idx_bv.byteStride = 0 ; 
- 
-    bufferViews = {vtx_bv, idx_bv} ;  
-    int vtx_bv_ = 0 ; 
-    int idx_bv_ = 1 ; 
-
-    accessor_t vtx_ac ; 
-    vtx_ac.bufferView = vtx_bv_ ; 
-    vtx_ac.byteOffset = 0 ;
-    vtx_ac.componentType = accessor_t::componentType_t::float_t ; 
-    vtx_ac.count = count ; 
-    vtx_ac.type = accessor_t::type_t::vec4_t ; 
-    vtx_ac.min = vtx_min ; 
-    vtx_ac.max = vtx_max ; 
-
-    accessor_t idx_ac ; 
-    idx_ac.bufferView = idx_bv_ ; 
-    idx_ac.byteOffset = 0 ;
-    idx_ac.componentType = accessor_t::componentType_t::unsigned_int_t ; 
-    idx_ac.count = count ; 
-    idx_ac.type = accessor_t::type_t::scalar_t ; 
-    idx_ac.min = idx_min ; 
-    idx_ac.max = idx_max ; 
-
-    accessors = {vtx_ac, idx_ac} ;
-    int vtx_ac_ = 0 ; 
-    int idx_ac_ = 1 ; 
- 
-    mesh_primitive_t mp ; 
-    mp.attributes = {{"POSITION", vtx_ac_ }} ; 
-    mp.indices = idx_ac_ ; 
-    mp.material = mt_ ; 
-    mp.mode = mesh_primitive_t::mode_t::triangles_t ; 
- 
-    mesh_t mh ; 
-    mh.primitives = { mp } ; 
-    meshes = {mh} ; 
-
-    return gltf ; 
+    int materialIdx = gltf->materials.size() ; 
+    gltf->materials.push_back( mt );
+    return materialIdx ;
 }
+
+void Maker::save(const char* path) const 
+{
+    bool save_bin = saveNPYToGLTF ; 
+    bool save_shaders = false ; 
+    bool save_images = false ; 
+
+    bool createDirs = true ; 
+    BFile::preparePath(path, createDirs); 
+
+    save_gltf(path, gltf, save_bin, save_shaders, save_images);
+    std::cout << "writing " << path << std::endl ; 
+
+    std::ifstream fp(path);
+    std::string line;
+    while(std::getline(fp, line)) std::cout << line << std::endl ; 
+
+    if(!save_bin)
+        saveBuffers(path);
+}
+
+void Maker::saveBuffers(const char* path) const 
+{
+    // This can save buffers into non-existing subfolders, 
+    // which it creates, unlike the ygltf buffer saving.
+
+    LOG(info) << " path " << path ; 
+
+    std::string dir = BFile::ParentDir(path);
+
+    for(unsigned i=0 ; i < specs.size() ; i++)
+    {
+        const NBufferSpec& spec = specs[i]; 
+
+        std::string bufpath_ = BFile::FormPath( dir.c_str(),  spec.uri.c_str() ); 
+        const char* bufpath = bufpath_.c_str() ; 
+
+        std::cout << std::setw(3) << i
+                  << " "
+                  << " spec.uri " << spec.uri 
+                  << " bufpath " << bufpath 
+                  << std::endl 
+                  ;
+
+        if(spec.ptr)
+        {
+            NPYBase* ptr = const_cast<NPYBase*>(spec.ptr);
+            ptr->save(bufpath);
+        }
+    }
+}
+
+template YOG_API int Maker::add_buffer<float>(NPY<float>*, const char* );
+template YOG_API int Maker::add_buffer<unsigned>(NPY<unsigned>*, const char* );
+
+
+} // namespace
+
 
 

@@ -228,7 +228,6 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
          mh->mesh = X4Mesh::Convert(solid) ; 
      }
 
-
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);

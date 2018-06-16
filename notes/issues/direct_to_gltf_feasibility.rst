@@ -185,16 +185,77 @@ YOG/YOGTF
 NEXT
 --------
 
-* create GMesh with X4Mesh
+* DONE : create GMesh with X4Mesh
 
 * describe GMesh buffers (just numpy underneath) 
   with GLTF buffers/bufferViews/accessors so standard GLTF renderers can render them
 
+  * hmm using GBuffer, npy not exposed 
+
 * need to hookup X4Solid conversion of G4VSolid into nnode into NCSG, 
   are missing boundary index... need materials first 
 
+* review boundary formation in AssimpGGeo and do equivalent in X4PhysicalVolume
+
 * review the mesh conversion, extras writing done in sc.py 
   and translate across into X4PhysicalVolume with YOG Sc etc..
+
+
+Describing buffers/bufferView/accessors
+-----------------------------------------
+
+Hmm need the equivalent of the below for GBuffer, as GMesh 
+still using GBuffer for vertices, indices, normals,
+
+::
+
+     763 template <typename T>
+     764 std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order) const
+     765 {
+     766     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
+     767     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
+     768     return aoba::BufferSize<T>(itemcount, itemshape.c_str(), header_only, fortran_order );
+     769 }
+     770 
+     771 template <typename T>
+     772 NPYBufferSpec NPY<T>::getBufferSpec() const
+     773 {
+     774     bool fortran_order = false ;
+     775     NPYBufferSpec spec ;
+     776     spec.bufferByteLength = getBufferSize(false, fortran_order );
+     777     spec.headerByteLength = getBufferSize(true, fortran_order );   // header_only
+     778     return spec ;
+     779 }
+
+     733 template <typename T>
+     734 NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) const // including the header 
+     735 {
+     736    // This enables saving NPY arrays into standards compliant gltf buffers
+     737    // allowing rendering by GLTF supporting renderers.
+     738 
+     739     NPYBufferSpec spec = getBufferSpec() ;
+     740 
+     741     bool fortran_order = false ;
+     742 
+     743     unsigned int itemcount = getShape(0);    // dimension 0, corresponds to "length/itemcount"
+     744 
+     745     std::string itemshape = getItemShape(1); // shape of dimensions > 0, corresponds to "item"
+     746 
+     747     vdst.clear();
+     748 
+     749     vdst.resize(spec.bufferByteLength);
+     750 
+     751     char* buffer = reinterpret_cast<char*>(vdst.data() ) ;
+     752 
+     753     std::size_t num_bytes = aoba::BufferSaveArrayAsNumpy<T>( buffer, fortran_order, itemcount, itemshape.c_str(), (T*)m_data.data() );
+     754 
+     755     assert( num_bytes == spec.bufferByteLength );
+     756 
+     757     assert( spec.headerByteLength == 16*5 || spec.headerByteLength == 16*6 ) ;
+     758 
+     759     return spec ;
+     760 }
+
 
 
 

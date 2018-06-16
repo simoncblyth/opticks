@@ -331,13 +331,15 @@ void NPY<T>::add(T x, T y, T z, T w)
 
 
 
+
 template <typename T>
 void NPY<T>::minmax(T& mi_, T& mx_)
 {
     unsigned int nv = getNumValues(0);
     T* vv = getValues();
 
-    T mx(std::numeric_limits<T>::min()); 
+    //T mx(std::numeric_limits<T>::min()); 
+    T mx(std::numeric_limits<T>::lowest()); 
     T mi(std::numeric_limits<T>::max()); 
 
     for(unsigned i=0 ; i < nv ; i++)
@@ -359,7 +361,8 @@ void NPY<T>::minmax_strided(T& mi_, T& mx_, unsigned stride, unsigned offset)
 
     T* vv = getValues();
 
-    T mx(std::numeric_limits<T>::min()); 
+    //T mx(std::numeric_limits<T>::min()); 
+    T mx(std::numeric_limits<T>::lowest()); 
     T mi(std::numeric_limits<T>::max()); 
 
     unsigned ns = nv/stride ; 
@@ -393,6 +396,22 @@ void NPY<T>::minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_)
     minmax_strided( mi_.z , mx_.z,  4, 2 );
     minmax_strided( mi_.w , mx_.w,  4, 3 );
 }
+
+
+template <typename T>
+void NPY<T>::minmax(std::vector<T>& min_,  std::vector<T>& max_)
+{
+    unsigned nelem = getNumElements(); 
+    min_.resize(nelem); 
+    max_.resize(nelem); 
+
+    for(unsigned i=0 ; i < nelem ; i++)
+    {
+        minmax_strided( min_[i] , max_[i],  nelem, i );
+    }
+}
+
+
 
 template <typename T>
 ntrange3<T> NPY<T>::minmax3()
@@ -731,12 +750,12 @@ void NPY<T>::save(const char* raw)
 
 
 template <typename T>
-NPYBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) const // including the header 
+NBufferSpec NPY<T>::saveToBuffer(std::vector<unsigned char>& vdst) const // including the header 
 {
    // This enables saving NPY arrays into standards compliant gltf buffers
    // allowing rendering by GLTF supporting renderers.
 
-    NPYBufferSpec spec = getBufferSpec() ;  
+    NBufferSpec spec = getBufferSpec() ;  
 
     bool fortran_order = false ; 
 
@@ -769,12 +788,15 @@ std::size_t NPY<T>::getBufferSize(bool header_only, bool fortran_order) const
 }
 
 template <typename T>
-NPYBufferSpec NPY<T>::getBufferSpec() const 
+NBufferSpec NPY<T>::getBufferSpec() const 
 {
     bool fortran_order = false ; 
-    NPYBufferSpec spec ;  
+    NBufferSpec spec ;  
     spec.bufferByteLength = getBufferSize(false, fortran_order );
     spec.headerByteLength = getBufferSize(true, fortran_order );   // header_only
+    spec.uri = "" ; 
+    spec.ptr = this ; 
+
     return spec ; 
 }
 

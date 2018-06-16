@@ -15,9 +15,6 @@ class G4Sphere ;
 class G4Orb ; 
 
 class G4VSolid ; 
-
-template <typename T> class NPY ;
-class GMesh ; 
 struct nnode ; 
 
 /**
@@ -87,7 +84,6 @@ class X4_API X4SolidBase
     protected:
         const G4VSolid* m_solid ;  
         const char*     m_name ; 
-        GMesh*          m_mesh ;
         X4Entity_t      m_entityType ; 
         const char*     m_entityName ; 
         nnode*          m_root ; 

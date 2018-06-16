@@ -31,6 +31,7 @@ set(SOURCES
     NPYConfig.cpp
 
     foo.cpp
+    NBufferSpec.cpp
     NPYBase.cpp
     NPYSpec.cpp
     NSlice.cpp
@@ -210,6 +211,7 @@ ucharfour.h
 charfour.h
 GLMPrint.hpp
 GLMFormat.hpp
+NBufferSpec.hpp
 NPYBase.hpp
 NPY.hpp
 NLoad.hpp

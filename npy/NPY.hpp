@@ -18,6 +18,7 @@
 #include "charfour.h"
 #include "numpy.hpp"
 
+#include "NBufferSpec.hpp"
 
 #include "NPYBase.hpp"
 #include "NPart.hpp"
@@ -75,18 +76,6 @@ with::
 
 **/
 
-
-struct NPY_API NPYBufferSpec 
-{  
-    std::size_t bufferByteLength ; 
-    std::size_t headerByteLength ; 
-
-    std::size_t dataSize()
-    {
-        return bufferByteLength - headerByteLength ; 
-    }
- 
-};
 
 
 template <class T>
@@ -150,7 +139,7 @@ class NPY_API NPY : public NPYBase {
 
    public:
        // to allow binary level access to NPY data from for example gltf tools
-       NPYBufferSpec getBufferSpec() const ;
+       NBufferSpec getBufferSpec() const ;
    private:
        std::size_t getBufferSize(bool header_only, bool fortran_order) const ;
    public:
@@ -165,7 +154,7 @@ class NPY_API NPY : public NPYBase {
        void save(const char* dir, const char* reldir, const char* name);
        void save(const char* tfmt, const char* targ, const char* tag, const char* det);
 
-       NPYBufferSpec saveToBuffer(std::vector<unsigned char>& vdst) const ;          // including the NPY header
+       NBufferSpec saveToBuffer(std::vector<unsigned char>& vdst) const ;          // including the NPY header
        static NPY<T>* loadFromBuffer(const std::vector<unsigned char>& vsrc); // buffer must include NPY header 
 
 
@@ -237,6 +226,7 @@ class NPY_API NPY : public NPYBase {
        void minmax(T& mi, T& mx);
        bool isConstant(T val);
     public:
+       void minmax(std::vector<T>& mi, std::vector<T>& mx);
        void minmax_strided(T& mi, T& mx, unsigned stride, unsigned offset);
        void minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_);
        void minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_);

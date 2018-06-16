@@ -4,7 +4,6 @@
 #include <string>
 #include <cstring>
 
-#include "X4Mesh.hh"
 #include "X4Solid.hh"
 #include "G4VSolid.hh"
 #include "PLOG.hh"
@@ -142,7 +141,6 @@ X4SolidBase::X4SolidBase( const G4VSolid* solid )
    :
    m_solid(solid),
    m_name(strdup(solid->GetName().c_str())),
-   m_mesh(X4Mesh::Convert(solid)),
    m_entityType(X4Entity::Type(solid->GetEntityType())),
    m_entityName(X4Entity::Name(m_entityType)),
    m_root(NULL)

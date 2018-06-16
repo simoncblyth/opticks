@@ -9,38 +9,26 @@
 class G4VSolid ; 
 struct nnode ; 
 
-
 /**
 X4Solid
 ==========
 
+Converts G4VSolid into OpticksCSG nnode trees, the number
+of nodes in the tree depends on G4VSolid parameter values, 
+eg whether an inner radius greater than zero is set, or phi 
+segments are set.
 
-/usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
+No tree balancing is implemented yet (see ../analytic/csg.py), 
+however polycone primitives are hung on a UnionTree and 
+the tree is pruned a bit using NTreeBuilder.
 
+TODO
+-----
 
-Converting to nnode OR NCSG ?
-------------------------------
-
-* NCSG is higher level focusing on tree transport/import/export 
-* nnode focuses on shape param, bbox, sdf : and is the base class for 
-  eg nbox, ncone, nsphere, nconvexpolyhedron, nunion, ...
-
-Thus nnode is the appropriate target, and NCSG has an nnode ctor : so can be 
-obtained later.
-
-
-Should names has pointer suffixes like GDML ? 
------------------------------------------------
-
-Probably NO as its a live conversion 
-(not via file) from one pointer to another : are not using 
-the name as a "pointer" reference. 
-
+* provide digest methods for each of the ~11 converted G4VSolid, 
+  so the geometry digest will notice changes to the solids
 
 **/
-
-
-
 
 class X4_API X4Solid : public X4SolidBase 
 {

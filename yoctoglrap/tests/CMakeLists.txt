@@ -7,6 +7,8 @@ include(OpticksBuildOptions)
 set(TEST_SOURCES
 
     YOGMakerTest.cc
+    YOGMakerMonolithicTest.cc
+
     YOGTest.cc
     YOGTFTest.cc
 

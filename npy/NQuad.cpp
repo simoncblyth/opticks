@@ -61,6 +61,17 @@ const char* ntvec3<T>::desc() const
     return strdup(desc.c_str());
 }
 
+template <typename T>
+const char* ntvec4<T>::desc() const
+{
+    std::stringstream ss ; 
+    ss << " (" << x << " " << y << " " << z << " " <<  w << ") " ;    
+    std::string desc = ss.str();
+    return strdup(desc.c_str());
+}
+
+
+
 
 
 const char* nvec4::desc() const 
@@ -92,4 +103,16 @@ template struct NPY_API ntvec3<int>;
 template struct NPY_API ntvec3<unsigned int>;
 template struct NPY_API ntvec3<unsigned long>;
 template struct NPY_API ntvec3<unsigned long long>;
+
+
+template struct NPY_API ntvec4<float>;
+template struct NPY_API ntvec4<double>;
+template struct NPY_API ntvec4<short>;
+template struct NPY_API ntvec4<int>;
+template struct NPY_API ntvec4<unsigned int>;
+template struct NPY_API ntvec4<unsigned long>;
+template struct NPY_API ntvec4<unsigned long long>;
+
+
+
 
