@@ -18,6 +18,7 @@ namespace YOG
 {
    struct Sc ; 
    struct Mh ; 
+   struct Nd ; 
    struct Maker ; 
 }
 
@@ -54,10 +55,13 @@ class X4_API X4PhysicalVolume
         void init();
     private:
         void TraverseVolumeTree(); 
+    private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
+    private:
         int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth);
+        YOG::Nd* convertNodeVisit(const G4VPhysicalVolume* const pv, int depth);
+        int  convertMaterialVisit(const G4Material* const material );
         void convertSolid( YOG::Mh* mh,  G4VSolid* solid);
-        void Visit(const G4LogicalVolume* const lv);
     private:
         const G4VPhysicalVolume*     m_top ;  
         const char*                  m_key ;  

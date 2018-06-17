@@ -44,9 +44,17 @@ void Maker::demo_create(const Geometry& geom)
     set_accessor_min_max( idx_a, geom.idx_minf, geom.idx_maxf );
 
 
-    int red_mat   = add_material(1,0,0); 
-    int green_mat = add_material(0,1,0); 
-    int blue_mat  = add_material(0,0,1); 
+    int red_mat   = add_material(); 
+    set_material_name( red_mat, "red");
+    configure_material( red_mat, 1,0,0);  
+
+    int green_mat = add_material(); 
+    set_material_name( green_mat, "green");
+    configure_material(green_mat, 0,1,0); 
+
+    int blue_mat  = add_material(); 
+    set_material_name( blue_mat, "blue");
+    configure_material(blue_mat, 0,0,1); 
 
     int red_mesh = impl->add_mesh();
     int green_mesh = impl->add_mesh();
@@ -55,6 +63,9 @@ void Maker::demo_create(const Geometry& geom)
     add_primitives_to_mesh( red_mesh, TRIANGLES, vtx_a, idx_a, red_mat );  
     add_primitives_to_mesh( green_mesh, TRIANGLES, vtx_a, idx_a, green_mat );  
     add_primitives_to_mesh( blue_mesh, TRIANGLES, vtx_a, idx_a, blue_mat );  
+
+    //  mesh primitives holds just an index pointer to the material, so 
+    //  a single material can be shared by multiple meshes 
 
 
     int a = impl->add_node();
@@ -117,14 +128,18 @@ void Maker::convert()
     {
         Mh* mh = sc->meshes[i] ; 
 
-        // reddish : placeholder, material should be coming down the pike : not invented here
-        // creating a material for every mesh, is just wrong... need 
-        // to collect sc->materials and define the association in the YOG model, not here
-        int mat = add_material(1,0,0);   
-        int m = impl->add_mesh(); 
-        //////////////////////////////
+        int mtIdx = mh->mtIdx ; // material
 
-        set_mesh_data( m,  mh,  mat ); 
+        int m = impl->add_mesh(); 
+        set_mesh_data( m,  mh,  mtIdx ); 
+    }
+
+    for(int i=0 ; i < sc->materials.size() ; i++ )
+    {
+        Mt* mt = sc->materials[i] ; 
+        int m = add_material(); 
+        configure_material_auto(m); 
+        set_material_name( m, mt->name ); 
     }
 }
 
@@ -307,7 +322,6 @@ void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, i
 {
     mesh_t& mh = impl->get_mesh(meshIdx) ; 
 
-
     mesh_primitive_t mp ; 
 
     mp.attributes = {{"POSITION", positionIdx }} ; 
@@ -340,7 +354,52 @@ void Maker::set_node_translation(int nodeIdx, float x, float y, float z)
     node.translation = {{ x, y, z }} ;  
 }
 
-int Maker::add_material(
+int Maker::add_material()
+{
+    int idx = impl->add_material();
+    return idx ; 
+}
+
+void Maker::set_material_name(int idx, const std::string& name)
+{
+    material_t& mt = impl->get_material(idx) ; 
+    mt.name = name ;  
+}
+
+
+
+/**
+configure_material_auto
+-------------------------
+
+Placeholder for arranging a different appearance 
+for each material.
+
+Considered propagating G4 VisAttributes, but 
+logvol hold those in G4 model, but in glTF mesh primitives
+hold the material index.  Model mismatch ?
+
+**/
+
+void Maker::configure_material_auto( int idx)
+{
+    switch(idx)
+    {
+        case 0:  configure_material(idx,  1.0, 0.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 1:  configure_material(idx,  0.0, 1.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 2:  configure_material(idx,  0.0, 0.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 3:  configure_material(idx,  1.0, 1.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 4:  configure_material(idx,  1.0, 0.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 5:  configure_material(idx,  0.0, 1.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 6:  configure_material(idx,  0.5, 0.5, 0.5, 1.0   ,0.5,0.1 ) ;  break ;  
+        default: configure_material(idx,  0.9, 0.9, 0.9, 1.0   ,0.5,0.1 ) ;  break ;  
+    }
+}
+
+
+
+void Maker::configure_material(
+     int idx, 
      float baseColorFactor_r, 
      float baseColorFactor_g, 
      float baseColorFactor_b, 
@@ -349,18 +408,14 @@ int Maker::add_material(
      float roughnessFactor 
     )
 {
-    material_pbrMetallicRoughness_t mr ; 
+    material_t& mt = impl->get_material(idx) ; 
 
+    material_pbrMetallicRoughness_t mr ; 
     mr.baseColorFactor =  {{ baseColorFactor_r, baseColorFactor_g, baseColorFactor_b, baseColorFactor_a }} ;
     mr.metallicFactor = metallicFactor ;
     mr.roughnessFactor = roughnessFactor ;
 
-    int idx = impl->add_material();
-    material_t& mt = impl->get_material(idx) ; 
-
     mt.pbrMetallicRoughness = mr ; 
-
-    return idx ;
 }
 
 void Maker::save(const char* path) const 

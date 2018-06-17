@@ -183,12 +183,45 @@ void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int dept
     m_lvidx[lv] = m_lvidx.size(); 
 }
 
+
+
+/**
+TraverseVolumeTree
+--------------------
+
+Moving convertNode to postorder position in the tail, 
+would avoid the separate IndexTraverse to give m_lvidx
+BUT preorder node indices (root being zero) are nicer, and would have to 
+collect vectors of child indices.
+
+The reason to keep using postorder indices is to 
+match GDML lvIdx.
+
+Note that its the YOG model that is updated, that gets
+converted to glTF later.  This is done to help keeping 
+this code independant of the actual glTF implementation 
+used.
+
+**/
+
 int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth)
 {
      const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
-     Visit(lv);
 
-         
+     Nd* nd = convertNodeVisit(pv, depth);
+
+     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
+     {
+         const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
+         int child_ndIdx = TraverseVolumeTree(child_pv,depth+1);
+         nd->children.push_back(child_ndIdx); 
+     }
+
+     return nd->ndIdx  ; 
+}
+
+Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int depth)
+{
      // rotation/translation of the Object relative to the mother
      G4RotationMatrix pv_rotation = pv->GetObjectRotationValue() ; 
      G4ThreeVector    pv_translation = pv->GetObjectTranslation() ;
@@ -196,11 +229,11 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
 
      glm::mat4* transform = new glm::mat4(X4Transform3D::Convert( pv_transform ));
 
-     // hmm moving this lot to postorder position in the tail, 
-     // would avoid the separate IndexTraverse to give m_lvidx
-     // BUT preorder node indices (root being zero) are nicer, and would have to 
-     // collect vectors of child indices 
+     const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
+     const G4Material* const material = lv->GetMaterial() ;
 
+     int materialIdx = convertMaterialVisit( material );
+ 
      G4VSolid* solid = lv->GetSolid();
 
      int lvIdx = m_lvidx[lv] ;  // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
@@ -212,6 +245,7 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
 
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
+                                 materialIdx,
                                  lvName,
                                  pvName,
                                  soName,
@@ -221,73 +255,66 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
                                  selected
                                );
 
-     Nd* nd = m_sc->nodes.back() ; 
-     assert( nd->ndIdx == ndIdx ) ; 
+     Nd* nd = m_sc->get_node(ndIdx) ; 
+     Mh* mh = m_sc->get_mesh_for_node( ndIdx ); 
+     if(mh->csg == NULL) convertSolid(mh, solid);
 
-     Mh* mh = m_sc->meshes[nd->soIdx];  
-     assert( mh );
-     assert( mh->soIdx == nd->soIdx );
-
-     if(mh->csg == NULL)
-     {
-         convertSolid(mh, solid);
-     }
-
-     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
-     {
-         const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
-         int daughter_ndIdx = TraverseVolumeTree(daughter_pv,depth+1);
-         nd->children.push_back(daughter_ndIdx); 
-     }
-
-     G4Material* material = lv->GetMaterial();
-     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
-     assert( mpt );
-     const std::string& matname_ = material->GetName(); 
-     const char* matname = matname_.c_str() ; 
-
-     if(!m_mlib->hasMaterial(matname))
-     { 
-         GMaterial* mat = X4Material::Convert(material) ; 
-         unsigned index = m_mlib->getNumMaterials();
-         mat->setIndex( index ); 
-         m_ggeo->add(mat);
-     }
-     return ndIdx  ; 
+     return nd ; 
 }
+
+/**
+convertMaterialVisit
+----------------------
+
+Recall the complication with material indices, need to 
+rearrange to make important materials have low indices
+for on-GPU step-by-step material tracing using small(4?) 
+numbers of bits to record the material 
+
+When does this reordering happen ?
+
+* Is that the source of the material lookups ?
+* There are also lookups into the boundary texture lines.
+**/
+
+int X4PhysicalVolume::convertMaterialVisit(const G4Material* const material )
+{
+    const std::string& matname_ = material->GetName(); 
+    const char* matname = matname_.c_str() ; 
+
+    int materialIdx = m_sc->add_material(matname_) ;  // only adds for new material names
+    if(!m_mlib->hasMaterial(matname))
+    { 
+        GMaterial* mat = X4Material::Convert(material) ; 
+        int mlibIdx = m_mlib->getNumMaterials();
+        mat->setIndex( mlibIdx ); 
+        m_ggeo->add(mat);  // huh: ggeo/mlib ? 
+        assert( materialIdx == mlibIdx );   
+    }
+    return materialIdx ; 
+}
+
+/**
+convertSolid
+-------------
+
+Converts G4VSolid into two things:
+
+1. analytic CSG nnode tree, boolean solids or polycones convert to trees of multiple nodes
+2. triangulated vertices and faces held in GMesh instance
+
+As YOG doesnt depend on GGeo, and as workaround for GMesh/GBuffer deficiencies 
+the source NPY arrays are also tacked on to the Mh instance.
+
+**/
 
 void X4PhysicalVolume::convertSolid( Mh* mh,  G4VSolid* solid)
 {
-     mh->csg = X4Solid::Convert(solid) ;     // analytic CSG nnode tree
-     GMesh* mesh = X4Mesh::Convert(solid) ;  // triangulated vertices, indices
+     mh->csg = X4Solid::Convert(solid) ;   
 
+     GMesh* mesh = X4Mesh::Convert(solid) ; 
      mh->mesh = mesh ; 
-     // avoiding GGeo dependency in YOG , and workaround GMesh/GBuffer deficiencies 
      mh->vtx = mesh->m_x4src_vtx ; 
-     mh->idx = mesh->m_x4src_idx ;
-
- 
+     mh->idx = mesh->m_x4src_idx ; 
 } 
-
-
-void X4PhysicalVolume::Visit(const G4LogicalVolume* const lv)
-{
-    const G4String lvname = lv->GetName();
-    G4VSolid* solid = lv->GetSolid();
-    G4Material* material = lv->GetMaterial();
-
-    const G4String geoname = solid->GetName() ;
-    const G4String matname = material->GetName();
-
-    if(m_verbosity > 1 )
-        LOG(info) << "X4PhysicalVolume::Visit"
-               << std::setw(20) << lvname
-               << std::setw(50) << geoname
-               << std::setw(20) << matname
-               ;
-}
-
-
-
-
 

@@ -37,6 +37,11 @@ struct Impl {
     { 
         return gltf->scenes.size() ;
     }
+    unsigned num_material() const 
+    { 
+        return gltf->materials.size() ;
+    }
+
     scene_t& get_scene(int idx)
     {
         assert( idx < gltf->scenes.size() );

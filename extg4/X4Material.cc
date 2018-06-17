@@ -66,14 +66,13 @@ void X4Material::init()
     const char* name = name_.c_str();
     unsigned index = 0 ;  // set the index on collecting into GMaterialLib
     m_mat = new GMaterial(name, index) ; 
-
+    assert( m_mpt );
     AddProperties( m_mat, m_mpt ); 
 }
 
 
 void X4Material::AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt)
 {
-
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = mpt->GetPropertiesMap() ;
 

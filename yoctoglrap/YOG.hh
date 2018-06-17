@@ -47,6 +47,7 @@ namespace YOG {
 
 struct Nd ; 
 struct Mh ; 
+struct Mt ; 
 
 struct YOG_API Sc 
 {
@@ -54,11 +55,13 @@ struct YOG_API Sc
 
     int  root ; 
     std::vector<Nd*>  nodes ; 
-    std::vector<Mh*>  meshes ; 
+    std::vector<Mh*>  meshes ;  // solids
+    std::vector<Mt*>  materials ; 
 
     std::string desc() const ;
 
     int add_node(int   lvIdx, 
+                 int   mtIdx,
                  const std::string& lvName, 
                  const std::string& pvName, 
                  const std::string& soName, 
@@ -69,11 +72,20 @@ struct YOG_API Sc
 
     int add_test_node(int lvIdx);
 
+    Nd* get_node(int nodeIdx) const ; 
+    Mh* get_mesh_for_node(int nodeIdx) const ; 
+
     int lv2so(int lvIdx) const ;
     bool has_mesh(int lvIdx) const ; 
+
     int add_mesh(int   lvIdx,
+                 int   mtIdx,
                  const std::string& lvName, 
                  const std::string& soName);
+
+    int add_material(const std::string& matName); 
+    int get_material_idx( const std::string& matName) const ;  // -1 if not found
+
 
 };
 
@@ -96,6 +108,7 @@ struct YOG_API Nd
 struct YOG_API Mh
 {
     int          lvIdx ; 
+    int          mtIdx ;   
     std::string lvName ; 
     std::string soName ;
     int          soIdx ; 
@@ -107,6 +120,16 @@ struct YOG_API Mh
 
     std::string desc() const ;
 };
+
+struct YOG_API Mt
+{
+    std::string name ; 
+    std::string desc() const ;
+};
+
+
+
+
 
 }  // namespace
 

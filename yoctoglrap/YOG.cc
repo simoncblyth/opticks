@@ -9,6 +9,16 @@
 
 namespace YOG {
 
+std::string Mt::desc() const 
+{
+    std::stringstream ss ; 
+    ss
+        << "Mt "
+        << std::setw(30) << name
+        ; 
+    return ss.str();
+}
+
 std::string Mh::desc() const 
 {
     std::stringstream ss ; 
@@ -82,7 +92,18 @@ bool Sc::has_mesh(int lvIdx) const
     return count == 1 ; 
 }
 
-int Sc::add_mesh(int lvIdx,
+/**
+add_mesh
+---------
+
+* only adds if no mesh with lvIdx is present already 
+
+
+**/
+
+int Sc::add_mesh(
+                 int lvIdx,
+                 int mtIdx,
                  const std::string& lvName, 
                  const std::string& soName)
 {
@@ -90,7 +111,7 @@ int Sc::add_mesh(int lvIdx,
     if(!has_mesh(lvIdx))
     {
         soIdx = meshes.size(); 
-        meshes.push_back(new Mh { lvIdx, lvName, soName, soIdx, NULL, NULL, NULL, NULL }) ;
+        meshes.push_back(new Mh { lvIdx, mtIdx, lvName, soName, soIdx, NULL, NULL, NULL, NULL }) ;
     }
     int soIdx2 = lv2so(lvIdx);
     if(soIdx > -1 ) assert( soIdx2 == soIdx ) ; // when a new mesh is added, can check local indices match
@@ -98,7 +119,38 @@ int Sc::add_mesh(int lvIdx,
 }
 
 
+int Sc::get_material_idx(const std::string& matName) const 
+{
+    int idx = -1 ; 
+    unsigned count(0); 
+    for(int i=0 ; i < materials.size() ; i++)
+    {
+        const Mt* mt = materials[i];
+        if(strcmp(mt->name.c_str(), matName.c_str()) == 0) 
+        {
+            idx = i ; 
+            count++ ; 
+        }
+    }
+    assert( count < 2 ); 
+    return idx ; 
+}
+
+
+int Sc::add_material(const std::string& matName)
+{
+    int idx = get_material_idx(matName) ;
+    if( idx == -1 )
+    {
+        idx = materials.size();
+        materials.push_back(new Mt { matName }); 
+    }     
+    return idx ; 
+}
+
+
 int Sc::add_node(int lvIdx, 
+                 int mtIdx,
                  const std::string& lvName, 
                  const std::string& pvName, 
                  const std::string& soName, 
@@ -107,8 +159,11 @@ int Sc::add_node(int lvIdx,
                  int depth, 
                  bool selected)
 {
-     int soIdx = add_mesh( lvIdx, lvName, soName);
+
+     int soIdx = add_mesh( lvIdx, mtIdx, lvName, soName);  
+
      assert( soIdx > -1 );  
+
      // soIdx is zero-based local index, lvIdx is an externally imposed index
 
      int ndIdx = nodes.size() ;
@@ -121,8 +176,28 @@ int Sc::add_node(int lvIdx,
      return ndIdx ; 
 }
 
+
+Nd* Sc::get_node(int nodeIdx) const 
+{
+    assert( nodeIdx < nodes.size() );
+    return nodes[nodeIdx] ;  
+}
+
+Mh* Sc::get_mesh_for_node(int nodeIdx) const 
+{
+    Nd* nd = get_node(nodeIdx) ; 
+    Mh* mh = meshes[nd->soIdx];  
+    assert( mh );
+    assert( mh->soIdx == nd->soIdx );
+    return mh ;  
+}
+
+
+
+
 int Sc::add_test_node(int lvIdx)
 {
+    int mtIdx = lvIdx ; 
     std::string lvName = BStr::concat<int>("lv", lvIdx, NULL) ;   
     std::string pvName = BStr::concat<int>("pv", lvIdx, NULL) ;   
     std::string soName = BStr::concat<int>("so", lvIdx, NULL) ;   
@@ -132,6 +207,7 @@ int Sc::add_test_node(int lvIdx)
     bool selected = true ;  
 
     int ndIdx = add_node(lvIdx, 
+                         mtIdx,
                          lvName, 
                          pvName, 
                          soName, 

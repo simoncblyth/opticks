@@ -56,7 +56,11 @@ struct YOG_API Maker
     int add_accessor( int bufferViewIdx, int count, Type_t type, ComponentType_t componentType ) ;
     void set_accessor_min_max(int accessorIdx, const std::vector<float>& minf , const std::vector<float>& maxf );
 
-    int add_material(
+    int add_material();
+    void set_material_name(int idx, const std::string& name);
+    void configure_material_auto( int idx);
+    void configure_material(
+        int idx, 
         float baseColorFactor_r=1.000, 
         float baseColorFactor_g=0.766, 
         float baseColorFactor_b=0.336, 
