@@ -40,23 +40,27 @@ extg4/X4PhysicalVolume
 extg4/X4Solid
 
    1. DONE: polygonize G4VSolid instances into vtx and tri NPY buffers 
-   2. TODO: get YOG to work with X4Solid instances, so can save them as GLTF
-   3. TODO: add analytic type info regarding the solid into ... hmm actually the
-      test solid is a sphere, the analytic GDML style info needs to be collected 
-      prior to descending to generic solid G4VSolid and somehow communicated thru to 
-      the X4VSolid 
-      ... perhaps static Create methods accepting the various types like G4Sphere etc.., 
-      which collect some ygltf json describing the type and its parameters 
-      look at (NCSG, nnode, GParts, sc.py, GDML) as thats where this data is headed
-      or is replacing.   
-      This json can be planted inside a mesh.extra property. 
-        
+   2. DONE: get YOG to work with X4Solid::convert results , so can save them as GLTF
+
+      * X4 is intended as an operator package to transform G4 volume trees
+        into Opticks equivalents described in NPY GGeo YOG language (not in X4)
+
+   3. NOT-NEEDED: add analytic type info regarding the eg G4Sphere into gltf json ?
+
+      * note that the glTF is a side product of the conversion that allows 
+        the cache to be visualized by glTF standard renderers, it does not 
+        need to contain all the information : just the metadata describing the 
+        buffers with the solid data and the node tree and transforms 
+
+      * G4VSolid are converted directly into nnode trees, and GMesh 
+        with no intermediary 
+
    For example to convert a G4VSolid into X4VSolid comprising 
    GMesh and GParts constituents
 
 
-Opticks early geocache assumption workaround
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+DONE : Opticks early geocache assumption workaround
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Can workaround okc.Opticks assuming a geocache too early, with 
 mimimal code changes if can come up with a geometry identity early, 
@@ -114,6 +118,13 @@ How to hookup OpticksHub with direct GGeo into g4ok.G4OpticksManager ?
 GLTF persisting of GGeo ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+* thats non-sensical : the glTF describes only whats needs to provide 
+  a render, it does not need to contain the full information (unlike COLLADA+GDML
+  or the Opticks geocache which do need to contain everything).
+  Thus there is no need to stuff material/surface optical properties into
+  the glTF, they can live quite happily in the geocache as they normally do and
+  not be mentioned at all in the glTF json.  This is because the glTF is now
+  regarded only as an output, not part of the geometry chain.
 
 * GGeo currently saved in Opticks geocache format (which is .npy and .txt files in 
   a directory structure)
@@ -122,8 +133,8 @@ GLTF persisting of GGeo ?
   top level .json in gltf dialect and referencing the NPY with the 
   meshes that can be visualized (hmm merged meshes)
   
-  * hmm this means forming the node tree in ygltf form, referencing GMesh/GSolid/GParts?
-    so it aint simple : but its fairly self contained
+  * DONE : hmm this means forming the node tree in ygltf form, so it aint simple : but its fairly self contained
+  * TODO: complete GGeo by pushing into GMesh/GSolid/GParts?
      
   * actually the hookup of the non-visualized content into extra tags in the GLTF 
     is not really needed 
@@ -187,7 +198,7 @@ NEXT
 
 * DONE : create GMesh with X4Mesh
 
-* describe GMesh buffers (just numpy underneath) 
+* DONE : describe GMesh buffers (just numpy underneath) 
   with GLTF buffers/bufferViews/accessors so standard GLTF renderers can render them
 
   * hmm using GBuffer, npy not exposed 

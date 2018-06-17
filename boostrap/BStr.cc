@@ -110,7 +110,7 @@ char* BStr::trimPointerSuffixPrefix(const char* origname, const char* prefix)
 {
     //  __dd__Materials__ADTableStainlessSteel0xc177178    0x is 9 chars from the end
     const char* ox = "0x" ;
-    char* name = strdup(origname);
+    char* name = strdup(origname);       // make a copy to modify 
     char* c = name + strlen(name) - 9 ;    
     if(strncmp(c, ox, strlen(ox)) == 0) *c = '\0';   // insert NULL to snip off the 0x tail
     if(prefix) name += strlen(prefix) ;
@@ -421,8 +421,18 @@ std::string BStr::ujoin( std::vector<unsigned>& elem, char delim)
 
 
 
-
-
+std::string BStr::join( const char* a, const char* b, const char* c, const char* d, char delim)
+{
+    std::stringstream ss ; 
+    if(a) ss << a ; 
+    ss << delim ; 
+    if(b) ss << b ; 
+    ss << delim ; 
+    if(c) ss << c ; 
+    ss << delim ; 
+    if(d) ss << d ; 
+    return ss.str();
+}
 
 
 int BStr::ekv_split( std::vector<std::pair<std::string, std::string> > & ekv, const char* line_, char edelim, const char* kvdelim)

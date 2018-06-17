@@ -4,10 +4,14 @@
 
 #include "G4VPhysicalVolume.hh"
 #include "G4LogicalVolume.hh"
+#include "G4LogicalSurface.hh"
+#include "G4LogicalSkinSurface.hh"
+#include "G4LogicalBorderSurface.hh"
 #include "G4Material.hh"
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
 
+#include "X4.hh"
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
 #include "X4Solid.hh"
@@ -28,6 +32,9 @@ using YOG::Maker ;
 #include "GGeo.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+#include "GBndLib.hh"
+
 #include "BOpticksKey.hh"
 #include "Opticks.hh"
 #include "SDigest.hh"
@@ -56,6 +63,8 @@ X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     m_ok(Opticks::GetOpticks()),  // Opticks instanciation must be after BOpticksKey::SetKey
     m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
+    m_slib(m_ggeo->getSurfaceLib()),
+    m_blib(m_ggeo->getBndLib()),
     m_sc(new YOG::Sc(0)),
     m_maker(new YOG::Maker(m_sc)),
     m_verbosity(m_ok->getVerbosity()),
@@ -82,8 +91,12 @@ void X4PhysicalVolume::TraverseVolumeTree()
      LOG(info) << " sc BEGIN " << m_sc->desc() ; 
 
      const G4VPhysicalVolume* pv = m_top ; 
-     IndexTraverse(pv, 0);
-     TraverseVolumeTree(pv, 0 );
+     const G4VPhysicalVolume* parent_pv = NULL ; 
+     int depth = 0 ;
+     int preorder = 0 ; 
+
+     IndexTraverse(pv, depth);
+     TraverseVolumeTree(pv, depth, preorder, parent_pv );
 
      LOG(info) << " sc END  " << m_sc->desc() ; 
 }
@@ -204,35 +217,102 @@ used.
 
 **/
 
-int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth)
+int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv )
 {
      const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
 
-     Nd* nd = convertNodeVisit(pv, depth);
-
+     Nd* nd = convertNodeVisit(pv, depth, parent_pv );
+     preorder += 1 ; 
+  
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-         int child_ndIdx = TraverseVolumeTree(child_pv,depth+1);
+         int child_ndIdx = TraverseVolumeTree(child_pv,depth+1, preorder,  pv );
          nd->children.push_back(child_ndIdx); 
      }
 
      return nd->ndIdx  ; 
 }
 
-Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int depth)
+/**
+X4PhysicalVolume::convertNodeVisit
+------------------------------------
+
+* cf AssimpGGeo::convertStructureVisit which returns GSolid (recall thats poorly named actually its "node" like)
+
+**/
+
+
+
+G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
 {
-     // rotation/translation of the Object relative to the mother
-     G4RotationMatrix pv_rotation = pv->GetObjectRotationValue() ; 
+     G4LogicalSurface* surf = NULL ; 
+
+     surf = G4LogicalBorderSurface::GetSurface(a, b) ;
+
+     const G4VPhysicalVolume* const first  = first_priority ? a : b ; 
+     const G4VPhysicalVolume* const second = first_priority ? b : a ; 
+
+     if(surf == NULL)
+         surf = G4LogicalSkinSurface::GetSurface(first ? first->GetLogicalVolume() : NULL );
+
+     if(surf == NULL)
+         surf = G4LogicalSkinSurface::GetSurface(second ? second->GetLogicalVolume() : NULL );
+
+     return surf ; 
+}
+
+
+Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const pv_p )
+{
+
+     G4RotationMatrix pv_rotation = pv->GetObjectRotationValue() ;  // obj relative to mother
      G4ThreeVector    pv_translation = pv->GetObjectTranslation() ;
      G4Transform3D    pv_transform(pv_rotation,pv_translation);
 
      glm::mat4* transform = new glm::mat4(X4Transform3D::Convert( pv_transform ));
 
-     const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
-     const G4Material* const material = lv->GetMaterial() ;
+     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
+     const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
-     int materialIdx = convertMaterialVisit( material );
+     const G4Material* const imat = lv->GetMaterial() ;
+     const G4Material* const omat = lv_p ? lv_p->GetMaterial() : imat ;   
+     // treat parent of world as same material as world
+
+     bool first_priority = true ;  
+     const G4LogicalSurface* const isur = findSurface( pv  , pv_p , first_priority );
+     const G4LogicalSurface* const osur = findSurface( pv_p, pv   , first_priority );  
+     // doubtful of this, see g4op-
+
+    /*
+     GBndLib::addBoundary requires getting the indices for the materials
+     and surfaces, but that triggers closure of the libs... which should
+     be done only when the traverse is complete.  
+
+     Hmm, perhaps do an initial traverse to collect all 
+     materials and surfaces, then close mlib and slib before 
+     this traverse.   
+
+     Actually do not need to traverse to find all materials
+     and surfaces just convert them from their stores.  Having more
+     than are used is not a problem.
+
+     unsigned boundary_ = m_blib->addBoundary( 
+                                                X4::ShortName(omat),  
+                                                X4::ShortName(osur),                   
+                                                X4::ShortName(isur),  
+                                                X4::ShortName(imat)       
+                                            );   
+     */
+     std::string boundary = BStr::join(
+                                        X4::ShortName(omat), 
+                                        X4::ShortName(osur),
+                                        X4::ShortName(isur),
+                                        X4::ShortName(imat)
+                                       ) ;
+
+
+     int materialIdx = convertMaterialVisit( imat );
  
      G4VSolid* solid = lv->GetSolid();
 
@@ -240,7 +320,6 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
      const std::string& lvName = lv->GetName() ;
      const std::string& pvName = pv->GetName() ; 
      const std::string& soName = solid->GetName() ; 
-     const std::string& boundary = "" ; 
      bool selected  = true ; 
 
      int ndIdx = m_sc->add_node(

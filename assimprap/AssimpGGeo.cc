@@ -799,39 +799,12 @@ void AssimpGGeo::convertStructure(GGeo* gg)
               << " outborder " << m_outborder_surface 
               << " inborder " << m_inborder_surface 
               << " no " << m_no_surface  ;
-
-    //gg->reportMeshUsage("AssimpGGeo::convertStructure reportMeshUsage");
-
-
-/*
-  // trying to avoi copy meshes
-    if(m_selection)
-    {
-
-        LOG(info) << __func__ 
-                  << " m_selection: " << m_selection
-                  << " NumSelected " << m_selection->getNumSelected() 
-                  ;
-        aiVector3D* alow  = m_selection->getLow() ;
-        gfloat3 low(alow->x, alow->y, alow->z);
-
-        aiVector3D* ahigh = m_selection->getHigh() ;
-        gfloat3 high(ahigh->x, ahigh->y, ahigh->z);
-
-        gg->setLow(low);
-        gg->setHigh(high);
-    }
-*/
-
-
-    //gg->Summary("AssimpGGeo::convertStructure");
 }
 
 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
 {
     // recursive traversal of the AssimpNode tree
     // note that full tree is traversed even when a partial selection is applied 
-
 
     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
 

@@ -2,6 +2,7 @@
 
 #include <map>
 
+class G4LogicalSurface ; 
 class G4LogicalVolume ; 
 class G4VPhysicalVolume ; 
 class G4VSolid ; 
@@ -12,6 +13,8 @@ class G4VSolid ;
 
 class GGeo ; 
 class GMaterialLib ; 
+class GSurfaceLib ; 
+class GBndLib ; 
 class Opticks ; 
 
 namespace YOG 
@@ -58,17 +61,22 @@ class X4_API X4PhysicalVolume
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
     private:
-        int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth);
-        YOG::Nd* convertNodeVisit(const G4VPhysicalVolume* const pv, int depth);
+        int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
+        YOG::Nd* convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const parent_pv );
         int  convertMaterialVisit(const G4Material* const material );
         void convertSolid( YOG::Mh* mh,  G4VSolid* solid);
+        G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
     private:
         const G4VPhysicalVolume*     m_top ;  
         const char*                  m_key ;  
         bool                         m_keyset ; 
         Opticks*                     m_ok ; 
+    private:
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 
+        GSurfaceLib*                 m_slib ; 
+        GBndLib*                     m_blib ; 
+    private:
         YOG::Sc*                     m_sc ; 
         YOG::Maker*                  m_maker ; 
         int                          m_verbosity ; 

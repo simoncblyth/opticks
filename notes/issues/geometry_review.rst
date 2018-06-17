@@ -80,6 +80,10 @@ Nd
     was just used as a convienent way to pass structure from the python 
     gdml parser into Opticks C++ (NScene).
 
+YOG::Nd,Sc,Mh
+    translation of sc.py used for live conversion of G4 volume tree into 
+    renderable glTF using YOG::Maker
+
 
 NCSG
     coordinator for NPY arrays of small numbers of nodes, transforms, planes for 
@@ -536,6 +540,47 @@ G4Hype vs Opticks CSG_HYPERBOLOID : can I relate them ?
      595 
 
 
+
+Forming Boundaries
+---------------------
+
+
+AssimpGGeo::convertStructure
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+::
+
+     830 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+     831 {
+     832     // recursive traversal of the AssimpNode tree
+     833     // note that full tree is traversed even when a partial selection is applied 
+     834 
+     835 
+     836     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+     837 
+     838     bool selected = m_nosel ? true : m_selection && m_selection->contains(node) ;   // twas hotspot for geocache creation before nosel special case
+     839 
+     840     solid->setSelected(selected);
+     841 
+     842     gg->add(solid);
+     843 
+     844     if(parent) // GNode hookup
+     845     {
+     846         parent->addChild(solid);
+     847         solid->setParent(parent);
+     848     }
+     849     else
+     850     {
+     851         assert(node->getIndex() == 0);   // only root node has no parent 
+     852     }
+     853 
+     854     for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1, solid);
+     855 }
+
+
+
+GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* /*parent*/)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
 
