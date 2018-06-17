@@ -2,12 +2,6 @@
 #include <iostream>
 #include <fstream>
 
-#define TEMPORARY 1
-#ifdef TEMPORARY
-#include "NNode.hpp"
-//#include "GMesh.hh"
-#endif
-
 #include "YOGTF.hh"
 
 using ygltf::glTF_t ; 
@@ -28,13 +22,6 @@ TF::TF( Sc* sc_ )
     gltf(NULL)
 {   
 }
-
-/**
-TF
-===
-
-* creation of gltf is deferred until convert 
-**/
 
 
 void TF::convert()
@@ -63,12 +50,7 @@ void TF::convert()
         Mh* mh = sc->meshes[i] ; 
 
         mesh_t mesh ; 
-        mesh.name = mh->soName ;  // 
-
-#ifdef TEMPORARY
-        mesh.extras["csg.desc"] = mh->csg ? mh->csg->tag() : "-" ; 
-     //   mesh.extras["mesh.desc"] = mh->mesh ? mh->mesh->desc() : "-" ; 
-#endif
+        mesh.name = mh->soName ;  
 
         gltf->meshes.push_back(mesh) ; 
     }

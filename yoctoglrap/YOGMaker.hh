@@ -3,16 +3,8 @@
 #include <string>
 #include <vector>
 
-#include "YGLTF.h"
 #include "NBufferSpec.hpp"
 #include "YOG_API_EXPORT.hh"
-
-namespace ygltf 
-{
-    struct glTF_t ;   
-    struct node_t ;
-    struct mesh_t ;
-}
 
 template <typename T> class NPY ;
 
@@ -20,8 +12,21 @@ template <typename T> class NPY ;
 YOGMaker
 ==========
 
-This focusses on attempting to create renderable GLTF 
-by providing the metadata to describe the buffers. 
+* creates renderable glTF by providing the metadata 
+  to describe the Opticks geocache buffers. 
+
+
+
+Dependencies
+-------------
+
+Note that there is no dependency on the glTF implementation 
+in this header, that is hidden inside YOGMakerImpl.hh and YOGMaker.cc 
+
+The motivation for this arrangement is to isolate users of YOG::Maker
+such as X4PhysicalVolume from the specific glTF implementation in use.
+
+
 
 **/
 
@@ -30,6 +35,8 @@ namespace YOG {
 struct Sc ; 
 struct Mh ; 
 struct Geometry ;
+
+struct Impl ; 
 
 typedef enum { SCALAR, VEC2, VEC3, VEC4, MAT2, MAT3, MAT4 } Type_t ; 
 typedef enum { BYTE, UNSIGNED_BYTE, SHORT, UNSIGNED_SHORT, UNSIGNED_INT, FLOAT} ComponentType_t ;
@@ -73,18 +80,13 @@ struct YOG_API Maker
     int add_node() ;
     void set_node_mesh(int nodeIdx, int meshIdx);
     void set_node_translation(int nodeIdx, float x, float y, float z);
-
-    ygltf::scene_t& get_scene(int idx=0);
-    ygltf::mesh_t& get_mesh(int idx);
-    ygltf::node_t& get_node(int idx);
-    ygltf::accessor_t& get_accessor(int idx);
-
     void save( const char* path) const ; 
     void saveBuffers(const char* path) const ;
 
 
     Sc*                      sc ;  
-    ygltf::glTF_t*           gltf ; 
+    Impl*                    impl ; 
+
     bool                     saveNPYToGLTF ; 
     bool                     converted ; 
     std::vector<NBufferSpec> specs ; 

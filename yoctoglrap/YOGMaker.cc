@@ -7,6 +7,8 @@
 #include "BStr.hh"
 #include "NPY.hpp"
 
+#include "YGLTF.h"
+
 #include "YOG.hh"
 #include "YOGMaker.hh"
 #include "YOGGeometry.hh"
@@ -23,10 +25,14 @@ using ygltf::buffer_data_t ;
 using ygltf::bufferView_t ; 
 using ygltf::accessor_t ; 
 
+#include "YOGMakerImpl.hh"
+
 namespace YOG {
 
 void Maker::demo_create(const Geometry& geom)
 {
+    assert( sc ) ; 
+
     int vtx_b = add_buffer<float>(geom.vtx, "subfold/subsubfold/vtx.npy");
     int vtx_v = add_bufferView(vtx_b, ARRAY_BUFFER );
     int vtx_a = add_accessor( vtx_v, geom.count,  VEC3,  FLOAT );  
@@ -42,18 +48,18 @@ void Maker::demo_create(const Geometry& geom)
     int green_mat = add_material(0,1,0); 
     int blue_mat  = add_material(0,0,1); 
 
-    int red_mesh = add_mesh();
-    int green_mesh = add_mesh();
-    int blue_mesh = add_mesh();
+    int red_mesh = impl->add_mesh();
+    int green_mesh = impl->add_mesh();
+    int blue_mesh = impl->add_mesh();
 
     add_primitives_to_mesh( red_mesh, TRIANGLES, vtx_a, idx_a, red_mat );  
     add_primitives_to_mesh( green_mesh, TRIANGLES, vtx_a, idx_a, green_mat );  
     add_primitives_to_mesh( blue_mesh, TRIANGLES, vtx_a, idx_a, blue_mat );  
 
 
-    int a = add_node();
-    int b = add_node();
-    int c = add_node();
+    int a = impl->add_node();
+    int b = impl->add_node();
+    int c = impl->add_node();
 
     set_node_mesh(a, red_mesh);
     set_node_mesh(b, green_mesh);
@@ -63,7 +69,7 @@ void Maker::demo_create(const Geometry& geom)
     set_node_translation(b,  0.f, 1.f, 0.f); 
     set_node_translation(c,  0.f, 0.f, 1.f); 
 
-    add_scene();
+    impl->add_scene();
 
     append_node_to_scene( a );
     //append_node_to_scene( b );
@@ -75,11 +81,11 @@ void Maker::demo_create(const Geometry& geom)
 
 
 Maker::Maker(Sc* sc_, bool saveNPYToGLTF_ )  
-   :
-   sc(sc_),
-   gltf(new glTF_t()),
-   saveNPYToGLTF(saveNPYToGLTF_),
-   converted(false)
+    :
+    sc(sc_),
+    impl(new Impl),
+    saveNPYToGLTF(saveNPYToGLTF_),
+    converted(false)
 {
 }
 
@@ -88,15 +94,18 @@ void Maker::convert()
     assert( converted == false );
     converted = true ; 
 
-    add_scene();
-    append_node_to_scene( sc->root );
+    if(impl->num_scene() == 0 )
+    {
+        impl->add_scene();
+        append_node_to_scene( sc->root );
+    }
 
     for(int i=0 ; i < sc->nodes.size() ; i++ )
     {
         Nd* nd = sc->nodes[i] ; 
 
-        int n = add_node();
-        node_t& node = get_node(n) ;
+        int n = impl->add_node();
+        node_t& node = impl->get_node(n) ;
  
         node.name = nd->name ;  // pvName 
         node.mesh = nd->soIdx ; 
@@ -112,7 +121,7 @@ void Maker::convert()
         // creating a material for every mesh, is just wrong... need 
         // to collect sc->materials and define the association in the YOG model, not here
         int mat = add_material(1,0,0);   
-        int m = add_mesh(); 
+        int m = impl->add_mesh(); 
         //////////////////////////////
 
         set_mesh_data( m,  mh,  mat ); 
@@ -121,11 +130,8 @@ void Maker::convert()
 
 void Maker::set_mesh_data( int meshIdx, Mh* mh, int materialIdx )
 {   
-    mesh_t& mesh = get_mesh(meshIdx) ;
+    mesh_t& mesh = impl->get_mesh(meshIdx) ;
     mesh.name = mh->soName ;  // 
-#ifdef TEMPORARY
-    mesh.extras["csg.desc"] = mh->csg ? mh->csg->tag() : "-" ; 
-#endif
 
     int vtx_a = set_mesh_data_vertices( mh );
     int idx_a = set_mesh_data_indices( mh );
@@ -211,26 +217,27 @@ int Maker::add_buffer( NPY<T>* npy, const char* uri )
     spec.uri = uri ; 
     assert( spec.ptr == (void*)npy );
 
-    buffer_t bu ; 
+    int idx = impl->add_buffer();
+    buffer_t& bu = impl->get_buffer(idx)  ; 
+
     bu.uri = uri ; 
     bu.byteLength = spec.bufferByteLength ; 
 
-    if( saveNPYToGLTF )
+    if( saveNPYToGLTF ) // copy data from NPY buffer into glTF buffer
     {
         npy->saveToBuffer( bu.data ) ; 
     }
 
-    int buIdx = gltf->buffers.size() ; 
-    gltf->buffers.push_back( bu );
-
-    return buIdx ; 
+    return idx ; 
 }
 
 int Maker::add_bufferView( int bufferIdx, TargetType_t targetType )
 {
     const NBufferSpec& spec = specs[bufferIdx] ;  
 
-    bufferView_t bv ;  
+    int idx = impl->add_bufferView();
+    bufferView_t& bv = impl->get_bufferView(idx) ;  
+
     bv.buffer = bufferIdx  ;
     bv.byteOffset = spec.headerByteLength ; // offset to skip the NPY header 
     bv.byteLength = spec.dataSize() ;
@@ -242,14 +249,14 @@ int Maker::add_bufferView( int bufferIdx, TargetType_t targetType )
     }
     bv.byteStride = 0 ; 
 
-    int bufferViewIdx = gltf->bufferViews.size() ; 
-    gltf->bufferViews.push_back( bv );
-    return bufferViewIdx ;
+    return idx ;
 }
 
 int Maker::add_accessor( int bufferViewIdx, int count, Type_t type, ComponentType_t componentType ) 
 {
-    accessor_t ac ; 
+    int idx = impl->add_accessor();
+    accessor_t& ac = impl->get_accessor(idx) ; 
+
     ac.bufferView = bufferViewIdx ; 
     ac.byteOffset = 0 ;
     ac.count = count ; 
@@ -274,83 +281,32 @@ int Maker::add_accessor( int bufferViewIdx, int count, Type_t type, ComponentTyp
         case UNSIGNED_INT   : ac.componentType = accessor_t::componentType_t::unsigned_int_t   ; break ; 
         case FLOAT          : ac.componentType = accessor_t::componentType_t::float_t          ; break ; 
     }
-
-    int accessorIdx = gltf->accessors.size() ; 
-    gltf->accessors.push_back( ac );
-
-    return accessorIdx ;
+    return idx ;
 }
 
 void Maker::set_accessor_min_max(int accessorIdx, const std::vector<float>& minf , const std::vector<float>& maxf )
 {
-    accessor_t& ac = get_accessor(accessorIdx);
+    accessor_t& ac = impl->get_accessor(accessorIdx);
     ac.min = minf ; 
     ac.max = maxf ; 
 }
 
-int Maker::add_mesh()
-{
-    int meshIdx = gltf->meshes.size() ; 
-    mesh_t mh ; 
-    gltf->meshes.push_back( mh );
-    return meshIdx ;
-}
-
-int Maker::add_scene()
-{
-    int sceneIdx = gltf->scenes.size() ; 
-    scene_t sc ; 
-    gltf->scenes.push_back( sc );
-    return sceneIdx ;
-}
-
-int Maker::add_node()
-{
-    int nodeIdx = gltf->nodes.size() ; 
-    node_t nd ; 
-    gltf->nodes.push_back( nd );
-    return nodeIdx ;
-}
-
 void Maker::append_node_to_scene(int nodeIdx, int sceneIdx)
 {
-    scene_t& sc = get_scene(sceneIdx);
+    scene_t& sc = impl->get_scene(sceneIdx);
     sc.nodes.push_back(nodeIdx); 
 }
 
 void Maker::append_child_to_node(int childIdx, int nodeIdx ) 
 {
-    node_t& nd = get_node(nodeIdx);
+    node_t& nd = impl->get_node(nodeIdx);
     nd.children.push_back(childIdx); 
 }
 
-scene_t& Maker::get_scene(int idx)
-{
-    assert( idx < gltf->scenes.size() );
-    return gltf->scenes[idx] ; 
-}
-mesh_t& Maker::get_mesh(int idx)
-{
-    assert( idx < gltf->meshes.size() );
-    return gltf->meshes[idx] ; 
-}
-node_t& Maker::get_node(int idx)
-{
-    assert( idx < gltf->nodes.size() );
-    return gltf->nodes[idx] ; 
-}
-accessor_t& Maker::get_accessor(int idx)
-{
-    assert( idx < gltf->accessors.size() );
-    return gltf->accessors[idx] ; 
-}
-
-
-
 void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, int indicesIdx, int materialIdx )
 {
-    assert( meshIdx < gltf->meshes.size() );
-    mesh_t& mh = gltf->meshes[meshIdx] ; 
+    mesh_t& mh = impl->get_mesh(meshIdx) ; 
+
 
     mesh_primitive_t mp ; 
 
@@ -374,13 +330,13 @@ void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, i
 
 void Maker::set_node_mesh(int nodeIdx, int meshIdx)
 {
-    node_t& node = get_node(nodeIdx) ;  
+    node_t& node = impl->get_node(nodeIdx) ;  
     node.mesh = meshIdx ;  
 }
 
 void Maker::set_node_translation(int nodeIdx, float x, float y, float z)
 {
-    node_t& node = get_node(nodeIdx) ;  
+    node_t& node = impl->get_node(nodeIdx) ;  
     node.translation = {{ x, y, z }} ;  
 }
 
@@ -394,30 +350,30 @@ int Maker::add_material(
     )
 {
     material_pbrMetallicRoughness_t mr ; 
+
     mr.baseColorFactor =  {{ baseColorFactor_r, baseColorFactor_g, baseColorFactor_b, baseColorFactor_a }} ;
     mr.metallicFactor = metallicFactor ;
     mr.roughnessFactor = roughnessFactor ;
 
-    material_t mt ; 
+    int idx = impl->add_material();
+    material_t& mt = impl->get_material(idx) ; 
+
     mt.pbrMetallicRoughness = mr ; 
 
-    int materialIdx = gltf->materials.size() ; 
-    gltf->materials.push_back( mt );
-    return materialIdx ;
+    return idx ;
 }
 
 void Maker::save(const char* path) const 
 {
     assert( converted == true );
 
-    bool save_bin = saveNPYToGLTF ; 
-    bool save_shaders = false ; 
-    bool save_images = false ; 
-
     bool createDirs = true ; 
     BFile::preparePath(path, createDirs); 
 
-    save_gltf(path, gltf, save_bin, save_shaders, save_images);
+    bool save_bin = saveNPYToGLTF ; 
+
+    impl->save(path, save_bin); 
+
     std::cout << "writing " << path << std::endl ; 
 
     std::ifstream fp(path);
@@ -462,8 +418,5 @@ void Maker::saveBuffers(const char* path) const
 template YOG_API int Maker::add_buffer<float>(NPY<float>*, const char* );
 template YOG_API int Maker::add_buffer<unsigned>(NPY<unsigned>*, const char* );
 
-
 } // namespace
-
-
 

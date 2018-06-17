@@ -21,6 +21,7 @@ set(SOURCES
     YOGTF.cc
 
     YOGMaker.cc
+    YOGMakerImpl.cc
     YOGGeometry.cc
 )
 
@@ -30,6 +31,7 @@ SET(HEADERS
     YOGTF.hh
 
     YOGMaker.hh
+    YOGMakerImpl.hh
     YOGGeometry.hh
 
     YOG_LOG.hh

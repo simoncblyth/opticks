@@ -1,9 +1,13 @@
 
 #include "OPTICKS_LOG.hh"
+#include "BFile.hh"
+
 #include "YOGMaker.hh"
+#include "YOG.hh"
 #include "YOGGeometry.hh"
 
 using YOG::Geometry ; 
+using YOG::Sc ; 
 using YOG::Maker ; 
 
 void test_demo_geom()
@@ -11,20 +15,20 @@ void test_demo_geom()
     Geometry geom(3) ; 
     geom.make_triangle();
 
-    Maker ym(NULL) ; 
+    Sc* sc = new Sc(0) ;  
+    Maker ym(sc) ; 
     ym.demo_create(geom); 
 
-    const char* path = "/tmp/YOGMakerTest/YOGMakerTest.gltf" ; 
+    std::string path = BFile::FormPath("$TMP/yoctoglrap/tests/YOGMakerTest/YOGMakerTest.gltf");
 
     ym.convert();
-    ym.save(path);
+    ym.save(path.c_str());
 }
-
 
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv); 
+    OPTICKS_LOG(argc, argv); 
 
     test_demo_geom();
 

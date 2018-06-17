@@ -28,6 +28,16 @@ The YOG model follows that provided in ../analytic/sc.py
 which was used to convert a parsed GDML into non-renderable
 GLTF for consumption by NGLTF/NScene.
 
+* NB there is no public or private dependency of 
+  YOG model on YoctoGL, it sits atop NPY : so it should live there perhaps ?
+
+  * but NPY has gotten far to big, need to split that up : before 
+    deciding where to put YOG 
+  * the GMesh is held just as a pointer, despite no use of GGeo 
+  * YoctoGLRap : SysRap NPY YoctoGL  
+
+
+
 **/
 
 struct nnode ; 

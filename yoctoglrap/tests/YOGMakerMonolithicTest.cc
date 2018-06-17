@@ -8,8 +8,13 @@
 #include "BFile.hh"
 #include "NPY.hpp"
 
+#include "YGLTF.h"
+
+#include "YOG.hh"
 #include "YOGMaker.hh"
+#include "YOGMakerImpl.hh"
 #include "YOGGeometry.hh"
+
 
 using ygltf::glTF_t ; 
 using ygltf::node_t ; 
@@ -24,6 +29,7 @@ using ygltf::bufferView_t ;
 using ygltf::accessor_t ; 
 
 using YOG::Geometry ; 
+using YOG::Sc ; 
 using YOG::Maker ; 
 
 
@@ -39,14 +45,16 @@ void demo_create_monolithic( Maker& mk, const Geometry& geom )
     NBufferSpec vtx_spec = geom.vtx->getBufferSpec();
     NBufferSpec idx_spec = geom.idx->getBufferSpec();
 
-    
-    std::vector<scene_t>& scenes = mk.gltf->scenes ; 
-    std::vector<node_t>& nodes = mk.gltf->nodes ; 
-    std::vector<buffer_t>& buffers = mk.gltf->buffers ; 
-    std::vector<bufferView_t>& bufferViews = mk.gltf->bufferViews ; 
-    std::vector<accessor_t>& accessors = mk.gltf->accessors ; 
-    std::vector<mesh_t>& meshes = mk.gltf->meshes ; 
-    std::vector<material_t>& materials = mk.gltf->materials ; 
+
+    ygltf::glTF_t* gltf = mk.impl->gltf ; 
+
+    std::vector<scene_t>& scenes = gltf->scenes ; 
+    std::vector<node_t>& nodes = gltf->nodes ; 
+    std::vector<buffer_t>& buffers = gltf->buffers ; 
+    std::vector<bufferView_t>& bufferViews = gltf->bufferViews ; 
+    std::vector<accessor_t>& accessors = gltf->accessors ; 
+    std::vector<mesh_t>& meshes = gltf->meshes ; 
+    std::vector<material_t>& materials = gltf->materials ; 
 
     node_t no0 ; 
     no0.mesh = 0 ; 
@@ -147,24 +155,22 @@ void demo_create_monolithic( Maker& mk, const Geometry& geom )
 
 
 
-
-
-
-
-
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv); 
+    OPTICKS_LOG(argc, argv); 
 
     Geometry geom(3) ; 
     geom.make_triangle();
 
-    Maker ym ; 
+    Sc* sc = new Sc(0) ;  
+    Maker ym(sc) ; 
 
     demo_create_monolithic(ym, geom);
 
-    bool monolithic = true ; 
-    std::string path = BStr::concat<int>("/tmp/YOGMakerTest/YOGMakerTest_", int(monolithic),".gltf") ; 
+    std::string path = BFile::FormPath("$TMP/yoctoglrap/tests/YOGMakerMonolithicTest/YOGMakerMonolithicTest.gltf");
+
+    ym.convert();
+
     ym.save(path.c_str());
 
     return 0 ; 

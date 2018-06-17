@@ -15,7 +15,7 @@ int main(int argc, char** argv)
     Sc sc ; 
     LOG(info) << sc.desc() ; 
 
-    for(int i=0 ; i < 100 ; i++)
+    for(int i=0 ; i < 10 ; i++)
     {
         int ndIdx = sc.add_test_node(i);
         assert( ndIdx == i ); 

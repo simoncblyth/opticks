@@ -10,29 +10,24 @@
 #include "YOG_API_EXPORT.hh"
 
 /**
-YOGTF
+YOG::TF
 ===========
 
-* ../analytic/sc.py
+* creates simple subset of glTF, for creation of full renderable glTF see YOGMaker
+* following ../analytic/sc.py
+* creation of gltf is deferred until convert 
 
 **/
 
 namespace ygltf 
 {
     struct glTF_t ;   
-    struct fl_gltf ;
-    struct fl_mesh ;
-    struct node_t ;
-    struct mesh_t ;
 }
 
 namespace YOG 
 {
-   struct Sc ; 
-}
 
-namespace YOG 
-{
+struct Sc ; 
 
 struct YOG_API TF 
 {
@@ -44,7 +39,6 @@ struct YOG_API TF
     void convert();
     void save(const char* path);
 };
-
 
 } // namespace
 
