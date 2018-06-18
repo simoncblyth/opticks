@@ -1,3 +1,4 @@
+#include "Opticks.hh"
 #include "GMaterialLib.hh"
 #include "X4MaterialTable.hh"
 #include "X4OpNoviceMaterials.hh"
@@ -5,13 +6,18 @@
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     X4OpNoviceMaterials opnov ; 
 
     assert( opnov.water && opnov.air ) ; 
 
-    GMaterialLib* mlib = X4MaterialTable::Convert() ; 
+    Opticks ok(argc, argv);
+    ok.configure();
+
+    GMaterialLib* mlib = new GMaterialLib(&ok);
+
+    X4MaterialTable::Convert(mlib) ; 
 
     assert( mlib->getNumMaterials() == 2 ); 
 

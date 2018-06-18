@@ -57,7 +57,9 @@ class X4_API X4PhysicalVolume
     private:
         void init();
     private:
-        void TraverseVolumeTree(); 
+        void convertMaterials(); 
+        void convertSurfaces(); 
+        void convertStructure(); 
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
     private:

@@ -10,26 +10,27 @@ class Opticks ;
 X4MaterialTable
 ===========================
 
-G4MaterialTable is a typedef to a vector of G4Material*, 
-the Opticks analog is GMaterialLib.  X4MaterialTable 
-converts to Opticks.
+void X4MaterialTable::Convert(GMaterialLib* mlib) 
+---------------------------------------------------
 
+Converts all G4Material from the static G4MaterialTable 
+into Opticks GMaterial and adds them to the GMaterialLib
+in original creation order with original indices.
+
+* mlib is expected to be empty when this is called.
 
 */
 
 class X4_API X4MaterialTable 
 {
     public:
-        static GMaterialLib* Convert(GMaterialLib* mlib=NULL) ; 
-        static GMaterialLib* Convert(const G4MaterialTable* mtab, GMaterialLib* mlib=NULL) ; 
-    public:
-        X4MaterialTable(const G4MaterialTable* mtab, GMaterialLib* mlib=NULL);
-        GMaterialLib*  getMaterialLib();
+        static void Convert(GMaterialLib* mlib) ; 
     private:
+        X4MaterialTable(GMaterialLib* mlib);
+        GMaterialLib* getMaterialLib();
         void init();
     private:
         const G4MaterialTable*  m_mtab ; 
-        Opticks*                m_ok ; 
         GMaterialLib*           m_mlib ;         
 };
 

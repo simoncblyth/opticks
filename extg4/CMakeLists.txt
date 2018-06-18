@@ -56,8 +56,12 @@ set(SOURCES
     X4Solid.cc
     X4Mesh.cc
     X4SolidList.cc
+
     X4Material.cc
     X4MaterialTable.cc
+    X4LogicalBorderSurfaceTable.cc
+    X4LogicalBorderSurface.cc
+
     X4PhysicsVector.cc
     X4RotationMatrix.cc
     X4Transform3D.cc
@@ -79,8 +83,12 @@ set(HEADERS
     X4Solid.hh
     X4Mesh.hh
     X4SolidList.hh
+
     X4Material.hh
     X4MaterialTable.hh
+    X4LogicalBorderSurfaceTable.hh
+    X4LogicalBorderSurface.hh
+
     X4PhysicsVector.hh
     X4Transform3D.hh
     X4RotationMatrix.hh

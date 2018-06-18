@@ -14,6 +14,8 @@
 #include "X4.hh"
 #include "X4PhysicalVolume.hh"
 #include "X4Material.hh"
+#include "X4MaterialTable.hh"
+#include "X4LogicalBorderSurfaceTable.hh"
 #include "X4Solid.hh"
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
@@ -35,6 +37,7 @@ using YOG::Maker ;
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 
+#include "BStr.hh"
 #include "BOpticksKey.hh"
 #include "Opticks.hh"
 #include "SDigest.hh"
@@ -81,13 +84,46 @@ GGeo* X4PhysicalVolume::getGGeo()
 
 void X4PhysicalVolume::init()
 {
-    TraverseVolumeTree();
+    convertMaterials();
+    convertSurfaces();
+    convertStructure();
 }
 
-void X4PhysicalVolume::TraverseVolumeTree()
+
+void X4PhysicalVolume::convertMaterials()
+{
+    size_t num_materials0 = m_mlib->getNumMaterials() ;
+    assert( num_materials0 == 0 );
+    X4MaterialTable::Convert(m_mlib);
+
+    size_t num_materials = m_mlib->getNumMaterials() ;
+    assert( num_materials > 0 );
+
+    LOG(info) << "convertMaterials"
+              << " num_materials " << num_materials
+              ;
+}
+
+void X4PhysicalVolume::convertSurfaces()
+{
+    size_t num_surf0 = m_slib->getNumSurfaces() ; 
+    assert( num_surf0 == 0 );
+
+    X4LogicalBorderSurfaceTable::Convert(m_slib);
+    size_t num_lbs = m_slib->getNumSurfaces() ; 
+
+    //X4LogicalSkinSurfaceTable::Convert(m_slib);
+    size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
+
+    LOG(info) << "convertSurfaces"
+              << " num_lbs " << num_lbs
+              << " num_sks " << num_sks
+              ;
+}
+
+void X4PhysicalVolume::convertStructure()
 {
      assert(m_top) ;
-
      LOG(info) << " sc BEGIN " << m_sc->desc() ; 
 
      const G4VPhysicalVolume* pv = m_top ; 
@@ -308,7 +344,8 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
                                         X4::ShortName(omat), 
                                         X4::ShortName(osur),
                                         X4::ShortName(isur),
-                                        X4::ShortName(imat)
+                                        X4::ShortName(imat),
+                                        '/'
                                        ) ;
 
 

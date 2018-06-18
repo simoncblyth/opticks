@@ -71,7 +71,13 @@ void X4Material::init()
 }
 
 
-void X4Material::AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt)
+//
+// TODO: generalize/reposition? as this will work 
+//       with GMaterial/GSkinSurface/GBorderSurface 
+//       by virtue of GPropertyMap<float> base of all those 
+//
+
+void X4Material::AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt)   // static
 {
     typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
     MKP* pm = mpt->GetPropertiesMap() ;
@@ -104,7 +110,7 @@ void X4Material::AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* 
 }
 
 
-std::string X4Material::Digest(const G4MaterialPropertiesTable* mpt)  
+std::string X4Material::Digest(const G4MaterialPropertiesTable* mpt)  // static
 {
     if(!mpt) return "" ; 
 

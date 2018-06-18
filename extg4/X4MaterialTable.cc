@@ -11,21 +11,11 @@
 #include "Opticks.hh"
 
 
-GMaterialLib* X4MaterialTable::Convert(GMaterialLib* mlib)
+void X4MaterialTable::Convert(GMaterialLib* mlib)
 {
-    const G4MaterialTable* mtab  = G4Material::GetMaterialTable();
-    return Convert(mtab, mlib);
-} 
-
-GMaterialLib* X4MaterialTable::Convert(const G4MaterialTable* mtab, GMaterialLib* mlib) 
-{
-    X4MaterialTable xmt(mtab, mlib) ; 
-    GMaterialLib* mlib_ = xmt.getMaterialLib();
-    if(mlib) 
-    {
-       assert( mlib == mlib_ ); 
-    }
-    return mlib_ ; 
+    assert( mlib->getNumMaterials() == 0 ); 
+    X4MaterialTable xmt(mlib) ; 
+    assert( mlib == xmt.getMaterialLib() );
 }
 
 GMaterialLib* X4MaterialTable::getMaterialLib()
@@ -33,11 +23,10 @@ GMaterialLib* X4MaterialTable::getMaterialLib()
     return m_mlib ;
 }
 
-X4MaterialTable::X4MaterialTable(const G4MaterialTable* mtab, GMaterialLib* mlib)
+X4MaterialTable::X4MaterialTable(GMaterialLib* mlib)
     :
-    m_mtab(mtab),
-    m_ok(Opticks::GetOpticks()),
-    m_mlib(mlib == NULL ? new GMaterialLib(m_ok) : mlib)
+    m_mtab(G4Material::GetMaterialTable()),
+    m_mlib(mlib)
 {
     init();
 }
@@ -50,6 +39,8 @@ void X4MaterialTable::init()
     for(unsigned i=0 ; i < nmat ; i++)
     {   
         G4Material* material = (*m_mtab)[i];
+  
+        assert( material->GetIndex() == i );
 
         GMaterial* mat = X4Material::Convert( material ); 
 
