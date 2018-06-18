@@ -10,6 +10,7 @@
 #include "GSkinSurface.hh"
 #include "GProperty.hh"
 #include "GPropertyMap.hh"
+#include "GDomain.hh"
 
 #include "GGEO_BODY.hh"
 
@@ -19,7 +20,16 @@ GSkinSurface::GSkinSurface(const char* name, unsigned int index, GOpticalSurface
     GPropertyMap<float>(name, index, "skinsurface", optical_surface ),
     m_skinsurface_vol(NULL)
 {
+    init();
 }
+
+void GSkinSurface::init()
+{
+    setStandardDomain( GDomain<float>::GetDefaultDomain()) ;   
+    // ensure the domain is set before adding properties, like AssimpGGeo 
+}
+
+
 
 GSkinSurface::~GSkinSurface()
 {

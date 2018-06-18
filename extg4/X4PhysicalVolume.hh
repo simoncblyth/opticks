@@ -65,14 +65,14 @@ class X4_API X4PhysicalVolume
     private:
         int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
         YOG::Nd* convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const parent_pv );
-        int  convertMaterialVisit(const G4Material* const material );
-        void convertSolid( YOG::Mh* mh,  G4VSolid* solid);
+        void convertSolid( YOG::Mh* mh,  const G4VSolid* const solid);
         G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
     private:
         const G4VPhysicalVolume*     m_top ;  
         const char*                  m_key ;  
         bool                         m_keyset ; 
         Opticks*                     m_ok ; 
+        const char*                  m_gltfpath ; 
     private:
         GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 

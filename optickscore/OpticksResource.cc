@@ -798,6 +798,31 @@ std::string OpticksResource::getDetectorPath(const char* name, unsigned int inde
 }
 
 
+/**
+OpticksResource::getPreferenceDir
+-------------------------------------
+
+::
+
+    find /usr/local/opticks/opticksdata/export/DayaBay -name order.json
+    /usr/local/opticks/opticksdata/export/DayaBay/GMaterialLib/order.json
+    /usr/local/opticks/opticksdata/export/DayaBay/GSurfaceLib/order.json
+
+    ## important materials arranged to have low indices, 
+    ## for 4-bit per step GPU recording of indices
+
+    epsilon:optickscore blyth$ cat /usr/local/opticks/opticksdata/export/DayaBay/GMaterialLib/order.json
+    {
+        "GdDopedLS": "1",
+        "LiquidScintillator": "2",
+        "Acrylic": "3",
+        "MineralOil": "4",
+        "Bialkali": "5",
+        "IwsWater": "6",
+        "Water": "7",
+        ...
+
+**/
 
 std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {

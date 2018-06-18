@@ -271,12 +271,25 @@ GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 }
 
 
+/**
+GMaterialLib::operator()
+-------------------------
+
+Defines the sort order of the materials based upon 
+the order map keyed on the material short names.
+
+The reason to rearrange the order, is to get important
+materials at low indices to allow highly compressed step
+by step recording of millions of photons on GPU using
+only 4 bits to record the material index. 
+
+**/
 bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
 {
     const char* a = a_.getShortName();
     const char* b = b_.getShortName();
 
-    typedef std::map<std::string, unsigned int> MSU ;
+    typedef std::map<std::string, unsigned> MSU ;
     MSU& order = getOrder();  
 
     MSU::const_iterator end = order.end() ; 
@@ -285,9 +298,16 @@ bool GMaterialLib::operator()(const GMaterial& a_, const GMaterial& b_)
     return ia < ib ; 
 }
 
+/**
+GMaterialLib::sort
+--------------------
+
+This is invoked from the base when the proplib is closed.
+
+**/
 void GMaterialLib::sort()
 {
-    typedef std::map<std::string, unsigned int> MSU ;
+    typedef std::map<std::string, unsigned> MSU ;
     MSU& order = getOrder();  
 
     if(order.size() == 0) return ; 

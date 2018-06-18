@@ -30,7 +30,8 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh
          m_pvname(NULL),
          m_lvname(NULL),
          m_sensor_surface_index(0),
-         m_parts(NULL)
+         m_parts(NULL),
+         m_parallel_node(NULL)
 {
 }
 
@@ -114,6 +115,20 @@ void GSolid::setParts(GParts* pts)
 {
     m_parts = pts ; 
 }
+
+
+// ancillary slot for a parallel node tree, used by X4PhysicalVolume
+void* GSolid::getParallelNode() const 
+{
+    return m_parallel_node ; 
+}
+void GSolid::setParallelNode(void* pnode)
+{
+    m_parallel_node = pnode ; 
+}
+ 
+
+
 
 void GSolid::setCSGFlag(OpticksCSG_t csgflag)
 {

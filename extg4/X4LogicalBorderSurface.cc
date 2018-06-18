@@ -3,47 +3,47 @@
 #include "G4OpticalSurface.hh"   
 #include "G4LogicalBorderSurface.hh"   
 
+#include "X4.hh"
+#include "X4LogicalSurface.hh"
 #include "X4LogicalBorderSurface.hh"
+#include "X4OpticalSurface.hh"
 
+#include "GOpticalSurface.hh"   
 #include "GBorderSurface.hh"   
+#include "GDomain.hh"   
+
 #include "PLOG.hh"
 
 
-GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* lbs)
+GBorderSurface* X4LogicalBorderSurface::Convert(const G4LogicalBorderSurface* src)
 {
-    X4LogicalBorderSurface xlbs(lbs);
-    GBorderSurface* bs = xlbs.getBorderSurface();
-    return bs ; 
+    const char* name = X4::Name( src ); 
+    size_t index = X4::GetOpticksIndex( src ) ;  
+
+    G4OpticalSurface* os = dynamic_cast<G4OpticalSurface*>(src->GetSurfaceProperty());
+    assert( os );
+    GOpticalSurface* optical_surface = X4OpticalSurface::Convert(os);   ; 
+    assert( optical_surface );
+
+    GBorderSurface* dst = new GBorderSurface( name, index, optical_surface) ;  
+    // standard domain is set by GBorderSurface::init
+
+    X4LogicalSurface::Convert( dst, src);
+
+    const G4VPhysicalVolume* pv1 = src->GetVolume1(); 
+    const G4VPhysicalVolume* pv2 = src->GetVolume2(); 
+    assert( pv1 && pv2 ) ; 
+
+    dst->setBorderSurface( X4::Name(pv1), X4::Name(pv2) );   
+
+
+    return dst ; 
 }
 
-
-X4LogicalBorderSurface::X4LogicalBorderSurface(const G4LogicalBorderSurface* lbs)
-    :
-    m_lbs(lbs),
-    m_bs(NULL)
+int X4LogicalBorderSurface::GetItemIndex( const G4LogicalBorderSurface* src )
 {
-    init();
-}  
-
-GBorderSurface* X4LogicalBorderSurface::getBorderSurface() const 
-{
-    return m_bs ;  
+    const G4LogicalBorderSurfaceTable* vec = G4LogicalBorderSurface::GetSurfaceTable() ; 
+    return X4::GetItemIndex<G4LogicalBorderSurface>( vec, src ); 
 }
-
-void X4LogicalBorderSurface::init()
-{
-    //  hmm this is common to skin and border, coming from base G4LogicalSurface
-
-    const G4LogicalSurface* lsurf = m_lbs ; 
-    const G4SurfaceProperty*  psurf = lsurf->GetSurfaceProperty() ;   
-    const G4OpticalSurface* opsurf = dynamic_cast<const G4OpticalSurface*>(psurf);
-    assert( opsurf );   
-
-    LOG(info) << " opsurf " << opsurf->GetName() ; 
-
- 
-
-}
-
 
 

@@ -7,6 +7,10 @@
 template <class T>
 class GGEO_API GDomain {
   public: 
+     static GDomain<T>* GetDefaultDomain() ; 
+  private: 
+     static GDomain<T>* fDefaultDomain ; 
+  public: 
      GDomain(T low, T high, T step) : m_low(low), m_high(high), m_step(step) {}
      GDomain<T>* makeInterpolationDomain(T step);
      virtual ~GDomain() {}

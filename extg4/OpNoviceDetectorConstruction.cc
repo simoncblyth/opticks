@@ -30,6 +30,9 @@
 
 #include "OpNoviceDetectorConstruction.hh"
 
+#define FOR_OPTICKS 1
+
+
 #include "G4Material.hh"
 #include "G4Element.hh"
 #include "G4LogicalBorderSurface.hh"
@@ -312,12 +315,21 @@ G4VPhysicalVolume* OpNoviceDetectorConstruction::Construct()
   G4double specularSpike[num]   = {0.2, 0.2};
   G4double backScatter[num]     = {0.2, 0.2};
 
+#ifdef FOR_OPTICKS
+  G4double reflectivity0[num] = {0.3, 0.5};
+#endif
+
   G4MaterialPropertiesTable* myST1 = new G4MaterialPropertiesTable();
 
   myST1->AddProperty("RINDEX",                ephoton, refractiveIndex, num);
   myST1->AddProperty("SPECULARLOBECONSTANT",  ephoton, specularLobe,    num);
   myST1->AddProperty("SPECULARSPIKECONSTANT", ephoton, specularSpike,   num);
   myST1->AddProperty("BACKSCATTERCONSTANT",   ephoton, backScatter,     num);
+
+#ifdef FOR_OPTICKS
+  myST1->AddProperty("REFLECTIVITY",          ephoton, reflectivity0, num);
+#endif
+
 
   G4cout << "Water Surface G4MaterialPropertiesTable" << G4endl;
   myST1->DumpTable();

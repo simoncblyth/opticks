@@ -59,8 +59,15 @@ set(SOURCES
 
     X4Material.cc
     X4MaterialTable.cc
+    X4MaterialPropertiesTable.cc
+
     X4LogicalBorderSurfaceTable.cc
+    X4LogicalSkinSurfaceTable.cc
+
     X4LogicalBorderSurface.cc
+    X4LogicalSkinSurface.cc
+    X4LogicalSurface.cc
+    X4OpticalSurface.cc
 
     X4PhysicsVector.cc
     X4RotationMatrix.cc
@@ -86,8 +93,15 @@ set(HEADERS
 
     X4Material.hh
     X4MaterialTable.hh
+    X4MaterialPropertiesTable.hh
+
     X4LogicalBorderSurfaceTable.hh
+    X4LogicalSkinSurfaceTable.hh
+
     X4LogicalBorderSurface.hh
+    X4LogicalSkinSurface.hh
+    X4LogicalSurface.hh
+    X4OpticalSurface.hh
 
     X4PhysicsVector.hh
     X4Transform3D.hh

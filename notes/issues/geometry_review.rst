@@ -647,11 +647,6 @@ The "structure" element is also "child-of-root"::
     380 }
 
 
-
-
-
-
-
 G4GDMLWriteSolids::AddSolid(G4VSolid* ) subclass fanout
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

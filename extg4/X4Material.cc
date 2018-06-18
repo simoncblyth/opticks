@@ -2,6 +2,7 @@
 #include "G4Material.hh"
 #include "X4PhysicsVector.hh"
 #include "X4Material.hh"
+#include "X4MaterialPropertiesTable.hh"
 #include "GMaterial.hh"
 
 #include "SDigest.hh"
@@ -32,7 +33,7 @@ std::string X4Material::Digest( const G4Material* material )
     if(!material) return "" ; 
     G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable() ; 
     const G4String& name = material->GetName();    
-    std::string dmpt = Digest(mpt) ; 
+    std::string dmpt = X4MaterialPropertiesTable::Digest(mpt) ; 
     SDigest dig ;
     dig.update( const_cast<char*>(name.data()), name.size() );  
     dig.update( const_cast<char*>(dmpt.data()), dmpt.size() );  
@@ -64,83 +65,18 @@ void X4Material::init()
 {
     G4String name_ = m_material->GetName() ;
     const char* name = name_.c_str();
-    unsigned index = 0 ;  // set the index on collecting into GMaterialLib
+    unsigned index = m_material->GetIndex() ;
+
+    // FORMERLY set the index on collecting into GMaterialLib, 
+    // now are just passing the creation index along  
+
     m_mat = new GMaterial(name, index) ; 
     assert( m_mpt );
-    AddProperties( m_mat, m_mpt ); 
+
+    X4MaterialPropertiesTable::Convert( m_mat, m_mpt );
 }
 
 
-//
-// TODO: generalize/reposition? as this will work 
-//       with GMaterial/GSkinSurface/GBorderSurface 
-//       by virtue of GPropertyMap<float> base of all those 
-//
-
-void X4Material::AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt)   // static
-{
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = mpt->GetPropertiesMap() ;
-
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)
-    {   
-        G4String pname = it->first ;
-        G4MaterialPropertyVector* pvec = it->second ;  
-        // G4MaterialPropertyVector is typedef to G4PhysicsOrderedFreeVector with most of imp in G4PhysicsVector
-
-        GProperty<float>* prop = X4PhysicsVector<float>::Convert(pvec) ; 
-
-
-      //   mat->addProperty( pname.c_str(), prop );  // non-interpolating collection
-        mat->addPropertyStandardized( pname.c_str(), prop );  // interpolates onto standard domain 
-
-    }  
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > CKP ; 
-    CKP* cm = mpt->GetPropertiesCMap();
-
-    for(CKP::const_iterator it=cm->begin() ; it != cm->end() ; it++)
-    {   
-        G4String pname = it->first ;
-        G4double pvalue = it->second ;  
-        float value = pvalue ; 
-
-        mat->addConstantProperty( pname.c_str(), value );   // asserts without standard domain
-    }     
-}
-
-
-std::string X4Material::Digest(const G4MaterialPropertiesTable* mpt)  // static
-{
-    if(!mpt) return "" ; 
-
-    typedef const std::map< G4String, G4MaterialPropertyVector*, std::less<G4String> > MKP ;
-    MKP* pm = mpt->GetPropertiesMap() ;
-
-    SDigest dig ;
-    for(MKP::const_iterator it=pm->begin() ; it != pm->end() ; it++)  
-    {   
-        const std::string&  n = it->first ;
-        G4MaterialPropertyVector* v = it->second ; 
-
-        std::string vs = X4PhysicsVector<float>::Digest(v) ; 
-        dig.update( const_cast<char*>(n.data()),  n.size() );  
-        dig.update( const_cast<char*>(vs.data()), vs.size() );  
-    }   
-
-    typedef const std::map< G4String, G4double, std::less<G4String> > CKP ; 
-    CKP* cm = mpt->GetPropertiesCMap();
-
-    for(CKP::const_iterator it=cm->begin() ; it != cm->end() ; it++)
-    {   
-        const std::string& n = it->first ;
-        double pvalue = it->second ;  
-
-        dig.update( const_cast<char*>(n.data()), n.size() );  
-        dig.update( reinterpret_cast<char*>(&pvalue), sizeof(double) );  
-    }  
-    return dig.finalize();
-}
 
 
 

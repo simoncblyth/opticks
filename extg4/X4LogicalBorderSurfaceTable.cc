@@ -10,15 +10,15 @@
 #include "PLOG.hh"
 
 
-void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* slib )
+void X4LogicalBorderSurfaceTable::Convert( GSurfaceLib* dst )
 {
-    X4LogicalBorderSurfaceTable xtab(slib); 
+    X4LogicalBorderSurfaceTable xtab(dst); 
 }
 
-X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* slib )
+X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* dst )
     :
-    m_table(G4LogicalBorderSurface::GetSurfaceTable()),
-    m_slib(slib)
+    m_src(G4LogicalBorderSurface::GetSurfaceTable()),
+    m_dst(dst)
 {
     init();
 }
@@ -26,20 +26,20 @@ X4LogicalBorderSurfaceTable::X4LogicalBorderSurfaceTable(GSurfaceLib* slib )
 
 void X4LogicalBorderSurfaceTable::init()
 {
-    unsigned num_lbs = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ; 
-    assert( num_lbs == m_table->size() );
+    unsigned num_src = G4LogicalBorderSurface::GetNumberOfBorderSurfaces() ; 
+    assert( num_src == m_src->size() );
     
-    for(size_t i=0 ; i < m_table->size() ; i++)
+    for(size_t i=0 ; i < m_src->size() ; i++)
     {
-        G4LogicalBorderSurface* lbs = (*m_table)[i] ; 
+        G4LogicalBorderSurface* src = (*m_src)[i] ; 
 
-        LOG(info) << " lbs " << lbs->GetName() ; 
+        LOG(info) << " src " << src->GetName() ; 
 
-        GBorderSurface* bs = X4LogicalBorderSurface::Convert( lbs );
+        GBorderSurface* dst = X4LogicalBorderSurface::Convert( src );
 
-        assert( bs ); 
+        assert( dst ); 
 
-        m_slib->add(bs) ;
+        m_dst->add(dst) ;
     }
 }
 

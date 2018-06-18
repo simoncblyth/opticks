@@ -63,12 +63,13 @@ void GPropertyLib::checkBufferCompatibility(unsigned int nk, const char* msg)
 }
 
 
-
-GDomain<float>* GPropertyLib::getDefaultDomain()
+GDomain<float>* GPropertyLib::getDefaultDomain()    // static 
 {
    // this is normal domain, only with --finebndtex does the finedomain interpolation get load within GBndLib::load
-   return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+   //return new GDomain<float>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+    return GDomain<float>::GetDefaultDomain(); 
 }
+
 
 const char* GPropertyLib::material = "material" ; 
 const char* GPropertyLib::surface  = "surface" ; 
@@ -284,7 +285,8 @@ void GPropertyLib::init()
 
     if(m_standard_domain == NULL)
     {
-        m_standard_domain = getDefaultDomain(); 
+        //m_standard_domain = getDefaultDomain(); 
+        m_standard_domain = GDomain<float>::GetDefaultDomain(); 
 
         unsigned int len = getStandardDomainLength() ;
 
@@ -355,12 +357,11 @@ std::string GPropertyLib::getPreferenceDir()
 }
 
 
-
-
-
-
 unsigned int GPropertyLib::getIndex(const char* shortname)
 {
+    assert( isClosed() && " must close the lib before the indices can be used, as preference sort order may be applied at the close" ); 
+    
+    /*
     if(!isClosed())
     {
         LOG(info) << "GPropertyLib::getIndex type " << m_type 
@@ -368,10 +369,9 @@ unsigned int GPropertyLib::getIndex(const char* shortname)
                      << " shortname [" << ( shortname ? shortname : "" ) << "]"  
                      ;
 
-        //assert(0);
-
         close();
     }
+    */
     assert(m_names);
     return m_names->getIndex(shortname);
 }

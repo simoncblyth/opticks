@@ -55,7 +55,7 @@ G4VPhysicalVolume* construct_OpNovice()
     std::string _cout = coutbuf.str() ; 
     std::string _cerr = cerrbuf.str() ; 
  
-    LOG(trace) << " cout " << _cout ;
+    //LOG(trace) << " cout " << _cout ;
     LOG(trace) << " cerr " << _cerr ;
     assert(top);  
 
@@ -68,7 +68,10 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
 
-    char c = argc > 1 ? *argv[1] : 'o' ; 
+    //char c = argc > 1 ? *argv[1] : 'o' ; 
+
+    char c = 'o' ; 
+
 
     // Note that okc.Opticks instanciation is 
     // handled by X4PhysicalVolume ctor in order to

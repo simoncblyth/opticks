@@ -44,7 +44,7 @@ void X4MaterialTable::init()
 
         GMaterial* mat = X4Material::Convert( material ); 
 
-        mat->setIndex(i) ; 
+        assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
 
         m_mlib->add(mat) ; // creates standardized material
     }

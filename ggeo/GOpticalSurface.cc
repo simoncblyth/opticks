@@ -17,8 +17,6 @@
 #include "PLOG.hh"
 // trace/debug/info/warning/error/fatal
 
-
-
 char* GOpticalSurface::getName()
 {
     return m_name ; 
@@ -77,15 +75,6 @@ const char* GOpticalSurface::Finish(unsigned finish)
     } 
     return s ;  
 }
-
-
-
-
-
-
-
-
-
 
 char* GOpticalSurface::getValue()
 {
@@ -290,7 +279,4 @@ std::string GOpticalSurface::description()
 
     return ss.str();
 }
-
-
-
 

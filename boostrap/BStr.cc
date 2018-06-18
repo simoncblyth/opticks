@@ -156,6 +156,17 @@ const char* BStr::itoa( int i )
 }
 
 
+template<typename T>
+const char* BStr::xtoa( T x )
+{
+    std::stringstream ss ; 
+    ss << x ; 
+    std::string s = ss.str() ;
+    return strdup(s.c_str());
+}
+
+
+
 
 
 template<typename T>
@@ -642,6 +653,12 @@ void BStr::ReplaceAll(std::string& subject, const char* search, const char* repl
 }
 
 
+
+
+
+
+template BRAP_API const char* BStr::xtoa(float);
+template BRAP_API const char* BStr::xtoa(double);
 
 
 

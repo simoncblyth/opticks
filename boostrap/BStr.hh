@@ -42,6 +42,9 @@ class BRAP_API BStr {
 
 
      template<typename T>
+     static const char* xtoa( T x );
+
+     template<typename T>
      static T LexicalCast(const char* str, T fallback, bool& badcast ) ;
 
      template<typename T> 

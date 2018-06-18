@@ -84,7 +84,7 @@ struct YOG_API Maker
     int add_node() ;
     void set_node_mesh(int nodeIdx, int meshIdx);
     void set_node_translation(int nodeIdx, float x, float y, float z);
-    void save( const char* path) const ; 
+    void save( const char* path, bool cat=false ) const ; 
     void saveBuffers(const char* path) const ;
 
 

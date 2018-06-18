@@ -53,7 +53,12 @@ const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 {
     X4PhysicalVolume pv(top) ;  
-    pv.saveAsGLTF("/tmp/X4PhysicalVolume/X4PhysicalVolume.gltf"); // TODO: should be using identity digest in the path  
+
+    //const char* path = "/tmp/X4PhysicalVolume/X4PhysicalVolume.gltf" ;
+    const char* path = NULL ; 
+
+    pv.saveAsGLTF(path); 
+
     GGeo* gg = pv.getGGeo();
     return gg ; 
 }
@@ -64,6 +69,7 @@ X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     m_key(Key(m_top)),
     m_keyset(BOpticksKey::SetKey(m_key)),
     m_ok(Opticks::GetOpticks()),  // Opticks instanciation must be after BOpticksKey::SetKey
+    m_gltfpath(m_ok->getGLTFPath()),
     m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
@@ -94,6 +100,7 @@ void X4PhysicalVolume::convertMaterials()
 {
     size_t num_materials0 = m_mlib->getNumMaterials() ;
     assert( num_materials0 == 0 );
+
     X4MaterialTable::Convert(m_mlib);
 
     size_t num_materials = m_mlib->getNumMaterials() ;
@@ -102,6 +109,8 @@ void X4PhysicalVolume::convertMaterials()
     LOG(info) << "convertMaterials"
               << " num_materials " << num_materials
               ;
+
+    m_mlib->close();   // may change order if prefs dictate
 }
 
 void X4PhysicalVolume::convertSurfaces()
@@ -110,6 +119,7 @@ void X4PhysicalVolume::convertSurfaces()
     assert( num_surf0 == 0 );
 
     X4LogicalBorderSurfaceTable::Convert(m_slib);
+
     size_t num_lbs = m_slib->getNumSurfaces() ; 
 
     //X4LogicalSkinSurfaceTable::Convert(m_slib);
@@ -119,6 +129,7 @@ void X4PhysicalVolume::convertSurfaces()
               << " num_lbs " << num_lbs
               << " num_sks " << num_sks
               ;
+    m_slib->close();  // may change order if prefs dictate
 }
 
 void X4PhysicalVolume::convertStructure()
@@ -140,7 +151,7 @@ void X4PhysicalVolume::convertStructure()
 void X4PhysicalVolume::saveAsGLTF(const char* path)
 {
      m_maker->convert();
-     m_maker->save(path);
+     m_maker->save(path ? path : m_gltfpath);
 }
 
 std::string X4PhysicalVolume::Digest( const G4LogicalVolume* const lv, const G4int depth )
@@ -251,6 +262,16 @@ converted to glTF later.  This is done to help keeping
 this code independant of the actual glTF implementation 
 used.
 
+TODO: contrast with AssimpGGeo::convertStructure
+
+* need to create GSolid(GNode) and hookem up into a tree here, but 
+  YOG::Nd is also needed 
+
+  * maybe add a void* "aux" slot to GNode to passively hold the YOG::Nd  
+    then can return GSolid(GNode) in the traverse but still have the 
+    much simpler YOG::Nd to work with YOG::Maker
+ 
+
 **/
 
 int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv )
@@ -269,14 +290,6 @@ int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int 
 
      return nd->ndIdx  ; 
 }
-
-/**
-X4PhysicalVolume::convertNodeVisit
-------------------------------------
-
-* cf AssimpGGeo::convertStructureVisit which returns GSolid (recall thats poorly named actually its "node" like)
-
-**/
 
 
 
@@ -299,14 +312,28 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 }
 
 
+/**
+X4PhysicalVolume::convertNodeVisit
+------------------------------------
+
+* cf AssimpGGeo::convertStructureVisit 
+
+  * which returns GSolid(*)(GNode)  TODO: change name of GSolid to GVolume ? 
+  * the parent/child links are then setup in the recursive method 
+
+
+What is required of YOG::Nd ? Can I do the same with GSolid(GNode) ?
+
+
+GBndLib::addBoundary requires getting the indices for the materials
+and surfaces, but that requires the libs to have been closed.  Thus 
+now collect materials and surfaces first.
+
+**/
+
 Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const pv_p )
 {
-
-     G4RotationMatrix pv_rotation = pv->GetObjectRotationValue() ;  // obj relative to mother
-     G4ThreeVector    pv_translation = pv->GetObjectTranslation() ;
-     G4Transform3D    pv_transform(pv_rotation,pv_translation);
-
-     glm::mat4* transform = new glm::mat4(X4Transform3D::Convert( pv_transform ));
+     glm::mat4* transform = X4Transform3D::GetLocalTransform(pv); 
 
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
@@ -318,40 +345,20 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
      bool first_priority = true ;  
      const G4LogicalSurface* const isur = findSurface( pv  , pv_p , first_priority );
      const G4LogicalSurface* const osur = findSurface( pv_p, pv   , first_priority );  
-     // doubtful of this, see g4op-
+     // doubtful of findSurface priority with double skin surfaces, see g4op-
 
-    /*
-     GBndLib::addBoundary requires getting the indices for the materials
-     and surfaces, but that triggers closure of the libs... which should
-     be done only when the traverse is complete.  
-
-     Hmm, perhaps do an initial traverse to collect all 
-     materials and surfaces, then close mlib and slib before 
-     this traverse.   
-
-     Actually do not need to traverse to find all materials
-     and surfaces just convert them from their stores.  Having more
-     than are used is not a problem.
-
-     unsigned boundary_ = m_blib->addBoundary( 
+     unsigned boundary = m_blib->addBoundary( 
                                                 X4::ShortName(omat),  
                                                 X4::ShortName(osur),                   
                                                 X4::ShortName(isur),  
                                                 X4::ShortName(imat)       
-                                            );   
-     */
-     std::string boundary = BStr::join(
-                                        X4::ShortName(omat), 
-                                        X4::ShortName(osur),
-                                        X4::ShortName(isur),
-                                        X4::ShortName(imat),
-                                        '/'
-                                       ) ;
+                                            );
+     std::string boundaryName = m_blib->shortname(boundary); 
+     guint4 bnd = m_blib->getBnd(boundary); 
+     int materialIdx = m_mlib->getIndex(X4::ShortName(imat)) ;
+     assert( materialIdx == bnd.w ); 
 
-
-     int materialIdx = convertMaterialVisit( imat );
- 
-     G4VSolid* solid = lv->GetSolid();
+     const G4VSolid* const solid = lv->GetSolid();
 
      int lvIdx = m_lvidx[lv] ;  // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
      const std::string& lvName = lv->GetName() ;
@@ -366,7 +373,7 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
                                  pvName,
                                  soName,
                                  transform,
-                                 boundary,
+                                 boundaryName,
                                  depth,
                                  selected
                                );
@@ -375,40 +382,15 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
      Mh* mh = m_sc->get_mesh_for_node( ndIdx ); 
      if(mh->csg == NULL) convertSolid(mh, solid);
 
+     // hmm AssimpGGeo::convertMeshes does some mesh processing (deduping, fixing) 
+     // before inclusion in the GSolid(GNode) 
+
+     // GParts setup from the recursive vistor GScene::createVolume 
+
+
      return nd ; 
 }
 
-/**
-convertMaterialVisit
-----------------------
-
-Recall the complication with material indices, need to 
-rearrange to make important materials have low indices
-for on-GPU step-by-step material tracing using small(4?) 
-numbers of bits to record the material 
-
-When does this reordering happen ?
-
-* Is that the source of the material lookups ?
-* There are also lookups into the boundary texture lines.
-**/
-
-int X4PhysicalVolume::convertMaterialVisit(const G4Material* const material )
-{
-    const std::string& matname_ = material->GetName(); 
-    const char* matname = matname_.c_str() ; 
-
-    int materialIdx = m_sc->add_material(matname_) ;  // only adds for new material names
-    if(!m_mlib->hasMaterial(matname))
-    { 
-        GMaterial* mat = X4Material::Convert(material) ; 
-        int mlibIdx = m_mlib->getNumMaterials();
-        mat->setIndex( mlibIdx ); 
-        m_ggeo->add(mat);  // huh: ggeo/mlib ? 
-        assert( materialIdx == mlibIdx );   
-    }
-    return materialIdx ; 
-}
 
 /**
 convertSolid
@@ -424,7 +406,7 @@ the source NPY arrays are also tacked on to the Mh instance.
 
 **/
 
-void X4PhysicalVolume::convertSolid( Mh* mh,  G4VSolid* solid)
+void X4PhysicalVolume::convertSolid( Mh* mh, const G4VSolid* const solid)
 {
      mh->csg = X4Solid::Convert(solid) ;   
 

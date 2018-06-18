@@ -1,3 +1,4 @@
+#include "G4VPhysicalVolume.hh"
 #include "X4Transform3D.hh"
 #include "SDigest.hh"
 
@@ -12,6 +13,21 @@ glm::mat4 X4Transform3D::Convert(const G4Transform3D&  transform)
     X4Transform3D xt(transform);
     return xt.tr ; 
 }
+
+
+glm::mat4* X4Transform3D::GetLocalTransform(const G4VPhysicalVolume* const pv)
+{
+    G4RotationMatrix rot = pv->GetObjectRotationValue() ;  // obj relative to mother
+    G4ThreeVector    tla = pv->GetObjectTranslation() ;
+    G4Transform3D    tra(rot,tla);
+
+    glm::mat4* transform = new glm::mat4(Convert( tra ));
+
+    return transform ; 
+}
+
+
+
 
 
 #ifdef X4_TRANSFORM_43

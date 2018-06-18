@@ -400,10 +400,27 @@ GPropertyMap<float>* GSurfaceLib::createStandardSurface(GPropertyMap<float>* src
     else
     {
         assert( getStandardDomain() );
+
         assert( src->getStandardDomain() );
-        assert(getStandardDomain()->isEqual(src->getStandardDomain()));
+
+/*
+    
+
+        if(src->getStandardDomain())
+        {
+            assert(getStandardDomain()->isEqual(src->getStandardDomain()));
+        }
+        else
+        {
+            src->setStandardDomain(getStandardDomain());
+        }
+        // TODO-SOMETIME : tidy up the proliferation of domain instances using a singleton 
+*/
+
+
         assert(src->isSurface());
         GOpticalSurface* os = src->getOpticalSurface() ;  // GSkinSurface and GBorderSurface ctor plant the OpticalSurface into the PropertyMap
+        assert( os && " all surfaces must have associated OpticalSurface " );
 
         if(src->isSensor())
         {
@@ -525,6 +542,7 @@ bool GSurfaceLib::checkSurface( GPropertyMap<float>* surf)
     if(!_absorb) return false ; 
     if(!_reflect_specular) return false ; 
     if(!_reflect_diffuse) return false ; 
+
 
     GProperty<float>* sum = GProperty<float>::make_addition( _detect, _absorb, _reflect_specular, _reflect_diffuse );
     GAry<float>* vals = sum->getValues();

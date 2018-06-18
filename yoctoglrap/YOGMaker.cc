@@ -418,7 +418,7 @@ void Maker::configure_material(
     mt.pbrMetallicRoughness = mr ; 
 }
 
-void Maker::save(const char* path) const 
+void Maker::save(const char* path, bool cat) const 
 {
     assert( converted == true );
 
@@ -429,11 +429,14 @@ void Maker::save(const char* path) const
 
     impl->save(path, save_bin); 
 
-    std::cout << "writing " << path << std::endl ; 
+    LOG(info) << "writing " << path ; 
 
-    std::ifstream fp(path);
-    std::string line;
-    while(std::getline(fp, line)) std::cout << line << std::endl ; 
+    if(cat)
+    {
+        std::ifstream fp(path);
+        std::string line;
+        while(std::getline(fp, line)) std::cout << line << std::endl ; 
+    } 
 
     if(!save_bin)
         saveBuffers(path);
@@ -455,9 +458,10 @@ void Maker::saveBuffers(const char* path) const
         std::string bufpath_ = BFile::FormPath( dir.c_str(),  spec.uri.c_str() ); 
         const char* bufpath = bufpath_.c_str() ; 
 
-        std::cout << std::setw(3) << i
+        std::cout << std::left 
+                  << std::setw(3) << i
                   << " "
-                  << " spec.uri " << spec.uri 
+                  << " spec.uri " << std::setw(40) << spec.uri 
                   << " bufpath " << bufpath 
                   << std::endl 
                   ;

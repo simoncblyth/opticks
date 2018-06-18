@@ -231,7 +231,8 @@ g4-bdir(){ echo $(g4-dir).$(g4-config).build ; }
 
 g4-cmake-dir(){     echo $(g4-prefix)/lib$(g4-libsuffix)/$(g4-name2) ; }
 g4-examples-dir(){  echo $(g4-prefix)/share/$(g4-name2)/examples ; }
-
+g4-gdml-dir(){      echo $(g4-dir)/source/persistency/gdml/src ; }
+g4-optical-dir(){   echo $(g4-dir)/source/processes/optical/src ; }
 
 
 g4-ecd(){  cd $(g4-edir); }
@@ -241,6 +242,10 @@ g4-icd(){  cd $(g4-prefix); }
 g4-bcd(){  cd $(g4-bdir); }
 g4-ccd(){  cd $(g4-cmake-dir); }
 g4-xcd(){  cd $(g4-examples-dir); }
+
+g4-gcd(){  cd $(g4-gdml-dir); }
+g4-ocd(){  cd $(g4-optical-dir); }
+
 
 
 g4-get-tgz(){
@@ -508,5 +513,8 @@ g4-look(){
 
 g4-find-(){ find $(g4-dir) $* ; }
 g4-find-gdml(){ g4-find- -name '*.gdml' ; } 
+
+
+
 
 

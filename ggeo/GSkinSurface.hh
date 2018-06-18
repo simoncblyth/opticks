@@ -14,7 +14,8 @@ class GGEO_API GSkinSurface : public GPropertyMap<float> {
       GSkinSurface(const char* name, unsigned int index, GOpticalSurface* optical_surface);
       virtual ~GSkinSurface();
       void Summary(const char* msg="GSkinSurface::Summary", unsigned int imod=1);
-
+  private:
+      void init();
   public:
       std::string description();
 

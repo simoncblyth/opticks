@@ -244,7 +244,15 @@ bool GProperty<T>::hasSameDomain(GProperty<T>* a, GProperty<T>* b, T delta, bool
                 << " blen " << blen
                 ;
 
-    if(alen != blen) return false ; 
+    if(alen != blen)
+    {
+        LOG(warning) 
+             << " length mismatch " 
+             << " alen " << alen 
+             << " blen " << blen 
+             ;
+        return false ; 
+    }
     T mxdif = GAry<T>::maxdiff(a->getDomain(), b->getDomain(), dump) ;
     if(mxdif > delta) return false ;
 
@@ -380,6 +388,14 @@ GProperty<T>* GProperty<T>::make_one_minus(GProperty<T>* a)
 template <typename T>
 GProperty<T>* GProperty<T>::make_addition(GProperty<T>* a, GProperty<T>* b, GProperty<T>* c, GProperty<T>* d)
 {
+    LOG(debug) 
+        << " make_addition lengths " 
+        << " a " << ( a ? a->getLength() : -1 )
+        << " b " << ( b ? b->getLength() : -1 )
+        << " c " << ( c ? c->getLength() : -1 )
+        << " d " << ( d ? d->getLength() : -1 )
+        ;
+
     assert(hasSameDomain(a,b));
     if(c) assert(hasSameDomain(a,c));
     if(d) assert(hasSameDomain(a,d));

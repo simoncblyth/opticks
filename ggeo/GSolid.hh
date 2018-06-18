@@ -74,6 +74,10 @@ class GGEO_API GSolid : public GNode {
   public:
       GParts*      getParts();
       void         setParts(GParts* pts);
+  public:
+      // ancillary slot for a parallel node tree, used by X4PhysicalVolume
+      void*        getParallelNode() const ;
+      void         setParallelNode(void* pnode); 
   public: 
       void Summary(const char* msg="GSolid::Summary");
       std::string description();
@@ -86,6 +90,7 @@ class GGEO_API GSolid : public GNode {
       const char*       m_lvname ; 
       unsigned int      m_sensor_surface_index ; 
       GParts*           m_parts ; 
+      void*             m_parallel_node ; 
 
 };
 #include "GGEO_TAIL.hh"

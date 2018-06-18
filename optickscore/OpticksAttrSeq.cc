@@ -68,10 +68,24 @@ void OpticksAttrSeq::init()
 {
 }
 
+/**
+OpticksAttrSeq::loadPrefs
+----------------------------
+
+Loads .json preferences files into the three map members : 
+
+* m_color
+* m_abbrev
+* m_order
+
+Different prefs for each type : GMaterialLib, GSurfaceLib etc..
+can be used.
+
+**/
+
+
 void OpticksAttrSeq::loadPrefs()
 {
-    // json -> maps : m_color, m_abbrev, m_order
-
     if(m_resource->loadPreference(m_color, m_type, "color.json"))
     {
         LOG(debug) << "OpticksAttrSeq::loadPrefs color " << m_type ;

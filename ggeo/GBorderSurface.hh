@@ -21,7 +21,8 @@ class GGEO_API GBorderSurface : public GPropertyMap<float> {
       virtual ~GBorderSurface();
       void Summary(const char* msg="GBorderSurface::Summary", unsigned int imod=1);
       std::string description();
-
+  private:
+      void init();
   public:
       void setBorderSurface(const char* pv1, const char* pv2);
       char* getPV1();

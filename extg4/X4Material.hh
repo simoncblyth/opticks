@@ -20,10 +20,9 @@ class X4_API X4Material
         static std::string Digest();
         static std::string Digest(const std::vector<G4Material*>& materials);
         static std::string Digest(const G4Material* material);
-        static std::string Digest(const G4MaterialPropertiesTable* mpt);
     public:
         static GMaterial* Convert(const G4Material* material);
-        static void       AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt);
+       // static void       AddProperties(GMaterial* mat, const G4MaterialPropertiesTable* mpt);
     public:
         X4Material(const G4Material* material); 
         GMaterial* getMaterial();

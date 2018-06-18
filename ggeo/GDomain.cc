@@ -7,8 +7,23 @@
 #include <string>
 
 #include "GDomain.hh"
+#include "Opticks.hh"
 
 #include "PLOG.hh"
+
+
+template <typename T>
+GDomain<T>* GDomain<T>::fDefaultDomain = NULL  ;
+
+template <typename T>
+GDomain<T>* GDomain<T>::GetDefaultDomain() 
+{
+    if(fDefaultDomain == NULL)
+    {
+        fDefaultDomain = new GDomain<T>(Opticks::DOMAIN_LOW, Opticks::DOMAIN_HIGH, Opticks::DOMAIN_STEP ); 
+    }
+    return fDefaultDomain ;
+}
 
 template <typename T>
 GDomain<T>* GDomain<T>::makeInterpolationDomain(T step)

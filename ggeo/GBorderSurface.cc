@@ -6,7 +6,7 @@
 #include "GBorderSurface.hh"
 #include "GOpticalSurface.hh"
 #include "GPropertyMap.hh"
-
+#include "GDomain.hh"
 
 #include "GGEO_BODY.hh"
 
@@ -17,7 +17,15 @@ GBorderSurface::GBorderSurface(const char* name, unsigned int index, GOpticalSur
     m_bordersurface_pv1(NULL),
     m_bordersurface_pv2(NULL)
 {
+    init() ;
 }
+
+void GBorderSurface::init()
+{
+    setStandardDomain( GDomain<float>::GetDefaultDomain()) ;   
+    // ensure the domain is set before adding properties, like AssimpGGeo 
+}
+
 
 GBorderSurface::~GBorderSurface()
 {
