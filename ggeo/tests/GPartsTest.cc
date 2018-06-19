@@ -80,6 +80,10 @@ void test_save_load(GBndLib* bndlib)
 
     const char* dir = "$TMP/GPartsTest_test_save" ;
     pts->setBndLib(bndlib);
+
+    // saving, registers boundaries : so the mlib and slib must be closed
+
+
     pts->save(dir);  // asserts in here for lack of bndlib
 
 
@@ -105,6 +109,7 @@ int main(int argc, char** argv)
 
     bool constituents = true ; 
     GBndLib* bndlib = GBndLib::load(&ok, constituents);
+    bndlib->closeConstituents();
 
     test_save_empty(bndlib);
     test_save_load(bndlib);

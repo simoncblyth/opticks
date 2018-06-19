@@ -629,7 +629,7 @@ unsigned int GParts::getNumParts()
 
 void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbosity )
 {
-   // gets invoked from GMergedMesh::mergeSolidAnalytic
+   // gets invoked from GMergedMesh::mergeVolumeAnalytic
 
     const float* data = static_cast<float*>(gtransform->getPointer());
 
@@ -850,7 +850,7 @@ In orther words "parts" are associated to their containing "prim"
 via the nodeIndex property.
 
 For the CSG nodeTree things are simpler as each NCSG tree 
-directly corresponds to a 1 GSolid and 1 GParts that
+directly corresponds to a 1 GVolume and 1 GParts that
 are added separtately, see GGeoTest::loadCSG.
 */
 

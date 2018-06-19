@@ -119,6 +119,7 @@ void GBndLib::loadIndexBuffer()
     }
 }
 
+
 void GBndLib::saveIndexBuffer()
 {
     NPY<unsigned int>* indexBuf = createIndexBuffer();
@@ -281,6 +282,7 @@ GBndLib::GBndLib(Opticks* ok)
     init();
 }
 
+
 void GBndLib::init()
 {
     if(m_dbgbnd)
@@ -289,6 +291,15 @@ void GBndLib::init()
     }
     assert(UNSET == GItemList::UNSET);
 }
+
+
+void GBndLib::closeConstituents()
+{
+    LOG(info) << "GBndLib::closeConstituents" ; 
+    if(m_mlib) m_mlib->close(); 
+    if(m_slib) m_slib->close(); 
+}
+
 
 bool GBndLib::isDbgBnd() const 
 {

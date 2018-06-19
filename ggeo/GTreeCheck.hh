@@ -8,9 +8,9 @@ struct NSceneConfig ;
 
 //class GGeo ; 
 class GGeoLib ;    // merged meshes 
-class GNodeLib ;   // GSolid nodes
+class GNodeLib ;   // GVolume nodes
 class GNode ; 
-class GSolid ; 
+class GVolume ; 
 class GBuffer ;
 class GMergedMesh ;
 
@@ -95,7 +95,7 @@ class GGEO_API GTreeCheck {
 
        unsigned int              m_repeat_min ; 
        unsigned int              m_vertex_min ; 
-       GSolid*                   m_root ; 
+       GVolume*                   m_root ; 
        unsigned int              m_count ;  
        unsigned int              m_labels ;   // count of nodes labelled
        Counts<unsigned int>*     m_digest_count ; 

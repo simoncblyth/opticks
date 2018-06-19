@@ -32,7 +32,9 @@ int main(int argc, char** argv)
     NSlice* slice = ok.getAnalyticPMTSlice();
     unsigned apmtidx = ok.getAnalyticPMTIndex();
 
-    GBndLib* blib = GBndLib::load(&ok, true);
+    bool constituents = true ; 
+    GBndLib* blib = GBndLib::load(&ok, constituents);
+    blib->closeConstituents();
 
     GPmt* pmt = GPmt::load(&ok, blib, apmtidx, slice);
 

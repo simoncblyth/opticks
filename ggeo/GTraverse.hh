@@ -1,13 +1,21 @@
 #pragma once
 
-
-
 template<class T> class Counts ;
 
 class GGeo ; 
 class GBndLib ; 
 class GMaterialLib ; 
 class GNode ; 
+
+/**
+GTraverse
+===========
+
+Takes a quick spin over the GGeo GVolume tree counting material
+names obtained from volume bpundaries.
+
+**/
+
 
 #include "GGEO_API_EXPORT.hh"
 class GGEO_API GTraverse {

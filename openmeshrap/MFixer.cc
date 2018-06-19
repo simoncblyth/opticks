@@ -31,11 +31,11 @@ void MFixer::init()
 void MFixer::fixMesh()
 {
 
-    unsigned int nso = m_ggeo->getNumSolids();
+    unsigned int nso = m_ggeo->getNumVolumes();
     unsigned int nme = m_ggeo->getNumMeshes();
 
     LOG(info) << "MFixer::fixMesh" 
-              << " NumSolids " << nso  
+              << " NumVolumes " << nso  
               << " NumMeshes " << nme 
               ; 
 

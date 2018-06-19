@@ -319,11 +319,11 @@ void GGeoLib::dump(const char* msg)
     {   
         GMergedMesh* mm = getMergedMesh(i); 
         const char geocode = mm ? mm->getGeoCode() : '-' ;
-        unsigned numSolids = mm ? mm->getNumSolids() : -1 ;
+        unsigned numVolumes = mm ? mm->getNumVolumes() : -1 ;
         unsigned numFaces = mm ? mm->getNumFaces() : -1 ;
         unsigned numITransforms = mm ? mm->getNumITransforms() : -1 ;
 
-        if( i == 0 ) num_total_volumes = numSolids ; 
+        if( i == 0 ) num_total_volumes = numVolumes ; 
 
         std::cout << "mm" 
                   << " i " << std::setw(3) << i 
@@ -331,13 +331,13 @@ void GGeoLib::dump(const char* msg)
                   << std::setw(5) << ( mm ? " " : "NULL" ) 
                   << std::setw(5) << ( mm && mm->isSkip(  ) ? "SKIP" : " " ) 
                   << std::setw(7) << ( mm && mm->isEmpty()  ? "EMPTY" : " " ) 
-                  << " numSolids " << std::setw(10) << numSolids
+                  << " numVolumes " << std::setw(10) << numVolumes
                   << " numFaces  " << std::setw(10) << numFaces
                   << " numITransforms  " << std::setw(10) << numITransforms
-                  << " numITransforms*numSolids  " << std::setw(10) << numITransforms*numSolids
+                  << " numITransforms*numVolumes  " << std::setw(10) << numITransforms*numVolumes
                   << std::endl
                   ;   
-        num_instanced_volumes += i > 0 ? numITransforms*numSolids : 0 ;
+        num_instanced_volumes += i > 0 ? numITransforms*numVolumes : 0 ;
     }
 
     std::cout

@@ -32,7 +32,7 @@ TODO: enable OpticksViz to be used in such a
 
 class OGLRAP_API AxisApp {
   public:
-      AxisApp(int argc, char** argv);
+      AxisApp(Opticks* ok);
   public:
       void renderLoop();
       MultiViewNPY* getAxisAttr();
@@ -43,7 +43,7 @@ class OGLRAP_API AxisApp {
       void prepareViz();
       void upload();
   private:
-      Opticks*     m_opticks ;
+      Opticks*     m_ok ;
       OpticksHub*  m_hub ;
       OpticksViz*  m_viz ;
       Composition* m_composition ;

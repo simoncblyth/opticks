@@ -3,17 +3,12 @@ class OpticksQuery ;
 
 #include "BFile.hh"
 
-
 #include "OpticksHub.hh"
 #include "OpticksCfg.hh"
 #include "Opticks.hh"
 
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
-
-//#include "GSurLib.hh"
-//#include "GSur.hh"
-//#include "CSurLib.hh"
 
 #include "CMaterialTable.hh"
 #include "CMaterialBridge.hh"
@@ -140,7 +135,6 @@ void CGeometry::export_()
     if(!expo) return ; 
     //std::string expodir = m_cfg->getExportConfig();
     
-
     const char* expodir = "$TMP/CGeometry" ;
 
     if(BFile::ExistsDir(expodir))
@@ -152,8 +146,5 @@ void CGeometry::export_()
     BFile::CreateDir(expodir);
     m_detector->export_dae(expodir, "CGeometry.dae");
     m_detector->export_gdml(expodir, "CGeometry.gdml");
-
 }
-
-
 

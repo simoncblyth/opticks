@@ -8,7 +8,7 @@
 #include "GVector.hh"
 #include "GMesh.hh"
 #include "GMergedMesh.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GItemIndex.hh"
 
 #include "GNodeLib.hh"
@@ -50,11 +50,11 @@ void GColorizer::setRepeatIndex(unsigned int ridx)
 void GColorizer::writeVertexColors()
 {
     GMergedMesh* mesh0 = m_geolib->getMergedMesh(0);
-    GSolid* root = m_nodelib->getSolid(0);
+    GVolume* root = m_nodelib->getVolume(0);
     writeVertexColors( mesh0, root );
 }
 
-void GColorizer::writeVertexColors(GMergedMesh* mesh0, GSolid* root)
+void GColorizer::writeVertexColors(GMergedMesh* mesh0, GVolume* root)
 {
     assert(mesh0);
 
@@ -83,7 +83,7 @@ void GColorizer::init()
 }
 
 
-void GColorizer::traverse(GSolid* root)
+void GColorizer::traverse(GVolume* root)
 {
     if(!m_target)
     {
@@ -99,12 +99,12 @@ void GColorizer::traverse(GSolid* root)
 
 void GColorizer::traverse_r( GNode* node, unsigned depth)
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    const GMesh* mesh = solid->getMesh();
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    const GMesh* mesh = volume->getMesh();
     unsigned nvert = mesh->getNumVertices();
 
 
-    bool selected = solid->isSelected() && solid->getRepeatIndex() == m_repeat_index ;
+    bool selected = volume->isSelected() && volume->getRepeatIndex() == m_repeat_index ;
 
     LOG(trace) << "GColorizer::traverse"
               << " depth " << depth
@@ -153,9 +153,9 @@ void GColorizer::traverse_r( GNode* node, unsigned depth)
 nvec3 GColorizer::getSurfaceColor(GNode* node)
 {
 
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
 
-    unsigned int boundary = solid->getBoundary();
+    unsigned int boundary = volume->getBoundary();
 
     guint4 bnd = m_blib->getBnd(boundary);
     unsigned int isur_ = bnd.z ;  

@@ -18,7 +18,7 @@
 
 
 #include "GGeo.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GParts.hh"
 #include "GTree.hh"
 #include "GMergedMesh.hh"
@@ -59,7 +59,7 @@ GMergedMesh::GMergedMesh(
        GMesh(index, vertices, num_vertices, faces, num_faces, normals, texcoords),
        m_cur_vertices(0),
        m_cur_faces(0),
-       m_cur_solid(0),
+       m_cur_volume(0),
        m_cur_mergedmesh(0),
        m_num_csgskip(0),
        m_cur_base(NULL)
@@ -73,7 +73,7 @@ GMergedMesh::GMergedMesh(unsigned index)
        GMesh(index, NULL, 0, NULL, 0, NULL, NULL),
        m_cur_vertices(0),
        m_cur_faces(0),
-       m_cur_solid(0),
+       m_cur_volume(0),
        m_cur_mergedmesh(0),
        m_num_csgskip(0),
        m_cur_base(NULL)
@@ -93,8 +93,8 @@ std::string GMergedMesh::brief() const
        << " isTriangulated " << std::setw(1) << isTriangulated()
        << " numVertices " << std::setw(7) << getNumVertices()
        << " numFaces " << std::setw(7) << getNumFaces()
-       << " numSolids " << std::setw(5) << getNumSolids()
-       << " numSolidsSelected " << std::setw(5) << getNumSolidsSelected()
+       << " numVolumes " << std::setw(5) << getNumVolumes()
+       << " numVolumesSelected " << std::setw(5) << getNumVolumesSelected()
   //     << " numComponents " << std::setw(5) << getNumComponents()
        ;
 
@@ -124,40 +124,40 @@ bool GMergedMesh::isInstanced()
 
 
 
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity )
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity )
 {
-    std::vector<GSolid*> solids ; 
-    solids.push_back(solid);
-    return combine(index, mm, solids, verbosity );
+    std::vector<GVolume*> volumes ; 
+    volumes.push_back(volume);
+    return combine(index, mm, volumes, verbosity );
 }
 
 // count-allocate-merge
-GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity )
+GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity )
 {
-    unsigned numSolids = solids.size(); 
+    unsigned numVolumes = volumes.size(); 
     LOG(info) << "GMergedMesh::combine"
               << " making new mesh "
               << " index " << index 
-              << " solids " << numSolids
+              << " volumes " << numVolumes
               << " verbosity " << verbosity 
               ; 
 
-    GSolid::Dump(solids, "GMergedMesh::combine (source solids)");
+    GVolume::Dump(volumes, "GMergedMesh::combine (source volumes)");
 
 
     GMergedMesh* com = new GMergedMesh( index ); 
     com->setVerbosity(mm ? mm->getVerbosity() : 0 );
 
     if(mm) com->countMergedMesh(mm, true);
-    for(unsigned i=0 ; i < numSolids ; i++) com->countSolid(solids[i], true, verbosity ) ;
+    for(unsigned i=0 ; i < numVolumes ; i++) com->countVolume(volumes[i], true, verbosity ) ;
 
     com->allocate(); 
  
     if(mm) com->mergeMergedMesh(mm, true, verbosity );
-    for(unsigned i=0 ; i < numSolids ; i++) com->mergeSolid(solids[i], true, verbosity ) ;
+    for(unsigned i=0 ; i < numVolumes ; i++) com->mergeVolume(volumes[i], true, verbosity ) ;
 
     com->updateBounds();
-    com->dumpSolids("GMergedMesh::combine (combined result) ");
+    com->dumpVolumes("GMergedMesh::combine (combined result) ");
    
     return com ; 
 }
@@ -219,17 +219,17 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
 
 void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity )
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
 
     int idx = getIndex() ;
     assert(idx > -1 ) ; 
 
     unsigned uidx = idx > -1 ? idx : UINT_MAX ; 
-    unsigned ridx = solid->getRepeatIndex() ;
+    unsigned ridx = volume->getRepeatIndex() ;
 
     bool repsel =  idx == -1 || ridx == uidx ;
-    bool csgskip = solid->isCSGSkip() ; 
-    bool selected_ =  solid->isSelected() && repsel ;
+    bool csgskip = volume->isCSGSkip() ; 
+    bool selected_ =  volume->isSelected() && repsel ;
     bool selected = selected_ && !csgskip ;
 
     if(pass == PASS_COUNT)
@@ -242,8 +242,8 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
                   << "GMergedMesh::traverse_r"
                   << " verbosity " << verbosity
                   << " node " << node 
-                  << " solid " << solid 
-                  << " solid.pts " << solid->getParts()
+                  << " volume " << volume 
+                  << " volume.pts " << volume->getParts()
                   << " depth " << depth 
                   << " NumChildren " << node->getNumChildren()
                   << " pass " << pass
@@ -254,8 +254,8 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
 
     switch(pass)
     {
-       case PASS_COUNT:    countSolid(solid, selected, verbosity)  ;break;
-       case PASS_MERGE:    mergeSolid(solid, selected, verbosity)  ;break;
+       case PASS_COUNT:    countVolume(volume, selected, verbosity)  ;break;
+       case PASS_MERGE:    mergeVolume(volume, selected, verbosity)  ;break;
                default:    assert(0)                    ;break;
     }
 
@@ -263,24 +263,24 @@ void GMergedMesh::traverse_r( GNode* node, unsigned int depth, unsigned int pass
 }
 
 
-void GMergedMesh::countSolid( GSolid* solid, bool selected, unsigned verbosity )
+void GMergedMesh::countVolume( GVolume* volume, bool selected, unsigned verbosity )
 {
-    const GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = volume->getMesh();
 
-    m_num_solids += 1 ; 
+    m_num_volumes += 1 ; 
 
     if(selected)
     {
-        m_num_solids_selected += 1 ;
+        m_num_volumes_selected += 1 ;
         countMesh( mesh ); 
     }
 
     if(m_verbosity > 1)
-    LOG(info) << "GMergedMesh::count GSolid " 
+    LOG(info) << "GMergedMesh::count GVolume " 
               << " verbosity " << verbosity 
               << " selected " << selected
-              << " num_solids " << m_num_solids 
-              << " num_solids_selected " << m_num_solids_selected 
+              << " num_volumes " << m_num_volumes 
+              << " num_volumes_selected " << m_num_volumes_selected 
               ;
 }
 
@@ -297,18 +297,18 @@ void GMergedMesh::countMesh( const GMesh* mesh )
 
 void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
 {
-    // NB what is appropriate for a merged mesh is not for a mesh ... wrt counting solids
+    // NB what is appropriate for a merged mesh is not for a mesh ... wrt counting volumes
     // so cannot lump the below together using GMesh base class
 
-    unsigned int nsolid = other->getNumSolids();
+    unsigned int nvolume = other->getNumVolumes();
 
     m_num_mergedmesh += 1 ; 
 
-    m_num_solids += nsolid ;
+    m_num_volumes += nvolume ;
 
     if(selected)
     {
-        m_num_solids_selected += 1 ;
+        m_num_volumes_selected += 1 ;
         countMesh( other );     // increment m_num_vertices, m_num_faces
     }
 
@@ -316,22 +316,22 @@ void GMergedMesh::countMergedMesh( GMergedMesh*  other, bool selected)
     LOG(info) << "GMergedMesh::count other GMergedMesh  " 
               << " selected " << selected
               << " num_mergedmesh " << m_num_mergedmesh 
-              << " num_solids " << m_num_solids 
-              << " num_solids_selected " << m_num_solids_selected 
+              << " num_volumes " << m_num_volumes 
+              << " num_volumes_selected " << m_num_volumes_selected 
               ;
 }
 
 
 
-void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
+void GMergedMesh::mergeVolume( GVolume* volume, bool selected, unsigned verbosity )
 {
-    GNode* node = static_cast<GNode*>(solid);
+    GNode* node = static_cast<GNode*>(volume);
     GNode* base = getCurrentBase();
-    unsigned ridx = solid->getRepeatIndex() ;  
+    unsigned ridx = volume->getRepeatIndex() ;  
 
-    GMatrixF* transform = base ? solid->getRelativeTransform(base) : solid->getTransform() ;     // base or root relative global transform
+    GMatrixF* transform = base ? volume->getRelativeTransform(base) : volume->getTransform() ;     // base or root relative global transform
 
-    // GMergedMesh::create invokes GMergedMesh::mergeSolid from node tree traversal 
+    // GMergedMesh::create invokes GMergedMesh::mergeVolume from node tree traversal 
     // via the recursive GMergedMesh::traverse_r 
     //
     // GNode::getRelativeTransform
@@ -350,20 +350,20 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
     if( ridx == 0 ) assert( base == NULL && "expecting NULL base for ridx 0" ); 
 
 
-    float* dest = getTransform(m_cur_solid);
+    float* dest = getTransform(m_cur_volume);
     assert(dest);
     transform->copyTo(dest);
 
-    const GMesh* mesh = solid->getMesh();   // triangulated
-    GParts* pts = solid->getParts();  // analytic 
+    const GMesh* mesh = volume->getMesh();   // triangulated
+    GParts* pts = volume->getParts();  // analytic 
 
 
     unsigned num_vert = mesh->getNumVertices();
     unsigned num_face = mesh->getNumFaces();
 
 
-    LOG(trace) << "GMergedMesh::mergeSolid "
-               << " m_cur_solid " << std::setw(6) << m_cur_solid
+    LOG(trace) << "GMergedMesh::mergeVolume "
+               << " m_cur_volume " << std::setw(6) << m_cur_volume
                << " pts (normally NULL) " << pts
                << " selected " << ( selected ? "YES" : "NO" ) 
                << " num_vert " << std::setw(5) << num_vert
@@ -377,23 +377,23 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
     gfloat3* vertices = mesh->getTransformedVertices(*transform) ;
     gfloat3* normals  = mesh->getTransformedNormals(*transform);  
 
-    if(verbosity > 3) mergeSolidDump(solid);
-    mergeSolidBBox(vertices, num_vert);
-    mergeSolidIdentity(solid, selected );
+    if(verbosity > 3) mergeVolumeDump(volume);
+    mergeVolumeBBox(vertices, num_vert);
+    mergeVolumeIdentity(volume, selected );
 
-    m_cur_solid += 1 ;    // irrespective of selection, as prefer absolute solid indexing 
+    m_cur_volume += 1 ;    // irrespective of selection, as prefer absolute volume indexing 
 
     if(selected)
     {
-        mergeSolidVertices( num_vert, vertices, normals );
+        mergeVolumeVertices( num_vert, vertices, normals );
 
-        unsigned* node_indices     = solid->getNodeIndices();
-        unsigned* boundary_indices = solid->getBoundaryIndices();
-        unsigned* sensor_indices   = solid->getSensorIndices();
+        unsigned* node_indices     = volume->getNodeIndices();
+        unsigned* boundary_indices = volume->getBoundaryIndices();
+        unsigned* sensor_indices   = volume->getSensorIndices();
 
-        mergeSolidFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
+        mergeVolumeFaces( num_face, faces, node_indices, boundary_indices, sensor_indices  );
 
-        mergeSolidAnalytic( pts, transform, verbosity );
+        mergeVolumeAnalytic( pts, transform, verbosity );
 
         // offsets with the flat arrays
         m_cur_vertices += num_vert ;  
@@ -405,7 +405,7 @@ void GMergedMesh::mergeSolid( GSolid* solid, bool selected, unsigned verbosity )
 
 void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity )
 {
-    // solids are present irrespective of selection as prefer absolute solid indexing 
+    // volumes are present irrespective of selection as prefer absolute volume indexing 
 
     // 2017-10-21 : HUH SEEMS NEVER ADDED A SOLID TO AN MM ANALYTIC-WISE PREVIOUSLY ?
     GParts* pts = other->getParts(); 
@@ -421,40 +421,40 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
         m_parts->add( pts, verbosity );
     }
 
-    unsigned int nsolid = other->getNumSolids();
+    unsigned int nvolume = other->getNumVolumes();
 
     if(m_verbosity > 1)
     LOG(info) << "GMergedMesh::mergeMergedMesh"
-              << " m_cur_solid " << m_cur_solid
+              << " m_cur_volume " << m_cur_volume
               << " m_cur_vertices " << m_cur_vertices
               << " m_cur_faces " << m_cur_faces
-              << " other nsolid " << nsolid 
+              << " other nvolume " << nvolume 
               << " selected " << selected
               ; 
 
 
-    for(unsigned int i=0 ; i < nsolid ; i++)
+    for(unsigned int i=0 ; i < nvolume ; i++)
     {
         gbbox bb = other->getBBox(i) ;
         gfloat4 ce = other->getCenterExtent(i) ;
 
         if(m_verbosity > 2)
         LOG(info) << "GMergedMesh::mergeMergedMesh"
-                   << " m_cur_solid " << m_cur_solid  
+                   << " m_cur_volume " << m_cur_volume  
                    << " i " << i
                    << " ce " <<  ce.description() 
                    << " bb " <<  bb.description() 
                    ;
 
-        m_bbox[m_cur_solid] = bb ;  
-        m_center_extent[m_cur_solid] = ce ;
-        m_nodeinfo[m_cur_solid] = other->getNodeInfo(i) ; 
-        m_identity[m_cur_solid] = other->getIdentity(i) ; 
-        m_meshes[m_cur_solid] = other->getMeshIndice(i) ; 
+        m_bbox[m_cur_volume] = bb ;  
+        m_center_extent[m_cur_volume] = ce ;
+        m_nodeinfo[m_cur_volume] = other->getNodeInfo(i) ; 
+        m_identity[m_cur_volume] = other->getIdentity(i) ; 
+        m_meshes[m_cur_volume] = other->getMeshIndice(i) ; 
 
-        memcpy( getTransform(m_cur_solid), other->getTransform(i), 16*sizeof(float) ); 
+        memcpy( getTransform(m_cur_volume), other->getTransform(i), 16*sizeof(float) ); 
 
-        m_cur_solid += 1 ; 
+        m_cur_volume += 1 ; 
     }
 
     unsigned int nvert = other->getNumVertices();
@@ -477,8 +477,8 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 
     if(selected)
     {
-        mergeSolidVertices( nvert, vertices, normals );
-        mergeSolidFaces(    nface, faces, node_indices, boundary_indices, sensor_indices );
+        mergeVolumeVertices( nvert, vertices, normals );
+        mergeVolumeFaces(    nface, faces, node_indices, boundary_indices, sensor_indices );
 
         m_cur_vertices += nvert ;
         m_cur_faces    += nface ;
@@ -487,16 +487,16 @@ void GMergedMesh::mergeMergedMesh( GMergedMesh* other, bool selected, unsigned v
 }
 
 
-void GMergedMesh::mergeSolidDump( GSolid* solid)
+void GMergedMesh::mergeVolumeDump( GVolume* volume)
 {
-    const char* pvn = solid->getPVName() ;
-    const char* lvn = solid->getLVName() ;
-    guint4 _identity = solid->getIdentity();
-    unsigned ridx = solid->getRepeatIndex() ;  
+    const char* pvn = volume->getPVName() ;
+    const char* lvn = volume->getLVName() ;
+    guint4 _identity = volume->getIdentity();
+    unsigned ridx = volume->getRepeatIndex() ;  
 
-    LOG(info) << "GMergedMesh::mergeSolidDump" 
-              << " m_cur_solid " << m_cur_solid
-              << " idx " << solid->getIndex()
+    LOG(info) << "GMergedMesh::mergeVolumeDump" 
+              << " m_cur_volume " << m_cur_volume
+              << " idx " << volume->getIndex()
               << " ridx " << ridx
               << " id " << _identity.description()
               << " pv " << ( pvn ? pvn : "-" )
@@ -504,31 +504,31 @@ void GMergedMesh::mergeSolidDump( GSolid* solid)
               ;
 }
 
-void GMergedMesh::mergeSolidBBox( gfloat3* vertices, unsigned nvert )
+void GMergedMesh::mergeVolumeBBox( gfloat3* vertices, unsigned nvert )
 {
-    // needs to be outside the selection branch for the all solid center extent
+    // needs to be outside the selection branch for the all volume center extent
     gbbox* bb = GMesh::findBBox(vertices, nvert) ;
-    if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeSolid NULL bb " ; 
+    if(bb == NULL) LOG(fatal) << "GMergedMesh::mergeVolume NULL bb " ; 
     assert(bb); 
 
-    m_bbox[m_cur_solid] = *bb ;  
-    m_center_extent[m_cur_solid] = bb->center_extent() ;
+    m_bbox[m_cur_volume] = *bb ;  
+    m_center_extent[m_cur_volume] = bb->center_extent() ;
 }
 
-void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
+void GMergedMesh::mergeVolumeIdentity( GVolume* volume, bool selected )
 {
-    const GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = volume->getMesh();
 
     unsigned nvert = mesh->getNumVertices();
     unsigned nface = mesh->getNumFaces();
 
-    guint4 _identity = solid->getIdentity();
+    guint4 _identity = volume->getIdentity();
 
-    unsigned nodeIndex = solid->getIndex();
+    unsigned nodeIndex = volume->getIndex();
     unsigned meshIndex = mesh->getIndex();
-    unsigned boundary = solid->getBoundary();
+    unsigned boundary = volume->getBoundary();
 
-    NSensor* sensor = solid->getSensor();
+    NSensor* sensor = volume->getSensor();
     unsigned sensorIndex = NSensor::RefIndex(sensor) ; 
 
     assert(_identity.x == nodeIndex);
@@ -536,8 +536,8 @@ void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
     assert(_identity.z == boundary);
     //assert(_identity.w == sensorIndex);   this is no longer the case, now require SensorSurface in the identity
     
-    LOG(debug) << "GMergedMesh::mergeSolidIdentity"
-              << " m_cur_solid " << m_cur_solid 
+    LOG(debug) << "GMergedMesh::mergeVolumeIdentity"
+              << " m_cur_volume " << m_cur_volume 
               << " nodeIndex " << nodeIndex
               << " boundaryIndex " << boundary
               << " sensorIndex " << sensorIndex
@@ -545,33 +545,33 @@ void GMergedMesh::mergeSolidIdentity( GSolid* solid, bool selected )
               ;
 
 
-    GNode* parent = solid->getParent();
+    GNode* parent = volume->getParent();
     unsigned int parentIndex = parent ? parent->getIndex() : UINT_MAX ;
 
-    m_meshes[m_cur_solid] = meshIndex ; 
+    m_meshes[m_cur_volume] = meshIndex ; 
 
     // face and vertex counts must use same selection as above to be usable 
     // with the above filled vertices and indices 
 
-    m_nodeinfo[m_cur_solid].x = selected ? nface : 0 ; 
-    m_nodeinfo[m_cur_solid].y = selected ? nvert : 0 ; 
-    m_nodeinfo[m_cur_solid].z = nodeIndex ;  
-    m_nodeinfo[m_cur_solid].w = parentIndex ; 
+    m_nodeinfo[m_cur_volume].x = selected ? nface : 0 ; 
+    m_nodeinfo[m_cur_volume].y = selected ? nvert : 0 ; 
+    m_nodeinfo[m_cur_volume].z = nodeIndex ;  
+    m_nodeinfo[m_cur_volume].w = parentIndex ; 
 
     if(isGlobal())
     {
-         if(nodeIndex != m_cur_solid)
-             LOG(fatal) << "GMergedMesh::mergeSolidIdentity mismatch " 
+         if(nodeIndex != m_cur_volume)
+             LOG(fatal) << "GMergedMesh::mergeVolumeIdentity mismatch " 
                         <<  " nodeIndex " << nodeIndex 
-                        <<  " m_cur_solid " << m_cur_solid
+                        <<  " m_cur_volume " << m_cur_volume
                         ; 
 
-         //assert(nodeIndex == m_cur_solid);  // trips ggv-pmt still needed ?
+         //assert(nodeIndex == m_cur_volume);  // trips ggv-pmt still needed ?
     } 
-    m_identity[m_cur_solid] = _identity ; 
+    m_identity[m_cur_volume] = _identity ; 
 }
 
-void GMergedMesh::mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals )
+void GMergedMesh::mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals )
 {
     for(unsigned i=0 ; i < nvert ; ++i )
     {
@@ -580,7 +580,7 @@ void GMergedMesh::mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3
     }
 }
 
-void GMergedMesh::mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices )
+void GMergedMesh::mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices )
 {
     assert(node_indices);
     assert(boundary_indices);
@@ -601,18 +601,18 @@ void GMergedMesh::mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node
 }
 
 
-void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
 {
     // analytic CSG combined at node level  
 
-    LOG(debug) << "GMergedMesh::mergeSolidAnalytic" 
+    LOG(debug) << "GMergedMesh::mergeVolumeAnalytic" 
                << " pts (often NULL) " << ( pts ? pts->desc() : "-" )
                 ; 
 
 
     if(!pts)
     {
-        LOG(debug) << "GMergedMesh::mergeSolidAnalytic pts NULL " ;
+        LOG(debug) << "GMergedMesh::mergeVolumeAnalytic pts NULL " ;
         return ; 
         //assert(pts);
     }
@@ -700,12 +700,12 @@ GMergedMesh* GMergedMesh::load(const char* dir, unsigned int index, const char* 
 
 
 
-void GMergedMesh::dumpSolids(const char* msg) const 
+void GMergedMesh::dumpVolumes(const char* msg) const 
 {
     gfloat4 ce0 = getCenterExtent(0) ;
     LOG(info) << msg << " ce0 " << ce0.description() ; 
 
-    for(unsigned int index=0 ; index < getNumSolids() ; ++index)
+    for(unsigned int index=0 ; index < getNumVolumes() ; ++index)
     {
         gfloat4 ce = getCenterExtent(index) ;
         gbbox bb = getBBox(index) ; 
@@ -717,7 +717,7 @@ void GMergedMesh::dumpSolids(const char* msg) const
              ;
     }
 
-    for(unsigned int index=0 ; index < getNumSolids() ; ++index)
+    for(unsigned int index=0 ; index < getNumVolumes() ; ++index)
     {
         guint4* ni = getNodeInfo() + index ; 
         guint4* id = getIdentity() + index ; 
@@ -799,7 +799,7 @@ GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // stat
 
     //com->updateBounds(); ?
 
-    com->dumpSolids("GMergedMesh::MakeComposite");
+    com->dumpVolumes("GMergedMesh::MakeComposite");
    
     return com ; 
 }

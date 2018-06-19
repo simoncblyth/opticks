@@ -37,23 +37,23 @@ TODO SOMETIME : break up the monolith
 Where NCSG is used
 -------------------
 
-void GGeoTest::loadCSG(const char* csgpath, std::vector<GSolid*>& solids)
+void GGeoTest::loadCSG(const char* csgpath, std::vector<GVolume*>& volumes)
 
     GGeoTest is the primary user of NCSG, with method GGeoTest::loadCSG
     invoking NCSG::Deserialize to create vectors of csg trees. 
-    Each tree is converted into a GSolid by GMaker::makeFromCSG(NCSG* tree).  
+    Each tree is converted into a GVolume by GMaker::makeFromCSG(NCSG* tree).  
 
     This python defined CSG node tree approach has replaced
     the old bash configured GGeoTest::createCsgInBox.
 
 
-GSolid* GMaker::makeFromCSG(NCSG* csg)
+GVolume* GMaker::makeFromCSG(NCSG* csg)
 
     Coordinates:
 
     * NPolygonizer -> GMesh 
     * GParts::make, create analytic description
-    * GSolid, container for GMesh and GParts
+    * GVolume, container for GMesh and GParts
 
 GParts* GParts::make( NCSG* tree)
 
@@ -61,7 +61,7 @@ GParts* GParts::make( NCSG* tree)
     huh but thats done in GMaker::makeFromCSG too...
 
     * Is GParts is serving any purpose for NCSG ?
-      YES : it provides merging of analytic solids
+      YES : it provides merging of analytic volumes
       in parallel with the merging of triangulated meshes
 
 

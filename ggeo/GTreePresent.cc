@@ -10,7 +10,7 @@
 
 #include "GTreePresent.hh"
 #include "GMesh.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 
 #include "PLOG.hh"
 
@@ -49,7 +49,7 @@ void GTreePresent::traverse( GNode* node, unsigned int depth, unsigned int numSi
 
     if(!name) name = NONAME ; 
 
-    //GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    //GVolume* solid = dynamic_cast<GVolume*>(node) ;
     //bool selected = solid->isSelected();
 
     std::stringstream ss ; 

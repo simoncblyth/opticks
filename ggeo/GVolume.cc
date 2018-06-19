@@ -14,13 +14,13 @@
 #include "GBndLib.hh"
 #include "GSurfaceLib.hh"
 
-#include "GSolid.hh"
+#include "GVolume.hh"
 
 #include "PLOG.hh"
 #include "GGEO_BODY.hh"
 
 
-GSolid::GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
+GVolume::GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh, unsigned int boundary, NSensor* sensor)
          : 
          GNode(index, transform, mesh ),
          m_boundary(boundary),
@@ -36,46 +36,46 @@ GSolid::GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh
 }
 
 
-OpticksCSG_t GSolid::getCSGFlag()
+OpticksCSG_t GVolume::getCSGFlag()
 {
     return m_csgflag ; 
 }
 
-bool GSolid::isCSGSkip()
+bool GVolume::isCSGSkip()
 {
     return m_csgskip ; 
 }
-void GSolid::setCSGSkip(bool csgskip)
+void GVolume::setCSGSkip(bool csgskip)
 {
     m_csgskip = csgskip ; 
 }
 
 
-unsigned int GSolid::getBoundary() const 
+unsigned int GVolume::getBoundary() const 
 {
     return m_boundary ; 
 }
 
-NSensor* GSolid::getSensor()
+NSensor* GVolume::getSensor()
 {
     return m_sensor ; 
 }
 
 
-void GSolid::setPVName(const char* pvname)
+void GVolume::setPVName(const char* pvname)
 {
     m_pvname = strdup(pvname);
 }
-void GSolid::setLVName(const char* lvname)
+void GVolume::setLVName(const char* lvname)
 {
     m_lvname = strdup(lvname);
 }
 
-const char* GSolid::getPVName()
+const char* GVolume::getPVName()
 {
     return m_pvname ; 
 }
-const char* GSolid::getLVName()
+const char* GVolume::getLVName()
 {
     return m_lvname ; 
 }
@@ -87,15 +87,15 @@ const char* GSolid::getLVName()
 
 
 
-void GSolid::Summary(const char* msg )
+void GVolume::Summary(const char* msg )
 {
    if(!msg) msg = getDescription();
-   if(!msg) msg = "GSolid::Summary" ;
+   if(!msg) msg = "GVolume::Summary" ;
    printf("%s\n", msg );
 }
 
 
-std::string GSolid::description()
+std::string GVolume::description()
 {
     const char* desc_ = getDescription() ;
 
@@ -107,22 +107,22 @@ std::string GSolid::description()
 }
 
 
-GParts* GSolid::getParts()
+GParts* GVolume::getParts()
 {
     return m_parts ;  
 }
-void GSolid::setParts(GParts* pts)
+void GVolume::setParts(GParts* pts)
 {
     m_parts = pts ; 
 }
 
 
 // ancillary slot for a parallel node tree, used by X4PhysicalVolume
-void* GSolid::getParallelNode() const 
+void* GVolume::getParallelNode() const 
 {
     return m_parallel_node ; 
 }
-void GSolid::setParallelNode(void* pnode)
+void GVolume::setParallelNode(void* pnode)
 {
     m_parallel_node = pnode ; 
 }
@@ -130,19 +130,19 @@ void GSolid::setParallelNode(void* pnode)
 
 
 
-void GSolid::setCSGFlag(OpticksCSG_t csgflag)
+void GVolume::setCSGFlag(OpticksCSG_t csgflag)
 {
     m_csgflag = csgflag ; 
 }
 
-void GSolid::setBoundary(unsigned int boundary)
+void GVolume::setBoundary(unsigned int boundary)
 {
     m_boundary = boundary ; 
     setBoundaryIndices( boundary );
 }
 
 
-void GSolid::setBoundaryAll(unsigned boundary)
+void GVolume::setBoundaryAll(unsigned boundary)
 {
      unsigned nchild = getNumChildren();
      if(nchild > 0)
@@ -150,21 +150,21 @@ void GSolid::setBoundaryAll(unsigned boundary)
         for(unsigned i=0 ; i < nchild ; i++)
         {
             GNode* node = getChild(i);
-            GSolid* sub = dynamic_cast<GSolid*>(node);
+            GVolume* sub = dynamic_cast<GVolume*>(node);
             sub->setBoundary(boundary);
         }
      } 
 }
 
 
-void GSolid::setSensor(NSensor* sensor)
+void GVolume::setSensor(NSensor* sensor)
 {
     m_sensor = sensor ; 
     // every triangle needs a value... use 0 to mean unset, so sensor   
     setSensorIndices( NSensor::RefIndex(sensor) );
 }
 
-guint4 GSolid::getIdentity()
+guint4 GVolume::getIdentity()
 {
     return guint4(
                    m_index, 
@@ -176,7 +176,7 @@ guint4 GSolid::getIdentity()
 
 
 /*
-void GSolid::setIdentity(const guint4& id )
+void GVolume::setIdentity(const guint4& id )
 {
     assert( id.x == m_index );
     assert( id.y == getMeshIndex() ) ;
@@ -189,11 +189,11 @@ void GSolid::setIdentity(const guint4& id )
 
 
 
-void GSolid::setSensorSurfaceIndex(unsigned int ssi)
+void GVolume::setSensorSurfaceIndex(unsigned int ssi)
 {
     m_sensor_surface_index = ssi ; 
 }
-unsigned int GSolid::getSensorSurfaceIndex()
+unsigned int GVolume::getSensorSurfaceIndex()
 {
     return m_sensor_surface_index ; 
 }
@@ -205,7 +205,7 @@ unsigned int GSolid::getSensorSurfaceIndex()
  
 
 
-void GSolid::Dump( const std::vector<GSolid*>& solids, const char* msg )
+void GVolume::Dump( const std::vector<GVolume*>& solids, const char* msg )
 {
     unsigned numSolid = solids.size() ;
     LOG(info) << msg << " numSolid " << numSolid ; 

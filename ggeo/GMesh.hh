@@ -36,7 +36,7 @@ of the pivotal GMergedMesh (so have to be cautions with refactorings)
    eg setVerticesBuffer 
 
 
-GMesh are distinct geometrical shapes, **NOT** placed nodes/solids
+GMesh are distinct geometrical shapes, **NOT** placed nodes/volumes
 --------------------------------------------------------------------
 
 There are relatively few GMesh which get reused with different transforms
@@ -86,7 +86,7 @@ Face buffers in a GMesh (used from GMergedMesh)
      1*uint*nface
 
 
-Solid buffers in a GMesh (used from GMergedMesh)
+Volume buffers in a GMesh (used from GMergedMesh)
 -------------------------------------------------
 
 *center_extent*
@@ -98,8 +98,8 @@ Solid buffers in a GMesh (used from GMergedMesh)
 *meshes*
 
 *nodeinfo*
-      contains per-solid nface, nvert, nodeindex, parent nodeindex
-      nface counts per-solid allowing solid selection even from 
+      contains per-volume nface, nvert, nodeindex, parent nodeindex
+      nface counts per-volume allowing volume selection even from 
       merged meshes by accessing the correct ranges  
 
       ::
@@ -114,8 +114,8 @@ Solid buffers in a GMesh (used from GMergedMesh)
 
 
 *identity*
-      per-solid identity info, nodeIndex, meshIndex, boundaryIndex, sensorSurfaceIndex
-      see GSolid::getIdentity
+      per-volume identity info, nodeIndex, meshIndex, boundaryIndex, sensorSurfaceIndex
+      see GVolume::getIdentity
        
       ::
 
@@ -196,12 +196,12 @@ class GGEO_API GMesh : public GDrawable {
       static const char* boundaries_ ; 
       static const char* sensors_ ; 
 
-      // per-solid (used from the composite GMergedMesh)
+      // per-volume (used from the composite GMergedMesh)
       static const char* center_extent_ ; 
       static const char* bbox_ ; 
       static const char* transforms_ ;    
       static const char* meshes_ ;        // mesh indices
-      static const char* nodeinfo_ ;      // nface,nvert,?,? per solid : allowing solid selection beyond the geocache
+      static const char* nodeinfo_ ;      // nface,nvert,?,? per volume : allowing volume selection beyond the geocache
 
       static const char* identity_ ;      // guint4: node, mesh, boundary, sensor : aiming to replace uint nodes/boundaries/sensors/meshes
 
@@ -223,7 +223,7 @@ class GGEO_API GMesh : public GDrawable {
             gfloat3* normals=NULL, 
             gfloat2* texcoords=NULL );
 
-      void allocate();  // must first have set numVertices, numFaces, numSolids
+      void allocate();  // must first have set numVertices, numFaces, numVolumes
       void deallocate(); 
       virtual ~GMesh();
       void setVerbosity(unsigned verbosity); 
@@ -289,8 +289,8 @@ class GGEO_API GMesh : public GDrawable {
       unsigned getNumVertices() const ;
       //unsigned getNumColors();
       unsigned getNumFaces() const ;
-      unsigned getNumSolidsSelected() const ;
-      unsigned getNumSolids() const ;
+      unsigned getNumVolumesSelected() const ;
+      unsigned getNumVolumes() const ;
       int      getNumComponents() const ;
       void     dumpComponents(const char* msg="GMesh::dumpComponents") const ;
 
@@ -457,7 +457,7 @@ class GGEO_API GMesh : public GDrawable {
       void setMeshes(unsigned int* meshes);
       void setNodeInfo(guint4* nodeinfo);
       void setIdentity(guint4* identity);
-      //void setIIdentity(guint4* iidentity);   size numInstances*numSolids, try operating via the buffer setting only
+      //void setIIdentity(guint4* iidentity);   size numInstances*numVolumes, try operating via the buffer setting only
 
   private:
       void setCenterExtent(gfloat4* center_extent);  // canonically invoked by GMesh::allocate
@@ -480,7 +480,7 @@ class GGEO_API GMesh : public GDrawable {
       // used from GMergedMesh
       void setNumVertices(unsigned int num_vertices);
       void setNumFaces(   unsigned int num_faces);
-      void setNumSolids(unsigned int num_solids);
+      void setNumVolumes(unsigned int num_volumes);
       void setComponent(const glm::uvec4& eidx, unsigned icomp );
       void getComponent(      glm::uvec4& eidx, unsigned icomp ) const ;
 
@@ -495,8 +495,8 @@ class GGEO_API GMesh : public GDrawable {
 
       unsigned     m_num_vertices ;
       unsigned     m_num_faces ;
-      unsigned     m_num_solids  ;         // used from GMergedMesh subclass
-      unsigned     m_num_solids_selected  ;
+      unsigned     m_num_volumes  ;         // used from GMergedMesh subclass
+      unsigned     m_num_volumes_selected  ;
       unsigned     m_num_mergedmesh ;
 
       unsigned*    m_nodes ; 
@@ -516,7 +516,7 @@ class GGEO_API GMesh : public GDrawable {
       gfloat3*        m_center ;
       float           m_extent ; 
 
-      // per-solid/node 
+      // per-volume/node 
       gfloat4*        m_center_extent ;
       gbbox*          m_bbox ;
       float*          m_transforms ; 

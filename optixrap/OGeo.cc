@@ -660,18 +660,18 @@ optix::Geometry OGeo::makeAnalyticGeometry(GMergedMesh* mm, unsigned lod)
     unsigned numTran = tranBuf->getNumItems();
     unsigned numPlan = planBuf->getNumItems();
 
-    unsigned int numSolids = mm->getNumSolids();
-    unsigned int numSolidsSelected = mm->getNumSolidsSelected();
+    unsigned int numVolumes = mm->getNumVolumes();
+    unsigned int numVolumesSelected = mm->getNumVolumesSelected();
 
 
     if( pts->isNodeTree() )
     {
-        bool match = numPrim == numSolids ;
+        bool match = numPrim == numVolumes ;
         if(!match)
         {
-            LOG(fatal) << " NodeTree : MISMATCH (numPrim != numSolids) "
-                       << " numSolids " << numSolids 
-                       << " numSolidsSelected " << numSolidsSelected 
+            LOG(fatal) << " NodeTree : MISMATCH (numPrim != numVolumes) "
+                       << " numVolumes " << numVolumes 
+                       << " numVolumesSelected " << numVolumesSelected 
                        << " numPrim " << numPrim 
                        << " numPart " << numPart 
                        << " numTran " << numTran 
@@ -754,20 +754,20 @@ void OGeo::dumpStats(const char* msg)
 }
 
 
-void OGeo::dumpSolids(const char* msg, GMergedMesh* mm)
+void OGeo::dumpVolumes(const char* msg, GMergedMesh* mm)
 {
     assert(mm);
-    unsigned numSolids = mm->getNumSolids();
+    unsigned numVolumes = mm->getNumVolumes();
     unsigned numFaces = mm->getNumFaces();
 
     LOG(info) << msg 
-              << " numSolids " << numSolids
+              << " numVolumes " << numVolumes
               << " numFaces " << numFaces
               << " mmIndex " << mm->getIndex()
              ; 
 
     unsigned numFacesTotal = 0 ;  
-    for(unsigned i=0 ; i < numSolids ; i++)
+    for(unsigned i=0 ; i < numVolumes ; i++)
     {
          guint4 ni = mm->getNodeInfo(i) ;
          numFacesTotal += ni.x ; 
@@ -807,7 +807,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
     geometry->setBoundingBoxProgram(m_ocontext->createProgram("TriangleMesh.cu.ptx", "mesh_bounds"));
 
 
-    unsigned numSolids = mm->getNumSolids();
+    unsigned numVolumes = mm->getNumVolumes();
     unsigned numFaces = mm->getNumFaces();
     unsigned numITransforms = mm->getNumITransforms();
     unsigned numFaces0 = mm->getNodeInfo(0).x ; 
@@ -817,7 +817,7 @@ optix::Geometry OGeo::makeTriangulatedGeometry(GMergedMesh* mm, unsigned lod)
               << " mmIndex " << mm->getIndex() 
               << " numFaces (PrimitiveCount) " << numFaces
               << " numFaces0 (Outermost) " << numFaces0
-              << " numSolids " << numSolids
+              << " numVolumes " << numVolumes
               << " numITransforms " << numITransforms 
               ;
              

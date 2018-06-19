@@ -24,10 +24,10 @@
 #include "PLOG.hh"
 
 
-AxisApp::AxisApp(int argc, char** argv)
+AxisApp::AxisApp(Opticks* ok)
         :
-         m_opticks(new Opticks(argc, argv)),
-         m_hub(new OpticksHub(m_opticks)),
+         m_ok(ok),
+         m_hub(new OpticksHub(m_ok)),
          m_viz(new OpticksViz(m_hub, NULL)),
          m_composition(m_hub->getComposition()),
          m_scene(m_viz->getScene()), 

@@ -22,7 +22,7 @@ class GGEO_API GGeoBase {
         virtual GBndLib*          getBndLib() = 0 ; 
         virtual GPmtLib*          getPmtLib() = 0 ; 
         virtual GGeoLib*          getGeoLib() = 0 ;        // GMergedMesh 
-        virtual GNodeLib*         getNodeLib() = 0 ;       // GNode/GSolid pv,lv names
+        virtual GNodeLib*         getNodeLib() = 0 ;       // GNode/GVolume pv,lv names
 
         virtual const char*       getIdentifier() = 0 ; 
         virtual GMergedMesh*      getMergedMesh(unsigned index) = 0 ; 

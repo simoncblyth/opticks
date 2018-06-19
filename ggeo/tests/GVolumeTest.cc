@@ -1,6 +1,6 @@
 #include <cassert>
 
-#include "GSolid.hh"
+#include "GVolume.hh"
 
 #include "PLOG.hh"
 #include "GGEO_LOG.hh"
@@ -15,9 +15,9 @@ int main(int argc, char** argv)
     GMesh* mesh = NULL ; 
     NSensor* sensor = NULL ; 
 
-    GSolid* solid = new GSolid(0, transform, mesh, 0, sensor );
+    GVolume* volume = new GVolume(0, transform, mesh, 0, sensor );
 
-    assert(solid->getIndex() == 0);
+    assert(volume->getIndex() == 0);
 
 
 

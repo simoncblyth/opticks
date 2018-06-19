@@ -8,7 +8,7 @@
 
 template <typename T> class GMatrix ; 
 class GMesh ;
-class GSolid ; 
+class GVolume ; 
 
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
@@ -69,7 +69,7 @@ class GGEO_API GNode {
       unsigned int  getIndex();
       GNode*        getParent() const ; 
       GNode*        getChild(unsigned index);
-      GSolid*       getChildSolid(unsigned index);
+      GVolume*       getChildVolume(unsigned index);
       unsigned int  getNumChildren();
       char*         getDescription();
       gfloat3*      getLow();

@@ -2,7 +2,7 @@
 #include "NPY.hpp"
 
 #include "GNode.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GTree.hh"
 
 #include "PLOG.hh"
@@ -46,7 +46,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     //         identity buffer has numInstances items (ie one entry for each repeated instance)
     //
     //    triangulated:  
-    //         identity buffer has numInstances*numSolids items (ie one entry for every solid of every instance)
+    //         identity buffer has numInstances*numVolumes items (ie one entry for every volume of every instance)
     //         ... downstream this gets repeated further to every triangle
     //
 
@@ -55,15 +55,15 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
     assert( progeny0.size() == numProgeny0 );
 
 
-    unsigned int numSolids  = numProgeny0 + 1 ; 
+    unsigned int numVolumes  = numProgeny0 + 1 ; 
 
     // observe that each instance has only one sensor, so not need 
-    // to repeat over the number of solids just one entry per instance
+    // to repeat over the number of volumes just one entry per instance
 
     LOG(info) << "GTree::makeAnalyticInstanceIdentityBuffer " 
               << " numPlacements " << numInstances
               << " numProgeny0 " << numProgeny0      
-              << " numSolids " << numSolids      
+              << " numVolumes " << numVolumes      
               ;
 
     for(unsigned int i=0 ; i < numInstances ; i++) // over instances of the same geometry
@@ -85,7 +85,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
                           << " progeny.size() " << progeny.size() 
                           << " numProgeny " << numProgeny
                           << " numInstances " << numInstances
-                          << " numSolids " << numSolids
+                          << " numVolumes " << numVolumes
                           << " i " << i 
                           << " ridx " << ridx
                           ;
@@ -95,11 +95,11 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 
       
         NSensor* sensor = NULL ;  
-        for(unsigned int s=0 ; s < numSolids ; s++ )  // loop over solids looking for a sensor
+        for(unsigned int s=0 ; s < numVolumes ; s++ )  // loop over volumes looking for a sensor
         {
             GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GSolid* solid = dynamic_cast<GSolid*>(node) ;
-            NSensor* ss = solid->getSensor();
+            GVolume* volume = dynamic_cast<GVolume*>(node) ;
+            NSensor* ss = volume->getSensor();
             //assert(ss); dont have JUNO sensor info
 
             unsigned int sid = ss && ss->isCathode() ? ss->getId() : 0 ;
@@ -113,7 +113,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 
             if(sid > 0 && numInstances > 1)  // formerly && ridx > 0 
             {
-                assert(sensor == NULL && "not expecting more than one sensor solid with non-zero id within an instance of repeated geometry");
+                assert(sensor == NULL && "not expecting more than one sensor volume with non-zero id within an instance of repeated geometry");
                 sensor = ss ; 
             }
         }
@@ -122,7 +122,7 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 
         aii.x = base->getIndex();        
         aii.y = i ;  // instance index (for triangulated this contains the mesh index)
-        aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 solid/boundary relationship so boundary must live in partBuffer
+        aii.z = 0 ;  // formerly boundary, but with analytic have broken 1-1 volume/boundary relationship so boundary must live in partBuffer
         aii.w = NSensor::RefIndex(sensor) ;  // the only critical one 
 
         buf->setQuadU(aii, i, 0); 
@@ -134,16 +134,16 @@ NPY<unsigned int>* GTree::makeAnalyticInstanceIdentityBuffer(const std::vector<G
 NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& placements) 
 {
     /*
-     Repeating identity guint4 for all solids of an instance (typically ~5 solids for 1 instance)
+     Repeating identity guint4 for all volumes of an instance (typically ~5 volumes for 1 instance)
      into all the instances (typically large 500-36k).
 
 
      Instances need to know the sensor they correspond 
      even though their geometry is duplicated. 
 
-     For analytic geometry this is needed at the solid level 
+     For analytic geometry this is needed at the volume level 
      ie need buffer of size:
-             #transforms * #solids-per-instance
+             #transforms * #volumes-per-instance
 
      For triangulated geometry this is needed at the triangle level
      ie need buffer of size 
@@ -161,8 +161,8 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
     unsigned numProgeny0 = placements[0]->getLastProgenyCount();
     assert( progeny0.size() == numProgeny0 );
 
-    unsigned int numSolids  = numProgeny0 + 1 ; 
-    unsigned int num = numSolids*numInstances ; 
+    unsigned int numVolumes  = numProgeny0 + 1 ; 
+    unsigned int num = numVolumes*numInstances ; 
 
     NPY<unsigned int>* buf = NPY<unsigned int>::make(0, 4);
 
@@ -187,7 +187,7 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
                       << " progeny.size() " << progeny.size() 
                       << " numProgeny " << numProgeny
                       << " numInstances " << numInstances
-                      << " numSolids " << numSolids
+                      << " numVolumes " << numVolumes
                       << " i " << i 
                       << " ridx " << ridx
                       ;
@@ -196,12 +196,12 @@ NPY<unsigned int>* GTree::makeInstanceIdentityBuffer(const std::vector<GNode*>& 
             assert( progeny_match );
         }
 
-        for(unsigned int s=0 ; s < numSolids ; s++ )
+        for(unsigned int s=0 ; s < numVolumes ; s++ )
         {
             GNode* node = s == 0 ? base : progeny[s-1] ; 
-            GSolid* solid = dynamic_cast<GSolid*>(node) ;
+            GVolume* volume = dynamic_cast<GVolume*>(node) ;
 
-            guint4 id = solid->getIdentity();
+            guint4 id = volume->getIdentity();
             buf->add(id.x, id.y, id.z, id.w ); 
 
 #ifdef DEBUG

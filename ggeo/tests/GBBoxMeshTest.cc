@@ -29,11 +29,11 @@ int main(int argc, char** argv)
 
     mm->Summary("mm loading");
     mm->dump("mm dump", 10);
-    mm->dumpSolids("dumpSolids");
+    mm->dumpVolumes("dumpVolumes");
 
-    unsigned int numSolids = mm->getNumSolids();
+    unsigned int numVolumes = mm->getNumVolumes();
 
-    LOG(info) << "mm numSolids " << numSolids  ;
+    LOG(info) << "mm numVolumes " << numVolumes  ;
 
     //GBBoxMesh* bb = GBBoxMesh::create(mm);
 

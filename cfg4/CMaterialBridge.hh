@@ -11,6 +11,16 @@ class G4StepPoint ;
 class G4Step ; 
 class G4Material ; 
 
+/**
+CMaterialBridge
+=================
+
+Provides a mapping between G4 and Opticks materials, 
+the Opticks material lib needs to be closed before 
+instanciation of CMaterialBridge.
+
+**/
+
 class CFG4_API CMaterialBridge 
 {
     public:

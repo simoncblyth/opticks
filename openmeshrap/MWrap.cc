@@ -157,7 +157,7 @@ GMesh* MWrap<MeshT>::createGMesh()
 
     gm->setNumVertices( nvert );
     gm->setNumFaces(    nface );
-    gm->setNumSolids(   1 );
+    gm->setNumVolumes(   1 );
 
     gm->allocate();
 

@@ -20,7 +20,7 @@
 #include "GBBoxMesh.hh"
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GVector.hh"
 #include "GMatrix.hh"
 #include "GMaker.hh"
@@ -44,7 +44,7 @@ void GMaker::init()
 
 
 
-GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
+GVolume* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param, const char* spec )
 {
     // invoked from eg GGeoTest::createBoxInBox while looping over configured shape/boundary/param entries
     // for CSG triangulation need to be given the tree.. 
@@ -52,17 +52,17 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
     // NB note the the move to SDF means that forming a polygonization
     // no longer requires this, instead must implement the SDF : signed distance function
 
-     GSolid* solid = NULL ; 
+     GVolume* volume = NULL ; 
      switch(type)
      {
-         case CSG_BOX:          solid = makeBox(param); break;
-         case CSG_PRISM:        solid = makePrism(param, spec); break;
-         case CSG_SPHERE:       solid = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
-         case CSG_ZSPHERE:      solid = makeZSphere(param) ; break;
-         case CSG_ZLENS:        solid = makeZSphereIntersect_DEAD(param, spec) ; break;   // composite handled by adding child node
-         case CSG_INTERSECTION: solid = makeBox(param); break ;    // boolean intersect
-         case CSG_UNION:        solid = makeBox(param); break ;    // boolean union
-         case CSG_DIFFERENCE:   solid = makeBox(param); break ;    // boolean difference
+         case CSG_BOX:          volume = makeBox(param); break;
+         case CSG_PRISM:        volume = makePrism(param, spec); break;
+         case CSG_SPHERE:       volume = makeSubdivSphere(param, 3, "I") ; break; // I:icosahedron O:octahedron HO:hemi-octahedron C:cube 
+         case CSG_ZSPHERE:      volume = makeZSphere(param) ; break;
+         case CSG_ZLENS:        volume = makeZSphereIntersect_DEAD(param, spec) ; break;   // composite handled by adding child node
+         case CSG_INTERSECTION: volume = makeBox(param); break ;    // boolean intersect
+         case CSG_UNION:        volume = makeBox(param); break ;    // boolean union
+         case CSG_DIFFERENCE:   volume = makeBox(param); break ;    // boolean difference
 
          case CSG_ZERO:         
          case CSG_PARTLIST:
@@ -86,30 +86,30 @@ GSolid* GMaker::make(unsigned int /*index*/, OpticksCSG_t type, glm::vec4& param
          case CSG_ELLIPSOID:
          case CSG_HYPERBOLOID:
          case CSG_CUBIC:
-                                solid = NULL ; break ;
+                                volume = NULL ; break ;
      }
-     assert(solid);
-     solid->setCSGFlag( type );
+     assert(volume);
+     volume->setCSGFlag( type );
 
      // TODO: most parts alread hooked up above, do this uniformly
-     GParts* pts = solid->getParts();  
+     GParts* pts = volume->getParts();  
      if(pts == NULL)
      {
          pts = GParts::make(type, param, spec);  // (1,4,4) with typecode and bbox set 
-         solid->setParts(pts);
+         volume->setParts(pts);
      }
      assert(pts);
 
      unsigned boundary = m_bndlib->addBoundary(spec);  // only adds if not existing
-     solid->setBoundaryAll(boundary);   // All loops over immediate children, needed for composite
+     volume->setBoundaryAll(boundary);   // All loops over immediate children, needed for composite
      pts->setBoundaryAll(boundary);
      pts->enlargeBBoxAll(0.01f );
 
-     return solid ; 
+     return volume ; 
 }
 
 
-GSolid* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
+GVolume* GMaker::makeFromCSG(NCSG* csg, unsigned verbosity)
 {
     return makeFromCSG(csg, m_bndlib, verbosity );
 }
@@ -125,7 +125,7 @@ std::string GMaker::PVName(const char* shapename, int idx)
     return NCSG::TestVolumeName(shapename, "pv", idx );
 }
 
-GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
+GVolume* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
 {
     unsigned index = csg->getIndex();
 
@@ -141,10 +141,10 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GSolid* solid = new GSolid(index, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(index, transform, mesh, UINT_MAX, NULL );     
     // csg is mesh-qty not a node-qty, boundary spec is a node-qty : so this is just for testing
 
-    solid->setSensor( NULL );      
+    volume->setSensor( NULL );      
 
     // FORMERLY set boundary here 
     // moved later to allow relocation of basis
@@ -156,13 +156,13 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
     std::string lvn = csg->getTestLVName();
     std::string pvn = csg->getTestPVName();
     
-    solid->setPVName( strdup(pvn.c_str()) );
-    solid->setLVName( strdup(lvn.c_str()) );
-    solid->setCSGFlag( type );
+    volume->setPVName( strdup(pvn.c_str()) );
+    volume->setLVName( strdup(lvn.c_str()) );
+    volume->setCSGFlag( type );
 
     GParts* pts = GParts::make( csg, spec, verbosity );
 
-    solid->setParts( pts );
+    volume->setParts( pts );
 
 
     LOG(info) << "GMaker::makeFromCSG" 
@@ -173,14 +173,14 @@ GSolid* GMaker::makeFromCSG(NCSG* csg, GBndLib* /*bndlib*/, unsigned verbosity )
               << " trisMsg " << ( tris ? tris->getMessage() : "" )
               ; 
 
-    return solid ; 
+    return volume ; 
 }
 
 
 
 
 
-GSolid* GMaker::makeBox(glm::vec4& param)
+GVolume* GMaker::makeBox(glm::vec4& param)
 {
     float size = param.w ; 
 
@@ -194,7 +194,7 @@ GSolid* GMaker::makeBox(glm::vec4& param)
 }
 
 
-GSolid* GMaker::makeBox(gbbox& bbox)
+GVolume* GMaker::makeBox(gbbox& bbox)
 {
     LOG(debug) << "GMaker::makeBox" ;
 
@@ -223,18 +223,18 @@ GSolid* GMaker::makeBox(gbbox& bbox)
     // TODO: tranform hookup with NTrianglesNPY 
     GMatrixF* transform = new GMatrix<float>();
 
-    GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
 
-    solid->setBoundary(0);     // unlike ctor these create arrays
-    solid->setSensor( NULL );      
+    volume->setBoundary(0);     // unlike ctor these create arrays
+    volume->setSensor( NULL );      
 
 
 
-    return solid ; 
+    return volume ; 
 }
 
 
-GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
+GVolume* GMaker::makePrism(glm::vec4& param, const char* spec)
 {
    /*
    */
@@ -250,18 +250,18 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
     glm::mat4 txf = tris->getTransform(); 
     GMatrixF* transform = new GMatrix<float>(glm::value_ptr(txf));
 
-    GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
-    solid->setBoundary(0);     // unlike ctor these create arrays
-    solid->setSensor( NULL );      
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
+    volume->setBoundary(0);     // unlike ctor these create arrays
+    volume->setSensor( NULL );      
 
     nprism prism(param.x, param.y, param.z, param.w);
     npart  pprism = prism.part();
 
     GParts* pts = GParts::make(pprism, spec);
 
-    solid->setParts(pts);
+    volume->setParts(pts);
 
-    return solid ; 
+    return volume ; 
 }
 
 
@@ -270,7 +270,7 @@ GSolid* GMaker::makePrism(glm::vec4& param, const char* spec)
 
 
 
-GSolid* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
+GVolume* GMaker::makeSubdivSphere(glm::vec4& param, unsigned int nsubdiv, const char* type)
 {
     LOG(debug) << "GMaker::makeSubdivSphere" 
               << " nsubdiv " << nsubdiv
@@ -341,7 +341,7 @@ NTrianglesNPY* GMaker::makeSubdivSphere(unsigned int nsubdiv, const char* type)
 }
 
 
-GSolid* GMaker::makeZSphere(glm::vec4& param)
+GVolume* GMaker::makeZSphere(glm::vec4& param)
 {
     NTrianglesNPY* ll = NTrianglesNPY::sphere(param);
     NTrianglesNPY* dk = NTrianglesNPY::disk(param);
@@ -350,7 +350,7 @@ GSolid* GMaker::makeZSphere(glm::vec4& param)
 }
 
 
-void GMaker::makeBooleanComposite(char shapecode, std::vector<GSolid*>& /*solids*/,  glm::vec4& /*param*/, const char* /*spec*/)
+void GMaker::makeBooleanComposite(char shapecode, std::vector<GVolume*>& /*volumes*/,  glm::vec4& /*param*/, const char* /*spec*/)
 {
     assert( shapecode == 'I' || shapecode == 'J' || shapecode == 'K' );
 
@@ -358,7 +358,7 @@ void GMaker::makeBooleanComposite(char shapecode, std::vector<GSolid*>& /*solids
     // but tis just for viz so could use bbox placeholder ?
 }
 
-GSolid* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
+GVolume* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
 {
     assert(0 && "NOT WORKING, NO POINT FIXING : AS NCSG APPROACH SO MUCH BETTER SEE tlens-- " );
 
@@ -422,24 +422,24 @@ GSolid* GMaker::makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec)
     NTrianglesNPY* a_tris = NTrianglesNPY::sphere(arhs_param);
     NTrianglesNPY* b_tris = NTrianglesNPY::sphere(blhs_param);
 
-    GSolid* a_solid = makeSphere(a_tris);
-    GSolid* b_solid = makeSphere(b_tris);
+    GVolume* a_volume = makeSphere(a_tris);
+    GVolume* b_volume = makeSphere(b_tris);
 
     GParts* a_pts = GParts::make(ar, spec);
     GParts* b_pts = GParts::make(bl, spec);
 
-    a_solid->setParts(a_pts);
-    b_solid->setParts(b_pts);
+    a_volume->setParts(a_pts);
+    b_volume->setParts(b_pts);
 
-    //solids.push_back(a_solid);
-    //solids.push_back(b_solid);
+    //volumes.push_back(a_volume);
+    //volumes.push_back(b_volume);
 
-    a_solid->addChild(b_solid);
-    return a_solid ; 
+    a_volume->addChild(b_volume);
+    return a_volume ; 
 }
 
 
-GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
+GVolume* GMaker::makeSphere(NTrianglesNPY* tris)
 {
     // TODO: generalize to makeSolid by finding other way to handle normals ?
 
@@ -456,11 +456,11 @@ GSolid* GMaker::makeSphere(NTrianglesNPY* tris)
 
     //transform->Summary("GMaker::makeSphere");
 
-    GSolid* solid = new GSolid(nodeindex, transform, mesh, UINT_MAX, NULL );     
+    GVolume* volume = new GVolume(nodeindex, transform, mesh, UINT_MAX, NULL );     
 
-    solid->setBoundary(0);     // unlike ctor these create arrays
-    solid->setSensor( NULL );      
+    volume->setBoundary(0);     // unlike ctor these create arrays
+    volume->setSensor( NULL );      
 
-    return solid ; 
+    return volume ; 
 }
 

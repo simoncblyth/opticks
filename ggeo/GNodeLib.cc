@@ -5,7 +5,7 @@
 #include "Opticks.hh"
 
 #include "GItemList.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GNodeLib.hh"
 #include "GTreePresent.hh"
 
@@ -89,16 +89,16 @@ std::string GNodeLib::desc() const
        << " reldir " << ( m_reldir ? m_reldir : "-" )
        << " numPV " << getNumPV()
        << " numLV " << getNumLV()
-       << " numSolids " << getNumSolids()
+       << " numVolumes " << getNumVolumes()
        << " PV(0) " << getPVName(0)
        << " LV(0) " << getLVName(0)
        ;
 
 
-    typedef std::map<unsigned, GSolid*>::const_iterator IT ; 
+    typedef std::map<unsigned, GVolume*>::const_iterator IT ; 
 
-    IT beg = m_solidmap.begin() ;
-    IT end = m_solidmap.end() ;
+    IT beg = m_volumemap.begin() ;
+    IT end = m_volumemap.end() ;
 
     for(IT it=beg ; it != end && std::distance(beg,it) < 10 ; it++)
     {
@@ -132,9 +132,9 @@ const char* GNodeLib::getLVName(unsigned int index) const
 }
 
 
-unsigned int GNodeLib::getNumSolids() const 
+unsigned int GNodeLib::getNumVolumes() const 
 {
-    return m_solids.size();
+    return m_volumes.size();
 }
 
 
@@ -149,63 +149,63 @@ GItemList* GNodeLib::getLVList()
 
 
 
-void GNodeLib::add(GSolid* solid)
+void GNodeLib::add(GVolume* volume)
 {
-    m_solids.push_back(solid);
+    m_volumes.push_back(volume);
 
-    unsigned int index = solid->getIndex(); 
+    unsigned int index = volume->getIndex(); 
 
     if(m_test)
     {
-        assert( m_solids.size() - 1 == index && "indices of test geometry solids added to GNodeLib must follow the sequence : 0,1,2,... " );
+        assert( m_volumes.size() - 1 == index && "indices of test geometry volumes added to GNodeLib must follow the sequence : 0,1,2,... " );
     }
 
 
-    //assert( m_solidmap.size() == index );   //  only with relative GSolid indexing
+    //assert( m_volumemap.size() == index );   //  only with relative GVolume indexing
 
 /*
     LOG(info) << "GNodeLib::add"
-              << " solidIndex " << index 
-              << " preCount " << m_solidmap.size()
+              << " volumeIndex " << index 
+              << " preCount " << m_volumemap.size()
               ;
 */
               
-    m_solidmap[index] = solid ; 
+    m_volumemap[index] = volume ; 
 
     if(!m_pvlist) m_pvlist = new GItemList("PVNames", m_reldir) ; 
     if(!m_lvlist) m_lvlist = new GItemList("LVNames", m_reldir) ; 
 
-    m_lvlist->add(solid->getLVName()); 
-    m_pvlist->add(solid->getPVName()); 
+    m_lvlist->add(volume->getLVName()); 
+    m_pvlist->add(volume->getPVName()); 
 
-    // NB added in tandem, so same counts and same index as the solids  
+    // NB added in tandem, so same counts and same index as the volumes  
 
-    GSolid* check = getSolid(index);
-    assert(check == solid);
+    GVolume* check = getVolume(index);
+    assert(check == volume);
 }
 
 
-GSolid* GNodeLib::getSolid(unsigned index) const 
+GVolume* GNodeLib::getVolume(unsigned index) const 
 {
-    GSolid* solid = NULL ; 
-    if(m_solidmap.find(index) != m_solidmap.end()) 
+    GVolume* volume = NULL ; 
+    if(m_volumemap.find(index) != m_volumemap.end()) 
     {
-        solid = m_solidmap.at(index) ;
-        assert(solid->getIndex() == index);
+        volume = m_volumemap.at(index) ;
+        assert(volume->getIndex() == index);
     }
-    return solid ; 
+    return volume ; 
 }
 
-GSolid* GNodeLib::getSolidSimple(unsigned int index)
+GVolume* GNodeLib::getVolumeSimple(unsigned int index)
 {
-    return m_solids[index];
+    return m_volumes[index];
 }
 
 
 GNode* GNodeLib::getNode(unsigned index) const 
 {
-    GSolid* solid = getSolid(index);
-    GNode* node = static_cast<GNode*>(solid); 
+    GVolume* volume = getVolume(index);
+    GNode* node = static_cast<GNode*>(volume); 
     return node ; 
 }
 

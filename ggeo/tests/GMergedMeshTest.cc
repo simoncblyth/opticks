@@ -16,17 +16,17 @@ void test_GMergedMesh_Dump(GMergedMesh* mm)
 {
     mm->Summary("mm loading");
     mm->dump("mm dump", 10);
-    mm->dumpSolids("dumpSolids");
+    mm->dumpVolumes("dumpVolumes");
 
-    unsigned int numSolids = mm->getNumSolids();
-    unsigned int numSolidsSelected = mm->getNumSolidsSelected();
+    unsigned int numVolumes = mm->getNumVolumes();
+    unsigned int numVolumesSelected = mm->getNumVolumesSelected();
 
     LOG(info) 
-                  << " numSolids " << numSolids       
-                  << " numSolidsSelected " << numSolidsSelected ;      
+                  << " numVolumes " << numVolumes       
+                  << " numVolumesSelected " << numVolumesSelected ;      
 
 
-    for(unsigned int i=0 ; i < numSolids ; i++)
+    for(unsigned int i=0 ; i < numVolumes ; i++)
     {
         gbbox bb = mm->getBBox(i);
         bb.Summary("bb"); 
@@ -36,7 +36,7 @@ void test_GMergedMesh_Dump(GMergedMesh* mm)
     GBuffer* idbuf = mm->getIdentityBuffer();
     idbuf->dump<unsigned int>("idbuf");
 
-    for(unsigned int i=0 ; i < mm->getNumSolids() ; i++)
+    for(unsigned int i=0 ; i < mm->getNumVolumes() ; i++)
     {
         guint4 id = mm->getIdentity(i);
         LOG(info) << id.description() ; 
@@ -56,7 +56,7 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
 
     GMergedMesh* comp = GMergedMesh::MakeComposite(mms);
 
-    comp->dumpSolids("test_GMergedMesh_MakeComposite.dumpSolids");
+    comp->dumpVolumes("test_GMergedMesh_MakeComposite.dumpVolumes");
     comp->dumpComponents("test_GMergedMesh_MakeComposite.dumpComponents");
 
     const char* dir = "$TMP/test_GMergedMesh_MakeComposite" ; 
@@ -64,7 +64,7 @@ void test_GMergedMesh_MakeComposite(GMergedMesh* mm)
 
     GMergedMesh* comp2 = GMergedMesh::load(dir);
 
-    comp2->dumpSolids("test_GMergedMesh_MakeComposite.dumpSolids.comp2");
+    comp2->dumpVolumes("test_GMergedMesh_MakeComposite.dumpVolumes.comp2");
     comp2->dumpComponents("test_GMergedMesh_MakeComposite.dumpComponents.comp2");
 
 }
@@ -74,7 +74,7 @@ void test_GMergedMesh_MakeLODComposite(GMergedMesh* mm, unsigned levels)
 {
     GMergedMesh* comp = GMergedMesh::MakeLODComposite(mm, levels);
 
-    comp->dumpSolids("test_GMergedMesh_MakeLODComposite.dumpSolids");
+    comp->dumpVolumes("test_GMergedMesh_MakeLODComposite.dumpVolumes");
     comp->dumpComponents("test_GMergedMesh_MakeLODComposite.dumpComponents");
 
 }
@@ -112,11 +112,11 @@ int main(int argc, char** argv)
     } 
 
     unsigned numFaces =  mm->getNumFaces() ;
-    unsigned numSolids =  mm->getNumSolids() ;
+    unsigned numVolumes =  mm->getNumVolumes() ;
 
     LOG(info) << argv[0] 
               << " numFaces " << numFaces
-              << " numSolids " << numSolids
+              << " numVolumes " << numVolumes
                ; 
 
 

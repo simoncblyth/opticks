@@ -61,7 +61,7 @@ glm::vec4 OpticksAim::getCenterExtent()
 
 void OpticksAim::dumpTarget(const char* msg)  
 {
-    m_hub->dumpSolids( m_target, m_mesh0, msg  ); 
+    m_hub->dumpVolumes( m_target, m_mesh0, msg  ); 
 }
 
 

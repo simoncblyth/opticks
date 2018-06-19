@@ -61,8 +61,8 @@ set(SOURCES
     GNode.cc
     GTreePresent.cc
 
-    GSolid.cc
-    GSolidList.cc
+    GVolume.cc
+    GVolumeList.cc
     GGeoLib.cc
     GGeoCfg.cc
     GGeoTest.cc
@@ -104,7 +104,7 @@ set(HEADERS
     GDomain.hh
     GAry.hh
     GPropertyMap.hh
-    GSolid.hh
+    GVolume.hh
 
     GSkinSurface.hh
     GBorderSurface.hh

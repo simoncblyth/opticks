@@ -17,7 +17,7 @@
 #include "GGeoLib.hh"
 #include "GNodeLib.hh"
 
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GMatrix.hh"
 #include "GBuffer.hh"
 #include "GTree.hh"
@@ -94,7 +94,7 @@ void GTreeCheck::createInstancedMergedMeshes(bool delta, unsigned verbosity)
 
 void GTreeCheck::traverse()
 {
-    m_root = m_nodelib->getSolid(0);
+    m_root = m_nodelib->getVolume(0);
     assert(m_root);
 
     // count occurences of distinct progeny digests (relative sub-tree identities) in m_digest_count 
@@ -123,7 +123,7 @@ void GTreeCheck::traverse_r( GNode* node, unsigned int depth)
 void GTreeCheck::deltacheck()
 {
     // check consistency of the level transforms
-    m_root = m_nodelib->getSolid(0);
+    m_root = m_nodelib->getVolume(0);
     assert(m_root);
 
     deltacheck_r(m_root, 0);
@@ -131,15 +131,15 @@ void GTreeCheck::deltacheck()
 
 void GTreeCheck::deltacheck_r( GNode* node, unsigned int depth)
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    GMatrixF* gtransform = solid->getTransform();
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    GMatrixF* gtransform = volume->getTransform();
 
-    // solids levelTransform is set in AssimpGGeo and hails from the below with level -2
+    // volumes levelTransform is set in AssimpGGeo and hails from the below with level -2
     //      aiMatrix4x4 AssimpNode::getLevelTransform(int level)
     //  looks to correspond to the placement of the LV within its PV  
 
-    //GMatrixF* ltransform = solid->getLevelTransform();  
-    GMatrixF* ctransform = solid->calculateTransform();
+    //GMatrixF* ltransform = volume->getLevelTransform();  
+    GMatrixF* ctransform = volume->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
 
     

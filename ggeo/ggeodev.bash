@@ -541,7 +541,7 @@ GFlags
 
 GGeo
     top level control and holder of other instances:
-    GMesh GSolid GMaterial GSkinSurface GBorderSurface GBoundaryLib
+    GMesh GVolume GMaterial GSkinSurface GBorderSurface GBoundaryLib
 
 GGeoCfg
 GGeoLib
@@ -605,7 +605,7 @@ GScintillatorLib
 GSkinSurface
     PropertyMap specialization, specialization only used for creation
 
-GSolid
+GVolume
     GNode specialized with associated GBoundary and selection bit constituents
 
 GSource
@@ -640,7 +640,7 @@ Where are substance indices formed and associated to every triangle ?
   materials with specific surfaces(or maybe no associated surface) 
 
 * substance indices are affixed to the triangles of the geometry 
-  by GSolid::setBoundary GNode::setBoundaryIndices
+  by GVolume::setBoundary GNode::setBoundaryIndices
   which repeats the indice for every triangle of the solid. 
  
   This gets done within the AssimpGGeo::convertStructureVisit,
@@ -886,7 +886,7 @@ Analogs to Chroma
 * GMaterial : chroma.geometry.Material
 * GSurface : chroma.geometry.Surface
 * GMesh : chroma.geometry.Mesh
-* GSolid : chroma.geometry.Solid
+* GVolume : chroma.geometry.Solid
 * GGeo : chroma.geometry.Geometry 
 
 * AssimpWrap/AssimpGeometry/AssimpTree 
@@ -921,7 +921,7 @@ Client Classes
 
 ::
 
-    class GSolid {
+    class GVolume {
 
         * mesh + inside/outside materials and surfaces
         * nexus of structure

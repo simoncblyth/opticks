@@ -1,16 +1,17 @@
+#include "Opticks.hh"
 #include "AxisApp.hh"
 
-#include "OGLRAP_LOG.hh"
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    OGLRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ; 
 
-    AxisApp aa(argc, argv); 
+    Opticks ok(argc, argv);
+
+    AxisApp aa(&ok); 
 
     aa.renderLoop();
 

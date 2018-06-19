@@ -53,9 +53,9 @@ Lifecycle
 Single Tree GParts created from from NCSG by GScene
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-GParts are created from the NCSG in GScene::createVolume where they get attached to a GSolid::
+GParts are created from the NCSG in GScene::createVolume where they get attached to a GVolume::
 
-    629 GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
+    629 GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
     630 {
     ...
     644     NCSG*   csg =  getCSG(rel_mesh_idx);
@@ -87,12 +87,12 @@ Merged GParts are born with GMergedMesh
      55 }
 
 
-GParts merging happens via GMergedMesh::mergeSolidAnalytic
+GParts merging happens via GMergedMesh::mergeVolumeAnalytic
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 ::
 
-    525 void GMergedMesh::mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
+    525 void GMergedMesh::mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity )
     526 {
     527     // analytic CSG combined at node level  
     ...

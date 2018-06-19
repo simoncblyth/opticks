@@ -159,7 +159,7 @@ void OpticksGeometry::loadGeometryBase()
         GMergedMesh* mesh1 = m_ggeo->getMergedMesh(1);
         if(mesh1)
         {
-            mesh1->dumpSolids("OpticksGeometry::loadGeometryBase mesh1");
+            mesh1->dumpVolumes("OpticksGeometry::loadGeometryBase mesh1");
             mesh1->save("$TMP", "GMergedMesh", "baseGeometry") ;
         }
     }

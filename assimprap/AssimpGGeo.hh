@@ -12,7 +12,7 @@ class AssimpNode ;
 class GGeo ; 
 class GSurface ;
 class GMaterial ;
-class GSolid ; 
+class GVolume ; 
 class GMesh ; 
 class OpticksQuery ; 
 
@@ -31,20 +31,20 @@ AssimpGGeo
 
 Primary entry point is AssimpGGeo::load(GGeo* ggeo)
 which imports the full geometry Assimp node tree.
-The Assimp node tree is converted into the GSolid/GNode tree, 
-with AssimpSelection such as volume ranges feeding into GSolid/GNode 
-selected flags (GSolid::setSelected).
+The Assimp node tree is converted into the GVolume/GNode tree, 
+with AssimpSelection such as volume ranges feeding into GVolume/GNode 
+selected flags (GVolume::setSelected).
 
 * think of the selection as a node mask.
 
 ::
 
-     806 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+     806 void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent)
      807 {
      808     // recursive traversal of the AssimpNode tree
      809     // note that full tree is traversed even when a partial selection is applied 
      ...
-     812     GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+     812     GVolume* solid = convertStructureVisit( gg, node, depth, parent);
      814     bool selected = m_selection && m_selection->contains(node) ;
      816     solid->setSelected(selected);
      817 
@@ -98,8 +98,8 @@ protected:
     void convertMeshes(const aiScene* scene, GGeo* gg, const char* ctrl);
 protected:
     void convertStructure(GGeo* gg);
-    void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent);
-    GSolid* convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent);
+    void convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent);
+    GVolume* convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent);
 
 protected:
     void setDomainScale(float dscale);

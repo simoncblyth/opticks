@@ -15,7 +15,7 @@ struct gbbox ;
 struct nnode ; 
 
 class GBndLib ; 
-class GSolid ; 
+class GVolume ; 
 class GMesh ; 
 
 /**
@@ -37,22 +37,22 @@ class GGEO_API GMaker {
    public:
        GMaker(Opticks* ok, GBndLib* blib);
    public:
-       GSolid* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
-       GSolid* makeFromCSG(NCSG* csg, unsigned verbosity );
+       GVolume* make(unsigned int index, OpticksCSG_t typecode, glm::vec4& param, const char* spec);
+       GVolume* makeFromCSG(NCSG* csg, unsigned verbosity );
    private:
        void init();    
 
-       static GSolid* makeFromCSG(NCSG* csg, GBndLib* , unsigned verbosity );
-       static GSolid* makePrism(glm::vec4& param, const char* spec);
-       static GSolid* makeBox(glm::vec4& param);
-       static GSolid* makeZSphere(glm::vec4& param);
-       static GSolid* makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec);
-       static void makeBooleanComposite(char shapecode, std::vector<GSolid*>& solids,  glm::vec4& param, const char* spec);
-       static GSolid* makeBox(gbbox& bbox);
+       static GVolume* makeFromCSG(NCSG* csg, GBndLib* , unsigned verbosity );
+       static GVolume* makePrism(glm::vec4& param, const char* spec);
+       static GVolume* makeBox(glm::vec4& param);
+       static GVolume* makeZSphere(glm::vec4& param);
+       static GVolume* makeZSphereIntersect_DEAD(glm::vec4& param, const char* spec);
+       static void makeBooleanComposite(char shapecode, std::vector<GVolume*>& volumes,  glm::vec4& param, const char* spec);
+       static GVolume* makeBox(gbbox& bbox);
    private:
-       static GSolid* makeSubdivSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
+       static GVolume* makeSubdivSphere(glm::vec4& param, unsigned int subdiv=3, const char* type="I");
        static NTrianglesNPY* makeSubdivSphere(unsigned int nsubdiv=3, const char* type="I");
-       static GSolid* makeSphere(NTrianglesNPY* tris);
+       static GVolume* makeSphere(NTrianglesNPY* tris);
    private:
        Opticks*  m_ok ; 
        GBndLib*  m_bndlib ; 

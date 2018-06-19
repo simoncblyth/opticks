@@ -28,7 +28,7 @@ set(TEST_SOURCES
 
     GMeshTest.cc
     GNodeTest.cc
-    GSolidTest.cc
+    GVolumeTest.cc
     GCIETest.cc
     GArrayTest.cc
     GTransformsTest.cc

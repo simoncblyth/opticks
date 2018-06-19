@@ -3,8 +3,6 @@
 #include <vector>
 
 class GNode ; 
-class GSolid ; 
-
 template<class T> class NPY ;
 
 /**

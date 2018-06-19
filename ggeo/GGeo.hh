@@ -30,7 +30,7 @@ template <typename T> class GPropertyMap ;
 template <typename T> class GProperty ; 
 
 class GMesh ; 
-class GSolid ; 
+class GVolume ; 
 class GNode ; 
 class GMaterial ; 
 class GSkinSurface ; 
@@ -71,6 +71,30 @@ from which the geometry model is created eg by AssimpGGeo::convert
 However it grew to be somewhat monolithic.
 
 When possible break pieces off the monolith.
+
+Primary Constituents
+----------------------
+
+Opticks
+Composition
+GTreeCheck
+NLookup
+GMeshLib
+GGeoLib
+GNodeLib
+   precache : holds GVolume
+   persists pvnames, lvname
+
+GBndLib
+GMaterialLib
+GSurfaceLib
+GScintillatorLib
+GSourceLib
+GPmtLib
+
+GColorizer
+GScene
+
 
 */
 
@@ -137,6 +161,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // configureGeometry stage additions
     public:
+        void close();
         void prepareMaterialLib();
         void prepareSurfaceLib();
         void prepareScintillatorLib();
@@ -180,8 +205,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         //     .w  index verts count
         //
         glm::ivec4 getNodeOffsetCount(unsigned int index);
-        glm::vec4 getFaceCenterExtent(unsigned int face_index, unsigned int solid_index, unsigned int mergedmesh_index=0 );
-        glm::vec4 getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mergedmesh_index=0 );
+        glm::vec4 getFaceCenterExtent(unsigned int face_index, unsigned int volume_index, unsigned int mergedmesh_index=0 );
+        glm::vec4 getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mergedmesh_index=0 );
 
     private:
         glm::mat4 getTransform(int index);  //TRYING TO MOVE TO HUB 
@@ -190,12 +215,12 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     public:
         // via GNodeLib
-        unsigned int getNumSolids();
-        void add(GSolid*    solid);
+        unsigned int getNumVolumes();
+        void add(GVolume*    volume);
         GNode* getNode(unsigned index); 
-        GSolid* getSolid(unsigned int index);  
-        GSolid* getSolidSimple(unsigned int index);  
-        //GSolid* getSolidAnalytic(unsigned idx);
+        GVolume* getVolume(unsigned int index);  
+        GVolume* getVolumeSimple(unsigned int index);  
+        //GVolume* getVolumeAnalytic(unsigned idx);
 
         const char* getPVName(unsigned int index);
         const char* getLVName(unsigned int index);
@@ -207,7 +232,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
 
-        void close();
 
         void addToIndex(GPropertyMap<float>* obj);
         void dumpIndex(const char* msg="GGeo::dumpIndex");
@@ -306,7 +330,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     TODO: see if this can be reinstated
     public:
         void materialConsistencyCheck();
-        unsigned int materialConsistencyCheck(GSolid* solid);
+        unsigned int materialConsistencyCheck(GVolume* volume);
 #endif
 
     public:
@@ -318,8 +342,8 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         void setPickFace(std::string pickface);
         void setPickFace(const glm::ivec4& pickface);
-        void setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index);
-        void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index);
+        void setFaceTarget(unsigned int face_index, unsigned int volume_index, unsigned int mesh_index);
+        void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
         SLog*                         m_log ; 
@@ -336,7 +360,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         std::vector<GSkinSurface*>    m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
-        std::vector<GSolid*>           m_sensitive_solids ; 
+        std::vector<GVolume*>           m_sensitive_volumes ; 
         std::unordered_set<std::string> m_cathode_lv ; 
 
         // _raw mainly for debug

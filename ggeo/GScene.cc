@@ -30,7 +30,7 @@
 #include "GMatrix.hh"
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GScene.hh"
 #include "GColorizer.hh"
 #include "GMergedMesh.hh"
@@ -164,9 +164,9 @@ GMergedMesh* GScene::getMergedMesh(unsigned idx)
 {
     return m_geolib->getMergedMesh(idx);
 }
-GSolid* GScene::getSolid(unsigned idx)
+GVolume* GScene::getVolume(unsigned idx)
 {
-    return m_nodelib->getSolid(idx);
+    return m_nodelib->getVolume(idx);
 }
 
 
@@ -194,7 +194,7 @@ void GScene::initFromGLTF()
 
     if(m_gltf == 4 || m_gltf == 44)  assert(0 && "GScene::init early exit for gltf==4 or gltf==44" );
 
-    m_root = createVolumeTree(m_scene) ;  // recursive conversion of nd/NCSG/nnode into GSolid/GNode/GMesh/GParts
+    m_root = createVolumeTree(m_scene) ;  // recursive conversion of nd/NCSG/nnode into GVolume/GNode/GMesh/GParts
     assert(m_root);
 
     if(m_verbosity > 0)
@@ -267,13 +267,13 @@ void GScene::compareTrees() const
 {
     if(m_verbosity > 1)
     {
-        LOG(info) << "nodelib (GSolid) volumes " ; 
+        LOG(info) << "nodelib (GVolume) volumes " ; 
         std::cout << " ana " << m_nodelib->desc() << std::endl ; 
         std::cout << " tri " << m_tri_nodelib->desc() << std::endl ; 
     }
 
 
-    //m_tri_mm0->dumpSolids();
+    //m_tri_mm0->dumpVolumes();
 }
 
 
@@ -320,7 +320,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         assert( csg->getIndex() == mesh_idx) ;
 
         // establish index mapping between ana and tri meshes 
-        // based on the common solidname  
+        // based on the common volumename  
 
         std::string soname = csg->soname();
         unsigned tri_mesh_idx = findTriMeshIndex(soname.c_str());
@@ -328,7 +328,7 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         // rel2abs/abs2rel are not good names
         //
         // analytic/sc.py GDML branch is using mesh indexing based on lvIdx unlike G4DAE, 
-        // so need solid name mapping 
+        // so need volume name mapping 
         // to establish correspondence, the names include pointer addresses so this ensures
         // that the source GDML and G4DAE files were produced by a single process
 
@@ -580,7 +580,7 @@ void GScene::compareMeshes_GMeshBB()
 
 
 
-GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode tree without access to triangulated GGeo info
+GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNode tree without access to triangulated GGeo info
 {
     if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree START"
@@ -597,10 +597,10 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
     assert( root_nd == root_nd2 );
 
 
-    GSolid* parent = NULL ;
+    GVolume* parent = NULL ;
     unsigned depth = 0 ; 
     bool recursive_select = false ; 
-    GSolid* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
+    GVolume* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
     assert(root);
 
     assert( m_nodes.size() == nd::num_nodes()) ;
@@ -611,12 +611,12 @@ GSolid* GScene::createVolumeTree(NScene* scene) // creates analytic GSolid/GNode
 }
 
 
-GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool recursive_select  )
+GVolume* GScene::createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, bool recursive_select  )
 {
     guint4 id = getIdentity(n->idx);
     guint4 ni = getNodeInfo(n->idx);
 
-    unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GSolid index
+    unsigned aidx = n->idx + m_targetnode ;           // absolute nd index, fed directly into GVolume index
     unsigned pidx = parent ? parent->getIndex() : 0 ; // partial parent index
 
     // hmm targetnode is for geometry sub-selection perhaps ?
@@ -640,7 +640,7 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool r
         assert( pidx + m_targetnode == ni.w );  // relative node indexing
     }
 
-    GSolid* node = createVolume(n, depth, recursive_select );
+    GVolume* node = createVolume(n, depth, recursive_select );
     node->setParent(parent) ;   // tree hookup 
 
 
@@ -648,14 +648,14 @@ GSolid* GScene::createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool r
     for(VN::const_iterator it=n->children.begin() ; it != n->children.end() ; it++)
     {
         nd* cn = *it ; 
-        GSolid* child = createVolumeTree_r(cn, node, depth+1, recursive_select );
+        GVolume* child = createVolumeTree_r(cn, node, depth+1, recursive_select );
         node->addChild(child);
     } 
     return node  ; 
 }
 
 
-GSolid* GScene::getNode(unsigned node_idx)
+GVolume* GScene::getNode(unsigned node_idx)
 {
    // TODO: migrate to using nodelib 
     assert(node_idx < m_nodes.size());
@@ -663,7 +663,7 @@ GSolid* GScene::getNode(unsigned node_idx)
 }
 
 
-GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
+GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
 {
     assert(n);
     unsigned rel_node_idx = n->idx ;
@@ -685,17 +685,17 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
-    // for odd gltf : use the tri GMesh within the analytic GSolid 
+    // for odd gltf : use the tri GMesh within the analytic GVolume 
     // for direct comparison of analytic ray trace with tri polygonization
 
-    GSolid* solid = new GSolid( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ), UINT_MAX, NULL );     
+    GVolume* volume = new GVolume( rel_node_idx, gtransform, (m_gltf == 3 ? altmesh : mesh ), UINT_MAX, NULL );     
    
-    solid->setLevelTransform(ltransform); 
+    volume->setLevelTransform(ltransform); 
 
-    transferMetadata( solid, csg, n, depth, recursive_select ); 
-    transferIdentity( solid, n ); 
+    transferMetadata( volume, csg, n, depth, recursive_select ); 
+    transferIdentity( volume, n ); 
 
-    std::string bndspec = lookupBoundarySpec(solid, n);  // using just transferred boundary from tri branch
+    std::string bndspec = lookupBoundarySpec(volume, n);  // using just transferred boundary from tri branch
 
     GParts* pts = GParts::make( csg, bndspec.c_str(), m_verbosity  ); // amplification from mesh level to node level 
 
@@ -703,7 +703,7 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
 
     pts->setBndLib(m_tri_bndlib);
 
-    solid->setParts( pts );
+    volume->setParts( pts );
 
 
     if(m_verbosity > 2) 
@@ -714,20 +714,20 @@ GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) //
               << " rel_mesh_idx " << std::setw(3) << rel_mesh_idx 
               << " abs_mesh_idx " << std::setw(3) << abs_mesh_idx 
               << " ridx " << std::setw(3) << n->repeatIdx
-              << " solid " << solid
-              << " solid.pts " << pts 
-              << " solid.idx " << solid->getIndex()
-              << " solid.lvn " << solid->getLVName()
-              << " solid.pvn " << solid->getPVName()
+              << " volume " << volume
+              << " volume.pts " << pts 
+              << " volume.idx " << volume->getIndex()
+              << " volume.lvn " << volume->getLVName()
+              << " volume.pvn " << volume->getPVName()
               ;
 
 
-    addNode(solid, n );
+    addNode(volume, n );
 
-    return solid ; 
+    return volume ; 
 }
 
-void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select )
+void GScene::transferMetadata( GVolume* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select )
 {
     assert(n->repeatIdx > -1);
 
@@ -765,7 +765,7 @@ void GScene::transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsig
 }
 
 
-void GScene::transferIdentity( GSolid* node, const nd* n)
+void GScene::transferIdentity( GVolume* node, const nd* n)
 {
     // passing tri identity into analytic branch 
     unsigned rel_node_idx = n->idx ;
@@ -850,7 +850,7 @@ void GScene::transferIdentity( GSolid* node, const nd* n)
 
 
 
-std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const 
+std::string GScene::lookupBoundarySpec( const GVolume* node, const nd* n) const 
 {
     unsigned tri_boundary = node->getBoundary();    // get the just transferred tri_boundary 
 
@@ -912,7 +912,7 @@ std::string GScene::lookupBoundarySpec( const GSolid* node, const nd* n) const
 
 
 
-void GScene::addNode(GSolid* node, nd* n)
+void GScene::addNode(GVolume* node, nd* n)
 {
     unsigned node_idx = n->idx ;
     assert(m_nodes.count(node_idx) == 0); 
@@ -927,11 +927,11 @@ void GScene::addNode(GSolid* node, nd* n)
 
 void GScene::deltacheck_r( GNode* node, unsigned int depth)
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
-    GMatrixF* gtransform = solid->getTransform();
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
+    GMatrixF* gtransform = volume->getTransform();
 
-    //GMatrixF* ltransform = solid->getLevelTransform();  
-    GMatrixF* ctransform = solid->calculateTransform();
+    //GMatrixF* ltransform = volume->getLevelTransform();  
+    GMatrixF* ctransform = volume->calculateTransform();
     float delta = gtransform->largestDiff(*ctransform);
 
     if(m_verbosity > 1)
@@ -977,7 +977,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
 
          assert( instances.size() > 0u );
 
-         GSolid* instance0 = dynamic_cast<GSolid*>(instances[0]) ; 
+         GVolume* instance0 = dynamic_cast<GVolume*>(instances[0]) ; 
 
          if(ridx == 0 )
          {
@@ -985,7 +985,7 @@ void GScene::makeMergedMeshAndInstancedBuffers()   // using m_geolib to makeMerg
          }     
    
 
-         GSolid* base = ridx == 0 ? NULL : instance0 ; 
+         GVolume* base = ridx == 0 ? NULL : instance0 ; 
 
          GMergedMesh* mm = m_geolib->makeMergedMesh(ridx, base, m_root, m_verbosity );   
 
@@ -1046,10 +1046,10 @@ void GScene::anaEvent(OpticksEvent* evt)
 
     int dbgnode = m_ok->getDbgNode();
 
-    GSolid* solid = m_nodelib->getSolid(dbgnode);
+    GVolume* volume = m_nodelib->getVolume(dbgnode);
     GNodeLib* nlib = m_ggeo->getNodeLib();
 
-    const GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = volume->getMesh();
     unsigned mesh_idx = mesh->getIndex();
     NCSG* csg = m_scene->getCSG(mesh_idx);
     nnode* root = csg->getRoot();
@@ -1064,14 +1064,14 @@ void GScene::anaEvent(OpticksEvent* evt)
 
     LOG(info) << "GScene::anaEvent " << dbgnode << " epsilon " << epsilon  ;
     LOG(info) << " nodelib " << nlib->desc() ;
-    LOG(info) << " solid " <<  ( solid ? solid->description() : " NONE " )  ; 
+    LOG(info) << " volume " <<  ( volume ? volume->description() : " NONE " )  ; 
     LOG(info) << " csg.meta " << csg->meta() ; 
     LOG(info) << " csg.desc " << csg->desc() ; 
 
-    assert(solid);
+    assert(volume);
 
     // fails to find with tboolean- because thats test mode not gltf mode
-    glm::mat4  gtr = solid->getTransformMat4();
+    glm::mat4  gtr = volume->getTransformMat4();
     glm::mat4 igtr = glm::inverse(gtr);   
 
     std::cout << gpresent("gtr", gtr) << std::endl ; 

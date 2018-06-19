@@ -33,7 +33,7 @@
 
 #include "GNodeLib.hh"
 
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GMesh.hh"
 
 // g4-
@@ -158,10 +158,10 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
 {
     GNodeLib* nolib = m_geotest->getNodeLib();
     assert( nolib );
-    unsigned numSolids = nolib->getNumSolids();
+    unsigned numVolumes = nolib->getNumVolumes();
 
     LOG(info) << "CTestDetector::makeDetector_NCSG"
-              << " numSolids " << numSolids 
+              << " numVolumes " << numVolumes 
               ;
 
     NCSG* universe = m_geotest->getUniverse();
@@ -175,9 +175,9 @@ G4VPhysicalVolume* CTestDetector::makeDetector_NCSG()
     }
     
     G4VPhysicalVolume* ppv = NULL ; 
-    for(unsigned i=0 ; i < numSolids ; i++) 
+    for(unsigned i=0 ; i < numVolumes ; i++) 
     {
-        GSolid* kso = nolib->getSolid(i); 
+        GVolume* kso = nolib->getVolume(i); 
         const char* lvn = kso->getLVName();
         const char* pvn = kso->getPVName();
         const GMesh* mesh = kso->getMesh();
@@ -212,8 +212,8 @@ G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
    //
     GMergedMesh* mm = m_ggb->getMergedMesh(0);
 
-    unsigned numSolidsMesh = mm->getNumSolids();
-    unsigned numSolidsConfig = m_config->getNumElements();
+    unsigned numVolumesMesh = mm->getNumVolumes();
+    unsigned numVolumesConfig = m_config->getNumElements();
 
     bool is_pib  = m_config->isPmtInBox() ;
     bool is_bib  = m_config->isBoxInBox() ;
@@ -221,19 +221,19 @@ G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
     LOG(info)  << "CTestDetector::makeDetector_OLD "
                << " PmtInBox " << is_pib
                << " BoxInBox " << is_bib
-               << " numSolidsMesh " << numSolidsMesh
-               << " numSolidsConfig " << numSolidsConfig 
+               << " numVolumesMesh " << numVolumesMesh
+               << " numVolumesConfig " << numVolumesConfig 
               ;
 
     assert( ( is_pib || is_bib ) && "CTestDetector::makeDetector_OLD mode not recognized");
 
     if(is_bib)
     {
-        if( numSolidsMesh != numSolidsConfig )
+        if( numVolumesMesh != numVolumesConfig )
         {
-             mm->dumpSolids("CTestDetector::makeDetector_OLD (solid count inconsistent)");
+             mm->dumpVolumes("CTestDetector::makeDetector_OLD (solid count inconsistent)");
         }
-        assert( numSolidsMesh == numSolidsConfig ); // bound to fail for PmtInBox
+        assert( numVolumesMesh == numVolumesConfig ); // bound to fail for PmtInBox
     }
     else if(is_pib)
     {
@@ -249,7 +249,7 @@ G4VPhysicalVolume* CTestDetector::makeDetector_OLD()
     G4LogicalVolume* mother = NULL ; 
 
 
-    for(unsigned int i=0 ; i < numSolidsConfig ; i++)
+    for(unsigned int i=0 ; i < numVolumesConfig ; i++)
     {   
         const char* spec = m_config->getBoundary(i);
 

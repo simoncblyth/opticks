@@ -11,7 +11,7 @@ class GNodeLib ;
 class GMeshLib ; 
 class GItemList ; 
 class GGeo ; 
-class GSolid ; 
+class GVolume ; 
 class GNode ; 
 
 class GSurfaceLib ; 
@@ -100,17 +100,17 @@ void GScene::initFromGLTF()
 
 
 
-GSolid* GScene::createVolumeTree(NScene* scene) 
+GVolume* GScene::createVolumeTree(NScene* scene) 
 -------------------------------------------------
 
-* recursively convert nd tree into GSolid(GNode) tree
-* recall "GSolid" is not a good name (think GNode its base class) 
+* recursively convert nd tree into GVolume(GNode) tree
+* recall GVolume(GNode) was formerly misnamed as "GSolid"
 
 
-GSolid* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  )
+GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  )
 ------------------------------------------------------------------------------
 
-* nexus : GMesh, GSolid, GParts, NCSG, boundary spec  
+* nexus : GMesh, GVolume, GParts, NCSG, boundary spec  
 
 
 
@@ -129,7 +129,7 @@ class GGEO_API GScene : public GGeoBase
         GScene(Opticks* ok, GGeo* ggeo, bool loaded);
 
         GMergedMesh* getMergedMesh(unsigned ridx);
-        GSolid* getSolid(unsigned nidx);
+        GVolume* getVolume(unsigned nidx);
         void dumpNode(unsigned nidx);
         void anaEvent(OpticksEvent* evt);
         void save() const ; 
@@ -170,13 +170,13 @@ class GGEO_API GScene : public GGeoBase
         guint4 getNodeInfo(unsigned idx) const ;
         guint4 getIdentity(unsigned idx) const ;
     private:
-        GSolid* createVolumeTree(NScene* scene);
-        GSolid* createVolumeTree_r(nd* n, GSolid* parent, unsigned depth, bool recursive_select );
-        GSolid* createVolume(nd* n, unsigned depth, bool& recursive_select );
-        void transferIdentity( GSolid* node, const nd* n);
-        void transferMetadata( GSolid* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select );
-        std::string lookupBoundarySpec( const GSolid* node, const nd* n) const ;
-        void addNode(GSolid* node, nd* n);
+        GVolume* createVolumeTree(NScene* scene);
+        GVolume* createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, bool recursive_select );
+        GVolume* createVolume(nd* n, unsigned depth, bool& recursive_select );
+        void transferIdentity( GVolume* node, const nd* n);
+        void transferMetadata( GVolume* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select );
+        std::string lookupBoundarySpec( const GVolume* node, const nd* n) const ;
+        void addNode(GVolume* node, nd* n);
     private:
         // compare tree calculated and persisted transforms
         void           deltacheck_r( GNode* node, unsigned int depth );
@@ -185,7 +185,7 @@ class GGEO_API GScene : public GGeoBase
         void         makeMergedMeshAndInstancedBuffers() ; 
 
     private:
-        GSolid*       getNode(unsigned node_idx);
+        GVolume*       getNode(unsigned node_idx);
     private:
         Opticks*      m_ok ; 
         OpticksQuery* m_query ; 
@@ -220,11 +220,11 @@ class GGEO_API GScene : public GGeoBase
         GColorizer*   m_colorizer ; 
 
         unsigned     m_verbosity ; 
-        GSolid*      m_root ; 
+        GVolume*      m_root ; 
         unsigned     m_selected_count ; 
 
         std::map<unsigned, GMesh*>   m_meshes ; 
-        std::map<unsigned, GSolid*>  m_nodes ;  
+        std::map<unsigned, GVolume*>  m_nodes ;  
         std::map<unsigned, unsigned> m_rel2abs_mesh ; 
         std::map<unsigned, unsigned> m_abs2rel_mesh ; 
 

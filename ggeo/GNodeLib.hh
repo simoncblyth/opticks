@@ -6,7 +6,7 @@
 
 class Opticks ; 
 
-class GSolid ; 
+class GVolume ; 
 class GNode ; 
 class GItemList ; 
 
@@ -20,8 +20,8 @@ class GTreePresent ;
 GNodeLib
 ===========
 
-Collection of GSolid/GNode instances with access by index.
-NB only pv/lv names are persisted, not the solids/nodes.
+Collection of GVolume/GNode instances with access by index.
+NB only pv/lv names are persisted, not the volumes/nodes.
 The analytic and test ctor arguments determine the name of the 
 persisting directory.
 
@@ -32,9 +32,9 @@ There are several canonical m_nodelib instances:
 
 *GGeo::init precache non-analytic*
 
-     874 void GGeo::add(GSolid* solid)
+     874 void GGeo::add(GVolume* volume)
      875 {
-     876     m_nodelib->add(solid);
+     876     m_nodelib->add(volume);
      877 }
 
 
@@ -42,7 +42,7 @@ There are several canonical m_nodelib instances:
 
      m_nodelib(loaded ? GNodeLib::Load(m_ok, m_analytic ) : new GNodeLib(m_ok, m_analytic)), 
 
-     893 void GScene::addNode(GSolid* node, nd* n)
+     893 void GScene::addNode(GVolume* node, nd* n)
      894 {
      895     unsigned node_idx = n->idx ;
      896     assert(m_nodes.count(node_idx) == 0);
@@ -74,11 +74,11 @@ class GGEO_API GNodeLib
         //unsigned getTargetNodeOffset() const ;
         unsigned getNumPV() const ;
         unsigned getNumLV() const ;
-        void add(GSolid*    solid);
+        void add(GVolume*    volume);
         GNode* getNode(unsigned index) const ; 
-        GSolid* getSolid(unsigned int index) const ;  
-        GSolid* getSolidSimple(unsigned int index);  
-        unsigned getNumSolids() const ;
+        GVolume* getVolume(unsigned int index) const ;  
+        GVolume* getVolumeSimple(unsigned int index);  
+        unsigned getNumVolumes() const ;
     public:
         const char* getPVName(unsigned int index) const ;
         const char* getLVName(unsigned int index) const ;
@@ -92,8 +92,8 @@ class GGEO_API GNodeLib
         GItemList*                         m_lvlist ; 
         GTreePresent*                      m_treepresent ; 
     private:
-        std::map<unsigned int, GSolid*>    m_solidmap ; 
-        std::vector<GSolid*>               m_solids ; 
+        std::map<unsigned int, GVolume*>    m_volumemap ; 
+        std::vector<GVolume*>               m_volumes ; 
 };
  
 

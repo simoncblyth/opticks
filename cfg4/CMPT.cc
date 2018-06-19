@@ -442,7 +442,17 @@ void CMPT::sample(NPY<float>* a, unsigned offset, const char* _keys, float low, 
 
     float* values = a->getValues() + offset ;
 
+
     assert( nl == nstep );
+
+    if( nm_ != nkey )
+    {
+        LOG(fatal) << " unexpected _keys " << _keys 
+                   << " nkey " << nkey 
+                   << " nm_ " << nm_
+                   << " a " << a->getShapeString()
+                   ;
+    }
     assert( nm_ == nkey );
 
     for(unsigned l=0 ; l < nl ; l++)

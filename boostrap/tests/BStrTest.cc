@@ -326,6 +326,27 @@ void test_Split()
     test_Split<float>("0.5,1.5,2,3,4,5,6,7,8,9", 10 );
 }
 
+void test_Split1(const char* keys, unsigned expected_nkey )
+{
+    std::vector<std::string> elem ;
+    BStr::split(elem, keys, ',') ;
+
+    unsigned nkey = elem.size() ;
+
+    bool expected = nkey == expected_nkey ;
+
+    if(!expected)
+    {
+         LOG(fatal) << " keys " << keys 
+                    << " nkey " << nkey 
+                    << " expected_nkey " << expected_nkey
+                    ; 
+    }
+
+    assert( expected );
+}
+
+
 
 
 int main(int argc, char** argv)
@@ -350,9 +371,12 @@ int main(int argc, char** argv)
     test_replace_all();
     test_usplit();
     test_LexicalCast();
+    test_Split();
 */
 
-    test_Split();
+    test_Split1( "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB", 4 );
+    test_Split1( "RINDEX,,,", 3 );
+    test_Split1( "RINDEX,,, ", 4 );
 
     return 0 ; 
 }

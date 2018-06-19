@@ -15,7 +15,7 @@
 #include "GMatrix.hh"
 #include "GMesh.hh"
 #include "GNode.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 
 
 #include "PLOG.hh"
@@ -143,9 +143,9 @@ GNode* GNode::getChild(unsigned int index)
     return index < getNumChildren() ? m_children[index] : NULL ;
 }
 
-GSolid* GNode::getChildSolid(unsigned int index)
+GVolume* GNode::getChildVolume(unsigned int index)
 {
-    return dynamic_cast<GSolid*>(getChild(index));
+    return dynamic_cast<GVolume*>(getChild(index));
 }
 
 
@@ -220,9 +220,9 @@ void GNode::dump(const char* )
 
     if(m_mesh)
     {
-         unsigned msol = m_mesh->getNumSolids() ;
+         unsigned msol = m_mesh->getNumVolumes() ;
          gfloat4 mce0 = m_mesh->getCenterExtent(0);
-         LOG(info) << "mesh.numSolids " << msol << " mesh.ce.0 " << mce0.description() ; 
+         LOG(info) << "mesh.numVolumes " << msol << " mesh.ce.0 " << mce0.description() ; 
 
          for(unsigned i=0 ; i < msol ; i++)
          {

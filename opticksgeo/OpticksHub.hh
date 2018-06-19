@@ -127,7 +127,7 @@ class OKGEO_API OpticksHub {
        bool         hasOpt(const char* name);
        bool         isCompute();
    public:
-       void         dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpSolids" );  
+       void         dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg="OpticksHub::dumpVolumes" );  
    public:
        std::string    getG4GunConfig();
        NPY<float>*    getInputGensteps() const ;
@@ -183,7 +183,7 @@ class OKGEO_API OpticksHub {
        const char*          getIdentifier(); 
        GMergedMesh*         getMergedMesh( unsigned index );
 
-       GGeoLib*             getGeoLib();       //  meshes :   until very recently direct from GGeo
+       GGeoLib*             getGeoLib();       //  meshes 
        GMaterialLib*        getMaterialLib();  //  materials
        GSurfaceLib*         getSurfaceLib();   //  surfaces
        GBndLib*             getBndLib();       //  boundaries

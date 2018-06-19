@@ -151,11 +151,6 @@ unsigned CMaterialBridge::getPointMaterial(const G4StepPoint* point) const
 }
 
 
-
-
-
-
-
 unsigned int CMaterialBridge::getMaterialIndex(const G4Material* material) const 
 {
     // used from CSteppingAction::UserSteppingActionOptical to CRecorder::setBoundaryStatus

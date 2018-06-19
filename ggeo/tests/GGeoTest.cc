@@ -18,14 +18,14 @@ void misc(GGeo* m_ggeo)
     for(unsigned int i=0 ; i < nmm ; i++)
     { 
         GMergedMesh* mm = m_ggeo->getMergedMesh(i) ;
-        unsigned int numSolids = mm->getNumSolids();
-        unsigned int numSolidsSelected = mm->getNumSolidsSelected();
+        unsigned int numVolumes = mm->getNumVolumes();
+        unsigned int numVolumesSelected = mm->getNumVolumesSelected();
 
         LOG(info) << " i " << i 
-                  << " numSolids " << numSolids       
-                  << " numSolidsSelected " << numSolidsSelected ;      
+                  << " numVolumes " << numVolumes       
+                  << " numVolumesSelected " << numVolumesSelected ;      
 
-        for(unsigned int j=0 ; j < numSolids ; j++)
+        for(unsigned int j=0 ; j < numVolumes ; j++)
         {
             gbbox bb = mm->getBBox(j);
             bb.Summary("bb");
@@ -60,7 +60,7 @@ void misc(GGeo* m_ggeo)
 void test_GGeo(GGeo* gg)
 {
     GMergedMesh* mm = gg->getMergedMesh(0);
-    unsigned numSolids = mm->getNumSolids();
+    unsigned numVolumes = mm->getNumVolumes();
 
     GBndLib* blib = gg->getBndLib();
 
@@ -69,7 +69,7 @@ void test_GGeo(GGeo* gg)
     typedef std::pair<std::string, std::string> PSS ; 
     std::set<PSS> pvp ; 
 
-    for(unsigned i=0 ; i < numSolids ; i++)
+    for(unsigned i=0 ; i < numVolumes ; i++)
     {
         guint4 nodeinfo = mm->getNodeInfo(i);
         unsigned nface = nodeinfo.x ;

@@ -32,7 +32,7 @@
 #include "GSurfaceLib.hh"
 
 #include "GMesh.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GGeo.hh"
 
 
@@ -187,6 +187,8 @@ int AssimpGGeo::convert(const char* ctrl)
     convertMaterials(scene, m_ggeo, ctrl );
     convertSensors( m_ggeo ); 
     convertMeshes(scene, m_ggeo, ctrl);
+
+
     convertStructure(m_ggeo);
 
     return 0 ;
@@ -790,7 +792,9 @@ void AssimpGGeo::convertMeshes(const aiScene* scene, GGeo* gg, const char* /*que
 
 void AssimpGGeo::convertStructure(GGeo* gg)
 {
-    LOG(info) << "AssimpGGeo::convertStructure ";
+    LOG(info) << "AssimpGGeo::convertStructure, closing GGeo ";
+
+    m_ggeo->close(); 
 
     convertStructure(gg, m_tree->getRoot(), 0, NULL);
 
@@ -801,36 +805,36 @@ void AssimpGGeo::convertStructure(GGeo* gg)
               << " no " << m_no_surface  ;
 }
 
-void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+void AssimpGGeo::convertStructure(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent)
 {
     // recursive traversal of the AssimpNode tree
     // note that full tree is traversed even when a partial selection is applied 
 
-    GSolid* solid = convertStructureVisit( gg, node, depth, parent);
+    GVolume* volume = convertStructureVisit( gg, node, depth, parent);
 
     bool selected = m_nosel ? true : m_selection && m_selection->contains(node) ;   // twas hotspot for geocache creation before nosel special case
 
-    solid->setSelected(selected);
+    volume->setSelected(selected);
 
-    gg->add(solid);
+    gg->add(volume);
 
     if(parent) // GNode hookup
     {
-        parent->addChild(solid);
-        solid->setParent(parent);
+        parent->addChild(volume);
+        volume->setParent(parent);
     }
     else
     {
         assert(node->getIndex() == 0);   // only root node has no parent 
     }
 
-    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1, solid);
+    for(unsigned int i = 0; i < node->getNumChildren(); i++) convertStructure(gg, node->getChild(i), depth + 1, volume);
 }
 
 
 
 
-GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* /*parent*/)
+GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* /*parent*/)
 {
     // Associates node to extra information analogous to collada_to_chroma.py:visit
     //
@@ -838,7 +842,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     // * border surfaces, via pv pair names
     // * skin surfaces, via lv names
     //
-    // Solid-centric naming 
+    // Volume-centric naming 
     //
     // outer-surface 
     //      relevant to inwards going photons, from parent to self
@@ -906,8 +910,8 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
     ltransform->Summary("AssimpGGeo::convertStructureVisit ltransform");
 
 
-    GSolid* solid = new GSolid(nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
-    solid->setLevelTransform(ltransform);
+    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
+    volume->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 
     const char* pv   = node->getName(1); 
@@ -986,7 +990,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
 
     NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
-    solid->setSensor( sensor );  
+    volume->setSensor( sensor );  
 
     GBndLib* blib = gg->getBndLib();  
     GSurfaceLib* slib = gg->getSurfaceLib();  
@@ -999,7 +1003,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
                                                mt->getShortName()
                                              );
 
-    solid->setBoundary(boundary);
+    volume->setBoundary(boundary);
     {
        // sensor indices are set even for non sensitive volumes in PMT viscinity
        // TODO: change that 
@@ -1009,17 +1013,17 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
         unsigned int surface = blib->getOuterSurface(boundary);
         bool oss = slib->isSensorSurface(surface); 
         unsigned int ssi = oss ? NSensor::RefIndex(sensor) : 0 ; 
-        solid->setSensorSurfaceIndex( ssi ); 
+        volume->setSensorSurfaceIndex( ssi ); 
     } 
 
     char* desc = node->getDescription("\n\noriginal node description"); 
-    solid->setDescription(desc);
-    solid->setName(node->getName());  // this is LV name, maybe set PV name too 
+    volume->setDescription(desc);
+    volume->setName(node->getName());  // this is LV name, maybe set PV name too 
 
     if(m_volnames)
     {
-        solid->setPVName(pv);
-        solid->setLVName(lv);
+        volume->setPVName(pv);
+        volume->setLVName(lv);
 
         // these names have the ptr 
         /*
@@ -1034,7 +1038,7 @@ GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned i
 
     free(desc);
 
-    return solid ; 
+    return volume ; 
 }
 
 

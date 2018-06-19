@@ -264,11 +264,11 @@ used.
 
 TODO: contrast with AssimpGGeo::convertStructure
 
-* need to create GSolid(GNode) and hookem up into a tree here, but 
+* need to create GVolume(GNode) and hookem up into a tree here, but 
   YOG::Nd is also needed 
 
   * maybe add a void* "aux" slot to GNode to passively hold the YOG::Nd  
-    then can return GSolid(GNode) in the traverse but still have the 
+    then can return GVolume(GNode) in the traverse but still have the 
     much simpler YOG::Nd to work with YOG::Maker
  
 
@@ -318,11 +318,11 @@ X4PhysicalVolume::convertNodeVisit
 
 * cf AssimpGGeo::convertStructureVisit 
 
-  * which returns GSolid(*)(GNode)  TODO: change name of GSolid to GVolume ? 
+  * which returns GVolume(*)(GNode)  
   * the parent/child links are then setup in the recursive method 
 
 
-What is required of YOG::Nd ? Can I do the same with GSolid(GNode) ?
+What is required of YOG::Nd ? Can I do the same with GVolume(GNode) ?
 
 
 GBndLib::addBoundary requires getting the indices for the materials
@@ -383,7 +383,7 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
      if(mh->csg == NULL) convertSolid(mh, solid);
 
      // hmm AssimpGGeo::convertMeshes does some mesh processing (deduping, fixing) 
-     // before inclusion in the GSolid(GNode) 
+     // before inclusion in the GVolume(GNode) 
 
      // GParts setup from the recursive vistor GScene::createVolume 
 

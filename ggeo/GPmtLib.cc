@@ -91,7 +91,7 @@ void GPmtLib::loadTriPmt()
     if(m_tpmt == NULL) LOG(fatal) << "GPmtLib::loadTriPmt FAILED " << pmtpath ;
     assert(m_tpmt);
 
-    m_tpmt->dumpSolids("GPmtLib::loadTriPmt GMergedMesh::dumpSolids (before:mmpmt) ");
+    m_tpmt->dumpVolumes("GPmtLib::loadTriPmt GMergedMesh::dumpVolumes (before:mmpmt) ");
 }
 
 

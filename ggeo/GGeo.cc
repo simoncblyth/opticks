@@ -58,7 +58,7 @@ namespace fs = boost::filesystem;
 #include "GSourceLib.hh"
 
 
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GMesh.hh"
 #include "GTreeCheck.hh"
 #include "GTreePresent.hh"
@@ -750,7 +750,7 @@ void GGeo::Summary(const char* msg)
 {
     LOG(info) << msg
               << " ms " << m_meshlib->getNumMeshes()
-              << " so " << m_nodelib->getNumSolids()
+              << " so " << m_nodelib->getNumVolumes()
               << " mt " << m_materials.size()
               << " bs " << m_border_surfaces.size()
               << " ss " << m_skin_surfaces.size()
@@ -796,9 +796,9 @@ void GGeo::Details(const char* msg)
     }
 
     /*
-    for(unsigned int isol=0 ; isol < m_solids.size()  ; isol++ )
+    for(unsigned int isol=0 ; isol < m_volumes.size()  ; isol++ )
     {
-        GSolid* sol = m_solids[isol];
+        GVolume* sol = m_volumes[isol];
         snprintf(mbuf,BSIZ, "%s so %u", msg, isol);
         sol->Summary(mbuf);
     }
@@ -837,21 +837,21 @@ void GGeo::add(GMesh* mesh)
 
 // via GNodeLib
 
-unsigned GGeo::getNumSolids()
+unsigned GGeo::getNumVolumes()
 {
-    return m_nodelib->getNumSolids();
+    return m_nodelib->getNumVolumes();
 }
-void GGeo::add(GSolid* solid)
+void GGeo::add(GVolume* volume)
 {
-    m_nodelib->add(solid);
+    m_nodelib->add(volume);
 }
-GSolid* GGeo::getSolid(unsigned index)
+GVolume* GGeo::getVolume(unsigned index)
 {
-    return m_nodelib->getSolid(index);
+    return m_nodelib->getVolume(index);
 }
-GSolid* GGeo::getSolidSimple(unsigned int index)
+GVolume* GGeo::getVolumeSimple(unsigned int index)
 {
-    return m_nodelib->getSolidSimple(index);
+    return m_nodelib->getVolumeSimple(index);
 }
 const char* GGeo::getPVName(unsigned int index)
 {
@@ -890,33 +890,33 @@ void GGeo::dumpRaw(const char* msg)
 
 void GGeo::materialConsistencyCheck()
 {
-    GSolid* solid = getSolid(0);
-    assert(solid);
-    unsigned int nok = materialConsistencyCheck(solid);
+    GVolume* volume = getVolume(0);
+    assert(volume);
+    unsigned int nok = materialConsistencyCheck(volume);
     printf("GGeo::materialConsistencyCheck nok %u \n", nok );
 }
 
-unsigned int GGeo::materialConsistencyCheck(GSolid* solid)
+unsigned int GGeo::materialConsistencyCheck(GVolume* volume)
 {
-    assert(solid);
-    //solid->Summary(NULL);
+    assert(volume);
+    //volume->Summary(NULL);
 
-    GSolid* parent = dynamic_cast<GSolid*>(solid->getParent()) ; 
+    GVolume* parent = dynamic_cast<GVolume*>(volume->getParent()) ; 
 
     unsigned int nok = 0 ;
     if(parent)
     {
-        assert(parent->getInnerMaterial() == solid->getOuterMaterial());
+        assert(parent->getInnerMaterial() == volume->getOuterMaterial());
         nok += 1 ;
     } 
     else
     {
-        assert(solid->getIndex() == 0); 
+        assert(volume->getIndex() == 0); 
     } 
 
-    for(unsigned int i=0 ; i < solid->getNumChildren() ; i++)
+    for(unsigned int i=0 ; i < volume->getNumChildren() ; i++)
     {
-        GSolid* child = dynamic_cast<GSolid*>(solid->getChild(i)) ;
+        GVolume* child = dynamic_cast<GVolume*>(volume->getChild(i)) ;
         assert(child); 
         nok += materialConsistencyCheck(child);
     }
@@ -1085,15 +1085,15 @@ void GGeo::dumpRawBorderSurface(const char* name)
 void GGeo::traverse(const char* msg)
 {
     LOG(info) << msg ; 
-    traverse( getSolid(0), 0 );
+    traverse( getVolume(0), 0 );
 }
 
 
 void GGeo::traverse( GNode* node, unsigned int depth)
 {
-    GSolid* solid = dynamic_cast<GSolid*>(node) ;
+    GVolume* volume = dynamic_cast<GVolume*>(node) ;
 
-    NSensor* sensor = solid->getSensor(); 
+    NSensor* sensor = volume->getSensor(); 
 
     if(sensor)
          LOG(debug) << "GGeo::traverse " 
@@ -1137,6 +1137,19 @@ void GGeo::prepareSurfaceLib()
     GSurfaceLib* slib = getSurfaceLib() ;
    
     slib->addPerfectSurfaces(); 
+}
+
+
+void GGeo::close()
+{
+    // this needs to be invoked after all Opticks materials and surfaces have been
+    // created, and before boundaries are formed : typically in the recursive structure traverse
+
+    GMaterialLib* mlib = getMaterialLib() ;
+    GSurfaceLib* slib = getSurfaceLib() ;
+
+    mlib->close();
+    slib->close();
 }
 
 
@@ -1423,11 +1436,11 @@ void GGeo::dumpNodeInfo(unsigned int mmindex, const char* msg)
     GMergedMesh* mm = getMergedMesh(mmindex);
     guint4* nodeinfo = mm->getNodeInfo(); 
 
-    unsigned int nso = mm->getNumSolids() ;
+    unsigned int nso = mm->getNumVolumes() ;
 
     LOG(info) << msg 
               << " mmindex " << mmindex  
-              << " solids " << nso 
+              << " volumes " << nso 
               ; 
 
     for(unsigned int i=0 ; i < nso ; i++)
@@ -1498,7 +1511,7 @@ void GGeo::dumpTree(const char* msg)
     GMergedMesh* mm0 = getMergedMesh(0);
 
     // all these are full traverse counts, not reduced by selections or instancing
-    unsigned int nso = mm0->getNumSolids();  
+    unsigned int nso = mm0->getNumVolumes();  
     guint4* nodeinfo = mm0->getNodeInfo(); 
 
     unsigned int npv = m_nodelib->getNumPV();
@@ -1513,7 +1526,7 @@ void GGeo::dumpTree(const char* msg)
 
     if( nso <= 10 || npv == 0 || nlv == 0 || nodeinfo == NULL )
     {
-        LOG(warning) << "GGeo::dumpTree MISSING pvlist lvlist or nodeinfo OR few solid testing  " ; 
+        LOG(warning) << "GGeo::dumpTree MISSING pvlist lvlist or nodeinfo OR few volume testing  " ; 
         return ;
     }
     else
@@ -1548,7 +1561,7 @@ glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index) // TODO: move into geoli
 {
     GMergedMesh* mm0 = getMergedMesh(0);
     guint4* nodeinfo = mm0->getNodeInfo(); 
-    unsigned int nso = mm0->getNumSolids();   // poor name, means volumes
+    unsigned int nso = mm0->getNumVolumes();   // poor name, means volumes
     assert(index < nso );
 
     glm::ivec4 offset ; 
@@ -1576,11 +1589,11 @@ glm::ivec4 GGeo::getNodeOffsetCount(unsigned int index) // TODO: move into geoli
 void GGeo::dumpVolume(unsigned int index, const char* msg)
 {
     GMergedMesh* mm0 = getMergedMesh(0);
-    unsigned int nsolid = mm0->getNumSolids();  
+    unsigned int nvolume = mm0->getNumVolumes();  
     unsigned int nvert = mm0->getNumVertices();  
     unsigned int nface = mm0->getNumFaces();  
     LOG(info) << msg 
-              << " nsolid " << nsolid
+              << " nvolume " << nvolume
               << " nvert" << nvert
               << " nface " << nface
                ; 
@@ -1599,9 +1612,9 @@ void GGeo::dumpVolume(unsigned int index, const char* msg)
 
     for(int i=0 ; i < offnum.z ; i++)
     {
-        guint3* f = faces + offnum.x + i ;    // offnum.x is cumulative sum of prior solid face counts
+        guint3* f = faces + offnum.x + i ;    // offnum.x is cumulative sum of prior volume face counts
 
-        //  GMergedMesh::traverse  already does vertex index offsetting corresponding to the other solid meshes incorporated in the merge
+        //  GMergedMesh::traverse  already does vertex index offsetting corresponding to the other volume meshes incorporated in the merge
         gfloat3* v0 = verts + f->x ; 
         gfloat3* v1 = verts + f->y ; 
         gfloat3* v2 = verts + f->z ; 
@@ -1626,20 +1639,20 @@ void GGeo::dumpVolume(unsigned int index, const char* msg)
 }
 
 
-glm::vec4 GGeo::getFaceCenterExtent(unsigned int face_index, unsigned int solid_index, unsigned int mergedmesh_index )
+glm::vec4 GGeo::getFaceCenterExtent(unsigned int face_index, unsigned int volume_index, unsigned int mergedmesh_index )
 {
-   return getFaceRangeCenterExtent( face_index, face_index + 1 , solid_index, mergedmesh_index );
+   return getFaceRangeCenterExtent( face_index, face_index + 1 , volume_index, mergedmesh_index );
 }
 
-glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mergedmesh_index )
+glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mergedmesh_index )
 {
     assert(mergedmesh_index == 0 && "instanced meshes not yet supported");
     GMergedMesh* mm = getMergedMesh(mergedmesh_index);
     assert(mm);
-    unsigned int nsolid = mm->getNumSolids();  
-    assert(solid_index < nsolid);
+    unsigned int nvolume = mm->getNumVolumes();  
+    assert(volume_index < nvolume);
 
-    glm::ivec4 offnum = getNodeOffsetCount(solid_index);
+    glm::ivec4 offnum = getNodeOffsetCount(volume_index);
     gfloat3* verts = mm->getVertices();
     guint3* faces = mm->getFaces(); 
 
@@ -1655,7 +1668,7 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
     for(unsigned int face_index=face_index0 ; face_index < face_index1 ; face_index++)
     {
 
-        guint3* f = faces + offnum.x + face_index ; // offnum.x is cumulative sum of prior solid face counts within the merged mesh
+        guint3* f = faces + offnum.x + face_index ; // offnum.x is cumulative sum of prior volume face counts within the merged mesh
         gfloat3* v = NULL ; 
 
         gfloat3* v0 = verts + f->x ;
@@ -1779,11 +1792,11 @@ void GGeo::setPickFace(const glm::ivec4& pickface)
         print(pickface, "GGeo::setPickFace face targetting");
         unsigned int face_index0= pickface.x ;
         unsigned int face_index1= pickface.y ;
-        unsigned int solid_index= pickface.z ;
+        unsigned int volume_index= pickface.z ;
         unsigned int mesh_index = pickface.w ;
 
-        //setFaceTarget(face_index, solid_index, mesh_index);
-        setFaceRangeTarget(face_index0, face_index1, solid_index, mesh_index);
+        //setFaceTarget(face_index, volume_index, mesh_index);
+        setFaceRangeTarget(face_index0, face_index1, volume_index, mesh_index);
     }    
     else 
     {    
@@ -1791,17 +1804,17 @@ void GGeo::setPickFace(const glm::ivec4& pickface)
     }    
 }
 
-void GGeo::setFaceTarget(unsigned int face_index, unsigned int solid_index, unsigned int mesh_index)
+void GGeo::setFaceTarget(unsigned int face_index, unsigned int volume_index, unsigned int mesh_index)
 {
-    glm::vec4 ce = getFaceCenterExtent(face_index, solid_index, mesh_index);
+    glm::vec4 ce = getFaceCenterExtent(face_index, volume_index, mesh_index);
     bool autocam = false ; 
     m_composition->setCenterExtent(ce, autocam );
 }
 
 
-void GGeo::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int solid_index, unsigned int mesh_index)
+void GGeo::setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mesh_index)
 {
-    glm::vec4 ce = getFaceRangeCenterExtent(face_index0, face_index1, solid_index, mesh_index);
+    glm::vec4 ce = getFaceRangeCenterExtent(face_index0, face_index1, volume_index, mesh_index);
     bool autocam = false ;
     m_composition->setCenterExtent(ce, autocam );
 }

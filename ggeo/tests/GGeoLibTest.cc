@@ -48,9 +48,9 @@ void test_InstancedMergedMesh(GMergedMesh* mm)
 void test_GlobalMergedMesh(GMergedMesh* mm)
 {
     assert(mm->getIndex() == 0);
-    //mm->dumpSolids("test_GlobalMergedMesh");
-    unsigned numSolids = mm->getNumSolids();
-    for(unsigned i=0 ; i < numSolids ; i++)
+    //mm->dumpVolumes("test_GlobalMergedMesh");
+    unsigned numVolumes = mm->getNumVolumes();
+    for(unsigned i=0 ; i < numVolumes ; i++)
     {
         guint4 nodeinfo = mm->getNodeInfo(i);
         unsigned nface = nodeinfo.x ;

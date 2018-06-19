@@ -10,7 +10,7 @@ class Opticks ;
 
 class GGeo ; 
 class GNode ;
-class GSolid ; 
+class GVolume ; 
 class GMergedMesh ; 
 
 #include "GMesh.hh"
@@ -39,7 +39,7 @@ public:
     static GMergedMesh* create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity);
 private:
      // operates in COUNT and MERGE passes, COUNT find out the number of 
-     // ridx selected solids and their vertices to allocate then 
+     // ridx selected volumes and their vertices to allocate then 
      // MERGE collects them together
      void traverse_r( GNode* node, unsigned int depth, unsigned int pass, unsigned verbosity );
 
@@ -52,8 +52,8 @@ public:
 public:
     static GMergedMesh* load(Opticks* opticks, unsigned int index=0, const char* version=NULL );
     static GMergedMesh* load(const char* dir, unsigned int index=0, const char* version=NULL );
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GSolid*>& solids, unsigned verbosity) ;
-    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GSolid* solid, unsigned verbosity ) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, const std::vector<GVolume*>& volumes, unsigned verbosity) ;
+    static GMergedMesh* combine(unsigned int index, GMergedMesh* mm, GVolume* volume, unsigned verbosity ) ;
 public:
     GMergedMesh(unsigned index) ;
     GMergedMesh(                // expedient pass-thru to GMesh ctor
@@ -70,19 +70,19 @@ public:
     void addInstancedBuffers(const std::vector<GNode*>& placements);  // uses GTree statics to create the buffers
    // int  getNumComponents() const ;  <-- this caused some grief, silent override decl without an implementation  
 private:
-    // NB cannot treat GMergedMesh as a GMesh wrt calling getNumSolids 
+    // NB cannot treat GMergedMesh as a GMesh wrt calling getNumVolumes 
     // explicit naming to avoid subclass confusion
     void countMergedMesh( GMergedMesh* other, bool selected );   
-    void countSolid( GSolid*      solid, bool selected, unsigned verbosity  ); 
+    void countVolume( GVolume*      volume, bool selected, unsigned verbosity  ); 
     void countMesh( const GMesh* mesh ); 
 private:
-    void mergeSolid( GSolid* solid, bool selected, unsigned verbosity );
-    void mergeSolidIdentity( GSolid* solid, bool selected );
-    void mergeSolidVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
-    void mergeSolidFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
-    void mergeSolidAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
-    void mergeSolidBBox( gfloat3* vertices, unsigned nvert );
-    void mergeSolidDump( GSolid* solid);
+    void mergeVolume( GVolume* volume, bool selected, unsigned verbosity );
+    void mergeVolumeIdentity( GVolume* volume, bool selected );
+    void mergeVolumeVertices( unsigned nvert, gfloat3* vertices, gfloat3* normals );
+    void mergeVolumeFaces( unsigned nface, guint3* faces, unsigned* node_indices, unsigned* boundary_indices, unsigned* sensor_indices );
+    void mergeVolumeAnalytic( GParts* pts, GMatrixF* transform, unsigned verbosity );
+    void mergeVolumeBBox( gfloat3* vertices, unsigned nvert );
+    void mergeVolumeDump( GVolume* volume);
 private:
     void mergeMergedMesh( GMergedMesh* other, bool selected, unsigned verbosity );
 public:
@@ -91,7 +91,7 @@ public:
     // TODO: below is only usage of GGeo here, move this elsewhere... into GGeo ?
     void reportMeshUsage(GGeo* ggeo, const char* msg="GMergedMesh::reportMeshUsage");
 public:
-    void dumpSolids(const char* msg="GMergedMesh::dumpSolids") const ;
+    void dumpVolumes(const char* msg="GMergedMesh::dumpVolumes") const ;
 public:
     // used when obtaining relative transforms for flattening sub-trees of repeated geometry
     void   setCurrentBase(GNode* base);
@@ -107,7 +107,7 @@ private:
     // transients that do not need persisting, persistables are down in GMesh
     unsigned     m_cur_vertices ;
     unsigned     m_cur_faces ;
-    unsigned     m_cur_solid ;
+    unsigned     m_cur_volume ;
     unsigned     m_cur_mergedmesh ; // for composite mergedmesh recording 
     unsigned     m_num_csgskip ; 
     GNode*       m_cur_base ;  

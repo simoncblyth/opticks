@@ -104,8 +104,8 @@ GMesh::GMesh(unsigned int index,
 
       m_num_vertices(num_vertices), 
       m_num_faces(num_faces),
-      m_num_solids(0),
-      m_num_solids_selected(0),
+      m_num_volumes(0),
+      m_num_volumes_selected(0),
       m_num_mergedmesh(0),
 
       m_nodes(NULL),          
@@ -294,13 +294,13 @@ unsigned int GMesh::getNumFaces() const
 {
     return m_num_faces ; 
 }
-unsigned int GMesh::getNumSolids() const 
+unsigned int GMesh::getNumVolumes() const 
 {
-    return m_num_solids ; 
+    return m_num_volumes ; 
 }
-unsigned int GMesh::getNumSolidsSelected() const 
+unsigned int GMesh::getNumVolumesSelected() const 
 {
-    return m_num_solids_selected ; 
+    return m_num_volumes_selected ; 
 }
 
 
@@ -400,7 +400,7 @@ glm::vec4 GMesh::getCE(unsigned index) const
 
 float GMesh::getBoundingRadiusCE(unsigned index) const
 {
-    // radius of the origin centered sphere that contains all of the solid
+    // radius of the origin centered sphere that contains all of the volume
     // without safety margin
     glm::vec4 ce = getCE(index) ;
     float bounding_radius = glm::length(glm::vec3(ce)) + ce.w ;
@@ -665,7 +665,7 @@ void GMesh::allocate()
 
     unsigned int numVertices = getNumVertices();
     unsigned int numFaces = getNumFaces();
-    unsigned int numSolids = getNumSolids();
+    unsigned int numVolumes = getNumVolumes();
 
 
     bool empty = numVertices == 0 && numFaces == 0 ; 
@@ -674,11 +674,11 @@ void GMesh::allocate()
     LOG(warning) << "GMesh::allocate EMPTY"
               << " numVertices " << numVertices
               << " numFaces " << numFaces
-              << " numSolids " << numSolids
+              << " numVolumes " << numVolumes
               ;
 
-    //assert(numVertices > 0 && numFaces > 0 && numSolids > 0);
-    assert(numSolids > 0);
+    //assert(numVertices > 0 && numFaces > 0 && numVolumes > 0);
+    assert(numVolumes > 0);
 
     if(numVertices > 0 && numFaces > 0)
     {
@@ -705,13 +705,13 @@ void GMesh::allocate()
     }
 
 
-    setCenterExtent(new gfloat4[numSolids]);
-    setBBox(new gbbox[numSolids]);
-    //setBBox(new nbbox[numSolids]);
-    setMeshes(new unsigned[numSolids]);
-    setNodeInfo(new guint4[numSolids]);
-    setIdentity(new guint4[numSolids]);
-    setTransforms(new float[numSolids*16]);
+    setCenterExtent(new gfloat4[numVolumes]);
+    setBBox(new gbbox[numVolumes]);
+    //setBBox(new nbbox[numVolumes]);
+    setMeshes(new unsigned[numVolumes]);
+    setNodeInfo(new guint4[numVolumes]);
+    setIdentity(new guint4[numVolumes]);
+    setTransforms(new float[numVolumes*16]);
 
     //LOG(info) << "GMesh::allocate DONE " ;
 }
@@ -849,11 +849,11 @@ void GMesh::setCenterExtent(gfloat4* center_extent)
 
     LOG(debug) << "GMesh::setCenterExtent (creates buffer) " 
               << " m_center_extent " << m_center_extent
-              << " m_num_solids " << m_num_solids 
+              << " m_num_volumes " << m_num_volumes 
               ; 
 
-    assert(m_num_solids > 0);
-    m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_solids, (void*)m_center_extent, sizeof(gfloat4), 4 ); 
+    assert(m_num_volumes > 0);
+    m_center_extent_buffer = new GBuffer( sizeof(gfloat4)*m_num_volumes, (void*)m_center_extent, sizeof(gfloat4), 4 ); 
     assert(sizeof(gfloat4) == sizeof(float)*4);
 }
 void GMesh::setCenterExtentBuffer(GBuffer* buffer) 
@@ -863,11 +863,11 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
 
     m_center_extent = (gfloat4*)buffer->getPointer();
     unsigned int numBytes = buffer->getNumBytes();
-    m_num_solids = numBytes/sizeof(gfloat4) ;
+    m_num_volumes = numBytes/sizeof(gfloat4) ;
 
     LOG(debug) << "GMesh::setCenterExtentBuffer  (creates array from buffer) " 
               << " m_center_extent " << m_center_extent
-              << " m_num_solids " << m_num_solids 
+              << " m_num_volumes " << m_num_volumes 
               ; 
 
 
@@ -878,8 +878,8 @@ void GMesh::setCenterExtentBuffer(GBuffer* buffer)
 void GMesh::setBBox(gbbox* bb)  
 {
     m_bbox = bb ;  
-    assert(m_num_solids > 0);
-    m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_solids, (void*)m_bbox, sizeof(gbbox), 6 ); 
+    assert(m_num_volumes > 0);
+    m_bbox_buffer = new GBuffer( sizeof(gbbox)*m_num_volumes, (void*)m_bbox, sizeof(gbbox), 6 ); 
     assert(sizeof(gbbox) == sizeof(float)*6);
 }
 void GMesh::setBBoxBuffer(GBuffer* buffer) 
@@ -889,9 +889,9 @@ void GMesh::setBBoxBuffer(GBuffer* buffer)
 
     m_bbox = (gbbox*)buffer->getPointer();
     unsigned int numBytes = buffer->getNumBytes();
-    unsigned int numSolids = numBytes/sizeof(gbbox) ;
+    unsigned int numVolumes = numBytes/sizeof(gbbox) ;
 
-    setNumSolids(numSolids);
+    setNumVolumes(numVolumes);
 }
 
 
@@ -899,18 +899,18 @@ void GMesh::setBBoxBuffer(GBuffer* buffer)
 void GMesh::setTransforms(float* transforms)  
 {
     m_transforms = transforms ;  
-    assert(m_num_solids > 0);
+    assert(m_num_volumes > 0);
 
     unsigned int numElements = 16 ; 
     unsigned int size = sizeof(float)*numElements;
 
     LOG(debug) << "GMesh::setTransforms " 
-              << " num_solids " << m_num_solids 
+              << " num_volumes " << m_num_volumes 
               << " size " << size 
               << " fsize " << sizeof(float)
               ;
 
-    m_transforms_buffer = new GBuffer( size*m_num_solids, (void*)m_transforms, size, numElements ); 
+    m_transforms_buffer = new GBuffer( size*m_num_volumes, (void*)m_transforms, size, numElements ); 
 }
 
 
@@ -949,15 +949,15 @@ unsigned int GMesh::getNumITransforms()
 
 float* GMesh::getTransform(unsigned int index)
 {
-    if(index >= m_num_solids)
+    if(index >= m_num_volumes)
     {
        // assert(0);
         LOG(warning) << "GMesh::getTransform out of bounds " 
-                     << " m_num_solids " << m_num_solids 
+                     << " m_num_volumes " << m_num_volumes 
                      << " index " << index
                      ;
     }
-    return index < m_num_solids ? m_transforms + index*16 : NULL  ;
+    return index < m_num_volumes ? m_transforms + index*16 : NULL  ;
 }
 
 float* GMesh::getITransform(unsigned int index)
@@ -978,9 +978,9 @@ float* GMesh::getITransform(unsigned int index)
 void GMesh::setMeshes(unsigned int* meshes)  
 {
     m_meshes = meshes ;  
-    assert(m_num_solids > 0);
+    assert(m_num_volumes > 0);
     unsigned int size = sizeof(unsigned int);
-    m_meshes_buffer = new GBuffer( size*m_num_solids, (void*)m_meshes, size, 1 ); 
+    m_meshes_buffer = new GBuffer( size*m_num_volumes, (void*)m_meshes, size, 1 ); 
 }
 
 void GMesh::setMeshesBuffer(GBuffer* buffer) 
@@ -992,8 +992,8 @@ void GMesh::setMeshesBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int numElements = 1  ; 
     unsigned int size = sizeof(float)*numElements;
-    unsigned int numSolids = numBytes/size ;
-    setNumSolids(numSolids);
+    unsigned int numVolumes = numBytes/size ;
+    setNumVolumes(numVolumes);
 }
 
 
@@ -1001,10 +1001,10 @@ void GMesh::setMeshesBuffer(GBuffer* buffer)
 void GMesh::setNodeInfo(guint4* nodeinfo)  
 {
     m_nodeinfo = nodeinfo ;  
-    assert(m_num_solids > 0);
+    assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    m_nodeinfo_buffer = new GBuffer( size*m_num_solids, (void*)m_nodeinfo, size, 4 ); 
+    m_nodeinfo_buffer = new GBuffer( size*m_num_volumes, (void*)m_nodeinfo, size, 4 ); 
 }
 void GMesh::setNodeInfoBuffer(GBuffer* buffer) 
 {
@@ -1015,8 +1015,8 @@ void GMesh::setNodeInfoBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    unsigned int numSolids = numBytes/size ;
-    setNumSolids(numSolids);
+    unsigned int numVolumes = numBytes/size ;
+    setNumVolumes(numVolumes);
 }
 
 
@@ -1025,10 +1025,10 @@ void GMesh::setNodeInfoBuffer(GBuffer* buffer)
 void GMesh::setIdentity(guint4* identity)  
 {
     m_identity = identity ;  
-    assert(m_num_solids > 0);
+    assert(m_num_volumes > 0);
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    m_identity_buffer = new GBuffer( size*m_num_solids, (void*)m_identity, size, 4 ); 
+    m_identity_buffer = new GBuffer( size*m_num_volumes, (void*)m_identity, size, 4 ); 
 }
 void GMesh::setIdentityBuffer(GBuffer* buffer) 
 {
@@ -1039,8 +1039,8 @@ void GMesh::setIdentityBuffer(GBuffer* buffer)
     unsigned int numBytes = buffer->getNumBytes();
     unsigned int size = sizeof(guint4);
     assert(size == sizeof(unsigned int)*4 );
-    unsigned int numSolids = numBytes/size ;
-    setNumSolids(numSolids);
+    unsigned int numVolumes = numBytes/size ;
+    setNumVolumes(numVolumes);
 }
 
 
@@ -1121,15 +1121,15 @@ void GMesh::dumpComponents(const char* msg) const
 
 
 
-void GMesh::setNumSolids(unsigned int numSolids)
+void GMesh::setNumVolumes(unsigned int numVolumes)
 {
-    if(m_num_solids == 0) 
+    if(m_num_volumes == 0) 
     {
-        m_num_solids = numSolids ; 
+        m_num_volumes = numVolumes ; 
     }
     else
     {
-        assert(numSolids == m_num_solids);
+        assert(numVolumes == m_num_volumes);
     }
 }
 
@@ -1273,7 +1273,7 @@ void GMesh::dump(const char* msg, unsigned int nmax) const
     LOG(info) << msg  
               << " num_vertices " << m_num_vertices 
               << " num_faces " << m_num_faces
-              << " num_solids " << m_num_solids
+              << " num_volumes " << m_num_volumes
               << " name " << ( m_name ? m_name : "-" )
               ;  
 
@@ -1558,10 +1558,10 @@ void GMesh::updateBounds()
     else
     {
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
-        // instead just overwrite solid 0 
+        // instead just overwrite volume 0 
 
         LOG(debug) << "GMesh::updateBounds"
-                  << " overwrite solid 0 ce "
+                  << " overwrite volume 0 ce "
                   <<  m_center_extent[0].description()
                   << " with " 
                   << ce.description()
@@ -1983,7 +1983,7 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
 
          instanceIdx*PrimitiveCount + primIdx ;
 
-     the primIdx goes over all the solids 
+     the primIdx goes over all the volumes 
 */
 
     unsigned int numITransforms = getNumITransforms() ;
@@ -1997,19 +1997,19 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     }
 
 
-    unsigned int numSolids = getNumSolids();
+    unsigned int numVolumes = getNumVolumes();
     unsigned int numFaces = getNumFaces() ;
     unsigned int numRepeatedIdentity = numITransforms*numFaces ;
 
-    bool nodeinfo_ok = m_nodeinfo_buffer->getNumItems() == numSolids ;
-    bool iidentity_ok = m_iidentity_buffer->getNumItems() == numSolids*numITransforms ;
+    bool nodeinfo_ok = m_nodeinfo_buffer->getNumItems() == numVolumes ;
+    bool iidentity_ok = m_iidentity_buffer->getNumItems() == numVolumes*numITransforms ;
 
     //if(!nodeinfo_ok)
     LOG(fatal) 
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " nodeinfo_ok " << nodeinfo_ok
                << " nodeinfo_buffer_items " << m_nodeinfo_buffer->getNumItems()
-               << " numSolids " << numSolids  
+               << " numVolumes " << numVolumes  
                ;
 
     //if(!iidentity_ok)
@@ -2017,9 +2017,9 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
                << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
                << " iidentity_ok " << iidentity_ok
                << " iidentity_buffer_items " << m_iidentity_buffer->getNumItems() 
-               << " numFaces (sum of faces in numSolids)" << numFaces 
+               << " numFaces (sum of faces in numVolumes)" << numFaces 
                << " numITransforms " << numITransforms
-               << " numSolids*numITransforms " << numSolids*numITransforms 
+               << " numVolumes*numITransforms " << numVolumes*numITransforms 
                << " numRepeatedIdentity " << numRepeatedIdentity 
                ; 
 
@@ -2032,15 +2032,15 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     unsigned int i1 = numFaces ;                    // instance 1 offset
     unsigned int il = (numITransforms-1)*numFaces ; // instance N-1 offset 
 
-    // check nodeinfo per-solid sum of faces matches expected total 
+    // check nodeinfo per-volume sum of faces matches expected total 
 
     if(m_verbosity > 3) 
     LOG(info) << "GMesh::makeFaceRepeatedInstancedIdentityBuffer"
               << " verbosity " << m_verbosity
-              << " dumping per solid offsets "
+              << " dumping per volume offsets "
               ;
 
-    for(unsigned int s=0 ; s < numSolids ; s++)
+    for(unsigned int s=0 ; s < numVolumes ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
         if(m_verbosity > 3)
@@ -2065,9 +2065,9 @@ GBuffer* GMesh::makeFaceRepeatedInstancedIdentityBuffer()
     for(unsigned int i=0 ; i < numITransforms ; i++)
     {
         offset = 0 ; 
-        for(unsigned int s=0 ; s < numSolids ; s++)
+        for(unsigned int s=0 ; s < numVolumes ; s++)
         {   
-            guint4 iid = m_iidentity[numSolids*i + s]  ;  
+            guint4 iid = m_iidentity[numVolumes*i + s]  ;  
             unsigned int nf = (nodeinfo + s)->x ;
             for(unsigned int f=0 ; f < nf ; ++f) riid[i*numFaces+offset+f] = iid ; 
             offset += nf ; 
@@ -2098,7 +2098,7 @@ GBuffer*  GMesh::getFaceRepeatedInstancedIdentityBuffer()
 /*
 
 Instance Identity buffer has nodeIndex/meshIndex/boundaryIndex/sensorIndex
-for all 5 solids of each instance::
+for all 5 volumes of each instance::
 
     In [3]: ii = np.load("iidentity.npy")
 
@@ -2149,7 +2149,7 @@ for all 5 solids of each instance::
     In [82]: fr.reshape(672,-1,4).shape
     Out[82]: (672, 2928, 4)
 
-    In [83]: fr[4320:5280]   # 3rd solid of 2nd instance : using face repeated IIdentity 
+    In [83]: fr[4320:5280]   # 3rd volume of 2nd instance : using face repeated IIdentity 
     Out[83]: 
     array([[3207,   43,   21,    8],
            [3207,   43,   21,    8],
@@ -2160,7 +2160,7 @@ for all 5 solids of each instance::
            [3207,   43,   21,    8]], dtype=uint32)
 
 
-    In [11]: ii.reshape(672,-1,4)[1,2]    # again 3rd solid of 2nd instance : using solid level IIdentity 
+    In [11]: ii.reshape(672,-1,4)[1,2]    # again 3rd volume of 2nd instance : using volume level IIdentity 
     Out[11]: array([3207,   43,   21,    8], dtype=uint32)
 
 
@@ -2176,7 +2176,7 @@ for all 5 solids of each instance::
 
 
 
-    [2015-10-09 18:39:50.180695] [0x000007fff7448031] [info]    GMesh::makeFaceRepeatedIIdentityBuffer numSolids 5 numFaces (sum of faces in numSolids)2928 numITransforms 672 numRepeatedIdentity 1967616
+    [2015-10-09 18:39:50.180695] [0x000007fff7448031] [info]    GMesh::makeFaceRepeatedIIdentityBuffer numVolumes 5 numFaces (sum of faces in numVolumes)2928 numITransforms 672 numRepeatedIdentity 1967616
      s 0 nf 720  i0 0:720  i1 2928:3648   il 1964688:1965408 
      s 1 nf 672  i0 720:1392  i1 3648:4320   il 1965408:1966080 
      s 2 nf 960  i0 1392:2352  i1 4320:5280   il 1966080:1967040 
@@ -2196,22 +2196,22 @@ GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
         LOG(warning) << "GMesh::makeFaceRepeatedIdentityBuffer only relevant to non-instanced meshes " ;
         return NULL ; 
     }
-    unsigned int numSolids = getNumSolids();
+    unsigned int numVolumes = getNumVolumes();
     unsigned int numFaces = getNumFaces() ;
 
     LOG(info) << "GMesh::makeFaceRepeatedIdentityBuffer"
-              << " numSolids " << numSolids 
-              << " numFaces (sum of faces in numSolids)" << numFaces 
+              << " numVolumes " << numVolumes 
+              << " numFaces (sum of faces in numVolumes)" << numFaces 
                ; 
 
-    assert(m_nodeinfo_buffer->getNumItems() == numSolids);
+    assert(m_nodeinfo_buffer->getNumItems() == numVolumes);
 
     guint4* nodeinfo = getNodeInfo();
 
 
-    // check nodeinfo sum of per-solid faces matches expectation
+    // check nodeinfo sum of per-volume faces matches expectation
     unsigned int nftot(0);
-    for(unsigned int s=0 ; s < numSolids ; s++)
+    for(unsigned int s=0 ; s < numVolumes ; s++)
     {
         unsigned int nf = (nodeinfo + s)->x ;
         nftot += nf ;
@@ -2220,10 +2220,10 @@ GBuffer* GMesh::makeFaceRepeatedIdentityBuffer()
     assert( numFaces == nftot );
 
 
-    // duplicate nodeinfo for each solid out to each face
+    // duplicate nodeinfo for each volume out to each face
     unsigned int offset(0);
     guint4* rid = new guint4[numFaces] ;
-    for(unsigned int s=0 ; s < numSolids ; s++)
+    for(unsigned int s=0 ; s < numVolumes ; s++)
     {   
         guint4 sid = m_identity[s]  ;  
         unsigned int nf = (nodeinfo + s)->x ;
@@ -2301,7 +2301,7 @@ unsigned int GMesh::findContainer(gfloat3 p)
     unsigned int container(0);
     float cext(FLT_MAX) ; 
 
-    for(unsigned int index=0 ; index < m_num_solids ; index++)
+    for(unsigned int index=0 ; index < m_num_volumes ; index++)
     {
          gfloat4 ce = m_center_extent[index] ;
          gfloat3 hi(ce.x + ce.w, ce.y + ce.w, ce.z + ce.w );

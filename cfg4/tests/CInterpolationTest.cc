@@ -1,7 +1,8 @@
 #include <cassert>
+#include <climits>
 
 #include "CFG4_BODY.hh"
-#include <climits>
+#include "OPTICKS_LOG.hh"
 
 // npy-
 #include "NPY.hpp"
@@ -28,10 +29,6 @@
 #include "G4OpticalSurface.hh"
 
 
-#include "GGEO_LOG.hh"
-#include "CFG4_LOG.hh"
-#include "PLOG.hh"
-
 
 /**
 CInterpolationTest
@@ -50,13 +47,10 @@ The GPU analogue of this is oxrap-/tests/OInterpolationTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-
-
-    CFG4_LOG__ ; 
-    GGEO_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
 
     LOG(info) << argv[0] ;
+
     Opticks ok(argc, argv);
     OpticksHub hub(&ok) ;
 
@@ -117,7 +111,7 @@ int main(int argc, char** argv)
 
 
     const char* mkeys_0 = "RINDEX,ABSLENGTH,RAYLEIGH,REEMISSIONPROB" ;
-    const char* mkeys_1 = "GROUPVEL,,," ;
+    const char* mkeys_1 = "GROUPVEL,,, " ;  // <-- without trailing space the split giving 3 not 4 
 
 
     // gathering an Opticks tex buffer  from G4 material and surface properties

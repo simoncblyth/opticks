@@ -25,7 +25,7 @@ class GGEO_API GColorizer {
         void writeVertexColors();
    private:
         void init(); 
-        void writeVertexColors(GMergedMesh* mesh0, GSolid* root);
+        void writeVertexColors(GMergedMesh* mesh0, GVolume* root);
    public:
         void setTarget(nvec3* target);  // where to write the colors
         void setRepeatIndex(unsigned int ridx);
@@ -33,7 +33,7 @@ class GGEO_API GColorizer {
    public:
         nvec3 make_color(unsigned int rgb);
    public:
-        void traverse(GSolid* root);   // full recursive traverse from root
+        void traverse(GVolume* root);   // full recursive traverse from root
    private:
         nvec3 getSurfaceColor(GNode* node);
 

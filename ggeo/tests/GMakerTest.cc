@@ -11,7 +11,7 @@
 #include "Opticks.hh"
 
 #include "GMesh.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 #include "GBndLib.hh"
 #include "GMaker.hh"
 
@@ -44,11 +44,11 @@ void GMakerTest::makeSphere()
 
     const char* spec = "Rock//perfectAbsorbSurface/Vacuum" ; 
 
-    GSolid* solid = m_maker->make(0u, CSG_SPHERE, param, spec );
+    GVolume* volume = m_maker->make(0u, CSG_SPHERE, param, spec );
 
-    solid->Summary();
+    volume->Summary();
 
-    const GMesh* mesh = solid->getMesh();
+    const GMesh* mesh = volume->getMesh();
 
     mesh->dump();
 }
@@ -79,13 +79,13 @@ void GMakerTest::makeFromCSG()
 
         csg->setMeta<std::string>("poly", "IM");
 
-        GSolid* solid = m_maker->makeFromCSG(csg, verbosity );
+        GVolume* volume = m_maker->makeFromCSG(csg, verbosity );
 
-        const GMesh* mesh = solid->getMesh();
+        const GMesh* mesh = volume->getMesh();
 
         mesh->Summary();
 
-        solid->Summary();
+        volume->Summary();
    }
 }
 
@@ -99,8 +99,10 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
     ok.configure();
 
-    GBndLib* blib = GBndLib::load(&ok, true ); 
-    
+    bool constituents = true ; 
+    GBndLib* blib = GBndLib::load(&ok, constituents ); 
+    blib->closeConstituents();
+
     GMakerTest tst(&ok, blib);
 
     tst.makeSphere();

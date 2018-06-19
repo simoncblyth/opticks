@@ -398,8 +398,9 @@ void OpticksHub::loadGeometry()
 
     registerGeometry();
 
-
     m_ggeo->setComposition(m_composition);
+
+    m_ggeo->close();  // mlib and slib  (June 2018, following remove the auto-trigger-close on getIndex in the proplib )
 
     LOG(info) << "OpticksHub::loadGeometry DONE" ; 
 }
@@ -421,14 +422,10 @@ GGeoTest* OpticksHub::createTestGeometry(GGeoBase* basis)
 }
 
 
-
-
 NCSG* OpticksHub::findEmitter() const  
 {
     return m_geotest == NULL ? NULL : m_geotest->findEmitter() ; 
 }
-
-
 
 
 GGeoTest* OpticksHub::getGGeoTest()
@@ -850,20 +847,20 @@ void OpticksHub::cleanup()
 
 
 
-void OpticksHub::dumpSolids(unsigned cursor, GMergedMesh* mm, const char* msg )  
+void OpticksHub::dumpVolumes(unsigned cursor, GMergedMesh* mm, const char* msg )  
 {
     assert( mm );
-    unsigned num_solids = mm->getNumSolids();
+    unsigned num_volumes = mm->getNumVolumes();
 
-    LOG(info) << "OpticksHub::dumpSolids "
+    LOG(info) << "OpticksHub::dumpVolumes "
               << msg 
-              << " num_solids " << num_solids 
+              << " num_volumes " << num_volumes 
               ;
 
     bool test = m_ok->isTest() ; 
 
     GNodeLib* nodelib = getNodeLib();
-    for(unsigned i=0 ; i < std::min(num_solids, 20u) ; i++)
+    for(unsigned i=0 ; i < std::min(num_volumes, 20u) ; i++)
     {
          glm::vec4 ce_ = mm->getCE(i);
          std::cout << " " << std::setw(3) << i 

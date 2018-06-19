@@ -271,15 +271,15 @@ rather than the solid buffer
 
 No matter which grouping is used identity and solid buffer need the same
 shape and identity content needs to mimic the triangulated ones (other than mesh index).
-Triangulated identity buffer hails from GSolid::getIdentity with guint4 per solid
+Triangulated identity buffer hails from GVolume::getIdentity with guint4 per solid
 
 * node index (useful)
 * mesh index (not used yet? handy for mesh debug)
 * boundary index (critical)
 * sensor surface index (critical)
 
-All these are setup in AssimpGGeo eg with GSolid::setSensor 
-and GSolid::setBoundary
+All these are setup in AssimpGGeo eg with GVolume::setSensor 
+and GVolume::setBoundary
 
    897     NSensorList* sens = gg->getSensorList();
    898     NSensor* sensor = sens->findSensorForNode( nodeIndex );

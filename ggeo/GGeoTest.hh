@@ -18,8 +18,8 @@ class GNodeLib ;
 
 class GMaker ; 
 class GMergedMesh ; 
-class GSolid ; 
-class GSolidList ; 
+class GVolume ; 
+class GVolumeList ; 
 
 /**
 GGeoTest
@@ -83,7 +83,7 @@ class GGEO_API GGeoTest : public GGeoBase {
 
     private:
        void autoTestSetup(NCSGList* csglist);
-       void relocateSurfaces(GSolid* solid, const char* spec) ;
+       void relocateSurfaces(GVolume* solid, const char* spec) ;
        void reuseMaterials(NCSGList* csglist);
        void reuseMaterials(const char* spec);
     public:
@@ -96,18 +96,18 @@ class GGEO_API GGeoTest : public GGeoBase {
        unsigned        getNumTrees() const ;
        NCSG*           getTree(unsigned index) const ;
     public:
-       GSolidList*     getSolidList();
+       GVolumeList*     getVolumeList();
     public:
        void anaEvent(OpticksEvent* evt);
     private:
-       GMergedMesh* combineSolids( std::vector<GSolid*>& solids, GMergedMesh* mm0);
-       GSolid*      makeSolidFromConfig( unsigned i );
-       void         importCSG(std::vector<GSolid*>& solids );
+       GMergedMesh* combineVolumes( std::vector<GVolume*>& volumes, GMergedMesh* mm0);
+       GVolume*      makeVolumeFromConfig( unsigned i );
+       void         importCSG(std::vector<GVolume*>& volumes );
 
-       void         createBoxInBox(std::vector<GSolid*>& solids);
+       void         createBoxInBox(std::vector<GVolume*>& volumes);
        GMergedMesh* createPmtInBox();
 
-       void labelPartList( std::vector<GSolid*>& solids );
+       void labelPartList( std::vector<GVolume*>& volumes );
 
     private:
        Opticks*         m_ok ; 
@@ -137,7 +137,7 @@ class GGEO_API GGeoTest : public GGeoBase {
        // actors
        GMaker*          m_maker ; 
        NCSGList*        m_csglist ; 
-       GSolidList*      m_solist ; 
+       GVolumeList*      m_solist ; 
        int              m_err ; 
 
 };

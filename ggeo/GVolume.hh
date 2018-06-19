@@ -5,7 +5,7 @@
 //  relationship between how many materials for each mesh is up for grabs
 //
 // Instances are created by:
-//       GSolid* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GSolid* parent)
+//       GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned int depth, GVolume* parent)
 //
 
 
@@ -26,26 +26,25 @@ template <typename T> class GMatrix ;
 
 /**
 
-GSolid
+GVolume
 ========
 
-TODO: restructure
+GVolume was formerly mis-named as "GSolid", which was always a confusing name.
 
-* perhaps just rename GSolid -> GVolume(?) or GVolNode 
-* OR move everythng down into GNode ?
-* OR rename current GNode -> GVNode making it pure virtual and use the GNode name up here ?
+Constituent "solids" (as in CSG, and G4VSolid in G4) are mesh-level-objects 
+(relatively few in a geometry, corresponding to each distinct shape)
 
-* GSolid is a node-level-object, not a mesh-level-object but the name GSolid implies a mesh-level-object
-* GSolid just adds a few properties to its GNode base class
+Whereas GVolume(GNode) are node-level-objects (relatively many in the geometry)
+which refer to the corresponding mesh-level-objects by pointer or index.
 
 
 **/
 
-class GGEO_API GSolid : public GNode {
+class GGEO_API GVolume : public GNode {
   public:
-      static void Dump( const std::vector<GSolid*>& solids, const char* msg="GSolid::Dump" );
+      static void Dump( const std::vector<GVolume*>& solids, const char* msg="GVolume::Dump" );
   public:
-      GSolid( unsigned int index, GMatrix<float>* transform, const GMesh* mesh,  unsigned int boundary, NSensor* sensor);
+      GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh,  unsigned int boundary, NSensor* sensor);
   public:
   public:
       void setCSGFlag(OpticksCSG_t flag);
@@ -79,7 +78,7 @@ class GGEO_API GSolid : public GNode {
       void*        getParallelNode() const ;
       void         setParallelNode(void* pnode); 
   public: 
-      void Summary(const char* msg="GSolid::Summary");
+      void Summary(const char* msg="GVolume::Summary");
       std::string description();
   private:
       unsigned int      m_boundary ; 

@@ -31,10 +31,10 @@
 
 #include "GMergedMesh.hh"
 #include "GPmt.hh"
-#include "GSolid.hh"
+#include "GVolume.hh"
 
 #include "GNodeLib.hh"
-#include "GSolidList.hh"
+#include "GVolumeList.hh"
 
 #include "GMaker.hh"
 #include "GItemList.hh"
@@ -52,7 +52,7 @@ const char* GGeoTest::UNIVERSE_LV = "UNIVERSE_LV" ;
 const char* GGeoTest::UNIVERSE_PV = "UNIVERSE_PV" ; 
 
 
-GSolidList*     GGeoTest::getSolidList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
+GVolumeList*     GGeoTest::getVolumeList(){        return m_solist ; }  // <-- TODO: elim, use GNodeLib
 
 NCSGList*       GGeoTest::getCSGList() const  {  return m_csglist ;  }
 NGeoTestConfig* GGeoTest::getConfig() {          return m_config ; }
@@ -118,7 +118,7 @@ GGeoTest::GGeoTest(Opticks* ok, GGeoBase* basis)
     m_nodelib(new GNodeLib(m_ok, m_analytic, m_test)),
     m_maker(new GMaker(m_ok, m_bndlib)),
     m_csglist(m_csgpath ? NCSGList::Load(m_csgpath, m_verbosity ) : NULL),
-    m_solist(new GSolidList()),
+    m_solist(new GVolumeList()),
     m_err(0)
 {
     LOG(fatal) << "GGeoTest::GGeoTest" ; 
@@ -195,11 +195,11 @@ GMergedMesh* GGeoTest::initCreateCSG()
         m_csglist->autoTestSetup(m_config);
     }
 
-    std::vector<GSolid*>& solids = m_solist->getList();
+    std::vector<GVolume*>& volumes = m_solist->getList();
 
-    importCSG(solids);
+    importCSG(volumes);
 
-    GMergedMesh* tmm = combineSolids(solids, NULL);
+    GMergedMesh* tmm = combineVolumes(volumes, NULL);
 
 
     return tmm ; 
@@ -217,14 +217,14 @@ GMergedMesh* GGeoTest::initCreateBIB()
     assert(nelem > 0);
 
 
-    std::vector<GSolid*>& solids = m_solist->getList();
+    std::vector<GVolume*>& volumes = m_solist->getList();
     GMergedMesh* tmm = NULL ;
 
     if(m_config->isBoxInBox()) 
     {
-        createBoxInBox(solids); 
-        labelPartList(solids) ;
-        tmm = combineSolids(solids, NULL);
+        createBoxInBox(volumes); 
+        labelPartList(volumes) ;
+        tmm = combineVolumes(volumes, NULL);
     }
     else if(m_config->isPmtInBox())
     {
@@ -253,7 +253,7 @@ unsigned GGeoTest::getNumTrees() const
 
 
 
-void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
+void GGeoTest::relocateSurfaces(GVolume* volume, const char* spec)
 {
     BBnd b(spec);
     bool unknown_osur = b.osur && !m_slib->hasSurface(b.osur) ;
@@ -261,9 +261,9 @@ void GGeoTest::relocateSurfaces(GSolid* solid, const char* spec)
 
     if(unknown_osur || unknown_isur)
     {
-        GSolid* parent = static_cast<GSolid*>(solid->getParent()) ; 
-        const char* self_lv = solid->getLVName() ;
-        const char* self_pv = solid->getPVName() ;   
+        GVolume* parent = static_cast<GVolume*>(volume->getParent()) ; 
+        const char* self_lv = volume->getLVName() ;
+        const char* self_pv = volume->getPVName() ;   
         const char* parent_pv = parent ? parent->getPVName() : UNIVERSE_PV ; 
 
         if(m_dbgbnd)
@@ -324,7 +324,7 @@ void GGeoTest::reuseMaterials(const char* spec)
 }
 
 
-void GGeoTest::importCSG(std::vector<GSolid*>& solids)
+void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
 {
     assert(m_csgpath);
     assert(m_csglist);
@@ -352,7 +352,7 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
     int primIdx(-1) ; 
 
     // assuming tree order from outermost to innermost volume 
-    GSolid* prior = NULL ; 
+    GVolume* prior = NULL ; 
 
     for(unsigned i=0 ; i < numTree ; i++)
     {
@@ -360,25 +360,25 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
 
         NCSG* tree = m_csglist->getTree(i) ; 
        
-        GSolid* solid = m_maker->makeFromCSG(tree, m_verbosity );
+        GVolume* volume = m_maker->makeFromCSG(tree, m_verbosity );
 
         if(prior)
         {
-            solid->setParent(prior);
-            prior->addChild(solid);
+            volume->setParent(prior);
+            prior->addChild(volume);
         }
-        prior = solid ; 
+        prior = volume ; 
 
         const char* spec = tree->getBoundary();  
 
         // materials and surfaces must be in place before adding 
         // the boundary spec to get the boundary index 
 
-        relocateSurfaces(solid, spec);
+        relocateSurfaces(volume, spec);
 
 
 
-        GParts* pts = solid->getParts();
+        GParts* pts = volume->getParts();
         pts->setIndex(0u, i);
         if(pts->isPartList())  // not doing this for NodeTree
         {
@@ -386,8 +386,8 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
         }
         pts->setBndLib(m_bndlib);
 
-        solids.push_back(solid);  // <-- TODO: eliminate 
-        m_nodelib->add(solid);
+        volumes.push_back(volume);  // <-- TODO: eliminate 
+        m_nodelib->add(volume);
     }
 
 
@@ -404,17 +404,17 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
     // See notes/issues/GGeoTest_isClosed_assert.rst 
     
  
-    unsigned numSolid = m_nodelib->getNumSolids();
-    assert( numSolid == numTree );
+    unsigned numVolume = m_nodelib->getNumVolumes();
+    assert( numVolume == numTree );
 
     for(unsigned i=0 ; i < numTree ; i++)
     {
         NCSG* tree = m_csglist->getTree(i) ; 
-        GSolid* solid = m_nodelib->getSolid(i) ;
+        GVolume* volume = m_nodelib->getVolume(i) ;
         const char* spec = tree->getBoundary();  
         unsigned boundary = m_bndlib->addBoundary(spec, false); 
 
-        solid->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
+        volume->setBoundary(boundary);     // unlike ctor these create arrays, duplicating boundary to all tris
     }
 
 
@@ -434,7 +434,7 @@ void GGeoTest::importCSG(std::vector<GSolid*>& solids)
     LOG(info) << "GGeoTest::importCSG DONE " ; 
 }
 
-void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
+void GGeoTest::labelPartList( std::vector<GVolume*>& volumes )
 {
     // PartList geometry (the precursor to proper CSG Trees, usually defined in python CSG) 
     // is implemented by allowing a single "primitive" to be composed of multiple
@@ -443,14 +443,14 @@ void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
     //
     // collected pts are converted into primitives in GParts::makePrimBuffer
   
-    for(unsigned i=0 ; i < solids.size() ; i++)
+    for(unsigned i=0 ; i < volumes.size() ; i++)
     {
-        GSolid* solid = solids[i];
-        GParts* pts = solid->getParts();
+        GVolume* volume = volumes[i];
+        GParts* pts = volume->getParts();
         assert(pts);
         assert(pts->isPartList());
 
-        OpticksCSG_t csgflag = solid->getCSGFlag(); 
+        OpticksCSG_t csgflag = volume->getCSGFlag(); 
         int flags = csgflag ;
 
         pts->setIndex(0u, i);
@@ -475,7 +475,7 @@ void GGeoTest::labelPartList( std::vector<GSolid*>& solids )
     }
 }
 
-GSolid* GGeoTest::makeSolidFromConfig( unsigned i ) // setup nodeIndex here ?
+GVolume* GGeoTest::makeVolumeFromConfig( unsigned i ) // setup nodeIndex here ?
 {
     std::string node = m_config->getNodeString(i);
     OpticksCSG_t type = m_config->getTypeCode(i);
@@ -485,7 +485,7 @@ GSolid* GGeoTest::makeSolidFromConfig( unsigned i ) // setup nodeIndex here ?
     glm::mat4 trans = m_config->getTransform(i);
     unsigned boundary = m_bndlib->addBoundary(spec);
 
-    LOG(info) << "GGeoTest::makeSolidFromConfig" 
+    LOG(info) << "GGeoTest::makeVolumeFromConfig" 
               << " i " << std::setw(2) << i 
               << " node " << std::setw(20) << node
               << " type " << std::setw(2) << type 
@@ -497,27 +497,27 @@ GSolid* GGeoTest::makeSolidFromConfig( unsigned i ) // setup nodeIndex here ?
               ;
 
     bool oktype = type < CSG_UNDEFINED ;  
-    if(!oktype) LOG(fatal) << "GGeoTest::makeSolidFromConfig configured node not implemented " << node ;
+    if(!oktype) LOG(fatal) << "GGeoTest::makeVolumeFromConfig configured node not implemented " << node ;
     assert(oktype);
 
-    GSolid* solid = m_maker->make(i, type, param, spec );   
-    GParts* pts = solid->getParts();
+    GVolume* volume = m_maker->make(i, type, param, spec );   
+    GParts* pts = volume->getParts();
     assert(pts);
     pts->setPartList(); // setting primFlag to CSG_FLAGPARTLIST
     pts->setBndLib(m_bndlib) ; 
 
-    return solid ; 
+    return volume ; 
 }
 
-void GGeoTest::createBoxInBox(std::vector<GSolid*>& solids)
+void GGeoTest::createBoxInBox(std::vector<GVolume*>& volumes)
 {
     unsigned nelem = m_config->getNumElements();
     for(unsigned i=0 ; i < nelem ; i++)
     {
-        GSolid* solid = makeSolidFromConfig(i);
-        solids.push_back(solid);  // <-- TODO: eliminate
+        GVolume* volume = makeVolumeFromConfig(i);
+        volumes.push_back(volume);  // <-- TODO: eliminate
 
-        m_nodelib->add(solid);
+        m_nodelib->add(volume);
     }
 }
 
@@ -526,7 +526,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
 {
     assert( m_config->getNumElements() == 1 && "GGeoTest::createPmtInBox expecting single container " );
 
-    GSolid* container = makeSolidFromConfig(0); 
+    GVolume* container = makeVolumeFromConfig(0); 
     const char* spec = m_config->getBoundary(0);
     const char* container_inner_material = m_bndlib->getInnerMaterialName(spec);
     const char* medium = m_ok->getAnalyticPMTMedium();
@@ -538,13 +538,13 @@ GMergedMesh* GGeoTest::createPmtInBox()
     GMergedMesh* mmpmt = m_pmtlib->getPmt() ;
     assert(mmpmt);
 
-    unsigned pmtNumSolids = mmpmt->getNumSolids() ; 
-    container->setIndex( pmtNumSolids );   // <-- HMM: MAYBE THIS SHOULD FEED INTO GParts::setNodeIndex ?
+    unsigned pmtNumVolumes = mmpmt->getNumVolumes() ; 
+    container->setIndex( pmtNumVolumes );   // <-- HMM: MAYBE THIS SHOULD FEED INTO GParts::setNodeIndex ?
 
     LOG(info) << "GGeoTest::createPmtInBox " 
               << " spec " << spec 
               << " container_inner_material " << container_inner_material
-              << " pmtNumSolids " << pmtNumSolids
+              << " pmtNumVolumes " << pmtNumVolumes
               ; 
 
 
@@ -555,7 +555,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
 
     cpts->setPrimFlag(CSG_FLAGPARTLIST);  // PmtInBox uses old partlist, not the default CSG_FLAGNODETREE
     cpts->setAnalyticVersion(mmpmt->getParts()->getAnalyticVersion()); // follow the PMT version for the box
-    cpts->setNodeIndex(0, pmtNumSolids);   // NodeIndex used to associate parts to their prim, fixed 5-4-2-1-1 issue yielding 4-4-2-1-1-1
+    cpts->setNodeIndex(0, pmtNumVolumes);   // NodeIndex used to associate parts to their prim, fixed 5-4-2-1-1 issue yielding 4-4-2-1-1-1
 
 
     GMergedMesh* triangulated = GMergedMesh::combine( mmpmt->getIndex(), mmpmt, container, verbosity );   
@@ -563,7 +563,7 @@ GMergedMesh* GGeoTest::createPmtInBox()
     // hmm this is putting the container at the end... does that matter ?
 
     //if(verbosity > 1)
-    triangulated->dumpSolids("GGeoTest::createPmtInBox GMergedMesh::dumpSolids combined (triangulated) ");
+    triangulated->dumpVolumes("GGeoTest::createPmtInBox GMergedMesh::dumpVolumes combined (triangulated) ");
 
     // needed by OGeo::makeAnalyticGeometry
     NPY<unsigned int>* idBuf = mmpmt->getAnalyticInstancedIdentityBuffer();
@@ -578,23 +578,23 @@ GMergedMesh* GGeoTest::createPmtInBox()
     return triangulated ; 
 }
 
-GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* mm0)
+GMergedMesh* GGeoTest::combineVolumes(std::vector<GVolume*>& volumes, GMergedMesh* mm0)
 {
     // TODO: eliminate, instead use GNodeLib::createMergeMesh 
 
-    LOG(info) << "GGeoTest::combineSolids START " ; 
+    LOG(info) << "GGeoTest::combineVolumes START " ; 
 
     unsigned verbosity = 3 ; 
-    GMergedMesh* tri = GMergedMesh::combine( 0, mm0, solids, verbosity );
+    GMergedMesh* tri = GMergedMesh::combine( 0, mm0, volumes, verbosity );
 
-    unsigned nelem = solids.size() ; 
+    unsigned nelem = volumes.size() ; 
     GTransforms* txf = GTransforms::make(nelem); // identities
     GIds*        aii = GIds::make(nelem);        // placeholder (n,4) of zeros
 
     tri->setAnalyticInstancedIdentityBuffer(aii->getBuffer());  
     tri->setITransformsBuffer(txf->getBuffer());
 
-    GParts* pts0 = solids[0]->getParts();
+    GParts* pts0 = volumes[0]->getParts();
     GParts* pts = tri->getParts();
 
     if(pts0->isPartList())
@@ -608,14 +608,14 @@ GMergedMesh* GGeoTest::combineSolids(std::vector<GSolid*>& solids, GMergedMesh* 
     {
         GParts* pts = tri->getParts();
         pts->setName(m_config->getName());
-        const char* msg = "GGeoTest::combineSolids --dbganalytic" ;
+        const char* msg = "GGeoTest::combineVolumes --dbganalytic" ;
         pts->Summary(msg);
         pts->dumpPrimInfo(msg); // this usually dumps nothing as solid buffer not yet created
     }
     // collected pts are converted into primitives in GParts::makePrimBuffer
 
 
-    LOG(info) << "GGeoTest::combineSolids DONE " ; 
+    LOG(info) << "GGeoTest::combineVolumes DONE " ; 
 
     return tri ; 
 }
