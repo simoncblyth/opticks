@@ -564,10 +564,6 @@ void NScene::dumpCSG(const char* dbgmesh, const char* msg) const
 
 
 
-
-
-
-
 nd* NScene::import_r(int idx,  nd* parent, int depth)
 {
     // recursive translation of source node tree (eg ygltf) 

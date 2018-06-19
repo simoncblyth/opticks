@@ -120,6 +120,19 @@ unsigned NPYBase::getNumHit() const
 }
 
 
+template <typename T>
+void NPYBase::setParameter(const char* key, T value)
+{
+    m_parameters->set<T>(key, value);
+}
+template <typename T>
+T NPYBase::getParameter(const char* key, const char* fallback) const 
+{
+    m_parameters->get<T>(key,fallback);
+}
+
+
+
 
 
 NPYBase::NPYBase(const std::vector<int>& shape, unsigned char sizeoftype, Type_t type, std::string& metadata, bool has_data) 

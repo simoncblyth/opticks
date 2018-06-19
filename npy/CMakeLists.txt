@@ -159,6 +159,7 @@ set(SOURCES
     NPolygonizer.cpp
 
     Nd.cpp
+    NXform.cpp
 
     NTris.cpp
     NOpenMesh.cpp
@@ -328,6 +329,7 @@ NLODConfig.hpp
 
 Nuv.hpp
 Nd.hpp
+NXform.hpp
     
 NTris.hpp
 

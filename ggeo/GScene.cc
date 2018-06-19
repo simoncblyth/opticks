@@ -599,8 +599,9 @@ GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNo
 
     GVolume* parent = NULL ;
     unsigned depth = 0 ; 
+    unsigned preorder = 0 ; 
     bool recursive_select = false ; 
-    GVolume* root = createVolumeTree_r( root_nd, parent, depth, recursive_select );
+    GVolume* root = createVolumeTree_r( root_nd, parent, depth, preorder, recursive_select );
     assert(root);
 
     assert( m_nodes.size() == nd::num_nodes()) ;
@@ -611,8 +612,11 @@ GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNo
 }
 
 
-GVolume* GScene::createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, bool recursive_select  )
+GVolume* GScene::createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, unsigned preorder, bool recursive_select  )
 {
+
+    assert( n->idx == preorder ) ; 
+
     guint4 id = getIdentity(n->idx);
     guint4 ni = getNodeInfo(n->idx);
 
@@ -640,15 +644,16 @@ GVolume* GScene::createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, bool
         assert( pidx + m_targetnode == ni.w );  // relative node indexing
     }
 
-    GVolume* node = createVolume(n, depth, recursive_select );
+    GVolume* node = createVolume(n, depth, preorder, recursive_select );
     node->setParent(parent) ;   // tree hookup 
 
+    preorder += 1 ; 
 
     typedef std::vector<nd*> VN ; 
     for(VN::const_iterator it=n->children.begin() ; it != n->children.end() ; it++)
     {
         nd* cn = *it ; 
-        GVolume* child = createVolumeTree_r(cn, node, depth+1, recursive_select );
+        GVolume* child = createVolumeTree_r(cn, node, depth+1, preorder, recursive_select );
         node->addChild(child);
     } 
     return node  ; 
@@ -663,7 +668,7 @@ GVolume* GScene::getNode(unsigned node_idx)
 }
 
 
-GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
+GVolume* GScene::createVolume(nd* n, unsigned depth, unsigned preorder, bool& recursive_select  ) // compare with AssimpGGeo::convertStructureVisit
 {
     assert(n);
     unsigned rel_node_idx = n->idx ;
@@ -682,6 +687,7 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
 
     glm::mat4 xf_global = n->gtransform->t ;    
     glm::mat4 xf_local  = n->transform->t ;    
+
     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 

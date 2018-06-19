@@ -23,13 +23,25 @@ std::string nd::pvtag(unsigned nch) const
     return pvns ; 
 }
 
+/**
+nd::create
+-----------
+
+Used from NScene::import_r/NGLTF::createNdConverted 
+converting input glTF nodes into an nd tree.
+
+This glTF was created from the python gdml2gltf conversion 
+using gdml.py sc.py.
+
+**/
+
 nd* nd::create(int idx, 
                int mesh, 
                int depth,
                const std::string& boundary,
                const std::string& pvname,
                nd* parent,
-               const float* transform)
+               const float* transform)   // static
 {
     nd* n = new nd ;   // NB these are structural nodes, not CSG tree nodes
 
@@ -44,7 +56,6 @@ nd* nd::create(int idx,
 
     n->parent = parent ;
     n->transform = make_triple(transform) ; 
-
     n->gtransform = make_global_transform(n) ;    // requires transform and parent to be set first 
 
     if(!_register) _register = new nd_register_t ;

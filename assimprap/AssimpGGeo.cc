@@ -910,7 +910,9 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     ltransform->Summary("AssimpGGeo::convertStructureVisit ltransform");
 
 
-    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh, UINT_MAX, NULL ); // sensor starts NULL
+    unsigned boundary = UINT_MAX ; 
+    NSensor* sensor = NULL ; 
+    GVolume* volume = new GVolume(nodeIndex, gtransform, mesh, boundary, sensor ); // sensor starts NULL
     volume->setLevelTransform(ltransform);
 
     const char* lv   = node->getName(0); 

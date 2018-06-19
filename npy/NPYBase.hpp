@@ -74,6 +74,14 @@ class NPY_API NPYBase {
        unsigned int getNumValues(unsigned int from_dim=0) const ;
 
        NParameters*  getParameters() const ;
+
+       template <typename T>
+       void setParameter(const char* key, T value);
+
+       template <typename T>
+       T getParameter(const char* key, const char* fallback) const ;
+
+
    public:
        // depending on sizeoftype
        Type_t        getType() const ;

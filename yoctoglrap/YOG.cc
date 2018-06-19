@@ -5,6 +5,7 @@
 #include "PLOG.hh"
 #include "BStr.hh"
 #include "NGLM.hpp"
+#include "NTran.hpp"
 #include "YOG.hh"
 
 namespace YOG {
@@ -42,7 +43,6 @@ std::string Nd::desc() const
         << " soIdx:" << std::setw(4) << soIdx 
         << " nch:"   << std::setw(4) << children.size()
         << " par:"   << std::setw(4) << parent  
-        << " xf:"  << ( transform ? glm::to_string(*transform) : "-" )
         ; 
     return ss.str();
 }
@@ -50,6 +50,7 @@ std::string Nd::desc() const
 Sc::Sc(int root_)
    :
    root(root_)
+//   xform(new nxform(0,false))
 {
 }
 
@@ -154,7 +155,7 @@ int Sc::add_node(int lvIdx,
                  const std::string& lvName, 
                  const std::string& pvName, 
                  const std::string& soName, 
-                 const glm::mat4* transform, 
+                 const nmat4triple* transform, 
                  const std::string& boundary,
                  int depth, 
                  bool selected)
@@ -183,7 +184,7 @@ Nd* Sc::get_node(int nodeIdx) const
     return nodes[nodeIdx] ;  
 }
 
-Mh* Sc::get_mesh_for_node(int nodeIdx) const 
+Mh* Sc::get_mesh_for_node(int nodeIdx) const  // node->mesh association via nd->soIdx
 {
     Nd* nd = get_node(nodeIdx) ; 
     Mh* mh = meshes[nd->soIdx];  
@@ -201,7 +202,7 @@ int Sc::add_test_node(int lvIdx)
     std::string lvName = BStr::concat<int>("lv", lvIdx, NULL) ;   
     std::string pvName = BStr::concat<int>("pv", lvIdx, NULL) ;   
     std::string soName = BStr::concat<int>("so", lvIdx, NULL) ;   
-    const glm::mat4* transform = new glm::mat4 ; 
+    const nmat4triple* transform = NULL ; 
     std::string boundary = BStr::concat<int>("bd", lvIdx, NULL) ;   
     int depth = 0 ; 
     bool selected = true ;  
@@ -218,5 +219,12 @@ int Sc::add_test_node(int lvIdx)
 
     return ndIdx ; 
 }
+
+
+
+
+
+
+
 
 } // namespace

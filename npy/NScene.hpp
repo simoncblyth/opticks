@@ -40,12 +40,9 @@ NScene
   * pulls in NCSG extras from sc.py 
   * finds repeat geometry instances 
 
-
 * NScene is consumed directly only by GScene, 
 
-
 * NScene::Load from GScene::GScene 
-
 
 
 Scene files in glTF format are created by opticks/analytic/sc.py 

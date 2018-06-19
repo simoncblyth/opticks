@@ -1,8 +1,6 @@
-# === func-gen- : graphics/assimprap/assimprap fgp graphics/assimprap/assimprap.bash fgn assimprap fgh graphics/assimprap
-assimprap-src(){      echo assimprap/assimprap.bash ; }
-assimprap-source(){   echo ${BASH_SOURCE:-$(opticks-home)/$(assimprap-src)} ; }
-assimprap-vi(){       vi $(assimprap-source) ; }
-assimprap-usage(){ cat << EOU
+asirap-source(){   echo ${BASH_SOURCE} ; }
+asirap-vi(){       vi $(asirap-source) ; }
+asirap-usage(){ cat << EOU
 
 AssimpRap
 ============
@@ -22,9 +20,9 @@ High Sierra Warnings
 
 ::
 
-    delta:ggeo blyth$ assimprap-
-    delta:ggeo blyth$ assimprap-clean
-    delta:ggeo blyth$ assimprap--
+    delta:ggeo blyth$ asirap-
+    delta:ggeo blyth$ asirap-clean
+    delta:ggeo blyth$ asirap--
     [  0%] Building CXX object assimprap/CMakeFiles/AssimpRap.dir/ASIRAP_LOG.cc.o
     [  0%] Building CXX object assimprap/CMakeFiles/AssimpRap.dir/AssimpCommon.cc.o
     In file included from /Users/blyth/opticks/assimprap/AssimpCommon.cc:6:
@@ -207,7 +205,7 @@ Workflow
 
 ::
 
-   assimprap-extra
+   asirap-extra
 
 
 
@@ -286,45 +284,45 @@ Border Surfaces Looking Reasonable with expected AD symmetry
 
 EOU
 }
-assimprap-env(){      olocal- ; opticks- ;  }
+asirap-env(){      olocal- ; opticks- ;  }
 
-assimprap-sdir(){ echo $(opticks-home)/assimprap ; }
-assimprap-tdir(){ echo $(opticks-home)/assimprap/tests ; }
-assimprap-idir(){ echo $(opticks-idir); }
-assimprap-bdir(){ echo $(opticks-bdir)/assimprap ; }
+asirap-sdir(){ echo $(opticks-home)/assimprap ; }
+asirap-tdir(){ echo $(opticks-home)/assimprap/tests ; }
+asirap-idir(){ echo $(opticks-idir); }
+asirap-bdir(){ echo $(opticks-bdir)/assimprap ; }
 
-assimprap-icd(){  cd $(assimprap-idir); }
-assimprap-bcd(){  cd $(assimprap-bdir); }
-assimprap-scd(){  cd $(assimprap-sdir); }
-assimprap-tcd(){  cd $(assimprap-tdir); }
+asirap-icd(){  cd $(asirap-idir); }
+asirap-bcd(){  cd $(asirap-bdir); }
+asirap-scd(){  cd $(asirap-sdir); }
+asirap-tcd(){  cd $(asirap-tdir); }
 
-assimprap-c(){   cd $(assimprap-sdir); }
-assimprap-cd(){  cd $(assimprap-sdir); }
+asirap-c(){   cd $(asirap-sdir); }
+asirap-cd(){  cd $(asirap-sdir); }
 
-assimprap-wipe(){
-    local bdir=$(assimprap-bdir)
+asirap-wipe(){
+    local bdir=$(asirap-bdir)
     rm -rf $bdir
 }
 
 
-assimprap-name(){ echo AssimpRap ; }
-assimprap-tag(){  echo ASIRAP ; }
+asirap-name(){ echo AssimpRap ; }
+asirap-tag(){  echo ASIRAP ; }
 
-assimprap-apihh(){  echo $(assimprap-sdir)/$(assimprap-tag)_API_EXPORT.hh ; }
-assimprap---(){     touch $(assimprap-apihh) ; assimprap--  ; }
-
-
-assimprap--(){        opticks--     $(assimprap-bdir) ; }
-assimprap-t(){        opticks-t     $(assimprap-bdir) $* ; }
-assimprap-clean(){    opticks-make- $(assimprap-bdir) clean ; }
-
-assimprap-genproj(){  assimprap-scd ; opticks-genproj $(assimprap-name) $(assimprap-tag) ; }
-assimprap-gentest(){  assimprap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(assimprap-tag) ; }
-assimprap-txt(){ vi $(assimprap-sdir)/CMakeLists.txt $(assimprap-tdir)/CMakeLists.txt ; } 
+asirap-apihh(){  echo $(asirap-sdir)/$(asirap-tag)_API_EXPORT.hh ; }
+asirap---(){     touch $(asirap-apihh) ; asirap--  ; }
 
 
+asirap--(){        opticks--     $(asirap-bdir) ; }
+asirap-t(){        opticks-t     $(asirap-bdir) $* ; }
+asirap-clean(){    opticks-make- $(asirap-bdir) clean ; }
 
-assimprap-nodae-t()
+asirap-genproj(){  asirap-scd ; opticks-genproj $(asirap-name) $(asirap-tag) ; }
+asirap-gentest(){  asirap-tcd ; opticks-gentest ${1:-AssimpGGeo} $(asirap-tag) ; }
+asirap-txt(){ vi $(asirap-sdir)/CMakeLists.txt $(asirap-tdir)/CMakeLists.txt ; } 
+
+
+
+asirap-nodae-t()
 {
    opticksdata-
    local path=$(opticksdata-path dyb)

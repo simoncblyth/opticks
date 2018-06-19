@@ -20,9 +20,7 @@ glm::mat4* X4Transform3D::GetLocalTransform(const G4VPhysicalVolume* const pv)
     G4RotationMatrix rot = pv->GetObjectRotationValue() ;  // obj relative to mother
     G4ThreeVector    tla = pv->GetObjectTranslation() ;
     G4Transform3D    tra(rot,tla);
-
     glm::mat4* transform = new glm::mat4(Convert( tra ));
-
     return transform ; 
 }
 

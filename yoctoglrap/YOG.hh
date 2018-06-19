@@ -6,7 +6,7 @@
 #include "YOG_API_EXPORT.hh"
 template <typename T> class NPY ; 
 
-#include <glm/fwd.hpp>
+struct nmat4triple ; 
 
 /**
 YOG : intermediate geometry tree
@@ -41,6 +41,7 @@ GLTF for consumption by NGLTF/NScene.
 **/
 
 struct nnode ; 
+struct nmat4triple ; 
 class GMesh ; 
 
 namespace YOG {
@@ -49,7 +50,7 @@ struct Nd ;
 struct Mh ; 
 struct Mt ; 
 
-struct YOG_API Sc 
+struct YOG_API Sc  // scene
 {
     Sc(int root_=0);
 
@@ -65,7 +66,7 @@ struct YOG_API Sc
                  const std::string& lvName, 
                  const std::string& pvName, 
                  const std::string& soName, 
-                 const glm::mat4* transform, 
+                 const nmat4triple* transform, 
                  const std::string& boundary,
                  int   depth, 
                  bool  selected);  
@@ -73,15 +74,15 @@ struct YOG_API Sc
     int add_test_node(int lvIdx);
 
     Nd* get_node(int nodeIdx) const ; 
-    Mh* get_mesh_for_node(int nodeIdx) const ; 
+    Mh* get_mesh_for_node(int nodeIdx) const ;  // node->mesh association via nd->soIdx
 
     int lv2so(int lvIdx) const ;
     bool has_mesh(int lvIdx) const ; 
 
-    int add_mesh(int   lvIdx,
+    int add_mesh(int   lvIdx,    
                  int   mtIdx,
                  const std::string& lvName, 
-                 const std::string& soName);
+                 const std::string& soName);  // mesh identity from lvIdx
 
     int add_material(const std::string& matName); 
     int get_material_idx( const std::string& matName) const ;  // -1 if not found
@@ -89,11 +90,12 @@ struct YOG_API Sc
 
 };
 
-struct YOG_API Nd
+struct YOG_API Nd  // node
 {
     int              ndIdx ; 
     int              soIdx ;   // mesh 
-    const glm::mat4* transform ; 
+    const nmat4triple* transform ; 
+
     std::string      boundary ; 
     std::string      name ;   // pvname 
     int              depth ;
@@ -105,7 +107,7 @@ struct YOG_API Nd
     std::string desc() const ;
 };
 
-struct YOG_API Mh
+struct YOG_API Mh  // mesh
 {
     int          lvIdx ; 
     int          mtIdx ;   
@@ -121,7 +123,7 @@ struct YOG_API Mh
     std::string desc() const ;
 };
 
-struct YOG_API Mt
+struct YOG_API Mt  // material
 {
     std::string name ; 
     std::string desc() const ;

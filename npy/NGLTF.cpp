@@ -257,6 +257,13 @@ const std::vector<int>& NGLTF::getNodeChildren(unsigned node_idx) const
     return ynode->children ;
 }
 
+/**
+NGLTF::createNdConverted
+-------------------------
+
+Invoked from NScene::import_r
+
+**/
 nd* NGLTF::createNdConverted(unsigned node_idx, unsigned depth, nd* parent) const 
 {
     ygltf::node_t* ynode = getNode(node_idx);

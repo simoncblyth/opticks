@@ -171,8 +171,8 @@ class GGEO_API GScene : public GGeoBase
         guint4 getIdentity(unsigned idx) const ;
     private:
         GVolume* createVolumeTree(NScene* scene);
-        GVolume* createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, bool recursive_select );
-        GVolume* createVolume(nd* n, unsigned depth, bool& recursive_select );
+        GVolume* createVolumeTree_r(nd* n, GVolume* parent, unsigned depth, unsigned preorder, bool recursive_select );
+        GVolume* createVolume(nd* n, unsigned depth, unsigned preorder, bool& recursive_select );
         void transferIdentity( GVolume* node, const nd* n);
         void transferMetadata( GVolume* node, const NCSG* csg, const nd* n, unsigned depth, bool& recursive_select );
         std::string lookupBoundarySpec( const GVolume* node, const nd* n) const ;
@@ -220,7 +220,7 @@ class GGEO_API GScene : public GGeoBase
         GColorizer*   m_colorizer ; 
 
         unsigned     m_verbosity ; 
-        GVolume*      m_root ; 
+        GVolume*     m_root ; 
         unsigned     m_selected_count ; 
 
         std::map<unsigned, GMesh*>   m_meshes ; 

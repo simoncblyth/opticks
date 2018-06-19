@@ -11,10 +11,13 @@ class G4VSolid ;
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
 
+struct nxform ; 
+
 class GGeo ; 
 class GMaterialLib ; 
 class GSurfaceLib ; 
 class GBndLib ; 
+class GVolume ; 
 class Opticks ; 
 
 namespace YOG 
@@ -28,6 +31,9 @@ namespace YOG
 /**
 X4PhysicalVolume
 ===================
+
+Hmm this shoud probably be named X4Scene or X4Tree, 
+as it forcusses on the tree not the PhysicalVolume node.
 
 CAUTION regarding geometry digests
 ------------------------------------
@@ -63,8 +69,8 @@ class X4_API X4PhysicalVolume
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
     private:
-        int TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
-        YOG::Nd* convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const parent_pv );
+        GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
+        GVolume* convertNode(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
         void convertSolid( YOG::Mh* mh,  const G4VSolid* const solid);
         G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
     private:
@@ -79,11 +85,13 @@ class X4_API X4PhysicalVolume
         GSurfaceLib*                 m_slib ; 
         GBndLib*                     m_blib ; 
     private:
+        GVolume*                     m_root ;  
+    private:
+        nxform*                      m_xform ; 
+    private:
         YOG::Sc*                     m_sc ; 
         YOG::Maker*                  m_maker ; 
         int                          m_verbosity ; 
-        int                          m_pvcount ; 
-        glm::mat4                    m_identity ; 
 
         std::map<const G4LogicalVolume* const, int> m_lvidx ; 
 

@@ -961,7 +961,7 @@ brap
 npy
 okc
 ggeo
-assimprap
+asirap
 openmeshrap
 okg
 oglrap
@@ -1200,7 +1200,7 @@ npy-(){             . $(opticks-home)/npy/npy.bash && npy-env $* ; }
 okc-(){             . $(opticks-home)/optickscore/okc.bash && okc-env $* ; }
 
 ggeo-(){            . $(opticks-home)/ggeo/ggeo.bash && ggeo-env $* ; }
-assimprap-(){       . $(opticks-home)/assimprap/assimprap.bash && assimprap-env $* ; }
+asirap-(){          . $(opticks-home)/assimprap/asirap.bash && asirap-env $* ; }
 openmeshrap-(){     . $(opticks-home)/openmeshrap/openmeshrap.bash && openmeshrap-env $* ; }
 okg-(){             . $(opticks-home)/opticksgeo/okg.bash && okg-env $* ; }
 

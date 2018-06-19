@@ -30,13 +30,17 @@ using YOG::Mh ;
 using YOG::Maker ; 
 
 
+class NSensor ; 
+
 #include "GMesh.hh"
+#include "GVolume.hh"
 #include "GGeo.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 
+#include "NXform.hpp"
 #include "BStr.hh"
 #include "BOpticksKey.hh"
 #include "Opticks.hh"
@@ -74,11 +78,10 @@ X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
+    m_xform(new nxform(0,false)),
     m_sc(new YOG::Sc(0)),
     m_maker(new YOG::Maker(m_sc)),
-    m_verbosity(m_ok->getVerbosity()),
-    m_pvcount(0),
-    m_identity()
+    m_verbosity(m_ok->getVerbosity())
 {
     init();
 }
@@ -132,21 +135,6 @@ void X4PhysicalVolume::convertSurfaces()
     m_slib->close();  // may change order if prefs dictate
 }
 
-void X4PhysicalVolume::convertStructure()
-{
-     assert(m_top) ;
-     LOG(info) << " sc BEGIN " << m_sc->desc() ; 
-
-     const G4VPhysicalVolume* pv = m_top ; 
-     const G4VPhysicalVolume* parent_pv = NULL ; 
-     int depth = 0 ;
-     int preorder = 0 ; 
-
-     IndexTraverse(pv, depth);
-     TraverseVolumeTree(pv, depth, preorder, parent_pv );
-
-     LOG(info) << " sc END  " << m_sc->desc() ; 
-}
 
 void X4PhysicalVolume::saveAsGLTF(const char* path)
 {
@@ -245,6 +233,28 @@ void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int dept
 
 
 
+G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
+{
+     G4LogicalSurface* surf = NULL ; 
+
+     surf = G4LogicalBorderSurface::GetSurface(a, b) ;
+
+     const G4VPhysicalVolume* const first  = first_priority ? a : b ; 
+     const G4VPhysicalVolume* const second = first_priority ? b : a ; 
+
+     if(surf == NULL)
+         surf = G4LogicalSkinSurface::GetSurface(first ? first->GetLogicalVolume() : NULL );
+
+     if(surf == NULL)
+         surf = G4LogicalSkinSurface::GetSurface(second ? second->GetLogicalVolume() : NULL );
+
+     return surf ; 
+}
+
+
+
+
+
 /**
 TraverseVolumeTree
 --------------------
@@ -274,67 +284,67 @@ TODO: contrast with AssimpGGeo::convertStructure
 
 **/
 
-int X4PhysicalVolume::TraverseVolumeTree(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv )
-{
-     const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
 
-     Nd* nd = convertNodeVisit(pv, depth, parent_pv );
+void X4PhysicalVolume::convertStructure()
+{
+     assert(m_top) ;
+     LOG(info) << " convertStructure BEGIN " << m_sc->desc() ; 
+
+     const G4VPhysicalVolume* pv = m_top ; 
+     GVolume* parent = NULL ; 
+     const G4VPhysicalVolume* parent_pv = NULL ; 
+     int depth = 0 ;
+     int preorder = 0 ; 
+
+     IndexTraverse(pv, depth);
+
+     m_root = convertTree_r(pv, parent, depth, preorder, parent_pv );
+
+     LOG(info) << " convertStructure END  " << m_sc->desc() ; 
+}
+
+
+GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, int preorder, const G4VPhysicalVolume* const parent_pv )
+{
+     GVolume* volume = convertNode(pv, depth, preorder, parent_pv );
+
+     YOG::Nd* nd = static_cast<YOG::Nd*>(volume->getParallelNode()) ;
+     YOG::Nd* parent_nd = parent ? static_cast<YOG::Nd*>(parent->getParallelNode()) : NULL ;
+
+     if(parent) 
+     {
+         parent->addChild(volume);
+         volume->setParent(parent);
+     } 
+
+     if(parent_nd)
+     {
+         parent_nd->children.push_back(nd->ndIdx);
+     }
+
+     // TODO: need parent hookup, somewhere here, then can form the global
+
+
+     const G4LogicalVolume* const lv = pv->GetLogicalVolume();
+
      preorder += 1 ; 
   
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-         int child_ndIdx = TraverseVolumeTree(child_pv,depth+1, preorder,  pv );
-         nd->children.push_back(child_ndIdx); 
+         convertTree_r(child_pv, volume, depth+1, preorder, pv );
      }
 
-     return nd->ndIdx  ; 
+     return volume   ; 
 }
-
-
-
-G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
-{
-     G4LogicalSurface* surf = NULL ; 
-
-     surf = G4LogicalBorderSurface::GetSurface(a, b) ;
-
-     const G4VPhysicalVolume* const first  = first_priority ? a : b ; 
-     const G4VPhysicalVolume* const second = first_priority ? b : a ; 
-
-     if(surf == NULL)
-         surf = G4LogicalSkinSurface::GetSurface(first ? first->GetLogicalVolume() : NULL );
-
-     if(surf == NULL)
-         surf = G4LogicalSkinSurface::GetSurface(second ? second->GetLogicalVolume() : NULL );
-
-     return surf ; 
-}
-
 
 /**
 X4PhysicalVolume::convertNodeVisit
 ------------------------------------
-
-* cf AssimpGGeo::convertStructureVisit 
-
-  * which returns GVolume(*)(GNode)  
-  * the parent/child links are then setup in the recursive method 
-
-
-What is required of YOG::Nd ? Can I do the same with GVolume(GNode) ?
-
-
-GBndLib::addBoundary requires getting the indices for the materials
-and surfaces, but that requires the libs to have been closed.  Thus 
-now collect materials and surfaces first.
-
 **/
 
-Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int depth, const G4VPhysicalVolume* const pv_p )
+GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const pv_p )
 {
-     glm::mat4* transform = X4Transform3D::GetLocalTransform(pv); 
-
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
@@ -358,13 +368,19 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
      int materialIdx = m_mlib->getIndex(X4::ShortName(imat)) ;
      assert( materialIdx == bnd.w ); 
 
-     const G4VSolid* const solid = lv->GetSolid();
 
-     int lvIdx = m_lvidx[lv] ;  // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
+     // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
+     // mesh identity is based on lvIdx 
+     int lvIdx = m_lvidx[lv] ;  
+
+     const G4VSolid* const solid = lv->GetSolid();
      const std::string& lvName = lv->GetName() ;
      const std::string& pvName = pv->GetName() ; 
      const std::string& soName = solid->GetName() ; 
      bool selected  = true ; 
+
+     glm::mat4* xf_local = X4Transform3D::GetLocalTransform(pv); 
+     const nmat4triple* transform = m_xform->make_triple( glm::value_ptr(*xf_local) ) ; 
 
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
@@ -378,17 +394,32 @@ Nd* X4PhysicalVolume::convertNodeVisit(const G4VPhysicalVolume* const pv, int de
                                  selected
                                );
 
+     assert( ndIdx == preorder ); 
+
      Nd* nd = m_sc->get_node(ndIdx) ; 
-     Mh* mh = m_sc->get_mesh_for_node( ndIdx ); 
+     Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
+
      if(mh->csg == NULL) convertSolid(mh, solid);
 
-     // hmm AssimpGGeo::convertMeshes does some mesh processing (deduping, fixing) 
+     GMesh* mesh = mh->mesh ;  
+     // CAUTION : AssimpGGeo::convertMeshes does some mesh processing (deduping, fixing) 
      // before inclusion in the GVolume(GNode) 
 
-     // GParts setup from the recursive vistor GScene::createVolume 
+     GParts* pts = NULL ;   // TODO: get GParts setup from recursive vistor GScene::createVolume 
+     NSensor* sensor = NULL ; 
 
+     glm::mat4 xf_global ; // placeholder, until have parent hookup so can get the global
+     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(*xf_local));
 
-     return nd ; 
+     GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
+
+     volume->setLevelTransform(ltransform);
+
+     volume->setParallelNode( nd ); 
+     volume->setParts( pts ); 
+
+     return volume ; 
 }
 
 
