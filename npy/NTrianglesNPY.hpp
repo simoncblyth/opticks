@@ -11,6 +11,13 @@ struct NTriSource ;
 #include "NPY_API_EXPORT.hh"
 #include "NPY_HEAD.hh"
 
+
+struct NPY_API NVtxIdx
+{ 
+    NPY<float>*    vtx ; 
+    NPY<unsigned>* idx ; 
+};
+
 class NPY_API NTrianglesNPY {
     public:
         static const char* PLACEHOLDER ; 
@@ -53,6 +60,9 @@ class NPY_API NTrianglesNPY {
         static NTrianglesNPY* sphere(unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(glm::vec4& param, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* sphere(float ctmin, float ctmax, unsigned int n_polar=24, unsigned int n_azimuthal=24); 
+        static NTrianglesNPY* from_indexed( NPY<float>* vtx, NPY<unsigned>* idx ); 
+        void   to_vtxidx(NVtxIdx& vtxidx) ;  
+        float maxdiff( const NTrianglesNPY* other, bool dump=false );
     public:
         static NTrianglesNPY* disk(glm::vec4& param, unsigned int n_azimuthal=24); 
         static NTrianglesNPY* prism(const glm::vec4& param); 
@@ -71,9 +81,8 @@ class NPY_API NTrianglesNPY {
         void addNormal(const glm::vec3& n ); // in triplicate
         void addNormal(const glm::vec3& a, const glm::vec3& b, const glm::vec3& c );
     public:
-        NPY<float>* getBuffer();
-        NPY<float>* getTris();
-        NPY<float>* getNormals();
+        NPY<float>* getTris() const ;
+        NPY<float>* getNormals() const ;
         unsigned int getNumTriangles();
         nbbox* findBBox();
         void setTransform(const glm::mat4& transform);
@@ -87,6 +96,7 @@ class NPY_API NTrianglesNPY {
         const std::string& getMessage();
         bool  hasMessage(const std::string& msg);
         bool  isPlaceholder();
+        void dump(const char* msg="NTrianglesNPY::dump") const ;
     private:
         NPY<float>*  m_tris ; 
         NPY<float>*  m_normals ; 

@@ -1,8 +1,10 @@
 
+#include "NBBox.hpp"
 #include "NPY.hpp"
 #include "GLMPrint.hpp"
 #include "NTrianglesNPY.hpp"
-#include "PLOG.hh"
+
+#include "OPTICKS_LOG.hh"
 
 void test_prism()
 {
@@ -63,15 +65,48 @@ void test_icosahedron()
 }
 
 
+void test_box()
+{
+    nbbox bb = make_bbox( -100,-100,-100, 100, 100, 100 ); 
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb);
+    tris->dump();
+}
+
+void test_to_from_vtxidx()
+{
+    nbbox bb = make_bbox( -100,-100,-100, 100, 100, 100 ); 
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb);
+    tris->dump("tris");
+
+    NVtxIdx vtxidx ;
+    tris->to_vtxidx(vtxidx);
+
+    vtxidx.vtx->dump();
+    vtxidx.idx->dump();
+
+    NTrianglesNPY* tris2 = NTrianglesNPY::from_indexed(vtxidx.vtx, vtxidx.idx);
+    tris2->dump("tris2");
+
+    float md = tris2->maxdiff(tris, true );
+
+    LOG(info) << " maxdiff " << md ; 
+
+    assert( md == 0.f );
+}
+
 
 int main(int argc, char**argv)
 {
-    PLOG_(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
+/*
     test_prism();
     test_transform();
     test_latlon();
     test_icosahedron();
+*/
+    //test_box();
+    test_to_from_vtxidx();
 }
 
 

@@ -60,11 +60,11 @@ void test_sphere(NMarchingCubesNPY& mcu, bool dump)
 
     NTrianglesNPY* tris0 = mcu(&a);
     assert(tris0);
-    if(dump) tris0->getBuffer()->dump("test_sphere");
+    if(dump) tris0->getTris()->dump("test_sphere");
 
     NTrianglesNPY* tris1 = mcu((nnode*)&a);
     assert(tris1);
-    if(dump) tris1->getBuffer()->dump("test_sphere (nnode*)");
+    if(dump) tris1->getTris()->dump("test_sphere (nnode*)");
 }
 
 
@@ -74,11 +74,11 @@ void test_box(NMarchingCubesNPY& mcu, bool dump)
 
     NTrianglesNPY* tris0 = mcu(&a);
     assert(tris0);
-    if(dump) tris0->getBuffer()->dump("test_box");
+    if(dump) tris0->getTris()->dump("test_box");
 
     NTrianglesNPY* tris1 = mcu((nnode*)&a);
     assert(tris1);
-    if(dump) tris1->getBuffer()->dump("test_box (nnode*)");
+    if(dump) tris1->getTris()->dump("test_box (nnode*)");
 }
 
 
@@ -96,7 +96,7 @@ void test_union(NMarchingCubesNPY& mcu, bool dump)
     NTrianglesNPY* tris = mcu(&u);
     assert(tris);
 
-    if(dump) tris->getBuffer()->dump("test_union");
+    if(dump) tris->getTris()->dump("test_union");
 }
 
 void test_intersection(NMarchingCubesNPY& mcu, bool dump)
@@ -109,7 +109,7 @@ void test_intersection(NMarchingCubesNPY& mcu, bool dump)
     NTrianglesNPY* tris = mcu(&i);
     assert(tris);
 
-    if(dump) tris->getBuffer()->dump("test_intersection");
+    if(dump) tris->getTris()->dump("test_intersection");
 }
 
 
@@ -123,11 +123,11 @@ void test_difference(NMarchingCubesNPY& mcu, bool dump)
 
     NTrianglesNPY* tris1 = mcu(&d1);
     assert(tris1);
-    if(dump) tris1->getBuffer()->dump("test_difference d1");
+    if(dump) tris1->getTris()->dump("test_difference d1");
 
     NTrianglesNPY* tris2 = mcu(&d2);
     assert(tris2);
-    if(dump) tris2->getBuffer()->dump("test_difference d2");
+    if(dump) tris2->getTris()->dump("test_difference d2");
 }
 
 

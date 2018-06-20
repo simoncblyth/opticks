@@ -42,7 +42,7 @@ std::string X4SolidBase::desc() const
 {
     std::stringstream ss ; 
     ss << "X4SolidBase" 
-       << " name " << m_name
+       << " name " << std::setw(40) << m_name
        << " entityType " << m_entityType 
        << " entityName " << m_entityName
        << " root " << m_root

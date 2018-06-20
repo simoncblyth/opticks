@@ -34,6 +34,24 @@ TODO SOMETIME : break up the monolith
 * perhaps transport buffers could live in a separate class fairly easily  
 
 
+
+setIsUsedGlobally : always now true ?
+-------------------------------------------
+
+::
+
+    epsilon:npy blyth$ opticks-find setIsUsedGlobally 
+    ./npy/NGLTF.cpp:void NGLTF::setIsUsedGlobally(unsigned mesh_idx, bool iug)
+    ./npy/NScene.cpp:    //if(n->repeatIdx == 0) setIsUsedGlobally(n->mesh, true );
+    ./npy/NScene.cpp:    m_source->setIsUsedGlobally(n->mesh, true );
+    ./npy/NCSG.cpp:void NCSG::setIsUsedGlobally(bool usedglobally )
+    ./npy/NCSG.cpp:    tree->setIsUsedGlobally(true);
+    ./npy/NCSG.hpp:        void setIsUsedGlobally(bool usedglobally);
+    ./npy/NGeometry.hpp:       virtual void                     setIsUsedGlobally(unsigned mesh_idx, bool iug) = 0 ;
+    ./npy/NGLTF.hpp:        void                         setIsUsedGlobally(unsigned mesh_idx, bool iug);
+
+
+
 Where NCSG is used
 -------------------
 

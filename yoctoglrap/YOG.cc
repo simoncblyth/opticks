@@ -158,22 +158,28 @@ int Sc::add_node(int lvIdx,
                  const nmat4triple* transform, 
                  const std::string& boundary,
                  int depth, 
-                 bool selected)
+                 bool selected,
+                 Nd* parent 
+                )
 {
 
      int soIdx = add_mesh( lvIdx, mtIdx, lvName, soName);  
 
      assert( soIdx > -1 );  
-
      // soIdx is zero-based local index, lvIdx is an externally imposed index
 
      int ndIdx = nodes.size() ;
-     int parent = -1 ; 
      Nd* nd = new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent }  ;
 
-     LOG(info) << nd->desc(); 
-
      nodes.push_back(nd) ;
+
+     //LOG(info) << nd->desc(); 
+
+     if(parent)
+     {
+         parent->children.push_back(ndIdx);
+     } 
+
      return ndIdx ; 
 }
 
@@ -206,6 +212,7 @@ int Sc::add_test_node(int lvIdx)
     std::string boundary = BStr::concat<int>("bd", lvIdx, NULL) ;   
     int depth = 0 ; 
     bool selected = true ;  
+    Nd* parent = NULL ;  
 
     int ndIdx = add_node(lvIdx, 
                          mtIdx,
@@ -215,7 +222,9 @@ int Sc::add_test_node(int lvIdx)
                          transform, 
                          boundary,
                          depth, 
-                         selected);  
+                         selected,
+                         parent
+                         );  
 
     return ndIdx ; 
 }

@@ -4,6 +4,7 @@
 #include <string>
 
 
+#include "G4VisExtent.hh"
 #include "G4VSolid.hh"
 #include "G4Polyhedron.hh"
 
@@ -12,9 +13,36 @@
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
 #include "SDirect.hh"
+
+#include "NBBox.hpp"
+#include "NTrianglesNPY.hpp"
 #include "NPY.hpp"
+
 #include "PLOG.hh"
 
+
+
+
+GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
+{
+    G4VisExtent ve = solid->GetExtent();
+    LOG(info) << " visExtent " << ve ; 
+ 
+    nbbox bb = make_bbox( 
+                   ve.GetXmin(), ve.GetYmin(), ve.GetZmin(), 
+                   ve.GetXmax(), ve.GetYmax(), ve.GetZmax(),  false );  
+
+    NTrianglesNPY* tris = NTrianglesNPY::box(bb) ;     
+    GMesh* mesh = GMeshMaker::make_mesh(tris->getTris());
+
+    NVtxIdx vtxidx ;
+    tris->to_vtxidx(vtxidx);
+
+    mesh->m_x4src_vtx = vtxidx.vtx ; 
+    mesh->m_x4src_idx = vtxidx.idx ; 
+
+    return mesh ; 
+}
 
 
 GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
@@ -255,7 +283,16 @@ void X4Mesh::save(const char* dir) const
 
 void X4Mesh::makemesh()
 {
-    m_mesh = GMeshMaker::make_mesh(m_vtx, m_tri, 0 );
+    bool via_tris = false ; 
+    if( via_tris ) 
+    {
+        NTrianglesNPY* tris = NTrianglesNPY::from_indexed(m_vtx, m_tri);
+        m_mesh = GMeshMaker::make_mesh(tris->getTris());
+    }
+    else
+    {
+        m_mesh = GMeshMaker::make_mesh(m_vtx, m_tri, 0 );
+    }
 }
 
 

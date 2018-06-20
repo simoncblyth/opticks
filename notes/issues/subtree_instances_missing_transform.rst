@@ -1,6 +1,15 @@
 Subtree Instances Missing Transform
 ======================================
 
+
+June 2018
+-----------
+
+* changed instanciation default usedglobally to true 
+  so all nnode will get the slots, unless switched off
+
+
+
 FIX/WORKAROUND not yet sure which
 -----------------------------------
 

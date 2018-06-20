@@ -11,7 +11,8 @@ class G4VSolid ;
 #include "NGLM.hpp"
 #include "X4_API_EXPORT.hh"
 
-struct nxform ; 
+
+template <typename T> struct nxform ; 
 
 class GGeo ; 
 class GMaterialLib ; 
@@ -57,7 +58,7 @@ class X4_API X4PhysicalVolume
         static std::string Digest( const G4VPhysicalVolume* const top);
         static std::string Digest( const G4LogicalVolume* const lv, const G4int depth );
     public:
-        X4PhysicalVolume(const G4VPhysicalVolume* const pv); 
+        X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const pv); 
         GGeo* getGGeo();
         void  saveAsGLTF(const char* path);
     private:
@@ -69,29 +70,29 @@ class X4_API X4PhysicalVolume
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
     private:
-        GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
-        GVolume* convertNode(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const parent_pv );
+        GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv );
+        GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv );
+        unsigned addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p );
         void convertSolid( YOG::Mh* mh,  const G4VSolid* const solid);
         G4LogicalSurface* findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority );
     private:
+        GGeo*                        m_ggeo ; 
         const G4VPhysicalVolume*     m_top ;  
-        const char*                  m_key ;  
-        bool                         m_keyset ; 
         Opticks*                     m_ok ; 
         const char*                  m_gltfpath ; 
     private:
-        GGeo*                        m_ggeo ; 
         GMaterialLib*                m_mlib ; 
         GSurfaceLib*                 m_slib ; 
         GBndLib*                     m_blib ; 
     private:
         GVolume*                     m_root ;  
     private:
-        nxform*                      m_xform ; 
+        nxform<YOG::Nd>*             m_xform ; 
     private:
         YOG::Sc*                     m_sc ; 
         YOG::Maker*                  m_maker ; 
         int                          m_verbosity ; 
+        unsigned                     m_ndCount ; 
 
         std::map<const G4LogicalVolume* const, int> m_lvidx ; 
 

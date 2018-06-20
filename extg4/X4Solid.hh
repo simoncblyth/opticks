@@ -45,6 +45,11 @@ class X4_API X4Solid : public X4SolidBase
     private:
         void init();
     private:
+        void convertDisplacedSolid();
+        void convertUnionSolid();
+        void convertIntersectionSolid();
+        void convertSubtractionSolid();
+    private:
         void convertBooleanSolid();
         void convertSphere();
         void convertOrb();

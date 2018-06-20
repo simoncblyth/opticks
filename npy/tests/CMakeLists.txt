@@ -15,6 +15,7 @@ set(_TEST_SOURCES
 
 FabStepTest.cc
 
+NXformTest.cc 
 
 EnvTest.cc
 NPYBaseTest.cc

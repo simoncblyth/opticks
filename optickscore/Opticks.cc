@@ -260,7 +260,12 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
 {
        OK_PROFILE("Opticks::Opticks");
 
-       assert( fOpticks == NULL ); // should only ever be one instance 
+
+       if(fOpticks != NULL)
+       {
+          LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
+       }
+       //assert( fOpticks == NULL ); // should only ever be one instance 
        fOpticks = this ; 
        init();
        (*m_log)("DONE");
@@ -439,7 +444,10 @@ void Opticks::init()
 
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
+
+    LOG(info) << " Opticks::init start instanciate resource " ;
     m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
+    LOG(info) << " Opticks::init done instanciate resource " ;
 
     setDetector( m_resource->getDetector() );
 

@@ -69,7 +69,9 @@ struct YOG_API Sc  // scene
                  const nmat4triple* transform, 
                  const std::string& boundary,
                  int   depth, 
-                 bool  selected);  
+                 bool  selected,
+                 Nd*   parent 
+                 );  
 
     int add_test_node(int lvIdx);
 
@@ -101,7 +103,7 @@ struct YOG_API Nd  // node
     int              depth ;
     const Sc*        scene ;   // TODO: maybe remove 
     bool             selected ; 
-    int              parent ; 
+    Nd*              parent ; 
 
     std::vector<int> children ; 
     std::string desc() const ;

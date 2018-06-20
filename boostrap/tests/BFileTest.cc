@@ -124,6 +124,15 @@ void test_FormPath_reldir()
 
 }
 
+void test_FormPath_edge()
+{
+    std::string x = BFile::FormPath("", "g4ok.gltf");
+    LOG(info) << "test_FormPath_edge"
+              << " " << x 
+              ;
+}
+
+
 
 void test_FormPath()
 {
@@ -437,7 +446,9 @@ int main(int argc, char** argv)
    //test_prefixShorten_0();
    //test_prefixShorten_1();
 
-   test_FileSize();
+   //test_FileSize();
+
+   test_FormPath_edge();
 
    return 0 ; 
 }

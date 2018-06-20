@@ -36,6 +36,7 @@ set(TEST_SOURCES
     CPhotonTest.cc
     CRandomEngineTest.cc
 
+    CX4GDMLTest.cc
 )
 
 

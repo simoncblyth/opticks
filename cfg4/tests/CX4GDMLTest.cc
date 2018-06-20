@@ -1,3 +1,5 @@
+// while CX4GDMLTest ; do sleep 0.2 ; done 
+
 #include <cassert>
 // cfg4--;op --cgdmldetector --dbg
 
@@ -23,6 +25,11 @@
 #include "GLMPrint.hpp"
 #include "GLMFormat.hpp"
 
+
+// x4-
+#include "X4PhysicalVolume.hh"
+
+
 #include "OPTICKS_LOG.hh"
 
 
@@ -35,9 +42,6 @@ int main(int argc, char** argv)
     Opticks ok(argc, argv);
 
     OpticksHub hub(&ok);
-
-    //OpticksCfg<Opticks>* m_cfg = m_opticks->getCfg();
-    //m_cfg->commandline(argc, argv);  
 
 
     OpticksQuery* query = ok.getQuery();   // non-done inside Detector classes for transparent control/flexibility 
@@ -55,31 +59,19 @@ int main(int argc, char** argv)
         return 0 ;  
     }
 
-
     detector->setVerbosity(2) ;
-
-    NPY<float>* gtransforms = detector->getGlobalTransforms();
-    gtransforms->save("$TMP/gdml.npy");
-
-    unsigned int index = 3160 ; 
-
-    glm::mat4 mg = detector->getGlobalTransform(index);
-    glm::mat4 ml = detector->getLocalTransform(index);
-
-    LOG(info) << " index " << index 
-              << " pvname " << detector->getPVName(index) 
-              << " global " << gformat(mg)
-              << " local "  << gformat(ml)
-              ;
 
     G4VPhysicalVolume* world_pv = detector->Construct();
     assert(world_pv);
 
-    CMaterialTable mt ; 
-    mt.dump("CGDMLDetectorTest CMaterialTable");
+    LOG(info) << "/////////////////////////////////////////////////" ;
 
-    CBorderSurfaceTable bst ; 
-    bst.dump("CGDMLDetectorTest CBorderSurfaceTable");
+
+
+   
+    GGeo* ggeo = X4PhysicalVolume::Convert(world_pv) ;
+    assert( ggeo ); 
+
 
     return 0 ; 
 }

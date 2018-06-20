@@ -20,6 +20,7 @@ a G4VSolid into a GMesh.
 class X4_API X4Mesh
 {
     public:
+        static GMesh* Placeholder(const G4VSolid* solid );
         static GMesh* Convert(const G4VSolid* solid );
     public:
         X4Mesh(const G4VSolid* solid); 

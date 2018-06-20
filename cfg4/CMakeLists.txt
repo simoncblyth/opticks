@@ -4,8 +4,12 @@ project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
 find_package(G4              REQUIRED MODULE)
+find_package(ExtG4           REQUIRED CONFIG) 
+
+
 find_package(OpticksXercesC  REQUIRED MODULE)
 find_package(OpticksGeo      REQUIRED CONFIG)
+
 
 
 set(SOURCES
@@ -199,6 +203,7 @@ add_library(${name} SHARED  ${SOURCES})
 
 target_link_libraries( ${name} PUBLIC 
    Opticks::G4
+   Opticks::ExtG4
    Opticks::OpticksXercesC
    Opticks::OpticksGeo
 )

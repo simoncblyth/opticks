@@ -59,7 +59,7 @@ NCSG::NCSG(const char* treedir)
    m_index(0),
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(0),
-   m_usedglobally(false),
+   m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
    m_root(NULL),
    m_points(NULL),
    m_uncoincide(NULL),
@@ -93,7 +93,7 @@ NCSG::NCSG(nnode* root )
    m_index(0),
    m_surface_epsilon(SURFACE_EPSILON),
    m_verbosity(root->verbosity),
-   m_usedglobally(false),
+   m_usedglobally(true),   // changed to true : June 2018, see notes/issues/subtree_instances_missing_transform.rst
    m_root(root),
    m_points(NULL),
    m_uncoincide(make_uncoincide()),

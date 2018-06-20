@@ -16,14 +16,23 @@ x4-cd(){  cd $(x4-dir) ; }
 x4-c(){   cd $(x4-dir) ; }
 x4--(){   opticks-- $(x4-dir) ; }
 
+
+
+x4-names-boolean(){ cat << EON
+UnionSolid
+IntersectionSolid
+SubtractionSolid
+EON
+} 
+
 x4-names()
 {
    local iwd=$PWD
    g4- 
+
+   x4-names-boolean
+
    cd $(g4-dir)/source/persistency/gdml/src
-
-   echo "BooleanSolid" 
-
    grep ==\"G4 G4GDMLWriteSolids.cc | perl -n -e 'm,\"G4(\w*)\", && print "$1\n" ' -  
    cd $iwd
 }

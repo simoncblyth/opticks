@@ -8,6 +8,7 @@
 #include "G4LogicalSkinSurface.hh"
 #include "G4LogicalBorderSurface.hh"
 #include "G4Material.hh"
+#include "G4VisExtent.hh"
 #include "G4VSolid.hh"
 #include "G4TransportationManager.hh"
 
@@ -20,7 +21,6 @@
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
 
-
 #include "YOG.hh"
 #include "YOGMaker.hh"
 
@@ -29,23 +29,31 @@ using YOG::Nd ;
 using YOG::Mh ; 
 using YOG::Maker ; 
 
+#include "SDigest.hh"
+#include "PLOG.hh"
+#include "BStr.hh"
+#include "BOpticksKey.hh"
 
 class NSensor ; 
 
+#include "NXform.hpp"  // header with the implementation
+template struct nxform<YOG::Nd> ; 
+
+#include "NGLMExt.hpp"
+#include "NCSG.hpp"
+#include "NNode.hpp"
+
 #include "GMesh.hh"
 #include "GVolume.hh"
+#include "GParts.hh"
 #include "GGeo.hh"
 #include "GMaterial.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
 #include "GBndLib.hh"
 
-#include "NXform.hpp"
-#include "BStr.hh"
-#include "BOpticksKey.hh"
 #include "Opticks.hh"
-#include "SDigest.hh"
-#include "PLOG.hh"
+
 
 
 const G4VPhysicalVolume* const X4PhysicalVolume::Top()
@@ -56,32 +64,40 @@ const G4VPhysicalVolume* const X4PhysicalVolume::Top()
 
 GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
 {
-    X4PhysicalVolume pv(top) ;  
+    const char* key = X4PhysicalVolume::Key(top) ; 
 
+    BOpticksKey::SetKey(key);
+    LOG(info) << " SetKey " ; 
+    //Opticks* ok = Opticks::GetOpticks() ; 
+    Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
+    LOG(info) << " ok-instanciated " ; 
+    GGeo* gg = new GGeo(ok) ;
+    LOG(info) << " gg-instanciated " ; 
+
+    X4PhysicalVolume xtop(gg, top) ;  
     //const char* path = "/tmp/X4PhysicalVolume/X4PhysicalVolume.gltf" ;
     const char* path = NULL ; 
-
-    pv.saveAsGLTF(path); 
-
-    GGeo* gg = pv.getGGeo();
+    xtop.saveAsGLTF(path); 
+ 
     return gg ; 
 }
 
-X4PhysicalVolume::X4PhysicalVolume(const G4VPhysicalVolume* const top)
+
+
+X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
     :
+    m_ggeo(ggeo),
     m_top(top),
-    m_key(Key(m_top)),
-    m_keyset(BOpticksKey::SetKey(m_key)),
-    m_ok(Opticks::GetOpticks()),  // Opticks instanciation must be after BOpticksKey::SetKey
+    m_ok(m_ggeo->getOpticks()), 
     m_gltfpath(m_ok->getGLTFPath()),
-    m_ggeo(new GGeo(m_ok)),
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
     m_blib(m_ggeo->getBndLib()),
-    m_xform(new nxform(0,false)),
+    m_xform(new nxform<YOG::Nd>(0,false)),
     m_sc(new YOG::Sc(0)),
     m_maker(new YOG::Maker(m_sc)),
-    m_verbosity(m_ok->getVerbosity())
+    m_verbosity(m_ok->getVerbosity()),
+    m_ndCount(0)
 {
     init();
 }
@@ -256,7 +272,7 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 
 
 /**
-TraverseVolumeTree
+convertStructure
 --------------------
 
 Moving convertNode to postorder position in the tail, 
@@ -272,18 +288,9 @@ converted to glTF later.  This is done to help keeping
 this code independant of the actual glTF implementation 
 used.
 
-TODO: contrast with AssimpGGeo::convertStructure
-
-* need to create GVolume(GNode) and hookem up into a tree here, but 
-  YOG::Nd is also needed 
-
-  * maybe add a void* "aux" slot to GNode to passively hold the YOG::Nd  
-    then can return GVolume(GNode) in the traverse but still have the 
-    much simpler YOG::Nd to work with YOG::Maker
- 
+* NB this is very similar to AssimpGGeo::convertStructure, GScene::createVolumeTree
 
 **/
-
 
 void X4PhysicalVolume::convertStructure()
 {
@@ -294,63 +301,38 @@ void X4PhysicalVolume::convertStructure()
      GVolume* parent = NULL ; 
      const G4VPhysicalVolume* parent_pv = NULL ; 
      int depth = 0 ;
-     int preorder = 0 ; 
 
      IndexTraverse(pv, depth);
 
-     m_root = convertTree_r(pv, parent, depth, preorder, parent_pv );
+     m_root = convertTree_r(pv, parent, depth, parent_pv );
 
      LOG(info) << " convertStructure END  " << m_sc->desc() ; 
 }
 
 
-GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, int preorder, const G4VPhysicalVolume* const parent_pv )
+GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv )
 {
-     GVolume* volume = convertNode(pv, depth, preorder, parent_pv );
-
-     YOG::Nd* nd = static_cast<YOG::Nd*>(volume->getParallelNode()) ;
-     YOG::Nd* parent_nd = parent ? static_cast<YOG::Nd*>(parent->getParallelNode()) : NULL ;
-
-     if(parent) 
-     {
-         parent->addChild(volume);
-         volume->setParent(parent);
-     } 
-
-     if(parent_nd)
-     {
-         parent_nd->children.push_back(nd->ndIdx);
-     }
-
-     // TODO: need parent hookup, somewhere here, then can form the global
-
+     GVolume* volume = convertNode(pv, parent, depth, parent_pv );
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
-
-     preorder += 1 ; 
   
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-         convertTree_r(child_pv, volume, depth+1, preorder, pv );
+         convertTree_r(child_pv, volume, depth+1, pv );
      }
 
      return volume   ; 
 }
 
-/**
-X4PhysicalVolume::convertNodeVisit
-------------------------------------
-**/
 
-GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, int depth, int preorder, const G4VPhysicalVolume* const pv_p )
+unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const G4VPhysicalVolume* const pv_p )
 {
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4LogicalVolume* const lv_p = pv_p ? pv_p->GetLogicalVolume() : NULL ;
 
      const G4Material* const imat = lv->GetMaterial() ;
-     const G4Material* const omat = lv_p ? lv_p->GetMaterial() : imat ;   
-     // treat parent of world as same material as world
+     const G4Material* const omat = lv_p ? lv_p->GetMaterial() : imat ;  // top omat -> imat 
 
      bool first_priority = true ;  
      const G4LogicalSurface* const isur = findSurface( pv  , pv_p , first_priority );
@@ -363,61 +345,98 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, int de
                                                 X4::ShortName(isur),  
                                                 X4::ShortName(imat)       
                                             );
+     return boundary ; 
+}
+
+
+GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p )
+{
+     YOG::Nd* parent_nd = parent ? static_cast<YOG::Nd*>(parent->getParallelNode()) : NULL ;
+
+     unsigned boundary = addBoundary( pv, pv_p );
      std::string boundaryName = m_blib->shortname(boundary); 
-     guint4 bnd = m_blib->getBnd(boundary); 
-     int materialIdx = m_mlib->getIndex(X4::ShortName(imat)) ;
-     assert( materialIdx == bnd.w ); 
+     int materialIdx = m_blib->getInnerMaterial(boundary); 
 
-
-     // from a prior postorder IndexTraverse, to match the lvIdx obtained from GDML 
-     // mesh identity is based on lvIdx 
-     int lvIdx = m_lvidx[lv] ;  
-
+     const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4VSolid* const solid = lv->GetSolid();
-     const std::string& lvName = lv->GetName() ;
-     const std::string& pvName = pv->GetName() ; 
-     const std::string& soName = solid->GetName() ; 
-     bool selected  = true ; 
+
+     int lvIdx = m_lvidx[lv] ;   // from postorder IndexTraverse, to match GDML lvIdx : mesh identity uses lvIdx
 
      glm::mat4* xf_local = X4Transform3D::GetLocalTransform(pv); 
-     const nmat4triple* transform = m_xform->make_triple( glm::value_ptr(*xf_local) ) ; 
+     const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(*xf_local) ) ; 
 
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
                                  materialIdx,
-                                 lvName,
-                                 pvName,
-                                 soName,
-                                 transform,
+                                 lv->GetName(),
+                                 pv->GetName(),
+                                 solid->GetName(),
+                                 ltriple,
                                  boundaryName,
                                  depth,
-                                 selected
+                                 true,     // selected
+                                 parent_nd
                                );
 
-     assert( ndIdx == preorder ); 
-
      Nd* nd = m_sc->get_node(ndIdx) ; 
+
+     LOG(info) << "convertNode " 
+               << " ndIdx "  << ndIdx 
+               << " soIdx "  << nd->soIdx 
+               ;
+
+     assert( ndIdx == m_ndCount ); 
+     m_ndCount += 1 ; 
+
+     const nmat4triple* gtriple = nxform<YOG::Nd>::make_global_transform(nd) ; 
+     glm::mat4 xf_global = gtriple->t ;
+     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
+
      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
 
-     if(mh->csg == NULL) convertSolid(mh, solid);
+     std::vector<unsigned> skips = {11, 13 };
 
-     GMesh* mesh = mh->mesh ;  
-     // CAUTION : AssimpGGeo::convertMeshes does some mesh processing (deduping, fixing) 
-     // before inclusion in the GVolume(GNode) 
+     if(mh->csg == NULL)
+     {
+         //convertSolid(mh, solid);
+         mh->csg = X4Solid::Convert(solid) ;   
 
-     GParts* pts = NULL ;   // TODO: get GParts setup from recursive vistor GScene::createVolume 
+         bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
+
+         mh->mesh = placeholder ? X4Mesh::Placeholder(solid) : X4Mesh::Convert(solid) ; 
+       
+         mh->vtx = mh->mesh->m_x4src_vtx ; 
+         mh->idx = mh->mesh->m_x4src_idx ; 
+     }
+
+     assert( mh->csg ); 
+
+     mh->csg->set_boundary( boundaryName.c_str() ) ; 
+     NCSG* csg = NCSG::FromNode( mh->csg, NULL ); 
+     assert( csg ) ; 
+     assert( csg->isUsedGlobally() );
+
+     GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
+
+     GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+
+     // metadata needs to be transferred, like in GScene ?
+
      NSensor* sensor = NULL ; 
 
-     glm::mat4 xf_global ; // placeholder, until have parent hookup so can get the global
-     GMatrixF* gtransform = new GMatrix<float>(glm::value_ptr(xf_global));
      GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(*xf_local));
 
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
 
      volume->setLevelTransform(ltransform);
-
      volume->setParallelNode( nd ); 
      volume->setParts( pts ); 
+
+     if(parent) 
+     {
+         parent->addChild(volume);
+         volume->setParent(parent);
+     } 
 
      return volume ; 
 }
@@ -439,11 +458,5 @@ the source NPY arrays are also tacked on to the Mh instance.
 
 void X4PhysicalVolume::convertSolid( Mh* mh, const G4VSolid* const solid)
 {
-     mh->csg = X4Solid::Convert(solid) ;   
-
-     GMesh* mesh = X4Mesh::Convert(solid) ; 
-     mh->mesh = mesh ; 
-     mh->vtx = mesh->m_x4src_vtx ; 
-     mh->idx = mesh->m_x4src_idx ; 
 } 
 

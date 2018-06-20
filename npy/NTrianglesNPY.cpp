@@ -13,6 +13,8 @@
 
 #include "NTris.hpp"
 
+#include "PLOG.hh"
+
 #ifdef _MSC_VER
 // instanciations of 'NTrianglesNPY' raise warning:
 //    object allocated on the heap may not be aligned 16
@@ -26,19 +28,30 @@
 const char* NTrianglesNPY::PLACEHOLDER = "PLACEHOLDER" ; 
 
 
-NPY<float>* NTrianglesNPY::getBuffer()
-{
-    assert(0) ; // move to getTris
-    return m_tris ; 
-}
 
-NPY<float>* NTrianglesNPY::getTris()
+NPY<float>* NTrianglesNPY::getTris() const 
 {
     return m_tris ; 
 }
-NPY<float>* NTrianglesNPY::getNormals()
+NPY<float>* NTrianglesNPY::getNormals() const 
 {
     return m_normals ; 
+}
+
+float NTrianglesNPY::maxdiff( const NTrianglesNPY* other, bool dump )
+{
+    return m_tris->maxdiff( other->getTris(), dump ); 
+}
+
+
+
+void NTrianglesNPY::dump(const char* msg) const 
+{
+    LOG(info) << "NTrianglesNPY::dump"
+              << " tris " << m_tris->getShapeString()
+              ;
+
+    m_tris->dump(msg);
 }
 
 
@@ -314,6 +327,74 @@ NTrianglesNPY* NTrianglesNPY::icosahedron()
     return tris ;
 }
 
+
+
+
+NTrianglesNPY* NTrianglesNPY::from_indexed( NPY<float>* vtx, NPY<unsigned>* idx )
+{
+    assert( vtx->hasShape( -1, 3) && idx->hasShape(-1,3) );
+    // each idx entry of 3 unsigned ints points to three vertices of the triangle
+     
+    unsigned nvtx = vtx->getShape(0) ; 
+    unsigned ntri = idx->getShape(0) ; 
+
+    LOG(info) << " idx " << idx->getShapeString() ; 
+    LOG(info) << " vtx " << vtx->getShapeString() ; 
+
+    NTrianglesNPY* tris = new NTrianglesNPY();
+
+    for(unsigned i=0 ; i < ntri ; i++)
+    {
+        unsigned v0 = idx->getValue( i, 0, 0,  0 );
+        unsigned v1 = idx->getValue( i, 0, 0,  1 );
+        unsigned v2 = idx->getValue( i, 0, 0,  2 );
+ 
+        assert( v0 < nvtx );
+        assert( v1 < nvtx );
+        assert( v2 < nvtx );
+
+        glm::vec3 vtx0 ; 
+        vtx0.x = vtx->getValue( v0, 0, 0,  0 );
+        vtx0.y = vtx->getValue( v0, 0, 0,  1 );
+        vtx0.z = vtx->getValue( v0, 0, 0,  2 );
+
+        glm::vec3 vtx1 ; 
+        vtx1.x = vtx->getValue( v1, 0, 0,  0 );
+        vtx1.y = vtx->getValue( v1, 0, 0,  1 );
+        vtx1.z = vtx->getValue( v1, 0, 0,  2 );
+
+        glm::vec3 vtx2 ; 
+        vtx2.x = vtx->getValue( v2, 0, 0,  0 );
+        vtx2.y = vtx->getValue( v2, 0, 0,  1 );
+        vtx2.z = vtx->getValue( v2, 0, 0,  2 );
+
+        tris->add( vtx0, vtx1, vtx2 );
+    }
+    return tris ;
+}
+
+void NTrianglesNPY::to_vtxidx(NVtxIdx& vtxidx) 
+{
+    assert( m_tris->hasShape(-1,3,3) );  // items with 3*3 float for each tri
+    unsigned ntri = m_tris->getShape(0) ; 
+
+    NPY<float>* vtx = NPY<float>::copy( m_tris ) ;
+    vtx->reshape( ntri*3 , 3 );
+
+    NPY<unsigned>* idx = NPY<unsigned>::make( ntri, 3 ) ;
+    idx->zero();
+
+    vtxidx.vtx = vtx ;   // duplicate vertices for each use in a face     
+    vtxidx.idx = idx ; 
+
+
+    for(unsigned i=0 ; i < ntri ; i++)
+    {
+        idx->setValue( i, 0, 0,  0,  i*3+0  );
+        idx->setValue( i, 0, 0,  1,  i*3+1  );
+        idx->setValue( i, 0, 0,  2,  i*3+2  );
+    }
+}
 
 
 

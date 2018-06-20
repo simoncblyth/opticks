@@ -323,6 +323,7 @@ NTreeBuilder.hpp
 NTreeTools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp
+NGLMCF.hpp
 
 NSnapConfig.hpp
 NLODConfig.hpp

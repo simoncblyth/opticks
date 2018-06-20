@@ -49,6 +49,7 @@ BOpticksResource::BOpticksResource(const char* envprefix)
     m_idfile(NULL),
     m_idname(NULL),
     m_idpath(NULL),
+    m_idpath_tmp(NULL),
     m_debugging_idpath(NULL),
     m_debugging_idfold(NULL),
     m_daepath(NULL),
@@ -148,6 +149,8 @@ std::string BOpticksResource::getGeoCachePath(const char* rela, const char* relb
 std::string BOpticksResource::getIdPathPath(const char* rela, const char* relb, const char* relc, const char* reld ) const 
 {
     const char* idpath = getIdPath(); 
+    LOG(info) << " idpath " << idpath ; 
+
     std::string path = BFile::FormPath(idpath, rela, relb, relc, reld ) ;
     return path ;
 }
@@ -367,6 +370,14 @@ void BOpticksResource::setupViaKey()
     m_res->addDir("idfold", m_idfold ); 
 
     std::string idpath = getGeoCachePath( m_idname, m_idfile, m_srcdigest, layout );
+
+    LOG(info)
+           <<  " idname " << m_idname 
+           <<  " idfile " << m_idfile 
+           <<  " srcdigest " << m_srcdigest
+           <<  " idpath " << idpath 
+            ;
+
     m_idpath = strdup(idpath.c_str()) ; 
     m_res->addDir("idpath", m_idpath ); 
 
@@ -487,6 +498,12 @@ void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for te
 } 
 const char* BOpticksResource::getIdPath() const 
 {
+
+    LOG(info) << "getIdPath"
+              << " idpath_tmp " << m_idpath_tmp 
+              << " idpath " << m_idpath
+              ; 
+
     return m_idpath_tmp ? m_idpath_tmp : m_idpath  ;
 }
 const char* BOpticksResource::getIdFold() const 
