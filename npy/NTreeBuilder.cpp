@@ -143,13 +143,15 @@ T* NTreeBuilder<T>::build_r( int elevation )
     {
         T* left = build_r( elevation - 1 );
         T* right = build_r( elevation - 1 );
-        node = new T(T::make_node( m_operator , left , right )); 
+        //node = new T(T::make_node( m_operator , left , right )); 
+        node = T::make_operator_ptr(m_operator, left, right ) ; 
     }
     else
     {
         T* left =  new T(T::make_node( CSG_ZERO )); 
         T* right =  new T(T::make_node( CSG_ZERO )); 
-        node = new T(T::make_node( m_operator , left , right )); 
+        //node = new T(T::make_node( m_operator , left , right )); 
+        node = T::make_operator_ptr(m_operator, left, right ) ; 
     }
     return node ; 
 }
@@ -170,13 +172,16 @@ void NTreeBuilder<T>::populate()
             if(node->left->is_zero() && cprims.size() > 0)
             {
                T* back = cprims.back() ;
-               node->left = new T(*back) ; 
-               cprims.pop_back();  // hmm this will destroy it ?
+               //node->left = new T(*back) ; // <-- this caused bbox infinite recursion, as it drops the vtable : see NTreeBuilderTest
+               node->left = back->make_copy();
+
+               cprims.pop_back();  // popping destroys it, so need the copy 
             }         
             if(node->right->is_zero() && cprims.size() > 0)
             {
                T* back = cprims.back() ;
-               node->right = new T(*back) ; 
+               //node->right = new T(*back) ;   // ditto
+               node->right = back->make_copy();
                cprims.pop_back(); 
             }         
         }
@@ -231,7 +236,7 @@ void NTreeBuilder<T>::prune_r(T* node)
 
 
 #include "NNode.hpp"
-#include "no.hpp"
+#include "No.hpp"
 template class NTreeBuilder<nnode> ; 
 template class NTreeBuilder<no> ; 
 

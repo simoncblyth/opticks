@@ -94,7 +94,7 @@ std::string NGrid<T>::desc()
 }
 
 
-#include "no.hpp"
+#include "No.hpp"
 #include "NNode.hpp"
 
 template struct NGrid<nnode> ; 

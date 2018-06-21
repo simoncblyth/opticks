@@ -72,6 +72,9 @@ GMesh* GMeshMaker::make_mesh(NPY<float>* vtx3, NPY<unsigned>* tri3, unsigned int
 
     // expedient workaround, as YOG needs NPY buffers
     // but the GMesh manages to loose them thanks to using GBuffer
+
+    tri3->reshape(-1,1);
+
     mesh->m_x4src_vtx = vtx3 ;  
     mesh->m_x4src_idx = tri3 ;  
 

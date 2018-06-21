@@ -27,7 +27,7 @@ void test_collect_surface_points()
     nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
     b.transform = nmat4triple::make_translate( tlate );    
 
-    nintersection ab = make_intersection(&a, &b); 
+    nintersection ab = nintersection::make_intersection(&a, &b); 
 
     a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
     b.parent = &ab ;   

@@ -333,10 +333,10 @@ void NPY<T>::add(T x, T y, T z, T w)
 
 
 template <typename T>
-void NPY<T>::minmax(T& mi_, T& mx_)
+void NPY<T>::minmax(T& mi_, T& mx_) const 
 {
     unsigned int nv = getNumValues(0);
-    T* vv = getValues();
+    const T* vv = getValuesConst();
 
     //T mx(std::numeric_limits<T>::min()); 
     T mx(std::numeric_limits<T>::lowest()); 
@@ -353,13 +353,13 @@ void NPY<T>::minmax(T& mi_, T& mx_)
 }
 
 template <typename T>
-void NPY<T>::minmax_strided(T& mi_, T& mx_, unsigned stride, unsigned offset)
+void NPY<T>::minmax_strided(T& mi_, T& mx_, unsigned stride, unsigned offset) const 
 {
     unsigned int nv = getNumValues(0);
     assert( nv % stride == 0);
     assert( offset < stride);
 
-    T* vv = getValues();
+    const T* vv = getValuesConst();
 
     //T mx(std::numeric_limits<T>::min()); 
     T mx(std::numeric_limits<T>::lowest()); 
@@ -381,7 +381,7 @@ void NPY<T>::minmax_strided(T& mi_, T& mx_, unsigned stride, unsigned offset)
 
 
 template <typename T>
-void NPY<T>::minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_)
+void NPY<T>::minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_) const 
 {
     minmax_strided( mi_.x , mx_.x,  3, 0 );
     minmax_strided( mi_.y , mx_.y,  3, 1 );
@@ -389,7 +389,7 @@ void NPY<T>::minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_)
 }
 
 template <typename T>
-void NPY<T>::minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_)
+void NPY<T>::minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_) const 
 {
     minmax_strided( mi_.x , mx_.x,  4, 0 );
     minmax_strided( mi_.y , mx_.y,  4, 1 );
@@ -399,7 +399,7 @@ void NPY<T>::minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_)
 
 
 template <typename T>
-void NPY<T>::minmax(std::vector<T>& min_,  std::vector<T>& max_)
+void NPY<T>::minmax(std::vector<T>& min_,  std::vector<T>& max_) const 
 {
     unsigned nelem = getNumElements(); 
     min_.resize(nelem); 
@@ -414,7 +414,7 @@ void NPY<T>::minmax(std::vector<T>& min_,  std::vector<T>& max_)
 
 
 template <typename T>
-ntrange3<T> NPY<T>::minmax3()
+ntrange3<T> NPY<T>::minmax3() const 
 {
     ntrange3<T> r ; 
     minmax3( r.min , r.max );
@@ -422,7 +422,7 @@ ntrange3<T> NPY<T>::minmax3()
 }
 
 template <typename T>
-ntrange4<T> NPY<T>::minmax4()
+ntrange4<T> NPY<T>::minmax4() const 
 {
     ntrange4<T> r ; 
     minmax4( r.min , r.max );
@@ -433,7 +433,7 @@ ntrange4<T> NPY<T>::minmax4()
 
 
 template <typename T>
-bool NPY<T>::isConstant(T val)
+bool NPY<T>::isConstant(T val) const 
 {
     T mi(0);
     T mx(0);

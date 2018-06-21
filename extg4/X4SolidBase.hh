@@ -40,7 +40,7 @@ class X4_API X4SolidBase
         static G4Tubs*   MakeTubs(const char* name, float rmin, float rmax, float hz, float startphi=0.f, float deltaphi=360.f );
         static G4Orb*    MakeOrb(const char* name, float radius);
         static G4Sphere* MakeSphere(const char* name, float rmax, float rmin=0.f );
-        static G4Sphere* MakeZSphere(const char* name, float rmax, float rmin=0.f, float startTheta=0.f, float deltaTheta=180.f );
+        static G4Sphere* MakeZSphere(const char* name, float rmin, float rmax, float startPhi=0.f, float deltaPhi=360.f,float startTheta=0.f, float deltaTheta=180.f );
     public:
         X4SolidBase(const G4VSolid* solid); 
         nnode* root() const ;

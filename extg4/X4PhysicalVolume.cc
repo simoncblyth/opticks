@@ -114,7 +114,6 @@ void X4PhysicalVolume::init()
     convertStructure();
 }
 
-
 void X4PhysicalVolume::convertMaterials()
 {
     size_t num_materials0 = m_mlib->getNumMaterials() ;
@@ -237,17 +236,42 @@ const char* X4PhysicalVolume::Key(const G4VPhysicalVolume* const top )
 
 void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int depth)
 {
-    const G4LogicalVolume* const lv = pv->GetLogicalVolume() ;
+    const G4LogicalVolume* lv = pv->GetLogicalVolume() ;
     for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
     {
         const G4VPhysicalVolume* const daughter_pv = lv->GetDaughter(i);
         IndexTraverse( daughter_pv , depth + 1 );
     }
-    // record the tail/postorder idx for the lv
-    m_lvidx[lv] = m_lvidx.size(); 
+
+
+    // for newly encountered lv record the tail/postorder idx for the lv
+    if(std::find(m_lvlist.begin(), m_lvlist.end(), lv) == m_lvlist.end())
+    {
+        m_lvidx[lv] = m_lvlist.size(); 
+        m_lvlist.push_back(lv);  
+    }  
+    
+
+
 }
 
+void X4PhysicalVolume::dumpLV()
+{
+   LOG(info)
+        << " m_lvidx.size() " << m_lvidx.size() 
+        << " m_lvlist.size() " << m_lvlist.size() 
+        ;
 
+   for(unsigned i=0 ; i < m_lvlist.size() ; i++)
+   {
+       const G4LogicalVolume* lv = m_lvlist[i] ; 
+       std::cout 
+           << " i " << std::setw(5) << i
+           << " idx " << std::setw(5) << m_lvidx[lv]  
+           << " lv "  << lv->GetName()
+           << std::endl ;  
+   }
+}
 
 G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
 {
@@ -266,10 +290,6 @@ G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const 
 
      return surf ; 
 }
-
-
-
-
 
 /**
 convertStructure
@@ -303,6 +323,7 @@ void X4PhysicalVolume::convertStructure()
      int depth = 0 ;
 
      IndexTraverse(pv, depth);
+     dumpLV();
 
      m_root = convertTree_r(pv, parent, depth, parent_pv );
 
@@ -383,6 +404,8 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      LOG(info) << "convertNode " 
                << " ndIdx "  << ndIdx 
                << " soIdx "  << nd->soIdx 
+               << " lvIdx "  << lvIdx 
+               << " soName " << solid->GetName()
                ;
 
      assert( ndIdx == m_ndCount ); 
@@ -394,12 +417,12 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
 
-     std::vector<unsigned> skips = {11, 13 };
+     std::vector<unsigned> skips = {27, 29, 33 };
 
      if(mh->csg == NULL)
      {
          //convertSolid(mh, solid);
-         mh->csg = X4Solid::Convert(solid) ;   
+         mh->csg = X4Solid::Convert(solid) ;  // soIdx 33 giving analytic problems too 
 
          bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
 
@@ -416,7 +439,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      assert( csg ) ; 
      assert( csg->isUsedGlobally() );
 
-     GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
+     const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
 

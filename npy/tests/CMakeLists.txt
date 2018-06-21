@@ -67,6 +67,7 @@ NCylinderTest.cc
 NDiscTest.cc
 NConeTest.cc
 NConvexPolyhedronTest.cc
+NConvexPolyhedronSegmentTest.cc
 
 NNodeTest.cc
 NNodeDumpTest.cc

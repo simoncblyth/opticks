@@ -83,8 +83,8 @@ void test_diff_DeMorgan_sdf()
     nsphere c = make_sphere(0.f,0.f, 50.f,100.f);
     c.complement = true ; 
 
-    ndifference   d = make_difference( &a, &b ); 
-    nintersection i = make_intersection( &a, &c ); 
+    ndifference   d = ndifference::make_difference( &a, &b ); 
+    nintersection i = nintersection::make_intersection( &a, &c ); 
 
     float epsilon = 1e-5 ; 
     float x = 0.f ; 
@@ -115,11 +115,11 @@ void test_csgsdf()
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    nunion u = make_union( &a, &b );
-    nintersection i = make_intersection( &a, &b ); 
-    ndifference d1 = make_difference( &a, &b ); 
-    ndifference d2 = make_difference( &b, &a ); 
-    nunion u2 = make_union( &d1, &d2 );
+    nunion u = nunion::make_union( &a, &b );
+    nintersection i = nintersection::make_intersection( &a, &b ); 
+    ndifference d1 = ndifference::make_difference( &a, &b ); 
+    ndifference d2 = ndifference::make_difference( &b, &a ); 
+    nunion u2 = nunion::make_union( &d1, &d2 );
 
     typedef std::vector<nnode*> VN ;
 
@@ -188,7 +188,7 @@ void test_bbox_u()
 {
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
-    nunion  u = make_union( &a, &b );
+    nunion  u = nunion::make_union( &a, &b );
 
     a.dump("(a) sph");
     b.dump("(b) sph");

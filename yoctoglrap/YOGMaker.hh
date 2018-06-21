@@ -45,13 +45,15 @@ typedef enum { POINTS, LINES, LINE_LOOP, LINE_STRIP, TRIANGLES, TRIANGLE_STRIP, 
 
 struct YOG_API Maker 
 {
+    static void SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const char* path);
+
     void demo_create(const Geometry& geom );
 
     Maker(Sc* sc_=NULL, bool saveNPYToGLTF_=false );  
     void convert();
 
     template <typename T> 
-    int add_buffer( NPY<T>* buffer, const char* uri ); 
+    int add_buffer( const NPY<T>* buffer, const char* uri ); 
     int add_bufferView( int bufferIdx, TargetType_t targetType ); 
     int add_accessor( int bufferViewIdx, int count, Type_t type, ComponentType_t componentType ) ;
     void set_accessor_min_max(int accessorIdx, const std::vector<float>& minf , const std::vector<float>& maxf );

@@ -21,6 +21,7 @@
 #include "X4Solid.hh"
 #include "BStr.hh"
 
+#include "OpticksCSG.h"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
 #include "NGLM.hpp"
@@ -171,12 +172,11 @@ void X4Solid::convertBooleanSolid()
     const G4BooleanSolid* const solid = static_cast<const G4BooleanSolid*>(m_solid);
     assert(solid); 
 
-    typedef enum { _intersection, _subtraction, _union, _error } Boolean_t ;     
-    Boolean_t _operator = _error ;  
-    if      (dynamic_cast<const G4IntersectionSolid*>(solid)) _operator = _intersection ;
-    else if (dynamic_cast<const G4SubtractionSolid*>(solid))  _operator = _subtraction ;
-    else if (dynamic_cast<const G4UnionSolid*>(solid))        _operator = _union ;
-    assert( _operator != _error ) ;
+    OpticksCSG_t _operator = CSG_ZERO ; 
+    if      (dynamic_cast<const G4IntersectionSolid*>(solid)) _operator = CSG_INTERSECTION ;
+    else if (dynamic_cast<const G4SubtractionSolid*>(solid))  _operator = CSG_DIFFERENCE ;
+    else if (dynamic_cast<const G4UnionSolid*>(solid))        _operator = CSG_UNION ;
+    assert( _operator != CSG_ZERO ) ;
 
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));
     G4VSolid* right = const_cast<G4VSolid*>(solid->GetConstituentSolid(1));
@@ -196,15 +196,8 @@ void X4Solid::convertBooleanSolid()
 
     nnode* a = xleft->root(); 
     nnode* b = xright->root(); 
+    nnode* n = nnode::make_operator_ptr( _operator, a, b ); 
 
-    nnode* n = NULL ; 
-    switch(_operator)
-    {
-        case _intersection : { nintersection*  i = new nintersection(make_intersection( a, b )) ; n = (nnode*)i ; break ; } 
-        case _union        : { nunion*         u = new nunion(make_union( a, b ))               ; n = (nnode*)u ; break ; }
-        case _subtraction  : { ndifference*    d = new ndifference(make_difference( a, b ))     ; n = (nnode*)d ; break ; }
-        default            : { assert(0) ; break ; } 
-    }
     setRoot(n); 
 }
 
@@ -263,19 +256,33 @@ nnode* X4Solid::convertSphere_(bool only_inner)
         cn->label = BStr::concat(m_name, "_nsphere", NULL ) ; 
     }
     
-    nnode* ret = has_inner ? new ndifference(make_difference(cn, inner)) : cn  ; 
+    nnode* ret = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner) : cn ; 
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
   
 
     float startPhi = solid->GetStartPhiAngle()/degree ; 
     float deltaPhi = solid->GetDeltaPhiAngle()/degree ; 
     bool has_deltaPhi = deltaPhi < 360.f ; 
-    assert( startPhi >= 0.f && !has_deltaPhi ); 
+    
+    //assert( startPhi >= 0.f && !has_deltaPhi ); 
+    // CAUTION : deltaphi_slab_segment_enabled is switched off in the python
 
-    // deltaphi_slab_segment_enabled is switched off in the python
-    // so need some checking python side before porting
+    // phi segment radius segR rotates around origin in x-y plane,
+    //  z limited +- segZ/2 
 
-    return ret ; 
+
+    bool deltaPhi_segment_enabled = true ; 
+    float segZ = radius*1.01 ; 
+    float segR = radius*1.5 ;   
+
+    nnode* result =  has_deltaPhi && deltaPhi_segment_enabled 
+                  ?
+                     intersectWithPhiSegment(ret, startPhi, deltaPhi, segZ, segR ) 
+                  :
+                     ret 
+                  ;
+
+    return result ; 
 }
 
 
@@ -382,7 +389,7 @@ void X4Solid::convertTubs()
     nnode* outer = new ncylinder(make_cylinder(rmax, -hz, hz));
     outer->label = BStr::concat( m_name, "_outer", NULL ); 
 
-    nnode* tube = has_inner ? new ndifference(make_difference(outer, inner)) : outer ; 
+    nnode* tube = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, outer, inner) : outer ; 
     tube->label = BStr::concat( m_name, "_difference", NULL );
 
     bool deltaPhi_segment_enabled = true ; 
@@ -409,18 +416,43 @@ void X4Solid::convertTubs()
 }
 
 
+/**
+X4Solid::intersectWithPhiSegment
+---------------------------------
+
+* suffers degeneracy collapse from segment to a plane when deltaPhi = 180 
+
+**/
+
 nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float deltaPhi, float segZ, float segR )  
 {
     bool has_deltaphi = deltaPhi < 360.f ; 
     assert( has_deltaphi ) ; 
 
-    float phi0 = startPhi ; 
-    float phi1 = startPhi + deltaPhi ; 
+    nnode* segment = NULL ; 
+  
+    if( startPhi == 0.f && deltaPhi == 180.f )
+    {
+        LOG(error) << " special cased startPhi == 0.f && deltaPhi == 180.f " ; 
 
-    nnode* segment = nconvexpolyhedron::make_segment(phi0, phi1, segZ, segR );  
-    segment->label = BStr::concat(m_name, "_segment", NULL); 
+        nbbox bb = whole->bbox();
+        float sx = bb.max.x - bb.min.x ; 
+        float sy = bb.max.y - bb.min.y ; 
+        float sz = bb.max.z - bb.min.z ; 
 
-    nnode* result = new nintersection(make_intersection(whole, segment)); 
+        segment = new nbox(make_box3(sx,sy,sz));  
+        //segment.transform = nmat4triple::make_transform(
+        segment->label = BStr::concat(m_name, "_segment_box", NULL); 
+    }
+    else
+    {
+        float phi0 = startPhi ; 
+        float phi1 = startPhi + deltaPhi ; 
+        segment = nconvexpolyhedron::make_segment(phi0, phi1, segZ, segR );  
+        segment->label = BStr::concat(m_name, "_segment_wedge", NULL); 
+    }
+
+    nnode* result = nnode::make_operator_ptr(CSG_INTERSECTION, whole, segment); 
     result->label = BStr::concat(m_name, "_intersection", NULL); 
 
     return result ;   
@@ -480,7 +512,7 @@ nnode* X4Solid::convertCons_(bool only_inner)
     nnode* cn = new ncone(make_cone(r1,z1,r2,z2)) ;
     cn->label = BStr::concat(m_name, "_cn", NULL ) ; 
 
-    nnode* ret = has_inner ? new ndifference(make_difference(cn, inner)) : cn  ; 
+    nnode* ret = has_inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner) : cn ; 
     if(has_inner) ret->label = BStr::concat(m_name, "_ndifference", NULL ) ; 
 
 
@@ -684,7 +716,7 @@ void X4Solid::convertPolycone()
         inner->label = BStr::concat( m_name, "_inner_cylinder", NULL  ); 
     }
 
-    nnode* result = inner ? new ndifference(make_difference( cn, inner ))  : cn ; 
+    nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
     setRoot(result); 
 }
 
@@ -740,7 +772,7 @@ nnode* X4Solid::convertHype_(bool only_inner)
     nnode* cn = new nhyperboloid(make_hyperboloid( radius, zf, z1, z2 ));
     cn->label = BStr::concat(m_name, "_hyperboloid", NULL ) ; 
     
-    nnode* result = inner ? new ndifference(make_difference( cn, inner ))  : cn ; 
+    nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
     return result ; 
 }
 

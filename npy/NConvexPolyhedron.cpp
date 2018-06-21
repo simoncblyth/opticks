@@ -12,6 +12,29 @@
 #include "PLOG.hh"
 
 
+void nconvexpolyhedron::check_planes() const 
+{
+    unsigned num_planes = planes.size(); 
+    for(unsigned i=0 ; i < num_planes ; i++)
+    {
+        const glm::vec4& plane = planes[i]; 
+        glm::vec3 pnorm(plane.x, plane.y, plane.z );
+
+        bool non_negative = plane.w >= 0.f ;  
+        if( !non_negative )
+        {
+            LOG(fatal) << " unexpected negative plane.w " << plane.w ; 
+            std::cout 
+            << " pl: " << gpresent(plane)
+            << std::endl 
+             ;
+        }
+        //assert( non_negative );// <-- TODO: assert elsewhere in lifecycle
+        // for CSG_SEGMENT two planes include the origin, so allow zero
+
+    }
+}
+
 
 float nconvexpolyhedron::operator()(float x, float y, float z) const 
 {
@@ -31,10 +54,11 @@ float nconvexpolyhedron::operator()(float x, float y, float z) const
         const glm::vec4& plane = planes[i]; 
         glm::vec3 pnorm(plane.x, plane.y, plane.z );
 
-        assert( plane.w >= 0.f );// <-- TODO: assert elsewhere in lifecycle
         // for CSG_SEGMENT two planes include the origin, so allow zero
-
         float pdist = plane.w ; 
+
+        bool non_negative = pdist >= 0.f ;  
+        assert( non_negative );  // segment with 180 giving -ve dist ??
 
         float d0 = glm::dot(pnorm, glm::vec3(q)) ;   // distance from q to the normal plane thru origin
         if(d0 == 0.f) continue ; 

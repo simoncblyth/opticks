@@ -1,5 +1,6 @@
 #pragma once
 
+#include <vector>
 #include <map>
 
 class G4LogicalSurface ; 
@@ -69,6 +70,7 @@ class X4_API X4PhysicalVolume
         void convertStructure(); 
     private:
         void IndexTraverse(const G4VPhysicalVolume* const pv, int depth);
+        void dumpLV();
     private:
         GVolume* convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv );
         GVolume* convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv );
@@ -94,7 +96,12 @@ class X4_API X4PhysicalVolume
         int                          m_verbosity ; 
         unsigned                     m_ndCount ; 
 
-        std::map<const G4LogicalVolume* const, int> m_lvidx ; 
+        std::map<const G4LogicalVolume*, int> m_lvidx ; 
+
+        std::vector<const G4LogicalVolume*> m_lvlist ; 
+
+        
+
 
 
 };

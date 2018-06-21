@@ -413,6 +413,10 @@ void OpticksResource::assignDetectorName()
 
    assert(m_detector);
 
+   LOG(info) << "OpticksResource::assignDetectorName"
+             << " m_detector " << m_detector
+             ; 
+
    bool g4live = strcmp(m_detector, G4LIVE) == 0 ; 
    if(g4live)
    {

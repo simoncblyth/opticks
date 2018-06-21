@@ -6,6 +6,7 @@
 #include "BFile.hh"
 #include "BStr.hh"
 #include "NPY.hpp"
+#include "NGLMExt.hpp"
 
 #include "YGLTF.h"
 
@@ -28,6 +29,40 @@ using ygltf::accessor_t ;
 #include "YOGMakerImpl.hh"
 
 namespace YOG {
+
+void Maker::SaveToGLTF(const NPY<float>* vtx, const NPY<unsigned>* idx, const char* path)
+{
+    YOG::Sc sc ;
+    YOG::Maker mk(&sc) ; 
+    YOG::Nd* parent_nd = NULL ;  
+
+    int lvIdx = 0 ; 
+    int materialIdx = 0 ; 
+    int depth = 0 ; 
+    nmat4triple* ltriple = NULL ; 
+
+    int ndIdx = sc.add_node(
+                            lvIdx, 
+                            materialIdx,
+                            "lvName",
+                            "pvName",
+                            "soName",
+                            ltriple,
+                            "boundaryName",
+                            depth,
+                            true,     // selected
+                            parent_nd
+                            );
+
+     YOG::Mh* mh = sc.get_mesh_for_node( ndIdx );
+     mh->vtx = vtx ; 
+     mh->idx = idx ; 
+ 
+     mk.convert();
+     mk.save(path);
+}
+
+
 
 void Maker::demo_create(const Geometry& geom)
 {
@@ -122,6 +157,12 @@ void Maker::convert()
         node.mesh = nd->soIdx ; 
         node.children = nd->children ; 
         node.extras["boundary"] = nd->boundary ; 
+        node.extras["ndIdx"] = nd->ndIdx ; 
+        node.extras["parentIdx"] = nd->parent ? nd->parent->ndIdx : -1 ; 
+        node.extras["soName"] = nd->mh->soName ; 
+
+        if(nd->transform)
+            nglmext::copyTransform( node.matrix, nd->transform->t );
     }
 
     for(int i=0 ; i < sc->meshes.size() ; i++ )
@@ -132,6 +173,10 @@ void Maker::convert()
 
         int m = impl->add_mesh(); 
         set_mesh_data( m,  mh,  mtIdx ); 
+
+        mesh_t& mesh = impl->get_mesh(m) ;
+        mesh.extras["meshIdx"] = m ; 
+
     }
 
     for(int i=0 ; i < sc->materials.size() ; i++ )
@@ -161,7 +206,7 @@ std::string Maker::get_mesh_uri( Mh* mh, const char* bufname ) const
 
 int Maker::set_mesh_data_vertices( Mh* mh )
 {
-    NPY<float>* vtx = mh->vtx ;
+    const NPY<float>* vtx = mh->vtx ;
     std::string uri = get_mesh_uri( mh, "vertices.npy" );
 
     std::vector<float> f_min ; 
@@ -184,8 +229,10 @@ int Maker::set_mesh_data_vertices( Mh* mh )
 
 int Maker::set_mesh_data_indices( Mh* mh )
 {
-    NPY<unsigned>* idx = mh->idx ;
+    const NPY<unsigned>* idx = mh->idx ;
 
+    assert( idx->hasShape(-1,1) && " need to idx->reshape(-1,1) first " ); 
+    /*
     if(!idx->hasShape(-1,1))
     {
         std::string bef = idx->getShapeString() ; 
@@ -198,6 +245,7 @@ int Maker::set_mesh_data_indices( Mh* mh )
            << " to " << aft 
            ; 
     } 
+    */
 
     std::string uri = get_mesh_uri( mh, "indices.npy" );
 
@@ -220,7 +268,7 @@ int Maker::set_mesh_data_indices( Mh* mh )
 }
 
 template <typename T> 
-int Maker::add_buffer( NPY<T>* npy, const char* uri )
+int Maker::add_buffer( const NPY<T>* npy, const char* uri )
 {
     LOG(info) << "add_buffer" 
               << " uri " << uri 
@@ -462,7 +510,7 @@ void Maker::saveBuffers(const char* path) const
                   << std::setw(3) << i
                   << " "
                   << " spec.uri " << std::setw(40) << spec.uri 
-                  << " bufpath " << bufpath 
+             //     << " bufpath " << bufpath 
                   << std::endl 
                   ;
 
@@ -474,8 +522,8 @@ void Maker::saveBuffers(const char* path) const
     }
 }
 
-template YOG_API int Maker::add_buffer<float>(NPY<float>*, const char* );
-template YOG_API int Maker::add_buffer<unsigned>(NPY<unsigned>*, const char* );
+template YOG_API int Maker::add_buffer<float>(const NPY<float>*, const char* );
+template YOG_API int Maker::add_buffer<unsigned>(const NPY<unsigned>*, const char* );
 
 } // namespace
 

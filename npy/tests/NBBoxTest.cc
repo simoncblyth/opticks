@@ -236,9 +236,9 @@ void test_positive_form()
     nbbox bb0 ; 
     std::vector<float> sd0 ; 
     {
-        ndifference ab = make_difference( &a, &b ); 
-        ndifference abc = make_difference( &ab, &c ); 
-        ndifference abcd = make_difference( &abc, &d ); 
+        ndifference ab = ndifference::make_difference( &a, &b ); 
+        ndifference abc = ndifference::make_difference( &ab, &c ); 
+        ndifference abcd = ndifference::make_difference( &abc, &d ); 
 
         NScan scan(abcd, verbosity);
         scan.scan(sd0, origin, direction, range );
@@ -255,9 +255,9 @@ void test_positive_form()
         c.complement = true ;  
         d.complement = true ;  
 
-        nintersection ab = make_intersection( &a, &b ); 
-        nintersection abc = make_intersection( &ab, &c ); 
-        nintersection abcd = make_intersection( &abc, &d ); 
+        nintersection ab = nintersection::make_intersection( &a, &b ); 
+        nintersection abc = nintersection::make_intersection( &ab, &c ); 
+        nintersection abcd = nintersection::make_intersection( &abc, &d ); 
 
         NScan scan(abcd, verbosity);
         scan.scan(sd1, origin, direction, range );
@@ -292,7 +292,7 @@ void test_difference_bbox()
     a.pdump("a");
     b.pdump("b");
 
-    ndifference ab = make_difference( &a, &b ); 
+    ndifference ab = ndifference::make_difference( &a, &b ); 
     ab.dump("a-b");
 }
 
@@ -305,7 +305,7 @@ nnode* make_placed_dicycy(float rmin, float rmax, float zmin, float zmax, float 
     ncylinder* a = new ncylinder(make_cylinder( rmax , zmin, zmax));   a->label = "A" ;     
     ncylinder* b = new ncylinder(make_cylinder( rmin , zmin, zmax));   b->label = "B" ;   
 
-    ndifference* ab = new ndifference(make_difference( a, b )); 
+    ndifference* ab = new ndifference(ndifference::make_difference( a, b )); 
 
     ab->transform  = nmat4triple::make_translate( tx, ty, tz );
 
@@ -375,7 +375,7 @@ void test_difference_chop_bbox()
     nbox a = make_box3( 50000.000,50000.000,50000.000,0.000 ) ; a.label = "a" ;   
     nbox b = make_box3( 50010.000,50010.000,12010.000,0.000 ) ; b.label = "b" ;   
     b.transform = nmat4triple::make_transform(1.000,0.000,0.000,0.000,  0.000,1.000,0.000,0.000,  0.000,0.000,1.000,0.000,  0.000,0.000,-19000.000,1.000) ;
-    ndifference ab = make_difference( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;   
+    ndifference ab = ndifference::make_difference( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;   
 
     ab.update_gtransforms();
     ab.verbosity = SSys::getenvint("VERBOSITY", 1) ; 
@@ -408,7 +408,7 @@ void test_intersection_cone_difference_bbox()
     //a.pdump("a");
     //b.pdump("b");
 
-    ndifference ab = make_difference( &a, &b ); 
+    ndifference ab = ndifference::make_difference( &a, &b ); 
     //ab.dump("a-b");
 
  
@@ -427,7 +427,7 @@ void test_intersection_cone_difference_bbox()
 
     ncone c = make_cone( r1, z1, r2, z2 );
 
-    nintersection cab = make_intersection( &c, &ab );
+    nintersection cab = nintersection::make_intersection( &c, &ab );
     cab.dump("c*(a-b)");
 }
 

@@ -33,6 +33,8 @@ void NNodeNudger::init()
 
 void NNodeNudger::update_prim_bb()
 {
+
+    //LOG(info) << "NNodeNudger::update_prim_bb nprim " << prim.size() ;
     zorder.clear();
     bb.clear(); 
     for(unsigned i=0 ; i < prim.size() ; i++)

@@ -14,6 +14,7 @@ BOpticksKey* BOpticksKey::fKey = NULL ;
 
 const char* BOpticksKey::G4LIVE = "g4live" ; 
 const char* BOpticksKey::IDFILE = "g4ok.gltf" ; 
+const char* BOpticksKey::IDSUBD = "g4ok_gltf" ; 
 int         BOpticksKey::LAYOUT = 1 ; 
 
 
@@ -38,6 +39,7 @@ BOpticksKey::BOpticksKey(const char* spec)
    m_digest( NULL ),
    m_idname( NULL ),
    m_idfile( IDFILE ),
+   m_idsubd( IDSUBD ),
    m_layout( LAYOUT )
 {
    std::vector<std::string> elem ; 
@@ -99,6 +101,12 @@ const char* BOpticksKey::getIdfile() const
 {
    return m_idfile ;  
 }
+const char* BOpticksKey::getIdsubd() const 
+{
+   return m_idsubd ;  
+}
+
+
 int BOpticksKey::getLayout() const 
 {
    return m_layout ;  

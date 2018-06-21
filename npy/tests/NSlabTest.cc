@@ -86,7 +86,7 @@ void test_slab_sphere_intersection()
 {
     nsphere a = make_sphere( 0.000,0.000,0.000,500.000 ) ; a.label = "a" ;   
     nslab b = make_slab( 1.000,1.000,1.000,0.000,-500.000,100.000,0.000,0.000 ) ; b.label = "b" ;   
-    nintersection ab = make_intersection( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
+    nintersection ab = nintersection::make_intersection( &a, &b ) ; ab.label = "ab" ; a.parent = &ab ; b.parent = &ab ;  ;   
     
     ab.update_gtransforms();
     ab.verbosity = SSys::getenvint("VERBOSITY", 1) ; 

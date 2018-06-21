@@ -79,7 +79,7 @@ std::string NNodeAnalyse<T>::desc() const
 
 
 
-#include "no.hpp"
+#include "No.hpp"
 #include "NNode.hpp"
 
 template struct NNodeAnalyse<no> ; 

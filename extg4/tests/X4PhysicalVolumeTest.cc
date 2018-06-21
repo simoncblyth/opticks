@@ -70,7 +70,7 @@ int main(int argc, char** argv)
 
     //char c = argc > 1 ? *argv[1] : 'o' ; 
 
-    char c = 'o' ; 
+    char c = 's' ; 
 
 
     // Note that okc.Opticks instanciation is 

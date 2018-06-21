@@ -104,6 +104,7 @@ struct YOG_API Nd  // node
     const Sc*        scene ;   // TODO: maybe remove 
     bool             selected ; 
     Nd*              parent ; 
+    Mh*              mh ; 
 
     std::vector<int> children ; 
     std::string desc() const ;
@@ -117,10 +118,10 @@ struct YOG_API Mh  // mesh
     std::string soName ;
     int          soIdx ; 
 
-    nnode*         csg ; 
-    GMesh*        mesh ; 
-    NPY<float>*    vtx ; 
-    NPY<unsigned>* idx ; 
+    nnode*               csg ; 
+    const GMesh*         mesh ; 
+    const NPY<float>*    vtx ; 
+    const NPY<unsigned>* idx ; 
 
     std::string desc() const ;
 };
@@ -130,9 +131,6 @@ struct YOG_API Mt  // material
     std::string name ; 
     std::string desc() const ;
 };
-
-
-
 
 
 }  // namespace

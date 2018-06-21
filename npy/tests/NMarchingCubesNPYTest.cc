@@ -91,7 +91,7 @@ void test_union(NMarchingCubesNPY& mcu, bool dump)
 {
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
-    nunion u = make_union( &a, &b ); 
+    nunion u = nunion::make_union( &a, &b ); 
 
     NTrianglesNPY* tris = mcu(&u);
     assert(tris);
@@ -104,7 +104,7 @@ void test_intersection(NMarchingCubesNPY& mcu, bool dump)
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    nintersection i = make_intersection( &a , &b ); 
+    nintersection i = nintersection::make_intersection( &a , &b ); 
 
     NTrianglesNPY* tris = mcu(&i);
     assert(tris);
@@ -118,8 +118,8 @@ void test_difference(NMarchingCubesNPY& mcu, bool dump)
     nsphere a = make_sphere(0.f,0.f,-50.f,100.f);
     nsphere b = make_sphere(0.f,0.f, 50.f,100.f);
 
-    ndifference d1 = make_difference( &a, &b ); 
-    ndifference d2 = make_difference( &b, &a ); 
+    ndifference d1 = ndifference::make_difference( &a, &b ); 
+    ndifference d2 = ndifference::make_difference( &b, &a ); 
 
     NTrianglesNPY* tris1 = mcu(&d1);
     assert(tris1);

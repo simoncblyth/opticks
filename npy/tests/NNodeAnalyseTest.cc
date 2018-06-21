@@ -1,6 +1,6 @@
 #include "OPTICKS_LOG.hh"
 
-#include "no.hpp"
+#include "No.hpp"
 #include "NNodeCollector.hpp"
 #include "NNodeAnalyse.hpp"
 

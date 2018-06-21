@@ -5,6 +5,8 @@
 #include "NNode.hpp"
 #include "NNodePoints.hpp"
 #include "NSphere.hpp"
+#include "NCylinder.hpp"
+#include "NCone.hpp"
 #include "NPlane.hpp"
 #include "NPart.hpp"
 #include "NBBox.hpp"
@@ -66,19 +68,19 @@ void test_node_transforms()
     // lu
     nsphere la = make_sphere(-500.f,0.f,-50.f,100.f); la.label = "la" ; 
     nsphere lb = make_sphere(-500.f,0.f, 50.f,100.f); lb.label = "lb" ; 
-    nunion  lu = make_union( &la, &lb );
+    nunion  lu = nunion::make_union( &la, &lb );
     la.parent = &lu ; 
     lb.parent = &lu ; 
 
     // ru
     nsphere ra = make_sphere( 500.f,0.f,-50.f,100.f); ra.label = "ra" ; 
     nsphere rb = make_sphere( 500.f,0.f, 50.f,100.f); rb.label = "rb" ; 
-    nunion  ru = make_union( &ra, &rb );
+    nunion  ru = nunion::make_union( &ra, &rb );
     ra.parent = &ru ; 
     rb.parent = &ru ; 
 
     // u 
-    nunion u = make_union( &lu, &ru );
+    nunion u = nunion::make_union( &lu, &ru );
     lu.parent = &u ; 
     ru.parent = &u ; 
  
@@ -118,6 +120,48 @@ void test_node_transforms()
     // hmm need to do this with rotations, as with translation order doesnt matter 
 }
 
+void test_node_bbox_unspsp()
+{
+    nsphere a = make_sphere(-50.f,0.f,0.f,100.f); a.label = "a" ; 
+    nsphere b = make_sphere( 50.f,0.f,0.f,100.f); b.label = "b" ; 
+    nunion  ab = nunion::make_union( &a, &b );
+    a.parent = &ab ; 
+    b.parent = &ab ; 
+
+    nbbox bb = ab.bbox(); 
+
+    LOG(info) << bb.desc();  
+}
+
+
+void test_node_bbox_uncyco()
+{
+    float cy_radius = 100.f ; 
+    float cy_z1 = -50.f ; 
+    float cy_z2 =  50.f ; 
+
+    ncylinder cy = make_cylinder(cy_radius,cy_z1,cy_z2); 
+    cy.label = "cy" ; 
+
+    float co_r1 = 100.f ; 
+    float co_r2 =  10.f ; 
+    float co_z1 =  50.f ; 
+    float co_z2 = 100.f ; 
+    
+    ncone co = make_cone(co_r1,co_z1,co_r2, co_z2); 
+    co.label = "co" ; 
+
+    nunion  uncyco = nunion::make_union( &cy, &co );
+    cy.parent = &uncyco ; 
+    co.parent = &uncyco ; 
+
+    nbbox bb = uncyco.bbox(); 
+
+    LOG(info) << bb.desc();  
+}
+
+
+
 
 
 
@@ -131,7 +175,7 @@ void test_getSurfacePoints_difference()
     glm::vec3 tlate(0,0,25);
     b.transform = nmat4triple::make_translate( tlate );    
 
-    ndifference obj = make_difference(&a, &b);
+    ndifference obj = ndifference::make_difference(&a, &b);
 
     a.parent = &obj ;  // parent hookup usually done by NCSG::import_r 
     b.parent = &obj ;   
@@ -312,7 +356,7 @@ void test_getSurfacePointsAll_Composite()
         nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
         b.transform = nmat4triple::make_translate( tlate );    
 
-        ndifference   ab = make_difference(&a, &b); 
+        ndifference   ab = ndifference::make_difference(&a, &b); 
 
         a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
         b.parent = &ab ;   
@@ -330,7 +374,7 @@ void test_getSurfacePointsAll_Composite()
         nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
         b.transform = nmat4triple::make_translate( tlate );    
 
-        nunion        ab = make_union(&a, &b); 
+        nunion        ab = nunion::make_union(&a, &b); 
 
         a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
         b.parent = &ab ;   
@@ -348,7 +392,7 @@ void test_getSurfacePointsAll_Composite()
         nbox b = make_box(bb.x,bb.y,bb.z,bb.w);
         b.transform = nmat4triple::make_translate( tlate );    
 
-        nintersection ab = make_intersection(&a, &b); 
+        nintersection ab = nintersection::make_intersection(&a, &b); 
 
         a.parent = &ab ;  // parent hookup usually done by NCSG::import_r 
         b.parent = &ab ;   
@@ -374,13 +418,15 @@ int main(int argc, char** argv)
     NPY_LOG__ ; 
 
     //test_node_transforms();
+    //test_node_bbox_unspsp();
+    test_node_bbox_uncyco();
 
     //test_getSurfacePoints_difference();
     //test_getSurfacePoints();
     //test_getCoincidentSurfacePoints();
     //test_getCoincident();
 
-    test_getSurfacePointsAll_Composite();
+    //test_getSurfacePointsAll_Composite();
 
     return 0 ; 
 }

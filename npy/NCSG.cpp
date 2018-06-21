@@ -1065,9 +1065,9 @@ nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
     nnode* node = NULL ;   
     switch(typecode)
     {
-       case CSG_UNION:        node = new nunion(make_union(NULL, NULL )) ; break ; 
-       case CSG_INTERSECTION: node = new nintersection(make_intersection(NULL, NULL )) ; break ; 
-       case CSG_DIFFERENCE:   node = new ndifference(make_difference(NULL, NULL ))   ; break ; 
+       case CSG_UNION:        node = new nunion(nunion::make_union(NULL, NULL )) ; break ; 
+       case CSG_INTERSECTION: node = new nintersection(nintersection::make_intersection(NULL, NULL )) ; break ; 
+       case CSG_DIFFERENCE:   node = new ndifference(ndifference::make_difference(NULL, NULL ))   ; break ; 
        default:               node = NULL                                 ; break ; 
     }
     assert(node);

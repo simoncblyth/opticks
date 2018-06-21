@@ -125,6 +125,20 @@ om-subs(){
 }
 
 
+
+om-reldir()
+{
+   local cwd=$(pwd)
+   local sdir=$(om-sdir)
+   local bdir=$(om-bdir)
+   case $cwd in
+      $sdir*) echo ${cwd/$sdir} ;; 
+      $bdir*) echo ${cwd/$bdir} ;; 
+   esac
+}
+om-bcd(){ cd $(om-bdir $(om-reldir)) ; pwd ;  }
+om-scd(){ cd $(om-sdir $(om-reldir)) ; pwd ;  }
+
 om-sdir(){  echo $(opticks-home)/$1 ; }
 om-bdir(){  
    local gen=$(opticks-cmake-generator)
@@ -287,6 +301,44 @@ om-make()
 }
 
 
+
+om-mk-notes(){ cat << EON
+om-mk 
+=======
+
+om-mk allows running commands from the parallel build tree, 
+particularly useful for quickly building and running 
+single single test executables::
+
+   npy-c 
+   cd tests
+
+   om-mk "make help | grep Test"
+
+   om-mk "make NTreeBuilderTest && ./NTreeBuilderTest"
+
+   om-mk "make NConvexPolyhedronSegmentTest  && ./NConvexPolyhedronSegmentTest"
+
+       ## build and run a single test 
+
+EON
+}
+
+#om-t(){  om-t- NConvexPolyhedronSegmentTest ; }
+om-t(){  om-t- X4SolidTest ; }
+om-t-(){ om-mk "make $1  && ./$1" ; }
+
+om-mk()
+{
+    local msg="=== $FUNCNAME :"
+    local iwd=$(pwd)
+    local rdir=$(om-reldir)   #  relative dir, when invoked from within source or build trees
+    local bdir=$(om-bdir $rdir)
+    cd $bdir
+    echo $msg bdir $bdir rdir $rdir : $1 
+    eval $1
+    cd $iwd
+}
 
 om-test()
 {

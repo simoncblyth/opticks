@@ -25,7 +25,7 @@ class X4_API X4Mesh
     public:
         X4Mesh(const G4VSolid* solid); 
         std::string desc() const  ; 
-        void save(const char* dir="/tmp/X4Mesh") const  ; 
+        void save(const char* path="/tmp/X4Mesh/name.gltf") const  ; 
         GMesh* getMesh() const ;
     private:
         void init();

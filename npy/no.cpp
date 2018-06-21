@@ -1,7 +1,22 @@
 
 #include <sstream>
 #include <iomanip>
-#include "no.hpp"
+#include "No.hpp"
+
+
+no* no::copy( const no* a )  // static  ... matches nnode::copy where this is actually needed
+{
+    no* c = NULL ; 
+    c = new no(*a) ; 
+    return c ; 
+}
+no* no::make_copy() const 
+{
+    return no::copy(this); 
+}
+
+
+
 
 std::string no::desc() const 
 {

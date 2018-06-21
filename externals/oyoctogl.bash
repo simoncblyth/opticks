@@ -18,8 +18,6 @@ See also env-;yoctogl-
 * https://github.com/simoncblyth/yocto-gl/commits/master
 
 
-
-
 gcc issue reported by YL Chan
 -------------------------------
 
@@ -233,6 +231,7 @@ oyoctogl-cmake()
 
 
     cmake \
+       -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
        -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
        -DCMAKE_BUILD_TYPE=Debug \
        -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \

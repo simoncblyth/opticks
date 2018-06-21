@@ -30,6 +30,10 @@ struct nmat4triple ;
 
 struct NPY_API nnode 
 {
+    static unsigned bb_count ; 
+    static nnode* copy( const nnode* a ); // retaining vtable of subclass instances 
+    nnode* make_copy() const ;  // retaining vtable of subclass instances
+
     //virtual float operator()(const glm::vec3& p) const ;
     virtual float operator()(float px, float py, float pz) const  ;
     virtual float sdf_(const glm::vec3& pos, NNodeFrameType fr) const ;
@@ -234,39 +238,50 @@ struct NPY_API nnode
     nbbox*        _bbox_model ; 
 
     static nnode make_node(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL);
+    static nnode* make_operator_ptr(OpticksCSG_t operator_, nnode* left=NULL, nnode* right=NULL );
 
 };
-
-// hmm perhaps easier to switch on these ?? instead
-// of having separate types ? 
-
-struct NPY_API nunion : nnode {
-    float operator()(float x, float y, float z) const ;
-};
-struct NPY_API nintersection : nnode {
-    float operator()(float x, float y, float z) const ;
-};
-struct NPY_API ndifference : nnode {
-    float operator()(float x, float y, float z) const ;
-};
-
-
-inline NPY_API nunion make_union(nnode* left, nnode* right)
-{
-    nunion n ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
-}
-inline NPY_API nintersection make_intersection(nnode* left, nnode* right)
-{
-    nintersection n ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
-}
-inline NPY_API ndifference make_difference(nnode* left, nnode* right)
-{
-    ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
-}
-
 inline nnode nnode::make_node(OpticksCSG_t operator_, nnode* left, nnode* right )
 {
     nnode n ;    nnode::Init(n, operator_ , left, right ); return n ;
 }
 
+struct NPY_API nunion : nnode {
+    float operator()(float x, float y, float z) const ;
+    static nunion make_union(nnode* left=NULL, nnode* right=NULL);
+};
+struct NPY_API nintersection : nnode {
+    float operator()(float x, float y, float z) const ;
+    static nintersection make_intersection(nnode* left=NULL, nnode* right=NULL);
+};
+struct NPY_API ndifference : nnode {
+    float operator()(float x, float y, float z) const ;
+    static ndifference make_difference(nnode* left=NULL, nnode* right=NULL);
+};
+
+inline nunion nunion::make_union(nnode* left, nnode* right)
+{
+    nunion n ;         nnode::Init(n, CSG_UNION , left, right ); return n ; 
+}
+inline nintersection nintersection::make_intersection(nnode* left, nnode* right)
+{
+    nintersection n ;  nnode::Init(n, CSG_INTERSECTION , left, right ); return n ;
+}
+inline ndifference ndifference::make_difference(nnode* left, nnode* right)
+{
+    ndifference n ;    nnode::Init(n, CSG_DIFFERENCE , left, right ); return n ;
+}
+
+inline nnode* nnode::make_operator_ptr(OpticksCSG_t operator_, nnode* left, nnode* right )
+{
+    nnode* node = NULL ; 
+    switch(operator_) 
+    {
+        case CSG_UNION        : node = new nunion(nunion::make_union(left , right ))                      ; break ;    
+        case CSG_INTERSECTION : node = new nintersection(nintersection::make_intersection(left , right )) ; break ;    
+        case CSG_DIFFERENCE   : node = new ndifference(ndifference::make_difference(left , right ))       ; break ;    
+        default               : node = NULL ; break ; 
+    }
+    return node ; 
+}
 

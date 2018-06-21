@@ -10,8 +10,10 @@
 
 #include "X4Mesh.hh"
 
+#include "YOGMaker.hh"
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
+#include "BFile.hh"
 #include "SDirect.hh"
 
 #include "NBBox.hpp"
@@ -38,6 +40,8 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
     NVtxIdx vtxidx ;
     tris->to_vtxidx(vtxidx);
 
+    vtxidx.idx->reshape(-1,1); // YOGMaker expects this shape for indices
+
     mesh->m_x4src_vtx = vtxidx.vtx ; 
     mesh->m_x4src_idx = vtxidx.idx ; 
 
@@ -50,7 +54,6 @@ GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
     X4Mesh xm(solid); 
     return xm.getMesh();
 }
-
 
 X4Mesh::X4Mesh( const G4VSolid* solid ) 
    :
@@ -271,15 +274,27 @@ void X4Mesh::collect_tri()
 }
 
 
-void X4Mesh::save(const char* dir) const 
+void X4Mesh::save(const char* path) const 
 {
+    LOG(info) << " saving to " << path ;     
+
+    std::string dir_ = BFile::ParentDir(path); 
+    const char* dir = dir_.c_str();
+
     m_vtx->save(dir,"vtx.npy"); 
     m_raw->save(dir,"raw.npy"); 
     m_tri->save(dir,"tri.npy"); 
 
     m_mesh->save(dir); 
 
+    GMesh* mesh = getMesh();
+    const NPY<float>* vtx = mesh->m_x4src_vtx ; 
+    const NPY<unsigned>* idx = mesh->m_x4src_idx ; 
+
+    YOG::Maker::SaveToGLTF( vtx, idx, path ); 
 }
+
+
 
 void X4Mesh::makemesh()
 {

@@ -50,7 +50,6 @@ std::string Nd::desc() const
 Sc::Sc(int root_)
    :
    root(root_)
-//   xform(new nxform(0,false))
 {
 }
 
@@ -98,7 +97,6 @@ add_mesh
 ---------
 
 * only adds if no mesh with lvIdx is present already 
-
 
 **/
 
@@ -168,8 +166,10 @@ int Sc::add_node(int lvIdx,
      assert( soIdx > -1 );  
      // soIdx is zero-based local index, lvIdx is an externally imposed index
 
+     Mh* mh = meshes[soIdx];  
+
      int ndIdx = nodes.size() ;
-     Nd* nd = new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent }  ;
+     Nd* nd = new Nd {ndIdx, soIdx, transform, boundary, pvName, depth, this, selected, parent, mh }  ;
 
      nodes.push_back(nd) ;
 
@@ -228,11 +228,6 @@ int Sc::add_test_node(int lvIdx)
 
     return ndIdx ; 
 }
-
-
-
-
-
 
 
 

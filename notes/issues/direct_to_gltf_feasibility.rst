@@ -177,6 +177,8 @@ GLTF persisting of GGeo ?
 
 
 
+
+
 Solids/Nodes/Meshes/CSG Trees
 ---------------------------------
 
@@ -266,6 +268,28 @@ still using GBuffer for vertices, indices, normals,
      758 
      759     return spec ;
      760 }
+
+
+
+glTF viz shows messed up transforms
+--------------------------------------
+
+Debug by editing the glTF to pick particular nodes::
+
+    329578   "scenes": [
+    329579     {
+    329580       "nodes": [
+    329581         3199
+    329582       ]
+    329583     }
+
+
+Also add metadata extras to allow to navigate the gltf.  Suspect 
+are getting bad mesh association, as unexpected lots of repeated mesh.
+
+Huh : only 35 meshes, (expect ~250) but the expected 12k nodes.
+
+Suspect the lvIdx mesh identity.
 
 
 

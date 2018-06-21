@@ -47,6 +47,7 @@ BOpticksResource::BOpticksResource(const char* envprefix)
     m_srcdigest(NULL),
     m_idfold(NULL),
     m_idfile(NULL),
+    m_idsubd(NULL),
     m_idname(NULL),
     m_idpath(NULL),
     m_idpath_tmp(NULL),
@@ -360,6 +361,11 @@ void BOpticksResource::setupViaKey()
     m_idname = strdup(idname);         
     m_res->addName("idname", m_idname ); 
 
+    const char* idsubd = m_key->getIdsubd() ; //  eg  g4ok_gltf
+    assert(idsubd) ; 
+    m_idsubd = strdup(idsubd); 
+    m_res->addName("idsubd", m_idsubd ); 
+
     const char* idfile = m_key->getIdfile() ; //  eg  g4ok.gltf
     assert(idfile) ; 
     m_idfile = strdup(idfile); 
@@ -369,7 +375,7 @@ void BOpticksResource::setupViaKey()
     m_idfold = strdup(fold.c_str()) ; 
     m_res->addDir("idfold", m_idfold ); 
 
-    std::string idpath = getGeoCachePath( m_idname, m_idfile, m_srcdigest, layout );
+    std::string idpath = getGeoCachePath( m_idname, m_idsubd, m_srcdigest, layout );
 
     LOG(info)
            <<  " idname " << m_idname 

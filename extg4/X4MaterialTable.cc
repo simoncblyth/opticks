@@ -10,6 +10,8 @@
 #include "GMaterialLib.hh"
 #include "Opticks.hh"
 
+#include "PLOG.hh"
+
 
 void X4MaterialTable::Convert(GMaterialLib* mlib)
 {
@@ -41,6 +43,14 @@ void X4MaterialTable::init()
         G4Material* material = (*m_mtab)[i];
   
         assert( material->GetIndex() == i );
+
+        G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
+
+        if( mpt == NULL )
+        {
+            LOG(warning) << "skip convert of material with no mpt " << material->GetName() ; 
+            continue ;  
+        }
 
         GMaterial* mat = X4Material::Convert( material ); 
 

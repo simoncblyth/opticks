@@ -116,13 +116,14 @@ G4Orb* X4SolidBase::MakeOrb(const char* name, float radius )
     return new G4Orb(name, radius); 
 }
 
-G4Sphere* X4SolidBase::MakeZSphere(const char* name, float rmax, float rmin, float startTheta, float deltaTheta )
+G4Sphere* X4SolidBase::MakeZSphere(const char* name, float rmin, float rmax, float startPhi, float deltaPhi, float startTheta, float deltaTheta )
 {
     G4String name_(name);
     G4double pRmin = rmin ; 
     G4double pRmax = rmax ; 
-    G4double pSPhi = 0. ; 
-    G4double pDPhi = 2.*CLHEP::pi ;
+
+    G4double pSPhi = startPhi*CLHEP::pi/180. ; 
+    G4double pDPhi = deltaPhi*CLHEP::pi/180. ;
 
     G4double pSTheta = startTheta*CLHEP::pi/180. ; 
     G4double pDTheta = deltaTheta*CLHEP::pi/180. ;
@@ -133,7 +134,7 @@ G4Sphere* X4SolidBase::MakeZSphere(const char* name, float rmax, float rmin, flo
 
 G4Sphere* X4SolidBase::MakeSphere(const char* name, float rmax, float rmin)
 {
-   return MakeZSphere(name, rmax, rmin, 0.f, 180.f ); 
+   return MakeZSphere(name, rmin, rmax, 0.f, 360.f, 0.f, 180.f ); 
 
 }
 

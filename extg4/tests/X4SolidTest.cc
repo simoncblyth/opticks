@@ -1,3 +1,4 @@
+#include <iostream>
 
 #include "G4Hype.hh"
 #include "G4Ellipsoid.hh"
@@ -8,20 +9,32 @@
 #include "G4Sphere.hh"
 #include "G4Orb.hh"
 #include "G4Box.hh"
+#include "G4VisExtent.hh"
+
 
 #include "X4Solid.hh"
+#include "X4Mesh.hh"
 #include "NNode.hpp"
+#include "BStr.hh"
 
 #include "OPTICKS_LOG.hh"
 
 
+
 void test_solid(G4VSolid* so)
 {
-    X4Solid* xso = new X4Solid(so) ; 
-    LOG(info) << xso->desc() ; 
-    nnode* root = xso->root(); 
+    G4VisExtent vx = so->GetExtent() ; 
+    std::cout << vx << std::endl ; 
+
+    X4Solid* xs = new X4Solid(so) ; 
+    LOG(info) << xs->desc() ; 
+    nnode* root = xs->root(); 
     assert( root ) ; 
     root->dump();
+
+    X4Mesh* xm = new X4Mesh(so) ; 
+    xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
+
 }
 
 void test_G4Sphere()
@@ -82,10 +95,42 @@ void test_G4Hype()
 }
 
  
+void test_intersectWithPhiSegment()
+{
+    G4String name = "intersectWithPhiSegment" ; 
+
+    G4double rmin = 0. ; 
+    G4double rmax = 100 ; 
+
+    G4double startPhi = 0. ; 
+    G4double deltaPhi = 180. ;
+    //G4double deltaPhi = 90. ;
+    //G4double deltaPhi = 360. ;
+
+    G4double startTheta = 0. ; 
+    //G4double startTheta = 30. ; 
+    //G4double deltaTheta = 30. ;
+    //G4double deltaTheta = 180. ;
+    G4double deltaTheta = 180. ;
+
+
+    G4Sphere* sp = X4Solid::MakeZSphere(name, 
+             rmin, 
+             rmax, 
+             startPhi, 
+             deltaPhi,
+             startTheta, 
+             deltaTheta
+         );
+  
+    test_solid(sp); 
+}
+
+
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv);
+    OPTICKS_LOG(argc, argv);
 
     //test_G4Sphere();
     //test_G4Orb();
@@ -95,8 +140,10 @@ int main(int argc, char** argv)
     //test_G4Cons();
     //test_G4Torus();
     //test_G4Ellipsoid();
-    test_G4Hype();
+    //test_G4Hype();
  
+    test_intersectWithPhiSegment();
+
     return 0 ; 
 }
 

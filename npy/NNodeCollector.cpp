@@ -66,7 +66,7 @@ void NNodeCollector<T>::dump(const char* msg )
 }
 
 
-#include "no.hpp"
+#include "No.hpp"
 #include "NNode.hpp"
 
 template struct NNodeCollector<no>;

@@ -131,6 +131,7 @@ class BRAP_API  BOpticksResource {
         const char* m_srcdigest ; 
         const char* m_idfold ; 
         const char* m_idfile ; 
+        const char* m_idsubd ; 
         const char* m_idname ; 
         const char* m_idpath ; 
         const char* m_idpath_tmp ; 

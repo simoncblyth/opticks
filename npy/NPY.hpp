@@ -223,15 +223,15 @@ class NPY_API NPY : public NPYBase {
        bool isUnsetItem(unsigned int i, unsigned int j);
     public:
        void dump(const char* msg="NPY::dump", unsigned int limit=15);
-       void minmax(T& mi, T& mx);
-       bool isConstant(T val);
+       void minmax(T& mi, T& mx) const ;
+       bool isConstant(T val) const ;
     public:
-       void minmax(std::vector<T>& mi, std::vector<T>& mx);
-       void minmax_strided(T& mi, T& mx, unsigned stride, unsigned offset);
-       void minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_);
-       void minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_);
-       ntrange3<T> minmax3();
-       ntrange4<T> minmax4();
+       void minmax(std::vector<T>& mi, std::vector<T>& mx) const ;
+       void minmax_strided(T& mi, T& mx, unsigned stride, unsigned offset) const ;
+       void minmax3(ntvec3<T>& mi_, ntvec3<T>& mx_) const ;
+       void minmax4(ntvec4<T>& mi_, ntvec4<T>& mx_) const ;
+       ntrange3<T> minmax3() const ;
+       ntrange4<T> minmax4() const ;
     public:
        void qdump(const char* msg="NPY::qdump");
     public:

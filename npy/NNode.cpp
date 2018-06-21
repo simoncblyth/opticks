@@ -27,7 +27,7 @@
 #include "PLOG.hh"
 
 
-
+unsigned nnode::bb_count = 0 ; 
 
 // see NNodeUncoincide::uncoincide_union
 float nnode::z1() const { assert(0 && "nnode::z1 needs override "); return 0 ; } 
@@ -75,6 +75,7 @@ std::string nnode::tag() const
         << ( label ? " " : "" )
         << ( label ? label : "" )
         << "]"
+        << " " << ( is_primitive() ? "P" : "C" ) 
         ;     
     return ss.str();
 }
@@ -503,8 +504,27 @@ void nnode::get_composite_bbox( nbbox& bb ) const
     //assert( !lr_unbound  && " combination of two unbounded prmitives is not allowed " );
 
 
+    if(verbosity > 4 )
+    {
+         LOG(info) 
+             << " l_unbound " << l_unbound  
+             << " r_unbound " << r_unbound  
+             << " lr_unbound " << lr_unbound  
+             << " this " << this
+             << " left " << left
+             << " right " << right
+             << " ll " << left->left 
+             << " lr " << left->right
+             << " rl " << right->left 
+             << " rr " << right->right
+             ;
+    }
+
     nbbox l_bb = left->bbox();
+    if( verbosity > 4 ) LOG(info) << "l_bb " << l_bb.desc() ; 
+
     nbbox r_bb = right->bbox();
+    if( verbosity > 4 ) LOG(info) << "r_bb " << r_bb.desc() ; 
 
 
     if( left->is_unbounded() )
@@ -537,6 +557,15 @@ void nnode::get_composite_bbox( nbbox& bb ) const
 
 
 
+/**
+nnode::get_primitive_bbox
+--------------------------
+
+Relies on different action for base classes and subclasses
+to prevent infinite recursion.
+
+**/
+
 void nnode::get_primitive_bbox(nbbox& bb) const 
 {
     assert(is_primitive());
@@ -561,8 +590,9 @@ void nnode::get_primitive_bbox(nbbox& bb) const
     }
     else if(node->type == CSG_BOX || node->type == CSG_BOX3)
     {
+        if(verbosity > 4 ) LOG(info) << " CSG_BOX/CSG_BOX3 " ; 
         nbox* n = (nbox*)node ;
-        nbbox pp = n->bbox() ;
+        nbbox pp = n->bbox() ;   // <-- if the node is not a real nbox 
         bb.copy_from(pp) ; 
     }
     else if(node->type == CSG_CYLINDER)
@@ -613,15 +643,19 @@ nbbox nnode::bbox() const
     it would not be possible to combine them.
     */
 
+    nnode::bb_count += 1 ; 
+
     if(verbosity > 0)
     {
-        LOG(info) << "nnode::bbox " << desc() ; 
+        LOG(info) << "nnode::bbox " << desc() << " " << this << " bb_count " << nnode::bb_count ; 
     }
+
+    //assert( nnode::bb_count < 10 );  // just for debug some infinite recursion  
 
     nbbox bb = make_bbox() ; 
 
     if(is_primitive())
-    { 
+    {
         get_primitive_bbox(bb);
     } 
     else 
@@ -680,11 +714,11 @@ void nnode::Tests(std::vector<nnode*>& nodes )
     nsphere* b = new nsphere(make_sphere(0.f,0.f, 50.f,100.f));
     nbox*    c = new nbox(make_box(0.f,0.f,0.f,200.f));
 
-    nunion* u = new nunion(make_union( a, b ));
-    nintersection* i = new nintersection(make_intersection( a, b )); 
-    ndifference* d1 = new ndifference(make_difference( a, b )); 
-    ndifference* d2 = new ndifference(make_difference( b, a )); 
-    nunion* u2 = new nunion(make_union( d1, d2 ));
+    nunion* u = new nunion(nunion::make_union( a, b ));
+    nintersection* i = new nintersection(nintersection::make_intersection( a, b )); 
+    ndifference* d1 = new ndifference(ndifference::make_difference( a, b )); 
+    ndifference* d2 = new ndifference(ndifference::make_difference( b, a )); 
+    nunion* u2 = new nunion(nunion::make_union( d1, d2 ));
 
     nodes.push_back( (nnode*)a );
     nodes.push_back( (nnode*)b );
@@ -702,10 +736,10 @@ void nnode::Tests(std::vector<nnode*>& nodes )
 
     nsphere* sp = new nsphere(make_sphere(0.f,0.f,0.f,radius));
     nbox*    bx = new nbox(make_box(0.f,0.f,0.f, inscribe ));
-    nunion*  u_sp_bx = new nunion(make_union( sp, bx ));
-    nintersection*  i_sp_bx = new nintersection(make_intersection( sp, bx ));
-    ndifference*    d_sp_bx = new ndifference(make_difference( sp, bx ));
-    ndifference*    d_bx_sp = new ndifference(make_difference( bx, sp ));
+    nunion*  u_sp_bx = new nunion(nunion::make_union( sp, bx ));
+    nintersection*  i_sp_bx = new nintersection(nintersection::make_intersection( sp, bx ));
+    ndifference*    d_sp_bx = new ndifference(ndifference::make_difference( sp, bx ));
+    ndifference*    d_bx_sp = new ndifference(ndifference::make_difference( bx, sp ));
 
     nodes.push_back( (nnode*)u_sp_bx );
     nodes.push_back( (nnode*)i_sp_bx );
@@ -741,6 +775,54 @@ void nnode::AdjustToFit(nnode* root, const nbbox& container, float scale, float 
                    ; 
         assert(0 && "nnode::AdjustToFit" ); 
     }
+}
+
+
+/**
+nnode::copy
+-------------
+
+See test/NTreeBuilderTest.cc:test_bbox for the motivation 
+for node instance copying that passes along the vtable.
+Essentially::
+
+    //nnode* b = new nnode(*a) ;       // <-- culprit : CAUSING THE INFINITE RECURSION
+    //nnode* b = new nbox(*(nbox*)a) ;   // <--- fix
+    nnode* b = a->make_copy();   
+   
+**/
+nnode* nnode::copy( const nnode* node )  // static
+{
+    nnode* c = NULL ; 
+    typedef nconvexpolyhedron ncxpol ; 
+    switch(node->type)   
+    {
+        case CSG_UNION:           { nunion* n        = (nunion*)node         ; c = new nunion(*n)        ; } break ;
+        case CSG_INTERSECTION:    { nintersection* n = (nintersection*)node  ; c = new nintersection(*n) ; } break ;
+        case CSG_DIFFERENCE:      { ndifference* n   = (ndifference*)node    ; c = new ndifference(*n)   ; } break ;
+        case CSG_SPHERE:          { nsphere* n       = (nsphere*)node        ; c = new nsphere(*n)       ; } break ;
+        case CSG_ZSPHERE:         { nzsphere* n      = (nzsphere*)node       ; c = new nzsphere(*n)      ; } break ;
+        case CSG_BOX:             { nbox* n          = (nbox*)node           ; c = new nbox(*n)          ; } break ;
+        case CSG_BOX3:            { nbox* n          = (nbox*)node           ; c = new nbox(*n)          ; } break ;
+        case CSG_SLAB:            { nslab* n         = (nslab*)node          ; c = new nslab(*n)         ; } break ; 
+        case CSG_PLANE:           { nplane* n        = (nplane*)node         ; c = new nplane(*n)        ; } break ; 
+        case CSG_CYLINDER:        { ncylinder* n     = (ncylinder*)node      ; c = new ncylinder(*n)     ; } break ; 
+        case CSG_DISC:            { ndisc* n         = (ndisc*)node          ; c = new ndisc(*n)         ; } break ; 
+        case CSG_CONE:            { ncone* n         = (ncone*)node          ; c = new ncone(*n)         ; } break ; 
+        case CSG_CONVEXPOLYHEDRON:{ ncxpol* n        = (ncxpol*)node         ; c = new ncxpol(*n)        ; } break ; 
+        case CSG_TORUS:           { ntorus* n        = (ntorus*)node         ; c = new ntorus(*n)        ; } break ; 
+        case CSG_CUBIC:           { ncubic* n        = (ncubic*)node         ; c = new ncubic(*n)        ; } break ; 
+        case CSG_HYPERBOLOID:     { nhyperboloid* n  = (nhyperboloid*)node   ; c = new nhyperboloid(*n)  ; } break ; 
+        default:
+            LOG(fatal) << "Need to add upcasting for type: " << node->type << " name " << CSGName(node->type) ;  
+            assert(0);
+    }
+    return c ;
+}
+
+nnode* nnode::make_copy() const 
+{
+    return nnode::copy(this); 
 }
 
 
