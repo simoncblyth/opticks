@@ -566,13 +566,19 @@ void GGeo::loadFromG4DAE()
 
     assert(rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- ") ;
 
+    prepareToSave();
+
+    LOG(error) << "GGeo::loadFromG4DAE DONE" ; 
+}
+
+
+void GGeo::prepareToSave()
+{
     prepareScintillatorLib();
 
     prepareMeshes();
 
     prepareVertexColors();
-
-    LOG(error) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 
@@ -658,29 +664,6 @@ void GGeo::afterConvertMaterials()
     prepareMaterialLib(); 
     prepareSurfaceLib(); 
 }
-
-
-
-/*
-GSurLib* GGeo::getSurLib()
-{
-    if(m_surlib == NULL) createSurLib();
-    return m_surlib ; 
-}
-void GGeo::createSurLib()
-{
-    assert( m_surlib == NULL );
-
-
-   if(m_ok->isDbgSurf())
-   LOG(info) << "[--dbgsurf] deferred creation of GSurLib " ; 
-
-    m_surlib = new GSurLib(m_ok, this) ; 
-    //m_surlib->dump("GGeo::createSurLib");
-}
-*/
-
-
 
 
 

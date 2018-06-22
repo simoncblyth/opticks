@@ -15,8 +15,8 @@ int main(int argc, char** argv)
 {
     OPTICKS_LOG_COLOR__(argc, argv);
 
-    //const char* default_path = "$TMP/tgltf-t-/sc.gltf" ; 
-    const char* default_path = "/tmp/g4_00.gltf" ; 
+    const char* default_path = "$TMP/tgltf-t-/sc.gltf" ; 
+    //const char* default_path = "/tmp/g4_00.gltf" ; 
     const char* path = argc > 1 ? argv[1] : default_path  ; 
 
     std::string base = BFile::ParentDir(path);

@@ -3,9 +3,6 @@ set(name CFG4Test)
 project(${name} VERSION 0.1.0)
 include(OpticksBuildOptions)   
 
-set(_TEST_SOURCES
-
-)
 
 set(TEST_SOURCES
 
@@ -36,8 +33,14 @@ set(TEST_SOURCES
     CPhotonTest.cc
     CRandomEngineTest.cc
 
+)
+
+set(_TEST_SOURCES
+
     CX4GDMLTest.cc
 )
+
+
 
 
 foreach(SRC ${TEST_SOURCES})

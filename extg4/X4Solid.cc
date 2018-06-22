@@ -435,6 +435,8 @@ nnode* X4Solid::intersectWithPhiSegment(nnode* whole, float startPhi, float delt
     {
         LOG(error) << " special cased startPhi == 0.f && deltaPhi == 180.f " ; 
 
+        // pure guesswork starting point : need some visualization guidance 
+
         nbbox bb = whole->bbox();
         float sx = bb.max.x - bb.min.x ; 
         float sy = bb.max.y - bb.min.y ; 

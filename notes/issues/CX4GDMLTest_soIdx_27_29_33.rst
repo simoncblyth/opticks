@@ -4,7 +4,7 @@ CX4GDMLTest_soIdx_27_29_33
 
 Observations on CX4GDML:
 
-* suspect time consuming node nudging is happening at node level when 
+* suspect time consuming CSG node nudging is happening at node level when 
   it could be done at mesh level : this would save loada time, by only 
   doing this once per shape
 

@@ -67,14 +67,18 @@ class CMakeLists(object):
 
 
 class Opticks(object):
+    """
+    """
 
     order = {
              'OKConf':10, 
              'SysRap':20, 
              'BoostRap':30, 
              'NPY':40, 
+             'YoctoGLRap':45,
              'OpticksCore':50, 
              'GGeo':60, 
+             'ExtG4':65,
              'AssimpRap':70,
              'OpenMeshRap':80, 
              'OpticksGeo':90,
@@ -88,8 +92,6 @@ class Opticks(object):
              'CFG4':170,
              'OKG4':180,
              'G4OK':190,
-             'YoctoGLRap':200,
-             'ExtG4':210,
              'NumpyServer':-1
             }
 

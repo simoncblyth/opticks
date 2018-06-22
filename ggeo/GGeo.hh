@@ -162,6 +162,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         // configureGeometry stage additions
     public:
         void close();
+        void prepareToSave();
         void prepareMaterialLib();
         void prepareSurfaceLib();
         void prepareScintillatorLib();

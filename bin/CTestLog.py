@@ -7,6 +7,10 @@ Collective reporting from a bunch of separate ctest.log files::
 
     CTestLog.py /usr/local/opticks-cmake-overhaul/build
 
+
+TODO: fix the pkg order reporting to match dependency/run order
+
+
 """
 import sys, re, os, logging, argparse, datetime
 log = logging.getLogger(__name__)
@@ -110,12 +114,17 @@ if __name__ == '__main__':
     CTestLog.examine_logs(args)
     print CTestLog.desc_totals()
 
-    for lg in CTestLog.logs:
+    lgs = sorted(CTestLog.logs, key=lambda lg:lg.dt)
+
+    for lg in lgs:
+        print ""
         for tst in lg.tests:
             print tst
         pass
     pass
-    for lg in CTestLog.logs:
+    print "\n\nFAILS:"
+
+    for lg in lgs:
         for tst in lg.fails:
             print tst
         pass

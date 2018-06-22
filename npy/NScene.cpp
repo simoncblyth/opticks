@@ -375,12 +375,26 @@ void NScene::load_csg_metadata()
         m_csg_lvIdx[mesh_id] = lvIdx ; 
 
         NParameters* meta = m_source->getCSGMetadata(mesh_id);
+        
+        //assert( meta ) ; 
 
         m_csg_metadata[mesh_id] = meta ; 
 
         std::string meta_soname = soname(mesh_id);
 
-        assert( meta_soname.compare(soName) == 0) ; 
+        bool soname_match = meta_soname.compare(soName) == 0 ;
+
+
+        LOG(info) 
+               << " mesh_id " << std::setw(4) << mesh_id  
+               << " lvIdx " << std::setw(4) << lvIdx  
+               << " meta " << meta  
+               << " meta_soname " << std::setw(30) << meta_soname
+               << " soName " << std::setw(30) << soName
+               << " soname_match " << ( soname_match ? "Y" : "N:???????????"  )
+               ;
+
+        //assert( soname_match) ; 
 
         if(m_verbosity > 3)
         {
@@ -405,6 +419,10 @@ template<typename T>
 T NScene::getCSGMeta(unsigned mesh_id, const char* key, const char* fallback ) const 
 {
     const NParameters* meta = m_csg_metadata.at(mesh_id) ;   // operator[] can change the map if no such key
+
+    if( meta == NULL )
+        LOG(warning) << " missing ALL metadata for mesh_id  " << mesh_id ;
+
     return meta->get<T>(key, fallback) ;
 }
 

@@ -383,7 +383,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      int lvIdx = m_lvidx[lv] ;   // from postorder IndexTraverse, to match GDML lvIdx : mesh identity uses lvIdx
 
-     glm::mat4* xf_local = X4Transform3D::GetLocalTransform(pv); 
+     bool frame = false ; 
+     //bool frame = true ; 
+     glm::mat4* xf_local = X4Transform3D::GetLocalTransform(pv, frame); 
      const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(*xf_local) ) ; 
 
      int ndIdx = m_sc->add_node(
@@ -402,9 +404,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      Nd* nd = m_sc->get_node(ndIdx) ; 
 
      LOG(info) << "convertNode " 
-               << " ndIdx "  << ndIdx 
-               << " soIdx "  << nd->soIdx 
-               << " lvIdx "  << lvIdx 
+               << " ndIdx "  << std::setw(5) << ndIdx 
+               << " soIdx "  << std::setw(5) << nd->soIdx 
+               << " lvIdx "  << std::setw(5) << lvIdx 
+               << " materialIdx "  << std::setw(5) << materialIdx 
                << " soName " << solid->GetName()
                ;
 

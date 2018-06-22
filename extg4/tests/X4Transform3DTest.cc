@@ -1,4 +1,6 @@
 #include <iostream>
+
+#include "G4Point3D.hh"
 #include "X4RotationMatrix.hh"
 #include "X4Transform3D.hh"
 
@@ -8,91 +10,67 @@
 #include "OPTICKS_LOG.hh"
 
 
-void test_machinery()
+void test_convert()
 {
-    float xx = 11.f ; 
-    float xy = 12.f ; 
-    float xz = 13.f ; 
+    // create glm::mat4 transform
 
-    float yx = 21.f ; 
-    float yy = 22.f ; 
-    float yz = 23.f ; 
+    glm::vec3 tlat(10,1,3);
+    glm::vec4 axis_angle(1,1,1,45.); 
+    //glm::vec4 axis_angle(0,0,1,45.); 
+    glm::vec3 scal(1,1,1);
+    glm::mat4 trs = nglmext::make_transform("trs", tlat, axis_angle, scal );
 
-    float zx = 31.f ; 
-    float zy = 32.f ; 
-    float zz = 33.f ; 
+    std::cout << gpresent("trs", trs) << std::endl ; 
 
-    float dx = 41.f ; 
-    float dy = 42.f ; 
-    float dz = 43.f ; 
+    // apply the transform to a single point 
 
+    glm::vec4 p(1,0,0,1);
+    glm::vec4 pt = trs * p ; 
 
-    X4RotationMatrix<float> xrot( xx, xy, xz , 
-                                  yx, yy, yz ,
-                                  zx, zy, zz ) ; 
+    std::cout 
+           << gpresent("trs", trs) 
+           << std::endl
+           << gpresent("p", p) 
+           << std::endl
+           << gpresent("pt", pt) 
+           ; 
 
-    G4ThreeVector xtra( dx, dy, dz );    
+    // convert glm ->  G4 
 
-    G4Transform3D t( xrot, xtra );
-    
-    glm::mat4 m = X4Transform3D::Convert(t);
+    G4Transform3D* t0p = X4Transform3D::Convert(trs);
+    const G4Transform3D& t0 = *t0p ; 
 
-    std::string dig = X4Transform3D::Digest(t) ; 
+    G4Point3D pp(p.x, p.y, p.z ) ; 
+    G4Point3D ppt = t0 * pp ;  
 
+    std::cout 
+          << "pp" << pp << std::endl
+          << "ppt" << ppt << std::endl
+          ; 
 
-    LOG(info) << " m " << glm::to_string(m) 
-              << " dig " << dig 
-              ;
+    // compare the result of the G4 performed transform with the glm result
 
+    float eps = 1e-5 ; 
+    assert( std::abs( ppt.x() - pt.x ) < eps ); 
+    assert( std::abs( ppt.y() - pt.y ) < eps ); 
+    assert( std::abs( ppt.z() - pt.z ) < eps ); 
 
-#ifdef X4_TRANSFORM_43
-    assert( m[0][3] == dx ) ;  
-    assert( m[1][3] == dy ) ;  
-    assert( m[2][3] == dz ) ;  
-#else
-    assert( m[3][0] == dx ) ;  
-    assert( m[3][1] == dy ) ;  
-    assert( m[3][2] == dz ) ;  
-#endif
+    // convert back from G4 -> glm 
 
-    assert( m[0][0] == xx ) ;  
-    assert( m[0][1] == xy ) ;  
-    assert( m[0][2] == xz ) ;  
+    glm::mat4* trs2_p = X4Transform3D::Convert(t0) ; 
+    const glm::mat4& trs2 = *trs2_p ;
 
-    assert( m[1][0] == yx ) ;  
-    assert( m[1][1] == yy ) ;  
-    assert( m[1][2] == yz ) ;  
+    // compare the glm matrices componentwise
 
-    assert( m[2][0] == zx ) ;  
-    assert( m[2][1] == zy ) ;  
-    assert( m[2][2] == zz ) ;  
+    float diff = nglmext::compDiff(trs, trs2); 
+    std::cout 
+           << gpresent("trs2", trs2) 
+           << std::endl
+           << " diff " << diff
+           << std::endl
+           ;
 
-}
-
-
-
-void test_transform_1(float ax, float ay, float az, float angle_, float tx, float ty, float tz)
-{
-    G4ThreeVector axis(ax,ay,az);
-
-    float angle = angle_ * CLHEP::pi/180.f ; 
-
-    G4RotationMatrix rot( axis, -angle ); 
-
-    G4ThreeVector tla(tx,ty,tz);
-
-    G4Transform3D t( rot, tla );  // rotate then translate
-
-    glm::mat4 m = X4Transform3D::Convert(t);
-
-    LOG(info) << glm::to_string(m) ; 
-
-    std::cout
-            << "test_transform_1 ( HUH : HAVE TO NEGATE G4RotationMatrix ANGLE TO MATCH GLM ? )" 
-            << std::endl 
-            << gpresent( "m", m )
-            << std::endl 
-            ;
+    assert( diff < eps ); 
 
 }
 
@@ -111,18 +89,16 @@ void test_transform_0(float ax, float ay, float az, float angle_, float tx, floa
 
     LOG(info) << glm::to_string(mat) ; 
 
-/*
-    glm::mat4 mat(1.f) ;
-    for(unsigned i=0 ; i < order.length() ; i++)
-    {   
-        switch(order[i])
-        {  
-            case 's': mat = glm::scale(mat, scal)         ; break ; 
-            case 'r': mat = glm::rotate(mat, axis_angle.w , glm::vec3(axis_angle)) ; break ;
-            case 't': mat = glm::translate(mat, tlat )    ; break ;
-        }  
-    }
-*/
+   // glm::mat4 mat(1.f) ;
+   // for(unsigned i=0 ; i < order.length() ; i++)
+   // {   
+   //     switch(order[i])
+   //     {  
+   //         case 's': mat = glm::scale(mat, scal)         ; break ; 
+   //         case 'r': mat = glm::rotate(mat, axis_angle.w , glm::vec3(axis_angle)) ; break ;
+   //         case 't': mat = glm::translate(mat, tlat )    ; break ;
+   //     }  
+   // }
 
     std::cout
             << "test_transform_0 " << order
@@ -168,18 +144,16 @@ void test_transform()
     float tz = 0 ;
 
     test_transform_0(ax, ay, az,  angle, tx, ty, tz);
-    test_transform_1(ax, ay, az,  angle, tx, ty, tz); 
     test_transform_2(ax, ay, az,  angle, tx, ty, tz); 
-
 }
 
 
 int main(int argc, char** argv)
 {
-    OPTICKS_LOG_COLOR__(argc, argv);
+    OPTICKS_LOG(argc, argv);
  
-    test_machinery();
     test_transform();
+    test_convert();
  
     return 0 ; 
 }

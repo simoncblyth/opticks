@@ -345,9 +345,10 @@ NParameters* NCSG::LoadMetadata(const char* treedir, int idx )
     NParameters* meta = NULL  ; 
     std::string metapath = MetaPath(treedir, idx) ;
 
+    meta = new NParameters ; 
+
     if(BFile::ExistsFile(metapath.c_str()))
     {
-         meta = new NParameters ; 
          meta->load_( metapath.c_str() );
     } 
     else

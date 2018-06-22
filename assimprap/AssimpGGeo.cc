@@ -991,19 +991,19 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     assert((isurf == NULL || osurf == NULL) && "tripwire to inform that both ISURF and OSURF are defined simultaneously" ) ;
 
 
-    NSensor* sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
+    sensor = m_sensor_list ? m_sensor_list->findSensorForNode( nodeIndex ) : NULL ; 
     volume->setSensor( sensor );  
 
     GBndLib* blib = gg->getBndLib();  
     GSurfaceLib* slib = gg->getSurfaceLib();  
 
     // boundary identification via 4-uint 
-    unsigned int boundary = blib->addBoundary( 
-                                               mt_p->getShortName(),
-                                               osurf ? osurf->getShortName() : NULL ,
-                                               isurf ? isurf->getShortName() : NULL ,
-                                               mt->getShortName()
-                                             );
+    boundary = blib->addBoundary( 
+                                  mt_p->getShortName(),
+                                  osurf ? osurf->getShortName() : NULL ,
+                                  isurf ? isurf->getShortName() : NULL ,
+                                  mt->getShortName()
+                                  );
 
     volume->setBoundary(boundary);
     {

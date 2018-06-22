@@ -307,8 +307,8 @@ om-mk
 =======
 
 om-mk allows running commands from the parallel build tree, 
-particularly useful for quickly building and running 
-single single test executables::
+particularly useful for quickly building and running/debugging 
+single test executables::
 
    npy-c 
    cd tests
@@ -320,19 +320,26 @@ single single test executables::
    om-mk "make NConvexPolyhedronSegmentTest  && ./NConvexPolyhedronSegmentTest"
 
        ## build and run a single test 
+    
+   TEST=NSceneLoadTest om-t
+
 
 EON
 }
 
 #om-t(){  om-t- NConvexPolyhedronSegmentTest ; }
-om-t(){  om-t- X4SolidTest ; }
+om-t(){  om-t- ${TEST:-X4SolidTest} ; }
 om-t-(){ om-mk "make $1  && ./$1" ; }
+
+om-d(){  om-d- ${TEST:-X4SolidTest} ; }
+om-d-(){ om-mk "make $1  && lldb ./$1" ; }
 
 om-mk()
 {
     local msg="=== $FUNCNAME :"
     local iwd=$(pwd)
     local rdir=$(om-reldir)   #  relative dir, when invoked from within source or build trees
+    [ "${rdir/tests}" == "${rdir}" ] && rdir="$rdir/tests"  
     local bdir=$(om-bdir $rdir)
     cd $bdir
     echo $msg bdir $bdir rdir $rdir : $1 

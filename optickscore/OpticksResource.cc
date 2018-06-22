@@ -115,8 +115,8 @@ OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const 
        m_example_matnames(NULL),
        m_sensor_surface(NULL),
        m_testcsgpath(NULL),
-       m_testconfig(NULL)
-
+       m_testconfig(NULL),
+       m_sensor_list(NULL)
 {
     init();
     (*m_log)("DONE"); 
