@@ -164,7 +164,7 @@ class GGEO_API GParts {
        //
         static GParts* make(const npart& pt, const char* spec);
         static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
-        static GParts* make(NCSG* tree, const char* spec, unsigned verbosity );
+        static GParts* make(const NCSG* tree, const char* spec, unsigned verbosity );
     public:
         static GParts* combine(std::vector<GParts*> subs, unsigned verbosity);
         static GParts* combine(GParts* onesub,            unsigned verbosity );   // for consistent handling between 1 and many 
@@ -172,7 +172,7 @@ class GGEO_API GParts {
         GParts(GBndLib* bndlib=NULL);
         GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, const char* spec, GBndLib* bndlib=NULL);
         GParts(NPY<float>* partBuf, NPY<float>* tranBuf, NPY<float>* planBuf, GItemList* spec, GBndLib* bndlib=NULL);
-    public:
+   public:
         void setName(const char* name);
         void setBndLib(GBndLib* blib);
         void setVerbosity(unsigned verbosity); 
@@ -180,6 +180,10 @@ class GGEO_API GParts {
         void close();
         void enlargeBBox(unsigned int part, float epsilon=0.00001f);
         void enlargeBBoxAll(float epsilon=0.00001f);
+    public:
+        // transients for debugging convenience when made from NCSG
+        void setCSG(const NCSG* csg);
+        const NCSG* getCSG() const ;
     private:
         void init(const char* spec);        
         void init();        
@@ -292,6 +296,7 @@ class GGEO_API GParts {
         unsigned           m_analytic_version ; 
         OpticksCSG_t       m_primflag ; 
         const char*        m_medium ; 
+        const NCSG*        m_csg ; 
 
 };
 

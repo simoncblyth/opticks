@@ -18,6 +18,11 @@ of nodes in the tree depends on G4VSolid parameter values,
 eg whether an inner radius greater than zero is set, or phi 
 segments are set.
 
+NB the results of X4Solid conversions are **not visible in the glTF**
+renders, as those are based on the G4Polyhedron polgonization 
+of the solids.  Thus the skipping of G4DisplacedSolid displacement
+info will impact the ray trace (and the simulation) but not the glTF.
+
 No tree balancing is implemented yet (see ../analytic/csg.py), 
 however polycone primitives are hung on a UnionTree and 
 the tree is pruned a bit using NTreeBuilder.

@@ -29,6 +29,7 @@ using YOG::Nd ;
 using YOG::Mh ; 
 using YOG::Maker ; 
 
+#include "SSys.hh"
 #include "SDigest.hh"
 #include "PLOG.hh"
 #include "BStr.hh"
@@ -70,12 +71,9 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
     LOG(info) << " SetKey " ; 
     //Opticks* ok = Opticks::GetOpticks() ; 
     Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
-    LOG(info) << " ok-instanciated " ; 
     GGeo* gg = new GGeo(ok) ;
-    LOG(info) << " gg-instanciated " ; 
 
     X4PhysicalVolume xtop(gg, top) ;  
-    //const char* path = "/tmp/X4PhysicalVolume/X4PhysicalVolume.gltf" ;
     const char* path = NULL ; 
     xtop.saveAsGLTF(path); 
  
@@ -124,11 +122,28 @@ void X4PhysicalVolume::convertMaterials()
     size_t num_materials = m_mlib->getNumMaterials() ;
     assert( num_materials > 0 );
 
+
     LOG(info) << "convertMaterials"
               << " num_materials " << num_materials
               ;
 
     m_mlib->close();   // may change order if prefs dictate
+
+    // getting names must be done after the close
+
+    for(size_t i=0 ; i < num_materials ; i++)
+    {
+        const char* name = m_mlib->getName(i); 
+        int idx = m_sc->add_material(name); 
+        assert( idx == int(i) ); 
+        std::cout 
+            << std::setw(4) << i 
+            << " : " 
+            << name
+            << std::endl 
+            ;
+    }
+
 }
 
 void X4PhysicalVolume::convertSurfaces()
@@ -153,6 +168,11 @@ void X4PhysicalVolume::convertSurfaces()
 
 void X4PhysicalVolume::saveAsGLTF(const char* path)
 {
+     m_sc->root = SSys::getenvint("GLTF_ROOT", 3147); 
+     LOG(error) << "X4PhysicalVolume::saveAsGLTF"
+                << " sc.root " << m_sc->root 
+                ;
+
      m_maker->convert();
      m_maker->save(path ? path : m_gltfpath);
 }
@@ -243,16 +263,12 @@ void X4PhysicalVolume::IndexTraverse(const G4VPhysicalVolume* const pv, int dept
         IndexTraverse( daughter_pv , depth + 1 );
     }
 
-
     // for newly encountered lv record the tail/postorder idx for the lv
     if(std::find(m_lvlist.begin(), m_lvlist.end(), lv) == m_lvlist.end())
     {
         m_lvidx[lv] = m_lvlist.size(); 
         m_lvlist.push_back(lv);  
     }  
-    
-
-
 }
 
 void X4PhysicalVolume::dumpLV()
@@ -275,9 +291,7 @@ void X4PhysicalVolume::dumpLV()
 
 G4LogicalSurface* X4PhysicalVolume::findSurface( const G4VPhysicalVolume* const a, const G4VPhysicalVolume* const b, bool first_priority )
 {
-     G4LogicalSurface* surf = NULL ; 
-
-     surf = G4LogicalBorderSurface::GetSurface(a, b) ;
+     G4LogicalSurface* surf = G4LogicalBorderSurface::GetSurface(a, b) ;
 
      const G4VPhysicalVolume* const first  = first_priority ? a : b ; 
      const G4VPhysicalVolume* const second = first_priority ? b : a ; 
@@ -334,6 +348,7 @@ void X4PhysicalVolume::convertStructure()
 GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv )
 {
      GVolume* volume = convertNode(pv, parent, depth, parent_pv );
+     m_ggeo->add(volume); // collect in nodelib
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
   
@@ -377,23 +392,26 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      unsigned boundary = addBoundary( pv, pv_p );
      std::string boundaryName = m_blib->shortname(boundary); 
      int materialIdx = m_blib->getInnerMaterial(boundary); 
+     //materialIdx = m_ndCount ; // <-- checking effect of different material idx
 
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;
      const G4VSolid* const solid = lv->GetSolid();
 
      int lvIdx = m_lvidx[lv] ;   // from postorder IndexTraverse, to match GDML lvIdx : mesh identity uses lvIdx
 
-     bool frame = false ; 
-     //bool frame = true ; 
-     glm::mat4* xf_local = X4Transform3D::GetLocalTransform(pv, frame); 
-     const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(*xf_local) ) ; 
+     glm::mat4 xf_local = X4Transform3D::GetObjectTransform(pv);  
+     const nmat4triple* ltriple = m_xform->make_triple( glm::value_ptr(xf_local) ) ; 
+
+     const std::string& lvName = lv->GetName() ; 
+     const std::string& pvName = pv->GetName() ; 
+     const std::string& soName = solid->GetName() ; 
 
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
                                  materialIdx,
-                                 lv->GetName(),
-                                 pv->GetName(),
-                                 solid->GetName(),
+                                 lvName,
+                                 pvName,
+                                 soName,
                                  ltriple,
                                  boundaryName,
                                  depth,
@@ -403,12 +421,14 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      Nd* nd = m_sc->get_node(ndIdx) ; 
 
+
+     if(ndIdx % 100 == 0) 
      LOG(info) << "convertNode " 
                << " ndIdx "  << std::setw(5) << ndIdx 
                << " soIdx "  << std::setw(5) << nd->soIdx 
                << " lvIdx "  << std::setw(5) << lvIdx 
                << " materialIdx "  << std::setw(5) << materialIdx 
-               << " soName " << solid->GetName()
+               << " soName " << soName
                ;
 
      assert( ndIdx == m_ndCount ); 
@@ -420,12 +440,13 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
 
-     std::vector<unsigned> skips = {27, 29, 33 };
 
-     if(mh->csg == NULL)
+     //std::vector<unsigned> skips = {27, 29, 33 }; // soIdx
+     std::vector<unsigned> skips = {27, 29}; // soIdx   
+
+     if(mh->csgnode == NULL)
      {
-         //convertSolid(mh, solid);
-         mh->csg = X4Solid::Convert(solid) ;  // soIdx 33 giving analytic problems too 
+         mh->csgnode = X4Solid::Convert(solid) ; 
 
          bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
 
@@ -433,30 +454,42 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
        
          mh->vtx = mh->mesh->m_x4src_vtx ; 
          mh->idx = mh->mesh->m_x4src_idx ; 
+
+         mh->csg = NCSG::FromNode( mh->csgnode, NULL ); 
+
+         assert( mh->csg ) ; 
+         assert( mh->csg->isUsedGlobally() );
      }
 
-     assert( mh->csg ); 
+     assert( mh->csgnode ); 
 
-     mh->csg->set_boundary( boundaryName.c_str() ) ; 
-     NCSG* csg = NCSG::FromNode( mh->csg, NULL ); 
-     assert( csg ) ; 
-     assert( csg->isUsedGlobally() );
+     // mh->csgnode->set_boundary( boundaryName.c_str() ) ;  <-- makes no sense, would keep overwriting 
+     //
+     // can this be done at mesh level (ie within the above bracket) ?
+     // ... would be a big time saving 
+     // ... see how the boundary is used, also check GParts 
+ 
 
      const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
 
+     const NCSG* csg = mh->csg ; 
+
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+
 
      // metadata needs to be transferred, like in GScene ?
 
      NSensor* sensor = NULL ; 
 
-     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(*xf_local));
+     GMatrixF* ltransform = new GMatrix<float>(glm::value_ptr(xf_local));
 
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
 
      volume->setLevelTransform(ltransform);
      volume->setParallelNode( nd ); 
      volume->setParts( pts ); 
+     volume->setPVName( pvName.c_str() );
+     volume->setLVName( lvName.c_str() );
 
      if(parent) 
      {

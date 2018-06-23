@@ -176,7 +176,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.treedir = NULL ; 
     n.treeidx = -1 ; 
     n.depth = 0 ; 
-    n.boundary = NULL ; 
+    n.boundary = NULL ;  
     n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 
 
@@ -200,11 +200,11 @@ const char* nnode::csgname() const
 {
    return CSGName(type);
 }
-unsigned nnode::maxdepth()
+unsigned nnode::maxdepth() const 
 {
     return _maxdepth(0);
 }
-unsigned nnode::_maxdepth(unsigned depth)  // recursive 
+unsigned nnode::_maxdepth(unsigned depth) const   // recursive 
 {
     return left && right ? nmaxu( left->_maxdepth(depth+1), right->_maxdepth(depth+1)) : depth ;  
 }

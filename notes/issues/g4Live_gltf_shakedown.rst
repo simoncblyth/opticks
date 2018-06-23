@@ -1,8 +1,411 @@
 g4Live_gltf_shakedown
 ========================
 
-glTF viz shows messed up transforms
---------------------------------------
+
+DYB Nodes for glTF check viz
+--------------------------------
+
+Debug by editing the glTF to pick particular nodes::
+
+    329578   "scenes": [
+    329579     {
+    329580       "nodes": [
+    329581         3199
+    329582       ]
+    329583     }
+
+::
+
+   3199 : single pmt (with frame false looks correct, with frame true mangled)
+   3155 : AD  (view starts from above the lid) (with frame false PMT all pointing in one direction, with frame true correct)
+   3147 : pool with 2 ADs etc..
+
+
+NEXT
+-----
+
+* comparison of GGeo instances from two routes 
+
+  * easiest way is to persist and compare files 
+
+* need to get thru to raytracing the direct geometry 
+
+
+
+Three Solids X4Mesh skipped still 
+------------------------------------
+
+::
+
+    443      std::vector<unsigned> skips = {27, 29, 33 };
+    444 
+    445      if(mh->csgnode == NULL)
+    446      {
+    447          mh->csgnode = X4Solid::Convert(solid) ;  // soIdx 33 giving analytic problems too 
+    448 
+    449          bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ;
+    450 
+    451          mh->mesh = placeholder ? X4Mesh::Placeholder(solid) : X4Mesh::Convert(solid) ;
+    452 
+
+
+
+FIXED : Slow convert due to CSG node nudger running at node(not mesh) level ?
+-------------------------------------------------------------------------------- 
+
+* moving the nudging to mesh level, gives drastic speedup : now DYB near
+  conversion from G4 model to Opticks GGeo and writes out glTF in 5 seconds.
+
+* looks like the slow convert, was related to not having the displacements 
+  done already, nevertheless : if this processing can be moved to mesh level 
+  ot should be 
+
+
+
+X4PhysicalVolume::convertNode::
+
+    434 
+    435      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
+    436 
+    437      std::vector<unsigned> skips = {27, 29, 33 };
+    438 
+    439      if(mh->csg == NULL)
+    440      {
+    441          //convertSolid(mh, solid);
+    442          mh->csg = X4Solid::Convert(solid) ;  // soIdx 33 giving analytic problems too 
+    443 
+    444          bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ;
+    445 
+    446          mh->mesh = placeholder ? X4Mesh::Placeholder(solid) : X4Mesh::Convert(solid) ;
+    447 
+    448          mh->vtx = mh->mesh->m_x4src_vtx ;
+    449          mh->idx = mh->mesh->m_x4src_idx ;
+    450      }
+    451 
+    452      assert( mh->csg );
+    453 
+    454      // can this be done at mesh level (ie within the above bracket) ?
+    455      // ... would be a big time saving 
+    456      // ... see how the boundary is used, also check GParts 
+    457 
+    458      mh->csg->set_boundary( boundaryName.c_str() ) ;
+    459 
+    460      NCSG* csg = NCSG::FromNode( mh->csg, NULL );
+    461      assert( csg ) ;
+    462      assert( csg->isUsedGlobally() );
+    463 
+    464      const GMesh* mesh = mh->mesh ;   // hmm AssimpGGeo::convertMeshes does deduping/fixing before inclusion in GVolume(GNode) 
+    465 
+    466      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+    467 
+
+
+* WHY does NCSG require nnode to have boundary spec char* ? 
+
+  * Suspect nnode does not need boundary any more ?
+  * hmm actually that was probably a convenience for tboolean- passing boundaries in from python,
+    so need to keep the capability
+  * GParts really needs this spec, as it has a GBndLib to convert the spec 
+    into a bndIdx for laying down in buffers
+
+
+* guess that GParts needs to be at node level, peer with GVolume 
+
+
+
+
+
+
+DONE : initial implementation to convert G4DisplacedSolid into nnode CSG 
+---------------------------------------------------------------------------
+
+::
+
+     87 G4BooleanSolid::G4BooleanSolid( const G4String& pName,
+     88                                       G4VSolid* pSolidA ,
+     89                                       G4VSolid* pSolidB ,
+     90                                 const G4Transform3D& transform    ) :
+     91   G4VSolid(pName), fAreaRatio(0.), fStatistics(1000000), fCubVolEpsilon(0.001),
+     92   fAreaAccuracy(-1.), fCubicVolume(0.), fSurfaceArea(0.),
+     93   fRebuildPolyhedron(false), fpPolyhedron(0), createdDisplacedSolid(true)
+     94 {
+     95   fPtrSolidA = pSolidA ;
+     96   fPtrSolidB = new G4DisplacedSolid("placedB",pSolidB,transform) ;
+     97 }
+
+::
+
+     70 G4DisplacedSolid::G4DisplacedSolid( const G4String& pName,
+     71                                           G4VSolid* pSolid ,
+     72                                     const G4Transform3D& transform  )
+     73   : G4VSolid(pName), fRebuildPolyhedron(false), fpPolyhedron(0)
+     74 {
+     75   fPtrSolid = pSolid ;
+     76   fDirectTransform = new G4AffineTransform(transform.getRotation().inverse(),
+     77                                            transform.getTranslation()) ;
+     78 
+     79   fPtrTransform    = new G4AffineTransform(transform.getRotation().inverse(),
+     80                                            transform.getTranslation()) ;
+     81   fPtrTransform->Invert() ;
+     82 }
+
+
+g4-gcd::
+
+     152 void G4GDMLWriteSolids::
+     153 BooleanWrite(xercesc::DOMElement* solElement,
+     154              const G4BooleanSolid* const boolean)
+     155 {
+     156    G4int displaced=0;
+     157 
+     158    G4String tag("undefined");
+     159    if (dynamic_cast<const G4IntersectionSolid*>(boolean))
+     160      { tag = "intersection"; } else
+     161    if (dynamic_cast<const G4SubtractionSolid*>(boolean))
+     162      { tag = "subtraction"; } else
+     163    if (dynamic_cast<const G4UnionSolid*>(boolean))
+     164      { tag = "union"; }
+     165 
+     166    G4VSolid* firstPtr = const_cast<G4VSolid*>(boolean->GetConstituentSolid(0));
+     167    G4VSolid* secondPtr = const_cast<G4VSolid*>(boolean->GetConstituentSolid(1));
+     168 
+     169    G4ThreeVector firstpos,firstrot,pos,rot;
+     170 
+     171    // Solve possible displacement of referenced solids!
+     172    //
+     173    while (true)
+     174    {
+     175       if ( displaced>8 )
+     ///                 ... error message ...
+     ...
+     186       if (G4DisplacedSolid* disp = dynamic_cast<G4DisplacedSolid*>(firstPtr))
+     187       {
+     188          firstpos += disp->GetObjectTranslation();
+     189          firstrot += GetAngles(disp->GetObjectRotation());
+     ///
+     ///      adding angles ... hmm looks fishy 
+     ///
+     190          firstPtr = disp->GetConstituentMovedSolid();
+     191          displaced++;
+     ///
+     ///   can understand why you might have one displacement ?
+     ///   but how you manage to have 8 displacements ? 
+     ///
+     192          continue;
+     193       }
+     194       break;
+     195    }
+     196    displaced = 0;
+
+     ...
+     221    AddSolid(firstPtr);   // At first add the constituent solids!
+     222    AddSolid(secondPtr);
+     223 
+     224    const G4String& name = GenerateName(boolean->GetName(),boolean);
+     225    const G4String& firstref = GenerateName(firstPtr->GetName(),firstPtr);
+     226    const G4String& secondref = GenerateName(secondPtr->GetName(),secondPtr);
+     227 
+     228    xercesc::DOMElement* booleanElement = NewElement(tag);
+     229    booleanElement->setAttributeNode(NewAttribute("name",name));
+     230    xercesc::DOMElement* firstElement = NewElement("first");
+     231    firstElement->setAttributeNode(NewAttribute("ref",firstref));
+     232    booleanElement->appendChild(firstElement);
+     233    xercesc::DOMElement* secondElement = NewElement("second");
+     234    secondElement->setAttributeNode(NewAttribute("ref",secondref));
+     235    booleanElement->appendChild(secondElement);
+     236    solElement->appendChild(booleanElement);
+     237      // Add the boolean solid AFTER the constituent solids!
+     238 
+     239    if ( (std::fabs(pos.x()) > kLinearPrecision)
+     240      || (std::fabs(pos.y()) > kLinearPrecision)
+     241      || (std::fabs(pos.z()) > kLinearPrecision) )
+     242    {
+     243      PositionWrite(booleanElement,name+"_pos",pos);
+     244    }
+     245 
+     246    if ( (std::fabs(rot.x()) > kAngularPrecision)
+     247      || (std::fabs(rot.y()) > kAngularPrecision)
+     248      || (std::fabs(rot.z()) > kAngularPrecision) )
+     249    {
+     250      RotationWrite(booleanElement,name+"_rot",rot);
+     251    }
+     252 
+     253    if ( (std::fabs(firstpos.x()) > kLinearPrecision)
+     254      || (std::fabs(firstpos.y()) > kLinearPrecision)
+     255      || (std::fabs(firstpos.z()) > kLinearPrecision) )
+     256    {
+     257      FirstpositionWrite(booleanElement,name+"_fpos",firstpos);
+     258    }
+     259 
+     260    if ( (std::fabs(firstrot.x()) > kAngularPrecision)
+     261      || (std::fabs(firstrot.y()) > kAngularPrecision)
+     262      || (std::fabs(firstrot.z()) > kAngularPrecision) )
+     263    {
+     264      FirstrotationWrite(booleanElement,name+"_frot",firstrot);
+     265    }
+     266 }
+
+
+::
+
+     .80 void G4GDMLReadSolids::
+      81 BooleanRead(const xercesc::DOMElement* const booleanElement, const BooleanOp op)
+      82 {
+     ...
+     154    G4VSolid* firstSolid = GetSolid(GenerateName(first));
+     155    G4VSolid* secondSolid = GetSolid(GenerateName(scnd));
+     156 
+     157    G4Transform3D transform(GetRotationMatrix(rotation),position);
+     158 
+     159    if (( (firstrotation.x()!=0.0) || (firstrotation.y()!=0.0)
+     160                                   || (firstrotation.z()!=0.0))
+     161     || ( (firstposition.x()!=0.0) || (firstposition.y()!=0.0)
+     162                                   || (firstposition.z()!=0.0)))
+     163    {
+     164       G4Transform3D firsttransform(GetRotationMatrix(firstrotation),
+     165                                    firstposition);
+     166       firstSolid = new G4DisplacedSolid(GenerateName("displaced_"+first),
+     167                                         firstSolid, firsttransform);
+     168    }
+     169 
+     170    if (op==UNION)
+     171      { new G4UnionSolid(name,firstSolid,secondSolid,transform); } else
+     172    if (op==SUBTRACTION)
+     173      { new G4SubtractionSolid(name,firstSolid,secondSolid,transform); } else
+     174    if (op==INTERSECTION)
+     175      { new G4IntersectionSolid(name,firstSolid,secondSolid,transform); }
+     176 }
+
+::
+
+    132 G4RotationMatrix
+    133 G4GDMLReadDefine::GetRotationMatrix(const G4ThreeVector& angles)
+    134 {
+    135    G4RotationMatrix rot;
+    136 
+    137    rot.rotateX(angles.x());
+    138    rot.rotateY(angles.y());
+    139    rot.rotateZ(angles.z());
+    140    rot.rectify();  // Rectify matrix from possible roundoff errors
+    141 
+    142    return rot;
+
+
+
+
+G4GDMLWriteDefine.hh::
+
+     58     void RotationWrite(xercesc::DOMElement* element,
+     59                     const G4String& name, const G4ThreeVector& rot)
+     60          { Rotation_vectorWrite(element,"rotation",name,rot); }
+     61     void PositionWrite(xercesc::DOMElement* element,
+     62                     const G4String& name, const G4ThreeVector& pos)
+     63          { Position_vectorWrite(element,"position",name,pos); }
+     64     void FirstrotationWrite(xercesc::DOMElement* element,
+     65                     const G4String& name, const G4ThreeVector& rot)
+     66          { Rotation_vectorWrite(element,"firstrotation",name,rot); }
+     67     void FirstpositionWrite(xercesc::DOMElement* element,
+     68                     const G4String& name, const G4ThreeVector& pos)
+     69          { Position_vectorWrite(element,"firstposition",name,pos); }
+     70     void AddPosition(const G4String& name, const G4ThreeVector& pos)
+     71          { Position_vectorWrite(defineElement,"position",name,pos
+
+
+gdml.py::
+
+     * no handling of : firstposition, firstrotation
+
+
+     166 class Boolean(Geometry):
+     167     firstref = property(lambda self:self.elem.find("first").attrib["ref"])
+     168     secondref = property(lambda self:self.elem.find("second").attrib["ref"])
+     169 
+     170     position = property(lambda self:self.find1_("position"))
+     171     rotation = property(lambda self:self.find1_("rotation"))
+     172     scale = None
+     173     secondtransform = property(lambda self:construct_transform(self))
+     174 
+     175     first = property(lambda self:self.g.solids[self.firstref])
+     176     second = property(lambda self:self.g.solids[self.secondref])
+     177 
+     ...
+     183     def as_ncsg(self):
+     ...
+     188         left = self.first.as_ncsg()
+     189         right = self.second.as_ncsg()
+     ...
+     194         right.transform = self.secondtransform
+     195 
+     196         cn = CSG(self.operation, name=self.name)
+     197         cn.left = left
+     198         cn.right = right
+     199         return cn
+
+
+::
+
+      31 def construct_transform(obj):
+      32     tla = obj.position.xyz if obj.position is not None else None
+      33     rot = obj.rotation.xyz if obj.rotation is not None else None
+      34     sca = obj.scale.xyz if obj.scale is not None else None
+      35     order = "trs"
+      36 
+      37     #elem = filter(None, [tla,rot,sca])
+      38     #if len(elem) > 1:
+      39     #    log.warning("construct_transform multi %s " % repr(obj))
+      40     #pass
+      41 
+      42     return make_transform( order, tla, rot, sca , three_axis_rotate=True, transpose_rotation=True, suppress_identity=False, dtype=np.float32 )
+      43 
+
+
+::
+
+    258 def make_transform( order, tla, rot, sca, dtype=np.float32, suppress_identity=True, three_axis_rotate=False, transpose_rotation=False):
+    259     """
+    260     :param order: string containing "s" "r" and "t", standard order is "trs" meaning t*r*s  ie scale first, then rotate, then translate 
+    261     :param tla: tx,ty,tz tranlation dists eg 0,0,0 for no translation 
+    262     :param rot: ax,ay,az,angle_degrees  eg 0,0,1,45 for 45 degrees about z-axis
+    263     :param sca: sx,sy,sz eg 1,1,1 for no scaling 
+    264     :return mat: 4x4 numpy array 
+    265 
+    266     All arguments can be specified as comma delimited string, list or numpy array
+    267 
+    268     Translation of npy/tests/NGLMTest.cc:make_mat
+    269     """
+    270 
+    271     if tla is None and rot is None and sca is None and suppress_identity:
+    272         return None
+    273 
+    274     identity = np.eye(4, dtype=dtype)
+    275     m = np.eye(4, dtype=dtype)
+    276     for c in order:
+    277         if c == 's':
+    278             m = make_scale(sca, m)
+    279         elif c == 'r':
+    280             if three_axis_rotate:
+    281                 m = rotate_three_axis(rot, m, transpose=transpose_rotation )
+    282             else:
+    283                 m = rotate(rot, m, transpose=transpose_rotation )
+    284             pass
+    285         elif c == 't':
+    286             m = translate(tla, m)
+    287         else:
+    288             assert 0
+    289         pass
+    290     pass
+    291 
+    292     if suppress_identity and np.all( m == identity ):
+    293         #log.warning("supressing identity transform")
+    294         return None
+    295     pass
+    296     return m
+
+
+
+
+FIXED : glTF viz shows messed up transforms
+----------------------------------------------
 
 Debug by editing the glTF to pick particular nodes::
 
@@ -22,17 +425,15 @@ Debug by editing the glTF to pick particular nodes::
 
 
 Similar trouble before
-------------------------
-
+~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Every time, gets troubles from transforms...
 
 * :doc:`gdml_gltf_transforms`
 
 
-
 Debugging Approach ?
------------------------
+~~~~~~~~~~~~~~~~~~~~~~~
 
 * compare the GGeo transforms from the two streams 
 * simplify transform handling : avoid multiple holdings of transforms, 
@@ -43,9 +444,8 @@ Observations
   translation in z : so getting that correct could be deceptive as no rotation   
 
 
-
 Switching to frame gets PMT pointing correct, but seems mangled inside themselves
------------------------------------------------------------------------------------
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 * mangled : the base poking thru the front 
 

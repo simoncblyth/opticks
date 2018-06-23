@@ -122,7 +122,7 @@ class NPY_API NCSG {
         std::string getTestLVName() const ;
         std::string getTestPVName() const ;
 
-        static NCSG* FromNode(nnode* root, const NSceneConfig* config);
+        static NCSG* FromNode(nnode* root, const NSceneConfig* config);  // not const because of nudger
         static NCSG* LoadCSG(const char* treedir, const char* gltfconfig);
         static NCSG* LoadTree(const char* treedir, const NSceneConfig* config );
 
@@ -206,16 +206,16 @@ class NPY_API NCSG {
         float        getContainerScale() const ;
         bool         isUsedGlobally() const ;
 
-        NPY<float>*  getNodeBuffer();
-        NPY<float>*  getTransformBuffer();
-        NPY<float>*  getGTransformBuffer();
-        NPY<float>*  getPlaneBuffer();
-        NParameters* getMetaParameters();
+        NPY<float>*  getNodeBuffer() const ;
+        NPY<float>*  getTransformBuffer() const ;
+        NPY<float>*  getGTransformBuffer() const ;
+        NPY<float>*  getPlaneBuffer() const ;
+        NParameters* getMetaParameters() const ;
         NParameters* getNodeMetadata(unsigned idx) const ;
 
 
         unsigned     getNumNodes() const ;
-        unsigned     getNumTransforms();
+        //unsigned     getNumTransforms() const ;
 
         unsigned     getHeight() const ;
         nnode*       getRoot() const ;
@@ -230,7 +230,7 @@ class NPY_API NCSG {
         // Deserialize
         NCSG(const char* treedir);
          // Serialize 
-        NCSG(nnode* root);
+        NCSG( nnode* root);  // cannot be const because of the nudger
 
     public:
         // for --testauto
@@ -279,7 +279,7 @@ class NPY_API NCSG {
         int          m_verbosity ;  
         bool         m_usedglobally ; 
 
-        nnode*           m_root ;  
+        nnode*       m_root ;  
         NNodePoints*     m_points ; 
         NNodeUncoincide* m_uncoincide ; 
         NNodeNudger*     m_nudger ; 

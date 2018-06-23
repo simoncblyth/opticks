@@ -1,5 +1,7 @@
 #pragma once
 
+#include <string>
+#include <sstream>
 #include <cassert>
 #include "YGLTF.h"
 
@@ -133,6 +135,21 @@ struct Impl {
         bool save_shaders = false ; 
         bool save_images = false ; 
         save_gltf(path, gltf, save_bin, save_shaders, save_images);
+    }
+
+    std::string desc() const 
+    {
+        std::stringstream ss ; 
+        ss 
+            << " scenes " << gltf->scenes.size() << std::endl 
+            << " nodes " << gltf->nodes.size() << std::endl
+            << " buffers " << gltf->buffers.size() << std::endl
+            << " bufferViews " << gltf->bufferViews.size() << std::endl
+            << " accessors " << gltf->accessors.size() << std::endl
+            << " materials " << gltf->materials.size() << std::endl
+            << " meshes " << gltf->meshes.size() << std::endl
+            ;
+        return ss.str();
     }
 
 };

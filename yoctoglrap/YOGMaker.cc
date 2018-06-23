@@ -101,7 +101,11 @@ void Maker::demo_create(const Geometry& geom)
 
     //  mesh primitives holds just an index pointer to the material, so 
     //  a single material can be shared by multiple meshes 
-
+    //
+    //  also note that the mesh can be is lightweight too, as it just refers to
+    //  accessors/bufferViews : this may be useful as material is a property of the mesh 
+    //  in glTF model
+    //
 
     int a = impl->add_node();
     int b = impl->add_node();
@@ -130,6 +134,7 @@ Maker::Maker(Sc* sc_, bool saveNPYToGLTF_ )
     :
     sc(sc_),
     impl(new Impl),
+    verbosity(1),
     saveNPYToGLTF(saveNPYToGLTF_),
     converted(false)
 {
@@ -199,11 +204,6 @@ void Maker::set_mesh_data( int meshIdx, Mh* mh, int materialIdx )
     add_primitives_to_mesh( meshIdx, TRIANGLES, vtx_a, idx_a, materialIdx );  
 }
 
-std::string Maker::get_mesh_uri( Mh* mh, const char* bufname ) const 
-{
-    return BFile::FormRelativePath("extras", BStr::itoa(mh->lvIdx), bufname );
-}
-
 int Maker::set_mesh_data_vertices( Mh* mh )
 {
     const NPY<float>* vtx = mh->vtx ;
@@ -213,8 +213,12 @@ int Maker::set_mesh_data_vertices( Mh* mh )
     std::vector<float> f_max ; 
     vtx->minmax(f_min,f_max);
 
-    SVec<float>::Dump("vtx.fmin", f_min ); 
-    SVec<float>::Dump("vtx.fmax", f_max ); 
+    if(verbosity > 3)
+    {
+        LOG(info) << "set_mesh_data_vertices" ; 
+        SVec<float>::Dump("vtx.fmin", f_min ); 
+        SVec<float>::Dump("vtx.fmax", f_max ); 
+    }
 
     int vtx_b = add_buffer<float>(vtx, uri.c_str() );
     int vtx_v = add_bufferView(vtx_b, ARRAY_BUFFER );
@@ -232,20 +236,6 @@ int Maker::set_mesh_data_indices( Mh* mh )
     const NPY<unsigned>* idx = mh->idx ;
 
     assert( idx->hasShape(-1,1) && " need to idx->reshape(-1,1) first " ); 
-    /*
-    if(!idx->hasShape(-1,1))
-    {
-        std::string bef = idx->getShapeString() ; 
-        idx->reshape(-1,1); 
-        std::string aft = idx->getShapeString() ; 
-
-        LOG(info) 
-           << "reshaped idx buffer" 
-           << " from " << bef 
-           << " to " << aft 
-           ; 
-    } 
-    */
 
     std::string uri = get_mesh_uri( mh, "indices.npy" );
 
@@ -256,8 +246,12 @@ int Maker::set_mesh_data_indices( Mh* mh )
     std::vector<float> f_min(u_min.begin(), u_min.end());
     std::vector<float> f_max(u_max.begin(), u_max.end());
 
-    SVec<float>::Dump("idx.fmin", f_min ); 
-    SVec<float>::Dump("idx.fmax", f_max ); 
+    if(verbosity > 3 )
+    {
+        LOG(info) << "set_mesh_data_indices" ; 
+        SVec<float>::Dump("idx.fmin", f_min ); 
+        SVec<float>::Dump("idx.fmax", f_max ); 
+    }
 
     int idx_b = add_buffer<unsigned>(idx, uri.c_str() );
     int idx_v = add_bufferView(idx_b, ELEMENT_ARRAY_BUFFER );
@@ -267,13 +261,46 @@ int Maker::set_mesh_data_indices( Mh* mh )
     return idx_a ; 
 }
 
+std::string Maker::get_mesh_uri( Mh* mh, const char* bufname ) const 
+{
+    return BFile::FormRelativePath("extras", BStr::itoa(mh->lvIdx), bufname );
+}
+
+void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, int indicesIdx, int materialIdx )
+{
+    mesh_t& mh = impl->get_mesh(meshIdx) ; 
+
+    mesh_primitive_t mp ; 
+
+    mp.attributes = {{"POSITION", positionIdx }} ; 
+    mp.indices = indicesIdx  ; 
+    mp.material = materialIdx ; 
+
+    switch(mode)
+    {
+        case POINTS         :  mp.mode = mesh_primitive_t::mode_t::points_t         ; break ; 
+        case LINES          :  mp.mode = mesh_primitive_t::mode_t::lines_t          ; break ; 
+        case LINE_LOOP      :  mp.mode = mesh_primitive_t::mode_t::line_loop_t      ; break ; 
+        case LINE_STRIP     :  mp.mode = mesh_primitive_t::mode_t::line_strip_t     ; break ; 
+        case TRIANGLES      :  mp.mode = mesh_primitive_t::mode_t::triangles_t      ; break ; 
+        case TRIANGLE_STRIP :  mp.mode = mesh_primitive_t::mode_t::triangle_strip_t ; break ; 
+        case TRIANGLE_FAN   :  mp.mode = mesh_primitive_t::mode_t::triangle_fan_t   ; break ; 
+    }
+ 
+    mh.primitives.push_back(mp) ;
+}
+
+
+
+
 template <typename T> 
 int Maker::add_buffer( const NPY<T>* npy, const char* uri )
 {
-    LOG(info) << "add_buffer" 
-              << " uri " << uri 
-              << " shape " << npy->getShapeString()
-              ;
+    
+    LOG(trace) << "add_buffer" 
+               << " uri " << uri 
+               << " shape " << npy->getShapeString()
+               ;
 
     specs.push_back(npy->getBufferSpec()) ; 
     NBufferSpec& spec = specs.back() ;
@@ -366,29 +393,6 @@ void Maker::append_child_to_node(int childIdx, int nodeIdx )
     nd.children.push_back(childIdx); 
 }
 
-void Maker::add_primitives_to_mesh( int meshIdx, Mode_t mode, int positionIdx, int indicesIdx, int materialIdx )
-{
-    mesh_t& mh = impl->get_mesh(meshIdx) ; 
-
-    mesh_primitive_t mp ; 
-
-    mp.attributes = {{"POSITION", positionIdx }} ; 
-    mp.indices = indicesIdx  ; 
-    mp.material = materialIdx ; 
-
-    switch(mode)
-    {
-        case POINTS         :  mp.mode = mesh_primitive_t::mode_t::points_t         ; break ; 
-        case LINES          :  mp.mode = mesh_primitive_t::mode_t::lines_t          ; break ; 
-        case LINE_LOOP      :  mp.mode = mesh_primitive_t::mode_t::line_loop_t      ; break ; 
-        case LINE_STRIP     :  mp.mode = mesh_primitive_t::mode_t::line_strip_t     ; break ; 
-        case TRIANGLES      :  mp.mode = mesh_primitive_t::mode_t::triangles_t      ; break ; 
-        case TRIANGLE_STRIP :  mp.mode = mesh_primitive_t::mode_t::triangle_strip_t ; break ; 
-        case TRIANGLE_FAN   :  mp.mode = mesh_primitive_t::mode_t::triangle_fan_t   ; break ; 
-    }
- 
-    mh.primitives.push_back(mp) ;
-}
 
 void Maker::set_node_mesh(int nodeIdx, int meshIdx)
 {
@@ -431,16 +435,18 @@ hold the material index.  Model mismatch ?
 
 void Maker::configure_material_auto( int idx)
 {
-    switch(idx)
+    float alpha = 0.5 ; 
+
+    switch(idx % 7)
     {
-        case 0:  configure_material(idx,  1.0, 0.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 1:  configure_material(idx,  0.0, 1.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 2:  configure_material(idx,  0.0, 0.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 3:  configure_material(idx,  1.0, 1.0, 0.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 4:  configure_material(idx,  1.0, 0.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 5:  configure_material(idx,  0.0, 1.0, 1.0, 1.0   ,0.5,0.1 ) ;  break ;  
-        case 6:  configure_material(idx,  0.5, 0.5, 0.5, 1.0   ,0.5,0.1 ) ;  break ;  
-        default: configure_material(idx,  0.9, 0.9, 0.9, 1.0   ,0.5,0.1 ) ;  break ;  
+        case 0:  configure_material(idx, 1.0, 0.0, 0.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 1:  configure_material(idx, 0.0, 1.0, 0.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 2:  configure_material(idx, 0.0, 0.0, 1.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 3:  configure_material(idx, 1.0, 1.0, 0.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 4:  configure_material(idx, 1.0, 0.0, 1.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 5:  configure_material(idx, 0.0, 1.0, 1.0, alpha ,0.5,0.1 ) ;  break ;  
+        case 6:  configure_material(idx, 0.5, 0.5, 0.5, alpha ,0.5,0.1 ) ;  break ;  
+        default: configure_material(idx, 0.9, 0.9, 0.9, alpha ,0.5,0.1 ) ;  break ;  
     }
 }
 
@@ -464,7 +470,10 @@ void Maker::configure_material(
     mr.roughnessFactor = roughnessFactor ;
 
     mt.pbrMetallicRoughness = mr ; 
+    mt.extras["materialIdx"] = idx ; 
 }
+
+
 
 void Maker::save(const char* path, bool cat) const 
 {
@@ -478,6 +487,8 @@ void Maker::save(const char* path, bool cat) const
     impl->save(path, save_bin); 
 
     LOG(info) << "writing " << path ; 
+
+    LOG(info) << impl->desc() ; 
 
     if(cat)
     {
@@ -495,7 +506,10 @@ void Maker::saveBuffers(const char* path) const
     // This can save buffers into non-existing subfolders, 
     // which it creates, unlike the ygltf buffer saving.
 
-    LOG(info) << " path " << path ; 
+    LOG(info) 
+         << " path " << path 
+         << " num_buffers " << specs.size()
+         ;
 
     std::string dir = BFile::ParentDir(path);
 
@@ -506,6 +520,7 @@ void Maker::saveBuffers(const char* path) const
         std::string bufpath_ = BFile::FormPath( dir.c_str(),  spec.uri.c_str() ); 
         const char* bufpath = bufpath_.c_str() ; 
 
+        if(verbosity > 3)
         std::cout << std::left 
                   << std::setw(3) << i
                   << " "

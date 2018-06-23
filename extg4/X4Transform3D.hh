@@ -4,7 +4,9 @@
 #include <array>
 #include "X4_API_EXPORT.hh"
 #include "G4Transform3D.hh"
+
 class G4VPhysicalVolume ; 
+class G4DisplacedSolid ; 
 
 #include "glm/fwd.hpp"
 
@@ -15,8 +17,9 @@ X4Transform3D
 
 Adopting:
 
-* GetLocalTransform with frame=false and the M44T approach 
-  to mapping from G4Transform3D to glm succeeds to yield glTF render 
+* X4Transform3D::GetObjectTransform 
+  (same as the M44T approach to mapping from G4Transform3D to glm) 
+  succeeds to yield glTF render 
   that appears correct : PMTs pointing and assembled correctly  
 
 * see issues/g4Live_gltf_shakedown.rst
@@ -36,10 +39,12 @@ NB majority of the methods only used in development
 struct X4_API X4Transform3D
 {
     static std::string Digest(const G4Transform3D&  transform ); 
-    static G4Transform3D* Convert( const glm::mat4&     trs );
-    static glm::mat4*     Convert(const G4Transform3D&  transform );
-    static glm::mat4* GetLocalTransform(const G4VPhysicalVolume* const pv, bool frame );
+    static G4Transform3D Convert( const glm::mat4&     trs );
+    static glm::mat4     Convert(const G4Transform3D&  transform );
 
+    static glm::mat4 GetObjectTransform(const G4VPhysicalVolume* const pv ); // <-- preferred
+    static glm::mat4 GetFrameTransform(const G4VPhysicalVolume* const pv );
+    static glm::mat4 GetDisplacementTransform(const G4DisplacedSolid* const disp );
 
     typedef enum { M43, M44, M44T } Mapping_t ; 
     typedef std::array<float,16> Array_t ; 

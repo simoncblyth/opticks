@@ -41,6 +41,7 @@ GLTF for consumption by NGLTF/NScene.
 **/
 
 struct nnode ; 
+class NCSG ; 
 struct nmat4triple ; 
 class GMesh ; 
 
@@ -118,7 +119,9 @@ struct YOG_API Mh  // mesh
     std::string soName ;
     int          soIdx ; 
 
-    nnode*               csg ; 
+    //const nnode*         csgnode ; 
+    nnode*         csgnode ;     // not-const due to nudger
+    const NCSG*          csg ; 
     const GMesh*         mesh ; 
     const NPY<float>*    vtx ; 
     const NPY<unsigned>* idx ; 

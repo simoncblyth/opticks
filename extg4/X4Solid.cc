@@ -18,9 +18,10 @@
 #include "G4UnionSolid.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "X4Transform3D.hh"
 #include "X4Solid.hh"
-#include "BStr.hh"
 
+#include "BStr.hh"
 #include "OpticksCSG.h"
 #include "GLMFormat.hpp"
 #include "NGLMExt.hpp"
@@ -122,6 +123,9 @@ G4ThreeVector X4Solid::GetAngles(const G4RotationMatrix& mtx)
    return G4ThreeVector(x,y,z);
 }
 
+
+
+
 void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVector& rot )
 {
     // cf /usr/local/opticks/externals/g4/geant4_10_02_p01/source/persistency/gdml/src/G4GDMLWriteSolids.cc
@@ -139,6 +143,12 @@ void X4Solid::booleanDisplacement( G4VSolid** pp, G4ThreeVector& pos, G4ThreeVec
       }
       break;
    }
+
+   LOG(info) << " booleanDisplacement "
+             << " pos " << pos 
+             << " rot " << rot 
+             ;
+
 }
 
 
@@ -156,13 +166,18 @@ void X4Solid::convertSubtractionSolid()
 }
 void X4Solid::convertDisplacedSolid()
 {
-    const G4DisplacedSolid* const solid = static_cast<const G4DisplacedSolid*>(m_solid);
-    G4VSolid* moved = solid->GetConstituentMovedSolid() ;
+    const G4DisplacedSolid* const disp = static_cast<const G4DisplacedSolid*>(m_solid);
+    G4VSolid* moved = disp->GetConstituentMovedSolid() ;
+    assert( dynamic_cast<G4DisplacedSolid*>(moved) == NULL ); // only a single displacement is handled
 
     X4Solid* xmoved = new X4Solid(moved);
     nnode* a = xmoved->root();
 
-    // just ignoring the displacment for now
+    glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);  
+    a->transform = new nmat4triple(xf_disp); 
+    a->update_gtransforms();  // without this the transform does nothing 
+
+    LOG(error) << gpresent("\n      disp", xf_disp) ; 
 
     setRoot(a); 
 }
@@ -181,15 +196,7 @@ void X4Solid::convertBooleanSolid()
     G4VSolid* left  = const_cast<G4VSolid*>(solid->GetConstituentSolid(0));
     G4VSolid* right = const_cast<G4VSolid*>(solid->GetConstituentSolid(1));
 
-/* 
-    TODO: get displacements operational
-
-    G4ThreeVector left_pos,left_rot ;
-    booleanDisplacement( &left, left_pos, left_rot );
-
-    G4ThreeVector right_pos,right_rot;
-    booleanDisplacement( &right, right_pos, right_rot );
-*/
+    assert( dynamic_cast<G4DisplacedSolid*>(left) == NULL ); // not expecting left displacement 
 
     X4Solid* xleft = new X4Solid(left); 
     X4Solid* xright = new X4Solid(right); 
@@ -309,7 +316,7 @@ void X4Solid::convertSphere()
 {  
     const G4Sphere* const solid = static_cast<const G4Sphere*>(m_solid);
     assert(solid); 
-    LOG(info) << "\n" << *solid ; 
+    //LOG(info) << "\n" << *solid ; 
 
     bool only_inner = false ; 
     nnode* n = convertSphere_(only_inner); 
@@ -320,7 +327,7 @@ void X4Solid::convertOrb()
 {  
     const G4Orb* const solid = static_cast<const G4Orb*>(m_solid);
     assert(solid); 
-    LOG(info) << "\n" << *solid ; 
+    //LOG(info) << "\n" << *solid ; 
 
     float radius = solid->GetRadius()/mm ; 
 
@@ -360,7 +367,7 @@ void X4Solid::convertTubs()
 
     const G4Tubs* const solid = static_cast<const G4Tubs*>(m_solid);
     assert(solid); 
-    LOG(info) << "\n" << *solid ; 
+    //LOG(info) << "\n" << *solid ; 
 
     // match G4GDMLWriteSolids::TubeWrite
 
@@ -545,7 +552,7 @@ void X4Solid::convertCons()
 {  
     const G4Cons* const cone = static_cast<const G4Cons*>(m_solid);
     assert(cone); 
-    LOG(info) << "\n" << *cone ; 
+    //LOG(info) << "\n" << *cone ; 
 
     bool only_inner = false ; 
     nnode* n = convertCons_(only_inner); 

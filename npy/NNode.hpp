@@ -28,6 +28,29 @@ struct nmat4triple ;
 
 #include "NNodeEnum.hpp"
 
+/**
+nnode : CSG nodes (ie constituent nodes of small boolean CSG trees) 
+======================================================================
+
+Despite the name nnode is a "mesh-level-thing", ie its needed 
+only once for each shape. Every node will reference an nnode instance.
+
+WHY does NCSG require nnode to have boundary spec char* ? 
+------------------------------------------------------------
+
+Boundary is relevant to structure-nodes (not shape-nodes at mesh level)
+so it belongs at node level up in GParts. Not here in "nnode" at mesh level. 
+
+* Suspect nnode does not need boundary any more ?
+* hmm actually that was probably a convenience for tboolean- passing boundaries in from python,
+  so need to keep the capability
+* GParts really needs this spec, as it has a GBndLib to convert the spec 
+  into a bndIdx for laying down in buffers
+
+
+
+**/
+
 struct NPY_API nnode 
 {
     static unsigned bb_count ; 
@@ -51,8 +74,8 @@ struct NPY_API nnode
     void get_primitive_bbox( nbbox& bb ) const ;
 
     virtual npart part() const ;
-    virtual unsigned maxdepth();
-    virtual unsigned _maxdepth(unsigned depth);
+    virtual unsigned maxdepth() const ;
+    virtual unsigned _maxdepth(unsigned depth) const ;
 
     static const unsigned desc_indent ; 
     virtual std::string desc() const ;
@@ -185,10 +208,11 @@ struct NPY_API nnode
     static void get_mask_r(const nnode* node, NNodeType ntyp, unsigned& msk);
     std::string get_mask_string(NNodeType ntyp) const ;
 
-
     void set_treeidx(int idx) ; 
     void set_treedir(const char* treedir) ; 
     void set_boundary(const char* boundary) ; 
+    // boundary spec is only actually needed at structure level, 
+    // suspect the boundary member is here for testing convenience (python tboolean inputs)
 
     bool is_znudge_capable() const ;
     bool is_zero() const ;

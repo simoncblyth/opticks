@@ -1,4 +1,6 @@
 #include "G4VPhysicalVolume.hh"
+#include "G4DisplacedSolid.hh"
+
 #include "X4Transform3D.hh"
 #include "NGLM.hpp"
 #include "GLMFormat.hpp"
@@ -7,31 +9,36 @@
 
 std::string X4Transform3D::Digest(const G4Transform3D&  t)
 {
-    glm::mat4* mat = Convert(t);
-    return SDigest::digest( (void*)mat, sizeof(glm::mat4) );
+    glm::mat4 mat = Convert(t);
+    return SDigest::digest( (void*)&mat, sizeof(glm::mat4) );
 }
 
-glm::mat4* X4Transform3D::GetLocalTransform(const G4VPhysicalVolume* const pv, bool frame)
+glm::mat4 X4Transform3D::GetObjectTransform(const G4VPhysicalVolume* const pv)
 {
-    glm::mat4* transform = NULL ; 
-    if(frame)
-    {
-        const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
-        G4ThreeVector    tla = pv->GetFrameTranslation() ;
-        G4Transform3D    tra(rotp ? *rotp : G4RotationMatrix(),tla);
-        transform = Convert( tra );
-    }
-    else
-    {
-        G4RotationMatrix rot = pv->GetObjectRotationValue() ;  // obj relative to mother
-        G4ThreeVector    tla = pv->GetObjectTranslation() ;
-        G4Transform3D    tra(rot,tla);
-        transform = Convert( tra ) ;
-    }
-    return transform ; 
+   // preferred for interop with glm/Opticks : obj relative to mother
+    G4RotationMatrix rot = pv->GetObjectRotationValue() ; 
+    G4ThreeVector    tla = pv->GetObjectTranslation() ;
+    G4Transform3D    tra(rot,tla);
+    return Convert( tra ) ;
 }
 
-glm::mat4* X4Transform3D::Convert( const G4Transform3D& t ) // static
+glm::mat4 X4Transform3D::GetFrameTransform(const G4VPhysicalVolume* const pv)
+{
+    const G4RotationMatrix* rotp = pv->GetFrameRotation() ;
+    G4ThreeVector    tla = pv->GetFrameTranslation() ;
+    G4Transform3D    tra(rotp ? *rotp : G4RotationMatrix(),tla);
+    return Convert( tra ) ;
+}
+
+glm::mat4 X4Transform3D::GetDisplacementTransform(const G4DisplacedSolid* const disp)
+{
+    G4RotationMatrix rot = disp->GetObjectRotation();  
+    G4ThreeVector    tla = disp->GetObjectTranslation();
+    G4Transform3D    tra(rot,tla);
+    return Convert( tra ) ;
+}
+
+glm::mat4 X4Transform3D::Convert( const G4Transform3D& t ) // static
 {
     // M44T
     std::array<float, 16> a ; 
@@ -44,12 +51,11 @@ glm::mat4* X4Transform3D::Convert( const G4Transform3D& t ) // static
     if(n > 0) LOG(fatal) << "nan/inf array values";
     assert( n == 0); 
 
-    glm::mat4* mat = new glm::mat4(glm::make_mat4(a.data()));
-    return mat ; 
+    return glm::make_mat4(a.data()) ; 
 }
 
 
-G4Transform3D* X4Transform3D::Convert( const glm::mat4& trs ) // static
+G4Transform3D X4Transform3D::Convert( const glm::mat4& trs ) // static
 {
     float xx = trs[0][0] ; 
     float xy = trs[0][1] ; 
@@ -89,7 +95,7 @@ G4Transform3D* X4Transform3D::Convert( const glm::mat4& trs ) // static
     G4ThreeVector    translate(dx, dy, dz);
     G4Transform3D    transform( rotate, translate );
 
-    return new G4Transform3D(transform) ; 
+    return transform ; 
 }
 
 
@@ -177,7 +183,6 @@ void X4Transform3D::copyToArray_M44T(std::array<float,16>& a, const G4Transform3
     a[ 8] = t.xz() ; a[ 9] = t.yz() ; a[10] = t.zz() ; a[11] = 0.f    ; 
     a[12] = t.dx() ; a[13] = t.dy() ; a[14] = t.dz() ; a[15] = 1.f    ;
 }
-
 
 void X4Transform3D::dump(const char* msg) const 
 {

@@ -110,7 +110,15 @@ int Sc::add_mesh(
     if(!has_mesh(lvIdx))
     {
         soIdx = meshes.size(); 
-        meshes.push_back(new Mh { lvIdx, mtIdx, lvName, soName, soIdx, NULL, NULL, NULL, NULL }) ;
+
+        //const nnode* csgnode = NULL ; 
+        nnode* csgnode = NULL ; 
+        const NCSG*  csg  = NULL ; 
+        const GMesh* mesh  = NULL ; 
+        const NPY<float>* vtx  = NULL ; 
+        const NPY<unsigned>* idx  = NULL ; 
+
+        meshes.push_back(new Mh { lvIdx, mtIdx, lvName, soName, soIdx, csgnode, csg, mesh, vtx, idx }) ;
     }
     int soIdx2 = lv2so(lvIdx);
     if(soIdx > -1 ) assert( soIdx2 == soIdx ) ; // when a new mesh is added, can check local indices match
@@ -136,7 +144,7 @@ int Sc::get_material_idx(const std::string& matName) const
 }
 
 
-int Sc::add_material(const std::string& matName)
+int Sc::add_material(const std::string& matName) // only adds if no material with that name is already present
 {
     int idx = get_material_idx(matName) ;
     if( idx == -1 )

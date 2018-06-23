@@ -37,8 +37,7 @@ void test_convert()
 
     // convert glm ->  G4 
 
-    G4Transform3D* t0p = X4Transform3D::Convert(trs);
-    const G4Transform3D& t0 = *t0p ; 
+    G4Transform3D t0 = X4Transform3D::Convert(trs);
 
     G4Point3D pp(p.x, p.y, p.z ) ; 
     G4Point3D ppt = t0 * pp ;  
@@ -57,8 +56,7 @@ void test_convert()
 
     // convert back from G4 -> glm 
 
-    glm::mat4* trs2_p = X4Transform3D::Convert(t0) ; 
-    const glm::mat4& trs2 = *trs2_p ;
+    glm::mat4 trs2 = X4Transform3D::Convert(t0) ; 
 
     // compare the glm matrices componentwise
 

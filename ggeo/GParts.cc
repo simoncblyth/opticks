@@ -162,8 +162,17 @@ GParts* GParts::make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec)
 
 const int GParts::NTRAN = 3 ; 
 
+void GParts::setCSG(const NCSG* csg)
+{
+    m_csg = csg ; 
+}
+const NCSG* GParts::getCSG() const 
+{
+    return m_csg ; 
+}
 
-GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
+
+GParts* GParts::make( const NCSG* tree, const char* spec, unsigned verbosity )
 {
     assert(spec);
 
@@ -249,6 +258,9 @@ GParts* GParts::make( NCSG* tree, const char* spec, unsigned verbosity )
     GParts* pts = new GParts(nodebuf, tranbuf, planbuf, lspec) ;
 
     //pts->setTypeCode(0u, root->type);   //no need, slot 0 is the root node where the type came from
+
+    pts->setCSG(tree); 
+
     return pts ; 
 }
 
@@ -266,7 +278,8 @@ GParts::GParts(GBndLib* bndlib)
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL)
+      m_medium(NULL),
+      m_csg(NULL)
 {
       m_part_buffer->zero();
       m_tran_buffer->zero();
@@ -288,7 +301,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, c
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL)
+      m_medium(NULL),
+      m_csg(NULL)
 {
       m_bndspec->add(spec);
       init() ; 
@@ -307,7 +321,8 @@ GParts::GParts(NPY<float>* partBuf,  NPY<float>* tranBuf, NPY<float>* planBuf, G
       m_verbosity(0),
       m_analytic_version(0),
       m_primflag(CSG_FLAGNODETREE),
-      m_medium(NULL)
+      m_medium(NULL),
+      m_csg(NULL)
 {
      
       const std::string& reldir = spec->getRelDir() ;

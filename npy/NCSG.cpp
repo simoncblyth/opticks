@@ -85,7 +85,7 @@ NCSG::NCSG(const char* treedir)
 {
 }
 
-// ctor : booting from in memory node tree
+// ctor : booting from in memory node tree : cannoy be cont because of the nudger 
 NCSG::NCSG(nnode* root ) 
    :
    m_meta(NULL),
@@ -681,32 +681,25 @@ unsigned NCSG::getNumNodes() const
     return m_num_nodes ; 
 }
 
-NPY<float>* NCSG::getNodeBuffer()
+NPY<float>* NCSG::getNodeBuffer() const 
 {
     return m_nodes ; 
 }
-NPY<float>* NCSG::getTransformBuffer()
+NPY<float>* NCSG::getTransformBuffer() const 
 {
     return m_transforms ; 
 }
 
-NPY<float>* NCSG::getGTransformBuffer()
+NPY<float>* NCSG::getGTransformBuffer() const
 {
     return m_gtransforms ; 
 }
-NPY<float>* NCSG::getPlaneBuffer()
+NPY<float>* NCSG::getPlaneBuffer() const 
 {
     return m_planes ; 
 }
 
-
-
-
-
-
-
-
-NParameters* NCSG::getMetaParameters() 
+NParameters* NCSG::getMetaParameters() const
 {
     return m_meta ; 
 }
@@ -1462,7 +1455,8 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
 
 NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
 {
-    assert( root->boundary && "must root->set_boundary(spec) first" );
+    //assert( root->boundary && "must root->set_boundary(spec) first" );
+    // stipulation no longer needed ??
 
     NCSG* tree = new NCSG(root);
 

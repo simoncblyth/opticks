@@ -92,6 +92,7 @@ struct YOG_API Maker
 
     Sc*                      sc ;  
     Impl*                    impl ; 
+    int                      verbosity ;  
 
     bool                     saveNPYToGLTF ; 
     bool                     converted ; 
