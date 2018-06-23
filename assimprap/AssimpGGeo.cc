@@ -1020,7 +1020,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
 
     char* desc = node->getDescription("\n\noriginal node description"); 
     volume->setDescription(desc);
-    volume->setName(node->getName());  // this is LV name, maybe set PV name too 
+    volume->setName(node->getName());  // this is LV name, maybe set PV name too : actully PV name would make more sense
 
     if(m_volnames)
     {

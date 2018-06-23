@@ -91,6 +91,7 @@ GGeo::GGeo(Opticks* ok)
    m_composition(NULL), 
    m_treecheck(NULL), 
    m_loaded(false), 
+   m_prepared(false), 
    m_lookup(NULL), 
    m_meshlib(NULL),
    m_geolib(NULL),
@@ -566,14 +567,18 @@ void GGeo::loadFromG4DAE()
 
     assert(rc == 0 && "G4DAE geometry file does not exist, try : opticksdata- ; opticksdata-- ") ;
 
-    prepareToSave();
+    prepare();
 
     LOG(error) << "GGeo::loadFromG4DAE DONE" ; 
 }
 
 
-void GGeo::prepareToSave()
+void GGeo::prepare()
 {
+   // prepare is needed prior to saving or GPU upload by OGeo
+    assert( m_prepared == false && "have prepared already" ); 
+    m_prepared = true ; 
+
     prepareScintillatorLib();
 
     prepareMeshes();
@@ -600,7 +605,19 @@ void GGeo::loadAnalyticFromGLTF()
 
 void GGeo::save()
 {
-    LOG(info) << "GGeo::save" ;
+    const char* idpath = m_ok->getIdPath() ;
+    LOG(info) << "GGeo::save" 
+              << " idpath " << ( idpath ? idpath : "NULL" )
+               ;
+
+
+    if(!m_prepared)
+    {
+        LOG(info) << "preparing before save " ; 
+        prepare();
+    }   
+
+
     m_geolib->dump("GGeo::save.geolib");
 
     m_geolib->save();
@@ -705,9 +722,6 @@ void GGeo::setupColors()
 }
 
 
-
-
-
 void GGeo::setLow(const gfloat3& low)
 {
     m_low = new gfloat3(low);
@@ -717,9 +731,6 @@ void GGeo::setHigh(const gfloat3& high)
     m_high = new gfloat3(high);
 }
 
-
-
-
 void GGeo::updateBounds(GNode* node)
 {
     if(!m_low)  m_low  = new gfloat3(1e10f, 1e10f, 1e10f) ;
@@ -727,7 +738,6 @@ void GGeo::updateBounds(GNode* node)
   
     node->updateBounds(*m_low, *m_high);
 }
-
 
 void GGeo::Summary(const char* msg)
 {
@@ -738,7 +748,6 @@ void GGeo::Summary(const char* msg)
               << " bs " << m_border_surfaces.size()
               << " ss " << m_skin_surfaces.size()
               ;
-
 
     if(m_low)  printf("    low  %10.3f %10.3f %10.3f \n", m_low->x, m_low->y, m_low->z);
     if(m_high) printf("    high %10.3f %10.3f %10.3f \n", m_high->x, m_high->y, m_high->z);

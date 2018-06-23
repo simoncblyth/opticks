@@ -3,10 +3,8 @@
 
 #include "Opticks.hh"
 #include "OpticksResource.hh"
+#include "OPTICKS_LOG.hh"
 
-
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
 
 void dumpenv_0(char** envp)
 {
@@ -19,7 +17,6 @@ void dumpenv_0(char** envp)
     }
 }
 
-
 void dumpenv_1(char** envp)
 {
     while(*envp) printf("%s\n",*envp++);
@@ -29,8 +26,9 @@ void dumpenv_1(char** envp)
 
 int main(int argc, char** argv, char** /*envp*/)
 {
-    PLOG_(argc, argv);
-    OKCORE_LOG__ ; 
+    OPTICKS_LOG(argc, argv);
+
+    Opticks::SetKey(NULL);  // <-- using NULL makes sensitive to OPTICKS_KEY envvar for debugging
 
     Opticks ok(argc, argv) ;
 

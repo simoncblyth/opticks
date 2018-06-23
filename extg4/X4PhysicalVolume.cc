@@ -68,9 +68,13 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
     const char* key = X4PhysicalVolume::Key(top) ; 
 
     BOpticksKey::SetKey(key);
-    LOG(info) << " SetKey " ; 
+
+    LOG(error) << " SetKey " << key  ; 
+
     //Opticks* ok = Opticks::GetOpticks() ; 
+
     Opticks* ok = new Opticks(0,0);  // Opticks instanciation must be after BOpticksKey::SetKey
+
     GGeo* gg = new GGeo(ok) ;
 
     X4PhysicalVolume xtop(gg, top) ;  
@@ -79,7 +83,6 @@ GGeo* X4PhysicalVolume::Convert(const G4VPhysicalVolume* const top)
  
     return gg ; 
 }
-
 
 
 X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const top)
@@ -127,7 +130,18 @@ void X4PhysicalVolume::convertMaterials()
               << " num_materials " << num_materials
               ;
 
+
+    // TODO : can these go into one method within GMaterialLib?
+    m_mlib->addTestMaterials() ;
+
     m_mlib->close();   // may change order if prefs dictate
+
+    // replaceGROUPVE needs the buffer : so must be after close
+    bool debug = false ; 
+    m_mlib->replaceGROUPVEL(debug); 
+
+    // TODO: do the GROUPVEL calc be directly within Geant4, to avoid the kludging 
+    
 
     // getting names must be done after the close
 
@@ -162,6 +176,9 @@ void X4PhysicalVolume::convertSurfaces()
               << " num_lbs " << num_lbs
               << " num_sks " << num_sks
               ;
+
+    m_slib->addPerfectSurfaces();
+
     m_slib->close();  // may change order if prefs dictate
 }
 
@@ -475,6 +492,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const NCSG* csg = mh->csg ; 
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+     pts->setBndLib(m_blib);
 
 
      // metadata needs to be transferred, like in GScene ?
@@ -485,11 +503,18 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      GVolume* volume = new GVolume(ndIdx, gtransform, mesh, boundary, sensor );
 
+     // sensor = m_sensor_list ? m_sensor_list->findSensorForNode( ndIndex ) : NULL ; 
+     volume->setSensor( sensor );   
+     volume->setBoundary( boundary ); 
+    
+     // TODO: rejig ctor args, to avoid needing the setters for array setup
+
      volume->setLevelTransform(ltransform);
      volume->setParallelNode( nd ); 
      volume->setParts( pts ); 
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );
+     volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
 
      if(parent) 
      {

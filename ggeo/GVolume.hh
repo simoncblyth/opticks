@@ -37,7 +37,6 @@ Constituent "solids" (as in CSG, and G4VSolid in G4) are mesh-level-objects
 Whereas GVolume(GNode) are node-level-objects (relatively many in the geometry)
 which refer to the corresponding mesh-level-objects by pointer or index.
 
-
 **/
 
 class GGEO_API GVolume : public GNode {
@@ -46,29 +45,25 @@ class GGEO_API GVolume : public GNode {
   public:
       GVolume( unsigned int index, GMatrix<float>* transform, const GMesh* mesh,  unsigned int boundary, NSensor* sensor);
   public:
-  public:
       void setCSGFlag(OpticksCSG_t flag);
       void setCSGSkip(bool csgskip);
-      void setBoundary(unsigned boundary);
-      void setBoundaryAll(unsigned boundary);
-      void setSensor(NSensor* sensor);
+      void setBoundary(unsigned boundary);     // also sets BoundaryIndices array
+      void setBoundaryAll(unsigned boundary);  // recursive over tree
+      void setSensor(NSensor* sensor);         // also sets SensorIndices
       void setSensorSurfaceIndex(unsigned int ssi);
       unsigned int getSensorSurfaceIndex();
-
   public:
       // need to resort to names for debugging IAV top lid issue
       void setPVName(const char* pvname);
       void setLVName(const char* lvname);
       const char* getPVName();
       const char* getLVName();
-
   public:
       OpticksCSG_t getCSGFlag();
       bool         isCSGSkip();
       unsigned int getBoundary() const ;
       guint4       getIdentity();
       //void  setIdentity(const guint4& id );
-
       NSensor*     getSensor();
   public:
       GParts*      getParts();

@@ -100,6 +100,7 @@ GScene
 
 class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
+        friend class  X4PhysicalVolume ;  // X4PhysicalVolume::init needs afterConvertMaterial 
         friend class  AssimpGGeo ; 
         friend struct GSceneTest ; 
     public:
@@ -161,8 +162,9 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
     public:
         // configureGeometry stage additions
     public:
+        void prepare();  // prepare is needed before saving to file or GPU upload by oxrap.OGeo
+    public:
         void close();
-        void prepareToSave();
         void prepareMaterialLib();
         void prepareSurfaceLib();
         void prepareScintillatorLib();
@@ -354,6 +356,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         Composition*                  m_composition ; 
         GTreeCheck*                   m_treecheck ; 
         bool                          m_loaded ;  
+        bool                          m_prepared ;  
 
 
 

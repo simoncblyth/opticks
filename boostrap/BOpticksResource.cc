@@ -37,6 +37,7 @@ BOpticksResource::BOpticksResource(const char* envprefix)
     m_geocache_dir(NULL),
     m_resource_dir(NULL),
     m_gensteps_dir(NULL),
+    m_export_dir(NULL),
     m_installcache_dir(NULL),
     m_rng_installcache_dir(NULL),
     m_okc_installcache_dir(NULL),
@@ -167,6 +168,7 @@ void BOpticksResource::initTopDownDirs()
     m_geocache_dir         = GeoCacheDir() ;      // eg /usr/local/opticks/geocache
     m_resource_dir         = ResourceDir() ;      // eg /usr/local/opticks/opticksdata/resource
     m_gensteps_dir         = GenstepsDir() ;      // eg /usr/local/opticks/opticksdata/gensteps
+    m_export_dir           = ExportDir() ;        // eg /usr/local/opticks/opticksdata/export
     m_installcache_dir     = InstallCacheDir() ;  // eg /usr/local/opticks/installcache
 
     m_rng_installcache_dir = RNGInstallPath() ;   // eg /usr/local/opticks/installcache/RNG
@@ -178,7 +180,9 @@ void BOpticksResource::initTopDownDirs()
     m_res->addDir("geocache_dir",    m_geocache_dir );
     m_res->addDir("resource_dir",    m_resource_dir );
     m_res->addDir("gensteps_dir",    m_gensteps_dir );
+    m_res->addDir("export_dir",      m_export_dir);
     m_res->addDir("installcache_dir", m_installcache_dir );
+
     m_res->addDir("rng_installcache_dir", m_rng_installcache_dir );
     m_res->addDir("okc_installcache_dir", m_okc_installcache_dir );
     m_res->addDir("ptx_installcache_dir", m_ptx_installcache_dir );
@@ -235,6 +239,7 @@ const char* BOpticksResource::OpticksDataDir(){ return makeInstallPath(OKCONF_OP
 const char* BOpticksResource::GeoCacheDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "geocache",  NULL); }
 const char* BOpticksResource::ResourceDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "resource" ); }
 const char* BOpticksResource::GenstepsDir(){    return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "gensteps" ); }
+const char* BOpticksResource::ExportDir(){      return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "opticksdata", "export" ); }
 
 const char* BOpticksResource::PTXInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "PTX"); }
 const char* BOpticksResource::RNGInstallPath(){ return makeInstallPath(OKCONF_OPTICKS_INSTALL_PREFIX, "installcache", "RNG"); }
@@ -253,6 +258,7 @@ const char* BOpticksResource::getInstallDir() {         return m_install_prefix 
 const char* BOpticksResource::getOpticksDataDir() {     return m_opticksdata_dir ; }   
 const char* BOpticksResource::getGeoCacheDir() {        return m_geocache_dir ; }   
 const char* BOpticksResource::getResourceDir() {        return m_resource_dir ; } 
+const char* BOpticksResource::getExportDir() {          return m_export_dir ; } 
 
 const char* BOpticksResource::getInstallCacheDir() {    return m_installcache_dir ; } 
 const char* BOpticksResource::getRNGInstallCacheDir() { return m_rng_installcache_dir ; } 
@@ -288,6 +294,7 @@ void BOpticksResource::setSrcPath(const char* srcpath)
 
     std::string srcbase = BFile::ParentDir(srcfold.c_str());
     m_srcbase = strdup(srcbase.c_str());
+
     m_res->addDir("srcfold", m_srcfold ); 
     m_res->addDir("srcbase", m_srcbase ); 
 

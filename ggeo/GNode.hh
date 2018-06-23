@@ -13,6 +13,34 @@ class GVolume ;
 #include "GGEO_API_EXPORT.hh"
 #include "GGEO_HEAD.hh"
 
+/**
+GNode
+======
+
+**boundary indices live on the node rather than the mesh**
+
+as there are a relatively small number of meshes and many nodes
+that utilize them with different transforms
+
+normally a single boundary per-node but allow the 
+possibility of compound boundary nodes, eg for combined meshes
+
+
+setBoundaryIndices
+setNodeIndices
+setSensorIndices
+
+    indice setters duplicate the index into an array 
+    of length num_face of the associated mesh,
+    allowing simple merging when flatten a tree 
+    of nodes into a single structure
+
+TODO:
+
+* reposition some methods between GVolume/GNode for clarity 
+
+**/
+
 class GGEO_API GNode {
   public:
       GNode(unsigned int index, GMatrix<float>* transform, const GMesh* mesh);
@@ -22,7 +50,6 @@ class GGEO_API GNode {
       virtual ~GNode();
   private:
       void init();
-
   public: 
       void Summary(const char* msg="GNode::Summary");
       void dump(const char* msg="GNode::dump");
@@ -32,71 +59,46 @@ class GGEO_API GNode {
       void setDescription(char* desc);
       void setName(const char* name);
       const char* getName();
-
   public:
      void setRepeatIndex(unsigned int index);
      unsigned int getRepeatIndex();  
-
-  public:
-      //
-      // **boundary indices live on the node rather than the mesh**
-      //
-      // as there are a relatively small number of meshes and many nodes
-      // that utilize them with different transforms
-      //
-      // normally a single boundary per-node but allow the 
-      // possibility of compound boundary nodes, eg for combined meshes
-      //
-
   public: 
-      // setters duplicate the index to all the faces
-      // allowing simple merging when flatten a tree 
-      // of nodes into a single structure
-      //
       void setBoundaryIndices(unsigned int boundary_index);
       void setSensorIndices(unsigned int sensor_index);
   private:
       void setNodeIndices(unsigned int index); 
-
   public: 
       void setBoundaryIndices(unsigned int* boundary_indices);
       void setSensorIndices(unsigned int* sensor_indices);
 
       std::vector<unsigned int>& getDistinctBoundaryIndices();
       void updateDistinctBoundaryIndices();
-
   public:
       unsigned int  getIndex();
       GNode*        getParent() const ; 
       GNode*        getChild(unsigned index);
-      GVolume*       getChildVolume(unsigned index);
+      GVolume*      getChildVolume(unsigned index);
       unsigned int  getNumChildren();
       char*         getDescription();
       gfloat3*      getLow();
       gfloat3*      getHigh();
       const GMesh*  getMesh();
       unsigned      getMeshIndex() const ;
-
   public:
       unsigned int* getNodeIndices();
       unsigned int* getBoundaryIndices();
       unsigned int* getSensorIndices();
-
   public:
-     void updateBounds();
-     void updateBounds(gfloat3& low, gfloat3& high );
-
+      void updateBounds();
+      void updateBounds(gfloat3& low, gfloat3& high );
   public:
       glm::mat4 getTransformMat4();
-
 
       GMatrixF*     getTransform();  // global transform
       GMatrixF* getLevelTransform();  // immediate "local" node transform
       GMatrixF* getRelativeTransform(GNode* base);  // product of transforms from beneath base node
-
   public:
       void setLevelTransform(GMatrixF* ltransform);
-
   public:
       // *calculateTransform* 
       //       successfully duplicates the global transform of a node by calculating 
@@ -107,7 +109,6 @@ class GGEO_API GNode {
       //
       //
       GMatrixF*            calculateTransform();  
-
   public:
       std::vector<GNode*>& getAncestors();
       std::vector<GNode*>& getProgeny();
@@ -127,7 +128,6 @@ class GGEO_API GNode {
       void collectAllProgenyDigest(std::vector<GNode*>& match, std::string& dig);
       void collectAllInstances(std::vector<GNode*>& match, unsigned ridx, bool inside, bool honour_selection );
 
-
   private:
       bool                m_selfdigest ; // when true getProgenyDigest includes self node 
       bool                m_selected ;
@@ -137,7 +137,6 @@ class GGEO_API GNode {
       GNode*              m_parent ; 
       std::vector<GNode*> m_children ;
       char*               m_description ;
-
   private: 
       GMatrixF*           m_transform ; 
       GMatrixF*           m_ltransform ; 
@@ -146,7 +145,6 @@ class GGEO_API GNode {
   private: 
       gfloat3*            m_low ; 
       gfloat3*            m_high ; 
-
   private: 
       unsigned int*       m_boundary_indices ;
       unsigned int*       m_sensor_indices ;
@@ -162,10 +160,7 @@ class GGEO_API GNode {
       unsigned int        m_progeny_num_vertices ;
   private: 
       std::vector<unsigned int> m_distinct_boundary_indices ;
-
 };
 
-
 #include "GGEO_TAIL.hh"
-
 

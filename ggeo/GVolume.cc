@@ -81,12 +81,6 @@ const char* GVolume::getLVName()
 }
 
 
-
-
-
-
-
-
 void GVolume::Summary(const char* msg )
 {
    if(!msg) msg = getDescription();
@@ -94,14 +88,12 @@ void GVolume::Summary(const char* msg )
    printf("%s\n", msg );
 }
 
-
 std::string GVolume::description()
 {
     const char* desc_ = getDescription() ;
 
     std::string desc ;
     if(desc_) desc.assign(desc_);
-
   
     return desc; 
 }
@@ -199,17 +191,11 @@ unsigned int GVolume::getSensorSurfaceIndex()
 }
 
 
-
-
-
- 
-
-
-void GVolume::Dump( const std::vector<GVolume*>& solids, const char* msg )
+void GVolume::Dump( const std::vector<GVolume*>& volumes, const char* msg )
 {
-    unsigned numSolid = solids.size() ;
-    LOG(info) << msg << " numSolid " << numSolid ; 
-    for(unsigned i=0 ; i < numSolid ; i++) solids[i]->dump(); 
+    unsigned numVolume = volumes.size() ;
+    LOG(info) << msg << " numVolume " << numVolume ; 
+    for(unsigned i=0 ; i < numVolume ; i++) volumes[i]->dump(); 
 }
 
 

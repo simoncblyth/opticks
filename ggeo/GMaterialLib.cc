@@ -116,7 +116,7 @@ void GMaterialLib::postLoadFromCache()
     }
 
 
-    if(groupvel)
+    if(groupvel)  // unlike the other material changes : this one is ON by default, so long at not swiched off with --nogroupvel 
     {
        bool debug = false ; 
        replaceGROUPVEL(debug);

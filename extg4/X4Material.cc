@@ -5,6 +5,7 @@
 #include "X4MaterialPropertiesTable.hh"
 #include "GMaterial.hh"
 
+#include "BFile.hh"
 #include "SDigest.hh"
 #include "PLOG.hh"
 
@@ -63,14 +64,19 @@ X4Material::X4Material( const G4Material* material )
 
 void X4Material::init()
 {
-    G4String name_ = m_material->GetName() ;
-    const char* name = name_.c_str();
+    const std::string& matname_ = m_material->GetName() ;
+    const char* matname = matname_.c_str();
+
+    std::string name = BFile::Name( matname ); 
     unsigned index = m_material->GetIndex() ;
+
+    //LOG(error) << "name " << name ; 
+
 
     // FORMERLY set the index on collecting into GMaterialLib, 
     // now are just passing the creation index along  
 
-    m_mat = new GMaterial(name, index) ; 
+    m_mat = new GMaterial(name.c_str(), index) ; 
     assert( m_mpt );
 
     X4MaterialPropertiesTable::Convert( m_mat, m_mpt );

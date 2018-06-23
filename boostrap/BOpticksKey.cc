@@ -4,6 +4,7 @@
 #include <cstring>
 #include <vector>
 
+#include "SSys.hh"
 #include "SDigest.hh"
 #include "BStr.hh"
 #include "BOpticksKey.hh"
@@ -25,8 +26,15 @@ BOpticksKey* BOpticksKey::GetKey()
 
 bool BOpticksKey::SetKey(const char* spec)
 {
-    assert( fKey == NULL ); // SetId only expected to be called once 
-    fKey = new BOpticksKey(spec) ; 
+    assert( fKey == NULL ); // SetKey is only expected to be called once 
+
+    if(spec == NULL)
+    {
+        spec = SSys::getenvvar("OPTICKS_KEY");   // envvar intended for debugging, not usual usage
+        LOG(info) << "BOpticksKey::SetKey from OPTICKS_KEY envvar " << spec ; 
+    } 
+
+    fKey = spec ? new BOpticksKey(spec) : NULL  ; 
     return true ; 
 }
 

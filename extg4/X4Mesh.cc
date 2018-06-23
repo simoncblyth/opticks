@@ -14,6 +14,7 @@
 #include "GMesh.hh"
 #include "GMeshMaker.hh"
 #include "BFile.hh"
+#include "BStr.hh"
 #include "SDirect.hh"
 
 #include "NBBox.hpp"
@@ -44,6 +45,10 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 
     mesh->m_x4src_vtx = vtxidx.vtx ; 
     mesh->m_x4src_idx = vtxidx.idx ; 
+
+    const std::string& soName = solid->GetName(); 
+    const char* name = BStr::concat("PLACEHOLDER_", soName.c_str(), NULL );  
+    mesh->setName(name); 
 
     return mesh ; 
 }
@@ -78,7 +83,14 @@ void X4Mesh::init()
     polygonize();
     collect();
     makemesh();
+
+    assert(m_mesh);
+    const std::string& soName = m_solid->GetName(); 
+    m_mesh->setName(soName.c_str()); 
 }
+
+
+
 
 std::string X4Mesh::desc() const 
 {
@@ -125,7 +137,7 @@ void X4Mesh::polygonize()
        polysmry = ss.str();
     }
    
-    LOG(info) << polysmry ; 
+    LOG(debug) << polysmry ; 
 }
 
 
@@ -295,7 +307,6 @@ void X4Mesh::save(const char* path) const
 }
 
 
-
 void X4Mesh::makemesh()
 {
     bool via_tris = false ; 
@@ -309,6 +320,7 @@ void X4Mesh::makemesh()
         m_mesh = GMeshMaker::make_mesh(m_vtx, m_tri, 0 );
     }
 }
+
 
 
 

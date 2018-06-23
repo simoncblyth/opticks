@@ -1,4 +1,7 @@
-// while CX4GDMLTest ; do sleep 0.2 ; done 
+//  cfg4-;cfg4-c;om-;TEST=CX4GDMLTest om-t
+//  cfg4-;cfg4-c;om-;TEST=CX4GDMLTest om-d
+//
+//  while CX4GDMLTest ; do sleep 0.2 ; done 
 
 #include <cassert>
 // cfg4--;op --cgdmldetector --dbg
@@ -28,6 +31,7 @@
 
 // x4-
 #include "X4PhysicalVolume.hh"
+#include "GGeo.hh"
 
 
 #include "OPTICKS_LOG.hh"
@@ -66,11 +70,13 @@ int main(int argc, char** argv)
 
     LOG(info) << "/////////////////////////////////////////////////" ;
 
-
-
    
     GGeo* ggeo = X4PhysicalVolume::Convert(world_pv) ;
     assert( ggeo ); 
+
+    ggeo->save();
+
+    LOG(info) << " DONE " ; 
 
 
     return 0 ; 

@@ -437,26 +437,28 @@ void OpticksResource::assignDetectorName()
    assert(m_detector_name);
 
 
+   // move detector_base relative to topdown export_dir 
+   // rather than bottom-up (and src dependant) srcbase
 
-   if(!g4live)
+   //if(m_srcbase )  // eg /usr/local/opticks/opticksdata/export
+   if(m_export_dir )  // eg /usr/local/opticks/opticksdata/export
    {
-       if(m_srcbase )
-       {
-            std::string detbase = BFile::FormPath(m_srcbase, m_detector_name);
-            m_detector_base = strdup(detbase.c_str());
-            m_res->addDir("detector_base",   m_detector_base  );
-       }
-       if(m_detector_base == NULL)
-       {
-           Summary("FAILED TO ASSIGN m_detector_base"); 
-           LOG(fatal) << "FAILED TO ASSIGN m_detector_base " ; 
-       }
-       assert(m_detector_base);
-
-
-       std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
-       m_material_map = strdup(cmm.c_str());
+        std::string detbase = BFile::FormPath(m_export_dir, m_detector_name);
+        m_detector_base = strdup(detbase.c_str());
+        m_res->addDir("detector_base",   m_detector_base  );
    }
+
+   if(m_detector_base == NULL)
+   {
+       Summary("FAILED TO ASSIGN m_detector_base"); 
+       LOG(fatal) 
+           << "FAILED TO ASSIGN m_detector_base " ; 
+   }
+   assert(m_detector_base);
+
+
+   std::string cmm = BFile::FormPath(m_detector_base, "ChromaMaterialMap.json" );
+   m_material_map = strdup(cmm.c_str());
 
 }
 
@@ -830,7 +832,7 @@ OpticksResource::getPreferenceDir
 
 std::string OpticksResource::getPreferenceDir(const char* type, const char* udet, const char* subtype )
 {
-    if(isG4Live()) return EMPTY ; 
+    //if(isG4Live()) return EMPTY ;   // g4live running needs o standardize material order too 
 
     bool detector_type = isDetectorType(type) ; // GScintillatorLib,GMaterialLib,GSurfaceLib,GBndLib,GSourceLib
     bool resource_type = isResourceType(type) ; // GFlags,OpticksColors 
@@ -927,7 +929,7 @@ bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, c
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(trace) << "OpticksResource::loadPreference(MSU)" 
+    LOG(error) << "OpticksResource::loadPreference(MSU)" 
               << " prefdir " << prefdir
               << " name " << name
               << " empty " << ( empty ? "YES" : "NO" )

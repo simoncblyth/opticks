@@ -38,6 +38,7 @@ class BRAP_API  BOpticksResource {
         static const char* GeoCacheDir();
         static const char* ResourceDir();
         static const char* GenstepsDir();
+        static const char* ExportDir();
         static const char* InstallCacheDir();
         static const char* PTXInstallPath();
         static const char* RNGInstallPath();
@@ -55,6 +56,7 @@ class BRAP_API  BOpticksResource {
         const char* getInstallCacheDir();
         const char* getResourceDir();
         const char* getGenstepsDir();
+        const char* getExportDir();
 
         const char* getRNGInstallCacheDir();
         const char* getOKCInstallCacheDir();
@@ -120,6 +122,7 @@ class BRAP_API  BOpticksResource {
         const char* m_geocache_dir ; 
         const char* m_resource_dir ; 
         const char* m_gensteps_dir ; 
+        const char* m_export_dir ; 
         const char* m_installcache_dir ; 
         const char* m_rng_installcache_dir ; 
         const char* m_okc_installcache_dir ; 

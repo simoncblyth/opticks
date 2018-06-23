@@ -50,6 +50,250 @@ Three Solids X4Mesh skipped still
 
 
 
+Comparing geocache : some large differences in groupvel ? UNDERSTOOD
+------------------------------------------------------------------------
+
+Huh : the old geocache material groupvel always 300, but the 
+new one is varying.  Was that a postcache fixup ? 
+
+* Ah-ha : the fixup was done postcache (GMaterialLib::postLoadFromCache) 
+  SO THE 300. IN THE OLD GEOCACHE ARE UNDERSTOOD : DIFFERENCE IS UNDERSTOOD 
+
+
+::
+
+    055 void GMaterialLib::postLoadFromCache()
+     56 {
+     ..
+     69     bool groupvel = !m_ok->hasOpt("nogroupvel") ;
+     70 
+
+    119     if(groupvel)   // unlike the other material changes : this one is ON by default, so long at not swiched off with --nogroupvel
+    120     {
+    121        bool debug = false ;
+    122        replaceGROUPVEL(debug);
+    123     }
+    124 
+
+
+
+
+::
+
+    In [58]: cat geocache.py 
+    #!/usr/bin/env python
+
+    import os, numpy as np
+
+    idp_ = lambda _:os.path.expandvars("$IDPATH/%s" % _ )
+    idp2_ = lambda _:os.path.expandvars("$IDPATH2/%s" % _ )
+
+
+    if __name__ == '__main__':
+        aa = np.load(idp_("GMaterialLib/GMaterialLib.npy"))
+        bb = np.load(idp2_("GMaterialLib/GMaterialLib.npy"))
+        assert aa.shape == bb.shape
+        print aa.shape
+
+        for i in range(len(aa)):
+            a = aa[i]  
+            b = bb[i]  
+            assert len(a) == 2 
+            assert len(b) == 2 
+
+            g0 = a[0] - b[0] 
+            g1 = a[1] - b[1] 
+
+            assert g0.shape == g1.shape
+
+            print i, g0.shape, "g0max: ", np.max(g0), "g1max: ", np.max(g1)
+
+
+
+
+::
+
+    In [51]: aa[:,1,:,0]
+    Out[51]: 
+    array([[300., 300., 300., ..., 300., 300., 300.],
+           [300., 300., 300., ..., 300., 300., 300.],
+           [300., 300., 300., ..., 300., 300., 300.],
+           ...,
+           [300., 300., 300., ..., 300., 300., 300.],
+           [300., 300., 300., ..., 300., 300., 300.],
+           [300., 300., 300., ..., 300., 300., 300.]], dtype=float32)
+
+    In [52]: aa[:,1,:,0].shape
+    Out[52]: (38, 39)
+
+    In [53]: aa[:,1,:,0].min()
+    Out[53]: 300.0
+
+    In [54]: aa[:,1,:,0].max()
+    Out[54]: 300.0
+
+    In [55]: bb[:,1,:,0]
+    Out[55]: 
+    array([[206.2414, 206.2414, 206.2414, ..., 200.9359, 201.9052, 202.8228],
+           [206.2414, 206.2414, 206.2414, ..., 200.9359, 201.9052, 202.8228],
+           [205.0564, 205.0564, 205.0564, ..., 199.8321, 200.6891, 201.5005],
+           ...,
+           [299.7924, 299.7924, 299.7924, ..., 299.7924, 299.7924, 299.7924],
+           [299.7924, 299.7924, 299.7924, ..., 299.7924, 299.7924, 299.7924],
+           [300.    , 300.    , 300.    , ..., 300.    , 300.    , 300.    ]], dtype=float32)
+
+    In [56]: bb[:,1,:,0].min()
+    Out[56]: 118.98735
+
+    In [57]: bb[:,1,:,0].max()
+    Out[57]: 300.0
+
+
+
+
+::
+
+    In [22]: run geocache.py 
+    (38, 2, 39, 4)
+    0 (39, 4) g0max:  0.015625 g1max:  181.01265
+    1 (39, 4) g0max:  0.015625 g1max:  181.01265
+    2 (39, 4) g0max:  0.015625 g1max:  180.42665
+    3 (39, 4) g0max:  0.015625 g1max:  178.10599
+    4 (39, 4) g0max:  0.00024414062 g1max:  94.38103
+    5 (39, 4) g0max:  0.005859375 g1max:  93.02899
+    6 (39, 4) g0max:  0.005859375 g1max:  93.02899
+    7 (39, 4) g0max:  0.005859375 g1max:  93.02899
+    8 (39, 4) g0max:  0.005859375 g1max:  93.02899
+    9 (39, 4) g0max:  0.0 g1max:  0.20755005
+    10 (39, 4) g0max:  0.0 g1max:  0.20755005
+    11 (39, 4) g0max:  0.0 g1max:  0.20755005
+    12 (39, 4) g0max:  0.0 g1max:  0.20755005
+    13 (39, 4) g0max:  0.00024414062 g1max:  94.38103
+    14 (39, 4) g0max:  0.0 g1max:  0.28848267
+    15 (39, 4) g0max:  0.0 g1max:  0.0
+    16 (39, 4) g0max:  0.0 g1max:  0.20755005
+    17 (39, 4) g0max:  0.0 g1max:  0.20755005
+    18 (39, 4) g0max:  0.0 g1max:  0.20755005
+    19 (39, 4) g0max:  0.0 g1max:  0.20755005
+    20 (39, 4) g0max:  0.0 g1max:  0.20755005
+    21 (39, 4) g0max:  0.0 g1max:  0.31243896
+    22 (39, 4) g0max:  0.0 g1max:  0.20755005
+    23 (39, 4) g0max:  0.0 g1max:  0.20755005
+    24 (39, 4) g0max:  0.0 g1max:  0.20755005
+    25 (39, 4) g0max:  0.0 g1max:  0.20755005
+    26 (39, 4) g0max:  0.0 g1max:  0.20755005
+    27 (39, 4) g0max:  0.0 g1max:  0.20755005
+    28 (39, 4) g0max:  0.015625 g1max:  180.42665
+    29 (39, 4) g0max:  0.0 g1max:  0.20755005
+    30 (39, 4) g0max:  0.0 g1max:  0.20755005
+    31 (39, 4) g0max:  0.0 g1max:  0.20755005
+    32 (39, 4) g0max:  0.0 g1max:  0.20755005
+    33 (39, 4) g0max:  0.0 g1max:  0.20755005
+    34 (39, 4) g0max:  0.0 g1max:  0.20755005
+    35 (39, 4) g0max:  0.0 g1max:  0.20755005
+    36 (39, 4) g0max:  0.0 g1max:  0.20755005
+    37 (39, 4) g0max:  0.0 g1max:  0.0
+
+
+
+
+FIXED : Comparing geocache : material lib ordering and test materials
+---------------------------------------------------------------------------
+
+* sort material order
+
+  * sorting done by GPropertyLib::close, based on Order from m_attrnames 
+
+::
+
+    338 std::map<std::string, unsigned int>& GPropertyLib::getOrder()
+    339 {
+    340     return m_attrnames->getOrder() ;
+    341 }
+
+
+GPropertyLib::init loads the prefs including the order::
+
+    318     m_attrnames = new OpticksAttrSeq(m_ok, m_type);
+    319     m_attrnames->loadPrefs(); // color.json, abbrev.json and order.json 
+    320     LOG(debug) << "GPropertyLib::init loadPrefs-DONE " ;
+
+::
+
+    OpticksResourceTest:
+
+                     detector_base :  Y :      /usr/local/opticks/opticksdata/export/DayaBay
+
+
+    epsilon:issues blyth$ ll /usr/local/opticks/opticksdata/export/DayaBay/GMaterialLib/
+    -rw-r--r--  1 blyth  staff  612 Apr  4 14:26 abbrev.json
+    -rw-r--r--  1 blyth  staff  660 Apr  4 14:26 color.json
+    -rw-r--r--  1 blyth  staff  795 Apr  4 14:26 order.json
+
+
+::
+
+   OPTICKS_KEY=CX4GDMLTest.X4PhysicalVolume.World0xc15cfc0_PV.828722902b5e94dab05ac248329ffebe OpticksResourceTest 
+
+
+Kludge symbolic link to try to access the prefs with the g4live running::
+
+    epsilon:~ blyth$ cd /usr/local/opticks-cmake-overhaul/opticksdata/export/
+    epsilon:export blyth$ ln -s DayaBay CX4GDMLTest
+
+
+* add test materials
+
+::
+
+    export IDPATH2=/usr/local/opticks-cmake-overhaul/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1
+
+    epsilon:ana blyth$ python geocache.py 
+    (38, 2, 39, 4)
+    (36, 2, 39, 4)
+
+::
+
+    epsilon:1 blyth$ head -5 $IDPATH/GItemList/GMaterialLib.txt 
+    GdDopedLS
+    LiquidScintillator
+    Acrylic
+    MineralOil
+    Bialkali
+    epsilon:1 blyth$ head -5 $IDPATH2/GItemList/GMaterialLib.txt 
+    PPE
+    MixGas
+    Air
+    Bakelite
+    Foam
+
+
+
+
+FIXED : material names with slashes mess up boundary spec 
+------------------------------------------------------------
+
+* fixed using basenames
+
+cfg4-;cfg4-c;om-;TEST=CX4GDMLTest om-d::
+
+    2018-06-23 16:30:36.316 INFO  [25301620] [GParts::close@802] GParts::close START  verbosity 0
+    2018-06-23 16:30:36.316 FATAL [25301620] [GBnd::init@27] GBnd::init bad boundary spec, expecting 4 elements spec /dd/Materials/Vacuum////dd/Materials/Vacuum nelem 10
+    Assertion failed: (nelem == 4), function init, file /Users/blyth/opticks-cmake-overhaul/ggeo/GBnd.cc, line 34.
+    Process 19616 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff56001b6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff56001b6e <+10>: jae    0x7fff56001b78            ; <+20>
+        0x7fff56001b70 <+12>: movq   %rax, %rdi
+        0x7fff56001b73 <+15>: jmp    0x7fff55ff8b00            ; cerror_nocancel
+        0x7fff56001b78 <+20>: retq   
+    Target 0: (CX4GDMLTest) stopped.
+    (lldb) 
+
+
+
+
 FIXED : Slow convert due to CSG node nudger running at node(not mesh) level ?
 -------------------------------------------------------------------------------- 
 

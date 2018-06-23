@@ -35,23 +35,23 @@ set(TEST_SOURCES
 
 )
 
+# generate targets for these, but dont add_test 
 set(_TEST_SOURCES
 
     CX4GDMLTest.cc
 )
 
 
-
-
-foreach(SRC ${TEST_SOURCES})
+foreach(SRC ${TEST_SOURCES} ${_TEST_SOURCES})
 
     get_filename_component(TGT ${SRC} NAME_WE)
     add_executable(${TGT} ${SRC})
     target_link_libraries(${TGT} CFG4)
     install(TARGETS ${TGT} DESTINATION lib)
 
-    add_test(${name}.${TGT} ${TGT})
-    #add_dependencies(check ${TGT})
-
+    if(${SRC} IN_LIST TEST_SOURCES)   # CMake 3.3
+       add_test(${name}.${TGT} ${TGT})
+    endif()
 endforeach()
+
 
