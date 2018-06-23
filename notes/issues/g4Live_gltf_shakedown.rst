@@ -24,12 +24,87 @@ Debug by editing the glTF to pick particular nodes::
 NEXT
 -----
 
-* comparison of GGeo instances from two routes 
-
-  * easiest way is to persist and compare files 
-
 * need to get thru to raytracing the direct geometry 
 
+
+Targetting difference yields a blank screen for OKX4Test
+-----------------------------------------------------------
+
+OKTest::
+
+    2018-06-23 23:28:00.106 INFO  [25695381] [*OpticksHub::getGGeoBasePrimary@726] OpticksHub::getGGeoBasePrimary analytic switch   m_gltf 0 ggb GGeo
+       0 **                                    World0xc15cfc0         ce-16520.000 -802110.000 -7125.000 7710.562 
+       1       __dd__Geometry__Sites__lvNearSiteRock0xc030350         ce-16520.000 -802110.000 3892.900 34569.875 
+       2        __dd__Geometry__Sites__lvNearHallTop0xc136890         ce-12840.846 -806876.250 5389.855 22545.562 
+       3   __dd__Geometry__PoolDetails__lvNearTopCover0xc137060         ce-16519.969 -802109.875 -2088.000 7800.906 
+       4               __dd__Geometry__RPC__lvRPCMod0xbf54e60         ce-11612.387 -799007.250 683.900 1509.703 
+       5              __dd__Geometry__RPC__lvRPCFoam0xc032c88         ce-11611.265 -799018.375 683.900 1455.636 
+       6         __dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0         ce-11611.265 -799018.375 669.900 1448.750 
+       7          __dd__Geometry__RPC__lvRPCGasgap140xbf98ae0         ce-11611.265 -799018.375 669.900 1434.939 
+       8             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11124.670 -799787.375 669.900 948.345 
+       9             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11263.697 -799567.625 669.900 948.345 
+      10             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11402.724 -799347.938 669.900 948.345 
+      11             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11541.751 -799128.250 669.900 948.345 
+      12             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11680.778 -798908.500 669.900 948.345 
+      13             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11819.806 -798688.812 669.900 948.345 
+      14             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11958.832 -798469.125 669.900 948.345 
+      15             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-12097.859 -798249.375 669.900 948.345 
+      16         __dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0         ce-11611.265 -799018.375 707.900 1448.750 
+      17          __dd__Geometry__RPC__lvRPCGasgap140xbf98ae0         ce-11611.265 -799018.375 707.900 1434.939 
+      18             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11124.670 -799787.375 707.900 948.345 
+      19             __dd__Geometry__RPC__lvRPCStrip0xc2213c0         ce-11263.697 -799567.625 707.900 948.345 
+    2018-06-23 23:28:00.106 FATAL [25695381] [OpticksAim::setTarget@119] OpticksAim::setTarget  based on CenterExtent from m_mesh0  target 0 aim 1 ce -16520.0000,-802110.0000,-7125.0000,7710.5625
+    2018-06-23 23:28:00.106 INFO  [25695381] [Composition::setCenterExtent@1010] Composition::setCenterExtent ce -16520.0000,-802110.0000,-7125.0000,7710.5625
+    2018-06-23 23:28:00.106 INFO  [25695381] [SLog::operator@20] OpticksViz::OpticksViz  DONE
+
+
+OKX4Test::
+
+    2018-06-23 23:31:04.004 INFO  [25697900] [OpticksAim::setupCompositionTargetting@92] OpticksAim::setupCompositionTargetting deferred_target 0 cmdline_target 0
+    2018-06-23 23:31:04.004 INFO  [25697900] [OpticksHub::dumpVolumes@887] OpticksHub::dumpVolumes OpticksAim::setTarget num_volumes 12230
+    2018-06-23 23:31:04.005 INFO  [25697900] [*OpticksHub::getGGeoBasePrimary@726] OpticksHub::getGGeoBasePrimary analytic switch   m_gltf 0 ggb GGeo
+       0 **                                    World0xc15cfc0         ce  0.000   0.000   0.000 2400000.000 
+       1           /dd/Geometry/Sites/lvNearSiteRock0xc030350         ce-16520.000 -802110.000 3892.925 34569.875 
+       2            /dd/Geometry/Sites/lvNearHallTop0xc136890         ce-12841.452 -806876.000 5390.000 22545.344 
+       3     /dd/Geometry/PoolDetails/lvNearTopCover0xc137060         ce-16520.098 -802110.000 -2088.000 7801.031 
+       4                   /dd/Geometry/RPC/lvRPCMod0xbf54e60         ce-11612.390 -799007.250 683.903 1509.703 
+       5                  /dd/Geometry/RPC/lvRPCFoam0xc032c88         ce-11611.268 -799018.375 683.903 1455.636 
+       6             /dd/Geometry/RPC/lvRPCBarCham140xbf4c6a0         ce-11611.268 -799018.375 669.903 1448.750 
+       7              /dd/Geometry/RPC/lvRPCGasgap140xbf98ae0         ce-11611.268 -799018.375 669.903 1434.939 
+       8                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11124.673 -799787.375 669.903 948.345 
+       9                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11263.700 -799567.625 669.903 948.345 
+      10                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11402.727 -799347.938 669.903 948.345 
+      11                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11541.754 -799128.250 669.903 948.345 
+      12                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11680.781 -798908.500 669.903 948.345 
+      13                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11819.809 -798688.812 669.903 948.345 
+      14                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11958.835 -798469.125 669.903 948.345 
+      15                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-12097.862 -798249.375 669.903 948.345 
+      16             /dd/Geometry/RPC/lvRPCBarCham140xbf4c6a0         ce-11611.268 -799018.375 707.903 1448.750 
+      17              /dd/Geometry/RPC/lvRPCGasgap140xbf98ae0         ce-11611.268 -799018.375 707.903 1434.939 
+      18                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11124.673 -799787.375 707.903 948.345 
+      19                 /dd/Geometry/RPC/lvRPCStrip0xc2213c0         ce-11263.700 -799567.625 707.903 948.345 
+    2018-06-23 23:31:04.005 FATAL [25697900] [OpticksAim::setTarget@119] OpticksAim::setTarget  based on CenterExtent from m_mesh0  target 0 aim 1 ce 0.0000,0.0000,0.0000,2400000.0000
+    2018-06-23 23:31:04.005 INFO  [25697900] [Composition::setCenterExtent@1010] Composition::setCenterExtent ce 0.0000,0.0000,0.0000,2400000.0000
+    2018-06-23 23:31:04.005 INFO  [25697900] [SLog::operator@20] OpticksViz::OpticksViz  DONE
+    2018-06-23 23:31:04.005 INFO  [25697900] [Bookmarks::create@249] Bookmarks::create : persisting state to slot 0
+
+
+
+Geocache matching : its going to take a while ... 
+-------------------------------------------------------
+
+* to get a match will take at least a week of detailed work : not the best use of time at the moment
+
+* perhaps : try to push ahead and see if can run from the directly converted GGeo, eg 
+
+  * OGLRap render
+  * ray trace
+  * OptiX sim 
+
+
+Basically this means modifying some tests to boot from the direct GGeo
+
+* actually the direct GGeo is from the CGDMLDetector load ... 
 
 
 Three Solids X4Mesh skipped still 
@@ -47,6 +122,80 @@ Three Solids X4Mesh skipped still
     450 
     451          mh->mesh = placeholder ? X4Mesh::Placeholder(solid) : X4Mesh::Convert(solid) ;
     452 
+
+
+PVNames / LVNames
+--------------------
+
+Some name fixup done following the GDML load ?  
+
+::
+
+    epsilon:src blyth$ geocache-;geocache-diff-lv | head -10
+
+    ======== GNodeLib/LVNames.txt 
+
+    World0xc15cfc0							World0xc15cfc0
+    __dd__Geometry__Sites__lvNearSiteRock0xc030350		      |	/dd/Geometry/Sites/lvNearSiteRock0xc030350
+    __dd__Geometry__Sites__lvNearHallTop0xc136890		      |	/dd/Geometry/Sites/lvNearHallTop0xc136890
+    __dd__Geometry__PoolDetails__lvNearTopCover0xc137060	      |	/dd/Geometry/PoolDetails/lvNearTopCover0xc137060
+    __dd__Geometry__RPC__lvRPCMod0xbf54e60			      |	/dd/Geometry/RPC/lvRPCMod0xbf54e60
+    __dd__Geometry__RPC__lvRPCFoam0xc032c88			      |	/dd/Geometry/RPC/lvRPCFoam0xc032c88
+    __dd__Geometry__RPC__lvRPCBarCham140xbf4c6a0		      |	/dd/Geometry/RPC/lvRPCBarCham140xbf4c6a0
+    epsilon:src blyth$ 
+
+
+Name in the GDML is path like, but is converted to XML friendly form before reaching geocache::
+
+
+    30919     <volume name="/dd/Geometry/Sites/lvNearSiteRock0xc030350">
+    30920       <materialref ref="/dd/Materials/Rock0xc0300c8"/>
+    30921       <solidref ref="near_rock0xc04ba08"/>
+    30922       <physvol name="/dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop0xbf89820">
+    30923         <volumeref ref="/dd/Geometry/Sites/lvNearHallTop0xc136890"/>
+    30924         <position name="/dd/Geometry/Sites/lvNearSiteRock#pvNearHallTop0xbf89820_pos" unit="mm" x="2500" y="-500" z="7500"/>
+    30925       </physvol>
+    30926       <physvol name="/dd/Geometry/Sites/lvNearSiteRock#pvNearHallBot0xcd2fa58">
+    30927         <volumeref ref="/dd/Geometry/Sites/lvNearHallBot0xbf89c60"/>
+    30928         <position name="/dd/Geometry/Sites/lvNearSiteRock#pvNearHallBot0xcd2fa58_pos" unit="mm" x="0" y="0" z="-5150"/>
+    30929       </physvol>
+    30930     </volume>
+
+
+
+
+
+No surfaces listed ? UNDERSTOOD
+-------------------------------------
+
+Am testing from an old DYB GDML loaded geometry (which lacks surfaces).  It also 
+lacked MPT : which are fixed up from the G4DAE in cfg4.CGDMLDetector ?
+
+* how to proceed ? do some more fixup ?
+
+::
+
+    2018-06-23 20:29:00.568 ERROR [25544667] [X4LogicalBorderSurfaceTable::init@32]  NumberOfBorderSurfaces 0
+    2018-06-23 20:29:00.568 ERROR [25544667] [X4LogicalSkinSurfaceTable::init@32]  NumberOfSkinSurfaces 0
+    2018-06-23 20:29:00.568 INFO  [25544667] [X4PhysicalVolume::convertSurfaces@175] convertSurfaces num_lbs 0 num_sks 0
+    2018-06-23 20:29:00.568 INFO  [25544667] [GPropertyLib::close@417] GPropertyLib::close type GSurfaceLib buf 4,2,39,4
+
+::
+
+    In [5]: aa.shape
+    Out[5]: (48, 2, 39, 4)
+
+    In [6]: bb.shape
+    Out[6]: (4, 2, 39, 4)
+
+::
+
+    epsilon:ana blyth$ cat /usr/local/opticks-cmake-overhaul/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/GItemList/GSurfaceLib.txt 
+    perfectDetectSurface
+    perfectAbsorbSurface
+    perfectSpecularSurface
+    perfectDiffuseSurface
+    epsilon:ana blyth$ 
 
 
 

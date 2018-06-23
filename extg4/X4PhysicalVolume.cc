@@ -17,6 +17,7 @@
 #include "X4Material.hh"
 #include "X4MaterialTable.hh"
 #include "X4LogicalBorderSurfaceTable.hh"
+#include "X4LogicalSkinSurfaceTable.hh"
 #include "X4Solid.hh"
 #include "X4Mesh.hh"
 #include "X4Transform3D.hh"
@@ -141,7 +142,6 @@ void X4PhysicalVolume::convertMaterials()
     m_mlib->replaceGROUPVEL(debug); 
 
     // TODO: do the GROUPVEL calc be directly within Geant4, to avoid the kludging 
-    
 
     // getting names must be done after the close
 
@@ -150,13 +150,15 @@ void X4PhysicalVolume::convertMaterials()
         const char* name = m_mlib->getName(i); 
         int idx = m_sc->add_material(name); 
         assert( idx == int(i) ); 
-        std::cout 
-            << std::setw(4) << i 
-            << " : " 
-            << name
-            << std::endl 
-            ;
-    }
+
+        if(m_verbosity > 5)
+            std::cout 
+                << std::setw(4) << i 
+                << " : " 
+                << name
+                << std::endl 
+                ;
+        }
 
 }
 
@@ -166,10 +168,9 @@ void X4PhysicalVolume::convertSurfaces()
     assert( num_surf0 == 0 );
 
     X4LogicalBorderSurfaceTable::Convert(m_slib);
-
     size_t num_lbs = m_slib->getNumSurfaces() ; 
 
-    //X4LogicalSkinSurfaceTable::Convert(m_slib);
+    X4LogicalSkinSurfaceTable::Convert(m_slib);
     size_t num_sks = m_slib->getNumSurfaces() - num_lbs ; 
 
     LOG(info) << "convertSurfaces"
@@ -354,7 +355,8 @@ void X4PhysicalVolume::convertStructure()
      int depth = 0 ;
 
      IndexTraverse(pv, depth);
-     dumpLV();
+
+     if(m_verbosity > 5) dumpLV();
 
      m_root = convertTree_r(pv, parent, depth, parent_pv );
 
@@ -393,10 +395,10 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
      // doubtful of findSurface priority with double skin surfaces, see g4op-
 
      unsigned boundary = m_blib->addBoundary( 
-                                                X4::ShortName(omat),  
-                                                X4::ShortName(osur),                   
-                                                X4::ShortName(isur),  
-                                                X4::ShortName(imat)       
+                                                X4::BaseName(omat),  
+                                                X4::BaseName(osur),                   
+                                                X4::BaseName(isur),  
+                                                X4::BaseName(imat)       
                                             );
      return boundary ; 
 }

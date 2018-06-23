@@ -129,20 +129,14 @@ int OpticksHub::getErr() const
 
 
 
-
-
-
-
-
-
-OpticksHub::OpticksHub(Opticks* ok) 
+OpticksHub::OpticksHub(Opticks* ok, GGeo* ggeo) 
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(ok),
    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
    m_run(m_ok->getRun()),
    m_geometry(NULL),
-   m_ggeo(NULL),
+   m_ggeo(ggeo),
    m_gscene(NULL),
    m_composition(new Composition),
 #ifdef OPTICKS_NPYSERVER
@@ -169,13 +163,21 @@ void OpticksHub::init()
     add(m_fcfg);
 
     configure();
+    // configureGeometryPrep();
     configureServer();
     configureCompositionSize();
     configureLookupA();
 
     m_aim = new OpticksAim(this) ; 
 
-    loadGeometry() ;    
+    if( m_ggeo == NULL )
+    {
+        loadGeometry() ;    
+    }
+    else
+    {
+        adoptGeometry() ;    
+    }
     if(m_err) return ; 
 
     configureGeometry() ;    
@@ -216,7 +218,7 @@ void OpticksHub::configure()
     LOG(debug) << "OpticksHub::configure " << argv[0] ; 
 
     m_cfg->commandline(argc, argv);
-    m_ok->configure();      
+    m_ok->configure();        // <--- dont like 
 
     if(m_fcfg->hasError())
     {
@@ -253,6 +255,27 @@ void OpticksHub::configure()
         assert(0);
     }
 }
+
+
+
+
+/*
+void OpticksHub::configureGeometryPrep()
+{
+    bool geocache = !m_fcfg->hasOpt("nogeocache") ;
+    bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
+
+    LOG(debug) << "OpticksGeometry::init"
+              << " geocache " << geocache 
+              << " instanced " << instanced
+              ;
+
+    m_ok->setGeocache(geocache);
+    m_ok->setInstanced(instanced); // find repeated geometry 
+}
+
+*/
+
 
 
 void OpticksHub::configureServer()
@@ -359,7 +382,6 @@ void OpticksHub::loadGeometry()
 
     LOG(info) << "OpticksHub::loadGeometry START" ; 
 
-
     m_geometry = new OpticksGeometry(this);   // m_lookup is set into m_ggeo here 
 
     m_geometry->loadGeometry();   
@@ -405,6 +427,20 @@ void OpticksHub::loadGeometry()
     LOG(info) << "OpticksHub::loadGeometry DONE" ; 
 }
 
+
+
+void OpticksHub::adoptGeometry()
+{
+    assert( m_ggeo ); 
+
+    m_gscene = m_ggeo->getScene();  // DONT LIKE SEPARATE GScene 
+
+    registerGeometry();
+
+    m_ggeo->setComposition(m_composition);
+
+    LOG(info) << "OpticksHub::adoptGeometry DONE" ; 
+}
 
 
 
@@ -475,10 +511,6 @@ unsigned OpticksHub::getTarget()
     return m_aim->getTarget();
 }
  
-
-
-
-
 
 
 void OpticksHub::configureGeometry()

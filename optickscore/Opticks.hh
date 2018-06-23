@@ -118,6 +118,7 @@ class OKCORE_API Opticks {
        void configure();  // invoked after commandline parsed
    private:
        void configureCheckGeometryFiles()  ; // non-const may setExit 
+       void configureGeometryHandling() ; 
    public:
        std::string brief();
        void dump(const char* msg="Opticks::dump") ;

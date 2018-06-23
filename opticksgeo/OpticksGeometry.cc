@@ -76,24 +76,9 @@ GGeo* OpticksGeometry::getGGeo()
 
 void OpticksGeometry::init()
 {
-    bool geocache = !m_fcfg->hasOpt("nogeocache") ;
-    bool instanced = !m_fcfg->hasOpt("noinstanced") ; // find repeated geometry 
-
-    LOG(debug) << "OpticksGeometry::init"
-              << " geocache " << geocache 
-              << " instanced " << instanced
-              ;
-
-    m_ok->setGeocache(geocache);
-    m_ok->setInstanced(instanced); // find repeated geometry 
-
     m_ggeo = new GGeo(m_ok);
     m_ggeo->setLookup(m_hub->getLookup());
 }
-
-
-
-
 
 
 void OpticksGeometry::loadGeometry()
@@ -194,7 +179,5 @@ void OpticksGeometry::fixGeometry()
     }
     TIMER("fixGeometry"); 
 }
-
-
 
 

@@ -1263,6 +1263,10 @@ tboolean-bib-(){      . $(opticks-home)/tests/tboolean-bib.bash  && tboolean-bib
 tjuno-(){      . $(opticks-home)/tests/tjuno.bash  && tjuno-env $* ; }
 tgltf-(){         . $(opticks-home)/tests/tgltf.bash  && tgltf-env $* ; }
 
+geocache-(){      . $(opticks-home)/ana/geocache.bash  && geocache-env $* ; }
+
+
+
 ####### below functions support analysis on machines without a full opticks install
 ####### by copying some parts of an opticks install to corresponding local locations 
 

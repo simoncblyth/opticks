@@ -15,6 +15,9 @@ class X4_API X4
 
         template<typename T>
         static const char* ShortName( const T* const obj );
+
+        template<typename T>
+        static const char* BaseName( const T* const obj );
         
         template<typename T>
         static const char* Name( const T* const obj );

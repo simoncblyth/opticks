@@ -90,7 +90,7 @@ void NTreeBuilder<T>::analyse()
 {
     delete m_ana ; 
     m_ana  = new NNodeAnalyse<T>(m_root) ; 
-    LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
+    //LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
 }
 
 

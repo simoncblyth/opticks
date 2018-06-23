@@ -7,7 +7,6 @@
 class OpticksHub ; 
 class Opticks ; 
 class Composition ; 
-//class OpticksAttrSeq ;
 template <typename> class OpticksCfg ;
 class GGeo ; 
 class GMesh ;
@@ -22,17 +21,17 @@ level holder of GGeo with a triangulated (G4DAE) focus.
 Anything related to analytic (GLTF) should not live here, OpticksHub 
 would be more appropriate.
 
+* ACTUALLY ARE NOW THINKING THAT ANALYTIC SHOULD LIVE INSIDE
+  A SINGLE GGeo ALONGSIDE THE TRIANGULATED 
+
 Canonical m_geometry instance resides in okg/OpticksHub 
 and is instanciated by OpticksHub::init which 
 happens within the ok/OKMgr or okg4/OKG4Mgr ctors.
-
 
 Dev History
 -------------
 
 * started as spillout from monolithic GGeo
-
-
 
 **/
 
@@ -45,12 +44,6 @@ class OKGEO_API OpticksGeometry {
        void loadGeometry();
   public:
        GGeo*           getGGeo();
-
-       // move up to hub  
-       //OpticksAttrSeq* getMaterialNames();
-       //OpticksAttrSeq* getBoundaryNames();
-       //std::map<unsigned int, std::string> getBoundaryNamesMap();
-
   private: 
        void loadGeometryBase();
        void fixGeometry();
@@ -63,8 +56,6 @@ class OKGEO_API OpticksGeometry {
        OpticksCfg<Opticks>* m_fcfg ;
        GGeo*                m_ggeo ; 
        unsigned             m_verbosity ;
-     
-
 };
 
 

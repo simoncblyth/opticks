@@ -350,6 +350,15 @@ unsigned GBndLib::addBoundary( const char* spec, bool flip)
 }
 unsigned GBndLib::addBoundary( const char* omat, const char* osur, const char* isur, const char* imat)
 {
+   /*
+    LOG(error) 
+           << " omat " << ( omat ? omat : "-" )  
+           << " osur " << ( osur ? osur : "-" ) 
+           << " isur " << ( isur ? isur : "-" ) 
+           << " imat " << ( imat ? imat : "-" )  
+           ;
+    */
+
     guint4 bnd = add(omat, osur, isur, imat);
     return index(bnd) ; 
 }

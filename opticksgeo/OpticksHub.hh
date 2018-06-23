@@ -97,7 +97,7 @@ class OKGEO_API OpticksHub {
        friend class OpticksViz ; 
        friend class OpticksIdx ; 
    public:
-       OpticksHub(Opticks* opticks);
+       OpticksHub(Opticks* opticks, GGeo* ggeo=NULL);  // passed in ggeo used by X4 direct from Geant4 running
 
    public:
        int getErr() const ;
@@ -109,6 +109,7 @@ class OKGEO_API OpticksHub {
        void configureCompositionSize();
 
        void loadGeometry();
+       void adoptGeometry();  // when operating from a passed in GGeo
        GGeoTest* createTestGeometry(GGeoBase* basis);
 
        void registerGeometry(); 
@@ -117,6 +118,7 @@ class OKGEO_API OpticksHub {
        void configureGeometryTriAna(); 
        void configureGeometryTest(); 
    private:
+       //void configureGeometryPrep(); moved to Opticks
        void configureServer();
        void configureLookupA();
        void overrideMaterialMapA(const std::map<std::string, unsigned>& A, const char* msg);

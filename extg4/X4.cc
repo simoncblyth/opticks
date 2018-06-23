@@ -1,5 +1,6 @@
 #include "X4.hh"
 #include "BStr.hh"
+#include "BFile.hh"
 
 const char* X4::ShortName( const std::string& name )
 {
@@ -20,6 +21,17 @@ const char* X4::ShortName( const T* const obj )
     const std::string& name = obj->GetName();
     return ShortName(name);
 }
+
+
+template<typename T>
+const char* X4::BaseName( const T* const obj )
+{    
+    if(obj == NULL) return NULL ; 
+    const std::string& name = obj->GetName();
+    const std::string base = BFile::Name(name.c_str());  
+    return ShortName(base);
+}
+
 
 template<typename T>
 const char* X4::Name( const T* const obj )
@@ -74,6 +86,18 @@ template X4_API const char* X4::ShortName<G4LogicalSurface>(const G4LogicalSurfa
 template X4_API const char* X4::ShortName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
 template X4_API const char* X4::ShortName<G4LogicalVolume>(const G4LogicalVolume* const);
 template X4_API const char* X4::ShortName<G4Material>(const G4Material* const);
+
+template X4_API const char* X4::BaseName<G4OpticalSurface>(const G4OpticalSurface* const);
+template X4_API const char* X4::BaseName<G4LogicalBorderSurface>(const G4LogicalBorderSurface* const);
+template X4_API const char* X4::BaseName<G4LogicalSkinSurface>(const G4LogicalSkinSurface* const);
+template X4_API const char* X4::BaseName<G4LogicalSurface>(const G4LogicalSurface* const);
+template X4_API const char* X4::BaseName<G4VPhysicalVolume>(const G4VPhysicalVolume* const);
+template X4_API const char* X4::BaseName<G4LogicalVolume>(const G4LogicalVolume* const);
+template X4_API const char* X4::BaseName<G4Material>(const G4Material* const);
+
+
+
+
 
 
 /**

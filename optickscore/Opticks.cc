@@ -1235,11 +1235,34 @@ void Opticks::configure()
 
     configureCheckGeometryFiles();
 
+    configureGeometryHandling();
+
     LOG(debug) << "Opticks::configure DONE " 
               << " verbosity " << m_verbosity 
               ;
 
 }
+
+
+
+
+void Opticks::configureGeometryHandling()
+{
+    bool geocache = !m_cfg->hasOpt("nogeocache") ;
+    bool instanced = !m_cfg->hasOpt("noinstanced") ; // find repeated geometry 
+
+    LOG(debug) << "Opticks::configureGeometryHandling"
+              << " geocache " << geocache 
+              << " instanced " << instanced
+              ;   
+
+    setGeocache(geocache);
+    setInstanced(instanced); // find repeated geometry 
+}
+
+
+
+
 
 
 
