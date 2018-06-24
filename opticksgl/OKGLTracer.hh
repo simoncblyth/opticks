@@ -29,7 +29,22 @@ class OpticksViz ;
 
 #include "SRenderer.hh"
 
+/**
+OKGLTracer
+============
+
+Establishes OpenGL interop between oxrap.OTracer and oglrap.Scene/Renderer
+
+Canonical m_tracer instance is a resident of ok.OKPropagator 
+when visualization is enabled (m_viz).
+
+SRenderer protocol base, just: "void render()"
+**/
+
+
 class OKGL_API OKGLTracer : public SRenderer {
+    public:
+       static OKGLTracer* GetInstance();
     public:
        OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate);
     public:
@@ -38,6 +53,7 @@ class OKGL_API OKGLTracer : public SRenderer {
     private:
        void init();
     private:
+       static OKGLTracer* fInstance ; 
        SLog*            m_log ; 
        OpEngine*        m_ope ; 
        OpticksViz*      m_viz ; 

@@ -32,15 +32,13 @@ event.
 Methods intended to operate above the 
 level of the compute/interop split.
 
-
 * core functionality of this could be down in okop ?
-
-
 
 **/
 
-
 class OK_API OKPropagator {
+   public:
+       static OKPropagator* GetInstance();
    public:
        OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz);
    public:
@@ -51,6 +49,7 @@ class OK_API OKPropagator {
        int downloadEvent();
        void indexEvent();
    private:
+       static OKPropagator* fInstance ;  
        SLog*          m_log ; 
        OpticksHub*    m_hub ; 
        OpticksIdx*    m_idx ; 

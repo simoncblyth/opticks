@@ -59,6 +59,10 @@
 #include "PLOG.hh"
 
 
+Scene* Scene::fInstance = NULL ; 
+Scene* Scene::GetInstance(){ return fInstance ; }
+
+
 const char* Scene::PREFIX = "scene" ;
 const char* Scene::getPrefix()
 {
@@ -962,9 +966,19 @@ unsigned int Scene::getTarget()
 
 
 
+void Scene::setRaytraceEnabled(bool raytrace_enabled) // set by OKGLTracer
+{
+    m_raytrace_enabled = raytrace_enabled ;
+}
 
 void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projective, Raytraced, Composite 
 {
+    if(!m_raytrace_enabled)
+    {
+        LOG(error) << "Scene::nextRenderStyle is inhibited as Scene::setRaytraceEnabled has not been called, see okgl.OKGLTracer " ;  
+        return ; 
+    }
+
     bool nudge = modifiers & OpticksConst::e_shift ;
     if(nudge)
     {
@@ -1047,6 +1061,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
             m_num_global_style(0),
             m_instance_style(IVIS),
             m_render_style(R_PROJECTIVE),
+            m_raytrace_enabled(false),    // <-- enabled by OKGLTracer 
             m_initialized(false),
             m_time_fraction(0.f),
             m_instcull(true),
@@ -1055,6 +1070,7 @@ Scene::Scene(OpticksHub* hub, const char* shader_dir, const char* shader_incl_pa
 {
 
     init();
+    fInstance = this ; 
 
     for(unsigned int i=0 ; i < MAX_INSTANCE_RENDERER ; i++ ) 
     {

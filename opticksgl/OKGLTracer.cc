@@ -30,6 +30,9 @@
 #include "ORenderer.hh"
 
 
+OKGLTracer* OKGLTracer::fInstance = NULL ; 
+OKGLTracer* OKGLTracer::GetInstance(){ return fInstance ;}
+
 OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate) 
    :
       m_log(new SLog("OKGLTracer::OKGLTracer")),
@@ -49,6 +52,7 @@ OKGLTracer::OKGLTracer(OpEngine* ope, OpticksViz* viz, bool immediate)
 {
     init();
     (*m_log)("DONE");
+    fInstance = this ; 
 }
 
 void OKGLTracer::init()
@@ -60,6 +64,18 @@ void OKGLTracer::init()
 }
 
 
+
+/**
+OKGLTracer::prepareTracer
+---------------------------
+
+Establishes connection between: 
+
+1. oxrap.OTracer m_otracer (OptiX) resident here
+2. oglrap.Scene OpenGL "raytrace" renderer (actually its just renders tex pushed to it)
+
+**/
+
 void OKGLTracer::prepareTracer()
 {
     if(m_hub->isCompute()) return ;
@@ -68,6 +84,10 @@ void OKGLTracer::prepareTracer()
         LOG(fatal) << "OKGLTracer::prepareTracer NULL scene ?"  ;
         return ;
     }
+
+    Scene* scene = Scene::GetInstance();
+    assert(scene); 
+    scene->setRaytraceEnabled(true);  // enables the "O" key to switch to ray trace
 
 
     m_viz->setExternalRenderer(this);
@@ -99,6 +119,41 @@ void OKGLTracer::prepareTracer()
     //m_ocontext->dump("OKGLTracer::prepareTracer");
 }
 
+
+/**
+OKGLTracer::render
+--------------------
+
+1. Invokes the OTracer::trace
+
+2. Pushes the OptiX raytrace PBO to the OpenGL tex renderer, 
+   using OpenGL interop to keep this all GPU side. 
+
+
+This method is invoked from down in OGLRAP.OpticksViz by
+virtue of the SRenderer protocol base, and the 
+setting of this instance as the external renderer 
+of OpticksViz.
+
+OpticksViz::render coordinates the dance of the 
+two renderers and GPU texture passing with::
+
+    425 void OpticksViz::render()
+    426 {
+    427     m_frame->viewport();
+    428     m_frame->clear();
+    429 
+    430     if(m_scene->isRaytracedRender() || m_scene->isCompositeRender())
+    431     {
+    432         if(m_external_renderer) m_external_renderer->render();
+    433     }
+    434 
+    435     m_scene->render();
+    436 }
+
+**/
+
+
 void OKGLTracer::render()
 {     
     if(m_otracer && m_orenderer)
@@ -117,8 +172,6 @@ void OKGLTracer::render()
                 m_ocontext->snap();
             }
 */
-
-
             m_trace_count++ ; 
         }
         else
@@ -126,8 +179,6 @@ void OKGLTracer::render()
             // dont bother tracing when no change in geometry
         }
     }
-    
 }   
-
 
 

@@ -6,7 +6,7 @@ include(OpticksBuildOptions)
 find_package(OGLRap REQUIRED CONFIG)
 find_package(OKOP REQUIRED CONFIG)
 
-# NB only for classes with OGLRap "OpenGL" dependency, for others use opticksop- not opticksgl-
+# NB only for classes with OGLRap "OpenGL" dependency, for others use opticksop- not okgl-
 set(SOURCES
      
     OKGL_LOG.cc

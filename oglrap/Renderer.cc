@@ -80,6 +80,7 @@ const char* Renderer::PRINT = "print" ;
 Renderer::Renderer(const char* tag, const char* dir, const char* incl_path)
     :
     RendererBase(tag, dir, incl_path),
+    m_tagtex(strcmp(tag,"tex")==0),
     m_draw_0(0),
     m_draw_1(1),
 
@@ -634,7 +635,8 @@ void Renderer::render()
         }
         else
         {
-            //LOG(info) << "glDrawElements " << draw.desc() ;  
+            if(m_tagtex)
+                LOG(info) << "(tagtex) glDrawElements " << draw.desc() ;  
             glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
         }
     }
@@ -824,7 +826,6 @@ void Renderer::update_uniforms()
 
     if(m_has_tex)
     {
-
         glUniform1i(m_colorTex_location, TEX_UNIT_0 );
         glUniform1i(m_depthTex_location, TEX_UNIT_1 );
     }

@@ -106,6 +106,7 @@ InstanceStyle (I key)
 
 class OGLRAP_API Scene : public NConfigurable {
    public:
+        static Scene*      GetInstance();
         static const char* PREFIX ;
         const char* getPrefix();
    public:
@@ -192,6 +193,8 @@ class OGLRAP_API Scene : public NConfigurable {
 
         Scene::RenderStyle_t getRenderStyle() const  ;
         const char*   getRenderStyleString() const  ;
+
+        void setRaytraceEnabled(bool raytrace_enabled); // set by OKGLTracer
 
         void nextRenderStyle(unsigned int modifiers); 
         void applyRenderStyle();
@@ -292,7 +295,7 @@ class OGLRAP_API Scene : public NConfigurable {
         float         getTimeFraction();
 
    private:
-        
+        static Scene* fInstance ; 
         OpticksHub*  m_hub ; 
         Opticks*     m_ok ;     // think twice before using this, is the feature OpenGL specific ? Does it belong here ?
         char*        m_shader_dir ; 
@@ -347,7 +350,10 @@ class OGLRAP_API Scene : public NConfigurable {
         GlobalStyle_t   m_global_style ; 
         unsigned int    m_num_global_style ; 
         InstanceStyle_t m_instance_style ; 
+
         RenderStyle_t   m_render_style ; 
+        bool            m_raytrace_enabled ; 
+
         bool            m_initialized ;  
         float           m_time_fraction ;  
         bool            m_instcull ; 

@@ -27,6 +27,143 @@ NEXT
 * need to get thru to raytracing the direct geometry 
 
 
+
+Switching to raytrace render with O crashes in Renderer::render
+-------------------------------------------------------------------
+
+The raytrace rendering relies on GPU side interop between OptiX and OpenGL 
+which is coordinated by okgl.OKGLTracer.  If there is no instance of 
+that booted up and called every frame, you get the crash.
+
+* hmm how to detect that and prevent the O option from doing anything ?
+
+
+* to do this is a bit of a dependency conundrum, as only the packages above OKGL
+  can check on that the instance is around OKGLTracer::GetInstance() 
+  but the rendering style control and the crash is back down in OGLRap :
+  perhaps just a setEnableRayTracing on Scene that needs to be called
+  from on high
+
+
+::
+
+    050          OKCORE :          optickscore :          OpticksCore : NPY  
+     60            GGEO :                 ggeo :                 GGeo : OpticksCore  
+     65              X4 :                extg4 :                ExtG4 : G4 GGeo YoctoGLRap  
+     70          ASIRAP :            assimprap :            AssimpRap : OpticksAssimp GGeo  
+     80         MESHRAP :          openmeshrap :          OpenMeshRap : GGeo OpticksCore  
+     90           OKGEO :           opticksgeo :           OpticksGeo : OpticksCore AssimpRap OpenMeshRap  
+    100         CUDARAP :              cudarap :              CUDARap : OKConf SysRap OpticksCUDA  
+    110           THRAP :            thrustrap :            ThrustRap : OKConf OpticksCore CUDARap  
+    120           OXRAP :             optixrap :             OptiXRap : OKConf OptiX OpticksGeo ThrustRap  
+    130            OKOP :                 okop :                 OKOP : OKConf OptiXRap  
+    140          OGLRAP :               oglrap :               OGLRap : ImGui OpticksGLEW OpticksGLFW OpticksGeo  
+    150            OKGL :            opticksgl :            OpticksGL : OGLRap OKOP  
+    160              OK :                   ok :                   OK : OpticksGL  
+    170            CFG4 :                 cfg4 :                 CFG4 : G4 ExtG4 OpticksXercesC OpticksGeo  
+    180            OKG4 :                 okg4 :                 OKG4 : OK CFG4  
+    190            G4OK :                 g4ok :                 G4OK : CFG4 OKConf OKOP G4DAE  
+
+
+
+
+
+::
+
+   lldb OKX4Test
+
+
+    018-06-24 15:35:26.738 INFO  [25996296] [Interactor::key_pressed@409] Interactor::key_pressed O nextRenderStyle 
+    Process 20950 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
+        frame #0: 0x00000001001be65a libOGLRap.dylib`Renderer::render(this=0x000000011c563f70) at Renderer.cc:638
+       635 	        else
+       636 	        {
+       637 	            //LOG(info) << "glDrawElements " << draw.desc() ;  
+    -> 638 	            glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
+       639 	        }
+       640 	    }
+       641 	
+    Target 0: (OKX4Test) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x0)
+      * frame #0: 0x00000001001be65a libOGLRap.dylib`Renderer::render(this=0x000000011c563f70) at Renderer.cc:638
+        frame #1: 0x00000001001abe32 libOGLRap.dylib`Scene::render(this=0x000000011c55f8c0) at Scene.cc:883
+        frame #2: 0x00000001001c5fb3 libOGLRap.dylib`OpticksViz::render(this=0x00007ffeefbfe0e0) at OpticksViz.cc:435
+        frame #3: 0x00000001001c4bb2 libOGLRap.dylib`OpticksViz::renderLoop(this=0x00007ffeefbfe0e0) at OpticksViz.cc:474
+        frame #4: 0x00000001001c42f2 libOGLRap.dylib`OpticksViz::visualize(this=0x00007ffeefbfe0e0) at OpticksViz.cc:135
+        frame #5: 0x0000000100015342 OKX4Test`main(argc=1, argv=0x00007ffeefbfe880) at OKX4Test.cc:77
+        frame #6: 0x00007fff55eb1015 libdyld.dylib`start + 1
+    (lldb) p this
+    (Renderer *) $0 = 0x000000011c563f70
+    (lldb) p *this
+    (Renderer) $1 = {
+      RendererBase = {
+        m_shader = 0x000000011c5640d0
+        m_program = -1
+        m_verbosity = 0
+        m_shaderdir = 0x000000011c561c40 "/usr/local/opticks-cmake-overhaul/gl"
+        m_shadertag = 0x000000011c563070 "tex"
+        m_incl_path = 0x000000011c563ce0 "/usr/local/opticks-cmake-overhaul/gl"
+      }
+      m_vao = ([0] = 1936484142, [1] = 108, [2] = 0)
+      m_vao_all = 0
+      m_draw = {
+        [0] = 0x0000000000000000
+        [1] = 0x0000000000000000
+        [2] = 0x0000000000000023
+      }
+      m_draw_0 = 0
+      m_draw_1 = 1
+      m_lod_counts = ([0] = 0, [1] = 0, [2] = 0)
+      m_vbuf = 0x0000000000000000
+
+
+::
+
+    0966 void Scene::nextRenderStyle(unsigned int modifiers)  // O:key cycling: Projective, Raytraced, Composite 
+     967 {
+     968     bool nudge = modifiers & OpticksConst::e_shift ;
+     969     if(nudge)
+     970     {
+     971         m_composition->setChanged(true) ;
+     972         return ;
+     973     }
+     974 
+     975     int next = (m_render_style + 1) % NUM_RENDER_STYLE ;
+     976     m_render_style = (RenderStyle_t)next ;
+     977     applyRenderStyle();
+     978 
+     979     m_composition->setChanged(true) ; // trying to avoid the need for shift-O nudging 
+     980 }
+     981 
+     982 
+     983 
+     984 
+     985 bool Scene::isProjectiveRender() const
+     986 {
+     987    return m_render_style == R_PROJECTIVE ;
+     988 }
+     989 bool Scene::isRaytracedRender() const
+     990 {
+     991    return m_render_style == R_RAYTRACED ;
+     992 }
+     993 bool Scene::isCompositeRender() const
+     994 {
+     995    return m_render_style == R_COMPOSITE ;
+     996 }
+     997 
+     998 void Scene::applyRenderStyle()
+     999 {
+    1000     // nothing to do, style is honoured by  Scene::render
+    1001 
+    1002 
+    1003 }
+
+
+
+
+
 FIXED : Targetting difference yields a blank screen for OKX4Test
 ------------------------------------------------------------------
 

@@ -1596,7 +1596,7 @@ void GMesh::updateBounds()
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
         // instead just overwrite volume 0 
 
-        LOG(error) << "GMesh::updateBounds (to bbox of selected vertices) "
+        LOG(debug) << "GMesh::updateBounds (to bbox of selected vertices) "
                    << " overwrite volume 0 ce "
                    <<  m_center_extent[0].description()
                    << " with " 

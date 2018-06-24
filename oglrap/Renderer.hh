@@ -124,6 +124,8 @@ class OGLRAP_API Renderer : public RendererBase  {
       GLuint m_vao_all  ; 
 
       DrawElements* m_draw[MAX_LOD] ; 
+
+      bool          m_tagtex ; 
       unsigned      m_draw_0 ; 
       unsigned      m_draw_1 ; 
       unsigned      m_lod_counts[MAX_LOD] ; 

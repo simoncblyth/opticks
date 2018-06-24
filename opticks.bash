@@ -970,7 +970,7 @@ cudarap
 thrap
 oxrap
 okop
-opticksgl
+okgl
 
 ok
 cfg4
@@ -984,7 +984,7 @@ cudarap
 thrap
 oxrap
 okop
-opticksgl
+okgl
 EOP
 }
 
@@ -1210,7 +1210,7 @@ thrap-(){           . $(opticks-home)/thrustrap/thrap.bash && thrap-env $* ; }
 oxrap-(){           . $(opticks-home)/optixrap/oxrap.bash && oxrap-env $* ; }
 
 okop-(){            . $(opticks-home)/okop/okop.bash && okop-env $* ; }
-opticksgl-(){       . $(opticks-home)/opticksgl/opticksgl.bash && opticksgl-env $* ; }
+okgl-(){            . $(opticks-home)/opticksgl/okgl.bash && okgl-env $* ; }
 ok-(){              . $(opticks-home)/ok/ok.bash && ok-env $* ; }
 cfg4-(){            . $(opticks-home)/cfg4/cfg4.bash && cfg4-env $* ; }
 okg4-(){            . $(opticks-home)/okg4/okg4.bash && okg4-env $* ; }

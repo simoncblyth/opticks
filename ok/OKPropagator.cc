@@ -35,6 +35,10 @@
 
 
 
+OKPropagator* OKPropagator::fInstance = NULL ; 
+OKPropagator* OKPropagator::GetInstance(){ return fInstance ;}
+
+
 OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz) 
     :
     m_log(new SLog("OKPropagator::OKPropagator")),
@@ -49,6 +53,7 @@ OKPropagator::OKPropagator(OpticksHub* hub, OpticksIdx* idx, OpticksViz* viz)
     m_placeholder(0)
 {
     (*m_log)("DONE");
+    fInstance = this ; 
 }
 
 
