@@ -156,6 +156,16 @@ int Sc::add_material(const std::string& matName) // only adds if no material wit
 }
 
 
+
+int Sc::get_num_meshes() const 
+{
+    return meshes.size();
+}
+int Sc::get_num_nodes() const 
+{
+    return nodes.size();
+}
+
 int Sc::add_node(int lvIdx, 
                  int mtIdx,
                  const std::string& lvName, 

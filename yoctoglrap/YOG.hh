@@ -62,6 +62,9 @@ struct YOG_API Sc  // scene
 
     std::string desc() const ;
 
+    int get_num_meshes() const ;  
+    int get_num_nodes() const ;  
+
     int add_node(int   lvIdx, 
                  int   mtIdx,
                  const std::string& lvName, 

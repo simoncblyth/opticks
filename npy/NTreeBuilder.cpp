@@ -16,7 +16,7 @@ template <typename T>
 T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_ ) // static
 {
     NTreeBuilder tb(prims, operator_ );  
-    LOG(info) << tb.desc(); 
+    //LOG(info) << tb.desc(); 
     return tb.root() ; 
 }
 
@@ -55,7 +55,8 @@ NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& prims, OpticksCSG_t operat
     m_operator(operator_),
     m_optag(CSGTag(operator_)),
     m_root(NULL),
-    m_ana(NULL)
+    m_ana(NULL),
+    m_verbosity(1)
 {
     init(); 
 } 
@@ -90,7 +91,9 @@ void NTreeBuilder<T>::analyse()
 {
     delete m_ana ; 
     m_ana  = new NNodeAnalyse<T>(m_root) ; 
-    //LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
+
+    if(m_verbosity > 2 )
+        LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
 }
 
 
@@ -105,7 +108,8 @@ void NTreeBuilder<T>::init()
     for(unsigned i=0 ; i < num_prim ; i++)
     {
         T* prim = m_prims[i] ;
-        std::cout << prim->desc() << std::endl ; 
+        if(m_verbosity > 2)
+            std::cout << prim->desc() << std::endl ; 
         assert( prim->is_primitive() ); 
     }
 

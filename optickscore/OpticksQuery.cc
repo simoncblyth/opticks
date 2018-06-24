@@ -5,9 +5,10 @@
 
 // brap-
 #include "BStr.hh"
+#include "SDigest.hh"
 #include "PLOG.hh"
 
-// optickscore-
+// okc-
 #include "OpticksQuery.hh"
 
 const char* OpticksQuery::UNDEFINED_ = "undefined" ; 
@@ -23,6 +24,7 @@ const char* OpticksQuery::EMPTY_   = "" ;
 OpticksQuery::OpticksQuery(const char* query) 
     : 
     m_query_string(strdup(query)),
+    m_query_digest(SDigest::md5digest_( m_query_string, strlen(m_query_string))),
     m_query_name(NULL),
     m_query_index(0), 
     m_query_merge(0), 
@@ -38,6 +40,11 @@ const char* OpticksQuery::getQueryString() const
 {
     return m_query_string ; 
 }
+const char* OpticksQuery::getQueryDigest() const 
+{
+    return m_query_digest ; 
+}
+
 const char* OpticksQuery::getQueryName() const
 {
     return m_query_name ; 
@@ -77,10 +84,10 @@ void OpticksQuery::init()
 
 void OpticksQuery::dump(const char* msg) const 
 {
-    LOG(info) << msg << description() ; 
+    LOG(info) << msg << desc() ; 
 }
 
-std::string OpticksQuery::description() const 
+std::string OpticksQuery::desc() const 
 {
    std::stringstream ss ;  
    ss 
@@ -198,7 +205,6 @@ void OpticksQuery::parseQueryElement(const char* query)
        std::vector<std::string> elem ; 
        BStr::split(elem, query+strlen(range_token), ':'); 
        assert(elem.size() == 2);
-       //m_query_range.clear();
        for(unsigned int i=0 ; i<elem.size() ; ++i)
        {
            int query_range_elem = atoi(elem[i].c_str());
@@ -208,6 +214,18 @@ void OpticksQuery::parseQueryElement(const char* query)
        m_flat_selection = true ; 
   } 
 }
+
+
+/**
+OpticksQuery::selected
+------------------------
+
+Subsequent calls to selected from a node traverse
+need to supply a reference to the same recursive_select 
+boolean. 
+
+
+**/
 
 bool OpticksQuery::selected(const char* name, unsigned int index, unsigned int depth, bool& recursive_select )
 {

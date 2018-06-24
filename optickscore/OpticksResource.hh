@@ -31,6 +31,25 @@ OpticksResource
 Canonical m_resource instance is resident of Opticks
 instanciated by BOpticks::init prior to configuration.
 
+TODO:
+
+* the split between whats in BOpticksResource and OpticksResource 
+  is kinda arbitrary and makes this a pain to follow... 
+
+* make the split more logical eg between installation resources and 
+  specific geometry resources 
+
+* detector specifics need to come in from json 
+
+* move to constituent instead of base class, move all down to brap ? 
+
+* relying on a set of envvars is annoying, as that divides config
+  between scripts and here 
+
+* DONE : envprefix was never anything other than OPTICKS_ so get rid of the machinery 
+
+* need a better way to feed in metadata thru the keyhole, for live running 
+  (probably a json string passed from user code ?) eg for OPTICKS_QUERY_LIVE 
 
 
 
@@ -50,6 +69,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
     public:
        static const char* DEFAULT_GEOKEY ;
        static const char* DEFAULT_QUERY ;
+       static const char* DEFAULT_QUERY_LIVE ;
        static const char* DEFAULT_CTRL ;
        static const char* DEFAULT_MESHFIX ;
        static const char* DEFAULT_MESHFIX_CFG ;
@@ -75,7 +95,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        static bool existsFile(const char* dir, const char* name);
        static bool existsDir(const char* path);
     public:
-       OpticksResource(Opticks* opticks=NULL, const char* envprefix="OPTICKS_", const char* lastarg=NULL);
+       OpticksResource(Opticks* opticks=NULL, const char* lastarg=NULL);
        bool isValid();
     private:
        void init();
@@ -123,7 +143,7 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        void Dump(const char* msg="OpticksResource::Dump");
        std::string desc() const ; 
     public:
-       const char* getQueryString();
+       //const char* getQueryString();
        const char* getCtrl();
        bool hasCtrlKey(const char* key) const ;
     public:
@@ -168,18 +188,18 @@ class OKCORE_API OpticksResource : public BOpticksResource {
        SLog*       m_log ; 
        Opticks*    m_opticks ; 
        const char* m_lastarg ; 
+
    private:
-       const char* m_geokey ;
+       OpticksQuery*  m_query ;
    private:
        // results of readEnvironment
-       const char* m_query_string ;
+       const char* m_geokey ;
        const char* m_ctrl ;
        const char* m_meshfix ;
        const char* m_meshfixcfg ;
    private:
        bool        m_valid ; 
    private:
-       OpticksQuery*  m_query ;
        OpticksColors* m_colors ;
        OpticksFlags*  m_flags ;
        OpticksAttrSeq* m_flagnames ;

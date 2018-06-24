@@ -40,7 +40,7 @@ OpticksAttrSeq::OpticksAttrSeq(Opticks* ok, const char* type)
    m_sequence(NULL)
 {
    init();
-   (*m_log)("DONE");
+  // (*m_log)("DONE");
 }
 
 const char* OpticksAttrSeq::getType()

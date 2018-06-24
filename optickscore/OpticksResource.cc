@@ -56,6 +56,7 @@ const char* OpticksResource::PREFERENCE_BASE = "$HOME/.opticks" ;
 
 const char* OpticksResource::DEFAULT_GEOKEY = "OPTICKSDATA_DAEPATH_DYB" ; 
 const char* OpticksResource::DEFAULT_QUERY = "range:3153:12221" ; 
+const char* OpticksResource::DEFAULT_QUERY_LIVE = "range:3153:12221" ;  // <-- EXPEDIENT ASSUMPTION THAT G4LIVE GEOMETRY IS DYB  
 const char* OpticksResource::DEFAULT_CTRL = "" ; 
 const char* OpticksResource::DEFAULT_MESHFIX = "iav,oav" ; 
 const char* OpticksResource::DEFAULT_MESHFIX_CFG = "100,100,10,-0.999" ; 
@@ -79,21 +80,21 @@ const char* OpticksResource::SENSOR_SURFACE_OTHER = "SS-OTHER-UNKNOWN" ;
 
 
 
-OpticksResource::OpticksResource(Opticks* opticks, const char* envprefix, const char* lastarg) 
+OpticksResource::OpticksResource(Opticks* opticks, const char* lastarg) 
     :
-       BOpticksResource(envprefix),
+       BOpticksResource(),
        m_log(new SLog("OpticksResource::OpticksResource")),
        m_opticks(opticks),
        m_lastarg(lastarg ? strdup(lastarg) : NULL),
-
+       m_query(new OpticksQuery(SSys::getenvvar(
+                      m_key ? "OPTICKS_QUERY_LIVE" : "OPTICKS_QUERY" ,
+                      m_key ? DEFAULT_QUERY_LIVE : DEFAULT_QUERY 
+              ))), 
        m_geokey(NULL),
-
-       m_query_string(NULL),
        m_ctrl(NULL),
        m_meshfix(NULL),
        m_meshfixcfg(NULL),
        m_valid(true),
-       m_query(NULL),
        m_colors(NULL),
        m_flags(NULL),
        m_flagnames(NULL),
@@ -149,18 +150,13 @@ const char* OpticksResource::getMaterialMap()
 
 
 
-const char* OpticksResource::getEnvPrefix() 
-{
-    return m_envprefix ;
-}
-
-
-
-
+/*
 const char* OpticksResource::getQueryString()
 {
     return m_query_string ;
 }
+*/
+
 OpticksQuery* OpticksResource::getQuery()
 {
     return m_query ;
@@ -267,9 +263,9 @@ void OpticksResource::init()
    readG4Environment();
    readOpticksEnvironment();
 
-   if( m_key )  // from BOpticksResource base
+   if( m_key )  
    {
-       setupViaKey();  
+       setupViaKey();    // from BOpticksResource base
    } 
    else
    {
@@ -552,7 +548,6 @@ void OpticksResource::readEnvironment()
 {
 /*
 
-:param envprefix: of the required envvars, eg with "OPTICKS_" need:
 
 *path* 
      identifies the source geometry G4DAE exported file
@@ -578,7 +573,7 @@ OPTICKS_GEOKEY
 
 */
 
-    m_geokey = SSys::getenvvar(m_envprefix, "GEOKEY", DEFAULT_GEOKEY);
+    m_geokey = SSys::getenvvar("OPTICKS_GEOKEY", DEFAULT_GEOKEY);
     const char* daepath = SSys::getenvvar(m_geokey);
 
     if(daepath == NULL)
@@ -609,22 +604,17 @@ OPTICKS_GEOKEY
         setValid(false);
     } 
 
+    m_ctrl         = SSys::getenvvar("OPTICKS_CTRL", DEFAULT_CTRL);
+    m_meshfix      = SSys::getenvvar("OPTICKS_MESHFIX", DEFAULT_MESHFIX);
+    m_meshfixcfg   = SSys::getenvvar("OPTICKS_MESHFIX_CFG", DEFAULT_MESHFIX_CFG);
 
-    m_query_string = SSys::getenvvar(m_envprefix, "QUERY", DEFAULT_QUERY);
-    m_ctrl         = SSys::getenvvar(m_envprefix, "CTRL", DEFAULT_CTRL);
-    m_meshfix      = SSys::getenvvar(m_envprefix, "MESHFIX", DEFAULT_MESHFIX);
-    m_meshfixcfg   = SSys::getenvvar(m_envprefix, "MESHFIX_CFG", DEFAULT_MESHFIX_CFG);
-
-    m_query = new OpticksQuery(m_query_string);
-    std::string query_digest = SDigest::md5digest( m_query_string, strlen(m_query_string));
- 
     // idpath incorporates digest of geometry selection envvar 
     // allowing to benefit from caching as vary geometry selection 
     // while still only having a single source geometry file.
 
     assert(daepath);
 
-    setupViaSrc(daepath, query_digest.c_str());  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
+    setupViaSrc(daepath, m_query->getQueryDigest() );  // this sets m_idbase, m_idfold, m_idname done in base BOpticksResource
 
     assert(m_idpath) ; 
     assert(m_idname) ; 
@@ -668,13 +658,12 @@ void OpticksResource::Summary(const char* msg)
     std::cerr << "geocache_dir      : " <<  (m_geocache_dir ? m_geocache_dir : "NULL" ) << std::endl ; 
     std::cerr << "resource_dir      : " <<  (m_resource_dir ? m_resource_dir : "NULL" ) << std::endl ; 
     std::cerr << "valid    : " <<  (m_valid ? "valid" : "NOT VALID" ) << std::endl ; 
-    std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
     std::cerr << "geokey   : " <<  (m_geokey?m_geokey:"NULL") << std::endl; 
     std::cerr << "daepath  : " <<  (m_daepath?m_daepath:"NULL") << std::endl; 
     std::cerr << "gdmlpath : " <<  (m_gdmlpath?m_gdmlpath:"NULL") << std::endl; 
     std::cerr << "gltfpath : " <<  (m_gltfpath?m_gltfpath:"NULL") << std::endl; 
     std::cerr << "metapath : " <<  (m_metapath?m_metapath:"NULL") << std::endl; 
-    std::cerr << "query    : " <<  (m_query_string?m_query_string:"NULL") << std::endl; 
+    std::cerr << "query    : " <<  (m_query?m_query->getQueryString():"NULL") << std::endl; 
     std::cerr << "ctrl     : " <<  (m_ctrl?m_ctrl:"NULL") << std::endl; 
     std::cerr << "digest   : " <<  (m_srcdigest?m_srcdigest:"NULL") << std::endl; 
     std::cerr << "idpath   : " <<  (m_idpath?m_idpath:"NULL") << std::endl; 
@@ -929,7 +918,7 @@ bool OpticksResource::loadPreference(std::map<std::string, unsigned int>& msu, c
     std::string prefdir = getPreferenceDir(type);
     bool empty = prefdir.empty() ; 
 
-    LOG(error) << "OpticksResource::loadPreference(MSU)" 
+    LOG(trace) << "OpticksResource::loadPreference(MSU)" 
               << " prefdir " << prefdir
               << " name " << name
               << " empty " << ( empty ? "YES" : "NO" )

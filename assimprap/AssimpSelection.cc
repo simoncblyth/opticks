@@ -77,7 +77,7 @@ void AssimpSelection::init()
 
     LOG(info) << "AssimpSelection::AssimpSelection"
               << " before SelectNodes " 
-              << m_query->description()
+              << m_query->desc()
               ;
 
     selectNodes(m_root, 0, false);
@@ -208,8 +208,6 @@ void AssimpSelection::findBounds(AssimpNode* node, aiVector3D& low, aiVector3D& 
    } 
 }
 
-
-
 void AssimpSelection::dump(const char* msg)
 {
     LOG(info) << msg 
@@ -230,6 +228,4 @@ void AssimpSelection::bounds()
     if(m_extent) 
                printf("AssimpSelection::bounds ext  %10.3f %10.3f %10.3f \n", m_extent->x, m_extent->y, m_extent->z );
 }
-
-
 

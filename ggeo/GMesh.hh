@@ -471,11 +471,10 @@ class GGEO_API GMesh : public GDrawable {
        gfloat3* getTransformedNormals(GMatrixF& transform ) const ;
 
   public:
-      static gbbox*  findBBox(gfloat3* vertices, unsigned int num_vertices);
-      static gfloat4 findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices);
       void updateBounds();
       void updateBounds(gfloat3& low, gfloat3& high, GMatrixF& transform);
-
+      static gbbox*  findBBox(gfloat3* vertices, unsigned int num_vertices);
+      static gfloat4 findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_vertices);
   public:
       // used from GMergedMesh
       void setNumVertices(unsigned int num_vertices);

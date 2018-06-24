@@ -29,7 +29,7 @@
 GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
 {
     G4VisExtent ve = solid->GetExtent();
-    LOG(info) << " visExtent " << ve ; 
+    //LOG(info) << " visExtent " << ve ; 
  
     nbbox bb = make_bbox( 
                    ve.GetXmin(), ve.GetYmin(), ve.GetZmin(), 

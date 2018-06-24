@@ -11,6 +11,14 @@ class Composition ;
 
 #include "OKGEO_API_EXPORT.hh"
 
+/**
+OpticksAim
+===========
+
+
+
+**/
+
 class OKGEO_API OpticksAim {
     public:
        OpticksAim(OpticksHub* hub);

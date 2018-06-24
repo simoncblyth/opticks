@@ -27,8 +27,12 @@ NEXT
 * need to get thru to raytracing the direct geometry 
 
 
-Targetting difference yields a blank screen for OKX4Test
------------------------------------------------------------
+FIXED : Targetting difference yields a blank screen for OKX4Test
+------------------------------------------------------------------
+
+* OpticksQuery selection was not being applied by X4PhysicalVolume, so the
+  merged mesh was an enormous one (from overlarge world volume)
+
 
 OKTest::
 

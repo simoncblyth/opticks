@@ -101,7 +101,7 @@ int main(int argc, char** argv)
     PLOG_(argc, argv);
     GGEO_LOG__ ;
 
-    SSys::setenvvar("", "IDPATH", "$TMP", true );
+    SSys::setenvvar("IDPATH", "$TMP", true );
 
     Opticks ok(argc, argv);
     ok.configure();

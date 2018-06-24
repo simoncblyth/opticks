@@ -70,7 +70,7 @@ public:
     OpticksQuery_t getQueryType() const ;
 
     void dump(const char* msg="OpticksQuery::dump") const ; 
-    std::string description() const ;
+    std::string desc() const ;
 
 public:
     OpticksQuery(const char* query);
@@ -80,6 +80,7 @@ private:
 public:
     // inline getters
     const char*  getQueryString() const ;
+    const char*  getQueryDigest() const ;
     const char*  getQueryName() const ;
     int          getQueryIndex() const ;
     int          getQueryMerge() const ;
@@ -92,6 +93,7 @@ private:
     void parseQuery(const char* query);
 private:
     const char*  m_query_string ; 
+    const char*  m_query_digest ; 
     const char*  m_query_name ;
     unsigned int m_query_index ; 
     unsigned int m_query_merge ; 

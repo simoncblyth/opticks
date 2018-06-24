@@ -55,6 +55,7 @@ template struct nxform<YOG::Nd> ;
 #include "GBndLib.hh"
 
 #include "Opticks.hh"
+#include "OpticksQuery.hh"
 
 
 
@@ -91,6 +92,7 @@ X4PhysicalVolume::X4PhysicalVolume(GGeo* ggeo, const G4VPhysicalVolume* const to
     m_ggeo(ggeo),
     m_top(top),
     m_ok(m_ggeo->getOpticks()), 
+    m_query(m_ok->getQuery()),
     m_gltfpath(m_ok->getGLTFPath()),
     m_mlib(m_ggeo->getMaterialLib()),
     m_slib(m_ggeo->getSurfaceLib()),
@@ -111,6 +113,8 @@ GGeo* X4PhysicalVolume::getGGeo()
 
 void X4PhysicalVolume::init()
 {
+    LOG(info) << "query : " << m_query->desc() ; 
+
     convertMaterials();
     convertSurfaces();
     convertStructure();
@@ -358,15 +362,17 @@ void X4PhysicalVolume::convertStructure()
 
      if(m_verbosity > 5) dumpLV();
 
-     m_root = convertTree_r(pv, parent, depth, parent_pv );
+     bool recursive_select = false ;
+
+     m_root = convertTree_r(pv, parent, depth, parent_pv, recursive_select );
 
      LOG(info) << " convertStructure END  " << m_sc->desc() ; 
 }
 
 
-GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv )
+GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const parent_pv, bool& recursive_select )
 {
-     GVolume* volume = convertNode(pv, parent, depth, parent_pv );
+     GVolume* volume = convertNode(pv, parent, depth, parent_pv, recursive_select );
      m_ggeo->add(volume); // collect in nodelib
 
      const G4LogicalVolume* const lv = pv->GetLogicalVolume();
@@ -374,7 +380,7 @@ GVolume* X4PhysicalVolume::convertTree_r(const G4VPhysicalVolume* const pv, GVol
      for (int i=0 ; i < lv->GetNoDaughters() ;i++ )
      {
          const G4VPhysicalVolume* const child_pv = lv->GetDaughter(i);
-         convertTree_r(child_pv, volume, depth+1, pv );
+         convertTree_r(child_pv, volume, depth+1, pv, recursive_select );
      }
 
      return volume   ; 
@@ -404,7 +410,7 @@ unsigned X4PhysicalVolume::addBoundary(const G4VPhysicalVolume* const pv, const 
 }
 
 
-GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p )
+GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolume* parent, int depth, const G4VPhysicalVolume* const pv_p, bool& recursive_select )
 {
      YOG::Nd* parent_nd = parent ? static_cast<YOG::Nd*>(parent->getParallelNode()) : NULL ;
 
@@ -425,6 +431,21 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const std::string& pvName = pv->GetName() ; 
      const std::string& soName = solid->GetName() ; 
 
+
+     int ndIdx0 = m_sc->get_num_nodes();
+
+     bool selected = m_query->selected(pvName.c_str(), ndIdx0, depth, recursive_select);
+
+     /*
+     if(selected)
+     LOG(info) << " ndIdx0 " << std::setw(6) << ndIdx0 
+               << " selected " << selected 
+               << " recursive_select " << recursive_select 
+             //  << " pvName " << pvName
+               ;
+     */     
+
+
      int ndIdx = m_sc->add_node(
                                  lvIdx, 
                                  materialIdx,
@@ -434,14 +455,15 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
                                  ltriple,
                                  boundaryName,
                                  depth,
-                                 true,     // selected
+                                 selected,      // not yet used in YOG machinery  
                                  parent_nd
                                );
 
+     assert( ndIdx == ndIdx0) ; 
+
      Nd* nd = m_sc->get_node(ndIdx) ; 
 
-
-     if(ndIdx % 100 == 0) 
+     if(ndIdx % 1000 == 0) 
      LOG(info) << "convertNode " 
                << " ndIdx "  << std::setw(5) << ndIdx 
                << " soIdx "  << std::setw(5) << nd->soIdx 
@@ -508,6 +530,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      // sensor = m_sensor_list ? m_sensor_list->findSensorForNode( ndIndex ) : NULL ; 
      volume->setSensor( sensor );   
      volume->setBoundary( boundary ); 
+     volume->setSelected( selected );
     
      // TODO: rejig ctor args, to avoid needing the setters for array setup
 

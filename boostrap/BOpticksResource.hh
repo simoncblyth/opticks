@@ -26,7 +26,7 @@ class BRAP_API  BOpticksResource {
    public:
        static const char* MakeSrcPath(const char* srcpath, const char* ext) ;
    public:
-        BOpticksResource(const char* envprefix="OPTICKS_");
+        BOpticksResource();
         virtual ~BOpticksResource();
         virtual void Summary(const char* msg="BOpticksResource::Summary");
 
@@ -115,7 +115,6 @@ class BRAP_API  BOpticksResource {
         BPath*       m_id ; 
         BResource*   m_res ;
  
-        const char* m_envprefix ; 
         int         m_layout ; 
         const char* m_install_prefix ;   // from BOpticksResourceCMakeConfig header
         const char* m_opticksdata_dir ; 

@@ -221,7 +221,6 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        m_argv(m_sargs->argv),
        m_production(m_sargs->hasArg("--production")),
        m_profile(new OpticksProfile("Opticks",m_sargs->hasArg("--stamp"))),
-       m_envprefix(strdup("OPTICKS_")),
        m_materialprefix(NULL),
        m_photons_per_g4event(0), 
 
@@ -266,6 +265,7 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
           LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
        }
        //assert( fOpticks == NULL ); // should only ever be one instance 
+
        fOpticks = this ; 
        init();
        (*m_log)("DONE");
@@ -445,9 +445,9 @@ void Opticks::init()
     m_lastarg = m_argc > 1 ? strdup(m_argv[m_argc-1]) : NULL ;
 
 
-    LOG(info) << " Opticks::init start instanciate resource " ;
-    m_resource = new OpticksResource(this, m_envprefix, m_lastarg);
-    LOG(info) << " Opticks::init done instanciate resource " ;
+    LOG(trace) << " Opticks::init start instanciate resource " ;
+    m_resource = new OpticksResource(this, m_lastarg);
+    LOG(trace) << " Opticks::init done instanciate resource " ;
 
     setDetector( m_resource->getDetector() );
 

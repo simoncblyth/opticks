@@ -33,6 +33,8 @@ LEAVING AS IS : mesh ordering different in gdml and dae branches
 
 Forced to do solid name mapping to establish correspondence... why ?
 
+* THAT LOOKS LIKE DIFFERENCE BETWEEN AN INDEX COLLECTED POSTORDER VS PREORDER 
+
 ::
 
     2017-06-23 16:55:44.638 INFO  [525994] [GScene::importMeshes@185] GScene::importMeshes START num_meshes 249
@@ -56,7 +58,7 @@ Forced to do solid name mapping to establish correspondence... why ?
 assimprap/AssimpGeo
 ----------------------
 
-OpticksQuery volume range selection feeds into GSolid/GNode isSelected flags.
+OpticksQuery volume range selection feeds into GVolume/GNode isSelected flags.
 
 
 

@@ -222,6 +222,7 @@ const char* SSys::getenvvar( const char* envvar )
 }
 
 
+/*
 const char* SSys::getenvvar( const char* envprefix, const char* envkey, const char* fallback )
 {
     char envvar[128];
@@ -229,6 +230,15 @@ const char* SSys::getenvvar( const char* envprefix, const char* envkey, const ch
     const char* evalue = getenvvar(envvar) ; 
     return evalue ? evalue : fallback ; 
 }
+*/
+
+const char* SSys::getenvvar( const char* envkey, const char* fallback )
+{
+    const char* evalue = getenvvar(envkey) ; 
+    return evalue ? evalue : fallback ; 
+}
+
+
 
 
 int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
@@ -260,7 +270,7 @@ int SSys::setenvvar( const char* ekey, const char* value, bool overwrite)
 }
 
 
-
+/*
 int SSys::setenvvar( const char* envprefix, const char* key, const char* value, bool overwrite)
 {
     std::stringstream ss ;
@@ -269,7 +279,7 @@ int SSys::setenvvar( const char* envprefix, const char* key, const char* value, 
     std::string ekey = ss.str();
     return SSys::setenvvar(ekey.c_str(), value, overwrite );    
 } 
-
+*/
 
 
 

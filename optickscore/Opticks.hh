@@ -438,7 +438,6 @@ class OKCORE_API Opticks {
        char**               m_argv ; 
        bool                 m_production ; 
        OpticksProfile*      m_profile ; 
-       const char*          m_envprefix ;
        const char*          m_materialprefix ;
    private:
        unsigned             m_photons_per_g4event ;

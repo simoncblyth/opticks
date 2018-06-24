@@ -1,5 +1,4 @@
 
-
 #include "NGLM.hpp"
 #include "NGLMExt.hpp"
 #include "GLMFormat.hpp"
@@ -16,7 +15,6 @@
 #include "OpticksAim.hh"
 
 #include "PLOG.hh"
-
 
 
 OpticksAim::OpticksAim(OpticksHub* hub) 

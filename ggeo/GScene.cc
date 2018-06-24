@@ -585,7 +585,7 @@ GVolume* GScene::createVolumeTree(NScene* scene) // creates analytic GVolume/GNo
     if(m_verbosity > 0)
     LOG(info) << "GScene::createVolumeTree START"
               << "  verbosity " << m_verbosity  
-              << " query " << m_query->description()
+              << " query " << m_query->desc()
               ; 
     assert(scene);
 

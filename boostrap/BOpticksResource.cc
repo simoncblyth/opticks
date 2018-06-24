@@ -23,14 +23,13 @@ const char* BOpticksResource::G4ENV_RELPATH = "externals/config/geant4.ini" ;
 const char* BOpticksResource::OKDATA_RELPATH = "opticksdata/config/opticksdata.ini" ; // TODO: relocate into geocache
 
 
-BOpticksResource::BOpticksResource(const char* envprefix)
+BOpticksResource::BOpticksResource()
     :
     m_log(new SLog("BOpticksResource::BOpticksResource")),
     m_setup(false),
     m_key(BOpticksKey::GetKey()),   // will be NULL unless BOpticksKey::SetKey has been called 
     m_id(NULL),
     m_res(new BResource),
-    m_envprefix(strdup(envprefix)),
     m_layout(SSys::getenvint("OPTICKS_RESOURCE_LAYOUT", 0)),
     m_install_prefix(NULL),
     m_opticksdata_dir(NULL),
@@ -109,13 +108,12 @@ void BOpticksResource::initInstallPrefix()
     m_install_prefix = strdup(OKCONF_OPTICKS_INSTALL_PREFIX) ; 
     m_res->addDir("install_prefix", m_install_prefix );
 
-    const char* key = "INSTALL_PREFIX" ; 
+    const char* key = "OPTICKS_INSTALL_PREFIX" ; 
 
-    int rc = SSys::setenvvar(m_envprefix, key, m_install_prefix, true );  
+    int rc = SSys::setenvvar(key, m_install_prefix, true );  
 
     LOG(trace) << "OpticksResource::adoptInstallPrefix " 
                << " install_prefix " << m_install_prefix  
-               << " envprefix " << m_envprefix  
                << " key " << key 
                << " rc " << rc
               ;   
@@ -422,7 +420,7 @@ void BOpticksResource::setupViaSrc(const char* srcpath, const char* srcdigest)
         m_idpath = strdup(kfn.c_str());
 
         // internal setting of envvar 
-        assert(SSys::setenvvar("","IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
+        assert(SSys::setenvvar("IDPATH", m_idpath, true )==0);  // uses putenv for windows mingw compat 
 
         // Where is IDPATH internal envvar used ? 
         //    Mainly by NPY tests as a resource access workaround as NPY 
@@ -511,8 +509,7 @@ void BOpticksResource::setIdPathOverride(const char* idpath_tmp)  // used for te
 } 
 const char* BOpticksResource::getIdPath() const 
 {
-
-    LOG(info) << "getIdPath"
+    LOG(trace) << "getIdPath"
               << " idpath_tmp " << m_idpath_tmp 
               << " idpath " << m_idpath
               ; 
@@ -532,7 +529,6 @@ void BOpticksResource::Summary(const char* msg)
     const char* prefix = m_install_prefix ; 
 
     std::cerr << "prefix   : " <<  (prefix ? prefix : "NULL" ) << std::endl ; 
-    std::cerr << "envprefix: " <<  (m_envprefix?m_envprefix:"NULL") << std::endl; 
 
     const char* name = "generate.cu.ptx" ;
     std::string ptxpath = getPTXPath(name); 

@@ -1480,10 +1480,46 @@ gfloat4 GMesh::findCenterExtentDeprecated(gfloat3* vertices, unsigned int num_ve
 }
 
 
+/**
+GMesh::updatebounds
+--------------------
+
+Updates the below based on the bounding box of the vertices.
+The vertices present depend on the geometry selection 
+when the GMergedMesh was created from the GMesh of the GVolume. 
+
+::
+
+    m_center_extent[0] 
+    m_bbox[0]
+    m_model_to_world
+
+
+updateBounds is invoked from::
+
+   GMesh::init
+   GMesh::loadBuffers
+   GGeo::invokeMeshJoin
+   GMergedMesh::combine
+   GMergedMesh::create
+ 
+TODO-SOMETIME: 
+
+Avoid the need for updating as it is a source of confusion
+arising from double use of slot zero for:
+
+1. absolute volume 0 (world volume, an often over large container)  
+2. overall selected volumes 
+
+**/
 
 void GMesh::updateBounds()
 {
-    LOG(trace) << "GMesh::updateBounds " << m_num_vertices ; 
+    if(m_num_volumes > 0)
+    LOG(error) << "GMesh::updateBounds from bbox of vertices  " 
+               << " num_vertices " << m_num_vertices
+               << " num_volumes " << m_num_volumes
+               ; 
 
     gbbox*  bb = findBBox(m_vertices, m_num_vertices);
 
@@ -1560,21 +1596,20 @@ void GMesh::updateBounds()
         // avoid stomping on position of array of center_extent in case of MergedMesh, 
         // instead just overwrite volume 0 
 
-        LOG(debug) << "GMesh::updateBounds"
-                  << " overwrite volume 0 ce "
-                  <<  m_center_extent[0].description()
-                  << " with " 
-                  << ce.description()
-                  ;
+        LOG(error) << "GMesh::updateBounds (to bbox of selected vertices) "
+                   << " overwrite volume 0 ce "
+                   <<  m_center_extent[0].description()
+                   << " with " 
+                   << ce.description()
+                   << " num_vertices " << m_num_vertices
+                   << " num_volumes " << m_num_volumes
+                   ;
 
         m_center_extent[0].x = ce.x ;
         m_center_extent[0].y = ce.y ;
         m_center_extent[0].z = ce.z ;
         m_center_extent[0].w = ce.w ;
     }
-
-
-
 }
 
 

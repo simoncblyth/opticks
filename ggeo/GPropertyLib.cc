@@ -105,7 +105,8 @@ GPropertyLib::GPropertyLib(GPropertyLib* other, GDomain<float>* domain)
 // the domain will get set in ::init to the default
 GPropertyLib::GPropertyLib(Opticks* ok, const char* type) 
      :
-     m_log(new SLog("GPropertyLib::GPropertyLib.normal-ctor", type)),
+     //m_log(new SLog("GPropertyLib::GPropertyLib.normal-ctor", type)),
+     m_log(NULL),
      m_ok(ok),
      m_resource(NULL),
      m_buffer(NULL),
@@ -120,7 +121,7 @@ GPropertyLib::GPropertyLib(Opticks* ok, const char* type)
      m_valid(true)
 {
      init();
-     (*m_log)("DONE");
+     //(*m_log)("DONE");
 }
 
 Opticks* GPropertyLib::getOpticks()

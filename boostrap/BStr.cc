@@ -36,7 +36,10 @@ bool BStr::HasChar(const std::string& s, char c)
     return s.find(c) != std::string::npos ; 
 }
 
-
+bool BStr::EndsWith(const char* s, const char* q)
+{
+    return boost::ends_with(s, q);
+}
 
 bool BStr::StartsWith(const char* s, const char* q)
 {

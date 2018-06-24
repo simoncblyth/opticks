@@ -723,11 +723,14 @@ GGeoBase* OpticksHub::getGGeoBaseTest() const
 GGeoBase* OpticksHub::getGGeoBasePrimary() const 
 {
     GGeoBase* ggb = m_gltf ? dynamic_cast<GGeoBase*>(m_gscene) : dynamic_cast<GGeoBase*>(m_ggeo) ; 
+
+    /*
     LOG(info) << "OpticksHub::getGGeoBasePrimary"
               << " analytic switch  "
               << " m_gltf " << m_gltf
               << " ggb " << ( ggb ? ggb->getIdentifier() : "NULL" )
                ;
+    */ 
 
     return ggb ; 
 }

@@ -644,7 +644,7 @@ void X4Solid::convertPolyconePrimitives( const std::vector<zplane>& zp,  std::ve
 
         if( z1 == z2 )
         {
-            LOG(warning) << " skipping z2 == z1 zp " ; 
+            //LOG(warning) << " skipping z2 == z1 zp " ; 
             continue ; 
         }
         
@@ -677,6 +677,8 @@ void X4Solid::convertPolycone()
     // G4GDMLWriteSolids::ZplaneWrite
     // ../analytic/gdml.py 
 
+    //LOG(error) << "START" ; 
+
     const G4Polycone* const solid = static_cast<const G4Polycone*>(m_solid);
     assert(solid); 
     const G4PolyconeHistorical* ph = solid->GetOriginalParameters() ;
@@ -704,7 +706,10 @@ void X4Solid::convertPolycone()
 
     std::vector<nnode*> prims ; 
     convertPolyconePrimitives( zp, prims ); 
+
+    //LOG(info) << "pre-UnionTree" ; 
     nnode* cn = NTreeBuilder<nnode>::UnionTree(prims) ;
+    //LOG(info) << "post-UnionTree" ; 
 
 
     bool multi_Rmin = Rmin.size() > 1 ; 
@@ -728,6 +733,8 @@ void X4Solid::convertPolycone()
 
     nnode* result = inner ? nnode::make_operator_ptr(CSG_DIFFERENCE, cn, inner )  : cn ; 
     setRoot(result); 
+   
+    //LOG(error) << "DONE" ; 
 }
 
 

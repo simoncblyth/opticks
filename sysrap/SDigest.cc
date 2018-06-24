@@ -35,6 +35,7 @@ char* md5digest_str2md5_monolithic(const char *buffer, int length)
 }
 
 
+
 void md5digest_str2md5_update(MD5_CTX& ctx, char* buffer, int length) 
 {
     const int blocksize = 512 ; 
@@ -123,6 +124,10 @@ std::string SDigest::md5digest( const char* buffer, int len )
     return digest;
 }
 
+const char* SDigest::md5digest_( const char* buffer, int len )
+{
+    return md5digest_str2md5_monolithic(buffer, len);
+}
 
 
 std::string SDigest::digest( void* buffer, int len )

@@ -43,6 +43,7 @@ class NPY_API NTreeBuilder
         std::string            m_optag ; 
         T*                     m_root ; 
         NNodeAnalyse<T>*       m_ana ; 
+        int                    m_verbosity ; 
 
 
 };

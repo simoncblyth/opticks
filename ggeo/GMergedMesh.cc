@@ -164,12 +164,30 @@ GMergedMesh* GMergedMesh::combine(unsigned int index, GMergedMesh* mm, const std
 
 
 
+/**
+GMergedMesh::create
+---------------------
+
+For instanced meshes the base is set to the first occurence of the 
+instance eg invoked from GScene::makeMergedMeshAndInstancedBuffers
+
+The base is used as the frame into which the subframes are transformed, when
+base is NULL global transforms and not base relative transforms are used.
+
+For vertices to be merged into the GMergedMesh they must pass a selection
+based upon the repeatIdx and isSelected status of the GVolume(GNode).
+
+The GNode::setSelection is invoked from::
+
+    AssimpGGeo::convertStructure
+    GScene::transferMetadata    
+
+
+**/
+
 
 GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsigned verbosity )
 {
-    // for instanced meshes the base is set to the first occurence of the 
-    // instance eg invoked from GScene::makeMergedMeshAndInstancedBuffers
-
     assert(root && "root node is required");
 
     Timer t("GMergedMesh::create") ; 
@@ -180,7 +198,6 @@ GMergedMesh* GMergedMesh::create(unsigned ridx, GNode* base, GNode* root, unsign
     mm->setCurrentBase(base);  // <-- when NULL it means will use global not base relative transforms
 
     GNode* start = base ? base : root ; 
-
 
     if(verbosity > 1)
     LOG(info)<<"GMergedMesh::create"
@@ -759,11 +776,6 @@ void GMergedMesh::addInstancedBuffers(const std::vector<GNode*>& placements)
 
 
 
-
-
-
-
-
 GMergedMesh*  GMergedMesh::MakeComposite(std::vector<GMergedMesh*> mms ) // static
 {
     assert(mms.size() > 0 );
@@ -887,6 +899,20 @@ bool GMergedMesh::CheckFacesQty(const GMergedMesh* mm)
 
      return node_indices && boundary_indices && sensor_indices ;
 }
+
+/**
+GMergedMesh::CreateQuadMesh
+----------------------------
+
+This is used to make LOD (level-of-detail) standins for 
+geometry that are swapped in when the geometry is very distant.
+The quad standin is constructed from the bbox cuboid by collapsing the
+smallest dimension.
+
+TODO: try moving to GMeshMaker and create GMesh, 
+      as looks like is not using anything of GMergedMesh ?
+
+**/
 
 GMergedMesh* GMergedMesh::CreateQuadMesh(unsigned index, gbbox& bb ) // static
 {

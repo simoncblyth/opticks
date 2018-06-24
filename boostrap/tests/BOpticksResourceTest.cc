@@ -46,7 +46,7 @@ struct BOpticksResourceTest
 void test_ViaSrc()
 {
     const char* srcpath   = SSys::getenvvar("DEBUG_OPTICKS_SRCPATH");
-    const char* srcdigest  = SSys::getenvvar("DEBUG_OPTICKS_SRCDIGEST", "0123456789abcdef0123456789abcdef");
+    const char* srcdigest  = SSys::getenvvar("DEBUG_OPTICKS_SRCDIGEST", "0123456789abcdef0123456789abcdef" );
 
     assert( srcpath && srcdigest );
  

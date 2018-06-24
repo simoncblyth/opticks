@@ -27,6 +27,11 @@ GMergedMesh
 * THAT MEANS : DO NOT ADD METHODS HERE THAT CAN LIVE IN GMesh
 
 
+
+
+
+
+
 **/
 
 class GGEO_API GMergedMesh : public GMesh {
