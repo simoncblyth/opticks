@@ -13,6 +13,18 @@
 #include "PLOG.hh"
 
 
+G4Material* X4MaterialTable::Get(unsigned idx)
+{
+    unsigned nmat = G4Material::GetNumberOfMaterials();
+    assert( idx < nmat );
+    G4MaterialTable* mtab = G4Material::GetMaterialTable();
+    G4Material* material = (*mtab)[idx];
+    assert( material->GetIndex() == idx );
+    return material ; 
+}
+
+
+
 void X4MaterialTable::Convert(GMaterialLib* mlib)
 {
     assert( mlib->getNumMaterials() == 0 ); 
@@ -33,17 +45,15 @@ X4MaterialTable::X4MaterialTable(GMaterialLib* mlib)
     init();
 }
 
+
+
+
 void X4MaterialTable::init()
 {
     unsigned nmat = G4Material::GetNumberOfMaterials();
-    assert( nmat == m_mtab->size() ) ; 
-  
     for(unsigned i=0 ; i < nmat ; i++)
     {   
-        G4Material* material = (*m_mtab)[i];
-  
-        assert( material->GetIndex() == i );
-
+        G4Material* material = Get(i) ; 
         G4MaterialPropertiesTable* mpt = material->GetMaterialPropertiesTable();
 
         if( mpt == NULL )
@@ -56,7 +66,8 @@ void X4MaterialTable::init()
 
         assert( mat->getIndex() == i ); // this is not the lib, no danger of triggering a close
 
-        m_mlib->add(mat) ; // creates standardized material
+        m_mlib->add(mat) ;    // creates standardized material
+        m_mlib->addRaw(mat) ; // stores as-is
     }
 }
 

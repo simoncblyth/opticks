@@ -1,6 +1,7 @@
 
 #include <limits>
 
+#include "BStr.hh"
 #include "NPY.hpp"
 #include "Opticks.hh"
 
@@ -136,6 +137,14 @@ unsigned GMaterialLib::getNumMaterials() const
 {
     return m_materials.size();
 }
+unsigned GMaterialLib::getNumRawMaterials() const 
+{
+    return m_materials_raw.size();
+}
+
+
+
+
 
 GMaterialLib::GMaterialLib(Opticks* ok, GMaterialLib* basis) 
     :
@@ -223,19 +232,21 @@ void GMaterialLib::Summary(const char* msg)
 
 
 // invoked pre-cache by GGeo::add(GMaterial* material) AssimpGGeo::convertMaterials
-void GMaterialLib::add(GMaterial* raw)
+void GMaterialLib::add(GMaterial* mat)
 {
     assert(!isClosed());
-    m_materials.push_back(createStandardMaterial(raw)); 
+    m_materials.push_back(createStandardMaterial(mat)); 
 }
-
+void GMaterialLib::addRaw(GMaterial* mat)
+{
+    m_materials_raw.push_back(mat);
+}
 
 void GMaterialLib::addDirect(GMaterial* mat)
 {
     assert(!isClosed());
     m_materials.push_back(mat); 
 }
-
 
 GMaterial* GMaterialLib::createStandardMaterial(GMaterial* src)
 {
@@ -809,6 +820,86 @@ GMaterial* GMaterialLib::getMaterial(unsigned int index) const
 {
     return index < m_materials.size() ? m_materials[index] : NULL  ;
 }
+
+GMaterial* GMaterialLib::getMaterialWithIndex(unsigned aindex) const 
+{
+    GMaterial* mat = NULL ; 
+    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
+    { 
+        if(m_materials[i]->getIndex() == aindex )
+        {
+            mat = m_materials[i] ; 
+            break ; 
+        }
+    }
+    return mat ;
+}
+
+
+GPropertyMap<float>* GMaterialLib::findRawMaterial(const char* shortname) const 
+{
+    GMaterial* mat = NULL ; 
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++ )
+    { 
+        std::string sn = m_materials_raw[i]->getShortNameString();
+        //printf("GGeo::findRawMaterial %d %s \n", i, sn.c_str()); 
+        if(strcmp(sn.c_str(), shortname)==0)
+        {
+            mat = m_materials_raw[i] ; 
+            break ; 
+        }
+    }
+    return (GPropertyMap<float>*)mat ;
+}
+
+GProperty<float>* GMaterialLib::findRawMaterialProperty(const char* shortname, const char* propname) const
+{
+    GPropertyMap<float>* mat = findRawMaterial(shortname);
+
+    GProperty<float>* prop = mat->getProperty(propname);
+
+    prop->Summary();
+
+    return prop ;   
+}
+
+void GMaterialLib::dumpRawMaterialProperties(const char* msg) const 
+{
+    LOG(info) << msg ; 
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
+    {
+        GMaterial* mat = m_materials_raw[i];
+        //mat->Summary();
+        std::cout << std::setw(30) << mat->getShortName()
+                  << " keys: " << mat->getKeysString()
+                  << std::endl ; 
+    }
+}
+
+std::vector<GMaterial*> GMaterialLib::getRawMaterialsWithProperties(const char* props, char delim) const 
+{
+    std::vector<std::string> elem ;
+    BStr::split(elem, props, delim);
+
+    LOG(error) << "GMaterialLib::getRawMaterialsWithProperties " 
+               << props 
+               << " m_materials_raw.size()  " << m_materials_raw.size() 
+               ; 
+
+    std::vector<GMaterial*>  selected ; 
+    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
+    {
+        GMaterial* mat = m_materials_raw[i];
+        unsigned int found(0);
+        for(unsigned int p=0 ; p < elem.size() ; p++)
+        { 
+           if(mat->hasProperty(elem[p].c_str())) found+=1 ;        
+        }
+        if(found == elem.size()) selected.push_back(mat);
+    }
+    return selected ;  
+}
+
 
 
 

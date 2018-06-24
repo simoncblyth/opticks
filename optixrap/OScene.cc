@@ -80,7 +80,7 @@ OScene::OScene(OpticksHub* hub)
 }
 
 
-/*
+/**
 
 OScene::Init
 ---------------
@@ -97,7 +97,7 @@ OScene::Init
     OGeo
     OBndLib 
 
-*/
+**/
 
 void OScene::init()
 {

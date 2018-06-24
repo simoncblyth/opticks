@@ -120,6 +120,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
    public:
        // lifecycle
        void add(GMaterial* material);
+       void addRaw(GMaterial* material);
        void addDirect(GMaterial* material);  // not-standarized
        void sort();
        bool operator()(const GMaterial& a_, const GMaterial& b_);
@@ -139,10 +140,16 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        // but that triggers a close 
 
        GMaterial* getMaterial(unsigned i) const ; // zero based index
+       GMaterial* getMaterialWithIndex(unsigned aindex) const ;  
        unsigned  getMaterialIndex(const char* name) const ;    // without triggering a close
+       GPropertyMap<float>* findRawMaterial(const char* shortname) const ; 
+       GProperty<float>* findRawMaterialProperty(const char* shortname, const char* propname) const ;
+       void dumpRawMaterialProperties(const char* msg) const ;
+       std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, char delim) const ;
    public:
        const char* getNameCheck(unsigned int i);
-       unsigned int getNumMaterials() const ;
+       unsigned getNumMaterials() const ;
+       unsigned getNumRawMaterials() const ;
        unsigned int getMaterialIndex(const GMaterial* material);
    public:
        GMaterial*  createStandardMaterial(GMaterial* src);
@@ -153,6 +160,7 @@ class GGEO_API GMaterialLib : public GPropertyLib {
        void import( GMaterial* mat, float* data, unsigned int nj, unsigned int nk, unsigned int jcat=0 );
    private:
        std::vector<GMaterial*>       m_materials ; 
+       std::vector<GMaterial*>       m_materials_raw ; 
 
        GMaterialLib*  m_basis ; 
 

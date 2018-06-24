@@ -1,7 +1,9 @@
 #pragma once
 
+class GGeo ; 
 class GMaterialLib ; 
 class Opticks ; 
+class G4Material ; 
 
 #include "G4MaterialTable.hh"   // typedef std::vector<G4Material*>
 #include "X4_API_EXPORT.hh"
@@ -25,6 +27,7 @@ class X4_API X4MaterialTable
 {
     public:
         static void Convert(GMaterialLib* mlib) ; 
+        static G4Material* Get(unsigned idx);
     private:
         X4MaterialTable(GMaterialLib* mlib);
         GMaterialLib* getMaterialLib();

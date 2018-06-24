@@ -97,7 +97,7 @@ class OKGEO_API OpticksHub {
        friend class OpticksViz ; 
        friend class OpticksIdx ; 
    public:
-       OpticksHub(Opticks* opticks, GGeo* ggeo=NULL);  // passed in ggeo used by X4 direct from Geant4 running
+       OpticksHub(Opticks* ok); 
 
    public:
        int getErr() const ;
@@ -159,6 +159,7 @@ class OKGEO_API OpticksHub {
        OpticksGeometry*     getGeometry();
 
    public:
+       GGeo*                getGGeo() const ;
        GGeoBase*            getGGeoBase() const ; // downcast of the encumbent: GGeoTest/GScene/GGeo 
 
    public:
@@ -171,7 +172,6 @@ class OKGEO_API OpticksHub {
        GGeoBase*            getGGeoBasePrimary() const ;  // either Ana or Tri 
        GGeoBase*            getGGeoBaseTest() const ;    // downcast of GGeoTest
    private:
-       //GGeo*                getGGeo();
    private:
        friend class CTestDetector ; 
        GGeoTest*            getGGeoTest();  

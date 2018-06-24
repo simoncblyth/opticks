@@ -7,6 +7,9 @@
 #include "OpticksHub.hh" 
 #include "OpticksIdx.hh" 
 #include "OpticksViz.hh"
+#include "OKPropagator.hh"
+
+#include "OKMgr.hh"     
 
 #include "GBndLib.hh"
 #include "GGeo.hh"
@@ -16,7 +19,6 @@
 #include "X4PhysicalVolume.hh"
 
 class G4VPhysicalVolume ;
-
 
 #include "OPTICKS_LOG.hh"
 
@@ -48,34 +50,41 @@ int main(int argc, char** argv)
 
     LOG(error) << " SetKey " << key  ;   
 
-    const char* argforce = "--target 3199" ;
+    const char* argforce = "--tracer" ;
 
-    Opticks* ok2 = new Opticks(0,0, argforce);  // Opticks instanciation must be after Opticks::SetKey
+    Opticks* ok2 = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
 
     ok2->configure();
-
 
     GGeo* gg2 = new GGeo(ok2) ;
 
     X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
-
     //xtop.saveAsGLTF(); 
 
-    //GBndLib* blib = gg2->getBndLib();
-    //blib->dump(); 
+    gg2->prepare();   // merging meshes, closing libs
 
 
-    gg2->prepare();   // merging meshes
 
+/*
+    OpticksHub hub2(ok2);   // <-- this should pick up gg2, not create/load a new one 
 
-    OpticksHub hub2(ok2, gg2 );
+    assert( hub2.getGGeo() == gg2 ); 
 
     OpticksIdx idx2(&hub2) ;
 
     OpticksViz viz2(&hub2, &idx2, true);    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
- 
+
+    OKPropagator pro2(&hub2, &idx2, &viz2) ;
+
     viz2.visualize();
+*/
 
 
-    return 0 ;
+   // not OKG4Mgr as no need for CG4 
+
+    OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg2 (last GGeo instanciated) via GGeo::GetInstance 
+    mgr.propagate();
+    mgr.visualize();   
+
+    return mgr.rc() ;
 }

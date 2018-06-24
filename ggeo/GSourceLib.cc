@@ -23,21 +23,17 @@ void GSourceLib::save()
     saveToCache();
 }
 
-GSourceLib* GSourceLib::load(Opticks* cache)
+GSourceLib* GSourceLib::load(Opticks* ok)
 {
-    GSourceLib* lib = new GSourceLib(cache);
+    GSourceLib* lib = new GSourceLib(ok);
     lib->loadFromCache();
     return lib ; 
 }
 
 
-
-
-
-
-GSourceLib::GSourceLib( Opticks* cache) 
+GSourceLib::GSourceLib( Opticks* ok) 
     :
-    GPropertyLib(cache, "GSourceLib")
+    GPropertyLib(ok, "GSourceLib")
 {
     init();
 }
@@ -46,9 +42,6 @@ unsigned int GSourceLib::getNumSources()
 {
     return m_source.size();
 }
-
-
-
 
 
 void GSourceLib::init()

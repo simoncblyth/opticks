@@ -129,14 +129,14 @@ int OpticksHub::getErr() const
 
 
 
-OpticksHub::OpticksHub(Opticks* ok, GGeo* ggeo) 
+OpticksHub::OpticksHub(Opticks* ok) 
    :
    m_log(new SLog("OpticksHub::OpticksHub")),
    m_ok(ok),
    m_gltf(-1),        // m_ok not yet configured, so defer getting the settings
    m_run(m_ok->getRun()),
    m_geometry(NULL),
-   m_ggeo(ggeo),
+   m_ggeo(GGeo::GetInstance()),   // if there is a GGeo instance already extant adopt it, otherwise load one  
    m_gscene(NULL),
    m_composition(new Composition),
 #ifdef OPTICKS_NPYSERVER
@@ -739,6 +739,10 @@ GGeoBase* OpticksHub::getGGeoBase() const
     return m_geotest ? dynamic_cast<GGeoBase*>(m_geotest) : getGGeoBasePrimary() ; 
 }
 
+GGeo* OpticksHub::getGGeo() const 
+{
+    return m_ggeo ; 
+}
 
 
 

@@ -104,6 +104,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         friend class  AssimpGGeo ; 
         friend struct GSceneTest ; 
     public:
+        static GGeo* GetInstance();  // statically provides the last instanciated GGeo instance
         static const char* CATHODE_MATERIAL ; 
     public:
         // see GGeoCfg.hh
@@ -168,6 +169,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void prepareMaterialLib();
         void prepareSurfaceLib();
         void prepareScintillatorLib();
+        void prepareSourceLib();
         void prepareMeshes();
         void prepareVertexColors();
     public:
@@ -232,15 +234,16 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
        // void _add(GMaterial* material);
     public:
         void add(GMaterial* material);
+        void addRaw(GMaterial* material);
+    public:
         void add(GSkinSurface*  surface);
         void add(GBorderSurface*  surface);
 
-
-        void addToIndex(GPropertyMap<float>* obj);
-        void dumpIndex(const char* msg="GGeo::dumpIndex");
+        // no longer needed ?
+        //void addToIndex(GPropertyMap<float>* obj);
+        //void dumpIndex(const char* msg="GGeo::dumpIndex");
 
     public:
-        void addRaw(GMaterial* material);
         void addRaw(GSkinSurface* surface);
         void addRaw(GBorderSurface*  surface);
       
@@ -252,8 +255,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMesh*             getMesh(unsigned index);  
         void               add(GMesh*    mesh);
     public:
-        void dumpRaw(const char* msg="GGeo::dumpRaw");
-        void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties");
         void dumpRawSkinSurface(const char* name=NULL);
         void dumpRawBorderSurface(const char* name=NULL);
     public:
@@ -262,13 +263,14 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void traverse(GNode* node, unsigned int depth);
  
     public:
-        unsigned int getNumMaterials();
-        unsigned int getNumSkinSurfaces();
-        unsigned int getNumBorderSurfaces();
+        unsigned getNumMaterials() const ;
+        unsigned getNumRawMaterials() const ;
     public:
-        unsigned int getNumRawMaterials();
-        unsigned int getNumRawSkinSurfaces();
-        unsigned int getNumRawBorderSurfaces();
+        unsigned getNumSkinSurfaces();
+        unsigned getNumRawSkinSurfaces();
+    public:
+        unsigned getNumBorderSurfaces();
+        unsigned getNumRawBorderSurfaces();
     public:
         GScene*            getScene();
         GNodeLib*          getNodeLib();
@@ -287,7 +289,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         OpticksAttrSeq*    getFlagNames(); 
         Opticks*           getOpticks();
     public:
-        GMaterial* getMaterial(unsigned int index);  
+        GMaterial* getMaterial(unsigned int index) const ;   
         GSkinSurface* getSkinSurface(unsigned int index);  
         GBorderSurface* getBorderSurface(unsigned int index);  
     public:
@@ -301,12 +303,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         unsigned int getNumCathodeMaterials();
         GMaterial* getCathodeMaterial(unsigned int index);
     public:
-        std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, const char* delim);
-    public:
-        GPropertyMap<float>* findRawMaterial(const char* shortname);
-        GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname);
-    public:
-
+        GPropertyMap<float>* findRawMaterial(const char* shortname) const ;
+        GProperty<float>*    findRawMaterialProperty(const char* shortname, const char* propname) const ;
+        void dumpRawMaterialProperties(const char* msg="GGeo::dumpRawMaterialProperties") const ;
+        std::vector<GMaterial*> getRawMaterialsWithProperties(const char* props, char delim) const ;
     public:
         gfloat3* getLow();
         gfloat3* getHigh();
@@ -349,6 +349,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         void setFaceRangeTarget(unsigned int face_index0, unsigned int face_index1, unsigned int volume_index, unsigned int mesh_index);
         glm::ivec4& getPickFace(); 
     private:
+        static GGeo*                  fInstance ; 
         SLog*                         m_log ; 
         Opticks*                      m_ok ;  
         bool                          m_analytic ; 
@@ -360,7 +361,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
 
 
-        std::vector<GMaterial*>       m_materials ; 
+        //std::vector<GMaterial*>       m_materials ; 
         std::vector<GSkinSurface*>    m_skin_surfaces ; 
         std::vector<GBorderSurface*>  m_border_surfaces ; 
 
@@ -368,7 +369,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         std::unordered_set<std::string> m_cathode_lv ; 
 
         // _raw mainly for debug
-        std::vector<GMaterial*>       m_materials_raw ; 
+        //std::vector<GMaterial*>       m_materials_raw ; 
         std::vector<GSkinSurface*>    m_skin_surfaces_raw ; 
         std::vector<GBorderSurface*>  m_border_surfaces_raw ; 
 
@@ -401,7 +402,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
     private:
 
-        Index_t                            m_index ; 
+       // Index_t                            m_index ; 
         unsigned int                       m_sensitive_count ;  
         GMaterial*                         m_cathode ; 
         const char*                        m_join_cfg ; 

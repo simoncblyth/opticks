@@ -53,7 +53,6 @@ namespace fs = boost::filesystem;
 #include "GBndLib.hh"
 #include "GMaterialLib.hh"
 #include "GSurfaceLib.hh"
-//#include "GSurLib.hh"
 #include "GScintillatorLib.hh"
 #include "GSourceLib.hh"
 
@@ -80,7 +79,12 @@ namespace fs = boost::filesystem;
 const char* GGeo::CATHODE_MATERIAL = "Bialkali" ; 
 const char* GGeo::PICKFACE = "pickface" ;
 
+GGeo* GGeo::fInstance = NULL ; 
 
+GGeo* GGeo::GetInstance()
+{
+    return fInstance ;    
+}
 
 GGeo::GGeo(Opticks* ok)
   :
@@ -113,6 +117,9 @@ GGeo::GGeo(Opticks* ok)
 {
    init(); 
    (*m_log)("DONE"); 
+
+   if(fInstance != NULL) LOG(error) << " replacing GGeo::fInstance " ; 
+   fInstance = this ; 
 }
 
 
@@ -160,10 +167,9 @@ bool GGeo::isLoaded()
 }
 
 
-void GGeo::addRaw(GMaterial* material)
-{
-    m_materials_raw.push_back(material);
-}
+
+
+
 void GGeo::addRaw(GBorderSurface* surface)
 {
     m_border_surfaces_raw.push_back(surface);
@@ -174,10 +180,6 @@ void GGeo::addRaw(GSkinSurface* surface)
 }
 
 
-unsigned int GGeo::getNumMaterials()
-{
-    return m_materials.size();
-}
 unsigned int GGeo::getNumBorderSurfaces()
 {
     return m_border_surfaces.size();
@@ -186,10 +188,10 @@ unsigned int GGeo::getNumSkinSurfaces()
 {
     return m_skin_surfaces.size();
 }
-unsigned int GGeo::getNumRawMaterials()
-{
-    return m_materials_raw.size();
-}
+
+
+
+
 unsigned int GGeo::getNumRawBorderSurfaces()
 {
     return m_border_surfaces_raw.size();
@@ -389,27 +391,42 @@ void GGeo::init()
 }
 
 
-/*
-void GGeo::add(GMaterial* material)
-{
-   const char* name = material->getName()
-   if(!m_materiallib->hasMaterial(name))
-   {
-       _add(material);  
-   } 
-}
-*/
 void GGeo::add(GMaterial* material)
 {
     m_materiallib->add(material);
-    m_materials.push_back(material);   // why the duplication ? is this raw material ?
-    addToIndex((GPropertyMap<float>*)material);
+    //addToIndex((GPropertyMap<float>*)material);
 }
+void GGeo::addRaw(GMaterial* material)
+{
+    m_materiallib->addRaw(material);
+}
+
+
+
+
+unsigned GGeo::getNumMaterials() const 
+{
+    return m_materiallib->getNumMaterials();
+}
+unsigned GGeo::getNumRawMaterials() const 
+{
+    return m_materiallib->getNumRawMaterials();
+}
+
+
+
+
+
+
+
+
+
+
 void GGeo::add(GBorderSurface* surface)
 {
     m_surfacelib->add(surface);
     m_border_surfaces.push_back(surface);
-    addToIndex((GPropertyMap<float>*)surface);
+    //addToIndex((GPropertyMap<float>*)surface);
 }
 void GGeo::add(GSkinSurface* surface)
 {
@@ -418,7 +435,7 @@ void GGeo::add(GSkinSurface* surface)
     m_surfacelib->add(surface);
     m_skin_surfaces.push_back(surface);
 
-    addToIndex((GPropertyMap<float>*)surface);
+    //addToIndex((GPropertyMap<float>*)surface);
 }
 
 
@@ -580,6 +597,8 @@ void GGeo::prepare()
     m_prepared = true ; 
 
     prepareScintillatorLib();
+
+    prepareSourceLib();
 
     prepareMeshes();
 
@@ -744,7 +763,7 @@ void GGeo::Summary(const char* msg)
     LOG(info) << msg
               << " ms " << m_meshlib->getNumMeshes()
               << " so " << m_nodelib->getNumVolumes()
-              << " mt " << m_materials.size()
+              << " mt " << m_materiallib->getNumMaterials()
               << " bs " << m_border_surfaces.size()
               << " ss " << m_skin_surfaces.size()
               ;
@@ -780,9 +799,9 @@ void GGeo::Details(const char* msg)
         snprintf(mbuf,BSIZ, "%s ss %u", msg, iss);
         ss->Summary(mbuf);
     }
-    for(unsigned int imat=0 ; imat < m_materials.size()  ; imat++ )
+    for(unsigned int imat=0 ; imat < m_materiallib->getNumMaterials()  ; imat++ )
     {
-        GMaterial* mat = m_materials[imat];
+        GMaterial* mat = m_materiallib->getMaterial(imat) ;
         snprintf(mbuf,BSIZ, "%s mt %u", msg, imat);
         mat->Summary(mbuf);
     }
@@ -862,17 +881,6 @@ GNode* GGeo::getNode(unsigned index)
 
 
 
-void GGeo::dumpRaw(const char* msg)
-{
-    printf("%s\n", msg);     
-    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
-    {
-        GMaterial* mat = m_materials_raw[i];
-        mat->Summary();
-    }
-}
-
-
 
 
 
@@ -920,39 +928,32 @@ unsigned int GGeo::materialConsistencyCheck(GVolume* volume)
 
 
 
-
-GMaterial* GGeo::getMaterial(unsigned int aindex)
+GMaterial* GGeo::getMaterial(unsigned aindex) const 
 {
-    GMaterial* mat = NULL ; 
-    for(unsigned int i=0 ; i < m_materials.size() ; i++ )
-    { 
-        if(m_materials[i]->getIndex() == aindex )
-        {
-            mat = m_materials[i] ; 
-            break ; 
-        }
-    }
-    return mat ;
+    return m_materiallib->getMaterialWithIndex(aindex);
+}
+GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname) const 
+{
+    return m_materiallib->findRawMaterial(shortname) ; 
+}
+GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname) const 
+{
+   return m_materiallib->findRawMaterialProperty(shortname, propname) ;   
+}
+void GGeo::dumpRawMaterialProperties(const char* msg) const 
+{
+    m_materiallib->dumpRawMaterialProperties(msg);
+}
+std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, char delim) const 
+{
+    return m_materiallib->getRawMaterialsWithProperties(props, delim ); 
 }
 
 
-GPropertyMap<float>* GGeo::findRawMaterial(const char* shortname)
-{
-    GMaterial* mat = NULL ; 
-    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++ )
-    { 
-        std::string sn = m_materials_raw[i]->getShortNameString();
-        //printf("GGeo::findRawMaterial %d %s \n", i, sn.c_str()); 
-        if(strcmp(sn.c_str(), shortname)==0)
-        {
-            mat = m_materials_raw[i] ; 
-            break ; 
-        }
-    }
-    return (GPropertyMap<float>*)mat ;
-}
 
 
+
+/*
 void GGeo::addToIndex(GPropertyMap<float>* psrc)
 {
     unsigned pindex = psrc->getIndex();
@@ -994,19 +995,7 @@ void  GGeo::dumpIndex(const char* msg)
          printf("  %3u :  %s \n", it->first, it->second.c_str() );
 }
 
-
-
-GProperty<float>* GGeo::findRawMaterialProperty(const char* shortname, const char* propname)
-{
-    GPropertyMap<float>* mat = findRawMaterial(shortname);
-
-    GProperty<float>* prop = mat->getProperty(propname);
-    prop->Summary();
-
-    // hmm should have permanent slot in idpath 
-    return prop ;   
-}
-
+*/
 
 
 
@@ -1098,19 +1087,6 @@ void GGeo::traverse( GNode* node, unsigned int depth)
 
 
 
-void GGeo::dumpRawMaterialProperties(const char* msg)
-{
-    printf("%s\n", msg);     
-    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
-    {
-        GMaterial* mat = m_materials_raw[i];
-        //mat->Summary();
-        std::cout << std::setw(30) << mat->getShortName()
-                  << " keys: " << mat->getKeysString()
-                  << std::endl ; 
-    }
-}
-
 
 
 void GGeo::prepareMaterialLib()
@@ -1130,6 +1106,18 @@ void GGeo::prepareSurfaceLib()
    
     slib->addPerfectSurfaces(); 
 }
+
+
+void GGeo::prepareSourceLib()
+{
+    LOG(trace) << "GGeo::prepareSourceLib " ; 
+
+    GSourceLib* srclib = getSourceLib() ;
+
+    srclib->close();
+}
+
+
 
 
 void GGeo::close()
@@ -1157,7 +1145,7 @@ void GGeo::prepareScintillatorLib()
 
     if(nscint == 0)
     {
-        LOG(warning) << "GGeo::prepareScintillatorLib found no scintillator materials  " ; 
+        LOG(error) << "GGeo::prepareScintillatorLib found no scintillator materials  " ; 
     }
     else
     {
@@ -1177,7 +1165,7 @@ void GGeo::prepareScintillatorLib()
 
 void GGeo::findScintillatorMaterials(const char* props)
 {
-    m_scintillators_raw = getRawMaterialsWithProperties(props, ",");
+    m_scintillators_raw = getRawMaterialsWithProperties(props, ',');
     //assert(m_scintillators_raw.size() > 0 );
 }
 
@@ -1206,9 +1194,6 @@ GMaterial* GGeo::getScintillatorMaterial(unsigned int index)
 
 
 //////////////////////
-
-
-
 
 
 
@@ -1268,7 +1253,7 @@ void GGeo::prepareVertexColors()
 
 void GGeo::findCathodeMaterials(const char* props)
 {
-    m_cathodes_raw = getRawMaterialsWithProperties(props, ",");
+    m_cathodes_raw = getRawMaterialsWithProperties(props, ',');
     assert(m_cathodes_raw.size() > 0 );
 }
 void GGeo::dumpCathodeMaterials(const char* msg)
@@ -1301,28 +1286,6 @@ GMaterial* GGeo::getCathodeMaterial(unsigned int index)
 
 
 
-
-
-
-
-std::vector<GMaterial*> GGeo::getRawMaterialsWithProperties(const char* props, const char* delim)
-{
-    std::vector<std::string> elem ;
-    boost::split(elem, props, boost::is_any_of(delim));
-
-    std::vector<GMaterial*>  selected ; 
-    for(unsigned int i=0 ; i < m_materials_raw.size() ; i++)
-    {
-        GMaterial* mat = m_materials_raw[i];
-        unsigned int found(0);
-        for(unsigned int p=0 ; p < elem.size() ; p++)
-        { 
-           if(mat->hasProperty(elem[p].c_str())) found+=1 ;        
-        }
-        if(found == elem.size()) selected.push_back(mat);
-    }
-    return selected ;  
-}
 
 
 

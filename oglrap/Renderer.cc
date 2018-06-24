@@ -635,8 +635,7 @@ void Renderer::render()
         }
         else
         {
-            if(m_tagtex)
-                LOG(info) << "(tagtex) glDrawElements " << draw.desc() ;  
+            //if(m_tagtex) LOG(info) << "(tagtex) glDrawElements " << draw.desc() ;  
             glDrawElements( draw.mode, draw.count, draw.type,  draw.indices ) ;
         }
     }

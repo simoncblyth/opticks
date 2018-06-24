@@ -24,12 +24,270 @@ Debug by editing the glTF to pick particular nodes::
 NEXT
 -----
 
-* need to get thru to raytracing the direct geometry 
+* raytracing g4live direct geometry (analytic)
+
+  * examine how GScene operates, possibly all thats needed is 
+    some metadata in the GMergedMesh to switch geocode for oxrap.OGeo 
+     
+
+
+DONE : Oldschool from geocache analytic
+------------------------------------------
+
+Required a rebuild of geocache, note beautiful but slower raytrace of the analytic CSG::
+
+    op --gltf 3 -G 
+    op --gltf 3 
+
+
+TODO : REJIG GGeo/GScene/GGeoTest in triplicate pattern ?
+-------------------------------------------------------------
+
+* X4 populated GGeo has both triangulated (GMesh) and analytic (GParts)
+  side by side, with the GVolume(GNode) tree being common to the two 
+
+* separate GScene from NGLTF now seems a mistake, 
+  better to incorporate the analytic GParts from GScene inside  
+  a partner GGeo ?
+
+  * nevertheless : should get this route operational anyhow, before replacing it 
+
+* GGeoTest feeding off a basis GGeo, seems less problematic 
+
+
+DONE : raytracing g4live direct geometry (triangulated)
+-----------------------------------------------------------
+
+* moving OpticksHub to picking up the last GGeo instance with GGeo::GetInstance 
+  allows the OKMgr to work unchanged 
+
+
+FIXED : Switch to raytrace gives OptiX validation fail, for lack of record_buffer
+-------------------------------------------------------------------------------------
+
+* fixed by giving "--tracer" argument to the 2nd Opticks, which has the 
+  effect of skipping "OpEngine::initPropagation" : which although it doesnt 
+  fail, seems to kill the OptiX context causing a fail on the raytracer launch :
+  because it expects some buffers from event upload 
+
+::
+
+     670 bool Opticks::isTracer() const
+     671 {
+     672     return m_cfg->hasOpt("tracer") ;
+     673 }
+
+::
+
+    epsilon:optickscore blyth$ opticks-find isTracer
+    ./okop/OpEngine.cc:   else if(m_ok->isTracer())
+    ./optickscore/Opticks.cc:bool Opticks::isTracer() const
+    ./optickscore/Opticks.hh:       bool isTracer() const;
+
+::
+
+     56 void OpEngine::init()
+     57 {
+     58    m_ok->setOptiXVersion(OConfig::OptiXVersion());
+     59    if(m_ok->isLoad())
+     60    {
+     61        LOG(warning) << "OpEngine::init skip initPropagation as just loading pre-cooked event " ;
+     62    }
+     63    else if(m_ok->isTracer())
+     64    {
+     65        LOG(warning) << "OpEngine::init skip initPropagation as tracer mode is active  " ;
+     66    }
+     67    else
+     68    {
+     69        LOG(warning) << "OpEngine::init initPropagation START" ;
+     70        initPropagation();
+     71        LOG(warning) << "OpEngine::init initPropagation DONE" ;
+     72 
+     73    }
+     74 }
 
 
 
-Switching to raytrace render with O crashes in Renderer::render
--------------------------------------------------------------------
+
+
+
+OKX4Test then press O::
+
+    2018-06-24 21:08:50.962 INFO  [26433846] [OTracer::trace_@128] OTracer::trace  entry_index 1 trace_count 0 resolution_scale 1 size(2880,1704) ZProj.zw (-1.04159,-2079.67) front 0.5971,0.6757,-0.4322
+    2018-06-24 21:08:50.963 INFO  [26433846] [OContext::close@236] OContext::close numEntryPoint 2
+    2018-06-24 21:08:50.964 INFO  [26433846] [OContext::close@240] OContext::close setEntryPointCount done.
+    2018-06-24 21:08:51.184 INFO  [26433846] [OContext::close@246] OContext::close m_cfg->apply() done.
+    libc++abi.dylib: terminating with uncaught exception of type optix::Exception: Variable not found (Details: Function "RTresult _rtContextValidate(RTcontext)" caught exception: Variable "Unresolved reference to variable record_buffer from _Z8generatev_cp7" not found in scope)
+    Process 58275 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff56001b6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff56001b6e <+10>: jae    0x7fff56001b78            ; <+20>
+        0x7fff56001b70 <+12>: movq   %rax, %rdi
+        0x7fff56001b73 <+15>: jmp    0x7fff55ff8b00            ; cerror_nocancel
+        0x7fff56001b78 <+20>: retq   
+    Target 0: (OKX4Test) stopped.
+    (lldb) 
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff56001b6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff561cc080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff55f5d1ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff53e61f8f libc++abi.dylib`abort_message + 245
+        frame #4: 0x00007fff53e62113 libc++abi.dylib`default_terminate_handler() + 241
+        frame #5: 0x00007fff55299eab libobjc.A.dylib`_objc_terminate() + 105
+        frame #6: 0x00007fff53e7d7c9 libc++abi.dylib`std::__terminate(void (*)()) + 8
+        frame #7: 0x00007fff53e7d26f libc++abi.dylib`__cxa_throw + 121
+        frame #8: 0x00000001004b9eb6 libOptiXRap.dylib`optix::ContextObj::checkError(this=0x000000012006f690, code=RT_ERROR_VARIABLE_NOT_FOUND) const at optixpp_namespace.h:1963
+        frame #9: 0x00000001004b9f17 libOptiXRap.dylib`optix::ContextObj::validate(this=0x000000012006f690) at optixpp_namespace.h:2008
+        frame #10: 0x00000001004ce4a8 libOptiXRap.dylib`OContext::validate_(this=0x000000012007c960) at OContext.cc:308
+        frame #11: 0x00000001004cde81 libOptiXRap.dylib`OContext::launch(this=0x000000012007c960, lmode=30, entry=1, width=2880, height=1704, times=0x0000000123fc2740) at OContext.cc:275
+        frame #12: 0x00000001004e09a7 libOptiXRap.dylib`OTracer::trace_(this=0x0000000129b31e90) at OTracer.cc:142
+        frame #13: 0x00000001001318d5 libOpticksGL.dylib`OKGLTracer::render(this=0x0000000123fc1f70) at OKGLTracer.cc:165
+        frame #14: 0x00000001001c7de1 libOGLRap.dylib`OpticksViz::render(this=0x00007ffeefbfe220) at OpticksViz.cc:432
+        frame #15: 0x00000001001c69f2 libOGLRap.dylib`OpticksViz::renderLoop(this=0x00007ffeefbfe220) at OpticksViz.cc:474
+        frame #16: 0x00000001001c6132 libOGLRap.dylib`OpticksViz::visualize(this=0x00007ffeefbfe220) at OpticksViz.cc:135
+        frame #17: 0x0000000100015328 OKX4Test`main(argc=1, argv=0x00007ffeefbfe9c0) at OKX4Test.cc:80
+        frame #18: 0x00007fff55eb1015 libdyld.dylib`start + 1
+    (lldb) 
+
+In the trace launch::
+
+    (lldb) f 14
+    frame #14: 0x00000001001c7de1 libOGLRap.dylib`OpticksViz::render(this=0x00007ffeefbfe220) at OpticksViz.cc:432
+       429 	
+       430 	    if(m_scene->isRaytracedRender() || m_scene->isCompositeRender()) 
+       431 	    {
+    -> 432 	        if(m_external_renderer) m_external_renderer->render();
+       433 	    }
+       434 	
+       435 	    m_scene->render();
+    (lldb) f 13
+    frame #13: 0x00000001001318d5 libOpticksGL.dylib`OKGLTracer::render(this=0x0000000123fc1f70) at OKGLTracer.cc:165
+       162 	        {
+       163 	            unsigned int scale = m_interactor->getOptiXResolutionScale() ;
+       164 	            m_otracer->setResolutionScale(scale) ;
+    -> 165 	            m_otracer->trace_();
+       166 	            m_oframe->push_PBO_to_Texture();
+       167 	
+       168 	/*
+    (lldb) 
+
+
+
+FIXED : X4 Conversion missing scintillators causing crash in OScintillatorLib::convert
+-------------------------------------------------------------------------------------------
+
+* looks to be from lack of GGeo::addRaw in X4 
+* fixed by rejig of material handling, moving stuff from GGeo into GMaterialLib 
+
+After fix::
+
+    2018-06-24 21:08:37.846 INFO  [26433846] [*X4PhysicalVolume::convertNode@467] convertNode  ndIdx 12000 soIdx   224 lvIdx   218 materialIdx    15 soName out_cross_rib0xc20ec60
+    2018-06-24 21:08:37.876 INFO  [26433846] [X4PhysicalVolume::convertStructure@369]  convertStructure END  Sc  nodes:12230 meshes: 249
+    2018-06-24 21:08:37.877 ERROR [26433846] [GMaterialLib::getRawMaterialsWithProperties@884] GMaterialLib::getRawMaterialsWithProperties SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB m_materials_raw.size()  36
+    2018-06-24 21:08:37.877 INFO  [26433846] [GGeo::prepareScintillatorLib@1144] GGeo::prepareScintillatorLib found 2 scintillator materials  
+    2018-06-24 21:08:37.877 INFO  [26433846] [*GScintillatorLib::createBuffer@109] GScintillatorLib::createBuffer  ni 2 nj 4096 nk 1
+
+Issue::
+
+    2018-06-24 17:59:32.143 INFO  [26324769] [*X4PhysicalVolume::convertNode@467] convertNode  ndIdx 12000 soIdx   224 lvIdx   218 materialIdx    15 soName out_cross_rib0xc20ec60
+    2018-06-24 17:59:32.173 INFO  [26324769] [X4PhysicalVolume::convertStructure@369]  convertStructure END  Sc  nodes:12230 meshes: 249
+    2018-06-24 17:59:32.173 ERROR [26324769] [GGeo::getRawMaterialsWithProperties@1323] GGeo::getRawMaterialsWithProperties SLOWCOMPONENT,FASTCOMPONENT,REEMISSIONPROB m_materials_raw.size()  0
+    2018-06-24 17:59:32.173 ERROR [26324769] [GGeo::prepareScintillatorLib@1173] GGeo::prepareScintillatorLib found no scintillator materials  
+    2018-06-24 17:59:32.173 INFO  [26324769] [*GSourceLib::createBuffer@88] GSourceLib::createBuffer adding standard source 
+    2018-06-24 17:59:32.174 INFO  [26324769] [GPropertyLib::close@418] GPropertyLib::close type GSourceLib buf 1,1024,1
+
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = EXC_BAD_ACCESS (code=1, address=0x78)
+      * frame #0: 0x000000010b711a03 libNPY.dylib`NPYBase::getShape(unsigned int) const [inlined] std::__1::vector<int, std::__1::allocator<int> >::size(this=0x0000000000000070 size=1) const at vector:632
+        frame #1: 0x000000010b711a03 libNPY.dylib`NPYBase::getShape(this=0x0000000000000000, n=0) const at NPYBase.cpp:235
+        frame #2: 0x00000001004ddc19 libOptiXRap.dylib`OScintillatorLib::convert(this=0x000000012c88ed40, slice="0:1") at OScintillatorLib.cc:20
+        frame #3: 0x00000001004e27e7 libOptiXRap.dylib`OScene::init(this=0x000000011f05a940) at OScene.cc:148
+        frame #4: 0x00000001004e1794 libOptiXRap.dylib`OScene::OScene(this=0x000000011f05a940, hub=0x00007ffeefbfe2e0) at OScene.cc:78
+        frame #5: 0x00000001004e31fd libOptiXRap.dylib`OScene::OScene(this=0x000000011f05a940, hub=0x00007ffeefbfe2e0) at OScene.cc:77
+        frame #6: 0x0000000100407d1e libOKOP.dylib`OpEngine::OpEngine(this=0x000000011f062550, hub=0x00007ffeefbfe2e0) at OpEngine.cc:44
+        frame #7: 0x000000010040820d libOKOP.dylib`OpEngine::OpEngine(this=0x000000011f062550, hub=0x00007ffeefbfe2e0) at OpEngine.cc:52
+        frame #8: 0x000000010010a5c6 libOK.dylib`OKPropagator::OKPropagator(this=0x00007ffeefbfe1e0, hub=0x00007ffeefbfe2e0, idx=0x00007ffeefbfe2c8, viz=0x00007ffeefbfe220) at OKPropagator.cc:50
+        frame #9: 0x000000010010a72d libOK.dylib`OKPropagator::OKPropagator(this=0x00007ffeefbfe1e0, hub=0x00007ffeefbfe2e0, idx=0x00007ffeefbfe2c8, viz=0x00007ffeefbfe220) at OKPropagator.cc:54
+        frame #10: 0x0000000100015317 OKX4Test`main(argc=1, argv=0x00007ffeefbfe9c0) at OKX4Test.cc:78
+        frame #11: 0x00007fff55eb1015 libdyld.dylib`start + 1
+    (lldb) exit
+    Quitting LLDB will kill one or more processes. Do you really want to proceed: [Y/n] 
+    epsilon:okg4 blyth$ 
+
+
+
+FIXED : OKPropagator instanciation fails for lack of source buffer
+--------------------------------------------------------------------
+
+* fixed by addition of GGeo::prepareSourceLib to GGeo::prepare that closes the sourcelib
+
+
+::
+
+    2018-06-24 17:26:12.546 INFO  [26242428] [OScene::init@105] OScene::init START
+    2018-06-24 17:26:12.706 INFO  [26242428] [OScene::init@130] OScene::init ggeobase identifier : GGeo
+    2018-06-24 17:26:12.706 WARN  [26242428] [OColors::convert@30] OColors::convert SKIP no composite color buffer 
+    Assertion failed: (buf && "OSourceLib::makeSourceTexture NULL buffer, try updating geocache first: ggv -G  ? "), function makeSourceTexture, file /Users/blyth/opticks-cmake-overhaul/optixrap/OSourceLib.cc, line 26.
+    Process 39493 stopped
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+        frame #0: 0x00007fff56001b6e libsystem_kernel.dylib`__pthread_kill + 10
+    libsystem_kernel.dylib`__pthread_kill:
+    ->  0x7fff56001b6e <+10>: jae    0x7fff56001b78            ; <+20>
+        0x7fff56001b70 <+12>: movq   %rax, %rdi
+        0x7fff56001b73 <+15>: jmp    0x7fff55ff8b00            ; cerror_nocancel
+        0x7fff56001b78 <+20>: retq   
+    Target 0: (OKX4Test) stopped.
+    (lldb) bt
+    * thread #1, queue = 'com.apple.main-thread', stop reason = signal SIGABRT
+      * frame #0: 0x00007fff56001b6e libsystem_kernel.dylib`__pthread_kill + 10
+        frame #1: 0x00007fff561cc080 libsystem_pthread.dylib`pthread_kill + 333
+        frame #2: 0x00007fff55f5d1ae libsystem_c.dylib`abort + 127
+        frame #3: 0x00007fff55f251ac libsystem_c.dylib`__assert_rtn + 320
+        frame #4: 0x00000001004dee74 libOptiXRap.dylib`OSourceLib::makeSourceTexture(this=0x000000011c2e4960, buf=0x0000000000000000) at OSourceLib.cc:26
+        frame #5: 0x00000001004dede5 libOptiXRap.dylib`OSourceLib::convert(this=0x000000011c2e4960) at OSourceLib.cc:19
+        frame #6: 0x00000001004e2607 libOptiXRap.dylib`OScene::init(this=0x0000000128701960) at OScene.cc:142
+        frame #7: 0x00000001004e1794 libOptiXRap.dylib`OScene::OScene(this=0x0000000128701960, hub=0x00007ffeefbfe2e0) at OScene.cc:78
+        frame #8: 0x00000001004e31fd libOptiXRap.dylib`OScene::OScene(this=0x0000000128701960, hub=0x00007ffeefbfe2e0) at OScene.cc:77
+        frame #9: 0x0000000100407d1e libOKOP.dylib`OpEngine::OpEngine(this=0x00000001287018e0, hub=0x00007ffeefbfe2e0) at OpEngine.cc:44
+        frame #10: 0x000000010040820d libOKOP.dylib`OpEngine::OpEngine(this=0x00000001287018e0, hub=0x00007ffeefbfe2e0) at OpEngine.cc:52
+        frame #11: 0x000000010010a5c6 libOK.dylib`OKPropagator::OKPropagator(this=0x00007ffeefbfe1e0, hub=0x00007ffeefbfe2e0, idx=0x00007ffeefbfe2c8, viz=0x00007ffeefbfe220) at OKPropagator.cc:50
+        frame #12: 0x000000010010a72d libOK.dylib`OKPropagator::OKPropagator(this=0x00007ffeefbfe1e0, hub=0x00007ffeefbfe2e0, idx=0x00007ffeefbfe2c8, viz=0x00007ffeefbfe220) at OKPropagator.cc:54
+        frame #13: 0x0000000100015317 OKX4Test`main(argc=1, argv=0x00007ffeefbfe9c0) at OKX4Test.cc:78
+        frame #14: 0x00007fff55eb1015 libdyld.dylib`start + 1
+    (lldb) f 4
+    frame #4: 0x00000001004dee74 libOptiXRap.dylib`OSourceLib::makeSourceTexture(this=0x000000011c2e4960, buf=0x0000000000000000) at OSourceLib.cc:26
+       23  	{
+       24  	   // this is fragile, often getting memory errors
+       25  	
+    -> 26  	    assert(buf && "OSourceLib::makeSourceTexture NULL buffer, try updating geocache first: ggv -G  ? " );
+       27  	
+       28  	    unsigned int ni = buf->getShape(0);
+       29  	    unsigned int nj = buf->getShape(1);
+    (lldb) f 5
+    frame #5: 0x00000001004dede5 libOptiXRap.dylib`OSourceLib::convert(this=0x000000011c2e4960) at OSourceLib.cc:19
+       16  	{
+       17  	    LOG(debug) << "OSourceLib::convert" ;
+       18  	    NPY<float>* buf = m_lib->getBuffer();
+    -> 19  	    makeSourceTexture(buf);
+       20  	}
+       21  	
+       22  	void OSourceLib::makeSourceTexture(NPY<float>* buf)
+    (lldb) p m_lib
+    (GSourceLib *) $0 = 0x000000011554def0
+    (lldb) 
+
+
+
+
+FIXED : Switching to raytrace render with O crashes in Renderer::render
+--------------------------------------------------------------------------
+
+* fixed by adding inhibition of raytrace rendering 
+  when the interop setup in OKGLTracer has not been done  
+
+
 
 The raytrace rendering relies on GPU side interop between OptiX and OpenGL 
 which is coordinated by okgl.OKGLTracer.  If there is no instance of 
