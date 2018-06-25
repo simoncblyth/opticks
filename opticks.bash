@@ -1,5 +1,4 @@
 opticks-(){         source $(opticks-source) && opticks-env $* ; }
-opticks-src(){      echo opticks.bash ; }
 opticks-source(){   echo $BASH_SOURCE ; }
 opticks-vi(){       vi $(opticks-source) ; }
 opticks-help(){ opticks-usage ; }
@@ -484,9 +483,13 @@ opticks-full()
         echo $msg using preexisting externals from $(opticks-prefix)/externals
     fi 
 
-    opticks-configure
+    #opticks-configure
+    #opticks--
 
-    opticks--
+    om-
+    cd $(om-home)
+    om-install
+
 
     opticks-prepare-installcache
 
