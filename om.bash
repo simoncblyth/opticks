@@ -6,37 +6,45 @@ om-usage(){ cat << EOU
 OM : Opticks Mimimal Approach to Configuring and Building
 ===========================================================
 
-The below functions configure, build and test the Opticks subprojects
+The below subproj functions configure, build, install or test 
+either one, all or a range of Opticks subprojects 
 in the appropriate dependency order.
+
+The commands are sensitive to the invoking directory, performing
+actions for all subprojects when invoked from top level 
+directories. Also an argument can be used to select a 
+starting subproject, eg "cudarap:" starts from there 
+or ":" starts from the subproject of the current directory.
+
+When building for the first time it is necessary to 
+use "om-install" as later subprojects cannot be configured 
+until earlier ones have been installed.
 
 
 SUBPROJ FUNCTIONS 
 -----------------
 
 om-subs
-   list subprojects in dependency order,
-   an argument can be used to select a
-   starting subproject, eg "cudarap:" starts from there or ":" 
-   starts from the current directory
-
-   Such arguments can be used for all the subproj functions
+   list subprojects in dependency order
 
 om-conf
-   runs cmake to configure one/all/range of subprojects 
+   configures using cmake 
 
 om-make
-   builds and install one/all/range of subprojects 
+   build and install 
+
+om-install
+    configures, builds and installs by doing both om-conf and om-make 
 
 om-test
-   runs ctest for one/all/range of subprojects
+   runs ctests
 
 om-visit 
-   debugging
+   visits each subproj in turn
  
 om-echo
-   debugging
+   echos the pwd of each subproj
  
-
 
 OTHER FUNCTIONS
 -----------------
@@ -62,23 +70,58 @@ om-testlog
 EOU
 } 
 
+om-home-default(){  echo $(dirname $(om-source)) ; } 
+om-home(){   echo ${OPTICKS_HOME:-$(om-home-default)} ; }
+om-local(){  echo ${LOCAL_BASE:-/usr/local} ; }
+om-name(){   echo $(basename $(om-home)) ; }
+om-fold(){   echo $(om-local)/$(om-name) ; }
+om-prefix(){ echo $(om-fold) ; }
+om-cmake-generator(){ echo ${OPTICKS_CMAKE_GENERATOR:-Unix Makefiles} ; }
+om-bdir(){  
+   local gen=$(om-cmake-generator)
+   case $gen in 
+      "Unix Makefiles") echo $(om-prefix)/build/$1 ;;
+               "Xcode") echo $(om-prefix)/build_xcode/$1 ;;
+   esac
+}
+om-sdir(){   echo $(om-home)/$1 ; }
+
+om-url(){ echo http://bitbucket.org/simoncblyth/$(om-name)/src/$(om-rdir) ; }
+om-open(){ open $(om-url) ; }
+
+om-info(){ cat << EOI
+
+   om-home-default    : $(om-home-default)
+   om-home            : $(om-home)  from OPTICKS_HOME envvar if defined 
+   om-name            : $(om-name)
+   om-local           : $(om-local)  from LOCAL_BASE envvar if defined
+   om-fold            : $(om-fold)
+   om-prefix          : $(om-prefix)
+   om-cmake-generator : $(om-cmake-generator)
+   om-bdir            : $(om-bdir)
+   om-sdir            : $(om-sdir)
+
+EOI
+}
+
 om-subs--all(){ cat << EOS
+# to update this list : opticks-deps --subdirs
 okconf
 sysrap
 boostrap
 npy
 yoctoglrap
-extg4
 optickscore
-ggeo 
+ggeo
+extg4
 assimprap
-openmeshrap 
-opticksgeo 
+openmeshrap
+opticksgeo
 cudarap
 thrustrap
 optixrap
 okop
-oglrap  
+oglrap
 opticksgl
 ok
 cfg4
@@ -124,8 +167,6 @@ om-subs(){
   fi
 }
 
-
-
 om-reldir()
 {
    local cwd=$(pwd)
@@ -139,34 +180,57 @@ om-reldir()
 om-bcd(){ cd $(om-bdir $(om-reldir)) ; pwd ;  }
 om-scd(){ cd $(om-sdir $(om-reldir)) ; pwd ;  }
 
-om-sdir(){  echo $(opticks-home)/$1 ; }
-om-bdir(){  
-   local gen=$(opticks-cmake-generator)
-   case $gen in 
-      "Unix Makefiles") echo $(opticks-prefix)/build/$1 ;;
-               "Xcode") echo $(opticks-prefix)/build_xcode/$1 ;;
-   esac
-}
 
 om-visit-all(){     om-all ${FUNCNAME/-all} $* ; }
 om-conf-all(){      om-all ${FUNCNAME/-all} $* ; }
 om-make-all(){      om-all ${FUNCNAME/-all} $* ; }
+om-install-all(){   om-all ${FUNCNAME/-all} $* ; }
 om-test-all(){      om-all ${FUNCNAME/-all} $* ; om-testlog ; }
 om-echo-all(){      om-all ${FUNCNAME/-all} $* ; }
 
 om-testlog(){      CTestLog.py $(om-bdir)  ; }
+
+
+om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
+
+om-conf(){    om-one-or-all conf $* ; }
+om-make(){    om-one-or-all make $* ; }
+om-install(){ om-one-or-all install $* ; }
+om-visit(){   om-one-or-all visit $* ; }
+om-test(){    om-one-or-all test $* ; }
+om-echo(){    om-one-or-all echo $* ; }
+
+om--(){       om-make $* ; }
+
+
+om-check()
+{
+    local msg="=== $FUNCNAME :"
+    local bdir=$(om-bdir)
+    local rc=0
+    [ ! -d "$bdir" ] && echo $msg top level bdir $bdir does not exist  && rc=1
+    return $rc 
+}
+
+
 
 om-all()
 {
     local rc
     local iwd=$(pwd)
     local func=$1
-    shift
     local msg="=== $FUNCNAME $func :"
+    shift
+
+    om-check
+    rc=$?
+    [ "$rc" != "0" ] && echo $msg ERROR om-check failed && return $rc
+
     local name
     om-subs $* | while read name 
     do 
         local bdir=$(om-bdir $name)
+        mkdir -p $bdir
         cd $bdir
         $func
         rc=$?
@@ -176,83 +240,24 @@ om-all()
     return $rc
 }
 
-
-om-echo(){ echo $(pwd) ; }
-
-om-visit()
+om-one-or-all()
 {
-    local arg=$1  # not normally used
-    local msg="=== $FUNCNAME :"
+    local rc=0 
+    local func=$1
+    local arg=$2  # not normally used
     local iwd=$(pwd)
+    local msg="=== $FUNCNAME $func :"
 
-    if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o "${arg/:}" != "$arg" ]; then
-
-        om-visit-all $arg
-
-    else
-        local name=$(basename $iwd)
-        local sdir=$(om-sdir $name)
-        local bdir=$(om-bdir $name)
-        cd $bdir
-        printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
-    fi
-}
-
-
-
-om-conf-xcode(){ OPTICKS_CMAKE_GENERATOR=Xcode om-conf ; }
-
-om-conf()
-{
-    local rc 
-    local arg=$1  # not normally used
-    local iwd=$(pwd)
-    local msg="=== $FUNCNAME :"
+    om-check
+    rc=$?
+    [ "$rc" != "0" ] && echo $msg ERROR om-check failed && om-info && return $rc 
 
     if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o  "${arg/:}" != "$arg" ]; then
-
-        om-conf-all $arg 
-
+        om-$func-all $arg 
+        rc=$?
     else
-        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
-        local sdir=$(om-sdir $name)
-        local bdir=$(om-bdir $name)
-
-        if [ "$arg" == "clean" ]; then
-             echo $msg removed bdir $bdir as directed by clean argument
-             rm -rf $bdir
-        fi 
-
-        if [ ! -d "$bdir" ]; then
-             echo $msg bdir $bdir does not exist : creating it
-             mkdir -p $bdir
-        fi 
-
-        cd $bdir
-        printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
-
-        # TODO: hmm cleaner just to use same invokation for all pkgs 
- 
-        if [ "$name" == "okconf" ]; then     
-            cmake $sdir \
-               -G "$(opticks-cmake-generator)" \
-               -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-               -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-               -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-               -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules \
-               -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
-               -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
-            rc=$?
-        else
-            cmake $sdir \
-               -G "$(opticks-cmake-generator)" \
-               -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
-               -DCMAKE_PREFIX_PATH=$(opticks-prefix)/externals \
-               -DCMAKE_INSTALL_PREFIX=$(opticks-prefix) \
-               -DCMAKE_MODULE_PATH=$(opticks-home)/cmake/Modules 
-
-            rc=$?
-        fi
+        om-$func-one $arg 
+        rc=$?
     fi
 
     if [ "$rc" != "0" ]; then
@@ -262,44 +267,136 @@ om-conf()
     return $rc 
 }
 
+om-echo-one(){ echo $(pwd) ; }
 
-om--(){ om-make $* ; }
+om-install-one()
+{
+    om-visit-one $*
+    om-conf-one $*
+    om-make-one $*
+}
 
-om-make()
-{   
+om-visit-one()
+{
+    local msg="=== $FUNCNAME :"
+    local iwd=$(pwd)
+    local name=$(basename $iwd)
+    local sdir=$(om-sdir $name)
+    local bdir=$(om-bdir $name)
+    cd $bdir
+    printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+}
+
+om-conf-one()
+{
     local rc=0
-    local arg=$1  # not normally used
+    local arg=$1
     local iwd=$(pwd)
 
-    if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o "${arg/:}" != "$arg" ]; then
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local sdir=$(om-sdir $name)
+    local bdir=$(om-bdir $name)
 
-        om-make-all $arg
-
-    else
-        local msg="=== $FUNCNAME :"
-        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
-        local sdir=$(om-sdir $name)
-        local bdir=$(om-bdir $name)
-        printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
-        cd $bdir
-        local t0=$(date +"%s")
-        cmake --build .  --target all
-        rc=$?
-        local t1=$(date +"%s")
-        local d1=$(( t1 - t0 ))
-
-        [ "$rc" != "0" ] && cd $iwd && return $rc
-
-        #echo d1 $d1
-        [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
-        cmake --build .  --target install
-        rc=$?
-        [ "$rc" != "0" ] && cd $iwd && return $rc
+    if [ "$arg" == "clean" ]; then
+         echo $msg removed bdir $bdir as directed by clean argument
+         rm -rf $bdir
     fi 
-    cd $iwd
+
+    if [ ! -d "$bdir" ]; then
+         echo $msg bdir $bdir does not exist : creating it
+         mkdir -p $bdir
+    fi 
+
+    cd $bdir
+    printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+
+    # TODO: hmm cleaner just to use same invokation for all pkgs 
+
+    if [ "$name" == "okconf" ]; then     
+        cmake $sdir \
+           -G "$(om-cmake-generator)" \
+           -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+           -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+           -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
+           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules \
+           -DOptiX_INSTALL_DIR=$(opticks-optix-install-dir) \
+           -DCOMPUTE_CAPABILITY=$(opticks-compute-capability)
+        rc=$?
+    else
+        cmake $sdir \
+           -G "$(om-cmake-generator)" \
+           -DCMAKE_BUILD_TYPE=$(opticks-buildtype) \
+           -DCMAKE_PREFIX_PATH=$(om-prefix)/externals \
+           -DCMAKE_INSTALL_PREFIX=$(om-prefix) \
+           -DCMAKE_MODULE_PATH=$(om-home)/cmake/Modules 
+
+        rc=$?
+    fi
     return $rc
 }
 
+om-make-one()
+{
+    local rc=0
+    local iwd=$(pwd)
+    local msg="=== $FUNCNAME :"
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local sdir=$(om-sdir $name)
+    local bdir=$(om-bdir $name)
+    printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+    cd $bdir
+    local t0=$(date +"%s")
+    cmake --build .  --target all
+    rc=$?
+    local t1=$(date +"%s")
+    local d1=$(( t1 - t0 ))
+
+    [ "$rc" != "0" ] && cd $iwd && return $rc
+
+    #echo d1 $d1
+    [ "$(uname)" == "Darwin" -a $d1 -lt 1 ] && echo $msg kludge sleep 2s : make time $d1 && sleep 2  
+    cmake --build .  --target install
+    rc=$?
+    return $rc
+    [ "$rc" != "0" ] && cd $iwd && return $rc
+}
+
+om-test-one()
+{
+    local iwd=$(pwd)
+    local name=$(basename $iwd)
+
+    local msg="=== $FUNCNAME :"
+    local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
+    local sdir=$(om-sdir $name)
+    local bdir=$(om-bdir $name)
+    printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
+    cd $bdir
+    local log=ctest.log
+    date          | tee $log
+    ctest $* --interactive-debug-mode 0 2>&1 | tee -a $log
+    date          | tee -a $log
+
+    cd $iwd
+}
+
+
+
+om-divider(){ cat << EOD
+//////////////////////////////////////////////////////////////////////////////////
+
+My bash functions tend to grow, in order to avoid confusing users 
+trying to install Opticks should try to distinguish between 
+
+1. essentials for building 
+2. useful additions for developers
+
+This divider attempts to make that split.  Possibly relocate the below into 
+an omu- to make that distinction stronger.
+
+//////////////////////////////////////////////////////////////////////////////////
+EOD
+}
 
 
 om-mk-notes(){ cat << EON
@@ -308,7 +405,11 @@ om-mk
 
 om-mk allows running commands from the parallel build tree, 
 particularly useful for quickly building and running/debugging 
-single test executables::
+single test executables
+
+Note this works so long as the source changes are all within the 
+current subproj. If there are changes in other projs this will not 
+detect that::
 
    npy-c 
    cd tests
@@ -347,30 +448,6 @@ om-mk()
     cd $iwd
 }
 
-om-test()
-{
-    local iwd=$(pwd)
-    local name=$(basename $iwd)
-
-    if [ "${iwd}/" == "$(om-sdir)" -o "${iwd}/" == "$(om-bdir)" -o "${arg/:}" != "$arg" ]; then
-
-        om-test-all $arg
-
-    else
-        local msg="=== $FUNCNAME :"
-        local name=$(basename ${iwd/tests})   # trim tests to get name of subproj from tests folder or subproj folder
-        local sdir=$(om-sdir $name)
-        local bdir=$(om-bdir $name)
-        printf "%s %-15s %-60s %-60s \n"  "$msg" $name $sdir $bdir
-        cd $bdir
-        local log=ctest.log
-        date          | tee $log
-        ctest $* --interactive-debug-mode 0 2>&1 | tee -a $log
-        date          | tee -a $log
-    fi
-    cd $iwd
-}
-
 om-pdir() 
 { 
     local here=$(pwd -P);
@@ -404,10 +481,6 @@ om-rdir()
     esac
     return 0 
 }
-
-
-om-url(){ echo http://bitbucket.org/simoncblyth/$(opticks-name)/src/$(om-rdir) ; }
-om-open(){ open $(om-url) ; }
 
 om-cd()
 {

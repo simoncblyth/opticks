@@ -5,7 +5,7 @@
 #include "PLOG.hh"
 #include "BStr.hh"
 #include "NGLM.hpp"
-#include "NTran.hpp"
+//#include "NTran.hpp"
 #include "YOG.hh"
 
 namespace YOG {

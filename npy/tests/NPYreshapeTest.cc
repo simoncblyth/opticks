@@ -6,6 +6,7 @@ int main(int argc, char** argv)
     OPTICKS_LOG(argc, argv);
  
     NPY<unsigned>* a = NPY<unsigned>::load("/tmp/X4PhysicalVolume/extras/2/indices.npy");
+    if(!a) return 0 ; 
 
     a->dump();
 
