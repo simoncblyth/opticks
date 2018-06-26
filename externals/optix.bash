@@ -19,6 +19,13 @@ Resources
 * http://docs.nvidia.com/gameworks/index.html#gameworkslibrary/optix/optix_programming_guide.htm
 
 
+GTC 2018 : Whats new in 5.0, Whats coming in 5.1
+--------------------------------------------------
+
+* http://on-demand.gputechconf.com/gtc/2018/video/S8519/
+* http://on-demand.gputechconf.com/gtc-eu/2017/presentation/23136-timo-stich-scientific-ray-tracing-with-optix.pdf
+
+
 OptiX RTX
 ----------
 

@@ -85,7 +85,7 @@ NCSG::NCSG(const char* treedir)
 {
 }
 
-// ctor : booting from in memory node tree : cannoy be cont because of the nudger 
+// ctor : booting from in memory node tree : cannot be const because of the nudger 
 NCSG::NCSG(nnode* root ) 
    :
    m_meta(NULL),
@@ -118,9 +118,9 @@ NCSG::NCSG(nnode* root )
    m_tris(NULL)
 {
 
-   setBoundary( root->boundary );
+   setBoundary( root->boundary );  // boundary spec
 
-   m_num_nodes = NumNodes(m_height);
+   m_num_nodes = NumNodes(m_height); // number of nodes for a complete binary tree of the needed height, with no balancing 
 
    m_nodes = NPY<float>::make( m_num_nodes, NJ, NK);
    m_nodes->zero();
@@ -798,7 +798,7 @@ unsigned NCSG::getTransformIndex(unsigned idx)
 bool NCSG::isComplement(unsigned idx)
 {
     unsigned raw = m_nodes->getUInt(idx,TRANSFORM_J,TRANSFORM_K,0u);
-    return raw & SSys::SIGNBIT32 ; 
+    return raw & SSys::SIGNBIT32 ;   // pick the sign bit 
 }
 
 
@@ -831,7 +831,7 @@ void NCSG::import()
               ;
     }
 
-    m_root = import_r(0, NULL) ; 
+    m_root = import_r(0, NULL) ;  // complete binary tree buffer -> node tree
     m_root->set_treedir(m_treedir) ; 
     m_root->set_treeidx(getTreeNameIdx()) ; 
 
@@ -1437,8 +1437,8 @@ NCSG* NCSG::LoadTree(const char* treedir, const NSceneConfig* config  )
     tree->setIsUsedGlobally(true);
 
     tree->load();
-    tree->import();
-    tree->export_();
+    tree->import();  // complete binary tree m_nodes buffer -> node tree
+    tree->export_(); // node tree -> complete binary tree m_nodes buffer
 
     if(config->verbosity > 1) tree->dump("NCSG::LoadTree");
 
@@ -1461,7 +1461,7 @@ NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
     NCSG* tree = new NCSG(root);
 
     tree->setConfig(config);
-    tree->export_();
+    tree->export_();  // node tree -> complete binary tree m_nodes buffer
     assert( tree->getGTransformBuffer() );
 
     tree->collect_surface_points();

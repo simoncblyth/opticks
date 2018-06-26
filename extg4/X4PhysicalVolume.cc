@@ -417,6 +417,13 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      unsigned boundary = addBoundary( pv, pv_p );
      std::string boundaryName = m_blib->shortname(boundary); 
      int materialIdx = m_blib->getInnerMaterial(boundary); 
+
+     LOG(error) 
+         << " boundary " << std::setw(4) << boundary 
+         << " materialIdx " << std::setw(4) << materialIdx
+         << " boundaryName " << boundaryName
+         ;
+
      //materialIdx = m_ndCount ; // <-- checking effect of different material idx
 
      const G4LogicalVolume* const lv   = pv->GetLogicalVolume() ;

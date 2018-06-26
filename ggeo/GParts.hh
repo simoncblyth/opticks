@@ -127,6 +127,27 @@ Primary GParts usage by OGeo::makeAnalyticGeometry feeding cu/intersect_analytic
     501      // PmtInBox yielding -1,1,4 ?
     502 
 
+
+
+Mesh-type or node-type
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Hmm boundary spec is a node-type-qty, not a mesh-type-qty 
+so it does not belong inside GParts (a mesh-type-qty)
+... there are relatively few mesh-type-qty for 
+each distinct shape (~249), but much more node-type-qty (~12k)
+ 
+BUT: GParts combination means that it kinda transitions 
+between mesh-type when just for a single unplaced shape
+into node-type once applyPlacementTransform is used by GMergedMesh::mergeVolumeAnalytic
+
+
+persisted structure detailed in GParts.rst
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+* for examination of structure of multi-complete tree buffers see GParts.rst
+
+
 **/
 
 #include "GGEO_API_EXPORT.hh"
@@ -156,12 +177,7 @@ class GGEO_API GParts {
               SK = 4  
             } ;
     public:
-
-       // hmm boundary spec is a node-type-qty, not a mesh-type-qty 
-       // so it does not belong inside GParts (a mesh-type-qty)
-       // ... there are relatively few mesh-type-qty for 
-       // each distinct shape (~249), but much more node-type-qty (~12k)
-       //
+      //
         static GParts* make(const npart& pt, const char* spec);
         static GParts* make(OpticksCSG_t csgflag, glm::vec4& param, const char* spec);
         static GParts* make(const NCSG* tree, const char* spec, unsigned verbosity );

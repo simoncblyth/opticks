@@ -1,6 +1,9 @@
 #[=[
-Opticks CMake Conventions 
-==================================
+
+*THIS CMakeLists.txt IS NO LONGER USED** 
+
+Opticks CMake Conventions (STILL APPLY)
+=========================================
 
 1. project names are the same as the library targets they generate 
 2. project names are CamelCased, project directory names are lowercase
@@ -18,8 +21,15 @@ a CMakeLists.txt file starting::
     include(OpticksBuildOptions)
 
 
-This Integrated Build
------------------------
+DECISION TO HALT ATTEMPTS TO GET INTEGRATED BUILD OPERATIONAL AGAIN
+---------------------------------------------------------------------
+
+Because it doesnt add enough value for the effort, instead 
+just use proj-by-proj integrated at bash level with om.bash, 
+see om-install
+
+This Integrated Build  : ON HOLD
+------------------------------------
 
 For this integrated build, find_package is redefined by the below
 macro to skip packages corresponding to the below SUBDIRS as they have directly 
@@ -27,6 +37,16 @@ been built already within the single CMake context and hence do not need to be f
 
 This structure allows the proj-by-proj building and integrated building to otherwise
 be identical.
+
+bcm_ignore_package
+~~~~~~~~~~~~~~~~~~~
+
+Incase decide to try again with integrated build, try 
+out the bcm_ignore_package approach:
+
+* http://bcm.readthedocs.io/en/latest/src/Building.html#integrated-builds
+
+
 
 #]=]
 

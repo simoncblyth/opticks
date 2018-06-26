@@ -19,3 +19,8 @@ g4ok-test(){  g4ok-cd ; om- ; om-test $* ; }
 
 g4ok--(){   g4ok-make ; }
 g4ok-t(){   g4ok-test ; }
+
+g4ok-g(){ echo /usr/local/opticks/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live/g4ok_gltf/828722902b5e94dab05ac248329ffebe/1/g4ok.gltf ; }
+g4ok-gcd(){ cd $(dirname $(g4ok-g)) ; }
+g4ok-ed(){  local g=$(g4ok-g) ; ls -l $g ; sleep 0.5 ; vi $g ; ls -l $g ; }
+

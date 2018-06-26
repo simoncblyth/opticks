@@ -1,25 +1,56 @@
 Progress
 =========
 
-Use *hg-month n* to review commits for the numbered month, 
+Use *hg-;hg-month n* to review commits for the numbered month, 
 negative n eg -12 for December of last year.
 
 Dont use colons in section text for easy title grepping.
 
 
+2018 June  
+-----------
+
+**Focus : simplify applying Opticks acceleration to any Geant4 geometry**
+
+* X4/ExtG4 package for direct conversion of in memory Geant4 model into Opticks GGeo
+* YoctoGLRap YOG package for direct conversion from Geant4 into glTF 
+* direct conversions of G4VSolid into Opticks CSG nnode trees, and GMesh polygonizations
+* direct conversions of materials and surfaces
+
+2018 May 
+---------
+
+**Focus : simplify Opticks configuration internally and from user projects**
+
+* research modern CMake (3.5+) capabilities for target export/import, find BCM
+* adopt Boost CMake Modules (BCM) http://bcm.readthedocs.io/  (proposed for Boost)
+  to benefit from modern CMake without the boilerplate 
+* much simpler CMakeLists.txt both inside Opticks and in the use of Opticks
+  by user code, only need to be concerned with direct dependencies, the tree
+  of sub-dependencies is configured  automatically 
+* BCM wave over all ~100 CMakeLists.txt took ~10 days
+* g4ok project for Geant4 based user code with embedded Opticks, via G4OpticksManager
+* simplify logging OPTICKS_LOG.hh 
+* geometry digests to notice changed geometry 
+
+
+2018 March/April : macOS system update from Mavericks to High Sierra
+-----------------------------------------------------------------------
+
+* get installation opational onto "new" machine, latest macOS : High Sierra 10.13.4, Xcode 9.3 with CUDA 9.1 and OptiX 5.0.1
+
+
 2017 December
 --------------
 
-**Aim : "--align" mode, taming randomness for perfectly aligned bi-simulation**
+**Focus : "--align" mode, taming randomness for perfectly aligned bi-simulation**
 
 * investigate approaches allowing use of the same RNG sequence with Opticks and Geant4
 
-  * if this turns out to be possible, can expect perfect (float precision level) matching 
-  * would be an extremely powerful debugging tool, problems will then be directly apparent 
+  * near perfect (float precision level) matching with input photons (no reemission yet) 
 
 * add diffuse emitters for testing all angle incidence
 * rework specular reflection to match Geant4, fixing polarization discrepancy
-
 
 2017 November
 --------------
@@ -537,4 +568,13 @@ CSG Engine : python prototyping, recursive into iterative
 * introduce the geocache
 * material code translation in Lookup
 * adopt ImGui
+
+
+Earlier
+----------
+
+* see okc- okc-vi 
+* TODO-SOMETIME: integrate that in here
+
+
 
