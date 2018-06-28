@@ -662,7 +662,7 @@ void GMergedMesh::reportMeshUsage(GGeo* ggeo, const char* msg)
          unsigned int meshIndex = it->first ; 
          unsigned int nodeCount = it->second ; 
  
-         GMesh* mesh = ggeo->getMesh(meshIndex);
+         const GMesh* mesh = ggeo->getMesh(meshIndex);
          const char* meshName = mesh->getName() ; 
          unsigned int nv = mesh->getNumVertices() ; 
          unsigned int nf = mesh->getNumFaces() ; 

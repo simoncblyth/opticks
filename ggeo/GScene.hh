@@ -156,7 +156,7 @@ class GGEO_API GScene : public GGeoBase
         void dumpMeshes();
         void compareMeshes();
         void compareMeshes_GMeshBB();
-        GMesh* getMesh(unsigned mesh_idx);
+        const GMesh* getMesh(unsigned mesh_idx);
         unsigned getNumMeshes();
 
         NCSG* getCSG(unsigned mesh_idx);

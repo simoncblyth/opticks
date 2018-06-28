@@ -14,11 +14,7 @@
 #include "OpticksEvent.hh"
 #include "OpticksBufferControl.hh"
 
-#include "NPY_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "OXRAP_LOG.hh"
-
-#include "PLOG.hh"
+#include "OPTICKS_LOG.hh"
 
 
 /**
@@ -29,14 +25,9 @@ OEventTest
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);    
-
-    NPY_LOG__ ; 
-    OKCORE_LOG__ ; 
-    OXRAP_LOG__ ; 
+    OPTICKS_LOG(argc, argv);    
 
     Opticks ok(argc, argv, "--machinery --compute");
-    //Opticks ok(argc, argv);
     OpticksHub hub(&ok);
 
 

@@ -22,16 +22,26 @@ class G4VPhysicalVolume ;
 
 #include "OPTICKS_LOG.hh"
 
+/**
+OKX4Test : checking direct from G4 conversion, starting from a GDML loaded geometry
+=======================================================================================
+
+The first Opticks is there just to work with CGDMLDetector
+to load the GDML and apply fixups for missing material property tables
+to provide the G4VPhysicalVolume world volume for checking 
+the direct from G4.
+
+It would be cleaner to do this with pure G4. Perhaps 
+new Geant4 can avoid the fixups ?  Maybe not I think even
+current G4 misses optical properties.
+
+See :doc:`../../notes/issues/OKX4Test`
+
+**/
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
-
-    //// the point of the first Opticks etc.. is just to provide top 
-    //// it would be better to do that with pure Geant4 
-    //// but CGDMLDetector does some fixup for the lacking GDML
-    ////
-    //// Hmm maybe by exporting GDML from a newer Geant4, 
-    //// can avoid the need for the fixup ? And these complications.
 
     Opticks ok(argc, argv);
     OpticksHub hub(&ok);
@@ -63,9 +73,9 @@ int main(int argc, char** argv)
 
     gg2->prepare();   // merging meshes, closing libs
 
-
-
 /*
+    // this is done inside OKMgr 
+
     OpticksHub hub2(ok2);   // <-- this should pick up gg2, not create/load a new one 
 
     assert( hub2.getGGeo() == gg2 ); 
@@ -85,6 +95,11 @@ int main(int argc, char** argv)
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg2 (last GGeo instanciated) via GGeo::GetInstance 
     mgr.propagate();
     mgr.visualize();   
+
+    assert( GGeo::GetInstance() == gg2 );
+    gg2->reportMeshUsage();
+
+
 
     return mgr.rc() ;
 }

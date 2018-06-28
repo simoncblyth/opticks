@@ -132,7 +132,7 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         typedef GMesh* (*GJoinImpFunctionPtr)(GMesh*, Opticks*);
         void setMeshJoinImp(GJoinImpFunctionPtr imp);
         void setMeshJoinCfg(const char* config);
-        bool shouldMeshJoin(GMesh* mesh);
+        bool shouldMeshJoin(const GMesh* mesh);
         GMesh* invokeMeshJoin(GMesh* mesh);    // used from AssimpGGeo::convertMeshes immediately after GMesh birth and deduping
     public:
         typedef std::map<unsigned int, std::string> Index_t ;
@@ -252,8 +252,10 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GMeshLib*          getMeshLib();  // unplaced meshes
         unsigned           getNumMeshes();
         GItemIndex*        getMeshIndex(); 
-        GMesh*             getMesh(unsigned index);  
-        void               add(GMesh*    mesh);
+        const GMesh*       getMesh(unsigned index);  
+        void               add(const GMesh* mesh);
+        void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
+        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
     public:
         void dumpRawSkinSurface(const char* name=NULL);
         void dumpRawBorderSurface(const char* name=NULL);
@@ -324,10 +326,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
         GBorderSurface* findBorderSurface(const char* pv1, const char* pv2);  
 
     public:
-        std::map<unsigned int, unsigned int>& getMeshUsage();
-        std::map<unsigned int, std::vector<unsigned int> >& getMeshNodes();
-        void countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* lv, const char* pv);
-        void reportMeshUsage(const char* msg="GGeo::reportMeshUsage");
 
 #if 0
     TODO: see if this can be reinstated
@@ -394,11 +392,6 @@ class GGEO_API GGeo : public GGeoBase, public NConfigurable {
 
         gfloat3*                      m_low ; 
         gfloat3*                      m_high ; 
-
-        // maybe into GGeoLib ? 
-
-        std::map<unsigned int, unsigned int>                  m_mesh_usage ; 
-        std::map<unsigned int, std::vector<unsigned int> >    m_mesh_nodes ; 
 
     private:
 

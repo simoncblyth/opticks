@@ -553,6 +553,7 @@ tboolean-testname    : $(tboolean-testname)
 tboolean-testconfig  : $(tboolean-testconfig)
 tboolean-torchconfig : $(tboolean-torchconfig)
 
+
 EOI
 }
 
@@ -570,7 +571,7 @@ tboolean--(){
     local testconfig=$(tboolean-testconfig)
     local torchconfig=$(tboolean-torchconfig)
 
-    $testname--
+    $testname--   ## dump python geometry description
 
     op.sh  \
             $cmdline \

@@ -30,7 +30,7 @@ class MESHRAP_API MWrap {
        unsigned int getNumFaces();
    public:
        GMesh* createGMesh();   // must externally setName and setIndex for usage with GGeo
-       void load(GMesh* mm);   // GMergedMesh isa GMesh
+       void load(const GMesh* mm);   // GMergedMesh isa GMesh
        void copyIn(struct NTris* tris) ;
        void copyIn( float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces );
        void copyOut(float* vdata, unsigned int num_vertices, unsigned int* fdata, unsigned int num_faces, float* ndata );

@@ -15,6 +15,20 @@ This juicing of the IDPATH allows among other things the location
 of the src geometry file to be determined, avoiding the need to 
 provide multiple paths.
 
+Examples:
+
+layout 0
+     /usr/local/opticks/opticksdata/export/DayaBay_VGDX_20140414-1300/g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+
+     has dotted triple as last element: g4_00.96ff965744a2f6b78c24e33c80d3a4cd.dae
+     which yields idfile (eg g4_00.dae) and digest (96ff965744a2f6b78c24e33c80d3a4cd) 
+
+layout > 0
+     /usr/local/opticks/geocache/DayaBay_VGDX_20140414-1300/g4_00.dae/96ff965744a2f6b78c24e33c80d3a4cd/1 
+
+      last elem is the layout integer
+
+
 */
 
 class BRAP_API BPath {

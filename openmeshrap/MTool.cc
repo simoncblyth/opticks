@@ -38,7 +38,7 @@ unsigned int MTool::getNoise()
 }
 
 
-unsigned int MTool::countMeshComponents(GMesh* gmesh)
+unsigned int MTool::countMeshComponents(const GMesh* gmesh)
 {
     unsigned int ret ; 
     std::stringstream coutbuf;
@@ -59,7 +59,7 @@ unsigned int MTool::countMeshComponents(GMesh* gmesh)
 
 
 
-unsigned int MTool::countMeshComponents_(GMesh* gmesh)
+unsigned int MTool::countMeshComponents_(const GMesh* gmesh)
 {
     MWrap<MMesh> wsrc(new MMesh);
 

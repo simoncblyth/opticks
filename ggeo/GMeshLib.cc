@@ -59,7 +59,7 @@ void GMeshLib::loadFromCache()
 
     bool has_index = m_meshindex->hasIndex() ;
     if(!has_index)  LOG(fatal) << " meshindex load failure " ; 
-    assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
+    //assert(has_index && " MISSING MESH INDEX : PERHAPS YOU NEED TO CREATE/RE-CREATE GEOCACHE WITH : op.sh -G ");
 
     loadMeshes(idpath);
 }
@@ -126,7 +126,7 @@ void GMeshLib::dump(const char* msg) const
                << " name " << std::setw(40) << name 
                ;
 
-         GMesh* mesh = getMesh(aindex);
+         const GMesh* mesh = getMesh(aindex);
          if(mesh)
          {
              assert( strcmp(mesh->getName(), name) == 0);
@@ -154,9 +154,9 @@ unsigned int GMeshLib::getNumMeshes() const
     return m_meshes.size();
 }
 
-GMesh* GMeshLib::getMesh(unsigned aindex) const 
+const GMesh* GMeshLib::getMesh(unsigned aindex) const 
 {
-    GMesh* mesh = NULL ; 
+    const GMesh* mesh = NULL ; 
     for(unsigned int i=0 ; i < m_meshes.size() ; i++ )
     { 
         if(m_meshes[i]->getIndex() == aindex )
@@ -169,7 +169,7 @@ GMesh* GMeshLib::getMesh(unsigned aindex) const
 }  
 
 
-GMesh* GMeshLib::getMesh(const char* name, bool startswith) const 
+const GMesh* GMeshLib::getMesh(const char* name, bool startswith) const 
 {
     unsigned aindex = getMeshIndex(name, startswith);
     return getMesh(aindex);
@@ -177,7 +177,7 @@ GMesh* GMeshLib::getMesh(const char* name, bool startswith) const
 
 
 
-void GMeshLib::add(GMesh* mesh)
+void GMeshLib::add(const GMesh* mesh)
 {
     if(!m_meshindex) m_meshindex = new GItemIndex(GITEMINDEX, GetRelDirIndex(m_analytic))   ;
 
@@ -260,10 +260,10 @@ void GMeshLib::saveMeshes(const char* idpath) const
 {
     removeMeshes(idpath); // clean old meshes to avoid duplication when repeat counts go down 
 
-    typedef std::vector<GMesh*>::const_iterator VMI ; 
+    typedef std::vector<const GMesh*>::const_iterator VMI ; 
     for(VMI it=m_meshes.begin() ; it != m_meshes.end() ; it++)
     {
-        GMesh* mesh = *it ; 
+        const GMesh* mesh = *it ; 
         unsigned int idx = mesh->getIndex() ; 
         const char* sidx = BStr::itoa(idx);
 
@@ -272,5 +272,64 @@ void GMeshLib::saveMeshes(const char* idpath) const
 
     // meshindex persisted first, up in GMeshLib::save
 }
+
+
+
+
+
+
+
+
+void GMeshLib::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex)
+{
+     // called during GGeo creation from: void AssimpGGeo::convertStructure(GGeo* gg)
+     //printf("GMeshLib::countMeshUsage %d %d %s %s \n", meshIndex, nodeIndex, lv, pv);
+     m_mesh_usage[meshIndex] += 1 ; 
+     m_mesh_nodes[meshIndex].push_back(nodeIndex); 
+}
+
+
+std::map<unsigned int, unsigned int>& GMeshLib::getMeshUsage()
+{
+    return m_mesh_usage ; 
+}
+std::map<unsigned int, std::vector<unsigned int> >& GMeshLib::getMeshNodes()
+{
+    return m_mesh_nodes ; 
+}
+
+void GMeshLib::reportMeshUsage(const char* msg)
+{
+     printf("%s\n", msg);
+     typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
+     LOG(info) << " meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName " ; 
+
+     unsigned tnode(0) ; 
+     unsigned tvert(0) ; 
+     unsigned tface(0) ; 
+
+     for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
+     {
+         unsigned int meshIndex = it->first ; 
+         unsigned int nodeCount = it->second ; 
+ 
+         const GMesh* mesh = getMesh(meshIndex);
+         const char* meshName = mesh->getName() ; 
+         unsigned int nvert = mesh->getNumVertices() ; 
+         unsigned int nface = mesh->getNumFaces() ; 
+
+         printf("  %4d (v%5d f%5d) : %6d : %7d : %7d : %s \n", meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName);
+
+         tnode += nodeCount ; 
+         tvert += nodeCount*nvert ; 
+         tface += nodeCount*nface ; 
+     }
+
+     printf(" tnode : %7d \n", tnode);
+     printf(" tvert : %7d \n", tvert);
+     printf(" tface : %7d \n", tface);
+}
+
+
 
 

@@ -2,6 +2,7 @@
 #include <sstream>
 
 #include "GGeo.hh"
+#include "GMeshLib.hh"
 #include "GMesh.hh"
 
 #include "MFixer.hh"
@@ -12,6 +13,7 @@
 
 MFixer::MFixer(GGeo* ggeo) : 
     m_ggeo(ggeo), 
+    m_meshlib(ggeo->getMeshLib()),
     m_tool(NULL),
     m_verbose(false)
 {
@@ -30,7 +32,6 @@ void MFixer::init()
 
 void MFixer::fixMesh()
 {
-
     unsigned int nso = m_ggeo->getNumVolumes();
     unsigned int nme = m_ggeo->getNumMeshes();
 
@@ -45,8 +46,9 @@ void MFixer::fixMesh()
     typedef std::vector<unsigned int> VU ; 
     typedef std::map<unsigned int, VU > MUVU ; 
 
-    MUU& mesh_usage = m_ggeo->getMeshUsage();
-    MUVU& mesh_nodes = m_ggeo->getMeshNodes();
+    
+    MUU& mesh_usage = m_meshlib->getMeshUsage();
+    MUVU& mesh_nodes = m_meshlib->getMeshNodes();
 
     for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
     {    
@@ -60,7 +62,7 @@ void MFixer::fixMesh()
         for(unsigned int i=0 ; i < std::min( nodeCount, 5u ) ; i++) nss << nodes[i] << "," ;
 
 
-        GMesh* mesh = m_ggeo->getMesh(meshIndex);
+        const GMesh* mesh = m_meshlib->getMesh(meshIndex);
         gfloat4 ce = mesh->getCenterExtent(0);
 
         const char* shortName = mesh->getShortName();
@@ -97,7 +99,7 @@ void MFixer::fixMesh()
     for(MUUI it=mesh_usage.begin() ; it != mesh_usage.end() ; it++)
     {
         unsigned int meshIndex = it->first ; 
-        GMesh* mesh = m_ggeo->getMesh(meshIndex);
+        const GMesh* mesh = m_meshlib->getMesh(meshIndex);
         bool join = m_ggeo->shouldMeshJoin(mesh);
         if(join)
         {

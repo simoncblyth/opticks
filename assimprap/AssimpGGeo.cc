@@ -872,7 +872,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     aiMatrix4x4 l = node->getLevelTransform(-2); // -1 is always identity 
     GMatrixF* ltransform = new GMATRIXF(l) ; 
     unsigned int msi = node->getMeshIndex();
-    GMesh* mesh = gg->getMesh(msi);
+    const GMesh* mesh = gg->getMesh(msi);
 
     if(!mesh)
     {
@@ -919,7 +919,7 @@ GVolume* AssimpGGeo::convertStructureVisit(GGeo* gg, AssimpNode* node, unsigned 
     const char* pv   = node->getName(1); 
     const char* pv_p   = pnode->getName(1); 
 
-    gg->countMeshUsage(msi, nodeIndex, lv, pv);
+    gg->countMeshUsage(msi, nodeIndex);
 
     GBorderSurface* obs = gg->findBorderSurface(pv_p, pv);  // outer surface (parent->self) 
     GBorderSurface* ibs = gg->findBorderSurface(pv, pv_p);  // inner surface (self->parent) 

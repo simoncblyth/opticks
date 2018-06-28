@@ -12,13 +12,13 @@ class MESHRAP_API MTool {
        MTool();
        static GMesh* joinSplitUnion(GMesh* mesh, Opticks* opticks);
    public:
-       unsigned int countMeshComponents(GMesh* gm);
+       unsigned int countMeshComponents(const GMesh* gm);
    public:
        std::string& getOut();
        std::string& getErr();
        unsigned int getNoise();
    private:
-       unsigned int countMeshComponents_(GMesh* gm);
+       unsigned int countMeshComponents_(const GMesh* gm);
 
    private:
        std::string  m_out ; 

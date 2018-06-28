@@ -24,6 +24,7 @@ void NNodeDump::dump() const
 
     if(m_node.verbosity > 1)
     {
+        LOG(info) << "NNodeDump::dump verbosity " << m_node.verbosity ;         
         dump_prim();
         dump_transform();
         dump_planes();

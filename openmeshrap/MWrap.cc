@@ -1026,7 +1026,7 @@ void MWrap<MeshT>::write(const char* tmpl, unsigned int index)
 
 
 template <typename MeshT>
-void MWrap<MeshT>::load(GMesh* mm)
+void MWrap<MeshT>::load(const GMesh* mm)
 {
     copyIn( (float*)mm->getVertices(), mm->getNumVertices(), (unsigned int*)mm->getFaces(), mm->getNumFaces() );
 }

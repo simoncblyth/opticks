@@ -59,7 +59,9 @@ void GScene::save() const
 
     m_geolib->save();
     m_nodelib->save();
-    m_meshlib->save();
+
+    if(m_meshlib)
+        m_meshlib->save();
 }
 
 GScene* GScene::Create(Opticks* ok, GGeo* ggeo)
@@ -349,13 +351,14 @@ void GScene::importMeshes(NScene* scene)  // load analytic polygonized GMesh ins
         mesh->setName(strdup(soname.c_str()));
 
         const char* aname = mesh->getName() ; 
-        GMesh* alt = m_tri_meshlib->getMesh(aname, false);
+        const GMesh* alt = m_tri_meshlib->getMesh(aname, false);
         assert(alt);
-        mesh->setAlt(alt);
 
-        alt->setAlt(mesh);
+        mesh->setAlt(alt); 
+        const_cast<GMesh*>(alt)->setAlt(mesh);
 
-        m_meshlib->add(mesh);
+        if(m_meshlib)
+            m_meshlib->add(mesh);
     }
     LOG(info) << "GScene::importMeshes DONE num_meshes " << num_meshes  ; 
 }
@@ -367,10 +370,12 @@ unsigned GScene::getNumMeshes()
 {
    return m_meshlib->getNumMeshes() ;
 }
-GMesh* GScene::getMesh(unsigned r)
+const GMesh* GScene::getMesh(unsigned r)
 {
     return m_meshlib->getMesh(r) ; 
 }
+
+
 NCSG* GScene::getCSG(unsigned r) 
 {
     return m_scene->getCSG(r);
@@ -396,7 +401,7 @@ void GScene::dumpMeshes()
          unsigned a = m_rel2abs_mesh[r] ; 
          unsigned a2r = m_abs2rel_mesh[a] ; 
 
-         GMesh* mesh = getMesh( r );
+         const GMesh* mesh = getMesh( r );
          gbbox bb = mesh->getBBox(0) ; 
 
          std::cout 
@@ -438,14 +443,14 @@ nbbox GScene::getBBox(const char* soname, NSceneConfigBBoxType bbty) const
     }
     else if(bbty == CSG_BBOX_POLY )
     {
-        GMesh* a = ana->getMesh(soname, startswith);
+        const GMesh* a = ana->getMesh(soname, startswith);
         gbbox _pbb = a->getBBox(0) ;   // depends on my NPolygonization IM/HY/DCS/etc... 
         nbbox pbb = make_bbox( _pbb.min.x, _pbb.min.y, _pbb.min.z, _pbb.max.x, _pbb.max.y, _pbb.max.z );
         ubb.copy_from(pbb);
     }
     else if(bbty == CSG_BBOX_G4POLY )
     {
-        GMesh* g4poly = tri->getMesh(soname, startswith);
+        const GMesh* g4poly = tri->getMesh(soname, startswith);
         gbbox _bbb = g4poly->getBBox(0) ;   // depends on G4 polygonization 
         nbbox g4bb = make_bbox( _bbb.min.x, _bbb.min.y, _bbb.min.z, _bbb.max.x, _bbb.max.y, _bbb.max.z );
         ubb.copy_from(g4bb);
@@ -486,7 +491,7 @@ void GScene::compareMeshes_GMeshBB()
 
     for(unsigned i=0 ; i < num_meshes ; i++ )
     {
-        GMesh* a = ana->getMesh(i);
+        const GMesh* a = ana->getMesh(i);
         unsigned mesh_idx = a->getIndex();
         assert( mesh_idx == i );
         const char* soname = a->getName() ; 
@@ -511,8 +516,8 @@ void GScene::compareMeshes_GMeshBB()
         std::string name = delta.getKey(i);
         const char* soname = name.c_str(); 
 
-        GMesh* a = ana->getMesh(soname, startswith);
-        GMesh* b = tri->getMesh(soname, startswith);
+        const GMesh* a = ana->getMesh(soname, startswith);
+        const GMesh* b = tri->getMesh(soname, startswith);
 
         const GMesh* a2 = b->getAlt(); assert( a2 == a );
         const GMesh* b2 = a->getAlt(); assert( b2 == b );
@@ -673,7 +678,7 @@ GVolume* GScene::createVolume(nd* n, unsigned depth, bool& recursive_select  ) /
     unsigned rel_mesh_idx = n->mesh ;   
     unsigned abs_mesh_idx = m_rel2abs_mesh[rel_mesh_idx] ;   
 
-    GMesh* mesh = getMesh(rel_mesh_idx);
+    const GMesh* mesh = getMesh(rel_mesh_idx);
     const GMesh* altmesh = mesh->getAlt();
     assert(altmesh);
 

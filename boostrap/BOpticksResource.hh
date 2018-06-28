@@ -13,6 +13,39 @@ class BOpticksKey ;
 class BPath ; 
 class BResource ; 
 
+/**
+BOpticksResource : base class to okc.OpticksResource 
+======================================================
+
+TODO: rearrange this, avoid confusing split between okc.OpticksResource and brap.BOpticksResource
+
+Constituents:
+
+BPath m_id
+    idpath parser, giving access to the elements including a layout integer 
+
+BOpticksKey m_key 
+    used for G4 live running 
+
+
+OPTICKS_RESOURCE_LAYOUT envvar : for expert use only
+-------------------------------------------------------
+
+The envvar changes the layout integer, current default is 1 (the old layout is 0). 
+Use higher integers to test new geocache writing or new layouts.  
+
+Setting the envvar to eg 100 enables testing geocache writing 
+into an empty directory without disturbing the existing geocache in slot 1.
+This works by changing the m_layout integer which changes the paths 
+to all the geocache Opticks resources.
+
+::
+
+    OPTICKS_RESOURCE_LAYOUT=100 OKTest -G --gltf 1
+
+
+
+**/
 
 class BRAP_API  BOpticksResource {
        

@@ -418,7 +418,7 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      std::string boundaryName = m_blib->shortname(boundary); 
      int materialIdx = m_blib->getInnerMaterial(boundary); 
 
-     LOG(error) 
+     LOG(trace) 
          << " boundary " << std::setw(4) << boundary 
          << " materialIdx " << std::setw(4) << materialIdx
          << " boundaryName " << boundaryName
@@ -488,17 +488,22 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      Mh* mh = m_sc->get_mesh_for_node( ndIdx );  // node->mesh via soIdx (the local mesh index)
 
-
-     //std::vector<unsigned> skips = {27, 29, 33 }; // soIdx
-     std::vector<unsigned> skips = {27, 29}; // soIdx   
+     std::vector<unsigned> skips = {27, 29}; // soIdx     (formerly 33 too)
 
      if(mh->csgnode == NULL)
      {
          mh->csgnode = X4Solid::Convert(solid) ; 
 
-         bool placeholder = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
+         bool is_skip = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
 
-         mh->mesh = placeholder ? X4Mesh::Placeholder(solid) : X4Mesh::Convert(solid) ; 
+         mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 
+
+         if(is_skip)
+         {
+             LOG(error) << " csgnode::dump START for skipped solid soIdx " << nd->soIdx ; 
+             mh->csgnode->dump();
+             LOG(error) << " csgnode::dump DONE for skipped solid soIdx " << nd->soIdx ; 
+         }
        
          mh->vtx = mh->mesh->m_x4src_vtx ; 
          mh->idx = mh->mesh->m_x4src_idx ; 
@@ -507,9 +512,13 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
          assert( mh->csg ) ; 
          assert( mh->csg->isUsedGlobally() );
+  
+         m_ggeo->add( mh->mesh ) ; 
      }
 
      assert( mh->csgnode ); 
+
+    
 
      // mh->csgnode->set_boundary( boundaryName.c_str() ) ;  <-- makes no sense, would keep overwriting 
      //
@@ -547,6 +556,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      volume->setPVName( pvName.c_str() );
      volume->setLVName( lvName.c_str() );
      volume->setName( pvName.c_str() );   // historically (AssimpGGeo) this was set to lvName, but pvName makes more sense for node node
+
+
+     m_ggeo->countMeshUsage(nd->soIdx, ndIdx );
+
 
      if(parent) 
      {

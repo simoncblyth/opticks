@@ -14,6 +14,11 @@ template <typename T> class OpticksCfg ;
 OpticksDbg
 ============
 
+
+The list of mask indices is used with aligned bi-simulation, to 
+allow rerunning of single photons.
+
+
 **/
 
 class OKCORE_API OpticksDbg

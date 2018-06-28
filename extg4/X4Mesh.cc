@@ -26,7 +26,7 @@
 
 
 
-GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
+GMesh* X4Mesh::Placeholder(const G4VSolid* solid, unsigned soIdx ) //static
 {
     G4VisExtent ve = solid->GetExtent();
     //LOG(info) << " visExtent " << ve ; 
@@ -49,15 +49,18 @@ GMesh* X4Mesh::Placeholder(const G4VSolid* solid ) //static
     const std::string& soName = solid->GetName(); 
     const char* name = BStr::concat("PLACEHOLDER_", soName.c_str(), NULL );  
     mesh->setName(name); 
+    mesh->setIndex(soIdx);
 
     return mesh ; 
 }
 
 
-GMesh* X4Mesh::Convert(const G4VSolid* solid ) //static
+GMesh* X4Mesh::Convert(const G4VSolid* solid, unsigned soIdx ) //static
 {
     X4Mesh xm(solid); 
-    return xm.getMesh();
+    GMesh* mesh = xm.getMesh();
+    mesh->setIndex(soIdx);
+    return mesh ; 
 }
 
 X4Mesh::X4Mesh( const G4VSolid* solid ) 

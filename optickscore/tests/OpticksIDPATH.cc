@@ -3,14 +3,7 @@
 #include <iostream>
 #include "Opticks.hh"
 
-#define DO_LOG 1
-
-#ifdef DO_LOG
-#include "SYSRAP_LOG.hh"
-#include "BRAP_LOG.hh"
-#include "OKCORE_LOG.hh"
-#include "PLOG.hh"
-#endif
+#include "OPTICKS_LOG.hh"
 
 /**
 OpticksIDPATH 
@@ -33,12 +26,7 @@ After setting PATH use::
 
 int main(int argc, char** argv)
 {
-#ifdef DO_LOG
-    PLOG_(argc, argv);
-    SYSRAP_LOG__ ;
-    BRAP_LOG__ ;
-    OKCORE_LOG__ ;
-#endif
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv) ;
     ok.configure();

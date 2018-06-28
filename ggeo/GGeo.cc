@@ -833,16 +833,23 @@ GItemIndex* GGeo::getMeshIndex()
 {
     return m_meshlib->getMeshIndex() ; 
 }
-GMesh* GGeo::getMesh(unsigned int aindex)
+const GMesh* GGeo::getMesh(unsigned int aindex)
 {
     return m_meshlib->getMesh(aindex);
 }  
-void GGeo::add(GMesh* mesh)
+void GGeo::add(const GMesh* mesh)
 {
     m_meshlib->add(mesh);
 }
-
-
+void GGeo::countMeshUsage(unsigned meshIndex, unsigned nodeIndex)
+{
+    m_meshlib->countMeshUsage(meshIndex, nodeIndex); 
+}
+void GGeo::reportMeshUsage(const char* msg)
+{
+    m_meshlib->reportMeshUsage(msg);
+}
+ 
 
 
 
@@ -1291,46 +1298,7 @@ GMaterial* GGeo::getCathodeMaterial(unsigned int index)
 
 
 
-void GGeo::countMeshUsage(unsigned int meshIndex, unsigned int nodeIndex, const char* /*lv*/, const char* /*pv*/)
-{
 
-     // called during GGeo creation from: void AssimpGGeo::convertStructure(GGeo* gg)
-     //printf("GGeo::countMeshUsage %d %d %s %s \n", meshIndex, nodeIndex, lv, pv);
-     m_mesh_usage[meshIndex] += 1 ; 
-     m_mesh_nodes[meshIndex].push_back(nodeIndex); 
-}
-
-
-std::map<unsigned int, unsigned int>& GGeo::getMeshUsage()
-{
-    return m_mesh_usage ; 
-}
-std::map<unsigned int, std::vector<unsigned int> >& GGeo::getMeshNodes()
-{
-    return m_mesh_nodes ; 
-}
-
-
-void GGeo::reportMeshUsage(const char* msg)
-{
-     printf("%s\n", msg);
-     unsigned int tv(0) ; 
-     typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
-     for(MUUI it=m_mesh_usage.begin() ; it != m_mesh_usage.end() ; it++)
-     {
-         unsigned int meshIndex = it->first ; 
-         unsigned int nodeCount = it->second ; 
- 
-         GMesh* mesh = getMesh(meshIndex);
-         const char* meshName = mesh->getName() ; 
-         unsigned int nv = mesh->getNumVertices() ; 
-         unsigned int nf = mesh->getNumFaces() ; 
-
-         printf("  %4d (v%5d f%5d) : %6d : %7d : %s \n", meshIndex, nv, nf, nodeCount, nodeCount*nv, meshName);
-         tv += nodeCount*nv ; 
-     }
-     printf(" tv : %7d \n", tv);
-}
 
 
 void GGeo::dumpStats(const char* msg)
@@ -1684,7 +1652,7 @@ glm::vec4 GGeo::getFaceRangeCenterExtent(unsigned int face_index0, unsigned int 
 }
 
 
-bool GGeo::shouldMeshJoin(GMesh* mesh)
+bool GGeo::shouldMeshJoin(const GMesh* mesh)
 {
     const char* shortname = mesh->getShortName();
 

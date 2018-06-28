@@ -21,6 +21,13 @@ details handled by npy-/NState
 Instantiating *Bookmarks* reads all the .ini state files within the directory into NState 
 instances held in m_bookmarks std::map<unsigned int, NState*>
 
+Canonical m_bookmarks instance is a resident of OpticksHub and is instanciated
+by OpticksHub::configureState(NConfigurable* scene)
+
+The ctor directory argument of the Bookmarks is provided by NState m_state from okc.Opticks
+
+
+
 An InterpolatedView moving between Bookmarks can be created, to result in visible 
 changes the viewpoint needs to differ between the states. Currently camera only differences
 are not interpolated.

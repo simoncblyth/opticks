@@ -360,20 +360,20 @@ GMatrix<float>* GMesh::getModelToWorld()
 }
 
 
-gfloat3* GMesh::getVertices()
+gfloat3* GMesh::getVertices() const 
 {
     return m_vertices ;
 }
-gfloat3* GMesh::getNormals()
+gfloat3* GMesh::getNormals() const 
 {
     return m_normals ;
 }
 
-gfloat3* GMesh::getColors()
+gfloat3* GMesh::getColors() const 
 {
     return m_colors ;
 }
-gfloat2* GMesh::getTexcoords()
+gfloat2* GMesh::getTexcoords() const 
 {
     return m_texcoords ;
 }
@@ -524,38 +524,38 @@ GBuffer*  GMesh::getBBoxBuffer()
     return m_bbox_buffer ;
 }
 
-GBuffer*  GMesh::getTransformsBuffer()
+GBuffer*  GMesh::getTransformsBuffer() const 
 {
     return m_transforms_buffer ;
 }
-NPY<float>*  GMesh::getITransformsBuffer()
+NPY<float>*  GMesh::getITransformsBuffer() const 
 {
     return m_itransforms_buffer ;
 }
 
 
 
-GBuffer*  GMesh::getMeshesBuffer()
+GBuffer*  GMesh::getMeshesBuffer() const 
 {
     return m_meshes_buffer ;
 }
-GBuffer*  GMesh::getNodeInfoBuffer()
+GBuffer*  GMesh::getNodeInfoBuffer() const 
 {
     return m_nodeinfo_buffer ;
 }
-GBuffer*  GMesh::getIdentityBuffer()
+GBuffer*  GMesh::getIdentityBuffer() const 
 {
     return m_identity_buffer ;
 }
-NPY<unsigned>*  GMesh::getInstancedIdentityBuffer()
+NPY<unsigned>*  GMesh::getInstancedIdentityBuffer() const 
 {
     return m_iidentity_buffer ;
 }
-NPY<unsigned>*  GMesh::getAnalyticInstancedIdentityBuffer()
+NPY<unsigned>*  GMesh::getAnalyticInstancedIdentityBuffer() const 
 {
     return m_aiidentity_buffer ;
 }
-NPY<unsigned>*  GMesh::getComponentsBuffer()
+NPY<unsigned>*  GMesh::getComponentsBuffer() const 
 {
     return m_components_buffer ;
 }
@@ -743,7 +743,7 @@ void GMesh::setFacesQty(guint3* faces )
 
 
 
-GBuffer* GMesh::getBuffer(const char* name)
+GBuffer* GMesh::getBuffer(const char* name) const 
 {
     if(isNPYBuffer(name)) return NULL ; 
 
@@ -1693,7 +1693,7 @@ std::vector<unsigned int>& GMesh::getDistinctBoundaries()
 
 
 
-bool GMesh::isFloatBuffer(const char* name)
+bool GMesh::isFloatBuffer(const char* name) const 
 {
 
     return ( strcmp( name, vertices_) == 0 || 
@@ -1704,8 +1704,8 @@ bool GMesh::isFloatBuffer(const char* name)
              strcmp( name, colors_) == 0 );
 }
 
-bool GMesh::isIntBuffer(const char* name)
-{
+bool GMesh::isIntBuffer(const char* name) const 
+{ 
     return ( 
              strcmp( name, indices_) == 0     || 
              strcmp( name, nodes_) == 0       || 
@@ -1713,7 +1713,7 @@ bool GMesh::isIntBuffer(const char* name)
              strcmp( name, boundaries_) == 0 
           );
 }
-bool GMesh::isUIntBuffer(const char* name)
+bool GMesh::isUIntBuffer(const char* name) const 
 {
     return 
            ( 
@@ -1725,7 +1725,7 @@ bool GMesh::isUIntBuffer(const char* name)
 }
 
 
-bool GMesh::isNPYBuffer(const char* name)
+bool GMesh::isNPYBuffer(const char* name)  const 
 {
     return 
            ( 
@@ -1737,7 +1737,7 @@ bool GMesh::isNPYBuffer(const char* name)
 }
 
 
-void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
+void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer) const 
 {
     LOG(debug) << "GMesh::saveBuffer "
                << " name " << std::setw(25) << name 
@@ -1758,7 +1758,7 @@ void GMesh::saveBuffer(const char* path, const char* name, GBuffer* buffer)
     }
 }
 
-void GMesh::saveNPYBuffer(const char* path, const char* name)
+void GMesh::saveNPYBuffer(const char* path, const char* name) const 
 {
     NPYBase* buf = getNPYBuffer(name);
     if(buf)
@@ -1775,7 +1775,7 @@ void GMesh::saveNPYBuffer(const char* path, const char* name)
     } 
 }
 
-NPYBase* GMesh::getNPYBuffer(const char* name)
+NPYBase* GMesh::getNPYBuffer(const char* name) const 
 {
     NPYBase* buf(NULL);
     if(     strcmp(name, aiidentity_)  == 0) buf = getAnalyticInstancedIdentityBuffer();
@@ -1846,7 +1846,7 @@ std::vector<std::string>& GMesh::getNames()
     return m_names ; 
 }
 
-std::string GMesh::getVersionedBufferName(std::string& name)
+std::string GMesh::getVersionedBufferName(std::string& name) const 
 {
     std::string vname = name ;
     if(m_version)
@@ -1900,7 +1900,7 @@ GMesh* GMesh::load(const char* dir, const char* typedir, const char* instancedir
 }
 
 
-void GMesh::save(const char* dir, const char* typedir, const char* instancedir)
+void GMesh::save(const char* dir, const char* typedir, const char* instancedir) const 
 {
     std::string cachedir = BFile::CreateDir(dir, typedir, instancedir);
 
@@ -1944,7 +1944,7 @@ void GMesh::loadBuffers(const char* dir)
 }
 
 
-void GMesh::saveBuffers(const char* dir)
+void GMesh::saveBuffers(const char* dir) const 
 {
     for(unsigned int i=0 ; i<m_names.size() ; i++)
     {

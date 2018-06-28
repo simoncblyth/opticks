@@ -19,15 +19,11 @@
 #include "GMeshLib.hh"
 #include "GMesh.hh"
 
-#include "PLOG.hh"
-#include "OKCORE_LOG.hh"
-#include "GGEO_LOG.hh"
+#include "OPTICKS_LOG.hh"
 
 int main(int argc, char** argv)
 {
-    PLOG_(argc, argv);
-    OKCORE_LOG__ ;
-    GGEO_LOG__ ;
+    OPTICKS_LOG(argc, argv);
 
     Opticks ok(argc, argv);
     ok.configure();
@@ -41,7 +37,7 @@ int main(int argc, char** argv)
     if(dbgmesh)
     {
         bool startswith = true ; 
-        GMesh* mesh = ml->getMesh(dbgmesh, startswith);
+        const GMesh* mesh = ml->getMesh(dbgmesh, startswith);
         mesh->dump("GMesh::dump", 50);
     }
     else

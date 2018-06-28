@@ -407,6 +407,9 @@ void GGeoTest::importCSG(std::vector<GVolume*>& volumes)
     unsigned numVolume = m_nodelib->getNumVolumes();
     assert( numVolume == numTree );
 
+    m_bndlib->closeConstituents(); 
+
+
     for(unsigned i=0 ; i < numTree ; i++)
     {
         NCSG* tree = m_csglist->getTree(i) ; 

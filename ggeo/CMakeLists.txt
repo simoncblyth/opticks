@@ -145,6 +145,7 @@ set(HEADERS
     GCIE.hh
     GGeoTest.hh
     GNodeLib.hh
+    GMeshLib.hh
 
     GScene.hh
     GPropertyMap.hh

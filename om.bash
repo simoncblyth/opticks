@@ -200,7 +200,8 @@ om-visit(){   om-one-or-all visit $* ; }
 om-test(){    om-one-or-all test $* ; }
 om-echo(){    om-one-or-all echo $* ; }
 
-om--(){       om-make $* ; }
+om--(){       om-make $* ; }     ## just this proj
+om---(){      om-make-all : ; }  ## all projs from this one onwards 
 
 
 om-check()

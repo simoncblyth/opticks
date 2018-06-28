@@ -303,10 +303,10 @@ class GGEO_API GMesh : public GDrawable {
        void explodeZVertices(float zoffset, float zcut);
 
   public:
-      gfloat3*       getVertices();
-      gfloat3*       getNormals();
-      gfloat3*       getColors();
-      gfloat2*       getTexcoords();
+      gfloat3*       getVertices() const ;
+      gfloat3*       getNormals() const ;
+      gfloat3*       getColors() const ;
+      gfloat2*       getTexcoords() const ;
       bool hasTexcoords() const ;
   public:
       guint3*        getFaces() const ;
@@ -316,27 +316,27 @@ class GGEO_API GMesh : public GDrawable {
       static GMesh* load_deduped(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
 
       // saves into basedir/typedir/instancedir, only basedir is required
-      void save(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL);
+      void save(const char* basedir, const char* typedir=NULL, const char* instancedir=NULL) const ; 
 
   private:
       // methods supporting save/load from file
-      std::string getVersionedBufferName(std::string& name);
+      std::string getVersionedBufferName(std::string& name) const ;
       void loadBuffers(const char* dir);
-      void saveBuffers(const char* dir);
-      void saveBuffer(const char* path, const char* name, GBuffer* buffer);
+      void saveBuffers(const char* dir) const ;
+      void saveBuffer(const char* path, const char* name, GBuffer* buffer) const ;
       void loadBuffer(const char* path, const char* name);
       static void nameConstituents(std::vector<std::string>& names);
   private: 
-      bool isNPYBuffer(const char* name);
+      bool isNPYBuffer(const char* name) const ;
       void loadNPYBuffer(const char* path, const char* name);
-      void saveNPYBuffer(const char* path, const char* name);
-      NPYBase* getNPYBuffer(const char* name);
+      void saveNPYBuffer(const char* path, const char* name) const ;
+      NPYBase* getNPYBuffer(const char* name) const ;
   private: 
-      GBuffer* getBuffer(const char* name);
+      GBuffer* getBuffer(const char* name) const ;
       void setBuffer(const char* name, GBuffer* buffer);
-      bool isIntBuffer(const char* name);
-      bool isUIntBuffer(const char* name);
-      bool isFloatBuffer(const char* name);
+      bool isIntBuffer(const char* name) const ;
+      bool isUIntBuffer(const char* name) const ;
+      bool isFloatBuffer(const char* name) const ;
   public:
       void setVerticesBuffer(GBuffer* buffer);
       void setNormalsBuffer(GBuffer* buffer);
@@ -374,18 +374,18 @@ class GGEO_API GMesh : public GDrawable {
       GBuffer* getModelToWorldBuffer();
       GBuffer* getCenterExtentBuffer();
       GBuffer* getBBoxBuffer();
-      GBuffer* getTransformsBuffer();
-      GBuffer* getMeshesBuffer();
-      GBuffer* getNodeInfoBuffer();
-      GBuffer* getIdentityBuffer();
+      GBuffer* getTransformsBuffer() const ;
+      GBuffer* getMeshesBuffer() const ;
+      GBuffer* getNodeInfoBuffer() const ;
+      GBuffer* getIdentityBuffer() const ;
   public:
       // all instanced buffers created by GTreeCheck
-      NPY<unsigned int>* getAnalyticInstancedIdentityBuffer();
-      NPY<float>*        getITransformsBuffer();
-      NPY<unsigned int>* getInstancedIdentityBuffer(); 
+      NPY<unsigned int>* getAnalyticInstancedIdentityBuffer() const ;
+      NPY<float>*        getITransformsBuffer() const ;
+      NPY<unsigned int>* getInstancedIdentityBuffer() const ; 
   public:
       // for composited GMergedMesh, eg for LOD levels 
-      NPY<unsigned>*     getComponentsBuffer();
+      NPY<unsigned>*     getComponentsBuffer() const ;
   public:
       float  getExtent();
       float* getModelToWorldPtr(unsigned int index);

@@ -358,6 +358,18 @@ void CRandomEngine::postStep()
 }
 
 
+
+/**
+CRandomEngine::preTrack
+-------------------------
+
+Use of the maskIndex allows a partial run on a single 
+input photon to use the same RNG sequence as a full run 
+over many photons, buy jumping forwards to the appropriate 
+place in RNG sequence.
+
+**/
+
 // invoked from CG4::preTrack following CG4Ctx::setTrack
 void CRandomEngine::preTrack()
 {
@@ -372,7 +384,7 @@ void CRandomEngine::preTrack()
 
     if(align_mask)
     {
-        // Access to the Opticks event, relies on Opticks propagation
+        // Access to the Opticks event, relies on Opticks GPU propagation
         // going first, which is only the case in align mode.
 
         if(!m_okevt) m_okevt = m_run->getEvent();  // is the defer needed ?
