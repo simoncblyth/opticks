@@ -40,7 +40,11 @@ if __name__ == '__main__':
     #log.info("args : %s " % repr(args))
     if len(args) == 1:
         p = args[0]
-        dump_one(p)
+        if os.path.isdir(p):
+            dump_tree(p)
+        else:
+            dump_one(p)
+        pass 
     elif len(args) == 0:
         dump_tree(".")
     else:

@@ -498,17 +498,19 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
          mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 
 
+         /*
          if(is_skip)
          {
              LOG(error) << " csgnode::dump START for skipped solid soIdx " << nd->soIdx ; 
              mh->csgnode->dump();
              LOG(error) << " csgnode::dump DONE for skipped solid soIdx " << nd->soIdx ; 
          }
+         */
        
          mh->vtx = mh->mesh->m_x4src_vtx ; 
          mh->idx = mh->mesh->m_x4src_idx ; 
 
-         mh->csg = NCSG::FromNode( mh->csgnode, NULL ); 
+         mh->csg = NCSG::FromNode( mh->csgnode, NULL );   // FromNode exports nnode tree to m_nodes buffer 
 
          assert( mh->csg ) ; 
          assert( mh->csg->isUsedGlobally() );

@@ -197,18 +197,18 @@ void Opticks::dumpRC() const
 
 
 
-Opticks*    Opticks::fOpticks = NULL ; 
+Opticks*    Opticks::fInstance = NULL ; 
 
-Opticks* Opticks::GetOpticks()
+Opticks* Opticks::GetInstance()
 {
-     if(fOpticks == NULL )
+     if(fInstance == NULL )
      {
          const char* argforced = SSys::getenvvar("OPTICKS_ARGS") ; 
          Opticks* ok = new Opticks(0,0, argforced);  
-         ok->setInternal(true);   // internal means was instanciated within Opticks::GetOpticks
+         ok->setInternal(true);   // internal means was instanciated within Opticks::GetInstance
      }
-     assert( fOpticks != NULL ) ; // Opticks ctor should have defined THE instance
-     return fOpticks ; 
+     assert( fInstance != NULL ) ; // Opticks ctor should have defined THE instance
+     return fInstance ; 
 }
 
 
@@ -260,13 +260,14 @@ Opticks::Opticks(int argc, char** argv, const char* argforced )
        OK_PROFILE("Opticks::Opticks");
 
 
-       if(fOpticks != NULL)
+       if(fInstance != NULL)
        {
           LOG(fatal) << " SECOND OPTICKS INSTANCE " ;  
        }
-       //assert( fOpticks == NULL ); // should only ever be one instance 
+       //assert( fInstance == NULL ); // should only ever be one instance 
 
-       fOpticks = this ; 
+       fInstance = this ; 
+
        init();
        (*m_log)("DONE");
 }

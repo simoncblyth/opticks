@@ -91,7 +91,7 @@ int main(int argc, char** argv)
     GGeo* ggeo = X4PhysicalVolume::Convert(top) ;   
     assert(ggeo);  
 
-    Opticks* ok = Opticks::GetOpticks();
+    Opticks* ok = Opticks::GetInstance();
     ok->Summary();
 
     return 0 ; 

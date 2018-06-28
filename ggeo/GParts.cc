@@ -39,7 +39,7 @@ GParts* GParts::combine(GParts* onesub, unsigned verbosity)
     // for consistency: need to combine even when only one sub
     std::vector<GParts*> subs ; 
     subs.push_back(onesub); 
-    return GParts::combine(subs, verbosity );
+    return GParts::combine(subs, verbosity == 0 ? onesub->getVerbosity() : verbosity  );
 }
 
 GParts* GParts::combine(std::vector<GParts*> subs, unsigned verbosity)
@@ -522,7 +522,10 @@ void GParts::setVerbosity(unsigned verbosity)
 {
     m_verbosity = verbosity ; 
 }
-
+unsigned GParts::getVerbosity() const 
+{
+    return m_verbosity ;
+}
 
 
 
@@ -809,6 +812,7 @@ void GParts::close()
     {
         makePrimBuffer(); 
     }
+    
 
     if(m_verbosity > 1)
     dumpPrimBuffer(); 
@@ -918,25 +922,29 @@ are added separtately, see GGeoTest::loadCSG.
 
 
 
+
+
+/**
+GParts::makePrimBuffer
+------------------------
+
+Derives prim buffer from the part buffer
+
+Primbuffer acts as an "index" providing cross
+referencing associating a primitive via
+offsets to the parts/nodes, transforms and planes
+relevant to the primitive.
+
+prim/part/tran/plan buffers are used GPU side in cu/intersect_analytic.cu.
+
+Hmm looks impossible to do this prim Buffer derivation
+postcache, as it is relying on the offsets collected 
+at each concatentation. So will need to load the primBuf 
+
+**/
+
 void GParts::makePrimBuffer()
 {
-    /*
-    Derives prim buffer from the part buffer
-    
-    Primbuffer acts as an "index" providing cross
-    referencing associating a primitive via
-    offsets to the parts/nodes, transforms and planes
-    relevant to the primitive.
-
-    prim/part/tran/plan buffers are used GPU side in cu/intersect_analytic.cu.
-    
-
-    Hmm looks impossible to do this prim Buffer derivation
-    postcache, as it is relying on the offsets collected 
-    at each concatentation. So will need to load the primBuf 
-
-    */
-
     unsigned int num_prim = 0 ; 
 
     if(m_verbosity > 0)
@@ -1110,10 +1118,6 @@ void GParts::dumpPrim(unsigned primIdx)
               << " CSGName "  << CSGName((OpticksCSG_t)primFlag) 
               << " prim "       << gformat(prim)
               ;
-
-
-
-
 }
 
 

@@ -272,7 +272,7 @@ std::string NCSG::meta() const
     return ss.str();
 }
 
-std::string NCSG::smry()
+std::string NCSG::smry() const 
 {
     std::stringstream ss ; 
     ss 
@@ -480,8 +480,6 @@ void NCSG::loadNodes()
 
     assert(m_nodes);
 
-
-
     m_num_nodes  = m_nodes->getShape(0) ;  
     unsigned nj = m_nodes->getShape(1);
     unsigned nk = m_nodes->getShape(2);
@@ -491,8 +489,6 @@ void NCSG::loadNodes()
 
     m_height = UINT_MAX ; 
     int h = MAX_HEIGHT*2 ;   // <-- dont let exceeding MAXHEIGHT, mess up determination of height 
-
-
     while(h--)
     {
         unsigned complete_nodes = TREE_NODES(h) ;
@@ -513,11 +509,6 @@ void NCSG::loadNodes()
     }
 
     assert(!invalid_height); // must be complete binary tree sized 1, 3, 7, 15, 31, ...
-
-
-
-
-
 }
 
 
@@ -1045,6 +1036,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
 } 
 
 
+
 nnode* NCSG::import_operator( unsigned idx, OpticksCSG_t typecode )
 {
     if(m_verbosity > 2)
@@ -1177,9 +1169,9 @@ void NCSG::import_planes(nnode* node)
     assert(cpol);
 
 
-    unsigned iplane = node->planeIdx() ;
+    unsigned iplane = node->planeIdx() ;   // 1-based idx ?
     unsigned num_plane = node->planeNum() ;
-    unsigned idx = iplane - 1 ; 
+    unsigned idx = iplane - 1 ;     
 
     if(m_verbosity > 3)
     {
@@ -1212,6 +1204,31 @@ void NCSG::import_planes(nnode* node)
     cpol->set_planes(_planes);     
 
     assert( cpol->planes.size() == num_plane );
+}
+
+
+void NCSG::export_planes(nnode* node)
+{
+    if(!node->has_planes()) return ;
+
+    nconvexpolyhedron* cpol = dynamic_cast<nconvexpolyhedron*>(node);
+    assert(cpol);
+
+    assert(node->planes.size() > 0);  
+
+    unsigned planeNum = node->planes.size() ;
+    unsigned planeIdx0 = m_planes->getNumItems(); 
+    node->setPlaneIdx( planeIdx0 );
+    node->setPlaneNum( planeNum );
+    assert( planeNum > 3); 
+
+    for(unsigned i=0 ; i < planeNum ; i++)
+    {
+        const glm::vec4& pln = node->planes[i] ; 
+        m_planes->add(pln); 
+    } 
+    unsigned planeIdxN = m_planes->getNumItems(); 
+    assert( planeIdxN == planeIdx0 + planeNum );
 }
 
 
@@ -1311,21 +1328,65 @@ void NCSG::export_()
 
 void NCSG::export_r(nnode* node, unsigned idx)
 {
-    assert(idx < m_num_nodes); 
-    LOG(trace) << "NCSG::export_r"
-              << " idx " << idx 
-              << node->desc()
-              ;
-
-    // crucial 2-step here, where m_nodes gets totally rewritten
-    npart pt = node->part();
-    m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
+    export_node( node, idx) ; 
 
     if(node->left && node->right)
     {
         export_r(node->left,  2*idx + 1);
         export_r(node->right, 2*idx + 2);
     }  
+}
+
+
+/**
+NCSG::export_node
+-------------------
+
+export_gtransform
+   collects gtransform into the tran buffer and sets gtransform_idx 
+   on the node tree 
+
+export_planes
+   collects convex polyhedron planes into plan buffer
+
+
+NB the part writing into part buffer has to be after 
+these as idxs get into that buffer
+
+**/
+
+
+
+void NCSG::export_node(nnode* node, unsigned idx)
+{
+    assert(idx < m_num_nodes); 
+    LOG(trace) << "NCSG::export_node"
+              << " idx " << idx 
+              << node->desc()
+              ;
+
+    export_gtransform(node);
+    export_planes(node);
+  
+    // crucial 2-step here, where m_nodes gets totally rewritten
+    npart pt = node->part();
+    m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
+}
+
+
+void NCSG::export_gtransform(nnode* node)
+{
+    // originally guesses this should be just for 
+    // primitives : but that seems incorrect 
+
+    const nmat4triple* gtransform = node->global_transform();   
+    if(gtransform == NULL )  gtransform = nmat4triple::make_identity() ;
+    // all primitives get a gtransform 
+    unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
+
+    unsigned prior = node->gtransform_idx ;
+    if( prior > 0) assert( gtransform_idx == prior ); 
+    node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
 }
 
 
@@ -1461,7 +1522,7 @@ NCSG* NCSG::FromNode(nnode* root, const NSceneConfig* config)
     NCSG* tree = new NCSG(root);
 
     tree->setConfig(config);
-    tree->export_();  // node tree -> complete binary tree m_nodes buffer
+    tree->export_();        // node tree -> complete binary tree m_nodes buffer
     assert( tree->getGTransformBuffer() );
 
     tree->collect_surface_points();
@@ -1497,12 +1558,12 @@ NTrianglesNPY* NCSG::polygonize()
     return m_tris ; 
 }
 
-NTrianglesNPY* NCSG::getTris()
+NTrianglesNPY* NCSG::getTris() const 
 {
     return m_tris ; 
 }
 
-unsigned NCSG::getNumTriangles()
+unsigned NCSG::getNumTriangles() const 
 {
     return m_tris ? m_tris->getNumTriangles() : 0 ; 
 }

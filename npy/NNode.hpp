@@ -225,9 +225,13 @@ struct NPY_API nnode
     bool is_unbounded() const ;
     bool is_root() const ;
     bool is_bileaf() const ;
-    bool has_planes();
-    unsigned planeIdx();
-    unsigned planeNum();
+
+    bool has_planes() const ;
+    unsigned planeIdx() const ;
+    unsigned planeNum() const ;
+    void setPlaneIdx(unsigned idx); 
+    void setPlaneNum(unsigned num); 
+
 
     unsigned     idx ; 
     OpticksCSG_t type ;  

@@ -140,9 +140,8 @@ int main(int argc, char** argv)
     //test_G4Cons();
     //test_G4Torus();
     //test_G4Ellipsoid();
-    //test_G4Hype();
- 
-    test_intersectWithPhiSegment();
+    test_G4Hype();
+    //test_intersectWithPhiSegment();
 
     return 0 ; 
 }

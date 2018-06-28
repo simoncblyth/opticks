@@ -40,7 +40,7 @@ OpMgr::OpMgr(Opticks* ok )
     :
     m_log(new SLog("OpMgr::OpMgr")),
     //m_ok(new Opticks(argc, argv, argforced)),         
-    m_ok(ok ? ok : Opticks::GetOpticks()),         
+    m_ok(ok ? ok : Opticks::GetInstance()),         
     m_hub(new OpticksHub(m_ok)),            // immediate configure and loadGeometry 
     m_idx(new OpticksIdx(m_hub)),
     m_num_event(m_ok->getMultiEvent()),     // after hub instanciation, as that configures Opticks

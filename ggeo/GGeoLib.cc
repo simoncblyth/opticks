@@ -155,7 +155,18 @@ void GGeoLib::removeConstituents(const char* idpath )
 }
 
 
+/**
+GGeoLib::loadConstituents
+---------------------------
 
+* loads GMergedMesh, GParts and associates them 
+* GMergedMesh geocode ANA/TRI is set according to the m_analytic toggle
+* m_analytic toggle also changes the directory that gets loaded 
+
+  * this is kinda funny because GParts is always analytic 
+
+
+**/
 
 void GGeoLib::loadConstituents(const char* idpath )
 {

@@ -145,7 +145,7 @@ class NPY_API NCSG {
         void adjustToFit( const nbbox& container, float scale, float delta ) const ;
     public:
         NTrianglesNPY* polygonize();
-        NTrianglesNPY* getTris();
+        NTrianglesNPY* getTris() const ;
 
 
     public:
@@ -176,7 +176,7 @@ class NPY_API NCSG {
         bool isSkip() const ;
         bool is_uncoincide() const ;
         std::string meta() const ;
-        std::string smry();
+        std::string smry() const ;
     public:
         // used by --testauto 
         void setEmit(int emit);  
@@ -220,7 +220,7 @@ class NPY_API NCSG {
         unsigned     getHeight() const ;
         nnode*       getRoot() const ;
         OpticksCSG_t getRootType() const ;  
-        unsigned getNumTriangles();
+        unsigned getNumTriangles() const ;
     public:
         void check();
         void check_r(nnode* node); 
@@ -252,7 +252,9 @@ class NPY_API NCSG {
         void loadPlanes();
         void loadSrcVerts();
         void loadSrcFaces();
-    private:
+
+   private:
+        // import a complete binary tree buffer of nodes into a node tree 
         void import();
         void postimport();
         void postimport_uncoincide();
@@ -268,9 +270,16 @@ class NPY_API NCSG {
         nmat4triple* import_transform_triple(unsigned itra);
         unsigned addUniqueTransform( const nmat4triple* gtransform );
     private:
-         // Serialize branch
+        // Serialize branch 
+        // export node tree into a complete binary tree buffer of nodes
         void export_r(nnode* node, unsigned idx);
         void export_();
+
+        // collects gtransform into the tran buffer and sets gtransform_idx 
+        // into the node tree needed to prepare a G4 directly converted solid to go to GPU 
+        void export_node( nnode* node, unsigned idx );
+        void export_gtransform(nnode* node);
+        void export_planes(nnode* node);
     private:
         NParameters* m_meta ; 
         const char* m_treedir ; 

@@ -37,6 +37,11 @@ GColorizer::GColorizer(GNodeLib* nodelib, GGeoLib* geolib, GBndLib* blib, Optick
      init();
 }
 
+void GColorizer::init()
+{
+    if(!m_colors)
+         LOG(warning) << "GColorizer::init m_colors NULL " ; 
+}
 
 void GColorizer::setTarget(nvec3* target)
 {
@@ -67,21 +72,15 @@ void GColorizer::writeVertexColors(GMergedMesh* mesh0, GVolume* root)
 }
 
 
+/**
+GColorizer::traverse
+----------------------
 
+Visits all vertices of selected volumes setting the 
+vertex colors of the GMergedMesh based on indices of
+objects configured via the style.
 
-
-
-void GColorizer::init()
-{
-    //m_blib = m_ggeo->getBndLib();
-    //m_slib = m_ggeo->getSurfaceLib();
-    //m_colors = m_ggeo->getColors();
-
-    if(!m_colors)
-         LOG(warning) << "GColorizer::init m_colors NULL " ; 
-
-}
-
+**/
 
 void GColorizer::traverse(GVolume* root)
 {
@@ -184,16 +183,4 @@ nvec3 GColorizer::getSurfaceColor(GNode* node)
    return colorcode == UINT_MAX ? make_nvec3(1,0,1) : GItemIndex::makeColor(colorcode) ; 
 }
 
-
-//
-//  observations as change gl/nrm/vert.glsl and vertex colors
-//
-//  initially without flipping normals had to fine tune light positions
-//  in order to see anything and everything was generally very dark
-//
-//  with normals flipped things become much more visible, which makes
-//  sense given the realisation that the "canonical" lighting situation 
-//  is from inside geometry, which togther with outwards normals
-//  means that have to flip the normals to see something 
-//     
 

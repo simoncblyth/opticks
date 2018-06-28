@@ -1,3 +1,5 @@
+// om-;TEST=NPY3Test om-t
+
 #include "OPTICKS_LOG.hh"
 #include "SBufferSpec.hh"
 #include "SSys.hh"
@@ -103,6 +105,25 @@ void test_cast()
    assert( u == NULL ); 
 
 }
+void test_add()
+{
+    LOG(info) << "." ; 
+    NPY<float>* planes = NPY<float>::make(0,4);  
+   
+    glm::vec4 a(1,1,1,1);
+    glm::vec4 b(2,1,1,1);
+    glm::vec4 c(3,1,1,1);
+    
+    assert( planes->getNumItems() == 0 );
+    planes->add(a); 
+    assert( planes->getNumItems() == 1 );
+    planes->add(b); 
+    assert( planes->getNumItems() == 2 );
+    planes->add(c); 
+    assert( planes->getNumItems() == 3 );
+
+    planes->dump();
+}
 
 
 int main(int argc, char** argv )
@@ -113,7 +134,8 @@ int main(int argc, char** argv )
     //test_saveToBuffer(); 
     //test_loadFromBuffer(); 
 
-    test_cast();
+    //test_cast();
+    test_add();
 
     return 0 ; 
 }

@@ -1,3 +1,6 @@
+#include <ostream>
+#include <fstream>
+#include <iomanip>
 
 #include "BStr.hh"
 #include "BFile.hh"
@@ -78,6 +81,7 @@ void GMeshLib::save() const
     }
 
     saveMeshes(idpath);
+    saveMeshUsage(idpath);
 }
 
 
@@ -298,11 +302,10 @@ std::map<unsigned int, std::vector<unsigned int> >& GMeshLib::getMeshNodes()
     return m_mesh_nodes ; 
 }
 
-void GMeshLib::reportMeshUsage(const char* msg)
+void GMeshLib::reportMeshUsage_(std::ostream& out) const 
 {
-     printf("%s\n", msg);
      typedef std::map<unsigned int, unsigned int>::const_iterator MUUI ; 
-     LOG(info) << " meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName " ; 
+     out << " meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName " << std::endl ; 
 
      unsigned tnode(0) ; 
      unsigned tvert(0) ; 
@@ -318,18 +321,55 @@ void GMeshLib::reportMeshUsage(const char* msg)
          unsigned int nvert = mesh->getNumVertices() ; 
          unsigned int nface = mesh->getNumFaces() ; 
 
-         printf("  %4d (v%5d f%5d) : %6d : %7d : %7d : %s \n", meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName);
+         //printf("  %4d (v%5d f%5d) : %6d : %7d : %7d : %s \n", meshIndex, nvert, nface, nodeCount, nodeCount*nvert, nodeCount*nface, meshName);
+
+         out << "  " << std::setw(4) << meshIndex 
+             << " ("
+             << " v" << std::setw(5) << nvert 
+             << " f" << std::setw(5) << nface
+             << " )"
+             << " : " << std::setw(6) << nodeCount
+             << " : " << std::setw(7) << nodeCount*nvert
+             << " : " << std::setw(7) << nodeCount*nface
+             << " : " << meshName 
+             << std::endl ; 
+
 
          tnode += nodeCount ; 
          tvert += nodeCount*nvert ; 
          tface += nodeCount*nface ; 
      }
 
-     printf(" tnode : %7d \n", tnode);
-     printf(" tvert : %7d \n", tvert);
-     printf(" tface : %7d \n", tface);
+     //printf(" tnode : %7d \n", tnode);
+     //printf(" tvert : %7d \n", tvert);
+     //printf(" tface : %7d \n", tface);
+
+     out << " tot "
+         << " node : " << std::setw(7) << tnode
+         << " vert : " << std::setw(7) << tvert
+         << " face : " << std::setw(7) << tface
+         << std::endl ;
 }
 
+void GMeshLib::reportMeshUsage(const char* msg) const 
+{
+    std::ostream& out = std::cout ; 
+    out << msg << std::endl ; 
+    reportMeshUsage_(out); 
+}
 
+void GMeshLib::writeMeshUsage(const char* path) const 
+{
+    LOG(info) << " write to " << path ; 
+    std::ofstream out(path); 
+    out << "GMeshLib::writeMeshUsage"  << std::endl ; 
+    reportMeshUsage_(out); 
+}
+
+void GMeshLib::saveMeshUsage(const char* idpath) const 
+{
+    std::string path = BFile::FormPath(idpath, m_reldir, "MeshUsage.txt") ; 
+    writeMeshUsage(path.c_str()); 
+}
 
 

@@ -74,7 +74,7 @@ int main(int argc, char** argv)
     GGeo* ggeo = X4PhysicalVolume::Convert(world_pv) ;
     assert( ggeo ); 
 
-    ggeo->save();
+    ggeo->save();  // saves to /usr/local/opticks/geocache/CX4GDMLTest_World0xc15cfc0_PV_g4live
 
     LOG(info) << " DONE " ; 
 

@@ -39,19 +39,33 @@ void  nnode::decrease_z1(float /*dz*/){ assert(0 && "nnode::decrease_z1 needs ov
 
 
 
-bool nnode::has_planes()
+bool nnode::has_planes() const 
 {
     return CSGHasPlanes(type) ;
 }
-
-unsigned nnode::planeIdx()
+ 
+unsigned nnode::planeIdx() const 
 {
     return param.u.x ; 
 }
-unsigned nnode::planeNum()
+void nnode::setPlaneIdx(unsigned idx)
+{
+    param.u.x = idx ; 
+}
+
+unsigned nnode::planeNum() const 
 {
     return param.u.y ; 
 }
+void nnode::setPlaneNum(unsigned num)
+{
+    param.u.y = num ; 
+}
+
+
+
+
+
 
 
 const unsigned nnode::desc_indent = 10 ; 

@@ -1,5 +1,6 @@
 // x4-;x4-c;om-;TEST=X4PhysicalVolume2Test om-t
 
+#include "G4Trd.hh"
 #include "G4Cons.hh"
 #include "G4Orb.hh"
 #include "G4Box.hh"
@@ -11,6 +12,7 @@
 #include "OpNoviceDetectorConstruction.hh"
 #include "LXe_Materials.hh"
 
+#include "X4Solid.hh"
 #include "X4PhysicalVolume.hh"
 #include "X4MaterialTable.hh"
 
@@ -180,6 +182,19 @@ G4VPhysicalVolume* check_union(const LXe_Materials& lm)
 }
 
 
+G4VPhysicalVolume* check_convexpolyhedron(const LXe_Materials& lm)
+{
+    G4LogicalVolume* mo_0 = NULL ;   
+
+    G4VSolid* so_0 = X4Solid::MakeTrapezoidCube("trapezoid_cube", 100.f );
+    G4LogicalVolume* lv_0 = new G4LogicalVolume(so_0,lm.fAir,"World",0,0,0);
+    G4VPhysicalVolume* pv_0 = new G4PVPlacement(0,G4ThreeVector(),lv_0, "World",mo_0,false,0);
+    G4VPhysicalVolume* top = pv_0 ; 
+    return top ;  
+}
+
+
+
 int main(int argc, char** argv)
 {
     OPTICKS_LOG(argc, argv);
@@ -189,7 +204,8 @@ int main(int argc, char** argv)
     //G4VPhysicalVolume* top = check_transforms(lm);
     //G4VPhysicalVolume* top = check_subtraction(lm);
     //G4VPhysicalVolume* top = check_union(lm);
-    G4VPhysicalVolume* top = check_subtraction_displaced(lm);
+    //G4VPhysicalVolume* top = check_subtraction_displaced(lm);
+    G4VPhysicalVolume* top = check_convexpolyhedron(lm);
     //G4VPhysicalVolume* top = check_placement(lm);
 
     GGeo* ggeo = X4PhysicalVolume::Convert(top) ;   
@@ -201,14 +217,24 @@ int main(int argc, char** argv)
     assert(vol); 
     LOG(info) << " vol.getNumChildren " << vol->getNumChildren() ; 
 
-    GParts* parts = vol->getParts();
+    GParts* pts = vol->getParts();
+    pts->setVerbosity(5); 
 
-    const NCSG* csg = parts->getCSG();
+
+    const NCSG* csg = pts->getCSG();
+    LOG(info) << " csg.smry " << csg->smry() ;
 
     nnode* root = csg->getRoot();
-
+    root->update_gtransforms();
     root->dump(); 
 
+    LOG(info) << " root->planes.size() " << root->planes.size() ;
+
+
+    // primBuffer creation expects a combine, not a single one
+    GParts* pts_c = GParts::combine( pts, pts->getVerbosity() ); 
+    pts_c->close();
+    pts_c->save("$TMP/X4/X4PhysicalVolume2Test");
 
     //Opticks* ok = Opticks::GetOpticks();
     //ok->Summary();

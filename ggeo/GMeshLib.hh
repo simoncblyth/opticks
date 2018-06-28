@@ -3,11 +3,13 @@
 #include <map>
 #include <string>
 #include <vector>
+#include <ostream>
 
 class Opticks ; 
 
 class GItemIndex ; 
 class GMesh ; 
+
 
 #include "GGEO_API_EXPORT.hh"
 
@@ -104,7 +106,10 @@ class GGEO_API GMeshLib
         std::map<unsigned,unsigned>& getMeshUsage();
         std::map<unsigned,std::vector<unsigned> >& getMeshNodes();
         void countMeshUsage(unsigned meshIndex, unsigned nodeIndex);
-        void reportMeshUsage(const char* msg="GMeshLib::reportMeshUsage");
+        void reportMeshUsage(const char* msg="GMeshLib::reportMeshUsage") const ;
+        void writeMeshUsage(const char* path="/tmp/GMeshLib_MeshUsageReport.txt") const ;
+        void reportMeshUsage_(std::ostream& out) const ;
+        void saveMeshUsage(const char* idpath) const ;
     private:
         Opticks*                      m_ok ; 
         bool                          m_analytic ; 

@@ -600,9 +600,9 @@ void GGeo::prepare()
 
     prepareSourceLib();
 
-    prepareMeshes();
+    prepareMeshes();   // GTreeCheck::createInstancedMergedMeshes
 
-    prepareVertexColors();
+    prepareVertexColors();  // writes colors into GMergedMesh mm0
 }
 
 

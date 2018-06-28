@@ -60,46 +60,48 @@ int main(int argc, char** argv)
 
     LOG(error) << " SetKey " << key  ;   
 
-    const char* argforce = "--tracer" ;
+    const char* argforce = "--tracer --nogeocache" ;
+    // --nogeoache to prevent GGeo booting from cache 
 
     Opticks* ok2 = new Opticks(argc, argv, argforce);  // Opticks instanciation must be after Opticks::SetKey
-
     ok2->configure();
 
     GGeo* gg2 = new GGeo(ok2) ;
+    assert(gg2->getMaterialLib());
+
+    LOG(info) << " gg2 " << gg2 
+              << " gg2.mlib " << gg2->getMaterialLib()
+              ;
+
 
     X4PhysicalVolume xtop(gg2, top) ;    // populates gg2 
     //xtop.saveAsGLTF(); 
 
     gg2->prepare();   // merging meshes, closing libs
 
-/*
-    // this is done inside OKMgr 
-
-    OpticksHub hub2(ok2);   // <-- this should pick up gg2, not create/load a new one 
-
-    assert( hub2.getGGeo() == gg2 ); 
-
-    OpticksIdx idx2(&hub2) ;
-
-    OpticksViz viz2(&hub2, &idx2, true);    // true: load/create Bookmarks, setup shaders, upload geometry immediately 
-
-    OKPropagator pro2(&hub2, &idx2, &viz2) ;
-
-    viz2.visualize();
-*/
-
-
    // not OKG4Mgr as no need for CG4 
 
     OKMgr mgr(argc, argv);  // OpticksHub inside here picks up the gg2 (last GGeo instanciated) via GGeo::GetInstance 
-    mgr.propagate();
+    //mgr.propagate();
     mgr.visualize();   
 
     assert( GGeo::GetInstance() == gg2 );
     gg2->reportMeshUsage();
+    gg2->save();
 
+    Opticks* oki = Opticks::GetInstance() ; 
 
+    std::cout << " oki " << oki
+              << " ok2 " << ok2 
+              << " ok " << &ok 
+              << std::endl ; 
+
+    LOG(info) << " oki.idpath " << oki->getIdPath() ; 
+    LOG(info) << " ok.idpath " << ok.getIdPath() ; 
+    LOG(info) << " ok2.idpath " << ok2->getIdPath() ; 
+
+    //assert( oki == ok2 ); 
+ 
 
     return mgr.rc() ;
 }

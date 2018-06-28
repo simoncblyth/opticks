@@ -107,9 +107,9 @@ class OKCORE_API Opticks {
        static BOpticksKey* GetKey();
        static bool         SetKey(const char* keyspec);
    private:
-       static Opticks*     fOpticks ;  
+       static Opticks*     fInstance ;  
    public:
-       static Opticks* GetOpticks();
+       static Opticks* GetInstance();
    public:
        Opticks(int argc=0, char** argv=NULL, const char* argforced=NULL );
    private:
