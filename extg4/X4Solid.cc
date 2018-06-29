@@ -43,7 +43,9 @@
 nnode* X4Solid::Convert(const G4VSolid* solid)
 {
     X4Solid xs(solid);
-    return xs.root(); 
+    nnode* root = xs.root(); 
+    root->update_gtransforms();  
+    return root ; 
 }
 
 X4Solid::X4Solid(const G4VSolid* solid )
@@ -175,8 +177,10 @@ void X4Solid::convertDisplacedSolid()
 
     glm::mat4 xf_disp = X4Transform3D::GetDisplacementTransform(disp);  
     a->transform = new nmat4triple(xf_disp); 
-    a->update_gtransforms();  // without this the transform does nothing 
 
+    // a->update_gtransforms();  
+    // without update_transforms does nothing 
+    // YES : but should be done for the full solid, not just from one of the nodes
     //LOG(error) << gpresent("\n      disp", xf_disp) ; 
 
     setRoot(a); 
@@ -252,8 +256,8 @@ nnode* X4Solid::convertSphere_(bool only_inner)
     nnode* cn = NULL ; 
     if(zslice)
     {
-        float zmin = radius*std::cos(lTheta*CLHEP::pi/180.f) ;
-        float zmax = radius*std::cos(rTheta*CLHEP::pi/180.f) ;
+        double zmin = radius*std::cos(lTheta*CLHEP::pi/180.) ;
+        double zmax = radius*std::cos(rTheta*CLHEP::pi/180.) ;
         assert( zmax > zmin ) ; 
         cn = new nzsphere(make_zsphere( x, y, z, radius, zmin, zmax )) ;
         cn->label = BStr::concat(m_name, "_nzsphere", NULL) ; 

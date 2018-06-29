@@ -512,6 +512,9 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
          mh->csg = NCSG::FromNode( mh->csgnode, NULL );   // FromNode exports nnode tree to m_nodes buffer 
 
+         const_cast<NCSG*>(mh->csg)->setSOIdx( nd->soIdx ); 
+         const_cast<NCSG*>(mh->csg)->setLVIdx( lvIdx ); 
+
          assert( mh->csg ) ; 
          assert( mh->csg->isUsedGlobally() );
   
@@ -534,6 +537,10 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
      const NCSG* csg = mh->csg ; 
 
      GParts* pts = GParts::make( csg, boundaryName.c_str(), m_verbosity  );  // see GScene::createVolume 
+
+     LOG(error) << " make pts " << pts->id() ; 
+
+
      pts->setBndLib(m_blib);
 
 

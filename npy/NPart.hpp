@@ -12,14 +12,15 @@ struct NPY_API npart
     nquad q0 ;  // x,y,z,w (float): param 
     nquad q1 ;  // x,y,z,w (uint) -/index/boundary/flags
     nquad q2 ;  // x,y,z (float):bbmin   w(uint):typecode  
-    nquad q3 ;  // x,y,z (float):bbmax   
+    nquad q3 ;  // x,y,z (float):bbmax   w(uint):gpack
 
     nquad qx ;  // <- CPU only 
  
     static unsigned VERSION ;  // 0:with bbox, 1:without bbox and with GTransforms
 
     void zero();
-    void dump(const char* msg);
+    void dump(const char* msg) const ;
+    void check_bb_zero(OpticksCSG_t typecode) const ;
     void setTypeCode(OpticksCSG_t typecode);
     void setGTransform(unsigned gtransform_idx, bool complement=false);
     void setBBox(const nbbox& bb);

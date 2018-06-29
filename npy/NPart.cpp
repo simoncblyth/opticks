@@ -37,11 +37,7 @@ void npart::setGTransform(unsigned gtransform_idx, bool complement)
 {
     assert(VERSION == 1u);
 
-   // assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 0 );
-   // q3.u.x = gtransform_idx ; 
-
    assert( GTRANSFORM_J == 3 && GTRANSFORM_K == 3 );
-
 
    unsigned gpack = gtransform_idx & SSys::OTHERBIT32 ;
    if(complement) gpack |= SSys::SIGNBIT32 ; 
@@ -124,7 +120,7 @@ void npart::traverse( npart* tree, unsigned numNodes, unsigned i )
 
 // primitive parts
 
-void npart::dump(const char* msg)
+void npart::dump(const char* msg) const 
 {
     printf("%s\n", msg);
     q0.dump("q0");
@@ -144,6 +140,29 @@ void npart::zero()
 
     qx.u = {0,0,0,0} ;
 }
+
+void npart::check_bb_zero(OpticksCSG_t typecode) const 
+{
+   if( typecode == CSG_CONVEXPOLYHEDRON) return ;  // bbox is actually used 
+
+   if( typecode == CSG_ZSPHERE )
+   {
+       assert( q2.u.x == 3 );   // <-- no nolonger used endcap flags, but keeping it for matching 
+   }
+   else
+   {
+       assert( q2.u.x == 0 ); 
+
+   } 
+   assert( q2.u.y == 0 ); 
+   assert( q2.u.z == 0 ); 
+
+   assert( q3.u.x == 0 ); 
+   assert( q3.u.y == 0 ); 
+   assert( q3.u.z == 0 ); 
+}
+
+
 void npart::setParam(const nquad& q0_)
 {
     assert( PARAM_J == 0 && PARAM_K == 0 );

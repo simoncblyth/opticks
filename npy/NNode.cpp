@@ -347,9 +347,15 @@ bool nnode::is_same_union(const nnode* a, const nnode* b) // static
 
 
 
+/**
+nnode::update_gtransforms
+--------------------------
 
+Sets global transforms for every node, by multiplying the
+level transforms for each.  If no level transforms are collected
+the gtransform is set to NULL. 
 
-
+**/
 
 void nnode::update_gtransforms()
 {

@@ -81,9 +81,12 @@ NCSG::NCSG(const char* treedir)
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL)
+   m_tris(NULL),
+   m_soIdx(0),
+   m_lvIdx(0)
 {
 }
+
 
 // ctor : booting from in memory node tree : cannot be const because of the nudger 
 NCSG::NCSG(nnode* root ) 
@@ -115,7 +118,9 @@ NCSG::NCSG(nnode* root )
    m_gpuoffset(0,0,0),
    m_container(0),
    m_containerscale(2.f),
-   m_tris(NULL)
+   m_tris(NULL),
+   m_soIdx(0),
+   m_lvIdx(0)
 {
 
    setBoundary( root->boundary );  // boundary spec
@@ -967,6 +972,20 @@ nmat4triple* NCSG::import_transform_triple(unsigned itra)
 
 
 
+
+/**
+NCSG::import_r
+----------------
+
+Importing from the python buffers written by analytic/csg.py 
+and constructing the node tree
+
+On import the gtransforms (**for primitives only**) are constructed 
+by multiplication down the tree, and uniquely collected into m_gtransforms 
+with the 1-based gtransforms_idx being set on the node.
+
+**/
+
 nnode* NCSG::import_r(unsigned idx, nnode* parent)
 {
     if(idx >= m_num_nodes) return NULL ; 
@@ -991,7 +1010,7 @@ nnode* NCSG::import_r(unsigned idx, nnode* parent)
         node->idx = idx ; 
         node->complement = complement ; 
 
-        node->transform = import_transform_triple( transform_idx ) ;
+        node->transform = import_transform_triple( transform_idx ) ;  // from m_transforms
 
         node->left = import_r(idx*2+1, node );  
         node->right = import_r(idx*2+2, node );
@@ -1370,23 +1389,33 @@ void NCSG::export_node(nnode* node, unsigned idx)
   
     // crucial 2-step here, where m_nodes gets totally rewritten
     npart pt = node->part();
+
+    pt.check_bb_zero(node->type); 
+
     m_nodes->setPart( pt, idx);  // writes 4 quads to buffer
 }
 
+/**
+NCSG::export_gtransform
+-------------------------
 
+On GPU only gtransform_idx on primitives are used
+(there being no multiplying up the tree). 
+Any gtransform_idx on operator nodes are ignored.
+
+see notes/issues/OKX4Test_partBuffer_difference.rst
+
+using 0 (meaning None) for identity 
+
+**/
 void NCSG::export_gtransform(nnode* node)
 {
-    // originally guesses this should be just for 
-    // primitives : but that seems incorrect 
-
-    const nmat4triple* gtransform = node->global_transform();   
-    if(gtransform == NULL )  gtransform = nmat4triple::make_identity() ;
-    // all primitives get a gtransform 
-    unsigned gtransform_idx = gtransform ? addUniqueTransform(gtransform) : 0 ; 
-
-    unsigned prior = node->gtransform_idx ;
-    if( prior > 0) assert( gtransform_idx == prior ); 
-    node->gtransform_idx = gtransform_idx ; // 1-based, 0 for None
+    if(node->is_primitive())
+    {
+        const nmat4triple* gtransform = node->global_transform();   
+        if( gtransform == NULL ) gtransform = nmat4triple::make_identity() ;
+        node->gtransform_idx = addUniqueTransform(gtransform) ; // to m_gtransforms
+    }
 }
 
 
@@ -1637,6 +1666,28 @@ void NCSG::adjustToFit( const nbbox& container, float scale, float delta ) const
               << " container " << container.desc()
               ;
 }
+
+
+void NCSG::setSOIdx(unsigned soIdx)
+{
+    m_soIdx = soIdx ; 
+}
+void NCSG::setLVIdx(unsigned lvIdx)
+{
+    m_lvIdx = lvIdx ; 
+}
+unsigned NCSG::getSOIdx() const 
+{
+    return m_soIdx ; 
+}
+unsigned NCSG::getLVIdx() const 
+{
+    return m_lvIdx ; 
+}
+
+
+
+
 
 
 

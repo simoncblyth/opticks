@@ -114,10 +114,6 @@ inline float NPY_API nzsphere::deltaTheta() const { return endTheta() - startThe
 
 
 
-
-
-
-
 inline NPY_API void init_zsphere(nzsphere& s, const nquad& param, const nquad& param1, const nquad& param2)
 {
     s.param = param ; 
@@ -140,6 +136,9 @@ inline NPY_API nzsphere make_zsphere(float x, float y, float z, float radius, fl
 
     p0.f = {x,y,z,radius} ;
     p1.f = {z1, z2, 0,0} ;
+    p2.u = {3, 0, 0, 0} ;   // <-- fix to avoid uninitialized gibberish getting into partBuffer
+
+    // the 3 is to match endcap flags in an old version 
 
     return make_zsphere(p0, p1, p2);
 }
@@ -156,7 +155,4 @@ inline NPY_API nzsphere make_zsphere(float x0, float y0, float z0, float w0, flo
     assert( w1 == 0.f );
     return make_zsphere( x0,y0,z0,w0,x1,y1 );
 }
-
-
-
 

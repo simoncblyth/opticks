@@ -10,12 +10,21 @@
 #include "G4Orb.hh"
 #include "G4Box.hh"
 #include "G4VisExtent.hh"
+#include "G4SubtractionSolid.hh"
+#include "G4UnionSolid.hh"
 
 
 #include "X4Solid.hh"
 #include "X4Mesh.hh"
 #include "NNode.hpp"
 #include "BStr.hh"
+#include "NCSG.hpp"
+#include "GParts.hh"
+#include "GMaterialLib.hh"
+#include "GSurfaceLib.hh"
+#include "GBndLib.hh"
+#include "Opticks.hh"
+#include "SSys.hh"
 
 #include "OPTICKS_LOG.hh"
 
@@ -30,10 +39,29 @@ void test_solid(G4VSolid* so)
     LOG(info) << xs->desc() ; 
     nnode* root = xs->root(); 
     assert( root ) ; 
+    root->update_gtransforms();
     root->dump();
 
-    X4Mesh* xm = new X4Mesh(so) ; 
-    xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
+    NCSG* csg = NCSG::FromNode( root, NULL ); 
+
+    Opticks* ok = new Opticks(0,0);
+    GMaterialLib* mlib = new GMaterialLib(ok); 
+    GSurfaceLib* slib = new GSurfaceLib(ok); 
+    GBndLib* blib = new GBndLib(ok, mlib, slib);
+    blib->closeConstituents();
+
+    GParts* pts = GParts::make( csg, "Air///Water", 1 );  
+    pts->setBndLib(blib); 
+
+    GParts* cpts = GParts::combine(pts); 
+
+    const char* path = "/tmp/X4SolidTest/GParts" ;
+    cpts->save(path);
+    SSys::run(BStr::concat("prim.py ", path, NULL )); 
+
+
+    // X4Mesh* xm = new X4Mesh(so) ; 
+    // xm->save(BStr::concat("/tmp/X4SolidTest/",so->GetName().c_str(),".gltf")); 
 
 }
 
@@ -127,6 +155,26 @@ void test_intersectWithPhiSegment()
 }
 
 
+void test_union_of_two_differences()
+{
+    G4RotationMatrix* rotMatrix = NULL ; 
+    G4ThreeVector right(0.5,0,0);
+    G4ThreeVector left(-0.5,0,0);
+
+    G4VSolid* box1 = new G4Box("box1",1.,1.,1.) ;
+    G4VSolid* orb1 = new G4Orb("orb1",1.) ;
+    G4VSolid* sub1 = new G4SubtractionSolid("sub1", box1, orb1, rotMatrix, right ); 
+
+    G4VSolid* box2 = new G4Box("box2",1.,1.,1.) ;
+    G4VSolid* orb2 = new G4Orb("orb2",1.) ;
+    G4VSolid* sub2 = new G4SubtractionSolid("sub2", box2, orb2, rotMatrix, left  ); 
+
+    G4VSolid* uni1 = new G4UnionSolid("uni1", sub1, sub2 ); 
+
+    test_solid(uni1);
+}
+
+
 
 int main(int argc, char** argv)
 {
@@ -140,8 +188,9 @@ int main(int argc, char** argv)
     //test_G4Cons();
     //test_G4Torus();
     //test_G4Ellipsoid();
-    test_G4Hype();
+    //test_G4Hype();
     //test_intersectWithPhiSegment();
+    test_union_of_two_differences();
 
     return 0 ; 
 }

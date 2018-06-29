@@ -280,6 +280,12 @@ class NPY_API NCSG {
         void export_node( nnode* node, unsigned idx );
         void export_gtransform(nnode* node);
         void export_planes(nnode* node);
+    public:
+        void setSOIdx(unsigned soIdx);
+        void setLVIdx(unsigned lvIdx);
+        unsigned getSOIdx() const ; 
+        unsigned getLVIdx() const ; 
+
     private:
         NParameters* m_meta ; 
         const char* m_treedir ; 
@@ -316,10 +322,14 @@ class NPY_API NCSG {
         glm::vec3   m_gpuoffset ; 
         int         m_container ;  
         float       m_containerscale ;  
-
         
         NTrianglesNPY*         m_tris ; 
         std::vector<glm::vec3> m_surface_points ; 
+
+        unsigned    m_soIdx ;   // debugging 
+        unsigned    m_lvIdx ;   // debugging 
+
+
 
 };
 

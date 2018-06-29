@@ -80,7 +80,6 @@ inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr(const nquad& param, 
     return cpol ;
 }
 
-
 inline NPY_API nconvexpolyhedron make_convexpolyhedron()
 {
     nquad param, param1, param2, param3 ; 
@@ -100,6 +99,5 @@ inline NPY_API nconvexpolyhedron* make_convexpolyhedron_ptr()
     param3.u = {0,0,0,0} ;
     return make_convexpolyhedron_ptr(param, param1, param2, param3 );
 }
-
 
 

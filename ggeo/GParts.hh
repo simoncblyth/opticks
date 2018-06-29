@@ -217,6 +217,8 @@ class GGEO_API GParts {
         void setPartList();
         void setNodeTree();
 
+        std::string id() const ; 
+
         unsigned int getIndex(unsigned int part);
         unsigned int getTypeCode(unsigned int part);
         unsigned int getNodeIndex(unsigned int part);

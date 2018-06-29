@@ -1232,6 +1232,8 @@ tests-(){           . $(opticks-home)/tests/tests.bash && tests-env $*  ; }
 tools-(){           . $(opticks-home)/tools/tools.bash && tools-env $*  ; }
 notes-(){           . $(opticks-home)/notes/notes.bash && notes-env $*  ; }
 pmt-(){             . $(opticks-home)/ana/pmt/pmt.bash && pmt-env $* ; }
+ab-(){              . $(opticks-home)/bin/ab.bash      && ab-env $* ; }
+
 # override old original from env, $(env-home)/nuwa/detdesc/pmt/pmt.bash
 
 ### opticks g4 examples ########

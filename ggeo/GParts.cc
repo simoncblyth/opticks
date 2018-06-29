@@ -710,6 +710,25 @@ void GParts::applyPlacementTransform(GMatrix<float>* gtransform, unsigned verbos
 }
 
 
+std::string GParts::id() const 
+{
+    std::stringstream ss ; 
+    ss  << "GParts::id" ;
+
+    const NCSG* csg = getCSG();
+    if(csg)
+    {
+        unsigned soIdx = csg->getSOIdx(); 
+        unsigned lvIdx = csg->getLVIdx(); 
+        ss
+           << " soIdx " << soIdx 
+           << " lvIdx " << lvIdx 
+           ;
+    }    
+    return ss.str(); 
+}
+
+
 void GParts::add(GParts* other, unsigned verbosity )
 {
     if(getBndLib() == NULL)
@@ -720,6 +739,9 @@ void GParts::add(GParts* other, unsigned verbosity )
     {
         assert(getBndLib() == other->getBndLib());
     }
+
+    LOG(error) << " add other : " << other->id() ; 
+
 
     unsigned int n0 = getNumParts(); // before adding
 

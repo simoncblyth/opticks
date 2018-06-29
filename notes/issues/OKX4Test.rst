@@ -25,6 +25,14 @@ Observations from GGeo::save
 --------------------------------
 
 
+
+partBuffer differences
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+* :doc:`OKX4Test_partBuffer_difference`
+
+
+
 GParts::save mm5 one less transform ?
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 

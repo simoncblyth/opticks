@@ -50,4 +50,3 @@ okg4-txt(){     vi $(okg4-sdir)/CMakeLists.txt $(okg4-tdir)/CMakeLists.txt ; }
 
 
 
-
