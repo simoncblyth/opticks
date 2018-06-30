@@ -17,16 +17,18 @@ template <typename T> struct NGrid ;
 template <typename T>
 struct NPY_API NNodeAnalyse
 {
-    NNodeAnalyse(T* root_); 
+    static std::string Desc(const T* root_);
+  
+    NNodeAnalyse(const T* root_); 
     ~NNodeAnalyse(); 
 
     void init(); 
     void initGrid(); 
     unsigned depth_(bool label);
-    unsigned depth_r(T* node, unsigned depth, bool label);
+    unsigned depth_r(const T* node, unsigned depth, bool label);
     std::string desc() const ;
 
-    T*                 root ; 
+    const T*           root ; 
     unsigned           height ; 
     NNodeCollector<T>* nodes ; 
     unsigned           count ; 

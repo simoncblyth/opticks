@@ -429,11 +429,13 @@ detect that::
 EON
 }
 
-#om-t(){  om-t- NConvexPolyhedronSegmentTest ; }
-om-t(){  om-t- ${TEST:-X4SolidTest} ; }
+
+om-tt(){ echo ${TEST:-NTreePositiveTest} ; }
+
+om-t(){  om-t- $(om-tt) ; }
 om-t-(){ om-mk "make $1  && ./$1" ; }
 
-om-d(){  om-d- ${TEST:-X4SolidTest} ; }
+om-d(){  om-d- $(om-tt) ; }
 om-d-(){ om-mk "make $1  && lldb ./$1" ; }
 
 om-mk()

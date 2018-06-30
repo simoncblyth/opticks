@@ -5,6 +5,95 @@ Large differnce in number of parts from the lack of
 tree balancing implementation in the direct approach.
 
 
+Need to tranlate some more pythin into C++
+
+::
+
+    292     @classmethod
+    293     def translate_lv(cls, lv, maxcsgheight, maxcsgheight2=0 ):
+    294         """
+    295         NB dont be tempted to convert to node here as CSG is a mesh level thing, not node level
+    296 
+    297         :param lv:
+    298         :param maxcsgheight:  CSG trees greater than this are balanced
+    299         :param maxcsgheight2:  required post-balanced height to avoid skipping 
+    300 
+    301         There are many `solid.as_ncsg` implementations, one for each the supported GDML solids, 
+    302         some of them return single primitives others return boolean composites, some
+    303         such as the Polycone invokes treebuilder to provide uniontree composites.
+    304 
+    305         """
+    306 
+    307         if maxcsgheight2 == 0 and maxcsgheight != 0:
+    308             maxcsgheight2 = maxcsgheight + 1
+    309         pass
+    310 
+    311         solid = lv.solid
+    312         log.debug("translate_lv START %-15s %s  " % (solid.__class__.__name__, lv.name ))
+    313 
+    314         rawcsg = solid.as_ncsg()
+    315 
+    316         if rawcsg is None:
+    317             err = "translate_lv solid.as_ncsg failed for solid %r lv %r " % ( solid, lv )
+    318             log.fatal(err)
+    319             rawcsg = CSG.MakeUndefined(err=err,lv=lv)
+    320         pass
+    321         rawcsg.analyse()
+    322 
+    323         log.debug("translate_lv DONE %-15s height %3d csg:%s " % (solid.__class__.__name__, rawcsg.height, rawcsg.name))
+    324 
+    325         csg = cls.optimize_csg(rawcsg, maxcsgheight, maxcsgheight2 )
+    326 
+    327         polyconfig = PolyConfig(lv.shortname)
+    328         csg.meta.update(polyconfig.meta )
+    329         csg.meta.update(lvname=lv.name, soname=lv.solid.name, height=csg.height)
+    330 
+    331         ### Nope pvname is not appropriate in the CSG, CSG is a mesh level tink not a node/volume level thing 
+    332 
+    333         return csg
+
+::
+
+    336     @classmethod
+    337     def optimize_csg(self, rawcsg, maxcsgheight, maxcsgheight2):
+    338         """
+    339         :param rawcsg:
+    340         :param maxcsgheight:  tree balancing is for height > maxcsgheight
+    341         :param maxcsgheight2: error is raised if balanced tree height reamains > maxcsgheight2 
+    342         :return csg:  balanced csg tree
+    343         """
+    344         overheight_ = lambda csg,maxheight:csg.height > maxheight and maxheight != 0
+    345 
+    346         is_balance_disabled = rawcsg.is_balance_disabled()
+    347 
+    348         #log.info(" %s %s " % ( is_balance_disabled, rawcsg.name ))
+    349 
+    350         is_overheight = overheight_(rawcsg, maxcsgheight)
+    351         if is_overheight:
+    352             if is_balance_disabled:
+    353                 log.warning("tree is_overheight but marked balance_disabled leaving raw : %s " % rawcsg.name )
+    354                 return rawcsg
+    355             else:
+    356                 log.debug("proceed to balance")
+    357         else:
+    358             return rawcsg
+    359         pass
+    360         log.debug("optimize_csg OVERHEIGHT h:%2d maxcsgheight:%d maxcsgheight2:%d %s " % (rawcsg.height,maxcsgheight, maxcsgheight2, rawcsg.name))
+    361 
+    362         rawcsg.positivize()
+    363 
+    364         csg = TreeBuilder.balance(rawcsg)
+    365 
+    366         log.debug("optimize_csg compressed tree from height %3d to %3d " % (rawcsg.height, csg.height ))
+    367 
+    368         #assert not overheight_(csg, maxcsgheight2)
+    369         if overheight_(csg, maxcsgheight2):
+    370             csg.meta.update(err="optimize_csg.overheight csg.height %s maxcsgheight:%s maxcsgheight2:%s " % (csg.height,maxcsgheight,maxcsgheight2) )
+    371         pass
+    372 
+    373         return csg
+
+
 ::
 
     In [9]: pb[:20]

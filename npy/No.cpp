@@ -16,7 +16,16 @@ no* no::make_copy() const
 }
 
 
-
+std::string no::id() const 
+{
+    std::stringstream ss ; 
+    ss  
+        << ( complement ? "!" : "" )
+        << ( label ? label : "" )
+        ;     
+    return ss.str();
+}
+ 
 
 std::string no::desc() const 
 {
@@ -67,6 +76,7 @@ no no::make_node(OpticksCSG_t type, no* left, no* right )
     n.right = right ; 
     n.depth = 0 ; 
     n.type = type ; 
+    n.complement = false ; 
 
     return n ;
 }

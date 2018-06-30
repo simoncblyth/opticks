@@ -1618,7 +1618,7 @@ if __name__ == '__main__':
     #test_analyse()
     #test_trapezoid()
 
-    #test_positivize()
+    test_positivize()
     #test_positivize_2()
     #test_subdepth()
 
@@ -1626,11 +1626,11 @@ if __name__ == '__main__':
     #test_content_generate()
 
 
-    RSU = 56 
-    ESR = 57 
-    tree = test_load(ESR)
-    tree.analyse()
-    print tree.txt
+    #RSU = 56 
+    #ESR = 57 
+    #tree = test_load(ESR)
+    #tree.analyse()
+    #print tree.txt
 
    
 

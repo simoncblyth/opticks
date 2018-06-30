@@ -80,6 +80,7 @@ struct NPY_API nnode
     static const unsigned desc_indent ; 
     virtual std::string desc() const ;
     std::string tag() const ;
+    std::string id() const ;
 
     static void Tests(std::vector<nnode*>& nodes );
     static void Init(nnode& n, OpticksCSG_t type, nnode* left=NULL, nnode* right=NULL);

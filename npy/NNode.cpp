@@ -77,6 +77,17 @@ std::string nnode::desc() const
     return ss.str();
 }
 
+
+std::string nnode::id() const 
+{
+    std::stringstream ss ; 
+    ss  
+        << ( complement ? "!" : "" )
+        << CSGTag(type) 
+        ;     
+    return ss.str();
+}
+
 std::string nnode::tag() const 
 {
     std::stringstream ss ; 
@@ -84,10 +95,7 @@ std::string nnode::tag() const
         << "[" 
         << std::setw(2) << idx 
         << ":"
-        << ( complement ? "!" : "" )
-        << CSGTag(type) 
-        << ( label ? " " : "" )
-        << ( label ? label : "" )
+        << id()
         << "]"
         << " " << ( is_primitive() ? "P" : "C" ) 
         ;     

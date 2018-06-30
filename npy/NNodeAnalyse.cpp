@@ -5,8 +5,17 @@
 #include "NNodeCollector.hpp"
 #include "NGrid.hpp"
 
+
 template <typename T>
-NNodeAnalyse<T>::NNodeAnalyse(T* root_)
+std::string  NNodeAnalyse<T>::Desc(const T* root)  // static
+{
+    NNodeAnalyse<T> ana(root); 
+    return ana.desc(); 
+}
+
+
+template <typename T>
+NNodeAnalyse<T>::NNodeAnalyse(const T* root_)
     :
     root(root_),
     height(depth_(true)),
@@ -37,7 +46,7 @@ void NNodeAnalyse<T>::initGrid()
 {
     for(unsigned i=0 ; i < count ; i++)
     {
-        T* node = nodes->inorder[i] ;  
+        const T* node = nodes->inorder[i] ;  
         grid->set(node->depth, i, node) ; 
     }
 }
@@ -50,10 +59,10 @@ unsigned NNodeAnalyse<T>::depth_(bool label)
 }
 
 template <typename T>
-unsigned NNodeAnalyse<T>::depth_r(T* node, unsigned depth, bool label)
+unsigned NNodeAnalyse<T>::depth_r(const T* node, unsigned depth, bool label)
 {
      if(node == NULL) return depth ; 
-     if(label) node->depth = depth ; 
+     if(label) const_cast<T*>(node)->depth = depth ; 
      if(node->left == NULL && node->right == NULL) return depth ; 
 
      unsigned ldepth = depth_r(node->left,  depth+1, label ); 

@@ -24,8 +24,8 @@ struct NPY_API NGrid
    void clear();
 
    unsigned idx(unsigned r, unsigned c) const  ; 
-   void     set(unsigned r, unsigned c, T* ptr);
-   T*       get(unsigned r, unsigned c) const ; 
+   void     set(unsigned r, unsigned c, const T* ptr);
+   const T* get(unsigned r, unsigned c) const ; 
 
    std::string desc() ;
 
@@ -35,7 +35,7 @@ struct NPY_API NGrid
    const char* unset ;
    const char* rowjoin ;
 
-   T**      grid ;   // linear array of pointers to T 
+   const T**   grid ;   // linear array of pointers to T 
    
    // Judged that the hassles of 2d arrays are not worth the bother 
    // for the minor benefit of 2d indexing,

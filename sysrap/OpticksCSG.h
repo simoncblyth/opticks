@@ -124,6 +124,20 @@ static OpticksCSG_t CSGTypeCode(const char* nodename)
 }
 
 
+static OpticksCSG_t CSG_DeMorganSwap( OpticksCSG_t type )
+{
+    OpticksCSG_t t = CSG_ZERO ; 
+    switch(type)
+    {
+        case CSG_INTERSECTION:  t = CSG_UNION         ; break ; 
+        case CSG_UNION:         t = CSG_INTERSECTION  ; break ; 
+        default:                t = CSG_ZERO          ; break ; 
+    }
+    assert( t != CSG_ZERO ); 
+    return t ; 
+}
+
+
 static const char* CSGName( OpticksCSG_t type )
 {
     const char* s = NULL ; 

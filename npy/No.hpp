@@ -16,7 +16,9 @@ struct NPY_API no
     no* right ; 
     unsigned depth ;
     OpticksCSG_t type ; 
+    bool    complement ; 
  
+    std::string id() const ;
     std::string desc() const ;
     bool is_primitive() const ; 
     bool is_operator() const ; 

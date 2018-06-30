@@ -21,20 +21,20 @@ use in NNodeAnalyse
 template <typename T>
 struct NPY_API NNodeCollector
 {
-    NNodeCollector( T* root_ ); 
+    NNodeCollector( const T* root_ ); 
     ~NNodeCollector(); 
 
-    void collect_preorder_r( T* node ); 
-    void collect_inorder_r( T* node ); 
-    void collect_postorder_r( T* node ); 
+    void collect_preorder_r( const T* node ); 
+    void collect_inorder_r( const T* node ); 
+    void collect_postorder_r( const T* node ); 
 
-    void dump( const char* msg, std::vector<T*>& order ) ;
+    void dump( const char* msg, std::vector<const T*>& order ) ;
     void dump( const char* msg="NNodeCollector::dump" ) ;
 
-    T* root ; 
-    std::vector<T*> inorder ; 
-    std::vector<T*> preorder ; 
-    std::vector<T*> postorder ; 
+    const T* root ; 
+    std::vector<const T*> inorder ; 
+    std::vector<const T*> preorder ; 
+    std::vector<const T*> postorder ; 
 
 };
 

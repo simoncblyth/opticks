@@ -3,7 +3,7 @@
 #include "NNodeCollector.hpp"
 
 template <typename T>
-NNodeCollector<T>::NNodeCollector( T* root_)
+NNodeCollector<T>::NNodeCollector( const T* root_)
    :
    root(root_)
 {
@@ -19,7 +19,7 @@ NNodeCollector<T>::~NNodeCollector()
  
 
 template <typename T>
-void NNodeCollector<T>::collect_inorder_r(  T* node ) 
+void NNodeCollector<T>::collect_inorder_r( const T* node ) 
 {
     if( node == NULL ) return ; 
     collect_inorder_r( node->left );
@@ -27,7 +27,7 @@ void NNodeCollector<T>::collect_inorder_r(  T* node )
     collect_inorder_r( node->right );
 }
 template <typename T>
-void NNodeCollector<T>::collect_postorder_r(  T* node ) 
+void NNodeCollector<T>::collect_postorder_r(  const T* node ) 
 {
     if( node == NULL ) return ; 
     collect_postorder_r( node->left );
@@ -35,7 +35,7 @@ void NNodeCollector<T>::collect_postorder_r(  T* node )
     postorder.push_back( node ) ;
 }
 template <typename T>
-void NNodeCollector<T>::collect_preorder_r(  T* node ) 
+void NNodeCollector<T>::collect_preorder_r( const  T* node ) 
 {
     if( node == NULL ) return ; 
     preorder.push_back( node ) ;
@@ -44,7 +44,7 @@ void NNodeCollector<T>::collect_preorder_r(  T* node )
 }
 
 template <typename T>
-void NNodeCollector<T>::dump(const char* msg, std::vector< T*>& order ) 
+void NNodeCollector<T>::dump(const char* msg, std::vector<const T*>& order ) 
 {
     std::cout << msg  ; 
     for(auto n: order) 

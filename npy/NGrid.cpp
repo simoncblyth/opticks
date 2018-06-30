@@ -14,7 +14,7 @@ NGrid<T>::NGrid(unsigned nr_, unsigned nc_, unsigned width_, const char* unset_ 
    width(width_),
    unset(strdup(unset_)),
    rowjoin(strdup(rowjoin_)),
-   grid(new T*[nr*nc])      // linear array of nr*nc pointers to instances of T, pointers default initialized to zero
+   grid(new const T*[nr*nc])      // linear array of nr*nc pointers to instances of T, pointers default initialized to zero
 {
     init();
 }
@@ -35,15 +35,15 @@ unsigned NGrid<T>::idx(unsigned r, unsigned c) const
 }
 
 template <typename T>
-void NGrid<T>::set(unsigned r, unsigned c, T* ptr)
+void NGrid<T>::set(unsigned r, unsigned c, const T* ptr)
 {
     grid[idx(r,c)] = ptr ; 
 }
 
 template <typename T>
-T* NGrid<T>::get(unsigned r, unsigned c) const 
+const T* NGrid<T>::get(unsigned r, unsigned c) const 
 {
-    T* ptr = grid[idx(r,c)] ; 
+    const T* ptr = grid[idx(r,c)] ; 
     return ptr ;
 }
 
@@ -84,9 +84,10 @@ std::string NGrid<T>::desc()
     {
         for(unsigned c=0 ; c < nc ; c++)
         {        
-            T* ptr = get(r,c) ;
-            const char* label = ptr ? ptr->label : unset ; 
-            ss << std::setw(width) << label ; 
+            const T* ptr = get(r,c) ;
+            //const char* label = ptr ? ptr->label : unset ; 
+            std::string id = ptr ? ptr->id() : unset ; 
+            ss << std::setw(width) << id ; 
         }
         ss << rowjoin ; 
     }

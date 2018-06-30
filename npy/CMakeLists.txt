@@ -153,6 +153,7 @@ set(SOURCES
     NFieldGrid3.cpp
 
     NTreeBuilder.cpp
+    NTreePositive.cpp
     NTreeTools.cpp
     NGLMExt.cpp
     NGLMCF.cpp
@@ -320,6 +321,8 @@ NField3.hpp
 NFieldGrid3.hpp
 
 NTreeBuilder.hpp
+NTreePositive.hpp
+
 NTreeTools.hpp
 NGLMExt.hpp
 NPolygonizer.hpp

@@ -165,12 +165,14 @@ template <typename T>
 void NTreeBuilder<T>::populate()
 {
     assert(m_ana);
-    const std::vector<T*>& inorder = m_ana->nodes->inorder ;     
+    const std::vector<const T*>& inorder = m_ana->nodes->inorder ;     
     std::vector<T*>& cprims = m_cprims ; 
 
     for(unsigned i=0 ; i < inorder.size() ; i++)
     {
-        T* node = inorder[i]; 
+        const T* node_ = inorder[i]; 
+        T* node = const_cast<T*>(node_); 
+
         if(node->is_operator())
         {
             if(node->left->is_zero() && cprims.size() > 0)
