@@ -291,7 +291,7 @@ if __name__ == '__main__':
 
     #test_treebuilder()
     #test_uniontree()
-    #test_balance()
-    test_balance_bileaf()
+    test_balance()
+    #test_balance_bileaf()
 
 

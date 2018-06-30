@@ -2,7 +2,6 @@
 #include <sstream>
 
 #include "NTreePositive.hpp"
-#include "NNodeAnalyse.hpp"
 #include "NNodeCollector.hpp"
 #include "PLOG.hh"
 
@@ -26,18 +25,6 @@ T* NTreePositive<T>::root() const
 {
    return m_root ; 
 }
-
-
-template <typename T>
-void NTreePositive<T>::analyse()
-{
-    //delete m_ana ; 
-    m_ana  = new NNodeAnalyse<T>(m_root) ; 
-
-    if(fVerbosity > 2 )
-        LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
-}
-
 
 template <typename T>
 void NTreePositive<T>::init()
@@ -105,9 +92,6 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
 }
 
 
-
-
-
 /** 
         deMorganSwap = {CSG_.INTERSECTION:CSG_.UNION, CSG_.UNION:CSG_.INTERSECTION }
 
@@ -153,12 +137,6 @@ void NTreePositive<T>::positivize_r(T* node, bool negate, unsigned depth)
         pass
         positivize_r(self)
 **/
-
-
-
-
-
-
 
 
 #include "NNode.hpp"

@@ -5,6 +5,7 @@
 #include <functional>
 
 #include "OpticksCSG.h"
+#include "OpticksCSGMask.h"
 #include "NQuad.hpp"
 #include "Nuv.hpp"
 #include "NPY_API_EXPORT.hh"
@@ -246,6 +247,7 @@ struct NPY_API nnode
     const char* treedir ; 
     int         treeidx ;   
     unsigned    depth ; 
+    unsigned    subdepth ; 
     const char* boundary ; 
 
     const nmat4triple* transform ; 

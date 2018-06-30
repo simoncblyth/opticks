@@ -21,6 +21,8 @@ use in NNodeAnalyse
 template <typename T>
 struct NPY_API NNodeCollector
 {
+    static void Inorder_r( std::vector<T*>& inorder, T* node ); 
+
     NNodeCollector( const T* root_ ); 
     ~NNodeCollector(); 
 

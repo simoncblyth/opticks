@@ -154,6 +154,9 @@ set(SOURCES
 
     NTreeBuilder.cpp
     NTreePositive.cpp
+    NTreeBalance.cpp
+    NTreeProcess.cpp
+
     NTreeTools.cpp
     NGLMExt.cpp
     NGLMCF.cpp
@@ -268,6 +271,7 @@ NNode.hpp
 NNodeCollector.hpp
 NNodeAnalyse.hpp
 
+
 NGrid.hpp
 
 NNodeEnum.hpp
@@ -322,6 +326,8 @@ NFieldGrid3.hpp
 
 NTreeBuilder.hpp
 NTreePositive.hpp
+NTreeBalance.hpp
+NTreeProcess.hpp
 
 NTreeTools.hpp
 NGLMExt.hpp

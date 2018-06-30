@@ -13,7 +13,6 @@ cf ../analytic/csg.py
 #include <vector>
 #include <string>
 
-template <typename T> struct NNodeAnalyse ; 
 
 template <typename T>
 class NPY_API NTreePositive
@@ -22,14 +21,12 @@ class NPY_API NTreePositive
         std::string desc() const ;
         NTreePositive(T* root); 
         T*    root() const ;
-        void  analyse() ; 
     private:
         void  init() ; 
         static void positivize_r(T* node, bool negate, unsigned depth);
         static int  fVerbosity ; 
     private:
         T*                     m_root ; 
-        NNodeAnalyse<T>*       m_ana ; 
 
 
 };

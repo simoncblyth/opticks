@@ -1,7 +1,6 @@
 #include <iostream>
 #include <sstream>
 
-#include "NNodeAnalyse.hpp"
 #include "NNodeCollector.hpp"
 #include "NTreeBuilder.hpp"
 #include "PLOG.hh"
@@ -11,26 +10,32 @@ T* NTreeBuilder<T>::UnionTree(const std::vector<T*>& prims )  // static
 {
     return CommonTree(prims, CSG_UNION ) ; 
 }
-
 template <typename T>
 T* NTreeBuilder<T>::CommonTree(const std::vector<T*>& prims, OpticksCSG_t operator_ ) // static
 {
     NTreeBuilder tb(prims, operator_ );  
-    //LOG(info) << tb.desc(); 
+    return tb.root() ; 
+}
+template <typename T>
+T* NTreeBuilder<T>::BileafTree(const std::vector<T*>& bileafs, OpticksCSG_t operator_ ) // static
+{
+    bool bileaf = true ; 
+    NTreeBuilder tb(bileafs, operator_, bileaf );  
     return tb.root() ; 
 }
 
+
+
+/**
+Find complete binary tree height sufficient for num_leaves
+        
+   height: 0, 1, 2, 3,  4,  5,  6,   7,   8,   9,   10, 
+   tprim : 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 
+
+**/
 template <typename T>
 int NTreeBuilder<T>::FindBinaryTreeHeight(unsigned num_leaves) // static
 {
-    /**
-    Find complete binary tree height sufficient for num_leaves
-        
-      height: 0, 1, 2, 3,  4,  5,  6,   7,   8,   9,   10, 
-      tprim : 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 
-
-    **/
-
     int  height = -1 ;
     for(int h=0 ; h < 10 ; h++ )
     {
@@ -45,18 +50,16 @@ int NTreeBuilder<T>::FindBinaryTreeHeight(unsigned num_leaves) // static
     return height ; 
 }
 
-
-
 template <typename T>
-NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& prims, OpticksCSG_t operator_ )
+NTreeBuilder<T>::NTreeBuilder( const std::vector<T*>& subs, OpticksCSG_t operator_, bool bileaf )
     :
-    m_prims(prims),
-    m_height(FindBinaryTreeHeight(prims.size())),
+    m_subs(subs),
     m_operator(operator_),
     m_optag(CSGTag(operator_)),
+    m_bileaf(bileaf),
+    m_height(0),
     m_root(NULL),
-    m_ana(NULL),
-    m_verbosity(1)
+    m_verbosity(3)
 {
     init(); 
 } 
@@ -66,7 +69,7 @@ std::string NTreeBuilder<T>::desc() const
 {
     std::stringstream ss ; 
     ss 
-       << " num_prims " << m_prims.size() 
+       << " num_subs " << m_subs.size() 
        << " height " << m_height 
        << " operator " << CSGName(m_operator) 
        ; 
@@ -86,75 +89,73 @@ void NTreeBuilder<T>::setRoot(T* root)
     m_root = root ; 
 }
 
-template <typename T>
-void NTreeBuilder<T>::analyse()
-{
-    delete m_ana ; 
-    m_ana  = new NNodeAnalyse<T>(m_root) ; 
-
-    if(m_verbosity > 2 )
-        LOG(info) << " NNodeAnalyse \n" << m_ana->desc(); 
-}
-
 
 template <typename T>
 void NTreeBuilder<T>::init()
 {
-    unsigned num_prim = m_prims.size() ; 
-
-    m_cprims = m_prims ; 
-    std::reverse( m_cprims.begin(), m_cprims.end() ); 
-
-    for(unsigned i=0 ; i < num_prim ; i++)
+    for(unsigned i=0 ; i < m_subs.size() ; i++)
     {
-        T* prim = m_prims[i] ;
+        T* sub = m_subs[i] ;
         if(m_verbosity > 2)
-            std::cout << prim->desc() << std::endl ; 
-        assert( prim->is_primitive() ); 
+        {
+            std::cout << sub->desc() << std::endl ; 
+        }
+        if( m_bileaf )
+        {
+            assert( sub->is_bileaf() );
+        }
+        else
+        { 
+            assert( sub->is_primitive() ); 
+        } 
     }
+
+    unsigned num_prim = m_bileaf ? 2*m_subs.size() : m_subs.size() ; 
+
+    m_height = FindBinaryTreeHeight(num_prim) ; 
+
+    m_csubs = m_subs ; 
+
+    std::reverse( m_csubs.begin(), m_csubs.end() ); 
 
     if(m_height == 0)
     {
-         assert( num_prim == 1 );
-         setRoot( m_prims[0] ); 
+         assert( num_prim == 1 && m_bileaf == false );
+         setRoot( m_subs[0] ); 
     } 
     else
     {
-         T* root = build_r(m_height) ;
+         T* root = build_r( m_bileaf ? m_height - 1 : m_height ) ; // bileaf are 2 levels, so height - 1
          setRoot(root);
-         analyse();
-
          populate(); 
-         analyse();
-
          prune();
-         analyse();
     }
 }
 
 
+/**
+NTreeBuilder<T>::build_r
+--------------------------
+    
+Build complete binary tree with all operators the same
+and CSG_ZERO placeholders for elevation 0
+
+**/
 
 template <typename T>
 T* NTreeBuilder<T>::build_r( int elevation )
 {
-    /*
-    Build complete binary tree with all operators the same
-    and CSG_ZERO placeholders for elevation 0
-    */
-
     T* node = NULL ; 
     if(elevation > 1)
     {
         T* left = build_r( elevation - 1 );
         T* right = build_r( elevation - 1 );
-        //node = new T(T::make_node( m_operator , left , right )); 
         node = T::make_operator_ptr(m_operator, left, right ) ; 
     }
     else
     {
         T* left =  new T(T::make_node( CSG_ZERO )); 
         T* right =  new T(T::make_node( CSG_ZERO )); 
-        //node = new T(T::make_node( m_operator , left , right )); 
         node = T::make_operator_ptr(m_operator, left, right ) ; 
     }
     return node ; 
@@ -164,44 +165,41 @@ T* NTreeBuilder<T>::build_r( int elevation )
 template <typename T>
 void NTreeBuilder<T>::populate()
 {
-    assert(m_ana);
-    const std::vector<const T*>& inorder = m_ana->nodes->inorder ;     
-    std::vector<T*>& cprims = m_cprims ; 
+    std::vector<T*> inorder ; 
+    NNodeCollector<T>::Inorder_r( inorder, m_root ) ;  
+
+    std::vector<T*>& csubs = m_csubs ; 
 
     for(unsigned i=0 ; i < inorder.size() ; i++)
     {
-        const T* node_ = inorder[i]; 
-        T* node = const_cast<T*>(node_); 
+        T* node = inorder[i]; 
 
         if(node->is_operator())
         {
-            if(node->left->is_zero() && cprims.size() > 0)
+            if(node->left->is_zero() && csubs.size() > 0)
             {
-               T* back = cprims.back() ;
+               T* back = csubs.back() ;
                //node->left = new T(*back) ; // <-- this caused bbox infinite recursion, as it drops the vtable : see NTreeBuilderTest
                node->left = back->make_copy();
 
-               cprims.pop_back();  // popping destroys it, so need the copy 
+               csubs.pop_back();  // popping destroys it, so need the copy 
             }         
-            if(node->right->is_zero() && cprims.size() > 0)
+            if(node->right->is_zero() && csubs.size() > 0)
             {
-               T* back = cprims.back() ;
+               T* back = csubs.back() ;
                //node->right = new T(*back) ;   // ditto
                node->right = back->make_copy();
-               cprims.pop_back(); 
+               csubs.pop_back(); 
             }         
         }
     }
 }
-
-
 
 template <typename T>
 void NTreeBuilder<T>::prune()
 {
     prune_r(m_root);
 }
-
 
 template <typename T>
 void NTreeBuilder<T>::prune_r(T* node)
@@ -216,7 +214,6 @@ void NTreeBuilder<T>::prune_r(T* node)
 
         // postorder visit : so both children always visited before their parents 
 
-
         if(node->left->is_lrzero()) // left node is an operator which has both its left and right zero 
         {
             node->left = new T(T::make_node(CSG_ZERO)) ;  // prune : ie replace operator with CSG_ZERO placeholder  
@@ -226,7 +223,6 @@ void NTreeBuilder<T>::prune_r(T* node)
             T* ll = node->left->left ; 
             node->left = ll ;        // moving the lonely primitive up to higher elevation   
         }
-
 
         if(node->right->is_lrzero())  // right node is operator with both its left and right zero 
         {
@@ -239,7 +235,6 @@ void NTreeBuilder<T>::prune_r(T* node)
         }
     }
 }
-
 
 #include "NNode.hpp"
 #include "No.hpp"

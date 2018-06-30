@@ -44,6 +44,7 @@ template struct nxform<YOG::Nd> ;
 #include "NGLMExt.hpp"
 #include "NCSG.hpp"
 #include "NNode.hpp"
+#include "NTreeProcess.hpp"
 
 #include "GMesh.hh"
 #include "GVolume.hh"
@@ -492,8 +493,13 @@ GVolume* X4PhysicalVolume::convertNode(const G4VPhysicalVolume* const pv, GVolum
 
      if(mh->csgnode == NULL)
      {
-         mh->csgnode = X4Solid::Convert(solid) ; 
+         nnode* tree = X4Solid::Convert(solid)  ; 
+         NTreeProcess<nnode> proc(tree); 
+         nnode* result = proc.result ; 
 
+         mh->csgnode = result ; 
+
+   
          bool is_skip = std::find( skips.begin(), skips.end(), nd->soIdx ) != skips.end()  ; 
 
          mh->mesh = is_skip ? X4Mesh::Placeholder(solid, nd->soIdx) : X4Mesh::Convert(solid, nd->soIdx ) ; 

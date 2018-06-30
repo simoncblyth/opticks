@@ -58,10 +58,8 @@ void test_positivize()
     LOG(info) << NNodeAnalyse<nnode>::Desc(abcde) ; 
 
     NTreePositive<nnode> pos(abcde) ; 
-    pos.analyse();  
+    LOG(info) << NNodeAnalyse<nnode>::Desc(abcde) ; 
 }
-
-
 
 
 

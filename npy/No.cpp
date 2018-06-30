@@ -43,6 +43,10 @@ bool no::is_primitive() const
 {
     return left == NULL && right == NULL ; 
 }
+bool no::is_bileaf() const 
+{
+    return !is_primitive() && left->is_primitive() && right->is_primitive() ; 
+}
 bool no::is_operator() const 
 {
     return left != NULL && right != NULL ; 

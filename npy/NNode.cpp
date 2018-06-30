@@ -81,10 +81,10 @@ std::string nnode::desc() const
 std::string nnode::id() const 
 {
     std::stringstream ss ; 
-    ss  
-        << ( complement ? "!" : "" )
-        << CSGTag(type) 
-        ;     
+
+    //ss << subdepth ; 
+    ss   << ( complement ? "!" : "" ) << CSGTag(type)  ;     
+
     return ss.str();
 }
 
@@ -132,6 +132,8 @@ bool nnode::is_lzero() const
 {
     return is_operator() && left->is_zero() && !right->is_zero() ; 
 }
+
+
 
 
 bool nnode::is_operator() const 
@@ -198,6 +200,7 @@ void nnode::Init( nnode& n , OpticksCSG_t type, nnode* left, nnode* right )
     n.treedir = NULL ; 
     n.treeidx = -1 ; 
     n.depth = 0 ; 
+    n.subdepth = 0 ; 
     n.boundary = NULL ;  
     n.meta = NULL ; 
     n._dump = new NNodeDump(n) ; 

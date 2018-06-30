@@ -17,6 +17,15 @@ NNodeCollector<T>::~NNodeCollector()
 {
 }
  
+template <typename T>
+void NNodeCollector<T>::Inorder_r( std::vector<T*>& inorder, T* node ) // static
+{
+    if( node == NULL ) return ; 
+    Inorder_r( inorder,  node->left );
+    inorder.push_back( node ) ;
+    Inorder_r( inorder, node->right );
+}
+
 
 template <typename T>
 void NNodeCollector<T>::collect_inorder_r( const T* node ) 
